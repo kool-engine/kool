@@ -10,10 +10,10 @@ interface TextScope : UiScope {
     override val modifier: TextModifier
 }
 
-open class TextModifier : UiModifier() {
+open class TextModifier(surface: UiSurface) : UiModifier(surface) {
     var text: String by property("")
-    var font: FontProps by property(Font.DEFAULT_FONT_PROPS)
-    var textColor: Color by property(Color.WHITE)
+    var font: FontProps by property { it.sizes.normalText }
+    var textColor: Color by property { it.colors.onSurface }
     var textAlignX: AlignmentX by property(AlignmentX.Start)
     var textAlignY: AlignmentY by property(AlignmentY.Top)
 }
@@ -24,6 +24,12 @@ fun <T: TextModifier> T.textColor(color: Color): T { textColor = color; return t
 fun <T: TextModifier> T.textAlignX(alignment: AlignmentX): T { textAlignX = alignment; return this }
 fun <T: TextModifier> T.textAlignY(alignment: AlignmentY): T { textAlignY = alignment; return this }
 
+fun <T: TextModifier> T.textAlign(alignX: AlignmentX, alignY: AlignmentY): T {
+    textAlignX = alignX
+    textAlignY = alignY
+    return this
+}
+
 inline fun UiScope.Text(text: String = "", block: TextScope.() -> Unit): TextScope {
     val textNd = uiNode.createChild(TextNode::class, TextNode.factory)
     textNd.modifier.text(text)
@@ -32,15 +38,10 @@ inline fun UiScope.Text(text: String = "", block: TextScope.() -> Unit): TextSco
 }
 
 open class TextNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface), TextScope {
-    override val modifier = TextModifier()
+    override val modifier = TextModifier(surface)
 
     private val textProps = TextProps(Font.DEFAULT_FONT)
     private val textCache = CachedText(this)
-
-    override fun resetDefaults() {
-        super.resetDefaults()
-        modifier.textColor(colors.onSurface)
-    }
 
     override fun measureContentSize(ctx: KoolContext) {
         val font = surface.getFont(modifier.font, ctx)

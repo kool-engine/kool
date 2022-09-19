@@ -92,7 +92,7 @@ interface ScrollPaneScope : UiScope {
     override val modifier: ScrollPaneModifier
 }
 
-open class ScrollPaneModifier : UiModifier() {
+open class ScrollPaneModifier(surface: UiSurface) : UiModifier(surface) {
     var onScrollPosChanged: ((Float, Float) -> Unit)? by property(null)
 
     var allowOverscrollX by property(false)
@@ -118,7 +118,7 @@ inline fun UiScope.ScrollPane(state: ScrollState, block: ScrollPaneScope.() -> U
 }
 
 open class ScrollPaneNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface), ScrollPaneScope {
-    override val modifier = ScrollPaneModifier()
+    override val modifier = ScrollPaneModifier(surface)
 
     lateinit var state: ScrollState
 

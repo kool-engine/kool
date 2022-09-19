@@ -26,7 +26,7 @@ interface LazyListScope : UiScope {
     fun <T> itemsIndexed(items: List<T>, block: LazyListScope.(Int, T) -> Unit)
 }
 
-open class LazyListModifier : UiModifier() {
+open class LazyListModifier(surface: UiSurface) : UiModifier(surface) {
     var orientation: ListOrientation by property(ListOrientation.Vertical)
     var extraItemsBefore: Int by property(0)
     var extraItemsAfter: Int by property(3)
@@ -77,7 +77,7 @@ fun UiScope.LazyList(
 }
 
 class LazyListNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface), LazyListScope {
-    override val modifier = LazyListModifier()
+    override val modifier = LazyListModifier(surface)
 
     lateinit var state: LazyListState
 

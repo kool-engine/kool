@@ -18,19 +18,20 @@ interface TextFieldScope : UiScope {
     override val modifier: TextFieldModifier
 }
 
-open class TextFieldModifier : UiModifier() {
+open class TextFieldModifier(surface: UiSurface) : UiModifier(surface) {
     var text: String by property("")
-    var font: FontProps by property(Font.DEFAULT_FONT_PROPS)
+    var font: FontProps by property { it.sizes.normalText }
     var hint: String by property("")
     var hintFont: FontProps? by property(null)
     var isEditable: Boolean by property(true)
     var textAlignX: AlignmentX by property(AlignmentX.Start)
-    var textColor: Color by property(Color.WHITE)
-    var hintColor: Color by property(Color.WHITE)
-    var selectionColor: Color by property(Color.WHITE)
-    var cursorColor: Color by property(Color.WHITE)
-    var lineColor: Color by property(Color.WHITE)
-    var lineColorFocused: Color by property(Color.WHITE)
+
+    var textColor: Color by property { it.colors.onSurface }
+    var hintColor: Color by property { it.colors.onSurface.withAlpha(0.5f) }
+    var selectionColor: Color by property { it.colors.secondary.withAlpha(0.5f) }
+    var cursorColor: Color by property { it.colors.onSurface }
+    var lineColor: Color by property { it.colors.secondaryVariant }
+    var lineColorFocused: Color by property { it.colors.secondary }
 
     var onChange: ((String) -> Unit)? by property(null)
 }
@@ -75,7 +76,7 @@ inline fun UiScope.TextField(text: String = "", block: TextFieldScope.() -> Unit
 open class TextFieldNode(parent: UiNode?, surface: UiSurface)
     : UiNode(parent, surface), TextFieldScope, Clickable, Focusable, Hoverable, Draggable
 {
-    override val modifier = TextFieldModifier()
+    override val modifier = TextFieldModifier(surface)
 
     private val textProps = TextProps(Font.DEFAULT_FONT)
     private val textCache = CachedText(this)
@@ -88,18 +89,6 @@ open class TextFieldNode(parent: UiNode?, surface: UiSurface)
     private var cursorShow = mutableStateOf(false)
 
     private val editText = EditableText()
-
-    override fun resetDefaults() {
-        super.resetDefaults()
-        modifier.colors(
-            textColor = colors.onSurface,
-            hintColor = colors.onSurface.withAlpha(0.5f),
-            selectionColor = colors.secondary.withAlpha(0.5f),
-            cursorColor = colors.onSurface,
-            lineColor = colors.secondaryVariant,
-            lineColorFocused = colors.secondary
-        )
-    }
 
     override fun measureContentSize(ctx: KoolContext) {
         val isHint = modifier.text.isEmpty()

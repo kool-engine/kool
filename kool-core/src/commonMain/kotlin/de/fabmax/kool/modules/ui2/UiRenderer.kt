@@ -1,6 +1,7 @@
 package de.fabmax.kool.modules.ui2
 
 import de.fabmax.kool.util.Color
+import kotlin.math.min
 import kotlin.math.round
 
 interface UiRenderer<in T: UiNode> {
@@ -19,6 +20,14 @@ class RoundRectBackground(val backgroundColor: Color, val cornerRadius: Dp) : Ui
     override fun renderUi(node: UiNode) {
         node.apply {
             surface.getUiPrimitives().localRoundRect(0f, 0f, widthPx, heightPx, cornerRadius.px, backgroundColor)
+        }
+    }
+}
+
+class CircularBackground(val backgroundColor: Color) : UiRenderer<UiNode> {
+    override fun renderUi(node: UiNode) {
+        node.apply {
+            surface.getUiPrimitives().localCircle(widthPx * 0.5f, heightPx * 0.5f, min(widthPx, heightPx) * 0.5f, backgroundColor)
         }
     }
 }

@@ -14,6 +14,7 @@ import de.fabmax.kool.util.logD
 
 class UiSurface(
     colors: Colors = Colors.darkColors(),
+    sizes: Sizes = Sizes.normal(),
     name: String = "uiSurface",
     private val uiBlock: UiScope.() -> Unit
 ) : Group(name) {
@@ -38,10 +39,13 @@ class UiSurface(
 
     var printTiming = false
 
-    // colorsState is private and use()d internally by UiSurface
-    // for all other consumers the colors value is directly exposed
+    // colorsState and sizesState are private and use()d internally by UiSurface
+    // for all other consumers the values are directly exposed
     private val colorsState = mutableStateOf(colors)
+    private val sizesState = mutableStateOf(sizes)
+
     var colors: Colors by colorsState::value
+    var sizes: Sizes by sizesState::value
 
     init {
         // mirror y-axis
@@ -311,6 +315,7 @@ class UiSurface(
         fun reset() {
             resetDefaults()
             modifier.background(colorsState.use().surface)
+            sizesState.use()
         }
 
         fun collectNodesAt(x: Float, y: Float, result: MutableList<UiNode>, predicate: (UiNode) -> Boolean) {

@@ -8,10 +8,9 @@ interface ButtonScope : UiScope {
     override val modifier: ButtonModifier
 }
 
-open class ButtonModifier : TextModifier() {
-    // default color value are overridden by theme colors
-    var buttonColor: Color by property(Color.GRAY)
-    var buttonHoverColor: Color? by property(null)
+open class ButtonModifier(surface: UiSurface) : TextModifier(surface) {
+    var buttonColor: Color by property { it.colors.primaryVariant }
+    var buttonHoverColor: Color? by property { it.colors.primary }
     var textHoverColor: Color? by property(null)
     var isClickFeedback: Boolean by property(true)
 }
@@ -35,6 +34,9 @@ inline fun UiScope.Button(text: String = "", block: ButtonScope.() -> Unit): Tex
     val button = uiNode.createChild(ButtonNode::class, ButtonNode.factory)
     button.modifier
         .text(text)
+        .colors(textColor = colors.onPrimary)
+        .height(sizes.buttonHeight)
+        .textAlign(AlignmentX.Center, AlignmentY.Center)
         .margin(8.dp)
         .padding(horizontal = 8.dp, vertical = 4.dp)
         .onClick(button)
@@ -44,31 +46,24 @@ inline fun UiScope.Button(text: String = "", block: ButtonScope.() -> Unit): Tex
 }
 
 class ButtonNode(parent: UiNode?, surface: UiSurface) : TextNode(parent, surface), ButtonScope, Clickable, Hoverable {
-    override val modifier = ButtonModifier()
+    override val modifier = ButtonModifier(surface)
 
     private var isHovered = mutableStateOf(false)
     private val clickAnimator = AnimationState(0.3f)
     private val clickPos = MutableVec2f()
 
-    override fun resetDefaults() {
-        super.resetDefaults()
-        modifier.colors(
-            buttonColor = colors.primaryVariant,
-            textColor = colors.onPrimary,
-            buttonHoverColor = colors.primary
-        )
-    }
-
     override fun render(ctx: KoolContext) {
-        if (modifier.background == null) {
-            // only set default button background if no custom one was configured
-            val bgColor = if (isHovered.value) modifier.buttonHoverColor ?: modifier.buttonColor else modifier.buttonColor
-            modifier.background(RoundRectBackground(bgColor, 4.dp))
-        }
+        var bgColor = modifier.buttonColor
         if (isHovered.use()) {
             // overwrite text color with text hover color, so TextNode uses the desired color
             modifier.textHoverColor?.let { modifier.textColor(it) }
+            modifier.buttonHoverColor?.let { bgColor = it }
         }
+        if (modifier.background == null) {
+            // only set default button background if no custom one was configured
+            modifier.background(RoundRectBackground(bgColor, 4.dp))
+        }
+
         super.render(ctx)
 
         if (modifier.isClickFeedback && clickAnimator.isActive) {

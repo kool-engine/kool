@@ -14,14 +14,13 @@ interface ScrollbarScope : UiScope {
     val isVertical: Boolean get() = modifier.orientation == ScrollbarOrientation.Vertical
 }
 
-open class ScrollbarModifier : UiModifier() {
+open class ScrollbarModifier(surface: UiSurface) : UiModifier(surface) {
     var orientation: ScrollbarOrientation by property(ScrollbarOrientation.Vertical)
     var minBarLength: Dp by property(Dp(24f))
     var hideIfFullyExtended: Boolean by property(true)
 
-    // default color value are overridden by theme colors
-    var barColor: Color by property(Color.GRAY)
-    var hoverColor: Color? by property(null)
+    var barColor: Color by property { it.colors.secondary.withAlpha(0.5f) }
+    var hoverColor: Color? by property { it.colors.secondary }
     var trackColor: Color? by property(null)
     var trackHoverColor: Color? by property(null)
 }
@@ -59,8 +58,8 @@ inline fun UiScope.Scrollbar(
     val scrollBar = uiNode.createChild(ScrollbarNode::class, ScrollbarNode.factory)
     scrollBar.state = state
     scrollBar.modifier.onClick(scrollBar)
-    scrollBar.modifier.hoverListener(scrollBar)
-    scrollBar.modifier.dragListener(scrollBar)
+        .hoverListener(scrollBar)
+        .dragListener(scrollBar)
     scrollBar.block()
 }
 
@@ -115,7 +114,7 @@ inline fun UiScope.HorizontalScrollbar(
 open class ScrollbarNode(parent: UiNode?, surface: UiSurface)
     : UiNode(parent, surface), ScrollbarScope, Clickable, Draggable, Hoverable {
 
-    override val modifier = ScrollbarModifier()
+    override val modifier = ScrollbarModifier(surface)
     lateinit var state: ScrollState
 
     private val isTrackVisible: Boolean get() = modifier.trackColor != null
@@ -126,14 +125,6 @@ open class ScrollbarNode(parent: UiNode?, surface: UiSurface)
     private var barMaxX = 0f
     private var barMinY = 0f
     private var barMaxY = 0f
-
-    override fun resetDefaults() {
-        super.resetDefaults()
-        modifier.colors(
-            color = colors.secondary.withAlpha(0.5f),
-            hoverColor = colors.secondary
-        )
-    }
 
     override fun render(ctx: KoolContext) {
         // draw background

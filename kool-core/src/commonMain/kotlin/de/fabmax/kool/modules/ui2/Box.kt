@@ -46,7 +46,7 @@ inline fun UiScope.Box(
 }
 
 open class BoxNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface), UiScope {
-    override val modifier = UiModifier()
+    override val modifier = UiModifier(surface)
 
     companion object {
         val factory: (UiNode, UiSurface) -> BoxNode = { parent, surface -> BoxNode(parent, surface) }

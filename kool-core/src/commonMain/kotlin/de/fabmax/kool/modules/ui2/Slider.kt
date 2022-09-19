@@ -9,7 +9,7 @@ interface SliderScope : UiScope {
     override val modifier: SliderModifier
 }
 
-open class SliderModifier : TextModifier() {
+open class SliderModifier(surface: UiSurface) : TextModifier(surface) {
     var value: Float by property(0.5f)
     var minValue: Float by property(0f)
     var maxValue: Float by property(1f)
@@ -18,10 +18,9 @@ open class SliderModifier : TextModifier() {
 
     var orientation: SliderOrientation by property(SliderOrientation.Horizontal)
 
-    // default color values are overridden by theme colors
-    var knobColor: Color by property(Color.WHITE)
-    var trackColor: Color by property(Color.GRAY)
-    var trackColorActive: Color? by property(null)
+    var knobColor: Color by property { it.colors.secondary }
+    var trackColor: Color by property { it.colors.secondaryVariant.withAlpha(0.5f) }
+    var trackColorActive: Color? by property { it.colors.secondaryVariant.withAlpha(0.8f) }
 }
 
 fun <T: SliderModifier> T.value(value: Float): T { this.value = value; return this }
@@ -61,30 +60,24 @@ inline fun UiScope.Slider(value: Float = 0.5f, min: Float = 0f, max: Float = 1f,
 }
 
 class SliderNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface), SliderScope, Draggable {
-    override val modifier = SliderModifier()
+    override val modifier = SliderModifier(surface)
 
     private val knobCenter = MutableVec2f()
     private val dragStart = MutableVec2f()
 
-    override fun resetDefaults() {
-        super.resetDefaults()
-        modifier
-            .colors(
-                knobColor = colors.secondary,
-                trackColor = colors.secondaryVariant.withAlpha(0.5f),
-                trackColorActive = colors.secondaryVariant.withAlpha(0.8f)
-            )
-    }
+    private val knobDiameter: Dp get() = sizes.sliderHeight
+    private val trackLenPx: Float get() = knobDiameter.px * 6
+    private val trackHeightPx: Float get() = knobDiameter.px * 0.4f
 
     override fun measureContentSize(ctx: KoolContext) {
         val w: Float
         val h: Float
         if (modifier.orientation == SliderOrientation.Horizontal) {
-            w = trackLen.dp.px
-            h = knobDiameter.dp.px
+            w = trackLenPx
+            h = knobDiameter.px
         } else {
-            w = knobDiameter.dp.px
-            h = trackLen.dp.px
+            w = knobDiameter.px
+            h = trackLenPx
         }
         val measuredWidth = w + paddingStartPx + paddingEndPx
         val measuredHeight = h + paddingTopPx + paddingBottomPx
@@ -95,9 +88,9 @@ class SliderNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface),
         super.render(ctx)
         val draw = surface.getUiPrimitives()
         val knobPos = ((modifier.value - modifier.minValue) / (modifier.maxValue - modifier.minValue)).clamp()
-        val kD = knobDiameter.dp.px
+        val kD = knobDiameter.px
         val kR = kD * 0.5f
-        val tH = trackHeight.dp.px
+        val tH = trackHeightPx
         val tR = tH * 0.5f
 
         if (modifier.orientation == SliderOrientation.Horizontal) {
@@ -121,7 +114,7 @@ class SliderNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface),
                     xMax - xMin + tH, tH, tR, modifier.trackColor)
             }
             knobCenter.set(knobX, c)
-            draw.localCircle(knobX, c, knobDiameter.dp.px * 0.5f, modifier.knobColor)
+            draw.localCircle(knobX, c, knobDiameter.px * 0.5f, modifier.knobColor)
 
         } else {
             val c = widthPx * 0.5f
@@ -144,12 +137,12 @@ class SliderNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface),
                     tH, yMax - yMin + tH, tR, modifier.trackColor)
             }
             knobCenter.set(c, knobY)
-            draw.localCircle(c, knobY, knobDiameter.dp.px * 0.5f, modifier.knobColor)
+            draw.localCircle(c, knobY, knobDiameter.px * 0.5f, modifier.knobColor)
         }
     }
 
     private fun computeValue(ev: PointerEvent): Float {
-        val kD = knobDiameter.dp.px
+        val kD = knobDiameter.px
         return if (modifier.orientation == SliderOrientation.Horizontal) {
             val innerW = innerWidthPx - kD
             val dragKnobPos = dragStart.x + ev.pointer.dragDeltaX.toFloat() - paddingStartPx - kD * 0.5f
@@ -164,7 +157,7 @@ class SliderNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface),
     }
 
     override fun onDragStart(ev: PointerEvent) {
-        if (ev.position.distance(knobCenter) < knobDiameter.dp.px) {
+        if (ev.position.distance(knobCenter) < knobDiameter.px) {
             dragStart.set(knobCenter)
         } else {
             ev.reject()
@@ -180,9 +173,6 @@ class SliderNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface),
     }
 
     companion object {
-        const val knobDiameter = 16f
-        const val trackLen = 100f
-        const val trackHeight = 6f
         val factory: (UiNode, UiSurface) -> SliderNode = { parent, surface -> SliderNode(parent, surface) }
     }
 }

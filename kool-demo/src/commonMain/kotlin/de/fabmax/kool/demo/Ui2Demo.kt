@@ -41,9 +41,6 @@ class Ui2Demo : DemoScene("UI2 Demo") {
         //  more ui elements: combo-box
         //  elastic overscroll
         //  icons + images
-        //  keyboard input
-        //  focus
-        //  clipboard
         //  popup menus, tooltips
         //  input context stack
 
@@ -59,12 +56,12 @@ class Ui2Demo : DemoScene("UI2 Demo") {
 
         setupUiScene(true)
 
-        +UiSurface(themeColors) {
+        +UiSurface(themeColors, sizes = Sizes.normal()) {
             modifier
                 .width(500.dp)
                 .height(WrapContent)
                 .margin(top = 100.dp, bottom = 100.dp)
-                .padding(8.dp)
+                .padding(sizes.gap)
                 .layout(ColumnLayout)
                 .alignX(AlignmentX.Center)
                 .alignY(AlignmentY.Center)
@@ -82,21 +79,19 @@ class Ui2Demo : DemoScene("UI2 Demo") {
 
         ScrollArea(scrollState, height = 200.dp) {
             Column {
-                modifier.margin(0.dp)
-
                 Text("Text with two lines:\nThe second line is a little longer than the first one") {
                     modifier
                         .width(300.dp)
-                        .margin(2.dp)
+                        .margin(sizes.smallGap)
                 }
                 Row {
                     for (i in 1..5) {
                         Text("Another text no. $i with a lot of height") {
                             modifier
                                 .height(300.dp)
-                                .margin(2.dp)
-                                .padding(20.dp)
-                                .border(RoundRectBorder(colors.primary, 14.dp, 2.dp, 6.dp))
+                                .margin(sizes.smallGap)
+                                .padding(sizes.largeGap)
+                                .border(RoundRectBorder(colors.primary, sizes.gap, 2.dp, 6.dp))
                         }
                     }
                 }
@@ -107,7 +102,7 @@ class Ui2Demo : DemoScene("UI2 Demo") {
             listState,
             height = 400.dp,
             containerModifier = {
-                it.margin(top = 16.dp)
+                it.margin(top = sizes.largeGap)
             },
             vScrollbarModifier = {
                 it.colors(
@@ -134,7 +129,7 @@ class Ui2Demo : DemoScene("UI2 Demo") {
                 Text(item) {
                     modifier
                         .textColor(textColor)
-                        .padding(8.dp)
+                        .padding(sizes.smallGap)
                         .width(Grow())
                         .background(bgColor)
                         .onHover { hoveredListItem.set(item) }
@@ -156,12 +151,12 @@ class Ui2Demo : DemoScene("UI2 Demo") {
                 modifier.onToggle { checkboxState.set(it) }
             }
 
-            Text("Radio Button") { modifier.alignY(AlignmentY.Center).margin(start = 16.dp) }
+            Text("Radio Button") { modifier.alignY(AlignmentY.Center).margin(start = sizes.largeGap) }
             RadioButton(radioButtonState.use()) {
                 modifier.onToggle { radioButtonState.set(it) }
             }
 
-            Text("Switch") { modifier.alignY(AlignmentY.Center).margin(start = 16.dp) }
+            Text("Switch") { modifier.alignY(AlignmentY.Center).margin(start = sizes.largeGap) }
             Switch(switchState.use()) {
                 modifier.onToggle { switchState.set(it) }
             }
@@ -189,7 +184,7 @@ class Ui2Demo : DemoScene("UI2 Demo") {
                 modifier
                     .width(150.dp)
                     .hint("Another text field")
-                    .margin(start = 16.dp)
+                    .margin(start = sizes.largeGap)
                     .onChange { text2.set(it) }
             }
         }
@@ -200,7 +195,7 @@ class Ui2Demo : DemoScene("UI2 Demo") {
                 .height(32.dp)
                 .textAlignX(AlignmentX.End)
                 .textAlignY(AlignmentY.Bottom)
-                .margin(8.dp)
+                .margin(sizes.gap)
         }
     }
 }

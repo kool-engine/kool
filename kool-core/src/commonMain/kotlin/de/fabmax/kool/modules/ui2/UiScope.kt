@@ -10,6 +10,7 @@ interface UiScope {
     val modifier: UiModifier
 
     val colors: Colors get() = surface.colors
+    val sizes: Sizes get() = surface.sizes
     val deltaT: Float get() = surface.deltaT
 
     val Int.dp: Dp get() = Dp(this.toFloat())

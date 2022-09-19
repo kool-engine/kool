@@ -10,14 +10,14 @@ interface ToggleScope : UiScope {
     override val modifier: ToggleModifier
 }
 
-open class ToggleModifier : UiModifier() {
+open class ToggleModifier(surface: UiSurface) : UiModifier(surface) {
     var toggleState: Boolean by property(false)
     var onToggle: ((Boolean) -> Unit)? by property(null)
 
     // default color value are overridden by theme colors
-    var foregroundColor: Color by property(Color.WHITE)
-    var backgroundColor: Color by property(Color.BLACK)
-    var borderColor: Color by property(Color.GRAY)
+    var foregroundColor: Color by property { it.colors.secondary }
+    var backgroundColor: Color by property { it.colors.secondaryVariant.withAlpha(0.5f) }
+    var borderColor: Color by property { it.colors.secondaryVariant }
 }
 
 fun <T: ToggleModifier> T.toggleState(value: Boolean): T { toggleState = value; return this }
@@ -62,7 +62,7 @@ abstract class ToggleNode(
     protected val buttonHeight: Dp
 ) : UiNode(parent, surface), ToggleScope, Clickable {
 
-    override val modifier = ToggleModifier()
+    override val modifier = ToggleModifier(surface)
     protected val toggleAnimator = AnimationState(0.1f)
 
     protected fun animationPos(): Float {
@@ -89,11 +89,6 @@ abstract class ToggleNode(
             .onClick(this)
             .margin(8.dp)
             .padding(bottom = 1.dp)
-            .colors(
-                foregroundColor = colors.secondary,
-                backgroundColor = colors.secondaryVariant.withAlpha(0.5f),
-                borderColor = colors.secondaryVariant
-            )
     }
 
     override fun onClick(ev: PointerEvent) {
@@ -106,7 +101,9 @@ abstract class ToggleNode(
     }
 }
 
-class CheckboxNode(parent: UiNode?, surface: UiSurface) : ToggleNode(parent, surface, Dp(size), Dp(size)) {
+class CheckboxNode(parent: UiNode?, surface: UiSurface)
+    : ToggleNode(parent, surface, surface.sizes.checkboxHeight, surface.sizes.checkboxHeight)
+{
     override fun render(ctx: KoolContext) {
         super.render(ctx)
         val r = buttonHeight.px * 0.5f
@@ -135,13 +132,16 @@ class CheckboxNode(parent: UiNode?, surface: UiSurface) : ToggleNode(parent, sur
     }
 
     companion object {
-        const val size = 16f
         val factory: (UiNode, UiSurface) -> CheckboxNode = { parent, surface -> CheckboxNode(parent, surface) }
     }
 }
 
-class RadioButtonNode(parent: UiNode?, surface: UiSurface) : ToggleNode(parent, surface, Dp(size), Dp(size)) {
-    override fun isOnClickTarget(ev: PointerEvent): Boolean = pxToDp(ev.position.distance(center())) < size * 0.5f
+class RadioButtonNode(parent: UiNode?, surface: UiSurface)
+    : ToggleNode(parent, surface, surface.sizes.radioButtonHeight, surface.sizes.radioButtonHeight)
+{
+
+    override fun isOnClickTarget(ev: PointerEvent): Boolean =
+        pxToDp(ev.position.distance(center())) < buttonWidth.px * 0.5f
 
     override fun render(ctx: KoolContext) {
         super.render(ctx)
@@ -159,19 +159,21 @@ class RadioButtonNode(parent: UiNode?, surface: UiSurface) : ToggleNode(parent, 
     }
 
     companion object {
-        const val size = 16f
         val factory: (UiNode, UiSurface) -> RadioButtonNode = { parent, surface -> RadioButtonNode(parent, surface) }
     }
 }
 
-class SwitchNode(parent: UiNode?, surface: UiSurface) : ToggleNode(parent, surface, Dp(width), Dp(height)) {
+class SwitchNode(parent: UiNode?, surface: UiSurface)
+    : ToggleNode(parent, surface, Dp(surface.sizes.switchHeight.value * 2f), surface.sizes.switchHeight)
+{
+
     override fun render(ctx: KoolContext) {
         super.render(ctx)
         val c = center()
         val w = buttonWidth.px
         val h = buttonHeight.px
-        val tW = trackWidth.dp.px
-        val tH = trackHeight.dp.px
+        val tH = buttonHeight.px * 0.75f
+        val tW = buttonWidth.px - (h - tH) * 0.5f
         val draw = surface.getUiPrimitives()
 
         draw.localRoundRect(c.x - tW * 0.5f, c.y - tH * 0.5f, tW, tH, tH * 0.5f, modifier.backgroundColor)
@@ -182,10 +184,6 @@ class SwitchNode(parent: UiNode?, surface: UiSurface) : ToggleNode(parent, surfa
     }
 
     companion object {
-        const val width = 32f
-        const val height = 16f
-        const val trackHeight = 12f
-        const val trackWidth = width - (height - trackHeight) * 0.5f
         val factory: (UiNode, UiSurface) -> SwitchNode = { parent, surface -> SwitchNode(parent, surface) }
     }
 }

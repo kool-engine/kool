@@ -6,7 +6,7 @@ import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.util.Color
 import kotlin.reflect.KProperty
 
-open class UiModifier {
+open class UiModifier(val surface: UiSurface) {
     private val properties = mutableListOf<PropertyHolder<*>>()
 
     var width: Dimension by property(WrapContent)
@@ -42,6 +42,12 @@ open class UiModifier {
     val onDragEnd: MutableList<(PointerEvent) -> Unit> by listProperty()
 
     protected fun <T> property(defaultVal: T): PropertyHolder<T> {
+        val holder = PropertyHolder { defaultVal }
+        properties += holder
+        return holder
+    }
+
+    protected fun <T> property(defaultVal: (UiSurface) -> T): PropertyHolder<T> {
         val holder = PropertyHolder(defaultVal)
         properties += holder
         return holder
@@ -81,16 +87,16 @@ open class UiModifier {
                 onDrag.isNotEmpty() ||
                 onDragEnd.isNotEmpty()
 
-    protected open inner class PropertyHolder<T>(private val defaultVal: T) {
-        var field = defaultVal
+    protected open inner class PropertyHolder<T>(private val defaultVal: (UiSurface) -> T) {
+        var field = defaultVal(surface)
 
-        open fun resetDefault() { field = defaultVal }
+        open fun resetDefault() { field = defaultVal(surface) }
 
         operator fun getValue(thisRef: Any?, property: KProperty<*>): T = field
         operator fun setValue(thisRef: Any?, property: KProperty<*>, value: T) { field = value }
     }
 
-    protected inner class ListPropertyHolder<T> : PropertyHolder<MutableList<T>>(mutableListOf()) {
+    protected inner class ListPropertyHolder<T> : PropertyHolder<MutableList<T>>({ mutableListOf() }) {
         override fun resetDefault() {
             field.clear()
         }

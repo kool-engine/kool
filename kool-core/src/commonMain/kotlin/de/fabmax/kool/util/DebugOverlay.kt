@@ -40,13 +40,20 @@ class DebugOverlay(position: Position = Position.UPPER_RIGHT) {
 
     private val deltaTGraph = DeltaTGraph()
 
+    private val isExpanded = mutableStateOf(false)
+
     init {
         val fpsFont = FontProps(Font.SYSTEM_FONT, 20f)
 
         ui = Ui2Scene("debug-overlay") {
-            onUpdate += this@DebugOverlay::updateStats
+            onUpdate += {
+                fpsText.set("${it.ctx.fps.toString(1)} fps")
+                if (isExpanded.value) {
+                    updateExpandedStats(it)
+                }
+            }
 
-            +UiSurface(name = "overview") {
+            +UiSurface(name = "overview", sizes = Sizes.small()) {
                 modifier.layout(ColumnLayout)
 
                 when (position) {
@@ -56,31 +63,44 @@ class DebugOverlay(position: Position = Position.UPPER_RIGHT) {
                     Position.LOWER_RIGHT -> modifier.align(AlignmentX.End, AlignmentY.Bottom)
                 }
 
+                // min width
+                Box { modifier.width(180.dp) }
+
                 Text(fpsText.use()) {
                     modifier
                         .alignX(AlignmentX.Center)
-                        .padding(4.dp)
+                        .padding(sizes.smallGap)
                         .width(Grow())
                         .textAlignX(AlignmentX.Center)
                         .font(fpsFont)
                         .textColor(colors.primary)
                         .background(deltaTGraph)
+
+                    Text(if (isExpanded.use()) "-" else "+") {
+                        modifier
+                            .align(AlignmentX.End, AlignmentY.Center)
+                            .font(fpsFont)
+                            .textColor(colors.primary)
+                            .onClick { isExpanded.set(!isExpanded.value) }
+                            .margin(end = sizes.gap)
+                    }
                 }
 
-                Text("Kool v${KoolContext.KOOL_VERSION}") { debugTextStyle() }
-                sysInfos.use().forEach { txt -> Text(txt) { debugTextStyle() } }
-                Text(viewportText.use()) { debugTextStyle() }
-                Text(uptimeText.use()) { debugTextStyle() }
-                Text(numTexText.use()) { debugTextStyle() }
-                Text(numBufText.use()) { debugTextStyle() }
-                Text(numCmdsText.use()) { debugTextStyle() }
-                Text(numFacesText.use()) { debugTextStyle() }
+                if (isExpanded.use()) {
+                    Text("Kool v${KoolContext.KOOL_VERSION}") { debugTextStyle() }
+                    sysInfos.use().forEach { txt -> Text(txt) { debugTextStyle() } }
+                    Text(viewportText.use()) { debugTextStyle() }
+                    Text(uptimeText.use()) { debugTextStyle() }
+                    Text(numTexText.use()) { debugTextStyle() }
+                    Text(numBufText.use()) { debugTextStyle() }
+                    Text(numCmdsText.use()) { debugTextStyle() }
+                    Text(numFacesText.use()) { debugTextStyle() }
+                }
             }
         }
     }
 
-    private fun updateStats(ev: RenderPass.UpdateEvent) {
-        fpsText.set("${ev.ctx.fps.toString(1)} fps")
+    private fun updateExpandedStats(ev: RenderPass.UpdateEvent) {
         viewportText.set("Viewport: ${ev.viewport.width}x${ev.viewport.height} / ${(ev.ctx.windowScale * 100f).roundToInt()} %")
         updateUpText(ev.time)
 
