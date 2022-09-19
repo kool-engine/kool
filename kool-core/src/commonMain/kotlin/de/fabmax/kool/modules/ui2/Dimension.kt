@@ -19,6 +19,10 @@ value class Grow(val weight: Float = 1f) : Dimension {
 
 @JvmInline
 value class Dp(val value: Float): Dimension {
+    operator fun plus(other: Dp): Dp = Dp(value + other.value)
+    operator fun minus(other: Dp): Dp = Dp(value - other.value)
+    operator fun times(factor: Float): Dp = Dp(value * factor)
+
     override fun toString(): String {
         return "Dp($value)"
     }

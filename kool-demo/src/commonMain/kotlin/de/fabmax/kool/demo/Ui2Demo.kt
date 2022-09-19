@@ -22,6 +22,11 @@ class Ui2Demo : DemoScene("UI2 Demo") {
     private val text1 = mutableStateOf("")
     private val text2 = mutableStateOf("")
 
+    private val smallUi = Sizes.small()
+    private val mediumUi = Sizes.medium()
+    private val largeUi = Sizes.large()
+    private var selectedUiSize = mutableStateOf(mediumUi)
+
     override fun Scene.setupMainScene(ctx: KoolContext) {
         // new improved ui system
         // desired features
@@ -56,7 +61,7 @@ class Ui2Demo : DemoScene("UI2 Demo") {
 
         setupUiScene(true)
 
-        +UiSurface(themeColors, sizes = Sizes.normal()) {
+        +UiSurface(themeColors, sizes = selectedUiSize.value) {
             modifier
                 .width(500.dp)
                 .height(WrapContent)
@@ -77,12 +82,34 @@ class Ui2Demo : DemoScene("UI2 Demo") {
                 .onClick { clickCnt.value += 1 }
         }
 
+        Row {
+            surface.sizes = selectedUiSize.use()
+
+            Text("UI Size:") { modifier.alignY(AlignmentY.Center) }
+
+            fun TextScope.sizeButtonLabel(size: Sizes) {
+                modifier
+                    .margin(start = sizes.largeGap)
+                    .alignY(AlignmentY.Center)
+                    .onClick { selectedUiSize.set(size) }
+            }
+
+            Text("Small") { sizeButtonLabel(smallUi) }
+            RadioButton(surface.sizes == smallUi) { modifier.onToggle { if (it) selectedUiSize.set(smallUi) } }
+
+            Text("Medium") { sizeButtonLabel(mediumUi) }
+            RadioButton(surface.sizes == mediumUi) { modifier.onToggle { if (it) selectedUiSize.set(mediumUi) } }
+
+            Text("Large") { sizeButtonLabel(largeUi) }
+            RadioButton(surface.sizes == largeUi) { modifier.onToggle { if (it) selectedUiSize.set(largeUi) } }
+        }
+
         ScrollArea(scrollState, height = 200.dp) {
             Column {
-                Text("Text with two lines:\nThe second line is a little longer than the first one") {
+                Text("Text with two lines in a slightly larger font:\nThe second line is a little longer than the first one") {
                     modifier
-                        .width(300.dp)
                         .margin(sizes.smallGap)
+                        .font(sizes.largeText)
                 }
                 Row {
                     for (i in 1..5) {
@@ -179,6 +206,7 @@ class Ui2Demo : DemoScene("UI2 Demo") {
                     .width(150.dp)
                     .hint("A text field")
                     .onChange { text1.set(it) }
+                    .onEnterPressed { println("typed: $it") }
             }
             TextField(text2.use()) {
                 modifier
@@ -187,15 +215,6 @@ class Ui2Demo : DemoScene("UI2 Demo") {
                     .margin(start = sizes.largeGap)
                     .onChange { text2.set(it) }
             }
-        }
-
-        Text("Yet another text") {
-            modifier
-                .width(Grow())
-                .height(32.dp)
-                .textAlignX(AlignmentX.End)
-                .textAlignY(AlignmentY.Bottom)
-                .margin(sizes.gap)
         }
     }
 }

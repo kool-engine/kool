@@ -6,7 +6,6 @@ import de.fabmax.kool.scene.ui.FontProps
 data class Sizes(
     val normalText: FontProps,
     val largeText: FontProps,
-    val buttonHeight: Dp,
     val sliderHeight: Dp,
     val checkboxHeight: Dp,
     val radioButtonHeight: Dp,
@@ -18,9 +17,8 @@ data class Sizes(
 
     companion object {
         fun small(
-            normalText: FontProps = FontProps(Font.SYSTEM_FONT, 12f),
-            largeText: FontProps = FontProps(Font.SYSTEM_FONT, 18f),
-            buttonHeight: Dp = Dp(28f),
+            normalText: FontProps = FontProps(Font.SYSTEM_FONT, 12f, isScaledByWindowScale = false),
+            largeText: FontProps = FontProps(Font.SYSTEM_FONT, 16f, isScaledByWindowScale = false),
             sliderHeight: Dp = Dp(16f),
             checkboxHeight: Dp = Dp(16f),
             radioButtonHeight: Dp = Dp(16f),
@@ -31,7 +29,6 @@ data class Sizes(
         ): Sizes = Sizes(
             normalText,
             largeText,
-            buttonHeight,
             sliderHeight,
             checkboxHeight,
             radioButtonHeight,
@@ -41,10 +38,9 @@ data class Sizes(
             largeGap
         )
 
-        fun normal(
-            normalText: FontProps = FontProps(Font.SYSTEM_FONT, 15f),
-            largeText: FontProps = FontProps(Font.SYSTEM_FONT, 22f),
-            buttonHeight: Dp = Dp(35f),
+        fun medium(
+            normalText: FontProps = FontProps(Font.SYSTEM_FONT, 15f, isScaledByWindowScale = false),
+            largeText: FontProps = FontProps(Font.SYSTEM_FONT, 20f, isScaledByWindowScale = false),
             sliderHeight: Dp = Dp(20f),
             checkboxHeight: Dp = Dp(20f),
             radioButtonHeight: Dp = Dp(20f),
@@ -55,7 +51,6 @@ data class Sizes(
         ): Sizes = Sizes(
             normalText,
             largeText,
-            buttonHeight,
             sliderHeight,
             checkboxHeight,
             radioButtonHeight,
@@ -66,9 +61,8 @@ data class Sizes(
         )
 
         fun large(
-            normalText: FontProps = FontProps(Font.SYSTEM_FONT, 18f),
-            largeText: FontProps = FontProps(Font.SYSTEM_FONT, 27f),
-            buttonHeight: Dp = Dp(42f),
+            normalText: FontProps = FontProps(Font.SYSTEM_FONT, 18f, isScaledByWindowScale = false),
+            largeText: FontProps = FontProps(Font.SYSTEM_FONT, 24f, isScaledByWindowScale = false),
             sliderHeight: Dp = Dp(24f),
             checkboxHeight: Dp = Dp(24f),
             radioButtonHeight: Dp = Dp(24f),
@@ -79,7 +73,6 @@ data class Sizes(
         ): Sizes = Sizes(
             normalText,
             largeText,
-            buttonHeight,
             sliderHeight,
             checkboxHeight,
             radioButtonHeight,

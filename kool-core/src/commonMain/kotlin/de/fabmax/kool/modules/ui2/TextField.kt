@@ -34,6 +34,7 @@ open class TextFieldModifier(surface: UiSurface) : UiModifier(surface) {
     var lineColorFocused: Color by property { it.colors.secondary }
 
     var onChange: ((String) -> Unit)? by property(null)
+    var onEnterPressed: ((String) -> Unit)? by property(null)
 }
 
 fun <T: TextFieldModifier> T.text(text: String): T { this.text = text; return this }
@@ -43,6 +44,7 @@ fun <T: TextFieldModifier> T.hintFont(font: FontProps): T { this.hintFont = font
 fun <T: TextFieldModifier> T.isEditable(flag: Boolean): T { isEditable = flag; return this }
 fun <T: TextFieldModifier> T.textAlignX(alignment: AlignmentX): T { textAlignX = alignment; return this }
 fun <T: TextFieldModifier> T.onChange(block: ((String) -> Unit)?): T { this.onChange = block; return this }
+fun <T: TextFieldModifier> T.onEnterPressed(block: ((String) -> Unit)?): T { this.onEnterPressed = block; return this }
 
 fun <T: TextFieldModifier> T.colors(
     textColor: Color = this.textColor,
@@ -305,6 +307,7 @@ open class TextFieldNode(parent: UiNode?, surface: UiSurface)
                 InputManager.KEY_HOME -> editText.moveCaret(EditableText.MOVE_START, keyEvent.isShiftDown)
                 InputManager.KEY_END -> editText.moveCaret(EditableText.MOVE_END, keyEvent.isShiftDown)
                 InputManager.KEY_ESC -> surface.requestFocus(null)
+                InputManager.KEY_ENTER -> modifier.onEnterPressed?.invoke(editText.text)
                 else -> {
                     triggerUpdate = false
                     if (keyEvent.isCtrlDown) {

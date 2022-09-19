@@ -14,7 +14,7 @@ import de.fabmax.kool.util.logD
 
 class UiSurface(
     colors: Colors = Colors.darkColors(),
-    sizes: Sizes = Sizes.normal(),
+    sizes: Sizes = Sizes.medium(),
     name: String = "uiSurface",
     private val uiBlock: UiScope.() -> Unit
 ) : Group(name) {

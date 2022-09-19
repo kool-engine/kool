@@ -35,10 +35,9 @@ inline fun UiScope.Button(text: String = "", block: ButtonScope.() -> Unit): Tex
     button.modifier
         .text(text)
         .colors(textColor = colors.onPrimary)
-        .height(sizes.buttonHeight)
         .textAlign(AlignmentX.Center, AlignmentY.Center)
-        .margin(8.dp)
-        .padding(horizontal = 8.dp, vertical = 4.dp)
+        .margin(sizes.gap)
+        .padding(horizontal = sizes.gap, vertical = sizes.smallGap * 0.5f)
         .onClick(button)
         .hoverListener(button)
     button.block()
@@ -61,7 +60,7 @@ class ButtonNode(parent: UiNode?, surface: UiSurface) : TextNode(parent, surface
         }
         if (modifier.background == null) {
             // only set default button background if no custom one was configured
-            modifier.background(RoundRectBackground(bgColor, 4.dp))
+            modifier.background(RoundRectBackground(bgColor, sizes.smallGap * 0.75f))
         }
 
         super.render(ctx)
