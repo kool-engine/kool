@@ -146,8 +146,8 @@ open class ScrollbarNode(parent: UiNode?, surface: UiSurface)
         }
 
         // compute scrollbar dimensions
-        val refHeight = uiNode.heightPx - paddingTopPx - paddingBottomPx
-        val refWidth = uiNode.widthPx - paddingStartPx - paddingEndPx
+        val refHeight = uiNode.innerHeightPx
+        val refWidth = uiNode.innerWidthPx
         val clampLen = max(len, modifier.minBarLength.px / if (isVertical) refHeight else refWidth)
 
         val radius: Float
@@ -249,11 +249,11 @@ open class ScrollbarNode(parent: UiNode?, surface: UiSurface)
 
         fun captureDragStart() {
             if (isVertical) {
-                trackLenPx = uiNode.heightPx - paddingTopPx - paddingBottomPx
+                trackLenPx = uiNode.innerHeightPx
                 barLenPx = barMaxY - barMinY
                 barStartPx = barMinY
             } else {
-                trackLenPx = uiNode.widthPx - paddingStartPx - paddingEndPx
+                trackLenPx = uiNode.innerWidthPx
                 barLenPx = barMaxX - barMinX
                 barStartPx = barMinX
             }

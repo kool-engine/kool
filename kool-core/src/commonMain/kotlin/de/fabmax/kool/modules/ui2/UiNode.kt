@@ -37,6 +37,8 @@ abstract class UiNode(val parent: UiNode?, override val surface: UiSurface) : Ui
         private set
     val widthPx: Float get() = rightPx - leftPx
     val heightPx: Float get() = bottomPx - topPx
+    val innerWidthPx: Float get() = widthPx - paddingStartPx - paddingEndPx
+    val innerHeightPx: Float get() = heightPx - paddingTopPx - paddingBottomPx
 
     val clipBoundsPx = MutableVec4f()
     val clipLeftPx: Float get() = clipBoundsPx.x

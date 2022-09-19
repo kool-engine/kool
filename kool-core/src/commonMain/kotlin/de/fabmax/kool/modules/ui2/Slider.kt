@@ -151,12 +151,12 @@ class SliderNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface),
     private fun computeValue(ev: PointerEvent): Float {
         val kD = knobDiameter.dp.px
         return if (modifier.orientation == SliderOrientation.Horizontal) {
-            val innerW = widthPx - paddingStartPx - paddingEndPx - kD
+            val innerW = innerWidthPx - kD
             val dragKnobPos = dragStart.x + ev.pointer.dragDeltaX.toFloat() - paddingStartPx - kD * 0.5f
             val f = (dragKnobPos / innerW).clamp()
             f * (modifier.maxValue - modifier.minValue) + modifier.minValue
         } else {
-            val innerH = heightPx - paddingTopPx - paddingBottomPx - knobDiameter.dp.px
+            val innerH = innerHeightPx - kD
             val dragKnobPos = dragStart.y + ev.pointer.dragDeltaY.toFloat() - paddingTopPx - kD * 0.5f
             val f = 1f - (dragKnobPos / innerH).clamp()
             f * (modifier.maxValue - modifier.minValue) + modifier.minValue
@@ -180,9 +180,9 @@ class SliderNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface),
     }
 
     companion object {
-        const val knobDiameter = 20f
+        const val knobDiameter = 16f
         const val trackLen = 100f
-        const val trackHeight = 8f
+        const val trackHeight = 6f
         val factory: (UiNode, UiSurface) -> SliderNode = { parent, surface -> SliderNode(parent, surface) }
     }
 }

@@ -4,7 +4,6 @@ import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.Vec2f
-import de.fabmax.kool.math.clamp
 import de.fabmax.kool.scene.animation.Animator
 import de.fabmax.kool.scene.animation.CosAnimator
 import de.fabmax.kool.scene.animation.InterpolatedFloat
@@ -12,7 +11,6 @@ import de.fabmax.kool.scene.animation.LinearAnimator
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MutableColor
 import kotlin.math.max
-import kotlin.math.min
 
 /**
  * @author fabmax
@@ -280,114 +278,3 @@ open class TextFieldUi(val textField: TextField, baseUi: ComponentUi) : LabelUi(
     }
 }
 
-class EditableText(txt: String = "") {
-
-    var text: String = txt
-        set(value) {
-            if (caretPosition > value.length) {
-                caretPosition = value.length
-            }
-            if (selectionStart > value.length) {
-                selectionStart = value.length
-            }
-            field = value
-        }
-
-    var maxLength = 100
-
-    var caretPosition = 0
-        set(value) {
-            field = value.clamp(0, text.length)
-        }
-
-    var selectionStart = 0
-        set(value) {
-            field = value.clamp(0, text.length)
-        }
-
-    fun charTyped(c: Char) {
-        replaceSelection("$c")
-    }
-
-    fun moveCaret(mode: Int, selection: Boolean) {
-        when (mode) {
-            MOVE_LEFT -> caretPosition--
-            MOVE_RIGHT -> caretPosition++
-            MOVE_START -> caretPosition = 0
-            MOVE_END -> caretPosition = text.length
-            MOVE_WORD_LEFT -> moveWordLeft()
-            MOVE_WORD_RIGHT -> moveWordRight()
-        }
-        if (!selection) {
-            selectionStart = caretPosition
-        }
-    }
-
-    private fun moveWordLeft() {
-        if (caretPosition > 0) {
-            val idx = text.substring(0, caretPosition).lastIndexOf(' ')
-            if (idx < 0) {
-                caretPosition = 0
-            } else {
-                caretPosition = idx
-            }
-        }
-    }
-
-    private fun moveWordRight() {
-        if (caretPosition < text.length) {
-            val idx = text.indexOf(' ', caretPosition)
-            if (idx < 0) {
-                caretPosition = text.length
-            } else {
-                caretPosition = idx + 1
-            }
-        }
-    }
-
-    fun backspace() {
-        if (selectionStart != caretPosition) {
-            replaceSelection("")
-        } else if (caretPosition > 0) {
-            selectionStart = --caretPosition
-            text = text.substring(0, caretPosition) + text.substring(caretPosition + 1)
-        }
-    }
-
-    fun deleteSelection() {
-        if (selectionStart != caretPosition) {
-            replaceSelection("")
-        } else if (caretPosition < text.length) {
-            text = text.substring(0, caretPosition) + text.substring(caretPosition + 1)
-        }
-    }
-
-    fun replaceSelection(string: String) {
-        val start = min(selectionStart, caretPosition)
-        val end = max(selectionStart, caretPosition)
-
-        val newText = text.substring(0, start) + string + text.substring(end)
-        if (maxLength <= 0 || newText.length < text.length || newText.length <= maxLength) {
-            text = newText
-            caretPosition = min(selectionStart, caretPosition) + string.length
-            selectionStart = caretPosition
-        }
-    }
-
-    operator fun get(index: Int): Char {
-        return text[index]
-    }
-
-    override fun toString(): String {
-        return text
-    }
-
-    companion object {
-        const val MOVE_LEFT = 1
-        const val MOVE_RIGHT = 2
-        const val MOVE_WORD_LEFT = 3
-        const val MOVE_WORD_RIGHT = 4
-        const val MOVE_START = 5
-        const val MOVE_END = 6
-    }
-}

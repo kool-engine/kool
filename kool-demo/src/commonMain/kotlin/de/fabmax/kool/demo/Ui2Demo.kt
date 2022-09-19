@@ -19,6 +19,9 @@ class Ui2Demo : DemoScene("UI2 Demo") {
     private val switchState = mutableStateOf(false)
     private val sliderValue = mutableStateOf(1f)
 
+    private val text1 = mutableStateOf("")
+    private val text2 = mutableStateOf("")
+
     override fun Scene.setupMainScene(ctx: KoolContext) {
         // new improved ui system
         // desired features
@@ -35,7 +38,7 @@ class Ui2Demo : DemoScene("UI2 Demo") {
         // - [x] padding / inside gap
 
         // todo
-        //  more ui elements: text field, combo-box
+        //  more ui elements: combo-box
         //  elastic overscroll
         //  icons + images
         //  keyboard input
@@ -163,6 +166,7 @@ class Ui2Demo : DemoScene("UI2 Demo") {
                 modifier.onToggle { switchState.set(it) }
             }
         }
+
         Row {
             Text("Slider") { modifier.alignY(AlignmentY.Center) }
             Slider(sliderValue.use(), 0.8f, 3f) {
@@ -172,6 +176,22 @@ class Ui2Demo : DemoScene("UI2 Demo") {
                     .onChangeEnd { UiScale.uiScale.set(it) }
             }
             Text("UI Scale: ${sliderValue.use()}") { modifier.alignY(AlignmentY.Center) }
+        }
+
+        Row {
+            TextField(text1.use()) {
+                modifier
+                    .width(150.dp)
+                    .hint("A text field")
+                    .onChange { text1.set(it) }
+            }
+            TextField(text2.use()) {
+                modifier
+                    .width(150.dp)
+                    .hint("Another text field")
+                    .margin(start = 16.dp)
+                    .onChange { text2.set(it) }
+            }
         }
 
         Text("Yet another text") {

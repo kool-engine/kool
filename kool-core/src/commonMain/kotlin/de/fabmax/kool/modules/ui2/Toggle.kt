@@ -70,7 +70,7 @@ abstract class ToggleNode(
         return if (modifier.toggleState) ax else 1f - ax
     }
 
-    protected fun center() = MutableVec2f(widthPx * 0.5f, heightPx * 0.5f)
+    protected fun center() = MutableVec2f( paddingStartPx + innerWidthPx * 0.5f, paddingTopPx + innerHeightPx * 0.5f)
 
     protected open fun isOnClickTarget(ev: PointerEvent): Boolean {
         val d = center().subtract(ev.position)
@@ -135,7 +135,7 @@ class CheckboxNode(parent: UiNode?, surface: UiSurface) : ToggleNode(parent, sur
     }
 
     companion object {
-        const val size = 20f
+        const val size = 16f
         val factory: (UiNode, UiSurface) -> CheckboxNode = { parent, surface -> CheckboxNode(parent, surface) }
     }
 }
@@ -159,7 +159,7 @@ class RadioButtonNode(parent: UiNode?, surface: UiSurface) : ToggleNode(parent, 
     }
 
     companion object {
-        const val size = 20f
+        const val size = 16f
         val factory: (UiNode, UiSurface) -> RadioButtonNode = { parent, surface -> RadioButtonNode(parent, surface) }
     }
 }
@@ -182,9 +182,9 @@ class SwitchNode(parent: UiNode?, surface: UiSurface) : ToggleNode(parent, surfa
     }
 
     companion object {
-        const val width = 40f
-        const val height = 20f
-        const val trackHeight = 16f
+        const val width = 32f
+        const val height = 16f
+        const val trackHeight = 12f
         const val trackWidth = width - (height - trackHeight) * 0.5f
         val factory: (UiNode, UiSurface) -> SwitchNode = { parent, surface -> SwitchNode(parent, surface) }
     }

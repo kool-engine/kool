@@ -231,14 +231,16 @@ fun <T: UiModifier> T.onDragEnd(block: (PointerEvent) -> Unit): T { onDragEnd +=
 
 fun <T: UiModifier> T.onClick(clickable: Clickable): T { onClick += clickable::onClick; return this }
 
-fun <T: UiModifier> T.hoverListener(hoverable: Hoverable) {
+fun <T: UiModifier> T.hoverListener(hoverable: Hoverable): T {
     onEnter(hoverable::onEnter)
     onHover(hoverable::onHover)
     onExit(hoverable::onExit)
+    return this
 }
 
-fun <T: UiModifier> T.dragListener(draggable: Draggable) {
+fun <T: UiModifier> T.dragListener(draggable: Draggable): T {
     onDragStart(draggable::onDragStart)
     onDrag(draggable::onDrag)
     onDragEnd(draggable::onDragEnd)
+    return this
 }

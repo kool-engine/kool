@@ -16,6 +16,7 @@ abstract class InputManager internal constructor() {
     private val keyHandlers = mutableMapOf<KeyCode, MutableList<KeyEventListener>>()
 
     abstract var cursorMode: CursorMode
+    abstract var cursorShape: CursorShape
 
     val pointerState = PointerState()
 
@@ -564,6 +565,15 @@ abstract class InputManager internal constructor() {
     enum class CursorMode {
         NORMAL,
         LOCKED
+    }
+
+    enum class CursorShape {
+        DEFAULT,
+        TEXT,
+        CROSSHAIR,
+        HAND,
+        H_RESIZE,
+        V_RESIZE
     }
 
     companion object {

@@ -19,6 +19,7 @@ class UiSurface(
 ) : Group(name) {
 
     private val meshLayers = TreeMap<Int, MeshLayer>()
+    private val onEachFrame = mutableListOf<() -> Unit>()
 
     private val inputHandler = InputHandler()
     private val viewportWidth = mutableStateOf(0f)
@@ -51,6 +52,10 @@ class UiSurface(
             viewportHeight.set(it.renderPass.viewport.height.toFloat())
             deltaT = it.deltaT
 
+            for (i in onEachFrame.indices) {
+                onEachFrame[i]()
+            }
+
             inputHandler.handleInput(it)
             if (requiresUpdate) {
                 requiresUpdate = false
@@ -68,6 +73,7 @@ class UiSurface(
             it.clear()
             removeNode(it)
         }
+        onEachFrame.clear()
         UiScale.updateScale(this, updateEvent.ctx)
         val prep = pt.takeMs().also { pt.reset() }
 
@@ -99,6 +105,14 @@ class UiSurface(
                     "layout: ${(layout * 1000).toInt()} us, " +
                     "render: ${(render * 1000).toInt()} us" }
         }
+    }
+
+    fun onEachFrame(block: () -> Unit) {
+        onEachFrame += block
+    }
+
+    fun requestFocus(focusable: Focusable?) {
+        inputHandler.requestFocus(focusable)
     }
 
     fun registerState(state: MutableState) {
@@ -156,11 +170,33 @@ class UiSurface(
 
     private inner class InputHandler {
         private val nodeResult = mutableListOf<UiNode>()
+        private var focusedNode: Focusable? = null
         private var hoveredNode: UiNode? = null
         private var wasDrag = false
         private var dragNode: UiNode? = null
 
+        fun requestFocus(focusable: Focusable?) {
+            focusedNode?.onFocusLost()
+            focusedNode = focusable
+            focusable?.onFocusGain()
+        }
+
         fun handleInput(updateEvent: RenderPass.UpdateEvent) {
+            handlePointerInput(updateEvent)
+            handleKeyInput(updateEvent)
+        }
+
+        fun handleKeyInput(updateEvent: RenderPass.UpdateEvent) {
+            if (updateEvent.ctx.inputMgr.keyEvents.isNotEmpty()) {
+                focusedNode?.let { focusable ->
+                    for (keyEv in updateEvent.ctx.inputMgr.keyEvents) {
+                        focusable.onKeyEvent(keyEv)
+                    }
+                }
+            }
+        }
+
+        fun handlePointerInput(updateEvent: RenderPass.UpdateEvent) {
             val ptr = updateEvent.ctx.inputMgr.pointerState.primaryPointer
             content.collectNodesAt(ptr.x.toFloat(), ptr.y.toFloat(), nodeResult, hasPointerListener)
             if (hoveredNode == null && dragNode == null && nodeResult.isEmpty()) {

@@ -20,6 +20,19 @@ class JsInputManager(private val canvas: HTMLCanvasElement, private val props: J
         get() = pointerLockState.cursorMode
         set(value) { pointerLockState.cursorMode = value }
 
+    override var cursorShape: CursorShape = CursorShape.DEFAULT
+        set(value) {
+            field = value
+            canvas.style.cursor = when (value) {
+                CursorShape.DEFAULT -> "default"
+                CursorShape.TEXT -> "text"
+                CursorShape.CROSSHAIR -> "crosshair"
+                CursorShape.HAND -> "pointer"
+                CursorShape.H_RESIZE -> "e-resize"
+                CursorShape.V_RESIZE -> "n-resize"
+            }
+        }
+
     init {
         installInputHandlers()
     }
