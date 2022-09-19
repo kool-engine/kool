@@ -1,9 +1,14 @@
 package de.fabmax.kool
 
-actual object Clipboard {
-    actual fun copyToClipboard(string: String) { }
+import kotlin.js.Promise
 
-    actual fun getStringFromClipboard(): String? {
-        TODO("Not yet implemented")
+actual object Clipboard {
+    actual fun copyToClipboard(string: String) {
+        js("navigator.clipboard.writeText(string)")
+    }
+
+    actual fun getStringFromClipboard(receiver: (String?) -> Unit) {
+        val promise = js("navigator.clipboard.readText()") as Promise<String>
+        promise.then { receiver(it) }
     }
 }

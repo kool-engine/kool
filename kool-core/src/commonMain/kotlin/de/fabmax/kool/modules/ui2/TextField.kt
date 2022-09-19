@@ -315,7 +315,10 @@ open class TextFieldNode(parent: UiNode?, surface: UiSurface)
                                 isTextUpdate = true
                             }
                             KEY_CODE_PASTE -> {
-                                Clipboard.getStringFromClipboard()?.let { editText.replaceSelection(it) }
+                                Clipboard.getStringFromClipboard {
+                                    if (it != null) editText.replaceSelection(it)
+                                    modifier.onChange?.invoke(editText.text)
+                                }
                                 isTextUpdate = true
                             }
                             KEY_CODE_SELECT_ALL -> {

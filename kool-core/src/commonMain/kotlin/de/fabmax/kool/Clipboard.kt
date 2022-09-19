@@ -4,6 +4,6 @@ expect object Clipboard {
 
     fun copyToClipboard(string: String)
 
-    fun getStringFromClipboard(): String?
+    fun getStringFromClipboard(receiver: (String?) -> Unit)
 
 }

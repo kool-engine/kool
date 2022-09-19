@@ -11,14 +11,15 @@ actual object Clipboard {
         clipboard.setContents(selection, selection)
     }
 
-    actual fun getStringFromClipboard(): String? {
+    actual fun getStringFromClipboard(receiver: (String?) -> Unit) {
         val clipboard = Toolkit.getDefaultToolkit().systemClipboard
         val t = clipboard.getContents(null)
-        return if (t.isDataFlavorSupported(DataFlavor.stringFlavor)) {
+        val clipboardText = if (t.isDataFlavorSupported(DataFlavor.stringFlavor)) {
             t.getTransferData(DataFlavor.stringFlavor) as? String
         } else {
             null
         }
+        receiver(clipboardText)
     }
 
 }

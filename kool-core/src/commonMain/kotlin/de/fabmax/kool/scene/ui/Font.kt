@@ -79,7 +79,7 @@ class Font(val fontProps: FontProps) {
 
             } else {
                 val metrics = map[c] ?: continue
-                lineWidth += metrics.width
+                lineWidth += metrics.advance
                 if (i == 0) {
                     result.height = metrics.height
                     result.yBaseline = metrics.yBaseline

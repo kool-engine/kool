@@ -122,8 +122,8 @@ class JsInputManager(private val canvas: HTMLCanvasElement, private val props: J
     private fun handleKeyDown(ev: KeyboardEvent) {
         val keyCode = ev.toKeyCode()
         val localKeyCode = ev.toLocalKeyCode()
+        var mods = 0
         if (keyCode.code != 0 || localKeyCode.code != 0) {
-            var mods = 0
             if (ev.altKey) { mods = mods or KEY_MOD_ALT }
             if (ev.ctrlKey) { mods = mods or KEY_MOD_CTRL }
             if (ev.shiftKey) { mods = mods or KEY_MOD_SHIFT }
@@ -135,7 +135,7 @@ class JsInputManager(private val canvas: HTMLCanvasElement, private val props: J
             }
             keyEvent(KeyEvent(keyCode, localKeyCode, event, mods))
         }
-        if (ev.key.length == 1) {
+        if (ev.key.length == 1 && mods == 0) {
             charTyped(ev.key[0])
         }
 
