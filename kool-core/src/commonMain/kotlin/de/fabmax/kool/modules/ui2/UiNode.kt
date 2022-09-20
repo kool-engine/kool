@@ -6,6 +6,7 @@ import de.fabmax.kool.math.MutableVec4f
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.VertexView
+import de.fabmax.kool.scene.ui.FontProps
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.logD
 import kotlin.math.max
@@ -119,7 +120,7 @@ abstract class UiNode(val parent: UiNode?, override val surface: UiSurface) : Ui
         modifier.layout.layoutChildren(this, ctx)
     }
 
-    protected open fun resetDefaults() {
+    open fun resetDefaults() {
         nodeIndex = surface.nodeIndex++
         oldChildren.clear()
         for (i in mutChildren.lastIndex downTo 0) {
@@ -127,6 +128,7 @@ abstract class UiNode(val parent: UiNode?, override val surface: UiSurface) : Ui
         }
         mutChildren.clear()
         modifier.resetDefaults()
+        modifier.zLayer(parent?.modifier?.zLayer ?: UiSurface.LAYER_DEFAULT)
     }
 
     fun <T: UiNode> createChild(type: KClass<T>, factory: (UiNode, UiSurface) -> T): T {
@@ -160,6 +162,18 @@ abstract class UiNode(val parent: UiNode?, override val surface: UiSurface) : Ui
 
         this.vertexModFun = prevMod
         this.color = prevColor
+    }
+
+    fun getUiPrimitives(layerOffset: Int = 0): UiPrimitiveMesh {
+        return surface.getMeshLayer(modifier.zLayer + layerOffset).uiPrimitives
+    }
+
+    fun getPlainBuilder(layerOffset: Int = 0): MeshBuilder {
+        return surface.getMeshLayer(modifier.zLayer + layerOffset).plainBuilder
+    }
+
+    fun getTextBuilder(fontProps: FontProps, ctx: KoolContext, layerOffset: Int = 0): MeshBuilder {
+        return surface.getMeshLayer(modifier.zLayer + layerOffset).getTextBuilder(fontProps, ctx)
     }
 
     fun UiPrimitiveMesh.localRect(x: Float, y: Float, width: Float, height: Float, color: Color) {

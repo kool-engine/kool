@@ -26,3 +26,23 @@ interface UiScope {
         return use(surface)
     }
 }
+
+inline fun UiScope.Popup(
+    screenPxX: Float,
+    screenPxY: Float,
+    width: Dimension = WrapContent,
+    height: Dimension = WrapContent,
+    layout: Layout = ColumnLayout,
+    block: UiScope.() -> Unit
+): UiScope {
+    return surface.popup().apply {
+        modifier
+            .margin(start = pxToDp(screenPxX).dp, top = pxToDp(screenPxY).dp)
+            .width(width)
+            .height(height)
+            .background(colors.surface)
+            .zLayer(UiSurface.LAYER_POPUP)
+            .layout(layout)
+        block()
+    }
+}

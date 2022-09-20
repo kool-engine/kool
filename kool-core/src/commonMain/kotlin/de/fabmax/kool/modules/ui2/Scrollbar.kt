@@ -167,7 +167,7 @@ open class ScrollbarNode(parent: UiNode?, surface: UiSurface)
             modifier.trackHoverColor?.let { trackColor = it }
         }
 
-        val uiPrimitives = surface.getUiPrimitives(UiSurface.LAYER_FLOATING)
+        val uiPrimitives = getUiPrimitives(UiSurface.LAYER_FLOATING)
         if (trackColor != null) {
             uiPrimitives.localRoundRect(0f, 0f, widthPx, heightPx, radius, trackColor!!)
         }

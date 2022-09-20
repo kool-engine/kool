@@ -86,7 +86,7 @@ class SliderNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface),
 
     override fun render(ctx: KoolContext) {
         super.render(ctx)
-        val draw = surface.getUiPrimitives()
+        val draw = getUiPrimitives()
         val knobPos = ((modifier.value - modifier.minValue) / (modifier.maxValue - modifier.minValue)).clamp()
         val kD = knobDiameter.px
         val kR = kD * 0.5f

@@ -73,7 +73,7 @@ open class TextNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surfac
             }
             origin.set(leftPx + oriX, topPx + oriY, 0f)
         }
-        textCache.addTextGeometry(surface.getTextBuilder(modifier.font, ctx).geometry, textProps, modifier.textColor)
+        textCache.addTextGeometry(getTextBuilder(modifier.font, ctx).geometry, textProps, modifier.textColor)
     }
 
     companion object {

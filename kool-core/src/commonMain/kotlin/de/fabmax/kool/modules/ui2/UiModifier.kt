@@ -14,6 +14,7 @@ open class UiModifier(val surface: UiSurface) {
     var layout: Layout by property(CellLayout)
     var background: UiRenderer<UiNode>? by property(null)
     var border: UiRenderer<UiNode>? by property(null)
+    var zLayer: Int by property(0)
 
     var paddingStart: Dp by property(Dp.ZERO)
     var paddingEnd: Dp by property(Dp.ZERO)
@@ -107,6 +108,7 @@ fun <T: UiModifier> T.width(width: Dimension): T { this.width = width; return th
 fun <T: UiModifier> T.height(height: Dimension): T { this.height = height; return this }
 fun <T: UiModifier> T.layout(layout: Layout): T { this.layout = layout; return this }
 fun <T: UiModifier> T.border(border: UiRenderer<UiNode>?): T { this.border = border; return this }
+fun <T: UiModifier> T.zLayer(zLayer: Int): T { this.zLayer = zLayer; return this }
 fun <T: UiModifier> T.background(background: UiRenderer<UiNode>?): T { this.background = background; return this }
 fun <T: UiModifier> T.background(color: Color?): T {
     background = if (color != null) RectBackground(color) else null

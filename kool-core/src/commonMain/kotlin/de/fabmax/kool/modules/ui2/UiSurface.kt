@@ -26,7 +26,6 @@ class UiSurface(
     private val viewportWidth = mutableStateOf(0f)
     private val viewportHeight = mutableStateOf(0f)
     private val viewport = BoxNode(null, this).apply { modifier.layout(CellLayout) }
-    private val content = viewport.createChild(RootCell::class) { _, _ -> RootCell() }
 
     internal var nodeIndex = 0
 
@@ -82,17 +81,15 @@ class UiSurface(
         val prep = pt.takeMs().also { pt.reset() }
 
         viewport.setBounds(0f, 0f, viewportWidth.use(this), viewportHeight.use(this))
-        content.reset()
-        content.uiBlock()
+        viewport.resetDefaults()
+        composeContent()
         val compose = pt.takeMs().also { pt.reset() }
 
         measureUiNodeContent(viewport, updateEvent.ctx)
         val measure = pt.takeMs().also { pt.reset() }
         layoutUiNodeChildren(viewport, updateEvent.ctx)
         val layout = pt.takeMs().also { pt.reset() }
-        if (content.isInClip) {
-            renderUiNode(content, updateEvent.ctx)
-        }
+        renderUiNode(viewport, updateEvent.ctx)
 
         // re-add mesh layers in correct order
         meshLayers.values.forEach {
@@ -133,19 +130,31 @@ class UiSurface(
         return meshLayer
     }
 
-    fun getUiPrimitives(layer: Int = LAYER_DEFAULT): UiPrimitiveMesh {
+    fun getUiPrimitives(layer: Int): UiPrimitiveMesh {
         return getMeshLayer(layer).uiPrimitives
     }
 
-    fun getPlainBuilder(layer: Int = LAYER_DEFAULT): MeshBuilder {
+    fun getPlainBuilder(layer: Int): MeshBuilder {
         return getMeshLayer(layer).plainBuilder
     }
 
-    fun getTextBuilder(fontProps: FontProps, ctx: KoolContext, layer: Int = LAYER_DEFAULT): MeshBuilder {
+    fun getTextBuilder(fontProps: FontProps, ctx: KoolContext, layer: Int): MeshBuilder {
         return getMeshLayer(layer).getTextBuilder(fontProps, ctx)
     }
 
     fun getFont(fontProps: FontProps, ctx: KoolContext) = UiScale.getOrCreateFont(fontProps, ctx)
+
+    fun popup(): UiScope {
+        return viewport.Box { }
+    }
+
+    private fun composeContent() {
+        viewport.Box {
+            modifier.background(colorsState.use().surface)
+            sizesState.use()
+            uiBlock()
+        }
+    }
 
     private fun measureUiNodeContent(node: UiNode, ctx: KoolContext) {
         for (i in node.children.indices) {
@@ -202,7 +211,7 @@ class UiSurface(
 
         fun handlePointerInput(updateEvent: RenderPass.UpdateEvent) {
             val ptr = updateEvent.ctx.inputMgr.pointerState.primaryPointer
-            content.collectNodesAt(ptr.x.toFloat(), ptr.y.toFloat(), nodeResult, hasPointerListener)
+            viewport.collectNodesAt(ptr.x.toFloat(), ptr.y.toFloat(), nodeResult, hasPointerListener)
             if (hoveredNode == null && dragNode == null && nodeResult.isEmpty()) {
                 return
             }
@@ -309,16 +318,9 @@ class UiSurface(
             }
             return wasConsumed
         }
-    }
 
-    private inner class RootCell : BoxNode(viewport, this@UiSurface) {
-        fun reset() {
-            resetDefaults()
-            modifier.background(colorsState.use().surface)
-            sizesState.use()
-        }
 
-        fun collectNodesAt(x: Float, y: Float, result: MutableList<UiNode>, predicate: (UiNode) -> Boolean) {
+        private fun UiNode.collectNodesAt(x: Float, y: Float, result: MutableList<UiNode>, predicate: (UiNode) -> Boolean) {
             result.clear()
             if (isInClip(x, y)) {
                 traverseChildren(this, x, y, result, predicate)
@@ -408,7 +410,9 @@ class UiSurface(
 
     companion object {
         const val LAYER_DEFAULT = 0
-        const val LAYER_FLOATING = 1000
+        const val LAYER_BACKGROUND = -100
+        const val LAYER_FLOATING = 100
+        const val LAYER_POPUP = 1000
 
         fun MeshBuilder.setupUiBuilder() {
             isInvertFaceOrientation = true

@@ -11,7 +11,8 @@ interface UiRenderer<in T: UiNode> {
 class RectBackground(val backgroundColor: Color) : UiRenderer<UiNode> {
     override fun renderUi(node: UiNode) {
         node.apply {
-            surface.getUiPrimitives().localRect(0f, 0f, widthPx, heightPx, backgroundColor)
+            node.getUiPrimitives(UiSurface.LAYER_BACKGROUND)
+                .localRect(0f, 0f, widthPx, heightPx, backgroundColor)
         }
     }
 }
@@ -19,7 +20,8 @@ class RectBackground(val backgroundColor: Color) : UiRenderer<UiNode> {
 class RoundRectBackground(val backgroundColor: Color, val cornerRadius: Dp) : UiRenderer<UiNode> {
     override fun renderUi(node: UiNode) {
         node.apply {
-            surface.getUiPrimitives().localRoundRect(0f, 0f, widthPx, heightPx, cornerRadius.px, backgroundColor)
+            node.getUiPrimitives(UiSurface.LAYER_BACKGROUND)
+                .localRoundRect(0f, 0f, widthPx, heightPx, cornerRadius.px, backgroundColor)
         }
     }
 }
@@ -27,7 +29,8 @@ class RoundRectBackground(val backgroundColor: Color, val cornerRadius: Dp) : Ui
 class CircularBackground(val backgroundColor: Color) : UiRenderer<UiNode> {
     override fun renderUi(node: UiNode) {
         node.apply {
-            surface.getUiPrimitives().localCircle(widthPx * 0.5f, heightPx * 0.5f, min(widthPx, heightPx) * 0.5f, backgroundColor)
+            node.getUiPrimitives(UiSurface.LAYER_BACKGROUND)
+                .localCircle(widthPx * 0.5f, heightPx * 0.5f, min(widthPx, heightPx) * 0.5f, backgroundColor)
         }
     }
 }
@@ -36,7 +39,7 @@ class RectBorder(val borderColor: Color, val borderWidth: Dp, val inset: Dp = Dp
     override fun renderUi(node: UiNode) {
         node.apply {
             val inPx = inset.px
-            surface.getUiPrimitives().localRectBorder(
+            node.getUiPrimitives(UiSurface.LAYER_BACKGROUND).localRectBorder(
                 inPx, inPx, widthPx - inPx * 2f, heightPx - inPx * 2f, borderWidth.px, borderColor
             )
         }
@@ -48,9 +51,21 @@ class RoundRectBorder(val borderColor: Color, val cornerRadius: Dp, val borderWi
         node.apply {
             val inPx = round(inset.px)
             val bw = round(borderWidth.px)
-            surface.getUiPrimitives().localRoundRectBorder(
+            node.getUiPrimitives(UiSurface.LAYER_BACKGROUND).localRoundRectBorder(
                 inPx, inPx, widthPx - inPx * 2f, heightPx - inPx * 2f, cornerRadius.px, bw, borderColor
             )
+        }
+    }
+}
+
+class CircularBorder(val borderColor: Color, val borderWidth: Dp, val inset: Dp = Dp.ZERO) : UiRenderer<UiNode> {
+    override fun renderUi(node: UiNode) {
+        node.apply {
+            val bw = round(borderWidth.px)
+            val x = widthPx * 0.5f
+            val y = heightPx * 0.5f
+            val r = min(x, y) - round(inset.px)
+            node.getUiPrimitives(UiSurface.LAYER_BACKGROUND).localCircleBorder(x, y, r, bw, borderColor)
         }
     }
 }

@@ -133,12 +133,12 @@ open class TextFieldNode(parent: UiNode?, surface: UiSurface)
             isYAxisUp = false
             origin.set(leftPx + textOrigin.x, topPx + textOrigin.y, 0f)
         }
-        textCache.addTextGeometry(surface.getTextBuilder(fontProps, ctx).geometry, textProps, textColor)
+        textCache.addTextGeometry(getTextBuilder(fontProps, ctx).geometry, textProps, textColor)
 
         val isFocused = isFocusedState.use()
         val lineColor = if (isFocused) modifier.lineColorFocused else modifier.lineColor
         val w = widthPx - paddingStartPx - paddingEndPx
-        surface.getUiPrimitives().localRect(paddingStartPx, textOrigin.y + 4.dp.px, w, 1.dp.px, lineColor)
+        getUiPrimitives().localRect(paddingStartPx, textOrigin.y + 4.dp.px, w, 1.dp.px, lineColor)
 
         if (isFocused) {
             renderCursor(txtFont)
@@ -189,8 +189,7 @@ open class TextFieldNode(parent: UiNode?, surface: UiSurface)
 
         // cursor (blinking)
         if (cursorShow.use()) {
-            surface.getUiPrimitives().localRect(
-                cursorX, textOrigin.y + 4.dp.px - h, 1f.dp.px, h, modifier.cursorColor)
+            getUiPrimitives().localRect(cursorX, textOrigin.y + 4.dp.px - h, 1f.dp.px, h, modifier.cursorColor)
         }
 
         // selection
@@ -198,8 +197,7 @@ open class TextFieldNode(parent: UiNode?, surface: UiSurface)
             val selStartX = textX(font, editText.selectionStart)
             val left = min(selStartX, cursorX)
             val right = max(selStartX, cursorX)
-            surface.getUiPrimitives().localRect(
-                left, textOrigin.y + 4.dp.px - h, right - left, h, modifier.selectionColor)
+            getUiPrimitives().localRect(left, textOrigin.y + 4.dp.px - h, right - left, h, modifier.selectionColor)
         }
     }
 

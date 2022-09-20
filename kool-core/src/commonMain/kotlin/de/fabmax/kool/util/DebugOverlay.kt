@@ -53,7 +53,7 @@ class DebugOverlay(position: Position = Position.UPPER_RIGHT) {
                 }
             }
 
-            +UiSurface(name = "overview", sizes = Sizes.small()) {
+            +UiSurface(name = "overview", sizes = Sizes.small(), colors = Colors.darkColors(surface = Color("10101080"))) {
                 modifier.layout(ColumnLayout)
 
                 when (position) {

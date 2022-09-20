@@ -108,13 +108,13 @@ class CheckboxNode(parent: UiNode?, surface: UiSurface)
         super.render(ctx)
         val r = buttonHeight.px * 0.5f
         val c = center()
-        val draw = surface.getUiPrimitives()
+        val draw = getUiPrimitives()
         draw.localRoundRect(c.x - r, c.y - r, r * 2f, r * 2f, 4.dp.px, modifier.backgroundColor)
         draw.localRoundRectBorder(c.x - r, c.y - r, r * 2f, r * 2f, 4.dp.px, 2.dp.px, modifier.borderColor)
 
         val p = animationPos()
         if (p > 0f) {
-            surface.getPlainBuilder().configured(modifier.foregroundColor) {
+            getPlainBuilder().configured(modifier.foregroundColor) {
                 translate(c.x, c.y, 0f)
                 val sz = buttonWidth.px * 0.8f * p
                 rotate(45f, Vec3f.Z_AXIS)
@@ -147,7 +147,7 @@ class RadioButtonNode(parent: UiNode?, surface: UiSurface)
         super.render(ctx)
         val r = buttonHeight.px * 0.5f
         val c = center()
-        val draw = surface.getUiPrimitives()
+        val draw = getUiPrimitives()
 
         draw.localCircle(c.x, c.y, r, modifier.backgroundColor)
         draw.localCircleBorder(c.x, c.y, r, 2.dp.px, modifier.borderColor)
@@ -174,7 +174,7 @@ class SwitchNode(parent: UiNode?, surface: UiSurface)
         val h = buttonHeight.px
         val tH = buttonHeight.px * 0.75f
         val tW = buttonWidth.px - (h - tH) * 0.5f
-        val draw = surface.getUiPrimitives()
+        val draw = getUiPrimitives()
 
         draw.localRoundRect(c.x - tW * 0.5f, c.y - tH * 0.5f, tW, tH, tH * 0.5f, modifier.backgroundColor)
 
