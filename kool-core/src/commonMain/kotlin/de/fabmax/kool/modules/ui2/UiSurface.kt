@@ -81,7 +81,7 @@ class UiSurface(
         val prep = pt.takeMs().also { pt.reset() }
 
         viewport.setBounds(0f, 0f, viewportWidth.use(this), viewportHeight.use(this))
-        viewport.resetDefaults()
+        viewport.applyDefaults()
         composeContent()
         val compose = pt.takeMs().also { pt.reset() }
 

@@ -120,13 +120,15 @@ abstract class UiNode(val parent: UiNode?, override val surface: UiSurface) : Ui
         modifier.layout.layoutChildren(this, ctx)
     }
 
-    open fun resetDefaults() {
+    open fun applyDefaults() {
         nodeIndex = surface.nodeIndex++
-        oldChildren.clear()
-        for (i in mutChildren.lastIndex downTo 0) {
-            oldChildren += mutChildren[i]
+        if (children.isNotEmpty()) {
+            oldChildren.clear()
+            for (i in mutChildren.lastIndex downTo 0) {
+                oldChildren += mutChildren[i]
+            }
+            mutChildren.clear()
         }
-        mutChildren.clear()
         modifier.resetDefaults()
         modifier.zLayer(parent?.modifier?.zLayer ?: UiSurface.LAYER_DEFAULT)
     }
@@ -136,7 +138,6 @@ abstract class UiNode(val parent: UiNode?, override val surface: UiSurface) : Ui
         if (oldChildren.isNotEmpty()) {
             val old = oldChildren.removeLast()
             if (old::class === type) {
-                old.resetDefaults()
                 @Suppress("UNCHECKED_CAST")
                 child = old as T
             }
@@ -145,6 +146,7 @@ abstract class UiNode(val parent: UiNode?, override val surface: UiSurface) : Ui
             logD { "Creating new child node of type $type" }
             child = factory(this, surface)
         }
+        child.applyDefaults()
         mutChildren += child
         return child
     }

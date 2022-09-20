@@ -83,8 +83,8 @@ abstract class ToggleNode(
         setContentSize(measuredWidth, measuredHeight)
     }
 
-    override fun resetDefaults() {
-        super.resetDefaults()
+    override fun applyDefaults() {
+        super.applyDefaults()
         modifier
             .onClick(this)
             .margin(8.dp)

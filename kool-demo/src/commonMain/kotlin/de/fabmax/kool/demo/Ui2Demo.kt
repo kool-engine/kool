@@ -18,6 +18,7 @@ class Ui2Demo : DemoScene("UI2 Demo") {
     private val checkboxState = mutableStateOf(false)
     private val switchState = mutableStateOf(false)
     private val sliderValue = mutableStateOf(1f)
+    private val checkboxTooltipState = MutableTooltipState()
 
     private val text1 = mutableStateOf("")
     private val text2 = mutableStateOf("")
@@ -46,7 +47,6 @@ class Ui2Demo : DemoScene("UI2 Demo") {
         //  more ui elements: combo-box
         //  elastic overscroll
         //  icons + images
-        //  popup menus, tooltips
         //  input context stack
 
         // not for now
@@ -176,6 +176,7 @@ class Ui2Demo : DemoScene("UI2 Demo") {
             Text("Checkbox") { modifier.alignY(AlignmentY.Center) }
             Checkbox(checkboxState.use()) {
                 modifier.onToggle { checkboxState.set(it) }
+                Tooltip(checkboxTooltipState, "A simple checkbox")
             }
 
             Text("Radio Button") { modifier.alignY(AlignmentY.Center).margin(start = sizes.largeGap) }

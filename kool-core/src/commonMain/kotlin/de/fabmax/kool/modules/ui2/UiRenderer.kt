@@ -8,6 +8,12 @@ interface UiRenderer<in T: UiNode> {
     fun renderUi(node: T)
 }
 
+fun UiRenderer(renderUi: (UiNode) -> Unit) = object : UiRenderer<UiNode> {
+    override fun renderUi(node: UiNode) {
+        renderUi(node)
+    }
+}
+
 class RectBackground(val backgroundColor: Color) : UiRenderer<UiNode> {
     override fun renderUi(node: UiNode) {
         node.apply {
