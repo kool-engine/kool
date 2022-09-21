@@ -70,7 +70,6 @@ fun UiScope.LazyList(
         lazyList.state = state
         lazyList.modifier
             .layout(layout)
-            .margin(0.dp)
             .width(Grow())
         lazyList.block()
     }

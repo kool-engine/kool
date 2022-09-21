@@ -7,7 +7,17 @@ import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 
 class Ui2Demo : DemoScene("UI2 Demo") {
-    private val themeColors = Colors.darkColors()
+    private val selectedColors = mutableStateOf(0)
+    private val themeColors = listOf(
+        "Neon" to Colors.darkColors(Color("b2ff00"), Color("7cb200")),
+        "Lime" to Colors.darkColors(MdColor.LIME, MdColor.LIME tone 800),
+        "Green" to Colors.darkColors(MdColor.LIGHT_GREEN, MdColor.LIGHT_GREEN tone 800),
+        "Cyan" to Colors.darkColors(MdColor.CYAN, MdColor.CYAN tone 800),
+        "Blue" to Colors.darkColors(MdColor.LIGHT_BLUE, MdColor.LIGHT_BLUE tone 800),
+        "Purple" to Colors.darkColors(MdColor.PURPLE, MdColor.PURPLE tone 800, onAccent = Color.WHITE),
+        "Pink" to Colors.darkColors(MdColor.PINK, MdColor.PINK tone 800),
+        "Red" to Colors.darkColors(MdColor.RED, MdColor.RED tone 800),
+    )
 
     private val clickCnt = mutableStateOf(0)
     private val scrollState = ScrollState()
@@ -44,8 +54,6 @@ class Ui2Demo : DemoScene("UI2 Demo") {
         // - [x] padding / inside gap
 
         // todo
-        //  more ui elements: combo-box
-        //  elastic overscroll
         //  icons + images
         //  input context stack
 
@@ -61,15 +69,18 @@ class Ui2Demo : DemoScene("UI2 Demo") {
 
         setupUiScene(true)
 
-        +UiSurface(themeColors, sizes = selectedUiSize.value) {
+        +UiSurface {
+            surface.sizes = selectedUiSize.use()
+            surface.colors = themeColors[selectedColors.use()].second
+
             modifier
                 .width(500.dp)
                 .height(WrapContent)
                 .margin(top = 100.dp, bottom = 100.dp)
-                .padding(sizes.gap)
+                .padding(horizontal = sizes.gap, vertical = sizes.largeGap)
                 .layout(ColumnLayout)
                 .alignX(AlignmentX.Center)
-                .alignY(AlignmentY.Center)
+                .alignY(AlignmentY.Top)
 
             TestContent(listItems)
 
@@ -77,15 +88,19 @@ class Ui2Demo : DemoScene("UI2 Demo") {
     }
 
     fun UiScope.TestContent(listItems: MutableList<String>) {
-        Button("A regular button... clicked: ${clickCnt.use()}") {
-            modifier
-                .onClick { clickCnt.value += 1 }
+        Row {
+            modifier.margin(bottom = sizes.gap)
+
+            Button("A regular button... clicked: ${clickCnt.use()}") {
+                modifier
+                    .onClick { clickCnt.value += 1 }
+                    .margin(end = sizes.largeGap)
+            }
         }
 
         Row {
-            surface.sizes = selectedUiSize.use()
-
-            Text("UI Size:") { modifier.alignY(AlignmentY.Center) }
+            modifier.margin(bottom = sizes.gap)
+            Text("UI size:") { modifier.alignY(AlignmentY.Center) }
 
             fun TextScope.sizeButtonLabel(size: Sizes) {
                 modifier
@@ -95,13 +110,27 @@ class Ui2Demo : DemoScene("UI2 Demo") {
             }
 
             Text("Small") { sizeButtonLabel(smallUi) }
-            RadioButton(surface.sizes == smallUi) { modifier.onToggle { if (it) selectedUiSize.set(smallUi) } }
+            RadioButton(surface.sizes == smallUi) { modifier.margin(sizes.smallGap).onToggle { if (it) selectedUiSize.set(smallUi) } }
 
             Text("Medium") { sizeButtonLabel(mediumUi) }
-            RadioButton(surface.sizes == mediumUi) { modifier.onToggle { if (it) selectedUiSize.set(mediumUi) } }
+            RadioButton(surface.sizes == mediumUi) { modifier.margin(sizes.smallGap).onToggle { if (it) selectedUiSize.set(mediumUi) } }
 
             Text("Large") { sizeButtonLabel(largeUi) }
-            RadioButton(surface.sizes == largeUi) { modifier.onToggle { if (it) selectedUiSize.set(largeUi) } }
+            RadioButton(surface.sizes == largeUi) { modifier.margin(sizes.smallGap).onToggle { if (it) selectedUiSize.set(largeUi) } }
+        }
+
+        Row {
+            modifier.margin(bottom = sizes.gap)
+            Text("Accent color:") { modifier.alignY(AlignmentY.Center).margin(end = sizes.largeGap) }
+
+            ComboBox {
+                modifier
+                    .margin(sizes.smallGap)
+                    .width(sizes.gap * 10f)
+                    .items(themeColors.map { it.first })
+                    .selectedIndex(selectedColors.use())
+                    .onItemSelected { selectedColors.set(it) }
+            }
         }
 
         ScrollArea(scrollState, height = 200.dp) {
@@ -118,7 +147,7 @@ class Ui2Demo : DemoScene("UI2 Demo") {
                                 .height(300.dp)
                                 .margin(sizes.smallGap)
                                 .padding(sizes.largeGap)
-                                .border(RoundRectBorder(colors.primary, sizes.gap, 2.dp, 6.dp))
+                                .border(RoundRectBorder(colors.accentVariant, sizes.gap, 2.dp, 6.dp))
                         }
                     }
                 }
@@ -127,14 +156,14 @@ class Ui2Demo : DemoScene("UI2 Demo") {
 
         LazyList(
             listState,
-            height = 400.dp,
+            height = 350.dp,
             containerModifier = {
                 it.margin(top = sizes.largeGap)
             },
             vScrollbarModifier = {
                 it.colors(
-                    trackColor = colors.secondaryVariant.withAlpha(0.1f),
-                    trackHoverColor = colors.secondaryVariant.withAlpha(0.15f)
+                    trackColor = colors.accentVariant.withAlpha(0.1f),
+                    trackHoverColor = colors.accentVariant.withAlpha(0.15f)
                 )
             }
         ) {
@@ -151,7 +180,7 @@ class Ui2Demo : DemoScene("UI2 Demo") {
                 } else {
                     null
                 }
-                val textColor = if (isHovered) Color.BLACK else itemColor
+                val textColor = if (isHovered) colors.onAccent else colors.onBackground
 
                 Text(item) {
                     modifier
@@ -175,18 +204,18 @@ class Ui2Demo : DemoScene("UI2 Demo") {
         Row {
             Text("Checkbox") { modifier.alignY(AlignmentY.Center) }
             Checkbox(checkboxState.use()) {
-                modifier.onToggle { checkboxState.set(it) }
+                modifier.margin(sizes.gap).onToggle { checkboxState.set(it) }
                 Tooltip(checkboxTooltipState, "A simple checkbox")
             }
 
             Text("Radio Button") { modifier.alignY(AlignmentY.Center).margin(start = sizes.largeGap) }
             RadioButton(radioButtonState.use()) {
-                modifier.onToggle { radioButtonState.set(it) }
+                modifier.margin(sizes.gap).onToggle { radioButtonState.set(it) }
             }
 
             Text("Switch") { modifier.alignY(AlignmentY.Center).margin(start = sizes.largeGap) }
             Switch(switchState.use()) {
-                modifier.onToggle { switchState.set(it) }
+                modifier.margin(sizes.gap).onToggle { switchState.set(it) }
             }
         }
 
@@ -194,6 +223,7 @@ class Ui2Demo : DemoScene("UI2 Demo") {
             Text("Slider") { modifier.alignY(AlignmentY.Center) }
             Slider(sliderValue.use(), 0.8f, 3f) {
                 modifier
+                    .margin(sizes.gap)
                     .orientation(SliderOrientation.Horizontal)
                     .onChange { sliderValue.set(it) }
                     .onChangeEnd { UiScale.uiScale.set(it) }

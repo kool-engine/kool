@@ -28,10 +28,10 @@ open class TextFieldModifier(surface: UiSurface) : UiModifier(surface) {
 
     var textColor: Color by property { it.colors.onSurface }
     var hintColor: Color by property { it.colors.onSurface.withAlpha(0.5f) }
-    var selectionColor: Color by property { it.colors.secondary.withAlpha(0.5f) }
+    var selectionColor: Color by property { it.colors.accent.withAlpha(0.5f) }
     var cursorColor: Color by property { it.colors.onSurface }
-    var lineColor: Color by property { it.colors.secondaryVariant }
-    var lineColorFocused: Color by property { it.colors.secondary }
+    var lineColor: Color by property { it.colors.accentVariant }
+    var lineFocusedColor: Color by property { it.colors.accent }
 
     var onChange: ((String) -> Unit)? by property(null)
     var onEnterPressed: ((String) -> Unit)? by property(null)
@@ -52,14 +52,14 @@ fun <T: TextFieldModifier> T.colors(
     selectionColor: Color = this.selectionColor,
     cursorColor: Color = this.cursorColor,
     lineColor: Color = this.lineColor,
-    lineColorFocused: Color = this.lineColorFocused
+    lineColorFocused: Color = this.lineFocusedColor
 ): T {
     this.textColor = textColor
     this.hintColor = hintColor
     this.selectionColor = selectionColor
     this.cursorColor = cursorColor
     this.lineColor = lineColor
-    this.lineColorFocused = lineColorFocused
+    this.lineFocusedColor = lineColorFocused
     return this
 }
 
@@ -111,6 +111,7 @@ open class TextFieldNode(parent: UiNode?, surface: UiSurface)
 
         editText.text = modifier.text
 
+        val isFocused = isFocusedState.use()
         val isHint = modifier.text.isEmpty()
         val fontProps = if (isHint) modifier.hintFont ?: modifier.font else modifier.font
         val dispText = if (isHint) modifier.hint else modifier.text
@@ -126,7 +127,9 @@ open class TextFieldNode(parent: UiNode?, surface: UiSurface)
             AlignmentX.End -> widthPx - textMetrics.width - paddingEndPx
         }
         textOrigin.x += checkTextOverflow(txtFont)
+        val lineY = textOrigin.y + 4.dp.px
 
+        // draw text
         textProps.apply {
             font = txtFont
             text = dispText
@@ -135,13 +138,31 @@ open class TextFieldNode(parent: UiNode?, surface: UiSurface)
         }
         textCache.addTextGeometry(getTextBuilder(fontProps, ctx).geometry, textProps, textColor)
 
-        val isFocused = isFocusedState.use()
-        val lineColor = if (isFocused) modifier.lineColorFocused else modifier.lineColor
+        val draw = getUiPrimitives()
+        val lineColor = if (isFocused) modifier.lineFocusedColor else modifier.lineColor
         val w = widthPx - paddingStartPx - paddingEndPx
-        getUiPrimitives().localRect(paddingStartPx, textOrigin.y + 4.dp.px, w, 1.dp.px, lineColor)
+        draw.localRect(paddingStartPx, lineY, w, 1.dp.px, lineColor)
 
         if (isFocused) {
-            renderCursor(txtFont)
+            draw.renderCursor(txtFont)
+        }
+    }
+
+    private fun UiPrimitiveMesh.renderCursor(font: Font) {
+        val h = (modifier.font.sizePts + 4f).dp.px
+        val cursorX = textX(font, editText.caretPosition)
+
+        // cursor (blinking)
+        if (cursorShow.use()) {
+            localRect(cursorX, textOrigin.y + 4.dp.px - h, 1f.dp.px, h, modifier.cursorColor)
+        }
+
+        // selection
+        if (editText.selectionStart != editText.caretPosition) {
+            val selStartX = textX(font, editText.selectionStart)
+            val left = min(selStartX, cursorX)
+            val right = max(selStartX, cursorX)
+            localRect(left, textOrigin.y + 4.dp.px - h, right - left, h, modifier.selectionColor)
         }
     }
 
@@ -181,24 +202,6 @@ open class TextFieldNode(parent: UiNode?, surface: UiSurface)
             x += w
         }
         return editText.text.length
-    }
-
-    private fun renderCursor(font: Font) {
-        val h = (modifier.font.sizePts + 4f).dp.px
-        val cursorX = textX(font, editText.caretPosition)
-
-        // cursor (blinking)
-        if (cursorShow.use()) {
-            getUiPrimitives().localRect(cursorX, textOrigin.y + 4.dp.px - h, 1f.dp.px, h, modifier.cursorColor)
-        }
-
-        // selection
-        if (editText.selectionStart != editText.caretPosition) {
-            val selStartX = textX(font, editText.selectionStart)
-            val left = min(selStartX, cursorX)
-            val right = max(selStartX, cursorX)
-            getUiPrimitives().localRect(left, textOrigin.y + 4.dp.px - h, right - left, h, modifier.selectionColor)
-        }
     }
 
     private fun resetCursorBlink() {

@@ -105,6 +105,10 @@ abstract class UiNode(val parent: UiNode?, override val surface: UiSurface) : Ui
             clipBoundsPx.z = maxX
             clipBoundsPx.w = maxY
         }
+
+        if (modifier.onPositioned.isNotEmpty()) {
+            modifier.onPositioned.forEach { it(this) }
+        }
     }
 
     open fun render(ctx: KoolContext) {

@@ -15,9 +15,9 @@ open class ToggleModifier(surface: UiSurface) : UiModifier(surface) {
     var onToggle: ((Boolean) -> Unit)? by property(null)
 
     // default color value are overridden by theme colors
-    var foregroundColor: Color by property { it.colors.secondary }
-    var backgroundColor: Color by property { it.colors.secondaryVariant.withAlpha(0.5f) }
-    var borderColor: Color by property { it.colors.secondaryVariant }
+    var foregroundColor: Color by property { it.colors.accent }
+    var backgroundColor: Color by property { it.colors.accentVariant.withAlpha(0.5f) }
+    var borderColor: Color by property { it.colors.accentVariant }
 }
 
 fun <T: ToggleModifier> T.toggleState(value: Boolean): T { toggleState = value; return this }
@@ -87,7 +87,6 @@ abstract class ToggleNode(
         super.applyDefaults()
         modifier
             .onClick(this)
-            .margin(8.dp)
             .padding(bottom = 1.dp)
     }
 

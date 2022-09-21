@@ -42,13 +42,13 @@ class CachedText(val node: UiNode) {
         return textMetrics
     }
 
-    fun addTextGeometry(target: IndexedVertexList, textProps: TextProps, textColor: Color) {
+    fun addTextGeometry(target: IndexedVertexList, textProps: TextProps, textColor: Color, clip: Vec4f = node.clipBoundsPx) {
         if (!geometryValid) {
             geometryValid = true
             buildGeometry(textProps, textColor)
         }
         if (cachedTextPos.x != node.leftPx || cachedTextPos.y != node.topPx ||
-            cachedClip != node.clipBoundsPx || cachedColor != textColor) {
+            cachedClip != clip || cachedColor != textColor) {
             updateVertexAttribs(textProps, textColor)
         }
 

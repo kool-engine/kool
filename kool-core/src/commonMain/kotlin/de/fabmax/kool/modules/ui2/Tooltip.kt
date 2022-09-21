@@ -32,7 +32,7 @@ fun UiScope.Tooltip(tooltipState: MutableTooltipState, text: String, yOffset: Dp
                     node.getUiPrimitives(UiSurface.LAYER_BACKGROUND)
                         .localRoundRect(0f, 0f, widthPx, heightPx, heightPx * 0.5f, colors.background)
                     node.getUiPrimitives(UiSurface.LAYER_BACKGROUND)
-                        .localRoundRectBorder(0f, 0f, widthPx, heightPx, heightPx * 0.5f, 2.dp.px, colors.secondaryVariant.withAlpha(0.5f))
+                        .localRoundRectBorder(0f, 0f, widthPx, heightPx, heightPx * 0.5f, 2.dp.px, colors.accentVariant.withAlpha(0.5f))
                 }
             })
         Text(text) {

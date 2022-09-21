@@ -18,9 +18,9 @@ open class SliderModifier(surface: UiSurface) : TextModifier(surface) {
 
     var orientation: SliderOrientation by property(SliderOrientation.Horizontal)
 
-    var knobColor: Color by property { it.colors.secondary }
-    var trackColor: Color by property { it.colors.secondaryVariant.withAlpha(0.5f) }
-    var trackColorActive: Color? by property { it.colors.secondaryVariant.withAlpha(0.8f) }
+    var knobColor: Color by property { it.colors.accent }
+    var trackColor: Color by property { it.colors.accentVariant.withAlpha(0.5f) }
+    var trackColorActive: Color? by property { it.colors.accentVariant.withAlpha(0.8f) }
 }
 
 fun <T: SliderModifier> T.value(value: Float): T { this.value = value; return this }
@@ -53,7 +53,6 @@ inline fun UiScope.Slider(value: Float = 0.5f, min: Float = 0f, max: Float = 1f,
         .value(value)
         .minValue(min)
         .maxValue(max)
-        .margin(8.dp)
         .dragListener(slider)
     slider.block()
     return slider

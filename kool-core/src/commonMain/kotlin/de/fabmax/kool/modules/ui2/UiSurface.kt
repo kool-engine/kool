@@ -188,6 +188,16 @@ class UiSurface(
         private var wasDrag = false
         private var dragNode: UiNode? = null
 
+        private val nodeComparator = Comparator<UiNode> { a, b ->
+            if (a.modifier.zLayer == b.modifier.zLayer) {
+                // equal z-layers -> higher node index first
+                b.nodeIndex.compareTo(a.nodeIndex)
+            } else {
+                // higher z-layer first
+                b.modifier.zLayer.compareTo(a.modifier.zLayer)
+            }
+        }
+
         fun requestFocus(focusable: Focusable?) {
             focusedNode?.onFocusLost()
             focusedNode = focusable
@@ -273,7 +283,7 @@ class UiSurface(
                 invokePointerCallback(node, ptrEv, mod.onPointer)
 
                 // check for new hover bodes
-                if (mod.hasAnyHoverCallback && node.nodeIndex > (hoveredNode?.nodeIndex ?: -1)) {
+                if (mod.hasAnyHoverCallback && hoveredNode?.let { nodeComparator.compare(node, it) < 0 } != false) {
                     // stop hovering of previous hoveredNode - we found a new one on top of it
                     hoveredNode?.let { invokePointerCallback(it, ptrEv, it.modifier.onExit) }
                     // start hovering new node
@@ -326,7 +336,7 @@ class UiSurface(
                 traverseChildren(this, x, y, result, predicate)
             }
             if (result.size > 1) {
-                result.sortBy { -it.nodeIndex }
+                result.sortWith(nodeComparator)
             }
         }
 

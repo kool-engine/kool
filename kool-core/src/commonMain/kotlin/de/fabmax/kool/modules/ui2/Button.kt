@@ -9,9 +9,9 @@ interface ButtonScope : UiScope {
 }
 
 open class ButtonModifier(surface: UiSurface) : TextModifier(surface) {
-    var buttonColor: Color by property { it.colors.primaryVariant }
-    var buttonHoverColor: Color? by property { it.colors.primary }
-    var textHoverColor: Color? by property(null)
+    var buttonColor: Color by property { it.colors.accentVariant }
+    var buttonHoverColor: Color by property { it.colors.accent }
+    var textHoverColor: Color by property{ it.colors.onAccent }
     var isClickFeedback: Boolean by property(true)
 }
 
@@ -20,8 +20,8 @@ fun <T: ButtonModifier> T.isClickFeedback(value: Boolean): T { this.isClickFeedb
 fun <T: ButtonModifier> T.colors(
     buttonColor: Color = this.buttonColor,
     textColor: Color = this.textColor,
-    buttonHoverColor: Color? = this.buttonHoverColor,
-    textHoverColor: Color? = this.textHoverColor
+    buttonHoverColor: Color = this.buttonHoverColor,
+    textHoverColor: Color = this.textHoverColor
 ): T {
     this.buttonColor = buttonColor
     this.textColor = textColor
@@ -34,9 +34,8 @@ inline fun UiScope.Button(text: String = "", block: ButtonScope.() -> Unit): Tex
     val button = uiNode.createChild(ButtonNode::class, ButtonNode.factory)
     button.modifier
         .text(text)
-        .colors(textColor = colors.onPrimary)
+        .colors(textColor = colors.onAccent)
         .textAlign(AlignmentX.Center, AlignmentY.Center)
-        .margin(sizes.gap)
         .padding(horizontal = sizes.gap, vertical = sizes.smallGap * 0.5f)
         .onClick(button)
         .hoverListener(button)
@@ -55,12 +54,12 @@ class ButtonNode(parent: UiNode?, surface: UiSurface) : TextNode(parent, surface
         var bgColor = modifier.buttonColor
         if (isHovered.use()) {
             // overwrite text color with text hover color, so TextNode uses the desired color
-            modifier.textHoverColor?.let { modifier.textColor(it) }
-            modifier.buttonHoverColor?.let { bgColor = it }
+            modifier.textColor(modifier.textHoverColor)
+            bgColor = modifier.buttonHoverColor
         }
         if (modifier.background == null) {
             // only set default button background if no custom one was configured
-            modifier.background(RoundRectBackground(bgColor, sizes.smallGap * 0.75f))
+            modifier.background(RoundRectBackground(bgColor, sizes.smallGap))
         }
 
         super.render(ctx)

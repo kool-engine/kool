@@ -53,7 +53,11 @@ class DebugOverlay(position: Position = Position.UPPER_RIGHT) {
                 }
             }
 
-            +UiSurface(name = "overview", sizes = Sizes.small(), colors = Colors.darkColors(surface = Color("10101080"))) {
+            +UiSurface(
+                name = "overview",
+                sizes = Sizes.small(),
+                colors = Colors.darkColors(accent = Color("b2ff00"), surface = Color("10101080"))
+            ) {
                 modifier.layout(ColumnLayout)
 
                 when (position) {
@@ -73,14 +77,14 @@ class DebugOverlay(position: Position = Position.UPPER_RIGHT) {
                         .width(Grow())
                         .textAlignX(AlignmentX.Center)
                         .font(fpsFont)
-                        .textColor(colors.primary)
+                        .textColor(colors.accent)
                         .background(deltaTGraph)
 
                     Text(if (isExpanded.use()) "-" else "+") {
                         modifier
                             .align(AlignmentX.End, AlignmentY.Center)
                             .font(fpsFont)
-                            .textColor(colors.primary)
+                            .textColor(colors.accent)
                             .onClick { isExpanded.set(!isExpanded.value) }
                             .margin(end = sizes.gap)
                     }

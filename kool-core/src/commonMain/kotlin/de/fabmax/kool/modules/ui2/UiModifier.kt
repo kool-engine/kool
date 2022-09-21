@@ -29,6 +29,8 @@ open class UiModifier(val surface: UiSurface) {
     var alignX: AlignmentX by property(AlignmentX.Start)
     var alignY: AlignmentY by property(AlignmentY.Top)
 
+    val onPositioned: MutableList<(UiNode) -> Unit> by listProperty()
+
     val onPointer: MutableList<(PointerEvent) -> Unit> by listProperty()
     val onClick: MutableList<(PointerEvent) -> Unit> by listProperty()
     val onWheelX: MutableList<(PointerEvent) -> Unit> by listProperty()
@@ -200,6 +202,8 @@ fun <T: UiModifier> T.align(xAlignment: AlignmentX, yAlignment: AlignmentY): T {
     alignY = yAlignment
     return this
 }
+
+fun <T: UiModifier> T.onPositioned(block: (UiNode) -> Unit): T { onPositioned += block; return this }
 
 class PointerEvent(val pointer: InputManager.Pointer, val ctx: KoolContext) {
     /**
