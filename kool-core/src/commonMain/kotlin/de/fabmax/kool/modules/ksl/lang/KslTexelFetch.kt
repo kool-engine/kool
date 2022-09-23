@@ -6,7 +6,7 @@ import de.fabmax.kool.modules.ksl.model.KslMutatedState
 class KslTexelFetch<T: KslTypeSampler<KslTypeFloat4>>(
     val sampler: KslExpression<T>,
     val coord: KslExpression<*>,
-    val lod: KslScalarExpression<KslTypeFloat1>?)
+    val lod: KslScalarExpression<KslTypeInt1>?)
     : KslVectorExpression<KslTypeFloat4, KslTypeFloat1> {
 
     override val expressionType = KslTypeFloat4
