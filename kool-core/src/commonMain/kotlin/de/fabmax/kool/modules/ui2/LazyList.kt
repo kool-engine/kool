@@ -3,16 +3,19 @@ package de.fabmax.kool.modules.ui2
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.logD
+import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.roundToInt
 
 class LazyListState : ScrollState() {
+    var firstElementSizeDp = 0f
     var averageElementSizeDp = 0f
     var spaceBeforeVisibleItems = 0f
     var spaceAfterVisibleItems = 0f
 
-    var itemsSize = 0
-    var itemsFrom = 0
+    var numTotalItems = 0
+    var itemsFrom = 0f
     var itemsTo = 0
 }
 
@@ -28,7 +31,6 @@ interface LazyListScope : UiScope {
 
 open class LazyListModifier(surface: UiSurface) : UiModifier(surface) {
     var orientation: ListOrientation by property(ListOrientation.Vertical)
-    var extraItemsBefore: Int by property(0)
     var extraItemsAfter: Int by property(3)
 }
 
@@ -93,33 +95,55 @@ class LazyListNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface
     ) {
         // auto-depend on list state in case it is a MutableListState
         (items as? MutableListState)?.use()
-        state.itemsSize = items.size
+        state.numTotalItems = items.size
 
-        // use prior knowledge from state to select the range of visible items
-        if (state.averageElementSizeDp == 0f) {
+        val elemSize = state.firstElementSizeDp
+        if (elemSize == 0f) {
             // this apparently is the first layout run, we have absolutely no knowledge about the future content
             // start by adding up to 100 items and hope for the best
-            state.itemsFrom = 0
+            state.itemsFrom = 0f
             state.itemsTo = min(items.lastIndex, 100)
             state.spaceBeforeVisibleItems = 0f
             state.spaceAfterVisibleItems = 0f
 
         } else {
             // use the element size seen in previous layout runs to estimate the total list dimensions
-            val elemSize = state.averageElementSizeDp
+            val viewSize = if (isVertical) state.viewSizeDp.y else state.viewSizeDp.x
+            val numViewItems = (viewSize / state.averageElementSizeDp).toInt() + 1
+
+            // compute the scroll change amount
+            val oldListPos = if (isVertical) state.yScrollDp.value else state.xScrollDp.value
             val listPos = if (isVertical) {
                 state.computeSmoothScrollPosDpY(surface.deltaT)
             } else {
                 state.computeSmoothScrollPosDpX(surface.deltaT)
             }
-            val viewSize = if (isVertical) state.viewSizeDp.y else state.viewSizeDp.x
-            val numViewItems = (viewSize / elemSize).toInt() + modifier.extraItemsAfter
+            val deltaScroll = listPos - oldListPos
 
-            state.itemsFrom = min(items.size - numViewItems, max(0, (listPos / elemSize).toInt() - modifier.extraItemsBefore))
-            state.itemsTo = min(items.lastIndex, state.itemsFrom + numViewItems)
+            // update scroll position to correspond to visible item range based on current element size
+            val updatePos = state.itemsFrom * elemSize
+            val oldError = state.yScrollDpDesired.value - state.yScrollDp.value
+            if (isVertical) {
+                if (abs(updatePos - state.yScrollDp.value) > 1f && state.spaceAfterVisibleItems > 0f) {
+                    state.yScrollDp.set(updatePos)
+                    state.yScrollDpDesired.set(state.yScrollDp.value + oldError)
+                }
+            } else {
+                if (abs(updatePos - state.xScrollDp.value) > 1f) {
+                    state.xScrollDp.set(updatePos)
+                    state.xScrollDpDesired.set(state.xScrollDp.value + oldError)
+                }
+            }
 
-            state.spaceBeforeVisibleItems = state.itemsFrom * elemSize
+            // compute new first visible item based on previous value and scroll delta (no matter what the current
+            // element size is)
+            state.itemsFrom = min(items.size - numViewItems.toFloat(), max(0f, state.itemsFrom + deltaScroll / elemSize))
+            state.itemsTo = min(items.lastIndex, (state.itemsFrom).roundToInt() + numViewItems)
+
+            state.spaceBeforeVisibleItems = (state.itemsFrom).toInt() * elemSize
             state.spaceAfterVisibleItems = (items.lastIndex - state.itemsTo) * elemSize
+
+            state.itemsTo = min(items.lastIndex, state.itemsTo + modifier.extraItemsAfter)
         }
 
         // add a placeholder in front of visible items to achieve correct scroll pane dimensions
@@ -131,7 +155,7 @@ class LazyListNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface
             }
         }
 
-        for (i in state.itemsFrom..state.itemsTo) {
+        for (i in state.itemsFrom.toInt()..state.itemsTo) {
             val item = items[i]
             indexedBlock?.invoke(this, i, item)
             block?.invoke(this, item)
@@ -160,6 +184,9 @@ class LazyListNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface
         var prevMargin = 0f
         for (i in from..to) {
             val child = children[i]
+            if (i == from) {
+                state.firstElementSizeDp = pxToDp(if (isVertical) child.contentHeightPx else child.contentWidthPx)
+            }
             if (isVertical) {
                 size += child.contentHeightPx + max(prevMargin, child.marginTopPx)
                 prevMargin = child.marginBottomPx
@@ -173,7 +200,7 @@ class LazyListNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface
         state.averageElementSizeDp = size / count
 
         val viewSize = if (isVertical) state.viewSizeDp.y else state.viewSizeDp.x
-        if (size < viewSize && count < state.itemsSize) {
+        if (size < viewSize && state.itemsTo < state.numTotalItems - 1) {
             // we selected too few elements re-run layout with updated average element size
             surface.triggerUpdate()
             logD { "Selected too few lazy list elements: ${viewSize - size}" }

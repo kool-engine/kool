@@ -13,6 +13,7 @@ import de.fabmax.kool.scene.ui.Font
 import de.fabmax.kool.scene.ui.TextMetrics
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MutableColor
+import kotlin.math.round
 
 class CachedText(val node: UiNode) {
     private val cacheData = IndexedVertexList(Ui2Shader.UI_MESH_ATTRIBS)
@@ -111,8 +112,8 @@ class CachedText(val node: UiNode) {
         cachedColor.set(textColor)
         for (i in 0 until cacheData.numVertices) {
             val j = i * cacheData.vertexSizeF
-            cacheData.dataF[j + posOffset] += posOffX
-            cacheData.dataF[j + posOffset + 1] += posOffY
+            cacheData.dataF[j + posOffset] = round(cacheData.dataF[j + posOffset] + posOffX)
+            cacheData.dataF[j + posOffset + 1] = round(cacheData.dataF[j + posOffset + 1] + posOffY)
             cacheData.dataF[j + clipOffset] = node.clipLeftPx
             cacheData.dataF[j + clipOffset + 1] = node.clipTopPx
             cacheData.dataF[j + clipOffset + 2] = node.clipRightPx

@@ -188,33 +188,29 @@ class Ui2Demo : DemoScene("UI2 Demo") {
         ) {
             itemsIndexed(listItems) { i, item ->
                 val isHovered = item == hoveredListItem.use()
-                val itemColor = when (item) {
-                    "Item 17" -> MdColor.GREEN tone 200
-                    else -> MdColor.RED tone 200
-                }
                 val bgColor = if (isHovered) {
-                    itemColor
+                    colors.accentVariant
                 } else if (i % 2 == 0) {
                     MdColor.GREY.withAlpha(0.05f)
                 } else {
                     null
                 }
                 val textColor = if (isHovered) colors.onAccent else colors.onBackground
+                val isLarge = (i / 10) % 2 != 0
+                val txt = if (isLarge) "$item [large]" else item
 
-                Text(item) {
+                Text(txt) {
                     modifier
                         .textColor(textColor)
+                        .textAlignY(AlignmentY.Center)
                         .padding(sizes.smallGap)
                         .width(Grow())
+                        .height(if (isLarge) 64.dp else WrapContent)
                         .background(bgColor)
                         .onHover { hoveredListItem.set(item) }
                         .onExit { hoveredListItem.set(null) }
                         .onClick {
-                            if (item == "Item 17") {
-                                listItems += "Item ${listItems.size}"
-                            } else {
-                                listItems.remove(item)
-                            }
+                            listItems.remove(item)
                         }
                 }
             }
