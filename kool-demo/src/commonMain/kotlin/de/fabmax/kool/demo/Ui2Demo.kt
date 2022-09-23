@@ -1,7 +1,9 @@
 package de.fabmax.kool.demo
 
+import de.fabmax.kool.AssetManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.modules.ui2.*
+import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
@@ -38,6 +40,12 @@ class Ui2Demo : DemoScene("UI2 Demo") {
     private val largeUi = Sizes.large()
     private var selectedUiSize = mutableStateOf(mediumUi)
 
+    private var imageTex: Texture2d? = null
+
+    override suspend fun AssetManager.loadResources(ctx: KoolContext) {
+        imageTex = loadAndPrepareTexture("${Demo.assetStorageBase}/uv_checker_map.png")
+    }
+
     override fun Scene.setupMainScene(ctx: KoolContext) {
         // new improved ui system
         // desired features
@@ -54,7 +62,7 @@ class Ui2Demo : DemoScene("UI2 Demo") {
         // - [x] padding / inside gap
 
         // todo
-        //  icons + images
+        //  icons
         //  input context stack
 
         // not for now
@@ -139,6 +147,17 @@ class Ui2Demo : DemoScene("UI2 Demo") {
                     modifier
                         .margin(sizes.smallGap)
                         .font(sizes.largeText)
+                }
+                Row {
+                    for (tint in listOf(Color.WHITE, MdColor.RED, MdColor.GREEN, MdColor.BLUE)) {
+                        Image {
+                            modifier
+                                .padding(sizes.smallGap)
+                                .image(imageTex)
+                                .tint(tint)
+                                .imageScale(0.05f)
+                        }
+                    }
                 }
                 Row {
                     for (r in TextRotation.values()) {

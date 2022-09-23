@@ -78,8 +78,10 @@ abstract class ToggleNode(
     }
 
     override fun measureContentSize(ctx: KoolContext) {
-        val measuredWidth = buttonWidth.px + paddingStartPx + paddingEndPx
-        val measuredHeight = buttonHeight.px + paddingTopPx + paddingBottomPx
+        val modWidth = modifier.width
+        val modHeight = modifier.height
+        val measuredWidth = if (modWidth is Dp) modWidth.px else buttonWidth.px + paddingStartPx + paddingEndPx
+        val measuredHeight = if (modHeight is Dp) modHeight.px else buttonHeight.px + paddingTopPx + paddingBottomPx
         setContentSize(measuredWidth, measuredHeight)
     }
 

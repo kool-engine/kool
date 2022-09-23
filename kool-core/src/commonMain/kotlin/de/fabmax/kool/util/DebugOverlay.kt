@@ -195,7 +195,7 @@ private class DeltaTGraph : UiRenderer<UiNode> {
                 }
             }
         }
-        node.surface.getMeshLayer(UiSurface.LAYER_DEFAULT).addCustomNode(graphMesh, 1)
+        node.surface.getMeshLayer(node.modifier.zLayer).addCustomNode(graphMesh, 1)
     }
 
     fun updateGraph(updateEvent: RenderPass.UpdateEvent) {

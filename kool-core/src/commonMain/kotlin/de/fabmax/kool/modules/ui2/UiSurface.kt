@@ -2,6 +2,7 @@ package de.fabmax.kool.modules.ui2
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.pipeline.RenderPass
+import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.geometry.MeshBuilder
@@ -375,8 +376,23 @@ class UiSurface(
         }
     }
 
+    private class ImageMeshes {
+        val meshes = mutableListOf<ImageMesh>()
+        var lastUsed = -1
+
+        fun getUnusedMesh(): ImageMesh {
+            lastUsed++
+            return if (lastUsed < meshes.size) meshes[lastUsed] else ImageMesh().also { meshes += it }
+        }
+
+        fun clear() {
+            lastUsed = -1
+        }
+    }
+
     inner class MeshLayer : Group() {
         private val textMeshes = mutableMapOf<FontProps, TextMesh>()
+        private val imageMeshes = mutableMapOf<Texture2d, ImageMeshes>()
         private val plainMesh = mesh(Ui2Shader.UI_MESH_ATTRIBS) { shader = Ui2Shader() }
 
         val uiPrimitives = UiPrimitiveMesh()
@@ -404,10 +420,20 @@ class UiSurface(
             customNodes += drawNode
         }
 
+        fun addImage(image: Texture2d): ImageMesh {
+            val imgMesh = imageMeshes.getOrPut(image) { ImageMeshes() }.getUnusedMesh()
+            addCustomNode(imgMesh)
+            return imgMesh
+        }
+
         fun clear() {
             textMeshes.values.forEach { it.clear() }
             uiPrimitives.instances?.clear()
             plainBuilder.clear()
+
+            if (imageMeshes.isNotEmpty()) {
+                imageMeshes.values.forEach { it.clear() }
+            }
 
             if (customNodes.isNotEmpty()) {
                 customNodes.forEach { removeNode(it) }

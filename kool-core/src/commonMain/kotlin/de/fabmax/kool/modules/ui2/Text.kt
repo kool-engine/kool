@@ -56,10 +56,10 @@ open class TextNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surfac
     override fun measureContentSize(ctx: KoolContext) {
         val font = surface.getFont(modifier.font, ctx)
         val textMetrics = textCache.getTextMetrics(modifier.text, font, ctx)
-        val modWidth = modifier.width
-        val modHeight = modifier.height
         val textWidth = if (modifier.textRotation.isHorizontal) textMetrics.width else textMetrics.height
         val textHeight = if (modifier.textRotation.isHorizontal) textMetrics.height else textMetrics.width
+        val modWidth = modifier.width
+        val modHeight = modifier.height
         val measuredWidth = if (modWidth is Dp) modWidth.px else textWidth + paddingStartPx + paddingEndPx
         val measuredHeight = if (modHeight is Dp) modHeight.px else textHeight + paddingTopPx + paddingBottomPx
         setContentSize(measuredWidth, measuredHeight)

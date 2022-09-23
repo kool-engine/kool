@@ -78,8 +78,11 @@ class SliderNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface),
             w = knobDiameter.px
             h = trackLenPx
         }
-        val measuredWidth = w + paddingStartPx + paddingEndPx
-        val measuredHeight = h + paddingTopPx + paddingBottomPx
+
+        val modWidth = modifier.width
+        val modHeight = modifier.height
+        val measuredWidth = if (modWidth is Dp) modWidth.px else w + paddingStartPx + paddingEndPx
+        val measuredHeight = if (modHeight is Dp) modHeight.px else h + paddingTopPx + paddingBottomPx
         setContentSize(measuredWidth, measuredHeight)
     }
 
