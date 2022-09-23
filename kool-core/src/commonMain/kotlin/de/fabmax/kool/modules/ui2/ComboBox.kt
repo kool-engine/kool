@@ -160,7 +160,7 @@ open class ComboBoxNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, su
         }
         customClip.set(clipBoundsPx)
         customClip.z = min(clipRightPx, expanderBorder)
-        textCache.addTextGeometry(getTextBuilder(modifier.font, ctx).geometry, textProps, modifier.textColor, customClip)
+        textCache.addTextGeometry(getTextBuilder(modifier.font, ctx).geometry, textProps, modifier.textColor, clip = customClip)
 
         getPlainBuilder().configured(modifier.expanderArrowColor) {
             val cx = widthPx - expanderWidth * 0.5f

@@ -141,12 +141,12 @@ class Ui2Demo : DemoScene("UI2 Demo") {
                         .font(sizes.largeText)
                 }
                 Row {
-                    for (i in 1..5) {
-                        Text("Another text no. $i with a lot of height") {
+                    for (r in TextRotation.values()) {
+                        Text("Another text with rotation: \"$r\"") {
                             modifier
-                                .height(300.dp)
                                 .margin(sizes.smallGap)
                                 .padding(sizes.largeGap)
+                                .textRotation(r)
                                 .border(RoundRectBorder(colors.accentVariant, sizes.gap, 2.dp, 6.dp))
                         }
                     }

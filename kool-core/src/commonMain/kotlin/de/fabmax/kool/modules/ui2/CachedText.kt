@@ -3,6 +3,7 @@ package de.fabmax.kool.modules.ui2
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.MutableVec4f
+import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.geometry.IndexedVertexList
@@ -26,6 +27,7 @@ class CachedText(val node: UiNode) {
     private var cachedFont: Font? = null
     private var cachedText: String? = null
     private var cachedScale = 0f
+    private var cachedRotation = TextRotation.Rotation0
     private val cachedTextPos = MutableVec3f()
     private val cachedClip = MutableVec4f()
     private val cachedColor = MutableColor()
@@ -42,10 +44,13 @@ class CachedText(val node: UiNode) {
         return textMetrics
     }
 
-    fun addTextGeometry(target: IndexedVertexList, textProps: TextProps, textColor: Color, clip: Vec4f = node.clipBoundsPx) {
+    fun addTextGeometry(target: IndexedVertexList, textProps: TextProps, textColor: Color, rotation: TextRotation = TextRotation.Rotation0, clip: Vec4f = node.clipBoundsPx) {
+        if (rotation != cachedRotation) {
+            geometryValid = false
+        }
         if (!geometryValid) {
             geometryValid = true
-            buildGeometry(textProps, textColor)
+            buildGeometry(textProps, textColor, rotation)
         }
         if (cachedTextPos.x != node.leftPx || cachedTextPos.y != node.topPx ||
             cachedClip != clip || cachedColor != textColor) {
@@ -73,15 +78,27 @@ class CachedText(val node: UiNode) {
         }
     }
 
-    private fun buildGeometry(textProps: TextProps, textColor: Color) {
+    private fun buildGeometry(textProps: TextProps, textColor: Color, textRotation: TextRotation) {
         cachedScale = textProps.font.charMap!!.scale
-        with(node) {
-            cacheBuilder.configured(textColor) {
-                clear()
-                text(textProps)
-                cachedTextPos.set(textProps.origin)
-                cachedClip.set(Vec4f.ZERO)
+        cacheBuilder.apply {
+            clear()
+            vertexModFun = node.setBoundsVertexMod
+            color = textColor
+
+            if (textRotation != TextRotation.Rotation0) {
+                translate(textProps.origin)
+                when (textRotation) {
+                    TextRotation.Rotation90 -> rotate(90f, Vec3f.Z_AXIS)
+                    TextRotation.Rotation180 -> rotate(180f, Vec3f.Z_AXIS)
+                    TextRotation.Rotation270 -> rotate(270f, Vec3f.Z_AXIS)
+                    TextRotation.Rotation0 -> { }
+                }
+                translate(-textProps.origin.x, -textProps.origin.y, -textProps.origin.z)
             }
+
+            text(textProps)
+            cachedTextPos.set(textProps.origin)
+            cachedClip.set(Vec4f.ZERO)
         }
         cacheData.dataF.flip()
     }

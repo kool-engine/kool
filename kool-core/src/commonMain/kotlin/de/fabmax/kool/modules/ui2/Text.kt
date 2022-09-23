@@ -16,6 +16,7 @@ open class TextModifier(surface: UiSurface) : UiModifier(surface) {
     var textColor: Color by property { it.colors.onSurface }
     var textAlignX: AlignmentX by property(AlignmentX.Start)
     var textAlignY: AlignmentY by property(AlignmentY.Top)
+    var textRotation: TextRotation by property(TextRotation.Rotation0)
 }
 
 fun <T: TextModifier> T.text(text: String): T { this.text = text; return this }
@@ -28,6 +29,15 @@ fun <T: TextModifier> T.textAlign(alignX: AlignmentX, alignY: AlignmentY): T {
     textAlignX = alignX
     textAlignY = alignY
     return this
+}
+
+fun <T: TextModifier> T.textRotation(rotation: TextRotation): T { textRotation = rotation; return this }
+
+enum class TextRotation(val isHorizontal: Boolean) {
+    Rotation0(true),
+    Rotation90(false),
+    Rotation180(true),
+    Rotation270(false)
 }
 
 inline fun UiScope.Text(text: String = "", block: TextScope.() -> Unit): TextScope {
@@ -48,8 +58,10 @@ open class TextNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surfac
         val textMetrics = textCache.getTextMetrics(modifier.text, font, ctx)
         val modWidth = modifier.width
         val modHeight = modifier.height
-        val measuredWidth = if (modWidth is Dp) modWidth.px else textMetrics.width + paddingStartPx + paddingEndPx
-        val measuredHeight = if (modHeight is Dp) modHeight.px else textMetrics.height + paddingTopPx + paddingBottomPx
+        val textWidth = if (modifier.textRotation.isHorizontal) textMetrics.width else textMetrics.height
+        val textHeight = if (modifier.textRotation.isHorizontal) textMetrics.height else textMetrics.width
+        val measuredWidth = if (modWidth is Dp) modWidth.px else textWidth + paddingStartPx + paddingEndPx
+        val measuredHeight = if (modHeight is Dp) modHeight.px else textHeight + paddingTopPx + paddingBottomPx
         setContentSize(measuredWidth, measuredHeight)
     }
 
@@ -60,20 +72,45 @@ open class TextNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surfac
             font = surface.getFont(modifier.font, ctx)
             text = modifier.text
             isYAxisUp = false
+
             val textMetrics = textCache.textMetrics
-            val oriX = when (modifier.textAlignX) {
-                AlignmentX.Start -> paddingStartPx
-                AlignmentX.Center -> (widthPx - textMetrics.width) / 2f
-                AlignmentX.End -> widthPx - textMetrics.width - paddingEndPx
+            val textWidth = if (modifier.textRotation.isHorizontal) textMetrics.width else textMetrics.height
+            val textHeight = if (modifier.textRotation.isHorizontal) textMetrics.height else textMetrics.width
+
+            val txtX: Float
+            val txtY: Float
+            when (modifier.textRotation) {
+                TextRotation.Rotation0 -> {
+                    txtX = 0f
+                    txtY = textMetrics.yBaseline
+                }
+                TextRotation.Rotation90 -> {
+                    txtX = textWidth - textMetrics.yBaseline
+                    txtY = 0f
+                }
+                TextRotation.Rotation180 -> {
+                    txtX = textWidth
+                    txtY = textHeight - textMetrics.yBaseline
+                }
+                TextRotation.Rotation270 -> {
+                    txtX = textMetrics.yBaseline
+                    txtY = textHeight
+                }
             }
-            val oriY = when (modifier.textAlignY) {
-                AlignmentY.Top -> textMetrics.yBaseline + paddingTopPx
-                AlignmentY.Center -> (heightPx - textMetrics.height) / 2f + textMetrics.yBaseline
-                AlignmentY.Bottom -> heightPx - textMetrics.height + textMetrics.yBaseline - paddingBottomPx
+
+            val oriX = txtX + when (modifier.textAlignX) {
+                AlignmentX.Start -> paddingStartPx
+                AlignmentX.Center -> (widthPx - textWidth) / 2f
+                AlignmentX.End -> widthPx - textWidth - paddingEndPx
+            }
+            val oriY = txtY + when (modifier.textAlignY) {
+                AlignmentY.Top -> paddingTopPx
+                AlignmentY.Center -> (heightPx - textHeight) / 2f
+                AlignmentY.Bottom -> heightPx - textHeight - paddingBottomPx
             }
             origin.set(leftPx + oriX, topPx + oriY, 0f)
         }
-        textCache.addTextGeometry(getTextBuilder(modifier.font, ctx).geometry, textProps, modifier.textColor)
+        textCache.addTextGeometry(getTextBuilder(modifier.font, ctx).geometry, textProps, modifier.textColor, modifier.textRotation)
     }
 
     companion object {
