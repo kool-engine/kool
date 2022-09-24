@@ -151,7 +151,7 @@ class UiSurface(
 
     private fun composeContent() {
         viewport.Box {
-            modifier.background(colorsState.use().surface)
+            modifier.backgroundColor(colorsState.use().background)
             sizesState.use()
             uiBlock()
         }

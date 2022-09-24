@@ -25,6 +25,10 @@ interface UiScope {
         progress(deltaT)
         return use(surface)
     }
+
+    operator fun ComposableComponent.invoke() {
+        compose()
+    }
 }
 
 inline fun UiScope.Popup(
@@ -40,7 +44,7 @@ inline fun UiScope.Popup(
             .margin(start = pxToDp(screenPxX).dp, top = pxToDp(screenPxY).dp)
             .width(width)
             .height(height)
-            .background(colors.surface)
+            .backgroundColor(colors.background)
             .zLayer(UiSurface.LAYER_POPUP)
             .layout(layout)
         block()

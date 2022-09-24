@@ -56,7 +56,7 @@ class DebugOverlay(position: Position = Position.UPPER_RIGHT) {
             +UiSurface(
                 name = "overview",
                 sizes = Sizes.small(),
-                colors = Colors.darkColors(accent = Color("b2ff00"), surface = Color("10101080"))
+                colors = Colors.darkColors(accent = Color("b2ff00"), background = Color("10101080"))
             ) {
                 modifier.layout(ColumnLayout)
 
@@ -74,7 +74,7 @@ class DebugOverlay(position: Position = Position.UPPER_RIGHT) {
                     modifier
                         .alignX(AlignmentX.Center)
                         .padding(sizes.smallGap)
-                        .width(Grow())
+                        .width(Grow.Std)
                         .textAlignX(AlignmentX.Center)
                         .font(fpsFont)
                         .textColor(colors.accent)

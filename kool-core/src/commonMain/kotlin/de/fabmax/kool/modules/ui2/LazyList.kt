@@ -47,8 +47,8 @@ enum class ListOrientation {
 fun UiScope.LazyList(
     state: LazyListState,
     layout: Layout = ColumnLayout,
-    width: Dimension = Grow(),
-    height: Dimension = Grow(),
+    width: Dimension = Grow.Std,
+    height: Dimension = Grow.Std,
     withVerticalScrollbar: Boolean = true,
     withHorizontalScrollbar: Boolean = false,
     scrollbarColor: Color? = null,
@@ -65,14 +65,14 @@ fun UiScope.LazyList(
         scrollbarColor,
         containerModifier, vScrollbarModifier, hScrollbarModifier
     ) {
-        modifier.width(Grow())
+        modifier.width(Grow.Std)
         scrollPaneModifier?.let { it(modifier) }
 
         val lazyList = uiNode.createChild(LazyListNode::class, LazyListNode.factory)
         lazyList.state = state
         lazyList.modifier
             .layout(layout)
-            .width(Grow())
+            .width(Grow.Std)
         lazyList.block()
     }
 }
@@ -137,7 +137,7 @@ class LazyListNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface
 
             // compute new first visible item based on previous value and scroll delta (no matter what the current
             // element size is)
-            state.itemsFrom = min(items.size - numViewItems.toFloat(), max(0f, state.itemsFrom + deltaScroll / elemSize))
+            state.itemsFrom = min(max(0f, items.size - numViewItems.toFloat()), max(0f, state.itemsFrom + deltaScroll / elemSize))
             state.itemsTo = min(items.lastIndex, (state.itemsFrom).roundToInt() + numViewItems)
 
             state.spaceBeforeVisibleItems = (state.itemsFrom).toInt() * elemSize

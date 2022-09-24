@@ -4,8 +4,8 @@ import de.fabmax.kool.util.Color
 
 fun UiScope.ScrollArea(
     state: ScrollState,
-    width: Dimension = Grow(),
-    height: Dimension = Grow(),
+    width: Dimension = Grow.Std,
+    height: Dimension = Grow.Std,
     withVerticalScrollbar: Boolean = true,
     withHorizontalScrollbar: Boolean = true,
     scrollbarColor: Color? = null,
@@ -18,7 +18,7 @@ fun UiScope.ScrollArea(
         modifier
             .width(width)
             .height(height)
-            .background(colors.background)
+            .backgroundColor(colors.backgroundVariant)
             .onWheelX { state.scrollDpX(it.pointer.deltaScrollX.toFloat() * -20f) }
             .onWheelY { state.scrollDpY(it.pointer.deltaScrollY.toFloat() * -50f) }
 

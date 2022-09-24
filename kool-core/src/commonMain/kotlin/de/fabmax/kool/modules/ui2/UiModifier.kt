@@ -112,7 +112,7 @@ fun <T: UiModifier> T.layout(layout: Layout): T { this.layout = layout; return t
 fun <T: UiModifier> T.border(border: UiRenderer<UiNode>?): T { this.border = border; return this }
 fun <T: UiModifier> T.zLayer(zLayer: Int): T { this.zLayer = zLayer; return this }
 fun <T: UiModifier> T.background(background: UiRenderer<UiNode>?): T { this.background = background; return this }
-fun <T: UiModifier> T.background(color: Color?): T {
+fun <T: UiModifier> T.backgroundColor(color: Color?): T {
     background = if (color != null) RectBackground(color) else null
     return this
 }

@@ -43,7 +43,7 @@ class Ui2Demo : DemoScene("UI2 Demo") {
     private var imageTex: Texture2d? = null
 
     override suspend fun AssetManager.loadResources(ctx: KoolContext) {
-        imageTex = loadAndPrepareTexture("${Demo.assetStorageBase}/uv_checker_map.png")
+        imageTex = loadAndPrepareTexture("${DemoLoader.assetStorageBase}/uv_checker_map.png")
     }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
@@ -205,9 +205,9 @@ class Ui2Demo : DemoScene("UI2 Demo") {
                         .textColor(textColor)
                         .textAlignY(AlignmentY.Center)
                         .padding(sizes.smallGap)
-                        .width(Grow())
+                        .width(Grow.Std)
                         .height(if (isLarge) 64.dp else WrapContent)
-                        .background(bgColor)
+                        .backgroundColor(bgColor)
                         .onHover { hoveredListItem.set(item) }
                         .onExit { hoveredListItem.set(null) }
                         .onClick {

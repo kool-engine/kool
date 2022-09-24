@@ -10,9 +10,13 @@ object WrapContent : Dimension {
     }
 }
 
-class Grow(val weight: Float = 1f, val min: Dimension = Dp.ZERO, val max: Dimension = Dp.UNBOUNDED) : Dimension {
+class Grow(val weight: Float, val min: Dimension = Dp.ZERO, val max: Dimension = Dp.UNBOUNDED) : Dimension {
     override fun toString(): String {
         return "Grow(weight=$weight)"
+    }
+
+    companion object {
+        val Std = Grow(1f)
     }
 }
 

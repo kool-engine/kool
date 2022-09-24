@@ -64,14 +64,16 @@ class ButtonNode(parent: UiNode?, surface: UiSurface) : TextNode(parent, surface
 
         super.render(ctx)
 
-        if (modifier.isClickFeedback && clickAnimator.isActive) {
-            clickAnimator.progress(deltaT)
+        if (modifier.isClickFeedback) {
             val p = clickAnimator.use()
-            getUiPrimitives().localCircle(
-                clickPos.x, clickPos.y,
-                p * 128.dp.px,
-                Color.WHITE.withAlpha(0.7f - p * 0.5f)
-            )
+            if (clickAnimator.isActive) {
+                clickAnimator.progress(deltaT)
+                getUiPrimitives().localCircle(
+                    clickPos.x, clickPos.y,
+                    p * 128.dp.px,
+                    Color.WHITE.withAlpha(0.7f - p * 0.5f)
+                )
+            }
         }
     }
 

@@ -57,13 +57,17 @@ inline fun UiScope.Switch(state: Boolean? = null, block: ToggleScope.() -> Unit)
 
 abstract class ToggleNode(
     parent: UiNode?,
-    surface: UiSurface,
-    protected val buttonWidth: Dp,
-    protected val buttonHeight: Dp
+    surface: UiSurface
 ) : UiNode(parent, surface), ToggleScope, Clickable {
 
     override val modifier = ToggleModifier(surface)
-    protected val toggleAnimator = AnimationState(0.1f)
+
+    abstract val buttonWidth: Dp
+    abstract val buttonHeight: Dp
+
+    private val toggleAnimator = AnimationState(0.1f)
+    private var isFirst = true
+    private var prevState = false
 
     protected fun animationPos(): Float {
         val ax = if (toggleAnimator.isActive) toggleAnimator.progressAndUse() else 1f
@@ -83,6 +87,13 @@ abstract class ToggleNode(
         val measuredWidth = if (modWidth is Dp) modWidth.px else buttonWidth.px + paddingStartPx + paddingEndPx
         val measuredHeight = if (modHeight is Dp) modHeight.px else buttonHeight.px + paddingTopPx + paddingBottomPx
         setContentSize(measuredWidth, measuredHeight)
+
+        if (isFirst) {
+            isFirst = false
+        } else if (prevState != modifier.toggleState) {
+            toggleAnimator.start()
+        }
+        prevState = modifier.toggleState
     }
 
     override fun applyDefaults() {
@@ -94,7 +105,6 @@ abstract class ToggleNode(
 
     override fun onClick(ev: PointerEvent) {
         if (isOnClickTarget(ev)) {
-            toggleAnimator.start()
             modifier.onToggle?.invoke(!modifier.toggleState)
         } else {
             ev.reject()
@@ -102,9 +112,10 @@ abstract class ToggleNode(
     }
 }
 
-class CheckboxNode(parent: UiNode?, surface: UiSurface)
-    : ToggleNode(parent, surface, surface.sizes.checkboxHeight, surface.sizes.checkboxHeight)
-{
+class CheckboxNode(parent: UiNode?, surface: UiSurface) : ToggleNode(parent, surface) {
+    override val buttonWidth: Dp get() = surface.sizes.checkboxHeight
+    override val buttonHeight: Dp get() = surface.sizes.checkboxHeight
+
     override fun render(ctx: KoolContext) {
         super.render(ctx)
         val r = buttonHeight.px * 0.5f
@@ -137,9 +148,9 @@ class CheckboxNode(parent: UiNode?, surface: UiSurface)
     }
 }
 
-class RadioButtonNode(parent: UiNode?, surface: UiSurface)
-    : ToggleNode(parent, surface, surface.sizes.radioButtonHeight, surface.sizes.radioButtonHeight)
-{
+class RadioButtonNode(parent: UiNode?, surface: UiSurface) : ToggleNode(parent, surface) {
+    override val buttonWidth: Dp get() = surface.sizes.radioButtonHeight
+    override val buttonHeight: Dp get() = surface.sizes.radioButtonHeight
 
     override fun isOnClickTarget(ev: PointerEvent): Boolean =
         pxToDp(ev.position.distance(center())) < buttonWidth.px * 0.5f
@@ -164,9 +175,9 @@ class RadioButtonNode(parent: UiNode?, surface: UiSurface)
     }
 }
 
-class SwitchNode(parent: UiNode?, surface: UiSurface)
-    : ToggleNode(parent, surface, Dp(surface.sizes.switchHeight.value * 2f), surface.sizes.switchHeight)
-{
+class SwitchNode(parent: UiNode?, surface: UiSurface) : ToggleNode(parent, surface) {
+    override val buttonWidth: Dp get() = Dp(surface.sizes.switchHeight.value * 2f)
+    override val buttonHeight: Dp get() = surface.sizes.switchHeight
 
     override fun render(ctx: KoolContext) {
         super.render(ctx)

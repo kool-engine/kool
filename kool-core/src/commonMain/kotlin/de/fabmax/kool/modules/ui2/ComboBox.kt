@@ -59,7 +59,7 @@ inline fun UiScope.ComboBox(block: ComboBoxScope.() -> Unit): ComboBoxScope {
                 val hovered = comboBox.hoveredItem.use()
                 Text(item) {
                     modifier
-                        .width(Grow())
+                        .width(Grow.Std)
                         .padding(horizontal = sizes.gap, vertical = sizes.smallGap * 0.5f)
                         .onEnter {
                             comboBox.hoveredItem.set(i)
@@ -74,7 +74,7 @@ inline fun UiScope.ComboBox(block: ComboBoxScope.() -> Unit): ComboBoxScope {
                         }
                     if (i == hovered) {
                         modifier
-                            .background(comboBox.modifier.expanderHoverColor)
+                            .backgroundColor(comboBox.modifier.expanderHoverColor)
                             .textColor(comboBox.modifier.expanderArrowColor)
                     }
                 }

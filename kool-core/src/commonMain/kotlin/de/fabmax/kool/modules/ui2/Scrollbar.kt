@@ -70,7 +70,7 @@ inline fun UiScope.VerticalScrollbar(
     modifier
         .orientation(ScrollbarOrientation.Vertical)
         .width(8.dp)
-        .height(Grow())
+        .height(Grow.Std)
         .alignX(AlignmentX.End)
 
     // try to be smart: add some margin if parent scope (which hopefully is a cell) already contains a horizontal scrollbar
@@ -94,7 +94,7 @@ inline fun UiScope.HorizontalScrollbar(
     modifier
         .orientation(ScrollbarOrientation.Horizontal)
         .height(8.dp)
-        .width(Grow())
+        .width(Grow.Std)
         .alignY(AlignmentY.Bottom)
 
     // try to be smart: add some margin if parent scope (which hopefully is a cell) already contains a vertical scrollbar
