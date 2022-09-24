@@ -1,6 +1,7 @@
 package de.fabmax.kool.modules.ui2
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.math.MutableVec2f
 import kotlin.math.max
 import kotlin.math.round
 
@@ -29,11 +30,19 @@ private object HorizontalLayout {
         val modWidth = modifier.width
         val modHeight = modifier.height
 
-        // if width / height is Grow, content size will remain 0
-        var measuredWidth = if (modWidth is Dp) modWidth.px else 0f
-        var measuredHeight = if (modHeight is Dp) modHeight.px else 0f
-        val isDynamicWidth = modWidth === WrapContent
-        val isDynamicHeight = modHeight === WrapContent
+        var measuredWidth = 0f
+        var measuredHeight = 0f
+        var isDynamicWidth = true
+        var isDynamicHeight = true
+
+        if (modWidth is Dp) {
+            measuredWidth = modWidth.px
+            isDynamicWidth = false
+        }
+        if (modHeight is Dp) {
+            measuredHeight = modHeight.px
+            isDynamicHeight = false
+        }
 
         if (isDynamicWidth || isDynamicHeight) {
             // determine content size based on child sizes
@@ -66,20 +75,16 @@ private object HorizontalLayout {
         for (i in children.indices) {
             val child = children[i]
 
-            val layoutW = when (val childW = child.modifier.width) {
-                is Dp -> childW.px
-                is Grow -> widthPx - max(paddingStartPx, child.marginStartPx) - max(paddingEndPx, child.marginEndPx)
-                WrapContent -> child.contentWidthPx
-            }
-            val layoutH = when (val childH = child.modifier.height) {
-                is Dp -> childH.px
-                is Grow -> growSpace * childH.weight
-                WrapContent -> child.contentHeightPx
-            }
-            val layoutY = when (child.modifier.alignY) {
-                AlignmentY.Top -> topPx + max(paddingTopPx, child.marginTopPx)
-                AlignmentY.Center -> topPx + (heightPx - layoutH) * 0.5f
-                AlignmentY.Bottom -> bottomPx - layoutH - max(paddingBottomPx, child.marginBottomPx)
+            val growSpaceW = growSpace.x / growSpace.y
+            val growSpaceH = heightPx - max(paddingTopPx, child.marginTopPx) - max(paddingBottomPx, child.marginBottomPx)
+            val layoutW = child.computeWidthFromDimension(growSpaceW)
+            val layoutH = child.computeHeightFromDimension(growSpaceH)
+            val layoutY = uiNode.computeChildLocationY(child, layoutH)
+
+            val cw = child.modifier.width
+            if (cw is Grow) {
+                growSpace.x -= layoutW
+                growSpace.y -= cw.weight
             }
 
             val layoutX: Float
@@ -99,7 +104,7 @@ private object HorizontalLayout {
         }
     }
 
-    private fun UiNode.determineAvailableGrowSpace(isStartToEnd: Boolean): Float {
+    private fun UiNode.determineAvailableGrowSpace(isStartToEnd: Boolean): MutableVec2f {
         var prevMargin = paddingStartPx
         var remainingSpace = widthPx
         var totalWeight = 0f
@@ -118,6 +123,6 @@ private object HorizontalLayout {
             }
         }
         if (totalWeight == 0f) totalWeight = 1f
-        return remainingSpace / totalWeight
+        return MutableVec2f(remainingSpace, totalWeight)
     }
 }

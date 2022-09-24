@@ -83,6 +83,7 @@ class Ui2Demo : DemoScene("UI2 Demo") {
 
             modifier
                 .width(500.dp)
+                //.height(Grow(min = WrapContent))
                 .height(WrapContent)
                 .margin(top = 100.dp, bottom = 100.dp)
                 .padding(horizontal = sizes.gap, vertical = sizes.largeGap)

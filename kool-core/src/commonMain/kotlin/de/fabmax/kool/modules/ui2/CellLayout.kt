@@ -36,27 +36,13 @@ object CellLayout : Layout {
     override fun layoutChildren(uiNode: UiNode, ctx: KoolContext) {
         uiNode.apply {
             children.forEach { child ->
-                val childWidth = when (val w = child.modifier.width) {
-                    is Dp -> w.px
-                    is Grow -> widthPx - max(paddingStartPx, child.marginStartPx) - max(paddingEndPx, child.marginEndPx)
-                    WrapContent -> child.contentWidthPx
-                }
-                val childHeight = when (val h = child.modifier.height) {
-                    is Dp -> h.px
-                    is Grow -> heightPx - max(paddingTopPx, child.marginTopPx) - max(paddingBottomPx, child.marginBottomPx)
-                    WrapContent -> child.contentHeightPx
-                }
+                val growSpaceW = widthPx - max(paddingStartPx, child.marginStartPx) - max(paddingEndPx, child.marginEndPx)
+                val growSpaceH = heightPx - max(paddingTopPx, child.marginTopPx) - max(paddingBottomPx, child.marginBottomPx)
 
-                val childX = leftPx + when (child.modifier.alignX) {
-                    AlignmentX.Start -> max(paddingStartPx, child.marginStartPx)
-                    AlignmentX.Center -> (widthPx - childWidth) * 0.5f
-                    AlignmentX.End -> widthPx - childWidth - max(paddingEndPx, child.marginEndPx)
-                }
-                val childY = topPx + when (child.modifier.alignY) {
-                    AlignmentY.Top -> max(paddingTopPx, child.marginTopPx)
-                    AlignmentY.Center -> (heightPx - childHeight) * 0.5f
-                    AlignmentY.Bottom -> heightPx - childHeight - max(paddingBottomPx, child.marginBottomPx)
-                }
+                val childWidth = child.computeWidthFromDimension(growSpaceW)
+                val childHeight = child.computeHeightFromDimension(growSpaceH)
+                val childX = computeChildLocationX(child, childWidth)
+                val childY = computeChildLocationY(child, childHeight)
 
                 child.setBounds(round(childX), round(childY), round(childX + childWidth), round(childY + childHeight))
             }

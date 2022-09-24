@@ -10,8 +10,7 @@ object WrapContent : Dimension {
     }
 }
 
-@JvmInline
-value class Grow(val weight: Float = 1f) : Dimension {
+class Grow(val weight: Float = 1f, val min: Dimension = Dp.ZERO, val max: Dimension = Dp.UNBOUNDED) : Dimension {
     override fun toString(): String {
         return "Grow(weight=$weight)"
     }
@@ -29,5 +28,6 @@ value class Dp(val value: Float): Dimension {
 
     companion object {
         val ZERO = Dp(0f)
+        val UNBOUNDED = Dp(1e9f)
     }
 }

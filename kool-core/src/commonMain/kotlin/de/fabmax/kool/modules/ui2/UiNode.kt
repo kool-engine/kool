@@ -4,6 +4,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.MutableVec4f
 import de.fabmax.kool.math.Vec2f
+import de.fabmax.kool.math.clamp
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.VertexView
 import de.fabmax.kool.scene.ui.FontProps
@@ -108,6 +109,46 @@ abstract class UiNode(val parent: UiNode?, override val surface: UiSurface) : Ui
 
         if (modifier.onPositioned.isNotEmpty()) {
             modifier.onPositioned.forEach { it(this) }
+        }
+    }
+
+    fun computeWidthFromDimension(scaledGrowSpace: Float): Float {
+        return dimensionToPx(modifier.width, contentWidthPx, scaledGrowSpace, true)
+    }
+
+    fun computeHeightFromDimension(scaledGrowSpace: Float): Float {
+        return dimensionToPx(modifier.height, contentHeightPx, scaledGrowSpace, true)
+    }
+
+    private fun dimensionToPx(dim: Dimension, contentPx: Float, scaledGrowSpace: Float, isGrowAllowed: Boolean): Float {
+        return when (dim) {
+            WrapContent -> contentPx
+            is Dp -> dim.px
+            is Grow -> {
+                if (isGrowAllowed) {
+                    val min = dimensionToPx(dim.min, contentPx, 0f, false)
+                    val max = dimensionToPx(dim.max, contentPx, 0f, false)
+                    (scaledGrowSpace * dim.weight).clamp(min, max)
+                } else {
+                    0f
+                }
+            }
+        }
+    }
+
+    fun computeChildLocationX(child: UiNode, measuredChildWidth: Float): Float {
+        return leftPx + when (child.modifier.alignX) {
+            AlignmentX.Start -> max(paddingStartPx, child.marginStartPx)
+            AlignmentX.Center -> (widthPx - measuredChildWidth) * 0.5f
+            AlignmentX.End -> widthPx - measuredChildWidth - max(paddingEndPx, child.marginEndPx)
+        }
+    }
+
+    fun computeChildLocationY(child: UiNode, measuredChildHeight: Float): Float {
+        return topPx + when (child.modifier.alignY) {
+            AlignmentY.Top -> max(paddingTopPx, child.marginTopPx)
+            AlignmentY.Center -> (heightPx - measuredChildHeight) * 0.5f
+            AlignmentY.Bottom -> heightPx - measuredChildHeight - max(paddingBottomPx, child.marginBottomPx)
         }
     }
 
