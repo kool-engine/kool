@@ -54,7 +54,7 @@ class DemoListContent(val menu: DemoMenu) : ComposableComponent {
                         modifier
                             .width(Grow.Std)
                             .height(DemoMenu.itemSize.dp)
-                            .padding(horizontal = sizes.gap)
+                            .padding(horizontal = sizes.gap * 1.25f)
                             .textAlignY(AlignmentY.Center)
                             .onEnter { hoveredDemoItem.set(i) }
                             .onExit { hoveredDemoItem.set(-1) }
@@ -79,17 +79,17 @@ class DemoListContent(val menu: DemoMenu) : ComposableComponent {
     private fun TextScope.demoEntryStyle(item: DemoItem, isHovered: Boolean) {
         if (isHovered) {
             modifier
-                .backgroundColor(item.color.withAlpha(0.7f))
+                .backgroundColor(item.color)
                 .textColor(Color.WHITE)
         } else {
             modifier
-                .textColor(item.color)
+                .textColor(item.color.mix(Color.WHITE, 0.5f))
         }
     }
 
     private fun TextScope.categoryTitleStyle(item: DemoItem) {
         modifier
-            .background(CategoryBgRenderer(item.category.fromColor, item.category.toColor))
+            .background(TitleBgRenderer(item.category.fromColor, item.category.toColor))
             .textColor(Color.WHITE)
             .font(sizes.largeText)
     }

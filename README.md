@@ -56,7 +56,8 @@ Code for all demos is available in kool-demo sub-project.
 ## Engine Features / Noticeable Stuff:
 
 - Physics simulation (based on Nvidia PhysX 4.1, using [physx-jni](https://github.com/fabmax/physx-jni) on Java and [physx-js-webidl](https://github.com/fabmax/physx-js-webidl) on javascript)
-- Node based dynamic shader generation
+- Kotlin DSL based shader language (translates into GLSL)
+- Neat little integrated GUI framework (the API is heavily inspired by [Jetpack Compose](https://github.com/JetBrains/compose-jb) but the implementation is my own)
 - Vulkan rendering backend (on JVM)
 - Support for physical based rendering (with metallic workflow) and image-based lighting
 - (Almost) complete support for [glTF 2.0](https://github.com/KhronosGroup/glTF) model format (including animations, morph targets and skins)
@@ -69,7 +70,6 @@ Code for all demos is available in kool-demo sub-project.
 - Normal, roughness, metallic, ambient occlusion and displacement mapping
 - Lighting with multiple point, spot and directional lights
 - Shadow mapping for multiple light sources (only spot and directional lights for now)
-- A small GUI framework for simple in-game menus / controls
 - Basic audio support
 
 ## A Hello World Example
@@ -226,8 +226,9 @@ multiplatform approach much easier.
 
 ## Usage
 
-If you are adventurous, you can use kool as a library in your own (multiplatform-)projects. It is published on
-maven central:
+If you are adventurous, you can use kool as a library in your own (multiplatform-)projects. I published a version on
+maven central a while ago, however that's very much outdated. Here is a gradle snippet in case you want to try anyway
+(but I would recommend to clone this project and use one of the demos as starting point):
 
 Gradle setup:
 ```groovy

@@ -2,6 +2,7 @@ package de.fabmax.kool.demo.menu
 
 import de.fabmax.kool.demo.DemoLoader
 import de.fabmax.kool.modules.ui2.*
+import de.fabmax.kool.util.MdColor
 import kotlin.math.sqrt
 
 class DemoMenu(val demoLoader: DemoLoader) {
@@ -64,6 +65,12 @@ class DemoMenu(val demoLoader: DemoLoader) {
             .backgroundColor(colors.background)
 
         NavigationBar()
+        Box {
+            modifier
+                .height(Grow.Std)
+                .width(1.dp)
+                .backgroundColor(MdColor.GREY tone 800)
+        }
         when (content.use()) {
             MenuContent.Demos -> demoList()
             MenuContent.Settings -> settings()

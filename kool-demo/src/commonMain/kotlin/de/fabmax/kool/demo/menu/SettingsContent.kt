@@ -1,6 +1,7 @@
 package de.fabmax.kool.demo.menu
 
 import de.fabmax.kool.modules.ui2.*
+import de.fabmax.kool.util.Color
 
 class SettingsContent(val menu: DemoMenu) : ComposableComponent {
 
@@ -13,8 +14,9 @@ class SettingsContent(val menu: DemoMenu) : ComposableComponent {
             Text("Settings") {
                 itemStyle()
                 modifier
-                    .backgroundColor(colors.accentVariant)
-                    .textColor(colors.onAccent)
+                    .background(TitleBgRenderer(0.75f, 0.95f))
+                    .font(sizes.largeText)
+                    .textColor(Color.WHITE)
             }
 
             Row(width = Grow.Std) {
@@ -60,7 +62,7 @@ class SettingsContent(val menu: DemoMenu) : ComposableComponent {
         modifier
             .width(Grow.Std)
             .height(DemoMenu.itemSize.dp)
-            .padding(horizontal = sizes.gap)
+            .padding(horizontal = sizes.gap * 1.25f)
             .textAlignY(AlignmentY.Center)
     }
 

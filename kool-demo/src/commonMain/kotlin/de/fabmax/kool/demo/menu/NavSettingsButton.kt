@@ -12,6 +12,7 @@ class NavSettingsButton(val menu: DemoMenu) : ComposableComponent {
 
     private val isHovered = mutableStateOf(false)
     private val animator = AnimationState(0.25f)
+    private val tooltipState = MutableTooltipState()
 
     private val gearPoly = makeGearPoly()
 
@@ -53,6 +54,8 @@ class NavSettingsButton(val menu: DemoMenu) : ComposableComponent {
                     menu.content.set(DemoMenu.MenuContent.Settings)
                     animator.start()
                 }
+
+            Tooltip(tooltipState, "Settings")
         }
     }
 

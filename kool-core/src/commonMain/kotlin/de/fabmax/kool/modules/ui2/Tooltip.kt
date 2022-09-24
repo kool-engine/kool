@@ -2,7 +2,7 @@ package de.fabmax.kool.modules.ui2
 
 import de.fabmax.kool.math.MutableVec2f
 
-class MutableTooltipState(val delay: Double = 1.5) : MutableValueState<Boolean>(false), Hoverable {
+class MutableTooltipState(val delay: Double = 1.0) : MutableValueState<Boolean>(false), Hoverable {
     private var enterTime = 0.0
     val pointerPos = MutableVec2f()
 

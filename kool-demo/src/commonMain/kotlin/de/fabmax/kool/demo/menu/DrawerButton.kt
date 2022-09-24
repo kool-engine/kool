@@ -8,6 +8,7 @@ class DrawerButton(val menu: DemoMenu) : ComposableComponent {
 
     private val isHovered = mutableStateOf(false)
     private val animator = AnimationState(0.25f)
+    private val tooltipState = MutableTooltipState()
 
     override fun UiScope.compose() {
         Box {
@@ -22,6 +23,8 @@ class DrawerButton(val menu: DemoMenu) : ComposableComponent {
                     menu.isExpanded = !menu.isExpanded
                     animator.start()
                 }
+
+            Tooltip(tooltipState, "Toggle demo menu")
         }
     }
 

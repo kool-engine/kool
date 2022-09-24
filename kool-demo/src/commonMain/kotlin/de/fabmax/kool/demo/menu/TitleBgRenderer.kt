@@ -17,7 +17,7 @@ import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.util.createUint8Buffer
 
-class CategoryBgRenderer(val fromColor: Float, val toColor: Float) : UiRenderer<UiNode> {
+class TitleBgRenderer(val fromColor: Float, val toColor: Float) : UiRenderer<UiNode> {
 
     override fun renderUi(node: UiNode) {
         val meshLayer = node.surface.getMeshLayer(node.modifier.zLayer + UiSurface.LAYER_BACKGROUND)
