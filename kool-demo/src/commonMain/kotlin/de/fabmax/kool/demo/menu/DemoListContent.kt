@@ -14,17 +14,18 @@ class DemoListContent(val menu: DemoMenu) : ComposableComponent {
 
     init {
         Demos.categories.forEach { cat ->
-            val titleItem = DemoItem(cat.title, cat.colorSet.getColor(0f), true, null)
+            val titleItem = DemoItem(cat.title, cat.getCategoryColor(0f), true, cat, null)
             allDemoItems += titleItem
             if (!cat.isHidden) {
                 nonHiddenDemoItems += titleItem
             }
 
-            cat.entries.forEachIndexed { i, entry ->
+            cat.entries.forEach { entry ->
                 val demoItem = DemoItem(
                     entry.title,
-                    cat.colorSet.getColor((i + 1f) / cat.entries.size),
+                    entry.color,
                     false,
+                    cat,
                     entry
                 )
                 allDemoItems += demoItem
@@ -88,10 +89,10 @@ class DemoListContent(val menu: DemoMenu) : ComposableComponent {
 
     private fun TextScope.categoryTitleStyle(item: DemoItem) {
         modifier
-            .backgroundColor(item.color)
+            .background(CategoryBgRenderer(item.category.fromColor, item.category.toColor))
             .textColor(Color.WHITE)
             .font(sizes.largeText)
     }
 
-    private class DemoItem(val text: String, val color: Color, val isTitle: Boolean, val demo: Demos.Entry?)
+    private class DemoItem(val text: String, val color: Color, val isTitle: Boolean, val category: Demos.Category, val demo: Demos.Entry?)
 }

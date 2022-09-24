@@ -159,7 +159,7 @@ class UiPrimitiveMesh : Mesh(IndexedVertexList(ATTRIB_OUTER_WEIGHTS, ATTRIB_INNE
     }
 
     private class PrimitiveShader : KslShader(Model(), pipelineConfig) {
-        private class Model : KslProgram("UI2 Shader") {
+        private class Model : KslProgram("UI2 primitive shape shader") {
             init {
                 val screenPos = interStageFloat2()
                 val color = interStageFloat4()

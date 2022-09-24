@@ -601,9 +601,10 @@ abstract class InputManager internal constructor() {
         const val CONSUMED_MIDDLE_BUTTON = MIDDLE_BUTTON_MASK
         const val CONSUMED_BACK_BUTTON = BACK_BUTTON_MASK
         const val CONSUMED_FORWARD_BUTTON = FORWARD_BUTTON_MASK
-        const val CONSUMED_SCROLL = 32
-        const val CONSUMED_X = 64
-        const val CONSUMED_Y = 128
+        const val CONSUMED_SCROLL_X = 32
+        const val CONSUMED_SCROLL_Y = 64
+        const val CONSUMED_X = 128
+        const val CONSUMED_Y = 256
 
         const val KEY_EV_UP = 1
         const val KEY_EV_DOWN = 2

@@ -5,6 +5,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.toString
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 
@@ -43,7 +44,7 @@ class Ui2Demo : DemoScene("UI2 Demo") {
     private var imageTex: Texture2d? = null
 
     override suspend fun AssetManager.loadResources(ctx: KoolContext) {
-        imageTex = loadAndPrepareTexture("${DemoLoader.assetStorageBase}/uv_checker_map.png")
+        imageTex = loadAndPrepareTexture("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine.png")
     }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
@@ -98,7 +99,7 @@ class Ui2Demo : DemoScene("UI2 Demo") {
 
     fun UiScope.TestContent(listItems: MutableList<String>) {
         Row {
-            modifier.margin(bottom = sizes.gap)
+            modifier.margin(bottom = sizes.smallGap)
 
             Button("A regular button... clicked: ${clickCnt.use()}") {
                 modifier
@@ -108,7 +109,7 @@ class Ui2Demo : DemoScene("UI2 Demo") {
         }
 
         Row {
-            modifier.margin(bottom = sizes.gap)
+            modifier.margin(bottom = sizes.smallGap)
             Text("UI size:") { modifier.alignY(AlignmentY.Center) }
 
             fun TextScope.sizeButtonLabel(size: Sizes) {
@@ -129,6 +130,19 @@ class Ui2Demo : DemoScene("UI2 Demo") {
         }
 
         Row {
+            modifier.margin(bottom = sizes.smallGap)
+            Text("Global UI Scale:") { modifier.alignY(AlignmentY.Center) }
+            Slider(sliderValue.use(), 0.8f, 2f) {
+                modifier
+                    .margin(sizes.gap)
+                    .orientation(SliderOrientation.Horizontal)
+                    .onChange { sliderValue.set(it) }
+                    .onChangeEnd { UiScale.uiScale.set(it) }
+            }
+            Text(sliderValue.use().toString(2)) { modifier.alignY(AlignmentY.Center) }
+        }
+
+        Row {
             modifier.margin(bottom = sizes.gap)
             Text("Accent color:") { modifier.alignY(AlignmentY.Center).margin(end = sizes.largeGap) }
 
@@ -139,6 +153,43 @@ class Ui2Demo : DemoScene("UI2 Demo") {
                     .items(themeColors.map { it.first })
                     .selectedIndex(selectedColors.use())
                     .onItemSelected { selectedColors.set(it) }
+            }
+        }
+
+        Row {
+            modifier.margin(bottom = sizes.smallGap)
+            Text("Checkbox") { modifier.alignY(AlignmentY.Center) }
+            Checkbox(checkboxState.use()) {
+                modifier.margin(sizes.gap).onToggle { checkboxState.set(it) }
+                Tooltip(checkboxTooltipState, "A simple checkbox")
+            }
+
+            Text("Radio Button") { modifier.alignY(AlignmentY.Center).margin(start = sizes.largeGap) }
+            RadioButton(radioButtonState.use()) {
+                modifier.margin(sizes.gap).onToggle { radioButtonState.set(it) }
+            }
+
+            Text("Switch") { modifier.alignY(AlignmentY.Center).margin(start = sizes.largeGap) }
+            Switch(switchState.use()) {
+                modifier.margin(sizes.gap).onToggle { switchState.set(it) }
+            }
+        }
+
+        Row {
+            modifier.margin(bottom = sizes.smallGap)
+            TextField(text1.use()) {
+                modifier
+                    .width(150.dp)
+                    .hint("A text field")
+                    .onChange { text1.set(it) }
+                    .onEnterPressed { println("typed: $it") }
+            }
+            TextField(text2.use()) {
+                modifier
+                    .width(150.dp)
+                    .hint("Another text field")
+                    .margin(start = sizes.largeGap)
+                    .onChange { text2.set(it) }
             }
         }
 
@@ -156,7 +207,7 @@ class Ui2Demo : DemoScene("UI2 Demo") {
                                 .padding(sizes.smallGap)
                                 .image(imageTex)
                                 .tint(tint)
-                                .imageScale(0.05f)
+                                .imageScale(0.2f)
                         }
                     }
                 }
@@ -214,53 +265,6 @@ class Ui2Demo : DemoScene("UI2 Demo") {
                             listItems.remove(item)
                         }
                 }
-            }
-        }
-
-        Row {
-            Text("Checkbox") { modifier.alignY(AlignmentY.Center) }
-            Checkbox(checkboxState.use()) {
-                modifier.margin(sizes.gap).onToggle { checkboxState.set(it) }
-                Tooltip(checkboxTooltipState, "A simple checkbox")
-            }
-
-            Text("Radio Button") { modifier.alignY(AlignmentY.Center).margin(start = sizes.largeGap) }
-            RadioButton(radioButtonState.use()) {
-                modifier.margin(sizes.gap).onToggle { radioButtonState.set(it) }
-            }
-
-            Text("Switch") { modifier.alignY(AlignmentY.Center).margin(start = sizes.largeGap) }
-            Switch(switchState.use()) {
-                modifier.margin(sizes.gap).onToggle { switchState.set(it) }
-            }
-        }
-
-        Row {
-            Text("Slider") { modifier.alignY(AlignmentY.Center) }
-            Slider(sliderValue.use(), 0.8f, 3f) {
-                modifier
-                    .margin(sizes.gap)
-                    .orientation(SliderOrientation.Horizontal)
-                    .onChange { sliderValue.set(it) }
-                    .onChangeEnd { UiScale.uiScale.set(it) }
-            }
-            Text("UI Scale: ${sliderValue.use()}") { modifier.alignY(AlignmentY.Center) }
-        }
-
-        Row {
-            TextField(text1.use()) {
-                modifier
-                    .width(150.dp)
-                    .hint("A text field")
-                    .onChange { text1.set(it) }
-                    .onEnterPressed { println("typed: $it") }
-            }
-            TextField(text2.use()) {
-                modifier
-                    .width(150.dp)
-                    .hint("Another text field")
-                    .margin(start = sizes.largeGap)
-                    .onChange { text2.set(it) }
             }
         }
     }

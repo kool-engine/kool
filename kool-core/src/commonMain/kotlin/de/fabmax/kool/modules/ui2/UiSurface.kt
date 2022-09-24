@@ -1,5 +1,6 @@
 package de.fabmax.kool.modules.ui2
 
+import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.pipeline.Texture2d
@@ -299,14 +300,17 @@ class UiSurface(
 
                 if (isAnyClick && invokePointerCallback(node, ptrEv, mod.onClick)) {
                     // click was consumed
+                    ptrEv.pointer.consume()
                     isAnyClick = false
                 }
                 if (isWheelX && invokePointerCallback(node, ptrEv, mod.onWheelX)) {
                     // wheel x was consumed
+                    ptrEv.pointer.consume(InputManager.CONSUMED_SCROLL_X)
                     isWheelX = false
                 }
                 if (isWheelY && invokePointerCallback(node, ptrEv, mod.onWheelY)) {
                     // wheel y was consumed
+                    ptrEv.pointer.consume(InputManager.CONSUMED_SCROLL_Y)
                     isWheelY = false
                 }
             }

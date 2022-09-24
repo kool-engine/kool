@@ -333,7 +333,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
                 val gun = physicsObjects.playerController.tractorGun
                 val ptr = ev.ctx.inputMgr.pointerState.primaryPointer
                 if (gun.tractorState == TractorGun.TractorState.TRACTOR) {
-                    ptr.consume(InputManager.CONSUMED_SCROLL)
+                    ptr.consume(InputManager.CONSUMED_SCROLL_Y)
                     if (ctx.inputMgr.isShiftDown) {
                         gun.tractorDistance += ptr.deltaScroll.toFloat() * 0.25f
                     } else {
