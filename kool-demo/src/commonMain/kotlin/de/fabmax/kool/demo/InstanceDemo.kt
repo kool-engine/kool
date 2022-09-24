@@ -43,7 +43,7 @@ class InstanceDemo : DemoScene("Instanced Drawing") {
     )
 
     override suspend fun AssetManager.loadResources(ctx: KoolContext) {
-        model = loadGltfFile("${Demo.modelPath}/bunny.gltf.gz")!!
+        model = loadGltfFile("${DemoLoader.modelPath}/bunny.gltf.gz")!!
     }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {

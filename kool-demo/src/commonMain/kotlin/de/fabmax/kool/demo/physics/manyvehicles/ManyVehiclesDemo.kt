@@ -2,7 +2,7 @@ package de.fabmax.kool.demo.physics.manyvehicles
 
 import de.fabmax.kool.AssetManager
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.demo.Demo
+import de.fabmax.kool.demo.DemoLoader
 import de.fabmax.kool.demo.DemoScene
 import de.fabmax.kool.math.Mat3f
 import de.fabmax.kool.math.Mat4f
@@ -76,7 +76,7 @@ class ManyVehiclesDemo : DemoScene("Many Vehicles") {
 
     override suspend fun AssetManager.loadResources(ctx: KoolContext) {
         showLoadText("Loading IBL maps")
-        ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${Demo.hdriPath}/syferfontein_0d_clear_1k.rgbe.png", this)
+        ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${DemoLoader.hdriPath}/syferfontein_0d_clear_1k.rgbe.png", this)
         mainScene += Skybox.cube(ibl.reflectionMap, 1f)
         Physics.awaitLoaded()
 
@@ -153,8 +153,8 @@ class ManyVehiclesDemo : DemoScene("Many Vehicles") {
     }
 
     private fun Group.makeGround() {
-        val groundAlbedo = Texture2d("${Demo.materialPath}/tile_flat/tiles_flat_fine.png")
-        val groundNormal = Texture2d("${Demo.materialPath}/tile_flat/tiles_flat_fine_normal.png")
+        val groundAlbedo = Texture2d("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine.png")
+        val groundNormal = Texture2d("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine_normal.png")
         onDispose += {
             groundAlbedo.dispose()
             groundNormal.dispose()

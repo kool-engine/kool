@@ -71,7 +71,7 @@ fun Scene.helloGltfScene(ctx: KoolContext) {
                 scrSpcAmbientOcclusionMap = aoPipeline.aoMap
         )
         val modelCfg = GltfFile.ModelGenerateConfig(materialConfig = materialCfg)
-        loadGltfModel("${Demo.modelPath}/BoxAnimated.gltf", modelCfg)?.let { model ->
+        loadGltfModel("${DemoLoader.modelPath}/BoxAnimated.gltf", modelCfg)?.let { model ->
             +model
             model.translate(0f, 0.5f, 0f)
 

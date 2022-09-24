@@ -56,9 +56,9 @@ class SimplificationDemo : DemoScene("Simplification") {
 
     override fun lateInit(ctx: KoolContext) {
         ctx.assetMgr.launch {
-            loadModel("${Demo.modelPath}/bunny.gltf.gz", 1f, Vec3f(0f, -3f, 0f))
-            loadModel("${Demo.modelPath}/cow.gltf.gz", 1f, Vec3f.ZERO)
-            loadModel("${Demo.modelPath}/teapot.gltf.gz", 1f, Vec3f(0f, -1.5f, 0f))
+            loadModel("${DemoLoader.modelPath}/bunny.gltf.gz", 1f, Vec3f(0f, -3f, 0f))
+            loadModel("${DemoLoader.modelPath}/cow.gltf.gz", 1f, Vec3f.ZERO)
+            loadModel("${DemoLoader.modelPath}/teapot.gltf.gz", 1f, Vec3f(0f, -1.5f, 0f))
         }
         simplify()
     }

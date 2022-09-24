@@ -3,7 +3,7 @@ package de.fabmax.kool.demo.physics.terrain
 import de.fabmax.kool.AssetManager
 import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.demo.Demo
+import de.fabmax.kool.demo.DemoLoader
 import de.fabmax.kool.demo.DemoScene
 import de.fabmax.kool.demo.controlUi
 import de.fabmax.kool.math.Vec2f
@@ -67,21 +67,21 @@ class TerrainDemo : DemoScene("Terrain Demo") {
 
     override suspend fun AssetManager.loadResources(ctx: KoolContext) {
         showLoadText("Loading height map...")
-        val heightMap = HeightMap.fromRawData(loadAsset("${Demo.heightMapPath}/terrain_ocean.raw")!!, 200f, heightOffset = -50f)
+        val heightMap = HeightMap.fromRawData(loadAsset("${DemoLoader.heightMapPath}/terrain_ocean.raw")!!, 200f, heightOffset = -50f)
         // more or less the same, but falls back to 8-bit height-resolution in javascript
         //heightMap = HeightMap.fromTextureData2d(loadTextureData2d("${Demo.heightMapPath}/terrain.png", TexFormat.R_F16), 200f)
 
         showLoadText("Loading textures...")
-        colorMap = loadAndPrepareTexture("${Demo.materialPath}/tile_flat/tiles_flat_fine.png")
-        normalMap = loadAndPrepareTexture("${Demo.materialPath}/tile_flat/tiles_flat_fine_normal.png")
-        oceanBump = loadAndPrepareTexture("${Demo.materialPath}/ocean-bump-1k.jpg")
-        val moonTex = loadAndPrepareTexture("${Demo.materialPath}/moon-blueish.png")
+        colorMap = loadAndPrepareTexture("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine.png")
+        normalMap = loadAndPrepareTexture("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine_normal.png")
+        oceanBump = loadAndPrepareTexture("${DemoLoader.materialPath}/ocean-bump-1k.jpg")
+        val moonTex = loadAndPrepareTexture("${DemoLoader.materialPath}/moon-blueish.png")
 
         val grassProps = TextureProps(
             addressModeU = AddressMode.CLAMP_TO_EDGE,
             addressModeV = AddressMode.CLAMP_TO_EDGE
         )
-        grassColor = loadAndPrepareTexture("${Demo.materialPath}/grass_64.png", grassProps)
+        grassColor = loadAndPrepareTexture("${DemoLoader.materialPath}/grass_64.png", grassProps)
 
         showLoadText("Generating wind density texture...")
         wind = Wind()
@@ -107,7 +107,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         bridgeMesh = makeBridgeMesh()
 
         showLoadText("Loading player model...")
-        val playerGltf = loadGltfModel("${Demo.modelPath}/player.glb") ?: throw IllegalStateException("Failed loading model")
+        val playerGltf = loadGltfModel("${DemoLoader.modelPath}/player.glb") ?: throw IllegalStateException("Failed loading model")
         playerModel = PlayerModel(playerGltf, physicsObjects.playerController)
 
         escKeyListener = ctx.inputMgr.registerKeyListener(InputManager.KEY_ESC, "Exit cursor lock") {

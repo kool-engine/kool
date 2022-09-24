@@ -1,6 +1,6 @@
 package de.fabmax.kool.demo.procedural
 
-import de.fabmax.kool.demo.Demo
+import de.fabmax.kool.demo.DemoLoader
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.deferred.deferredPbrShader
@@ -24,9 +24,9 @@ class Table : Mesh(IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS, Att
         }
 
         shader = deferredPbrShader {
-            useAlbedoMap("${Demo.materialPath}/granitesmooth1/granitesmooth1-albedo4.jpg")
-            useNormalMap("${Demo.materialPath}/granitesmooth1/granitesmooth1-normal2.jpg")
-            useRoughnessMap("${Demo.materialPath}/granitesmooth1/granitesmooth1-roughness3.jpg")
+            useAlbedoMap("${DemoLoader.materialPath}/granitesmooth1/granitesmooth1-albedo4.jpg")
+            useNormalMap("${DemoLoader.materialPath}/granitesmooth1/granitesmooth1-normal2.jpg")
+            useRoughnessMap("${DemoLoader.materialPath}/granitesmooth1/granitesmooth1-roughness3.jpg")
         }
     }
 

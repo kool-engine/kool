@@ -2,7 +2,7 @@ package de.fabmax.kool.demo.procedural
 
 import de.fabmax.kool.AssetManager
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.demo.Demo
+import de.fabmax.kool.demo.DemoLoader
 import de.fabmax.kool.demo.DemoScene
 import de.fabmax.kool.demo.controlUi
 import de.fabmax.kool.math.Vec3f
@@ -28,7 +28,7 @@ class ProceduralDemo : DemoScene("Procedural Geometry") {
     lateinit var ibl: EnvironmentMaps
 
     override suspend fun AssetManager.loadResources(ctx: KoolContext) {
-        ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${Demo.hdriPath}/syferfontein_0d_clear_1k.rgbe.png", this)
+        ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${DemoLoader.hdriPath}/syferfontein_0d_clear_1k.rgbe.png", this)
     }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {

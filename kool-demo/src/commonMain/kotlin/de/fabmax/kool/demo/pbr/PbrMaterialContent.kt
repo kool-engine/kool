@@ -2,7 +2,7 @@ package de.fabmax.kool.demo.pbr
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.Cycler
-import de.fabmax.kool.demo.Demo
+import de.fabmax.kool.demo.DemoLoader
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.SingleColorTexture
 import de.fabmax.kool.pipeline.Texture2d
@@ -178,7 +178,7 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrCont
         private val defaultAoTex = SingleColorTexture(Color.WHITE)
         private val defaultDispTex = SingleColorTexture(Color.BLACK)
 
-        private val assetPath = Demo.materialPath
+        private val assetPath = DemoLoader.materialPath
         
         private val materials = mutableListOf(
                 MaterialMaps(

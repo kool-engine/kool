@@ -3,7 +3,7 @@ package de.fabmax.kool.demo.pbr
 import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.Cycler
-import de.fabmax.kool.demo.Demo
+import de.fabmax.kool.demo.DemoLoader
 import de.fabmax.kool.demo.DemoScene
 import de.fabmax.kool.demo.controlUi
 import de.fabmax.kool.math.Vec3f
@@ -203,11 +203,11 @@ class PbrDemo : DemoScene("PBR Materials") {
                 maxAnisotropy = 1)
 
         private val hdriTextures = listOf(
-                Hdri("${Demo.hdriPath}/syferfontein_0d_clear_1k.rgbe.png", "South Africa"),
-                Hdri("${Demo.hdriPath}/circus_arena_1k.rgbe.png", "Circus"),
-                Hdri("${Demo.hdriPath}/newport_loft.rgbe.png", "Loft"),
-                Hdri("${Demo.hdriPath}/shanghai_bund_1k.rgbe.png", "Shanghai"),
-                Hdri("${Demo.hdriPath}/mossy_forest_1k.rgbe.png", "Mossy Forest")
+                Hdri("${DemoLoader.hdriPath}/syferfontein_0d_clear_1k.rgbe.png", "South Africa"),
+                Hdri("${DemoLoader.hdriPath}/circus_arena_1k.rgbe.png", "Circus"),
+                Hdri("${DemoLoader.hdriPath}/newport_loft.rgbe.png", "Loft"),
+                Hdri("${DemoLoader.hdriPath}/shanghai_bund_1k.rgbe.png", "Shanghai"),
+                Hdri("${DemoLoader.hdriPath}/mossy_forest_1k.rgbe.png", "Mossy Forest")
         )
 
         private const val lightStrength = 250f
