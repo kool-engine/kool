@@ -3,7 +3,7 @@ package de.fabmax.kool.demo.physics.collision
 import de.fabmax.kool.AssetManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.Cycler
-import de.fabmax.kool.demo.Demo
+import de.fabmax.kool.demo.DemoLoader
 import de.fabmax.kool.demo.DemoScene
 import de.fabmax.kool.demo.controlUi
 import de.fabmax.kool.math.*
@@ -47,10 +47,10 @@ class CollisionDemo : DemoScene("Physics - Collision") {
     private val shapeGenCtx = ShapeType.ShapeGeneratorContext()
 
     override suspend fun AssetManager.loadResources(ctx: KoolContext) {
-        ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${Demo.hdriPath}/colorful_studio_1k.rgbe.png", this)
+        ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${DemoLoader.hdriPath}/colorful_studio_1k.rgbe.png", this)
 
-        groundAlbedo = loadAndPrepareTexture("${Demo.materialPath}/tile_flat/tiles_flat_fine.png")
-        groundNormal = loadAndPrepareTexture("${Demo.materialPath}/tile_flat/tiles_flat_fine_normal.png")
+        groundAlbedo = loadAndPrepareTexture("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine.png")
+        groundNormal = loadAndPrepareTexture("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine_normal.png")
 
         Physics.awaitLoaded()
         this@CollisionDemo.physicsWorld = PhysicsWorld().apply {

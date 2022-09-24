@@ -1,7 +1,7 @@
 package de.fabmax.kool.demo.physics.vehicle
 
 import de.fabmax.kool.AssetManager
-import de.fabmax.kool.demo.Demo
+import de.fabmax.kool.demo.DemoLoader
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.math.randomI
 import de.fabmax.kool.modules.audio.*
@@ -45,15 +45,15 @@ class VehicleAudio(physicsWorld: PhysicsWorld) {
     suspend fun loadAudio(assetMgr: AssetManager) {
         assetMgr.apply {
             for (i in 1..5) {
-                crashSounds += loadAudioClip("${Demo.soundPath}/car/crash$i.wav")
+                crashSounds += loadAudioClip("${DemoLoader.soundPath}/car/crash$i.wav")
             }
 
-            val idle1 = WavNode(WavFile(loadAsset("${Demo.soundPath}/car/rpm_idle1.wav")!!))
-            val idle2 = WavNode(WavFile(loadAsset("${Demo.soundPath}/car/rpm_idle2.wav")!!))
+            val idle1 = WavNode(WavFile(loadAsset("${DemoLoader.soundPath}/car/rpm_idle1.wav")!!))
+            val idle2 = WavNode(WavFile(loadAsset("${DemoLoader.soundPath}/car/rpm_idle2.wav")!!))
             val idleMix = ModulateNode(idle1, idle2).apply { gain = 1.5f }
 
-            val mid1 = WavNode(WavFile(loadAsset("${Demo.soundPath}/car/rpm_mid1.wav")!!))
-            val mid2 = WavNode(WavFile(loadAsset("${Demo.soundPath}/car/rpm_mid2.wav")!!))
+            val mid1 = WavNode(WavFile(loadAsset("${DemoLoader.soundPath}/car/rpm_mid1.wav")!!))
+            val mid2 = WavNode(WavFile(loadAsset("${DemoLoader.soundPath}/car/rpm_mid2.wav")!!))
             val midMix = ModulateNode(mid1, mid2).apply {
                 gainAmpliMod1 = 0.2f
                 gainAmpliMod2 = 0.2f
@@ -63,8 +63,8 @@ class VehicleAudio(physicsWorld: PhysicsWorld) {
                 speedAmpliMod2 = 0.015f
             }
 
-            val high1 = WavNode(WavFile(loadAsset("${Demo.soundPath}/car/rpm_high1.wav")!!))
-            val high2 = WavNode(WavFile(loadAsset("${Demo.soundPath}/car/rpm_high2.wav")!!)).apply { speed = 1.05f }
+            val high1 = WavNode(WavFile(loadAsset("${DemoLoader.soundPath}/car/rpm_high1.wav")!!))
+            val high2 = WavNode(WavFile(loadAsset("${DemoLoader.soundPath}/car/rpm_high2.wav")!!)).apply { speed = 1.05f }
             val highMix = ModulateNode(high1, high2).apply {
                 gainAmpliMod1 = 0.2f
                 gainAmpliMod2 = 0.2f
@@ -76,11 +76,11 @@ class VehicleAudio(physicsWorld: PhysicsWorld) {
 
             rpmMix = RpmMixNode(idleMix, midMix, highMix)
 
-            val squeal1 = WavNode(WavFile(loadAsset("${Demo.soundPath}/car/squeal1.wav")!!))
-            val squeal2 = WavNode(WavFile(loadAsset("${Demo.soundPath}/car/squeal2.wav")!!))
+            val squeal1 = WavNode(WavFile(loadAsset("${DemoLoader.soundPath}/car/squeal1.wav")!!))
+            val squeal2 = WavNode(WavFile(loadAsset("${DemoLoader.soundPath}/car/squeal2.wav")!!))
             squealMix = SquealModulateNode(squeal1, squeal2)
 
-            gearShiftNode = WavNode(WavFile(loadAsset("${Demo.soundPath}/car/gear_shift.wav")!!)).apply { loop = false }
+            gearShiftNode = WavNode(WavFile(loadAsset("${DemoLoader.soundPath}/car/gear_shift.wav")!!)).apply { loop = false }
 
             rpmMix.gain = 0.7f
             squealMix.gain = 0.5f

@@ -1,7 +1,7 @@
 package de.fabmax.kool.demo.physics.ragdoll
 
 import de.fabmax.kool.*
-import de.fabmax.kool.demo.Demo
+import de.fabmax.kool.demo.DemoLoader
 import de.fabmax.kool.demo.DemoScene
 import de.fabmax.kool.demo.controlUi
 import de.fabmax.kool.math.*
@@ -60,7 +60,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
             setDefaultDepthOffset(true)
             shadowBounds = BoundingBox(Vec3f(-20f, 0f, -20f), Vec3f(20f, 10f, 20f))
         }
-        ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${Demo.hdriPath}/colorful_studio_1k.rgbe.png", this)
+        ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${DemoLoader.hdriPath}/colorful_studio_1k.rgbe.png", this)
         mainScene += Skybox.cube(ibl.reflectionMap, 1f)
 
         Physics.awaitLoaded()
@@ -92,8 +92,8 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
         ground.setRotation(0f, 0f, 90f)
         physicsWorld.addActor(ground)
 
-        val groundAlbedo = loadAndPrepareTexture("${Demo.materialPath}/tile_flat/tiles_flat_fine.png")
-        val groundNormal = loadAndPrepareTexture("${Demo.materialPath}/tile_flat/tiles_flat_fine_normal.png")
+        val groundAlbedo = loadAndPrepareTexture("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine.png")
+        val groundNormal = loadAndPrepareTexture("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine_normal.png")
 
         mainScene += textureMesh(isNormalMapped = true) {
             isCastingShadow = false

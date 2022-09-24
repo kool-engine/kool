@@ -80,7 +80,7 @@ class CharacterTrackingCamRig(private val inputManager: InputManager, enableCurs
         lookDirection.z = sin(lookTheta) * sin(lookPhi)
         lookDirection.y = cos(lookTheta)
 
-        if (!ptr.isConsumed(InputManager.CONSUMED_SCROLL)) {
+        if (!ptr.isConsumed(InputManager.CONSUMED_SCROLL_Y)) {
             zoom *= 1f - inputManager.pointerState.primaryPointer.deltaScroll.toFloat() / 10f
             zoom = zoom.clamp(minZoom, maxZoom)
         }

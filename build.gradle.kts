@@ -4,7 +4,7 @@ plugins {
 
 allprojects {
     group = "de.fabmax.kool"
-    version = "0.9.3-SNAPSHOT"
+    version = "0.10.0-SNAPSHOT"
 
     repositories {
         mavenCentral()

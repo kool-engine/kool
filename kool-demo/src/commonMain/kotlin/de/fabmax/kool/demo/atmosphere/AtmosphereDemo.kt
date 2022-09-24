@@ -3,7 +3,7 @@ package de.fabmax.kool.demo.atmosphere
 import de.fabmax.kool.AssetManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.ControlUiBuilder
-import de.fabmax.kool.demo.Demo
+import de.fabmax.kool.demo.DemoLoader
 import de.fabmax.kool.demo.DemoScene
 import de.fabmax.kool.demo.controlUi
 import de.fabmax.kool.math.MutableVec3f
@@ -60,17 +60,17 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
         }
 
     override suspend fun AssetManager.loadResources(ctx: KoolContext) {
-        loadTex(texMilkyway, "${Demo.assetStorageBase}/solarsystem/stars_bg.jpg")
-        loadTex(texSun, "${Demo.assetStorageBase}/solarsystem/sun.png")
-        loadTex(texSunBg, "${Demo.assetStorageBase}/solarsystem/sun_bg.png")
-        loadTex(texMoon, "${Demo.assetStorageBase}/solarsystem/moon.jpg")
+        loadTex(texMilkyway, "${DemoLoader.assetStorageBase}/solarsystem/stars_bg.jpg")
+        loadTex(texSun, "${DemoLoader.assetStorageBase}/solarsystem/sun.png")
+        loadTex(texSunBg, "${DemoLoader.assetStorageBase}/solarsystem/sun_bg.png")
+        loadTex(texMoon, "${DemoLoader.assetStorageBase}/solarsystem/moon.jpg")
 
-        loadTex(EarthShader.texEarthDay, "${Demo.assetStorageBase}/solarsystem/earth_day.jpg")
-        loadTex(EarthShader.texEarthNight, "${Demo.assetStorageBase}/solarsystem/earth_night.jpg")
-        loadTex(EarthShader.texEarthNrm, "${Demo.assetStorageBase}/solarsystem/earth_nrm.jpg")
-        loadTex(EarthShader.texOceanNrm, "${Demo.assetStorageBase}/solarsystem/oceanNrm.jpg")
+        loadTex(EarthShader.texEarthDay, "${DemoLoader.assetStorageBase}/solarsystem/earth_day.jpg")
+        loadTex(EarthShader.texEarthNight, "${DemoLoader.assetStorageBase}/solarsystem/earth_night.jpg")
+        loadTex(EarthShader.texEarthNrm, "${DemoLoader.assetStorageBase}/solarsystem/earth_nrm.jpg")
+        loadTex(EarthShader.texOceanNrm, "${DemoLoader.assetStorageBase}/solarsystem/oceanNrm.jpg")
         val heightMapProps = TextureProps(TexFormat.R, AddressMode.CLAMP_TO_EDGE, AddressMode.CLAMP_TO_EDGE, AddressMode.CLAMP_TO_EDGE)
-        loadTex(EarthShader.texEarthHeight, "${Demo.assetStorageBase}/solarsystem/earth_height_8k.png", heightMapProps)
+        loadTex(EarthShader.texEarthHeight, "${DemoLoader.assetStorageBase}/solarsystem/earth_height_8k.png", heightMapProps)
     }
 
     override fun lateInit(ctx: KoolContext) {

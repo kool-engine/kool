@@ -3,6 +3,7 @@ package de.fabmax.kool.scene.ui
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.pipeline.*
+import kotlin.math.max
 import kotlin.math.round
 
 /**
@@ -46,7 +47,6 @@ class Font(val fontProps: FontProps) {
     fun textWidth(string: String): Float {
         var width = 0f
         var maxWidth = 0f
-
         for (i in string.indices) {
             val c = string[i]
             width += charWidth(c)
@@ -60,9 +60,44 @@ class Font(val fontProps: FontProps) {
         return maxWidth
     }
 
+    fun textDimensions(string: String, ctx: KoolContext, result: TextMetrics = TextMetrics()): TextMetrics {
+        var lineWidth = 0f
+        result.width = 0f
+        result.height = 0f
+        result.yBaseline = 0f
+        result.numLines = 1
+
+        val map = getOrInitCharMap(ctx)
+        for (i in string.indices) {
+            val c = string[i]
+
+            if (c == '\n') {
+                result.width = max(result.width, lineWidth)
+                result.height += lineSpace
+                result.numLines++
+                lineWidth = 0f
+
+            } else {
+                val metrics = map[c] ?: continue
+                lineWidth += metrics.advance
+                if (i == 0) {
+                    result.height = metrics.height
+                    result.yBaseline = metrics.yBaseline
+                }
+            }
+        }
+        result.width = max(result.width, lineWidth)
+        return result
+    }
+
     fun charWidth(char: Char): Float {
         val cm = charMap ?: throw IllegalStateException("Font char map has not yet been initialized")
-        return cm.get(char)?.advance ?: 0f
+        return cm[char]?.advance ?: 0f
+    }
+
+    fun charHeight(char: Char): Float {
+        val cm = charMap ?: throw IllegalStateException("Font char map has not yet been initialized")
+        return cm[char]?.height ?: 0f
     }
 
     override fun toString(): String {
@@ -91,6 +126,13 @@ class Font(val fontProps: FontProps) {
             DEFAULT_FONT = Font(DEFAULT_FONT_PROPS)
         }
     }
+}
+
+class TextMetrics {
+    var width = 0f
+    var height = 0f
+    var yBaseline = 0f
+    var numLines = 0
 }
 
 class CharMetrics {
@@ -132,10 +174,13 @@ class CharMap internal constructor(val fontProps: FontProps, private val map: Mu
     var normHeight = fontProps.sizePts * 0.7f
         private set
 
+    var scale = 1f
+
     val isInitialized: Boolean
         get() = textureData != null
 
     fun applyScale(scale: Float) {
+        this.scale = scale
         lineSpace = round(fontProps.sizePts * 1.2f * scale)
         normHeight = fontProps.sizePts * 0.7f * scale
     }

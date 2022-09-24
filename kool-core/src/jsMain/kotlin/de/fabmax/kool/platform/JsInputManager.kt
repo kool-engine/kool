@@ -20,6 +20,19 @@ class JsInputManager(private val canvas: HTMLCanvasElement, private val props: J
         get() = pointerLockState.cursorMode
         set(value) { pointerLockState.cursorMode = value }
 
+    override var cursorShape: CursorShape = CursorShape.DEFAULT
+        set(value) {
+            field = value
+            canvas.style.cursor = when (value) {
+                CursorShape.DEFAULT -> "default"
+                CursorShape.TEXT -> "text"
+                CursorShape.CROSSHAIR -> "crosshair"
+                CursorShape.HAND -> "pointer"
+                CursorShape.H_RESIZE -> "e-resize"
+                CursorShape.V_RESIZE -> "n-resize"
+            }
+        }
+
     init {
         installInputHandlers()
     }
@@ -54,14 +67,15 @@ class JsInputManager(private val canvas: HTMLCanvasElement, private val props: J
         }
         canvas.onmouseleave = { handleMouseExit() }
         canvas.onwheel = { ev ->
-            // scroll amount is browser dependent, try to norm it to roughly 1.0 ticks per mouse
-            // scroll wheel tick
-            var ticks = -ev.deltaY.toFloat() / 3.0
+            // scroll amount is browser dependent, try to norm it to roughly 1.0 ticks per mouse scroll wheel tick
+            var yTicks = -ev.deltaY.toFloat() / 3.0
+            var xTicks = -ev.deltaX.toFloat() / 3.0
             if (ev.deltaMode == 0) {
                 // scroll delta is specified in pixels...
-                ticks /= 30.0
+                yTicks /= 30.0
+                xTicks /= 30.0
             }
-            handleMouseScroll(ticks)
+            handleMouseScroll(xTicks, yTicks)
             ev.preventDefault()
         }
 
@@ -108,8 +122,8 @@ class JsInputManager(private val canvas: HTMLCanvasElement, private val props: J
     private fun handleKeyDown(ev: KeyboardEvent) {
         val keyCode = ev.toKeyCode()
         val localKeyCode = ev.toLocalKeyCode()
+        var mods = 0
         if (keyCode.code != 0 || localKeyCode.code != 0) {
-            var mods = 0
             if (ev.altKey) { mods = mods or KEY_MOD_ALT }
             if (ev.ctrlKey) { mods = mods or KEY_MOD_CTRL }
             if (ev.shiftKey) { mods = mods or KEY_MOD_SHIFT }
@@ -121,7 +135,7 @@ class JsInputManager(private val canvas: HTMLCanvasElement, private val props: J
             }
             keyEvent(KeyEvent(keyCode, localKeyCode, event, mods))
         }
-        if (ev.key.length == 1) {
+        if (ev.key.length == 1 && mods == 0) {
             charTyped(ev.key[0])
         }
 

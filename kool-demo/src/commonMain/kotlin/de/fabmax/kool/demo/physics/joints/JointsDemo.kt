@@ -2,7 +2,7 @@ package de.fabmax.kool.demo.physics.joints
 
 import de.fabmax.kool.AssetManager
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.demo.Demo
+import de.fabmax.kool.demo.DemoLoader
 import de.fabmax.kool.demo.DemoScene
 import de.fabmax.kool.demo.controlUi
 import de.fabmax.kool.math.*
@@ -62,7 +62,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
     private val material = Material(0.5f)
 
     override suspend fun AssetManager.loadResources(ctx: KoolContext) {
-        ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${Demo.hdriPath}/colorful_studio_1k.rgbe.png", this)
+        ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${DemoLoader.hdriPath}/colorful_studio_1k.rgbe.png", this)
 
         Physics.awaitLoaded()
         val world = PhysicsWorld()
@@ -72,8 +72,8 @@ class JointsDemo : DemoScene("Physics - Joints") {
         constraintInfo = ConstraintsInfoMesh().apply { isVisible = false }
         mainScene += constraintInfo
 
-        groundAlbedo = loadAndPrepareTexture("${Demo.materialPath}/tile_flat/tiles_flat_fine.png")
-        groundNormal = loadAndPrepareTexture("${Demo.materialPath}/tile_flat/tiles_flat_fine_normal.png")
+        groundAlbedo = loadAndPrepareTexture("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine.png")
+        groundNormal = loadAndPrepareTexture("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine_normal.png")
 
         world.registerHandlers(mainScene)
     }

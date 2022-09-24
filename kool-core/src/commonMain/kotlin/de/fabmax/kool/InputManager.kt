@@ -16,6 +16,7 @@ abstract class InputManager internal constructor() {
     private val keyHandlers = mutableMapOf<KeyCode, MutableList<KeyEventListener>>()
 
     abstract var cursorMode: CursorMode
+    abstract var cursorShape: CursorShape
 
     val pointerState = PointerState()
 
@@ -112,7 +113,7 @@ abstract class InputManager internal constructor() {
 
     fun handleMouseButtonStates(mask: Int) = pointerState.handleMouseButtonStates(mask)
 
-    fun handleMouseScroll(ticks: Double) = pointerState.handleMouseScroll(ticks)
+    fun handleMouseScroll(xTicks: Double, yTicks: Double) = pointerState.handleMouseScroll(xTicks, yTicks)
 
     fun handleMouseExit() = pointerState.handleMouseExit()
 
@@ -133,8 +134,14 @@ abstract class InputManager internal constructor() {
             internal set
         var dragDeltaY = 0.0
             internal set
-        var deltaScroll = 0.0
+
+        var deltaScrollY = 0.0
             internal set
+        var deltaScrollX = 0.0
+            internal set
+
+        val deltaScroll: Double
+            get() = deltaScrollY
 
         var buttonMask = 0
             internal set(value) {
@@ -154,12 +161,14 @@ abstract class InputManager internal constructor() {
         internal var consumptionMask = 0
         internal var dragMovement = 0.0
 
+        val isAnyButtonDown: Boolean get() = buttonMask != 0
         val isLeftButtonDown: Boolean get() = (buttonMask and LEFT_BUTTON_MASK) != 0
         val isRightButtonDown: Boolean get() = (buttonMask and RIGHT_BUTTON_MASK) != 0
         val isMiddleButtonDown: Boolean get() = (buttonMask and MIDDLE_BUTTON_MASK) != 0
         val isBackButtonDown: Boolean get() = (buttonMask and BACK_BUTTON_MASK) != 0
         val isForwardButtonDown: Boolean get() = (buttonMask and FORWARD_BUTTON_MASK) != 0
 
+        val isAnyButtonEvent: Boolean get() = buttonEventMask != 0
         val isLeftButtonEvent: Boolean get() = (buttonEventMask and LEFT_BUTTON_MASK) != 0
         val isRightButtonEvent: Boolean get() = (buttonEventMask and RIGHT_BUTTON_MASK) != 0
         val isMiddleButtonEvent: Boolean get() = (buttonEventMask and MIDDLE_BUTTON_MASK) != 0
@@ -188,6 +197,8 @@ abstract class InputManager internal constructor() {
                 && now() - buttonDownTimes[3] < MAX_CLICK_TIME_MS && dragMovement < MAX_CLICK_MOVE_PX
         val isForwardButtonClicked: Boolean get() = isForwardButtonReleased
                 && now() - buttonDownTimes[4] < MAX_CLICK_TIME_MS && dragMovement < MAX_CLICK_MOVE_PX
+
+        val isDrag: Boolean get() = isAnyButtonDown && (dragDeltaX != 0.0 || dragDeltaY != 0.0)
 
         fun consume(mask: Int = CONSUMED_ALL) {
             consumptionMask = consumptionMask or mask
@@ -239,13 +250,14 @@ abstract class InputManager internal constructor() {
             dragDeltaX = 0.0
             dragDeltaY = 0.0
             dragMovement = 0.0
-            deltaScroll = 0.0
+            deltaScrollX = 0.0
+            deltaScrollY = 0.0
             updateState = UpdateState.STARTED
             isValid = true
         }
 
         fun movePointer(x: Double, y: Double) {
-            if (buttonMask != 0) {
+            if (isAnyButtonDown) {
                 dragDeltaX += x - this.x
                 dragDeltaY += y - this.y
                 dragMovement += abs(x - this.x) + abs(y - this.y)
@@ -271,7 +283,8 @@ abstract class InputManager internal constructor() {
             buttonEventMask = 0
             deltaX = 0.0
             deltaY = 0.0
-            deltaScroll = 0.0
+            deltaScrollX = 0.0
+            deltaScrollY = 0.0
             dragDeltaX = 0.0
             dragDeltaY = 0.0
             dragMovement = 0.0
@@ -291,7 +304,8 @@ abstract class InputManager internal constructor() {
             target.dragDeltaX = dragDeltaX
             target.dragDeltaY = dragDeltaY
             target.dragMovement = dragMovement
-            target.deltaScroll = deltaScroll
+            target.deltaScrollX = deltaScrollX
+            target.deltaScrollY = deltaScrollY
             target.x = x
             target.y = y
             target.isValid = true
@@ -312,7 +326,8 @@ abstract class InputManager internal constructor() {
 
             deltaX = 0.0
             deltaY = 0.0
-            deltaScroll = 0.0
+            deltaScrollX = 0.0
+            deltaScrollY = 0.0
             buttonEventMask = 0
 
             processedState = updateState
@@ -423,7 +438,7 @@ abstract class InputManager internal constructor() {
                     TouchGestureEvaluator.PINCH -> {
                         // set primary pointer deltaScroll for compatibility with mouse input
                         primaryPointer.consumptionMask = 0
-                        primaryPointer.deltaScroll = compatGestureEvaluator.currentGesture.dPinchAmount / 20.0
+                        primaryPointer.deltaScrollY = compatGestureEvaluator.currentGesture.dPinchAmount / 20.0
                         primaryPointer.x = compatGestureEvaluator.currentGesture.centerCurrent.x
                         primaryPointer.y = compatGestureEvaluator.currentGesture.centerCurrent.y
                         primaryPointer.deltaX = compatGestureEvaluator.currentGesture.dCenter.x
@@ -532,10 +547,11 @@ abstract class InputManager internal constructor() {
             }
         }
 
-        internal fun handleMouseScroll(ticks: Double) {
+        internal fun handleMouseScroll(xTicks: Double, yTicks: Double) {
             lock(inputPointers) {
                 val ptr = findInputPointer(MOUSE_POINTER_ID) ?: return
-                ptr.deltaScroll += ticks
+                ptr.deltaScrollX += xTicks
+                ptr.deltaScrollY += yTicks
             }
         }
 
@@ -549,6 +565,15 @@ abstract class InputManager internal constructor() {
     enum class CursorMode {
         NORMAL,
         LOCKED
+    }
+
+    enum class CursorShape {
+        DEFAULT,
+        TEXT,
+        CROSSHAIR,
+        HAND,
+        H_RESIZE,
+        V_RESIZE
     }
 
     companion object {
@@ -576,9 +601,10 @@ abstract class InputManager internal constructor() {
         const val CONSUMED_MIDDLE_BUTTON = MIDDLE_BUTTON_MASK
         const val CONSUMED_BACK_BUTTON = BACK_BUTTON_MASK
         const val CONSUMED_FORWARD_BUTTON = FORWARD_BUTTON_MASK
-        const val CONSUMED_SCROLL = 32
-        const val CONSUMED_X = 64
-        const val CONSUMED_Y = 128
+        const val CONSUMED_SCROLL_X = 32
+        const val CONSUMED_SCROLL_Y = 64
+        const val CONSUMED_X = 128
+        const val CONSUMED_Y = 256
 
         const val KEY_EV_UP = 1
         const val KEY_EV_DOWN = 2

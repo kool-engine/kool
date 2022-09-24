@@ -5,6 +5,9 @@ package de.fabmax.kool.modules.ksl.lang
 val KslVectorExpression<KslTypeFloat4, KslTypeFloat1>.xy get() = float2("xy")
 val KslVectorExpression<KslTypeFloat4, KslTypeFloat1>.xz get() = float2("xz")
 val KslVectorExpression<KslTypeFloat4, KslTypeFloat1>.yz get() = float2("xz")
+val KslVectorExpression<KslTypeFloat4, KslTypeFloat1>.xw get() = float2("xw")
+val KslVectorExpression<KslTypeFloat4, KslTypeFloat1>.yw get() = float2("yw")
+val KslVectorExpression<KslTypeFloat4, KslTypeFloat1>.zw get() = float2("zw")
 
 val KslVectorExpression<KslTypeFloat4, KslTypeFloat1>.rg get() = float2("rg")
 val KslVectorExpression<KslTypeFloat4, KslTypeFloat1>.rb get() = float2("rb")

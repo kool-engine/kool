@@ -9,6 +9,7 @@ import org.lwjgl.glfw.GLFW.*
 class JvmInputManager(private val windowHandle: Long, private val ctx: Lwjgl3Context) : InputManager() {
 
     private val localCharKeyCodes = mutableMapOf<Int, Int>()
+    private val cursorShapes = mutableMapOf<CursorShape, Long>()
 
     override var cursorMode: CursorMode = CursorMode.NORMAL
         set(value) {
@@ -18,8 +19,15 @@ class JvmInputManager(private val windowHandle: Long, private val ctx: Lwjgl3Con
             }
         }
 
+    override var cursorShape: CursorShape = CursorShape.DEFAULT
+        set(value) {
+            field = value
+            glfwSetCursor(windowHandle, cursorShapes[value] ?: 0L)
+        }
+
     init {
         installInputHandlers()
+        createStandardCursors()
 
         ctx.onWindowFocusChanged += {
             if (cursorMode == CursorMode.LOCKED) {
@@ -55,8 +63,8 @@ class JvmInputManager(private val windowHandle: Long, private val ctx: Lwjgl3Con
                 handleMouseExit()
             }
         }
-        glfwSetScrollCallback(windowHandle) { _, _, yOff ->
-            handleMouseScroll(yOff)
+        glfwSetScrollCallback(windowHandle) { _, xOff, yOff ->
+            handleMouseScroll(xOff, yOff)
         }
 
         // install keyboard callbacks
@@ -89,6 +97,15 @@ class JvmInputManager(private val windowHandle: Long, private val ctx: Lwjgl3Con
         glfwSetCharCallback(windowHandle) { _, codepoint ->
             charTyped(codepoint.toChar())
         }
+    }
+
+    private fun createStandardCursors() {
+        cursorShapes[CursorShape.DEFAULT] = 0
+        cursorShapes[CursorShape.TEXT] = glfwCreateStandardCursor(GLFW_IBEAM_CURSOR)
+        cursorShapes[CursorShape.CROSSHAIR] = glfwCreateStandardCursor(GLFW_CROSSHAIR_CURSOR)
+        cursorShapes[CursorShape.HAND] = glfwCreateStandardCursor(GLFW_HAND_CURSOR)
+        cursorShapes[CursorShape.H_RESIZE] = glfwCreateStandardCursor(GLFW_HRESIZE_CURSOR)
+        cursorShapes[CursorShape.V_RESIZE] = glfwCreateStandardCursor(GLFW_VRESIZE_CURSOR)
     }
 
     private val CursorMode.glfwMode: Int

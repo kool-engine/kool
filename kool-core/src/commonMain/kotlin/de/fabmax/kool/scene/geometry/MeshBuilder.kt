@@ -13,6 +13,7 @@ import kotlin.math.*
 open class MeshBuilder(val geometry: IndexedVertexList) {
 
     val transform = Mat4fStack()
+    var isInvertFaceOrientation = false
 
     var color = Color.GRAY
     var emissiveColor = Color.BLACK
@@ -43,6 +44,14 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
         position.set(pos)
         normal.set(nrm)
         texCoord.set(uv)
+    }
+
+    fun addTriIndices(i0: Int, i1: Int, i2: Int) {
+        if (isInvertFaceOrientation) {
+            geometry.addTriIndices(i2, i1, i0)
+        } else {
+            geometry.addTriIndices(i0, i1, i2)
+        }
     }
 
     inline fun withTransform(block: MeshBuilder.() -> Unit) {
@@ -172,7 +181,7 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
             }
         }
         for (i in poly.indices.indices step 3) {
-            geometry.addTriIndices(meshIndices[poly.indices[i]], meshIndices[poly.indices[i + 1]], meshIndices[poly.indices[i + 2]])
+            addTriIndices(meshIndices[poly.indices[i]], meshIndices[poly.indices[i + 1]], meshIndices[poly.indices[i + 2]])
         }
     }
 
@@ -194,7 +203,7 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
             val i0 = indices[poly.indices[i * 3]]
             val i1 = indices[poly.indices[i * 3 + 1]]
             val i2 = indices[poly.indices[i * 3 + 2]]
-            geometry.addTriIndices(i0, i1, i2)
+            addTriIndices(i0, i1, i2)
         }
     }
 
@@ -215,7 +224,7 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
             }
 
             if (i > 0) {
-                geometry.addTriIndices(iCenter, i1, idx)
+                addTriIndices(iCenter, i1, idx)
             }
             i1 = idx
         }
@@ -253,7 +262,7 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
                     normal.set(Vec3f.NEG_Y_AXIS)
                     texCoord.set(props.texCoordGenerator(PI.toFloat(), phi.toFloat()))
                 }
-                geometry.addTriIndices(iCenter, rowIndices[i], rowIndices[i - 1])
+                addTriIndices(iCenter, rowIndices[i], rowIndices[i - 1])
             }
         }
 
@@ -277,8 +286,8 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
                 }
 
                 if (i > 0) {
-                    geometry.addTriIndices(prevIndices[i - 1], rowIndices[i], rowIndices[i - 1])
-                    geometry.addTriIndices(prevIndices[i - 1], prevIndices[i], rowIndices[i])
+                    addTriIndices(prevIndices[i - 1], rowIndices[i], rowIndices[i - 1])
+                    addTriIndices(prevIndices[i - 1], prevIndices[i], rowIndices[i])
                 }
             }
         }
@@ -290,7 +299,7 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
                 normal.set(Vec3f.Y_AXIS)
                 texCoord.set(props.texCoordGenerator(0f, (PI * i / steps).toFloat()))
             }
-            geometry.addTriIndices(iCenter, rowIndices[i - 1], rowIndices[i])
+            addTriIndices(iCenter, rowIndices[i - 1], rowIndices[i])
         }
     }
 
@@ -380,7 +389,7 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
             }
         }
         for (i in icoGenerator.faces.indices step 3) {
-            geometry.addTriIndices(i0 + icoGenerator.faces[i], i0 + icoGenerator.faces[1 + i], i0 + icoGenerator.faces[2 + i])
+            addTriIndices(i0 + icoGenerator.faces[i], i0 + icoGenerator.faces[1 + i], i0 + icoGenerator.faces[2 + i])
         }
     }
 
@@ -414,8 +423,8 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
                 normal.set(Vec3f.Z_AXIS)
                 texCoord.set(props.texCoordUpperLeft)
             }
-            geometry.addTriIndices(i0, i1, i2)
-            geometry.addTriIndices(i0, i2, i3)
+            addTriIndices(i0, i1, i2)
+            addTriIndices(i0, i2, i3)
 
         } else {
             val x = props.origin.x
@@ -441,8 +450,8 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
                 val i1 = vertex(tmpPos.set(x + w, yI, z), nrm, tmpUv.set(0f, vI).add(props.texCoordLowerRight))
                 val i2 = vertex(tmpPos.set(x + w, yI + hI, z), nrm, tmpUv.set(0f, -vI).add(props.texCoordUpperRight))
                 val i3 = vertex(tmpPos.set(x, yI + hI, z), nrm, tmpUv.set(0f, -vI).add(props.texCoordUpperLeft))
-                geometry.addTriIndices(i0, i1, i2)
-                geometry.addTriIndices(i0, i2, i3)
+                addTriIndices(i0, i1, i2)
+                addTriIndices(i0, i2, i3)
             }
 
             if (wI > 0) {
@@ -450,15 +459,15 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
                 var i1 = vertex(tmpPos.set(xI + wI, y, z), nrm, tmpUv.set(-uI, 0f).add(props.texCoordLowerRight))
                 var i2 = vertex(tmpPos.set(xI + wI, yI, z), nrm, tmpUv.set(-uI, vI).add(props.texCoordLowerRight))
                 var i3 = vertex(tmpPos.set(xI, yI, z), nrm, tmpUv.set(uI, vI).add(props.texCoordLowerLeft))
-                geometry.addTriIndices(i0, i1, i2)
-                geometry.addTriIndices(i0, i2, i3)
+                addTriIndices(i0, i1, i2)
+                addTriIndices(i0, i2, i3)
 
                 i0 = vertex(tmpPos.set(xI, yI + hI, z), nrm, tmpUv.set(uI, -vI).add(props.texCoordUpperLeft))
                 i1 = vertex(tmpPos.set(xI + wI, yI + hI, z), nrm, tmpUv.set(-uI, -vI).add(props.texCoordUpperRight))
                 i2 = vertex(tmpPos.set(xI + wI, y + h, z), nrm, tmpUv.set(-uI, 0f).add(props.texCoordUpperRight))
                 i3 = vertex(tmpPos.set(xI, y + h, z), nrm, tmpUv.set(uI, 0f).add(props.texCoordUpperLeft))
-                geometry.addTriIndices(i0, i1, i2)
-                geometry.addTriIndices(i0, i2, i3)
+                addTriIndices(i0, i1, i2)
+                addTriIndices(i0, i2, i3)
             }
 
             circle {
@@ -534,8 +543,8 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
         val i1 = vertex { position.set(qx1, qy1, 0f); normal.set(Vec3f.Z_AXIS) }
         val i2 = vertex { position.set(qx2, qy2, 0f); normal.set(Vec3f.Z_AXIS) }
         val i3 = vertex { position.set(qx3, qy3, 0f); normal.set(Vec3f.Z_AXIS) }
-        geometry.addTriIndices(i0, i1, i2)
-        geometry.addTriIndices(i0, i2, i3)
+        addTriIndices(i0, i1, i2)
+        addTriIndices(i0, i2, i3)
     }
 
     fun lineArc(centerX: Float, centerY: Float, radius: Float, startDeg: Float, sweepDeg: Float, width: Float, resolution: Float = 3f) {
@@ -572,8 +581,8 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
             val i1 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y, props.origin.z + props.size.z), Vec3f.Z_AXIS, Vec2f(1f, 1f))
             val i2 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y + props.size.y, props.origin.z + props.size.z), Vec3f.Z_AXIS, Vec2f(1f, 0f))
             val i3 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.size.y, props.origin.z + props.size.z), Vec3f.Z_AXIS, Vec2f(0f, 0f))
-            geometry.addTriIndices(i0, i1, i2)
-            geometry.addTriIndices(i0, i2, i3)
+            addTriIndices(i0, i1, i2)
+            addTriIndices(i0, i2, i3)
         }
 
         // right
@@ -582,8 +591,8 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
             val i1 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y + props.size.y, props.origin.z), Vec3f.X_AXIS, Vec2f(1f, 0f))
             val i2 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y + props.size.y, props.origin.z + props.size.z), Vec3f.X_AXIS, Vec2f(0f, 0f))
             val i3 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y, props.origin.z + props.size.z), Vec3f.X_AXIS, Vec2f(0f, 1f))
-            geometry.addTriIndices(i0, i1, i2)
-            geometry.addTriIndices(i0, i2, i3)
+            addTriIndices(i0, i1, i2)
+            addTriIndices(i0, i2, i3)
         }
 
         // back
@@ -592,8 +601,8 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
             val i1 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y + props.size.y, props.origin.z), Vec3f.NEG_Z_AXIS, Vec2f(0f, 0f))
             val i2 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y, props.origin.z), Vec3f.NEG_Z_AXIS, Vec2f(0f, 1f))
             val i3 = vertex(tmpPos.set(props.origin.x, props.origin.y, props.origin.z), Vec3f.NEG_Z_AXIS, Vec2f(1f, 1f))
-            geometry.addTriIndices(i0, i1, i2)
-            geometry.addTriIndices(i0, i2, i3)
+            addTriIndices(i0, i1, i2)
+            addTriIndices(i0, i2, i3)
         }
 
         // left
@@ -602,8 +611,8 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
             val i1 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.size.y, props.origin.z + props.size.z), Vec3f.NEG_X_AXIS, Vec2f(1f, 0f))
             val i2 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.size.y, props.origin.z), Vec3f.NEG_X_AXIS, Vec2f(0f, 0f))
             val i3 = vertex(tmpPos.set(props.origin.x, props.origin.y, props.origin.z), Vec3f.NEG_X_AXIS, Vec2f(0f, 1f))
-            geometry.addTriIndices(i0, i1, i2)
-            geometry.addTriIndices(i0, i2, i3)
+            addTriIndices(i0, i1, i2)
+            addTriIndices(i0, i2, i3)
         }
 
         // top
@@ -612,8 +621,8 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
             val i1 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y + props.size.y, props.origin.z + props.size.z), Vec3f.Y_AXIS, Vec2f(1f, 1f))
             val i2 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y + props.size.y, props.origin.z), Vec3f.Y_AXIS, Vec2f(1f, 0f))
             val i3 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.size.y, props.origin.z), Vec3f.Y_AXIS, Vec2f(0f, 0f))
-            geometry.addTriIndices(i0, i1, i2)
-            geometry.addTriIndices(i0, i2, i3)
+            addTriIndices(i0, i1, i2)
+            addTriIndices(i0, i2, i3)
         }
 
         // bottom
@@ -622,8 +631,8 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
             val i1 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y, props.origin.z), Vec3f.NEG_Y_AXIS, Vec2f(1f, 1f))
             val i2 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y, props.origin.z + props.size.z), Vec3f.NEG_Y_AXIS, Vec2f(1f, 0f))
             val i3 = vertex(tmpPos.set(props.origin.x, props.origin.y, props.origin.z + props.size.z), Vec3f.NEG_Y_AXIS, Vec2f(0f, 0f))
-            geometry.addTriIndices(i0, i1, i2)
-            geometry.addTriIndices(i0, i2, i3)
+            addTriIndices(i0, i1, i2)
+            addTriIndices(i0, i2, i3)
         }
     }
 
@@ -684,8 +693,8 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
             }
 
             if (i > 0) {
-                geometry.addTriIndices(i0, i1, i2)
-                geometry.addTriIndices(i1, i3, i2)
+                addTriIndices(i0, i1, i2)
+                addTriIndices(i1, i3, i2)
             }
             i0 = i2
             i1 = i3
@@ -725,11 +734,11 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
 
                 if (x > 0 && y > 0) {
                     if (x % 2 == y % 2) {
-                        geometry.addTriIndices(idx - nx - 1, idx, idx - 1)
-                        geometry.addTriIndices(idx - nx, idx, idx - nx - 1)
+                        addTriIndices(idx - nx - 1, idx, idx - 1)
+                        addTriIndices(idx - nx, idx, idx - nx - 1)
                     } else {
-                        geometry.addTriIndices(idx - nx, idx, idx - 1)
-                        geometry.addTriIndices(idx - nx, idx - 1, idx - nx - 1)
+                        addTriIndices(idx - nx, idx, idx - 1)
+                        addTriIndices(idx - nx, idx - 1, idx - nx - 1)
                     }
                 }
             }
@@ -793,7 +802,7 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
         }
 
         withTransform {
-            if (fontSizeUnits != 0f) {
+            if (fontSizeUnits != 0f && fontSizeUnits != charMap.fontProps.sizePts) {
                 val s = fontSizeUnits / charMap.fontProps.sizePts
                 scale(s, s, s)
             }
@@ -807,35 +816,47 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
             val ct = props.charTransform
             var advanced = 0f
             val txt = if (props.autoWrapWidth > 0f) wrapText(props) else props.text
+            val rectProps = RectProps()
             for (c in txt) {
                 if (c == '\n') {
-                    translate(0f, -round(props.font.lineSpace), 0f)
+                    if (props.isYAxisUp) {
+                        translate(0f, -round(props.font.lineSpace), 0f)
+                    } else {
+                        translate(0f, round(props.font.lineSpace), 0f)
+                    }
                     advanced = 0f
                 }
 
                 val metrics = charMap[c]
                 if (metrics != null) {
-                    withTransform {
-                        var advOffset = 0f
-                        if (ct == null) {
-                            advOffset = advanced
+                    var advOffset = 0f
+                    if (ct == null) {
+                        advOffset = advanced
+                    } else {
+                        ct(advanced)
+                    }
+                    rect(rectProps.apply {
+                        val x = advOffset - metrics.xOffset
+                        val y = if (props.isYAxisUp) metrics.yBaseline - metrics.height else -metrics.yBaseline
+                        if (props.roundOriginToUnits) {
+                            origin.set(round(x), round(y), 0f)
                         } else {
-                            ct(advanced)
+                            origin.set(x, y, 0f)
                         }
-                        rect {
-                            if (props.roundOriginToUnits) {
-                                origin.set(round(advOffset - metrics.xOffset), round(metrics.yBaseline - metrics.height), 0f)
-                            } else {
-                                origin.set(advOffset - metrics.xOffset, metrics.yBaseline - metrics.height, 0f)
-                            }
-                            size.set(metrics.width, metrics.height)
+                        size.set(metrics.width, metrics.height)
 
+                        if (props.isYAxisUp) {
                             texCoordUpperLeft.set(metrics.uvMin)
                             texCoordUpperRight.set(metrics.uvMax.x, metrics.uvMin.y)
                             texCoordLowerLeft.set(metrics.uvMin.x, metrics.uvMax.y)
                             texCoordLowerRight.set(metrics.uvMax)
+                        } else {
+                            texCoordLowerLeft.set(metrics.uvMin)
+                            texCoordLowerRight.set(metrics.uvMax.x, metrics.uvMin.y)
+                            texCoordUpperLeft.set(metrics.uvMin.x, metrics.uvMax.y)
+                            texCoordUpperRight.set(metrics.uvMax)
                         }
-                    }
+                    })
                     advanced += metrics.advance
                 }
             }
@@ -1091,6 +1112,7 @@ class TextProps(var font: Font) {
     val origin = MutableVec3f()
     var roundOriginToUnits = true
     var autoWrapWidth = -1f
+    var isYAxisUp = true
 
     var charTransform: (MeshBuilder.(Float) -> Unit)? = null
 }

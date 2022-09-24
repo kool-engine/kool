@@ -2,7 +2,7 @@ package de.fabmax.kool.demo.physics.manyvehicles
 
 import de.fabmax.kool.AssetManager
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.demo.Demo
+import de.fabmax.kool.demo.DemoLoader
 import de.fabmax.kool.demo.DemoScene
 import de.fabmax.kool.math.Mat3f
 import de.fabmax.kool.math.Mat4f
@@ -76,7 +76,7 @@ class ManyVehiclesDemo : DemoScene("Many Vehicles") {
 
     override suspend fun AssetManager.loadResources(ctx: KoolContext) {
         showLoadText("Loading IBL maps")
-        ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${Demo.hdriPath}/syferfontein_0d_clear_1k.rgbe.png", this)
+        ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${DemoLoader.hdriPath}/syferfontein_0d_clear_1k.rgbe.png", this)
         mainScene += Skybox.cube(ibl.reflectionMap, 1f)
         Physics.awaitLoaded()
 
@@ -125,18 +125,13 @@ class ManyVehiclesDemo : DemoScene("Many Vehicles") {
             shader = wheelsShader()
         }
 
-        onUpdate += { ev ->
+        onUpdate += {
             chassisInstances.clear()
             wheelInstances.clear()
             for (i in vehicleInstances.indices) {
                 val vi = vehicleInstances[i]
                 vi.addChassisInstance(chassisInstances)
                 vi.addWheelInstances(wheelInstances)
-                if (ev.time > 5 && ev.time < 17) {
-                    vi.vehicle.throttleInput = 0.8f
-                } else {
-                    vi.vehicle.throttleInput = 0f
-                }
             }
         }
 
@@ -153,8 +148,8 @@ class ManyVehiclesDemo : DemoScene("Many Vehicles") {
     }
 
     private fun Group.makeGround() {
-        val groundAlbedo = Texture2d("${Demo.materialPath}/tile_flat/tiles_flat_fine.png")
-        val groundNormal = Texture2d("${Demo.materialPath}/tile_flat/tiles_flat_fine_normal.png")
+        val groundAlbedo = Texture2d("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine.png")
+        val groundNormal = Texture2d("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine_normal.png")
         onDispose += {
             groundAlbedo.dispose()
             groundNormal.dispose()
@@ -191,10 +186,9 @@ class ManyVehiclesDemo : DemoScene("Many Vehicles") {
     }
 
     private fun spawnVehicle(pos: Vec3f, dir: Float, color: Color) {
-        //val vehicle = Vehicle(vehicleProps, physicsWorld) { vehicle, _ -> batchUpdater.addVehicle(vehicle) }
         val vehicle = Vehicle(vehicleProps, physicsWorld)
         vehicle.position = pos
-        vehicle.throttleInput = 1f
+        vehicle.throttleInput = 0.75f
         vehicle.steerInput = 0f
         vehicle.setRotation(0f, dir, 0f)
         physicsWorld.addActor(vehicle)
