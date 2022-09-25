@@ -17,7 +17,7 @@ interface ComboBoxScope : UiScope {
 
 open class ComboBoxModifier(surface: UiSurface) : UiModifier(surface) {
     var font: FontProps by property { it.sizes.normalText }
-    var items: List<String> by property(emptyList())
+    var items: List<Any> by property(emptyList())
     var selectedIndex: Int by property(0)
 
     var textColor: Color by property { it.colors.onBackground }
@@ -32,7 +32,7 @@ open class ComboBoxModifier(surface: UiSurface) : UiModifier(surface) {
 
 fun <T: ComboBoxModifier> T.font(font: FontProps): T { this.font = font; return this }
 fun <T: ComboBoxModifier> T.textColor(color: Color): T { textColor = color; return this }
-fun <T: ComboBoxModifier> T.items(items: List<String>): T { this.items = items; return this }
+fun <T: ComboBoxModifier> T.items(items: List<Any>): T { this.items = items; return this }
 fun <T: ComboBoxModifier> T.selectedIndex(index: Int): T { this.selectedIndex = index; return this }
 fun <T: ComboBoxModifier> T.onItemSelected(block: ((Int) -> Unit)?): T { this.onItemSelected = block; return this }
 
@@ -57,7 +57,7 @@ inline fun UiScope.ComboBox(block: ComboBoxScope.() -> Unit): ComboBoxScope {
 
             comboBox.modifier.items.forEachIndexed { i, item ->
                 val hovered = comboBox.hoveredItem.use()
-                Text(item) {
+                Text(item.toString()) {
                     modifier
                         .width(Grow.Std)
                         .padding(horizontal = sizes.gap, vertical = sizes.smallGap * 0.5f)
@@ -101,7 +101,7 @@ open class ComboBoxNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, su
             return if (modifier.items.isEmpty()) {
                 ""
             } else {
-                modifier.items[modifier.selectedIndex.clamp(0, modifier.items.lastIndex)]
+                modifier.items[modifier.selectedIndex.clamp(0, modifier.items.lastIndex)].toString()
             }
         }
 

@@ -4,6 +4,7 @@ import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.clamp
 import kotlin.math.abs
 import kotlin.math.max
+import kotlin.math.round
 
 open class ScrollState {
     val xScrollDp = mutableStateOf(0f)
@@ -14,8 +15,8 @@ open class ScrollState {
     val contentSizeDp = MutableVec2f()
     val viewSizeDp = MutableVec2f()
 
-    val relativeBarLenX: Float get() = (viewSizeDp.x / contentSizeDp.x).clamp()
-    val relativeBarLenY: Float get() = (viewSizeDp.y / contentSizeDp.y).clamp()
+    val relativeBarLenX: Float get() = (round(viewSizeDp.x) / round(contentSizeDp.x)).clamp()
+    val relativeBarLenY: Float get() = (round(viewSizeDp.y) / round(contentSizeDp.y)).clamp()
 
     val relativeBarPosX: Float get() {
         val div = xScrollDp.value + contentSizeDp.x - (xScrollDp.value + viewSizeDp.x)

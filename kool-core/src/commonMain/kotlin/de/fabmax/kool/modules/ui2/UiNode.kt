@@ -86,6 +86,7 @@ abstract class UiNode(val parent: UiNode?, override val surface: UiSurface) : Ui
     open fun setContentSize(width: Float, height: Float) {
         contentWidthPx = width
         contentHeightPx = height
+        modifier.onMeasured?.let { it(this) }
     }
 
     open fun setBounds(minX: Float, minY: Float, maxX: Float, maxY: Float) {
@@ -105,10 +106,7 @@ abstract class UiNode(val parent: UiNode?, override val surface: UiSurface) : Ui
             clipBoundsPx.z = maxX
             clipBoundsPx.w = maxY
         }
-
-        if (modifier.onPositioned.isNotEmpty()) {
-            modifier.onPositioned.forEach { it(this) }
-        }
+        modifier.onPositioned?.let { it(this) }
     }
 
     fun computeWidthFromDimension(scaledGrowSpace: Float): Float {

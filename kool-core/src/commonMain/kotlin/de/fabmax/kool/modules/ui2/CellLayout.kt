@@ -9,11 +9,19 @@ object CellLayout : Layout {
         val modWidth = modifier.width
         val modHeight = modifier.height
 
-        // if width / height is Grow, content size will remain 0
-        var measuredWidth = if (modWidth is Dp) modWidth.px else 0f
-        var measuredHeight = if (modHeight is Dp) modHeight.px else 0f
-        val isDynamicWidth = modWidth === WrapContent
-        val isDynamicHeight = modHeight === WrapContent
+        var measuredWidth = 0f
+        var measuredHeight = 0f
+        var isDynamicWidth = true
+        var isDynamicHeight = true
+
+        if (modWidth is Dp) {
+            measuredWidth = modWidth.px
+            isDynamicWidth = false
+        }
+        if (modHeight is Dp) {
+            measuredHeight = modHeight.px
+            isDynamicHeight = false
+        }
 
         if (isDynamicWidth || isDynamicHeight) {
             for (i in children.indices) {

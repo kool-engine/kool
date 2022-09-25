@@ -34,13 +34,24 @@ abstract class MutableState {
 }
 
 open class MutableValueState<T: Any?>(initValue: T) : MutableState() {
+    private val stateListeners = mutableListOf<(T) -> Unit>()
+
     var value: T = initValue
         set(value) {
             if (value != field) {
                 stateChanged()
+                notifyListeners(value)
             }
             field = value
         }
+
+    private fun notifyListeners(newState: T) {
+        if (stateListeners.isNotEmpty()) {
+            for (i in stateListeners.indices) {
+                stateListeners[i](newState)
+            }
+        }
+    }
 
     fun set(value: T) {
         this.value = value
@@ -49,6 +60,10 @@ open class MutableValueState<T: Any?>(initValue: T) : MutableState() {
     fun use(surface: UiSurface): T {
         usedBy(surface)
         return value
+    }
+
+    fun onChange(block: (T) -> Unit) {
+        stateListeners += block
     }
 }
 

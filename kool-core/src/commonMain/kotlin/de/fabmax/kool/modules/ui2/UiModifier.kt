@@ -29,7 +29,8 @@ open class UiModifier(val surface: UiSurface) {
     var alignX: AlignmentX by property(AlignmentX.Start)
     var alignY: AlignmentY by property(AlignmentY.Top)
 
-    val onPositioned: MutableList<(UiNode) -> Unit> by listProperty()
+    var onMeasured: ((UiNode) -> Unit)? by property(null)
+    var onPositioned: ((UiNode) -> Unit)? by property(null)
 
     val onPointer: MutableList<(PointerEvent) -> Unit> by listProperty()
     val onClick: MutableList<(PointerEvent) -> Unit> by listProperty()
@@ -197,13 +198,14 @@ enum class AlignmentY {
 
 fun <T: UiModifier> T.alignX(alignment: AlignmentX): T { alignX = alignment; return this }
 fun <T: UiModifier> T.alignY(alignment: AlignmentY): T { alignY = alignment; return this }
-fun <T: UiModifier> T.align(xAlignment: AlignmentX, yAlignment: AlignmentY): T {
+fun <T: UiModifier> T.align(xAlignment: AlignmentX = alignX, yAlignment: AlignmentY = alignY): T {
     alignX = xAlignment
     alignY = yAlignment
     return this
 }
 
-fun <T: UiModifier> T.onPositioned(block: (UiNode) -> Unit): T { onPositioned += block; return this }
+fun <T: UiModifier> T.onMeasured(block: (UiNode) -> Unit): T { onMeasured = block; return this }
+fun <T: UiModifier> T.onPositioned(block: (UiNode) -> Unit): T { onPositioned = block; return this }
 
 class PointerEvent(val pointer: InputManager.Pointer, val ctx: KoolContext) {
     /**

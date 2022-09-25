@@ -61,9 +61,12 @@ fun UiScope.LazyList(
     ScrollArea(
         state,
         width, height,
-        withVerticalScrollbar, withHorizontalScrollbar,
+        withVerticalScrollbar,
+        withHorizontalScrollbar,
         scrollbarColor,
-        containerModifier, vScrollbarModifier, hScrollbarModifier
+        containerModifier,
+        vScrollbarModifier,
+        hScrollbarModifier
     ) {
         modifier.width(Grow.Std)
         scrollPaneModifier?.let { it(modifier) }

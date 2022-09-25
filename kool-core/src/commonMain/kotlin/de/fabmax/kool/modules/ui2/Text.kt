@@ -25,7 +25,7 @@ fun <T: TextModifier> T.textColor(color: Color): T { textColor = color; return t
 fun <T: TextModifier> T.textAlignX(alignment: AlignmentX): T { textAlignX = alignment; return this }
 fun <T: TextModifier> T.textAlignY(alignment: AlignmentY): T { textAlignY = alignment; return this }
 
-fun <T: TextModifier> T.textAlign(alignX: AlignmentX, alignY: AlignmentY): T {
+fun <T: TextModifier> T.textAlign(alignX: AlignmentX = textAlignX, alignY: AlignmentY = textAlignY): T {
     textAlignX = alignX
     textAlignY = alignY
     return this
