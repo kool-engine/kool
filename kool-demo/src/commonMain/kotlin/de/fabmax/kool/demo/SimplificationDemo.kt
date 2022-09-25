@@ -2,6 +2,7 @@ package de.fabmax.kool.demo
 
 import de.fabmax.kool.AssetManager
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.gltf.GltfFile
 import de.fabmax.kool.modules.gltf.loadGltfModel
@@ -9,14 +10,13 @@ import de.fabmax.kool.modules.mesh.HalfEdgeMesh
 import de.fabmax.kool.modules.mesh.ListEdgeHandler
 import de.fabmax.kool.modules.mesh.simplification.simplify
 import de.fabmax.kool.modules.mesh.simplification.terminateOnFaceCountRel
+import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.shading.Albedo
 import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
-import de.fabmax.kool.scene.ui.Label
-import de.fabmax.kool.scene.ui.ToggleButton
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
@@ -26,21 +26,26 @@ import kotlin.math.cos
 import kotlin.math.sqrt
 
 class SimplificationDemo : DemoScene("Simplification") {
-    val models = mutableMapOf<String, IndexedVertexList>()
+    private val models = mutableListOf<DemoModel>()
 
-    val modelWireframe = LineMesh()
+    private val activeModel: MutableValueState<DemoModel>
+    private var heMesh: HalfEdgeMesh
+    private val dispModel = Mesh(IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS))
+    private val modelWireframe = LineMesh()
 
-    var srcModel: IndexedVertexList
-    val dispModel = Mesh(IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS))
-    var heMesh: HalfEdgeMesh
+    private val simplifcationRatio = mutableStateOf(1f)
+    private val isAutoSimplify = mutableStateOf(true)
+    private val isAutoRotate = mutableStateOf(true)
+    private val isSolidVisible = mutableStateOf(true).apply { onChange { dispModel.isVisible = it } }
+    private val isWireframeVisible = mutableStateOf(true).apply { onChange { modelWireframe.isVisible = it } }
 
-    var simplifcationGrade = 1f
-    lateinit var autoRun: ToggleButton
-    lateinit var facesValLbl: Label
-    lateinit var vertsValLbl: Label
-    lateinit var timeValLbl: Label
+    private val simplifiedNumFaces = mutableStateOf(0)
+    private val simplifiedNumVerts = mutableStateOf(0)
+    private val simplificationTime = mutableStateOf(0.0)
 
-    var autoRotate = true
+    private class DemoModel(val name: String, val geometry: IndexedVertexList) {
+        override fun toString() = name
+    }
 
     init {
         dispModel.shader = pbrShader {
@@ -49,18 +54,17 @@ class SimplificationDemo : DemoScene("Simplification") {
             roughness = 0.15f
         }
 
-        srcModel = makeCosGrid()
-        models["cos"] = srcModel
-        heMesh = HalfEdgeMesh(srcModel)
+        val cosModel = DemoModel("Cosine grid", makeCosGrid())
+        activeModel = mutableStateOf(cosModel)
+        heMesh = HalfEdgeMesh(activeModel.value.geometry)
+        models += cosModel
     }
 
-    override fun lateInit(ctx: KoolContext) {
-        ctx.assetMgr.launch {
-            loadModel("${DemoLoader.modelPath}/bunny.gltf.gz", 1f, Vec3f(0f, -3f, 0f))
-            loadModel("${DemoLoader.modelPath}/cow.gltf.gz", 1f, Vec3f.ZERO)
-            loadModel("${DemoLoader.modelPath}/teapot.gltf.gz", 1f, Vec3f(0f, -1.5f, 0f))
-        }
-        simplify()
+    override suspend fun AssetManager.loadResources(ctx: KoolContext) {
+        loadModel("Bunny", "${DemoLoader.modelPath}/bunny.gltf.gz", 1f, Vec3f(0f, -3f, 0f))
+        loadModel("Cow", "${DemoLoader.modelPath}/cow.gltf.gz", 1f, Vec3f.ZERO)
+        loadModel("Teapot", "${DemoLoader.modelPath}/teapot.gltf.gz", 1f, Vec3f(0f, -1.5f, 0f))
+        runSimplification(1f)
     }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
@@ -77,22 +81,22 @@ class SimplificationDemo : DemoScene("Simplification") {
             +modelWireframe
 
             onUpdate += {
-                if (autoRotate) {
+                if (isAutoRotate.value) {
                     rotate(ctx.deltaT * 3f, Vec3f.Y_AXIS)
                 }
             }
         }
     }
 
-    fun simplify() {
+    private fun runSimplification(ratio: Float) {
         val pt = PerfTimer()
         dispModel.geometry.batchUpdate {
             dispModel.geometry.clear()
-            dispModel.geometry.addGeometry(srcModel)
+            dispModel.geometry.addGeometry(activeModel.value.geometry)
 
             heMesh = HalfEdgeMesh(dispModel.geometry, ListEdgeHandler())
-            if (simplifcationGrade < 0.999f) {
-                heMesh.simplify(terminateOnFaceCountRel(simplifcationGrade.toDouble()))
+            if (ratio < 0.999f) {
+                heMesh.simplify(terminateOnFaceCountRel(ratio.toDouble()))
             }
 
             modelWireframe.geometry.batchUpdate {
@@ -101,27 +105,26 @@ class SimplificationDemo : DemoScene("Simplification") {
             }
 
             val time = pt.takeSecs()
+            simplificationTime.set(time)
+            simplifiedNumVerts.set(heMesh.vertCount)
+            simplifiedNumFaces.set(heMesh.faceCount)
             if (time > 0.5) {
-                autoRun.isEnabled = false
+                isAutoSimplify.set(false)
             }
-            facesValLbl.text = "${heMesh.faceCount}"
-            vertsValLbl.text = "${heMesh.vertCount}"
-            timeValLbl.text = "${time.toString(2)} s"
         }
     }
 
-    private suspend fun AssetManager.loadModel(name: String, scale: Float, offset: Vec3f) {
+    private suspend fun AssetManager.loadModel(name: String, path: String, scale: Float, offset: Vec3f) {
         val modelCfg = GltfFile.ModelGenerateConfig(generateNormals = true, applyMaterials = false)
-        loadGltfModel(name, modelCfg)?.let { model ->
+        loadGltfModel(path, modelCfg)?.let { model ->
             val mesh = model.meshes.values.first()
             val geometry = mesh.geometry
             for (i in 0 until geometry.numVertices) {
                 geometry.vertexIt.index = i
                 geometry.vertexIt.position.scale(scale).add(offset)
             }
-            val modelKey = name.substring(name.lastIndexOf('/') + 1 until name.lastIndexOf(".gltf.gz"))
-            models[modelKey] = geometry
-            logD { "loaded: $name, bounds: ${models[name]?.bounds}" }
+            logD { "loaded: $name, bounds: ${geometry.bounds}" }
+            models += DemoModel(name, geometry)
         }
     }
 
@@ -143,54 +146,114 @@ class SimplificationDemo : DemoScene("Simplification") {
         return builder.geometry
     }
 
-    override fun setupMenu(ctx: KoolContext) = controlUi {
-        section("Model") {
-            button("Cow") {
-                srcModel = models["cow"] ?: srcModel
-                simplify()
-            }
-            button("Teapot") {
-                srcModel = models["teapot"] ?: srcModel
-                simplify()
-            }
-            button("Bunny") {
-                srcModel = models["bunny"] ?: srcModel
-                simplify()
-            }
-            button("Cosine Grid") {
-                srcModel = models["cos"] ?: srcModel
-                simplify()
+    override fun createMenu(menu: DemoMenu, ctx: KoolContext) = menuSurface {
+        MenuRow {
+            Text("Model:") { labelStyle(true) }
+            ComboBox {
+                modifier
+                    .width(160.dp)
+                    .items(models)
+                    .selectedIndex(models.indexOf(activeModel.use()))
+                    .onItemSelected {
+                        activeModel.set(models[it])
+                        runSimplification(if (isAutoSimplify.value) simplifcationRatio.value else 1f)
+                    }
             }
         }
-        section("Scene") {
-            val tbSolid = toggleButton("Draw Solid", dispModel.isVisible) { }
-            val tbWireframe = toggleButton("Draw Wireframe", modelWireframe.isVisible) { }
-            tbSolid.onStateChange += {
-                dispModel.isVisible = isEnabled
-                if (!isEnabled && !tbWireframe.isEnabled) {
-                    tbWireframe.isEnabled = true
-                }
+        MenuRow {
+            Text("Ratio:") { labelStyle() }
+            Slider(simplifcationRatio.use(), 0.01f, 1f) {
+                modifier
+                    .width(Grow.Std)
+                    .alignY(AlignmentY.Center)
+                    .margin(horizontal = 8.dp)
+                    .onChange {
+                        simplifcationRatio.set(it)
+                        if (isAutoSimplify.value) {
+                            runSimplification(simplifcationRatio.value)
+                        }
+                    }
             }
-            tbWireframe.onStateChange += {
-                modelWireframe.isVisible = isEnabled
-                if (!isEnabled && !tbSolid.isEnabled) {
-                    tbSolid.isEnabled = true
-                }
+            Text("${(simplifcationRatio.value * 100).toInt()} %") {
+                labelStyle()
+                modifier.width(48.dp).textAlignX(AlignmentX.End)
             }
-            toggleButton("Auto Rotate", autoRotate) { autoRotate = isEnabled}
         }
-        section("Simplification") {
-            sliderWithValue("Ratio:", 100f, 1f, 100f) {
-                simplifcationGrade = value / 100f
-                if (autoRun.isEnabled) {
-                    simplify()
+        Button("Simplify Mesh") {
+            modifier
+                .alignX(AlignmentX.Center)
+                .width(Grow.Std)
+                .margin(horizontal = 16.dp, vertical = 24.dp)
+                .onClick {
+                    runSimplification(simplifcationRatio.value)
                 }
-            }
-            button("Update Mesh") { simplify() }
-            autoRun = toggleButton("Auto Update", true) { }
-            facesValLbl = textWithValue("Faces:", "")
-            vertsValLbl = textWithValue("Vertices:", "")
-            timeValLbl = textWithValue("Time:", "")
         }
+
+        Text("Options") { sectionTitleStyle() }
+        MenuRow {
+            Text("Auto simplify mesh") { labelStyle(true) }
+            Switch(isAutoSimplify.use()) {
+                modifier
+                    .alignY(AlignmentY.Center)
+                    .onToggle { isAutoSimplify.set(it) }
+            }
+        }
+        MenuRow {
+            Text("Draw solid") { labelStyle(true) }
+            Switch(isSolidVisible.use()) {
+                modifier
+                    .alignY(AlignmentY.Center)
+                    .onToggle { isSolidVisible.set(it) }
+            }
+        }
+        MenuRow {
+            Text("Draw wireframe") { labelStyle(true) }
+            Switch(isWireframeVisible.use()) {
+                modifier
+                    .alignY(AlignmentY.Center)
+                    .onToggle { isWireframeVisible.set(it) }
+            }
+        }
+        MenuRow {
+            Text("Auto rotate view") { labelStyle(true) }
+            Switch(isAutoRotate.use()) {
+                modifier
+                    .alignY(AlignmentY.Center)
+                    .onToggle { isAutoRotate.set(it) }
+            }
+        }
+
+        Text("Statistics") { sectionTitleStyle() }
+        MenuRow {
+            Text("Faces:") { labelStyle(true) }
+            Text("${simplifiedNumFaces.use()}   /") {
+                labelStyle(false)
+                modifier.textAlignX(AlignmentX.End)
+            }
+            Text("${activeModel.value.geometry.numPrimitives}") {
+                labelStyle(false)
+                modifier
+                    .width(64.dp)
+                    .textAlignX(AlignmentX.End)
+            }
+        }
+        MenuRow {
+            Text("Vertices:") { labelStyle(true) }
+            Text("${simplifiedNumVerts.use()}   /") {
+                labelStyle(false)
+                modifier.textAlignX(AlignmentX.End)
+            }
+            Text("${activeModel.value.geometry.numVertices}") {
+                labelStyle(false)
+                modifier
+                    .width(64.dp)
+                    .textAlignX(AlignmentX.End)
+            }
+        }
+        MenuRow {
+            Text("Time:") { labelStyle(true) }
+            Text("${simplificationTime.use().toString(2)} s") { labelStyle(false) }
+        }
+
     }
 }

@@ -4,9 +4,12 @@ import de.fabmax.kool.AssetManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.createDefaultContext
 import de.fabmax.kool.demo.menu.DemoMenu
+import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.DebugOverlay
+import de.fabmax.kool.util.MdColor
 
 /**
  * @author fabmax
@@ -32,6 +35,7 @@ fun demo(startScene: String? = null, ctx: KoolContext = createDefaultContext()) 
 class DemoLoader(ctx: KoolContext, startScene: String? = null) {
 
     val dbgOverlay = DebugOverlay(DebugOverlay.Position.LOWER_RIGHT)
+    val menu = DemoMenu(this)
 
     private val loadingScreen = LoadingScreen(ctx)
     private var currentDemo: Pair<String, DemoScene>? = null
@@ -41,7 +45,6 @@ class DemoLoader(ctx: KoolContext, startScene: String? = null) {
         // load physics module early - in js, for some reason wasm file cannot be loaded if this happens later on
         Physics.loadPhysics()
 
-        val menu = DemoMenu(this)
 
         ctx.scenes += dbgOverlay.ui
         ctx.scenes += menu.ui
@@ -64,23 +67,27 @@ class DemoLoader(ctx: KoolContext, startScene: String? = null) {
         switchDemo?.let { newDemo ->
             ctx.assetMgr.storage.storeString("selectedScene", newDemo.id)
             // release old demo
-            currentDemo?.let { demo ->
-                demo.second.scenes.forEach {
+            currentDemo?.second?.let { demo ->
+                demo.scenes.forEach {
                     ctx.scenes -= it
                     it.dispose(ctx)
                 }
-                demo.second.dispose(ctx)
+                demo.menuUi?.let { menu.ui -= it }
+                demo.dispose(ctx)
             }
             ctx.scenes.add(0, loadingScreen)
 
             // set new demo
-            currentDemo = newDemo.id to newDemo.newInstance(ctx).also { it.loadingScreen = loadingScreen }
+            currentDemo = newDemo.id to newDemo.newInstance(ctx).also {
+                it.demoEntry = newDemo
+                it.loadingScreen = loadingScreen
+            }
             switchDemo = null
         }
 
         currentDemo?.second?.let {
             if (it.demoState != DemoScene.State.RUNNING) {
-                it.checkDemoState(ctx)
+                it.checkDemoState(this, ctx)
                 if (it.demoState == DemoScene.State.RUNNING) {
                     // demo setup complete -> add scenes
                     ctx.scenes -= loadingScreen
@@ -142,11 +149,11 @@ class Cycler<T>(elements: List<T>) : List<T> by elements {
 }
 
 abstract class DemoScene(val name: String) {
+    var demoEntry: Demos.Entry? = null
     var demoState = State.NEW
-    var isLoading = false
-    var isLoaded = false
 
     val mainScene = Scene(name)
+    var menuUi: UiSurface? = null
     var menuScene: Scene? = null
     val scenes = mutableListOf(mainScene)
 
@@ -164,7 +171,7 @@ abstract class DemoScene(val name: String) {
         }
     }
 
-    fun checkDemoState(ctx: KoolContext) {
+    fun checkDemoState(loader: DemoLoader, ctx: KoolContext) {
         if (demoState == State.NEW) {
             // load resources (async from AssetManager CoroutineScope)
             demoState = State.LOADING
@@ -176,13 +183,15 @@ abstract class DemoScene(val name: String) {
 
         if (demoState == State.SETUP) {
             // setup scene after required resources are loaded, blocking in main thread
-            setupScenes(ctx)
+            setupScenes(loader.menu, ctx)
             demoState = State.RUNNING
         }
     }
 
-    private fun setupScenes(ctx: KoolContext) {
+    private fun setupScenes(menu: DemoMenu, ctx: KoolContext) {
         mainScene.setupMainScene(ctx)
+        menuUi = createMenu(menu, ctx)
+        menuUi?.let { menu.ui += it }
         menuScene = setupMenu(ctx)
         menuScene?.let { scenes += it }
         lateInit(ctx)
@@ -196,9 +205,75 @@ abstract class DemoScene(val name: String) {
         return null
     }
 
+    open fun createMenu(menu: DemoMenu, ctx: KoolContext): UiSurface? {
+        return null
+    }
+
     open fun lateInit(ctx: KoolContext) { }
 
     open fun dispose(ctx: KoolContext) { }
+
+    protected fun menuSurface(title: String? = null, block: UiScope.() -> Unit): UiSurface {
+        val accent = demoEntry?.color ?: MdColor.PINK
+        val accentVariant = accent.mix(Color.BLACK, 0.3f)
+        val titleTxt = title ?: "${demoEntry?.title} Demo"
+
+        val scrollState = ScrollState()
+
+        return UiSurface(
+            colors = Colors.darkColors(accent, accentVariant, onAccent = Color.WHITE),
+            sizes = Sizes.large()
+        ) {
+            modifier
+                .width(DemoMenu.menuWidth.dp)
+                .height(Grow(1f, max = WrapContent))
+                .align(AlignmentX.End, AlignmentY.Top)
+                .margin(DemoMenu.itemSize.dp * 2f)
+                .layout(ColumnLayout)
+
+            Text(titleTxt) {
+                modifier
+                    .width(Grow.Std)
+                    .height(DemoMenu.itemSize.dp)
+                    .backgroundColor(colors.accent)
+                    .textColor(colors.onAccent)
+                    .font(sizes.largeText)
+                    .textAlign(AlignmentX.Center, AlignmentY.Center)
+            }
+
+            ScrollArea(
+                state = scrollState,
+                withHorizontalScrollbar = false,
+                containerModifier = { it.background(null) }
+            ) {
+                modifier.width(Grow.Std).margin(top = sizes.smallGap)
+                Column(width = Grow.Std, block = block)
+            }
+        }
+    }
+
+    protected fun UiScope.MenuRow(vGap: Dp = sizes.gap, block: UiScope.() -> Unit) {
+        Row(width = Grow.Std) {
+            modifier.margin(horizontal = 16.dp, vertical = vGap)
+            block()
+        }
+    }
+
+    protected fun TextScope.sectionTitleStyle() {
+        modifier
+            .width(Grow.Std)
+            .margin(16.dp)
+            .textColor(colors.accent)
+            .font(sizes.largeText)
+            .textAlignX(AlignmentX.Center)
+    }
+
+    protected fun TextScope.labelStyle(growInWidth: Boolean = false) {
+        if (growInWidth) {
+            modifier.width(Grow.Std)
+        }
+        modifier.align(yAlignment = AlignmentY.Center)
+    }
 
     enum class State {
         NEW,
