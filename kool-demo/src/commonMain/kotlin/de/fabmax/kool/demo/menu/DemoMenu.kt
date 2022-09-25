@@ -52,7 +52,7 @@ class DemoMenu(val demoLoader: DemoLoader) {
             }
 
             drawerButton()
-        }.apply { printTiming = true }
+        }
     }
 
     private fun UiScope.MenuContent() = Row {
@@ -94,8 +94,8 @@ class DemoMenu(val demoLoader: DemoLoader) {
     }
 
     companion object {
-        const val menuWidth = 300
         const val itemSize = 48
+        const val menuWidth = itemSize * 7
 
         const val navBarButtonSelectedAlpha = 0.20f
         const val navBarButtonHoveredAlpha = 0.35f

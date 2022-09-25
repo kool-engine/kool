@@ -9,7 +9,6 @@ import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.VertexView
 import de.fabmax.kool.scene.ui.FontProps
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.logD
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.reflect.KClass
@@ -188,7 +187,6 @@ abstract class UiNode(val parent: UiNode?, override val surface: UiSurface) : Ui
             }
         }
         if (child == null) {
-            logD { "Creating new child node of type $type" }
             child = factory(this, surface)
         }
         child.applyDefaults()

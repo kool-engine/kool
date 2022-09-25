@@ -66,7 +66,7 @@ class SettingsContent(val menu: DemoMenu) : ComposableComponent {
             .textAlignY(AlignmentY.Center)
     }
 
-    private fun ToggleScope.switchStyle() {
+    private fun SwitchScope.switchStyle() {
         modifier
             .width(64.dp)
             .margin(end = sizes.gap)

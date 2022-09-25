@@ -6,49 +6,113 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.util.Color
 import kotlin.math.abs
 
-interface ToggleScope : UiScope {
-    override val modifier: ToggleModifier
+interface CheckboxScope : UiScope {
+    override val modifier: CheckboxModifier
+}
+
+interface RadioButtonScope : UiScope {
+    override val modifier: RadioButtonModifier
+}
+
+interface SwitchScope : UiScope {
+    override val modifier: SwitchModifier
 }
 
 open class ToggleModifier(surface: UiSurface) : UiModifier(surface) {
     var toggleState: Boolean by property(false)
     var onToggle: ((Boolean) -> Unit)? by property(null)
-
-    // default color value are overridden by theme colors
-    var foregroundColor: Color by property { it.colors.accent }
-    var backgroundColor: Color by property { it.colors.accentVariant.withAlpha(0.5f) }
-    var borderColor: Color by property { it.colors.accentVariant }
 }
+
+open class CheckboxModifier(surface: UiSurface) : ToggleModifier(surface) {
+    var checkboxSize: Dp by property { it.sizes.checkboxSize }
+
+    var borderColor: Color by property { it.colors.accentVariant }
+    var backgroundColorUnchecked: Color by property { it.colors.accentVariant.withAlpha(0.5f) }
+    var backgroundColorChecked: Color by property { it.colors.accent }
+    var checkMarkColor: Color by property { it.colors.onAccent }
+}
+
+open class RadioButtonModifier(surface: UiSurface) : ToggleModifier(surface) {
+    var radioButtonSize: Dp by property { it.sizes.radioButtonSize }
+
+    var borderColor: Color by property { it.colors.accentVariant }
+    var backgroundColor: Color by property { it.colors.accentVariant.withAlpha(0.5f) }
+    var knobColor: Color by property { it.colors.accent }
+}
+
+open class SwitchModifier(surface: UiSurface) : ToggleModifier(surface) {
+    var switchWidth: Dp by property { it.sizes.switchSize * 2f }
+    var switchHeight: Dp by property { it.sizes.switchSize }
+
+    var knobColorOn: Color by property { it.colors.accent }
+    var knobColorOff: Color by property { it.colors.accent }
+    var trackColorOn: Color by property { it.colors.accentVariant.withAlpha(0.5f) }
+    var trackColorOff: Color by property { it.colors.accentVariant.withAlpha(0.5f) }
+}
+
 
 fun <T: ToggleModifier> T.toggleState(value: Boolean): T { toggleState = value; return this }
 fun <T: ToggleModifier> T.onToggle(block: ((Boolean) -> Unit)?): T { onToggle = block; return this }
 
-fun <T: ToggleModifier> T.colors(
-    foregroundColor: Color = this.foregroundColor,
-    backgroundColor: Color = this.backgroundColor,
-    borderColor: Color = this.borderColor
+fun <T: CheckboxModifier> T.checkboxSize(size: Dp): T { checkboxSize = size; return this }
+fun <T: CheckboxModifier> T.colors(
+    borderColor: Color = this.borderColor,
+    backgroundColorUnchecked: Color = this.backgroundColorUnchecked,
+    backgroundColorChecked: Color = this.backgroundColorChecked,
+    checkMarkColor: Color = this.checkMarkColor
 ): T {
-    this.foregroundColor = foregroundColor
-    this.backgroundColor = backgroundColor
     this.borderColor = borderColor
+    this.backgroundColorUnchecked = backgroundColorUnchecked
+    this.backgroundColorChecked = backgroundColorChecked
+    this.checkMarkColor = checkMarkColor
     return this
 }
 
-inline fun UiScope.Checkbox(state: Boolean? = null, block: ToggleScope.() -> Unit): ToggleScope {
+fun <T: RadioButtonModifier> T.radioButtonSize(size: Dp): T { radioButtonSize = size; return this }
+fun <T: RadioButtonModifier> T.colors(
+    borderColor: Color = this.borderColor,
+    backgroundColor: Color = this.backgroundColor,
+    knobColor: Color = this.knobColor
+): T {
+    this.borderColor = borderColor
+    this.backgroundColor = backgroundColor
+    this.knobColor = knobColor
+    return this
+}
+
+fun <T: SwitchModifier> T.switchSize(width: Dp = this.switchWidth, height: Dp = this.switchHeight): T {
+    switchWidth = width
+    switchHeight = height
+    return this
+}
+fun <T: SwitchModifier> T.colors(
+    knobColorOn: Color = this.knobColorOn,
+    knobColorOff: Color = this.knobColorOff,
+    trackColorOn: Color = this.trackColorOn,
+    trackColorOff: Color = this.trackColorOff
+): T {
+    this.knobColorOn = knobColorOn
+    this.knobColorOff = knobColorOff
+    this.trackColorOn = trackColorOn
+    this.trackColorOff = trackColorOff
+    return this
+}
+
+inline fun UiScope.Checkbox(state: Boolean? = null, block: CheckboxScope.() -> Unit): CheckboxScope {
     val checkbox = uiNode.createChild(CheckboxNode::class, CheckboxNode.factory)
     state?.let { checkbox.modifier.toggleState(it) }
     checkbox.block()
     return checkbox
 }
 
-inline fun UiScope.RadioButton(state: Boolean? = null, block: ToggleScope.() -> Unit): ToggleScope {
+inline fun UiScope.RadioButton(state: Boolean? = null, block: RadioButtonScope.() -> Unit): RadioButtonScope {
     val radioButton = uiNode.createChild(RadioButtonNode::class, RadioButtonNode.factory)
     state?.let { radioButton.modifier.toggleState(it) }
     radioButton.block()
     return radioButton
 }
 
-inline fun UiScope.Switch(state: Boolean? = null, block: ToggleScope.() -> Unit): ToggleScope {
+inline fun UiScope.Switch(state: Boolean? = null, block: SwitchScope.() -> Unit): SwitchScope {
     val switch = uiNode.createChild(SwitchNode::class, SwitchNode.factory)
     state?.let { switch.modifier.toggleState(it) }
     switch.block()
@@ -58,10 +122,9 @@ inline fun UiScope.Switch(state: Boolean? = null, block: ToggleScope.() -> Unit)
 abstract class ToggleNode(
     parent: UiNode?,
     surface: UiSurface
-) : UiNode(parent, surface), ToggleScope, Clickable {
+) : UiNode(parent, surface), Clickable {
 
-    override val modifier = ToggleModifier(surface)
-
+    abstract override val modifier: ToggleModifier
     abstract val buttonWidth: Dp
     abstract val buttonHeight: Dp
 
@@ -112,32 +175,41 @@ abstract class ToggleNode(
     }
 }
 
-class CheckboxNode(parent: UiNode?, surface: UiSurface) : ToggleNode(parent, surface) {
-    override val buttonWidth: Dp get() = surface.sizes.checkboxHeight
-    override val buttonHeight: Dp get() = surface.sizes.checkboxHeight
+class CheckboxNode(parent: UiNode?, surface: UiSurface) : ToggleNode(parent, surface), CheckboxScope {
+    override val modifier = CheckboxModifier(surface)
+    override val buttonWidth: Dp get() = modifier.checkboxSize
+    override val buttonHeight: Dp get() = modifier.checkboxSize
 
     override fun render(ctx: KoolContext) {
         super.render(ctx)
         val r = buttonHeight.px * 0.5f
         val c = center()
         val draw = getUiPrimitives()
-        draw.localRoundRect(c.x - r, c.y - r, r * 2f, r * 2f, 4.dp.px, modifier.backgroundColor)
-        draw.localRoundRectBorder(c.x - r, c.y - r, r * 2f, r * 2f, 4.dp.px, 2.dp.px, modifier.borderColor)
-
         val p = animationPos()
+
+        if (p < 1f) {
+            draw.localRoundRectBorder(c.x - r, c.y - r, r * 2f, r * 2f, 4.dp.px, 2.dp.px, modifier.borderColor)
+        }
+
+        val bgColor = when (p) {
+            0f -> modifier.backgroundColorUnchecked
+            1f -> modifier.backgroundColorChecked
+            else -> modifier.backgroundColorUnchecked.mix(modifier.backgroundColorChecked, p)
+        }
+        draw.localRoundRect(c.x - r, c.y - r, r * 2f, r * 2f, 4.dp.px, bgColor)
+
         if (p > 0f) {
-            getPlainBuilder().configured(modifier.foregroundColor) {
-                translate(c.x, c.y, 0f)
+            getPlainBuilder().configured(modifier.checkMarkColor) {
                 val sz = buttonWidth.px * 0.8f * p
+                translate(c.x, c.y - sz * 0.2f, 0f)
                 rotate(45f, Vec3f.Z_AXIS)
                 rect {
-                    size.set(sz, sz * 0.2f)
-                    origin.set(size.x * -0.5f, size.y * -0.5f, 0f)
+                    size.set(sz * 0.6f, sz * 0.2f)
+                    origin.set(size.x * -0.333f, size.y * 2f, 0f)
                 }
-                rotate(90f, Vec3f.Z_AXIS)
                 rect {
-                    size.set(sz, sz * 0.2f)
-                    origin.set(size.x * -0.5f, size.y * -0.5f, 0f)
+                    size.set(sz * 0.2f, sz)
+                    origin.set(size.x, size.y * -0.5f, 0f)
                 }
             }
         }
@@ -148,9 +220,10 @@ class CheckboxNode(parent: UiNode?, surface: UiSurface) : ToggleNode(parent, sur
     }
 }
 
-class RadioButtonNode(parent: UiNode?, surface: UiSurface) : ToggleNode(parent, surface) {
-    override val buttonWidth: Dp get() = surface.sizes.radioButtonHeight
-    override val buttonHeight: Dp get() = surface.sizes.radioButtonHeight
+class RadioButtonNode(parent: UiNode?, surface: UiSurface) : ToggleNode(parent, surface), RadioButtonScope {
+    override val modifier = RadioButtonModifier(surface)
+    override val buttonWidth: Dp get() = modifier.radioButtonSize
+    override val buttonHeight: Dp get() = modifier.radioButtonSize
 
     override fun isOnClickTarget(ev: PointerEvent): Boolean =
         pxToDp(ev.position.distance(center())) < buttonWidth.px * 0.5f
@@ -166,7 +239,7 @@ class RadioButtonNode(parent: UiNode?, surface: UiSurface) : ToggleNode(parent, 
 
         val p = animationPos()
         if (p > 0f) {
-            draw.localCircle(c.x, c.y, (r - 4.dp.px) * p, modifier.foregroundColor)
+            draw.localCircle(c.x, c.y, (r - 4.dp.px) * p, modifier.knobColor)
         }
     }
 
@@ -175,9 +248,10 @@ class RadioButtonNode(parent: UiNode?, surface: UiSurface) : ToggleNode(parent, 
     }
 }
 
-class SwitchNode(parent: UiNode?, surface: UiSurface) : ToggleNode(parent, surface) {
-    override val buttonWidth: Dp get() = Dp(surface.sizes.switchHeight.value * 2f)
-    override val buttonHeight: Dp get() = surface.sizes.switchHeight
+class SwitchNode(parent: UiNode?, surface: UiSurface) : ToggleNode(parent, surface), SwitchScope {
+    override val modifier = SwitchModifier(surface)
+    override val buttonWidth: Dp get() = modifier.switchWidth
+    override val buttonHeight: Dp get() = modifier.switchHeight
 
     override fun render(ctx: KoolContext) {
         super.render(ctx)
@@ -187,12 +261,24 @@ class SwitchNode(parent: UiNode?, surface: UiSurface) : ToggleNode(parent, surfa
         val tH = buttonHeight.px * 0.75f
         val tW = buttonWidth.px - (h - tH) * 0.5f
         val draw = getUiPrimitives()
+        val p = animationPos()
 
-        draw.localRoundRect(c.x - tW * 0.5f, c.y - tH * 0.5f, tW, tH, tH * 0.5f, modifier.backgroundColor)
+        val trackColor = when (p) {
+            0f -> modifier.trackColorOff
+            1f -> modifier.trackColorOn
+            else -> modifier.trackColorOff.mix(modifier.trackColorOn, p)
+        }
+        val knobColor = when (p) {
+            0f -> modifier.knobColorOff
+            1f -> modifier.knobColorOn
+            else -> modifier.knobColorOff.mix(modifier.knobColorOn, p)
+        }
+
+        draw.localRoundRect(c.x - tW * 0.5f, c.y - tH * 0.5f, tW, tH, tH * 0.5f, trackColor)
 
         val extent = w - h
         val knobX = c.x - extent * 0.5f + extent * animationPos()
-        draw.localCircle(knobX, c.y, h * 0.5f, modifier.foregroundColor)
+        draw.localCircle(knobX, c.y, h * 0.5f, knobColor)
     }
 
     companion object {
