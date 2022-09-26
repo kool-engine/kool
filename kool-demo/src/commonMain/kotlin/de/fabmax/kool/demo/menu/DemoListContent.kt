@@ -5,7 +5,6 @@ import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.Color
 
 class DemoListContent(val menu: DemoMenu) : ComposableComponent {
-
     private val nonHiddenDemoItems = mutableListOf<DemoItem>()
     private val allDemoItems = mutableListOf<DemoItem>()
 
@@ -89,7 +88,7 @@ class DemoListContent(val menu: DemoMenu) : ComposableComponent {
 
     private fun TextScope.categoryTitleStyle(item: DemoItem) {
         modifier
-            .background(TitleBgRenderer(item.category.fromColor, item.category.toColor))
+            .background(TitleBgRenderer(DemoMenu.titleBgMesh, item.category.fromColor, item.category.toColor))
             .textColor(Color.WHITE)
             .font(sizes.largeText)
     }

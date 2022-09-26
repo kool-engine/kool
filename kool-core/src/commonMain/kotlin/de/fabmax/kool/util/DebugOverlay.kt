@@ -28,7 +28,7 @@ class DebugOverlay(position: Position = Position.UPPER_RIGHT) {
     val ui: Scene
 
     private val fpsText = mutableStateOf("")
-    private val sysInfos = mutableListStateOf<String>()
+    private val sysInfos = mutableStateListOf<String>()
     private val viewportText = mutableStateOf("")
     private val uptimeText = mutableStateOf("")
     private val numTexText = mutableStateOf("")
@@ -195,7 +195,7 @@ private class DeltaTGraph : UiRenderer<UiNode> {
                 }
             }
         }
-        node.surface.getMeshLayer(node.modifier.zLayer).addCustomNode(graphMesh, 1)
+        node.surface.getMeshLayer(node.modifier.zLayer - 1).addCustomLayer("dt-graph") { graphMesh }
     }
 
     fun updateGraph(updateEvent: RenderPass.UpdateEvent) {

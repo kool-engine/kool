@@ -64,13 +64,12 @@ class Ui2Demo : DemoScene("UI2 Demo") {
 
         // todo
         //  icons
-        //  input context stack
 
         // not for now
         //  smart update: only update nodes which actually changed (might not work with shared meshes), also not really
         //  needed because update is fast enough
 
-        val listItems = mutableListStateOf<String>()
+        val listItems = mutableStateListOf<String>()
         var nextItem = 1
         for (i in 1..500) {
             listItems += "Item ${nextItem++}"

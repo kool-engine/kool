@@ -19,8 +19,8 @@ interface UiScope {
 
     fun pxToDp(px: Float) = px / UiScale.measuredScale
 
-    fun <T: Any?> MutableValueState<T>.use(): T = use(surface)
-    fun <T> MutableListState<T>.use(): MutableListState<T> = use(surface)
+    fun <T: Any?> MutableStateValue<T>.use(): T = use(surface)
+    fun <T> MutableStateList<T>.use(): MutableStateList<T> = use(surface)
     fun AnimationState.progressAndUse(): Float {
         progress(deltaT)
         return use(surface)

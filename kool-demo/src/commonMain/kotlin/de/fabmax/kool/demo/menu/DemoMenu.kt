@@ -99,5 +99,7 @@ class DemoMenu(val demoLoader: DemoLoader) {
 
         const val navBarButtonSelectedAlpha = 0.20f
         const val navBarButtonHoveredAlpha = 0.35f
+
+        val titleBgMesh = TitleBgRenderer.BgMesh()
     }
 }

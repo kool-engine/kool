@@ -28,7 +28,7 @@ import kotlin.math.sqrt
 class SimplificationDemo : DemoScene("Simplification") {
     private val models = mutableListOf<DemoModel>()
 
-    private val activeModel: MutableValueState<DemoModel>
+    private val activeModel: MutableStateValue<DemoModel>
     private var heMesh: HalfEdgeMesh
     private val dispModel = Mesh(IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS))
     private val modelWireframe = LineMesh()
@@ -166,7 +166,7 @@ class SimplificationDemo : DemoScene("Simplification") {
                 modifier
                     .width(Grow.Std)
                     .alignY(AlignmentY.Center)
-                    .margin(horizontal = 8.dp)
+                    .margin(horizontal = sizes.gap)
                     .onChange {
                         simplifcationRatio.set(it)
                         if (isAutoSimplify.value) {

@@ -97,7 +97,7 @@ class LazyListNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface
         indexedBlock: (LazyListScope.(Int, T) -> Unit)?
     ) {
         // auto-depend on list state in case it is a MutableListState
-        (items as? MutableListState)?.use()
+        (items as? MutableStateList)?.use()
         state.numTotalItems = items.size
 
         val elemSize = state.firstElementSizeDp

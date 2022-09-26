@@ -6,6 +6,7 @@ import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.BoundingBox
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.scene.animation.SpringDamperDouble
+import de.fabmax.kool.util.InputStack
 
 /**
  * A special kind of transform group which translates mouse input into a orbit transform. This is mainly useful
@@ -14,8 +15,8 @@ import de.fabmax.kool.scene.animation.SpringDamperDouble
  * @author fabmax
  */
 
-fun Scene.orbitInputTransform(name: String? = null, block: OrbitInputTransform.() -> Unit): OrbitInputTransform {
-    val sit = OrbitInputTransform(this, name)
+fun orbitInputTransform(name: String? = null, block: OrbitInputTransform.() -> Unit): OrbitInputTransform {
+    val sit = OrbitInputTransform(name)
     sit.block()
     return sit
 }
@@ -31,7 +32,7 @@ fun Scene.defaultCamTransform(): OrbitInputTransform {
     return ct
 }
 
-open class OrbitInputTransform(scene: Scene, name: String? = null) : Group(name), Scene.DragHandler {
+open class OrbitInputTransform(name: String? = null) : Group(name) {
     var leftDragMethod = DragMethod.ROTATE
     var middleDragMethod = DragMethod.NONE
     var rightDragMethod = DragMethod.PAN
@@ -96,10 +97,13 @@ open class OrbitInputTransform(scene: Scene, name: String? = null) : Group(name)
         panPlane.p.set(Vec3f.ZERO)
         panPlane.n.set(Vec3f.Y_AXIS)
 
-        scene.registerDragHandler(this)
-
         onUpdate += { (rp, ctx) ->
             doCamTransform(rp, ctx)
+        }
+
+        InputStack.defaultInputHandler.pointerListeners += ::handleDrag
+        onDispose += {
+            InputStack.defaultInputHandler.pointerListeners -= ::handleDrag
         }
     }
 
@@ -230,24 +234,25 @@ open class OrbitInputTransform(scene: Scene, name: String? = null) : Group(name)
         zoom = zoomAnimator.actual
     }
 
-    override fun handleDrag(dragPtrs: List<InputManager.Pointer>, scene: Scene, ctx: KoolContext) {
-        if (dragPtrs.isNotEmpty() && !dragPtrs[0].isConsumed()) {
-            if (dragPtrs[0].buttonEventMask != 0 || dragPtrs[0].buttonMask != prevButtonMask) {
+    private fun handleDrag(pointerState: InputManager.PointerState) {
+        val dragPtr = pointerState.primaryPointer
+        if (!dragPtr.isConsumed()) {
+            if (dragPtr.buttonEventMask != 0 || dragPtr.buttonMask != prevButtonMask) {
                 dragMethod = when {
-                    dragPtrs[0].isLeftButtonDown -> leftDragMethod
-                    dragPtrs[0].isRightButtonDown -> rightDragMethod
-                    dragPtrs[0].isMiddleButtonDown -> middleDragMethod
+                    dragPtr.isLeftButtonDown -> leftDragMethod
+                    dragPtr.isRightButtonDown -> rightDragMethod
+                    dragPtr.isMiddleButtonDown -> middleDragMethod
                     else -> DragMethod.NONE
                 }
                 dragStart = dragMethod != DragMethod.NONE
             }
 
-            prevButtonMask = dragPtrs[0].buttonMask
-            ptrPos.set(dragPtrs[0].x, dragPtrs[0].y)
-            deltaPos.set(dragPtrs[0].deltaX, dragPtrs[0].deltaY)
-            deltaScroll = dragPtrs[0].deltaScroll
+            prevButtonMask = dragPtr.buttonMask
+            ptrPos.set(dragPtr.x, dragPtr.y)
+            deltaPos.set(dragPtr.deltaX, dragPtr.deltaY)
+            deltaScroll = dragPtr.deltaScroll
             if (isConsumingPtr) {
-                dragPtrs[0].consume()
+                dragPtr.consume()
             }
 
         } else {

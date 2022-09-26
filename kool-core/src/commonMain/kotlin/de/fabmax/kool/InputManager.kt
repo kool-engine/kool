@@ -1,9 +1,6 @@
 package de.fabmax.kool
 
-import de.fabmax.kool.util.TouchGestureEvaluator
-import de.fabmax.kool.util.Viewport
-import de.fabmax.kool.util.logD
-import de.fabmax.kool.util.logW
+import de.fabmax.kool.util.*
 import kotlin.math.abs
 
 abstract class InputManager internal constructor() {
@@ -76,6 +73,8 @@ abstract class InputManager internal constructor() {
                 }
             }
         }
+
+        InputStack.handleInput(this, ctx)
     }
 
     fun keyEvent(ev: KeyEvent) {

@@ -4,6 +4,7 @@ import de.fabmax.kool.AssetManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.createDefaultContext
 import de.fabmax.kool.demo.menu.DemoMenu
+import de.fabmax.kool.demo.menu.TitleBgRenderer
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.scene.Scene
@@ -216,7 +217,9 @@ abstract class DemoScene(val name: String) {
     protected fun menuSurface(title: String? = null, block: UiScope.() -> Unit): UiSurface {
         val accent = demoEntry?.color ?: MdColor.PINK
         val accentVariant = accent.mix(Color.BLACK, 0.3f)
-        val titleTxt = title ?: "${demoEntry?.title} Demo"
+        val titleTxt = title ?: demoEntry?.title ?: "Demo"
+        val titleFrom = demoEntry?.category?.fromColor ?: 0f
+        val titleTo = demoEntry?.category?.toColor ?: 0.2f
 
         val scrollState = ScrollState()
 
@@ -235,7 +238,7 @@ abstract class DemoScene(val name: String) {
                 modifier
                     .width(Grow.Std)
                     .height(DemoMenu.itemSize.dp)
-                    .backgroundColor(colors.accent)
+                    .background(TitleBgRenderer(titleBgMesh, titleFrom, titleTo))
                     .textColor(colors.onAccent)
                     .font(sizes.largeText)
                     .textAlign(AlignmentX.Center, AlignmentY.Center)
@@ -262,8 +265,9 @@ abstract class DemoScene(val name: String) {
     protected fun TextScope.sectionTitleStyle() {
         modifier
             .width(Grow.Std)
-            .margin(16.dp)
+            .margin(vertical = 16.dp)
             .textColor(colors.accent)
+            .backgroundColor(colors.accentVariant.withAlpha(0.2f))
             .font(sizes.largeText)
             .textAlignX(AlignmentX.Center)
     }
@@ -280,5 +284,9 @@ abstract class DemoScene(val name: String) {
         LOADING,
         SETUP,
         RUNNING
+    }
+
+    companion object {
+        private val titleBgMesh = TitleBgRenderer.BgMesh()
     }
 }

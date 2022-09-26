@@ -1,7 +1,7 @@
 package de.fabmax.kool.modules.ui2
 
-fun <T> mutableStateOf(value: T) = MutableValueState(value)
-fun <T: Any> mutableListStateOf(vararg elements: T) = MutableListState<T>().apply { addAll(elements) }
+fun <T> mutableStateOf(value: T) = MutableStateValue(value)
+fun <T: Any> mutableStateListOf(vararg elements: T) = MutableStateList<T>().apply { addAll(elements) }
 
 abstract class MutableState {
     var isStateChanged = true
@@ -33,7 +33,7 @@ abstract class MutableState {
     }
 }
 
-open class MutableValueState<T: Any?>(initValue: T) : MutableState() {
+open class MutableStateValue<T: Any?>(initValue: T) : MutableState() {
     private val stateListeners = mutableListOf<(T) -> Unit>()
 
     var value: T = initValue
@@ -67,10 +67,10 @@ open class MutableValueState<T: Any?>(initValue: T) : MutableState() {
     }
 }
 
-class MutableListState<T>(private val values: MutableList<T> = mutableListOf()) :
+class MutableStateList<T>(private val values: MutableList<T> = mutableListOf()) :
     MutableState(), MutableList<T> by values
 {
-    fun use(surface: UiSurface): MutableListState<T> {
+    fun use(surface: UiSurface): MutableStateList<T> {
         usedBy(surface)
         return this
     }

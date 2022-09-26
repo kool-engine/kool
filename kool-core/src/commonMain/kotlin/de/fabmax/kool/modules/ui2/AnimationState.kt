@@ -1,6 +1,6 @@
 package de.fabmax.kool.modules.ui2
 
-open class AnimationState(var duration: Float) : MutableValueState<Float>(1f) {
+open class AnimationState(var duration: Float) : MutableStateValue<Float>(1f) {
     var isActive = false
         private set
     var progressionTime = duration

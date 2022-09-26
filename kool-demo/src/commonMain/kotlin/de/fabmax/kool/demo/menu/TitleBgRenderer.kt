@@ -17,16 +17,16 @@ import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.util.createUint8Buffer
 
-class TitleBgRenderer(val fromColor: Float, val toColor: Float) : UiRenderer<UiNode> {
+class TitleBgRenderer(val titleBgMesh: BgMesh, val fromColor: Float, val toColor: Float) : UiRenderer<UiNode> {
 
     override fun renderUi(node: UiNode) {
         val meshLayer = node.surface.getMeshLayer(node.modifier.zLayer + UiSurface.LAYER_BACKGROUND)
-        if (BgMesh.mesh !in meshLayer.customNodes) {
-            BgMesh.bgInstances.clear()
-            meshLayer.addCustomNode(BgMesh.mesh)
+        val isFirstUsage = meshLayer.addCustomLayer("title-bg") { titleBgMesh }
+        if (isFirstUsage) {
+            titleBgMesh.bgInstances.clear()
         }
 
-        BgMesh.bgInstances.addInstance {
+        titleBgMesh.bgInstances.addInstance {
             put(node.clipBoundsPx.array)
             put(node.leftPx)
             put(node.topPx)
@@ -37,21 +37,16 @@ class TitleBgRenderer(val fromColor: Float, val toColor: Float) : UiRenderer<UiN
         }
     }
 
-    private object BgMesh {
-        val ATTRIB_DIMENS = Attribute("aDimens", GlslType.VEC_4F)
-        val ATTRIB_GRADIENT_RANGE = Attribute("aGradientRange", GlslType.VEC_2F)
-
-        val gradientTex = GradientTexture(Demos.demoColors, size = 512)
+    class BgMesh : Mesh(IndexedVertexList(Ui2Shader.UI_MESH_ATTRIBS)) {
         val bgInstances = MeshInstanceList(listOf(
             Ui2Shader.ATTRIB_CLIP,
-            ATTRIB_DIMENS,
-            ATTRIB_GRADIENT_RANGE
+            CategoryShader.ATTRIB_DIMENS,
+            CategoryShader.ATTRIB_GRADIENT_RANGE
         ))
 
-        val noiseTex = generateNoiseTex()
-        val catShader = CategoryShader()
+        private val catShader = CategoryShader()
 
-        val mesh = Mesh(IndexedVertexList(Ui2Shader.UI_MESH_ATTRIBS)).apply {
+        init {
             shader = catShader
             instances = bgInstances
             generate {
@@ -69,6 +64,13 @@ class TitleBgRenderer(val fromColor: Float, val toColor: Float) : UiRenderer<UiN
                 catShader.noiseOffset += it.deltaT * 0.01f
             }
         }
+
+    }
+
+    private class CategoryShader : KslShader(Model(), pipelineConfig) {
+        val colorTex by texture1d("tGradient", GradientTexture(Demos.demoColors, size = 512))
+        val noiseTex by texture2d("tNoise", generateNoiseTex())
+        var noiseOffset by uniform1f("uNoiseOffset")
 
         private fun generateNoiseTex(): Texture2d {
             val width = 32
@@ -89,12 +91,6 @@ class TitleBgRenderer(val fromColor: Float, val toColor: Float) : UiRenderer<UiN
             val noiseProps = TextureProps(mipMapping = false, maxAnisotropy = 0)
             return Texture2d(noiseProps, loader = BufferedTextureLoader(TextureData2d(data, width, height, TexFormat.RGBA)))
         }
-    }
-
-    private class CategoryShader : KslShader(Model(), pipelineConfig) {
-        val colorTex by texture1d("tGradient", BgMesh.gradientTex)
-        val noiseTex by texture2d("tNoise", BgMesh.noiseTex)
-        var noiseOffset by uniform1f("uNoiseOffset")
 
         private class Model : KslProgram("Demo category shader") {
             init {
@@ -105,7 +101,7 @@ class TitleBgRenderer(val fromColor: Float, val toColor: Float) : UiRenderer<UiN
                 vertexStage {
                     main {
                         clipBounds.input set instanceAttribFloat4(Ui2Shader.ATTRIB_CLIP.name)
-                        val uvRange = float2Var(instanceAttribFloat2(BgMesh.ATTRIB_GRADIENT_RANGE.name))
+                        val uvRange = float2Var(instanceAttribFloat2(ATTRIB_GRADIENT_RANGE.name))
                         val meshUv = float2Var(vertexAttribFloat2(Attribute.TEXTURE_COORDS.name))
                         meshUv.x += uniformFloat1("uNoiseOffset")
                         meshUv.y += uvRange.x
@@ -117,7 +113,7 @@ class TitleBgRenderer(val fromColor: Float, val toColor: Float) : UiRenderer<UiN
                         texCoords.input set pos.xy
                         texCoords.input.x set uvRange.x + clamp(pos.x + pos.y * 0.2f.const, (-0.1f).const, 1.1f.const) * (uvRange.y - uvRange.x)
 
-                        val dimens = float4Var(instanceAttribFloat4(BgMesh.ATTRIB_DIMENS.name))
+                        val dimens = float4Var(instanceAttribFloat4(ATTRIB_DIMENS.name))
                         pos.x set dimens.x + pos.x * dimens.z
                         pos.y set dimens.y + pos.y * dimens.w
 
@@ -142,6 +138,9 @@ class TitleBgRenderer(val fromColor: Float, val toColor: Float) : UiRenderer<UiN
         }
 
         companion object {
+            val ATTRIB_DIMENS = Attribute("aDimens", GlslType.VEC_4F)
+            val ATTRIB_GRADIENT_RANGE = Attribute("aGradientRange", GlslType.VEC_2F)
+
             val pipelineConfig = PipelineConfig().apply {
                 blendMode = BlendMode.BLEND_PREMULTIPLIED_ALPHA
                 cullMethod = CullMethod.NO_CULLING

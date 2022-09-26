@@ -14,7 +14,7 @@ class SettingsContent(val menu: DemoMenu) : ComposableComponent {
             Text("Settings") {
                 itemStyle()
                 modifier
-                    .background(TitleBgRenderer(0.75f, 0.95f))
+                    .background(TitleBgRenderer(DemoMenu.titleBgMesh, 0.75f, 0.95f))
                     .font(sizes.largeText)
                     .textColor(Color.WHITE)
             }

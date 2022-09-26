@@ -2,6 +2,7 @@ package de.fabmax.kool.modules.ui2
 
 import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.scene.Group
@@ -10,6 +11,7 @@ import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.scene.ui.Font
 import de.fabmax.kool.scene.ui.FontProps
+import de.fabmax.kool.util.InputStack
 import de.fabmax.kool.util.PerfTimer
 import de.fabmax.kool.util.TreeMap
 import de.fabmax.kool.util.logD
@@ -24,7 +26,7 @@ class UiSurface(
     private val meshLayers = TreeMap<Int, MeshLayer>()
     private val onEachFrame = mutableListOf<() -> Unit>()
 
-    private val inputHandler = InputHandler()
+    private val inputHandler = UiInputHandler()
     private val viewportWidth = mutableStateOf(0f)
     private val viewportHeight = mutableStateOf(0f)
     private val viewport = BoxNode(null, this).apply { modifier.layout(CellLayout) }
@@ -61,7 +63,7 @@ class UiSurface(
                 onEachFrame[i]()
             }
 
-            inputHandler.handleInput(it)
+            inputHandler.checkInputHandler(it.ctx)
             if (requiresUpdate) {
                 requiresUpdate = false
                 updateUi(it)
@@ -183,7 +185,7 @@ class UiSurface(
         }
     }
 
-    private inner class InputHandler {
+    private inner class UiInputHandler : InputStack.InputHandler(name ?: "UiSurface", false, false) {
         private val nodeResult = mutableListOf<UiNode>()
         private var focusedNode: Focusable? = null
         private var hoveredNode: UiNode? = null
@@ -206,34 +208,60 @@ class UiSurface(
             focusable?.onFocusGain()
         }
 
-        fun handleInput(updateEvent: RenderPass.UpdateEvent) {
-            handlePointerInput(updateEvent)
-            handleKeyInput(updateEvent)
-        }
+        fun checkInputHandler(ctx: KoolContext) {
+            // keyboard input is blocked by this UiSurface as soon as a ui element is focused
+            blockAllKeyboardInput = focusedNode != null
 
-        fun handleKeyInput(updateEvent: RenderPass.UpdateEvent) {
-            if (updateEvent.ctx.inputMgr.keyEvents.isNotEmpty()) {
-                focusedNode?.let { focusable ->
-                    for (keyEv in updateEvent.ctx.inputMgr.keyEvents) {
-                        focusable.onKeyEvent(keyEv)
-                    }
+            // pointer input is blocked as soon as the pointer is above this surface OR if drag is active
+            // the drag check is needed to avoid losing the pointer while dragging, e.g., a slider and accidentally
+            // leaving the surface bounds
+            // the other way around we do not start to block the input while drag is active when the pointer enters the
+            // surface area
+            val wasBlockingPointerInput = blockAllPointerInput
+            blockAllPointerInput = false
+            val ptr = ctx.inputMgr.pointerState.primaryPointer
+            if (ptr.isValid) {
+                val ptrPos = Vec2f(ptr.x.toFloat(), ptr.y.toFloat())
+                val isPointerOnSurface = dragNode != null || viewport.children.any { it.isInBounds(ptrPos) }
+                if (isPointerOnSurface && (wasBlockingPointerInput || !ptr.isDrag)) {
+                    blockAllPointerInput = true
                 }
+            }
+
+            if (blockAllPointerInput || blockAllKeyboardInput) {
+                InputStack.pushTop(this)
+            } else {
+                InputStack.remove(this)
             }
         }
 
-        fun handlePointerInput(updateEvent: RenderPass.UpdateEvent) {
-            val ptr = updateEvent.ctx.inputMgr.pointerState.primaryPointer
+        override fun handlePointer(pointerState: InputManager.PointerState, ctx: KoolContext) {
+            super.handlePointer(pointerState, ctx)
+
+            val ptr = pointerState.primaryPointer
             viewport.collectNodesAt(ptr.x.toFloat(), ptr.y.toFloat(), nodeResult, hasPointerListener)
             if (hoveredNode == null && dragNode == null && nodeResult.isEmpty()) {
                 return
             }
 
-            val ptrEv = PointerEvent(ptr, updateEvent.ctx)
+            val ptrEv = PointerEvent(ptr, ctx)
             hoveredNode?.let { handleHover(it, ptrEv) }
             if (nodeResult.isNotEmpty()) {
                 handlePointerEvents(nodeResult, ptrEv)
             }
             dragNode?.let { handleDrag(it, ptrEv) }
+        }
+
+        override fun handleKeyEvents(keyEvents: MutableList<InputManager.KeyEvent>, ctx: KoolContext) {
+            super.handleKeyEvents(keyEvents, ctx)
+
+            if (keyEvents.isNotEmpty()) {
+                focusedNode?.let { focusable ->
+                    for (keyEv in keyEvents) {
+                        focusable.onKeyEvent(keyEv)
+                    }
+                }
+            }
         }
 
         private fun handleHover(currentHover: UiNode, ptrEv: PointerEvent) {
@@ -394,14 +422,22 @@ class UiSurface(
         }
     }
 
+    private class CustomLayer(val drawNode: Node) {
+        var isUsed = false
+
+        fun clear() {
+            isUsed = false
+        }
+    }
+
     inner class MeshLayer : Group() {
         private val textMeshes = mutableMapOf<FontProps, TextMesh>()
         private val imageMeshes = mutableMapOf<Texture2d, ImageMeshes>()
+        private val customLayers = mutableMapOf<String, CustomLayer>()
         private val plainMesh = mesh(Ui2Shader.UI_MESH_ATTRIBS) { shader = Ui2Shader() }
 
         val uiPrimitives = UiPrimitiveMesh()
         val plainBuilder = MeshBuilder(plainMesh.geometry).apply { isInvertFaceOrientation = true }
-        val customNodes = mutableListOf<Node>()
 
         var isUsed = false
 
@@ -419,32 +455,41 @@ class UiSurface(
             return textMesh.builder
         }
 
-        fun addCustomNode(drawNode: Node, index: Int = -1) {
-            addNode(drawNode, index)
-            customNodes += drawNode
+        fun addCustomLayer(key: String, block: () -> Node): Boolean {
+            val layer = customLayers.getOrPut(key) { CustomLayer(block()) }
+            val isFirstUsage = !layer.isUsed
+            if (isFirstUsage) {
+                addNode(layer.drawNode)
+            }
+            layer.isUsed = true
+            return isFirstUsage
         }
 
         fun addImage(image: Texture2d): ImageMesh {
             val imgMesh = imageMeshes.getOrPut(image) { ImageMeshes() }.getUnusedMesh()
-            addCustomNode(imgMesh)
+            addNode(imgMesh)
             return imgMesh
         }
 
         fun clear() {
+            isUsed = false
             textMeshes.values.forEach { it.clear() }
             uiPrimitives.instances?.clear()
             plainBuilder.clear()
 
             if (imageMeshes.isNotEmpty()) {
-                imageMeshes.values.forEach { it.clear() }
+                imageMeshes.values.forEach {
+                    it.clear()
+                    intChildren -= it.meshes.toSet()
+                }
             }
 
-            if (customNodes.isNotEmpty()) {
-                customNodes.forEach { removeNode(it) }
-                customNodes.clear()
+            if (customLayers.isNotEmpty()) {
+                customLayers.values.forEach {
+                    it.clear()
+                    removeNode(it.drawNode)
+                }
             }
-
-            isUsed = false
         }
     }
 
