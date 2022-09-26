@@ -167,7 +167,10 @@ class SliderNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface),
     }
 
     override fun onDrag(ev: PointerEvent) {
-        modifier.onChange?.invoke(computeValue(ev))
+        val newValue = computeValue(ev)
+        if (newValue != modifier.value) {
+            modifier.onChange?.invoke(newValue)
+        }
     }
 
     override fun onDragEnd(ev: PointerEvent) {

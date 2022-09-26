@@ -298,9 +298,9 @@ class DeferredDemo : DemoScene("Deferred Shading") {
         images += image(imageShader = gBufferShader(deferredPipeline.activePass.materialPass.positionFlags, 10f, 0.05f)).apply {
             setupImage(0.025f, 0.675f)
         }
-        images += image(imageShader = ModeledShader.TextureColor(deferredPipeline.aoPipeline?.aoMap, model = AoDemo.aoMapColorModel())).apply {
-            setupImage(0.35f, 0.35f)
-        }
+//        images += image(imageShader = ModeledShader.TextureColor(deferredPipeline.aoPipeline?.aoMap, model = AoDemo.aoMapColorModel())).apply {
+//            setupImage(0.35f, 0.35f)
+//        }
         images += image(imageShader = MetalRoughFlagsTex(deferredPipeline)).apply {
             setupImage(0.35f, 0.675f)
         }

@@ -2,12 +2,14 @@ package de.fabmax.kool.demo
 
 import de.fabmax.kool.AssetManager
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Random
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.randomF
 import de.fabmax.kool.modules.gltf.GltfFile
 import de.fabmax.kool.modules.gltf.loadGltfFile
+import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.Shader
 import de.fabmax.kool.pipeline.shadermodel.PbrMaterialNode
@@ -23,9 +25,10 @@ import kotlin.math.roundToInt
 
 class InstanceDemo : DemoScene("Instanced Drawing") {
 
-    private var nBunnies = 10
-    private var isLodColors = false
-    private var isAutoRotate = true
+    private val nBunnies = mutableStateOf(10)
+    private val isLodColors = mutableStateOf(false)
+    private val isAutoRotate = mutableStateOf(true)
+    private val numInstances = mutableStateListOf(0)
 
     private val modelCenter = MutableVec3f()
     private var modelRadius = 1f
@@ -61,8 +64,12 @@ class InstanceDemo : DemoScene("Instanced Drawing") {
             setMouseRotation(30f, -40f)
 
             onUpdate += {
-                if (isAutoRotate) {
+                if (isAutoRotate.value) {
                     verticalRotation += it.deltaT * 3f
+                }
+                numInstances.clear()
+                for (i in lods.indices) {
+                    numInstances += lodController.getInstanceCount(i)
                 }
             }
         }
@@ -112,11 +119,12 @@ class InstanceDemo : DemoScene("Instanced Drawing") {
         )
 
         instances.clear()
+        val n = nBunnies.value
         val rand = Random(17)
-        val off = (nBunnies - 1) * 0.5f
-        for (x in 0 until nBunnies) {
-            for (y in 0 until nBunnies) {
-                for (z in 0 until nBunnies) {
+        val off = (n - 1) * 0.5f
+        for (x in 0 until n) {
+            for (y in 0 until n) {
+                for (z in 0 until n) {
                     val position = MutableVec3f((x - off) * 5f + randomF(-2f, 2f), (y - off) * 5f + randomF(-2f, 2f), (z - off) * 5f + randomF(-2f, 2f))
                     val rotAxis = MutableVec3f(randomF(-1f, 1f), randomF(-1f, 1f), randomF(-1f, 1f))
                     instances += BunnyInstance(position, rotAxis).apply {
@@ -167,7 +175,7 @@ class InstanceDemo : DemoScene("Instanced Drawing") {
 
         override fun addInstanceData(lod: Int, buffer: Float32Buffer, ctx: KoolContext) {
             buffer.put(instanceModelMat.matrix)
-            if (isLodColors) {
+            if (isLodColors.value) {
                 buffer.put(lods[lod].color.array)
             } else {
                 buffer.put(color.array)
@@ -175,30 +183,48 @@ class InstanceDemo : DemoScene("Instanced Drawing") {
         }
     }
 
-    override fun setupMenu(ctx: KoolContext) = controlUi {
-        section("Scene") {
-            val bunnyTxtFormat: ((Float) -> String) = {
-                val n = it.roundToInt()
-                "${n * n * n}"
-            }
-            sliderWithValue("Bunnies:", nBunnies.toFloat(), 5f, 20f, textFormat = bunnyTxtFormat) {
+    override fun createMenu(menu: DemoMenu, ctx: KoolContext) = menuSurface {
+        MenuRow {
+            Text("Bunnies:") { labelStyle() }
+            MenuSlider(
+                nBunnies.use().toFloat(), 5f, 20f,
+                txtFormat = {
+                    val iValue = it.toInt()
+                    "${iValue * iValue * iValue}"
+                }
+            ) { value ->
                 val n = value.roundToInt()
-                if (n != nBunnies) {
-                    nBunnies = n
+                if (n != nBunnies.value) {
+                    nBunnies.set(n)
                     lodController.setupInstances()
                 }
             }
-            toggleButton("Color by LOD", isLodColors) { isLodColors = isEnabled }
-            toggleButton("Auto Rotate", isAutoRotate) { isAutoRotate = isEnabled }
         }
-        section("Info") {
-            for (i in lods.indices) {
-                textWithValue("LOD $i:", "").apply {
-                    onUpdate += {
-                        val cnt = lodController.getInstanceCount(i)
-                        val tris = cnt * (lods[i].mesh?.geometry?.numPrimitives ?: 0)
-                        text = "$cnt insts / $tris tris"
-                    }
+        MenuRow { LabeledSwitch("Color by LOD", isLodColors) }
+        MenuRow { LabeledSwitch("Auto rotate view", isAutoRotate) }
+
+        Text("Statistics") { sectionTitleStyle() }
+        MenuRow {
+            Box(width = Grow.Std) {  }
+            Text("# Instances") {
+                labelStyle(Grow.Std)
+                modifier.textAlign(AlignmentX.End)
+            }
+            Text("# Faces") {
+                labelStyle(Grow.Std)
+                modifier.textAlign(AlignmentX.End)
+            }
+        }
+        numInstances.use().forEachIndexed { i, numInsts ->
+            MenuRow {
+                Text("LOD $i") { labelStyle(Grow.Std) }
+                Text("$numInsts") {
+                    labelStyle(Grow.Std)
+                    modifier.textAlign(AlignmentX.End)
+                }
+                Text("${numInsts * (lods[i].mesh?.geometry?.numPrimitives ?: 0)}") {
+                    labelStyle(Grow.Std)
+                    modifier.textAlign(AlignmentX.End)
                 }
             }
         }

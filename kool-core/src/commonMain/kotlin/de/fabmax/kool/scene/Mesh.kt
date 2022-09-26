@@ -56,9 +56,12 @@ open class Mesh(var geometry: IndexedVertexList, name: String? = null) : Node(na
 
     var shader: Shader? = null
         set(value) {
-            field = value
-            pipeline?.let { discardedPipelines += it }
-            pipeline = null
+            if (field !== value) {
+                field = value
+                // fixme: this is not optimal in cases where the old shader is still used in other places
+                pipeline?.let { discardedPipelines += it }
+                pipeline = null
+            }
         }
 
     /**

@@ -319,7 +319,6 @@ abstract class MappedUniformTex(val texUnit: Int, val target: Int) : MappedUnifo
     }
 
     companion object {
-        // todo: integrate texture manager
         private val loadedTextures = mutableMapOf<TextureData, LoadedTextureGl>()
 
         protected fun getLoadedTex(texData: TextureData, texture: Texture, ctx: Lwjgl3Context): LoadedTextureGl {

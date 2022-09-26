@@ -148,7 +148,7 @@ class SimplificationDemo : DemoScene("Simplification") {
 
     override fun createMenu(menu: DemoMenu, ctx: KoolContext) = menuSurface {
         MenuRow {
-            Text("Model:") { labelStyle(true) }
+            Text("Model:") { labelStyle(Grow.Std) }
             ComboBox {
                 modifier
                     .width(160.dp)
@@ -162,21 +162,11 @@ class SimplificationDemo : DemoScene("Simplification") {
         }
         MenuRow {
             Text("Ratio:") { labelStyle() }
-            Slider(simplifcationRatio.use(), 0.01f, 1f) {
-                modifier
-                    .width(Grow.Std)
-                    .alignY(AlignmentY.Center)
-                    .margin(horizontal = sizes.gap)
-                    .onChange {
-                        simplifcationRatio.set(it)
-                        if (isAutoSimplify.value) {
-                            runSimplification(simplifcationRatio.value)
-                        }
-                    }
-            }
-            Text("${(simplifcationRatio.value * 100).toInt()} %") {
-                labelStyle()
-                modifier.width(48.dp).textAlignX(AlignmentX.End)
+            MenuSlider(simplifcationRatio.use(), 0.01f, 1f, { "${(it * 100).toInt()} %" }) {
+                simplifcationRatio.set(it)
+                if (isAutoSimplify.value) {
+                    runSimplification(simplifcationRatio.value)
+                }
             }
         }
         Button("Simplify Mesh") {
@@ -190,69 +180,41 @@ class SimplificationDemo : DemoScene("Simplification") {
         }
 
         Text("Options") { sectionTitleStyle() }
-        MenuRow {
-            Text("Auto simplify mesh") { labelStyle(true) }
-            Switch(isAutoSimplify.use()) {
-                modifier
-                    .alignY(AlignmentY.Center)
-                    .onToggle { isAutoSimplify.set(it) }
-            }
-        }
-        MenuRow {
-            Text("Draw solid") { labelStyle(true) }
-            Switch(isSolidVisible.use()) {
-                modifier
-                    .alignY(AlignmentY.Center)
-                    .onToggle { isSolidVisible.set(it) }
-            }
-        }
-        MenuRow {
-            Text("Draw wireframe") { labelStyle(true) }
-            Switch(isWireframeVisible.use()) {
-                modifier
-                    .alignY(AlignmentY.Center)
-                    .onToggle { isWireframeVisible.set(it) }
-            }
-        }
-        MenuRow {
-            Text("Auto rotate view") { labelStyle(true) }
-            Switch(isAutoRotate.use()) {
-                modifier
-                    .alignY(AlignmentY.Center)
-                    .onToggle { isAutoRotate.set(it) }
-            }
-        }
+        MenuRow { LabeledSwitch("Auto simplify mesh", isAutoSimplify) }
+        MenuRow { LabeledSwitch("Draw solid", isSolidVisible) }
+        MenuRow { LabeledSwitch("Draw wireframe", isWireframeVisible) }
+        MenuRow { LabeledSwitch("Auto rotate view", isAutoRotate) }
 
         Text("Statistics") { sectionTitleStyle() }
         MenuRow {
-            Text("Faces:") { labelStyle(true) }
+            Text("Faces:") { labelStyle(Grow.Std) }
             Text("${simplifiedNumFaces.use()}   /") {
-                labelStyle(false)
+                labelStyle()
                 modifier.textAlignX(AlignmentX.End)
             }
             Text("${activeModel.value.geometry.numPrimitives}") {
-                labelStyle(false)
+                labelStyle()
                 modifier
                     .width(64.dp)
                     .textAlignX(AlignmentX.End)
             }
         }
         MenuRow {
-            Text("Vertices:") { labelStyle(true) }
+            Text("Vertices:") { labelStyle(Grow.Std) }
             Text("${simplifiedNumVerts.use()}   /") {
-                labelStyle(false)
+                labelStyle()
                 modifier.textAlignX(AlignmentX.End)
             }
             Text("${activeModel.value.geometry.numVertices}") {
-                labelStyle(false)
+                labelStyle()
                 modifier
                     .width(64.dp)
                     .textAlignX(AlignmentX.End)
             }
         }
         MenuRow {
-            Text("Time:") { labelStyle(true) }
-            Text("${simplificationTime.use().toString(2)} s") { labelStyle(false) }
+            Text("Time:") { labelStyle(Grow.Std) }
+            Text("${simplificationTime.use().toString(2)} s") { labelStyle() }
         }
 
     }

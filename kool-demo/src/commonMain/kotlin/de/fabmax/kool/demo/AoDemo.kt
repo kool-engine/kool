@@ -2,20 +2,27 @@ package de.fabmax.kool.demo
 
 import de.fabmax.kool.AssetManager
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.scale
 import de.fabmax.kool.math.toDeg
 import de.fabmax.kool.modules.gltf.GltfFile
 import de.fabmax.kool.modules.gltf.loadGltfModel
+import de.fabmax.kool.modules.ksl.KslUnlitShader
+import de.fabmax.kool.modules.ksl.lang.b
+import de.fabmax.kool.modules.ksl.lang.g
+import de.fabmax.kool.modules.ksl.lang.getFloat4Port
+import de.fabmax.kool.modules.ksl.lang.r
+import de.fabmax.kool.modules.ui2.*
+import de.fabmax.kool.pipeline.DepthCompareOp
 import de.fabmax.kool.pipeline.ao.AoPipeline
 import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
-import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.Albedo
-import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.RectProps
+import de.fabmax.kool.toString
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.ShadowMap
@@ -24,17 +31,26 @@ import kotlin.math.*
 
 class AoDemo : DemoScene("Ambient Occlusion") {
 
-    private var autoRotate = true
-    private var spotLight = true
-
     private lateinit var aoPipeline: AoPipeline
     private val shadows = mutableListOf<ShadowMap>()
 
     private lateinit var ibl: EnvironmentMaps
     private lateinit var teapotMesh: Mesh
 
+    private val isAoEnabled = mutableStateOf(true).apply { onChange { aoPipeline.isEnabled = it } }
+    private val isAutoRotate = mutableStateOf(true)
+    private val isSpotLight = mutableStateOf(true).apply { onChange { updateLighting(it) } }
+    private val showAoMapValues = listOf("None", "Filtered", "Noisy")
+    private val showAoMapIndex = mutableStateOf(0)
+
+    private val aoRadius = mutableStateOf(1f).apply { onChange { aoPipeline.radius = it } }
+    private val aoPower = mutableStateOf(1f).apply { onChange { aoPipeline.power = it } }
+    private val aoStrength = mutableStateOf(1f).apply { onChange { aoPipeline.strength = it } }
+    private val aoSamples = mutableStateOf(16).apply { onChange { aoPipeline.kernelSz = it } }
+    private val aoMapSize = mutableStateOf(1f).apply { onChange { aoPipeline.mapSize = it } }
+
     override fun lateInit(ctx: KoolContext) {
-        updateLighting()
+        updateLighting(isSpotLight.value)
     }
 
     override suspend fun AssetManager.loadResources(ctx: KoolContext) {
@@ -56,7 +72,7 @@ class AoDemo : DemoScene("Ambient Occlusion") {
             zoom = 8.0
 
             onUpdate += {
-                if (autoRotate) {
+                if (isAutoRotate.value) {
                     verticalRotation += ctx.deltaT * 3f
                 }
             }
@@ -64,6 +80,12 @@ class AoDemo : DemoScene("Ambient Occlusion") {
 
         shadows.add(SimpleShadowMap(this, 0, 2048))
         aoPipeline = AoPipeline.createForward(this)
+
+        aoRadius.set(aoPipeline.radius)
+        aoPower.set(aoPipeline.power)
+        aoStrength.set(aoPipeline.strength)
+        aoSamples.set(aoPipeline.kernelSz)
+        aoMapSize.set(aoPipeline.mapSize)
 
         +colorMesh("teapots") {
             generate {
@@ -196,8 +218,8 @@ class AoDemo : DemoScene("Ambient Occlusion") {
         texCoordLowerRight.set(u + width, v + height)
     }
 
-    private fun updateLighting() {
-        if (spotLight) {
+    private fun updateLighting(enabled: Boolean) {
+        if (enabled) {
             mainScene.lighting.singleLight {
                 val p = Vec3f(6f, 10f, -6f)
                 setSpot(p, scale(p, -1f).norm(), 40f)
@@ -206,67 +228,92 @@ class AoDemo : DemoScene("Ambient Occlusion") {
         } else {
             mainScene.lighting.lights.clear()
         }
-        shadows.forEach { it.isShadowMapEnabled = spotLight }
+        shadows.forEach { it.isShadowMapEnabled = enabled }
     }
 
-    override fun setupMenu(ctx: KoolContext) = controlUi {
-        val aoMap = image(imageShader = ModeledShader.TextureColor(aoPipeline.aoMap, model = aoMapColorModel())).apply {
-            isVisible = false
+    override fun createMenu(menu: DemoMenu, ctx: KoolContext) = menuSurface {
+        MenuRow { LabeledSwitch("AO enabled", isAoEnabled) }
+        MenuRow { LabeledSwitch("Spot light", isSpotLight) }
+        MenuRow { LabeledSwitch("Auto rotate view", isAutoRotate) }
+        MenuRow {
+            Text("Show AO map:") { labelStyle(Grow.Std) }
+            ComboBox {
+                modifier
+                    .items(showAoMapValues)
+                    .selectedIndex(showAoMapIndex.use())
+                    .width(160.dp)
+                    .onItemSelected { showAoMapIndex.set(it) }
+            }
         }
 
-        section("Ambient Occlusion") {
-            toggleButton("Enabled", aoPipeline.isEnabled) { aoPipeline.isEnabled = isEnabled }
-            toggleButton("Show AO Map", aoMap.isVisible) { aoMap.isVisible = isEnabled }
-            sliderWithValue("Radius:", aoPipeline.radius, 0.1f, 3f, 2) {
-                aoPipeline.radius = value
-            }
-            sliderWithValue("Power:", log(aoPipeline.power, 10f), log(0.2f, 10f), log(5f, 10f), 2) {
-                aoPipeline.power = 10f.pow(value)
-            }
-            sliderWithValue("Strength:", aoPipeline.strength, 0f, 5f, 2) {
-                aoPipeline.strength = value
-            }
-            sliderWithValue("AO Samples:", aoPipeline.kernelSz.toFloat(), 4f, 64f, 0) {
-                aoPipeline.kernelSz = value.roundToInt()
-            }
-            sliderWithValue("Map Size:", aoPipeline.mapSize, 0.1f, 1f, 1) {
-                aoPipeline.mapSize = (value * 10).roundToInt() / 10f
+        Text("AO Settings") { sectionTitleStyle() }
+        MenuRow {
+            Text("Radius:") { labelStyle(80.dp) }
+            MenuSlider(aoRadius.use(), 0.1f, 3f) {
+                aoRadius.set(it)
             }
         }
-        section("Scene") {
-            toggleButton("Auto Rotate", autoRotate) { autoRotate = isEnabled }
-            toggleButton("Spot Light", spotLight) {
-                spotLight = isEnabled
-                updateLighting()
+        MenuRow {
+            Text("Power:") { labelStyle(80.dp) }
+            MenuSlider(log(aoPower.use(), 10f), log(0.2f, 10f), log(5f, 10f)) {
+                aoPower.set(10f.pow(it))
+            }
+        }
+        MenuRow {
+            Text("Strength:") { labelStyle(80.dp) }
+            MenuSlider(aoStrength.use(), 0f, 5f) {
+                aoStrength.set(it)
+            }
+        }
+        MenuRow {
+            Text("Samples:") { labelStyle(80.dp) }
+            MenuSlider(aoSamples.use().toFloat(), 4f, 64f, { "${it.roundToInt()}" }) {
+                aoSamples.set(it.roundToInt())
+            }
+        }
+        MenuRow {
+            Text("Map Size:") { labelStyle(80.dp) }
+            MenuSlider(aoMapSize.use(), 0.1f, 1f, { it.toString(1) }) {
+                aoMapSize.set((it * 10).roundToInt() / 10f)
+            }
+        }
+
+        if (showAoMapIndex.value != 0) {
+            val image = when (showAoMapIndex.value) {
+                1 -> aoPipeline.aoMap
+                2 -> aoPipeline.aoPass.colorTexture
+                else -> null
+            }
+            surface.popup().apply {
+                modifier
+                    .margin(sizes.gap)
+                    .zLayer(UiSurface.LAYER_BACKGROUND)
+                    .align(AlignmentX.Start, AlignmentY.Bottom)
+
+                Image(image) {
+                    modifier
+                        .height(500.dp)
+                        .mirror(y = true)
+                        .customShader(aoMapShader.apply { colorMap = image })
+                }
             }
         }
     }
 
     companion object {
-        fun aoMapColorModel() = ShaderModel("aoMap").apply {
-            val ifTexCoords: StageInterfaceNode
-
-            vertexStage {
-                ifTexCoords = stageInterfaceNode("ifTexCoords", attrTexCoords().output)
-                positionOutput = simpleVertexPositionNode().outVec4
-            }
-            fragmentStage {
-                val sampler = texture2dSamplerNode(texture2dNode("colorTex"), ifTexCoords.output)
-                val gray = addNode(Red2GrayNode(sampler.outColor, stage)).outGray
-                colorOutput(gray)
-            }
-        }
-
-        private class Red2GrayNode(val inRed: ShaderNodeIoVar, graph: ShaderGraph) : ShaderNode("red2gray", graph) {
-            val outGray = ShaderNodeIoVar(ModelVar4f("outGray"), this)
-
-            override fun setup(shaderGraph: ShaderGraph) {
-                super.setup(shaderGraph)
-                dependsOn(inRed)
-            }
-
-            override fun generateCode(generator: CodeGenerator) {
-                generator.appendMain("${outGray.declare()} = vec4(${inRed.ref1f()}, ${inRed.ref1f()}, ${inRed.ref1f()}, 1.0);")
+        private val aoMapShader = KslUnlitShader {
+            color { textureColor() }
+            pipeline { depthTest = DepthCompareOp.DISABLED }
+            modelCustomizer = {
+                fragmentStage {
+                    main {
+                        val baseColorPort = getFloat4Port("baseColor")
+                        val inColor = float4Var(baseColorPort.input.input)
+                        inColor.g set inColor.r
+                        inColor.b set inColor.r
+                        baseColorPort.input(inColor)
+                    }
+                }
             }
         }
     }

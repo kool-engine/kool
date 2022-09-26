@@ -3,6 +3,8 @@ package de.fabmax.kool.modules.ui2
 fun <T> mutableStateOf(value: T) = MutableStateValue(value)
 fun <T: Any> mutableStateListOf(vararg elements: T) = MutableStateList<T>().apply { addAll(elements) }
 
+fun MutableStateValue<Boolean>.toggle() { value = !value }
+
 abstract class MutableState {
     var isStateChanged = true
         private set

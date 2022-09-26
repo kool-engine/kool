@@ -44,6 +44,20 @@ fun <T: ImageModifier> T.uv(topLeft: Vec2f, width: Float, height: Float): T {
     return this
 }
 
+fun <T: ImageModifier> T.mirror(x: Boolean = false, y: Boolean = false): T {
+    if (x) {
+        uvTopLeft = uvTopRight.also { uvTopRight = uvTopLeft }
+        uvBottomLeft = uvBottomRight.also { uvBottomRight = uvBottomLeft }
+    }
+    if (y) {
+        uvTopLeft = uvBottomLeft.also { uvBottomLeft = uvTopLeft }
+        uvTopRight = uvBottomRight.also { uvBottomRight = uvTopRight }
+    }
+    return this
+}
+
+fun <T: ImageModifier> T.customShader(shader: Shader): T { customShader = shader; return this }
+
 inline fun UiScope.Image(imageTex: Texture2d? = null, block: ImageScope.() -> Unit): ImageScope {
     val image = uiNode.createChild(ImageNode::class, ImageNode.factory)
     image.modifier.image(imageTex)
@@ -64,20 +78,36 @@ class ImageNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface), 
         val modHeight = modifier.height
         var isUsingTexSize = false
 
-        val measuredWidth = if (modWidth is Dp) {
-            modWidth.px
-        } else {
-            isUsingTexSize = true
-            imageWidth.use() * modifier.imageScale + paddingStartPx + paddingEndPx
-        }
-        val measuredHeight = if (modHeight is Dp) {
-            modHeight.px
-        } else {
-            isUsingTexSize = true
-            imageHeight.use() * modifier.imageScale + paddingTopPx + paddingBottomPx
-        }
-        setContentSize(measuredWidth, measuredHeight)
+        val measuredWidth: Float
+        val measuredHeight: Float
 
+        when {
+            modWidth is Dp && modHeight is Dp -> {
+                measuredWidth = modWidth.px
+                measuredHeight = modHeight.px
+            }
+            modWidth is Dp && modHeight !is Dp -> {
+                isUsingTexSize = true
+                measuredWidth = modWidth.px
+                val scale = measuredWidth / imageWidth.use()
+                measuredHeight = imageHeight.use() * scale
+            }
+            modWidth !is Dp && modHeight is Dp -> {
+                isUsingTexSize = true
+                measuredHeight = modHeight.px
+                val scale = measuredHeight / imageHeight.use()
+                measuredWidth = imageWidth.use() * scale
+            }
+            else -> {
+                isUsingTexSize = true
+                measuredWidth = imageWidth.use() * modifier.imageScale + paddingStartPx + paddingEndPx
+                measuredHeight = imageHeight.use() * modifier.imageScale + paddingTopPx + paddingBottomPx
+            }
+        }
+        setContentSize(
+            measuredWidth + paddingStartPx + paddingEndPx,
+            measuredHeight + paddingTopPx + paddingBottomPx
+        )
         if (isUsingTexSize) {
             surface.onEachFrame {
                 imageWidth.set(modifier.image?.loadedTexture?.width?.toFloat() ?: 0f)
@@ -112,7 +142,7 @@ class ImageNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface), 
 
 class ImageMesh : Mesh(IndexedVertexList(Ui2Shader.UI_MESH_ATTRIBS)) {
     var defaultImageShader: ImageShader? = null
-    val builder = MeshBuilder(geometry)
+    val builder = MeshBuilder(geometry).apply { isInvertFaceOrientation = true }
 
     private fun getOrCreateDefaultShader(imageTex: Texture2d?): ImageShader {
         val shader = defaultImageShader ?: ImageShader().also { defaultImageShader = it }
