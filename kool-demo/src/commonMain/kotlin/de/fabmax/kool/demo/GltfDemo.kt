@@ -2,9 +2,11 @@ package de.fabmax.kool.demo
 
 import de.fabmax.kool.AssetManager
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.gltf.GltfFile
 import de.fabmax.kool.modules.gltf.loadGltfFile
+import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.ao.AoPipeline
 import de.fabmax.kool.pipeline.deferred.DeferredOutputShader
 import de.fabmax.kool.pipeline.deferred.DeferredPbrShader
@@ -16,6 +18,7 @@ import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
 import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.MeshBuilder
+import de.fabmax.kool.toString
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.ShadowMap
@@ -28,7 +31,7 @@ import kotlin.math.sin
 class GltfDemo : DemoScene("glTF Models") {
 
     private val foxAnimator = FoxAnimator()
-    private val models = Cycler(
+    private val models = listOf(
             GltfModel("Flight Helmet", "${DemoLoader.modelPath}/flight_helmet/FlightHelmet.gltf",
                     4f, Vec3f.ZERO, false, Vec3d(0.0, 1.25, 0.0), false, 3.5),
             GltfModel("Polly", "${DemoLoader.modelPath}/project_polly_jpg.glb",
@@ -47,6 +50,8 @@ class GltfDemo : DemoScene("glTF Models") {
             GltfModel("Alpha Mode Test", "${DemoLoader.modelPath}/AlphaBlendModeTest.glb",
                     0.5f, Vec3f(0f, 0.06f, 0f), false, Vec3d(0.0, 0.75, 0.0), false, 3.5)
     )
+    private val selectedModelIdx = mutableStateOf(0)
+    private val currentModel: GltfModel get() = models[selectedModelIdx.value]
 
     private lateinit var orbitTransform: OrbitInputTransform
     private var camTranslationTarget: Vec3d? = null
@@ -61,19 +66,23 @@ class GltfDemo : DemoScene("glTF Models") {
     private lateinit var deferredPipeline: DeferredPipeline
     private val contentGroupDeferred = Group()
 
-    private var animationSpeed = .5f
     private var animationDeltaTime = 0f
-    private var autoRotate = true
-    private var useDeferredPipeline = true
-    private var isAo = true
-        set(value) {
-            field = value
-            deferredPipeline.isAoEnabled = value
+    private val animationSpeed = mutableStateOf(0.5f)
+    private val isAutoRotate = mutableStateOf(true)
+
+    private val isDeferredShading: MutableStateValue<Boolean> = mutableStateOf(true).apply { onChange { setupPipelines(it, isAo.value) } }
+    private val isAo: MutableStateValue<Boolean> = mutableStateOf(true).apply { onChange { setupPipelines(isDeferredShading.value, it) } }
+    private val isSsr: MutableStateValue<Boolean> = mutableStateOf(true).apply {
+        onChange {
+            deferredPipeline.isSsrEnabled = it
+            setupPipelines(isDeferredShading.value, isAo.value)
         }
+    }
+    private val ssrMapSize = mutableStateOf(0.5f).apply { onChange { deferredPipeline.reflectionMapSize = it } }
 
     override fun lateInit(ctx: KoolContext) {
-        models.current.isVisible = true
-        trackModel = models.current.trackModel
+        currentModel.isVisible = true
+        trackModel = currentModel.trackModel
     }
 
     override suspend fun AssetManager.loadResources(ctx: KoolContext) {
@@ -95,6 +104,7 @@ class GltfDemo : DemoScene("glTF Models") {
         deferredPipeline.aoPipeline?.apply {
             radius = 0.2f
         }
+        ssrMapSize.set(deferredPipeline.reflectionMapSize)
 
         // create forward pipeline
         aoPipelineForward = AoPipeline.createForward(mainScene).apply {
@@ -119,25 +129,23 @@ class GltfDemo : DemoScene("glTF Models") {
 
         makeDeferredContent(ctx)
         makeForwardContent(ctx)
-
-        setupPipelines()
+        setupPipelines(isDeferredShading.value, isAo.value)
 
         onUpdate += {
-            animationDeltaTime = ctx.deltaT * animationSpeed
+            animationDeltaTime = ctx.deltaT * animationSpeed.value
             foxAnimator.updatePosition(ctx)
         }
     }
 
-    private fun setupPipelines() {
-        val defState = useDeferredPipeline
-        val fwdState = !defState
+    private fun setupPipelines(isDeferred: Boolean, isAo: Boolean) {
+        val fwdState = !isDeferred
 
         contentGroupForward.isVisible = fwdState
         shadowsForward.forEach { it.isShadowMapEnabled = fwdState }
         aoPipelineForward?.isEnabled = fwdState && isAo
 
-        contentGroupDeferred.isVisible = defState
-        deferredPipeline.isEnabled = defState
+        contentGroupDeferred.isVisible = isDeferred
+        deferredPipeline.isEnabled = isDeferred
         deferredPipeline.isAoEnabled = isAo
     }
 
@@ -162,18 +170,18 @@ class GltfDemo : DemoScene("glTF Models") {
         orbitTransform = orbitInputTransform {
             setMouseRotation(0f, -30f)
             +camera
-            zoom = models.current.zoom
-            translation.set(models.current.lookAt)
+            zoom = currentModel.zoom
+            translation.set(currentModel.lookAt)
 
             onUpdate += { ev ->
                 var translationTarget = camTranslationTarget
                 if (trackModel) {
-                    val model = models.current.forwardModel
+                    val model = currentModel.forwardModel
                     model?.let {
                         val center = model.globalCenter
                         translationTarget = Vec3d(center.x.toDouble(), center.y.toDouble(), center.z.toDouble())
                     }
-                } else if (autoRotate) {
+                } else if (isAutoRotate.value) {
                     verticalRotation -= ev.deltaT * 3f
                 }
 
@@ -208,7 +216,7 @@ class GltfDemo : DemoScene("glTF Models") {
     private fun Group.setupContentGroup(isDeferredShading: Boolean, ctx: KoolContext) {
         rotate(-60.0, Vec3d.Y_AXIS)
         onUpdate += {
-            if (autoRotate) {
+            if (isAutoRotate.value) {
                 setIdentity()
                 rotate(ctx.time * 3, Vec3d.Y_AXIS)
             }
@@ -267,28 +275,60 @@ class GltfDemo : DemoScene("glTF Models") {
         trackModel = newModel.trackModel
     }
 
-    override fun setupMenu(ctx: KoolContext) = controlUi {
-        section("glTF models") {
-            cycler("Model:", models) { cur, prev -> cycleModel(prev, cur, ctx) }
-            sliderWithValue("Animation Speed:", animationSpeed, 0f, 1f, 2) { animationSpeed = value }
-            toggleButton("Deferred Shading", useDeferredPipeline) {
-                useDeferredPipeline = isEnabled
-                setupPipelines()
+    override fun createMenu(menu: DemoMenu, ctx: KoolContext) = menuSurface {
+        MenuRow {
+            Text("Model") { labelStyle() }
+            ComboBox {
+                modifier
+                    .width(Grow.Std)
+                    .margin(start = sizes.largeGap)
+                    .items(models)
+                    .selectedIndex(selectedModelIdx.use())
+                    .onItemSelected {
+                        val prevModel = currentModel
+                        selectedModelIdx.set(it)
+                        cycleModel(prevModel, currentModel, ctx)
+                    }
             }
-            toggleButton("Ambient Occlusion", isAo) {
-                isAo = isEnabled
-                setupPipelines()
-            }
-            toggleButton("Screen Space Reflections", true) {
-                deferredPipeline.isSsrEnabled = isEnabled
-                setupPipelines()
-            }
-            sliderWithValue("SSR Map Size:", 0.7f, 0.1f, 1f, 1) {
-                deferredPipeline.reflectionMapSize = (value * 10).roundToInt() / 10f
-            }
-            toggleButton("Auto Rotate", autoRotate) { autoRotate = isEnabled }
         }
+        if (currentModel.name == "Fox") {
+            MenuSlider2("Movement speed", animationSpeed.use(), 0f, 1f) { animationSpeed.set(it) }
+        }
+
+        Text("Options") { sectionTitleStyle() }
+        MenuRow { LabeledSwitch("Deferred shading", isDeferredShading) }
+        MenuRow { LabeledSwitch("Ambient occlusion", isAo) }
+        if (isDeferredShading.value) {
+            MenuRow { LabeledSwitch("Screen space reflections", isSsr) }
+            MenuSlider2("SSR map size", ssrMapSize.use(), 0.1f, 1f, { it.toString(1) }) {
+                ssrMapSize.set((it * 10).roundToInt() / 10f)
+            }
+        }
+        MenuRow { LabeledSwitch("Auto rotate view", isAutoRotate) }
     }
+
+//    override fun setupMenu(ctx: KoolContext) = controlUi {
+//        section("glTF models") {
+//            cycler("Model:", models) { cur, prev -> cycleModel(prev, cur, ctx) }
+//            sliderWithValue("Animation Speed:", animationSpeed, 0f, 1f, 2) { animationSpeed = value }
+//            toggleButton("Deferred Shading", useDeferredPipeline) {
+//                useDeferredPipeline = isEnabled
+//                setupPipelines()
+//            }
+//            toggleButton("Ambient Occlusion", isAo) {
+//                isAo = isEnabled
+//                setupPipelines()
+//            }
+//            toggleButton("Screen Space Reflections", true) {
+//                deferredPipeline.isSsrEnabled = isEnabled
+//                setupPipelines()
+//            }
+//            sliderWithValue("SSR Map Size:", 0.7f, 0.1f, 1f, 1) {
+//                deferredPipeline.reflectionMapSize = (value * 10).roundToInt() / 10f
+//            }
+//            toggleButton("Auto Rotate", autoRotate) { autoRotate = isEnabled }
+//        }
+//    }
 
     private fun MeshBuilder.roundCylinder(radius: Float, height: Float) {
         val nCorner = 20
@@ -394,20 +434,20 @@ class GltfDemo : DemoScene("glTF Models") {
         val position = MutableVec3d()
 
         fun updatePosition(ctx: KoolContext) {
-            val speed = animationSpeed * 2
+            val speed = animationSpeed.value * 2
             angle += speed * ctx.deltaT / radius
         }
 
         fun animate(model: Model, ctx: KoolContext) {
             // mix survey / walk / run animations according to animation speed
-            if (animationSpeed < 0.5f) {
-                val w1 = animationSpeed * 2f
+            if (animationSpeed.value < 0.5f) {
+                val w1 = animationSpeed.value * 2f
                 val w0 = 1f - w1
                 model.setAnimationWeight(0, w0)
                 model.setAnimationWeight(1, w1)
                 model.setAnimationWeight(2, 0f)
             } else {
-                val w1 = (animationSpeed - 0.5f) * 2f
+                val w1 = (animationSpeed.value - 0.5f) * 2f
                 val w0 = 1f - w1
                 model.setAnimationWeight(0, 0f)
                 model.setAnimationWeight(1, w0)

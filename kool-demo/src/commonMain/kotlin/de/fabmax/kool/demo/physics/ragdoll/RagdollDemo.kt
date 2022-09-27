@@ -1,11 +1,11 @@
 package de.fabmax.kool.demo.physics.ragdoll
 
 import de.fabmax.kool.*
-import de.fabmax.kool.demo.DemoLoader
-import de.fabmax.kool.demo.DemoScene
-import de.fabmax.kool.demo.controlUi
+import de.fabmax.kool.demo.*
+import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.BoundingBox
+import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.physics.*
 import de.fabmax.kool.physics.articulations.Articulation
 import de.fabmax.kool.physics.articulations.ArticulationJoint
@@ -27,6 +27,7 @@ import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.pipeline.shading.unlitShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.*
+import kotlin.math.roundToInt
 
 class RagdollDemo : DemoScene("Ragdoll Demo") {
 
@@ -42,7 +43,9 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
 
     private val ragdolls = mutableListOf<Articulation>()
 
-    private var numRagdolls = 50
+    private val numRagdolls = mutableStateOf(50)
+    private val physicsTimeTxt = mutableStateOf("0.00 ms")
+    private val timeFactorTxt = mutableStateOf("1.00 x")
 
     private val bodyMaterialCfg: PbrMaterialConfig.() -> Unit = {
         shadowMaps += shadows
@@ -125,69 +128,83 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
     override fun Scene.setupMainScene(ctx: KoolContext) {
         spawnDolls()
 
-        mainScene.apply {
-            defaultCamTransform().apply {
-                zoom = 15.0
-                maxZoom = 50.0
-            }
+        defaultCamTransform().apply {
+            zoom = 15.0
+            maxZoom = 50.0
+        }
 
-            val forceHelper = ForceHelper()
-            registerDragHandler(forceHelper)
+        val forceHelper = ForceHelper(ctx)
+        InputStack.defaultInputHandler.pointerListeners += forceHelper::handleDrag
+        onDispose += {
+            InputStack.defaultInputHandler.pointerListeners -= forceHelper::handleDrag
+        }
 
-            +colorMesh {
-                isFrustumChecked = false
-                instances = bodyInstanceData
-                generate {
-                    cube {
-                        centered()
-                    }
-                }
-                shader = instancedBodyShader()
-                onUpdate += {
-                    bodyInstanceData.clear()
-                    bodyInstanceData.addInstances(bodyInstances.size) { buf ->
-                        for (i in bodyInstances.indices) {
-                            bodyInstances[i].putInstanceData(buf)
-                        }
-                    }
+        +colorMesh {
+            isFrustumChecked = false
+            instances = bodyInstanceData
+            generate {
+                cube {
+                    centered()
                 }
             }
-
-            +lineMesh {
-                isCastingShadow = false
-                shader = unlitShader { lineWidth = 3f }
-                onUpdate += {
-                    clear()
-                    if (forceHelper.isActive) {
-                        addLine(forceHelper.forceAppPosGlobal, forceHelper.forceDragPos, MdColor.PINK)
+            shader = instancedBodyShader()
+            onUpdate += {
+                bodyInstanceData.clear()
+                bodyInstanceData.addInstances(bodyInstances.size) { buf ->
+                    for (i in bodyInstances.indices) {
+                        bodyInstances[i].putInstanceData(buf)
                     }
                 }
             }
+        }
+
+        +lineMesh {
+            isCastingShadow = false
+            shader = unlitShader { lineWidth = 3f }
+            onUpdate += {
+                clear()
+                if (forceHelper.isActive) {
+                    addLine(forceHelper.forceAppPosGlobal, forceHelper.forceDragPos, MdColor.PINK)
+                }
+            }
+        }
+
+        onUpdate += {
+            physicsTimeTxt.set("${physicsStepper.perfCpuTime.toString(2)} ms")
+            timeFactorTxt.set("${physicsStepper.perfTimeFactor.toString(2)} x")
         }
     }
 
-    override fun setupMenu(ctx: KoolContext) = controlUi {
-        section("Physics") {
-            sliderWithValue("Number of Ragdolls:", numRagdolls.toFloat(), 1f, 100f, 0) {
-                numRagdolls = value.toInt()
-            }
-            button("Respawn") { spawnDolls() }
+    override fun createMenu(menu: DemoMenu, ctx: KoolContext) = menuSurface {
+        MenuSlider2("Number of ragdolls", numRagdolls.use().toFloat(), 1f, 100f, { "${it.roundToInt()}" }) {
+            numRagdolls.set(it.roundToInt())
         }
-        section("Performance") {
-            textWithValue("Physics:", "0.00 ms").apply {
-                onUpdate += {
-                    text = "${physicsStepper.perfCpuTime.toString(2)} ms"
-                }
-            }
-            textWithValue("Time Factor:", "1.00 x").apply {
-                onUpdate += {
-                    text = "${physicsStepper.perfTimeFactor.toString(2)} x"
-                }
-            }
+        Button("Respawn") {
+            modifier
+                .alignX(AlignmentX.Center)
+                .width(Grow.Std)
+                .margin(horizontal = 16.dp, vertical = 24.dp)
+                .onClick { spawnDolls() }
         }
-        section("Controls") {
-            text("Space to Invert Gravity")
-            text("Middle Mouse to Drag")
+
+        Text("Statistics") { sectionTitleStyle() }
+        MenuRow {
+            Text("Physics step CPU time") { labelStyle(Grow.Std) }
+            Text(physicsTimeTxt.use()) { labelStyle() }
+        }
+        MenuRow {
+            Text("Time factor") { labelStyle(Grow.Std) }
+            Text(timeFactorTxt.use()) { labelStyle() }
+        }
+
+        Text("Controls") { sectionTitleStyle() }
+        MenuRow {
+            Text("[Space]") { labelStyle(Grow.Std) }
+            Text("invert gravity") { labelStyle() }
+        }
+        MenuRow {
+            Text("[Middle mouse drag]") { labelStyle(Grow.Std) }
+            Text("grab ragdolls") { labelStyle() }
         }
     }
 
@@ -201,7 +218,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
         bodyInstances.clear()
 
         // spawn new dolls
-        for (i in 0 until numRagdolls) {
+        for (i in 0 until numRagdolls.value) {
             val h = 7f + 2.5f * (i / 10)
             val pose = Mat4f()
                 .translate(rand.randomF(-3f, 3f), h, rand.randomF(-3f, 3f))
@@ -500,7 +517,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
         }
     }
 
-    private inner class ForceHelper : Scene.DragHandler {
+    private inner class ForceHelper(val ctx: KoolContext) {
         val pickRay = Ray()
         val hitResult = HitResult()
         var hitActor: RigidBody? = null
@@ -515,14 +532,12 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
 
         var isActive = false
 
-        override fun handleDrag(dragPtrs: List<InputManager.Pointer>, scene: Scene, ctx: KoolContext) {
-            val dragPtr = (if (dragPtrs.isEmpty()) null else dragPtrs[0]) ?: return
-
-            if (dragPtr.isConsumed()) { return }
-            if (!dragPtr.isInViewport(scene.mainRenderPass.viewport, ctx)) { return }
+        fun handleDrag(pointerState: InputManager.PointerState) {
+            val dragPtr = pointerState.primaryPointer
+            if (!dragPtr.isValid) { return }
             if (!(dragPtr.isMiddleButtonEvent || dragPtr.isMiddleButtonDown)) { return }
 
-            mainScene.camera.computePickRay(pickRay, dragPtr, scene.mainRenderPass.viewport, ctx)
+            mainScene.camera.computePickRay(pickRay, dragPtr, mainScene.mainRenderPass.viewport, ctx)
             when {
                 dragPtr.isMiddleButtonPressed -> initDrag()
                 dragPtr.isMiddleButtonDown -> applyForce()

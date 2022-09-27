@@ -2,11 +2,11 @@ package de.fabmax.kool.demo.physics.joints
 
 import de.fabmax.kool.AssetManager
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.demo.DemoLoader
-import de.fabmax.kool.demo.DemoScene
-import de.fabmax.kool.demo.controlUi
+import de.fabmax.kool.demo.*
+import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.BoundingBox
+import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.physics.*
 import de.fabmax.kool.physics.geometry.BoxGeometry
 import de.fabmax.kool.physics.geometry.ConvexMeshGeometry
@@ -30,19 +30,29 @@ import de.fabmax.kool.util.SimpleShadowMap
 import kotlin.math.abs
 import kotlin.math.acos
 import kotlin.math.max
+import kotlin.math.roundToInt
 
 class JointsDemo : DemoScene("Physics - Joints") {
 
     private var physicsWorld: PhysicsWorld? = null
     private val physicsStepper = ConstantPhysicsStepper(isAsync = false)
 
-    private var motorGearConstraint: RevoluteJoint? = null
-    private var motorStrength = 50f
-    private var motorSpeed = 1.5f
-    private var motorDirection = 1f
-    private var numLinks = 40
-    private val joints = mutableListOf<RevoluteJoint>()
+    private val motorStrength = mutableStateOf(50f)
+    private val motorSpeed = mutableStateOf(1.5f)
+    private val motorDirection = mutableStateOf(1f)
+    private val numLinks = mutableStateOf(40)
 
+    private val drawNiceMeshes = mutableStateOf(true).apply { onChange { niceMeshes.isVisible = it } }
+    private val drawPhysMeshes = mutableStateOf(false).apply { onChange { physMeshes.isVisible = it } }
+    private val drawJointInfos = mutableStateOf(false).apply { onChange { constraintInfo.isVisible = it } }
+
+    private val physicsTimeTxt = mutableStateOf("0.00 ms")
+    private val numBodiesTxt = mutableStateOf("0")
+    private val numJointsTxt = mutableStateOf("0")
+    private val timeFactorTxt = mutableStateOf("1.00 x")
+
+    private var motorGearConstraint: RevoluteJoint? = null
+    private val joints = mutableListOf<RevoluteJoint>()
     private val physMeshes = BodyMeshes(false).apply { isVisible = false }
     private val niceMeshes = BodyMeshes(true).apply { isVisible = true }
     private lateinit var constraintInfo: ConstraintsInfoMesh
@@ -123,6 +133,10 @@ class JointsDemo : DemoScene("Physics - Joints") {
                 resetPhysics = false
                 makePhysicsScene()
             }
+            physicsTimeTxt.set("${physicsStepper.perfCpuTime.toString(2)} ms")
+            timeFactorTxt.set("${physicsStepper.perfTimeFactor.toString(2)} x")
+            numBodiesTxt.set("${physicsWorld?.actors?.size ?: 0}")
+            numJointsTxt.set("${joints.size}")
         }
     }
 
@@ -173,7 +187,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
         }
 
         val frame = Mat4f().rotate(90f, Vec3f.Z_AXIS)
-        makeGearChain(numLinks, frame)
+        makeGearChain(numLinks.value, frame)
         updateMotor()
     }
 
@@ -189,87 +203,113 @@ class JointsDemo : DemoScene("Physics - Joints") {
         groundNormal.dispose()
     }
 
-    override fun setupMenu(ctx: KoolContext) = controlUi {
-        section("Physics") {
-            sliderWithValue("Number of Links:", numLinks.toFloat() / 2, 10f, 50f, textFormat = { "${it.toInt() * 2}" }) {
-                val lnks = value.toInt() * 2
-                if (lnks != numLinks) {
-                    numLinks = lnks
-                    resetPhysics = true
-                }
-            }
-            sliderWithValue("Motor Strength:", motorStrength, 0f, 100f, 0) {
-                motorStrength = value
-                updateMotor()
-            }
-            sliderWithValue("Motor Speed:", motorSpeed, 0f, 10f, 1) {
-                motorSpeed = value
-                updateMotor()
-            }
-            toggleButton("Reverse Motor Direction", motorDirection < 0) {
-                motorDirection = if (isEnabled) -1f else 1f
-                updateMotor()
+    private fun drawNiceMeshes() {
+        drawNiceMeshes.set(true)
+        drawPhysMeshes.set(false)
+    }
+
+    private fun drawPhysMeshes() {
+        drawNiceMeshes.set(false)
+        drawPhysMeshes.set(true)
+    }
+
+    override fun createMenu(menu: DemoMenu, ctx: KoolContext) = menuSurface {
+        MenuSlider2("Number of links", numLinks.use() / 2f, 10f, 50f, { "${it.roundToInt() * 2}" }) {
+            val links = it.roundToInt() * 2
+            if (links != numLinks.value) {
+                numLinks.set(links)
+                resetPhysics = true
             }
         }
-        section("Rendering") {
-            val showNiceMeshes = toggleButton("Draw Nice Meshes", niceMeshes.isVisible) { }
-            val showPhysMeshes = toggleButton("Draw Physics Meshes", physMeshes.isVisible) { }
-            var ignoreStateChange = false
-            showNiceMeshes.onStateChange += {
-                if (!ignoreStateChange) {
-                    ignoreStateChange = true
-                    niceMeshes.isVisible = isEnabled
-                    physMeshes.isVisible = !isEnabled
-                    showPhysMeshes.isEnabled = !isEnabled
-                    ignoreStateChange = false
+        MenuSlider2("Motor strength", motorStrength.use(), 0f, 100f, { "${it.toInt()}" }) {
+            motorStrength.set(it)
+            updateMotor()
+        }
+        MenuSlider2("Motor speed", motorSpeed.use(), 0f, 10f, { it.toString(1) }) {
+            motorSpeed.set(it)
+            updateMotor()
+        }
+        MenuRow {
+            Text("Reverse motor") {
+                labelStyle(Grow.Std)
+                modifier.onClick {
+                    motorDirection.set(-motorDirection.value)
+                    updateMotor()
                 }
             }
-            showPhysMeshes.onStateChange += {
-                if (!ignoreStateChange) {
-                    ignoreStateChange = true
-                    physMeshes.isVisible = isEnabled
-                    niceMeshes.isVisible = !isEnabled
-                    showNiceMeshes.isEnabled = !isEnabled
-                    ignoreStateChange = false
-                }
-            }
-            toggleButton("Draw Joint Indicators", false) {
-                constraintInfo.isVisible = isEnabled
+            Switch(motorDirection.use() < 0f) {
+                modifier
+                    .alignY(AlignmentY.Center)
+                    .onToggle {
+                        motorDirection.set(-motorDirection.value)
+                        updateMotor()
+                    }
             }
         }
-        section("Performance") {
-            textWithValue("Physics:", "0.00 ms").apply {
-                onUpdate += {
-                    text = "${physicsStepper.perfCpuTime.toString(2)} ms"
-                }
+
+        Text("Visualization") { sectionTitleStyle() }
+        MenuRow {
+            RadioButton(drawNiceMeshes.use()) {
+                modifier
+                    .alignY(AlignmentY.Center)
+                    .margin(end = sizes.gap)
+                    .onToggle {
+                        if (it) {
+                            drawNiceMeshes()
+                        }
+                    }
             }
-            textWithValue("Time Factor:", "1.00 x").apply {
-                onUpdate += {
-                    text = "${physicsStepper.perfTimeFactor.toString(2)} x"
-                }
+            Text("Draw nice meshes") {
+                labelStyle(Grow.Std)
+                modifier.onClick { drawNiceMeshes() }
             }
-            textWithValue("Number of Bodies:", "").apply {
-                onUpdate += {
-                    text = "${physicsWorld?.actors?.size ?: 0}"
-                }
+        }
+        MenuRow {
+            RadioButton(drawPhysMeshes.use()) {
+                modifier
+                    .alignY(AlignmentY.Center)
+                    .margin(end = sizes.gap)
+                    .onToggle {
+                        if (it) {
+                            drawPhysMeshes()
+                        }
+                    }
             }
-            textWithValue("Number of Joints:", "").apply {
-                onUpdate += {
-                    text = "${joints.size}"
-                }
+            Text("Draw physics meshes") {
+                labelStyle(Grow.Std)
+                modifier.onClick { drawPhysMeshes() }
             }
+        }
+        MenuRow { LabeledSwitch("Draw joint infos", drawJointInfos) }
+
+        Text("Statistics") { sectionTitleStyle() }
+        MenuRow {
+            Text("Number of joints") { labelStyle(Grow.Std) }
+            Text(numJointsTxt.use()) { labelStyle() }
+        }
+        MenuRow {
+            Text("Number of bodies") { labelStyle(Grow.Std) }
+            Text(numBodiesTxt.use()) { labelStyle() }
+        }
+        MenuRow {
+            Text("Physics step CPU time") { labelStyle(Grow.Std) }
+            Text(physicsTimeTxt.use()) { labelStyle() }
+        }
+        MenuRow {
+            Text("Time factor") { labelStyle(Grow.Std) }
+            Text(timeFactorTxt.use()) { labelStyle() }
         }
     }
 
     private fun updateMotor() {
         motorGearConstraint?.apply {
-            enableAngularMotor(motorSpeed * motorDirection, motorStrength)
+            enableAngularMotor(motorSpeed.value * motorDirection.value, motorStrength.value)
         }
     }
 
     private fun computeAxleDist(): Float {
         val linkLen = 4f
-        return (numLinks - 12) / 2 * linkLen
+        return (numLinks.value - 12) / 2 * linkLen
     }
 
     private fun makeGearChain(numLinks: Int, frame: Mat4f) {
@@ -294,8 +334,9 @@ class JointsDemo : DemoScene("Physics - Joints") {
         val t = Mat4f().set(frame).translate(0f, axleDist / 2f + gearR + 0.6f, 0f)
         val r = Mat3f()
 
-        val rotLinks = mutableSetOf(1, 2, 3, numLinks - 2, numLinks - 1, numLinks)
-        for (i in (numLinks / 2 - 2)..(numLinks / 2 + 3)) {
+        val nLinks = numLinks.value
+        val rotLinks = mutableSetOf(1, 2, 3, nLinks - 2, nLinks - 1, nLinks)
+        for (i in (nLinks / 2 - 2)..(nLinks / 2 + 3)) {
             rotLinks += i
         }
 
@@ -319,7 +360,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
         physMeshes.linksI += prevInner
         niceMeshes.linksI += prevInner
 
-        for (i in 1 until numLinks) {
+        for (i in 1 until nLinks) {
             t.translate(0.5f, 0f, 0f)
             if (i in rotLinks) {
                 t.rotate(0f, 0f, -15f)

@@ -2,12 +2,11 @@ package de.fabmax.kool.demo.physics.collision
 
 import de.fabmax.kool.AssetManager
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.demo.Cycler
-import de.fabmax.kool.demo.DemoLoader
-import de.fabmax.kool.demo.DemoScene
-import de.fabmax.kool.demo.controlUi
+import de.fabmax.kool.demo.*
+import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.BoundingBox
+import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.physics.*
 import de.fabmax.kool.physics.geometry.*
 import de.fabmax.kool.pipeline.Attribute
@@ -26,6 +25,7 @@ import de.fabmax.kool.scene.*
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
 import kotlin.math.max
+import kotlin.math.roundToInt
 
 class CollisionDemo : DemoScene("Physics - Collision") {
 
@@ -35,11 +35,17 @@ class CollisionDemo : DemoScene("Physics - Collision") {
     private lateinit var groundNormal: Texture2d
     private val shadows = mutableListOf<ShadowMap>()
 
-    private val shapeType = Cycler(*ShapeType.values()).apply { index = 6 }
+    private val shapeTypes = mutableListOf(*ShapeType.values())
+    private val selectedShapeType = mutableStateOf(6)
+    private val numSpawnBodies = mutableStateOf(450)
+    private val friction = mutableStateOf(0.5f)
+    private val restitution = mutableStateOf(0.2f)
+    private val drawBodyState = mutableStateOf(false)
 
-    private var numSpawnBodies = 450
-    private var friction = 0.5f
-    private var restitution = 0.2f
+    private val physicsTimeTxt = mutableStateOf("0.00 ms")
+    private val activeActorsTxt = mutableStateOf("0")
+    private val timeFactorTxt = mutableStateOf("1.00 x")
+
     private lateinit var physicsWorld: PhysicsWorld
     private val physicsStepper = SimplePhysicsStepper()
     private val bodies = mutableMapOf<ShapeType, MutableList<ColoredBody>>()
@@ -83,10 +89,10 @@ class CollisionDemo : DemoScene("Physics - Collision") {
         }
 
         makeGround(ibl, physicsWorld)
-        shapeGenCtx.material = Material(friction, friction, restitution)
+        shapeGenCtx.material = Material(friction.value, friction.value, restitution.value)
         resetPhysics()
 
-        shapeType.forEach {
+        shapeTypes.forEach {
             if (it != ShapeType.MIXED) {
                 it.mesh.shader = instancedBodyShader(ibl)
                 +it.mesh
@@ -96,9 +102,12 @@ class CollisionDemo : DemoScene("Physics - Collision") {
         val matBuf = Mat4f()
         val removeBodies = mutableListOf<ColoredBody>()
         onUpdate += {
-            for (i in shapeType.indices) {
-                shapeType[i].instances.clear()
+            for (i in shapeTypes.indices) {
+                shapeTypes[i].instances.clear()
             }
+
+            val activeColor = MutableColor(MdColor.RED.toLinear())
+            val inactiveColor = MutableColor(MdColor.LIGHT_GREEN.toLinear())
 
             bodies.forEach { (type, typeBodies) ->
                 type.instances.addInstances(typeBodies.size) { buf ->
@@ -107,7 +116,16 @@ class CollisionDemo : DemoScene("Physics - Collision") {
                         matBuf.set(body.rigidActor.transform).scale(body.scale)
 
                         buf.put(matBuf.matrix)
-                        buf.put(body.color.array)
+
+                        if (drawBodyState.value) {
+                            if (body.rigidActor.isActive) {
+                                buf.put(activeColor.array)
+                            } else {
+                                buf.put(inactiveColor.array)
+                            }
+                        } else {
+                            buf.put(body.color.array)
+                        }
 
                         if (body.rigidActor.position.length() > 500f) {
                             removeBodies += body
@@ -124,6 +142,10 @@ class CollisionDemo : DemoScene("Physics - Collision") {
                     removeBodies.clear()
                 }
             }
+
+            physicsTimeTxt.set("${physicsStepper.perfCpuTime.toString(2)} ms")
+            activeActorsTxt.set("${physicsWorld.activeActors}")
+            timeFactorTxt.set("${physicsStepper.perfTimeFactor.toString(2)} x")
         }
 
         +Skybox.cube(ibl.reflectionMap, 1f)
@@ -148,20 +170,20 @@ class CollisionDemo : DemoScene("Physics - Collision") {
         }
         bodies.clear()
 
-        val types = if (shapeType.current == ShapeType.MIXED) {
+        val types = if (shapeTypes[selectedShapeType.value] == ShapeType.MIXED) {
             ShapeType.values().toList().filter { it != ShapeType.MIXED }
         } else {
-            listOf(shapeType.current)
+            listOf(shapeTypes[selectedShapeType.value])
         }
 
         shapeGenCtx.material.release()
-        shapeGenCtx.material = Material(friction, friction, restitution)
+        shapeGenCtx.material = Material(friction.value, friction.value, restitution.value)
 
-        val stacks = max(1, numSpawnBodies / 50)
+        val stacks = max(1, numSpawnBodies.value / 50)
         val centers = makeCenters(stacks)
 
         val rand = Random(39851564)
-        for (i in 0 until numSpawnBodies) {
+        for (i in 0 until numSpawnBodies.value) {
             val layer = i / stacks
             val stack = i % stacks
             val color = MdColor.PALETTE[layer % MdColor.PALETTE.size].toLinear()
@@ -354,38 +376,46 @@ class CollisionDemo : DemoScene("Physics - Collision") {
         }
     }
 
-    override fun setupMenu(ctx: KoolContext) = controlUi {
-        section("Physics") {
-            cycler("Body Shape:", shapeType) { _, _ -> }
-            sliderWithValue("Number of Bodies:", numSpawnBodies.toFloat(), 50f, 2000f, 0) {
-                numSpawnBodies = value.toInt()
+    override fun createMenu(menu: DemoMenu, ctx: KoolContext) = menuSurface {
+        MenuRow {
+            Text("Body shape") { labelStyle() }
+            ComboBox {
+                modifier
+                    .width(Grow.Std)
+                    .margin(start = sizes.largeGap)
+                    .items(shapeTypes)
+                    .selectedIndex(selectedShapeType.use())
+                    .onItemSelected { selectedShapeType.set(it) }
             }
-            sliderWithValue("Friction:", friction, 0f, 2f, 2) {
-                friction = value
-            }
-            sliderWithValue("Restitution:", restitution, 0f, 1f, 2) {
-                restitution = value
-            }
-            gap(10f)
-            button("Apply") { resetPhysics() }
-            gap(10f)
         }
-        section("Performance") {
-            textWithValue("Physics:", "0.00 ms").apply {
-                onUpdate += {
-                    text = "${physicsStepper.perfCpuTime.toString(2)} ms"
-                }
-            }
-            textWithValue("Active Actors:", "0").apply {
-                onUpdate += {
-                    text = "${physicsWorld.activeActors}"
-                }
-            }
-            textWithValue("Time Factor:", "1.00 x").apply {
-                onUpdate += {
-                    text = "${physicsStepper.perfTimeFactor.toString(2)} x"
-                }
-            }
+
+        MenuSlider2("Number of Bodies", numSpawnBodies.use().toFloat(), 50f, 2000f, { "${it.roundToInt()}" }) {
+            numSpawnBodies.set(it.roundToInt())
+        }
+        MenuSlider2("Friction", friction.use(), 0f, 2f) { friction.set(it) }
+        MenuSlider2("Restitution", restitution.use(), 0f, 1f) { restitution.set(it) }
+
+        Button("Apply settings") {
+            modifier
+                .alignX(AlignmentX.Center)
+                .width(Grow.Std)
+                .margin(horizontal = 16.dp, vertical = 24.dp)
+                .onClick { resetPhysics() }
+        }
+
+        Text("Statistics") { sectionTitleStyle() }
+        MenuRow { LabeledSwitch("Show body state", drawBodyState) }
+        MenuRow {
+            Text("Active actors") { labelStyle(Grow.Std) }
+            Text(activeActorsTxt.use()) { labelStyle() }
+        }
+        MenuRow {
+            Text("Physics step CPU time") { labelStyle(Grow.Std) }
+            Text(physicsTimeTxt.use()) { labelStyle() }
+        }
+        MenuRow {
+            Text("Time factor") { labelStyle(Grow.Std) }
+            Text(timeFactorTxt.use()) { labelStyle() }
         }
     }
 }

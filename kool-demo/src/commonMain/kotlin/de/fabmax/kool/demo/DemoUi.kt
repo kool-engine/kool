@@ -41,6 +41,28 @@ fun UiScope.MenuSlider(
     }
 }
 
+fun UiScope.MenuSlider2(
+    label: String,
+    value: Float,
+    min: Float,
+    max: Float,
+    txtFormat: (Float) -> String = { it.toString(2) },
+    onChange: (Float) -> Unit
+) {
+    MenuRow {
+        Text(label) { labelStyle(Grow.Std) }
+        Text(txtFormat(value)) { labelStyle() }
+    }
+    MenuRow {
+        Slider(value, min, max) {
+            modifier
+                .width(Grow.Std)
+                .alignY(AlignmentY.Center)
+                .onChange(onChange)
+        }
+    }
+}
+
 fun UiScope.LabeledSwitch(label: String, toggleState: MutableStateValue<Boolean>) {
     Text(label) {
         labelStyle(Grow.Std)

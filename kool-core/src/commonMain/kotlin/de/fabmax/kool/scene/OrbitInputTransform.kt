@@ -50,6 +50,7 @@ open class OrbitInputTransform(name: String? = null) : Group(name) {
     var zoom = 10.0
         set(value) {
             field = value.clamp(minZoom, maxZoom)
+            zoomAnimator.set(value)
         }
 
     var isKeepingStandardTransform = false
@@ -236,28 +237,28 @@ open class OrbitInputTransform(name: String? = null) : Group(name) {
 
     private fun handleDrag(pointerState: InputManager.PointerState) {
         val dragPtr = pointerState.primaryPointer
-        if (!dragPtr.isConsumed()) {
-            if (dragPtr.buttonEventMask != 0 || dragPtr.buttonMask != prevButtonMask) {
-                dragMethod = when {
-                    dragPtr.isLeftButtonDown -> leftDragMethod
-                    dragPtr.isRightButtonDown -> rightDragMethod
-                    dragPtr.isMiddleButtonDown -> middleDragMethod
-                    else -> DragMethod.NONE
-                }
-                dragStart = dragMethod != DragMethod.NONE
-            }
-
-            prevButtonMask = dragPtr.buttonMask
-            ptrPos.set(dragPtr.x, dragPtr.y)
-            deltaPos.set(dragPtr.deltaX, dragPtr.deltaY)
-            deltaScroll = dragPtr.deltaScroll
-            if (isConsumingPtr) {
-                dragPtr.consume()
-            }
-
-        } else {
+        if (dragPtr.isConsumed()) {
             deltaPos.set(Vec2d.ZERO)
             deltaScroll = 0.0
+            return
+        }
+
+        if (dragPtr.buttonEventMask != 0 || dragPtr.buttonMask != prevButtonMask) {
+            dragMethod = when {
+                dragPtr.isLeftButtonDown -> leftDragMethod
+                dragPtr.isRightButtonDown -> rightDragMethod
+                dragPtr.isMiddleButtonDown -> middleDragMethod
+                else -> DragMethod.NONE
+            }
+            dragStart = dragMethod != DragMethod.NONE
+        }
+
+        prevButtonMask = dragPtr.buttonMask
+        ptrPos.set(dragPtr.x, dragPtr.y)
+        deltaPos.set(dragPtr.deltaX, dragPtr.deltaY)
+        deltaScroll = dragPtr.deltaScroll
+        if (isConsumingPtr) {
+            dragPtr.consume()
         }
     }
 

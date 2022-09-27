@@ -38,7 +38,7 @@ object Demos {
     val physicsDemos = Category("Physics", false, 0f, 0.2f).apply {
         entry("phys-terrain", "Island") { TerrainDemo() }
         entry("phys-vehicle", "Vehicle") { VehicleDemo() }
-        entry("phys-ragdoll", "Ragdoll") { RagdollDemo() }
+        entry("phys-ragdoll", "Ragdolls") { RagdollDemo() }
         entry("phys-joints", "Joints") { JointsDemo() }
         entry("physics", "Collision") { CollisionDemo() }
     }
