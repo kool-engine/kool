@@ -148,10 +148,11 @@ class SimplificationDemo : DemoScene("Simplification") {
 
     override fun createMenu(menu: DemoMenu, ctx: KoolContext) = menuSurface {
         MenuRow {
-            Text("Model:") { labelStyle(Grow.Std) }
+            Text("Model") { labelStyle() }
             ComboBox {
                 modifier
-                    .width(160.dp)
+                    .width(Grow.Std)
+                    .margin(start = sizes.largeGap)
                     .items(models)
                     .selectedIndex(models.indexOf(activeModel.use()))
                     .onItemSelected {
@@ -161,7 +162,7 @@ class SimplificationDemo : DemoScene("Simplification") {
             }
         }
         MenuRow {
-            Text("Ratio:") { labelStyle() }
+            Text("Ratio") { labelStyle() }
             MenuSlider(simplifcationRatio.use(), 0.01f, 1f, { "${(it * 100).toInt()} %" }) {
                 simplifcationRatio.set(it)
                 if (isAutoSimplify.value) {
@@ -187,7 +188,7 @@ class SimplificationDemo : DemoScene("Simplification") {
 
         Text("Statistics") { sectionTitleStyle() }
         MenuRow {
-            Text("Faces:") { labelStyle(Grow.Std) }
+            Text("Faces") { labelStyle(Grow.Std) }
             Text("${simplifiedNumFaces.use()}   /") {
                 labelStyle()
                 modifier.textAlignX(AlignmentX.End)
@@ -200,7 +201,7 @@ class SimplificationDemo : DemoScene("Simplification") {
             }
         }
         MenuRow {
-            Text("Vertices:") { labelStyle(Grow.Std) }
+            Text("Vertices") { labelStyle(Grow.Std) }
             Text("${simplifiedNumVerts.use()}   /") {
                 labelStyle()
                 modifier.textAlignX(AlignmentX.End)
@@ -213,7 +214,7 @@ class SimplificationDemo : DemoScene("Simplification") {
             }
         }
         MenuRow {
-            Text("Time:") { labelStyle(Grow.Std) }
+            Text("Time") { labelStyle(Grow.Std) }
             Text("${simplificationTime.use().toString(2)} s") { labelStyle() }
         }
 

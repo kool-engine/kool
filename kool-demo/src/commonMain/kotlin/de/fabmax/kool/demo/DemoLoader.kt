@@ -8,7 +8,6 @@ import de.fabmax.kool.demo.menu.TitleBgRenderer
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.toString
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.DebugOverlay
 import de.fabmax.kool.util.MdColor
@@ -46,13 +45,13 @@ class DemoLoader(ctx: KoolContext, startScene: String? = null) {
     init {
         // load physics module early - in js, for some reason wasm file cannot be loaded if this happens later on
         Physics.loadPhysics()
-
+        Settings.loadSettings(ctx)
 
         ctx.scenes += dbgOverlay.ui
         ctx.scenes += menu.ui
         ctx.onRender += this::onRender
 
-        val loadScene = startScene ?: ctx.assetMgr.storage.loadString("selectedScene") ?: Demos.defaultDemo
+        val loadScene = startScene ?: Settings.selectedDemo.value
         val loadDemo = Demos.demos[loadScene] ?: Demos.demos[Demos.defaultDemo]!!
         switchDemo = loadDemo
 
@@ -66,8 +65,11 @@ class DemoLoader(ctx: KoolContext, startScene: String? = null) {
     }
 
     private fun onRender(ctx: KoolContext) {
+        applySettings(ctx)
+
         switchDemo?.let { newDemo ->
-            ctx.assetMgr.storage.storeString("selectedScene", newDemo.id)
+            Settings.selectedDemo.set(newDemo.id)
+
             // release old demo
             currentDemo?.second?.let { demo ->
                 demo.scenes.forEach {
@@ -97,6 +99,13 @@ class DemoLoader(ctx: KoolContext, startScene: String? = null) {
                 }
             }
         }
+    }
+
+    private fun applySettings(ctx: KoolContext) {
+        if (Settings.isFullscreen.value != ctx.isFullscreen) {
+            ctx.isFullscreen = Settings.isFullscreen.value
+        }
+        dbgOverlay.ui.isVisible = Settings.showDebugOverlay.value
     }
 
     companion object {
@@ -225,20 +234,21 @@ abstract class DemoScene(val name: String) {
         val scrollState = ScrollState()
 
         return UiSurface(
-            colors = Colors.darkColors(accent, accentVariant, onAccent = Color.WHITE),
-            sizes = Sizes.large()
+            colors = Colors.darkColors(accent, accentVariant, onAccent = Color.WHITE)
         ) {
+            surface.sizes = Settings.uiSize.use().sizes
+
             modifier
-                .width(DemoMenu.menuWidth.dp)
+                .width(UiSizes.menuWidth)
                 .height(Grow(1f, max = WrapContent))
                 .align(AlignmentX.End, AlignmentY.Top)
-                .margin(DemoMenu.itemSize.dp * 2f)
+                .margin(UiSizes.baseElemSize * 2f)
                 .layout(ColumnLayout)
 
             Text(titleTxt) {
                 modifier
                     .width(Grow.Std)
-                    .height(DemoMenu.itemSize.dp)
+                    .height(UiSizes.baseElemSize)
                     .background(TitleBgRenderer(titleBgMesh, titleFrom, titleTo))
                     .textColor(colors.onAccent)
                     .font(sizes.largeText)
@@ -254,64 +264,6 @@ abstract class DemoScene(val name: String) {
                 Column(width = Grow.Std, block = block)
             }
         }
-    }
-
-    protected fun UiScope.MenuRow(vGap: Dp = sizes.gap, block: UiScope.() -> Unit) {
-        Row(width = Grow.Std) {
-            modifier.margin(horizontal = 16.dp, vertical = vGap)
-            block()
-        }
-    }
-
-    protected fun UiScope.MenuSlider(
-        value: Float,
-        min: Float,
-        max: Float,
-        txtFormat: (Float) -> String = { it.toString(2) },
-        txtWidth: Dp = 48.dp,
-        onChange: (Float) -> Unit
-    ) {
-        Slider(value, min, max) {
-            modifier
-                .width(Grow.Std)
-                .alignY(AlignmentY.Center)
-                .margin(horizontal = sizes.gap)
-                .onChange(onChange)
-        }
-        if (txtWidth.value > 0f) {
-            Text(txtFormat(value)) {
-                labelStyle()
-                modifier.width(txtWidth).textAlignX(AlignmentX.End)
-            }
-        }
-    }
-
-    protected fun UiScope.LabeledSwitch(label: String, toggleState: MutableStateValue<Boolean>) {
-        Text(label) {
-            labelStyle(Grow.Std)
-            modifier.onClick { toggleState.toggle() }
-        }
-        Switch(toggleState.use()) {
-            modifier
-                .alignY(AlignmentY.Center)
-                .onToggle { toggleState.set(it) }
-        }
-    }
-
-    protected fun TextScope.sectionTitleStyle() {
-        modifier
-            .width(Grow.Std)
-            .margin(vertical = 16.dp)
-            .textColor(colors.accent)
-            .backgroundColor(colors.accentVariant.withAlpha(0.2f))
-            .font(sizes.largeText)
-            .textAlignX(AlignmentX.Center)
-    }
-
-    protected fun TextScope.labelStyle(width: Dimension = WrapContent) {
-        modifier
-            .width(width)
-            .align(yAlignment = AlignmentY.Center)
     }
 
     enum class State {

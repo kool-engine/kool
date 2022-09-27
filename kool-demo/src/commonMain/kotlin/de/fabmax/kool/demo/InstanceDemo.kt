@@ -185,7 +185,7 @@ class InstanceDemo : DemoScene("Instanced Drawing") {
 
     override fun createMenu(menu: DemoMenu, ctx: KoolContext) = menuSurface {
         MenuRow {
-            Text("Bunnies:") { labelStyle() }
+            Text("Bunnies") { labelStyle() }
             MenuSlider(
                 nBunnies.use().toFloat(), 5f, 20f,
                 txtFormat = {
@@ -217,14 +217,25 @@ class InstanceDemo : DemoScene("Instanced Drawing") {
         }
         numInstances.use().forEachIndexed { i, numInsts ->
             MenuRow {
-                Text("LOD $i") { labelStyle(Grow.Std) }
+                Text("LOD $i") {
+                    labelStyle(Grow.Std)
+                    if (isLodColors.value) {
+                        modifier.textColor(lods[i].color.toSrgb())
+                    }
+                }
                 Text("$numInsts") {
                     labelStyle(Grow.Std)
                     modifier.textAlign(AlignmentX.End)
+                    if (isLodColors.value) {
+                        modifier.textColor(lods[i].color.toSrgb())
+                    }
                 }
                 Text("${numInsts * (lods[i].mesh?.geometry?.numPrimitives ?: 0)}") {
                     labelStyle(Grow.Std)
                     modifier.textAlign(AlignmentX.End)
+                    if (isLodColors.value) {
+                        modifier.textColor(lods[i].color.toSrgb())
+                    }
                 }
             }
         }

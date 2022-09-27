@@ -1,5 +1,6 @@
 package de.fabmax.kool.demo.menu
 
+import de.fabmax.kool.demo.UiSizes
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.Color
@@ -41,22 +42,20 @@ class NavSettingsButton(val menu: DemoMenu) : ComposableComponent {
         return PolyUtil.fillPolygon(outside, listOf(inside))
     }
 
-    override fun UiScope.compose() {
-        Box {
-            modifier
-                .width(DemoMenu.itemSize.dp)
-                .height(DemoMenu.itemSize.dp)
-                .padding(12.dp)
-                .background(buttonRenderer)
-                .onEnter { isHovered.set(true) }
-                .onExit { isHovered.set(false) }
-                .onClick {
-                    menu.content.set(DemoMenu.MenuContent.Settings)
-                    animator.start()
-                }
+    override fun UiScope.compose() = Box {
+        modifier
+            .width(UiSizes.baseElemSize)
+            .height(UiSizes.baseElemSize)
+            .padding(sizes.gap)
+            .background(buttonRenderer)
+            .onEnter { isHovered.set(true) }
+            .onExit { isHovered.set(false) }
+            .onClick {
+                menu.content.set(DemoMenu.MenuContent.Settings)
+                animator.start()
+            }
 
-            Tooltip(tooltipState, "Settings")
-        }
+        Tooltip(tooltipState, "Settings")
     }
 
     private val buttonRenderer = UiRenderer { node ->
