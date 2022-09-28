@@ -71,8 +71,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
             translationBounds = BoundingBox(Vec3f(-50f), Vec3f(50f))
             minHorizontalRot = -90.0
             maxHorizontalRot = -20.0
-            minZoom = 10.0
-            zoom = 75.0
+            setZoom(75.0, min = 10.0)
         }
 
         (camera as PerspectiveCamera).apply {

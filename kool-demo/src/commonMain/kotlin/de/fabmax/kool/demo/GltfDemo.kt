@@ -70,15 +70,13 @@ class GltfDemo : DemoScene("glTF Models") {
     private val animationSpeed = mutableStateOf(0.5f)
     private val isAutoRotate = mutableStateOf(true)
 
-    private val isDeferredShading: MutableStateValue<Boolean> = mutableStateOf(true).apply { onChange { setupPipelines(it, isAo.value) } }
-    private val isAo: MutableStateValue<Boolean> = mutableStateOf(true).apply { onChange { setupPipelines(isDeferredShading.value, it) } }
-    private val isSsr: MutableStateValue<Boolean> = mutableStateOf(true).apply {
-        onChange {
-            deferredPipeline.isSsrEnabled = it
-            setupPipelines(isDeferredShading.value, isAo.value)
-        }
+    private val isDeferredShading: MutableStateValue<Boolean> = mutableStateOf(true).onChange { setupPipelines(it, isAo.value) }
+    private val isAo: MutableStateValue<Boolean> = mutableStateOf(true).onChange { setupPipelines(isDeferredShading.value, it) }
+    private val isSsr: MutableStateValue<Boolean> = mutableStateOf(true).onChange {
+        deferredPipeline.isSsrEnabled = it
+        setupPipelines(isDeferredShading.value, isAo.value)
     }
-    private val ssrMapSize = mutableStateOf(0.5f).apply { onChange { deferredPipeline.reflectionMapSize = it } }
+    private val ssrMapSize = mutableStateOf(0.5f).onChange { deferredPipeline.reflectionMapSize = it }
 
     override fun lateInit(ctx: KoolContext) {
         currentModel.isVisible = true
@@ -306,29 +304,6 @@ class GltfDemo : DemoScene("glTF Models") {
         }
         MenuRow { LabeledSwitch("Auto rotate view", isAutoRotate) }
     }
-
-//    override fun setupMenu(ctx: KoolContext) = controlUi {
-//        section("glTF models") {
-//            cycler("Model:", models) { cur, prev -> cycleModel(prev, cur, ctx) }
-//            sliderWithValue("Animation Speed:", animationSpeed, 0f, 1f, 2) { animationSpeed = value }
-//            toggleButton("Deferred Shading", useDeferredPipeline) {
-//                useDeferredPipeline = isEnabled
-//                setupPipelines()
-//            }
-//            toggleButton("Ambient Occlusion", isAo) {
-//                isAo = isEnabled
-//                setupPipelines()
-//            }
-//            toggleButton("Screen Space Reflections", true) {
-//                deferredPipeline.isSsrEnabled = isEnabled
-//                setupPipelines()
-//            }
-//            sliderWithValue("SSR Map Size:", 0.7f, 0.1f, 1f, 1) {
-//                deferredPipeline.reflectionMapSize = (value * 10).roundToInt() / 10f
-//            }
-//            toggleButton("Auto Rotate", autoRotate) { autoRotate = isEnabled }
-//        }
-//    }
 
     private fun MeshBuilder.roundCylinder(radius: Float, height: Float) {
         val nCorner = 20

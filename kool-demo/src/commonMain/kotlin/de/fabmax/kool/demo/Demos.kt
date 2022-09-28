@@ -48,7 +48,7 @@ object Demos {
         entry("gltf", "glTF Models") { GltfDemo() }
         entry("ssr", "Reflections") { MultiLightDemo() }
         entry("deferred", "Deferred Shading") { DeferredDemo() }
-        entry("procedural", "Procedural Geometry") { ProceduralDemo() }
+        entry("procedural", "Procedural Roses") { ProceduralDemo() }
         entry("pbr", "PBR Materials") { PbrDemo() }
         entry("atmosphere", "Atmospheric Scattering") { AtmosphereDemo() }
     }

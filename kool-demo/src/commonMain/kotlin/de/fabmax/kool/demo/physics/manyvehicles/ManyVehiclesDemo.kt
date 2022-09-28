@@ -93,8 +93,7 @@ class ManyVehiclesDemo : DemoScene("Many Vehicles") {
         }
 
         defaultCamTransform().apply {
-            maxZoom = 500.0
-            zoom = 100.0
+            setZoom(100.0, max = 500.0)
         }
         makeGround()
 

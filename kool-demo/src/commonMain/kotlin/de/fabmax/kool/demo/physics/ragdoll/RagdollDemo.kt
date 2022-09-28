@@ -129,8 +129,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
         spawnDolls()
 
         defaultCamTransform().apply {
-            zoom = 15.0
-            maxZoom = 50.0
+            setZoom(15.0, max = 50.0)
         }
 
         val forceHelper = ForceHelper(ctx)

@@ -53,8 +53,7 @@ class MultiLightDemo : DemoScene("Reflections") {
         +orbitInputTransform {
             +camera
             zoomMethod = OrbitInputTransform.ZoomMethod.ZOOM_CENTER
-            zoom = 17.0
-            maxZoom = 50.0
+            setZoom(17.0, max = 50.0)
             translation.set(0.0, 2.0, 0.0)
             setMouseRotation(0f, -5f)
             // let the camera slowly rotate around vertical axis

@@ -239,7 +239,10 @@ class UiSurface(
             super.handlePointer(pointerState, ctx)
 
             val ptr = pointerState.primaryPointer
-            viewport.collectNodesAt(ptr.x.toFloat(), ptr.y.toFloat(), nodeResult, hasPointerListener)
+            nodeResult.clear()
+            if (ctx.inputMgr.cursorMode != InputManager.CursorMode.LOCKED) {
+                viewport.collectNodesAt(ptr.x.toFloat(), ptr.y.toFloat(), nodeResult, hasPointerListener)
+            }
             if (hoveredNode == null && dragNode == null && nodeResult.isEmpty()) {
                 return
             }
@@ -364,7 +367,6 @@ class UiSurface(
 
 
         private fun UiNode.collectNodesAt(x: Float, y: Float, result: MutableList<UiNode>, predicate: (UiNode) -> Boolean) {
-            result.clear()
             if (isInClip(x, y)) {
                 traverseChildren(this, x, y, result, predicate)
             }

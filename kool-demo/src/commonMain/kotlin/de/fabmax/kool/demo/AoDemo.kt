@@ -37,17 +37,17 @@ class AoDemo : DemoScene("Ambient Occlusion") {
     private lateinit var ibl: EnvironmentMaps
     private lateinit var teapotMesh: Mesh
 
-    private val isAoEnabled = mutableStateOf(true).apply { onChange { aoPipeline.isEnabled = it } }
+    private val isAoEnabled = mutableStateOf(true).onChange { aoPipeline.isEnabled = it }
     private val isAutoRotate = mutableStateOf(true)
-    private val isSpotLight = mutableStateOf(true).apply { onChange { updateLighting(it) } }
+    private val isSpotLight = mutableStateOf(true).onChange { updateLighting(it) }
     private val showAoMapValues = listOf("None", "Filtered", "Noisy")
     private val showAoMapIndex = mutableStateOf(0)
 
-    private val aoRadius = mutableStateOf(1f).apply { onChange { aoPipeline.radius = it } }
-    private val aoPower = mutableStateOf(1f).apply { onChange { aoPipeline.power = it } }
-    private val aoStrength = mutableStateOf(1f).apply { onChange { aoPipeline.strength = it } }
-    private val aoSamples = mutableStateOf(16).apply { onChange { aoPipeline.kernelSz = it } }
-    private val aoMapSize = mutableStateOf(1f).apply { onChange { aoPipeline.mapSize = it } }
+    private val aoRadius = mutableStateOf(1f).onChange { aoPipeline.radius = it }
+    private val aoPower = mutableStateOf(1f).onChange { aoPipeline.power = it }
+    private val aoStrength = mutableStateOf(1f).onChange { aoPipeline.strength = it }
+    private val aoSamples = mutableStateOf(16).onChange { aoPipeline.kernelSz = it }
+    private val aoMapSize = mutableStateOf(1f).onChange { aoPipeline.mapSize = it }
 
     override fun lateInit(ctx: KoolContext) {
         updateLighting(isSpotLight.value)
@@ -65,11 +65,12 @@ class AoDemo : DemoScene("Ambient Occlusion") {
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
         +orbitInputTransform {
+            translation.set(0.0, -0.7, 0.0)
             // Set some initial rotation so that we look down on the scene
-            setMouseRotation(0f, -20f)
+            setMouseRotation(0f, -30f)
             // Add camera to the transform group
             +camera
-            zoom = 8.0
+            setZoom(8.0)
 
             onUpdate += {
                 if (isAutoRotate.value) {

@@ -64,8 +64,9 @@ open class MutableStateValue<T: Any?>(initValue: T) : MutableState() {
         return value
     }
 
-    fun onChange(block: (T) -> Unit) {
+    fun onChange(block: (T) -> Unit): MutableStateValue<T> {
         stateListeners += block
+        return this
     }
 }
 

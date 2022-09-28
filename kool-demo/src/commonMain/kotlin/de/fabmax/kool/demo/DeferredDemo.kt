@@ -58,8 +58,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
             setMouseRotation(0f, -40f)
             // Add camera to the transform group
             +camera
-            zoom = 28.0
-            maxZoom = 50.0
+            setZoom(28.0, max = 50.0)
 
             translation.set(0.0, -11.0, 0.0)
             onUpdate += {

@@ -56,10 +56,8 @@ class InstanceDemo : DemoScene("Instanced Drawing") {
                 clipNear = 1f
                 clipFar = 500f
             }
-            minZoom = 1.0
-            maxZoom = 250.0
             zoomMethod = OrbitInputTransform.ZoomMethod.ZOOM_CENTER
-            zoom = 40.0
+            setZoom(40.0, 1.0, 250.0)
 
             setMouseRotation(30f, -40f)
 

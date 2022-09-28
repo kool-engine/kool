@@ -1,8 +1,11 @@
 package de.fabmax.kool.demo.pbr
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.demo.Cycler
+import de.fabmax.kool.demo.MenuRow
+import de.fabmax.kool.demo.UiSizes
+import de.fabmax.kool.demo.labelStyle
 import de.fabmax.kool.math.Mat4f
+import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.pipeline.shadermodel.PbrMaterialNode
@@ -13,69 +16,30 @@ import de.fabmax.kool.pipeline.shading.Albedo
 import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
 import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.scene.*
-import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 import kotlin.math.max
 
-class RoughnesMetalGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrContent("Roughness / Metal") {
-    private val colors = Cycler(matColors)
-
+class RoughnesMetalGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrContent("Material grid") {
     private val shaders = mutableListOf<PbrShader>()
     private var iblContent: Mesh? = null
     private var nonIblContent: Mesh? = null
 
-    override fun createMenu(parent: UiContainer, smallFont: Font, yPos: Float) {
-        parent.root.apply {
-            ui = container("pbr-rough-metal-container") {
-                isVisible = false
-                layoutSpec.setOrigin(pcs(0f), dps(yPos - 60f), zero())
-                layoutSpec.setSize(pcs(100f), dps(60f), full())
+    private val selectedColorIdx = mutableStateOf(0)
 
-                // material map selection
-                var y = -30f
-                +label("color-lbl") {
-                    layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                    layoutSpec.setSize(pcs(100f), dps(30f), full())
-                    font.setCustom(smallFont)
-                    text = "Color"
-                    textColor.setCustom(theme.accentColor)
-                    textAlignment = Gravity(Alignment.CENTER, Alignment.CENTER)
-                }
-                y -= 30f
-                val matLabel = button("selected-color") {
-                    layoutSpec.setOrigin(pcs(15f), dps(y), zero())
-                    layoutSpec.setSize(pcs(70f), dps(35f), full())
-                    text = colors.current.name
-
-                    onClick += { _, _, _ ->
-                        text = colors.next().name
-                        shaders.forEach { it.albedo(colors.current.linColor) }
+    override fun UiScope.createContentMenu() {
+        MenuRow {
+            Text("Color") { labelStyle(Grow.Std) }
+            ComboBox {
+                modifier
+                    .width(UiSizes.baseElemSize * 3.5f)
+                    .items(matColors)
+                    .selectedIndex(selectedColorIdx.use())
+                    .onItemSelected {
+                        selectedColorIdx.set(it)
+                        shaders.forEach { s -> s.albedo(matColors[it].linColor) }
                     }
-                }
-                +matLabel
-                +button("color-left") {
-                    layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                    layoutSpec.setSize(pcs(20f), dps(35f), full())
-                    text = "<"
-
-                    onClick += { _, _, _ ->
-                        matLabel.text = colors.prev().name
-                        shaders.forEach { it.albedo(colors.current.linColor) }
-                    }
-                }
-                +button("color-right") {
-                    layoutSpec.setOrigin(pcs(80f), dps(y), zero())
-                    layoutSpec.setSize(pcs(20f), dps(35f), full())
-                    text = ">"
-
-                    onClick += { _, _, _ ->
-                        matLabel.text = colors.next().name
-                        shaders.forEach { it.albedo(colors.current.linColor) }
-                    }
-                }
             }
-            parent += ui!!
         }
     }
 
@@ -144,7 +108,7 @@ class RoughnesMetalGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.P
     private fun instancedPbrShader(withIbl: Boolean, envMaps: EnvironmentMaps): PbrShader {
         val pbrCfg = PbrMaterialConfig().apply {
             albedoSource = Albedo.STATIC_ALBEDO
-            albedo = colors.current.linColor
+            albedo = matColors[selectedColorIdx.value].linColor
             isInstanced = true
             if (withIbl) {
                 useImageBasedLighting(envMaps)
@@ -166,30 +130,32 @@ class RoughnesMetalGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.P
         return PbrShader(pbrCfg, model)
     }
 
-    private data class MatColor(val name: String, val linColor: Color)
+    private data class MatColor(val name: String, val linColor: Color) {
+        override fun toString() = name
+    }
 
     companion object {
         private val matColors = listOf(
-                MatColor("Red", MdColor.RED.toLinear()),
-                MatColor("Pink", MdColor.PINK.toLinear()),
-                MatColor("Purple", MdColor.PURPLE.toLinear()),
-                MatColor("Deep Purple", MdColor.DEEP_PURPLE.toLinear()),
-                MatColor("Indigo", MdColor.INDIGO.toLinear()),
-                MatColor("Blue", MdColor.BLUE.toLinear()),
-                MatColor("Cyan", MdColor.CYAN.toLinear()),
-                MatColor("Teal", MdColor.TEAL.toLinear()),
-                MatColor("Green", MdColor.GREEN.toLinear()),
-                MatColor("Light Green", MdColor.LIGHT_GREEN.toLinear()),
-                MatColor("Lime", MdColor.LIME.toLinear()),
-                MatColor("Yellow", MdColor.YELLOW.toLinear()),
-                MatColor("Amber", MdColor.AMBER.toLinear()),
-                MatColor("Orange", MdColor.ORANGE.toLinear()),
-                MatColor("Deep Orange", MdColor.DEEP_ORANGE.toLinear()),
-                MatColor("Brown", MdColor.BROWN.toLinear()),
-                MatColor("White", Color.WHITE.toLinear()),
-                MatColor("Grey", MdColor.GREY.toLinear()),
-                MatColor("Blue Grey", MdColor.BLUE_GREY.toLinear()),
-                MatColor("Almost Black", Color(0.1f, 0.1f, 0.1f).toLinear())
+            MatColor("Red", MdColor.RED.toLinear()),
+            MatColor("Pink", MdColor.PINK.toLinear()),
+            MatColor("Purple", MdColor.PURPLE.toLinear()),
+            MatColor("Deep Purple", MdColor.DEEP_PURPLE.toLinear()),
+            MatColor("Indigo", MdColor.INDIGO.toLinear()),
+            MatColor("Blue", MdColor.BLUE.toLinear()),
+            MatColor("Cyan", MdColor.CYAN.toLinear()),
+            MatColor("Teal", MdColor.TEAL.toLinear()),
+            MatColor("Green", MdColor.GREEN.toLinear()),
+            MatColor("Light Green", MdColor.LIGHT_GREEN.toLinear()),
+            MatColor("Lime", MdColor.LIME.toLinear()),
+            MatColor("Yellow", MdColor.YELLOW.toLinear()),
+            MatColor("Amber", MdColor.AMBER.toLinear()),
+            MatColor("Orange", MdColor.ORANGE.toLinear()),
+            MatColor("Deep Orange", MdColor.DEEP_ORANGE.toLinear()),
+            MatColor("Brown", MdColor.BROWN.toLinear()),
+            MatColor("White", Color.WHITE.toLinear()),
+            MatColor("Grey", MdColor.GREY.toLinear()),
+            MatColor("Blue Grey", MdColor.BLUE_GREY.toLinear()),
+            MatColor("Almost Black", Color(0.1f, 0.1f, 0.1f).toLinear())
         )
     }
 }

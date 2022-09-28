@@ -36,8 +36,8 @@ class SimplificationDemo : DemoScene("Simplification") {
     private val simplifcationRatio = mutableStateOf(1f)
     private val isAutoSimplify = mutableStateOf(true)
     private val isAutoRotate = mutableStateOf(true)
-    private val isSolidVisible = mutableStateOf(true).apply { onChange { dispModel.isVisible = it } }
-    private val isWireframeVisible = mutableStateOf(true).apply { onChange { modelWireframe.isVisible = it } }
+    private val isSolidVisible = mutableStateOf(true).onChange { dispModel.isVisible = it }
+    private val isWireframeVisible = mutableStateOf(true).onChange { modelWireframe.isVisible = it }
 
     private val simplifiedNumFaces = mutableStateOf(0)
     private val simplifiedNumVerts = mutableStateOf(0)

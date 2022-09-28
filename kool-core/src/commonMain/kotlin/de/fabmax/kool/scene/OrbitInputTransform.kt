@@ -50,7 +50,6 @@ open class OrbitInputTransform(name: String? = null) : Group(name) {
     var zoom = 10.0
         set(value) {
             field = value.clamp(minZoom, maxZoom)
-            zoomAnimator.set(value)
         }
 
     var isKeepingStandardTransform = false
@@ -123,11 +122,13 @@ open class OrbitInputTransform(name: String? = null) : Group(name) {
         translation.set(x, y, z)
     }
 
-    fun resetZoom(newZoom: Float) = resetZoom(newZoom.toDouble())
+    fun setZoom(newZoom: Float) = setZoom(newZoom.toDouble())
 
-    fun resetZoom(newZoom: Double) {
+    fun setZoom(newZoom: Double, min: Double = minZoom, max: Double = maxZoom) {
         zoom = newZoom
         zoomAnimator.set(zoom)
+        minZoom = min
+        maxZoom = max
     }
 
     fun updateTransform() {

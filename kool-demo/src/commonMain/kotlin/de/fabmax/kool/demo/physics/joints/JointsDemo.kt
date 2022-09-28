@@ -42,9 +42,9 @@ class JointsDemo : DemoScene("Physics - Joints") {
     private val motorDirection = mutableStateOf(1f)
     private val numLinks = mutableStateOf(40)
 
-    private val drawNiceMeshes = mutableStateOf(true).apply { onChange { niceMeshes.isVisible = it } }
-    private val drawPhysMeshes = mutableStateOf(false).apply { onChange { physMeshes.isVisible = it } }
-    private val drawJointInfos = mutableStateOf(false).apply { onChange { constraintInfo.isVisible = it } }
+    private val drawNiceMeshes = mutableStateOf(true).onChange { niceMeshes.isVisible = it }
+    private val drawPhysMeshes = mutableStateOf(false).onChange { physMeshes.isVisible = it }
+    private val drawJointInfos = mutableStateOf(false).onChange { constraintInfo.isVisible = it }
 
     private val physicsTimeTxt = mutableStateOf("0.00 ms")
     private val numBodiesTxt = mutableStateOf("0")
@@ -91,8 +91,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
     override fun Scene.setupMainScene(ctx: KoolContext) {
         defaultCamTransform().apply {
             setMouseRotation(-20f, -20f)
-            zoom = 50.0
-            maxZoom = 200.0
+            setZoom(50.0, max = 200.0)
         }
         (camera as PerspectiveCamera).apply {
             clipNear = 1f

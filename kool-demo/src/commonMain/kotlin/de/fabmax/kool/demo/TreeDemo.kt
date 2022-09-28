@@ -158,10 +158,8 @@ class TreeDemo : DemoScene("Procedural Tree") {
 
         +orbitInputTransform {
             +camera
-            minZoom = 1.0
-            maxZoom = 50.0
             zoomMethod = OrbitInputTransform.ZoomMethod.ZOOM_CENTER
-            zoom = 6.0
+            setZoom(6.0, 1.0, 50.0)
 
             setMouseRotation(0f, -10f)
             setMouseTranslation(0f, 2f, 0f)

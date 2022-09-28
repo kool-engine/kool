@@ -1,12 +1,10 @@
 package de.fabmax.kool.demo.pbr
 
-import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.demo.Cycler
-import de.fabmax.kool.demo.DemoLoader
-import de.fabmax.kool.demo.DemoScene
-import de.fabmax.kool.demo.controlUi
+import de.fabmax.kool.demo.*
+import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.FilterMethod
 import de.fabmax.kool.pipeline.Texture2d
@@ -16,7 +14,6 @@ import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
-import de.fabmax.kool.scene.ui.Font
 import de.fabmax.kool.scene.ui.UiContainer
 import de.fabmax.kool.util.Color
 
@@ -29,90 +26,109 @@ class PbrDemo : DemoScene("PBR Materials") {
     private lateinit var skybox: Skybox.Cube
     private lateinit var envMaps: EnvironmentMaps
 
-    private val lightCycler = Cycler(lightSetups)
-    private val hdriCycler = Cycler(hdriTextures)
     private val loadedHdris = Array<Texture2d?>(hdriTextures.size) { null }
 
     private val sphereProto = SphereProto()
-    private val pbrContentCycler = Cycler(listOf(
-            PbrMaterialContent(sphereProto), ColorGridContent(sphereProto), RoughnesMetalGridContent(sphereProto)))
+    private val pbrContent = listOf(
+        PbrMaterialContent(sphereProto),
+        ColorGridContent(sphereProto),
+        RoughnesMetalGridContent(sphereProto)
+    )
+    private val selectedContentIdx = mutableStateOf(0)
+    private val selectedHdriIdx = mutableStateOf(0)
+    private val selectedLightIdx = mutableStateOf(0)
 
-    private var autoRotate = true
-        set(value) {
-            field = value
-            pbrContentCycler.forEach { it.autoRotate = value }
-        }
+    private val selectedContent: PbrContent get() = pbrContent[selectedContentIdx.value]
+    private val selectedLightSetup: LightSetup get() = lightSetups[selectedLightIdx.value]
+
+    private val isIbl = mutableStateOf(true).onChange {
+        pbrContent.forEach { c -> c.setUseImageBasedLighting(it) }
+    }
+    private val isAutoRotate = mutableStateOf(true).onChange {
+        pbrContent.forEach { c -> c.autoRotate = it }
+    }
 
     override fun lateInit(ctx: KoolContext) {
-        val nextHdriKeyListener = ctx.inputMgr.registerKeyListener(InputManager.KEY_CURSOR_LEFT, "Next environment map", { it.isPressed }) {
-            hdriCycler.next()
-            updateHdri(hdriCycler.index, ctx)
-        }
-        val prevHdriKeyListener = ctx.inputMgr.registerKeyListener(InputManager.KEY_CURSOR_RIGHT, "Prev environment map", { it.isPressed }) {
-            hdriCycler.prev()
-            updateHdri(hdriCycler.index, ctx)
-        }
         mainScene.onDispose += {
-            ctx.inputMgr.removeKeyListener(nextHdriKeyListener)
-            ctx.inputMgr.removeKeyListener(prevHdriKeyListener)
-
             loadedHdris.forEach { it?.dispose() }
             envMaps.dispose()
         }
     }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
-        lightCycler.current.setup(this)
+        selectedLightSetup.setup(this)
 
         +orbitInputTransform {
             +camera
             // let the camera slowly rotate around vertical axis
             onUpdate += {
-                if (autoRotate) {
+                if (isAutoRotate.value) {
                     verticalRotation += ctx.deltaT * 2f
                 }
             }
             zoomMethod = OrbitInputTransform.ZoomMethod.ZOOM_CENTER
-            zoom = 20.0
+            setZoom(20.0)
         }
 
-        loadHdri(hdriCycler.index, ctx) { hdri ->
+        loadHdri(selectedHdriIdx.value, ctx) { hdri ->
             envMaps = EnvironmentHelper.hdriEnvironment(this, hdri, false)
             skybox = Skybox.cube(envMaps.reflectionMap, 1f)
             this += skybox
 
-            pbrContentCycler.forEach {
+            pbrContent.forEach {
                 +it.createContent(this, envMaps, ctx)
             }
-            pbrContentCycler.current.show()
+            selectedContent.show()
         }
     }
 
-    override fun setupMenu(ctx: KoolContext) = controlUi {
-        menuHeight = 440f
-
-        section("Environment") {
-            cycler(null, hdriCycler) { _, _ -> updateHdri(hdriCycler.index, ctx) }
-        }
-        section("Image Based Lighting") {
-            toggleButton("IBL Enabled", true) {
-                pbrContentCycler.forEach { it.setUseImageBasedLighting(isEnabled) }
+    override fun createMenu(menu: DemoMenu, ctx: KoolContext) = menuSurface {
+        val comboW = UiSizes.baseElemSize * 3.5f
+        MenuRow {
+            Text("Scene") { labelStyle(Grow.Std) }
+            ComboBox {
+                modifier
+                    .width(comboW)
+                    .items(pbrContent)
+                    .selectedIndex(selectedContentIdx.use())
+                    .onItemSelected {
+                        selectedContent.hide()
+                        selectedContentIdx.set(it)
+                        selectedContent.show()
+                    }
             }
         }
-        section("Discrete Lighting") {
-            cycler(null, lightCycler) { light, _ -> light.setup(mainScene) }
-        }
-        section("Scene Content") {
-            cycler(null, pbrContentCycler) { content, prevContent ->
-                prevContent.hide()
-                content.show()
-            }
-            toggleButton("Auto Rotate", autoRotate) { autoRotate = isEnabled }
+        with(selectedContent) { createContentMenu() }
 
-            menuY += 25f
-            pbrContentCycler.forEach { it.createMenu(menuContainer, smallFont, menuY) }
-            pbrContentCycler.current.show()
+        Text("Settings") { sectionTitleStyle() }
+        MenuRow { LabeledSwitch("Image based lighting", isIbl) }
+        MenuRow {
+            Text("Environment") { labelStyle(Grow.Std) }
+            ComboBox {
+                modifier
+                    .width(comboW)
+                    .items(hdriTextures)
+                    .selectedIndex(selectedHdriIdx.use())
+                    .onItemSelected {
+                        selectedHdriIdx.set(it)
+                        updateHdri(it, ctx)
+                    }
+            }
         }
+        MenuRow {
+            Text("Discrete lights") { labelStyle(Grow.Std) }
+            ComboBox {
+                modifier
+                    .width(comboW)
+                    .items(lightSetups)
+                    .selectedIndex(selectedLightIdx.use())
+                    .onItemSelected {
+                        selectedLightIdx.set(it)
+                        selectedLightSetup.setup(mainScene)
+                    }
+            }
+        }
+        MenuRow { LabeledSwitch("Auto rotate view", isAutoRotate) }
     }
 
     private fun updateHdri(idx: Int, ctx: KoolContext) {
@@ -120,7 +136,7 @@ class PbrDemo : DemoScene("PBR Materials") {
             envMaps.let { oldEnvMap -> ctx.runDelayed(1) { oldEnvMap.dispose() } }
             envMaps = EnvironmentHelper.hdriEnvironment(mainScene, tex, false)
             skybox.skyboxShader.setSingleSky(envMaps.reflectionMap)
-            pbrContentCycler.forEach { it.updateEnvironmentMap(envMaps) }
+            pbrContent.forEach { it.updateEnvironmentMap(envMaps) }
         }
     }
 
@@ -162,7 +178,7 @@ class PbrDemo : DemoScene("PBR Materials") {
 
         override fun toString() = name
 
-        abstract fun createMenu(parent: UiContainer, smallFont: Font, yPos: Float)
+        abstract fun UiScope.createContentMenu()
         abstract fun setUseImageBasedLighting(enabled: Boolean)
         abstract fun createContent(scene: Scene, envMaps: EnvironmentMaps, ctx: KoolContext): Group
         abstract fun updateEnvironmentMap(envMaps: EnvironmentMaps)
@@ -207,13 +223,13 @@ class PbrDemo : DemoScene("PBR Materials") {
                 Hdri("${DemoLoader.hdriPath}/circus_arena_1k.rgbe.png", "Circus"),
                 Hdri("${DemoLoader.hdriPath}/newport_loft.rgbe.png", "Loft"),
                 Hdri("${DemoLoader.hdriPath}/shanghai_bund_1k.rgbe.png", "Shanghai"),
-                Hdri("${DemoLoader.hdriPath}/mossy_forest_1k.rgbe.png", "Mossy Forest")
+                Hdri("${DemoLoader.hdriPath}/mossy_forest_1k.rgbe.png", "Mossy forest")
         )
 
         private const val lightStrength = 250f
         private const val lightExtent = 10f
         private val lightSetups = listOf(
-                LightSetup("Off") { lighting.lights.clear() },
+                LightSetup("None") { lighting.lights.clear() },
 
                 LightSetup("Front x1") {
                     val light1 = Light().setPoint(Vec3f(0f, 0f, lightExtent * 1.5f)).setColor(Color.WHITE, lightStrength * 2f)

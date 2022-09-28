@@ -1,7 +1,14 @@
 package de.fabmax.kool.demo.pbr
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.demo.MenuRow
+import de.fabmax.kool.demo.MenuSlider
+import de.fabmax.kool.demo.UiSizes
+import de.fabmax.kool.demo.labelStyle
 import de.fabmax.kool.math.Mat4f
+import de.fabmax.kool.modules.ui2.Text
+import de.fabmax.kool.modules.ui2.UiScope
+import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.pipeline.shadermodel.PbrMaterialNode
@@ -12,64 +19,27 @@ import de.fabmax.kool.pipeline.shading.Albedo
 import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
 import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.scene.*
-import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 
-class ColorGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrContent("Color Grid") {
+class ColorGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrContent("Color grid") {
     private val shaders = mutableListOf<PbrShader>()
     private var iblContent: Mesh? = null
     private var nonIblContent: Mesh? = null
 
-    override fun createMenu(parent: UiContainer, smallFont: Font, yPos: Float) {
-        parent.root.apply {
-            ui = container("pbr-color-container") {
-                isVisible = false
-                layoutSpec.setOrigin(pcs(0f), dps(yPos - 100f), zero())
-                layoutSpec.setSize(pcs(100f), dps(100f), full())
+    private val roughness = mutableStateOf(0.1f).onChange { shaders.forEach { s -> s.roughness(it) } }
+    private val metallic = mutableStateOf(0f).onChange { shaders.forEach { s -> s.metallic(it) } }
 
-                // material map selection
-                var y = -30f
-                +label("mat-lbl") {
-                    layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                    layoutSpec.setSize(pcs(100f), dps(30f), full())
-                    font.setCustom(smallFont)
-                    text = "Material"
-                    textColor.setCustom(theme.accentColor)
-                    textAlignment = Gravity(Alignment.CENTER, Alignment.CENTER)
-                }
-                y -= 35f
-                +label("mat-roughness-lbl") {
-                    layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                    layoutSpec.setSize(pcs(10f), dps(35f), full())
-                    text = "R:"
-                }
-                +slider("mat-roughness-slider") {
-                    layoutSpec.setOrigin(pcs(15f), dps(y), zero())
-                    layoutSpec.setSize(pcs(85f), dps(35f), full())
-                    value = 10f
-
-                    onValueChanged += {
-                        shaders.forEach { it.roughness(value / 100f) }
-                    }
-                }
-                y -= 35f
-                +label("mat-metallic-lbl") {
-                    layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                    layoutSpec.setSize(pcs(10f), dps(35f), full())
-                    text = "M:"
-                }
-                +slider("mat-metallic-slider") {
-                    layoutSpec.setOrigin(pcs(15f), dps(y), zero())
-                    layoutSpec.setSize(pcs(85f), dps(35f), full())
-                    value = 0f
-
-                    onValueChanged += {
-                        shaders.forEach { it.metallic(value / 100f) }
-                    }
-                }
-            }
-            parent += ui!!
+    override fun UiScope.createContentMenu() {
+        val lblSize = UiSizes.baseElemSize * 2f
+        val txtSize = UiSizes.baseElemSize * 0.7f
+        MenuRow {
+            Text("Roughness") { labelStyle(lblSize) }
+            MenuSlider(roughness.use(), 0f, 1f, txtWidth = txtSize) { roughness.set(it) }
+        }
+        MenuRow {
+            Text("Metallic") { labelStyle(lblSize) }
+            MenuSlider(metallic.use(), 0f, 1f, txtWidth = txtSize) { metallic.set(it) }
         }
     }
 

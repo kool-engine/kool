@@ -1,9 +1,11 @@
 package de.fabmax.kool.demo.pbr
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.demo.Cycler
 import de.fabmax.kool.demo.DemoLoader
+import de.fabmax.kool.demo.MenuRow
+import de.fabmax.kool.demo.labelStyle
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.SingleColorTexture
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
@@ -11,31 +13,15 @@ import de.fabmax.kool.pipeline.shading.Albedo
 import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.*
-import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.util.Color
 
-class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrContent("PBR Material") {
-    val matCycler = Cycler(materials).apply { index = 3 }
-    val currentMat: MaterialMaps
-        get() = matCycler.current
-
+class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrContent("PBR material") {
     private val shaders = mutableListOf<PbrShader>()
     private var iblContent: Group? = null
     private var nonIblContent: Group? = null
 
-    private fun nextMaterial(): MaterialMaps {
-        currentMat.disposeMaps()
-        matCycler.next()
-        updatePbrMaterial()
-        return currentMat
-    }
-
-    private fun prevMaterial(): MaterialMaps {
-        currentMat.disposeMaps()
-        matCycler.prev()
-        updatePbrMaterial()
-        return currentMat
-    }
+    private val selectedMatIdx = mutableStateOf(3)
+    val currentMat: MaterialMaps get() = materials[selectedMatIdx.value]
 
     private fun updatePbrMaterial() {
         shaders.forEach {
@@ -48,54 +34,21 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrCont
         }
     }
 
-    override fun createMenu(parent: UiContainer, smallFont: Font, yPos: Float) {
-        parent.root.apply {
-            ui = container("pbr-mat-container") {
-                isVisible = false
-                layoutSpec.setOrigin(pcs(0f), dps(yPos - 60f), zero())
-                layoutSpec.setSize(pcs(100f), dps(60f), full())
-
-                // material map selection
-                var y = -30f
-                +label("mat-lbl") {
-                    layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                    layoutSpec.setSize(pcs(100f), dps(30f), full())
-                    font.setCustom(smallFont)
-                    text = "Material"
-                    textColor.setCustom(theme.accentColor)
-                    textAlignment = Gravity(Alignment.CENTER, Alignment.CENTER)
-                }
-                y -= 30f
-                val matLabel = button("selected-mat") {
-                    layoutSpec.setOrigin(pcs(15f), dps(y), zero())
-                    layoutSpec.setSize(pcs(70f), dps(35f), full())
-                    text = currentMat.name
-
-                    onClick += { _, _, _ ->
-                        text = nextMaterial().name
+    override fun UiScope.createContentMenu() {
+        MenuRow {
+            Text("Material") { labelStyle() }
+            ComboBox {
+                modifier
+                    .width(Grow.Std)
+                    .margin(start = sizes.largeGap)
+                    .items(materials)
+                    .selectedIndex(selectedMatIdx.use())
+                    .onItemSelected {
+                        currentMat.disposeMaps()
+                        selectedMatIdx.set(it)
+                        updatePbrMaterial()
                     }
-                }
-                +matLabel
-                +button("mat-left") {
-                    layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                    layoutSpec.setSize(pcs(20f), dps(35f), full())
-                    text = "<"
-
-                    onClick += { _, _, _ ->
-                        matLabel.text = prevMaterial().name
-                    }
-                }
-                +button("mat-right") {
-                    layoutSpec.setOrigin(pcs(80f), dps(y), zero())
-                    layoutSpec.setSize(pcs(20f), dps(35f), full())
-                    text = ">"
-
-                    onClick += { _, _, _ ->
-                        matLabel.text = nextMaterial().name
-                    }
-                }
             }
-            parent += ui!!
         }
     }
 
@@ -156,7 +109,7 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrCont
             updatePbrMaterial()
 
             scene.onDispose += {
-                matCycler.forEach { it.disposeMaps() }
+                materials.forEach { it.disposeMaps() }
             }
         }
     }
@@ -170,6 +123,8 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrCont
             ao?.dispose()
             displacement?.dispose()
         }
+
+        override fun toString() = name
     }
 
     companion object {

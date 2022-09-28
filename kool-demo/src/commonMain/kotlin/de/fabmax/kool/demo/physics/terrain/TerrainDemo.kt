@@ -3,15 +3,15 @@ package de.fabmax.kool.demo.physics.terrain
 import de.fabmax.kool.AssetManager
 import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.demo.DemoLoader
-import de.fabmax.kool.demo.DemoScene
-import de.fabmax.kool.demo.controlUi
+import de.fabmax.kool.demo.*
+import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.toDeg
 import de.fabmax.kool.modules.gltf.loadGltfModel
 import de.fabmax.kool.modules.ksl.*
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
+import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.physics.util.CharacterTrackingCamRig
 import de.fabmax.kool.pipeline.AddressMode
@@ -23,7 +23,6 @@ import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.colorMesh
-import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.util.*
 import kotlin.math.atan2
 
@@ -55,17 +54,37 @@ class TerrainDemo : DemoScene("Terrain Demo") {
 
     private lateinit var escKeyListener: InputManager.KeyEventListener
 
-    private var isSsao = true
+    private val isSsao = mutableStateOf(true).onChange { ssao.isEnabled = it }
+    private val isPlayerPbr = mutableStateOf(true).onChange { updatePlayerShader(it) }
+    private val isGroundPbr = mutableStateOf(true).onChange {
+        updateTerrainShader(it)
+        updateOceanShader(it)
+        updateBridgeShader(it)
+    }
+    private val isBoxesPbr = mutableStateOf(true).onChange { updateBoxShader(it) }
+    private val isVegetationPbr = mutableStateOf(false).onChange {
+        updateGrassShader(it)
+        updateTreeShader(it)
+    }
 
-    private var isPlayerPbr = true
-    private var isGroundPbr = true
-    private var isBridgePbr = true
-    private var isBoxesPbr = true
-    // trees and grass actually look better with cheap blinn-phong shading
-    private var isTreesPbr = false
-    private var isGrassPbr = false
+    private val isCursorLocked = mutableStateOf(true).onChange { camRig.isCursorLocked = it }
+    private val windSpeed = mutableStateOf(2.5f).onChange {
+        wind.speed.set(4f * it, 0.2f * it, 2.7f * it)
+    }
+    private val windStrength = mutableStateOf(1f).onChange {
+        wind.offsetStrength.w = it
+    }
+    private val windScale = mutableStateOf(100f).onChange {
+        wind.scale = it
+    }
+    private val isGrassEnabled = mutableStateOf(true).onChange { grass.grassQuads.isVisible = it }
+    private val isCamLocalGrassEnabled = mutableStateOf(true).onChange { camLocalGrass.grassQuads.isVisible = it }
+    private val isGrassShadows = mutableStateOf(true).onChange {
+        grass.setIsCastingShadow(it)
+        camLocalGrass.setIsCastingShadow(it)
+    }
 
-    override suspend fun AssetManager.loadResources(ctx: KoolContext) {
+        override suspend fun AssetManager.loadResources(ctx: KoolContext) {
         showLoadText("Loading height map...")
         val heightMap = HeightMap.fromRawData(loadAsset("${DemoLoader.heightMapPath}/terrain_ocean.raw")!!, 200f, heightOffset = -50f)
         // more or less the same, but falls back to 8-bit height-resolution in javascript
@@ -85,6 +104,8 @@ class TerrainDemo : DemoScene("Terrain Demo") {
 
         showLoadText("Generating wind density texture...")
         wind = Wind()
+        wind.offsetStrength.w = windStrength.value
+        wind.scale = windScale.value
 
         sky = Sky(mainScene, moonTex).apply { generateMaps(this@TerrainDemo, loadingScreen!!, ctx) }
         showLoadText("Creating terrain...")
@@ -111,6 +132,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         playerModel = PlayerModel(playerGltf, physicsObjects.playerController)
 
         escKeyListener = ctx.inputMgr.registerKeyListener(InputManager.KEY_ESC, "Exit cursor lock") {
+            isCursorLocked.set(false)
             ctx.inputMgr.cursorMode = InputManager.CursorMode.NORMAL
         }
     }
@@ -124,112 +146,69 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         ctx.inputMgr.cursorMode = InputManager.CursorMode.NORMAL
     }
 
-    override fun setupMenu(ctx: KoolContext) = controlUi {
-        //image(oceanFloorPass.colorTexture)
-
-        section("Terrain Demo") {
-            button("ESC to unlock Cursor") {
-                camRig.isCursorLocked = true
-            }.apply {
-                textAlignment = Gravity(Alignment.CENTER, Alignment.CENTER)
-                textColorHovered.setCustom(MdColor.DEEP_ORANGE)
-                onUpdate += {
-                    text = if (camRig.isCursorLocked) {
-                        textColor.setCustom(MdColor.DEEP_ORANGE)
-                        "ESC to unlock Cursor"
-                    } else {
-                        textColor.setCustom(Color.WHITE)
-                        "Click here to lock Cursor"
-                    }
-                }
+    override fun createMenu(menu: DemoMenu, ctx: KoolContext) = menuSurface {
+        Button(if (isCursorLocked.use()) "ESC to unlock cursor" else "Lock cursor") {
+            modifier
+                .alignX(AlignmentX.Center)
+                .width(Grow.Std)
+                .margin(horizontal = 16.dp, vertical = 24.dp)
+                .onClick { isCursorLocked.set(true) }
+            if (isCursorLocked.use()) {
+                modifier.colors(buttonColor = MdColor.RED)
             }
-            text("[WASD / Cursor Keys]: Move").apply { font.setCustom(smallFont); menuY += 10f }
-            text("[Shift]: Walk").apply { font.setCustom(smallFont); menuY += 10f }
-            text("[Space]: Jump").apply { font.setCustom(smallFont); menuY += 10f }
         }
-//        button("Respawn Boxes") {
-//            physicsObjects.respawnBoxes()
-//        }
+        MenuRow {
+            Text("[WASD / cursor keys]") { labelStyle(Grow.Std) }
+            Text("move") { labelStyle() }
+        }
+        MenuRow {
+            Text("[Shift]") { labelStyle(Grow.Std) }
+            Text("walk") { labelStyle() }
+        }
+        MenuRow {
+            Text("[Space]") { labelStyle(Grow.Std) }
+            Text("jump") { labelStyle() }
+        }
 //        toggleButton("Draw Debug Info", playerModel.isDrawShapeOutline) {
 //            playerModel.isDrawShapeOutline = isEnabled
 //            physicsObjects.debugLines.isVisible = isEnabled
 //        }
-        section("Wind") {
-            sliderWithValue("Wind Speed", 2.5f, 0.1f, 20f) {
-                wind.speed.set(4f * value, 0.2f * value, 2.7f * value)
-            }
-            sliderWithValue("Wind Strength", wind.offsetStrength.w, 0f, 2f) {
-                wind.offsetStrength.w = value
-            }
-            sliderWithValue("Wind Scale", wind.scale, 10f, 500f) {
-                wind.scale = value
-            }
-//            sliderWithValue("Time of Day", sky.timeOfDay, 0f, 1f) {
-//                sky.timeOfDay = value
-//                println("time of day: ${sky.timeOfDay} (is day: ${sky.isDay}), sun progress: ${sky.sunProgress(sky.timeOfDay)}, moon progress: ${sky.moonProgress(sky.timeOfDay)}")
-//            }
+
+        Text("Wind") { sectionTitleStyle() }
+        val lblSize = UiSizes.baseElemSize * 1.5f
+        val txtSize = UiSizes.baseElemSize * 1.1f
+        MenuRow {
+            Text("Speed") { labelStyle(lblSize) }
+            MenuSlider(windSpeed.use(), 0.1f, 20f, txtWidth = txtSize) { windSpeed.set(it) }
         }
-        section("Grass") {
-            toggleButton("Grass", grass.grassQuads.isVisible) {
-                grass.grassQuads.isVisible = isEnabled
-            }
-            toggleButton("Cam Local Grass", camLocalGrass.grassQuads.isVisible) {
-                camLocalGrass.grassQuads.isVisible = isEnabled
-            }
-            toggleButton("Grass Shadow Casting", camLocalGrass.grassQuads.isCastingShadow) {
-                grass.setIsCastingShadow(isEnabled)
-                camLocalGrass.setIsCastingShadow(isEnabled)
-            }
+        MenuRow {
+            Text("Strength") { labelStyle(lblSize) }
+            MenuSlider(windStrength.use(), 0f, 2f, txtWidth = txtSize) { windStrength.set(it) }
         }
-        section("Shading") {
-            toggleButton("Ambient Occlusion", isSsao) {
-                isSsao = isEnabled
-                updateSsaoEnabled()
-            }
-            toggleButton("Player PBR Shading", isPlayerPbr) {
-                isPlayerPbr = isEnabled
-                updatePlayerShader()
-            }
-            toggleButton("Ground PBR Shading", isGroundPbr) {
-                isGroundPbr = isEnabled
-                isBridgePbr = isEnabled
-                updateTerrainShader()
-                updateOceanShader()
-                updateBridgeShader()
-            }
-            toggleButton("Boxes PBR Shading", isBoxesPbr) {
-                isBoxesPbr = isEnabled
-                updateBoxShader()
-            }
-            toggleButton("Vegetation PBR Shading", isTreesPbr) {
-                isTreesPbr = isEnabled
-                isGrassPbr = isEnabled
-                updateGrassShader()
-                updateTreeShader()
-            }
+        MenuRow {
+            Text("Scale") { labelStyle(lblSize) }
+            MenuSlider(windScale.use(), 10f, 500f, txtWidth = txtSize) { windScale.set(it) }
         }
 
-        uiRoot.apply {
-            +container("x1") {
-                layoutSpec.setOrigin(pcs(50f) - dps(13f), pcs(50f) - dps(1f), zero())
-                layoutSpec.setSize(dps(10f), dps(2f), full())
-                ui.setCustom(SimpleComponentUi(this).apply { color.setCustom(Color.WHITE) })
-            }
-            +container("x2") {
-                layoutSpec.setOrigin(pcs(50f) + dps(3f), pcs(50f) - dps(1f), zero())
-                layoutSpec.setSize(dps(10f), dps(2f), full())
-                ui.setCustom(SimpleComponentUi(this).apply { color.setCustom(Color.WHITE) })
-            }
-            +container("x3") {
-                layoutSpec.setOrigin(pcs(50f) - dps(1f), pcs(50f) - dps(13f), zero())
-                layoutSpec.setSize(dps(2f), dps(10f), full())
-                ui.setCustom(SimpleComponentUi(this).apply { color.setCustom(Color.WHITE) })
-            }
-            +container("x4") {
-                layoutSpec.setOrigin(pcs(50f) - dps(1f), pcs(50f) + dps(3f), zero())
-                layoutSpec.setSize(dps(2f), dps(10f), full())
-                ui.setCustom(SimpleComponentUi(this).apply { color.setCustom(Color.WHITE) })
-            }
+        Text("Grass") { sectionTitleStyle() }
+        MenuRow { LabeledSwitch("Enabled", isGrassEnabled) }
+        MenuRow { LabeledSwitch("Dense grass", isCamLocalGrassEnabled) }
+        MenuRow { LabeledSwitch("Shadow casting", isGrassShadows) }
+
+        Text("Shading") { sectionTitleStyle() }
+        MenuRow { LabeledSwitch("Ambient occlusion", isSsao) }
+        MenuRow { LabeledSwitch("Player PBR shading", isPlayerPbr) }
+        MenuRow { LabeledSwitch("Ground PBR shading", isGroundPbr) }
+        MenuRow { LabeledSwitch("Boxes PBR shading", isBoxesPbr) }
+        MenuRow { LabeledSwitch("Vegetation PBR shading", isVegetationPbr) }
+
+        // crosshair
+        surface.popup().apply {
+            modifier.width(24.dp).height(24.dp).align(AlignmentX.Center, AlignmentY.Center)
+            Box { modifier.width(10.dp).height(2.dp).align(AlignmentX.Start, AlignmentY.Center).backgroundColor(Color.WHITE) }
+            Box { modifier.width(10.dp).height(2.dp).align(AlignmentX.End, AlignmentY.Center).backgroundColor(Color.WHITE) }
+            Box { modifier.width(2.dp).height(10.dp).align(AlignmentX.Center, AlignmentY.Top).backgroundColor(Color.WHITE) }
+            Box { modifier.width(2.dp).height(10.dp).align(AlignmentX.Center, AlignmentY.Bottom).backgroundColor(Color.WHITE) }
         }
     }
 
@@ -258,7 +237,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         ssao = AoPipeline.createForward(this).apply {
             // negative radius is used to set radius relative to camera distance
             radius = -0.05f
-            isEnabled = isSsao
+            isEnabled = isSsao.value
             kernelSz = 8
         }
 
@@ -286,13 +265,13 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         // setup camera tracking player
         setupCamera(ctx)
 
-        updateTerrainShader()
-        updateOceanShader()
-        updateGrassShader()
-        updateTreeShader()
-        updatePlayerShader()
-        updateBoxShader()
-        updateBridgeShader()
+        updateTerrainShader(isGroundPbr.value)
+        updateOceanShader(isGroundPbr.value)
+        updateGrassShader(isVegetationPbr.value)
+        updateTreeShader(isVegetationPbr.value)
+        updatePlayerShader(isPlayerPbr.value)
+        updateBoxShader(isBoxesPbr.value)
+        updateBridgeShader(isGroundPbr.value)
 
         onUpdate += {
             wind.updateWind(it.deltaT)
@@ -348,38 +327,34 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         physicsObjects.playerController.tractorGun.camRig = camRig
     }
 
-    private fun updateSsaoEnabled() {
-        ssao.isEnabled = isSsao
-    }
-
-    private fun updateTerrainShader() {
+    private fun updateTerrainShader(isGroundPbr: Boolean) {
         terrainTiles.makeTerrainShaders(colorMap, normalMap, terrain.splatMap, shadowMap, ssao.aoMap, isGroundPbr)
     }
 
-    private fun updateOceanShader() {
+    private fun updateOceanShader(isGroundPbr: Boolean) {
         ocean.oceanShader = OceanShader.makeOceanShader(oceanFloorPass, shadowMap, wind.density, oceanBump, isGroundPbr)
     }
 
-    private fun updateTreeShader() {
-        trees.makeTreeShaders(shadowMap, ssao.aoMap, wind.density, isTreesPbr)
+    private fun updateTreeShader(isVegetationPbr: Boolean) {
+        trees.makeTreeShaders(shadowMap, ssao.aoMap, wind.density, isVegetationPbr)
     }
 
-    private fun updateGrassShader() {
-        camLocalGrass.grassShader = GrassShader.makeGrassShader(grassColor, shadowMap, ssao.aoMap, wind.density, true, isGrassPbr)
+    private fun updateGrassShader(isVegetationPbr: Boolean) {
+        camLocalGrass.grassShader = GrassShader.makeGrassShader(grassColor, shadowMap, ssao.aoMap, wind.density, true, isVegetationPbr)
         grass.grassQuads.children.filterIsInstance<Mesh>().forEach {
-            it.shader = GrassShader.makeGrassShader(grassColor, shadowMap, ssao.aoMap, wind.density, false, isGrassPbr).shader
+            it.shader = GrassShader.makeGrassShader(grassColor, shadowMap, ssao.aoMap, wind.density, false, isVegetationPbr).shader
         }
     }
 
-    private fun updateBoxShader() {
+    private fun updateBoxShader(isBoxesPbr: Boolean) {
         boxMesh?.shader = instancedObjectShader(0.2f, 0.25f, isBoxesPbr)
     }
 
-    private fun updateBridgeShader() {
-        bridgeMesh?.shader = instancedObjectShader(0.8f, 0f, isBridgePbr)
+    private fun updateBridgeShader(isGroundPbr: Boolean) {
+        bridgeMesh?.shader = instancedObjectShader(0.8f, 0f, isGroundPbr)
     }
 
-    private fun updatePlayerShader() {
+    private fun updatePlayerShader(isPlayerPbr: Boolean) {
         fun KslLitShader.LitShaderConfig.baseConfig() {
             vertices { enableArmature(40) }
             color { constColor(MdColor.PINK.toLinear()) }

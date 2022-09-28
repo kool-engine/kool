@@ -35,7 +35,7 @@ class ProceduralDemo : DemoScene("Procedural Geometry") {
         +orbitInputTransform {
             setMouseRotation(-20f, -10f)
             setMouseTranslation(0f, 16f, 0f)
-            zoom = 40.0
+            setZoom(40.0)
             +camera
 
             onUpdate += {

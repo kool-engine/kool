@@ -30,7 +30,7 @@ class NavSettingsButton(val menu: DemoMenu) : ComposableComponent {
         for (i in 1..nTeeth * 4) {
             val isInner = (i / 2) % 2 != 0
             val aMod = 0.04f * if (i % 2 == 1) 1f else -1f
-            val a = (i - 0.5f) / (nTeeth * 4f) * 2f * PI.toFloat() + aMod
+            val a = (i + 1.5f) / (nTeeth * 4f) * 2f * PI.toFloat() + aMod
             val r = if (isInner) rIn else rOut
 
             outside += Vec3f(cos(a) * r, sin(a) * r, 0f)
