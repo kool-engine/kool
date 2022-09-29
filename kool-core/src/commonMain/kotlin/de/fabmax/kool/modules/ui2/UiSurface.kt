@@ -99,7 +99,7 @@ class UiSurface(
         meshLayers.values.forEach {
             if (it.isUsed) {
                 +it
-            }
+            } // todo: else we should dispose it probably?
         }
         val render = pt.takeMs().also { pt.reset() }
 
