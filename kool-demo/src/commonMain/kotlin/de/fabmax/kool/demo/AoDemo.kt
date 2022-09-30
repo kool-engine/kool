@@ -9,6 +9,7 @@ import de.fabmax.kool.math.toDeg
 import de.fabmax.kool.modules.gltf.GltfFile
 import de.fabmax.kool.modules.gltf.loadGltfModel
 import de.fabmax.kool.modules.ksl.KslUnlitShader
+import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.modules.ksl.lang.b
 import de.fabmax.kool.modules.ksl.lang.g
 import de.fabmax.kool.modules.ksl.lang.getFloat4Port
@@ -284,31 +285,37 @@ class AoDemo : DemoScene("Ambient Occlusion") {
         }
 
         if (showAoMapIndex.value != 0) {
-            val image = when (showAoMapIndex.value) {
-                1 -> aoPipeline.aoMap
-                2 -> aoPipeline.aoPass.colorTexture
+            val shader = when (showAoMapIndex.value) {
+                1 -> aoMapShader.apply { colorMap = aoPipeline.aoMap }
+                2 -> noisyAoMapShader.apply { colorMap = aoPipeline.aoPass.colorTexture }
                 else -> null
             }
-            surface.popup().apply {
-                modifier
-                    .margin(sizes.gap)
-                    .zLayer(UiSurface.LAYER_BACKGROUND)
-                    .align(AlignmentX.Start, AlignmentY.Bottom)
-
-                Image(image) {
+            if (shader != null) {
+                surface.popup().apply {
                     modifier
-                        .height(500.dp)
-                        .mirror(y = true)
-                        .customShader(aoMapShader.apply { colorMap = image })
+                        .margin(sizes.gap)
+                        .zLayer(UiSurface.LAYER_BACKGROUND)
+                        .align(AlignmentX.Start, AlignmentY.Bottom)
+
+                    Image(shader.colorMap) {
+                        modifier
+                            .height(500.dp)
+                            .mirror(y = true)
+                            .customShader(shader)
+                    }
                 }
             }
         }
     }
 
     companion object {
-        private val aoMapShader = KslUnlitShader {
-            color { textureColor() }
+        val aoMapShader = aoShader()
+        val noisyAoMapShader = aoShader()
+
+        private fun aoShader() = KslUnlitShader {
             pipeline { depthTest = DepthCompareOp.DISABLED }
+            color { textureData() }
+            colorSpaceConversion = ColorSpaceConversion.AS_IS
             modelCustomizer = {
                 fragmentStage {
                     main {

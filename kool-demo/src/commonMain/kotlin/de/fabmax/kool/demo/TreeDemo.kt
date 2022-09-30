@@ -1,8 +1,10 @@
 package de.fabmax.kool.demo
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.CullMethod
 import de.fabmax.kool.pipeline.Uniform1f
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
@@ -19,6 +21,7 @@ import de.fabmax.kool.util.ShadowMap
 import de.fabmax.kool.util.SimpleShadowMap
 import de.fabmax.kool.util.timedMs
 import kotlin.math.cos
+import kotlin.math.roundToInt
 import kotlin.math.sqrt
 
 
@@ -28,18 +31,28 @@ import kotlin.math.sqrt
 
 class TreeDemo : DemoScene("Procedural Tree") {
 
-    val treeGen: TreeGenerator
-    var trunkMesh: Mesh? = null
-    var leafMesh: Mesh? = null
+    private val treeGen: TreeGenerator
+    private var trunkMesh: Mesh? = null
+    private var leafMesh: Mesh? = null
 
-    var autoRotate = true
-    var windSpeed = 2.5f
-    var windAnimationPos = 0f
-    var windStrength = 1f
+    private val growDist: MutableStateValue<Float>
+    private val killDist: MutableStateValue<Float>
+    private val attractionPoints: MutableStateValue<Int>
+    private val radiusOfInfluence: MutableStateValue<Float>
 
-    val lightDirection = MutableVec3f(-1f, -1.5f, -1f).norm()
+    private val isAutoRotate = mutableStateOf(true)
+    private val windSpeed = mutableStateOf(2.5f)
+    private val windStrength = mutableStateOf(1f)
+    private var windAnimationPos = 0f
+
+    private val lightDirection = MutableVec3f(-1f, -1.5f, -1f).norm()
 
     private lateinit var skySystem: SkyCubeIblSystem
+
+    private val isLeafs = mutableStateOf(true).onChange { leafMesh?.isVisible = it }
+    private val sunAzimuth = mutableStateOf(0f)
+    private val sunElevation = mutableStateOf(0f)
+    private val isAutoUpdateIbl = mutableStateOf(true)
 
     init {
         val w = 3f
@@ -49,6 +62,11 @@ class TreeDemo : DemoScene("Procedural Tree") {
         //val dist = CubicPointDistribution(4f, Vec3f(0f, 3f, 0f))
         treeGen = TreeGenerator(dist, primaryLightDir = lightDirection)
         treeGen.generate()
+
+        growDist = mutableStateOf(treeGen.growDistance).onChange { treeGen.growDistance = it }
+        killDist = mutableStateOf(treeGen.killDistance).onChange { treeGen.killDistance = it }
+        attractionPoints = mutableStateOf(treeGen.numberOfAttractionPoints).onChange { treeGen.numberOfAttractionPoints = it }
+        radiusOfInfluence = mutableStateOf(treeGen.radiusOfInfluence).onChange { treeGen.radiusOfInfluence = it }
     }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
@@ -68,6 +86,8 @@ class TreeDemo : DemoScene("Procedural Tree") {
         skySystem = SkyCubeIblSystem(this)
         skySystem.isAutoUpdateIblMaps = true
         skySystem.setupOffscreenPasses()
+        sunAzimuth.set(skySystem.skyPass.azimuth)
+        sunElevation.set(skySystem.skyPass.elevation)
         val envMaps = skySystem.envMaps
 
         lighting.singleLight {
@@ -109,9 +129,9 @@ class TreeDemo : DemoScene("Procedural Tree") {
                 }
             }
             onUpdate += {
-                windAnimationPos += ctx.deltaT * windSpeed
+                windAnimationPos += ctx.deltaT * windSpeed.value
                 uWindSpeed?.value = windAnimationPos
-                uWindStrength?.value = windStrength
+                uWindStrength?.value = windStrength.value
             }
         }
 
@@ -146,7 +166,7 @@ class TreeDemo : DemoScene("Procedural Tree") {
             }
             onUpdate += {
                 uWindSpeed?.value = windAnimationPos
-                uWindStrength?.value = windStrength
+                uWindStrength?.value = windStrength.value
             }
         }
 
@@ -167,64 +187,88 @@ class TreeDemo : DemoScene("Procedural Tree") {
             (camera as PerspectiveCamera).apply { clipFar = 50f }
 
             onUpdate += {
-                if (autoRotate) {
+                if (isAutoRotate.value) {
                     verticalRotation += ctx.deltaT * 3f
                 }
             }
         }
     }
 
-    override fun setupMenu(ctx: KoolContext) = controlUi {
-        section("Generator Settings") {
-            sliderWithValue("Grow Distance:", treeGen.growDistance, 0.1f, 0.4f) { treeGen.growDistance = value }
-            sliderWithValue("Kill Distance:", treeGen.killDistance, 1f, 4f) { treeGen.killDistance = value }
-            sliderWithValue("Attraction Points:", treeGen.numberOfAttractionPoints.toFloat(), 100f, 10000f) {
-                treeGen.numberOfAttractionPoints = value.toInt()
-            }
-            sliderWithValue("Radius of Influence:", treeGen.radiusOfInfluence, 0.25f, 10f) {
-                treeGen.radiusOfInfluence = value
-            }
-            button("Generate Tree") {
-                treeGen.generate()
+    private fun updateTree() {
+        treeGen.generate()
 
-                trunkMesh?.apply {
-                    geometry.batchUpdate {
-                        clear()
-                        val builder = MeshBuilder(this)
-                        timedMs({"Generated ${numIndices / 3} trunk triangles in"}) {
-                            treeGen.buildTrunkMesh(builder)
-                            generateTangents()
-                        }
-                    }
-                }
-                leafMesh?.apply {
-                    geometry.batchUpdate {
-                        clear()
-                        val builder = MeshBuilder(this)
-                        timedMs({"Generated ${numIndices / 3} leaf triangles in"}) {
-                            treeGen.buildLeafMesh(builder)
-                        }
-                    }
+        trunkMesh?.apply {
+            geometry.batchUpdate {
+                clear()
+                val builder = MeshBuilder(this)
+                timedMs({"Generated ${numIndices / 3} trunk triangles in"}) {
+                    treeGen.buildTrunkMesh(builder)
+                    generateTangents()
                 }
             }
         }
-        section("Scene") {
-            sliderWithValue("Animation Speed", windSpeed, 0f, 10f) { windSpeed = value }
-            sliderWithValue("Animation Strength", windStrength, 0f, 10f) { windStrength = value }
-            toggleButton("Toggle Leafs", true) { leafMesh?.isVisible = isEnabled }
-            toggleButton("Auto Rotate", autoRotate) { autoRotate = isEnabled }
-        }
-        section("Light") {
-            val aziSlider = sliderWithValueSmall("Azimuth", skySystem.skyPass.azimuth, 0f, 360f, 0, widthLabel = 25f) {
-                skySystem.skyPass.azimuth = value
+        leafMesh?.apply {
+            geometry.batchUpdate {
+                clear()
+                val builder = MeshBuilder(this)
+                timedMs({"Generated ${numIndices / 3} leaf triangles in"}) {
+                    treeGen.buildLeafMesh(builder)
+                }
             }
-            val eleSlider = sliderWithValueSmall("Elevation", skySystem.skyPass.elevation, -90f, 90f, 0, widthLabel = 25f) {
-                skySystem.skyPass.elevation = value
-            }
-            toggleButton("Auto Update IBL Maps", skySystem.isAutoUpdateIblMaps) { skySystem.isAutoUpdateIblMaps = isEnabled }
-            aziSlider.onDragFinished += { skySystem.updateIblMaps() }
-            eleSlider.onDragFinished += { skySystem.updateIblMaps() }
         }
+    }
+
+    override fun createMenu(menu: DemoMenu, ctx: KoolContext) = menuSurface {
+        Button("Generate tree") {
+            modifier
+                .alignX(AlignmentX.Center)
+                .width(Grow.Std)
+                .margin(horizontal = 16.dp, vertical = 24.dp)
+                .onClick {
+                    updateTree()
+                }
+        }
+        MenuSlider2("Grow distance", growDist.use(), 0.1f, 0.4f) { growDist.set(it) }
+        MenuSlider2("Kill distance", killDist.use(), 1f, 4f) { killDist.set(it) }
+        MenuSlider2("Attraction points", attractionPoints.use().toFloat(), 100f, 10000f) { attractionPoints.set(it.roundToInt()) }
+        MenuSlider2("Radius of influence", radiusOfInfluence.use(), 0.25f, 10f) { radiusOfInfluence.set(it) }
+
+        Text("Scene") { sectionTitleStyle() }
+        MenuSlider2("Animation speed", windSpeed.use(), 0f, 10f) { windSpeed.set(it) }
+        MenuSlider2("Animation strength", windStrength.use(), 0f, 10f) { windStrength.set(it) }
+        MenuRow {  LabeledSwitch("Toggle leafs", isLeafs) }
+        MenuRow { LabeledSwitch("Auto rotate view", isAutoRotate) }
+
+        Text("Sunlight") { sectionTitleStyle() }
+        MenuRow {
+            Text("Azimuth") { labelStyle(UiSizes.baseElemSize * 1.85f) }
+            MenuSlider(
+                sunAzimuth.use(), 0f, 360f,
+                txtFormat = { "${it.roundToInt()} °" },
+                txtWidth = UiSizes.baseElemSize * 0.9f,
+                onChangeEnd = { skySystem.skyPass.azimuth = it }
+            ) {
+                sunAzimuth.set(it)
+                if (isAutoUpdateIbl.value) {
+                    skySystem.skyPass.azimuth = it
+                }
+            }
+        }
+        MenuRow {
+            Text("Elevation") { labelStyle(UiSizes.baseElemSize * 1.85f) }
+            MenuSlider(
+                sunElevation.use(), -90f, 90f,
+                txtFormat = { "${it.roundToInt()} °" },
+                txtWidth = UiSizes.baseElemSize * 0.9f,
+                onChangeEnd = { skySystem.skyPass.elevation = it }
+            ) {
+                sunElevation.set(it)
+                if (isAutoUpdateIbl.value) {
+                    skySystem.skyPass.elevation = it
+                }
+            }
+        }
+        MenuRow { LabeledSwitch("Auto update environment map", isAutoUpdateIbl) }
     }
 
     private class WindNode(graph: ShaderGraph) : ShaderNode("windNode", graph) {

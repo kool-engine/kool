@@ -11,10 +11,12 @@ object InputStack {
     private val processableKeyEvents = mutableListOf<InputManager.KeyEvent>()
 
     fun pushTop(inputHandler: InputHandler) {
+        remove(inputHandler)
         handlerStack += inputHandler
     }
 
     fun pushBottom(inputHandler: InputHandler) {
+        remove(inputHandler)
         handlerStack.add(0, inputHandler)
     }
 

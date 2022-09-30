@@ -69,6 +69,9 @@ class UiSurface(
                 updateUi(it)
             }
         }
+        onDispose += {
+            InputStack.remove(inputHandler)
+        }
     }
 
     private fun updateUi(updateEvent: RenderPass.UpdateEvent) {
@@ -481,8 +484,8 @@ class UiSurface(
 
             if (imageMeshes.isNotEmpty()) {
                 imageMeshes.values.forEach {
-                    it.clear()
                     intChildren -= it.meshes.toSet()
+                    it.clear()
                 }
             }
 
@@ -492,6 +495,11 @@ class UiSurface(
                     removeNode(it.drawNode)
                 }
             }
+        }
+
+        override fun dispose(ctx: KoolContext) {
+            super.dispose(ctx)
+            imageMeshes.values.forEach { it.meshes.forEach { img -> img.dispose(ctx) } }
         }
     }
 

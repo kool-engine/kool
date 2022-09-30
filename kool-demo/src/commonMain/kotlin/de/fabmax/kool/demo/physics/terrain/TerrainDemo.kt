@@ -67,7 +67,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         updateTreeShader(it)
     }
 
-    private val isCursorLocked = mutableStateOf(true).onChange { camRig.isCursorLocked = it }
+    private val isCursorLocked = mutableStateOf(false).onChange { camRig.isCursorLocked = it }
     private val windSpeed = mutableStateOf(2.5f).onChange {
         wind.speed.set(4f * it, 0.2f * it, 2.7f * it)
     }
@@ -290,7 +290,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
     }
 
     private fun Scene.setupCamera(ctx: KoolContext) {
-        camRig = CharacterTrackingCamRig(ctx.inputMgr).apply {
+        camRig = CharacterTrackingCamRig(ctx.inputMgr, false).apply {
             camera.setClipRange(0.5f, 5000f)
             trackedPose = physicsObjects.playerController.controller.actor.transform
             +camera
@@ -302,6 +302,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
 
             // hardcoded start look direction
             lookDirection.set(-0.87f, 0.22f, 0.44f).norm()
+            applyLookDirection()
 
             // make sure onUpdate listener is called before internal one of CharacterTrackingCamRig, so we can
             // consume the scroll event if the tractor gun is active

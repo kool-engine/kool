@@ -24,6 +24,7 @@ fun UiScope.MenuSlider(
     max: Float,
     txtFormat: (Float) -> String = { it.toString(2) },
     txtWidth: Dp = UiSizes.baseElemSize,
+    onChangeEnd: ((Float) -> Unit)? = null,
     onChange: (Float) -> Unit
 ) {
     Slider(value, min, max) {
@@ -32,6 +33,7 @@ fun UiScope.MenuSlider(
             .alignY(AlignmentY.Center)
             .margin(horizontal = sizes.gap)
             .onChange(onChange)
+        modifier.onChangeEnd = onChangeEnd
     }
     if (txtWidth.value > 0f) {
         Text(txtFormat(value)) {

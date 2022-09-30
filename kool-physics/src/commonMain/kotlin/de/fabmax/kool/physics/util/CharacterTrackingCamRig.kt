@@ -66,9 +66,13 @@ class CharacterTrackingCamRig(private val inputManager: InputManager, enableCurs
         }
     }
 
-    private fun handlePointerInput() {
+    fun applyLookDirection() {
         lookPhi = atan2(lookDirection.z, lookDirection.x)
         lookTheta = acos(lookDirection.y)
+    }
+
+    private fun handlePointerInput() {
+        applyLookDirection()
 
         val div = 1000f / sensitivity
         val ptr = inputManager.pointerState.primaryPointer

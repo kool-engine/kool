@@ -2,15 +2,14 @@ package de.fabmax.kool.demo.atmosphere
 
 import de.fabmax.kool.AssetManager
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.demo.ControlUiBuilder
-import de.fabmax.kool.demo.DemoLoader
-import de.fabmax.kool.demo.DemoScene
-import de.fabmax.kool.demo.controlUi
+import de.fabmax.kool.demo.*
+import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.math.toRad
 import de.fabmax.kool.modules.atmosphere.OpticalDepthLutPass
+import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.deferred.DeferredPipeline
 import de.fabmax.kool.pipeline.deferred.DeferredPipelineConfig
@@ -34,12 +33,12 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
         setDirectional(Vec3f.NEG_Z_AXIS)
         setColor(sunColor, 5f)
     }
-    private var sunIntensity = 1f
+    private val sunIntensity = mutableStateOf(1f).onChange { updateSun() }
 
-    var time = 0.5f
+    val time = mutableStateOf(0.5f)
     var moonTime = 0f
-    private var animateTime = true
-    private var timeSlider: Slider? = null
+    private val isAnimateTime = mutableStateOf(true)
+    private val camHeightTxt = mutableStateOf("0 km")
 
     val textures = mutableMapOf<String, Texture2d>()
     val textures1d = mutableMapOf<String, Texture1d>()
@@ -53,6 +52,21 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
     private val camTransform = EarthCamTransform(earthRadius)
 
     private var sceneSetupComplete = false
+
+    private val atmoThickness = mutableStateOf(0f).onChange { updateAtmosphereThickness(it) }
+    private val atmoFalloff = mutableStateOf(0f).onChange { opticalDepthLutPass.densityFalloff = it }
+
+    private val scatteringR = mutableStateOf(0f).onChange { updateScatteringCoeffs(x = it) }
+    private val scatteringG = mutableStateOf(0f).onChange { updateScatteringCoeffs(y = it) }
+    private val scatteringB = mutableStateOf(0f).onChange { updateScatteringCoeffs(z = it) }
+
+    private val rayleighR = mutableStateOf(0f).onChange { updateRayleighColor(r = it) }
+    private val rayleighG = mutableStateOf(0f).onChange { updateRayleighColor(g = it) }
+    private val rayleighB = mutableStateOf(0f).onChange { updateRayleighColor(b = it) }
+    private val rayleighA = mutableStateOf(0f).onChange { updateRayleighColor(strength = it) }
+
+    private val mieStr = mutableStateOf(0f).onChange { updateMieColor(strength = it) }
+    private val mieG = mutableStateOf(0f).onChange { atmoShader.mieG = it }
 
     val cameraHeight: Float
         get() {
@@ -75,7 +89,6 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
 
     override fun lateInit(ctx: KoolContext) {
         camTransform.apply {
-            mainScene.registerDragHandler(this)
             +mainScene.camera
         }
     }
@@ -154,12 +167,13 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
                 lookAt.set(Vec3f.NEG_Z_AXIS)
                 clipNear = (h * 0.5f).clamp(0.003f, 5f)
                 clipFar = clipNear * 1000f
+                camHeightTxt.set("${(cameraHeight * kmPerUnit).toString(1)} km")
             }
 
-            if (animateTime) {
+            if (isAnimateTime.value) {
                 val dt = ev.deltaT / 120
                 // setting time slider value results in timer slider's onChange function being called which also sets time
-                timeSlider?.value = (time + dt) % 1f
+                time.set((time.value + dt) % 1f)
                 moonTime = (moonTime + dt / moonT)
             }
         }
@@ -168,6 +182,18 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
             textures.values.forEach { it.dispose() }
             textures1d.values.forEach { it.dispose() }
         }
+
+        atmoFalloff.set(opticalDepthLutPass.densityFalloff)
+        atmoThickness.set((atmoShader.atmosphereRadius - earthRadius) * kmPerUnit)
+        scatteringR.set(atmoShader.scatteringCoeffs.x)
+        scatteringG.set(atmoShader.scatteringCoeffs.y)
+        scatteringB.set(atmoShader.scatteringCoeffs.z)
+        rayleighR.set(atmoShader.rayleighColor.r)
+        rayleighG.set(atmoShader.rayleighColor.g)
+        rayleighB.set(atmoShader.rayleighColor.b)
+        rayleighA.set(atmoShader.rayleighColor.a)
+        mieStr.set(atmoShader.mieColor.a)
+        mieG.set(atmoShader.mieG)
     }
 
     private fun makeDeferredPbrShader(cfg: DeferredPipelineConfig): PbrSceneShader {
@@ -283,91 +309,132 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
             onUpdate += {
                 setIdentity()
                 rotate(earthAxisTilt, Vec3f.NEG_X_AXIS)
-                rotate(time * 360, Vec3f.Y_AXIS)
+                rotate(time.value * 360, Vec3f.Y_AXIS)
             }
         }
     }
 
-    override fun setupMenu(ctx: KoolContext) = controlUi {
-//        image(opticalDepthLutPass.colorTexture).apply {
-//            aspectRatio = 1f
-//            relativeWidth = 0.25f
-//        }
-
-        menuWidth = 380f
-        section("Scattering") {
-            colorSlider("R:", Color.RED, atmoShader.scatteringCoeffs.x, 0f, 2f) { updateScatteringCoeffs(x = value) }
-            colorSlider("G:", Color.GREEN, atmoShader.scatteringCoeffs.y, 0f, 2f) { updateScatteringCoeffs(y = value) }
-            colorSlider("B:", Color.BLUE, atmoShader.scatteringCoeffs.z, 0f, 2f) { updateScatteringCoeffs(z = value) }
-            gap(8f)
-            sliderWithValueSmall("Pow:", atmoShader.scatteringCoeffPow, 1f, 20f, 2, widthLabel = 10f) {
-                atmoShader.scatteringCoeffPow = value
-            }
-            sliderWithValueSmall("Str:", atmoShader.scatteringCoeffStrength, 0.01f, 5f, 2, widthLabel = 10f) {
-                atmoShader.scatteringCoeffStrength = value
-            }
+    private fun UiScope.ColoredMenuSlider(
+        color: Color,
+        value: Float,
+        min: Float,
+        max: Float,
+        txtFormat: (Float) -> String = { it.toString(2) },
+        txtWidth: Dp = UiSizes.baseElemSize,
+        onChange: (Float) -> Unit
+    ) {
+        Slider(value, min, max) {
+            modifier
+                .width(Grow.Std)
+                .alignY(AlignmentY.Center)
+                .margin(horizontal = sizes.gap)
+                .onChange(onChange)
+                .colors(color, color.withAlpha(0.4f), color.withAlpha(0.7f))
         }
-
-        section("Rayleigh") {
-            colorSlider("R:", Color.RED, atmoShader.rayleighColor.r, 0f, 4f) { updateRayleighColor(r = value) }
-            colorSlider("G:", Color.GREEN, atmoShader.rayleighColor.g, 0f, 4f) { updateRayleighColor(g = value) }
-            colorSlider("B:", Color.BLUE, atmoShader.rayleighColor.b, 0f, 4f) { updateRayleighColor(b = value) }
-            gap(8f)
-            sliderWithValueSmall("Str:", atmoShader.rayleighColor.a, 0f, 2f, widthLabel = 10f) { updateRayleighColor(strength = value) }
-        }
-        section("Mie") {
-//            colorSlider("R:", Color.RED, atmoShader.mieColor.r, 0f, 4f) { updateMieColor(r = value) }
-//            colorSlider("G:", Color.GREEN, atmoShader.mieColor.g, 0f, 4f) { updateMieColor(g = value) }
-//            colorSlider("B:", Color.BLUE, atmoShader.mieColor.b, 0f, 4f) { updateMieColor(b = value) }
-//            gap(8f)
-            sliderWithValueSmall("Str:", atmoShader.mieColor.a, 0f, 2f, widthLabel = 10f) { updateMieColor(strength = value) }
-            sliderWithValueSmall("g:", atmoShader.mieG, 0.5f, 0.999f, 3, widthLabel = 10f) { atmoShader.mieG = value }
-        }
-
-        section("Atmosphere") {
-            val thickFmt: (Float) -> String = { "${it.toString(0)} km" }
-            sliderWithValueSmall("Thickness:", (atmoShader.atmosphereRadius - earthRadius) * kmPerUnit, 10f, 1000f, textFormat = thickFmt, widthLabel = 24f) {
-                updateAtmosphereThickness(value)
-            }
-            sliderWithValueSmall("Falloff:", opticalDepthLutPass.densityFalloff, 0f, 15f, 2, widthLabel = 24f) {
-                opticalDepthLutPass.densityFalloff = value
+        if (txtWidth.value > 0f) {
+            Text(txtFormat(value)) {
+                labelStyle()
+                modifier.width(txtWidth).textAlignX(AlignmentX.End)
             }
         }
+    }
 
-        section("View") {
-            sliderWithValueSmall("Sun:", atmoShader.sunColor.a, 0.1f, 5f, 2, widthLabel = 24f) {
-                sunIntensity = value
+    override fun createMenu(menu: DemoMenu, ctx: KoolContext) = menuSurface {
+        val lblW = UiSizes.baseElemSize * 1f
+        val txtW = UiSizes.baseElemSize * 0.85f
+
+        val timeFmt: (Float) -> String = {
+            val t = it * 24
+            val h = t.toInt()
+            val m = ((t % 1f) * 60).toInt()
+            val m0 = if (m < 10) "0" else ""
+            "$h:$m0$m"
+        }
+
+        MenuRow {
+            Text("Sun") { labelStyle(lblW) }
+            MenuSlider(sunIntensity.use(), 0.1f, 5f, txtWidth = txtW) { sunIntensity.set(it) }
+        }
+        MenuRow {
+            Text("Time") { labelStyle(lblW) }
+            MenuSlider(time.use(), 0f, 1f, timeFmt, txtWidth = txtW) {
+                time.set(it)
                 updateSun()
             }
-            val timeFmt: (Float) -> String = {
-                val t = it * 24
-                val h = t.toInt()
-                val m = ((t % 1f) * 60).toInt()
-                val m0 = if (m < 10) "0" else ""
-                "$h:$m0$m"
-            }
-            timeSlider = sliderWithValueSmall("Time:", time, 0f, 1f, textFormat = timeFmt, widthLabel = 24f) {
-                time = value
-                updateSun()
-            }
-            toggleButton("Animate Time", animateTime) { animateTime = isEnabled }
-            textWithValue("Camera Height:", "").apply {
-                onUpdate += {
-                    val h = cameraHeight * kmPerUnit
-                    text = "${h.toString(1)} km"
-                }
-            }
+        }
+        MenuRow { LabeledSwitch("Animate time", isAnimateTime) }
+        MenuRow {
+            Text("Camera height") { labelStyle(Grow.Std) }
+            Text(camHeightTxt.use()) { labelStyle() }
+        }
+
+        Text("Atmosphere") { sectionTitleStyle() }
+        MenuRow {
+            Text("Thickness") { labelStyle(UiSizes.baseElemSize * 1.75f) }
+            MenuSlider(
+                atmoThickness.use(),
+                10f,
+                1000f,
+                { it.toString(0) },
+                txtWidth = txtW)
+            { atmoThickness.set(it) }
+        }
+        MenuRow {
+            Text("Falloff") { labelStyle(UiSizes.baseElemSize * 1.75f) }
+            MenuSlider(atmoFalloff.use(), 0f, 15f, txtWidth = txtW) { atmoFalloff.set(it) }
+        }
+
+        Text("Scattering") { sectionTitleStyle() }
+        MenuRow {
+            Text("Red") { labelStyle(lblW) }
+            ColoredMenuSlider(MdColor.RED, scatteringR.use(), 0f, 4f, txtWidth = txtW) { scatteringR.set(it) }
+        }
+        MenuRow {
+            Text("Green") { labelStyle(lblW) }
+            ColoredMenuSlider(MdColor.GREEN, scatteringG.use(), 0f, 4f, txtWidth = txtW) { scatteringG.set(it) }
+        }
+        MenuRow {
+            Text("Blue") { labelStyle(lblW) }
+            ColoredMenuSlider(MdColor.BLUE, scatteringB.use(), 0f, 4f, txtWidth = txtW) { scatteringB.set(it) }
+        }
+
+        Text("Rayleigh") { sectionTitleStyle() }
+        MenuRow {
+            Text("Red") { labelStyle(lblW) }
+            ColoredMenuSlider(MdColor.RED, rayleighR.use(), 0f, 4f, txtWidth = txtW) { rayleighR.set(it) }
+        }
+        MenuRow {
+            Text("Green") { labelStyle(lblW) }
+            ColoredMenuSlider(MdColor.GREEN, rayleighG.use(), 0f, 4f, txtWidth = txtW) { rayleighG.set(it) }
+        }
+        MenuRow {
+            Text("Blue") { labelStyle(lblW) }
+            ColoredMenuSlider(MdColor.BLUE, rayleighB.use(), 0f, 4f, txtWidth = txtW) { rayleighB.set(it) }
+        }
+        MenuRow {
+            Text("Str") { labelStyle(lblW) }
+            MenuSlider(rayleighA.use(), 0f, 2f, txtWidth = txtW) { rayleighA.set(it) }
+        }
+
+        Text("Mie") { sectionTitleStyle() }
+        MenuRow {
+            Text("Str") { labelStyle(lblW) }
+            MenuSlider(mieStr.use(), 0f, 2f, txtWidth = txtW) { mieStr.set(it) }
+        }
+        MenuRow {
+            Text("g") { labelStyle(lblW) }
+            MenuSlider(mieG.use(), 0.5f, 0.999f, txtFormat = { it.toString(3) }, txtWidth = txtW) { mieG.set(it) }
         }
     }
 
     private fun updateSun() {
         val lightDir = MutableVec3f(0f, 0f, -1f)
         atmoShader.dirToSun = lightDir
-        atmoShader.sunColor = sunColor.withAlpha(sunIntensity)
+        atmoShader.sunColor = sunColor.withAlpha(sunIntensity.value)
 
         mainScene.lighting.lights[0].apply {
             setDirectional(MutableVec3f(lightDir).scale(-1f))
-            setColor(sunColor, sunIntensity * 5)
+            setColor(sunColor, sunIntensity.value * 5)
         }
     }
 

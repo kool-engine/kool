@@ -1,17 +1,16 @@
 package de.fabmax.kool.demo.atmosphere
 
 import de.fabmax.kool.InputManager
-import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.math.MutableVec3d
 import de.fabmax.kool.math.Vec3d
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.scene.Group
-import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.util.InputStack
 import kotlin.math.min
 import kotlin.math.pow
 
-class EarthCamTransform(val earthRadius: Float) : Group(), Scene.DragHandler {
+class EarthCamTransform(val earthRadius: Float) : Group() {
 
     var planetRotX = 0.0
     var planetRotY = 0.0
@@ -58,14 +57,16 @@ class EarthCamTransform(val earthRadius: Float) : Group(), Scene.DragHandler {
             translate(0f, 0f, earthRadius * zoom)
             mul(camRot)
         }
+
+        InputStack.defaultInputHandler.pointerListeners += ::handleDrag
+        onDispose += {
+            InputStack.defaultInputHandler.pointerListeners -= ::handleDrag
+        }
     }
 
-    override fun handleDrag(dragPtrs: List<InputManager.Pointer>, scene: Scene, ctx: KoolContext) {
-        if (dragPtrs.isEmpty()) {
-            return
-        }
-        val dragPtr = dragPtrs[0]
-        if (!dragPtr.isConsumed() && dragPtr.isInViewport(scene.mainRenderPass.viewport, ctx)) {
+    fun handleDrag(pointerState: InputManager.PointerState) {
+        val dragPtr = pointerState.primaryPointer
+        if (!dragPtr.isConsumed() && dragPtr.isValid) {
             val moveScale = min(zoom, 10f)
             when {
                 dragPtr.isLeftButtonDown -> {

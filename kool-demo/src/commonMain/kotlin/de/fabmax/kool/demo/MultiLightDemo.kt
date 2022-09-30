@@ -1,17 +1,20 @@
 package de.fabmax.kool.demo
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.randomF
 import de.fabmax.kool.math.toRad
 import de.fabmax.kool.modules.gltf.GltfFile
 import de.fabmax.kool.modules.gltf.loadGltfFile
+import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.SingleColorTexture
 import de.fabmax.kool.pipeline.deferred.*
 import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
 import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.*
+import de.fabmax.kool.toString
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ColorGradient
 import de.fabmax.kool.util.MdColor
@@ -29,16 +32,20 @@ class MultiLightDemo : DemoScene("Reflections") {
             LightMesh(MdColor.GREEN))
     private val noSsrMap = SingleColorTexture(Color(0f, 0f, 0f, 0f))
 
-    private var lightCount = 4
-    private var lightPower = 500f
-    private var lightSaturation = 0.4f
-    private var lightRandomness = 0.3f
-    private var autoRotate = true
-    private var showLightIndicators = true
+    private val lightChoices = listOf("1", "2", "3", "4")
 
-    private val colorCycler = Cycler(matColors).apply { index = 1 }
-    private var roughness = 0.1f
-    private var metallic = 0.0f
+    private val isSsrEnabled = mutableStateOf(true).onChange { deferredPipeline.isSsrEnabled = it }
+    private val ssrMapSize = mutableStateOf(0.5f).onChange { deferredPipeline.reflectionMapSize = it }
+    private val isShowSsrMap = mutableStateOf(true)
+    private val lightCount = mutableStateOf(4)
+    private val lightPower = mutableStateOf(500f)
+    private val lightSaturation = mutableStateOf(0.4f)
+    private val lightRandomness = mutableStateOf(0.3f)
+    private val isAutoRotate = mutableStateOf(true)
+    private val isShowLightIndicators = mutableStateOf(true)
+    private val selectedColorIdx = mutableStateOf(1)
+    private val roughness = mutableStateOf(0.1f)
+    private val metallic = mutableStateOf(0.0f)
 
     private var bunnyMesh: Mesh? = null
     private var groundMesh: Mesh? = null
@@ -58,7 +65,7 @@ class MultiLightDemo : DemoScene("Reflections") {
             setMouseRotation(0f, -5f)
             // let the camera slowly rotate around vertical axis
             onUpdate += {
-                if (autoRotate) {
+                if (isAutoRotate.value) {
                     verticalRotation += it.deltaT * 3f
                 }
             }
@@ -131,8 +138,8 @@ class MultiLightDemo : DemoScene("Reflections") {
                     +model
 
                     modelShader = deferredPbrShader {
-                        useStaticAlbedo(colorCycler.current.linColor)
-                        roughness = this@MultiLightDemo.roughness
+                        useStaticAlbedo(matColors[selectedColorIdx.value].linColor)
+                        roughness = this@MultiLightDemo.roughness.value
                     }
                     bunnyMesh!!.shader = modelShader
                 }
@@ -149,8 +156,8 @@ class MultiLightDemo : DemoScene("Reflections") {
         }
 
         var pos = 0f
-        val step = 360f / lightCount
-        for (i in 0 until min(lightCount, lights.size)) {
+        val step = 360f / lightCount.value
+        for (i in 0 until min(lightCount.value, lights.size)) {
             lights[i].setup(pos)
             lights[i].enable(mainScene.lighting)
             pos += step
@@ -162,48 +169,87 @@ class MultiLightDemo : DemoScene("Reflections") {
         lights.forEach { it.updateVisibility() }
     }
 
-    override fun setupMenu(ctx: KoolContext) = controlUi {
-        val ssrMap = image(deferredPipeline.reflections?.reflectionMap)
+    override fun createMenu(menu: DemoMenu, ctx: KoolContext) = menuSurface {
+        val lblSize = UiSizes.baseElemSize * 2f
+        val txtSize = UiSizes.baseElemSize * 0.75f
 
-        section("Lights") {
-            cycler("Lights:", Cycler(1, 2, 3, 4).apply { index = 3 }) { count, _ ->
-                lightCount = count
-                updateLighting()
-            }
-            sliderWithValue("Strength:", lightPower, 0f, 1000f, 0) {
-                lightPower = value
-                updateLighting()
-            }
-            sliderWithValue("Saturation:", lightSaturation, 0f, 1f) {
-                lightSaturation = value
-                updateLighting()
+        MenuRow { LabeledSwitch("SSR enabled", isSsrEnabled) }
+        MenuRow { LabeledSwitch("Show map", isShowSsrMap) }
+        MenuRow {
+            Text("Map size") { labelStyle(lblSize) }
+            MenuSlider(ssrMapSize.use(), 0.1f, 1f, { it.toString(1) }, txtWidth = txtSize) {
+                ssrMapSize.set((it * 10).roundToInt() / 10f)
             }
         }
-        section("Screen Space Reflections") {
-            toggleButton("Enabled", deferredPipeline.isSsrEnabled) { deferredPipeline.isSsrEnabled = isEnabled }
-            toggleButton("Show SSR Map", ssrMap.isVisible) { ssrMap.isVisible = isEnabled }
-            sliderWithValue("Map Size:", deferredPipeline.reflectionMapSize, 0.1f, 1f, 1) {
-                deferredPipeline.reflectionMapSize = (value * 10).roundToInt() / 10f
+
+        Text("Material") { sectionTitleStyle() }
+        MenuRow {
+            Text("Color") { labelStyle(lblSize) }
+            ComboBox {
+                modifier
+                    .width(Grow.Std)
+                    .items(matColors)
+                    .selectedIndex(selectedColorIdx.use())
+                    .onItemSelected {
+                        selectedColorIdx.set(it)
+                        modelShader?.albedo?.invoke(matColors[it].linColor)
+                    }
             }
         }
-        section("Material") {
-            cycler("Color:", colorCycler) { color, _ -> modelShader?.albedo?.invoke(color.linColor) }
-            sliderWithValue("Roughness:", roughness, 0f, 1f) {
-                roughness = value
-                modelShader?.roughness?.invoke(value)
-            }
-            sliderWithValue("Metallic:", metallic, 0f, 1f) {
-                metallic = value
-                modelShader?.metallic?.invoke(value)
+        MenuRow {
+            Text("Roughness") { labelStyle(lblSize) }
+            MenuSlider(roughness.use(), 0f, 1f, txtWidth = txtSize) {
+                roughness.set(it)
+                modelShader?.roughness?.invoke(it)
             }
         }
-        section("Scene") {
-            toggleButton("Auto Rotate", autoRotate) { autoRotate = isEnabled }
-            toggleButton("Light Indicators", showLightIndicators) {
-                showLightIndicators = isEnabled
-                updateLighting()
+        MenuRow {
+            Text("Metallic") { labelStyle(lblSize) }
+            MenuSlider(metallic.use(), 0f, 1f, txtWidth = txtSize) {
+                metallic.set(it)
+                modelShader?.metallic?.invoke(it)
             }
         }
+
+        Text("Lighting") { sectionTitleStyle() }
+        MenuRow {
+            Text("Lights") { labelStyle(lblSize) }
+            ComboBox {
+                modifier
+                    .width(Grow.Std)
+                    .items(lightChoices)
+                    .selectedIndex(lightCount.use() - 1)
+                    .onItemSelected { lightCount.set(it + 1) }
+            }
+        }
+        MenuRow {
+            Text("Strength") { labelStyle(lblSize) }
+            MenuSlider(lightPower.use(), 0f, 1000f, { "${it.roundToInt()}" }, txtSize) { lightPower.set(it) }
+        }
+        MenuRow {
+            Text("Saturation") { labelStyle(lblSize) }
+            MenuSlider(lightSaturation.use(), 0f, 1f, txtWidth = txtSize) { lightSaturation.set(it) }
+        }
+        MenuRow { LabeledSwitch("Light indicators", isShowLightIndicators) }
+        MenuRow { LabeledSwitch("Auto rotate view", isAutoRotate) }
+
+        if (isShowSsrMap.value) {
+            surface.popup().apply {
+                modifier
+                    .margin(sizes.gap)
+                    .zLayer(UiSurface.LAYER_BACKGROUND)
+                    .align(AlignmentX.Start, AlignmentY.Bottom)
+
+                Image(deferredPipeline.reflections?.reflectionMap) {
+                    modifier
+                        .height(500.dp)
+                        .mirror(y = true)
+                        .backgroundColor(Color.BLACK)
+                }
+            }
+        }
+
+        updateLighting()
     }
 
     private inner class LightMesh(val color: Color) : Group() {
@@ -246,11 +292,11 @@ class MultiLightDemo : DemoScene("Reflections") {
             +spotAngleMesh
 
             onUpdate += {
-                if (autoRotate) {
+                if (isAutoRotate.value) {
                     animPos += it.deltaT
                 }
 
-                val r = cos(animPos / 15 + rotOff).toFloat() * lightRandomness
+                val r = cos(animPos / 15 + rotOff).toFloat() * lightRandomness.value
                 light.spotAngle = 60f - r * 20f
                 updateSpotAngleMesh()
 
@@ -289,8 +335,8 @@ class MultiLightDemo : DemoScene("Reflections") {
             val z = sin(angPos.toRad()) * 10f
             meshPos.set(x, 9f, -z)
             anglePos = angPos
-            val color = Color.WHITE.mix(color, lightSaturation, MutableColor())
-            light.setColor(color.toLinear(), lightPower)
+            val color = Color.WHITE.mix(color, lightSaturation.value, MutableColor())
+            light.setColor(color.toLinear(), lightPower.value)
             lightMeshShader.color = color
             updateSpotAngleMesh()
         }
@@ -312,7 +358,7 @@ class MultiLightDemo : DemoScene("Reflections") {
         }
 
         fun updateVisibility() {
-            isVisible = isEnabled && showLightIndicators
+            isVisible = isEnabled && isShowLightIndicators.value
         }
     }
 

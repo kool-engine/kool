@@ -2,12 +2,12 @@ package de.fabmax.kool.demo.procedural
 
 import de.fabmax.kool.AssetManager
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.demo.DemoLoader
-import de.fabmax.kool.demo.DemoScene
-import de.fabmax.kool.demo.controlUi
+import de.fabmax.kool.demo.*
+import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.randomI
 import de.fabmax.kool.math.spatial.BoundingBox
+import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.DepthCompareOp
 import de.fabmax.kool.pipeline.deferred.DeferredPipeline
 import de.fabmax.kool.pipeline.deferred.DeferredPipelineConfig
@@ -16,13 +16,15 @@ import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.Skybox
 import de.fabmax.kool.scene.orbitInputTransform
-import de.fabmax.kool.scene.ui.Label
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.SimpleShadowMap
 
 class ProceduralDemo : DemoScene("Procedural Geometry") {
-    var autoRotate = true
+    val isAutoRotate = mutableStateOf(true)
+    val isReplaceRose = mutableStateOf(true)
+    val seedText = mutableStateOf("")
+    val randomSeedText = mutableStateOf("${randomI()}")
     lateinit var roses: Roses
 
     lateinit var ibl: EnvironmentMaps
@@ -39,7 +41,7 @@ class ProceduralDemo : DemoScene("Procedural Geometry") {
             +camera
 
             onUpdate += {
-                if (autoRotate) {
+                if (isAutoRotate.value) {
                     verticalRotation += 5f * it.deltaT
                 }
             }
@@ -82,30 +84,44 @@ class ProceduralDemo : DemoScene("Procedural Geometry") {
         +deferredPipeline.createDefaultOutputQuad()
     }
 
-    override fun setupMenu(ctx: KoolContext) = controlUi {
-        section("Roses") {
-            button("Empty Vase") {
-                roses.children.forEach { it.dispose(ctx) }
-                roses.removeAllChildren()
+    override fun createMenu(menu: DemoMenu, ctx: KoolContext) = menuSurface {
+        MenuRow {
+            Text("Seed") { labelStyle() }
+            TextField(seedText.use()) {
+                modifier
+                    .width(Grow.Std)
+                    .margin(start = sizes.largeGap)
+                    .hint(randomSeedText.use())
+                    .onChange { seedText.set(it) }
             }
-            var seedTxt: Label? = null
-            var replaceLastRose = true
-            button("Generate Rose") {
-                if (roses.children.isNotEmpty() && replaceLastRose) {
-                    val remNd = roses.children.last()
-                    roses.removeNode(remNd)
-                    remNd.dispose(ctx)
+        }
+        Button("Generate rose") {
+            modifier
+                .alignX(AlignmentX.Center)
+                .width(Grow.Std)
+                .margin(horizontal = 16.dp, vertical = 24.dp)
+                .onClick {
+                    if (roses.children.isNotEmpty() && isReplaceRose.value) {
+                        val remNd = roses.children.last()
+                        roses.removeNode(remNd)
+                        remNd.dispose(ctx)
+                    }
+                    val seed = if (seedText.value.isNotEmpty()) seedText.value else randomSeedText.value
+                    randomSeedText.set("${randomI()}")
+                    roses.makeRose(seed.hashCode())
                 }
-
-                val seed = randomI()
-                seedTxt?.text = "$seed"
-                roses.makeRose(seed)
-            }
-            toggleButton("Replace Last Rose", replaceLastRose) { replaceLastRose = isEnabled }
-            seedTxt = textWithValue("Seed:", "")
         }
-        section("Scene") {
-            toggleButton("Auto Rotate", autoRotate) { autoRotate = isEnabled }
+        Button("Empty vase") {
+            modifier
+                .alignX(AlignmentX.Center)
+                .width(Grow.Std)
+                .margin(horizontal = 16.dp, vertical = 24.dp)
+                .onClick {
+                    roses.children.forEach { it.dispose(ctx) }
+                    roses.removeAllChildren()
+                }
         }
+        MenuRow { LabeledSwitch("Replace last rose", isReplaceRose) }
+        MenuRow { LabeledSwitch("Auto rotate view", isAutoRotate) }
     }
 }
