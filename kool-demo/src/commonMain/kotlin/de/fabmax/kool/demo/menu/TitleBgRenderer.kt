@@ -17,7 +17,7 @@ import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.util.createUint8Buffer
 
-class TitleBgRenderer(val titleBgMesh: BgMesh, val fromColor: Float, val toColor: Float) : UiRenderer<UiNode> {
+class TitleBgRenderer(val titleBgMesh: BgMesh, val fromColor: Float, val toColor: Float, val radius: Float = 0f) : UiRenderer<UiNode> {
 
     override fun renderUi(node: UiNode) {
         val meshLayer = node.surface.getMeshLayer(node.modifier.zLayer + UiSurface.LAYER_BACKGROUND)
@@ -34,6 +34,8 @@ class TitleBgRenderer(val titleBgMesh: BgMesh, val fromColor: Float, val toColor
             put(node.heightPx)
             put(fromColor)
             put(toColor)
+            put(radius)
+            put(0f)
         }
     }
 
@@ -97,12 +99,14 @@ class TitleBgRenderer(val titleBgMesh: BgMesh, val fromColor: Float, val toColor
                 val screenPos = interStageFloat2()
                 val texCoords = interStageFloat2(interpolation = KslInterStageInterpolation.Flat)
                 val clipBounds = interStageFloat4(interpolation = KslInterStageInterpolation.Flat)
+                val clipCornerRadius = interStageFloat1(interpolation = KslInterStageInterpolation.Flat)
 
                 vertexStage {
                     main {
                         clipBounds.input set instanceAttribFloat4(Ui2Shader.ATTRIB_CLIP.name)
-                        val uvRange = float2Var(instanceAttribFloat2(ATTRIB_GRADIENT_RANGE.name))
+                        val uvRange = float4Var(instanceAttribFloat4(ATTRIB_GRADIENT_RANGE.name))
                         val meshUv = float2Var(vertexAttribFloat2(Attribute.TEXTURE_COORDS.name))
+                        clipCornerRadius.input set uvRange.z
                         meshUv.x += uniformFloat1("uNoiseOffset")
                         meshUv.y += uvRange.x
 
@@ -127,6 +131,20 @@ class TitleBgRenderer(val titleBgMesh: BgMesh, val fromColor: Float, val toColor
 
                         `if` (all(screenPos.output gt clipBounds.output.xy) and
                                 all(screenPos.output lt clipBounds.output.zw)) {
+
+                            // rounded upper corners
+                            val p = screenPos.output
+                            val r = clipCornerRadius.output
+                            val lt = clipBounds.output.x
+                            val up = clipBounds.output.y
+                            val rt = clipBounds.output.z
+                            val cLt = float2Var(float2Value(lt + r, up + r))
+                            val cRt = float2Var(float2Value(rt - r, up + r))
+                            `if` ((all(p lt cLt) and (length(cLt - p) gt r)) or
+                                    ((p.x gt cRt.x) and (p.y lt cRt.y) and (length(cRt - p) gt r))) {
+                                discard()
+                            }
+
                             val color = sampleTexture(gradientTex, texCoords.output.x)
                             colorOutput(color)
                         }.`else` {
@@ -139,7 +157,7 @@ class TitleBgRenderer(val titleBgMesh: BgMesh, val fromColor: Float, val toColor
 
         companion object {
             val ATTRIB_DIMENS = Attribute("aDimens", GlslType.VEC_4F)
-            val ATTRIB_GRADIENT_RANGE = Attribute("aGradientRange", GlslType.VEC_2F)
+            val ATTRIB_GRADIENT_RANGE = Attribute("aGradientRange", GlslType.VEC_4F)
 
             val pipelineConfig = PipelineConfig().apply {
                 blendMode = BlendMode.BLEND_PREMULTIPLIED_ALPHA

@@ -240,6 +240,8 @@ abstract class DemoScene(val name: String) {
             colors = Colors.darkColors(accent, accentVariant, onAccent = Color.WHITE)
         ) {
             surface.sizes = Settings.uiSize.use().sizes
+            val cornerRadius = sizes.gap
+            //val cornerRadius = sizes.gap * 0f
 
             modifier
                 .width(UiSizes.menuWidth)
@@ -247,15 +249,23 @@ abstract class DemoScene(val name: String) {
                 .align(AlignmentX.End, AlignmentY.Top)
                 .margin(UiSizes.baseElemSize * 2f)
                 .layout(ColumnLayout)
+                .background(RoundRectBackground(colors.background, cornerRadius))
 
-            Text(titleTxt) {
+            Box {
                 modifier
                     .width(Grow.Std)
                     .height(UiSizes.baseElemSize)
-                    .background(TitleBgRenderer(titleBgMesh, titleFrom, titleTo))
-                    .textColor(colors.onAccent)
-                    .font(sizes.largeText)
-                    .textAlign(AlignmentX.Center, AlignmentY.Center)
+                    .background(RoundRectBackground(colors.accent, cornerRadius))
+
+                Text(titleTxt) {
+                    modifier
+                        .width(Grow.Std)
+                        .height(UiSizes.baseElemSize)
+                        .background(TitleBgRenderer(titleBgMesh, titleFrom, titleTo, (cornerRadius + 1.dp).px))
+                        .textColor(colors.onAccent)
+                        .font(sizes.largeText)
+                        .textAlign(AlignmentX.Center, AlignmentY.Center)
+                }
             }
 
             ScrollArea(
@@ -263,7 +273,7 @@ abstract class DemoScene(val name: String) {
                 withHorizontalScrollbar = false,
                 containerModifier = { it.background(null) }
             ) {
-                modifier.width(Grow.Std).margin(top = sizes.smallGap)
+                modifier.width(Grow.Std).margin(top = sizes.smallGap, bottom = sizes.smallGap * 0.5f)
                 Column(width = Grow.Std, block = block)
             }
         }

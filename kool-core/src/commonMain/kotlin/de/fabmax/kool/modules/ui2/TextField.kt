@@ -26,10 +26,10 @@ open class TextFieldModifier(surface: UiSurface) : UiModifier(surface) {
     var isEditable: Boolean by property(true)
     var textAlignX: AlignmentX by property(AlignmentX.Start)
 
-    var textColor: Color by property { it.colors.onSurface }
-    var hintColor: Color by property { it.colors.onSurface.withAlpha(0.5f) }
+    var textColor: Color by property { it.colors.onBackground }
+    var hintColor: Color by property { it.colors.onBackground.withAlpha(0.5f) }
     var selectionColor: Color by property { it.colors.accent.withAlpha(0.5f) }
-    var cursorColor: Color by property { it.colors.onSurface }
+    var cursorColor: Color by property { it.colors.onBackground }
     var lineColor: Color by property { it.colors.accentVariant }
     var lineFocusedColor: Color by property { it.colors.accent }
 

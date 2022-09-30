@@ -230,8 +230,10 @@ class TreeDemo : DemoScene("Procedural Tree") {
         }
         MenuSlider2("Grow distance", growDist.use(), 0.1f, 0.4f) { growDist.set(it) }
         MenuSlider2("Kill distance", killDist.use(), 1f, 4f) { killDist.set(it) }
-        MenuSlider2("Attraction points", attractionPoints.use().toFloat(), 100f, 10000f) { attractionPoints.set(it.roundToInt()) }
         MenuSlider2("Radius of influence", radiusOfInfluence.use(), 0.25f, 10f) { radiusOfInfluence.set(it) }
+        MenuSlider2("Attraction points", attractionPoints.use().toFloat(), 100f, 10000f, { "${it.roundToInt()}" } ) {
+            attractionPoints.set(it.roundToInt())
+        }
 
         Text("Scene") { sectionTitleStyle() }
         MenuSlider2("Animation speed", windSpeed.use(), 0f, 10f) { windSpeed.set(it) }

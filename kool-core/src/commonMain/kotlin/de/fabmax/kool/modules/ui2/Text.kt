@@ -13,7 +13,7 @@ interface TextScope : UiScope {
 open class TextModifier(surface: UiSurface) : UiModifier(surface) {
     var text: String by property("")
     var font: FontProps by property { it.sizes.normalText }
-    var textColor: Color by property { it.colors.onSurface }
+    var textColor: Color by property { it.colors.onBackground }
     var textAlignX: AlignmentX by property(AlignmentX.Start)
     var textAlignY: AlignmentY by property(AlignmentY.Top)
     var textRotation: TextRotation by property(TextRotation.Rotation0)

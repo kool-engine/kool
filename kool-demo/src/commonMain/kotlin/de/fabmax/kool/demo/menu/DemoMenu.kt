@@ -62,7 +62,7 @@ class DemoMenu(val demoLoader: DemoLoader) {
             modifier
                 .height(Grow.Std)
                 .width(1.dp)
-                .backgroundColor(MdColor.GREY tone 800)
+                .backgroundColor((MdColor.GREY tone 800).withAlpha(0.5f))
         }
         when (content.use()) {
             MenuContent.Demos -> demoList()

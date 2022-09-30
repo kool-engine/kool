@@ -14,7 +14,6 @@ import de.fabmax.kool.util.Color
  * - [error]: Indicates errors in components, such as invalid text in a text field.
  * - [onAccent]: Used for icons and text displayed on top of the secondary color.
  * - [onBackground]: Used for icons and text displayed on top of the background color.
- * - [onSurface]: Used for icons and text displayed on top of the surface color.
  * - [onError]: Used for icons and text displayed on top of the error color.
  * - [isLight]: Whether this color is considered as a 'light' or 'dark' set of colors.
  */
@@ -26,7 +25,6 @@ data class Colors(
     val error: Color,
     val onAccent: Color,
     val onBackground: Color,
-    val onSurface: Color,
     val onError: Color,
     val isLight: Boolean
 ) {
@@ -39,7 +37,6 @@ data class Colors(
             error: Color = Color("b00020"),
             onAccent: Color = Color.BLACK,
             onBackground: Color = Color.WHITE,
-            onSurface: Color = Color.WHITE,
             onError: Color = Color.BLACK,
             isLight: Boolean = false
         ): Colors = Colors(
@@ -50,7 +47,6 @@ data class Colors(
             error,
             onAccent,
             onBackground,
-            onSurface,
             onError,
             isLight
         )
