@@ -19,13 +19,9 @@ data class FontProps(
     val minFilter: FilterMethod = FilterMethod.LINEAR,
     val mipMapping: Boolean = false,
     val maxAnisotropy: Int = 0,
+    val sampleScale: Float = 1f,
     val isScaledByWindowScale: Boolean = true
-) {
-
-    override fun toString(): String {
-        return "FontProps($family, ${sizePts}pts, $style)"
-    }
-}
+)
 
 class Font(val fontProps: FontProps) {
 

@@ -97,7 +97,7 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, props: JsContext.I
             style += "italic "
         }
 
-        val fontSize = round(fontProps.sizePts * fontScale)
+        val fontSize = round(fontProps.sizePts * fontScale * fontProps.sampleScale)
         val fontStr = "$style ${fontSize}px ${fontProps.family}"
         canvasCtx.font = fontStr
         canvasCtx.fillStyle = "#000000"
@@ -141,19 +141,20 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, props: JsContext.I
             }
 
             val heightPx = height.toFloat()
+            val xOff = txtMetrics.actualBoundingBoxLeft
             val metrics = CharMetrics()
-            metrics.width = charW
-            metrics.height = heightPx
-            metrics.xOffset = txtMetrics.actualBoundingBoxLeft.toFloat()
-            metrics.yBaseline = hab.toFloat()
-            metrics.advance = txtMetrics.width.toFloat()
+            metrics.width = charW / fontProps.sampleScale
+            metrics.height = heightPx / fontProps.sampleScale
+            metrics.xOffset = xOff.toFloat() / fontProps.sampleScale
+            metrics.yBaseline = hab.toFloat() / fontProps.sampleScale
+            metrics.advance = txtMetrics.width.toFloat() / fontProps.sampleScale
 
             metrics.uvMin.set(x.toFloat(), (y - hab).toFloat())
             metrics.uvMax.set(x + charW, (y - hab).toFloat() + heightPx)
             map[c] = metrics
 
-            canvasCtx.fillText(txt, x + metrics.xOffset.toDouble(), y.toDouble())
-            x += metrics.width.toInt() + 1
+            canvasCtx.fillText(txt, x + xOff, y.toDouble())
+            x += charW.toInt() + 1
         }
 
         val texW = maxWidth

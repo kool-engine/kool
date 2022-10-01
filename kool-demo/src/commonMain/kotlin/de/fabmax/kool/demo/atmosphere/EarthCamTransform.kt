@@ -58,9 +58,10 @@ class EarthCamTransform(val earthRadius: Float) : Group() {
             mul(camRot)
         }
 
-        InputStack.defaultInputHandler.pointerListeners += ::handleDrag
+        val pointerListener = ::handleDrag
+        InputStack.defaultInputHandler.pointerListeners += pointerListener
         onDispose += {
-            InputStack.defaultInputHandler.pointerListeners -= ::handleDrag
+            InputStack.defaultInputHandler.pointerListeners -= pointerListener
         }
     }
 

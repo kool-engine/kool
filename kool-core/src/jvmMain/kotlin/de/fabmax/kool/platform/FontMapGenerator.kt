@@ -117,7 +117,7 @@ internal class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, val ctx: 
             else -> 1f
         }
 
-        val size = fontProps.sizePts * scale
+        val size = fontProps.sizePts * scale * fontProps.sampleScale
         val font: AwtFont = customFont?.deriveFont(fontProps.style, size) ?: AwtFont(family, style, size.roundToInt())
 
         g.font = font
@@ -130,6 +130,8 @@ internal class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, val ctx: 
         charMap.applyScale(scale)
 
         //logD { "Updated char map: ${charMap.fontProps}, scaled size: $size" }
+        logD { "Generated font map for ($font, scale=${scale}x${fontProps.sampleScale})" }
+        //ImageIO.write(canvas, "png", File("${font.family}-${font.size}.png"))
 
         return charMap
     }
@@ -179,10 +181,10 @@ internal class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, val ctx: 
             val widthPx = charW.toFloat()
             val heightPx = height.toFloat()
             val metrics = CharMetrics()
-            metrics.width = widthPx
-            metrics.height = heightPx
+            metrics.width = widthPx / fontProps.sampleScale
+            metrics.height = heightPx / fontProps.sampleScale
             metrics.xOffset = 0f
-            metrics.yBaseline = hab.toFloat()
+            metrics.yBaseline = hab.toFloat() / fontProps.sampleScale
             metrics.advance = metrics.width
 
             metrics.uvMin.set((x + padding).toFloat(), (y - hab).toFloat())

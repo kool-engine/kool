@@ -101,9 +101,12 @@ open class OrbitInputTransform(name: String? = null) : Group(name) {
             doCamTransform(rp, ctx)
         }
 
-        InputStack.defaultInputHandler.pointerListeners += ::handleDrag
+        // caching ::handleDrag in pointerListener is needed, otherwise removing the listener does not work on JS
+        // because apparently on JS it creates a new object / function under the hood each time
+        val pointerListener = ::handleDrag
+        InputStack.defaultInputHandler.pointerListeners += pointerListener
         onDispose += {
-            InputStack.defaultInputHandler.pointerListeners -= ::handleDrag
+            InputStack.defaultInputHandler.pointerListeners -= pointerListener
         }
     }
 

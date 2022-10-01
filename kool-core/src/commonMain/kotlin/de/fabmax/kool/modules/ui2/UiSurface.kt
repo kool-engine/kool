@@ -42,6 +42,8 @@ class UiSurface(
 
     var printTiming = false
 
+    var isInputEnabled = true
+
     // colorsState and sizesState are private and use()d internally by UiSurface
     // for all other consumers the values are directly exposed
     private val colorsState = mutableStateOf(colors)
@@ -188,7 +190,7 @@ class UiSurface(
         }
     }
 
-    private inner class UiInputHandler : InputStack.InputHandler(name ?: "UiSurface", false, false) {
+    private inner class UiInputHandler : InputStack.InputHandler(name ?: "UiSurface") {
         private val nodeResult = mutableListOf<UiNode>()
         private var focusedNode: Focusable? = null
         private var hoveredNode: UiNode? = null
@@ -212,6 +214,11 @@ class UiSurface(
         }
 
         fun checkInputHandler(ctx: KoolContext) {
+            if (!isInputEnabled) {
+                InputStack.remove(this)
+                return
+            }
+
             // keyboard input is blocked by this UiSurface as soon as a ui element is focused
             blockAllKeyboardInput = focusedNode != null
 

@@ -17,8 +17,8 @@ data class Sizes(
 
     companion object {
         fun small(
-            normalText: FontProps = FontProps(Font.SYSTEM_FONT, 12f, isScaledByWindowScale = false),
-            largeText: FontProps = FontProps(Font.SYSTEM_FONT, 16f, isScaledByWindowScale = false),
+            normalText: FontProps = FontProps(Font.SYSTEM_FONT, 12f, isScaledByWindowScale = false, sampleScale = 2f),
+            largeText: FontProps = FontProps(Font.SYSTEM_FONT, 16f, isScaledByWindowScale = false, sampleScale = 2f),
             sliderHeight: Dp = Dp(14f),
             checkboxSize: Dp = Dp(14f),
             radioButtonSize: Dp = Dp(14f),
@@ -39,7 +39,7 @@ data class Sizes(
         )
 
         fun medium(
-            normalText: FontProps = FontProps(Font.SYSTEM_FONT, 15f, isScaledByWindowScale = false),
+            normalText: FontProps = FontProps(Font.SYSTEM_FONT, 15f, isScaledByWindowScale = false, sampleScale = 2f),
             largeText: FontProps = FontProps(Font.SYSTEM_FONT, 20f, isScaledByWindowScale = false),
             sliderHeight: Dp = Dp(17f),
             checkboxSize: Dp = Dp(17f),

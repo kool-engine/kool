@@ -133,9 +133,10 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
         }
 
         val forceHelper = ForceHelper(ctx)
-        InputStack.defaultInputHandler.pointerListeners += forceHelper::handleDrag
+        val dragListener = forceHelper::handleDrag
+        InputStack.defaultInputHandler.pointerListeners += dragListener
         onDispose += {
-            InputStack.defaultInputHandler.pointerListeners -= forceHelper::handleDrag
+            InputStack.defaultInputHandler.pointerListeners -= dragListener
         }
 
         +colorMesh {

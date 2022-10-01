@@ -174,13 +174,13 @@ abstract class DemoScene(val name: String) {
     var loadingScreen: LoadingScreen? = null
         set(value) {
             field = value
-            value?.loadingText1?.text = "Loading $name"
-            value?.loadingText2?.text = ""
+            value?.loadingText1?.set("Loading $name")
+            value?.loadingText2?.set("")
         }
 
     suspend fun showLoadText(text: String, delayFrames: Int = 1) {
         loadingScreen?.let { ls ->
-            ls.loadingText2.text = text
+            ls.loadingText2.set(text)
             ls.ctx.delayFrames(delayFrames)
         }
     }

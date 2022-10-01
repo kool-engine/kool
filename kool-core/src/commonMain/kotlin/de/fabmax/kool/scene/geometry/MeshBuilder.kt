@@ -788,13 +788,13 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
         }
     }
 
-    inline fun text(font: Font, fontSizeUnits: Float = 0f, block: TextProps.() -> Unit) {
+    inline fun text(font: Font, block: TextProps.() -> Unit) {
         val props = TextProps(font)
         props.block()
-        text(props, fontSizeUnits)
+        text(props)
     }
 
-    fun text(props: TextProps, fontSizeUnits: Float = 0f) {
+    fun text(props: TextProps) {
         val charMap = props.font.charMap
         if (charMap == null) {
             logE { "Font char map has not yet been initialized" }
@@ -802,15 +802,14 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
         }
 
         withTransform {
-            if (fontSizeUnits != 0f && fontSizeUnits != charMap.fontProps.sizePts) {
-                val s = fontSizeUnits / charMap.fontProps.sizePts
-                scale(s, s, s)
-            }
-
             if (props.roundOriginToUnits) {
                 translate(round(props.origin.x), round(props.origin.y), props.origin.z)
             } else {
                 translate(props.origin)
+            }
+
+            if (props.scale != 1f) {
+                scale(props.scale, props.scale, props.scale)
             }
 
             val ct = props.charTransform
@@ -1110,6 +1109,7 @@ class CylinderProps {
 class TextProps(var font: Font) {
     var text = ""
     val origin = MutableVec3f()
+    var scale = 1f
     var roundOriginToUnits = true
     var autoWrapWidth = -1f
     var isYAxisUp = true

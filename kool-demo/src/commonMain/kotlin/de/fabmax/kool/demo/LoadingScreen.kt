@@ -2,27 +2,24 @@ package de.fabmax.kool.demo
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.randomF
+import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.shading.unlitShader
-import de.fabmax.kool.scene.OrthographicCamera
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.colorMesh
 import de.fabmax.kool.scene.geometry.MeshBuilder
-import de.fabmax.kool.scene.ui.*
+import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 import kotlin.math.min
 
 class LoadingScreen(val ctx: KoolContext) : Scene("Loading Screen") {
 
-    lateinit var loadingText1: Label
-        private set
-    lateinit var loadingText2: Label
-        private set
+    val loadingText1 = mutableStateOf("")
+    val loadingText2 = mutableStateOf("")
+
+    private val ui: UiSurface
 
     init {
-        camera = OrthographicCamera().apply {
-            isClipToViewport = true
-            setClipRange(-1000f, 1000f)
-        }
+        setupUiScene(true)
 
         +colorMesh {
             shader = unlitShader { }
@@ -33,27 +30,37 @@ class LoadingScreen(val ctx: KoolContext) : Scene("Loading Screen") {
             }
         }
 
-        +embeddedUi(1f, 1f, null, ctx.windowScale * 96f) {
-            isFillViewport = true
+        ui = UiSurface(sizes = Sizes.large()) {
+            modifier
+                .height(Grow.Std)
+                .alignX(AlignmentX.Center)
+                .layout(ColumnLayout)
+                .background(null)
+            Box {
+                modifier.height(Grow(0.83f))
+            }
+            Box {
+                modifier
+                    .height(Grow(0.17f))
+                    .alignX(AlignmentX.Center)
+                    .layout(ColumnLayout)
 
-            theme = theme {
-                componentUi { BlankComponentUi() }
-                containerUi { BlankComponentUi() }
+                Text(loadingText1.use()) {
+                    modifier
+                        .alignX(AlignmentX.Center)
+                        .textColor(Color.WHITE)
+                        .font(sizes.largeText)
+                }
+                Text(loadingText2.use()) {
+                    modifier
+                        .alignX(AlignmentX.Center)
+                        .textColor(Color.WHITE)
+                        .font(sizes.largeText)
+                }
             }
-
-            loadingText1 = label("Loading...") {
-                layoutSpec.setOrigin(zero(), pcs(15f), zero())
-                layoutSpec.setSize(pcs(100f), dps(35f), full())
-                textAlignment = Gravity(Alignment.CENTER, Alignment.CENTER)
-            }
-            loadingText2 = label("Blub") {
-                layoutSpec.setOrigin(zero(), pcs(15f) - dps(35f), zero())
-                layoutSpec.setSize(pcs(100f), dps(35f), full())
-                textAlignment = Gravity(Alignment.CENTER, Alignment.CENTER)
-            }
-            +loadingText1
-            +loadingText2
         }
+        +ui
+        ui.isInputEnabled = false
     }
 
     private var colors = listOf(
@@ -69,12 +76,12 @@ class LoadingScreen(val ctx: KoolContext) : Scene("Loading Screen") {
 
     private fun MeshBuilder.animateLoading(dt: Float) {
         val w = mainRenderPass.viewport.width
-        val h = mainRenderPass.viewport.height
+        val h = -mainRenderPass.viewport.height
         val r = min(w, h)
 
         for (i in colors.indices) {
             color = colors[i]
-            lineArc(w * 0.5f, h * 0.55f, r * arcRadii[i], (pos + i) * arcSpeeds[i], arcLengths[i], 15f, 5f)
+            lineArc(w * 0.5f, h * 0.45f, r * arcRadii[i], (pos + i) * arcSpeeds[i], arcLengths[i], 15f, 5f)
         }
         pos += dt
     }

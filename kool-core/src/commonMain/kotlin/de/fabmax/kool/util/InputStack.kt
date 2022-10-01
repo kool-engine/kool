@@ -5,7 +5,7 @@ import de.fabmax.kool.KoolContext
 
 object InputStack {
 
-    val defaultInputHandler = InputHandler("InputStack.defaultInputHandler", false, false)
+    val defaultInputHandler = InputHandler("InputStack.defaultInputHandler")
 
     private val handlerStack = mutableListOf(defaultInputHandler)
     private val processableKeyEvents = mutableListOf<InputManager.KeyEvent>()
@@ -62,7 +62,10 @@ object InputStack {
         }
     }
 
-    open class InputHandler(val name: String, var blockAllPointerInput: Boolean, var blockAllKeyboardInput: Boolean) {
+    open class InputHandler(val name: String) {
+        var blockAllPointerInput = false
+        var blockAllKeyboardInput = false
+
         val pointerListeners = mutableListOf<(InputManager.PointerState) -> Unit>()
         val keyboardListeners = mutableListOf<(MutableList<InputManager.KeyEvent>) -> Unit>()
 
