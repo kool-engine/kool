@@ -256,6 +256,7 @@ abstract class InputManager internal constructor() {
         }
 
         fun movePointer(x: Double, y: Double) {
+            val wasDrag = dragMovement != 0.0
             if (isAnyButtonDown) {
                 dragDeltaX += x - this.x
                 dragDeltaY += y - this.y
@@ -264,8 +265,16 @@ abstract class InputManager internal constructor() {
 
             deltaX += x - this.x
             deltaY += y - this.y
-            this.x = x
-            this.y = y
+
+            // Do not update the position if a drag has just started - this way drag start events are guaranteed
+            // to have the same position as the previous hover event. Otherwise, the drag event might not be received
+            // by the correct receiver if the first movement is too large and / or the hover / drag target is very
+            // small (e.g. resizing of a window border)
+            if (!isDrag || isDrag == wasDrag) {
+                this.x = x
+                this.y = y
+            }
+
             lastUpdate = now()
         }
 

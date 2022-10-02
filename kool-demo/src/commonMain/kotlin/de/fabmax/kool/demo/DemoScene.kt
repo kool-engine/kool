@@ -144,10 +144,9 @@ abstract class DemoScene(val name: String) {
                         it.apply {
                             val r = widthPx * 0.5f
                             getUiPrimitives().localCircle(r, r, r, closeButtonBgColor)
-                            getPlainBuilder().configured {
+                            getPlainBuilder().configured(closeButtonFgColor) {
                                 translate(r, r, 0f)
                                 rotate(45f, Vec3f.Z_AXIS)
-                                color = closeButtonFgColor
                                 rect {
                                     size.set(r * 1.3f, r * 0.2f)
                                     origin.set(size.x * -0.5f, size.y * -0.5f, 0f)

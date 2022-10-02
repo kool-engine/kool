@@ -22,6 +22,8 @@ class Ui2Demo : DemoScene("UI2 Demo") {
         "Red" to Colors.darkColors(MdColor.RED, MdColor.RED tone 800),
     )
 
+    private val windowState = WindowState()
+    private val isMinimizedToTitle = mutableStateOf(false)
     private val clickCnt = mutableStateOf(0)
     private val scrollState = ScrollState()
     private val listState = LazyListState()
@@ -77,22 +79,36 @@ class Ui2Demo : DemoScene("UI2 Demo") {
 
         setupUiScene(true)
 
+        windowState.apply {
+            xDp.set(Dp(200f))
+            yDp.set(Dp(200f))
+            width.set(Dp(500f))
+            height.set(Dp(700f))
+        }
+
         +UiSurface {
             surface.sizes = selectedUiSize.use()
             surface.colors = themeColors[selectedColors.use()].second
 
-            modifier
-                .width(500.dp)
-                //.height(Grow(min = WrapContent))
-                .height(WrapContent)
-                .margin(top = 100.dp, bottom = 100.dp)
-                .padding(horizontal = sizes.gap, vertical = sizes.largeGap)
-                .layout(ColumnLayout)
-                .alignX(AlignmentX.Center)
-                .alignY(AlignmentY.Top)
+            val minimizeListener: (PointerEvent) -> Unit = { isMinimizedToTitle.set(true) }
+            val maximizeListener: (PointerEvent) -> Unit = { isMinimizedToTitle.set(false) }
 
-            TestContent(listItems)
+            Windowed(
+                windowState,
+                "UI window",
+                isMinimizedToTitleBar = isMinimizedToTitle.use(),
+                onCloseClicked = { println("close clicked") },
+                onMinimizeClicked = if (!isMinimizedToTitle.use()) minimizeListener else null,
+                onMaximizeClicked = if (isMinimizedToTitle.use()) maximizeListener else null,
+                minWidth = 200.dp,
+                minHeight = 200.dp
+            ) {
+                modifier
+                    .padding(horizontal = sizes.gap, vertical = sizes.largeGap)
+                    .layout(ColumnLayout)
 
+                TestContent(listItems)
+            }
         }.apply { printTiming = true }
     }
 
@@ -192,7 +208,7 @@ class Ui2Demo : DemoScene("UI2 Demo") {
             }
         }
 
-        ScrollArea(scrollState, height = 200.dp) {
+        ScrollArea(scrollState) {
             Column {
                 Text("Text with two lines in a slightly larger font:\nThe second line is a little longer than the first one") {
                     modifier
@@ -226,7 +242,6 @@ class Ui2Demo : DemoScene("UI2 Demo") {
 
         LazyList(
             listState,
-            height = 350.dp,
             containerModifier = {
                 it.margin(top = sizes.largeGap)
             },
