@@ -8,7 +8,7 @@ fun MutableStateValue<Boolean>.toggle() { value = !value }
 abstract class MutableState {
     var isStateChanged = true
         private set
-    private var usedBy = mutableListOf<UiSurface>()
+    private val usedBy = mutableListOf<UiSurface>()
 
     protected fun stateChanged() {
         if (!isStateChanged) {

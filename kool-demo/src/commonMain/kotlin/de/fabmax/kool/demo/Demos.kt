@@ -63,6 +63,7 @@ object Demos {
     val hiddenDemos = Category("Hidden", true, 0.75f, 0.95f).apply {
         entry("helloworld", "Hello World") { HelloWorldDemo() }
         entry("hellogltf", "Hello glTF") { HelloGltfDemo() }
+        entry("hellobuffers", "Hello RenderToTexture") { HelloRenderToTextureDemo() }
         entry("manyvehicles", "Many Vehicles") { ManyVehiclesDemo() }
         entry("ksl-test", "Ksl Shading Test") { KslShaderTest() }
     }
