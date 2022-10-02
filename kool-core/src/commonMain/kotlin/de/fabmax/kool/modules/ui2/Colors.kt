@@ -37,7 +37,7 @@ data class Colors(
             error: Color = Color("b00020"),
             onAccent: Color = Color.BLACK,
             onBackground: Color = Color.WHITE,
-            onError: Color = Color.BLACK,
+            onError: Color = Color.WHITE,
             isLight: Boolean = false
         ): Colors = Colors(
             accent,

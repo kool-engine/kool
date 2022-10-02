@@ -36,6 +36,9 @@ class DemoLoader(ctx: KoolContext, startScene: String? = null) {
     private var currentDemo: Pair<String, DemoScene>? = null
     private var switchDemo: Demos.Entry? = null
 
+    val activeDemo: DemoScene?
+        get() = currentDemo?.second
+
     init {
         // load physics module early - in js, for some reason wasm file cannot be loaded if this happens later on
         Physics.loadPhysics()

@@ -12,6 +12,7 @@ import de.fabmax.kool.modules.gltf.loadGltfModel
 import de.fabmax.kool.modules.ksl.*
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.modules.ui2.*
+import de.fabmax.kool.now
 import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.physics.util.CharacterTrackingCamRig
 import de.fabmax.kool.pipeline.AddressMode
@@ -84,7 +85,18 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         camLocalGrass.setIsCastingShadow(it)
     }
 
-        override suspend fun AssetManager.loadResources(ctx: KoolContext) {
+    private var lastClick = 0.0
+    private val doubleClickListener: (InputManager.PointerState) -> Unit = {
+        if (it.primaryPointer.isLeftButtonClicked) {
+            val t = now()
+            if (t - lastClick < 500.0) {
+                isCursorLocked.set(true)
+            }
+            lastClick = now()
+        }
+    }
+
+    override suspend fun AssetManager.loadResources(ctx: KoolContext) {
         showLoadText("Loading height map...")
         val heightMap = HeightMap.fromRawData(loadAsset("${DemoLoader.heightMapPath}/terrain_ocean.raw")!!, 200f, heightOffset = -50f)
         // more or less the same, but falls back to 8-bit height-resolution in javascript
@@ -135,6 +147,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
             isCursorLocked.set(false)
             ctx.inputMgr.cursorMode = InputManager.CursorMode.NORMAL
         }
+        InputStack.defaultInputHandler.pointerListeners += doubleClickListener
     }
 
     override fun dispose(ctx: KoolContext) {
@@ -144,6 +157,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
 
         ctx.inputMgr.removeKeyListener(escKeyListener)
         ctx.inputMgr.cursorMode = InputManager.CursorMode.NORMAL
+        InputStack.defaultInputHandler.pointerListeners -= doubleClickListener
     }
 
     override fun createMenu(menu: DemoMenu, ctx: KoolContext) = menuSurface {

@@ -38,5 +38,9 @@ class SettingsContent(val menu: DemoMenu) : ComposableComponent {
         MenuRow { LabeledSwitch("Debug overlay", Settings.showDebugOverlay) }
         MenuRow { LabeledSwitch("Fullscreen", Settings.isFullscreen) }
         MenuRow { LabeledSwitch("Hidden demos", Settings.showHiddenDemos) }
+
+        menu.demoLoader.activeDemo?.let {
+            MenuRow { LabeledSwitch("Show demo menu", it.isMenu) }
+        }
     }
 }
