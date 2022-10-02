@@ -13,8 +13,8 @@ class DrawerButton(val menu: DemoMenu) : ComposableComponent {
 
     override fun UiScope.compose() = Box {
         modifier
-            .width(UiSizes.baseElemSize)
-            .height(UiSizes.baseElemSize)
+            .width(UiSizes.baseSize)
+            .height(UiSizes.baseSize)
             .padding(sizes.smallGap)
             .background(buttonRenderer)
             .onEnter { isHovered.set(true) }

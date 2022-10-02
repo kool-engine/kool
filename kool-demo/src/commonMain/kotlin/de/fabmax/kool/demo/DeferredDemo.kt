@@ -312,8 +312,8 @@ class DeferredDemo : DemoScene("Deferred Shading") {
     }
 
     override fun createMenu(menu: DemoMenu, ctx: KoolContext) = menuSurface {
-        val lblSize = UiSizes.baseElemSize * 2f
-        val txtSize = UiSizes.baseElemSize * 0.75f
+        val lblSize = UiSizes.baseSize * 2f
+        val txtSize = UiSizes.baseSize * 0.75f
 
         MenuSlider2("Number of lights", lightCount.use().toFloat(), 1f, MAX_LIGHTS.toFloat(), { "${it.roundToInt()}" }) {
             lightCount.set(it.roundToInt())

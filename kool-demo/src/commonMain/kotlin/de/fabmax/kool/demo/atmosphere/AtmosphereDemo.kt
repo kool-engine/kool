@@ -17,7 +17,6 @@ import de.fabmax.kool.pipeline.deferred.PbrSceneShader
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.unlitShader
 import de.fabmax.kool.scene.*
-import de.fabmax.kool.scene.ui.Slider
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ColorGradient
@@ -320,7 +319,7 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
         min: Float,
         max: Float,
         txtFormat: (Float) -> String = { it.toString(2) },
-        txtWidth: Dp = UiSizes.baseElemSize,
+        txtWidth: Dp = UiSizes.baseSize,
         onChange: (Float) -> Unit
     ) {
         Slider(value, min, max) {
@@ -340,8 +339,8 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
     }
 
     override fun createMenu(menu: DemoMenu, ctx: KoolContext) = menuSurface {
-        val lblW = UiSizes.baseElemSize * 1f
-        val txtW = UiSizes.baseElemSize * 0.85f
+        val lblW = UiSizes.baseSize * 1f
+        val txtW = UiSizes.baseSize * 0.85f
 
         val timeFmt: (Float) -> String = {
             val t = it * 24
@@ -370,7 +369,7 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
 
         Text("Atmosphere") { sectionTitleStyle() }
         MenuRow {
-            Text("Thickness") { labelStyle(UiSizes.baseElemSize * 1.75f) }
+            Text("Thickness") { labelStyle(UiSizes.baseSize * 1.75f) }
             MenuSlider(
                 atmoThickness.use(),
                 10f,
@@ -380,7 +379,7 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
             { atmoThickness.set(it) }
         }
         MenuRow {
-            Text("Falloff") { labelStyle(UiSizes.baseElemSize * 1.75f) }
+            Text("Falloff") { labelStyle(UiSizes.baseSize * 1.75f) }
             MenuSlider(atmoFalloff.use(), 0f, 15f, txtWidth = txtW) { atmoFalloff.set(it) }
         }
 
@@ -454,13 +453,6 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
         val atmoRadius = earthRadius + newThickness / kmPerUnit
         atmoShader.atmosphereRadius = atmoRadius
         opticalDepthLutPass.atmosphereRadius = atmoRadius
-    }
-
-    private fun ControlUiBuilder.colorSlider(label: String, color: Color, initialValue: Float, min: Float, max: Float, onChange: Slider.() -> Unit): Slider {
-        val slider = sliderWithValueSmall(label, initialValue, min, max, widthLabel = 10f, onChange = onChange)
-        slider.knobColor.setCustom(color)
-        slider.trackColorHighlighted.setCustom(color.mix(Color.BLACK, 0.5f))
-        return slider
     }
 
     companion object {

@@ -15,7 +15,15 @@ import kotlin.math.*
 
 class UiPrimitiveMesh : Mesh(IndexedVertexList(ATTRIB_OUTER_WEIGHTS, ATTRIB_INNER_WEIGHTS)) {
 
-    private val primitives = MeshInstanceList(listOf(ATTRIB_OUTER_DIMENS, ATTRIB_INNER_DIMENS, Attribute.COLORS, Ui2Shader.ATTRIB_CLIP, ATTRIB_CENTER))
+    private val primitives = MeshInstanceList(listOf(
+        ATTRIB_OUTER_DIMENS,
+        ATTRIB_INNER_DIMENS,
+        Ui2Shader.ATTRIB_CLIP,
+        ATTRIB_COLOR_A,
+        ATTRIB_COLOR_B,
+        ATTRIB_GRADIENT_DIR,
+        ATTRIB_CENTER)
+    )
 
     init {
         instances = primitives
@@ -67,55 +75,83 @@ class UiPrimitiveMesh : Mesh(IndexedVertexList(ATTRIB_OUTER_WEIGHTS, ATTRIB_INNE
         shader = PrimitiveShader()
     }
 
-    fun rect(x: Float, y: Float, width: Float, height: Float, color: Color, clip: Vec4f) {
-        addPrimitive(x, y, width, height, 0f, 0f, 0f, 0f, 0f, 0f, color, clip)
+    fun rect(x: Float, y: Float, width: Float, height: Float, clip: Vec4f,
+             colorA: Color, colorB: Color = colorA, gradientX: Float = 1f, gradientY: Float = 0f) {
+        addPrimitive(
+            x, y, width, height, 0f, 0f,
+            0f, 0f, 0f, 0f, clip,
+            colorA, colorB, gradientX, gradientY
+        )
     }
 
-    fun roundRect(x: Float, y: Float, width: Float, height: Float, radius: Float, color: Color, clip: Vec4f) {
-        addPrimitive(x, y, width, height, radius, radius, 0f, 0f, 0f, 0f, color, clip)
+    fun roundRect(x: Float, y: Float, width: Float, height: Float, radius: Float, clip: Vec4f,
+                  colorA: Color, colorB: Color = colorA, gradientX: Float = 1f, gradientY: Float = 0f) {
+        addPrimitive(
+            x, y, width, height, radius, radius,
+            0f, 0f, 0f, 0f, clip,
+            colorA, colorB, gradientX, gradientY
+        )
     }
 
-    fun circle(x: Float, y: Float, radius: Float, color: Color, clip: Vec4f) {
-        addPrimitive(x - radius, y - radius, radius * 2f, radius * 2f, radius, radius, 0f, 0f, 0f, 0f, color, clip)
+    fun circle(x: Float, y: Float, radius: Float, clip: Vec4f,
+               colorA: Color, colorB: Color = colorA, gradientX: Float = 1f, gradientY: Float = 0f) {
+        addPrimitive(
+            x - radius, y - radius, radius * 2f, radius * 2f, radius, radius,
+            0f, 0f, 0f, 0f, clip,
+            colorA, colorB, gradientX, gradientY
+        )
     }
 
-    fun oval(x: Float, y: Float, xRadius: Float, yRadius: Float, color: Color, clip: Vec4f) {
-        addPrimitive(x - xRadius, y - yRadius, xRadius * 2f, yRadius * 2f, xRadius, yRadius, 0f, 0f, 0f, 0f, color, clip)
+    fun oval(x: Float, y: Float, xRadius: Float, yRadius: Float, clip: Vec4f,
+             colorA: Color, colorB: Color = colorA, gradientX: Float = 1f, gradientY: Float = 0f) {
+        addPrimitive(
+            x - xRadius, y - yRadius, xRadius * 2f, yRadius * 2f, xRadius, yRadius,
+            0f, 0f, 0f, 0f, clip,
+            colorA, colorB, gradientX, gradientY
+        )
     }
 
-    fun rectBorder(x: Float, y: Float, width: Float, height: Float, borderWidth: Float, color: Color, clip: Vec4f) {
+    fun rectBorder(x: Float, y: Float, width: Float, height: Float,
+                   borderWidth: Float, clip: Vec4f,
+                   colorA: Color, colorB: Color = colorA, gradientX: Float = 1f, gradientY: Float = 0f) {
         addPrimitive(
             x, y,
             width, height, 0f, 0f,
             width - borderWidth * 2, height - borderWidth * 2, 0f, 0f,
-            color, clip
+            clip, colorA, colorB, gradientX, gradientY
         )
     }
 
-    fun roundRectBorder(x: Float, y: Float, width: Float, height: Float, radius: Float, borderWidth: Float, color: Color, clip: Vec4f) {
+    fun roundRectBorder(x: Float, y: Float, width: Float, height: Float, radius: Float,
+                        borderWidth: Float, clip: Vec4f,
+                        colorA: Color, colorB: Color = colorA, gradientX: Float = 1f, gradientY: Float = 0f) {
         addPrimitive(
             x, y,
             width, height, radius, radius,
             (width - borderWidth * 2f), (height - borderWidth * 2f), radius - borderWidth, radius - borderWidth,
-            color, clip
+            clip, colorA, colorB, gradientX, gradientY
         )
     }
 
-    fun circleBorder(x: Float, y: Float, radius: Float, borderWidth: Float, color: Color, clip: Vec4f) {
+    fun circleBorder(x: Float, y: Float, radius: Float,
+                     borderWidth: Float, clip: Vec4f,
+                     colorA: Color, colorB: Color = colorA, gradientX: Float = 1f, gradientY: Float = 0f) {
         addPrimitive(
             x - radius, y - radius,
             radius * 2f, radius * 2f, radius, radius,
             (radius - borderWidth) * 2f, (radius - borderWidth) * 2f, radius - borderWidth, radius - borderWidth,
-            color, clip
+            clip, colorA, colorB, gradientX, gradientY
         )
     }
 
-    fun ovalBorder(x: Float, y: Float, xRadius: Float, yRadius: Float, borderWidth: Float, color: Color, clip: Vec4f) {
+    fun ovalBorder(x: Float, y: Float, xRadius: Float, yRadius: Float,
+                   borderWidth: Float, clip: Vec4f,
+                   colorA: Color, colorB: Color = colorA, gradientX: Float = 1f, gradientY: Float = 0f) {
         addPrimitive(
             x - xRadius, y - yRadius,
             xRadius * 2f, yRadius * 2f, xRadius, yRadius,
             (xRadius - borderWidth) * 2f, (yRadius - borderWidth) * 2f, xRadius - borderWidth, yRadius - borderWidth,
-            color, clip
+            clip, colorA, colorB, gradientX, gradientY
         )
     }
 
@@ -123,7 +159,8 @@ class UiPrimitiveMesh : Mesh(IndexedVertexList(ATTRIB_OUTER_WEIGHTS, ATTRIB_INNE
         x: Float, y: Float,
         outerW: Float, outerH: Float, outerRx: Float, outerRy: Float,
         innerW: Float, innerH: Float, innerRx: Float, innerRy: Float,
-        color: Color, clip: Vec4f
+        clip: Vec4f,
+        colorA: Color, colorB: Color, gradientX: Float, gradientY: Float
     ) {
         val vec4 = MutableVec4f()
         primitives.addInstance {
@@ -141,8 +178,12 @@ class UiPrimitiveMesh : Mesh(IndexedVertexList(ATTRIB_OUTER_WEIGHTS, ATTRIB_INNE
                 min(innerRy, innerH * 0.5f)
             ).array)
 
-            put(vec4.set(color).array)
             put(vec4.set(clip).array)
+
+            put(vec4.set(colorA).array)
+            put(vec4.set(colorB).array)
+            put(gradientX)
+            put(gradientY)
 
             // center position
             put(x + outerW * 0.5f)
@@ -156,6 +197,9 @@ class UiPrimitiveMesh : Mesh(IndexedVertexList(ATTRIB_OUTER_WEIGHTS, ATTRIB_INNE
         val ATTRIB_INNER_DIMENS = Attribute("aInnerDimens", GlslType.VEC_4F)
         val ATTRIB_OUTER_WEIGHTS = Attribute("aOuterW", GlslType.VEC_4F)
         val ATTRIB_INNER_WEIGHTS = Attribute("aInnerW", GlslType.VEC_4F)
+        val ATTRIB_COLOR_A = Attribute("aColorA", GlslType.VEC_4F)
+        val ATTRIB_COLOR_B = Attribute("aColorB", GlslType.VEC_4F)
+        val ATTRIB_GRADIENT_DIR = Attribute("aGradientDir", GlslType.VEC_2F)
     }
 
     private class PrimitiveShader : KslShader(Model(), pipelineConfig) {
@@ -167,8 +211,6 @@ class UiPrimitiveMesh : Mesh(IndexedVertexList(ATTRIB_OUTER_WEIGHTS, ATTRIB_INNE
 
                 vertexStage {
                     main {
-                        color.input set instanceAttribFloat4(Attribute.COLORS.name)
-                        color.input.rgb set color.input.rgb * color.input.a
                         clipBounds.input set instanceAttribFloat4(Ui2Shader.ATTRIB_CLIP.name)
 
                         val center = float2Var(instanceAttribFloat2(ATTRIB_CENTER.name))
@@ -180,6 +222,18 @@ class UiPrimitiveMesh : Mesh(IndexedVertexList(ATTRIB_OUTER_WEIGHTS, ATTRIB_INNE
 
                         pos.xy set center + outerPosWeights.xy * outerDimens.xy + outerPosWeights.zw * outerDimens.zw
                         pos.xy += innerPosWeights.xy * innerDimens.xy + innerPosWeights.zw * innerDimens.zw
+
+                        val colorA = instanceAttribFloat4(ATTRIB_COLOR_A.name)
+                        val colorB = instanceAttribFloat4(ATTRIB_COLOR_B.name)
+                        val gradientDir = instanceAttribFloat2(ATTRIB_GRADIENT_DIR.name)
+
+                        val widthHeight = float2Var(outerDimens.xy + outerDimens.zw)
+                        val normPos = float2Var((pos.xy - center) / widthHeight * 2f.const)
+                        val wB = clamp(dot(normPos, gradientDir) * 0.5f.const + 0.5f.const, 0f.const, 1f.const)
+                        val wA = 1f.const - wB
+
+                        color.input set colorA * wA + colorB * wB
+                        color.input.rgb set color.input.rgb * color.input.a
 
                         screenPos.input set pos.xy
                         outPosition set mvpMatrix().matrix * float4Value(pos, 1f.const)

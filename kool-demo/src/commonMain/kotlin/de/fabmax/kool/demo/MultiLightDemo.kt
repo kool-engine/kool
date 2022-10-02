@@ -170,8 +170,8 @@ class MultiLightDemo : DemoScene("Reflections") {
     }
 
     override fun createMenu(menu: DemoMenu, ctx: KoolContext) = menuSurface {
-        val lblSize = UiSizes.baseElemSize * 2f
-        val txtSize = UiSizes.baseElemSize * 0.75f
+        val lblSize = UiSizes.baseSize * 2f
+        val txtSize = UiSizes.baseSize * 0.75f
 
         MenuRow { LabeledSwitch("SSR enabled", isSsrEnabled) }
         MenuRow { LabeledSwitch("Show map", isShowSsrMap) }

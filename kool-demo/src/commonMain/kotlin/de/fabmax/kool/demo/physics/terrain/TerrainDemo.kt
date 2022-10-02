@@ -175,8 +175,8 @@ class TerrainDemo : DemoScene("Terrain Demo") {
 //        }
 
         Text("Wind") { sectionTitleStyle() }
-        val lblSize = UiSizes.baseElemSize * 1.5f
-        val txtSize = UiSizes.baseElemSize * 1.1f
+        val lblSize = UiSizes.baseSize * 1.5f
+        val txtSize = UiSizes.baseSize * 1.1f
         MenuRow {
             Text("Speed") { labelStyle(lblSize) }
             MenuSlider(windSpeed.use(), 0.1f, 20f, txtWidth = txtSize) { windSpeed.set(it) }

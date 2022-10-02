@@ -53,7 +53,7 @@ class DemoListContent(val menu: DemoMenu) : ComposableComponent {
                 Text(item.text) {
                     modifier
                         .width(Grow.Std)
-                        .height(UiSizes.baseElemSize)
+                        .height(UiSizes.baseSize)
                         .padding(horizontal = sizes.gap * 1.25f)
                         .textAlignY(AlignmentY.Center)
                         .onEnter { hoveredDemoItem.set(i) }

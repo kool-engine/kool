@@ -17,6 +17,8 @@ open class TextModifier(surface: UiSurface) : UiModifier(surface) {
     var textAlignX: AlignmentX by property(AlignmentX.Start)
     var textAlignY: AlignmentY by property(AlignmentY.Top)
     var textRotation: TextRotation by property(TextRotation.Rotation0)
+    var baselineBottomMargin: Dp? by property(null)
+    var baselineTopMargin: Dp? by property(null)
 }
 
 fun <T: TextModifier> T.text(text: String): T { this.text = text; return this }
@@ -24,6 +26,17 @@ fun <T: TextModifier> T.font(font: FontProps): T { this.font = font; return this
 fun <T: TextModifier> T.textColor(color: Color): T { textColor = color; return this }
 fun <T: TextModifier> T.textAlignX(alignment: AlignmentX): T { textAlignX = alignment; return this }
 fun <T: TextModifier> T.textAlignY(alignment: AlignmentY): T { textAlignY = alignment; return this }
+
+/**
+ * Sets the margin between text baseline and bottom / top border of the text box. If a baseline margin is set,
+ * the other y text-alignment and padding properties are ignored. Currently, baseline margin only works for
+ * non-rotated text.
+ */
+fun <T: TextModifier> T.baselineMargin(bottom: Dp? = null, top: Dp? = null): T {
+    baselineBottomMargin = bottom
+    baselineTopMargin = top
+    return this
+}
 
 fun <T: TextModifier> T.textAlign(alignX: AlignmentX = textAlignX, alignY: AlignmentY = textAlignY): T {
     textAlignX = alignX
@@ -103,11 +116,24 @@ open class TextNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surfac
                 AlignmentX.Center -> (widthPx - textWidth) / 2f
                 AlignmentX.End -> widthPx - textWidth - paddingEndPx
             }
-            val oriY = txtY + when (modifier.textAlignY) {
-                AlignmentY.Top -> paddingTopPx
-                AlignmentY.Center -> (heightPx - textHeight) / 2f
-                AlignmentY.Bottom -> heightPx - textHeight - paddingBottomPx
+
+            // a little hacky:
+            // if a baseline margin is set, the original align properties are ignored
+            // also, this currently won't correctly work for rotated text
+            val baseBotMargin = modifier.baselineBottomMargin
+            val baseTopMargin = modifier.baselineTopMargin
+            val oriY = if (baseBotMargin != null) {
+                heightPx - baseBotMargin.px
+            } else if (baseTopMargin != null) {
+                textMetrics.yBaseline + baseTopMargin.px
+            } else {
+                txtY + when (modifier.textAlignY) {
+                    AlignmentY.Top -> paddingTopPx
+                    AlignmentY.Center -> (heightPx - textHeight) / 2f
+                    AlignmentY.Bottom -> heightPx - textHeight - paddingBottomPx
+                }
             }
+
             origin.set(leftPx + oriX, topPx + oriY, 0f)
         }
         textCache.addTextGeometry(getTextBuilder(modifier.font, ctx).geometry, textProps, modifier.textColor, modifier.textRotation)

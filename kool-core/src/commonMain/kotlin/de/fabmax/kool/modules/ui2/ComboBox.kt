@@ -143,7 +143,8 @@ open class ComboBoxNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, su
                 draw.roundRect(
                     rightPx - expanderWidth - cornerRadius, topPx,
                     expanderWidth + cornerRadius, heightPx,
-                    cornerRadius, arrowBgColor, customClip)
+                    cornerRadius, customClip, arrowBgColor
+                )
             })
         }
 

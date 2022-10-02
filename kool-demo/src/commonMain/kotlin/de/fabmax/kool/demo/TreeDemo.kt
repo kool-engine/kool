@@ -243,11 +243,11 @@ class TreeDemo : DemoScene("Procedural Tree") {
 
         Text("Sunlight") { sectionTitleStyle() }
         MenuRow {
-            Text("Azimuth") { labelStyle(UiSizes.baseElemSize * 1.85f) }
+            Text("Azimuth") { labelStyle(UiSizes.baseSize * 1.85f) }
             MenuSlider(
                 sunAzimuth.use(), 0f, 360f,
                 txtFormat = { "${it.roundToInt()} °" },
-                txtWidth = UiSizes.baseElemSize * 0.9f,
+                txtWidth = UiSizes.baseSize * 0.9f,
                 onChangeEnd = { skySystem.skyPass.azimuth = it }
             ) {
                 sunAzimuth.set(it)
@@ -257,11 +257,11 @@ class TreeDemo : DemoScene("Procedural Tree") {
             }
         }
         MenuRow {
-            Text("Elevation") { labelStyle(UiSizes.baseElemSize * 1.85f) }
+            Text("Elevation") { labelStyle(UiSizes.baseSize * 1.85f) }
             MenuSlider(
                 sunElevation.use(), -90f, 90f,
                 txtFormat = { "${it.roundToInt()} °" },
-                txtWidth = UiSizes.baseElemSize * 0.9f,
+                txtWidth = UiSizes.baseSize * 0.9f,
                 onChangeEnd = { skySystem.skyPass.elevation = it }
             ) {
                 sunElevation.set(it)

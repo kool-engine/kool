@@ -13,7 +13,7 @@ class SettingsContent(val menu: DemoMenu) : ComposableComponent {
         Text("Settings") {
             modifier
                 .width(Grow.Std)
-                .height(UiSizes.baseElemSize)
+                .height(UiSizes.baseSize)
                 .padding(horizontal = UiSizes.hGap)
                 .textAlignY(AlignmentY.Center)
                 .background(TitleBgRenderer(DemoMenu.titleBgMesh, 0.75f, 0.95f))

@@ -83,7 +83,7 @@ class PbrDemo : DemoScene("PBR Materials") {
     }
 
     override fun createMenu(menu: DemoMenu, ctx: KoolContext) = menuSurface {
-        val comboW = UiSizes.baseElemSize * 3.5f
+        val comboW = UiSizes.baseSize * 3.5f
         MenuRow {
             Text("Scene") { labelStyle(Grow.Std) }
             ComboBox {

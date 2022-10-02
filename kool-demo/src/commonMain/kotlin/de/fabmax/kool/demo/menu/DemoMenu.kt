@@ -72,8 +72,8 @@ class DemoMenu(val demoLoader: DemoLoader) {
 
     private fun UiScope.NavigationBar() = Column {
         modifier
-            .padding(top = UiSizes.baseElemSize)
-            .width(UiSizes.baseElemSize)
+            .padding(top = UiSizes.baseSize)
+            .width(UiSizes.baseSize)
             .height(Grow.Std)
             .backgroundColor(colors.backgroundVariant)
 

@@ -32,7 +32,7 @@ class RoughnesMetalGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.P
             Text("Color") { labelStyle(Grow.Std) }
             ComboBox {
                 modifier
-                    .width(UiSizes.baseElemSize * 3.5f)
+                    .width(UiSizes.baseSize * 3.5f)
                     .items(matColors)
                     .selectedIndex(selectedColorIdx.use())
                     .onItemSelected {

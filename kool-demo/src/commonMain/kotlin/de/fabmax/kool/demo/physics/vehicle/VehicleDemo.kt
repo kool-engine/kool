@@ -4,12 +4,14 @@ import de.fabmax.kool.AssetManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.DemoLoader
 import de.fabmax.kool.demo.DemoScene
+import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.demo.physics.vehicle.ui.VehicleUi
 import de.fabmax.kool.math.Mat3f
 import de.fabmax.kool.math.SimpleSpline3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.gltf.GltfFile
 import de.fabmax.kool.modules.gltf.loadGltfModel
+import de.fabmax.kool.modules.ui2.UiSurface
 import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.physics.PhysicsWorld
 import de.fabmax.kool.physics.RigidStatic
@@ -34,7 +36,7 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
     private lateinit var vehicleModel: Model
     private lateinit var vehicle: DemoVehicle
 
-    private var dashboard: VehicleUi? = null
+    private var ui: VehicleUi? = null
     private var track: Track? = null
     private var timer: TrackTimer? = null
 
@@ -141,30 +143,30 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
         track?.cleanUp()
     }
 
-    override fun setupMenu(ctx: KoolContext): Scene {
-        dashboard = VehicleUi(vehicle).apply {
+    override fun createMenu(menu: DemoMenu, ctx: KoolContext): UiSurface {
+        ui = VehicleUi(vehicle).apply {
             onToggleSound = { en -> vehicle.toggleSound(en) }
         }
-        return dashboard!!.uiScene
+        return ui!!.uiSurface
     }
 
     private fun updateDashboard() {
-        dashboard?.apply {
+        ui?.apply {
             vehicle.vehicle.let { vehicle ->
-                speedKph = vehicle.forwardSpeed * 3.6f
-                rpm = vehicle.engineSpeedRpm
-                torqueNm = vehicle.engineTorqueNm
-                powerKW = vehicle.enginePowerW / 1000f
-                gear = vehicle.currentGear
-                steering = -vehicle.steerInput
-                throttle = vehicle.throttleInput
-                brake = vehicle.brakeInput
-                longitudinalAcceleration = vehicle.longitudinalAcceleration
-                lateralAcceleration = vehicle.lateralAcceleration
+                dashboard.speedKph.set(vehicle.forwardSpeed * 3.6f)
+                dashboard.rpm.set(vehicle.engineSpeedRpm)
+                dashboard.torqueNm.set(vehicle.engineTorqueNm)
+                dashboard.powerKW.set(vehicle.enginePowerW / 1000f)
+                dashboard.gear.set(vehicle.currentGear)
+                dashboard.steering.set(-vehicle.steerInput)
+                dashboard.throttle.set(vehicle.throttleInput)
+                dashboard.brake.set(vehicle.brakeInput)
+                dashboard.longitudinalAcceleration.set(vehicle.longitudinalAcceleration)
+                dashboard.lateralAcceleration.set(vehicle.lateralAcceleration)
             }
 
             timer?.let { t ->
-                trackTime = t.trackTime
+                timerUi.trackTime.set(t.trackTime)
                 if (t.timerState != TrackTimer.TimerState.STOPPED) {
                     vehicle.vehicle.let { veh ->
                         val distToTrack = track?.distanceToTrack(veh.position) ?: 0f
@@ -223,8 +225,8 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
 
             buildTriggers()
 
-            onCheckPoint1 = { dashboard?.sec1Time = it }
-            onCheckPoint2 = { dashboard?.sec2Time = it }
+            onCheckPoint1 = { ui?.timerUi?.sec1Time?.set(it) }
+            onCheckPoint2 = { ui?.timerUi?.sec2Time?.set(it) }
         }
     }
 

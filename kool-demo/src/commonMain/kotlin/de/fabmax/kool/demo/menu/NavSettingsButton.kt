@@ -44,8 +44,8 @@ class NavSettingsButton(val menu: DemoMenu) : ComposableComponent {
 
     override fun UiScope.compose() = Box {
         modifier
-            .width(UiSizes.baseElemSize)
-            .height(UiSizes.baseElemSize)
+            .width(UiSizes.baseSize)
+            .height(UiSizes.baseSize)
             .padding(sizes.gap)
             .background(buttonRenderer)
             .onEnter { isHovered.set(true) }

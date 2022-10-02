@@ -31,8 +31,8 @@ class ColorGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrConten
     private val metallic = mutableStateOf(0f).onChange { shaders.forEach { s -> s.metallic(it) } }
 
     override fun UiScope.createContentMenu() {
-        val lblSize = UiSizes.baseElemSize * 2f
-        val txtSize = UiSizes.baseElemSize * 0.7f
+        val lblSize = UiSizes.baseSize * 2f
+        val txtSize = UiSizes.baseSize * 0.7f
         MenuRow {
             Text("Roughness") { labelStyle(lblSize) }
             MenuSlider(roughness.use(), 0f, 1f, txtWidth = txtSize) { roughness.set(it) }

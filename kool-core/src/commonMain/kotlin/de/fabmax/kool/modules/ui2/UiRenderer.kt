@@ -41,6 +41,24 @@ class CircularBackground(val backgroundColor: Color) : UiRenderer<UiNode> {
     }
 }
 
+class RectGradientBackground(val colorA: Color, val colorB: Color, val gradientX: Float, val gradientY: Float) : UiRenderer<UiNode> {
+    override fun renderUi(node: UiNode) {
+        node.apply {
+            node.getUiPrimitives(UiSurface.LAYER_BACKGROUND)
+                .localRectGradient(0f, 0f, widthPx, heightPx, colorA, colorB, gradientX, gradientY)
+        }
+    }
+}
+
+class RoundRectGradientBackground(val cornerRadius: Dp, val colorA: Color, val colorB: Color, val gradientX: Float, val gradientY: Float) : UiRenderer<UiNode> {
+    override fun renderUi(node: UiNode) {
+        node.apply {
+            node.getUiPrimitives(UiSurface.LAYER_BACKGROUND)
+                .localRoundRectGradient(0f, 0f, widthPx, heightPx, cornerRadius.px, colorA, colorB, gradientX, gradientY)
+        }
+    }
+}
+
 class RectBorder(val borderColor: Color, val borderWidth: Dp, val inset: Dp = Dp.ZERO) : UiRenderer<UiNode> {
     override fun renderUi(node: UiNode) {
         node.apply {

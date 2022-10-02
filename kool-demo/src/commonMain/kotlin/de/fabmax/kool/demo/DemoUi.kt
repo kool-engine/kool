@@ -7,8 +7,8 @@ object UiSizes {
     val hGap: Dp get() = Settings.uiSize.value.sizes.gap * 1.25f
     val vGap: Dp get() = Settings.uiSize.value.sizes.gap
 
-    val baseElemSize: Dp get() = Settings.uiSize.value.sizes.gap * 4f
-    val menuWidth: Dp get() = baseElemSize * 7f
+    val baseSize: Dp get() = Settings.uiSize.value.sizes.gap * 4f
+    val menuWidth: Dp get() = baseSize * 7f
 }
 
 fun UiScope.MenuRow(vGap: Dp = UiSizes.vGap, block: UiScope.() -> Unit) {
@@ -23,7 +23,7 @@ fun UiScope.MenuSlider(
     min: Float,
     max: Float,
     txtFormat: (Float) -> String = { it.toString(2) },
-    txtWidth: Dp = UiSizes.baseElemSize,
+    txtWidth: Dp = UiSizes.baseSize,
     onChangeEnd: ((Float) -> Unit)? = null,
     onChange: (Float) -> Unit
 ) {

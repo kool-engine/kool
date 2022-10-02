@@ -1,189 +1,80 @@
 package de.fabmax.kool.demo.physics.vehicle.ui
 
-import de.fabmax.kool.KoolContext
-import de.fabmax.kool.math.MutableVec2f
-import de.fabmax.kool.math.Vec2f
-import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.math.toRad
-import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.scene.geometry.MeshBuilder
-import de.fabmax.kool.scene.mesh
-import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ColorGradient
 import de.fabmax.kool.util.MdColor
-import kotlin.math.cos
 import kotlin.math.min
-import kotlin.math.round
-import kotlin.math.sin
 
-class RpmScale(root: UiRoot) : UiComponent("rpm", root) {
-    var criticlaRpm = 5000f
-        set(value) {
-            field = value
-            requestUiUpdate()
-        }
-    var maxRpm = 6000f
-        set(value) {
-            field = value
-            requestUiUpdate()
-        }
-    var value = 750f
-        set(value) {
-            field = value
-            isTrackUpdate = true
-        }
+class RpmScale(val dashboard: Dashboard) : ComposableComponent {
 
-    private var isTrackUpdate = false
+    private val rpm: Float
+        get() = dashboard.rpm.value
+    private val maxRpm: Float
+        get() = dashboard.maxRpm.value
+    private val critRpm: Float
+        get() = dashboard.criticalRpm.value
 
-    override fun createThemeUi(ctx: KoolContext): ComponentUi {
-        return RpmScaleUi(this)
-    }
+    private val trackColor = ColorGradient(Color.WHITE.withAlpha(0.7f), MdColor.ORANGE.withAlpha(0.7f))
+    private val colorCrit = MdColor.RED
+    private val colorCritBg = colorCrit.withAlpha(0.4f)
 
-    override fun updateComponent(ctx: KoolContext) {
-        super.updateComponent(ctx)
-        if (isTrackUpdate) {
-            isTrackUpdate = false
-            val rpmUi = ui.prop
-            if (rpmUi is RpmScaleUi) {
-                rpmUi.updateTrack()
-            } else {
-                requestUiUpdate()
+    private fun rpmX(rpm: Float, innerWidth: Float) = rpm / maxRpm * innerWidth
+
+    private val rpmRenderer = UiRenderer {
+        it.apply {
+            val indent = sizes.gap.px * 0.5f
+            getPlainBuilder().configured {
+                translate(paddingStartPx, paddingTopPx, 0f)
+
+                val iw = innerWidthPx - indent
+
+                // track
+                fillTrack(rpmX(critRpm, iw), rpmX(maxRpm, iw), innerHeightPx, indent, colorCritBg, colorCritBg)
+                val nrmRpm = min(rpm, critRpm)
+                fillTrack(rpmX(0f, iw), rpmX(nrmRpm, iw), innerHeightPx, indent, trackColor.getColor(0f), trackColor.getColor(rpm / critRpm))
+                if (rpm > critRpm) {
+                    fillTrack(rpmX(critRpm, iw), rpmX(rpm, iw), innerHeightPx, indent, colorCrit, colorCrit)
+                }
+
+                // border
+                color = Color.WHITE.withAlpha(0.75f)
+                line(indent, 0f, innerWidthPx, 0f, 1.dp.px)
+                line(0f, innerHeightPx, innerWidthPx - indent, innerHeightPx, 1.dp.px)
+                line(0f, innerHeightPx, indent, 0f, 1.dp.px)
+                line(innerWidthPx - indent, innerHeightPx, innerWidthPx, 0f, 1.dp.px)
+
+                // grid
+                color = Color.WHITE.withAlpha(0.3f)
+                val step = (innerWidthPx - indent) / 6f
+                var x = step
+                for (i in 1..4) {
+                    line(x, innerHeightPx, x + indent, 0f, 1.dp.px)
+                    x += step
+                }
             }
         }
     }
-}
 
-class RpmScaleUi(private val rpmScale: RpmScale) : BarUi(rpmScale) {
-    private val trackColor = ColorGradient(Color.WHITE.withAlpha(0.5f), MdColor.ORANGE)
+    private fun MeshBuilder.fillTrack(fromX: Float, toX: Float, innerHeight: Float, indent: Float, colorLt: Color, colorRt: Color) {
+        color = colorLt
+        val i1 = vertex { set(fromX + indent, 0f, 0f) }
+        val i2 = vertex { set(fromX, innerHeight, 0f) }
+        color = colorRt
+        val i3 = vertex { set(toX, innerHeight, 0f) }
+        val i4 = vertex { set(toX + indent, 0f, 0f) }
 
-    private val largeFontMesh = mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS)) { }
-    private val largeFontMeshBuilder = MeshBuilder(largeFontMesh.geometry)
-
-    private val smallFontMesh = mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS)) { }
-    private val smallFontMeshBuilder = MeshBuilder(smallFontMesh.geometry)
-
-    private lateinit var largeFont: Font
-    private lateinit var smallFont: Font
-
-    init {
-        // compute track positions
-        val w = 0.15f
-        val r = 0.2f + w / 2
-        val cy = 1f - w/2 - r
-        val cx = cy * tilt + r + w/2f
-        centerTrack += Vec2f(w/2f, 0f)
-        for (i in 0..10) {
-            val a = (180f - tiltAng - (90f - tiltAng) / 10f * i).toRad()
-            centerTrack += Vec2f(cx + r * cos(a), cy + r * sin(a))
-        }
-        centerTrack += Vec2f(2.75f - w/2f * tilt, 1f - w / 2f)
-
-        // compute track length
-        var len = 0f
-        for (i in 0 until centerTrack.lastIndex) {
-            len += centerTrack[i].distance(centerTrack[i+1])
-        }
-        var pos = 0f
-        for (i in 0 until centerTrack.lastIndex) {
-            centerTrackRelPos += pos / len
-            pos += centerTrack[i].distance(centerTrack[i+1])
-        }
-        centerTrackRelPos += 1f
-
-        // compute left directions
-        centerTrackLefts += Vec2f(-w/2, 0f)
-        for (i in 1 until centerTrack.lastIndex) {
-            val v = MutableVec2f(centerTrack[i+1]).subtract(centerTrack[i]).norm().scale(w/2).rotate(90f)
-            centerTrackLefts += v
-        }
-        centerTrackLefts += Vec2f(w/2 * tilt, w/2)
+        addTriIndices(i1, i2, i3)
+        addTriIndices(i1, i3, i4)
     }
 
-    override fun updateComponentAlpha() {
-        super.updateComponentAlpha()
-        (largeFontMesh.shader as UiShader).apply { alpha = rpmScale.alpha }
-        (smallFontMesh.shader as UiShader).apply { alpha = rpmScale.alpha }
-    }
-
-    override fun createUi(ctx: KoolContext) {
-        super.createUi(ctx)
-
-        largeFont = Font(FontProps(VehicleUi.fontFamily, 19f * VehicleUi.scale, Font.ITALIC))
-        largeFontMesh.shader = UiShader().apply { setFont(largeFont, ctx) }
-        rpmScale += largeFontMesh
-
-        smallFont = Font(FontProps(VehicleUi.fontFamily, 14f * VehicleUi.scale, Font.ITALIC))
-        smallFontMesh.shader = UiShader().apply { setFont(smallFont, ctx) }
-        rpmScale += smallFontMesh
-    }
-
-    override fun updateUi(ctx: KoolContext) {
-        numIntervals = (rpmScale.maxRpm / 1000).toInt()
-        if (rpmScale.maxRpm % 1000 > 0) {
-            numIntervals++
-        }
-        trackScale = rpmScale.height
-        super.updateUi(ctx)
-
-        meshBuilder.fillTrack(rpmScale.criticlaRpm / rpmScale.maxRpm, 1f) { MdColor.DEEP_ORANGE.withAlpha(0.3f) }
-
-        rpmScale.setupBuilder(largeFontMeshBuilder)
-        rpmScale.setupBuilder(smallFontMeshBuilder)
-
-        drawRpms()
-        updateTrack()
-    }
-
-    fun updateTrack() {
-        rpmScale.setupBuilder(trackBuilder)
-
-        val p = min(rpmScale.value, rpmScale.criticlaRpm) / rpmScale.maxRpm
-        trackBuilder.fillTrack(0f, p) { trackColor.getColor(it, 0.0f, rpmScale.criticlaRpm / rpmScale.maxRpm) }
-        if (p < 1) {
-            trackBuilder.color = MdColor.DEEP_ORANGE
-            trackBuilder.fillTrack(p, rpmScale.value / rpmScale.maxRpm) { trackBuilder.color }
-        }
-    }
-
-    private fun drawRpms() {
-        largeFontMeshBuilder.color = Color.WHITE
-        smallFontMeshBuilder.color = Color.WHITE
-
-        val pos = MutableVec2f()
-        val lt = MutableVec2f()
-        for (i in 1 .. numIntervals) {
-            getTrackPosAt(i.toFloat() / numIntervals, pos, lt)
-
-            largeFontMeshBuilder.text(largeFont) {
-                text = "$i"
-                origin.x = round(pos.x - lt.x * 2.3f - largeFont.textWidth(text) / 2)
-                origin.y = round(pos.y - lt.y * 2.3f - largeFont.normHeight / 2)
-                origin.z = 0f
-            }
-        }
-
-        getTrackPosAt(0.12f, pos, lt)
-        smallFontMeshBuilder.withTransform {
-            translate(pos.x + lt.x * 1.7f, pos.y + lt.y * 1.7f, 0f)
-            rotate(90f - tiltAng + 2, Vec3f.Z_AXIS)
-            text(smallFont) { text = "x1000 rpm" }
-        }
-    }
-
-    override fun MeshBuilder.drawIntervals(w: Float) {
-        withTransform {
-            translate(0f, 0f, 10f)
-            meshBuilder.color = Color.WHITE
-            val pos = MutableVec2f()
-            val lt = MutableVec2f()
-            val cnt = numIntervals * 2
-            for (i in 1 until cnt) {
-                val f = if (i % 2 == 0) 0.5f else 0.75f
-                getTrackPosAt(i.toFloat() / cnt, pos, lt)
-                line(pos.x - lt.x * f, pos.y - lt.y * f, pos.x - lt.x, pos.y - lt.y, w)
-                line(pos.x + lt.x * f, pos.y + lt.y * f, pos.x + lt.x, pos.y + lt.y, w)
-            }
-        }
+    override fun UiScope.compose() = Box {
+        modifier
+            .width(Grow.Std)
+            .height(sizes.largeGap * 1.25f)
+            .margin(start = sizes.gap)
+            .padding(2.dp)
+            .background(rpmRenderer)
     }
 }

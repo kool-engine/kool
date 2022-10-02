@@ -249,8 +249,8 @@ class AoDemo : DemoScene("Ambient Occlusion") {
         MenuRow { LabeledSwitch("Spot light", isSpotLight) }
         MenuRow { LabeledSwitch("Auto rotate view", isAutoRotate) }
 
-        val lblW = UiSizes.baseElemSize * 1.6f
-        val txtW = UiSizes.baseElemSize * 0.7f
+        val lblW = UiSizes.baseSize * 1.6f
+        val txtW = UiSizes.baseSize * 0.7f
 
         Text("AO Settings") { sectionTitleStyle() }
         MenuRow {
