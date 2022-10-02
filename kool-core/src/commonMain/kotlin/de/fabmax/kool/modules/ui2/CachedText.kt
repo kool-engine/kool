@@ -9,10 +9,10 @@ import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.TextProps
-import de.fabmax.kool.scene.ui.Font
-import de.fabmax.kool.scene.ui.TextMetrics
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.Font
 import de.fabmax.kool.util.MutableColor
+import de.fabmax.kool.util.TextMetrics
 import kotlin.math.round
 
 class CachedText(val node: UiNode) {

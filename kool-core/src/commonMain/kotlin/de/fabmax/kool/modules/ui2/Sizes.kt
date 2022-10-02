@@ -1,7 +1,7 @@
 package de.fabmax.kool.modules.ui2
 
-import de.fabmax.kool.scene.ui.Font
-import de.fabmax.kool.scene.ui.FontProps
+import de.fabmax.kool.util.Font
+import de.fabmax.kool.util.FontProps
 
 data class Sizes(
     val normalText: FontProps,

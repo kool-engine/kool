@@ -3,11 +3,7 @@ package de.fabmax.kool.platform
 import de.fabmax.kool.*
 import de.fabmax.kool.modules.audio.AudioClip
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.scene.ui.CharMap
-import de.fabmax.kool.scene.ui.FontProps
-import de.fabmax.kool.util.Uint8Buffer
-import de.fabmax.kool.util.Uint8BufferImpl
-import de.fabmax.kool.util.logE
+import de.fabmax.kool.util.*
 import kotlinx.coroutines.*
 import org.lwjgl.PointerBuffer
 import org.lwjgl.util.nfd.NativeFileDialog
@@ -65,9 +61,6 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val c
                 try {
                     val f = HttpCache.loadHttpResource(httpRawRef.url)
                             ?: throw IOException("Failed downloading ${httpRawRef.url}")
-
-                    // what is the IO dispatcher for if not for this?
-                    @Suppress("BlockingMethodInNonBlockingContext")
                     FileInputStream(f).use { data = Uint8BufferImpl(it.readBytes()) }
                 } catch (e: Exception) {
                     logE { "Failed loading asset ${httpRawRef.url}: $e" }
@@ -191,8 +184,6 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val c
         var img: BufferedImage?
         withContext(Dispatchers.IO) {
             img = synchronized(imageIoLock) {
-                // what is the IO dispatcher for if not for this?
-                @Suppress("BlockingMethodInNonBlockingContext")
                 ImageIO.read(ByteArrayInputStream(texData.toArray()))
             }
         }

@@ -3,14 +3,7 @@ package de.fabmax.kool.platform
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.TextureData2d
-import de.fabmax.kool.scene.ui.CharMap
-import de.fabmax.kool.scene.ui.CharMetrics
-import de.fabmax.kool.scene.ui.Font
-import de.fabmax.kool.scene.ui.FontProps
-import de.fabmax.kool.util.Uint8Buffer
-import de.fabmax.kool.util.createUint8Buffer
-import de.fabmax.kool.util.logD
-import de.fabmax.kool.util.logE
+import de.fabmax.kool.util.*
 import kotlinx.coroutines.runBlocking
 import java.awt.Color
 import java.awt.Graphics2D
@@ -71,7 +64,8 @@ internal class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, val ctx: 
         }
     }
 
-    fun getCharMap(fontProps: FontProps, fontScale: Float): CharMap = charMaps.computeIfAbsent(fontProps) { updateCharMap(CharMap(it), fontScale) }
+    fun getCharMap(fontProps: FontProps, fontScale: Float): CharMap = charMaps.computeIfAbsent(fontProps) { updateCharMap(
+        CharMap(it), fontScale) }
 
     fun updateCharMap(charMap: CharMap, fontScale: Float): CharMap {
         val fontProps = charMap.fontProps

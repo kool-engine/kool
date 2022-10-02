@@ -1,8 +1,8 @@
 package de.fabmax.kool.modules.ui2
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.scene.ui.Font
-import de.fabmax.kool.scene.ui.FontProps
+import de.fabmax.kool.util.Font
+import de.fabmax.kool.util.FontProps
 
 object UiScale {
 

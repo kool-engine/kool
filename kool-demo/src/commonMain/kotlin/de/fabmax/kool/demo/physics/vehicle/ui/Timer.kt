@@ -77,7 +77,7 @@ class Timer(val vehicleUi: VehicleUi) : ComposableComponent {
 
             Column {
                 modifier
-                    .width(UiSizes.baseSize * 2.5f)
+                    .width(UiSizes.baseSize * 2.75f)
                     .height(Grow.Std)
                     .margin(horizontal = sizes.largeGap * 1.5f)
                     .margin(top = sizes.smallGap)

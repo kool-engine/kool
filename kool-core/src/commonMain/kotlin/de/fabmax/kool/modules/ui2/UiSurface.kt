@@ -9,12 +9,7 @@ import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.mesh
-import de.fabmax.kool.scene.ui.Font
-import de.fabmax.kool.scene.ui.FontProps
-import de.fabmax.kool.util.InputStack
-import de.fabmax.kool.util.PerfTimer
-import de.fabmax.kool.util.TreeMap
-import de.fabmax.kool.util.logD
+import de.fabmax.kool.util.*
 
 class UiSurface(
     colors: Colors = Colors.darkColors(),

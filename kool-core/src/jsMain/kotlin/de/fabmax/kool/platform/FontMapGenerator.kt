@@ -3,12 +3,7 @@ package de.fabmax.kool.platform
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.TextureData2d
-import de.fabmax.kool.scene.ui.CharMap
-import de.fabmax.kool.scene.ui.CharMetrics
-import de.fabmax.kool.scene.ui.Font
-import de.fabmax.kool.scene.ui.FontProps
-import de.fabmax.kool.util.createUint8Buffer
-import de.fabmax.kool.util.logD
+import de.fabmax.kool.util.*
 import kotlinx.browser.document
 import org.khronos.webgl.get
 import org.w3c.dom.CanvasRenderingContext2D
@@ -58,7 +53,8 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, props: JsContext.I
         }
     }
 
-    fun getCharMap(fontProps: FontProps, fontScale: Float): CharMap = charMaps.getOrPut(fontProps) { updateCharMap(CharMap(fontProps), fontScale) }
+    fun getCharMap(fontProps: FontProps, fontScale: Float): CharMap = charMaps.getOrPut(fontProps) { updateCharMap(
+        CharMap(fontProps), fontScale) }
 
     fun updateCharMap(charMap: CharMap, fontScale: Float): CharMap {
         val fontProps = charMap.fontProps

@@ -6,10 +6,10 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.LocalKeyCode
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.scene.geometry.TextProps
-import de.fabmax.kool.scene.ui.EditableText
-import de.fabmax.kool.scene.ui.Font
-import de.fabmax.kool.scene.ui.FontProps
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.EditableText
+import de.fabmax.kool.util.Font
+import de.fabmax.kool.util.FontProps
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min

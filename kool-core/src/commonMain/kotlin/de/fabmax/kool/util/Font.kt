@@ -1,4 +1,4 @@
-package de.fabmax.kool.scene.ui
+package de.fabmax.kool.util
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec2f

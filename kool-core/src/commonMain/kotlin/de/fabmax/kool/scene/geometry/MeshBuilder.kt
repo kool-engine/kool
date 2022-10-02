@@ -3,7 +3,6 @@ package de.fabmax.kool.scene.geometry
 import de.fabmax.kool.KoolException
 import de.fabmax.kool.math.*
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.scene.ui.Font
 import de.fabmax.kool.util.*
 import kotlin.math.*
 

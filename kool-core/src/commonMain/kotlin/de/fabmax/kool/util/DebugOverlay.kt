@@ -9,8 +9,6 @@ import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.Usage
-import de.fabmax.kool.scene.ui.Font
-import de.fabmax.kool.scene.ui.FontProps
 import de.fabmax.kool.toString
 import kotlin.math.min
 import kotlin.math.roundToInt

@@ -4,12 +4,7 @@ import de.fabmax.kool.*
 import de.fabmax.kool.modules.audio.AudioClip
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.platform.webgl.TextureLoader
-import de.fabmax.kool.scene.ui.CharMap
-import de.fabmax.kool.scene.ui.FontProps
-import de.fabmax.kool.util.Uint8Buffer
-import de.fabmax.kool.util.Uint8BufferImpl
-import de.fabmax.kool.util.logD
-import de.fabmax.kool.util.logE
+import de.fabmax.kool.util.*
 import kotlinx.browser.document
 import kotlinx.coroutines.*
 import org.khronos.webgl.ArrayBuffer

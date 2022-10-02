@@ -5,8 +5,8 @@ import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.blocks.mvpMatrix
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.scene.ui.Font
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.Font
 
 class Ui2Shader : KslShader(Model(), pipelineConfig) {
     var fontTex by texture2d("uFontTex", noFontTex)

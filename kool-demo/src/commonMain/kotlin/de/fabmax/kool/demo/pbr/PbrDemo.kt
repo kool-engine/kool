@@ -14,7 +14,6 @@ import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
-import de.fabmax.kool.scene.ui.UiContainer
 import de.fabmax.kool.util.Color
 
 /**
@@ -163,17 +162,14 @@ class PbrDemo : DemoScene("PBR Materials") {
 
     abstract class PbrContent(val name: String) {
         var content: Group? = null
-        var ui: UiContainer? = null
         var autoRotate = true
 
         fun show() {
             content?.isVisible = true
-            ui?.isVisible = true
         }
 
         fun hide() {
             content?.isVisible = false
-            ui?.isVisible = false
         }
 
         override fun toString() = name

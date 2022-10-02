@@ -7,8 +7,8 @@ import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.VertexView
-import de.fabmax.kool.scene.ui.FontProps
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.FontProps
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.reflect.KClass
