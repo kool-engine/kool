@@ -25,25 +25,29 @@ open class UiSurface(
     protected val viewportHeight = mutableStateOf(0f)
     protected val viewport = BoxNode(null, this).apply { modifier.layout(CellLayout) }
 
-    internal var nodeIndex = 0
-
-    private val registeredState = mutableListOf<MutableState>()
-    var requiresUpdate: Boolean = true
-        private set
-
-    var printTiming = false
-
-    var isInputEnabled = true
-
-    var content: (UiScope.() -> Unit)? = null
-
     // colorsState and sizesState are private and use()d internally by UiSurface
     // for all other consumers the values are directly exposed
     private val colorsState = mutableStateOf(colors)
     private val sizesState = mutableStateOf(sizes)
 
+    private val registeredState = mutableListOf<MutableState>()
+    private var requiresUpdate: Boolean = true
+    internal var nodeIndex = 0
+
+    var lastInput = 0.0
+        private set
+
+    // hint, set by DockingHost (if present), if this surface has input focus
+    var isFocused = mutableStateOf(false).onChange {
+        if (!it) inputHandler.requestFocus(null)
+    }
+
     var colors: Colors by colorsState::value
     var sizes: Sizes by sizesState::value
+    var content: (UiScope.() -> Unit)? = null
+
+    var isInputEnabled = true
+    var printTiming = false
 
     init {
         // mirror y-axis
@@ -263,6 +267,7 @@ open class UiSurface(
 
             if (keyEvents.isNotEmpty()) {
                 focusedNode?.let { focusable ->
+                    lastInput = Time.gameTime
                     for (keyEv in keyEvents) {
                         focusable.onKeyEvent(keyEv)
                     }
@@ -285,6 +290,7 @@ open class UiSurface(
         }
 
         private fun handleDrag(currentDrag: UiNode, ptrEv: PointerEvent) {
+            lastInput = Time.gameTime
             val ptr = ptrEv.pointer
             if (ptr.isDrag) {
                 // dragging continues, drag event can be rejected, by dragNode to stop dragging
@@ -330,12 +336,14 @@ open class UiSurface(
 
                 if (isDragStart && dragNode == null && mod.hasAnyDragCallback && invokePointerCallback(node, ptrEv, mod.onDragStart, true)) {
                     dragNode = node
+                    lastInput = Time.gameTime
                 }
 
                 if (isAnyClick && invokePointerCallback(node, ptrEv, mod.onClick)) {
                     // click was consumed
                     ptrEv.pointer.consume()
                     isAnyClick = false
+                    lastInput = Time.gameTime
                 }
                 if (isWheelX && invokePointerCallback(node, ptrEv, mod.onWheelX)) {
                     // wheel x was consumed

@@ -188,7 +188,7 @@ class CheckboxNode(parent: UiNode?, surface: UiSurface) : ToggleNode(parent, sur
         val p = animationPos()
 
         if (p < 1f) {
-            draw.localRoundRectBorder(c.x - r, c.y - r, r * 2f, r * 2f, 4.dp.px, 2.dp.px, modifier.borderColor)
+            draw.localRoundRectBorder(c.x - r, c.y - r, r * 2f, r * 2f, 4.dp.px, sizes.borderWidth.px * 1.5f, modifier.borderColor)
         }
 
         val bgColor = when (p) {
@@ -235,11 +235,11 @@ class RadioButtonNode(parent: UiNode?, surface: UiSurface) : ToggleNode(parent, 
         val draw = getUiPrimitives()
 
         draw.localCircle(c.x, c.y, r, modifier.backgroundColor)
-        draw.localCircleBorder(c.x, c.y, r, 2.dp.px, modifier.borderColor)
+        draw.localCircleBorder(c.x, c.y, r, sizes.borderWidth.px * 1.5f, modifier.borderColor)
 
         val p = animationPos()
         if (p > 0f) {
-            draw.localCircle(c.x, c.y, (r - 4.dp.px) * p, modifier.knobColor)
+            draw.localCircle(c.x, c.y, (r - sizes.borderWidth.px * 3f) * p, modifier.knobColor)
         }
     }
 

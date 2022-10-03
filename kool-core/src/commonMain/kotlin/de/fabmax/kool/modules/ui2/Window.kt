@@ -38,6 +38,7 @@ interface WindowScope : UiScope {
 
 open class WindowModifier(surface: UiSurface) : UiModifier(surface) {
     var titleBarColor: Color by property { it.colors.accentVariant }
+    var borderColor: Color? by property { it.colors.accentVariant.withAlpha(0.3f) }
     var isVerticallyResizable: Boolean by property(true)
     var isHorizontallyResizable: Boolean by property(true)
     var isMinimizedToTitle: Boolean by property(false)
@@ -52,6 +53,7 @@ open class WindowModifier(surface: UiSurface) : UiModifier(surface) {
 }
 
 fun <T: WindowModifier> T.titleBarColor(color: Color): T { titleBarColor = color; return this }
+fun <T: WindowModifier> T.borderColor(color: Color?): T { borderColor = color; return this }
 fun <T: WindowModifier> T.isResizable(horizontally: Boolean = isHorizontallyResizable, vertically: Boolean = isVerticallyResizable): T {
     isHorizontallyResizable = horizontally
     isVerticallyResizable = vertically
@@ -81,18 +83,26 @@ fun Window(
     content: WindowScope.() -> Unit
 ): UiSurface {
     val surface = UiSurface(colors, sizes, name)
+
     surface.content = {
         val window = uiNode.createChild(WindowNode::class, WindowNode.factory)
         window.state = state
         window.modifier
-            .background(RoundRectBackground(colors.background, sizes.gap))
+            .background(RoundRectBackground(this.colors.background, this.sizes.gap))
             .layout(ColumnLayout)
+        if (surface.isFocused.use()) {
+            window.modifier.titleBarColor(this.colors.accent)
+        }
 
         // auto-register docking host if window was created in one
         (surface.parent as? DockingHost)?.let { window.modifier.dockingHost(it) }
 
         // compose user supplied window content
         window.content()
+
+        window.modifier.borderColor?.let {
+            window.modifier.border(RoundRectBorder(it, this.sizes.gap, this.sizes.borderWidth))
+        }
 
         // set window location and size according to window state
         val dock = state.dockedTo.use()
@@ -112,6 +122,7 @@ fun Window(
         if (window.modifier.isVerticallyResizable || window.modifier.isHorizontallyResizable) {
             window.modifier.hoverListener(window)
             window.modifier.dragListener(window)
+            window.modifier.onClick(window)
         }
     }
     return surface
@@ -170,12 +181,18 @@ fun WindowScope.TitleBar(title: String, isDraggable: Boolean = true) {
     }
 }
 
-class WindowNode(parent:UiNode?, surface: UiSurface) : UiNode(parent, surface), WindowScope, Hoverable, Draggable {
+class WindowNode(parent:UiNode?, surface: UiSurface) : UiNode(parent, surface), WindowScope, Clickable, Draggable, Hoverable {
     override val modifier = WindowModifier(surface)
 
     lateinit var state: WindowState
     override val windowState: WindowState
         get() = state
+
+    override fun onClick(ev: PointerEvent) {
+        // default window click handler is empty, but it consumes the click event so that the surface input time
+        // is updated when the used clicks into the window. This way the window gains focus in case a DockingHost
+        // is preset
+    }
 
     override fun onHover(ev: PointerEvent) {
         if (!ev.pointer.isDrag) {

@@ -13,6 +13,7 @@ data class Sizes(
     val gap: Dp,
     val smallGap: Dp,
     val largeGap: Dp,
+    val borderWidth: Dp,
 ) {
 
     companion object {
@@ -25,7 +26,8 @@ data class Sizes(
             switchSize: Dp = Dp(14f),
             gap: Dp = Dp(8f),
             smallGap: Dp = Dp(4f),
-            largeGap: Dp = Dp(16f)
+            largeGap: Dp = Dp(16f),
+            borderWidth: Dp = Dp(1f)
         ): Sizes = Sizes(
             normalText,
             largeText,
@@ -35,7 +37,8 @@ data class Sizes(
             switchSize,
             gap,
             smallGap,
-            largeGap
+            largeGap,
+            borderWidth
         )
 
         fun medium(
@@ -47,7 +50,8 @@ data class Sizes(
             switchSize: Dp = Dp(17f),
             gap: Dp = Dp(10f),
             smallGap: Dp = Dp(5f),
-            largeGap: Dp = Dp(20f)
+            largeGap: Dp = Dp(20f),
+            borderWidth: Dp = Dp(1.25f)
         ): Sizes = Sizes(
             normalText,
             largeText,
@@ -57,7 +61,8 @@ data class Sizes(
             switchSize,
             gap,
             smallGap,
-            largeGap
+            largeGap,
+            borderWidth
         )
 
         fun large(
@@ -69,7 +74,8 @@ data class Sizes(
             switchSize: Dp = Dp(20f),
             gap: Dp = Dp(12f),
             smallGap: Dp = Dp(6f),
-            largeGap: Dp = Dp(24f)
+            largeGap: Dp = Dp(24f),
+            borderWidth: Dp = Dp(1.5f)
         ): Sizes = Sizes(
             normalText,
             largeText,
@@ -79,7 +85,8 @@ data class Sizes(
             switchSize,
             gap,
             smallGap,
-            largeGap
+            largeGap,
+            borderWidth
         )
     }
 }

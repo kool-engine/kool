@@ -3,6 +3,7 @@ package de.fabmax.kool.modules.ui2
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.min
+import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.logD
@@ -14,6 +15,9 @@ class DockingHost : Group() {
 
     private var hoveredDockingPane: DockingPane? = null
     private var hoveredDockingSlot: DockingSlot? = null
+
+    var focusedSurface: UiSurface? = null
+        private set
 
     init {
         +dockingSurface
@@ -54,17 +58,28 @@ class DockingHost : Group() {
         hoverSlot?.isHovered?.set(true)
     }
 
+    override fun update(updateEvent: RenderPass.UpdateEvent) {
+        // reorder child surfaces: the one with the latest user input is last / on top
+        // 2nd to last is the docking surface, so that overlay is drawn over background surfaces but behind drag
+        // surface
+        val latestInputSurface = childSurfaces.maxByOrNull { it.lastInput }
+        if (latestInputSurface != focusedSurface && (latestInputSurface?.lastInput ?: 0.0) > (focusedSurface?.lastInput ?: 0.0)) {
+            focusedSurface?.isFocused?.set(false)
+            focusedSurface = latestInputSurface
+            focusedSurface?.isFocused?.set(true)
+        }
+        focusedSurface?.let { removeNode(it) }
+        removeNode(dockingSurface)
+        addNode(dockingSurface)
+        focusedSurface?.let { addNode(it) }
+        super.update(updateEvent)
+    }
+
     override fun addNode(node: Node, index: Int) {
-        var i = index
         if (node is UiSurface) {
             childSurfaces += node
-            // by default UiSurfaces are inserted before last element (the docking pane), so that docking pane overlay
-            // is drawn on top of any surface
-            if (i == -1) {
-                i = children.lastIndex
-            }
         }
-        super.addNode(node, i)
+        super.addNode(node, index)
     }
 
     override fun removeNode(node: Node): Boolean {
