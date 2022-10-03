@@ -6,6 +6,7 @@ import de.fabmax.kool.pipeline.drawqueue.DrawQueue
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Profiling
+import de.fabmax.kool.util.Time
 import de.fabmax.kool.util.Viewport
 
 abstract class RenderPass(var drawNode: Node) {
@@ -133,12 +134,15 @@ abstract class RenderPass(var drawNode: Node) {
     open fun dispose(ctx: KoolContext) { }
 
     class UpdateEvent(val renderPass: RenderPass, val ctx: KoolContext) {
+        @Deprecated("Replaced by Time.gameTime", ReplaceWith("de.fabmax.kool.util.Time.gameTime"))
         val time: Double
-            get() = ctx.time
+            get() = Time.gameTime
+
+        @Deprecated("Replaced by Time.deltaT", ReplaceWith("de.fabmax.kool.util.Time.deltaT"))
         val deltaT: Float
-            get() = ctx.deltaT
+            get() = Time.deltaT
         val frameIndex: Int
-            get() = ctx.frameIdx
+            get() = Time.frameCount
 
         val camera: Camera
             get() = renderPass.camera

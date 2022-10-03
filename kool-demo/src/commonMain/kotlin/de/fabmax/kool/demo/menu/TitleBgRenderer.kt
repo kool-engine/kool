@@ -15,6 +15,7 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.geometry.IndexedVertexList
+import de.fabmax.kool.util.Time
 import de.fabmax.kool.util.createUint8Buffer
 
 class TitleBgRenderer(val titleBgMesh: BgMesh, val fromColor: Float, val toColor: Float, val radius: Float = 0f) : UiRenderer<UiNode> {
@@ -63,7 +64,7 @@ class TitleBgRenderer(val titleBgMesh: BgMesh, val fromColor: Float, val toColor
                 }
             }
             onUpdate += {
-                catShader.noiseOffset += it.deltaT * 0.01f
+                catShader.noiseOffset += Time.deltaT * 0.01f
             }
         }
 

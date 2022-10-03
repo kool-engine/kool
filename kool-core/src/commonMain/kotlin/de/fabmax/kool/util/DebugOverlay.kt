@@ -102,7 +102,7 @@ class DebugOverlay(position: Position = Position.UPPER_RIGHT) {
 
     private fun updateExpandedStats(ev: RenderPass.UpdateEvent) {
         viewportText.set("Viewport: ${ev.viewport.width}x${ev.viewport.height} / ${(ev.ctx.windowScale * 100f).roundToInt()} %")
-        updateUpText(ev.time)
+        updateUpText(Time.gameTime)
 
         val numTex = ev.ctx.engineStats.textureAllocations.size
         val memTex = ev.ctx.engineStats.totalTextureSize.toDouble()
@@ -174,7 +174,7 @@ private class DeltaTGraph : UiRenderer<UiNode> {
         graphMesh = Mesh(graphGeom)
         graphMesh.geometry.usage = Usage.DYNAMIC
         graphMesh.shader = Ui2Shader()
-        graphMesh.onUpdate += this::updateGraph
+        graphMesh.onUpdate += { updateGraph() }
     }
 
     override fun renderUi(node: UiNode) {
@@ -194,7 +194,7 @@ private class DeltaTGraph : UiRenderer<UiNode> {
         node.surface.getMeshLayer(node.modifier.zLayer - 1).addCustomLayer("dt-graph") { graphMesh }
     }
 
-    fun updateGraph(updateEvent: RenderPass.UpdateEvent) {
+    fun updateGraph() {
         // set previous bar color according to previous deltaT
         var color = Color.WHITE
         if (prevDeltaT > 0.05f) {
@@ -203,13 +203,13 @@ private class DeltaTGraph : UiRenderer<UiNode> {
             color = Color.YELLOW
         }
         setCurrentBarColor(color)
-        prevDeltaT = updateEvent.deltaT
+        prevDeltaT = Time.deltaT
 
         // modify vertices in graph mesh to change line height of current bar
         graphIdx = (graphIdx + 4) % (width * 4)
         graphVertex.index = graphIdx
         val y0 = graphVertex.position.y
-        val h = min(updateEvent.deltaT * 250, height.toFloat())
+        val h = min(Time.deltaT * 250, height.toFloat())
         graphVertex.index++
         graphVertex.position.y = y0 - h
         graphVertex.index++

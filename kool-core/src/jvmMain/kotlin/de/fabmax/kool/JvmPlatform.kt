@@ -4,6 +4,7 @@ import de.fabmax.kool.math.clamp
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.platform.MonitorSpec
 import de.fabmax.kool.util.Log
+import de.fabmax.kool.util.Time
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFWErrorCallback
 import java.text.SimpleDateFormat
@@ -28,8 +29,6 @@ fun createContext(block: Lwjgl3Context.InitProps.() -> Unit): KoolContext {
     return DesktopImpl.createContext(props)
 }
 
-actual fun now(): Double = System.nanoTime() / 1e6
-
 actual fun Double.toString(precision: Int): String =
         java.lang.String.format(Locale.ENGLISH, "%.${precision.clamp(0, 12)}f", this)
 
@@ -45,7 +44,7 @@ internal object DesktopImpl {
         val dateFmt = SimpleDateFormat("HH:mm:ss.SSS")
         Log.printer = { lvl, tag, message ->
             synchronized(dateFmt) {
-                val frmTxt = ctx?.let { "|f:${it.frameIdx}" } ?: ""
+                val frmTxt = ctx?.let { "|f:${Time.frameCount}" } ?: ""
                 val txt = "${dateFmt.format(System.currentTimeMillis())}$frmTxt ${lvl.indicator}/$tag: $message"
                 if (lvl.level < Log.Level.WARN.level) {
                     println(txt)

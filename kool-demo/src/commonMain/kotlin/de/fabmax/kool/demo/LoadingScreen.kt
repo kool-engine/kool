@@ -9,6 +9,7 @@ import de.fabmax.kool.scene.colorMesh
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
+import de.fabmax.kool.util.Time
 import kotlin.math.min
 
 class LoadingScreen(val ctx: KoolContext) : Scene("Loading Screen") {
@@ -26,7 +27,7 @@ class LoadingScreen(val ctx: KoolContext) : Scene("Loading Screen") {
             val builder = MeshBuilder(geometry)
             onUpdate += { ev ->
                 geometry.clear()
-                builder.animateLoading(ev.deltaT)
+                builder.animateLoading(Time.deltaT)
             }
         }
 

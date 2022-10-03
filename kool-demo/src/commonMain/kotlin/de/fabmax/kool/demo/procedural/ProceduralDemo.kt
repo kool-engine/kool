@@ -19,6 +19,7 @@ import de.fabmax.kool.scene.orbitInputTransform
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.SimpleShadowMap
+import de.fabmax.kool.util.Time
 
 class ProceduralDemo : DemoScene("Procedural Geometry") {
     val isAutoRotate = mutableStateOf(true)
@@ -42,7 +43,7 @@ class ProceduralDemo : DemoScene("Procedural Geometry") {
 
             onUpdate += {
                 if (isAutoRotate.value) {
-                    verticalRotation += 5f * it.deltaT
+                    verticalRotation += 5f * Time.deltaT
                 }
             }
         }

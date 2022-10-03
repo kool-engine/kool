@@ -1,5 +1,7 @@
 package de.fabmax.kool.modules.ui2
 
+import de.fabmax.kool.util.Time
+
 interface UiScope {
     val surface: UiSurface
     val uiNode: UiNode
@@ -7,7 +9,6 @@ interface UiScope {
 
     val colors: Colors get() = surface.colors
     val sizes: Sizes get() = surface.sizes
-    val deltaT: Float get() = surface.deltaT
 
     val Int.dp: Dp get() = Dp(this.toFloat())
     val Float.dp: Dp get() = Dp(this)
@@ -18,7 +19,7 @@ interface UiScope {
     fun <T: Any?> MutableStateValue<T>.use(): T = use(surface)
     fun <T> MutableStateList<T>.use(): MutableStateList<T> = use(surface)
     fun AnimationState.progressAndUse(): Float {
-        progress(deltaT)
+        progress(Time.deltaT)
         return use(surface)
     }
 

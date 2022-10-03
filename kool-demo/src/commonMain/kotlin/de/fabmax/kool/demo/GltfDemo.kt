@@ -19,10 +19,7 @@ import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.toString
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.MdColor
-import de.fabmax.kool.util.ShadowMap
-import de.fabmax.kool.util.SimpleShadowMap
+import de.fabmax.kool.util.*
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.roundToInt
@@ -42,7 +39,7 @@ class GltfDemo : DemoScene("glTF Models") {
                     20f, Vec3f.ZERO, true, Vec3d(0.0, 0.5, 0.0), false, 5.0),
             GltfModel("Fox", "${DemoLoader.modelPath}/fox.glb",
                     0.01f, Vec3f.ZERO, false, Vec3d(0.0, 1.25, 0.0), true, 3.5)
-                    .apply { animate = { _, ctx -> foxAnimator.animate(this, ctx) } },
+                    .apply { animate = { _, _ -> foxAnimator.animate(this) } },
             GltfModel("Animated Box", "${DemoLoader.modelPath}/BoxAnimated.gltf",
                     1f, Vec3f(0f, 0.5f, 0f), false, Vec3d(0.0, 1.5, 0.0), false, 5.0),
             GltfModel("Morph Cube", "${DemoLoader.modelPath}/AnimatedMorphCube.glb",
@@ -125,13 +122,13 @@ class GltfDemo : DemoScene("glTF Models") {
 
         +Skybox.cube(envMaps.reflectionMap, 1f)
 
-        makeDeferredContent(ctx)
-        makeForwardContent(ctx)
+        makeDeferredContent()
+        makeForwardContent()
         setupPipelines(isDeferredShading.value, isAo.value)
 
         onUpdate += {
-            animationDeltaTime = ctx.deltaT * animationSpeed.value
-            foxAnimator.updatePosition(ctx)
+            animationDeltaTime = Time.deltaT * animationSpeed.value
+            foxAnimator.updatePosition()
         }
     }
 
@@ -147,13 +144,13 @@ class GltfDemo : DemoScene("glTF Models") {
         deferredPipeline.isAoEnabled = isAo
     }
 
-    private fun Scene.makeForwardContent(ctx: KoolContext) {
-        contentGroupForward.setupContentGroup(false, ctx)
+    private fun Scene.makeForwardContent() {
+        contentGroupForward.setupContentGroup(false)
         +contentGroupForward
     }
 
-    private fun Scene.makeDeferredContent(ctx: KoolContext) {
-        deferredPipeline.sceneContent.setupContentGroup(true, ctx)
+    private fun Scene.makeDeferredContent() {
+        deferredPipeline.sceneContent.setupContentGroup(true)
 
         // main scene only contains a quad used to draw the deferred shading output
         +contentGroupDeferred.apply {
@@ -180,7 +177,7 @@ class GltfDemo : DemoScene("glTF Models") {
                         translationTarget = Vec3d(center.x.toDouble(), center.y.toDouble(), center.z.toDouble())
                     }
                 } else if (isAutoRotate.value) {
-                    verticalRotation -= ev.deltaT * 3f
+                    verticalRotation -= Time.deltaT * 3f
                 }
 
                 translationTarget?.let {
@@ -211,12 +208,12 @@ class GltfDemo : DemoScene("glTF Models") {
         })
     }
 
-    private fun Group.setupContentGroup(isDeferredShading: Boolean, ctx: KoolContext) {
+    private fun Group.setupContentGroup(isDeferredShading: Boolean) {
         rotate(-60.0, Vec3d.Y_AXIS)
         onUpdate += {
             if (isAutoRotate.value) {
                 setIdentity()
-                rotate(ctx.time * 3, Vec3d.Y_AXIS)
+                rotate(Time.gameTime * 3, Vec3d.Y_AXIS)
             }
         }
 
@@ -408,12 +405,12 @@ class GltfDemo : DemoScene("glTF Models") {
         val radius = 3.0
         val position = MutableVec3d()
 
-        fun updatePosition(ctx: KoolContext) {
+        fun updatePosition() {
             val speed = animationSpeed.value * 2
-            angle += speed * ctx.deltaT / radius
+            angle += speed * Time.deltaT / radius
         }
 
-        fun animate(model: Model, ctx: KoolContext) {
+        fun animate(model: Model) {
             // mix survey / walk / run animations according to animation speed
             if (animationSpeed.value < 0.5f) {
                 val w1 = animationSpeed.value * 2f
@@ -428,7 +425,7 @@ class GltfDemo : DemoScene("glTF Models") {
                 model.setAnimationWeight(1, w0)
                 model.setAnimationWeight(2, w1)
             }
-            model.applyAnimation(ctx.deltaT)
+            model.applyAnimation(Time.deltaT)
 
             // move model according to animation speed
             model.setIdentity()

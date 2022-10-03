@@ -6,6 +6,7 @@ import de.fabmax.kool.physics.HitResult
 import de.fabmax.kool.physics.PhysicsWorld
 import de.fabmax.kool.physics.geometry.BoxGeometry
 import de.fabmax.kool.scene.Group
+import de.fabmax.kool.util.Time
 import kotlin.math.*
 
 class CharacterTrackingCamRig(private val inputManager: InputManager, enableCursorLock: Boolean = true) : Group("PointerLockCamRig") {
@@ -47,7 +48,7 @@ class CharacterTrackingCamRig(private val inputManager: InputManager, enableCurs
             if (isCursorLocked) {
                 handlePointerInput()
             }
-            updateTracking(it.deltaT)
+            updateTracking(Time.deltaT)
         }
     }
 

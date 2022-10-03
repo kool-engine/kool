@@ -24,10 +24,7 @@ import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.RectProps
 import de.fabmax.kool.toString
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.MdColor
-import de.fabmax.kool.util.ShadowMap
-import de.fabmax.kool.util.SimpleShadowMap
+import de.fabmax.kool.util.*
 import kotlin.math.*
 
 class AoDemo : DemoScene("Ambient Occlusion") {
@@ -75,7 +72,7 @@ class AoDemo : DemoScene("Ambient Occlusion") {
 
             onUpdate += {
                 if (isAutoRotate.value) {
-                    verticalRotation += ctx.deltaT * 3f
+                    verticalRotation += Time.deltaT * 3f
                 }
             }
         }

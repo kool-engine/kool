@@ -2,6 +2,7 @@ package de.fabmax.kool.modules.ui2
 
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.clamp
+import de.fabmax.kool.util.Time
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.round
@@ -163,8 +164,8 @@ open class ScrollPaneNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, 
             }
         }
 
-        state.xScrollDp.set(state.computeSmoothScrollPosDpX(surface.deltaT))
-        state.yScrollDp.set(state.computeSmoothScrollPosDpY(surface.deltaT))
+        state.xScrollDp.set(state.computeSmoothScrollPosDpX(Time.deltaT))
+        state.yScrollDp.set(state.computeSmoothScrollPosDpY(Time.deltaT))
         if (state.xScrollDp.isStateChanged || state.yScrollDp.isStateChanged) {
             modifier.onScrollPosChanged?.invoke(state.xScrollDp.value, state.yScrollDp.value)
         }

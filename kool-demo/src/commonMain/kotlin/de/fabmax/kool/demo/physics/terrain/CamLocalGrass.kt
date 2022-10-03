@@ -9,6 +9,7 @@ import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.util.PerfTimer
+import de.fabmax.kool.util.Time
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.profiled
 import kotlin.math.sqrt
@@ -80,8 +81,8 @@ class CamLocalGrass(val camera: Camera, val terrain: Terrain, val wind: Wind, va
         grassQuads.normalLinearDepthShader = aoShader
 
         camera.onCameraUpdated += { ctx ->
-            if (grassQuads.isVisible && updateFrameIdx != ctx.frameIdx) {
-                updateFrameIdx = ctx.frameIdx
+            if (grassQuads.isVisible && updateFrameIdx != Time.frameCount) {
+                updateFrameIdx = Time.frameCount
 
                 grassShader?.let {
                     it.windOffsetStrength = wind.offsetStrength
@@ -105,7 +106,10 @@ class CamLocalGrass(val camera: Camera, val terrain: Terrain, val wind: Wind, va
                     grassInstances.clear()
                     grassInstances.addInstances(instanceTrav.result.size) { buf ->
                         for (grass in instanceTrav.result) {
-                            val distScale = ((grass.distance(camera.globalPos) / radius - 0.1f).clamp(0f, 1f) / (grass.p - 0.1f)).clamp(0f, 1f)
+                            val distScale = ((grass.distance(camera.globalPos) / radius - 0.1f).clamp(
+                                0f,
+                                1f
+                            ) / (grass.p - 0.1f)).clamp(0f, 1f)
                             buf.put(grass.transform.matrix)
                             buf.put(distScale * grass.s)
                         }

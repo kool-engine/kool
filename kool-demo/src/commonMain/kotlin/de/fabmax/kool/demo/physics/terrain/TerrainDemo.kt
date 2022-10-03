@@ -12,7 +12,6 @@ import de.fabmax.kool.modules.gltf.loadGltfModel
 import de.fabmax.kool.modules.ksl.*
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.modules.ui2.*
-import de.fabmax.kool.now
 import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.physics.util.CharacterTrackingCamRig
 import de.fabmax.kool.pipeline.AddressMode
@@ -88,11 +87,11 @@ class TerrainDemo : DemoScene("Terrain Demo") {
     private var lastClick = 0.0
     private val doubleClickListener: (InputManager.PointerState) -> Unit = {
         if (it.primaryPointer.isLeftButtonClicked) {
-            val t = now()
+            val t = Time.precisionTime
             if (t - lastClick < 500.0) {
                 isCursorLocked.set(true)
             }
-            lastClick = now()
+            lastClick = Time.precisionTime
         }
     }
 
@@ -288,7 +287,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         updateBridgeShader(isGroundPbr.value)
 
         onUpdate += {
-            wind.updateWind(it.deltaT)
+            wind.updateWind(Time.deltaT)
             sky.updateLight(lighting.lights[0])
 
             (playerModel.model.meshes.values.first().shader as KslLitShader).apply {

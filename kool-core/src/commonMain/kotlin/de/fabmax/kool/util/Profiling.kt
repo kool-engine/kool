@@ -2,7 +2,6 @@ package de.fabmax.kool.util
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.lock
-import de.fabmax.kool.now
 import de.fabmax.kool.toString
 import kotlin.math.abs
 
@@ -16,7 +15,7 @@ inline fun <T> profiled(tag: String, block: () -> T): T {
 object Profiling {
 
     private val timers = mutableMapOf<String, SectionTimer>()
-    private var lastPrint = now()
+    private var lastPrint = Time.precisionTime
     private var lastPrintFrameIdx = 0
 
     private var autoPrinter: ((KoolContext) -> Unit)? = null
@@ -34,11 +33,11 @@ object Profiling {
         var spentTime = 0.0
 
         fun enter() {
-            enterTime = now()
+            enterTime = Time.precisionTime
         }
 
         fun exit() {
-            spentTime += now() - enterTime
+            spentTime += Time.precisionTime - enterTime
         }
 
         fun reset() {
@@ -46,11 +45,11 @@ object Profiling {
         }
     }
 
-    fun printStatistics(ctx: KoolContext) {
-        val numFrames = ctx.frameIdx - lastPrintFrameIdx
-        val deltaT = now() - lastPrint
-        lastPrint = now()
-        lastPrintFrameIdx = ctx.frameIdx
+    fun printStatistics() {
+        val numFrames = Time.frameCount - lastPrintFrameIdx
+        val deltaT = Time.precisionTime - lastPrint
+        lastPrint = Time.precisionTime
+        lastPrintFrameIdx = Time.frameCount
 
         lock(timers) {
             println(" Profiling statistics for last ${deltaT.toString(0)} ms / $numFrames frames")
@@ -73,8 +72,8 @@ object Profiling {
     fun enableAutoPrint(intervalSecs: Double, ctx: KoolContext) {
         autoPrinter?.let { ctx.onRender -= it }
         autoPrinter = {
-            if (now() - lastPrint >= intervalSecs * 1000.0) {
-                printStatistics(it)
+            if (Time.precisionTime - lastPrint >= intervalSecs) {
+                printStatistics()
             }
         }
         ctx.onRender += autoPrinter!!

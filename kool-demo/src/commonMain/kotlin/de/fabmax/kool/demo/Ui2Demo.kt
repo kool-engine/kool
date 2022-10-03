@@ -111,8 +111,8 @@ class Ui2Demo : DemoScene("UI2 Demo") {
             }//.apply { printTiming = true }
 
             moreWindowStates.forEachIndexed { i, state ->
-                state.xDp.set(Dp(250f + i * 30f))
-                state.yDp.set(Dp(250f + i * 30f))
+                state.xDp.set(Dp(850f + i * 30f))
+                state.yDp.set(Dp(200f + i * 30f))
                 state.width.set(Dp(500f))
                 state.height.set(Dp(500f))
                 +Window(state) {

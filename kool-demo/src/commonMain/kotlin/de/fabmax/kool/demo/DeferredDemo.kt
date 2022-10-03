@@ -30,6 +30,7 @@ import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.MutableColor
+import de.fabmax.kool.util.Time
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
 
@@ -86,7 +87,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
             translation.set(0.0, -11.0, 0.0)
             onUpdate += {
                 if (isAutoRotate.value) {
-                    verticalRotation += it.deltaT * 3f
+                    verticalRotation += Time.deltaT * 3f
                 }
             }
         }
@@ -123,7 +124,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
         makeLightOverlays()
 
         onUpdate += { evt ->
-            lights.forEach { it.animate(evt.deltaT) }
+            lights.forEach { it.animate(Time.deltaT) }
         }
     }
 

@@ -1,11 +1,11 @@
 package de.fabmax.kool.math
 
-import de.fabmax.kool.now
+import de.fabmax.kool.util.Time
 import kotlin.math.abs
 import kotlin.math.ln
 import kotlin.math.sqrt
 
-val defaultRandomInstance = Random(now().toInt())
+val defaultRandomInstance = Random((Time.precisionTime * 1e3).toInt())
 
 /**
  * Returns a random integer in range of [Int.MIN_VALUE] .. [Int.MAX_VALUE]

@@ -187,15 +187,15 @@ abstract class InputManager internal constructor() {
         val isForwardButtonReleased: Boolean get() = isForwardButtonEvent && !isForwardButtonDown
 
         val isLeftButtonClicked: Boolean get() = isLeftButtonReleased
-                && now() - buttonDownTimes[0] < MAX_CLICK_TIME_MS && dragMovement < MAX_CLICK_MOVE_PX
+                && Time.precisionTime - buttonDownTimes[0] < MAX_CLICK_TIME_SECS && dragMovement < MAX_CLICK_MOVE_PX
         val isRightButtonClicked: Boolean get() = isRightButtonReleased
-                && now() - buttonDownTimes[1] < MAX_CLICK_TIME_MS && dragMovement < MAX_CLICK_MOVE_PX
+                && Time.precisionTime - buttonDownTimes[1] < MAX_CLICK_TIME_SECS && dragMovement < MAX_CLICK_MOVE_PX
         val isMiddleButtonClicked: Boolean get() = isMiddleButtonReleased
-                && now() - buttonDownTimes[2] < MAX_CLICK_TIME_MS && dragMovement < MAX_CLICK_MOVE_PX
+                && Time.precisionTime - buttonDownTimes[2] < MAX_CLICK_TIME_SECS && dragMovement < MAX_CLICK_MOVE_PX
         val isBackButtonClicked: Boolean get() = isBackButtonReleased
-                && now() - buttonDownTimes[3] < MAX_CLICK_TIME_MS && dragMovement < MAX_CLICK_MOVE_PX
+                && Time.precisionTime - buttonDownTimes[3] < MAX_CLICK_TIME_SECS && dragMovement < MAX_CLICK_MOVE_PX
         val isForwardButtonClicked: Boolean get() = isForwardButtonReleased
-                && now() - buttonDownTimes[4] < MAX_CLICK_TIME_MS && dragMovement < MAX_CLICK_MOVE_PX
+                && Time.precisionTime - buttonDownTimes[4] < MAX_CLICK_TIME_SECS && dragMovement < MAX_CLICK_MOVE_PX
 
         val isDrag: Boolean get() = isAnyButtonDown && (dragDeltaX != 0.0 || dragDeltaY != 0.0)
 
@@ -220,7 +220,7 @@ abstract class InputManager internal constructor() {
             val downEvents = buttonEventMask and buttonMask
             for (i in buttonDownTimes.indices) {
                 if (downEvents and (1 shl i) != 0) {
-                    buttonDownTimes[i] = now()
+                    buttonDownTimes[i] = Time.precisionTime
                 }
             }
         }
@@ -275,7 +275,7 @@ abstract class InputManager internal constructor() {
                 this.y = y
             }
 
-            lastUpdate = now()
+            lastUpdate = Time.precisionTime
         }
 
         fun endPointer() {
@@ -490,7 +490,7 @@ abstract class InputManager internal constructor() {
 
         internal fun handleTouchStart(pointerId: Int, x: Double, y: Double) {
             lock(inputPointers) {
-                lastPtrInput = now()
+                lastPtrInput = Time.precisionTime
                 val inPtr = getFreeInputPointer() ?: return
                 inPtr.startPointer(pointerId, x, y)
                 inPtr.buttonMask = 1
@@ -511,7 +511,7 @@ abstract class InputManager internal constructor() {
 
         internal fun handleTouchMove(pointerId: Int, x: Double, y: Double) {
             lock(inputPointers) {
-                lastPtrInput = now()
+                lastPtrInput = Time.precisionTime
                 findInputPointer(pointerId)?.movePointer(x, y)
             }
         }
@@ -522,7 +522,7 @@ abstract class InputManager internal constructor() {
 
         internal fun handleMouseMove(x: Double, y: Double) {
             lock(inputPointers) {
-                lastPtrInput = now()
+                lastPtrInput = Time.precisionTime
                 val mousePtr = findInputPointer(MOUSE_POINTER_ID)
                 if (mousePtr == null) {
                     val startPtr = getFreeInputPointer() ?: return
@@ -586,7 +586,7 @@ abstract class InputManager internal constructor() {
 
     companion object {
         const val MAX_CLICK_MOVE_PX = 20.0
-        const val MAX_CLICK_TIME_MS = 250.0
+        const val MAX_CLICK_TIME_SECS = 0.25
         const val DOUBLE_CLICK_INTERVAL_SECS = 0.3
 
         const val LEFT_BUTTON = 0

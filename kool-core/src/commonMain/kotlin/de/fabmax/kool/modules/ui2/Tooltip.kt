@@ -1,17 +1,18 @@
 package de.fabmax.kool.modules.ui2
 
 import de.fabmax.kool.math.MutableVec2f
+import de.fabmax.kool.util.Time
 
 class MutableTooltipState(val delay: Double = 1.0) : MutableStateValue<Boolean>(false), Hoverable {
     private var enterTime = 0.0
     val pointerPos = MutableVec2f()
 
     override fun onEnter(ev: PointerEvent) {
-        enterTime = ev.ctx.time
+        enterTime = Time.gameTime
     }
 
     override fun onHover(ev: PointerEvent) {
-        if (ev.ctx.time - enterTime > delay) {
+        if (Time.gameTime - enterTime > delay) {
             pointerPos.set(ev.pointer.x.toFloat(), ev.pointer.y.toFloat())
             set(true)
         }

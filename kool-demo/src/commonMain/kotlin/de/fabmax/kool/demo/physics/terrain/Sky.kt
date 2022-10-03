@@ -100,7 +100,7 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
 
     init {
         mainScene.onUpdate += {
-            val timeInc = it.deltaT / fullDayDuration
+            val timeInc = Time.deltaT / fullDayDuration
             timeOfDay = (timeOfDay + timeInc) % 1f
 
             var fKey = skies.floorKey(timeOfDay)
@@ -120,7 +120,8 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
 
             skybox.skyboxShader.setBlendSkies(
                 weightedEnvs.envA.reflectionMap, weightedEnvs.weightA * 2f,
-                weightedEnvs.envB.reflectionMap, weightedEnvs.weightB * 2f)
+                weightedEnvs.envB.reflectionMap, weightedEnvs.weightB * 2f
+            )
         }
     }
 

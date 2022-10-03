@@ -18,10 +18,7 @@ import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.toString
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.MdColor
-import de.fabmax.kool.util.PerfTimer
-import de.fabmax.kool.util.logD
+import de.fabmax.kool.util.*
 import kotlin.math.cos
 import kotlin.math.sqrt
 
@@ -82,7 +79,7 @@ class SimplificationDemo : DemoScene("Simplification") {
 
             onUpdate += {
                 if (isAutoRotate.value) {
-                    rotate(ctx.deltaT * 3f, Vec3f.Y_AXIS)
+                    rotate(Time.deltaT * 3f, Vec3f.Y_AXIS)
                 }
             }
         }

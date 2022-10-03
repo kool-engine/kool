@@ -302,7 +302,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
 
     private fun updateMotor() {
         motorGearConstraint?.apply {
-            enableAngularMotor(motorSpeed.value * motorDirection.value, motorStrength.value)
+            enableAngularMotor(motorSpeed.value * -motorDirection.value, motorStrength.value)
         }
     }
 

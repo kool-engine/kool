@@ -12,6 +12,7 @@ import de.fabmax.kool.scene.colorMesh
 import de.fabmax.kool.scene.defaultCamTransform
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.SimpleShadowMap
+import de.fabmax.kool.util.Time
 
 class HelloWorldDemo : DemoScene("Hello World") {
     override fun Scene.setupMainScene(ctx: KoolContext) = helloWorldScene()
@@ -77,8 +78,8 @@ fun Scene.helloGltfScene(ctx: KoolContext) {
 
             if (model.animations.isNotEmpty()) {
                 model.enableAnimation(0)
-                model.onUpdate += { updateEvt ->
-                    model.applyAnimation(updateEvt.deltaT)
+                model.onUpdate += {
+                    model.applyAnimation(Time.deltaT)
                 }
             }
         }

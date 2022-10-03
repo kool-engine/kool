@@ -7,6 +7,7 @@ import de.fabmax.kool.math.spatial.BoundingBox
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.scene.animation.SpringDamperDouble
 import de.fabmax.kool.util.InputStack
+import de.fabmax.kool.util.Time
 
 /**
  * A special kind of transform group which translates mouse input into a orbit transform. This is mainly useful
@@ -201,15 +202,15 @@ open class OrbitInputTransform(name: String? = null) : Group(name) {
         zoomAnimator.desired = zoom
 
         val oldZ = zoomAnimator.actual
-        val z = zoomAnimator.animate(ctx.deltaT)
+        val z = zoomAnimator.animate(Time.deltaT)
         if (!isFuzzyEqual(oldZ, z)
                 && zoomMethod == ZoomMethod.ZOOM_TRANSLATE
                 && panMethod.computePanPoint(pointerHit, renderPass, ptrPos, ctx)) {
             computeZoomTranslationPerspective(renderPass.camera, oldZ, z)
         }
 
-        vertRotAnimator.animate(ctx.deltaT)
-        horiRotAnimator.animate(ctx.deltaT)
+        vertRotAnimator.animate(Time.deltaT)
+        horiRotAnimator.animate(Time.deltaT)
         updateTransform()
     }
 

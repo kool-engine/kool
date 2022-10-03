@@ -16,10 +16,7 @@ import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.MeshBuilder
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.ShadowMap
-import de.fabmax.kool.util.SimpleShadowMap
-import de.fabmax.kool.util.timedMs
+import de.fabmax.kool.util.*
 import kotlin.math.cos
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
@@ -129,7 +126,7 @@ class TreeDemo : DemoScene("Procedural Tree") {
                 }
             }
             onUpdate += {
-                windAnimationPos += ctx.deltaT * windSpeed.value
+                windAnimationPos += Time.deltaT * windSpeed.value
                 uWindSpeed?.value = windAnimationPos
                 uWindStrength?.value = windStrength.value
             }
@@ -188,7 +185,7 @@ class TreeDemo : DemoScene("Procedural Tree") {
 
             onUpdate += {
                 if (isAutoRotate.value) {
-                    verticalRotation += ctx.deltaT * 3f
+                    verticalRotation += Time.deltaT * 3f
                 }
             }
         }

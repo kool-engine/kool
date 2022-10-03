@@ -15,6 +15,7 @@ import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.Time
 
 /**
  * @author fabmax
@@ -62,7 +63,7 @@ class PbrDemo : DemoScene("PBR Materials") {
             // let the camera slowly rotate around vertical axis
             onUpdate += {
                 if (isAutoRotate.value) {
-                    verticalRotation += ctx.deltaT * 2f
+                    verticalRotation += Time.deltaT * 2f
                 }
             }
             zoomMethod = OrbitInputTransform.ZoomMethod.ZOOM_CENTER

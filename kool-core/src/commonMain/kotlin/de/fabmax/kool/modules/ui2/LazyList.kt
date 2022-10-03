@@ -2,6 +2,7 @@ package de.fabmax.kool.modules.ui2
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.Time
 import de.fabmax.kool.util.logD
 import kotlin.math.abs
 import kotlin.math.max
@@ -117,9 +118,9 @@ class LazyListNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface
             // compute the scroll change amount
             val oldListPos = if (isVertical) state.yScrollDp.value else state.xScrollDp.value
             val listPos = if (isVertical) {
-                state.computeSmoothScrollPosDpY(surface.deltaT)
+                state.computeSmoothScrollPosDpY(Time.deltaT)
             } else {
-                state.computeSmoothScrollPosDpX(surface.deltaT)
+                state.computeSmoothScrollPosDpX(Time.deltaT)
             }
             val deltaScroll = listPos - oldListPos
 

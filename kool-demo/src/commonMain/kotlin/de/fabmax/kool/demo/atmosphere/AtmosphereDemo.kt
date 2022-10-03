@@ -18,10 +18,7 @@ import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.unlitShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.toString
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.ColorGradient
-import de.fabmax.kool.util.MdColor
-import de.fabmax.kool.util.SimpleShadowMap
+import de.fabmax.kool.util.*
 import kotlin.math.cos
 import kotlin.math.pow
 
@@ -170,7 +167,7 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
             }
 
             if (isAnimateTime.value) {
-                val dt = ev.deltaT / 120
+                val dt = Time.deltaT / 120
                 // setting time slider value results in timer slider's onChange function being called which also sets time
                 time.set((time.value + dt) % 1f)
                 moonTime = (moonTime + dt / moonT)
@@ -292,7 +289,9 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
                     val camHeight = cameraHeight * kmPerUnit
                     val colorMix = (camHeight / 100f).clamp()
                     earthShader.uWaterColor?.value?.set(waterColorLow.mix(waterColorHigh, colorMix))
-                    earthShader.uNormalShift?.value?.set(ev.time.toFloat() * 0.0051f, ev.time.toFloat() * 0.0037f, ev.time.toFloat() * -0.0071f, ev.time.toFloat() * -0.0039f)
+                    earthShader.uNormalShift?.value?.set(
+                        Time.gameTime.toFloat() * 0.0051f, Time.gameTime.toFloat() * 0.0037f,
+                        Time.gameTime.toFloat() * -0.0071f, Time.gameTime.toFloat() * -0.0039f)
 
                     val dirToSun = MutableVec3f(sun.direction).scale(-1f)
                     earthShader.uDirToSun?.value?.let { uSunDir ->

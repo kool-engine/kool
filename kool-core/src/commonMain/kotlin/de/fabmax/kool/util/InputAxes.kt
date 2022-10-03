@@ -15,7 +15,7 @@ open class InputAxes(ctx: KoolContext) : Disposable {
 
     private val updateAxes: ((KoolContext) -> Unit) = { ctx ->
         for (i in axesList.indices) {
-            axesList[i].updateAxisState(ctx.deltaT)
+            axesList[i].updateAxisState(Time.deltaT)
         }
     }
 

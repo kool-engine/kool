@@ -13,7 +13,6 @@ import de.fabmax.kool.physics.geometry.ConvexMeshGeometry
 import de.fabmax.kool.physics.vehicle.Vehicle
 import de.fabmax.kool.physics.vehicle.VehicleProperties
 import de.fabmax.kool.physics.vehicle.VehicleUtils
-import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.pipeline.deferred.DeferredPbrShader
 import de.fabmax.kool.pipeline.deferred.DeferredPointLights
 import de.fabmax.kool.pipeline.deferred.DeferredSpotLights
@@ -23,6 +22,7 @@ import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Model
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.DriveAxes
+import de.fabmax.kool.util.Time
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.max
@@ -104,13 +104,13 @@ class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: Koo
         rearLightLt = world.deferredPipeline.dynamicPointLights.addPointLight { }
         rearLightRt = world.deferredPipeline.dynamicPointLights.addPointLight { }
 
-        vehicleModel.onUpdate += { ev ->
-            updateVehicle(ev)
+        vehicleModel.onUpdate += {
+            updateVehicle()
         }
     }
 
-    private fun updateVehicle(ev: RenderPass.UpdateEvent) {
-        throttleBrakeHandler.update(inputAxes.throttle, inputAxes.brake, vehicle.forwardSpeed, ev.deltaT)
+    private fun updateVehicle() {
+        throttleBrakeHandler.update(inputAxes.throttle, inputAxes.brake, vehicle.forwardSpeed, Time.deltaT)
         vehicle.isReverse = throttleBrakeHandler.isReverse
         vehicle.throttleInput = throttleBrakeHandler.throttle
         vehicle.brakeInput = throttleBrakeHandler.brake
@@ -268,7 +268,7 @@ class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: Koo
 
         var prevRecoverTime = 0.0
         recoverListener = ctx.inputMgr.registerKeyListener(LocalKeyCode('r'), "recover", filter = { it.isPressed }) {
-            val time = ctx.time
+            val time = Time.gameTime
             val recoverHard = time - prevRecoverTime < 0.3
             prevRecoverTime = time
 

@@ -31,9 +31,6 @@ open class UiSurface(
     var requiresUpdate: Boolean = true
         private set
 
-    var deltaT = 0f
-        private set
-
     var printTiming = false
 
     var isInputEnabled = true
@@ -55,7 +52,6 @@ open class UiSurface(
             UiScale.windowScale.set(it.ctx.windowScale)
             viewportWidth.set(it.renderPass.viewport.width.toFloat())
             viewportHeight.set(it.renderPass.viewport.height.toFloat())
-            deltaT = it.deltaT
 
             for (i in onEachFrame.indices) {
                 onEachFrame[i]()

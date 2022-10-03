@@ -73,7 +73,7 @@ class KslShaderTest : DemoScene("KslShader") {
 
         val lightRotTransform = Mat4f()
         onUpdate += { ev ->
-            lightRotTransform.rotate(ev.deltaT * 5f, Vec3f.Z_AXIS)
+            lightRotTransform.rotate(Time.deltaT * 5f, Vec3f.Z_AXIS)
             lighting.lights.forEachIndexed { i, light ->
                 val pos = lightRotTransform.transform(MutableVec3f(lightPoses[i].first), 1f)
                 val dir = lightRotTransform.transform(MutableVec3f(lightPoses[i].second), 0f)
@@ -139,8 +139,8 @@ class KslShaderTest : DemoScene("KslShader") {
                 rotate(rotationX, Vec3f.X_AXIS)
                 rotate(rotationY, Vec3f.Y_AXIS)
 
-                rotationX += it.deltaT * 10f
-                rotationY += it.deltaT * 13.7f
+                rotationX += Time.deltaT * 10f
+                rotationY += Time.deltaT * 13.7f
             }
         }
 
@@ -196,8 +196,8 @@ class KslShaderTest : DemoScene("KslShader") {
             }
 
             shader = phongShader
-            onUpdate += { ev ->
-                uSparkle?.value = (ev.time % 1.0).toFloat()
+            onUpdate += {
+                uSparkle?.value = (Time.gameTime % 1.0).toFloat()
             }
         }
     }

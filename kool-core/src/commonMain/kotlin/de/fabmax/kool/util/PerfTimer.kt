@@ -1,6 +1,5 @@
 package de.fabmax.kool.util
 
-import de.fabmax.kool.now
 import de.fabmax.kool.toString
 
 class PerfTimer {
@@ -12,42 +11,42 @@ class PerfTimer {
     }
 
     fun reset() {
-        tStart = now()
+        tStart = Time.precisionTime
     }
 
     fun takeSecs(): Double {
-        return takeMs() / 1000.0
+        return Time.precisionTime - tStart
     }
 
     fun takeMs(): Double {
-        return now() - tStart
+        return takeSecs() * 1000.0
     }
 }
 
 inline fun <T> timedMs(message: String, tag: String? = "PerfTimer", level: Log.Level = Log.Level.INFO, block: () -> T): T {
-    val t = now()
+    val t = Time.precisionTime
     val ret = block()
-    Log.log(level, tag) { "$message ${(now() - t).toString(3)} ms" }
+    Log.log(level, tag) { "$message ${((Time.precisionTime - t) * 1000.0).toString(3)} ms" }
     return ret
 }
 
 inline fun <T> timedMs(message: () -> String, tag: String? = "PerfTimer", level: Log.Level = Log.Level.INFO, block: () -> T): T {
-    val t = now()
+    val t = Time.precisionTime
     val ret = block()
-    Log.log(level, tag) { "${message()} ${(now() - t).toString(3)} ms" }
+    Log.log(level, tag) { "${message()} ${((Time.precisionTime - t) * 1000.0).toString(3)} ms" }
     return ret
 }
 
 inline fun <T> Any.timedMs(message: String, level: Log.Level = Log.Level.INFO, block: () -> T): T {
-    val t = now()
+    val t = Time.precisionTime
     val ret = block()
-    Log.logExt(level, this) { "$message ${(now() - t).toString(3)} ms" }
+    Log.logExt(level, this) { "$message ${((Time.precisionTime - t) * 1000.0).toString(3)} ms" }
     return ret
 }
 
 inline fun <T> Any.timedMs(message: () -> String, level: Log.Level = Log.Level.INFO, block: () -> T): T {
-    val t = now()
+    val t = Time.precisionTime
     val ret = block()
-    Log.logExt(level, this) { "${message()} ${(now() - t).toString(3)} ms" }
+    Log.logExt(level, this) { "${message()} ${((Time.precisionTime - t) * 1000.0).toString(3)} ms" }
     return ret
 }

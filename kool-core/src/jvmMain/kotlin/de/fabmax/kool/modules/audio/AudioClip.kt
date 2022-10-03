@@ -1,7 +1,7 @@
 package de.fabmax.kool.modules.audio
 
 import de.fabmax.kool.math.clamp
-import de.fabmax.kool.now
+import de.fabmax.kool.util.Time
 import de.fabmax.kool.util.logE
 import java.io.ByteArrayInputStream
 import javax.sound.sampled.AudioSystem
@@ -65,8 +65,8 @@ actual class AudioClip(private val audioData: ByteArray) {
     }
 
     actual fun play() {
-        val t = now()
-        if (t - lastPlay > minIntervalMs) {
+        val t = Time.precisionTime
+        if (t - lastPlay > minIntervalMs / 1000.0) {
             lastPlay = t
             latestClip = nextClip().apply { play() }
         }
@@ -148,7 +148,7 @@ actual class AudioClip(private val audioData: ByteArray) {
             currentTime = 0f
             clipState = ClipState.PLAYING
             clip?.start()
-            startTime = now()
+            startTime = Time.precisionTime
         }
 
         fun stop() {

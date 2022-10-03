@@ -6,10 +6,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.LocalKeyCode
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.scene.geometry.TextProps
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.EditableText
-import de.fabmax.kool.util.Font
-import de.fabmax.kool.util.FontProps
+import de.fabmax.kool.util.*
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
@@ -211,7 +208,7 @@ open class TextFieldNode(parent: UiNode?, surface: UiSurface)
 
     fun updateCursorState() {
         if (isFocusedState.value) {
-            cursorBlink -= deltaT
+            cursorBlink -= Time.deltaT
             if (cursorBlink < 0f) {
                 cursorShow.set(!cursorShow.value)
                 cursorBlink += 0.5f
@@ -231,7 +228,7 @@ open class TextFieldNode(parent: UiNode?, surface: UiSurface)
         editText.caretPosition = textIndex(surface.getFont(modifier.font, ev.ctx), ev.position.x)
         editText.selectionStart = editText.caretPosition
 
-        val t = ev.ctx.time
+        val t = Time.gameTime
         if (ev.pointer.isLeftButtonClicked && t - prevClickTime < 0.3) {
             // double click -> select clicked word
             editText.moveCaret(EditableText.MOVE_WORD_LEFT, false)

@@ -9,6 +9,7 @@ import de.fabmax.kool.pipeline.ibl.BrdfLutPass
 import de.fabmax.kool.pipeline.shadermodel.ShaderGenerator
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Profiling
+import de.fabmax.kool.util.Time
 import de.fabmax.kool.util.Viewport
 import de.fabmax.kool.util.logD
 import kotlinx.coroutines.CompletableDeferred
@@ -73,20 +74,20 @@ abstract class KoolContext {
      * Run time of this render context in seconds. This is the wall clock time between now and the first time render()
      * was called.
      */
-    var time = 0.0
-        protected set
+    @Deprecated("Replaced by Time.gameTime", replaceWith = ReplaceWith("de.fabmax.kool.util.Time.gameTime"))
+    val time: Double get() = Time.gameTime
 
     /**
      * Time between current and last call of render() in seconds.
      */
-    var deltaT = 0.0f
-        private set
+    @Deprecated("Replaced by Time.deltaT", replaceWith = ReplaceWith("de.fabmax.kool.util.Time.deltaT"))
+    val deltaT: Float get() = Time.deltaT
 
     /**
      * Number of rendered frames.
      */
-    var frameIdx = 0
-        private set
+    @Deprecated("Replaced by Time.frameCount", replaceWith = ReplaceWith("de.fabmax.kool.util.Time.frameCount"))
+    val frameIdx: Int get() = Time.frameCount
 
     /**
      * Frames per second (averaged over last 25 frames)
@@ -123,7 +124,7 @@ abstract class KoolContext {
     abstract fun getWindowViewport(result: Viewport)
 
     fun runDelayed(frames: Int, callback: (KoolContext) -> Unit) {
-        delayedCallbacks += DelayedCallback(frameIdx + frames, callback)
+        delayedCallbacks += DelayedCallback(Time.frameCount + frames, callback)
     }
 
     suspend fun delayFrames(frames: Int) {
@@ -151,21 +152,21 @@ abstract class KoolContext {
             Profiling.enter("!main-render-loop")
         }
 
-        this.deltaT = dt.toFloat()
-        time += dt
-        frameIdx++
+        Time.deltaT = dt.toFloat()
+        Time.gameTime += dt
+        Time.frameCount++
 
         if (delayedCallbacks.isNotEmpty()) {
             for (i in delayedCallbacks.indices.reversed()) {
                 val callback = delayedCallbacks[i]
-                if (callback.callOnFrame <= frameIdx) {
+                if (callback.callOnFrame <= Time.frameCount) {
                     callback.callback(this)
                     delayedCallbacks.removeAt(i)
                 }
             }
         }
 
-        frameTimes[frameIdx % frameTimes.size] = dt
+        frameTimes[Time.frameCount % frameTimes.size] = dt
         var sum = 0.0
         for (i in frameTimes.indices) { sum += frameTimes[i] }
         fps = (frameTimes.size / sum) * 0.1 + fps * 0.9

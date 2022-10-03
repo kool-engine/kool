@@ -4,8 +4,6 @@ package de.fabmax.kool
  * @author fabmax
  */
 
-expect fun now(): Double
-
 expect fun Double.toString(precision: Int): String
 
 /**

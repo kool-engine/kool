@@ -14,6 +14,7 @@ import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.Time
 
 class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrContent("PBR material") {
     private val shaders = mutableListOf<PbrShader>()
@@ -72,7 +73,7 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrCont
 
             onUpdate += {
                 if (autoRotate) {
-                    rotate(-2f * ctx.deltaT, Vec3f.Y_AXIS)
+                    rotate(-2f * Time.deltaT, Vec3f.Y_AXIS)
                 }
             }
         }

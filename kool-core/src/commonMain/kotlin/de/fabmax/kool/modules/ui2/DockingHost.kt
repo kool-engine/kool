@@ -55,10 +55,16 @@ class DockingHost : Group() {
     }
 
     override fun addNode(node: Node, index: Int) {
-        super.addNode(node, index)
+        var i = index
         if (node is UiSurface) {
             childSurfaces += node
+            // by default UiSurfaces are inserted before last element (the docking pane), so that docking pane overlay
+            // is drawn on top of any surface
+            if (i == -1) {
+                i = children.lastIndex
+            }
         }
+        super.addNode(node, i)
     }
 
     override fun removeNode(node: Node): Boolean {
@@ -75,6 +81,8 @@ class DockingHost : Group() {
             content = {
                 rootPane()
             }
+            // fixme: temporary, at some point docking surface will need input, but it must not block it...
+            isInputEnabled = false
         }
 
         fun getPaneAt(screenPos: Vec2f): DockingPane {

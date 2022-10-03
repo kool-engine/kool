@@ -4,6 +4,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.math.isFuzzyZero
 import de.fabmax.kool.util.MutableColor
+import de.fabmax.kool.util.Time
 import kotlin.math.*
 
 /**
@@ -23,7 +24,7 @@ abstract class Animator<V, out T: InterpolatedValue<V>>(val value: T) {
 
     open fun tick(ctx: KoolContext): V {
         if (!speed.isFuzzyZero()) {
-            progress += ctx.deltaT * speed / duration
+            progress += Time.deltaT * speed / duration
             if (progress >= 1f && speed > 0) {
                 when (repeating) {
                     ONCE -> {

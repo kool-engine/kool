@@ -63,7 +63,7 @@ class InstanceDemo : DemoScene("Instanced Drawing") {
 
             onUpdate += {
                 if (isAutoRotate.value) {
-                    verticalRotation += it.deltaT * 3f
+                    verticalRotation += Time.deltaT * 3f
                 }
                 numInstances.clear()
                 for (i in lods.indices) {
@@ -167,7 +167,7 @@ class InstanceDemo : DemoScene("Instanced Drawing") {
             instanceModelMat
                     .setIdentity()
                     .translate(position)
-                    .rotate(ctx.time.toFloat() * rotSpeed, rotAxis)
+                    .rotate(Time.gameTime.toFloat() * rotSpeed, rotAxis)
             super.update(lodCtrl, cam, ctx)
         }
 

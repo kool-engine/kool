@@ -7,6 +7,7 @@ import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.LineMesh
 import de.fabmax.kool.scene.Model
 import de.fabmax.kool.util.MdColor
+import de.fabmax.kool.util.Time
 import kotlin.math.*
 
 class PlayerModel(val model: Model, val playerController: PlayerController) : Group("player-model") {
@@ -26,7 +27,7 @@ class PlayerModel(val model: Model, val playerController: PlayerController) : Gr
         +controllerShapeOutline
 
         onUpdate += {
-            updateAnimation(it.deltaT)
+            updateAnimation(Time.deltaT)
         }
     }
 

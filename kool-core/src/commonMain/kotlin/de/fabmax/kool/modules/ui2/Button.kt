@@ -3,6 +3,7 @@ package de.fabmax.kool.modules.ui2
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.Time
 
 interface ButtonScope : UiScope {
     override val modifier: ButtonModifier
@@ -67,7 +68,7 @@ class ButtonNode(parent: UiNode?, surface: UiSurface) : TextNode(parent, surface
         if (modifier.isClickFeedback) {
             val p = clickAnimator.use()
             if (clickAnimator.isActive) {
-                clickAnimator.progress(deltaT)
+                clickAnimator.progress(Time.deltaT)
                 getUiPrimitives().localCircle(
                     clickPos.x, clickPos.y,
                     p * 128.dp.px,

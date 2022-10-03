@@ -15,10 +15,7 @@ import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
 import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.toString
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.ColorGradient
-import de.fabmax.kool.util.MdColor
-import de.fabmax.kool.util.MutableColor
+import de.fabmax.kool.util.*
 import kotlin.math.*
 
 class MultiLightDemo : DemoScene("Reflections") {
@@ -66,7 +63,7 @@ class MultiLightDemo : DemoScene("Reflections") {
             // let the camera slowly rotate around vertical axis
             onUpdate += {
                 if (isAutoRotate.value) {
-                    verticalRotation += it.deltaT * 3f
+                    verticalRotation += Time.deltaT * 3f
                 }
             }
         }
@@ -293,7 +290,7 @@ class MultiLightDemo : DemoScene("Reflections") {
 
             onUpdate += {
                 if (isAutoRotate.value) {
-                    animPos += it.deltaT
+                    animPos += Time.deltaT
                 }
 
                 val r = cos(animPos / 15 + rotOff).toFloat() * lightRandomness.value

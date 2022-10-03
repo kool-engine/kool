@@ -13,8 +13,6 @@ actual fun createDefaultContext(): KoolContext = createContext(JsContext.InitPro
 
 fun createContext(props: JsContext.InitProps): KoolContext = JsImpl.createContext(props)
 
-actual fun now(): Double = js("performance.now()") as Double
-
 actual fun Double.toString(precision: Int): String {
     if (this.isNaN()) {
         return "NaN"
