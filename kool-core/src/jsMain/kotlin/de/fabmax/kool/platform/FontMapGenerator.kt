@@ -1,16 +1,21 @@
 package de.fabmax.kool.platform
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.math.clamp
+import de.fabmax.kool.math.smoothStep
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.TextureData2d
 import de.fabmax.kool.util.*
 import kotlinx.browser.document
+import kotlinx.browser.window
 import org.khronos.webgl.get
 import org.w3c.dom.CanvasRenderingContext2D
 import org.w3c.dom.HTMLCanvasElement
 import kotlin.js.Promise
 import kotlin.math.ceil
+import kotlin.math.pow
 import kotlin.math.round
+import kotlin.math.roundToInt
 
 /**
  * @author fabmax
@@ -26,6 +31,8 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, props: JsContext.I
     val loadingFonts = mutableListOf<Promise<FontFace>>()
 
     init {
+        canvas.style.width = "${(maxWidth / window.devicePixelRatio).roundToInt()}"
+        canvas.style.height = "${(maxHeight / window.devicePixelRatio).roundToInt()}"
         canvas.width = maxWidth
         canvas.height = maxHeight
         canvasCtx = canvas.getContext("2d") as CanvasRenderingContext2D
@@ -65,26 +72,42 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, props: JsContext.I
             fontScale != 0f -> fontScale
             else -> 1f
         }
+        val fontSize = (fontProps.sizePts * fontScale * fontProps.sampleScale).roundToInt()
 
         // clear canvas
-        canvasCtx.fillStyle = "#ffffff"
+        canvasCtx.fillStyle = "#000000"
         canvasCtx.fillRect(0.0, 0.0, maxWidth.toDouble(), maxHeight.toDouble())
         // draw font chars
-        val texHeight = makeMap(fontProps, scale, charMap)
+        val texHeight = makeMap(fontProps, fontSize, charMap)
         // copy image data
         val data = canvasCtx.getImageData(0.0, 0.0, maxWidth.toDouble(), texHeight.toDouble())
+
+        // alpha correction lut:
+        // boost font contrast by increasing contrast / reducing anti-aliasing (otherwise small fonts appear quite
+        // blurry, especially in Chrome)
+        val alphaLut = ByteArray(256) { i ->
+            val a = i / 255f
+            // corrected value: boosted contrast
+            val ac = a.pow(1.5f) * 1.3f - 0.15f
+            // mix original value and corrected one based on font size:
+            // max correction for sizes <= 12, no correction for sizes >= 36
+            val cw = smoothStep(12f, 36f, fontSize.toFloat())
+            val c = a * cw + ac * (1f - cw)
+            (c.clamp(0f, 1f) * 255f).toInt().toByte()
+        }
 
         // alpha texture
         val buffer = createUint8Buffer(maxWidth * texHeight)
         for (i in 0 until buffer.capacity) {
-            buffer.put((255 - (data.data[i*4].toInt() and 0xff)).toByte())
+            val a = data.data[i*4].toInt() and 0xff
+            buffer.put(alphaLut[a])
         }
         charMap.textureData = TextureData2d(buffer, maxWidth, texHeight, TexFormat.R)
         charMap.applyScale(scale)
         return charMap
     }
 
-    private fun makeMap(fontProps: FontProps, fontScale: Float, map: MutableMap<Char, CharMetrics>): Int {
+    private fun makeMap(fontProps: FontProps, fontSize: Int, map: MutableMap<Char, CharMetrics>): Int {
         var style = ""
         if (fontProps.style and Font.BOLD != 0) {
             style = "bold "
@@ -93,11 +116,10 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, props: JsContext.I
             style += "italic "
         }
 
-        val fontSize = round(fontProps.sizePts * fontScale * fontProps.sampleScale)
         val fontStr = "$style ${fontSize}px ${fontProps.family}"
         canvasCtx.font = fontStr
-        canvasCtx.fillStyle = "#000000"
-        canvasCtx.strokeStyle = "#000000"
+        canvasCtx.fillStyle = "#ffffff"
+        canvasCtx.strokeStyle = "#ffffff"
 
         logD { "generate font: $fontStr" }
 
