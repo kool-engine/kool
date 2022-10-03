@@ -20,10 +20,10 @@ open class UiSurface(
     private val meshLayers = TreeMap<Int, MeshLayer>()
     private val onEachFrame = mutableListOf<() -> Unit>()
 
-    private val inputHandler = UiInputHandler()
-    private val viewportWidth = mutableStateOf(0f)
-    private val viewportHeight = mutableStateOf(0f)
-    private val viewport = BoxNode(null, this).apply { modifier.layout(CellLayout) }
+    protected val inputHandler = UiInputHandler()
+    protected val viewportWidth = mutableStateOf(0f)
+    protected val viewportHeight = mutableStateOf(0f)
+    protected val viewport = BoxNode(null, this).apply { modifier.layout(CellLayout) }
 
     internal var nodeIndex = 0
 
@@ -162,14 +162,14 @@ open class UiSurface(
         }
     }
 
-    private fun measureUiNodeContent(node: UiNode, ctx: KoolContext) {
+    protected open fun measureUiNodeContent(node: UiNode, ctx: KoolContext) {
         for (i in node.children.indices) {
             measureUiNodeContent(node.children[i], ctx)
         }
         node.measureContentSize(ctx)
     }
 
-    private fun layoutUiNodeChildren(node: UiNode, ctx: KoolContext) {
+    protected open fun layoutUiNodeChildren(node: UiNode, ctx: KoolContext) {
         node.layoutChildren(ctx)
         for (i in node.children.indices) {
             if (node.children[i].isInClip) {
@@ -178,7 +178,7 @@ open class UiSurface(
         }
     }
 
-    private fun renderUiNode(node: UiNode, ctx: KoolContext) {
+    protected open fun renderUiNode(node: UiNode, ctx: KoolContext) {
         node.render(ctx)
         for (i in node.children.indices) {
             if (node.children[i].isInClip) {
@@ -187,7 +187,7 @@ open class UiSurface(
         }
     }
 
-    private inner class UiInputHandler : InputStack.InputHandler(name ?: "UiSurface") {
+    protected inner class UiInputHandler : InputStack.InputHandler(name ?: "UiSurface") {
         private val nodeResult = mutableListOf<UiNode>()
         private var focusedNode: Focusable? = null
         private var hoveredNode: UiNode? = null
@@ -362,7 +362,7 @@ open class UiSurface(
         ): Boolean {
             var wasConsumed = consumedIfNull
             if (callbacks.isNotEmpty()) {
-                uiNode.toLocal(ptrEvent.pointer.x, ptrEvent.pointer.y, ptrEvent.position)
+                uiNode.toLocal(ptrEvent.screenPosition.x, ptrEvent.screenPosition.y, ptrEvent.position)
                 // make sure consumed flag is set by default, callback has to actively reject() the
                 // event to not consume it
                 ptrEvent.isConsumed = true

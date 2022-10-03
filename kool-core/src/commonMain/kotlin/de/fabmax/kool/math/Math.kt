@@ -49,6 +49,10 @@ inline fun Double.clamp(min: Double = 0.0, max: Double = 1.0): Double = when {
     else -> this
 }
 
+// is there really no min/max for Comparables in the standard library?
+fun <T: Comparable<T>> min(a: T, b: T): T = if (a <= b) a else b
+fun <T: Comparable<T>> max(a: T, b: T): T = if (a >= b) a else b
+
 fun stableAsin(x: Float): Float {
     val asin = asin(x)
     return if (!asin.isNaN()) {

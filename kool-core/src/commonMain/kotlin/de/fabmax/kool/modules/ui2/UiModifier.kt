@@ -3,6 +3,7 @@ package de.fabmax.kool.modules.ui2
 import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec2f
+import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.util.Color
 import kotlin.reflect.KProperty
 
@@ -109,6 +110,11 @@ open class UiModifier(val surface: UiSurface) {
 
 fun <T: UiModifier> T.width(width: Dimension): T { this.width = width; return this }
 fun <T: UiModifier> T.height(height: Dimension): T { this.height = height; return this }
+fun <T: UiModifier> T.size(width: Dimension, height: Dimension): T {
+    this.width = width
+    this.height = height
+    return this
+}
 fun <T: UiModifier> T.layout(layout: Layout): T { this.layout = layout; return this }
 fun <T: UiModifier> T.border(border: UiRenderer<UiNode>?): T { this.border = border; return this }
 fun <T: UiModifier> T.zLayer(zLayer: Int): T { this.zLayer = zLayer; return this }
@@ -209,9 +215,14 @@ fun <T: UiModifier> T.onPositioned(block: (UiNode) -> Unit): T { onPositioned = 
 
 class PointerEvent(val pointer: InputManager.Pointer, val ctx: KoolContext) {
     /**
-     * Pointer position in UiNode local coordinates.
+     * Pointer position in UiNode local coordinates: (0, 0) = upper left node corner.
      */
     val position = MutableVec2f()
+
+    /**
+     * Pointer position in screen coordinates: (0, 0) = upper left screen corner.
+     */
+    val screenPosition = Vec2f(pointer.x.toFloat(), pointer.y.toFloat())
 
     /**
      * Can be set to false by listeners to reject the event. Rejected events will be passed on to potential other

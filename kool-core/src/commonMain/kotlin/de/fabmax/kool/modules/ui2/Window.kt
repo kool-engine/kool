@@ -24,11 +24,14 @@ open class WindowState {
     var dragStartY = 0f
     var dragStartWidth = 0f
     var dragStartHeight = 0f
+
+    val dockedTo = mutableStateOf<DockingHost.DockingPane?>(null)
 }
 
 interface WindowScope : UiScope {
     override val modifier: WindowModifier
     val windowState: WindowState
+    val isDocked: Boolean get() = windowState.dockedTo.value != null
 
     fun getBorderFlags(localPosition: Vec2f, borderWidth: Dp): Int
 }
@@ -45,6 +48,7 @@ open class WindowModifier(surface: UiSurface) : UiModifier(surface) {
     val onCloseClicked: MutableList<(PointerEvent) -> Unit> by listProperty()
     val onMinimizeClicked: MutableList<(PointerEvent) -> Unit> by listProperty()
     val onMaximizeClicked: MutableList<(PointerEvent) -> Unit> by listProperty()
+    var dockingHost: DockingHost? by property(null)
 }
 
 fun <T: WindowModifier> T.titleBarColor(color: Color): T { titleBarColor = color; return this }
@@ -67,6 +71,7 @@ fun <T: WindowModifier> T.maxSize(width: Dp = maxWidth, height: Dp = maxHeight):
 fun <T: WindowModifier> T.onCloseClicked(block: (PointerEvent) -> Unit): T { onCloseClicked += block; return this }
 fun <T: WindowModifier> T.onMinimizeClicked(block: (PointerEvent) -> Unit): T { onMinimizeClicked += block; return this }
 fun <T: WindowModifier> T.onMaximizeClicked(block: (PointerEvent) -> Unit): T { onMaximizeClicked += block; return this }
+fun <T: WindowModifier> T.dockingHost(dockingHost: DockingHost?): T { this.dockingHost = dockingHost; return this }
 
 fun Window(
     state: WindowState,
@@ -83,18 +88,31 @@ fun Window(
             .background(RoundRectBackground(colors.background, sizes.gap))
             .layout(ColumnLayout)
 
+        // auto-register docking host if window was created in one
+        (surface.parent as? DockingHost)?.let { window.modifier.dockingHost(it) }
+
+        // compose user supplied window content
         window.content()
 
+        // set window location and size according to window state
+        val dock = state.dockedTo.use()
+        if (dock != null) {
+            // window is docked -> set position according to docking pane
+            dock.setupDockPosition(window)
+        } else {
+            // floating window
+            window.modifier
+                .width(state.width.use())
+                .height(if (window.modifier.isMinimizedToTitle) WrapContent else state.height.use())
+                .align(AlignmentX.Start, AlignmentY.Top)
+                .margin(start = state.xDp.use(), top = state.yDp.use())
+        }
+
+        // register resize hover and drag listeners if window is resizable
         if (window.modifier.isVerticallyResizable || window.modifier.isHorizontallyResizable) {
             window.modifier.hoverListener(window)
             window.modifier.dragListener(window)
         }
-
-        window.modifier
-            .width(state.width.use())
-            .height(if (window.modifier.isMinimizedToTitle) WrapContent else state.height.use())
-            .align(AlignmentX.Start, AlignmentY.Top)
-            .margin(start = state.xDp.use(), top = state.yDp.use())
     }
     return surface
 }
@@ -112,13 +130,24 @@ fun WindowScope.TitleBar(title: String, isDraggable: Boolean = true) {
                     if (getBorderFlags(it.position, 4.dp) != 0) {
                         it.reject()
                     } else {
+                        if (isDocked) {
+                            // relocate window position if window was docked, such that cursor is centered over title bar
+                            val widthPx = (windowState.width.value as? Dp)?.px ?: 100f
+                            windowState.xDp.set(pxToDp(it.screenPosition.x - widthPx * 0.5f).dp)
+                            windowState.yDp.set(this@TitleBar.modifier.marginTop)
+                        }
                         windowState.dragStartX = windowState.xDp.value.px
                         windowState.dragStartY = windowState.yDp.value.px
+                        windowModifier.dockingHost?.onWindowMoveStart(this@TitleBar)
                     }
                 }
                 .onDrag {
                     windowState.xDp.set(pxToDp(windowState.dragStartX + it.pointer.dragDeltaX.toFloat()).dp)
                     windowState.yDp.set(pxToDp(windowState.dragStartY + it.pointer.dragDeltaY.toFloat()).dp)
+                    windowModifier.dockingHost?.onWindowMove(it)
+                }
+                .onDragEnd {
+                    windowModifier.dockingHost?.onWindowMoveEnd(this@TitleBar)
                 }
         }
 

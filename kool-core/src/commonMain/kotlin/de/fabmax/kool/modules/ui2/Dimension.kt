@@ -21,10 +21,12 @@ class Grow(val weight: Float, val min: Dimension = Dp.ZERO, val max: Dimension =
 }
 
 @JvmInline
-value class Dp(val value: Float): Dimension {
+value class Dp(val value: Float): Dimension, Comparable<Dp> {
     operator fun plus(other: Dp): Dp = Dp(value + other.value)
     operator fun minus(other: Dp): Dp = Dp(value - other.value)
     operator fun times(factor: Float): Dp = Dp(value * factor)
+
+    override fun compareTo(other: Dp): Int = value.compareTo(other.value)
 
     override fun toString(): String {
         return "Dp($value)"

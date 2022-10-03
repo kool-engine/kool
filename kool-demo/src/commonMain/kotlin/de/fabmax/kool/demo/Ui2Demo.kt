@@ -86,23 +86,44 @@ class Ui2Demo : DemoScene("UI2 Demo") {
             height.set(Dp(700f))
         }
 
-        +Window(windowState) {
-            surface.sizes = selectedUiSize.use()
-            surface.colors = themeColors[selectedColors.use()].second
+        val moreWindowStates = mutableListOf<WindowState>()
+        for (i in 1..3) {
+            moreWindowStates += WindowState()
+        }
 
-            modifier
-                .isMinimizedToTitle(isMinimizedToTitle.use())
-                .onCloseClicked { println("close clicked") }
-                .minSize(200.dp, 200.dp)
-            if (!isMinimizedToTitle.use()) modifier.onMinimizeClicked { isMinimizedToTitle.set(true) }
-            if (isMinimizedToTitle.use()) modifier.onMaximizeClicked { isMinimizedToTitle.set(false) }
+        +DockingHost().apply {
+            +Window(windowState) {
+                surface.sizes = selectedUiSize.use()
+                surface.colors = themeColors[selectedColors.use()].second
 
-            TitleBar("UI Window")
-            if (!isMinimizedToTitle.value) {
-                WindowContent(listItems)
+                modifier
+                    .isMinimizedToTitle(isMinimizedToTitle.use())
+                    .onCloseClicked { println("close clicked") }
+                    .minSize(200.dp, 200.dp)
+                if (!isMinimizedToTitle.use()) modifier.onMinimizeClicked { isMinimizedToTitle.set(true) }
+                if (isMinimizedToTitle.use()) modifier.onMaximizeClicked { isMinimizedToTitle.set(false) }
+
+                TitleBar("UI Window")
+                if (!isMinimizedToTitle.value) {
+                    WindowContent(listItems)
+                }
+
+            }//.apply { printTiming = true }
+
+            moreWindowStates.forEachIndexed { i, state ->
+                state.xDp.set(Dp(250f + i * 30f))
+                state.yDp.set(Dp(250f + i * 30f))
+                state.width.set(Dp(500f))
+                state.height.set(Dp(500f))
+                +Window(state) {
+                    surface.sizes = selectedUiSize.use()
+                    surface.colors = themeColors[selectedColors.use()].second
+
+                    TitleBar("Another Window $i")
+                    Text("This is another window, which has no content") {  }
+                }
             }
-
-        }.apply { printTiming = true }
+        }
     }
 
     fun UiScope.WindowContent(listItems: MutableList<String>) = Box(Grow.Std, Grow.Std) {
