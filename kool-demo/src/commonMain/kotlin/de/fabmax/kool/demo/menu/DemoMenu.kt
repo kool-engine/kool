@@ -31,10 +31,11 @@ class DemoMenu(val demoLoader: DemoLoader) {
         }
 
     val ui = Ui2Scene {
-        +UiSurface {
+        +Panel {
             surface.sizes = Settings.uiSize.use().sizes
 
             modifier
+                .layout(CellLayout)
                 .width(WrapContent)
                 .padding(start = UiSizes.menuWidth * -1f)
                 .height(Grow.Std)

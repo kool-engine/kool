@@ -48,7 +48,6 @@ class Timer(val vehicleUi: VehicleUi) : ComposableComponent {
 
     override fun UiScope.compose() = Box {
         modifier
-            .align(AlignmentX.Center, AlignmentY.Top)
             .width(UiSizes.baseSize * 15f)
             .height(UiSizes.baseSize * 1.7f)
             .background(TimerBackground(colors.background))

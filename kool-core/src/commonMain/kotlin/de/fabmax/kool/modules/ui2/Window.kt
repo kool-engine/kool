@@ -26,182 +26,212 @@ open class WindowState {
     var dragStartHeight = 0f
 }
 
-fun UiScope.Windowed(
+interface WindowScope : UiScope {
+    override val modifier: WindowModifier
+    val windowState: WindowState
+
+    fun getBorderFlags(localPosition: Vec2f, borderWidth: Dp): Int
+}
+
+open class WindowModifier(surface: UiSurface) : UiModifier(surface) {
+    var titleBarColor: Color by property { it.colors.accentVariant }
+    var isVerticallyResizable: Boolean by property(true)
+    var isHorizontallyResizable: Boolean by property(true)
+    var isMinimizedToTitle: Boolean by property(false)
+    var minWidth: Dp by property { it.sizes.largeGap * 2f }
+    var minHeight: Dp by property { it.sizes.largeGap * 2f }
+    var maxWidth: Dp by property { Dp(10_000f) }
+    var maxHeight: Dp by property { Dp(10_000f) }
+    val onCloseClicked: MutableList<(PointerEvent) -> Unit> by listProperty()
+    val onMinimizeClicked: MutableList<(PointerEvent) -> Unit> by listProperty()
+    val onMaximizeClicked: MutableList<(PointerEvent) -> Unit> by listProperty()
+}
+
+fun <T: WindowModifier> T.titleBarColor(color: Color): T { titleBarColor = color; return this }
+fun <T: WindowModifier> T.isResizable(horizontally: Boolean = isHorizontallyResizable, vertically: Boolean = isVerticallyResizable): T {
+    isHorizontallyResizable = horizontally
+    isVerticallyResizable = vertically
+    return this
+}
+fun <T: WindowModifier> T.isMinimizedToTitle(flag: Boolean): T { isMinimizedToTitle = flag; return this }
+fun <T: WindowModifier> T.minSize(width: Dp = minWidth, height: Dp = minHeight): T {
+    minWidth = width
+    minHeight = height
+    return this
+}
+fun <T: WindowModifier> T.maxSize(width: Dp = maxWidth, height: Dp = maxHeight): T {
+    maxWidth = width
+    maxHeight = height
+    return this
+}
+fun <T: WindowModifier> T.onCloseClicked(block: (PointerEvent) -> Unit): T { onCloseClicked += block; return this }
+fun <T: WindowModifier> T.onMinimizeClicked(block: (PointerEvent) -> Unit): T { onMinimizeClicked += block; return this }
+fun <T: WindowModifier> T.onMaximizeClicked(block: (PointerEvent) -> Unit): T { onMaximizeClicked += block; return this }
+
+fun Window(
     state: WindowState,
-    title: String,
-    titleBarColor: Color = colors.accentVariant,
-    isMovable: Boolean = true,
-    isVerticallyResizable: Boolean = true,
-    isHorizontallyResizable: Boolean = true,
-    minWidth: Dp = sizes.largeGap * 2f,
-    maxWidth: Dp = 10_000f.dp,
-    minHeight: Dp = sizes.largeGap * 2f,
-    maxHeight: Dp = 10_000f.dp,
-    isMinimizedToTitleBar: Boolean = false,
-    onCloseClicked: ((PointerEvent) -> Unit)? = null,
-    onMinimizeClicked: ((PointerEvent) -> Unit)? = null,
-    onMaximizeClicked: ((PointerEvent) -> Unit)? = null,
-    titleBarContent: UiScope.(String) -> Unit = {
-        Text(it) {
+    colors: Colors = Colors.darkColors(),
+    sizes: Sizes = Sizes.medium(),
+    name: String = "Window",
+    content: WindowScope.() -> Unit
+): UiSurface {
+    val surface = UiSurface(colors, sizes, name)
+    surface.content = {
+        val window = uiNode.createChild(WindowNode::class, WindowNode.factory)
+        window.state = state
+        window.modifier
+            .background(RoundRectBackground(colors.background, sizes.gap))
+            .layout(ColumnLayout)
+
+        window.content()
+
+        if (window.modifier.isVerticallyResizable || window.modifier.isHorizontallyResizable) {
+            window.modifier.hoverListener(window)
+            window.modifier.dragListener(window)
+        }
+
+        window.modifier
+            .width(state.width.use())
+            .height(if (window.modifier.isMinimizedToTitle) WrapContent else state.height.use())
+            .align(AlignmentX.Start, AlignmentY.Top)
+            .margin(start = state.xDp.use(), top = state.yDp.use())
+    }
+    return surface
+}
+
+fun WindowScope.TitleBar(title: String, isDraggable: Boolean = true) {
+    val windowModifier = modifier
+    Row(Grow.Std) {
+        modifier
+            .padding(start = sizes.gap)
+            .background(TitleBarBackground(windowModifier.titleBarColor, sizes.gap.px, windowModifier.isMinimizedToTitle))
+
+        if (isDraggable) {
+            modifier
+                .onDragStart {
+                    if (getBorderFlags(it.position, 4.dp) != 0) {
+                        it.reject()
+                    } else {
+                        windowState.dragStartX = windowState.xDp.value.px
+                        windowState.dragStartY = windowState.yDp.value.px
+                    }
+                }
+                .onDrag {
+                    windowState.xDp.set(pxToDp(windowState.dragStartX + it.pointer.dragDeltaX.toFloat()).dp)
+                    windowState.yDp.set(pxToDp(windowState.dragStartY + it.pointer.dragDeltaY.toFloat()).dp)
+                }
+        }
+
+        Text(title) {
             modifier
                 .width(Grow.Std)
                 .margin(horizontal = sizes.gap, vertical = sizes.smallGap * 0.5f)
                 .textColor(colors.onAccent)
         }
-    },
-    block: UiScope.() -> Unit
-) {
-    modifier
-        .width(state.width.use())
-        .height(if (isMinimizedToTitleBar) WrapContent else state.height.use())
-        .align(AlignmentX.Start, AlignmentY.Top)
-        .margin(start = state.xDp.use(), top = state.yDp.use())
-        .background(RoundRectBackground(colors.background, sizes.gap))
-        .layout(ColumnLayout)
 
-    if (isVerticallyResizable || isHorizontallyResizable) {
-        ResizeHelper(
-            state, this, isVerticallyResizable, isHorizontallyResizable,
-            minWidth, maxWidth, minHeight, maxHeight
-        )
-    }
-
-    Row(Grow.Std) {
-        modifier
-            .padding(start = sizes.gap)
-            .background(TitleBarBackground(titleBarColor, sizes.gap.px, isMinimizedToTitleBar))
-
-        if (isMovable) {
-            modifier
-                .onDragStart {
-                    if (ResizeHelper.getBorder(uiNode, it.position, 4.dp.px) != 0) {
-                        it.reject()
-                    } else {
-                        state.dragStartX = state.xDp.value.px
-                        state.dragStartY = state.yDp.value.px
-                    }
-                }
-                .onDrag {
-                    state.xDp.set(pxToDp(state.dragStartX + it.pointer.dragDeltaX.toFloat()).dp)
-                    state.yDp.set(pxToDp(state.dragStartY + it.pointer.dragDeltaY.toFloat()).dp)
-                }
+        if (windowModifier.onMaximizeClicked.isNotEmpty()) {
+            MaximizeButton(windowState) { ev -> windowModifier.onMaximizeClicked.forEach { it(ev) } }
         }
-
-        titleBarContent(title)
-        onMaximizeClicked?.let { MaximizeButton(state, it) }
-        onMinimizeClicked?.let { MinimizeButton(state, it) }
-        onCloseClicked?.let { CloseButton(state, it) }
-    }
-
-    if (!isMinimizedToTitleBar) {
-        Box {
-            modifier
-                .width(Grow.Std)
-                .height(Grow.Std)
-
-            block()
+        if (windowModifier.onMinimizeClicked.isNotEmpty()) {
+            MinimizeButton(windowState) { ev -> windowModifier.onMinimizeClicked.forEach { it(ev) } }
+        }
+        if (windowModifier.onCloseClicked.isNotEmpty()) {
+            CloseButton(windowState) { ev -> windowModifier.onCloseClicked.forEach { it(ev) } }
         }
     }
 }
 
-private class ResizeHelper(
-    val state: WindowState,
-    val uiScope: UiScope,
-    val isVerticallyResizable: Boolean,
-    val isHorizontallyResizable: Boolean,
-    val minWidth: Dp,
-    val maxWidth: Dp,
-    val minHeight: Dp,
-    val maxHeight: Dp
-) {
+class WindowNode(parent:UiNode?, surface: UiSurface) : UiNode(parent, surface), WindowScope, Hoverable, Draggable {
+    override val modifier = WindowModifier(surface)
 
-    private val onHover: (PointerEvent) -> Unit = {
-        uiScope.apply {
-            if (!it.pointer.isDrag) {
-                val borderFlags = getBorder(uiNode, it.position, 4.dp.px)
-                setResizeCursor(isVerticallyResizable, isHorizontallyResizable, borderFlags, it.ctx)
+    lateinit var state: WindowState
+    override val windowState: WindowState
+        get() = state
+
+    override fun onHover(ev: PointerEvent) {
+        if (!ev.pointer.isDrag) {
+            val borderFlags = getBorderFlags(ev.position, 4.dp)
+            setResizeCursor(modifier.isVerticallyResizable, modifier.isHorizontallyResizable, borderFlags, ev.ctx)
+        }
+    }
+
+    override fun onExit(ev: PointerEvent) {
+        if (!ev.pointer.isDrag) {
+            ev.ctx.inputMgr.cursorShape = InputManager.CursorShape.DEFAULT
+        }
+    }
+
+    override fun onDragStart(ev: PointerEvent) {
+        val startPos = MutableVec2f(ev.position)
+        startPos.x -= ev.pointer.dragDeltaX.toFloat()
+        startPos.y -= ev.pointer.dragDeltaY.toFloat()
+
+        state.borderFlags = getBorderFlags(ev.position, 4.dp)
+        if (modifier.isVerticallyResizable && state.borderFlags and V_BORDER != 0) {
+            ev.ctx.inputMgr.cursorShape = InputManager.CursorShape.V_RESIZE
+        } else if (modifier.isHorizontallyResizable && state.borderFlags and H_BORDER != 0) {
+            ev.ctx.inputMgr.cursorShape = InputManager.CursorShape.H_RESIZE
+        } else {
+            ev.reject()
+        }
+        state.dragStartX = state.xDp.value.px
+        state.dragStartY = state.yDp.value.px
+        state.dragStartWidth = uiNode.widthPx
+        state.dragStartHeight = uiNode.heightPx
+    }
+
+    override fun onDrag(ev: PointerEvent) {
+        setResizeCursor(modifier.isVerticallyResizable, modifier.isHorizontallyResizable, state.borderFlags, ev.ctx)
+
+        if (state.borderFlags and H_BORDER != 0) {
+            val dx = ev.pointer.dragDeltaX.toFloat()
+            if (state.borderFlags and RIGHT_BORDER != 0) {
+                state.width.set(clampWidthToDp(state.dragStartWidth + dx))
+            } else if (state.borderFlags and LEFT_BORDER != 0) {
+                val w = clampWidthToDp(state.dragStartWidth - dx)
+                state.width.set(w)
+                state.xDp.set(pxToDp(state.dragStartX + state.dragStartWidth - w.px).dp)
+            }
+        }
+
+        if (state.borderFlags and V_BORDER != 0) {
+            val dy = ev.pointer.dragDeltaY.toFloat()
+            if (state.borderFlags and BOTTOM_BORDER != 0) {
+                state.height.set(clampHeightToDp(state.dragStartHeight + dy))
+            } else if (state.borderFlags and TOP_BORDER != 0) {
+                val h = clampHeightToDp(state.dragStartHeight - dy)
+                state.height.set(h)
+                state.yDp.set(pxToDp(state.dragStartY + state.dragStartHeight - h.px).dp)
             }
         }
     }
 
-    private val onExit: (PointerEvent) -> Unit = {
-        if (!it.pointer.isDrag) {
-            it.ctx.inputMgr.cursorShape = InputManager.CursorShape.DEFAULT
+    override fun onDragEnd(ev: PointerEvent) {
+        ev.ctx.inputMgr.cursorShape = InputManager.CursorShape.DEFAULT
+    }
+
+    override fun getBorderFlags(localPosition: Vec2f, borderWidth: Dp): Int {
+        val borderPx = borderWidth.px
+        var flags = 0
+        if (localPosition.y < borderPx) {
+            flags = TOP_BORDER
+        } else if (localPosition.y > heightPx - borderPx) {
+            flags = BOTTOM_BORDER
         }
-    }
-
-    private val onDragStart: (PointerEvent) -> Unit = {
-        uiScope.apply {
-            val startPos = MutableVec2f(it.position)
-            startPos.x -= it.pointer.dragDeltaX.toFloat()
-            startPos.y -= it.pointer.dragDeltaY.toFloat()
-
-            state.borderFlags = getBorder(uiNode, it.position, 4.dp.px)
-            if (isVerticallyResizable && state.borderFlags and V_BORDER != 0) {
-                it.ctx.inputMgr.cursorShape = InputManager.CursorShape.V_RESIZE
-            } else if (isHorizontallyResizable && state.borderFlags and H_BORDER != 0) {
-                it.ctx.inputMgr.cursorShape = InputManager.CursorShape.H_RESIZE
-            } else {
-                it.reject()
-            }
-            state.dragStartX = state.xDp.value.px
-            state.dragStartY = state.yDp.value.px
-            state.dragStartWidth = uiNode.widthPx
-            state.dragStartHeight = uiNode.heightPx
+        if (localPosition.x < borderPx) {
+            flags = flags or LEFT_BORDER
+        } else if (localPosition.x > widthPx - borderPx) {
+            flags = flags or RIGHT_BORDER
         }
-    }
-
-    private val onDrag: (PointerEvent) -> Unit = {
-        uiScope.apply {
-            setResizeCursor(isVerticallyResizable, isHorizontallyResizable, state.borderFlags, it.ctx)
-
-            if (state.borderFlags and H_BORDER != 0) {
-                val dx = it.pointer.dragDeltaX.toFloat()
-                if (state.borderFlags and RIGHT_BORDER != 0) {
-                    state.width.set(clampWidthToDp(state.dragStartWidth + dx))
-                } else if (state.borderFlags and LEFT_BORDER != 0) {
-                    val w = clampWidthToDp(state.dragStartWidth - dx)
-                    state.width.set(w)
-                    state.xDp.set(pxToDp(state.dragStartX + state.dragStartWidth - w.px).dp)
-                }
-            }
-
-            if (state.borderFlags and V_BORDER != 0) {
-                val dy = it.pointer.dragDeltaY.toFloat()
-                if (state.borderFlags and BOTTOM_BORDER != 0) {
-                    state.height.set(clampHeightToDp(state.dragStartHeight + dy))
-                } else if (state.borderFlags and TOP_BORDER != 0) {
-                    val h = clampHeightToDp(state.dragStartHeight - dy)
-                    state.height.set(h)
-                    state.yDp.set(pxToDp(state.dragStartY + state.dragStartHeight - h.px).dp)
-                }
-            }
-        }
-    }
-
-    private val onDragEnd: (PointerEvent) -> Unit = {
-        it.ctx.inputMgr.cursorShape = InputManager.CursorShape.DEFAULT
-    }
-
-    init {
-        uiScope.modifier
-            .onHover(onHover)
-            .onExit(onExit)
-            .onDragStart(onDragStart)
-            .onDrag(onDrag)
-            .onDragEnd(onDragEnd)
+        return flags
     }
 
     private fun clampWidthToDp(widthPx: Float): Dp {
-        return uiScope.run {
-            pxToDp(min(maxWidth.px, max(minWidth.px, widthPx))).dp
-        }
+        return pxToDp(min(modifier.maxWidth.px, max(modifier.minWidth.px, widthPx))).dp
     }
 
     private fun clampHeightToDp(heightPx: Float): Dp {
-        return uiScope.run {
-            pxToDp(min(maxHeight.px, max(minHeight.px, heightPx))).dp
-        }
+        return pxToDp(min(modifier.maxHeight.px, max(modifier.minHeight.px, heightPx))).dp
     }
 
     private fun setResizeCursor(isV: Boolean, isH: Boolean, borderFlags: Int, ctx: KoolContext) {
@@ -215,27 +245,14 @@ private class ResizeHelper(
     }
 
     companion object {
+        val factory: (UiNode, UiSurface) -> WindowNode = { parent, surface -> WindowNode(parent, surface) }
+
         const val TOP_BORDER = 1
         const val BOTTOM_BORDER = 2
         const val LEFT_BORDER = 4
         const val RIGHT_BORDER = 8
         const val V_BORDER = TOP_BORDER or BOTTOM_BORDER
         const val H_BORDER = LEFT_BORDER or RIGHT_BORDER
-
-        fun getBorder(node: UiNode, pos: Vec2f, borderWidth: Float): Int {
-            var flags = 0
-            if (pos.y < borderWidth) {
-                flags = TOP_BORDER
-            } else if (pos.y > node.heightPx - borderWidth) {
-                flags = BOTTOM_BORDER
-            }
-            if (pos.x < borderWidth) {
-                flags = flags or LEFT_BORDER
-            } else if (pos.x > node.widthPx - borderWidth) {
-                flags = flags or RIGHT_BORDER
-            }
-            return flags
-        }
     }
 }
 

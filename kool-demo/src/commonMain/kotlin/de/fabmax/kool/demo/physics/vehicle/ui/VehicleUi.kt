@@ -21,7 +21,7 @@ class VehicleUi(val vehicle: DemoVehicle) {
         background = Color("00000070")
     )
 
-    val uiSurface = UiSurface(colors = menuColors) {
+    val uiSurface = Panel(colors = menuColors) {
         val themeSizes = Settings.uiSize.use().sizes
         val nrmFont = themeSizes.normalText
         surface.sizes = themeSizes.copy(
@@ -31,10 +31,18 @@ class VehicleUi(val vehicle: DemoVehicle) {
 
         modifier
             .background(null)
-            .width(Grow.Std)
-            .height(Grow.Std)
-
+            .layout(CellLayout)
+            .width(WrapContent)
+            .height(WrapContent)
+            .align(AlignmentX.Start, AlignmentY.Bottom)
         dashboard()
-        timerUi()
+
+        surface.popup().apply {
+            modifier
+                .width(WrapContent)
+                .height(WrapContent)
+                .align(AlignmentX.Center, AlignmentY.Top)
+            timerUi()
+        }
     }
 }

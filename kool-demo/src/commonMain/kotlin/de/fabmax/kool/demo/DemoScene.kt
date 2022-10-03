@@ -78,11 +78,11 @@ abstract class DemoScene(val name: String) {
 
         val scrollState = ScrollState()
 
-        return UiSurface(
+        return Panel(
             colors = Colors.darkColors(accent, accentVariant, onAccent = Color.WHITE)
         ) {
             if (!isMenu.use()) {
-                return@UiSurface
+                return@Panel Unit
             }
 
             surface.sizes = Settings.uiSize.use().sizes
@@ -92,7 +92,6 @@ abstract class DemoScene(val name: String) {
                 .height(Grow(1f, max = WrapContent))
                 .align(AlignmentX.End, AlignmentY.Top)
                 .margin(UiSizes.baseSize * 2f)
-                .layout(ColumnLayout)
                 .background(RoundRectBackground(colors.background, cornerRadius))
 
             TitleBar(titleTxt, cornerRadius)

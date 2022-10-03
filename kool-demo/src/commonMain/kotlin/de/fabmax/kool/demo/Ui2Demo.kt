@@ -86,33 +86,30 @@ class Ui2Demo : DemoScene("UI2 Demo") {
             height.set(Dp(700f))
         }
 
-        +UiSurface {
+        +Window(windowState) {
             surface.sizes = selectedUiSize.use()
             surface.colors = themeColors[selectedColors.use()].second
 
-            val minimizeListener: (PointerEvent) -> Unit = { isMinimizedToTitle.set(true) }
-            val maximizeListener: (PointerEvent) -> Unit = { isMinimizedToTitle.set(false) }
+            modifier
+                .isMinimizedToTitle(isMinimizedToTitle.use())
+                .onCloseClicked { println("close clicked") }
+                .minSize(200.dp, 200.dp)
+            if (!isMinimizedToTitle.use()) modifier.onMinimizeClicked { isMinimizedToTitle.set(true) }
+            if (isMinimizedToTitle.use()) modifier.onMaximizeClicked { isMinimizedToTitle.set(false) }
 
-            Windowed(
-                windowState,
-                "UI window",
-                isMinimizedToTitleBar = isMinimizedToTitle.use(),
-                onCloseClicked = { println("close clicked") },
-                onMinimizeClicked = if (!isMinimizedToTitle.use()) minimizeListener else null,
-                onMaximizeClicked = if (isMinimizedToTitle.use()) maximizeListener else null,
-                minWidth = 200.dp,
-                minHeight = 200.dp
-            ) {
-                modifier
-                    .padding(horizontal = sizes.gap, vertical = sizes.largeGap)
-                    .layout(ColumnLayout)
-
-                TestContent(listItems)
+            TitleBar("UI Window")
+            if (!isMinimizedToTitle.value) {
+                WindowContent(listItems)
             }
+
         }.apply { printTiming = true }
     }
 
-    fun UiScope.TestContent(listItems: MutableList<String>) {
+    fun UiScope.WindowContent(listItems: MutableList<String>) = Box(Grow.Std, Grow.Std) {
+        modifier
+            .padding(horizontal = sizes.gap, vertical = sizes.largeGap)
+            .layout(ColumnLayout)
+
         Row {
             modifier.margin(bottom = sizes.smallGap)
 

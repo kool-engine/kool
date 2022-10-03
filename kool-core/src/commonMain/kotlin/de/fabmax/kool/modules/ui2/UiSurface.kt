@@ -11,11 +11,10 @@ import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.util.*
 
-class UiSurface(
+open class UiSurface(
     colors: Colors = Colors.darkColors(),
     sizes: Sizes = Sizes.medium(),
-    name: String = "uiSurface",
-    private val uiBlock: UiScope.() -> Unit
+    name: String = "uiSurface"
 ) : Group(name) {
 
     private val meshLayers = TreeMap<Int, MeshLayer>()
@@ -38,6 +37,8 @@ class UiSurface(
     var printTiming = false
 
     var isInputEnabled = true
+
+    var content: (UiScope.() -> Unit)? = null
 
     // colorsState and sizesState are private and use()d internally by UiSurface
     // for all other consumers the values are directly exposed
@@ -153,10 +154,11 @@ class UiSurface(
     }
 
     private fun composeContent() {
-        viewport.Box {
-            modifier.backgroundColor(colorsState.use().background)
+        with(viewport) {
             sizesState.use()
-            uiBlock()
+            colorsState.use()
+
+            content?.invoke(this)
         }
     }
 

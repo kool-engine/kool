@@ -51,13 +51,11 @@ class DebugOverlay(position: Position = Position.UPPER_RIGHT) {
                 }
             }
 
-            +UiSurface(
+            +Panel(
                 name = "overview",
                 sizes = Sizes.small(),
                 colors = Colors.darkColors(accent = Color("b2ff00"), background = Color("10101080"))
             ) {
-                modifier.layout(ColumnLayout)
-
                 when (position) {
                     Position.UPPER_LEFT -> modifier.align(AlignmentX.Start, AlignmentY.Top)
                     Position.UPPER_RIGHT -> modifier.align(AlignmentX.End, AlignmentY.Top)

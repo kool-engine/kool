@@ -44,7 +44,6 @@ class Dashboard : ComposableComponent {
 
     override fun UiScope.compose() = Box {
         modifier
-            .align(AlignmentX.Start, AlignmentY.Bottom)
             .width(UiSizes.baseSize * 12f)
             .height(UiSizes.baseSize * 3.5f)
             .background(DashboardBackground(colors.background))

@@ -1,9 +1,5 @@
 package de.fabmax.kool.modules.ui2
 
-@DslMarker
-annotation class UiScopeMarker
-
-@UiScopeMarker
 interface UiScope {
     val surface: UiSurface
     val uiNode: UiNode
