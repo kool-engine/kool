@@ -197,6 +197,9 @@ open class Group(name: String? = null) : Node(name) {
         addNode(this)
     }
 
+    operator fun Node.unaryMinus() =
+        removeNode(this)
+
     fun translate(t: Vec3f) = translate(t.x, t.y, t.z)
 
     fun translate(tx: Float, ty: Float, tz: Float) = translate(tx.toDouble(), ty.toDouble(), tz.toDouble())
