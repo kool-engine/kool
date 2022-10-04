@@ -5,6 +5,7 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.gltf.GltfFile
 import de.fabmax.kool.modules.gltf.loadGltfModel
 import de.fabmax.kool.modules.ksl.KslUnlitShader
+import de.fabmax.kool.pipeline.CullMethod
 import de.fabmax.kool.pipeline.OffscreenRenderPass2d
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.ao.AoPipeline
@@ -86,7 +87,10 @@ fun Scene.helloRenderToTexture() {
                 origin.set(-1f, -1f, 0f)
             }
         }
-        shader = KslUnlitShader { color { textureColor(off.colorTexture) } }
+        shader = KslUnlitShader {
+            color { textureColor(off.colorTexture) }
+            pipeline { cullMethod = CullMethod.NO_CULLING }
+        }
     }
 }
 
