@@ -114,7 +114,7 @@ private object HorizontalLayout {
             when (val childW = child.modifier.width) {
                 is Dp -> remainingSpace -= childW.px
                 is Grow -> totalWeight += childW.weight
-                WrapContent -> remainingSpace -= child.contentWidthPx
+                FitContent -> remainingSpace -= child.contentWidthPx
             }
             remainingSpace -= max(prevMargin, child.marginStartPx)
             prevMargin = child.marginEndPx

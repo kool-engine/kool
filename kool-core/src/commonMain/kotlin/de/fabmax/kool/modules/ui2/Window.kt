@@ -10,10 +10,10 @@ import kotlin.math.max
 import kotlin.math.min
 
 open class WindowState {
-    val xDp = mutableStateOf(Dp.ZERO)
-    val yDp = mutableStateOf(Dp.ZERO)
-    val width: MutableStateValue<Dimension> = mutableStateOf(WrapContent)
-    val height: MutableStateValue<Dimension> = mutableStateOf(WrapContent)
+    val x = mutableStateOf(Dp.ZERO)
+    val y = mutableStateOf(Dp.ZERO)
+    val width: MutableStateValue<Dimension> = mutableStateOf(FitContent)
+    val height: MutableStateValue<Dimension> = mutableStateOf(FitContent)
 
     val closeButtonHovered = mutableStateOf(false)
     val minimizeButtonHovered = mutableStateOf(false)
@@ -25,7 +25,22 @@ open class WindowState {
     var dragStartWidth = 0f
     var dragStartHeight = 0f
 
-    val dockedTo = mutableStateOf<DockingHost.DockingPane?>(null)
+    val dockedTo = mutableStateOf<DockingHost.DockingNode?>(null)
+
+    fun setWindowLocation(x: Dp, y: Dp) {
+        this.x.set(x)
+        this.y.set(y)
+    }
+
+    fun setWindowSize(width: Dp, height: Dp) {
+        this.width.set(width)
+        this.height.set(height)
+    }
+
+    fun setWindowBounds(x: Dp, y: Dp, width: Dp, height: Dp) {
+        setWindowLocation(x, y)
+        setWindowSize(width, height)
+    }
 }
 
 interface WindowScope : UiScope {
@@ -104,19 +119,19 @@ fun Window(
             window.modifier.border(RoundRectBorder(it, this.sizes.gap, this.sizes.borderWidth))
         }
 
-        // set window location and size according to window state
-        val dock = state.dockedTo.use()
-        if (dock != null) {
-            // window is docked -> set position according to docking pane
-            dock.setupDockPosition(window)
-        } else {
-            // floating window
+//        // set window location and size according to window state
+//        val dock = state.dockedTo.use()
+//        if (dock != null) {
+//            // window is docked -> set position according to docking pane
+//            dock.setupDockPosition(window)
+//        } else {
+//            // floating window
             window.modifier
                 .width(state.width.use())
-                .height(if (window.modifier.isMinimizedToTitle) WrapContent else state.height.use())
+                .height(if (window.modifier.isMinimizedToTitle) FitContent else state.height.use())
                 .align(AlignmentX.Start, AlignmentY.Top)
-                .margin(start = state.xDp.use(), top = state.yDp.use())
-        }
+                .margin(start = state.x.use(), top = state.y.use())
+//        }
 
         // register resize hover and drag listeners if window is resizable
         if (window.modifier.isVerticallyResizable || window.modifier.isHorizontallyResizable) {
@@ -141,24 +156,18 @@ fun WindowScope.TitleBar(title: String, isDraggable: Boolean = true) {
                     if (getBorderFlags(it.position, 4.dp) != 0) {
                         it.reject()
                     } else {
-                        if (isDocked) {
-                            // relocate window position if window was docked, such that cursor is centered over title bar
-                            val widthPx = (windowState.width.value as? Dp)?.px ?: 100f
-                            windowState.xDp.set(pxToDp(it.screenPosition.x - widthPx * 0.5f).dp)
-                            windowState.yDp.set(this@TitleBar.modifier.marginTop)
-                        }
-                        windowState.dragStartX = windowState.xDp.value.px
-                        windowState.dragStartY = windowState.yDp.value.px
-                        windowModifier.dockingHost?.onWindowMoveStart(this@TitleBar)
+                        windowState.dragStartX = windowState.x.value.px
+                        windowState.dragStartY = windowState.y.value.px
+                        windowModifier.dockingHost?.onWindowMoveStart(it, this@TitleBar)
                     }
                 }
                 .onDrag {
-                    windowState.xDp.set(pxToDp(windowState.dragStartX + it.pointer.dragDeltaX.toFloat()).dp)
-                    windowState.yDp.set(pxToDp(windowState.dragStartY + it.pointer.dragDeltaY.toFloat()).dp)
-                    windowModifier.dockingHost?.onWindowMove(it)
+                    windowState.x.set(pxToDp(windowState.dragStartX + it.pointer.dragDeltaX.toFloat()).dp)
+                    windowState.y.set(pxToDp(windowState.dragStartY + it.pointer.dragDeltaY.toFloat()).dp)
+                    windowModifier.dockingHost?.onWindowMove(it, this@TitleBar)
                 }
                 .onDragEnd {
-                    windowModifier.dockingHost?.onWindowMoveEnd(this@TitleBar)
+                    windowModifier.dockingHost?.onWindowMoveEnd(it, this@TitleBar)
                 }
         }
 
@@ -220,8 +229,8 @@ class WindowNode(parent:UiNode?, surface: UiSurface) : UiNode(parent, surface), 
         } else {
             ev.reject()
         }
-        state.dragStartX = state.xDp.value.px
-        state.dragStartY = state.yDp.value.px
+        state.dragStartX = state.x.value.px
+        state.dragStartY = state.y.value.px
         state.dragStartWidth = uiNode.widthPx
         state.dragStartHeight = uiNode.heightPx
     }
@@ -236,7 +245,7 @@ class WindowNode(parent:UiNode?, surface: UiSurface) : UiNode(parent, surface), 
             } else if (state.borderFlags and LEFT_BORDER != 0) {
                 val w = clampWidthToDp(state.dragStartWidth - dx)
                 state.width.set(w)
-                state.xDp.set(pxToDp(state.dragStartX + state.dragStartWidth - w.px).dp)
+                state.x.set(pxToDp(state.dragStartX + state.dragStartWidth - w.px).dp)
             }
         }
 
@@ -247,7 +256,7 @@ class WindowNode(parent:UiNode?, surface: UiSurface) : UiNode(parent, surface), 
             } else if (state.borderFlags and TOP_BORDER != 0) {
                 val h = clampHeightToDp(state.dragStartHeight - dy)
                 state.height.set(h)
-                state.yDp.set(pxToDp(state.dragStartY + state.dragStartHeight - h.px).dp)
+                state.y.set(pxToDp(state.dragStartY + state.dragStartHeight - h.px).dp)
             }
         }
     }

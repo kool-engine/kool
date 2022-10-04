@@ -36,7 +36,7 @@ class DemoMenu(val demoLoader: DemoLoader) {
 
             modifier
                 .layout(CellLayout)
-                .width(WrapContent)
+                .width(FitContent)
                 .padding(start = UiSizes.menuWidth * -1f)
                 .height(Grow.Std)
                 .background(background = null)

@@ -87,7 +87,7 @@ fun TextScope.sectionTitleStyle() {
         .textAlignX(AlignmentX.Center)
 }
 
-fun TextScope.labelStyle(width: Dimension = WrapContent) {
+fun TextScope.labelStyle(width: Dimension = FitContent) {
     modifier
         .width(width)
         .align(yAlignment = AlignmentY.Center)

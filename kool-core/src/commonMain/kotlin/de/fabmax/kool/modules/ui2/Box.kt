@@ -1,39 +1,39 @@
 package de.fabmax.kool.modules.ui2
 
 inline fun UiScope.Column(
-    width: Dimension = WrapContent,
-    height: Dimension = WrapContent,
+    width: Dimension = FitContent,
+    height: Dimension = FitContent,
     block: UiScope.() -> Unit
 ) = Box(ColumnLayout, width, height, block)
 
 inline fun UiScope.Row(
-    width: Dimension = WrapContent,
-    height: Dimension = WrapContent,
+    width: Dimension = FitContent,
+    height: Dimension = FitContent,
     block: UiScope.() -> Unit
 ) = Box(RowLayout, width, height, block)
 
 inline fun UiScope.ReverseColumn(
-    width: Dimension = WrapContent,
-    height: Dimension = WrapContent,
+    width: Dimension = FitContent,
+    height: Dimension = FitContent,
     block: UiScope.() -> Unit
 ) = Box(ReverseColumnLayout, width, height, block)
 
 inline fun UiScope.ReverseRow(
-    width: Dimension = WrapContent,
-    height: Dimension = WrapContent,
+    width: Dimension = FitContent,
+    height: Dimension = FitContent,
     block: UiScope.() -> Unit
 ) = Box(ReverseRowLayout, width, height, block)
 
 inline fun UiScope.Box(
-    width: Dimension = WrapContent,
-    height: Dimension = WrapContent,
+    width: Dimension = FitContent,
+    height: Dimension = FitContent,
     block: UiScope.() -> Unit
 ) = Box(CellLayout, width, height, block)
 
 inline fun UiScope.Box(
     layout: Layout,
-    width: Dimension = WrapContent,
-    height: Dimension = WrapContent,
+    width: Dimension = FitContent,
+    height: Dimension = FitContent,
     block: UiScope.() -> Unit
 ): UiScope {
     val box = uiNode.createChild(BoxNode::class, BoxNode.factory)

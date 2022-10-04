@@ -10,8 +10,8 @@ import kotlin.reflect.KProperty
 open class UiModifier(val surface: UiSurface) {
     private val properties = mutableListOf<PropertyHolder<*>>()
 
-    var width: Dimension by property(WrapContent)
-    var height: Dimension by property(WrapContent)
+    var width: Dimension by property(FitContent)
+    var height: Dimension by property(FitContent)
     var layout: Layout by property(CellLayout)
     var background: UiRenderer<UiNode>? by property(null)
     var border: UiRenderer<UiNode>? by property(null)

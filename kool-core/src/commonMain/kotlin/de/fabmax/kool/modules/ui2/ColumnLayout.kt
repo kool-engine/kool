@@ -114,7 +114,7 @@ private object VerticalLayout {
             when (val childH = child.modifier.height) {
                 is Dp -> remainingSpace -= childH.px
                 is Grow -> totalWeight += childH.weight
-                WrapContent -> remainingSpace -= child.contentHeightPx
+                FitContent -> remainingSpace -= child.contentHeightPx
             }
             remainingSpace -= max(prevMargin, child.marginTopPx)
             prevMargin = child.marginBottomPx

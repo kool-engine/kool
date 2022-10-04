@@ -80,8 +80,8 @@ class Ui2Demo : DemoScene("UI2 Demo") {
         setupUiScene(true)
 
         windowState.apply {
-            xDp.set(Dp(200f))
-            yDp.set(Dp(200f))
+            x.set(Dp(200f))
+            y.set(Dp(200f))
             width.set(Dp(500f))
             height.set(Dp(700f))
         }
@@ -111,8 +111,8 @@ class Ui2Demo : DemoScene("UI2 Demo") {
             }//.apply { printTiming = true }
 
             moreWindowStates.forEachIndexed { i, state ->
-                state.xDp.set(Dp(850f + i * 30f))
-                state.yDp.set(Dp(200f + i * 30f))
+                state.x.set(Dp(850f + i * 30f))
+                state.y.set(Dp(200f + i * 30f))
                 state.width.set(Dp(500f))
                 state.height.set(Dp(500f))
                 +Window(state) {
@@ -289,7 +289,7 @@ class Ui2Demo : DemoScene("UI2 Demo") {
                         .textAlignY(AlignmentY.Center)
                         .padding(sizes.smallGap)
                         .width(Grow.Std)
-                        .height(if (isLarge) 64.dp else WrapContent)
+                        .height(if (isLarge) 64.dp else FitContent)
                         .backgroundColor(bgColor)
                         .onHover { hoveredListItem.set(item) }
                         .onExit { hoveredListItem.set(null) }

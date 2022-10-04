@@ -32,15 +32,15 @@ class VehicleUi(val vehicle: DemoVehicle) {
         modifier
             .background(null)
             .layout(CellLayout)
-            .width(WrapContent)
-            .height(WrapContent)
+            .width(FitContent)
+            .height(FitContent)
             .align(AlignmentX.Start, AlignmentY.Bottom)
         dashboard()
 
         surface.popup().apply {
             modifier
-                .width(WrapContent)
-                .height(WrapContent)
+                .width(FitContent)
+                .height(FitContent)
                 .align(AlignmentX.Center, AlignmentY.Top)
             timerUi()
         }

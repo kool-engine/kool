@@ -119,7 +119,7 @@ abstract class UiNode(val parent: UiNode?, override val surface: UiSurface) : Ui
 
     private fun dimensionToPx(dim: Dimension, contentPx: Float, scaledGrowSpace: Float, isGrowAllowed: Boolean): Float {
         return when (dim) {
-            WrapContent -> contentPx
+            FitContent -> contentPx
             is Dp -> dim.px
             is Grow -> {
                 if (isGrowAllowed) {

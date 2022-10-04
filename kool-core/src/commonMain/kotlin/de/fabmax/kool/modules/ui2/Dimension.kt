@@ -4,9 +4,9 @@ import kotlin.jvm.JvmInline
 
 sealed interface Dimension
 
-object WrapContent : Dimension {
+object FitContent : Dimension {
     override fun toString(): String {
-        return "WrapContent"
+        return "FitContent"
     }
 }
 

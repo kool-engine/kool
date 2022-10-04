@@ -31,8 +31,8 @@ interface UiScope {
 inline fun UiScope.Popup(
     screenPxX: Float,
     screenPxY: Float,
-    width: Dimension = WrapContent,
-    height: Dimension = WrapContent,
+    width: Dimension = FitContent,
+    height: Dimension = FitContent,
     layout: Layout = ColumnLayout,
     block: UiScope.() -> Unit
 ): UiScope {

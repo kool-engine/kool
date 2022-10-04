@@ -89,7 +89,7 @@ abstract class DemoScene(val name: String) {
             val cornerRadius = sizes.gap
             modifier
                 .width(UiSizes.menuWidth)
-                .height(Grow(1f, max = WrapContent))
+                .height(Grow(1f, max = FitContent))
                 .align(AlignmentX.End, AlignmentY.Top)
                 .margin(UiSizes.baseSize * 2f)
                 .background(RoundRectBackground(colors.background, cornerRadius))
