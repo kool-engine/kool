@@ -123,7 +123,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
         +deferredPipeline.createDefaultOutputQuad()
         makeLightOverlays()
 
-        onUpdate += { evt ->
+        onUpdate += {
             lights.forEach { it.animate(Time.deltaT) }
         }
     }

@@ -168,7 +168,7 @@ class GltfDemo : DemoScene("glTF Models") {
             zoom = currentModel.zoom
             translation.set(currentModel.lookAt)
 
-            onUpdate += { ev ->
+            onUpdate += {
                 var translationTarget = camTranslationTarget
                 if (trackModel) {
                     val model = currentModel.forwardModel
