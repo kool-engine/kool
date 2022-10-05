@@ -1,7 +1,9 @@
-package de.fabmax.kool.demo
+package de.fabmax.kool.demo.uidemo
 
 import de.fabmax.kool.AssetManager
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.demo.DemoLoader
+import de.fabmax.kool.demo.DemoScene
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.scene.Scene
@@ -9,8 +11,7 @@ import de.fabmax.kool.toString
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 
-class Ui2Demo : DemoScene("UI2 Demo") {
-    private val selectedColors = mutableStateOf(0)
+class UiDemo : DemoScene("UI Demo") {
     private val themeColors = listOf(
         "Neon" to Colors.darkColors(Color("b2ff00"), Color("7cb200")),
         "Lime" to Colors.darkColors(MdColor.LIME, MdColor.LIME tone 800),
@@ -41,7 +42,9 @@ class Ui2Demo : DemoScene("UI2 Demo") {
     private val smallUi = Sizes.small()
     private val mediumUi = Sizes.medium()
     private val largeUi = Sizes.large()
-    private var selectedUiSize = mutableStateOf(mediumUi)
+
+    val selectedColors = mutableStateOf(themeColors[0].second)
+    val selectedUiSize = mutableStateOf(mediumUi)
 
     private var imageTex: Texture2d? = null
 
@@ -90,11 +93,12 @@ class Ui2Demo : DemoScene("UI2 Demo") {
         for (i in 1..3) {
             moreWindowStates += WindowState()
         }
+        val golWindow = GameOfLifeWindow(this@UiDemo)
 
         +DockingHost().apply {
             +Window(windowState) {
                 surface.sizes = selectedUiSize.use()
-                surface.colors = themeColors[selectedColors.use()].second
+                surface.colors = selectedColors.use()
 
                 modifier
                     .isMinimizedToTitle(isMinimizedToTitle.use())
@@ -117,12 +121,14 @@ class Ui2Demo : DemoScene("UI2 Demo") {
                 state.height.set(Dp(500f))
                 +Window(state) {
                     surface.sizes = selectedUiSize.use()
-                    surface.colors = themeColors[selectedColors.use()].second
+                    surface.colors = selectedColors.use()
 
                     TitleBar("Another Window $i")
                     Text("This is another window, which has no content") {  }
                 }
             }
+
+            +golWindow.window
         }
     }
 
@@ -184,8 +190,8 @@ class Ui2Demo : DemoScene("UI2 Demo") {
                     .margin(sizes.smallGap)
                     .width(sizes.gap * 10f)
                     .items(themeColors.map { it.first })
-                    .selectedIndex(selectedColors.use())
-                    .onItemSelected { selectedColors.set(it) }
+                    .selectedIndex(themeColors.indexOfFirst { it.second == selectedColors.value })
+                    .onItemSelected { selectedColors.set(themeColors[it].second) }
             }
         }
 

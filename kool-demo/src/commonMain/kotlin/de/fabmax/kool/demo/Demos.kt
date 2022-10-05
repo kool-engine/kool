@@ -10,6 +10,7 @@ import de.fabmax.kool.demo.physics.ragdoll.RagdollDemo
 import de.fabmax.kool.demo.physics.terrain.TerrainDemo
 import de.fabmax.kool.demo.physics.vehicle.VehicleDemo
 import de.fabmax.kool.demo.procedural.ProceduralDemo
+import de.fabmax.kool.demo.uidemo.UiDemo
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ColorGradient
 import de.fabmax.kool.util.MdColor
@@ -57,7 +58,7 @@ object Demos {
         entry("instance", "Instanced Drawing") { InstanceDemo() }
         entry("simplification", "Simplification") { SimplificationDemo() }
         entry("tree", "Procedural Tree") { TreeDemo() }
-        entry("ui2", "User Interface") { Ui2Demo() }
+        entry("ui", "User Interface") { UiDemo() }
     }
 
     val hiddenDemos = Category("Hidden", true, 0.75f, 0.95f).apply {

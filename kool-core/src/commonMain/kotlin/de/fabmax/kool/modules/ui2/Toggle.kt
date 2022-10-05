@@ -27,8 +27,8 @@ open class CheckboxModifier(surface: UiSurface) : ToggleModifier(surface) {
     var checkboxSize: Dp by property { it.sizes.checkboxSize }
 
     var borderColor: Color by property { it.colors.accentVariant }
-    var backgroundColorUnchecked: Color by property { it.colors.accentVariant.withAlpha(0.5f) }
-    var backgroundColorChecked: Color by property { it.colors.accent }
+    var backgroundColor: Color by property { it.colors.accentVariant.withAlpha(0.5f) }
+    var fillColor: Color by property { it.colors.accent }
     var checkMarkColor: Color by property { it.colors.onAccent }
 }
 
@@ -57,13 +57,13 @@ fun <T: ToggleModifier> T.onToggle(block: ((Boolean) -> Unit)?): T { onToggle = 
 fun <T: CheckboxModifier> T.checkboxSize(size: Dp): T { checkboxSize = size; return this }
 fun <T: CheckboxModifier> T.colors(
     borderColor: Color = this.borderColor,
-    backgroundColorUnchecked: Color = this.backgroundColorUnchecked,
-    backgroundColorChecked: Color = this.backgroundColorChecked,
+    backgroundColor: Color = this.backgroundColor,
+    fillColor: Color = this.fillColor,
     checkMarkColor: Color = this.checkMarkColor
 ): T {
     this.borderColor = borderColor
-    this.backgroundColorUnchecked = backgroundColorUnchecked
-    this.backgroundColorChecked = backgroundColorChecked
+    this.backgroundColor = backgroundColor
+    this.fillColor = fillColor
     this.checkMarkColor = checkMarkColor
     return this
 }
@@ -161,9 +161,7 @@ abstract class ToggleNode(
 
     override fun applyDefaults() {
         super.applyDefaults()
-        modifier
-            .onClick(this)
-            .padding(bottom = 1.dp)
+        modifier.onClick(this)
     }
 
     override fun onClick(ev: PointerEvent) {
@@ -192,9 +190,9 @@ class CheckboxNode(parent: UiNode?, surface: UiSurface) : ToggleNode(parent, sur
         }
 
         val bgColor = when (p) {
-            0f -> modifier.backgroundColorUnchecked
-            1f -> modifier.backgroundColorChecked
-            else -> modifier.backgroundColorUnchecked.mix(modifier.backgroundColorChecked, p)
+            0f -> modifier.backgroundColor
+            1f -> modifier.fillColor
+            else -> modifier.backgroundColor.mix(modifier.fillColor, p)
         }
         draw.localRoundRect(c.x - r, c.y - r, r * 2f, r * 2f, 4.dp.px, bgColor)
 
