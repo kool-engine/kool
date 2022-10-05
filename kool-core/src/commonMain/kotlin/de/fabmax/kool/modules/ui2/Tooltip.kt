@@ -26,7 +26,7 @@ class MutableTooltipState(val delay: Double = 1.0) : MutableStateValue<Boolean>(
 fun UiScope.Tooltip(tooltipState: MutableTooltipState, text: String, yOffset: Dp = (-30).dp, target: UiScope? = this) =
     Tooltip(tooltipState, target) {
         modifier
-            .margin(top = pxToDp(tooltipState.pointerPos.y).dp + yOffset)
+            .margin(top = Dp.fromPx(tooltipState.pointerPos.y) + yOffset)
             .layout(CellLayout)
             .background(UiRenderer { node ->
                 node.apply {

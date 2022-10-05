@@ -12,9 +12,6 @@ interface UiScope {
 
     val Int.dp: Dp get() = Dp(this.toFloat())
     val Float.dp: Dp get() = Dp(this)
-    val Dp.px: Float get() = value * UiScale.measuredScale
-
-    fun pxToDp(px: Float) = px / UiScale.measuredScale
 
     fun <T: Any?> MutableStateValue<T>.use(): T = use(surface)
     fun <T> MutableStateList<T>.use(): MutableStateList<T> = use(surface)
@@ -38,7 +35,7 @@ inline fun UiScope.Popup(
 ): UiScope {
     return surface.popup().apply {
         modifier
-            .margin(start = pxToDp(screenPxX).dp, top = pxToDp(screenPxY).dp)
+            .margin(start = Dp.fromPx(screenPxX), top = Dp.fromPx(screenPxY))
             .width(width)
             .height(height)
             .backgroundColor(colors.background)

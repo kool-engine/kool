@@ -66,6 +66,11 @@ abstract class UiNode(val parent: UiNode?, override val surface: UiSurface) : Ui
         result.set(screenX.toFloat() - leftPx, screenY.toFloat() - topPx)
     fun toLocal(screenX: Float, screenY: Float, result: MutableVec2f = MutableVec2f()): MutableVec2f =
         result.set(screenX - leftPx, screenY - topPx)
+    fun toLocal(screen: Vec2f, result: MutableVec2f = MutableVec2f()) = toLocal(screen.x, screen.y, result)
+
+    fun toScreen(localX: Float, localY: Float, result: MutableVec2f = MutableVec2f()): MutableVec2f =
+        result.set(localX + leftPx, localY + topPx)
+    fun toScreen(local: Vec2f, result: MutableVec2f = MutableVec2f()) = toScreen(local.x, local.y, result)
 
     fun isInBounds(point: Vec2f): Boolean {
         return point.x in leftPx..rightPx && point.y in topPx..bottomPx

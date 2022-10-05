@@ -46,9 +46,10 @@ open class WindowState {
 interface WindowScope : UiScope {
     override val modifier: WindowModifier
     val windowState: WindowState
+    val dockingHost: DockingHost? get() = windowState.dockedTo.value?.dockingHost
     val isDocked: Boolean get() = windowState.dockedTo.value != null
 
-    fun getBorderFlags(localPosition: Vec2f, borderWidth: Dp): Int
+    fun getBorderFlags(localPosition: Vec2f): Int
 }
 
 open class WindowModifier(surface: UiSurface) : UiModifier(surface) {
@@ -119,19 +120,12 @@ fun Window(
             window.modifier.border(RoundRectBorder(it, this.sizes.gap, this.sizes.borderWidth))
         }
 
-//        // set window location and size according to window state
-//        val dock = state.dockedTo.use()
-//        if (dock != null) {
-//            // window is docked -> set position according to docking pane
-//            dock.setupDockPosition(window)
-//        } else {
-//            // floating window
-            window.modifier
-                .width(state.width.use())
-                .height(if (window.modifier.isMinimizedToTitle) FitContent else state.height.use())
-                .align(AlignmentX.Start, AlignmentY.Top)
-                .margin(start = state.x.use(), top = state.y.use())
-//        }
+        // set window location and size according to window state
+        window.modifier
+            .width(state.width.use())
+            .height(if (window.modifier.isMinimizedToTitle) FitContent else state.height.use())
+            .align(AlignmentX.Start, AlignmentY.Top)
+            .margin(start = state.x.use(), top = state.y.use())
 
         // register resize hover and drag listeners if window is resizable
         if (window.modifier.isVerticallyResizable || window.modifier.isHorizontallyResizable) {
@@ -151,24 +145,7 @@ fun WindowScope.TitleBar(title: String, isDraggable: Boolean = true) {
             .background(TitleBarBackground(windowModifier.titleBarColor, sizes.gap.px, windowModifier.isMinimizedToTitle))
 
         if (isDraggable) {
-            modifier
-                .onDragStart {
-                    if (getBorderFlags(it.position, 4.dp) != 0) {
-                        it.reject()
-                    } else {
-                        windowState.dragStartX = windowState.x.value.px
-                        windowState.dragStartY = windowState.y.value.px
-                        windowModifier.dockingHost?.onWindowMoveStart(it, this@TitleBar)
-                    }
-                }
-                .onDrag {
-                    windowState.x.set(pxToDp(windowState.dragStartX + it.pointer.dragDeltaX.toFloat()).dp)
-                    windowState.y.set(pxToDp(windowState.dragStartY + it.pointer.dragDeltaY.toFloat()).dp)
-                    windowModifier.dockingHost?.onWindowMove(it, this@TitleBar)
-                }
-                .onDragEnd {
-                    windowModifier.dockingHost?.onWindowMoveEnd(it, this@TitleBar)
-                }
+            modifier.dragListener(WindowMoveDragHandler(this@TitleBar))
         }
 
         Text(title) {
@@ -190,12 +167,40 @@ fun WindowScope.TitleBar(title: String, isDraggable: Boolean = true) {
     }
 }
 
+class WindowMoveDragHandler(val window: WindowScope) : Draggable {
+    override fun onDragStart(ev: PointerEvent) {
+        with(window) {
+            if (getBorderFlags(ev.position) != 0) {
+                ev.reject()
+            } else {
+                windowState.dragStartX = windowState.x.value.px
+                windowState.dragStartY = windowState.y.value.px
+                modifier.dockingHost?.onWindowMoveStart(ev, this)
+            }
+        }
+    }
+
+    override fun onDrag(ev: PointerEvent) {
+        with(window) {
+            windowState.x.set(Dp.fromPx(windowState.dragStartX + ev.pointer.dragDeltaX.toFloat()))
+            windowState.y.set(Dp.fromPx(windowState.dragStartY + ev.pointer.dragDeltaY.toFloat()))
+            modifier.dockingHost?.onWindowMove(ev, this)
+        }
+    }
+
+    override fun onDragEnd(ev: PointerEvent) {
+        window.modifier.dockingHost?.onWindowMoveEnd(ev, window)
+    }
+}
+
 class WindowNode(parent:UiNode?, surface: UiSurface) : UiNode(parent, surface), WindowScope, Clickable, Draggable, Hoverable {
     override val modifier = WindowModifier(surface)
 
     lateinit var state: WindowState
     override val windowState: WindowState
         get() = state
+
+    private var resizingDockingNode: DockingHost.DockingNode? = null
 
     override fun onClick(ev: PointerEvent) {
         // default window click handler is empty, but it consumes the click event so that the surface input time
@@ -205,7 +210,7 @@ class WindowNode(parent:UiNode?, surface: UiSurface) : UiNode(parent, surface), 
 
     override fun onHover(ev: PointerEvent) {
         if (!ev.pointer.isDrag) {
-            val borderFlags = getBorderFlags(ev.position, 4.dp)
+            val borderFlags = getBorderFlags(ev.position)
             setResizeCursor(modifier.isVerticallyResizable, modifier.isHorizontallyResizable, borderFlags, ev.ctx)
         }
     }
@@ -221,7 +226,7 @@ class WindowNode(parent:UiNode?, surface: UiSurface) : UiNode(parent, surface), 
         startPos.x -= ev.pointer.dragDeltaX.toFloat()
         startPos.y -= ev.pointer.dragDeltaY.toFloat()
 
-        state.borderFlags = getBorderFlags(ev.position, 4.dp)
+        state.borderFlags = getBorderFlags(ev.position)
         if (modifier.isVerticallyResizable && state.borderFlags and V_BORDER != 0) {
             ev.ctx.inputMgr.cursorShape = InputManager.CursorShape.V_RESIZE
         } else if (modifier.isHorizontallyResizable && state.borderFlags and H_BORDER != 0) {
@@ -229,6 +234,11 @@ class WindowNode(parent:UiNode?, surface: UiSurface) : UiNode(parent, surface), 
         } else {
             ev.reject()
         }
+
+        if (isDocked) {
+            resizingDockingNode = dockingHost?.getNodeContainingSplitEdgeAt(ev.screenPosition)
+        }
+
         state.dragStartX = state.x.value.px
         state.dragStartY = state.y.value.px
         state.dragStartWidth = uiNode.widthPx
@@ -238,35 +248,41 @@ class WindowNode(parent:UiNode?, surface: UiSurface) : UiNode(parent, surface), 
     override fun onDrag(ev: PointerEvent) {
         setResizeCursor(modifier.isVerticallyResizable, modifier.isHorizontallyResizable, state.borderFlags, ev.ctx)
 
-        if (state.borderFlags and H_BORDER != 0) {
-            val dx = ev.pointer.dragDeltaX.toFloat()
-            if (state.borderFlags and RIGHT_BORDER != 0) {
-                state.width.set(clampWidthToDp(state.dragStartWidth + dx))
-            } else if (state.borderFlags and LEFT_BORDER != 0) {
-                val w = clampWidthToDp(state.dragStartWidth - dx)
-                state.width.set(w)
-                state.x.set(pxToDp(state.dragStartX + state.dragStartWidth - w.px).dp)
-            }
-        }
+        if (isDocked) {
+            resizingDockingNode?.moveSplitEdgeTo(ev.screenPosition)
 
-        if (state.borderFlags and V_BORDER != 0) {
-            val dy = ev.pointer.dragDeltaY.toFloat()
-            if (state.borderFlags and BOTTOM_BORDER != 0) {
-                state.height.set(clampHeightToDp(state.dragStartHeight + dy))
-            } else if (state.borderFlags and TOP_BORDER != 0) {
-                val h = clampHeightToDp(state.dragStartHeight - dy)
-                state.height.set(h)
-                state.y.set(pxToDp(state.dragStartY + state.dragStartHeight - h.px).dp)
+        } else {
+            if (state.borderFlags and H_BORDER != 0) {
+                val dx = ev.pointer.dragDeltaX.toFloat()
+                if (state.borderFlags and RIGHT_BORDER != 0) {
+                    state.width.set(clampWidthToDp(state.dragStartWidth + dx))
+                } else if (state.borderFlags and LEFT_BORDER != 0) {
+                    val w = clampWidthToDp(state.dragStartWidth - dx)
+                    state.width.set(w)
+                    state.x.set(Dp.fromPx(state.dragStartX + state.dragStartWidth - w.px))
+                }
+            }
+
+            if (state.borderFlags and V_BORDER != 0) {
+                val dy = ev.pointer.dragDeltaY.toFloat()
+                if (state.borderFlags and BOTTOM_BORDER != 0) {
+                    state.height.set(clampHeightToDp(state.dragStartHeight + dy))
+                } else if (state.borderFlags and TOP_BORDER != 0) {
+                    val h = clampHeightToDp(state.dragStartHeight - dy)
+                    state.height.set(h)
+                    state.y.set(Dp.fromPx(state.dragStartY + state.dragStartHeight - h.px))
+                }
             }
         }
     }
 
     override fun onDragEnd(ev: PointerEvent) {
         ev.ctx.inputMgr.cursorShape = InputManager.CursorShape.DEFAULT
+        resizingDockingNode = null
     }
 
-    override fun getBorderFlags(localPosition: Vec2f, borderWidth: Dp): Int {
-        val borderPx = borderWidth.px
+    override fun getBorderFlags(localPosition: Vec2f): Int {
+        val borderPx = RESIZE_BORDER_WIDTH.px
         var flags = 0
         if (localPosition.y < borderPx) {
             flags = TOP_BORDER
@@ -278,15 +294,21 @@ class WindowNode(parent:UiNode?, surface: UiSurface) : UiNode(parent, surface), 
         } else if (localPosition.x > widthPx - borderPx) {
             flags = flags or RIGHT_BORDER
         }
+
+        if (flags != 0 && dockingHost?.isResizableBorder(toScreen(localPosition)) == false) {
+            // window is docked and hovered edge is non-resizable
+            flags = 0
+        }
+
         return flags
     }
 
     private fun clampWidthToDp(widthPx: Float): Dp {
-        return pxToDp(min(modifier.maxWidth.px, max(modifier.minWidth.px, widthPx))).dp
+        return Dp.fromPx(min(modifier.maxWidth.px, max(modifier.minWidth.px, widthPx)))
     }
 
     private fun clampHeightToDp(heightPx: Float): Dp {
-        return pxToDp(min(modifier.maxHeight.px, max(modifier.minHeight.px, heightPx))).dp
+        return Dp.fromPx(min(modifier.maxHeight.px, max(modifier.minHeight.px, heightPx)))
     }
 
     private fun setResizeCursor(isV: Boolean, isH: Boolean, borderFlags: Int, ctx: KoolContext) {
@@ -301,6 +323,8 @@ class WindowNode(parent:UiNode?, surface: UiSurface) : UiNode(parent, surface), 
 
     companion object {
         val factory: (UiNode, UiSurface) -> WindowNode = { parent, surface -> WindowNode(parent, surface) }
+
+        val RESIZE_BORDER_WIDTH = Dp(4f)
 
         const val TOP_BORDER = 1
         const val BOTTOM_BORDER = 2

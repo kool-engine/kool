@@ -189,7 +189,7 @@ class LazyListNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface
         for (i in from..to) {
             val child = children[i]
             if (i == from) {
-                state.firstElementSizeDp = pxToDp(if (isVertical) child.contentHeightPx else child.contentWidthPx)
+                state.firstElementSizeDp = Dp.fromPx(if (isVertical) child.contentHeightPx else child.contentWidthPx).value
             }
             if (isVertical) {
                 size += child.contentHeightPx + max(prevMargin, child.marginTopPx)
@@ -200,7 +200,7 @@ class LazyListNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface
             }
             count++
         }
-        size = pxToDp(size)
+        size = Dp.fromPx(size).value
         state.averageElementSizeDp = size / count
 
         val viewSize = if (isVertical) state.viewSizeDp.y else state.viewSizeDp.x

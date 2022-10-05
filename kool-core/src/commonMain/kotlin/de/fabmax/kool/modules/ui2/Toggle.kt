@@ -141,7 +141,7 @@ abstract class ToggleNode(
 
     protected open fun isOnClickTarget(ev: PointerEvent): Boolean {
         val d = center().subtract(ev.position)
-        return pxToDp(abs(d.x)) < buttonWidth.value * 0.5f && pxToDp(abs(d.y)) < buttonHeight.value * 0.5f
+        return Dp.fromPx(abs(d.x)) < buttonWidth * 0.5f && Dp.fromPx(abs(d.y)) < buttonHeight * 0.5f
     }
 
     override fun measureContentSize(ctx: KoolContext) {
@@ -226,7 +226,7 @@ class RadioButtonNode(parent: UiNode?, surface: UiSurface) : ToggleNode(parent, 
     override val buttonHeight: Dp get() = modifier.radioButtonSize
 
     override fun isOnClickTarget(ev: PointerEvent): Boolean =
-        pxToDp(ev.position.distance(center())) < buttonWidth.px * 0.5f
+        Dp.fromPx(ev.position.distance(center())) < modifier.radioButtonSize * 0.5f
 
     override fun render(ctx: KoolContext) {
         super.render(ctx)
