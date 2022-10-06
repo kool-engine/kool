@@ -62,7 +62,7 @@ fun Scene.helloRenderToTexture() {
             }
             shader = KslUnlitShader { color { vertexColor() } }
         }
-        onUpdate += { rotate(it.deltaT * 30f, Vec3f.Y_AXIS) }
+        onUpdate += { rotate(Time.deltaT * 30f, Vec3f.Y_AXIS) }
     }
 
     // setup offscreen pass

@@ -1,7 +1,7 @@
 package de.fabmax.kool.modules.audio
 
 import de.fabmax.kool.math.clamp
-import de.fabmax.kool.now
+import de.fabmax.kool.util.Time
 import org.w3c.dom.Audio
 
 actual class AudioClip(val assetPath: String) {
@@ -57,7 +57,7 @@ actual class AudioClip(val assetPath: String) {
     }
 
     actual fun play() {
-        val t = now()
+        val t = Time.precisionTime * 1000.0
         if (t - lastPlay > minIntervalMs) {
             lastPlay = t
             latestClip = nextClip().apply { play() }

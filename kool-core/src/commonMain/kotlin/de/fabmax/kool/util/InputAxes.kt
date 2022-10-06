@@ -13,7 +13,7 @@ open class InputAxes(ctx: KoolContext) : Disposable {
     private val axesList = mutableListOf<Axis>()
     private val axes = mutableMapOf<String, Axis>()
 
-    private val updateAxes: ((KoolContext) -> Unit) = { ctx ->
+    private val updateAxes: ((KoolContext) -> Unit) = {
         for (i in axesList.indices) {
             axesList[i].updateAxisState(Time.deltaT)
         }

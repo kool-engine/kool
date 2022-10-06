@@ -25,7 +25,7 @@ class LoadingScreen(val ctx: KoolContext) : Scene("Loading Screen") {
         +colorMesh {
             shader = unlitShader { }
             val builder = MeshBuilder(geometry)
-            onUpdate += { ev ->
+            onUpdate += {
                 geometry.clear()
                 builder.animateLoading(Time.deltaT)
             }

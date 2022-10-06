@@ -80,7 +80,7 @@ class CamLocalGrass(val camera: Camera, val terrain: Terrain, val wind: Wind, va
         grassQuads.depthShader = shadowShader
         grassQuads.normalLinearDepthShader = aoShader
 
-        camera.onCameraUpdated += { ctx ->
+        camera.onCameraUpdated += {
             if (grassQuads.isVisible && updateFrameIdx != Time.frameCount) {
                 updateFrameIdx = Time.frameCount
 

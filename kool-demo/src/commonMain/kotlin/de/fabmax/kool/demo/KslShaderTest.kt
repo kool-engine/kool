@@ -72,7 +72,7 @@ class KslShaderTest : DemoScene("KslShader") {
         }
 
         val lightRotTransform = Mat4f()
-        onUpdate += { ev ->
+        onUpdate += {
             lightRotTransform.rotate(Time.deltaT * 5f, Vec3f.Z_AXIS)
             lighting.lights.forEachIndexed { i, light ->
                 val pos = lightRotTransform.transform(MutableVec3f(lightPoses[i].first), 1f)

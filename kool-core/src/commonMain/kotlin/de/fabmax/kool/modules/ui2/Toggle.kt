@@ -185,16 +185,16 @@ class CheckboxNode(parent: UiNode?, surface: UiSurface) : ToggleNode(parent, sur
         val draw = getUiPrimitives()
         val p = animationPos()
 
-        if (p < 1f) {
-            draw.localRoundRectBorder(c.x - r, c.y - r, r * 2f, r * 2f, 4.dp.px, sizes.borderWidth.px * 1.5f, modifier.borderColor)
-        }
-
         val bgColor = when (p) {
             0f -> modifier.backgroundColor
             1f -> modifier.fillColor
             else -> modifier.backgroundColor.mix(modifier.fillColor, p)
         }
         draw.localRoundRect(c.x - r, c.y - r, r * 2f, r * 2f, 4.dp.px, bgColor)
+
+        if (p < 1f) {
+            draw.localRoundRectBorder(c.x - r, c.y - r, r * 2f, r * 2f, 4.dp.px, sizes.borderWidth.px * 1.5f, modifier.borderColor)
+        }
 
         if (p > 0f) {
             getPlainBuilder().configured(modifier.checkMarkColor) {

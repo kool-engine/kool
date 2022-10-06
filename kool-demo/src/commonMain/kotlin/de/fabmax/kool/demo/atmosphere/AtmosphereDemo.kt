@@ -149,7 +149,7 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
             //shadow.shadowBounds = deferredPipeline.contentGroup.bounds
         }
 
-        onUpdate += { ev ->
+        onUpdate += {
             if (!sceneSetupComplete) {
                 sceneSetupComplete = true
                 finalizeSceneSetup(deferredPipeline)
@@ -283,7 +283,7 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
                 earthShader.oceanNrmTex = textures[EarthShader.texOceanNrm]
                 shader = earthShader
 
-                onUpdate += { ev ->
+                onUpdate += {
                     updateTiles(mainScene.camera.globalPos)
 
                     val camHeight = cameraHeight * kmPerUnit

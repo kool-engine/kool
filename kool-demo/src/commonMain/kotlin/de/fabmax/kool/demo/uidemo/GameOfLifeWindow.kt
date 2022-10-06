@@ -23,14 +23,20 @@ class GameOfLifeWindow(val uiDemo: UiDemo) {
 
     private val radioButtonRenderer: UiScope.(Int, Int) -> Unit = { x, y ->
         RadioButton(gameState.value[x, y]) {
-            modifier.colors(backgroundColor = colors.backgroundVariant)
+            modifier.colors(
+                borderColor = colors.accentVariant.withAlpha(0.65f),
+                backgroundColor = colors.accentVariant.withAlpha(0.15f)
+            )
             setupCellRenderer(x, y)
         }
     }
 
     private val checkboxRenderer: UiScope.(Int, Int) -> Unit = { x, y ->
         Checkbox(gameState.value[x, y]) {
-            modifier.colors(backgroundColor = colors.backgroundVariant)
+            modifier.colors(
+                borderColor = colors.accentVariant.withAlpha(0.65f),
+                backgroundColor = colors.accentVariant.withAlpha(0.15f)
+            )
             setupCellRenderer(x, y)
         }
     }

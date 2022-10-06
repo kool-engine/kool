@@ -21,6 +21,7 @@ import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.util.Float32Buffer
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.PolyUtil
+import de.fabmax.kool.util.Time
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.max
@@ -135,10 +136,10 @@ class GuardRail {
                     sign.emission.set(Vec2f.ZERO)
                     if (!sign.joint.isBroken) {
                         if (isReverse) {
-                            val em = (sin((ev.time + sign.iSign * 0.1) * 6).toFloat() + 0.5f).clamp(0f, 1f)
+                            val em = (sin((Time.gameTime + sign.iSign * 0.1) * 6).toFloat() + 0.5f).clamp(0f, 1f)
                             if (sign.isLeft) { sign.emission.x = em } else { sign.emission.y = em }
                         } else {
-                            val em = (sin((-ev.time + sign.iSign * 0.1) * 6).toFloat() + 0.5f).clamp(0f, 1f)
+                            val em = (sin((-Time.gameTime + sign.iSign * 0.1) * 6).toFloat() + 0.5f).clamp(0f, 1f)
                             if (sign.isLeft) { sign.emission.y = em } else { sign.emission.x = em }
                         }
                     }

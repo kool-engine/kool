@@ -54,7 +54,7 @@ class Ocean(terrainTiles: TerrainTiles, val camera: Camera, val wind: Wind, val 
 
     init {
         tileCenters = KdTree(generateTilePoses(terrainTiles), TileAdapter)
-        camera.onCameraUpdated += { ctx ->
+        camera.onCameraUpdated += {
             profiled("update ocean tiles") {
                 if (Time.frameCount != updateFrameIdx) {
                     updateFrameIdx = Time.frameCount
@@ -116,7 +116,6 @@ class Ocean(terrainTiles: TerrainTiles, val camera: Camera, val wind: Wind, val 
 
     companion object {
         const val TILE_SIZE = 64f
-        const val TILE_HALF_COUNT = 12
         const val OCEAN_FLOOR_HEIGHT_THRESH = 3f
     }
 }
