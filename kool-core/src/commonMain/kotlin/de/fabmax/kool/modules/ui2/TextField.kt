@@ -6,7 +6,10 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.LocalKeyCode
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.scene.geometry.TextProps
-import de.fabmax.kool.util.*
+import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.EditableText
+import de.fabmax.kool.util.Font
+import de.fabmax.kool.util.Time
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
@@ -17,9 +20,9 @@ interface TextFieldScope : UiScope {
 
 open class TextFieldModifier(surface: UiSurface) : UiModifier(surface) {
     var text: String by property("")
-    var font: FontProps by property { it.sizes.normalText }
+    var font: Font by property { it.sizes.normalText }
     var hint: String by property("")
-    var hintFont: FontProps? by property(null)
+    var hintFont: Font? by property(null)
     var isEditable: Boolean by property(true)
     var textAlignX: AlignmentX by property(AlignmentX.Start)
 
@@ -35,9 +38,9 @@ open class TextFieldModifier(surface: UiSurface) : UiModifier(surface) {
 }
 
 fun <T: TextFieldModifier> T.text(text: String): T { this.text = text; return this }
-fun <T: TextFieldModifier> T.font(font: FontProps): T { this.font = font; return this }
+fun <T: TextFieldModifier> T.font(font: Font): T { this.font = font; return this }
 fun <T: TextFieldModifier> T.hint(hint: String): T { this.hint = hint; return this }
-fun <T: TextFieldModifier> T.hintFont(font: FontProps): T { this.hintFont = font; return this }
+fun <T: TextFieldModifier> T.hintFont(font: Font): T { this.hintFont = font; return this }
 fun <T: TextFieldModifier> T.isEditable(flag: Boolean): T { isEditable = flag; return this }
 fun <T: TextFieldModifier> T.textAlignX(alignment: AlignmentX): T { textAlignX = alignment; return this }
 fun <T: TextFieldModifier> T.onChange(block: ((String) -> Unit)?): T { this.onChange = block; return this }
@@ -94,8 +97,8 @@ open class TextFieldNode(parent: UiNode?, surface: UiSurface)
         val fontProps = if (isHint) modifier.hintFont ?: modifier.font else modifier.font
         val dispText = if (isHint) modifier.hint else modifier.text
 
-        val font = surface.getFont(fontProps, ctx)
-        val textMetrics = textCache.getTextMetrics(dispText, font, ctx)
+        val font = surface.loadFont(fontProps, ctx)
+        val textMetrics = textCache.getTextMetrics(dispText, font)
         val modWidth = modifier.width
         val modHeight = modifier.height
         val measuredWidth = if (modWidth is Dp) modWidth.px else textMetrics.width + paddingStartPx + paddingEndPx
@@ -110,11 +113,10 @@ open class TextFieldNode(parent: UiNode?, surface: UiSurface)
 
         val isFocused = isFocusedState.use()
         val isHint = modifier.text.isEmpty()
-        val fontProps = if (isHint) modifier.hintFont ?: modifier.font else modifier.font
+        val txtFont = if (isHint) modifier.hintFont ?: modifier.font else modifier.font
         val dispText = if (isHint) modifier.hint else modifier.text
         val textColor = if (isHint) modifier.hintColor else modifier.textColor
 
-        val txtFont = surface.getFont(fontProps, ctx)
         val textMetrics = textCache.textMetrics
 
         textOrigin.y = (heightPx - textMetrics.height) / 2f + textMetrics.yBaseline
@@ -133,7 +135,7 @@ open class TextFieldNode(parent: UiNode?, surface: UiSurface)
             isYAxisUp = false
             origin.set(leftPx + textOrigin.x, topPx + textOrigin.y, 0f)
         }
-        textCache.addTextGeometry(getTextBuilder(fontProps, ctx).geometry, textProps, textColor)
+        textCache.addTextGeometry(getTextBuilder(txtFont, ctx).geometry, textProps, textColor)
 
         val draw = getUiPrimitives()
         val lineColor = if (isFocused) modifier.lineFocusedColor else modifier.lineColor
@@ -224,7 +226,7 @@ open class TextFieldNode(parent: UiNode?, surface: UiSurface)
     override fun onClick(ev: PointerEvent) {
         surface.requestFocus(this)
 
-        editText.caretPosition = textIndex(surface.getFont(modifier.font, ev.ctx), ev.position.x)
+        editText.caretPosition = textIndex(modifier.font, ev.position.x)
         editText.selectionStart = editText.caretPosition
 
         val t = Time.gameTime
@@ -263,7 +265,7 @@ open class TextFieldNode(parent: UiNode?, surface: UiSurface)
     override fun onDragStart(ev: PointerEvent) = onClick(ev)
 
     override fun onDrag(ev: PointerEvent) {
-        val selPos = textIndex(surface.getFont(modifier.font, ev.ctx), ev.position.x)
+        val selPos = textIndex(modifier.font, ev.position.x)
         if (selPos != editText.caretPosition) {
             editText.caretPosition = selPos
             surface.triggerUpdate()

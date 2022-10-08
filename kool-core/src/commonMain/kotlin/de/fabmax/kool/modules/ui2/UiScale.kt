@@ -2,7 +2,7 @@ package de.fabmax.kool.modules.ui2
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.util.Font
-import de.fabmax.kool.util.FontProps
+import de.fabmax.kool.util.FontMap
 
 object UiScale {
 
@@ -12,30 +12,15 @@ object UiScale {
     var measuredScale = 1f
         private set
 
-    val fonts = mutableMapOf<FontProps, Font>()
-    private var activeFontScale = 1f
+    val fonts = mutableSetOf<Font>()
 
-    fun getOrCreateFont(fontProps: FontProps, ctx: KoolContext): Font {
-        val noScaleProps = if (fontProps.isScaledByWindowScale) {
-            fontProps.copy(isScaledByWindowScale = false)
-        } else {
-            fontProps
-        }
-
-        return fonts.getOrPut(noScaleProps) {
-            val font = Font(noScaleProps)
-            font.charMap = ctx.assetMgr.createCharMap(noScaleProps, activeFontScale)
-            font
-        }
+    fun loadFont(font: Font, ctx: KoolContext): FontMap {
+        val map = font.getOrLoadFontMap(ctx, measuredScale)
+        fonts += font
+        return map
     }
 
-    fun updateScale(surface: UiSurface, ctx: KoolContext) {
+    fun updateScale(surface: UiSurface) {
         measuredScale = uiScale.use(surface) * windowScale.use(surface)
-        if (measuredScale != activeFontScale) {
-            activeFontScale = measuredScale
-            fonts.values.forEach {
-                ctx.assetMgr.updateCharMap(it.charMap!!, measuredScale)
-            }
-        }
     }
 }

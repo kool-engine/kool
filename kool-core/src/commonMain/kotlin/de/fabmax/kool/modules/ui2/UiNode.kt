@@ -8,7 +8,7 @@ import de.fabmax.kool.math.clamp
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.VertexView
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.FontProps
+import de.fabmax.kool.util.Font
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.reflect.KClass
@@ -220,7 +220,7 @@ abstract class UiNode(val parent: UiNode?, override val surface: UiSurface) : Ui
         return surface.getMeshLayer(modifier.zLayer + layerOffset).plainBuilder
     }
 
-    fun getTextBuilder(fontProps: FontProps, ctx: KoolContext, layerOffset: Int = 0): MeshBuilder {
+    fun getTextBuilder(fontProps: Font, ctx: KoolContext, layerOffset: Int = 0): MeshBuilder {
         return surface.getMeshLayer(modifier.zLayer + layerOffset).getTextBuilder(fontProps, ctx)
     }
 

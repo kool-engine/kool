@@ -92,6 +92,17 @@ open class TextureCube(props: TextureProps = TextureProps(), name: String? = nul
     override val type = "Cube"
 }
 
+class BufferedTexture2d(data: TextureData, props: TextureProps = TextureProps(), name: String? = null)
+    : Texture2d(props, name, BufferedTextureLoader(data)
+) {
+    fun updateTextureData(data: TextureData) {
+        (loader as BufferedTextureLoader).data = data
+        if (loadingState == LoadingState.LOADED) {
+            dispose()
+        }
+    }
+}
+
 class SingleColorTexture(color: Color) : Texture2d(
         TextureProps(
                 minFilter = FilterMethod.NEAREST,

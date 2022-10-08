@@ -1,11 +1,10 @@
 package de.fabmax.kool.modules.ui2
 
 import de.fabmax.kool.util.Font
-import de.fabmax.kool.util.FontProps
 
 data class Sizes(
-    val normalText: FontProps,
-    val largeText: FontProps,
+    val normalText: Font,
+    val largeText: Font,
     val sliderHeight: Dp,
     val checkboxSize: Dp,
     val radioButtonSize: Dp,
@@ -18,8 +17,8 @@ data class Sizes(
 
     companion object {
         fun small(
-            normalText: FontProps = FontProps(Font.SYSTEM_FONT, 12f, isScaledByWindowScale = false),
-            largeText: FontProps = FontProps(Font.SYSTEM_FONT, 16f, isScaledByWindowScale = false),
+            normalText: Font = Font(Font.SYSTEM_FONT, 12f),
+            largeText: Font = Font(Font.SYSTEM_FONT, 16f),
             sliderHeight: Dp = Dp(14f),
             checkboxSize: Dp = Dp(14f),
             radioButtonSize: Dp = Dp(14f),
@@ -42,8 +41,8 @@ data class Sizes(
         )
 
         fun medium(
-            normalText: FontProps = FontProps(Font.SYSTEM_FONT, 15f, isScaledByWindowScale = false),
-            largeText: FontProps = FontProps(Font.SYSTEM_FONT, 20f, isScaledByWindowScale = false),
+            normalText: Font = Font(Font.SYSTEM_FONT, 15f),
+            largeText: Font = Font(Font.SYSTEM_FONT, 20f),
             sliderHeight: Dp = Dp(17f),
             checkboxSize: Dp = Dp(17f),
             radioButtonSize: Dp = Dp(17f),
@@ -66,8 +65,8 @@ data class Sizes(
         )
 
         fun large(
-            normalText: FontProps = FontProps(Font.SYSTEM_FONT, 18f, isScaledByWindowScale = false),
-            largeText: FontProps = FontProps(Font.SYSTEM_FONT, 24f, isScaledByWindowScale = false),
+            normalText: Font = Font(Font.SYSTEM_FONT, 18f),
+            largeText: Font = Font(Font.SYSTEM_FONT, 24f),
             sliderHeight: Dp = Dp(20f),
             checkboxSize: Dp = Dp(20f),
             radioButtonSize: Dp = Dp(20f),

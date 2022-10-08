@@ -26,4 +26,4 @@ class SyncTextureLoader(val loader: (KoolContext) -> TextureData) : TextureLoade
     }
 }
 
-class BufferedTextureLoader(val data: TextureData) : TextureLoader()
+class BufferedTextureLoader(var data: TextureData) : TextureLoader()

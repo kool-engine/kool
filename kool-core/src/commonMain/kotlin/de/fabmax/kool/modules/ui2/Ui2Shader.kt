@@ -12,7 +12,7 @@ class Ui2Shader : KslShader(Model(), pipelineConfig) {
     var fontTex by texture2d("uFontTex", noFontTex)
 
     fun setFont(font: Font, ctx: KoolContext) {
-        fontTex = font.getOrInitCharMap(ctx).texture
+        fontTex = UiScale.loadFont(font, ctx).texture
     }
 
     private class Model : KslProgram("UI2 Shader") {

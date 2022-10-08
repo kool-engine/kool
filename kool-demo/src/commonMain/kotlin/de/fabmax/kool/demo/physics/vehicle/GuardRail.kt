@@ -128,7 +128,7 @@ class GuardRail {
 
         shader = GuardRailShader.createShader()
 
-        onUpdate += { ev ->
+        onUpdate += {
             signInstances.clear()
             signInstances.addInstances(signs.size) { buf ->
                 for (i in signs.indices) {

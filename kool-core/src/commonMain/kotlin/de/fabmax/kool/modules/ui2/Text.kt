@@ -4,7 +4,6 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.scene.geometry.TextProps
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Font
-import de.fabmax.kool.util.FontProps
 
 interface TextScope : UiScope {
     override val modifier: TextModifier
@@ -12,7 +11,7 @@ interface TextScope : UiScope {
 
 open class TextModifier(surface: UiSurface) : UiModifier(surface) {
     var text: String by property("")
-    var font: FontProps by property { it.sizes.normalText }
+    var font: Font by property { it.sizes.normalText }
     var textColor: Color by property { it.colors.onBackground }
     var textAlignX: AlignmentX by property(AlignmentX.Start)
     var textAlignY: AlignmentY by property(AlignmentY.Top)
@@ -22,7 +21,7 @@ open class TextModifier(surface: UiSurface) : UiModifier(surface) {
 }
 
 fun <T: TextModifier> T.text(text: String): T { this.text = text; return this }
-fun <T: TextModifier> T.font(font: FontProps): T { this.font = font; return this }
+fun <T: TextModifier> T.font(font: Font): T { this.font = font; return this }
 fun <T: TextModifier> T.textColor(color: Color): T { textColor = color; return this }
 fun <T: TextModifier> T.textAlignX(alignment: AlignmentX): T { textAlignX = alignment; return this }
 fun <T: TextModifier> T.textAlignY(alignment: AlignmentY): T { textAlignY = alignment; return this }
@@ -67,8 +66,8 @@ open class TextNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surfac
     private val textCache = CachedText(this)
 
     override fun measureContentSize(ctx: KoolContext) {
-        val font = surface.getFont(modifier.font, ctx)
-        val textMetrics = textCache.getTextMetrics(modifier.text, font, ctx)
+        val font = surface.loadFont(modifier.font, ctx)
+        val textMetrics = textCache.getTextMetrics(modifier.text, font)
         val textWidth = if (modifier.textRotation.isHorizontal) textMetrics.width else textMetrics.height
         val textHeight = if (modifier.textRotation.isHorizontal) textMetrics.height else textMetrics.width
         val modWidth = modifier.width
@@ -82,7 +81,7 @@ open class TextNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surfac
         super.render(ctx)
 
         textProps.apply {
-            font = surface.getFont(modifier.font, ctx)
+            font = modifier.font
             text = modifier.text
             isYAxisUp = false
 

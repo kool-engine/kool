@@ -41,7 +41,7 @@ class DebugOverlay(position: Position = Position.UPPER_RIGHT) {
     private val isExpanded = mutableStateOf(false)
 
     init {
-        val fpsFont = FontProps(Font.SYSTEM_FONT, 20f)
+        val fpsFont = Font(Font.SYSTEM_FONT, 20f)
 
         ui = Ui2Scene("debug-overlay") {
             onUpdate += {

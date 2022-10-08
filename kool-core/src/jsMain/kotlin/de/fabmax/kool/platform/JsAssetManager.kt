@@ -92,11 +92,8 @@ class JsAssetManager internal constructor(props: JsContext.InitProps, val ctx: J
         }
     }
 
-    override fun createCharMap(fontProps: FontProps, fontScale: Float) = fontGenerator.getCharMap(fontProps, fontScale)
-
-    override fun updateCharMap(charMap: CharMap, fontScale: Float) {
-        fontGenerator.updateCharMap(charMap, fontScale)
-    }
+    override fun createFontMapData(font: Font, fontScale: Float, outMetrics: MutableMap<Char, CharMetrics>) =
+        fontGenerator.createFontMapData(font, fontScale, outMetrics)
 
     override fun inflate(zipData: Uint8Buffer): Uint8Buffer {
         val uint8Data = (zipData as Uint8BufferImpl).buffer

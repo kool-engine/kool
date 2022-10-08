@@ -13,6 +13,7 @@ import java.awt.image.BufferedImage
 import java.awt.image.DataBufferInt
 import java.io.ByteArrayInputStream
 import java.io.IOException
+import kotlin.math.round
 import kotlin.math.roundToInt
 
 /**
@@ -26,7 +27,7 @@ internal class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, val ctx: 
     private val canvas = BufferedImage(maxWidth, maxHeight, BufferedImage.TYPE_INT_ARGB)
     private val clearColor = Color(0, 0, 0, 0)
 
-    private val charMaps = mutableMapOf<FontProps, CharMap>()
+    private val fontMaps = mutableMapOf<Font, FontMap>()
 
     private val availableFamilies: Set<String>
     private val customFonts = mutableMapOf<String, AwtFont>()
@@ -38,14 +39,6 @@ internal class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, val ctx: 
             families.add(family)
         }
         availableFamilies = families
-
-        ctx.onWindowScaleChanged += {
-            charMaps.values.forEach {
-                if (it.fontProps.isScaledByWindowScale) {
-                    updateCharMap(it, 0f)
-                }
-            }
-        }
     }
 
     internal fun loadCustomFonts(props: Lwjgl3Context.InitProps, assetMgr: JvmAssetManager) {
@@ -64,11 +57,7 @@ internal class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, val ctx: 
         }
     }
 
-    fun getCharMap(fontProps: FontProps, fontScale: Float): CharMap = charMaps.computeIfAbsent(fontProps) { updateCharMap(
-        CharMap(it), fontScale) }
-
-    fun updateCharMap(charMap: CharMap, fontScale: Float): CharMap {
-        val fontProps = charMap.fontProps
+    fun createFontMapData(font: Font, fontScale: Float, outMetrics: MutableMap<Char, CharMetrics>): TextureData2d {
         val g = canvas.graphics as Graphics2D
         g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON)
 
@@ -77,16 +66,16 @@ internal class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, val ctx: 
         g.clearRect(0, 0, maxWidth, maxHeight)
 
         var style = AwtFont.PLAIN
-        if (fontProps.style and Font.BOLD != 0) {
+        if (font.style and Font.BOLD != 0) {
             style = AwtFont.BOLD
         }
-        if (fontProps.style and Font.ITALIC != 0) {
+        if (font.style and Font.ITALIC != 0) {
             style += AwtFont.ITALIC
         }
 
         var customFont: AwtFont? = null
         var family = AwtFont.SANS_SERIF
-        val fams = fontProps.family.split(",")
+        val fams = font.family.split(",")
         for (fam in fams) {
             val f = fam.trim().replace("\"", "")
             if (f in customFonts.keys) {
@@ -104,30 +93,18 @@ internal class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, val ctx: 
             }
         }
 
-        val scale = when {
-            fontProps.isScaledByWindowScale && fontScale == 0f -> ctx.windowScale
-            fontProps.isScaledByWindowScale && fontScale != 0f -> ctx.windowScale * fontScale
-            fontScale != 0f -> fontScale
-            else -> 1f
-        }
-
-        val size = fontProps.sizePts * scale * fontProps.sampleScale
-        val font: AwtFont = customFont?.deriveFont(fontProps.style, size) ?: AwtFont(family, style, size.roundToInt())
-
-        g.font = font
+        val size = round(font.sizePts * fontScale * font.sampleScale)
+        g.font = customFont?.deriveFont(font.style, size) ?: AwtFont(family, style, size.toInt())
         g.color = Color.BLACK
 
-        val texHeight = makeMap(fontProps, size, g, charMap)
+        outMetrics.clear()
+        val texHeight = makeMap(font, size, g, outMetrics)
         val buffer = getCanvasAlphaData(maxWidth, texHeight)
-        val texData = TextureData2d(buffer, maxWidth, texHeight, TexFormat.R)
-        charMap.textureData = texData
-        charMap.applyScale(scale)
 
-        //logD { "Updated char map: ${charMap.fontProps}, scaled size: $size" }
-        logD { "Generated font map for ($font, scale=${scale}x${fontProps.sampleScale})" }
+        logD { "Generated font map for (${font.toStringShort()}, scale=${fontScale}x${font.sampleScale})" }
         //ImageIO.write(canvas, "png", File("${font.family}-${font.size}.png"))
 
-        return charMap
+        return TextureData2d(buffer, maxWidth, texHeight, TexFormat.R)
     }
 
     private fun getCanvasAlphaData(width: Int, height: Int): Uint8Buffer {
@@ -141,7 +118,7 @@ internal class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, val ctx: 
         return buffer
     }
 
-    private fun makeMap(fontProps: FontProps, size: Float, g: Graphics2D, map: MutableMap<Char, CharMetrics>): Int {
+    private fun makeMap(fontProps: Font, size: Float, g: Graphics2D, outMetrics: MutableMap<Char, CharMetrics>): Int {
         val padding = (if (fontProps.style == Font.ITALIC) 3 else 6) * (size / 30f).clamp(1f, 3f).roundToInt()
         // line height above baseline
         val hab = (size * 1.1f).roundToInt()
@@ -183,7 +160,7 @@ internal class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, val ctx: 
 
             metrics.uvMin.set((x + padding).toFloat(), (y - hab).toFloat())
             metrics.uvMax.set((x + padding + widthPx), (y - hab).toFloat() + heightPx)
-            map[c] = metrics
+            outMetrics[c] = metrics
 
             g.drawString("$c", x + padding, y)
             x += paddedWidth
@@ -192,13 +169,12 @@ internal class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, val ctx: 
         val texW = maxWidth
         val texH = nextPow2(y + hbb)
 
-        for (cm in map.values) {
+        for (cm in outMetrics.values) {
             cm.uvMin.x /= texW
             cm.uvMin.y /= texH
             cm.uvMax.x /= texW
             cm.uvMax.y /= texH
         }
-
         return texH
     }
 

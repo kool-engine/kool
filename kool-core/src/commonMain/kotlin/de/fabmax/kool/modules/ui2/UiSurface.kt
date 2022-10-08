@@ -82,7 +82,7 @@ open class UiSurface(
             removeNode(it)
         }
         onEachFrame.clear()
-        UiScale.updateScale(this, updateEvent.ctx)
+        UiScale.updateScale(this)
         val prep = pt.takeMs().also { pt.reset() }
 
         viewport.setBounds(0f, 0f, viewportWidth.use(this), viewportHeight.use(this))
@@ -143,11 +143,11 @@ open class UiSurface(
         return getMeshLayer(layer).plainBuilder
     }
 
-    fun getTextBuilder(fontProps: FontProps, ctx: KoolContext, layer: Int): MeshBuilder {
-        return getMeshLayer(layer).getTextBuilder(fontProps, ctx)
+    fun getTextBuilder(font: Font, ctx: KoolContext, layer: Int): MeshBuilder {
+        return getMeshLayer(layer).getTextBuilder(font, ctx)
     }
 
-    fun getFont(fontProps: FontProps, ctx: KoolContext) = UiScale.getOrCreateFont(fontProps, ctx)
+    fun loadFont(font: Font, ctx: KoolContext) = UiScale.loadFont(font, ctx)
 
     fun popup(): UiScope {
         return viewport.Box { }
@@ -444,7 +444,7 @@ open class UiSurface(
     }
 
     inner class MeshLayer : Group() {
-        private val textMeshes = mutableMapOf<FontProps, TextMesh>()
+        private val textMeshes = mutableMapOf<Font, TextMesh>()
         private val imageMeshes = mutableMapOf<Texture2d, ImageMeshes>()
         private val customLayers = mutableMapOf<String, CustomLayer>()
         private val plainMesh = mesh(Ui2Shader.UI_MESH_ATTRIBS) { shader = Ui2Shader() }
@@ -459,9 +459,8 @@ open class UiSurface(
             +plainMesh
         }
 
-        fun getTextBuilder(fontProps: FontProps, ctx: KoolContext): MeshBuilder {
-            val textMesh =  textMeshes.getOrPut(fontProps) {
-                val font = UiScale.getOrCreateFont(fontProps, ctx)
+        fun getTextBuilder(font: Font, ctx: KoolContext): MeshBuilder {
+            val textMesh =  textMeshes.getOrPut(font) {
                 TextMesh(font, ctx).also { this += it.mesh }
             }
             textMesh.isUsed = true

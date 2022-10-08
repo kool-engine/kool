@@ -2,10 +2,7 @@ package de.fabmax.kool
 
 import de.fabmax.kool.modules.audio.AudioClip
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.util.CharMap
-import de.fabmax.kool.util.FontProps
-import de.fabmax.kool.util.Uint8Buffer
-import de.fabmax.kool.util.logD
+import de.fabmax.kool.util.*
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -26,6 +23,8 @@ abstract class AssetManager(var assetsBaseDir: String) : CoroutineScope {
     private val awaitedAssetsChannel = Channel<AwaitedAsset>()
     private val assetRefChannel = Channel<AssetRef>(Channel.UNLIMITED)
     private val loadedAssetChannel = Channel<LoadedAsset>()
+
+    private val loadedFontMaps = mutableMapOf<Font, FontMap>()
 
     private val workers = List(NUM_LOAD_WORKERS) { loadWorker(assetRefChannel, loadedAssetChannel) }
 
@@ -77,9 +76,50 @@ abstract class AssetManager(var assetsBaseDir: String) : CoroutineScope {
 
     abstract suspend fun waitForFonts()
 
-    abstract fun createCharMap(fontProps: FontProps, fontScale: Float = 0f): CharMap
+    fun getOrCreateFontMap(font: Font, fontScale: Float): FontMap = loadedFontMaps.getOrPut(font) {
+        updateFontMap(font, fontScale)
+    }
 
-    abstract fun updateCharMap(charMap: CharMap, fontScale: Float = 0f)
+    fun updateFontMap(font: Font, fontScale: Float): FontMap {
+        var map = font.map
+        if (font.isCustomMap) {
+            return map ?: throw IllegalStateException("Custom font map not set for font ${font.toStringShort()}")
+        }
+
+        val metrics = mutableMapOf<Char, CharMetrics>()
+        val texData = createFontMapData(font, fontScale, metrics)
+
+        if (map == null) {
+            val tex = BufferedTexture2d(
+                texData,
+                TextureProps(
+                    addressModeU = AddressMode.CLAMP_TO_EDGE,
+                    addressModeV = AddressMode.CLAMP_TO_EDGE,
+                    magFilter = font.magFilter,
+                    minFilter = font.minFilter,
+                    mipMapping = font.mipMapping,
+                    maxAnisotropy = font.maxAnisotropy
+                ),
+                font.toString()
+            )
+            map = FontMap(font, tex, metrics)
+            map.applyScale(fontScale)
+            font.map = map
+
+        } else {
+            val tex = map.texture as? BufferedTexture2d
+            if (tex != null) {
+                tex.updateTextureData(texData)
+                map.applyScale(fontScale)
+                map.putAll(metrics)
+            } else {
+                logE { "Unable to update texture data of font ${font.toStringShort()}" }
+            }
+        }
+        return map
+    }
+
+    abstract fun createFontMapData(font: Font, fontScale: Float, outMetrics: MutableMap<Char, CharMetrics>): TextureData2d
 
     abstract fun inflate(zipData: Uint8Buffer): Uint8Buffer
 

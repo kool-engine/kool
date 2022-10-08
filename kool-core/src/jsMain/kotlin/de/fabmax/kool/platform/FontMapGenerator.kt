@@ -5,7 +5,10 @@ import de.fabmax.kool.math.clamp
 import de.fabmax.kool.math.smoothStep
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.TextureData2d
-import de.fabmax.kool.util.*
+import de.fabmax.kool.util.CharMetrics
+import de.fabmax.kool.util.Font
+import de.fabmax.kool.util.createUint8Buffer
+import de.fabmax.kool.util.logD
 import kotlinx.browser.document
 import kotlinx.browser.window
 import org.khronos.webgl.get
@@ -26,8 +29,6 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, props: JsContext.I
     private val canvas = document.createElement("canvas") as HTMLCanvasElement
     private val canvasCtx: CanvasRenderingContext2D
 
-    private val charMaps = mutableMapOf<FontProps, CharMap>()
-
     val loadingFonts = mutableListOf<Promise<FontFace>>()
 
     init {
@@ -39,14 +40,6 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, props: JsContext.I
 
         props.customFonts.forEach { (family, url) ->
             loadFont(family, assetManager.makeAssetRef(url).url)
-        }
-
-        ctx.onWindowScaleChanged += {
-            charMaps.values.forEach {
-                if (it.fontProps.isScaledByWindowScale) {
-                    updateCharMap(it, 0f)
-                }
-            }
         }
     }
 
@@ -60,25 +53,14 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, props: JsContext.I
         }
     }
 
-    fun getCharMap(fontProps: FontProps, fontScale: Float): CharMap = charMaps.getOrPut(fontProps) { updateCharMap(
-        CharMap(fontProps), fontScale) }
-
-    fun updateCharMap(charMap: CharMap, fontScale: Float): CharMap {
-        val fontProps = charMap.fontProps
-
-        val scale = when {
-            fontProps.isScaledByWindowScale && fontScale == 0f -> ctx.windowScale
-            fontProps.isScaledByWindowScale && fontScale != 0f -> ctx.windowScale * fontScale
-            fontScale != 0f -> fontScale
-            else -> 1f
-        }
-        val fontSize = (fontProps.sizePts * fontScale * fontProps.sampleScale).roundToInt()
+    fun createFontMapData(font: Font, fontScale: Float, outMetrics: MutableMap<Char, CharMetrics>): TextureData2d {
+        val fontSize = (font.sizePts * fontScale * font.sampleScale).roundToInt()
 
         // clear canvas
         canvasCtx.fillStyle = "#000000"
         canvasCtx.fillRect(0.0, 0.0, maxWidth.toDouble(), maxHeight.toDouble())
         // draw font chars
-        val texHeight = makeMap(fontProps, fontSize, charMap)
+        val texHeight = makeMap(font, fontSize, outMetrics)
         // copy image data
         val data = canvasCtx.getImageData(0.0, 0.0, maxWidth.toDouble(), texHeight.toDouble())
 
@@ -102,12 +84,11 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, props: JsContext.I
             val a = data.data[i*4].toInt() and 0xff
             buffer.put(alphaLut[a])
         }
-        charMap.textureData = TextureData2d(buffer, maxWidth, texHeight, TexFormat.R)
-        charMap.applyScale(scale)
-        return charMap
+        logD { "Generated font map for (${font.toStringShort()}, scale=${fontScale}x${font.sampleScale})" }
+        return TextureData2d(buffer, maxWidth, texHeight, TexFormat.R)
     }
 
-    private fun makeMap(fontProps: FontProps, fontSize: Int, map: MutableMap<Char, CharMetrics>): Int {
+    private fun makeMap(fontProps: Font, fontSize: Int, map: MutableMap<Char, CharMetrics>): Int {
         var style = ""
         if (fontProps.style and Font.BOLD != 0) {
             style = "bold "

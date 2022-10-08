@@ -6,7 +6,6 @@ import de.fabmax.kool.math.clamp
 import de.fabmax.kool.scene.geometry.TextProps
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Font
-import de.fabmax.kool.util.FontProps
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.round
@@ -16,7 +15,7 @@ interface ComboBoxScope : UiScope {
 }
 
 open class ComboBoxModifier(surface: UiSurface) : UiModifier(surface) {
-    var font: FontProps by property { it.sizes.normalText }
+    var font: Font by property { it.sizes.normalText }
     var items: List<Any> by property(emptyList())
     var selectedIndex: Int by property(0)
 
@@ -30,7 +29,7 @@ open class ComboBoxModifier(surface: UiSurface) : UiModifier(surface) {
     var onItemSelected: ((Int) -> Unit)? by property(null)
 }
 
-fun <T: ComboBoxModifier> T.font(font: FontProps): T { this.font = font; return this }
+fun <T: ComboBoxModifier> T.font(font: Font): T { this.font = font; return this }
 fun <T: ComboBoxModifier> T.textColor(color: Color): T { textColor = color; return this }
 fun <T: ComboBoxModifier> T.items(items: List<Any>): T { this.items = items; return this }
 fun <T: ComboBoxModifier> T.selectedIndex(index: Int): T { this.selectedIndex = index; return this }
@@ -106,8 +105,8 @@ open class ComboBoxNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, su
         }
 
     override fun measureContentSize(ctx: KoolContext) {
-        val font = surface.getFont(modifier.font, ctx)
-        val textMetrics = textCache.getTextMetrics(selectedText, font, ctx)
+        val fontMap = surface.loadFont(modifier.font, ctx)
+        val textMetrics = textCache.getTextMetrics(selectedText, fontMap)
         val modWidth = modifier.width
         val modHeight = modifier.height
         val measuredWidth = if (modWidth is Dp) {
@@ -151,7 +150,7 @@ open class ComboBoxNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, su
         super.render(ctx)
 
         textProps.apply {
-            font = surface.getFont(modifier.font, ctx)
+            font = modifier.font
             text = selectedText
             isYAxisUp = false
             val textMetrics = textCache.textMetrics

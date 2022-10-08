@@ -794,7 +794,7 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
     }
 
     fun text(props: TextProps) {
-        val charMap = props.font.charMap
+        val charMap = props.font.map
         if (charMap == null) {
             logE { "Font char map has not yet been initialized" }
             return

@@ -1,6 +1,5 @@
 package de.fabmax.kool.modules.ui2
 
-import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.MutableVec4f
 import de.fabmax.kool.math.Vec3f
@@ -10,7 +9,7 @@ import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.TextProps
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.Font
+import de.fabmax.kool.util.FontMap
 import de.fabmax.kool.util.MutableColor
 import de.fabmax.kool.util.TextMetrics
 import kotlin.math.round
@@ -25,7 +24,7 @@ class CachedText(val node: UiNode) {
 
     val textMetrics = TextMetrics()
 
-    private var cachedFont: Font? = null
+    private var cachedFont: FontMap? = null
     private var cachedText: String? = null
     private var cachedScale = 0f
     private var cachedRotation = TextRotation.Rotation0
@@ -36,11 +35,11 @@ class CachedText(val node: UiNode) {
     private var metricsValid = false
     private var geometryValid = false
 
-    fun getTextMetrics(text: String, font: Font, ctx: KoolContext): TextMetrics {
-        checkCache(text, font)
+    fun getTextMetrics(text: String, fontMap: FontMap): TextMetrics {
+        checkCache(text, fontMap)
         if (!metricsValid) {
             metricsValid = true
-            font.textDimensions(text, ctx, textMetrics)
+            fontMap.textDimensions(text, textMetrics)
         }
         return textMetrics
     }
@@ -69,10 +68,10 @@ class CachedText(val node: UiNode) {
         target.numVertices += cacheData.numVertices
     }
 
-    private fun checkCache(text: String, font: Font) {
-        val fontScale = font.charMap?.scale
-        if (text != cachedText || font !== cachedFont || cachedScale != fontScale) {
-            cachedFont = font
+    private fun checkCache(text: String, fontMap: FontMap) {
+        val fontScale = fontMap.scale
+        if (text != cachedText || fontMap !== cachedFont || cachedScale != fontScale) {
+            cachedFont = fontMap
             cachedText = text
             metricsValid = false
             geometryValid = false
@@ -80,7 +79,7 @@ class CachedText(val node: UiNode) {
     }
 
     private fun buildGeometry(textProps: TextProps, textColor: Color, textRotation: TextRotation) {
-        cachedScale = textProps.font.charMap!!.scale
+        cachedScale = textProps.font.map!!.scale
         cacheBuilder.apply {
             clear()
             vertexModFun = node.setBoundsVertexMod
