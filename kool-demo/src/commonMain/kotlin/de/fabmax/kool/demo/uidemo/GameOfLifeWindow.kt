@@ -8,61 +8,20 @@ class GameOfLifeWindow(val uiDemo: UiDemo) {
     private val windowState = WindowState().apply { setWindowBounds(Dp(400f), Dp(400f), Dp(800f), Dp(800f)) }
     private val scrollState = ScrollState()
 
-    private val gridSizeX = mutableStateOf(50)
-    private val gridSizeY = mutableStateOf(50)
-
-    private val gameState = mutableStateOf(BooleanArray(gridSizeX.value * gridSizeY.value))
-    private var nextGameState = BooleanArray(gridSizeX.value * gridSizeY.value)
+    private val world = GameWorld()
+    private val worldRenderer = GameWorldRenderer()
 
     private val isPaused = mutableStateOf(false)
     private var updateRate = mutableStateOf(5)
     private var updateCount = updateRate.value
 
-    private var dragChangeToState = false
-    private var windowNode: WindowNode? = null
-
-    private val radioButtonRenderer: UiScope.(Int, Int) -> Unit = { x, y ->
-        RadioButton(gameState.value[x, y]) {
-            modifier.colors(
-                borderColor = colors.accentVariant.withAlpha(0.65f),
-                backgroundColor = colors.accentVariant.withAlpha(0.15f)
-            )
-            setupCellRenderer(x, y)
-        }
-    }
-
-    private val checkboxRenderer: UiScope.(Int, Int) -> Unit = { x, y ->
-        Checkbox(gameState.value[x, y]) {
-            modifier.colors(
-                borderColor = colors.accentVariant.withAlpha(0.65f),
-                backgroundColor = colors.accentVariant.withAlpha(0.15f)
-            )
-            setupCellRenderer(x, y)
-        }
-    }
-
-    private val boxRenderer: UiScope.(Int, Int) -> Unit = { x, y ->
-        Box {
-            modifier.size(sizes.checkboxSize, sizes.checkboxSize)
-            setupCellRenderer(x, y)
-            if (gameState.value[x, y]) {
-                modifier.backgroundColor(colors.accent)
-            }
-        }
-    }
-
-    private val rendererChoices = listOf("Radiobutton", "Checkbox", "Box")
-    private val selectedRenderer = mutableStateOf(0)
-
     init {
-        gameState.value.loadAsciiState(gliderGun)
+        world.loadAsciiState(GameWorld.gliderGun)
     }
 
     val window = Window(windowState) {
         surface.sizes = uiDemo.selectedUiSize.use()
         surface.colors = uiDemo.selectedColors.use()
-
-        windowNode = uiNode as WindowNode
 
         TitleBar("Game of Life")
 
@@ -78,12 +37,21 @@ class GameOfLifeWindow(val uiDemo: UiDemo) {
                     .margin(sizes.gap)
                     .onToggle { isPaused.toggle() }
             }
+            Button("Clear") {
+                modifier
+                    .alignY(AlignmentY.Center)
+                    .margin(sizes.gap)
+                    .onClick {
+                        world.clear()
+                        surface.triggerUpdate()
+                    }
+            }
             Button("Load glider gun") {
                 modifier
                     .alignY(AlignmentY.Center)
                     .margin(sizes.gap)
                     .onClick {
-                        gameState.value.loadAsciiState(gliderGun)
+                        world.loadAsciiState(GameWorld.gliderGun)
                         surface.triggerUpdate()
                     }
             }
@@ -92,7 +60,7 @@ class GameOfLifeWindow(val uiDemo: UiDemo) {
                     .alignY(AlignmentY.Center)
                     .margin(sizes.gap)
                     .onClick {
-                        gameState.value.randomize(0.3f)
+                        world.randomize(0.3f)
                         surface.triggerUpdate()
                     }
             }
@@ -100,9 +68,9 @@ class GameOfLifeWindow(val uiDemo: UiDemo) {
                 modifier
                     .alignY(AlignmentY.Center)
                     .margin(sizes.gap)
-                    .items(rendererChoices)
-                    .selectedIndex(selectedRenderer.use())
-                    .onItemSelected { selectedRenderer.set(it) }
+                    .items(worldRenderer.rendererChoices)
+                    .selectedIndex(worldRenderer.selectedRenderer.use())
+                    .onItemSelected { worldRenderer.selectedRenderer.set(it) }
             }
             Text("Speed") {
                 modifier
@@ -119,12 +87,12 @@ class GameOfLifeWindow(val uiDemo: UiDemo) {
         surface.onEachFrame {
             if (!isPaused.value && --updateCount <= 0) {
                 updateCount = updateRate.value
-                step()
+                world.step()
             }
         }
 
         // use() game state to get updated whenever it is stepped
-        gameState.use()
+        world.gameState.use()
 
         ScrollArea(
             scrollState,
@@ -134,104 +102,153 @@ class GameOfLifeWindow(val uiDemo: UiDemo) {
                     .size(Grow(1f, max = FitContent), Grow(1f, max = FitContent))
             }
         ) {
-            Column {
-                val szX = gridSizeX.use()
-                val szY = gridSizeY.use()
-                val renderer = when(selectedRenderer.use()) {
-                    0 -> radioButtonRenderer
-                    1 -> checkboxRenderer
-                    else -> boxRenderer
+            worldRenderer()
+        }
+    }
+
+    private inner class GameWorldRenderer : ComposableComponent {
+        val rendererChoices = listOf("Radiobutton", "Checkbox", "Box")
+        val selectedRenderer = mutableStateOf(0)
+
+        private var isEditDrag = false
+        private var editChangeToState = false
+
+        private val radioButtonRenderer: UiScope.(Int, Int) -> Unit = { x, y ->
+            RadioButton(world[x, y]) {
+                modifier.colors(
+                    borderColor = colors.accentVariant.withAlpha(0.65f),
+                    backgroundColor = colors.accentVariant.withAlpha(0.15f)
+                )
+                setupCellRenderer(x, y)
+            }
+        }
+
+        private val checkboxRenderer: UiScope.(Int, Int) -> Unit = { x, y ->
+            Checkbox(world[x, y]) {
+                modifier.colors(
+                    borderColor = colors.accentVariant.withAlpha(0.65f),
+                    backgroundColor = colors.accentVariant.withAlpha(0.15f)
+                )
+                setupCellRenderer(x, y)
+            }
+        }
+
+        private val boxRenderer: UiScope.(Int, Int) -> Unit = { x, y ->
+            Box {
+                modifier.size(sizes.checkboxSize, sizes.checkboxSize)
+                setupCellRenderer(x, y)
+                if (world[x, y]) {
+                    modifier.backgroundColor(colors.accent)
                 }
-                for (y in 0 until szY) {
-                    Row {
-                        for (x in 0 until szX) {
-                            renderer(x, y)
-                        }
+            }
+        }
+
+        private fun UiScope.setupCellRenderer(x: Int, y: Int) {
+            modifier
+                .onDragStart {
+                    isEditDrag = true
+                    editChangeToState = !world[x, y]
+                    isPaused.set(true)
+                }
+                .onDragEnd {
+                    isEditDrag = false
+                }
+                .onPointer {
+                    if (isEditDrag) {
+                        world[x, y] = editChangeToState
+                        surface.triggerUpdate()
+                    }
+                }
+                .onClick {
+                    // pause game to enable manual editing
+                    isPaused.set(true)
+                    world[x, y] = !world[x, y]
+                    // trigger update (without stepping the game state) to update button state
+                    surface.triggerUpdate()
+                }
+        }
+
+        override fun UiScope.compose() = Column {
+            val szX = world.worldSizeX.use()
+            val szY = world.worldSizeY.use()
+            val renderer = when(selectedRenderer.use()) {
+                0 -> radioButtonRenderer
+                1 -> checkboxRenderer
+                else -> boxRenderer
+            }
+
+            for (y in 0 until szY) {
+                Row {
+                    for (x in 0 until szX) {
+                        renderer(x, y)
                     }
                 }
             }
         }
     }
 
-    fun step() {
-        val state = gameState.value
-        for (y in 0 until gridSizeY.value) {
-            for (x in 0 until gridSizeX.value) {
-                val popCnt = state.countPopNeighbors(x, y)
-                nextGameState[x, y] = if (popCnt == 2 && state[x, y]) true else popCnt == 3
-            }
-        }
-        gameState.set(nextGameState)
-        nextGameState = state
-    }
+    private class GameWorld {
+        val worldSizeX = mutableStateOf(50)
+        val worldSizeY = mutableStateOf(50)
+        val gameState = mutableStateOf(BooleanArray(worldSizeX.value * worldSizeY.value))
 
-    private fun UiScope.setupCellRenderer(x: Int, y: Int) {
-        modifier
-            .onDragStart {
-                val flags = windowNode?.let { wnd -> wnd.getBorderFlags(wnd.toLocal(it.screenPosition)) }
-                if (flags != 0) {
-                    it.reject()
-                } else {
-                    dragChangeToState = !gameState.value[x, y]
-                    isPaused.set(true)
+        private var nextGameState = BooleanArray(worldSizeX.value * worldSizeY.value)
+
+        fun step() {
+            val state = gameState.value
+            for (y in 0 until worldSizeY.value) {
+                for (x in 0 until worldSizeX.value) {
+                    val popCnt = countPopNeighbors(x, y)
+                    nextGameState[y * worldSizeX.value + x] = if (popCnt == 2 && this[x, y]) true else popCnt == 3
                 }
             }
-            .onPointer {
-                if (it.pointer.isDrag) {
-                    gameState.value[x, y] = dragChangeToState
-                    surface.triggerUpdate()
+            gameState.set(nextGameState)
+            nextGameState = state
+        }
+
+        private fun countPopNeighbors(x: Int, y: Int): Int {
+            var popCnt = 0
+            for (iy in -1..1) {
+                for (ix in -1..1) {
+                    if (this[x + ix, y + iy] && (ix != 0 || iy != 0)) {
+                        popCnt++
+                    }
                 }
             }
-            .onClick {
-                // pause game to enable manual editing
-                isPaused.set(true)
-                gameState.value[x, y] = !gameState.value[x, y]
-                // trigger update (without stepping the game state) to update button state
-                surface.triggerUpdate()
-            }
-    }
+            return popCnt
+        }
 
-    private fun BooleanArray.countPopNeighbors(x: Int, y: Int): Int {
-        var popCnt = 0
-        for (iy in -1..1) {
-            for (ix in -1..1) {
-                if (this[x + ix, y + iy] && (ix != 0 || iy != 0)) {
-                    popCnt++
+        operator fun get(x: Int, y: Int): Boolean {
+            if (x !in 0 until worldSizeX.value || y !in 0 until worldSizeY.value) {
+                return false
+            }
+            return gameState.value[y * worldSizeX.value + x]
+        }
+
+        operator fun set(x: Int, y: Int, value: Boolean) {
+            if (x !in 0 until worldSizeX.value || y !in 0 until worldSizeY.value) {
+                return
+            }
+            gameState.value[y * worldSizeX.value + x] = value
+        }
+
+        fun clear() = loadAsciiState("")
+
+        fun randomize(p: Float) {
+            for (i in gameState.value.indices) gameState.value[i] = randomF() < p
+        }
+
+        fun loadAsciiState(state: String) {
+            for (i in gameState.value.indices) gameState.value[i] = false
+            state.lines().forEachIndexed { y, line ->
+                line.forEachIndexed { x, c ->
+                    this[x, y] = c =='0'
                 }
             }
         }
-        return popCnt
-    }
 
-    private operator fun BooleanArray.get(x: Int, y: Int): Boolean {
-        if (x !in 0 until gridSizeX.value || y !in 0 until gridSizeY.value) {
-            return false
-        }
-        return this[y * gridSizeX.value + x]
-    }
-
-    private operator fun BooleanArray.set(x: Int, y: Int, value: Boolean) {
-        if (x !in 0 until gridSizeX.value || y !in 0 until gridSizeY.value) {
-            return
-        }
-        this[y * gridSizeX.value + x] = value
-    }
-
-    private fun BooleanArray.randomize(p: Float) {
-        for (i in indices) this[i] = randomF() < p
-    }
-
-    private fun BooleanArray.loadAsciiState(state: String) {
-        for (i in indices) this[i] = false
-        state.lines().forEachIndexed { y, line ->
-            line.forEachIndexed { x, c ->
-                this[x, y] = c =='0'
-            }
-        }
-    }
-
-    companion object {
-        val gliderGun = """
+        companion object {
+            val gliderGun = """
             .
             .........................0
             .......................0.0
@@ -243,5 +260,6 @@ class GameOfLifeWindow(val uiDemo: UiDemo) {
             ............0...0
             .............00
         """.trimIndent()
+        }
     }
 }

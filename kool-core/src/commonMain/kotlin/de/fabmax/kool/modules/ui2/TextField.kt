@@ -137,8 +137,7 @@ open class TextFieldNode(parent: UiNode?, surface: UiSurface)
 
         val draw = getUiPrimitives()
         val lineColor = if (isFocused) modifier.lineFocusedColor else modifier.lineColor
-        val w = widthPx - paddingStartPx - paddingEndPx
-        draw.localRect(paddingStartPx, lineY, w, 1.dp.px, lineColor)
+        draw.localRect(paddingStartPx, lineY, innerWidthPx, 1.dp.px, lineColor)
 
         if (isFocused) {
             draw.renderCursor(txtFont)
