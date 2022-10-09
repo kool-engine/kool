@@ -133,7 +133,7 @@ open class TextFieldNode(parent: UiNode?, surface: UiSurface)
             font = txtFont
             text = dispText
             isYAxisUp = false
-            origin.set(leftPx + textOrigin.x, topPx + textOrigin.y, 0f)
+            origin.set(textOrigin.x, textOrigin.y, 0f)
         }
         textCache.addTextGeometry(getTextBuilder(txtFont, ctx).geometry, textProps, textColor)
 

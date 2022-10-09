@@ -36,6 +36,11 @@ class UiDemo : DemoScene("UI Demo") {
     private val sliderValue = mutableStateOf(1f)
     private val checkboxTooltipState = MutableTooltipState()
 
+    private val colorHueValue = mutableStateOf(0f)
+    private val colorSatValue = mutableStateOf(1f)
+    private val colorValValue = mutableStateOf(1f)
+    private val chosenColor = mutableStateOf(Color.RED)
+
     private val text1 = mutableStateOf("")
     private val text2 = mutableStateOf("")
 
@@ -136,6 +141,25 @@ class UiDemo : DemoScene("UI Demo") {
         modifier
             .padding(horizontal = sizes.gap, vertical = sizes.largeGap)
             .layout(ColumnLayout)
+
+        Row {
+            ColorWheel(colorHueValue.use(), colorSatValue.use(), colorValValue.use()) {
+                modifier
+                    .margin(sizes.gap)
+                    .onChange { hue, sat, value ->
+                        colorHueValue.set(hue)
+                        colorSatValue.set(sat)
+                        colorValValue.set(value)
+                        chosenColor.set(Color.fromHsv(hue, sat, value, 1f))
+                    }
+            }
+
+            Box(200.dp, Grow.Std) {
+                modifier
+                    .margin(sizes.gap)
+                    .backgroundColor(chosenColor.use())
+            }
+        }
 
         Row {
             modifier.margin(bottom = sizes.smallGap)

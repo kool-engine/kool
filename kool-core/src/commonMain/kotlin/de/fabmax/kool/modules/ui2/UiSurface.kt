@@ -255,7 +255,10 @@ open class UiSurface(
             }
 
             val ptrEv = PointerEvent(ptr, ctx)
-            hoveredNode?.let { handleHover(it, ptrEv) }
+            if (dragNode == null) {
+                // only do hover if there is no drag in progress
+                hoveredNode?.let { handleHover(it, ptrEv) }
+            }
             if (nodeResult.isNotEmpty()) {
                 handlePointerEvents(nodeResult, ptrEv)
             }
@@ -324,8 +327,8 @@ open class UiSurface(
                 // onPointer is called for any node below pointer position
                 invokePointerCallback(node, ptrEv, mod.onPointer)
 
-                // check for new hover bodes
-                if (mod.hasAnyHoverCallback && hoveredNode?.let { nodeComparator.compare(node, it) < 0 } != false) {
+                // check for new hover bodes (if no drag is in progress)
+                if (dragNode == null && mod.hasAnyHoverCallback && hoveredNode?.let { nodeComparator.compare(node, it) < 0 } != false) {
                     // stop hovering of previous hoveredNode - we found a new one on top of it
                     hoveredNode?.let { invokePointerCallback(it, ptrEv, it.modifier.onExit) }
                     // start hovering new node
