@@ -63,6 +63,9 @@ private object VerticalLayout {
                     measuredHeight += max(prevMargin, paddingBottomPx)
                 }
             }
+
+            if (modWidth is Grow) measuredWidth = modWidth.clampPx(measuredWidth, measuredWidth)
+            if (modHeight is Grow) measuredHeight = modHeight.clampPx(measuredHeight, measuredHeight)
         }
         setContentSize(measuredWidth, measuredHeight)
     }

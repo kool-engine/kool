@@ -158,7 +158,7 @@ class IndexedVertexList(val vertexAttributes: List<Attribute>) {
 
     fun checkIndexSize(reqSpace: Int = 1) {
         if (indices.remaining < reqSpace) {
-            increaseIndicesSize(max(round(indices.capacity * GROW_FACTOR).toInt(), numVertices + reqSpace))
+            increaseIndicesSize(max(round(indices.capacity * GROW_FACTOR).toInt(), numIndices + reqSpace))
         }
     }
 

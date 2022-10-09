@@ -41,7 +41,7 @@ class GMeter(val dashboard: Dashboard) : ComposableComponent {
                 a.norm()
             }
             a.scale(rCircle).add(center)
-            draw.localCircle(a.x, a.y, rDot, colors.accent)
+            draw.localCircle(a.x, a.y, rDot, colors.primary)
         }
     }
 

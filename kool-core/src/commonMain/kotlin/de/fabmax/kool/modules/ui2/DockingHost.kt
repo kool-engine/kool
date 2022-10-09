@@ -8,6 +8,7 @@ import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Node
 import kotlin.math.abs
+import kotlin.math.max
 
 class DockingHost : Group() {
 
@@ -73,19 +74,30 @@ class DockingHost : Group() {
     }
 
     override fun update(updateEvent: RenderPass.UpdateEvent) {
-        // reorder child surfaces: the one with the latest user input is last / on top
+        // sort child surfaces:
+        // floating surfaces are always on top of docked surfaces
+        // surface with the latest user input is last / on top (within it's docked / undocked group)
         // 2nd to last is the docking surface, so that overlay is drawn over background surfaces but behind drag
         // surface
+
+        intChildren.sortBy {
+            if (it is UiSurface) {
+                it.lastInput + if (it.isDocked.value) 0.0 else 1e9
+            } else {
+                0.0
+            }
+        }
+
         val latestInputSurface = childSurfaces.maxByOrNull { it.lastInput }
         if (latestInputSurface != focusedSurface && (latestInputSurface?.lastInput ?: 0.0) > (focusedSurface?.lastInput ?: 0.0)) {
             focusedSurface?.isFocused?.set(false)
             focusedSurface = latestInputSurface
             focusedSurface?.isFocused?.set(true)
         }
-        focusedSurface?.let { removeNode(it) }
+//        focusedSurface?.let { removeNode(it) }
         removeNode(dockingSurface)
-        addNode(dockingSurface)
-        focusedSurface?.let { addNode(it) }
+        addNode(dockingSurface, max(0, childSurfaces.lastIndex))
+//        focusedSurface?.let { addNode(it) }
         super.update(updateEvent)
     }
 
@@ -157,6 +169,7 @@ class DockingHost : Group() {
         fun undock(window: WindowScope) {
             dockedWindows -= window
             window.windowState.dockedTo.set(null)
+            window.surface.isDocked.set(false)
         }
 
         fun dock(window: WindowScope) {
@@ -165,6 +178,7 @@ class DockingHost : Group() {
             }
             dockedWindows += window
             window.apply {
+                surface.isDocked.set(true)
                 windowState.dockedTo.set(this@DockingNode)
                 windowState.setWindowBounds(
                     Dp.fromPx(boundsMinPx.x), Dp.fromPx(boundsMinPx.y),
@@ -400,11 +414,11 @@ class DockingHost : Group() {
                 modifier
                     .align(position.alignX, position.alignY)
                     .backgroundColor(
-                        if (isHv) colors.accent.withAlpha(0.3f) else colors.accentVariant.withAlpha(0.2f)
+                        if (isHv) colors.primary.withAlpha(0.3f) else colors.primaryVariant.withAlpha(0.2f)
                     )
                     .border(
                         RectBorder(
-                            if (isHv) colors.accent.withAlpha(0.5f) else colors.accentVariant.withAlpha(0.4f),
+                            if (isHv) colors.primary.withAlpha(0.5f) else colors.primaryVariant.withAlpha(0.4f),
                             sizes.smallGap * 0.5f
                         )
                     )

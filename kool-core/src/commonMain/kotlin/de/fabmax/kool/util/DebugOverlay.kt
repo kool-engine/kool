@@ -54,7 +54,7 @@ class DebugOverlay(position: Position = Position.UPPER_RIGHT) {
             +Panel(
                 name = "overview",
                 sizes = Sizes.small(),
-                colors = Colors.darkColors(accent = Color("b2ff00"), background = Color("10101080"))
+                colors = Colors.darkColors(primary = Color("b2ff00"), background = Color("10101080"))
             ) {
                 when (position) {
                     Position.UPPER_LEFT -> modifier.align(AlignmentX.Start, AlignmentY.Top)
@@ -73,14 +73,14 @@ class DebugOverlay(position: Position = Position.UPPER_RIGHT) {
                         .width(Grow.Std)
                         .textAlignX(AlignmentX.Center)
                         .font(fpsFont)
-                        .textColor(colors.accent)
+                        .textColor(colors.primary)
                         .background(deltaTGraph)
 
                     Text(if (isExpanded.use()) "-" else "+") {
                         modifier
                             .align(AlignmentX.End, AlignmentY.Center)
                             .font(fpsFont)
-                            .textColor(colors.accent)
+                            .textColor(colors.primary)
                             .onClick { isExpanded.set(!isExpanded.value) }
                             .margin(end = sizes.gap)
                     }

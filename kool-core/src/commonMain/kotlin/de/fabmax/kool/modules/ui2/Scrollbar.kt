@@ -19,8 +19,8 @@ open class ScrollbarModifier(surface: UiSurface) : UiModifier(surface) {
     var minBarLength: Dp by property(Dp(24f))
     var hideIfFullyExtended: Boolean by property(true)
 
-    var barColor: Color by property { it.colors.accent.withAlpha(0.5f) }
-    var hoverColor: Color? by property { it.colors.accent }
+    var barColor: Color by property { it.colors.secondaryVariant }
+    var hoverColor: Color? by property { it.colors.secondary }
     var trackColor: Color? by property(null)
     var trackHoverColor: Color? by property(null)
 }

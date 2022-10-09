@@ -37,10 +37,12 @@ open class UiSurface(
     var lastInput = 0.0
         private set
 
-    // hint, set by DockingHost (if present), if this surface has input focus
+    // hint, set by DockingHost (if present), when this surface has input focus
     var isFocused = mutableStateOf(false).onChange {
         if (!it) inputHandler.requestFocus(null)
     }
+    // hint, set by DockingHost (if present), when this surface is docked
+    var isDocked = mutableStateOf(false)
 
     var colors: Colors by colorsState::value
     var sizes: Sizes by sizesState::value
@@ -205,9 +207,11 @@ open class UiSurface(
         }
 
         fun requestFocus(focusable: Focusable?) {
-            focusedNode?.onFocusLost()
-            focusedNode = focusable
-            focusable?.onFocusGain()
+            if (focusable != focusedNode) {
+                focusedNode?.onFocusLost()
+                focusedNode = focusable
+                focusable?.onFocusGain()
+            }
         }
 
         fun checkInputHandler(ctx: KoolContext) {
@@ -340,6 +344,9 @@ open class UiSurface(
                 if (isDragStart && dragNode == null && mod.hasAnyDragCallback && invokePointerCallback(node, ptrEv, mod.onDragStart, true)) {
                     dragNode = node
                     lastInput = Time.gameTime
+                    if (node != focusedNode) {
+                        requestFocus(null)
+                    }
                 }
 
                 if (isAnyClick && invokePointerCallback(node, ptrEv, mod.onClick)) {
@@ -347,6 +354,9 @@ open class UiSurface(
                     ptrEv.pointer.consume()
                     isAnyClick = false
                     lastInput = Time.gameTime
+                    if (node != focusedNode) {
+                        requestFocus(null)
+                    }
                 }
                 if (isWheelX && invokePointerCallback(node, ptrEv, mod.onWheelX)) {
                     // wheel x was consumed

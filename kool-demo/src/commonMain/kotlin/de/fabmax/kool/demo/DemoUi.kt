@@ -81,8 +81,8 @@ fun TextScope.sectionTitleStyle() {
     modifier
         .width(Grow.Std)
         .margin(vertical = UiSizes.hGap)    // hGap is intentional, since we want a little more spacing around titles
-        .textColor(colors.accent)
-        .backgroundColor(colors.accentVariant.withAlpha(0.2f))
+        .textColor(colors.primary)
+        .backgroundColor(colors.primaryVariant.withAlpha(0.2f))
         .font(sizes.largeText)
         .textAlignX(AlignmentX.Center)
 }

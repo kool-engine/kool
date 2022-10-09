@@ -1,7 +1,10 @@
 package de.fabmax.kool.util
 
+import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.math.clamp
+import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.roundToInt
 
@@ -50,12 +53,60 @@ open class Color(r: Float, g: Float, b: Float, a: Float = 1f) : Vec4f(r, g, b, a
         return result.set(r.pow(gamma), g.pow(gamma), b.pow(gamma), a)
     }
 
-    fun toHexString(): String {
-        val ir = (r * 255).roundToInt().clamp(0, 255)
-        val ig = (g * 255).roundToInt().clamp(0, 255)
-        val ib = (b * 255).roundToInt().clamp(0, 255)
-        val ia = (a * 255).roundToInt().clamp(0, 255)
-        return ir.toString(16) + ig.toString(16) + ib.toString(16) + ia.toString(16)
+    fun toGray(): Float {
+        return r * 0.299f + g * 0.587f + b * 0.114f
+    }
+
+    /**
+     * Returns this color is HSV color space:
+     * [result].x = hue [0..360]
+     * [result].y = saturation [0..1]
+     * [result].z = value [0..1]
+     */
+    fun toHsv(result: MutableVec3f = MutableVec3f()): MutableVec3f {
+        val min = min(r, min(g, b)).clamp()
+        val max = max(r, max(g, b)).clamp()
+
+        // value
+        result.z = max
+
+        val delta = max - min
+        if (delta < 0.001f) {
+            // saturation is 0, hue is undefined (we set it to 0)
+            result.set(0f, 0f, max)
+        } else {
+            // saturation
+            result.y = delta / max
+
+            // hue
+            result.x = 60f * if (r >= max) {
+                (g.clamp() - b.clamp()) / delta
+            } else if (g >= max) {
+                2f + (b.clamp() - r.clamp()) / delta
+            } else {
+                4f + (r.clamp() - g.clamp()) / delta
+            }
+            if (result.x < 0f) {
+                result.x += 360f
+            }
+        }
+        return result
+    }
+
+    fun toHexString(inclAlpha: Boolean = true): String {
+        var hr = (r * 255).roundToInt().clamp(0, 255).toString(16)
+        var hg = (g * 255).roundToInt().clamp(0, 255).toString(16)
+        var hb = (b * 255).roundToInt().clamp(0, 255).toString(16)
+        var ha = (a * 255).roundToInt().clamp(0, 255).toString(16)
+        if (hr.length == 1) hr = "0$hr"
+        if (hg.length == 1) hg = "0$hg"
+        if (hb.length == 1) hb = "0$hb"
+        if (ha.length == 1) ha = "0$ha"
+        if (inclAlpha) {
+            return "$hr$hg$hb$ha"
+        } else {
+            return "$hr$hg$hb"
+        }
     }
 
     companion object {
@@ -94,8 +145,7 @@ open class Color(r: Float, g: Float, b: Float, a: Float = 1f) : Vec4f(r, g, b, a
         val DARK_ORANGE = Color(0.5f, 0.25f, 0.0f, 1.0f)
 
         fun fromHsv(h: Float, s: Float, v: Float, a: Float): Color {
-            val color = MutableColor()
-            return color.setHsv(h, s, v, a)
+            return MutableColor().setHsv(h, s, v, a)
         }
 
         fun fromHex(hex: String): Color {
@@ -107,14 +157,27 @@ open class Color(r: Float, g: Float, b: Float, a: Float = 1f) : Vec4f(r, g, b, a
             if (str[0] == '#') {
                 str = str.substring(1)
             }
+            if (str.length > 8) {
+                str = str.substring(0, 8)
+            }
 
             var r = 0f
             var g = 0f
             var b = 0f
             var a = 1f
             try {
-                when {
-                    str.length == 3 -> {
+                when (str.length) {
+                    1 -> {
+                        val r4 = str.toInt(16)
+                        r = (r4 or (r4 shl 4)) / 255f
+                    }
+                    2 -> {
+                        val r4 = str.substring(0, 1).toInt(16)
+                        val g4 = str.substring(1, 2).toInt(16)
+                        r = (r4 or (r4 shl 4)) / 255f
+                        g = (g4 or (g4 shl 4)) / 255f
+                    }
+                    3 -> {
                         val r4 = str.substring(0, 1).toInt(16)
                         val g4 = str.substring(1, 2).toInt(16)
                         val b4 = str.substring(2, 3).toInt(16)
@@ -123,7 +186,7 @@ open class Color(r: Float, g: Float, b: Float, a: Float = 1f) : Vec4f(r, g, b, a
                         b = (b4 or (b4 shl 4)) / 255f
 
                     }
-                    str.length == 4 -> {
+                    4 -> {
                         val r4 = str.substring(0, 1).toInt(16)
                         val g4 = str.substring(1, 2).toInt(16)
                         val b4 = str.substring(2, 3).toInt(16)
@@ -134,24 +197,37 @@ open class Color(r: Float, g: Float, b: Float, a: Float = 1f) : Vec4f(r, g, b, a
                         a = (a4 or (a4 shl 4)) / 255f
 
                     }
-                    str.length == 6 -> {
+                    5 -> {
+                        r = str.substring(0, 2).toInt(16) / 255f
+                        g = str.substring(2, 4).toInt(16) / 255f
+                        b = str.substring(4, 5).toInt(16) / 255f
+                    }
+                    6 -> {
                         // parse rgb
                         r = str.substring(0, 2).toInt(16) / 255f
                         g = str.substring(2, 4).toInt(16) / 255f
                         b = str.substring(4, 6).toInt(16) / 255f
                     }
-                    str.length == 8 -> {
+                    else -> {
                         // parse rgba
                         r = str.substring(0, 2).toInt(16) / 255f
                         g = str.substring(2, 4).toInt(16) / 255f
                         b = str.substring(4, 6).toInt(16) / 255f
-                        a = str.substring(6, 8).toInt(16) / 255f
+                        a = str.substring(6).toInt(16) / 255f
                     }
                 }
             } catch (e: NumberFormatException) {
-                logE { "invalid color code: $hex, $e" }
+                throw IllegalArgumentException("Invalid color code: $hex", e)
             }
             return Color(r, g, b, a)
+        }
+
+        fun fromHexOrNull(hex: String): Color? {
+            return try {
+                fromHex(hex)
+            } catch (e: Exception) {
+                null
+            }
         }
     }
 }

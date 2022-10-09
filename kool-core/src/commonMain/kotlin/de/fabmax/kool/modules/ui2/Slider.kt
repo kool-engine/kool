@@ -18,9 +18,9 @@ open class SliderModifier(surface: UiSurface) : TextModifier(surface) {
 
     var orientation: SliderOrientation by property(SliderOrientation.Horizontal)
 
-    var knobColor: Color by property { it.colors.accent }
-    var trackColor: Color by property { it.colors.accentVariant.withAlpha(0.5f) }
-    var trackColorActive: Color? by property { it.colors.accentVariant.withAlpha(0.8f) }
+    var knobColor: Color by property { it.colors.primary }
+    var trackColor: Color by property { it.colors.secondaryVariant }
+    var trackColorActive: Color? by property { it.colors.secondary }
 }
 
 fun <T: SliderModifier> T.value(value: Float): T { this.value = value; return this }
@@ -65,18 +65,17 @@ class SliderNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface),
     private val dragStart = MutableVec2f()
 
     private val knobDiameter: Dp get() = sizes.sliderHeight
-    private val trackLenPx: Float get() = knobDiameter.px * 6
     private val trackHeightPx: Float get() = knobDiameter.px * 0.4f
 
     override fun measureContentSize(ctx: KoolContext) {
         val w: Float
         val h: Float
         if (modifier.orientation == SliderOrientation.Horizontal) {
-            w = trackLenPx
-            h = knobDiameter.px
+            w = knobDiameter.px * 5 + 2f
+            h = knobDiameter.px + 2f
         } else {
-            w = knobDiameter.px
-            h = trackLenPx
+            w = knobDiameter.px + 2f
+            h = knobDiameter.px * 5 + 2f
         }
 
         val modWidth = modifier.width

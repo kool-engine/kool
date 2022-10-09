@@ -73,13 +73,12 @@ abstract class DemoScene(val name: String) {
 
     protected fun menuSurface(title: String? = null, block: UiScope.() -> Unit): UiSurface {
         val accent = demoEntry?.color ?: MdColor.PINK
-        val accentVariant = accent.mix(Color.BLACK, 0.3f)
         val titleTxt = title ?: demoEntry?.title ?: "Demo"
 
         val scrollState = ScrollState()
 
         return Panel(
-            colors = Colors.darkColors(accent, accentVariant, onAccent = Color.WHITE)
+            colors = Colors.singleColorDark(accent, Color("101010d0"))
         ) {
             if (!isMenu.use()) {
                 return@Panel Unit
@@ -115,21 +114,21 @@ abstract class DemoScene(val name: String) {
             modifier
                 .width(Grow.Std)
                 .height(UiSizes.baseSize)
-                .background(RoundRectBackground(colors.accent, cornerRadius))
+                .background(RoundRectBackground(colors.primary, cornerRadius))
 
             Text(titleTxt) {
                 modifier
                     .width(Grow.Std)
                     .height(UiSizes.baseSize)
                     .background(TitleBgRenderer(titleBgMesh, titleFrom, titleTo, (cornerRadius + 1.dp).px))
-                    .textColor(colors.onAccent)
+                    .textColor(colors.onPrimary)
                     .font(sizes.largeText)
                     .textAlign(AlignmentX.Center, AlignmentY.Center)
             }
 
             Box {
-                val closeButtonBgColor = if (isCloseHovered.use()) colors.error else Color.WHITE.withAlpha(0.8f)
-                val closeButtonFgColor = if (isCloseHovered.use()) Color.WHITE else colors.accentVariant
+                val closeButtonBgColor = if (isCloseHovered.use()) MdColor.RED tone 600 else Color.WHITE.withAlpha(0.8f)
+                val closeButtonFgColor = if (isCloseHovered.use()) Color.WHITE else colors.primaryVariant
                 modifier
                     .width(sizes.gap * 1.75f)
                     .height(sizes.gap * 1.75f)

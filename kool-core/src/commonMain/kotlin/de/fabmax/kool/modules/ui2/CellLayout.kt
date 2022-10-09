@@ -37,6 +37,9 @@ object CellLayout : Layout {
                     measuredHeight = max(measuredHeight, child.contentHeightPx + pTop + pBottom)
                 }
             }
+
+            if (modWidth is Grow) measuredWidth = modWidth.clampPx(measuredWidth, measuredWidth)
+            if (modHeight is Grow) measuredHeight = modHeight.clampPx(measuredHeight, measuredHeight)
         }
         setContentSize(measuredWidth, measuredHeight)
     }

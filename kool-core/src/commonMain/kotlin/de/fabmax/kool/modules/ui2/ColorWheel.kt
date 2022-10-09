@@ -16,7 +16,7 @@ open class ColorWheelModifier(surface: UiSurface) : UiModifier(surface) {
     var value by property(1f)
 
     var hueRingWidth by property { it.sizes.gap }
-    var hueIndicatorColor by property(Color.WHITE)
+    var hueIndicatorColor by property { if (it.colors.isLight) Color.GRAY else Color.WHITE }
 
     var onChange: ((Float, Float, Float) -> Unit)? by property(null)
 }
@@ -126,8 +126,8 @@ open class ColorWheelNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, 
     }
 
     override fun measureContentSize(ctx: KoolContext) {
-        val w = modifier.hueRingWidth.px * 16f
-        val h = modifier.hueRingWidth.px * 16f
+        val w = modifier.hueRingWidth.px * 20f
+        val h = modifier.hueRingWidth.px * 20f
         val modWidth = modifier.width
         val modHeight = modifier.height
         val measuredWidth = if (modWidth is Dp) modWidth.px else w + paddingStartPx + paddingEndPx

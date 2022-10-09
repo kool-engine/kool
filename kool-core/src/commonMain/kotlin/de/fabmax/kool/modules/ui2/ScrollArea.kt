@@ -19,6 +19,7 @@ fun UiScope.ScrollArea(
             .width(width)
             .height(height)
             .backgroundColor(colors.backgroundVariant)
+            //.border(RectBorder(colors.secondaryVariant.withAlpha(0.3f), sizes.borderWidth))
             .onWheelX { state.scrollDpX(it.pointer.deltaScrollX.toFloat() * -20f) }
             .onWheelY { state.scrollDpY(it.pointer.deltaScrollY.toFloat() * -50f) }
 

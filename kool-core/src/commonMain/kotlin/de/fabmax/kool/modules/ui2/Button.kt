@@ -10,9 +10,9 @@ interface ButtonScope : UiScope {
 }
 
 open class ButtonModifier(surface: UiSurface) : TextModifier(surface) {
-    var buttonColor: Color by property { it.colors.accentVariant }
-    var buttonHoverColor: Color by property { it.colors.accent }
-    var textHoverColor: Color by property{ it.colors.onAccent }
+    var buttonColor: Color by property { it.colors.secondaryVariant }
+    var buttonHoverColor: Color by property { it.colors.secondary }
+    var textHoverColor: Color by property{ it.colors.onSecondary }
     var isClickFeedback: Boolean by property(true)
 }
 
@@ -35,7 +35,7 @@ inline fun UiScope.Button(text: String = "", block: ButtonScope.() -> Unit): Tex
     val button = uiNode.createChild(ButtonNode::class, ButtonNode.factory)
     button.modifier
         .text(text)
-        .colors(textColor = colors.onAccent)
+        .colors(textColor = colors.onSecondary)
         .textAlign(AlignmentX.Center, AlignmentY.Center)
         .padding(horizontal = sizes.gap, vertical = sizes.smallGap * 0.5f)
         .onClick(button)

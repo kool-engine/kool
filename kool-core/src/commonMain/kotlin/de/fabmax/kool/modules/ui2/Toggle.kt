@@ -26,28 +26,30 @@ open class ToggleModifier(surface: UiSurface) : UiModifier(surface) {
 open class CheckboxModifier(surface: UiSurface) : ToggleModifier(surface) {
     var checkboxSize: Dp by property { it.sizes.checkboxSize }
 
-    var borderColor: Color by property { it.colors.accentVariant }
-    var backgroundColor: Color by property { it.colors.accentVariant.withAlpha(0.5f) }
-    var fillColor: Color by property { it.colors.accent }
-    var checkMarkColor: Color by property { it.colors.onAccent }
+    var borderColor: Color by property { it.colors.secondaryVariant }
+    var backgroundColor: Color by property { it.colors.secondary.withAlpha(0.5f) }
+    var fillColor: Color by property { it.colors.primary }
+    var checkMarkColor: Color by property { it.colors.onPrimary }
 }
 
 open class RadioButtonModifier(surface: UiSurface) : ToggleModifier(surface) {
     var radioButtonSize: Dp by property { it.sizes.radioButtonSize }
 
-    var borderColor: Color by property { it.colors.accentVariant }
-    var backgroundColor: Color by property { it.colors.accentVariant.withAlpha(0.5f) }
-    var knobColor: Color by property { it.colors.accent }
+    var borderColorOn: Color by property { it.colors.primaryVariant }
+    var borderColorOff: Color by property { it.colors.secondaryVariant }
+    var backgroundColorOn: Color by property { it.colors.primary.withAlpha(0.5f) }
+    var backgroundColorOff: Color by property { it.colors.secondary.withAlpha(0.3f) }
+    var knobColor: Color by property { it.colors.primary }
 }
 
 open class SwitchModifier(surface: UiSurface) : ToggleModifier(surface) {
     var switchWidth: Dp by property { it.sizes.switchSize * 2f }
     var switchHeight: Dp by property { it.sizes.switchSize }
 
-    var knobColorOn: Color by property { it.colors.accent }
-    var knobColorOff: Color by property { it.colors.accent }
-    var trackColorOn: Color by property { it.colors.accentVariant.withAlpha(0.5f) }
-    var trackColorOff: Color by property { it.colors.accentVariant.withAlpha(0.5f) }
+    var knobColorOn: Color by property { it.colors.primary }
+    var knobColorOff: Color by property { it.colors.primary }
+    var trackColorOn: Color by property { it.colors.secondary }
+    var trackColorOff: Color by property { it.colors.secondaryVariant }
 }
 
 
@@ -70,12 +72,16 @@ fun <T: CheckboxModifier> T.colors(
 
 fun <T: RadioButtonModifier> T.radioButtonSize(size: Dp): T { radioButtonSize = size; return this }
 fun <T: RadioButtonModifier> T.colors(
-    borderColor: Color = this.borderColor,
-    backgroundColor: Color = this.backgroundColor,
+    borderColorOn: Color = this.borderColorOn,
+    borderColorOff: Color = this.borderColorOff,
+    backgroundColorOn: Color = this.backgroundColorOn,
+    backgroundColorOff: Color = this.backgroundColorOff,
     knobColor: Color = this.knobColor
 ): T {
-    this.borderColor = borderColor
-    this.backgroundColor = backgroundColor
+    this.borderColorOff = borderColorOff
+    this.borderColorOn = borderColorOn
+    this.backgroundColorOn = backgroundColorOn
+    this.backgroundColorOff = backgroundColorOff
     this.knobColor = knobColor
     return this
 }
@@ -147,8 +153,8 @@ abstract class ToggleNode(
     override fun measureContentSize(ctx: KoolContext) {
         val modWidth = modifier.width
         val modHeight = modifier.height
-        val measuredWidth = if (modWidth is Dp) modWidth.px else buttonWidth.px + paddingStartPx + paddingEndPx
-        val measuredHeight = if (modHeight is Dp) modHeight.px else buttonHeight.px + paddingTopPx + paddingBottomPx
+        val measuredWidth = if (modWidth is Dp) modWidth.px else buttonWidth.px + 2 + paddingStartPx + paddingEndPx
+        val measuredHeight = if (modHeight is Dp) modHeight.px else buttonHeight.px + 2 + paddingTopPx + paddingBottomPx
         setContentSize(measuredWidth, measuredHeight)
 
         if (isFirst) {
@@ -232,12 +238,25 @@ class RadioButtonNode(parent: UiNode?, surface: UiSurface) : ToggleNode(parent, 
         val c = center()
         val draw = getUiPrimitives()
 
-        draw.localCircle(c.x, c.y, r, modifier.backgroundColor)
-        draw.localCircleBorder(c.x, c.y, r, sizes.borderWidth.px * 1.5f, modifier.borderColor)
-
         val p = animationPos()
         if (p > 0f) {
+            val bgColor: Color
+            val borderColor: Color
+            if (p < 1f) {
+                bgColor = modifier.backgroundColorOff.mix(modifier.backgroundColorOn, p)
+                borderColor = modifier.borderColorOff.mix(modifier.borderColorOn, p)
+            } else {
+                bgColor = modifier.backgroundColorOn
+                borderColor = modifier.borderColorOn
+            }
+
+            draw.localCircle(c.x, c.y, r, bgColor)
+            draw.localCircleBorder(c.x, c.y, r, sizes.borderWidth.px * 1.5f, borderColor)
             draw.localCircle(c.x, c.y, (r - sizes.borderWidth.px * 3f) * p, modifier.knobColor)
+
+        } else {
+            draw.localCircle(c.x, c.y, r, modifier.backgroundColorOff)
+            draw.localCircleBorder(c.x, c.y, r, sizes.borderWidth.px * 1.5f, modifier.borderColorOff)
         }
     }
 

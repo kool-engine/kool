@@ -61,10 +61,10 @@ class NavSettingsButton(val menu: DemoMenu) : ComposableComponent {
     private val buttonRenderer = UiRenderer { node ->
         node.apply {
             val animationP = animator.progressAndUse()
-            val buttonColor = if (isHovered.use()) colors.accent else Color.WHITE
+            val buttonColor = if (isHovered.use()) colors.primary else Color.WHITE
             val bgColor = when {
-                isHovered.value -> colors.accentVariant.withAlpha(DemoMenu.navBarButtonHoveredAlpha)
-                menu.content.value == DemoMenu.MenuContent.Settings -> colors.accentVariant.withAlpha(DemoMenu.navBarButtonSelectedAlpha)
+                isHovered.value -> colors.primaryVariant.withAlpha(DemoMenu.navBarButtonHoveredAlpha)
+                menu.content.value == DemoMenu.MenuContent.Settings -> colors.primaryVariant.withAlpha(DemoMenu.navBarButtonSelectedAlpha)
                 else -> null
             }
             bgColor?.let { getUiPrimitives().localRect(0f, 0f, widthPx, heightPx, it) }

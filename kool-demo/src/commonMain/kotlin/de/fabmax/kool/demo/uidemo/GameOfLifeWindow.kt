@@ -5,7 +5,7 @@ import de.fabmax.kool.modules.ui2.*
 
 class GameOfLifeWindow(val uiDemo: UiDemo) {
 
-    private val windowState = WindowState().apply { setWindowBounds(Dp(400f), Dp(400f), Dp(800f), Dp(800f)) }
+    private val windowState = WindowState().apply { setWindowLocation(Dp(400f), Dp(400f)) }
     private val scrollState = ScrollState()
 
     private val world = GameWorld()
@@ -23,7 +23,7 @@ class GameOfLifeWindow(val uiDemo: UiDemo) {
         surface.sizes = uiDemo.selectedUiSize.use()
         surface.colors = uiDemo.selectedColors.use()
 
-        TitleBar("Game of Life")
+        TitleBar("Conway`s Game of Life")
 
         Row {
             Text("Paused") {
@@ -116,8 +116,8 @@ class GameOfLifeWindow(val uiDemo: UiDemo) {
         private val radioButtonRenderer: UiScope.(Int, Int) -> Unit = { x, y ->
             RadioButton(world[x, y]) {
                 modifier.colors(
-                    borderColor = colors.accentVariant.withAlpha(0.65f),
-                    backgroundColor = colors.accentVariant.withAlpha(0.15f)
+                    borderColorOff = colors.secondary.withAlpha(0.5f),
+                    backgroundColorOff = colors.secondary.withAlpha(0.15f)
                 )
                 setupCellRenderer(x, y)
             }
@@ -126,8 +126,8 @@ class GameOfLifeWindow(val uiDemo: UiDemo) {
         private val checkboxRenderer: UiScope.(Int, Int) -> Unit = { x, y ->
             Checkbox(world[x, y]) {
                 modifier.colors(
-                    borderColor = colors.accentVariant.withAlpha(0.65f),
-                    backgroundColor = colors.accentVariant.withAlpha(0.15f)
+                    borderColor = colors.primaryVariant.withAlpha(0.65f),
+                    backgroundColor = colors.primaryVariant.withAlpha(0.15f)
                 )
                 setupCellRenderer(x, y)
             }
@@ -138,7 +138,7 @@ class GameOfLifeWindow(val uiDemo: UiDemo) {
                 modifier.size(sizes.checkboxSize, sizes.checkboxSize)
                 setupCellRenderer(x, y)
                 if (world[x, y]) {
-                    modifier.backgroundColor(colors.accent)
+                    modifier.backgroundColor(colors.primary)
                 }
             }
         }

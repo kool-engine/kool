@@ -14,9 +14,8 @@ class VehicleUi(val vehicle: DemoVehicle) {
     val dashboard = Dashboard()
     val timerUi = Timer(this)
 
-    private val menuColors = Colors.darkColors(
+    private val menuColors = Colors.singleColorDark(
         accent = MdColor.ORANGE,
-        accentVariant = MdColor.ORANGE.mix(Color.BLACK, 0.3f),
         background = Color("00000070")
     )
 

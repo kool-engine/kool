@@ -63,6 +63,9 @@ private object HorizontalLayout {
                     measuredWidth += max(prevMargin, paddingEndPx)
                 }
             }
+
+            if (modWidth is Grow) measuredWidth = modWidth.clampPx(measuredWidth, measuredWidth)
+            if (modHeight is Grow) measuredHeight = modHeight.clampPx(measuredHeight, measuredHeight)
         }
         setContentSize(measuredWidth, measuredHeight)
     }

@@ -14,7 +14,7 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
-interface TextFieldScope : UiScope {
+interface TextFieldScope : UiScope, Focusable {
     override val modifier: TextFieldModifier
 }
 
@@ -24,14 +24,15 @@ open class TextFieldModifier(surface: UiSurface) : UiModifier(surface) {
     var hint: String by property("")
     var hintFont: Font? by property(null)
     var isEditable: Boolean by property(true)
+    var maxLength: Int by property(100)
     var textAlignX: AlignmentX by property(AlignmentX.Start)
 
     var textColor: Color by property { it.colors.onBackground }
     var hintColor: Color by property { it.colors.onBackground.withAlpha(0.5f) }
-    var selectionColor: Color by property { it.colors.accent.withAlpha(0.5f) }
+    var selectionColor: Color by property { it.colors.primary.withAlpha(0.5f) }
     var cursorColor: Color by property { it.colors.onBackground }
-    var lineColor: Color by property { it.colors.accentVariant }
-    var lineFocusedColor: Color by property { it.colors.accent }
+    var lineColor: Color by property { it.colors.primaryVariant }
+    var lineFocusedColor: Color by property { it.colors.primary }
 
     var onChange: ((String) -> Unit)? by property(null)
     var onEnterPressed: ((String) -> Unit)? by property(null)
@@ -42,6 +43,7 @@ fun <T: TextFieldModifier> T.font(font: Font): T { this.font = font; return this
 fun <T: TextFieldModifier> T.hint(hint: String): T { this.hint = hint; return this }
 fun <T: TextFieldModifier> T.hintFont(font: Font): T { this.hintFont = font; return this }
 fun <T: TextFieldModifier> T.isEditable(flag: Boolean): T { isEditable = flag; return this }
+fun <T: TextFieldModifier> T.maxLength(len: Int): T { maxLength = len; return this }
 fun <T: TextFieldModifier> T.textAlignX(alignment: AlignmentX): T { textAlignX = alignment; return this }
 fun <T: TextFieldModifier> T.onChange(block: ((String) -> Unit)?): T { this.onChange = block; return this }
 fun <T: TextFieldModifier> T.onEnterPressed(block: ((String) -> Unit)?): T { this.onEnterPressed = block; return this }
@@ -76,9 +78,10 @@ inline fun UiScope.TextField(text: String = "", block: TextFieldScope.() -> Unit
 }
 
 open class TextFieldNode(parent: UiNode?, surface: UiSurface)
-    : UiNode(parent, surface), TextFieldScope, Clickable, Focusable, Hoverable, Draggable
+    : UiNode(parent, surface), TextFieldScope, Clickable, Hoverable, Draggable
 {
     override val modifier = TextFieldModifier(surface)
+    override val isFocused: Boolean get() = isFocusedState.value
 
     private val textProps = TextProps(Font.DEFAULT_FONT)
     private val textCache = CachedText(this)
@@ -110,6 +113,7 @@ open class TextFieldNode(parent: UiNode?, surface: UiSurface)
         super.render(ctx)
 
         editText.text = modifier.text
+        editText.maxLength = modifier.maxLength
 
         val isFocused = isFocusedState.use()
         val isHint = modifier.text.isEmpty()
@@ -120,10 +124,10 @@ open class TextFieldNode(parent: UiNode?, surface: UiSurface)
         val textMetrics = textCache.textMetrics
 
         textOrigin.y = (heightPx - textMetrics.height) / 2f + textMetrics.yBaseline
-        textOrigin.x = 4.dp.px + when (modifier.textAlignX) {
-            AlignmentX.Start -> paddingStartPx
+        textOrigin.x = when (modifier.textAlignX) {
+            AlignmentX.Start -> paddingStartPx + 4.dp.px
             AlignmentX.Center -> (widthPx - textMetrics.width) / 2f
-            AlignmentX.End -> widthPx - textMetrics.width - paddingEndPx
+            AlignmentX.End -> widthPx - textMetrics.width - paddingEndPx - 4.dp.px
         }
         textOrigin.x += checkTextOverflow(txtFont)
         val lineY = textOrigin.y + 4.dp.px
@@ -273,6 +277,10 @@ open class TextFieldNode(parent: UiNode?, surface: UiSurface)
     }
 
     override fun onKeyEvent(keyEvent: InputManager.KeyEvent) {
+        if (!modifier.isEditable) {
+            return
+        }
+
         var isTextUpdate = false
         var triggerUpdate = true
         if (keyEvent.isCharTyped) {

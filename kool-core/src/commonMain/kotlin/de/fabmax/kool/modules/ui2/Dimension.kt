@@ -1,5 +1,6 @@
 package de.fabmax.kool.modules.ui2
 
+import de.fabmax.kool.math.clamp
 import kotlin.jvm.JvmInline
 
 sealed interface Dimension
@@ -13,6 +14,12 @@ object FitContent : Dimension {
 class Grow(val weight: Float, val min: Dimension = Dp.ZERO, val max: Dimension = Dp.UNBOUNDED) : Dimension {
     override fun toString(): String {
         return "Grow(weight=$weight)"
+    }
+
+    fun clampPx(px: Float, contentSize: Float): Float {
+        val minPx = if (min is Dp) min.px else contentSize
+        val maxPx = if (max is Dp) max.px else contentSize
+        return px.clamp(minPx, maxPx)
     }
 
     companion object {

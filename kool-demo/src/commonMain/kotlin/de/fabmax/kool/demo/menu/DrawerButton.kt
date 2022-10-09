@@ -29,12 +29,12 @@ class DrawerButton(val menu: DemoMenu) : ComposableComponent {
 
     private val buttonRenderer = UiRenderer { node ->
         node.apply {
-            val buttonColor = if (isHovered.use()) colors.accent else Color.WHITE
+            val buttonColor = if (isHovered.use()) colors.primary else Color.WHITE
             val p = animator.progressAndUse()
             val animationP = if (menu.isExpanded) p else 1f - p
 
             if (menu.isExpanded && isHovered.value) {
-                val bgColor = colors.accentVariant.withAlpha(DemoMenu.navBarButtonHoveredAlpha)
+                val bgColor = colors.primaryVariant.withAlpha(DemoMenu.navBarButtonHoveredAlpha)
                 getUiPrimitives().localRect(0f, 0f, widthPx, heightPx, bgColor)
             }
 

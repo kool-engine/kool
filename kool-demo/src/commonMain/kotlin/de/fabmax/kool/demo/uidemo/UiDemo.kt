@@ -12,16 +12,6 @@ import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 
 class UiDemo : DemoScene("UI Demo") {
-    private val themeColors = listOf(
-        "Neon" to Colors.darkColors(Color("b2ff00"), Color("7cb200")),
-        "Lime" to Colors.darkColors(MdColor.LIME, MdColor.LIME tone 800),
-        "Green" to Colors.darkColors(MdColor.LIGHT_GREEN, MdColor.LIGHT_GREEN tone 800),
-        "Cyan" to Colors.darkColors(MdColor.CYAN, MdColor.CYAN tone 800),
-        "Blue" to Colors.darkColors(MdColor.LIGHT_BLUE, MdColor.LIGHT_BLUE tone 800),
-        "Purple" to Colors.darkColors(MdColor.PURPLE, MdColor.PURPLE tone 800, onAccent = Color.WHITE),
-        "Pink" to Colors.darkColors(MdColor.PINK, MdColor.PINK tone 800),
-        "Red" to Colors.darkColors(MdColor.RED, MdColor.RED tone 800),
-    )
 
     private val windowState = WindowState()
     private val isMinimizedToTitle = mutableStateOf(false)
@@ -36,11 +26,6 @@ class UiDemo : DemoScene("UI Demo") {
     private val sliderValue = mutableStateOf(1f)
     private val checkboxTooltipState = MutableTooltipState()
 
-    private val colorHueValue = mutableStateOf(0f)
-    private val colorSatValue = mutableStateOf(1f)
-    private val colorValValue = mutableStateOf(1f)
-    private val chosenColor = mutableStateOf(Color.RED)
-
     private val text1 = mutableStateOf("")
     private val text2 = mutableStateOf("")
 
@@ -48,7 +33,7 @@ class UiDemo : DemoScene("UI Demo") {
     private val mediumUi = Sizes.medium()
     private val largeUi = Sizes.large()
 
-    val selectedColors = mutableStateOf(themeColors[0].second)
+    val selectedColors = mutableStateOf(Colors.darkColors())
     val selectedUiSize = mutableStateOf(mediumUi)
 
     private var imageTex: Texture2d? = null
@@ -94,12 +79,6 @@ class UiDemo : DemoScene("UI Demo") {
             height.set(Dp(700f))
         }
 
-        val moreWindowStates = mutableListOf<WindowState>()
-        for (i in 1..3) {
-            moreWindowStates += WindowState()
-        }
-        val golWindow = GameOfLifeWindow(this@UiDemo)
-
         +DockingHost().apply {
             +Window(windowState) {
                 surface.sizes = selectedUiSize.use()
@@ -119,21 +98,8 @@ class UiDemo : DemoScene("UI Demo") {
 
             }//.apply { printTiming = true }
 
-            moreWindowStates.forEachIndexed { i, state ->
-                state.x.set(Dp(850f + i * 30f))
-                state.y.set(Dp(200f + i * 30f))
-                state.width.set(Dp(500f))
-                state.height.set(Dp(500f))
-                +Window(state) {
-                    surface.sizes = selectedUiSize.use()
-                    surface.colors = selectedColors.use()
-
-                    TitleBar("Another Window $i")
-                    Text("This is another window, which has no content") {  }
-                }
-            }
-
-            +golWindow.window
+            +GameOfLifeWindow(this@UiDemo).window
+            +ThemeEditorWindow(this@UiDemo).window
         }
     }
 
@@ -141,25 +107,6 @@ class UiDemo : DemoScene("UI Demo") {
         modifier
             .padding(horizontal = sizes.gap, vertical = sizes.largeGap)
             .layout(ColumnLayout)
-
-        Row {
-            ColorWheel(colorHueValue.use(), colorSatValue.use(), colorValValue.use()) {
-                modifier
-                    .margin(sizes.gap)
-                    .onChange { hue, sat, value ->
-                        colorHueValue.set(hue)
-                        colorSatValue.set(sat)
-                        colorValValue.set(value)
-                        chosenColor.set(Color.fromHsv(hue, sat, value, 1f))
-                    }
-            }
-
-            Box(200.dp, Grow.Std) {
-                modifier
-                    .margin(sizes.gap)
-                    .backgroundColor(chosenColor.use())
-            }
-        }
 
         Row {
             modifier.margin(bottom = sizes.smallGap)
@@ -203,20 +150,6 @@ class UiDemo : DemoScene("UI Demo") {
                     .onChangeEnd { UiScale.uiScale.set(it) }
             }
             Text(sliderValue.use().toString(2)) { modifier.alignY(AlignmentY.Center) }
-        }
-
-        Row {
-            modifier.margin(bottom = sizes.gap)
-            Text("Accent color:") { modifier.alignY(AlignmentY.Center).margin(end = sizes.largeGap) }
-
-            ComboBox {
-                modifier
-                    .margin(sizes.smallGap)
-                    .width(sizes.gap * 10f)
-                    .items(themeColors.map { it.first })
-                    .selectedIndex(themeColors.indexOfFirst { it.second == selectedColors.value })
-                    .onItemSelected { selectedColors.set(themeColors[it].second) }
-            }
         }
 
         Row {
@@ -281,7 +214,7 @@ class UiDemo : DemoScene("UI Demo") {
                                 .margin(sizes.smallGap)
                                 .padding(sizes.largeGap)
                                 .textRotation(r)
-                                .border(RoundRectBorder(colors.accentVariant, sizes.gap, 2.dp, 6.dp))
+                                .border(RoundRectBorder(colors.primaryVariant, sizes.gap, 2.dp, 6.dp))
                         }
                     }
                 }
@@ -295,21 +228,21 @@ class UiDemo : DemoScene("UI Demo") {
             },
             vScrollbarModifier = {
                 it.colors(
-                    trackColor = colors.accentVariant.withAlpha(0.1f),
-                    trackHoverColor = colors.accentVariant.withAlpha(0.15f)
+                    trackColor = colors.primaryVariant.withAlpha(0.1f),
+                    trackHoverColor = colors.primaryVariant.withAlpha(0.15f)
                 )
             }
         ) {
             itemsIndexed(listItems) { i, item ->
                 val isHovered = item == hoveredListItem.use()
                 val bgColor = if (isHovered) {
-                    colors.accentVariant
+                    colors.primaryVariant
                 } else if (i % 2 == 0) {
                     MdColor.GREY.withAlpha(0.05f)
                 } else {
                     null
                 }
-                val textColor = if (isHovered) colors.onAccent else colors.onBackground
+                val textColor = if (isHovered) colors.onPrimary else colors.onBackground
                 val isLarge = (i / 10) % 2 != 0
                 val txt = if (isLarge) "$item [large]" else item
 

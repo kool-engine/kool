@@ -32,12 +32,12 @@ open class WindowState {
         this.y.set(y)
     }
 
-    fun setWindowSize(width: Dp, height: Dp) {
+    fun setWindowSize(width: Dimension, height: Dimension) {
         this.width.set(width)
         this.height.set(height)
     }
 
-    fun setWindowBounds(x: Dp, y: Dp, width: Dp, height: Dp) {
+    fun setWindowBounds(x: Dp, y: Dp, width: Dimension, height: Dimension) {
         setWindowLocation(x, y)
         setWindowSize(width, height)
     }
@@ -53,8 +53,8 @@ interface WindowScope : UiScope {
 }
 
 open class WindowModifier(surface: UiSurface) : UiModifier(surface) {
-    var titleBarColor: Color by property { it.colors.accentVariant }
-    var borderColor: Color? by property { it.colors.accentVariant.withAlpha(0.3f) }
+    var titleBarColor: Color by property { it.colors.secondaryVariant }
+    var borderColor: Color? by property { it.colors.secondaryVariant.withAlpha(0.3f) }
     var isVerticallyResizable: Boolean by property(true)
     var isHorizontallyResizable: Boolean by property(true)
     var isMinimizedToTitle: Boolean by property(false)
@@ -104,10 +104,18 @@ fun Window(
         val window = uiNode.createChild(WindowNode::class, WindowNode.factory)
         window.state = state
         window.modifier
-            .background(RoundRectBackground(this.colors.background, this.sizes.gap))
             .layout(ColumnLayout)
+
+        if (window.isDocked) {
+            window.modifier.backgroundColor(this.colors.background)
+        } else {
+            window.modifier.background(RoundRectBackground(this.colors.background, this.sizes.gap))
+        }
+
         if (surface.isFocused.use()) {
-            window.modifier.titleBarColor(this.colors.accent)
+            window.modifier
+                .titleBarColor(this.colors.secondary)
+                .borderColor(this.colors.secondary.withAlpha(0.3f))
         }
 
         // auto-register docking host if window was created in one
@@ -117,7 +125,11 @@ fun Window(
         window.content()
 
         window.modifier.borderColor?.let {
-            window.modifier.border(RoundRectBorder(it, this.sizes.gap, this.sizes.borderWidth))
+            if (window.isDocked) {
+                window.modifier.border(RectBorder(it, this.sizes.borderWidth))
+            } else {
+                window.modifier.border(RoundRectBorder(it, this.sizes.gap, this.sizes.borderWidth))
+            }
         }
 
         // set window location and size according to window state
@@ -140,9 +152,10 @@ fun Window(
 fun WindowScope.TitleBar(title: String, isDraggable: Boolean = true) {
     val windowModifier = modifier
     Row(Grow.Std) {
+        val cornerR = if (isDocked) 0f else sizes.gap.px
         modifier
             .padding(start = sizes.gap)
-            .background(TitleBarBackground(windowModifier.titleBarColor, sizes.gap.px, windowModifier.isMinimizedToTitle))
+            .background(TitleBarBackground(windowModifier.titleBarColor, cornerR, windowModifier.isMinimizedToTitle))
 
         if (isDraggable) {
             modifier.dragListener(WindowMoveDragHandler(this@TitleBar))
@@ -152,7 +165,7 @@ fun WindowScope.TitleBar(title: String, isDraggable: Boolean = true) {
             modifier
                 .width(Grow.Std)
                 .margin(horizontal = sizes.gap, vertical = sizes.smallGap * 0.5f)
-                .textColor(colors.onAccent)
+                .textColor(colors.onSecondary)
         }
 
         if (windowModifier.onMaximizeClicked.isNotEmpty()) {
@@ -374,8 +387,8 @@ fun UiScope.MaximizeButton(state: WindowState, onClick: (PointerEvent) -> Unit) 
 object CloseButtonBackground : UiRenderer<UiNode> {
     override fun renderUi(node: UiNode) = node.run {
         val r = innerWidthPx * 0.5f
-        getUiPrimitives().localCircle(widthPx * 0.5f, heightPx * 0.5f, r, colors.onAccent)
-        getPlainBuilder().configured(colors.accent) {
+        getUiPrimitives().localCircle(widthPx * 0.5f, heightPx * 0.5f, r, colors.background)
+        getPlainBuilder().configured(colors.secondary) {
             translate(widthPx * 0.5f, heightPx * 0.5f, 0f)
             rotate(45f, Vec3f.Z_AXIS)
             rect {
@@ -394,8 +407,8 @@ object MinimizeButtonBackground : UiRenderer<UiNode> {
     override fun renderUi(node: UiNode) = node.run {
         val r = innerWidthPx * 0.5f
         val draw = getUiPrimitives()
-        draw.localCircle(widthPx * 0.5f, heightPx * 0.5f, r, colors.onAccent)
-        draw.localRect(widthPx * 0.5f - r * 0.6f, heightPx * 0.5f - r * 0.1f, r * 1.2f, r * 0.2f, colors.accent)
+        draw.localCircle(widthPx * 0.5f, heightPx * 0.5f, r, colors.background)
+        draw.localRect(widthPx * 0.5f - r * 0.6f, heightPx * 0.5f - r * 0.1f, r * 1.2f, r * 0.2f, colors.secondary)
     }
 }
 
@@ -403,7 +416,7 @@ object MaximizeButtonBackground : UiRenderer<UiNode> {
     override fun renderUi(node: UiNode) = node.run {
         val r = innerWidthPx * 0.5f
         val draw = getUiPrimitives()
-        draw.localCircle(widthPx * 0.5f, heightPx * 0.5f, r, colors.onAccent)
-        draw.localRectBorder(widthPx * 0.5f - r * 0.5f, heightPx * 0.5f - r * 0.5f, r, r, 1.5f.dp.px, colors.accent)
+        draw.localCircle(widthPx * 0.5f, heightPx * 0.5f, r, colors.background)
+        draw.localRectBorder(widthPx * 0.5f - r * 0.5f, heightPx * 0.5f - r * 0.5f, r, r, 1.5f.dp.px, colors.secondary)
     }
 }

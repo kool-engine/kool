@@ -7,48 +7,98 @@ import de.fabmax.kool.util.Color
  *   https://material.io/design/color/the-color-system.html#color-theme-creation
  * However, primary and secondary color are replaced by a single accent color.
  *
- * - [accent]: Accent color used by UI elements.
- * - [accentVariant]: A little less prominent than the main accent color.
+ * - [primary]: Accent color used by UI elements.
+ * - [primaryVariant]: A little less prominent than the primary accent color.
+ * - [secondary]: Secondary accent color used by UI elements.
+ * - [secondaryVariant]: A little less prominent than the secondary accent color.
  * - [background]: Used on surfaces of components, such as menus.
  * - [backgroundVariant]: Appears behind scrollable content.
- * - [error]: Indicates errors in components, such as invalid text in a text field.
- * - [onAccent]: Used for icons and text displayed on top of the secondary color.
+ * - [onPrimary]: Used for icons and text displayed on top of the primary accent color.
+ * - [onSecondary]: Used for icons and text displayed on top of the secondary accent color.
  * - [onBackground]: Used for icons and text displayed on top of the background color.
- * - [onError]: Used for icons and text displayed on top of the error color.
  * - [isLight]: Whether this color is considered as a 'light' or 'dark' set of colors.
  */
 data class Colors(
-    val accent: Color,
-    val accentVariant: Color,
+    val primary: Color,
+    val primaryVariant: Color,
+    val secondary: Color,
+    val secondaryVariant: Color,
     val background: Color,
     val backgroundVariant: Color,
-    val error: Color,
-    val onAccent: Color,
+    val onPrimary: Color,
+    val onSecondary: Color,
     val onBackground: Color,
-    val onError: Color,
     val isLight: Boolean
 ) {
     companion object {
+        fun singleColorLight(
+            accent: Color,
+            background: Color = Color("f3f3f3ff"),
+            onAccent: Color = Color.WHITE,
+            onBackground: Color = Color("343434ff"),
+        ): Colors = Colors(
+            primary = accent,
+            primaryVariant = accent.mix(Color.BLACK, 0.2f),
+            secondary = accent.mix(Color.BLACK, 0.3f),
+            secondaryVariant = accent.mix(Color.BLACK, 0.5f),
+            background = background,
+            backgroundVariant = background.mix(Color.BLACK, 0.05f),
+            onPrimary = onAccent,
+            onSecondary = onAccent,
+            onBackground = onBackground,
+            isLight = true
+        )
+
+        fun singleColorDark(
+            accent: Color,
+            background: Color = Color("1a1a1aff"),
+            onAccent: Color = Color.WHITE,
+            onBackground: Color = Color("f2f2f2ff"),
+        ): Colors = Colors(
+            primary = accent,
+            primaryVariant = accent.mix(Color.BLACK, 0.2f),
+            secondary = accent.mix(Color.BLACK, 0.4f),
+            secondaryVariant = accent.mix(Color.BLACK, 0.5f),
+            background = background,
+            backgroundVariant = background.mix(Color.WHITE, 0.05f),
+            onPrimary = onAccent,
+            onSecondary = onAccent,
+            onBackground = onBackground,
+            isLight = false
+        )
+
         fun darkColors(
-            accent: Color = Color("b2ff00"),
-            accentVariant: Color = Color("7cb200"),
-            background: Color = Color("101010d0"),
-            backgroundVariant: Color = Color("202020d0"),
-            error: Color = Color("b00020"),
-            onAccent: Color = Color.BLACK,
-            onBackground: Color = Color.WHITE,
-            onError: Color = Color.WHITE,
+            primary: Color = Color("ffb703ff"),
+            primaryVariant: Color = Color("fb8500f0"),
+            secondary: Color = Color("8ecae6ff"),
+            secondaryVariant: Color = Color("219ebcff"),
+            background: Color = Color("023047ff"),
+            backgroundVariant: Color = Color("143d52ff"),
+            onPrimary: Color = Color.WHITE,
+            onSecondary: Color = Color.BLACK,
+            onBackground: Color = Color("dcf7ffff"),
             isLight: Boolean = false
         ): Colors = Colors(
-            accent,
-            accentVariant,
+            primary,
+            primaryVariant,
+            secondary,
+            secondaryVariant,
             background,
             backgroundVariant,
-            error,
-            onAccent,
+            onPrimary,
+            onSecondary,
             onBackground,
-            onError,
             isLight
+        )
+
+        val neon = darkColors(
+            primary = Color("b2ff00"),
+            primaryVariant = Color("7cb200"),
+            secondary = Color("b2ff00").withAlpha(0.6f),
+            secondaryVariant = Color("7cb200").withAlpha(0.6f),
+            background = Color("101010d0"),
+            backgroundVariant = Color("202020d0"),
+            onPrimary = Color.BLACK
         )
     }
 }
