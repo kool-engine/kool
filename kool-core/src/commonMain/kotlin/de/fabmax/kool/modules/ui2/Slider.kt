@@ -4,6 +4,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.util.Color
+import kotlin.math.floor
 
 interface SliderScope : UiScope {
     override val modifier: SliderModifier
@@ -72,9 +73,9 @@ class SliderNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface),
         val h: Float
         if (modifier.orientation == SliderOrientation.Horizontal) {
             w = knobDiameter.px * 5 + 2f
-            h = knobDiameter.px + 2f
+            h = knobDiameter.px
         } else {
-            w = knobDiameter.px + 2f
+            w = knobDiameter.px
             h = knobDiameter.px * 5 + 2f
         }
 
@@ -89,8 +90,7 @@ class SliderNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface),
         super.render(ctx)
         val draw = getUiPrimitives()
         val knobPos = ((modifier.value - modifier.minValue) / (modifier.maxValue - modifier.minValue)).clamp()
-        val kD = knobDiameter.px
-        val kR = kD * 0.5f
+        val kR = floor(knobDiameter.px * 0.5f)
         val tH = trackHeightPx
         val tR = tH * 0.5f
 
@@ -115,7 +115,7 @@ class SliderNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface),
                     xMax - xMin + tH, tH, tR, modifier.trackColor)
             }
             knobCenter.set(knobX, c)
-            draw.localCircle(knobX, c, knobDiameter.px * 0.5f, modifier.knobColor)
+            draw.localCircle(knobX, c, kR, modifier.knobColor)
 
         } else {
             val c = widthPx * 0.5f
@@ -138,7 +138,7 @@ class SliderNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface),
                     tH, yMax - yMin + tH, tR, modifier.trackColor)
             }
             knobCenter.set(c, knobY)
-            draw.localCircle(c, knobY, knobDiameter.px * 0.5f, modifier.knobColor)
+            draw.localCircle(c, knobY, kR, modifier.knobColor)
         }
     }
 

@@ -29,7 +29,7 @@ class ThemeEditorWindow(val uiDemo: UiDemo) {
         "Green" to Colors.singleColorDark(MdColor.GREEN),
         "Light green" to Colors.singleColorDark(MdColor.LIGHT_GREEN),
         "Lime" to Colors.singleColorDark(MdColor.LIME),
-        "Default" to Colors.darkColors(),
+        "Colorful" to Colors.darkColors(),
         "Neon" to Colors.neon
     )
 
@@ -64,15 +64,15 @@ class ThemeEditorWindow(val uiDemo: UiDemo) {
         ColorEntry("On background", uiDemo.selectedColors.value.onBackground)
     )
 
-    private val isDarkPresets = mutableStateOf(false)
-    private val selectedPreset = mutableStateOf(9)
+    private val isDarkPresets = mutableStateOf(true)
+    private val selectedPreset = mutableStateOf(16)
     private val selectedColor = mutableStateOf(0)
     private val hoverItem = mutableStateOf(-1)
 
     val window = Window(windowState) {
-        uiDemo.selectedColors.set(makeColors())
         surface.sizes = uiDemo.selectedUiSize.use()
         surface.colors = uiDemo.selectedColors.use()
+        uiDemo.selectedColors.set(makeColors())
 
         TitleBar("Theme Editor")
 

@@ -2,6 +2,7 @@ package de.fabmax.kool.demo.uidemo
 
 import de.fabmax.kool.math.randomF
 import de.fabmax.kool.modules.ui2.*
+import kotlin.math.min
 
 class GameOfLifeWindow(val uiDemo: UiDemo) {
 
@@ -12,8 +13,9 @@ class GameOfLifeWindow(val uiDemo: UiDemo) {
     private val worldRenderer = GameWorldRenderer()
 
     private val isPaused = mutableStateOf(false)
-    private var updateRate = mutableStateOf(5)
-    private var updateCount = updateRate.value
+    private val updateSpeeds = intArrayOf(60, 30, 20, 15, 10, 7, 5, 3, 2, 1)
+    private val updateSpeed = mutableStateOf(5)
+    private var updateCount = updateSpeeds[updateSpeed.value]
 
     init {
         world.loadAsciiState(GameWorld.gliderGun)
@@ -77,16 +79,19 @@ class GameOfLifeWindow(val uiDemo: UiDemo) {
                     .alignY(AlignmentY.Center)
                     .margin(sizes.gap)
             }
-            Slider(10f - updateRate.use(), 0f, 10f) {
+            Slider(updateSpeed.use().toFloat(), 0f, updateSpeeds.lastIndex.toFloat()) {
                 modifier
                     .alignY(AlignmentY.Center)
-                    .onChange { updateRate.set(10 - it.toInt()) }
+                    .onChange {
+                        updateSpeed.set(it.toInt())
+                        updateCount = min(updateCount, updateSpeeds[updateSpeed.value])
+                    }
             }
         }
 
         surface.onEachFrame {
             if (!isPaused.value && --updateCount <= 0) {
-                updateCount = updateRate.value
+                updateCount = updateSpeeds[updateSpeed.value]
                 world.step()
             }
         }
@@ -126,8 +131,8 @@ class GameOfLifeWindow(val uiDemo: UiDemo) {
         private val checkboxRenderer: UiScope.(Int, Int) -> Unit = { x, y ->
             Checkbox(world[x, y]) {
                 modifier.colors(
-                    borderColor = colors.primaryVariant.withAlpha(0.65f),
-                    backgroundColor = colors.primaryVariant.withAlpha(0.15f)
+                    borderColor = colors.secondary.withAlpha(0.5f),
+                    backgroundColor = colors.secondary.withAlpha(0.15f)
                 )
                 setupCellRenderer(x, y)
             }

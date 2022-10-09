@@ -5,6 +5,7 @@ import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.util.Color
 import kotlin.math.abs
+import kotlin.math.floor
 
 interface CheckboxScope : UiScope {
     override val modifier: CheckboxModifier
@@ -153,8 +154,8 @@ abstract class ToggleNode(
     override fun measureContentSize(ctx: KoolContext) {
         val modWidth = modifier.width
         val modHeight = modifier.height
-        val measuredWidth = if (modWidth is Dp) modWidth.px else buttonWidth.px + 2 + paddingStartPx + paddingEndPx
-        val measuredHeight = if (modHeight is Dp) modHeight.px else buttonHeight.px + 2 + paddingTopPx + paddingBottomPx
+        val measuredWidth = if (modWidth is Dp) modWidth.px else buttonWidth.px + paddingStartPx + paddingEndPx
+        val measuredHeight = if (modHeight is Dp) modHeight.px else buttonHeight.px + paddingTopPx + paddingBottomPx
         setContentSize(measuredWidth, measuredHeight)
 
         if (isFirst) {
@@ -186,7 +187,7 @@ class CheckboxNode(parent: UiNode?, surface: UiSurface) : ToggleNode(parent, sur
 
     override fun render(ctx: KoolContext) {
         super.render(ctx)
-        val r = buttonHeight.px * 0.5f
+        val r = floor(buttonHeight.px * 0.5f)
         val c = center()
         val draw = getUiPrimitives()
         val p = animationPos()
@@ -234,7 +235,7 @@ class RadioButtonNode(parent: UiNode?, surface: UiSurface) : ToggleNode(parent, 
 
     override fun render(ctx: KoolContext) {
         super.render(ctx)
-        val r = buttonHeight.px * 0.5f
+        val r = floor(buttonHeight.px * 0.5f)
         val c = center()
         val draw = getUiPrimitives()
 
@@ -295,7 +296,7 @@ class SwitchNode(parent: UiNode?, surface: UiSurface) : ToggleNode(parent, surfa
 
         val extent = w - h
         val knobX = c.x - extent * 0.5f + extent * animationPos()
-        draw.localCircle(knobX, c.y, h * 0.5f, knobColor)
+        draw.localCircle(knobX, c.y, floor(h * 0.5f), knobColor)
     }
 
     companion object {
