@@ -69,12 +69,12 @@ class ThemeEditorWindow(val uiDemo: UiDemo) {
     private val selectedColor = mutableStateOf(0)
     private val hoverItem = mutableStateOf(-1)
 
-    val window = Window(windowState) {
+    val window = Window(windowState, name = "Theme Editor") {
         surface.sizes = uiDemo.selectedUiSize.use()
         surface.colors = uiDemo.selectedColors.use()
         uiDemo.selectedColors.set(makeColors())
 
-        TitleBar("Theme Editor")
+        TitleBar()
 
         val entry = colorEntries[selectedColor.use()]
 

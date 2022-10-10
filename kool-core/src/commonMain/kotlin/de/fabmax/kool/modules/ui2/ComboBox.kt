@@ -12,6 +12,7 @@ import kotlin.math.round
 
 interface ComboBoxScope : UiScope {
     override val modifier: ComboBoxModifier
+    val isHovered: Boolean
 }
 
 open class ComboBoxModifier(surface: UiSurface) : UiModifier(surface) {
@@ -86,11 +87,12 @@ inline fun UiScope.ComboBox(block: ComboBoxScope.() -> Unit): ComboBoxScope {
 
 open class ComboBoxNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface), ComboBoxScope, Clickable, Hoverable {
     override val modifier = ComboBoxModifier(surface)
+    override val isHovered: Boolean get() = isHoveredState.value
 
     private val textProps = TextProps(Font.DEFAULT_FONT)
     private val textCache = CachedText(this)
 
-    private var isHovered = mutableStateOf(false)
+    private var isHoveredState = mutableStateOf(false)
 
     var isExpanded = mutableStateOf(false)
     var hoveredItem = mutableStateOf(-1)
@@ -125,7 +127,7 @@ open class ComboBoxNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, su
 
         var textBgColor = modifier.textBackgroundColor
         var arrowBgColor = modifier.expanderColor
-        if (isHovered.use()) {
+        if (isHoveredState.use()) {
             textBgColor = modifier.textBackgroundHoverColor
             arrowBgColor = modifier.expanderHoverColor
         }
@@ -171,11 +173,11 @@ open class ComboBoxNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, su
     }
 
     override fun onEnter(ev: PointerEvent) {
-        isHovered.set(true)
+        isHoveredState.set(true)
     }
 
     override fun onExit(ev: PointerEvent) {
-        isHovered.set(false)
+        isHoveredState.set(false)
     }
 
     override fun onClick(ev: PointerEvent) {

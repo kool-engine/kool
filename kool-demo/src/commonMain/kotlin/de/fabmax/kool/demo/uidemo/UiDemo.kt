@@ -4,6 +4,7 @@ import de.fabmax.kool.AssetManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.DemoLoader
 import de.fabmax.kool.demo.DemoScene
+import de.fabmax.kool.demo.UiSizes
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.scene.Scene
@@ -51,7 +52,7 @@ class UiDemo : DemoScene("UI Demo") {
         // - [x] lazy list for fast update of large scrolling lists
         // - [x] clip content to bounds
         // - [x] scrollable content
-        // - [ ] docking
+        // - [x] docking
         // - [x] size: absolute (dp), grow, wrap content
         // - [x] alignment: start, center, end / top, center, bottom
         // - [x] margin / outside gap
@@ -80,7 +81,7 @@ class UiDemo : DemoScene("UI Demo") {
         }
 
         +DockingHost().apply {
-            +Window(windowState) {
+            +Window(windowState, name = "Demo Window") {
                 surface.sizes = selectedUiSize.use()
                 surface.colors = selectedColors.use()
 
@@ -91,15 +92,19 @@ class UiDemo : DemoScene("UI Demo") {
                 if (!isMinimizedToTitle.use()) modifier.onMinimizeClicked { isMinimizedToTitle.set(true) }
                 if (isMinimizedToTitle.use()) modifier.onMaximizeClicked { isMinimizedToTitle.set(false) }
 
-                TitleBar("UI Window")
+                TitleBar()
                 if (!isMinimizedToTitle.value) {
                     WindowContent(listItems)
                 }
-
             }//.apply { printTiming = true }
 
             +GameOfLifeWindow(this@UiDemo).window
             +ThemeEditorWindow(this@UiDemo).window
+
+            onUpdate += {
+                // set a left margin for the demo menu band
+                dockingSurface.rootContainer.dockMarginStart.set(UiSizes.baseSize)
+            }
         }
     }
 

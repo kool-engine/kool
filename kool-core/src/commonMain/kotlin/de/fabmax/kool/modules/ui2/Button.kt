@@ -7,6 +7,7 @@ import de.fabmax.kool.util.Time
 
 interface ButtonScope : UiScope {
     override val modifier: ButtonModifier
+    val isHovered: Boolean
 }
 
 open class ButtonModifier(surface: UiSurface) : TextModifier(surface) {
@@ -46,14 +47,15 @@ inline fun UiScope.Button(text: String = "", block: ButtonScope.() -> Unit): Tex
 
 class ButtonNode(parent: UiNode?, surface: UiSurface) : TextNode(parent, surface), ButtonScope, Clickable, Hoverable {
     override val modifier = ButtonModifier(surface)
+    override val isHovered: Boolean get() = isHoveredState.value
 
-    private var isHovered = mutableStateOf(false)
+    private var isHoveredState = mutableStateOf(false)
     private val clickAnimator = AnimationState(0.3f)
     private val clickPos = MutableVec2f()
 
     override fun render(ctx: KoolContext) {
         var bgColor = modifier.buttonColor
-        if (isHovered.use()) {
+        if (isHoveredState.use()) {
             // overwrite text color with text hover color, so TextNode uses the desired color
             modifier.textColor(modifier.textHoverColor)
             bgColor = modifier.buttonHoverColor
@@ -84,11 +86,11 @@ class ButtonNode(parent: UiNode?, surface: UiSurface) : TextNode(parent, surface
     }
 
     override fun onEnter(ev: PointerEvent) {
-        isHovered.set(true)
+        isHoveredState.set(true)
     }
 
     override fun onExit(ev: PointerEvent) {
-        isHovered.set(false)
+        isHoveredState.set(false)
     }
 
     companion object {

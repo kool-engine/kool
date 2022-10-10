@@ -21,11 +21,11 @@ class GameOfLifeWindow(val uiDemo: UiDemo) {
         world.loadAsciiState(GameWorld.gliderGun)
     }
 
-    val window = Window(windowState) {
+    val window = Window(windowState, name = "Conway`s Game of Life") {
         surface.sizes = uiDemo.selectedUiSize.use()
         surface.colors = uiDemo.selectedColors.use()
 
-        TitleBar("Conway`s Game of Life")
+        TitleBar()
 
         Row {
             Text("Paused") {

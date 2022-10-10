@@ -4,7 +4,6 @@ import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.Vec2f
-import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.util.Color
 import kotlin.math.max
 import kotlin.math.min
@@ -25,7 +24,9 @@ open class WindowState {
     var dragStartWidth = 0f
     var dragStartHeight = 0f
 
-    val dockedTo = mutableStateOf<DockingHost.DockingNode?>(null)
+    val isVisible = mutableStateOf(true)
+    val isFocused = mutableStateOf(false)
+    val dockedTo = mutableStateOf<DockingContainer?>(null)
 
     fun setWindowLocation(x: Dp, y: Dp) {
         this.x.set(x)
@@ -106,78 +107,51 @@ fun Window(
         window.modifier
             .layout(ColumnLayout)
 
-        if (window.isDocked) {
-            window.modifier.backgroundColor(this.colors.background)
-        } else {
-            window.modifier.background(RoundRectBackground(this.colors.background, this.sizes.gap))
-        }
+        surface.windowScope = window
 
-        if (surface.isFocused.use()) {
-            window.modifier
-                .titleBarColor(this.colors.secondary)
-                .borderColor(this.colors.secondary.withAlpha(0.3f))
-        }
-
-        // auto-register docking host if window was created in one
-        (surface.parent as? DockingHost)?.let { window.modifier.dockingHost(it) }
-
-        // compose user supplied window content
-        window.content()
-
-        window.modifier.borderColor?.let {
+        if (state.isVisible.use()) {
             if (window.isDocked) {
-                window.modifier.border(RectBorder(it, this.sizes.borderWidth))
+                window.modifier.backgroundColor(this.colors.background)
             } else {
-                window.modifier.border(RoundRectBorder(it, this.sizes.gap, this.sizes.borderWidth))
+                window.modifier.background(RoundRectBackground(this.colors.background, this.sizes.gap))
             }
-        }
 
-        // set window location and size according to window state
-        window.modifier
-            .width(state.width.use())
-            .height(if (window.modifier.isMinimizedToTitle) FitContent else state.height.use())
-            .align(AlignmentX.Start, AlignmentY.Top)
-            .margin(start = state.x.use(), top = state.y.use())
+            if (state.isFocused.use()) {
+                window.modifier
+                    .titleBarColor(this.colors.secondary)
+                    .borderColor(this.colors.secondary.withAlpha(0.3f))
+            }
 
-        // register resize hover and drag listeners if window is resizable
-        if (window.modifier.isVerticallyResizable || window.modifier.isHorizontallyResizable) {
-            window.modifier.hoverListener(window)
-            window.modifier.dragListener(window)
-            window.modifier.onClick(window)
+            // auto-register docking host if window was created in one
+            (surface.parent as? DockingHost)?.let { window.modifier.dockingHost(it) }
+
+            // compose user supplied window content
+            window.content()
+
+            window.modifier.borderColor?.let {
+                if (window.isDocked) {
+                    window.modifier.border(RectBorder(it, this.sizes.borderWidth))
+                } else {
+                    window.modifier.border(RoundRectBorder(it, this.sizes.gap, this.sizes.borderWidth))
+                }
+            }
+
+            // set window location and size according to window state
+            window.modifier
+                .width(state.width.use())
+                .height(if (window.modifier.isMinimizedToTitle) FitContent else state.height.use())
+                .align(AlignmentX.Start, AlignmentY.Top)
+                .margin(start = state.x.use(), top = state.y.use())
+
+            // register resize hover and drag listeners if window is resizable
+            if (window.modifier.isVerticallyResizable || window.modifier.isHorizontallyResizable) {
+                window.modifier.hoverListener(window)
+                window.modifier.dragListener(window)
+                window.modifier.onClick(window)
+            }
         }
     }
     return surface
-}
-
-fun WindowScope.TitleBar(title: String, isDraggable: Boolean = true) {
-    val windowModifier = modifier
-    Row(Grow.Std) {
-        val cornerR = if (isDocked) 0f else sizes.gap.px
-        modifier
-            .padding(start = sizes.gap)
-            .background(TitleBarBackground(windowModifier.titleBarColor, cornerR, windowModifier.isMinimizedToTitle))
-
-        if (isDraggable) {
-            modifier.dragListener(WindowMoveDragHandler(this@TitleBar))
-        }
-
-        Text(title) {
-            modifier
-                .width(Grow.Std)
-                .margin(horizontal = sizes.gap, vertical = sizes.smallGap * 0.5f)
-                .textColor(colors.onSecondary)
-        }
-
-        if (windowModifier.onMaximizeClicked.isNotEmpty()) {
-            MaximizeButton(windowState) { ev -> windowModifier.onMaximizeClicked.forEach { it(ev) } }
-        }
-        if (windowModifier.onMinimizeClicked.isNotEmpty()) {
-            MinimizeButton(windowState) { ev -> windowModifier.onMinimizeClicked.forEach { it(ev) } }
-        }
-        if (windowModifier.onCloseClicked.isNotEmpty()) {
-            CloseButton(windowState) { ev -> windowModifier.onCloseClicked.forEach { it(ev) } }
-        }
-    }
 }
 
 class WindowMoveDragHandler(val window: WindowScope) : Draggable {
@@ -213,7 +187,7 @@ class WindowNode(parent:UiNode?, surface: UiSurface) : UiNode(parent, surface), 
     override val windowState: WindowState
         get() = state
 
-    private var resizingDockingNode: DockingHost.DockingNode? = null
+    private var resizingDockingNode: DockingContainer? = null
 
     override fun onClick(ev: PointerEvent) {
         // default window click handler is empty, but it consumes the click event so that the surface input time
@@ -345,78 +319,5 @@ class WindowNode(parent:UiNode?, surface: UiSurface) : UiNode(parent, surface), 
         const val RIGHT_BORDER = 8
         const val V_BORDER = TOP_BORDER or BOTTOM_BORDER
         const val H_BORDER = LEFT_BORDER or RIGHT_BORDER
-    }
-}
-
-class TitleBarBackground(val bgColor: Color, val cornerRadius: Float, val roundedBottom: Boolean) : UiRenderer<UiNode> {
-    override fun renderUi(node: UiNode) = node.run {
-        if (roundedBottom) {
-            getUiPrimitives().localRoundRect(0f, 0f, widthPx, heightPx, cornerRadius, bgColor)
-        } else {
-            getUiPrimitives().localRoundRect(0f, 0f, widthPx, heightPx + cornerRadius, cornerRadius, bgColor)
-        }
-    }
-}
-
-fun UiScope.TitleBarButton(
-    hoverState: MutableStateValue<Boolean>,
-    onClick: (PointerEvent) -> Unit,
-    background: UiRenderer<UiNode>
-) {
-    Box {
-        modifier
-            .width(sizes.gap * 2f)
-            .height(sizes.gap * 2f)
-            .alignY(AlignmentY.Center)
-            .margin(horizontal = sizes.gap)
-            .padding(if (hoverState.use()) 0.dp else sizes.smallGap * 0.25f)
-            .onEnter { hoverState.set(true) }
-            .onExit { hoverState.set(false) }
-            .onClick(onClick)
-            .background(background)
-    }
-}
-
-fun UiScope.CloseButton(state: WindowState, onClick: (PointerEvent) -> Unit) =
-    TitleBarButton(state.closeButtonHovered, onClick, CloseButtonBackground)
-fun UiScope.MinimizeButton(state: WindowState, onClick: (PointerEvent) -> Unit) =
-    TitleBarButton(state.minimizeButtonHovered, onClick, MinimizeButtonBackground)
-fun UiScope.MaximizeButton(state: WindowState, onClick: (PointerEvent) -> Unit) =
-    TitleBarButton(state.maximizeButtonHovered, onClick, MaximizeButtonBackground)
-
-object CloseButtonBackground : UiRenderer<UiNode> {
-    override fun renderUi(node: UiNode) = node.run {
-        val r = innerWidthPx * 0.5f
-        getUiPrimitives().localCircle(widthPx * 0.5f, heightPx * 0.5f, r, colors.background)
-        getPlainBuilder().configured(colors.secondary) {
-            translate(widthPx * 0.5f, heightPx * 0.5f, 0f)
-            rotate(45f, Vec3f.Z_AXIS)
-            rect {
-                size.set(r * 1.3f, r * 0.2f)
-                origin.set(size.x * -0.5f, size.y * -0.5f, 0f)
-            }
-            rect {
-                size.set(r * 0.2f, r * 1.3f)
-                origin.set(size.x * -0.5f, size.y * -0.5f, 0f)
-            }
-        }
-    }
-}
-
-object MinimizeButtonBackground : UiRenderer<UiNode> {
-    override fun renderUi(node: UiNode) = node.run {
-        val r = innerWidthPx * 0.5f
-        val draw = getUiPrimitives()
-        draw.localCircle(widthPx * 0.5f, heightPx * 0.5f, r, colors.background)
-        draw.localRect(widthPx * 0.5f - r * 0.6f, heightPx * 0.5f - r * 0.1f, r * 1.2f, r * 0.2f, colors.secondary)
-    }
-}
-
-object MaximizeButtonBackground : UiRenderer<UiNode> {
-    override fun renderUi(node: UiNode) = node.run {
-        val r = innerWidthPx * 0.5f
-        val draw = getUiPrimitives()
-        draw.localCircle(widthPx * 0.5f, heightPx * 0.5f, r, colors.background)
-        draw.localRectBorder(widthPx * 0.5f - r * 0.5f, heightPx * 0.5f - r * 0.5f, r, r, 1.5f.dp.px, colors.secondary)
     }
 }

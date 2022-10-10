@@ -34,15 +34,10 @@ open class UiSurface(
     private var requiresUpdate: Boolean = true
     internal var nodeIndex = 0
 
-    var lastInput = 0.0
-        private set
+    var lastInputTime = 0.0
 
-    // hint, set by DockingHost (if present), when this surface has input focus
-    var isFocused = mutableStateOf(false).onChange {
-        if (!it) inputHandler.requestFocus(null)
-    }
-    // hint, set by DockingHost (if present), when this surface is docked
-    var isDocked = mutableStateOf(false)
+    // top-level window scope if this UiSurface hosts a window
+    var windowScope: WindowScope? = null
 
     var colors: Colors by colorsState::value
     var sizes: Sizes by sizesState::value
@@ -274,7 +269,7 @@ open class UiSurface(
 
             if (keyEvents.isNotEmpty()) {
                 focusedNode?.let { focusable ->
-                    lastInput = Time.gameTime
+                    lastInputTime = Time.gameTime
                     for (keyEv in keyEvents) {
                         focusable.onKeyEvent(keyEv)
                     }
@@ -297,7 +292,7 @@ open class UiSurface(
         }
 
         private fun handleDrag(currentDrag: UiNode, ptrEv: PointerEvent) {
-            lastInput = Time.gameTime
+            lastInputTime = Time.gameTime
             val ptr = ptrEv.pointer
             if (ptr.isDrag) {
                 // dragging continues, drag event can be rejected, by dragNode to stop dragging
@@ -343,7 +338,7 @@ open class UiSurface(
 
                 if (isDragStart && dragNode == null && mod.hasAnyDragCallback && invokePointerCallback(node, ptrEv, mod.onDragStart, true)) {
                     dragNode = node
-                    lastInput = Time.gameTime
+                    lastInputTime = Time.gameTime
                     if (node != focusedNode) {
                         requestFocus(null)
                     }
@@ -353,7 +348,7 @@ open class UiSurface(
                     // click was consumed
                     ptrEv.pointer.consume()
                     isAnyClick = false
-                    lastInput = Time.gameTime
+                    lastInputTime = Time.gameTime
                     if (node != focusedNode) {
                         requestFocus(null)
                     }
