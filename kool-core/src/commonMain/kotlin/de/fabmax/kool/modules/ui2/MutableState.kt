@@ -68,6 +68,10 @@ open class MutableStateValue<T: Any?>(initValue: T) : MutableState() {
         stateListeners += block
         return this
     }
+
+    override fun toString(): String {
+        return "mutableStateOf($value)"
+    }
 }
 
 class MutableStateList<T>(private val values: MutableList<T> = mutableListOf()) :

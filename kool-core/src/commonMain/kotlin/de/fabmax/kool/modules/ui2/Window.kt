@@ -63,9 +63,6 @@ open class WindowModifier(surface: UiSurface) : UiModifier(surface) {
     var minHeight: Dp by property { it.sizes.largeGap * 2f }
     var maxWidth: Dp by property { Dp(10_000f) }
     var maxHeight: Dp by property { Dp(10_000f) }
-    val onCloseClicked: MutableList<(PointerEvent) -> Unit> by listProperty()
-    val onMinimizeClicked: MutableList<(PointerEvent) -> Unit> by listProperty()
-    val onMaximizeClicked: MutableList<(PointerEvent) -> Unit> by listProperty()
     var dockingHost: DockingHost? by property(null)
 }
 
@@ -87,19 +84,19 @@ fun <T: WindowModifier> T.maxSize(width: Dp = maxWidth, height: Dp = maxHeight):
     maxHeight = height
     return this
 }
-fun <T: WindowModifier> T.onCloseClicked(block: (PointerEvent) -> Unit): T { onCloseClicked += block; return this }
-fun <T: WindowModifier> T.onMinimizeClicked(block: (PointerEvent) -> Unit): T { onMinimizeClicked += block; return this }
-fun <T: WindowModifier> T.onMaximizeClicked(block: (PointerEvent) -> Unit): T { onMaximizeClicked += block; return this }
 fun <T: WindowModifier> T.dockingHost(dockingHost: DockingHost?): T { this.dockingHost = dockingHost; return this }
 
 fun Window(
     state: WindowState,
     colors: Colors = Colors.darkColors(),
-    sizes: Sizes = Sizes.medium(),
+    sizes: Sizes = Sizes.medium,
     name: String = "Window",
     content: WindowScope.() -> Unit
 ): UiSurface {
     val surface = UiSurface(colors, sizes, name)
+
+    // create the initial empty window scope
+    surface.windowScope = surface.viewport.createChild(WindowNode::class, WindowNode.factory).apply { this.state = state }
 
     surface.content = {
         val window = uiNode.createChild(WindowNode::class, WindowNode.factory)

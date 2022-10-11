@@ -13,7 +13,7 @@ import de.fabmax.kool.util.*
 
 open class UiSurface(
     colors: Colors = Colors.darkColors(),
-    sizes: Sizes = Sizes.medium(),
+    sizes: Sizes = Sizes.medium,
     name: String = "uiSurface"
 ) : Group(name) {
 
@@ -21,9 +21,9 @@ open class UiSurface(
     private val onEachFrame = mutableListOf<() -> Unit>()
 
     protected val inputHandler = UiInputHandler()
-    protected val viewportWidth = mutableStateOf(0f)
-    protected val viewportHeight = mutableStateOf(0f)
-    protected val viewport = BoxNode(null, this).apply { modifier.layout(CellLayout) }
+    val viewportWidth = mutableStateOf(0f)
+    val viewportHeight = mutableStateOf(0f)
+    val viewport = BoxNode(null, this).apply { modifier.layout(CellLayout) }
 
     // colorsState and sizesState are private and use()d internally by UiSurface
     // for all other consumers the values are directly exposed

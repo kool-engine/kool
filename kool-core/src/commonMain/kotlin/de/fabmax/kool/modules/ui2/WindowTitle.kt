@@ -8,7 +8,10 @@ fun WindowScope.TitleBar(
     title: String = surface.name ?: "Window",
     isDraggable: Boolean = true,
     showTabsIfDocked: Boolean = true,
-    hideTitleWhenTabbed: Boolean = true
+    hideTitleWhenTabbed: Boolean = true,
+    onCloseAction: ((PointerEvent) -> Unit)? = null,
+    onMinimizeAction: ((PointerEvent) -> Unit)? = null,
+    onMaximizeAction: ((PointerEvent) -> Unit)? = null
 ) {
     val isTabbed = if (showTabsIfDocked) {
         DockingTabsBar()
@@ -21,7 +24,7 @@ fun WindowScope.TitleBar(
         Row(Grow.Std, height = sizes.gap * 3f) {
             val cornerR = if (isDocked) 0f else sizes.gap.px
             modifier
-                .padding(start = sizes.gap)
+                .padding(horizontal = sizes.gap)
                 .background(TitleBarBackground(windowModifier.titleBarColor, cornerR, windowModifier.isMinimizedToTitle))
 
             if (isDraggable) {
@@ -36,14 +39,14 @@ fun WindowScope.TitleBar(
                     .alignY(AlignmentY.Center)
             }
 
-            if (windowModifier.onMaximizeClicked.isNotEmpty()) {
-                MaximizeButton(windowState) { ev -> windowModifier.onMaximizeClicked.forEach { it(ev) } }
+            onMinimizeAction?.let {
+                MinimizeButton(windowState) { ev -> it(ev) }
             }
-            if (windowModifier.onMinimizeClicked.isNotEmpty()) {
-                MinimizeButton(windowState) { ev -> windowModifier.onMinimizeClicked.forEach { it(ev) } }
+            onMaximizeAction?.let {
+                MaximizeButton(windowState) { ev -> it(ev) }
             }
-            if (windowModifier.onCloseClicked.isNotEmpty()) {
-                CloseButton(windowState) { ev -> windowModifier.onCloseClicked.forEach { it(ev) } }
+            onCloseAction?.let {
+                CloseButton(windowState) { ev -> it(ev) }
             }
         }
     } else {
@@ -130,7 +133,7 @@ fun UiScope.TitleBarButton(
             .width(sizes.gap * 2f)
             .height(sizes.gap * 2f)
             .alignY(AlignmentY.Center)
-            .margin(horizontal = sizes.gap)
+            .margin(horizontal = sizes.smallGap)
             .padding(if (hoverState.use()) 0.dp else sizes.smallGap * 0.25f)
             .onEnter { hoverState.set(true) }
             .onExit { hoverState.set(false) }

@@ -2,7 +2,7 @@ package de.fabmax.kool.modules.ui2
 
 fun Panel(
     colors: Colors = Colors.darkColors(),
-    sizes: Sizes = Sizes.medium(),
+    sizes: Sizes = Sizes.medium,
     name: String = "Panel",
     content: UiScope.() -> Any
 ): UiSurface {

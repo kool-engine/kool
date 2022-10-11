@@ -66,6 +66,13 @@ class DockingContainer(
         dockingHost.dockingListeners.forEach { it.onWindowUndocked(window, this) }
     }
 
+    fun getNearestLeaf(): DockingContainer {
+        val (a, b) = childContainers ?: return this
+        val aLeaf = a.getNearestLeaf()
+        val bLeaf = b.getNearestLeaf()
+        return if (aLeaf.depth < bLeaf.depth) aLeaf else bLeaf
+    }
+
     fun dock(window: WindowScope) {
         if (!isLeaf) {
             throw IllegalStateException("Windows can only be docked to leaf nodes")
@@ -77,6 +84,7 @@ class DockingContainer(
                 Dp.fromPx(boundsMinPx.x), Dp.fromPx(boundsMinPx.y),
                 Dp.fromPx(width), Dp.fromPx(height),
             )
+            println("docked: ${windowState.x}, ${windowState.y}, ${windowState.width}, ${windowState.height}")
         }
         bringToTop(window)
         dockingHost.dockingListeners.forEach { it.onWindowDocked(window, this) }
@@ -198,7 +206,23 @@ class DockingContainer(
         }
     }
 
-    fun split(insertPos: DockingHost.DockPosition, widthPxHint: Float, heightPxHint: Float): DockingContainer {
+    fun xWeightByWidthPx(widthPx: Float, minWeight: Float = 0.2f, maxWeight: Float = 0.8f): Float {
+        var w = (widthPx / width).clamp(minWeight, maxWeight)
+        if (w.isNaN()) {
+            w = 0.5f
+        }
+        return w
+    }
+
+    fun yWeightByHeightPx(heightPx: Float, minWeight: Float = 0.2f, maxWeight: Float = 0.8f): Float {
+        var w = (heightPx / height).clamp(minWeight, maxWeight)
+        if (w.isNaN()) {
+            w = 0.5f
+        }
+        return w
+    }
+
+    fun split(insertPos: DockingHost.DockPosition, splitWeightX: Float, splitWeightY: Float): DockingContainer {
         if (!isLeaf) {
             throw IllegalStateException("Only leaf nodes can be split")
         }
@@ -214,31 +238,37 @@ class DockingContainer(
         val opposingPos: DockingHost.DockPosition
         when (insertPos) {
             DockingHost.DockPosition.Start -> {
-                insertWidthW = (widthPxHint / width).clamp(0.2f, 0.8f)
+                insertWidthW = splitWeightX
                 opposingWidthW = 1f - insertWidthW
                 opposingPos = DockingHost.DockPosition.End
                 insertFirst = true
             }
             DockingHost.DockPosition.End -> {
-                insertWidthW = (widthPxHint / width).clamp(0.2f, 0.8f)
+                insertWidthW = splitWeightX
                 opposingWidthW = 1f - insertWidthW
                 opposingPos = DockingHost.DockPosition.Start
                 insertFirst = false
             }
             DockingHost.DockPosition.Top -> {
-                insertHeightW = (heightPxHint / height).clamp(0.2f, 0.8f)
+                insertHeightW = splitWeightY
                 opposingHeightW = 1f - insertHeightW
                 opposingPos = DockingHost.DockPosition.Bottom
                 insertFirst = true
             }
             DockingHost.DockPosition.Bottom -> {
-                insertHeightW = (heightPxHint / height).clamp(0.2f, 0.8f)
+                insertHeightW = splitWeightY
                 opposingHeightW = 1f - insertHeightW
                 opposingPos = DockingHost.DockPosition.Top
                 insertFirst = false
             }
             DockingHost.DockPosition.Center -> return this
         }
+
+        // weights become NaN when the container wasn't layouted yet and its width / height is still 0
+        if (insertWidthW.isNaN()) insertWidthW = 1f
+        if (insertHeightW.isNaN()) insertHeightW = 1f
+        if (opposingWidthW.isNaN()) opposingWidthW = 1f
+        if (opposingHeightW.isNaN()) opposingHeightW = 1f
 
         // add newly spawned, empty node
         val insertNode = DockingContainer(dockingHost, this, insertPos, insertWidthW, insertHeightW)

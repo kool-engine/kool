@@ -31,7 +31,7 @@ class LoadingScreen(val ctx: KoolContext) : Scene("Loading Screen") {
             }
         }
 
-        ui = Panel(sizes = Sizes.large()) {
+        ui = Panel(sizes = Sizes.large) {
             modifier
                 .height(Grow.Std)
                 .alignX(AlignmentX.Center)

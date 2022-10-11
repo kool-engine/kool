@@ -25,14 +25,34 @@ class DockingHost : Group() {
 
     private var hoveredDockingNode: DockingContainer? = null
     private var hoveredDockingSlot: DockingSlot? = null
-
-    var focusedSurface: UiSurface? = null
-        private set
+    private var focusedSurface: UiSurface? = null
 
     var maxSplitDepth = 4
 
     init {
         +dockingSurface
+    }
+
+    fun dockWindow(
+        window: WindowScope,
+        path: List<Pair<DockPosition, Float>>
+    ) {
+        var container = dockingSurface.rootContainer
+        for (p in path) {
+            if (container.isLeaf) {
+                container.split(p.first, p.second, p.second)
+            }
+            val (a, b) = container.childContainers ?: break
+
+            container = if (a.position == p.first) {
+                a
+            } else if (b.position == p.first) {
+                b
+            } else {
+                break
+            }
+        }
+        container.getNearestLeaf().dock(window)
     }
 
     @Suppress("UNUSED_PARAMETER")
@@ -148,7 +168,7 @@ class DockingHost : Group() {
         }
     }
 
-    class DockingSlot(val position: DockPosition, val node: DockingContainer) : ComposableComponent {
+    class DockingSlot(val position: DockPosition, val container: DockingContainer) : ComposableComponent {
         val isHovered = mutableStateOf(false)
 
         val boundsMinPx = MutableVec2f()
@@ -207,9 +227,11 @@ class DockingHost : Group() {
 
         fun dock(window: WindowScope) {
             if (position == DockPosition.Center) {
-                node.dock(window)
+                container.dock(window)
             } else {
-                node.split(position, window.uiNode.widthPx, window.uiNode.heightPx).dock(window)
+                val weightX = container.xWeightByWidthPx(window.uiNode.widthPx)
+                val weightY = container.yWeightByHeightPx(window.uiNode.heightPx)
+                container.split(position, weightX, weightY).dock(window)
             }
         }
     }

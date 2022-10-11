@@ -9,7 +9,7 @@ import kotlin.math.roundToInt
 
 class ThemeEditorWindow(val uiDemo: UiDemo) {
 
-    private val windowState = WindowState().apply { setWindowBounds(Dp(370f), Dp(370f), Dp(450f), Dp(600f)) }
+    private val windowState = WindowState().apply { setWindowBounds(Dp(370f), Dp(370f), Dp(500f), Dp(700f)) }
     private val listState = LazyListState()
 
     private val presetsDark = listOf(
@@ -87,8 +87,8 @@ class ThemeEditorWindow(val uiDemo: UiDemo) {
             ColorChooserH(entry.hue, entry.sat, entry.value, entry.alpha, entry.hexString)
 
             Row {
-                modifier.margin(horizontal = sizes.gap, vertical = sizes.largeGap)
-                Text("Preset:") { modifier.alignY(AlignmentY.Center) }
+                modifier.margin(start = sizes.gap, end = sizes.gap, top = sizes.largeGap, bottom = sizes.gap)
+                Text("Preset:") { modifier.width(sizes.largeGap * 3f).alignY(AlignmentY.Center) }
                 ComboBox {
                     modifier
                         .width(150.dp)
@@ -137,6 +137,47 @@ class ThemeEditorWindow(val uiDemo: UiDemo) {
                             applyPreset()
                         }
                 }
+            }
+
+            Row {
+                modifier.margin(start = sizes.gap, end = sizes.gap, top = sizes.gap, bottom = sizes.largeGap)
+                Text("Size:") { modifier.width(sizes.largeGap * 3f).alignY(AlignmentY.Center) }
+
+                RadioButton(uiDemo.selectedUiSize.use() == Sizes.small) {
+                    modifier
+                        .margin(start = sizes.largeGap, end = sizes.gap)
+                        .alignY(AlignmentY.Center)
+                        .onToggle {
+                            if (it) {
+                                uiDemo.selectedUiSize.set(Sizes.small)
+                            }
+                        }
+                }
+                Text("Small") { modifier.alignY(AlignmentY.Center) }
+
+                RadioButton(uiDemo.selectedUiSize.use() == Sizes.medium) {
+                    modifier
+                        .margin(start = sizes.largeGap, end = sizes.gap)
+                        .alignY(AlignmentY.Center)
+                        .onToggle {
+                            if (it) {
+                                uiDemo.selectedUiSize.set(Sizes.medium)
+                            }
+                        }
+                }
+                Text("Medium") { modifier.alignY(AlignmentY.Center) }
+
+                RadioButton(uiDemo.selectedUiSize.use() == Sizes.large) {
+                    modifier
+                        .margin(start = sizes.largeGap, end = sizes.gap)
+                        .alignY(AlignmentY.Center)
+                        .onToggle {
+                            if (it) {
+                                uiDemo.selectedUiSize.set(Sizes.large)
+                            }
+                        }
+                }
+                Text("Large") { modifier.alignY(AlignmentY.Center) }
             }
 
             LazyList(

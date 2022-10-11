@@ -12,11 +12,11 @@ import de.fabmax.kool.util.logD
 object Settings {
 
     val defaultUiSizes = mapOf(
-        "Small" to UiSizeSetting("Small", Sizes.small()),
-        "Medium" to UiSizeSetting("Medium", Sizes.medium()),
-        "Large" to UiSizeSetting("Large", Sizes.large()),
+        "Small" to UiSizeSetting("Small", Sizes.small),
+        "Medium" to UiSizeSetting("Medium", Sizes.medium),
+        "Large" to UiSizeSetting("Large", Sizes.large),
     )
-    val defaultUiSize = UiSizeSetting("Large", Sizes.large())
+    val defaultUiSize = UiSizeSetting("Large", Sizes.large)
 
     private var settingsStore: KeyValueStorage? = null
 

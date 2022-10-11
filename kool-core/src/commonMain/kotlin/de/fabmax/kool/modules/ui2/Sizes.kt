@@ -16,6 +16,10 @@ data class Sizes(
 ) {
 
     companion object {
+        val small = small()
+        val medium = medium()
+        val large = large()
+
         fun small(
             normalText: Font = Font(Font.SYSTEM_FONT, 12f),
             largeText: Font = Font(Font.SYSTEM_FONT, 16f),
