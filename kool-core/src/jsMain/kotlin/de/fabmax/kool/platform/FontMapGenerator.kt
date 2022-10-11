@@ -5,10 +5,7 @@ import de.fabmax.kool.math.clamp
 import de.fabmax.kool.math.smoothStep
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.TextureData2d
-import de.fabmax.kool.util.CharMetrics
-import de.fabmax.kool.util.Font
-import de.fabmax.kool.util.createUint8Buffer
-import de.fabmax.kool.util.logD
+import de.fabmax.kool.util.*
 import kotlinx.browser.document
 import kotlinx.browser.window
 import org.khronos.webgl.get
@@ -17,7 +14,6 @@ import org.w3c.dom.HTMLCanvasElement
 import kotlin.js.Promise
 import kotlin.math.ceil
 import kotlin.math.pow
-import kotlin.math.round
 import kotlin.math.roundToInt
 
 /**
@@ -88,7 +84,7 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, props: JsContext.I
         return TextureData2d(buffer, maxWidth, texHeight, TexFormat.R)
     }
 
-    private fun makeMap(fontProps: Font, fontSize: Int, map: MutableMap<Char, CharMetrics>): Int {
+    private fun makeMap(fontProps: Font, size: Int, outMetrics: MutableMap<Char, CharMetrics>): Int {
         var style = ""
         if (fontProps.style and Font.BOLD != 0) {
             style = "bold "
@@ -97,19 +93,33 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, props: JsContext.I
             style += "italic "
         }
 
-        val fontStr = "$style ${fontSize}px ${fontProps.family}"
+        val fontStr = "$style ${size}px ${fontProps.family}"
         canvasCtx.font = fontStr
         canvasCtx.fillStyle = "#ffffff"
         canvasCtx.strokeStyle = "#ffffff"
 
         logD { "generate font: $fontStr" }
 
-        // line height above baseline
-        val hab = round(fontSize * 1.1).toInt()
-        // line height below baseline
-        val hbb = round(fontSize * 0.5)
-        // overall line height
-        val height = round(fontSize * 1.6)
+        val fm = canvasCtx.measureText("A")
+
+        val padLeft = ceil(size / 10f).toInt()
+        val padRight = ceil(size / 10f).toInt()
+        val padTop = 0
+        val padBottom = ceil(size / 10f).toInt()
+
+        // firefox currently does not have font ascent / descent measures
+        val ascent = if (fm.fontBoundingBoxAscent === undefined) {
+            ceil(size * 1.1f).toInt()
+        } else {
+            ceil(fm.fontBoundingBoxAscent).toInt()
+        }
+        val descent = if (fm.fontBoundingBoxAscent === undefined) {
+            ceil(size * 0.25f).toInt()
+        } else {
+            ceil(fm.fontBoundingBoxAscent).toInt()
+        }
+        // overall line height - unfortunately js does not offer a font-specific measure, we just take a guess...
+        val height = (size * 1.35).roundToInt()
 
         // first pixel is opaque
         canvasCtx.beginPath()
@@ -117,49 +127,48 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, props: JsContext.I
         canvasCtx.lineTo(0.5, 1.0)
         canvasCtx.stroke()
 
-        // enforce constant width for numeric char (0..9)
-        val numericChars = setOf('0', '1', '2', '3', '4', '5', '6', '7', '8', '9')
-        val numericWidth = numericChars.maxOf { c ->
-            val txtMetrics = canvasCtx.measureText("$c")
-            ceil(txtMetrics.actualBoundingBoxRight + txtMetrics.actualBoundingBoxLeft).toFloat()
-        }
-
         var x = 1
-        var y = hab
+        var y = ascent
         for (c in fontProps.chars) {
             val txt = "$c"
             val txtMetrics = canvasCtx.measureText(txt)
-            val charW = if (c in numericChars) numericWidth else ceil(txtMetrics.actualBoundingBoxRight + txtMetrics.actualBoundingBoxLeft).toFloat()
-
-            if (x + charW > maxWidth) {
+            val charW = ceil(txtMetrics.actualBoundingBoxRight + txtMetrics.actualBoundingBoxLeft).toInt()
+            val paddedWidth = charW + padLeft + padRight
+            if (x + paddedWidth > maxWidth) {
                 x = 0
-                y += (height + 10).toInt()
-                if (y + hbb > maxHeight) {
+                y += (height + padBottom + padTop)
+                if (y + descent > maxHeight) {
+                    logE { "Unable to render full font map: Maximum texture size exceeded" }
                     break
                 }
             }
 
-            val heightPx = height.toFloat()
-            val xOff = txtMetrics.actualBoundingBoxLeft
+            val xOff = txtMetrics.actualBoundingBoxLeft + padLeft
             val metrics = CharMetrics()
-            metrics.width = charW / fontProps.sampleScale
-            metrics.height = heightPx / fontProps.sampleScale
+            metrics.width = paddedWidth / fontProps.sampleScale
+            metrics.height = (height + padBottom + padTop) / fontProps.sampleScale
             metrics.xOffset = xOff.toFloat() / fontProps.sampleScale
-            metrics.yBaseline = hab.toFloat() / fontProps.sampleScale
+            metrics.yBaseline = ascent / fontProps.sampleScale
             metrics.advance = txtMetrics.width.toFloat() / fontProps.sampleScale
 
-            metrics.uvMin.set(x.toFloat(), (y - hab).toFloat())
-            metrics.uvMax.set(x + charW, (y - hab).toFloat() + heightPx)
-            map[c] = metrics
+            metrics.uvMin.set(
+                x.toFloat(),
+                (y - ascent - padTop).toFloat()
+            )
+            metrics.uvMax.set(
+                (x + paddedWidth).toFloat(),
+                (y - ascent + padBottom + height).toFloat()
+            )
+            outMetrics[c] = metrics
 
             canvasCtx.fillText(txt, x + xOff, y.toDouble())
-            x += charW.toInt() + 1
+            x += paddedWidth
         }
 
         val texW = maxWidth
-        val texH = nextPow2(y + hbb)
+        val texH = nextPow2(y + descent)
 
-        for (cm in map.values) {
+        for (cm in outMetrics.values) {
             cm.uvMin.x /= texW
             cm.uvMin.y /= texH
             cm.uvMax.x /= texW
@@ -169,7 +178,7 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, props: JsContext.I
         return texH
     }
 
-    private fun nextPow2(value: Double): Int {
+    private fun nextPow2(value: Int): Int {
         var pow2 = 16
         while (pow2 < value && pow2 < maxHeight) {
             pow2 = pow2 shl 1

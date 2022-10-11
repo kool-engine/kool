@@ -1,6 +1,5 @@
 package de.fabmax.kool.platform
 
-import de.fabmax.kool.math.clamp
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.TextureData2d
 import de.fabmax.kool.util.*
@@ -13,8 +12,8 @@ import java.awt.image.BufferedImage
 import java.awt.image.DataBufferInt
 import java.io.ByteArrayInputStream
 import java.io.IOException
+import kotlin.math.ceil
 import kotlin.math.round
-import kotlin.math.roundToInt
 
 /**
  * @author fabmax
@@ -94,7 +93,11 @@ internal class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, val ctx: 
         }
 
         val size = round(font.sizePts * fontScale * font.sampleScale)
-        g.font = customFont?.deriveFont(font.style, size) ?: AwtFont(family, style, size.toInt())
+        val awtFont = customFont?.deriveFont(font.style, size) ?: AwtFont(family, style, size.toInt())
+        // theoretically we could specify an accurate font weight, however this does not have any effect for all fonts I tried
+        //awtFont = awtFont.deriveFont(mapOf<TextAttribute, Any>(TextAttribute.WEIGHT to TextAttribute.WEIGHT_EXTRA_LIGHT))
+
+        g.font = awtFont
         g.color = Color.BLACK
 
         outMetrics.clear()
@@ -102,7 +105,7 @@ internal class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, val ctx: 
         val buffer = getCanvasAlphaData(maxWidth, texHeight)
 
         logD { "Generated font map for (${font.toStringShort()}, scale=${fontScale}x${font.sampleScale})" }
-        //ImageIO.write(canvas, "png", File("${font.family}-${font.size}.png"))
+        //ImageIO.write(canvas, "png", File("${g.font.family}-${g.font.size}.png"))
 
         return TextureData2d(buffer, maxWidth, texHeight, TexFormat.R)
     }
@@ -119,55 +122,57 @@ internal class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, val ctx: 
     }
 
     private fun makeMap(fontProps: Font, size: Float, g: Graphics2D, outMetrics: MutableMap<Char, CharMetrics>): Int {
-        val padding = (if (fontProps.style == Font.ITALIC) 3 else 6) * (size / 30f).clamp(1f, 3f).roundToInt()
-        // line height above baseline
-        val hab = (size * 1.1f).roundToInt()
-        // line height below baseline
-        val hbb = (size * 0.5f).roundToInt()
-        // overall line height
-        val height = (size * 1.6f).roundToInt()
         val fm = g.fontMetrics
+
+        // unfortunately java font metrics don't provide methods to determine the precise pixel bounds of individual
+        // characters and some characters (e.g. 'j', 'f') extend further to left / right than the given char width
+        // therefore we need to add generous padding to avoid artefacts
+        val isItalic = fontProps.style == Font.ITALIC
+        val padLeft = ceil(if (isItalic) size / 2f else size / 5f).toInt()
+        val padRight = ceil(if (isItalic) size / 2f else size / 10f).toInt()
+        val padTop = fm.leading
+        val padBottom = ceil(size / 10f).toInt()
 
         // first pixel is opaque
         g.fillRect(0, 0, 1, 1)
 
         var x = 1
-        var y = hab
+        var y = fm.ascent
         for (c in fontProps.chars) {
-            // super-ugly special treatment for 'j' which has a negative x-offset for most fonts
-            if (c == 'j') {
-                x += (size * 0.1f).roundToInt()
-            }
-
             val charW = fm.charWidth(c)
-            val paddedWidth = charW + padding * 2
+            val paddedWidth = charW + padLeft + padRight
             if (x + paddedWidth > maxWidth) {
                 x = 0
-                y += height + 10
-                if (y + hbb > maxHeight) {
+                y += fm.height + padBottom + padTop
+                if (y + fm.descent > maxHeight) {
+                    logE { "Unable to render full font map: Maximum texture size exceeded" }
                     break
                 }
             }
 
-            val widthPx = charW.toFloat()
-            val heightPx = height.toFloat()
             val metrics = CharMetrics()
-            metrics.width = widthPx / fontProps.sampleScale
-            metrics.height = heightPx / fontProps.sampleScale
-            metrics.xOffset = 0f
-            metrics.yBaseline = hab.toFloat() / fontProps.sampleScale
-            metrics.advance = metrics.width
+            metrics.width = paddedWidth / fontProps.sampleScale
+            metrics.height = (fm.height + padBottom + padTop) / fontProps.sampleScale
+            metrics.xOffset = padLeft / fontProps.sampleScale
+            metrics.yBaseline = fm.ascent.toFloat() / fontProps.sampleScale
+            metrics.advance = charW / fontProps.sampleScale
 
-            metrics.uvMin.set((x + padding).toFloat(), (y - hab).toFloat())
-            metrics.uvMax.set((x + padding + widthPx), (y - hab).toFloat() + heightPx)
+            metrics.uvMin.set(
+                x.toFloat(),
+                (y - fm.ascent - padTop).toFloat()
+            )
+            metrics.uvMax.set(
+                (x + paddedWidth).toFloat(),
+                (y - fm.ascent + padBottom + fm.height).toFloat()
+            )
             outMetrics[c] = metrics
 
-            g.drawString("$c", x + padding, y)
+            g.drawString("$c", x + padLeft, y)
             x += paddedWidth
         }
 
         val texW = maxWidth
-        val texH = nextPow2(y + hbb)
+        val texH = nextPow2(y + fm.descent)
 
         for (cm in outMetrics.values) {
             cm.uvMin.x /= texW

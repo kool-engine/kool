@@ -77,7 +77,7 @@ data class Font(
         const val BOLD = 1
         const val ITALIC = 2
 
-        const val SYSTEM_FONT = "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen, Ubuntu, Cantarell, \"Open Sans\", \"Helvetica Neue\", sans-serif"
+        const val SYSTEM_FONT = "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen, Ubuntu, Cantarell, \"Open Sans\", sans-serif"
 
         val STD_CHARS: String
         val DEFAULT_FONT: Font

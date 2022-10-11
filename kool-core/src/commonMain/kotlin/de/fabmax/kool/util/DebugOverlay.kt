@@ -133,6 +133,7 @@ class DebugOverlay(position: Position = Position.UPPER_RIGHT) {
         modifier
             .alignX(AlignmentX.End)
             .margin(top = (-2).dp, bottom = (-2).dp, start = 4.dp, end = 4.dp)
+            .padding(vertical = 1.dp, horizontal = 2.dp)
     }
 
     private fun updateUpText(time: Double) {

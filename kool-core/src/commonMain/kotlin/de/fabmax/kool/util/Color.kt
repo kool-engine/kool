@@ -161,7 +161,7 @@ open class Color(r: Float, g: Float, b: Float, a: Float = 1f) : Vec4f(r, g, b, a
                 str = str.substring(0, 8)
             }
 
-            var r = 0f
+            val r: Float
             var g = 0f
             var b = 0f
             var a = 1f
