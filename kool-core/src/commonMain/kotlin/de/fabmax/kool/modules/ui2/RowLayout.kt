@@ -51,16 +51,16 @@ private object HorizontalLayout {
             for (i in indices) {
                 val child = children[i]
                 if (isDynamicWidth) {
-                    measuredWidth += child.contentWidthPx + max(prevMargin, child.marginStartPx)
+                    measuredWidth += round(child.contentWidthPx + max(prevMargin, child.marginStartPx))
                     prevMargin = child.marginEndPx
                 }
                 if (isDynamicHeight) {
                     val pTop = max(paddingTopPx, child.marginTopPx)
                     val pBottom = max(paddingBottomPx, child.marginBottomPx)
-                    measuredHeight = max(measuredHeight, child.contentHeightPx + pTop + pBottom)
+                    measuredHeight = max(measuredHeight, round(child.contentHeightPx + pTop + pBottom))
                 }
                 if (i == children.lastIndex && isDynamicWidth) {
-                    measuredWidth += max(prevMargin, paddingEndPx)
+                    measuredWidth += round(max(prevMargin, paddingEndPx))
                 }
             }
 
@@ -80,9 +80,9 @@ private object HorizontalLayout {
 
             val growSpaceW = growSpace.x / growSpace.y
             val growSpaceH = heightPx - max(paddingTopPx, child.marginTopPx) - max(paddingBottomPx, child.marginBottomPx)
-            val layoutW = child.computeWidthFromDimension(growSpaceW)
-            val layoutH = child.computeHeightFromDimension(growSpaceH)
-            val layoutY = uiNode.computeChildLocationY(child, layoutH)
+            val layoutW = round(child.computeWidthFromDimension(growSpaceW))
+            val layoutH = round(child.computeHeightFromDimension(growSpaceH))
+            val layoutY = round(uiNode.computeChildLocationY(child, layoutH))
 
             val cw = child.modifier.width
             if (cw is Grow) {
@@ -92,18 +92,18 @@ private object HorizontalLayout {
 
             val layoutX: Float
             if (isStartToEnd) {
-                x += max(prevMargin, child.marginStartPx)
+                x += round(max(prevMargin, child.marginStartPx))
                 prevMargin = child.marginEndPx
-                layoutX = x
+                layoutX = round(x)
                 x += layoutW
             } else {
-                x -= max(prevMargin, child.marginEndPx)
+                x -= round(max(prevMargin, child.marginEndPx))
                 prevMargin = child.marginStartPx
                 x -= layoutW
-                layoutX = x
+                layoutX = round(x)
             }
 
-            child.setBounds(round(layoutX), round(layoutY), round(layoutX + layoutW), round(layoutY + layoutH))
+            child.setBounds(layoutX, layoutY, layoutX + layoutW, layoutY + layoutH)
         }
     }
 

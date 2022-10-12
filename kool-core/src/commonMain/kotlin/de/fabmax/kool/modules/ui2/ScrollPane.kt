@@ -126,8 +126,8 @@ open class ScrollPaneNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, 
 
     override fun setBounds(minX: Float, minY: Float, maxX: Float, maxY: Float) {
         updateScrollPos()
-        val scrollX = state.xScrollDp.use() * UiScale.measuredScale
-        val scrollY = state.yScrollDp.use() * UiScale.measuredScale
+        val scrollX = round(state.xScrollDp.use() * UiScale.measuredScale)
+        val scrollY = round(state.yScrollDp.use() * UiScale.measuredScale)
         super.setBounds(minX - scrollX, minY - scrollY, maxX - scrollX, maxY - scrollY)
     }
 

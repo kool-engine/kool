@@ -153,9 +153,9 @@ class LazyListNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface
         // add a placeholder in front of visible items to achieve correct scroll pane dimensions
         if (state.spaceBeforeVisibleItems > 0f) {
             if (isVertical) {
-                Box(CellLayout, 1.dp, state.spaceBeforeVisibleItems.dp) { }
+                Box(1.dp, state.spaceBeforeVisibleItems.dp) { }
             } else {
-                Box(CellLayout, state.spaceBeforeVisibleItems.dp, 1.dp) { }
+                Box(state.spaceBeforeVisibleItems.dp, 1.dp) { }
             }
         }
 
@@ -168,9 +168,9 @@ class LazyListNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface
         // add a placeholder behind of visible items to achieve correct scroll pane dimensions
         if (state.spaceAfterVisibleItems > 0f) {
             if (isVertical) {
-                Box(CellLayout, 1.dp,  state.spaceAfterVisibleItems.dp) { }
+                Box(1.dp, state.spaceAfterVisibleItems.dp) { }
             } else {
-                Box(CellLayout,  state.spaceAfterVisibleItems.dp, 1.dp) { }
+                Box(state.spaceAfterVisibleItems.dp, 1.dp) { }
             }
         }
 

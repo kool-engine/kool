@@ -147,37 +147,37 @@ class ThemeEditorWindow(val uiDemo: UiDemo) {
                     modifier
                         .margin(start = sizes.largeGap, end = sizes.gap)
                         .alignY(AlignmentY.Center)
-                        .onToggle {
-                            if (it) {
-                                uiDemo.selectedUiSize.set(Sizes.small)
-                            }
-                        }
+                        .onClick {uiDemo.selectedUiSize.set(Sizes.small) }
                 }
-                Text("Small") { modifier.alignY(AlignmentY.Center) }
+                Text("Small") {
+                    modifier
+                        .alignY(AlignmentY.Center)
+                        .onClick { uiDemo.selectedUiSize.set(Sizes.small) }
+                }
 
                 RadioButton(uiDemo.selectedUiSize.use() == Sizes.medium) {
                     modifier
                         .margin(start = sizes.largeGap, end = sizes.gap)
                         .alignY(AlignmentY.Center)
-                        .onToggle {
-                            if (it) {
-                                uiDemo.selectedUiSize.set(Sizes.medium)
-                            }
-                        }
+                        .onClick {uiDemo.selectedUiSize.set(Sizes.medium) }
                 }
-                Text("Medium") { modifier.alignY(AlignmentY.Center) }
+                Text("Medium") {
+                    modifier
+                        .alignY(AlignmentY.Center)
+                        .onClick {uiDemo.selectedUiSize.set(Sizes.medium) }
+                }
 
                 RadioButton(uiDemo.selectedUiSize.use() == Sizes.large) {
                     modifier
                         .margin(start = sizes.largeGap, end = sizes.gap)
                         .alignY(AlignmentY.Center)
-                        .onToggle {
-                            if (it) {
-                                uiDemo.selectedUiSize.set(Sizes.large)
-                            }
-                        }
+                        .onClick {uiDemo.selectedUiSize.set(Sizes.large) }
                 }
-                Text("Large") { modifier.alignY(AlignmentY.Center) }
+                Text("Large") {
+                    modifier
+                        .alignY(AlignmentY.Center)
+                        .onClick {uiDemo.selectedUiSize.set(Sizes.large) }
+                }
             }
 
             LazyList(

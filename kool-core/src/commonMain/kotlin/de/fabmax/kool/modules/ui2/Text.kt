@@ -65,6 +65,9 @@ open class TextNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surfac
     private val textProps = TextProps(Font.DEFAULT_FONT)
     private val textCache = CachedText(this)
 
+    private val extraItalicPadding: Float
+        get() = if (modifier.font.style == Font.ITALIC) (modifier.font.sizePts * 0.1f).dp.px else 0f
+
     override fun measureContentSize(ctx: KoolContext) {
         val font = surface.loadFont(modifier.font, ctx)
         val textMetrics = textCache.getTextMetrics(modifier.text, font)
@@ -72,7 +75,7 @@ open class TextNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surfac
         val textHeight = if (modifier.textRotation.isHorizontal) textMetrics.height else textMetrics.width
         val modWidth = modifier.width
         val modHeight = modifier.height
-        val measuredWidth = if (modWidth is Dp) modWidth.px else textWidth + paddingStartPx + paddingEndPx
+        val measuredWidth = if (modWidth is Dp) modWidth.px else textWidth + paddingStartPx + paddingEndPx + extraItalicPadding
         val measuredHeight = if (modHeight is Dp) modHeight.px else textHeight + paddingTopPx + paddingBottomPx
         setContentSize(measuredWidth, measuredHeight)
     }
@@ -113,7 +116,7 @@ open class TextNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surfac
             val oriX = txtX + when (modifier.textAlignX) {
                 AlignmentX.Start -> paddingStartPx
                 AlignmentX.Center -> (widthPx - textWidth) / 2f
-                AlignmentX.End -> widthPx - textWidth - paddingEndPx
+                AlignmentX.End -> widthPx - textWidth - paddingEndPx - extraItalicPadding
             }
 
             // a little hacky:

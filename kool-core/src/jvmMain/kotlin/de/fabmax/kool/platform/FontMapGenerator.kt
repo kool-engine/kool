@@ -46,7 +46,7 @@ internal class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, val ctx: 
                 val inStream = runBlocking {
                     ByteArrayInputStream(assetMgr.loadAsset(path)!!.toArray())
                 }
-                val ttfFont = java.awt.Font.createFont(java.awt.Font.TRUETYPE_FONT, inStream)
+                val ttfFont = AwtFont.createFont(AwtFont.TRUETYPE_FONT, inStream)
                 customFonts[family] = ttfFont
                 logD { "Loaded custom font: $family" }
             } catch (e: IOException) {
@@ -121,49 +121,53 @@ internal class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, val ctx: 
         return buffer
     }
 
-    private fun makeMap(fontProps: Font, size: Float, g: Graphics2D, outMetrics: MutableMap<Char, CharMetrics>): Int {
+    private fun makeMap(font: Font, size: Float, g: Graphics2D, outMetrics: MutableMap<Char, CharMetrics>): Int {
         val fm = g.fontMetrics
 
         // unfortunately java font metrics don't provide methods to determine the precise pixel bounds of individual
         // characters and some characters (e.g. 'j', 'f') extend further to left / right than the given char width
         // therefore we need to add generous padding to avoid artefacts
-        val isItalic = fontProps.style == Font.ITALIC
+        val isItalic = font.style == Font.ITALIC
         val padLeft = ceil(if (isItalic) size / 2f else size / 5f).toInt()
         val padRight = ceil(if (isItalic) size / 2f else size / 10f).toInt()
-        val padTop = fm.leading
-        val padBottom = ceil(size / 10f).toInt()
+        val padTop = 0
+        val padBottom = 0
+
+        val ascent = if (font.ascentEm == 0f) (fm.ascent + fm.leading) else ceil(font.ascentEm * size).toInt()
+        val descent = if (font.descentEm == 0f) fm.descent else ceil(font.descentEm * size).toInt()
+        val height = if (font.heightEm == 0f) fm.height else ceil(font.heightEm * size).toInt()
 
         // first pixel is opaque
         g.fillRect(0, 0, 1, 1)
 
         var x = 1
-        var y = fm.ascent
-        for (c in fontProps.chars) {
+        var y = ascent
+        for (c in font.chars) {
             val charW = fm.charWidth(c)
             val paddedWidth = charW + padLeft + padRight
             if (x + paddedWidth > maxWidth) {
                 x = 0
-                y += fm.height + padBottom + padTop
-                if (y + fm.descent > maxHeight) {
+                y += height + padBottom + padTop
+                if (y + descent > maxHeight) {
                     logE { "Unable to render full font map: Maximum texture size exceeded" }
                     break
                 }
             }
 
             val metrics = CharMetrics()
-            metrics.width = paddedWidth / fontProps.sampleScale
-            metrics.height = (fm.height + padBottom + padTop) / fontProps.sampleScale
-            metrics.xOffset = padLeft / fontProps.sampleScale
-            metrics.yBaseline = fm.ascent.toFloat() / fontProps.sampleScale
-            metrics.advance = charW / fontProps.sampleScale
+            metrics.width = paddedWidth / font.sampleScale
+            metrics.height = (height + padBottom + padTop) / font.sampleScale
+            metrics.xOffset = padLeft / font.sampleScale
+            metrics.yBaseline = ascent.toFloat() / font.sampleScale
+            metrics.advance = charW / font.sampleScale
 
             metrics.uvMin.set(
                 x.toFloat(),
-                (y - fm.ascent - padTop).toFloat()
+                (y - ascent - padTop).toFloat()
             )
             metrics.uvMax.set(
                 (x + paddedWidth).toFloat(),
-                (y - fm.ascent + padBottom + fm.height).toFloat()
+                (y - ascent + padBottom + height).toFloat()
             )
             outMetrics[c] = metrics
 
@@ -172,7 +176,7 @@ internal class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, val ctx: 
         }
 
         val texW = maxWidth
-        val texH = nextPow2(y + fm.descent)
+        val texH = nextPow2(y + descent)
 
         for (cm in outMetrics.values) {
             cm.uvMin.x /= texW

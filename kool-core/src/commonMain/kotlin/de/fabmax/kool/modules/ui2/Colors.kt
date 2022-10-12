@@ -38,7 +38,7 @@ data class Colors(
             onBackground: Color = Color("343434ff"),
         ): Colors = Colors(
             primary = accent,
-            primaryVariant = accent.mix(Color.BLACK, 0.2f),
+            primaryVariant = accent.mix(Color.BLACK, 0.3f),
             secondary = accent.mix(Color.BLACK, 0.3f),
             secondaryVariant = accent.mix(Color.BLACK, 0.5f),
             background = background,
@@ -56,8 +56,8 @@ data class Colors(
             onBackground: Color = Color("f2f2f2ff"),
         ): Colors = Colors(
             primary = accent,
-            primaryVariant = accent.mix(Color.BLACK, 0.2f),
-            secondary = accent.mix(Color.BLACK, 0.4f),
+            primaryVariant = accent.mix(Color.BLACK, 0.3f),
+            secondary = accent.mix(Color.BLACK, 0.3f),
             secondaryVariant = accent.mix(Color.BLACK, 0.5f),
             background = background,
             backgroundVariant = background.mix(Color.WHITE, 0.05f),

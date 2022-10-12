@@ -28,7 +28,7 @@ class DockingContainer(
     private val slots = DockingHost.DockPosition.values().map { DockingHost.DockingSlot(it, this) }
     val isDrawSlots = mutableStateOf(false)
 
-    var isMergeIfHalfEmpty = true
+    var isMergeIfHalfEmpty = false
     val widthWeight = mutableStateOf(widthWeight)
     val heightWeight = mutableStateOf(heightWeight)
     val boundsMinPx = MutableVec2f()
@@ -84,7 +84,6 @@ class DockingContainer(
                 Dp.fromPx(boundsMinPx.x), Dp.fromPx(boundsMinPx.y),
                 Dp.fromPx(width), Dp.fromPx(height),
             )
-            println("docked: ${windowState.x}, ${windowState.y}, ${windowState.width}, ${windowState.height}")
         }
         bringToTop(window)
         dockingHost.dockingListeners.forEach { it.onWindowDocked(window, this) }

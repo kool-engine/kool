@@ -50,12 +50,12 @@ object CellLayout : Layout {
                 val growSpaceW = widthPx - max(paddingStartPx, child.marginStartPx) - max(paddingEndPx, child.marginEndPx)
                 val growSpaceH = heightPx - max(paddingTopPx, child.marginTopPx) - max(paddingBottomPx, child.marginBottomPx)
 
-                val childWidth = child.computeWidthFromDimension(growSpaceW)
-                val childHeight = child.computeHeightFromDimension(growSpaceH)
-                val childX = computeChildLocationX(child, childWidth)
-                val childY = computeChildLocationY(child, childHeight)
+                val childWidth = round(child.computeWidthFromDimension(growSpaceW))
+                val childHeight = round(child.computeHeightFromDimension(growSpaceH))
+                val childX = round(computeChildLocationX(child, childWidth))
+                val childY = round(computeChildLocationY(child, childHeight))
 
-                child.setBounds(round(childX), round(childY), round(childX + childWidth), round(childY + childHeight))
+                child.setBounds(childX, childY, childX + childWidth, childY + childHeight)
             }
         }
     }

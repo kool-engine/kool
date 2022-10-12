@@ -45,10 +45,9 @@ class BasicUiWindow(val uiDemo: UiDemo) {
         }
     }
 
-    fun UiScope.WindowContent(listItems: MutableList<String>) = Box(Grow.Std, Grow.Std) {
+    fun UiScope.WindowContent(listItems: MutableList<String>) = Column(Grow.Std, Grow.Std) {
         modifier
             .padding(horizontal = sizes.gap, vertical = sizes.largeGap)
-            .layout(ColumnLayout)
 
         Row {
             modifier.margin(bottom = sizes.smallGap)
@@ -108,7 +107,6 @@ class BasicUiWindow(val uiDemo: UiDemo) {
         }
 
         Row {
-            modifier.margin(bottom = sizes.smallGap)
             Text("Combo-box") { modifier.alignY(AlignmentY.Center) }
             ComboBox {
                 modifier
@@ -120,9 +118,9 @@ class BasicUiWindow(val uiDemo: UiDemo) {
             }
         }
 
+        divider(colors.secondaryVariant.withAlpha(0.5f), marginTop = sizes.largeGap, marginBottom = sizes.gap)
         Text("A scroll area:") {
-            modifier
-                .margin(top = sizes.largeGap, bottom = sizes.gap)
+            modifier.margin(bottom = sizes.gap)
         }
         ScrollArea(
             scrollState,
@@ -170,9 +168,9 @@ class BasicUiWindow(val uiDemo: UiDemo) {
             }
         }
 
+        divider(colors.secondaryVariant.withAlpha(0.5f), marginTop = sizes.largeGap, marginBottom = sizes.gap)
         Text("A longer list, click items to delete them:") {
-            modifier
-                .margin(top = sizes.largeGap, bottom = sizes.gap)
+            modifier.margin(bottom = sizes.gap)
         }
         LazyList(
             listState,

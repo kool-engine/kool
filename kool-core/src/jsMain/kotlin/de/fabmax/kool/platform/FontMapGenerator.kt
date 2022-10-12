@@ -68,8 +68,8 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, props: JsContext.I
             // corrected value: boosted contrast
             val ac = a.pow(1.5f) * 1.3f - 0.15f
             // mix original value and corrected one based on font size:
-            // max correction for sizes <= 12, no correction for sizes >= 36
-            val cw = smoothStep(12f, 36f, fontSize.toFloat())
+            // max correction for sizes <= 12, no correction for sizes >= 40
+            val cw = smoothStep(12f, 40f, fontSize.toFloat())
             val c = a * cw + ac * (1f - cw)
             (c.clamp(0f, 1f) * 255f).toInt().toByte()
         }
@@ -84,16 +84,16 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, props: JsContext.I
         return TextureData2d(buffer, maxWidth, texHeight, TexFormat.R)
     }
 
-    private fun makeMap(fontProps: Font, size: Int, outMetrics: MutableMap<Char, CharMetrics>): Int {
+    private fun makeMap(font: Font, size: Int, outMetrics: MutableMap<Char, CharMetrics>): Int {
         var style = ""
-        if (fontProps.style and Font.BOLD != 0) {
+        if (font.style and Font.BOLD != 0) {
             style = "bold "
         }
-        if (fontProps.style and Font.ITALIC != 0) {
+        if (font.style and Font.ITALIC != 0) {
             style += "italic "
         }
 
-        val fontStr = "$style ${size}px ${fontProps.family}"
+        val fontStr = "$style ${size}px ${font.family}"
         canvasCtx.font = fontStr
         canvasCtx.fillStyle = "#ffffff"
         canvasCtx.strokeStyle = "#ffffff"
@@ -108,18 +108,13 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, props: JsContext.I
         val padBottom = ceil(size / 10f).toInt()
 
         // firefox currently does not have font ascent / descent measures
-        val ascent = if (fm.fontBoundingBoxAscent === undefined) {
-            ceil(size * 1.1f).toInt()
-        } else {
-            ceil(fm.fontBoundingBoxAscent).toInt()
-        }
-        val descent = if (fm.fontBoundingBoxAscent === undefined) {
-            ceil(size * 0.25f).toInt()
-        } else {
-            ceil(fm.fontBoundingBoxAscent).toInt()
-        }
-        // overall line height - unfortunately js does not offer a font-specific measure, we just take a guess...
-        val height = (size * 1.35).roundToInt()
+        val hasFontMetrics = fm.fontBoundingBoxAscent !== undefined && fm.fontBoundingBoxDescent !== undefined
+        val fontAscent = ceil(if (hasFontMetrics) size * 1.05 else fm.fontBoundingBoxAscent).toInt()
+        val fontDescent = ceil(if (hasFontMetrics) size * 0.35 else fm.fontBoundingBoxAscent).toInt()
+
+        val ascent = if (font.ascentEm == 0f) fontAscent else ceil(font.ascentEm * size).toInt()
+        val descent = if (font.descentEm == 0f) fontDescent else ceil(font.descentEm * size).toInt()
+        val height = if (font.heightEm == 0f) ascent + descent else ceil(font.heightEm * size).toInt()
 
         // first pixel is opaque
         canvasCtx.beginPath()
@@ -129,7 +124,7 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, props: JsContext.I
 
         var x = 1
         var y = ascent
-        for (c in fontProps.chars) {
+        for (c in font.chars) {
             val txt = "$c"
             val txtMetrics = canvasCtx.measureText(txt)
             val charW = ceil(txtMetrics.actualBoundingBoxRight + txtMetrics.actualBoundingBoxLeft).toInt()
@@ -145,11 +140,11 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, props: JsContext.I
 
             val xOff = txtMetrics.actualBoundingBoxLeft + padLeft
             val metrics = CharMetrics()
-            metrics.width = paddedWidth / fontProps.sampleScale
-            metrics.height = (height + padBottom + padTop) / fontProps.sampleScale
-            metrics.xOffset = xOff.toFloat() / fontProps.sampleScale
-            metrics.yBaseline = ascent / fontProps.sampleScale
-            metrics.advance = txtMetrics.width.toFloat() / fontProps.sampleScale
+            metrics.width = paddedWidth / font.sampleScale
+            metrics.height = (height + padBottom + padTop) / font.sampleScale
+            metrics.xOffset = xOff.toFloat() / font.sampleScale
+            metrics.yBaseline = ascent / font.sampleScale
+            metrics.advance = txtMetrics.width.toFloat() / font.sampleScale
 
             metrics.uvMin.set(
                 x.toFloat(),

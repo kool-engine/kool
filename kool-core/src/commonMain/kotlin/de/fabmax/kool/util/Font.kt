@@ -2,8 +2,7 @@ package de.fabmax.kool.util
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec2f
-import de.fabmax.kool.pipeline.FilterMethod
-import de.fabmax.kool.pipeline.Texture2d
+import de.fabmax.kool.pipeline.*
 import kotlin.math.max
 import kotlin.math.round
 
@@ -15,12 +14,12 @@ data class Font(
     val family: String,
     val sizePts: Float,
     val style: Int = PLAIN,
+    val ascentEm: Float = 1.05f,
+    val descentEm: Float = 0.35f,
+    val heightEm: Float = 1.4f,
     val chars: String = STD_CHARS,
-    val magFilter: FilterMethod = FilterMethod.LINEAR,
-    val minFilter: FilterMethod = FilterMethod.LINEAR,
-    val mipMapping: Boolean = false,
-    val maxAnisotropy: Int = 0,
     val sampleScale: Float = 1f,
+    val fontMapProps: TextureProps = DEFAULT_FONT_TEX_PROPS,
     val isCustomMap: Boolean = false
 ) {
 
@@ -81,6 +80,16 @@ data class Font(
 
         val STD_CHARS: String
         val DEFAULT_FONT: Font
+
+        val DEFAULT_FONT_TEX_PROPS = TextureProps(
+            format = TexFormat.R,
+            addressModeU = AddressMode.CLAMP_TO_EDGE,
+            addressModeV = AddressMode.CLAMP_TO_EDGE,
+            magFilter = FilterMethod.LINEAR,
+            minFilter = FilterMethod.LINEAR,
+            mipMapping = false,
+            maxAnisotropy = 0
+        )
 
         init {
             var str = ""

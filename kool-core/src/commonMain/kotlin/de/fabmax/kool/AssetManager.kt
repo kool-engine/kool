@@ -90,18 +90,7 @@ abstract class AssetManager(var assetsBaseDir: String) : CoroutineScope {
         val texData = createFontMapData(font, fontScale, metrics)
 
         if (map == null) {
-            val tex = BufferedTexture2d(
-                texData,
-                TextureProps(
-                    addressModeU = AddressMode.CLAMP_TO_EDGE,
-                    addressModeV = AddressMode.CLAMP_TO_EDGE,
-                    magFilter = font.magFilter,
-                    minFilter = font.minFilter,
-                    mipMapping = font.mipMapping,
-                    maxAnisotropy = font.maxAnisotropy
-                ),
-                font.toString()
-            )
+            val tex = BufferedTexture2d(texData, font.fontMapProps, font.toString())
             map = FontMap(font, tex, metrics)
             map.applyScale(fontScale)
             font.map = map
