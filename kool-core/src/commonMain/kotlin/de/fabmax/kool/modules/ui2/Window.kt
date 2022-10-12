@@ -101,8 +101,7 @@ fun Window(
     surface.content = {
         val window = uiNode.createChild(WindowNode::class, WindowNode.factory)
         window.state = state
-        window.modifier
-            .layout(ColumnLayout)
+        window.modifier.layout(ColumnLayout)
 
         surface.windowScope = window
 
@@ -127,9 +126,9 @@ fun Window(
 
             window.modifier.borderColor?.let {
                 if (window.isDocked) {
-                    window.modifier.border(RectBorder(it, this.sizes.borderWidth))
+                    window.modifier.border(RectBorder(it, 1.dp))
                 } else {
-                    window.modifier.border(RoundRectBorder(it, this.sizes.gap, this.sizes.borderWidth))
+                    window.modifier.border(RoundRectBorder(it, this.sizes.gap, 1.dp))
                 }
             }
 

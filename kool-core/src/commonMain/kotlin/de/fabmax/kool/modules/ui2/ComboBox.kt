@@ -166,8 +166,8 @@ open class ComboBoxNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, su
 
         getPlainBuilder().configured(modifier.expanderArrowColor) {
             val cx = widthPx - expanderWidth * 0.5f
-            val cy = heightPx * 0.5f - sizes.smallGap.px * 0.25f
-            val d = sizes.smallGap.px * 1.75f
+            val cy = heightPx * 0.5f
+            val d = sizes.smallGap.px * 2.5f
             arrow(cx, cy, d, 90f)
         }
     }

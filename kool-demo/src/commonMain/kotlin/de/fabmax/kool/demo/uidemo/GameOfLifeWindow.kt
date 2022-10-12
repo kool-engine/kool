@@ -1,5 +1,6 @@
 package de.fabmax.kool.demo.uidemo
 
+import de.fabmax.kool.math.MutableVec2i
 import de.fabmax.kool.math.randomF
 import de.fabmax.kool.modules.ui2.*
 import kotlin.math.min
@@ -17,6 +18,9 @@ class GameOfLifeWindow(val uiDemo: UiDemo) {
     private val updateSpeed = mutableStateOf(5)
     private var updateCount = updateSpeeds[updateSpeed.value]
 
+    private val worldPanel = WorldPanel()
+    private val renderPanel = RenderPanel()
+
     init {
         world.loadAsciiState(GameWorld.gliderGun)
     }
@@ -27,67 +31,8 @@ class GameOfLifeWindow(val uiDemo: UiDemo) {
 
         TitleBar()
 
-        Row {
-            Text("Paused") {
-                modifier
-                    .alignY(AlignmentY.Center)
-                    .margin(sizes.gap)
-            }
-            Switch(isPaused.use()) {
-                modifier
-                    .alignY(AlignmentY.Center)
-                    .margin(sizes.gap)
-                    .onToggle { isPaused.toggle() }
-            }
-            Button("Clear") {
-                modifier
-                    .alignY(AlignmentY.Center)
-                    .margin(sizes.gap)
-                    .onClick {
-                        world.clear()
-                        surface.triggerUpdate()
-                    }
-            }
-            Button("Load glider gun") {
-                modifier
-                    .alignY(AlignmentY.Center)
-                    .margin(sizes.gap)
-                    .onClick {
-                        world.loadAsciiState(GameWorld.gliderGun)
-                        surface.triggerUpdate()
-                    }
-            }
-            Button("Randomize") {
-                modifier
-                    .alignY(AlignmentY.Center)
-                    .margin(sizes.gap)
-                    .onClick {
-                        world.randomize(0.3f)
-                        surface.triggerUpdate()
-                    }
-            }
-            ComboBox {
-                modifier
-                    .alignY(AlignmentY.Center)
-                    .margin(sizes.gap)
-                    .items(worldRenderer.rendererChoices)
-                    .selectedIndex(worldRenderer.selectedRenderer.use())
-                    .onItemSelected { worldRenderer.selectedRenderer.set(it) }
-            }
-            Text("Speed") {
-                modifier
-                    .alignY(AlignmentY.Center)
-                    .margin(sizes.gap)
-            }
-            Slider(updateSpeed.use().toFloat(), 0f, updateSpeeds.lastIndex.toFloat()) {
-                modifier
-                    .alignY(AlignmentY.Center)
-                    .onChange {
-                        updateSpeed.set(it.toInt())
-                        updateCount = min(updateCount, updateSpeeds[updateSpeed.value])
-                    }
-            }
-        }
+        worldPanel()
+        renderPanel()
 
         surface.onEachFrame {
             if (!isPaused.value && --updateCount <= 0) {
@@ -108,6 +53,150 @@ class GameOfLifeWindow(val uiDemo: UiDemo) {
             }
         ) {
             worldRenderer()
+        }
+    }
+
+    private abstract class CollapsablePanel(val title: String) : ComposableComponent {
+        val isCollapsed = mutableStateOf(false)
+        val isHovered = mutableStateOf(false)
+
+        override fun UiScope.compose() = Column(Grow.Std) {
+            modifier.backgroundColor(colors.backgroundVariant)
+            Row(Grow.Std) {
+                modifier
+                    .backgroundColor(colors.secondaryVariant.withAlpha(if (isHovered.use()) 0.75f else 0.5f))
+                    .onClick { isCollapsed.toggle() }
+                    .padding(horizontal = sizes.gap, vertical = sizes.smallGap)
+                    .onEnter { isHovered.set(true) }
+                    .onExit { isHovered.set(false) }
+
+                Arrow (if (isCollapsed.use()) 0f else 90f) {
+                    modifier
+                        .size(sizes.gap * 1.5f, sizes.gap * 1.5f)
+                        .margin(horizontal = sizes.gap)
+                        .alignY(AlignmentY.Center)
+                }
+                Text(title) { }
+            }
+            if (!isCollapsed.value) {
+                content()
+            } else {
+                divider(colors.secondaryVariant.withAlpha(0.75f), horizontalMargin = 0.dp, thickness = 1.dp)
+            }
+        }
+
+        abstract fun UiScope.content()
+    }
+
+    private inner class WorldPanel : CollapsablePanel("World") {
+        override fun UiScope.content() {
+            Row {
+                modifier.padding(horizontal = sizes.gap, vertical = sizes.smallGap)
+                Text("Content") { modifier.alignY(AlignmentY.Center).width(sizes.largeGap * 7f) }
+                Button("Clear world") {
+                    modifier
+                        .width(sizes.largeGap * 7f)
+                        .margin(horizontal = sizes.gap)
+                        .onClick {
+                            world.clear()
+                            surface.triggerUpdate()
+                        }
+                }
+                Button("Load glider gun") {
+                    modifier
+                        .width(sizes.largeGap * 7f)
+                        .margin(horizontal = sizes.gap)
+                        .onClick {
+                            world.loadAsciiState(GameWorld.gliderGun)
+                            surface.triggerUpdate()
+                        }
+                }
+                Button("Randomize") {
+                    modifier
+                        .width(sizes.largeGap * 7f)
+                        .margin(horizontal = sizes.gap)
+                        .onClick {
+                            world.randomize(0.3f)
+                            surface.triggerUpdate()
+                        }
+                }
+            }
+            Row {
+                modifier.padding(horizontal = sizes.gap, vertical = sizes.smallGap)
+                Text("Size") { modifier.alignY(AlignmentY.Center).width(sizes.largeGap * 7f) }
+                Text("Width:") { modifier.alignY(AlignmentY.Center).margin(horizontal = sizes.gap) }
+                Slider(world.worldSizeX.use().toFloat(), 16f, 70f) {
+                    modifier
+                        .alignY(AlignmentY.Center)
+                        .margin(horizontal = sizes.gap)
+                        .width(sizes.largeGap * 5f)
+                        .onChange { world.worldSizeX.set(it.toInt()) }
+                }
+                Text("${world.worldSizeX.value}") { modifier.alignY(AlignmentY.Center).margin(end = sizes.largeGap * 2f) }
+                Text("Height:") { modifier.alignY(AlignmentY.Center) }
+                Slider(world.worldSizeY.use().toFloat(), 16f, 70f) {
+                    modifier
+                        .alignY(AlignmentY.Center)
+                        .margin(horizontal = sizes.gap)
+                        .width(sizes.largeGap * 5f)
+                        .onChange { world.worldSizeY.set(it.toInt()) }
+                }
+                Text("${world.worldSizeY.value}") { modifier.alignY(AlignmentY.Center).margin(end = sizes.largeGap) }
+            }
+            Row {
+                modifier.padding(horizontal = sizes.gap, vertical = sizes.smallGap)
+                Text("Connect edges") { modifier.alignY(AlignmentY.Center).width(sizes.largeGap * 7f) }
+                Switch(world.connectWorldEdges.use()) {
+                    modifier
+                        .alignY(AlignmentY.Center)
+                        .margin(sizes.gap)
+                        .onToggle {
+                            world.connectWorldEdges.set(it)
+                        }
+                }
+            }
+        }
+    }
+
+    private inner class RenderPanel : CollapsablePanel("Visualization") {
+        override fun UiScope.content() {
+            Row {
+                modifier.padding(horizontal = sizes.gap, vertical = sizes.smallGap)
+                Text("Cell-renderer") { modifier.alignY(AlignmentY.Center).width(sizes.largeGap * 7f) }
+                ComboBox {
+                    modifier
+                        .alignY(AlignmentY.Center)
+                        .width(sizes.largeGap * 7f)
+                        .margin(horizontal = sizes.gap)
+                        .items(worldRenderer.rendererChoices)
+                        .selectedIndex(worldRenderer.selectedRenderer.use())
+                        .onItemSelected { worldRenderer.selectedRenderer.set(it) }
+                }
+            }
+            Row {
+                modifier.padding(horizontal = sizes.gap, vertical = sizes.smallGap)
+                Text("Speed") { modifier.alignY(AlignmentY.Center).width(sizes.largeGap * 7f) }
+                Slider(updateSpeed.use().toFloat(), 0f, updateSpeeds.lastIndex.toFloat()) {
+                    modifier
+                        .alignY(AlignmentY.Center)
+                        .width(sizes.largeGap * 5f)
+                        .margin(horizontal = sizes.gap)
+                        .onChange {
+                            updateSpeed.set(it.toInt())
+                            updateCount = min(updateCount, updateSpeeds[updateSpeed.value])
+                        }
+                }
+            }
+            Row {
+                modifier.padding(horizontal = sizes.gap, vertical = sizes.smallGap)
+                Text("Pause game") { modifier.alignY(AlignmentY.Center).width(sizes.largeGap * 7f) }
+                Switch(isPaused.use()) {
+                    modifier
+                        .alignY(AlignmentY.Center)
+                        .margin(sizes.gap)
+                        .onToggle { isPaused.toggle() }
+                }
+            }
         }
     }
 
@@ -193,18 +282,33 @@ class GameOfLifeWindow(val uiDemo: UiDemo) {
     }
 
     private class GameWorld {
-        val worldSizeX = mutableStateOf(50)
-        val worldSizeY = mutableStateOf(50)
+        val connectWorldEdges = mutableStateOf(false)
+        val worldSizeX: MutableStateValue<Int> = mutableStateOf(45).onChange { resize(it, worldSizeY.value) }
+        val worldSizeY: MutableStateValue<Int> = mutableStateOf(30).onChange { resize(worldSizeX.value, it) }
         val gameState = mutableStateOf(BooleanArray(worldSizeX.value * worldSizeY.value))
 
+        private val size = MutableVec2i(worldSizeX.value, worldSizeY.value)
         private var nextGameState = BooleanArray(worldSizeX.value * worldSizeY.value)
+
+        private fun resize(newX: Int, newY: Int) {
+            val newState = BooleanArray(newX * newY)
+            nextGameState = BooleanArray(newX * newY)
+            for (y in 0 until min(size.y, newY)) {
+                for (x in 0 until min(size.x, newX)) {
+                    newState[y * newX + x] = gameState.value[y * size.x + x]
+                }
+            }
+            size.x = newX
+            size.y = newY
+            gameState.set(newState)
+        }
 
         fun step() {
             val state = gameState.value
-            for (y in 0 until worldSizeY.value) {
-                for (x in 0 until worldSizeX.value) {
+            for (y in 0 until size.y) {
+                for (x in 0 until size.x) {
                     val popCnt = countPopNeighbors(x, y)
-                    nextGameState[y * worldSizeX.value + x] = if (popCnt == 2 && this[x, y]) true else popCnt == 3
+                    nextGameState[y * size.x + x] = if (popCnt == 2 && this[x, y]) true else popCnt == 3
                 }
             }
             gameState.set(nextGameState)
@@ -224,17 +328,35 @@ class GameOfLifeWindow(val uiDemo: UiDemo) {
         }
 
         operator fun get(x: Int, y: Int): Boolean {
-            if (x !in 0 until worldSizeX.value || y !in 0 until worldSizeY.value) {
-                return false
+            var xx = x
+            var yy = y
+
+            if (xx !in 0 until size.x) {
+                if (!connectWorldEdges.value) {
+                    return false
+                }
+                xx %= size.x
+                if (xx < 0) {
+                    xx += size.x
+                }
             }
-            return gameState.value[y * worldSizeX.value + x]
+            if (yy !in 0 until size.y) {
+                if (!connectWorldEdges.value) {
+                    return false
+                }
+                yy %= size.y
+                if (yy < 0) {
+                    yy += size.y
+                }
+            }
+            return gameState.value[yy * size.x + xx]
         }
 
         operator fun set(x: Int, y: Int, value: Boolean) {
-            if (x !in 0 until worldSizeX.value || y !in 0 until worldSizeY.value) {
+            if (x !in 0 until size.x || y !in 0 until size.y) {
                 return
             }
-            gameState.value[y * worldSizeX.value + x] = value
+            gameState.value[y * size.x + x] = value
         }
 
         fun clear() = loadAsciiState("")
