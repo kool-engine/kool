@@ -13,7 +13,9 @@ as well (look below for a very short usage guide - that's all the documentation 
 
 I also have a few demos in place (roughly in order of creation; once loaded, you can also switch between them via the
 hamburger button in the upper left corner):
-- [Island](https://fabmax.github.io/kool/kool-js/?demo=phys-terrain): Work-in-progress: Height-map based
+- [Embedded UI](https://fabmax.github.io/kool/kool-js/?demo=ui): Integrated UI framework implemented completely within
+  the engine. Highly customizable, easy-to-use and blazing fast. I guess next thing is an editor then... :smile:
+- [Island](https://fabmax.github.io/kool/kool-js/?demo=phys-terrain): Height-map based
   island incl. some wind-affected vegetation + a basic controllable character.
 - [Physics - Ragdoll](https://fabmax.github.io/kool/kool-js/?demo=phys-ragdoll): Ragdoll physics demo.
 - [Physics - Vehicle](https://fabmax.github.io/kool/kool-js/?demo=phys-vehicle): A drivable vehicle (W, A, S, D /
