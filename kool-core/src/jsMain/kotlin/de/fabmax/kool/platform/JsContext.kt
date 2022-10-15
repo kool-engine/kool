@@ -279,7 +279,7 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
         var canvasName = "glCanvas"
         val excludedKeyCodes: MutableSet<String> = mutableSetOf("F5", "F11")
 
-        var assetsBaseDir = "./assets"
+        var localAssetPath = "./assets"
         val customFonts = mutableMapOf<String, String>()
     }
 }

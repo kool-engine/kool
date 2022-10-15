@@ -13,3 +13,5 @@ expect fun Double.toString(precision: Int): String
 expect inline fun <R> lock(lock: Any, block: () -> R): R
 
 fun Float.toString(precision: Int): String = this.toDouble().toString(precision)
+
+expect fun createDefaultContext(localAssetPath: String = "./assets"): KoolContext

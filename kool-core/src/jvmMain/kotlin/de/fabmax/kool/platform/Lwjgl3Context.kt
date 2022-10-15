@@ -209,7 +209,7 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
 
         var msaaSamples = 8
 
-        var assetsBaseDir = "./assets"
+        var localAssetPath = "./assets"
         var storageDir = "./.storage"
 
         val customFonts = mutableMapOf<String, String>()

@@ -19,10 +19,7 @@ import kotlin.math.roundToInt
  * @author fabmax
  */
 
-expect fun createDefaultContext(): KoolContext
-
 abstract class KoolContext {
-
     var windowScale = 1f
         set(value) {
             val userValue = applicationCallbacks.onWindowScaleChange(value, this)

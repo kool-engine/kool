@@ -38,7 +38,7 @@ inline fun UiScope.Button(text: String = "", block: ButtonScope.() -> Unit): Tex
         .text(text)
         .colors(textColor = colors.onSecondary)
         .textAlign(AlignmentX.Center, AlignmentY.Center)
-        .padding(horizontal = sizes.gap, vertical = sizes.smallGap * 0.5f)
+        .padding(horizontal = sizes.gap, vertical = sizes.smallGap)
         .onClick(button)
         .hoverListener(button)
     button.block()

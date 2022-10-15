@@ -41,7 +41,7 @@ class DebugOverlay(position: Position = Position.UPPER_RIGHT) {
     private val isExpanded = mutableStateOf(false)
 
     init {
-        val fpsFont = Font(Font.SYSTEM_FONT, 20f)
+        val fpsFont = MsdfFont(sizePts = 20f)
 
         ui = Ui2Scene("debug-overlay") {
             onUpdate += {
@@ -69,7 +69,7 @@ class DebugOverlay(position: Position = Position.UPPER_RIGHT) {
                 Text(fpsText.use()) {
                     modifier
                         .alignX(AlignmentX.Center)
-                        .padding(sizes.smallGap)
+                        .padding(sizes.gap)
                         .width(Grow.Std)
                         .textAlignX(AlignmentX.Center)
                         .font(fpsFont)
@@ -133,7 +133,7 @@ class DebugOverlay(position: Position = Position.UPPER_RIGHT) {
         modifier
             .alignX(AlignmentX.End)
             .margin(top = (-2).dp, bottom = (-2).dp, start = 4.dp, end = 4.dp)
-            .padding(vertical = 1.dp, horizontal = 2.dp)
+            .padding(vertical = 2.dp, horizontal = 2.dp)
     }
 
     private fun updateUpText(time: Double) {

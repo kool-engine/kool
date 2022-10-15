@@ -56,7 +56,7 @@ private object VerticalLayout {
                     measuredWidth = max(measuredWidth, round(child.contentWidthPx + pStart + pEnd))
                 }
                 if (isDynamicHeight) {
-                    measuredHeight += round(child.contentHeightPx + max(prevMargin, child.marginTopPx))
+                    measuredHeight += round(child.contentHeightPx) + round(max(prevMargin, child.marginTopPx))
                     prevMargin = child.marginBottomPx
                 }
                 if (i == children.lastIndex && isDynamicHeight) {

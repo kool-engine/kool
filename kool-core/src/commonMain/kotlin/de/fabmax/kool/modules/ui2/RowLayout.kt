@@ -51,7 +51,7 @@ private object HorizontalLayout {
             for (i in indices) {
                 val child = children[i]
                 if (isDynamicWidth) {
-                    measuredWidth += round(child.contentWidthPx + max(prevMargin, child.marginStartPx))
+                    measuredWidth += round(child.contentWidthPx) + round(max(prevMargin, child.marginStartPx))
                     prevMargin = child.marginEndPx
                 }
                 if (isDynamicHeight) {

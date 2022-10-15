@@ -267,7 +267,7 @@ class ThemeEditorWindow(val uiDemo: UiDemo) {
             } else if (index == selectedColor.use()) {
                 modifier.backgroundColor(colors.secondary.withAlpha(0.3f))
             } else if (index % 2 == 0) {
-                val bg = if (colors.isLight) Color.BLACK else Color.WHITE
+                val bg = if (colors.isLight) Color.BLACK else colors.secondary
                 modifier.backgroundColor(bg.withAlpha(0.05f))
             }
 

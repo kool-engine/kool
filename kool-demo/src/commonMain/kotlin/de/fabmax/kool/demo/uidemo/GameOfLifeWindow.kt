@@ -125,7 +125,7 @@ class GameOfLifeWindow(val uiDemo: UiDemo) {
                 modifier.padding(horizontal = sizes.gap, vertical = sizes.smallGap)
                 Text("Size") { modifier.alignY(AlignmentY.Center).width(sizes.largeGap * 7f) }
                 Text("Width:") { modifier.alignY(AlignmentY.Center).margin(horizontal = sizes.gap) }
-                Slider(world.worldSizeX.use().toFloat(), 16f, 70f) {
+                Slider(world.worldSizeX.use().toFloat(), 10f, 100f) {
                     modifier
                         .alignY(AlignmentY.Center)
                         .margin(horizontal = sizes.gap)
@@ -134,7 +134,7 @@ class GameOfLifeWindow(val uiDemo: UiDemo) {
                 }
                 Text("${world.worldSizeX.value}") { modifier.alignY(AlignmentY.Center).margin(end = sizes.largeGap * 2f) }
                 Text("Height:") { modifier.alignY(AlignmentY.Center) }
-                Slider(world.worldSizeY.use().toFloat(), 16f, 70f) {
+                Slider(world.worldSizeY.use().toFloat(), 10f, 100f) {
                     modifier
                         .alignY(AlignmentY.Center)
                         .margin(horizontal = sizes.gap)

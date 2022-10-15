@@ -186,7 +186,7 @@ class BasicUiWindow(val uiDemo: UiDemo) {
                 val bgColor = if (isHovered) {
                     colors.secondary.withAlpha(0.5f)
                 } else if (i % 2 == 0) {
-                    val bg = if (colors.isLight) Color.BLACK else Color.WHITE
+                    val bg = if (colors.isLight) Color.BLACK else colors.secondary
                     bg.withAlpha(0.05f)
                 } else {
                     null

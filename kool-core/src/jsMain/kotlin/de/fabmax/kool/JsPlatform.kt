@@ -9,7 +9,11 @@ import de.fabmax.kool.platform.WebGL2RenderingContext
  * @author fabmax
  */
 
-actual fun createDefaultContext(): KoolContext = createContext(JsContext.InitProps())
+actual fun createDefaultContext(localAssetPath: String): KoolContext {
+    val props = JsContext.InitProps()
+    props.localAssetPath = localAssetPath
+    return createContext(props)
+}
 
 fun createContext(props: JsContext.InitProps): KoolContext = JsImpl.createContext(props)
 

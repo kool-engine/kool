@@ -19,9 +19,10 @@ import org.w3c.xhr.XMLHttpRequest
 import org.w3c.xhr.XMLHttpRequestResponseType
 import kotlin.js.Promise
 
-class JsAssetManager internal constructor(props: JsContext.InitProps, val ctx: JsContext) : AssetManager(props.assetsBaseDir) {
+class JsAssetManager internal constructor(props: JsContext.InitProps, val ctx: JsContext) : AssetManager() {
 
     private val fontGenerator = FontMapGenerator(MAX_GENERATED_TEX_WIDTH, MAX_GENERATED_TEX_HEIGHT, props, this, ctx)
+    private val localAssetsPath = props.localAssetPath
 
     private var fileLoadDeferred: CompletableDeferred<Uint8Buffer?>? = null
     private val onFileSelectionChanged: (Event) -> Unit = { loadSelectedFile() }
@@ -32,14 +33,15 @@ class JsAssetManager internal constructor(props: JsContext.InitProps, val ctx: J
         document.body?.appendChild(this)
     }
 
-    override val storage = KeyValueStorageJs(this)
+    override val storage = KeyValueStorageJs()
 
     override suspend fun loadRaw(rawRef: RawAssetRef) = LoadedRawAsset(rawRef, loadRaw(rawRef.url))
 
-    override suspend fun loadTexture(textureRef: TextureAssetRef) =
-            LoadedTextureAsset(textureRef, loadImage(textureRef))
+    override suspend fun loadTexture(textureRef: TextureAssetRef) = LoadedTextureAsset(textureRef, loadImage(textureRef))
 
     private suspend fun loadRaw(url: String): Uint8Buffer? {
+        val prefixedUrl = if (isHttpAsset(url)) url else "$localAssetsPath/$url"
+
         val data = CompletableDeferred<Uint8Buffer?>(job)
         val req = XMLHttpRequest()
         req.responseType = XMLHttpRequestResponseType.ARRAYBUFFER
@@ -49,9 +51,9 @@ class JsAssetManager internal constructor(props: JsContext.InitProps, val ctx: J
         }
         req.onerror = {
             data.complete(null)
-            logE { "Failed loading resource $url: $it" }
+            logE { "Failed loading resource $prefixedUrl: $it" }
         }
-        req.open("GET", url)
+        req.open("GET", prefixedUrl)
         req.send()
 
         return data.await()
@@ -59,20 +61,21 @@ class JsAssetManager internal constructor(props: JsContext.InitProps, val ctx: J
 
     private suspend fun loadImage(ref: TextureAssetRef): TextureData {
         val deferred = CompletableDeferred<Image>()
+        val prefixedUrl = if (isHttpAsset(ref.url)) ref.url else "$localAssetsPath/${ref.url}"
 
         val img = Image()
         img.onload = {
             deferred.complete(img)
         }
         img.onerror = { _, _, _, _, _ ->
-            if (ref.url.startsWith("data:")) {
+            if (prefixedUrl.startsWith("data:")) {
                 deferred.completeExceptionally(KoolException("Failed loading tex from data URL"))
             } else {
-                deferred.completeExceptionally(KoolException("Failed loading tex from ${ref.url}"))
+                deferred.completeExceptionally(KoolException("Failed loading tex from $prefixedUrl"))
             }
         }
         img.crossOrigin = ""
-        img.src = ref.url
+        img.src = prefixedUrl
 
         return if (ref.isAtlas) {
             ImageAtlasTextureData(deferred.await(), ref.tilesX, ref.tilesY, ref.fmt)
@@ -92,18 +95,8 @@ class JsAssetManager internal constructor(props: JsContext.InitProps, val ctx: J
         }
     }
 
-    override fun createFontMapData(font: Font, fontScale: Float, outMetrics: MutableMap<Char, CharMetrics>) =
+    override fun createFontMapData(font: AtlasFont, fontScale: Float, outMetrics: MutableMap<Char, CharMetrics>) =
         fontGenerator.createFontMapData(font, fontScale, outMetrics)
-
-    override fun inflate(zipData: Uint8Buffer): Uint8Buffer {
-        val uint8Data = (zipData as Uint8BufferImpl).buffer
-        return Uint8BufferImpl(Pako.inflate(uint8Data))
-    }
-
-    override fun deflate(data: Uint8Buffer): Uint8Buffer {
-        val uint8Data = (data as Uint8BufferImpl).buffer
-        return Uint8BufferImpl(Pako.gzip(uint8Data))
-    }
 
     override suspend fun loadFileByUser(): Uint8Buffer? {
         val deferred = CompletableDeferred<Uint8Buffer?>()
@@ -152,33 +145,9 @@ class JsAssetManager internal constructor(props: JsContext.InitProps, val ctx: J
     }
 
     private fun Uint8Buffer.toDataUrl(mimeType: String): String {
-        val base64 = binToBase64((this as Uint8BufferImpl).buffer)
+        val base64 = BufferUtil.binToBase64((this as Uint8BufferImpl).buffer)
         return "data:$mimeType;base64,$base64"
     }
-
-    /**
-     * Cumbersome / ugly method to convert Uint8Array into a base64 string in javascript
-     */
-    @Suppress("UNUSED_PARAMETER")
-    fun binToBase64(uint8Data: Uint8Array): String = js("""
-        var chunkSize = 0x8000;
-        var c = [];
-        for (var i = 0; i < uint8Data.length; i += chunkSize) {
-            c.push(String.fromCharCode.apply(null, uint8Data.subarray(i, i+chunkSize)));
-        }
-        return window.btoa(c.join(""));
-    """) as String
-
-    @Suppress("UNUSED_PARAMETER")
-    fun base64ToBin(base64: String): Uint8Array = js ("""
-        var binary_string = window.atob(base64);
-        var len = binary_string.length;
-        var bytes = new Uint8Array(len);
-        for (var i = 0; i < len; i++) {
-            bytes[i] = binary_string.charCodeAt(i);
-        }
-        return bytes;
-    """) as Uint8Array
 
     override suspend fun loadAndPrepareTexture(assetPath: String, props: TextureProps): Texture2d {
         val tex = Texture2d(props, assetPathToName(assetPath)) { it.loadTextureData(assetPath) }
@@ -216,7 +185,7 @@ class JsAssetManager internal constructor(props: JsContext.InitProps, val ctx: J
         return if (isHttpAsset(assetPath)) {
             AudioClip(assetPath)
         } else {
-            AudioClip("$assetsBaseDir/$assetPath")
+            AudioClip("$localAssetsPath/$assetPath")
         }
     }
 

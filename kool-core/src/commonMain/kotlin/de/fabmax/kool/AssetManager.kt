@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.select
 import kotlin.coroutines.CoroutineContext
 
-abstract class AssetManager(var assetsBaseDir: String) : CoroutineScope {
+abstract class AssetManager : CoroutineScope {
 
     protected val job = Job()
 
@@ -24,7 +24,7 @@ abstract class AssetManager(var assetsBaseDir: String) : CoroutineScope {
     private val assetRefChannel = Channel<AssetRef>(Channel.UNLIMITED)
     private val loadedAssetChannel = Channel<LoadedAsset>()
 
-    private val loadedFontMaps = mutableMapOf<Font, FontMap>()
+    private val loadedAtlasFontMaps = mutableMapOf<AtlasFont, FontMap>()
 
     private val workers = List(NUM_LOAD_WORKERS) { loadWorker(assetRefChannel, loadedAssetChannel) }
 
@@ -76,43 +76,35 @@ abstract class AssetManager(var assetsBaseDir: String) : CoroutineScope {
 
     abstract suspend fun waitForFonts()
 
-    fun getOrCreateFontMap(font: Font, fontScale: Float): FontMap = loadedFontMaps.getOrPut(font) {
+    fun getOrCreateFontMap(font: AtlasFont, fontScale: Float): FontMap = loadedAtlasFontMaps.getOrPut(font) {
         updateFontMap(font, fontScale)
     }
 
-    fun updateFontMap(font: Font, fontScale: Float): FontMap {
+    fun updateFontMap(font: AtlasFont, fontScale: Float): FontMap {
         var map = font.map
-        if (font.isCustomMap) {
-            return map ?: throw IllegalStateException("Custom font map not set for font ${font.toStringShort()}")
-        }
-
         val metrics = mutableMapOf<Char, CharMetrics>()
         val texData = createFontMapData(font, fontScale, metrics)
 
         if (map == null) {
             val tex = BufferedTexture2d(texData, font.fontMapProps, font.toString())
             map = FontMap(font, tex, metrics)
-            map.applyScale(fontScale)
+            font.scale = fontScale
             font.map = map
 
         } else {
             val tex = map.texture as? BufferedTexture2d
             if (tex != null) {
                 tex.updateTextureData(texData)
-                map.applyScale(fontScale)
+                font.scale = fontScale
                 map.putAll(metrics)
             } else {
-                logE { "Unable to update texture data of font ${font.toStringShort()}" }
+                logE { "Unable to update texture data of font ${font}" }
             }
         }
         return map
     }
 
-    abstract fun createFontMapData(font: Font, fontScale: Float, outMetrics: MutableMap<Char, CharMetrics>): TextureData2d
-
-    abstract fun inflate(zipData: Uint8Buffer): Uint8Buffer
-
-    abstract fun deflate(data: Uint8Buffer): Uint8Buffer
+    abstract fun createFontMapData(font: AtlasFont, fontScale: Float, outMetrics: MutableMap<Char, CharMetrics>): TextureData2d
 
     abstract suspend fun loadFileByUser(): Uint8Buffer?
 
@@ -131,11 +123,7 @@ abstract class AssetManager(var assetsBaseDir: String) : CoroutineScope {
     }
 
     fun makeAssetRef(assetPath: String): RawAssetRef {
-        return if (isHttpAsset(assetPath)) {
-            RawAssetRef(assetPath, false)
-        } else {
-            RawAssetRef("$assetsBaseDir/$assetPath", true)
-        }
+        return RawAssetRef(assetPath, !isHttpAsset(assetPath))
     }
 
     suspend fun loadAsset(assetPath: String): Uint8Buffer? {
@@ -150,11 +138,7 @@ abstract class AssetManager(var assetsBaseDir: String) : CoroutineScope {
     }
 
     suspend fun loadTextureData(assetPath: String, format: TexFormat? = null): TextureData {
-        val ref = if (isHttpAsset(assetPath)) {
-            TextureAssetRef(assetPath, false, format, false)
-        } else {
-            TextureAssetRef("$assetsBaseDir/$assetPath", true, format, false)
-        }
+        val ref = TextureAssetRef(assetPath, !isHttpAsset(assetPath), format, false)
         val awaitedAsset = AwaitedAsset(ref)
         awaitedAssetsChannel.send(awaitedAsset)
         val loaded = awaitedAsset.awaiting.await() as LoadedTextureAsset
@@ -172,11 +156,7 @@ abstract class AssetManager(var assetsBaseDir: String) : CoroutineScope {
     abstract suspend fun loadTextureData2d(imagePath: String, format: TexFormat? = null): TextureData2d
 
     suspend fun loadTextureAtlasData(assetPath: String, tilesX: Int, tilesY: Int, format: TexFormat? = null): TextureData {
-        val ref = if (isHttpAsset(assetPath)) {
-            TextureAssetRef(assetPath, false, format, true, tilesX, tilesY)
-        } else {
-            TextureAssetRef("$assetsBaseDir/$assetPath", true, format, true, tilesX, tilesY)
-        }
+        val ref = TextureAssetRef(assetPath, !isHttpAsset(assetPath), format, true, tilesX, tilesY)
         val awaitedAsset = AwaitedAsset(ref)
         awaitedAssetsChannel.send(awaitedAsset)
         val loaded = awaitedAsset.awaiting.await() as LoadedTextureAsset

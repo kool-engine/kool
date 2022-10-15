@@ -16,8 +16,9 @@ import java.util.*
  * @author fabmax
  */
 
-actual fun createDefaultContext(): KoolContext {
+actual fun createDefaultContext(localAssetPath: String): KoolContext {
     return createContext {
+        this.localAssetPath = localAssetPath
         renderBackend = Lwjgl3Context.Backend.OPEN_GL
         title = "Kool App"
     }

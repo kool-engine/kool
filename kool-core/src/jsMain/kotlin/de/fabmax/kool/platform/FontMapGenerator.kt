@@ -49,8 +49,8 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, props: JsContext.I
         }
     }
 
-    fun createFontMapData(font: Font, fontScale: Float, outMetrics: MutableMap<Char, CharMetrics>): TextureData2d {
-        val fontSize = (font.sizePts * fontScale * font.sampleScale).roundToInt()
+    fun createFontMapData(font: AtlasFont, fontScale: Float, outMetrics: MutableMap<Char, CharMetrics>): TextureData2d {
+        val fontSize = (font.sizePts * fontScale).roundToInt()
 
         // clear canvas
         canvasCtx.fillStyle = "#000000"
@@ -80,11 +80,11 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, props: JsContext.I
             val a = data.data[i*4].toInt() and 0xff
             buffer.put(alphaLut[a])
         }
-        logD { "Generated font map for (${font.toStringShort()}, scale=${fontScale}x${font.sampleScale})" }
+        logD { "Generated font map for (${font}, scale=${fontScale})" }
         return TextureData2d(buffer, maxWidth, texHeight, TexFormat.R)
     }
 
-    private fun makeMap(font: Font, size: Int, outMetrics: MutableMap<Char, CharMetrics>): Int {
+    private fun makeMap(font: AtlasFont, size: Int, outMetrics: MutableMap<Char, CharMetrics>): Int {
         var style = ""
         if (font.style and Font.BOLD != 0) {
             style = "bold "
@@ -140,11 +140,11 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, props: JsContext.I
 
             val xOff = txtMetrics.actualBoundingBoxLeft + padLeft
             val metrics = CharMetrics()
-            metrics.width = paddedWidth / font.sampleScale
-            metrics.height = (height + padBottom + padTop) / font.sampleScale
-            metrics.xOffset = xOff.toFloat() / font.sampleScale
-            metrics.yBaseline = ascent / font.sampleScale
-            metrics.advance = txtMetrics.width.toFloat() / font.sampleScale
+            metrics.width = paddedWidth.toFloat()
+            metrics.height = (height + padBottom + padTop).toFloat()
+            metrics.xOffset = xOff.toFloat()
+            metrics.yBaseline = ascent.toFloat()
+            metrics.advance = txtMetrics.width.toFloat()
 
             metrics.uvMin.set(
                 x.toFloat(),

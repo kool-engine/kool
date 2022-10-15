@@ -26,8 +26,6 @@ internal class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, val ctx: 
     private val canvas = BufferedImage(maxWidth, maxHeight, BufferedImage.TYPE_INT_ARGB)
     private val clearColor = Color(0, 0, 0, 0)
 
-    private val fontMaps = mutableMapOf<Font, FontMap>()
-
     private val availableFamilies: Set<String>
     private val customFonts = mutableMapOf<String, AwtFont>()
 
@@ -56,7 +54,7 @@ internal class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, val ctx: 
         }
     }
 
-    fun createFontMapData(font: Font, fontScale: Float, outMetrics: MutableMap<Char, CharMetrics>): TextureData2d {
+    fun createFontMapData(font: AtlasFont, fontScale: Float, outMetrics: MutableMap<Char, CharMetrics>): TextureData2d {
         val g = canvas.graphics as Graphics2D
         g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON)
 
@@ -92,7 +90,7 @@ internal class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, val ctx: 
             }
         }
 
-        val size = round(font.sizePts * fontScale * font.sampleScale)
+        val size = round(font.sizePts * fontScale)
         val awtFont = customFont?.deriveFont(font.style, size) ?: AwtFont(family, style, size.toInt())
         // theoretically we could specify an accurate font weight, however this does not have any effect for all fonts I tried
         //awtFont = awtFont.deriveFont(mapOf<TextAttribute, Any>(TextAttribute.WEIGHT to TextAttribute.WEIGHT_EXTRA_LIGHT))
@@ -104,7 +102,7 @@ internal class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, val ctx: 
         val texHeight = makeMap(font, size, g, outMetrics)
         val buffer = getCanvasAlphaData(maxWidth, texHeight)
 
-        logD { "Generated font map for (${font.toStringShort()}, scale=${fontScale}x${font.sampleScale})" }
+        logD { "Generated font map for (${font}, scale=${fontScale})" }
         //ImageIO.write(canvas, "png", File("${g.font.family}-${g.font.size}.png"))
 
         return TextureData2d(buffer, maxWidth, texHeight, TexFormat.R)
@@ -121,7 +119,7 @@ internal class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, val ctx: 
         return buffer
     }
 
-    private fun makeMap(font: Font, size: Float, g: Graphics2D, outMetrics: MutableMap<Char, CharMetrics>): Int {
+    private fun makeMap(font: AtlasFont, size: Float, g: Graphics2D, outMetrics: MutableMap<Char, CharMetrics>): Int {
         val fm = g.fontMetrics
 
         // unfortunately java font metrics don't provide methods to determine the precise pixel bounds of individual
@@ -155,11 +153,11 @@ internal class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, val ctx: 
             }
 
             val metrics = CharMetrics()
-            metrics.width = paddedWidth / font.sampleScale
-            metrics.height = (height + padBottom + padTop) / font.sampleScale
-            metrics.xOffset = padLeft / font.sampleScale
-            metrics.yBaseline = ascent.toFloat() / font.sampleScale
-            metrics.advance = charW / font.sampleScale
+            metrics.width = paddedWidth.toFloat()
+            metrics.height = (height + padBottom + padTop).toFloat()
+            metrics.xOffset = padLeft.toFloat()
+            metrics.yBaseline = ascent.toFloat()
+            metrics.advance = charW.toFloat()
 
             metrics.uvMin.set(
                 x.toFloat(),

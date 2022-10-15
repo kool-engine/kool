@@ -39,7 +39,7 @@ fun <T: ComboBoxModifier> T.onItemSelected(block: ((Int) -> Unit)?): T { this.on
 inline fun UiScope.ComboBox(block: ComboBoxScope.() -> Unit): ComboBoxScope {
     val comboBox = uiNode.createChild(ComboBoxNode::class, ComboBoxNode.factory)
     comboBox.modifier
-        .padding(horizontal = sizes.gap, vertical = sizes.smallGap * 0.5f)
+        .padding(horizontal = sizes.gap, vertical = sizes.smallGap)
         .hoverListener(comboBox)
         .onClick(comboBox)
         .onWheelY {
@@ -107,8 +107,8 @@ open class ComboBoxNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, su
         }
 
     override fun measureContentSize(ctx: KoolContext) {
-        val fontMap = surface.loadFont(modifier.font, ctx)
-        val textMetrics = textCache.getTextMetrics(selectedText, fontMap)
+        surface.applyFontScale(modifier.font, ctx)
+        val textMetrics = textCache.getTextMetrics(selectedText, modifier.font)
         val modWidth = modifier.width
         val modHeight = modifier.height
         val measuredWidth = if (modWidth is Dp) {

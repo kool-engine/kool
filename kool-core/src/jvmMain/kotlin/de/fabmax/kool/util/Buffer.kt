@@ -1,7 +1,13 @@
 package de.fabmax.kool.util
 
+import de.fabmax.kool.use
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 import java.nio.*
 import java.nio.Buffer
+import java.util.*
+import java.util.zip.GZIPInputStream
+import java.util.zip.GZIPOutputStream
 
 /**
  * @author fabmax
@@ -329,3 +335,22 @@ actual fun createUint32Buffer(capacity: Int): Uint32Buffer = Uint32BufferImpl(ca
 actual fun createFloat32Buffer(capacity: Int): Float32Buffer = Float32BufferImpl(capacity)
 
 actual fun createMixedBuffer(capacity: Int): MixedBuffer = MixedBufferImpl(capacity)
+
+actual object BufferUtil {
+    actual fun inflate(zipData: Uint8Buffer): Uint8Buffer =
+        Uint8BufferImpl(GZIPInputStream(ByteArrayInputStream(zipData.toArray())).readBytes())
+
+    actual fun deflate(data: Uint8Buffer): Uint8Buffer {
+        val bos = ByteArrayOutputStream()
+        GZIPOutputStream(bos).use { it.write(data.toArray()) }
+        return Uint8BufferImpl(bos.toByteArray())
+    }
+
+    actual fun encodeBase64(data: Uint8Buffer): String {
+        return Base64.getEncoder().encodeToString((data as Uint8BufferImpl).toArray())
+    }
+
+    actual fun decodeBase64(base64: String): Uint8Buffer {
+        return Uint8BufferImpl(Base64.getDecoder().decode(base64))
+    }
+}

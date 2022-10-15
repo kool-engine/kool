@@ -97,10 +97,10 @@ open class TextFieldNode(parent: UiNode?, surface: UiSurface)
 
     override fun measureContentSize(ctx: KoolContext) {
         val isHint = modifier.text.isEmpty()
-        val fontProps = if (isHint) modifier.hintFont ?: modifier.font else modifier.font
+        val font = if (isHint) modifier.hintFont ?: modifier.font else modifier.font
         val dispText = if (isHint) modifier.hint else modifier.text
 
-        val font = surface.loadFont(fontProps, ctx)
+        surface.applyFontScale(modifier.font, ctx)
         val textMetrics = textCache.getTextMetrics(dispText, font)
         val modWidth = modifier.width
         val modHeight = modifier.height
@@ -248,6 +248,7 @@ open class TextFieldNode(parent: UiNode?, surface: UiSurface)
             }
         }
         prevClickTime = t
+        surface.triggerUpdate()
     }
 
     override fun onFocusGain() {

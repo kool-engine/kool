@@ -6,10 +6,10 @@ import kotlin.collections.set
  * @author fabmax
  */
 fun main() {
-    // optional local directory to load assets from (by default they are loaded from web)
-    //Demo.setProperty("assets.base", "./assets")
+    // uncomment to load assets locally instead of from remote
+    //Demo.setProperty("assets.base", ".")
 
-    // sub directories for individual asset classes within asset base dir
+    // sub-directories for individual asset classes within asset base dir
     //Demo.setProperty("assets.hdri", "hdri")
     //Demo.setProperty("assets.materials", "materials")
     //Demo.setProperty("assets.models", "models")

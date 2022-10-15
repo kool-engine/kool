@@ -69,8 +69,8 @@ open class TextNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surfac
         get() = if (modifier.font.style == Font.ITALIC) (modifier.font.sizePts * 0.1f).dp.px else 0f
 
     override fun measureContentSize(ctx: KoolContext) {
-        val font = surface.loadFont(modifier.font, ctx)
-        val textMetrics = textCache.getTextMetrics(modifier.text, font)
+        surface.applyFontScale(modifier.font, ctx)
+        val textMetrics = textCache.getTextMetrics(modifier.text, modifier.font)
         val textWidth = if (modifier.textRotation.isHorizontal) textMetrics.width else textMetrics.height
         val textHeight = if (modifier.textRotation.isHorizontal) textMetrics.height else textMetrics.width
         val modWidth = modifier.width

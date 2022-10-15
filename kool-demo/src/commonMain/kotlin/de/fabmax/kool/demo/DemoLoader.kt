@@ -11,11 +11,6 @@ import de.fabmax.kool.util.DebugOverlay
  */
 
 fun demo(startScene: String? = null, ctx: KoolContext = createDefaultContext()) {
-    val assetsBaseDir = DemoLoader.getProperty("assetsBaseDir", "")
-    if (assetsBaseDir.isNotEmpty()) {
-        ctx.assetMgr.assetsBaseDir = assetsBaseDir
-    }
-
     // launch demo
     var demo = startScene
     if (demo != null) {

@@ -2,7 +2,6 @@ package de.fabmax.kool.physics
 
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.vehicle.FrictionPairs
-import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logI
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -50,8 +49,6 @@ actual object Physics : CoroutineScope {
     val defaultBodyFlags: PxShapeFlags
 
     init {
-        logD { "Loading physx-js..." }
-
         val version = PxTopLevelFunctions.getPHYSICS_VERSION()
         val allocator = PxDefaultAllocator()
         foundation = PxTopLevelFunctions.CreateFoundation(version, allocator, KoolErrorCallback())

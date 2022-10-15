@@ -241,11 +241,11 @@ class UiPrimitiveMesh : Mesh(IndexedVertexList(ATTRIB_OUTER_WEIGHTS, ATTRIB_INNE
                 }
                 fragmentStage {
                     main {
-                        `if` (all(screenPos.output gt clipBounds.output.xy) and
-                                all(screenPos.output lt clipBounds.output.zw)) {
-                            colorOutput(color.output)
-                        }.`else` {
+                        `if` (any(screenPos.output lt clipBounds.output.xy) or
+                                any(screenPos.output gt clipBounds.output.zw)) {
                             discard()
+                        }.`else` {
+                            colorOutput(color.output)
                         }
                     }
                 }

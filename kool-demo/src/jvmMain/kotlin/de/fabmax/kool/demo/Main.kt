@@ -7,18 +7,22 @@ import de.fabmax.kool.platform.Lwjgl3Context
  * @author fabmax
  */
 fun main() {
-    // optional local directory to load assets from (by default they are loaded from web)
-    //Demo.setProperty("assetsBaseDir", "./assets")
+    // uncomment to load assets locally instead of from web
+    //Demo.setProperty("assets.base", ".")
 
-    // sub directories for individual asset classes within asset base dir
-    //Demo.setProperty("pbrDemo.envMaps", "hdri")
-    //Demo.setProperty("pbrDemo.materials", "materials")
-    //Demo.setProperty("pbrDemo.models", "models")
+    // sub-directories for individual asset classes within asset base dir
+    //Demo.setProperty("assets.hdri", "hdri")
+    //Demo.setProperty("assets.materials", "materials")
+    //Demo.setProperty("assets.models", "models")
 
     val ctx = createContext {
         renderBackend = Lwjgl3Context.Backend.OPEN_GL
         title = "Kool Demo @ ${renderBackend.displayName}"
         setWindowed(1600, 900)
+
+        // Local asset path: Only used in case assets are not loaded from web (set "assets.base" demo property
+        // from above to ".")
+        localAssetPath = "./assets"
     }
 
     // launch demo

@@ -2,6 +2,7 @@ package de.fabmax.kool.scene.geometry
 
 import de.fabmax.kool.KoolException
 import de.fabmax.kool.math.*
+import de.fabmax.kool.modules.ui2.MsdfUiShader
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.util.*
 import kotlin.math.*
@@ -794,7 +795,86 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
     }
 
     fun text(props: TextProps) {
-        val charMap = props.font.map
+        when (val font = props.font) {
+            is AtlasFont -> renderSystemFont(font, props)
+            is MsdfFont -> renderMsdfFont(font, props)
+        }
+    }
+
+    private fun renderMsdfFont(font: MsdfFont, props: TextProps) {
+        withTransform {
+            if (props.roundOriginToUnits) {
+                translate(round(props.origin.x), round(props.origin.y), props.origin.z)
+            } else {
+                translate(props.origin)
+            }
+
+            val meta = font.data.meta
+            val s = props.scale * font.scale * font.sizePts
+            val us = 1f / meta.atlas.width
+            val vs = 1f / meta.atlas.height
+            val pxRange = (s / meta.atlas.size) * meta.atlas.distanceRange
+
+            var advanced = 0f
+            var prevC = 0
+            for (c in props.text) {
+                if (c == '\n') {
+                    if (props.isYAxisUp) {
+                        translate(0f, -round(font.lineHeight), 0f)
+                    } else {
+                        translate(0f, round(font.lineHeight), 0f)
+                    }
+                    advanced = 0f
+                }
+
+                val g = font.data.glyphMap[c] ?: continue
+
+                val kerningKey = (prevC shl 16) or c.code
+                font.data.kerning[kerningKey]?.let { advanced += it }
+                prevC = c.code
+
+                val yTop = if (props.isYAxisUp) g.planeBounds.top * s else -g.planeBounds.top * s
+                val yBot = if (props.isYAxisUp) g.planeBounds.bottom * s else -g.planeBounds.bottom * s
+                val h = yTop - yBot
+                val lt = (advanced + g.planeBounds.left) * s
+                // individual char positions are currently not rounded for MSDF fonts, as it's not really needed
+                // and can produce artefacts
+                // if (props.roundOriginToUnits) {
+                //     lt = round(lt)
+                //     yBot = round(yBot) + 0.5f
+                // }
+                val w = (g.planeBounds.right - g.planeBounds.left) * s
+
+                val iBtLt = vertex {
+                    set(lt, yBot, 0f)
+                    texCoord.set(g.atlasBounds.left * us, 1f - g.atlasBounds.bottom * vs)
+                    getVec4fAttribute(MsdfUiShader.ATTRIB_MSDF_PROPS)?.set(pxRange, font.weight, font.cutoff, 0f)
+                }
+                val iBtRt = vertex {
+                    set(lt + w, yBot, 0f)
+                    texCoord.set(g.atlasBounds.right * us, 1f - g.atlasBounds.bottom * vs)
+                    getVec4fAttribute(MsdfUiShader.ATTRIB_MSDF_PROPS)?.set(pxRange, font.weight, font.cutoff, 0f)
+                }
+                val iTpLt = vertex {
+                    set(lt, yBot + h, 0f)
+                    texCoord.set(g.atlasBounds.left * us, 1f - g.atlasBounds.top * vs)
+                    getVec4fAttribute(MsdfUiShader.ATTRIB_MSDF_PROPS)?.set(pxRange, font.weight, font.cutoff, 0f)
+                }
+                val iTpRt = vertex {
+                    set(lt + w, yBot + h, 0f)
+                    texCoord.set(g.atlasBounds.right * us, 1f - g.atlasBounds.top * vs)
+                    getVec4fAttribute(MsdfUiShader.ATTRIB_MSDF_PROPS)?.set(pxRange, font.weight, font.cutoff, 0f)
+                }
+                addTriIndices(iBtLt, iBtRt, iTpRt)
+                addTriIndices(iBtLt, iTpRt, iTpLt)
+
+                advanced += g.advance
+            }
+        }
+    }
+
+    private fun renderSystemFont(font: AtlasFont, props: TextProps) {
+        val charMap = font.map
         if (charMap == null) {
             logE { "Font char map has not yet been initialized" }
             return
@@ -813,14 +893,14 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
 
             val ct = props.charTransform
             var advanced = 0f
-            val txt = if (props.autoWrapWidth > 0f) wrapText(props) else props.text
             val rectProps = RectProps()
-            for (c in txt) {
+            for (c in props.text) {
                 if (c == '\n') {
+                    val lineHeight = font.lineHeight
                     if (props.isYAxisUp) {
-                        translate(0f, -round(props.font.lineSpace), 0f)
+                        translate(0f, -round(lineHeight), 0f)
                     } else {
-                        translate(0f, round(props.font.lineSpace), 0f)
+                        translate(0f, round(lineHeight), 0f)
                     }
                     advanced = 0f
                 }
@@ -859,25 +939,6 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
                 }
             }
         }
-    }
-
-    private fun wrapText(txtProps: TextProps): String {
-        val words = txtProps.text.split(' ')
-        val outTxt = StringBuilder()
-
-        var pos = 0f
-        words.forEach { w ->
-            val ww = txtProps.font.textWidth(w) + txtProps.font.charWidth(' ')
-            val advPos = pos + ww
-            pos = if (pos > 0f && advPos > txtProps.autoWrapWidth) {
-                outTxt.append('\n')
-                ww
-            } else {
-                advPos
-            }
-            outTxt.append(w).append(' ')
-        }
-        return outTxt.toString()
     }
 }
 
@@ -1109,8 +1170,8 @@ class TextProps(var font: Font) {
     var text = ""
     val origin = MutableVec3f()
     var scale = 1f
+
     var roundOriginToUnits = true
-    var autoWrapWidth = -1f
     var isYAxisUp = true
 
     var charTransform: (MeshBuilder.(Float) -> Unit)? = null

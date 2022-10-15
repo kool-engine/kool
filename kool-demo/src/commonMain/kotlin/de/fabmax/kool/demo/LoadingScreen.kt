@@ -33,7 +33,7 @@ class LoadingScreen(val ctx: KoolContext) : Scene("Loading Screen") {
 
         ui = Panel(sizes = Sizes.large) {
             modifier
-                .height(Grow.Std)
+                .size(Grow.Std, Grow.Std)
                 .alignX(AlignmentX.Center)
                 .layout(ColumnLayout)
                 .background(null)
@@ -42,20 +42,24 @@ class LoadingScreen(val ctx: KoolContext) : Scene("Loading Screen") {
             }
             Box {
                 modifier
-                    .height(Grow(0.17f))
+                    .size(Grow.Std, Grow(0.17f))
                     .alignX(AlignmentX.Center)
                     .layout(ColumnLayout)
 
                 Text(loadingText1.use()) {
                     modifier
-                        .alignX(AlignmentX.Center)
+                        .width(Grow.Std)
+                        .textAlignX(AlignmentX.Center)
                         .textColor(Color.WHITE)
+                        .margin(vertical = sizes.gap)
                         .font(sizes.largeText)
                 }
                 Text(loadingText2.use()) {
                     modifier
-                        .alignX(AlignmentX.Center)
+                        .width(Grow.Std)
+                        .textAlignX(AlignmentX.Center)
                         .textColor(Color.WHITE)
+                        .margin(vertical = sizes.gap)
                         .font(sizes.largeText)
                 }
             }

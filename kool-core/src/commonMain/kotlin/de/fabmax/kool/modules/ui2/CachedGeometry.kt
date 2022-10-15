@@ -7,20 +7,19 @@ import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.MutableColor
 
-open class CachedGeometry(val node: UiNode) {
-    val cacheData = IndexedVertexList(Ui2Shader.UI_MESH_ATTRIBS)
+open class CachedGeometry(
+    val node: UiNode,
+    val cacheData: IndexedVertexList = IndexedVertexList(Ui2Shader.UI_MESH_ATTRIBS)
+) {
     val cacheBuilder = MeshBuilder(cacheData).apply { isInvertFaceOrientation = true }
     val isEmpty: Boolean get() = cacheData.isEmpty()
 
     val cachedPosition = MutableVec2f()
     val cachedSize = MutableVec2f()
     val cachedClip = MutableVec4f()
-    val cachedColor = MutableColor()
 
     private val posOffset = cacheData.attributeByteOffsets[Attribute.POSITIONS]!! / 4
-    private val colorOffset = cacheData.attributeByteOffsets[Attribute.COLORS]!! / 4
     private val clipOffset = cacheData.attributeByteOffsets[Ui2Shader.ATTRIB_CLIP]!! / 4
 
     fun appendTo(target: IndexedVertexList) {
@@ -50,27 +49,25 @@ open class CachedGeometry(val node: UiNode) {
     ) {
         node.apply {
             cacheBuilder.clear()
-            cacheBuilder.configured(block = block)
+            cacheBuilder.configured(color, block = block)
             cacheData.dataF.flip()
         }
         cachedPosition.set(posX, posY)
         cachedClip.set(node.clipBoundsPx)
         cachedSize.set(node.widthPx, node.heightPx)
-        color?.let { cachedColor.set(it) }
     }
 
-    open fun updateCache(posX: Float = node.leftPx, posY: Float = node.topPx, color: Color? = null, clip: Vec4f = node.clipBoundsPx) {
-        if (hasMoved(posX, posY) || (color != null && color != cachedColor)) {
-            updateVertices(posX, posY, color, clip)
+    open fun updateCache(posX: Float = node.leftPx, posY: Float = node.topPx, clip: Vec4f = node.clipBoundsPx) {
+        if (hasMoved(posX, posY) || clip != cachedClip) {
+            updateVertices(posX, posY, clip)
         }
     }
 
-    fun updateVertices(posX: Float, posY: Float, color: Color?, clip: Vec4f) {
+    fun updateVertices(posX: Float, posY: Float, clip: Vec4f) {
         val posOffX = posX - cachedPosition.x
         val posOffY = posY - cachedPosition.y
         cachedPosition.set(posX, posY)
         cachedClip.set(clip)
-        color?.let { cachedColor.set(it) }
 
         for (i in 0 until cacheData.numVertices) {
             val j = i * cacheData.vertexSizeF
@@ -80,12 +77,6 @@ open class CachedGeometry(val node: UiNode) {
             cacheData.dataF[j + clipOffset + 1] = cachedClip.y
             cacheData.dataF[j + clipOffset + 2] = cachedClip.z
             cacheData.dataF[j + clipOffset + 3] = cachedClip.w
-            if (color != null) {
-                cacheData.dataF[j + colorOffset + 0] = cachedColor.r
-                cacheData.dataF[j + colorOffset + 1] = cachedColor.g
-                cacheData.dataF[j + colorOffset + 2] = cachedColor.b
-                cacheData.dataF[j + colorOffset + 3] = cachedColor.a
-            }
         }
     }
 }

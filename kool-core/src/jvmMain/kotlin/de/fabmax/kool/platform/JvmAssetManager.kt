@@ -10,15 +10,14 @@ import org.lwjgl.util.nfd.NativeFileDialog
 import java.awt.image.BufferedImage
 import java.io.*
 import java.util.*
-import java.util.zip.GZIPInputStream
-import java.util.zip.GZIPOutputStream
 import javax.imageio.ImageIO
 
-class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : AssetManager(props.assetsBaseDir) {
+class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : AssetManager() {
 
     private val fontGenerator = FontMapGenerator(MAX_GENERATED_TEX_WIDTH, MAX_GENERATED_TEX_HEIGHT, ctx)
     private val imageIoLock = Any()
     private val isWithHttp = props.isWithHttpAssets
+    private val localAssetsPath = props.localAssetPath
 
     private var fileChooserPath = System.getProperty("user.home")
 
@@ -116,7 +115,7 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val c
         }
     }
 
-    internal fun openLocalStream(assetPath: String): InputStream {
+    fun openLocalStream(assetPath: String): InputStream {
         var resPath = assetPath.replace('\\', '/')
         if (resPath.startsWith("/")) {
             resPath = resPath.substring(1)
@@ -124,23 +123,15 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val c
         var inStream = ClassLoader.getSystemResourceAsStream(resPath)
         if (inStream == null) {
             // if asset wasn't found in resources try to load it from file system
-            inStream = FileInputStream(assetPath)
+            inStream = FileInputStream("$localAssetsPath/$assetPath")
         }
         return inStream
     }
 
     override suspend fun waitForFonts() { }
 
-    override fun createFontMapData(font: Font, fontScale: Float, outMetrics: MutableMap<Char, CharMetrics>) =
+    override fun createFontMapData(font: AtlasFont, fontScale: Float, outMetrics: MutableMap<Char, CharMetrics>) =
         fontGenerator.createFontMapData(font, fontScale, outMetrics)
-
-    override fun inflate(zipData: Uint8Buffer): Uint8Buffer = Uint8BufferImpl(GZIPInputStream(ByteArrayInputStream(zipData.toArray())).readBytes())
-
-    override fun deflate(data: Uint8Buffer): Uint8Buffer {
-        val bos = ByteArrayOutputStream()
-        GZIPOutputStream(bos).use { it.write(data.toArray()) }
-        return Uint8BufferImpl(bos.toByteArray())
-    }
 
     override suspend fun loadFileByUser(): Uint8Buffer? {
         val outPath = PointerBuffer.allocateDirect(1)

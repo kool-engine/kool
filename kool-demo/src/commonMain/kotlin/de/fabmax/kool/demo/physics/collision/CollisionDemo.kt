@@ -79,7 +79,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
             clipFar = 500f
         }
 
-        val shadowMap = CascadedShadowMap(this, 0, maxRange = 175f)
+        val shadowMap = CascadedShadowMap(this, 0, maxRange = 300f)
         shadows.add(shadowMap)
         aoPipeline = AoPipeline.createForward(this)
 

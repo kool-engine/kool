@@ -5,33 +5,36 @@ import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.TextProps
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.FontMap
+import de.fabmax.kool.util.Font
+import de.fabmax.kool.util.MutableColor
 import de.fabmax.kool.util.TextMetrics
 
-class CachedText(node: UiNode) : CachedGeometry(node) {
+class CachedText(node: UiNode) : CachedGeometry(node, IndexedVertexList(MsdfUiShader.MSDF_UI_MESH_ATTRIBS)) {
     val textMetrics = TextMetrics()
 
-    private var cachedFont: FontMap? = null
+    private var cachedFont: Font? = null
     private var cachedText: String? = null
     private var cachedScale = 0f
     private var cachedRotation = TextRotation.Rotation0
+    private val cachedColor = MutableColor()
 
     private var metricsValid = false
     private var geometryValid = false
 
-    fun getTextMetrics(text: String, fontMap: FontMap): TextMetrics {
-        checkCache(text, fontMap)
+    fun getTextMetrics(text: String, font: Font): TextMetrics {
+        checkCache(text, font)
         if (!metricsValid) {
             metricsValid = true
-            fontMap.textDimensions(text, textMetrics)
+            font.textDimensions(text, textMetrics)
         }
         return textMetrics
     }
 
-    private fun checkCache(text: String, fontMap: FontMap) {
-        if (text != cachedText || fontMap !== cachedFont || cachedScale != fontMap.scale) {
-            cachedFont = fontMap
-            cachedScale = fontMap.scale
+    private fun checkCache(text: String, font: Font) {
+        val fontScale = font.scale
+        if (text != cachedText || font !== cachedFont || cachedScale != font.scale) {
+            cachedFont = font
+            cachedScale = fontScale
             cachedText = text
             metricsValid = false
             geometryValid = false
@@ -39,22 +42,27 @@ class CachedText(node: UiNode) : CachedGeometry(node) {
     }
 
     fun addTextGeometry(target: IndexedVertexList, textProps: TextProps, textColor: Color, textRotation: TextRotation = TextRotation.Rotation0, textClip: Vec4f = node.clipBoundsPx) {
-        if (hasContentChanged(textRotation)) {
+        if (hasContentChanged(textRotation, textColor)) {
             rebuildTextGeometry(textProps, textColor, textRotation)
         }
-        updateTextCache(textProps, textColor, textClip)
+        updateTextCache(textProps, textClip)
         appendTo(target)
     }
 
-    fun hasContentChanged(textRotation: TextRotation): Boolean {
-        return hasSizeChanged() || !geometryValid || textRotation != cachedRotation
+    private fun hasContentChanged(rotation: TextRotation, color: Color): Boolean {
+        return hasSizeChanged()
+                || !geometryValid
+                || rotation != cachedRotation
+                || color != cachedColor
     }
 
-    fun rebuildTextGeometry(textProps: TextProps, textColor: Color, textRotation: TextRotation) = rebuildCache(
-        node.leftPx + textProps.origin.x, node.topPx + textProps.origin.y
+    private fun rebuildTextGeometry(textProps: TextProps, textColor: Color, textRotation: TextRotation) = rebuildCache(
+        node.leftPx + textProps.origin.x, node.topPx + textProps.origin.y, textColor
     ) {
         geometryValid = true
-        color = textColor
+        cachedRotation = textRotation
+        cachedColor.set(color)
+
         if (textRotation != TextRotation.Rotation0) {
             translate(textProps.origin)
             when (textRotation) {
@@ -68,7 +76,7 @@ class CachedText(node: UiNode) : CachedGeometry(node) {
         text(textProps)
     }
 
-    fun updateTextCache(textProps: TextProps, textColor: Color, textClip: Vec4f) {
-        updateCache(node.leftPx + textProps.origin.x, node.topPx + textProps.origin.y, textColor, textClip)
+    private fun updateTextCache(textProps: TextProps, textClip: Vec4f) {
+        updateCache(node.leftPx + textProps.origin.x, node.topPx + textProps.origin.y, textClip)
     }
 }

@@ -1,6 +1,7 @@
 package de.fabmax.kool.modules.ui2
 
 import de.fabmax.kool.util.Font
+import de.fabmax.kool.util.MsdfFont
 
 data class Sizes(
     val normalText: Font,
@@ -21,8 +22,8 @@ data class Sizes(
         val large = large()
 
         fun small(
-            normalText: Font = Font(Font.SYSTEM_FONT, 12f),
-            largeText: Font = Font(Font.SYSTEM_FONT, 16f),
+            normalText: Font = MsdfFont(sizePts = 12f),
+            largeText: Font = MsdfFont(sizePts = 16f),
             sliderHeight: Dp = Dp(14f),
             checkboxSize: Dp = Dp(14f),
             radioButtonSize: Dp = Dp(14f),
@@ -45,8 +46,8 @@ data class Sizes(
         )
 
         fun medium(
-            normalText: Font = Font(Font.SYSTEM_FONT, 15f),
-            largeText: Font = Font(Font.SYSTEM_FONT, 20f),
+            normalText: Font = MsdfFont(sizePts = 15f),
+            largeText: Font = MsdfFont(sizePts = 20f),
             sliderHeight: Dp = Dp(17f),
             checkboxSize: Dp = Dp(17f),
             radioButtonSize: Dp = Dp(17f),
@@ -69,8 +70,8 @@ data class Sizes(
         )
 
         fun large(
-            normalText: Font = Font(Font.SYSTEM_FONT, 18f),
-            largeText: Font = Font(Font.SYSTEM_FONT, 24f),
+            normalText: Font = MsdfFont(sizePts = 18f),
+            largeText: Font = MsdfFont(sizePts = 24f),
             sliderHeight: Dp = Dp(20f),
             checkboxSize: Dp = Dp(20f),
             radioButtonSize: Dp = Dp(20f),

@@ -3,6 +3,7 @@ package de.fabmax.kool.demo.physics.vehicle.ui
 import de.fabmax.kool.demo.Settings
 import de.fabmax.kool.demo.physics.vehicle.DemoVehicle
 import de.fabmax.kool.modules.ui2.*
+import de.fabmax.kool.util.AtlasFont
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Font
 import de.fabmax.kool.util.MdColor
@@ -20,12 +21,7 @@ class VehicleUi(val vehicle: DemoVehicle) {
     )
 
     val uiSurface = Panel(colors = menuColors) {
-        val themeSizes = Settings.uiSize.use().sizes
-        val nrmFont = themeSizes.normalText
-        surface.sizes = themeSizes.copy(
-            normalText = Font(nrmFont.family, nrmFont.sizePts * 1.1f, Font.ITALIC),
-            largeText = Font(nrmFont.family, nrmFont.sizePts * 3.5f, Font.ITALIC, chars = "-01234567890.:"),
-        )
+        surface.sizes = getSizes(Settings.uiSize.use().sizes)
 
         modifier
             .background(null)
@@ -41,6 +37,28 @@ class VehicleUi(val vehicle: DemoVehicle) {
                 .height(FitContent)
                 .align(AlignmentX.Center, AlignmentY.Top)
             timerUi()
+        }
+    }
+
+    class VehicleUiFonts(baseFontSize: Float) {
+        val normalFont = AtlasFont(sizePts = baseFontSize * 1.1f, style = Font.ITALIC)
+        val largeFont = AtlasFont(sizePts = baseFontSize * 3.5f, style = Font.ITALIC, chars = "-01234567890.:")
+        val speedFont = AtlasFont(sizePts = baseFontSize * 6f, style = Font.ITALIC, chars = "-01234567890.:")
+    }
+
+    companion object {
+        private val sizes = mutableMapOf<Sizes, Sizes>()
+        private val fonts = mutableMapOf<Float, VehicleUiFonts>()
+
+        fun getUiFonts(baseFontSize: Float): VehicleUiFonts {
+            return fonts.getOrPut(baseFontSize) { VehicleUiFonts(baseFontSize) }
+        }
+
+        fun getSizes(globalSizes: Sizes): Sizes {
+            return sizes.getOrPut(globalSizes) {
+                val fonts = getUiFonts(globalSizes.normalText.sizePts)
+                globalSizes.copy(normalText = fonts.normalFont, largeText = fonts.largeFont)
+            }
         }
     }
 }

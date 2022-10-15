@@ -1,6 +1,7 @@
 package de.fabmax.kool.util
 
 import de.fabmax.kool.KoolException
+import de.fabmax.kool.platform.Pako
 import org.khronos.webgl.*
 
 /**
@@ -285,4 +286,46 @@ actual fun createFloat32Buffer(capacity: Int): Float32Buffer {
 
 actual fun createMixedBuffer(capacity: Int): MixedBuffer {
     return MixedBufferImpl(capacity)
+}
+
+actual object BufferUtil {
+    actual fun inflate(zipData: Uint8Buffer): Uint8Buffer {
+        val uint8Data = (zipData as Uint8BufferImpl).buffer
+        return Uint8BufferImpl(Pako.inflate(uint8Data))
+    }
+
+    actual fun deflate(data: Uint8Buffer): Uint8Buffer {
+        val uint8Data = (data as Uint8BufferImpl).buffer
+        return Uint8BufferImpl(Pako.gzip(uint8Data))
+    }
+
+    actual fun encodeBase64(data: Uint8Buffer) = binToBase64((data as Uint8BufferImpl).buffer)
+
+    actual fun decodeBase64(base64: String): Uint8Buffer = Uint8BufferImpl(base64ToBin(base64))
+
+    /**
+     * Cumbersome / ugly method to convert Uint8Array into a base64 string in javascript
+     */
+    @Suppress("UNUSED_PARAMETER")
+    fun binToBase64(uint8Data: Uint8Array): String = js(
+        """
+        var chunkSize = 0x8000;
+        var c = [];
+        for (var i = 0; i < uint8Data.length; i += chunkSize) {
+            c.push(String.fromCharCode.apply(null, uint8Data.subarray(i, i+chunkSize)));
+        }
+        return window.btoa(c.join(""));
+    """) as String
+
+    @Suppress("UNUSED_PARAMETER")
+    fun base64ToBin(base64: String): Uint8Array = js(
+        """
+        var binary_string = window.atob(base64);
+        var len = binary_string.length;
+        var bytes = new Uint8Array(len);
+        for (var i = 0; i < len; i++) {
+            bytes[i] = binary_string.charCodeAt(i);
+        }
+        return bytes;
+    """) as Uint8Array
 }

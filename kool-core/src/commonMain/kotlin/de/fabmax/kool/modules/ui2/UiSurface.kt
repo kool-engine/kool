@@ -4,6 +4,7 @@ import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.pipeline.RenderPass
+import de.fabmax.kool.pipeline.Shader
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Node
@@ -144,7 +145,9 @@ open class UiSurface(
         return getMeshLayer(layer).getTextBuilder(font, ctx)
     }
 
-    fun loadFont(font: Font, ctx: KoolContext) = UiScale.loadFont(font, ctx)
+    fun applyFontScale(font: Font, ctx: KoolContext) {
+        font.setScale(UiScale.measuredScale, ctx)
+    }
 
     fun popup(): UiScope {
         return viewport.Box { }
@@ -411,11 +414,10 @@ open class UiSurface(
         }
     }
 
-    private class TextMesh(val font: Font, ctx: KoolContext) {
-        val mesh = mesh(Ui2Shader.UI_MESH_ATTRIBS) {
-            shader = Ui2Shader().apply { setFont(font, ctx) }
+    private class TextMesh(shader: Shader) {
+        val mesh = mesh(MsdfUiShader.MSDF_UI_MESH_ATTRIBS) {
+            this.shader = shader
         }
-
         val builder = MeshBuilder(mesh.geometry)
         var isUsed = false
 
@@ -426,6 +428,17 @@ open class UiSurface(
         fun clear() {
             builder.clear()
             isUsed = false
+        }
+
+        companion object {
+            fun msdfTextMesh(font: MsdfFont): TextMesh {
+                val shader = MsdfUiShader().apply { fontMap = font.data.map }
+                return TextMesh(shader)
+            }
+            fun atlasTextMesh(font: AtlasFont, ctx: KoolContext): TextMesh {
+                val shader = Ui2Shader().apply { setFont(font, ctx) }
+                return TextMesh(shader)
+            }
         }
     }
 
@@ -452,6 +465,7 @@ open class UiSurface(
     }
 
     inner class MeshLayer : Group() {
+        private val msdfMeshes = mutableMapOf<MsdfFontData, TextMesh>()
         private val textMeshes = mutableMapOf<Font, TextMesh>()
         private val imageMeshes = mutableMapOf<Texture2d, ImageMeshes>()
         private val customLayers = mutableMapOf<String, CustomLayer>()
@@ -468,8 +482,24 @@ open class UiSurface(
         }
 
         fun getTextBuilder(font: Font, ctx: KoolContext): MeshBuilder {
-            val textMesh =  textMeshes.getOrPut(font) {
-                TextMesh(font, ctx).also { this += it.mesh }
+            return textMeshes[font]?.builder ?: when (font) {
+                is MsdfFont -> getMsdfTextBuilder(font)
+                is AtlasFont -> getAtlasTextBuilder(font, ctx)
+            }
+        }
+
+        private fun getMsdfTextBuilder(font: MsdfFont): MeshBuilder {
+            val textMesh = msdfMeshes.getOrPut(font.data) {
+                TextMesh.msdfTextMesh(font).also { this += it.mesh }
+            }
+            textMeshes[font] = textMesh
+            textMesh.isUsed = true
+            return textMesh.builder
+        }
+
+        private fun getAtlasTextBuilder(font: AtlasFont, ctx: KoolContext): MeshBuilder {
+            val textMesh = textMeshes.getOrPut(font) {
+                TextMesh.atlasTextMesh(font, ctx).also { this += it.mesh }
             }
             textMesh.isUsed = true
             return textMesh.builder

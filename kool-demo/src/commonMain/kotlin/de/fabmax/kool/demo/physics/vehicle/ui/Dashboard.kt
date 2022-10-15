@@ -71,7 +71,7 @@ class Dashboard : ComposableComponent {
                 .width(UiSizes.baseSize * 4.5f)
                 .height(UiSizes.baseSize * 2.5f)
                 .alignY(AlignmentY.Bottom)
-                .font(sizes.largeText.copy(sizePts = sizes.largeText.sizePts * 1.7f))
+                .font(VehicleUi.getUiFonts(sizes.normalText.sizePts).speedFont)
                 .baselineMargin(sizes.largeGap)
                 .textAlignX(AlignmentX.End)
         }
