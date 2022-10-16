@@ -10,9 +10,6 @@ class DemoListContent(val menu: DemoMenu) : Composable {
     private val nonHiddenDemoItems = mutableListOf<DemoItem>()
     private val allDemoItems = mutableListOf<DemoItem>()
 
-    private val hoveredDemoItem = mutableStateOf(-1)
-    private val demoSelectionScrollState = LazyListState()
-
     init {
         Demos.categories.forEach { cat ->
             val titleItem = DemoItem(cat.title, cat.getCategoryColor(0f), true, cat, null)
@@ -43,11 +40,11 @@ class DemoListContent(val menu: DemoMenu) : Composable {
             .width(Grow.Std)
 
         LazyList(
-            demoSelectionScrollState,
+            weakRememberListState(),
             containerModifier = { it.background(null) },
             vScrollbarModifier = { it.colors(color = Color.WHITE.withAlpha(0.2f), hoverColor = Color.WHITE.withAlpha(0.4f)) }
         ) {
-            val hoveredIndex = hoveredDemoItem.use()
+            val hoveredIndex = weakRememberState(-1)
             val demoItems = if (Settings.showHiddenDemos.use()) allDemoItems else nonHiddenDemoItems
             itemsIndexed(demoItems) { i, item ->
                 Text(item.text) {
@@ -56,8 +53,8 @@ class DemoListContent(val menu: DemoMenu) : Composable {
                         .height(UiSizes.baseSize)
                         .padding(horizontal = sizes.gap * 1.25f)
                         .textAlignY(AlignmentY.Center)
-                        .onEnter { hoveredDemoItem.set(i) }
-                        .onExit { hoveredDemoItem.set(-1) }
+                        .onEnter { hoveredIndex.set(i) }
+                        .onExit { hoveredIndex.set(-1) }
                         .onClick {
                             if (!item.isTitle) {
                                 item.demo?.let { menu.demoLoader.loadDemo(it) }
@@ -68,7 +65,7 @@ class DemoListContent(val menu: DemoMenu) : Composable {
                     if (item.isTitle) {
                         categoryTitleStyle(item)
                     } else {
-                        demoEntryStyle(item, hoveredIndex == i)
+                        demoEntryStyle(item, hoveredIndex.use() == i)
                     }
                 }
             }

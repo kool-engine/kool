@@ -128,6 +128,7 @@ class UiDemo : DemoScene("UI Demo") {
                 }
             }
         }
+        window.windowSurface.bringToTop()
     }
 
     fun closeWindow(window: DemoWindow, ctx: KoolContext) {

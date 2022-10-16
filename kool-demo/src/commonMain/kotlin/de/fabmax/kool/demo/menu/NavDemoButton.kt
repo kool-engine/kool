@@ -9,7 +9,6 @@ class NavDemoButton(val menu: DemoMenu) : Composable {
 
     private val isHovered = mutableStateOf(false)
     private val animator = AnimationState(0.25f)
-    private val tooltipState = MutableTooltipState()
 
     override fun UiScope.compose() = Box {
         modifier
@@ -24,7 +23,7 @@ class NavDemoButton(val menu: DemoMenu) : Composable {
                 animator.start()
             }
 
-        Tooltip(tooltipState, "Available demos")
+        Tooltip("Available demos")
     }
 
     private val buttonRenderer = UiRenderer { node ->

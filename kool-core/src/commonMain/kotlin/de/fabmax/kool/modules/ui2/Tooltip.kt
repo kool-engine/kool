@@ -1,11 +1,11 @@
 package de.fabmax.kool.modules.ui2
 
-import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.util.Time
 
-class MutableTooltipState(val delay: Double = 1.0) : MutableStateValue<Boolean>(false), Hoverable {
+class TooltipState(val delay: Double = 1.0) : MutableStateValue<Boolean>(false), Hoverable {
     private var enterTime = 0.0
-    val pointerPos = MutableVec2f()
+    val pointerX = mutableStateOf(0f)
+    val pointerY = mutableStateOf(0f)
 
     override fun onEnter(ev: PointerEvent) {
         enterTime = Time.gameTime
@@ -13,7 +13,8 @@ class MutableTooltipState(val delay: Double = 1.0) : MutableStateValue<Boolean>(
 
     override fun onHover(ev: PointerEvent) {
         if (Time.gameTime - enterTime > delay) {
-            pointerPos.set(ev.pointer.x.toFloat(), ev.pointer.y.toFloat())
+            pointerX.set(ev.pointer.x.toFloat())
+            pointerY.set(ev.pointer.y.toFloat())
             set(true)
         }
     }
@@ -23,10 +24,10 @@ class MutableTooltipState(val delay: Double = 1.0) : MutableStateValue<Boolean>(
     }
 }
 
-fun UiScope.Tooltip(tooltipState: MutableTooltipState, text: String, yOffset: Dp = (-30).dp, target: UiScope? = this) =
+fun UiScope.Tooltip(text: String, yOffset: Dp = (-30).dp, target: UiScope? = this, tooltipState: TooltipState = weakRemember { TooltipState() }) =
     Tooltip(tooltipState, target) {
         modifier
-            .margin(top = Dp.fromPx(tooltipState.pointerPos.y) + yOffset)
+            .margin(top = Dp.fromPx(tooltipState.pointerY.use()) + yOffset)
             .layout(CellLayout)
             .background(UiRenderer { node ->
                 node.apply {
@@ -43,9 +44,9 @@ fun UiScope.Tooltip(tooltipState: MutableTooltipState, text: String, yOffset: Dp
         }
     }
 
-inline fun UiScope.Tooltip(tooltipState: MutableTooltipState, target: UiScope? = this, block: UiScope.() -> Unit) {
+inline fun UiScope.Tooltip(tooltipState: TooltipState, target: UiScope? = this, block: UiScope.() -> Unit) {
     target?.modifier?.hoverListener(tooltipState)
     if (tooltipState.use()) {
-        Popup(tooltipState.pointerPos.x, tooltipState.pointerPos.y, block = block)
+        Popup(tooltipState.pointerX.use(), tooltipState.pointerY.use(), block = block)
     }
 }

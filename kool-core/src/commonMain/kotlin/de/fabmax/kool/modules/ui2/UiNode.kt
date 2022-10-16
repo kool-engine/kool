@@ -22,6 +22,7 @@ abstract class UiNode(val parent: UiNode?, override val surface: UiSurface) : Ui
     private val oldChildren = mutableListOf<UiNode>()
     private val mutChildren = mutableListOf<UiNode>()
     val children: List<UiNode> get() = mutChildren
+    val weakMemory = WeakMemory()
 
     var contentWidthPx = 0f
         private set
@@ -178,6 +179,7 @@ abstract class UiNode(val parent: UiNode?, override val surface: UiSurface) : Ui
         }
         modifier.resetDefaults()
         modifier.zLayer(parent?.modifier?.zLayer ?: UiSurface.LAYER_DEFAULT)
+        weakMemory.rewind()
     }
 
     fun <T: UiNode> createChild(type: KClass<T>, factory: (UiNode, UiSurface) -> T): T {

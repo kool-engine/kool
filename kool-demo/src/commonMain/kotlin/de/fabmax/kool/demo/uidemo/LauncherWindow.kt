@@ -6,15 +6,12 @@ import kotlin.reflect.KClass
 class LauncherWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
 
     private val windowState = WindowState().apply { setWindowSize(Dp(250f), FitContent) }
-    private val isMinimizedToTitle = mutableStateOf(false)
-
-    private val allowMultiInstances = mutableStateOf(false)
-    private val tooltipStates = mutableMapOf<String, MutableTooltipState>()
 
     override val windowSurface = Window(windowState, name = "Window Launcher") {
         surface.sizes = uiDemo.selectedUiSize.use()
         surface.colors = uiDemo.selectedColors.use()
 
+        val isMinimizedToTitle = weakRememberState(false)
         modifier
             .isMinimizedToTitle(isMinimizedToTitle.use())
             .isResizable(false, false)
@@ -31,6 +28,8 @@ class LauncherWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
     override val windowScope = windowSurface.windowScope!!
 
     private fun UiScope.WindowContent() = Column(Grow.Std) {
+        val allowMultiInstances = weakRememberState(false)
+
         Button("UI Basics") {
             launcherButtonStyle("Example window with a few basic UI components")
             modifier.onClick {
@@ -81,7 +80,6 @@ class LauncherWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
             .margin(sizes.largeGap)
             .padding(vertical = sizes.gap)
 
-        val tooltipState = tooltipStates.getOrPut(tooltip) { MutableTooltipState() }
-        Tooltip(tooltipState, tooltip)
+        Tooltip(tooltip)
     }
 }

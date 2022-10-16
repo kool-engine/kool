@@ -10,7 +10,6 @@ import kotlin.math.roundToInt
 class ThemeEditorWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
 
     private val windowState = WindowState().apply { setWindowBounds(Dp(370f), Dp(370f), Dp(500f), Dp(700f)) }
-    private val listState = LazyListState()
 
     private val presetsDark = listOf(
         "Yellow" to Colors.singleColorDark(MdColor.YELLOW),
@@ -67,7 +66,6 @@ class ThemeEditorWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
     private val isDarkPresets = mutableStateOf(true)
     private val selectedPreset = mutableStateOf(16)
     private val selectedColor = mutableStateOf(0)
-    private val hoverItem = mutableStateOf(-1)
 
     override val windowSurface = Window(windowState, name = "Theme Editor") {
         surface.sizes = uiDemo.selectedUiSize.use()
@@ -181,18 +179,19 @@ class ThemeEditorWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
             }
 
             LazyList(
-                listState,
+                weakRememberListState(),
                 containerModifier = {
                     it
                         .margin(sizes.gap)
                         .size(Grow.Std, Grow(1f, max = FitContent))
                 }
             ) {
+                val hoveredItem = weakRememberState(-1)
                 itemsIndexed(colorEntries) { i, it ->
                     it.apply {
-                        itemRow(i).apply {
-                            modifier.onEnter { hoverItem.set(i) }
-                            modifier.onExit { hoverItem.set(-1) }
+                        itemRow(i, i == hoveredItem.use()).apply {
+                            modifier.onEnter { hoveredItem.set(i) }
+                            modifier.onExit { hoveredItem.set(-1) }
                             modifier.onClick { selectedColor.set(i) }
                         }
                     }
@@ -263,8 +262,8 @@ class ThemeEditorWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
             alpha.set(color.a)
         }
 
-        fun UiScope.itemRow(index: Int) = Row(Grow.Std) {
-            if (index == hoverItem.use()) {
+        fun UiScope.itemRow(index: Int, isHovered: Boolean) = Row(Grow.Std) {
+            if (isHovered) {
                 modifier.backgroundColor(colors.secondary.withAlpha(0.5f))
             } else if (index == selectedColor.use()) {
                 modifier.backgroundColor(colors.secondary.withAlpha(0.3f))
