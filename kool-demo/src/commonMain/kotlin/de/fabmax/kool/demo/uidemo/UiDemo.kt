@@ -10,6 +10,7 @@ import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MsdfFont
 
 class UiDemo : DemoScene("UI Demo") {
@@ -77,17 +78,27 @@ class UiDemo : DemoScene("UI Demo") {
             surface.colors = selectedColors.use()
             surface.sizes = Settings.uiSize.use().sizes
 
+            val fgColor: Color
+            val bgColor: Color
+            if (colors.isLight) {
+                fgColor = colors.primary
+                bgColor = colors.secondaryVariant.mix(Color.BLACK, 0.3f)
+            } else {
+                fgColor = colors.secondary
+                bgColor = colors.backgroundVariant
+            }
+
             modifier
                 .width(UiSizes.baseSize)
                 .height(Grow.Std)
-                .backgroundColor(colors.backgroundVariant)
+                .backgroundColor(bgColor)
                 .layout(CellLayout)
                 .onClick { demoLoader?.menu?.isExpanded = true }
 
             Text("UI Demo") {
                 val font = MsdfFont(sizePts = sizes.largeText.sizePts * 1.25f, weight = MsdfFont.WEIGHT_BOLD)
                 modifier
-                    .textColor(colors.secondary)
+                    .textColor(fgColor)
                     .textRotation(TextRotation.Rotation270)
                     .font(font)
                     .padding(top = UiSizes.baseSize)

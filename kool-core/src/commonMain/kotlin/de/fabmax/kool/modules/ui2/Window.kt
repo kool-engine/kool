@@ -17,10 +17,6 @@ open class WindowState {
     val widthDocked: MutableStateValue<Dp> = mutableStateOf(Dp.ZERO)
     val heightDocked: MutableStateValue<Dp> = mutableStateOf(Dp.ZERO)
 
-    val closeButtonHovered = mutableStateOf(false)
-    val minimizeButtonHovered = mutableStateOf(false)
-    val maximizeButtonHovered = mutableStateOf(false)
-
     var borderFlags = 0
     var dragStartX = 0f
     var dragStartY = 0f
