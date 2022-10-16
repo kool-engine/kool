@@ -2,6 +2,10 @@ package de.fabmax.kool.demo
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.atmosphere.AtmosphereDemo
+import de.fabmax.kool.demo.helloworld.HelloGltfDemo
+import de.fabmax.kool.demo.helloworld.HelloRenderToTextureDemo
+import de.fabmax.kool.demo.helloworld.HelloUiDemo
+import de.fabmax.kool.demo.helloworld.HelloWorldDemo
 import de.fabmax.kool.demo.pbr.PbrDemo
 import de.fabmax.kool.demo.physics.collision.CollisionDemo
 import de.fabmax.kool.demo.physics.joints.JointsDemo
@@ -65,6 +69,7 @@ object Demos {
         entry("helloworld", "Hello World") { HelloWorldDemo() }
         entry("hellogltf", "Hello glTF") { HelloGltfDemo() }
         entry("hellobuffers", "Hello RenderToTexture") { HelloRenderToTextureDemo() }
+        entry("hello-ui", "Hello UI") { HelloUiDemo() }
         entry("manyvehicles", "Many Vehicles") { ManyVehiclesDemo() }
         entry("ksl-test", "Ksl Shading Test") { KslShaderTest() }
     }

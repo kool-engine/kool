@@ -8,7 +8,7 @@ import de.fabmax.kool.scene.Scene
  *
  * @see [setupUiScene]
  */
-fun Ui2Scene(
+fun UiScene(
     name: String = "UiScene",
     clearScreen: Boolean = false,
     block: Scene.() -> Unit

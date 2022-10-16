@@ -202,6 +202,51 @@ The resulting scene looks like [this](https://fabmax.github.io/kool/kool-js/?dem
 respository is loaded.
 
 
+## Kool UI
+
+Kool comes with an embedded UI framework, which is heavily inspired by [Jetpack Compose](https://github.com/JetBrains/compose-jb)
+but was implemented from scratch. Here is a small example:
+```kotlin
+fun main() {
+    val ctx = createDefaultContext()
+    ctx.scenes += UiScene(clearScreen = true) {
+        +Panel(colors = Colors.singleColorLight(MdColor.LIGHT_GREEN)) {
+            modifier
+                .size(400.dp, 300.dp)
+                .align(AlignmentX.Center, AlignmentY.Center)
+                .background(RoundRectBackground(colors.background, 16.dp))
+
+            val clickCount = weakRememberState(0)
+            Button("Click me!") {
+                modifier
+                    .alignX(AlignmentX.Center)
+                    .margin(sizes.largeGap * 4f)
+                    .padding(horizontal = sizes.largeGap, vertical = sizes.gap)
+                    .font(sizes.largeText)
+                    .onClick { clickCount.set(clickCount.value + 1) }
+            }
+            Text("Button clicked ${clickCount.use()} times") {
+                modifier
+                    .alignX(AlignmentX.Center)
+            }
+        }
+    }
+}
+```
+Here, we create a new `UiScene` and add a `Panel` to it, which serves as top-level container for our UI content. Within
+the `Panel`-block, we add a button and a text field. All appearance and layout-properties of the UI elements are
+controlled by their `modifier`s.
+
+Whenever the button is clicked we increment a `clickCount` which is then displayed by the text field. This works
+because the `Panel`-block is executed each time any state `use()`d within the block changes. The mechanics behind
+that are somewhat similar to how Jetpack-Compose works, although my implementation is much less sophisticated. On
+the plus-side we don't need a dedicated compiler-plugin and there is a bit less magic involved.
+
+The resulting scene looks like [this](https://fabmax.github.io/kool/kool-js/?demo=hello-ui).
+
+More complex layouts can be created by nesting `Row { }` and `Column { }` objects. The
+[full UI demo](https://fabmax.github.io/kool/kool-js/?demo=ui) should give you an impression on what's possible.
+
 ## Kool Shader Language
 
 I'm currently working on my own shader language (called ksl), which is implemented as a

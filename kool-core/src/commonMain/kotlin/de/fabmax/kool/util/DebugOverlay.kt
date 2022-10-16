@@ -43,7 +43,7 @@ class DebugOverlay(position: Position = Position.UPPER_RIGHT) {
     init {
         val fpsFont = MsdfFont(sizePts = 20f)
 
-        ui = Ui2Scene("debug-overlay") {
+        ui = UiScene("debug-overlay") {
             onUpdate += {
                 fpsText.set("${it.ctx.fps.toString(1)} fps")
                 if (isExpanded.value) {
