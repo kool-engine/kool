@@ -44,7 +44,7 @@ open class UiSurface(
     var sizes: Sizes by sizesState::value
     var content: (UiScope.() -> Unit)? = null
 
-    var isInputEnabled = true
+    var inputMode = InputCaptureMode.CaptureInsideBounds
     var printTiming = false
 
     init {
@@ -200,6 +200,12 @@ open class UiSurface(
         }
     }
 
+    enum class InputCaptureMode {
+        CaptureInsideBounds,
+        CaptureOverBackground,
+        CaptureDisabled
+    }
+
     protected inner class UiInputHandler : InputStack.InputHandler(name ?: "UiSurface") {
         private val nodeResult = mutableListOf<UiNode>()
         private var focusedNode: Focusable? = null
@@ -226,9 +232,10 @@ open class UiSurface(
         }
 
         fun checkInputHandler(ctx: KoolContext) {
-            if (!isInputEnabled) {
+            if (inputMode == InputCaptureMode.CaptureDisabled) {
                 InputStack.remove(this)
                 return
+
             }
 
             // keyboard input is blocked by this UiSurface as soon as a ui element is focused
@@ -244,7 +251,16 @@ open class UiSurface(
             val ptr = ctx.inputMgr.pointerState.primaryPointer
             if (ptr.isValid) {
                 val ptrPos = Vec2f(ptr.x.toFloat(), ptr.y.toFloat())
-                val isPointerOnSurface = dragNode != null || viewport.children.any { it.isInBounds(ptrPos) }
+                var isPointerOnSurface = dragNode != null || viewport.children.any { it.isInBounds(ptrPos) }
+
+                if (dragNode == null && inputMode == InputCaptureMode.CaptureOverBackground) {
+                    nodeResult.clear()
+                    viewport.collectNodesAt(ptr.x.toFloat(), ptr.y.toFloat(), nodeResult) {
+                        hasPointerListener(it) || it.modifier.background != null
+                    }
+                    isPointerOnSurface = nodeResult.isNotEmpty()
+                }
+
                 if (isPointerOnSurface && (wasBlockingPointerInput || !ptr.isDrag)) {
                     blockAllPointerInput = true
                 }

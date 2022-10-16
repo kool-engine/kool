@@ -160,7 +160,7 @@ class DockingHost : Group() {
                 rootContainer.updateDepth()
                 rootContainer()
             }
-            isInputEnabled = false
+            inputMode = InputCaptureMode.CaptureDisabled
         }
 
         fun getNodeAt(screenPos: Vec2f): DockingContainer? {

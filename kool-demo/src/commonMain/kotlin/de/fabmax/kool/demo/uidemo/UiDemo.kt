@@ -4,11 +4,13 @@ import de.fabmax.kool.AssetManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.DemoLoader
 import de.fabmax.kool.demo.DemoScene
+import de.fabmax.kool.demo.Settings
 import de.fabmax.kool.demo.UiSizes
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.util.MsdfFont
 
 class UiDemo : DemoScene("UI Demo") {
 
@@ -69,6 +71,29 @@ class UiDemo : DemoScene("UI Demo") {
 
         spawnWindow(LauncherWindow(this@UiDemo), listOf(DockingHost.DockPosition.Start to 0.15f))
         spawnWindow(ThemeEditorWindow(this@UiDemo), listOf(DockingHost.DockPosition.End to 0.85f, DockingHost.DockPosition.End to 0.3f))
+
+        // add a sidebar for the demo menu
+        +Panel {
+            surface.colors = selectedColors.use()
+            surface.sizes = Settings.uiSize.use().sizes
+
+            modifier
+                .width(UiSizes.baseSize)
+                .height(Grow.Std)
+                .backgroundColor(colors.backgroundVariant)
+                .layout(CellLayout)
+                .onClick { demoLoader?.menu?.isExpanded = true }
+
+            Text("UI Demo") {
+                val font = MsdfFont(sizePts = sizes.largeText.sizePts * 1.25f, weight = MsdfFont.WEIGHT_BOLD)
+                modifier
+                    .textColor(colors.secondary)
+                    .textRotation(TextRotation.Rotation270)
+                    .font(font)
+                    .padding(top = UiSizes.baseSize)
+                    .align(AlignmentX.Center, AlignmentY.Top)
+            }
+        }
     }
 
     fun spawnWindow(window: DemoWindow, dockPath: List<Pair<DockingHost.DockPosition, Float>>? = null) {

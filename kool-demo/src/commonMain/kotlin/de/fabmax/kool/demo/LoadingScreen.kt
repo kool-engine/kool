@@ -65,7 +65,7 @@ class LoadingScreen(val ctx: KoolContext) : Scene("Loading Screen") {
             }
         }
         +ui
-        ui.isInputEnabled = false
+        ui.inputMode = UiSurface.InputCaptureMode.CaptureDisabled
     }
 
     private var colors = listOf(

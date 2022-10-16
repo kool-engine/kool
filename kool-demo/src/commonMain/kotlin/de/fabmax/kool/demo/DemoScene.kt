@@ -21,6 +21,7 @@ abstract class DemoScene(val name: String) {
     val isMenu = mutableStateOf(true)
     private val isCloseHovered = mutableStateOf(false)
 
+    var demoLoader: DemoLoader? = null
     var loadingScreen: LoadingScreen? = null
         set(value) {
             field = value

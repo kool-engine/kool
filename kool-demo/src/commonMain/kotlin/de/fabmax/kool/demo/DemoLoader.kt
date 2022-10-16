@@ -79,6 +79,7 @@ class DemoLoader(ctx: KoolContext, startScene: String? = null) {
             // set new demo
             currentDemo = newDemo.id to newDemo.newInstance(ctx).also {
                 it.demoEntry = newDemo
+                it.demoLoader = this
                 it.loadingScreen = loadingScreen
             }
             switchDemo = null

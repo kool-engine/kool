@@ -46,6 +46,8 @@ class DemoMenu(val demoLoader: DemoLoader) {
             }
 
             drawerButton()
+        }.apply {
+            inputMode = UiSurface.InputCaptureMode.CaptureOverBackground
         }
     }
 
