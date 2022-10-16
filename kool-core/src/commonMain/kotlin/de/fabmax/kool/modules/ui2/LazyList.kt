@@ -3,7 +3,6 @@ package de.fabmax.kool.modules.ui2
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Time
-import de.fabmax.kool.util.logD
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
@@ -126,22 +125,26 @@ class LazyListNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface
 
             // update scroll position to correspond to visible item range based on current element size
             val updatePos = state.itemsFrom * elemSize
-            val oldError = state.yScrollDpDesired.value - state.yScrollDp.value
             if (isVertical) {
-                if (abs(updatePos - state.yScrollDp.value) > 1f && state.spaceAfterVisibleItems > 0f) {
+                if (abs(updatePos - state.yScrollDp.value) > 1f) {
+                    val oldError = state.yScrollDpDesired.value - state.yScrollDp.value
                     state.yScrollDp.set(updatePos)
                     state.yScrollDpDesired.set(state.yScrollDp.value + oldError)
                 }
             } else {
                 if (abs(updatePos - state.xScrollDp.value) > 1f) {
+                    val oldError = state.xScrollDpDesired.value - state.xScrollDp.value
                     state.xScrollDp.set(updatePos)
                     state.xScrollDpDesired.set(state.xScrollDp.value + oldError)
                 }
             }
 
-            // compute new first visible item based on previous value and scroll delta (no matter what the current
-            // element size is)
-            state.itemsFrom = min(max(0f, items.size - numViewItems.toFloat()), max(0f, state.itemsFrom + deltaScroll / elemSize))
+            // compute new first visible item based on previous value and scroll delta
+            // make sure visible item range stays inside list bounds
+            state.itemsFrom = min(
+                max(0f, items.size - numViewItems.toFloat() + 0.9999f),
+                max(0f, state.itemsFrom + deltaScroll / elemSize)
+            )
             state.itemsTo = min(items.lastIndex, (state.itemsFrom).roundToInt() + numViewItems)
 
             state.spaceBeforeVisibleItems = (state.itemsFrom).toInt() * elemSize
@@ -207,7 +210,6 @@ class LazyListNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface
         if (size < viewSize && state.itemsTo < state.numTotalItems - 1) {
             // we selected too few elements re-run layout with updated average element size
             surface.triggerUpdate()
-            logD { "Selected too few lazy list elements: ${viewSize - size}" }
         }
     }
 
