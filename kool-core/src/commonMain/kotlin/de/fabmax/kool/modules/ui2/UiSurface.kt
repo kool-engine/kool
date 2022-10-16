@@ -19,7 +19,7 @@ open class UiSurface(
 ) : Group(name) {
 
     private val meshLayers = TreeMap<Int, MeshLayer>()
-    private val onEachFrame = mutableListOf<() -> Unit>()
+    private val onEachFrame = mutableListOf<(KoolContext) -> Unit>()
 
     protected val inputHandler = UiInputHandler()
     val viewportWidth = mutableStateOf(0f)
@@ -56,7 +56,7 @@ open class UiSurface(
             viewportHeight.set(it.renderPass.viewport.height.toFloat())
 
             for (i in onEachFrame.indices) {
-                onEachFrame[i]()
+                onEachFrame[i](it.ctx)
             }
 
             inputHandler.checkInputHandler(it.ctx)
@@ -124,7 +124,7 @@ open class UiSurface(
         }
     }
 
-    fun onEachFrame(block: () -> Unit) {
+    fun onEachFrame(block: (KoolContext) -> Unit) {
         onEachFrame += block
     }
 

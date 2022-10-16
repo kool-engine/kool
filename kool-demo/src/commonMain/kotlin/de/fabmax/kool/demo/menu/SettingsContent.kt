@@ -35,6 +35,7 @@ class SettingsContent(val menu: DemoMenu) : Composable {
                     }
             }
         }
+        MenuRow { LabeledSwitch("Menu initially expanded", Settings.showMenuOnStartup) }
         MenuRow { LabeledSwitch("Debug overlay", Settings.showDebugOverlay) }
         MenuRow { LabeledSwitch("Fullscreen", Settings.isFullscreen) }
         MenuRow { LabeledSwitch("Hidden demos", Settings.showHiddenDemos) }

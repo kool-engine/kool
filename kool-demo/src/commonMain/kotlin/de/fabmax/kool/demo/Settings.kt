@@ -19,10 +19,12 @@ object Settings {
     val defaultUiSize = UiSizeSetting("Large", Sizes.large)
 
     private var settingsStore: KeyValueStorage? = null
+    private val settings = mutableListOf<MutableStateSettings<*>>()
 
     val isFullscreen = MutableStateSettings("koolDemo.isFullscreen", false) { it.toBoolean() }
     val showHiddenDemos = MutableStateSettings("koolDemo.showHiddenDemos", false) { it.toBoolean() }
     val showDebugOverlay = MutableStateSettings("koolDemo.showDebugOverlay", true) { it.toBoolean() }
+    val showMenuOnStartup = MutableStateSettings("koolDemo.showMenuOnStartup", true) { it.toBoolean() }
 
     val uiSize = MutableStateSettings("koolDemo.uiSize", defaultUiSize) {
         defaultUiSizes[it] ?: defaultUiSize
@@ -32,17 +34,14 @@ object Settings {
 
     fun loadSettings(ctx: KoolContext) {
         settingsStore = ctx.assetMgr.storage
-        isFullscreen.load()
-        showHiddenDemos.load()
-        showDebugOverlay.load()
-        uiSize.load()
-        selectedDemo.load()
+        settings.forEach { it.load() }
     }
 
     class MutableStateSettings<T>(val key: String, initValue: T, val parser: (String) -> T)
         : MutableStateValue<T>(initValue)
     {
         init {
+            settings += this
             onChange {
                 settingsStore?.storeString(key, "$it")
                 logD { "Stored $key: $it" }

@@ -5,6 +5,7 @@ import de.fabmax.kool.createDefaultContext
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.util.DebugOverlay
+import de.fabmax.kool.util.Time
 
 /**
  * @author fabmax
@@ -30,6 +31,9 @@ class DemoLoader(ctx: KoolContext, startScene: String? = null) {
     private val loadingScreen = LoadingScreen(ctx)
     private var currentDemo: Pair<String, DemoScene>? = null
     private var switchDemo: Demos.Entry? = null
+
+    private var initShownMenu = false
+    private var shouldAutoHideMenu = 2.5f
 
     val activeDemo: DemoScene?
         get() = currentDemo?.second
@@ -92,6 +96,19 @@ class DemoLoader(ctx: KoolContext, startScene: String? = null) {
                     // demo setup complete -> add scenes
                     ctx.scenes -= loadingScreen
                     it.scenes.forEachIndexed { i, s -> ctx.scenes.add(i, s) }
+                }
+
+            } else {
+                // demo fully loaded
+                if (shouldAutoHideMenu > 0f) {
+                    shouldAutoHideMenu -= Time.deltaT
+                    if (!initShownMenu && Settings.showMenuOnStartup.value) {
+                        menu.isExpanded = true
+                        initShownMenu = true
+                    }
+                    if (shouldAutoHideMenu <= 0f) {
+                        menu.isExpanded = false
+                    }
                 }
             }
         }

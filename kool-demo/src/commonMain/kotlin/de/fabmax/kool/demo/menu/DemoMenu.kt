@@ -3,8 +3,10 @@ package de.fabmax.kool.demo.menu
 import de.fabmax.kool.demo.DemoLoader
 import de.fabmax.kool.demo.Settings
 import de.fabmax.kool.demo.UiSizes
+import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.MdColor
+import de.fabmax.kool.util.MsdfFont
 import kotlin.math.sqrt
 
 class DemoMenu(val demoLoader: DemoLoader) {
@@ -43,6 +45,16 @@ class DemoMenu(val demoLoader: DemoLoader) {
 
             if (isExpandedState.use() || menuPositionAnimator.isActive) {
                 MenuContent()
+
+                surface.onEachFrame {
+                    val ptr = it.inputMgr.pointerState.primaryPointer
+                    if (ptr.isAnyButtonEvent) {
+                        val ptrPos = Vec2f(ptr.x.toFloat(), ptr.y.toFloat())
+                        if (!uiNode.isInBounds(ptrPos)) {
+                            isExpanded = false
+                        }
+                    }
+                }
             }
 
             drawerButton()
@@ -82,6 +94,15 @@ class DemoMenu(val demoLoader: DemoLoader) {
 
         navDemoButton()
         navSettingsButton()
+
+        Text("kool Demo Menu") {
+            modifier
+                .textRotation(270f)
+                .textColor(colors.primaryVariant)
+                .font(MsdfFont(sizePts = sizes.largeText.sizePts * 1.25f, weight = MsdfFont.WEIGHT_LIGHT))
+                .margin(top = sizes.gap)
+                .alignX(AlignmentX.Center)
+        }
     }
 
     enum class MenuContent {
@@ -92,6 +113,7 @@ class DemoMenu(val demoLoader: DemoLoader) {
     companion object {
         const val navBarButtonSelectedAlpha = 0.20f
         const val navBarButtonHoveredAlpha = 0.35f
+        const val navBarButtonAlpha = 0.1f
 
         val titleBgMesh = TitleBgRenderer.BgMesh()
     }

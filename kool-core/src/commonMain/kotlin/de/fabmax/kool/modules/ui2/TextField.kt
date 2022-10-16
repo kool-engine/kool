@@ -211,7 +211,8 @@ open class TextFieldNode(parent: UiNode?, surface: UiSurface)
         cursorShow = mutableStateOf(true)
     }
 
-    fun updateCursorState() {
+    @Suppress("UNUSED_PARAMETER")
+    fun updateCursorState(ctx: KoolContext) {
         if (isFocusedState.value) {
             cursorBlink -= Time.deltaT
             if (cursorBlink < 0f) {
