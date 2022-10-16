@@ -5,6 +5,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.DemoLoader
 import de.fabmax.kool.demo.DemoScene
 import de.fabmax.kool.demo.UiSizes
+import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.scene.Scene
@@ -14,13 +15,15 @@ class UiDemo : DemoScene("UI Demo") {
     val selectedColors = mutableStateOf(Colors.darkColors())
     val selectedUiSize = mutableStateOf(Sizes.medium)
 
-    private val dockingHost = DockingHost()
-    private val windows = mutableListOf<UiSurface>()
+    val demoWindows = mutableListOf<DemoWindow>()
 
-    var imageTex: Texture2d? = null
+    private val windowSpawnLocation = MutableVec2f(320f, 64f)
+    private val dockingHost = DockingHost()
+
+    var exampleImage: Texture2d? = null
 
     override suspend fun AssetManager.loadResources(ctx: KoolContext) {
-        imageTex = loadAndPrepareTexture("${DemoLoader.materialPath}/uv_checker_map.jpg")
+        exampleImage = loadAndPrepareTexture("${DemoLoader.materialPath}/uv_checker_map.jpg")
     }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
@@ -58,27 +61,49 @@ class UiDemo : DemoScene("UI Demo") {
         // The numbers define the split weights in case tree nodes have to be spawned to complete the path.
         // If the internal tree structure conflicts with the given path, the window is docked in the next best slot.
         //
-        // The ThemeEditorWindow is docked at End (right) position below the root node. Splitting it with a weight of
-        // 0.25, i.e. the ThemeEditorWindow will take 25% of the screen space.
-        // GameOfLifeWindow is docked left to the theme editor, initially taking up the remaining 75% of screen space.
-        // Finally, the BasicUiWindow is spawned left of the GameOfLifeWindow (path: root -> start/left -> start/left),
-        // reducing the size of the GameOfLifeWindow by one third (from former 75% screen space to 50% screen space).
+        // The LauncherWindow is docked at Start (left) position below the root node. Splitting it with a weight of
+        // 0.15, i.e. the LauncherWindow will take 15% of the screen width and the other 85% of screen space remain
+        // empty.
+        // Then, the ThemeEditorWindow is spawned on the right side of the empty side (path: root -> end/right -> end/right),
+        // with a weight of 0.3 result in a total width of 0.85 * 0.3 ~= 25% of screen width.
 
-        spawnWindow(ThemeEditorWindow(this@UiDemo).window, listOf(DockingHost.DockPosition.End to 0.25f))
-        spawnWindow(GameOfLifeWindow(this@UiDemo).window, listOf(DockingHost.DockPosition.Start to 0.75f))
-        spawnWindow(BasicUiWindow(this@UiDemo).window, listOf(DockingHost.DockPosition.Start to 0.75f, DockingHost.DockPosition.Start to 0.333f))
+        spawnWindow(LauncherWindow(this@UiDemo), listOf(DockingHost.DockPosition.Start to 0.15f))
+        spawnWindow(ThemeEditorWindow(this@UiDemo), listOf(DockingHost.DockPosition.End to 0.85f, DockingHost.DockPosition.End to 0.3f))
     }
 
-    fun spawnWindow(windowSurface: UiSurface, dockPath: List<Pair<DockingHost.DockPosition, Float>>? = null) {
-        windows += windowSurface
+    fun spawnWindow(window: DemoWindow, dockPath: List<Pair<DockingHost.DockPosition, Float>>? = null) {
+        demoWindows += window
         dockingHost.apply {
-            +windowSurface
+            +window.windowSurface
             if (dockPath != null) {
-                windowSurface.windowScope?.let { window ->
-                    dockWindow(window, dockPath)
+                dockWindow(window.windowScope, dockPath)
+            } else {
+                window.windowScope.windowState.setWindowLocation(Dp(windowSpawnLocation.x), Dp(windowSpawnLocation.y))
+                windowSpawnLocation.x += 32f
+                windowSpawnLocation.y += 32f
+
+                if (windowSpawnLocation.y > 480f) {
+                    windowSpawnLocation.y -= 416
+                    windowSpawnLocation.x -= 384
+
+                    if (windowSpawnLocation.x > 480f) {
+                        windowSpawnLocation.x = 320f
+                    }
                 }
             }
         }
     }
 
+    fun closeWindow(window: DemoWindow, ctx: KoolContext) {
+        window.windowScope.windowState.dockedTo.value?.undock(window.windowScope)
+
+        dockingHost -= window.windowSurface
+        demoWindows -= window
+        window.windowSurface.dispose(ctx)
+    }
+
+    interface DemoWindow {
+        val windowSurface: UiSurface
+        val windowScope: WindowScope
+    }
 }

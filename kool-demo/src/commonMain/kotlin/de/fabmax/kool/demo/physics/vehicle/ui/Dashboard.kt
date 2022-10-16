@@ -7,7 +7,7 @@ import de.fabmax.kool.util.MdColor
 import kotlin.math.round
 import kotlin.math.roundToInt
 
-class Dashboard : ComposableComponent {
+class Dashboard : Composable {
     val speedKph = mutableStateOf(0f)
     val torqueNm = mutableStateOf(0f)
     val powerKW = mutableStateOf(0f)

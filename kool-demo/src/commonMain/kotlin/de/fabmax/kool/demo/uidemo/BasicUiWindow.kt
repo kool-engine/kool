@@ -4,10 +4,9 @@ import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 
-class BasicUiWindow(val uiDemo: UiDemo) {
+class BasicUiWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
 
     private val windowState = WindowState().apply { setWindowBounds(Dp(200f), Dp(200f), Dp(500f), Dp(700f)) }
-    private val isMinimizedToTitle = mutableStateOf(false)
 
     private val clickCnt = mutableStateOf(0)
     private val scrollState = ScrollState()
@@ -27,23 +26,14 @@ class BasicUiWindow(val uiDemo: UiDemo) {
     private val text1 = mutableStateOf("")
     private val text2 = mutableStateOf("")
 
-    val window = Window(windowState, name = "Demo Window") {
+    override val windowSurface: UiSurface = Window(windowState, name = "Demo Window") {
         surface.sizes = uiDemo.selectedUiSize.use()
         surface.colors = uiDemo.selectedColors.use()
 
-        modifier
-            .isMinimizedToTitle(isMinimizedToTitle.use())
-            .minSize(200.dp, 200.dp)
-
-        TitleBar(
-            onCloseAction = { println("close clicked") },
-            onMinimizeAction = if (!isMinimizedToTitle.use()) { { isMinimizedToTitle.set(true) } } else null,
-            onMaximizeAction = if (isMinimizedToTitle.use()) { { isMinimizedToTitle.set(false) } } else null
-        )
-        if (!isMinimizedToTitle.value) {
-            WindowContent(listItems)
-        }
+        TitleBar(onCloseAction = { uiDemo.closeWindow(this@BasicUiWindow, it.ctx) })
+        WindowContent(listItems)
     }
+    override val windowScope: WindowScope = windowSurface.windowScope!!
 
     fun UiScope.WindowContent(listItems: MutableList<String>) = Column(Grow.Std, Grow.Std) {
         modifier
@@ -148,7 +138,7 @@ class BasicUiWindow(val uiDemo: UiDemo) {
                         Image {
                             modifier
                                 .padding(sizes.smallGap)
-                                .image(uiDemo.imageTex)
+                                .image(uiDemo.exampleImage)
                                 .tint(tint)
                                 .imageScale(0.2f)
                         }

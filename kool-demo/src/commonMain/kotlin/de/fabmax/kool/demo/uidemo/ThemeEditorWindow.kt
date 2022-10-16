@@ -7,7 +7,7 @@ import de.fabmax.kool.util.Font
 import de.fabmax.kool.util.MdColor
 import kotlin.math.roundToInt
 
-class ThemeEditorWindow(val uiDemo: UiDemo) {
+class ThemeEditorWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
 
     private val windowState = WindowState().apply { setWindowBounds(Dp(370f), Dp(370f), Dp(500f), Dp(700f)) }
     private val listState = LazyListState()
@@ -69,12 +69,12 @@ class ThemeEditorWindow(val uiDemo: UiDemo) {
     private val selectedColor = mutableStateOf(0)
     private val hoverItem = mutableStateOf(-1)
 
-    val window = Window(windowState, name = "Theme Editor") {
+    override val windowSurface = Window(windowState, name = "Theme Editor") {
         surface.sizes = uiDemo.selectedUiSize.use()
         surface.colors = uiDemo.selectedColors.use()
         uiDemo.selectedColors.set(makeColors())
 
-        TitleBar()
+        TitleBar(onCloseAction = { uiDemo.closeWindow(this@ThemeEditorWindow, it.ctx) })
 
         val entry = colorEntries[selectedColor.use()]
 
@@ -200,6 +200,8 @@ class ThemeEditorWindow(val uiDemo: UiDemo) {
             }
         }
     }
+
+    override val windowScope: WindowScope = windowSurface.windowScope!!
 
     init {
         applyPreset()

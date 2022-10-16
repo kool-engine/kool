@@ -5,7 +5,7 @@ import de.fabmax.kool.math.randomF
 import de.fabmax.kool.modules.ui2.*
 import kotlin.math.min
 
-class GameOfLifeWindow(val uiDemo: UiDemo) {
+class GameOfLifeWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
 
     private val windowState = WindowState().apply { setWindowLocation(Dp(400f), Dp(400f)) }
     private val scrollState = ScrollState()
@@ -25,11 +25,11 @@ class GameOfLifeWindow(val uiDemo: UiDemo) {
         world.loadAsciiState(GameWorld.gliderGun)
     }
 
-    val window = Window(windowState, name = "Conway`s Game of Life") {
+    override val windowSurface = Window(windowState, name = "Conway`s Game of Life") {
         surface.sizes = uiDemo.selectedUiSize.use()
         surface.colors = uiDemo.selectedColors.use()
 
-        TitleBar()
+        TitleBar(onCloseAction = { uiDemo.closeWindow(this@GameOfLifeWindow, it.ctx) })
 
         worldPanel()
         renderPanel()
@@ -56,7 +56,9 @@ class GameOfLifeWindow(val uiDemo: UiDemo) {
         }
     }
 
-    private abstract class CollapsablePanel(val title: String) : ComposableComponent {
+    override val windowScope: WindowScope = windowSurface.windowScope!!
+
+    private abstract class CollapsablePanel(val title: String) : Composable {
         val isCollapsed = mutableStateOf(false)
         val isHovered = mutableStateOf(false)
 
@@ -200,7 +202,7 @@ class GameOfLifeWindow(val uiDemo: UiDemo) {
         }
     }
 
-    private inner class GameWorldRenderer : ComposableComponent {
+    private inner class GameWorldRenderer : Composable {
         val rendererChoices = listOf("Radiobutton", "Checkbox", "Box")
         val selectedRenderer = mutableStateOf(0)
 

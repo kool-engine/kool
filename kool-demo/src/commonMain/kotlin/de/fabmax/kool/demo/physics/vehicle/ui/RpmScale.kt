@@ -7,7 +7,7 @@ import de.fabmax.kool.util.ColorGradient
 import de.fabmax.kool.util.MdColor
 import kotlin.math.min
 
-class RpmScale(val dashboard: Dashboard) : ComposableComponent {
+class RpmScale(val dashboard: Dashboard) : Composable {
 
     private val rpm: Float
         get() = dashboard.rpm.value

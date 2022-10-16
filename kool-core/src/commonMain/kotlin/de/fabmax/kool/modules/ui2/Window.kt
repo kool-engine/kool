@@ -14,6 +14,9 @@ open class WindowState {
     val width: MutableStateValue<Dimension> = mutableStateOf(FitContent)
     val height: MutableStateValue<Dimension> = mutableStateOf(FitContent)
 
+    val widthDocked: MutableStateValue<Dp> = mutableStateOf(Dp.ZERO)
+    val heightDocked: MutableStateValue<Dp> = mutableStateOf(Dp.ZERO)
+
     val closeButtonHovered = mutableStateOf(false)
     val minimizeButtonHovered = mutableStateOf(false)
     val maximizeButtonHovered = mutableStateOf(false)
@@ -41,6 +44,12 @@ open class WindowState {
     fun setWindowBounds(x: Dp, y: Dp, width: Dimension, height: Dimension) {
         setWindowLocation(x, y)
         setWindowSize(width, height)
+    }
+
+    fun setDockedWindowBounds(x: Dp, y: Dp, width: Dp, height: Dp) {
+        setWindowLocation(x, y)
+        widthDocked.set(width)
+        heightDocked.set(height)
     }
 }
 
@@ -133,9 +142,11 @@ fun Window(
             }
 
             // set window location and size according to window state
+            val width = if (window.isDocked) state.widthDocked else state.width
+            val height = if (window.isDocked) state.heightDocked else state.height
             window.modifier
-                .width(state.width.use())
-                .height(if (window.modifier.isMinimizedToTitle) FitContent else state.height.use())
+                .width(width.use())
+                .height(if (window.modifier.isMinimizedToTitle) FitContent else height.use())
                 .align(AlignmentX.Start, AlignmentY.Top)
                 .margin(start = state.x.use(), top = state.y.use())
 
@@ -165,8 +176,14 @@ class WindowMoveDragHandler(val window: WindowScope) : Draggable {
 
     override fun onDrag(ev: PointerEvent) {
         with(window) {
-            windowState.x.set(Dp.fromPx(windowState.dragStartX + ev.pointer.dragDeltaX.toFloat()))
-            windowState.y.set(Dp.fromPx(windowState.dragStartY + ev.pointer.dragDeltaY.toFloat()))
+            val mvX = ev.pointer.dragDeltaX.toFloat()
+            val mvY = ev.pointer.dragDeltaY.toFloat()
+            if (ev.screenPosition.x > window.uiNode.rightPx) {
+                windowState.dragStartX = ev.screenPosition.x - window.uiNode.widthPx * 0.5f - mvX
+            }
+            windowState.x.set(Dp.fromPx(windowState.dragStartX + mvX))
+            windowState.y.set(Dp.fromPx(windowState.dragStartY + mvY))
+
             modifier.dockingHost?.onWindowMove(ev, this)
         }
     }

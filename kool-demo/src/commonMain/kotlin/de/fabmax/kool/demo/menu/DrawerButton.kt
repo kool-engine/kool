@@ -5,7 +5,7 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.Color
 
-class DrawerButton(val menu: DemoMenu) : ComposableComponent {
+class DrawerButton(val menu: DemoMenu) : Composable {
 
     private val isHovered = mutableStateOf(false)
     private val animator = AnimationState(0.25f)

@@ -6,7 +6,7 @@ import de.fabmax.kool.demo.UiSizes
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.Color
 
-class DemoListContent(val menu: DemoMenu) : ComposableComponent {
+class DemoListContent(val menu: DemoMenu) : Composable {
     private val nonHiddenDemoItems = mutableListOf<DemoItem>()
     private val allDemoItems = mutableListOf<DemoItem>()
 

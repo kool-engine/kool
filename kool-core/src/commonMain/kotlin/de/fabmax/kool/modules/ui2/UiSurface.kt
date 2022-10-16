@@ -70,6 +70,19 @@ open class UiSurface(
         }
     }
 
+    /**
+     * Brings this surface to top inside a [DockingHost] context.
+     */
+    fun bringToTop() {
+        // kinda hacky: docked surfaces are ordered by their time of last user input
+        // give this surface an input time 1ms in the future to force it on top
+        lastInputTime = Time.gameTime + 0.001
+
+        windowScope?.let {
+            it.windowState.dockedTo.value?.bringToTop(it)
+        }
+    }
+
     private fun updateUi(updateEvent: RenderPass.UpdateEvent) {
         val pt = PerfTimer()
         nodeIndex = 0

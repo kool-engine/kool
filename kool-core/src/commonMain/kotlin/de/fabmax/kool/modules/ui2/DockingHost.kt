@@ -168,7 +168,7 @@ class DockingHost : Group() {
         }
     }
 
-    class DockingSlot(val position: DockPosition, val container: DockingContainer) : ComposableComponent {
+    class DockingSlot(val position: DockPosition, val container: DockingContainer) : Composable {
         val isHovered = mutableStateOf(false)
 
         val boundsMinPx = MutableVec2f()

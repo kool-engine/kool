@@ -12,7 +12,7 @@ class DockingContainer(
     val position: DockingHost.DockPosition,
     widthWeight: Float,
     heightWeight: Float
-) : ComposableComponent {
+) : Composable {
 
     var depth = 0
 
@@ -80,7 +80,7 @@ class DockingContainer(
         dockedWindows += window
         window.apply {
             windowState.dockedTo.set(this@DockingContainer)
-            windowState.setWindowBounds(
+            windowState.setDockedWindowBounds(
                 Dp.fromPx(boundsMinPx.x), Dp.fromPx(boundsMinPx.y),
                 Dp.fromPx(width), Dp.fromPx(height),
             )
@@ -131,7 +131,7 @@ class DockingContainer(
         val w = Dp.fromPx(boundsMaxPx.x - boundsMinPx.x)
         val h = Dp.fromPx(boundsMaxPx.y - boundsMinPx.y)
         dockedWindows.forEach {
-            it.windowState.setWindowBounds(x, y, w, h)
+            it.windowState.setDockedWindowBounds(x, y, w, h)
         }
     }
 

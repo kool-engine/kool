@@ -20,7 +20,7 @@ interface UiScope {
         return use(surface)
     }
 
-    operator fun ComposableComponent.invoke() {
+    operator fun Composable.invoke() {
         compose()
     }
 }

@@ -7,7 +7,7 @@ import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 import kotlin.math.round
 
-class Timer(val vehicleUi: VehicleUi) : ComposableComponent {
+class Timer(val vehicleUi: VehicleUi) : Composable {
     val trackTime = mutableStateOf(0f)
     val sec1Time = mutableStateOf(0f)
     val sec2Time = mutableStateOf(0f)

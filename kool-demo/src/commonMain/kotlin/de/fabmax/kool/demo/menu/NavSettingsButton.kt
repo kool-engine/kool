@@ -9,7 +9,7 @@ import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 
-class NavSettingsButton(val menu: DemoMenu) : ComposableComponent {
+class NavSettingsButton(val menu: DemoMenu) : Composable {
 
     private val isHovered = mutableStateOf(false)
     private val animator = AnimationState(0.25f)

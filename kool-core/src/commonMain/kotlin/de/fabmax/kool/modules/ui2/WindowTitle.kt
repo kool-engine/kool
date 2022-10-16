@@ -2,7 +2,6 @@ package de.fabmax.kool.modules.ui2
 
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.Time
 
 fun WindowScope.TitleBar(
     title: String = surface.name ?: "Window",
@@ -69,14 +68,7 @@ fun WindowScope.DockingTabsBar(isDraggable: Boolean = true): Boolean {
                         .alignY(AlignmentY.Bottom)
 
                     Button(wnd.surface.name ?: "Window $i") {
-                        modifier
-                            .onClick {
-                                // kinda hacky: docked surfaces are ordered by their time of last user input
-                                // give the clicked surface a time 1ms in the future to force it on top
-                                wnd.surface.lastInputTime = Time.gameTime + 0.001
-                                // make the new tab visible
-                                dockingContainer.bringToTop(wnd)
-                            }
+                        modifier.onClick { wnd.surface.bringToTop() }
 
                         // set a bit different button style: click feedback is disabled (doesn't work with the way
                         // the tabs are switched)

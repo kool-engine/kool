@@ -4,7 +4,7 @@ import de.fabmax.kool.demo.*
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.Color
 
-class SettingsContent(val menu: DemoMenu) : ComposableComponent {
+class SettingsContent(val menu: DemoMenu) : Composable {
     override fun UiScope.compose() = Column {
         modifier
             .height(Grow.Std)

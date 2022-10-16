@@ -8,7 +8,7 @@ import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.Color
 
 
-class GMeter(val dashboard: Dashboard) : ComposableComponent {
+class GMeter(val dashboard: Dashboard) : Composable {
 
     private val bgColor = Color.WHITE.withAlpha(0.2f)
     private val gridColor = Color.WHITE.withAlpha(0.1f)
