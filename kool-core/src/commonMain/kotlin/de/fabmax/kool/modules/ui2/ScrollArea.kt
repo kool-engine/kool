@@ -3,7 +3,6 @@ package de.fabmax.kool.modules.ui2
 import de.fabmax.kool.util.Color
 
 fun UiScope.ScrollArea(
-    state: ScrollState,
     width: Dimension = Grow.Std,
     height: Dimension = Grow.Std,
     withVerticalScrollbar: Boolean = true,
@@ -12,6 +11,7 @@ fun UiScope.ScrollArea(
     containerModifier: ((UiModifier) -> Unit)? = null,
     vScrollbarModifier: ((ScrollbarModifier) -> Unit)? = null,
     hScrollbarModifier: ((ScrollbarModifier) -> Unit)? = null,
+    state: ScrollState = weakRememberScrollState(),
     block: ScrollPaneScope.() -> Unit
 ) {
     Box {

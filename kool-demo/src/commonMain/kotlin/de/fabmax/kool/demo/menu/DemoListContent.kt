@@ -40,7 +40,6 @@ class DemoListContent(val menu: DemoMenu) : Composable {
             .width(Grow.Std)
 
         LazyList(
-            weakRememberListState(),
             containerModifier = { it.background(null) },
             vScrollbarModifier = { it.colors(color = Color.WHITE.withAlpha(0.2f), hoverColor = Color.WHITE.withAlpha(0.4f)) }
         ) {

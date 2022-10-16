@@ -7,7 +7,7 @@ import kotlin.math.min
 
 class GameOfLifeWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
 
-    private val windowState = WindowState().apply { setWindowLocation(Dp(400f), Dp(400f)) }
+    private val windowState = WindowState()
 
     private val world = GameWorld()
     private val worldRenderer = GameWorldRenderer()
@@ -44,7 +44,6 @@ class GameOfLifeWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
         world.gameState.use()
 
         ScrollArea(
-            weakRememberScrollState(),
             containerModifier = {
                 it
                     .margin(sizes.gap)

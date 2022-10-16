@@ -9,7 +9,7 @@ import kotlin.math.roundToInt
 
 class ThemeEditorWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
 
-    private val windowState = WindowState().apply { setWindowBounds(Dp(370f), Dp(370f), Dp(500f), Dp(700f)) }
+    private val windowState = WindowState().apply { setWindowSize(Dp(500f), Dp(700f)) }
 
     private val presetsDark = listOf(
         "Yellow" to Colors.singleColorDark(MdColor.YELLOW),
@@ -179,7 +179,6 @@ class ThemeEditorWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
             }
 
             LazyList(
-                weakRememberListState(),
                 containerModifier = {
                     it
                         .margin(sizes.gap)

@@ -30,6 +30,7 @@ class WeakMemory {
             return if (nextEntry < entries.size) {
                 entries[nextEntry++]
             } else {
+                nextEntry++
                 val newEntry = provider()
                 entries += newEntry
                 return newEntry

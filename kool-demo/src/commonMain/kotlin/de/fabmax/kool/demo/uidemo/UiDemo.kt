@@ -73,6 +73,8 @@ class UiDemo : DemoScene("UI Demo") {
         spawnWindow(LauncherWindow(this@UiDemo), listOf(DockingHost.DockPosition.Start to 0.15f))
         spawnWindow(ThemeEditorWindow(this@UiDemo), listOf(DockingHost.DockPosition.End to 0.85f, DockingHost.DockPosition.End to 0.3f))
 
+        spawnWindow(TextStyleWindow(this@UiDemo))
+
         // add a sidebar for the demo menu
         +Panel {
             surface.colors = selectedColors.use()
@@ -99,7 +101,7 @@ class UiDemo : DemoScene("UI Demo") {
                 val font = MsdfFont(sizePts = sizes.largeText.sizePts * 1.25f, weight = MsdfFont.WEIGHT_BOLD)
                 modifier
                     .textColor(fgColor)
-                    .textRotation(TextRotation.Rotation270)
+                    .textRotation(270f)
                     .font(font)
                     .padding(top = UiSizes.baseSize)
                     .align(AlignmentX.Center, AlignmentY.Top)

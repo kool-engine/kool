@@ -6,7 +6,7 @@ import de.fabmax.kool.util.MdColor
 
 class BasicUiWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
 
-    private val windowState = WindowState().apply { setWindowBounds(Dp(200f), Dp(200f), Dp(500f), Dp(700f)) }
+    private val windowState = WindowState().apply { setWindowSize(Dp(500f), Dp(700f)) }
 
     override val windowSurface: UiSurface = Window(windowState, name = "Demo Window") {
         surface.sizes = uiDemo.selectedUiSize.use()
@@ -106,7 +106,6 @@ class BasicUiWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
             modifier.margin(bottom = sizes.gap)
         }
         ScrollArea(
-            weakRememberScrollState(),
             vScrollbarModifier = {
                 it.colors(
                     trackColor = colors.secondaryVariant.withAlpha(0.1f),
@@ -138,12 +137,12 @@ class BasicUiWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
                     }
                 }
                 Row {
-                    for (r in TextRotation.values()) {
-                        Text("Another text with rotation: \"$r\"") {
+                    for (r in 0..270 step 90) {
+                        Text("Another text with rotation: $r") {
                             modifier
                                 .margin(sizes.smallGap)
                                 .padding(sizes.largeGap)
-                                .textRotation(r)
+                                .textRotation(r.toFloat())
                                 .border(RoundRectBorder(colors.primaryVariant, sizes.gap, 2.dp, 6.dp))
                         }
                     }
@@ -158,7 +157,6 @@ class BasicUiWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
         val listItems = weakRemember { mutableStateListOf<String>().apply { for (i in 1..500) { add("Item $i") } } }
         val hoveredItemIndex = weakRememberState(-1)
         LazyList(
-            weakRememberListState(),
             vScrollbarModifier = {
                 it.colors(
                     trackColor = colors.secondaryVariant.withAlpha(0.1f),

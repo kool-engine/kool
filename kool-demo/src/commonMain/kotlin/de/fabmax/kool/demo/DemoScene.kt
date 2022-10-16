@@ -76,8 +76,6 @@ abstract class DemoScene(val name: String) {
         val accent = demoEntry?.color ?: MdColor.PINK
         val titleTxt = title ?: demoEntry?.title ?: "Demo"
 
-        val scrollState = ScrollState()
-
         return Panel(
             colors = Colors.singleColorDark(accent, Color("101010d0"))
         ) {
@@ -97,7 +95,6 @@ abstract class DemoScene(val name: String) {
             TitleBar(titleTxt, cornerRadius)
 
             ScrollArea(
-                state = scrollState,
                 withHorizontalScrollbar = false,
                 containerModifier = { it.background(null) }
             ) {

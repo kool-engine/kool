@@ -36,6 +36,12 @@ class LauncherWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
                 launchOrBringToTop(allowMultiInstances.use(), BasicUiWindow::class) { BasicUiWindow(uiDemo) }
             }
         }
+        Button("Text Style") {
+            launcherButtonStyle("Signed-distance-field font rendering showcase")
+            modifier.onClick {
+                launchOrBringToTop(allowMultiInstances.use(), TextStyleWindow::class) { TextStyleWindow(uiDemo) }
+            }
+        }
         Button("Conway's Game of Life") {
             launcherButtonStyle("Game of Life simulation / toggle-button benchmark")
             modifier.onClick {

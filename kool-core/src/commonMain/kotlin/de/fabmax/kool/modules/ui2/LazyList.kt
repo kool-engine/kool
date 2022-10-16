@@ -45,7 +45,6 @@ enum class ListOrientation {
 }
 
 fun UiScope.LazyList(
-    state: LazyListState,
     layout: Layout = ColumnLayout,
     width: Dimension = Grow.Std,
     height: Dimension = Grow.Std,
@@ -56,17 +55,18 @@ fun UiScope.LazyList(
     scrollPaneModifier: ((ScrollPaneModifier) -> Unit)? = null,
     vScrollbarModifier: ((ScrollbarModifier) -> Unit)? = null,
     hScrollbarModifier: ((ScrollbarModifier) -> Unit)? = null,
+    state: LazyListState = weakRememberListState(),
     block: LazyListScope.() -> Unit
 ) {
     ScrollArea(
-        state,
         width, height,
         withVerticalScrollbar,
         withHorizontalScrollbar,
         scrollbarColor,
         containerModifier,
         vScrollbarModifier,
-        hScrollbarModifier
+        hScrollbarModifier,
+        state
     ) {
         modifier.width(Grow.Std)
         scrollPaneModifier?.let { it(modifier) }

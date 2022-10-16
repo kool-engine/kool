@@ -1,9 +1,13 @@
 package de.fabmax.kool.modules.ui2
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.math.MutableVec2f
+import de.fabmax.kool.math.MutableVec4f
+import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.scene.geometry.TextProps
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Font
+import de.fabmax.kool.util.TextMetrics
 
 interface TextScope : UiScope {
     override val modifier: TextModifier
@@ -15,7 +19,7 @@ open class TextModifier(surface: UiSurface) : UiModifier(surface) {
     var textColor: Color by property { it.colors.onBackground }
     var textAlignX: AlignmentX by property(AlignmentX.Start)
     var textAlignY: AlignmentY by property(AlignmentY.Top)
-    var textRotation: TextRotation by property(TextRotation.Rotation0)
+    var textRotation: Float by property(0f)
     var baselineBottomMargin: Dp? by property(null)
     var baselineTopMargin: Dp? by property(null)
 }
@@ -43,14 +47,7 @@ fun <T: TextModifier> T.textAlign(alignX: AlignmentX = textAlignX, alignY: Align
     return this
 }
 
-fun <T: TextModifier> T.textRotation(rotation: TextRotation): T { textRotation = rotation; return this }
-
-enum class TextRotation(val isHorizontal: Boolean) {
-    Rotation0(true),
-    Rotation90(false),
-    Rotation180(true),
-    Rotation270(false)
-}
+fun <T: TextModifier> T.textRotation(rotation: Float): T { textRotation = rotation; return this }
 
 inline fun UiScope.Text(text: String = "", block: TextScope.() -> Unit): TextScope {
     val textNd = uiNode.createChild(TextNode::class, TextNode.factory)
@@ -64,6 +61,8 @@ open class TextNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surfac
 
     private val textProps = TextProps(Font.DEFAULT_FONT)
     private val textCache = CachedText(this)
+    private val textBounds = MutableVec4f()
+    private var isOddRotation = false
 
     private val extraItalicPadding: Float
         get() = if (modifier.font.style == Font.ITALIC) (modifier.font.sizePts * 0.1f).dp.px else 0f
@@ -71,8 +70,9 @@ open class TextNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surfac
     override fun measureContentSize(ctx: KoolContext) {
         surface.applyFontScale(modifier.font, ctx)
         val textMetrics = textCache.getTextMetrics(modifier.text, modifier.font)
-        val textWidth = if (modifier.textRotation.isHorizontal) textMetrics.width else textMetrics.height
-        val textHeight = if (modifier.textRotation.isHorizontal) textMetrics.height else textMetrics.width
+        transformMetrics(modifier.textRotation, textMetrics)
+        val textWidth = textBounds.z
+        val textHeight = textBounds.w
         val modWidth = modifier.width
         val modHeight = modifier.height
         val measuredWidth = if (modWidth is Dp) modWidth.px else textWidth + paddingStartPx + paddingEndPx + extraItalicPadding
@@ -82,36 +82,17 @@ open class TextNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surfac
 
     override fun render(ctx: KoolContext) {
         super.render(ctx)
+        val textMetrics = textCache.textMetrics
 
         textProps.apply {
             font = modifier.font
             text = modifier.text
             isYAxisUp = false
 
-            val textMetrics = textCache.textMetrics
-            val textWidth = if (modifier.textRotation.isHorizontal) textMetrics.width else textMetrics.height
-            val textHeight = if (modifier.textRotation.isHorizontal) textMetrics.height else textMetrics.width
-
-            val txtX: Float
-            val txtY: Float
-            when (modifier.textRotation) {
-                TextRotation.Rotation0 -> {
-                    txtX = 0f
-                    txtY = textMetrics.yBaseline
-                }
-                TextRotation.Rotation90 -> {
-                    txtX = textWidth - textMetrics.yBaseline
-                    txtY = 0f
-                }
-                TextRotation.Rotation180 -> {
-                    txtX = textWidth
-                    txtY = textHeight - textMetrics.yBaseline
-                }
-                TextRotation.Rotation270 -> {
-                    txtX = textMetrics.yBaseline
-                    txtY = textHeight
-                }
-            }
+            val txtX = textBounds.x
+            val txtY = textBounds.y
+            val textWidth = textBounds.z
+            val textHeight = textBounds.w
 
             val oriX = txtX + when (modifier.textAlignX) {
                 AlignmentX.Start -> paddingStartPx
@@ -138,7 +119,65 @@ open class TextNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surfac
 
             origin.set(oriX, oriY, 0f)
         }
-        textCache.addTextGeometry(getTextBuilder(modifier.font, ctx).geometry, textProps, modifier.textColor, modifier.textRotation)
+
+        val builder = getTextBuilder(modifier.font, ctx)
+        if (!isOddRotation) {
+            textCache.addTextGeometry(builder.geometry, textProps, modifier.textColor, modifier.textRotation)
+        } else {
+            builder.configured(modifier.textColor) {
+                translate(widthPx * 0.5f, heightPx * 0.5f, 0f)
+                rotate(modifier.textRotation, Vec3f.Z_AXIS)
+                translate(-textMetrics.width * 0.5f, textMetrics.yBaseline - textMetrics.height * 0.5f, 0f)
+                textProps.origin.set(Vec3f.ZERO)
+                text(textProps)
+            }
+        }
+    }
+
+    private fun transformMetrics(rotation: Float, inMetrics: TextMetrics) {
+        isOddRotation = false
+        when (rotation) {
+            0f -> {
+                textBounds.x = 0f
+                textBounds.y = inMetrics.yBaseline
+                textBounds.z = inMetrics.width
+                textBounds.w = inMetrics.height
+            }
+            90f -> {
+                textBounds.x = inMetrics.height - inMetrics.yBaseline
+                textBounds.y = 0f
+                textBounds.z = inMetrics.height
+                textBounds.w = inMetrics.width
+            }
+            180f -> {
+                textBounds.x = inMetrics.width
+                textBounds.y = inMetrics.height - inMetrics.yBaseline
+                textBounds.z = inMetrics.width
+                textBounds.w = inMetrics.height
+            }
+            270f -> {
+                textBounds.x = inMetrics.yBaseline
+                textBounds.y = inMetrics.width
+                textBounds.z = inMetrics.height
+                textBounds.w = inMetrics.width
+            }
+            else -> {
+                isOddRotation = true
+                val a = MutableVec2f(0f, inMetrics.height).rotate(rotation)
+                val b = MutableVec2f(inMetrics.width, 0f).rotate(rotation)
+                val c = MutableVec2f(inMetrics.width, inMetrics.height).rotate(rotation)
+
+                val lt = minOf(0f, a.x, b.x, c.x)
+                val rt = maxOf(0f, a.x, b.x, c.x)
+                val tp = minOf(0f, a.y, b.y, c.y)
+                val dn = maxOf(0f, a.y, b.y, c.y)
+
+                textBounds.x = 0f
+                textBounds.y = 0f
+                textBounds.z = rt - lt
+                textBounds.w = dn - tp
+            }
+        }
     }
 
     companion object {
