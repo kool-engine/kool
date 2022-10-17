@@ -33,9 +33,11 @@ class NavDemoButton(val menu: DemoMenu) : Composable {
             val bgColor = when {
                 isHovered.value -> colors.primaryVariant.withAlpha(DemoMenu.navBarButtonHoveredAlpha)
                 menu.content.value == DemoMenu.MenuContent.Demos -> colors.primaryVariant.withAlpha(DemoMenu.navBarButtonSelectedAlpha)
-                else -> colors.primaryVariant.withAlpha(DemoMenu.navBarButtonAlpha)
+                else -> null
             }
-            getUiPrimitives().localRect(0f, 0f, widthPx, heightPx, bgColor)
+            bgColor?.let {
+                getUiPrimitives().localRect(0f, 0f, widthPx, heightPx, it)
+            }
 
             getPlainBuilder(UiSurface.LAYER_FLOATING).configured(buttonColor) {
                 val r = innerWidthPx * 0.45f

@@ -14,6 +14,9 @@ open class WindowState {
     val width: MutableStateValue<Dimension> = mutableStateOf(FitContent)
     val height: MutableStateValue<Dimension> = mutableStateOf(FitContent)
 
+    val floatingAlignmentX = mutableStateOf(AlignmentX.Start)
+    val floatingAlignmentY = mutableStateOf(AlignmentY.Top)
+
     val widthDocked: MutableStateValue<Dp> = mutableStateOf(Dp.ZERO)
     val heightDocked: MutableStateValue<Dp> = mutableStateOf(Dp.ZERO)
 
@@ -27,9 +30,11 @@ open class WindowState {
     val isFocused = mutableStateOf(false)
     val dockedTo = mutableStateOf<DockingContainer?>(null)
 
-    fun setWindowLocation(x: Dp, y: Dp) {
+    fun setWindowLocation(x: Dp, y: Dp, alignX: AlignmentX = AlignmentX.Start, alignY: AlignmentY = AlignmentY.Top) {
         this.x.set(x)
         this.y.set(y)
+        this.floatingAlignmentX.set(alignX)
+        this.floatingAlignmentY.set(alignY)
     }
 
     fun setWindowSize(width: Dimension, height: Dimension) {
@@ -138,13 +143,29 @@ fun Window(
             }
 
             // set window location and size according to window state
-            val width = if (window.isDocked) state.widthDocked else state.width
-            val height = if (window.isDocked) state.heightDocked else state.height
-            window.modifier
-                .width(width.use())
-                .height(if (window.modifier.isMinimizedToTitle) FitContent else height.use())
-                .align(AlignmentX.Start, AlignmentY.Top)
-                .margin(start = state.x.use(), top = state.y.use())
+            if (window.isDocked) {
+                window.modifier
+                    .width(state.widthDocked.use())
+                    .height(state.heightDocked.use())
+                    .align(AlignmentX.Start, AlignmentY.Top)
+                    .margin(start = state.x.use(), top = state.y.use())
+            } else {
+                window.modifier
+                    .width(state.width.use())
+                    .height(if (window.modifier.isMinimizedToTitle) FitContent else state.height.use())
+                    .align(state.floatingAlignmentX.use(), state.floatingAlignmentY.use())
+
+                if (state.floatingAlignmentX.value == AlignmentX.End) {
+                    window.modifier.margin(end = state.x.use())
+                } else {
+                    window.modifier.margin(start = state.x.use())
+                }
+                if (state.floatingAlignmentY.value == AlignmentY.Bottom) {
+                    window.modifier.margin(bottom = state.y.use())
+                } else {
+                    window.modifier.margin(top = state.y.use())
+                }
+            }
 
             // register resize hover and drag listeners if window is resizable
             if (window.modifier.isVerticallyResizable || window.modifier.isHorizontallyResizable) {
@@ -163,8 +184,8 @@ class WindowMoveDragHandler(val window: WindowScope) : Draggable {
             if (getBorderFlags(ev.position) != 0) {
                 ev.reject()
             } else {
-                windowState.dragStartX = windowState.x.value.px
-                windowState.dragStartY = windowState.y.value.px
+                windowState.dragStartX = window.uiNode.leftPx
+                windowState.dragStartY = window.uiNode.topPx
                 modifier.dockingHost?.onWindowMoveStart(ev, this)
             }
         }
@@ -177,8 +198,10 @@ class WindowMoveDragHandler(val window: WindowScope) : Draggable {
             if (ev.screenPosition.x > window.uiNode.rightPx) {
                 windowState.dragStartX = ev.screenPosition.x - window.uiNode.widthPx * 0.5f - mvX
             }
-            windowState.x.set(Dp.fromPx(windowState.dragStartX + mvX))
-            windowState.y.set(Dp.fromPx(windowState.dragStartY + mvY))
+            windowState.setWindowLocation(
+                Dp.fromPx(windowState.dragStartX + mvX),
+                Dp.fromPx(windowState.dragStartY + mvY)
+            )
 
             modifier.dockingHost?.onWindowMove(ev, this)
         }

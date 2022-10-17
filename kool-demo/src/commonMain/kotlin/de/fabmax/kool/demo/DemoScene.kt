@@ -4,7 +4,6 @@ import de.fabmax.kool.AssetManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.demo.menu.TitleBgRenderer
-import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Color
@@ -19,7 +18,12 @@ abstract class DemoScene(val name: String) {
     val scenes = mutableListOf(mainScene)
 
     val isMenu = mutableStateOf(true)
-    private val isCloseHovered = mutableStateOf(false)
+    val isMenuMinimized = mutableStateOf(false)
+
+    private val windowState = WindowState().apply {
+        setWindowLocation(Dp(100f), Dp(100f), AlignmentX.End, AlignmentY.Top)
+        setWindowSize(UiSizes.menuWidth, FitContent)
+    }
 
     var demoLoader: DemoLoader? = null
     var loadingScreen: LoadingScreen? = null
@@ -76,84 +80,88 @@ abstract class DemoScene(val name: String) {
         val accent = demoEntry?.color ?: MdColor.PINK
         val titleTxt = title ?: demoEntry?.title ?: "Demo"
 
-        return Panel(
+        return Window(
+            windowState,
             colors = Colors.singleColorDark(accent, Color("101010d0"))
         ) {
             if (!isMenu.use()) {
-                return@Panel Unit
+                // reset window location, so that it will appear at default location when it is shown again
+                windowState.setWindowLocation(Dp(100f), Dp(100f), AlignmentX.End, AlignmentY.Top)
+                isMenuMinimized.set(false)
+                // hide window
+                surface.isVisible = false
+                return@Window
             }
+            surface.isVisible = true
+            windowState.setWindowSize(UiSizes.menuWidth, FitContent)
 
             surface.sizes = Settings.uiSize.use().sizes
             val cornerRadius = sizes.gap
             modifier
-                .width(UiSizes.menuWidth)
-                .height(Grow(1f, max = FitContent))
                 .align(AlignmentX.End, AlignmentY.Top)
                 .margin(UiSizes.baseSize * 2f)
                 .background(RoundRectBackground(colors.background, cornerRadius))
+                .isResizable(false, true)
+                .isMinimizedToTitle(isMenuMinimized.use())
 
-            TitleBar(titleTxt, cornerRadius)
+            TitleBar(titleTxt, cornerRadius, isMenuMinimized.value)
 
-            ScrollArea(
-                withHorizontalScrollbar = false,
-                containerModifier = { it.background(null) }
-            ) {
-                modifier.width(Grow.Std).margin(top = sizes.smallGap, bottom = sizes.smallGap * 0.5f)
-                Column(width = Grow.Std, block = block)
+            if (!isMenuMinimized.value) {
+                ScrollArea(
+                    withHorizontalScrollbar = false,
+                    containerModifier = { it.background(null) }
+                ) {
+                    modifier.width(Grow.Std).margin(top = sizes.smallGap, bottom = sizes.smallGap * 0.5f)
+                    Column(width = Grow.Std, block = block)
+                }
             }
         }
     }
 
-    private fun UiScope.TitleBar(titleTxt: String, cornerRadius: Dp) {
+    private fun WindowScope.TitleBar(titleTxt: String, cornerRadius: Dp, bottomRounded: Boolean) {
         val titleFrom = demoEntry?.category?.fromColor ?: 0f
         val titleTo = demoEntry?.category?.toColor ?: 0.2f
+
+        val isMinimized = modifier.isMinimizedToTitle
+        val isMinimizeHovered = weakRememberState(false)
 
         Box {
             modifier
                 .width(Grow.Std)
                 .height(UiSizes.baseSize)
                 .background(RoundRectBackground(colors.primary, cornerRadius))
+                .dragListener(WindowMoveDragHandler(this@TitleBar))
 
             Text(titleTxt) {
+                val bgRadius = cornerRadius.px + 1f
+                val bottomRadius = if (bottomRounded) bgRadius else 0f
                 modifier
                     .width(Grow.Std)
                     .height(UiSizes.baseSize)
-                    .background(TitleBgRenderer(titleBgMesh, titleFrom, titleTo, (cornerRadius + 1.dp).px))
+                    .background(TitleBgRenderer(titleBgMesh, titleFrom, titleTo, bgRadius, bottomRadius))
                     .textColor(colors.onPrimary)
                     .font(sizes.largeText)
                     .textAlign(AlignmentX.Center, AlignmentY.Center)
             }
 
+            val minButtonBgColor = if (isMinimizeHovered.use()) MdColor.RED tone 600 else Color.WHITE.withAlpha(0.8f)
             Box {
-                val closeButtonBgColor = if (isCloseHovered.use()) MdColor.RED tone 600 else Color.WHITE.withAlpha(0.8f)
-                val closeButtonFgColor = if (isCloseHovered.use()) Color.WHITE else colors.primaryVariant
                 modifier
-                    .width(sizes.gap * 1.75f)
-                    .height(sizes.gap * 1.75f)
+                    .size(sizes.gap * 1.75f, sizes.gap * 1.75f)
                     .align(AlignmentX.End, AlignmentY.Center)
                     .margin(end = sizes.gap * 1.2f)
+                    .background(CircularBackground(minButtonBgColor))
                     .zLayer(UiSurface.LAYER_FLOATING)
-                    .onClick { isMenu.set(false) }
-                    .onEnter { isCloseHovered.set(true) }
-                    .onExit { isCloseHovered.set(false) }
-                    .background(UiRenderer {
-                        it.apply {
-                            val r = widthPx * 0.5f
-                            getUiPrimitives().localCircle(r, r, r, closeButtonBgColor)
-                            getPlainBuilder().configured(closeButtonFgColor) {
-                                translate(r, r, 0f)
-                                rotate(45f, Vec3f.Z_AXIS)
-                                rect {
-                                    size.set(r * 1.3f, r * 0.2f)
-                                    origin.set(size.x * -0.5f, size.y * -0.5f, 0f)
-                                }
-                                rect {
-                                    size.set(r * 0.2f, r * 1.3f)
-                                    origin.set(size.x * -0.5f, size.y * -0.5f, 0f)
-                                }
-                            }
-                        }
-                    })
+
+                Arrow(if (isMinimized) -90f else 90f) {
+                    modifier
+                        .size(Grow.Std, Grow.Std)
+                        .colors(colors.primaryVariant, Color.WHITE)
+                        .onClick { isMenuMinimized.toggle() }
+                        .onEnter { isMinimizeHovered.set(true) }
+                        .onExit { isMinimizeHovered.set(false) }
+                        .margin(sizes.smallGap * 0.7f)
+                }
             }
         }
     }

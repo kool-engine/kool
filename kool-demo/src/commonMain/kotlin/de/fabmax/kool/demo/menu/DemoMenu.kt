@@ -97,11 +97,13 @@ class DemoMenu(val demoLoader: DemoLoader) {
 
         Text("kool Demo Menu") {
             modifier
+                .height(Grow.Std)
                 .textRotation(270f)
                 .textColor(colors.primaryVariant)
                 .font(MsdfFont(sizePts = sizes.largeText.sizePts * 1.25f, weight = MsdfFont.WEIGHT_LIGHT))
-                .margin(top = sizes.gap)
+                .margin(bottom = sizes.gap)
                 .alignX(AlignmentX.Center)
+                .textAlignY(AlignmentY.Bottom)
         }
     }
 
@@ -113,7 +115,6 @@ class DemoMenu(val demoLoader: DemoLoader) {
     companion object {
         const val navBarButtonSelectedAlpha = 0.20f
         const val navBarButtonHoveredAlpha = 0.35f
-        const val navBarButtonAlpha = 0.1f
 
         val titleBgMesh = TitleBgRenderer.BgMesh()
     }
