@@ -153,7 +153,7 @@ abstract class DemoScene(val name: String) {
                     .background(CircularBackground(minButtonBgColor))
                     .zLayer(UiSurface.LAYER_FLOATING)
 
-                Arrow(if (isMinimized) -90f else 90f) {
+                Arrow(if (isMinimized) 90f else -90f) {
                     modifier
                         .size(Grow.Std, Grow.Std)
                         .colors(colors.primaryVariant, Color.WHITE)

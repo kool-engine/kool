@@ -102,12 +102,15 @@ class DemoLoader(ctx: KoolContext, startScene: String? = null) {
                 // demo fully loaded
                 if (shouldAutoHideMenu > 0f) {
                     shouldAutoHideMenu -= Time.deltaT
-                    if (!initShownMenu && Settings.showMenuOnStartup.value) {
-                        menu.isExpanded = true
-                        initShownMenu = true
-                    }
-                    if (shouldAutoHideMenu <= 0f) {
-                        menu.isExpanded = false
+                    if (Settings.showMenuOnStartup.value) {
+                        if (!initShownMenu) {
+                            menu.isExpanded = true
+                            initShownMenu = true
+                        }
+                        if (shouldAutoHideMenu <= 0f
+                            && ctx.inputMgr.pointerState.primaryPointer.x > UiSizes.menuWidth.px) {
+                            menu.isExpanded = false
+                        }
                     }
                 }
             }

@@ -95,13 +95,13 @@ class DemoMenu(val demoLoader: DemoLoader) {
         navDemoButton()
         navSettingsButton()
 
-        Text("kool Demo Menu") {
+        Text("kool Demos") {
             modifier
                 .height(Grow.Std)
                 .textRotation(270f)
                 .textColor(colors.primaryVariant)
                 .font(MsdfFont(sizePts = sizes.largeText.sizePts * 1.25f, weight = MsdfFont.WEIGHT_LIGHT))
-                .margin(bottom = sizes.gap)
+                .margin(bottom = sizes.gap * 1.5f)
                 .alignX(AlignmentX.Center)
                 .textAlignY(AlignmentY.Bottom)
         }
