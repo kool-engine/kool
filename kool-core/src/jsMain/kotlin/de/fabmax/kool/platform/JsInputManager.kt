@@ -135,7 +135,9 @@ class JsInputManager(private val canvas: HTMLCanvasElement, private val props: J
             }
             keyEvent(KeyEvent(keyCode, localKeyCode, event, mods))
         }
-        if (ev.key.length == 1 && mods == 0) {
+        // do not issue an charType() if a modifier key is down (e.g. Ctrl+C), Shift is fine however (it's just
+        // a capital letter then...)
+        if (ev.key.length == 1 && (mods and KEY_MOD_SHIFT.inv()) == 0) {
             charTyped(ev.key[0])
         }
 
