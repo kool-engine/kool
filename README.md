@@ -209,6 +209,7 @@ but was implemented from scratch. Here is a small example:
 ```kotlin
 fun main() {
     val ctx = createDefaultContext()
+    
     ctx.scenes += UiScene(clearScreen = true) {
         +Panel(colors = Colors.singleColorLight(MdColor.LIGHT_GREEN)) {
             modifier
@@ -231,6 +232,8 @@ fun main() {
             }
         }
     }
+    
+    ctx.run()
 }
 ```
 Here, we create a new `UiScene` and add a `Panel` to it, which serves as top-level container for our UI content. Within
