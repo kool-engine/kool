@@ -316,6 +316,7 @@ open class TextFieldNode(parent: UiNode?, surface: UiSurface)
                 InputManager.KEY_HOME -> editText.moveCaret(EditableText.MOVE_START, keyEvent.isShiftDown)
                 InputManager.KEY_END -> editText.moveCaret(EditableText.MOVE_END, keyEvent.isShiftDown)
                 InputManager.KEY_ESC -> surface.requestFocus(null)
+                InputManager.KEY_TAB -> surface.cycleFocus(backwards = keyEvent.isShiftDown)
                 InputManager.KEY_ENTER -> modifier.onEnterPressed?.invoke(editText.text)
                 else -> {
                     triggerUpdate = false

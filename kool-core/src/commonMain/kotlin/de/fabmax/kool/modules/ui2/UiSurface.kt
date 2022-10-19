@@ -35,6 +35,8 @@ open class UiSurface(
     private var requiresUpdate: Boolean = true
     internal var nodeIndex = 0
 
+    private val focusableNodes = mutableListOf<Focusable>()
+
     var lastInputTime = 0.0
 
     // top-level window scope if this UiSurface hosts a window
@@ -93,6 +95,7 @@ open class UiSurface(
             removeNode(it)
         }
         onEachFrame.clear()
+        focusableNodes.clear()
         UiScale.updateScale(this)
         val prep = pt.takeMs().also { pt.reset() }
 
@@ -130,6 +133,10 @@ open class UiSurface(
 
     fun requestFocus(focusable: Focusable?) {
         inputHandler.requestFocus(focusable)
+    }
+
+    fun cycleFocus(backwards: Boolean = false) {
+        inputHandler.cycleFocus(backwards)
     }
 
     fun registerState(state: MutableState) {
@@ -184,6 +191,11 @@ open class UiSurface(
 
     protected open fun layoutUiNodeChildren(node: UiNode, ctx: KoolContext) {
         node.layoutChildren(ctx)
+
+        if (node is Focusable) {
+            focusableNodes += node
+        }
+
         for (i in node.children.indices) {
             if (node.children[i].isInClip) {
                 layoutUiNodeChildren(node.children[i], ctx)
@@ -228,6 +240,17 @@ open class UiSurface(
                 focusedNode?.onFocusLost()
                 focusedNode = focusable
                 focusable?.onFocusGain()
+            }
+        }
+
+        fun cycleFocus(backwards: Boolean) {
+            val currentIdx = focusedNode?.let { focusableNodes.indexOf(it) } ?: -1
+            if (focusableNodes.isNotEmpty()) {
+                var nextIdx = currentIdx + if (backwards) -1 else 1
+                if (nextIdx < 0) {
+                    nextIdx += focusableNodes.size
+                }
+                requestFocus(focusableNodes[nextIdx % focusableNodes.size])
             }
         }
 

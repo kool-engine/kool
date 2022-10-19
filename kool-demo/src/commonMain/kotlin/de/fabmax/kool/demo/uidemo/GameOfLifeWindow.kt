@@ -319,7 +319,7 @@ class GameOfLifeWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
             colorGradient = when(selectedColor.use()) {
                 1 -> ColorGradient.RED_WHITE_BLUE.inverted()
                 2 -> ColorGradient.VIRIDIS
-                3 -> ColorGradient.RED_YELLOW_GREEN_MD
+                3 -> ColorGradient.PLASMA
                 else -> null
             }
 
