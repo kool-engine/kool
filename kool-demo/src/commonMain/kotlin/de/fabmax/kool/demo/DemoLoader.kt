@@ -107,8 +107,8 @@ class DemoLoader(ctx: KoolContext, startScene: String? = null) {
                             menu.isExpanded = true
                             initShownMenu = true
                         }
-                        if (shouldAutoHideMenu <= 0f
-                            && ctx.inputMgr.pointerState.primaryPointer.x > UiSizes.menuWidth.px) {
+                        val ptr = ctx.inputMgr.pointerState.primaryPointer
+                        if (shouldAutoHideMenu <= 0f && (!ptr.isValid || ptr.x > UiSizes.menuWidth.px)) {
                             menu.isExpanded = false
                         }
                     }
