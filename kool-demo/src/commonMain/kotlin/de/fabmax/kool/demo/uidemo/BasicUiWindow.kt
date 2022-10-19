@@ -2,7 +2,6 @@ package de.fabmax.kool.demo.uidemo
 
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.MdColor
 
 class BasicUiWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
 
@@ -126,14 +125,54 @@ class BasicUiWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
                         .font(sizes.largeText)
                 }
                 Row {
-                    for (tint in listOf(Color.WHITE, MdColor.RED, MdColor.GREEN, MdColor.BLUE)) {
-                        Image {
+                    fun ImageScope.imageLabel(text: String) {
+                        Text(text) {
                             modifier
-                                .padding(sizes.smallGap)
-                                .image(uiDemo.exampleImage)
-                                .tint(tint)
-                                .imageScale(0.2f)
+                                .textColor(Color.WHITE)
+                                .align(AlignmentX.Start, AlignmentY.Bottom)
+                                .zLayer(UiSurface.LAYER_FLOATING)
+                                .backgroundColor(Color.BLACK.withAlpha(0.5f))
                         }
+                    }
+                    Image {
+                        modifier
+                            .margin(sizes.smallGap)
+                            .image(uiDemo.exampleImage)
+                            .imageZ(UiSurface.LAYER_BACKGROUND)
+                            .imageSize(ImageSize.FixedScale(0.3f))
+                            .border(RectBorder(Color.RED, 1.dp))
+                            .size(FitContent, FitContent)
+                        imageLabel("sz: fit, img: fixedScale(0.3)")
+                    }
+                    Image {
+                        modifier
+                            .margin(sizes.smallGap)
+                            .image(uiDemo.exampleImage)
+                            .imageZ(UiSurface.LAYER_BACKGROUND)
+                            .size(400.dp, 300.dp)
+                            .imageSize(ImageSize.FitContent)
+                            .border(RectBorder(Color.RED, 1.dp))
+                        imageLabel("sz: 400x300, img: fit")
+                    }
+                    Image {
+                        modifier
+                            .margin(sizes.smallGap)
+                            .image(uiDemo.exampleImage)
+                            .imageZ(UiSurface.LAYER_BACKGROUND)
+                            .size(400.dp, 300.dp)
+                            .imageSize(ImageSize.ZoomContent)
+                            .border(RectBorder(Color.RED, 1.dp))
+                        imageLabel("sz: 400x300, img: zoom")
+                    }
+                    Image {
+                        modifier
+                            .margin(sizes.smallGap)
+                            .image(uiDemo.exampleImage)
+                            .imageZ(UiSurface.LAYER_BACKGROUND)
+                            .size(400.dp, 300.dp)
+                            .imageSize(ImageSize.Stretch)
+                            .border(RectBorder(Color.RED, 1.dp))
+                        imageLabel("sz: 400x300, img: stretch")
                     }
                 }
                 Row {

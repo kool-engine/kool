@@ -378,7 +378,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                     modifier.margin(vertical = sizes.gap)
                     Image(albedoMetal) {
                         modifier
-                            .imageScale(0.3f)
+                            .imageSize(ImageSize.FixedScale(0.3f))
                             .mirror(y = true)
                             .margin(horizontal = sizes.gap)
                             .customShader(albedoMapShader.apply { colorMap = albedoMetal })
@@ -386,7 +386,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                     }
                     Image(normalRough) {
                         modifier
-                            .imageScale(0.3f)
+                            .imageSize(ImageSize.FixedScale(0.3f))
                             .mirror(y = true)
                             .margin(horizontal = sizes.gap)
                             .customShader(normalMapShader.apply { colorMap = normalRough })
@@ -397,7 +397,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                     modifier.margin(vertical = sizes.gap)
                     Image(positionFlags) {
                         modifier
-                            .imageScale(0.3f)
+                            .imageSize(ImageSize.FixedScale(0.3f))
                             .mirror(y = true)
                             .margin(horizontal = sizes.gap)
                             .customShader(positionMapShader.apply { colorMap = positionFlags })
@@ -405,7 +405,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                     }
                     Image(ao) {
                         modifier
-                            .imageScale(0.3f / deferredPipeline.aoMapSize)
+                            .imageSize(ImageSize.FixedScale(0.3f / deferredPipeline.aoMapSize))
                             .mirror(y = true)
                             .margin(horizontal = sizes.gap)
                             .customShader(AoDemo.aoMapShader.apply { colorMap = ao })
@@ -416,7 +416,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                     modifier.margin(vertical = sizes.gap)
                     Image(positionFlags) {
                         modifier
-                            .imageScale(0.3f)
+                            .imageSize(ImageSize.FixedScale(0.3f))
                             .mirror(y = true)
                             .margin(horizontal = sizes.gap)
                             .customShader(metalRoughFlagsShader.apply {
@@ -428,7 +428,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                     }
                     Image(bloom) {
                         modifier
-                            .imageScale(0.3f * ((positionFlags.loadedTexture?.height ?: 1) / deferredPipeline.bloomMapSize))
+                            .imageSize(ImageSize.FixedScale(0.3f * ((positionFlags.loadedTexture?.height ?: 1) / deferredPipeline.bloomMapSize)))
                             .mirror(y = true)
                             .margin(horizontal = sizes.gap)
                             .customShader(bloomMapShader.apply { colorMap = bloom })

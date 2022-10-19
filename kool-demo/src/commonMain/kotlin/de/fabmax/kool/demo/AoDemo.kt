@@ -296,7 +296,7 @@ class AoDemo : DemoScene("Ambient Occlusion") {
 
                     Image(shader.colorMap) {
                         modifier
-                            .height(500.dp)
+                            .imageSize(ImageSize.FixedScale(0.45f / aoMapSize.value))
                             .mirror(y = true)
                             .customShader(shader)
                     }
