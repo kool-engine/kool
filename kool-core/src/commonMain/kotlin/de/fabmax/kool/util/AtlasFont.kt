@@ -25,7 +25,6 @@ class AtlasFont(
 
     override var scale = 1f
         set(value) {
-            println("$family: scale set to $value")
             field = value
         }
     override val lineHeight: Float get() = round(sizePts * heightEm * scale)

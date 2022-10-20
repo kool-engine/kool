@@ -74,8 +74,6 @@ inline fun UiScope.Image(imageTex: Texture2d? = null, block: ImageScope.() -> Un
     val image = uiNode.createChild(ImageNode::class, ImageNode.factory)
     image.modifier.image(imageTex)
     image.block()
-    image.imageWidth.set(image.modifier.image?.loadedTexture?.width?.toFloat() ?: 0f)
-    image.imageHeight.set(image.modifier.image?.loadedTexture?.height?.toFloat() ?: 0f)
     return image
 }
 
@@ -92,8 +90,8 @@ class ImageNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface), 
         if (modifier.imageSize != ImageSize.Stretch) {
             imageAr = computeImageAr()
             surface.onEachFrame {
-                imageWidth.set(modifier.image?.loadedTexture?.width?.toFloat() ?: 0f)
-                imageHeight.set(modifier.image?.loadedTexture?.height?.toFloat() ?: 0f)
+                imageWidth.set(max(1f, modifier.image?.loadedTexture?.width?.toFloat() ?: 1f))
+                imageHeight.set(max(1f, modifier.image?.loadedTexture?.height?.toFloat() ?: 1f))
             }
         }
 
