@@ -64,6 +64,8 @@ class DockingContainer(
         window.windowState.dockedTo.set(null)
         getWindowOnTop()?.let { bringToTop(it) }
         dockingHost.dockingListeners.forEach { it.onWindowUndocked(window, this) }
+        parent?.mergeEmptyChildren()
+        dockingHost.dockingSurface.triggerUpdate()
     }
 
     fun getNearestLeaf(): DockingContainer {
@@ -87,6 +89,7 @@ class DockingContainer(
         }
         bringToTop(window)
         dockingHost.dockingListeners.forEach { it.onWindowDocked(window, this) }
+        dockingHost.dockingSurface.triggerUpdate()
     }
 
     fun getNodeContainingSplitEdgeAt(screenPos: Vec2f): DockingContainer? {

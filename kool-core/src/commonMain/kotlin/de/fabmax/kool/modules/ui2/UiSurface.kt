@@ -47,6 +47,13 @@ open class UiSurface(
     var content: (UiScope.() -> Unit)? = null
 
     var inputMode = InputCaptureMode.CaptureInsideBounds
+        set(value) {
+            field = value
+            if (value == InputCaptureMode.CaptureDisabled) {
+                InputStack.remove(inputHandler)
+            }
+        }
+
     var printTiming = false
 
     init {
@@ -258,7 +265,6 @@ open class UiSurface(
             if (inputMode == InputCaptureMode.CaptureDisabled) {
                 InputStack.remove(this)
                 return
-
             }
 
             // keyboard input is blocked by this UiSurface as soon as a ui element is focused
