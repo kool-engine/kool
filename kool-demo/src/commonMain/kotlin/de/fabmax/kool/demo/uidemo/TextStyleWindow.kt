@@ -59,7 +59,6 @@ class TextStyleWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
                 .height(Grow(1f, min = FitContent))
 
             val font = MsdfFont(sizePts = fontSize.value, weight = fontWeight.value, cutoff = fontCutoff.value)
-
             Text(displayText.use()) {
                 modifier
                     .size(Grow.Std, Grow.Std)

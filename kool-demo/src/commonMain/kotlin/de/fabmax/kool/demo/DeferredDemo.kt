@@ -376,18 +376,18 @@ class DeferredDemo : DemoScene("Deferred Shading") {
 
                 Row {
                     modifier.margin(vertical = sizes.gap)
-                    Image(albedoMetal) {
+                    Image {
                         modifier
                             .imageSize(ImageSize.FixedScale(0.3f))
-                            .mirror(y = true)
+                            .imageProvider(FlatImageProvider(albedoMetal, true).mirrorY())
                             .margin(horizontal = sizes.gap)
                             .customShader(albedoMapShader.apply { colorMap = albedoMetal })
                         Text("Albedo") { imageLabelStyle() }
                     }
-                    Image(normalRough) {
+                    Image {
                         modifier
                             .imageSize(ImageSize.FixedScale(0.3f))
-                            .mirror(y = true)
+                            .imageProvider(FlatImageProvider(normalRough, true).mirrorY())
                             .margin(horizontal = sizes.gap)
                             .customShader(normalMapShader.apply { colorMap = normalRough })
                         Text("Normals") { imageLabelStyle() }
@@ -395,10 +395,10 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                 }
                 Row {
                     modifier.margin(vertical = sizes.gap)
-                    Image(positionFlags) {
+                    Image {
                         modifier
                             .imageSize(ImageSize.FixedScale(0.3f))
-                            .mirror(y = true)
+                            .imageProvider(FlatImageProvider(positionFlags, true).mirrorY())
                             .margin(horizontal = sizes.gap)
                             .customShader(positionMapShader.apply { colorMap = positionFlags })
                         Text("Position") { imageLabelStyle() }
@@ -406,7 +406,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                     Image(ao) {
                         modifier
                             .imageSize(ImageSize.FixedScale(0.3f / deferredPipeline.aoMapSize))
-                            .mirror(y = true)
+                            .imageProvider(FlatImageProvider(ao, true).mirrorY())
                             .margin(horizontal = sizes.gap)
                             .customShader(AoDemo.aoMapShader.apply { colorMap = ao })
                         Text("Ambient occlusion") { imageLabelStyle() }
@@ -417,7 +417,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                     Image(positionFlags) {
                         modifier
                             .imageSize(ImageSize.FixedScale(0.3f))
-                            .mirror(y = true)
+                            .imageProvider(FlatImageProvider(positionFlags, true).mirrorY())
                             .margin(horizontal = sizes.gap)
                             .customShader(metalRoughFlagsShader.apply {
                                 metal = albedoMetal
@@ -429,7 +429,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                     Image(bloom) {
                         modifier
                             .imageSize(ImageSize.FixedScale(0.3f * ((positionFlags.loadedTexture?.height ?: 1) / deferredPipeline.bloomMapSize)))
-                            .mirror(y = true)
+                            .imageProvider(FlatImageProvider(bloom, true).mirrorY())
                             .margin(horizontal = sizes.gap)
                             .customShader(bloomMapShader.apply { colorMap = bloom })
                         Text("Bloom") { imageLabelStyle() }

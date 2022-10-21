@@ -156,11 +156,14 @@ abstract class DemoScene(val name: String) {
                 Arrow(if (isMinimized) 90f else -90f) {
                     modifier
                         .size(Grow.Std, Grow.Std)
+                        .margin(sizes.smallGap * 0.7f)
                         .colors(colors.primaryVariant, Color.WHITE)
                         .onClick { isMenuMinimized.toggle() }
                         .onEnter { isMinimizeHovered.set(true) }
                         .onExit { isMinimizeHovered.set(false) }
-                        .margin(sizes.smallGap * 0.7f)
+                        .onDrag {
+                            // intentionally left empty to avoid accidental window drags while clicking the button
+                        }
                 }
             }
         }

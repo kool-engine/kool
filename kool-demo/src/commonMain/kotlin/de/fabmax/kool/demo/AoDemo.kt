@@ -294,10 +294,10 @@ class AoDemo : DemoScene("Ambient Occlusion") {
                         .zLayer(UiSurface.LAYER_BACKGROUND)
                         .align(AlignmentX.Start, AlignmentY.Bottom)
 
-                    Image(shader.colorMap) {
+                    Image {
                         modifier
                             .imageSize(ImageSize.FixedScale(0.45f / aoMapSize.value))
-                            .mirror(y = true)
+                            .imageProvider(FlatImageProvider(shader.colorMap, true).mirrorY())
                             .customShader(shader)
                     }
                 }

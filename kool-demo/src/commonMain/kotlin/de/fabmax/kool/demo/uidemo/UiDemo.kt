@@ -30,23 +30,6 @@ class UiDemo : DemoScene("UI Demo") {
     }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
-        // new improved ui system
-        // desired features
-        // - [x] somewhat jetpack compose inspired api
-        // - [x] traditional ui coord system: top left origin
-        // - [x] layout via nested boxes
-        // - [x] lazy list for fast update of large scrolling lists
-        // - [x] clip content to bounds
-        // - [x] scrollable content
-        // - [x] docking
-        // - [x] size: absolute (dp), grow, wrap content
-        // - [x] alignment: start, center, end / top, center, bottom
-        // - [x] margin / outside gap
-        // - [x] padding / inside gap
-
-        // todo
-        //  icons
-
         setupUiScene(true)
 
         +dockingHost.apply {

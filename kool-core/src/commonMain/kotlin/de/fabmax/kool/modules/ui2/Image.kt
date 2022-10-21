@@ -10,7 +10,6 @@ import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.util.Color
-import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
@@ -19,47 +18,18 @@ interface ImageScope : UiScope {
 }
 
 open class ImageModifier(surface: UiSurface) : UiModifier(surface) {
-    var image: Texture2d? by property(null)
+    var imageProvider: ImageProvider? by property(null)
     var tint: Color by property(Color.WHITE)
     var customShader: Shader? by property(null)
     var imageZ: Int by property(0)
     var imageSize: ImageSize by property(ImageSize.FitContent)
-    var uvTopLeft: Vec2f by property(Vec2f(0f, 0f))
-    var uvBottomLeft: Vec2f by property(Vec2f(0f, 1f))
-    var uvBottomRight: Vec2f by property(Vec2f(1f, 1f))
-    var uvTopRight: Vec2f by property(Vec2f(1f, 0f))
 }
 
-fun <T: ImageModifier> T.image(image: Texture2d?): T { this.image = image; return this }
+fun <T: ImageModifier> T.image(image: Texture2d?): T { this.imageProvider = FlatImageProvider(image); return this }
+fun <T: ImageModifier> T.imageProvider(imageProvider: ImageProvider?): T { this.imageProvider = imageProvider; return this }
 fun <T: ImageModifier> T.tint(color: Color): T { this.tint = color; return this }
 fun <T: ImageModifier> T.imageZ(imageZ: Int): T { this.imageZ = imageZ; return this }
 fun <T: ImageModifier> T.imageSize(size: ImageSize): T { this.imageSize = size; return this }
-fun <T: ImageModifier> T.uv(topLeft: Vec2f, topRight: Vec2f, bottomLeft: Vec2f, bottomRight: Vec2f): T {
-    uvTopLeft = topLeft
-    uvTopRight = topRight
-    uvBottomLeft = bottomLeft
-    uvBottomRight = bottomRight
-    return this
-}
-fun <T: ImageModifier> T.uv(topLeft: Vec2f, width: Float, height: Float): T {
-    uvTopLeft = topLeft
-    uvTopRight = Vec2f(topLeft.x + width, topLeft.y)
-    uvBottomLeft = Vec2f(topLeft.x, topLeft.y + height)
-    uvBottomRight = Vec2f(topLeft.x + width, topLeft.y + height)
-    return this
-}
-
-fun <T: ImageModifier> T.mirror(x: Boolean = false, y: Boolean = false): T {
-    if (x) {
-        uvTopLeft = uvTopRight.also { uvTopRight = uvTopLeft }
-        uvBottomLeft = uvBottomRight.also { uvBottomRight = uvBottomLeft }
-    }
-    if (y) {
-        uvTopLeft = uvBottomLeft.also { uvBottomLeft = uvTopLeft }
-        uvTopRight = uvBottomRight.also { uvBottomRight = uvTopRight }
-    }
-    return this
-}
 
 fun <T: ImageModifier> T.customShader(shader: Shader): T { customShader = shader; return this }
 
@@ -83,15 +53,19 @@ class ImageNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface), 
     val imageWidth = mutableStateOf(1f)
     val imageHeight = mutableStateOf(1f)
 
+    private val imgUvTpLt: Vec2f get() = modifier.imageProvider?.uvTopLeft ?: Vec2f.ZERO
+    private val imgUvTpRt: Vec2f get() = modifier.imageProvider?.uvTopRight ?: Vec2f.ZERO
+    private val imgUvBtLt: Vec2f get() = modifier.imageProvider?.uvBottomLeft ?: Vec2f.ZERO
+    private val imgUvBtRt: Vec2f get() = modifier.imageProvider?.uvBottomRight ?: Vec2f.ZERO
     private var imageAr = 1f
 
     override fun measureContentSize(ctx: KoolContext) {
         imageAr = 1f
         if (modifier.imageSize != ImageSize.Stretch) {
-            imageAr = computeImageAr()
-            surface.onEachFrame {
-                imageWidth.set(max(1f, modifier.image?.loadedTexture?.width?.toFloat() ?: 1f))
-                imageHeight.set(max(1f, modifier.image?.loadedTexture?.height?.toFloat() ?: 1f))
+            imageAr = modifier.imageProvider?.getImageAspectRatio() ?: 1f
+            updateImageSize()
+            if (modifier.imageProvider?.isDynamicSize == true) {
+                surface.onEachFrame { updateImageSize() }
             }
         }
 
@@ -118,8 +92,8 @@ class ImageNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface), 
             else -> {
                 // dynamic (fit / grow) width and height
                 val scale = (modifier.imageSize as? ImageSize.FixedScale)?.scale ?: 1f
-                measuredWidth = imageWidth.value * scale
-                measuredHeight = imageHeight.value * scale
+                measuredWidth = imageWidth.use() * scale
+                measuredHeight = imageHeight.use() * scale
             }
         }
         setContentSize(
@@ -128,11 +102,9 @@ class ImageNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface), 
         )
     }
 
-    private fun computeImageAr(): Float {
-        val uvWidth = abs(modifier.uvBottomRight.x - modifier.uvBottomLeft.x)
-        val uvHeight = abs(modifier.uvTopLeft.y - modifier.uvBottomLeft.y)
-        val uvAr = uvWidth / uvHeight
-        return imageWidth.use() / imageHeight.use() * uvAr
+    private fun updateImageSize() {
+        imageWidth.set(max(1f, modifier.imageProvider?.getImageWidth() ?: 1f))
+        imageHeight.set(max(1f, modifier.imageProvider?.getImageHeight() ?: 1f))
     }
 
     private fun imageWidth(measuredHeightPx: Float, imageAr: Float): Float {
@@ -140,7 +112,7 @@ class ImageNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface), 
             ImageSize.Stretch -> measuredHeightPx
             ImageSize.FitContent -> measuredHeightPx * imageAr
             ImageSize.ZoomContent -> measuredHeightPx * imageAr
-            is ImageSize.FixedScale -> imageHeight.value * sz.scale
+            is ImageSize.FixedScale -> imageHeight.use() * sz.scale
         }
     }
 
@@ -149,21 +121,21 @@ class ImageNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface), 
             ImageSize.Stretch -> measuredWidthPx
             ImageSize.FitContent -> measuredWidthPx / imageAr
             ImageSize.ZoomContent -> measuredWidthPx / imageAr
-            is ImageSize.FixedScale -> imageWidth.value * sz.scale
+            is ImageSize.FixedScale -> imageWidth.use() * sz.scale
         }
     }
 
     override fun render(ctx: KoolContext) {
         super.render(ctx)
-        modifier.image?.let {
+        modifier.imageProvider?.getTexture(innerWidthPx, innerHeightPx)?.let {
             val imgMesh = surface.getMeshLayer(modifier.zLayer + modifier.imageZ).addImage(it)
             imgMesh.builder.clear()
             imgMesh.builder.configured(modifier.tint) {
                 rect {
-                    texCoordLowerLeft.set(modifier.uvTopLeft)
-                    texCoordLowerRight.set(modifier.uvTopRight)
-                    texCoordUpperLeft.set(modifier.uvBottomLeft)
-                    texCoordUpperRight.set(modifier.uvBottomRight)
+                    texCoordLowerLeft.set(imgUvTpLt)
+                    texCoordLowerRight.set(imgUvTpRt)
+                    texCoordUpperLeft.set(imgUvBtLt)
+                    texCoordUpperRight.set(imgUvBtRt)
 
                     val imgW = imageWidth.value
                     val imgH = imageHeight.value
@@ -193,7 +165,7 @@ class ImageNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface), 
                     }
                 }
             }
-            imgMesh.applyShader(modifier.image, modifier.customShader)
+            imgMesh.applyShader(it, modifier.customShader)
         }
     }
 

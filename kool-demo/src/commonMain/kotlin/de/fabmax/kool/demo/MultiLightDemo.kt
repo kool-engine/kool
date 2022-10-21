@@ -240,7 +240,7 @@ class MultiLightDemo : DemoScene("Reflections") {
                 Image(deferredPipeline.reflections?.reflectionMap) {
                     modifier
                         .height(500.dp)
-                        .mirror(y = true)
+                        .imageProvider(FlatImageProvider(deferredPipeline.reflections?.reflectionMap, true).mirrorY())
                         .backgroundColor(Color.BLACK)
                 }
             }
