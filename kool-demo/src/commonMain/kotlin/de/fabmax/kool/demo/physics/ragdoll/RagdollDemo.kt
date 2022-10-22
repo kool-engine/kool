@@ -133,10 +133,9 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
         }
 
         val forceHelper = ForceHelper(ctx)
-        val dragListener = forceHelper::handleDrag
-        InputStack.defaultInputHandler.pointerListeners += dragListener
+        InputStack.defaultInputHandler.pointerListeners += forceHelper
         onDispose += {
-            InputStack.defaultInputHandler.pointerListeners -= dragListener
+            InputStack.defaultInputHandler.pointerListeners -= forceHelper
         }
 
         +colorMesh {
@@ -517,7 +516,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
         }
     }
 
-    private inner class ForceHelper(val ctx: KoolContext) {
+    private inner class ForceHelper(val ctx: KoolContext) : InputStack.PointerListener {
         val pickRay = Ray()
         val hitResult = HitResult()
         var hitActor: RigidBody? = null
@@ -532,7 +531,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
 
         var isActive = false
 
-        fun handleDrag(pointerState: InputManager.PointerState) {
+        override fun handlePointer(pointerState: InputManager.PointerState, ctx: KoolContext) {
             val dragPtr = pointerState.primaryPointer
             if (!dragPtr.isValid) { return }
             if (!(dragPtr.isMiddleButtonEvent || dragPtr.isMiddleButtonDown)) { return }

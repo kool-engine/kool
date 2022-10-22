@@ -33,7 +33,7 @@ fun Scene.defaultCamTransform(): OrbitInputTransform {
     return ct
 }
 
-open class OrbitInputTransform(name: String? = null) : Group(name) {
+open class OrbitInputTransform(name: String? = null) : Group(name), InputStack.PointerListener {
     var leftDragMethod = DragMethod.ROTATE
     var middleDragMethod = DragMethod.NONE
     var rightDragMethod = DragMethod.PAN
@@ -102,12 +102,9 @@ open class OrbitInputTransform(name: String? = null) : Group(name) {
             doCamTransform(rp, ctx)
         }
 
-        // caching ::handleDrag in pointerListener is needed, otherwise removing the listener does not work on JS
-        // because apparently on JS it creates a new object / function under the hood each time
-        val pointerListener = ::handleDrag
-        InputStack.defaultInputHandler.pointerListeners += pointerListener
+        InputStack.defaultInputHandler.pointerListeners += this
         onDispose += {
-            InputStack.defaultInputHandler.pointerListeners -= pointerListener
+            InputStack.defaultInputHandler.pointerListeners -= this
         }
     }
 
@@ -240,7 +237,7 @@ open class OrbitInputTransform(name: String? = null) : Group(name) {
         zoom = zoomAnimator.actual
     }
 
-    private fun handleDrag(pointerState: InputManager.PointerState) {
+    override fun handlePointer(pointerState: InputManager.PointerState, ctx: KoolContext) {
         val dragPtr = pointerState.primaryPointer
         if (dragPtr.isConsumed()) {
             deltaPos.set(Vec2d.ZERO)

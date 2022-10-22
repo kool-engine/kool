@@ -1,6 +1,7 @@
 package de.fabmax.kool.demo.atmosphere
 
 import de.fabmax.kool.InputManager
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.math.MutableVec3d
 import de.fabmax.kool.math.Vec3d
@@ -10,7 +11,7 @@ import de.fabmax.kool.util.InputStack
 import kotlin.math.min
 import kotlin.math.pow
 
-class EarthCamTransform(val earthRadius: Float) : Group() {
+class EarthCamTransform(val earthRadius: Float) : Group(), InputStack.PointerListener {
 
     var planetRotX = 0.0
     var planetRotY = 0.0
@@ -58,14 +59,13 @@ class EarthCamTransform(val earthRadius: Float) : Group() {
             mul(camRot)
         }
 
-        val pointerListener = ::handleDrag
-        InputStack.defaultInputHandler.pointerListeners += pointerListener
+        InputStack.defaultInputHandler.pointerListeners += this
         onDispose += {
-            InputStack.defaultInputHandler.pointerListeners -= pointerListener
+            InputStack.defaultInputHandler.pointerListeners -= this
         }
     }
 
-    fun handleDrag(pointerState: InputManager.PointerState) {
+    override fun handlePointer(pointerState: InputManager.PointerState, ctx: KoolContext) {
         val dragPtr = pointerState.primaryPointer
         if (!dragPtr.isConsumed() && dragPtr.isValid) {
             val moveScale = min(zoom, 10f)

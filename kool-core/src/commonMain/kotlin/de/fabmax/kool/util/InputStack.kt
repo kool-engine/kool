@@ -66,15 +66,23 @@ object InputStack {
         var blockAllPointerInput = false
         var blockAllKeyboardInput = false
 
-        val pointerListeners = mutableListOf<(InputManager.PointerState) -> Unit>()
-        val keyboardListeners = mutableListOf<(MutableList<InputManager.KeyEvent>) -> Unit>()
+        val pointerListeners = mutableListOf<PointerListener>()
+        val keyboardListeners = mutableListOf<KeyboardListener>()
 
         open fun handlePointer(pointerState: InputManager.PointerState, ctx: KoolContext) {
-            pointerListeners.forEach { it(pointerState) }
+            pointerListeners.forEach { it.handlePointer(pointerState, ctx) }
         }
 
         open fun handleKeyEvents(keyEvents: MutableList<InputManager.KeyEvent>, ctx: KoolContext) {
-            keyboardListeners.forEach { it(keyEvents) }
+            keyboardListeners.forEach { it.handleKeyboard(keyEvents, ctx) }
         }
+    }
+
+    interface PointerListener {
+        fun handlePointer(pointerState: InputManager.PointerState, ctx: KoolContext)
+    }
+
+    interface KeyboardListener {
+        fun handleKeyboard(keyEvents: MutableList<InputManager.KeyEvent>, ctx: KoolContext)
     }
 }

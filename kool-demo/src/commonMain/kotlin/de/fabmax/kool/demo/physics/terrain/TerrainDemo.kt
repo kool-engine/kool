@@ -85,13 +85,15 @@ class TerrainDemo : DemoScene("Terrain Demo") {
     }
 
     private var lastClick = 0.0
-    private val doubleClickListener: (InputManager.PointerState) -> Unit = {
-        if (it.primaryPointer.isLeftButtonClicked) {
-            val t = Time.precisionTime
-            if (t - lastClick < 500.0) {
-                isCursorLocked.set(true)
+    private val doubleClickListener = object : InputStack.PointerListener {
+        override fun handlePointer(pointerState: InputManager.PointerState, ctx: KoolContext) {
+            if (pointerState.primaryPointer.isLeftButtonClicked) {
+                val t = Time.precisionTime
+                if (t - lastClick < 500.0) {
+                    isCursorLocked.set(true)
+                }
+                lastClick = Time.precisionTime
             }
-            lastClick = Time.precisionTime
         }
     }
 
