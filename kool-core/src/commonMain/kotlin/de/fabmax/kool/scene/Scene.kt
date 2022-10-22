@@ -37,9 +37,6 @@ open class Scene(name: String? = null) : Group(name) {
         get() = false
         set(_) {}
 
-    private val dragPtrs: MutableList<InputManager.Pointer> = mutableListOf()
-    private val dragHandlers: MutableList<DragHandler> = mutableListOf()
-
     private val disposables = mutableListOf<Disposable>()
 
     fun addOffscreenPass(pass: OffscreenRenderPass) {
@@ -89,15 +86,6 @@ open class Scene(name: String? = null) : Group(name) {
         mainRenderPass.collectDrawCommands(ctx)
     }
 
-    fun processInput(ctx: KoolContext) {
-        if (ctx.inputMgr.cursorMode != InputManager.CursorMode.LOCKED) {
-            for (i in onProcessInput.indices) {
-                onProcessInput[i](ctx)
-            }
-            handleDrag(ctx)
-        }
-    }
-
     override fun update(updateEvent: RenderPass.UpdateEvent) {
         for (i in disposables.indices) {
             disposables[i].dispose(updateEvent.ctx)
@@ -124,35 +112,7 @@ open class Scene(name: String? = null) : Group(name) {
         super.dispose(ctx)
     }
 
-    fun registerDragHandler(handler: DragHandler) {
-        if (handler !in dragHandlers) {
-            dragHandlers += handler
-        }
-    }
-
-    fun removeDragHandler(handler: DragHandler) {
-        dragHandlers -= handler
-    }
-
-    fun computeRay(pointer: InputManager.Pointer, ctx: KoolContext, result: Ray): Boolean {
+    fun computePickRay(pointer: InputManager.Pointer, ctx: KoolContext, result: Ray): Boolean {
         return camera.computePickRay(result, pointer, mainRenderPass.viewport, ctx)
-    }
-
-    private fun handleDrag(ctx: KoolContext) {
-        dragPtrs.clear()
-        for (i in ctx.inputMgr.pointerState.pointers.indices) {
-            val ptr = ctx.inputMgr.pointerState.pointers[i]
-            if (ptr.isValid && (ptr.buttonMask != 0 || ptr.buttonEventMask != 0 || ptr.deltaScroll != 0.0)) {
-                dragPtrs.add(ptr)
-            }
-        }
-
-        for (i in dragHandlers.indices.reversed()) {
-            dragHandlers[i].handleDrag(dragPtrs, this, ctx)
-        }
-    }
-
-    interface DragHandler {
-        fun handleDrag(dragPtrs: List<InputManager.Pointer>, scene: Scene, ctx: KoolContext)
     }
 }

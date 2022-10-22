@@ -169,16 +169,8 @@ abstract class KoolContext {
         fps = (frameTimes.size / sum) * 0.1 + fps * 0.9
 
         inputMgr.onNewFrame(this)
-
         for (i in onRender.indices) {
             onRender[i](this)
-        }
-
-        // process input for scenes in reverse order (front to back)
-        for (i in scenes.indices.reversed()) {
-            if (scenes[i].isVisible) {
-                scenes[i].processInput(this)
-            }
         }
 
         backgroundScene.renderScene(this)
