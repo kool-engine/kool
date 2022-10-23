@@ -92,6 +92,7 @@ class ProceduralDemo : DemoScene("Procedural Geometry") {
                 modifier
                     .width(Grow.Std)
                     .margin(start = sizes.largeGap)
+                    .alignY(AlignmentY.Center)
                     .hint(randomSeedText.use())
                     .onChange { seedText.set(it) }
             }

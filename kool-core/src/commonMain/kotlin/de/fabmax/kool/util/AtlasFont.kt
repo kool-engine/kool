@@ -126,7 +126,7 @@ class AtlasFont(
 }
 
 class FontMap(
-    val font: Font,
+    val font: AtlasFont,
     val texture: Texture2d,
     private val map: MutableMap<Char, CharMetrics> = mutableMapOf()
 ) : MutableMap<Char, CharMetrics> by map {
@@ -137,12 +137,14 @@ class FontMap(
         result.height = 0f
         result.yBaseline = 0f
         result.numLines = 1
+        result.ascentPx = font.ascentEm * font.sizePts * font.scale
+        result.descentPx = font.descentEm * font.sizePts * font.scale
 
         for (i in text.indices) {
             val c = text[i]
             if (c == '\n') {
                 result.width = max(result.width, lineWidth)
-                result.height += (font as AtlasFont).lineHeight
+                result.height += font.lineHeight
                 result.numLines++
                 lineWidth = 0f
 

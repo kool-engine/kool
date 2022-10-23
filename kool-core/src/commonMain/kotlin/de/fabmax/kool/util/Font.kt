@@ -33,4 +33,7 @@ class TextMetrics {
     var height = 0f
     var yBaseline = 0f
     var numLines = 0
+
+    var ascentPx = 0f
+    var descentPx = 0f
 }

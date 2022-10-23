@@ -106,7 +106,7 @@ open class TextFieldNode(parent: UiNode?, surface: UiSurface)
         val modHeight = modifier.height
         val measuredWidth = if (modWidth is Dp) modWidth.px else textMetrics.width + paddingStartPx + paddingEndPx
         val measuredHeight = if (modHeight is Dp) modHeight.px else textMetrics.height + paddingTopPx + paddingBottomPx
-        setContentSize(measuredWidth + 8.dp.px, measuredHeight + 8.dp.px)
+        setContentSize(measuredWidth, measuredHeight)
     }
 
     override fun render(ctx: KoolContext) {
@@ -125,12 +125,12 @@ open class TextFieldNode(parent: UiNode?, surface: UiSurface)
 
         textOrigin.y = (heightPx - textMetrics.height) / 2f + textMetrics.yBaseline
         textOrigin.x = when (modifier.textAlignX) {
-            AlignmentX.Start -> paddingStartPx + 4.dp.px
+            AlignmentX.Start -> paddingStartPx
             AlignmentX.Center -> (widthPx - textMetrics.width) / 2f
-            AlignmentX.End -> widthPx - textMetrics.width - paddingEndPx - 4.dp.px
+            AlignmentX.End -> widthPx - textMetrics.width - paddingEndPx
         }
         textOrigin.x += checkTextOverflow(txtFont)
-        val lineY = textOrigin.y + 4.dp.px
+        val lineY = textOrigin.y - textMetrics.descentPx - 1.dp.px
 
         // draw text
         textProps.apply {

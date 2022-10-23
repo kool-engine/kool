@@ -38,6 +38,8 @@ class MsdfFont(
         result.height = lineHeight
         result.yBaseline = data.meta.metrics.ascender * emScale
         result.numLines = 1
+        result.ascentPx = data.meta.metrics.ascender * emScale
+        result.descentPx = data.meta.metrics.descender * emScale
 
         for (i in text.indices) {
             val c = text[i]

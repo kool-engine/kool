@@ -60,7 +60,9 @@ fun UiScope.ColorSliderPanel(
     Column(Grow.Std, Grow.Std) {
         val color = Color.fromHsv(hue.use(), saturation.use(), value.use(), alpha?.use() ?: 1f)
         Box(Grow.Std, Grow(1f, min = 32.dp)) {
-            modifier.backgroundColor(color)
+            modifier
+                .backgroundColor(color)
+                .margin(bottom = sizes.gap)
         }
         ColorSlider(hue, 0f, 360f, 1f, "H:")
         ColorSlider(saturation, 0f, 1f, 100f, "S:")
@@ -81,7 +83,7 @@ fun UiScope.ColorSliderPanel(
                 modifier
                     .hint("hex code")
                     .width(sizes.largeGap * 4f)
-                    .margin(start = sizes.gap)
+                    .margin(start = sizes.gap, top = sizes.smallGap, bottom = sizes.smallGap)
                     .alignY(AlignmentY.Center)
                     .textAlignX(AlignmentX.End)
                     .maxLength(9)
@@ -121,13 +123,13 @@ private fun UiScope.ColorSlider(
     Text(label) {
         modifier
             .width(sizes.gap * 2f)
+            .margin(vertical = sizes.smallGap)
             .alignY(AlignmentY.Center)
     }
     Slider(state.value, min, max) {
         modifier
             .width(Grow.Std)
             .alignY(AlignmentY.Center)
-            .margin(top = sizes.gap)
             .onChange { state.set(it) }
     }
     TextField("${(state.value * scale).roundToInt()}") {

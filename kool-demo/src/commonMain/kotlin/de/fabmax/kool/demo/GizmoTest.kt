@@ -152,7 +152,7 @@ class GizmoTest : DemoScene("Gizmo Test") {
     private fun UiScope.translation(props: TransformProps) = MenuRow {
         Column(sizes.largeGap * 4f) {
             Text("Location") {
-                modifier.margin(vertical = 4.dp)
+                modifier.margin(vertical = sizes.smallGap * 0.75f)
             }
         }
         Column(Grow.Std) {
@@ -174,7 +174,7 @@ class GizmoTest : DemoScene("Gizmo Test") {
     private fun UiScope.rotation(props: TransformProps) = MenuRow {
         Column(sizes.largeGap * 4f) {
             Text("Rotation") {
-                modifier.margin(vertical = 4.dp)
+                modifier.margin(vertical = sizes.smallGap * 0.75f)
             }
         }
         Column(Grow.Std) {
@@ -200,6 +200,7 @@ class GizmoTest : DemoScene("Gizmo Test") {
         }
         modifier
             .text(text.use())
+            .padding(vertical = sizes.smallGap * 0.75f)
             .margin(start = sizes.gap)
             .width(Grow.Std)
             .textAlignX(AlignmentX.End)
