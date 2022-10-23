@@ -344,7 +344,7 @@ class Gizmo : Group(), InputStack.PointerListener {
 
         checkHoverAxes(cam)
         if (hoverHandle == AXIS_NONE) {
-            checkHoverPlanes(pickRay, cam)
+            checkHoverPlanes(cam)
         }
 
         if (isAnyHover) {
@@ -464,60 +464,55 @@ class Gizmo : Group(), InputStack.PointerListener {
         return Float.MAX_VALUE
     }
 
-    private fun checkHoverPlanes(pickRay: Ray, cam: Camera) {
-        var np = Float.MAX_VALUE
-        val handleSize = properties.planeHandleSize * scale
+    private fun checkHoverPlanes(cam: Camera) {
         toGlobalCoords(pickPlane.p.set(Vec3f.ZERO))
 
-        toGlobalCoords(pickPlane.n.set(Vec3f.Z_AXIS), 0f)
-        if (pickPlane.intersectionPoint(pickRay, pickPoint)) {
-            val d = pickPoint.distance(cam.globalPos) / scale
-            toLocalCoords(pickPoint)
-            if (isInInterval(pickPoint.x,handleSize * camSign.x) && isInInterval(pickPoint.y, handleSize * camSign.y)) {
-                hoverPlane = PLANE_XY
-                np = d
-            } else if (abs(pickPoint.length() / scale - properties.rotationHandleRadius) < 0.05f) {
-                hoverRot = AXIS_Z
-                np = d
-            }
-            if (np == d) dragStartPos.set(pickPoint)
-        }
+        var np = checkPlaneHover(PLANE_XY, AXIS_Z, properties.hasPlaneXY, properties.hasRotationZ, Float.MAX_VALUE, Vec3f.Z_AXIS, cam)
+        np = checkPlaneHover(PLANE_XZ, AXIS_Y, properties.hasPlaneXZ, properties.hasRotationY, np, Vec3f.Y_AXIS, cam)
+        checkPlaneHover(PLANE_YZ, AXIS_X, properties.hasPlaneYZ, properties.hasRotationX, np, Vec3f.X_AXIS, cam)
+    }
 
-        toGlobalCoords(pickPlane.n.set(Vec3f.Y_AXIS), 0f)
-        if (pickPlane.intersectionPoint(pickRay, pickPoint)) {
-            val d = pickPoint.distance(cam.globalPos) / scale
-            toLocalCoords(pickPoint)
-            if (d < np) {
-                if (isInInterval(pickPoint.x, handleSize * camSign.x) && isInInterval(pickPoint.z, handleSize * camSign.z)) {
-                    hoverRot = AXIS_NONE
-                    hoverPlane = PLANE_XZ
-                    np = d
-                } else if (abs(pickPoint.length() / scale - properties.rotationHandleRadius) < 0.05f) {
-                    hoverPlane = PLANE_NONE
-                    hoverRot = AXIS_Y
-                    np = d
-                }
-                if (np == d) dragStartPos.set(pickPoint)
-            }
-        }
+    private fun checkPlaneHover(plane: Int, rotAxis: Int, isPlane: Boolean, isRot: Boolean, minDist: Float, normal: Vec3f, cam: Camera): Float {
+        var returnDist = minDist
+        val handleSize = properties.planeHandleSize * scale
 
-        toGlobalCoords(pickPlane.n.set(Vec3f.X_AXIS), 0f)
+        toGlobalCoords(pickPlane.n.set(normal), 0f)
         if (pickPlane.intersectionPoint(pickRay, pickPoint)) {
             val d = pickPoint.distance(cam.globalPos) / scale
             toLocalCoords(pickPoint)
-            if (d < np) {
-                if (isInInterval(pickPoint.y, handleSize * camSign.y) && isInInterval(pickPoint.z, handleSize * camSign.z)) {
-                    hoverRot = AXIS_NONE
-                    hoverPlane = PLANE_YZ
-                    np = d
-                } else if (abs(pickPoint.length() / scale - properties.rotationHandleRadius) < 0.05f) {
-                    hoverPlane = PLANE_NONE
-                    hoverRot = AXIS_X
-                    np = d
+            val pickX: Float
+            val pickY: Float
+            val signX: Float
+            val signY: Float
+            when {
+                normal.x != 0f -> {
+                    pickX = pickPoint.y;    signX = camSign.y
+                    pickY = pickPoint.z;    signY = camSign.z
                 }
-                if (np == d) dragStartPos.set(pickPoint)
+                normal.y != 0f -> {
+                    pickX = pickPoint.x;    signX = camSign.x
+                    pickY = pickPoint.z;    signY = camSign.z
+                }
+                else -> {
+                    pickX = pickPoint.x;    signX = camSign.x
+                    pickY = pickPoint.y;    signY = camSign.y
+                }
+            }
+
+            if (d < minDist) {
+                if (isPlane && isInInterval(pickX, handleSize * signX) && isInInterval(pickY, handleSize * signY)) {
+                    hoverRot = AXIS_NONE
+                    hoverPlane = plane
+                    returnDist = d
+                } else if (isRot && abs(pickPoint.length() / scale - properties.rotationHandleRadius) < 0.05f) {
+                    hoverPlane = PLANE_NONE
+                    hoverRot = rotAxis
+                    returnDist = d
+                }
+                if (returnDist == d) dragStartPos.set(pickPoint)
             }
         }
+        return returnDist
     }
 
     private fun isInInterval(value: Float, bound: Float): Boolean {
