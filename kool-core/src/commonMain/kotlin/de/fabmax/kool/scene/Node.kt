@@ -178,7 +178,7 @@ abstract class Node(var name: String? = null) : Disposable {
         while (p != null && p !is T) {
             p = p.parent
         }
-        return p as T
+        return p as? T
     }
 
     companion object {

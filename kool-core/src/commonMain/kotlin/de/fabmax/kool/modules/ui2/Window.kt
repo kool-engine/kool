@@ -27,7 +27,7 @@ open class WindowState {
     var dragStartHeight = 0f
 
     val isVisible = mutableStateOf(true)
-    val isFocused = mutableStateOf(false)
+    val isFocused = mutableStateOf(true)
     val dockedTo = mutableStateOf<DockingContainer?>(null)
 
     fun setWindowLocation(x: Dp, y: Dp, alignX: AlignmentX = AlignmentX.Start, alignY: AlignmentY = AlignmentY.Top) {
@@ -174,8 +174,10 @@ fun Window(
             if (window.modifier.isVerticallyResizable || window.modifier.isHorizontallyResizable) {
                 window.modifier.hoverListener(window)
                 window.modifier.dragListener(window)
-                window.modifier.onClick(window)
             }
+            // register window default click listener: does nothing but consume unused click events inside the
+            // window, so that the window gains focus within a DockingHost
+            window.modifier.onClick(window)
         }
     }
     return surface

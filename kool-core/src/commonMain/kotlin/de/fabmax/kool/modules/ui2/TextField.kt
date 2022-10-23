@@ -318,6 +318,7 @@ open class TextFieldNode(parent: UiNode?, surface: UiSurface)
                 InputManager.KEY_ESC -> surface.requestFocus(null)
                 InputManager.KEY_TAB -> surface.cycleFocus(backwards = keyEvent.isShiftDown)
                 InputManager.KEY_ENTER -> modifier.onEnterPressed?.invoke(editText.text)
+                InputManager.KEY_NP_ENTER -> modifier.onEnterPressed?.invoke(editText.text)
                 else -> {
                     triggerUpdate = false
                     if (keyEvent.isCtrlDown) {

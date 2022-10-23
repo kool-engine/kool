@@ -2,10 +2,7 @@ package de.fabmax.kool.math
 
 import de.fabmax.kool.lock
 import de.fabmax.kool.util.Float32Buffer
-import kotlin.math.PI
-import kotlin.math.cos
-import kotlin.math.sin
-import kotlin.math.sqrt
+import kotlin.math.*
 
 
 class Mat3f {
@@ -296,6 +293,22 @@ class Mat3f {
             result.w = (this[k, j] - this[j, k]) * s
             result[j] = (this[j, i] + this[i, j]) * s
             result[k] = (this[k, i] + this[i, k]) * s
+        }
+        return result
+    }
+
+    fun getEulerAngles(result: MutableVec3f): MutableVec3f {
+        val sy = sqrt(this[0, 0] * this[0, 0] + this[1, 0] * this[1, 0])
+        val isSingular = sy.isFuzzyZero()
+
+        if (!isSingular) {
+            result.x = atan2(this[2, 1], this[2, 2]).toDeg()
+            result.y = atan2(-this[2, 0], sy).toDeg()
+            result.z = atan2(this[1, 0], this[0, 0]).toDeg()
+        } else {
+            result.x = atan2(-this[1, 2], this[1, 1]).toDeg()
+            result.y = atan2(-this[2, 0], sy).toDeg()
+            result.z = 0f
         }
         return result
     }

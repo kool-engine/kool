@@ -72,6 +72,7 @@ object Demos {
         entry("hello-ui", "Hello UI") { HelloUiDemo() }
         entry("manyvehicles", "Many Vehicles") { ManyVehiclesDemo() }
         entry("ksl-test", "Ksl Shading Test") { KslShaderTest() }
+        entry("gizmo-test", "Gizmo Test") { GizmoTest() }
     }
 
     val categories = mutableListOf(physicsDemos, graphicsDemos, techDemos, hiddenDemos)

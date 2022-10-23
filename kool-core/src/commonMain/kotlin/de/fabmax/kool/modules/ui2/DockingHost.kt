@@ -135,6 +135,7 @@ class DockingHost : Group() {
 
     override fun addNode(node: Node, index: Int) {
         if (node is UiSurface) {
+            node.windowScope?.windowState?.isFocused?.set(false)
             childSurfaces += node
         }
         super.addNode(node, index)

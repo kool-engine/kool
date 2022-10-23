@@ -13,12 +13,16 @@ open class Mat4d {
         setIdentity()
     }
 
+    fun translate(tx: Float, ty: Float, tz: Float): Mat4d = translate(tx.toDouble(), ty.toDouble(), tz.toDouble())
+
     fun translate(tx: Double, ty: Double, tz: Double): Mat4d {
         for (i in 0..3) {
             matrix[12 + i] += matrix[i] * tx + matrix[4 + i] * ty + matrix[8 + i] * tz
         }
         return this
     }
+
+    fun translate(t: Vec3f): Mat4d = translate(t.x.toDouble(), t.y.toDouble(), t.z.toDouble())
 
     fun translate(t: Vec3d): Mat4d = translate(t.x, t.y, t.z)
 
@@ -38,6 +42,8 @@ open class Mat4d {
             set(mul(tmpMatA, tmpMatB))
         }
     }
+
+    fun rotate(angleDeg: Float, axis: Vec3f) = rotate(angleDeg.toDouble(), axis.x.toDouble(), axis.y.toDouble(), axis.z.toDouble())
 
     fun rotate(angleDeg: Double, axis: Vec3d) = rotate(angleDeg, axis.x, axis.y, axis.z)
 
