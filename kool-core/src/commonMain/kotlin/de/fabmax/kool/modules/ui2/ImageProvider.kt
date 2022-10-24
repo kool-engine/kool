@@ -2,6 +2,7 @@ package de.fabmax.kool.modules.ui2
 
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.Vec2f
+import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.util.TreeMap
 import kotlin.math.abs
@@ -71,6 +72,10 @@ class ImageIconMap(val gridSize: Int) {
 
     operator fun get(iconX: Int, iconY: Int): IconImageProvider {
         return providers[iconY * gridSize + iconX]
+    }
+
+    operator fun get(iconXy: Vec2i): IconImageProvider {
+        return providers[iconXy.y * gridSize + iconXy.x]
     }
 
     inner class IconImageProvider(x: Int, y: Int) : ImageProvider {

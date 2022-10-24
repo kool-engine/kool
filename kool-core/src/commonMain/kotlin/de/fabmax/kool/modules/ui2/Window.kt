@@ -177,7 +177,9 @@ fun Window(
             }
             // register window default click listener: does nothing but consume unused click events inside the
             // window, so that the window gains focus within a DockingHost
-            window.modifier.onClick(window)
+            if (window.modifier.background != null) {
+                window.modifier.onClick(window)
+            }
         }
     }
     return surface
