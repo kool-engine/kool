@@ -35,12 +35,12 @@ class DockingHost : Group() {
 
     fun dockWindow(
         window: WindowScope,
-        path: List<Pair<DockPosition, Float>>
+        path: List<Pair<DockPosition, Dimension>>
     ) {
         var container = dockingSurface.rootContainer
         for (p in path) {
             if (container.isLeaf) {
-                container.split(p.first, p.second, p.second)
+                container.split(p.first, p.second)
             }
             val (a, b) = container.childContainers ?: break
 
@@ -152,7 +152,7 @@ class DockingHost : Group() {
         val rootContainer = DockingContainer(
             this@DockingHost,
             null,
-            DockPosition.Center, 1f, 1f
+            DockPosition.Center, Grow.Std, Grow.Std
         ).apply { isMergeIfHalfEmpty = false }
 
         init {
@@ -230,18 +230,21 @@ class DockingHost : Group() {
             if (position == DockPosition.Center) {
                 container.dock(window)
             } else {
-                val weightX = container.xWeightByWidthPx(window.uiNode.widthPx)
-                val weightY = container.yWeightByHeightPx(window.uiNode.heightPx)
-                container.split(position, weightX, weightY).dock(window)
+                val insertDim = if (position.isHorizontal) {
+                    Grow(container.xWeightByWidthPx(window.uiNode.widthPx))
+                } else {
+                    Grow(container.yWeightByHeightPx(window.uiNode.heightPx))
+                }
+                container.split(position, insertDim).dock(window)
             }
         }
     }
 
-    enum class DockPosition(val alignX: AlignmentX, val alignY: AlignmentY) {
-        Start(AlignmentX.Start, AlignmentY.Center),
-        End(AlignmentX.End, AlignmentY.Center),
-        Top(AlignmentX.Center, AlignmentY.Top),
-        Bottom(AlignmentX.Center, AlignmentY.Bottom),
-        Center(AlignmentX.Center, AlignmentY.Center)
+    enum class DockPosition(val alignX: AlignmentX, val alignY: AlignmentY, val isHorizontal: Boolean) {
+        Start(AlignmentX.Start, AlignmentY.Center, true),
+        End(AlignmentX.End, AlignmentY.Center, true),
+        Top(AlignmentX.Center, AlignmentY.Top, false),
+        Bottom(AlignmentX.Center, AlignmentY.Bottom, false),
+        Center(AlignmentX.Center, AlignmentY.Center, false)
     }
 }
