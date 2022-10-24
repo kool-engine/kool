@@ -46,7 +46,7 @@ class Gizmo : Group(), InputStack.PointerListener {
         }
     }
     private val lineMeshHidden = BetterLineMesh().apply {
-        shader = BetterLineMesh.LineShader(KslUnlitShader.Config().apply {
+        shader = BetterLineMesh.LineShader {
             color {
                 vertexColor()
                 constColor(Color.WHITE.withAlpha(0.4f), ColorBlockConfig.MixMode.Multiply)
@@ -56,7 +56,7 @@ class Gizmo : Group(), InputStack.PointerListener {
                 depthTest = DepthCompareOp.GREATER_EQUAL
                 isWriteDepth = false
             }
-        })
+        }
     }
     private val solidMeshHidden = colorMesh {
         shader = KslUnlitShader {
@@ -135,7 +135,7 @@ class Gizmo : Group(), InputStack.PointerListener {
 
             if (isDynamicScale()) {
                 lineMesh.toGlobalCoords(gizmoCenter.set(Vec3f.ZERO))
-                val camDist = gizmoCenter.distance(it.camera.globalPos)
+                val camDist = gizmoCenter.subtract(it.camera.globalPos).dot(it.camera.globalLookDir)
                 scale = camDist * dynamicScaleFactor
             }
             scaleGroup.setIdentity().scale(scale)
@@ -504,7 +504,7 @@ class Gizmo : Group(), InputStack.PointerListener {
                     hoverRot = AXIS_NONE
                     hoverPlane = plane
                     returnDist = d
-                } else if (isRot && abs(pickPoint.length() / scale - properties.rotationHandleRadius) < 0.05f) {
+                } else if (isRot && abs(pickPoint.length() / scale - properties.rotationHandleRadius) < properties.rotationHandleGrabDist) {
                     hoverPlane = PLANE_NONE
                     hoverRot = rotAxis
                     returnDist = d
@@ -552,6 +552,7 @@ class Gizmo : Group(), InputStack.PointerListener {
         var axesHandleRadius: Float = 0.075f,
         var axesHandleRadiusHovered: Float = 0.1f,
         var rotationHandleRadius: Float = 0.75f,
+        var rotationHandleGrabDist: Float = 0.075f,
         var planeHandleSize: Float = 0.33f,
 
         var lineWidth: Float = 3f,

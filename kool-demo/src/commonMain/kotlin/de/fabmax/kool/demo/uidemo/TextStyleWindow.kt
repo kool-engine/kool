@@ -22,8 +22,10 @@ class TextStyleWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
         val displayText = weakRememberState("Hello kool UI!")
         val fontSize = weakRememberState(150f)
         val rotation = weakRememberState(0f)
+        val glow = weakRememberState(0f)
         val fontWeight = weakRememberState(0f)
         val fontCutoff = weakRememberState(0.5f)
+        val fontItalic = weakRememberState(0f)
 
         modifier.padding(sizes.gap)
 
@@ -44,7 +46,9 @@ class TextStyleWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
 
         labeledSlider("Font size", fontSize, 8f, 500f, 0)
         labeledSlider("Weight", fontWeight, -0.2f, 0.3f, 2)
+        labeledSlider("Italic", fontItalic, -0.5f, 0.5f, 2)
         labeledSlider("Cutoff / outline", fontCutoff, 0f, 0.5f, 2)
+        labeledSlider("Glow", glow, 0f, 1f, 2)
         labeledSlider("Rotation", rotation, 0f, 360f, 0)
 
         ScrollArea(
@@ -58,7 +62,13 @@ class TextStyleWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
                 .width(Grow(1f, min = FitContent))
                 .height(Grow(1f, min = FitContent))
 
-            val font = MsdfFont(sizePts = fontSize.value, weight = fontWeight.value, cutoff = fontCutoff.value)
+            val font = MsdfFont(
+                sizePts = fontSize.value,
+                italic = fontItalic.value,
+                weight = fontWeight.value,
+                cutoff = fontCutoff.value,
+                glowColor = colors.secondary.withAlpha(glow.value)
+            )
             Text(displayText.use()) {
                 modifier
                     .size(Grow.Std, Grow.Std)

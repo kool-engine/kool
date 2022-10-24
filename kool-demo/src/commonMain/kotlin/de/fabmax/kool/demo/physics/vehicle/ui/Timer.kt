@@ -158,9 +158,8 @@ class Timer(val vehicleUi: VehicleUi) : Composable {
                     }
                     Switch(isHeadlights.use()) {
                         modifier
-                            .alignY(AlignmentY.Center)
                             .onToggle { isHeadlights.set(it) }
-                            .margin(end = sizes.smallGap)
+                            .margin(end = sizes.smallGap, top = sizes.smallGap * 0.5f)
                     }
                 }
             }

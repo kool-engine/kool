@@ -63,10 +63,10 @@ internal class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, val ctx: 
         g.clearRect(0, 0, maxWidth, maxHeight)
 
         var style = AwtFont.PLAIN
-        if (font.style and Font.BOLD != 0) {
+        if (font.style and AtlasFont.BOLD != 0) {
             style = AwtFont.BOLD
         }
-        if (font.style and Font.ITALIC != 0) {
+        if (font.style and AtlasFont.ITALIC != 0) {
             style += AwtFont.ITALIC
         }
 
@@ -125,7 +125,7 @@ internal class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, val ctx: 
         // unfortunately java font metrics don't provide methods to determine the precise pixel bounds of individual
         // characters and some characters (e.g. 'j', 'f') extend further to left / right than the given char width
         // therefore we need to add generous padding to avoid artefacts
-        val isItalic = font.style == Font.ITALIC
+        val isItalic = font.style == AtlasFont.ITALIC
         val padLeft = ceil(if (isItalic) size / 2f else size / 5f).toInt()
         val padRight = ceil(if (isItalic) size / 2f else size / 10f).toInt()
         val padTop = 0

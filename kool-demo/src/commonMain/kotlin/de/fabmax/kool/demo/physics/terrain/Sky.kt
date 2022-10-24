@@ -193,7 +193,7 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
         var alpha: Float by uniform1f("uAlpha", 1f)
 
         companion object {
-            fun config(isPointShader: Boolean, colorBlock: ColorBlockConfig.() -> Unit) = Config().apply {
+            fun config(isPointShader: Boolean, colorBlock: ColorBlockConfig.() -> Unit) = UnlitShaderConfig().apply {
                 color {
                     colorBlock()
                 }

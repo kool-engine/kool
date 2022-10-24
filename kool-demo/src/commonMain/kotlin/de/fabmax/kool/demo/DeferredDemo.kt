@@ -566,7 +566,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
         var metal by texture2d("tMetal")
 
         companion object {
-            val cfg = Config().apply {
+            val cfg = UnlitShaderConfig().apply {
                 pipeline { depthTest = DepthCompareOp.DISABLED }
                 colorSpaceConversion = ColorSpaceConversion.AS_IS
                 modelCustomizer = {
