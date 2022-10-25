@@ -3,6 +3,7 @@ package de.fabmax.kool.modules.mesh
 import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.OcTree
 import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.scene.BetterLineMesh
 import de.fabmax.kool.scene.LineMesh
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.geometry.IndexedVertexList
@@ -86,6 +87,16 @@ class HalfEdgeMesh(geometry: IndexedVertexList, val edgeHandler: EdgeHandler = L
             v0.set(edge.from)
             v1.set(edge.to)
             lineMesh.addLine(v0, lineColor, v1, lineColor)
+        }
+    }
+
+    fun generateWireframe(lineMesh: BetterLineMesh, lineColor: Color = MdColor.PINK, lineWidth: Float = 2f) {
+        val v0 = MutableVec3f()
+        val v1 = MutableVec3f()
+        edgeHandler.filter { it.opp == null || it.from.index < it.to.index }.forEach { edge ->
+            v0.set(edge.from)
+            v1.set(edge.to)
+            lineMesh.line(v0, v1, lineColor, lineWidth)
         }
     }
 

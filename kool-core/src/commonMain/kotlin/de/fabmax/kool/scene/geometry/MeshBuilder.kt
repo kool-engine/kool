@@ -796,7 +796,7 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
 
     fun text(props: TextProps) {
         when (val font = props.font) {
-            is AtlasFont -> renderSystemFont(font, props)
+            is AtlasFont -> renderAtlasFont(font, props)
             is MsdfFont -> renderMsdfFont(font, props)
         }
     }
@@ -845,25 +845,31 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
                 // }
                 val w = (g.planeBounds.right - g.planeBounds.left) * s
 
+                val msdfProps = geometry.vertexIt.getVec4fAttribute(MsdfUiShader.ATTRIB_MSDF_PROPS)
+                val glowColor = geometry.vertexIt.getVec4fAttribute(MsdfUiShader.ATTRIB_GLOW_COLOR)
                 val iBtLt = vertex {
                     set(lt, yBot, 0f)
                     texCoord.set(g.atlasBounds.left * us, 1f - g.atlasBounds.bottom * vs)
-                    getVec4fAttribute(MsdfUiShader.ATTRIB_MSDF_PROPS)?.set(pxRange, font.weight, font.cutoff, 0f)
+                    msdfProps?.set(pxRange, font.weight, font.cutoff, 0f)
+                    font.glowColor?.let { glowColor?.set(it) }
                 }
                 val iBtRt = vertex {
                     set(lt + w, yBot, 0f)
                     texCoord.set(g.atlasBounds.right * us, 1f - g.atlasBounds.bottom * vs)
-                    getVec4fAttribute(MsdfUiShader.ATTRIB_MSDF_PROPS)?.set(pxRange, font.weight, font.cutoff, 0f)
+                    msdfProps?.set(pxRange, font.weight, font.cutoff, 0f)
+                    font.glowColor?.let { glowColor?.set(it) }
                 }
                 val iTpLt = vertex {
-                    set(lt, yBot + h, 0f)
+                    set(lt - h * font.italic, yBot + h, 0f)
                     texCoord.set(g.atlasBounds.left * us, 1f - g.atlasBounds.top * vs)
-                    getVec4fAttribute(MsdfUiShader.ATTRIB_MSDF_PROPS)?.set(pxRange, font.weight, font.cutoff, 0f)
+                    msdfProps?.set(pxRange, font.weight, font.cutoff, 0f)
+                    font.glowColor?.let { glowColor?.set(it) }
                 }
                 val iTpRt = vertex {
-                    set(lt + w, yBot + h, 0f)
+                    set(lt + w - h * font.italic, yBot + h, 0f)
                     texCoord.set(g.atlasBounds.right * us, 1f - g.atlasBounds.top * vs)
-                    getVec4fAttribute(MsdfUiShader.ATTRIB_MSDF_PROPS)?.set(pxRange, font.weight, font.cutoff, 0f)
+                    msdfProps?.set(pxRange, font.weight, font.cutoff, 0f)
+                    font.glowColor?.let { glowColor?.set(it) }
                 }
                 addTriIndices(iBtLt, iBtRt, iTpRt)
                 addTriIndices(iBtLt, iTpRt, iTpLt)
@@ -873,7 +879,7 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
         }
     }
 
-    private fun renderSystemFont(font: AtlasFont, props: TextProps) {
+    private fun renderAtlasFont(font: AtlasFont, props: TextProps) {
         val charMap = font.map
         if (charMap == null) {
             logE { "Font char map has not yet been initialized" }

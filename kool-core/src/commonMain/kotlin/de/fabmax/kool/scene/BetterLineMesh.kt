@@ -88,18 +88,26 @@ class BetterLineMesh(name: String? = null) : Mesh(IndexedVertexList(lineMeshAttr
 
     data class LineVertex(val position: Vec3f, val color: Color, val width: Float)
 
-    class LineShader(cfg: Config = config, model: LineModel = LineModel(cfg)) : KslUnlitShader(cfg, model) {
+    class LineShader(cfg: LineShaderConfig = defaultCfg, model: LineModel = LineModel(cfg)) : KslUnlitShader(cfg, model) {
+
+        constructor(block: LineShaderConfig.() -> Unit) : this(LineShaderConfig().apply(block))
+
         companion object {
-            private val config = Config().apply {
+            private val defaultCfg = LineShaderConfig().apply {
                 color { vertexColor() }
                 colorSpaceConversion = ColorSpaceConversion.AS_IS
             }
         }
 
-        class LineModel(cfg: Config) : KslProgram("Line Shader") {
-            init {
-                vertexStage {
+        class LineShaderConfig : UnlitShaderConfig() {
+            var depthFactor = 1f
+        }
 
+        class LineModel(cfg: LineShaderConfig) : KslProgram("Line Shader") {
+            init {
+                val clipPos = interStageFloat4()
+
+                vertexStage {
                     val cross2 = functionFloat1("cross2") {
                         val v1 = paramFloat2("v1")
                         val v2 = paramFloat2("v2")
@@ -153,6 +161,7 @@ class BetterLineMesh(name: String? = null) : Mesh(IndexedVertexList(lineMeshAttr
 
                         x.x *= 1f.const / ar
                         projPos.xy += (x * lineWidth) * projPos.w
+                        clipPos.input set projPos
                         outPosition set projPos
 
                     }
@@ -167,6 +176,13 @@ class BetterLineMesh(name: String? = null) : Mesh(IndexedVertexList(lineMeshAttr
                             outRgb set outRgb * baseColor.a
                         }
                         colorOutput(outRgb, baseColor.a)
+
+                        if (cfg.depthFactor != 1f) {
+                            val clipDepth = float1Var(clipPos.output.z / clipPos.output.w) * cfg.depthFactor.const
+                            val near = 0f.const
+                            val far = 1f.const
+                            outDepth set (((far - near) * clipDepth) + near + far) / 2f.const
+                        }
                     }
                 }
                 cfg.modelCustomizer?.invoke(this)

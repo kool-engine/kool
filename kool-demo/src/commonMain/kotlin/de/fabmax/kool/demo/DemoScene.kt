@@ -8,6 +8,7 @@ import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
+import de.fabmax.kool.util.MsdfFont
 
 abstract class DemoScene(val name: String) {
     var demoEntry: Demos.Entry? = null
@@ -132,6 +133,11 @@ abstract class DemoScene(val name: String) {
                 .background(RoundRectBackground(colors.primary, cornerRadius))
                 .dragListener(WindowMoveDragHandler(this@TitleBar))
 
+            var titleFont = sizes.largeText
+            if (titleFont is MsdfFont) {
+                titleFont = titleFont.copy(glowColor = colors.secondaryVariant)
+            }
+
             Text(titleTxt) {
                 val bgRadius = cornerRadius.px + 1f
                 val bottomRadius = if (bottomRounded) bgRadius else 0f
@@ -140,7 +146,7 @@ abstract class DemoScene(val name: String) {
                     .height(UiSizes.baseSize)
                     .background(TitleBgRenderer(titleBgMesh, titleFrom, titleTo, bgRadius, bottomRadius))
                     .textColor(colors.onPrimary)
-                    .font(sizes.largeText)
+                    .font(titleFont)
                     .textAlign(AlignmentX.Center, AlignmentY.Center)
             }
 

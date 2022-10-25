@@ -47,15 +47,15 @@ class UiDemo : DemoScene("UI Demo") {
         // The numbers define the split weights in case tree nodes have to be spawned to complete the path.
         // If the internal tree structure conflicts with the given path, the window is docked in the next best slot.
         //
-        // The LauncherWindow is docked at Start (left) position below the root node. Splitting it with a weight of
-        // 0.15, i.e. the LauncherWindow will take 15% of the screen width and the other 85% of screen space remain
-        // empty.
+        // The LauncherWindow is docked at Start (left) position below the root node. Splitting it with an absolute
+        // width of 250 dp, remaining screen space remain will be empty.
         // Then, the ThemeEditorWindow is spawned on the right side of the empty side (path: root -> end/right -> end/right),
-        // with a weight of 0.3 result in a total width of 0.85 * 0.3 ~= 25% of screen width.
+        // taking 30 % of the empty space.
 
-        spawnWindow(LauncherWindow(this@UiDemo), listOf(DockingHost.DockPosition.Start to 0.15f))
-        spawnWindow(ThemeEditorWindow(this@UiDemo), listOf(DockingHost.DockPosition.End to 0.85f, DockingHost.DockPosition.End to 0.3f))
+        spawnWindow(LauncherWindow(this@UiDemo), listOf(DockingHost.DockPosition.Start to Dp(250f)))
+        spawnWindow(ThemeEditorWindow(this@UiDemo), listOf(DockingHost.DockPosition.End to Grow.Std, DockingHost.DockPosition.End to Grow(0.3f)))
 
+        // TextStyleWindow is spawned as a floating window
         spawnWindow(TextStyleWindow(this@UiDemo))
 
         // add a sidebar for the demo menu
@@ -92,7 +92,7 @@ class UiDemo : DemoScene("UI Demo") {
         }
     }
 
-    fun spawnWindow(window: DemoWindow, dockPath: List<Pair<DockingHost.DockPosition, Float>>? = null) {
+    fun spawnWindow(window: DemoWindow, dockPath: List<Pair<DockingHost.DockPosition, Dimension>>? = null) {
         demoWindows += window
         dockingHost.apply {
             +window.windowSurface

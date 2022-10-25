@@ -4,15 +4,23 @@ import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.blocks.mvpMatrix
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.pipeline.BlendMode
 import de.fabmax.kool.pipeline.CullMethod
 import de.fabmax.kool.pipeline.GlslType
 
-class MsdfUiShader : KslShader(Model(), PipelineConfig().apply { cullMethod = CullMethod.NO_CULLING }) {
+class MsdfUiShader : KslShader(
+    Model(),
+    PipelineConfig().apply {
+        cullMethod = CullMethod.NO_CULLING
+        blendMode = BlendMode.BLEND_PREMULTIPLIED_ALPHA
+    }
+) {
     var fontMap by texture2d("tFontMap")
 
     class Model : KslProgram("Msdf UI2 Shader") {
         init {
             val fgColor = interStageFloat4(interpolation = KslInterStageInterpolation.Flat)
+            val glowColor = interStageFloat4(interpolation = KslInterStageInterpolation.Flat)
             val msdfProps = interStageFloat4(interpolation = KslInterStageInterpolation.Flat)
             val clipBounds = interStageFloat4(interpolation = KslInterStageInterpolation.Flat)
             val screenPos = interStageFloat2()
@@ -21,6 +29,7 @@ class MsdfUiShader : KslShader(Model(), PipelineConfig().apply { cullMethod = Cu
             vertexStage {
                 main {
                     fgColor.input set vertexAttribFloat4(Attribute.COLORS.name)
+                    glowColor.input set vertexAttribFloat4(ATTRIB_GLOW_COLOR.name)
                     msdfProps.input set vertexAttribFloat4(ATTRIB_MSDF_PROPS.name)
                     clipBounds.input set vertexAttribFloat4(Ui2Shader.ATTRIB_CLIP.name)
                     uv.input set vertexAttribFloat2(Attribute.TEXTURE_COORDS.name)
@@ -41,11 +50,11 @@ class MsdfUiShader : KslShader(Model(), PipelineConfig().apply { cullMethod = Cu
                 }
 
                 val computeOpacity = functionFloat1("computeOpacity") {
-                    val msdf = paramFloat4("msdf")
+                    val msdf = paramFloat3("msdf")
                     val props = paramFloat4("props")
 
                     body {
-                        val sd = float1Var(median3(msdf.rgb))
+                        val sd = float1Var(median3(msdf))
                         val dist = float1Var(sd - 0.5f.const + props.y)
 
                         // branch-less version of "if (dist > cutoff) dist = 2.0 * cutoff - dist"
@@ -63,11 +72,31 @@ class MsdfUiShader : KslShader(Model(), PipelineConfig().apply { cullMethod = Cu
                         discard()
 
                     }.`else` {
-                        val fontMap = texture2d("tFontMap")
-                        val msdf = sampleTexture(fontMap, uv.output)
                         val color = float4Var(fgColor.output)
-                        color.a *= computeOpacity(msdf, msdfProps.output)
-                        colorOutput(color)
+                        val fontMap = texture2d("tFontMap")
+                        val msdfVals = sampleTexture(fontMap, uv.output)
+
+                        val pxRange = msdfProps.output.x
+                        val weight = msdfProps.output.y
+                        //val cutoff = msdfProps.output.z
+
+                        // sample regular sdf map (stored in texture alpha channel)
+                        val dist = float1Var(msdfVals.a - 0.5f.const + weight)
+                        val screenPxDistance = float1Var(pxRange * dist)
+                        val sdfOpa = float1Var(clamp(screenPxDistance + 0.5f.const, 0f.const, 1f.const))
+
+                        // sample multi-sdf map (stored in texture rgb channels)
+                        val msdfOpa = computeOpacity(msdfVals.rgb, msdfProps.output)
+
+                        // use sdf for small fonts and msdf for large fonts
+                        val wMsdf = float1Var(smoothStep(5f.const, 10f.const, pxRange))
+                        color.a *= sdfOpa * (1f.const - wMsdf) + msdfOpa * wMsdf
+
+                        val glow = float4Var(glowColor.output)
+                        glow.a *= smoothStep(0f.const, 1f.const, msdfVals.a * 1.5f.const) * (1f.const - color.a)
+
+                        val outColor = float4Var(float4Value(color.rgb * color.a + glow.rgb * glow.a, color.a + glow.a))
+                        colorOutput(outColor)
                     }
                 }
             }
@@ -76,7 +105,15 @@ class MsdfUiShader : KslShader(Model(), PipelineConfig().apply { cullMethod = Cu
 
     companion object {
         val ATTRIB_MSDF_PROPS = Attribute("aMsdfProps", GlslType.VEC_4F)
+        val ATTRIB_GLOW_COLOR = Attribute("aGlowColor", GlslType.VEC_4F)
 
-        val MSDF_UI_MESH_ATTRIBS = listOf(ATTRIB_MSDF_PROPS, Attribute.COLORS, Ui2Shader.ATTRIB_CLIP, Attribute.POSITIONS, Attribute.TEXTURE_COORDS)
+        val MSDF_UI_MESH_ATTRIBS = listOf(
+            ATTRIB_MSDF_PROPS,
+            Attribute.COLORS,
+            ATTRIB_GLOW_COLOR,
+            Ui2Shader.ATTRIB_CLIP,
+            Attribute.POSITIONS,
+            Attribute.TEXTURE_COORDS
+        )
     }
 }

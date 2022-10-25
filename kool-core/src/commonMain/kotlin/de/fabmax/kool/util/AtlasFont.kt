@@ -11,14 +11,14 @@ import kotlin.math.round
 class AtlasFont(
     val family: String = SYSTEM_FONT,
     sizePts: Float = 12f,
-    style: Int = PLAIN,
+    val style: Int = PLAIN,
     val ascentEm: Float = 1.05f,
     val descentEm: Float = 0.35f,
     val heightEm: Float = 1.4f,
     val chars: String = STD_CHARS,
     val fontMapProps: TextureProps = DEFAULT_FONT_TEX_PROPS,
     val isExternalMap: Boolean = false
-) : Font(sizePts, style) {
+) : Font(sizePts) {
 
     var map: FontMap? = null
     val isLoaded: Boolean get() = map != null
@@ -99,6 +99,10 @@ class AtlasFont(
 
 
     companion object {
+        const val PLAIN = 0
+        const val BOLD = 1
+        const val ITALIC = 2
+
         const val SYSTEM_FONT = "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen, Ubuntu, Cantarell, \"Open Sans\", sans-serif"
         val STD_CHARS: String
         val DEFAULT_FONT: AtlasFont
@@ -158,6 +162,9 @@ class FontMap(
             }
         }
         result.width = max(result.width, lineWidth)
+        if (font.style and AtlasFont.ITALIC != 0) {
+            result.width += 0.1f * font.sizePts * font.scale
+        }
         return result
     }
 

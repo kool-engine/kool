@@ -3,10 +3,9 @@ package de.fabmax.kool.demo.physics.vehicle.ui
 import de.fabmax.kool.demo.Settings
 import de.fabmax.kool.demo.physics.vehicle.DemoVehicle
 import de.fabmax.kool.modules.ui2.*
-import de.fabmax.kool.util.AtlasFont
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.Font
 import de.fabmax.kool.util.MdColor
+import de.fabmax.kool.util.MsdfFont
 
 class VehicleUi(val vehicle: DemoVehicle) {
 
@@ -41,9 +40,9 @@ class VehicleUi(val vehicle: DemoVehicle) {
     }
 
     class VehicleUiFonts(baseFontSize: Float) {
-        val normalFont = AtlasFont(sizePts = baseFontSize * 1.1f, style = Font.ITALIC)
-        val largeFont = AtlasFont(sizePts = baseFontSize * 3.5f, style = Font.ITALIC, chars = "-01234567890.:")
-        val speedFont = AtlasFont(sizePts = baseFontSize * 6f, style = Font.ITALIC, chars = "-01234567890.:")
+        val normalFont = MsdfFont(sizePts = baseFontSize * 1.1f, italic = 0.25f)
+        val largeFont = MsdfFont(sizePts = baseFontSize * 3.5f, italic = 0.25f)
+        val speedFont = MsdfFont(sizePts = baseFontSize * 5.5f, italic = 0.25f)
     }
 
     companion object {

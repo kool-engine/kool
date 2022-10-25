@@ -6,7 +6,7 @@ import de.fabmax.kool.KoolContext
  * @author fabmax
  */
 
-sealed class Font(val sizePts: Float, val style: Int) {
+sealed class Font(val sizePts: Float) {
 
     abstract val scale: Float
     abstract val lineHeight: Float
@@ -20,10 +20,6 @@ sealed class Font(val sizePts: Float, val style: Int) {
     abstract fun derive(sizePts: Float): Font
 
     companion object {
-        const val PLAIN = 0
-        const val BOLD = 1
-        const val ITALIC = 2
-
         val DEFAULT_FONT: Font get() = MsdfFont.DEFAULT_FONT
     }
 }

@@ -6,6 +6,7 @@ import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.gltf.GltfFile
 import de.fabmax.kool.modules.gltf.loadGltfModel
+import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.modules.mesh.HalfEdgeMesh
 import de.fabmax.kool.modules.mesh.ListEdgeHandler
 import de.fabmax.kool.modules.mesh.simplification.simplify
@@ -28,7 +29,13 @@ class SimplificationDemo : DemoScene("Simplification") {
     private val activeModel: MutableStateValue<DemoModel>
     private var heMesh: HalfEdgeMesh
     private val dispModel = Mesh(IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS))
-    private val modelWireframe = LineMesh()
+    private val modelWireframe = BetterLineMesh().apply {
+        shader = BetterLineMesh.LineShader {
+            color { vertexColor() }
+            colorSpaceConversion = ColorSpaceConversion.AS_IS
+            depthFactor = 0.9999f
+        }
+    }
 
     private val simplifcationRatio = mutableStateOf(1f)
     private val isAutoSimplify = mutableStateOf(true)
@@ -98,7 +105,7 @@ class SimplificationDemo : DemoScene("Simplification") {
 
             modelWireframe.geometry.batchUpdate {
                 modelWireframe.clear()
-                heMesh.generateWireframe(modelWireframe, MdColor.LIME)
+                heMesh.generateWireframe(modelWireframe, MdColor.LIME, 1.5f)
             }
 
             val time = pt.takeSecs()

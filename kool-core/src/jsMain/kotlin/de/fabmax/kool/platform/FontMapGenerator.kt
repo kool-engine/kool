@@ -86,10 +86,10 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, props: JsContext.I
 
     private fun makeMap(font: AtlasFont, size: Int, outMetrics: MutableMap<Char, CharMetrics>): Int {
         var style = ""
-        if (font.style and Font.BOLD != 0) {
+        if (font.style and AtlasFont.BOLD != 0) {
             style = "bold "
         }
-        if (font.style and Font.ITALIC != 0) {
+        if (font.style and AtlasFont.ITALIC != 0) {
             style += "italic "
         }
 

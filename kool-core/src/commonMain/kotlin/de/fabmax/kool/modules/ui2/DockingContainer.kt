@@ -10,8 +10,8 @@ class DockingContainer(
     val dockingHost: DockingHost,
     var parent: DockingContainer?,
     val position: DockingHost.DockPosition,
-    widthWeight: Float,
-    heightWeight: Float
+    initWidth: Dimension,
+    initHeight: Dimension
 ) : Composable {
 
     var depth = 0
@@ -29,12 +29,12 @@ class DockingContainer(
     val isDrawSlots = mutableStateOf(false)
 
     var isMergeIfHalfEmpty = false
-    val widthWeight = mutableStateOf(widthWeight)
-    val heightWeight = mutableStateOf(heightWeight)
+    val width = mutableStateOf(initWidth)
+    val height = mutableStateOf(initHeight)
     val boundsMinPx = MutableVec2f()
     val boundsMaxPx = MutableVec2f()
-    val width: Float get() = boundsMaxPx.x - boundsMinPx.x
-    val height: Float get() = boundsMaxPx.y - boundsMinPx.y
+    val widthPx: Float get() = boundsMaxPx.x - boundsMinPx.x
+    val heightPx: Float get() = boundsMaxPx.y - boundsMinPx.y
 
     val dockMarginStart = mutableStateOf(Dp.ZERO)
     val dockMarginEnd = mutableStateOf(Dp.ZERO)
@@ -84,7 +84,7 @@ class DockingContainer(
             windowState.dockedTo.set(this@DockingContainer)
             windowState.setDockedWindowBounds(
                 Dp.fromPx(boundsMinPx.x), Dp.fromPx(boundsMinPx.y),
-                Dp.fromPx(width), Dp.fromPx(height),
+                Dp.fromPx(widthPx), Dp.fromPx(heightPx),
             )
         }
         bringToTop(window)
@@ -113,18 +113,42 @@ class DockingContainer(
         val (a, b) = childContainers ?: return
 
         if (isSplitHorizontally) {
-            val minRemaining = min(width * 0.5f, Dp(50f).px)
-            val splitX = (screenPos.x - boundsMinPx.x).clamp(minRemaining, width - minRemaining)
-            val weightA = (splitX / width)
-            a.widthWeight.set(weightA)
-            b.widthWeight.set(1f - weightA)
+            val minRemaining = min(widthPx * 0.5f, Dp(8f).px)
+            val splitX = (screenPos.x - boundsMinPx.x).clamp(minRemaining, widthPx - minRemaining)
+            val weightA = (splitX / widthPx)
+            if (a.width.value is Grow && b.width.value is Grow) {
+                a.width.set(Grow(weightA))
+                b.width.set(Grow(1f - weightA))
+
+            } else if (b.width.value is Grow) {
+                // set width of a to absolute dp value, b remains grow
+                a.width.set(Dp.fromPx(splitX))
+                b.width.set(Grow.Std)
+
+            } else {
+                // set width of b to absolute dp value, a is forced to grow
+                a.width.set(Grow.Std)
+                b.width.set(Dp.fromPx(widthPx - splitX))
+            }
 
         } else {
-            val minRemaining = min(height * 0.5f, Dp(50f).px)
-            val splitY = (screenPos.y - boundsMinPx.y).clamp(minRemaining, height - minRemaining)
-            val weightA = (splitY / height)
-            a.heightWeight.set(weightA)
-            b.heightWeight.set(1f - weightA)
+            val minRemaining = min(heightPx * 0.5f, Dp(50f).px)
+            val splitY = (screenPos.y - boundsMinPx.y).clamp(minRemaining, heightPx - minRemaining)
+            val weightA = (splitY / heightPx)
+            if (a.height.value is Grow && b.height.value is Grow) {
+                a.height.set(Grow(weightA))
+                b.height.set(Grow(1f - weightA))
+
+            } else if (b.height.value is Grow) {
+                // set height of a to absolute dp value, b remains grow
+                a.height.set(Dp.fromPx(splitY))
+                b.height.set(Grow.Std)
+
+            } else {
+                // set height of b to absolute dp value, a is forced to grow
+                a.height.set(Grow.Std)
+                b.height.set(Dp.fromPx(widthPx - splitY))
+            }
         }
     }
 
@@ -142,7 +166,7 @@ class DockingContainer(
         if (customCompositer != null) {
             customCompositer?.invoke(this, this@DockingContainer)
         } else {
-            composeContent(Grow(widthWeight.use()), Grow(heightWeight.use()))
+            composeContent(width.use(), height.use())
         }
     }
 
@@ -209,7 +233,7 @@ class DockingContainer(
     }
 
     fun xWeightByWidthPx(widthPx: Float, minWeight: Float = 0.2f, maxWeight: Float = 0.8f): Float {
-        var w = (widthPx / width).clamp(minWeight, maxWeight)
+        var w = (widthPx / this.widthPx).clamp(minWeight, maxWeight)
         if (w.isNaN()) {
             w = 0.5f
         }
@@ -217,14 +241,22 @@ class DockingContainer(
     }
 
     fun yWeightByHeightPx(heightPx: Float, minWeight: Float = 0.2f, maxWeight: Float = 0.8f): Float {
-        var w = (heightPx / height).clamp(minWeight, maxWeight)
+        var w = (heightPx / this.heightPx).clamp(minWeight, maxWeight)
         if (w.isNaN()) {
             w = 0.5f
         }
         return w
     }
 
-    fun split(insertPos: DockingHost.DockPosition, splitWeightX: Float, splitWeightY: Float): DockingContainer {
+    private fun getOpposingDimension(insertDim: Dimension): Dimension {
+        return when (insertDim) {
+            FitContent -> Grow.Std
+            is Dp -> Grow.Std
+            is Grow -> Grow((1f - insertDim.weight).clamp(0.05f, 0.95f))
+        }
+    }
+
+    fun split(insertPos: DockingHost.DockPosition, insertDim: Dimension): DockingContainer {
         if (!isLeaf) {
             throw IllegalStateException("Only leaf nodes can be split")
         }
@@ -232,51 +264,45 @@ class DockingContainer(
             return this
         }
 
-        var insertWidthW = 1f
-        var insertHeightW = 1f
-        var opposingWidthW = 1f
-        var opposingHeightW = 1f
+        var insertWidth: Dimension = Grow.Std
+        var insertHeight: Dimension = Grow.Std
+        var opposingWidth: Dimension = Grow.Std
+        var opposingHeight: Dimension = Grow.Std
         val insertFirst: Boolean
         val opposingPos: DockingHost.DockPosition
         when (insertPos) {
             DockingHost.DockPosition.Start -> {
-                insertWidthW = splitWeightX
-                opposingWidthW = 1f - insertWidthW
+                insertWidth = insertDim
+                opposingWidth = getOpposingDimension(insertDim)
                 opposingPos = DockingHost.DockPosition.End
                 insertFirst = true
             }
             DockingHost.DockPosition.End -> {
-                insertWidthW = splitWeightX
-                opposingWidthW = 1f - insertWidthW
+                insertWidth = insertDim
+                opposingWidth = getOpposingDimension(insertDim)
                 opposingPos = DockingHost.DockPosition.Start
                 insertFirst = false
             }
             DockingHost.DockPosition.Top -> {
-                insertHeightW = splitWeightY
-                opposingHeightW = 1f - insertHeightW
+                insertHeight = insertDim
+                opposingHeight = getOpposingDimension(insertDim)
                 opposingPos = DockingHost.DockPosition.Bottom
                 insertFirst = true
             }
             DockingHost.DockPosition.Bottom -> {
-                insertHeightW = splitWeightY
-                opposingHeightW = 1f - insertHeightW
+                insertHeight = insertDim
+                opposingHeight = getOpposingDimension(insertDim)
                 opposingPos = DockingHost.DockPosition.Top
                 insertFirst = false
             }
             DockingHost.DockPosition.Center -> return this
         }
 
-        // weights become NaN when the container wasn't layouted yet and its width / height is still 0
-        if (insertWidthW.isNaN()) insertWidthW = 1f
-        if (insertHeightW.isNaN()) insertHeightW = 1f
-        if (opposingWidthW.isNaN()) opposingWidthW = 1f
-        if (opposingHeightW.isNaN()) opposingHeightW = 1f
-
         // add newly spawned, empty node
-        val insertNode = DockingContainer(dockingHost, this, insertPos, insertWidthW, insertHeightW)
+        val insertNode = DockingContainer(dockingHost, this, insertPos, insertWidth, insertHeight)
 
         // add split node on opposing side which will contain the windows previously docked in this node
-        val splitNode = DockingContainer(dockingHost, this, opposingPos, opposingWidthW, opposingHeightW)
+        val splitNode = DockingContainer(dockingHost, this, opposingPos, opposingWidth, opposingHeight)
         splitNode.dockedWindows += dockedWindows
         dockedWindows.forEach { it.windowState.dockedTo.set(splitNode) }
         dockedWindows.clear()
