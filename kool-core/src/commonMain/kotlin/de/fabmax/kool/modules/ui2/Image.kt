@@ -108,20 +108,26 @@ class ImageNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface), 
     }
 
     private fun imageWidth(measuredHeightPx: Float, imageAr: Float): Float {
+        // make sure we use() image dimensions, so we get updated when they change
+        imageWidth.use()
+        val imgH = imageHeight.use()
         return when (val sz = modifier.imageSize) {
             ImageSize.Stretch -> measuredHeightPx
             ImageSize.FitContent -> measuredHeightPx * imageAr
             ImageSize.ZoomContent -> measuredHeightPx * imageAr
-            is ImageSize.FixedScale -> imageHeight.use() * sz.scale
+            is ImageSize.FixedScale -> imgH * sz.scale
         }
     }
 
     private fun imageHeight(measuredWidthPx: Float, imageAr: Float): Float {
+        // make sure we use() image dimensions, so we get updated when they change
+        imageHeight.use()
+        val imgW = imageWidth.use()
         return when (val sz = modifier.imageSize) {
             ImageSize.Stretch -> measuredWidthPx
             ImageSize.FitContent -> measuredWidthPx / imageAr
             ImageSize.ZoomContent -> measuredWidthPx / imageAr
-            is ImageSize.FixedScale -> imageWidth.use() * sz.scale
+            is ImageSize.FixedScale -> imgW * sz.scale
         }
     }
 
