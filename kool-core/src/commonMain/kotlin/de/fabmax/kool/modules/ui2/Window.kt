@@ -20,6 +20,9 @@ open class WindowState {
     val widthDocked: MutableStateValue<Dp> = mutableStateOf(Dp.ZERO)
     val heightDocked: MutableStateValue<Dp> = mutableStateOf(Dp.ZERO)
 
+    var preferredDockingWidth: Dimension? = null
+    var preferredDockingHeight: Dimension? = null
+
     var borderFlags = 0
     var dragStartX = 0f
     var dragStartY = 0f

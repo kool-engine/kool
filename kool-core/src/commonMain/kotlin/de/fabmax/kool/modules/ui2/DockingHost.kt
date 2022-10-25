@@ -33,10 +33,7 @@ class DockingHost : Group() {
         +dockingSurface
     }
 
-    fun dockWindow(
-        window: WindowScope,
-        path: List<Pair<DockPosition, Dimension>>
-    ) {
+    fun dockWindow(window: WindowScope, path: List<Pair<DockPosition, Dimension>>) {
         var container = dockingSurface.rootContainer
         for (p in path) {
             if (container.isLeaf) {
@@ -231,9 +228,9 @@ class DockingHost : Group() {
                 container.dock(window)
             } else {
                 val insertDim = if (position.isHorizontal) {
-                    Grow(container.xWeightByWidthPx(window.uiNode.widthPx))
+                    window.windowState.preferredDockingWidth ?: Grow(container.xWeightByWidthPx(window.uiNode.widthPx))
                 } else {
-                    Grow(container.yWeightByHeightPx(window.uiNode.heightPx))
+                    window.windowState.preferredDockingHeight ?: Grow(container.yWeightByHeightPx(window.uiNode.heightPx))
                 }
                 container.split(position, insertDim).dock(window)
             }

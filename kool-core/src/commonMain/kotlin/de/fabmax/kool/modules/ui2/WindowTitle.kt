@@ -85,7 +85,6 @@ fun WindowScope.DockingTabsBar(
                             .textAlignX(AlignmentX.Start)
                             .onClick { wnd.surface.bringToTop() }
 
-
                         if (wnd == this@DockingTabsBar && onCloseAction != null) {
                             modifier
                                 .text(modifier.text + "       ")

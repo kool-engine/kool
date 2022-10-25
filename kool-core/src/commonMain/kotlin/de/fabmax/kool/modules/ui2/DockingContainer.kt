@@ -59,6 +59,19 @@ class DockingContainer(
         return dockedWindows.maxByOrNull { it.surface.lastInputTime }
     }
 
+    fun getPath(): List<Pair<DockingHost.DockPosition, Dimension>> {
+        val result = mutableListOf<Pair<DockingHost.DockPosition, Dimension>>()
+
+        var it: DockingContainer? = this
+        while (it != null) {
+            val dim = if (position.isHorizontal) width.value else height.value
+            result += position to dim
+            it = it.parent
+        }
+        result.reverse()
+        return result
+    }
+
     fun undock(window: WindowScope) {
         dockedWindows -= window
         window.windowState.dockedTo.set(null)
