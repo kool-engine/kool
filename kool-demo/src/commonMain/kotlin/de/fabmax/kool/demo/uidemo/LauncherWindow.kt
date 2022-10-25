@@ -42,6 +42,12 @@ class LauncherWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
                 launchOrBringToTop(allowMultiInstances.use(), TextStyleWindow::class) { TextStyleWindow(uiDemo) }
             }
         }
+        Button("Attributed Text") {
+            launcherButtonStyle("Colorful text area")
+            modifier.onClick {
+                launchOrBringToTop(allowMultiInstances.use(), TextAreaWindow::class) { TextAreaWindow(uiDemo) }
+            }
+        }
         Button("Conway's Game of Life") {
             launcherButtonStyle("Game of Life simulation / toggle-button benchmark")
             modifier.onClick {

@@ -133,11 +133,7 @@ abstract class DemoScene(val name: String) {
                 .background(RoundRectBackground(colors.primary, cornerRadius))
                 .dragListener(WindowMoveDragHandler(this@TitleBar))
 
-            var titleFont = sizes.largeText
-            if (titleFont is MsdfFont) {
-                titleFont = titleFont.copy(glowColor = colors.secondaryVariant)
-            }
-
+            val titleFont = (sizes.largeText as MsdfFont).copy(glowColor = DemoMenu.titleTextGlowColor)
             Text(titleTxt) {
                 val bgRadius = cornerRadius.px + 1f
                 val bottomRadius = if (bottomRounded) bgRadius else 0f

@@ -6,8 +6,8 @@ import de.fabmax.kool.pipeline.TextureProps
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
-import kotlin.math.abs
 import kotlin.math.max
+import kotlin.math.min
 
 /**
  * Multi-Signed-Distance-Field based font. Provides good-looking text for pretty much arbitrary font sizes from a
@@ -37,7 +37,7 @@ class MsdfFont(
 
     override fun textDimensions(text: String, result: TextMetrics): TextMetrics {
         var lineWidth = 0f
-        result.width = 0f
+        result.baselineWidth = 0f
         result.height = lineHeight
         result.yBaseline = data.meta.metrics.ascender * emScale
         result.numLines = 1
@@ -47,7 +47,7 @@ class MsdfFont(
         for (i in text.indices) {
             val c = text[i]
             if (c == '\n') {
-                result.width = max(result.width, lineWidth)
+                result.baselineWidth = max(result.width, lineWidth)
                 result.height += lineHeight
                 result.numLines++
                 lineWidth = 0f
@@ -57,8 +57,9 @@ class MsdfFont(
                 lineWidth += metrics.advance * emScale
             }
         }
-        result.width = max(result.width, lineWidth)
-        result.width += abs(italic) * emScale
+        result.baselineWidth = max(result.width, lineWidth)
+        result.paddingStart = min(0f, italic) * emScale
+        result.paddingEnd = max(0f, italic) * emScale
         return result
     }
 

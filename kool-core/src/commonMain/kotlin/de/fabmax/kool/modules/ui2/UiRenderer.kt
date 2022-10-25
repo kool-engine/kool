@@ -59,7 +59,7 @@ class RoundRectGradientBackground(val cornerRadius: Dp, val colorA: Color, val c
     }
 }
 
-class RectBorder(val borderColor: Color, val borderWidth: Dp, val inset: Dp = Dp.ZERO) : UiRenderer<UiNode> {
+open class RectBorder(val borderColor: Color, val borderWidth: Dp, val inset: Dp = Dp.ZERO) : UiRenderer<UiNode> {
     override fun renderUi(node: UiNode) {
         node.apply {
             val inPx = inset.px
@@ -69,6 +69,8 @@ class RectBorder(val borderColor: Color, val borderWidth: Dp, val inset: Dp = Dp
         }
     }
 }
+
+object DebugBorder : RectBorder(Color.RED, Dp(1f))
 
 class RoundRectBorder(val borderColor: Color, val cornerRadius: Dp, val borderWidth: Dp, val inset: Dp = Dp.ZERO) : UiRenderer<UiNode> {
     override fun renderUi(node: UiNode) {

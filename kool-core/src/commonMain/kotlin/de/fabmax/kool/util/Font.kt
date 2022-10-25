@@ -25,11 +25,16 @@ sealed class Font(val sizePts: Float) {
 }
 
 class TextMetrics {
-    var width = 0f
+    var baselineWidth = 0f
     var height = 0f
     var yBaseline = 0f
     var numLines = 0
+    var paddingStart = 0f
+    var paddingEnd = 0f
 
     var ascentPx = 0f
     var descentPx = 0f
+
+    val width: Float
+        get() = baselineWidth + paddingStart + paddingEnd
 }

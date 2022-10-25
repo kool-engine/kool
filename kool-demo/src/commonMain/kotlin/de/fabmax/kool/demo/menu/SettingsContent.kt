@@ -3,6 +3,7 @@ package de.fabmax.kool.demo.menu
 import de.fabmax.kool.demo.*
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.MsdfFont
 
 class SettingsContent(val menu: DemoMenu) : Composable {
     override fun UiScope.compose() = Column {
@@ -17,7 +18,7 @@ class SettingsContent(val menu: DemoMenu) : Composable {
                 .padding(horizontal = UiSizes.hGap)
                 .textAlignY(AlignmentY.Center)
                 .background(TitleBgRenderer(DemoMenu.titleBgMesh, 0.75f, 0.95f))
-                .font(sizes.largeText)
+                .font((sizes.largeText as MsdfFont).copy(glowColor = DemoMenu.titleTextGlowColor))
                 .textColor(Color.WHITE)
         }
 

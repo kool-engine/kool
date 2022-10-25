@@ -90,7 +90,7 @@ open class ComboBoxNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, su
     override val isHovered: Boolean get() = isHoveredState.value
 
     private val textProps = TextProps(Font.DEFAULT_FONT)
-    private val textCache = CachedText(this)
+    private val textCache = CachedTextGeometry(this)
 
     private var isHoveredState = mutableStateOf(false)
 

@@ -137,7 +137,7 @@ class FontMap(
 
     fun textDimensions(text: String, result: TextMetrics = TextMetrics()): TextMetrics {
         var lineWidth = 0f
-        result.width = 0f
+        result.baselineWidth = 0f
         result.height = 0f
         result.yBaseline = 0f
         result.numLines = 1
@@ -147,7 +147,7 @@ class FontMap(
         for (i in text.indices) {
             val c = text[i]
             if (c == '\n') {
-                result.width = max(result.width, lineWidth)
+                result.baselineWidth = max(result.width, lineWidth)
                 result.height += font.lineHeight
                 result.numLines++
                 lineWidth = 0f
@@ -161,9 +161,9 @@ class FontMap(
                 }
             }
         }
-        result.width = max(result.width, lineWidth)
+        result.baselineWidth = max(result.width, lineWidth)
         if (font.style and AtlasFont.ITALIC != 0) {
-            result.width += 0.1f * font.sizePts * font.scale
+            result.paddingEnd = 0.1f * font.sizePts * font.scale
         }
         return result
     }

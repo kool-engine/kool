@@ -60,7 +60,7 @@ open class TextNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surfac
     override val modifier = TextModifier(surface)
 
     private val textProps = TextProps(Font.DEFAULT_FONT)
-    private val textCache = CachedText(this)
+    private val textCache = CachedTextGeometry(this)
     private val textBounds = MutableVec4f()
     private var isOddRotation = false
 
@@ -135,7 +135,7 @@ open class TextNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surfac
         isOddRotation = false
         when (rotation) {
             0f -> {
-                textBounds.x = 0f
+                textBounds.x = inMetrics.paddingStart
                 textBounds.y = inMetrics.yBaseline
                 textBounds.z = inMetrics.width
                 textBounds.w = inMetrics.height

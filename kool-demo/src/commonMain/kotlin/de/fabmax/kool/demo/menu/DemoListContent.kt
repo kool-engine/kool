@@ -5,6 +5,7 @@ import de.fabmax.kool.demo.Settings
 import de.fabmax.kool.demo.UiSizes
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.MsdfFont
 
 class DemoListContent(val menu: DemoMenu) : Composable {
     private val nonHiddenDemoItems = mutableListOf<DemoItem>()
@@ -90,7 +91,7 @@ class DemoListContent(val menu: DemoMenu) : Composable {
         modifier
             .background(TitleBgRenderer(DemoMenu.titleBgMesh, item.category.fromColor, item.category.toColor))
             .textColor(Color.WHITE)
-            .font(sizes.largeText)
+            .font((sizes.largeText as MsdfFont).copy(glowColor = DemoMenu.titleTextGlowColor))
     }
 
     private class DemoItem(val text: String, val color: Color, val isTitle: Boolean, val category: Demos.Category, val demo: Demos.Entry?)

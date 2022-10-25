@@ -5,6 +5,7 @@ import de.fabmax.kool.demo.Settings
 import de.fabmax.kool.demo.UiSizes
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.modules.ui2.*
+import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.MsdfFont
 import kotlin.math.sqrt
@@ -117,5 +118,7 @@ class DemoMenu(val demoLoader: DemoLoader) {
         const val navBarButtonHoveredAlpha = 0.35f
 
         val titleBgMesh = TitleBgRenderer.BgMesh()
+
+        val titleTextGlowColor = Color.BLACK.withAlpha(0.5f)
     }
 }

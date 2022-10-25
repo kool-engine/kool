@@ -84,7 +84,7 @@ open class TextFieldNode(parent: UiNode?, surface: UiSurface)
     override val isFocused: Boolean get() = isFocusedState.value
 
     private val textProps = TextProps(Font.DEFAULT_FONT)
-    private val textCache = CachedText(this)
+    private val textCache = CachedTextGeometry(this)
 
     private val textOrigin = MutableVec2f()
     private var overflowOffset = 0f

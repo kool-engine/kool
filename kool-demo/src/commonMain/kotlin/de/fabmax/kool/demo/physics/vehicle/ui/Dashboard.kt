@@ -42,17 +42,11 @@ class Dashboard : Composable {
         }
     }
 
-    override fun UiScope.compose() = Box {
+    override fun UiScope.compose() = Row {
         modifier
-            .width(UiSizes.baseSize * 12f)
+            .width(UiSizes.baseSize * 12.5f)
             .height(UiSizes.baseSize * 3.5f)
             .background(DashboardBackground(colors.background))
-            .layout(RowLayout)
-
-//        Box {
-//            modifier.width(200.dp)
-//        }
-
 
         Column {
             modifier

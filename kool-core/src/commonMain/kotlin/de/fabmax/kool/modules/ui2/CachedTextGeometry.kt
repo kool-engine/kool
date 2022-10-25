@@ -6,7 +6,7 @@ import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.TextProps
 import de.fabmax.kool.util.*
 
-class CachedText(node: UiNode) : CachedGeometry(node, IndexedVertexList(MsdfUiShader.MSDF_UI_MESH_ATTRIBS)) {
+class CachedTextGeometry(node: UiNode) : CachedGeometry(node, IndexedVertexList(MsdfUiShader.MSDF_UI_MESH_ATTRIBS)) {
     val textMetrics = TextMetrics()
 
     private var cachedFont: Font? = null

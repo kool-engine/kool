@@ -51,6 +51,8 @@ fun UiScope.LazyList(
     withVerticalScrollbar: Boolean = true,
     withHorizontalScrollbar: Boolean = false,
     scrollbarColor: Color? = null,
+    isGrowWidth: Boolean = true,
+    isGrowHeight: Boolean = false,
     containerModifier: ((UiModifier) -> Unit)? = null,
     scrollPaneModifier: ((ScrollPaneModifier) -> Unit)? = null,
     vScrollbarModifier: ((ScrollbarModifier) -> Unit)? = null,
@@ -68,19 +70,20 @@ fun UiScope.LazyList(
         hScrollbarModifier,
         state
     ) {
-        modifier.width(Grow.Std)
+        if (isGrowWidth) modifier.width(Grow.Std)
+        if (isGrowHeight) modifier.height(Grow.Std)
         scrollPaneModifier?.let { it(modifier) }
 
         val lazyList = uiNode.createChild(LazyListNode::class, LazyListNode.factory)
         lazyList.state = state
-        lazyList.modifier
-            .layout(layout)
-            .width(Grow.Std)
+        lazyList.modifier.layout(layout)
+        if (isGrowWidth) lazyList.modifier.width(Grow.Std)
+        if (isGrowHeight) lazyList.modifier.height(Grow.Std)
         lazyList.block()
     }
 }
 
-class LazyListNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface), LazyListScope {
+open class LazyListNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface), LazyListScope {
     override val modifier = LazyListModifier(surface)
 
     lateinit var state: LazyListState
