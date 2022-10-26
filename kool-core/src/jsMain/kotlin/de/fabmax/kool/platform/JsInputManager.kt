@@ -16,6 +16,8 @@ class JsInputManager(private val canvas: HTMLCanvasElement, private val props: J
     private val pointerLockState = PointerLockState(canvas)
     private val virtualPointerPos = MutableVec2d()
 
+    private var mouseButtonState = 0
+
     override var cursorMode: CursorMode
         get() = pointerLockState.cursorMode
         set(value) { pointerLockState.cursorMode = value }
@@ -60,10 +62,22 @@ class JsInputManager(private val canvas: HTMLCanvasElement, private val props: J
         }
         canvas.onmousedown = { ev ->
             pointerLockState.checkLockState()
-            handleMouseButtonStates(ev.buttons.toInt())
+            val changeMask = ev.buttons.toInt() and mouseButtonState.inv()
+            mouseButtonState = ev.buttons.toInt()
+            for (btn in 0..7) {
+                if (changeMask and (1 shl btn) != 0) {
+                    handleMouseButtonState(btn, true)
+                }
+            }
         }
         canvas.onmouseup = { ev ->
-            handleMouseButtonStates(ev.buttons.toInt())
+            val changeMask = ev.buttons.toInt().inv() and mouseButtonState
+            mouseButtonState = ev.buttons.toInt()
+            for (btn in 0..7) {
+                if (changeMask and (1 shl btn) != 0) {
+                    handleMouseButtonState(btn, false)
+                }
+            }
         }
         canvas.onmouseleave = { handleMouseExit() }
         canvas.onwheel = { ev ->

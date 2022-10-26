@@ -163,9 +163,6 @@ abstract class DemoScene(val name: String) {
                         .onClick { isMenuMinimized.toggle() }
                         .onEnter { isMinimizeHovered.set(true) }
                         .onExit { isMinimizeHovered.set(false) }
-                        .onDrag {
-                            // intentionally left empty to avoid accidental window drags while clicking the button
-                        }
                 }
             }
         }

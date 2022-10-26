@@ -46,11 +46,9 @@ abstract class InputManager internal constructor() {
     internal fun onNewFrame(ctx: KoolContext) {
         pointerState.onNewFrame(ctx)
 
-        lock(queuedKeyEvents) {
-            keyEvents.clear()
-            keyEvents.addAll(queuedKeyEvents)
-            queuedKeyEvents.clear()
-        }
+        keyEvents.clear()
+        keyEvents.addAll(queuedKeyEvents)
+        queuedKeyEvents.clear()
 
         for (i in keyEvents.indices) {
             val evt = keyEvents[i]
@@ -81,17 +79,13 @@ abstract class InputManager internal constructor() {
         currentKeyMods = ev.modifiers
         currentKeyRepeated = ev.event and KEY_EV_REPEATED
 
-        lock(queuedKeyEvents) {
-            queuedKeyEvents.add(ev)
-        }
+        queuedKeyEvents.add(ev)
     }
 
     fun charTyped(typedChar: Char) {
         val ev = KeyEvent(LocalKeyCode(typedChar.code), KEY_EV_CHAR_TYPED or currentKeyRepeated, currentKeyMods)
         ev.typedChar = typedChar
-        lock(queuedKeyEvents) {
-            queuedKeyEvents.add(ev)
-        }
+        queuedKeyEvents.add(ev)
     }
 
     //
@@ -108,9 +102,7 @@ abstract class InputManager internal constructor() {
 
     fun handleMouseMove(x: Double, y: Double) = pointerState.handleMouseMove(x, y)
 
-    fun handleMouseButtonState(button: Int, down: Boolean) = pointerState.handleMouseButtonState(button, down)
-
-    fun handleMouseButtonStates(mask: Int) = pointerState.handleMouseButtonStates(mask)
+    fun handleMouseButtonState(button: Int, down: Boolean) = pointerState.handleMouseButtonEvent(button, down)
 
     fun handleMouseScroll(xTicks: Double, yTicks: Double) = pointerState.handleMouseScroll(xTicks, yTicks)
 
@@ -155,7 +147,10 @@ abstract class InputManager internal constructor() {
         var isValid = false
             internal set
 
-        private val buttonDownTimes = DoubleArray(5)
+        protected val buttonClickTimes = DoubleArray(5)
+        protected val buttonClickFrames = IntArray(5)
+        protected val buttonDownTimes = DoubleArray(5)
+        protected val buttonDownFrames = IntArray(5)
 
         internal var consumptionMask = 0
         internal var dragMovement = 0.0
@@ -186,16 +181,27 @@ abstract class InputManager internal constructor() {
         val isBackButtonReleased: Boolean get() = isBackButtonEvent && !isBackButtonDown
         val isForwardButtonReleased: Boolean get() = isForwardButtonEvent && !isForwardButtonDown
 
-        val isLeftButtonClicked: Boolean get() = isLeftButtonReleased
-                && Time.precisionTime - buttonDownTimes[0] < MAX_CLICK_TIME_SECS && dragMovement < MAX_CLICK_MOVE_PX
-        val isRightButtonClicked: Boolean get() = isRightButtonReleased
-                && Time.precisionTime - buttonDownTimes[1] < MAX_CLICK_TIME_SECS && dragMovement < MAX_CLICK_MOVE_PX
-        val isMiddleButtonClicked: Boolean get() = isMiddleButtonReleased
-                && Time.precisionTime - buttonDownTimes[2] < MAX_CLICK_TIME_SECS && dragMovement < MAX_CLICK_MOVE_PX
-        val isBackButtonClicked: Boolean get() = isBackButtonReleased
-                && Time.precisionTime - buttonDownTimes[3] < MAX_CLICK_TIME_SECS && dragMovement < MAX_CLICK_MOVE_PX
-        val isForwardButtonClicked: Boolean get() = isForwardButtonReleased
-                && Time.precisionTime - buttonDownTimes[4] < MAX_CLICK_TIME_SECS && dragMovement < MAX_CLICK_MOVE_PX
+        var isLeftButtonClicked = false
+            internal set
+        var isRightButtonClicked = false
+            internal set
+        var isMiddleButtonClicked = false
+            internal set
+        var isBackButtonClicked = false
+            internal set
+        var isForwardButtonClicked = false
+            internal set
+
+        var leftButtonRepeatedClickCount = 0
+            internal set
+        var rightButtonRepeatedClickCount = 0
+            internal set
+        var middleButtonRepeatedClickCount = 0
+            internal set
+        var backButtonRepeatedClickCount = 0
+            internal set
+        var forwardButtonRepeatedClickCount = 0
+            internal set
 
         val isDrag: Boolean get() = isAnyButtonDown && (dragDeltaX != 0.0 || dragDeltaY != 0.0)
 
@@ -221,6 +227,7 @@ abstract class InputManager internal constructor() {
             for (i in buttonDownTimes.indices) {
                 if (downEvents and (1 shl i) != 0) {
                     buttonDownTimes[i] = Time.precisionTime
+                    buttonDownFrames[i] = Time.frameCount
                 }
             }
         }
@@ -230,14 +237,44 @@ abstract class InputManager internal constructor() {
         private var updateState = UpdateState.INVALID
         private var processedState = UpdateState.INVALID
 
+        private val buttonEventQueue = List<MutableList<Boolean>>(8) { mutableListOf() }
+        private var gotPointerEvents = false
+
         var lastUpdate = 0.0
 
-        fun setButtonMask(mask: Int) {
-            buttonMask = mask
-            if (isLeftButtonPressed || isRightButtonPressed || isMiddleButtonPressed) {
-                dragDeltaX = 0.0
-                dragDeltaY = 0.0
-                dragMovement = 0.0
+        fun enqueueButtonEvent(button: Int, down: Boolean) {
+            if (button !in buttonEventQueue.indices) {
+                logW { "Discarding pointer button event for out of bounds button: $button" }
+                return
+            }
+            buttonEventQueue[button] += down
+            gotPointerEvents = true
+        }
+
+        fun processPointerEvents() {
+            if (gotPointerEvents) {
+                gotPointerEvents = false
+
+                // only apply one event per button per frame, this way we can't lose events on low frame rates
+                var updateMask = buttonMask
+                buttonEventQueue.forEachIndexed { button, events ->
+                    if (events.isNotEmpty()) {
+                        val event = events.removeAt(0)
+                        updateMask = if (event) {
+                            updateMask or (1 shl button)
+                        } else {
+                            updateMask and (1 shl button).inv()
+                        }
+                    }
+                }
+                buttonMask = updateMask
+
+                // reset drag tracker if left / mid / right button has been pressed
+                if (isLeftButtonPressed || isRightButtonPressed || isMiddleButtonPressed) {
+                    dragDeltaX = 0.0
+                    dragDeltaY = 0.0
+                    dragMovement = 0.0
+                }
             }
         }
 
@@ -306,6 +343,9 @@ abstract class InputManager internal constructor() {
                 cancelPointer()
             }
 
+            processPointerEvents()
+            updateClickStates()
+
             target.id = id
             target.deltaX = deltaX
             target.deltaY = deltaY
@@ -319,6 +359,17 @@ abstract class InputManager internal constructor() {
             target.isValid = true
             target.consumptionMask = 0
             target.buttonEventMask = 0
+
+            target.isLeftButtonClicked = isLeftButtonClicked
+            target.isRightButtonClicked = isRightButtonClicked
+            target.isMiddleButtonClicked = isMiddleButtonClicked
+            target.isBackButtonClicked = isBackButtonClicked
+            target.isForwardButtonClicked = isForwardButtonClicked
+            target.leftButtonRepeatedClickCount = leftButtonRepeatedClickCount
+            target.rightButtonRepeatedClickCount = rightButtonRepeatedClickCount
+            target.middleButtonRepeatedClickCount = middleButtonRepeatedClickCount
+            target.backButtonRepeatedClickCount = backButtonRepeatedClickCount
+            target.forwardButtonRepeatedClickCount = forwardButtonRepeatedClickCount
 
             when (updateState) {
                 UpdateState.STARTED -> target.buttonMask = 0
@@ -342,9 +393,64 @@ abstract class InputManager internal constructor() {
             updateState = updateState.next()
         }
 
+        private fun updateClickStates() {
+            isLeftButtonClicked = isClick(isLeftButtonReleased, 0, dragMovement)
+            isRightButtonClicked = isClick(isRightButtonReleased, 1, dragMovement)
+            isMiddleButtonClicked = isClick(isMiddleButtonReleased, 2, dragMovement)
+            isBackButtonClicked = isClick(isBackButtonReleased, 3, dragMovement)
+            isForwardButtonClicked = isClick(isForwardButtonReleased, 4, dragMovement)
+
+            leftButtonRepeatedClickCount = updateRepeatedClickCount(isLeftButtonClicked, 0, leftButtonRepeatedClickCount)
+            rightButtonRepeatedClickCount = updateRepeatedClickCount(isRightButtonClicked, 0, rightButtonRepeatedClickCount)
+            middleButtonRepeatedClickCount = updateRepeatedClickCount(isMiddleButtonClicked, 0, middleButtonRepeatedClickCount)
+            backButtonRepeatedClickCount = updateRepeatedClickCount(isBackButtonClicked, 0, backButtonRepeatedClickCount)
+            forwardButtonRepeatedClickCount = updateRepeatedClickCount(isForwardButtonClicked, 0, forwardButtonRepeatedClickCount)
+
+            if (isLeftButtonClicked) {
+                buttonClickTimes[0] = Time.precisionTime
+                buttonClickFrames[0] = Time.frameCount
+            }
+            if (isRightButtonClicked) {
+                buttonClickTimes[1] = Time.precisionTime
+                buttonClickFrames[1] = Time.frameCount
+            }
+            if (isMiddleButtonClicked) {
+                buttonClickTimes[2] = Time.precisionTime
+                buttonClickFrames[2] = Time.frameCount
+            }
+            if (isBackButtonClicked) {
+                buttonClickTimes[3] = Time.precisionTime
+                buttonClickFrames[3] = Time.frameCount
+            }
+            if (isForwardButtonClicked) {
+                buttonClickTimes[4] = Time.precisionTime
+                buttonClickFrames[4] = Time.frameCount
+            }
+        }
+
+        private fun isClick(isReleased: Boolean, buttonI: Int, dragMovement: Double): Boolean {
+            val pressedTime = buttonDownTimes[buttonI]
+            val pressedFrame = buttonDownFrames[buttonI]
+            return isReleased && dragMovement < MAX_CLICK_MOVE_PX
+                    && (Time.precisionTime - pressedTime < MAX_CLICK_TIME_SECS || Time.frameCount - pressedFrame == 1)
+        }
+
+        private fun updateRepeatedClickCount(isClick: Boolean, buttonI: Int, currentClickCount: Int): Int {
+            val dt = Time.precisionTime - buttonClickTimes[buttonI]
+            val dFrm = Time.frameCount - buttonClickFrames[buttonI]
+            return if (!isClick && dt > MAX_DOUBLE_CLICK_TIME_SECS && dFrm > 2) {
+                0
+            } else if (isClick) {
+                currentClickCount + 1
+            } else {
+                currentClickCount
+            }
+        }
+
+
+
         /**
-         * State machine for handling pointer state, needed for correct mouse button emulation for
-         * touche events.
+         * State machine for handling pointer state, needed for correct mouse button emulation for touch events.
          */
         enum class UpdateState {
             STARTED {
@@ -434,10 +540,8 @@ abstract class InputManager internal constructor() {
         }
 
         internal fun onNewFrame(ctx: KoolContext) {
-            lock(inputPointers) {
-                for (i in pointers.indices) {
-                    inputPointers[i].update(pointers[i], lastPtrInput)
-                }
+            for (i in pointers.indices) {
+                inputPointers[i].update(pointers[i], lastPtrInput)
             }
 
             if (isEvaluatingCompatGestures) {
@@ -489,31 +593,23 @@ abstract class InputManager internal constructor() {
         }
 
         internal fun handleTouchStart(pointerId: Int, x: Double, y: Double) {
-            lock(inputPointers) {
-                lastPtrInput = Time.precisionTime
-                val inPtr = getFreeInputPointer() ?: return
-                inPtr.startPointer(pointerId, x, y)
-                inPtr.buttonMask = 1
-            }
+            lastPtrInput = Time.precisionTime
+            val inPtr = getFreeInputPointer() ?: return
+            inPtr.startPointer(pointerId, x, y)
+            inPtr.buttonMask = 1
         }
 
         internal fun handleTouchEnd(pointerId: Int) {
-            lock(inputPointers) {
-                findInputPointer(pointerId)?.endPointer()
-            }
+            findInputPointer(pointerId)?.endPointer()
         }
 
         internal fun handleTouchCancel(pointerId: Int) {
-            lock(inputPointers) {
-                findInputPointer(pointerId)?.cancelPointer()
-            }
+            findInputPointer(pointerId)?.cancelPointer()
         }
 
         internal fun handleTouchMove(pointerId: Int, x: Double, y: Double) {
-            lock(inputPointers) {
-                lastPtrInput = Time.precisionTime
-                findInputPointer(pointerId)?.movePointer(x, y)
-            }
+            lastPtrInput = Time.precisionTime
+            findInputPointer(pointerId)?.movePointer(x, y)
         }
 
         //
@@ -521,52 +617,29 @@ abstract class InputManager internal constructor() {
         //
 
         internal fun handleMouseMove(x: Double, y: Double) {
-            lock(inputPointers) {
-                lastPtrInput = Time.precisionTime
-                val mousePtr = findInputPointer(MOUSE_POINTER_ID)
-                if (mousePtr == null) {
-                    val startPtr = getFreeInputPointer() ?: return
-                    startPtr.startPointer(MOUSE_POINTER_ID, x, y)
-                } else {
-                    mousePtr.movePointer(x, y)
-                }
+            lastPtrInput = Time.precisionTime
+            val mousePtr = findInputPointer(MOUSE_POINTER_ID)
+            if (mousePtr == null) {
+                val startPtr = getFreeInputPointer() ?: return
+                startPtr.startPointer(MOUSE_POINTER_ID, x, y)
+            } else {
+                mousePtr.movePointer(x, y)
             }
         }
 
-        internal fun handleMouseButtonState(button: Int, down: Boolean) {
-            lock(inputPointers) {
-                val ptr = findInputPointer(MOUSE_POINTER_ID) ?: return
-                if (down) {
-                    ptr.setButtonMask(ptr.buttonMask or (1 shl button))
-                } else {
-                    ptr.setButtonMask(ptr.buttonMask and (1 shl button).inv())
-                }
-                // todo: on low frame rates, mouse button events can get lost if button is pressed
-                // and released again before a new frame was rendered
-            }
-        }
-
-        internal fun handleMouseButtonStates(mask: Int) {
-            lock(inputPointers) {
-                val ptr = findInputPointer(MOUSE_POINTER_ID) ?: return
-                ptr.setButtonMask(mask)
-                // todo: on low frame rates, mouse button events can get lost if button is pressed
-                // and released again before a new frame was rendered
-            }
+        internal fun handleMouseButtonEvent(button: Int, down: Boolean) {
+            val ptr = findInputPointer(MOUSE_POINTER_ID) ?: return
+            ptr.enqueueButtonEvent(button, down)
         }
 
         internal fun handleMouseScroll(xTicks: Double, yTicks: Double) {
-            lock(inputPointers) {
-                val ptr = findInputPointer(MOUSE_POINTER_ID) ?: return
-                ptr.deltaScrollX += xTicks
-                ptr.deltaScrollY += yTicks
-            }
+            val ptr = findInputPointer(MOUSE_POINTER_ID) ?: return
+            ptr.deltaScrollX += xTicks
+            ptr.deltaScrollY += yTicks
         }
 
         internal fun handleMouseExit() {
-            lock(inputPointers) {
-                findInputPointer(MOUSE_POINTER_ID)?.cancelPointer()
-            }
+            findInputPointer(MOUSE_POINTER_ID)?.cancelPointer()
         }
     }
 
@@ -585,8 +658,9 @@ abstract class InputManager internal constructor() {
     }
 
     companion object {
-        const val MAX_CLICK_MOVE_PX = 20.0
+        const val MAX_CLICK_MOVE_PX = 15.0
         const val MAX_CLICK_TIME_SECS = 0.25
+        const val MAX_DOUBLE_CLICK_TIME_SECS = 0.25
         const val DOUBLE_CLICK_INTERVAL_SECS = 0.3
 
         const val LEFT_BUTTON = 0

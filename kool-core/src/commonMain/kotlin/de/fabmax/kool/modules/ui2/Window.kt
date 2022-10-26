@@ -7,6 +7,7 @@ import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.util.Color
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.sqrt
 
 open class WindowState {
     val x = mutableStateOf(Dp.ZERO)
@@ -24,6 +25,7 @@ open class WindowState {
     var preferredDockingHeight: Dimension? = null
 
     var borderFlags = 0
+    var isDrag = false
     var dragStartX = 0f
     var dragStartY = 0f
     var dragStartWidth = 0f
@@ -193,10 +195,6 @@ class WindowMoveDragHandler(val window: WindowScope) : Draggable {
         with(window) {
             if (getBorderFlags(ev.position) != 0) {
                 ev.reject()
-            } else {
-                windowState.dragStartX = window.uiNode.leftPx
-                windowState.dragStartY = window.uiNode.topPx
-                modifier.dockingHost?.onWindowMoveStart(ev, this)
             }
         }
     }
@@ -205,20 +203,33 @@ class WindowMoveDragHandler(val window: WindowScope) : Draggable {
         with(window) {
             val mvX = ev.pointer.dragDeltaX.toFloat()
             val mvY = ev.pointer.dragDeltaY.toFloat()
-            if (ev.screenPosition.x > window.uiNode.rightPx) {
-                windowState.dragStartX = ev.screenPosition.x - window.uiNode.widthPx * 0.5f - mvX
-            }
-            windowState.setWindowLocation(
-                Dp.fromPx(windowState.dragStartX + mvX),
-                Dp.fromPx(windowState.dragStartY + mvY)
-            )
 
-            modifier.dockingHost?.onWindowMove(ev, this)
+            if (!windowState.isDrag) {
+                val dist = sqrt(mvX * mvX + mvY * mvY)
+                if (dist > InputManager.MAX_CLICK_MOVE_PX) {
+                    windowState.isDrag = true
+                    windowState.dragStartX = window.uiNode.leftPx
+                    windowState.dragStartY = window.uiNode.topPx
+                    modifier.dockingHost?.onWindowMoveStart(ev, this)
+                }
+            } else {
+                if (ev.screenPosition.x > window.uiNode.rightPx) {
+                    windowState.dragStartX = ev.screenPosition.x - window.uiNode.widthPx * 0.5f - mvX
+                }
+                windowState.setWindowLocation(
+                    Dp.fromPx(windowState.dragStartX + mvX),
+                    Dp.fromPx(windowState.dragStartY + mvY)
+                )
+
+                modifier.dockingHost?.onWindowMove(ev, this)
+            }
+            Unit
         }
     }
 
     override fun onDragEnd(ev: PointerEvent) {
         window.modifier.dockingHost?.onWindowMoveEnd(ev, window)
+        window.windowState.isDrag = false
     }
 }
 
