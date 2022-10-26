@@ -72,9 +72,11 @@ class TextAreaWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
             isGrowWidth = false,
             withHorizontalScrollbar = true,
             containerModifier = { it.backgroundColor(MdColor.GREY tone 900) },
+            hScrollbarModifier = { it.margin(start = sizes.gap, end = sizes.gap * 2f,bottom = sizes.gap) },
+            vScrollbarModifier = { it.margin(sizes.gap) }
         ) {
             items(texts) {
-                AttributedText(it)
+                AttributedText(it) { modifier.margin(horizontal = sizes.gap) }
             }
         }
     }

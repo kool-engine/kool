@@ -81,6 +81,7 @@ abstract class DemoScene(val name: String) {
         val accent = demoEntry?.color ?: MdColor.PINK
         val titleTxt = title ?: demoEntry?.title ?: "Demo"
 
+        windowState.setWindowSize(UiSizes.menuWidth, FitContent)
         return Window(
             windowState,
             colors = Colors.singleColorDark(accent, Color("101010d0"))
@@ -94,7 +95,6 @@ abstract class DemoScene(val name: String) {
                 return@Window
             }
             surface.isVisible = true
-            windowState.setWindowSize(UiSizes.menuWidth, FitContent)
 
             surface.sizes = Settings.uiSize.use().sizes
             val cornerRadius = sizes.gap

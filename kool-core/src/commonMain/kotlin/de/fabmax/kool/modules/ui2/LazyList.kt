@@ -103,6 +103,8 @@ open class LazyListNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, su
         (items as? MutableStateList)?.use()
         state.numTotalItems = items.size
 
+        var cachePadding = 0
+
         val elemSize = state.firstElementSizeDp
         if (elemSize == 0f) {
             // this apparently is the first layout run, we have absolutely no knowledge about the future content
@@ -129,13 +131,15 @@ open class LazyListNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, su
             // update scroll position to correspond to visible item range based on current element size
             val updatePos = state.itemsFrom * elemSize
             if (isVertical) {
-                if (abs(updatePos - state.yScrollDp.value) > 1f) {
+                val delta = updatePos - state.yScrollDp.value
+                if (abs(delta) > 1f && (delta < 0f || state.remainingSpaceBottom > 1f)) {
                     val oldError = state.yScrollDpDesired.value - state.yScrollDp.value
                     state.yScrollDp.set(updatePos)
                     state.yScrollDpDesired.set(state.yScrollDp.value + oldError)
                 }
             } else {
-                if (abs(updatePos - state.xScrollDp.value) > 1f) {
+                val delta = updatePos - state.xScrollDp.value
+                if (abs(delta) > 1f && (delta < 0f || state.remainingSpaceEnd > 1f)) {
                     val oldError = state.xScrollDpDesired.value - state.xScrollDp.value
                     state.xScrollDp.set(updatePos)
                     state.xScrollDpDesired.set(state.xScrollDp.value + oldError)
@@ -144,11 +148,13 @@ open class LazyListNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, su
 
             // compute new first visible item based on previous value and scroll delta
             // make sure visible item range stays inside list bounds
+            val prevFrom = state.itemsFrom.toInt()
             state.itemsFrom = min(
                 max(0f, items.size - numViewItems.toFloat() + 0.9999f),
                 max(0f, state.itemsFrom + deltaScroll / elemSize)
             )
             state.itemsTo = min(items.lastIndex, (state.itemsFrom).roundToInt() + numViewItems)
+            cachePadding = prevFrom - state.itemsFrom.toInt()
 
             state.spaceBeforeVisibleItems = (state.itemsFrom).toInt() * elemSize
             state.spaceAfterVisibleItems = (items.lastIndex - state.itemsTo) * elemSize
@@ -165,6 +171,7 @@ open class LazyListNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, su
             }
         }
 
+        padCachedChildren(cachePadding)
         for (i in state.itemsFrom.toInt()..state.itemsTo) {
             val item = items[i]
             indexedBlock?.invoke(this, i, item)

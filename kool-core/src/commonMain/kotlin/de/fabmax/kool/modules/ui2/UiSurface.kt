@@ -55,6 +55,11 @@ open class UiSurface(
         }
 
     var printTiming = false
+    var perfPrep = 0.0
+    var perfCompose = 0.0
+    var perfMeasure = 0.0
+    var perfLayout = 0.0
+    var perfRender = 0.0
 
     init {
         // mirror y-axis
@@ -104,17 +109,17 @@ open class UiSurface(
         onEachFrame.clear()
         focusableNodes.clear()
         UiScale.updateScale(this)
-        val prep = pt.takeMs().also { pt.reset() }
+        perfPrep = pt.takeMs().also { pt.reset() }
 
         viewport.setBounds(0f, 0f, viewportWidth.use(this), viewportHeight.use(this))
         viewport.applyDefaults()
         composeContent()
-        val compose = pt.takeMs().also { pt.reset() }
+        perfCompose = pt.takeMs().also { pt.reset() }
 
         measureUiNodeContent(viewport, updateEvent.ctx)
-        val measure = pt.takeMs().also { pt.reset() }
+        perfMeasure = pt.takeMs().also { pt.reset() }
         layoutUiNodeChildren(viewport, updateEvent.ctx)
-        val layout = pt.takeMs().also { pt.reset() }
+        perfLayout = pt.takeMs().also { pt.reset() }
         renderUiNode(viewport, updateEvent.ctx)
 
         // re-add mesh layers in correct order
@@ -123,14 +128,14 @@ open class UiSurface(
                 +it
             } // todo: else we should dispose it probably?
         }
-        val render = pt.takeMs().also { pt.reset() }
+        perfRender = pt.takeMs().also { pt.reset() }
 
         if (printTiming) {
-            logD { "UI update: prep: ${(prep * 1000).toInt()} us, " +
-                    "compose: ${(compose * 1000).toInt()} us, " +
-                    "measure: ${(measure * 1000).toInt()} us, " +
-                    "layout: ${(layout * 1000).toInt()} us, " +
-                    "render: ${(render * 1000).toInt()} us" }
+            logD { "UI update: prep: ${(perfPrep * 1000).toInt()} us, " +
+                    "compose: ${(perfCompose * 1000).toInt()} us, " +
+                    "measure: ${(perfMeasure * 1000).toInt()} us, " +
+                    "layout: ${(perfLayout * 1000).toInt()} us, " +
+                    "render: ${(perfLayout * 1000).toInt()} us" }
         }
     }
 

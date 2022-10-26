@@ -29,6 +29,15 @@ open class ScrollState {
         return if (div == 0f) 0f else (yScrollDp.value / (div))
     }
 
+    val remainingSpaceTop: Float
+        get() = yScrollDp.value
+    val remainingSpaceBottom: Float
+        get() = contentSizeDp.y - (yScrollDp.value + viewSizeDp.y)
+    val remainingSpaceStart: Float
+        get() = xScrollDp.value
+    val remainingSpaceEnd: Float
+        get() = contentSizeDp.x - (xScrollDp.value + viewSizeDp.x)
+
     fun scrollDpX(amount: Float, smooth: Boolean = true) {
         if (smooth) {
             xScrollDpDesired.set((xScrollDpDesired.value + amount))

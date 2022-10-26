@@ -9,6 +9,7 @@ import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.VertexView
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Font
+import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.reflect.KClass
@@ -180,6 +181,20 @@ abstract class UiNode(val parent: UiNode?, override val surface: UiSurface) : Ui
         modifier.resetDefaults()
         modifier.zLayer(parent?.modifier?.zLayer ?: UiSurface.LAYER_DEFAULT)
         weakMemory.rewind()
+    }
+
+    protected fun padCachedChildren(pad: Int) {
+        if (abs(pad) < oldChildren.size) {
+            var padI = pad
+            while (padI < 0) {
+                oldChildren.removeLast()
+                padI++
+            }
+            while (padI > 0) {
+                oldChildren.add(BoxNode.factory(this, surface))
+                padI--
+            }
+        }
     }
 
     fun <T: UiNode> createChild(type: KClass<T>, factory: (UiNode, UiSurface) -> T): T {
