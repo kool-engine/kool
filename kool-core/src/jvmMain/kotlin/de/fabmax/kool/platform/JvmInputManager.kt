@@ -11,6 +11,9 @@ class JvmInputManager(private val windowHandle: Long, private val ctx: Lwjgl3Con
     private val localCharKeyCodes = mutableMapOf<Int, Int>()
     private val cursorShapes = mutableMapOf<CursorShape, Long>()
 
+    var isMouseOverWindow = false
+        private set
+
     override var cursorMode: CursorMode = CursorMode.NORMAL
         set(value) {
             field = value
@@ -60,7 +63,10 @@ class JvmInputManager(private val windowHandle: Long, private val ctx: Lwjgl3Con
         }
         glfwSetCursorEnterCallback(windowHandle) { _, entered ->
             if (!entered) {
+                isMouseOverWindow = false
                 handleMouseExit()
+            } else {
+                isMouseOverWindow = true
             }
         }
         glfwSetScrollCallback(windowHandle) { _, xOff, yOff ->

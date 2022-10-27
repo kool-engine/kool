@@ -447,8 +447,6 @@ abstract class InputManager internal constructor() {
             }
         }
 
-
-
         /**
          * State machine for handling pointer state, needed for correct mouse button emulation for touch events.
          */

@@ -37,6 +37,7 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
         get() = renderBackend.glfwWindow.isFullscreen
         set(value) { renderBackend.glfwWindow.isFullscreen = value }
 
+    private val windowUnfocusedFrameRate = props.windowUnfocusedFrameRate
     private val mainThreadRunnables = mutableListOf<GpuThreadRunnable>()
 
     private object SysInfo : ArrayList<String>() {
@@ -112,8 +113,17 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
             }
 
             // determine time delta
-            val time = System.nanoTime()
-            val dt = (time - prevTime) / 1e9
+            var time = System.nanoTime()
+            var dt = (time - prevTime) / 1e9
+
+            if (!isWindowFocused && windowUnfocusedFrameRate > 0 && dt < 1.0 / windowUnfocusedFrameRate) {
+                delayFrameRender(time + (1e9 / windowUnfocusedFrameRate).toLong())
+                time = System.nanoTime()
+                dt = (time - prevTime) / 1e9
+                if (glfwWindowShouldClose(renderBackend.glfwWindow.windowPtr)) {
+                    break
+                }
+            }
             prevTime = time
 
             // setup draw queues for all scenes / render passes
@@ -124,6 +134,17 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
             renderBackend.drawFrame(this)
         }
         renderBackend.cleanup(this)
+    }
+
+    private fun delayFrameRender(untilNanos: Long) {
+        while (!isWindowFocused
+            && !inputMgr.isMouseOverWindow
+            && System.nanoTime() < untilNanos
+            && !glfwWindowShouldClose(renderBackend.glfwWindow.windowPtr)
+        ) {
+            glfwPollEvents()
+            Thread.sleep(17)
+        }
     }
 
     override fun close() {
@@ -204,6 +225,7 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
         var isFullscreen = false
         var isWithHttpAssets = true
         var showWindowOnStart = true
+        var windowUnfocusedFrameRate = 0
 
         var renderBackend = Backend.OPEN_GL
 

@@ -12,10 +12,6 @@ interface RenderBackend {
     val deviceName: String
 
     val glfwWindow: GlfwWindow
-//    val windowWidth: Int
-//    val windowHeight: Int
-//    val glfwWindowHandle: Long
-//    var isFullscreen: Boolean
 
     val projCorrectionMatrixScreen: Mat4d
     val projCorrectionMatrixOffscreen: Mat4d
