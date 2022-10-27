@@ -37,7 +37,7 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
         get() = renderBackend.glfwWindow.isFullscreen
         set(value) { renderBackend.glfwWindow.isFullscreen = value }
 
-    private val windowUnfocusedFrameRate = props.windowUnfocusedFrameRate
+    var windowUnfocusedFrameRate = props.windowUnfocusedFrameRate
     private val mainThreadRunnables = mutableListOf<GpuThreadRunnable>()
 
     private object SysInfo : ArrayList<String>() {
