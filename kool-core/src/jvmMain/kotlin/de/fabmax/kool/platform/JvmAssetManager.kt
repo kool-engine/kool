@@ -134,16 +134,23 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val c
         fontGenerator.createFontMapData(font, fontScale, outMetrics)
 
     override suspend fun loadFileByUser(): Uint8Buffer? {
-        val outPath = PointerBuffer.allocateDirect(1)
-        val result = NativeFileDialog.NFD_OpenDialog(null, fileChooserPath, outPath)
-        if (result == NativeFileDialog.NFD_OKAY) {
-            val file = File(outPath.stringUTF8)
-            fileChooserPath = file.parent
+        chooseFile()?.let { file ->
             try {
                 return Uint8BufferImpl(file.readBytes())
             } catch (e: IOException) {
                 e.printStackTrace()
             }
+        }
+        return null
+    }
+
+    fun chooseFile(filterList: String? = null): File? {
+        val outPath = PointerBuffer.allocateDirect(1)
+        val result = NativeFileDialog.NFD_OpenDialog(filterList, fileChooserPath, outPath)
+        if (result == NativeFileDialog.NFD_OKAY) {
+            val file = File(outPath.stringUTF8)
+            fileChooserPath = file.parent
+            return file
         }
         return null
     }
