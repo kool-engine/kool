@@ -33,7 +33,7 @@ class DockingHost : Group() {
         +dockingSurface
     }
 
-    fun dockWindow(window: WindowScope, path: List<Pair<DockPosition, Dimension>>) {
+    fun dockWindow(window: WindowScope, path: List<Pair<DockPosition, Dimension>>, bringToTop: Boolean = true) {
         var container = dockingSurface.rootContainer
         for (p in path) {
             if (container.isLeaf) {
@@ -49,7 +49,7 @@ class DockingHost : Group() {
                 break
             }
         }
-        container.getNearestLeaf().dock(window)
+        container.getNearestLeaf().dock(window, bringToTop)
     }
 
     @Suppress("UNUSED_PARAMETER")
@@ -223,16 +223,16 @@ class DockingHost : Group() {
             return point.x >= boundsMinPx.x && point.x <= boundsMaxPx.x && point.y >= boundsMinPx.y && point.y <= boundsMaxPx.y
         }
 
-        fun dock(window: WindowScope) {
+        fun dock(window: WindowScope, bringToTop: Boolean = true) {
             if (position == DockPosition.Center) {
-                container.dock(window)
+                container.dock(window, bringToTop)
             } else {
                 val insertDim = if (position.isHorizontal) {
                     window.windowState.preferredDockingWidth ?: Grow(container.xWeightByWidthPx(window.uiNode.widthPx))
                 } else {
                     window.windowState.preferredDockingHeight ?: Grow(container.yWeightByHeightPx(window.uiNode.heightPx))
                 }
-                container.split(position, insertDim).dock(window)
+                container.split(position, insertDim).dock(window, bringToTop)
             }
         }
     }

@@ -4,7 +4,9 @@ import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.math.min
+import de.fabmax.kool.util.Time
 import kotlin.math.abs
+import kotlin.math.max
 
 class DockingContainer(
     val dockingHost: DockingHost,
@@ -48,6 +50,8 @@ class DockingContainer(
     }
 
     fun bringToTop(window: WindowScope) {
+        val maxInputTime = max(Time.gameTime, dockedWindows.maxOf { it.surface.lastInputTime } + 0.001)
+        window.surface.lastInputTime = maxInputTime
         dockedWindows.forEach { it.windowState.isVisible.set(it == window) }
     }
 
@@ -88,7 +92,7 @@ class DockingContainer(
         return if (aLeaf.depth < bLeaf.depth) aLeaf else bLeaf
     }
 
-    fun dock(window: WindowScope) {
+    fun dock(window: WindowScope, bringToTop: Boolean) {
         if (!isLeaf) {
             throw IllegalStateException("Windows can only be docked to leaf nodes")
         }
@@ -100,7 +104,12 @@ class DockingContainer(
                 Dp.fromPx(widthPx), Dp.fromPx(heightPx),
             )
         }
-        bringToTop(window)
+        if (bringToTop) {
+            bringToTop(window)
+        } else {
+            // make sure only top window is visible, this might be the docked window even if bring to top is false
+            getWindowOnTop()?.let { bringToTop(it) }
+        }
         dockingHost.dockingListeners.forEach { it.onWindowDocked(window, this) }
         dockingHost.dockingSurface.triggerUpdate()
     }
