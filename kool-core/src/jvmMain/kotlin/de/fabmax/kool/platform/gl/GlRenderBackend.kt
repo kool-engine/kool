@@ -53,8 +53,11 @@ class GlRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
 
         // make the OpenGL context current
         glfwMakeContextCurrent(glfwWindow.windowPtr)
-        // enable v-sync
-        glfwSwapInterval(1)
+        if (props.isVsync) {
+            glfwSwapInterval(1)
+        } else {
+            glfwSwapInterval(0)
+        }
         // make the window visible
         if (props.showWindowOnStart) {
             glfwWindow.isVisible = true

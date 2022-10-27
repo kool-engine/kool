@@ -4,6 +4,7 @@ import de.fabmax.kool.InputManager
 import de.fabmax.kool.KeyCode
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.clamp
+import de.fabmax.kool.math.min
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.platform.gl.GlRenderBackend
@@ -37,6 +38,7 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
         get() = renderBackend.glfwWindow.isFullscreen
         set(value) { renderBackend.glfwWindow.isFullscreen = value }
 
+    var maxFrameRate = props.maxFrameRate
     var windowUnfocusedFrameRate = props.windowUnfocusedFrameRate
     private val mainThreadRunnables = mutableListOf<GpuThreadRunnable>()
 
@@ -112,18 +114,13 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
                 }
             }
 
-            // determine time delta
-            var time = System.nanoTime()
-            var dt = (time - prevTime) / 1e9
-
-            if (!isWindowFocused && windowUnfocusedFrameRate > 0 && dt < 1.0 / windowUnfocusedFrameRate) {
-                delayFrameRender(time + (1e9 / windowUnfocusedFrameRate).toLong())
-                time = System.nanoTime()
-                dt = (time - prevTime) / 1e9
-                if (glfwWindowShouldClose(renderBackend.glfwWindow.windowPtr)) {
-                    break
-                }
+            if (windowUnfocusedFrameRate > 0 || maxFrameRate > 0) {
+                checkFrameRateLimits(prevTime)
             }
+
+            // determine time delta
+            val time = System.nanoTime()
+            val dt = (time - prevTime) / 1e9
             prevTime = time
 
             // setup draw queues for all scenes / render passes
@@ -136,14 +133,37 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
         renderBackend.cleanup(this)
     }
 
-    private fun delayFrameRender(untilNanos: Long) {
-        while (!isWindowFocused
-            && !inputMgr.isMouseOverWindow
-            && System.nanoTime() < untilNanos
-            && !glfwWindowShouldClose(renderBackend.glfwWindow.windowPtr)
-        ) {
-            glfwPollEvents()
-            Thread.sleep(17)
+    private fun checkFrameRateLimits(prevTime: Long) {
+        val t = System.nanoTime()
+        val dtFocused = if (maxFrameRate > 0) 1.0 / maxFrameRate else 0.0
+        val dtUnfocused = if (windowUnfocusedFrameRate > 0) 1.0 / windowUnfocusedFrameRate else dtFocused
+        val dtCurrent = (t - prevTime) / 1e9
+        val dtCmp = if (isWindowFocused || inputMgr.isMouseOverWindow) dtFocused else dtUnfocused
+        if (dtCmp > dtCurrent) {
+            val untilFocused = t + ((dtFocused - dtCurrent) * 1e9).toLong()
+            val untilUnfocused = t + ((dtUnfocused - dtCurrent) * 1e9).toLong()
+            delayFrameRender(untilFocused, untilUnfocused)
+        }
+    }
+
+    private fun delayFrameRender(untilFocused: Long, untilUnfocused: Long) {
+        while (!glfwWindowShouldClose(renderBackend.glfwWindow.windowPtr)) {
+            val t = System.nanoTime()
+            val isFocused = isWindowFocused || inputMgr.isMouseOverWindow
+            if ((isFocused && t >= untilFocused) || (!isFocused && t >= untilUnfocused)) {
+                break
+            }
+
+            val until = if (isFocused) untilFocused else untilUnfocused
+            val delayMillis = ((until - t) / 1e6).toLong()
+            if (delayMillis > 5) {
+                val sleep = min(5L, delayMillis)
+                Thread.sleep(sleep)
+                if (sleep == delayMillis) {
+                    break
+                }
+                glfwPollEvents()
+            }
         }
     }
 
@@ -225,7 +245,9 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
         var isFullscreen = false
         var isWithHttpAssets = true
         var showWindowOnStart = true
+        var isVsync = true
         var windowUnfocusedFrameRate = 0
+        var maxFrameRate = 0
 
         var renderBackend = Backend.OPEN_GL
 
