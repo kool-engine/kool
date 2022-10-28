@@ -74,6 +74,9 @@ class ImageNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface), 
         val measuredWidth: Float
         val measuredHeight: Float
 
+        val padH = paddingStartPx + paddingEndPx
+        val padV = paddingTopPx + paddingBottomPx
+
         when {
             modWidth is Dp && modHeight is Dp -> {
                 measuredWidth = modWidth.px
@@ -82,24 +85,21 @@ class ImageNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface), 
             modWidth is Dp && modHeight !is Dp -> {
                 // fixed width, measured height depends on width and chosen image size mode
                 measuredWidth = modWidth.px
-                measuredHeight = imageHeight(measuredWidth, imageAr)
+                measuredHeight = imageHeight(measuredWidth - padH, imageAr) + padV
             }
             modWidth !is Dp && modHeight is Dp -> {
                 // fixed height, measured width depends on height and chosen image size mode
                 measuredHeight = modHeight.px
-                measuredWidth = imageWidth(measuredHeight, imageAr)
+                measuredWidth = imageWidth(measuredHeight - padV, imageAr) + padH
             }
             else -> {
                 // dynamic (fit / grow) width and height
                 val scale = (modifier.imageSize as? ImageSize.FixedScale)?.scale ?: 1f
-                measuredWidth = imageWidth.use() * scale
-                measuredHeight = imageHeight.use() * scale
+                measuredWidth = imageWidth.use() * scale + padH
+                measuredHeight = imageHeight.use() * scale + padV
             }
         }
-        setContentSize(
-            measuredWidth + paddingStartPx + paddingEndPx,
-            measuredHeight + paddingTopPx + paddingBottomPx
-        )
+        setContentSize(measuredWidth, measuredHeight)
     }
 
     private fun updateImageSize() {

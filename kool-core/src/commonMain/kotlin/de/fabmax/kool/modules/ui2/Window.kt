@@ -144,9 +144,9 @@ fun Window(
 
             window.modifier.borderColor?.let {
                 if (window.isDocked) {
-                    window.modifier.border(RectBorder(it, 1.dp))
+                    window.modifier.border(RectBorder(it, Dp.fromPx(1f)))
                 } else {
-                    window.modifier.border(RoundRectBorder(it, this.sizes.gap, 1.dp))
+                    window.modifier.border(RoundRectBorder(it, this.sizes.gap, Dp.fromPx(1f)))
                 }
             }
 

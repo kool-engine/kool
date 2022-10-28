@@ -42,15 +42,17 @@ internal object DesktopImpl {
     val primaryMonitor: MonitorSpec
 
     init {
-        val dateFmt = SimpleDateFormat("HH:mm:ss.SSS")
-        Log.printer = { lvl, tag, message ->
-            synchronized(dateFmt) {
-                val frmTxt = ctx?.let { "|f:${Time.frameCount}" } ?: ""
-                val txt = "${dateFmt.format(System.currentTimeMillis())}$frmTxt ${lvl.indicator}/$tag: $message"
-                if (lvl.level < Log.Level.WARN.level) {
-                    println(txt)
-                } else {
-                    System.err.println(txt)
+        if (Log.printer == Log.DEFAULT_PRINTER) {
+            val dateFmt = SimpleDateFormat("HH:mm:ss.SSS")
+            Log.printer = { lvl, tag, message ->
+                synchronized(dateFmt) {
+                    val frmTxt = ctx?.let { "|f:${Time.frameCount}" } ?: ""
+                    val txt = "${dateFmt.format(System.currentTimeMillis())}$frmTxt ${lvl.indicator}/$tag: $message"
+                    if (lvl.level < Log.Level.WARN.level) {
+                        println(txt)
+                    } else {
+                        System.err.println(txt)
+                    }
                 }
             }
         }

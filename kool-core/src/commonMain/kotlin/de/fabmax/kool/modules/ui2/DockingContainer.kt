@@ -169,7 +169,7 @@ class DockingContainer(
             } else {
                 // set height of b to absolute dp value, a is forced to grow
                 a.height.set(Grow.Std)
-                b.height.set(Dp.fromPx(widthPx - splitY))
+                b.height.set(Dp.fromPx(heightPx - splitY))
             }
         }
     }

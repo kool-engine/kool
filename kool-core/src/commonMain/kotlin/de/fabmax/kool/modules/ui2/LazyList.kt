@@ -32,7 +32,10 @@ interface LazyListScope : UiScope {
 open class LazyListModifier(surface: UiSurface) : UiModifier(surface) {
     var orientation: ListOrientation by property(ListOrientation.Vertical)
     var extraItemsAfter: Int by property(3)
+    var isScrollLock: Boolean by property(false)
 }
+
+fun <T: LazyListModifier> T.isScrollLock(flag: Boolean): T { isScrollLock = flag; return this }
 
 fun <T: LazyListModifier> T.orientation(orientation: ListOrientation): T {
     this.orientation = orientation
@@ -116,8 +119,16 @@ open class LazyListNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, su
 
         } else {
             // use the element size seen in previous layout runs to estimate the total list dimensions
-            val viewSize = if (isVertical) state.viewSizeDp.y else state.viewSizeDp.x
+            val viewSize = if (isVertical) state.viewHeightDp.use() else state.viewWidthDp.use()
             val numViewItems = (viewSize / state.averageElementSizeDp).toInt() + 1
+
+            if (modifier.isScrollLock) {
+                if (isVertical) {
+                    state.yScrollDpDesired.set(max(0f, state.contentHeightDp.use() - state.viewHeightDp.use()))
+                } else {
+                    state.xScrollDpDesired.set(max(0f, state.contentWidthDp.use() - state.viewWidthDp.use()))
+                }
+            }
 
             // compute the scroll change amount
             val oldListPos = if (isVertical) state.yScrollDp.value else state.xScrollDp.value
@@ -216,7 +227,7 @@ open class LazyListNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, su
         size = Dp.fromPx(size).value
         state.averageElementSizeDp = size / count
 
-        val viewSize = if (isVertical) state.viewSizeDp.y else state.viewSizeDp.x
+        val viewSize = if (isVertical) state.viewHeightDp.value else state.viewWidthDp.value
         if (size < viewSize && state.itemsTo < state.numTotalItems - 1) {
             // we selected too few elements re-run layout with updated average element size
             surface.triggerUpdate()

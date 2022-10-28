@@ -1,10 +1,10 @@
 package de.fabmax.kool.modules.ui2
 
-import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.util.Time
 import kotlin.math.abs
 import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.round
 
 open class ScrollState {
@@ -13,60 +13,66 @@ open class ScrollState {
     val xScrollDpDesired = mutableStateOf(0f)
     val yScrollDpDesired = mutableStateOf(0f)
 
-    val contentSizeDp = MutableVec2f()
-    val viewSizeDp = MutableVec2f()
+    val contentWidthDp = mutableStateOf(0f)
+    val contentHeightDp = mutableStateOf(0f)
+    val viewWidthDp = mutableStateOf(0f)
+    val viewHeightDp = mutableStateOf(0f)
 
-    val relativeBarLenX: Float get() = (round(viewSizeDp.x) / round(contentSizeDp.x)).clamp()
-    val relativeBarLenY: Float get() = (round(viewSizeDp.y) / round(contentSizeDp.y)).clamp()
+    val relativeBarLenX: Float get() = (round(viewWidthDp.value) / round(contentWidthDp.value)).clamp()
+    val relativeBarLenY: Float get() = (round(viewHeightDp.value) / round(contentHeightDp.value)).clamp()
 
     val relativeBarPosX: Float get() {
-        val div = xScrollDp.value + contentSizeDp.x - (xScrollDp.value + viewSizeDp.x)
+        val div = xScrollDp.value + contentWidthDp.value - (xScrollDp.value + viewWidthDp.value)
         return if (div == 0f) 1f else (xScrollDp.value / div)
     }
 
     val relativeBarPosY: Float get() {
-        val div = yScrollDp.value + contentSizeDp.y - (yScrollDp.value + viewSizeDp.y)
+        val div = yScrollDp.value + contentHeightDp.value - (yScrollDp.value + viewHeightDp.value)
         return if (div == 0f) 0f else (yScrollDp.value / (div))
     }
 
     val remainingSpaceTop: Float
         get() = yScrollDp.value
     val remainingSpaceBottom: Float
-        get() = contentSizeDp.y - (yScrollDp.value + viewSizeDp.y)
+        get() = contentHeightDp.value - (yScrollDp.value + viewHeightDp.value)
     val remainingSpaceStart: Float
         get() = xScrollDp.value
     val remainingSpaceEnd: Float
-        get() = contentSizeDp.x - (xScrollDp.value + viewSizeDp.x)
+        get() = contentWidthDp.value - (xScrollDp.value + viewWidthDp.value)
 
     fun scrollDpX(amount: Float, smooth: Boolean = true) {
         if (smooth) {
-            xScrollDpDesired.set((xScrollDpDesired.value + amount))
+            val x = min(max(0f, xScrollDpDesired.value + amount), contentWidthDp.value - viewWidthDp.value)
+            xScrollDpDesired.set(x)
         } else {
-            xScrollDp.set(xScrollDp.value + amount)
-            xScrollDpDesired.set(xScrollDp.value)
+            val x = min(max(0f, xScrollDp.value + amount), contentWidthDp.value - viewWidthDp.value)
+            xScrollDp.set(x)
+            xScrollDpDesired.set(x)
         }
     }
 
     fun scrollDpY(amount: Float, smooth: Boolean = true) {
         if (smooth) {
-            yScrollDpDesired.set((yScrollDpDesired.value + amount))
+            val y = min(max(0f, yScrollDpDesired.value + amount), contentHeightDp.value - viewHeightDp.value)
+            yScrollDpDesired.set(y)
         } else {
-            yScrollDp.set(yScrollDp.value + amount)
-            yScrollDpDesired.set(yScrollDp.value)
+            val y = min(max(0f, yScrollDp.value + amount), contentHeightDp.value - viewHeightDp.value)
+            yScrollDp.set(y)
+            yScrollDpDesired.set(y)
         }
     }
 
     fun scrollRelativeX(relativeX: Float, smooth: Boolean = true) {
-        val width = max(contentSizeDp.x, viewSizeDp.x)
-        xScrollDpDesired.set((width - viewSizeDp.x) * relativeX)
+        val width = max(contentWidthDp.value, viewWidthDp.value)
+        xScrollDpDesired.set((width - viewWidthDp.value) * relativeX)
         if (!smooth) {
             xScrollDp.set(xScrollDpDesired.value)
         }
     }
 
     fun scrollRelativeY(relativeY: Float, smooth: Boolean = true) {
-        val height = max(contentSizeDp.y, viewSizeDp.y)
-        yScrollDpDesired.set((height - viewSizeDp.y) * relativeY)
+        val height = max(contentHeightDp.value, viewHeightDp.value)
+        yScrollDpDesired.set((height - viewHeightDp.value) * relativeY)
         if (!smooth) {
             yScrollDp.set(yScrollDpDesired.value)
         }
@@ -147,26 +153,28 @@ open class ScrollPaneNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, 
         var desiredScrollY = state.yScrollDpDesired.use()
 
         if (parent != null) {
-            state.viewSizeDp.set(parent.widthPx, parent.heightPx).scale(1f / UiScale.measuredScale)
-            state.contentSizeDp.set(contentWidthPx, contentHeightPx).scale(1f / UiScale.measuredScale)
+            state.viewWidthDp.set(parent.widthPx / UiScale.measuredScale)
+            state.viewHeightDp.set(parent.heightPx / UiScale.measuredScale)
+            state.contentWidthDp.set(contentWidthPx / UiScale.measuredScale)
+            state.contentHeightDp.set(contentHeightPx / UiScale.measuredScale)
 
             // clamp scroll positions to  content size
             if (!modifier.allowOverscrollX) {
-                if (currentScrollX + state.viewSizeDp.x > state.contentSizeDp.x) {
-                    currentScrollX = state.contentSizeDp.x - state.viewSizeDp.x
+                if (currentScrollX + state.viewWidthDp.value > state.contentWidthDp.value) {
+                    currentScrollX = state.contentWidthDp.value - state.viewWidthDp.value
                 }
-                if (desiredScrollX + state.viewSizeDp.x > state.contentSizeDp.x) {
-                    desiredScrollX = state.contentSizeDp.x - state.viewSizeDp.x
+                if (desiredScrollX + state.viewWidthDp.value > state.contentWidthDp.value) {
+                    desiredScrollX = state.contentWidthDp.value - state.viewWidthDp.value
                 }
                 state.xScrollDp.set(max(0f, currentScrollX))
                 state.xScrollDpDesired.set(max(0f, desiredScrollX))
             }
             if (!modifier.allowOverscrollY) {
-                if (currentScrollY + state.viewSizeDp.y > state.contentSizeDp.y) {
-                    currentScrollY = state.contentSizeDp.y - state.viewSizeDp.y
+                if (currentScrollY + state.viewHeightDp.value > state.contentHeightDp.value) {
+                    currentScrollY = state.contentHeightDp.value - state.viewHeightDp.value
                 }
-                if (desiredScrollY + state.viewSizeDp.y > state.contentSizeDp.y) {
-                    desiredScrollY = state.contentSizeDp.y - state.viewSizeDp.y
+                if (desiredScrollY + state.viewHeightDp.value > state.contentHeightDp.value) {
+                    desiredScrollY = state.contentHeightDp.value - state.viewHeightDp.value
                 }
                 state.yScrollDp.set(max(0f, currentScrollY))
                 state.yScrollDpDesired.set(max(0f, desiredScrollY))

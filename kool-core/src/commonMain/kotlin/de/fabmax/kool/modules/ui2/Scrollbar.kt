@@ -185,10 +185,10 @@ open class ScrollbarNode(parent: UiNode?, surface: UiSurface)
     override fun onClick(ev: PointerEvent) {
         if (isTrackVisible && !isOnBar(ev)) {
             when {
-                isVertical && ev.position.y < barMinY -> { state.scrollDpY(-state.viewSizeDp.y) }
-                isVertical && ev.position.y > barMaxY -> { state.scrollDpY(state.viewSizeDp.y) }
-                isHorizontal && ev.position.x < barMinX -> { state.scrollDpX(-state.viewSizeDp.x) }
-                isHorizontal && ev.position.x > barMaxX -> { state.scrollDpX(state.viewSizeDp.x) }
+                isVertical && ev.position.y < barMinY -> { state.scrollDpY(-state.viewHeightDp.value) }
+                isVertical && ev.position.y > barMaxY -> { state.scrollDpY(state.viewHeightDp.value) }
+                isHorizontal && ev.position.x < barMinX -> { state.scrollDpX(-state.viewWidthDp.value) }
+                isHorizontal && ev.position.x > barMaxX -> { state.scrollDpX(state.viewWidthDp.value) }
             }
         } else {
             ev.reject()
