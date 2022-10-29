@@ -1,6 +1,7 @@
 package de.fabmax.kool.modules.ui2
 
 import de.fabmax.kool.util.Color
+import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.round
 
@@ -17,8 +18,13 @@ fun UiRenderer(renderUi: (UiNode) -> Unit) = object : UiRenderer<UiNode> {
 class RectBackground(val backgroundColor: Color) : UiRenderer<UiNode> {
     override fun renderUi(node: UiNode) {
         node.apply {
+            val lt = max(leftPx, clipLeftPx)
+            val rt = min(rightPx, clipRightPx)
+            val tp = max(topPx, clipTopPx)
+            val bt = min(bottomPx, clipBottomPx)
+
             node.getUiPrimitives(UiSurface.LAYER_BACKGROUND)
-                .localRect(0f, 0f, widthPx, heightPx, backgroundColor)
+                .rect(lt, tp, rt - lt, bt - tp, clipBoundsPx, backgroundColor)
         }
     }
 }
@@ -26,8 +32,14 @@ class RectBackground(val backgroundColor: Color) : UiRenderer<UiNode> {
 class RoundRectBackground(val backgroundColor: Color, val cornerRadius: Dp) : UiRenderer<UiNode> {
     override fun renderUi(node: UiNode) {
         node.apply {
+            val c = cornerRadius.px
+            val lt = max(leftPx, clipLeftPx - c)
+            val rt = min(rightPx, clipRightPx + c)
+            val tp = max(topPx, clipTopPx - c)
+            val bt = min(bottomPx, clipBottomPx + c)
+
             node.getUiPrimitives(UiSurface.LAYER_BACKGROUND)
-                .localRoundRect(0f, 0f, widthPx, heightPx, cornerRadius.px, backgroundColor)
+                .roundRect(lt, tp, rt - lt, bt - tp, c, clipBoundsPx, backgroundColor)
         }
     }
 }

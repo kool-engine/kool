@@ -87,7 +87,7 @@ class UiDemo : DemoScene("UI Demo") {
                     .textColor(fgColor)
                     .textRotation(270f)
                     .font(font)
-                    .padding(top = UiSizes.baseSize)
+                    .margin(top = UiSizes.baseSize)
                     .align(AlignmentX.Center, AlignmentY.Top)
             }
         }

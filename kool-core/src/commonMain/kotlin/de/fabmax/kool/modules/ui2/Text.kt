@@ -18,7 +18,7 @@ open class TextModifier(surface: UiSurface) : UiModifier(surface) {
     var font: Font by property { it.sizes.normalText }
     var textColor: Color by property { it.colors.onBackground }
     var textAlignX: AlignmentX by property(AlignmentX.Start)
-    var textAlignY: AlignmentY by property(AlignmentY.Top)
+    var textAlignY: AlignmentY by property(AlignmentY.Center)
     var textRotation: Float by property(0f)
     var baselineBottomMargin: Dp? by property(null)
     var baselineTopMargin: Dp? by property(null)

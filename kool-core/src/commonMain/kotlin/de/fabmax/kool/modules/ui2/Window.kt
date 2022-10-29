@@ -131,9 +131,6 @@ fun Window(
                 window.modifier
                     .titleBarColor(this.colors.secondary)
                     .borderColor(this.colors.secondary.withAlpha(0.3f))
-            } else {
-                // clear focused element on window focus loss
-                surface.requestFocus(null)
             }
 
             // auto-register docking host if window was created in one

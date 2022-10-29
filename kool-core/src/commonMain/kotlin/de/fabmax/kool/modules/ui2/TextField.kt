@@ -67,7 +67,7 @@ fun <T: TextFieldModifier> T.colors(
 
 inline fun UiScope.TextField(text: String = "", block: TextFieldScope.() -> Unit): TextFieldScope {
     val textField = uiNode.createChild(TextFieldNode::class, TextFieldNode.factory)
-    surface.onEachFrame(textField::updateCursorState)
+    surface.onEachFrame(textField::updateCaretBlinkState)
     textField.modifier
         .text(text)
         .onClick(textField)
@@ -81,17 +81,16 @@ open class TextFieldNode(parent: UiNode?, surface: UiSurface)
     : UiNode(parent, surface), TextFieldScope, Clickable, Hoverable, Draggable
 {
     override val modifier = TextFieldModifier(surface)
-    override val isFocused: Boolean get() = isFocusedState.value
+    override val isFocused = mutableStateOf(false)
 
     private val textProps = TextProps(Font.DEFAULT_FONT)
     private val textCache = CachedTextGeometry(this)
 
     private val textOrigin = MutableVec2f()
     private var overflowOffset = 0f
-    private var prevClickTime = 0.0
-    private var isFocusedState = mutableStateOf(false)
-    private var cursorBlink = 0f
-    private var cursorShow = mutableStateOf(false)
+    private var caretBlink = 0f
+    private val isCaretBlink = mutableStateOf(false)
+    private val caretWidth = Dp(1f)
 
     private val editText = EditableText()
 
@@ -104,7 +103,7 @@ open class TextFieldNode(parent: UiNode?, surface: UiSurface)
         val textMetrics = textCache.getTextMetrics(dispText, font)
         val modWidth = modifier.width
         val modHeight = modifier.height
-        val measuredWidth = if (modWidth is Dp) modWidth.px else textMetrics.width + paddingStartPx + paddingEndPx
+        val measuredWidth = if (modWidth is Dp) modWidth.px else textMetrics.width + caretWidth.px + paddingStartPx + paddingEndPx
         val measuredHeight = if (modHeight is Dp) modHeight.px else textMetrics.height + paddingTopPx + paddingBottomPx
         setContentSize(measuredWidth, measuredHeight)
     }
@@ -115,7 +114,7 @@ open class TextFieldNode(parent: UiNode?, surface: UiSurface)
         editText.text = modifier.text
         editText.maxLength = modifier.maxLength
 
-        val isFocused = isFocusedState.use()
+        val isFocused = isFocused.use()
         val isHint = modifier.text.isEmpty()
         val txtFont = if (isHint) modifier.hintFont ?: modifier.font else modifier.font
         val dispText = if (isHint) modifier.hint else modifier.text
@@ -127,7 +126,7 @@ open class TextFieldNode(parent: UiNode?, surface: UiSurface)
         textOrigin.x = when (modifier.textAlignX) {
             AlignmentX.Start -> paddingStartPx
             AlignmentX.Center -> (widthPx - textMetrics.width) / 2f
-            AlignmentX.End -> widthPx - textMetrics.width - paddingEndPx
+            AlignmentX.End -> widthPx - textMetrics.width - caretWidth.px - paddingEndPx
         }
         textOrigin.x += checkTextOverflow(txtFont)
         val lineY = textOrigin.y - textMetrics.descentPx - 1.dp.px
@@ -146,24 +145,24 @@ open class TextFieldNode(parent: UiNode?, surface: UiSurface)
         draw.localRect(paddingStartPx, lineY, innerWidthPx, 1.dp.px, lineColor)
 
         if (isFocused) {
-            draw.renderCursor(txtFont)
+            draw.renderCaretAndSelection()
         }
     }
 
-    private fun UiPrimitiveMesh.renderCursor(font: Font) {
+    private fun UiPrimitiveMesh.renderCaretAndSelection() {
         val h = (modifier.font.sizePts + 4f).dp.px
-        val cursorX = textX(font, editText.caretPosition)
+        val caretX = textX(modifier.font, editText.caretPosition)
 
-        // cursor (blinking)
-        if (cursorShow.use()) {
-            localRect(cursorX, textOrigin.y + 4.dp.px - h, 1f.dp.px, h, modifier.cursorColor)
+        // blinking caret
+        if (isCaretBlink.use() && surface.isWindowFocused) {
+            localRect(caretX, textOrigin.y + 4.dp.px - h, caretWidth.px, h, modifier.cursorColor)
         }
 
         // selection
         if (editText.selectionStart != editText.caretPosition) {
-            val selStartX = textX(font, editText.selectionStart)
-            val left = min(selStartX, cursorX)
-            val right = max(selStartX, cursorX)
+            val selStartX = textX(modifier.font, editText.selectionStart)
+            val left = min(selStartX, caretX)
+            val right = max(selStartX, caretX)
             localRect(left, textOrigin.y + 4.dp.px - h, right - left, h, modifier.selectionColor)
         }
     }
@@ -206,25 +205,25 @@ open class TextFieldNode(parent: UiNode?, surface: UiSurface)
         return editText.text.length
     }
 
-    private fun resetCursorBlink() {
-        cursorBlink = 0.5f
-        cursorShow = mutableStateOf(true)
+    private fun resetCaretBlinkState() {
+        caretBlink = 0.5f
+        isCaretBlink.set(true)
     }
 
     @Suppress("UNUSED_PARAMETER")
-    fun updateCursorState(ctx: KoolContext) {
-        if (isFocusedState.value) {
-            cursorBlink -= Time.deltaT
-            if (cursorBlink < 0f) {
-                cursorShow.set(!cursorShow.value)
-                cursorBlink += 0.5f
-                if (cursorBlink < 0f) {
-                    cursorBlink = 0.5f
+    fun updateCaretBlinkState(ctx: KoolContext) {
+        if (isFocused.value) {
+            caretBlink -= Time.deltaT
+            if (caretBlink < 0f) {
+                isCaretBlink.set(!isCaretBlink.value)
+                caretBlink += 0.5f
+                if (caretBlink < 0f) {
+                    caretBlink = 0.5f
                 }
             }
         } else {
-            cursorBlink = 0f
-            cursorShow = mutableStateOf(false)
+            caretBlink = 0f
+            isCaretBlink.set(false)
         }
     }
 
@@ -234,8 +233,7 @@ open class TextFieldNode(parent: UiNode?, surface: UiSurface)
         editText.caretPosition = textIndex(modifier.font, ev.position.x)
         editText.selectionStart = editText.caretPosition
 
-        val t = Time.gameTime
-        if (ev.pointer.isLeftButtonClicked && t - prevClickTime < 0.3) {
+        if (ev.pointer.isLeftButtonClicked && ev.pointer.leftButtonRepeatedClickCount > 1) {
             // double click -> select clicked word
             editText.moveCaret(EditableText.MOVE_WORD_LEFT, false)
             // MOVE_WORD_LEFT moves the cursor past the separating space, skip that before we select the word
@@ -248,16 +246,7 @@ open class TextFieldNode(parent: UiNode?, surface: UiSurface)
                 editText.caretPosition--
             }
         }
-        prevClickTime = t
         surface.triggerUpdate()
-    }
-
-    override fun onFocusGain() {
-        isFocusedState.set(true)
-    }
-
-    override fun onFocusLost() {
-        isFocusedState.set(false)
     }
 
     override fun onEnter(ev: PointerEvent) {
@@ -348,11 +337,11 @@ open class TextFieldNode(parent: UiNode?, surface: UiSurface)
         }
         if (isTextUpdate) {
             modifier.onChange?.invoke(editText.text)
-            resetCursorBlink()
+            resetCaretBlinkState()
         }
         if (triggerUpdate) {
             surface.triggerUpdate()
-            resetCursorBlink()
+            resetCaretBlinkState()
         }
     }
 

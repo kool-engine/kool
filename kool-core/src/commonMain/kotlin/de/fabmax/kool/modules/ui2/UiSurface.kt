@@ -41,6 +41,8 @@ open class UiSurface(
 
     // top-level window scope if this UiSurface hosts a window
     var windowScope: WindowScope? = null
+    val isWindowFocused: Boolean
+        get() = windowScope?.windowState?.isFocused?.value ?: true
 
     var colors: Colors by colorsState::value
     var sizes: Sizes by sizesState::value
@@ -273,7 +275,7 @@ open class UiSurface(
             }
 
             // keyboard input is blocked by this UiSurface as soon as a ui element is focused
-            blockAllKeyboardInput = focusedNode != null
+            blockAllKeyboardInput = isWindowFocused && focusedNode != null
 
             // pointer input is blocked as soon as the pointer is above this surface OR if drag is active
             // the drag check is needed to avoid losing the pointer while dragging, e.g., a slider and accidentally
@@ -331,6 +333,10 @@ open class UiSurface(
         }
 
         override fun handleKeyEvents(keyEvents: MutableList<InputManager.KeyEvent>, ctx: KoolContext) {
+            if (!blockAllKeyboardInput) {
+                return
+            }
+
             super.handleKeyEvents(keyEvents, ctx)
 
             if (keyEvents.isNotEmpty()) {
@@ -405,9 +411,6 @@ open class UiSurface(
                 if (isDragStart && dragNode == null && mod.hasAnyDragCallback && invokePointerCallback(node, ptrEv, mod.onDragStart, true)) {
                     dragNode = node
                     lastInputTime = Time.gameTime
-                    if (node != focusedNode) {
-                        requestFocus(null)
-                    }
                 }
 
                 if (isAnyClick && invokePointerCallback(node, ptrEv, mod.onClick)) {
@@ -415,9 +418,6 @@ open class UiSurface(
                     ptrEv.pointer.consume()
                     isAnyClick = false
                     lastInputTime = Time.gameTime
-                    if (node != focusedNode) {
-                        requestFocus(null)
-                    }
                 }
                 if (isWheelX && invokePointerCallback(node, ptrEv, mod.onWheelX)) {
                     // wheel x was consumed

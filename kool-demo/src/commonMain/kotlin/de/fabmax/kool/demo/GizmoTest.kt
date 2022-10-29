@@ -195,7 +195,7 @@ class GizmoTest : DemoScene("Gizmo Test") {
 
     private fun UiScope.TransformTextField(state: MutableStateValue<Float>, precision: Int) = TextField {
         val text = weakRememberState(state.value.toString(precision))
-        if (!isFocused) {
+        if (!isFocused.value) {
             text.set(state.use().toString(precision))
         }
         modifier

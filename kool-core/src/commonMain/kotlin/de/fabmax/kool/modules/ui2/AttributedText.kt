@@ -2,13 +2,19 @@ package de.fabmax.kool.modules.ui2
 
 import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.scene.geometry.TextProps
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Font
 import de.fabmax.kool.util.MsdfFont
+import de.fabmax.kool.util.Time
+import kotlin.math.abs
 import kotlin.math.max
+import kotlin.math.min
 
 data class TextLine(val spans: List<Pair<String, TextAttributes>>) {
+    val length: Int = spans.sumOf { it.first.length }
+
     companion object {
         val EMPTY = TextLine(emptyList())
     }
@@ -26,16 +32,38 @@ data class TextAttributes(
 
 interface AttributedTextScope : UiScope {
     override val modifier: AttributedTextModifier
+
+    fun charIndexFromLocalX(localX: Float): Int
+    fun charIndexToLocalX(charIndex: Int): Float
 }
 
 open class AttributedTextModifier(surface: UiSurface) : UiModifier(surface) {
     var text: TextLine by property(TextLine.EMPTY)
     var textAlignX: AlignmentX by property(AlignmentX.Start)
-    var textAlignY: AlignmentY by property(AlignmentY.Top)
+    var textAlignY: AlignmentY by property(AlignmentY.Center)
+
+    var caretPos: Int by property(0)
+    var selectionStart: Int by property(0)
+    var caretColor: Color by property { it.colors.onBackground }
+    var isCaretVisible: Boolean by property(false)
+    var selectionColor: Color by property { it.colors.primary.withAlpha(0.5f) }
+    var onSelectText: ((Int, Int) -> Unit)? by property(null)
 }
 
 fun <T: AttributedTextModifier> T.textAlignX(alignment: AlignmentX): T { textAlignX = alignment; return this }
 fun <T: AttributedTextModifier> T.textAlignY(alignment: AlignmentY): T { textAlignY = alignment; return this }
+fun <T: AttributedTextModifier> T.isCaretVisible(flag: Boolean): T { isCaretVisible = flag; return this }
+fun <T: AttributedTextModifier> T.onSelectText(block: ((Int, Int) -> Unit)?): T { onSelectText = block; return this }
+fun <T: AttributedTextModifier> T.cursorPos(cursor: Int): T {
+    caretPos = cursor
+    selectionStart = cursor
+    return this
+}
+    fun <T: AttributedTextModifier> T.selectionRange(start: Int, cursor: Int): T {
+    caretPos = cursor
+    selectionStart = start
+    return this
+}
 
 inline fun UiScope.AttributedText(text: TextLine, block: AttributedTextScope.() -> Unit = { }): AttributedTextScope {
     val textNd = uiNode.createChild(AttributedTextNode::class, AttributedTextNode.factory)
@@ -49,10 +77,9 @@ inline fun UiScope.AttributedText(text: TextLine, block: AttributedTextScope.() 
 }
 
 open class AttributedTextNode(parent: UiNode?, surface: UiSurface)
-    : UiNode(parent, surface), AttributedTextScope, Clickable, Hoverable, Draggable, Focusable
+    : UiNode(parent, surface), AttributedTextScope, Clickable, Hoverable, Draggable
 {
     override val modifier = AttributedTextModifier(surface)
-    override val isFocused: Boolean get() = isFocusedState.value
 
     private val textProps = TextProps(Font.DEFAULT_FONT)
     private val textCache = mutableListOf<CachedTextGeometry>()
@@ -61,10 +88,11 @@ open class AttributedTextNode(parent: UiNode?, surface: UiSurface)
     private var totalTextHeight = 0f
     private var baselineY = 0f
 
-    private var prevClickTime = 0.0
-    private var isFocusedState = mutableStateOf(false)
-    private var cursorBlink = 0f
-    private var cursorShow = mutableStateOf(false)
+    private val textOrigin = MutableVec2f()
+    private var dragStartFrame = 0
+    private var caretBlink = 0f
+    private val isCaretBlink = mutableStateOf(false)
+    private val caretWidth = Dp(1f)
 
     override fun measureContentSize(ctx: KoolContext) {
         updateCacheSize()
@@ -87,7 +115,7 @@ open class AttributedTextNode(parent: UiNode?, surface: UiSurface)
 
         val modWidth = modifier.width
         val modHeight = modifier.height
-        val measuredWidth = if (modWidth is Dp) modWidth.px else totalTextWidth + paddingStartPx + paddingEndPx
+        val measuredWidth = if (modWidth is Dp) modWidth.px else totalTextWidth + caretWidth.px + paddingStartPx + paddingEndPx
         val measuredHeight = if (modHeight is Dp) modHeight.px else totalTextHeight + paddingTopPx + paddingBottomPx
         setContentSize(measuredWidth, measuredHeight)
     }
@@ -104,49 +132,109 @@ open class AttributedTextNode(parent: UiNode?, surface: UiSurface)
     override fun render(ctx: KoolContext) {
         super.render(ctx)
 
-        var textX = when (modifier.textAlignX) {
-            AlignmentX.Start -> paddingStartPx
-            AlignmentX.Center -> (widthPx - totalTextWidth) / 2f
-            AlignmentX.End -> widthPx - totalTextWidth - paddingEndPx
+        // selection background
+        if (modifier.caretPos != modifier.selectionStart) {
+            val x1 = charIndexToLocalX(modifier.caretPos)
+            val x2 = charIndexToLocalX(modifier.selectionStart)
+            val from = min(x1, x2)
+            val to = max(x1, x2)
+            getUiPrimitives().localRect(from, 0f, to - from, heightPx, modifier.selectionColor)
         }
 
+        textOrigin.x = when (modifier.textAlignX) {
+            AlignmentX.Start -> paddingStartPx
+            AlignmentX.Center -> (widthPx - totalTextWidth) / 2f
+            AlignmentX.End -> widthPx - totalTextWidth - caretWidth.px - paddingEndPx
+        }
+        textOrigin.y = baselineY + when (modifier.textAlignY) {
+            AlignmentY.Top -> paddingTopPx
+            AlignmentY.Center -> (heightPx - totalTextHeight) / 2f
+            AlignmentY.Bottom -> heightPx - totalTextHeight - paddingBottomPx
+        }
+        var textX = textOrigin.x
+
+        // text spans
         modifier.text.spans.forEachIndexed { i, (txt, attr) ->
             val cache = textCache[i]
             val metrics = cache.textMetrics
 
-            if (i == 0) {
-                textX += metrics.paddingStart
-            }
+            if (i == 0) textX += metrics.paddingStart
 
+            // text background
             attr.background?.let { bg ->
                 getUiPrimitives(UiSurface.LAYER_BACKGROUND).localRect(textX - metrics.paddingStart, 0f, metrics.width, heightPx, bg)
             }
 
+            // text geometry
             textProps.apply {
                 font = attr.font
                 text = txt
                 isYAxisUp = false
 
-                val oriY = baselineY + when (modifier.textAlignY) {
-                    AlignmentY.Top -> paddingTopPx
-                    AlignmentY.Center -> (heightPx - totalTextHeight) / 2f
-                    AlignmentY.Bottom -> heightPx - totalTextHeight - paddingBottomPx
-                }
-                origin.set(textX, oriY, 0f)
+                origin.set(textX, textOrigin.y, 0f)
                 textX += metrics.baselineWidth
             }
-
             val builder = getTextBuilder(attr.font, ctx)
             cache.addTextGeometry(builder.geometry, textProps, attr.color)
         }
+
+        // caret
+        if (modifier.isCaretVisible && surface.isWindowFocused) {
+            surface.onEachFrame(::updateCaretBlinkState)
+            val caretX = charIndexToLocalX(modifier.caretPos)
+            if (isCaretBlink.use()) {
+                getUiPrimitives().localRect(caretX, 0f, caretWidth.px, heightPx, modifier.caretColor)
+            }
+        }
     }
 
-    override fun onFocusGain() {
-        isFocusedState.set(true)
+    override fun charIndexToLocalX(charIndex: Int): Float {
+        var x = textOrigin.x
+        var i = charIndex
+        for (s in modifier.text.spans.indices) {
+            val (txt, attr) = modifier.text.spans[s]
+            for (j in 0 until min(txt.length, i)) {
+                if (i-- == 0) {
+                    return x
+                }
+                x += attr.font.charWidth(txt[j])
+            }
+        }
+        return x
     }
 
-    override fun onFocusLost() {
-        isFocusedState.set(false)
+    override fun charIndexFromLocalX(localX: Float): Int {
+        var x = textOrigin.x
+        var i = 0
+        for (s in modifier.text.spans.indices) {
+            val (txt, attr) = modifier.text.spans[s]
+            for (j in txt.indices) {
+                val w = attr.font.charWidth(txt[j])
+                if (x + w >= localX) {
+                    return if (abs(x - localX) < abs(x + w - localX)) i else i + 1
+                }
+                x += w
+                i++
+            }
+        }
+        return i
+    }
+
+    @Suppress("UNUSED_PARAMETER")
+    private fun updateCaretBlinkState(ctx: KoolContext) {
+        if (modifier.isCaretVisible) {
+            caretBlink -= Time.deltaT
+            if (caretBlink < 0f) {
+                isCaretBlink.set(!isCaretBlink.value)
+                caretBlink += 0.5f
+                if (caretBlink < 0f) {
+                    caretBlink = 0.5f
+                }
+            }
+        } else {
+            caretBlink = 0f
+            isCaretBlink.set(false)
+        }
     }
 
     override fun onEnter(ev: PointerEvent) {
@@ -157,18 +245,21 @@ open class AttributedTextNode(parent: UiNode?, surface: UiSurface)
         ev.ctx.inputMgr.cursorShape = InputManager.CursorShape.DEFAULT
     }
 
+    override fun onClick(ev: PointerEvent) {
+        val txtI = charIndexFromLocalX(ev.position.x)
+        modifier.onSelectText?.invoke(txtI, txtI)
+        dragStartFrame = Time.frameCount
+    }
+
     override fun onDragStart(ev: PointerEvent) = onClick(ev)
 
     override fun onDrag(ev: PointerEvent) {
-//        val selPos = textIndex(modifier.font, ev.position.x)
-//        if (selPos != editText.caretPosition) {
-//            editText.caretPosition = selPos
-//            surface.triggerUpdate()
-//        }
-    }
-
-    override fun onKeyEvent(keyEvent: InputManager.KeyEvent) {
-
+        if (Time.frameCount > dragStartFrame) {
+            val txtI = charIndexFromLocalX(ev.position.x)
+            if (txtI != modifier.caretPos) {
+                modifier.onSelectText?.invoke(txtI, modifier.selectionStart)
+            }
+        }
     }
 
     companion object {

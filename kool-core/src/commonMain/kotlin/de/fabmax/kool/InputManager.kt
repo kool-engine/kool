@@ -438,7 +438,7 @@ abstract class InputManager internal constructor() {
         private fun updateRepeatedClickCount(isClick: Boolean, buttonI: Int, currentClickCount: Int): Int {
             val dt = Time.precisionTime - buttonClickTimes[buttonI]
             val dFrm = Time.frameCount - buttonClickFrames[buttonI]
-            return if (!isClick && dt > MAX_DOUBLE_CLICK_TIME_SECS && dFrm > 2) {
+            return if (!isClick && dt > DOUBLE_CLICK_INTERVAL_SECS && dFrm > 2) {
                 0
             } else if (isClick) {
                 currentClickCount + 1
@@ -658,8 +658,7 @@ abstract class InputManager internal constructor() {
     companion object {
         const val MAX_CLICK_MOVE_PX = 15.0
         const val MAX_CLICK_TIME_SECS = 0.25
-        const val MAX_DOUBLE_CLICK_TIME_SECS = 0.25
-        const val DOUBLE_CLICK_INTERVAL_SECS = 0.3
+        const val DOUBLE_CLICK_INTERVAL_SECS = 0.35
 
         const val LEFT_BUTTON = 0
         const val LEFT_BUTTON_MASK = 1

@@ -75,7 +75,7 @@ fun UiScope.ColorSliderPanel(
                     .alignY(AlignmentY.Center)
             }
             TextField(color.toHexString(alpha != null)) {
-                if (isFocused && hexString != null) {
+                if (isFocused.value && hexString != null) {
                     modifier.text(hexString.use())
                 } else {
                     hexString?.set(color.toHexString())
