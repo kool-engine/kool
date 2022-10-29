@@ -24,11 +24,7 @@ data class TextAttributes(
     val font: MsdfFont,
     val color: Color,
     val background: Color? = null
-) {
-    companion object {
-        val DEFAULT_ATTRIBS = TextAttributes(MsdfFont.DEFAULT_FONT, Color.GRAY)
-    }
-}
+)
 
 interface AttributedTextScope : UiScope {
     override val modifier: AttributedTextModifier
