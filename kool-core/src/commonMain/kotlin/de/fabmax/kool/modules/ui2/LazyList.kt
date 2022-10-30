@@ -91,6 +91,8 @@ open class LazyListNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, su
 
     lateinit var state: LazyListState
 
+    private val delta = mutableStateOf(0f)
+
     override fun <T> items(items: List<T>, block: LazyListScope.(T) -> Unit) =
         iterateItems(items, block, null)
 
@@ -142,15 +144,17 @@ open class LazyListNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, su
             // update scroll position to correspond to visible item range based on current element size
             val updatePos = state.itemsFrom * elemSize
             if (isVertical) {
-                val delta = updatePos - state.yScrollDp.value
-                if (abs(delta) > 1f && (delta < 0f || state.remainingSpaceBottom > 1f)) {
+                delta.set(updatePos - state.yScrollDp.value)
+                val d = delta.use()
+                if (abs(d) > 1f && (d < 0f || state.remainingSpaceBottom > 1f)) {
                     val oldError = state.yScrollDpDesired.value - state.yScrollDp.value
                     state.yScrollDp.set(updatePos)
                     state.yScrollDpDesired.set(state.yScrollDp.value + oldError)
                 }
             } else {
-                val delta = updatePos - state.xScrollDp.value
-                if (abs(delta) > 1f && (delta < 0f || state.remainingSpaceEnd > 1f)) {
+                delta.set(updatePos - state.xScrollDp.value)
+                val d = delta.use()
+                if (abs(d) > 1f && (d < 0f || state.remainingSpaceEnd > 1f)) {
                     val oldError = state.xScrollDpDesired.value - state.xScrollDp.value
                     state.xScrollDp.set(updatePos)
                     state.xScrollDpDesired.set(state.xScrollDp.value + oldError)

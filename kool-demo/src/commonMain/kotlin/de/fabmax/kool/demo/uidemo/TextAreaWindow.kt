@@ -21,6 +21,8 @@ class TextAreaWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
             val spans = randomStyle(str, r)
             lines += TextAreaLine(TextLine(spans), i)
         }
+
+//        lines += TextAreaLine(TextLine(listOf("a" to TextAttributes(MsdfFont.DEFAULT_FONT.copy(sizePts = 50f), MdColor.PINK))), 0)
     }
 
     override val windowSurface: UiSurface = Window(windowState, name = "Text Area") {
@@ -67,16 +69,11 @@ class TextAreaWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
             val cutoff = if (size > 40f && weight >= MsdfFont.WEIGHT_EXTRA_BOLD) MsdfFont.CUTOFF_OUTLINED_THIN else MsdfFont.CUTOFF_SOLID
             val fgColor = random.randomI(MdColor.PALETTE.indices)
             val glowColor: Color? = if (random.randomF() > 0.3f) null else MdColor.PALETTE[random.randomI(MdColor.PALETTE.indices)]
-//            var bgColor: Int? = if (random.randomF() > 0.3f) null else random.randomI(MdColor.PALETTE.indices)
-//            if (bgColor == fgColor) {
-//                bgColor = null
-//            }
 
             val j1 = min(str.length, j + random.randomI(4, 8))
             spans += str.substring(j, j1) to TextAttributes(
                 font = MsdfFont(MsdfFont.DEFAULT_FONT_DATA, size, italic, weight, cutoff, glowColor),
                 color = MdColor.PALETTE[fgColor],
-//                background = bgColor?.let { MdColor.PALETTE[it] }
             )
             j = j1
         }

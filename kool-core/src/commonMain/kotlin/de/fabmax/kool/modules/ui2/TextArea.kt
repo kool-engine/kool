@@ -39,6 +39,8 @@ interface TextAreaScope : UiScope {
 }
 
 open class TextAreaModifier(surface: UiSurface) : UiModifier(surface) {
+    var bottomPadding: Dp by property(Dp(100f))
+
     var editorHandler: TextEditorHandler? by property(null)
 
     var selectionStartLine: Int by property(-1)
@@ -124,7 +126,7 @@ open class TextAreaNode(parent: UiNode?, surface: UiSurface) : BoxNode(parent, s
     fun setText(lines: List<TextAreaLine>) {
         this.lines = lines
         selectionHandler.updateSelectionRange()
-        linesHolder.items(lines) { line ->
+        linesHolder.itemsIndexed(lines) { i, line ->
             AttributedText(line.textLine) {
                 modifier.width(Grow.MinFit)
 
@@ -141,6 +143,12 @@ open class TextAreaNode(parent: UiNode?, surface: UiSurface) : BoxNode(parent, s
                         .onDrag { selectionHandler.onDrag(it) }
                         .onDragEnd { selectionHandler.onSelectEnd() }
                         .onPointer { selectionHandler.onPointer(this, line, it) }
+
+                    if (i == lines.lastIndex) {
+                        modifier
+                            .textAlignY(AlignmentY.Top)
+                            .padding(bottom = this@TextAreaNode.modifier.bottomPadding)
+                    }
 
                     selectionHandler.applySelectionRange(this, line)
                 }
@@ -183,10 +191,15 @@ open class TextAreaNode(parent: UiNode?, surface: UiSurface) : BoxNode(parent, s
                 else -> {
                     if (keyEvent.isCtrlDown) {
                         when (keyEvent.localKeyCode) {
-                            KEY_CODE_COPY -> selectionHandler.copySelection()?.let { Clipboard.copyToClipboard(it) }
-                            KEY_CODE_CUT -> {  }
-                            KEY_CODE_PASTE -> Clipboard.getStringFromClipboard { paste -> paste?.let { editText(it) } }
                             KEY_CODE_SELECT_ALL -> selectionHandler.selectAll()
+                            KEY_CODE_PASTE -> Clipboard.getStringFromClipboard { paste -> paste?.let { editText(it) } }
+                            KEY_CODE_COPY -> selectionHandler.copySelection()?.let { Clipboard.copyToClipboard(it) }
+                            KEY_CODE_CUT -> {
+                                selectionHandler.copySelection()?.let {
+                                    Clipboard.copyToClipboard(it)
+                                    editText("")
+                                }
+                            }
                             else -> { }
                         }
                     }
@@ -325,11 +338,11 @@ open class TextAreaNode(parent: UiNode?, surface: UiSurface) : BoxNode(parent, s
         }
 
         fun clearSelection() {
-            selectionChanged(-1, -1, 0, 0)
+            selectionChanged(selectionCaretLine, selectionCaretLine, selectionCaretChar, selectionCaretChar, false)
         }
 
         fun selectAll() {
-            selectionChanged(0, lines.lastIndex, 0, lines.last().length)
+            selectionChanged(0, lines.lastIndex, 0, lines.last().length, false)
         }
 
         fun selectWord(attributedText: AttributedTextScope, line: TextAreaLine, ev: PointerEvent) {
@@ -363,7 +376,7 @@ open class TextAreaNode(parent: UiNode?, surface: UiSurface) : BoxNode(parent, s
                 val dragLocalPos = MutableVec2f()
                 uiNode.toLocal(ev.screenPosition, dragLocalPos)
                 val charIndex = charIndexFromLocalX(dragLocalPos.x)
-                selectionChanged(selectionStartLine, selectionCaretLine, selectionStartChar, charIndex)
+                selectionChanged(selectionStartLine, selectionCaretLine, selectionStartChar, charIndex, false)
             }
         }
 
@@ -375,7 +388,7 @@ open class TextAreaNode(parent: UiNode?, surface: UiSurface) : BoxNode(parent, s
             if (isSelecting && ev.pointer.isDrag) {
                 caretLine = line
                 caretLineScope = attributedText
-                selectionChanged(selectionStartLine, line.lineIndex, selectionStartChar, selectionCaretChar)
+                selectionChanged(selectionStartLine, line.lineIndex, selectionStartChar, selectionCaretChar, false)
             }
         }
 
@@ -477,7 +490,7 @@ open class TextAreaNode(parent: UiNode?, surface: UiSurface) : BoxNode(parent, s
                 line = lines[0]
                 selectionCaretChar = 0
                 selectionCaretLine = line.lineIndex
-            } else if (targetLine > lines.size) {
+            } else if (targetLine > lines.lastIndex) {
                 line = lines[lines.lastIndex]
                 selectionCaretChar = line.length
                 selectionCaretLine = line.lineIndex
@@ -510,7 +523,7 @@ open class TextAreaNode(parent: UiNode?, surface: UiSurface) : BoxNode(parent, s
             selectionChanged(selectionStartLine, selectionCaretLine, selectionStartChar, selectionCaretChar)
         }
 
-        fun selectionChanged(startLine: Int, caretLine: Int, startChar: Int, caretChar: Int) {
+        fun selectionChanged(startLine: Int, caretLine: Int, startChar: Int, caretChar: Int, scrollToCaret: Boolean = true) {
             selectionStartLine = startLine
             selectionCaretLine = caretLine
             selectionStartChar = startChar
@@ -523,15 +536,17 @@ open class TextAreaNode(parent: UiNode?, surface: UiSurface) : BoxNode(parent, s
 
                 modifier.setSelectionRange(startLine, caretLine, startChar, caretChar)
                 resetCaretBlinkState()
-                scrollToCaret()
+                if (scrollToCaret) {
+                    scrollToCaret()
+                }
             }
         }
 
-        private fun resetCaretBlinkState() {
+        fun resetCaretBlinkState() {
             (caretLineScope as? AttributedTextNode)?.resetCaretBlinkState()
         }
 
-        private fun scrollToCaret() {
+        fun scrollToCaret() {
             val bottomLinePad = linesHolder.modifier.extraItemsAfter + 2
             if (selectionCaretLine < linesHolder.state.itemsFrom) {
                 linesHolder.state.itemsFrom = selectionCaretLine.toFloat()

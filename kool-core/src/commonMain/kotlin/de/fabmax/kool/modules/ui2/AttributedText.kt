@@ -169,7 +169,7 @@ open class AttributedTextNode(parent: UiNode?, surface: UiSurface)
             val x2 = charIndexToLocalX(modifier.selectionStart)
             val from = min(x1, x2)
             val to = max(x1, x2)
-            getUiPrimitives().localRect(from, 0f, to - from, heightPx, modifier.selectionColor)
+            getUiPrimitives().localRect(from, paddingTopPx, to - from, innerHeightPx, modifier.selectionColor)
         }
 
         textOrigin.x = when (modifier.textAlignX) {
@@ -193,7 +193,13 @@ open class AttributedTextNode(parent: UiNode?, surface: UiSurface)
 
             // text background
             attr.background?.let { bg ->
-                getUiPrimitives(UiSurface.LAYER_BACKGROUND).localRect(textX - metrics.paddingStart, 0f, metrics.width, heightPx, bg)
+                getUiPrimitives(UiSurface.LAYER_BACKGROUND).localRect(
+                    textX - metrics.paddingStart,
+                    paddingTopPx,
+                    metrics.width,
+                    innerHeightPx,
+                    bg
+                )
             }
 
             // text geometry
@@ -214,7 +220,7 @@ open class AttributedTextNode(parent: UiNode?, surface: UiSurface)
             surface.onEachFrame(::updateCaretBlinkState)
             val caretX = charIndexToLocalX(modifier.caretPos)
             if (isCaretBlink.use()) {
-                getUiPrimitives().localRect(caretX, 0f, caretWidth.px, heightPx, modifier.caretColor)
+                getUiPrimitives().localRect(caretX, paddingTopPx, caretWidth.px, innerHeightPx, modifier.caretColor)
             }
         }
     }
