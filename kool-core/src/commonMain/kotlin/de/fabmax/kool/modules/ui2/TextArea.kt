@@ -40,6 +40,8 @@ interface TextAreaScope : UiScope {
 
 open class TextAreaModifier(surface: UiSurface) : UiModifier(surface) {
     var bottomPadding: Dp by property(Dp(100f))
+    var lineStartPadding: Dp by property(Dp(0f))
+    var lineEndPadding: Dp by property(Dp(100f))
 
     var editorHandler: TextEditorHandler? by property(null)
 
@@ -125,6 +127,7 @@ open class TextAreaNode(parent: UiNode?, surface: UiSurface) : BoxNode(parent, s
 
     fun setText(lines: List<TextAreaLine>) {
         this.lines = lines
+        val textAreaMod = modifier
         selectionHandler.updateSelectionRange()
         linesHolder.itemsIndexed(lines) { i, line ->
             AttributedText(line.textLine) {
@@ -144,10 +147,11 @@ open class TextAreaNode(parent: UiNode?, surface: UiSurface) : BoxNode(parent, s
                         .onDragEnd { selectionHandler.onSelectEnd() }
                         .onPointer { selectionHandler.onPointer(this, line, it) }
 
+                    modifier.padding(start = textAreaMod.lineStartPadding, end = textAreaMod.lineEndPadding)
                     if (i == lines.lastIndex) {
                         modifier
                             .textAlignY(AlignmentY.Top)
-                            .padding(bottom = this@TextAreaNode.modifier.bottomPadding)
+                            .padding(bottom = textAreaMod.bottomPadding)
                     }
 
                     selectionHandler.applySelectionRange(this, line)
@@ -547,12 +551,23 @@ open class TextAreaNode(parent: UiNode?, surface: UiSurface) : BoxNode(parent, s
         }
 
         fun scrollToCaret() {
+            val scrState = linesHolder.state
             val bottomLinePad = linesHolder.modifier.extraItemsAfter + 2
-            if (selectionCaretLine < linesHolder.state.itemsFrom) {
-                linesHolder.state.itemsFrom = selectionCaretLine.toFloat()
-            } else if (selectionCaretLine > linesHolder.state.itemsTo - bottomLinePad) {
-                val visLines = linesHolder.state.itemsTo - linesHolder.state.itemsFrom.toInt() - bottomLinePad
-                linesHolder.state.itemsFrom = max(0f, selectionCaretLine.toFloat() - visLines)
+            if (selectionCaretLine < scrState.itemsFrom) {
+                scrState.itemsFrom = selectionCaretLine.toFloat()
+            } else if (selectionCaretLine > scrState.itemsTo - bottomLinePad) {
+                val visLines = scrState.itemsTo - scrState.itemsFrom.toInt() - bottomLinePad
+                scrState.itemsFrom = max(0f, selectionCaretLine.toFloat() - visLines)
+            }
+
+            val scrollPad = 16f
+            val caretX = Dp.fromPx(caretLine?.textLine?.charIndexToPx(selectionCaretChar) ?: 0f).value
+            val scrLt = scrState.xScrollDp.value
+            val scrRt = scrState.xScrollDp.value + scrState.viewWidthDp.value
+            if (caretX - scrollPad < scrLt) {
+                scrState.scrollDpX(caretX - scrLt - scrollPad)
+            } else if (caretX + scrollPad * 4 > scrRt) {
+                scrState.scrollDpX(caretX - scrRt + scrollPad * 4)
             }
         }
     }
