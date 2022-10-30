@@ -24,6 +24,7 @@ class Grow(val weight: Float, val min: Dimension = Dp.ZERO, val max: Dimension =
 
     companion object {
         val Std = Grow(1f)
+        val MinFit = Grow(1f, FitContent)
     }
 }
 

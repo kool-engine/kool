@@ -237,12 +237,12 @@ open class TextFieldNode(parent: UiNode?, surface: UiSurface)
             // double click -> select clicked word
             editText.moveCaret(EditableText.MOVE_WORD_LEFT, false)
             // MOVE_WORD_LEFT moves the cursor past the separating space, skip that before we select the word
-            while (editText.text.length > editText.caretPosition && editText.text[editText.caretPosition] == ' ') {
+            while (editText.text.length > editText.caretPosition && editText.text[editText.caretPosition].isWhitespace()) {
                 editText.caretPosition++
                 editText.selectionStart++
             }
             editText.moveCaret(EditableText.MOVE_WORD_RIGHT, true)
-            while (editText.copySelection()?.endsWith(" ") == true) {
+            while (editText.copySelection()?.last()?.isWhitespace() == true) {
                 editText.caretPosition--
             }
         }

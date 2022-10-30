@@ -48,24 +48,11 @@ class EditableText(txt: String = "") {
     }
 
     private fun moveWordLeft() {
-        if (caretPosition > 0) {
-            val idx = text.substring(0, caretPosition).lastIndexOf(' ')
-            caretPosition = if (idx < 0) 0 else text.substring(0, idx).trim().length
-        }
+        caretPosition = TextCaretNavigation.moveWordLeft(text, caretPosition)
     }
 
     private fun moveWordRight() {
-        if (caretPosition < text.length) {
-            var idx = text.indexOf(' ', caretPosition)
-            caretPosition = if (idx < 0) {
-                text.length
-            } else {
-                while (idx < text.length && text[idx] == ' ') {
-                    idx++
-                }
-                idx
-            }
-        }
+        caretPosition = TextCaretNavigation.moveWordRight(text, caretPosition)
     }
 
     fun backspace() {

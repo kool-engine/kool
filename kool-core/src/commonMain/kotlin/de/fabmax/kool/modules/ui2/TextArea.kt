@@ -1,8 +1,12 @@
 package de.fabmax.kool.modules.ui2
 
+import de.fabmax.kool.Clipboard
 import de.fabmax.kool.InputManager
+import de.fabmax.kool.LocalKeyCode
 import de.fabmax.kool.math.MutableVec2f
+import de.fabmax.kool.math.clamp
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.TextCaretNavigation
 import kotlin.math.max
 import kotlin.math.min
 
@@ -15,11 +19,9 @@ interface TextAreaScope : UiScope {
 
 open class TextAreaModifier(surface: UiSurface) : UiModifier(surface) {
     var isSelectable: Boolean by property(false)
-    var isEditable: Boolean by property(false)
 }
 
 fun <T: TextAreaModifier> T.isSelectable(flag: Boolean): T { isSelectable = flag; return this }
-fun <T: TextAreaModifier> T.isEditable(flag: Boolean): T { isEditable = flag; return this }
 
 fun UiScope.TextArea(
     lines: List<TextAreaLine> = emptyList(),
@@ -63,7 +65,7 @@ open class TextAreaNode(parent: UiNode?, surface: UiSurface) : BoxNode(parent, s
     private lateinit var lines: List<TextAreaLine>
 
     override val linesHolder = LazyListNode(this, surface)
-    private val selectionHandler = LineSelectionHandler()
+    private val selectionHandler = SelectionHandler()
 
     override fun applyDefaults() {
         super.applyDefaults()
@@ -76,40 +78,69 @@ open class TextAreaNode(parent: UiNode?, surface: UiSurface) : BoxNode(parent, s
         this.lines = lines
         linesHolder.items(lines) { line ->
             AttributedText(line.textLine) {
-                modifier.margin(horizontal = sizes.gap)
+                modifier
+                    .width(Grow.MinFit)
+                    .margin(horizontal = sizes.gap)
 
                 if (this@TextAreaNode.modifier.isSelectable) {
                     modifier
-                        .onClick { selectionHandler.onSelectStart(this, line, it, false) }
+                        .onClick {
+                            when (it.pointer.leftButtonRepeatedClickCount) {
+                                1 -> selectionHandler.onSelectStart(this, line, it, false)
+                                2 -> selectionHandler.selectWord(this, line, it)
+                                3 -> selectionHandler.selectLine(this, line)
+                            }
+                        }
                         .onDragStart { selectionHandler.onSelectStart(this, line, it, true) }
                         .onDrag { selectionHandler.onDrag(it) }
                         .onDragEnd { selectionHandler.onSelectEnd() }
                         .onPointer { selectionHandler.onPointer(this, line, it) }
 
-                    selectionHandler.setSelectionRange(this, line)
+                    selectionHandler.applySelectionRange(this, line)
                 }
             }
         }
     }
 
-    override fun onFocusGain() {
-        super.onFocusGain()
-        println("got focus")
-    }
-
-    override fun onFocusLost() {
-        super.onFocusLost()
-        println("lost focus")
-    }
-
     override fun onKeyEvent(keyEvent: InputManager.KeyEvent) {
-        println("key event")
+        if (keyEvent.isPressed) {
+            when (keyEvent.keyCode) {
+                InputManager.KEY_CURSOR_LEFT -> selectionHandler.moveCaretLeft(wordWise = keyEvent.isCtrlDown, select = keyEvent.isShiftDown)
+                InputManager.KEY_CURSOR_RIGHT -> selectionHandler.moveCaretRight(wordWise = keyEvent.isCtrlDown, select = keyEvent.isShiftDown)
+                InputManager.KEY_CURSOR_UP -> selectionHandler.moveCaretLineUp(select = keyEvent.isShiftDown)
+                InputManager.KEY_CURSOR_DOWN -> selectionHandler.moveCaretLineDown(select = keyEvent.isShiftDown)
+                InputManager.KEY_PAGE_UP -> selectionHandler.moveCaretPageUp(select = keyEvent.isShiftDown)
+                InputManager.KEY_PAGE_DOWN -> selectionHandler.moveCaretPageDown(select = keyEvent.isShiftDown)
+                InputManager.KEY_ESC -> {
+                    selectionHandler.clearSelection()
+                    surface.requestFocus(null)
+                }
+                else -> {
+                    if (keyEvent.isCtrlDown) {
+                        when (keyEvent.localKeyCode) {
+                            KEY_CODE_COPY -> selectionHandler.copySelection()?.let { Clipboard.copyToClipboard(it) }
+                            KEY_CODE_CUT -> {  }
+                            KEY_CODE_PASTE -> {  }
+                            KEY_CODE_SELECT_ALL -> {
+                                selectionHandler.selectAll()
+                            }
+                            else -> { }
+                        }
+                    }
+                }
+            }
+        }
     }
 
-    private inner class LineSelectionHandler {
+    private inner class SelectionHandler {
         private var isSelecting = false
+
+        // line indices of selection range
         private val selectionStartLine = mutableStateOf(-1)
         private val selectionCaretLine = mutableStateOf(-1)
+        // selection range caret positions within start / end line of selection range
+        private val selectionStartChar = mutableStateOf(-1)
+        private val selectionCaretChar = mutableStateOf(-1)
 
         private var caretLine: TextAreaLine? = null
         private var caretLineScope: AttributedTextScope? = null
@@ -119,29 +150,127 @@ open class TextAreaNode(parent: UiNode?, surface: UiSurface) : BoxNode(parent, s
         val selectionToLine: Int
             get() = max(selectionStartLine.value, selectionCaretLine.value)
 
-        fun setSelectionRange(attributedText: AttributedTextScope, line: TextAreaLine) {
+        val isEmptySelection: Boolean
+            get() = selectionStartLine.value == selectionCaretLine.value && selectionStartChar.value == selectionCaretChar.value
+
+        fun applySelectionRange(attributedText: AttributedTextScope, line: TextAreaLine) {
             val from = selectionFromLine
             val to = selectionToLine
-            if (line.lineIndex !in from..to) {
-                line.caretPos.set(0)
-                line.selectionStart.set(0)
-            } else if (line.lineIndex in (from + 1) until to) {
-                line.selectionStart.set(0)
-                line.caretPos.set(line.textLine.length)
-            } else if (line.lineIndex == selectionStartLine.value && selectionStartLine.value != selectionCaretLine.value) {
+
+            var selCaretPos = 0
+            var selStartPos = 0
+
+            if (line.lineIndex in (from + 1) until to) {
+                // line is completely in selection range
+                selStartPos = 0
+                selCaretPos = line.textLine.length
+
+            } else if (line.lineIndex == selectionStartLine.value && selectionStartLine.value == selectionCaretLine.value) {
+                // single-line selection
+                selStartPos = selectionStartChar.use()
+                selCaretPos = selectionCaretChar.use()
+
+            } else if (line.lineIndex == selectionFromLine) {
+                // multi-line selection, first selected line
                 if (selectionStartLine.value < selectionCaretLine.value) {
-                    line.caretPos.set(line.textLine.length)
+                    // forward selection
+                    selStartPos = selectionStartChar.use()
+                    selCaretPos = line.textLine.length
                 } else {
-                    line.caretPos.set(0)
+                    // reverse selection
+                    selStartPos = line.textLine.length
+                    selCaretPos = selectionCaretChar.use()
                 }
+            } else if (line.lineIndex == selectionToLine) {
+                // multi-line selection, last selected line
+                if (selectionStartLine.value < selectionCaretLine.value) {
+                    // forward selection
+                    selStartPos = 0
+                    selCaretPos = selectionCaretChar.use()
+                } else {
+                    // reverse selection
+                    selStartPos = selectionStartChar.use()
+                    selCaretPos = 0
+                }
+            }
+
+            if (line.lineIndex == selectionCaretLine.value) {
+                caretLineScope = attributedText
             }
 
             selectionStartLine.use()
             selectionCaretLine.use()
 
             attributedText.modifier
-                .selectionRange(line.selectionStart.use(), line.caretPos.use())
+                .selectionRange(selStartPos, selCaretPos)
                 .isCaretVisible(isFocused.use() && line.lineIndex == selectionCaretLine.value)
+        }
+
+        fun copySelection(): String? {
+            return if (isEmptySelection) {
+                null
+
+            } else if (selectionStartLine.value == selectionCaretLine.value) {
+                // single-line selection
+                val fromChar = min(selectionStartChar.value, selectionCaretChar.value)
+                val toChar = max(selectionStartChar.value, selectionCaretChar.value)
+                lines[selectionFromLine].textLine.text.substring(fromChar, toChar)
+
+            } else {
+                // multi-line selection
+                var fromChar = selectionStartChar.value
+                var toChar = selectionCaretChar.value
+                if (selectionCaretLine.value < selectionStartLine.value) {
+                    toChar = selectionStartChar.value
+                    fromChar = selectionCaretChar.value
+                }
+
+                return buildString {
+                    append(lines[selectionFromLine].textLine.text.substring(fromChar)).append('\n')
+                    for (i in (selectionFromLine + 1) until selectionToLine) {
+                        append(lines[i].textLine.text).append('\n')
+                    }
+                    append(lines[selectionToLine].textLine.text.substring(0, toChar))
+                }
+            }
+        }
+
+        fun clearSelection() {
+            selectionStartLine.set(-1)
+            selectionCaretLine.set(-1)
+            selectionStartChar.set(0)
+            selectionCaretChar.set(0)
+        }
+
+        fun selectAll() {
+            selectionStartLine.set(0)
+            selectionCaretLine.set(lines.lastIndex)
+            selectionStartChar.set(0)
+            selectionCaretChar.set(lines.last().textLine.length)
+            resetCaretBlinkState()
+            scrollToCaret()
+        }
+
+        fun selectWord(attributedText: AttributedTextScope, line: TextAreaLine, ev: PointerEvent) {
+            selectionStartLine.set(line.lineIndex)
+            selectionCaretLine.set(line.lineIndex)
+
+            val txt = line.textLine.text
+            val charIndex = attributedText.charIndexFromLocalX(ev.position.x)
+            selectionStartChar.set(TextCaretNavigation.startOfWord(txt, charIndex))
+            selectionCaretChar.set(TextCaretNavigation.endOfWord(txt, charIndex))
+            caretLine = line
+            caretLineScope = attributedText
+        }
+
+        fun selectLine(attributedText: AttributedTextScope, line: TextAreaLine) {
+            selectionStartLine.set(line.lineIndex)
+            selectionCaretLine.set(line.lineIndex)
+
+            selectionStartChar.set(0)
+            selectionCaretChar.set(line.textLine.length)
+            caretLine = line
+            caretLineScope = attributedText
         }
 
         fun onSelectStart(attributedText: AttributedTextScope, line: TextAreaLine, ev: PointerEvent, isSelecting: Boolean) {
@@ -152,8 +281,10 @@ open class TextAreaNode(parent: UiNode?, surface: UiSurface) : BoxNode(parent, s
             selectionCaretLine.set(line.lineIndex)
 
             val charIndex = attributedText.charIndexFromLocalX(ev.position.x)
-            line.caretPos.set(charIndex)
-            line.selectionStart.set(charIndex)
+            selectionStartChar.set(charIndex)
+            selectionCaretChar.set(charIndex)
+            caretLine = line
+            caretLineScope = attributedText
         }
 
         fun onDrag(ev: PointerEvent) {
@@ -161,21 +292,12 @@ open class TextAreaNode(parent: UiNode?, surface: UiSurface) : BoxNode(parent, s
                 val dragLocalPos = MutableVec2f()
                 uiNode.toLocal(ev.screenPosition, dragLocalPos)
                 val charIndex = charIndexFromLocalX(dragLocalPos.x)
-                caretLine?.let { line ->
-                    line.caretPos.set(charIndex)
-                    if (selectionCaretLine.value < selectionStartLine.value) {
-                        line.selectionStart.set(line.textLine.length)
-                    } else if (selectionCaretLine.value > selectionStartLine.value) {
-                        line.selectionStart.set(0)
-                    }
-                }
+                selectionCaretChar.set(charIndex)
             }
         }
 
         fun onSelectEnd() {
             isSelecting = false
-            caretLine = null
-            caretLineScope = null
         }
 
         fun onPointer(attributedText: AttributedTextScope, line: TextAreaLine, ev: PointerEvent) {
@@ -183,16 +305,147 @@ open class TextAreaNode(parent: UiNode?, surface: UiSurface) : BoxNode(parent, s
                 selectionCaretLine.set(line.lineIndex)
                 caretLine = line
                 caretLineScope = attributedText
+                resetCaretBlinkState()
+            }
+        }
+
+        fun moveCaretLeft(wordWise: Boolean, select: Boolean) {
+            var line = caretLine ?: return
+            var txt = line.textLine.text
+
+            if (selectionCaretChar.value == 0 && line.lineIndex > 0) {
+                line = lines[line.lineIndex - 1]
+                selectionCaretChar.set(line.textLine.length)
+                caretLine = line
+                txt = line.textLine.text
+
+                if (wordWise) {
+                    selectionCaretChar.set(TextCaretNavigation.moveWordLeft(txt, selectionCaretChar.value))
+                }
+                selectionCaretLine.set(line.lineIndex)
+                if (!select) {
+                    selectionStartLine.set(line.lineIndex)
+                    selectionStartChar.set(selectionCaretChar.value)
+                }
+
+            } else if (wordWise) {
+                selectionCaretChar.set(TextCaretNavigation.moveWordLeft(txt, selectionCaretChar.value))
+            } else {
+                selectionCaretChar.set((selectionCaretChar.value - 1).clamp(0, txt.length))
+            }
+            if (!select) {
+                selectionStartLine.set(selectionCaretLine.value)
+                selectionStartChar.set(selectionCaretChar.value)
+            }
+            resetCaretBlinkState()
+            scrollToCaret()
+        }
+
+        fun moveCaretRight(wordWise: Boolean, select: Boolean) {
+            var line = caretLine ?: return
+            var txt = line.textLine.text
+
+            if (selectionCaretChar.value == txt.length && line.lineIndex < lines.lastIndex) {
+                line = lines[line.lineIndex + 1]
+                selectionCaretChar.set(0)
+                caretLine = line
+                txt = line.textLine.text
+
+                if (wordWise) {
+                    selectionCaretChar.set(TextCaretNavigation.moveWordRight(txt, selectionCaretChar.value))
+                }
+                selectionCaretLine.set(line.lineIndex)
+                if (!select) {
+                    selectionStartLine.set(line.lineIndex)
+                    selectionStartChar.set(selectionCaretChar.value)
+                }
+
+            } else if (wordWise) {
+                selectionCaretChar.set(TextCaretNavigation.moveWordRight(txt, selectionCaretChar.value))
+            } else {
+                selectionCaretChar.set((selectionCaretChar.value + 1).clamp(0, txt.length))
+            }
+            if (!select) {
+                selectionStartLine.set(selectionCaretLine.value)
+                selectionStartChar.set(selectionCaretChar.value)
+            }
+            resetCaretBlinkState()
+            scrollToCaret()
+        }
+
+        fun moveCaretLineUp(select: Boolean) {
+            val line = caretLine ?: return
+            moveCaretToLine(line.lineIndex - 1, select)
+        }
+
+        fun moveCaretLineDown(select: Boolean) {
+            val line = caretLine ?: return
+            moveCaretToLine(line.lineIndex + 1, select)
+        }
+
+        fun moveCaretPageUp(select: Boolean) {
+            val line = caretLine ?: return
+            val bottomLinePad = linesHolder.modifier.extraItemsAfter + 2
+            val numPageLines = max(1, linesHolder.state.itemsTo - linesHolder.state.itemsFrom.toInt() - bottomLinePad)
+            moveCaretToLine(line.lineIndex - numPageLines, select)
+        }
+
+        fun moveCaretPageDown(select: Boolean) {
+            val line = caretLine ?: return
+            val bottomLinePad = linesHolder.modifier.extraItemsAfter + 2
+            val numPageLines = max(1, linesHolder.state.itemsTo - linesHolder.state.itemsFrom.toInt() - bottomLinePad)
+            moveCaretToLine(line.lineIndex + numPageLines, select)
+        }
+        private fun moveCaretToLine(targetLine: Int, select: Boolean) {
+            var line = caretLine ?: return
+            val caretX = line.textLine.charIndexToPx(selectionCaretChar.value)
+
+            if (targetLine in lines.indices) {
+                line = lines[targetLine]
+                selectionCaretChar.set(line.textLine.charIndexFromPx(caretX))
+                selectionCaretLine.set(line.lineIndex)
+            } else if (targetLine < 0) {
+                line = lines[0]
+                selectionCaretChar.set(0)
+                selectionCaretLine.set(line.lineIndex)
+            } else if (targetLine > lines.size) {
+                line = lines[lines.lastIndex]
+                selectionCaretChar.set(line.textLine.length)
+                selectionCaretLine.set(line.lineIndex)
+            }
+            caretLine = line
+
+            if (!select) {
+                selectionStartLine.set(selectionCaretLine.value)
+                selectionStartChar.set(selectionCaretChar.value)
+            }
+            resetCaretBlinkState()
+            scrollToCaret()
+        }
+
+        private fun resetCaretBlinkState() {
+            (caretLineScope as? AttributedTextNode)?.resetCaretBlinkState()
+        }
+
+        private fun scrollToCaret() {
+            val bottomLinePad = linesHolder.modifier.extraItemsAfter + 2
+            if (selectionCaretLine.value < linesHolder.state.itemsFrom) {
+                linesHolder.state.itemsFrom = selectionCaretLine.value.toFloat()
+            } else if (selectionCaretLine.value > linesHolder.state.itemsTo - bottomLinePad) {
+                val visLines = linesHolder.state.itemsTo - linesHolder.state.itemsFrom.toInt() - bottomLinePad
+                linesHolder.state.itemsFrom = max(0f, selectionCaretLine.value.toFloat() - visLines)
             }
         }
     }
 
     companion object {
+        private val KEY_CODE_SELECT_ALL = LocalKeyCode('a')
+        private val KEY_CODE_CUT = LocalKeyCode('x')
+        private val KEY_CODE_COPY = LocalKeyCode('c')
+        private val KEY_CODE_PASTE = LocalKeyCode('v')
+
         val factory: (UiNode, UiSurface) -> TextAreaNode = { parent, surface -> TextAreaNode(parent, surface) }
     }
 }
 
-class TextAreaLine(val textLine: TextLine, val lineIndex: Int) {
-    val caretPos = mutableStateOf(0)
-    val selectionStart = mutableStateOf(0)
-}
+class TextAreaLine(val textLine: TextLine, val lineIndex: Int)

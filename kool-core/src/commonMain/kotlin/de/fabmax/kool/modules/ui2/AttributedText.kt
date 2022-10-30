@@ -14,6 +14,41 @@ import kotlin.math.min
 
 data class TextLine(val spans: List<Pair<String, TextAttributes>>) {
     val length: Int = spans.sumOf { it.first.length }
+    val text: String
+        get() = spans.joinToString("") { (str,_) -> str }
+
+
+    fun charIndexToPx(charIndex: Int): Float {
+        var x = 0f
+        var i = charIndex
+        for (s in spans.indices) {
+            val (txt, attr) = spans[s]
+            for (j in 0 until min(txt.length, i)) {
+                if (i-- == 0) {
+                    return x
+                }
+                x += attr.font.charWidth(txt[j])
+            }
+        }
+        return x
+    }
+
+    fun charIndexFromPx(px: Float): Int {
+        var x = 0f
+        var i = 0
+        for (s in spans.indices) {
+            val (txt, attr) = spans[s]
+            for (j in txt.indices) {
+                val w = attr.font.charWidth(txt[j])
+                if (x + w >= px) {
+                    return if (abs(x - px) < abs(x + w - px)) i else i + 1
+                }
+                x += w
+                i++
+            }
+        }
+        return i
+    }
 
     companion object {
         val EMPTY = TextLine(emptyList())
@@ -185,35 +220,11 @@ open class AttributedTextNode(parent: UiNode?, surface: UiSurface)
     }
 
     override fun charIndexToLocalX(charIndex: Int): Float {
-        var x = textOrigin.x
-        var i = charIndex
-        for (s in modifier.text.spans.indices) {
-            val (txt, attr) = modifier.text.spans[s]
-            for (j in 0 until min(txt.length, i)) {
-                if (i-- == 0) {
-                    return x
-                }
-                x += attr.font.charWidth(txt[j])
-            }
-        }
-        return x
+        return textOrigin.x + modifier.text.charIndexToPx(charIndex)
     }
 
     override fun charIndexFromLocalX(localX: Float): Int {
-        var x = textOrigin.x
-        var i = 0
-        for (s in modifier.text.spans.indices) {
-            val (txt, attr) = modifier.text.spans[s]
-            for (j in txt.indices) {
-                val w = attr.font.charWidth(txt[j])
-                if (x + w >= localX) {
-                    return if (abs(x - localX) < abs(x + w - localX)) i else i + 1
-                }
-                x += w
-                i++
-            }
-        }
-        return i
+        return modifier.text.charIndexFromPx(localX - textOrigin.x)
     }
 
     @Suppress("UNUSED_PARAMETER")
@@ -231,6 +242,12 @@ open class AttributedTextNode(parent: UiNode?, surface: UiSurface)
             caretBlink = 0f
             isCaretBlink.set(false)
         }
+    }
+
+
+    fun resetCaretBlinkState() {
+        caretBlink = 0.5f
+        isCaretBlink.set(true)
     }
 
     override fun onEnter(ev: PointerEvent) {
