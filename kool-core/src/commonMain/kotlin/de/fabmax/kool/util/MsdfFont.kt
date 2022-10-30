@@ -87,6 +87,34 @@ class MsdfFont(
         return "MsdfFont { name: ${data.meta.name}, info: ${data.meta.atlas} }"
     }
 
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || this::class != other::class) return false
+
+        other as MsdfFont
+
+        if (data != other.data) return false
+        if (sizePts != other.sizePts) return false
+        if (italic != other.italic) return false
+        if (weight != other.weight) return false
+        if (cutoff != other.cutoff) return false
+        if (glowColor != other.glowColor) return false
+        if (scale != other.scale) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = data.hashCode()
+        result = 31 * result + sizePts.hashCode()
+        result = 31 * result + italic.hashCode()
+        result = 31 * result + weight.hashCode()
+        result = 31 * result + cutoff.hashCode()
+        result = 31 * result + (glowColor?.hashCode() ?: 0)
+        result = 31 * result + scale.hashCode()
+        return result
+    }
+
     companion object {
         const val WEIGHT_EXTRA_LIGHT = -0.09f
         const val WEIGHT_LIGHT = -0.06f

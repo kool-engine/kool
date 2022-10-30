@@ -12,7 +12,7 @@ class TextAreaWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
 
     private val windowState = WindowState().apply { setWindowSize(Dp(1200f), Dp(800f)) }
 
-    private val lines = mutableListOf<TextAreaLine>()
+    private val lines = mutableStateListOf<TextAreaLine>()
 
     init {
         val r = Random(randomI())
@@ -38,7 +38,10 @@ class TextAreaWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
         hScrollbarModifier = { it.margin(start = sizes.gap, end = sizes.gap * 2f,bottom = sizes.gap) },
         vScrollbarModifier = { it.margin(sizes.gap) }
     ) {
-        modifier.isSelectable(true)
+        // make text area selectable
+        installDefaultSelectionHandler()
+        // make text area editable
+        modifier.editorHandler(weakRemember { DefaultTextEditorHandler(lines) })
     }
 
     private fun randomText(random: Random): String {
@@ -61,16 +64,16 @@ class TextAreaWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
             val cutoff = if (size > 40f && weight >= MsdfFont.WEIGHT_EXTRA_BOLD) MsdfFont.CUTOFF_OUTLINED_THIN else MsdfFont.CUTOFF_SOLID
             val fgColor = random.randomI(MdColor.PALETTE.indices)
             val glowColor: Color? = if (random.randomF() > 0.3f) null else MdColor.PALETTE[random.randomI(MdColor.PALETTE.indices)]
-            var bgColor: Int? = if (random.randomF() > 0.3f) null else random.randomI(MdColor.PALETTE.indices)
-            if (bgColor == fgColor) {
-                bgColor = null
-            }
+//            var bgColor: Int? = if (random.randomF() > 0.3f) null else random.randomI(MdColor.PALETTE.indices)
+//            if (bgColor == fgColor) {
+//                bgColor = null
+//            }
 
             val j1 = min(str.length, j + random.randomI(4, 8))
             spans += str.substring(j, j1) to TextAttributes(
                 font = MsdfFont(MsdfFont.DEFAULT_FONT_DATA, size, italic, weight, cutoff, glowColor),
                 color = MdColor.PALETTE[fgColor],
-                background = bgColor?.let { MdColor.PALETTE[it] }
+//                background = bgColor?.let { MdColor.PALETTE[it] }
             )
             j = j1
         }
