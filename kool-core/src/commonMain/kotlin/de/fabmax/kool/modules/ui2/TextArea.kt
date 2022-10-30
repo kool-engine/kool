@@ -126,9 +126,7 @@ open class TextAreaNode(parent: UiNode?, surface: UiSurface) : BoxNode(parent, s
         selectionHandler.updateSelectionRange()
         linesHolder.items(lines) { line ->
             AttributedText(line.textLine) {
-                modifier
-                    .width(Grow.MinFit)
-                    .margin(horizontal = sizes.gap)
+                modifier.width(Grow.MinFit)
 
                 if (this@TextAreaNode.modifier.onSelectionChanged != null) {
                     modifier

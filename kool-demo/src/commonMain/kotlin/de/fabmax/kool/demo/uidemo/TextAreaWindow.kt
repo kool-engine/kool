@@ -27,6 +27,8 @@ class TextAreaWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
         surface.sizes = uiDemo.selectedUiSize.use()
         surface.colors = uiDemo.selectedColors.use()
 
+        modifier.backgroundColor(MdColor.GREY tone 900)
+
         TitleBar(onCloseAction = { uiDemo.closeWindow(this@TextAreaWindow, it.ctx) })
         WindowContent()
     }
@@ -34,10 +36,11 @@ class TextAreaWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
 
     fun UiScope.WindowContent() = TextArea(
         lines,
-        containerModifier = { it.backgroundColor(MdColor.GREY tone 900) },
+        containerModifier = { it.backgroundColor(null) },
         hScrollbarModifier = { it.margin(start = sizes.gap, end = sizes.gap * 2f,bottom = sizes.gap) },
         vScrollbarModifier = { it.margin(sizes.gap) }
     ) {
+        modifier.padding(horizontal = sizes.gap)
         // make text area selectable
         installDefaultSelectionHandler()
         // make text area editable

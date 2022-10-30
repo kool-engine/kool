@@ -392,14 +392,28 @@ open class UiSurface(
 
             wasDrag = ptr.isDrag
 
+            // kind of hacky: if pointer is close to the window border any ongoing hover is stopped so that we can
+            // hover (and drag / resize) the window border
+            val isCloseToWindowBorder = windowScope?.let {
+                it.uiNode.toLocal(ptrEv.screenPosition, ptrEv.position)
+                it.getResizeBorderFlags(ptrEv.position) != 0
+            } == true
+            if (isCloseToWindowBorder && hoveredNode !== windowScope?.uiNode) {
+                hoveredNode?.let { invokePointerCallback(it, ptrEv, it.modifier.onExit) }
+                hoveredNode = null
+            }
+
             relevantNodes.forEach { node ->
                 val mod = node.modifier
 
                 // onPointer is called for any node below pointer position
                 invokePointerCallback(node, ptrEv, mod.onPointer)
 
-                // check for new hover bodes (if no drag is in progress)
-                if (dragNode == null && mod.hasAnyHoverCallback && hoveredNode?.let { nodeComparator.compare(node, it) < 0 } != false) {
+                val windowResizeGuard = !isCloseToWindowBorder || node === windowScope?.uiNode
+
+                // check for new hover nodes (if no drag is in progress)
+                if (windowResizeGuard && dragNode == null && mod.hasAnyHoverCallback
+                    && hoveredNode?.let { nodeComparator.compare(node, it) < 0 } != false) {
                     // stop hovering of previous hoveredNode - we found a new one on top of it
                     hoveredNode?.let { invokePointerCallback(it, ptrEv, it.modifier.onExit) }
                     // start hovering new node
@@ -408,7 +422,8 @@ open class UiSurface(
                     }
                 }
 
-                if (isDragStart && dragNode == null && mod.hasAnyDragCallback && invokePointerCallback(node, ptrEv, mod.onDragStart, true)) {
+                if (windowResizeGuard && isDragStart && dragNode == null && mod.hasAnyDragCallback
+                    && invokePointerCallback(node, ptrEv, mod.onDragStart, true)) {
                     dragNode = node
                     lastInputTime = Time.gameTime
                 }
