@@ -42,8 +42,8 @@ class LauncherWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
                 launchOrBringToTop(allowMultiInstances.use(), TextStyleWindow::class) { TextStyleWindow(uiDemo) }
             }
         }
-        Button("Attributed Text") {
-            launcherButtonStyle("Colorful text area")
+        Button("Text Area") {
+            launcherButtonStyle("Editable text area with many different text styles")
             modifier.onClick {
                 launchOrBringToTop(allowMultiInstances.use(), TextAreaWindow::class) { TextAreaWindow(uiDemo) }
             }

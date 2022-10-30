@@ -50,6 +50,10 @@ data class TextLine(val spans: List<Pair<String, TextAttributes>>) {
         return i
     }
 
+    override fun toString(): String {
+        return spans.joinToString { "\"${it.first}\"" }
+    }
+
     companion object {
         val EMPTY = TextLine(emptyList())
     }

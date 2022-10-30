@@ -12,17 +12,17 @@ class TextAreaWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
 
     private val windowState = WindowState().apply { setWindowSize(Dp(1200f), Dp(800f)) }
 
-    private val lines = mutableStateListOf<TextAreaLine>()
+    private val lines = mutableStateListOf<TextLine>()
 
     init {
         val r = Random(randomI())
         for (i in 0 until 100) {
             val str = randomText(r)
             val spans = randomStyle(str, r)
-            lines += TextAreaLine(TextLine(spans), i)
+            lines += TextLine(spans)
         }
 
-//        lines += TextAreaLine(TextLine(listOf("a" to TextAttributes(MsdfFont.DEFAULT_FONT.copy(sizePts = 50f), MdColor.PINK))), 0)
+//        lines += TextLine(listOf("a" to TextAttributes(MsdfFont.DEFAULT_FONT.copy(sizePts = 50f), MdColor.PINK)))
     }
 
     override val windowSurface: UiSurface = Window(windowState, name = "Text Area") {
