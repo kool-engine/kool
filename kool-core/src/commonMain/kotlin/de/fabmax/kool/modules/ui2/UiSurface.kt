@@ -205,11 +205,9 @@ open class UiSurface(
 
     protected open fun layoutUiNodeChildren(node: UiNode, ctx: KoolContext) {
         node.layoutChildren(ctx)
-
         if (node is Focusable) {
             focusableNodes += node
         }
-
         for (i in node.children.indices) {
             if (node.children[i].isInClip) {
                 layoutUiNodeChildren(node.children[i], ctx)

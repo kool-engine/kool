@@ -5,7 +5,6 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.util.Color
-import kotlin.math.max
 
 interface ScrollbarScope : UiScope {
     override val modifier: ScrollbarModifier
@@ -18,6 +17,10 @@ open class ScrollbarModifier(surface: UiSurface) : UiModifier(surface) {
     var orientation: ScrollbarOrientation by property(ScrollbarOrientation.Vertical)
     var minBarLength: Dp by property(Dp(24f))
     var hideIfFullyExtended: Boolean by property(true)
+
+    var relativeBarPos: Float by property(0f)
+    var relativeBarLen: Float by property(0.5f)
+    var onChange: ((Float) -> Unit)? by property(null)
 
     var barColor: Color by property { it.colors.secondaryVariant }
     var hoverColor: Color? by property { it.colors.secondary }
@@ -32,6 +35,9 @@ fun <T: ScrollbarModifier> T.orientation(orientation: ScrollbarOrientation): T {
 
 fun <T: ScrollbarModifier> T.minBarLength(length: Dp): T { minBarLength = length; return this }
 fun <T: ScrollbarModifier> T.hideIfFullyExtended(flag: Boolean): T { hideIfFullyExtended = flag; return this }
+fun <T: ScrollbarModifier> T.relativeBarPos(pos: Float): T { relativeBarPos = pos; return this }
+fun <T: ScrollbarModifier> T.relativeBarLen(len: Float): T { relativeBarLen = len; return this }
+fun <T: ScrollbarModifier> T.onChange(block: ((Float) -> Unit)?): T { onChange = block; return this }
 
 fun <T: ScrollbarModifier> T.colors(
     color: Color = barColor,
@@ -51,22 +57,15 @@ enum class ScrollbarOrientation {
     Vertical
 }
 
-inline fun UiScope.Scrollbar(
-    state: ScrollState,
-    block: ScrollbarScope.() -> Unit
-) {
+inline fun UiScope.Scrollbar(block: ScrollbarScope.() -> Unit) {
     val scrollBar = uiNode.createChild(ScrollbarNode::class, ScrollbarNode.factory)
-    scrollBar.state = state
     scrollBar.modifier.onClick(scrollBar)
         .hoverListener(scrollBar)
         .dragListener(scrollBar)
     scrollBar.block()
 }
 
-inline fun UiScope.VerticalScrollbar(
-    state: ScrollState,
-    block: ScrollbarScope.() -> Unit
-) = Scrollbar(state) {
+inline fun UiScope.VerticalScrollbar(block: ScrollbarScope.() -> Unit) = Scrollbar {
     modifier
         .orientation(ScrollbarOrientation.Vertical)
         .width(8.dp)
@@ -87,10 +86,7 @@ inline fun UiScope.VerticalScrollbar(
     block()
 }
 
-inline fun UiScope.HorizontalScrollbar(
-    state: ScrollState,
-    block: ScrollbarScope.() -> Unit
-) = Scrollbar(state) {
+inline fun UiScope.HorizontalScrollbar(block: ScrollbarScope.() -> Unit) = Scrollbar {
     modifier
         .orientation(ScrollbarOrientation.Horizontal)
         .height(8.dp)
@@ -115,7 +111,6 @@ open class ScrollbarNode(parent: UiNode?, surface: UiSurface)
     : UiNode(parent, surface), ScrollbarScope, Clickable, Draggable, Hoverable {
 
     override val modifier = ScrollbarModifier(surface)
-    lateinit var state: ScrollState
 
     private val isTrackVisible: Boolean get() = modifier.trackColor != null
     private var isHovered = mutableStateOf(false)
@@ -130,28 +125,34 @@ open class ScrollbarNode(parent: UiNode?, surface: UiSurface)
         // draw background
         super.render(ctx)
 
-        val len = if (isVertical) state.relativeBarLenY else state.relativeBarLenX
-        val pos = if (isVertical) state.relativeBarPosY else state.relativeBarPosX
-        if (modifier.hideIfFullyExtended && len > 0.999f) {
+        if (uiNode.innerWidthPx <= 0f || uiNode.innerHeightPx <= 0f) {
             return
         }
 
-        // compute scrollbar dimensions
-        val refHeight = uiNode.innerHeightPx
-        val refWidth = uiNode.innerWidthPx
-        val clampLen = max(len, modifier.minBarLength.px / if (isVertical) refHeight else refWidth)
+        val minRelLen = if (isVertical) {
+            (modifier.minBarLength.px / innerHeightPx).clamp(0f, 1f)
+        } else if (isHorizontal) {
+            (modifier.minBarLength.px / innerWidthPx).clamp(0f, 1f)
+        } else {
+            0f
+        }
+        val len = modifier.relativeBarLen.clamp(minRelLen, 1f)
+        val pos = modifier.relativeBarPos.clamp(0f, 1f)
+        if (modifier.hideIfFullyExtended && len > 0.999f) {
+            return
+        }
 
         val radius: Float
         val origin = MutableVec2f()
         val size = MutableVec2f()
         if (isVertical) {
-            radius = refWidth * 0.5f
-            origin.set(paddingStartPx, pos * (1f - clampLen) * refHeight + paddingTopPx)
-            size.set(refWidth, clampLen * refHeight)
+            radius = innerWidthPx * 0.5f
+            origin.set(paddingStartPx, pos * (1f - len) * innerHeightPx + paddingTopPx)
+            size.set(innerWidthPx, len * innerHeightPx)
         } else {
-            radius = refHeight * 0.5f
-            origin.set(pos * (1f - clampLen) * refWidth + paddingStartPx, paddingTopPx)
-            size.set(clampLen * refWidth, refHeight)
+            radius = innerHeightPx * 0.5f
+            origin.set(pos * (1f - len) * innerWidthPx + paddingStartPx, paddingTopPx)
+            size.set(len * innerWidthPx, innerHeightPx)
         }
 
         barMinX = origin.x
@@ -182,13 +183,19 @@ open class ScrollbarNode(parent: UiNode?, surface: UiSurface)
         return (isTrackVisible && isInBoundsLocal(ev.position)) || isOnBar(ev)
     }
 
+    private fun onChange(newPos: Float) {
+        modifier.onChange?.invoke(newPos.clamp(0f, 1f))
+    }
+
     override fun onClick(ev: PointerEvent) {
         if (isTrackVisible && !isOnBar(ev)) {
+            val div = 1f - modifier.relativeBarLen
+            val step = if (div > 0f) (modifier.relativeBarLen / div) * 0.95f else 1f
             when {
-                isVertical && ev.position.y < barMinY -> { state.scrollDpY(-state.viewHeightDp.value) }
-                isVertical && ev.position.y > barMaxY -> { state.scrollDpY(state.viewHeightDp.value) }
-                isHorizontal && ev.position.x < barMinX -> { state.scrollDpX(-state.viewWidthDp.value) }
-                isHorizontal && ev.position.x > barMaxX -> { state.scrollDpX(state.viewWidthDp.value) }
+                isVertical && ev.position.y < barMinY -> { onChange(modifier.relativeBarPos - step) }
+                isVertical && ev.position.y > barMaxY -> { onChange(modifier.relativeBarPos + step) }
+                isHorizontal && ev.position.x < barMinX -> { onChange(modifier.relativeBarPos - step) }
+                isHorizontal && ev.position.x > barMaxX -> { onChange(modifier.relativeBarPos + step) }
             }
         } else {
             ev.reject()
@@ -261,9 +268,9 @@ open class ScrollbarNode(parent: UiNode?, surface: UiSurface)
             val spaceAfter = trackLenPx - (barPos + barLenPx)
             val relativeScroll = if (barPos + spaceAfter > 0f) barPos / (barPos + spaceAfter) else 0f
             if (isVertical) {
-                state.scrollRelativeY(relativeScroll)
+                onChange(relativeScroll)
             } else {
-                state.scrollRelativeX(relativeScroll)
+                onChange(relativeScroll)
             }
         }
     }

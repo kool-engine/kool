@@ -19,7 +19,6 @@ fun UiScope.ScrollArea(
             .width(width)
             .height(height)
             .backgroundColor(colors.backgroundVariant)
-            //.border(RectBorder(colors.secondaryVariant.withAlpha(0.3f), sizes.borderWidth))
             .onWheelX { state.scrollDpX(it.pointer.deltaScrollX.toFloat() * -20f) }
             .onWheelY { state.scrollDpY(it.pointer.deltaScrollY.toFloat() * -50f) }
 
@@ -29,13 +28,21 @@ fun UiScope.ScrollArea(
             block()
         }
         if (withVerticalScrollbar) {
-            VerticalScrollbar(state) {
+            VerticalScrollbar {
+                modifier
+                    .relativeBarPos(state.relativeBarPosY)
+                    .relativeBarLen(state.relativeBarLenY)
+                    .onChange { state.scrollRelativeY(it) }
                 scrollbarColor?.let { modifier.colors(it) }
                 vScrollbarModifier?.invoke(modifier)
             }
         }
         if (withHorizontalScrollbar) {
-            HorizontalScrollbar(state) {
+            HorizontalScrollbar {
+                modifier
+                    .relativeBarPos(state.relativeBarPosX)
+                    .relativeBarLen(state.relativeBarLenX)
+                    .onChange { state.scrollRelativeX(it) }
                 scrollbarColor?.let { modifier.colors(it) }
                 hScrollbarModifier?.invoke(modifier)
             }

@@ -103,6 +103,14 @@ open class ScrollState {
             yScrollDp.value + step
         }
     }
+
+    fun computeSmoothScrollAmountDpX(deltaT: Float): Float {
+        return computeSmoothScrollPosDpX(deltaT) - xScrollDp.value
+    }
+
+    fun computeSmoothScrollAmountDpY(deltaT: Float): Float {
+        return computeSmoothScrollPosDpY(deltaT) - yScrollDp.value
+    }
 }
 
 interface ScrollPaneScope : UiScope {
