@@ -72,7 +72,7 @@ interface WindowScope : UiScope {
 open class WindowModifier(surface: UiSurface) : UiModifier(surface) {
     var titleBarColor: Color by property { it.colors.secondaryVariant }
     var borderColor: Color? by property { it.colors.secondaryVariant.withAlpha(0.3f) }
-    var backgroundColor: Color by property { it.colors.background }
+    var backgroundColor: Color? by property { it.colors.background }
     var isVerticallyResizable: Boolean by property(true)
     var isHorizontallyResizable: Boolean by property(true)
     var isMinimizedToTitle: Boolean by property(false)
@@ -85,7 +85,7 @@ open class WindowModifier(surface: UiSurface) : UiModifier(surface) {
 
 fun <T: WindowModifier> T.titleBarColor(color: Color): T { titleBarColor = color; return this }
 fun <T: WindowModifier> T.borderColor(color: Color?): T { borderColor = color; return this }
-fun <T: WindowModifier> T.backgroundColor(color: Color): T { backgroundColor = color; return this }
+fun <T: WindowModifier> T.backgroundColor(color: Color?): T { backgroundColor = color; return this }
 fun <T: WindowModifier> T.isResizable(horizontally: Boolean = isHorizontallyResizable, vertically: Boolean = isVerticallyResizable): T {
     isHorizontallyResizable = horizontally
     isVerticallyResizable = vertically
@@ -136,10 +136,12 @@ fun Window(
             // compose user supplied window content
             window.content()
 
-            if (window.isDocked) {
-                window.modifier.background(RectBackground(window.modifier.backgroundColor))
-            } else {
-                window.modifier.background(RoundRectBackground(window.modifier.backgroundColor, this.sizes.gap))
+            window.modifier.backgroundColor?.let { bgColor ->
+                if (window.isDocked) {
+                    window.modifier.background(RectBackground(bgColor))
+                } else {
+                    window.modifier.background(RoundRectBackground(bgColor, this.sizes.gap))
+                }
             }
             window.modifier.borderColor?.let {
                 if (window.isDocked) {
