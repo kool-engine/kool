@@ -34,7 +34,7 @@ fun UiScope.Tooltip(text: String, yOffset: Dp = (-30).dp, target: UiScope? = thi
                     node.getUiPrimitives(UiSurface.LAYER_BACKGROUND)
                         .localRoundRect(0f, 0f, widthPx, heightPx, heightPx * 0.5f, colors.backgroundVariant)
                     node.getUiPrimitives(UiSurface.LAYER_BACKGROUND)
-                        .localRoundRectBorder(0f, 0f, widthPx, heightPx, heightPx * 0.5f, sizes.borderWidth.px, colors.primaryVariant.withAlpha(0.5f))
+                        .localRoundRectBorder(0f, 0f, widthPx, heightPx, heightPx * 0.5f, sizes.borderWidth.px, colors.primaryVariantAlpha(0.5f))
                 }
             })
         Text(text) {

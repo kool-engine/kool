@@ -31,8 +31,8 @@ class NavDemoButton(val menu: DemoMenu) : Composable {
             val animationP = animator.progressAndUse()
             val buttonColor = if (isHovered.use()) colors.primary else Color.WHITE
             val bgColor = when {
-                isHovered.value -> colors.primaryVariant.withAlpha(DemoMenu.navBarButtonHoveredAlpha)
-                menu.content.value == DemoMenu.MenuContent.Demos -> colors.primaryVariant.withAlpha(DemoMenu.navBarButtonSelectedAlpha)
+                isHovered.value -> colors.primaryVariantAlpha(DemoMenu.navBarButtonHoveredAlpha)
+                menu.content.value == DemoMenu.MenuContent.Demos -> colors.primaryVariantAlpha(DemoMenu.navBarButtonSelectedAlpha)
                 else -> null
             }
             bgColor?.let {

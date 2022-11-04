@@ -263,11 +263,11 @@ class ThemeEditorWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
 
         fun UiScope.itemRow(index: Int, isHovered: Boolean) = Row(Grow.Std) {
             if (isHovered) {
-                modifier.backgroundColor(colors.secondary.withAlpha(0.5f))
+                modifier.backgroundColor(colors.secondaryAlpha(0.5f))
             } else if (index == selectedColor.use()) {
-                modifier.backgroundColor(colors.secondary.withAlpha(0.3f))
+                modifier.backgroundColor(colors.secondaryAlpha(0.3f))
             } else if (index % 2 == 0) {
-                val bg = if (colors.isLight) Color.BLACK else colors.secondary
+                val bg = if (colors.isLight) Color.BLACK.withAlpha(0.05f) else colors.secondaryAlpha(0.05f)
                 modifier.backgroundColor(bg.withAlpha(0.05f))
             }
 

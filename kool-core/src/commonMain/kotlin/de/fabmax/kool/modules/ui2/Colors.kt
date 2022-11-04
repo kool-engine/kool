@@ -1,6 +1,8 @@
 package de.fabmax.kool.modules.ui2
 
+import de.fabmax.kool.math.clamp
 import de.fabmax.kool.util.Color
+import kotlin.math.roundToInt
 
 /**
  * UI colors. Somewhat based on the Material Design color system:
@@ -30,6 +32,27 @@ data class Colors(
     val onBackground: Color,
     val isLight: Boolean
 ) {
+
+    private val primaryAlpha = AlphaColorCache(primary)
+    private val primaryVariantAlpha = AlphaColorCache(primaryVariant)
+    private val secondaryAlpha = AlphaColorCache(secondary)
+    private val secondaryVariantAlpha = AlphaColorCache(secondaryVariant)
+    private val backgroundAlpha = AlphaColorCache(background)
+    private val backgroundVariantAlpha = AlphaColorCache(backgroundVariant)
+    private val onPrimaryAlpha = AlphaColorCache(onPrimary)
+    private val onSecondaryAlpha = AlphaColorCache(onSecondary)
+    private val onBackgroundAlpha = AlphaColorCache(onBackground)
+
+    fun primaryAlpha(alpha: Float) = primaryAlpha.getAlphaColor(alpha)
+    fun primaryVariantAlpha(alpha: Float) = primaryVariantAlpha.getAlphaColor(alpha)
+    fun secondaryAlpha(alpha: Float) = secondaryAlpha.getAlphaColor(alpha)
+    fun secondaryVariantAlpha(alpha: Float) = secondaryVariantAlpha.getAlphaColor(alpha)
+    fun backgroundAlpha(alpha: Float) = backgroundAlpha.getAlphaColor(alpha)
+    fun backgroundVariantAlpha(alpha: Float) = backgroundVariantAlpha.getAlphaColor(alpha)
+    fun onPrimaryAlpha(alpha: Float) = onPrimaryAlpha.getAlphaColor(alpha)
+    fun onSecondaryAlpha(alpha: Float) = onSecondaryAlpha.getAlphaColor(alpha)
+    fun onBackgroundAlpha(alpha: Float) = onBackgroundAlpha.getAlphaColor(alpha)
+
     companion object {
         fun singleColorLight(
             accent: Color,
@@ -100,5 +123,14 @@ data class Colors(
             backgroundVariant = Color("202020d0"),
             onPrimary = Color.BLACK
         )
+    }
+
+    private class AlphaColorCache(baseColor: Color) {
+        val alphaColors = Array<Color>(20) { baseColor.withAlpha(it / 20f) }
+
+        fun getAlphaColor(alpha: Float): Color {
+            val alphaI = (alpha * 20f).roundToInt().clamp(0, alphaColors.lastIndex)
+            return alphaColors[alphaI]
+        }
     }
 }

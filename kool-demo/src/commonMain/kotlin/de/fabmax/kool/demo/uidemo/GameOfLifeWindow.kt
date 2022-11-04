@@ -69,7 +69,7 @@ class GameOfLifeWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
             modifier.backgroundColor(colors.backgroundVariant)
             Row(Grow.Std) {
                 modifier
-                    .backgroundColor(colors.secondaryVariant.withAlpha(if (isHovered.use()) 0.75f else 0.5f))
+                    .backgroundColor(colors.secondaryVariantAlpha(if (isHovered.use()) 0.75f else 0.5f))
                     .onClick { isCollapsed.toggle() }
                     .padding(horizontal = sizes.gap, vertical = sizes.smallGap)
                     .onEnter { isHovered.set(true) }
@@ -86,7 +86,7 @@ class GameOfLifeWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
             if (!isCollapsed.value) {
                 content()
             } else {
-                divider(colors.secondaryVariant.withAlpha(0.75f), horizontalMargin = 0.dp, thickness = 1.dp)
+                divider(colors.secondaryVariantAlpha(0.75f), horizontalMargin = 0.dp, thickness = 1.dp)
             }
         }
 
@@ -134,7 +134,7 @@ class GameOfLifeWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
                     modifier
                         .alignY(AlignmentY.Center)
                         .margin(horizontal = sizes.gap)
-                        .width(sizes.largeGap * 5f)
+                        .width(sizes.largeGap * 8f)
                         .onChange { world.worldSizeX.set(it.toInt()) }
                 }
                 Text("${world.worldSizeX.value}") { modifier.alignY(AlignmentY.Center).margin(end = sizes.largeGap * 2f) }
@@ -143,7 +143,7 @@ class GameOfLifeWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
                     modifier
                         .alignY(AlignmentY.Center)
                         .margin(horizontal = sizes.gap)
-                        .width(sizes.largeGap * 5f)
+                        .width(sizes.largeGap * 8f)
                         .onChange { world.worldSizeY.set(it.toInt()) }
                 }
                 Text("${world.worldSizeY.value}") { modifier.alignY(AlignmentY.Center).margin(end = sizes.largeGap) }
@@ -241,10 +241,12 @@ class GameOfLifeWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
         private var classicButtonBorderColor = Color.WHITE
         private var classicButtonBgColor = Color.BLACK
 
+        val cellCallbacks = mutableListOf<CellCallbacks>()
+
         private val radioButtonRenderer: UiScope.(Int, Int) -> Unit = { x, y ->
             val cell = world[x, y]
-            val cellColor = cell.getColor(colors, colorGradient)
-            RadioButton(cell.isAlive) {
+            val cellColor = world.cellColor(x, y, colors, colorGradient)
+            RadioButton(cell) {
                 modifier.colors(
                     borderColorOff = cellColor ?: classicButtonBorderColor,
                     backgroundColorOff = cellColor?.withAlpha(0.5f) ?: classicButtonBgColor,
@@ -256,8 +258,8 @@ class GameOfLifeWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
 
         private val checkboxRenderer: UiScope.(Int, Int) -> Unit = { x, y ->
             val cell = world[x, y]
-            val cellColor = cell.getColor(colors, colorGradient)
-            Checkbox(cell.isAlive) {
+            val cellColor = world.cellColor(x, y, colors, colorGradient)
+            Checkbox(cell) {
                 modifier.colors(
                     borderColor = cellColor ?: classicButtonBorderColor,
                     backgroundColor = cellColor?.withAlpha(0.5f) ?: classicButtonBgColor,
@@ -268,45 +270,35 @@ class GameOfLifeWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
         }
 
         private val boxRenderer: UiScope.(Int, Int) -> Unit = { x, y ->
+            val cellColor = world.cellColor(x, y, colors, colorGradient)
             Box {
                 modifier.size(sizes.checkboxSize, sizes.checkboxSize)
                 setupCellRenderer(x, y)
-                world[x, y].getColor(colors, colorGradient)?.let { modifier.backgroundColor(it) }
+                cellColor?.let { modifier.backgroundColor(it) }
             }
         }
 
         private fun UiScope.setupCellRenderer(x: Int, y: Int) {
+            val cbs = cellCallbacks[y * world.worldSizeX.value + x]
             modifier
-                .onDragStart {
-                    isEditDrag = true
-                    editChangeToState = !world[x, y].isAlive
-                    if (isPauseOnEdit.value) {
-                        isPaused.set(true)
-                    }
-                }
-                .onDragEnd {
-                    isEditDrag = false
-                }
-                .onPointer {
-                    if (isEditDrag) {
-                        world[x, y] = editChangeToState
-                        surface.triggerUpdate()
-                    }
-                }
-                .onClick {
-                    // pause game to enable manual editing
-                    if (isPauseOnEdit.value) {
-                        isPaused.set(true)
-                    }
-                    world[x, y] = !world[x, y].isAlive
-                    // trigger update (without stepping the game state) to update button state
-                    surface.triggerUpdate()
-                }
+                .onDragStart(cbs.onDragStart)
+                .onDragEnd(cbs.onDragEnd)
+                .onPointer(cbs.onPointer)
+                .onClick(cbs.onClick)
         }
 
         override fun UiScope.compose() = Column {
             val szX = world.worldSizeX.use()
             val szY = world.worldSizeY.use()
+
+            if (szX * szY != cellCallbacks.size) {
+                cellCallbacks.clear()
+                for (y in 0 until szY) {
+                    for (x in 0 until szX) {
+                        cellCallbacks += CellCallbacks(x, y)
+                    }
+                }
+            }
 
             val renderer = when(selectedRenderer.use()) {
                 0 -> radioButtonRenderer
@@ -314,8 +306,8 @@ class GameOfLifeWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
                 else -> boxRenderer
             }
 
-            classicButtonBorderColor = colors.secondary.withAlpha(0.5f)
-            classicButtonBgColor = colors.secondary.withAlpha(0.15f)
+            classicButtonBorderColor = colors.secondaryAlpha(0.5f)
+            classicButtonBgColor = colors.secondaryAlpha(0.15f)
             colorGradient = when(selectedColor.use()) {
                 1 -> ColorGradient.RED_WHITE_BLUE.inverted()
                 2 -> ColorGradient.VIRIDIS
@@ -331,6 +323,37 @@ class GameOfLifeWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
                 }
             }
         }
+
+        private inner class CellCallbacks(val x: Int, val y: Int) {
+            val onDragStart: (PointerEvent) -> Unit = {
+                isEditDrag = true
+                editChangeToState = !world[x, y]
+                if (isPauseOnEdit.value) {
+                    isPaused.set(true)
+                }
+            }
+
+            val onDragEnd: (PointerEvent) -> Unit = {
+                isEditDrag = false
+            }
+
+            val onPointer: (PointerEvent) -> Unit = {
+                if (isEditDrag) {
+                    world[x, y] = editChangeToState
+                    windowSurface.triggerUpdate()
+                }
+            }
+
+            val onClick: (PointerEvent) -> Unit = {
+                // pause game to enable manual editing
+                if (isPauseOnEdit.value) {
+                    isPaused.set(true)
+                }
+                world[x, y] = !world[x, y]
+                // trigger update (without stepping the game state) to update button state
+                windowSurface.triggerUpdate()
+            }
+        }
     }
 
     private class GameWorld {
@@ -338,22 +361,26 @@ class GameOfLifeWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
         val worldSizeX: MutableStateValue<Int> = mutableStateOf(45).onChange { resize(it, worldSizeY.value) }
         val worldSizeY: MutableStateValue<Int> = mutableStateOf(30).onChange { resize(worldSizeX.value, it) }
 
-        val gameState = mutableStateOf(Array(worldSizeX.value * worldSizeY.value) { GameCell() })
+        val gameState = mutableStateOf(BooleanArray(worldSizeX.value * worldSizeY.value))
 
         private val size = MutableVec2i(worldSizeX.value, worldSizeY.value)
-        private var nextGameState = Array(worldSizeX.value * worldSizeY.value) { GameCell() }
+        private var nextGameState = BooleanArray(worldSizeX.value * worldSizeY.value)
+        private var aliveness = FloatArray(worldSizeX.value * worldSizeY.value)
 
         private fun resize(newX: Int, newY: Int) {
-            val newState = Array(newX * newY) { GameCell() }
-            nextGameState = Array(newX * newY) { GameCell() }
+            val newState = BooleanArray(newX * newY)
+            nextGameState = BooleanArray(newX * newY)
+            val newAliveness = FloatArray(newX * newY)
             for (y in 0 until min(size.y, newY)) {
                 for (x in 0 until min(size.x, newX)) {
                     newState[y * newX + x] = gameState.value[y * size.x + x]
+                    newAliveness[y * newX + x] = aliveness[y * size.x + x]
                 }
             }
             size.x = newX
             size.y = newY
             gameState.set(newState)
+            aliveness = newAliveness
         }
 
         fun step() {
@@ -362,9 +389,11 @@ class GameOfLifeWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
                 for (x in 0 until size.x) {
                     val popCnt = countPopNeighbors(x, y)
                     val cell = this[x, y]
-                    val nextCell = nextGameState[y * size.x + x]
-                    nextCell.aliveness = cell.aliveness
-                    nextCell.isAlive = if (popCnt == 2 && cell.isAlive) true else popCnt == 3
+                    if (nextGameState[y * size.x + x] != cell) {
+                        aliveness[y * size.x + x] += 1f
+                    }
+                    nextGameState[y * size.x + x] = if (popCnt == 2 && cell) true else popCnt == 3
+                    aliveness[y * size.x + x] *= 0.99f
                 }
             }
             gameState.set(nextGameState)
@@ -375,7 +404,7 @@ class GameOfLifeWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
             var popCnt = 0
             for (iy in -1..1) {
                 for (ix in -1..1) {
-                    if ((ix != 0 || iy != 0) && this[x + ix, y + iy].isAlive) {
+                    if ((ix != 0 || iy != 0) && this[x + ix, y + iy]) {
                         popCnt++
                     }
                 }
@@ -383,13 +412,21 @@ class GameOfLifeWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
             return popCnt
         }
 
-        operator fun get(x: Int, y: Int): GameCell {
+        fun cellColor(x: Int, y: Int, colors: Colors, gradient: ColorGradient?): Color? {
+            return if (this[x, y]) {
+                colors.primary
+            } else {
+                gradient?.getColor(aliveness[y * size.x + x], 0f, 10f)
+            }
+        }
+
+        operator fun get(x: Int, y: Int): Boolean {
             var xx = x
             var yy = y
 
             if (xx !in 0 until size.x) {
                 if (!connectWorldEdges.value) {
-                    return GameCell.BORDER
+                    return false
                 }
                 xx %= size.x
                 if (xx < 0) {
@@ -398,7 +435,7 @@ class GameOfLifeWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
             }
             if (yy !in 0 until size.y) {
                 if (!connectWorldEdges.value) {
-                    return GameCell.BORDER
+                    return false
                 }
                 yy %= size.y
                 if (yy < 0) {
@@ -412,17 +449,20 @@ class GameOfLifeWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
             if (x !in 0 until size.x || y !in 0 until size.y) {
                 return
             }
-            gameState.value[y * size.x + x].isAlive = value
+            gameState.value[y * size.x + x] = value
         }
 
         fun clear() {
-            gameState.value.forEach { it.clear() }
-            nextGameState.forEach { it.clear() }
+            for (i in gameState.value.indices) {
+                gameState.value[i] = false
+                nextGameState[i] = false
+                aliveness[i] = 0f
+            }
         }
 
         fun randomize(p: Float) {
             clear()
-            for (i in gameState.value.indices) gameState.value[i].isAlive = randomF() < p
+            for (i in gameState.value.indices) gameState.value[i] = randomF() < p
         }
 
         fun loadAsciiState(state: String) {

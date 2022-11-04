@@ -71,7 +71,7 @@ interface WindowScope : UiScope {
 
 open class WindowModifier(surface: UiSurface) : UiModifier(surface) {
     var titleBarColor: Color by property { it.colors.secondaryVariant }
-    var borderColor: Color? by property { it.colors.secondaryVariant.withAlpha(0.3f) }
+    var borderColor: Color? by property { it.colors.secondaryVariantAlpha(0.3f) }
     var backgroundColor: Color? by property { it.colors.background }
     var isVerticallyResizable: Boolean by property(true)
     var isHorizontallyResizable: Boolean by property(true)
@@ -127,7 +127,7 @@ fun Window(
             if (state.isFocused.use()) {
                 window.modifier
                     .titleBarColor(this.colors.secondary)
-                    .borderColor(this.colors.secondary.withAlpha(0.3f))
+                    .borderColor(this.colors.secondaryAlpha(0.3f))
             }
 
             // auto-register docking host if window was created in one

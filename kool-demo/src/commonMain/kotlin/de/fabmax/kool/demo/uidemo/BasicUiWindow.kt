@@ -100,21 +100,21 @@ class BasicUiWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
             }
         }
 
-        divider(colors.secondaryVariant.withAlpha(0.5f), marginTop = sizes.largeGap, marginBottom = sizes.gap)
+        divider(colors.secondaryVariantAlpha(0.5f), marginTop = sizes.largeGap, marginBottom = sizes.gap)
         Text("A scroll area:") {
             modifier.margin(bottom = sizes.gap)
         }
         ScrollArea(
             vScrollbarModifier = {
                 it.colors(
-                    trackColor = colors.secondaryVariant.withAlpha(0.1f),
-                    trackHoverColor = colors.secondaryVariant.withAlpha(0.2f)
+                    trackColor = colors.secondaryVariantAlpha(0.1f),
+                    trackHoverColor = colors.secondaryVariantAlpha(0.2f)
                 )
             },
             hScrollbarModifier = {
                 it.colors(
-                    trackColor = colors.secondaryVariant.withAlpha(0.1f),
-                    trackHoverColor = colors.secondaryVariant.withAlpha(0.2f)
+                    trackColor = colors.secondaryVariantAlpha(0.1f),
+                    trackHoverColor = colors.secondaryVariantAlpha(0.2f)
                 )
             }
         ) {
@@ -189,7 +189,7 @@ class BasicUiWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
             }
         }
 
-        divider(colors.secondaryVariant.withAlpha(0.5f), marginTop = sizes.largeGap, marginBottom = sizes.gap)
+        divider(colors.secondaryVariantAlpha(0.5f), marginTop = sizes.largeGap, marginBottom = sizes.gap)
         Text("A longer list, click items to delete them:") {
             modifier.margin(bottom = sizes.gap)
         }
@@ -198,18 +198,17 @@ class BasicUiWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
         LazyList(
             vScrollbarModifier = {
                 it.colors(
-                    trackColor = colors.secondaryVariant.withAlpha(0.1f),
-                    trackHoverColor = colors.secondaryVariant.withAlpha(0.2f)
+                    trackColor = colors.secondaryVariantAlpha(0.1f),
+                    trackHoverColor = colors.secondaryVariantAlpha(0.2f)
                 )
             }
         ) {
             itemsIndexed(listItems) { i, item ->
                 val isHovered = i == hoveredItemIndex.use()
                 val bgColor = if (isHovered) {
-                    colors.secondary.withAlpha(0.5f)
+                    colors.secondaryAlpha(0.5f)
                 } else if (i % 2 == 0) {
-                    val bg = if (colors.isLight) Color.BLACK else colors.secondary
-                    bg.withAlpha(0.05f)
+                    if (colors.isLight) Color.BLACK.withAlpha(0.05f) else colors.secondaryAlpha(0.05f)
                 } else {
                     null
                 }

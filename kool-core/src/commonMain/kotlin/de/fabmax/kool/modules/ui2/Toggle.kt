@@ -28,7 +28,7 @@ open class CheckboxModifier(surface: UiSurface) : ToggleModifier(surface) {
     var checkboxSize: Dp by property { it.sizes.checkboxSize }
 
     var borderColor: Color by property { it.colors.secondaryVariant }
-    var backgroundColor: Color by property { it.colors.secondary.withAlpha(0.5f) }
+    var backgroundColor: Color by property { it.colors.secondaryAlpha(0.5f) }
     var fillColor: Color by property { it.colors.primary }
     var checkMarkColor: Color by property { it.colors.onPrimary }
 }
@@ -38,8 +38,8 @@ open class RadioButtonModifier(surface: UiSurface) : ToggleModifier(surface) {
 
     var borderColorOn: Color by property { it.colors.primaryVariant }
     var borderColorOff: Color by property { it.colors.secondaryVariant }
-    var backgroundColorOn: Color by property { it.colors.primary.withAlpha(0.5f) }
-    var backgroundColorOff: Color by property { it.colors.secondary.withAlpha(0.3f) }
+    var backgroundColorOn: Color by property { it.colors.primaryAlpha(0.5f) }
+    var backgroundColorOff: Color by property { it.colors.secondaryAlpha(0.3f) }
     var knobColor: Color by property { it.colors.primary }
 }
 

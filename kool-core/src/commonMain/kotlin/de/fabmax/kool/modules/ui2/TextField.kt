@@ -28,8 +28,8 @@ open class TextFieldModifier(surface: UiSurface) : UiModifier(surface) {
     var textAlignX: AlignmentX by property(AlignmentX.Start)
 
     var textColor: Color by property { it.colors.onBackground }
-    var hintColor: Color by property { it.colors.onBackground.withAlpha(0.5f) }
-    var selectionColor: Color by property { it.colors.primary.withAlpha(0.5f) }
+    var hintColor: Color by property { it.colors.onBackgroundAlpha(0.5f) }
+    var selectionColor: Color by property { it.colors.primaryAlpha(0.5f) }
     var cursorColor: Color by property { it.colors.onBackground }
     var lineColor: Color by property { it.colors.primaryVariant }
     var lineFocusedColor: Color by property { it.colors.primary }

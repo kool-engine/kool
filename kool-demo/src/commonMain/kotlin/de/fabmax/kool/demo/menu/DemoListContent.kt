@@ -42,7 +42,7 @@ class DemoListContent(val menu: DemoMenu) : Composable {
 
         LazyList(
             containerModifier = { it.background(null) },
-            vScrollbarModifier = { it.colors(color = Color.WHITE.withAlpha(0.2f), hoverColor = Color.WHITE.withAlpha(0.4f)) }
+            vScrollbarModifier = { it.colors(color = colors.onBackgroundAlpha(0.2f), hoverColor = colors.onBackgroundAlpha(0.4f)) }
         ) {
             val hoveredIndex = weakRememberState(-1)
             val demoItems = if (Settings.showHiddenDemos.use()) allDemoItems else nonHiddenDemoItems

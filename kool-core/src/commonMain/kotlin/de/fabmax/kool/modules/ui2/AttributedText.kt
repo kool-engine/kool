@@ -81,7 +81,7 @@ open class AttributedTextModifier(surface: UiSurface) : UiModifier(surface) {
     var selectionStart: Int by property(0)
     var caretColor: Color by property { it.colors.onBackground }
     var isCaretVisible: Boolean by property(false)
-    var selectionColor: Color by property { it.colors.primary.withAlpha(0.5f) }
+    var selectionColor: Color by property { it.colors.primaryAlpha(0.5f) }
     var onSelectText: ((Int, Int) -> Unit)? by property(null)
 }
 

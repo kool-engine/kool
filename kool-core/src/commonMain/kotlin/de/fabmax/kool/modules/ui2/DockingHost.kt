@@ -204,11 +204,11 @@ class DockingHost : Group() {
                 modifier
                     .align(position.alignX, position.alignY)
                     .backgroundColor(
-                        if (isHv) colors.primary.withAlpha(0.3f) else colors.primaryVariant.withAlpha(0.2f)
+                        if (isHv) colors.primaryAlpha(0.3f) else colors.primaryVariantAlpha(0.2f)
                     )
                     .border(
                         RectBorder(
-                            if (isHv) colors.primary.withAlpha(0.5f) else colors.primaryVariant.withAlpha(0.4f),
+                            if (isHv) colors.primaryAlpha(0.5f) else colors.primaryVariantAlpha(0.4f),
                             sizes.smallGap * 0.5f
                         )
                     )

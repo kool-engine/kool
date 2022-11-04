@@ -21,8 +21,8 @@ open class ComboBoxModifier(surface: UiSurface) : UiModifier(surface) {
     var selectedIndex: Int by property(0)
 
     var textColor: Color by property { it.colors.onBackground }
-    var textBackgroundColor: Color by property { it.colors.secondaryVariant.withAlpha(0.5f) }
-    var textBackgroundHoverColor: Color by property { it.colors.secondary.withAlpha(0.5f) }
+    var textBackgroundColor: Color by property { it.colors.secondaryVariantAlpha(0.5f) }
+    var textBackgroundHoverColor: Color by property { it.colors.secondaryAlpha(0.5f) }
     var expanderColor: Color by property { it.colors.secondaryVariant }
     var expanderHoverColor: Color by property { it.colors.secondary }
     var expanderArrowColor: Color by property { it.colors.onSecondary }
@@ -53,7 +53,7 @@ inline fun UiScope.ComboBox(block: ComboBoxScope.() -> Unit): ComboBoxScope {
 
     if (comboBox.isExpanded.use()) {
         Popup(comboBox.leftPx, comboBox.bottomPx) {
-            modifier.border(RectBorder(colors.primaryVariant.withAlpha(0.5f), 1.dp))
+            modifier.border(RectBorder(colors.primaryVariantAlpha(0.5f), 1.dp))
 
             comboBox.modifier.items.forEachIndexed { i, item ->
                 val hovered = comboBox.hoveredItem.use()

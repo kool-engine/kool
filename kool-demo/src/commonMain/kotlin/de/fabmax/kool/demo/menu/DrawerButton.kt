@@ -33,7 +33,7 @@ class DrawerButton(val menu: DemoMenu) : Composable {
             val animationP = if (menu.isExpanded) p else 1f - p
 
             if (menu.isExpanded && isHovered.value) {
-                val bgColor = colors.primaryVariant.withAlpha(DemoMenu.navBarButtonHoveredAlpha)
+                val bgColor = colors.primaryVariantAlpha(DemoMenu.navBarButtonHoveredAlpha)
                 getUiPrimitives().localRect(0f, 0f, widthPx, heightPx, bgColor)
             }
 
