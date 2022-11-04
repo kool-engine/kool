@@ -1,22 +1,20 @@
 package de.fabmax.kool.modules.ui2
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.math.MutableVec2f
+import de.fabmax.kool.math.clamp
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.Time
-import kotlin.math.abs
-import kotlin.math.max
-import kotlin.math.min
+import kotlin.math.round
 import kotlin.math.roundToInt
 
 class LazyListState : ScrollState() {
-    var firstElementSizeDp = 0f
-    var averageElementSizeDp = 0f
-    var spaceBeforeVisibleItems = 0f
-    var spaceAfterVisibleItems = 0f
-
     var numTotalItems = 0
-    var itemsFrom = 0f
-    var itemsTo = 0
+    var numVisibleItems = 0
+    val itemsFrom = mutableStateOf(0)
+    val itemsTo: Int get() = itemsFrom.value + numVisibleItems
+
+    var avgItemSizeDp = 0f
+    var prevRemainingSpace = 0f
 }
 
 interface LazyListScope : UiScope {
@@ -25,17 +23,25 @@ interface LazyListScope : UiScope {
     val isHorizontal: Boolean get() = modifier.orientation == ListOrientation.Horizontal
     val isVertical: Boolean get() = modifier.orientation == ListOrientation.Vertical
 
-    fun <T> items(items: List<T>, block: LazyListScope.(T) -> Unit)
-    fun <T> itemsIndexed(items: List<T>, block: LazyListScope.(Int, T) -> Unit)
+    fun <T> items(items: List<T>, block: UiScope.(T) -> Unit) {
+        (items as? MutableStateList)?.use()
+        indices(items.size) { block(items[it]) }
+    }
+
+    fun <T> itemsIndexed(items: List<T>, block: UiScope.(Int, T) -> Unit) {
+        (items as? MutableStateList)?.use()
+        indices(items.size) { block(it, items[it]) }
+    }
+
+    fun indices(numItems: Int, block: UiScope.(Int) -> Unit)
 }
 
 open class LazyListModifier(surface: UiSurface) : UiModifier(surface) {
     var orientation: ListOrientation by property(ListOrientation.Vertical)
-    var extraItemsAfter: Int by property(3)
-    var isScrollLock: Boolean by property(false)
+    var isAutoScrollToEnd: Boolean by property(false)
 }
 
-fun <T: LazyListModifier> T.isScrollLock(flag: Boolean): T { isScrollLock = flag; return this }
+fun <T: LazyListModifier> T.isAutoScrollToEnd(flag: Boolean): T { isAutoScrollToEnd = flag; return this }
 
 fun <T: LazyListModifier> T.orientation(orientation: ListOrientation): T {
     this.orientation = orientation
@@ -48,9 +54,9 @@ enum class ListOrientation {
 }
 
 fun UiScope.LazyList(
-    layout: Layout = ColumnLayout,
     width: Dimension = Grow.Std,
     height: Dimension = Grow.Std,
+    listOrientation: ListOrientation = ListOrientation.Vertical,
     withVerticalScrollbar: Boolean = true,
     withHorizontalScrollbar: Boolean = false,
     scrollbarColor: Color? = null,
@@ -63,182 +69,320 @@ fun UiScope.LazyList(
     state: LazyListState = weakRememberListState(),
     block: LazyListScope.() -> Unit
 ) {
-    ScrollArea(
-        width, height,
-        withVerticalScrollbar,
-        withHorizontalScrollbar,
-        scrollbarColor,
-        containerModifier,
-        vScrollbarModifier,
-        hScrollbarModifier,
-        state
-    ) {
-        if (isGrowWidth) modifier.width(Grow.Std)
-        if (isGrowHeight) modifier.height(Grow.Std)
-        scrollPaneModifier?.let { it(modifier) }
+    Box {
+        modifier
+            .width(width)
+            .height(height)
+            .backgroundColor(colors.backgroundVariant)
+            .onWheelX { state.scrollDpX(it.pointer.deltaScrollX.toFloat() * -20f) }
+            .onWheelY { state.scrollDpY(it.pointer.deltaScrollY.toFloat() * -50f) }
 
-        val lazyList = uiNode.createChild(LazyListNode::class, LazyListNode.factory)
-        lazyList.state = state
-        lazyList.modifier.layout(layout)
-        if (isGrowWidth) lazyList.modifier.width(Grow.Std)
-        if (isGrowHeight) lazyList.modifier.height(Grow.Std)
-        lazyList.block()
+        containerModifier?.invoke(modifier)
+
+        ScrollPane(state) {
+            if (isGrowWidth) modifier.width(Grow.Std)
+            if (isGrowHeight) modifier.height(Grow.Std)
+            scrollPaneModifier?.let { it(modifier) }
+
+            val lazyList = uiNode.createChild(LazyListNode::class, LazyListNode.factory)
+            lazyList.state = state
+            lazyList.modifier
+                .orientation(listOrientation)
+                .layout(if (listOrientation == ListOrientation.Vertical) ColumnLayout else RowLayout)
+            if (isGrowWidth) lazyList.modifier.width(Grow.Std)
+            if (isGrowHeight) lazyList.modifier.height(Grow.Std)
+            lazyList.block()
+        }
+
+        if (withVerticalScrollbar) {
+            VerticalScrollbar {
+                lazyListAware(state, ScrollbarOrientation.Vertical, listOrientation, scrollbarColor, vScrollbarModifier)
+            }
+        }
+        if (withHorizontalScrollbar) {
+            HorizontalScrollbar {
+                lazyListAware(state, ScrollbarOrientation.Horizontal, listOrientation, scrollbarColor, hScrollbarModifier)
+            }
+        }
     }
+}
+
+fun ScrollbarScope.lazyListAware(
+    state: LazyListState,
+    scrollbarOrientation: ScrollbarOrientation,
+    listOrientation: ListOrientation,
+    scrollbarColor: Color?,
+    scrollbarModifier: ((ScrollbarModifier) -> Unit)?
+) {
+    if ((listOrientation == ListOrientation.Horizontal) == (scrollbarOrientation == ScrollbarOrientation.Horizontal)) {
+        modifier
+            .relativeBarPos(state.itemsFrom.value.toFloat() / (state.numTotalItems - state.numVisibleItems))
+            .relativeBarLen(state.numVisibleItems.toFloat() / state.numTotalItems)
+            .onChange { state.itemsFrom.set(((state.numTotalItems - state.numVisibleItems) * it).toInt()) }
+    } else {
+        val isV = scrollbarOrientation == ScrollbarOrientation.Vertical
+        modifier
+            .relativeBarPos(if (isV) state.relativeBarPosY else state.relativeBarPosX)
+            .relativeBarLen(if (isV) state.relativeBarLenY else state.relativeBarLenX)
+            .onChange { if (isV) state.scrollRelativeY(it) else state.scrollRelativeX(it) }
+    }
+    scrollbarColor?.let { modifier.colors(it) }
+    scrollbarModifier?.invoke(modifier)
 }
 
 open class LazyListNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface), LazyListScope {
     override val modifier = LazyListModifier(surface)
 
     lateinit var state: LazyListState
+    private val prevItems = mutableListOf<ListItemBox>()
+    private val padPrevItems = mutableListOf<ListItemBox>()
 
-    private val delta = mutableStateOf(0f)
+    private var itemBlock: (UiScope.(Int) -> Unit)? = null
 
-    override fun <T> items(items: List<T>, block: LazyListScope.(T) -> Unit) =
-        iterateItems(items, block, null)
+    private var scrollAmountDp = 0f
 
-    override fun <T> itemsIndexed(items: List<T>, block: LazyListScope.(Int, T) -> Unit) =
-        iterateItems(items, null, block)
-
-    private fun <T> iterateItems(
-        items: List<T>,
-        block: (LazyListScope.(T) -> Unit)?,
-        indexedBlock: (LazyListScope.(Int, T) -> Unit)?
-    ) {
-        // auto-depend on list state in case it is a MutableListState
-        (items as? MutableStateList)?.use()
-        state.numTotalItems = items.size
-
-        var cachePadding = 0
-
-        val elemSize = state.firstElementSizeDp
-        if (elemSize == 0f) {
-            // this apparently is the first layout run, we have absolutely no knowledge about the future content
-            // start by adding up to 100 items and hope for the best
-            state.itemsFrom = 0f
-            state.itemsTo = min(items.lastIndex, 100)
-            state.spaceBeforeVisibleItems = 0f
-            state.spaceAfterVisibleItems = 0f
-
-        } else {
-            // use the element size seen in previous layout runs to estimate the total list dimensions
-            val viewSize = if (isVertical) state.viewHeightDp.use() else state.viewWidthDp.use()
-            val numViewItems = (viewSize / state.averageElementSizeDp).toInt() + 1
-
-            if (modifier.isScrollLock) {
-                if (isVertical) {
-                    state.yScrollDpDesired.set(max(0f, state.contentHeightDp.use() - state.viewHeightDp.use()))
-                } else {
-                    state.xScrollDpDesired.set(max(0f, state.contentWidthDp.use() - state.viewWidthDp.use()))
-                }
-            }
-
-            // compute the scroll change amount
-            val oldListPos = if (isVertical) state.yScrollDp.value else state.xScrollDp.value
-            val listPos = if (isVertical) {
-                state.computeSmoothScrollPosDpY(Time.deltaT)
-            } else {
-                state.computeSmoothScrollPosDpX(Time.deltaT)
-            }
-            val deltaScroll = listPos - oldListPos
-
-            // update scroll position to correspond to visible item range based on current element size
-            val updatePos = state.itemsFrom * elemSize
-            if (isVertical) {
-                delta.set(updatePos - state.yScrollDp.value)
-                val d = delta.use()
-                if (abs(d) > 1f && (d < 0f || state.remainingSpaceBottom > 1f)) {
-                    val oldError = state.yScrollDpDesired.value - state.yScrollDp.value
-                    state.yScrollDp.set(updatePos)
-                    state.yScrollDpDesired.set(state.yScrollDp.value + oldError)
-                }
-            } else {
-                delta.set(updatePos - state.xScrollDp.value)
-                val d = delta.use()
-                if (abs(d) > 1f && (d < 0f || state.remainingSpaceEnd > 1f)) {
-                    val oldError = state.xScrollDpDesired.value - state.xScrollDp.value
-                    state.xScrollDp.set(updatePos)
-                    state.xScrollDpDesired.set(state.xScrollDp.value + oldError)
-                }
-            }
-
-            // compute new first visible item based on previous value and scroll delta
-            // make sure visible item range stays inside list bounds
-            val prevFrom = state.itemsFrom.toInt()
-            state.itemsFrom = min(
-                max(0f, items.size - numViewItems.toFloat() + 0.9999f),
-                max(0f, state.itemsFrom + deltaScroll / elemSize)
-            )
-            state.itemsTo = min(items.lastIndex, (state.itemsFrom).roundToInt() + numViewItems)
-            cachePadding = prevFrom - state.itemsFrom.toInt()
-
-            state.spaceBeforeVisibleItems = (state.itemsFrom).toInt() * elemSize
-            state.spaceAfterVisibleItems = (items.lastIndex - state.itemsTo) * elemSize
-
-            state.itemsTo = min(items.lastIndex, state.itemsTo + modifier.extraItemsAfter)
-        }
-
-        // add a placeholder in front of visible items to achieve correct scroll pane dimensions
-        if (state.spaceBeforeVisibleItems > 0f) {
-            if (isVertical) {
-                Box(1.dp, state.spaceBeforeVisibleItems.dp) { }
-            } else {
-                Box(state.spaceBeforeVisibleItems.dp, 1.dp) { }
-            }
-        }
-
-        padCachedChildren(cachePadding)
-        for (i in state.itemsFrom.toInt()..state.itemsTo) {
-            val item = items[i]
-            indexedBlock?.invoke(this, i, item)
-            block?.invoke(this, item)
-        }
-
-        // add a placeholder behind of visible items to achieve correct scroll pane dimensions
-        if (state.spaceAfterVisibleItems > 0f) {
-            if (isVertical) {
-                Box(1.dp, state.spaceAfterVisibleItems.dp) { }
-            } else {
-                Box(state.spaceAfterVisibleItems.dp, 1.dp) { }
-            }
-        }
-
+    override fun indices(numItems: Int, block: UiScope.(Int) -> Unit)  {
+        state.numTotalItems = numItems
+        itemBlock = block
     }
 
     override fun measureContentSize(ctx: KoolContext) {
-        super.measureContentSize(ctx)
+        computeScrollAmount()
 
-        // compute average child size, exclude spacer boxes before and after visible list elements
-        val from = if (state.spaceBeforeVisibleItems == 0f) 0 else 1
-        val to = if (state.spaceAfterVisibleItems == 0f) children.lastIndex else children.lastIndex - 1
+        val insertBeforeItems = mutableListOf<ListItemBox>()
+        var availableSpace = updateFromAndAvailableSpace(insertBeforeItems, ctx)
 
-        var size = 0f
-        var count = 0
-        var prevMargin = 0f
-        for (i in from..to) {
-            val child = children[i]
-            if (i == from) {
-                state.firstElementSizeDp = Dp.fromPx(if (isVertical) child.contentHeightPx else child.contentWidthPx).value
-            }
-            if (isVertical) {
-                size += child.contentHeightPx + max(prevMargin, child.marginTopPx)
-                prevMargin = child.marginBottomPx
+        // add some space after list content to allow scrolling
+        scrollSpacerBox()
+        stopOverscrollStart()
+
+        padPrevItems.clear()
+        padPrevItems += prevItems
+        prevItems.clear()
+        var itemI = insertNewItemsBefore(insertBeforeItems)
+
+        // pad oldChildren
+        oldChildren.clear()
+        for (i in padPrevItems.lastIndex downTo 0) {
+            val prev = padPrevItems[i]
+            if (prev.itemIndex >= itemI) {
+                oldChildren += prev
             } else {
-                size += child.contentWidthPx + max(prevMargin, child.marginStartPx)
-                prevMargin = child.marginEndPx
+                break
             }
-            count++
         }
-        size = Dp.fromPx(size).value
-        state.averageElementSizeDp = size / count
 
-        val viewSize = if (isVertical) state.viewHeightDp.value else state.viewWidthDp.value
-        if (size < viewSize && state.itemsTo < state.numTotalItems - 1) {
-            // we selected too few elements re-run layout with updated average element size
-            surface.triggerUpdate()
+        while (itemI < state.numTotalItems && availableSpace > 0f) {
+            val itemBox = createChild(ListItemBox::class, ListItemBox.factory)
+            itemBox.makeItem(itemI, ctx)
+            prevItems += itemBox
+
+            val itemSize = if (isVertical) round(itemBox.contentHeightPx) else round(itemBox.contentWidthPx)
+            availableSpace -= itemSize
+            itemI++
+        }
+
+        state.numVisibleItems = itemI - state.itemsFrom.value
+        state.prevRemainingSpace = availableSpace
+        state.avgItemSizeDp = Dp.fromPx(prevItems.sumOf { it.contentHeightPx.toDouble() }.toFloat()).value
+        if (prevItems.isNotEmpty()) {
+            state.avgItemSizeDp /= prevItems.size
+        }
+
+        // add some space after list content to allow scrolling
+        scrollSpacerBox()
+        stopOverscrollEnd(itemI, availableSpace)
+        super.measureContentSize(ctx)
+    }
+
+    private fun computeScrollAmount() {
+        val scrollAmount = if (isVertical) state.computeSmoothScrollAmountDpY() else state.computeSmoothScrollAmountDpX()
+
+        val minScroll = -(state.itemsFrom.value + 0.5f) * state.avgItemSizeDp * 0.75f
+        val maxScroll = (state.numTotalItems - (state.itemsTo) + 0.5f) * state.avgItemSizeDp * 0.75f
+        val clamped = scrollAmount.clamp(minScroll, maxScroll)
+        if (clamped != scrollAmount) {
+            if (isVertical) {
+                state.setSmoothScrollAmountDpY(clamped)
+            } else {
+                state.setSmoothScrollAmountDpX(clamped)
+            }
+        }
+        scrollAmountDp = clamped
+
+        if (scrollAmountDp > 0f && state.prevRemainingSpace > 0f) {
+            // don't allow scrolling, when we don't have enough items to fill up the entire space
+            if (isVertical) {
+                state.yScrollDpDesired.set(state.yScrollDp.value)
+            } else {
+                state.xScrollDpDesired.set(state.xScrollDp.value)
+            }
+            scrollAmountDp = 0f
+        }
+    }
+
+    private fun insertNewItemsBefore(newItems: List<ListItemBox>): Int {
+        newItems.forEach {
+            mutChildren += it
+            prevItems += it
+        }
+        return state.itemsFrom.use() + newItems.size
+    }
+
+    private fun stopOverscrollStart() {
+        if (state.itemsFrom.value == 0) {
+            if (isVertical) {
+                if (state.yScrollDp.value < overscrollSpaceDp) state.yScrollDp.set(overscrollSpaceDp)
+                if (state.yScrollDpDesired.value < overscrollSpaceDp) state.yScrollDpDesired.set(overscrollSpaceDp)
+            } else {
+                if (state.xScrollDp.value < overscrollSpaceDp) state.xScrollDp.set(overscrollSpaceDp)
+                if (state.xScrollDpDesired.value < overscrollSpaceDp) state.xScrollDpDesired.set(overscrollSpaceDp)
+            }
+        }
+    }
+
+    private fun stopOverscrollEnd(lastItemI: Int, availableSpace: Float) {
+        if (state.itemsFrom.value > 0 && lastItemI == state.numTotalItems && availableSpace > 0f && scrollAmountDp > 0f) {
+            moveScrollViewportDp(Dp.fromPx(-availableSpace).value)
+        }
+    }
+
+    private fun moveScrollViewportDp(deltaDp: Float) {
+        if (isVertical) {
+            state.yScrollDp.set(state.yScrollDp.value + deltaDp)
+            state.yScrollDpDesired.set(state.yScrollDpDesired.value + deltaDp)
+        } else {
+            state.xScrollDp.set(state.xScrollDp.value + deltaDp)
+            state.xScrollDpDesired.set(state.xScrollDpDesired.value + deltaDp)
+        }
+    }
+
+    private fun scrollSpacerBox() {
+        Box {
+            if (isVertical) {
+                uiNode.setContentSize(1.dp.px, overscrollSpaceDp.dp.px)
+            } else {
+                uiNode.setContentSize(overscrollSpaceDp.dp.px, 1.dp.px)
+            }
+        }
+    }
+
+    private fun ListItemBox.makeItem(itemI: Int, ctx: KoolContext) {
+        itemIndex = itemI
+        modifier
+            .width(if (isVertical) Grow.MinFit else FitContent)
+            .height(if (isVertical) FitContent else Grow.MinFit)
+        itemBlock?.invoke(this, itemI)
+
+        earlyMeasureContentSize(ctx)
+    }
+
+    private fun toContainer(x: Float, y: Float, result: MutableVec2f): MutableVec2f {
+        // translate position to container frame (lazy-list -> scroll-pane -> container)
+        var p = parent
+        while (p != null && p !is ScrollPaneNode) {
+            p = p.parent
+        }
+        p?.parent?.toLocal(x, y, result)
+        return result
+    }
+
+    private fun computeFirstVisible(): Int {
+        val local = MutableVec2f(1f, 1f)
+        val scrollPx = Dp(scrollAmountDp).px
+        for (i in prevItems.indices) {
+            val box = prevItems[i]
+            toContainer(box.rightPx - scrollPx, box.bottomPx - scrollPx, local)
+            if ((isVertical && local.y > 0f) || (isHorizontal && local.x > 0f)) {
+                return i
+            }
+        }
+        return -1
+    }
+
+    private fun updateFromAndAvailableSpace(insertBeforeItems: MutableList<ListItemBox>, ctx: KoolContext): Float {
+        var availableSpace = if (isVertical) state.viewHeightDp.use().dp.px else state.viewWidthDp.use().dp.px
+
+        val firstVisible = computeFirstVisible()
+        if (firstVisible < 0) {
+            // no previous item still visible
+            if (state.avgItemSizeDp > 0f) {
+                state.itemsFrom.value = (state.itemsFrom.value + (scrollAmountDp / state.avgItemSizeDp).roundToInt())
+                    .clamp(0, state.numTotalItems - state.numVisibleItems)
+            }
+            val removeScrollPosDp = Dp.fromPx(scrollAmountDp).value + state.yScrollDp.value - overscrollSpaceDp
+            moveScrollViewportDp(-removeScrollPosDp)
+
+        } else {
+            // first visible item is present in previous items
+            var removeScrollPos = 0f
+            for (i in 0 until firstVisible) {
+                removeScrollPos += prevItems[i].contentHeightPx
+                state.itemsFrom.value++
+            }
+            val box = prevItems[firstVisible]
+            val scrollPx = Dp(scrollAmountDp).px
+            val start = toContainer(box.leftPx - scrollPx, box.topPx - scrollPx, MutableVec2f())
+
+            if ((isVertical && start.y > 0.5f) || (isHorizontal && start.x > 0.5f)) {
+                collectItemsBefore(box.itemIndex, start.y, ctx, insertBeforeItems)
+            }
+
+            val removeScrollPosDp = Dp.fromPx(removeScrollPos).value
+            moveScrollViewportDp(-removeScrollPosDp)
+
+            availableSpace -= if (isVertical) start.y else start.x
+        }
+        return availableSpace
+    }
+
+    private fun collectItemsBefore(beforeI: Int, availableSpace: Float, ctx: KoolContext, result: MutableList<ListItemBox>) {
+        var avSpace = availableSpace
+        var itemI = beforeI - 1
+        var insertedSpace = 0f
+        while (itemI >= 0 && avSpace > 0) {
+            val insertItem = ListItemBox(this, surface)
+            insertItem.makeItem(itemI, ctx)
+
+            val insertSpace = if (isVertical) insertItem.contentHeightPx else insertItem.contentWidthPx
+            avSpace -= insertSpace
+            insertedSpace += Dp.fromPx(insertSpace).value
+            state.itemsFrom.value--
+            result += insertItem
+
+            itemI--
+        }
+        result.reverse()
+
+        moveScrollViewportDp(insertedSpace)
+    }
+
+    private class ListItemBox(parent: UiNode?, surface: UiSurface) : BoxNode(parent, surface) {
+        var itemIndex = 0
+
+        private fun measureUiNodeContent(node: UiNode, ctx: KoolContext) {
+            for (i in node.children.indices) {
+                measureUiNodeContent(node.children[i], ctx)
+            }
+            node.measureContentSize(ctx)
+        }
+
+        fun earlyMeasureContentSize(ctx: KoolContext) {
+            measureUiNodeContent(this, ctx)
+            super.measureContentSize(ctx)
+        }
+
+        override fun measureContentSize(ctx: KoolContext) {
+            // do nothing here, content size was already measured during earlyMeasureContentSize()
+        }
+
+        companion object {
+            val factory: (UiNode, UiSurface) -> ListItemBox = { parent, surface -> ListItemBox(parent, surface) }
         }
     }
 
     companion object {
+        private const val overscrollSpaceDp = 1000f
         val factory: (UiNode, UiSurface) -> LazyListNode = { parent, surface -> LazyListNode(parent, surface) }
     }
 }

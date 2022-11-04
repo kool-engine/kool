@@ -81,32 +81,29 @@ fun UiScope.TextArea(
     withVerticalScrollbar: Boolean = true,
     withHorizontalScrollbar: Boolean = true,
     scrollbarColor: Color? = null,
-    containerModifier: ((UiModifier) -> Unit)? = null,
     scrollPaneModifier: ((ScrollPaneModifier) -> Unit)? = null,
     vScrollbarModifier: ((ScrollbarModifier) -> Unit)? = null,
     hScrollbarModifier: ((ScrollbarModifier) -> Unit)? = null,
     state: LazyListState = weakRememberListState(),
     block: TextAreaScope.() -> Unit
 ) {
-    ScrollArea(
-        width, height,
+    val textArea = uiNode.createChild(TextAreaNode::class, TextAreaNode.factory)
+    textArea.listState = state
+    textArea.modifier
+        .size(width, height)
+        .onWheelX { state.scrollDpX(it.pointer.deltaScrollX.toFloat() * -20f) }
+        .onWheelY { state.scrollDpY(it.pointer.deltaScrollY.toFloat() * -50f) }
+
+    textArea.setupContent(
+        lines,
         withVerticalScrollbar,
         withHorizontalScrollbar,
         scrollbarColor,
-        containerModifier,
+        scrollPaneModifier,
         vScrollbarModifier,
         hScrollbarModifier,
-        state
-    ) {
-        scrollPaneModifier?.let { it(modifier) }
-
-        val textArea = uiNode.createChild(TextAreaNode::class, TextAreaNode.factory)
-        textArea.linesHolder.state = state
-        textArea.block()
-
-        // set text after block(), so that custom settings (isSelectable / editable) can take an effect
-        textArea.setText(lines)
-    }
+        block
+    )
 }
 
 open class TextAreaNode(parent: UiNode?, surface: UiSurface) : BoxNode(parent, surface), TextAreaScope, Focusable {
@@ -115,21 +112,55 @@ open class TextAreaNode(parent: UiNode?, surface: UiSurface) : BoxNode(parent, s
 
     private lateinit var lines: List<TextLine>
 
-    override val linesHolder = LazyListNode(this, surface)
+    lateinit var listState: LazyListState
+    override lateinit var linesHolder: LazyListNode
     private val selectionHandler = SelectionHandler()
 
-    override fun applyDefaults() {
-        super.applyDefaults()
-        linesHolder.applyDefaults()
-        linesHolder.modifier.layout(ColumnLayout)
-        mutChildren += linesHolder
+    fun setupContent(
+        lines: List<TextLine>,
+        withVerticalScrollbar: Boolean,
+        withHorizontalScrollbar: Boolean,
+        scrollbarColor: Color?,
+        scrollPaneModifier: ((ScrollPaneModifier) -> Unit)?,
+        vScrollbarModifier: ((ScrollbarModifier) -> Unit)?,
+        hScrollbarModifier: ((ScrollbarModifier) -> Unit)?,
+        block: TextAreaScope.() -> Unit
+    ) {
+        this.lines = lines
+        block.invoke(this)
+
+        ScrollPane(listState) {
+            modifier.width(Grow.MinFit)
+            scrollPaneModifier?.let { it(modifier) }
+
+            linesHolder = uiNode.createChild(LazyListNode::class, LazyListNode.factory)
+            linesHolder.state = listState
+            linesHolder.modifier
+                .orientation(ListOrientation.Vertical)
+                .layout(ColumnLayout)
+                .width(Grow.MinFit)
+
+            linesHolder.setText(lines)
+        }
+
+        if (withVerticalScrollbar) {
+            VerticalScrollbar {
+                lazyListAware(listState, ScrollbarOrientation.Vertical, ListOrientation.Vertical, scrollbarColor, vScrollbarModifier)
+            }
+        }
+        if (withHorizontalScrollbar) {
+            HorizontalScrollbar {
+                lazyListAware(listState, ScrollbarOrientation.Horizontal, ListOrientation.Vertical, scrollbarColor, hScrollbarModifier)
+            }
+        }
+
     }
 
-    fun setText(lines: List<TextLine>) {
-        this.lines = lines
-        val textAreaMod = modifier
+    private fun LazyListScope.setText(lines: List<TextLine>) {
+        val textAreaMod = this@TextAreaNode.modifier
         selectionHandler.updateSelectionRange()
-        linesHolder.itemsIndexed(lines) { lineIndex, line ->
+
+        itemsIndexed(lines) { lineIndex, line ->
             AttributedText(line) {
                 modifier.width(Grow.MinFit)
 
@@ -467,14 +498,14 @@ open class TextAreaNode(parent: UiNode?, surface: UiSurface) : BoxNode(parent, s
         }
 
         fun moveCaretPageUp(select: Boolean) {
-            val bottomLinePad = linesHolder.modifier.extraItemsAfter + 2
-            val numPageLines = max(1, linesHolder.state.itemsTo - linesHolder.state.itemsFrom.toInt() - bottomLinePad)
+            val bottomLinePad = 2
+            val numPageLines = max(1, linesHolder.state.numVisibleItems - bottomLinePad)
             moveCaretToLine(selectionCaretLine - numPageLines, select)
         }
 
         fun moveCaretPageDown(select: Boolean) {
-            val bottomLinePad = linesHolder.modifier.extraItemsAfter + 2
-            val numPageLines = max(1, linesHolder.state.itemsTo - linesHolder.state.itemsFrom.toInt() - bottomLinePad)
+            val bottomLinePad = 2
+            val numPageLines = max(1, linesHolder.state.numVisibleItems - bottomLinePad)
             moveCaretToLine(selectionCaretLine + numPageLines, select)
         }
 
@@ -548,12 +579,12 @@ open class TextAreaNode(parent: UiNode?, surface: UiSurface) : BoxNode(parent, s
 
         fun scrollToCaret() {
             val scrState = linesHolder.state
-            val bottomLinePad = linesHolder.modifier.extraItemsAfter + 2
-            if (selectionCaretLine < scrState.itemsFrom) {
-                scrState.itemsFrom = selectionCaretLine.toFloat()
-            } else if (selectionCaretLine > scrState.itemsTo - bottomLinePad) {
-                val visLines = scrState.itemsTo - scrState.itemsFrom.toInt() - bottomLinePad
-                scrState.itemsFrom = max(0f, selectionCaretLine.toFloat() - visLines)
+            val bottomLinePad = 2
+            if (selectionCaretLine < scrState.itemsFrom.value) {
+                scrState.itemsFrom.set(selectionCaretLine)
+            } else if (selectionCaretLine > scrState.itemsTo - bottomLinePad && scrState.itemsTo < scrState.numTotalItems) {
+                val visLines = scrState.itemsTo - scrState.itemsFrom.value - bottomLinePad
+                scrState.itemsFrom.set(max(0, selectionCaretLine - visLines))
             }
 
             val scrollPad = 16f

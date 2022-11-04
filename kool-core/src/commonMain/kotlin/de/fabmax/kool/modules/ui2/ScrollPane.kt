@@ -78,38 +78,52 @@ open class ScrollState {
         }
     }
 
-    fun computeSmoothScrollPosDpX(deltaT: Float): Float {
+    fun computeSmoothScrollPosDpX(): Float {
+        return xScrollDp.value + computeSmoothScrollAmountDpX()
+    }
+
+    fun computeSmoothScrollPosDpY(): Float {
+        return yScrollDp.value + computeSmoothScrollAmountDpY()
+    }
+
+    fun computeSmoothScrollAmountDpX(): Float {
         val error = xScrollDpDesired.value - xScrollDp.value
         return if (abs(error) < 1f) {
-            xScrollDpDesired.value
+            error
         } else {
-            var step = error * 15f * deltaT
+            var step = error * SMOOTHING_FAC * Time.deltaT
             if (abs(step) > abs(error)) {
                 step = error
             }
-            xScrollDp.value + step
+            step
         }
     }
 
-    fun computeSmoothScrollPosDpY(deltaT: Float): Float {
+    fun computeSmoothScrollAmountDpY(): Float {
         val error = yScrollDpDesired.value - yScrollDp.value
         return if (abs(error) < 1f) {
-            yScrollDpDesired.value
+            error
         } else {
-            var step = error * 15f * deltaT
+            var step = error * SMOOTHING_FAC * Time.deltaT
             if (abs(step) > abs(error)) {
                 step = error
             }
-            yScrollDp.value + step
+            step
         }
     }
 
-    fun computeSmoothScrollAmountDpX(deltaT: Float): Float {
-        return computeSmoothScrollPosDpX(deltaT) - xScrollDp.value
+    fun setSmoothScrollAmountDpX(step: Float) {
+        val error = step / (SMOOTHING_FAC * Time.deltaT)
+        xScrollDpDesired.set(xScrollDp.value + error)
     }
 
-    fun computeSmoothScrollAmountDpY(deltaT: Float): Float {
-        return computeSmoothScrollPosDpY(deltaT) - yScrollDp.value
+    fun setSmoothScrollAmountDpY(step: Float) {
+        val error = step / (SMOOTHING_FAC * Time.deltaT)
+        yScrollDpDesired.set(yScrollDp.value + error)
+    }
+
+    companion object {
+        private const val SMOOTHING_FAC = 15f
     }
 }
 
@@ -189,8 +203,8 @@ open class ScrollPaneNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, 
             }
         }
 
-        state.xScrollDp.set(state.computeSmoothScrollPosDpX(Time.deltaT))
-        state.yScrollDp.set(state.computeSmoothScrollPosDpY(Time.deltaT))
+        state.xScrollDp.set(state.computeSmoothScrollPosDpX())
+        state.yScrollDp.set(state.computeSmoothScrollPosDpY())
         if (state.xScrollDp.isStateChanged || state.yScrollDp.isStateChanged) {
             modifier.onScrollPosChanged?.invoke(state.xScrollDp.value, state.yScrollDp.value)
         }

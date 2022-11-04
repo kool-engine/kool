@@ -20,7 +20,7 @@ abstract class UiNode(val parent: UiNode?, override val surface: UiSurface) : Ui
     var nodeIndex = 0
         private set
 
-    private val oldChildren = mutableListOf<UiNode>()
+    protected val oldChildren = mutableListOf<UiNode>()
     protected val mutChildren = mutableListOf<UiNode>()
     val children: List<UiNode> get() = mutChildren
     val weakMemory = WeakMemory()

@@ -182,7 +182,7 @@ class ThemeEditorWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
                 containerModifier = {
                     it
                         .margin(sizes.gap)
-                        .size(Grow.Std, Grow(1f, max = FitContent))
+                        .size(Grow.Std, Grow.Std)
                 }
             ) {
                 val hoveredItem = weakRememberState(-1)

@@ -60,6 +60,7 @@ enum class ScrollbarOrientation {
 inline fun UiScope.Scrollbar(block: ScrollbarScope.() -> Unit) {
     val scrollBar = uiNode.createChild(ScrollbarNode::class, ScrollbarNode.factory)
     scrollBar.modifier.onClick(scrollBar)
+        .zLayer(UiSurface.LAYER_FLOATING)
         .hoverListener(scrollBar)
         .dragListener(scrollBar)
     scrollBar.block()
@@ -168,7 +169,7 @@ open class ScrollbarNode(parent: UiNode?, surface: UiSurface)
             modifier.trackHoverColor?.let { trackColor = it }
         }
 
-        val uiPrimitives = getUiPrimitives(UiSurface.LAYER_FLOATING)
+        val uiPrimitives = getUiPrimitives()
         if (trackColor != null) {
             uiPrimitives.localRoundRect(0f, 0f, widthPx, heightPx, radius, trackColor!!)
         }

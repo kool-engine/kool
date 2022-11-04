@@ -17,7 +17,7 @@ class TextAreaWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
     init {
         val r = Random(randomI())
         for (i in 0 until 100) {
-            val str = randomText(r)
+            val str = "$i: ${randomText(r)}"
             val spans = randomStyle(str, r)
             lines += TextLine(spans)
         }
@@ -38,7 +38,6 @@ class TextAreaWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
 
     fun UiScope.WindowContent() = TextArea(
         lines,
-        containerModifier = { it.backgroundColor(null) },
         hScrollbarModifier = { it.margin(start = sizes.gap, end = sizes.gap * 2f,bottom = sizes.gap) },
         vScrollbarModifier = { it.margin(sizes.gap) }
     ) {
