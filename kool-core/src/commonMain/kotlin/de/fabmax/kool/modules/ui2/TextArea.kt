@@ -168,15 +168,15 @@ open class TextAreaNode(parent: UiNode?, surface: UiSurface) : BoxNode(parent, s
                     modifier
                         .onClick {
                             when (it.pointer.leftButtonRepeatedClickCount) {
-                                1 -> selectionHandler.onSelectStart(this, line, lineIndex, it, false)
-                                2 -> selectionHandler.selectWord(this, line, lineIndex, it)
-                                3 -> selectionHandler.selectLine(this, line, lineIndex)
+                                1 -> selectionHandler.onSelectStart(this, lineIndex, it, false)
+                                2 -> selectionHandler.selectWord(this, line.text, lineIndex, it)
+                                3 -> selectionHandler.selectLine(this, line.text, lineIndex)
                             }
                         }
-                        .onDragStart { selectionHandler.onSelectStart(this, line, lineIndex, it, true) }
+                        .onDragStart { selectionHandler.onSelectStart(this, lineIndex, it, true) }
                         .onDrag { selectionHandler.onDrag(it) }
                         .onDragEnd { selectionHandler.onSelectEnd() }
-                        .onPointer { selectionHandler.onPointer(this, line, lineIndex, it) }
+                        .onPointer { selectionHandler.onPointer(this, lineIndex, it) }
 
                     modifier.padding(start = textAreaMod.lineStartPadding, end = textAreaMod.lineEndPadding)
                     if (lineIndex == lines.lastIndex) {
@@ -265,7 +265,8 @@ open class TextAreaNode(parent: UiNode?, surface: UiSurface) : BoxNode(parent, s
         var selectionStartChar = 0
         var selectionCaretChar = 0
 
-        private var caretLine: TextLine? = null
+        private val caretLine: TextLine?
+            get() = if (selectionCaretLine in lines.indices) lines[selectionCaretLine] else null
         private var caretLineScope: AttributedTextScope? = null
 
         val isReverseSelection: Boolean
@@ -295,7 +296,6 @@ open class TextAreaNode(parent: UiNode?, surface: UiSurface) : BoxNode(parent, s
             selectionCaretLine = modifier.selectionCaretLine
             selectionStartChar = modifier.selectionStartChar
             selectionCaretChar = modifier.selectionCaretChar
-            caretLine = null
             caretLineScope = null
         }
 
@@ -341,7 +341,6 @@ open class TextAreaNode(parent: UiNode?, surface: UiSurface) : BoxNode(parent, s
             }
 
             if (lineIndex == selectionCaretLine) {
-                caretLine = line
                 caretLineScope = attributedText
             }
 
@@ -380,28 +379,24 @@ open class TextAreaNode(parent: UiNode?, surface: UiSurface) : BoxNode(parent, s
             selectionChanged(0, lines.lastIndex, 0, lines.last().length, false)
         }
 
-        fun selectWord(attributedText: AttributedTextScope, line: TextLine, lineIndex: Int, ev: PointerEvent) {
-            val txt = line.text
+        fun selectWord(attributedText: AttributedTextScope, text: String, lineIndex: Int, ev: PointerEvent) {
             val charIndex = attributedText.charIndexFromLocalX(ev.position.x)
-            val startChar = TextCaretNavigation.startOfWord(txt, charIndex)
-            val caretChar = TextCaretNavigation.endOfWord(txt, charIndex)
-            caretLine = line
+            val startChar = TextCaretNavigation.startOfWord(text, charIndex)
+            val caretChar = TextCaretNavigation.endOfWord(text, charIndex)
             caretLineScope = attributedText
             selectionChanged(lineIndex, lineIndex, startChar, caretChar)
         }
 
-        fun selectLine(attributedText: AttributedTextScope, line: TextLine, lineIndex: Int) {
-            selectionChanged(lineIndex, lineIndex, 0, line.length)
-            caretLine = line
+        fun selectLine(attributedText: AttributedTextScope, text: String, lineIndex: Int) {
+            selectionChanged(lineIndex, lineIndex, 0, text.length)
             caretLineScope = attributedText
         }
 
-        fun onSelectStart(attributedText: AttributedTextScope, line: TextLine, lineIndex: Int, ev: PointerEvent, isSelecting: Boolean) {
+        fun onSelectStart(attributedText: AttributedTextScope, lineIndex: Int, ev: PointerEvent, isSelecting: Boolean) {
             requestFocus()
 
             this.isSelecting = isSelecting
             val charIndex = attributedText.charIndexFromLocalX(ev.position.x)
-            caretLine = line
             caretLineScope = attributedText
             selectionChanged(lineIndex, lineIndex, charIndex, charIndex)
         }
@@ -419,37 +414,34 @@ open class TextAreaNode(parent: UiNode?, surface: UiSurface) : BoxNode(parent, s
             isSelecting = false
         }
 
-        fun onPointer(attributedText: AttributedTextScope, line: TextLine, lineIndex: Int, ev: PointerEvent) {
+        fun onPointer(attributedText: AttributedTextScope, lineIndex: Int, ev: PointerEvent) {
             if (isSelecting && ev.pointer.isDrag) {
-                caretLine = line
                 caretLineScope = attributedText
                 selectionChanged(selectionStartLine, lineIndex, selectionStartChar, selectionCaretChar, false)
             }
         }
 
         fun moveCaretLeft(wordWise: Boolean, select: Boolean) {
-            var line = caretLine ?: return
-            var txt = line.text
+            caretLine?.text?.let { txt ->
+                if (selectionCaretChar == 0 && selectionCaretLine > 0) {
+                    selectionCaretLine--
+                    val line = lines[selectionCaretLine]
+                    val newTxt = line.text
+                    selectionCaretChar = line.length
 
-            if (selectionCaretChar == 0 && selectionCaretLine > 0) {
-                selectionCaretLine--
-                line = lines[selectionCaretLine]
-                selectionCaretChar = line.length
-                caretLine = line
-                txt = line.text
+                    if (wordWise) {
+                        selectionCaretChar = TextCaretNavigation.moveWordLeft(newTxt, selectionCaretChar)
+                    }
+                    if (!select) {
+                        selectionStartLine = selectionCaretLine
+                        selectionStartChar = selectionCaretChar
+                    }
 
-                if (wordWise) {
+                } else if (wordWise) {
                     selectionCaretChar = TextCaretNavigation.moveWordLeft(txt, selectionCaretChar)
+                } else {
+                    selectionCaretChar = (selectionCaretChar - 1).clamp(0, txt.length)
                 }
-                if (!select) {
-                    selectionStartLine = selectionCaretLine
-                    selectionStartChar = selectionCaretChar
-                }
-
-            } else if (wordWise) {
-                selectionCaretChar = TextCaretNavigation.moveWordLeft(txt, selectionCaretChar)
-            } else {
-                selectionCaretChar = (selectionCaretChar - 1).clamp(0, txt.length)
             }
             if (!select) {
                 selectionStartLine = selectionCaretLine
@@ -459,28 +451,26 @@ open class TextAreaNode(parent: UiNode?, surface: UiSurface) : BoxNode(parent, s
         }
 
         fun moveCaretRight(wordWise: Boolean, select: Boolean) {
-            var line = caretLine ?: return
-            var txt = line.text
+            caretLine?.text?.let { txt ->
+                if (selectionCaretChar == txt.length && selectionCaretLine < lines.lastIndex) {
+                    selectionCaretLine++
+                    val line = lines[selectionCaretLine]
+                    val newTxt = line.text
+                    selectionCaretChar = 0
 
-            if (selectionCaretChar == txt.length && selectionCaretLine < lines.lastIndex) {
-                selectionCaretLine++
-                line = lines[selectionCaretLine]
-                selectionCaretChar = 0
-                caretLine = line
-                txt = line.text
+                    if (wordWise) {
+                        selectionCaretChar = TextCaretNavigation.moveWordRight(newTxt, selectionCaretChar)
+                    }
+                    if (!select) {
+                        selectionStartLine = selectionCaretLine
+                        selectionStartChar = selectionCaretChar
+                    }
 
-                if (wordWise) {
+                } else if (wordWise) {
                     selectionCaretChar = TextCaretNavigation.moveWordRight(txt, selectionCaretChar)
+                } else {
+                    selectionCaretChar = (selectionCaretChar + 1).clamp(0, txt.length)
                 }
-                if (!select) {
-                    selectionStartLine = selectionCaretLine
-                    selectionStartChar = selectionCaretChar
-                }
-
-            } else if (wordWise) {
-                selectionCaretChar = TextCaretNavigation.moveWordRight(txt, selectionCaretChar)
-            } else {
-                selectionCaretChar = (selectionCaretChar + 1).clamp(0, txt.length)
             }
             if (!select) {
                 selectionStartLine = selectionCaretLine
@@ -510,23 +500,19 @@ open class TextAreaNode(parent: UiNode?, surface: UiSurface) : BoxNode(parent, s
         }
 
         private fun moveCaretToLine(targetLine: Int, select: Boolean) {
-            var line = caretLine ?: return
+            val line = caretLine ?: return
             val caretX = line.charIndexToPx(selectionCaretChar)
 
             if (targetLine in lines.indices) {
-                line = lines[targetLine]
-                selectionCaretChar = line.charIndexFromPx(caretX)
+                selectionCaretChar = lines[targetLine].charIndexFromPx(caretX)
                 selectionCaretLine = targetLine
             } else if (targetLine < 0) {
-                line = lines[0]
                 selectionCaretChar = 0
                 selectionCaretLine = 0
             } else if (targetLine > lines.lastIndex) {
-                line = lines[lines.lastIndex]
-                selectionCaretChar = line.length
+                selectionCaretChar = lines[lines.lastIndex].length
                 selectionCaretLine = lines.lastIndex
             }
-            caretLine = line
 
             if (!select) {
                 selectionStartLine = selectionCaretLine
