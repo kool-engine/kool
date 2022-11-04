@@ -565,12 +565,10 @@ open class TextAreaNode(parent: UiNode?, surface: UiSurface) : BoxNode(parent, s
 
         fun scrollToCaret() {
             val scrState = linesHolder.state
-            val bottomLinePad = 2
             if (selectionCaretLine < scrState.itemsFrom.value) {
                 scrState.itemsFrom.set(selectionCaretLine)
-            } else if (selectionCaretLine > scrState.itemsTo - bottomLinePad && scrState.itemsTo < scrState.numTotalItems) {
-                val visLines = scrState.itemsTo - scrState.itemsFrom.value - bottomLinePad
-                scrState.itemsFrom.set(max(0, selectionCaretLine - visLines))
+            } else if (selectionCaretLine >= scrState.itemsTo) {
+                scrState.itemsFrom.set(max(0, selectionCaretLine - scrState.numVisibleItems + 1))
             }
 
             val scrollPad = 16f
@@ -637,7 +635,7 @@ class DefaultTextEditorHandler(val text: MutableList<TextLine> = mutableStateLis
         return caretPos
     }
 
-    fun insertLines(insertLines: List<TextLine>, insertFrom: Int, insertTo: Int) {
+    private fun insertLines(insertLines: List<TextLine>, insertFrom: Int, insertTo: Int) {
         val linesBefore = mutableListOf<TextLine>()
         val linesAfter = mutableListOf<TextLine>()
         if (insertFrom > 0) {
@@ -646,13 +644,6 @@ class DefaultTextEditorHandler(val text: MutableList<TextLine> = mutableStateLis
         if (insertTo < text.lastIndex) {
             linesAfter += text.subList(insertTo + 1, text.size)
         }
-
-//        println("before:")
-//        linesBefore.forEach { println("  $it") }
-//        println("insert:")
-//        insertLines.forEach { println("  $it") }
-//        println("after:")
-//        linesAfter.forEach { println("  $it") }
 
         text.clear()
         text += linesBefore

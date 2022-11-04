@@ -328,9 +328,10 @@ open class LazyListNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, su
                 collectItemsBefore(box.itemIndex, start.y, ctx, insertBeforeItems)
             }
 
-            val removeScrollPosDp = Dp.fromPx(removeScrollPos).value
-            moveScrollViewportDp(-removeScrollPosDp)
-
+            if (removeScrollPos > 0f) {
+                val removeScrollPosDp = Dp.fromPx(removeScrollPos).value
+                moveScrollViewportDp(-removeScrollPosDp)
+            }
             availableSpace -= if (isVertical) start.y else start.x
         }
         return availableSpace
