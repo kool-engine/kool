@@ -56,8 +56,8 @@ class UiDemo : DemoScene("UI Demo") {
         spawnWindow(ThemeEditorWindow(this@UiDemo), listOf(DockingHost.DockPosition.End to Grow.Std, DockingHost.DockPosition.End to Grow(0.3f)))
 
         // TextStyleWindow is spawned as a floating window
-        //spawnWindow(TextStyleWindow(this@UiDemo))
-        spawnWindow(TextAreaWindow(this@UiDemo))
+        spawnWindow(TextStyleWindow(this@UiDemo))
+        //spawnWindow(TextAreaWindow(this@UiDemo))
 
         // add a sidebar for the demo menu
         +Panel {

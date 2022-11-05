@@ -4,6 +4,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.util.Color
+import kotlin.math.abs
 import kotlin.math.round
 import kotlin.math.roundToInt
 
@@ -11,7 +12,9 @@ class LazyListState : ScrollState() {
     var numTotalItems = 0
     var numVisibleItems = 0
     val itemsFrom = mutableStateOf(0)
-    val itemsTo: Int get() = itemsFrom.value + numVisibleItems
+    val itemsTo: Int get() = itemsFrom.value + numVisibleItems - 1
+
+    val scrollToItem = mutableStateOf(-1)
 
     var avgItemSizeDp = 0f
     var prevRemainingSpace = 0f
@@ -142,8 +145,11 @@ open class LazyListNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, su
     private var scrollAmountDp = 0f
 
     override fun indices(numItems: Int, block: UiScope.(Int) -> Unit)  {
-        state.numTotalItems = numItems
         itemBlock = block
+        state.numTotalItems = numItems
+        if (modifier.isAutoScrollToEnd) {
+            state.scrollToItem.set(state.numTotalItems - 1)
+        }
     }
 
     override fun measureContentSize(ctx: KoolContext) {
@@ -182,7 +188,7 @@ open class LazyListNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, su
             itemI++
         }
 
-        state.numVisibleItems = itemI - state.itemsFrom.value
+        state.numVisibleItems = itemI - state.itemsFrom.use()
         state.prevRemainingSpace = availableSpace
         state.avgItemSizeDp = Dp.fromPx(prevItems.sumOf { it.contentHeightPx.toDouble() }.toFloat()).value
         if (prevItems.isNotEmpty()) {
@@ -199,7 +205,7 @@ open class LazyListNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, su
         val scrollAmount = if (isVertical) state.computeSmoothScrollAmountDpY() else state.computeSmoothScrollAmountDpX()
 
         val minScroll = -(state.itemsFrom.value + 0.5f) * state.avgItemSizeDp * 0.75f
-        val maxScroll = (state.numTotalItems - (state.itemsTo) + 0.5f) * state.avgItemSizeDp * 0.75f
+        val maxScroll = (state.numTotalItems - (state.itemsTo) - 0.5f) * state.avgItemSizeDp * 0.75f
         val clamped = scrollAmount.clamp(minScroll, maxScroll)
         if (clamped != scrollAmount) {
             if (isVertical) {
@@ -209,6 +215,9 @@ open class LazyListNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, su
             }
         }
         scrollAmountDp = clamped
+
+        // scroll to requested item if set
+        scrollToItem()
 
         if (scrollAmountDp > 0f && state.prevRemainingSpace > 0f) {
             // don't allow scrolling, when we don't have enough items to fill up the entire space
@@ -221,12 +230,55 @@ open class LazyListNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, su
         }
     }
 
+    private fun scrollToItem() {
+        val scrollItem = state.scrollToItem.use()
+        if (scrollItem < 0) {
+            return
+        }
+
+        if (scrollItem in state.itemsFrom.value .. state.itemsTo) {
+            // scroll item already is in visible range, we should be able to find it in prevItems
+            prevItems.find { it.itemIndex == scrollItem }?.let { item ->
+                // check if item is entirely visible and set scroll accordingly if not
+                val itemStart = toContainer(item.leftPx, item.topPx, MutableVec2f())
+                val itemEnd = toContainer(item.rightPx, item.bottomPx, MutableVec2f())
+                val viewEnd = if (isVertical) state.viewHeightDp.value.dp.px else state.viewWidthDp.value.dp.px
+                if (isVertical) {
+                    if (itemStart.y < 0f) {
+                        state.yScrollDpDesired.set(state.yScrollDp.value + Dp.fromPx(itemStart.y).value)
+                    } else if (itemEnd.y > viewEnd) {
+                        state.yScrollDpDesired.set(state.yScrollDp.value + Dp.fromPx(itemEnd.y - viewEnd).value)
+                    }
+                } else {
+                    if (itemStart.x < 0f) {
+                        state.xScrollDpDesired.set(state.xScrollDp.value + Dp.fromPx(itemStart.x).value)
+                    } else if (itemEnd.x > viewEnd) {
+                        state.xScrollDpDesired.set(state.xScrollDp.value + Dp.fromPx(itemEnd.x - viewEnd).value)
+                    }
+                }
+
+                // clear scroll to item value
+                state.scrollToItem.set(-1)
+            }
+        } else {
+            // item is not in visible range
+            val delta = if (scrollItem < state.itemsFrom.value) scrollItem - state.itemsFrom.value else scrollItem - state.itemsTo
+            if (abs(delta) < state.numVisibleItems && state.avgItemSizeDp > 0f) {
+                // item is close to visible range, smooth scroll to it
+                state.yScrollDpDesired.set(state.yScrollDp.value + delta * state.avgItemSizeDp * 0.9f)
+            } else {
+                // item is far from visible range, hard-set itemsFrom index
+                state.itemsFrom.set((scrollItem - state.numVisibleItems).clamp(0, state.numTotalItems - state.numVisibleItems))
+            }
+        }
+    }
+
     private fun insertNewItemsBefore(newItems: List<ListItemBox>): Int {
         newItems.forEach {
             mutChildren += it
             prevItems += it
         }
-        return state.itemsFrom.use() + newItems.size
+        return state.itemsFrom.value + newItems.size
     }
 
     private fun stopOverscrollStart() {

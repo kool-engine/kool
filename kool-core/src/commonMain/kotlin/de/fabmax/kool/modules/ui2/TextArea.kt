@@ -565,11 +565,12 @@ open class TextAreaNode(parent: UiNode?, surface: UiSurface) : BoxNode(parent, s
 
         fun scrollToCaret() {
             val scrState = linesHolder.state
-            if (selectionCaretLine < scrState.itemsFrom.value) {
-                scrState.itemsFrom.set(selectionCaretLine)
-            } else if (selectionCaretLine >= scrState.itemsTo) {
-                scrState.itemsFrom.set(max(0, selectionCaretLine - scrState.numVisibleItems + 1))
-            }
+            scrState.scrollToItem.set(selectionCaretLine)
+//            if (selectionCaretLine < scrState.itemsFrom.value) {
+//                scrState.itemsFrom.set(selectionCaretLine)
+//            } else if (selectionCaretLine >= scrState.itemsTo) {
+//                scrState.itemsFrom.set(max(0, selectionCaretLine - scrState.numVisibleItems + 1))
+//            }
 
             val scrollPad = 16f
             val caretX = Dp.fromPx(caretLine?.charIndexToPx(selectionCaretChar) ?: 0f).value
