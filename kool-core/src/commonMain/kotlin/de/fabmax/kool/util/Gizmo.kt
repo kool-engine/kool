@@ -33,12 +33,14 @@ class Gizmo : Group(), InputStack.PointerListener {
     private val dragStartPos = MutableVec3f()
     private val tmpMat4 = Mat4d()
     private val tmpMat3 = Mat3f()
+    private val tmpVec4d = MutableVec4d()
 
     private val dragGroup = Group()
     private val scaleGroup = Group()
 
     private val lineMesh = BetterLineMesh()
     private val solidMesh = colorMesh {
+        isCastingShadow = false
         shader = KslUnlitShader {
             color { vertexColor() }
             colorSpaceConversion = ColorSpaceConversion.AS_IS
@@ -59,6 +61,7 @@ class Gizmo : Group(), InputStack.PointerListener {
         }
     }
     private val solidMeshHidden = colorMesh {
+        isCastingShadow = false
         shader = KslUnlitShader {
             color {
                 vertexColor()
@@ -171,6 +174,10 @@ class Gizmo : Group(), InputStack.PointerListener {
         return getGizmoTransform(tmpMat4).getRotation(tmpMat3).getEulerAngles(result)
     }
 
+    fun getQuatRotation(result: MutableVec4f): MutableVec4f {
+        return getGizmoTransform(tmpMat4).getRotation(tmpVec4d).toMutableVec4f(result)
+    }
+
     fun setGizmoTransform(transform: Mat4d) {
         set(transform)
     }
@@ -184,6 +191,12 @@ class Gizmo : Group(), InputStack.PointerListener {
 
     fun setEulerAngles(euler: Vec3f) {
         tmpMat3.setRotate(euler.x, euler.y, euler.z)
+        transform.setRotation(tmpMat3)
+        setDirty()
+    }
+
+    fun setQuatRotation(rotation: Vec4f) {
+        tmpMat3.setRotate(rotation)
         transform.setRotation(tmpMat3)
         setDirty()
     }

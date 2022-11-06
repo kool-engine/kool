@@ -19,6 +19,7 @@ class BetterLineMesh(name: String? = null) : Mesh(IndexedVertexList(lineMeshAttr
     var width = 1f
 
     init {
+        isCastingShadow = false
         shader = LineShader()
     }
 

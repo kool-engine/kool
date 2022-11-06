@@ -76,7 +76,7 @@ object Demos {
     }
 
     val categories = mutableListOf(physicsDemos, graphicsDemos, techDemos, hiddenDemos)
-    val demos = categories.flatMap { it.entries }.map { it.id to it }.toMap()
+    val demos = categories.flatMap { it.entries }.associateBy { it.id }.toMutableMap()
 
     val defaultDemo = "phys-vehicle"
 

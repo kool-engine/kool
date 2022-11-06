@@ -252,10 +252,16 @@ abstract class InputManager internal constructor() {
         }
 
         fun processPointerEvents() {
-            if (gotPointerEvents) {
+            clearClickStates()
+
+            while (gotPointerEvents) {
                 gotPointerEvents = false
 
-                // only apply one event per button per frame, this way we can't lose events on low frame rates
+                // clear click states before every button event iteration so that we can count repeated click events
+                clearClickStates()
+
+                // process enqueued button events, update button mask after each iteration, so that we get click events
+                // even if a button was pressed and released again within a single frame
                 var updateMask = buttonMask
                 buttonEventQueue.forEachIndexed { button, events ->
                     if (events.isNotEmpty()) {
@@ -264,6 +270,11 @@ abstract class InputManager internal constructor() {
                             updateMask or (1 shl button)
                         } else {
                             updateMask and (1 shl button).inv()
+                        }
+                        if (events.isNotEmpty()) {
+                            // there are button events left in the queue, continue processing them after all buttons
+                            // are handled for this iteration
+                            gotPointerEvents = true
                         }
                     }
                 }
@@ -275,6 +286,7 @@ abstract class InputManager internal constructor() {
                     dragDeltaY = 0.0
                     dragMovement = 0.0
                 }
+                updateClickStates()
             }
         }
 
@@ -344,7 +356,6 @@ abstract class InputManager internal constructor() {
             }
 
             processPointerEvents()
-            updateClickStates()
 
             target.id = id
             target.deltaX = deltaX
@@ -391,6 +402,14 @@ abstract class InputManager internal constructor() {
 
             processedState = updateState
             updateState = updateState.next()
+        }
+
+        private fun clearClickStates() {
+            isLeftButtonClicked = false
+            isRightButtonClicked = false
+            isMiddleButtonClicked = false
+            isBackButtonClicked = false
+            isForwardButtonClicked = false
         }
 
         private fun updateClickStates() {

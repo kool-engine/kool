@@ -4,6 +4,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.logE
 import kotlin.math.abs
 import kotlin.math.round
 import kotlin.math.roundToInt
@@ -320,11 +321,17 @@ open class LazyListNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, su
     }
 
     private fun ListItemBox.makeItem(itemI: Int, ctx: KoolContext) {
-        itemIndex = itemI
+        var safeItemI = itemI
+        if (itemI !in 0 until state.numTotalItems) {
+            logE { "Invalid lazy list item index: $itemI" }
+            safeItemI = itemI.clamp(0, state.numTotalItems - 1)
+        }
+
+        itemIndex = safeItemI
         modifier
             .width(if (isVertical) Grow.MinFit else FitContent)
             .height(if (isVertical) FitContent else Grow.MinFit)
-        itemBlock?.invoke(this, itemI)
+        itemBlock?.invoke(this, safeItemI)
 
         earlyMeasureContentSize(ctx)
     }
