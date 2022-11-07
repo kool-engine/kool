@@ -17,6 +17,8 @@ class ImageAtlasTextureData(image: HTMLImageElement, tilesX: Int, tilesY: Int, f
         }
         width = image.width / tilesX
         height = image.height / tilesY
+        val w = width.toDouble()
+        val h = height.toDouble()
         depth = tilesX * tilesY
         fmt?.let { format = it }
 
@@ -27,9 +29,9 @@ class ImageAtlasTextureData(image: HTMLImageElement, tilesX: Int, tilesY: Int, f
 
         data = Array(depth) { i ->
             val x = (i % tilesX).toDouble()
-            val y = (i / tilesY).toDouble()
-            val w = width.toDouble()
-            val h = height.toDouble()
+            val y = (i / tilesX).toDouble()
+
+            canvasCtx.clearRect(0.0, 0.0, w, h)
             canvasCtx.drawImage(image, x * w, y * h, w, h, 0.0, 0.0, w, h)
             canvasCtx.getImageData(0.0, 0.0, w, h)
         }
