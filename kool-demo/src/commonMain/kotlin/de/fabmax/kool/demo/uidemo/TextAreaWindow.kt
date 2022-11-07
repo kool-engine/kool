@@ -37,7 +37,7 @@ class TextAreaWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
     override val windowScope: WindowScope = windowSurface.windowScope!!
 
     fun UiScope.WindowContent() = TextArea(
-        lines,
+        ListTextLineProvider(lines),
         hScrollbarModifier = { it.margin(start = sizes.gap, end = sizes.gap * 2f,bottom = sizes.gap) },
         vScrollbarModifier = { it.margin(sizes.gap) }
     ) {

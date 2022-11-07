@@ -148,7 +148,8 @@ open class LazyListNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, su
     override fun indices(numItems: Int, block: UiScope.(Int) -> Unit)  {
         itemBlock = block
         state.numTotalItems = numItems
-        if (modifier.isAutoScrollToEnd) {
+        if (modifier.isAutoScrollToEnd && state.itemsTo > 0) {
+            // auto scroll to last list item if modifier flag is set and list was layouted before
             state.scrollToItem.set(state.numTotalItems - 1)
         }
     }
@@ -442,7 +443,7 @@ open class LazyListNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, su
     }
 
     companion object {
-        private const val overscrollSpaceDp = 1000f
+        private const val overscrollSpaceDp = 5000f
         val factory: (UiNode, UiSurface) -> LazyListNode = { parent, surface -> LazyListNode(parent, surface) }
     }
 }

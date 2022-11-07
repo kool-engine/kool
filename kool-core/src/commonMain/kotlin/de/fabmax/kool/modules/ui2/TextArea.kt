@@ -39,9 +39,9 @@ interface TextAreaScope : UiScope {
 }
 
 open class TextAreaModifier(surface: UiSurface) : UiModifier(surface) {
-    var bottomPadding: Dp by property(Dp(100f))
     var lineStartPadding: Dp by property(Dp(0f))
     var lineEndPadding: Dp by property(Dp(100f))
+    var lastLineBottomPadding: Dp by property(Dp(16f))
 
     var editorHandler: TextEditorHandler? by property(null)
 
@@ -51,6 +51,10 @@ open class TextAreaModifier(surface: UiSurface) : UiModifier(surface) {
     var selectionCaretChar: Int by property(0)
     var onSelectionChanged: ((Int, Int, Int, Int) -> Unit)? by property(null)
 }
+
+fun <T: TextAreaModifier> T.lineStartPadding(padding: Dp): T { lineStartPadding = padding; return this }
+fun <T: TextAreaModifier> T.lineEndPadding(padding: Dp): T { lineEndPadding = padding; return this }
+fun <T: TextAreaModifier> T.lastLineBottomPadding(padding: Dp): T { lastLineBottomPadding = padding; return this }
 
 fun <T: TextAreaModifier> T.onSelectionChanged(block: ((Int, Int, Int, Int) -> Unit)?): T {
     onSelectionChanged = block
@@ -75,7 +79,7 @@ fun <T: TextAreaModifier> T.setSelectionRange(startLine: Int, caretLine: Int, st
 }
 
 fun UiScope.TextArea(
-    lines: List<TextLine> = emptyList(),
+    lineProvider: TextLineProvider,
     width: Dimension = Grow.Std,
     height: Dimension = Grow.Std,
     withVerticalScrollbar: Boolean = true,
@@ -95,7 +99,7 @@ fun UiScope.TextArea(
         .onWheelY { state.scrollDpY(it.pointer.deltaScrollY.toFloat() * -50f) }
 
     textArea.setupContent(
-        lines,
+        lineProvider,
         withVerticalScrollbar,
         withHorizontalScrollbar,
         scrollbarColor,
@@ -110,14 +114,14 @@ open class TextAreaNode(parent: UiNode?, surface: UiSurface) : BoxNode(parent, s
     override val modifier = TextAreaModifier(surface)
     override val isFocused = mutableStateOf(false)
 
-    private lateinit var lines: List<TextLine>
+    private lateinit var lineProvider: TextLineProvider
 
     lateinit var listState: LazyListState
     override lateinit var linesHolder: LazyListNode
     private val selectionHandler = SelectionHandler()
 
     fun setupContent(
-        lines: List<TextLine>,
+        lineProvider: TextLineProvider,
         withVerticalScrollbar: Boolean,
         withHorizontalScrollbar: Boolean,
         scrollbarColor: Color?,
@@ -126,8 +130,7 @@ open class TextAreaNode(parent: UiNode?, surface: UiSurface) : BoxNode(parent, s
         hScrollbarModifier: ((ScrollbarModifier) -> Unit)?,
         block: TextAreaScope.() -> Unit
     ) {
-        this.lines = lines
-        block.invoke(this)
+        this.lineProvider = lineProvider
 
         ScrollPane(listState) {
             modifier.width(Grow.MinFit)
@@ -140,7 +143,9 @@ open class TextAreaNode(parent: UiNode?, surface: UiSurface) : BoxNode(parent, s
                 .layout(ColumnLayout)
                 .width(Grow.MinFit)
 
-            linesHolder.setText(lines)
+            block.invoke(this@TextAreaNode)
+
+            setText(lineProvider)
         }
 
         if (withVerticalScrollbar) {
@@ -156,11 +161,11 @@ open class TextAreaNode(parent: UiNode?, surface: UiSurface) : BoxNode(parent, s
 
     }
 
-    private fun LazyListScope.setText(lines: List<TextLine>) {
+    private fun setText(lineProvider: TextLineProvider) {
         val textAreaMod = this@TextAreaNode.modifier
         selectionHandler.updateSelectionRange()
-
-        itemsIndexed(lines) { lineIndex, line ->
+        linesHolder.indices(lineProvider.size) { lineIndex ->
+            val line = lineProvider[lineIndex]
             AttributedText(line) {
                 modifier.width(Grow.MinFit)
 
@@ -179,10 +184,10 @@ open class TextAreaNode(parent: UiNode?, surface: UiSurface) : BoxNode(parent, s
                         .onPointer { selectionHandler.onPointer(this, lineIndex, it) }
 
                     modifier.padding(start = textAreaMod.lineStartPadding, end = textAreaMod.lineEndPadding)
-                    if (lineIndex == lines.lastIndex) {
+                    if (lineIndex == lineProvider.lastIndex) {
                         modifier
                             .textAlignY(AlignmentY.Top)
-                            .padding(bottom = textAreaMod.bottomPadding)
+                            .padding(bottom = textAreaMod.lastLineBottomPadding)
                     }
 
                     selectionHandler.applySelectionRange(this, line, lineIndex)
@@ -266,7 +271,7 @@ open class TextAreaNode(parent: UiNode?, surface: UiSurface) : BoxNode(parent, s
         var selectionCaretChar = 0
 
         private val caretLine: TextLine?
-            get() = if (selectionCaretLine in lines.indices) lines[selectionCaretLine] else null
+            get() = if (selectionCaretLine in 0 until lineProvider.size) lineProvider[selectionCaretLine] else null
         private var caretLineScope: AttributedTextScope? = null
 
         val isReverseSelection: Boolean
@@ -357,16 +362,16 @@ open class TextAreaNode(parent: UiNode?, surface: UiSurface) : BoxNode(parent, s
                 // single-line selection
                 val fromChar = min(selectionStartChar, selectionCaretChar)
                 val toChar = max(selectionStartChar, selectionCaretChar)
-                lines[selectionFromLine].text.substring(fromChar, toChar)
+                lineProvider[selectionFromLine].text.substring(fromChar, toChar)
 
             } else {
                 // multi-line selection
                 return buildString {
-                    append(lines[selectionFromLine].text.substring(selectionFromChar)).append('\n')
+                    append(lineProvider[selectionFromLine].text.substring(selectionFromChar)).append('\n')
                     for (i in (selectionFromLine + 1) until selectionToLine) {
-                        append(lines[i].text).append('\n')
+                        append(lineProvider[i].text).append('\n')
                     }
-                    append(lines[selectionToLine].text.substring(0, selectionToChar))
+                    append(lineProvider[selectionToLine].text.substring(0, selectionToChar))
                 }
             }
         }
@@ -376,7 +381,7 @@ open class TextAreaNode(parent: UiNode?, surface: UiSurface) : BoxNode(parent, s
         }
 
         fun selectAll() {
-            selectionChanged(0, lines.lastIndex, 0, lines.last().length, false)
+            selectionChanged(0, lineProvider.lastIndex, 0, lineProvider[lineProvider.lastIndex].length, false)
         }
 
         fun selectWord(attributedText: AttributedTextScope, text: String, lineIndex: Int, ev: PointerEvent) {
@@ -425,7 +430,7 @@ open class TextAreaNode(parent: UiNode?, surface: UiSurface) : BoxNode(parent, s
             caretLine?.text?.let { txt ->
                 if (selectionCaretChar == 0 && selectionCaretLine > 0) {
                     selectionCaretLine--
-                    val line = lines[selectionCaretLine]
+                    val line = lineProvider[selectionCaretLine]
                     val newTxt = line.text
                     selectionCaretChar = line.length
 
@@ -452,9 +457,9 @@ open class TextAreaNode(parent: UiNode?, surface: UiSurface) : BoxNode(parent, s
 
         fun moveCaretRight(wordWise: Boolean, select: Boolean) {
             caretLine?.text?.let { txt ->
-                if (selectionCaretChar == txt.length && selectionCaretLine < lines.lastIndex) {
+                if (selectionCaretChar == txt.length && selectionCaretLine < lineProvider.lastIndex) {
                     selectionCaretLine++
-                    val line = lines[selectionCaretLine]
+                    val line = lineProvider[selectionCaretLine]
                     val newTxt = line.text
                     selectionCaretChar = 0
 
@@ -503,15 +508,15 @@ open class TextAreaNode(parent: UiNode?, surface: UiSurface) : BoxNode(parent, s
             val line = caretLine ?: return
             val caretX = line.charIndexToPx(selectionCaretChar)
 
-            if (targetLine in lines.indices) {
-                selectionCaretChar = lines[targetLine].charIndexFromPx(caretX)
+            if (targetLine in 0 until lineProvider.size) {
+                selectionCaretChar = lineProvider[targetLine].charIndexFromPx(caretX)
                 selectionCaretLine = targetLine
             } else if (targetLine < 0) {
                 selectionCaretChar = 0
                 selectionCaretLine = 0
-            } else if (targetLine > lines.lastIndex) {
-                selectionCaretChar = lines[lines.lastIndex].length
-                selectionCaretLine = lines.lastIndex
+            } else if (targetLine > lineProvider.lastIndex) {
+                selectionCaretChar = lineProvider[lineProvider.lastIndex].length
+                selectionCaretLine = lineProvider.lastIndex
             }
 
             if (!select) {
@@ -566,11 +571,6 @@ open class TextAreaNode(parent: UiNode?, surface: UiSurface) : BoxNode(parent, s
         fun scrollToCaret() {
             val scrState = linesHolder.state
             scrState.scrollToItem.set(selectionCaretLine)
-//            if (selectionCaretLine < scrState.itemsFrom.value) {
-//                scrState.itemsFrom.set(selectionCaretLine)
-//            } else if (selectionCaretLine >= scrState.itemsTo) {
-//                scrState.itemsFrom.set(max(0, selectionCaretLine - scrState.numVisibleItems + 1))
-//            }
 
             val scrollPad = 16f
             val caretX = Dp.fromPx(caretLine?.charIndexToPx(selectionCaretChar) ?: 0f).value
@@ -592,6 +592,17 @@ open class TextAreaNode(parent: UiNode?, surface: UiSurface) : BoxNode(parent, s
 
         val factory: (UiNode, UiSurface) -> TextAreaNode = { parent, surface -> TextAreaNode(parent, surface) }
     }
+}
+
+interface TextLineProvider {
+    val size: Int
+    val lastIndex: Int get() = size - 1
+    operator fun get(index: Int): TextLine
+}
+
+class ListTextLineProvider(val lines: MutableList<TextLine> = mutableStateListOf()) : TextLineProvider {
+    override val size: Int get() = lines.size
+    override operator fun get(index: Int) = lines[index]
 }
 
 interface TextEditorHandler {
