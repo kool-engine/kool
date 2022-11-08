@@ -118,8 +118,7 @@ class UiDemo : DemoScene("UI Demo") {
     }
 
     fun closeWindow(window: DemoWindow, ctx: KoolContext) {
-        window.windowScope.windowState.dockedTo.value?.undock(window.windowScope)
-
+        dockingHost.undockWindow(window.windowScope)
         dockingHost -= window.windowSurface
         demoWindows -= window
         window.windowSurface.dispose(ctx)

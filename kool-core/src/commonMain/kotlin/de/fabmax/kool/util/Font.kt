@@ -13,7 +13,8 @@ sealed class Font(val sizePts: Float) {
 
     abstract fun setScale(scale: Float, ctx: KoolContext)
 
-    abstract fun textDimensions(text: String, result: TextMetrics = TextMetrics()): TextMetrics
+    abstract fun textDimensions(
+        text: String, result: TextMetrics = TextMetrics(), enforceSameWidthDigits: Boolean = true): TextMetrics
     abstract fun charWidth(char: Char): Float
     abstract fun charHeight(char: Char): Float
 

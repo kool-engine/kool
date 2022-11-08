@@ -6,6 +6,7 @@ import de.fabmax.kool.math.min
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Node
+import de.fabmax.kool.util.logW
 import kotlin.math.max
 
 interface DockingListener {
@@ -46,15 +47,27 @@ class DockingHost : Group() {
             } else if (b.position == p.first) {
                 b
             } else {
+                logW {
+                    "Unable to dock window \"${window.surface.name}\" to specified path $path: " +
+                        "${p.first} not in available slots (${a.position}, ${b.position})"
+                }
                 break
             }
         }
         container.getNearestLeaf().dock(window, bringToTop)
     }
 
+    fun undockWindow(window: WindowScope, updateHierarchy: Boolean = true) {
+        window.windowState.dockedTo.value?.undock(window, updateHierarchy)
+    }
+
+    fun updateHierarchy() {
+        dockingSurface.updateHierarchy()
+    }
+
     @Suppress("UNUSED_PARAMETER")
     fun onWindowMoveStart(ev: PointerEvent, window: WindowScope) {
-        window.windowState.dockedTo.value?.undock(window)
+        undockWindow(window)
     }
 
     @Suppress("UNUSED_PARAMETER")
@@ -154,11 +167,16 @@ class DockingHost : Group() {
 
         init {
             content = {
-                rootContainer.mergeEmptyChildren()
-                rootContainer.updateDepth()
+                //rootContainer.mergeEmptyChildren()
+                //rootContainer.updateDepth()
                 rootContainer()
             }
             inputMode = InputCaptureMode.CaptureDisabled
+        }
+
+        fun updateHierarchy() {
+            rootContainer.mergeEmptyChildren()
+            rootContainer.updateDepth()
         }
 
         fun getNodeAt(screenPos: Vec2f): DockingContainer? {

@@ -35,7 +35,7 @@ class MsdfFont(
         this.scale = scale
     }
 
-    override fun textDimensions(text: String, result: TextMetrics): TextMetrics {
+    override fun textDimensions(text: String, result: TextMetrics, enforceSameWidthDigits: Boolean): TextMetrics {
         var lineWidth = 0f
         result.baselineWidth = 0f
         result.height = lineHeight
@@ -53,7 +53,11 @@ class MsdfFont(
                 lineWidth = 0f
 
             } else {
-                val metrics = data.glyphMap[c] ?: continue
+                val metrics = if (c.isDigit() && enforceSameWidthDigits) {
+                    data.maxWidthDigit
+                } else {
+                    data.glyphMap[c]
+                }?: continue
                 lineWidth += metrics.advance * emScale
             }
         }
@@ -155,6 +159,8 @@ class MsdfFont(
 class MsdfFontData(val map: Texture2d, val meta: MsdfMeta) {
     val glyphMap = meta.glyphs.associateBy { it.unicode.toChar() }
     val kerning = meta.kerning.associate { (it.unicode1 shl 16) or it.unicode2 to it.advance }
+
+    val maxWidthDigit: MsdfGlyph? = ('0' ..'9').mapNotNull { glyphMap[it] }.maxByOrNull { it.advance }
 }
 
 @Serializable

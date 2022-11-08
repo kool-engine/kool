@@ -67,29 +67,13 @@ class DockingContainer(
         val result = mutableListOf<Pair<DockingHost.DockPosition, Dimension>>()
 
         var it: DockingContainer? = this
-        while (it != null) {
-            val dim = if (position.isHorizontal) width.value else height.value
-            result += position to dim
+        while (it != null && it != dockingHost.dockingSurface.rootContainer) {
+            val dim = if (position.isHorizontal) it.width.value else it.height.value
+            result += it.position to dim
             it = it.parent
         }
         result.reverse()
         return result
-    }
-
-    fun undock(window: WindowScope) {
-        dockedWindows -= window
-        window.windowState.dockedTo.set(null)
-        getWindowOnTop()?.let { bringToTop(it) }
-        dockingHost.dockingListeners.forEach { it.onWindowUndocked(window, this) }
-        parent?.mergeEmptyChildren()
-        dockingHost.dockingSurface.triggerUpdate()
-    }
-
-    fun getNearestLeaf(): DockingContainer {
-        val (a, b) = childContainers ?: return this
-        val aLeaf = a.getNearestLeaf()
-        val bLeaf = b.getNearestLeaf()
-        return if (aLeaf.depth < bLeaf.depth) aLeaf else bLeaf
     }
 
     fun dock(window: WindowScope, bringToTop: Boolean) {
@@ -112,6 +96,24 @@ class DockingContainer(
         }
         dockingHost.dockingListeners.forEach { it.onWindowDocked(window, this) }
         dockingHost.dockingSurface.triggerUpdate()
+    }
+
+    fun undock(window: WindowScope, updateHierarchy: Boolean) {
+        dockedWindows -= window
+        window.windowState.dockedTo.set(null)
+        getWindowOnTop()?.let { bringToTop(it) }
+        dockingHost.dockingListeners.forEach { it.onWindowUndocked(window, this) }
+        if (updateHierarchy) {
+            parent?.mergeEmptyChildren()
+        }
+        dockingHost.dockingSurface.triggerUpdate()
+    }
+
+    fun getNearestLeaf(): DockingContainer {
+        val (a, b) = childContainers ?: return this
+        val aLeaf = a.getNearestLeaf()
+        val bLeaf = b.getNearestLeaf()
+        return if (aLeaf.depth < bLeaf.depth) aLeaf else bLeaf
     }
 
     fun getNodeContainingSplitEdgeAt(screenPos: Vec2f): DockingContainer? {

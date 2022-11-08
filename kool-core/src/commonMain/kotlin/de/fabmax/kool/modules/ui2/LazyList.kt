@@ -352,9 +352,12 @@ open class LazyListNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, su
         val scrollPx = Dp(scrollAmountDp).px
         for (i in prevItems.indices) {
             val box = prevItems[i]
-            toContainer(box.rightPx - scrollPx, box.bottomPx - scrollPx, local)
-            if ((isVertical && local.y > 0f) || (isHorizontal && local.x > 0f)) {
-                return i
+            // item index check is required to avoid out of bounds item index in case items were removed
+            if (box.itemIndex in 0 until state.numTotalItems) {
+                toContainer(box.rightPx - scrollPx, box.bottomPx - scrollPx, local)
+                if ((isVertical && local.y > 0f) || (isHorizontal && local.x > 0f)) {
+                    return i
+                }
             }
         }
         return -1

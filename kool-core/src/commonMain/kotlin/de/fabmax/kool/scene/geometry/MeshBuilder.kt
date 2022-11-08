@@ -828,9 +828,17 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
                 }
 
                 val g = font.data.glyphMap[c] ?: continue
+                var adv = g.advance
+                if (c.isDigit() && props.enforceSameWidthDigits) {
+                    val digitAdv = font.data.maxWidthDigit?.advance ?: adv
+                    val delta = digitAdv - adv
+                    adv += delta * 0.5f
+                    advanced += delta * 0.5f
 
-                val kerningKey = (prevC shl 16) or c.code
-                font.data.kerning[kerningKey]?.let { advanced += it }
+                } else {
+                    val kerningKey = (prevC shl 16) or c.code
+                    font.data.kerning[kerningKey]?.let { advanced += it }
+                }
                 prevC = c.code
 
                 val yTop = if (props.isYAxisUp) g.planeBounds.top * s else -g.planeBounds.top * s
@@ -874,7 +882,7 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
                 addTriIndices(iBtLt, iBtRt, iTpRt)
                 addTriIndices(iBtLt, iTpRt, iTpLt)
 
-                advanced += g.advance
+                advanced += adv
             }
         }
     }
@@ -913,6 +921,14 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
 
                 val metrics = charMap[c]
                 if (metrics != null) {
+                    var adv = metrics.advance
+                    if (c.isDigit() && props.enforceSameWidthDigits) {
+                        val digitAdv = font.map?.maxWidthDigit?.advance ?: adv
+                        val delta = digitAdv - adv
+                        adv += delta * 0.5f
+                        advanced += delta * 0.5f
+                    }
+
                     var advOffset = 0f
                     if (ct == null) {
                         advOffset = advanced
@@ -941,7 +957,7 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
                             texCoordUpperRight.set(metrics.uvMax)
                         }
                     })
-                    advanced += metrics.advance
+                    advanced += adv
                 }
             }
         }
@@ -1179,6 +1195,7 @@ class TextProps(var font: Font) {
 
     var roundOriginToUnits = true
     var isYAxisUp = true
+    var enforceSameWidthDigits = true
 
     var charTransform: (MeshBuilder.(Float) -> Unit)? = null
 }

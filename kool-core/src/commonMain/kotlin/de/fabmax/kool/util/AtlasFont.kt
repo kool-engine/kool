@@ -33,8 +33,8 @@ class AtlasFont(
         getOrLoadFontMap(ctx, scale)
     }
 
-    override fun textDimensions(text: String, result: TextMetrics): TextMetrics {
-        return map?.textDimensions(text, result) ?: run {
+    override fun textDimensions(text: String, result: TextMetrics, enforceSameWidthDigits: Boolean): TextMetrics {
+        return map?.textDimensions(text, result, enforceSameWidthDigits) ?: run {
             logE { "Unable to measure text $text with font ${this}: Font is not loaded" }
             result
         }
@@ -135,7 +135,9 @@ class FontMap(
     private val map: MutableMap<Char, CharMetrics> = mutableMapOf()
 ) : MutableMap<Char, CharMetrics> by map {
 
-    fun textDimensions(text: String, result: TextMetrics = TextMetrics()): TextMetrics {
+    val maxWidthDigit: CharMetrics? = ('0' ..'9').mapNotNull { map[it] }.maxByOrNull { it.advance }
+
+    fun textDimensions(text: String, result: TextMetrics, enforceSameWidthDigits: Boolean): TextMetrics {
         var lineWidth = 0f
         result.baselineWidth = 0f
         result.height = 0f
@@ -153,7 +155,11 @@ class FontMap(
                 lineWidth = 0f
 
             } else {
-                val metrics = map[c] ?: continue
+                val metrics = if (c.isDigit() && enforceSameWidthDigits) {
+                    maxWidthDigit
+                } else {
+                    map[c]
+                }?: continue
                 lineWidth += metrics.advance
                 if (i == 0) {
                     result.height = metrics.height

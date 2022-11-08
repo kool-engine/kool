@@ -155,22 +155,45 @@ fun UiScope.TitleBarButton(
     }
 }
 
-fun UiScope.CloseButton(buttonMod: ((ButtonModifier) -> Unit)? = null, onClick: (PointerEvent) -> Unit) =
-    TitleBarButton(onClick, CloseButtonBackground(), buttonMod)
-fun UiScope.MinimizeButton(onClick: (PointerEvent) -> Unit) =
-    TitleBarButton(onClick, MinimizeButtonBackground(), null)
-fun UiScope.MaximizeButton(onClick: (PointerEvent) -> Unit) =
-    TitleBarButton(onClick, MaximizeButtonBackground(), null)
+fun UiScope.CloseButton(
+    foreground: Color = colors.secondary,
+    foregroundHover: Color = colors.primary,
+    background: Color = colors.background,
+    backgroundHover: Color = colors.backgroundVariant,
+    buttonMod: ((ButtonModifier) -> Unit)? = null,
+    onClick: (PointerEvent) -> Unit) =
+    TitleBarButton(onClick, CloseButtonBackground(foreground, foregroundHover, background, backgroundHover), buttonMod)
+fun UiScope.MinimizeButton(
+    foreground: Color = colors.secondary,
+    foregroundHover: Color = colors.primary,
+    background: Color = colors.background,
+    backgroundHover: Color = colors.backgroundVariant,
+    buttonMod: ((ButtonModifier) -> Unit)? = null,
+    onClick: (PointerEvent) -> Unit) =
+    TitleBarButton(onClick, MinimizeButtonBackground(foreground, foregroundHover, background, backgroundHover), buttonMod)
+fun UiScope.MaximizeButton(
+    foreground: Color = colors.secondary,
+    foregroundHover: Color = colors.primary,
+    background: Color = colors.background,
+    backgroundHover: Color = colors.backgroundVariant,
+    buttonMod: ((ButtonModifier) -> Unit)? = null,
+    onClick: (PointerEvent) -> Unit) =
+    TitleBarButton(onClick, MaximizeButtonBackground(foreground, foregroundHover, background, backgroundHover), buttonMod)
 
 abstract class TitleButtonBg : UiRenderer<UiNode> {
     var isHovered = false
 }
 
-class CloseButtonBackground : TitleButtonBg() {
+class CloseButtonBackground(
+    private val foreground: Color,
+    private val foregroundHover: Color,
+    private val background: Color,
+    private val backgroundHover: Color,
+) : TitleButtonBg() {
     override fun renderUi(node: UiNode) = node.run {
         val r = innerWidthPx * 0.5f
-        val bgColor = if (isHovered) colors.backgroundVariant else colors.background
-        val fgColor = if (isHovered) colors.primary else colors.secondary
+        val bgColor = if (isHovered) backgroundHover else background
+        val fgColor = if (isHovered) foregroundHover else foreground
         getUiPrimitives().localCircle(widthPx * 0.5f, heightPx * 0.5f, r, bgColor)
         getPlainBuilder().configured(fgColor) {
             translate(widthPx * 0.5f, heightPx * 0.5f, 0f)
@@ -187,23 +210,33 @@ class CloseButtonBackground : TitleButtonBg() {
     }
 }
 
-class MinimizeButtonBackground : TitleButtonBg() {
+class MinimizeButtonBackground(
+    private val foreground: Color,
+    private val foregroundHover: Color,
+    private val background: Color,
+    private val backgroundHover: Color,
+) : TitleButtonBg() {
     override fun renderUi(node: UiNode) = node.run {
         val r = innerWidthPx * 0.5f
         val draw = getUiPrimitives()
-        val bgColor = if (isHovered) colors.backgroundVariant else colors.background
-        val fgColor = if (isHovered) colors.primary else colors.secondary
+        val bgColor = if (isHovered) backgroundHover else background
+        val fgColor = if (isHovered) foregroundHover else foreground
         draw.localCircle(widthPx * 0.5f, heightPx * 0.5f, r, bgColor)
         draw.localRect(widthPx * 0.5f - r * 0.6f, heightPx * 0.5f - r * 0.1f, r * 1.2f, r * 0.2f, fgColor)
     }
 }
 
-class MaximizeButtonBackground : TitleButtonBg() {
+class MaximizeButtonBackground(
+    private val foreground: Color,
+    private val foregroundHover: Color,
+    private val background: Color,
+    private val backgroundHover: Color,
+) : TitleButtonBg() {
     override fun renderUi(node: UiNode) = node.run {
         val r = innerWidthPx * 0.5f
         val draw = getUiPrimitives()
-        val bgColor = if (isHovered) colors.backgroundVariant else colors.background
-        val fgColor = if (isHovered) colors.primary else colors.secondary
+        val bgColor = if (isHovered) backgroundHover else background
+        val fgColor = if (isHovered) foregroundHover else foreground
         draw.localCircle(widthPx * 0.5f, heightPx * 0.5f, r, bgColor)
         draw.localRectBorder(widthPx * 0.5f - r * 0.5f, heightPx * 0.5f - r * 0.5f, r, r, 1.5f.dp.px, fgColor)
     }
