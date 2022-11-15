@@ -112,6 +112,10 @@ open class GlfwWindow(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) {
     protected open fun onWindowSizeChanged(width: Int, height: Int) {
         windowWidth = width
         windowHeight = height
+
+        // with GLFW, window resizing blocks the main-loop, call renderFrame() from here to update window content
+        // during window resizing
+        ctx.renderFrame()
     }
 
     protected open fun onFramebufferSizeChanged(width: Int, height: Int) {
