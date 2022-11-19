@@ -28,7 +28,7 @@ abstract class SampleNode : AudioNode() {
     }
 
     protected abstract fun generate(dt: Float): Float
-    override fun nextSample(dt: Float): Float = generate(dt)
+    override fun nextSample(dt: Float): Float = next(dt)
 
     companion object {
         private val NOTE_TABLE = Array(15) { oct ->
