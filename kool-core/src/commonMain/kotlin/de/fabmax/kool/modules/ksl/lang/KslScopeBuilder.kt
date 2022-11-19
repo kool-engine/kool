@@ -497,7 +497,7 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
      * @param coord Specifies the texture coordinates at which texture will be sampled.
      * @param lod If present, specifies the level-of-detail within the texture from which the texel will be fetched.
      */
-    fun <T: KslTypeColorSampler<R>, R : KslFloatType> texelFetch(sampler: KslExpression<T>, coord: KslExpression<KslTypeInt2>,
+    fun <T: KslTypeColorSampler<R>, R : KslFloatType> texelFetch(sampler: KslExpression<T>, coord: KslExpression<*>,
                                                   lod: KslScalarExpression<KslTypeInt1>? = null) =
         KslTexelFetch(sampler, coord, lod)
 
