@@ -14,8 +14,8 @@ import de.fabmax.kool.scene.Model
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.animation.*
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.Log
 import de.fabmax.kool.util.ShadowMap
+import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logW
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
@@ -565,7 +565,7 @@ data class GltfFile(
                                 isSkinned = true
                                 maxJoints = min(cfg.materialConfig.maxNumberOfJoints, mesh.skin!!.nodes.size)
                                 if (cfg.materialConfig.maxNumberOfJoints < mesh.skin!!.nodes.size) {
-                                    Log.e("GltfFile") { "\"${model.name}\": Maximum number of joints exceeded (mesh has ${mesh.skin!!.nodes.size}, materialConfig.maxNumberOfJoints is ${cfg.materialConfig.maxNumberOfJoints})" }
+                                    logE("GltfFile") { "\"${model.name}\": Maximum number of joints exceeded (mesh has ${mesh.skin!!.nodes.size}, materialConfig.maxNumberOfJoints is ${cfg.materialConfig.maxNumberOfJoints})" }
                                 }
                             }
                             if (mesh.morphWeights != null) {

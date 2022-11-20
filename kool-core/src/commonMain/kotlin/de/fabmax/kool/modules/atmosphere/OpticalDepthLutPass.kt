@@ -9,7 +9,7 @@ import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.OrthographicCamera
 import de.fabmax.kool.scene.mesh
-import de.fabmax.kool.util.Log
+import de.fabmax.kool.util.logI
 
 class OpticalDepthLutPass(densityFun: String = DEFAULT_DENSITY_FUN) :
         OffscreenRenderPass2d(Group(), renderPassConfig {
@@ -85,7 +85,7 @@ class OpticalDepthLutPass(densityFun: String = DEFAULT_DENSITY_FUN) :
                     }
                 }
                 onUpdate += {
-                    Log.i("OpticalDepthLutPass") { "Updating atmosphere depth LUT: atmosphere radius = $atmosphereRadius, surface radius: $surfaceRadius, falloff: $densityFalloff" }
+                    logI("OpticalDepthLutPass") { "Updating atmosphere depth LUT: atmosphere radius = $atmosphereRadius, surface radius: $surfaceRadius, falloff: $densityFalloff" }
                 }
             }
         }

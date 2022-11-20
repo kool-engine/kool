@@ -12,22 +12,6 @@ object Log {
     var level = Level.DEBUG
     var printer: (lvl: Level, tag: String?, message: String) -> Unit = DEFAULT_PRINTER
 
-    inline fun tExt(src: Any, message: () -> String) = logExt(Level.TRACE, src, message)
-    inline fun t(tag: String?, message: () -> String) = log(Level.TRACE, tag, message)
-
-    inline fun dExt(src: Any, message: () -> String) = logExt(Level.DEBUG, src, message)
-    inline fun d(tag: String?, message: () -> String) = log(Level.DEBUG, tag, message)
-
-    inline fun iExt(src: Any, message: () -> String) = logExt(Level.INFO, src, message)
-    inline fun i(tag: String?, message: () -> String) = log(Level.INFO, tag, message)
-
-    inline fun wExt(src: Any, message: () -> String) = logExt(Level.WARN, src, message)
-    inline fun w(tag: String?, message: () -> String) = log(Level.WARN, tag, message)
-
-    inline fun eExt(src: Any, message: () -> String) = logExt(Level.ERROR, src, message)
-    inline fun e(tag: String?, message: () -> String) = log(Level.ERROR, tag, message)
-
-    inline fun logExt(level: Level, src: Any, message: () -> String) = log(level, src::class.simpleName, message)
     inline fun log(level: Level, tag: String?, message: () -> String) {
         if (level.level >= this.level.level) {
             printer(level, tag, message())
@@ -44,8 +28,14 @@ object Log {
     }
 }
 
-inline fun Any.logT(message: () -> String) = Log.tExt(this, message)
-inline fun Any.logD(message: () -> String) = Log.dExt(this, message)
-inline fun Any.logI(message: () -> String) = Log.iExt(this, message)
-inline fun Any.logW(message: () -> String) = Log.wExt(this, message)
-inline fun Any.logE(message: () -> String) = Log.eExt(this, message)
+inline fun Any.logT(message: () -> String) = logT(this::class.simpleName, message)
+inline fun Any.logD(message: () -> String) = logD(this::class.simpleName, message)
+inline fun Any.logI(message: () -> String) = logI(this::class.simpleName, message)
+inline fun Any.logW(message: () -> String) = logW(this::class.simpleName, message)
+inline fun Any.logE(message: () -> String) = logE(this::class.simpleName, message)
+
+inline fun logT(tag: String?, message: () -> String) = Log.log(Log.Level.TRACE, tag, message)
+inline fun logD(tag: String?, message: () -> String) = Log.log(Log.Level.DEBUG, tag, message)
+inline fun logI(tag: String?, message: () -> String) = Log.log(Log.Level.INFO, tag, message)
+inline fun logW(tag: String?, message: () -> String) = Log.log(Log.Level.WARN, tag, message)
+inline fun logE(tag: String?, message: () -> String) = Log.log(Log.Level.ERROR, tag, message)

@@ -1,7 +1,7 @@
 package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.platform.vk.pipeline.ShaderStage
-import de.fabmax.kool.util.Log
+import de.fabmax.kool.util.logD
 import org.lwjgl.vulkan.VK10
 
 actual class ShaderCode private constructor(private val vkCode: VkCode?, private val glCode: GlCode?) {
@@ -38,7 +38,7 @@ actual class ShaderCode private constructor(private val vkCode: VkCode?, private
             val vertShaderCode = ShaderStage.fromSource("vertShader", vertShaderSrc, VK10.VK_SHADER_STAGE_VERTEX_BIT)
             val fragShaderCode = ShaderStage.fromSource("fragShader", fragShaderSrc, VK10.VK_SHADER_STAGE_FRAGMENT_BIT)
 
-            Log.d("ShaderCode") { "Successfully compiled shader: vertShader: ${vertShaderCode.code.size} bytes, fragShader: ${fragShaderCode.code.size} bytes" }
+            logD("ShaderCode") { "Successfully compiled shader: vertShader: ${vertShaderCode.code.size} bytes, fragShader: ${fragShaderCode.code.size} bytes" }
             return ShaderCode(vertShaderCode, fragShaderCode)
         }
 

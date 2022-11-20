@@ -40,13 +40,13 @@ inline fun <T> timedMs(message: () -> String, tag: String? = "PerfTimer", level:
 inline fun <T> Any.timedMs(message: String, level: Log.Level = Log.Level.INFO, block: () -> T): T {
     val t = Time.precisionTime
     val ret = block()
-    Log.logExt(level, this) { "$message ${((Time.precisionTime - t) * 1000.0).toString(3)} ms" }
+    Log.log(level, this::class.simpleName) { "$message ${((Time.precisionTime - t) * 1000.0).toString(3)} ms" }
     return ret
 }
 
 inline fun <T> Any.timedMs(message: () -> String, level: Log.Level = Log.Level.INFO, block: () -> T): T {
     val t = Time.precisionTime
     val ret = block()
-    Log.logExt(level, this) { "${message()} ${((Time.precisionTime - t) * 1000.0).toString(3)} ms" }
+    Log.log(level, this::class.simpleName) { "${message()} ${((Time.precisionTime - t) * 1000.0).toString(3)} ms" }
     return ret
 }
