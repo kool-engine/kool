@@ -73,12 +73,12 @@ fun FilterData.toPxFilterData(target: PxFilterData): PxFilterData {
     return target
 }
 
-fun PxVehicleDrivableSurfaceToTireFrictionPairs_allocate(maxNbTireTypes: Int, maxNbSurfaceTypes: Int): PxVehicleDrivableSurfaceToTireFrictionPairs =
-    PhysXJsLoader.physXJs.PxVehicleDrivableSurfaceToTireFrictionPairs.prototype.allocate(maxNbTireTypes, maxNbSurfaceTypes)
-
-fun PxVehicleDrive4W_allocate(nbWheels: Int): PxVehicleDrive4W = PhysXJsLoader.physXJs.PxVehicleDrive4W.prototype.allocate(nbWheels)
-
-fun PxVehicleWheelsSimData_allocate(nbWheels: Int): PxVehicleWheelsSimData = PhysXJsLoader.physXJs.PxVehicleWheelsSimData.prototype.allocate(nbWheels)
+//fun PxVehicleDrivableSurfaceToTireFrictionPairs_allocate(maxNbTireTypes: Int, maxNbSurfaceTypes: Int): PxVehicleDrivableSurfaceToTireFrictionPairs =
+//    PhysXJsLoader.physXJs.PxVehicleDrivableSurfaceToTireFrictionPairs.prototype.allocate(maxNbTireTypes, maxNbSurfaceTypes)
+//
+//fun PxVehicleDrive4W_allocate(nbWheels: Int): PxVehicleDrive4W = PhysXJsLoader.physXJs.PxVehicleDrive4W.prototype.allocate(nbWheels)
+//
+//fun PxVehicleWheelsSimData_allocate(nbWheels: Int): PxVehicleWheelsSimData = PhysXJsLoader.physXJs.PxVehicleWheelsSimData.prototype.allocate(nbWheels)
 
 class MemoryStack private constructor() {
     val autoDeletables = mutableListOf<Any>()
@@ -104,6 +104,8 @@ class MemoryStack private constructor() {
         fun stackPush(): MemoryStack = MemoryStack()
     }
 
+    fun createPxArticulationDrive() = autoDelete(PxArticulationDrive())
+    fun createPxArticulationLimit(low: Float, high: Float) = autoDelete(PxArticulationLimit(low, high))
     fun createPxBoundedData() = autoDelete(PxBoundedData())
     fun createPxFilterData() = autoDelete(PxFilterData())
     fun createPxFilterData(w0: Int, w1: Int, w2: Int, w3: Int) = autoDelete(PxFilterData(w0, w1, w2, w3))
@@ -120,16 +122,16 @@ class MemoryStack private constructor() {
     fun createPxTransform(p: PxVec3, q: PxQuat) = autoDelete(PxTransform(p, q))
 
     fun createPxSceneDesc(scale: PxTolerancesScale) = autoDelete(PxSceneDesc(scale))
-    fun createPxBatchQueryDesc(maxRaycastsPerExecute: Int, maxSweepsPerExecute: Int, maxOverlapsPerExecute: Int) =
-        autoDelete(PxBatchQueryDesc(maxRaycastsPerExecute, maxSweepsPerExecute, maxOverlapsPerExecute))
+//    fun createPxBatchQueryDesc(maxRaycastsPerExecute: Int, maxSweepsPerExecute: Int, maxOverlapsPerExecute: Int) =
+//        autoDelete(PxBatchQueryDesc(maxRaycastsPerExecute, maxSweepsPerExecute, maxOverlapsPerExecute))
     fun createPxConvexMeshDesc() = autoDelete(PxConvexMeshDesc())
     fun createPxHeightFieldDesc() = autoDelete(PxHeightFieldDesc())
     fun createPxTriangleMeshDesc() = autoDelete(PxTriangleMeshDesc())
 
-    fun createPxVehicleAntiRollBarData() = autoDelete(PxVehicleAntiRollBarData())
-    fun createPxVehicleSuspensionData() = autoDelete(PxVehicleSuspensionData())
-    fun createPxVehicleTireData() = autoDelete(PxVehicleTireData())
-    fun createPxVehicleWheelData() = autoDelete(PxVehicleWheelData())
+//    fun createPxVehicleAntiRollBarData() = autoDelete(PxVehicleAntiRollBarData())
+//    fun createPxVehicleSuspensionData() = autoDelete(PxVehicleSuspensionData())
+//    fun createPxVehicleTireData() = autoDelete(PxVehicleTireData())
+//    fun createPxVehicleWheelData() = autoDelete(PxVehicleWheelData())
 
     fun createPxActorFlags(flags: Int) = autoDelete(PxActorFlags(flags.toByte()))
     fun createPxBaseFlags(flags: Int) = autoDelete(PxBaseFlags(flags.toShort()))
@@ -142,7 +144,7 @@ class MemoryStack private constructor() {
     fun createPxRigidDynamicLockFlags(flags: Int) = autoDelete(PxRigidDynamicLockFlags(flags.toByte()))
     fun createPxSceneFlags(flags: Int) = autoDelete(PxSceneFlags(flags))
     fun createPxShapeFlags(flags: Int) = autoDelete(PxShapeFlags(flags.toByte()))
-    fun createPxVehicleWheelsSimFlags(flags: Int) = autoDelete(PxVehicleWheelsSimFlags(flags))
+//    fun createPxVehicleWheelsSimFlags(flags: Int) = autoDelete(PxVehicleWheelsSimFlags(flags))
 
-    fun createBatchVehicleUpdateDesc() = autoDelete(BatchVehicleUpdateDesc())
+//    fun createBatchVehicleUpdateDesc() = autoDelete(BatchVehicleUpdateDesc())
 }

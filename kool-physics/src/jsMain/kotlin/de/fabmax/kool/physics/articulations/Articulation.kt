@@ -4,15 +4,21 @@ import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.physics.MemoryStack
 import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.physics.toPxTransform
-import physx.PxArticulation
+import physx.PxArticulationFlagEnum
+import physx.PxArticulationReducedCoordinate
 
-actual class Articulation : CommonArticulation() {
+actual class Articulation actual constructor(isFixedBase: Boolean) : CommonArticulation(isFixedBase) {
 
-    val pxArticulation: PxArticulation
+    val pxArticulation: PxArticulationReducedCoordinate
 
     init {
         Physics.checkIsLoaded()
-        pxArticulation = Physics.physics.createArticulation()
+        pxArticulation = Physics.physics.createArticulationReducedCoordinate()
+
+        if (isFixedBase) {
+            pxArticulation.setArticulationFlag(PxArticulationFlagEnum.eFIX_BASE, true)
+        }
+
     }
 
     actual fun createLink(parent: ArticulationLink?, pose: Mat4f): ArticulationLink {

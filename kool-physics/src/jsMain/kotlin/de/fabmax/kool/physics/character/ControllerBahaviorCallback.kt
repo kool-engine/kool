@@ -1,15 +1,15 @@
 package de.fabmax.kool.physics.character
 
 import de.fabmax.kool.physics.PhysicsWorld
-import physx.JavaControllerBehaviorCallback
 import physx.PxActor
+import physx.PxControllerBehaviorCallbackImpl
 import physx.PxControllerBehaviorFlagEnum
 
 class ControllerBahaviorCallback(private val world: PhysicsWorld) {
 
     lateinit var controller: JsCharacterController
 
-    val callback = JavaControllerBehaviorCallback().apply {
+    val callback = PxControllerBehaviorCallbackImpl().apply {
         getShapeBehaviorFlags = { _, actor: PxActor ->
             controller.hitActorBehaviorCallback?.let { cb ->
                 world.getActor(actor)?.let { rigidActor ->

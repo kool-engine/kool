@@ -24,11 +24,11 @@ object PhysicsLogging {
         if (code and logMask != 0) {
             val logMsg = "[${codeToString(code)}] $message [$file:$line]"
             if (code == DEBUG_INFO) {
-                logI { logMsg }
+                logI("PhysX") { logMsg }
             } else if (code == DEBUG_WARNING || code == PERF_WARNING) {
-                logW { logMsg }
+                logW("PhysX") { logMsg }
             } else {
-                logE { logMsg }
+                logE("PhysX") { logMsg }
             }
         }
     }

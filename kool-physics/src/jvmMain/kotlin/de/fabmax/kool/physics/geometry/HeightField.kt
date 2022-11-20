@@ -6,9 +6,9 @@ import de.fabmax.kool.physics.createPxHeightFieldDesc
 import de.fabmax.kool.physics.createPxHeightFieldSample
 import de.fabmax.kool.util.HeightMap
 import org.lwjgl.system.MemoryStack
-import physx.geomutils.PxHeightField
-import physx.geomutils.PxHeightFieldFormatEnum
-import physx.geomutils.PxHeightFieldSample
+import physx.geometry.PxHeightField
+import physx.geometry.PxHeightFieldFormatEnum
+import physx.geometry.PxHeightFieldSample
 import physx.support.Vector_PxHeightFieldSample
 import kotlin.math.max
 import kotlin.math.roundToInt

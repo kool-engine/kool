@@ -14,9 +14,9 @@ actual enum class D6JointMotion(val pxVal: Int) {
 
     companion object {
         fun fromPx(pxVal: Int) = when (pxVal) {
-            PxD6MotionEnum.eFREE -> D6JointMotion.Free
-            PxD6MotionEnum.eLIMITED -> D6JointMotion.Limited
-            PxD6MotionEnum.eLOCKED -> D6JointMotion.Locked
+            PxD6MotionEnum.eFREE -> Free
+            PxD6MotionEnum.eLIMITED -> Limited
+            PxD6MotionEnum.eLOCKED -> Locked
             else -> throw RuntimeException()
         }
     }
@@ -31,14 +31,6 @@ actual class D6Joint actual constructor(
 
     actual val frameA = Mat4f().set(posA)
     actual val frameB = Mat4f().set(posB)
-
-    actual var projectionLinearTolerance: Float? = null
-        set(value) = if (value != null) {
-            pxJoint.projectionLinearTolerance = value
-            pxJoint.constraintFlags.set(PxConstraintFlagEnum.ePROJECTION)
-        } else {
-            pxJoint.constraintFlags.clear(PxConstraintFlagEnum.ePROJECTION)
-        }
 
     override val pxJoint: PxD6Joint
 
@@ -65,8 +57,6 @@ actual class D6Joint actual constructor(
 
     actual fun setDistanceLimit(extend: Float, stiffness: Float, damping: Float) {
         pxJoint.setDistanceLimit(PxJointLinearLimit(extend, PxSpring(stiffness, damping)))
-        //pxJoint.constraintFlags += PxD6JointDriveFlagEnum.eACCELERATION
-        pxJoint.setConstraintFlag(PxD6JointDriveFlagEnum.eACCELERATION, true)
     }
 
     actual fun setXLinearLimit(lowerLimit: Float, upperLimit: Float, stiffness: Float, damping: Float) {
@@ -74,11 +64,13 @@ actual class D6Joint actual constructor(
             PxJointLinearLimitPair(lowerLimit, upperLimit, PxSpring(stiffness, damping)))
         motionX = D6JointMotion.Limited
     }
+
     actual fun setYLinearLimit(lowerLimit: Float, upperLimit: Float, stiffness: Float, damping: Float) {
         pxJoint.setLinearLimit(PxD6AxisEnum.eY,
             PxJointLinearLimitPair(lowerLimit, upperLimit, PxSpring(stiffness, damping)))
         motionY = D6JointMotion.Limited
     }
+
     actual fun setZLinearLimit(lowerLimit: Float, upperLimit: Float, stiffness: Float, damping: Float) {
         pxJoint.setLinearLimit(PxD6AxisEnum.eZ,
             PxJointLinearLimitPair(lowerLimit, upperLimit, PxSpring(stiffness, damping)))

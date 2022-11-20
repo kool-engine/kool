@@ -19,16 +19,17 @@ open class PhysxJsGenerator : DefaultTask() {
             throw FileNotFoundException("PhysX WebIDL definition not found!")
         }
 
-        val model = WebIdlParser().parse(idlFile.path)
-        JsInterfaceGenerator().apply {
-            outputDirectory = generatorOutput
-            packagePrefix = "physx"
-            moduleName = "physx-js-webidl"
-
-            nullableAttributes += "PxBatchQueryDesc.preFilterShader"
-            nullableAttributes += "PxBatchQueryDesc.postFilterShader"
-            nullableParameters += "PxArticulationBase.createLink" to "parent"
-            nullableReturnValues += "PxArticulationLink.getInboundJoint"
-        }.generate(model)
+        TODO("Update idl generator stuff")
+//        val model = WebIdlParser().parse(idlFile.path)
+//        JsInterfaceGenerator().apply {
+//            outputDirectory = generatorOutput
+//            packagePrefix = "physx"
+//            moduleName = "physx-js-webidl"
+//
+//            nullableAttributes += "PxBatchQueryDesc.preFilterShader"
+//            nullableAttributes += "PxBatchQueryDesc.postFilterShader"
+//            nullableParameters += "PxArticulationBase.createLink" to "parent"
+//            nullableReturnValues += "PxArticulationLink.getInboundJoint"
+//        }.generate(model)
     }
 }

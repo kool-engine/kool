@@ -2,7 +2,7 @@ package de.fabmax.kool.physics.geometry
 
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.Physics
-import physx.geomutils.PxBoxGeometry
+import physx.geometry.PxBoxGeometry
 
 actual class BoxGeometry actual constructor(size: Vec3f) : CommonBoxGeometry(size), CollisionGeometry {
 

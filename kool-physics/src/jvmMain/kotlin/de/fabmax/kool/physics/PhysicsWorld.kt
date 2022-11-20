@@ -11,15 +11,15 @@ import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logW
 import org.lwjgl.system.MemoryStack
 import physx.PxTopLevelFunctions
+import physx.common.PxDefaultCpuDispatcher
 import physx.common.PxVec3
-import physx.extensions.PxDefaultCpuDispatcher
 import physx.physics.*
 import physx.support.SupportFunctions
 import physx.support.TypeHelpers
 import physx.support.Vector_PxContactPairPoint
 import kotlin.collections.set
 
-actual class PhysicsWorld actual constructor(scene: Scene?, val isContinuousCollisionDetection: Boolean, val numWorkers: Int) : CommonPhysicsWorld(), Releasable {
+actual class PhysicsWorld actual constructor(scene: Scene?, val isContinuousCollisionDetection: Boolean, numWorkers: Int) : CommonPhysicsWorld(), Releasable {
     val pxScene: PxScene
 
     private val cpuDispatcher: PxDefaultCpuDispatcher
@@ -54,7 +54,7 @@ actual class PhysicsWorld actual constructor(scene: Scene?, val isContinuousColl
             sceneDesc.cpuDispatcher = this.cpuDispatcher
             sceneDesc.filterShader = PxTopLevelFunctions.DefaultFilterShader()
             sceneDesc.simulationEventCallback = SimEventCallback()
-            sceneDesc.flags.set(flags)
+            sceneDesc.flags.raise(flags)
             pxScene = Physics.physics.createScene(sceneDesc)
         }
         scene?.let { registerHandlers(it) }
@@ -192,7 +192,7 @@ actual class PhysicsWorld actual constructor(scene: Scene?, val isContinuousColl
         return result.isHit
     }
 
-    private inner class SimEventCallback : JavaSimulationEventCallback() {
+    private inner class SimEventCallback : PxSimulationEventCallbackImpl() {
         val contacts = Vector_PxContactPairPoint(64)
 
         override fun onTrigger(pairs: PxTriggerPair, count: Int) {
@@ -205,19 +205,13 @@ actual class PhysicsWorld actual constructor(scene: Scene?, val isContinuousColl
                 if (trigger != null && actor != null) {
                     triggerListeners[trigger]?.apply {
                         var cnt = actorEnterCounts.getOrPut(actor) { 0 }
-                        val shape = actor.shapes.find { it.pxShape == pair.otherShape }
-                        if (shape == null) {
-                            logE { "shape reference not found" }
-                        }
                         if (isEnter) {
                             cnt++
                             if (cnt == 1) {
                                 listeners.forEach { it.onActorEntered(trigger, actor) }
                             }
-                            shape?.let { s -> listeners.forEach { it.onShapeEntered(trigger, actor, s) } }
                         } else {
                             cnt--
-                            shape?.let { s -> listeners.forEach { it.onShapeExited(trigger, actor, s) } }
                             if (cnt == 0) {
                                 listeners.forEach { it.onActorExited(trigger, actor) }
                             }

@@ -1,7 +1,7 @@
 package de.fabmax.kool.physics.geometry
 
 import de.fabmax.kool.physics.Physics
-import physx.geomutils.PxPlaneGeometry
+import physx.geometry.PxPlaneGeometry
 
 actual class PlaneGeometry : CommonPlaneGeometry(), CollisionGeometry {
 

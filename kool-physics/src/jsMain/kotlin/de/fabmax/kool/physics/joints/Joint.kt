@@ -20,7 +20,7 @@ actual abstract class Joint : Releasable {
 
     actual var debugVisualize: Boolean = false
         set(value) = if ( value ) {
-            pxJoint.constraintFlags.set(PxConstraintFlagEnum.eVISUALIZATION)
+            pxJoint.constraintFlags.raise(PxConstraintFlagEnum.eVISUALIZATION)
         } else {
             pxJoint.constraintFlags.clear(PxConstraintFlagEnum.eVISUALIZATION)
         }

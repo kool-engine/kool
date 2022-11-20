@@ -13,6 +13,7 @@ kotlin {
         }
     }
     js(IR) {
+        binaries.executable()
         browser {
             @Suppress("OPT_IN_IS_NOT_ENABLED")
             @OptIn(ExperimentalDistributionDsl::class)
@@ -26,7 +27,6 @@ kotlin {
                     KotlinWebpackConfig.Mode.DEVELOPMENT
                 }
             }
-            binaries.executable()
         }
     }
 
@@ -61,9 +61,7 @@ kotlin {
                 runtimeOnly(DepsJvm.lwjglNatives("shaderc"))
                 runtimeOnly(DepsJvm.lwjglNatives("nfd"))
 
-                runtimeOnly("de.fabmax:physx-jni:1.1.0:natives-windows")
-                runtimeOnly("de.fabmax:physx-jni:1.1.0:natives-linux")
-                runtimeOnly("de.fabmax:physx-jni:1.1.0:natives-macos")
+                runtimeOnly(DepsJvm.physxJniRuntime)
             }
         }
 

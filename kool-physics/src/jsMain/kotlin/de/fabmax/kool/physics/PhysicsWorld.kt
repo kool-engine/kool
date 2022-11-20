@@ -47,7 +47,7 @@ actual class PhysicsWorld actual constructor(scene: Scene?, val isContinuousColl
             sceneDesc.cpuDispatcher = cpuDispatcher
             sceneDesc.filterShader = Physics.Px.DefaultFilterShader()
             sceneDesc.simulationEventCallback = simEventCallback()
-            sceneDesc.flags.set(flags)
+            sceneDesc.flags.raise(flags)
             pxScene = Physics.physics.createScene(sceneDesc)
         }
 
@@ -186,7 +186,7 @@ actual class PhysicsWorld actual constructor(scene: Scene?, val isContinuousColl
         return result.isHit
     }
 
-    private fun simEventCallback() = JavaSimulationEventCallback().apply {
+    private fun simEventCallback() = PxSimulationEventCallbackImpl().apply {
         val contacts = Vector_PxContactPairPoint(64)
 
         onConstraintBreak = { _, _ -> }
@@ -202,20 +202,13 @@ actual class PhysicsWorld actual constructor(scene: Scene?, val isContinuousColl
                 if (trigger != null && actor != null) {
                     triggerListeners[trigger]?.apply {
                         var cnt = actorEnterCounts.getOrPut(actor) { 0 }
-                        val shapeAddr = pair.otherShape.ptr
-                        val shape = actor.shapes.find { it.pxShape?.ptr == shapeAddr }
-                        if (shape == null) {
-                            logE { "shape reference not found" }
-                        }
                         if (isEnter) {
                             cnt++
                             if (cnt == 1) {
                                 listeners.forEach { it.onActorEntered(trigger, actor) }
                             }
-                            shape?.let { s -> listeners.forEach { it.onShapeEntered(trigger, actor, s) } }
                         } else {
                             cnt--
-                            shape?.let { s -> listeners.forEach { it.onShapeExited(trigger, actor, s) } }
                             if (cnt == 0) {
                                 listeners.forEach { it.onActorExited(trigger, actor) }
                             }

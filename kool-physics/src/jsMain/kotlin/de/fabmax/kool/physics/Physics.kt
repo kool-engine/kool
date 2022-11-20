@@ -1,6 +1,5 @@
 package de.fabmax.kool.physics
 
-import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.vehicle.FrictionPairs
 import de.fabmax.kool.util.logI
 import kotlinx.coroutines.CompletableDeferred
@@ -36,7 +35,7 @@ actual object Physics : CoroutineScope {
     val TypeHelpers: TypeHelpers get() = PhysXJsLoader.physXJs.TypeHelpers.prototype
     val SupportFunctions: SupportFunctions get() = PhysXJsLoader.physXJs.SupportFunctions.prototype
     val Px: PxTopLevelFunctions get() = PhysXJsLoader.physXJs.PxTopLevelFunctions.prototype
-    val PxVehicle: PxVehicleTopLevelFunctions get() = PhysXJsLoader.physXJs.PxVehicleTopLevelFunctions.prototype
+    //val PxVehicle: PxVehicleTopLevelFunctions get() = PhysXJsLoader.physXJs.PxVehicleTopLevelFunctions.prototype
     val PxRigidActorExt: PxRigidActorExt get() = PhysXJsLoader.physXJs.PxRigidActorExt.prototype
     val PxRigidBodyExt: PxRigidBodyExt get() = PhysXJsLoader.physXJs.PxRigidBodyExt.prototype
 
@@ -56,7 +55,7 @@ actual object Physics : CoroutineScope {
             isLoading = true
             PhysXJsLoader.addOnLoadListener {
                 val allocator = PxDefaultAllocator()
-                val errorCallback = JavaErrorCallback()
+                val errorCallback = PxErrorCallbackImpl()
                 errorCallback.reportError = { code, message, file, line ->
                     PhysicsLogging.logPhysics(code, message, file, line)
                 }
@@ -74,13 +73,13 @@ actual object Physics : CoroutineScope {
                 defaultBodyFlags = PxShapeFlags((PxShapeFlagEnum.eSCENE_QUERY_SHAPE or PxShapeFlagEnum.eSIMULATION_SHAPE).toByte())
 
                 // init vehicle simulation framework
-                MemoryStack.stackPush().use { mem ->
-                    val up = Vec3f.Y_AXIS.toPxVec3(mem.createPxVec3())
-                    val front = Vec3f.Z_AXIS.toPxVec3(mem.createPxVec3())
-                    PxVehicle.InitVehicleSDK(physics)
-                    PxVehicle.VehicleSetBasisVectors(up, front)
-                    PxVehicle.VehicleSetUpdateMode(PxVehicleUpdateModeEnum.eVELOCITY_CHANGE)
-                }
+//                MemoryStack.stackPush().use { mem ->
+//                    val up = Vec3f.Y_AXIS.toPxVec3(mem.createPxVec3())
+//                    val front = Vec3f.Z_AXIS.toPxVec3(mem.createPxVec3())
+//                    PxVehicle.InitVehicleSDK(physics)
+//                    PxVehicle.VehicleSetBasisVectors(up, front)
+//                    PxVehicle.VehicleSetUpdateMode(PxVehicleUpdateModeEnum.eVELOCITY_CHANGE)
+//                }
 
                 logI { "PhysX loaded, version: ${pxVersionToString(Px.PHYSICS_VERSION)}" }
                 loadingDeferred.complete(Unit)

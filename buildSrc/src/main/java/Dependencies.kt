@@ -4,15 +4,6 @@ object Versions {
     val kotlinVersion = "1.7.20"
     val kotlinCorroutinesVersion = "1.6.4"
     val kotlinSerializationVersion = "1.4.0"
-
-    val lwjglVersion = "3.3.1"
-    val lwjglNatives = OperatingSystem.current().let {
-        when {
-            it.isLinux -> "natives-linux"
-            it.isMacOsX -> "natives-macos"
-            else -> "natives-windows"
-        }
-    }
 }
 
 object DepsCommon {
@@ -22,19 +13,32 @@ object DepsCommon {
 }
 
 object DepsJvm {
+    val lwjglVersion = "3.3.1"
+    val nativeLibsSuffix = OperatingSystem.current().let {
+        when {
+            it.isLinux -> "natives-linux"
+            it.isMacOsX -> "natives-macos"
+            else -> "natives-windows"
+        }
+    }
+
+    val physxJniVersion = "2.0.2-SNAPSHOT"
+    val physxJni = "de.fabmax:physx-jni:2.0.2-SNAPSHOT"
+    val physxJniRuntime = "de.fabmax:physx-jni:2.0.2-SNAPSHOT:${nativeLibsSuffix}"
+
     fun lwjgl(subLib: String? = null): String {
         return if (subLib != null) {
-            "org.lwjgl:lwjgl-$subLib:${Versions.lwjglVersion}"
+            "org.lwjgl:lwjgl-$subLib:${lwjglVersion}"
         } else {
-            "org.lwjgl:lwjgl:${Versions.lwjglVersion}"
+            "org.lwjgl:lwjgl:${lwjglVersion}"
         }
     }
 
     fun lwjglNatives(subLib: String? = null): String {
         return if (subLib != null) {
-            "org.lwjgl:lwjgl-$subLib:${Versions.lwjglVersion}:${Versions.lwjglNatives}"
+            "org.lwjgl:lwjgl-$subLib:${lwjglVersion}:${nativeLibsSuffix}"
         } else {
-            "org.lwjgl:lwjgl:${Versions.lwjglVersion}:${Versions.lwjglNatives}"
+            "org.lwjgl:lwjgl:${lwjglVersion}:${nativeLibsSuffix}"
         }
     }
 }

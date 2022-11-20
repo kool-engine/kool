@@ -3,7 +3,7 @@ package de.fabmax.kool.physics.geometry
 import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.physics.createPxMeshGeometryFlags
 import org.lwjgl.system.MemoryStack
-import physx.geomutils.PxHeightFieldGeometry
+import physx.geometry.PxHeightFieldGeometry
 
 actual class HeightFieldGeometry actual constructor(heightField: HeightField) : CommonHeightFieldGeometry(heightField) {
 

@@ -5,15 +5,21 @@ import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.physics.createPxTransform
 import de.fabmax.kool.physics.toPxTransform
 import org.lwjgl.system.MemoryStack
-import physx.physics.PxArticulation
+import physx.physics.PxArticulationFlagEnum
+import physx.physics.PxArticulationReducedCoordinate
 
-actual class Articulation : CommonArticulation() {
+actual class Articulation actual constructor(isFixedBase: Boolean) : CommonArticulation(isFixedBase) {
 
-    val pxArticulation: PxArticulation
+    val pxArticulation: PxArticulationReducedCoordinate
 
     init {
         Physics.checkIsLoaded()
-        pxArticulation = Physics.physics.createArticulation()
+        pxArticulation = Physics.physics.createArticulationReducedCoordinate()
+
+        if (isFixedBase) {
+            pxArticulation.setArticulationFlag(PxArticulationFlagEnum.eFIX_BASE, true)
+        }
+
     }
 
     actual fun createLink(parent: ArticulationLink?, pose: Mat4f): ArticulationLink {

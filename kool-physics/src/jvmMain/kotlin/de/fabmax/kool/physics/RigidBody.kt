@@ -7,6 +7,7 @@ import physx.common.PxVec3
 import physx.extensions.PxRigidBodyExt
 import physx.physics.PxForceModeEnum
 import physx.physics.PxRigidBody
+import physx.physics.PxRigidDynamic
 
 actual abstract class RigidBody : RigidActor() {
 
@@ -27,11 +28,19 @@ actual abstract class RigidBody : RigidActor() {
 
     actual var linearVelocity: Vec3f
         get() = pxRigidBody.linearVelocity.toVec3f(bufLinVelocity)
-        set(value) { pxRigidBody.linearVelocity = value.toPxVec3(pxTmpVec) }
+        set(value) {
+            (pxRigidBody as? PxRigidDynamic)?.let {
+                it.linearVelocity = value.toPxVec3(pxTmpVec)
+            }
+        }
 
     actual var angularVelocity: Vec3f
         get() = pxRigidBody.angularVelocity.toVec3f(bufAngVelocity)
-        set(value) { pxRigidBody.angularVelocity = value.toPxVec3(pxTmpVec) }
+        set(value) {
+            (pxRigidBody as? PxRigidDynamic)?.let {
+                it.angularVelocity = value.toPxVec3(pxTmpVec)
+            }
+        }
 
     actual var maxLinearVelocity: Float
         get() = pxRigidBody.maxLinearVelocity

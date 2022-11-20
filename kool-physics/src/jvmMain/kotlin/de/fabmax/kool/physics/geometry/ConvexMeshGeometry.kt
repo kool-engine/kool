@@ -4,8 +4,8 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.*
 import org.lwjgl.system.MemoryStack
-import physx.geomutils.PxConvexMeshGeometry
-import physx.geomutils.PxGeometry
+import physx.geometry.PxConvexMeshGeometry
+import physx.geometry.PxGeometry
 
 actual class ConvexMeshGeometry actual constructor(convexMesh: ConvexMesh, scale: Vec3f) : CommonConvexMeshGeometry(convexMesh, scale), CollisionGeometry {
 

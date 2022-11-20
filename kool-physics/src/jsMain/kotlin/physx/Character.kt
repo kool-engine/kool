@@ -23,18 +23,21 @@ external interface PxBoxController : PxController {
 
     /**
      * @param halfHeight WebIDL type: float
+     * @return WebIDL type: boolean
      */
-    fun setHalfHeight(halfHeight: Float)
+    fun setHalfHeight(halfHeight: Float): Boolean
 
     /**
      * @param halfSideExtent WebIDL type: float
+     * @return WebIDL type: boolean
      */
-    fun setHalfSideExtent(halfSideExtent: Float)
+    fun setHalfSideExtent(halfSideExtent: Float): Boolean
 
     /**
      * @param halfForwardExtent WebIDL type: float
+     * @return WebIDL type: boolean
      */
-    fun setHalfForwardExtent(halfForwardExtent: Float)
+    fun setHalfForwardExtent(halfForwardExtent: Float): Boolean
 
 }
 
@@ -63,11 +66,6 @@ external interface PxBoxControllerDesc : PxControllerDesc {
     var halfForwardExtent: Float
 
     fun setToDefault()
-
-    /**
-     * @return WebIDL type: boolean
-     */
-    override fun isValid(): Boolean
 
 }
 
@@ -104,8 +102,9 @@ external interface PxCapsuleController : PxController {
 
     /**
      * @param radius WebIDL type: float
+     * @return WebIDL type: boolean
      */
-    fun setRadius(radius: Float)
+    fun setRadius(radius: Float): Boolean
 
     /**
      * @return WebIDL type: float
@@ -114,8 +113,9 @@ external interface PxCapsuleController : PxController {
 
     /**
      * @param height WebIDL type: float
+     * @return WebIDL type: boolean
      */
-    fun setHeight(height: Float)
+    fun setHeight(height: Float): Boolean
 
     /**
      * @return WebIDL type: [PxCapsuleClimbingModeEnum] (enum)
@@ -155,11 +155,6 @@ external interface PxCapsuleControllerDesc : PxControllerDesc {
     var climbingMode: Int
 
     fun setToDefault()
-
-    /**
-     * @return WebIDL type: boolean
-     */
-    override fun isValid(): Boolean
 
 }
 
@@ -395,7 +390,7 @@ fun SimpleControllerBehaviorCallback.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
-external interface JavaControllerBehaviorCallback : SimpleControllerBehaviorCallback {
+external interface PxControllerBehaviorCallbackImpl : SimpleControllerBehaviorCallback {
     /**
      * param shape WebIDL type: [PxShape] (Const, Ref)
      * param actor WebIDL type: [PxActor] (Const, Ref)
@@ -417,9 +412,9 @@ external interface JavaControllerBehaviorCallback : SimpleControllerBehaviorCall
 
 }
 
-fun JavaControllerBehaviorCallback(): JavaControllerBehaviorCallback {
-    fun _JavaControllerBehaviorCallback(_module: dynamic) = js("new _module.JavaControllerBehaviorCallback()")
-    return _JavaControllerBehaviorCallback(PhysXJsLoader.physXJs)
+fun PxControllerBehaviorCallbackImpl(): PxControllerBehaviorCallbackImpl {
+    fun _PxControllerBehaviorCallbackImpl(_module: dynamic) = js("new _module.PxControllerBehaviorCallbackImpl()")
+    return _PxControllerBehaviorCallbackImpl(PhysXJsLoader.physXJs)
 }
 
 external interface PxControllerBehaviorFlags {
@@ -437,7 +432,7 @@ external interface PxControllerBehaviorFlags {
     /**
      * @param flag WebIDL type: [PxControllerBehaviorFlagEnum] (enum)
      */
-    fun set(flag: Int)
+    fun raise(flag: Int)
 
     /**
      * @param flag WebIDL type: [PxControllerBehaviorFlagEnum] (enum)
@@ -473,7 +468,7 @@ external interface PxControllerCollisionFlags {
     /**
      * @param flag WebIDL type: [PxControllerCollisionFlagEnum] (enum)
      */
-    fun set(flag: Int)
+    fun raise(flag: Int)
 
     /**
      * @param flag WebIDL type: [PxControllerCollisionFlagEnum] (enum)
@@ -640,7 +635,7 @@ fun PxControllerFilterCallback.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
-external interface JavaControllerFilterCallback : PxControllerFilterCallback {
+external interface PxControllerFilterCallbackImpl : PxControllerFilterCallback {
     /**
      * param a WebIDL type: [PxController] (Const, Ref)
      * param b WebIDL type: [PxController] (Const, Ref)
@@ -648,6 +643,11 @@ external interface JavaControllerFilterCallback : PxControllerFilterCallback {
      */
     var filter: (a: PxController, b: PxController) -> Boolean
 
+}
+
+fun PxControllerFilterCallbackImpl(): PxControllerFilterCallbackImpl {
+    fun _PxControllerFilterCallbackImpl(_module: dynamic) = js("new _module.PxControllerFilterCallbackImpl()")
+    return _PxControllerFilterCallbackImpl(PhysXJsLoader.physXJs)
 }
 
 external interface PxControllerHit {
@@ -1043,7 +1043,7 @@ external interface PxUserControllerHitReport {
 
 }
 
-external interface JavaUserControllerHitReport : PxUserControllerHitReport {
+external interface PxUserControllerHitReportImpl : PxUserControllerHitReport {
     /**
      * param hit WebIDL type: [PxControllerShapeHit] (Const, Ref)
      */
@@ -1061,9 +1061,9 @@ external interface JavaUserControllerHitReport : PxUserControllerHitReport {
 
 }
 
-fun JavaUserControllerHitReport(): JavaUserControllerHitReport {
-    fun _JavaUserControllerHitReport(_module: dynamic) = js("new _module.JavaUserControllerHitReport()")
-    return _JavaUserControllerHitReport(PhysXJsLoader.physXJs)
+fun PxUserControllerHitReportImpl(): PxUserControllerHitReportImpl {
+    fun _PxUserControllerHitReportImpl(_module: dynamic) = js("new _module.PxUserControllerHitReportImpl()")
+    return _PxUserControllerHitReportImpl(PhysXJsLoader.physXJs)
 }
 
 object PxCapsuleClimbingModeEnum {

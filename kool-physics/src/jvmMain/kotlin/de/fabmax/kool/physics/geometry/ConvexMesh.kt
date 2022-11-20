@@ -8,7 +8,7 @@ import de.fabmax.kool.scene.geometry.IndexedVertexList
 import org.lwjgl.system.MemoryStack
 import physx.common.PxVec3
 import physx.cooking.PxConvexFlagEnum
-import physx.geomutils.PxConvexMesh
+import physx.geometry.PxConvexMesh
 import physx.support.TypeHelpers
 
 actual class ConvexMesh actual constructor(actual val points: List<Vec3f>) : Releasable {

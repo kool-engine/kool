@@ -3,7 +3,7 @@ package de.fabmax.kool.physics.articulations
 import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.physics.Releasable
 
-expect class Articulation() : CommonArticulation {
+expect class Articulation(isFixedBase: Boolean) : CommonArticulation {
 
     fun createLink(parent: ArticulationLink?, pose: Mat4f): ArticulationLink
 
@@ -12,7 +12,7 @@ expect class Articulation() : CommonArticulation {
     fun putToSleep()
 }
 
-abstract class CommonArticulation : Releasable {
+abstract class CommonArticulation(val isFixedBase: Boolean) : Releasable {
 
     protected val mutLinks = mutableListOf<ArticulationLink>()
     val links: List<ArticulationLink>

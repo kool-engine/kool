@@ -1,14 +1,14 @@
 package de.fabmax.kool.physics.character
 
 import de.fabmax.kool.physics.PhysicsWorld
-import physx.character.JavaControllerBehaviorCallback
 import physx.character.PxController
+import physx.character.PxControllerBehaviorCallbackImpl
 import physx.character.PxControllerBehaviorFlagEnum
 import physx.character.PxObstacle
 import physx.physics.PxActor
 import physx.physics.PxShape
 
-class ControllerBahaviorCallback(private val world: PhysicsWorld) : JavaControllerBehaviorCallback() {
+class ControllerBahaviorCallback(private val world: PhysicsWorld) : PxControllerBehaviorCallbackImpl() {
 
     lateinit var controller: JvmCharacterController
 

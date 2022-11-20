@@ -24,11 +24,15 @@ actual abstract class RigidBody : RigidActor() {
 
     actual var linearVelocity: Vec3f
         get() = pxRigidBody.linearVelocity.toVec3f(bufLinVelocity)
-        set(value) { pxRigidBody.linearVelocity = value.toPxVec3(pxTmpVec) }
+        set(value) {
+            (pxRigidBody as? PxRigidDynamic)?.setLinearVelocity(value.toPxVec3(pxTmpVec))
+        }
 
     actual var angularVelocity: Vec3f
         get() = pxRigidBody.angularVelocity.toVec3f(bufAngVelocity)
-        set(value) { pxRigidBody.angularVelocity = value.toPxVec3(pxTmpVec) }
+        set(value) {
+            (pxRigidBody as? PxRigidDynamic)?.setAngularVelocity(value.toPxVec3(pxTmpVec))
+        }
 
     actual var maxLinearVelocity: Float
         get() = pxRigidBody.maxLinearVelocity

@@ -11,6 +11,10 @@
 config.resolve = {
     fallback: {
         path: false,
-        fs: false
+        fs: false,
+
+        // required if physx is compiled with multithreading enabled (-pthread option)
+        perf_hooks: false,
+        worker_threads: false
     }
 }

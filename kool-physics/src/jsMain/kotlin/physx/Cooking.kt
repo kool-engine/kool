@@ -72,7 +72,7 @@ external interface PxConvexFlags {
     /**
      * @param flag WebIDL type: [PxConvexFlagEnum] (enum)
      */
-    fun set(flag: Int)
+    fun raise(flag: Int)
 
     /**
      * @param flag WebIDL type: [PxConvexFlagEnum] (enum)
@@ -128,24 +128,24 @@ external interface PxCooking {
 
     /**
      * @param desc              WebIDL type: [PxConvexMeshDesc] (Const, Ref)
-     * @param insertionCallback WebIDL type: [PxPhysicsInsertionCallback] (Ref)
+     * @param insertionCallback WebIDL type: [PxInsertionCallback] (Ref)
      * @return WebIDL type: [PxConvexMesh]
      */
-    fun createConvexMesh(desc: PxConvexMeshDesc, insertionCallback: PxPhysicsInsertionCallback): PxConvexMesh
+    fun createConvexMesh(desc: PxConvexMeshDesc, insertionCallback: PxInsertionCallback): PxConvexMesh
 
     /**
      * @param desc              WebIDL type: [PxTriangleMeshDesc] (Const, Ref)
-     * @param insertionCallback WebIDL type: [PxPhysicsInsertionCallback] (Ref)
+     * @param insertionCallback WebIDL type: [PxInsertionCallback] (Ref)
      * @return WebIDL type: [PxTriangleMesh]
      */
-    fun createTriangleMesh(desc: PxTriangleMeshDesc, insertionCallback: PxPhysicsInsertionCallback): PxTriangleMesh
+    fun createTriangleMesh(desc: PxTriangleMeshDesc, insertionCallback: PxInsertionCallback): PxTriangleMesh
 
     /**
      * @param desc              WebIDL type: [PxHeightFieldDesc] (Const, Ref)
-     * @param insertionCallback WebIDL type: [PxPhysicsInsertionCallback] (Ref)
+     * @param insertionCallback WebIDL type: [PxInsertionCallback] (Ref)
      * @return WebIDL type: [PxHeightField]
      */
-    fun createHeightField(desc: PxHeightFieldDesc, insertionCallback: PxPhysicsInsertionCallback): PxHeightField
+    fun createHeightField(desc: PxHeightFieldDesc, insertionCallback: PxInsertionCallback): PxHeightField
 
 }
 
@@ -228,7 +228,7 @@ external interface PxMeshPreprocessingFlags {
     /**
      * @param flag WebIDL type: [PxMeshPreprocessingFlagEnum] (enum)
      */
-    fun set(flag: Int)
+    fun raise(flag: Int)
 
     /**
      * @param flag WebIDL type: [PxMeshPreprocessingFlagEnum] (enum)
@@ -298,14 +298,6 @@ external interface PxTriangleMeshDesc : PxSimpleTriangleMesh {
      * WebIDL type: [PxU16StridedData] (Value)
      */
     var materialIndices: PxU16StridedData
-
-    override fun setToDefault()
-
-    /**
-     * @return WebIDL type: boolean
-     */
-    override fun isValid(): Boolean
-
 }
 
 fun PxTriangleMeshDesc(): PxTriangleMeshDesc {

@@ -4,7 +4,7 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.spatial.BoundingBox
 import de.fabmax.kool.physics.Releasable
 import de.fabmax.kool.scene.geometry.MeshBuilder
-import physx.geomutils.PxGeometry
+import physx.geometry.PxGeometry
 
 actual interface CollisionGeometry : Releasable {
     val pxGeometry: PxGeometry

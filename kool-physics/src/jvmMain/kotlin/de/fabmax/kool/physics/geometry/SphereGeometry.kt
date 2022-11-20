@@ -1,7 +1,7 @@
 package de.fabmax.kool.physics.geometry
 
 import de.fabmax.kool.physics.Physics
-import physx.geomutils.PxSphereGeometry
+import physx.geometry.PxSphereGeometry
 
 actual class SphereGeometry actual constructor(radius: Float) : CommonSphereGeometry(radius), CollisionGeometry {
 

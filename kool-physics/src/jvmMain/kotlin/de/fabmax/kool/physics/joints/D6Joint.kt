@@ -8,7 +8,6 @@ import de.fabmax.kool.physics.toPxTransform
 import org.lwjgl.system.MemoryStack
 import physx.PxTopLevelFunctions
 import physx.extensions.*
-import physx.physics.PxConstraintFlagEnum
 
 actual enum class D6JointMotion(val pxVal: Int) {
     Free(PxD6MotionEnum.eFREE),
@@ -17,32 +16,25 @@ actual enum class D6JointMotion(val pxVal: Int) {
 
     companion object {
         fun fromPx(pxVal: Int) = when (pxVal) {
-            PxD6MotionEnum.eFREE -> D6JointMotion.Free
-            PxD6MotionEnum.eLIMITED -> D6JointMotion.Limited
-            PxD6MotionEnum.eLOCKED -> D6JointMotion.Locked
+            PxD6MotionEnum.eFREE -> Free
+            PxD6MotionEnum.eLIMITED -> Limited
+            PxD6MotionEnum.eLOCKED -> Locked
             else -> throw RuntimeException()
         }
     }
 }
+
 actual class D6Joint actual constructor(
     actual val bodyA: RigidActor,
     actual val bodyB: RigidActor,
     posA: Mat4f,
     posB: Mat4f
 ) : Joint() {
+
     actual val frameA = Mat4f().set(posA)
     actual val frameB = Mat4f().set(posB)
 
-    actual var projectionLinearTolerance: Float? = null
-        set(value) = if ( value != null ) {
-            pxJoint.projectionLinearTolerance = value
-            pxJoint.constraintFlags.set(PxConstraintFlagEnum.ePROJECTION)
-        } else {
-            pxJoint.constraintFlags.clear(PxConstraintFlagEnum.ePROJECTION)
-        }
-
     override val pxJoint: PxD6Joint
-
 
     init {
         Physics.checkIsLoaded()

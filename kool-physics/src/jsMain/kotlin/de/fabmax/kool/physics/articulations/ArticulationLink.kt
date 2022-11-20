@@ -1,6 +1,5 @@
 package de.fabmax.kool.physics.articulations
 
-import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.physics.RigidBody
 import physx.PxArticulationLink
 import physx.inboundJoint
@@ -12,8 +11,7 @@ actual class ArticulationLink(val pxLink: PxArticulationLink, val parent: Articu
         get() = mutChildren
 
     actual val inboundJoint: ArticulationJoint? = if (parent != null) {
-        @Suppress("UNCHECKED_CAST_TO_EXTERNAL_INTERFACE")
-        ArticulationJoint(Physics.TypeHelpers.articulationBaseJointToJoint(pxLink.inboundJoint!!))
+        pxLink.inboundJoint?.let { ArticulationJoint(it) }
     } else {
         null
     }
@@ -22,4 +20,5 @@ actual class ArticulationLink(val pxLink: PxArticulationLink, val parent: Articu
         pxRigidActor = pxLink
         parent?.mutChildren?.add(this)
     }
+
 }

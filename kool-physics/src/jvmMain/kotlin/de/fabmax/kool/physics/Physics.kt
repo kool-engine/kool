@@ -1,26 +1,22 @@
 package de.fabmax.kool.physics
 
-import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.vehicle.FrictionPairs
 import de.fabmax.kool.util.logI
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import org.lwjgl.system.MemoryStack
 import physx.PxTopLevelFunctions
-import physx.common.JavaErrorCallback
+import physx.common.PxDefaultAllocator
+import physx.common.PxErrorCallbackImpl
 import physx.common.PxFoundation
 import physx.common.PxTolerancesScale
 import physx.cooking.PxCooking
 import physx.cooking.PxCookingParams
 import physx.cooking.PxMeshMidPhaseEnum
 import physx.cooking.PxMidphaseDesc
-import physx.extensions.PxDefaultAllocator
 import physx.physics.PxPairFlagEnum
 import physx.physics.PxPhysics
 import physx.physics.PxShapeFlagEnum
 import physx.physics.PxShapeFlags
-import physx.vehicle.PxVehicleTopLevelFunctions
-import physx.vehicle.PxVehicleUpdateModeEnum
 import kotlin.coroutines.CoroutineContext
 
 actual object Physics : CoroutineScope {
@@ -71,13 +67,13 @@ actual object Physics : CoroutineScope {
         defaultBodyFlags = PxShapeFlags((PxShapeFlagEnum.eSCENE_QUERY_SHAPE or PxShapeFlagEnum.eSIMULATION_SHAPE).toByte())
 
         // init vehicle simulation framework
-        MemoryStack.stackPush().use { mem ->
-            val up = Vec3f.Y_AXIS.toPxVec3(mem.createPxVec3())
-            val front = Vec3f.Z_AXIS.toPxVec3(mem.createPxVec3())
-            PxVehicleTopLevelFunctions.InitVehicleSDK(physics)
-            PxVehicleTopLevelFunctions.VehicleSetBasisVectors(up, front)
-            PxVehicleTopLevelFunctions.VehicleSetUpdateMode(PxVehicleUpdateModeEnum.eVELOCITY_CHANGE)
-        }
+//        MemoryStack.stackPush().use { mem ->
+//            val up = Vec3f.Y_AXIS.toPxVec3(mem.createPxVec3())
+//            val front = Vec3f.Z_AXIS.toPxVec3(mem.createPxVec3())
+//            PxVehicleTopLevelFunctions.InitVehicleSDK(physics)
+//            PxVehicleTopLevelFunctions.VehicleSetBasisVectors(up, front)
+//            PxVehicleTopLevelFunctions.VehicleSetUpdateMode(PxVehicleUpdateModeEnum.eVELOCITY_CHANGE)
+//        }
         defaultSurfaceFrictions = FrictionPairs(mapOf(defaultMaterial to 1.5f))
 
         logI { "PhysX loaded, version: ${pxVersionToString(version)}" }
@@ -100,7 +96,7 @@ actual object Physics : CoroutineScope {
         return "$major.$minor.$bugfix"
     }
 
-    private class KoolErrorCallback : JavaErrorCallback() {
+    private class KoolErrorCallback : PxErrorCallbackImpl() {
         override fun reportError(code: Int, message: String, file: String, line: Int) {
             PhysicsLogging.logPhysics(code, message, file, line)
         }

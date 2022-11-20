@@ -1,7 +1,7 @@
 package de.fabmax.kool.physics.geometry
 
 import de.fabmax.kool.physics.Physics
-import physx.geomutils.PxCapsuleGeometry
+import physx.geometry.PxCapsuleGeometry
 
 actual class CapsuleGeometry actual constructor(height: Float, radius: Float) : CommonCapsuleGeometry(height, radius), CollisionGeometry {
 

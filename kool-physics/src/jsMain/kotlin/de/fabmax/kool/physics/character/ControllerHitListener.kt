@@ -6,8 +6,8 @@ import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.physics.PhysicsWorld
 import de.fabmax.kool.physics.toVec3d
 import de.fabmax.kool.physics.toVec3f
-import physx.JavaUserControllerHitReport
 import physx.PxControllerShapeHit
+import physx.PxUserControllerHitReportImpl
 
 class ControllerHitListener(val world: PhysicsWorld) {
 
@@ -17,7 +17,7 @@ class ControllerHitListener(val world: PhysicsWorld) {
 
     lateinit var controller: JsCharacterController
 
-    val callback = JavaUserControllerHitReport().apply {
+    val callback = PxUserControllerHitReportImpl().apply {
         onShapeHit = { h: PxControllerShapeHit ->
             val hit = Physics.TypeHelpers.getControllerShapeHitAt(h, 0)
             hit.worldNormal.toVec3f(hitNormal)

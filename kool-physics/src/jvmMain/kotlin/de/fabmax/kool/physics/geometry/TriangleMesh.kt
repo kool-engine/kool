@@ -4,7 +4,7 @@ import de.fabmax.kool.physics.*
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import org.lwjgl.system.MemoryStack
 import physx.common.PxVec3
-import physx.geomutils.PxTriangleMesh
+import physx.geometry.PxTriangleMesh
 import physx.support.Vector_PxU32
 import physx.support.Vector_PxVec3
 

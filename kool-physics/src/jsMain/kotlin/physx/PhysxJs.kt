@@ -41,14 +41,6 @@ external interface PxTopLevelFunctions {
     fun CreateControllerManager(scene: PxScene, lockingEnabled: Boolean): PxControllerManager
 
     /**
-     * @param version    WebIDL type: unsigned long
-     * @param foundation WebIDL type: [PxFoundation] (Ref)
-     * @param scale      WebIDL type: [PxCookingParams] (Const, Ref)
-     * @return WebIDL type: [PxCooking]
-     */
-    fun CreateCooking(version: Int, foundation: PxFoundation, scale: PxCookingParams): PxCooking
-
-    /**
      * @param version       WebIDL type: unsigned long
      * @param allocator     WebIDL type: [PxDefaultAllocator] (Ref)
      * @param errorCallback WebIDL type: [PxErrorCallback] (Ref)
@@ -89,80 +81,97 @@ external interface PxTopLevelFunctions {
 
     /**
      * @param foundation WebIDL type: [PxFoundation] (Ref)
-     * @param desc       WebIDL type: [PxCudaContextManagerDesc] (Const, Ref)
-     * @return WebIDL type: [PxCudaContextManager]
-     */
-    fun CreateCudaContextManager(foundation: PxFoundation, desc: PxCudaContextManagerDesc): PxCudaContextManager
-
-    /**
-     * @param foundation WebIDL type: [PxFoundation] (Ref)
      * @return WebIDL type: [PxPvd]
      */
     fun CreatePvd(foundation: PxFoundation): PxPvd
 
     /**
      * @param physics     WebIDL type: [PxPhysics] (Ref)
-     * @param actor0      WebIDL type: [PxRigidActor]
+     * @param actor0      WebIDL type: [PxRigidActor] (Nullable)
      * @param localFrame0 WebIDL type: [PxTransform] (Ref)
-     * @param actor1      WebIDL type: [PxRigidActor]
+     * @param actor1      WebIDL type: [PxRigidActor] (Nullable)
      * @param localFrame1 WebIDL type: [PxTransform] (Ref)
      * @return WebIDL type: [PxD6Joint]
      */
-    fun D6JointCreate(physics: PxPhysics, actor0: PxRigidActor, localFrame0: PxTransform, actor1: PxRigidActor, localFrame1: PxTransform): PxD6Joint
+    fun D6JointCreate(physics: PxPhysics, actor0: PxRigidActor?, localFrame0: PxTransform, actor1: PxRigidActor?, localFrame1: PxTransform): PxD6Joint
 
     /**
      * @param physics     WebIDL type: [PxPhysics] (Ref)
-     * @param actor0      WebIDL type: [PxRigidActor]
+     * @param actor0      WebIDL type: [PxRigidActor] (Nullable)
      * @param localFrame0 WebIDL type: [PxTransform] (Ref)
-     * @param actor1      WebIDL type: [PxRigidActor]
+     * @param actor1      WebIDL type: [PxRigidActor] (Nullable)
      * @param localFrame1 WebIDL type: [PxTransform] (Ref)
      * @return WebIDL type: [PxDistanceJoint]
      */
-    fun DistanceJointCreate(physics: PxPhysics, actor0: PxRigidActor, localFrame0: PxTransform, actor1: PxRigidActor, localFrame1: PxTransform): PxDistanceJoint
+    fun DistanceJointCreate(physics: PxPhysics, actor0: PxRigidActor?, localFrame0: PxTransform, actor1: PxRigidActor?, localFrame1: PxTransform): PxDistanceJoint
 
     /**
      * @param physics     WebIDL type: [PxPhysics] (Ref)
-     * @param actor0      WebIDL type: [PxRigidActor]
+     * @param actor0      WebIDL type: [PxRigidActor] (Nullable)
      * @param localFrame0 WebIDL type: [PxTransform] (Ref)
-     * @param actor1      WebIDL type: [PxRigidActor]
+     * @param actor1      WebIDL type: [PxRigidActor] (Nullable)
      * @param localFrame1 WebIDL type: [PxTransform] (Ref)
      * @return WebIDL type: [PxFixedJoint]
      */
-    fun FixedJointCreate(physics: PxPhysics, actor0: PxRigidActor, localFrame0: PxTransform, actor1: PxRigidActor, localFrame1: PxTransform): PxFixedJoint
+    fun FixedJointCreate(physics: PxPhysics, actor0: PxRigidActor?, localFrame0: PxTransform, actor1: PxRigidActor?, localFrame1: PxTransform): PxFixedJoint
 
     /**
      * @param physics     WebIDL type: [PxPhysics] (Ref)
-     * @param actor0      WebIDL type: [PxRigidActor]
+     * @param actor0      WebIDL type: [PxRigidActor] (Nullable)
      * @param localFrame0 WebIDL type: [PxTransform] (Ref)
-     * @param actor1      WebIDL type: [PxRigidActor]
+     * @param actor1      WebIDL type: [PxRigidActor] (Nullable)
      * @param localFrame1 WebIDL type: [PxTransform] (Ref)
      * @return WebIDL type: [PxPrismaticJoint]
      */
-    fun PrismaticJointCreate(physics: PxPhysics, actor0: PxRigidActor, localFrame0: PxTransform, actor1: PxRigidActor, localFrame1: PxTransform): PxPrismaticJoint
+    fun PrismaticJointCreate(physics: PxPhysics, actor0: PxRigidActor?, localFrame0: PxTransform, actor1: PxRigidActor?, localFrame1: PxTransform): PxPrismaticJoint
 
     /**
      * @param physics     WebIDL type: [PxPhysics] (Ref)
-     * @param actor0      WebIDL type: [PxRigidActor]
+     * @param actor0      WebIDL type: [PxRigidActor] (Nullable)
      * @param localFrame0 WebIDL type: [PxTransform] (Ref)
-     * @param actor1      WebIDL type: [PxRigidActor]
+     * @param actor1      WebIDL type: [PxRigidActor] (Nullable)
      * @param localFrame1 WebIDL type: [PxTransform] (Ref)
      * @return WebIDL type: [PxRevoluteJoint]
      */
-    fun RevoluteJointCreate(physics: PxPhysics, actor0: PxRigidActor, localFrame0: PxTransform, actor1: PxRigidActor, localFrame1: PxTransform): PxRevoluteJoint
+    fun RevoluteJointCreate(physics: PxPhysics, actor0: PxRigidActor?, localFrame0: PxTransform, actor1: PxRigidActor?, localFrame1: PxTransform): PxRevoluteJoint
 
     /**
      * @param physics     WebIDL type: [PxPhysics] (Ref)
-     * @param actor0      WebIDL type: [PxRigidActor]
+     * @param actor0      WebIDL type: [PxRigidActor] (Nullable)
      * @param localFrame0 WebIDL type: [PxTransform] (Ref)
-     * @param actor1      WebIDL type: [PxRigidActor]
+     * @param actor1      WebIDL type: [PxRigidActor] (Nullable)
      * @param localFrame1 WebIDL type: [PxTransform] (Ref)
      * @return WebIDL type: [PxSphericalJoint]
      */
-    fun SphericalJointCreate(physics: PxPhysics, actor0: PxRigidActor, localFrame0: PxTransform, actor1: PxRigidActor, localFrame1: PxTransform): PxSphericalJoint
+    fun SphericalJointCreate(physics: PxPhysics, actor0: PxRigidActor?, localFrame0: PxTransform, actor1: PxRigidActor?, localFrame1: PxTransform): PxSphericalJoint
 
-}
+    /**
+     * @param params WebIDL type: [PxCookingParams] (Const, Ref)
+     * @param desc   WebIDL type: [PxConvexMeshDesc] (Const, Ref)
+     * @return WebIDL type: [PxConvexMesh]
+     */
+    fun CreateConvexMesh(params: PxCookingParams, desc: PxConvexMeshDesc): PxConvexMesh
 
-fun PxTopLevelFunctions.destroy() {
-    PhysXJsLoader.destroy(this)
+    /**
+     * @param params WebIDL type: [PxCookingParams] (Const, Ref)
+     * @param desc   WebIDL type: [PxTriangleMeshDesc] (Const, Ref)
+     * @return WebIDL type: [PxTriangleMesh]
+     */
+    fun CreateTriangleMesh(params: PxCookingParams, desc: PxTriangleMeshDesc): PxTriangleMesh
+
+    /**
+     * @param desc WebIDL type: [PxHeightFieldDesc] (Const, Ref)
+     * @return WebIDL type: [PxHeightField]
+     */
+    fun CreateHeightField(desc: PxHeightFieldDesc): PxHeightField
+
+    /**
+     * @param version    WebIDL type: unsigned long
+     * @param foundation WebIDL type: [PxFoundation] (Ref)
+     * @param scale      WebIDL type: [PxCookingParams] (Const, Ref)
+     * @return WebIDL type: [PxCooking]
+     */
+    fun CreateCooking(version: Int, foundation: PxFoundation, scale: PxCookingParams): PxCooking
+
 }
 

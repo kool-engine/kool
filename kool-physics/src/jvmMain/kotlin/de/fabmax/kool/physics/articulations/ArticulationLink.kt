@@ -1,7 +1,6 @@
 package de.fabmax.kool.physics.articulations
 
 import de.fabmax.kool.physics.RigidBody
-import physx.physics.PxArticulationJoint
 import physx.physics.PxArticulationLink
 
 @Suppress("CanBeParameter")
@@ -12,7 +11,7 @@ actual class ArticulationLink(val pxLink: PxArticulationLink, val parent: Articu
         get() = mutChildren
 
     actual val inboundJoint: ArticulationJoint? = if (parent != null) {
-        ArticulationJoint(PxArticulationJoint.wrapPointer(pxLink.inboundJoint.address))
+        pxLink.inboundJoint?.let { ArticulationJoint(it) }
     } else {
         null
     }

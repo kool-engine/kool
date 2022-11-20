@@ -2,9 +2,10 @@ package de.fabmax.kool.physics.vehicle
 
 import de.fabmax.kool.physics.Material
 import de.fabmax.kool.physics.Physics
-import de.fabmax.kool.physics.PxVehicleDrivableSurfaceToTireFrictionPairs_allocate
 import de.fabmax.kool.physics.Releasable
-import physx.*
+import physx.PxMaterial
+import physx.Vector_PxMaterialConst
+import physx.destroy
 
 class FrictionPairs(val nbTireTypes: Int, val materials: List<PxMaterial>, val surfaceTypes: List<Int>) : Releasable {
 
@@ -24,7 +25,7 @@ class FrictionPairs(val nbTireTypes: Int, val materials: List<PxMaterial>, val s
         }
     }
 
-    val frictionPairs: PxVehicleDrivableSurfaceToTireFrictionPairs
+//    val frictionPairs: PxVehicleDrivableSurfaceToTireFrictionPairs
 
     init {
         Physics.checkIsLoaded()
@@ -35,22 +36,22 @@ class FrictionPairs(val nbTireTypes: Int, val materials: List<PxMaterial>, val s
             materialVec.push_back(it)
         }
 
-        frictionPairs = PxVehicleDrivableSurfaceToTireFrictionPairs_allocate(nbTireTypes, nbSurfaceTypes)
-
-        val surfaceTypes = Vector_PxVehicleDrivableSurfaceType()
-        surfaceTypes.push_back(PxVehicleDrivableSurfaceType().apply { mType = 1 })
-
-        frictionPairs.setup(nbTireTypes, nbSurfaceTypes, materialVec.data(), surfaceTypes.data())
-
-        // initialize friction pairs with 1.0
-        for (s in 0 until nbSurfaceTypes) {
-            for (t in 0 until nbTireTypes) {
-                frictionPairs.setTypePairFriction(s, t, 1f)
-            }
-        }
+//        frictionPairs = PxVehicleDrivableSurfaceToTireFrictionPairs_allocate(nbTireTypes, nbSurfaceTypes)
+//
+//        val surfaceTypes = Vector_PxVehicleDrivableSurfaceType()
+//        surfaceTypes.push_back(PxVehicleDrivableSurfaceType().apply { mType = 1 })
+//
+//        frictionPairs.setup(nbTireTypes, nbSurfaceTypes, materialVec.data(), surfaceTypes.data())
+//
+//        // initialize friction pairs with 1.0
+//        for (s in 0 until nbSurfaceTypes) {
+//            for (t in 0 until nbTireTypes) {
+//                frictionPairs.setTypePairFriction(s, t, 1f)
+//            }
+//        }
 
         materialVec.destroy()
-        surfaceTypes.destroy()
+//        surfaceTypes.destroy()
     }
 
     fun setTypePairFriction(material: PxMaterial, tireType: Int, friction: Float) {
@@ -62,11 +63,11 @@ class FrictionPairs(val nbTireTypes: Int, val materials: List<PxMaterial>, val s
             throw IllegalArgumentException("tireType out of range: $tireType !in [0 .. ${nbTireTypes - 1}]")
         }
         val surfaceType = surfaceTypes[iMaterial]
-        frictionPairs.setTypePairFriction(surfaceType, tireType, friction)
+//        frictionPairs.setTypePairFriction(surfaceType, tireType, friction)
     }
 
     override fun release() {
-        frictionPairs.release()
+//        frictionPairs.release()
     }
 
     companion object {

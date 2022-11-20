@@ -1,7 +1,7 @@
 package de.fabmax.kool.physics.geometry
 
 import de.fabmax.kool.physics.Physics
-import physx.geomutils.PxConvexMeshGeometry
+import physx.geometry.PxConvexMeshGeometry
 
 actual class CylinderGeometry actual constructor(length: Float, radius: Float) : CommonCylinderGeometry(length, radius), CollisionGeometry {
 
