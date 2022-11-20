@@ -21,14 +21,13 @@ abstract class SampleNode : AudioNode() {
         return sample
     }
 
-    fun next(dt: Float): Float {
+    override fun nextSample(dt: Float): Float {
         t += dt
         sample = generate(dt) * gain
         return sample
     }
 
     protected abstract fun generate(dt: Float): Float
-    override fun nextSample(dt: Float): Float = next(dt)
 
     companion object {
         private val NOTE_TABLE = Array(15) { oct ->
