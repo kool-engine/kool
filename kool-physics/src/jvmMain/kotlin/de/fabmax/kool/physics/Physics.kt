@@ -1,14 +1,13 @@
 package de.fabmax.kool.physics
 
+import de.fabmax.kool.math.max
+import de.fabmax.kool.math.min
 import de.fabmax.kool.physics.vehicle.FrictionPairs
 import de.fabmax.kool.util.logI
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import physx.PxTopLevelFunctions
-import physx.common.PxDefaultAllocator
-import physx.common.PxErrorCallbackImpl
-import physx.common.PxFoundation
-import physx.common.PxTolerancesScale
+import physx.common.*
 import physx.cooking.PxCooking
 import physx.cooking.PxCookingParams
 import physx.cooking.PxMeshMidPhaseEnum
@@ -33,6 +32,8 @@ actual object Physics : CoroutineScope {
         get() = job
 
     actual val isLoaded = true
+
+    val defaultCpuDispatcher: PxDefaultCpuDispatcher
 
     actual val defaultMaterial = Material(0.5f)
     val defaultSurfaceFrictions: FrictionPairs
@@ -76,7 +77,11 @@ actual object Physics : CoroutineScope {
 //        }
         defaultSurfaceFrictions = FrictionPairs(mapOf(defaultMaterial to 1.5f))
 
-        logI { "PhysX loaded, version: ${pxVersionToString(version)}" }
+        // try to choose a sensible number of worker threads:
+        val numWorkers = min(16, max(1, Runtime.getRuntime().availableProcessors() - 2))
+        defaultCpuDispatcher = PxTopLevelFunctions.DefaultCpuDispatcherCreate(numWorkers)
+
+        logI { "PhysX loaded, version: ${pxVersionToString(version)}, using $numWorkers worker threads" }
     }
 
     actual fun loadPhysics() { }

@@ -28,6 +28,11 @@ enum class ShapeType {
             val sz = genCtx.rand.randomF(2f, 3f)
             val mass = sx * sy * sz
             return CollisionShapes(mass, Shape(BoxGeometry(Vec3f(sx, sy, sz)), genCtx.material))
+//            return CollisionShapes(mass, Shape(BoxGeometry(Vec3f(sx, sy, sz)), genCtx.material, simFilterData = FilterData {
+//                setCollisionGroup(0)
+//                setCollidesWithEverything()
+//                word2 = Physics.NOTIFY_TOUCH_FOUND
+//            }))
         }
     },
 

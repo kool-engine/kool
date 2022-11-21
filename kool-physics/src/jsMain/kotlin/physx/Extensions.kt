@@ -43,6 +43,8 @@ external interface PxCollectionExt {
 
 }
 
+fun PxCollectionExtFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxCollectionExt = js("_module.wrapPointer(ptr, _module.PxCollectionExt)")
+
 fun PxCollectionExt.destroy() {
     PhysXJsLoader.destroy(this)
 }
@@ -76,10 +78,9 @@ external interface PxDefaultMemoryInputData : PxInputData {
  * @param data   WebIDL type: [PxU8Ptr] (Ref)
  * @param length WebIDL type: unsigned long
  */
-fun PxDefaultMemoryInputData(data: PxU8Ptr, length: Int): PxDefaultMemoryInputData {
-    fun _PxDefaultMemoryInputData(_module: dynamic, data: PxU8Ptr, length: Int) = js("new _module.PxDefaultMemoryInputData(data, length)")
-    return _PxDefaultMemoryInputData(PhysXJsLoader.physXJs, data, length)
-}
+fun PxDefaultMemoryInputData(data: PxU8Ptr, length: Int, _module: dynamic = PhysXJsLoader.physXJs): PxDefaultMemoryInputData = js("new _module.PxDefaultMemoryInputData(data, length)")
+
+fun PxDefaultMemoryInputDataFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxDefaultMemoryInputData = js("_module.wrapPointer(ptr, _module.PxDefaultMemoryInputData)")
 
 fun PxDefaultMemoryInputData.destroy() {
     PhysXJsLoader.destroy(this)
@@ -107,10 +108,9 @@ external interface PxDefaultMemoryOutputStream : PxOutputStream {
 
 }
 
-fun PxDefaultMemoryOutputStream(): PxDefaultMemoryOutputStream {
-    fun _PxDefaultMemoryOutputStream(_module: dynamic) = js("new _module.PxDefaultMemoryOutputStream()")
-    return _PxDefaultMemoryOutputStream(PhysXJsLoader.physXJs)
-}
+fun PxDefaultMemoryOutputStream(_module: dynamic = PhysXJsLoader.physXJs): PxDefaultMemoryOutputStream = js("new _module.PxDefaultMemoryOutputStream()")
+
+fun PxDefaultMemoryOutputStreamFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxDefaultMemoryOutputStream = js("_module.wrapPointer(ptr, _module.PxDefaultMemoryOutputStream)")
 
 fun PxDefaultMemoryOutputStream.destroy() {
     PhysXJsLoader.destroy(this)
@@ -148,10 +148,9 @@ external interface PxMeshOverlapUtil {
 
 }
 
-fun PxMeshOverlapUtil(): PxMeshOverlapUtil {
-    fun _PxMeshOverlapUtil(_module: dynamic) = js("new _module.PxMeshOverlapUtil()")
-    return _PxMeshOverlapUtil(PhysXJsLoader.physXJs)
-}
+fun PxMeshOverlapUtil(_module: dynamic = PhysXJsLoader.physXJs): PxMeshOverlapUtil = js("new _module.PxMeshOverlapUtil()")
+
+fun PxMeshOverlapUtilFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxMeshOverlapUtil = js("_module.wrapPointer(ptr, _module.PxMeshOverlapUtil)")
 
 fun PxMeshOverlapUtil.destroy() {
     PhysXJsLoader.destroy(this)
@@ -186,6 +185,8 @@ external interface PxRigidActorExt {
     fun createExclusiveShape(actor: PxRigidActor, geometry: PxGeometry, material: PxMaterial, flags: PxShapeFlags): PxShape
 
 }
+
+fun PxRigidActorExtFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxRigidActorExt = js("_module.wrapPointer(ptr, _module.PxRigidActorExt)")
 
 fun PxRigidActorExt.destroy() {
     PhysXJsLoader.destroy(this)
@@ -397,6 +398,8 @@ external interface PxRigidBodyExt {
 
 }
 
+fun PxRigidBodyExtFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxRigidBodyExt = js("_module.wrapPointer(ptr, _module.PxRigidBodyExt)")
+
 fun PxRigidBodyExt.destroy() {
     PhysXJsLoader.destroy(this)
 }
@@ -543,6 +546,8 @@ external interface PxSerialization {
 
 }
 
+fun PxSerializationFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxSerialization = js("_module.wrapPointer(ptr, _module.PxSerialization)")
+
 fun PxSerialization.destroy() {
     PhysXJsLoader.destroy(this)
 }
@@ -556,6 +561,8 @@ external interface PxSerializationRegistry {
     fun release()
 
 }
+
+fun PxSerializationRegistryFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxSerializationRegistry = js("_module.wrapPointer(ptr, _module.PxSerializationRegistry)")
 
 external interface PxD6Joint : PxJoint {
     /**
@@ -673,6 +680,8 @@ external interface PxD6Joint : PxJoint {
 
 }
 
+fun PxD6JointFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxD6Joint = js("_module.wrapPointer(ptr, _module.PxD6Joint)")
+
 fun PxD6Joint.destroy() {
     PhysXJsLoader.destroy(this)
 }
@@ -705,20 +714,14 @@ external interface PxD6JointDrive : PxSpring {
     var flags: PxD6JointDriveFlags
 }
 
-fun PxD6JointDrive(): PxD6JointDrive {
-    fun _PxD6JointDrive(_module: dynamic) = js("new _module.PxD6JointDrive()")
-    return _PxD6JointDrive(PhysXJsLoader.physXJs)
-}
+fun PxD6JointDrive(_module: dynamic = PhysXJsLoader.physXJs): PxD6JointDrive = js("new _module.PxD6JointDrive()")
 
 /**
  * @param driveStiffness  WebIDL type: float
  * @param driveDamping    WebIDL type: float
  * @param driveForceLimit WebIDL type: float
  */
-fun PxD6JointDrive(driveStiffness: Float, driveDamping: Float, driveForceLimit: Float): PxD6JointDrive {
-    fun _PxD6JointDrive(_module: dynamic, driveStiffness: Float, driveDamping: Float, driveForceLimit: Float) = js("new _module.PxD6JointDrive(driveStiffness, driveDamping, driveForceLimit)")
-    return _PxD6JointDrive(PhysXJsLoader.physXJs, driveStiffness, driveDamping, driveForceLimit)
-}
+fun PxD6JointDrive(driveStiffness: Float, driveDamping: Float, driveForceLimit: Float, _module: dynamic = PhysXJsLoader.physXJs): PxD6JointDrive = js("new _module.PxD6JointDrive(driveStiffness, driveDamping, driveForceLimit)")
 
 /**
  * @param driveStiffness  WebIDL type: float
@@ -726,10 +729,9 @@ fun PxD6JointDrive(driveStiffness: Float, driveDamping: Float, driveForceLimit: 
  * @param driveForceLimit WebIDL type: float
  * @param isAcceleration  WebIDL type: boolean
  */
-fun PxD6JointDrive(driveStiffness: Float, driveDamping: Float, driveForceLimit: Float, isAcceleration: Boolean): PxD6JointDrive {
-    fun _PxD6JointDrive(_module: dynamic, driveStiffness: Float, driveDamping: Float, driveForceLimit: Float, isAcceleration: Boolean) = js("new _module.PxD6JointDrive(driveStiffness, driveDamping, driveForceLimit, isAcceleration)")
-    return _PxD6JointDrive(PhysXJsLoader.physXJs, driveStiffness, driveDamping, driveForceLimit, isAcceleration)
-}
+fun PxD6JointDrive(driveStiffness: Float, driveDamping: Float, driveForceLimit: Float, isAcceleration: Boolean, _module: dynamic = PhysXJsLoader.physXJs): PxD6JointDrive = js("new _module.PxD6JointDrive(driveStiffness, driveDamping, driveForceLimit, isAcceleration)")
+
+fun PxD6JointDriveFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxD6JointDrive = js("_module.wrapPointer(ptr, _module.PxD6JointDrive)")
 
 fun PxD6JointDrive.destroy() {
     PhysXJsLoader.destroy(this)
@@ -762,10 +764,9 @@ external interface PxD6JointDriveFlags {
 /**
  * @param flags WebIDL type: unsigned long
  */
-fun PxD6JointDriveFlags(flags: Int): PxD6JointDriveFlags {
-    fun _PxD6JointDriveFlags(_module: dynamic, flags: Int) = js("new _module.PxD6JointDriveFlags(flags)")
-    return _PxD6JointDriveFlags(PhysXJsLoader.physXJs, flags)
-}
+fun PxD6JointDriveFlags(flags: Int, _module: dynamic = PhysXJsLoader.physXJs): PxD6JointDriveFlags = js("new _module.PxD6JointDriveFlags(flags)")
+
+fun PxD6JointDriveFlagsFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxD6JointDriveFlags = js("_module.wrapPointer(ptr, _module.PxD6JointDriveFlags)")
 
 fun PxD6JointDriveFlags.destroy() {
     PhysXJsLoader.destroy(this)
@@ -845,6 +846,8 @@ external interface PxDistanceJoint : PxJoint {
 
 }
 
+fun PxDistanceJointFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxDistanceJoint = js("_module.wrapPointer(ptr, _module.PxDistanceJoint)")
+
 fun PxDistanceJoint.destroy() {
     PhysXJsLoader.destroy(this)
 }
@@ -898,10 +901,9 @@ external interface PxDistanceJointFlags {
 /**
  * @param flags WebIDL type: unsigned short
  */
-fun PxDistanceJointFlags(flags: Short): PxDistanceJointFlags {
-    fun _PxDistanceJointFlags(_module: dynamic, flags: Short) = js("new _module.PxDistanceJointFlags(flags)")
-    return _PxDistanceJointFlags(PhysXJsLoader.physXJs, flags)
-}
+fun PxDistanceJointFlags(flags: Short, _module: dynamic = PhysXJsLoader.physXJs): PxDistanceJointFlags = js("new _module.PxDistanceJointFlags(flags)")
+
+fun PxDistanceJointFlagsFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxDistanceJointFlags = js("_module.wrapPointer(ptr, _module.PxDistanceJointFlags)")
 
 fun PxDistanceJointFlags.destroy() {
     PhysXJsLoader.destroy(this)
@@ -929,6 +931,8 @@ external interface PxFixedJoint : PxJoint {
     fun getProjectionAngularTolerance(): Float
 
 }
+
+fun PxFixedJointFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxFixedJoint = js("_module.wrapPointer(ptr, _module.PxFixedJoint)")
 
 fun PxFixedJoint.destroy() {
     PhysXJsLoader.destroy(this)
@@ -1044,6 +1048,8 @@ external interface PxJoint : PxBase {
 
 }
 
+fun PxJointFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxJoint = js("_module.wrapPointer(ptr, _module.PxJoint)")
+
 val PxJoint.relativeTransform
     get() = getRelativeTransform()
 val PxJoint.relativeLinearVelocity
@@ -1084,10 +1090,9 @@ external interface PxJointAngularLimitPair : PxJointLimitParameters {
  * @param upperLimit WebIDL type: float
  * @param spring     WebIDL type: [PxSpring] (Const, Ref)
  */
-fun PxJointAngularLimitPair(lowerLimit: Float, upperLimit: Float, spring: PxSpring): PxJointAngularLimitPair {
-    fun _PxJointAngularLimitPair(_module: dynamic, lowerLimit: Float, upperLimit: Float, spring: PxSpring) = js("new _module.PxJointAngularLimitPair(lowerLimit, upperLimit, spring)")
-    return _PxJointAngularLimitPair(PhysXJsLoader.physXJs, lowerLimit, upperLimit, spring)
-}
+fun PxJointAngularLimitPair(lowerLimit: Float, upperLimit: Float, spring: PxSpring, _module: dynamic = PhysXJsLoader.physXJs): PxJointAngularLimitPair = js("new _module.PxJointAngularLimitPair(lowerLimit, upperLimit, spring)")
+
+fun PxJointAngularLimitPairFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxJointAngularLimitPair = js("_module.wrapPointer(ptr, _module.PxJointAngularLimitPair)")
 
 fun PxJointAngularLimitPair.destroy() {
     PhysXJsLoader.destroy(this)
@@ -1109,10 +1114,9 @@ external interface PxJointLimitCone : PxJointLimitParameters {
  * @param zLimitAngle WebIDL type: float
  * @param spring      WebIDL type: [PxSpring] (Const, Ref)
  */
-fun PxJointLimitCone(yLimitAngle: Float, zLimitAngle: Float, spring: PxSpring): PxJointLimitCone {
-    fun _PxJointLimitCone(_module: dynamic, yLimitAngle: Float, zLimitAngle: Float, spring: PxSpring) = js("new _module.PxJointLimitCone(yLimitAngle, zLimitAngle, spring)")
-    return _PxJointLimitCone(PhysXJsLoader.physXJs, yLimitAngle, zLimitAngle, spring)
-}
+fun PxJointLimitCone(yLimitAngle: Float, zLimitAngle: Float, spring: PxSpring, _module: dynamic = PhysXJsLoader.physXJs): PxJointLimitCone = js("new _module.PxJointLimitCone(yLimitAngle, zLimitAngle, spring)")
+
+fun PxJointLimitConeFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxJointLimitCone = js("_module.wrapPointer(ptr, _module.PxJointLimitCone)")
 
 fun PxJointLimitCone.destroy() {
     PhysXJsLoader.destroy(this)
@@ -1153,6 +1157,8 @@ external interface PxJointLimitParameters {
 
 }
 
+fun PxJointLimitParametersFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxJointLimitParameters = js("_module.wrapPointer(ptr, _module.PxJointLimitParameters)")
+
 external interface PxJointLimitPyramid : PxJointLimitParameters {
     /**
      * WebIDL type: float
@@ -1179,10 +1185,9 @@ external interface PxJointLimitPyramid : PxJointLimitParameters {
  * @param zLimitAngleMax WebIDL type: float
  * @param spring         WebIDL type: [PxSpring] (Const, Ref)
  */
-fun PxJointLimitPyramid(yLimitAngleMin: Float, yLimitAngleMax: Float, zLimitAngleMin: Float, zLimitAngleMax: Float, spring: PxSpring): PxJointLimitPyramid {
-    fun _PxJointLimitPyramid(_module: dynamic, yLimitAngleMin: Float, yLimitAngleMax: Float, zLimitAngleMin: Float, zLimitAngleMax: Float, spring: PxSpring) = js("new _module.PxJointLimitPyramid(yLimitAngleMin, yLimitAngleMax, zLimitAngleMin, zLimitAngleMax, spring)")
-    return _PxJointLimitPyramid(PhysXJsLoader.physXJs, yLimitAngleMin, yLimitAngleMax, zLimitAngleMin, zLimitAngleMax, spring)
-}
+fun PxJointLimitPyramid(yLimitAngleMin: Float, yLimitAngleMax: Float, zLimitAngleMin: Float, zLimitAngleMax: Float, spring: PxSpring, _module: dynamic = PhysXJsLoader.physXJs): PxJointLimitPyramid = js("new _module.PxJointLimitPyramid(yLimitAngleMin, yLimitAngleMax, zLimitAngleMin, zLimitAngleMax, spring)")
+
+fun PxJointLimitPyramidFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxJointLimitPyramid = js("_module.wrapPointer(ptr, _module.PxJointLimitPyramid)")
 
 fun PxJointLimitPyramid.destroy() {
     PhysXJsLoader.destroy(this)
@@ -1199,10 +1204,9 @@ external interface PxJointLinearLimit : PxJointLimitParameters {
  * @param extent WebIDL type: float
  * @param spring WebIDL type: [PxSpring] (Const, Ref)
  */
-fun PxJointLinearLimit(extent: Float, spring: PxSpring): PxJointLinearLimit {
-    fun _PxJointLinearLimit(_module: dynamic, extent: Float, spring: PxSpring) = js("new _module.PxJointLinearLimit(extent, spring)")
-    return _PxJointLinearLimit(PhysXJsLoader.physXJs, extent, spring)
-}
+fun PxJointLinearLimit(extent: Float, spring: PxSpring, _module: dynamic = PhysXJsLoader.physXJs): PxJointLinearLimit = js("new _module.PxJointLinearLimit(extent, spring)")
+
+fun PxJointLinearLimitFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxJointLinearLimit = js("_module.wrapPointer(ptr, _module.PxJointLinearLimit)")
 
 fun PxJointLinearLimit.destroy() {
     PhysXJsLoader.destroy(this)
@@ -1224,10 +1228,9 @@ external interface PxJointLinearLimitPair : PxJointLimitParameters {
  * @param upperLimit WebIDL type: float
  * @param spring     WebIDL type: [PxSpring] (Const, Ref)
  */
-fun PxJointLinearLimitPair(lowerLimit: Float, upperLimit: Float, spring: PxSpring): PxJointLinearLimitPair {
-    fun _PxJointLinearLimitPair(_module: dynamic, lowerLimit: Float, upperLimit: Float, spring: PxSpring) = js("new _module.PxJointLinearLimitPair(lowerLimit, upperLimit, spring)")
-    return _PxJointLinearLimitPair(PhysXJsLoader.physXJs, lowerLimit, upperLimit, spring)
-}
+fun PxJointLinearLimitPair(lowerLimit: Float, upperLimit: Float, spring: PxSpring, _module: dynamic = PhysXJsLoader.physXJs): PxJointLinearLimitPair = js("new _module.PxJointLinearLimitPair(lowerLimit, upperLimit, spring)")
+
+fun PxJointLinearLimitPairFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxJointLinearLimitPair = js("_module.wrapPointer(ptr, _module.PxJointLinearLimitPair)")
 
 fun PxJointLinearLimitPair.destroy() {
     PhysXJsLoader.destroy(this)
@@ -1287,6 +1290,8 @@ external interface PxPrismaticJoint : PxJoint {
 
 }
 
+fun PxPrismaticJointFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxPrismaticJoint = js("_module.wrapPointer(ptr, _module.PxPrismaticJoint)")
+
 fun PxPrismaticJoint.destroy() {
     PhysXJsLoader.destroy(this)
 }
@@ -1333,10 +1338,9 @@ external interface PxPrismaticJointFlags {
 /**
  * @param flags WebIDL type: unsigned short
  */
-fun PxPrismaticJointFlags(flags: Short): PxPrismaticJointFlags {
-    fun _PxPrismaticJointFlags(_module: dynamic, flags: Short) = js("new _module.PxPrismaticJointFlags(flags)")
-    return _PxPrismaticJointFlags(PhysXJsLoader.physXJs, flags)
-}
+fun PxPrismaticJointFlags(flags: Short, _module: dynamic = PhysXJsLoader.physXJs): PxPrismaticJointFlags = js("new _module.PxPrismaticJointFlags(flags)")
+
+fun PxPrismaticJointFlagsFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxPrismaticJointFlags = js("_module.wrapPointer(ptr, _module.PxPrismaticJointFlags)")
 
 fun PxPrismaticJointFlags.destroy() {
     PhysXJsLoader.destroy(this)
@@ -1432,6 +1436,8 @@ external interface PxRevoluteJoint : PxJoint {
 
 }
 
+fun PxRevoluteJointFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxRevoluteJoint = js("_module.wrapPointer(ptr, _module.PxRevoluteJoint)")
+
 fun PxRevoluteJoint.destroy() {
     PhysXJsLoader.destroy(this)
 }
@@ -1487,10 +1493,9 @@ external interface PxRevoluteJointFlags {
 /**
  * @param flags WebIDL type: unsigned short
  */
-fun PxRevoluteJointFlags(flags: Short): PxRevoluteJointFlags {
-    fun _PxRevoluteJointFlags(_module: dynamic, flags: Short) = js("new _module.PxRevoluteJointFlags(flags)")
-    return _PxRevoluteJointFlags(PhysXJsLoader.physXJs, flags)
-}
+fun PxRevoluteJointFlags(flags: Short, _module: dynamic = PhysXJsLoader.physXJs): PxRevoluteJointFlags = js("new _module.PxRevoluteJointFlags(flags)")
+
+fun PxRevoluteJointFlagsFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxRevoluteJointFlags = js("_module.wrapPointer(ptr, _module.PxRevoluteJointFlags)")
 
 fun PxRevoluteJointFlags.destroy() {
     PhysXJsLoader.destroy(this)
@@ -1540,6 +1545,8 @@ external interface PxSphericalJoint : PxJoint {
 
 }
 
+fun PxSphericalJointFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxSphericalJoint = js("_module.wrapPointer(ptr, _module.PxSphericalJoint)")
+
 fun PxSphericalJoint.destroy() {
     PhysXJsLoader.destroy(this)
 }
@@ -1583,10 +1590,9 @@ external interface PxSphericalJointFlags {
 /**
  * @param flags WebIDL type: unsigned short
  */
-fun PxSphericalJointFlags(flags: Short): PxSphericalJointFlags {
-    fun _PxSphericalJointFlags(_module: dynamic, flags: Short) = js("new _module.PxSphericalJointFlags(flags)")
-    return _PxSphericalJointFlags(PhysXJsLoader.physXJs, flags)
-}
+fun PxSphericalJointFlags(flags: Short, _module: dynamic = PhysXJsLoader.physXJs): PxSphericalJointFlags = js("new _module.PxSphericalJointFlags(flags)")
+
+fun PxSphericalJointFlagsFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxSphericalJointFlags = js("_module.wrapPointer(ptr, _module.PxSphericalJointFlags)")
 
 fun PxSphericalJointFlags.destroy() {
     PhysXJsLoader.destroy(this)
@@ -1612,10 +1618,9 @@ external interface PxSpring {
  * @param stiffness WebIDL type: float
  * @param damping   WebIDL type: float
  */
-fun PxSpring(stiffness: Float, damping: Float): PxSpring {
-    fun _PxSpring(_module: dynamic, stiffness: Float, damping: Float) = js("new _module.PxSpring(stiffness, damping)")
-    return _PxSpring(PhysXJsLoader.physXJs, stiffness, damping)
-}
+fun PxSpring(stiffness: Float, damping: Float, _module: dynamic = PhysXJsLoader.physXJs): PxSpring = js("new _module.PxSpring(stiffness, damping)")
+
+fun PxSpringFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxSpring = js("_module.wrapPointer(ptr, _module.PxSpring)")
 
 fun PxSpring.destroy() {
     PhysXJsLoader.destroy(this)

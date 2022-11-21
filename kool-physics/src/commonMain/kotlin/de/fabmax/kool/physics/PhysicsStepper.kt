@@ -55,13 +55,13 @@ class SimplePhysicsStepper : PhysicsStepper() {
 }
 
 /**
- * Provides deterministic physics behavior by using a constant time step. Moreover, this stepper usually uses
+ * Provides deterministic physics behavior by using a constant time step. Moreover, this stepper uses
  * asynchronous physics stepping, i.e. the bulk of physics simulation is done in parallel to graphics stuff resulting
  * in higher performance.
- * However, because a constant time step is used, physics may becomes jittery if the frame time diverges from physics
- * time step.
+ * However, because a constant time step is used, physics time and render time can diverge by up to one
+ * [constantTimeStep], which can result in a somewhat stuttery appearance.
  */
-class ConstantPhysicsStepper(val constantTimeStep: Float = 1f / 60f, val isAsync: Boolean = true) : PhysicsStepper() {
+class ConstantPhysicsStepperAsync(val constantTimeStep: Float = 1f / 60f) : PhysicsStepper() {
     private var isStepInProgress = false
     private var internalSimTime = 0.0
     private var desiredSimTime = 0.0
@@ -74,6 +74,7 @@ class ConstantPhysicsStepper(val constantTimeStep: Float = 1f / 60f, val isAsync
         var timeAdvance = 0f
         desiredSimTime += min(0.1f, Time.deltaT * simTimeFactor)
 
+        // get results from previous sim step, which was done in parallel to last frame render
         if (isStepInProgress) {
             world.fetchAsyncStepResults()
             isStepInProgress = false
@@ -81,6 +82,7 @@ class ConstantPhysicsStepper(val constantTimeStep: Float = 1f / 60f, val isAsync
             timeAdvance += constantTimeStep
         }
 
+        // do more synchronous / blocking sim steps if needed, in case past frame time was too large
         var subSteps = subStepLimit
         while (shouldAdvance(internalSimTime, desiredSimTime, false) && subSteps-- > 0) {
             world.singleStepSync(constantTimeStep)
@@ -94,13 +96,43 @@ class ConstantPhysicsStepper(val constantTimeStep: Float = 1f / 60f, val isAsync
             subStepLimit++
         }
 
+        // start next async / non-blocking sim step
         if (shouldAdvance(internalSimTime, desiredSimTime + constantTimeStep, true)) {
-            if (isAsync) {
-                world.singleStepAsync(constantTimeStep)
-                isStepInProgress = true
-            } else {
-                world.singleStepSync(constantTimeStep)
-            }
+            world.singleStepAsync(constantTimeStep)
+            isStepInProgress = true
+        }
+
+        return timeAdvance
+    }
+
+    private fun shouldAdvance(currentTime: Double, desiredTime: Double, isFirst: Boolean): Boolean {
+        return if (isFirst) {
+            currentTime + constantTimeStep < desiredTime
+        } else {
+            // only do additional steps if it's really necessary (i.e. allow some hysteresis to reduce jitter)
+            currentTime + constantTimeStep * 1.5f < desiredTime
+        }
+    }
+}
+
+/**
+ * Provides deterministic physics behavior by using a constant time step.
+ * However, because a constant time step is used, physics time and render time can diverge by up to one
+ * [constantTimeStep], which can result in a somewhat stuttery appearance.
+ */
+class ConstantPhysicsStepperSync(val constantTimeStep: Float = 1f / 60f) : PhysicsStepper() {
+    private var internalSimTime = 0.0
+    private var desiredSimTime = 0.0
+
+    override fun doSimSteps(world: CommonPhysicsWorld, ctx: KoolContext): Float {
+        var timeAdvance = 0f
+        desiredSimTime += min(0.1f, Time.deltaT * simTimeFactor)
+
+        // step simulation until desired time is reached
+        while (shouldAdvance(internalSimTime, desiredSimTime + constantTimeStep, timeAdvance == 0f)) {
+            world.singleStepSync(constantTimeStep)
+            timeAdvance += constantTimeStep
+            internalSimTime += constantTimeStep
         }
 
         return timeAdvance

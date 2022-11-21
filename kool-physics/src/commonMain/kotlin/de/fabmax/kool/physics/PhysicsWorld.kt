@@ -10,7 +10,7 @@ import de.fabmax.kool.physics.geometry.PlaneGeometry
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.logW
 
-expect class PhysicsWorld(scene: Scene? = null, isContinuousCollisionDetection: Boolean = false, numWorkers: Int = 4) : CommonPhysicsWorld {
+expect class PhysicsWorld(scene: Scene? = null, isContinuousCollisionDetection: Boolean = false) : CommonPhysicsWorld {
     var gravity: Vec3f
     val activeActors: Int
 
@@ -21,7 +21,7 @@ expect class PhysicsWorld(scene: Scene? = null, isContinuousCollisionDetection: 
 abstract class CommonPhysicsWorld : Releasable {
     var physicsTime = 0.0
 
-    var simStepper: PhysicsStepper = SimplePhysicsStepper()
+    var simStepper: PhysicsStepper = ConstantPhysicsStepperSync()
     var isStepInProgress = false
     var prevStepTime = 0f
 

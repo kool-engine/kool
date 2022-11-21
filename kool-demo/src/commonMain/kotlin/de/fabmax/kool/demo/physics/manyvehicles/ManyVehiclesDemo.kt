@@ -80,7 +80,7 @@ class ManyVehiclesDemo : DemoScene("Many Vehicles") {
         mainScene += Skybox.cube(ibl.reflectionMap, 1f)
         Physics.awaitLoaded()
 
-        physicsWorld = PhysicsWorld(numWorkers = 16)
+        physicsWorld = PhysicsWorld()
         physicsWorld.registerHandlers(mainScene)
 
         batchUpdater = BatchVehicleUpdater(numVehicles, physicsWorld)

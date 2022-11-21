@@ -9,7 +9,7 @@ import org.lwjgl.system.MemoryStack
 import physx.common.PxVec3
 import physx.cooking.PxConvexFlagEnum
 import physx.geometry.PxConvexMesh
-import physx.support.TypeHelpers
+import physx.support.NativeArrayHelpers
 
 actual class ConvexMesh actual constructor(actual val points: List<Vec3f>) : Releasable {
 
@@ -48,8 +48,8 @@ actual class ConvexMesh actual constructor(actual val points: List<Vec3f>) : Rel
 
             convexMesh.getPolygonData(i, poly)
             for (j in 0 until poly.mNbVerts) {
-                val vi = TypeHelpers.getU8At(convexMesh.indexBuffer, poly.mIndexBase + j).toInt() and 0xff
-                val pt = TypeHelpers.getVec3At(convexMesh.vertices, vi)
+                val vi = NativeArrayHelpers.getU8At(convexMesh.indexBuffer, poly.mIndexBase + j).toInt() and 0xff
+                val pt = PxVec3.arrayGet(convexMesh.vertices.address, vi)
                 polyIndices += geometry.addVertex(pt.toVec3f(v))
             }
 

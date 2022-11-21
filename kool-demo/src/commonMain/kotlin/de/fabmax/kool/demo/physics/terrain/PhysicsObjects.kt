@@ -29,7 +29,7 @@ class PhysicsObjects(mainScene: Scene, terrain: Terrain, trees: Trees, ctx: Kool
         world = PhysicsWorld(mainScene, isContinuousCollisionDetection = true)
 
         // use constant time step for more stable bridge behavior
-        world.simStepper = ConstantPhysicsStepper()
+        world.simStepper = ConstantPhysicsStepperSync()
 
         world.addActor(terrain.terrainBody)
 

@@ -32,8 +32,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
 
     private val rand = Random(1337)
     private lateinit var physicsWorld: PhysicsWorld
-    private val physicsStepper = SimplePhysicsStepper()//.apply { simTimeFactor = 0.1f }
-    //private val physicsStepper = ConstantPhysicsStepper(isAsync = false)
+    private val physicsStepper = ConstantPhysicsStepperSync()//.apply { simTimeFactor = 0.1f }
 
     private lateinit var ibl: EnvironmentMaps
     private lateinit var ao: AoPipeline

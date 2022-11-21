@@ -27,12 +27,14 @@ actual object Physics : CoroutineScope {
     actual val isLoaded: Boolean
         get() = loadingDeferred.isCompleted
 
+    lateinit var defaultCpuDispatcher: PxDefaultCpuDispatcher
+
     actual val defaultMaterial = Material(0.5f)
     lateinit var defaultSurfaceFrictions: FrictionPairs
         private set
 
     // static top-level PhysX functions
-    val TypeHelpers: TypeHelpers get() = PhysXJsLoader.physXJs.TypeHelpers.prototype
+    val NativeArrayHelpers: NativeArrayHelpers get() = PhysXJsLoader.physXJs.NativeArrayHelpers.prototype
     val SupportFunctions: SupportFunctions get() = PhysXJsLoader.physXJs.SupportFunctions.prototype
     val Px: PxTopLevelFunctions get() = PhysXJsLoader.physXJs.PxTopLevelFunctions.prototype
     //val PxVehicle: PxVehicleTopLevelFunctions get() = PhysXJsLoader.physXJs.PxVehicleTopLevelFunctions.prototype
@@ -80,6 +82,8 @@ actual object Physics : CoroutineScope {
 //                    PxVehicle.VehicleSetBasisVectors(up, front)
 //                    PxVehicle.VehicleSetUpdateMode(PxVehicleUpdateModeEnum.eVELOCITY_CHANGE)
 //                }
+
+                defaultCpuDispatcher = Px.DefaultCpuDispatcherCreate(0)
 
                 logI { "PhysX loaded, version: ${pxVersionToString(Px.PHYSICS_VERSION)}" }
                 loadingDeferred.complete(Unit)

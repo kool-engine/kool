@@ -11,18 +11,14 @@ import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logW
 import org.lwjgl.system.MemoryStack
 import physx.PxTopLevelFunctions
-import physx.common.PxDefaultCpuDispatcher
 import physx.common.PxVec3
 import physx.physics.*
 import physx.support.SupportFunctions
-import physx.support.TypeHelpers
 import physx.support.Vector_PxContactPairPoint
 import kotlin.collections.set
 
-actual class PhysicsWorld actual constructor(scene: Scene?, val isContinuousCollisionDetection: Boolean, numWorkers: Int) : CommonPhysicsWorld(), Releasable {
+actual class PhysicsWorld actual constructor(scene: Scene?, val isContinuousCollisionDetection: Boolean) : CommonPhysicsWorld(), Releasable {
     val pxScene: PxScene
-
-    private val cpuDispatcher: PxDefaultCpuDispatcher
 
     private val raycastResult = PxRaycastBuffer10()
     private val sweepResult = PxSweepBuffer10()
@@ -42,7 +38,6 @@ actual class PhysicsWorld actual constructor(scene: Scene?, val isContinuousColl
 
     init {
         Physics.checkIsLoaded()
-        cpuDispatcher = PxTopLevelFunctions.DefaultCpuDispatcherCreate(numWorkers)
 
         MemoryStack.stackPush().use { mem ->
             var flags = PxSceneFlagEnum.eENABLE_ACTIVE_ACTORS
@@ -51,7 +46,7 @@ actual class PhysicsWorld actual constructor(scene: Scene?, val isContinuousColl
             }
             val sceneDesc = PxSceneDesc.createAt(mem, MemoryStack::nmalloc, Physics.physics.tolerancesScale)
             sceneDesc.gravity = bufPxGravity
-            sceneDesc.cpuDispatcher = this.cpuDispatcher
+            sceneDesc.cpuDispatcher = Physics.defaultCpuDispatcher
             sceneDesc.filterShader = PxTopLevelFunctions.DefaultFilterShader()
             sceneDesc.simulationEventCallback = SimEventCallback()
             sceneDesc.flags.raise(flags)
@@ -124,7 +119,6 @@ actual class PhysicsWorld actual constructor(scene: Scene?, val isContinuousColl
         bufPxGravity.destroy()
         raycastResult.destroy()
         sweepResult.destroy()
-        cpuDispatcher.destroy()
     }
 
     actual fun raycast(ray: Ray, maxDistance: Float, result: HitResult): Boolean {
@@ -197,7 +191,7 @@ actual class PhysicsWorld actual constructor(scene: Scene?, val isContinuousColl
 
         override fun onTrigger(pairs: PxTriggerPair, count: Int) {
             for (i in 0 until count) {
-                val pair = TypeHelpers.getTriggerPairAt(pairs, i)
+                val pair = PxTriggerPair.arrayGet(pairs.address, i)
                 val isEnter = pair.status == PxPairFlagEnum.eNOTIFY_TOUCH_FOUND
                 val trigger = pxActors[pair.triggerActor]
                 val actor = pxActors[pair.otherActor]
@@ -234,7 +228,7 @@ actual class PhysicsWorld actual constructor(scene: Scene?, val isContinuousColl
             }
 
             for (i in 0 until nbPairs) {
-                val pair = TypeHelpers.getContactPairAt(pairs, i)
+                val pair = PxContactPair.arrayGet(pairs.address, i)
                 val evts = pair.events
 
                 if (evts.isSet(PxPairFlagEnum.eNOTIFY_TOUCH_FOUND)) {

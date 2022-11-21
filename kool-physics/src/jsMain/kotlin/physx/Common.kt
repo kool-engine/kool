@@ -46,6 +46,8 @@ external interface PxBase {
 
 }
 
+fun PxBaseFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxBase = js("_module.wrapPointer(ptr, _module.PxBase)")
+
 val PxBase.concreteTypeName
     get() = getConcreteTypeName()
 val PxBase.concreteType
@@ -82,16 +84,17 @@ external interface PxBaseFlags {
 /**
  * @param flags WebIDL type: unsigned short
  */
-fun PxBaseFlags(flags: Short): PxBaseFlags {
-    fun _PxBaseFlags(_module: dynamic, flags: Short) = js("new _module.PxBaseFlags(flags)")
-    return _PxBaseFlags(PhysXJsLoader.physXJs, flags)
-}
+fun PxBaseFlags(flags: Short, _module: dynamic = PhysXJsLoader.physXJs): PxBaseFlags = js("new _module.PxBaseFlags(flags)")
+
+fun PxBaseFlagsFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxBaseFlags = js("_module.wrapPointer(ptr, _module.PxBaseFlags)")
 
 fun PxBaseFlags.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
 external interface PxBaseTask
+
+fun PxBaseTaskFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxBaseTask = js("_module.wrapPointer(ptr, _module.PxBaseTask)")
 
 fun PxBaseTask.destroy() {
     PhysXJsLoader.destroy(this)
@@ -104,10 +107,9 @@ external interface PxBoundedData : PxStridedData {
     var count: Int
 }
 
-fun PxBoundedData(): PxBoundedData {
-    fun _PxBoundedData(_module: dynamic) = js("new _module.PxBoundedData()")
-    return _PxBoundedData(PhysXJsLoader.physXJs)
-}
+fun PxBoundedData(_module: dynamic = PhysXJsLoader.physXJs): PxBoundedData = js("new _module.PxBoundedData()")
+
+fun PxBoundedDataFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxBoundedData = js("_module.wrapPointer(ptr, _module.PxBoundedData)")
 
 fun PxBoundedData.destroy() {
     PhysXJsLoader.destroy(this)
@@ -214,19 +216,15 @@ external interface PxBounds3 {
 
 }
 
-fun PxBounds3(): PxBounds3 {
-    fun _PxBounds3(_module: dynamic) = js("new _module.PxBounds3()")
-    return _PxBounds3(PhysXJsLoader.physXJs)
-}
+fun PxBounds3(_module: dynamic = PhysXJsLoader.physXJs): PxBounds3 = js("new _module.PxBounds3()")
 
 /**
  * @param minimum WebIDL type: [PxVec3] (Const, Ref)
  * @param maximum WebIDL type: [PxVec3] (Const, Ref)
  */
-fun PxBounds3(minimum: PxVec3, maximum: PxVec3): PxBounds3 {
-    fun _PxBounds3(_module: dynamic, minimum: PxVec3, maximum: PxVec3) = js("new _module.PxBounds3(minimum, maximum)")
-    return _PxBounds3(PhysXJsLoader.physXJs, minimum, maximum)
-}
+fun PxBounds3(minimum: PxVec3, maximum: PxVec3, _module: dynamic = PhysXJsLoader.physXJs): PxBounds3 = js("new _module.PxBounds3(minimum, maximum)")
+
+fun PxBounds3FromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxBounds3 = js("_module.wrapPointer(ptr, _module.PxBounds3)")
 
 fun PxBounds3.destroy() {
     PhysXJsLoader.destroy(this)
@@ -310,6 +308,8 @@ external interface PxCollection {
 
 }
 
+fun PxCollectionFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxCollection = js("_module.wrapPointer(ptr, _module.PxCollection)")
+
 val PxCollection.nbObjects
     get() = getNbObjects()
 val PxCollection.nbIds
@@ -317,16 +317,17 @@ val PxCollection.nbIds
 
 external interface PxCpuDispatcher
 
+fun PxCpuDispatcherFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxCpuDispatcher = js("_module.wrapPointer(ptr, _module.PxCpuDispatcher)")
+
 fun PxCpuDispatcher.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
 external interface PxDefaultAllocator
 
-fun PxDefaultAllocator(): PxDefaultAllocator {
-    fun _PxDefaultAllocator(_module: dynamic) = js("new _module.PxDefaultAllocator()")
-    return _PxDefaultAllocator(PhysXJsLoader.physXJs)
-}
+fun PxDefaultAllocator(_module: dynamic = PhysXJsLoader.physXJs): PxDefaultAllocator = js("new _module.PxDefaultAllocator()")
+
+fun PxDefaultAllocatorFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxDefaultAllocator = js("_module.wrapPointer(ptr, _module.PxDefaultAllocator)")
 
 fun PxDefaultAllocator.destroy() {
     PhysXJsLoader.destroy(this)
@@ -334,16 +335,17 @@ fun PxDefaultAllocator.destroy() {
 
 external interface PxDefaultCpuDispatcher : PxCpuDispatcher
 
+fun PxDefaultCpuDispatcherFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxDefaultCpuDispatcher = js("_module.wrapPointer(ptr, _module.PxDefaultCpuDispatcher)")
+
 fun PxDefaultCpuDispatcher.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
 external interface PxDefaultErrorCallback : PxErrorCallback
 
-fun PxDefaultErrorCallback(): PxDefaultErrorCallback {
-    fun _PxDefaultErrorCallback(_module: dynamic) = js("new _module.PxDefaultErrorCallback()")
-    return _PxDefaultErrorCallback(PhysXJsLoader.physXJs)
-}
+fun PxDefaultErrorCallback(_module: dynamic = PhysXJsLoader.physXJs): PxDefaultErrorCallback = js("new _module.PxDefaultErrorCallback()")
+
+fun PxDefaultErrorCallbackFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxDefaultErrorCallback = js("_module.wrapPointer(ptr, _module.PxDefaultErrorCallback)")
 
 fun PxDefaultErrorCallback.destroy() {
     PhysXJsLoader.destroy(this)
@@ -365,6 +367,8 @@ external interface PxErrorCallback {
 
 }
 
+fun PxErrorCallbackFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxErrorCallback = js("_module.wrapPointer(ptr, _module.PxErrorCallback)")
+
 fun PxErrorCallback.destroy() {
     PhysXJsLoader.destroy(this)
 }
@@ -380,10 +384,7 @@ external interface PxErrorCallbackImpl : PxErrorCallback {
 
 }
 
-fun PxErrorCallbackImpl(): PxErrorCallbackImpl {
-    fun _PxErrorCallbackImpl(_module: dynamic) = js("new _module.PxErrorCallbackImpl()")
-    return _PxErrorCallbackImpl(PhysXJsLoader.physXJs)
-}
+fun PxErrorCallbackImpl(_module: dynamic = PhysXJsLoader.physXJs): PxErrorCallbackImpl = js("new _module.PxErrorCallbackImpl()")
 
 external interface PxFoundation {
     /**
@@ -395,7 +396,11 @@ external interface PxFoundation {
 
 }
 
+fun PxFoundationFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxFoundation = js("_module.wrapPointer(ptr, _module.PxFoundation)")
+
 external interface PxInputData
+
+fun PxInputDataFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxInputData = js("_module.wrapPointer(ptr, _module.PxInputData)")
 
 fun PxInputData.destroy() {
     PhysXJsLoader.destroy(this)
@@ -403,7 +408,11 @@ fun PxInputData.destroy() {
 
 external interface PxInsertionCallback
 
+fun PxInsertionCallbackFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxInsertionCallback = js("_module.wrapPointer(ptr, _module.PxInsertionCallback)")
+
 external interface PxOutputStream
+
+fun PxOutputStreamFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxOutputStream = js("_module.wrapPointer(ptr, _module.PxOutputStream)")
 
 fun PxOutputStream.destroy() {
     PhysXJsLoader.destroy(this)
@@ -433,18 +442,12 @@ external interface PxQuat {
     var w: Float
 }
 
-fun PxQuat(): PxQuat {
-    fun _PxQuat(_module: dynamic) = js("new _module.PxQuat()")
-    return _PxQuat(PhysXJsLoader.physXJs)
-}
+fun PxQuat(_module: dynamic = PhysXJsLoader.physXJs): PxQuat = js("new _module.PxQuat()")
 
 /**
  * @param r WebIDL type: [PxIDENTITYEnum] (enum)
  */
-fun PxQuat(r: Int): PxQuat {
-    fun _PxQuat(_module: dynamic, r: Int) = js("new _module.PxQuat(r)")
-    return _PxQuat(PhysXJsLoader.physXJs, r)
-}
+fun PxQuat(r: Int, _module: dynamic = PhysXJsLoader.physXJs): PxQuat = js("new _module.PxQuat(r)")
 
 /**
  * @param x WebIDL type: float
@@ -452,10 +455,9 @@ fun PxQuat(r: Int): PxQuat {
  * @param z WebIDL type: float
  * @param w WebIDL type: float
  */
-fun PxQuat(x: Float, y: Float, z: Float, w: Float): PxQuat {
-    fun _PxQuat(_module: dynamic, x: Float, y: Float, z: Float, w: Float) = js("new _module.PxQuat(x, y, z, w)")
-    return _PxQuat(PhysXJsLoader.physXJs, x, y, z, w)
-}
+fun PxQuat(x: Float, y: Float, z: Float, w: Float, _module: dynamic = PhysXJsLoader.physXJs): PxQuat = js("new _module.PxQuat(x, y, z, w)")
+
+fun PxQuatFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxQuat = js("_module.wrapPointer(ptr, _module.PxQuat)")
 
 fun PxQuat.destroy() {
     PhysXJsLoader.destroy(this)
@@ -470,6 +472,8 @@ external interface PxRefCounted : PxBase {
     fun acquireReference()
 
 }
+
+fun PxRefCountedFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxRefCounted = js("_module.wrapPointer(ptr, _module.PxRefCounted)")
 
 val PxRefCounted.referenceCount
     get() = getReferenceCount()
@@ -490,16 +494,17 @@ external interface PxStridedData {
     var data: Any
 }
 
+fun PxStridedDataFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxStridedData = js("_module.wrapPointer(ptr, _module.PxStridedData)")
+
 fun PxStridedData.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
 external interface PxTolerancesScale
 
-fun PxTolerancesScale(): PxTolerancesScale {
-    fun _PxTolerancesScale(_module: dynamic) = js("new _module.PxTolerancesScale()")
-    return _PxTolerancesScale(PhysXJsLoader.physXJs)
-}
+fun PxTolerancesScale(_module: dynamic = PhysXJsLoader.physXJs): PxTolerancesScale = js("new _module.PxTolerancesScale()")
+
+fun PxTolerancesScaleFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxTolerancesScale = js("_module.wrapPointer(ptr, _module.PxTolerancesScale)")
 
 fun PxTolerancesScale.destroy() {
     PhysXJsLoader.destroy(this)
@@ -521,27 +526,20 @@ external interface PxTransform {
     var p: PxVec3
 }
 
-fun PxTransform(): PxTransform {
-    fun _PxTransform(_module: dynamic) = js("new _module.PxTransform()")
-    return _PxTransform(PhysXJsLoader.physXJs)
-}
+fun PxTransform(_module: dynamic = PhysXJsLoader.physXJs): PxTransform = js("new _module.PxTransform()")
 
 /**
  * @param r WebIDL type: [PxIDENTITYEnum] (enum)
  */
-fun PxTransform(r: Int): PxTransform {
-    fun _PxTransform(_module: dynamic, r: Int) = js("new _module.PxTransform(r)")
-    return _PxTransform(PhysXJsLoader.physXJs, r)
-}
+fun PxTransform(r: Int, _module: dynamic = PhysXJsLoader.physXJs): PxTransform = js("new _module.PxTransform(r)")
 
 /**
  * @param p0 WebIDL type: [PxVec3] (Const, Ref)
  * @param q0 WebIDL type: [PxQuat] (Const, Ref)
  */
-fun PxTransform(p0: PxVec3, q0: PxQuat): PxTransform {
-    fun _PxTransform(_module: dynamic, p0: PxVec3, q0: PxQuat) = js("new _module.PxTransform(p0, q0)")
-    return _PxTransform(PhysXJsLoader.physXJs, p0, q0)
-}
+fun PxTransform(p0: PxVec3, q0: PxQuat, _module: dynamic = PhysXJsLoader.physXJs): PxTransform = js("new _module.PxTransform(p0, q0)")
+
+fun PxTransformFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxTransform = js("_module.wrapPointer(ptr, _module.PxTransform)")
 
 fun PxTransform.destroy() {
     PhysXJsLoader.destroy(this)
@@ -562,6 +560,8 @@ external interface PxU16StridedData {
      */
     var data: PxU16ConstPtr
 }
+
+fun PxU16StridedDataFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxU16StridedData = js("_module.wrapPointer(ptr, _module.PxU16StridedData)")
 
 fun PxU16StridedData.destroy() {
     PhysXJsLoader.destroy(this)
@@ -587,20 +587,16 @@ external interface PxVec3 {
     var z: Float
 }
 
-fun PxVec3(): PxVec3 {
-    fun _PxVec3(_module: dynamic) = js("new _module.PxVec3()")
-    return _PxVec3(PhysXJsLoader.physXJs)
-}
+fun PxVec3(_module: dynamic = PhysXJsLoader.physXJs): PxVec3 = js("new _module.PxVec3()")
 
 /**
  * @param x WebIDL type: float
  * @param y WebIDL type: float
  * @param z WebIDL type: float
  */
-fun PxVec3(x: Float, y: Float, z: Float): PxVec3 {
-    fun _PxVec3(_module: dynamic, x: Float, y: Float, z: Float) = js("new _module.PxVec3(x, y, z)")
-    return _PxVec3(PhysXJsLoader.physXJs, x, y, z)
-}
+fun PxVec3(x: Float, y: Float, z: Float, _module: dynamic = PhysXJsLoader.physXJs): PxVec3 = js("new _module.PxVec3(x, y, z)")
+
+fun PxVec3FromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxVec3 = js("_module.wrapPointer(ptr, _module.PxVec3)")
 
 fun PxVec3.destroy() {
     PhysXJsLoader.destroy(this)
@@ -621,7 +617,11 @@ external interface PxCudaTopLevelFunctions {
 
 }
 
+fun PxCudaTopLevelFunctionsFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxCudaTopLevelFunctions = js("_module.wrapPointer(ptr, _module.PxCudaTopLevelFunctions)")
+
 external interface CUcontext
+
+fun CUcontextFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): CUcontext = js("_module.wrapPointer(ptr, _module.CUcontext)")
 
 fun CUcontext.destroy() {
     PhysXJsLoader.destroy(this)
@@ -629,17 +629,23 @@ fun CUcontext.destroy() {
 
 external interface CUdevice
 
+fun CUdeviceFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): CUdevice = js("_module.wrapPointer(ptr, _module.CUdevice)")
+
 fun CUdevice.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
 external interface CUmodule
 
+fun CUmoduleFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): CUmodule = js("_module.wrapPointer(ptr, _module.CUmodule)")
+
 fun CUmodule.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
 external interface PxCudaContext
+
+fun PxCudaContextFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxCudaContext = js("_module.wrapPointer(ptr, _module.PxCudaContext)")
 
 external interface PxCudaContextManager {
     /**
@@ -800,6 +806,8 @@ external interface PxCudaContextManager {
 
 }
 
+fun PxCudaContextManagerFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxCudaContextManager = js("_module.wrapPointer(ptr, _module.PxCudaContextManager)")
+
 val PxCudaContextManager.context
     get() = getContext()
 val PxCudaContextManager.cudaContext
@@ -855,10 +863,9 @@ external interface PxCudaContextManagerDesc {
     var interopMode: Int
 }
 
-fun PxCudaContextManagerDesc(): PxCudaContextManagerDesc {
-    fun _PxCudaContextManagerDesc(_module: dynamic) = js("new _module.PxCudaContextManagerDesc()")
-    return _PxCudaContextManagerDesc(PhysXJsLoader.physXJs)
-}
+fun PxCudaContextManagerDesc(_module: dynamic = PhysXJsLoader.physXJs): PxCudaContextManagerDesc = js("new _module.PxCudaContextManagerDesc()")
+
+fun PxCudaContextManagerDescFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxCudaContextManagerDesc = js("_module.wrapPointer(ptr, _module.PxCudaContextManagerDesc)")
 
 fun PxCudaContextManagerDesc.destroy() {
     PhysXJsLoader.destroy(this)
@@ -926,10 +933,9 @@ external interface PxgDynamicsMemoryConfig {
 
 }
 
-fun PxgDynamicsMemoryConfig(): PxgDynamicsMemoryConfig {
-    fun _PxgDynamicsMemoryConfig(_module: dynamic) = js("new _module.PxgDynamicsMemoryConfig()")
-    return _PxgDynamicsMemoryConfig(PhysXJsLoader.physXJs)
-}
+fun PxgDynamicsMemoryConfig(_module: dynamic = PhysXJsLoader.physXJs): PxgDynamicsMemoryConfig = js("new _module.PxgDynamicsMemoryConfig()")
+
+fun PxgDynamicsMemoryConfigFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxgDynamicsMemoryConfig = js("_module.wrapPointer(ptr, _module.PxgDynamicsMemoryConfig)")
 
 fun PxgDynamicsMemoryConfig.destroy() {
     PhysXJsLoader.destroy(this)

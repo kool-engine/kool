@@ -47,7 +47,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
     private val timeFactorTxt = mutableStateOf("1.00 x")
 
     private lateinit var physicsWorld: PhysicsWorld
-    private val physicsStepper = SimplePhysicsStepper()
+    private val physicsStepper = ConstantPhysicsStepperSync()
     private val bodies = mutableMapOf<ShapeType, MutableList<ColoredBody>>()
 
     private val shapeGenCtx = ShapeType.ShapeGeneratorContext()

@@ -35,7 +35,10 @@ import kotlin.math.roundToInt
 class JointsDemo : DemoScene("Physics - Joints") {
 
     private var physicsWorld: PhysicsWorld? = null
-    private val physicsStepper = ConstantPhysicsStepper(isAsync = false)
+    private val physicsStepper = ConstantPhysicsStepperSync().apply {
+        // make the chain spin faster by using double speed simulation
+        simTimeFactor = 2f
+    }
 
     private val motorStrength = mutableStateOf(50f)
     private val motorSpeed = mutableStateOf(1.5f)

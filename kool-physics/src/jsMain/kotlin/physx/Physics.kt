@@ -80,6 +80,8 @@ external interface PxActor : PxBase {
 
 }
 
+fun PxActorFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxActor = js("_module.wrapPointer(ptr, _module.PxActor)")
+
 val PxActor.type
     get() = getType()
 val PxActor.scene
@@ -127,10 +129,9 @@ external interface PxActorFlags {
 /**
  * @param flags WebIDL type: octet
  */
-fun PxActorFlags(flags: Byte): PxActorFlags {
-    fun _PxActorFlags(_module: dynamic, flags: Byte) = js("new _module.PxActorFlags(flags)")
-    return _PxActorFlags(PhysXJsLoader.physXJs, flags)
-}
+fun PxActorFlags(flags: Byte, _module: dynamic = PhysXJsLoader.physXJs): PxActorFlags = js("new _module.PxActorFlags(flags)")
+
+fun PxActorFlagsFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxActorFlags = js("_module.wrapPointer(ptr, _module.PxActorFlags)")
 
 fun PxActorFlags.destroy() {
     PhysXJsLoader.destroy(this)
@@ -163,10 +164,9 @@ external interface PxActorTypeFlags {
 /**
  * @param flags WebIDL type: unsigned short
  */
-fun PxActorTypeFlags(flags: Short): PxActorTypeFlags {
-    fun _PxActorTypeFlags(_module: dynamic, flags: Short) = js("new _module.PxActorTypeFlags(flags)")
-    return _PxActorTypeFlags(PhysXJsLoader.physXJs, flags)
-}
+fun PxActorTypeFlags(flags: Short, _module: dynamic = PhysXJsLoader.physXJs): PxActorTypeFlags = js("new _module.PxActorTypeFlags(flags)")
+
+fun PxActorTypeFlagsFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxActorTypeFlags = js("_module.wrapPointer(ptr, _module.PxActorTypeFlags)")
 
 fun PxActorTypeFlags.destroy() {
     PhysXJsLoader.destroy(this)
@@ -217,6 +217,8 @@ external interface PxRigidActor : PxActor {
     fun getNbConstraints(): Int
 
 }
+
+fun PxRigidActorFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxRigidActor = js("_module.wrapPointer(ptr, _module.PxRigidActor)")
 
 val PxRigidActor.nbShapes
     get() = getNbShapes()
@@ -435,6 +437,8 @@ external interface PxRigidBody : PxRigidActor {
 
 }
 
+fun PxRigidBodyFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxRigidBody = js("_module.wrapPointer(ptr, _module.PxRigidBody)")
+
 val PxRigidBody.invMass
     get() = getInvMass()
 val PxRigidBody.massSpaceInvInertiaTensor
@@ -508,10 +512,9 @@ external interface PxRigidBodyFlags {
 /**
  * @param flags WebIDL type: octet
  */
-fun PxRigidBodyFlags(flags: Byte): PxRigidBodyFlags {
-    fun _PxRigidBodyFlags(_module: dynamic, flags: Byte) = js("new _module.PxRigidBodyFlags(flags)")
-    return _PxRigidBodyFlags(PhysXJsLoader.physXJs, flags)
-}
+fun PxRigidBodyFlags(flags: Byte, _module: dynamic = PhysXJsLoader.physXJs): PxRigidBodyFlags = js("new _module.PxRigidBodyFlags(flags)")
+
+fun PxRigidBodyFlagsFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxRigidBodyFlags = js("_module.wrapPointer(ptr, _module.PxRigidBodyFlags)")
 
 fun PxRigidBodyFlags.destroy() {
     PhysXJsLoader.destroy(this)
@@ -629,6 +632,8 @@ external interface PxRigidDynamic : PxRigidBody {
 
 }
 
+fun PxRigidDynamicFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxRigidDynamic = js("_module.wrapPointer(ptr, _module.PxRigidDynamic)")
+
 var PxRigidDynamic.sleepThreshold
     get() = getSleepThreshold()
     set(value) { setSleepThreshold(value) }
@@ -672,16 +677,17 @@ external interface PxRigidDynamicLockFlags {
 /**
  * @param flags WebIDL type: octet
  */
-fun PxRigidDynamicLockFlags(flags: Byte): PxRigidDynamicLockFlags {
-    fun _PxRigidDynamicLockFlags(_module: dynamic, flags: Byte) = js("new _module.PxRigidDynamicLockFlags(flags)")
-    return _PxRigidDynamicLockFlags(PhysXJsLoader.physXJs, flags)
-}
+fun PxRigidDynamicLockFlags(flags: Byte, _module: dynamic = PhysXJsLoader.physXJs): PxRigidDynamicLockFlags = js("new _module.PxRigidDynamicLockFlags(flags)")
+
+fun PxRigidDynamicLockFlagsFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxRigidDynamicLockFlags = js("_module.wrapPointer(ptr, _module.PxRigidDynamicLockFlags)")
 
 fun PxRigidDynamicLockFlags.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
 external interface PxRigidStatic : PxRigidActor
+
+fun PxRigidStaticFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxRigidStatic = js("_module.wrapPointer(ptr, _module.PxRigidStatic)")
 
 external interface PxArticulationAttachment {
     /**
@@ -757,6 +763,8 @@ external interface PxArticulationAttachment {
     fun release()
 
 }
+
+fun PxArticulationAttachmentFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxArticulationAttachment = js("_module.wrapPointer(ptr, _module.PxArticulationAttachment)")
 
 fun PxArticulationAttachment.destroy() {
     PhysXJsLoader.destroy(this)
@@ -857,6 +865,8 @@ external interface PxArticulationCache {
 
 }
 
+fun PxArticulationCacheFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxArticulationCache = js("_module.wrapPointer(ptr, _module.PxArticulationCache)")
+
 fun PxArticulationCache.destroy() {
     PhysXJsLoader.destroy(this)
 }
@@ -888,10 +898,9 @@ external interface PxArticulationCacheFlags {
 /**
  * @param flags WebIDL type: unsigned long
  */
-fun PxArticulationCacheFlags(flags: Int): PxArticulationCacheFlags {
-    fun _PxArticulationCacheFlags(_module: dynamic, flags: Int) = js("new _module.PxArticulationCacheFlags(flags)")
-    return _PxArticulationCacheFlags(PhysXJsLoader.physXJs, flags)
-}
+fun PxArticulationCacheFlags(flags: Int, _module: dynamic = PhysXJsLoader.physXJs): PxArticulationCacheFlags = js("new _module.PxArticulationCacheFlags(flags)")
+
+fun PxArticulationCacheFlagsFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxArticulationCacheFlags = js("_module.wrapPointer(ptr, _module.PxArticulationCacheFlags)")
 
 fun PxArticulationCacheFlags.destroy() {
     PhysXJsLoader.destroy(this)
@@ -921,10 +930,7 @@ external interface PxArticulationDrive {
     var driveType: Int
 }
 
-fun PxArticulationDrive(): PxArticulationDrive {
-    fun _PxArticulationDrive(_module: dynamic) = js("new _module.PxArticulationDrive()")
-    return _PxArticulationDrive(PhysXJsLoader.physXJs)
-}
+fun PxArticulationDrive(_module: dynamic = PhysXJsLoader.physXJs): PxArticulationDrive = js("new _module.PxArticulationDrive()")
 
 /**
  * @param stiffness WebIDL type: float
@@ -932,10 +938,9 @@ fun PxArticulationDrive(): PxArticulationDrive {
  * @param maxForce  WebIDL type: float
  * @param driveType WebIDL type: [PxArticulationDriveTypeEnum] (enum)
  */
-fun PxArticulationDrive(stiffness: Float, damping: Float, maxForce: Float, driveType: Int): PxArticulationDrive {
-    fun _PxArticulationDrive(_module: dynamic, stiffness: Float, damping: Float, maxForce: Float, driveType: Int) = js("new _module.PxArticulationDrive(stiffness, damping, maxForce, driveType)")
-    return _PxArticulationDrive(PhysXJsLoader.physXJs, stiffness, damping, maxForce, driveType)
-}
+fun PxArticulationDrive(stiffness: Float, damping: Float, maxForce: Float, driveType: Int, _module: dynamic = PhysXJsLoader.physXJs): PxArticulationDrive = js("new _module.PxArticulationDrive(stiffness, damping, maxForce, driveType)")
+
+fun PxArticulationDriveFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxArticulationDrive = js("_module.wrapPointer(ptr, _module.PxArticulationDrive)")
 
 fun PxArticulationDrive.destroy() {
     PhysXJsLoader.destroy(this)
@@ -979,6 +984,8 @@ external interface PxArticulationFixedTendon : PxArticulationTendon {
 
 }
 
+fun PxArticulationFixedTendonFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxArticulationFixedTendon = js("_module.wrapPointer(ptr, _module.PxArticulationFixedTendon)")
+
 fun PxArticulationFixedTendon.destroy() {
     PhysXJsLoader.destroy(this)
 }
@@ -1020,10 +1027,9 @@ external interface PxArticulationFlags {
 /**
  * @param flags WebIDL type: octet
  */
-fun PxArticulationFlags(flags: Byte): PxArticulationFlags {
-    fun _PxArticulationFlags(_module: dynamic, flags: Byte) = js("new _module.PxArticulationFlags(flags)")
-    return _PxArticulationFlags(PhysXJsLoader.physXJs, flags)
-}
+fun PxArticulationFlags(flags: Byte, _module: dynamic = PhysXJsLoader.physXJs): PxArticulationFlags = js("new _module.PxArticulationFlags(flags)")
+
+fun PxArticulationFlagsFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxArticulationFlags = js("_module.wrapPointer(ptr, _module.PxArticulationFlags)")
 
 fun PxArticulationFlags.destroy() {
     PhysXJsLoader.destroy(this)
@@ -1196,6 +1202,8 @@ external interface PxArticulationJointReducedCoordinate : PxBase {
 
 }
 
+fun PxArticulationJointReducedCoordinateFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxArticulationJointReducedCoordinate = js("_module.wrapPointer(ptr, _module.PxArticulationJointReducedCoordinate)")
+
 fun PxArticulationJointReducedCoordinate.destroy() {
     PhysXJsLoader.destroy(this)
 }
@@ -1248,10 +1256,9 @@ external interface PxArticulationKinematicFlags {
 /**
  * @param flags WebIDL type: octet
  */
-fun PxArticulationKinematicFlags(flags: Byte): PxArticulationKinematicFlags {
-    fun _PxArticulationKinematicFlags(_module: dynamic, flags: Byte) = js("new _module.PxArticulationKinematicFlags(flags)")
-    return _PxArticulationKinematicFlags(PhysXJsLoader.physXJs, flags)
-}
+fun PxArticulationKinematicFlags(flags: Byte, _module: dynamic = PhysXJsLoader.physXJs): PxArticulationKinematicFlags = js("new _module.PxArticulationKinematicFlags(flags)")
+
+fun PxArticulationKinematicFlagsFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxArticulationKinematicFlags = js("_module.wrapPointer(ptr, _module.PxArticulationKinematicFlags)")
 
 fun PxArticulationKinematicFlags.destroy() {
     PhysXJsLoader.destroy(this)
@@ -1295,6 +1302,8 @@ external interface PxArticulationLink : PxRigidBody {
 
 }
 
+fun PxArticulationLinkFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxArticulationLink = js("_module.wrapPointer(ptr, _module.PxArticulationLink)")
+
 val PxArticulationLink.articulation
     get() = getArticulation()
 val PxArticulationLink.inboundJoint
@@ -1326,19 +1335,15 @@ external interface PxArticulationLimit {
     var high: Float
 }
 
-fun PxArticulationLimit(): PxArticulationLimit {
-    fun _PxArticulationLimit(_module: dynamic) = js("new _module.PxArticulationLimit()")
-    return _PxArticulationLimit(PhysXJsLoader.physXJs)
-}
+fun PxArticulationLimit(_module: dynamic = PhysXJsLoader.physXJs): PxArticulationLimit = js("new _module.PxArticulationLimit()")
 
 /**
  * @param low  WebIDL type: float
  * @param high WebIDL type: float
  */
-fun PxArticulationLimit(low: Float, high: Float): PxArticulationLimit {
-    fun _PxArticulationLimit(_module: dynamic, low: Float, high: Float) = js("new _module.PxArticulationLimit(low, high)")
-    return _PxArticulationLimit(PhysXJsLoader.physXJs, low, high)
-}
+fun PxArticulationLimit(low: Float, high: Float, _module: dynamic = PhysXJsLoader.physXJs): PxArticulationLimit = js("new _module.PxArticulationLimit(low, high)")
+
+fun PxArticulationLimitFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxArticulationLimit = js("_module.wrapPointer(ptr, _module.PxArticulationLimit)")
 
 fun PxArticulationLimit.destroy() {
     PhysXJsLoader.destroy(this)
@@ -1372,10 +1377,9 @@ external interface PxArticulationRootLinkData {
     var worldAngAccel: PxVec3
 }
 
-fun PxArticulationRootLinkData(): PxArticulationRootLinkData {
-    fun _PxArticulationRootLinkData(_module: dynamic) = js("new _module.PxArticulationRootLinkData()")
-    return _PxArticulationRootLinkData(PhysXJsLoader.physXJs)
-}
+fun PxArticulationRootLinkData(_module: dynamic = PhysXJsLoader.physXJs): PxArticulationRootLinkData = js("new _module.PxArticulationRootLinkData()")
+
+fun PxArticulationRootLinkDataFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxArticulationRootLinkData = js("_module.wrapPointer(ptr, _module.PxArticulationRootLinkData)")
 
 fun PxArticulationRootLinkData.destroy() {
     PhysXJsLoader.destroy(this)
@@ -1710,6 +1714,8 @@ external interface PxArticulationReducedCoordinate : PxBase {
 
 }
 
+fun PxArticulationReducedCoordinateFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxArticulationReducedCoordinate = js("_module.wrapPointer(ptr, _module.PxArticulationReducedCoordinate)")
+
 fun PxArticulationReducedCoordinate.destroy() {
     PhysXJsLoader.destroy(this)
 }
@@ -1821,6 +1827,8 @@ external interface PxArticulationSensor : PxBase {
 
 }
 
+fun PxArticulationSensorFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxArticulationSensor = js("_module.wrapPointer(ptr, _module.PxArticulationSensor)")
+
 fun PxArticulationSensor.destroy() {
     PhysXJsLoader.destroy(this)
 }
@@ -1867,10 +1875,9 @@ external interface PxArticulationSensorFlags {
 /**
  * @param flags WebIDL type: octet
  */
-fun PxArticulationSensorFlags(flags: Byte): PxArticulationSensorFlags {
-    fun _PxArticulationSensorFlags(_module: dynamic, flags: Byte) = js("new _module.PxArticulationSensorFlags(flags)")
-    return _PxArticulationSensorFlags(PhysXJsLoader.physXJs, flags)
-}
+fun PxArticulationSensorFlags(flags: Byte, _module: dynamic = PhysXJsLoader.physXJs): PxArticulationSensorFlags = js("new _module.PxArticulationSensorFlags(flags)")
+
+fun PxArticulationSensorFlagsFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxArticulationSensorFlags = js("_module.wrapPointer(ptr, _module.PxArticulationSensorFlags)")
 
 fun PxArticulationSensorFlags.destroy() {
     PhysXJsLoader.destroy(this)
@@ -1892,6 +1899,8 @@ external interface PxArticulationSpatialTendon : PxArticulationTendon {
     fun getNbAttachments(): Int
 
 }
+
+fun PxArticulationSpatialTendonFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxArticulationSpatialTendon = js("_module.wrapPointer(ptr, _module.PxArticulationSpatialTendon)")
 
 fun PxArticulationSpatialTendon.destroy() {
     PhysXJsLoader.destroy(this)
@@ -1954,6 +1963,8 @@ external interface PxArticulationTendon : PxBase {
 
 }
 
+fun PxArticulationTendonFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxArticulationTendon = js("_module.wrapPointer(ptr, _module.PxArticulationTendon)")
+
 fun PxArticulationTendon.destroy() {
     PhysXJsLoader.destroy(this)
 }
@@ -2011,6 +2022,8 @@ external interface PxArticulationTendonJoint {
 
 }
 
+fun PxArticulationTendonJointFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxArticulationTendonJoint = js("_module.wrapPointer(ptr, _module.PxArticulationTendonJoint)")
+
 fun PxArticulationTendonJoint.destroy() {
     PhysXJsLoader.destroy(this)
 }
@@ -2038,6 +2051,8 @@ external interface PxArticulationTendonLimit {
     var highLimit: Float
 }
 
+fun PxArticulationTendonLimitFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxArticulationTendonLimit = js("_module.wrapPointer(ptr, _module.PxArticulationTendonLimit)")
+
 fun PxArticulationTendonLimit.destroy() {
     PhysXJsLoader.destroy(this)
 }
@@ -2058,6 +2073,8 @@ external interface PxSpatialForce {
     var torque: PxVec3
 }
 
+fun PxSpatialForceFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxSpatialForce = js("_module.wrapPointer(ptr, _module.PxSpatialForce)")
+
 fun PxSpatialForce.destroy() {
     PhysXJsLoader.destroy(this)
 }
@@ -2077,6 +2094,8 @@ external interface PxSpatialVelocity {
      */
     var angular: PxVec3
 }
+
+fun PxSpatialVelocityFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxSpatialVelocity = js("_module.wrapPointer(ptr, _module.PxSpatialVelocity)")
 
 fun PxSpatialVelocity.destroy() {
     PhysXJsLoader.destroy(this)
@@ -2124,6 +2143,8 @@ external interface PxAggregate : PxBase {
 
 }
 
+fun PxAggregateFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxAggregate = js("_module.wrapPointer(ptr, _module.PxAggregate)")
+
 val PxAggregate.nbActors
     get() = getNbActors()
 val PxAggregate.maxNbActors
@@ -2134,6 +2155,8 @@ val PxAggregate.selfCollision
     get() = getSelfCollision()
 
 external interface PxBaseMaterial : PxRefCounted
+
+fun PxBaseMaterialFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxBaseMaterial = js("_module.wrapPointer(ptr, _module.PxBaseMaterial)")
 
 fun PxBaseMaterial.destroy() {
     PhysXJsLoader.destroy(this)
@@ -2151,10 +2174,9 @@ external interface PxBroadPhaseCaps {
     var mMaxNbRegions: Int
 }
 
-fun PxBroadPhaseCaps(): PxBroadPhaseCaps {
-    fun _PxBroadPhaseCaps(_module: dynamic) = js("new _module.PxBroadPhaseCaps()")
-    return _PxBroadPhaseCaps(PhysXJsLoader.physXJs)
-}
+fun PxBroadPhaseCaps(_module: dynamic = PhysXJsLoader.physXJs): PxBroadPhaseCaps = js("new _module.PxBroadPhaseCaps()")
+
+fun PxBroadPhaseCapsFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxBroadPhaseCaps = js("_module.wrapPointer(ptr, _module.PxBroadPhaseCaps)")
 
 fun PxBroadPhaseCaps.destroy() {
     PhysXJsLoader.destroy(this)
@@ -2176,10 +2198,9 @@ external interface PxBroadPhaseRegion {
     var mUserData: Any
 }
 
-fun PxBroadPhaseRegion(): PxBroadPhaseRegion {
-    fun _PxBroadPhaseRegion(_module: dynamic) = js("new _module.PxBroadPhaseRegion()")
-    return _PxBroadPhaseRegion(PhysXJsLoader.physXJs)
-}
+fun PxBroadPhaseRegion(_module: dynamic = PhysXJsLoader.physXJs): PxBroadPhaseRegion = js("new _module.PxBroadPhaseRegion()")
+
+fun PxBroadPhaseRegionFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxBroadPhaseRegion = js("_module.wrapPointer(ptr, _module.PxBroadPhaseRegion)")
 
 fun PxBroadPhaseRegion.destroy() {
     PhysXJsLoader.destroy(this)
@@ -2213,10 +2234,9 @@ external interface PxBroadPhaseRegionInfo {
     var mOverlap: Boolean
 }
 
-fun PxBroadPhaseRegionInfo(): PxBroadPhaseRegionInfo {
-    fun _PxBroadPhaseRegionInfo(_module: dynamic) = js("new _module.PxBroadPhaseRegionInfo()")
-    return _PxBroadPhaseRegionInfo(PhysXJsLoader.physXJs)
-}
+fun PxBroadPhaseRegionInfo(_module: dynamic = PhysXJsLoader.physXJs): PxBroadPhaseRegionInfo = js("new _module.PxBroadPhaseRegionInfo()")
+
+fun PxBroadPhaseRegionInfoFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxBroadPhaseRegionInfo = js("_module.wrapPointer(ptr, _module.PxBroadPhaseRegionInfo)")
 
 fun PxBroadPhaseRegionInfo.destroy() {
     PhysXJsLoader.destroy(this)
@@ -2281,6 +2301,8 @@ external interface PxConstraint : PxBase {
 
 }
 
+fun PxConstraintFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxConstraint = js("_module.wrapPointer(ptr, _module.PxConstraint)")
+
 val PxConstraint.scene
     get() = getScene()
 
@@ -2318,10 +2340,9 @@ external interface PxConstraintFlags {
 /**
  * @param flags WebIDL type: unsigned short
  */
-fun PxConstraintFlags(flags: Short): PxConstraintFlags {
-    fun _PxConstraintFlags(_module: dynamic, flags: Short) = js("new _module.PxConstraintFlags(flags)")
-    return _PxConstraintFlags(PhysXJsLoader.physXJs, flags)
-}
+fun PxConstraintFlags(flags: Short, _module: dynamic = PhysXJsLoader.physXJs): PxConstraintFlags = js("new _module.PxConstraintFlags(flags)")
+
+fun PxConstraintFlagsFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxConstraintFlags = js("_module.wrapPointer(ptr, _module.PxConstraintFlags)")
 
 fun PxConstraintFlags.destroy() {
     PhysXJsLoader.destroy(this)
@@ -2346,6 +2367,8 @@ external interface PxConstraintInfo {
      */
     var type: Int
 }
+
+fun PxConstraintInfoFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxConstraintInfo = js("_module.wrapPointer(ptr, _module.PxConstraintInfo)")
 
 fun PxConstraintInfo.destroy() {
     PhysXJsLoader.destroy(this)
@@ -2378,10 +2401,9 @@ external interface PxContactPairHeaderFlags {
 /**
  * @param flags WebIDL type: unsigned short
  */
-fun PxContactPairHeaderFlags(flags: Short): PxContactPairHeaderFlags {
-    fun _PxContactPairHeaderFlags(_module: dynamic, flags: Short) = js("new _module.PxContactPairHeaderFlags(flags)")
-    return _PxContactPairHeaderFlags(PhysXJsLoader.physXJs, flags)
-}
+fun PxContactPairHeaderFlags(flags: Short, _module: dynamic = PhysXJsLoader.physXJs): PxContactPairHeaderFlags = js("new _module.PxContactPairHeaderFlags(flags)")
+
+fun PxContactPairHeaderFlagsFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxContactPairHeaderFlags = js("_module.wrapPointer(ptr, _module.PxContactPairHeaderFlags)")
 
 fun PxContactPairHeaderFlags.destroy() {
     PhysXJsLoader.destroy(this)
@@ -2396,7 +2418,8 @@ external interface PxContactPair {
     /**
      * WebIDL type: [PxShape]
      */
-    var shapes: PxShape
+    fun get_shapes(index: Int): PxShape
+    fun set_shapes(index: Int, value: PxShape)
     /**
      * WebIDL type: octet
      */
@@ -2422,6 +2445,8 @@ external interface PxContactPair {
     fun extractContacts(userBuffer: PxContactPairPoint, bufferSize: Int): Int
 
 }
+
+fun PxContactPairFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxContactPair = js("_module.wrapPointer(ptr, _module.PxContactPair)")
 
 fun PxContactPair.destroy() {
     PhysXJsLoader.destroy(this)
@@ -2454,10 +2479,9 @@ external interface PxContactPairFlags {
 /**
  * @param flags WebIDL type: unsigned short
  */
-fun PxContactPairFlags(flags: Short): PxContactPairFlags {
-    fun _PxContactPairFlags(_module: dynamic, flags: Short) = js("new _module.PxContactPairFlags(flags)")
-    return _PxContactPairFlags(PhysXJsLoader.physXJs, flags)
-}
+fun PxContactPairFlags(flags: Short, _module: dynamic = PhysXJsLoader.physXJs): PxContactPairFlags = js("new _module.PxContactPairFlags(flags)")
+
+fun PxContactPairFlagsFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxContactPairFlags = js("_module.wrapPointer(ptr, _module.PxContactPairFlags)")
 
 fun PxContactPairFlags.destroy() {
     PhysXJsLoader.destroy(this)
@@ -2472,7 +2496,8 @@ external interface PxContactPairHeader {
     /**
      * WebIDL type: [PxActor]
      */
-    var actors: PxActor
+    fun get_actors(index: Int): PxActor
+    fun set_actors(index: Int, value: PxActor)
     /**
      * WebIDL type: [PxContactPairHeaderFlags] (Value)
      */
@@ -2486,6 +2511,8 @@ external interface PxContactPairHeader {
      */
     var nbPairs: Int
 }
+
+fun PxContactPairHeaderFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxContactPairHeader = js("_module.wrapPointer(ptr, _module.PxContactPairHeader)")
 
 fun PxContactPairHeader.destroy() {
     PhysXJsLoader.destroy(this)
@@ -2523,6 +2550,8 @@ external interface PxContactPairPoint {
     var internalFaceIndex1: Int
 }
 
+fun PxContactPairPointFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxContactPairPoint = js("_module.wrapPointer(ptr, _module.PxContactPairPoint)")
+
 fun PxContactPairPoint.destroy() {
     PhysXJsLoader.destroy(this)
 }
@@ -2547,10 +2576,9 @@ external interface PxDominanceGroupPair {
  * @param a WebIDL type: octet
  * @param b WebIDL type: octet
  */
-fun PxDominanceGroupPair(a: Byte, b: Byte): PxDominanceGroupPair {
-    fun _PxDominanceGroupPair(_module: dynamic, a: Byte, b: Byte) = js("new _module.PxDominanceGroupPair(a, b)")
-    return _PxDominanceGroupPair(PhysXJsLoader.physXJs, a, b)
-}
+fun PxDominanceGroupPair(a: Byte, b: Byte, _module: dynamic = PhysXJsLoader.physXJs): PxDominanceGroupPair = js("new _module.PxDominanceGroupPair(a, b)")
+
+fun PxDominanceGroupPairFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxDominanceGroupPair = js("_module.wrapPointer(ptr, _module.PxDominanceGroupPair)")
 
 fun PxDominanceGroupPair.destroy() {
     PhysXJsLoader.destroy(this)
@@ -2580,10 +2608,7 @@ external interface PxFilterData {
     var word3: Int
 }
 
-fun PxFilterData(): PxFilterData {
-    fun _PxFilterData(_module: dynamic) = js("new _module.PxFilterData()")
-    return _PxFilterData(PhysXJsLoader.physXJs)
-}
+fun PxFilterData(_module: dynamic = PhysXJsLoader.physXJs): PxFilterData = js("new _module.PxFilterData()")
 
 /**
  * @param w0 WebIDL type: unsigned long
@@ -2591,10 +2616,9 @@ fun PxFilterData(): PxFilterData {
  * @param w2 WebIDL type: unsigned long
  * @param w3 WebIDL type: unsigned long
  */
-fun PxFilterData(w0: Int, w1: Int, w2: Int, w3: Int): PxFilterData {
-    fun _PxFilterData(_module: dynamic, w0: Int, w1: Int, w2: Int, w3: Int) = js("new _module.PxFilterData(w0, w1, w2, w3)")
-    return _PxFilterData(PhysXJsLoader.physXJs, w0, w1, w2, w3)
-}
+fun PxFilterData(w0: Int, w1: Int, w2: Int, w3: Int, _module: dynamic = PhysXJsLoader.physXJs): PxFilterData = js("new _module.PxFilterData(w0, w1, w2, w3)")
+
+fun PxFilterDataFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxFilterData = js("_module.wrapPointer(ptr, _module.PxFilterData)")
 
 fun PxFilterData.destroy() {
     PhysXJsLoader.destroy(this)
@@ -2674,6 +2698,8 @@ external interface PxMaterial : PxBaseMaterial {
 
 }
 
+fun PxMaterialFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxMaterial = js("_module.wrapPointer(ptr, _module.PxMaterial)")
+
 var PxMaterial.dynamicFriction
     get() = getDynamicFriction()
     set(value) { setDynamicFriction(value) }
@@ -2720,10 +2746,9 @@ external interface PxMaterialFlags {
 /**
  * @param flags WebIDL type: unsigned short
  */
-fun PxMaterialFlags(flags: Short): PxMaterialFlags {
-    fun _PxMaterialFlags(_module: dynamic, flags: Short) = js("new _module.PxMaterialFlags(flags)")
-    return _PxMaterialFlags(PhysXJsLoader.physXJs, flags)
-}
+fun PxMaterialFlags(flags: Short, _module: dynamic = PhysXJsLoader.physXJs): PxMaterialFlags = js("new _module.PxMaterialFlags(flags)")
+
+fun PxMaterialFlagsFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxMaterialFlags = js("_module.wrapPointer(ptr, _module.PxMaterialFlags)")
 
 fun PxMaterialFlags.destroy() {
     PhysXJsLoader.destroy(this)
@@ -2756,10 +2781,9 @@ external interface PxPairFlags {
 /**
  * @param flags WebIDL type: unsigned short
  */
-fun PxPairFlags(flags: Short): PxPairFlags {
-    fun _PxPairFlags(_module: dynamic, flags: Short) = js("new _module.PxPairFlags(flags)")
-    return _PxPairFlags(PhysXJsLoader.physXJs, flags)
-}
+fun PxPairFlags(flags: Short, _module: dynamic = PhysXJsLoader.physXJs): PxPairFlags = js("new _module.PxPairFlags(flags)")
+
+fun PxPairFlagsFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxPairFlags = js("_module.wrapPointer(ptr, _module.PxPairFlags)")
 
 fun PxPairFlags.destroy() {
     PhysXJsLoader.destroy(this)
@@ -2858,6 +2882,8 @@ external interface PxPhysics {
 
 }
 
+fun PxPhysicsFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxPhysics = js("_module.wrapPointer(ptr, _module.PxPhysics)")
+
 fun PxPhysics.destroy() {
     PhysXJsLoader.destroy(this)
 }
@@ -2872,6 +2898,8 @@ val PxPhysics.physicsInsertionCallback
     get() = getPhysicsInsertionCallback()
 
 external interface PxSimulationEventCallback
+
+fun PxSimulationEventCallbackFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxSimulationEventCallback = js("_module.wrapPointer(ptr, _module.PxSimulationEventCallback)")
 
 fun PxSimulationEventCallback.destroy() {
     PhysXJsLoader.destroy(this)
@@ -2911,6 +2939,8 @@ external interface SimpleSimulationEventCallback : PxSimulationEventCallback {
 
 }
 
+fun SimpleSimulationEventCallbackFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): SimpleSimulationEventCallback = js("_module.wrapPointer(ptr, _module.SimpleSimulationEventCallback)")
+
 fun SimpleSimulationEventCallback.destroy() {
     PhysXJsLoader.destroy(this)
 }
@@ -2920,41 +2950,40 @@ external interface PxSimulationEventCallbackImpl : SimpleSimulationEventCallback
      * param constraints WebIDL type: [PxConstraintInfo]
      * param count       WebIDL type: unsigned long
      */
-    var onConstraintBreak: (constraints: PxConstraintInfo, count: Int) -> Unit
+    var onConstraintBreak: (constraints: Int, count: Int) -> Unit
 
     /**
      * param actors WebIDL type: [PxActorPtr]
      * param count  WebIDL type: unsigned long
      */
-    var onWake: (actors: PxActorPtr, count: Int) -> Unit
+    var onWake: (actors: Int, count: Int) -> Unit
 
     /**
      * param actors WebIDL type: [PxActorPtr]
      * param count  WebIDL type: unsigned long
      */
-    var onSleep: (actors: PxActorPtr, count: Int) -> Unit
+    var onSleep: (actors: Int, count: Int) -> Unit
 
     /**
      * param pairHeader WebIDL type: [PxContactPairHeader] (Const, Ref)
      * param pairs      WebIDL type: [PxContactPair] (Const)
      * param nbPairs    WebIDL type: unsigned long
      */
-    var onContact: (pairHeader: PxContactPairHeader, pairs: PxContactPair, nbPairs: Int) -> Unit
+    var onContact: (pairHeader: Int, pairs: Int, nbPairs: Int) -> Unit
 
     /**
      * param pairs WebIDL type: [PxTriggerPair]
      * param count WebIDL type: unsigned long
      */
-    var onTrigger: (pairs: PxTriggerPair, count: Int) -> Unit
+    var onTrigger: (pairs: Int, count: Int) -> Unit
 
 }
 
-fun PxSimulationEventCallbackImpl(): PxSimulationEventCallbackImpl {
-    fun _PxSimulationEventCallbackImpl(_module: dynamic) = js("new _module.PxSimulationEventCallbackImpl()")
-    return _PxSimulationEventCallbackImpl(PhysXJsLoader.physXJs)
-}
+fun PxSimulationEventCallbackImpl(_module: dynamic = PhysXJsLoader.physXJs): PxSimulationEventCallbackImpl = js("new _module.PxSimulationEventCallbackImpl()")
 
 external interface PxSimulationFilterShader
+
+fun PxSimulationFilterShaderFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxSimulationFilterShader = js("_module.wrapPointer(ptr, _module.PxSimulationFilterShader)")
 
 fun PxSimulationFilterShader.destroy() {
     PhysXJsLoader.destroy(this)
@@ -2993,7 +3022,8 @@ external interface PxSimulationStatistics {
     /**
      * WebIDL type: unsigned long
      */
-    var nbShapes: Int
+    fun get_nbShapes(index: Int): Int
+    fun set_nbShapes(index: Int, value: Int)
     /**
      * WebIDL type: unsigned long
      */
@@ -3060,6 +3090,8 @@ external interface PxSimulationStatistics {
     var nbBroadPhaseRemoves: Int
 }
 
+fun PxSimulationStatisticsFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxSimulationStatistics = js("_module.wrapPointer(ptr, _module.PxSimulationStatistics)")
+
 fun PxSimulationStatistics.destroy() {
     PhysXJsLoader.destroy(this)
 }
@@ -3096,6 +3128,8 @@ external interface PxTriggerPair {
     var flags: PxTriggerPairFlags
 }
 
+fun PxTriggerPairFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxTriggerPair = js("_module.wrapPointer(ptr, _module.PxTriggerPair)")
+
 fun PxTriggerPair.destroy() {
     PhysXJsLoader.destroy(this)
 }
@@ -3127,10 +3161,9 @@ external interface PxTriggerPairFlags {
 /**
  * @param flags WebIDL type: octet
  */
-fun PxTriggerPairFlags(flags: Byte): PxTriggerPairFlags {
-    fun _PxTriggerPairFlags(_module: dynamic, flags: Byte) = js("new _module.PxTriggerPairFlags(flags)")
-    return _PxTriggerPairFlags(PhysXJsLoader.physXJs, flags)
-}
+fun PxTriggerPairFlags(flags: Byte, _module: dynamic = PhysXJsLoader.physXJs): PxTriggerPairFlags = js("new _module.PxTriggerPairFlags(flags)")
+
+fun PxTriggerPairFlagsFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxTriggerPairFlags = js("_module.wrapPointer(ptr, _module.PxTriggerPairFlags)")
 
 fun PxTriggerPairFlags.destroy() {
     PhysXJsLoader.destroy(this)
@@ -3735,6 +3768,8 @@ external interface PxScene : PxSceneSQSystem {
 
 }
 
+fun PxSceneFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxScene = js("_module.wrapPointer(ptr, _module.PxScene)")
+
 val PxScene.wakeCounterResetValue
     get() = getWakeCounterResetValue()
 val PxScene.nbSoftBodies
@@ -4012,10 +4047,9 @@ external interface PxSceneDesc {
 /**
  * @param scale WebIDL type: [PxTolerancesScale] (Const, Ref)
  */
-fun PxSceneDesc(scale: PxTolerancesScale): PxSceneDesc {
-    fun _PxSceneDesc(_module: dynamic, scale: PxTolerancesScale) = js("new _module.PxSceneDesc(scale)")
-    return _PxSceneDesc(PhysXJsLoader.physXJs, scale)
-}
+fun PxSceneDesc(scale: PxTolerancesScale, _module: dynamic = PhysXJsLoader.physXJs): PxSceneDesc = js("new _module.PxSceneDesc(scale)")
+
+fun PxSceneDescFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxSceneDesc = js("_module.wrapPointer(ptr, _module.PxSceneDesc)")
 
 fun PxSceneDesc.destroy() {
     PhysXJsLoader.destroy(this)
@@ -4048,10 +4082,9 @@ external interface PxSceneFlags {
 /**
  * @param flags WebIDL type: unsigned long
  */
-fun PxSceneFlags(flags: Int): PxSceneFlags {
-    fun _PxSceneFlags(_module: dynamic, flags: Int) = js("new _module.PxSceneFlags(flags)")
-    return _PxSceneFlags(PhysXJsLoader.physXJs, flags)
-}
+fun PxSceneFlags(flags: Int, _module: dynamic = PhysXJsLoader.physXJs): PxSceneFlags = js("new _module.PxSceneFlags(flags)")
+
+fun PxSceneFlagsFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxSceneFlags = js("_module.wrapPointer(ptr, _module.PxSceneFlags)")
 
 fun PxSceneFlags.destroy() {
     PhysXJsLoader.destroy(this)
@@ -4105,10 +4138,9 @@ external interface PxSceneLimits {
 
 }
 
-fun PxSceneLimits(): PxSceneLimits {
-    fun _PxSceneLimits(_module: dynamic) = js("new _module.PxSceneLimits()")
-    return _PxSceneLimits(PhysXJsLoader.physXJs)
-}
+fun PxSceneLimits(_module: dynamic = PhysXJsLoader.physXJs): PxSceneLimits = js("new _module.PxSceneLimits()")
+
+fun PxSceneLimitsFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxSceneLimits = js("_module.wrapPointer(ptr, _module.PxSceneLimits)")
 
 fun PxSceneLimits.destroy() {
     PhysXJsLoader.destroy(this)
@@ -4141,10 +4173,9 @@ external interface PxHitFlags {
 /**
  * @param flags WebIDL type: unsigned short
  */
-fun PxHitFlags(flags: Short): PxHitFlags {
-    fun _PxHitFlags(_module: dynamic, flags: Short) = js("new _module.PxHitFlags(flags)")
-    return _PxHitFlags(PhysXJsLoader.physXJs, flags)
-}
+fun PxHitFlags(flags: Short, _module: dynamic = PhysXJsLoader.physXJs): PxHitFlags = js("new _module.PxHitFlags(flags)")
+
+fun PxHitFlagsFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxHitFlags = js("_module.wrapPointer(ptr, _module.PxHitFlags)")
 
 fun PxHitFlags.destroy() {
     PhysXJsLoader.destroy(this)
@@ -4168,6 +4199,8 @@ external interface PxLocationHit : PxQueryHit {
      */
     var distance: Float
 }
+
+fun PxLocationHitFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxLocationHit = js("_module.wrapPointer(ptr, _module.PxLocationHit)")
 
 fun PxLocationHit.destroy() {
     PhysXJsLoader.destroy(this)
@@ -4217,10 +4250,9 @@ external interface PxOverlapBuffer10 : PxOverlapCallback {
 
 }
 
-fun PxOverlapBuffer10(): PxOverlapBuffer10 {
-    fun _PxOverlapBuffer10(_module: dynamic) = js("new _module.PxOverlapBuffer10()")
-    return _PxOverlapBuffer10(PhysXJsLoader.physXJs)
-}
+fun PxOverlapBuffer10(_module: dynamic = PhysXJsLoader.physXJs): PxOverlapBuffer10 = js("new _module.PxOverlapBuffer10()")
+
+fun PxOverlapBuffer10FromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxOverlapBuffer10 = js("_module.wrapPointer(ptr, _module.PxOverlapBuffer10)")
 
 fun PxOverlapBuffer10.destroy() {
     PhysXJsLoader.destroy(this)
@@ -4248,6 +4280,8 @@ external interface PxOverlapCallback {
 
 }
 
+fun PxOverlapCallbackFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxOverlapCallback = js("_module.wrapPointer(ptr, _module.PxOverlapCallback)")
+
 fun PxOverlapCallback.destroy() {
     PhysXJsLoader.destroy(this)
 }
@@ -4263,11 +4297,15 @@ external interface PxOverlapHit : PxQueryHit {
     var shape: PxShape
 }
 
+fun PxOverlapHitFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxOverlapHit = js("_module.wrapPointer(ptr, _module.PxOverlapHit)")
+
 fun PxOverlapHit.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
 external interface PxQueryFilterCallback
+
+fun PxQueryFilterCallbackFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxQueryFilterCallback = js("_module.wrapPointer(ptr, _module.PxQueryFilterCallback)")
 
 fun PxQueryFilterCallback.destroy() {
     PhysXJsLoader.destroy(this)
@@ -4292,6 +4330,8 @@ external interface SimpleQueryFilterCallback : PxQueryFilterCallback {
 
 }
 
+fun SimpleQueryFilterCallbackFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): SimpleQueryFilterCallback = js("_module.wrapPointer(ptr, _module.SimpleQueryFilterCallback)")
+
 fun SimpleQueryFilterCallback.destroy() {
     PhysXJsLoader.destroy(this)
 }
@@ -4304,21 +4344,18 @@ external interface PxQueryFilterCallbackImpl : SimpleQueryFilterCallback {
      * param queryFlags WebIDL type: [PxHitFlags] (Ref)
      * return WebIDL type: unsigned long
      */
-    var simplePreFilter: (filterData: PxFilterData, shape: PxShape, actor: PxRigidActor, queryFlags: PxHitFlags) -> Int
+    var simplePreFilter: (filterData: Int, shape: Int, actor: Int, queryFlags: Int) -> Int
 
     /**
      * param filterData WebIDL type: [PxFilterData] (Const, Ref)
      * param hit        WebIDL type: [PxQueryHit] (Const, Ref)
      * return WebIDL type: unsigned long
      */
-    var simplePostFilter: (filterData: PxFilterData, hit: PxQueryHit) -> Int
+    var simplePostFilter: (filterData: Int, hit: Int) -> Int
 
 }
 
-fun PxQueryFilterCallbackImpl(): PxQueryFilterCallbackImpl {
-    fun _PxQueryFilterCallbackImpl(_module: dynamic) = js("new _module.PxQueryFilterCallbackImpl()")
-    return _PxQueryFilterCallbackImpl(PhysXJsLoader.physXJs)
-}
+fun PxQueryFilterCallbackImpl(_module: dynamic = PhysXJsLoader.physXJs): PxQueryFilterCallbackImpl = js("new _module.PxQueryFilterCallbackImpl()")
 
 external interface PxQueryFilterData {
     /**
@@ -4336,27 +4373,20 @@ external interface PxQueryFilterData {
     var flags: PxQueryFlags
 }
 
-fun PxQueryFilterData(): PxQueryFilterData {
-    fun _PxQueryFilterData(_module: dynamic) = js("new _module.PxQueryFilterData()")
-    return _PxQueryFilterData(PhysXJsLoader.physXJs)
-}
+fun PxQueryFilterData(_module: dynamic = PhysXJsLoader.physXJs): PxQueryFilterData = js("new _module.PxQueryFilterData()")
 
 /**
  * @param fd WebIDL type: [PxFilterData] (Const, Ref)
  * @param f  WebIDL type: [PxQueryFlags] (Ref)
  */
-fun PxQueryFilterData(fd: PxFilterData, f: PxQueryFlags): PxQueryFilterData {
-    fun _PxQueryFilterData(_module: dynamic, fd: PxFilterData, f: PxQueryFlags) = js("new _module.PxQueryFilterData(fd, f)")
-    return _PxQueryFilterData(PhysXJsLoader.physXJs, fd, f)
-}
+fun PxQueryFilterData(fd: PxFilterData, f: PxQueryFlags, _module: dynamic = PhysXJsLoader.physXJs): PxQueryFilterData = js("new _module.PxQueryFilterData(fd, f)")
 
 /**
  * @param f WebIDL type: [PxQueryFlags] (Ref)
  */
-fun PxQueryFilterData(f: PxQueryFlags): PxQueryFilterData {
-    fun _PxQueryFilterData(_module: dynamic, f: PxQueryFlags) = js("new _module.PxQueryFilterData(f)")
-    return _PxQueryFilterData(PhysXJsLoader.physXJs, f)
-}
+fun PxQueryFilterData(f: PxQueryFlags, _module: dynamic = PhysXJsLoader.physXJs): PxQueryFilterData = js("new _module.PxQueryFilterData(f)")
+
+fun PxQueryFilterDataFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxQueryFilterData = js("_module.wrapPointer(ptr, _module.PxQueryFilterData)")
 
 fun PxQueryFilterData.destroy() {
     PhysXJsLoader.destroy(this)
@@ -4389,10 +4419,9 @@ external interface PxQueryFlags {
 /**
  * @param flags WebIDL type: unsigned short
  */
-fun PxQueryFlags(flags: Short): PxQueryFlags {
-    fun _PxQueryFlags(_module: dynamic, flags: Short) = js("new _module.PxQueryFlags(flags)")
-    return _PxQueryFlags(PhysXJsLoader.physXJs, flags)
-}
+fun PxQueryFlags(flags: Short, _module: dynamic = PhysXJsLoader.physXJs): PxQueryFlags = js("new _module.PxQueryFlags(flags)")
+
+fun PxQueryFlagsFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxQueryFlags = js("_module.wrapPointer(ptr, _module.PxQueryFlags)")
 
 fun PxQueryFlags.destroy() {
     PhysXJsLoader.destroy(this)
@@ -4409,6 +4438,8 @@ external interface PxQueryHit {
      */
     var faceIndex: Int
 }
+
+fun PxQueryHitFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxQueryHit = js("_module.wrapPointer(ptr, _module.PxQueryHit)")
 
 fun PxQueryHit.destroy() {
     PhysXJsLoader.destroy(this)
@@ -4458,10 +4489,9 @@ external interface PxRaycastBuffer10 : PxRaycastCallback {
 
 }
 
-fun PxRaycastBuffer10(): PxRaycastBuffer10 {
-    fun _PxRaycastBuffer10(_module: dynamic) = js("new _module.PxRaycastBuffer10()")
-    return _PxRaycastBuffer10(PhysXJsLoader.physXJs)
-}
+fun PxRaycastBuffer10(_module: dynamic = PhysXJsLoader.physXJs): PxRaycastBuffer10 = js("new _module.PxRaycastBuffer10()")
+
+fun PxRaycastBuffer10FromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxRaycastBuffer10 = js("_module.wrapPointer(ptr, _module.PxRaycastBuffer10)")
 
 fun PxRaycastBuffer10.destroy() {
     PhysXJsLoader.destroy(this)
@@ -4489,6 +4519,8 @@ external interface PxRaycastCallback {
 
 }
 
+fun PxRaycastCallbackFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxRaycastCallback = js("_module.wrapPointer(ptr, _module.PxRaycastCallback)")
+
 fun PxRaycastCallback.destroy() {
     PhysXJsLoader.destroy(this)
 }
@@ -4512,10 +4544,9 @@ external interface PxRaycastHit : PxLocationHit {
     var shape: PxShape
 }
 
-fun PxRaycastHit(): PxRaycastHit {
-    fun _PxRaycastHit(_module: dynamic) = js("new _module.PxRaycastHit()")
-    return _PxRaycastHit(PhysXJsLoader.physXJs)
-}
+fun PxRaycastHit(_module: dynamic = PhysXJsLoader.physXJs): PxRaycastHit = js("new _module.PxRaycastHit()")
+
+fun PxRaycastHitFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxRaycastHit = js("_module.wrapPointer(ptr, _module.PxRaycastHit)")
 
 fun PxRaycastHit.destroy() {
     PhysXJsLoader.destroy(this)
@@ -4641,6 +4672,8 @@ external interface PxSceneQuerySystemBase {
 
 }
 
+fun PxSceneQuerySystemBaseFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxSceneQuerySystemBase = js("_module.wrapPointer(ptr, _module.PxSceneQuerySystemBase)")
+
 val PxSceneQuerySystemBase.staticTimestamp
     get() = getStaticTimestamp()
 
@@ -4722,6 +4755,8 @@ external interface PxSceneSQSystem : PxSceneQuerySystemBase {
 
 }
 
+fun PxSceneSQSystemFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxSceneSQSystem = js("_module.wrapPointer(ptr, _module.PxSceneSQSystem)")
+
 val PxSceneSQSystem.sceneQueryStaticTimestamp
     get() = getSceneQueryStaticTimestamp()
 val PxSceneSQSystem.staticStructure
@@ -4777,10 +4812,9 @@ external interface PxSweepBuffer10 : PxSweepCallback {
 
 }
 
-fun PxSweepBuffer10(): PxSweepBuffer10 {
-    fun _PxSweepBuffer10(_module: dynamic) = js("new _module.PxSweepBuffer10()")
-    return _PxSweepBuffer10(PhysXJsLoader.physXJs)
-}
+fun PxSweepBuffer10(_module: dynamic = PhysXJsLoader.physXJs): PxSweepBuffer10 = js("new _module.PxSweepBuffer10()")
+
+fun PxSweepBuffer10FromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxSweepBuffer10 = js("_module.wrapPointer(ptr, _module.PxSweepBuffer10)")
 
 fun PxSweepBuffer10.destroy() {
     PhysXJsLoader.destroy(this)
@@ -4808,6 +4842,8 @@ external interface PxSweepCallback {
 
 }
 
+fun PxSweepCallbackFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxSweepCallback = js("_module.wrapPointer(ptr, _module.PxSweepCallback)")
+
 fun PxSweepCallback.destroy() {
     PhysXJsLoader.destroy(this)
 }
@@ -4823,10 +4859,9 @@ external interface PxSweepHit : PxLocationHit {
     var shape: PxShape
 }
 
-fun PxSweepHit(): PxSweepHit {
-    fun _PxSweepHit(_module: dynamic) = js("new _module.PxSweepHit()")
-    return _PxSweepHit(PhysXJsLoader.physXJs)
-}
+fun PxSweepHit(_module: dynamic = PhysXJsLoader.physXJs): PxSweepHit = js("new _module.PxSweepHit()")
+
+fun PxSweepHitFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxSweepHit = js("_module.wrapPointer(ptr, _module.PxSweepHit)")
 
 fun PxSweepHit.destroy() {
     PhysXJsLoader.destroy(this)
@@ -4986,6 +5021,8 @@ external interface PxShape : PxRefCounted {
 
 }
 
+fun PxShapeFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxShape = js("_module.wrapPointer(ptr, _module.PxShape)")
+
 val PxShape.geometryType
     get() = getGeometryType()
 val PxShape.actor
@@ -5089,6 +5126,8 @@ external interface PxShapeExt {
 
 }
 
+fun PxShapeExtFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxShapeExt = js("_module.wrapPointer(ptr, _module.PxShapeExt)")
+
 fun PxShapeExt.destroy() {
     PhysXJsLoader.destroy(this)
 }
@@ -5120,10 +5159,9 @@ external interface PxShapeFlags {
 /**
  * @param flags WebIDL type: octet
  */
-fun PxShapeFlags(flags: Byte): PxShapeFlags {
-    fun _PxShapeFlags(_module: dynamic, flags: Byte) = js("new _module.PxShapeFlags(flags)")
-    return _PxShapeFlags(PhysXJsLoader.physXJs, flags)
-}
+fun PxShapeFlags(flags: Byte, _module: dynamic = PhysXJsLoader.physXJs): PxShapeFlags = js("new _module.PxShapeFlags(flags)")
+
+fun PxShapeFlagsFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxShapeFlags = js("_module.wrapPointer(ptr, _module.PxShapeFlags)")
 
 fun PxShapeFlags.destroy() {
     PhysXJsLoader.destroy(this)

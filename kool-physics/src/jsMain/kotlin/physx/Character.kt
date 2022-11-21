@@ -41,6 +41,8 @@ external interface PxBoxController : PxController {
 
 }
 
+fun PxBoxControllerFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxBoxController = js("_module.wrapPointer(ptr, _module.PxBoxController)")
+
 var PxBoxController.halfHeight
     get() = getHalfHeight()
     set(value) { setHalfHeight(value) }
@@ -69,10 +71,9 @@ external interface PxBoxControllerDesc : PxControllerDesc {
 
 }
 
-fun PxBoxControllerDesc(): PxBoxControllerDesc {
-    fun _PxBoxControllerDesc(_module: dynamic) = js("new _module.PxBoxControllerDesc()")
-    return _PxBoxControllerDesc(PhysXJsLoader.physXJs)
-}
+fun PxBoxControllerDesc(_module: dynamic = PhysXJsLoader.physXJs): PxBoxControllerDesc = js("new _module.PxBoxControllerDesc()")
+
+fun PxBoxControllerDescFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxBoxControllerDesc = js("_module.wrapPointer(ptr, _module.PxBoxControllerDesc)")
 
 fun PxBoxControllerDesc.destroy() {
     PhysXJsLoader.destroy(this)
@@ -85,10 +86,9 @@ external interface PxBoxObstacle : PxObstacle {
     var mHalfExtents: PxVec3
 }
 
-fun PxBoxObstacle(): PxBoxObstacle {
-    fun _PxBoxObstacle(_module: dynamic) = js("new _module.PxBoxObstacle()")
-    return _PxBoxObstacle(PhysXJsLoader.physXJs)
-}
+fun PxBoxObstacle(_module: dynamic = PhysXJsLoader.physXJs): PxBoxObstacle = js("new _module.PxBoxObstacle()")
+
+fun PxBoxObstacleFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxBoxObstacle = js("_module.wrapPointer(ptr, _module.PxBoxObstacle)")
 
 fun PxBoxObstacle.destroy() {
     PhysXJsLoader.destroy(this)
@@ -130,6 +130,8 @@ external interface PxCapsuleController : PxController {
 
 }
 
+fun PxCapsuleControllerFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxCapsuleController = js("_module.wrapPointer(ptr, _module.PxCapsuleController)")
+
 var PxCapsuleController.radius
     get() = getRadius()
     set(value) { setRadius(value) }
@@ -158,10 +160,9 @@ external interface PxCapsuleControllerDesc : PxControllerDesc {
 
 }
 
-fun PxCapsuleControllerDesc(): PxCapsuleControllerDesc {
-    fun _PxCapsuleControllerDesc(_module: dynamic) = js("new _module.PxCapsuleControllerDesc()")
-    return _PxCapsuleControllerDesc(PhysXJsLoader.physXJs)
-}
+fun PxCapsuleControllerDesc(_module: dynamic = PhysXJsLoader.physXJs): PxCapsuleControllerDesc = js("new _module.PxCapsuleControllerDesc()")
+
+fun PxCapsuleControllerDescFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxCapsuleControllerDesc = js("_module.wrapPointer(ptr, _module.PxCapsuleControllerDesc)")
 
 fun PxCapsuleControllerDesc.destroy() {
     PhysXJsLoader.destroy(this)
@@ -178,10 +179,9 @@ external interface PxCapsuleObstacle : PxObstacle {
     var mRadius: Float
 }
 
-fun PxCapsuleObstacle(): PxCapsuleObstacle {
-    fun _PxCapsuleObstacle(_module: dynamic) = js("new _module.PxCapsuleObstacle()")
-    return _PxCapsuleObstacle(PhysXJsLoader.physXJs)
-}
+fun PxCapsuleObstacle(_module: dynamic = PhysXJsLoader.physXJs): PxCapsuleObstacle = js("new _module.PxCapsuleObstacle()")
+
+fun PxCapsuleObstacleFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxCapsuleObstacle = js("_module.wrapPointer(ptr, _module.PxCapsuleObstacle)")
 
 fun PxCapsuleObstacle.destroy() {
     PhysXJsLoader.destroy(this)
@@ -330,6 +330,8 @@ external interface PxController {
 
 }
 
+fun PxControllerFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxController = js("_module.wrapPointer(ptr, _module.PxController)")
+
 val PxController.type
     get() = getType()
 val PxController.actor
@@ -364,6 +366,8 @@ var PxController.userData
 
 external interface PxControllerBehaviorCallback
 
+fun PxControllerBehaviorCallbackFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxControllerBehaviorCallback = js("_module.wrapPointer(ptr, _module.PxControllerBehaviorCallback)")
+
 external interface SimpleControllerBehaviorCallback : PxControllerBehaviorCallback {
     /**
      * @param shape WebIDL type: [PxShape] (Const, Ref)
@@ -386,6 +390,8 @@ external interface SimpleControllerBehaviorCallback : PxControllerBehaviorCallba
 
 }
 
+fun SimpleControllerBehaviorCallbackFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): SimpleControllerBehaviorCallback = js("_module.wrapPointer(ptr, _module.SimpleControllerBehaviorCallback)")
+
 fun SimpleControllerBehaviorCallback.destroy() {
     PhysXJsLoader.destroy(this)
 }
@@ -396,26 +402,23 @@ external interface PxControllerBehaviorCallbackImpl : SimpleControllerBehaviorCa
      * param actor WebIDL type: [PxActor] (Const, Ref)
      * return WebIDL type: unsigned long
      */
-    var getShapeBehaviorFlags: (shape: PxShape, actor: PxActor) -> Int
+    var getShapeBehaviorFlags: (shape: Int, actor: Int) -> Int
 
     /**
      * param controller WebIDL type: [PxController] (Const, Ref)
      * return WebIDL type: unsigned long
      */
-    var getControllerBehaviorFlags: (controller: PxController) -> Int
+    var getControllerBehaviorFlags: (controller: Int) -> Int
 
     /**
      * param obstacle WebIDL type: [PxObstacle] (Const, Ref)
      * return WebIDL type: unsigned long
      */
-    var getObstacleBehaviorFlags: (obstacle: PxObstacle) -> Int
+    var getObstacleBehaviorFlags: (obstacle: Int) -> Int
 
 }
 
-fun PxControllerBehaviorCallbackImpl(): PxControllerBehaviorCallbackImpl {
-    fun _PxControllerBehaviorCallbackImpl(_module: dynamic) = js("new _module.PxControllerBehaviorCallbackImpl()")
-    return _PxControllerBehaviorCallbackImpl(PhysXJsLoader.physXJs)
-}
+fun PxControllerBehaviorCallbackImpl(_module: dynamic = PhysXJsLoader.physXJs): PxControllerBehaviorCallbackImpl = js("new _module.PxControllerBehaviorCallbackImpl()")
 
 external interface PxControllerBehaviorFlags {
     /**
@@ -444,10 +447,9 @@ external interface PxControllerBehaviorFlags {
 /**
  * @param flags WebIDL type: octet
  */
-fun PxControllerBehaviorFlags(flags: Byte): PxControllerBehaviorFlags {
-    fun _PxControllerBehaviorFlags(_module: dynamic, flags: Byte) = js("new _module.PxControllerBehaviorFlags(flags)")
-    return _PxControllerBehaviorFlags(PhysXJsLoader.physXJs, flags)
-}
+fun PxControllerBehaviorFlags(flags: Byte, _module: dynamic = PhysXJsLoader.physXJs): PxControllerBehaviorFlags = js("new _module.PxControllerBehaviorFlags(flags)")
+
+fun PxControllerBehaviorFlagsFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxControllerBehaviorFlags = js("_module.wrapPointer(ptr, _module.PxControllerBehaviorFlags)")
 
 fun PxControllerBehaviorFlags.destroy() {
     PhysXJsLoader.destroy(this)
@@ -480,10 +482,9 @@ external interface PxControllerCollisionFlags {
 /**
  * @param flags WebIDL type: octet
  */
-fun PxControllerCollisionFlags(flags: Byte): PxControllerCollisionFlags {
-    fun _PxControllerCollisionFlags(_module: dynamic, flags: Byte) = js("new _module.PxControllerCollisionFlags(flags)")
-    return _PxControllerCollisionFlags(PhysXJsLoader.physXJs, flags)
-}
+fun PxControllerCollisionFlags(flags: Byte, _module: dynamic = PhysXJsLoader.physXJs): PxControllerCollisionFlags = js("new _module.PxControllerCollisionFlags(flags)")
+
+fun PxControllerCollisionFlagsFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxControllerCollisionFlags = js("_module.wrapPointer(ptr, _module.PxControllerCollisionFlags)")
 
 fun PxControllerCollisionFlags.destroy() {
     PhysXJsLoader.destroy(this)
@@ -572,6 +573,8 @@ external interface PxControllerDesc {
 
 }
 
+fun PxControllerDescFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxControllerDesc = js("_module.wrapPointer(ptr, _module.PxControllerDesc)")
+
 val PxControllerDesc.type
     get() = getType()
 
@@ -599,18 +602,14 @@ external interface PxControllerFilters {
     var mCCTFilterCallback: PxControllerFilterCallback
 }
 
-fun PxControllerFilters(): PxControllerFilters {
-    fun _PxControllerFilters(_module: dynamic) = js("new _module.PxControllerFilters()")
-    return _PxControllerFilters(PhysXJsLoader.physXJs)
-}
+fun PxControllerFilters(_module: dynamic = PhysXJsLoader.physXJs): PxControllerFilters = js("new _module.PxControllerFilters()")
 
 /**
  * @param filterData WebIDL type: [PxFilterData] (Const)
  */
-fun PxControllerFilters(filterData: PxFilterData): PxControllerFilters {
-    fun _PxControllerFilters(_module: dynamic, filterData: PxFilterData) = js("new _module.PxControllerFilters(filterData)")
-    return _PxControllerFilters(PhysXJsLoader.physXJs, filterData)
-}
+fun PxControllerFilters(filterData: PxFilterData, _module: dynamic = PhysXJsLoader.physXJs): PxControllerFilters = js("new _module.PxControllerFilters(filterData)")
+
+fun PxControllerFiltersFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxControllerFilters = js("_module.wrapPointer(ptr, _module.PxControllerFilters)")
 
 fun PxControllerFilters.destroy() {
     PhysXJsLoader.destroy(this)
@@ -631,6 +630,8 @@ external interface PxControllerFilterCallback {
 
 }
 
+fun PxControllerFilterCallbackFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxControllerFilterCallback = js("_module.wrapPointer(ptr, _module.PxControllerFilterCallback)")
+
 fun PxControllerFilterCallback.destroy() {
     PhysXJsLoader.destroy(this)
 }
@@ -641,14 +642,11 @@ external interface PxControllerFilterCallbackImpl : PxControllerFilterCallback {
      * param b WebIDL type: [PxController] (Const, Ref)
      * return WebIDL type: boolean
      */
-    var filter: (a: PxController, b: PxController) -> Boolean
+    var filter: (a: Int, b: Int) -> Boolean
 
 }
 
-fun PxControllerFilterCallbackImpl(): PxControllerFilterCallbackImpl {
-    fun _PxControllerFilterCallbackImpl(_module: dynamic) = js("new _module.PxControllerFilterCallbackImpl()")
-    return _PxControllerFilterCallbackImpl(PhysXJsLoader.physXJs)
-}
+fun PxControllerFilterCallbackImpl(_module: dynamic = PhysXJsLoader.physXJs): PxControllerFilterCallbackImpl = js("new _module.PxControllerFilterCallbackImpl()")
 
 external interface PxControllerHit {
     /**
@@ -677,6 +675,8 @@ external interface PxControllerHit {
      */
     var length: Float
 }
+
+fun PxControllerHitFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxControllerHit = js("_module.wrapPointer(ptr, _module.PxControllerHit)")
 
 fun PxControllerHit.destroy() {
     PhysXJsLoader.destroy(this)
@@ -763,6 +763,8 @@ external interface PxControllerManager {
 
 }
 
+fun PxControllerManagerFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxControllerManager = js("_module.wrapPointer(ptr, _module.PxControllerManager)")
+
 val PxControllerManager.scene
     get() = getScene()
 val PxControllerManager.nbControllers
@@ -776,6 +778,8 @@ external interface PxControllerObstacleHit : PxControllerHit {
      */
     var userData: Any
 }
+
+fun PxControllerObstacleHitFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxControllerObstacleHit = js("_module.wrapPointer(ptr, _module.PxControllerObstacleHit)")
 
 fun PxControllerObstacleHit.destroy() {
     PhysXJsLoader.destroy(this)
@@ -796,6 +800,8 @@ external interface PxControllerShapeHit : PxControllerHit {
     var triangleIndex: Int
 }
 
+fun PxControllerShapeHitFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxControllerShapeHit = js("_module.wrapPointer(ptr, _module.PxControllerShapeHit)")
+
 fun PxControllerShapeHit.destroy() {
     PhysXJsLoader.destroy(this)
 }
@@ -806,6 +812,8 @@ external interface PxControllersHit : PxControllerHit {
      */
     var other: PxController
 }
+
+fun PxControllersHitFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxControllersHit = js("_module.wrapPointer(ptr, _module.PxControllersHit)")
 
 fun PxControllersHit.destroy() {
     PhysXJsLoader.destroy(this)
@@ -851,10 +859,9 @@ external interface PxControllerState {
     var isMovingUp: Boolean
 }
 
-fun PxControllerState(): PxControllerState {
-    fun _PxControllerState(_module: dynamic) = js("new _module.PxControllerState()")
-    return _PxControllerState(PhysXJsLoader.physXJs)
-}
+fun PxControllerState(_module: dynamic = PhysXJsLoader.physXJs): PxControllerState = js("new _module.PxControllerState()")
+
+fun PxControllerStateFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxControllerState = js("_module.wrapPointer(ptr, _module.PxControllerState)")
 
 fun PxControllerState.destroy() {
     PhysXJsLoader.destroy(this)
@@ -884,6 +891,8 @@ external interface PxControllerStats {
     var nbTessellation: Short
 }
 
+fun PxControllerStatsFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxControllerStats = js("_module.wrapPointer(ptr, _module.PxControllerStats)")
+
 fun PxControllerStats.destroy() {
     PhysXJsLoader.destroy(this)
 }
@@ -908,20 +917,16 @@ external interface PxExtendedVec3 {
     var z: Double
 }
 
-fun PxExtendedVec3(): PxExtendedVec3 {
-    fun _PxExtendedVec3(_module: dynamic) = js("new _module.PxExtendedVec3()")
-    return _PxExtendedVec3(PhysXJsLoader.physXJs)
-}
+fun PxExtendedVec3(_module: dynamic = PhysXJsLoader.physXJs): PxExtendedVec3 = js("new _module.PxExtendedVec3()")
 
 /**
  * @param x WebIDL type: double
  * @param y WebIDL type: double
  * @param z WebIDL type: double
  */
-fun PxExtendedVec3(x: Double, y: Double, z: Double): PxExtendedVec3 {
-    fun _PxExtendedVec3(_module: dynamic, x: Double, y: Double, z: Double) = js("new _module.PxExtendedVec3(x, y, z)")
-    return _PxExtendedVec3(PhysXJsLoader.physXJs, x, y, z)
-}
+fun PxExtendedVec3(x: Double, y: Double, z: Double, _module: dynamic = PhysXJsLoader.physXJs): PxExtendedVec3 = js("new _module.PxExtendedVec3(x, y, z)")
+
+fun PxExtendedVec3FromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxExtendedVec3 = js("_module.wrapPointer(ptr, _module.PxExtendedVec3)")
 
 fun PxExtendedVec3.destroy() {
     PhysXJsLoader.destroy(this)
@@ -952,6 +957,8 @@ external interface PxObstacle {
     fun getType(): Int
 
 }
+
+fun PxObstacleFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxObstacle = js("_module.wrapPointer(ptr, _module.PxObstacle)")
 
 fun PxObstacle.destroy() {
     PhysXJsLoader.destroy(this)
@@ -1011,6 +1018,8 @@ external interface PxObstacleContext {
 
 }
 
+fun PxObstacleContextFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxObstacleContext = js("_module.wrapPointer(ptr, _module.PxObstacleContext)")
+
 fun PxObstacleContext.destroy() {
     PhysXJsLoader.destroy(this)
 }
@@ -1043,28 +1052,27 @@ external interface PxUserControllerHitReport {
 
 }
 
+fun PxUserControllerHitReportFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxUserControllerHitReport = js("_module.wrapPointer(ptr, _module.PxUserControllerHitReport)")
+
 external interface PxUserControllerHitReportImpl : PxUserControllerHitReport {
     /**
      * param hit WebIDL type: [PxControllerShapeHit] (Const, Ref)
      */
-    var onShapeHit: (hit: PxControllerShapeHit) -> Unit
+    var onShapeHit: (hit: Int) -> Unit
 
     /**
      * param hit WebIDL type: [PxControllersHit] (Const, Ref)
      */
-    var onControllerHit: (hit: PxControllersHit) -> Unit
+    var onControllerHit: (hit: Int) -> Unit
 
     /**
      * param hit WebIDL type: [PxControllerObstacleHit] (Const, Ref)
      */
-    var onObstacleHit: (hit: PxControllerObstacleHit) -> Unit
+    var onObstacleHit: (hit: Int) -> Unit
 
 }
 
-fun PxUserControllerHitReportImpl(): PxUserControllerHitReportImpl {
-    fun _PxUserControllerHitReportImpl(_module: dynamic) = js("new _module.PxUserControllerHitReportImpl()")
-    return _PxUserControllerHitReportImpl(PhysXJsLoader.physXJs)
-}
+fun PxUserControllerHitReportImpl(_module: dynamic = PhysXJsLoader.physXJs): PxUserControllerHitReportImpl = js("new _module.PxUserControllerHitReportImpl()")
 
 object PxCapsuleClimbingModeEnum {
     val eEASY: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxCapsuleClimbingModeEnum_eEASY()

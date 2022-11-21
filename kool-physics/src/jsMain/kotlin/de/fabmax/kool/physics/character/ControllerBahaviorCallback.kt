@@ -1,7 +1,7 @@
 package de.fabmax.kool.physics.character
 
 import de.fabmax.kool.physics.PhysicsWorld
-import physx.PxActor
+import physx.PxActorFromPointer
 import physx.PxControllerBehaviorCallbackImpl
 import physx.PxControllerBehaviorFlagEnum
 
@@ -10,9 +10,9 @@ class ControllerBahaviorCallback(private val world: PhysicsWorld) {
     lateinit var controller: JsCharacterController
 
     val callback = PxControllerBehaviorCallbackImpl().apply {
-        getShapeBehaviorFlags = { _, actor: PxActor ->
+        getShapeBehaviorFlags = { _, actor: Int ->
             controller.hitActorBehaviorCallback?.let { cb ->
-                world.getActor(actor)?.let { rigidActor ->
+                world.getActor(PxActorFromPointer(actor))?.let { rigidActor ->
                     when (cb.hitActorBehavior(rigidActor)) {
                         HitActorBehavior.DEFAULT -> 0
                         HitActorBehavior.SLIDE -> PxControllerBehaviorFlagEnum.eCCT_SLIDE
