@@ -9,13 +9,13 @@ import org.lwjgl.system.MemoryStack
 import physx.PxTopLevelFunctions
 import physx.extensions.*
 
-actual enum class D6JointMotion(val pxVal: Int) {
+actual enum class D6JointMotion(val pxVal: PxD6MotionEnum) {
     Free(PxD6MotionEnum.eFREE),
     Limited(PxD6MotionEnum.eLIMITED),
     Locked(PxD6MotionEnum.eLOCKED);
 
     companion object {
-        fun fromPx(pxVal: Int) = when (pxVal) {
+        fun fromPx(pxVal: PxD6MotionEnum) = when (pxVal) {
             PxD6MotionEnum.eFREE -> Free
             PxD6MotionEnum.eLIMITED -> Limited
             PxD6MotionEnum.eLOCKED -> Locked

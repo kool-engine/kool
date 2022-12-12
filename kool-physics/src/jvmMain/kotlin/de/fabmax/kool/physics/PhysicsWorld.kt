@@ -40,16 +40,15 @@ actual class PhysicsWorld actual constructor(scene: Scene?, val isContinuousColl
         Physics.checkIsLoaded()
 
         MemoryStack.stackPush().use { mem ->
-            var flags = PxSceneFlagEnum.eENABLE_ACTIVE_ACTORS
-            if (isContinuousCollisionDetection) {
-                flags = flags or PxSceneFlagEnum.eENABLE_CCD
-            }
             val sceneDesc = PxSceneDesc.createAt(mem, MemoryStack::nmalloc, Physics.physics.tolerancesScale)
             sceneDesc.gravity = bufPxGravity
             sceneDesc.cpuDispatcher = Physics.defaultCpuDispatcher
             sceneDesc.filterShader = PxTopLevelFunctions.DefaultFilterShader()
             sceneDesc.simulationEventCallback = SimEventCallback()
-            sceneDesc.flags.raise(flags)
+            sceneDesc.flags.raise(PxSceneFlagEnum.eENABLE_ACTIVE_ACTORS)
+            if (isContinuousCollisionDetection) {
+                sceneDesc.flags.raise(PxSceneFlagEnum.eENABLE_CCD)
+            }
             pxScene = Physics.physics.createScene(sceneDesc)
         }
         scene?.let { registerHandlers(it) }
@@ -90,7 +89,7 @@ actual class PhysicsWorld actual constructor(scene: Scene?, val isContinuousColl
             pxActor.setRigidBodyFlag(PxRigidBodyFlagEnum.eENABLE_CCD, true)
             actor.simulationFilterData = FilterData {
                 set(actor.simulationFilterData)
-                word2 = PxPairFlagEnum.eDETECT_CCD_CONTACT
+                word2 = PxPairFlagEnum.eDETECT_CCD_CONTACT.value
             }
         }
     }

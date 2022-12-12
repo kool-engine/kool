@@ -12,6 +12,8 @@ actual open class RigidDynamic internal constructor(mass: Float, pose: Mat4f, px
     protected val pxRigidDynamic: PxRigidDynamic
         get() = pxRigidActor as PxRigidDynamic
 
+    override val pxRigidActor: PxRigidActor
+
     init {
         if (pxActor == null) {
             MemoryStack.stackPush().use { mem ->

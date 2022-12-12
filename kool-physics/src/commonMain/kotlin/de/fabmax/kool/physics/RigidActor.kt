@@ -10,7 +10,7 @@ import de.fabmax.kool.scene.group
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.LazyMat4f
 
-expect open class RigidActor : CommonRigidActor {
+expect abstract class RigidActor : CommonRigidActor {
     val worldBounds: BoundingBox
     var simulationFilterData: FilterData
     var queryFilterData: FilterData

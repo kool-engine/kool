@@ -123,6 +123,7 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
             setColor(Color.WHITE, 0.75f)
         }
 
+//        defaultCamTransform()
         +ActorTrackingCamRig().apply {
             trackedActor = vehicle.vehicle
             camera.setClipRange(1f, 1000f)
@@ -260,9 +261,10 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
         +gndMesh
 
         val ground = RigidStatic().apply {
-            simulationFilterData = vehicleWorld.groundSimFilterData
-            queryFilterData = vehicleWorld.groundQryFilterData
-            attachShape(Shape(PlaneGeometry(), vehicleWorld.defaultMaterial))
+            //simulationFilterData = vehicleWorld.groundSimFilterData
+            //queryFilterData = vehicleWorld.groundQryFilterData
+            //attachShape(Shape(PlaneGeometry(), vehicleWorld.defaultMaterial))
+            attachShape(Shape(PlaneGeometry(), Physics.defaultMaterial))
             setRotation(Mat3f().rotate(90f, Vec3f.Z_AXIS))
         }
         vehicleWorld.physics.addActor(ground)

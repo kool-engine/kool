@@ -34,7 +34,7 @@ kotlin {
                 implementation(DepsJvm.lwjgl())
                 runtimeOnly(DepsJvm.lwjglNatives())
 
-                implementation(DepsJvm.physxJni)
+                api(DepsJvm.physxJni)
                 runtimeOnly(DepsJvm.physxJniRuntime)
             }
         }

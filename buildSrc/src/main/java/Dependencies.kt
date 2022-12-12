@@ -22,9 +22,9 @@ object DepsJvm {
         }
     }
 
-    val physxJniVersion = "2.0.2-SNAPSHOT"
-    val physxJni = "de.fabmax:physx-jni:2.0.2-SNAPSHOT"
-    val physxJniRuntime = "de.fabmax:physx-jni:2.0.2-SNAPSHOT:${nativeLibsSuffix}"
+    val physxJniVersion = "2.0.3-SNAPSHOT"
+    val physxJni = "de.fabmax:physx-jni:${physxJniVersion}"
+    val physxJniRuntime = "de.fabmax:physx-jni:${physxJniVersion}:${nativeLibsSuffix}"
 
     fun lwjgl(subLib: String? = null): String {
         return if (subLib != null) {

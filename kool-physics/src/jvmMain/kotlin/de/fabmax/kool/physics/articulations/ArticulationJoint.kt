@@ -9,7 +9,7 @@ import de.fabmax.kool.physics.toPxTransform
 import org.lwjgl.system.MemoryStack
 import physx.physics.*
 
-actual enum class ArticulationJointType(val pxVal: Int) {
+actual enum class ArticulationJointType(val pxVal: PxArticulationJointTypeEnum) {
     /**
      * All joint axes, i.e. degrees of freedom (DOFs) locked
      */
@@ -31,7 +31,7 @@ actual enum class ArticulationJointType(val pxVal: Int) {
     SPHERICAL(PxArticulationJointTypeEnum.eSPHERICAL);
 
     companion object {
-        fun fromPx(pxVal: Int) = when(pxVal) {
+        fun fromPx(pxVal: PxArticulationJointTypeEnum) = when (pxVal) {
             PxArticulationJointTypeEnum.eFIX -> FIX
             PxArticulationJointTypeEnum.ePRISMATIC -> PRISMATIC
             PxArticulationJointTypeEnum.eREVOLUTE -> REVOLUTE
@@ -41,7 +41,7 @@ actual enum class ArticulationJointType(val pxVal: Int) {
     }
 }
 
-actual enum class ArticulationJointAxis(val pxVal: Int) {
+actual enum class ArticulationJointAxis(val pxVal: PxArticulationAxisEnum) {
     ROT_TWIST(PxArticulationAxisEnum.eTWIST),
     ROT_SWING1(PxArticulationAxisEnum.eSWING1),
     ROT_SWING2(PxArticulationAxisEnum.eSWING2),
@@ -51,13 +51,13 @@ actual enum class ArticulationJointAxis(val pxVal: Int) {
     LINEAR_Z(PxArticulationAxisEnum.eZ)
 }
 
-actual enum class ArticulationMotionMode(val pxVal: Int) {
+actual enum class ArticulationMotionMode(val pxVal: PxArticulationMotionEnum) {
     FREE(PxArticulationMotionEnum.eFREE),
     LIMITED(PxArticulationMotionEnum.eLIMITED),
     LOCKED(PxArticulationMotionEnum.eLOCKED)
 }
 
-actual enum class ArticulationDriveType(val pxVal: Int) {
+actual enum class ArticulationDriveType(val pxVal: PxArticulationDriveTypeEnum) {
     ACCELERATION(PxArticulationDriveTypeEnum.eACCELERATION),
     FORCE(PxArticulationDriveTypeEnum.eFORCE),
     NONE(PxArticulationDriveTypeEnum.eNONE),

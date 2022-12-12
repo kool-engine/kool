@@ -1,7 +1,6 @@
 package de.fabmax.kool.physics.vehicle
 
 import de.fabmax.kool.physics.Material
-import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.physics.PhysicsWorld
 
 actual class BatchVehicleUpdater actual constructor(maxVehicles: Int, private val physicsWorld: PhysicsWorld) : VehicleUpdater {
@@ -9,7 +8,7 @@ actual class BatchVehicleUpdater actual constructor(maxVehicles: Int, private va
 //    private val batchVehicleUpdater: BatchVehicleUpdate
 //    private val desc = BatchVehicleUpdateDesc()
 
-    private var frictionPairs = Physics.defaultSurfaceFrictions
+//    private var frictionPairs = Physics.defaultSurfaceFrictions
     private val vehicles = mutableListOf<Vehicle>()
 
 //    private val onPhysicsUpdate: (Float) -> Unit
@@ -58,7 +57,7 @@ actual class BatchVehicleUpdater actual constructor(maxVehicles: Int, private va
     }
 
     override fun setSurfaceFrictions(frictionPairs: Map<Material, Float>) {
-        this.frictionPairs = FrictionPairs(frictionPairs)
+//        this.frictionPairs = FrictionPairs(frictionPairs)
     }
 
     override fun release() {
@@ -67,8 +66,8 @@ actual class BatchVehicleUpdater actual constructor(maxVehicles: Int, private va
 //        batchVehicleUpdater.destroy()
 //        desc.destroy()
 
-        if (frictionPairs != Physics.defaultSurfaceFrictions) {
-            frictionPairs.release()
-        }
+//        if (frictionPairs != Physics.defaultSurfaceFrictions) {
+//            frictionPairs.release()
+//        }
     }
 }

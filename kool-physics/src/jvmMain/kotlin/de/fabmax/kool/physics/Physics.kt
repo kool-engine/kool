@@ -2,7 +2,6 @@ package de.fabmax.kool.physics
 
 import de.fabmax.kool.math.max
 import de.fabmax.kool.math.min
-import de.fabmax.kool.physics.vehicle.FrictionPairs
 import de.fabmax.kool.util.logI
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -16,16 +15,17 @@ import physx.physics.PxPairFlagEnum
 import physx.physics.PxPhysics
 import physx.physics.PxShapeFlagEnum
 import physx.physics.PxShapeFlags
+import physx.vehicle2.PxVehicleTopLevelFunctions
 import kotlin.coroutines.CoroutineContext
 
 actual object Physics : CoroutineScope {
 
     actual val NOTIFY_TOUCH_FOUND: Int
-        get() = PxPairFlagEnum.eNOTIFY_TOUCH_FOUND
+        get() = PxPairFlagEnum.eNOTIFY_TOUCH_FOUND.value
     actual val NOTIFY_TOUCH_LOST: Int
-        get() = PxPairFlagEnum.eNOTIFY_TOUCH_LOST
+        get() = PxPairFlagEnum.eNOTIFY_TOUCH_LOST.value
     actual val NOTIFY_CONTACT_POINTS: Int
-        get() = PxPairFlagEnum.eNOTIFY_CONTACT_POINTS
+        get() = PxPairFlagEnum.eNOTIFY_CONTACT_POINTS.value
 
     private val job = Job()
     override val coroutineContext: CoroutineContext
@@ -36,11 +36,11 @@ actual object Physics : CoroutineScope {
     val defaultCpuDispatcher: PxDefaultCpuDispatcher
 
     actual val defaultMaterial = Material(0.5f)
-    val defaultSurfaceFrictions: FrictionPairs
 
     // default PhysX facilities
     val foundation: PxFoundation
     val physics: PxPhysics
+    val cookingParams: PxCookingParams
     val cooking: PxCooking
 
     val defaultBodyFlags: PxShapeFlags
@@ -55,7 +55,7 @@ actual object Physics : CoroutineScope {
 
         PxTopLevelFunctions.InitExtensions(physics)
 
-        val cookingParams = PxCookingParams(scale)
+        cookingParams = PxCookingParams(scale)
         cookingParams.midphaseDesc = PxMidphaseDesc().apply {
             setToDefault(PxMeshMidPhaseEnum.eBVH34)
             val bvh34 = mbvH34Desc
@@ -65,17 +65,10 @@ actual object Physics : CoroutineScope {
         cookingParams.suppressTriangleMeshRemapTable = true
         cooking = PxTopLevelFunctions.CreateCooking(version, foundation, cookingParams)
 
-        defaultBodyFlags = PxShapeFlags((PxShapeFlagEnum.eSCENE_QUERY_SHAPE or PxShapeFlagEnum.eSIMULATION_SHAPE).toByte())
+        defaultBodyFlags = PxShapeFlags((PxShapeFlagEnum.eSCENE_QUERY_SHAPE.value or PxShapeFlagEnum.eSIMULATION_SHAPE.value).toByte())
 
         // init vehicle simulation framework
-//        MemoryStack.stackPush().use { mem ->
-//            val up = Vec3f.Y_AXIS.toPxVec3(mem.createPxVec3())
-//            val front = Vec3f.Z_AXIS.toPxVec3(mem.createPxVec3())
-//            PxVehicleTopLevelFunctions.InitVehicleSDK(physics)
-//            PxVehicleTopLevelFunctions.VehicleSetBasisVectors(up, front)
-//            PxVehicleTopLevelFunctions.VehicleSetUpdateMode(PxVehicleUpdateModeEnum.eVELOCITY_CHANGE)
-//        }
-        defaultSurfaceFrictions = FrictionPairs(mapOf(defaultMaterial to 1.5f))
+        PxVehicleTopLevelFunctions.InitVehicleExtension(foundation)
 
         // try to choose a sensible number of worker threads:
         val numWorkers = min(16, max(1, Runtime.getRuntime().availableProcessors() - 2))
@@ -102,8 +95,8 @@ actual object Physics : CoroutineScope {
     }
 
     private class KoolErrorCallback : PxErrorCallbackImpl() {
-        override fun reportError(code: Int, message: String, file: String, line: Int) {
-            PhysicsLogging.logPhysics(code, message, file, line)
+        override fun reportError(code: PxErrorCodeEnum, message: String, file: String, line: Int) {
+            PhysicsLogging.logPhysics(code.value, message, file, line)
         }
     }
 }

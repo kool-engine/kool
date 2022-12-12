@@ -3,12 +3,12 @@ package de.fabmax.kool.physics.util
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.toDeg
-import de.fabmax.kool.physics.RigidDynamic
+import de.fabmax.kool.physics.RigidBody
 import de.fabmax.kool.scene.Group
 import kotlin.math.atan2
 
 class ActorTrackingCamRig : Group() {
-    var trackedActor: RigidDynamic? = null
+    var trackedActor: RigidBody? = null
         set(value) {
             field?.let {
                 it.onPhysicsUpdate -= updateTracking

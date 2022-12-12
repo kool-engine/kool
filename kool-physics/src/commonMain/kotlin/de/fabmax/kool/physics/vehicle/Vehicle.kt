@@ -2,7 +2,7 @@ package de.fabmax.kool.physics.vehicle
 
 import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.physics.PhysicsWorld
-import de.fabmax.kool.physics.RigidDynamic
+import de.fabmax.kool.physics.RigidBody
 import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
 import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.colorMesh
@@ -27,7 +27,7 @@ expect class Vehicle(vehicleProps: VehicleProperties, world: PhysicsWorld, pose:
     fun setToRestState()
 }
 
-abstract class CommonVehicle(val vehicleProps: VehicleProperties, pose: Mat4f) : RigidDynamic(vehicleProps.chassisMass, pose) {
+abstract class CommonVehicle(val vehicleProps: VehicleProperties) : RigidBody() {
 
     protected val mutWheelInfos = mutableListOf<WheelInfo>()
     val wheelInfos: List<WheelInfo>

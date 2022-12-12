@@ -17,8 +17,8 @@ class ControllerBahaviorCallback(private val world: PhysicsWorld) : PxController
             world.getActor(actor)?.let { rigidActor ->
                 return when (cb.hitActorBehavior(rigidActor)) {
                     HitActorBehavior.DEFAULT -> 0
-                    HitActorBehavior.SLIDE -> PxControllerBehaviorFlagEnum.eCCT_SLIDE
-                    HitActorBehavior.RIDE -> PxControllerBehaviorFlagEnum.eCCT_CAN_RIDE_ON_OBJECT
+                    HitActorBehavior.SLIDE -> PxControllerBehaviorFlagEnum.eCCT_SLIDE.value
+                    HitActorBehavior.RIDE -> PxControllerBehaviorFlagEnum.eCCT_CAN_RIDE_ON_OBJECT.value
                 }
             }
         }

@@ -7,12 +7,10 @@ import de.fabmax.kool.math.Mat3f
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.toDeg
-import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.physics.geometry.ConvexMesh
 import de.fabmax.kool.physics.geometry.ConvexMeshGeometry
 import de.fabmax.kool.physics.vehicle.Vehicle
 import de.fabmax.kool.physics.vehicle.VehicleProperties
-import de.fabmax.kool.physics.vehicle.VehicleUtils
 import de.fabmax.kool.pipeline.deferred.DeferredPbrShader
 import de.fabmax.kool.pipeline.deferred.DeferredPointLights
 import de.fabmax.kool.pipeline.deferred.DeferredSpotLights
@@ -230,8 +228,8 @@ class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: Koo
         ))
 
         vehicleGeometry = ConvexMeshGeometry(vehicleMesh)
-        val chassisBox = VehicleUtils.defaultChassisShape(vehicleGeometry, Physics.NOTIFY_TOUCH_FOUND or Physics.NOTIFY_CONTACT_POINTS)
-        vehicleProps.chassisShapes = listOf(chassisBox)
+        //val chassisBox = VehicleUtils.defaultChassisShape(vehicleGeometry, Physics.NOTIFY_TOUCH_FOUND or Physics.NOTIFY_CONTACT_POINTS)
+        //vehicleProps.chassisShapes = listOf(chassisBox)
 
         val vehicle = Vehicle(vehicleProps, world.physics)
         world.physics.addActor(vehicle)

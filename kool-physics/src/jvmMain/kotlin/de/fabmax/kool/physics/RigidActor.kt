@@ -10,13 +10,13 @@ import physx.extensions.PxRigidActorExt
 import physx.physics.PxRigidActor
 import physx.physics.PxShapeFlagEnum
 
-actual open class RigidActor : CommonRigidActor() {
+actual abstract class RigidActor : CommonRigidActor() {
 
     init {
         Physics.checkIsLoaded()
     }
 
-    internal lateinit var pxRigidActor: PxRigidActor
+    abstract val pxRigidActor: PxRigidActor
 
     actual var simulationFilterData = FilterData { setCollisionGroup(0); setCollidesWithEverything() }
         set(value) {
@@ -120,7 +120,7 @@ actual open class RigidActor : CommonRigidActor() {
     }
 
     companion object {
-        val SIM_SHAPE_FLAGS: Int = PxShapeFlagEnum.eSIMULATION_SHAPE or PxShapeFlagEnum.eSCENE_QUERY_SHAPE
-        val TRIGGER_SHAPE_FLAGS: Int = PxShapeFlagEnum.eTRIGGER_SHAPE
+        val SIM_SHAPE_FLAGS: Int = PxShapeFlagEnum.eSIMULATION_SHAPE.value or PxShapeFlagEnum.eSCENE_QUERY_SHAPE.value
+        val TRIGGER_SHAPE_FLAGS: Int = PxShapeFlagEnum.eTRIGGER_SHAPE.value
     }
 }
