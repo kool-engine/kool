@@ -13,8 +13,6 @@ import physx.cooking.PxMeshMidPhaseEnum
 import physx.cooking.PxMidphaseDesc
 import physx.physics.PxPairFlagEnum
 import physx.physics.PxPhysics
-import physx.physics.PxShapeFlagEnum
-import physx.physics.PxShapeFlags
 import physx.vehicle2.PxVehicleTopLevelFunctions
 import kotlin.coroutines.CoroutineContext
 
@@ -43,8 +41,6 @@ actual object Physics : CoroutineScope {
     val cookingParams: PxCookingParams
     val cooking: PxCooking
 
-    val defaultBodyFlags: PxShapeFlags
-
     init {
         val version = PxTopLevelFunctions.getPHYSICS_VERSION()
         val allocator = PxDefaultAllocator()
@@ -64,8 +60,6 @@ actual object Physics : CoroutineScope {
         }
         cookingParams.suppressTriangleMeshRemapTable = true
         cooking = PxTopLevelFunctions.CreateCooking(version, foundation, cookingParams)
-
-        defaultBodyFlags = PxShapeFlags((PxShapeFlagEnum.eSCENE_QUERY_SHAPE.value or PxShapeFlagEnum.eSIMULATION_SHAPE.value).toByte())
 
         // init vehicle simulation framework
         PxVehicleTopLevelFunctions.InitVehicleExtension(foundation)

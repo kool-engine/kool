@@ -312,7 +312,7 @@ class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: Koo
         var brake = 0f
 
         fun update(throttleIn: Float, brakeIn: Float, forwardSpeed: Float, deltaT: Float) {
-            if (abs(forwardSpeed) < 0.1f && brakeIn > 0f) {
+            if (abs(forwardSpeed) < 0.5f && brakeIn > 0f) {
                 reverseTriggerTime += deltaT
                 if (reverseTriggerTime > 0.2f) {
                     isReverse = true

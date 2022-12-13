@@ -5,7 +5,7 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.physics.PhysicsWorld
 
 actual class Vehicle actual constructor(vehicleProps: VehicleProperties, world: PhysicsWorld, pose: Mat4f)
-    : CommonVehicle(vehicleProps, pose) {
+    : CommonVehicle(vehicleProps) {
 
 //    val pxVehicle: PxVehicleDrive4W
 //
