@@ -11,8 +11,6 @@ import de.fabmax.kool.util.Color
 import kotlin.math.PI
 
 expect class Vehicle(vehicleProps: VehicleProperties, world: PhysicsWorld, pose: Mat4f = Mat4f()) : CommonVehicle {
-    val updater: VehicleUpdater
-
     val forwardSpeed: Float
     val sidewaysSpeed: Float
     val longitudinalAcceleration: Float

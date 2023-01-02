@@ -3,10 +3,7 @@ package de.fabmax.kool.demo.physics.vehicle
 import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.LocalKeyCode
-import de.fabmax.kool.math.Mat3f
-import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.math.toDeg
+import de.fabmax.kool.math.*
 import de.fabmax.kool.physics.geometry.ConvexMesh
 import de.fabmax.kool.physics.geometry.ConvexMeshGeometry
 import de.fabmax.kool.physics.vehicle.Vehicle
@@ -25,11 +22,11 @@ import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.max
 
-class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: KoolContext) {
+class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: KoolContext) {
+    private val world: VehicleWorld get() = demo.vehicleWorld
 
     val vehicle: Vehicle
     val vehicleGroup = Group()
-
     val vehicleAudio = VehicleAudio(world.physics)
 
     private lateinit var vehicleGeometry: ConvexMeshGeometry
@@ -112,7 +109,9 @@ class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: Koo
         vehicle.isReverse = throttleBrakeHandler.isReverse
         vehicle.throttleInput = throttleBrakeHandler.throttle
         vehicle.brakeInput = throttleBrakeHandler.brake
-        vehicle.steerInput = inputAxes.leftRight
+
+        val steerScale = 1f - (abs(vehicle.forwardSpeed) / 100f).clamp(0f, 0.9f)
+        vehicle.steerInput = inputAxes.leftRight * steerScale
 
         vehicleAudio.rpm = vehicle.engineSpeedRpm
         vehicleAudio.throttle = throttleBrakeHandler.throttle
@@ -157,7 +156,7 @@ class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: Koo
 
         vehicleAudio.slip = 0f
         for (i in 0..3) {
-            val slip = max(abs(vehicle.wheelInfos[i].lateralSlip), (abs(vehicle.wheelInfos[i].longitudinalSlip) - 0.3f) / 0.7f)
+            val slip = max(abs(vehicle.wheelInfos[i].lateralSlip) * 2f, abs(vehicle.wheelInfos[i].longitudinalSlip) * 1.5f)
             if (slip > vehicleAudio.slip) {
                 vehicleAudio.slip = slip
             }
@@ -170,16 +169,16 @@ class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: Koo
         }
         previousGear = gear
 
-        rearLightLt.position.set(0.4f, -0.1f, -2.5f)
+        rearLightLt.position.set(0.4f, 0.6f, -2.5f)
         vehicle.transform.transform(rearLightLt.position)
-        rearLightRt.position.set(-0.4f, -0.1f, -2.5f)
+        rearLightRt.position.set(-0.4f, 0.6f, -2.5f)
         vehicle.transform.transform(rearLightRt.position)
 
         vehicle.transform.getRotation(headLightLt.orientation).rotate(-85f, Vec3f.Y_AXIS).rotate(-7f, Vec3f.Z_AXIS)
         vehicle.transform.getRotation(headLightRt.orientation).rotate(-95f, Vec3f.Y_AXIS).rotate(-7f, Vec3f.Z_AXIS)
-        headLightLt.position.set(0.65f, -0.45f, 2.7f)
+        headLightLt.position.set(0.65f, 0.3f, 2.7f)
         vehicle.transform.transform(headLightLt.position)
-        headLightRt.position.set(-0.65f, -0.45f, 2.7f)
+        headLightRt.position.set(-0.65f, 0.3f, 2.7f)
         vehicle.transform.transform(headLightRt.position)
 
         headLightLt.power = desiredHeadLightPower * 0.1f + headLightLt.power * 0.9f
@@ -192,11 +191,21 @@ class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: Koo
     }
 
     private fun makeRaycastVehicle(world: VehicleWorld): Vehicle {
+        val vehicleMesh = ConvexMesh(listOf(
+            Vec3f(-1.05f, -0.65f,  2.5f), Vec3f(-1.05f, -0.4f,  2.75f),
+            Vec3f( 1.05f, -0.65f,  2.5f), Vec3f( 1.05f, -0.4f,  2.75f),
+            Vec3f(-0.95f, -0.65f, -2.5f), Vec3f(-0.95f, 0.25f, -2.6f),
+            Vec3f( 0.95f, -0.65f, -2.5f), Vec3f( 0.95f, 0.25f, -2.6f),
+
+            Vec3f(-1.05f, -0.55f,  2.75f), Vec3f(1.05f, -0.55f,  2.75f),
+            Vec3f( -0.95f, 0.2f, 0f), Vec3f( 0.95f, 0.2f, 0f)
+        ))
+
         val vehicleProps = VehicleProperties().apply {
             chassisDims = Vec3f(2.1f, 0.98f, 5.4f)
-            trackWidth = 1.6f
-            maxBrakeTorqueFront = 2400f
-            maxBrakeTorqueRear = 1200f
+            trackWidthFront = 1.6f
+            trackWidthRear = 1.65f
+            maxBrakeTorque = 3000f
             gearFinalRatio = 3f
             maxCompression = 0.1f
             maxDroop = 0.1f
@@ -213,23 +222,11 @@ class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: Koo
             wheelMassRear = 30f
             wheelPosRear = -1.7f
 
+            chassisGeometry = ConvexMeshGeometry(vehicleMesh)
+
             updateChassisMoiFromDimensionsAndMass()
             updateWheelMoiFromRadiusAndMass()
         }
-
-        val vehicleMesh = ConvexMesh(listOf(
-            Vec3f(-1.05f, -0.65f,  2.5f), Vec3f(-1.05f, -0.4f,  2.75f),
-            Vec3f( 1.05f, -0.65f,  2.5f), Vec3f( 1.05f, -0.4f,  2.75f),
-            Vec3f(-0.95f, -0.65f, -2.5f), Vec3f(-0.95f, 0.25f, -2.6f),
-            Vec3f( 0.95f, -0.65f, -2.5f), Vec3f( 0.95f, 0.25f, -2.6f),
-
-            Vec3f(-1.05f, -0.55f,  2.75f), Vec3f(1.05f, -0.55f,  2.75f),
-            Vec3f( -0.95f, 0.2f, 0f), Vec3f( 0.95f, 0.2f, 0f)
-        ))
-
-        vehicleGeometry = ConvexMeshGeometry(vehicleMesh)
-        //val chassisBox = VehicleUtils.defaultChassisShape(vehicleGeometry, Physics.NOTIFY_TOUCH_FOUND or Physics.NOTIFY_CONTACT_POINTS)
-        //vehicleProps.chassisShapes = listOf(chassisBox)
 
         val vehicle = Vehicle(vehicleProps, world.physics)
         world.physics.addActor(vehicle)
@@ -248,6 +245,7 @@ class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: Koo
 
             world.scene.onRenderScene += {
                 transform.set(vehicle.transform)
+                transform.translate(vehicleProps.chassisCMOffset)
                 setDirty()
                 for (i in 0..3) {
                     wheelTransforms[i].transform.set(vehicle.wheelInfos[i].transform)
@@ -256,7 +254,7 @@ class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: Koo
             }
         }
 
-        vehicleModel.translate(0f, -0.86f, 0f)
+        vehicleModel.translate(MutableVec3f(vehicleProps.chassisCMOffset).scale(-1f))
 
         return vehicle
     }
@@ -286,6 +284,8 @@ class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: Koo
             vehicle.linearVelocity = Vec3f.ZERO
             vehicle.angularVelocity = Vec3f.ZERO
             vehicle.setToRestState()
+
+            demo.timer?.reset(false)
         }
     }
 

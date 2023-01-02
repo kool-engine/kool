@@ -10,7 +10,6 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.toRad
 import de.fabmax.kool.physics.*
 import de.fabmax.kool.physics.geometry.PlaneGeometry
-import de.fabmax.kool.physics.vehicle.BatchVehicleUpdater
 import de.fabmax.kool.physics.vehicle.Vehicle
 import de.fabmax.kool.physics.vehicle.VehicleProperties
 import de.fabmax.kool.physics.vehicle.VehicleUtils
@@ -37,7 +36,7 @@ class ManyVehiclesDemo : DemoScene("Many Vehicles") {
     private lateinit var ibl: EnvironmentMaps
 
     private lateinit var physicsWorld: PhysicsWorld
-    private lateinit var batchUpdater: BatchVehicleUpdater
+    //private lateinit var batchUpdater: BatchVehicleUpdater
 
     private val groundSimFilterData = FilterData(VehicleUtils.COLLISION_FLAG_GROUND, VehicleUtils.COLLISION_FLAG_GROUND_AGAINST)
     private val groundQryFilterData = FilterData { VehicleUtils.setupDrivableSurface(this) }
@@ -49,9 +48,8 @@ class ManyVehiclesDemo : DemoScene("Many Vehicles") {
 
     private val vehicleProps = VehicleProperties().apply {
         chassisDims = Vec3f(2f, 1f, 5f)
-        trackWidth = 1.8f
-        maxBrakeTorqueFront = 3000f
-        maxBrakeTorqueRear = 1500f
+        trackWidthFront = 1.8f
+        trackWidthRear = 1.8f
         gearFinalRatio = 3f
         maxCompression = 0.1f
         maxDroop = 0.1f
@@ -68,8 +66,6 @@ class ManyVehiclesDemo : DemoScene("Many Vehicles") {
         wheelMassRear = 30f
         wheelPosRear = -1.7f
 
-        updater = { vehicle, _ -> batchUpdater.addVehicle(vehicle) }
-
         updateChassisMoiFromDimensionsAndMass()
         updateWheelMoiFromRadiusAndMass()
     }
@@ -83,7 +79,7 @@ class ManyVehiclesDemo : DemoScene("Many Vehicles") {
         physicsWorld = PhysicsWorld()
         physicsWorld.registerHandlers(mainScene)
 
-        batchUpdater = BatchVehicleUpdater(numVehicles, physicsWorld)
+        //batchUpdater = BatchVehicleUpdater(numVehicles, physicsWorld)
     }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {

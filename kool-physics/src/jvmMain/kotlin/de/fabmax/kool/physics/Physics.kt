@@ -11,8 +11,12 @@ import physx.cooking.PxCooking
 import physx.cooking.PxCookingParams
 import physx.cooking.PxMeshMidPhaseEnum
 import physx.cooking.PxMidphaseDesc
+import physx.geometry.PxConvexMesh
 import physx.physics.PxPairFlagEnum
 import physx.physics.PxPhysics
+import physx.support.PxPvd
+import physx.vehicle2.PxVehicleAxesEnum
+import physx.vehicle2.PxVehicleFrame
 import physx.vehicle2.PxVehicleTopLevelFunctions
 import kotlin.coroutines.CoroutineContext
 
@@ -34,6 +38,8 @@ actual object Physics : CoroutineScope {
     val defaultCpuDispatcher: PxDefaultCpuDispatcher
 
     actual val defaultMaterial = Material(0.5f)
+    internal val vehicleFrame: PxVehicleFrame
+    internal val unitCylinderSweepMesh: PxConvexMesh
 
     // default PhysX facilities
     val foundation: PxFoundation
@@ -46,8 +52,14 @@ actual object Physics : CoroutineScope {
         val allocator = PxDefaultAllocator()
         foundation = PxTopLevelFunctions.CreateFoundation(version, allocator, KoolErrorCallback())
 
+        val pvd: PxPvd? = null
+//        val pvd = PxTopLevelFunctions.CreatePvd(foundation)
+//        val socketTransport = PxTopLevelFunctions.DefaultPvdSocketTransportCreate("localhost", 5425, 10)
+//        val flags = PxPvdInstrumentationFlags(PxPvdInstrumentationFlagEnum.eALL.value.toByte())
+//        pvd.connect(socketTransport, flags)
+
         val scale = PxTolerancesScale()
-        physics = PxTopLevelFunctions.CreatePhysics(version, foundation, scale)
+        physics = PxTopLevelFunctions.CreatePhysics(version, foundation, scale, pvd)
 
         PxTopLevelFunctions.InitExtensions(physics)
 
@@ -63,6 +75,12 @@ actual object Physics : CoroutineScope {
 
         // init vehicle simulation framework
         PxVehicleTopLevelFunctions.InitVehicleExtension(foundation)
+        vehicleFrame = PxVehicleFrame().apply {
+            lngAxis = PxVehicleAxesEnum.ePosZ
+            latAxis = PxVehicleAxesEnum.ePosX
+            vrtAxis = PxVehicleAxesEnum.ePosY
+        }
+        unitCylinderSweepMesh = PxVehicleTopLevelFunctions.VehicleUnitCylinderSweepMeshCreate(vehicleFrame, physics, cookingParams)
 
         // try to choose a sensible number of worker threads:
         val numWorkers = min(16, max(1, Runtime.getRuntime().availableProcessors() - 2))

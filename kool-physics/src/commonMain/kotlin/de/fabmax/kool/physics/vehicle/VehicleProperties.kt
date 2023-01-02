@@ -1,13 +1,12 @@
 package de.fabmax.kool.physics.vehicle
 
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.physics.PhysicsWorld
-import de.fabmax.kool.physics.Shape
+import de.fabmax.kool.physics.geometry.CollisionGeometry
 
 class VehicleProperties {
     var chassisMass = 1500f
     var chassisDims = Vec3f(2f, 1f, 5f)
-    var chassisCMOffset = Vec3f(0.0f, -chassisDims.y * 0.5f + 0.15f, 0.25f)
+    var chassisCMOffset = Vec3f(0.0f, -chassisDims.y * 0.5f - 0.2f, 0.25f)
 
     var numWheels = 4       // for now this is kind of fixed
 
@@ -22,12 +21,16 @@ class VehicleProperties {
     var wheelPosRear = -1.75f
 
     var maxSteerAngle = 30f
-    var trackWidth = 1.8f
-    var wheelCenterHeightOffset = -0.5f     // relative to center of chassis dims
+    var trackWidthFront = 1.8f
+    var trackWidthRear = 1.8f
+    var wheelCenterHeightOffset = 0.5f
 
-    var maxBrakeTorqueFront = 5000f
-    var maxBrakeTorqueRear = 2500f
+    var maxBrakeTorque = 5000f
+    var brakeTorqueFrontFactor = 0.65f
+    var brakeTorqueRearFactor = 0.35f
     var maxHandBrakeTorque = 5000f
+    var handBrakeTorqueFrontFactor = 0f
+    var handBrakeTorqueRearFactor = 1f
 
     var maxCompression = 0.2f
     var maxDroop = 0.2f
@@ -37,7 +40,7 @@ class VehicleProperties {
     var camberAngleAtMaxCompression = 0.03f
     var camberAngleAtMaxDroop = -0.03f
 
-    var peakEngineTorque = 1000f
+    var peakEngineTorque = 900f
     var peakEngineRpm = 6000f
     var gearSwitchTime = 0.35f
     var gearFinalRatio = 4f
@@ -50,10 +53,7 @@ class VehicleProperties {
     var wheelMoiFront = 0f
     var wheelMoiRear = 0f
 
-    var chassisShapes = emptyList<Shape>()
-    var wheelShapes = emptyList<Shape>()
-
-    var updater: (Vehicle, PhysicsWorld) -> VehicleUpdater = { v, w -> SingleVehicleUpdater(v, w) }
+    var chassisGeometry: CollisionGeometry? = null
 
     init {
         updateChassisMoiFromDimensionsAndMass()

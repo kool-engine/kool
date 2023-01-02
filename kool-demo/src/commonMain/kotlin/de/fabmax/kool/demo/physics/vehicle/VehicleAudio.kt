@@ -131,7 +131,8 @@ class VehicleAudio(physicsWorld: PhysicsWorld) {
     private inner class VehicleContactListener : ContactListener {
         override fun onTouchFound(actorA: RigidActor, actorB: RigidActor, contactPoints: List<ContactPoint>?) {
             if (isEnabled && crashSounds.isNotEmpty()) {
-                var impulse = 10000f
+                val minImpulse = 10f
+                var impulse = 0f
                 contactPoints?.let {
                     impulse = 0f
                     it.forEach { pt ->
@@ -142,10 +143,10 @@ class VehicleAudio(physicsWorld: PhysicsWorld) {
                     }
                 }
 
-                if (impulse > 100f) {
+                if (impulse > minImpulse) {
                     val clip = crashSounds[randomI(crashSounds.indices)]
                     clip.play()
-                    clip.volume = (sqrt(impulse) / 400).clamp(0.2f, 0.5f)
+                    clip.volume = (sqrt(impulse) / 400).clamp(0.1f, 0.7f)
                 }
             }
         }

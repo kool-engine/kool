@@ -32,13 +32,13 @@ import de.fabmax.kool.util.MdColor
 
 class VehicleDemo : DemoScene("Vehicle Demo") {
 
-    private lateinit var vehicleWorld: VehicleWorld
+    lateinit var vehicleWorld: VehicleWorld
     private lateinit var vehicleModel: Model
     private lateinit var vehicle: DemoVehicle
 
     private var ui: VehicleUi? = null
     private var track: Track? = null
-    private var timer: TrackTimer? = null
+    var timer: TrackTimer? = null
 
     private lateinit var deferredPipeline: DeferredPipeline
 
@@ -99,7 +99,7 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
         vehicleWorld = VehicleWorld(mainScene, physics, deferredPipeline)
         vehicleWorld.physics.registerHandlers(mainScene)
 
-        vehicle = DemoVehicle(vehicleWorld, vehicleModel, ctx)
+        vehicle = DemoVehicle(this@VehicleDemo, vehicleModel, ctx)
         showLoadText("Loading Vehicle Audio")
         vehicle.vehicleAudio.loadAudio(this)
 
@@ -123,7 +123,6 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
             setColor(Color.WHITE, 0.75f)
         }
 
-//        defaultCamTransform()
         +ActorTrackingCamRig().apply {
             trackedActor = vehicle.vehicle
             camera.setClipRange(1f, 1000f)
@@ -131,6 +130,7 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
             camera.lookAt.set(0f, 1f, 0f)
             +camera
         }
+        //vehicle.vehicleGroup += defaultCamTransform()
 
         onUpdate += {
             updateDashboard()
@@ -246,10 +246,10 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
                     texCoord.set(x / 10f, z / 10f)
                 }
                 grid {
-                    sizeX = 500f
-                    sizeY = 500f
-                    stepsX = sizeX.toInt() / 10
-                    stepsY = sizeY.toInt() / 10
+                    sizeX = 5000f
+                    sizeY = 5000f
+                    stepsX = sizeX.toInt() / 100
+                    stepsY = sizeY.toInt() / 100
                 }
             }
             shader = deferredPbrShader {

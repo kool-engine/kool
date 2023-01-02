@@ -20,7 +20,7 @@ object Playground {
 
     fun makePlayground(vehicleWorld: VehicleWorld) {
         makeBoxes(Mat4f().translate(-20f, 0f, 30f), vehicleWorld)
-        makeRocker(Mat4f().translate(0f, 0f, 30f), vehicleWorld)
+        //makeRocker(Mat4f().translate(0f, 0f, 30f), vehicleWorld)
 
         vehicleWorld.deferredPipeline.sceneContent += colorMesh {
             generate {
