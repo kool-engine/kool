@@ -1,10 +1,7 @@
 package de.fabmax.kool.physics.joints
 
 import de.fabmax.kool.math.Mat4f
-import de.fabmax.kool.physics.MemoryStack
-import de.fabmax.kool.physics.Physics
-import de.fabmax.kool.physics.RigidActor
-import de.fabmax.kool.physics.toPxTransform
+import de.fabmax.kool.physics.*
 import physx.*
 
 actual enum class D6JointMotion(val pxVal: Int) {
@@ -39,7 +36,7 @@ actual class D6Joint actual constructor(
         MemoryStack.stackPush().use { mem ->
             val frmA = frameA.toPxTransform(mem.createPxTransform())
             val frmB = frameB.toPxTransform(mem.createPxTransform())
-            pxJoint = Physics.Px.D6JointCreate(Physics.physics, bodyA.pxRigidActor, frmA, bodyB.pxRigidActor, frmB)
+            pxJoint = PxTopLevelFunctions.D6JointCreate(Physics.physics, bodyA.pxRigidActor, frmA, bodyB.pxRigidActor, frmB)
         }
     }
 

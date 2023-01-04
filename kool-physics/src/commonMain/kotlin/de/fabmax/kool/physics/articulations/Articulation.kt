@@ -5,6 +5,9 @@ import de.fabmax.kool.physics.Releasable
 
 expect class Articulation(isFixedBase: Boolean) : CommonArticulation {
 
+    var minPositionIterations: Int
+    var minVelocityIterations: Int
+
     fun createLink(parent: ArticulationLink?, pose: Mat4f): ArticulationLink
 
     fun wakeUp()

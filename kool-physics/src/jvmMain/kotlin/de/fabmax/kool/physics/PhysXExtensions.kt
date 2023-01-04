@@ -101,16 +101,9 @@ fun MemoryStack.createPxTransform() = PxTransform.createAt(this, MemoryStack::nm
 fun MemoryStack.createPxTransform(p: PxVec3, q: PxQuat) =
     PxTransform.createAt(this, MemoryStack::nmalloc, p, q)
 
-//fun MemoryStack.createPxBatchQueryDesc(maxRaycastsPerExecute: Int, maxSweepsPerExecute: Int, maxOverlapsPerExecute: Int) =
-//    PxBatchQueryDesc.createAt(this, MemoryStack::nmalloc, maxRaycastsPerExecute, maxSweepsPerExecute, maxOverlapsPerExecute)
 fun MemoryStack.createPxConvexMeshDesc() = PxConvexMeshDesc.createAt(this, MemoryStack::nmalloc)
 fun MemoryStack.createPxHeightFieldDesc() = PxHeightFieldDesc.createAt(this, MemoryStack::nmalloc)
 fun MemoryStack.createPxTriangleMeshDesc() = PxTriangleMeshDesc.createAt(this, MemoryStack::nmalloc)
-
-//fun MemoryStack.createPxVehicleAntiRollBarData() = PxVehicleAntiRollBarData.createAt(this, MemoryStack::nmalloc)
-//fun MemoryStack.createPxVehicleSuspensionData() = PxVehicleSuspensionData.createAt(this, MemoryStack::nmalloc)
-//fun MemoryStack.createPxVehicleTireData() = PxVehicleTireData.createAt(this, MemoryStack::nmalloc)
-//fun MemoryStack.createPxVehicleWheelData() = PxVehicleWheelData.createAt(this, MemoryStack::nmalloc)
 
 fun MemoryStack.createPxActorFlags(flags: Int) = PxActorFlags.createAt(this, MemoryStack::nmalloc, flags.toByte())
 fun MemoryStack.createPxBaseFlags(flags: Int) = PxBaseFlags.createAt(this, MemoryStack::nmalloc, flags.toShort())
@@ -123,6 +116,3 @@ fun MemoryStack.createPxRigidBodyFlags(flags: Int) = PxRigidBodyFlags.createAt(t
 fun MemoryStack.createPxRigidDynamicLockFlags(flags: Int) = PxRigidDynamicLockFlags.createAt(this, MemoryStack::nmalloc, flags.toByte())
 fun MemoryStack.createPxSceneFlags(flags: Int) = PxSceneFlags.createAt(this, MemoryStack::nmalloc, flags)
 fun MemoryStack.createPxShapeFlags(flags: Int) = PxShapeFlags.createAt(this, MemoryStack::nmalloc, flags.toByte())
-//fun MemoryStack.createPxVehicleWheelsSimFlags(flags: Int) = PxVehicleWheelsSimFlags.createAt(this, MemoryStack::nmalloc, flags)
-
-//fun MemoryStack.createBatchVehicleUpdateDesc() = BatchVehicleUpdateDesc.createAt(this, MemoryStack::nmalloc)

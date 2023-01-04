@@ -1,10 +1,7 @@
 package de.fabmax.kool.physics.joints
 
 import de.fabmax.kool.math.Mat4f
-import de.fabmax.kool.physics.MemoryStack
-import de.fabmax.kool.physics.Physics
-import de.fabmax.kool.physics.RigidActor
-import de.fabmax.kool.physics.toPxTransform
+import de.fabmax.kool.physics.*
 import physx.PxJointLinearLimitPair
 import physx.PxPrismaticJoint
 import physx.PxPrismaticJointFlagEnum
@@ -25,7 +22,7 @@ actual class PrismaticJoint actual constructor(
         MemoryStack.stackPush().use { mem ->
             val frmA = posA.toPxTransform(mem.createPxTransform())
             val frmB = posB.toPxTransform(mem.createPxTransform())
-            pxJoint = Physics.Px.PrismaticJointCreate(Physics.physics, bodyA.pxRigidActor, frmA, bodyB.pxRigidActor, frmB)
+            pxJoint = PxTopLevelFunctions.PrismaticJointCreate(Physics.physics, bodyA.pxRigidActor, frmA, bodyB.pxRigidActor, frmB)
         }
     }
 

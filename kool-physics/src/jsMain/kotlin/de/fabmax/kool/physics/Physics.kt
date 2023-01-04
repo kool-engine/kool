@@ -1,6 +1,7 @@
+@file:Suppress("UNCHECKED_CAST_TO_EXTERNAL_INTERFACE")
+
 package de.fabmax.kool.physics
 
-import de.fabmax.kool.physics.vehicle.FrictionPairs
 import de.fabmax.kool.util.logI
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
@@ -8,7 +9,15 @@ import kotlinx.coroutines.Job
 import physx.*
 import kotlin.coroutines.CoroutineContext
 
-@Suppress("UnsafeCastFromDynamic")
+// static top-level PhysX functions
+val NativeArrayHelpers: NativeArrayHelpers get() = PhysXJsLoader.physXJs.NativeArrayHelpers.prototype as NativeArrayHelpers
+val SupportFunctions: SupportFunctions get() = PhysXJsLoader.physXJs.SupportFunctions.prototype as SupportFunctions
+val PxTopLevelFunctions: PxTopLevelFunctions get() = PhysXJsLoader.physXJs.PxTopLevelFunctions.prototype as PxTopLevelFunctions
+val PxVehicleTopLevelFunctions: PxVehicleTopLevelFunctions get() = PhysXJsLoader.physXJs.PxVehicleTopLevelFunctions.prototype as PxVehicleTopLevelFunctions
+val PxRigidActorExt: PxRigidActorExt get() = PhysXJsLoader.physXJs.PxRigidActorExt.prototype as PxRigidActorExt
+val PxRigidBodyExt: PxRigidBodyExt get() = PhysXJsLoader.physXJs.PxRigidBodyExt.prototype as PxRigidBodyExt
+val PxVehicleTireForceParamsExt: PxVehicleTireForceParamsExt get() = PhysXJsLoader.physXJs.PxVehicleTireForceParamsExt.prototype as PxVehicleTireForceParamsExt
+
 actual object Physics : CoroutineScope {
 
     actual val NOTIFY_TOUCH_FOUND: Int
@@ -30,26 +39,17 @@ actual object Physics : CoroutineScope {
     lateinit var defaultCpuDispatcher: PxDefaultCpuDispatcher
 
     actual val defaultMaterial = Material(0.5f)
-    lateinit var defaultSurfaceFrictions: FrictionPairs
-        private set
-
-    // static top-level PhysX functions
-    val NativeArrayHelpers: NativeArrayHelpers get() = PhysXJsLoader.physXJs.NativeArrayHelpers.prototype
-    val SupportFunctions: SupportFunctions get() = PhysXJsLoader.physXJs.SupportFunctions.prototype
-    val Px: PxTopLevelFunctions get() = PhysXJsLoader.physXJs.PxTopLevelFunctions.prototype
-    //val PxVehicle: PxVehicleTopLevelFunctions get() = PhysXJsLoader.physXJs.PxVehicleTopLevelFunctions.prototype
-    val PxRigidActorExt: PxRigidActorExt get() = PhysXJsLoader.physXJs.PxRigidActorExt.prototype
-    val PxRigidBodyExt: PxRigidBodyExt get() = PhysXJsLoader.physXJs.PxRigidBodyExt.prototype
+    internal lateinit var vehicleFrame: PxVehicleFrame
+    internal lateinit var unitCylinderSweepMesh: PxConvexMesh
 
     // default PhysX facilities
     lateinit var foundation: PxFoundation
         private set
     lateinit var physics: PxPhysics
         private set
-    lateinit var cooking: PxCooking
+    lateinit var cookingParams: PxCookingParams
         private set
-
-    lateinit var defaultBodyFlags: PxShapeFlags
+    lateinit var cooking: PxCooking
         private set
 
     actual fun loadPhysics() {
@@ -61,36 +61,30 @@ actual object Physics : CoroutineScope {
                 errorCallback.reportError = { code, message, file, line ->
                     PhysicsLogging.logPhysics(code, message, file, line)
                 }
-                foundation = Px.CreateFoundation(Px.PHYSICS_VERSION, allocator, errorCallback)
+                foundation = PxTopLevelFunctions.CreateFoundation(PxTopLevelFunctions.PHYSICS_VERSION, allocator, errorCallback)
 
                 val scale = PxTolerancesScale()
-                physics = Px.CreatePhysics(Px.PHYSICS_VERSION, foundation, scale)
+                physics = PxTopLevelFunctions.CreatePhysics(PxTopLevelFunctions.PHYSICS_VERSION, foundation, scale)
 
-                Px.InitExtensions(physics)
+                PxTopLevelFunctions.InitExtensions(physics)
 
-                val cookingParams = PxCookingParams(scale)
+                cookingParams = PxCookingParams(scale)
                 cookingParams.suppressTriangleMeshRemapTable = true
-                cooking = Px.CreateCooking(Px.PHYSICS_VERSION, foundation, cookingParams)
-
-                defaultBodyFlags = PxShapeFlags((PxShapeFlagEnum.eSCENE_QUERY_SHAPE or PxShapeFlagEnum.eSIMULATION_SHAPE).toByte())
+                cooking = PxTopLevelFunctions.CreateCooking(PxTopLevelFunctions.PHYSICS_VERSION, foundation, cookingParams)
 
                 // init vehicle simulation framework
-//                MemoryStack.stackPush().use { mem ->
-//                    val up = Vec3f.Y_AXIS.toPxVec3(mem.createPxVec3())
-//                    val front = Vec3f.Z_AXIS.toPxVec3(mem.createPxVec3())
-//                    PxVehicle.InitVehicleSDK(physics)
-//                    PxVehicle.VehicleSetBasisVectors(up, front)
-//                    PxVehicle.VehicleSetUpdateMode(PxVehicleUpdateModeEnum.eVELOCITY_CHANGE)
-//                }
+                PxVehicleTopLevelFunctions.InitVehicleExtension(foundation)
+                vehicleFrame = PxVehicleFrame().apply {
+                    lngAxis = PxVehicleAxesEnum.ePosZ
+                    latAxis = PxVehicleAxesEnum.ePosX
+                    vrtAxis = PxVehicleAxesEnum.ePosY
+                }
+                unitCylinderSweepMesh = PxVehicleTopLevelFunctions.VehicleUnitCylinderSweepMeshCreate(vehicleFrame, physics, cookingParams)
 
-                defaultCpuDispatcher = Px.DefaultCpuDispatcherCreate(0)
+                defaultCpuDispatcher = PxTopLevelFunctions.DefaultCpuDispatcherCreate(0)
 
-                logI { "PhysX loaded, version: ${pxVersionToString(Px.PHYSICS_VERSION)}" }
+                logI { "PhysX loaded, version: ${pxVersionToString(PxTopLevelFunctions.PHYSICS_VERSION)}" }
                 loadingDeferred.complete(Unit)
-
-                // create defaultSurfaceFrictions after loadingDeferred is complete, otherwise creation fails because
-                // physics isn't loaded...
-                defaultSurfaceFrictions = FrictionPairs(mapOf(defaultMaterial to 1.5f))
             }
             PhysXJsLoader.loadModule()
         }

@@ -29,8 +29,6 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
     val vehicleGroup = Group()
     val vehicleAudio = VehicleAudio(world.physics)
 
-    private lateinit var vehicleGeometry: ConvexMeshGeometry
-
     private lateinit var recoverListener: InputManager.KeyEventListener
     private val inputAxes = DriveAxes(ctx)
     private val throttleBrakeHandler = ThrottleBrakeHandler()
@@ -216,11 +214,13 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
             wheelWidthFront = 0.3f
             wheelMassFront = 25f
             wheelPosFront = 1.7f
+            brakeTorqueFrontFactor = 0.6f
 
             wheelRadiusRear = 0.4f
             wheelWidthRear = 0.333f
             wheelMassRear = 30f
             wheelPosRear = -1.7f
+            brakeTorqueRearFactor = 0.4f
 
             chassisGeometry = ConvexMeshGeometry(vehicleMesh)
 
@@ -292,7 +292,6 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
     fun cleanUp(ctx: KoolContext) {
         inputAxes.dispose(ctx)
         vehicleAudio.stop()
-        vehicleGeometry.release()
         ctx.inputMgr.removeKeyListener(recoverListener)
     }
 

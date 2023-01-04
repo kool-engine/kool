@@ -44,8 +44,8 @@ actual class ConvexMesh actual constructor(actual val points: List<Vec3f>) : Rel
 
             convexMesh.getPolygonData(i, poly)
             for (j in 0 until poly.mNbVerts) {
-                val vi = Physics.NativeArrayHelpers.getU8At(convexMesh.indexBuffer, poly.mIndexBase + j).toInt() and 0xff
-                val pt = Physics.NativeArrayHelpers.getVec3At(convexMesh.vertices, vi)
+                val vi = NativeArrayHelpers.getU8At(convexMesh.indexBuffer, poly.mIndexBase + j).toInt() and 0xff
+                val pt = NativeArrayHelpers.getVec3At(convexMesh.vertices, vi)
                 polyIndices += geometry.addVertex(pt.toVec3f(v))
             }
 

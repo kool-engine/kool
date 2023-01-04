@@ -1,7 +1,7 @@
 /*
  * Generated from WebIDL by webidl-util
  */
-@file:Suppress("UnsafeCastFromDynamic", "ClassName", "FunctionName", "UNUSED_VARIABLE", "UNUSED_PARAMETER", "unused")
+@file:Suppress("UnsafeCastFromDynamic", "ClassName", "FunctionName", "UNUSED_PARAMETER", "unused")
 
 package physx
 
@@ -35,6 +35,128 @@ fun PxCapsuleGeometry(radius: Float, halfHeight: Float, _module: dynamic = PhysX
 fun PxCapsuleGeometryFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxCapsuleGeometry = js("_module.wrapPointer(ptr, _module.PxCapsuleGeometry)")
 
 fun PxCapsuleGeometry.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface PxContactBuffer {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * WebIDL type: [PxContactPoint] (Value)
+     */
+    fun get_contacts(index: Int): PxContactPoint
+    fun set_contacts(index: Int, value: PxContactPoint)
+    /**
+     * WebIDL type: unsigned long
+     */
+    var count: Int
+    /**
+     * WebIDL type: unsigned long
+     */
+    var pad: Int
+    /**
+     * WebIDL type: unsigned long
+     */
+    var MAX_CONTACTS: Int
+
+    fun reset()
+
+    /**
+     * @param worldPoint    WebIDL type: [PxVec3] (Const, Ref)
+     * @param worldNormalIn WebIDL type: [PxVec3] (Const, Ref)
+     * @param separation    WebIDL type: float
+     * @return WebIDL type: boolean
+     */
+    fun contact(worldPoint: PxVec3, worldNormalIn: PxVec3, separation: Float): Boolean
+
+    /**
+     * @param worldPoint    WebIDL type: [PxVec3] (Const, Ref)
+     * @param worldNormalIn WebIDL type: [PxVec3] (Const, Ref)
+     * @param separation    WebIDL type: float
+     * @param faceIndex1    WebIDL type: unsigned long
+     * @return WebIDL type: boolean
+     */
+    fun contact(worldPoint: PxVec3, worldNormalIn: PxVec3, separation: Float, faceIndex1: Int): Boolean
+
+    /**
+     * @param pt WebIDL type: [PxContactPoint] (Const, Ref)
+     * @return WebIDL type: boolean
+     */
+    fun contact(pt: PxContactPoint): Boolean
+
+    /**
+     * @return WebIDL type: [PxContactPoint] (NonJs)
+     */
+    fun contact(): PxContactPoint
+
+}
+
+fun PxContactBufferFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxContactBuffer = js("_module.wrapPointer(ptr, _module.PxContactBuffer)")
+
+fun PxContactBuffer.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface PxContactPoint {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * WebIDL type: [PxVec3] (Value)
+     */
+    var normal: PxVec3
+    /**
+     * WebIDL type: [PxVec3] (Value)
+     */
+    var point: PxVec3
+    /**
+     * WebIDL type: [PxVec3] (Value)
+     */
+    var targetVel: PxVec3
+    /**
+     * WebIDL type: float
+     */
+    var separation: Float
+    /**
+     * WebIDL type: float
+     */
+    var maxImpulse: Float
+    /**
+     * WebIDL type: float
+     */
+    var staticFriction: Float
+    /**
+     * WebIDL type: octet
+     */
+    var materialFlags: Byte
+    /**
+     * WebIDL type: unsigned long
+     */
+    var internalFaceIndex1: Int
+    /**
+     * WebIDL type: float
+     */
+    var dynamicFriction: Float
+    /**
+     * WebIDL type: float
+     */
+    var restitution: Float
+    /**
+     * WebIDL type: float
+     */
+    var damping: Float
+}
+
+fun PxContactPoint(_module: dynamic = PhysXJsLoader.physXJs): PxContactPoint = js("new _module.PxContactPoint()")
+
+fun PxContactPointFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxContactPoint = js("_module.wrapPointer(ptr, _module.PxContactPoint)")
+
+fun PxContactPoint.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
@@ -150,6 +272,183 @@ fun PxConvexMeshGeometryFlagsFromPointer(ptr: Int, _module: dynamic = PhysXJsLoa
 
 fun PxConvexMeshGeometryFlags.destroy() {
     PhysXJsLoader.destroy(this)
+}
+
+external interface PxCustomGeometry : PxGeometry {
+    /**
+     * @return WebIDL type: boolean
+     */
+    fun isValid(): Boolean
+
+}
+
+/**
+ * @param callbacks WebIDL type: [SimpleCustomGeometryCallbacks] (Ref)
+ */
+fun PxCustomGeometry(callbacks: SimpleCustomGeometryCallbacks, _module: dynamic = PhysXJsLoader.physXJs): PxCustomGeometry = js("new _module.PxCustomGeometry(callbacks)")
+
+fun PxCustomGeometryFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxCustomGeometry = js("_module.wrapPointer(ptr, _module.PxCustomGeometry)")
+
+fun PxCustomGeometry.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface SimpleCustomGeometryCallbacks {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * WebIDL type: float
+     */
+    var persistentContactManifold_outBreakingThreshold: Float
+
+    /**
+     * @param geometry WebIDL type: [PxGeometry] (Const, Ref)
+     * @return WebIDL type: [PxBounds3]
+     */
+    fun getLocalBoundsImpl(geometry: PxGeometry): PxBounds3
+
+    /**
+     * @param geom0             WebIDL type: [PxGeometry] (Const, Ref)
+     * @param geom1             WebIDL type: [PxGeometry] (Const, Ref)
+     * @param pose0             WebIDL type: [PxTransform] (Const, Ref)
+     * @param pose1             WebIDL type: [PxTransform] (Const, Ref)
+     * @param contactDistance   WebIDL type: float
+     * @param meshContactMargin WebIDL type: float
+     * @param toleranceLength   WebIDL type: float
+     * @param contactBuffer     WebIDL type: [PxContactBuffer] (Ref)
+     * @return WebIDL type: boolean
+     */
+    fun generateContactsImpl(geom0: PxGeometry, geom1: PxGeometry, pose0: PxTransform, pose1: PxTransform, contactDistance: Float, meshContactMargin: Float, toleranceLength: Float, contactBuffer: PxContactBuffer): Boolean
+
+    /**
+     * @param origin   WebIDL type: [PxVec3] (Const, Ref)
+     * @param unitDir  WebIDL type: [PxVec3] (Const, Ref)
+     * @param geom     WebIDL type: [PxGeometry] (Const, Ref)
+     * @param pose     WebIDL type: [PxTransform] (Const, Ref)
+     * @param maxDist  WebIDL type: float
+     * @param hitFlags WebIDL type: [PxHitFlags] (Ref)
+     * @param maxHits  WebIDL type: unsigned long
+     * @param rayHits  WebIDL type: [PxGeomRaycastHit]
+     * @param stride   WebIDL type: unsigned long
+     * @return WebIDL type: unsigned long
+     */
+    fun raycastImpl(origin: PxVec3, unitDir: PxVec3, geom: PxGeometry, pose: PxTransform, maxDist: Float, hitFlags: PxHitFlags, maxHits: Int, rayHits: PxGeomRaycastHit, stride: Int): Int
+
+    /**
+     * @param geom0 WebIDL type: [PxGeometry] (Const, Ref)
+     * @param pose0 WebIDL type: [PxTransform] (Const, Ref)
+     * @param geom1 WebIDL type: [PxGeometry] (Const, Ref)
+     * @param pose1 WebIDL type: [PxTransform] (Const, Ref)
+     * @return WebIDL type: boolean
+     */
+    fun overlapImpl(geom0: PxGeometry, pose0: PxTransform, geom1: PxGeometry, pose1: PxTransform): Boolean
+
+    /**
+     * @param unitDir   WebIDL type: [PxVec3] (Const, Ref)
+     * @param maxDist   WebIDL type: float
+     * @param geom0     WebIDL type: [PxGeometry] (Const, Ref)
+     * @param pose0     WebIDL type: [PxTransform] (Const, Ref)
+     * @param geom1     WebIDL type: [PxGeometry] (Const, Ref)
+     * @param pose1     WebIDL type: [PxTransform] (Const, Ref)
+     * @param sweepHit  WebIDL type: [PxGeomSweepHit] (Ref)
+     * @param hitFlags  WebIDL type: [PxHitFlags] (Ref)
+     * @param inflation WebIDL type: float
+     * @return WebIDL type: boolean
+     */
+    fun sweepImpl(unitDir: PxVec3, maxDist: Float, geom0: PxGeometry, pose0: PxTransform, geom1: PxGeometry, pose1: PxTransform, sweepHit: PxGeomSweepHit, hitFlags: PxHitFlags, inflation: Float): Boolean
+
+    /**
+     * @param geometry       WebIDL type: [PxGeometry] (Const, Ref)
+     * @param massProperties WebIDL type: [PxMassProperties] (Ref)
+     */
+    fun computeMassPropertiesImpl(geometry: PxGeometry, massProperties: PxMassProperties)
+
+    /**
+     * @param geometry WebIDL type: [PxGeometry] (Const, Ref)
+     * @return WebIDL type: boolean
+     */
+    fun usePersistentContactManifoldImpl(geometry: PxGeometry): Boolean
+
+}
+
+fun SimpleCustomGeometryCallbacksFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): SimpleCustomGeometryCallbacks = js("_module.wrapPointer(ptr, _module.SimpleCustomGeometryCallbacks)")
+
+fun SimpleCustomGeometryCallbacks.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface SimpleCustomGeometryCallbacksImpl : SimpleCustomGeometryCallbacks {
+    /**
+     * param geometry WebIDL type: [PxGeometry] (Const, Ref)
+     * return WebIDL type: [PxBounds3]
+     */
+    var getLocalBoundsImpl: (geometry: Int) -> PxBounds3
+
+    /**
+     * param geom0             WebIDL type: [PxGeometry] (Const, Ref)
+     * param geom1             WebIDL type: [PxGeometry] (Const, Ref)
+     * param pose0             WebIDL type: [PxTransform] (Const, Ref)
+     * param pose1             WebIDL type: [PxTransform] (Const, Ref)
+     * param contactDistance   WebIDL type: float
+     * param meshContactMargin WebIDL type: float
+     * param toleranceLength   WebIDL type: float
+     * param contactBuffer     WebIDL type: [PxContactBuffer] (Ref)
+     * return WebIDL type: boolean
+     */
+    var generateContactsImpl: (geom0: Int, geom1: Int, pose0: Int, pose1: Int, contactDistance: Float, meshContactMargin: Float, toleranceLength: Float, contactBuffer: Int) -> Boolean
+
+    /**
+     * param origin   WebIDL type: [PxVec3] (Const, Ref)
+     * param unitDir  WebIDL type: [PxVec3] (Const, Ref)
+     * param geom     WebIDL type: [PxGeometry] (Const, Ref)
+     * param pose     WebIDL type: [PxTransform] (Const, Ref)
+     * param maxDist  WebIDL type: float
+     * param hitFlags WebIDL type: [PxHitFlags] (Ref)
+     * param maxHits  WebIDL type: unsigned long
+     * param rayHits  WebIDL type: [PxGeomRaycastHit]
+     * param stride   WebIDL type: unsigned long
+     * return WebIDL type: unsigned long
+     */
+    var raycastImpl: (origin: Int, unitDir: Int, geom: Int, pose: Int, maxDist: Float, hitFlags: Int, maxHits: Int, rayHits: Int, stride: Int) -> Int
+
+    /**
+     * param geom0 WebIDL type: [PxGeometry] (Const, Ref)
+     * param pose0 WebIDL type: [PxTransform] (Const, Ref)
+     * param geom1 WebIDL type: [PxGeometry] (Const, Ref)
+     * param pose1 WebIDL type: [PxTransform] (Const, Ref)
+     * return WebIDL type: boolean
+     */
+    var overlapImpl: (geom0: Int, pose0: Int, geom1: Int, pose1: Int) -> Boolean
+
+    /**
+     * param unitDir   WebIDL type: [PxVec3] (Const, Ref)
+     * param maxDist   WebIDL type: float
+     * param geom0     WebIDL type: [PxGeometry] (Const, Ref)
+     * param pose0     WebIDL type: [PxTransform] (Const, Ref)
+     * param geom1     WebIDL type: [PxGeometry] (Const, Ref)
+     * param pose1     WebIDL type: [PxTransform] (Const, Ref)
+     * param sweepHit  WebIDL type: [PxGeomSweepHit] (Ref)
+     * param hitFlags  WebIDL type: [PxHitFlags] (Ref)
+     * param inflation WebIDL type: float
+     * return WebIDL type: boolean
+     */
+    var sweepImpl: (unitDir: Int, maxDist: Float, geom0: Int, pose0: Int, geom1: Int, pose1: Int, sweepHit: Int, hitFlags: Int, inflation: Float) -> Boolean
+
+    /**
+     * param geometry       WebIDL type: [PxGeometry] (Const, Ref)
+     * param massProperties WebIDL type: [PxMassProperties] (Ref)
+     */
+    var computeMassPropertiesImpl: (geometry: Int, massProperties: Int) -> Unit
+
+    /**
+     * param geometry WebIDL type: [PxGeometry] (Const, Ref)
+     * return WebIDL type: boolean
+     */
+    var usePersistentContactManifoldImpl: (geometry: Int) -> Boolean
+
 }
 
 external interface PxGeometry {

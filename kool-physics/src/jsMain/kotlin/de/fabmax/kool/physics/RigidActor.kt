@@ -7,13 +7,13 @@ import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.math.spatial.BoundingBox
 import physx.*
 
-actual open class RigidActor : CommonRigidActor() {
+actual abstract class RigidActor : CommonRigidActor() {
 
     init {
         Physics.checkIsLoaded()
     }
 
-    internal lateinit var pxRigidActor: PxRigidActor
+    abstract val pxRigidActor: PxRigidActor
 
     actual var simulationFilterData = FilterData { setCollisionGroup(0); setCollidesWithEverything() }
         set(value) {
@@ -84,7 +84,7 @@ actual open class RigidActor : CommonRigidActor() {
             val flags = if (isTrigger) TRIGGER_SHAPE_FLAGS else SIM_SHAPE_FLAGS
             val shapeFlags = mem.createPxShapeFlags(flags)
 
-            val pxShape = Physics.PxRigidActorExt.createExclusiveShape(pxRigidActor, shape.geometry.pxGeometry, shape.material.pxMaterial, shapeFlags)
+            val pxShape = PxRigidActorExt.createExclusiveShape(pxRigidActor, shape.geometry.pxGeometry, shape.material.pxMaterial, shapeFlags)
             pxShape.localPose = shape.localPose.toPxTransform(mem.createPxTransform())
 
             val simFd = if (shape.simFilterData !== null) shape.simFilterData else simulationFilterData

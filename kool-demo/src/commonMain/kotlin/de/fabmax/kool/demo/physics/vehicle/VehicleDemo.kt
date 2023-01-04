@@ -126,8 +126,8 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
         +ActorTrackingCamRig().apply {
             trackedActor = vehicle.vehicle
             camera.setClipRange(1f, 1000f)
-            camera.position.set(0f, 2f, 6f)
-            camera.lookAt.set(0f, 1f, 0f)
+            camera.position.set(0f, 2.75f, 6f)
+            camera.lookAt.set(0f, 1.75f, 0f)
             +camera
         }
         //vehicle.vehicleGroup += defaultCamTransform()

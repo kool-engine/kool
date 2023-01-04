@@ -25,13 +25,13 @@ actual abstract class RigidBody : RigidActor() {
     actual var linearVelocity: Vec3f
         get() = pxRigidBody.linearVelocity.toVec3f(bufLinVelocity)
         set(value) {
-            (pxRigidBody as? PxRigidDynamic)?.setLinearVelocity(value.toPxVec3(pxTmpVec))
+            PxRigidDynamicFromPointer(pxRigidBody.ptr).setLinearVelocity(value.toPxVec3(pxTmpVec))
         }
 
     actual var angularVelocity: Vec3f
         get() = pxRigidBody.angularVelocity.toVec3f(bufAngVelocity)
         set(value) {
-            (pxRigidBody as? PxRigidDynamic)?.setAngularVelocity(value.toPxVec3(pxTmpVec))
+            PxRigidDynamicFromPointer(pxRigidBody.ptr).setAngularVelocity(value.toPxVec3(pxTmpVec))
         }
 
     actual var maxLinearVelocity: Float
@@ -69,7 +69,7 @@ actual abstract class RigidBody : RigidActor() {
     }
 
     actual fun updateInertiaFromShapesAndMass() {
-        Physics.PxRigidBodyExt.setMassAndUpdateInertia(pxRigidBody, mass)
+        PxRigidBodyExt.setMassAndUpdateInertia(pxRigidBody, mass)
     }
 
     actual fun addForceAtPos(force: Vec3f, pos: Vec3f, isLocalForce: Boolean, isLocalPos: Boolean) {
@@ -77,10 +77,10 @@ actual abstract class RigidBody : RigidActor() {
             val pxForce = force.toPxVec3(mem.createPxVec3())
             val pxPos = pos.toPxVec3(mem.createPxVec3())
             when {
-                isLocalForce && isLocalPos -> Physics.PxRigidBodyExt.addLocalForceAtLocalPos(pxRigidBody, pxForce, pxPos)
-                isLocalForce && !isLocalPos -> Physics.PxRigidBodyExt.addLocalForceAtPos(pxRigidBody, pxForce, pxPos)
-                !isLocalForce && isLocalPos -> Physics.PxRigidBodyExt.addForceAtLocalPos(pxRigidBody, pxForce, pxPos)
-                else -> Physics.PxRigidBodyExt.addForceAtPos(pxRigidBody, pxForce, pxPos)
+                isLocalForce && isLocalPos -> PxRigidBodyExt.addLocalForceAtLocalPos(pxRigidBody, pxForce, pxPos)
+                isLocalForce && !isLocalPos -> PxRigidBodyExt.addLocalForceAtPos(pxRigidBody, pxForce, pxPos)
+                !isLocalForce && isLocalPos -> PxRigidBodyExt.addForceAtLocalPos(pxRigidBody, pxForce, pxPos)
+                else -> PxRigidBodyExt.addForceAtPos(pxRigidBody, pxForce, pxPos)
             }
         }
     }
@@ -90,10 +90,10 @@ actual abstract class RigidBody : RigidActor() {
             val pxImpulse = impulse.toPxVec3(mem.createPxVec3())
             val pxPos = pos.toPxVec3(mem.createPxVec3())
             when {
-                isLocalImpulse && isLocalPos -> Physics.PxRigidBodyExt.addLocalForceAtLocalPos(pxRigidBody, pxImpulse, pxPos, PxForceModeEnum.eIMPULSE)
-                isLocalImpulse && !isLocalPos -> Physics.PxRigidBodyExt.addLocalForceAtPos(pxRigidBody, pxImpulse, pxPos, PxForceModeEnum.eIMPULSE)
-                !isLocalImpulse && isLocalPos -> Physics.PxRigidBodyExt.addForceAtLocalPos(pxRigidBody, pxImpulse, pxPos, PxForceModeEnum.eIMPULSE)
-                else -> Physics.PxRigidBodyExt.addForceAtPos(pxRigidBody, pxImpulse, pxPos, PxForceModeEnum.eIMPULSE)
+                isLocalImpulse && isLocalPos -> PxRigidBodyExt.addLocalForceAtLocalPos(pxRigidBody, pxImpulse, pxPos, PxForceModeEnum.eIMPULSE)
+                isLocalImpulse && !isLocalPos -> PxRigidBodyExt.addLocalForceAtPos(pxRigidBody, pxImpulse, pxPos, PxForceModeEnum.eIMPULSE)
+                !isLocalImpulse && isLocalPos -> PxRigidBodyExt.addForceAtLocalPos(pxRigidBody, pxImpulse, pxPos, PxForceModeEnum.eIMPULSE)
+                else -> PxRigidBodyExt.addForceAtPos(pxRigidBody, pxImpulse, pxPos, PxForceModeEnum.eIMPULSE)
             }
         }
     }

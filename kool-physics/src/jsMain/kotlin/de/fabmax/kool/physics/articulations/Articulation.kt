@@ -8,8 +8,19 @@ import physx.PxArticulationFlagEnum
 import physx.PxArticulationReducedCoordinate
 
 actual class Articulation actual constructor(isFixedBase: Boolean) : CommonArticulation(isFixedBase) {
-
     val pxArticulation: PxArticulationReducedCoordinate
+
+    actual var minPositionIterations: Int
+        get() = 0//SupportFunctions.PxArticulationReducedCoordinate_getMinSolverPositionIterations(pxArticulation)
+        set(_) {
+            //pxArticulation.setSolverIterationCounts(value, minVelocityIterations)
+        }
+
+    actual var minVelocityIterations: Int
+        get() = 0//SupportFunctions.PxArticulationReducedCoordinate_getMinSolverVelocityIterations(pxArticulation)
+        set(_) {
+            //pxArticulation.setSolverIterationCounts(minPositionIterations, value)
+        }
 
     init {
         Physics.checkIsLoaded()
@@ -18,7 +29,6 @@ actual class Articulation actual constructor(isFixedBase: Boolean) : CommonArtic
         if (isFixedBase) {
             pxArticulation.setArticulationFlag(PxArticulationFlagEnum.eFIX_BASE, true)
         }
-
     }
 
     actual fun createLink(parent: ArticulationLink?, pose: Mat4f): ArticulationLink {

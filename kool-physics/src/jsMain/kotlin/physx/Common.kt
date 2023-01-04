@@ -1,7 +1,7 @@
 /*
  * Generated from WebIDL by webidl-util
  */
-@file:Suppress("UnsafeCastFromDynamic", "ClassName", "FunctionName", "UNUSED_VARIABLE", "UNUSED_PARAMETER", "unused")
+@file:Suppress("UnsafeCastFromDynamic", "ClassName", "FunctionName", "UNUSED_PARAMETER", "unused")
 
 package physx
 
@@ -410,11 +410,127 @@ external interface PxInsertionCallback
 
 fun PxInsertionCallbackFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxInsertionCallback = js("_module.wrapPointer(ptr, _module.PxInsertionCallback)")
 
+external interface PxMat33 {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * WebIDL type: [PxVec3] (Value)
+     */
+    var column0: PxVec3
+    /**
+     * WebIDL type: [PxVec3] (Value)
+     */
+    var column1: PxVec3
+    /**
+     * WebIDL type: [PxVec3] (Value)
+     */
+    var column2: PxVec3
+}
+
+fun PxMat33(_module: dynamic = PhysXJsLoader.physXJs): PxMat33 = js("new _module.PxMat33()")
+
+/**
+ * @param r WebIDL type: [PxIDENTITYEnum] (enum)
+ */
+fun PxMat33(r: Int, _module: dynamic = PhysXJsLoader.physXJs): PxMat33 = js("new _module.PxMat33(r)")
+
+fun PxMat33FromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxMat33 = js("_module.wrapPointer(ptr, _module.PxMat33)")
+
+fun PxMat33.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface PxOutputStream
 
 fun PxOutputStreamFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxOutputStream = js("_module.wrapPointer(ptr, _module.PxOutputStream)")
 
 fun PxOutputStream.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface PxPlane {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * WebIDL type: [PxVec3] (Value)
+     */
+    var n: PxVec3
+    /**
+     * WebIDL type: float
+     */
+    var d: Float
+
+    /**
+     * @param p WebIDL type: [PxVec3] (Const, Ref)
+     * @return WebIDL type: float
+     */
+    fun distance(p: PxVec3): Float
+
+    /**
+     * @param p WebIDL type: [PxVec3] (Const, Ref)
+     * @return WebIDL type: boolean
+     */
+    fun contains(p: PxVec3): Boolean
+
+    /**
+     * @param p WebIDL type: [PxVec3] (Const, Ref)
+     * @return WebIDL type: [PxVec3] (Value)
+     */
+    fun project(p: PxVec3): PxVec3
+
+    /**
+     * @return WebIDL type: [PxVec3] (Value)
+     */
+    fun pointInPlane(): PxVec3
+
+    fun normalize()
+
+    /**
+     * @param pose WebIDL type: [PxTransform] (Const, Ref)
+     * @return WebIDL type: [PxPlane] (Value)
+     */
+    fun transform(pose: PxTransform): PxPlane
+
+    /**
+     * @param pose WebIDL type: [PxTransform] (Const, Ref)
+     * @return WebIDL type: [PxPlane] (Value)
+     */
+    fun inverseTransform(pose: PxTransform): PxPlane
+
+}
+
+fun PxPlane(_module: dynamic = PhysXJsLoader.physXJs): PxPlane = js("new _module.PxPlane()")
+
+/**
+ * @param nx       WebIDL type: float
+ * @param ny       WebIDL type: float
+ * @param nz       WebIDL type: float
+ * @param distance WebIDL type: float
+ */
+fun PxPlane(nx: Float, ny: Float, nz: Float, distance: Float, _module: dynamic = PhysXJsLoader.physXJs): PxPlane = js("new _module.PxPlane(nx, ny, nz, distance)")
+
+/**
+ * @param normal   WebIDL type: [PxVec3] (Const, Ref)
+ * @param distance WebIDL type: float
+ */
+fun PxPlane(normal: PxVec3, distance: Float, _module: dynamic = PhysXJsLoader.physXJs): PxPlane = js("new _module.PxPlane(normal, distance)")
+
+/**
+ * @param p0 WebIDL type: [PxVec3] (Const, Ref)
+ * @param p1 WebIDL type: [PxVec3] (Const, Ref)
+ * @param p2 WebIDL type: [PxVec3] (Const, Ref)
+ */
+fun PxPlane(p0: PxVec3, p1: PxVec3, p2: PxVec3, _module: dynamic = PhysXJsLoader.physXJs): PxPlane = js("new _module.PxPlane(p0, p1, p2)")
+
+fun PxPlaneFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxPlane = js("_module.wrapPointer(ptr, _module.PxPlane)")
+
+fun PxPlane.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
@@ -440,6 +556,101 @@ external interface PxQuat {
      * WebIDL type: float
      */
     var w: Float
+
+    /**
+     * @return WebIDL type: boolean
+     */
+    fun isIdentity(): Boolean
+
+    /**
+     * @return WebIDL type: boolean
+     */
+    fun isFinite(): Boolean
+
+    /**
+     * @return WebIDL type: boolean
+     */
+    fun isUnit(): Boolean
+
+    /**
+     * @return WebIDL type: boolean
+     */
+    fun isSane(): Boolean
+
+    /**
+     * @return WebIDL type: float
+     */
+    fun getAngle(): Float
+
+    /**
+     * @param q WebIDL type: [PxQuat] (Const, Ref)
+     * @return WebIDL type: float
+     */
+    fun getAngle(q: PxQuat): Float
+
+    /**
+     * @return WebIDL type: float
+     */
+    fun magnitudeSquared(): Float
+
+    /**
+     * @param q WebIDL type: [PxQuat] (Const, Ref)
+     * @return WebIDL type: float
+     */
+    fun dot(q: PxQuat): Float
+
+    /**
+     * @return WebIDL type: [PxQuat] (Value)
+     */
+    fun getNormalized(): PxQuat
+
+    /**
+     * @return WebIDL type: float
+     */
+    fun magnitude(): Float
+
+    /**
+     * @return WebIDL type: float
+     */
+    fun normalize(): Float
+
+    /**
+     * @return WebIDL type: [PxQuat] (Value)
+     */
+    fun getConjugate(): PxQuat
+
+    /**
+     * @return WebIDL type: [PxVec3] (Value)
+     */
+    fun getImaginaryPart(): PxVec3
+
+    /**
+     * @return WebIDL type: [PxVec3] (Value)
+     */
+    fun getBasisVector0(): PxVec3
+
+    /**
+     * @return WebIDL type: [PxVec3] (Value)
+     */
+    fun getBasisVector1(): PxVec3
+
+    /**
+     * @return WebIDL type: [PxVec3] (Value)
+     */
+    fun getBasisVector2(): PxVec3
+
+    /**
+     * @param v WebIDL type: [PxVec3] (Const, Ref)
+     * @return WebIDL type: [PxVec3] (Value)
+     */
+    fun rotate(v: PxVec3): PxVec3
+
+    /**
+     * @param v WebIDL type: [PxVec3] (Const, Ref)
+     * @return WebIDL type: [PxVec3] (Value)
+     */
+    fun rotateInv(v: PxVec3): PxVec3
+
 }
 
 fun PxQuat(_module: dynamic = PhysXJsLoader.physXJs): PxQuat = js("new _module.PxQuat()")
@@ -462,6 +673,21 @@ fun PxQuatFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxQua
 fun PxQuat.destroy() {
     PhysXJsLoader.destroy(this)
 }
+
+val PxQuat.angle
+    get() = getAngle()
+val PxQuat.normalized
+    get() = getNormalized()
+val PxQuat.conjugate
+    get() = getConjugate()
+val PxQuat.imaginaryPart
+    get() = getImaginaryPart()
+val PxQuat.basisVector0
+    get() = getBasisVector0()
+val PxQuat.basisVector1
+    get() = getBasisVector1()
+val PxQuat.basisVector2
+    get() = getBasisVector2()
 
 external interface PxRefCounted : PxBase {
     /**
@@ -585,6 +811,97 @@ external interface PxVec3 {
      * WebIDL type: float
      */
     var z: Float
+
+    /**
+     * @return WebIDL type: boolean
+     */
+    fun isZero(): Boolean
+
+    /**
+     * @return WebIDL type: boolean
+     */
+    fun isFinite(): Boolean
+
+    /**
+     * @return WebIDL type: boolean
+     */
+    fun isNormalized(): Boolean
+
+    /**
+     * @return WebIDL type: float
+     */
+    fun magnitudeSquared(): Float
+
+    /**
+     * @return WebIDL type: float
+     */
+    fun magnitude(): Float
+
+    /**
+     * @param v WebIDL type: [PxVec3] (Const, Ref)
+     * @return WebIDL type: float
+     */
+    fun dot(v: PxVec3): Float
+
+    /**
+     * @param v WebIDL type: [PxVec3] (Const, Ref)
+     * @return WebIDL type: [PxVec3] (Value)
+     */
+    fun cross(v: PxVec3): PxVec3
+
+    /**
+     * @return WebIDL type: [PxVec3] (Value)
+     */
+    fun getNormalized(): PxVec3
+
+    /**
+     * @return WebIDL type: float
+     */
+    fun normalize(): Float
+
+    /**
+     * @return WebIDL type: float
+     */
+    fun normalizeSafe(): Float
+
+    /**
+     * @return WebIDL type: float
+     */
+    fun normalizeFast(): Float
+
+    /**
+     * @param a WebIDL type: [PxVec3] (Const, Ref)
+     * @return WebIDL type: [PxVec3] (Value)
+     */
+    fun multiply(a: PxVec3): PxVec3
+
+    /**
+     * @param v WebIDL type: [PxVec3] (Const, Ref)
+     * @return WebIDL type: [PxVec3] (Value)
+     */
+    fun minimum(v: PxVec3): PxVec3
+
+    /**
+     * @return WebIDL type: float
+     */
+    fun minElement(): Float
+
+    /**
+     * @param v WebIDL type: [PxVec3] (Const, Ref)
+     * @return WebIDL type: [PxVec3] (Value)
+     */
+    fun maximum(v: PxVec3): PxVec3
+
+    /**
+     * @return WebIDL type: float
+     */
+    fun maxElement(): Float
+
+    /**
+     * @return WebIDL type: [PxVec3] (Value)
+     */
+    fun abs(): PxVec3
+
 }
 
 fun PxVec3(_module: dynamic = PhysXJsLoader.physXJs): PxVec3 = js("new _module.PxVec3()")
@@ -601,6 +918,9 @@ fun PxVec3FromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxVec
 fun PxVec3.destroy() {
     PhysXJsLoader.destroy(this)
 }
+
+val PxVec3.normalized
+    get() = getNormalized()
 
 external interface PxCudaTopLevelFunctions {
     /**

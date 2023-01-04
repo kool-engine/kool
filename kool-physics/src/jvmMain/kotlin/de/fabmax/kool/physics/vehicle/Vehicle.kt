@@ -322,7 +322,7 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, val wor
             baseParams.suspensionStateCalculationParams.suspensionJounceCalculationType = PxVehicleSuspensionJounceCalculationTypeEnum.eSWEEP
             baseParams.suspensionStateCalculationParams.limitSuspensionExpansionVelocity = false
 
-            val forceAppPoint = mem.createPxVec3(0f, 0f, -0.1f)
+            val forceAppPoint = mem.createPxVec3(0f, 0f, -0.2f)
             val suspSprungMasses = Vector_PxReal(numWheels)
             PxVehicleTopLevelFunctions.VehicleComputeSprungMasses(numWheels, pxWheelCenterActorOffsets,
                 vehicleProps.chassisMass, PxVehicleAxesEnum.eNegY, suspSprungMasses)
@@ -381,6 +381,7 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, val wor
                 PxQuat.createAt(mem, MemoryStack::nmalloc, PxIDENTITYEnum.PxIdentity)
             )
             val actorShapeLocalPose = PxTransform.createAt(mem, MemoryStack::nmalloc,
+                // fixme: don't use hardcoded shape local pose
                 PxVec3.createAt(mem, MemoryStack::nmalloc, 0f, 0.83f, 0f),
                 PxQuat.createAt(mem, MemoryStack::nmalloc, PxIDENTITYEnum.PxIdentity)
             )

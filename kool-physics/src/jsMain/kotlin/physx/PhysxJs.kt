@@ -1,7 +1,7 @@
 /*
  * Generated from WebIDL by webidl-util
  */
-@file:Suppress("UnsafeCastFromDynamic", "ClassName", "FunctionName", "UNUSED_VARIABLE", "UNUSED_PARAMETER", "unused")
+@file:Suppress("UnsafeCastFromDynamic", "ClassName", "FunctionName", "UNUSED_PARAMETER", "unused")
 
 package physx
 
@@ -60,10 +60,20 @@ external interface PxTopLevelFunctions {
      * @param version    WebIDL type: unsigned long
      * @param foundation WebIDL type: [PxFoundation] (Ref)
      * @param params     WebIDL type: [PxTolerancesScale] (Const, Ref)
-     * @param pvd        WebIDL type: [PxPvd]
+     * @param pvd        WebIDL type: [PxPvd] (Nullable)
      * @return WebIDL type: [PxPhysics]
      */
-    fun CreatePhysics(version: Int, foundation: PxFoundation, params: PxTolerancesScale, pvd: PxPvd): PxPhysics
+    fun CreatePhysics(version: Int, foundation: PxFoundation, params: PxTolerancesScale, pvd: PxPvd?): PxPhysics
+
+    /**
+     * @param version    WebIDL type: unsigned long
+     * @param foundation WebIDL type: [PxFoundation] (Ref)
+     * @param params     WebIDL type: [PxTolerancesScale] (Const, Ref)
+     * @param pvd        WebIDL type: [PxPvd] (Nullable)
+     * @param omniPvd    WebIDL type: [PxOmniPvd] (Nullable)
+     * @return WebIDL type: [PxPhysics]
+     */
+    fun CreatePhysics(version: Int, foundation: PxFoundation, params: PxTolerancesScale, pvd: PxPvd?, omniPvd: PxOmniPvd?): PxPhysics
 
     /**
      * @param numThreads WebIDL type: unsigned long
@@ -84,6 +94,20 @@ external interface PxTopLevelFunctions {
      * @return WebIDL type: [PxPvd]
      */
     fun CreatePvd(foundation: PxFoundation): PxPvd
+
+    /**
+     * @param host                  WebIDL type: DOMString
+     * @param port                  WebIDL type: long
+     * @param timeoutInMilliseconds WebIDL type: unsigned long
+     * @return WebIDL type: [PxPvdTransport] (NonJs)
+     */
+    fun DefaultPvdSocketTransportCreate(host: String, port: Int, timeoutInMilliseconds: Int): PxPvdTransport
+
+    /**
+     * @param foundation WebIDL type: [PxFoundation] (Ref)
+     * @return WebIDL type: [PxOmniPvd] (NonJs)
+     */
+    fun CreateOmniPvd(foundation: PxFoundation): PxOmniPvd
 
     /**
      * @param physics     WebIDL type: [PxPhysics] (Ref)
@@ -174,4 +198,6 @@ external interface PxTopLevelFunctions {
     fun CreateCooking(version: Int, foundation: PxFoundation, scale: PxCookingParams): PxCooking
 
 }
+
+fun PxTopLevelFunctionsFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxTopLevelFunctions = js("_module.wrapPointer(ptr, _module.PxTopLevelFunctions)")
 

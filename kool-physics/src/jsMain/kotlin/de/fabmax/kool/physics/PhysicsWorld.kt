@@ -34,20 +34,18 @@ actual class PhysicsWorld actual constructor(scene: Scene?, val isContinuousColl
         Physics.checkIsLoaded()
 
         MemoryStack.stackPush().use { mem ->
-            var flags = PxSceneFlagEnum.eENABLE_ACTIVE_ACTORS
-            if (isContinuousCollisionDetection) {
-                flags = flags or PxSceneFlagEnum.eENABLE_CCD
-            }
             val sceneDesc = mem.createPxSceneDesc(Physics.physics.tolerancesScale)
             sceneDesc.gravity = bufPxGravity
             // ignore numWorkers parameter and set numThreads to 0, since multi-threading is disabled for wasm
             sceneDesc.cpuDispatcher = Physics.defaultCpuDispatcher
-            sceneDesc.filterShader = Physics.Px.DefaultFilterShader()
+            sceneDesc.filterShader = PxTopLevelFunctions.DefaultFilterShader()
             sceneDesc.simulationEventCallback = simEventCallback()
-            sceneDesc.flags.raise(flags)
+            sceneDesc.flags.raise(PxSceneFlagEnum.eENABLE_ACTIVE_ACTORS)
+            if (isContinuousCollisionDetection) {
+                sceneDesc.flags.raise(PxSceneFlagEnum.eENABLE_CCD)
+            }
             pxScene = Physics.physics.createScene(sceneDesc)
         }
-
         scene?.let { registerHandlers(it) }
     }
 
@@ -62,7 +60,7 @@ actual class PhysicsWorld actual constructor(scene: Scene?, val isContinuousColl
         for (i in actors.indices) {
             actors[i].isActive = false
         }
-        val activeActors = Physics.SupportFunctions.PxScene_getActiveActors(pxScene)
+        val activeActors = SupportFunctions.PxScene_getActiveActors(pxScene)
         mutActiveActors = activeActors.size()
         for (i in 0 until mutActiveActors) {
             pxActors[activeActors.at(i).ptr]?.isActive = true
@@ -192,7 +190,7 @@ actual class PhysicsWorld actual constructor(scene: Scene?, val isContinuousColl
         onTrigger = { pairs: Int, count: Int ->
             val pairsWrapped = PxTriggerPairFromPointer(pairs)
             for (i in 0 until count) {
-                val pair = Physics.NativeArrayHelpers.getTriggerPairAt(pairsWrapped, i)
+                val pair = NativeArrayHelpers.getTriggerPairAt(pairsWrapped, i)
                 val isEnter = pair.status == PxPairFlagEnum.eNOTIFY_TOUCH_FOUND
                 val trigger = pxActors[pair.triggerActor.ptr]
                 val actor = pxActors[pair.otherActor.ptr]
@@ -229,7 +227,7 @@ actual class PhysicsWorld actual constructor(scene: Scene?, val isContinuousColl
 
             } else {
                 for (i in 0 until nbPairs) {
-                    val pair = Physics.NativeArrayHelpers.getContactPairAt(pairsWrapped, i)
+                    val pair = NativeArrayHelpers.getContactPairAt(pairsWrapped, i)
                     val evts = pair.events
 
                     if (evts.isSet(PxPairFlagEnum.eNOTIFY_TOUCH_FOUND)) {

@@ -7,10 +7,23 @@ import de.fabmax.kool.physics.toPxTransform
 import org.lwjgl.system.MemoryStack
 import physx.physics.PxArticulationFlagEnum
 import physx.physics.PxArticulationReducedCoordinate
+import physx.support.SupportFunctions
 
 actual class Articulation actual constructor(isFixedBase: Boolean) : CommonArticulation(isFixedBase) {
 
     val pxArticulation: PxArticulationReducedCoordinate
+
+    actual var minPositionIterations: Int
+        get() = SupportFunctions.PxArticulationReducedCoordinate_getMinSolverPositionIterations(pxArticulation)
+        set(value) {
+            pxArticulation.setSolverIterationCounts(value, minVelocityIterations)
+        }
+
+    actual var minVelocityIterations: Int
+        get() = SupportFunctions.PxArticulationReducedCoordinate_getMinSolverVelocityIterations(pxArticulation)
+        set(value) {
+            pxArticulation.setSolverIterationCounts(minPositionIterations, value)
+        }
 
     init {
         Physics.checkIsLoaded()
@@ -19,7 +32,6 @@ actual class Articulation actual constructor(isFixedBase: Boolean) : CommonArtic
         if (isFixedBase) {
             pxArticulation.setArticulationFlag(PxArticulationFlagEnum.eFIX_BASE, true)
         }
-
     }
 
     actual fun createLink(parent: ArticulationLink?, pose: Mat4f): ArticulationLink {

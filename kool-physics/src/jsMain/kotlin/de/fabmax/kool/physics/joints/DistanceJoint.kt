@@ -1,11 +1,11 @@
 package de.fabmax.kool.physics.joints
 
 import de.fabmax.kool.math.Mat4f
-import de.fabmax.kool.physics.MemoryStack
-import de.fabmax.kool.physics.Physics
-import de.fabmax.kool.physics.RigidActor
-import de.fabmax.kool.physics.toPxTransform
-import physx.*
+import de.fabmax.kool.physics.*
+import physx.PxDistanceJoint
+import physx.PxDistanceJointFlagEnum
+import physx.maxDistance
+import physx.minDistance
 
 actual class DistanceJoint actual constructor(
     actual val bodyA: RigidActor,
@@ -23,7 +23,7 @@ actual class DistanceJoint actual constructor(
         MemoryStack.stackPush().use { mem ->
             val frmA = frameA.toPxTransform(mem.createPxTransform())
             val frmB = frameB.toPxTransform(mem.createPxTransform())
-            pxJoint = Physics.Px.DistanceJointCreate(Physics.physics, bodyA.pxRigidActor, frmA, bodyB.pxRigidActor, frmB)
+            pxJoint = PxTopLevelFunctions.DistanceJointCreate(Physics.physics, bodyA.pxRigidActor, frmA, bodyB.pxRigidActor, frmB)
         }
     }
 

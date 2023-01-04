@@ -2,11 +2,8 @@ package de.fabmax.kool.physics.joints
 
 import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.physics.MemoryStack
-import de.fabmax.kool.physics.Physics
-import de.fabmax.kool.physics.RigidActor
+import de.fabmax.kool.physics.*
 import de.fabmax.kool.physics.joints.RevoluteJointHelper.computeFrame
-import de.fabmax.kool.physics.toPxTransform
 import physx.PxRevoluteJoint
 import physx.PxRevoluteJointFlagEnum
 import physx.driveForceLimit
@@ -30,7 +27,7 @@ actual class RevoluteJoint actual constructor(actual val bodyA: RigidActor, actu
         MemoryStack.stackPush().use { mem ->
             val frmA = frameA.toPxTransform(mem.createPxTransform())
             val frmB = frameB.toPxTransform(mem.createPxTransform())
-            pxJoint = Physics.Px.RevoluteJointCreate(Physics.physics, bodyA.pxRigidActor, frmA, bodyB.pxRigidActor, frmB)
+            pxJoint = PxTopLevelFunctions.RevoluteJointCreate(Physics.physics, bodyA.pxRigidActor, frmA, bodyB.pxRigidActor, frmB)
         }
     }
 

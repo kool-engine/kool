@@ -109,6 +109,8 @@ class MemoryStack private constructor() {
     fun createPxBoundedData() = autoDelete(PxBoundedData())
     fun createPxFilterData() = autoDelete(PxFilterData())
     fun createPxFilterData(w0: Int, w1: Int, w2: Int, w3: Int) = autoDelete(PxFilterData(w0, w1, w2, w3))
+    fun createPxQueryFilterData(fd: PxFilterData, f: PxQueryFlags) = autoDelete(PxQueryFilterData(fd, f))
+    fun createPxQueryFlags(flags: Short) = autoDelete(PxQueryFlags(flags))
     fun createPxHeightFieldSample() = autoDelete(PxHeightFieldSample())
     fun createPxHullPolygon() = autoDelete(PxHullPolygon())
     fun createPxMeshScale(s: PxVec3, r: PxQuat) = autoDelete(PxMeshScale(s, r))
@@ -122,16 +124,9 @@ class MemoryStack private constructor() {
     fun createPxTransform(p: PxVec3, q: PxQuat) = autoDelete(PxTransform(p, q))
 
     fun createPxSceneDesc(scale: PxTolerancesScale) = autoDelete(PxSceneDesc(scale))
-//    fun createPxBatchQueryDesc(maxRaycastsPerExecute: Int, maxSweepsPerExecute: Int, maxOverlapsPerExecute: Int) =
-//        autoDelete(PxBatchQueryDesc(maxRaycastsPerExecute, maxSweepsPerExecute, maxOverlapsPerExecute))
     fun createPxConvexMeshDesc() = autoDelete(PxConvexMeshDesc())
     fun createPxHeightFieldDesc() = autoDelete(PxHeightFieldDesc())
     fun createPxTriangleMeshDesc() = autoDelete(PxTriangleMeshDesc())
-
-//    fun createPxVehicleAntiRollBarData() = autoDelete(PxVehicleAntiRollBarData())
-//    fun createPxVehicleSuspensionData() = autoDelete(PxVehicleSuspensionData())
-//    fun createPxVehicleTireData() = autoDelete(PxVehicleTireData())
-//    fun createPxVehicleWheelData() = autoDelete(PxVehicleWheelData())
 
     fun createPxActorFlags(flags: Int) = autoDelete(PxActorFlags(flags.toByte()))
     fun createPxBaseFlags(flags: Int) = autoDelete(PxBaseFlags(flags.toShort()))
@@ -144,7 +139,4 @@ class MemoryStack private constructor() {
     fun createPxRigidDynamicLockFlags(flags: Int) = autoDelete(PxRigidDynamicLockFlags(flags.toByte()))
     fun createPxSceneFlags(flags: Int) = autoDelete(PxSceneFlags(flags))
     fun createPxShapeFlags(flags: Int) = autoDelete(PxShapeFlags(flags.toByte()))
-//    fun createPxVehicleWheelsSimFlags(flags: Int) = autoDelete(PxVehicleWheelsSimFlags(flags))
-
-//    fun createBatchVehicleUpdateDesc() = autoDelete(BatchVehicleUpdateDesc())
 }

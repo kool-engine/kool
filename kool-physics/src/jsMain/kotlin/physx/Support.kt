@@ -1,7 +1,7 @@
 /*
  * Generated from WebIDL by webidl-util
  */
-@file:Suppress("UnsafeCastFromDynamic", "ClassName", "FunctionName", "UNUSED_VARIABLE", "UNUSED_PARAMETER", "unused")
+@file:Suppress("UnsafeCastFromDynamic", "ClassName", "FunctionName", "UNUSED_PARAMETER", "unused")
 
 package physx
 
@@ -23,6 +23,18 @@ external interface SupportFunctions {
      * @return WebIDL type: [Vector_PxActorPtr] (Ref)
      */
     fun PxScene_getActiveActors(scene: PxScene): Vector_PxActorPtr
+
+    /**
+     * @param articulation WebIDL type: [PxArticulationReducedCoordinate]
+     * @return WebIDL type: unsigned long
+     */
+    fun PxArticulationReducedCoordinate_getMinSolverPositionIterations(articulation: PxArticulationReducedCoordinate): Int
+
+    /**
+     * @param articulation WebIDL type: [PxArticulationReducedCoordinate]
+     * @return WebIDL type: unsigned long
+     */
+    fun PxArticulationReducedCoordinate_getMinSolverVelocityIterations(articulation: PxArticulationReducedCoordinate): Int
 
 }
 
@@ -803,9 +815,195 @@ external interface PassThroughFilterShaderImpl : PassThroughFilterShader {
 
 fun PassThroughFilterShaderImpl(_module: dynamic = PhysXJsLoader.physXJs): PassThroughFilterShaderImpl = js("new _module.PassThroughFilterShaderImpl()")
 
-external interface PxPvd
+external interface PxPvd {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * @param transport WebIDL type: [PxPvdTransport] (Ref)
+     * @param flags     WebIDL type: [PxPvdInstrumentationFlags] (Ref)
+     * @return WebIDL type: boolean
+     */
+    fun connect(transport: PxPvdTransport, flags: PxPvdInstrumentationFlags): Boolean
+
+    fun release()
+
+}
 
 fun PxPvdFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxPvd = js("_module.wrapPointer(ptr, _module.PxPvd)")
+
+external interface PxPvdTransport {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * @return WebIDL type: boolean
+     */
+    fun connect(): Boolean
+
+    /**
+     * @return WebIDL type: boolean
+     */
+    fun isConnected(): Boolean
+
+    fun disconnect()
+
+    fun release()
+
+    fun flush()
+
+}
+
+fun PxPvdTransportFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxPvdTransport = js("_module.wrapPointer(ptr, _module.PxPvdTransport)")
+
+external interface SimplePvdTransport : PxPvdTransport {
+    /**
+     * @param inBytes  WebIDL type: any
+     * @param inLength WebIDL type: unsigned long
+     */
+    fun send(inBytes: Int, inLength: Int)
+
+}
+
+fun SimplePvdTransportFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): SimplePvdTransport = js("_module.wrapPointer(ptr, _module.SimplePvdTransport)")
+
+fun SimplePvdTransport.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface SimplPvdTransportImpl : SimplePvdTransport {
+    /**
+     * return WebIDL type: boolean
+     */
+    var connect: () -> Boolean
+
+    /**
+     * return WebIDL type: boolean
+     */
+    var isConnected: () -> Boolean
+
+    var disconnect: () -> Unit
+
+    /**
+     * param inBytes  WebIDL type: any
+     * param inLength WebIDL type: unsigned long
+     */
+    var send: (inBytes: Int, inLength: Int) -> Unit
+
+    var flush: () -> Unit
+
+}
+
+fun SimplPvdTransportImpl(_module: dynamic = PhysXJsLoader.physXJs): SimplPvdTransportImpl = js("new _module.SimplPvdTransportImpl()")
+
+external interface PxPvdInstrumentationFlags {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * @param flag WebIDL type: [PxPvdInstrumentationFlagEnum] (enum)
+     * @return WebIDL type: boolean
+     */
+    fun isSet(flag: Int): Boolean
+
+    /**
+     * @param flag WebIDL type: [PxPvdInstrumentationFlagEnum] (enum)
+     */
+    fun raise(flag: Int)
+
+    /**
+     * @param flag WebIDL type: [PxPvdInstrumentationFlagEnum] (enum)
+     */
+    fun clear(flag: Int)
+
+}
+
+/**
+ * @param flags WebIDL type: octet
+ */
+fun PxPvdInstrumentationFlags(flags: Byte, _module: dynamic = PhysXJsLoader.physXJs): PxPvdInstrumentationFlags = js("new _module.PxPvdInstrumentationFlags(flags)")
+
+fun PxPvdInstrumentationFlagsFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxPvdInstrumentationFlags = js("_module.wrapPointer(ptr, _module.PxPvdInstrumentationFlags)")
+
+fun PxPvdInstrumentationFlags.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface PxOmniPvd {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * @return WebIDL type: [OmniPvdWriter] (NonJs)
+     */
+    fun getWriter(): OmniPvdWriter
+
+    /**
+     * @return WebIDL type: [OmniPvdFileWriteStream] (NonJs)
+     */
+    fun getFileWriteStream(): OmniPvdFileWriteStream
+
+    /**
+     * @return WebIDL type: boolean
+     */
+    fun startSampling(): Boolean
+
+    fun release()
+
+}
+
+fun PxOmniPvdFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxOmniPvd = js("_module.wrapPointer(ptr, _module.PxOmniPvd)")
+
+fun PxOmniPvd.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+val PxOmniPvd.writer
+    get() = getWriter()
+val PxOmniPvd.fileWriteStream
+    get() = getFileWriteStream()
+
+external interface OmniPvdWriter {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * @param writeStream WebIDL type: [OmniPvdFileWriteStream]
+     */
+    fun setWriteStream(writeStream: OmniPvdFileWriteStream)
+
+}
+
+fun OmniPvdWriterFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): OmniPvdWriter = js("_module.wrapPointer(ptr, _module.OmniPvdWriter)")
+
+fun OmniPvdWriter.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface OmniPvdFileWriteStream {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * @param fileName WebIDL type: DOMString
+     */
+    fun setFileName(fileName: String)
+
+}
+
+fun OmniPvdFileWriteStreamFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): OmniPvdFileWriteStream = js("_module.wrapPointer(ptr, _module.OmniPvdFileWriteStream)")
 
 object PxVisualizationParameterEnum {
     val eSCALE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVisualizationParameterEnum_eSCALE()
@@ -835,5 +1033,12 @@ object PxVisualizationParameterEnum {
     val eSDF: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVisualizationParameterEnum_eSDF()
     val eNUM_VALUES: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVisualizationParameterEnum_eNUM_VALUES()
     val eFORCE_DWORD: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVisualizationParameterEnum_eFORCE_DWORD()
+}
+
+object PxPvdInstrumentationFlagEnum {
+    val eDEBUG: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPvdInstrumentationFlagEnum_eDEBUG()
+    val ePROFILE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPvdInstrumentationFlagEnum_ePROFILE()
+    val eMEMORY: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPvdInstrumentationFlagEnum_eMEMORY()
+    val eALL: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPvdInstrumentationFlagEnum_eALL()
 }
 

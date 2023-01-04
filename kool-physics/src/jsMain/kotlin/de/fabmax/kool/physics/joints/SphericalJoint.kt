@@ -1,11 +1,11 @@
 package de.fabmax.kool.physics.joints
 
 import de.fabmax.kool.math.Mat4f
-import de.fabmax.kool.physics.MemoryStack
-import de.fabmax.kool.physics.Physics
-import de.fabmax.kool.physics.RigidActor
-import de.fabmax.kool.physics.toPxTransform
-import physx.*
+import de.fabmax.kool.physics.*
+import physx.PxJointLimitCone
+import physx.PxSphericalJoint
+import physx.PxSphericalJointFlagEnum
+import physx.PxSpring
 
 actual class SphericalJoint actual constructor(
     actual val bodyA: RigidActor,
@@ -22,7 +22,7 @@ actual class SphericalJoint actual constructor(
         MemoryStack.stackPush().use { mem ->
             val frmA = posA.toPxTransform(mem.createPxTransform())
             val frmB = posB.toPxTransform(mem.createPxTransform())
-            pxJoint = Physics.Px.SphericalJointCreate(Physics.physics, bodyA.pxRigidActor, frmA, bodyB.pxRigidActor, frmB)
+            pxJoint = PxTopLevelFunctions.SphericalJointCreate(Physics.physics, bodyA.pxRigidActor, frmA, bodyB.pxRigidActor, frmB)
         }
     }
 

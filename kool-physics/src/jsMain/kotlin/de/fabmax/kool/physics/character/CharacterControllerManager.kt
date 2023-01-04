@@ -3,6 +3,7 @@ package de.fabmax.kool.physics.character
 import de.fabmax.kool.math.toRad
 import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.physics.PhysicsWorld
+import de.fabmax.kool.physics.PxTopLevelFunctions
 import physx.*
 import kotlin.math.cos
 
@@ -12,7 +13,7 @@ actual class CharacterControllerManager actual constructor(world: PhysicsWorld) 
 
     init {
         Physics.checkIsLoaded()
-        pxManager = Physics.Px.CreateControllerManager(world.pxScene)
+        pxManager = PxTopLevelFunctions.CreateControllerManager(world.pxScene)
     }
 
     override fun doCreateController(): JsCharacterController {

@@ -2,6 +2,7 @@ package de.fabmax.kool.physics.articulations
 
 import de.fabmax.kool.physics.RigidBody
 import physx.PxArticulationLink
+import physx.PxRigidActor
 import physx.inboundJoint
 
 actual class ArticulationLink(val pxLink: PxArticulationLink, val parent: ArticulationLink?) : RigidBody() {
@@ -16,8 +17,9 @@ actual class ArticulationLink(val pxLink: PxArticulationLink, val parent: Articu
         null
     }
 
+    override val pxRigidActor: PxRigidActor = pxLink
+
     init {
-        pxRigidActor = pxLink
         parent?.mutChildren?.add(this)
     }
 

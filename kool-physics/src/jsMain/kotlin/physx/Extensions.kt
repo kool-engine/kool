@@ -1,7 +1,7 @@
 /*
  * Generated from WebIDL by webidl-util
  */
-@file:Suppress("UnsafeCastFromDynamic", "ClassName", "FunctionName", "UNUSED_VARIABLE", "UNUSED_PARAMETER", "unused")
+@file:Suppress("UnsafeCastFromDynamic", "ClassName", "FunctionName", "UNUSED_PARAMETER", "unused")
 
 package physx
 
@@ -120,6 +120,90 @@ val PxDefaultMemoryOutputStream.size
     get() = getSize()
 val PxDefaultMemoryOutputStream.data
     get() = getData()
+
+external interface PxMassProperties {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * WebIDL type: [PxMat33] (Value)
+     */
+    var inertiaTensor: PxMat33
+    /**
+     * WebIDL type: [PxVec3] (Value)
+     */
+    var centerOfMass: PxVec3
+    /**
+     * WebIDL type: float
+     */
+    var mass: Float
+
+    /**
+     * @param t WebIDL type: [PxVec3] (Const, Ref)
+     */
+    fun translate(t: PxVec3)
+
+    /**
+     * @param inertia   WebIDL type: [PxMat33] (Const, Ref)
+     * @param massFrame WebIDL type: [PxQuat] (Ref)
+     * @return WebIDL type: [PxVec3] (Value)
+     */
+    fun getMassSpaceInertia(inertia: PxMat33, massFrame: PxQuat): PxVec3
+
+    /**
+     * @param inertia WebIDL type: [PxMat33] (Const, Ref)
+     * @param mass    WebIDL type: float
+     * @param t       WebIDL type: [PxVec3] (Const, Ref)
+     * @return WebIDL type: [PxMat33] (Value)
+     */
+    fun translateInertia(inertia: PxMat33, mass: Float, t: PxVec3): PxMat33
+
+    /**
+     * @param inertia WebIDL type: [PxMat33] (Const, Ref)
+     * @param q       WebIDL type: [PxQuat] (Const, Ref)
+     * @return WebIDL type: [PxMat33] (Value)
+     */
+    fun rotateInertia(inertia: PxMat33, q: PxQuat): PxMat33
+
+    /**
+     * @param inertia       WebIDL type: [PxMat33] (Const, Ref)
+     * @param scaleRotation WebIDL type: [PxQuat] (Const, Ref)
+     * @param scale         WebIDL type: [PxVec3] (Const, Ref)
+     * @return WebIDL type: [PxMat33] (Value)
+     */
+    fun scaleInertia(inertia: PxMat33, scaleRotation: PxQuat, scale: PxVec3): PxMat33
+
+    /**
+     * @param props      WebIDL type: [PxMassProperties] (Const)
+     * @param transforms WebIDL type: [PxTransform] (Const)
+     * @param count      WebIDL type: unsigned long
+     * @return WebIDL type: [PxMassProperties] (Value)
+     */
+    fun sum(props: PxMassProperties, transforms: PxTransform, count: Int): PxMassProperties
+
+}
+
+fun PxMassProperties(_module: dynamic = PhysXJsLoader.physXJs): PxMassProperties = js("new _module.PxMassProperties()")
+
+/**
+ * @param m        WebIDL type: float
+ * @param inertiaT WebIDL type: [PxMat33] (Const, Ref)
+ * @param com      WebIDL type: [PxVec3] (Const, Ref)
+ */
+fun PxMassProperties(m: Float, inertiaT: PxMat33, com: PxVec3, _module: dynamic = PhysXJsLoader.physXJs): PxMassProperties = js("new _module.PxMassProperties(m, inertiaT, com)")
+
+/**
+ * @param geometry WebIDL type: [PxGeometry] (Const, Ref)
+ */
+fun PxMassProperties(geometry: PxGeometry, _module: dynamic = PhysXJsLoader.physXJs): PxMassProperties = js("new _module.PxMassProperties(geometry)")
+
+fun PxMassPropertiesFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxMassProperties = js("_module.wrapPointer(ptr, _module.PxMassProperties)")
+
+fun PxMassProperties.destroy() {
+    PhysXJsLoader.destroy(this)
+}
 
 external interface PxMeshOverlapUtil {
     /**

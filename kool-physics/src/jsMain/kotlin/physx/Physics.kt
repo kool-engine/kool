@@ -1,7 +1,7 @@
 /*
  * Generated from WebIDL by webidl-util
  */
-@file:Suppress("UnsafeCastFromDynamic", "ClassName", "FunctionName", "UNUSED_VARIABLE", "UNUSED_PARAMETER", "unused")
+@file:Suppress("UnsafeCastFromDynamic", "ClassName", "FunctionName", "UNUSED_PARAMETER", "unused")
 
 package physx
 
@@ -2313,6 +2313,60 @@ var PxConstraint.minResponseThreshold
     get() = getMinResponseThreshold()
     set(value) { setMinResponseThreshold(value) }
 
+external interface PxConstraintConnector {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    fun prepareData()
+
+    fun updateOmniPvdProperties()
+
+    fun onConstraintRelease()
+
+    /**
+     * @param actor WebIDL type: unsigned long
+     */
+    fun onComShift(actor: Int)
+
+    /**
+     * @param shift WebIDL type: [PxVec3] (Const, Ref)
+     */
+    fun onOriginShift(shift: PxVec3)
+
+    /**
+     * @return WebIDL type: [PxBase]
+     */
+    fun getSerializable(): PxBase
+
+    /**
+     * @return WebIDL type: [PxConstraintSolverPrep] (Value)
+     */
+    fun getPrep(): PxConstraintSolverPrep
+
+    fun getConstantBlock()
+
+    /**
+     * @param constraint WebIDL type: [PxConstraint]
+     */
+    fun connectToConstraint(constraint: PxConstraint)
+
+}
+
+fun PxConstraintConnectorFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxConstraintConnector = js("_module.wrapPointer(ptr, _module.PxConstraintConnector)")
+
+fun PxConstraintConnector.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+val PxConstraintConnector.serializable
+    get() = getSerializable()
+val PxConstraintConnector.prep
+    get() = getPrep()
+val PxConstraintConnector.constantBlock
+    get() = getConstantBlock()
+
 external interface PxConstraintFlags {
     /**
      * Native object address.
@@ -2371,6 +2425,14 @@ external interface PxConstraintInfo {
 fun PxConstraintInfoFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxConstraintInfo = js("_module.wrapPointer(ptr, _module.PxConstraintInfo)")
 
 fun PxConstraintInfo.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface PxConstraintSolverPrep
+
+fun PxConstraintSolverPrepFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxConstraintSolverPrep = js("_module.wrapPointer(ptr, _module.PxConstraintSolverPrep)")
+
+fun PxConstraintSolverPrep.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
@@ -4146,6 +4208,43 @@ fun PxSceneLimits.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
+external interface PxGeomRaycastHit : PxLocationHit {
+    /**
+     * WebIDL type: float
+     */
+    var u: Float
+    /**
+     * WebIDL type: float
+     */
+    var v: Float
+
+    /**
+     * @return WebIDL type: boolean
+     */
+    fun hadInitialOverlap(): Boolean
+
+}
+
+fun PxGeomRaycastHitFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxGeomRaycastHit = js("_module.wrapPointer(ptr, _module.PxGeomRaycastHit)")
+
+fun PxGeomRaycastHit.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface PxGeomSweepHit : PxLocationHit {
+    /**
+     * @return WebIDL type: boolean
+     */
+    fun hadInitialOverlap(): Boolean
+
+}
+
+fun PxGeomSweepHitFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxGeomSweepHit = js("_module.wrapPointer(ptr, _module.PxGeomSweepHit)")
+
+fun PxGeomSweepHit.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface PxHitFlags {
     /**
      * Native object address.
@@ -4525,15 +4624,7 @@ fun PxRaycastCallback.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
-external interface PxRaycastHit : PxLocationHit {
-    /**
-     * WebIDL type: float
-     */
-    var u: Float
-    /**
-     * WebIDL type: float
-     */
-    var v: Float
+external interface PxRaycastHit : PxGeomRaycastHit {
     /**
      * WebIDL type: [PxRigidActor]
      */
@@ -4848,7 +4939,7 @@ fun PxSweepCallback.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
-external interface PxSweepHit : PxLocationHit {
+external interface PxSweepHit : PxGeomSweepHit {
     /**
      * WebIDL type: [PxRigidActor]
      */
