@@ -42,10 +42,13 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
     var windowUnfocusedFrameRate = props.windowUnfocusedFrameRate
     private val mainThreadRunnables = mutableListOf<GpuThreadRunnable>()
 
+    private var prevFrameTime = System.nanoTime()
+
     private object SysInfo : ArrayList<String>() {
         private var prevHeapSz = 1e9
         private var prevHeapSzTime = 0L
         private var avgHeapGrowth = 0.0
+        private val formatter = Formatter(Locale.ENGLISH)
 
         fun set(api: String, deviceName: String) {
             clear()
@@ -72,7 +75,7 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
                 }
             }
             prevHeapSz = heapSz
-            set(3, String.format(Locale.ENGLISH, "Heap: %.1f MB (+%.1f MB/s)", heapSz, avgHeapGrowth))
+            set(3, formatter.format("Heap: %.1f MB (+%.1f MB/s)", heapSz, avgHeapGrowth).toString())
         }
     }
 
@@ -99,38 +102,40 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
     override fun openUrl(url: String, sameWindow: Boolean)  = Desktop.getDesktop().browse(URI(url))
 
     override fun run() {
-        var prevTime = System.nanoTime()
         while (!glfwWindowShouldClose(renderBackend.glfwWindow.windowPtr)) {
             SysInfo.update()
             glfwPollEvents()
-
-            synchronized(mainThreadRunnables) {
-                if (mainThreadRunnables.isNotEmpty()) {
-                    for (r in mainThreadRunnables) {
-                        r.r()
-                        r.future.complete(null)
-                    }
-                    mainThreadRunnables.clear()
-                }
-            }
-
-            if (windowUnfocusedFrameRate > 0 || maxFrameRate > 0) {
-                checkFrameRateLimits(prevTime)
-            }
-
-            // determine time delta
-            val time = System.nanoTime()
-            val dt = (time - prevTime) / 1e9
-            prevTime = time
-
-            // setup draw queues for all scenes / render passes
-            render(dt)
-
-            // execute draw queues
-            engineStats.resetPerFrameCounts()
-            renderBackend.drawFrame(this)
+            renderFrame()
         }
         renderBackend.cleanup(this)
+    }
+
+    internal fun renderFrame() {
+        synchronized(mainThreadRunnables) {
+            if (mainThreadRunnables.isNotEmpty()) {
+                for (r in mainThreadRunnables) {
+                    r.r()
+                    r.future.complete(null)
+                }
+                mainThreadRunnables.clear()
+            }
+        }
+
+        if (windowUnfocusedFrameRate > 0 || maxFrameRate > 0) {
+            checkFrameRateLimits(prevFrameTime)
+        }
+
+        // determine time delta
+        val time = System.nanoTime()
+        val dt = (time - prevFrameTime) / 1e9
+        prevFrameTime = time
+
+        // setup draw queues for all scenes / render passes
+        render(dt)
+
+        // execute draw queues
+        engineStats.resetPerFrameCounts()
+        renderBackend.drawFrame(this)
     }
 
     private fun checkFrameRateLimits(prevTime: Long) {

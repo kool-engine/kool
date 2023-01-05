@@ -2,6 +2,7 @@ package de.fabmax.kool.modules.audio.synth
 
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.math.randomF
+import de.fabmax.kool.modules.audio.AudioNode
 import kotlin.math.max
 import kotlin.math.pow
 
@@ -9,9 +10,8 @@ import kotlin.math.pow
  * @author fabmax
  */
 
-abstract class SampleNode {
+abstract class SampleNode : AudioNode() {
 
-    var gain = 1f
     var t = 0.0
         protected set
 
@@ -28,11 +28,14 @@ abstract class SampleNode {
     }
 
     protected abstract fun generate(dt: Float): Float
+    override fun nextSample(dt: Float): Float = next(dt)
 
     companion object {
-        private val NOTE_TABLE = Array(15, { oct ->
-            FloatArray(100, { n -> 2.0.pow((n-20 - 33.0 + 12.0 * (oct-5)) / 12.0).toFloat() * 440f })
-        })
+        private val NOTE_TABLE = Array(15) { oct ->
+            FloatArray(100) { n ->
+                2.0.pow((n - 20 - 33.0 + 12.0 * (oct - 5)) / 12.0).toFloat() * 440f
+            }
+        }
 
         fun clip(value: Float, clip: Float): Float {
             return value.clamp(-clip, clip)
