@@ -88,7 +88,7 @@ external interface PxContactBuffer {
     fun contact(pt: PxContactPoint): Boolean
 
     /**
-     * @return WebIDL type: [PxContactPoint] (NonJs)
+     * @return WebIDL type: [PxContactPoint] (Platforms=windows;linux;macos)
      */
     fun contact(): PxContactPoint
 

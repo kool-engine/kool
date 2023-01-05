@@ -3,6 +3,7 @@ package de.fabmax.kool.physics.articulations
 import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.physics.MemoryStack
 import de.fabmax.kool.physics.Physics
+import de.fabmax.kool.physics.SupportFunctions
 import de.fabmax.kool.physics.toPxTransform
 import physx.PxArticulationFlagEnum
 import physx.PxArticulationReducedCoordinate
@@ -11,15 +12,15 @@ actual class Articulation actual constructor(isFixedBase: Boolean) : CommonArtic
     val pxArticulation: PxArticulationReducedCoordinate
 
     actual var minPositionIterations: Int
-        get() = 0//SupportFunctions.PxArticulationReducedCoordinate_getMinSolverPositionIterations(pxArticulation)
-        set(_) {
-            //pxArticulation.setSolverIterationCounts(value, minVelocityIterations)
+        get() = SupportFunctions.PxArticulationReducedCoordinate_getMinSolverPositionIterations(pxArticulation)
+        set(value) {
+            pxArticulation.setSolverIterationCounts(value, minVelocityIterations)
         }
 
     actual var minVelocityIterations: Int
-        get() = 0//SupportFunctions.PxArticulationReducedCoordinate_getMinSolverVelocityIterations(pxArticulation)
-        set(_) {
-            //pxArticulation.setSolverIterationCounts(minPositionIterations, value)
+        get() = SupportFunctions.PxArticulationReducedCoordinate_getMinSolverVelocityIterations(pxArticulation)
+        set(value) {
+            pxArticulation.setSolverIterationCounts(minPositionIterations, value)
         }
 
     init {

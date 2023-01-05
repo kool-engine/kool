@@ -99,13 +99,13 @@ external interface PxTopLevelFunctions {
      * @param host                  WebIDL type: DOMString
      * @param port                  WebIDL type: long
      * @param timeoutInMilliseconds WebIDL type: unsigned long
-     * @return WebIDL type: [PxPvdTransport] (NonJs)
+     * @return WebIDL type: [PxPvdTransport] (Platforms=windows;linux;macos)
      */
     fun DefaultPvdSocketTransportCreate(host: String, port: Int, timeoutInMilliseconds: Int): PxPvdTransport
 
     /**
      * @param foundation WebIDL type: [PxFoundation] (Ref)
-     * @return WebIDL type: [PxOmniPvd] (NonJs)
+     * @return WebIDL type: [PxOmniPvd] (Platforms=windows;linux;macos)
      */
     fun CreateOmniPvd(foundation: PxFoundation): PxOmniPvd
 

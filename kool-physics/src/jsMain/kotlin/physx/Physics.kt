@@ -3353,7 +3353,7 @@ external interface PxScene : PxSceneSQSystem {
     /**
      * @param group1 WebIDL type: octet
      * @param group2 WebIDL type: octet
-     * @return WebIDL type: [PxDominanceGroupPair] (NonJs, Value)
+     * @return WebIDL type: [PxDominanceGroupPair] (Platforms=windows;linux, Value)
      */
     fun getDominanceGroupPair(group1: Byte, group2: Byte): PxDominanceGroupPair
 
@@ -3363,7 +3363,7 @@ external interface PxScene : PxSceneSQSystem {
     fun getCpuDispatcher(): PxCpuDispatcher
 
     /**
-     * @return WebIDL type: [PxCudaContextManager] (NonJs)
+     * @return WebIDL type: [PxCudaContextManager] (Platforms=windows;linux)
      */
     fun getCudaContextManager(): PxCudaContextManager
 
@@ -3986,7 +3986,7 @@ external interface PxSceneDesc {
      */
     var cpuDispatcher: PxCpuDispatcher
     /**
-     * WebIDL type: [PxCudaContextManager] (NonJs)
+     * WebIDL type: [PxCudaContextManager] (Platforms=windows;linux)
      */
     var cudaContextManager: PxCudaContextManager
     /**
@@ -4038,7 +4038,7 @@ external interface PxSceneDesc {
      */
     var sanityBounds: PxBounds3
     /**
-     * WebIDL type: [PxgDynamicsMemoryConfig] (NonJs, Value)
+     * WebIDL type: [PxgDynamicsMemoryConfig] (Platforms=windows;linux, Value)
      */
     var gpuDynamicsConfig: PxgDynamicsMemoryConfig
     /**

@@ -942,12 +942,12 @@ external interface PxOmniPvd {
     val ptr: Int
 
     /**
-     * @return WebIDL type: [OmniPvdWriter] (NonJs)
+     * @return WebIDL type: [OmniPvdWriter] (Platforms=windows;linux;macos)
      */
     fun getWriter(): OmniPvdWriter
 
     /**
-     * @return WebIDL type: [OmniPvdFileWriteStream] (NonJs)
+     * @return WebIDL type: [OmniPvdFileWriteStream] (Platforms=windows;linux;macos)
      */
     fun getFileWriteStream(): OmniPvdFileWriteStream
 
