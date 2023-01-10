@@ -22,7 +22,7 @@ object DepsJvm {
         }
     }
 
-    val physxJniVersion = "2.0.4-SNAPSHOT"
+    val physxJniVersion = "2.0.4"
     val physxJni = "de.fabmax:physx-jni:${physxJniVersion}"
     val physxJniRuntime = "de.fabmax:physx-jni:${physxJniVersion}:${nativeLibsSuffix}"
 
