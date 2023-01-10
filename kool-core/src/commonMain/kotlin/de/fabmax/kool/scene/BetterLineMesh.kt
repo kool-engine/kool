@@ -89,7 +89,7 @@ class BetterLineMesh(name: String? = null) : Mesh(IndexedVertexList(lineMeshAttr
 
     data class LineVertex(val position: Vec3f, val color: Color, val width: Float)
 
-    class LineShader(cfg: LineShaderConfig = defaultCfg, model: LineModel = LineModel(cfg)) : KslUnlitShader(cfg, model) {
+    open class LineShader(cfg: LineShaderConfig = defaultCfg, model: LineModel = LineModel(cfg)) : KslUnlitShader(cfg, model) {
 
         constructor(block: LineShaderConfig.() -> Unit) : this(LineShaderConfig().apply(block))
 
@@ -127,7 +127,7 @@ class BetterLineMesh(name: String? = null) : Mesh(IndexedVertexList(lineMeshAttr
                         val vAttribs = vertexAttribFloat2(ATTRIB_LINE_ATTRIBS.name)
                         val pos = vertexAttribFloat3(Attribute.POSITIONS.name)
                         val shiftDir = vAttribs.x
-                        val lineWidth = vAttribs.y / camData.viewport.w
+                        val lineWidthPort = float1Port("lineWidth", vAttribs.y)
 
                         val projPos = float4Var(mvp * float4Value(pos, 1f))
                         val projPrv = float4Var(mvp * float4Value(pos + normalize(vPrevDir) * 0.01f.const, 1f))
@@ -161,7 +161,7 @@ class BetterLineMesh(name: String? = null) : Mesh(IndexedVertexList(lineMeshAttr
                         }
 
                         x.x *= 1f.const / ar
-                        projPos.xy += (x * lineWidth) * projPos.w
+                        projPos.xy += (x * lineWidthPort.output / camData.viewport.w) * projPos.w
                         clipPos.input set projPos
                         outPosition set projPos
 

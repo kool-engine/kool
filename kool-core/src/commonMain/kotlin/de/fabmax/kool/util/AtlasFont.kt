@@ -40,8 +40,8 @@ class AtlasFont(
         }
     }
 
-    override fun charWidth(char: Char): Float {
-        return map?.charWidth(char) ?: run {
+    override fun charWidth(char: Char, enforceSameWidthDigits: Boolean): Float {
+        return map?.charWidth(char, enforceSameWidthDigits) ?: run {
             logE { "Unable to measure char with font ${this}: Font is not loaded" }
             0f
         }
@@ -174,8 +174,12 @@ class FontMap(
         return result
     }
 
-    fun charWidth(char: Char): Float {
-        return map[char]?.advance ?: 0f
+    fun charWidth(char: Char, enforceSameWidthDigits: Boolean): Float {
+        return if (char.isDigit() && enforceSameWidthDigits) {
+            maxWidthDigit?.advance ?: map[char]?.advance ?: 0f
+        } else {
+            map[char]?.advance ?: 0f
+        }
     }
 
     fun charHeight(char: Char): Float {

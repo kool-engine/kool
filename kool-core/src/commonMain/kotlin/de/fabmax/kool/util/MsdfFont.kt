@@ -67,8 +67,15 @@ class MsdfFont(
         return result
     }
 
-    override fun charWidth(char: Char): Float {
-        val g = data.glyphMap[char] ?: return 0f
+    override fun charWidth(char: Char, enforceSameWidthDigits: Boolean): Float {
+        val g = if (char.isDigit() && enforceSameWidthDigits) {
+            data.maxWidthDigit
+        } else {
+            data.glyphMap[char]
+        }
+        if (g == null) {
+            return 0f
+        }
         return g.advance * emScale
     }
 

@@ -15,7 +15,7 @@ sealed class Font(val sizePts: Float) {
 
     abstract fun textDimensions(
         text: String, result: TextMetrics = TextMetrics(), enforceSameWidthDigits: Boolean = true): TextMetrics
-    abstract fun charWidth(char: Char): Float
+    abstract fun charWidth(char: Char, enforceSameWidthDigits: Boolean = true): Float
     abstract fun charHeight(char: Char): Float
 
     abstract fun derive(sizePts: Float): Font
