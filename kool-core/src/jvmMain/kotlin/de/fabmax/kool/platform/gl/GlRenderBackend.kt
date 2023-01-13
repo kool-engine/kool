@@ -20,6 +20,7 @@ import org.lwjgl.opengl.GL11C.glGetString
 import org.lwjgl.opengl.GL20.GL_MAX_TEXTURE_IMAGE_UNITS
 import org.lwjgl.opengl.GL20.GL_VERTEX_PROGRAM_POINT_SIZE
 import org.lwjgl.opengl.GL32.GL_TEXTURE_CUBE_MAP_SEAMLESS
+import java.nio.ByteBuffer
 
 class GlRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : RenderBackend {
     override val apiName: String
@@ -114,9 +115,14 @@ class GlRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
         for (i in ctx.scenes.indices) {
             val scene = ctx.scenes[i]
             if (scene.isVisible) {
+                if (scene.framebufferCaptureMode == Scene.FramebufferCaptureMode.BeforeRender) {
+                    captureFramebuffer(scene)
+                }
                 doOffscreenPasses(scene, ctx)
-
                 queueRenderer.renderQueue(scene.mainRenderPass.drawQueue)
+                if (scene.framebufferCaptureMode == Scene.FramebufferCaptureMode.AfterRender) {
+                    captureFramebuffer(scene)
+                }
                 scene.mainRenderPass.afterDraw(ctx)
             }
         }
@@ -127,6 +133,43 @@ class GlRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
         }
         // swap the color buffers
         glfwSwapBuffers(glfwWindow.windowPtr)
+    }
+
+    private fun captureFramebuffer(scene: Scene) {
+        val targetTex = scene.capturedFramebuffer
+
+        if (targetTex.loadedTexture == null) {
+            targetTex.loadedTexture = LoadedTextureGl(ctx, GL_TEXTURE_2D, glGenTextures(), 4096 * 2048 * 4)
+        }
+        val tex = targetTex.loadedTexture as LoadedTextureGl
+
+        val requiredTexWidth = nextPow2(scene.mainRenderPass.viewport.width)
+        val requiredTexHeight = nextPow2(scene.mainRenderPass.viewport.height)
+        if (tex.width != requiredTexWidth || tex.height != requiredTexHeight) {
+            tex.setSize(requiredTexWidth, requiredTexHeight, 1)
+            tex.applySamplerProps(TextureProps(
+                addressModeU = AddressMode.CLAMP_TO_EDGE,
+                addressModeV = AddressMode.CLAMP_TO_EDGE,
+                mipMapping = false,
+                maxAnisotropy = 0)
+            )
+            targetTex.loadingState = Texture.LoadingState.LOADED
+            val pixels: ByteBuffer? = null
+            glTexImage2D(tex.target, 0, GL_RGBA8, requiredTexWidth, requiredTexHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels)
+        }
+
+        val viewport = scene.mainRenderPass.viewport
+        glBindTexture(tex.target, tex.texture)
+        glReadBuffer(GL_BACK)
+        glCopyTexSubImage2D(tex.target, 0, 0, 0, viewport.x, viewport.y, viewport.width, viewport.height)
+    }
+
+    private fun nextPow2(x: Int): Int {
+        var pow2 = x.takeHighestOneBit()
+        if (pow2 < x) {
+            pow2 = pow2 shl 1
+        }
+        return pow2
     }
 
     private fun doOffscreenPasses(scene: Scene, ctx: KoolContext) {

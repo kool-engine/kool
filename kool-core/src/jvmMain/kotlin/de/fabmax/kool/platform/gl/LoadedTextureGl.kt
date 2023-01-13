@@ -5,9 +5,12 @@ import de.fabmax.kool.pipeline.FilterMethod
 import de.fabmax.kool.pipeline.LoadedTexture
 import de.fabmax.kool.pipeline.TextureProps
 import de.fabmax.kool.platform.Lwjgl3Context
+import de.fabmax.kool.util.Uint8BufferImpl
+import de.fabmax.kool.util.createUint8Buffer
 import de.fabmax.kool.util.logW
 import org.lwjgl.opengl.GL12.*
 import org.lwjgl.opengl.GL14.GL_MIRRORED_REPEAT
+import java.awt.image.BufferedImage
 import kotlin.math.min
 
 class LoadedTextureGl(val ctx: Lwjgl3Context, val target: Int, val texture: Int, estimatedSize: Int) : LoadedTexture {
@@ -50,6 +53,26 @@ class LoadedTextureGl(val ctx: Lwjgl3Context, val target: Int, val texture: Int,
         if (anisotropy > 1 && (props.minFilter == FilterMethod.NEAREST || props.magFilter == FilterMethod.NEAREST)) {
             logW { "Texture filtering is NEAREST but anisotropy is $anisotropy (> 1)" }
         }
+    }
+
+    fun copyToBufferedImage(): BufferedImage {
+        glBindTexture(target, texture)
+        val pixels = createUint8Buffer(width * height * 4)
+        glGetTexImage(target, 0, GL_RGBA, GL_UNSIGNED_BYTE, (pixels as Uint8BufferImpl).buffer)
+
+        val img = BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB)
+        for (i in 0 until width * height) {
+            // swap byte order (rgba -> abgr)
+            val bi = i * 4
+            val r = pixels[bi].toUByte().toInt()
+            val g = pixels[bi+1].toUByte().toInt()
+            val b = pixels[bi+2].toUByte().toInt()
+            val a = pixels[bi+3].toUByte().toInt()
+            val rgba = (a shl 24) or (r shl 16) or (g shl 8) or b
+            // todo: setting individual pixels is rather slow
+            img.setRGB(i % width, height - 1 - i / width, rgba)
+        }
+        return img
     }
 
     override fun dispose() {

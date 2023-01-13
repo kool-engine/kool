@@ -55,6 +55,8 @@ open class GlfwWindow(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) {
     private var windowedPosX = 0
     private var windowedPosY = 0
 
+    private var renderOnResizeFlag = false
+
     init {
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE)
         glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE)
@@ -101,6 +103,12 @@ open class GlfwWindow(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) {
         windowedPosY = windowPosY
     }
 
+    fun pollEvents() {
+        renderOnResizeFlag = true
+        glfwPollEvents()
+        renderOnResizeFlag = false
+    }
+
     fun setWindowSize(width: Int, height: Int) {
         glfwSetWindowSize(windowPtr, width, height)
     }
@@ -115,7 +123,9 @@ open class GlfwWindow(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) {
 
         // with GLFW, window resizing blocks the main-loop, call renderFrame() from here to update window content
         // during window resizing
-        ctx.renderFrame()
+        if (renderOnResizeFlag) {
+            ctx.renderFrame()
+        }
     }
 
     protected open fun onFramebufferSizeChanged(width: Int, height: Int) {

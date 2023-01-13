@@ -6,6 +6,8 @@ import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.generator.GlslGenerator
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shadermodel.ShaderGenerator
+import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.RGBA8
+import de.fabmax.kool.platform.webgl.LoadedTextureWebGl
 import de.fabmax.kool.platform.webgl.QueueRendererWebGl
 import de.fabmax.kool.platform.webgl.ShaderGeneratorImplWebGl
 import de.fabmax.kool.scene.Scene
@@ -14,7 +16,11 @@ import de.fabmax.kool.util.logE
 import kotlinx.browser.document
 import kotlinx.browser.window
 import org.khronos.webgl.*
+import org.khronos.webgl.WebGLRenderingContext.Companion.BACK
 import org.khronos.webgl.WebGLRenderingContext.Companion.MAX_TEXTURE_IMAGE_UNITS
+import org.khronos.webgl.WebGLRenderingContext.Companion.RGBA
+import org.khronos.webgl.WebGLRenderingContext.Companion.TEXTURE_2D
+import org.khronos.webgl.WebGLRenderingContext.Companion.UNSIGNED_BYTE
 import org.w3c.dom.Element
 import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.HTMLImageElement
@@ -172,8 +178,14 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
         for (i in scenes.indices) {
             val scene = scenes[i]
             if (scene.isVisible) {
+                if (scene.framebufferCaptureMode == Scene.FramebufferCaptureMode.BeforeRender) {
+                    captureFramebuffer(scene)
+                }
                 doOffscreenPasses(scene, this)
                 queueRenderer.renderQueue(scene.mainRenderPass.drawQueue)
+                if (scene.framebufferCaptureMode == Scene.FramebufferCaptureMode.AfterRender) {
+                    captureFramebuffer(scene)
+                }
                 scene.mainRenderPass.afterDraw(this)
             }
         }
@@ -182,6 +194,43 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
             afterRenderActions.forEach { it() }
             afterRenderActions.clear()
         }
+    }
+
+    private fun captureFramebuffer(scene: Scene) {
+        val targetTex = scene.capturedFramebuffer
+
+        if (targetTex.loadedTexture == null) {
+            targetTex.loadedTexture = LoadedTextureWebGl(this, TEXTURE_2D, gl.createTexture(), 4096 * 2048 * 4)
+        }
+        val tex = targetTex.loadedTexture as LoadedTextureWebGl
+
+        val requiredTexWidth = nextPow2(scene.mainRenderPass.viewport.width)
+        val requiredTexHeight = nextPow2(scene.mainRenderPass.viewport.height)
+        if (tex.width != requiredTexWidth || tex.height != requiredTexHeight) {
+            tex.setSize(requiredTexWidth, requiredTexHeight, 1)
+            tex.applySamplerProps(TextureProps(
+                addressModeU = AddressMode.CLAMP_TO_EDGE,
+                addressModeV = AddressMode.CLAMP_TO_EDGE,
+                mipMapping = false,
+                maxAnisotropy = 0)
+            )
+            targetTex.loadingState = Texture.LoadingState.LOADED
+            val pixels: ArrayBufferView? = null
+            gl.texImage2D(tex.target, 0, RGBA8, requiredTexWidth, requiredTexHeight, 0, RGBA, UNSIGNED_BYTE, pixels)
+        }
+
+        val viewport = scene.mainRenderPass.viewport
+        gl.bindTexture(tex.target, tex.texture)
+        gl.readBuffer(BACK)
+        gl.copyTexSubImage2D(tex.target, 0, 0, 0, viewport.x, viewport.y, viewport.width, viewport.height)
+    }
+
+    private fun nextPow2(x: Int): Int {
+        var pow2 = x.takeHighestOneBit()
+        if (pow2 < x) {
+            pow2 = pow2 shl 1
+        }
+        return pow2
     }
 
     private fun doOffscreenPasses(scene: Scene, ctx: KoolContext) {

@@ -104,7 +104,7 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
     override fun run() {
         while (!glfwWindowShouldClose(renderBackend.glfwWindow.windowPtr)) {
             SysInfo.update()
-            glfwPollEvents()
+            renderBackend.glfwWindow.pollEvents()
             renderFrame()
         }
         renderBackend.cleanup(this)

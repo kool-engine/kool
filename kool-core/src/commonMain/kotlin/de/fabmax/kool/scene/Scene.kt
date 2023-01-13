@@ -6,6 +6,7 @@ import de.fabmax.kool.math.Ray
 import de.fabmax.kool.pipeline.OffscreenRenderPass
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.pipeline.ScreenRenderPass
+import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.util.Disposable
 
 /**
@@ -38,6 +39,9 @@ open class Scene(name: String? = null) : Group(name) {
         set(_) {}
 
     private val disposables = mutableListOf<Disposable>()
+
+    var framebufferCaptureMode = FramebufferCaptureMode.Disabled
+    val capturedFramebuffer = Texture2d()
 
     fun addOffscreenPass(pass: OffscreenRenderPass) {
         addOffscreenPasses += pass
@@ -108,11 +112,18 @@ open class Scene(name: String? = null) : Group(name) {
         }
         remOffscreenPasses.clear()
         mutOffscreenPasses.clear()
+        capturedFramebuffer.dispose()
 
         super.dispose(ctx)
     }
 
     fun computePickRay(pointer: InputManager.Pointer, ctx: KoolContext, result: Ray): Boolean {
         return camera.computePickRay(result, pointer, mainRenderPass.viewport, ctx)
+    }
+
+    enum class FramebufferCaptureMode {
+        Disabled,
+        BeforeRender,
+        AfterRender
     }
 }
