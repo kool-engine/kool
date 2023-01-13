@@ -57,7 +57,7 @@ Code for all demos is available in kool-demo sub-project.
 
 ## Engine Features / Noticeable Stuff:
 
-- Physics simulation (based on Nvidia PhysX 4.1, using [physx-jni](https://github.com/fabmax/physx-jni) on Java and [physx-js-webidl](https://github.com/fabmax/physx-js-webidl) on javascript)
+- Physics simulation (based on Nvidia PhysX 5, using [physx-jni](https://github.com/fabmax/physx-jni) on Java and [physx-js-webidl](https://github.com/fabmax/physx-js-webidl) on javascript)
 - Kotlin DSL based shader language (translates into GLSL)
 - Neat little integrated GUI framework (the API is heavily inspired by [Jetpack Compose](https://github.com/JetBrains/compose-jb) but the implementation is my own)
 - Vulkan rendering backend (on JVM)
@@ -91,10 +91,10 @@ fun main() {
                     centered()
                 }
             }
-            shader = pbrShader {
-                albedoSource = Albedo.VERTEX_ALBEDO
-                metallic = 0.0f
-                roughness = 0.25f
+            shader = KslPbrShader {
+                color { vertexColor() }
+                metallic(0f)
+                roughness(0.25f)
             }
         }
     
@@ -110,7 +110,7 @@ fun main() {
 The above example creates a new scene and sets up a mouse-controlled camera (with `defaultCamTransform()`).
 As you might have guessed the `+colorMesh { ... }` block creates a colored cube and adds it to the scene.
 In order to draw the mesh on the screen it needs a shader, which is assigned with
-`shader = pbrShader { ... }`. This creates a simple PBR shader for a dielectric material
+`shader = KslPbrShader { ... }`. This creates a simple PBR shader for a dielectric material
 with a rather smooth surface. Color information is taken from the corresponding vertex attribute.
 Finally, we set up a single directional scene light (of white color and an intensity of 5), so that our cube can shine
 in its full glory. The resulting scene looks like [this](https://fabmax.github.io/kool/kool-js/?demo=helloWorld).
@@ -267,7 +267,7 @@ uses the new ksl approach (the interesting stuff happens in the `LitShaderModel`
 
 After playing around with various different engines on javascript and JVM I came to the
 conclusion that all of them had some kind of flaw. So I decided to write my own bindings for
-[Nvidia PhysX](https://github.com/NVIDIAGameWorks/PhysX): [physx-jni](https://github.com/fabmax/physx-jni) for JVM, and
+[Nvidia PhysX](https://github.com/NVIDIA-Omniverse/PhysX): [physx-jni](https://github.com/fabmax/physx-jni) for JVM, and
 [physx-js-webidl](https://github.com/fabmax/physx-js-webidl) for javascript.
 
 This was quite a bit of work (and is an ongoing project), but I think it was worth it: By writing my own bindings
