@@ -80,6 +80,9 @@ open class Texture3d(props: TextureProps = TextureProps(), name: String? = null,
     constructor(props: TextureProps = TextureProps(), name: String? = null, loader: (suspend CoroutineScope.(AssetManager) -> TextureData)? = null) :
             this(props, name, loader?.let { AsyncTextureLoader(it) })
 
+    constructor(props: TextureProps = TextureProps(), data: TextureData3d, name: String? = null) :
+            this(props, name, BufferedTextureLoader(data))
+
     override val type = "3D"
 }
 
