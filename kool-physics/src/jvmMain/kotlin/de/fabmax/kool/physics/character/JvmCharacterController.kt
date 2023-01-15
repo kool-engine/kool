@@ -27,8 +27,6 @@ class JvmCharacterController(
     init {
         hitListener.controller = this
         behaviorCallback.controller = this
-
-        println("controller actor: ${pxController.actor.address}")
     }
 
     override var position: Vec3d

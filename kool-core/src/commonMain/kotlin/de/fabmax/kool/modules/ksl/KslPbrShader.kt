@@ -50,9 +50,13 @@ open class KslPbrShader(cfg: Config, model: KslProgram = Model(cfg)) : KslLitSha
         val metallicCfg = PropertyBlockConfig("metallic").apply { constProperty(0f) }
         val roughnessCfg = PropertyBlockConfig("roughness").apply { constProperty(0.5f) }
 
-        var reflectionMap: TextureCube? = null
-
+        var isTextureReflection = false
         var reflectionStrength = Color.WHITE
+        var reflectionMap: TextureCube? = null
+            set(value) {
+                field = value
+                isTextureReflection = value != null
+            }
 
         fun metallic(block: PropertyBlockConfig.() -> Unit) {
             metallicCfg.propertySources.clear()
@@ -90,9 +94,13 @@ open class KslPbrShader(cfg: Config, model: KslProgram = Model(cfg)) : KslLitSha
             val uMetallic = fragmentPropertyBlock(cfg.metallicCfg).outProperty
 
             val ambientOri = uniformMat3("uAmbientTextureOri")
-            val reflectionMaps = textureArrayCube("tReflectionMaps", 2).value
             val brdfLut = texture2d("tBrdfLut")
             val reflectionStrength = uniformFloat4("uReflectionStrength").rgb
+            val reflectionMaps = if (cfg.isTextureReflection) {
+                textureArrayCube("tReflectionMaps", 2).value
+            } else {
+                null
+            }
 
             val material = pbrMaterialBlock(reflectionMaps, brdfLut) {
                 inCamPos(camData.position)

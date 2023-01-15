@@ -72,9 +72,13 @@ class CameraData(program: KslProgram) : KslDataBlock, KslShaderListener {
         uPosition?.value?.set(cam.globalPos)
         uDirection?.value?.set(cam.globalLookDir)
         uClip?.value?.set(cam.clipNear, cam.clipFar)
-        uViewMat?.value?.set(cam.view)
-        uProjMat?.value?.set(cam.proj)
-        uViewProjMat?.value?.set(cam.viewProj)
+        // fixme: it would be nicer to use the cam properties here instead of cmd ones (especially viewProj)
+        //  however, this does not work for render passes with multiple command queues and changing cam configs
+        //  (e.g. cube pass) because this method is called after all command queues are built and cam then contains
+        //  the values from the last command queue
+        uViewMat?.value?.set(cmd.viewMat)
+        uProjMat?.value?.set(cmd.projMat)
+        uViewProjMat?.value?.set(cmd.projMat)?.mul(cmd.viewMat)
         uViewport?.value?.set(vp.x.toFloat(), vp.y.toFloat(), vp.width.toFloat(), vp.height.toFloat())
     }
 

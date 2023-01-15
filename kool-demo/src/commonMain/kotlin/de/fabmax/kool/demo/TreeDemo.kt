@@ -80,9 +80,8 @@ class TreeDemo : DemoScene("Procedural Tree") {
         // alternatively a CascadedShadowMap can be used for dynamic shadow bounds based on view frustum
         //val shadowMaps = listOf(CascadedShadowMap(this, 0).apply { maxRange = 50f })
 
-        skySystem = SkyCubeIblSystem(this)
+        skySystem = SkyCubeIblSystem.simpleSkyCubeIblSystem(this)
         skySystem.isAutoUpdateIblMaps = true
-        skySystem.setupOffscreenPasses()
         sunAzimuth.set(skySystem.skyPass.azimuth)
         sunElevation.set(skySystem.skyPass.elevation)
         val envMaps = skySystem.envMaps

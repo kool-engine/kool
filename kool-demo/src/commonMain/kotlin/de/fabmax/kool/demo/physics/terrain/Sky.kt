@@ -2,6 +2,7 @@ package de.fabmax.kool.demo.physics.terrain
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.*
+import de.fabmax.kool.modules.atmosphere.OpticalDepthLutPass
 import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.modules.ksl.blocks.ColorBlockConfig
 import de.fabmax.kool.modules.ksl.blocks.mvpMatrix
@@ -123,20 +124,33 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
                 weightedEnvs.envB.reflectionMap, weightedEnvs.weightB * 2f
             )
         }
+
+        mainScene.onDispose += { ctx ->
+            skies.values.forEach { it.disposeOffscreenPasses(ctx) }
+        }
     }
 
     suspend fun generateMaps(terrainDemo: TerrainDemo, parentScene: Scene, ctx: KoolContext) {
         val hours = listOf(4f, 5f, 5.5f, 6f, 6.5f, 7f, 8f, 9f, 10f, 11f, 12f, 13f, 14f, 15f, 16f, 17f, 17.5f, 18f, 18.5f, 19f, 20f)
+        val skyLut = OpticalDepthLutPass()
+        parentScene.addOffscreenPass(skyLut)
+
         hours.forEachIndexed { i, h ->
             terrainDemo.showLoadText("Creating sky (${i * 100f / hours.lastIndex}%)...", 0)
-            precomputeSky(h / 24f, parentScene, ctx)
+            precomputeSky(h / 24f, parentScene, skyLut.colorTexture!!, ctx)
         }
         weightedEnvs = WeightedEnvMaps(skies[0.5f]!!.envMaps, skies[0.5f]!!.envMaps)
+
+        ctx.runDelayed(1) {
+            parentScene.removeOffscreenPass(skyLut)
+            skies.values.forEach { it.removeOffscreenPasses() }
+            skyLut.dispose(ctx)
+        }
     }
 
-    private suspend fun precomputeSky(timeOfDay: Float, parentScene: Scene, ctx: KoolContext) {
+    private suspend fun precomputeSky(timeOfDay: Float, parentScene: Scene, skyLut: Texture2d, ctx: KoolContext) {
         val sunDir = computeLightDirection(SUN_TILT, sunProgress(timeOfDay), Mat3f())
-        val sky = SkyCubeIblSystem(parentScene)
+        val sky = SkyCubeIblSystem(parentScene, skyLut)
         sky.skyPass.elevation = 90f - acos(-sunDir.y).toDeg()
         sky.skyPass.azimuth = atan2(sunDir.x, -sunDir.z).toDeg()
         sky.setupOffscreenPasses()

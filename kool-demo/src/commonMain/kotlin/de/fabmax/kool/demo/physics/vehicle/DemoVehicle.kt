@@ -152,13 +152,14 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
             reverseLightShader.emissive(Color.BLACK)
         }
 
-        vehicleAudio.slip = 0f
+        var maxSlip = 0f
         for (i in 0..3) {
             val slip = max(abs(vehicle.wheelInfos[i].lateralSlip) * 2f, abs(vehicle.wheelInfos[i].longitudinalSlip) * 1.5f)
-            if (slip > vehicleAudio.slip) {
-                vehicleAudio.slip = slip
+            if (slip > maxSlip) {
+                maxSlip = slip
             }
         }
+        vehicleAudio.slip = smoothStep(0f, 1f, maxSlip)
 
         val gear = vehicle.currentGear
         if (gear != previousGear) {

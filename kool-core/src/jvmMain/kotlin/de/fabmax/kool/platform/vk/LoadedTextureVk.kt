@@ -15,7 +15,8 @@ class LoadedTextureVk(val sys: VkSystem, val format: TexFormat, val textureImage
     override var width = 0
     override var height = 0
     override var depth = 0
-    override fun readTexturePixels(userMemory: TextureData) {
+
+    override fun readTexturePixels(targetData: TextureData) {
         TODO("Not yet implemented")
     }
 

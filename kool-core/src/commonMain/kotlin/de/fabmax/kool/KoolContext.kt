@@ -149,6 +149,11 @@ abstract class KoolContext {
             Profiling.enter("!main-render-loop")
         }
 
+        if (Time.frameCount == 0) {
+            // force generation of BFDR LUT texture in very first frame
+            defaultPbrBrdfLut
+        }
+
         Time.deltaT = dt.toFloat()
         Time.gameTime += dt
         Time.frameCount++

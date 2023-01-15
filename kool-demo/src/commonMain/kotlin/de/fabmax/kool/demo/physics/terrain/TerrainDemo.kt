@@ -464,6 +464,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
 
     companion object {
         fun KslPbrShader.Config.iblConfig() {
+            isTextureReflection = true
             lightStrength = 3f
         }
 

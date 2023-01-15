@@ -1,17 +1,18 @@
 package de.fabmax.kool.modules.atmosphere
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.math.Vec2f
+import de.fabmax.kool.modules.ksl.KslShader
+import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.pipeline.shadermodel.*
-import de.fabmax.kool.pipeline.shading.ModeledShader
+import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
+import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
 import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.OrthographicCamera
 import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.util.logI
 
-class OpticalDepthLutPass(densityFun: String = DEFAULT_DENSITY_FUN) :
+class OpticalDepthLutPass :
         OffscreenRenderPass2d(Group(), renderPassConfig {
             name = "OpticalDepthLutPass"
             setSize(LUT_SIZE_X, LUT_SIZE_Y)
@@ -19,26 +20,10 @@ class OpticalDepthLutPass(densityFun: String = DEFAULT_DENSITY_FUN) :
             clearDepthTexture()
         }) {
 
-    private var lutNode: OpticalDepthLutNode? = null
-
-    var atmosphereRadius = 65f
-        set(value) {
-            field = value
-            lutNode?.uAtmosphereRadius?.value = value
-            update()
-        }
-    var surfaceRadius = 60f
-        set(value) {
-            field = value
-            lutNode?.uSurfaceRadius?.value = value
-            update()
-        }
-    var densityFalloff = 9f
-        set(value) {
-            field = value
-            lutNode?.uDensityFalloff?.value = value
-            update()
-        }
+    private val lutShader = OpticalDepthLutShader()
+    var atmosphereRadius by lutShader::atmosphereRadius
+    var surfaceRadius by lutShader::surfaceRadius
+    var densityFalloff by lutShader::densityFalloff
 
     init {
         clearColor = null
@@ -54,36 +39,9 @@ class OpticalDepthLutPass(densityFun: String = DEFAULT_DENSITY_FUN) :
 
         (drawNode as Group).apply {
             +mesh(listOf(Attribute.POSITIONS, Attribute.TEXTURE_COORDS)) {
-                generate {
-                    rect {
-                        size.set(1f, 1f)
-                        mirrorTexCoordsY()
-                    }
-                }
+                generateFullscreenQuad()
+                shader = lutShader
 
-                val model = ShaderModel("Optical Depth LUT").apply {
-                    val ifTexCoords: StageInterfaceNode
-                    vertexStage {
-                        ifTexCoords = stageInterfaceNode("ifTexCoords", attrTexCoords().output)
-                        positionOutput = simpleVertexPositionNode().outVec4
-                    }
-                    fragmentStage {
-                        val lutNd = addNode(OpticalDepthLutNode(densityFun, stage)).apply {
-                            inTexCoords = ifTexCoords.output
-                        }
-                        colorOutput(lutNd.outColor)
-                    }
-                }
-                shader = ModeledShader(model).apply {
-                    onPipelineCreated += { _, _, _ ->
-                        lutNode = model.findNodeByType()
-                        lutNode?.apply {
-                            uAtmosphereRadius.value = atmosphereRadius
-                            uSurfaceRadius.value = surfaceRadius
-                            uDensityFalloff.value = densityFalloff
-                        }
-                    }
-                }
                 onUpdate += {
                     logI("OpticalDepthLutPass") { "Updating atmosphere depth LUT: atmosphere radius = $atmosphereRadius, surface radius: $surfaceRadius, falloff: $densityFalloff" }
                 }
@@ -105,100 +63,93 @@ class OpticalDepthLutPass(densityFun: String = DEFAULT_DENSITY_FUN) :
         super.dispose(ctx)
     }
 
+    private fun opticalDepthLutProg() = KslProgram("Optical Dpeth LUT").apply {
+        val uv = interStageFloat2("uv")
+
+        fullscreenQuadVertexStage(uv)
+
+        fragmentStage {
+            val uAtmosphereRadius = uniformFloat1("uAtmosphereRadius")
+            val uSurfaceRadius = uniformFloat1("uSurfaceRadius")
+            val uDensityFalloff = uniformFloat1("uDensityFalloff")
+
+            val funRayLength = functionFloat1("rayLength") {
+                val rayOrigin = paramFloat3("rayOrigin")
+                val rayDir = paramFloat3("rayDir")
+
+                body {
+                    val a = float1Var(dot(rayDir, rayDir))
+                    val b = float1Var(2f.const * dot(rayDir, rayOrigin))
+                    val c = float1Var(dot(rayOrigin, rayOrigin) - uAtmosphereRadius * uAtmosphereRadius)
+
+                    val discriminant = float1Var(b * b - 4f.const * a * c)
+                    val result = float1Var((-1f).const)
+                    `if`(discriminant ge 0f.const) {
+                        val q = float1Var((-0.5f).const * (b + sign(b) * sqrt(discriminant)))
+                        val t1 = float1Var(q / a)
+                        val t2 = float1Var(c / q)
+                        result set max(t1, t2)
+                    }
+                    result
+                }
+            }
+
+            val funDensityAtAltitude = functionFloat1("densityAtAltitude") {
+                val altitude = paramFloat1("altitude")
+
+                body {
+                    val normalizedHeight = float1Var(clamp(altitude / (uAtmosphereRadius - uSurfaceRadius), 0f.const, 1f.const))
+                    val x = float1Var(normalizedHeight * 10f.const)
+                    val f = float1Var(0.3f.const * (2f.const + 3f.const * x * exp(-x)) * (10f.const - x) / 10f.const)
+                    val h = float1Var(1f.const - f)
+
+                    exp(-clamp(h, 0f.const, 1f.const) * uDensityFalloff) * (1f.const - smoothStep(0f.const, 1f.const, normalizedHeight))
+                }
+            }
+
+            val funOpticalDepth = functionFloat1("opticalDepth") {
+                val origin = paramFloat3("rayOrigin")
+                val dir = paramFloat3("rayDir")
+                val rayLength = paramFloat1("rayLength")
+
+                body {
+                    val numDepthSamples = 100.const
+                    val samplePt = float3Var(origin)
+                    val stepSize = float1Var(rayLength / (numDepthSamples.toFloat1() + 1f.const))
+                    val opticalDepth = float1Var(0f.const)
+                    fori(0.const, numDepthSamples) {
+                        samplePt += dir * stepSize
+                        opticalDepth += funDensityAtAltitude(length(samplePt) - uSurfaceRadius) * stepSize
+                    }
+                    opticalDepth
+                }
+            }
+
+            main {
+                val cosAngle = float1Var(uv.output.x * 2f.const - 1f.const)
+                val altitude = float1Var(uv.output.y * (uAtmosphereRadius - uSurfaceRadius))
+
+                val origin = float3Var(float3Value(uSurfaceRadius + altitude, 0f.const, 0f.const))
+                val direction = float3Var(float3Value(cosAngle, sin(acos(cosAngle)), 0f.const))
+
+                val shift = uAtmosphereRadius * 2f.const
+                val rayLen = funRayLength(origin - direction * shift, direction) - shift
+                val opticalDepth = funOpticalDepth(origin, direction, rayLen)
+
+                colorOutput(float4Value(opticalDepth, funDensityAtAltitude(altitude), 0f.const, 1f.const))
+            }
+        }
+    }
+
+    private inner class OpticalDepthLutShader
+        : KslShader(opticalDepthLutProg(), FullscreenShaderUtil.fullscreenShaderPipelineCfg) {
+        var atmosphereRadius by uniform1f("uAtmosphereRadius", 65f)
+        var surfaceRadius by uniform1f("uSurfaceRadius", 60f)
+        var densityFalloff by uniform1f("uDensityFalloff", 9f)
+    }
+
     companion object {
         const val LUT_SIZE_X = 512
         const val LUT_SIZE_Y = 512
-
-        const val DEFAULT_DENSITY_FUN = """
-            float normalizedHeight = clamp(altitude / (atmosphereRadius - surfaceRadius), 0.0, 1.0);
-            float x = normalizedHeight * 10.0;
-            float f = 0.3 * (2.0 + 3.0 * x * exp(-x)) * (10.0 - x) / 10.0;
-            float h = 1.0 - f;
-            
-            return exp(-clamp(h, 0.0, 1.0) * densityFalloff) * (1.0 - smoothstep(0.0, 1.0, normalizedHeight));
-        """
-    }
-
-    private class OpticalDepthLutNode(val densityFun: String, graph: ShaderGraph) : ShaderNode("opticalDepthLut", graph) {
-        var inTexCoords = ShaderNodeIoVar(ModelVar2fConst(Vec2f.ZERO))
-        val outColor = ShaderNodeIoVar(ModelVar4f("brdfLut_outColor"), this)
-
-        val uAtmosphereRadius = Uniform1f("uAtmosphereRadius")
-        val uSurfaceRadius = Uniform1f("uSurfaceRadius")
-        val uDensityFalloff = Uniform1f("uDensityFalloff")
-
-        override fun setup(shaderGraph: ShaderGraph) {
-            super.setup(shaderGraph)
-            dependsOn(inTexCoords)
-
-            shaderGraph.descriptorSet.apply {
-                uniformBuffer(name, shaderGraph.stage) {
-                    +{ uAtmosphereRadius }
-                    +{ uSurfaceRadius }
-                    +{ uDensityFalloff }
-                }
-            }
-        }
-
-        override fun generateCode(generator: CodeGenerator) {
-            super.generateCode(generator)
-
-            val numDepthSamples = 100
-
-            generator.appendFunction("rayLength", """
-                float rayLength(vec3 rayOrigin, vec3 rayDir) {
-                    float a = dot(rayDir, rayDir);
-                    float b = 2.0 * dot(rayDir, rayOrigin);
-                    float c = dot(rayOrigin, rayOrigin) - $uAtmosphereRadius * $uAtmosphereRadius;
-                    
-                    float discriminant = b * b - 4.0 * a * c;
-                    if (discriminant < 0.0) {
-                        return -1.0;
-                    } else {
-                        float q = -0.5 * (b + sign(b) * sqrt(discriminant));
-                        float t1 = q / a;
-                        float t2 = c / q;
-                        return max(t1, t2);
-                    }
-                }
-            """)
-
-            generator.appendFunction("densityAtAltitude", """
-                float densityAtAltitude(float altitude) {
-                    float atmosphereRadius = $uAtmosphereRadius;
-                    float surfaceRadius = $uSurfaceRadius;
-                    float densityFalloff = $uDensityFalloff;
-                    
-                    $densityFun
-                }
-            """)
-
-            generator.appendFunction("opticalDepth", """
-                float opticalDepth(vec3 origin, vec3 dir, float rayLength) {
-                    vec3 samplePt = origin;
-                    float stepSize = rayLength / float(${numDepthSamples + 1});
-                    float opticalDepth = 0.0;
-                    for (int i = 0; i < $numDepthSamples; i++) {
-                        samplePt += dir * stepSize;
-                        opticalDepth += densityAtAltitude(length(samplePt) - $uSurfaceRadius) * stepSize;
-                    }
-                    return opticalDepth;
-                }
-            """)
-
-            generator.appendMain("""
-                float cosAngle = ${inTexCoords.ref2f()}.x * 2.0 - 1.0;
-                float altitude = ${inTexCoords.ref2f()}.y * ($uAtmosphereRadius - $uSurfaceRadius);
-                
-                vec3 origin = vec3($uSurfaceRadius + altitude, 0.0, 0.0);
-                vec3 direction = vec3(cosAngle, sin(acos(cosAngle)), 0.0);
-                
-                float shift = $uAtmosphereRadius * 2.0;
-                float rayLen = rayLength(origin - direction * shift, direction) - shift;
-                float opticalDepth = opticalDepth(origin, direction, rayLen);
-                
-                ${outColor.declare()} = vec4(opticalDepth, densityAtAltitude(altitude), 0.0, 1.0);
-            """)
-        }
     }
 }

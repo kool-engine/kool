@@ -231,8 +231,8 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
 
     private fun makeRagdollYUp(pose: Mat4f): Articulation {
         val ragdoll = Articulation(false)
-        ragdoll.minPositionIterations = 8
-        ragdoll.minVelocityIterations = 2
+        //ragdoll.minPositionIterations = 8
+        //ragdoll.minVelocityIterations = 2
 
         // create links / ragdoll bones
 
