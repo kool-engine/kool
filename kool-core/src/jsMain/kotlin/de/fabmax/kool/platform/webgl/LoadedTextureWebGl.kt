@@ -5,6 +5,7 @@ import de.fabmax.kool.platform.JsContext
 import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.TEXTURE_3D
 import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.TEXTURE_WRAP_R
 import de.fabmax.kool.platform.webgl.TextureLoader.arrayBufferView
+import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logW
 import org.khronos.webgl.WebGLRenderingContext.Companion.CLAMP_TO_EDGE
 import org.khronos.webgl.WebGLRenderingContext.Companion.COLOR_ATTACHMENT0
@@ -69,16 +70,25 @@ class LoadedTextureWebGl(val ctx: JsContext, val target: Int, val texture: WebGL
     }
 
     override fun readTexturePixels(targetData: TextureData) {
+        if (target != TEXTURE_2D) {
+            throw IllegalStateException("readTexturePixels() is only supported for 2D textures")
+        }
+        if (targetData.width != width || targetData.height != height) {
+            throw IllegalArgumentException("supplied targetData dimension does not match texture size " +
+                    "(supplied: ${targetData.width} x ${targetData.height}, actual: $width x $height)")
+        }
+
         with(ctx.gl) {
             val fb = createFramebuffer()
             bindFramebuffer(FRAMEBUFFER, fb)
             framebufferTexture2D(FRAMEBUFFER, COLOR_ATTACHMENT0, TEXTURE_2D, texture, 0)
 
-            if ( checkFramebufferStatus(FRAMEBUFFER) == FRAMEBUFFER_COMPLETE) {
+            if (checkFramebufferStatus(FRAMEBUFFER) == FRAMEBUFFER_COMPLETE) {
                 val format = getParameter(IMPLEMENTATION_COLOR_READ_FORMAT) as Int
                 val type = getParameter(IMPLEMENTATION_COLOR_READ_TYPE) as Int
-
                 readPixels(0, 0, width, height, format, type, targetData.arrayBufferView)
+            } else {
+                logE { "Failed reading pixels from framebuffer" }
             }
 
             deleteFramebuffer(fb)

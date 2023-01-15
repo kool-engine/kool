@@ -2,9 +2,10 @@ package de.fabmax.kool.platform.gl
 
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.platform.Lwjgl3Context
-import de.fabmax.kool.util.*
+import de.fabmax.kool.util.Float32BufferImpl
+import de.fabmax.kool.util.Uint8BufferImpl
+import de.fabmax.kool.util.logW
 import org.lwjgl.opengl.GL14.*
-import java.awt.image.BufferedImage
 import kotlin.math.min
 
 class LoadedTextureGl(val ctx: Lwjgl3Context, val target: Int, val texture: Int, estimatedSize: Int) : LoadedTexture {
@@ -49,41 +50,15 @@ class LoadedTextureGl(val ctx: Lwjgl3Context, val target: Int, val texture: Int,
         }
     }
 
-    fun copyToBufferedImage(): BufferedImage {
-        glBindTexture(target, texture)
-        val pixels = createUint8Buffer(width * height * 4)
-        glGetTexImage(target, 0, GL_RGBA, GL_UNSIGNED_BYTE, (pixels as Uint8BufferImpl).buffer)
-
-        val img = BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB)
-        for (i in 0 until width * height) {
-            // swap byte order (rgba -> abgr)
-            val bi = i * 4
-            val r = pixels[bi].toUByte().toInt()
-            val g = pixels[bi + 1].toUByte().toInt()
-            val b = pixels[bi + 2].toUByte().toInt()
-            val a = pixels[bi + 3].toUByte().toInt()
-            val rgba = (a shl 24) or (r shl 16) or (g shl 8) or b
-            // todo: setting individual pixels is rather slow
-            img.setRGB(i % width, height - 1 - i / width, rgba)
-        }
-        return img
-    }
-
     override fun readTexturePixels(targetData: TextureData) {
-        var error: Int?
-
         glBindTexture(target, texture)
-        when(val buf = targetData.data) {
+        when (val buf = targetData.data) {
             is Uint8BufferImpl -> {
                 glGetTexImage(target, 0, targetData.format.glFormat, targetData.format.glType, buf.buffer)
             }
             is Float32BufferImpl -> {
                 glGetTexImage(target, 0, targetData.format.glFormat, targetData.format.glType, buf.buffer)
             }
-        }
-
-        while( run { error = glGetError(); error } != GL_NO_ERROR ) {
-            logE { "GL Error glGetTexImage: ${error?.toString(16)}" }
         }
     }
 

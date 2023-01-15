@@ -72,6 +72,19 @@ open class Texture2d(props: TextureProps = TextureProps(), name: String? = null,
             this(props, name, AsyncTextureLoader { it.loadTextureData(assetPath, props.format) })
 
     override val type = "2D"
+
+    fun readTexturePixels(): TextureData2d? {
+        val tex = loadedTexture ?: return null
+        val bufferSize = tex.width * tex.height * props.format.channels
+        val buffer = if (props.format.isFloat) {
+            createFloat32Buffer(bufferSize)
+        } else {
+            createUint8Buffer(bufferSize)
+        }
+        val data = TextureData2d(buffer, tex.width, tex.height, props.format)
+        tex.readTexturePixels(data)
+        return data
+    }
 }
 
 open class Texture3d(props: TextureProps = TextureProps(), name: String? = null, loader: TextureLoader?) :
