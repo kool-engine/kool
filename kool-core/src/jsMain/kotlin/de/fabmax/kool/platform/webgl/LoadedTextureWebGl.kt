@@ -1,20 +1,24 @@
 package de.fabmax.kool.platform.webgl
 
-import de.fabmax.kool.pipeline.AddressMode
-import de.fabmax.kool.pipeline.FilterMethod
-import de.fabmax.kool.pipeline.LoadedTexture
-import de.fabmax.kool.pipeline.TextureProps
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.platform.JsContext
 import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.TEXTURE_3D
 import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.TEXTURE_WRAP_R
+import de.fabmax.kool.platform.webgl.TextureLoader.arrayBufferView
 import de.fabmax.kool.util.logW
 import org.khronos.webgl.WebGLRenderingContext.Companion.CLAMP_TO_EDGE
+import org.khronos.webgl.WebGLRenderingContext.Companion.COLOR_ATTACHMENT0
+import org.khronos.webgl.WebGLRenderingContext.Companion.FRAMEBUFFER
+import org.khronos.webgl.WebGLRenderingContext.Companion.FRAMEBUFFER_COMPLETE
+import org.khronos.webgl.WebGLRenderingContext.Companion.IMPLEMENTATION_COLOR_READ_FORMAT
+import org.khronos.webgl.WebGLRenderingContext.Companion.IMPLEMENTATION_COLOR_READ_TYPE
 import org.khronos.webgl.WebGLRenderingContext.Companion.LINEAR
 import org.khronos.webgl.WebGLRenderingContext.Companion.LINEAR_MIPMAP_LINEAR
 import org.khronos.webgl.WebGLRenderingContext.Companion.MIRRORED_REPEAT
 import org.khronos.webgl.WebGLRenderingContext.Companion.NEAREST
 import org.khronos.webgl.WebGLRenderingContext.Companion.NEAREST_MIPMAP_NEAREST
 import org.khronos.webgl.WebGLRenderingContext.Companion.REPEAT
+import org.khronos.webgl.WebGLRenderingContext.Companion.TEXTURE_2D
 import org.khronos.webgl.WebGLRenderingContext.Companion.TEXTURE_MAG_FILTER
 import org.khronos.webgl.WebGLRenderingContext.Companion.TEXTURE_MIN_FILTER
 import org.khronos.webgl.WebGLRenderingContext.Companion.TEXTURE_WRAP_S
@@ -61,6 +65,23 @@ class LoadedTextureWebGl(val ctx: JsContext, val target: Int, val texture: WebGL
 
         if (anisotropy > 1 && (props.minFilter == FilterMethod.NEAREST || props.magFilter == FilterMethod.NEAREST)) {
             logW { "Texture filtering is NEAREST but anisotropy is $anisotropy (> 1)" }
+        }
+    }
+
+    override fun readTexturePixels(targetData: TextureData) {
+        with(ctx.gl) {
+            val fb = createFramebuffer()
+            bindFramebuffer(FRAMEBUFFER, fb)
+            framebufferTexture2D(FRAMEBUFFER, COLOR_ATTACHMENT0, TEXTURE_2D, texture, 0)
+
+            if ( checkFramebufferStatus(FRAMEBUFFER) == FRAMEBUFFER_COMPLETE) {
+                val format = getParameter(IMPLEMENTATION_COLOR_READ_FORMAT) as Int
+                val type = getParameter(IMPLEMENTATION_COLOR_READ_TYPE) as Int
+
+                readPixels(0, 0, width, height, format, type, targetData.arrayBufferView)
+            }
+
+            deleteFramebuffer(fb)
         }
     }
 

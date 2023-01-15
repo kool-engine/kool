@@ -116,7 +116,7 @@ object TextureLoader {
         return Texture.estimatedTexSize(width, height, layers, mipLevels, format.pxSize)
     }
 
-    private val TextureData.arrayBufferView: ArrayBufferView
+    internal val TextureData.arrayBufferView: ArrayBufferView
         get() = when (val bufData = data) {
             is Uint8BufferImpl -> bufData.buffer
             is Uint16BufferImpl -> bufData.buffer
