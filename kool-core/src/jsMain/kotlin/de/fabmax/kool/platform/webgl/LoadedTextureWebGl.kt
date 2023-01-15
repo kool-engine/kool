@@ -1,9 +1,6 @@
 package de.fabmax.kool.platform.webgl
 
-import de.fabmax.kool.pipeline.AddressMode
-import de.fabmax.kool.pipeline.FilterMethod
-import de.fabmax.kool.pipeline.LoadedTexture
-import de.fabmax.kool.pipeline.TextureProps
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.platform.JsContext
 import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.TEXTURE_3D
 import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.TEXTURE_WRAP_R
@@ -83,6 +80,8 @@ class LoadedTextureWebGl(val ctx: JsContext, val target: Int, val texture: WebGL
 
                 readPixels(0, 0, width, height, format, type, targetData.arrayBufferView)
             }
+
+            deleteFramebuffer(fb)
         }
     }
 
