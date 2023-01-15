@@ -8,6 +8,7 @@ import de.fabmax.kool.math.Mat3f
 import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.toRad
+import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.physics.*
 import de.fabmax.kool.physics.geometry.PlaneGeometry
 import de.fabmax.kool.physics.vehicle.Vehicle
@@ -17,13 +18,6 @@ import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
-import de.fabmax.kool.pipeline.shadermodel.PbrMaterialNode
-import de.fabmax.kool.pipeline.shadermodel.StageInterfaceNode
-import de.fabmax.kool.pipeline.shadermodel.fragmentStage
-import de.fabmax.kool.pipeline.shadermodel.vertexStage
-import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
-import de.fabmax.kool.pipeline.shading.PbrShader
-import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
@@ -100,6 +94,7 @@ class ManyVehiclesDemo : DemoScene("Many Vehicles") {
                 cube {
                     size.set(vehicleProps.chassisDims)
                     centered()
+                    origin.subtract(vehicleProps.chassisCMOffset)
                 }
             }
             shader = chassisShader()
@@ -163,10 +158,11 @@ class ManyVehiclesDemo : DemoScene("Many Vehicles") {
                     stepsY = sizeY.toInt() / 10
                 }
             }
-            shader = pbrShader {
-                useAlbedoMap(groundAlbedo)
-                useNormalMap(groundNormal)
-                useImageBasedLighting(ibl)
+            shader = KslPbrShader {
+                color { textureColor(groundAlbedo) }
+                normalMapping { setNormalMap(groundNormal) }
+                imageBasedAmbientColor(ibl.irradianceMap)
+                reflectionMap = ibl.reflectionMap
             }
         }
         +gndMesh
@@ -190,36 +186,23 @@ class ManyVehiclesDemo : DemoScene("Many Vehicles") {
         vehicleInstances += VehicleInstance(vehicle, color)
     }
 
-    private fun chassisShader(): PbrShader {
-        val cfg = PbrMaterialConfig().apply {
-            isInstanced = true
-            roughness = 1f
-            useStaticAlbedo(Color.WHITE)
-            useImageBasedLighting(ibl)
-        }
-        val model = PbrShader.defaultPbrModel(cfg).apply {
-            val ifInstColor: StageInterfaceNode
-            vertexStage {
-                ifInstColor = stageInterfaceNode("ifInstColor", instanceAttributeNode(Attribute.COLORS).output)
-            }
-            fragmentStage {
-                findNodeByType<PbrMaterialNode>()!!.inAlbedo = ifInstColor.output
-            }
-        }
-        return PbrShader(cfg, model)
+    private fun chassisShader() = KslPbrShader {
+        vertices { isInstanced = true }
+        color { instanceColor(Attribute.COLORS) }
+        roughness(1f)
+        imageBasedAmbientColor(ibl.irradianceMap)
+        reflectionMap = ibl.reflectionMap
     }
 
-    private fun wheelsShader(): PbrShader {
-        val cfg = PbrMaterialConfig().apply {
-            isInstanced = true
-            roughness = 0.8f
-            useImageBasedLighting(ibl)
-        }
-        val model = PbrShader.defaultPbrModel(cfg)
-        return PbrShader(cfg, model)
+    private fun wheelsShader() = KslPbrShader {
+        vertices { isInstanced = true }
+        color { vertexColor() }
+        roughness(0.8f)
+        imageBasedAmbientColor(ibl.irradianceMap)
+        reflectionMap = ibl.reflectionMap
     }
 
-    private class VehicleInstance(val vehicle: Vehicle, color: Color) {
+    private inner class VehicleInstance(val vehicle: Vehicle, color: Color) {
         private val tmpMat = Mat4f()
         private val color = MutableColor(color)
 
@@ -233,7 +216,7 @@ class ManyVehiclesDemo : DemoScene("Many Vehicles") {
         fun addWheelInstances(instanceData: MeshInstanceList) {
             for (i in 0..3) {
                 val wheelInfo = vehicle.wheelInfos[i]
-                tmpMat.set(vehicle.transform).mul(wheelInfo.transform)
+                tmpMat.set(vehicle.transform).translate(vehicleProps.chassisCMOffset).mul(wheelInfo.transform)
                 instanceData.addInstance {
                     put(tmpMat.matrix)
                 }

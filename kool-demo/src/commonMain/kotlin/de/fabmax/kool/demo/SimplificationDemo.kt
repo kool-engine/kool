@@ -6,6 +6,7 @@ import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.gltf.GltfFile
 import de.fabmax.kool.modules.gltf.loadGltfModel
+import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.modules.mesh.HalfEdgeMesh
 import de.fabmax.kool.modules.mesh.ListEdgeHandler
@@ -13,8 +14,6 @@ import de.fabmax.kool.modules.mesh.simplification.simplify
 import de.fabmax.kool.modules.mesh.simplification.terminateOnFaceCountRel
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.shading.Albedo
-import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
@@ -52,10 +51,9 @@ class SimplificationDemo : DemoScene("Simplification") {
     }
 
     init {
-        dispModel.shader = pbrShader {
-            albedoSource = Albedo.STATIC_ALBEDO
-            albedo = Color.WHITE
-            roughness = 0.15f
+        dispModel.shader = KslPbrShader {
+            color { constColor(Color.WHITE) }
+            roughness(0.15f)
         }
 
         val cosModel = DemoModel("Cosine grid", makeCosGrid())

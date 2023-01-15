@@ -3,16 +3,11 @@ package de.fabmax.kool.demo.physics.joints
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.GlslType
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
-import de.fabmax.kool.pipeline.shadermodel.PbrMaterialNode
-import de.fabmax.kool.pipeline.shadermodel.StageInterfaceNode
-import de.fabmax.kool.pipeline.shadermodel.fragmentStage
-import de.fabmax.kool.pipeline.shadermodel.vertexStage
-import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
-import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.geometry.Profile
 import de.fabmax.kool.scene.geometry.SimpleShape
@@ -24,8 +19,9 @@ import de.fabmax.kool.util.ShadowMap
 
 object GearChainMeshGen {
 
-    private val attribRoughMetallic = Attribute("aRoughMetal", GlslType.VEC_2F)
-    private val meshAttribs = listOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, attribRoughMetallic)
+    private val attribRoughness = Attribute("aRoughness", GlslType.FLOAT)
+    private val attribMetallic = Attribute("aMetallic", GlslType.FLOAT)
+    private val meshAttribs = listOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, attribRoughness, attribMetallic)
 
     fun makeNiceGearMesh(ibl: EnvironmentMaps, aoMap: Texture2d, shadows: List<ShadowMap>) = mesh(meshAttribs) {
         isFrustumChecked = false
@@ -34,9 +30,8 @@ object GearChainMeshGen {
             var roughness = 0.3f
             var metal = 1f
             vertexModFun = {
-                val roughMetal = getVec2fAttribute(attribRoughMetallic)!!
-                roughMetal.x = roughness
-                roughMetal.y = metal
+                getFloatAttribute(attribRoughness)?.f = roughness
+                getFloatAttribute(attribMetallic)?.f = metal
             }
 
             // tooth
@@ -181,9 +176,8 @@ object GearChainMeshGen {
             var roughness = 0.3f
             var metal = 1f
             vertexModFun = {
-                val roughMetal = getVec2fAttribute(attribRoughMetallic)!!
-                roughMetal.x = roughness
-                roughMetal.y = metal
+                getFloatAttribute(attribRoughness)?.f = roughness
+                getFloatAttribute(attribMetallic)?.f = metal
             }
 
             // dielectric mesh components
@@ -283,9 +277,8 @@ object GearChainMeshGen {
             var roughness = 0.3f
             var metal = 1f
             vertexModFun = {
-                val roughMetal = getVec2fAttribute(attribRoughMetallic)!!
-                roughMetal.x = roughness
-                roughMetal.y = metal
+                getFloatAttribute(attribRoughness)?.f = roughness
+                getFloatAttribute(attribMetallic)?.f = metal
             }
 
             color = Color.GRAY
@@ -339,9 +332,8 @@ object GearChainMeshGen {
             var roughness = 0.3f
             var metal = 1f
             vertexModFun = {
-                val roughMetal = getVec2fAttribute(attribRoughMetallic)!!
-                roughMetal.x = roughness
-                roughMetal.y = metal
+                getFloatAttribute(attribRoughness)?.f = roughness
+                getFloatAttribute(attribMetallic)?.f = metal
             }
 
             color = MdColor.BLUE_GREY toneLin 400
@@ -406,26 +398,15 @@ object GearChainMeshGen {
         shader = makeMeshShader(ibl, aoMap, shadows)
     }
 
-    private fun makeMeshShader(ibl: EnvironmentMaps, aoMap: Texture2d, shadows: List<ShadowMap>): PbrShader {
-        val cfg = PbrMaterialConfig().apply {
-            isInstanced = true
-            shadowMaps += shadows
-            useImageBasedLighting(ibl)
-            useScreenSpaceAmbientOcclusion(aoMap)
-        }
-        val model = PbrShader.defaultPbrModel(cfg).apply {
-            val ifRoughMetal: StageInterfaceNode
-            vertexStage {
-                ifRoughMetal = stageInterfaceNode("ifRoughMetal", attributeNode(attribRoughMetallic).output)
-            }
-            fragmentStage {
-                findNodeByType<PbrMaterialNode>()!!.apply {
-                    inRoughness = splitNode(ifRoughMetal.output, "x").output
-                    inMetallic = splitNode(ifRoughMetal.output, "y").output
-                }
-            }
-        }
-        return PbrShader(cfg, model)
+    private fun makeMeshShader(ibl: EnvironmentMaps, aoMap: Texture2d, shadows: List<ShadowMap>) = KslPbrShader {
+        color { vertexColor() }
+        vertices { isInstanced = true }
+        shadow { addShadowMaps(shadows) }
+        roughness { vertexProperty(attribRoughness) }
+        metallic { vertexProperty(attribMetallic) }
+        enableSsao(aoMap)
+        imageBasedAmbientColor(ibl.irradianceMap)
+        reflectionMap = ibl.reflectionMap
     }
 
     private fun SimpleShape.roundRectXz(centerX: Float, centerZ: Float, sizeX: Float, sizeZ: Float, r: Float, steps: Int) {

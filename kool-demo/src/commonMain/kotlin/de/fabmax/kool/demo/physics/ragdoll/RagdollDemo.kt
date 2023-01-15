@@ -5,6 +5,8 @@ import de.fabmax.kool.demo.*
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.BoundingBox
+import de.fabmax.kool.modules.ksl.KslPbrShader
+import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.physics.*
 import de.fabmax.kool.physics.articulations.Articulation
@@ -19,14 +21,7 @@ import de.fabmax.kool.pipeline.GlslType
 import de.fabmax.kool.pipeline.ao.AoPipeline
 import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
-import de.fabmax.kool.pipeline.shadermodel.PbrMaterialNode
-import de.fabmax.kool.pipeline.shadermodel.StageInterfaceNode
-import de.fabmax.kool.pipeline.shadermodel.fragmentStage
-import de.fabmax.kool.pipeline.shadermodel.vertexStage
 import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
-import de.fabmax.kool.pipeline.shading.PbrShader
-import de.fabmax.kool.pipeline.shading.pbrShader
-import de.fabmax.kool.pipeline.shading.unlitShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.*
 import kotlin.math.roundToInt
@@ -110,12 +105,13 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
                     generateTexCoords(20f)
                 }
             }
-            shader = pbrShader {
-                shadowMaps += shadows
-                useImageBasedLighting(ibl)
-                useAlbedoMap(groundAlbedo)
-                useNormalMap(groundNormal)
-                useScreenSpaceAmbientOcclusion(ao.aoMap)
+            shader = KslPbrShader {
+                color { textureColor(groundAlbedo) }
+                normalMapping { setNormalMap(groundNormal) }
+                shadow { addShadowMaps(shadows) }
+                imageBasedAmbientColor(ibl.irradianceMap)
+                enableSsao(ao.aoMap)
+                reflectionMap = ibl.reflectionMap
             }
         }
 
@@ -161,7 +157,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
 
         +lineMesh {
             isCastingShadow = false
-            shader = unlitShader { lineWidth = 3f }
+            shader = KslUnlitShader { pipeline { lineWidth = 3f } }
             onUpdate += {
                 clear()
                 if (forceHelper.isActive) {
@@ -479,22 +475,14 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
         block()
     }
 
-    private fun instancedBodyShader(): PbrShader {
-        val cfg = PbrMaterialConfig()
-        cfg.bodyMaterialCfg()
-        cfg.isInstanced = true
-
-        val model = PbrShader.defaultPbrModel(cfg).apply {
-            val ifColor: StageInterfaceNode
-            vertexStage {
-                ifColor = stageInterfaceNode("ifColor", instanceAttributeNode(ATTRIB_COLOR).output)
-            }
-            fragmentStage {
-                findNodeByType<PbrMaterialNode>()?.inAlbedo = ifColor.output
-            }
-        }
-
-        return PbrShader(cfg, model)
+    private fun instancedBodyShader() = KslPbrShader {
+        vertices { isInstanced = true }
+        color { instanceColor(ATTRIB_COLOR) }
+        shadow { addShadowMaps(shadows) }
+        enableSsao(ao.aoMap)
+        roughness(0.8f)
+        imageBasedAmbientColor(ibl.irradianceMap)
+        reflectionMap = ibl.reflectionMap
     }
 
     private class BodyInstance(val transform: Mat4f, val size: Vec3f, color: Color) {

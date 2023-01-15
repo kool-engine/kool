@@ -9,16 +9,9 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.randomF
 import de.fabmax.kool.modules.gltf.GltfFile
 import de.fabmax.kool.modules.gltf.loadGltfFile
+import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.Shader
-import de.fabmax.kool.pipeline.shadermodel.PbrMaterialNode
-import de.fabmax.kool.pipeline.shadermodel.StageInterfaceNode
-import de.fabmax.kool.pipeline.shadermodel.fragmentStage
-import de.fabmax.kool.pipeline.shadermodel.vertexStage
-import de.fabmax.kool.pipeline.shading.Albedo
-import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
-import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.*
 import kotlin.math.roundToInt
@@ -135,22 +128,9 @@ class InstanceDemo : DemoScene("Instanced Drawing") {
         }
     }
 
-    private fun instanceColorPbrShader(): Shader {
-        val cfg = PbrMaterialConfig().apply {
-            albedoSource = Albedo.STATIC_ALBEDO
-            isInstanced = true
-            roughness = 0.5f
-        }
-        val model = PbrShader.defaultPbrModel(cfg).apply {
-            val ifInstColor: StageInterfaceNode
-            vertexStage {
-                ifInstColor = stageInterfaceNode("ifInstColor", instanceAttributeNode(Attribute.COLORS).output)
-            }
-            fragmentStage {
-                findNodeByType<PbrMaterialNode>()!!.inAlbedo = ifInstColor.output
-            }
-        }
-        return PbrShader(cfg, model)
+    private fun instanceColorPbrShader() = KslPbrShader {
+        vertices { isInstanced = true }
+        color { instanceColor(Attribute.COLORS) }
     }
 
     private class Lod(val maxInsts: Int, val maxDist: Float, val color: MutableColor) {

@@ -20,7 +20,9 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
     var normalMap: Texture2d? by texture2d(cfg.normalMapCfg.normalMapName, cfg.normalMapCfg.defaultNormalMap)
     var normalMapStrength: Float by uniform1f("uNormalMapStrength", cfg.normalMapCfg.defaultStrength)
 
-    var ssaoMap: Texture2d? by texture2d("tSsaoMap", cfg.defaultSsaoMap)
+    var ssaoMap: Texture2d? by texture2d("tSsaoMap", cfg.aoCfg.defaultSsaoMap)
+    var materialAo: Float by uniform1f(cfg.aoCfg.materialAo.primaryUniform?.uniformName, cfg.aoCfg.materialAo.primaryUniform?.defaultValue)
+    var materialAoMap: Texture2d? by texture2d(cfg.aoCfg.materialAo.primaryTexture?.textureName, cfg.aoCfg.materialAo.primaryTexture?.defaultTexture)
 
     var ambientFactor: Vec4f by uniform4f("uAmbientColor")
     var ambientTextureOrientation: Mat3f by uniformMat3f("uAmbientTextureOri", Mat3f().setIdentity())
@@ -53,6 +55,7 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
         val vertexCfg = BasicVertexConfig()
         val colorCfg = ColorBlockConfig("baseColor")
         val normalMapCfg = NormalMapConfig()
+        val aoCfg = AmbientOcclusionConfig()
         val pipelineCfg = PipelineConfig()
         val shadowCfg = ShadowConfig()
 
@@ -60,15 +63,17 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
         var colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
         var maxNumberOfLights = 4
         var lightStrength = 1f
-        var isSsao = false
-        var defaultSsaoMap: Texture2d? = null
         var alphaMode: AlphaMode = AlphaMode.Blend()
 
         var modelCustomizer: (KslProgram.() -> Unit)? = null
 
         fun enableSsao(ssaoMap: Texture2d? = null) {
-            isSsao = true
-            defaultSsaoMap = ssaoMap
+            aoCfg.isSsao = ssaoMap != null
+            aoCfg.defaultSsaoMap = ssaoMap
+        }
+
+        fun ao(block: AmbientOcclusionConfig.() -> Unit) {
+            aoCfg.block()
         }
 
         fun color(block: ColorBlockConfig.() -> Unit) {
@@ -208,11 +213,11 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
                     // adjust light strength values by shadow maps
                     fragmentShadowBlock(shadowMapVertexStage, shadowFactors)
 
-                    val aoFactor = float1Var(1f.const)
-                    if (cfg.isSsao) {
+                    val aoFactor = float1Var(fragmentPropertyBlock(cfg.aoCfg.materialAo).outProperty)
+                    if (cfg.aoCfg.isSsao) {
                         val aoMap = texture2d("tSsaoMap")
                         val aoUv = float2Var(projPosition.output.xy / projPosition.output.w * 0.5f.const + 0.5f.const)
-                        aoFactor set sampleTexture(aoMap, aoUv).x
+                        aoFactor *= sampleTexture(aoMap, aoUv).x
                     }
 
                     val irradiance = when (cfg.ambientColor) {

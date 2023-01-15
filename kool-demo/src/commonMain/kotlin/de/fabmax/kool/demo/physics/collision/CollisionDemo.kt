@@ -6,6 +6,7 @@ import de.fabmax.kool.demo.*
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.BoundingBox
+import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.physics.*
 import de.fabmax.kool.physics.geometry.*
@@ -14,13 +15,6 @@ import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ao.AoPipeline
 import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
-import de.fabmax.kool.pipeline.shadermodel.PbrMaterialNode
-import de.fabmax.kool.pipeline.shadermodel.StageInterfaceNode
-import de.fabmax.kool.pipeline.shadermodel.fragmentStage
-import de.fabmax.kool.pipeline.shadermodel.vertexStage
-import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
-import de.fabmax.kool.pipeline.shading.PbrShader
-import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
@@ -295,13 +289,14 @@ class CollisionDemo : DemoScene("Physics - Collision") {
                     origin.set(size).scale(-0.5f).add(ground.position)
                 }
             }
-            shader = pbrShader {
-                roughness = 0.75f
-                shadowMaps += shadows
-                useImageBasedLighting(ibl)
-                useScreenSpaceAmbientOcclusion(aoPipeline.aoMap)
-                useAlbedoMap(groundAlbedo)
-                useNormalMap(groundNormal)
+            shader = KslPbrShader {
+                color { textureColor(groundAlbedo) }
+                normalMapping { setNormalMap(groundNormal) }
+                roughness(0.75f)
+                enableSsao(aoPipeline.aoMap)
+                shadow { addShadowMaps(shadows) }
+                imageBasedAmbientColor(ibl.irradianceMap)
+                reflectionMap = ibl.reflectionMap
             }
         }
 
@@ -316,37 +311,25 @@ class CollisionDemo : DemoScene("Physics - Collision") {
                     }
                 }
             }
-            shader = pbrShader {
-                roughness = 0.75f
-                shadowMaps += shadows
-                useImageBasedLighting(ibl)
-                useScreenSpaceAmbientOcclusion(aoPipeline.aoMap)
-                useStaticAlbedo(MdColor.BLUE_GREY toneLin 700)
+            shader = KslPbrShader {
+                color { constColor(MdColor.BLUE_GREY toneLin 700) }
+                roughness(0.75f)
+                enableSsao(aoPipeline.aoMap)
+                shadow { addShadowMaps(shadows) }
+                imageBasedAmbientColor(ibl.irradianceMap)
+                reflectionMap = ibl.reflectionMap
             }
         }
     }
 
-    private fun instancedBodyShader(ibl: EnvironmentMaps): PbrShader {
-        val cfg = PbrMaterialConfig().apply {
-            roughness = 1f
-            isInstanced = true
-            shadowMaps += shadows
-            useImageBasedLighting(ibl)
-            useScreenSpaceAmbientOcclusion(aoPipeline.aoMap)
-            useStaticAlbedo(Color.WHITE)
-        }
-        val model = PbrShader.defaultPbrModel(cfg).apply {
-            val ifInstColor: StageInterfaceNode
-            vertexStage {
-                ifInstColor = stageInterfaceNode("ifInstColor", instanceAttributeNode(Attribute.COLORS).output)
-            }
-            fragmentStage {
-                findNodeByType<PbrMaterialNode>()!!.apply {
-                    inAlbedo = ifInstColor.output
-                }
-            }
-        }
-        return PbrShader(cfg, model)
+    private fun instancedBodyShader(ibl: EnvironmentMaps) = KslPbrShader {
+        vertices { isInstanced = true }
+        color { instanceColor(Attribute.COLORS) }
+        roughness(1f)
+        enableSsao(aoPipeline.aoMap)
+        shadow { addShadowMaps(shadows) }
+        imageBasedAmbientColor(ibl.irradianceMap)
+        reflectionMap = ibl.reflectionMap
     }
 
     private class ColoredBody(val rigidActor: RigidActor, val color: MutableColor, bodyShapes: ShapeType.CollisionShapes) {

@@ -6,6 +6,7 @@ import de.fabmax.kool.demo.*
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.BoundingBox
+import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.physics.*
 import de.fabmax.kool.physics.geometry.BoxGeometry
@@ -19,7 +20,6 @@ import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ao.AoPipeline
 import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
-import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.pipeline.shading.unlitShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.toString
@@ -119,12 +119,13 @@ class JointsDemo : DemoScene("Physics - Joints") {
                     generateTexCoords(15f)
                 }
             }
-            shader = pbrShader {
-                useAlbedoMap(groundAlbedo)
-                useNormalMap(groundNormal)
-                useScreenSpaceAmbientOcclusion(aoPipeline.aoMap)
-                useImageBasedLighting(ibl)
-                shadowMaps += shadows
+            shader = KslPbrShader {
+                color { textureColor(groundAlbedo) }
+                normalMapping { setNormalMap(groundNormal) }
+                shadow { addShadowMaps(shadows) }
+                enableSsao(aoPipeline.aoMap)
+                imageBasedAmbientColor(ibl.irradianceMap)
+                reflectionMap = ibl.reflectionMap
             }
         }
 
@@ -537,12 +538,14 @@ class JointsDemo : DemoScene("Physics - Joints") {
                         }
                     }
                 }
-                shader = pbrShader {
-                    roughness = 1f
-                    isInstanced = true
-                    shadowMaps += shadows
-                    useImageBasedLighting(ibl)
-                    useScreenSpaceAmbientOcclusion(aoPipeline.aoMap)
+                shader = KslPbrShader {
+                    vertices { isInstanced = true }
+                    color { vertexColor() }
+                    roughness(1f)
+                    shadow { addShadowMaps(shadows) }
+                    enableSsao(aoPipeline.aoMap)
+                    imageBasedAmbientColor(ibl.irradianceMap)
+                    reflectionMap = ibl.reflectionMap
                 }
             }
         }

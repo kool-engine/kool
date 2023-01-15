@@ -6,8 +6,8 @@ import de.fabmax.kool.demo.DemoScene
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.gltf.GltfFile
 import de.fabmax.kool.modules.gltf.loadGltfModel
+import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.pipeline.ao.AoPipeline
-import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.colorMesh
 import de.fabmax.kool.scene.defaultCamTransform
@@ -23,23 +23,23 @@ class HelloGltfDemo : DemoScene("Hello glTF") {
             setSpot(Vec3f(5f, 6.25f, 7.5f), Vec3f(-1f, -1.25f, -1.5f), 45f)
             setColor(Color.WHITE, 300f)
         }
-        val shadows = listOf(SimpleShadowMap(this, lightIndex = 0))
+        val shadows = SimpleShadowMap(this, lightIndex = 0)
         val aoPipeline = AoPipeline.createForward(this)
 
         +colorMesh {
             generate {
                 grid { }
             }
-            shader = pbrShader {
-                useStaticAlbedo(Color.WHITE)
-                useScreenSpaceAmbientOcclusion(aoPipeline.aoMap)
-                shadowMaps += shadows
+            shader = KslPbrShader {
+                color { constColor(Color.WHITE) }
+                enableSsao(aoPipeline.aoMap)
+                shadow { addShadowMap(shadows) }
             }
         }
 
         ctx.assetMgr.launch {
             val materialCfg = GltfFile.ModelMaterialConfig(
-                shadowMaps = shadows,
+                shadowMaps = listOf(shadows),
                 scrSpcAmbientOcclusionMap = aoPipeline.aoMap
             )
             val modelCfg = GltfFile.ModelGenerateConfig(materialConfig = materialCfg)

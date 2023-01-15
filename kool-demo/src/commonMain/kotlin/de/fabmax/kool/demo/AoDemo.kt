@@ -8,6 +8,7 @@ import de.fabmax.kool.math.scale
 import de.fabmax.kool.math.toDeg
 import de.fabmax.kool.modules.gltf.GltfFile
 import de.fabmax.kool.modules.gltf.loadGltfModel
+import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.modules.ksl.lang.b
@@ -16,11 +17,10 @@ import de.fabmax.kool.modules.ksl.lang.getFloat4Port
 import de.fabmax.kool.modules.ksl.lang.r
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.DepthCompareOp
+import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ao.AoPipeline
 import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
-import de.fabmax.kool.pipeline.shading.Albedo
-import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.RectProps
 import de.fabmax.kool.toString
@@ -34,6 +34,11 @@ class AoDemo : DemoScene("Ambient Occlusion") {
 
     private lateinit var ibl: EnvironmentMaps
     private lateinit var teapotMesh: Mesh
+
+    private lateinit var albedoMap: Texture2d
+    private lateinit var ambientOcclusionMap: Texture2d
+    private lateinit var normalMap: Texture2d
+    private lateinit var roughnessMap: Texture2d
 
     private val isAoEnabled = mutableStateOf(true).onChange { aoPipeline.isEnabled = it }
     private val isAutoRotate = mutableStateOf(true)
@@ -52,8 +57,20 @@ class AoDemo : DemoScene("Ambient Occlusion") {
     }
 
     override suspend fun AssetManager.loadResources(ctx: KoolContext) {
-        showLoadText("Loading IBL Maps")
+        showLoadText("Loading Textures")
         ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${DemoLoader.hdriPath}/mossy_forest_1k.rgbe.png", this)
+
+        albedoMap = loadAndPrepareTexture("${DemoLoader.materialPath}/brown_planks_03/brown_planks_03_diff_2k.jpg")
+        ambientOcclusionMap = loadAndPrepareTexture("${DemoLoader.materialPath}/brown_planks_03/brown_planks_03_AO_2k.jpg")
+        normalMap = loadAndPrepareTexture("${DemoLoader.materialPath}/brown_planks_03/brown_planks_03_Nor_2k.jpg")
+        roughnessMap = loadAndPrepareTexture("${DemoLoader.materialPath}/brown_planks_03/brown_planks_03_rough_2k.jpg")
+
+        mainScene.onDispose += {
+            albedoMap.dispose()
+            ambientOcclusionMap.dispose()
+            normalMap.dispose()
+            roughnessMap.dispose()
+        }
 
         showLoadText("Loading Model")
         val modelCfg = GltfFile.ModelGenerateConfig(generateNormals = true, applyMaterials = false)
@@ -103,13 +120,13 @@ class AoDemo : DemoScene("Ambient Occlusion") {
                     }
                 }
             }
-            val shader = pbrShader {
-                albedoSource = Albedo.VERTEX_ALBEDO
-                shadowMaps += shadows
-                roughness = 0.1f
-
-                useScreenSpaceAmbientOcclusion(aoPipeline.aoMap)
-                useImageBasedLighting(ibl)
+            val shader = KslPbrShader {
+                color { vertexColor() }
+                shadow { addShadowMaps(shadows) }
+                roughness(0.1f)
+                enableSsao(aoPipeline.aoMap)
+                imageBasedAmbientColor(ibl.irradianceMap)
+                reflectionMap = ibl.reflectionMap
             }
             this.shader = shader
         }
@@ -187,22 +204,17 @@ class AoDemo : DemoScene("Ambient Occlusion") {
                 }
             }
 
-            val shader = pbrShader {
-                useAlbedoMap("${DemoLoader.materialPath}/brown_planks_03/brown_planks_03_diff_2k.jpg")
-                useAmbientOcclusionMap("${DemoLoader.materialPath}/brown_planks_03/brown_planks_03_AO_2k.jpg")
-                useNormalMap("${DemoLoader.materialPath}/brown_planks_03/brown_planks_03_Nor_2k.jpg")
-                useRoughnessMap("${DemoLoader.materialPath}/brown_planks_03/brown_planks_03_rough_2k.jpg")
-
-                useScreenSpaceAmbientOcclusion(aoPipeline.aoMap)
-                useImageBasedLighting(ibl)
-                shadowMaps += shadows
-
-                onDispose += {
-                    albedoMap?.dispose()
-                    aoMap?.dispose()
-                    normalMap?.dispose()
-                    roughnessMap?.dispose()
+            val shader = KslPbrShader {
+                shadow { addShadowMaps(shadows) }
+                color { textureColor(albedoMap) }
+                normalMapping { setNormalMap(normalMap) }
+                roughness { textureProperty(roughnessMap) }
+                ao {
+                    materialAo.textureProperty(ambientOcclusionMap)
+                    enableSsao(aoPipeline.aoMap)
                 }
+                imageBasedAmbientColor(ibl.irradianceMap)
+                reflectionMap = ibl.reflectionMap
             }
             this.shader = shader
         }
