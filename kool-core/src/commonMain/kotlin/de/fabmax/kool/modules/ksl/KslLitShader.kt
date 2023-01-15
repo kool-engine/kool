@@ -148,7 +148,8 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
                     // if normal mapping is enabled, the input vertex data is expected to have a tangent attribute
                     if (cfg.normalMapCfg.isNormalMapped) {
                         tangentWorldSpace = interStageFloat4().apply {
-                            input set modelMat * float4Value(vertexAttribFloat4(Attribute.TANGENTS.name).xyz, 0f)
+                            val tang = vertexAttribFloat4(Attribute.TANGENTS.name)
+                            input set float4Value((modelMat * float4Value(tang.xyz, 0f)).xyz, tang.w)
                         }
                     }
 
@@ -190,7 +191,7 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
                     // do normal map computations (if enabled) and adjust material block input normal accordingly
                     val bumpedNormal = if (cfg.normalMapCfg.isNormalMapped) {
                         normalMapBlock(cfg.normalMapCfg) {
-                            inTangentWorldSpace(normalize(tangentWorldSpace!!.output))
+                            inTangentWorldSpace(tangentWorldSpace!!.output)
                             inNormalWorldSpace(vertexNormal)
                             inStrength(uNormalMapStrength)
                             inTexCoords(texCoordBlock.getAttributeCoords(cfg.normalMapCfg.coordAttribute))
