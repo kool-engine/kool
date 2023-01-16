@@ -50,9 +50,6 @@ kotlin {
         val jvmMain by getting {
             dependencies {
                 implementation(DepsJvm.lwjgl())
-                implementation(DepsJvm.lwjgl("stb"))
-                runtimeOnly(DepsJvm.lwjglNatives("stb"))
-
                 runtimeOnly(DepsJvm.lwjglNatives())
                 runtimeOnly(DepsJvm.lwjglNatives("glfw"))
                 runtimeOnly(DepsJvm.lwjglNatives("jemalloc"))
@@ -60,6 +57,7 @@ kotlin {
                 runtimeOnly(DepsJvm.lwjglNatives("vma"))
                 runtimeOnly(DepsJvm.lwjglNatives("shaderc"))
                 runtimeOnly(DepsJvm.lwjglNatives("nfd"))
+                runtimeOnly(DepsJvm.lwjglNatives("stb"))
 
                 runtimeOnly(DepsJvm.physxJniRuntime)
             }
