@@ -1,37 +1,36 @@
 package de.fabmax.kool.demo.pbr
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.demo.DemoLoader
-import de.fabmax.kool.demo.MenuRow
-import de.fabmax.kool.demo.labelStyle
+import de.fabmax.kool.demo.*
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.modules.ksl.KslPbrShader
+import de.fabmax.kool.modules.ksl.blocks.PropertyBlockConfig
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.SingleColorTexture
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
-import de.fabmax.kool.pipeline.shading.Albedo
-import de.fabmax.kool.pipeline.shading.PbrShader
-import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Time
 
 class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrContent("PBR material") {
-    private val shaders = mutableListOf<PbrShader>()
+    private val shaders = mutableListOf<KslPbrShader>()
     private var iblContent: Group? = null
     private var nonIblContent: Group? = null
 
     private val selectedMatIdx = mutableStateOf(3)
     val currentMat: MaterialMaps get() = materials[selectedMatIdx.value]
 
+    private val displacement = mutableStateOf(0.25f).onChange { disp -> shaders.forEach { it.displacement = disp } }
+
     private fun updatePbrMaterial() {
         shaders.forEach {
-            it.albedoMap(currentMat.albedo)
-            it.normalMap(currentMat.normal)
-            it.roughnessMap(currentMat.roughness)
-            it.metallicMap(currentMat.metallic ?: defaultMetallicTex)
-            it.aoMap(currentMat.ao ?: defaultAoTex)
-            it.displacementMap(currentMat.displacement ?: defaultDispTex)
+            it.colorMap = currentMat.albedo
+            it.normalMap = currentMat.normal
+            it.roughnessMap = currentMat.roughness
+            it.metallicMap = currentMat.metallic ?: defaultMetallicTex
+            it.materialAoMap = currentMat.ao ?: defaultAoTex
+            it.displacementMap = currentMat.displacement ?: defaultDispTex
         }
     }
 
@@ -50,6 +49,11 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrCont
                         updatePbrMaterial()
                     }
             }
+        }
+        MenuRow {
+            val txtSize = UiSizes.baseSize * 0.75f
+            Text("Displacement") { labelStyle(FitContent) }
+            MenuSlider(displacement.use(), 0f, 1f, txtWidth = txtSize) { displacement.set(it) }
         }
     }
 
@@ -83,25 +87,28 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrCont
     override fun updateEnvironmentMap(envMaps: EnvironmentMaps) {
         iblContent?.children?.forEach {
             it as Mesh
-            val pbrShader = it.shader as PbrShader
-            pbrShader.irradianceMap(envMaps.irradianceMap)
-            pbrShader.reflectionMap(envMaps.reflectionMap)
+            val pbrShader = it.shader as KslPbrShader
+            pbrShader.ambientTexture = envMaps.irradianceMap
+            pbrShader.reflectionMap = envMaps.reflectionMap
         }
     }
 
     private fun makeSphere(withIbl: Boolean, scene: Scene, envMaps: EnvironmentMaps) = group {
         +textureMesh(isNormalMapped = true) {
             geometry.addGeometry(sphereProto.detailSphere)
-            val shader = pbrShader{
-                albedoSource = Albedo.TEXTURE_ALBEDO
-                isNormalMapped = true
-                isRoughnessMapped = true
-                isMetallicMapped = true
-                isAoMapped = true
-                isDisplacementMapped = true
-                displacementStrength = 0.25f
+            val shader = KslPbrShader{
+                color { textureColor() }
+                normalMapping { setNormalMap() }
+                roughness { textureProperty() }
+                metallic { textureProperty() }
+                ao { materialAo { textureProperty() } }
+                displacement {
+                    textureProperty()
+                    uniformProperty(displacement.value, mixMode = PropertyBlockConfig.MixMode.Multiply)
+                }
                 if (withIbl) {
-                    useImageBasedLighting(envMaps)
+                    imageBasedAmbientColor(envMaps.irradianceMap)
+                    reflectionMap = envMaps.reflectionMap
                 }
             }
             this.shader = shader

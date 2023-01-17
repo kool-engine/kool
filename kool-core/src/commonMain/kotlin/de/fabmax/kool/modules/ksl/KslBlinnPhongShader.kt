@@ -51,7 +51,8 @@ open class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : Ks
             aoFactor: KslExprFloat1,
             normal: KslExprFloat3,
             fragmentWorldPos: KslExprFloat3,
-            baseColor: KslExprFloat4
+            baseColor: KslExprFloat4,
+            emissionColor: KslExprFloat4
         ): KslExprFloat4 {
 
             val uSpecularColor = uniformFloat4("uSpecularColor")
@@ -71,7 +72,7 @@ open class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : Ks
 
                 setLightData(lightData, shadowFactors, cfg.lightStrength.const)
             }
-            return float4Value(material.outColor, baseColor.a)
+            return float4Value(material.outColor + emissionColor.rgb, baseColor.a)
         }
     }
 }

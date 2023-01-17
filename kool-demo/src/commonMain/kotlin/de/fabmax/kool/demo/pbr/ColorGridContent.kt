@@ -6,33 +6,27 @@ import de.fabmax.kool.demo.MenuSlider
 import de.fabmax.kool.demo.UiSizes
 import de.fabmax.kool.demo.labelStyle
 import de.fabmax.kool.math.Mat4f
+import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ui2.Text
 import de.fabmax.kool.modules.ui2.UiScope
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
-import de.fabmax.kool.pipeline.shadermodel.PbrMaterialNode
-import de.fabmax.kool.pipeline.shadermodel.StageInterfaceNode
-import de.fabmax.kool.pipeline.shadermodel.fragmentStage
-import de.fabmax.kool.pipeline.shadermodel.vertexStage
-import de.fabmax.kool.pipeline.shading.Albedo
-import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
-import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 
 class ColorGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrContent("Color grid") {
-    private val shaders = mutableListOf<PbrShader>()
+    private val shaders = mutableListOf<KslPbrShader>()
     private var iblContent: Mesh? = null
     private var nonIblContent: Mesh? = null
 
-    private val roughness = mutableStateOf(0.1f).onChange { shaders.forEach { s -> s.roughness(it) } }
-    private val metallic = mutableStateOf(0f).onChange { shaders.forEach { s -> s.metallic(it) } }
+    private val roughness = mutableStateOf(0.1f).onChange { shaders.forEach { s -> s.roughness = it } }
+    private val metallic = mutableStateOf(0f).onChange { shaders.forEach { s -> s.metallic = it } }
 
     override fun UiScope.createContentMenu() {
         val lblSize = UiSizes.baseSize * 2f
-        val txtSize = UiSizes.baseSize * 0.7f
+        val txtSize = UiSizes.baseSize * 0.75f
         MenuRow {
             Text("Roughness") { labelStyle(lblSize) }
             MenuSlider(roughness.use(), 0f, 1f, txtWidth = txtSize) { roughness.set(it) }
@@ -67,9 +61,9 @@ class ColorGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrConten
 
     override fun updateEnvironmentMap(envMaps: EnvironmentMaps) {
         iblContent?.let {
-            val pbrShader = it.shader as PbrShader
-            pbrShader.irradianceMap(envMaps.irradianceMap)
-            pbrShader.reflectionMap(envMaps.reflectionMap)
+            val pbrShader = it.shader as KslPbrShader
+            pbrShader.ambientTexture = envMaps.irradianceMap
+            pbrShader.reflectionMap = envMaps.reflectionMap
         }
     }
 
@@ -111,28 +105,14 @@ class ColorGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrConten
         }
     }
 
-    private fun instancedPbrShader(withIbl: Boolean, envMaps: EnvironmentMaps): PbrShader {
-        val pbrCfg = PbrMaterialConfig().apply {
-            albedoSource = Albedo.STATIC_ALBEDO
-            roughness = 0.1f
-            metallic = 0f
-            isInstanced = true
-            if (withIbl) {
-                useImageBasedLighting(envMaps)
-            }
+    private fun instancedPbrShader(withIbl: Boolean, envMaps: EnvironmentMaps) = KslPbrShader {
+        vertices { isInstanced = true }
+        color { instanceColor(Attribute.COLORS) }
+        roughness { uniformProperty(0.1f) }
+        metallic { uniformProperty(0f) }
+        if (withIbl) {
+            imageBasedAmbientColor(envMaps.irradianceMap)
+            reflectionMap = envMaps.reflectionMap
         }
-
-        // use default PBR shader model and replace color input by instance attribute
-        val model = PbrShader.defaultPbrModel(pbrCfg).apply {
-            val ifInstColor: StageInterfaceNode
-            vertexStage {
-                ifInstColor = stageInterfaceNode("ifInstColors", instanceAttributeNode(Attribute.COLORS).output)
-            }
-            fragmentStage {
-                val material = findNode<PbrMaterialNode>("pbrMaterial")!!
-                material.inAlbedo = ifInstColor.output
-            }
-        }
-        return PbrShader(pbrCfg, model)
     }
 }

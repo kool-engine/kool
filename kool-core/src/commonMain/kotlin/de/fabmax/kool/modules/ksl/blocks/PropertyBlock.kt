@@ -5,15 +5,15 @@ import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.Texture2d
 
 fun KslScopeBuilder.vertexPropertyBlock(cfg: PropertyBlockConfig): PropertyBlockVertexStage {
-    val colorBlock = PropertyBlockVertexStage(cfg, this)
-    ops += colorBlock
-    return colorBlock
+    val propertyBlock = PropertyBlockVertexStage(cfg, this)
+    ops += propertyBlock
+    return propertyBlock
 }
 
 fun KslScopeBuilder.fragmentPropertyBlock(cfg: PropertyBlockConfig, vertexStage: PropertyBlockVertexStage? = null): PropertyBlockFragmentStage {
-    val colorBlock = PropertyBlockFragmentStage(cfg, vertexStage, this)
-    ops += colorBlock
-    return colorBlock
+    val propertyBlock = PropertyBlockFragmentStage(cfg, vertexStage, this)
+    ops += propertyBlock
+    return propertyBlock
 }
 
 class PropertyBlockVertexStage(cfg: PropertyBlockConfig, parentScope: KslScopeBuilder) : KslBlock(cfg.propertyName, parentScope) {
@@ -38,7 +38,12 @@ class PropertyBlockVertexStage(cfg: PropertyBlockConfig, parentScope: KslScopeBu
     }
 }
 
-class PropertyBlockFragmentStage(cfg: PropertyBlockConfig, vertexPropertyBlock: PropertyBlockVertexStage?, parentScope: KslScopeBuilder) : KslBlock(cfg.propertyName, parentScope) {
+class PropertyBlockFragmentStage(
+    private val cfg: PropertyBlockConfig,
+    private val vertexPropertyBlock: PropertyBlockVertexStage?,
+    parentScope: KslScopeBuilder
+) : KslBlock(cfg.propertyName, parentScope) {
+
     val outProperty = outFloat1(parentScope.nextName("${opName}_outProperty"))
     val outSamplerValues = mutableMapOf<Pair<String, Attribute>, KslVectorExpression<KslTypeFloat4, KslTypeFloat1>>()
 
@@ -48,13 +53,6 @@ class PropertyBlockFragmentStage(cfg: PropertyBlockConfig, vertexPropertyBlock: 
         body.apply {
             check(parentStage is KslFragmentStage) { "PropertyBlockFragmentStage can only be added to KslFragmentStage" }
 
-            val texCoordBlock: TexCoordAttributeBlock = parentStage.program.vertexStage.findBlock()
-                ?: parentStage.program.vertexStage.main.run { texCoordAttributeBlock() }
-
-            val vertexBlock: PropertyBlockVertexStage = vertexPropertyBlock
-                ?: parentStage.program.vertexStage.findBlock(cfg.propertyName)
-                ?: parentStage.program.vertexStage.main.run { vertexPropertyBlock(cfg) }
-
             if (cfg.propertySources.isEmpty() || cfg.propertySources.first().mixMode != PropertyBlockConfig.MixMode.Set) {
                 outProperty set 0f.const
             }
@@ -63,13 +61,13 @@ class PropertyBlockFragmentStage(cfg: PropertyBlockConfig, vertexPropertyBlock: 
                 val propertyValue: KslScalarExpression<KslTypeFloat1> = when (source) {
                     is PropertyBlockConfig.ConstProperty -> source.value.const
                     is PropertyBlockConfig.UniformProperty -> parentStage.program.uniformFloat1(source.uniformName)
-                    is PropertyBlockConfig.VertexProperty -> vertexBlock.vertexProperties[source]?.output ?: 0f.const
-                    is PropertyBlockConfig.InstanceProperty -> vertexBlock.instanceProperties[source]?.output ?: 0f.const
+                    is PropertyBlockConfig.VertexProperty -> vertexBlock(parentStage).vertexProperties[source]?.output ?: 0f.const
+                    is PropertyBlockConfig.InstanceProperty -> vertexBlock(parentStage).instanceProperties[source]?.output ?: 0f.const
                     is PropertyBlockConfig.TextureProperty ->  {
                         var sampleValue = findExistingSampleValue(source.textureName, source.coordAttribute, parentStage)
                         if (sampleValue == null) {
                             val tex = parentStage.program.texture2d(source.textureName).also { textures[source] = it }
-                            val texCoords = texCoordBlock.getAttributeCoords(source.coordAttribute)
+                            val texCoords = texCoordBlock(parentStage).getAttributeCoords(source.coordAttribute)
                             sampleValue = float4Var(sampleTexture(tex, texCoords)).also {
                                 outSamplerValues[source.textureName to source.coordAttribute] = it
                             }
@@ -86,6 +84,17 @@ class PropertyBlockFragmentStage(cfg: PropertyBlockConfig, vertexPropertyBlock: 
                 mixValue(source.mixMode, propertyValue)
             }
         }
+    }
+
+    private fun texCoordBlock(parentStage: KslShaderStage): TexCoordAttributeBlock {
+        return parentStage.program.vertexStage.findBlock()
+            ?: parentStage.program.vertexStage.main.run { texCoordAttributeBlock() }
+    }
+
+    private fun vertexBlock(parentStage: KslShaderStage): PropertyBlockVertexStage {
+        return vertexPropertyBlock
+            ?: parentStage.program.vertexStage.findBlock(cfg.propertyName)
+            ?: parentStage.program.vertexStage.main.run { vertexPropertyBlock(cfg) }
     }
 
     private fun findExistingSampleValue(texName: String, attrib: Attribute, parentStage: KslFragmentStage): KslExprFloat4? {
@@ -144,6 +153,16 @@ class PropertyBlockConfig(val propertyName: String) {
     class VertexProperty(val propertyAttrib: Attribute, mixMode: MixMode) : PropertySource(mixMode)
     class TextureProperty(val defaultTexture: Texture2d?, val channel: Int, val textureName: String, val coordAttribute: Attribute, mixMode: MixMode) : PropertySource(mixMode)
     class InstanceProperty(val propertyAttrib: Attribute, mixMode: MixMode) : PropertySource(mixMode)
+
+    fun isEmptyOrConst(constValue: Float): Boolean {
+        if (propertySources.size == 1) {
+            val ps = propertySources[0]
+            if (ps is ConstProperty) {
+                return ps.value == constValue
+            }
+        }
+        return propertySources.isEmpty()
+    }
 
     enum class MixMode {
         Set,

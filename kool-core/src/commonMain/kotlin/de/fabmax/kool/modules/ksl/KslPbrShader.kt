@@ -87,11 +87,12 @@ open class KslPbrShader(cfg: Config, model: KslProgram = Model(cfg)) : KslLitSha
             aoFactor: KslExprFloat1,
             normal: KslExprFloat3,
             fragmentWorldPos: KslExprFloat3,
-            baseColor: KslExprFloat4
+            baseColor: KslExprFloat4,
+            emissionColor: KslExprFloat4
         ): KslExprFloat4 {
 
-            val uRoughness = fragmentPropertyBlock(cfg.roughnessCfg).outProperty
-            val uMetallic = fragmentPropertyBlock(cfg.metallicCfg).outProperty
+            val roughness = fragmentPropertyBlock(cfg.roughnessCfg).outProperty
+            val metallic = fragmentPropertyBlock(cfg.metallicCfg).outProperty
 
             val ambientOri = uniformMat3("uAmbientTextureOri")
             val brdfLut = texture2d("tBrdfLut")
@@ -108,8 +109,8 @@ open class KslPbrShader(cfg: Config, model: KslProgram = Model(cfg)) : KslLitSha
                 inFragmentPos(fragmentWorldPos)
                 inBaseColor(baseColor.rgb)
 
-                inRoughness(uRoughness)
-                inMetallic(uMetallic)
+                inRoughness(roughness)
+                inMetallic(metallic)
 
                 inIrradiance(irradiance)
                 inAoFactor(aoFactor)
@@ -120,7 +121,7 @@ open class KslPbrShader(cfg: Config, model: KslProgram = Model(cfg)) : KslLitSha
 
                 setLightData(lightData, shadowFactors, cfg.lightStrength.const)
             }
-            return float4Value(material.outColor, baseColor.a)
+            return float4Value(material.outColor + emissionColor.rgb, baseColor.a)
         }
     }
 }

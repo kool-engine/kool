@@ -24,6 +24,9 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
     var materialAo: Float by uniform1f(cfg.aoCfg.materialAo.primaryUniform?.uniformName, cfg.aoCfg.materialAo.primaryUniform?.defaultValue)
     var materialAoMap: Texture2d? by texture2d(cfg.aoCfg.materialAo.primaryTexture?.textureName, cfg.aoCfg.materialAo.primaryTexture?.defaultTexture)
 
+    var displacement: Float by uniform1f(cfg.displacementCfg.primaryUniform?.uniformName, cfg.displacementCfg.primaryUniform?.defaultValue)
+    var displacementMap: Texture2d? by texture2d(cfg.displacementCfg.primaryTexture?.textureName, cfg.displacementCfg.primaryTexture?.defaultTexture)
+
     var ambientFactor: Vec4f by uniform4f("uAmbientColor")
     var ambientTextureOrientation: Mat3f by uniformMat3f("uAmbientTextureOri", Mat3f().setIdentity())
     // if ambient color is image based
@@ -58,6 +61,8 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
         val aoCfg = AmbientOcclusionConfig()
         val pipelineCfg = PipelineConfig()
         val shadowCfg = ShadowConfig()
+        val emissionCfg = ColorBlockConfig("emissionColor").apply { constColor(Color(0f, 0f, 0f, 0f)) }
+        val displacementCfg = PropertyBlockConfig("displacement").apply { constProperty(0f) }
 
         var ambientColor: AmbientColor = AmbientColor.Uniform(Color(0.2f, 0.2f, 0.2f).toLinear())
         var colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
@@ -67,10 +72,7 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
 
         var modelCustomizer: (KslProgram.() -> Unit)? = null
 
-        fun enableSsao(ssaoMap: Texture2d? = null) {
-            aoCfg.isSsao = ssaoMap != null
-            aoCfg.defaultSsaoMap = ssaoMap
-        }
+        fun enableSsao(ssaoMap: Texture2d? = null) = aoCfg.enableSsao(ssaoMap)
 
         fun ao(block: AmbientOcclusionConfig.() -> Unit) {
             aoCfg.block()
@@ -78,6 +80,10 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
 
         fun color(block: ColorBlockConfig.() -> Unit) {
             colorCfg.block()
+        }
+
+        fun displacement(block: PropertyBlockConfig.() -> Unit) {
+            displacementCfg.block()
         }
 
         fun uniformAmbientColor(color: Color = Color(0.2f, 0.2f, 0.2f).toLinear()) {
@@ -138,12 +144,17 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
                     }
 
                     // transform vertex attributes into world space and forward them to fragment stage
-                    val localPos = float4Value(vertexAttribFloat3(Attribute.POSITIONS.name), 1f)
-                    val localNormal = float4Value(vertexAttribFloat3(Attribute.NORMALS.name), 0f)
+                    val localPos = float3Var(vertexAttribFloat3(Attribute.POSITIONS.name))
+                    val localNormal = float3Var(vertexAttribFloat3(Attribute.NORMALS.name))
+
+                    if (!cfg.displacementCfg.isEmptyOrConst(0f)) {
+                        val displacement = vertexDisplacementBlock(cfg.displacementCfg).outProperty
+                        localPos += normalize(localNormal) * displacement
+                    }
 
                     // world position and normal are made available via ports for custom models to modify them
-                    val worldPos = float3Port("worldPos", float3Var((modelMat * localPos).xyz))
-                    val worldNormal = float3Port("worldNormal", float3Var(normalize((modelMat * localNormal).xyz)))
+                    val worldPos = float3Port("worldPos", float3Var((modelMat * float4Value(localPos, 1f)).xyz))
+                    val worldNormal = float3Port("worldNormal", float3Var(normalize((modelMat * float4Value(localNormal, 0f)).xyz)))
 
                     positionWorldSpace.input set worldPos
                     normalWorldSpace.input set worldNormal
@@ -185,6 +196,9 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
                             discard()
                         }
                     }
+
+                    val emissionBlock = fragmentColorBlock(cfg.emissionCfg)
+                    val emissionColorPort = float4Port("emissionColor", emissionBlock.outColor)
 
                     val vertexNormal = float3Var(normalize(normalWorldSpace.output))
                     if (cfg.pipelineCfg.cullMethod.isBackVisible && cfg.vertexCfg.isFlipBacksideNormals) {
@@ -249,8 +263,10 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
                         aoFactor = aoFactor,
                         normal = normal,
                         fragmentWorldPos = positionWorldSpace.output,
-                        baseColor = baseColorPort
+                        baseColor = baseColorPort,
+                        emissionColor = emissionColorPort
                     )
+
                     val materialColorPort = float4Port("materialColor", materialColor)
 
                     // set fragment stage output color
@@ -281,6 +297,7 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
             normal: KslExprFloat3,
             fragmentWorldPos: KslExprFloat3,
             baseColor: KslExprFloat4,
+            emissionColor: KslExprFloat4,
         ): KslExprFloat4
     }
 }

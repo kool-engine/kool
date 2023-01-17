@@ -41,7 +41,12 @@ class ColorBlockVertexStage(cfg: ColorBlockConfig, parentScope: KslScopeBuilder)
     }
 }
 
-class ColorBlockFragmentStage(cfg: ColorBlockConfig, vertexColorBlock: ColorBlockVertexStage?, parentScope: KslScopeBuilder) : KslBlock(cfg.colorName, parentScope) {
+class ColorBlockFragmentStage(
+    private val cfg: ColorBlockConfig,
+    private val vertexColorBlock: ColorBlockVertexStage?,
+    parentScope: KslScopeBuilder
+) : KslBlock(cfg.colorName, parentScope) {
+
     val outColor = outFloat4(parentScope.nextName("${opName}_outColor"))
 
     val textures = mutableMapOf<ColorBlockConfig.TextureColor, KslUniform<KslTypeColorSampler2d>>()
@@ -49,13 +54,6 @@ class ColorBlockFragmentStage(cfg: ColorBlockConfig, vertexColorBlock: ColorBloc
     init {
         body.apply {
             check(parentStage is KslFragmentStage) { "ColorBlockFragmentStage can only be added to KslFragmentStage" }
-
-            val texCoordBlock: TexCoordAttributeBlock = parentStage.program.vertexStage.findBlock()
-                ?: parentStage.program.vertexStage.main.run { texCoordAttributeBlock() }
-
-            val vertexBlock: ColorBlockVertexStage = vertexColorBlock
-                ?: parentStage.program.vertexStage.findBlock(cfg.colorName)
-                ?: parentStage.program.vertexStage.main.run { vertexColorBlock(cfg) }
 
             if (cfg.colorSources.isEmpty() || cfg.colorSources.first().mixMode != ColorBlockConfig.MixMode.Set) {
                 outColor set Color.BLACK.const
@@ -65,11 +63,11 @@ class ColorBlockFragmentStage(cfg: ColorBlockConfig, vertexColorBlock: ColorBloc
                 val colorValue: KslVectorExpression<KslTypeFloat4, KslTypeFloat1> = when (source) {
                     is ColorBlockConfig.ConstColor -> source.constColor.const
                     is ColorBlockConfig.UniformColor -> parentStage.program.uniformFloat4(source.uniformName)
-                    is ColorBlockConfig.VertexColor -> vertexBlock.vertexColors[source]?.output ?: Vec4f.ZERO.const
-                    is ColorBlockConfig.InstanceColor -> vertexBlock.instanceColors[source]?.output ?: Vec4f.ZERO.const
+                    is ColorBlockConfig.VertexColor -> vertexBlock(parentStage).vertexColors[source]?.output ?: Vec4f.ZERO.const
+                    is ColorBlockConfig.InstanceColor -> vertexBlock(parentStage).instanceColors[source]?.output ?: Vec4f.ZERO.const
                     is ColorBlockConfig.TextureColor ->  {
                         val tex = parentStage.program.texture2d(source.textureName).also { textures[source] = it }
-                        val texCoords = texCoordBlock.getAttributeCoords(source.coordAttribute)
+                        val texCoords = texCoordBlock(parentStage).getAttributeCoords(source.coordAttribute)
                         val texColor = float4Var(sampleTexture(tex, texCoords))
                         if (source.gamma != 1f) {
                             texColor.rgb set pow(texColor.rgb, Vec3f(source.gamma).const)
@@ -80,6 +78,17 @@ class ColorBlockFragmentStage(cfg: ColorBlockConfig, vertexColorBlock: ColorBloc
                 mixColor(source.mixMode, colorValue)
             }
         }
+    }
+
+    private fun texCoordBlock(parentStage: KslShaderStage): TexCoordAttributeBlock {
+        return parentStage.program.vertexStage.findBlock()
+            ?: parentStage.program.vertexStage.main.run { texCoordAttributeBlock() }
+    }
+
+    private fun vertexBlock(parentStage: KslShaderStage): ColorBlockVertexStage {
+        return vertexColorBlock
+            ?: parentStage.program.vertexStage.findBlock(cfg.colorName)
+            ?: parentStage.program.vertexStage.main.run { vertexColorBlock(cfg) }
     }
 
     private fun KslScopeBuilder.mixColor(mixMode: ColorBlockConfig.MixMode, value: KslExprFloat4) {
