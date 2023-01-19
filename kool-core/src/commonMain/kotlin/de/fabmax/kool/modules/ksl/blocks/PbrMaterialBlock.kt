@@ -31,9 +31,10 @@ class PbrMaterialBlock(
 
     init {
         body.apply {
+            val baseColorRgb = inBaseColor.rgb
             val viewDir = float3Var(normalize(inCamPos - inFragmentPos))
             val roughness = float1Var(clamp(inRoughness, 0.05f.const, 1f.const))
-            val f0 = mix(Vec3f(0.04f).const, inBaseColor, inMetallic)
+            val f0 = mix(Vec3f(0.04f).const, baseColorRgb, inMetallic)
             val lo = float3Var(Vec3f.ZERO.const)
 
             fori(0.const, inLightCount) { i ->
@@ -57,14 +58,14 @@ class PbrMaterialBlock(
                 val specular = float3Var(num / max(denom, 0.001f.const))
 
                 // add to outgoing radiance
-                lo += (kD * inBaseColor / PI.const + specular) * radiance * nDotL
+                lo += (kD * baseColorRgb / PI.const + specular) * radiance * nDotL
             }
 
             // image based (ambient) lighting and reflection
             val normalDotView = float1Var(max(dot(inNormal, viewDir), 0f.const))
             val f = float3Var(fresnelSchlickRoughness(normalDotView, f0, roughness))
             val kD = float3Var((1f.const - f) * (1f.const - inMetallic))
-            val diffuse = float3Var(inIrradiance * inBaseColor)
+            val diffuse = float3Var(inIrradiance * baseColorRgb)
 
             // use irradiance / ambient color as fallback reflection color in case no reflection map is used
             // ambient color is supposed to be uniform in this case because reflection direction is not considered
@@ -80,7 +81,7 @@ class PbrMaterialBlock(
             reflectionColor set reflectionColor * inReflectionStrength
 
             val brdf = float2Var(sampleTexture(brdfLut, float2Value(normalDotView, roughness)).rg)
-            val specular = float3Var(reflectionColor * (f * brdf.r + brdf.g))
+            val specular = float3Var(reflectionColor * (f * brdf.r + brdf.g) / inBaseColor.a)
             val ambient = float3Var(kD * diffuse * inAoFactor)
             val reflection = float3Var(specular * inAoFactor)
             outColor set ambient + lo + reflection

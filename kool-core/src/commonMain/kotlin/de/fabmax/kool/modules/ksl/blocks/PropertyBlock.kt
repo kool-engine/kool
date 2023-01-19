@@ -67,9 +67,11 @@ class PropertyBlockFragmentStage(
                         var sampleValue = findExistingSampleValue(source.textureName, source.coordAttribute, parentStage)
                         if (sampleValue == null) {
                             val tex = parentStage.program.texture2d(source.textureName).also { textures[source] = it }
-                            val texCoords = texCoordBlock(parentStage).getAttributeCoords(source.coordAttribute)
-                            sampleValue = float4Var(sampleTexture(tex, texCoords)).also {
-                                outSamplerValues[source.textureName to source.coordAttribute] = it
+                            sampleValue = parentScope.run {
+                                val texCoords = texCoordBlock(parentStage).getAttributeCoords(source.coordAttribute)
+                                float4Var(sampleTexture(tex, texCoords)).also {
+                                    outSamplerValues[source.textureName to source.coordAttribute] = it
+                                }
                             }
                         }
                         when (source.channel) {

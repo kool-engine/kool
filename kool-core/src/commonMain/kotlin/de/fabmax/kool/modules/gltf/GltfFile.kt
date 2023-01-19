@@ -4,6 +4,7 @@ import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.math.Mat4dStack
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec4d
+import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.deferred.DeferredPbrShader
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
@@ -117,26 +118,26 @@ data class GltfFile(
     }
 
     class ModelGenerateConfig(
-            val generateNormals: Boolean = false,
-            val applyMaterials: Boolean = true,
-            val materialConfig: ModelMaterialConfig = ModelMaterialConfig(),
-            val setVertexAttribsFromMaterial: Boolean = false,
-            val loadAnimations: Boolean = true,
-            val applySkins: Boolean = true,
-            val applyMorphTargets: Boolean = true,
-            val applyTransforms: Boolean = false,
-            val removeEmptyNodes: Boolean = true,
-            val mergeMeshesByMaterial: Boolean = false,
-            val sortNodesByAlpha: Boolean = true,
-            val pbrBlock: (PbrMaterialConfig.(GltfMesh.Primitive) -> Unit)? = null
+        val generateNormals: Boolean = false,
+        val applyMaterials: Boolean = true,
+        val materialConfig: ModelMaterialConfig = ModelMaterialConfig(),
+        val setVertexAttribsFromMaterial: Boolean = false,
+        val loadAnimations: Boolean = true,
+        val applySkins: Boolean = true,
+        val applyMorphTargets: Boolean = true,
+        val applyTransforms: Boolean = false,
+        val removeEmptyNodes: Boolean = true,
+        val mergeMeshesByMaterial: Boolean = false,
+        val sortNodesByAlpha: Boolean = true,
+        val pbrBlock: (KslPbrShader.Config.(GltfMesh.Primitive) -> Unit)? = null
     )
 
     class ModelMaterialConfig(
-            val shadowMaps: List<ShadowMap> = emptyList(),
-            val scrSpcAmbientOcclusionMap: Texture2d? = null,
-            val environmentMaps: EnvironmentMaps? = null,
-            val isDeferredShading: Boolean = false,
-            val maxNumberOfJoints: Int = 64
+        val shadowMaps: List<ShadowMap> = emptyList(),
+        val scrSpcAmbientOcclusionMap: Texture2d? = null,
+        val environmentMaps: EnvironmentMaps? = null,
+        val isDeferredShading: Boolean = false,
+        val maxNumberOfJoints: Int = 64
     )
 
     private inner class ModelGenerator(val cfg: ModelGenerateConfig) {
@@ -551,69 +552,155 @@ data class GltfFile(
                     }
 
                     if (cfg.applyMaterials) {
-                        var renderDeferred = cfg.materialConfig.isDeferredShading
-                        val useVertexColor = prim.attributes.containsKey(GltfMesh.Primitive.ATTRIBUTE_COLOR_0)
-                        val pbrConfig = PbrMaterialConfig().apply {
-                            val material = prim.materialRef
-                            if (material != null) {
-                                material.applyTo(this, useVertexColor, this@GltfFile)
-                            } else {
-                                albedo = Color.GRAY
-                                albedoSource = Albedo.STATIC_ALBEDO
-                            }
-                            if (mesh.skin != null) {
-                                isSkinned = true
-                                maxJoints = min(cfg.materialConfig.maxNumberOfJoints, mesh.skin!!.nodes.size)
-                                if (cfg.materialConfig.maxNumberOfJoints < mesh.skin!!.nodes.size) {
-                                    logE("GltfFile") { "\"${model.name}\": Maximum number of joints exceeded (mesh has ${mesh.skin!!.nodes.size}, materialConfig.maxNumberOfJoints is ${cfg.materialConfig.maxNumberOfJoints})" }
-                                }
-                            }
-                            if (mesh.morphWeights != null) {
-                                morphAttributes += mesh.geometry.getMorphAttributes()
-                            }
-
-                            cfg.materialConfig.let { matCfg ->
-                                shadowMaps += matCfg.shadowMaps
-                                matCfg.scrSpcAmbientOcclusionMap?.let { useScreenSpaceAmbientOcclusion(it) }
-                                useImageBasedLighting(matCfg.environmentMaps)
-                            }
-                            cfg.pbrBlock?.invoke(this, prim)
-
-                            if (alphaMode is AlphaMode.Blend) {
-                                mesh.isOpaque = false
-                                // transparent / blended meshes must be rendered in forward pass
-                                renderDeferred = false
-                            }
-
-                            albedoMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
-                            emissiveMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
-                            normalMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
-                            roughnessMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
-                            metallicMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
-                            aoMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
-                            displacementMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
-                        }
-
-                        if (renderDeferred) {
-                            pbrConfig.isHdrOutput = true
-                            mesh.shader = DeferredPbrShader(pbrConfig)
+                        val isDeferredPipeline = cfg.materialConfig.isDeferredShading
+                        if (isDeferredPipeline) {
+                            makeLegacyMaterial(prim, mesh, cfg, model)
                         } else {
-                            pbrConfig.isHdrOutput = false
-                            mesh.shader = PbrShader(pbrConfig)
-                        }
-                        if (pbrConfig.alphaMode is AlphaMode.Mask) {
-                            val depthShaderCfg = DepthShaderConfig().apply {
-                                isInstanced = pbrConfig.isInstanced
-                                isSkinned = pbrConfig.isSkinned
-                                cullMethod = pbrConfig.cullMethod
-                                alphaMode = pbrConfig.alphaMode
-                                alphaMask = pbrConfig.albedoMap
-                            }
-                            mesh.depthShader = DepthShader(depthShaderCfg)
+                            //makeLegacyMaterial(prim, mesh, cfg, model)
+                            makeKslMaterial(prim, mesh, cfg, model)
                         }
                     }
                     model.meshes[name] = mesh
                 }
+            }
+        }
+
+        private fun makeKslMaterial(prim: GltfMesh.Primitive, mesh: Mesh, cfg: ModelGenerateConfig, model: Model) {
+            if (cfg.materialConfig.isDeferredShading) {
+                TODO()
+            }
+            val useVertexColor = prim.attributes.containsKey(GltfMesh.Primitive.ATTRIBUTE_COLOR_0)
+
+            val pbrConfig = KslPbrShader.Config().apply {
+                val material = prim.materialRef
+                if (material != null) {
+                    material.applyTo(this, useVertexColor, this@GltfFile)
+                } else {
+                    color {
+                        uniformColor(Color.GRAY.toLinear())
+                    }
+                }
+
+                vertices {
+                    if (mesh.skin != null) {
+                        enableArmature(min(cfg.materialConfig.maxNumberOfJoints, mesh.skin!!.nodes.size))
+                        if (cfg.materialConfig.maxNumberOfJoints < mesh.skin!!.nodes.size) {
+                            logE("GltfFile") { "\"${model.name}\": Maximum number of joints exceeded (mesh has ${mesh.skin!!.nodes.size}, materialConfig.maxNumberOfJoints is ${cfg.materialConfig.maxNumberOfJoints})" }
+                        }
+                    }
+                    if (mesh.morphWeights != null) {
+                        morphAttributes += mesh.geometry.getMorphAttributes()
+                    }
+                }
+
+                cfg.materialConfig.let { matCfg ->
+                    shadow {
+                        addShadowMaps(matCfg.shadowMaps)
+                    }
+                    matCfg.scrSpcAmbientOcclusionMap?.let {
+                        enableSsao(it)
+                    }
+                    matCfg.environmentMaps?.let {  ibl ->
+                        imageBasedAmbientColor(ibl.irradianceMap)
+                        reflectionMap = ibl.reflectionMap
+                    }
+                }
+                cfg.pbrBlock?.invoke(this, prim)
+
+                if (alphaMode is AlphaMode.Blend) {
+                    mesh.isOpaque = false
+                    // transparent / blended meshes must be rendered in forward pass
+                    //renderDeferred = false
+                }
+
+                colorCfg.primaryTexture?.defaultTexture?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
+                emissionCfg.primaryTexture?.defaultTexture?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
+                normalMapCfg.defaultNormalMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
+                roughnessCfg.primaryTexture?.defaultTexture?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
+                metallicCfg.primaryTexture?.defaultTexture?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
+                aoCfg.materialAo.primaryTexture?.defaultTexture?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
+                vertexCfg.displacementCfg.primaryTexture?.defaultTexture?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
+            }
+
+            mesh.shader = KslPbrShader(pbrConfig)
+            if (pbrConfig.alphaMode is AlphaMode.Mask) {
+                val depthShaderCfg = DepthShaderConfig().apply {
+                    isInstanced = pbrConfig.vertexCfg.isInstanced
+                    isSkinned = pbrConfig.vertexCfg.isArmature
+                    cullMethod = pbrConfig.pipelineCfg.cullMethod
+                    alphaMode = pbrConfig.alphaMode
+                    alphaMask = pbrConfig.colorCfg.primaryTexture?.defaultTexture
+                    morphAttributes += pbrConfig.vertexCfg.morphAttributes
+                    nMorphWeights = pbrConfig.vertexCfg.morphAttributes.size
+                }
+                mesh.depthShader = DepthShader(depthShaderCfg)
+            }
+        }
+
+        private fun makeLegacyMaterial(prim: GltfMesh.Primitive, mesh: Mesh, cfg: ModelGenerateConfig, model: Model) {
+            var renderDeferred = cfg.materialConfig.isDeferredShading
+            val useVertexColor = prim.attributes.containsKey(GltfMesh.Primitive.ATTRIBUTE_COLOR_0)
+
+            val pbrConfig = PbrMaterialConfig().apply {
+                val material = prim.materialRef
+                if (material != null) {
+                    material.applyTo(this, useVertexColor, this@GltfFile)
+                } else {
+                    albedo = Color.GRAY
+                    albedoSource = Albedo.STATIC_ALBEDO
+                }
+                if (mesh.skin != null) {
+                    isSkinned = true
+                    maxJoints = min(cfg.materialConfig.maxNumberOfJoints, mesh.skin!!.nodes.size)
+                    if (cfg.materialConfig.maxNumberOfJoints < mesh.skin!!.nodes.size) {
+                        logE("GltfFile") { "\"${model.name}\": Maximum number of joints exceeded (mesh has ${mesh.skin!!.nodes.size}, materialConfig.maxNumberOfJoints is ${cfg.materialConfig.maxNumberOfJoints})" }
+                    }
+                }
+                if (mesh.morphWeights != null) {
+                    morphAttributes += mesh.geometry.getMorphAttributes()
+                }
+
+                cfg.materialConfig.let { matCfg ->
+                    shadowMaps += matCfg.shadowMaps
+                    matCfg.scrSpcAmbientOcclusionMap?.let { useScreenSpaceAmbientOcclusion(it) }
+                    useImageBasedLighting(matCfg.environmentMaps)
+                }
+                //cfg.pbrBlock?.invoke(this, prim)
+
+                if (alphaMode is AlphaMode.Blend) {
+                    mesh.isOpaque = false
+                    // transparent / blended meshes must be rendered in forward pass
+                    renderDeferred = false
+                }
+
+                albedoMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
+                emissiveMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
+                normalMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
+                roughnessMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
+                metallicMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
+                aoMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
+                displacementMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
+            }
+
+            if (renderDeferred) {
+                pbrConfig.isHdrOutput = true
+                mesh.shader = DeferredPbrShader(pbrConfig)
+            } else {
+                pbrConfig.isHdrOutput = false
+                mesh.shader = PbrShader(pbrConfig)
+            }
+
+            if (pbrConfig.alphaMode is AlphaMode.Mask) {
+                val depthShaderCfg = DepthShaderConfig().apply {
+                    isInstanced = pbrConfig.isInstanced
+                    isSkinned = pbrConfig.isSkinned
+                    cullMethod = pbrConfig.cullMethod
+                    alphaMode = pbrConfig.alphaMode
+                    alphaMask = pbrConfig.albedoMap
+                    morphAttributes += pbrConfig.morphAttributes
+                    nMorphWeights = pbrConfig.morphAttributes.size
+                }
+                mesh.depthShader = DepthShader(depthShaderCfg)
             }
         }
     }

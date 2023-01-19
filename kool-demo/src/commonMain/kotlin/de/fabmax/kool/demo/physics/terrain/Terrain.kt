@@ -193,7 +193,7 @@ class Terrain(val heightMap: HeightMap) {
                                         wRock * rockColor +
                                         wDeepWater * deepWaterColor
                             )
-                            material.inBaseColor(baseColor * terrainColor.rgb)
+                            material.inBaseColor(float4Value(baseColor.rgb * terrainColor.rgb, baseColor.a))
 
                             if (material is BlinnPhongMaterialBlock) {
                                 val specularStrength = float1Var(

@@ -17,7 +17,7 @@ class BlinnPhongMaterialBlock(name: String, parentScope: KslScopeBuilder) : LitM
 
     init {
         body.apply {
-            val ambientColor = float3Var(inBaseColor * inAmbientColor)
+            val ambientColor = float3Var(inBaseColor.rgb * inAmbientColor)
             val diffuseColor = float3Var(Vec3f.ZERO.const)
             val specularColor = float3Var(Vec3f.ZERO.const)
             val viewDir = float3Var(normalize(inCamPos - inFragmentPos))
@@ -37,7 +37,7 @@ class BlinnPhongMaterialBlock(name: String, parentScope: KslScopeBuilder) : LitM
                     val radiance = float3Var(inShadowFactors[i] * inLightStrength *
                             getLightRadiance(inFragmentPos, inEncodedLightPositions[i], inEncodedLightDirections[i], inEncodedLightColors[i]))
 
-                    diffuseColor += inBaseColor * lambertian * radiance
+                    diffuseColor += inBaseColor.rgb * lambertian * radiance
                     specularColor += inSpecularColor * specular * radiance
                 }
             }

@@ -20,12 +20,15 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
     var normalMap: Texture2d? by texture2d(cfg.normalMapCfg.normalMapName, cfg.normalMapCfg.defaultNormalMap)
     var normalMapStrength: Float by uniform1f("uNormalMapStrength", cfg.normalMapCfg.defaultStrength)
 
+    var emission: Vec4f by uniform4f(cfg.emissionCfg.primaryUniform?.uniformName, cfg.emissionCfg.primaryUniform?.defaultColor)
+    var emissionMap: Texture2d? by texture2d(cfg.emissionCfg.primaryTexture?.textureName, cfg.emissionCfg.primaryTexture?.defaultTexture)
+
     var ssaoMap: Texture2d? by texture2d("tSsaoMap", cfg.aoCfg.defaultSsaoMap)
     var materialAo: Float by uniform1f(cfg.aoCfg.materialAo.primaryUniform?.uniformName, cfg.aoCfg.materialAo.primaryUniform?.defaultValue)
     var materialAoMap: Texture2d? by texture2d(cfg.aoCfg.materialAo.primaryTexture?.textureName, cfg.aoCfg.materialAo.primaryTexture?.defaultTexture)
 
-    var displacement: Float by uniform1f(cfg.displacementCfg.primaryUniform?.uniformName, cfg.displacementCfg.primaryUniform?.defaultValue)
-    var displacementMap: Texture2d? by texture2d(cfg.displacementCfg.primaryTexture?.textureName, cfg.displacementCfg.primaryTexture?.defaultTexture)
+    var displacement: Float by uniform1f(cfg.vertexCfg.displacementCfg.primaryUniform?.uniformName, cfg.vertexCfg.displacementCfg.primaryUniform?.defaultValue)
+    var displacementMap: Texture2d? by texture2d(cfg.vertexCfg.displacementCfg.primaryTexture?.textureName, cfg.vertexCfg.displacementCfg.primaryTexture?.defaultTexture)
 
     var ambientFactor: Vec4f by uniform4f("uAmbientColor")
     var ambientTextureOrientation: Mat3f by uniformMat3f("uAmbientTextureOri", Mat3f().setIdentity())
@@ -62,7 +65,6 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
         val pipelineCfg = PipelineConfig()
         val shadowCfg = ShadowConfig()
         val emissionCfg = ColorBlockConfig("emissionColor").apply { constColor(Color(0f, 0f, 0f, 0f)) }
-        val displacementCfg = PropertyBlockConfig("displacement").apply { constProperty(0f) }
 
         var ambientColor: AmbientColor = AmbientColor.Uniform(Color(0.2f, 0.2f, 0.2f).toLinear())
         var colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
@@ -74,16 +76,16 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
 
         fun enableSsao(ssaoMap: Texture2d? = null) = aoCfg.enableSsao(ssaoMap)
 
-        fun ao(block: AmbientOcclusionConfig.() -> Unit) {
+        inline fun ao(block: AmbientOcclusionConfig.() -> Unit) {
             aoCfg.block()
         }
 
-        fun color(block: ColorBlockConfig.() -> Unit) {
+        inline fun color(block: ColorBlockConfig.() -> Unit) {
             colorCfg.block()
         }
 
-        fun displacement(block: PropertyBlockConfig.() -> Unit) {
-            displacementCfg.block()
+        inline fun emission(block: ColorBlockConfig.() -> Unit) {
+            emissionCfg.block()
         }
 
         fun uniformAmbientColor(color: Color = Color(0.2f, 0.2f, 0.2f).toLinear()) {
@@ -98,19 +100,19 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
             ambientColor = AmbientColor.DualImageBased(colorFactor)
         }
 
-        fun normalMapping(block: NormalMapConfig.() -> Unit) {
+        inline fun normalMapping(block: NormalMapConfig.() -> Unit) {
             normalMapCfg.block()
         }
 
-        fun pipeline(block: PipelineConfig.() -> Unit) {
+        inline fun pipeline(block: PipelineConfig.() -> Unit) {
             pipelineCfg.block()
         }
 
-        fun shadow(block: ShadowConfig.() -> Unit) {
+        inline fun shadow(block: ShadowConfig.() -> Unit) {
             shadowCfg.block()
         }
 
-        fun vertices(block: BasicVertexConfig.() -> Unit) {
+        inline fun vertices(block: BasicVertexConfig.() -> Unit) {
             vertexCfg.block()
         }
     }
@@ -129,44 +131,28 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
 
             vertexStage {
                 main {
-                    val uModelMat = modelMatrix()
-                    val viewProj = mat4Var(camData.viewProjMat)
-                    val modelMat = mat4Var(uModelMat.matrix)
-                    if (cfg.vertexCfg.isInstanced) {
-                        val instanceModelMat = instanceAttribMat4(Attribute.INSTANCE_MODEL_MAT.name)
-                        modelMat *= instanceModelMat
-                    }
-                    if (cfg.vertexCfg.isArmature) {
-                        val armatureBlock = armatureBlock(cfg.vertexCfg.maxNumberOfBones)
-                        armatureBlock.inBoneWeights(vertexAttribFloat4(Attribute.WEIGHTS.name))
-                        armatureBlock.inBoneIndices(vertexAttribInt4(Attribute.JOINTS.name))
-                        modelMat *= armatureBlock.outBoneTransform
-                    }
+                    val vertexBlock = vertexTransformBlock(cfg.vertexCfg) {
+                        inModelMat(modelMatrix().matrix)
+                        inLocalPos(vertexAttribFloat3(Attribute.POSITIONS.name))
+                        inLocalNormal(vertexAttribFloat3(Attribute.NORMALS.name))
 
-                    // transform vertex attributes into world space and forward them to fragment stage
-                    val localPos = float3Var(vertexAttribFloat3(Attribute.POSITIONS.name))
-                    val localNormal = float3Var(vertexAttribFloat3(Attribute.NORMALS.name))
-
-                    if (!cfg.displacementCfg.isEmptyOrConst(0f)) {
-                        val displacement = vertexDisplacementBlock(cfg.displacementCfg).outProperty
-                        localPos += normalize(localNormal) * displacement
+                        if (cfg.normalMapCfg.isNormalMapped) {
+                            // if normal mapping is enabled, the input vertex data is expected to have a tangent attribute
+                            inLocalTangent(vertexAttribFloat4(Attribute.TANGENTS.name))
+                        }
                     }
 
                     // world position and normal are made available via ports for custom models to modify them
-                    val worldPos = float3Port("worldPos", float3Var((modelMat * float4Value(localPos, 1f)).xyz))
-                    val worldNormal = float3Port("worldNormal", float3Var(normalize((modelMat * float4Value(localNormal, 0f)).xyz)))
+                    val worldPos = float3Port("worldPos", vertexBlock.outWorldPos)
+                    val worldNormal = float3Port("worldNormal", vertexBlock.outWorldNormal)
 
                     positionWorldSpace.input set worldPos
                     normalWorldSpace.input set worldNormal
-                    projPosition.input set (viewProj * float4Value(worldPos, 1f))
+                    projPosition.input set (camData.viewProjMat * float4Value(worldPos, 1f))
                     outPosition set projPosition.input
 
-                    // if normal mapping is enabled, the input vertex data is expected to have a tangent attribute
                     if (cfg.normalMapCfg.isNormalMapped) {
-                        tangentWorldSpace = interStageFloat4().apply {
-                            val tang = vertexAttribFloat4(Attribute.TANGENTS.name)
-                            input set float4Value((modelMat * float4Value(tang.xyz, 0f)).xyz, tang.w)
-                        }
+                        tangentWorldSpace = interStageFloat4().apply { input set vertexBlock.outWorldTangent }
                     }
 
                     // texCoordBlock is used by various other blocks to access texture coordinate vertex
@@ -271,10 +257,10 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
 
                     // set fragment stage output color
                     val outRgb = float3Var(materialColorPort.rgb)
-                    outRgb set convertColorSpace(outRgb, cfg.colorSpaceConversion)
                     if (cfg.pipelineCfg.blendMode == BlendMode.BLEND_PREMULTIPLIED_ALPHA) {
                         outRgb set outRgb * materialColorPort.a
                     }
+                    outRgb set convertColorSpace(outRgb, cfg.colorSpaceConversion)
 
                     when (cfg.alphaMode) {
                         is AlphaMode.Blend -> colorOutput(outRgb, materialColorPort.a)

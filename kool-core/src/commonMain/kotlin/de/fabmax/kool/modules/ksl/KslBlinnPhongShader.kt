@@ -63,7 +63,7 @@ open class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : Ks
                 inCamPos(camData.position)
                 inNormal(normal)
                 inFragmentPos(fragmentWorldPos)
-                inBaseColor(baseColor.rgb)
+                inBaseColor(baseColor)
 
                 inAmbientColor(irradiance * aoFactor)
                 inSpecularColor(uSpecularColor.rgb)

@@ -107,7 +107,7 @@ open class KslPbrShader(cfg: Config, model: KslProgram = Model(cfg)) : KslLitSha
                 inCamPos(camData.position)
                 inNormal(normal)
                 inFragmentPos(fragmentWorldPos)
-                inBaseColor(baseColor.rgb)
+                inBaseColor(baseColor)
 
                 inRoughness(roughness)
                 inMetallic(metallic)

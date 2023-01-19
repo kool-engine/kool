@@ -32,7 +32,7 @@ class GltfDemo : DemoScene("glTF Models") {
             GltfModel("Flight Helmet", "${DemoLoader.modelPath}/flight_helmet/FlightHelmet.gltf",
                     4f, Vec3f.ZERO, false, Vec3d(0.0, 1.25, 0.0), false, 3.5),
             GltfModel("Polly", "${DemoLoader.modelPath}/project_polly_jpg.glb",
-                    3f, Vec3f.ZERO, false, Vec3d(0.0, 1.25, 0.0), false, 3.5),
+                    3f, Vec3f.ZERO, false, Vec3d(0.0, 1.25, 0.0), false, 3.5, normalizeBoneWeights = true),
             GltfModel("Coffee Cart", "${DemoLoader.modelPath}/CoffeeCart_01.glb",
                     2f, Vec3f(0f, -0.01f, 0f), false, Vec3d(0.0, 1.75, 0.0), false, 3.5),
             GltfModel("Camera", "${DemoLoader.modelPath}/camera.glb",
@@ -342,14 +342,16 @@ class GltfDemo : DemoScene("glTF Models") {
     }
 
     private inner class GltfModel(
-            val name: String,
-            val assetPath: String,
-            val scale: Float,
-            val translation: Vec3f,
-            val generateNormals: Boolean,
-            val lookAt: Vec3d,
-            val trackModel: Boolean,
-            val zoom: Double) {
+        val name: String,
+        val assetPath: String,
+        val scale: Float,
+        val translation: Vec3f,
+        val generateNormals: Boolean,
+        val lookAt: Vec3d,
+        val trackModel: Boolean,
+        val zoom: Double,
+        val normalizeBoneWeights: Boolean = false
+    ) {
 
         var forwardModel: Model? = null
         var deferredModel: Model? = null
@@ -383,6 +385,14 @@ class GltfDemo : DemoScene("glTF Models") {
                 model = it.makeModel(modelCfg).apply {
                     translate(translation)
                     scale(scale)
+
+                    if (normalizeBoneWeights) {
+                        meshes.values.forEach { mesh ->
+                            mesh.geometry.forEach { v ->
+                                v.weights.scale(1f / (v.weights.x + v.weights.y + v.weights.z + v.weights.w))
+                            }
+                        }
+                    }
 
                     enableAnimation(0)
                     onUpdate += {

@@ -102,9 +102,11 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrCont
                 roughness { textureProperty() }
                 metallic { textureProperty() }
                 ao { materialAo { textureProperty() } }
-                displacement {
-                    textureProperty()
-                    uniformProperty(displacement.value, mixMode = PropertyBlockConfig.MixMode.Multiply)
+                vertices {
+                    displacement {
+                        textureProperty()
+                        uniformProperty(displacement.value, mixMode = PropertyBlockConfig.MixMode.Multiply)
+                    }
                 }
                 if (withIbl) {
                     imageBasedAmbientColor(envMaps.irradianceMap)

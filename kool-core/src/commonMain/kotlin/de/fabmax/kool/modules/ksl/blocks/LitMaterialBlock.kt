@@ -6,7 +6,7 @@ abstract class LitMaterialBlock(name: String, parentScope: KslScopeBuilder) : Ks
     val inCamPos = inFloat3("inCamPos")
     val inNormal = inFloat3("inNormal")
     val inFragmentPos = inFloat3("inFragmentPos")
-    val inBaseColor = inFloat3("inBaseColor")
+    val inBaseColor = inFloat4("inBaseColor")
 
     val inLightCount = inInt1("inLightCount")
     val inEncodedLightPositions = inFloat4Array("inEncodedLightPositions")

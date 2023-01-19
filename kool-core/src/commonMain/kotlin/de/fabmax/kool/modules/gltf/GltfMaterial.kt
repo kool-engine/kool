@@ -1,5 +1,9 @@
 package de.fabmax.kool.modules.gltf
 
+import de.fabmax.kool.modules.ksl.KslPbrShader
+import de.fabmax.kool.modules.ksl.blocks.ColorBlockConfig
+import de.fabmax.kool.modules.ksl.blocks.PropertyBlockConfig
+import de.fabmax.kool.pipeline.BlendMode
 import de.fabmax.kool.pipeline.CullMethod
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.shading.Albedo
@@ -36,6 +40,124 @@ data class GltfMaterial(
     val alphaCutoff: Float = 0.5f,
     val doubleSided: Boolean = false
 ) {
+
+    fun applyTo(cfg: KslPbrShader.Config, useVertexColor: Boolean, gltfFile: GltfFile) {
+        val baseColorTexture: Texture2d? = pbrMetallicRoughness.baseColorTexture?.getTexture(gltfFile)
+        val emissiveTexture: Texture2d? = emissiveTexture?.getTexture(gltfFile)
+        val normalTexture: Texture2d? = this.normalTexture?.getTexture(gltfFile)
+        val metallicTexture: Texture2d? = pbrMetallicRoughness.metallicRoughnessTexture?.getTexture(gltfFile)
+        val roughnessTexture: Texture2d? = pbrMetallicRoughness.metallicRoughnessTexture?.getTexture(gltfFile)
+        val occlusionTexture: Texture2d? = occlusionTexture?.getTexture(gltfFile)
+        val colorFac = pbrMetallicRoughness.baseColorFactor
+
+        cfg.alphaMode = when (alphaMode) {
+            ALPHA_MODE_BLEND -> AlphaMode.Blend()
+            ALPHA_MODE_MASK -> AlphaMode.Mask(alphaCutoff)
+            else -> AlphaMode.Opaque()
+        }
+
+        cfg.pipeline {
+            cullMethod = if (doubleSided) CullMethod.NO_CULLING else CullMethod.CULL_BACK_FACES
+            blendMode = BlendMode.BLEND_PREMULTIPLIED_ALPHA
+        }
+
+        cfg.color {
+            val colorFactor = if (colorFac.size == 4) Color(colorFac[0], colorFac[1], colorFac[2], colorFac[3]).toLinear() else Color.WHITE
+            when {
+                useVertexColor -> {
+                    vertexColor()
+                    if (colorFactor != Color.WHITE) {
+                        uniformColor(colorFactor, mixMode = ColorBlockConfig.MixMode.Multiply)
+                    }
+                }
+                baseColorTexture != null -> {
+                    textureColor(baseColorTexture)
+                    if (colorFactor != Color.WHITE) {
+                        uniformColor(colorFactor, mixMode = ColorBlockConfig.MixMode.Multiply)
+                    }
+                }
+                else -> {
+                    uniformColor(colorFactor)
+                }
+            }
+        }
+
+        cfg.emission {
+            if (emissiveTexture != null) {
+                textureColor(emissiveTexture)
+                if (emissiveFactor != null) {
+                    uniformColor(Color(emissiveFactor[0], emissiveFactor[1], emissiveFactor[2], 1f), mixMode = ColorBlockConfig.MixMode.Multiply)
+                }
+            } else if (emissiveFactor != null) {
+                uniformColor(Color(emissiveFactor[0], emissiveFactor[1], emissiveFactor[2], 1f))
+            }
+        }
+
+        cfg.normalMapping {
+            if (normalTexture != null) {
+                setNormalMap(normalTexture)
+            }
+        }
+
+        cfg.roughness {
+            if (roughnessTexture != null) {
+                if (roughnessTexture !== metallicTexture && roughnessTexture !== occlusionTexture) {
+                    textureProperty(roughnessTexture)
+                } else {
+                    val texName = when {
+                        roughnessTexture === metallicTexture && roughnessTexture === occlusionTexture -> "tOcclRoughMetal"
+                        roughnessTexture === metallicTexture -> "tRoughMetal"
+                        else -> "tOcclRough"
+                    }
+                    textureProperty(roughnessTexture, 1, texName)
+                }
+                if (pbrMetallicRoughness.roughnessFactor != 1f) {
+                    constProperty(pbrMetallicRoughness.roughnessFactor, mixMode = PropertyBlockConfig.MixMode.Multiply)
+                }
+            } else {
+                constProperty(pbrMetallicRoughness.roughnessFactor)
+            }
+        }
+
+        cfg.metallic {
+            if (metallicTexture != null) {
+                if (metallicTexture !== roughnessTexture && metallicTexture !== occlusionTexture) {
+                    textureProperty(metallicTexture)
+                } else {
+                    val texName = when {
+                        metallicTexture === roughnessTexture && metallicTexture === occlusionTexture -> "tOcclRoughMetal"
+                        metallicTexture === roughnessTexture -> "tRoughMetal"
+                        else -> "tOcclMetal"
+                    }
+                    textureProperty(roughnessTexture, 2, texName)
+                }
+                if (pbrMetallicRoughness.metallicFactor != 1f) {
+                    constProperty(pbrMetallicRoughness.metallicFactor, mixMode = PropertyBlockConfig.MixMode.Multiply)
+                }
+            } else {
+                constProperty(pbrMetallicRoughness.metallicFactor)
+            }
+        }
+
+        cfg.aoCfg.materialAo {
+            if (occlusionTexture != null) {
+                if (occlusionTexture !== roughnessTexture && occlusionTexture !== metallicTexture) {
+                    textureProperty(occlusionTexture)
+                } else {
+                    val texName = when {
+                        occlusionTexture === roughnessTexture && occlusionTexture === metallicTexture -> "tOcclRoughMetal"
+                        occlusionTexture === roughnessTexture -> "tOcclRough"
+                        else -> "tOcclMetal"
+                    }
+                    textureProperty(roughnessTexture, 0, texName)
+                }
+                val occlusionFactor = this@GltfMaterial.occlusionTexture?.strength ?: 1f
+                if (occlusionFactor != 1f) {
+                    constProperty(occlusionFactor, mixMode = PropertyBlockConfig.MixMode.Multiply)
+                }
+            }
+        }
+    }
 
     fun applyTo(cfg: PbrMaterialConfig, useVertexColor: Boolean, gltfFile: GltfFile) {
         val albedoTexture: Texture2d? = pbrMetallicRoughness.baseColorTexture?.getTexture(gltfFile)

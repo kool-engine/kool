@@ -15,13 +15,17 @@ open class KslUnlitShader(cfg: UnlitShaderConfig, model: KslProgram = Model(cfg)
     var colorMap: Texture2d? by texture2d(cfg.colorCfg.primaryTexture?.textureName, cfg.colorCfg.primaryTexture?.defaultTexture)
 
     open class UnlitShaderConfig {
+        val vertexCfg = BasicVertexConfig()
         val colorCfg = ColorBlockConfig("baseColor")
         val pipelineCfg = PipelineConfig()
 
-        var isInstanced = false
         var colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB
 
         var modelCustomizer: (KslProgram.() -> Unit)? = null
+
+        fun vertices(block: BasicVertexConfig.() -> Unit) {
+            vertexCfg.block()
+        }
 
         fun color(block: ColorBlockConfig.() -> Unit) {
             colorCfg.apply(block)
@@ -36,11 +40,12 @@ open class KslUnlitShader(cfg: UnlitShaderConfig, model: KslProgram = Model(cfg)
         init {
             vertexStage {
                 main {
-                    val mvp = mat4Var(mvpMatrix().matrix)
-                    if (cfg.isInstanced) {
-                        mvp *= instanceAttribMat4(Attribute.INSTANCE_MODEL_MAT.name)
+                    val viewProj = mat4Var(cameraData().viewProjMat)
+                    val vertexBlock = vertexTransformBlock(cfg.vertexCfg) {
+                        inModelMat(modelMatrix().matrix)
+                        inLocalPos(vertexAttribFloat3(Attribute.POSITIONS.name))
                     }
-                    outPosition set mvp * float4Value(vertexAttribFloat3(Attribute.POSITIONS.name), 1f)
+                    outPosition set viewProj * float4Value(vertexBlock.outWorldPos, 1f)
                 }
             }
             fragmentStage {
