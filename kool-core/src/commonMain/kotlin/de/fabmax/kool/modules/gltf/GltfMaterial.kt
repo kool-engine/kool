@@ -58,6 +58,7 @@ data class GltfMaterial(
 
         cfg.pipeline {
             cullMethod = if (doubleSided) CullMethod.NO_CULLING else CullMethod.CULL_BACK_FACES
+            // use pre-multiplied alpha blending for bright reflections of highly translucent materials
             blendMode = BlendMode.BLEND_PREMULTIPLIED_ALPHA
         }
 

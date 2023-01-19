@@ -176,10 +176,14 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
                     val colorBlock = fragmentColorBlock(cfg.colorCfg)
                     val baseColorPort = float4Port("baseColor", colorBlock.outColor)
 
-                    // discard fragment output if alpha mode is mask and fragment alpha value is below cutoff value
-                    (cfg.alphaMode as? AlphaMode.Mask)?.let { mask ->
-                        `if`(baseColorPort.a lt mask.cutOff.const) {
-                            discard()
+                    val baseColor = float4Var(baseColorPort)
+                    when (val alphaMode = cfg.alphaMode) {
+                        is AlphaMode.Blend -> { }
+                        is AlphaMode.Opaque -> baseColor.a set 1f.const
+                        is AlphaMode.Mask -> {
+                            `if`(baseColorPort.a lt alphaMode.cutOff.const) {
+                                discard()
+                            }
                         }
                     }
 
@@ -249,7 +253,7 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
                         aoFactor = aoFactor,
                         normal = normal,
                         fragmentWorldPos = positionWorldSpace.output,
-                        baseColor = baseColorPort,
+                        baseColor = baseColor,
                         emissionColor = emissionColorPort
                     )
 

@@ -157,11 +157,14 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
 
         +lineMesh {
             isCastingShadow = false
-            shader = KslUnlitShader { pipeline { lineWidth = 3f } }
+            shader = KslUnlitShader {
+                pipeline { lineWidth = 3f }
+                color { vertexColor() }
+            }
             onUpdate += {
                 clear()
                 if (forceHelper.isActive) {
-                    addLine(forceHelper.forceAppPosGlobal, forceHelper.forceDragPos, MdColor.PINK)
+                    addLine(forceHelper.forceAppPosGlobal, forceHelper.forceDragPos, MdColor.PINK.toLinear())
                 }
             }
         }
@@ -496,7 +499,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
         }
     }
 
-    private inner class ForceHelper() : InputStack.PointerListener {
+    private inner class ForceHelper : InputStack.PointerListener {
         val pickRay = Ray()
         val hitResult = HitResult()
         var hitActor: RigidBody? = null

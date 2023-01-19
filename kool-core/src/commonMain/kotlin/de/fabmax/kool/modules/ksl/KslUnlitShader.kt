@@ -6,6 +6,7 @@ import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.BlendMode
 import de.fabmax.kool.pipeline.Texture2d
+import de.fabmax.kool.pipeline.shading.AlphaMode
 
 open class KslUnlitShader(cfg: UnlitShaderConfig, model: KslProgram = Model(cfg)) : KslShader(model, cfg.pipelineCfg) {
 
@@ -20,6 +21,7 @@ open class KslUnlitShader(cfg: UnlitShaderConfig, model: KslProgram = Model(cfg)
         val pipelineCfg = PipelineConfig()
 
         var colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB
+        var alphaMode: AlphaMode = AlphaMode.Blend()
 
         var modelCustomizer: (KslProgram.() -> Unit)? = null
 
@@ -51,12 +53,24 @@ open class KslUnlitShader(cfg: UnlitShaderConfig, model: KslProgram = Model(cfg)
             fragmentStage {
                 main {
                     val colorBlock = fragmentColorBlock(cfg.colorCfg)
-                    val baseColor = float4Port("baseColor", colorBlock.outColor)
+                    val baseColorPort = float4Port("baseColor", colorBlock.outColor)
+
+                    val baseColor = float4Var(baseColorPort)
+                    when (val alphaMode = cfg.alphaMode) {
+                        is AlphaMode.Blend -> { }
+                        is AlphaMode.Opaque -> baseColor.a set 1f.const
+                        is AlphaMode.Mask -> {
+                            `if`(baseColorPort.a lt alphaMode.cutOff.const) {
+                                discard()
+                            }
+                        }
+                    }
+
                     val outRgb = float3Var(baseColor.rgb)
-                    outRgb set convertColorSpace(outRgb, cfg.colorSpaceConversion)
                     if (cfg.pipelineCfg.blendMode == BlendMode.BLEND_PREMULTIPLIED_ALPHA) {
                         outRgb set outRgb * baseColor.a
                     }
+                    outRgb set convertColorSpace(outRgb, cfg.colorSpaceConversion)
                     colorOutput(outRgb, baseColor.a)
                 }
             }
