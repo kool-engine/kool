@@ -34,17 +34,13 @@ class NormalMapBlock(cfg: NormalMapConfig, name: String, parentScope: KslScopeBu
     }
 }
 
-class NormalMapConfig {
-    var isNormalMapped = false
-        private set
-    var normalMapName = "tNormalMap"
-        private set
-    var coordAttribute = Attribute.TEXTURE_COORDS
-        private set
-    var defaultNormalMap: Texture2d? = null
-        private set
-    var defaultStrength = 1f
-
+data class NormalMapConfig(
+    var isNormalMapped: Boolean = false,
+    var normalMapName: String = "tNormalMap",
+    var coordAttribute: Attribute = Attribute.TEXTURE_COORDS,
+    var defaultNormalMap: Texture2d? = null,
+    var defaultStrength: Float = 1f
+) {
     fun clearNormalMap() {
         isNormalMapped = false
         defaultNormalMap = null

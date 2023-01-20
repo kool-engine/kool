@@ -1,84 +1,129 @@
 package de.fabmax.kool.pipeline.shading
 
-import de.fabmax.kool.KoolContext
+import de.fabmax.kool.modules.ksl.BasicVertexConfig
+import de.fabmax.kool.modules.ksl.KslShader
+import de.fabmax.kool.modules.ksl.blocks.cameraData
+import de.fabmax.kool.modules.ksl.blocks.modelMatrix
+import de.fabmax.kool.modules.ksl.blocks.vertexTransformBlock
+import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.pipeline.shadermodel.ShaderModel
-import de.fabmax.kool.pipeline.shadermodel.StageInterfaceNode
-import de.fabmax.kool.pipeline.shadermodel.fragmentStage
-import de.fabmax.kool.pipeline.shadermodel.vertexStage
 import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.util.Color
+import kotlin.math.max
 
-class DepthShader(val cfg: DepthShaderConfig, model: ShaderModel = defaultDepthShaderModel(cfg)) : ModeledShader(model) {
+class DepthShader(val cfg: Config) : KslShader(depthShaderProg(cfg), cfg.pipelineCfg) {
 
-    val alphaMask = Texture2dInput("tAlphaMask", cfg.alphaMask)
+    var alphaMask by texture2d("tAlphaMask", cfg.alphaMask)
 
-    override fun onPipelineSetup(builder: Pipeline.Builder, mesh: Mesh, ctx: KoolContext) {
-        builder.blendMode = BlendMode.DISABLED
-        builder.cullMethod = cfg.cullMethod
-        super.onPipelineSetup(builder, mesh, ctx)
-    }
-
-    override fun onPipelineCreated(pipeline: Pipeline, mesh: Mesh, ctx: KoolContext) {
-        alphaMask.connect(model)
-        super.onPipelineCreated(pipeline, mesh, ctx)
-    }
+    constructor(block: Config.() -> Unit) : this(Config().apply(block))
 
     companion object {
-        fun defaultDepthShaderModel(cfg: DepthShaderConfig) = ShaderModel("depth-shader").apply {
-            var ifTexCoords: StageInterfaceNode? = null
+        private fun depthShaderProg(cfg: Config) = KslProgram("Depth shader").apply {
+            var alphaMaskUv: KslInterStageVector<KslTypeFloat2, KslTypeFloat1>? = null
+            var viewNormal: KslInterStageVector<KslTypeFloat3, KslTypeFloat1>? = null
 
             vertexStage {
-                var mvpMat = premultipliedMvpNode().outMvpMat
-                if (cfg.isInstanced) {
-                    mvpMat = multiplyNode(mvpMat, instanceAttrModelMat().output).output
-                }
-                if (cfg.isSkinned) {
-                    val skinNd = skinTransformNode(attrJoints().output, attrWeights().output, cfg.maxJoints)
-                    mvpMat = multiplyNode(mvpMat, skinNd.outJointMat).output
-                }
-                if (cfg.alphaMode is AlphaMode.Mask) {
-                    ifTexCoords = stageInterfaceNode("ifTexCoords", attrTexCoords().output)
-                }
-                var localPos = attrPositions().output
+                main {
+                    val camData = cameraData()
+                    val viewProj = mat4Var(camData.viewProjMat)
+                    val vertexBlock = vertexTransformBlock(cfg.vertexCfg) {
+                        inModelMat(modelMatrix().matrix)
+                        inLocalPos(vertexAttribFloat3(Attribute.POSITIONS.name))
 
-                val posMorphAttribs = cfg.morphAttributes.filter { it.name.startsWith(Attribute.POSITIONS.name) }
-                if (cfg.nMorphWeights > 0 && posMorphAttribs.isNotEmpty()) {
-                    val morphWeights = morphWeightsNode(cfg.nMorphWeights)
-                    posMorphAttribs.forEach { attrib ->
-                        val weight = getMorphWeightNode(cfg.morphAttributes.indexOf(attrib), morphWeights)
-                        val posDisplacement = multiplyNode(attributeNode(attrib).output, weight.outWeight)
-                        localPos = addNode(localPos, posDisplacement.output).output
+                        if (cfg.outputNormals) {
+                            inLocalNormal(vertexAttribFloat3(Attribute.NORMALS.name))
+                        }
+                    }
+                    outPosition set viewProj * float4Value(vertexBlock.outWorldPos, 1f)
+
+                    if (cfg.alphaMode is AlphaMode.Mask) {
+                        alphaMaskUv = interStageFloat2("alphaMaskUv").apply {
+                            input set vertexAttribFloat2(Attribute.TEXTURE_COORDS.name)
+                        }
+                    }
+                    if (cfg.outputNormals) {
+                        viewNormal = interStageFloat3("worldNormal").apply {
+                            input set (camData.viewMat * float4Value(vertexBlock.outWorldNormal, 0f.const)).xyz
+                        }
                     }
                 }
-                positionOutput = vec4TransformNode(localPos, mvpMat).outVec4
             }
             fragmentStage {
-                val alphaMode = cfg.alphaMode
-                if (alphaMode is AlphaMode.Mask) {
-                    val color = texture2dSamplerNode(texture2dNode("tAlphaMask"), ifTexCoords!!.output).outColor
-                    discardAlpha(splitNode(color, "a").output, constFloat(alphaMode.cutOff))
+                main {
+                    (cfg.alphaMode as? AlphaMode.Mask)?.let { mask ->
+                        val color = sampleTexture(texture2d("tAlphaMask"), alphaMaskUv!!.output)
+                        `if`(color.a lt mask.cutOff.const) {
+                            discard()
+                        }
+                    }
+
+                    if (cfg.outputNormals) {
+                        var w: KslExprFloat1 = 1f.const
+                        if (cfg.outputLinearDepth) {
+                            w = inFragPosition.z / inFragPosition.w
+                        }
+                        colorOutput(float4Value(viewNormal!!.output, -w))
+                    } else if (cfg.outputLinearDepth) {
+                        val d = inFragPosition.z / inFragPosition.w
+                        colorOutput(float4Value(-d, 1f.const, 1f.const, 1f.const))
+                    } else {
+                        colorOutput(float4Value(1f, 1f, 1f, 1f))
+                    }
                 }
-                colorOutput(constVec4f(Color.RED))
             }
+            cfg.modelCustomizer?.invoke(this)
         }
     }
-}
 
-class DepthShaderConfig {
-    var cullMethod = CullMethod.CULL_BACK_FACES
-    var isInstanced = false
-    var isSkinned = false
-    var maxJoints = 16
+    data class Config(
+        val pipelineCfg: PipelineConfig = PipelineConfig(),
+        val vertexCfg: BasicVertexConfig = BasicVertexConfig(),
+        var alphaMode: AlphaMode = AlphaMode.Opaque(),
+        var alphaMask: Texture2d? = null,
 
-    var alphaMode: AlphaMode = AlphaMode.Opaque()
-    var alphaMask: Texture2d? = null
+        var outputLinearDepth: Boolean = false,
+        var outputNormals: Boolean = false,
 
-    var nMorphWeights = 0
-    val morphAttributes = mutableListOf<Attribute>()
+        var modelCustomizer: (KslProgram.() -> Unit)? = null
+    ) {
+        init {
+            pipelineCfg.blendMode = BlendMode.DISABLED
+        }
 
-    fun useAlphaMask(alphaMask: Texture2d, alphaCutOff: Float) {
-        this.alphaMask = alphaMask
-        alphaMode = AlphaMode.Mask(alphaCutOff)
+        fun useAlphaMask(alphaMask: Texture2d, alphaCutOff: Float) {
+            this.alphaMask = alphaMask
+            alphaMode = AlphaMode.Mask(alphaCutOff)
+        }
+
+        inline fun pipeline(block: PipelineConfig.() -> Unit) {
+            pipelineCfg.block()
+        }
+
+        inline fun vertices(block: BasicVertexConfig.() -> Unit) {
+            vertexCfg.block()
+        }
+
+        companion object {
+            fun forMesh(
+                mesh: Mesh,
+                cullMethod: CullMethod = CullMethod.CULL_BACK_FACES,
+                alphaMode: AlphaMode? = null,
+                alphaMask: Texture2d? = null
+            ) = Config().apply {
+                pipeline {
+                    this.cullMethod = cullMethod
+                }
+                vertices {
+                    isInstanced = mesh.instances != null
+                    mesh.skin?.let {
+                        enableArmature(max(DepthMapPass.defaultMaxNumberOfJoints, it.nodes.size))
+                    }
+                    morphAttributes += mesh.geometry.getMorphAttributes()
+                }
+                if (alphaMode is AlphaMode.Mask) {
+                    this.alphaMode = alphaMode
+                    this.alphaMask = alphaMask
+                }
+            }
+        }
     }
 }

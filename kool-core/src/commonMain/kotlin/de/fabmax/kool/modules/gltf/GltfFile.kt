@@ -624,16 +624,12 @@ data class GltfFile(
 
             mesh.shader = KslPbrShader(pbrConfig)
             if (pbrConfig.alphaMode is AlphaMode.Mask) {
-                val depthShaderCfg = DepthShaderConfig().apply {
-                    isInstanced = pbrConfig.vertexCfg.isInstanced
-                    isSkinned = pbrConfig.vertexCfg.isArmature
-                    cullMethod = pbrConfig.pipelineCfg.cullMethod
-                    alphaMode = pbrConfig.alphaMode
-                    alphaMask = pbrConfig.colorCfg.primaryTexture?.defaultTexture
-                    morphAttributes += pbrConfig.vertexCfg.morphAttributes
-                    nMorphWeights = pbrConfig.vertexCfg.morphAttributes.size
-                }
-                mesh.depthShader = DepthShader(depthShaderCfg)
+                mesh.depthShaderConfig = DepthShader.Config.forMesh(
+                    mesh,
+                    pbrConfig.pipelineCfg.cullMethod,
+                    pbrConfig.alphaMode,
+                    pbrConfig.colorCfg.primaryTexture?.defaultTexture
+                )
             }
         }
 
@@ -665,7 +661,6 @@ data class GltfFile(
                     matCfg.scrSpcAmbientOcclusionMap?.let { useScreenSpaceAmbientOcclusion(it) }
                     useImageBasedLighting(matCfg.environmentMaps)
                 }
-                //cfg.pbrBlock?.invoke(this, prim)
 
                 if (alphaMode is AlphaMode.Blend) {
                     mesh.isOpaque = false
@@ -691,16 +686,8 @@ data class GltfFile(
             }
 
             if (pbrConfig.alphaMode is AlphaMode.Mask) {
-                val depthShaderCfg = DepthShaderConfig().apply {
-                    isInstanced = pbrConfig.isInstanced
-                    isSkinned = pbrConfig.isSkinned
-                    cullMethod = pbrConfig.cullMethod
-                    alphaMode = pbrConfig.alphaMode
-                    alphaMask = pbrConfig.albedoMap
-                    morphAttributes += pbrConfig.morphAttributes
-                    nMorphWeights = pbrConfig.morphAttributes.size
-                }
-                mesh.depthShader = DepthShader(depthShaderCfg)
+                mesh.depthShaderConfig = DepthShader.Config.forMesh(
+                    mesh, pbrConfig.cullMethod, pbrConfig.alphaMode, pbrConfig.albedoMap)
             }
         }
     }

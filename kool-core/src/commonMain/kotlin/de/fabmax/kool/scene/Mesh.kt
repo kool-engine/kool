@@ -7,6 +7,7 @@ import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.pipeline.Shader
+import de.fabmax.kool.pipeline.shading.DepthShader
 import de.fabmax.kool.scene.animation.Skin
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
@@ -65,11 +66,25 @@ open class Mesh(var geometry: IndexedVertexList, name: String? = null) : Node(na
         }
 
     /**
-     * Optional shader used by DepthMapPass (mainly used for rendering shadow maps). If null DepthMapPass uses a
-     * geometry based default shader.
+     * Optional shader used by [de.fabmax.kool.pipeline.DepthMapPass] (mainly used for rendering shadow maps). If null
+     * DepthMapPass uses [depthShaderConfig] or - if this is null as well - a geometry based default config to create
+     * a default depth shader.
      */
     var depthShader: Shader? = null
+
+    /**
+     * Optional shader used by [de.fabmax.kool.pipeline.NormalLinearDepthMapPass] (mainly used for rendering
+     * screen-space ao maps). If null NormalLinearDepthMapPass uses [depthShaderConfig] or - if this is null as well -
+     * a geometry based default config to create a default depth shader.
+     */
     var normalLinearDepthShader: Shader? = null
+
+    /**
+     * Custom config for depth shader creation. If non-null, this is used to create depth shaders for shadow and ssao
+     * passes. By supplying a custom depth shader config, depth shaders can consider alpha masks. If [depthShader]
+     * and / or [normalLinearDepthShader] are set, these are preferred.
+     */
+    var depthShaderConfig: DepthShader.Config? = null
 
     /**
      * Optional list with lod geometry used by shadow passes. Shadow passes will use the geometry at index

@@ -101,9 +101,10 @@ class ColorBlockFragmentStage(
     }
 }
 
-class ColorBlockConfig(val colorName: String) {
-    val colorSources = mutableListOf<ColorSource>()
-
+data class ColorBlockConfig(
+    val colorName: String,
+    val colorSources: MutableList<ColorSource> = mutableListOf()
+) {
     fun constColor(constColor: Color, mixMode: MixMode = MixMode.Set) {
         colorSources += ConstColor(constColor, mixMode)
     }

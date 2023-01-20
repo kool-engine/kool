@@ -116,8 +116,10 @@ class PropertyBlockFragmentStage(
     }
 }
 
-class PropertyBlockConfig(val propertyName: String) {
-    val propertySources = mutableListOf<PropertySource>()
+data class PropertyBlockConfig(
+    val propertyName: String,
+    val propertySources: MutableList<PropertySource> = mutableListOf()
+) {
 
     fun constProperty(value: Float, mixMode: MixMode = MixMode.Set) {
         propertySources += ConstProperty(value, mixMode)

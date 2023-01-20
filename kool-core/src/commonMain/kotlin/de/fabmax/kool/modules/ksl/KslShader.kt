@@ -228,13 +228,13 @@ open class KslShader(val program: KslProgram, val pipelineConfig: PipelineConfig
         }
     }
 
-    class PipelineConfig {
-        var blendMode = BlendMode.BLEND_MULTIPLY_ALPHA
-        var cullMethod = CullMethod.CULL_BACK_FACES
-        var depthTest = DepthCompareOp.LESS_EQUAL
-        var isWriteDepth = true
-        var lineWidth = 1f
-    }
+    data class PipelineConfig(
+        var blendMode: BlendMode = BlendMode.BLEND_MULTIPLY_ALPHA,
+        var cullMethod: CullMethod = CullMethod.CULL_BACK_FACES,
+        var depthTest: DepthCompareOp = DepthCompareOp.LESS_EQUAL,
+        var isWriteDepth: Boolean = true,
+        var lineWidth: Float = 1f
+    )
 
     protected interface ConnectUniformListener {
         val isConnected: Boolean?

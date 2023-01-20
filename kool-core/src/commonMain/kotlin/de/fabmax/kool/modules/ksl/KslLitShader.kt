@@ -184,6 +184,7 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
                             `if`(baseColorPort.a lt alphaMode.cutOff.const) {
                                 discard()
                             }
+                            baseColor.a set 1f.const
                         }
                     }
 
