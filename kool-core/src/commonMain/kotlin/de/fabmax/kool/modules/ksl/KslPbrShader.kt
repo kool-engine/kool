@@ -46,7 +46,7 @@ open class KslPbrShader(cfg: Config, model: KslProgram = Model(cfg)) : KslLitSha
         }
     }
 
-    class Config : LitShaderConfig() {
+    open class Config : LitShaderConfig() {
         val metallicCfg = PropertyBlockConfig("metallic").apply { constProperty(0f) }
         val roughnessCfg = PropertyBlockConfig("roughness").apply { constProperty(0.5f) }
 

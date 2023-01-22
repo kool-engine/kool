@@ -11,6 +11,7 @@ import de.fabmax.kool.math.SimpleSpline3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.gltf.GltfFile
 import de.fabmax.kool.modules.gltf.loadGltfModel
+import de.fabmax.kool.modules.ksl.blocks.ColorBlockConfig
 import de.fabmax.kool.modules.ui2.UiSurface
 import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.physics.PhysicsWorld
@@ -22,9 +23,8 @@ import de.fabmax.kool.pipeline.DepthCompareOp
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.deferred.DeferredPipeline
 import de.fabmax.kool.pipeline.deferred.DeferredPipelineConfig
-import de.fabmax.kool.pipeline.deferred.deferredPbrShader
+import de.fabmax.kool.pipeline.deferred.deferredKslPbrShader
 import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
-import de.fabmax.kool.pipeline.shading.AlbedoMapMode
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.CascadedShadowMap
 import de.fabmax.kool.util.Color
@@ -252,10 +252,14 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
                     stepsY = sizeY.toInt() / 100
                 }
             }
-            shader = deferredPbrShader {
-                useAlbedoMap(groundAlbedo, AlbedoMapMode.MULTIPLY_BY_UNIFORM)
-                useNormalMap(groundNormal)
-                albedo = color(100)
+            shader = deferredKslPbrShader {
+                color {
+                    textureColor(groundAlbedo)
+                    constColor(color(100), mixMode = ColorBlockConfig.MixMode.Multiply)
+                }
+                normalMapping {
+                    setNormalMap(groundNormal)
+                }
             }
         }
         +gndMesh

@@ -61,7 +61,11 @@ class DepthShader(val cfg: Config) : KslShader(depthShaderProg(cfg), cfg.pipelin
                         if (cfg.outputLinearDepth) {
                             w = inFragPosition.z / inFragPosition.w
                         }
-                        colorOutput(float4Value(viewNormal!!.output, -w))
+                        val normal = float3Var(normalize(viewNormal!!.output))
+                        `if` (!inIsFrontFacing) {
+                            normal set normal * (-1f).const
+                        }
+                        colorOutput(float4Value(normal, -w))
                     } else if (cfg.outputLinearDepth) {
                         val d = inFragPosition.z / inFragPosition.w
                         colorOutput(float4Value(-d, 1f.const, 1f.const, 1f.const))

@@ -63,7 +63,7 @@ data class GltfMaterial(
         }
 
         cfg.color {
-            val colorFactor = if (colorFac.size == 4) Color(colorFac[0], colorFac[1], colorFac[2], colorFac[3]).toLinear() else Color.WHITE
+            val colorFactor = if (colorFac.size == 4) Color(colorFac[0], colorFac[1], colorFac[2], colorFac[3]) else Color.WHITE
             when {
                 useVertexColor -> {
                     vertexColor()

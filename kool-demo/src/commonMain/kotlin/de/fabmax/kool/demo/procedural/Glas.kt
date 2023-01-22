@@ -5,7 +5,7 @@ import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.GlslType
 import de.fabmax.kool.pipeline.deferred.DeferredPassSwapListener
 import de.fabmax.kool.pipeline.deferred.DeferredPasses
-import de.fabmax.kool.pipeline.deferred.deferredPbrShader
+import de.fabmax.kool.pipeline.deferred.deferredKslPbrShader
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.pipeline.shadermodel.RefractionSamplerNode
 import de.fabmax.kool.pipeline.shadermodel.StageInterfaceNode
@@ -73,10 +73,14 @@ class Glas(val ibl: EnvironmentMaps) : Group(), DeferredPassSwapListener {
             geometry.generateNormals()
         }
 
-        shader = deferredPbrShader {
-            roughness = 0.0f
-            emissive = Color(0.3f, 0f, 0.1f).toLinear().withAlpha(0.8f)
-            useStaticAlbedo(Color(0.3f, 0f, 0.1f).mix(Color.BLACK, 0.2f).toLinear())
+        shader = deferredKslPbrShader {
+            roughness(0.0f)
+            color {
+                constColor(Color(0.3f, 0f, 0.1f).mix(Color.BLACK, 0.2f).toLinear())
+            }
+            emission {
+                constColor(Color(0.3f, 0f, 0.1f).toLinear().withAlpha(0.8f))
+            }
         }
     }
 

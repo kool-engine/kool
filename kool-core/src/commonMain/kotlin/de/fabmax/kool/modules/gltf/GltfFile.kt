@@ -5,10 +5,12 @@ import de.fabmax.kool.math.Mat4dStack
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec4d
 import de.fabmax.kool.modules.ksl.KslPbrShader
+import de.fabmax.kool.pipeline.BlendMode
 import de.fabmax.kool.pipeline.Texture2d
-import de.fabmax.kool.pipeline.deferred.DeferredPbrShader
+import de.fabmax.kool.pipeline.deferred.DeferredKslPbrShader
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
-import de.fabmax.kool.pipeline.shading.*
+import de.fabmax.kool.pipeline.shading.AlphaMode
+import de.fabmax.kool.pipeline.shading.DepthShader
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Model
@@ -552,13 +554,7 @@ data class GltfFile(
                     }
 
                     if (cfg.applyMaterials) {
-                        val isDeferredPipeline = cfg.materialConfig.isDeferredShading
-                        if (isDeferredPipeline) {
-                            makeLegacyMaterial(prim, mesh, cfg, model)
-                        } else {
-                            //makeLegacyMaterial(prim, mesh, cfg, model)
-                            makeKslMaterial(prim, mesh, cfg, model)
-                        }
+                        makeKslMaterial(prim, mesh, cfg, model)
                     }
                     model.meshes[name] = mesh
                 }
@@ -566,12 +562,10 @@ data class GltfFile(
         }
 
         private fun makeKslMaterial(prim: GltfMesh.Primitive, mesh: Mesh, cfg: ModelGenerateConfig, model: Model) {
-            if (cfg.materialConfig.isDeferredShading) {
-                TODO()
-            }
+            var isDeferred = cfg.materialConfig.isDeferredShading
             val useVertexColor = prim.attributes.containsKey(GltfMesh.Primitive.ATTRIBUTE_COLOR_0)
 
-            val pbrConfig = KslPbrShader.Config().apply {
+            val pbrConfig = DeferredKslPbrShader.Config().apply {
                 val material = prim.materialRef
                 if (material != null) {
                     material.applyTo(this, useVertexColor, this@GltfFile)
@@ -610,7 +604,7 @@ data class GltfFile(
                 if (alphaMode is AlphaMode.Blend) {
                     mesh.isOpaque = false
                     // transparent / blended meshes must be rendered in forward pass
-                    //renderDeferred = false
+                    isDeferred = false
                 }
 
                 colorCfg.primaryTexture?.defaultTexture?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
@@ -622,7 +616,13 @@ data class GltfFile(
                 vertexCfg.displacementCfg.primaryTexture?.defaultTexture?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
             }
 
-            mesh.shader = KslPbrShader(pbrConfig)
+            mesh.shader = if (isDeferred) {
+                pbrConfig.pipelineCfg.blendMode = BlendMode.DISABLED
+                DeferredKslPbrShader(pbrConfig)
+            } else {
+                KslPbrShader(pbrConfig)
+            }
+
             if (pbrConfig.alphaMode is AlphaMode.Mask) {
                 mesh.depthShaderConfig = DepthShader.Config.forMesh(
                     mesh,
@@ -630,64 +630,6 @@ data class GltfFile(
                     pbrConfig.alphaMode,
                     pbrConfig.colorCfg.primaryTexture?.defaultTexture
                 )
-            }
-        }
-
-        private fun makeLegacyMaterial(prim: GltfMesh.Primitive, mesh: Mesh, cfg: ModelGenerateConfig, model: Model) {
-            var renderDeferred = cfg.materialConfig.isDeferredShading
-            val useVertexColor = prim.attributes.containsKey(GltfMesh.Primitive.ATTRIBUTE_COLOR_0)
-
-            val pbrConfig = PbrMaterialConfig().apply {
-                val material = prim.materialRef
-                if (material != null) {
-                    material.applyTo(this, useVertexColor, this@GltfFile)
-                } else {
-                    albedo = Color.GRAY
-                    albedoSource = Albedo.STATIC_ALBEDO
-                }
-                if (mesh.skin != null) {
-                    isSkinned = true
-                    maxJoints = min(cfg.materialConfig.maxNumberOfJoints, mesh.skin!!.nodes.size)
-                    if (cfg.materialConfig.maxNumberOfJoints < mesh.skin!!.nodes.size) {
-                        logE("GltfFile") { "\"${model.name}\": Maximum number of joints exceeded (mesh has ${mesh.skin!!.nodes.size}, materialConfig.maxNumberOfJoints is ${cfg.materialConfig.maxNumberOfJoints})" }
-                    }
-                }
-                if (mesh.morphWeights != null) {
-                    morphAttributes += mesh.geometry.getMorphAttributes()
-                }
-
-                cfg.materialConfig.let { matCfg ->
-                    shadowMaps += matCfg.shadowMaps
-                    matCfg.scrSpcAmbientOcclusionMap?.let { useScreenSpaceAmbientOcclusion(it) }
-                    useImageBasedLighting(matCfg.environmentMaps)
-                }
-
-                if (alphaMode is AlphaMode.Blend) {
-                    mesh.isOpaque = false
-                    // transparent / blended meshes must be rendered in forward pass
-                    renderDeferred = false
-                }
-
-                albedoMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
-                emissiveMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
-                normalMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
-                roughnessMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
-                metallicMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
-                aoMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
-                displacementMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
-            }
-
-            if (renderDeferred) {
-                pbrConfig.isHdrOutput = true
-                mesh.shader = DeferredPbrShader(pbrConfig)
-            } else {
-                pbrConfig.isHdrOutput = false
-                mesh.shader = PbrShader(pbrConfig)
-            }
-
-            if (pbrConfig.alphaMode is AlphaMode.Mask) {
-                mesh.depthShaderConfig = DepthShader.Config.forMesh(
-                    mesh, pbrConfig.cullMethod, pbrConfig.alphaMode, pbrConfig.albedoMap)
             }
         }
     }

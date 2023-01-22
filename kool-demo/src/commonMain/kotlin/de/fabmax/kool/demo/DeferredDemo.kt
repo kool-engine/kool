@@ -1,5 +1,6 @@
 package de.fabmax.kool.demo
 
+import de.fabmax.kool.AssetManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.Mat4f
@@ -7,29 +8,20 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Random
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.ksl.KslUnlitShader
+import de.fabmax.kool.modules.ksl.blocks.ColorBlockConfig
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.DepthCompareOp
-import de.fabmax.kool.pipeline.deferred.DeferredPbrShader
-import de.fabmax.kool.pipeline.deferred.DeferredPipeline
-import de.fabmax.kool.pipeline.deferred.DeferredPipelineConfig
-import de.fabmax.kool.pipeline.deferred.DeferredPointLights
+import de.fabmax.kool.pipeline.Texture2d
+import de.fabmax.kool.pipeline.deferred.*
 import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
-import de.fabmax.kool.pipeline.shadermodel.ShaderModel
-import de.fabmax.kool.pipeline.shadermodel.StageInterfaceNode
-import de.fabmax.kool.pipeline.shadermodel.fragmentStage
-import de.fabmax.kool.pipeline.shadermodel.vertexStage
-import de.fabmax.kool.pipeline.shading.Albedo
-import de.fabmax.kool.pipeline.shading.ModeledShader
-import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
-import de.fabmax.kool.util.MutableColor
 import de.fabmax.kool.util.Time
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
@@ -39,7 +31,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
     private lateinit var deferredPipeline: DeferredPipeline
 
     private lateinit var objects: Mesh
-    private lateinit var objectShader: DeferredPbrShader
+    private lateinit var objectShader: DeferredKslPbrShader
 
     private lateinit var lightPositionMesh: Mesh
     private lateinit var lightVolumeMesh: LineMesh
@@ -52,13 +44,19 @@ class DeferredDemo : DemoScene("Deferred Shading") {
     private val isObjects = mutableStateOf(true).onChange { objects.isVisible = it }
     private val isLightBodies = mutableStateOf(true).onChange { lightPositionMesh.isVisible = it }
     private val isLightVolumes = mutableStateOf(false).onChange { lightVolumeMesh.isVisible = it }
-    private val roughness = mutableStateOf(0.15f).onChange { objectShader.roughness(it) }
+    private val roughness = mutableStateOf(0.15f).onChange { objectShader.roughness = it }
     private val bloomStrength = mutableStateOf(0.75f).onChange { deferredPipeline.bloomStrength = it }
     private val bloomRadius = mutableStateOf(0.5f).onChange { deferredPipeline.bloomScale = it }
     private val bloomThreshold = mutableStateOf(0.5f).onChange {
         deferredPipeline.bloom?.lowerThreshold = it
         deferredPipeline.bloom?.upperThreshold = it + 0.5f
     }
+
+    private lateinit var groundColor: Texture2d
+    private lateinit var groundNormals: Texture2d
+    private lateinit var groundRoughness: Texture2d
+    private lateinit var groundMetallic: Texture2d
+    private lateinit var groundAo: Texture2d
 
     private val lights = mutableListOf<AnimatedLight>()
 
@@ -74,6 +72,22 @@ class DeferredDemo : DemoScene("Deferred Shading") {
 
     override fun lateInit(ctx: KoolContext) {
         updateLights()
+    }
+
+    override suspend fun AssetManager.loadResources(ctx: KoolContext) {
+        groundColor = loadAndPrepareTexture("${DemoLoader.materialPath}/futuristic-panels1/futuristic-panels1-albedo1.jpg")
+        groundNormals = loadAndPrepareTexture("${DemoLoader.materialPath}/futuristic-panels1/futuristic-panels1-normal.jpg")
+        groundRoughness = loadAndPrepareTexture("${DemoLoader.materialPath}/futuristic-panels1/futuristic-panels1-roughness.jpg")
+        groundMetallic = loadAndPrepareTexture("${DemoLoader.materialPath}/futuristic-panels1/futuristic-panels1-metallic.jpg")
+        groundAo = loadAndPrepareTexture("${DemoLoader.materialPath}/futuristic-panels1/futuristic-panels1-ao.jpg")
+
+        mainScene.onDispose += {
+            groundColor.dispose()
+            groundNormals.dispose()
+            groundRoughness.dispose()
+            groundMetallic.dispose()
+            groundAo.dispose()
+        }
     }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
@@ -134,7 +148,10 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                 isFrustumChecked = false
                 isVisible = false
                 isCastingShadow = false
-                shader = ModeledShader(instancedLightVolumeModel())
+                shader = KslUnlitShader {
+                    vertices { isInstanced = true }
+                    color { instanceColor(Attribute.COLORS) }
+                }
             }
             +lightVolumeMesh
 
@@ -148,7 +165,6 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                 if (lightPositionMesh.isVisible || lightVolumeMesh.isVisible) {
                     lightPosInsts.clear()
                     lightVolInsts.clear()
-                    val srgbColor = MutableColor()
 
                     deferredPipeline.dynamicPointLights.lightInstances.forEach { light ->
                         lightModelMat.setIdentity()
@@ -162,12 +178,11 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                             }
                         }
                         if (lightVolumeMesh.isVisible) {
-                            light.color.toSrgb(srgbColor)
                             val s = sqrt(light.power)
                             lightModelMat.scale(s, s, s)
                             lightVolInsts.addInstance {
                                 put(lightModelMat.matrix)
-                                put(srgbColor.array)
+                                put(light.color.array)
                             }
                         }
                     }
@@ -209,10 +224,10 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                     }
                 }
             }
-            val pbrCfg = PbrMaterialConfig().apply {
-                roughness = 0.15f
+            objectShader = deferredKslPbrShader {
+                color { vertexColor() }
+                roughness(0.15f)
             }
-            objectShader = DeferredPbrShader(pbrCfg)
             shader = objectShader
         }
         +objects
@@ -228,7 +243,13 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                     center.set(Vec3f.ZERO)
                 }
             }
-            shader = lightPosShader()
+            shader = deferredKslPbrShader {
+                vertices { isInstanced = true }
+                emission {
+                    instanceColor(Attribute.COLORS)
+                    constColor(Color(2f, 2f, 2f), mixMode = ColorBlockConfig.MixMode.Multiply)
+                }
+            }
         }
         +lightPositionMesh
 
@@ -242,23 +263,13 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                     generateTexCoords(30f)
                 }
             }
-            val pbrCfg = PbrMaterialConfig().apply {
-                useAlbedoMap("${DemoLoader.materialPath}/futuristic-panels1/futuristic-panels1-albedo1.jpg")
-                useNormalMap("${DemoLoader.materialPath}/futuristic-panels1/futuristic-panels1-normal.jpg")
-                useRoughnessMap("${DemoLoader.materialPath}/futuristic-panels1/futuristic-panels1-roughness.jpg")
-                useMetallicMap("${DemoLoader.materialPath}/futuristic-panels1/futuristic-panels1-metallic.jpg")
-                useAmbientOcclusionMap("${DemoLoader.materialPath}/futuristic-panels1/futuristic-panels1-ao.jpg")
-            }
-            val groundShader = DeferredPbrShader(pbrCfg)
-            shader = groundShader
 
-            onDispose += {
-                groundShader.albedoMap.dispose()
-                groundShader.aoMap.dispose()
-                groundShader.normalMap.dispose()
-                groundShader.metallicMap.dispose()
-                groundShader.roughnessMap.dispose()
-                groundShader.displacementMap.dispose()
+            shader = deferredKslPbrShader {
+                color { textureColor(groundColor) }
+                normalMapping { setNormalMap(groundNormals) }
+                roughness { textureProperty(groundRoughness) }
+                metallic { textureProperty(groundMetallic) }
+                ao { materialAo.textureProperty(groundAo) }
             }
         }
     }
@@ -488,37 +499,6 @@ class DeferredDemo : DemoScene("Deferred Shading") {
     private class ColorMap(val name: String, val colors: List<Color>) {
         fun getColor(idx: Int): Color = colors[idx % colors.size]
         override fun toString() = name
-    }
-
-    private fun instancedLightVolumeModel(): ShaderModel = ShaderModel("instancedLightIndicators").apply {
-        val ifColors: StageInterfaceNode
-        vertexStage {
-            ifColors = stageInterfaceNode("ifColors", instanceAttributeNode(Attribute.COLORS).output)
-            val modelMvp = premultipliedMvpNode().outMvpMat
-            val instMvp = multiplyNode(modelMvp, instanceAttrModelMat().output).output
-            positionOutput = vec4TransformNode(attrPositions().output, instMvp).outVec4
-        }
-        fragmentStage {
-            colorOutput(unlitMaterialNode(ifColors.output).outColor)
-        }
-    }
-
-    private fun lightPosShader(): DeferredPbrShader {
-        val cfg = PbrMaterialConfig().apply {
-            albedoSource = Albedo.STATIC_ALBEDO
-            albedo = Color.WHITE
-            isInstanced = true
-        }
-        val model = DeferredPbrShader.defaultMrtPbrModel(cfg).apply {
-            val ifColors: StageInterfaceNode
-            vertexStage {
-                ifColors = stageInterfaceNode("ifColors", instanceAttributeNode(Attribute.COLORS).output)
-            }
-            fragmentStage {
-                findNodeByType<DeferredPbrShader.MrtMultiplexNode>()!!.inEmissive = multiplyNode(ifColors.output, 2f).output
-            }
-        }
-        return DeferredPbrShader(cfg, model)
     }
 
     companion object {

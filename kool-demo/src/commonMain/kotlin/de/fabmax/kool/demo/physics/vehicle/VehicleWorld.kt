@@ -4,7 +4,7 @@ import de.fabmax.kool.physics.*
 import de.fabmax.kool.physics.geometry.TriangleMeshGeometry
 import de.fabmax.kool.physics.vehicle.VehicleUtils
 import de.fabmax.kool.pipeline.deferred.DeferredPipeline
-import de.fabmax.kool.pipeline.deferred.deferredPbrShader
+import de.fabmax.kool.pipeline.deferred.deferredKslPbrShader
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.colorMesh
@@ -31,9 +31,10 @@ class VehicleWorld(val scene: Scene, val physics: PhysicsWorld, val deferredPipe
                     }
                 }
             }
-            shader = deferredPbrShader {
-                roughness = rough
-                metallic = metal
+            shader = deferredKslPbrShader {
+                color { vertexColor() }
+                roughness(rough)
+                metallic(metal)
             }
             onUpdate += {
                 this@group.transform.set(actor.transform)

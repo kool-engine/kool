@@ -3,7 +3,7 @@ package de.fabmax.kool.demo.procedural
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.toDeg
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.deferred.deferredPbrShader
+import de.fabmax.kool.pipeline.deferred.deferredKslPbrShader
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
@@ -23,8 +23,9 @@ class Vase : Mesh(IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS, Attr
             geometry.removeDegeneratedTriangles()
             geometry.generateNormals()
         }
-        shader = deferredPbrShader {
-            roughness = 0.3f
+        shader = deferredKslPbrShader {
+            color { vertexColor() }
+            roughness(0.3f)
         }
     }
 

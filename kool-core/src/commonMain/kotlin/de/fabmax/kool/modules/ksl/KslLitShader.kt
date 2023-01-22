@@ -126,7 +126,7 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
             val camData = cameraData()
             val positionWorldSpace = interStageFloat3("positionWorldSpace")
             val normalWorldSpace = interStageFloat3("normalWorldSpace")
-            val projPosition = interStageFloat4("screenUv")
+            val projPosition = interStageFloat4("projPosition")
             var tangentWorldSpace: KslInterStageVector<KslTypeFloat4, KslTypeFloat1>? = null
 
             val texCoordBlock: TexCoordAttributeBlock
@@ -200,7 +200,7 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
                         }
                     }
 
-                    // do normal map computations (if enabled) and adjust material block input normal accordingly
+                    // do normal map computations (if enabled)
                     val bumpedNormal = if (cfg.normalMapCfg.isNormalMapped) {
                         val normalMapStrength = fragmentPropertyBlock(cfg.normalMapCfg.strengthCfg).outProperty
                         normalMapBlock(cfg.normalMapCfg) {
@@ -212,7 +212,6 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
                     } else {
                         vertexNormal
                     }
-
                     // make final normal value available to model customizer
                     val normal = float3Port("normal", bumpedNormal)
 

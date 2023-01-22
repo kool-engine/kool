@@ -1,18 +1,18 @@
 package de.fabmax.kool.demo.physics.vehicle
 
 import de.fabmax.kool.math.*
+import de.fabmax.kool.modules.ksl.lang.getFloat4Port
+import de.fabmax.kool.modules.ksl.lang.times
+import de.fabmax.kool.modules.ksl.lang.x
+import de.fabmax.kool.modules.ksl.lang.y
 import de.fabmax.kool.physics.RigidDynamic
 import de.fabmax.kool.physics.Shape
 import de.fabmax.kool.physics.geometry.BoxGeometry
 import de.fabmax.kool.physics.joints.FixedJoint
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.GlslType
-import de.fabmax.kool.pipeline.UniformColor
-import de.fabmax.kool.pipeline.deferred.DeferredPbrShader
+import de.fabmax.kool.pipeline.deferred.DeferredKslPbrShader
 import de.fabmax.kool.pipeline.deferred.DeferredPointLights
-import de.fabmax.kool.pipeline.shadermodel.*
-import de.fabmax.kool.pipeline.shading.Albedo
-import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.geometry.MeshBuilder
@@ -214,46 +214,47 @@ class GuardRail {
         }
     }
 
-    private class GuardRailShader private constructor(cfg: PbrMaterialConfig, model: ShaderModel) : DeferredPbrShader(cfg, model) {
-        private var uEmissionColor: UniformColor?  = null
-
-        init {
-            onPipelineCreated += { _, _, _ ->
-                uEmissionColor = model.findNode<PushConstantNodeColor>("uEmissiveColor")?.uniform
-                uEmissionColor?.value?.set(VehicleDemo.color(500, false).scale(10f, MutableVec4f()))
-            }
-        }
-
+    private class GuardRailShader(cfg: Config) : DeferredKslPbrShader(cfg) {
+//        private var uEmissionColor: UniformColor?  = null
+//
+//        init {
+//            onPipelineCreated += { _, _, _ ->
+//                uEmissionColor = model.findNode<PushConstantNodeColor>("uEmissiveColor")?.uniform
+//                uEmissionColor?.value?.set(VehicleDemo.color(500, false).scale(10f, MutableVec4f()))
+//            }
+//        }
+//
         companion object {
             fun createShader(): GuardRailShader {
-                val cfg = PbrMaterialConfig().apply {
-                    isInstanced = true
-                    albedoSource = Albedo.VERTEX_ALBEDO
-                    roughness = 0.8f
-                }
-                val model = defaultMrtPbrModel(cfg).apply {
-                    val ifEmissionMesh: StageInterfaceNode
-                    val ifEmissionInst: StageInterfaceNode
-                    vertexStage {
-                        ifEmissionMesh = stageInterfaceNode("ifEmissionMesh", attributeNode(Attribute.TEXTURE_COORDS).output)
-                        ifEmissionInst = stageInterfaceNode("ifEmissionInst", instanceAttributeNode(INSTANCE_EMISSION).output)
+                val cfg = Config().apply {
+                    vertices { isInstanced = true }
+                    color { vertexColor() }
+                    emission {
+                        constColor(VehicleDemo.color(500, false).scaleRgb(10f))
                     }
-                    fragmentStage {
-                        findNodeByType<MrtMultiplexNode>()!!.apply {
-                            val emissionColor = pushConstantNodeColor("uEmissiveColor").output
-                            val emissionPowLt = splitNode(ifEmissionInst.output, "x").output
-                            val emissionPowRt = splitNode(ifEmissionInst.output, "y").output
-                            val emissionLtMesh = splitNode(ifEmissionMesh.output, "x").output
-                            val emissionRtMesh = splitNode(ifEmissionMesh.output, "y").output
-                            val emissionLtFac = multiplyNode(emissionLtMesh, emissionPowLt).output
-                            val emissionRtFac = multiplyNode(emissionRtMesh, emissionPowRt).output
-                            val emissionFac = maxNode(emissionLtFac, emissionRtFac).output
 
-                            inEmissive = multiplyNode(emissionColor, emissionFac).output
+                    modelCustomizer = {
+                        val emissionFactor = interStageFloat1()
+
+                        vertexStage {
+                            main {
+                                val emissionDir = vertexAttribFloat2(Attribute.TEXTURE_COORDS.name)
+                                val emissionInst = instanceAttribFloat2(INSTANCE_EMISSION.name)
+                                val emissionLt = emissionDir.x * emissionInst.x
+                                val emissionRt = emissionDir.y * emissionInst.y
+                                emissionFactor.input set max(emissionLt, emissionRt)
+                            }
+                        }
+                        fragmentStage {
+                            main {
+                                val emissionPort = getFloat4Port("emissionColor")
+                                val color = float4Var(emissionPort.input.input)
+                                emissionPort.input(color * emissionFactor.output)
+                            }
                         }
                     }
                 }
-                return GuardRailShader(cfg, model)
+                return GuardRailShader(cfg)
             }
         }
     }

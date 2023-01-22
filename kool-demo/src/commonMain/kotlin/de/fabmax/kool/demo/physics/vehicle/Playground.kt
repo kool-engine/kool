@@ -9,8 +9,7 @@ import de.fabmax.kool.physics.RigidStatic
 import de.fabmax.kool.physics.Shape
 import de.fabmax.kool.physics.geometry.BoxGeometry
 import de.fabmax.kool.physics.joints.RevoluteJoint
-import de.fabmax.kool.pipeline.deferred.deferredPbrShader
-import de.fabmax.kool.pipeline.shading.Albedo
+import de.fabmax.kool.pipeline.deferred.deferredKslPbrShader
 import de.fabmax.kool.scene.colorMesh
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.multiShape
@@ -28,8 +27,8 @@ object Playground {
                 makeBumps(Mat4f().translate(20f, 0f, 0f))
                 makeHalfPipe(Mat4f().translate(-40f, 0f, 30f).rotate(90f, 0f, -1f, 0f))
             }
-            shader = deferredPbrShader {
-                albedoSource = Albedo.VERTEX_ALBEDO
+            shader = deferredKslPbrShader {
+                color { vertexColor() }
             }
 
             vehicleWorld.addStaticCollisionBody(geometry)

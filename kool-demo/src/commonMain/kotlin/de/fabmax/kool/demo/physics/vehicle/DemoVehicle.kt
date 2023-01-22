@@ -8,11 +8,10 @@ import de.fabmax.kool.physics.geometry.ConvexMesh
 import de.fabmax.kool.physics.geometry.ConvexMeshGeometry
 import de.fabmax.kool.physics.vehicle.Vehicle
 import de.fabmax.kool.physics.vehicle.VehicleProperties
-import de.fabmax.kool.pipeline.deferred.DeferredPbrShader
+import de.fabmax.kool.pipeline.deferred.DeferredKslPbrShader
 import de.fabmax.kool.pipeline.deferred.DeferredPointLights
 import de.fabmax.kool.pipeline.deferred.DeferredSpotLights
-import de.fabmax.kool.pipeline.deferred.deferredPbrShader
-import de.fabmax.kool.pipeline.shading.Albedo
+import de.fabmax.kool.pipeline.deferred.deferredKslPbrShader
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Model
 import de.fabmax.kool.util.Color
@@ -35,8 +34,8 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
 
     private var previousGear = 0
 
-    private val brakeLightShader: DeferredPbrShader
-    private val reverseLightShader: DeferredPbrShader
+    private val brakeLightShader: DeferredKslPbrShader
+    private val reverseLightShader: DeferredKslPbrShader
     private val rearLightLt: DeferredPointLights.PointLight
     private val rearLightRt: DeferredPointLights.PointLight
     private val headLightLt: DeferredSpotLights.SpotLight
@@ -62,19 +61,17 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
 
         resetVehiclePos()
 
-        vehicleModel.meshes["mesh_head_lights_0"]?.shader = deferredPbrShader {
-            albedoSource = Albedo.STATIC_ALBEDO
-            albedo = Color.WHITE
-            emissive = Color(25f, 25f, 25f)
+        vehicleModel.meshes["mesh_head_lights_0"]?.shader = deferredKslPbrShader {
+            emission { constColor(Color(25f, 25f, 25f)) }
         }
-        brakeLightShader = deferredPbrShader {
-            albedoSource = Albedo.STATIC_ALBEDO
-            albedo = Color(0.5f, 0.0f, 0.0f)
+        brakeLightShader = deferredKslPbrShader {
+            color { constColor(Color(0.5f, 0.0f, 0.0f)) }
+            emission { uniformColor(Color.BLACK) }
         }
         vehicleModel.meshes["mesh_brake_lights_0"]?.shader = brakeLightShader
-        reverseLightShader = deferredPbrShader {
-            albedoSource = Albedo.STATIC_ALBEDO
-            albedo = Color(0.6f, 0.6f, 0.6f)
+        reverseLightShader = deferredKslPbrShader {
+            color { constColor(Color(0.6f, 0.6f, 0.6f)) }
+            emission { uniformColor(Color.BLACK) }
         }
         vehicleModel.meshes["mesh_reverse_lights_0"]?.shader = reverseLightShader
 
@@ -142,14 +139,14 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
         rearLightRt.color.set(lightColor)
 
         if (vehicle.brakeInput > 0f) {
-            brakeLightShader.emissive(Color(25f, 0.25f, 0.125f))
+            brakeLightShader.emission = Color(25f, 0.25f, 0.125f)
         } else {
-            brakeLightShader.emissive(Color.BLACK)
+            brakeLightShader.emission = Color.BLACK
         }
         if (vehicle.isReverse) {
-            reverseLightShader.emissive(Color(25f, 25f, 25f))
+            reverseLightShader.emission = Color(25f, 25f, 25f)
         } else {
-            reverseLightShader.emissive(Color.BLACK)
+            reverseLightShader.emission = Color.BLACK
         }
 
         var maxSlip = 0f

@@ -3,7 +3,8 @@ package de.fabmax.kool.demo.procedural
 import de.fabmax.kool.demo.DemoLoader
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.deferred.deferredPbrShader
+import de.fabmax.kool.pipeline.Texture2d
+import de.fabmax.kool.pipeline.deferred.deferredKslPbrShader
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
@@ -23,10 +24,16 @@ class Table : Mesh(IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS, Att
             geometry.generateTangents()
         }
 
-        shader = deferredPbrShader {
-            useAlbedoMap("${DemoLoader.materialPath}/granitesmooth1/granitesmooth1-albedo4.jpg")
-            useNormalMap("${DemoLoader.materialPath}/granitesmooth1/granitesmooth1-normal2.jpg")
-            useRoughnessMap("${DemoLoader.materialPath}/granitesmooth1/granitesmooth1-roughness3.jpg")
+        shader = deferredKslPbrShader {
+            color {
+                textureColor(Texture2d("${DemoLoader.materialPath}/granitesmooth1/granitesmooth1-albedo4.jpg"))
+            }
+            normalMapping {
+                setNormalMap(Texture2d("${DemoLoader.materialPath}/granitesmooth1/granitesmooth1-normal2.jpg"))
+            }
+            roughness {
+                textureProperty(Texture2d("${DemoLoader.materialPath}/granitesmooth1/granitesmooth1-roughness3.jpg"))
+            }
         }
     }
 

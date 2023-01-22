@@ -1,7 +1,7 @@
 package de.fabmax.kool.demo.procedural
 
 import de.fabmax.kool.math.*
-import de.fabmax.kool.pipeline.deferred.deferredPbrShader
+import de.fabmax.kool.pipeline.deferred.deferredKslPbrShader
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.colorMesh
@@ -60,8 +60,9 @@ class Roses : Group() {
                     geometry.removeDegeneratedTriangles()
                     geometry.generateNormals()
                 }
-                shader = deferredPbrShader {
-                    roughness = 0.3f
+                shader = deferredKslPbrShader {
+                    color { vertexColor() }
+                    roughness(0.3f)
                 }
             }
             shaftLeafMesh = colorMesh {
@@ -70,8 +71,9 @@ class Roses : Group() {
                     geometry.removeDegeneratedTriangles()
                     geometry.generateNormals()
                 }
-                shader = deferredPbrShader {
-                    roughness = 0.5f
+                shader = deferredKslPbrShader {
+                    color { vertexColor() }
+                    roughness(0.5f)
                 }
             }
             leafMesh = colorMesh {
@@ -80,8 +82,9 @@ class Roses : Group() {
                     geometry.removeDegeneratedTriangles()
                     geometry.generateNormals()
                 }
-                shader = deferredPbrShader {
-                    roughness = 0.5f
+                shader = deferredKslPbrShader {
+                    color { vertexColor() }
+                    roughness(0.5f)
                 }
             }
             blossomMesh = colorMesh {
@@ -90,8 +93,9 @@ class Roses : Group() {
                     geometry.removeDegeneratedTriangles()
                     geometry.generateNormals()
                 }
-                shader = deferredPbrShader {
-                    roughness = 0.8f
+                shader = deferredKslPbrShader {
+                    color { vertexColor() }
+                    roughness(0.8f)
                 }
             }
 

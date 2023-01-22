@@ -6,14 +6,7 @@ import de.fabmax.kool.math.spatial.NearestTraverser
 import de.fabmax.kool.math.spatial.pointKdTree
 import de.fabmax.kool.physics.RigidStatic
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.pipeline.deferred.DeferredPbrShader
-import de.fabmax.kool.pipeline.deferred.deferredPbrShader
-import de.fabmax.kool.pipeline.shadermodel.StageInterfaceNode
-import de.fabmax.kool.pipeline.shadermodel.fragmentStage
-import de.fabmax.kool.pipeline.shadermodel.vertexStage
-import de.fabmax.kool.pipeline.shading.Albedo
-import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
-import de.fabmax.kool.pipeline.shading.PbrShader
+import de.fabmax.kool.pipeline.deferred.deferredKslPbrShader
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
@@ -357,28 +350,17 @@ class Track(val world: VehicleWorld) : Group() {
             roughnessMap.dispose()
         }
 
-        trackMesh.shader = deferredPbrShader {
-            albedoSource = Albedo.TEXTURE_ALBEDO
-            useAlbedoMap(albedoMap)
-            useRoughnessMap(roughnessMap)
+        trackMesh.shader = deferredKslPbrShader {
+            color { textureColor(albedoMap) }
+            roughness { textureProperty(roughnessMap) }
         }
     }
 
     private fun makeSupportMeshShader() {
-        val cfg = PbrMaterialConfig().apply {
-            albedoSource = Albedo.VERTEX_ALBEDO
-            roughness = 0.3f
+        trackSupportMesh.shader = deferredKslPbrShader {
+            color { vertexColor() }
+            roughness { vertexProperty(ATTRIBUTE_ROUGHNESS) }
         }
-        val model = DeferredPbrShader.defaultMrtPbrModel(cfg).apply {
-            val ifRoughness: StageInterfaceNode
-            vertexStage {
-                ifRoughness = stageInterfaceNode("ifRoughness", attributeNode(ATTRIBUTE_ROUGHNESS).output)
-            }
-            fragmentStage {
-                findNodeByType<DeferredPbrShader.MrtMultiplexNode>()!!.inRoughness = ifRoughness.output
-            }
-        }
-        trackSupportMesh.shader = PbrShader(cfg, model)
     }
 
     private class GuardRailSection(val from: Float, val to: Float, val isLeft: Boolean)
