@@ -39,7 +39,7 @@ data class NormalMapConfig(
     var normalMapName: String = "tNormalMap",
     var coordAttribute: Attribute = Attribute.TEXTURE_COORDS,
     var defaultNormalMap: Texture2d? = null,
-    var defaultStrength: Float = 1f
+    val strengthCfg: PropertyBlockConfig = PropertyBlockConfig("normalMapStrength").apply { constProperty(1f) }
 ) {
     fun clearNormalMap() {
         isNormalMapped = false

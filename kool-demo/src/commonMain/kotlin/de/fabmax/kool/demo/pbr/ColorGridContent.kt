@@ -62,7 +62,7 @@ class ColorGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrConten
     override fun updateEnvironmentMap(envMaps: EnvironmentMaps) {
         iblContent?.let {
             val pbrShader = it.shader as KslPbrShader
-            pbrShader.ambientTexture = envMaps.irradianceMap
+            pbrShader.ambientMap = envMaps.irradianceMap
             pbrShader.reflectionMap = envMaps.reflectionMap
         }
     }

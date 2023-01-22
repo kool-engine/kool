@@ -16,10 +16,10 @@ open class KslPbrShader(cfg: Config, model: KslProgram = Model(cfg)) : KslLitSha
     constructor(block: Config.() -> Unit) : this(Config().apply(block))
 
     // basic material properties
-    var roughness: Float by uniform1f(cfg.roughnessCfg.primaryUniform?.uniformName, cfg.roughnessCfg.primaryUniform?.defaultValue)
-    var roughnessMap: Texture2d? by texture2d(cfg.roughnessCfg.primaryTexture?.textureName, cfg.roughnessCfg.primaryTexture?.defaultTexture)
-    var metallic: Float by uniform1f(cfg.metallicCfg.primaryUniform?.uniformName, cfg.metallicCfg.primaryUniform?.defaultValue)
-    var metallicMap: Texture2d? by texture2d(cfg.metallicCfg.primaryTexture?.textureName, cfg.metallicCfg.primaryTexture?.defaultTexture)
+    var roughness: Float by propertyUniform(cfg.roughnessCfg)
+    var roughnessMap: Texture2d? by propertyTexture(cfg.roughnessCfg)
+    var metallic: Float by propertyUniform(cfg.metallicCfg)
+    var metallicMap: Texture2d? by propertyTexture(cfg.metallicCfg)
 
     val reflectionMaps: Array<TextureCube?> by textureCubeArray("tReflectionMaps", 2)
     var reflectionMapWeights: Vec2f by uniform2f("uReflectionWeights")

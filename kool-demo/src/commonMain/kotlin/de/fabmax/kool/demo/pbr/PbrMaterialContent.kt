@@ -88,7 +88,7 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrCont
         iblContent?.children?.forEach {
             it as Mesh
             val pbrShader = it.shader as KslPbrShader
-            pbrShader.ambientTexture = envMaps.irradianceMap
+            pbrShader.ambientMap = envMaps.irradianceMap
             pbrShader.reflectionMap = envMaps.reflectionMap
         }
     }

@@ -63,7 +63,7 @@ class RoughnesMetalGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.P
     override fun updateEnvironmentMap(envMaps: EnvironmentMaps) {
         iblContent?.let {
             val pbrShader = it.shader as KslPbrShader
-            pbrShader.ambientTexture = envMaps.irradianceMap
+            pbrShader.ambientMap = envMaps.irradianceMap
             pbrShader.reflectionMap = envMaps.reflectionMap
         }
     }

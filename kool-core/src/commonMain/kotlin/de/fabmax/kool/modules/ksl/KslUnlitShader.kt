@@ -12,8 +12,8 @@ open class KslUnlitShader(cfg: UnlitShaderConfig, model: KslProgram = Model(cfg)
 
     constructor(block: UnlitShaderConfig.() -> Unit) : this(UnlitShaderConfig().apply(block))
 
-    var color: Vec4f by uniform4f(cfg.colorCfg.primaryUniform?.uniformName, cfg.colorCfg.primaryUniform?.defaultColor)
-    var colorMap: Texture2d? by texture2d(cfg.colorCfg.primaryTexture?.textureName, cfg.colorCfg.primaryTexture?.defaultTexture)
+    var color: Vec4f by colorUniform(cfg.colorCfg)
+    var colorMap: Texture2d? by colorTexture(cfg.colorCfg)
 
     open class UnlitShaderConfig {
         val vertexCfg = BasicVertexConfig()

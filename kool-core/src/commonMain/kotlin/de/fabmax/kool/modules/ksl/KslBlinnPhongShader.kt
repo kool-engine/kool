@@ -10,10 +10,10 @@ open class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : Ks
 
     constructor(block: Config.() -> Unit) : this(Config().apply(block))
 
-    var shininess: Float by uniform1f(cfg.shininessCfg.primaryUniform?.uniformName, cfg.shininessCfg.primaryUniform?.defaultValue)
-    var shininessMap: Texture2d? by texture2d(cfg.shininessCfg.primaryTexture?.textureName, cfg.shininessCfg.primaryTexture?.defaultTexture)
-    var specularStrength: Float by uniform1f(cfg.shininessCfg.primaryUniform?.uniformName, cfg.shininessCfg.primaryUniform?.defaultValue)
-    var specularStrengthMap: Texture2d? by texture2d(cfg.specularStrengthCfg.primaryTexture?.textureName, cfg.specularStrengthCfg.primaryTexture?.defaultTexture)
+    var shininess: Float by propertyUniform(cfg.shininessCfg)
+    var shininessMap: Texture2d? by propertyTexture(cfg.shininessCfg)
+    var specularStrength: Float by propertyUniform(cfg.shininessCfg)
+    var specularStrengthMap: Texture2d? by propertyTexture(cfg.specularStrengthCfg)
 
     var specularColor: Vec4f by uniform4f("uSpecularColor", cfg.specularColor)
 

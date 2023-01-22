@@ -2,6 +2,8 @@ package de.fabmax.kool.modules.ksl
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.*
+import de.fabmax.kool.modules.ksl.blocks.ColorBlockConfig
+import de.fabmax.kool.modules.ksl.blocks.PropertyBlockConfig
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.Mesh
@@ -290,6 +292,16 @@ open class KslShader(val program: KslProgram, val pipelineConfig: PipelineConfig
         UniformInputTextureArray3d(uniformName, arraySize).also { connectUniformListeners += it }
     protected fun textureCubeArray(uniformName: String?, arraySize: Int): UniformInputTextureArrayCube =
         UniformInputTextureArrayCube(uniformName, arraySize).also { connectUniformListeners += it }
+
+    protected fun colorUniform(cfg: ColorBlockConfig): KslShader.UniformInput4f =
+        uniform4f(cfg.primaryUniform?.uniformName, cfg.primaryUniform?.defaultColor)
+    protected fun colorTexture(cfg: ColorBlockConfig): KslShader.UniformInputTexture2d =
+        texture2d(cfg.primaryTexture?.textureName, cfg.primaryTexture?.defaultTexture)
+
+    protected fun propertyUniform(cfg: PropertyBlockConfig): KslShader.UniformInput1f =
+        uniform1f(cfg.primaryUniform?.uniformName, cfg.primaryUniform?.defaultValue)
+    protected fun propertyTexture(cfg: PropertyBlockConfig): KslShader.UniformInputTexture2d =
+        texture2d(cfg.primaryTexture?.textureName, cfg.primaryTexture?.defaultTexture)
 
     protected inner class UniformInput1f(val uniformName: String?, defaultVal: Float) : ConnectUniformListener {
         private var uniform: Uniform1f? = null

@@ -14,36 +14,39 @@ import de.fabmax.kool.util.Color
 
 abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader(model, cfg.pipelineCfg) {
 
-    var color: Vec4f by uniform4f(cfg.colorCfg.primaryUniform?.uniformName, cfg.colorCfg.primaryUniform?.defaultColor)
-    var colorMap: Texture2d? by texture2d(cfg.colorCfg.primaryTexture?.textureName, cfg.colorCfg.primaryTexture?.defaultTexture)
+    var color: Vec4f by colorUniform(cfg.colorCfg)
+    var colorMap: Texture2d? by colorTexture(cfg.colorCfg)
 
-    var normalMap: Texture2d? by texture2d(cfg.normalMapCfg.normalMapName, cfg.normalMapCfg.defaultNormalMap)
-    var normalMapStrength: Float by uniform1f("uNormalMapStrength", cfg.normalMapCfg.defaultStrength)
+    var normalMap: Texture2d? by texture2d(
+        cfg.normalMapCfg.normalMapName,
+        cfg.normalMapCfg.defaultNormalMap
+    )
+    var normalMapStrength: Float by propertyUniform(cfg.normalMapCfg.strengthCfg)
 
-    var emission: Vec4f by uniform4f(cfg.emissionCfg.primaryUniform?.uniformName, cfg.emissionCfg.primaryUniform?.defaultColor)
-    var emissionMap: Texture2d? by texture2d(cfg.emissionCfg.primaryTexture?.textureName, cfg.emissionCfg.primaryTexture?.defaultTexture)
+    var emission: Vec4f by colorUniform(cfg.emissionCfg)
+    var emissionMap: Texture2d? by colorTexture(cfg.emissionCfg)
 
     var ssaoMap: Texture2d? by texture2d("tSsaoMap", cfg.aoCfg.defaultSsaoMap)
-    var materialAo: Float by uniform1f(cfg.aoCfg.materialAo.primaryUniform?.uniformName, cfg.aoCfg.materialAo.primaryUniform?.defaultValue)
-    var materialAoMap: Texture2d? by texture2d(cfg.aoCfg.materialAo.primaryTexture?.textureName, cfg.aoCfg.materialAo.primaryTexture?.defaultTexture)
+    var materialAo: Float by propertyUniform(cfg.aoCfg.materialAo)
+    var materialAoMap: Texture2d? by propertyTexture(cfg.aoCfg.materialAo)
 
-    var displacement: Float by uniform1f(cfg.vertexCfg.displacementCfg.primaryUniform?.uniformName, cfg.vertexCfg.displacementCfg.primaryUniform?.defaultValue)
-    var displacementMap: Texture2d? by texture2d(cfg.vertexCfg.displacementCfg.primaryTexture?.textureName, cfg.vertexCfg.displacementCfg.primaryTexture?.defaultTexture)
+    var displacement: Float by propertyUniform(cfg.vertexCfg.displacementCfg)
+    var displacementMap: Texture2d? by propertyTexture(cfg.vertexCfg.displacementCfg)
 
     var ambientFactor: Vec4f by uniform4f("uAmbientColor")
-    var ambientTextureOrientation: Mat3f by uniformMat3f("uAmbientTextureOri", Mat3f().setIdentity())
+    var ambientMapOrientation: Mat3f by uniformMat3f("uAmbientTextureOri", Mat3f().setIdentity())
     // if ambient color is image based
-    var ambientTexture: TextureCube? by textureCube("tAmbientTexture")
+    var ambientMap: TextureCube? by textureCube("tAmbientTexture")
     // if ambient color is dual image based
-    val ambientTextures: Array<TextureCube?> by textureCubeArray("tAmbientTextures", 2)
-    var ambientTextureWeights by uniform2f("tAmbientWeights", Vec2f.X_AXIS)
+    val ambientMaps: Array<TextureCube?> by textureCubeArray("tAmbientTextures", 2)
+    var ambientMapWeights by uniform2f("tAmbientWeights", Vec2f.X_AXIS)
 
     init {
         when (val ambient = cfg.ambientColor) {
             is AmbientColor.Uniform -> ambientFactor = ambient.color
             is AmbientColor.ImageBased -> {
-                ambientTexture = ambient.ambientTexture
-                ambientFactor = ambient.colorFactor
+                ambientMap = ambient.ambientMap
+                ambientFactor = ambient.ambientFactor
             }
             is AmbientColor.DualImageBased -> {
                 ambientFactor = ambient.colorFactor
@@ -53,7 +56,7 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
 
     sealed class AmbientColor {
         class Uniform(val color: Color) : AmbientColor()
-        class ImageBased(val ambientTexture: TextureCube?, val colorFactor: Color) : AmbientColor()
+        class ImageBased(val ambientMap: TextureCube?, val ambientFactor: Color) : AmbientColor()
         class DualImageBased(val colorFactor: Color) : AmbientColor()
     }
 
@@ -168,7 +171,6 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
             }
 
             fragmentStage {
-                val uNormalMapStrength = uniformFloat1("uNormalMapStrength")
                 val lightData = sceneLightData(cfg.maxNumberOfLights)
 
                 main {
@@ -200,10 +202,11 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
 
                     // do normal map computations (if enabled) and adjust material block input normal accordingly
                     val bumpedNormal = if (cfg.normalMapCfg.isNormalMapped) {
+                        val normalMapStrength = fragmentPropertyBlock(cfg.normalMapCfg.strengthCfg).outProperty
                         normalMapBlock(cfg.normalMapCfg) {
                             inTangentWorldSpace(tangentWorldSpace!!.output)
                             inNormalWorldSpace(vertexNormal)
-                            inStrength(uNormalMapStrength)
+                            inStrength(normalMapStrength)
                             inTexCoords(texCoordBlock.getAttributeCoords(cfg.normalMapCfg.coordAttribute))
                         }.outBumpNormal
                     } else {
