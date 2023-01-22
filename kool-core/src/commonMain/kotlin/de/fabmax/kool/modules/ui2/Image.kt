@@ -184,6 +184,10 @@ class ImageMesh : Mesh(IndexedVertexList(Ui2Shader.UI_MESH_ATTRIBS)) {
     var defaultImageShader: ImageShader? = null
     val builder = MeshBuilder(geometry).apply { isInvertFaceOrientation = true }
 
+    init {
+        isCastingShadow = false
+    }
+
     private fun getOrCreateDefaultShader(imageTex: Texture2d?): ImageShader {
         val shader = defaultImageShader ?: ImageShader().also { defaultImageShader = it }
         shader.image = imageTex

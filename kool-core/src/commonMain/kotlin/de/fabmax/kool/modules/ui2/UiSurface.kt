@@ -492,6 +492,7 @@ open class UiSurface(
 
     private class TextMesh(shader: Shader) {
         val mesh = mesh(MsdfUiShader.MSDF_UI_MESH_ATTRIBS) {
+            isCastingShadow = false
             this.shader = shader
         }
         val builder = MeshBuilder(mesh.geometry)

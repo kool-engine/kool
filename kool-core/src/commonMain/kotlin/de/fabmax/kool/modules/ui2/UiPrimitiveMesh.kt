@@ -28,6 +28,7 @@ class UiPrimitiveMesh : Mesh(IndexedVertexList(ATTRIB_OUTER_WEIGHTS, ATTRIB_INNE
     init {
         instances = primitives
         isFrustumChecked = false
+        isCastingShadow = false
 
         generate {
             val weights = MutableVec4f()

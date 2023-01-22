@@ -32,6 +32,9 @@ open class DepthMapPass(drawNode: Node, config: Config) : OffscreenRenderPass2d(
     }
 
     protected open fun getDepthPipeline(mesh: Mesh, ctx: KoolContext): Pipeline? {
+        if (!mesh.geometry.hasAttribute(Attribute.POSITIONS)) {
+            return null
+        }
         return shadowPipelines.getOrPut(mesh.id) {
             val depthShader = mesh.depthShader
                 ?: mesh.depthShaderConfig?.let { cfg -> DepthShader(cfg.copy(outputLinearDepth = false, outputNormals = false)) }
@@ -68,14 +71,13 @@ class NormalLinearDepthMapPass(drawNode: Node, config: Config) : DepthMapPass(dr
 
     init {
         name = "NormalLinearDepthMapPass"
-
         onAfterCollectDrawCommands += {
             clearColor = Color(0f, 1f, 0f, 1f)
         }
     }
 
     override fun getDepthPipeline(mesh: Mesh, ctx: KoolContext): Pipeline? {
-        if (!mesh.geometry.hasAttribute(Attribute.NORMALS)) {
+        if (!mesh.geometry.hasAttribute(Attribute.POSITIONS) || !mesh.geometry.hasAttribute(Attribute.NORMALS)) {
             return null
         }
         return shadowPipelines.getOrPut(mesh.id) {
