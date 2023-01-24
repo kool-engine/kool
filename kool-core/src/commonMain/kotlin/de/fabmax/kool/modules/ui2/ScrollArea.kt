@@ -11,7 +11,7 @@ fun UiScope.ScrollArea(
     containerModifier: ((UiModifier) -> Unit)? = null,
     vScrollbarModifier: ((ScrollbarModifier) -> Unit)? = null,
     hScrollbarModifier: ((ScrollbarModifier) -> Unit)? = null,
-    state: ScrollState = weakRememberScrollState(),
+    state: ScrollState = rememberScrollState(),
     block: ScrollPaneScope.() -> Unit
 ) {
     Box {

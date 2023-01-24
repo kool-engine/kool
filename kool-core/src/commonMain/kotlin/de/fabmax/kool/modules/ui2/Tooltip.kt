@@ -24,25 +24,29 @@ class TooltipState(val delay: Double = 1.0) : MutableStateValue<Boolean>(false),
     }
 }
 
-fun UiScope.Tooltip(text: String, yOffset: Dp = (-30).dp, target: UiScope? = this, tooltipState: TooltipState = weakRemember { TooltipState() }) =
-    Tooltip(tooltipState, target) {
+fun UiScope.Tooltip(
+    text: String,
+    yOffset: Dp = (-30).dp,
+    target: UiScope? = this,
+    tooltipState: TooltipState = remember { TooltipState() }
+) = Tooltip(tooltipState, target) {
+    modifier
+        .margin(top = Dp.fromPx(tooltipState.pointerY.use()) + yOffset)
+        .layout(CellLayout)
+        .background(UiRenderer { node ->
+            node.apply {
+                node.getUiPrimitives(UiSurface.LAYER_BACKGROUND)
+                    .localRoundRect(0f, 0f, widthPx, heightPx, heightPx * 0.5f, colors.backgroundVariant)
+                node.getUiPrimitives(UiSurface.LAYER_BACKGROUND)
+                    .localRoundRectBorder(0f, 0f, widthPx, heightPx, heightPx * 0.5f, sizes.borderWidth.px, colors.primaryVariantAlpha(0.5f))
+            }
+        })
+    Text(text) {
         modifier
-            .margin(top = Dp.fromPx(tooltipState.pointerY.use()) + yOffset)
-            .layout(CellLayout)
-            .background(UiRenderer { node ->
-                node.apply {
-                    node.getUiPrimitives(UiSurface.LAYER_BACKGROUND)
-                        .localRoundRect(0f, 0f, widthPx, heightPx, heightPx * 0.5f, colors.backgroundVariant)
-                    node.getUiPrimitives(UiSurface.LAYER_BACKGROUND)
-                        .localRoundRectBorder(0f, 0f, widthPx, heightPx, heightPx * 0.5f, sizes.borderWidth.px, colors.primaryVariantAlpha(0.5f))
-                }
-            })
-        Text(text) {
-            modifier
-                .alignY(AlignmentY.Center)
-                .padding(horizontal = sizes.largeGap, vertical = sizes.smallGap)
-        }
+            .alignY(AlignmentY.Center)
+            .padding(horizontal = sizes.largeGap, vertical = sizes.smallGap)
     }
+}
 
 inline fun UiScope.Tooltip(tooltipState: TooltipState, target: UiScope? = this, block: UiScope.() -> Unit) {
     target?.modifier?.hoverListener(tooltipState)

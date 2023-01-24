@@ -185,12 +185,12 @@ class ThemeEditorWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
                         .size(Grow.Std, Grow.Std)
                 }
             ) {
-                val hoveredItem = weakRememberState(-1)
+                var hoveredItem by remember(-1)
                 itemsIndexed(colorEntries) { i, it ->
                     it.apply {
-                        itemRow(i, i == hoveredItem.use()).apply {
-                            modifier.onEnter { hoveredItem.set(i) }
-                            modifier.onExit { hoveredItem.set(-1) }
+                        itemRow(i, i == hoveredItem).apply {
+                            modifier.onEnter { hoveredItem = i }
+                            modifier.onExit { hoveredItem = -1 }
                             modifier.onClick { selectedColor.set(i) }
                         }
                     }

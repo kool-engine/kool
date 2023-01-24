@@ -124,7 +124,7 @@ abstract class DemoScene(val name: String) {
         val titleTo = demoEntry?.category?.toColor ?: 0.2f
 
         val isMinimized = modifier.isMinimizedToTitle
-        val isMinimizeHovered = weakRememberState(false)
+        var isMinimizeHovered by remember(false)
 
         Box {
             modifier
@@ -146,7 +146,7 @@ abstract class DemoScene(val name: String) {
                     .textAlign(AlignmentX.Center, AlignmentY.Center)
             }
 
-            val minButtonBgColor = if (isMinimizeHovered.use()) MdColor.RED tone 600 else Color.WHITE.withAlpha(0.8f)
+            val minButtonBgColor = if (isMinimizeHovered) MdColor.RED tone 600 else Color.WHITE.withAlpha(0.8f)
             Box {
                 modifier
                     .size(sizes.gap * 1.75f, sizes.gap * 1.75f)
@@ -161,8 +161,8 @@ abstract class DemoScene(val name: String) {
                         .margin(sizes.smallGap * 0.7f)
                         .colors(colors.primaryVariant, Color.WHITE)
                         .onClick { isMenuMinimized.toggle() }
-                        .onEnter { isMinimizeHovered.set(true) }
-                        .onExit { isMinimizeHovered.set(false) }
+                        .onEnter { isMinimizeHovered = true }
+                        .onExit { isMinimizeHovered = false }
                 }
             }
         }

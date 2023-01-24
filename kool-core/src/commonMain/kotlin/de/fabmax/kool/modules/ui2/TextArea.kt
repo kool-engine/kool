@@ -20,10 +20,10 @@ interface TextAreaScope : UiScope {
     val linesHolder: LazyListScope
 
     fun installDefaultSelectionHandler() {
-        val selStartLine = weakRememberState(-1)
-        val selCaretLine = weakRememberState(-1)
-        val selStartChar = weakRememberState(0)
-        val selCaretChar = weakRememberState(0)
+        val selStartLine = remember(-1)
+        val selCaretLine = remember(-1)
+        val selStartChar = remember(0)
+        val selCaretChar = remember(0)
 
         modifier.onSelectionChanged = { startLine, caretLine, startChar, caretChar ->
             selStartLine.set(startLine)
@@ -88,7 +88,7 @@ fun UiScope.TextArea(
     scrollPaneModifier: ((ScrollPaneModifier) -> Unit)? = null,
     vScrollbarModifier: ((ScrollbarModifier) -> Unit)? = null,
     hScrollbarModifier: ((ScrollbarModifier) -> Unit)? = null,
-    state: LazyListState = weakRememberListState(),
+    state: LazyListState = rememberListState(),
     block: TextAreaScope.() -> Unit
 ) {
     val textArea = uiNode.createChild(TextAreaNode::class, TextAreaNode.factory)

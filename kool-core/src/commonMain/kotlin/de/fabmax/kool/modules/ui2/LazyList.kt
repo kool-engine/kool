@@ -70,7 +70,7 @@ fun UiScope.LazyList(
     scrollPaneModifier: ((ScrollPaneModifier) -> Unit)? = null,
     vScrollbarModifier: ((ScrollbarModifier) -> Unit)? = null,
     hScrollbarModifier: ((ScrollbarModifier) -> Unit)? = null,
-    state: LazyListState = weakRememberListState(),
+    state: LazyListState = rememberListState(),
     block: LazyListScope.() -> Unit
 ) {
     Box {

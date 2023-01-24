@@ -217,16 +217,16 @@ fun main() {
                 .align(AlignmentX.Center, AlignmentY.Center)
                 .background(RoundRectBackground(colors.background, 16.dp))
 
-            val clickCount = weakRememberState(0)
+            var clickCount by remember(0)
             Button("Click me!") {
                 modifier
                     .alignX(AlignmentX.Center)
                     .margin(sizes.largeGap * 4f)
                     .padding(horizontal = sizes.largeGap, vertical = sizes.gap)
                     .font(sizes.largeText)
-                    .onClick { clickCount.set(clickCount.value + 1) }
+                    .onClick { clickCount++ }
             }
-            Text("Button clicked ${clickCount.use()} times") {
+            Text("Button clicked $clickCount times") {
                 modifier
                     .alignX(AlignmentX.Center)
             }
@@ -241,9 +241,9 @@ the `Panel`-block, we add a button and a text field. All appearance and layout-p
 controlled by their `modifier`s.
 
 Whenever the button is clicked we increment a `clickCount` which is then displayed by the text field. This works
-because the `Panel`-block is executed each time any state `use()`d within the block changes. The mechanics behind
-that are somewhat similar to how Jetpack-Compose works, although my implementation is much less sophisticated. On
-the plus-side we don't need a dedicated compiler-plugin and there is a bit less magic involved.
+because the `Panel`-block is executed each time any `remember`ed state (or `mutableStateOf()`) within the block changes.
+The mechanics behind that are somewhat similar to how Jetpack-Compose works, although my implementation is much less
+sophisticated. On the plus-side we don't need a dedicated compiler-plugin and there is a bit less magic involved.
 
 The resulting scene looks like [this](https://fabmax.github.io/kool/kool-js/?demo=hello-ui).
 

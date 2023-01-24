@@ -44,7 +44,7 @@ class DemoListContent(val menu: DemoMenu) : Composable {
             containerModifier = { it.background(null) },
             vScrollbarModifier = { it.colors(color = colors.onBackgroundAlpha(0.2f), hoverColor = colors.onBackgroundAlpha(0.4f)) }
         ) {
-            val hoveredIndex = weakRememberState(-1)
+            var hoveredIndex by remember(-1)
             val demoItems = if (Settings.showHiddenDemos.use()) allDemoItems else nonHiddenDemoItems
             itemsIndexed(demoItems) { i, item ->
                 Text(item.text) {
@@ -53,8 +53,8 @@ class DemoListContent(val menu: DemoMenu) : Composable {
                         .height(UiSizes.baseSize)
                         .padding(horizontal = sizes.gap * 1.25f)
                         .textAlignY(AlignmentY.Center)
-                        .onEnter { hoveredIndex.set(i) }
-                        .onExit { hoveredIndex.set(-1) }
+                        .onEnter { hoveredIndex = i }
+                        .onExit { hoveredIndex = -1 }
                         .onClick {
                             if (!item.isTitle) {
                                 item.demo?.let { menu.demoLoader.loadDemo(it) }
@@ -65,7 +65,7 @@ class DemoListContent(val menu: DemoMenu) : Composable {
                     if (item.isTitle) {
                         categoryTitleStyle(item)
                     } else {
-                        demoEntryStyle(item, hoveredIndex.use() == i)
+                        demoEntryStyle(item, hoveredIndex == i)
                     }
                 }
             }

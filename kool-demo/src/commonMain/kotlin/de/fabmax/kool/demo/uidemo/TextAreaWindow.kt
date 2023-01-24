@@ -45,7 +45,7 @@ class TextAreaWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
         // make text area selectable
         installDefaultSelectionHandler()
         // make text area editable
-        modifier.editorHandler(weakRemember { DefaultTextEditorHandler(lines) })
+        modifier.editorHandler(remember { DefaultTextEditorHandler(lines) })
     }
 
     private fun randomText(random: Random): String {

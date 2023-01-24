@@ -16,16 +16,16 @@ class HelloUiDemo : DemoScene("Hello UI") {
                 .align(AlignmentX.Center, AlignmentY.Center)
                 .background(RoundRectBackground(colors.background, 16.dp))
 
-            val clickCount = weakRememberState(0)
+            var clickCount by remember(0)
             Button("Click me!") {
                 modifier
                     .alignX(AlignmentX.Center)
                     .margin(sizes.largeGap * 4f)
                     .padding(horizontal = sizes.largeGap, vertical = sizes.gap)
                     .font(sizes.largeText)
-                    .onClick { clickCount.set(clickCount.value + 1) }
+                    .onClick { clickCount++ }
             }
-            Text("Button clicked ${clickCount.use()} times") {
+            Text("Button clicked $clickCount times") {
                 modifier
                     .alignX(AlignmentX.Center)
             }

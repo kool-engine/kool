@@ -130,7 +130,7 @@ class GizmoTest : DemoScene("Gizmo Test") {
     override fun createMenu(menu: DemoMenu, ctx: KoolContext) = menuSurface {
         Text("Gizmo 1") { sectionTitleStyle() }
         MenuRow {
-            val isDynScale1 = weakRememberState(gizmo1.isDynamicScale()).onChange {
+            val isDynScale1 = remember(gizmo1.isDynamicScale()).onChange {
                 if (it) gizmo1.setDynamicScale() else gizmo1.setFixedScale()
             }
             LabeledSwitch("Dynamic scale", isDynScale1)
@@ -140,7 +140,7 @@ class GizmoTest : DemoScene("Gizmo Test") {
 
         Text("Gizmo 2") { sectionTitleStyle() }
         MenuRow {
-            val isDynScale2 = weakRememberState(gizmo2.isDynamicScale()).onChange {
+            val isDynScale2 = remember(gizmo2.isDynamicScale()).onChange {
                 if (it) gizmo2.setDynamicScale() else gizmo2.setFixedScale()
             }
             LabeledSwitch("Dynamic scale", isDynScale2)
@@ -194,19 +194,19 @@ class GizmoTest : DemoScene("Gizmo Test") {
     }
 
     private fun UiScope.TransformTextField(state: MutableStateValue<Float>, precision: Int) = TextField {
-        val text = weakRememberState(state.value.toString(precision))
+        var text by remember(state.value.toString(precision))
         if (!isFocused.value) {
-            text.set(state.use().toString(precision))
+            text = state.use().toString(precision)
         }
         modifier
-            .text(text.use())
+            .text(text)
             .padding(vertical = sizes.smallGap * 0.75f)
             .margin(start = sizes.gap)
             .width(Grow.Std)
             .textAlignX(AlignmentX.End)
-            .onEnterPressed { text.set(state.use().toString(precision)) }
+            .onEnterPressed { text = state.use().toString(precision) }
             .onChange { txt ->
-                text.set(txt)
+                text = txt
                 txt.toFloatOrNull()?.let {
                     state.set(it)
                 }

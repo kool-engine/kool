@@ -19,13 +19,13 @@ class TextStyleWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
     override val windowScope: WindowScope = windowSurface.windowScope!!
 
     fun UiScope.WindowContent() = Column(Grow.Std, Grow.Std) {
-        val displayText = weakRememberState("Hello kool UI!")
-        val fontSize = weakRememberState(150f)
-        val rotation = weakRememberState(0f)
-        val glow = weakRememberState(0f)
-        val fontWeight = weakRememberState(0f)
-        val fontCutoff = weakRememberState(0.5f)
-        val fontItalic = weakRememberState(0f)
+        var displayText by remember("Hello kool UI!")
+        val fontSize = remember(150f)
+        val rotation = remember(0f)
+        val glow = remember(0f)
+        val fontWeight = remember(0f)
+        val fontCutoff = remember(0.5f)
+        val fontItalic = remember(0f)
 
         modifier.padding(sizes.gap)
 
@@ -36,10 +36,10 @@ class TextStyleWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
                     .alignY(AlignmentY.Center)
                     .width(sizes.largeGap * 8f)
             }
-            TextField(displayText.use()) {
+            TextField(displayText) {
                 modifier
                     .alignY(AlignmentY.Center)
-                    .onChange { displayText.set(it) }
+                    .onChange { displayText = it }
                     .width(sizes.largeGap * 12f)
             }
         }
@@ -69,7 +69,7 @@ class TextStyleWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
                 cutoff = fontCutoff.value,
                 glowColor = colors.secondary.withAlpha(glow.value)
             )
-            Text(displayText.use()) {
+            Text(displayText) {
                 modifier
                     .size(Grow.Std, Grow.Std)
                     .textAlign(AlignmentX.Center, AlignmentY.Center)

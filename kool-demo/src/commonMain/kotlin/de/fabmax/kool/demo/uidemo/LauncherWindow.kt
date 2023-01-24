@@ -11,16 +11,24 @@ class LauncherWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
         surface.sizes = uiDemo.selectedUiSize.use()
         surface.colors = uiDemo.selectedColors.use()
 
-        val isMinimizedToTitle = weakRememberState(false)
+        var isMinimizedToTitle by remember(false)
         modifier
-            .isMinimizedToTitle(isMinimizedToTitle.use())
+            .isMinimizedToTitle(isMinimizedToTitle)
             .isResizable(false, false)
 
         TitleBar(
-            onMinimizeAction = if (!isDocked && !isMinimizedToTitle.use()) { { isMinimizedToTitle.set(true) } } else null,
-            onMaximizeAction = if (!isDocked && isMinimizedToTitle.use()) { { isMinimizedToTitle.set(false) } } else null
+            onMinimizeAction = if (!isDocked && !isMinimizedToTitle) {
+                { isMinimizedToTitle = true }
+            } else {
+                null
+            },
+            onMaximizeAction = if (!isDocked && isMinimizedToTitle) {
+                { isMinimizedToTitle = false }
+            } else {
+                null
+            }
         )
-        if (!isMinimizedToTitle.value) {
+        if (!isMinimizedToTitle) {
             WindowContent()
         }
     }
@@ -28,30 +36,30 @@ class LauncherWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
     override val windowScope = windowSurface.windowScope!!
 
     private fun UiScope.WindowContent() = Column(Grow.Std) {
-        val allowMultiInstances = weakRememberState(false)
+        var allowMultiInstances by remember(false)
 
         Button("UI Basics") {
             launcherButtonStyle("Example window with a few basic UI components")
             modifier.onClick {
-                launchOrBringToTop(allowMultiInstances.use(), BasicUiWindow::class) { BasicUiWindow(uiDemo) }
+                launchOrBringToTop(allowMultiInstances, BasicUiWindow::class) { BasicUiWindow(uiDemo) }
             }
         }
         Button("Text Style") {
             launcherButtonStyle("Signed-distance-field font rendering showcase")
             modifier.onClick {
-                launchOrBringToTop(allowMultiInstances.use(), TextStyleWindow::class) { TextStyleWindow(uiDemo) }
+                launchOrBringToTop(allowMultiInstances, TextStyleWindow::class) { TextStyleWindow(uiDemo) }
             }
         }
         Button("Text Area") {
             launcherButtonStyle("Editable text area with many different text styles")
             modifier.onClick {
-                launchOrBringToTop(allowMultiInstances.use(), TextAreaWindow::class) { TextAreaWindow(uiDemo) }
+                launchOrBringToTop(allowMultiInstances, TextAreaWindow::class) { TextAreaWindow(uiDemo) }
             }
         }
         Button("Conway's Game of Life") {
             launcherButtonStyle("Game of Life simulation / toggle-button benchmark")
             modifier.onClick {
-                launchOrBringToTop(allowMultiInstances.use(), GameOfLifeWindow::class) { GameOfLifeWindow(uiDemo) }
+                launchOrBringToTop(allowMultiInstances, GameOfLifeWindow::class) { GameOfLifeWindow(uiDemo) }
             }
         }
         Button("Theme Editor") {
@@ -67,10 +75,10 @@ class LauncherWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
                 modifier
                     .width(Grow.Std)
                     .alignY(AlignmentY.Center)
-                    .onClick { allowMultiInstances.toggle() }
+                    .onClick { allowMultiInstances = !allowMultiInstances }
             }
-            Switch(allowMultiInstances.use()) {
-                modifier.onToggle { allowMultiInstances.set(it) }
+            Switch(allowMultiInstances) {
+                modifier.onToggle { allowMultiInstances = it }
             }
         }
     }

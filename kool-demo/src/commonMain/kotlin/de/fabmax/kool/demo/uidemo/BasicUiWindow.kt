@@ -22,81 +22,81 @@ class BasicUiWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
 
         Row {
             modifier.margin(bottom = sizes.smallGap)
-            val clickCnt = weakRememberState(0)
-            Button("A regular button: clicked ${clickCnt.use()} times") {
+            var clickCnt by remember(0)
+            Button("A regular button: clicked $clickCnt times") {
                 modifier
-                    .onClick { clickCnt.value += 1 }
+                    .onClick { clickCnt++ }
             }
         }
 
         Row {
             modifier.margin(bottom = sizes.smallGap)
 
-            val checkboxState = weakRememberState(false)
-            val radioButtonState = weakRememberState(false)
-            val switchState = weakRememberState(false)
+            var checkboxState by remember(false)
+            var radioButtonState by remember(false)
+            var switchState by remember(false)
 
             Text("Checkbox") { modifier.alignY(AlignmentY.Center) }
-            Checkbox(checkboxState.use()) {
-                modifier.margin(sizes.gap).onToggle { checkboxState.set(it) }
+            Checkbox(checkboxState) {
+                modifier.margin(sizes.gap).onToggle { checkboxState = it }
             }
 
             Text("Radio Button") { modifier.alignY(AlignmentY.Center).margin(start = sizes.largeGap) }
-            RadioButton(radioButtonState.use()) {
-                modifier.margin(sizes.gap).onToggle { radioButtonState.set(it) }
+            RadioButton(radioButtonState) {
+                modifier.margin(sizes.gap).onToggle { radioButtonState = it }
             }
 
             Text("Switch") { modifier.alignY(AlignmentY.Center).margin(start = sizes.largeGap) }
-            Switch(switchState.use()) {
-                modifier.margin(sizes.gap).onToggle { switchState.set(it) }
+            Switch(switchState) {
+                modifier.margin(sizes.gap).onToggle { switchState = it }
             }
         }
 
         Row {
             modifier.margin(bottom = sizes.smallGap)
             Text("Text fields") { modifier.alignY(AlignmentY.Center).margin(end = sizes.gap) }
-            val text1 = weakRememberState("")
-            val text2 = weakRememberState("")
-            TextField(text1.use()) {
+            var text1 by remember("")
+            var text2 by remember("")
+            TextField(text1) {
                 modifier
                     .width(150.dp)
                     .hint("Ctrl+C to copy")
-                    .onChange { text1.set(it) }
+                    .onChange { text1 = it }
             }
-            TextField(text2.use()) {
+            TextField(text2) {
                 modifier
                     .width(150.dp)
                     .hint("Ctrl+V to paste")
                     .margin(start = sizes.largeGap)
-                    .onChange { text2.set(it) }
+                    .onChange { text2 = it }
             }
         }
 
         Row {
             modifier.margin(bottom = sizes.smallGap)
             Text("Slider") { modifier.alignY(AlignmentY.Center) }
-            val sliderValue = weakRememberState(50f)
-            Slider(sliderValue.use(), 0f, 100f) {
+            var sliderValue by remember(50f)
+            Slider(sliderValue, 0f, 100f) {
                 modifier
                     .margin(sizes.gap)
                     .width(sizes.largeGap * 6f)
-                    .onChange { sliderValue.set(it) }
+                    .onChange { sliderValue = it }
             }
-            Text("${sliderValue.use().toInt()}") { modifier.alignY(AlignmentY.Center).margin(start = sizes.gap) }
+            Text("${sliderValue.toInt()}") { modifier.alignY(AlignmentY.Center).margin(start = sizes.gap) }
         }
 
         Row {
             Text("Combo-box") { modifier.alignY(AlignmentY.Center) }
 
-            val items = weakRemember { List(8) { "Item ${it + 1}" } }
-            val selectedIndex = weakRememberState(0)
+            val items = remember { List(8) { "Item ${it + 1}" } }
+            var selectedIndex by remember(0)
             ComboBox {
                 modifier
                     .margin(start = sizes.gap)
                     .width(sizes.largeGap * 6f)
                     .items(items)
-                    .selectedIndex(selectedIndex.use())
-                    .onItemSelected { selectedIndex.set(it) }
+                    .selectedIndex(selectedIndex)
+                    .onItemSelected { selectedIndex = it }
             }
         }
 
@@ -193,8 +193,14 @@ class BasicUiWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
         Text("A longer list, click items to delete them:") {
             modifier.margin(bottom = sizes.gap)
         }
-        val listItems = weakRemember { mutableStateListOf<String>().apply { for (i in 1..500) { add("Item $i") } } }
-        val hoveredItemIndex = weakRememberState(-1)
+        val listItems by remember {
+            mutableStateListOf<String>().apply {
+                for (i in 1..500) {
+                    add("Item $i")
+                }
+            }
+        }
+        var hoveredItemIndex by remember(-1)
         LazyList(
             vScrollbarModifier = {
                 it.colors(
@@ -204,7 +210,7 @@ class BasicUiWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
             }
         ) {
             itemsIndexed(listItems) { i, item ->
-                val isHovered = i == hoveredItemIndex.use()
+                val isHovered = i == hoveredItemIndex
                 val bgColor = if (isHovered) {
                     colors.secondaryAlpha(0.5f)
                 } else if (i % 2 == 0) {
@@ -224,8 +230,8 @@ class BasicUiWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
                         .width(Grow.Std)
                         .height(if (isLarge) 64.dp else FitContent)
                         .backgroundColor(bgColor)
-                        .onHover { hoveredItemIndex.set(i) }
-                        .onExit { hoveredItemIndex.set(-1) }
+                        .onHover { hoveredItemIndex = i }
+                        .onExit { hoveredItemIndex = -1 }
                         .onClick {
                             listItems.remove(item)
                         }
