@@ -283,7 +283,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
                 modifier.onClick { drawPhysMeshes() }
             }
         }
-        MenuRow { LabeledSwitch("Draw joint infos", drawJointInfos) }
+        LabeledSwitch("Draw joint infos", drawJointInfos)
 
         Text("Statistics") { sectionTitleStyle() }
         MenuRow {

@@ -183,10 +183,10 @@ class SimplificationDemo : DemoScene("Simplification") {
         }
 
         Text("Options") { sectionTitleStyle() }
-        MenuRow { LabeledSwitch("Auto simplify mesh", isAutoSimplify) }
-        MenuRow { LabeledSwitch("Draw solid", isSolidVisible) }
-        MenuRow { LabeledSwitch("Draw wireframe", isWireframeVisible) }
-        MenuRow { LabeledSwitch("Auto rotate view", isAutoRotate) }
+        LabeledSwitch("Auto simplify mesh", isAutoSimplify)
+        LabeledSwitch("Draw solid", isSolidVisible)
+        LabeledSwitch("Draw wireframe", isWireframeVisible)
+        LabeledSwitch("Auto rotate view", isAutoRotate)
 
         Text("Statistics") { sectionTitleStyle() }
         MenuRow {

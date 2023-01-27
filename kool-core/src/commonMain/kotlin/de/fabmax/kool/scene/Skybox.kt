@@ -8,10 +8,15 @@ import de.fabmax.kool.modules.ksl.blocks.convertColorSpace
 import de.fabmax.kool.modules.ksl.blocks.mvpMatrix
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.pipeline.shading.Texture2dInput
 import de.fabmax.kool.scene.geometry.IndexedVertexList
+
+fun Scene.skybox(ibl: EnvironmentMaps, lod: Float = 1f) {
+    this += Skybox.cube(ibl.reflectionMap, lod)
+}
 
 object Skybox {
 

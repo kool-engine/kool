@@ -243,7 +243,7 @@ class AoDemo : DemoScene("Ambient Occlusion") {
     }
 
     override fun createMenu(menu: DemoMenu, ctx: KoolContext) = menuSurface {
-        MenuRow { LabeledSwitch("AO enabled", isAoEnabled) }
+        LabeledSwitch("AO enabled", isAoEnabled)
         MenuRow {
             Text("Show AO map") { labelStyle() }
             ComboBox {
@@ -255,8 +255,8 @@ class AoDemo : DemoScene("Ambient Occlusion") {
                     .onItemSelected { showAoMapIndex.set(it) }
             }
         }
-        MenuRow { LabeledSwitch("Spot light", isSpotLight) }
-        MenuRow { LabeledSwitch("Auto rotate view", isAutoRotate) }
+        LabeledSwitch("Spot light", isSpotLight)
+        LabeledSwitch("Auto rotate view", isAutoRotate)
 
         val lblW = UiSizes.baseSize * 1.6f
         val txtW = UiSizes.baseSize * 0.7f

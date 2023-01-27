@@ -201,16 +201,16 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         }
 
         Text("Grass") { sectionTitleStyle() }
-        MenuRow { LabeledSwitch("Enabled", isGrassEnabled) }
-        MenuRow { LabeledSwitch("Dense grass", isCamLocalGrassEnabled) }
-        MenuRow { LabeledSwitch("Shadow casting", isGrassShadows) }
+        LabeledSwitch("Enabled", isGrassEnabled)
+        LabeledSwitch("Dense grass", isCamLocalGrassEnabled)
+        LabeledSwitch("Shadow casting", isGrassShadows)
 
         Text("Shading") { sectionTitleStyle() }
-        MenuRow { LabeledSwitch("Ambient occlusion", isSsao) }
-        MenuRow { LabeledSwitch("Player PBR shading", isPlayerPbr) }
-        MenuRow { LabeledSwitch("Ground PBR shading", isGroundPbr) }
-        MenuRow { LabeledSwitch("Boxes PBR shading", isBoxesPbr) }
-        MenuRow { LabeledSwitch("Vegetation PBR shading", isVegetationPbr) }
+        LabeledSwitch("Ambient occlusion", isSsao)
+        LabeledSwitch("Player PBR shading", isPlayerPbr)
+        LabeledSwitch("Ground PBR shading", isGroundPbr)
+        LabeledSwitch("Boxes PBR shading", isBoxesPbr)
+        LabeledSwitch("Vegetation PBR shading", isVegetationPbr)
 
         // crosshair
         surface.popup().apply {

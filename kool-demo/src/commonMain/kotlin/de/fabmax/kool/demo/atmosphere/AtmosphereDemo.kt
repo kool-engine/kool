@@ -360,7 +360,7 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
                 updateSun()
             }
         }
-        MenuRow { LabeledSwitch("Animate time", isAnimateTime) }
+        LabeledSwitch("Animate time", isAnimateTime)
         MenuRow {
             Text("Camera height") { labelStyle(Grow.Std) }
             Text(camHeightTxt.use()) { labelStyle() }

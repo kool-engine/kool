@@ -170,8 +170,8 @@ class MultiLightDemo : DemoScene("Reflections") {
         val lblSize = UiSizes.baseSize * 2f
         val txtSize = UiSizes.baseSize * 0.75f
 
-        MenuRow { LabeledSwitch("SSR enabled", isSsrEnabled) }
-        MenuRow { LabeledSwitch("Show map", isShowSsrMap) }
+        LabeledSwitch("SSR enabled", isSsrEnabled)
+        LabeledSwitch("Show map", isShowSsrMap)
         MenuRow {
             Text("Map size") { labelStyle(lblSize) }
             MenuSlider(ssrMapSize.use(), 0.1f, 1f, { it.toString(1) }, txtWidth = txtSize) {
@@ -227,8 +227,8 @@ class MultiLightDemo : DemoScene("Reflections") {
             Text("Saturation") { labelStyle(lblSize) }
             MenuSlider(lightSaturation.use(), 0f, 1f, txtWidth = txtSize) { lightSaturation.set(it) }
         }
-        MenuRow { LabeledSwitch("Light indicators", isShowLightIndicators) }
-        MenuRow { LabeledSwitch("Auto rotate view", isAutoRotate) }
+        LabeledSwitch("Light indicators", isShowLightIndicators)
+        LabeledSwitch("Auto rotate view", isAutoRotate)
 
         if (isShowSsrMap.value) {
             surface.popup().apply {

@@ -66,14 +66,16 @@ fun UiScope.MenuSlider2(
 }
 
 fun UiScope.LabeledSwitch(label: String, toggleState: MutableStateValue<Boolean>) {
-    Text(label) {
-        labelStyle(Grow.Std)
-        modifier.onClick { toggleState.toggle() }
-    }
-    Switch(toggleState.use()) {
-        modifier
-            .alignY(AlignmentY.Center)
-            .onToggle { toggleState.set(it) }
+    MenuRow {
+        Text(label) {
+            labelStyle(Grow.Std)
+            modifier.onClick { toggleState.toggle() }
+        }
+        Switch(toggleState.use()) {
+            modifier
+                .alignY(AlignmentY.Center)
+                .onToggle { toggleState.set(it) }
+        }
     }
 }
 

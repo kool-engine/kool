@@ -11,6 +11,10 @@ import de.fabmax.kool.pipeline.GlslType
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.util.Color
 
+fun BetterLineMesh(block: BetterLineMesh.() -> Unit): BetterLineMesh {
+    return BetterLineMesh().apply(block)
+}
+
 class BetterLineMesh(name: String? = null) : Mesh(IndexedVertexList(lineMeshAttribs), name) {
 
     private val lineBuffer = mutableListOf<LineVertex>()

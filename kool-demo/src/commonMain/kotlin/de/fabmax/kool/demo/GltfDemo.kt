@@ -291,15 +291,15 @@ class GltfDemo : DemoScene("glTF Models") {
         }
 
         Text("Options") { sectionTitleStyle() }
-        MenuRow { LabeledSwitch("Deferred shading", isDeferredShading) }
-        MenuRow { LabeledSwitch("Ambient occlusion", isAo) }
+        LabeledSwitch("Deferred shading", isDeferredShading)
+        LabeledSwitch("Ambient occlusion", isAo)
         if (isDeferredShading.value) {
-            MenuRow { LabeledSwitch("Screen space reflections", isSsr) }
+            LabeledSwitch("Screen space reflections", isSsr)
             MenuSlider2("SSR map size", ssrMapSize.use(), 0.1f, 1f, { it.toString(1) }) {
                 ssrMapSize.set((it * 10).roundToInt() / 10f)
             }
         }
-        MenuRow { LabeledSwitch("Auto rotate view", isAutoRotate) }
+        LabeledSwitch("Auto rotate view", isAutoRotate)
     }
 
     private fun MeshBuilder.roundCylinder(radius: Float, height: Float) {

@@ -31,6 +31,18 @@ open class Vec3f(x: Float, y: Float, z: Float) {
         return result
     }
 
+    /**
+     * Returns a unit vector orthogonal to this vector.
+     */
+    fun ortho(result: MutableVec3f): MutableVec3f {
+        val ax = when {
+            this * X_AXIS < 0.5f -> X_AXIS
+            this * Y_AXIS < 0.5f -> Y_AXIS
+            else -> Z_AXIS
+        }
+        return ax.cross(this, result).norm()
+    }
+
     fun distance(other: Vec3f): Float = sqrt(sqrDistance(other))
 
     fun dot(other: Vec3f): Float = x * other.x + y * other.y + z * other.z

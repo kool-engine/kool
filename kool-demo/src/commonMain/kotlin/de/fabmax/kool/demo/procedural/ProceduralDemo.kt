@@ -123,7 +123,7 @@ class ProceduralDemo : DemoScene("Procedural Geometry") {
                     roses.removeAllChildren()
                 }
         }
-        MenuRow { LabeledSwitch("Replace last rose", isReplaceRose) }
-        MenuRow { LabeledSwitch("Auto rotate view", isAutoRotate) }
+        LabeledSwitch("Replace last rose", isReplaceRose)
+        LabeledSwitch("Auto rotate view", isAutoRotate)
     }
 }

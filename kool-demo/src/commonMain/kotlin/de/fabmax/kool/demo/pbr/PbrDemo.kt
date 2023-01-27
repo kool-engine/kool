@@ -101,7 +101,7 @@ class PbrDemo : DemoScene("PBR Materials") {
         with(selectedContent) { createContentMenu() }
 
         Text("Settings") { sectionTitleStyle() }
-        MenuRow { LabeledSwitch("Image based lighting", isIbl) }
+        LabeledSwitch("Image based lighting", isIbl)
         MenuRow {
             Text("Environment") { labelStyle(Grow.Std) }
             ComboBox {
@@ -128,7 +128,7 @@ class PbrDemo : DemoScene("PBR Materials") {
                     }
             }
         }
-        MenuRow { LabeledSwitch("Auto rotate view", isAutoRotate) }
+        LabeledSwitch("Auto rotate view", isAutoRotate)
     }
 
     private fun updateHdri(idx: Int, ctx: KoolContext) {

@@ -178,8 +178,8 @@ class InstanceDemo : DemoScene("Instanced Drawing") {
                 }
             }
         }
-        MenuRow { LabeledSwitch("Color by LOD", isLodColors) }
-        MenuRow { LabeledSwitch("Auto rotate view", isAutoRotate) }
+        LabeledSwitch("Color by LOD", isLodColors)
+        LabeledSwitch("Auto rotate view", isAutoRotate)
 
         Text("Statistics") { sectionTitleStyle() }
         MenuRow {

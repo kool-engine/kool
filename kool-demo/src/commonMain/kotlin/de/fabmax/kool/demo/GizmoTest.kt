@@ -129,22 +129,18 @@ class GizmoTest : DemoScene("Gizmo Test") {
 
     override fun createMenu(menu: DemoMenu, ctx: KoolContext) = menuSurface {
         Text("Gizmo 1") { sectionTitleStyle() }
-        MenuRow {
-            val isDynScale1 = remember(gizmo1.isDynamicScale()).onChange {
-                if (it) gizmo1.setDynamicScale() else gizmo1.setFixedScale()
-            }
-            LabeledSwitch("Dynamic scale", isDynScale1)
+        val isDynScale1 = remember(gizmo1.isDynamicScale()).onChange {
+            if (it) gizmo1.setDynamicScale() else gizmo1.setFixedScale()
         }
+        LabeledSwitch("Dynamic scale", isDynScale1)
         translation(transform1)
         rotation(transform1)
 
         Text("Gizmo 2") { sectionTitleStyle() }
-        MenuRow {
-            val isDynScale2 = remember(gizmo2.isDynamicScale()).onChange {
-                if (it) gizmo2.setDynamicScale() else gizmo2.setFixedScale()
-            }
-            LabeledSwitch("Dynamic scale", isDynScale2)
+        val isDynScale2 = remember(gizmo2.isDynamicScale()).onChange {
+            if (it) gizmo2.setDynamicScale() else gizmo2.setFixedScale()
         }
+        LabeledSwitch("Dynamic scale", isDynScale2)
         translation(transform2)
         rotation(transform2)
     }

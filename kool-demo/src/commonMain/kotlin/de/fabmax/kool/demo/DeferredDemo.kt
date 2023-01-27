@@ -331,10 +331,10 @@ class DeferredDemo : DemoScene("Deferred Shading") {
             lightCount.set(it.roundToInt())
             updateLights()
         }
-        MenuRow { LabeledSwitch("Show maps", isShowMaps) }
-        MenuRow { LabeledSwitch("Light bodies", isLightBodies) }
-        MenuRow { LabeledSwitch("Light volumes", isLightVolumes) }
-        MenuRow { LabeledSwitch("Auto rotate view", isAutoRotate) }
+        LabeledSwitch("Show maps", isShowMaps)
+        LabeledSwitch("Light bodies", isLightBodies)
+        LabeledSwitch("Light volumes", isLightVolumes)
+        LabeledSwitch("Auto rotate view", isAutoRotate)
         MenuRow {
             Text("Color theme") { labelStyle() }
             ComboBox {
@@ -366,7 +366,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
 
 
         Text("Objects") { sectionTitleStyle() }
-        MenuRow { LabeledSwitch("Show objects", isObjects) }
+        LabeledSwitch("Show objects", isObjects)
         MenuRow {
             Text("Roughness") { labelStyle(lblSize) }
             MenuSlider(roughness.use(), 0f, 1f, txtWidth = txtSize) { roughness.set(it) }

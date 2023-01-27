@@ -1,12 +1,13 @@
 package de.fabmax.kool.pipeline.deferred
 
-import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec2f
+import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.Vec4f
+import de.fabmax.kool.modules.ksl.KslShader
+import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.pipeline.shadermodel.*
-import de.fabmax.kool.pipeline.shading.ModeledShader
-import de.fabmax.kool.pipeline.shading.Texture2dInput
-import de.fabmax.kool.pipeline.shading.Vec2fInput
+import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
+import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.mesh
@@ -33,12 +34,7 @@ class BloomThresholdPass(deferredPipeline: DeferredPipeline, cfg: DeferredPipeli
             isFrustumChecked = false
             quad = mesh(listOf(Attribute.POSITIONS, Attribute.TEXTURE_COORDS)) {
                 isFrustumChecked = false
-                generate {
-                    rect {
-                        size.set(1f, 1f)
-                        mirrorTexCoordsY()
-                    }
-                }
+                generateFullscreenQuad()
                 shader = outputShader
             }
             +quad
@@ -48,117 +44,79 @@ class BloomThresholdPass(deferredPipeline: DeferredPipeline, cfg: DeferredPipeli
     }
 
     fun setLightingInput(newPass: PbrLightingPass) {
-        outputShader.inputTexture(newPass.colorTexture)
+        outputShader.inputTexture = newPass.colorTexture
     }
 
     fun setupDownSampling(samples: Int) {
         if (this.samples != samples) {
             this.samples = samples
-            val thresholds = Vec2f(outputShader.thresholds.value)
+            val tLower = outputShader.lowerThreshold
+            val tUpper = outputShader.upperThreshold
 
             outputShader = ThresholdShader(samples, doAvgDownsampling)
-            outputShader.thresholds.value = thresholds
+            outputShader.lowerThreshold = tLower
+            outputShader.upperThreshold = tUpper
             quad.shader = outputShader
         }
     }
 
-    class ThresholdShader(samples: Int, avgDownSampling: Boolean) : ModeledShader(shaderModel(samples, avgDownSampling)) {
-        val inputTexture = Texture2dInput("tInput")
-        val thresholds = Vec2fInput("uThreshold", Vec2f(1f, 2f))
+    class ThresholdShader(samples: Int, avgDownSampling: Boolean) : KslShader(program(samples, avgDownSampling), pipelineCfg) {
 
-        var lowerThreshold: Float
-            get() = thresholds.value.x
-            set(value) {
-                thresholds.value = Vec2f(value, thresholds.value.y)
-            }
-        var upperThreshold: Float
-            get() = thresholds.value.y
-            set(value) {
-                thresholds.value = Vec2f(thresholds.value.x, value)
-            }
-
-        init {
-            onPipelineSetup += { b, _, _ -> b.depthTest = DepthCompareOp.DISABLED }
-        }
-
-        override fun onPipelineCreated(pipeline: Pipeline, mesh: Mesh, ctx: KoolContext) {
-            inputTexture.connect(model)
-            thresholds.connect(model)
-            super.onPipelineCreated(pipeline, mesh, ctx)
-        }
+        var inputTexture by texture2d("tInput")
+        var lowerThreshold by uniform1f("uThresholdLower")
+        var upperThreshold by uniform1f("uThresholdUpper")
 
         companion object {
-            fun shaderModel(samples: Int, avgDownSampling: Boolean) = ShaderModel("defaultBlurModel").apply {
-                val ifTexCoords: StageInterfaceNode
-
-                vertexStage {
-                    ifTexCoords = stageInterfaceNode("ifTexCoords", attrTexCoords().output)
-                    positionOutput = fullScreenQuadPositionNode(attrTexCoords().output).outQuadPos
-                }
-                fragmentStage {
-                    addNode(ThresholdNode(samples, avgDownSampling, stage).apply {
-                        inTexture = texture2dNode("tInput")
-                        inTexCoord = ifTexCoords.output
-                        inThreshold = pushConstantNode2f("uThreshold").output
-                        colorOutput(outColor)
-                    })
-                }
+            private val pipelineCfg = PipelineConfig().apply {
+                depthTest = DepthCompareOp.DISABLED
             }
-        }
-    }
 
-    private class ThresholdNode(val samples: Int, val avgDownSampling: Boolean, graph: ShaderGraph) : ShaderNode("thresholdNd", graph) {
-        lateinit var inTexture: Texture2dNode
-        lateinit var inTexCoord: ShaderNodeIoVar
-        lateinit var inThreshold: ShaderNodeIoVar
+            private fun program(samples: Int, avgDownSampling: Boolean) = KslProgram("Bloom threshold pass").apply {
+                val screenUv = interStageFloat2("uv")
 
-        val outColor = ShaderNodeIoVar(ModelVar4f("outColor"), this)
+                fullscreenQuadVertexStage(screenUv)
 
-        override fun setup(shaderGraph: ShaderGraph) {
-            super.setup(shaderGraph)
-            dependsOn(inTexture)
-            dependsOn(inTexCoord, inThreshold)
-        }
+                fragmentStage {
+                    val inputTex = texture2d("tInput")
+                    val lowerThreshold = uniformFloat1("uThresholdLower")
+                    val upperThreshold = uniformFloat1("uThresholdUpper")
 
-        override fun generateCode(generator: CodeGenerator) {
-            generator.appendFunction("sampleBlurInTex", """
-                vec4 sampleWithThreshold(vec2 texCoord, vec2 threshold) {
-                    vec4 color = ${generator.sampleTexture2d(inTexture.name, "texCoord")};
-                    float brightness = dot(color.rgb, vec3(1.0, 1.0, 1.0)) * 0.333;
-                    float w = smoothstep(threshold.x, threshold.y, brightness);
-                    return vec4(color.rgb * w, brightness * w);
-                }
-            """)
+                    val funSampleInput = functionFloat4("sampleInput") {
+                        val sampleUv = paramFloat2("uv")
+                        body {
+                            val sample = float4Var(sampleTexture(inputTex, sampleUv))
+                            val brightness = float1Var(dot(sample.rgb, Vec3f(0.333f).const))
+                            val w = float1Var(smoothStep(lowerThreshold, upperThreshold, brightness))
+                            float4Value(sample.rgb * w, brightness * w)
+                        }
+                    }
 
-            // avg brightness
-            generator.appendMain("""
-                ${outColor.declare()} = vec4(0.0);
-                vec2 step = vec2(1.0) / vec2(textureSize(${inTexture.name}, 0));
-                vec2 offset = vec2(float($samples)) * -0.5;
-                vec4 tmpColor = vec4(0.0);
-            """)
-            for (y in 0 until samples) {
-                for (x in 0 until samples) {
-                    if (avgDownSampling) {
-                        // average brightness
-                        // for some reason the if is required to avoid artifacts?!
-                        generator.appendMain("""
-                            tmpColor = sampleWithThreshold(${inTexCoord.ref2f()} + (vec2(float($x), float($y)) + offset) * step, ${inThreshold.ref2f()});
-                            if (tmpColor.a > 0.0) { $outColor += tmpColor; }
-                        """)
-                    } else {
-                        // max brightness
-                        generator.appendMain("""
-                            tmpColor = sampleWithThreshold(${inTexCoord.ref2f()} + (vec2(float($x), float($y)) + offset) * step, ${inThreshold.ref2f()});
-                            if (tmpColor.a > $outColor.a) { $outColor = tmpColor; }
-                        """)
+                    main {
+                        val outputColor = float4Var(Vec4f.ZERO.const)
+                        val step = float2Var(1f.const / textureSize2d(inputTex).toFloat2())
+                        val offset = float2Var(Vec2f(samples.toFloat()).const * (-0.5f).const + 0.5f.const)
+                        val sample = float4Var()
+
+                        for (y in 0 until samples) {
+                            for (x in 0 until samples) {
+                                sample set funSampleInput(screenUv.output + (Vec2f(x.toFloat(), y.toFloat()).const + offset) * step)
+                                if (avgDownSampling) {
+                                    outputColor += sample
+                                } else {
+                                    `if`(sample.a gt outputColor.a) {
+                                        outputColor set sample
+                                    }
+                                }
+                            }
+                        }
+
+                        if (avgDownSampling) {
+                            outputColor.rgb set outputColor.rgb * (1f / (samples * samples)).const
+                        }
+                        colorOutput(outputColor.rgb, 1f.const)
                     }
                 }
             }
-            if (avgDownSampling) {
-                generator.appendMain("$outColor.rgb *= float(${1f / (samples * samples)});")
-            }
-            generator.appendMain("$outColor.a = 1.0;")
         }
     }
 }

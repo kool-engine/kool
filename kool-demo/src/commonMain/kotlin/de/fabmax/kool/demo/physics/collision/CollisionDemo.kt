@@ -386,7 +386,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
         }
 
         Text("Statistics") { sectionTitleStyle() }
-        MenuRow { LabeledSwitch("Show body state", drawBodyState) }
+        LabeledSwitch("Show body state", drawBodyState)
         MenuRow {
             Text("Active actors") { labelStyle(Grow.Std) }
             Text(activeActorsTxt.use()) { labelStyle() }

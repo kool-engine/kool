@@ -234,8 +234,8 @@ class TreeDemo : DemoScene("Procedural Tree") {
         Text("Scene") { sectionTitleStyle() }
         MenuSlider2("Animation speed", windSpeed.use(), 0f, 10f) { windSpeed.set(it) }
         MenuSlider2("Animation strength", windStrength.use(), 0f, 10f) { windStrength.set(it) }
-        MenuRow {  LabeledSwitch("Toggle leafs", isLeafs) }
-        MenuRow { LabeledSwitch("Auto rotate view", isAutoRotate) }
+        LabeledSwitch("Toggle leafs", isLeafs)
+        LabeledSwitch("Auto rotate view", isAutoRotate)
 
         Text("Sunlight") { sectionTitleStyle() }
         MenuRow {
@@ -266,7 +266,7 @@ class TreeDemo : DemoScene("Procedural Tree") {
                 }
             }
         }
-        MenuRow { LabeledSwitch("Auto update environment map", isAutoUpdateIbl) }
+        LabeledSwitch("Auto update environment map", isAutoUpdateIbl)
     }
 
     private class WindNode(graph: ShaderGraph) : ShaderNode("windNode", graph) {
