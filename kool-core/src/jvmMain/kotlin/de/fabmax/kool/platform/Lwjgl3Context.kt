@@ -48,7 +48,6 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
         private var prevHeapSz = 1e9
         private var prevHeapSzTime = 0L
         private var avgHeapGrowth = 0.0
-        private val formatter = Formatter(Locale.ENGLISH)
 
         fun set(api: String, deviceName: String) {
             clear()
@@ -75,7 +74,7 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
                 }
             }
             prevHeapSz = heapSz
-            set(3, formatter.format("Heap: %.1f MB (+%.1f MB/s)", heapSz, avgHeapGrowth).toString())
+            set(3, "Heap: %.1f MB (+%.1f MB/s)".format(Locale.ENGLISH, heapSz, avgHeapGrowth))
         }
     }
 
