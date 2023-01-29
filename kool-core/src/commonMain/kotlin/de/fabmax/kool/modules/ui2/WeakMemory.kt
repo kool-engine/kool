@@ -18,6 +18,10 @@ class WeakMemory {
         }
     }
 
+    fun clear() {
+        memory.clear()
+    }
+
     class MemEntries<T: Any>(val type: KClass<T>) {
         val entries = mutableListOf<T>()
         var nextEntry = 0

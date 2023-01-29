@@ -55,6 +55,7 @@ inline fun <reified T: Any> UiScope.remember(provider: () -> T): T = uiNode.weak
 fun <T: Any> UiScope.remember(initialState: T): MutableStateValue<T> = uiNode.weakMemory.weakMemory { mutableStateOf(initialState) }
 fun UiScope.rememberScrollState(): ScrollState = uiNode.weakMemory.weakMemory { ScrollState() }
 fun UiScope.rememberListState(): LazyListState = uiNode.weakMemory.weakMemory { LazyListState() }
+fun UiScope.clearMemory() = uiNode.weakMemory.clear()
 
 @Deprecated("replaced by remember()", replaceWith = ReplaceWith("remember(provider)"))
 inline fun <reified T: Any> UiScope.weakRemember(provider: () -> T): T = remember(provider)

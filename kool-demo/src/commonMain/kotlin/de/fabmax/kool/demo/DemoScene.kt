@@ -77,7 +77,7 @@ abstract class DemoScene(val name: String) {
 
     open fun dispose(ctx: KoolContext) { }
 
-    protected fun menuSurface(title: String? = null, block: UiScope.() -> Unit): UiSurface {
+    protected fun menuSurface(title: String? = null, block: ColumnScope.() -> Unit): UiSurface {
         val accent = demoEntry?.color ?: MdColor.PINK
         val titleTxt = title ?: demoEntry?.title ?: "Demo"
 

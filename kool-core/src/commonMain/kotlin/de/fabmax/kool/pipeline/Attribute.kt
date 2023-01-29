@@ -4,20 +4,20 @@ package de.fabmax.kool.pipeline
  * @author fabmax
  */
 
-enum class GlslType(val byteSize: Int, val isInt: Boolean, val glslType: String) {
-    FLOAT(4, false, "float"),
-    VEC_2F(8, false, "vec2"),
-    VEC_3F(12, false, "vec3"),
-    VEC_4F(16, false, "vec4"),
+enum class GlslType(val channels: Int, val byteSize: Int, val isInt: Boolean, val glslType: String) {
+    FLOAT(1, 4, false, "float"),
+    VEC_2F(2, 8, false, "vec2"),
+    VEC_3F(3, 12, false, "vec3"),
+    VEC_4F(4, 16, false, "vec4"),
 
-    INT(4, true, "int"),
-    VEC_2I(8, true, "ivec2"),
-    VEC_3I(12, true, "ivec3"),
-    VEC_4I(16, true, "ivec4"),
+    INT(1, 4, true, "int"),
+    VEC_2I(2, 8, true, "ivec2"),
+    VEC_3I(3, 12, true, "ivec3"),
+    VEC_4I(4, 16, true, "ivec4"),
 
-    MAT_2F(16, false, "mat2"),
-    MAT_3F(36, false, "mat3"),
-    MAT_4F(64, false, "mat4")
+    MAT_2F(2, 16, false, "mat2"),
+    MAT_3F(3, 36, false, "mat3"),
+    MAT_4F(4, 64, false, "mat4")
 }
 
 data class Attribute(val name: String, val type: GlslType) {

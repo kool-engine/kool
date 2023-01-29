@@ -26,12 +26,42 @@ class PropertyBlockVertexStage(cfg: PropertyBlockConfig, parentScope: KslScopeBu
 
             cfg.propertySources.filterIsInstance<PropertyBlockConfig.VertexProperty>().mapIndexed { i, source ->
                 vertexProperties[source] = parentStage.program.interStageFloat1(name = nextName("${opName}_vertexProp_$i")).apply {
-                    input set parentStage.vertexAttribFloat1(source.propertyAttrib.name)
+                    val prop = if (source.propertyAttrib.type.channels == 1) {
+                        parentStage.vertexAttribFloat1(source.propertyAttrib.name)
+                    } else {
+                        val attrib = when (source.propertyAttrib.type.channels) {
+                            2 -> parentStage.vertexAttribFloat2(source.propertyAttrib.name)
+                            3 -> parentStage.vertexAttribFloat3(source.propertyAttrib.name)
+                            else -> parentStage.vertexAttribFloat4(source.propertyAttrib.name)
+                        }
+                        when (source.channel) {
+                            0 -> attrib.x
+                            1 -> attrib.y
+                            2 -> attrib.z
+                            else -> attrib.w
+                        }
+                    }
+                    input set prop
                 }
             }
             cfg.propertySources.filterIsInstance<PropertyBlockConfig.InstanceProperty>().mapIndexed { i, source ->
                 instanceProperties[source] = parentStage.program.interStageFloat1(name = nextName("${opName}_instanceProp_$i")).apply {
-                    input set parentStage.instanceAttribFloat1(source.propertyAttrib.name)
+                    val prop = if (source.propertyAttrib.type.channels == 1) {
+                        parentStage.instanceAttribFloat1(source.propertyAttrib.name)
+                    } else {
+                        val attrib = when (source.propertyAttrib.type.channels) {
+                            2 -> parentStage.instanceAttribFloat2(source.propertyAttrib.name)
+                            3 -> parentStage.instanceAttribFloat3(source.propertyAttrib.name)
+                            else -> parentStage.instanceAttribFloat4(source.propertyAttrib.name)
+                        }
+                        when (source.channel) {
+                            0 -> attrib.x
+                            1 -> attrib.y
+                            2 -> attrib.z
+                            else -> attrib.w
+                        }
+                    }
+                    input set prop
                 }
             }
         }
@@ -129,8 +159,8 @@ data class PropertyBlockConfig(
         propertySources += UniformProperty(defaultValue, uniformName, mixMode)
     }
 
-    fun vertexProperty(attribute: Attribute, mixMode: MixMode = MixMode.Set) {
-        propertySources += VertexProperty(attribute, mixMode)
+    fun vertexProperty(attribute: Attribute, channel: Int = 0, mixMode: MixMode = MixMode.Set) {
+        propertySources += VertexProperty(attribute, channel, mixMode)
     }
 
     fun textureProperty(defaultTexture: Texture2d? = null,
@@ -141,8 +171,8 @@ data class PropertyBlockConfig(
         propertySources += TextureProperty(defaultTexture, channel, textureName, coordAttribute, mixMode)
     }
 
-    fun instanceProperty(attribute: Attribute = Attribute.INSTANCE_COLOR, mixMode: MixMode = MixMode.Set) {
-        propertySources += InstanceProperty(attribute, mixMode)
+    fun instanceProperty(attribute: Attribute, channel: Int = 0, mixMode: MixMode = MixMode.Set) {
+        propertySources += InstanceProperty(attribute, channel, mixMode)
     }
 
     val primaryUniform: UniformProperty?
@@ -154,9 +184,9 @@ data class PropertyBlockConfig(
     sealed class PropertySource(val mixMode: MixMode)
     class ConstProperty(val value: Float, mixMode: MixMode) : PropertySource(mixMode)
     class UniformProperty(val defaultValue: Float?, val uniformName: String, mixMode: MixMode) : PropertySource(mixMode)
-    class VertexProperty(val propertyAttrib: Attribute, mixMode: MixMode) : PropertySource(mixMode)
+    class VertexProperty(val propertyAttrib: Attribute, val channel: Int, mixMode: MixMode) : PropertySource(mixMode)
     class TextureProperty(val defaultTexture: Texture2d?, val channel: Int, val textureName: String, val coordAttribute: Attribute, mixMode: MixMode) : PropertySource(mixMode)
-    class InstanceProperty(val propertyAttrib: Attribute, mixMode: MixMode) : PropertySource(mixMode)
+    class InstanceProperty(val propertyAttrib: Attribute, val channel: Int, mixMode: MixMode) : PropertySource(mixMode)
 
     fun isEmptyOrConst(constValue: Float): Boolean {
         if (propertySources.size == 1) {
