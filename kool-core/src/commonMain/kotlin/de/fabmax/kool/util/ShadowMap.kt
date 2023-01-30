@@ -180,7 +180,15 @@ class SimpleShadowMap(val scene: Scene, override val lightIndex: Int, mapSize: I
     }
 }
 
-class CascadedShadowMap(scene: Scene, override val lightIndex: Int, var maxRange: Float = 100f, val numCascades: Int = 3, mapSizes: List<Int>? = null, drawNode: Node = scene) : ShadowMap {
+class CascadedShadowMap(
+    scene: Scene,
+    override val lightIndex: Int,
+    var maxRange: Float = 100f,
+    val numCascades: Int = 3,
+    nearOffset: Float = -20f,
+    mapSizes: List<Int>? = null,
+    drawNode: Node = scene
+) : ShadowMap {
     val mapRanges = Array(numCascades) { i ->
         val near = i.toFloat().pow(2) / numCascades.toFloat().pow(2)
         val far = (i + 1).toFloat().pow(2) / numCascades.toFloat().pow(2)
@@ -191,6 +199,7 @@ class CascadedShadowMap(scene: Scene, override val lightIndex: Int, var maxRange
         SimpleShadowMap(scene, lightIndex, mapSizes?.get(level) ?: 2048, drawNode).apply {
             name = "CascadedShadopwMap-level-$level"
             shadowMapLevel = level
+            directionalCamNearOffset = nearOffset
             setDefaultDepthOffset(true)
         }
     }

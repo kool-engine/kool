@@ -2,6 +2,7 @@ package de.fabmax.kool.demo
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.atmosphere.AtmosphereDemo
+import de.fabmax.kool.demo.creativecoding.CreativeCodingDemo
 import de.fabmax.kool.demo.helloworld.HelloGltfDemo
 import de.fabmax.kool.demo.helloworld.HelloRenderToTextureDemo
 import de.fabmax.kool.demo.helloworld.HelloUiDemo
@@ -56,6 +57,7 @@ object Demos {
         entry("procedural", "Procedural Roses") { ProceduralDemo() }
         entry("pbr", "PBR Materials") { PbrDemo() }
         entry("atmosphere", "Atmospheric Scattering") { AtmosphereDemo() }
+        entry("creative-coding", "Creative Coding") { CreativeCodingDemo() }
     }
 
     val techDemos = Category("Tech", false, 0.5f, 0.7f).apply {
