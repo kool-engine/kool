@@ -9,13 +9,16 @@ import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.BlendMode
 import de.fabmax.kool.pipeline.GlslType
 import de.fabmax.kool.scene.geometry.IndexedVertexList
+import de.fabmax.kool.scene.geometry.VertexView
 import de.fabmax.kool.util.Color
 
 fun BetterLineMesh(block: BetterLineMesh.() -> Unit): BetterLineMesh {
     return BetterLineMesh().apply(block)
 }
 
-class BetterLineMesh(name: String? = null) : Mesh(IndexedVertexList(lineMeshAttribs), name) {
+class BetterLineMesh(geometry: IndexedVertexList, name: String? = null) : Mesh(geometry, name) {
+
+    constructor(name: String? = null) : this(IndexedVertexList(lineMeshAttribs), name)
 
     private val lineBuffer = mutableListOf<LineVertex>()
 
@@ -29,18 +32,28 @@ class BetterLineMesh(name: String? = null) : Mesh(IndexedVertexList(lineMeshAttr
 
     fun moveTo(x: Float, y: Float, z: Float) = moveTo(Vec3f(x, y, z))
 
-    fun moveTo(position: Vec3f, color: Color = this.color, width: Float = this.width): BetterLineMesh {
+    fun moveTo(
+        position: Vec3f,
+        color: Color = this.color,
+        width: Float = this.width,
+        vertexMod: (VertexView.() -> Unit)? = null
+    ): BetterLineMesh {
         if (lineBuffer.isNotEmpty()) {
             stroke()
         }
-        lineBuffer.add(LineVertex(Vec3f(position), color, width))
+        lineBuffer.add(LineVertex(Vec3f(position), color, width, vertexMod))
         return this
     }
 
     fun lineTo(x: Float, y: Float, z: Float) = lineTo(Vec3f(x, y, z))
 
-    fun lineTo(position: Vec3f, color: Color = this.color, width: Float = this.width): BetterLineMesh {
-        lineBuffer.add(LineVertex(Vec3f(position), color, width))
+    fun lineTo(
+        position: Vec3f,
+        color: Color = this.color,
+        width: Float = this.width,
+        vertexMod: (VertexView.() -> Unit)? = null
+    ): BetterLineMesh {
+        lineBuffer.add(LineVertex(Vec3f(position), color, width, vertexMod))
         return this
     }
 
@@ -83,6 +96,7 @@ class BetterLineMesh(name: String? = null) : Mesh(IndexedVertexList(lineMeshAttr
             getVec2fAttribute(ATTRIB_LINE_ATTRIBS)?.set(u, vertex.width)
             getVec3fAttribute(ATTRIB_PREV_DIR)?.set(prevDir)
             getVec3fAttribute(ATTRIB_NEXT_DIR)?.set(nextDir)
+            vertex.vertexMod?.invoke(this)
         }
     }
 
@@ -91,7 +105,7 @@ class BetterLineMesh(name: String? = null) : Mesh(IndexedVertexList(lineMeshAttr
         geometry.clear()
     }
 
-    data class LineVertex(val position: Vec3f, val color: Color, val width: Float)
+    class LineVertex(val position: Vec3f, val color: Color, val width: Float, val vertexMod: (VertexView.() -> Unit)?)
 
     open class LineShader(cfg: LineShaderConfig = defaultCfg, model: LineModel = LineModel(cfg)) : KslUnlitShader(cfg, model) {
 
