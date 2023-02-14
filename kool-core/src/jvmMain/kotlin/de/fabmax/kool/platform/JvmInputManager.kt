@@ -10,6 +10,7 @@ class JvmInputManager(private val windowHandle: Long, private val ctx: Lwjgl3Con
 
     private val localCharKeyCodes = mutableMapOf<Int, Int>()
     private val cursorShapes = mutableMapOf<CursorShape, Long>()
+    private var currentCursorShape = CursorShape.DEFAULT
 
     var isMouseOverWindow = false
         private set
@@ -20,12 +21,6 @@ class JvmInputManager(private val windowHandle: Long, private val ctx: Lwjgl3Con
             if (value == CursorMode.NORMAL || ctx.isWindowFocused) {
                 glfwSetInputMode(windowHandle, GLFW_CURSOR, value.glfwMode)
             }
-        }
-
-    override var cursorShape: CursorShape = CursorShape.DEFAULT
-        set(value) {
-            field = value
-            glfwSetCursor(windowHandle, cursorShapes[value] ?: 0L)
         }
 
     init {
@@ -50,6 +45,13 @@ class JvmInputManager(private val windowHandle: Long, private val ctx: Lwjgl3Con
                 val localChar = localName[0].uppercaseChar()
                 localCharKeyCodes[c.code] = localChar.code
             }
+        }
+    }
+
+    override fun applyCursorShape() {
+        if (cursorShape != currentCursorShape) {
+            glfwSetCursor(windowHandle, cursorShapes[cursorShape] ?: 0L)
+            currentCursorShape = cursorShape
         }
     }
 

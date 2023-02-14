@@ -13,7 +13,7 @@ abstract class InputManager internal constructor() {
     private val keyHandlers = mutableMapOf<KeyCode, MutableList<KeyEventListener>>()
 
     abstract var cursorMode: CursorMode
-    abstract var cursorShape: CursorShape
+    var cursorShape: CursorShape = CursorShape.DEFAULT
 
     val pointerState = PointerState()
 
@@ -44,6 +44,9 @@ abstract class InputManager internal constructor() {
     fun getKeyCodeForChar(char: Char) = char.uppercaseChar().code
 
     internal fun onNewFrame(ctx: KoolContext) {
+        applyCursorShape()
+        cursorShape = CursorShape.DEFAULT
+
         pointerState.onNewFrame(ctx)
 
         keyEvents.clear()
@@ -74,6 +77,8 @@ abstract class InputManager internal constructor() {
 
         InputStack.handleInput(this, ctx)
     }
+
+    internal abstract fun applyCursorShape()
 
     fun keyEvent(ev: KeyEvent) {
         currentKeyMods = ev.modifiers

@@ -15,6 +15,7 @@ class JsInputManager(private val canvas: HTMLCanvasElement, private val props: J
 
     private val pointerLockState = PointerLockState(canvas)
     private val virtualPointerPos = MutableVec2d()
+    private var currentCursorShape = CursorShape.DEFAULT
 
     private var mouseButtonState = 0
 
@@ -22,10 +23,13 @@ class JsInputManager(private val canvas: HTMLCanvasElement, private val props: J
         get() = pointerLockState.cursorMode
         set(value) { pointerLockState.cursorMode = value }
 
-    override var cursorShape: CursorShape = CursorShape.DEFAULT
-        set(value) {
-            field = value
-            canvas.style.cursor = when (value) {
+    init {
+        installInputHandlers()
+    }
+
+    override fun applyCursorShape() {
+        if (cursorShape != currentCursorShape) {
+            canvas.style.cursor = when (cursorShape) {
                 CursorShape.DEFAULT -> "default"
                 CursorShape.TEXT -> "text"
                 CursorShape.CROSSHAIR -> "crosshair"
@@ -33,10 +37,8 @@ class JsInputManager(private val canvas: HTMLCanvasElement, private val props: J
                 CursorShape.H_RESIZE -> "e-resize"
                 CursorShape.V_RESIZE -> "n-resize"
             }
+            currentCursorShape = cursorShape
         }
-
-    init {
-        installInputHandlers()
     }
 
     @Suppress("UNUSED_PARAMETER")

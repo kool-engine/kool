@@ -259,10 +259,6 @@ class WindowNode(parent:UiNode?, surface: UiSurface) : UiNode(parent, surface), 
         }
     }
 
-    override fun onExit(ev: PointerEvent) {
-        ev.ctx.inputMgr.cursorShape = InputManager.CursorShape.DEFAULT
-    }
-
     override fun onDragStart(ev: PointerEvent) {
         val startPos = MutableVec2f(ev.position)
         startPos.x -= ev.pointer.dragDeltaX.toFloat()
@@ -319,7 +315,6 @@ class WindowNode(parent:UiNode?, surface: UiSurface) : UiNode(parent, surface), 
     }
 
     override fun onDragEnd(ev: PointerEvent) {
-        ev.ctx.inputMgr.cursorShape = InputManager.CursorShape.DEFAULT
         resizingDockingNode = null
     }
 

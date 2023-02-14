@@ -260,12 +260,8 @@ open class AttributedTextNode(parent: UiNode?, surface: UiSurface)
         isCaretBlink.set(true)
     }
 
-    override fun onEnter(ev: PointerEvent) {
+    override fun onHover(ev: PointerEvent) {
         ev.ctx.inputMgr.cursorShape = InputManager.CursorShape.TEXT
-    }
-
-    override fun onExit(ev: PointerEvent) {
-        ev.ctx.inputMgr.cursorShape = InputManager.CursorShape.DEFAULT
     }
 
     override fun onClick(ev: PointerEvent) {
@@ -277,6 +273,7 @@ open class AttributedTextNode(parent: UiNode?, surface: UiSurface)
     override fun onDragStart(ev: PointerEvent) = onClick(ev)
 
     override fun onDrag(ev: PointerEvent) {
+        ev.ctx.inputMgr.cursorShape = InputManager.CursorShape.TEXT
         if (Time.frameCount > dragStartFrame) {
             val txtI = charIndexFromLocalX(ev.position.x)
             if (txtI != modifier.caretPos) {

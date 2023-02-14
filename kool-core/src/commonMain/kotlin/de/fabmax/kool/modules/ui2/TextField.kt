@@ -249,17 +249,14 @@ open class TextFieldNode(parent: UiNode?, surface: UiSurface)
         surface.triggerUpdate()
     }
 
-    override fun onEnter(ev: PointerEvent) {
+    override fun onHover(ev: PointerEvent) {
         ev.ctx.inputMgr.cursorShape = InputManager.CursorShape.TEXT
-    }
-
-    override fun onExit(ev: PointerEvent) {
-        ev.ctx.inputMgr.cursorShape = InputManager.CursorShape.DEFAULT
     }
 
     override fun onDragStart(ev: PointerEvent) = onClick(ev)
 
     override fun onDrag(ev: PointerEvent) {
+        ev.ctx.inputMgr.cursorShape = InputManager.CursorShape.TEXT
         val selPos = textIndex(modifier.font, ev.position.x)
         if (selPos != editText.caretPosition) {
             editText.caretPosition = selPos
