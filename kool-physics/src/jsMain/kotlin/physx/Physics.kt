@@ -4366,6 +4366,53 @@ val PxOverlapBuffer10.touches
 val PxOverlapBuffer10.maxNbTouches
     get() = getMaxNbTouches()
 
+external interface PxOverlapResult : PxOverlapCallback {
+    /**
+     * WebIDL type: [PxOverlapHit] (Value)
+     */
+    var block: PxOverlapHit
+    /**
+     * WebIDL type: boolean
+     */
+    var hasBlock: Boolean
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun getNbAnyHits(): Int
+
+    /**
+     * @param index WebIDL type: unsigned long
+     * @return WebIDL type: [PxOverlapHit] (Const, Ref)
+     */
+    fun getAnyHit(index: Int): PxOverlapHit
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun getNbTouches(): Int
+
+    /**
+     * @param index WebIDL type: unsigned long
+     * @return WebIDL type: [PxOverlapHit] (Const, Ref)
+     */
+    fun getTouch(index: Int): PxOverlapHit
+
+}
+
+fun PxOverlapResult(_module: dynamic = PhysXJsLoader.physXJs): PxOverlapResult = js("new _module.PxOverlapResult()")
+
+fun PxOverlapResultFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxOverlapResult = js("_module.wrapPointer(ptr, _module.PxOverlapResult)")
+
+fun PxOverlapResult.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+val PxOverlapResult.nbAnyHits
+    get() = getNbAnyHits()
+val PxOverlapResult.nbTouches
+    get() = getNbTouches()
+
 external interface PxOverlapCallback {
     /**
      * Native object address.
@@ -4604,6 +4651,53 @@ val PxRaycastBuffer10.touches
     get() = getTouches()
 val PxRaycastBuffer10.maxNbTouches
     get() = getMaxNbTouches()
+
+external interface PxRaycastResult : PxRaycastCallback {
+    /**
+     * WebIDL type: [PxRaycastHit] (Value)
+     */
+    var block: PxRaycastHit
+    /**
+     * WebIDL type: boolean
+     */
+    var hasBlock: Boolean
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun getNbAnyHits(): Int
+
+    /**
+     * @param index WebIDL type: unsigned long
+     * @return WebIDL type: [PxRaycastHit] (Const, Ref)
+     */
+    fun getAnyHit(index: Int): PxRaycastHit
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun getNbTouches(): Int
+
+    /**
+     * @param index WebIDL type: unsigned long
+     * @return WebIDL type: [PxRaycastHit] (Const, Ref)
+     */
+    fun getTouch(index: Int): PxRaycastHit
+
+}
+
+fun PxRaycastResult(_module: dynamic = PhysXJsLoader.physXJs): PxRaycastResult = js("new _module.PxRaycastResult()")
+
+fun PxRaycastResultFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxRaycastResult = js("_module.wrapPointer(ptr, _module.PxRaycastResult)")
+
+fun PxRaycastResult.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+val PxRaycastResult.nbAnyHits
+    get() = getNbAnyHits()
+val PxRaycastResult.nbTouches
+    get() = getNbTouches()
 
 external interface PxRaycastCallback {
     /**
@@ -4919,6 +5013,53 @@ val PxSweepBuffer10.touches
     get() = getTouches()
 val PxSweepBuffer10.maxNbTouches
     get() = getMaxNbTouches()
+
+external interface PxSweepResult : PxSweepCallback {
+    /**
+     * WebIDL type: [PxSweepHit] (Value)
+     */
+    var block: PxSweepHit
+    /**
+     * WebIDL type: boolean
+     */
+    var hasBlock: Boolean
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun getNbAnyHits(): Int
+
+    /**
+     * @param index WebIDL type: unsigned long
+     * @return WebIDL type: [PxSweepHit] (Const, Ref)
+     */
+    fun getAnyHit(index: Int): PxSweepHit
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun getNbTouches(): Int
+
+    /**
+     * @param index WebIDL type: unsigned long
+     * @return WebIDL type: [PxSweepHit] (Const, Ref)
+     */
+    fun getTouch(index: Int): PxSweepHit
+
+}
+
+fun PxSweepResult(_module: dynamic = PhysXJsLoader.physXJs): PxSweepResult = js("new _module.PxSweepResult()")
+
+fun PxSweepResultFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxSweepResult = js("_module.wrapPointer(ptr, _module.PxSweepResult)")
+
+fun PxSweepResult.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+val PxSweepResult.nbAnyHits
+    get() = getNbAnyHits()
+val PxSweepResult.nbTouches
+    get() = getNbTouches()
 
 external interface PxSweepCallback {
     /**

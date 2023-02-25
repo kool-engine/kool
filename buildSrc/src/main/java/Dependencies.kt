@@ -1,7 +1,7 @@
 import org.gradle.internal.os.OperatingSystem
 
 object Versions {
-    val kotlinVersion = "1.8.0"
+    val kotlinVersion = "1.8.10"
     val kotlinCorroutinesVersion = "1.6.4"
     val kotlinSerializationVersion = "1.4.1"
 }
@@ -22,7 +22,7 @@ object DepsJvm {
         }
     }
 
-    val physxJniVersion = "2.0.4"
+    val physxJniVersion = "2.0.5"
     val physxJni = "de.fabmax:physx-jni:${physxJniVersion}"
     val physxJniRuntime = "de.fabmax:physx-jni:${physxJniVersion}:${nativeLibsSuffix}"
 

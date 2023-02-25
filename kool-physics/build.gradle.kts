@@ -41,7 +41,7 @@ kotlin {
 
         val jsMain by getting {
             dependencies {
-                implementation(npm("physx-js-webidl", "2.0.4"))
+                implementation(npm("physx-js-webidl", "2.0.5"))
                 //implementation(npm(File("$projectDir/npm/physx-js-webidl")))
             }
         }
