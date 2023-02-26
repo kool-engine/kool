@@ -68,6 +68,13 @@ class LauncherWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
                 launchOrBringToTop(false, ThemeEditorWindow::class) { ThemeEditorWindow(uiDemo) }
             }
         }
+        Button("Drag and Drop") {
+            launcherButtonStyle("Two windows with drag & droppable items")
+            modifier.onClick {
+                launchOrBringToTop(allowMultiInstances, DragAndDropWindow.A::class) { DragAndDropWindow.A(uiDemo) }
+                launchOrBringToTop(allowMultiInstances, DragAndDropWindow.B::class) { DragAndDropWindow.B(uiDemo) }
+            }
+        }
         Row(Grow.Std) {
             modifier
                 .margin(sizes.largeGap)

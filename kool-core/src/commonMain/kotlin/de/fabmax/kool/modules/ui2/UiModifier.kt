@@ -16,6 +16,7 @@ open class UiModifier(val surface: UiSurface) {
     var background: UiRenderer<UiNode>? by property(null)
     var border: UiRenderer<UiNode>? by property(null)
     var zLayer: Int by property(0)
+    var isBlocking: Boolean by property(true)
 
     var paddingStart: Dp by property(Dp.ZERO)
     var paddingEnd: Dp by property(Dp.ZERO)
@@ -118,6 +119,7 @@ fun <T: UiModifier> T.size(width: Dimension, height: Dimension): T {
 fun <T: UiModifier> T.layout(layout: Layout): T { this.layout = layout; return this }
 fun <T: UiModifier> T.border(border: UiRenderer<UiNode>?): T { this.border = border; return this }
 fun <T: UiModifier> T.zLayer(zLayer: Int): T { this.zLayer = zLayer; return this }
+fun <T: UiModifier> T.isBlocking(isBlocking: Boolean): T { this.isBlocking = isBlocking; return this }
 fun <T: UiModifier> T.background(background: UiRenderer<UiNode>?): T { this.background = background; return this }
 fun <T: UiModifier> T.backgroundColor(color: Color?): T {
     background = if (color != null) RectBackground(color) else null

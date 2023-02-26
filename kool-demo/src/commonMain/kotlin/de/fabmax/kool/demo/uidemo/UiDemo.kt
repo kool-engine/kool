@@ -24,6 +24,7 @@ class UiDemo : DemoScene("UI Demo") {
     private val dockingHost = DockingHost()
 
     var exampleImage: Texture2d? = null
+    val dndContext = DragAndDropContext<DragAndDropWindow.DndItem>()
 
     override suspend fun AssetManager.loadResources(ctx: KoolContext) {
         exampleImage = loadAndPrepareTexture("${DemoLoader.materialPath}/uv_checker_map.jpg")
@@ -57,7 +58,6 @@ class UiDemo : DemoScene("UI Demo") {
 
         // TextStyleWindow is spawned as a floating window
         spawnWindow(TextStyleWindow(this@UiDemo))
-        //spawnWindow(TextAreaWindow(this@UiDemo))
 
         // add a sidebar for the demo menu
         +Panel {
@@ -121,11 +121,14 @@ class UiDemo : DemoScene("UI Demo") {
         dockingHost.undockWindow(window.windowScope)
         dockingHost -= window.windowSurface
         demoWindows -= window
+        window.onClose()
         window.windowSurface.dispose(ctx)
     }
 
     interface DemoWindow {
         val windowSurface: UiSurface
         val windowScope: WindowScope
+
+        fun onClose() { }
     }
 }

@@ -99,6 +99,20 @@ open class UiSurface(
         }
     }
 
+    /**
+     * Checks whether this [UiSurface] / window is on top (i.e. visible) at the specified screen position within a
+     * [DockingHost] context.
+     */
+    fun isOnTop(screenPositionPx: Vec2f): Boolean {
+        // if this ui surface is not inside a DockingHost, it is probably on top
+        val dockingHost = parent as? DockingHost ?: return true
+
+        return dockingHost.children.filterIsInstance<UiSurface>().filter { surface ->
+            surface !is DockingHost.DockingSurface
+                    && surface.viewport.children.any { it.modifier.isBlocking && it.isInBounds(screenPositionPx) }
+        }.lastOrNull() === this
+    }
+
     private fun updateUi(updateEvent: RenderPass.UpdateEvent) {
         val pt = PerfTimer()
         nodeIndex = 0
@@ -225,8 +239,21 @@ open class UiSurface(
     }
 
     enum class InputCaptureMode {
+        /**
+         * Pointer input is captured / blocked as soon as the pointer enters the bounding box of any node of this
+         * surface. This is fine for most cases but can cause unwanted pointer capture if multiple panels are layouted
+         * in an invisible box hierarchy (use [CaptureOverBackground] in that case).
+         */
         CaptureInsideBounds,
+
+        /**
+         * Similar to [CaptureInsideBounds] but also checks if the child node has a background set.
+         */
         CaptureOverBackground,
+
+        /**
+         * Pointer is not used at all.
+         */
         CaptureDisabled
     }
 
@@ -285,7 +312,7 @@ open class UiSurface(
             val ptr = ctx.inputMgr.pointerState.primaryPointer
             if (ptr.isValid) {
                 val ptrPos = Vec2f(ptr.x.toFloat(), ptr.y.toFloat())
-                var isPointerOnSurface = dragNode != null || viewport.children.any { it.isInBounds(ptrPos) }
+                var isPointerOnSurface = dragNode != null || viewport.children.any { it.modifier.isBlocking && it.isInBounds(ptrPos) }
 
                 if (dragNode == null && inputMode == InputCaptureMode.CaptureOverBackground) {
                     nodeResult.clear()
