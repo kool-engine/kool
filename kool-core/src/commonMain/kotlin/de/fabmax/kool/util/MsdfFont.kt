@@ -183,7 +183,7 @@ data class MsdfMeta(
 data class MsdfAtlasInfo(
     val type: String,
     val distanceRange: Float,
-    val size: Int,
+    val size: Float,
     val width: Int,
     val height: Int,
     val yOrigin: String
