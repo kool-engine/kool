@@ -99,6 +99,8 @@ open class KslProgram(val name: String) {
     fun textureArray3d(name: String, arraySize: Int) = getOrCreateSampler(name) { KslUniformArray(KslArrayGeneric(name, KslTypeColorSampler3d, arraySize, false)) }
     fun textureArrayCube(name: String, arraySize: Int) = getOrCreateSampler(name) { KslUniformArray(KslArrayGeneric(name, KslTypeColorSamplerCube, arraySize, false)) }
 
+    fun itexture2d(name: String) = getOrCreateSampler(name) { KslUniform(KslVar(name, KslTypeIntSampler2d, false)) }
+
     // arrays of depth textures (this is different to array textures, like, e.g., KslTypeDepthSampler2dArray)
     fun depthTextureArray2d(name: String, arraySize: Int) = getOrCreateSampler(name) { KslUniformArray(KslArrayGeneric(name, KslTypeDepthSampler2d, arraySize, false)) }
     fun depthTextureArrayCube(name: String, arraySize: Int) = getOrCreateSampler(name) { KslUniformArray(KslArrayGeneric(name, KslTypeDepthSamplerCube, arraySize, false)) }

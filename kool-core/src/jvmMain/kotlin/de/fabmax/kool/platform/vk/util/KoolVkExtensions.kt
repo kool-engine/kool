@@ -26,6 +26,8 @@ val TexFormat.vkFormat: Int
         TexFormat.RG_F16 -> VK_FORMAT_R16G16_SFLOAT
         TexFormat.RGB_F16 -> VK_FORMAT_R16G16B16_SFLOAT
         TexFormat.RGBA_F16 -> VK_FORMAT_R16G16B16A16_SFLOAT
+
+        TexFormat.RI -> VK_FORMAT_R8_SINT
     }
 
 val TexFormat.vkBytesPerPx: Int
@@ -39,4 +41,6 @@ val TexFormat.vkBytesPerPx: Int
         TexFormat.RG_F16 -> 4
         TexFormat.RGB_F16 -> 6
         TexFormat.RGBA_F16 -> 8
+
+        TexFormat.RI -> 1
     }

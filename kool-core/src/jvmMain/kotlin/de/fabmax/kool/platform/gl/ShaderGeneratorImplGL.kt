@@ -53,6 +53,7 @@ class ShaderGeneratorImplGL : ShaderGenerator() {
             #version 300 es
             precision highp float;
             precision highp sampler2DShadow;
+            precision mediump isampler2D;
             ${model.infoStr()}
             
             // descriptor layout / uniforms ${generateDescriptorBindings(pipelineLayout, ShaderStage.FRAGMENT_SHADER)}

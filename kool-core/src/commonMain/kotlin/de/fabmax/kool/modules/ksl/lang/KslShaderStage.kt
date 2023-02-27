@@ -139,6 +139,7 @@ class KslFragmentStage(program: KslProgram) : KslShaderStage(program, KslShaderS
     val inIsFrontFacing = KslStageInputScalar(KslVarScalar(NAME_IN_IS_FRONT_FACING, KslTypeBool1, false))
     val outDepth = KslStageOutputScalar(KslVarScalar(NAME_OUT_DEPTH, KslTypeFloat1, true))
     val outColors = mutableListOf<KslStageOutputVector<KslTypeFloat4, KslTypeFloat1>>()
+    val outIntValues = mutableListOf<KslStageOutputScalar<KslTypeInt1>>()
 
     init {
         globalScope.definedStates += inFragPosition.value
@@ -156,6 +157,16 @@ class KslFragmentStage(program: KslProgram) : KslShaderStage(program, KslShaderS
             }
     }
 
+    fun intOutput(location: Int = 0): KslStageOutputScalar<KslTypeInt1> {
+        val name = "${NAME_OUT_VALUE_PREFIX}${location}"
+        return outIntValues.find { it.value.stateName == name }
+            ?: KslStageOutputScalar(KslVarScalar(name, KslTypeInt1, true)).also {
+                it.location = location
+                globalScope.definedStates += it.value
+                outIntValues += it
+            }
+    }
+
     fun KslScopeBuilder.colorOutput(rgb: KslVectorExpression<KslTypeFloat3, KslTypeFloat1>, a: KslScalarExpression<KslTypeFloat1> = 1f.const, location: Int = 0) {
         check (parentStage is KslFragmentStage) { "colorOutput is only available in fragment stage" }
         val outColor = parentStage.colorOutput(location)
@@ -168,10 +179,16 @@ class KslFragmentStage(program: KslProgram) : KslShaderStage(program, KslShaderS
         parentStage.colorOutput(location) set value
     }
 
+    fun KslScopeBuilder.valueOutput(value: KslScalarExpression<KslTypeInt1>, location: Int = 0) {
+        check (parentStage is KslFragmentStage) { "colorOutput is only available in fragment stage" }
+        parentStage.intOutput(location) set value
+    }
+
     companion object {
         const val NAME_IN_FRAG_POSITION = "inFragPosition"
         const val NAME_IN_IS_FRONT_FACING = "inIsFrontFacing"
         const val NAME_OUT_DEPTH = "outDepth"
         const val NAME_OUT_COLOR_PREFIX = "outColor_"
+        const val NAME_OUT_VALUE_PREFIX = "outValue_"
     }
 }

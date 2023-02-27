@@ -17,6 +17,8 @@ val TexFormat.glInternalFormat: Int
         TexFormat.RG_F16 -> GL30.GL_RG16F
         TexFormat.RGB_F16 -> GL30.GL_RGB16F
         TexFormat.RGBA_F16 -> GL30.GL_RGBA16F
+
+        TexFormat.RI -> GL30.GL_R8I
     }
 
 val TexFormat.glType: Int
@@ -30,6 +32,8 @@ val TexFormat.glType: Int
         TexFormat.RG_F16 -> GL30.GL_FLOAT
         TexFormat.RGB_F16 -> GL30.GL_FLOAT
         TexFormat.RGBA_F16 -> GL30.GL_FLOAT
+
+        TexFormat.RI -> GL30.GL_BYTE
     }
 
 val TexFormat.glFormat: Int
@@ -43,6 +47,8 @@ val TexFormat.glFormat: Int
         TexFormat.RG_F16 -> GL30.GL_RG
         TexFormat.RGB_F16 -> GL30.GL_RGB
         TexFormat.RGBA_F16 -> GL30.GL_RGBA
+
+        TexFormat.RI -> GL30.GL_RED_INTEGER
     }
 
 val TexFormat.pxSize: Int
@@ -56,6 +62,8 @@ val TexFormat.pxSize: Int
         TexFormat.RG_F16 -> 4
         TexFormat.RGB_F16 -> 6
         TexFormat.RGBA_F16 -> 8
+
+        TexFormat.RI -> 1
     }
 
 val DepthCompareOp.glOp: Int

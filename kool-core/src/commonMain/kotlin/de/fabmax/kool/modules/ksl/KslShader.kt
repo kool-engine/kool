@@ -132,6 +132,7 @@ open class KslShader(val program: KslProgram, val pipelineConfig: PipelineConfig
         if (program.uniformSamplers.isNotEmpty()) {
             program.uniformSamplers.values.forEach { sampler ->
                 val desc = when(val type = sampler.value.expressionType)  {
+                    is KslTypeIntSampler2d -> TextureSampler2d.Builder()
                     is KslTypeDepthSampler2d -> TextureSampler2d.Builder().apply { isDepthSampler = true }
                     is KslTypeDepthSamplerCube -> TextureSamplerCube.Builder().apply { isDepthSampler = true }
                     is KslTypeColorSampler1d -> TextureSampler1d.Builder()
@@ -293,6 +294,9 @@ open class KslShader(val program: KslProgram, val pipelineConfig: PipelineConfig
     protected fun textureCubeArray(uniformName: String?, arraySize: Int): UniformInputTextureArrayCube =
         UniformInputTextureArrayCube(uniformName, arraySize).also { connectUniformListeners += it }
 
+    protected fun itexture2d(uniformName: String?, defaultVal: Texture2d? = null): UniformInputTexture2d =
+        UniformInputTexture2d(uniformName, defaultVal).also { connectUniformListeners += it }
+    
     protected fun colorUniform(cfg: ColorBlockConfig): KslShader.UniformInput4f =
         uniform4f(cfg.primaryUniform?.uniformName, cfg.primaryUniform?.defaultColor)
     protected fun colorTexture(cfg: ColorBlockConfig): KslShader.UniformInputTexture2d =

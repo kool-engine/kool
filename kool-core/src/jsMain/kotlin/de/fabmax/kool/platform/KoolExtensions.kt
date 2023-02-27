@@ -24,6 +24,8 @@ val TexFormat.glInternalFormat: Int
         TexFormat.RG_F16 -> WebGL2RenderingContext.RG16F
         TexFormat.RGB_F16 -> WebGL2RenderingContext.RGB16F
         TexFormat.RGBA_F16 -> WebGL2RenderingContext.RGBA16F
+
+        TexFormat.RI -> WebGL2RenderingContext.R8I
     }
 
 val TexFormat.glType: Int
@@ -37,6 +39,8 @@ val TexFormat.glType: Int
         TexFormat.RG_F16 -> WebGLRenderingContext.FLOAT
         TexFormat.RGB_F16 -> WebGLRenderingContext.FLOAT
         TexFormat.RGBA_F16 -> WebGLRenderingContext.FLOAT
+
+        TexFormat.RI -> WebGLRenderingContext.BYTE
     }
 
 val TexFormat.glFormat: Int
@@ -50,6 +54,8 @@ val TexFormat.glFormat: Int
         TexFormat.RG_F16 -> WebGL2RenderingContext.RG
         TexFormat.RGB_F16 -> WebGLRenderingContext.RGB
         TexFormat.RGBA_F16 -> WebGLRenderingContext.RGBA
+
+        TexFormat.RI -> WebGL2RenderingContext.RED_INTEGER
     }
 
 val TexFormat.pxSize: Int
@@ -63,6 +69,8 @@ val TexFormat.pxSize: Int
         TexFormat.RG_F16 -> 4
         TexFormat.RGB_F16 -> 6
         TexFormat.RGBA_F16 -> 8
+
+        TexFormat.RI -> 1
     }
 
 val DepthCompareOp.glOp: Int

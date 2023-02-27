@@ -416,6 +416,7 @@ abstract external class WebGL2RenderingContext : WebGLRenderingContext {
         val INVALID_INDEX: Int
 
         val RED: Int
+        val RED_INTEGER: Int
         val RG: Int
 
         val R8: Int
@@ -427,6 +428,8 @@ abstract external class WebGL2RenderingContext : WebGLRenderingContext {
         val RG16F: Int
         val RGB16F: Int
         val RGBA16F: Int
+
+        val R8I: Int
     }
 }
 

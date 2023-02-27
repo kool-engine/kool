@@ -63,6 +63,7 @@ class KslTypeArray<T: KslType>(val elemType: T) : KslType("array<${elemType.type
 
 sealed class KslTypeColorSampler<C: KslFloatType>(typeName: String) : KslTypeSampler<KslTypeFloat4>(typeName)
 sealed class KslTypeDepthSampler<C: KslFloatType>(typeName: String) : KslTypeSampler<KslTypeFloat1>(typeName)
+sealed class KslTypeIntSampler<C: KslNumericType>(typeName: String) : KslTypeSampler<KslTypeInt4>(typeName)
 
 interface KslTypeSampler1d
 interface KslTypeSampler2d
@@ -82,3 +83,5 @@ object KslTypeDepthSampler2d : KslTypeDepthSampler<KslTypeFloat3>("depthSampler2
 object KslTypeDepthSamplerCube : KslTypeDepthSampler<KslTypeFloat4>("depthSamplerCube"), KslTypeSamplerCube
 object KslTypeDepthSampler2dArray : KslTypeDepthSampler<KslTypeFloat4>("depthSampler2dArray"), KslTypeSampler2dArray
 object KslTypeDepthSamplerCubeArray : KslTypeDepthSampler<KslTypeFloat4>("depthSamplerCubeArray"), KslTypeSamplerCubeArray
+
+object KslTypeIntSampler2d : KslTypeIntSampler<KslTypeFloat2>("isampler2d"), KslTypeSampler2d
