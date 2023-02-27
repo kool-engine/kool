@@ -9,3 +9,9 @@ sealed class KslStatement(opName: String, val parentScopeBuilder: KslScopeBuilde
         }
     }
 }
+
+class KslRawGLSL(private val raw: String, parentScope: KslScopeBuilder) : KslStatement("raw", parentScope) {
+    override fun toPseudoCode(): String {
+        return raw
+    }
+}
