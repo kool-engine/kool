@@ -321,6 +321,10 @@ open class GlslGenerator : KslGenerator() {
         return txt.toString()
     }
 
+    override fun opRaw(op: KslRawGLSL): String {
+        return op.toPseudoCode()
+    }
+
     private fun generateArgs(args: List<KslExpression<*>>, expectedArgs: Int): String {
         check(args.size == expectedArgs)
         return args.joinToString { it.generateExpression(this) }
