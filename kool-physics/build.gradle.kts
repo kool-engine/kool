@@ -56,11 +56,6 @@ kotlin {
     }
 }
 
-tasks.register<PhysxJsGenerator>("generatePhysxJsBindings") {
-    generatorOutput = "$projectDir/src/jsMain/kotlin/physx"
-    idlSource = "$projectDir/src/webidl/PhysXJs.idl"
-}
-
 publishing {
     publications {
         publications.filterIsInstance<MavenPublication>().forEach { pub ->
