@@ -133,15 +133,18 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val c
     override fun createFontMapData(font: AtlasFont, fontScale: Float, outMetrics: MutableMap<Char, CharMetrics>) =
         fontGenerator.createFontMapData(font, fontScale, outMetrics)
 
-    override suspend fun loadFileByUser(): Uint8Buffer? {
-        chooseFile()?.let { file ->
+    override suspend fun loadFileByUser(filterList: String?): LoadedFile {
+        chooseFile(filterList)?.let { file ->
             try {
-                return Uint8BufferImpl(file.readBytes())
+                return LoadedFile(
+                    file.absolutePath,
+                    Uint8BufferImpl(file.readBytes())
+                )
             } catch (e: IOException) {
                 e.printStackTrace()
             }
         }
-        return null
+        return LoadedFile(null, null)
     }
 
     fun chooseFile(filterList: String? = null): File? {
@@ -155,7 +158,7 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val c
         return null
     }
 
-    override fun saveFileByUser(data: Uint8Buffer, fileName: String, mimeType: String) {
+    override fun saveFileByUser(data: Uint8Buffer, fileName: String, mimeType: String): String? {
         val outPath = PointerBuffer.allocateDirect(1)
         val result = NativeFileDialog.NFD_SaveDialog(null, fileChooserPath, outPath)
         if (result == NativeFileDialog.NFD_OKAY) {
@@ -167,7 +170,11 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val c
             } catch (e: IOException) {
                 e.printStackTrace()
             }
+
+            return file.absolutePath
         }
+
+        return null
     }
 
     override suspend fun loadTextureData2d(imagePath: String, format: TexFormat?): TextureData2d {
