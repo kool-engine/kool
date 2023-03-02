@@ -37,7 +37,8 @@ class JsAssetManager internal constructor(props: JsContext.InitProps, val ctx: J
 
     override suspend fun loadRaw(rawRef: RawAssetRef) = LoadedRawAsset(rawRef, loadRaw(rawRef.url))
 
-    override suspend fun loadTexture(textureRef: TextureAssetRef) = LoadedTextureAsset(textureRef, loadImage(textureRef))
+    override suspend fun loadTexture(textureRef: TextureAssetRef) =
+        LoadedTextureAsset(textureRef, loadImage(textureRef))
 
     private suspend fun loadRaw(url: String): Uint8Buffer? {
         val prefixedUrl = if (isHttpAsset(url)) url else "$localAssetsPath/$url"
@@ -98,19 +99,19 @@ class JsAssetManager internal constructor(props: JsContext.InitProps, val ctx: J
     override fun createFontMapData(font: AtlasFont, fontScale: Float, outMetrics: MutableMap<Char, CharMetrics>) =
         fontGenerator.createFontMapData(font, fontScale, outMetrics)
 
-    override suspend fun loadFileByUser(): Uint8Buffer? {
+    override suspend fun loadFileByUser(filterList: String?): LoadedFile {
         val deferred = CompletableDeferred<Uint8Buffer?>()
         fileLoadDeferred = deferred
         fileChooser.asDynamic().click()
         try {
-            return deferred.await()
+            return LoadedFile(null, deferred.await())
         } catch (e: Exception) {
             logE { "Failed loading file: $e" }
         }
-        return null
+        return LoadedFile(null, null)
     }
 
-    override fun saveFileByUser(data: Uint8Buffer, fileName: String, mimeType: String) {
+    override fun saveFileByUser(data: Uint8Buffer, fileName: String, mimeType: String): String? {
         document.body?.let { body ->
             val element = document.createElement("a")
             element.setAttribute("href", data.toDataUrl(mimeType))
@@ -121,6 +122,8 @@ class JsAssetManager internal constructor(props: JsContext.InitProps, val ctx: J
             element.asDynamic().click()
             body.removeChild(element)
         }
+
+        return null
     }
 
     override suspend fun loadTextureData2d(imagePath: String, format: TexFormat?): TextureData2d {
@@ -164,8 +167,10 @@ class JsAssetManager internal constructor(props: JsContext.InitProps, val ctx: J
         return tex
     }
 
-    override suspend fun loadAndPrepareCubeMap(ft: String, bk: String, lt: String, rt: String, up: String, dn: String,
-                                       props: TextureProps): TextureCube {
+    override suspend fun loadAndPrepareCubeMap(
+        ft: String, bk: String, lt: String, rt: String, up: String, dn: String,
+        props: TextureProps
+    ): TextureCube {
         val name = cubeMapAssetPathToName(ft, bk, lt, rt, up, dn)
         val tex = TextureCube(props, name) { it.loadCubeMapTextureData(ft, bk, lt, rt, up, dn) }
         val data = loadCubeMapTextureData(ft, bk, lt, rt, up, dn)
@@ -174,7 +179,11 @@ class JsAssetManager internal constructor(props: JsContext.InitProps, val ctx: J
         return tex
     }
 
-    override suspend fun loadAndPrepareCubeMap(texData: TextureDataCube, props: TextureProps, name: String?): TextureCube {
+    override suspend fun loadAndPrepareCubeMap(
+        texData: TextureDataCube,
+        props: TextureProps,
+        name: String?
+    ): TextureCube {
         val tex = TextureCube(props, name) { texData }
         tex.loadedTexture = TextureLoader.loadTextureCube(ctx, props, texData)
         tex.loadingState = Texture.LoadingState.LOADED
