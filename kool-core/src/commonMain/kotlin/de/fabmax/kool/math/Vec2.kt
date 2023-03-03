@@ -159,6 +159,12 @@ open class MutableVec2f(x: Float, y: Float) : Vec2f(x, y) {
         return this
     }
 
+    fun set(other: Vec2d): MutableVec2f {
+        x = other.x.toFloat()
+        y = other.y.toFloat()
+        return this
+    }
+
     fun subtract(other: Vec2f): MutableVec2f {
         x -= other.x
         y -= other.y
@@ -325,6 +331,12 @@ open class MutableVec2d(x: Double, y: Double) : Vec2d(x, y) {
     fun set(other: Vec2d): MutableVec2d {
         x = other.x
         y = other.y
+        return this
+    }
+
+    fun set(other: Vec2f): MutableVec2d {
+        x = other.x.toDouble()
+        y = other.y.toDouble()
         return this
     }
 

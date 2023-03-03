@@ -222,6 +222,14 @@ open class MutableVec4f(x: Float, y: Float, z: Float, w: Float) : Vec4f(x, y, z,
         return this
     }
 
+    fun set(other: Vec4d): MutableVec4f {
+        x = other.x.toFloat()
+        y = other.y.toFloat()
+        z = other.z.toFloat()
+        w = other.w.toFloat()
+        return this
+    }
+
     fun set(xyz: Vec3f, w: Float = 0f): MutableVec4f {
         x = xyz.x
         y = xyz.y
@@ -511,6 +519,14 @@ open class MutableVec4d(x: Double, y: Double, z: Double, w: Double) : Vec4d(x, y
         y = other.y
         z = other.z
         w = other.w
+        return this
+    }
+
+    fun set(other: Vec4f): MutableVec4d {
+        x = other.x.toDouble()
+        y = other.y.toDouble()
+        z = other.z.toDouble()
+        w = other.w.toDouble()
         return this
     }
 

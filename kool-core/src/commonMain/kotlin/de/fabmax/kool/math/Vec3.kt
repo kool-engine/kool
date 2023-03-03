@@ -238,6 +238,13 @@ open class MutableVec3f(x: Float, y: Float, z: Float) : Vec3f(x, y, z) {
         return this
     }
 
+    fun set(other: Vec3d): MutableVec3f {
+        x = other.x.toFloat()
+        y = other.y.toFloat()
+        z = other.z.toFloat()
+        return this
+    }
+
     fun subtract(other: Vec3f): MutableVec3f {
         x -= other.x
         y -= other.y
@@ -463,6 +470,13 @@ open class MutableVec3d(x: Double, y: Double, z: Double) : Vec3d(x, y, z) {
         x = other.x
         y = other.y
         z = other.z
+        return this
+    }
+
+    fun set(other: Vec3f): MutableVec3d {
+        x = other.x.toDouble()
+        y = other.y.toDouble()
+        z = other.z.toDouble()
         return this
     }
 
