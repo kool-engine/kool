@@ -106,9 +106,9 @@ abstract class AssetManager : CoroutineScope {
 
     abstract fun createFontMapData(font: AtlasFont, fontScale: Float, outMetrics: MutableMap<Char, CharMetrics>): TextureData2d
 
-    abstract suspend fun loadFileByUser(): Uint8Buffer?
+    abstract suspend fun loadFileByUser(filterList: String? = null): LoadedFile
 
-    abstract fun saveFileByUser(data: Uint8Buffer, fileName: String, mimeType: String = "application/octet-stream")
+    abstract fun saveFileByUser(data: Uint8Buffer, fileName: String, mimeType: String = "application/octet-stream"): String?
 
     protected open fun isHttpAsset(assetPath: String): Boolean =
             // maybe use something less naive here?
@@ -216,3 +216,4 @@ data class TextureAssetRef(val url: String, val isLocal: Boolean, val fmt: TexFo
 sealed class LoadedAsset(val ref: AssetRef, val successfull: Boolean)
 class LoadedRawAsset(ref: AssetRef, val data: Uint8Buffer?) : LoadedAsset(ref, data != null)
 class LoadedTextureAsset(ref: AssetRef, val data: TextureData?) : LoadedAsset(ref, data != null)
+data class LoadedFile(val path: String?, val data: Uint8Buffer?)
