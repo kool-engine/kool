@@ -88,6 +88,7 @@ abstract class KslGenerator {
             is KslDiscard -> opDiscard(op)
             is KslReturn -> opReturn(op)
             is KslBlock -> opBlock(op)
+            is KslInlineCode -> opInlineCode(op)
             else -> throw IllegalArgumentException("Unsupported op: ${op.toPseudoCode()}")
         }
     }
@@ -105,6 +106,7 @@ abstract class KslGenerator {
     abstract fun opDiscard(op: KslDiscard): String
     abstract fun opReturn(op: KslReturn): String
     abstract fun opBlock(op: KslBlock): String
+    abstract fun opInlineCode(op: KslInlineCode): String
 
     abstract fun invokeFunction(func: KslInvokeFunction<*>): String
 

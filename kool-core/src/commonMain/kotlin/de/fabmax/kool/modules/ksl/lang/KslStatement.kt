@@ -9,3 +9,9 @@ sealed class KslStatement(opName: String, val parentScopeBuilder: KslScopeBuilde
         }
     }
 }
+
+class KslInlineCode(val code: String, parentScope: KslScopeBuilder) : KslStatement("inlineCode", parentScope) {
+    override fun toPseudoCode(): String {
+        return code
+    }
+}

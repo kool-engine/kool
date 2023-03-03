@@ -334,6 +334,12 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
         ops += KslAugmentedAssign(this, KslMathOperator.Remainder, expr, this@KslScopeBuilder)
     }
 
+    fun inlineCode(code: String): KslInlineCode {
+        val op = KslInlineCode(code, this)
+        ops += op
+        return op
+    }
+
     // function invocation
     operator fun <S> KslFunction<S>.invoke(vararg args: KslExpression<*>): KslScalarExpression<S> where S: KslType, S: KslScalar {
         return KslInvokeFunctionScalar(this, this@KslScopeBuilder, returnType, *args)
