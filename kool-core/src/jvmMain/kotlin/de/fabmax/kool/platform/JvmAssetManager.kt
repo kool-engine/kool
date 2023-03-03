@@ -133,7 +133,7 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val c
     override fun createFontMapData(font: AtlasFont, fontScale: Float, outMetrics: MutableMap<Char, CharMetrics>) =
         fontGenerator.createFontMapData(font, fontScale, outMetrics)
 
-    override suspend fun loadFileByUser(filterList: String?): LoadedFile {
+    override suspend fun loadFileByUser(filterList: String?): LoadedFile? {
         chooseFile(filterList)?.let { file ->
             try {
                 return LoadedFile(
@@ -144,7 +144,7 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val c
                 e.printStackTrace()
             }
         }
-        return LoadedFile(null, null)
+        return null
     }
 
     fun chooseFile(filterList: String? = null): File? {
@@ -167,13 +167,11 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val c
             fileChooserPath = file.parent
             try {
                 FileOutputStream(file).use { it.write(data.toArray()) }
+                return file.absolutePath
             } catch (e: IOException) {
                 e.printStackTrace()
             }
-
-            return file.absolutePath
         }
-
         return null
     }
 

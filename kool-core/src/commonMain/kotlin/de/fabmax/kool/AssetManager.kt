@@ -106,8 +106,23 @@ abstract class AssetManager : CoroutineScope {
 
     abstract fun createFontMapData(font: AtlasFont, fontScale: Float, outMetrics: MutableMap<Char, CharMetrics>): TextureData2d
 
-    abstract suspend fun loadFileByUser(filterList: String? = null): LoadedFile
+    /**
+     * Opens a file chooser dialog for the user to select and load a file. Returns the loaded file or null if the
+     * user canceled the dialog or loading failed. On JVM the returned [LoadedFile] also contains the path of the
+     * loaded file.
+     *
+     * @param filterList Optional file filter list as comma-separated string of file extensions (e.g. "jpg,png"; only
+     *                   supported on JVM, ignored on js).
+     * @return The [LoadedFile] containing the file data or null if the operation was canceled.
+     */
+    abstract suspend fun loadFileByUser(filterList: String? = null): LoadedFile?
 
+    /**
+     * Opens a file chooser dialog for the user to select a destination file for the given data.
+     *
+     * @return On JVM the selected path is returned or null if the suer canceled the operation. On js null is always
+     *         returned.
+     */
     abstract fun saveFileByUser(data: Uint8Buffer, fileName: String, mimeType: String = "application/octet-stream"): String?
 
     protected open fun isHttpAsset(assetPath: String): Boolean =
@@ -216,4 +231,5 @@ data class TextureAssetRef(val url: String, val isLocal: Boolean, val fmt: TexFo
 sealed class LoadedAsset(val ref: AssetRef, val successfull: Boolean)
 class LoadedRawAsset(ref: AssetRef, val data: Uint8Buffer?) : LoadedAsset(ref, data != null)
 class LoadedTextureAsset(ref: AssetRef, val data: TextureData?) : LoadedAsset(ref, data != null)
-data class LoadedFile(val path: String?, val data: Uint8Buffer?)
+
+data class LoadedFile(val path: String?, val data: Uint8Buffer)

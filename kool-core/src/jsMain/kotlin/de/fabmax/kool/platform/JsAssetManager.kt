@@ -99,16 +99,16 @@ class JsAssetManager internal constructor(props: JsContext.InitProps, val ctx: J
     override fun createFontMapData(font: AtlasFont, fontScale: Float, outMetrics: MutableMap<Char, CharMetrics>) =
         fontGenerator.createFontMapData(font, fontScale, outMetrics)
 
-    override suspend fun loadFileByUser(filterList: String?): LoadedFile {
+    override suspend fun loadFileByUser(filterList: String?): LoadedFile? {
         val deferred = CompletableDeferred<Uint8Buffer?>()
         fileLoadDeferred = deferred
         fileChooser.asDynamic().click()
         try {
-            return LoadedFile(null, deferred.await())
+            return deferred.await()?.let { LoadedFile(null, it) }
         } catch (e: Exception) {
             logE { "Failed loading file: $e" }
         }
-        return LoadedFile(null, null)
+        return null
     }
 
     override fun saveFileByUser(data: Uint8Buffer, fileName: String, mimeType: String): String? {
@@ -122,7 +122,6 @@ class JsAssetManager internal constructor(props: JsContext.InitProps, val ctx: J
             element.asDynamic().click()
             body.removeChild(element)
         }
-
         return null
     }
 
