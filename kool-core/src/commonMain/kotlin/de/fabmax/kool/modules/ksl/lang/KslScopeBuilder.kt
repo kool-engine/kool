@@ -334,8 +334,8 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
         ops += KslAugmentedAssign(this, KslMathOperator.Remainder, expr, this@KslScopeBuilder)
     }
 
-    fun inlineCode(code: String): KslRawGLSL {
-        val op = KslRawGLSL(code, this)
+    fun inlineCode(code: String): KslInlineCode {
+        val op = KslInlineCode(code, this)
         ops += op
         return op
     }
