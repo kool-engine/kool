@@ -4,7 +4,6 @@ import de.fabmax.kool.lock
 import de.fabmax.kool.util.Float32Buffer
 import kotlin.math.*
 
-
 class Mat3f {
 
     val matrix = FloatArray(9)
