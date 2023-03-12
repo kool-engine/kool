@@ -8,14 +8,15 @@ import de.fabmax.kool.pipeline.BlendMode
 import de.fabmax.kool.pipeline.CullMethod
 import de.fabmax.kool.pipeline.GlslType
 
-class MsdfUiShader : KslShader(
-    Model(),
-    PipelineConfig().apply {
+class MsdfUiShader(
+    model: Model = Model(),
+    pipelineCfg: PipelineConfig = PipelineConfig().apply {
         cullMethod = CullMethod.NO_CULLING
         blendMode = BlendMode.BLEND_PREMULTIPLIED_ALPHA
     }
-) {
+) : KslShader(model, pipelineCfg) {
     var fontMap by texture2d("tFontMap")
+    var pxRangeScale by uniform1f("uPxRange", 1f)
 
     class Model : KslProgram("Msdf UI2 Shader") {
         init {
@@ -76,7 +77,7 @@ class MsdfUiShader : KslShader(
                         val fontMap = texture2d("tFontMap")
                         val msdfVals = sampleTexture(fontMap, uv.output)
 
-                        val pxRange = msdfProps.output.x
+                        val pxRange = msdfProps.output.x * uniformFloat1("uPxRange")
                         val weight = msdfProps.output.y
                         //val cutoff = msdfProps.output.z
 
