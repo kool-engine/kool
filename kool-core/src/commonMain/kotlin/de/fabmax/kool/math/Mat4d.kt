@@ -728,6 +728,22 @@ open class Mat4d {
         return result
     }
 
+    fun getRotation(result: Mat3d): Mat3d {
+        result[0, 0] = this[0, 0]
+        result[0, 1] = this[0, 1]
+        result[0, 2] = this[0, 2]
+
+        result[1, 0] = this[1, 0]
+        result[1, 1] = this[1, 1]
+        result[1, 2] = this[1, 2]
+
+        result[2, 0] = this[2, 0]
+        result[2, 1] = this[2, 1]
+        result[2, 2] = this[2, 2]
+
+        return result
+    }
+
     fun getRotation(result: Mat3f): Mat3f {
         result[0, 0] = this[0, 0].toFloat()
         result[0, 1] = this[0, 1].toFloat()
