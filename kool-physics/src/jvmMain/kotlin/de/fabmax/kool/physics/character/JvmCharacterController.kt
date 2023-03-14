@@ -16,8 +16,8 @@ class JvmCharacterController(
     private val hitListener: ControllerHitListener,
     private val behaviorCallback: ControllerBahaviorCallback,
     manager: CharacterControllerManager,
-    world: PhysicsWorld) : CharacterController(manager, world
-) {
+    world: PhysicsWorld
+) : CharacterController(manager, world) {
 
     private val bufPosition = MutableVec3d()
     private val bufPxPosition = PxExtendedVec3()
@@ -36,7 +36,7 @@ class JvmCharacterController(
             prevPosition.set(value)
         }
 
-    override val actor: RigidDynamic = RigidDynamic(1f, Mat4f(), pxController.actor)
+    override val actor: RigidDynamic = RigidDynamic(1f, Mat4f(), false, pxController.actor)
 
     override fun move(displacement: Vec3f, timeStep: Float) {
         val flags = pxController.move(displacement.toPxVec3(bufPxVec3), 0.001f, timeStep, pxControllerFilters)

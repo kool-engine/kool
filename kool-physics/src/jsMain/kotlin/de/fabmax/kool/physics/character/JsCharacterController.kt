@@ -30,7 +30,7 @@ class JsCharacterController(private val pxController: PxController,
             prevPosition.set(value)
         }
 
-    override val actor: RigidDynamic = RigidDynamic(1f, Mat4f(), pxController.actor)
+    override val actor: RigidDynamic = RigidDynamic(1f, Mat4f(), false, pxController.actor)
 
     override fun move(displacement: Vec3f, timeStep: Float) {
         val flags = pxController.move(displacement.toPxVec3(bufPxVec3), 0.001f, timeStep, pxControllerFilters)
