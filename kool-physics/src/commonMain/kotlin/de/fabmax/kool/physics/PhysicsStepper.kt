@@ -11,6 +11,8 @@ import kotlin.math.min
 abstract class PhysicsStepper {
     var simTimeFactor = 1f
 
+    var maxTimeStepPerFrame = 0.1f
+
     private val perf = PerfTimer()
     var perfCpuTime = 0f
         private set
@@ -20,13 +22,19 @@ abstract class PhysicsStepper {
     fun stepSimulation(world: CommonPhysicsWorld, ctx: KoolContext): Float {
         perf.reset()
 
-        val timeAdvance = doSimSteps(world, ctx)
+        if (simTimeFactor > 0f) {
+            val timeAdvance = doSimSteps(world, ctx)
 
-        val ms = perf.takeMs().toFloat()
-        perfCpuTime = perfCpuTime * 0.8f + ms * 0.2f
-        perfTimeFactor = perfTimeFactor * 0.9f + (timeAdvance / (Time.deltaT * simTimeFactor)) * 0.1f
+            val ms = perf.takeMs().toFloat()
+            perfCpuTime = perfCpuTime * 0.8f + ms * 0.2f
+            perfTimeFactor = perfTimeFactor * 0.9f + (timeAdvance / (Time.deltaT * simTimeFactor)) * 0.1f
 
-        return timeAdvance
+            return timeAdvance
+        } else {
+            perfCpuTime = 0f
+            perfTimeFactor = 0f
+            return 0f
+        }
     }
 
     protected abstract fun doSimSteps(world: CommonPhysicsWorld, ctx: KoolContext): Float
@@ -42,7 +50,7 @@ class SimplePhysicsStepper : PhysicsStepper() {
     var maxSingleStepTime: Float = 0.02f
 
     override fun doSimSteps(world: CommonPhysicsWorld, ctx: KoolContext): Float {
-        var remainingStepTime = min(0.1f, Time.deltaT * simTimeFactor)
+        var remainingStepTime = min(maxTimeStepPerFrame, Time.deltaT * simTimeFactor)
         var timeAdvance = 0f
         while (remainingStepTime > 0.001f) {
             val singleStep = min(remainingStepTime, maxSingleStepTime)
@@ -72,7 +80,7 @@ class ConstantPhysicsStepperAsync(val constantTimeStep: Float = 1f / 60f) : Phys
 
     override fun doSimSteps(world: CommonPhysicsWorld, ctx: KoolContext): Float {
         var timeAdvance = 0f
-        desiredSimTime += min(0.1f, Time.deltaT * simTimeFactor)
+        desiredSimTime += min(maxTimeStepPerFrame, Time.deltaT * simTimeFactor)
 
         // get results from previous sim step, which was done in parallel to last frame render
         if (isStepInProgress) {
@@ -126,7 +134,7 @@ class ConstantPhysicsStepperSync(val constantTimeStep: Float = 1f / 60f) : Physi
 
     override fun doSimSteps(world: CommonPhysicsWorld, ctx: KoolContext): Float {
         var timeAdvance = 0f
-        desiredSimTime += min(0.1f, Time.deltaT * simTimeFactor)
+        desiredSimTime += min(maxTimeStepPerFrame, Time.deltaT * simTimeFactor)
 
         // step simulation until desired time is reached
         while (shouldAdvance(internalSimTime, desiredSimTime + constantTimeStep, timeAdvance == 0f)) {
