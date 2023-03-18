@@ -1,5 +1,6 @@
 package de.fabmax.kool.scene
 
+import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.ksl.KslUnlitShader
@@ -7,6 +8,7 @@ import de.fabmax.kool.modules.ksl.blocks.*
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.BlendMode
+import de.fabmax.kool.pipeline.CullMethod
 import de.fabmax.kool.pipeline.GlslType
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.VertexView
@@ -22,11 +24,23 @@ class BetterLineMesh(geometry: IndexedVertexList, name: String? = null) : Mesh(g
 
     private val lineBuffer = mutableListOf<LineVertex>()
 
+    private val lineAttribAccessor: MutableVec2f
+    private val prevDirAccessor: MutableVec3f
+    private val nextDirAccessor: MutableVec3f
+
     var color = Color.RED
     var width = 1f
 
     init {
         isCastingShadow = false
+
+        lineAttribAccessor = geometry.vertexIt.getVec2fAttribute(ATTRIB_LINE_ATTRIBS)
+            ?: throw IllegalStateException("Mesh geometry misses required vertex attribute: $ATTRIB_LINE_ATTRIBS")
+        prevDirAccessor = geometry.vertexIt.getVec3fAttribute(ATTRIB_PREV_DIR)
+            ?: throw IllegalStateException("Mesh geometry misses required vertex attribute: $ATTRIB_PREV_DIR")
+        nextDirAccessor = geometry.vertexIt.getVec3fAttribute(ATTRIB_NEXT_DIR)
+            ?: throw IllegalStateException("Mesh geometry misses required vertex attribute: $ATTRIB_NEXT_DIR")
+
         shader = LineShader()
     }
 
@@ -65,24 +79,19 @@ class BetterLineMesh(geometry: IndexedVertexList, name: String? = null) : Mesh(g
 
     fun stroke(): BetterLineMesh {
         if (lineBuffer.size > 1) {
-            val prevDir = MutableVec3f(lineBuffer[1].position).subtract(lineBuffer[0].position)
-            val nextDir = MutableVec3f()
+            val startPos = MutableVec3f(lineBuffer.first().position).scale(2f).subtract(lineBuffer[1].position)
+            val endPos = MutableVec3f(lineBuffer.last().position).scale(2f).subtract(lineBuffer[lineBuffer.lastIndex-1].position)
             for (i in 0 until lineBuffer.size) {
                 val v = lineBuffer[i]
-                if (i < lineBuffer.lastIndex) {
-                    nextDir.set(lineBuffer[i+1].position).subtract(v.position)
-                } else {
-                    nextDir.set(prevDir)
-                }
+                val p = if (i == 0) startPos else lineBuffer[i-1].position
+                val n = if (i == lineBuffer.lastIndex) endPos else lineBuffer[i+1].position
+                val ia = geometry.addLineVertex(v, -1f, p, n)
+                val ib = geometry.addLineVertex(v, 1f, p, n)
 
-                val ia = geometry.addLineVertex(v, -1f, prevDir, nextDir)
-                val ib = geometry.addLineVertex(v, 1f, prevDir, nextDir)
                 if (i > 0) {
                     geometry.addTriIndices(ia, ia - 2, ia - 1)
                     geometry.addTriIndices(ia, ia - 1, ib)
                 }
-
-                prevDir.set(nextDir)
             }
         }
         lineBuffer.clear()
@@ -93,9 +102,9 @@ class BetterLineMesh(geometry: IndexedVertexList, name: String? = null) : Mesh(g
         return addVertex {
             set(vertex.position)
             color.set(vertex.color)
-            getVec2fAttribute(ATTRIB_LINE_ATTRIBS)?.set(u, vertex.width)
-            getVec3fAttribute(ATTRIB_PREV_DIR)?.set(prevDir)
-            getVec3fAttribute(ATTRIB_NEXT_DIR)?.set(nextDir)
+            lineAttribAccessor.set(u, vertex.width)
+            prevDirAccessor.set(prevDir)
+            nextDirAccessor.set(nextDir)
             vertex.vertexMod?.invoke(this)
         }
     }
@@ -113,6 +122,7 @@ class BetterLineMesh(geometry: IndexedVertexList, name: String? = null) : Mesh(g
 
         companion object {
             private val defaultCfg = LineShaderConfig().apply {
+                pipeline { cullMethod = CullMethod.NO_CULLING }
                 color { vertexColor() }
                 colorSpaceConversion = ColorSpaceConversion.AS_IS
             }
@@ -135,44 +145,44 @@ class BetterLineMesh(geometry: IndexedVertexList, name: String? = null) : Mesh(g
                         }
                     }
 
+                    val rotate90 = functionFloat2("rotate90") {
+                        val v = paramFloat2("v")
+                        val d = paramFloat1("d")
+                        body {
+                            float2Value(v.y * d, -v.x * d)
+                        }
+                    }
+
                     main {
                         val mvp = mvpMatrix().matrix
                         val camData = cameraData()
                         val ar = camData.viewport.z / camData.viewport.w
 
-                        val vPrevDir = vertexAttribFloat3(ATTRIB_PREV_DIR.name)
-                        val vNextDir = vertexAttribFloat3(ATTRIB_NEXT_DIR.name)
+                        val vPrevPos = vertexAttribFloat3(ATTRIB_PREV_DIR.name)
+                        val vNextPos = vertexAttribFloat3(ATTRIB_NEXT_DIR.name)
                         val vAttribs = vertexAttribFloat2(ATTRIB_LINE_ATTRIBS.name)
                         val pos = vertexAttribFloat3(Attribute.POSITIONS.name)
                         val shiftDir = vAttribs.x
                         val lineWidthPort = float1Port("lineWidth", vAttribs.y)
 
+                        // project positions and compute 2d directions between prev, current and next points
                         val projPos = float4Var(mvp * float4Value(pos, 1f))
-                        val projPrv = float4Var(mvp * float4Value(pos + normalize(vPrevDir) * 0.01f.const, 1f))
-                        val projNxt = float4Var(mvp * float4Value(pos + normalize(vNextDir) * 0.01f.const, 1f))
+                        val projPrv = float4Var(mvp * float4Value(vPrevPos, 1f))
+                        val projNxt = float4Var(mvp * float4Value(vNextPos, 1f))
 
-                        // compute projected prev / next direction, scaled by aspect ratio
                         val s = float2Var(projNxt.xy / projNxt.w - projPos.xy / projPos.w)
-                        val r = float2Var(projPrv.xy / projPrv.w - projPos.xy / projPos.w)
-                        r.x *= ar
-                        s.x *= ar
-                        r set normalize(r)
-                        s set normalize(s)
+                        val r = float2Var(projPos.xy / projPos.w - projPrv.xy / projPrv.w)
+                        s set normalize(s * float2Value(ar, 1f.const) * sign(projPos.w * projNxt.w))
+                        r set normalize(r * float2Value(ar, 1f.const) * sign(projPos.w * projPrv.w))
 
                         // compute prev / next edge end points: rotate directions by 90°
-                        val p = float2Var(r)
-                        val q = float2Var(s)
-                        val swap = float1Var(p.x)
-                        p.x set p.y * shiftDir
-                        p.y set -swap * shiftDir
-                        swap set q.x
-                        q.x set q.y * shiftDir
-                        q.y set -swap * shiftDir
+                        val p = float2Var(rotate90(r, shiftDir))
+                        val q = float2Var(rotate90(s, shiftDir))
 
                         // compute intersection points of prev and next edge
                         val x = float2Var((p + q) * 0.5f.const)
                         val rCrossS = float1Var(cross2(r, s))
-                        `if`(rCrossS ne 0f.const) {
+                        `if`(abs(rCrossS) gt 0.001f.const) {
                             // lines are neither collinear nor parallel
                             val t = float1Var(clamp(cross2(q - p, s) / rCrossS, (-5f).const, 5f.const))
                             x set p + t * r
@@ -182,7 +192,6 @@ class BetterLineMesh(geometry: IndexedVertexList, name: String? = null) : Mesh(g
                         projPos.xy += (x * lineWidthPort.output / camData.viewport.w) * projPos.w
                         clipPos.input set projPos
                         outPosition set projPos
-
                     }
                 }
                 fragmentStage {
