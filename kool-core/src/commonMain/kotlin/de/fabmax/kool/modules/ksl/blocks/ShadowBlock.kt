@@ -16,7 +16,32 @@ fun KslScopeBuilder.vertexShadowBlock(cfg: ShadowConfig, block: ShadowBlockVerte
 }
 
 fun KslScopeBuilder.fragmentShadowBlock(vertexStage: ShadowBlockVertexStage, shadowFactors: KslArrayScalar<KslTypeFloat1>): ShadowBlockFragmentStage {
-    val shadowBlock = ShadowBlockFragmentStage(vertexStage, shadowFactors, parentStage.program.nextName("shadowBlock"), this)
+    val shadowBlock = ShadowBlockFragmentStage(
+        lightSpacePositions = vertexStage.positionsLightSpace!!.output,
+        lightSpaceNormalZs = vertexStage.normalZsLightSpace!!.output,
+        shadowData = vertexStage.shadowData,
+        shadowFactors = shadowFactors,
+        name = parentStage.program.nextName("shadowBlock"),
+        parentScope = this
+    )
+    ops += shadowBlock
+    return shadowBlock
+}
+
+fun KslScopeBuilder.fragmentShadowBlock(
+    lightSpacePositions: KslArrayVector<KslTypeFloat4, KslTypeFloat1>,
+    lightSpaceNormalZs: KslArrayScalar<KslTypeFloat1>,
+    shadowData: ShadowData,
+    shadowFactors: KslArrayScalar<KslTypeFloat1>
+): ShadowBlockFragmentStage {
+    val shadowBlock = ShadowBlockFragmentStage(
+        lightSpacePositions = lightSpacePositions,
+        lightSpaceNormalZs = lightSpaceNormalZs,
+        shadowData = shadowData,
+        shadowFactors = shadowFactors,
+        name = parentStage.program.nextName("shadowBlock"),
+        parentScope = this
+    )
     ops += shadowBlock
     return shadowBlock
 }
@@ -36,7 +61,7 @@ class ShadowBlockVertexStage(cfg: ShadowConfig, name: String, parentScope: KslSc
             check(parentStage is KslVertexStage) { "SimpleShadowMapBlockVertexStage can only be added to KslVertexStage" }
 
             parentScope.parentStage.program.apply {
-                shadowData = ShadowData(cfg, this)
+                shadowData = shadowData(cfg)
                 if (shadowData.numSubMaps > 0) {
                     positionsLightSpace = interStageFloat4Array(shadowData.numSubMaps)
                     normalZsLightSpace = interStageFloat1Array(shadowData.numSubMaps)
@@ -58,38 +83,37 @@ class ShadowBlockVertexStage(cfg: ShadowConfig, name: String, parentScope: KslSc
 }
 
 class ShadowBlockFragmentStage(
-    vertexStage: ShadowBlockVertexStage,
+    lightSpacePositions: KslArrayVector<KslTypeFloat4, KslTypeFloat1>,
+    lightSpaceNormalZs: KslArrayScalar<KslTypeFloat1>,
+    shadowData: ShadowData,
     shadowFactors: KslArrayScalar<KslTypeFloat1>,
-    name: String, parentScope: KslScopeBuilder)
-    : KslBlock(name, parentScope) {
+    name: String,
+    parentScope: KslScopeBuilder
+) : KslBlock(name, parentScope) {
 
     init {
         body.apply {
             check(parentStage is KslFragmentStage) { "SimpleShadowMapBlockFragmentStage can only be added to KslFragmentStage" }
 
-            val depthMaps = vertexStage.shadowData.depthMaps
-            vertexStage.shadowData.shadowMapInfos.forEach { mapInfo ->
+            shadowData.shadowMapInfos.forEach { mapInfo ->
                 val lightIdx = mapInfo.shadowMap.lightIndex
                 shadowFactors[lightIdx] set 1f.const
-
-                val positionsLightSpace = vertexStage.positionsLightSpace!!
-                val normalZsLightSpace = vertexStage.normalZsLightSpace!!
 
                 when (mapInfo.shadowMap) {
                     is SimpleShadowMap -> {
                         val subMapIdx = mapInfo.fromIndexIncl
-                        val posLightSpace = positionsLightSpace.output[subMapIdx]
+                        val posLightSpace = lightSpacePositions[subMapIdx]
 
-                        `if` (normalZsLightSpace.output[subMapIdx] lt 0f.const) {
+                        `if` (lightSpaceNormalZs[subMapIdx] lt 0f.const) {
                             // normal points towards light source, compute shadow factor
-                            shadowFactors[lightIdx] set getShadowMapFactor(depthMaps.value[subMapIdx], posLightSpace, mapInfo.samplePattern)
+                            shadowFactors[lightIdx] set getShadowMapFactor(shadowData.depthMaps.value[subMapIdx], posLightSpace, mapInfo.samplePattern)
                         }.`else` {
                             // normal points away from light source, set shadow factor to 0 (shadowed)
                             shadowFactors[lightIdx] set 0f.const
                         }
                     }
                     is CascadedShadowMap -> {
-                        `if`(normalZsLightSpace.output[mapInfo.fromIndexIncl] lt 0f.const) {
+                        `if`(lightSpaceNormalZs[mapInfo.fromIndexIncl] lt 0f.const) {
                             // normal points towards light source, compute shadow factor
                             val sampleW = float1Var(0f.const)
                             val sampleSum = float1Var(0f.const)
@@ -98,7 +122,7 @@ class ShadowBlockFragmentStage(
                             for (i in mapInfo.fromIndexIncl until mapInfo.toIndexExcl) {
                                 // check for each shadow map (sorted from high detail to low detail) if projected
                                 // position is inside map bounds, if so sample it and stop
-                                val posLightSpace = positionsLightSpace.output[i]
+                                val posLightSpace = lightSpacePositions[i]
                                 projPos set posLightSpace.xyz / posLightSpace.w
                                 `if`(sampleW lt 0.999f.const and
                                         all(projPos gt Vec3f(0f, 0f, -1f).const) and
@@ -111,7 +135,7 @@ class ShadowBlockFragmentStage(
                                     val w = float1Var(c * (1f.const - sampleW))
 
                                     // projected position is inside shadow map bounds, sample shadow map
-                                    sampleSum += getShadowMapFactor(depthMaps.value[i], posLightSpace, mapInfo.samplePattern) * w
+                                    sampleSum += getShadowMapFactor(shadowData.depthMaps.value[i], posLightSpace, mapInfo.samplePattern) * w
                                     sampleW += w
                                 }
                             }

@@ -63,8 +63,8 @@ class PbrMaterialBlock(
 
             // image based (ambient) lighting and reflection
             val normalDotView = float1Var(max(dot(inNormal, viewDir), 0f.const))
-            val f = float3Var(fresnelSchlickRoughness(normalDotView, f0, roughness))
-            val kD = float3Var((1f.const - f) * (1f.const - inMetallic))
+            val fAmbient = float3Var(fresnelSchlickRoughness(normalDotView, f0, roughness))
+            val kDAmbient = float3Var((1f.const - fAmbient) * (1f.const - inMetallic))
             val diffuse = float3Var(inIrradiance * baseColorRgb)
 
             // use irradiance / ambient color as fallback reflection color in case no reflection map is used
@@ -81,8 +81,8 @@ class PbrMaterialBlock(
             reflectionColor set reflectionColor * inReflectionStrength
 
             val brdf = float2Var(sampleTexture(brdfLut, float2Value(normalDotView, roughness)).rg)
-            val specular = float3Var(reflectionColor * (f * brdf.r + brdf.g) / inBaseColor.a)
-            val ambient = float3Var(kD * diffuse * inAoFactor)
+            val specular = float3Var(reflectionColor * (fAmbient * brdf.r + brdf.g) / inBaseColor.a)
+            val ambient = float3Var(kDAmbient * diffuse * inAoFactor)
             val reflection = float3Var(specular * inAoFactor)
             outColor set ambient + lo + reflection
         }

@@ -104,7 +104,7 @@ class DeferredPipeline(val scene: Scene, val cfg: DeferredPipelineConfig) {
                     isScrSpcAmbientOcclusion = cfg.isWithAmbientOcclusion
                     isScrSpcReflections = cfg.isWithScreenSpaceReflections
                     maxLights = cfg.maxGlobalLights
-                    shadowMaps += this@DeferredPipeline.shadowMaps
+                    shadowCfg.addShadowMaps(this@DeferredPipeline.shadowMaps)
                     useImageBasedLighting(cfg.environmentMaps)
                 })
 
@@ -113,7 +113,7 @@ class DeferredPipeline(val scene: Scene, val cfg: DeferredPipelineConfig) {
         if (cfg.isWithAmbientOcclusion) {
             aoPipeline = AoPipeline.createDeferred(this)
             passes.forEach { it.lightingPass.dependsOn(aoPipeline.denoisePass) }
-            lightingPassShader.scrSpcAmbientOcclusionMap(aoPipeline.aoMap)
+            lightingPassShader.scrSpcAmbientOcclusionMap = aoPipeline.aoMap
             onSwap += aoPipeline
         } else {
             aoPipeline = null
@@ -124,7 +124,7 @@ class DeferredPipeline(val scene: Scene, val cfg: DeferredPipelineConfig) {
             scene.addOffscreenPass(reflections.reflectionPass)
             scene.addOffscreenPass(reflections.denoisePass)
             passes.forEach { it.lightingPass.dependsOn(reflections.denoisePass) }
-            lightingPassShader.scrSpcReflectionMap(reflections.denoisePass.colorTexture)
+            lightingPassShader.scrSpcReflectionMap = reflections.denoisePass.colorTexture
             onSwap += reflections
         } else {
             reflections = null
@@ -190,16 +190,8 @@ class DeferredPipeline(val scene: Scene, val cfg: DeferredPipelineConfig) {
 
     private fun setupLightingPassContent() {
         lightingPassContent.apply {
-            isFrustumChecked = false
-
             +mesh(listOf(Attribute.POSITIONS, Attribute.TEXTURE_COORDS)) {
-                isFrustumChecked = false
-                generate {
-                    rect {
-                        size.set(1f, 1f)
-                        mirrorTexCoordsY()
-                    }
-                }
+                generateFullscreenQuad()
                 shader = lightingPassShader
             }
             +dynamicPointLights.mesh
@@ -258,7 +250,7 @@ class DeferredPipeline(val scene: Scene, val cfg: DeferredPipelineConfig) {
         aoPipeline?.isEnabled = isEnabled && isAoEnabled
         passes.forEach { it.isEnabled = isEnabled }
         reflections?.isEnabled = isEnabled && isSsrEnabled
-        lightingPassShader.scrSpcReflectionMap(if (isSsrEnabled) reflections?.reflectionMap else noSsrMap)
+        lightingPassShader.scrSpcReflectionMap = if (isSsrEnabled) reflections?.reflectionMap else noSsrMap
         bloom?.isEnabled = isEnabled && isBloomEnabled
 
         onConfigChange.forEach { it(this) }

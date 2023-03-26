@@ -13,13 +13,6 @@ import de.fabmax.kool.pipeline.shading.*
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.logE
 
-@Deprecated("Use deferredKslPbrShader instead")
-inline fun deferredPbrShader(block: PbrMaterialConfig.() -> Unit): DeferredPbrShader {
-    val cfg = PbrMaterialConfig()
-    cfg.block()
-    return DeferredPbrShader(cfg)
-}
-
 inline fun deferredKslPbrShader(block: DeferredKslPbrShader.Config.() -> Unit): DeferredKslPbrShader {
     val cfg = DeferredKslPbrShader.Config()
     cfg.block()

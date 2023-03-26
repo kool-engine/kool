@@ -70,7 +70,12 @@ class BlurShader(cfg: BlurShaderConfig, model: Model = Model(cfg)) : KslShader(m
 }
 
 class BlurShaderConfig {
-    val pipelineCfg = KslShader.PipelineConfig()
+    val pipelineCfg = KslShader.PipelineConfig(
+        blendMode = BlendMode.DISABLED,
+        cullMethod = CullMethod.NO_CULLING,
+        depthTest = DepthCompareOp.DISABLED,
+        isWriteDepth = false
+    )
     var kernel = BlurShader.blurKernel(8)
     var colorSpaceConversion = ColorSpaceConversion.AS_IS
 
@@ -79,11 +84,4 @@ class BlurShaderConfig {
         set(value) {
             kernel = BlurShader.blurKernel(value)
         }
-
-    init {
-        pipelineCfg.blendMode = BlendMode.DISABLED
-        pipelineCfg.cullMethod = CullMethod.NO_CULLING
-        pipelineCfg.depthTest = DepthCompareOp.DISABLED
-        pipelineCfg.isWriteDepth = false
-    }
 }

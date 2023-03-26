@@ -12,6 +12,10 @@ import de.fabmax.kool.util.CascadedShadowMap
 import de.fabmax.kool.util.ShadowMap
 import de.fabmax.kool.util.SimpleShadowMap
 
+fun KslProgram.shadowData(shadowCfg: ShadowConfig): ShadowData {
+    return (dataBlocks.find { it is ShadowData } as? ShadowData) ?: ShadowData(shadowCfg, this)
+}
+
 class ShadowData(shadowCfg: ShadowConfig, program: KslProgram) : KslDataBlock, KslShaderListener {
     override val name = NAME
 
@@ -39,6 +43,7 @@ class ShadowData(shadowCfg: ShadowConfig, program: KslProgram) : KslDataBlock, K
         shadowMapViewProjMats = program.uniformMat4Array(UNIFORM_NAME_SHADOW_VP_MATS, numSubMaps)
         depthMaps = program.depthTextureArray2d(SAMPLER_NAME_SHADOW_MAPS, numSubMaps)
 
+        program.dataBlocks += this
         if (numSubMaps > 0) {
             program.shaderListeners += this
         }

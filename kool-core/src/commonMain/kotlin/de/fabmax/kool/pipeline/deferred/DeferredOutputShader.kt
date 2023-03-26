@@ -25,7 +25,7 @@ class DeferredOutputShader(cfg: DeferredPipelineConfig, bloom: Texture2d?) :
     private var currentLighting by texture2d("currentLighting")
     private var depthTex by texture2d("currentDepth")
 
-    private var vignetteCfg by uniform3f("uVignetteCfg")
+    private var vignetteCfg by uniform3f("uVignetteCfg", Vec3f(0.4f, 0.71f, 0.25f))
     val vignetteStrength: Float
         get() = vignetteCfg.z
     val vignetteInnerRadius: Float
@@ -33,8 +33,8 @@ class DeferredOutputShader(cfg: DeferredPipelineConfig, bloom: Texture2d?) :
     val vignetteOuterRadius: Float
         get() = vignetteCfg.y
 
-    var chromaticAberrationStrength by uniform3f("uChromaticAberration", Vec3f(-0.002f, 0.0f, 0.002f))
-    var chromaticAberrationStrengthBloom by uniform3f("uChromaticAberration", Vec3f(-0.006f, 0.0f, 0.006f))
+    var chromaticAberrationStrength by uniform3f("uChromaticAberration", Vec3f(-0.001f, 0.0f, 0.001f))
+    var chromaticAberrationStrengthBloom by uniform3f("uChromaticAberration", Vec3f(-0.003f, 0.0f, 0.003f))
 
     fun setupVignette(strength: Float = vignetteStrength, innerRadius: Float = vignetteInnerRadius, outerRadius: Float = vignetteOuterRadius) {
         vignetteCfg = Vec3f(innerRadius, outerRadius, strength)
@@ -58,8 +58,7 @@ class DeferredOutputShader(cfg: DeferredPipelineConfig, bloom: Texture2d?) :
 
                     body {
                         val centerUv = float2Var(uv - 0.5f.const)
-                        val screenR = length(centerUv)
-                        val str = float3Var(strength * smoothStep(0.2f.const, 0.45f.const, screenR))
+                        val str = float3Var(strength * smoothStep(0.2f.const, 0.45f.const, length(centerUv)))
 
                         val uvR = float2Var(centerUv * (1f.const + str.r))
                         val uvG = float2Var(centerUv * (1f.const + str.g))

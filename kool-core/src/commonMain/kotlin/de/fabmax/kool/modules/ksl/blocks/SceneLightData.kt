@@ -21,10 +21,10 @@ class SceneLightData(program: KslProgram, val maxLightCount: Int) : KslDataBlock
     val encodedColors = program.uniformFloat4Array(UNIFORM_NAME_LIGHT_COLORS, maxLightCount)
     val lightCount = program.uniformInt1(UNIFORM_NAME_LIGHT_COUNT)
 
-    private lateinit var uLightPositions: Uniform4fv
-    private lateinit var uLightDirections: Uniform4fv
-    private lateinit var uLightColors: Uniform4fv
-    private lateinit var uLightCount: Uniform1i
+    private var uLightPositions: Uniform4fv? = null
+    private var uLightDirections: Uniform4fv? = null
+    private var uLightColors: Uniform4fv? = null
+    private var uLightCount: Uniform1i? = null
 
     init {
         program.dataBlocks += this
@@ -32,25 +32,30 @@ class SceneLightData(program: KslProgram, val maxLightCount: Int) : KslDataBlock
     }
 
     override fun onShaderCreated(shader: KslShader, pipeline: Pipeline, ctx: KoolContext) {
-        uLightPositions = shader.uniforms[UNIFORM_NAME_LIGHT_POSITIONS] as Uniform4fv
-        uLightDirections = shader.uniforms[UNIFORM_NAME_LIGHT_DIRECTIONS] as Uniform4fv
-        uLightColors = shader.uniforms[UNIFORM_NAME_LIGHT_COLORS] as Uniform4fv
-        uLightCount = shader.uniforms[UNIFORM_NAME_LIGHT_COUNT] as Uniform1i
+        uLightPositions = shader.uniforms[UNIFORM_NAME_LIGHT_POSITIONS] as? Uniform4fv
+        uLightDirections = shader.uniforms[UNIFORM_NAME_LIGHT_DIRECTIONS] as? Uniform4fv
+        uLightColors = shader.uniforms[UNIFORM_NAME_LIGHT_COLORS] as? Uniform4fv
+        uLightCount = shader.uniforms[UNIFORM_NAME_LIGHT_COUNT] as? Uniform1i
     }
 
     override fun onUpdate(cmd: DrawCommand) {
         val lighting = cmd.renderPass.lighting
         if (lighting != null) {
-            uLightCount.value = min(lighting.lights.size, maxLightCount)
-            for (i in 0 until uLightCount.value) {
+            val lightPos = uLightPositions ?: return
+            val lightDir = uLightDirections ?: return
+            val lightCol = uLightColors ?: return
+            val lightCnt = uLightCount ?: return
+
+            lightCnt.value = min(lighting.lights.size, maxLightCount)
+            for (i in 0 until lightCnt.value) {
                 val light = lighting.lights[i]
                 light.updateEncodedValues()
-                uLightPositions.value[i].set(light.encodedPosition)
-                uLightDirections.value[i].set(light.encodedDirection)
-                uLightColors.value[i].set(light.encodedColor)
+                lightPos.value[i].set(light.encodedPosition)
+                lightDir.value[i].set(light.encodedDirection)
+                lightCol.value[i].set(light.encodedColor)
             }
         } else {
-            uLightCount.value = 0
+            uLightCount?.value = 0
         }
     }
 

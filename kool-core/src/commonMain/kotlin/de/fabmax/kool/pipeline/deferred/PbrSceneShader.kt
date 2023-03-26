@@ -1,208 +1,215 @@
 package de.fabmax.kool.pipeline.deferred
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.pipeline.BlendMode
-import de.fabmax.kool.pipeline.DepthCompareOp
-import de.fabmax.kool.pipeline.Pipeline
-import de.fabmax.kool.pipeline.TextureSampler2d
+import de.fabmax.kool.math.Mat3f
+import de.fabmax.kool.math.Vec2f
+import de.fabmax.kool.math.Vec4f
+import de.fabmax.kool.modules.ksl.KslLitShader
+import de.fabmax.kool.modules.ksl.KslShader
+import de.fabmax.kool.modules.ksl.blocks.*
+import de.fabmax.kool.modules.ksl.lang.*
+import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
-import de.fabmax.kool.pipeline.shadermodel.*
-import de.fabmax.kool.pipeline.shading.*
-import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.util.CascadedShadowMap
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.ShadowMap
-import de.fabmax.kool.util.SimpleShadowMap
+import kotlin.math.abs
 
 /**
  * 2nd pass shader for deferred pbr shading: Uses textures with view space position, normals, albedo, roughness,
  * metallic and texture-based AO and computes the final color output.
  */
-open class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferredPbrModel(cfg)) : ModeledShader(model) {
+open class PbrSceneShader(cfg: DeferredPbrConfig, model: Model = Model(cfg)) :
+    KslShader(
+        model,
+        PipelineConfig(
+            blendMode = BlendMode.DISABLED,
+            cullMethod = CullMethod.NO_CULLING,
+            depthTest = DepthCompareOp.ALWAYS
+        )
+    )
+{
 
-    private var deferredCameraNode: DeferredCameraNode? = null
-    var sceneCamera: Camera? = null
+    var depth by texture2d("depth")
+    var positionFlags by texture2d("positionFlags")
+    var normalRoughness by texture2d("normalRoughness")
+    var colorMetallic by texture2d("colorMetallic")
+    var emissiveAo by texture2d("emissiveAo")
+
+    var ambientFactor: Vec4f by uniform4f("uAmbientColor")
+    var ambientMapOrientation: Mat3f by uniformMat3f("uAmbientTextureOri", Mat3f().setIdentity())
+    // if ambient color is image based
+    var ambientMap: TextureCube? by textureCube("tAmbientTexture")
+    // if ambient color is dual image based
+    val ambientMaps: Array<TextureCube?> by textureCubeArray("tAmbientTextures", 2)
+    var ambientMapWeights by uniform2f("tAmbientWeights", Vec2f.X_AXIS)
+    var ambientShadowFactor by uniform1f("uAmbientShadowFactor", cfg.ambientShadowFactor)
+
+    var scrSpcAmbientOcclusionMap: Texture2d? by texture2d("tSsaoMap")
+    var scrSpcReflectionMap: Texture2d? by texture2d("tSsrMap")
+
+    val reflectionMaps: Array<TextureCube?> by textureCubeArray("tReflectionMaps", 2)
+    var reflectionMapWeights: Vec2f by uniform2f("uReflectionWeights")
+    var reflectionStrength: Vec4f by uniform4f("uReflectionStrength", cfg.reflectionStrength)
+    var brdfLut: Texture2d? by texture2d("tBrdfLut")
+
+    var reflectionMap: TextureCube?
+        get() = reflectionMaps[0]
         set(value) {
-            field = value
-            deferredCameraNode?.sceneCam = value
+            reflectionMaps[0] = value
+            reflectionMaps[1] = value
+            reflectionMapWeights = Vec2f.X_AXIS
         }
 
-    val depth = Texture2dInput("depth")
-    val positionFlags = Texture2dInput("positionFlags")
-    val normalRoughness = Texture2dInput("normalRoughness")
-    val albedoMetal = Texture2dInput("albedoMetal")
-    val emissiveAo = Texture2dInput("emissiveAo")
-
-    // Lighting props
-    val ambient = ColorInput("uAmbient", Color(0.03f, 0.03f, 0.03f, 1f))
-    val ambientShadowFactor = FloatInput("uAmbientShadowFactor", cfg.ambientShadowFactor)
-
-    // Image based lighting maps
-    val environmentMapOrientation = Mat3fInput("uEnvMapOri")
-    val irradianceMap = TextureCubeInput("irradianceMap", cfg.environmentMaps?.irradianceMap)
-    val reflectionMap = TextureCubeInput("reflectionMap", cfg.environmentMaps?.reflectionMap)
-    val brdfLut = Texture2dInput("brdfLut")
-
-    // Screen space AO and Reflection maps
-    val scrSpcAmbientOcclusionMap = Texture2dInput("ssaoMap")
-    val scrSpcReflectionMap = Texture2dInput("ssrMap")
-
-    // Shadow Mapping
-    private val shadowMaps = Array(cfg.shadowMaps.size) { cfg.shadowMaps[it] }
-    private val depthSamplers = Array<TextureSampler2d?>(shadowMaps.size) { null }
-    private val isReceivingShadow = cfg.shadowMaps.isNotEmpty()
-
-    fun setMaterialInput(materialPass: MaterialPass) {
-        sceneCamera = materialPass.camera
-        depth(materialPass.depthTexture)
-        positionFlags(materialPass.positionFlags)
-        normalRoughness(materialPass.normalRoughness)
-        albedoMetal(materialPass.albedoMetal)
-        emissiveAo(materialPass.emissiveAo)
+    init {
+        reflectionMap = cfg.reflectionMap
+        when (val ambient = cfg.ambientColor) {
+            is KslLitShader.AmbientColor.Uniform -> ambientFactor = ambient.color
+            is KslLitShader.AmbientColor.ImageBased -> {
+                ambientMap = ambient.ambientMap
+                ambientFactor = ambient.ambientFactor
+            }
+            is KslLitShader.AmbientColor.DualImageBased -> {
+                ambientFactor = ambient.colorFactor
+            }
+        }
     }
 
     override fun onPipelineSetup(builder: Pipeline.Builder, mesh: Mesh, ctx: KoolContext) {
-        brdfLut(ctx.defaultPbrBrdfLut)
-        builder.depthTest = DepthCompareOp.ALWAYS
-        builder.blendMode = BlendMode.DISABLED
         super.onPipelineSetup(builder, mesh, ctx)
-    }
-
-    override fun onPipelineCreated(pipeline: Pipeline, mesh: Mesh, ctx: KoolContext) {
-        deferredCameraNode = model.findNode("deferredCam")
-        deferredCameraNode?.let { it.sceneCam = sceneCamera }
-
-        depth.connect(model)
-        positionFlags.connect(model)
-        normalRoughness.connect(model)
-        albedoMetal.connect(model)
-        emissiveAo.connect(model)
-
-        ambient.connect(model)
-
-        irradianceMap.connect(model)
-        reflectionMap.connect(model)
-        brdfLut.connect(model)
-        environmentMapOrientation.connect(model)
-
-        scrSpcAmbientOcclusionMap.connect(model)
-        scrSpcReflectionMap.connect(model)
-
-        if (isReceivingShadow) {
-            for (i in depthSamplers.indices) {
-                val sampler = model.findNode<Texture2dNode>("depthMap_$i")?.sampler
-                depthSamplers[i] = sampler
-                shadowMaps[i].setupSampler(sampler)
-            }
-            ambientShadowFactor.connect(model)
+        if (brdfLut == null) {
+            brdfLut = ctx.defaultPbrBrdfLut
         }
-        super.onPipelineCreated(pipeline, mesh, ctx)
     }
 
-    companion object {
-        fun defaultDeferredPbrModel(cfg: DeferredPbrConfig) = ShaderModel("defaultDeferredPbrModel()").apply {
-            val ifTexCoords: StageInterfaceNode
+    fun setMaterialInput(materialPass: MaterialPass) {
+        depth = materialPass.depthTexture
+        positionFlags = materialPass.positionFlags
+        normalRoughness = materialPass.normalRoughness
+        colorMetallic = materialPass.albedoMetal
+        emissiveAo = materialPass.emissiveAo
+    }
 
-            vertexStage {
-                ifTexCoords = stageInterfaceNode("ifTexCoords", attrTexCoords().output)
-                positionOutput = fullScreenQuadPositionNode(attrTexCoords().output).outQuadPos
-            }
+    class Model(cfg: DeferredPbrConfig) : KslProgram("Deferred PBR compositing shader") {
+        init {
+            val texCoord = interStageFloat2("uv")
+            fullscreenQuadVertexStage(texCoord)
+
             fragmentStage {
-                val coord = ifTexCoords.output
+                main {
+                    val uv = texCoord.output
 
-                val posFlagsTex = texture2dNode("positionFlags")
-                val mrtDeMultiplex = addNode(DeferredPbrShader.MrtDeMultiplexNode(stage)).apply {
-                    inPositionFlags = texture2dSamplerNode(posFlagsTex, coord).outColor
-                    inNormalRough = texture2dSamplerNode(texture2dNode("normalRoughness"), coord).outColor
-                    inAlbedoMetallic = texture2dSamplerNode(texture2dNode("albedoMetal"), coord).outColor
-                    inEmissiveAo = texture2dSamplerNode(texture2dNode("emissiveAo"), coord).outColor
-                }
+                    val posFlags = float4Var(sampleTexture(texture2d("positionFlags"), uv))
+                    val normalRoughness = float4Var(sampleTexture(texture2d("normalRoughness"), uv))
+                    val colorMetallic = float4Var(sampleTexture(texture2d("colorMetallic"), uv))
+                    val emissiveAo = float4Var(sampleTexture(texture2d("emissiveAo"), uv))
 
-                addNode(DiscardClearNode(stage)).apply { inViewPos = mrtDeMultiplex.outViewPos }
+                    val viewPos = posFlags.xyz
+                    //val flags = posFlags.a
+                    val viewNormal = normalRoughness.xyz
+                    val roughness = normalRoughness.a
+                    val color = colorMetallic.rgb
+                    val metallic = colorMetallic.a
+                    val emissive = emissiveAo.rgb
+                    val ao = emissiveAo.a
 
-                val defCam = addNode(DeferredCameraNode(stage))
-                val worldPos = vec3TransformNode(mrtDeMultiplex.outViewPos, defCam.outInvViewMat, 1f).outVec3
-                val worldNrm = vec3TransformNode(mrtDeMultiplex.outViewNormal, defCam.outInvViewMat, 0f).outVec3
+                    `if`(viewPos.z gt 0f.const) {
+                        discard()
+                    }
 
-                var lightNode: MultiLightNode? = null
-                if (cfg.maxLights > 0) {
-                    lightNode = multiLightNode(worldPos, cfg.maxLights)
-                    cfg.shadowMaps.forEachIndexed { i, map ->
-                        lightNode.inShadowFacs[i] = when (map) {
-                            is CascadedShadowMap -> deferredCascadedShadowMapNode(map, "depthMap_$i", mrtDeMultiplex.outViewPos, worldPos, worldNrm).outShadowFac
-                            is SimpleShadowMap -> deferredSimpleShadowMapNode(map, "depthMap_$i", worldPos, worldNrm).outShadowFac
-                            else -> ShaderNodeIoVar(ModelVar1fConst(1f))
+                    val camData = deferredCameraData()
+                    val lightData = sceneLightData(cfg.maxLights)
+                    val shadowData = shadowData(cfg.shadowCfg)
+
+                    // transform input positions from view space back to world space
+                    val worldPos = float3Var((camData.invViewMat * float4Value(viewPos, 1f.const)).xyz)
+                    val worldNrm = float3Var((camData.invViewMat * float4Value(viewNormal, 0f.const)).xyz)
+
+                    // compute ambient lighting properties
+                    val ambientOri = uniformMat3("uAmbientTextureOri")
+                    val irradiance = when (cfg.ambientColor) {
+                        is KslLitShader.AmbientColor.Uniform -> float3Var(uniformFloat4("uAmbientColor").rgb)
+                        is KslLitShader.AmbientColor.ImageBased -> {
+                            val ambientTex = textureCube("tAmbientTexture")
+                            float3Var((sampleTexture(ambientTex, ambientOri * worldNrm) * uniformFloat4("uAmbientColor")).rgb)
+                        }
+                        is KslLitShader.AmbientColor.DualImageBased -> {
+                            val ambientTexs = textureArrayCube("tAmbientTextures", 2)
+                            val ambientWeights = uniformFloat2("tAmbientWeights")
+                            val ambientColor = float4Var(sampleTexture(ambientTexs[0], ambientOri * worldNrm) * ambientWeights.x)
+                            `if`(ambientWeights.y gt 0f.const) {
+                                ambientColor += float4Var(sampleTexture(ambientTexs[1], ambientOri * worldNrm) * ambientWeights.y)
+                            }
+                            float3Var((ambientColor * uniformFloat4("uAmbientColor")).rgb)
                         }
                     }
-                }
 
-                val reflMap: TextureCubeNode?
-                val brdfLut: Texture2dNode?
-                val irrSampler: TextureCubeSamplerNode?
-                val envMapOri: UniformMat3fNode?
-                if (cfg.isImageBasedLighting) {
-                    envMapOri = uniformMat3fNode("uEnvMapOri")
-                    val irrDirection = vec3TransformNode(worldNrm, envMapOri.output).outVec3
-                    val irrMap = textureCubeNode("irradianceMap")
-                    irrSampler = textureCubeSamplerNode(irrMap, irrDirection)
-                    reflMap = textureCubeNode("reflectionMap")
-                    brdfLut = texture2dNode("brdfLut")
-                } else {
-                    irrSampler = null
-                    reflMap = null
-                    brdfLut = null
-                    envMapOri = null
-                }
+                    // create an array with light strength values per light source (1.0 = full strength)
+                    val shadowFactors = float1Array(lightData.maxLightCount, 1f.const)
+                    val avgShadow = float1Var(0f.const)
+                    if (shadowData.numSubMaps > 0) {
+                        val lightSpacePositions = float4Array(shadowData.numSubMaps, Vec4f.ZERO.const)
+                        val lightSpaceNormalZs = float1Array(shadowData.numSubMaps, 0f.const)
 
-                val mat = pbrMaterialNode(reflMap, brdfLut).apply {
-                    inFragPos = worldPos
-                    inNormal = worldNrm
-                    inViewDir = viewDirNode(defCam.outCamPos, worldPos).output
-                    envMapOri?.let { inReflectionMapOrientation = it.output }
+                        // transform positions to light space
+                        shadowData.shadowMapInfos.forEach { mapInfo ->
+                            mapInfo.subMaps.forEachIndexed { i, subMap ->
+                                val subMapIdx = mapInfo.fromIndexIncl + i
+                                val viewProj = shadowData.shadowMapViewProjMats[subMapIdx]
+                                val normalLightSpace = float3Var(normalize((viewProj * float4Value(worldNrm, 0f.const)).xyz))
+                                lightSpaceNormalZs[subMapIdx] set normalLightSpace.z
+                                lightSpacePositions[subMapIdx] set viewProj * float4Value(worldPos, 1f.const)
+                                lightSpacePositions[subMapIdx].xyz += normalLightSpace * abs(subMap.shaderDepthOffset).const
+                            }
+                        }
 
-                    val avgShadow: ShaderNodeIoVar
-                    if (lightNode != null) {
-                        inLightCount = lightNode.outLightCount
-                        inFragToLight = lightNode.outFragToLightDirection
-                        inRadiance = lightNode.outRadiance
-                        avgShadow = lightNode.outAvgShadowFac
-                    } else {
-                        avgShadow = constFloat(0f)
+                        // adjust light strength values by shadow maps
+                        fragmentShadowBlock(lightSpacePositions, lightSpaceNormalZs, shadowData, shadowFactors)
+                        fori(0.const, lightData.lightCount) { i ->
+                            avgShadow += shadowFactors[i]
+                        }
+                        avgShadow /= max(1f.const, lightData.lightCount.toFloat1())
                     }
+                    val ambientShadowFac = uniformFloat1("uAmbientShadowFactor")
+                    val shadowStr = float1Var((1f.const - avgShadow) * ambientShadowFac)
+                    irradiance set irradiance * (1f.const - shadowStr)
 
-                    val irr = irrSampler?.outColor ?: pushConstantNodeColor("uAmbient").output
-                    val ambientShadowFac = pushConstantNode1f("uAmbientShadowFactor").output
-                    val shadowStr = multiplyNode(subtractNode(constFloat(1f), avgShadow).output, ambientShadowFac)
-                    val ambientStr = subtractNode(constFloat(1f), shadowStr.output).output
-                    inIrradiance = multiplyNode(irr, ambientStr).output
-                    inReflectionStrength = ambientStr
-
-                    inAlbedo = mrtDeMultiplex.outAlbedo
-                    inEmissive = mrtDeMultiplex.outEmissive
-                    inMetallic = mrtDeMultiplex.outMetallic
-                    inRoughness = mrtDeMultiplex.outRoughness
-                    inAlwaysLit = mrtDeMultiplex.outLightBacksides
-
-                    var aoFactor = mrtDeMultiplex.outAo
+                    // screen-space ao (if enabled)
                     if (cfg.isScrSpcAmbientOcclusion) {
-                        val aoMap = texture2dNode("ssaoMap")
-                        val aoNode = addNode(AoMapSampleNode(aoMap, graph))
-                        aoNode.inViewport = defCam.outViewport
-                        aoFactor = multiplyNode(aoFactor, aoNode.outAo).output
+                        val aoMap = texture2d("tSsaoMap")
+                        ao *= sampleTexture(aoMap, uv).x
                     }
-                    inAmbientOccl = aoFactor
 
-                    if (cfg.isScrSpcReflections) {
-                        val ssr = texture2dSamplerNode(texture2dNode("ssrMap"), coord).outColor
-                        inReflectionColor = gammaNode(ssr).outColor
-                        inReflectionWeight = splitNode(ssr, "a").output
+                    // reflection input textures
+                    val brdfLut = texture2d("tBrdfLut")
+                    val reflectionStrength = uniformFloat4("uReflectionStrength").rgb
+                    val reflectionMaps = if (cfg.isTextureReflection) {
+                        textureArrayCube("tReflectionMaps", 2).value
+                    } else {
+                        null
                     }
+
+                    val material = pbrMaterialBlock(reflectionMaps, brdfLut) {
+                        inCamPos(camData.position)
+                        inNormal(worldNrm)
+                        inFragmentPos(worldPos)
+                        inBaseColor(float4Value(color, 1f.const))
+
+                        inRoughness(roughness)
+                        inMetallic(metallic)
+
+                        inIrradiance(irradiance)
+                        inAoFactor(ao)
+                        inAmbientOrientation(ambientOri)
+
+                        inReflectionMapWeights(uniformFloat2("uReflectionWeights"))
+                        inReflectionStrength(reflectionStrength)
+
+                        setLightData(lightData, shadowFactors, cfg.lightStrength.const)
+                    }
+                    colorOutput(material.outColor + emissive)
+                    outDepth set sampleTexture(texture2d("depth"), uv).r
                 }
-
-                colorOutput(mat.outColor)
-                val depthSampler = texture2dSamplerNode(texture2dNode("depth"), coord)
-                depthOutput(depthSampler.outColor)
             }
         }
     }
@@ -212,14 +219,34 @@ open class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDe
         var isScrSpcAmbientOcclusion = false
         var isScrSpcReflections = false
 
-        var maxLights = 4
-        val shadowMaps = mutableListOf<ShadowMap>()
         var environmentMaps: EnvironmentMaps? = null
         var ambientShadowFactor = 0f
+
+        var maxLights = 4
+        var lightStrength = 1f
+        val shadowCfg = ShadowConfig()
+
+        var ambientColor: KslLitShader.AmbientColor = KslLitShader.AmbientColor.Uniform(Color(0.2f, 0.2f, 0.2f).toLinear())
+        var isTextureReflection = false
+        var reflectionStrength = Color.WHITE
+        var reflectionMap: TextureCube? = null
+            set(value) {
+                field = value
+                isTextureReflection = value != null
+            }
 
         fun useImageBasedLighting(environmentMaps: EnvironmentMaps?) {
             this.environmentMaps = environmentMaps
             isImageBasedLighting = environmentMaps != null
+
+            if (environmentMaps != null) {
+                ambientColor = KslLitShader.AmbientColor.ImageBased(environmentMaps.irradianceMap, Color.WHITE)
+                isTextureReflection = true
+                reflectionMap = environmentMaps.reflectionMap
+            } else {
+                ambientColor = KslLitShader.AmbientColor.Uniform(Color(0.2f, 0.2f, 0.2f).toLinear())
+                isTextureReflection = false
+            }
         }
     }
 }
