@@ -4,6 +4,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.DepthCompareOp
+import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
 import de.fabmax.kool.pipeline.SingleColorTexture
 import de.fabmax.kool.pipeline.ao.AoPipeline
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
@@ -163,16 +164,11 @@ class DeferredPipeline(val scene: Scene, val cfg: DeferredPipelineConfig) {
         passes[1].lightingPass.onAfterDraw += { outputShader.setDeferredInput(passes[1]) }
 
         onConfigChange += {
-            outputShader.bloomMap(if (isBloomEnabled) bloom?.bloomMap else noBloomMap)
+            outputShader.bloomMap = if (isBloomEnabled) bloom?.bloomMap else noBloomMap
         }
 
         return textureMesh {
-            isFrustumChecked = false
-            generate {
-                rect {
-                    mirrorTexCoordsY()
-                }
-            }
+            generateFullscreenQuad()
             shader = outputShader
         }
     }

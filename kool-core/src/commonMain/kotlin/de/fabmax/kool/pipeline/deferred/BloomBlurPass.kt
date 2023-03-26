@@ -3,6 +3,7 @@ package de.fabmax.kool.pipeline.deferred
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
 import de.fabmax.kool.pipeline.shading.BlurShader
 import de.fabmax.kool.pipeline.shading.BlurShaderConfig
 import de.fabmax.kool.scene.Group
@@ -31,9 +32,9 @@ class BloomBlurPass(kernelSize: Int, thresholdPass: BloomThresholdPass) :
             blurDirDirty = true
         }
     var bloomStrength: Float
-        get() = pongShader.strength.value
+        get() = pongShader.strength
         set(value) {
-            pongShader.strength.value = value
+            pongShader.strength = value
         }
 
     init {
@@ -43,13 +44,13 @@ class BloomBlurPass(kernelSize: Int, thresholdPass: BloomThresholdPass) :
             kernelRadius = kernelSize
         }
         pingShader = BlurShader(pingCfg)
-        pingShader.blurInput(thresholdPass.colorTexture)
+        pingShader.blurInput = thresholdPass.colorTexture
 
         val pongCfg = BlurShaderConfig().apply {
             kernelRadius = kernelSize
         }
         pongShader = BlurShader(pongCfg)
-        pongShader.blurInput(ping.colorTexture)
+        pongShader.blurInput = ping.colorTexture
 
         pingContent.fullScreenQuad(pingShader)
         pongContent.fullScreenQuad(pongShader)
@@ -63,16 +64,14 @@ class BloomBlurPass(kernelSize: Int, thresholdPass: BloomThresholdPass) :
 
     override fun update(ctx: KoolContext) {
         super.update(ctx)
-//        pingShader.setXDirectionByTexWidth(width, bloomScale)
-//        pongShader.setYDirectionByTexHeight(height, bloomScale)
 
         if (blurDirDirty) {
             val sqrt2 = sqrt(2f)
             val dx = 1f / width * bloomScale * sqrt2
             val dy = 1f / height * bloomScale * sqrt2
 
-            pingShader.direction.value = Vec2f(dx, dy)
-            pongShader.direction.value = Vec2f(dx, -dy)
+            pingShader.direction = Vec2f(dx, dy)
+            pongShader.direction = Vec2f(dx, -dy)
         }
     }
 
@@ -84,13 +83,7 @@ class BloomBlurPass(kernelSize: Int, thresholdPass: BloomThresholdPass) :
     private fun Group.fullScreenQuad(quadShader: Shader) {
         isFrustumChecked = false
         +mesh(listOf(Attribute.POSITIONS, Attribute.TEXTURE_COORDS)) {
-            isFrustumChecked = false
-            generate {
-                rect {
-                    size.set(1f, 1f)
-                    mirrorTexCoordsY()
-                }
-            }
+            generateFullscreenQuad()
             shader = quadShader
         }
     }
