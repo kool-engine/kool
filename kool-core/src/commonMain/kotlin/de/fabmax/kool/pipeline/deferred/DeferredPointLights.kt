@@ -8,18 +8,21 @@ import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MutableColor
-import kotlin.math.sqrt
 
 
 class DeferredPointLights(var isDynamic: Boolean) {
     val lightInstances = mutableListOf<PointLight>()
 
-    private val lightInstanceData = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, DeferredLightShader.LIGHT_POS,
-        Attribute.COLORS, DeferredLightShader.LIGHT_DATA), 10000)
+    private val lightInstanceData = MeshInstanceList(listOf(
+        Attribute.INSTANCE_MODEL_MAT,
+        DeferredLightShader.LIGHT_POS,
+        Attribute.COLORS
+    ), 10000)
 
     private val modelMat = Mat4f()
-    private val encodedLightData = FloatArray(12)
+    private val encodedLightData = FloatArray(8)
 
+    //val lightShader = DeferredLightShader(Light.Type.POINT)
     val lightShader = DeferredLightShader(Light.Type.POINT)
 
     val mesh = mesh(listOf(Attribute.POSITIONS)) {
@@ -56,20 +59,17 @@ class DeferredPointLights(var isDynamic: Boolean) {
     private fun encodeLight(light: PointLight) {
         modelMat.setIdentity()
         modelMat.translate(light.position)
-        val soi = sqrt(light.power)
-        modelMat.scale(soi, soi, soi)
+        modelMat.scale(light.radius, light.radius, light.radius)
 
         encodedLightData[0] = light.position.x
         encodedLightData[1] = light.position.y
         encodedLightData[2] = light.position.z
         encodedLightData[3] = Light.Type.POINT.encoded
 
-        encodedLightData[4] = light.color.r
-        encodedLightData[5] = light.color.g
-        encodedLightData[6] = light.color.b
-        encodedLightData[7] = light.power
-
-        encodedLightData[8] = light.maxIntensity
+        encodedLightData[4] = light.color.r * light.intensity
+        encodedLightData[5] = light.color.g * light.intensity
+        encodedLightData[6] = light.color.b * light.intensity
+        encodedLightData[7] = 1f
     }
 
     fun addPointLight(pointLight: PointLight) {
@@ -90,7 +90,7 @@ class DeferredPointLights(var isDynamic: Boolean) {
     class PointLight {
         val position = MutableVec3f()
         val color = MutableColor(Color.WHITE)
-        var power = 1f
-        var maxIntensity = 100f
+        var radius = 1f
+        var intensity = 1f
     }
 }

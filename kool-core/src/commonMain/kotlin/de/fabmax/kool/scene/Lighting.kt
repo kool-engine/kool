@@ -27,7 +27,7 @@ class Light {
     val direction = MutableVec3f(0f, 1f, 0f)
     val position = MutableVec3f()
     var spotAngle = 60f
-    var spotAngleInnerFac = 0.5f
+    var coreRatio = 0.5f
 
     var isEncodingDirty = true
     val encodedPosition = MutableVec4f()
@@ -57,7 +57,7 @@ class Light {
             Type.SPOT -> {
                 encodedPosition.set(position, type.encoded)
                 encodedDirection.set(direction, cos((spotAngle / 2).toRad()))
-                encodedColor.w = spotAngleInnerFac
+                encodedColor.w = coreRatio
             }
         }
     }
@@ -89,12 +89,12 @@ class Light {
         return this
     }
 
-    fun setSpot(pos: Vec3f, dir: Vec3f, angle: Float, innerAngleFac: Float = 0.5f): Light {
+    fun setSpot(pos: Vec3f, dir: Vec3f, angle: Float, coreRatio: Float = 0.5f): Light {
         type = Type.SPOT
         position.set(pos)
         direction.set(dir).norm()
         spotAngle = angle
-        spotAngleInnerFac = innerAngleFac
+        this.coreRatio = coreRatio
         isEncodingDirty = true
         return this
     }

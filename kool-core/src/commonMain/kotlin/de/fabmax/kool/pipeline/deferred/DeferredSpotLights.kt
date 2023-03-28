@@ -8,18 +8,25 @@ import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MutableColor
-import kotlin.math.*
+import kotlin.math.PI
+import kotlin.math.abs
+import kotlin.math.cos
+import kotlin.math.sin
 
 
 class DeferredSpotLights(val maxSpotAngle: Float) {
     val lightInstances = mutableListOf<SpotLight>()
     var isDynamic = true
 
-    private val lightInstanceData = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, DeferredLightShader.LIGHT_POS,
-            DeferredLightShader.LIGHT_DIR, Attribute.COLORS, DeferredLightShader.LIGHT_DATA), 10000)
+    private val lightInstanceData = MeshInstanceList(listOf(
+        Attribute.INSTANCE_MODEL_MAT,
+        DeferredLightShader.LIGHT_POS,
+        DeferredLightShader.LIGHT_DIR,
+        Attribute.COLORS
+    ), 10000)
 
     private val modelMat = Mat4f()
-    private val encodedLightData = FloatArray(16)
+    private val encodedLightData = FloatArray(12)
     private val tmpLightDir = MutableVec3f()
 
     val lightShader = DeferredLightShader(Light.Type.SPOT)
@@ -54,8 +61,7 @@ class DeferredSpotLights(val maxSpotAngle: Float) {
     private fun encodeLight(light: SpotLight) {
         modelMat.setIdentity()
         modelMat.translate(light.position)
-        val soi = sqrt(light.power)
-        modelMat.scale(soi, soi, soi)
+        modelMat.scale(light.radius, light.radius, light.radius)
         modelMat.rotate(light.orientation)
 
         tmpLightDir.set(Vec3f.X_AXIS)
@@ -71,13 +77,10 @@ class DeferredSpotLights(val maxSpotAngle: Float) {
         encodedLightData[6] = tmpLightDir.z
         encodedLightData[7] = cos((min(maxSpotAngle, light.spotAngle) / 2).toRad())
 
-        encodedLightData[8] = light.color.r
-        encodedLightData[9] = light.color.g
-        encodedLightData[10] = light.color.b
-        encodedLightData[11] = light.power
-
-        encodedLightData[12] = light.maxIntensity
-        encodedLightData[13] = light.coreRatio
+        encodedLightData[8] = light.color.r * light.intensity
+        encodedLightData[9] = light.color.g * light.intensity
+        encodedLightData[10] = light.color.b * light.intensity
+        encodedLightData[11] = light.coreRatio
     }
 
     fun addSpotLight(spotLight: SpotLight) {
@@ -99,10 +102,10 @@ class DeferredSpotLights(val maxSpotAngle: Float) {
         val position = MutableVec3f()
         val orientation = Mat3f()
         var spotAngle = 60f
-        var coreRatio = 0.8f
+        var coreRatio = 0.5f
         val color = MutableColor(Color.WHITE)
-        var power = 1f
-        var maxIntensity = 100f
+        var radius = 1f
+        var intensity = 1f
 
         fun setDirection(direction: Vec3f) {
             val v = if (abs(direction.dot(Vec3f.Y_AXIS)) > 0.9f) {

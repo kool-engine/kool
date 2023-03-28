@@ -24,8 +24,8 @@ import de.fabmax.kool.util.PolyUtil
 import de.fabmax.kool.util.Time
 import kotlin.math.PI
 import kotlin.math.cos
-import kotlin.math.max
 import kotlin.math.sin
+import kotlin.math.sqrt
 
 class GuardRail {
 
@@ -206,7 +206,7 @@ class GuardRail {
         }
 
         fun updateInstance(buf: Float32Buffer) {
-            pointLight.power = max(emission.x, emission.y) * 100f
+            pointLight.radius = sqrt(max(emission.x, emission.y) * 100f)
             actor.transform.transform(pointLight.position.set(0f, 0.5f, 0.1f))
 
             buf.put(actor.transform.matrix)

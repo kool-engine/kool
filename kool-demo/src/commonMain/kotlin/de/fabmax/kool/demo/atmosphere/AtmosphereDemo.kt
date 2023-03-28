@@ -107,12 +107,12 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
             isWithScreenSpaceReflections = false
             maxGlobalLights = 1
             shadowMaps = shadows
-            pbrSceneShader = makeDeferredPbrShader(this)
+            //pbrSceneShader = makeDeferredPbrShader(this)
             isWithVignette = true
             isWithChromaticAberration = true
         }
         deferredPipeline = DeferredPipeline(this, defCfg)
-        deferredPipeline.lightingPassShader.ambient(Color(0.05f, 0.05f, 0.05f).toLinear())
+        //deferredPipeline.lightingPassShader.ambient(Color(0.05f, 0.05f, 0.05f).toLinear())
 
         atmoShader.apply {
             opticalDepthLut(opticalDepthLutPass.colorTexture)
@@ -197,24 +197,24 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
             isScrSpcAmbientOcclusion = cfg.isWithAmbientOcclusion
             isScrSpcReflections = cfg.isWithScreenSpaceReflections
             maxLights = cfg.maxGlobalLights
-            shadowMaps += shadows
+            shadowCfg.addShadowMaps(shadows)
             useImageBasedLighting(cfg.environmentMaps)
         }
 
-        val model = PbrSceneShader.defaultDeferredPbrModel(shaderCfg).apply {
-            fragmentStage {
-                val lightNd = findNodeByType<MultiLightNode>()!!
-                val pbrNd = findNodeByType<PbrMaterialNode>()!!
-
-                val lightGradientTex = texture1dNode("tLightGradient")
-                addNode(EarthLightColorNode(lightGradientTex, stage)).apply {
-                    inWorldPos = pbrNd.inFragPos
-                    inFragToLight = lightNd.outFragToLightDirection
-                    inRadiance = lightNd.outRadiance
-                    pbrNd.inRadiance = outRadiance
-                }
-            }
-        }
+//        val model = PbrSceneShader.defaultDeferredPbrModel(shaderCfg).apply {
+//            fragmentStage {
+//                val lightNd = findNodeByType<MultiLightNode>()!!
+//                val pbrNd = findNodeByType<PbrMaterialNode>()!!
+//
+//                val lightGradientTex = texture1dNode("tLightGradient")
+//                addNode(EarthLightColorNode(lightGradientTex, stage)).apply {
+//                    inWorldPos = pbrNd.inFragPos
+//                    inFragToLight = lightNd.outFragToLightDirection
+//                    inRadiance = lightNd.outRadiance
+//                    pbrNd.inRadiance = outRadiance
+//                }
+//            }
+//        }
 
         val lightGradientTex = GradientTexture(ColorGradient(
                 cos(90f.toRad()) to MdColor.ORANGE.mix(Color.WHITE, 0.6f).toLinear(),
@@ -224,11 +224,12 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
         ))
         textures1d[EarthShader.texLightGradient] = lightGradientTex
 
-        return PbrSceneShader(shaderCfg, model).apply {
-            onPipelineCreated += { _, _, _ ->
-                model.findNode<Texture1dNode>("tLightGradient")?.sampler?.texture = lightGradientTex
-            }
-        }
+        TODO()
+//        return PbrSceneShader(shaderCfg, model).apply {
+//            onPipelineCreated += { _, _, _ ->
+//                model.findNode<Texture1dNode>("tLightGradient")?.sampler?.texture = lightGradientTex
+//            }
+//        }
     }
 
     private class EarthLightColorNode(val lightColorGradient: Texture1dNode, graph: ShaderGraph) : ShaderNode("earthLightColor", graph) {

@@ -1,142 +1,123 @@
 package de.fabmax.kool.pipeline.deferred
 
-import de.fabmax.kool.KoolContext
+import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.Vec4f
+import de.fabmax.kool.modules.ksl.KslShader
+import de.fabmax.kool.modules.ksl.blocks.mvpMatrix
+import de.fabmax.kool.modules.ksl.blocks.pbrLightBlock
+import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.pipeline.shadermodel.*
-import de.fabmax.kool.pipeline.shading.ModeledShader
-import de.fabmax.kool.pipeline.shading.Texture2dInput
-import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Light
-import de.fabmax.kool.scene.Mesh
 
 /**
  * 2nd pass shader for deferred pbr shading: Uses textures with view space position, normals, albedo, roughness,
  * metallic and texture-based AO and computes the final color output.
  */
-class DeferredLightShader(lightType: Light.Type) : ModeledShader(shaderModel(lightType)) {
-
-    private var deferredCameraNode: DeferredCameraNode? = null
-    var sceneCamera: Camera? = null
-        set(value) {
-            field = value
-            deferredCameraNode?.sceneCam = value
-        }
-
-    val positionFlags = Texture2dInput("positionFlags")
-    val normalRoughness = Texture2dInput("normalRoughness")
-    val albedoMetal = Texture2dInput("albedoMetal")
-    val emissiveAo = Texture2dInput("emissiveAo")
+class DeferredLightShader(lightType: Light.Type, model: Model = Model(lightType)) :
+    KslShader(
+        model,
+        PipelineConfig(
+            blendMode = BlendMode.BLEND_ADDITIVE,
+            cullMethod = CullMethod.CULL_FRONT_FACES,
+            depthTest = DepthCompareOp.DISABLED
+        )
+    )
+{
+    var positionFlags by texture2d("positionFlags")
+    var normalRoughness by texture2d("normalRoughness")
+    var colorMetallic by texture2d("colorMetallic")
+    var emissiveAo by texture2d("emissiveAo")
 
     fun setMaterialInput(materialPass: MaterialPass) {
-        sceneCamera = materialPass.camera
-        positionFlags(materialPass.positionFlags)
-        normalRoughness(materialPass.normalRoughness)
-        albedoMetal(materialPass.albedoMetal)
-        emissiveAo(materialPass.emissiveAo)
+        positionFlags = materialPass.positionFlags
+        normalRoughness = materialPass.normalRoughness
+        colorMetallic = materialPass.albedoMetal
+        emissiveAo = materialPass.emissiveAo
     }
 
-    override fun onPipelineSetup(builder: Pipeline.Builder, mesh: Mesh, ctx: KoolContext) {
-        builder.blendMode = BlendMode.BLEND_ADDITIVE
-        builder.cullMethod = CullMethod.CULL_FRONT_FACES
-        builder.depthTest = DepthCompareOp.DISABLED
-        super.onPipelineSetup(builder, mesh, ctx)
-    }
+    class Model(lightType: Light.Type) : KslProgram("Defferred light shader") {
+        init {
+            val fragPos = interStageFloat4()
 
-    override fun onPipelineCreated(pipeline: Pipeline, mesh: Mesh, ctx: KoolContext) {
-        deferredCameraNode = model.findNode("deferredCam")
-        deferredCameraNode?.let { it.sceneCam = sceneCamera }
-        positionFlags.connect(model)
-        normalRoughness.connect(model)
-        albedoMetal.connect(model)
-        emissiveAo.connect(model)
-        super.onPipelineCreated(pipeline, mesh, ctx)
+            val lightColor = interStageFloat4(interpolation = KslInterStageInterpolation.Flat)
+            val lightPos = interStageFloat4(interpolation = KslInterStageInterpolation.Flat)
+            val lightDir = interStageFloat4(interpolation = KslInterStageInterpolation.Flat)
+
+            val lightRadius = interStageFloat1(interpolation = KslInterStageInterpolation.Flat)
+
+            vertexStage {
+                main {
+                    val instanceMvp = instanceAttribMat4(Attribute.INSTANCE_MODEL_MAT.name)
+                    val mvp = mat4Var(mvpMatrix().matrix * instanceMvp)
+                    outPosition set mvp * float4Value(vertexAttribFloat3(Attribute.POSITIONS.name), 1f.const)
+                    fragPos.input set outPosition
+
+                    lightRadius.input set length(instanceMvp * Vec4f.X_AXIS.const)
+
+                    lightColor.input set instanceAttribFloat4(Attribute.COLORS.name)
+                    lightPos.input set instanceAttribFloat4(LIGHT_POS.name)
+                    if (lightType != Light.Type.POINT) {
+                        lightDir.input set instanceAttribFloat4(LIGHT_DIR.name)
+                    } else {
+                        lightDir.input set Vec4f.ZERO.const
+                    }
+                }
+            }
+
+            fragmentStage {
+                main {
+                    val uv = float2Var(fragPos.output.xy / fragPos.output.w * 0.5.const + 0.5.const)
+
+                    val posFlags = float4Var(sampleTexture(texture2d("positionFlags"), uv))
+                    val normalRoughness = float4Var(sampleTexture(texture2d("normalRoughness"), uv))
+                    val colorMetallic = float4Var(sampleTexture(texture2d("colorMetallic"), uv))
+                    val emissiveAo = float4Var(sampleTexture(texture2d("emissiveAo"), uv))
+
+                    val viewPos = posFlags.xyz
+                    val viewNormal = normalRoughness.xyz
+                    val roughness = normalRoughness.a
+                    val color = colorMetallic.rgb
+                    val metallic = colorMetallic.a
+                    val ao = emissiveAo.a
+
+                    // discard fragment if it contains background / clear color
+                    `if`(viewPos.z gt 0f.const) {
+                        discard()
+                    }
+
+                    // transform input positions from view space back to world space
+                    val camData = deferredCameraData()
+                    val worldPos = float3Var((camData.invViewMat * float4Value(viewPos, 1f.const)).xyz)
+                    val worldNrm = float3Var((camData.invViewMat * float4Value(viewNormal, 0f.const)).xyz)
+
+                    val viewDir = float3Var(normalize(camData.position - worldPos))
+                    val f0 = mix(Vec3f(0.04f).const, color, metallic)
+
+                    val lightBlock = pbrLightBlock(false) {
+                        inViewDir(viewDir)
+                        inNormalLight(worldNrm)
+                        inFragmentPosLight(worldPos)
+                        inBaseColorRgb(color)
+
+                        inRoughnessLight(roughness)
+                        inMetallicLight(metallic)
+                        inF0(f0)
+
+                        inEncodedLightPos(lightPos.output)
+                        inEncodedLightDir(lightDir.output)
+                        inEncodedLightColor(lightColor.output)
+                        inLightRadius(lightRadius.output)
+                        inLightStr(1f.const)
+                        inShadowFac(ao)
+                    }
+                    colorOutput(lightBlock.outRadiance)
+                }
+            }
+        }
     }
 
     companion object {
         val LIGHT_POS = Attribute("aLightPos", GlslType.VEC_4F)
         val LIGHT_DIR = Attribute("aLightDir", GlslType.VEC_4F)
-        val LIGHT_DATA = Attribute("aLightData", GlslType.VEC_4F)
-
-        fun shaderModel(lightType: Light.Type) = ShaderModel("point light shader model").apply {
-            val ifFragCoords: StageInterfaceNode
-            val ifLightColor: StageInterfaceNode
-            val ifLightPos: StageInterfaceNode
-            val ifLightData: StageInterfaceNode
-            val ifLightDir: StageInterfaceNode?
-
-            vertexStage {
-                val instMvp = instanceAttrModelMat().output
-                val mvpMat = multiplyNode(premultipliedMvpNode().outMvpMat, instMvp).output
-                positionOutput = vec4TransformNode(attrPositions().output, mvpMat).outVec4
-                ifFragCoords = stageInterfaceNode("ifFragCoords", positionOutput)
-
-                ifLightColor = stageInterfaceNode("ifLightColor", instanceAttributeNode(Attribute.COLORS).output, true)
-                ifLightPos = stageInterfaceNode("ifLightPos", instanceAttributeNode(LIGHT_POS).output, true)
-                ifLightData = stageInterfaceNode("ifLightData", instanceAttributeNode(LIGHT_DATA).output, true)
-                ifLightDir = if (lightType == Light.Type.POINT) {
-                    null
-                } else {
-                    stageInterfaceNode("ifLightDir", instanceAttributeNode(LIGHT_DIR).output, true)
-                }
-            }
-            fragmentStage {
-                val xyPos = divideNode(splitNode(ifFragCoords.output, "xy").output, splitNode(ifFragCoords.output, "w").output).output
-                val texPos = addNode(multiplyNode(xyPos, 0.5f).output, ShaderNodeIoVar(ModelVar1fConst(0.5f))).output
-
-                val coord = texPos
-                val mrtDeMultiplex = addNode(DeferredPbrShader.MrtDeMultiplexNode(stage)).apply {
-                    inPositionFlags = texture2dSamplerNode(texture2dNode("positionFlags"), coord).outColor
-                    inNormalRough = texture2dSamplerNode(texture2dNode("normalRoughness"), coord).outColor
-                    inAlbedoMetallic = texture2dSamplerNode(texture2dNode("albedoMetal"), coord).outColor
-                    inEmissiveAo = texture2dSamplerNode(texture2dNode("emissiveAo"), coord).outColor
-                }
-
-                // discard fragment if it contains background / clear color
-                addNode(DiscardClearNode(stage)).apply { inViewPos = mrtDeMultiplex.outViewPos }
-
-                val defCam = addNode(DeferredCameraNode(stage))
-                val worldPos = vec3TransformNode(mrtDeMultiplex.outViewPos, defCam.outInvViewMat, 1f).outVec3
-                val worldNrm = vec3TransformNode(mrtDeMultiplex.outViewNormal, defCam.outInvViewMat, 0f).outVec3
-
-                val mat = pbrLightNode().apply {
-                    inFragPos = worldPos
-                    inNormal = worldNrm
-                    inCamPos = defCam.outCamPos
-
-                    inAlbedo = mrtDeMultiplex.outAlbedo
-                    inMetallic = mrtDeMultiplex.outMetallic
-                    inRoughness = mrtDeMultiplex.outRoughness
-                    inAlwaysLit = mrtDeMultiplex.outLightBacksides
-
-                    if (lightType == Light.Type.SPOT) {
-                        val spot = addNode(SingleSpotLightNode(stage)).apply {
-                            isReducedSoi = true
-                            inShadowFac = mrtDeMultiplex.outAo
-                            inLightPos = ifLightPos.output
-                            inLightColor = ifLightColor.output
-                            inMaxIntensity = splitNode(ifLightData.output, "x").output
-                            inSpotCoreRatio = splitNode(ifLightData.output, "y").output
-                            inLightDir = ifLightDir!!.output
-                            inFragPos = worldPos
-                        }
-                        inFragToLight = spot.outFragToLightDirection
-                        inRadiance = spot.outRadiance
-                    } else {
-                        val point = addNode(SinglePointLightNode(stage)).apply {
-                            isReducedSoi = true
-                            inShadowFac = mrtDeMultiplex.outAo
-                            inLightPos = ifLightPos.output
-                            inLightColor = ifLightColor.output
-                            inMaxIntensity = ifLightData.output
-                            inFragPos = worldPos
-                        }
-                        inFragToLight = point.outFragToLightDirection
-                        inRadiance = point.outRadiance
-                    }
-                }
-
-                colorOutput(mat.outColor)
-            }
-        }
     }
 }

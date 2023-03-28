@@ -3,7 +3,7 @@ package de.fabmax.kool.modules.ksl.blocks
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.scene.Light
 
-class GetLightRadiance(parentScope: KslScopeBuilder) :
+class GetLightRadiance(parentScope: KslScopeBuilder, isFiniteSoi: Boolean) :
     KslFunction<KslTypeFloat3>(FUNC_NAME, KslTypeFloat3, parentScope.parentStage) {
 
     init {
@@ -11,6 +11,7 @@ class GetLightRadiance(parentScope: KslScopeBuilder) :
         val encLightPos = paramFloat4("encLightPos")
         val encLightDir = paramFloat4("encLightDir")
         val encLightColor = paramFloat4("encLightColor")
+        val lightRadius = paramFloat1("lightRadius")
 
         body {
             val radiance = float3Var()
@@ -21,9 +22,12 @@ class GetLightRadiance(parentScope: KslScopeBuilder) :
                 // spot or point light
                 val dist = float1Var(length(fragPos - encLightPos.xyz))
                 val strength = float1Var(1f.const / (dist * dist + 1f.const))
+                if (isFiniteSoi) {
+                    strength *= clamp((lightRadius - dist) / lightRadius, 0f.const, 1f.const)
+                }
+
                 `if`(encLightPos.w eq Light.Type.POINT.encoded.const) {
                     radiance set encLightColor.rgb * strength
-
                 }.`else` {
                     // spot light
                     val lightDirToFrag = float3Var((fragPos - encLightPos.xyz) / dist)
@@ -50,6 +54,17 @@ fun KslScopeBuilder.getLightRadiance(
     encodedLightDir: KslExprFloat4,
     encodedLightColor: KslExprFloat4
 ): KslExprFloat3 {
-    val func = parentStage.getOrCreateFunction(GetLightRadiance.FUNC_NAME) { GetLightRadiance(this) }
-    return func(fragPos, encodedLightPos, encodedLightDir, encodedLightColor)
+    val func = parentStage.getOrCreateFunction(GetLightRadiance.FUNC_NAME) { GetLightRadiance(this, false) }
+    return func(fragPos, encodedLightPos, encodedLightDir, encodedLightColor, 0f.const)
+}
+
+fun KslScopeBuilder.getLightRadianceFiniteSoi(
+    fragPos: KslExprFloat3,
+    encodedLightPos: KslExprFloat4,
+    encodedLightDir: KslExprFloat4,
+    encodedLightColor: KslExprFloat4,
+    lightRadius: KslExprFloat1
+): KslExprFloat3 {
+    val func = parentStage.getOrCreateFunction(GetLightRadiance.FUNC_NAME) { GetLightRadiance(this, true) }
+    return func(fragPos, encodedLightPos, encodedLightDir, encodedLightColor, lightRadius)
 }

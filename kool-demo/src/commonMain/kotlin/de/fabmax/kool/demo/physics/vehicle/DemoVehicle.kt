@@ -45,11 +45,11 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
     private val rearLightColorReverse = Color(1f, 1f, 1f)
     private val rearLightColorBrakeReverse = Color(2f, 1f, 1f)
 
-    private var desiredHeadLightPower = 5000f
+    private var desiredHeadLightRange = 70f
     var isHeadlightsOn: Boolean
-        get() = desiredHeadLightPower > 0f
+        get() = desiredHeadLightRange > 0f
         set(value) {
-            desiredHeadLightPower = if (value) 5000f else 0f
+            desiredHeadLightRange = if (value) 70f else 0f
         }
 
     init {
@@ -78,14 +78,14 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
         headLightLt = DeferredSpotLights.SpotLight().apply {
             spotAngle = 30f
             coreRatio = 0.5f
-            power = 0f
-            maxIntensity = 50f
+            radius = 0f
+            intensity = 500f
         }
         headLightRt = DeferredSpotLights.SpotLight().apply {
             spotAngle = 30f
             coreRatio = 0.5f
-            power = 0f
-            maxIntensity = 50f
+            radius = 0f
+            intensity = 500f
         }
         val headLights = world.deferredPipeline.createSpotLights(30f)
         headLights.addSpotLight(headLightLt)
@@ -113,28 +113,28 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
         vehicleAudio.brake = throttleBrakeHandler.brake
         vehicleAudio.speed = vehicle.linearVelocity.length()
 
-        val lightIntensity: Float
+        val lightRadius: Float
         val lightColor: Color
         when {
             vehicle.isReverse && vehicle.brakeInput > 0f -> {
-                lightIntensity = 5f
+                lightRadius = 2.5f
                 lightColor = rearLightColorBrakeReverse
             }
             vehicle.isReverse && vehicle.brakeInput == 0f -> {
-                lightIntensity = 5f
+                lightRadius = 2.5f
                 lightColor = rearLightColorReverse
             }
             !vehicle.isReverse && vehicle.brakeInput > 0f -> {
-                lightIntensity = 5f
+                lightRadius = 2.5f
                 lightColor = rearLightColorBrake
             }
             else -> {
-                lightIntensity = 0f
+                lightRadius = 0f
                 lightColor = Color.BLACK
             }
         }
-        rearLightLt.power = lightIntensity
-        rearLightRt.power = lightIntensity
+        rearLightLt.radius = lightRadius
+        rearLightRt.radius = lightRadius
         rearLightLt.color.set(lightColor)
         rearLightRt.color.set(lightColor)
 
@@ -177,8 +177,8 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
         headLightRt.position.set(-0.65f, 0.3f, 2.7f)
         vehicle.transform.transform(headLightRt.position)
 
-        headLightLt.power = desiredHeadLightPower * 0.1f + headLightLt.power * 0.9f
-        headLightRt.power = headLightLt.power
+        headLightLt.radius = desiredHeadLightRange * 0.1f + headLightLt.radius * 0.9f
+        headLightRt.radius = headLightLt.radius
     }
 
     fun resetVehiclePos() {

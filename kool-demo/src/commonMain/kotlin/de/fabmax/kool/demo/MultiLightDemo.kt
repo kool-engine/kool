@@ -47,7 +47,7 @@ class MultiLightDemo : DemoScene("Reflections") {
     private var bunnyMesh: Mesh? = null
     private var groundMesh: Mesh? = null
 
-    private var modelShader: DeferredPbrShader? = null
+    private var modelShader: DeferredKslPbrShader? = null
 
     override fun lateInit(ctx: KoolContext) {
         updateLighting()
@@ -121,10 +121,10 @@ class MultiLightDemo : DemoScene("Reflections") {
                     isCastingShadow = false
                     groundMesh = this
 
-                    shader = deferredPbrShader {
-                        useAlbedoMap(floorAlbedo)
-                        useNormalMap(floorNormal)
-                        useRoughnessMap(floorRoughness)
+                    shader = deferredKslPbrShader {
+                        color { textureColor(floorAlbedo) }
+                        normalMapping { setNormalMap(floorNormal) }
+                        roughness { textureProperty(floorRoughness) }
                     }
                 }
 
@@ -134,9 +134,10 @@ class MultiLightDemo : DemoScene("Reflections") {
                     bunnyMesh = model.meshes.values.first()
                     +model
 
-                    modelShader = deferredPbrShader {
-                        useStaticAlbedo(matColors[selectedColorIdx.value].linColor)
-                        roughness = this@MultiLightDemo.roughness.value
+                    modelShader = deferredKslPbrShader {
+                        color { uniformColor(matColors[selectedColorIdx.value].linColor) }
+                        roughness { uniformProperty(this@MultiLightDemo.roughness.value) }
+                        metallic { uniformProperty(this@MultiLightDemo.metallic.value) }
                     }
                     bunnyMesh!!.shader = modelShader
                 }
@@ -189,7 +190,7 @@ class MultiLightDemo : DemoScene("Reflections") {
                     .selectedIndex(selectedColorIdx.use())
                     .onItemSelected {
                         selectedColorIdx.set(it)
-                        modelShader?.albedo?.invoke(matColors[it].linColor)
+                        modelShader?.color = matColors[it].linColor
                     }
             }
         }
@@ -197,14 +198,14 @@ class MultiLightDemo : DemoScene("Reflections") {
             Text("Roughness") { labelStyle(lblSize) }
             MenuSlider(roughness.use(), 0f, 1f, txtWidth = txtSize) {
                 roughness.set(it)
-                modelShader?.roughness?.invoke(it)
+                modelShader?.roughness = it
             }
         }
         MenuRow {
             Text("Metallic") { labelStyle(lblSize) }
             MenuSlider(metallic.use(), 0f, 1f, txtWidth = txtSize) {
                 metallic.set(it)
-                modelShader?.metallic?.invoke(it)
+                modelShader?.metallic = it
             }
         }
 

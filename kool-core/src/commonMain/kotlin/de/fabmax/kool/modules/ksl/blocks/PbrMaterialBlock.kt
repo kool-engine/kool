@@ -38,27 +38,23 @@ class PbrMaterialBlock(
             val lo = float3Var(Vec3f.ZERO.const)
 
             fori(0.const, inLightCount) { i ->
-                val lightDir =
-                    float3Var(normalize(getLightDirectionFromFragPos(inFragmentPos, inEncodedLightPositions[i])))
-                val h = float3Var(normalize(viewDir + lightDir))
-                val normalDotLight = float1Var(dot(inNormal, lightDir))
-                val radiance = float3Var(inShadowFactors[i] * inLightStrength *
-                        getLightRadiance(inFragmentPos, inEncodedLightPositions[i], inEncodedLightDirections[i], inEncodedLightColors[i]))
+                val light = pbrLightBlock(true) {
+                    inViewDir(viewDir)
+                    inNormalLight(inNormal)
+                    inFragmentPosLight(inFragmentPos)
+                    inBaseColorRgb(baseColorRgb)
 
-                // cook-torrance BRDF
-                val ndf = float1Var(distributionGgx(inNormal, h, roughness))
-                val g = float1Var(geometrySmith(inNormal, viewDir, lightDir, roughness))
-                val f = float3Var(fresnelSchlick(max(dot(h, viewDir), 0f.const), f0))
+                    inRoughnessLight(roughness)
+                    inMetallicLight(inMetallic)
+                    inF0(f0)
 
-                val kD = float3Var(1f.const - f) * (1f.const - inMetallic)
-
-                val nDotL = float1Var(max(normalDotLight, 0f.const))
-                val num = ndf * g * f
-                val denom = 4f.const * max(dot(inNormal, viewDir), 0f.const) * nDotL
-                val specular = float3Var(num / max(denom, 0.001f.const))
-
-                // add to outgoing radiance
-                lo += (kD * baseColorRgb / PI.const + specular) * radiance * nDotL
+                    inEncodedLightPos(inEncodedLightPositions[i])
+                    inEncodedLightDir(inEncodedLightDirections[i])
+                    inEncodedLightColor(inEncodedLightColors[i])
+                    inLightStr(inLightStrength)
+                    inShadowFac(inShadowFactors[i])
+                }
+                lo += light.outRadiance
             }
 
             // image based (ambient) lighting and reflection
@@ -85,6 +81,76 @@ class PbrMaterialBlock(
             val ambient = float3Var(kDAmbient * diffuse * inAoFactor)
             val reflection = float3Var(specular * inAoFactor)
             outColor set ambient + lo + reflection
+        }
+    }
+}
+
+fun KslScopeBuilder.pbrLightBlock(isInfiniteSoi: Boolean, block: PbrLightBlock.() -> Unit): PbrLightBlock {
+    val pbrLightBlock = PbrLightBlock(parentStage.program.nextName("pbrLightBlock"), isInfiniteSoi, this)
+    ops += pbrLightBlock.apply(block)
+    return pbrLightBlock
+}
+
+class PbrLightBlock(name: String, isInfiniteSoi: Boolean, parentScope: KslScopeBuilder) : KslBlock(name, parentScope) {
+    val inViewDir = inFloat3("inViewDir")
+    val inNormalLight = inFloat3("inNormalLight")
+    val inFragmentPosLight = inFloat3("inFragmentPosLight")
+    val inBaseColorRgb = inFloat3("inBaseColorRgb")
+
+    val inRoughnessLight = inFloat1("inRoughnessLight")
+    val inMetallicLight = inFloat1("inMetallicLight")
+    val inF0 = inFloat3("inF0")
+
+    val inEncodedLightPos = inFloat4("inEncLightPos")
+    val inEncodedLightDir = inFloat4("inEncLightDir")
+    val inEncodedLightColor = inFloat4("inEncLightColor")
+    val inLightRadius = inFloat1("inNormalLight", KslValueFloat1(0f))
+    val inLightStr = inFloat1("inLightStrength")
+    val inShadowFac = inFloat1("inShadowFactor")
+
+    val outRadiance = outFloat3("outColor")
+
+    init {
+        body.apply {
+            val lightDir = float3Var(normalize(getLightDirectionFromFragPos(inFragmentPosLight, inEncodedLightPos)))
+            val h = float3Var(normalize(inViewDir + lightDir))
+            val normalDotLight = float1Var(dot(inNormalLight, lightDir))
+
+            val radiance = if (isInfiniteSoi) {
+                float3Var(inShadowFac * inLightStr * getLightRadiance(
+                    inFragmentPosLight,
+                    inEncodedLightPos,
+                    inEncodedLightDir,
+                    inEncodedLightColor
+                ))
+            } else {
+                float3Var(inShadowFac * inLightStr * getLightRadianceFiniteSoi(
+                    inFragmentPosLight,
+                    inEncodedLightPos,
+                    inEncodedLightDir,
+                    inEncodedLightColor,
+                    inLightRadius
+                ))
+            }
+
+            val nDotL = float1Var(max(normalDotLight, 0f.const))
+            `if`(nDotL gt 0f.const) {
+                // cook-torrance BRDF
+                val ndf = float1Var(distributionGgx(inNormalLight, h, inRoughnessLight))
+                val g = float1Var(geometrySmith(inNormalLight, inViewDir, lightDir, inRoughnessLight))
+                val f = float3Var(fresnelSchlick(max(dot(h, inViewDir), 0f.const), inF0))
+
+                val kD = float3Var(1f.const - f) * (1f.const - inMetallicLight)
+
+                val num = ndf * g * f
+                val denom = 4f.const * max(dot(inNormalLight, inViewDir), 0f.const) * nDotL
+                val specular = float3Var(num / max(denom, 0.001f.const))
+
+                // add to outgoing radiance
+                outRadiance set (kD * inBaseColorRgb / PI.const + specular) * radiance * nDotL
+            }.`else` {
+                outRadiance set Vec3f.ZERO.const
+            }
         }
     }
 }

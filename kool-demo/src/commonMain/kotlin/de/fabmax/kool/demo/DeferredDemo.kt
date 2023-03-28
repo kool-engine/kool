@@ -24,7 +24,6 @@ import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.Time
 import kotlin.math.roundToInt
-import kotlin.math.sqrt
 
 class DeferredDemo : DemoScene("Deferred Shading") {
 
@@ -41,6 +40,8 @@ class DeferredDemo : DemoScene("Deferred Shading") {
     private val isShowMaps = mutableStateOf(false)
     private val isAutoRotate = mutableStateOf(true)
     private val lightCount = mutableStateOf(2000)
+    private val lightPower = mutableStateOf(1f)
+    private val lightRadius = mutableStateOf(1f)
     private val isObjects = mutableStateOf(true).onChange { objects.isVisible = it }
     private val isLightBodies = mutableStateOf(true).onChange { lightPositionMesh.isVisible = it }
     private val isLightVolumes = mutableStateOf(false).onChange { lightVolumeMesh.isVisible = it }
@@ -114,7 +115,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
         val ibl = EnvironmentHelper.singleColorEnvironment(this, Color(0.15f, 0.15f, 0.15f))
 
         val defCfg = DeferredPipelineConfig().apply {
-            maxGlobalLights = 0
+            maxGlobalLights = 1
             isWithAmbientOcclusion = true
             isWithScreenSpaceReflections = false
             isWithImageBasedLighting = false
@@ -170,7 +171,6 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                         lightModelMat.setIdentity()
                         lightModelMat.translate(light.position)
 
-
                         if (lightPositionMesh.isVisible) {
                             lightPosInsts.addInstance {
                                 put(lightModelMat.matrix)
@@ -178,8 +178,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                             }
                         }
                         if (lightVolumeMesh.isVisible) {
-                            val s = sqrt(light.power)
-                            lightModelMat.scale(s, s, s)
+                            lightModelMat.scale(light.radius, light.radius, light.radius)
                             lightVolInsts.addInstance {
                                 put(lightModelMat.matrix)
                                 put(light.color.array)
@@ -301,9 +300,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
         while (lights.size < lightCount.value) {
             val grp = lightGroups[rand.randomI(lightGroups.indices)]
             val x = rand.randomI(0 until grp.rows)
-            val light = deferredPipeline.dynamicPointLights.addPointLight {
-                power = 1.0f
-            }
+            val light = deferredPipeline.dynamicPointLights.addPointLight { }
             val animLight = AnimatedLight(light).apply {
                 startColor = colorMap[colorMapIdx.value].getColor(lights.size).toLinear()
                 desiredColor = startColor
@@ -312,7 +309,12 @@ class DeferredDemo : DemoScene("Deferred Shading") {
             lights += animLight
             grp.setupLight(animLight, x, travel, rand.randomF())
         }
+
         updateLightColors()
+        deferredPipeline.dynamicPointLights.lightInstances.forEach {
+            it.radius = lightRadius.value
+            it.intensity = lightPower.value
+        }
     }
 
     private fun updateLightColors() {
@@ -329,6 +331,14 @@ class DeferredDemo : DemoScene("Deferred Shading") {
 
         MenuSlider2("Number of lights", lightCount.use().toFloat(), 1f, MAX_LIGHTS.toFloat(), { "${it.roundToInt()}" }) {
             lightCount.set(it.roundToInt())
+            updateLights()
+        }
+        MenuSlider2("Light power", lightPower.use().toFloat(), 0f, 10f) {
+            lightPower.set(it)
+            updateLights()
+        }
+        MenuSlider2("Light radius", lightRadius.use().toFloat(), 0f, 4f) {
+            lightRadius.set(it)
             updateLights()
         }
         LabeledSwitch("Show maps", isShowMaps)
