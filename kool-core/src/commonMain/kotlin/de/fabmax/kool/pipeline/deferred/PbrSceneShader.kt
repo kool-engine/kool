@@ -3,6 +3,7 @@ package de.fabmax.kool.pipeline.deferred
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Mat3f
 import de.fabmax.kool.math.Vec2f
+import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.modules.ksl.KslLitShader
 import de.fabmax.kool.modules.ksl.KslShader
@@ -180,6 +181,15 @@ open class PbrSceneShader(cfg: DeferredPbrConfig, model: Model = Model(cfg)) :
                         ao *= sampleTexture(aoMap, uv).x
                     }
 
+                    val reflectionColor = float3Var(Vec3f.ZERO.const)
+                    val reflectionWeight = float1Var(0f.const)
+                    if (cfg.isScrSpcReflections) {
+                        val ssrMap = texture2d("tSsrMap")
+                        val ssr = float4Var(sampleTexture(ssrMap, uv))
+                        reflectionColor set convertColorSpace(ssr.rgb, ColorSpaceConversion.sRGB_TO_LINEAR)
+                        reflectionWeight set ssr.a
+                    }
+
                     // reflection input textures
                     val brdfLut = texture2d("tBrdfLut")
                     val reflectionStrength = uniformFloat4("uReflectionStrength").rgb
@@ -204,6 +214,8 @@ open class PbrSceneShader(cfg: DeferredPbrConfig, model: Model = Model(cfg)) :
 
                         inReflectionMapWeights(uniformFloat2("uReflectionWeights"))
                         inReflectionStrength(reflectionStrength)
+                        inReflectionColor(reflectionColor)
+                        inReflectionWeight(reflectionWeight)
 
                         setLightData(lightData, shadowFactors, cfg.lightStrength.const)
                     }

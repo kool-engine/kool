@@ -95,7 +95,7 @@ class AoDenoisePass(aoPass: OffscreenRenderPass2d, depthComponent: String) :
             main {
                 val texelSize = float2Var(1f.const / textureSize2d(noisyAoTex).toFloat2())
                 val baseDepth = float1Var(sampleTexture(depthTex, uv.output).float1(depthComponent))
-                val depthThresh = float1Var(uRadius * 0.1.const)
+                val depthThresh = float1Var(uRadius * 0.1f.const)
 
                 val result = float1Var(0f.const)
                 val weight = float1Var(0f.const)
@@ -104,7 +104,7 @@ class AoDenoisePass(aoPass: OffscreenRenderPass2d, depthComponent: String) :
                     fori(0.const, AmbientOcclusionPass.NOISE_TEX_SIZE.const) { x ->
                         val sampleUv = float2Var(uv.output + (hlim + float2Value(x.toFloat1(), y.toFloat1())) * texelSize)
                         val sampleDepth = abs(sampleTexture(depthTex, sampleUv).float1(depthComponent) - baseDepth)
-                        val w = 1f.const - step(depthThresh, sampleDepth) * 0.99.const
+                        val w = 1f.const - step(depthThresh, sampleDepth) * 0.99f.const
                         result += sampleTexture(noisyAoTex, sampleUv).r * w
                         weight += w
                     }

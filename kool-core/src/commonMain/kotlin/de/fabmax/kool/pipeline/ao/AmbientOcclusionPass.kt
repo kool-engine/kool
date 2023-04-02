@@ -116,31 +116,8 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
         return a + f * (b - a)
     }
 
-    private fun makeNoiseTexture(): Texture2d {
-        val noiseLen = NOISE_TEX_SIZE * NOISE_TEX_SIZE
-        val buf = createUint8Buffer(4 * noiseLen)
-        val rotAngles = (0 until noiseLen).map { 2f * PI.toFloat() * it / noiseLen }.shuffled()
-
-        for (i in 0 until (NOISE_TEX_SIZE * NOISE_TEX_SIZE)) {
-            val ang = rotAngles[i]
-            val x = cos(ang)
-            val y = sin(ang)
-            buf[i*4+0] = ((x * 0.5f + 0.5f) * 255).toInt().toByte()
-            buf[i*4+1] = ((y * 0.5f + 0.5f) * 255).toInt().toByte()
-            buf[i*4+2] = 0
-            buf[i*4+3] = 1
-        }
-
-        val data = TextureData2d(buf, NOISE_TEX_SIZE, NOISE_TEX_SIZE, TexFormat.RGBA)
-        val texProps = TextureProps(TexFormat.RGBA, AddressMode.REPEAT, AddressMode.REPEAT,
-                minFilter = FilterMethod.NEAREST, magFilter = FilterMethod.NEAREST,
-                mipMapping = false, maxAnisotropy = 1)
-        return Texture2d(texProps, "ao_noise_tex") { data }
-    }
-
     override fun dispose(ctx: KoolContext) {
         drawNode.dispose(ctx)
-        aoPassShader.noiseTex?.dispose()
         super.dispose(ctx)
     }
 
@@ -231,7 +208,7 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
     }
 
     private inner class AoPassShader : KslShader(aoPassProg(), fullscreenShaderPipelineCfg) {
-        var noiseTex by texture2d("noiseTex", makeNoiseTexture())
+        var noiseTex by texture2d("noiseTex", aoNoiseTex)
         var depthTex by texture2d("depthTex")
         var normalTex by texture2d("normalTex")
 
@@ -249,6 +226,30 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
     companion object {
         const val MAX_KERNEL_SIZE = 64
         const val NOISE_TEX_SIZE = 4
+
+        private fun generateNoiseTex(): Texture2d {
+            val noiseLen = NOISE_TEX_SIZE * NOISE_TEX_SIZE
+            val buf = createUint8Buffer(4 * noiseLen)
+            val rotAngles = (0 until noiseLen).map { 2f * PI.toFloat() * it / noiseLen }.shuffled()
+
+            for (i in 0 until (NOISE_TEX_SIZE * NOISE_TEX_SIZE)) {
+                val ang = rotAngles[i]
+                val x = cos(ang)
+                val y = sin(ang)
+                buf[i*4+0] = ((x * 0.5f + 0.5f) * 255).toInt().toByte()
+                buf[i*4+1] = ((y * 0.5f + 0.5f) * 255).toInt().toByte()
+                buf[i*4+2] = 0
+                buf[i*4+3] = 1
+            }
+
+            val data = TextureData2d(buf, NOISE_TEX_SIZE, NOISE_TEX_SIZE, TexFormat.RGBA)
+            val texProps = TextureProps(TexFormat.RGBA, AddressMode.REPEAT, AddressMode.REPEAT,
+                minFilter = FilterMethod.NEAREST, magFilter = FilterMethod.NEAREST,
+                mipMapping = false, maxAnisotropy = 1)
+            return Texture2d(texProps, "ao_noise_tex") { data }
+        }
+
+        private val aoNoiseTex: Texture2d by lazy { generateNoiseTex() }
     }
 }
 

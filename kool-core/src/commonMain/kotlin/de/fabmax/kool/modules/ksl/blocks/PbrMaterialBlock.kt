@@ -22,8 +22,12 @@ class PbrMaterialBlock(
     val inRoughness = inFloat1("inRoughness", KslValueFloat1(0.5f))
     val inMetallic = inFloat1("inMetallic", KslValueFloat1(0f))
 
+    // environment reflection map(s)
     val inReflectionMapWeights = inFloat2("inReflectionMapWeights", KslValueFloat2(1f, 0f))
     val inReflectionStrength = inFloat3("inReflectionStrength", KslValueFloat3(1f, 1f, 1f))
+    // screen-space reflection
+    val inReflectionColor = inFloat3("inReflectionColor", KslValueFloat3(1f, 1f, 1f))
+    val inReflectionWeight = inFloat1("inReflectionWeight", KslValueFloat1(0f))
 
     val inAmbientOrientation = inMat3("inAmbientOrientation")
     val inIrradiance = inFloat3("inIrradiance")
@@ -75,6 +79,9 @@ class PbrMaterialBlock(
                 }
             }
             reflectionColor set reflectionColor * inReflectionStrength
+
+            // screen-space reflection
+            reflectionColor set mix(reflectionColor, clamp(inReflectionColor, Vec3f.ZERO.const, Vec3f(5f).const), inReflectionWeight)
 
             val brdf = float2Var(sampleTexture(brdfLut, float2Value(normalDotView, roughness)).rg)
             val specular = float3Var(reflectionColor * (fAmbient * brdf.r + brdf.g) / inBaseColor.a)

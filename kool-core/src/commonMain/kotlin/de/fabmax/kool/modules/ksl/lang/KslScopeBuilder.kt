@@ -297,6 +297,11 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
         ops += loop
     }
 
+    fun `while`(whileExpr: KslScalarExpression<KslTypeBool1>, block: KslScopeBuilder.() -> Unit) {
+        val loop = KslLoopWhile(whileExpr, this).apply { body.block() }
+        ops += loop
+    }
+
     fun `break`() {
         ops += KslLoopBreak(this)
     }

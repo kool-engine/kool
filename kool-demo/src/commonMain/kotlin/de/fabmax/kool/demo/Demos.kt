@@ -52,7 +52,7 @@ object Demos {
     val graphicsDemos = Category("Graphics", false, 0.25f, 0.45f).apply {
         entry("ao", "Ambient Occlusion") { AoDemo() }
         entry("gltf", "glTF Models") { GltfDemo() }
-        entry("ssr", "Reflections") { MultiLightDemo() }
+        entry("ssr", "Reflections") { ReflectionDemo() }
         entry("deferred", "Deferred Shading") { DeferredDemo() }
         entry("procedural", "Procedural Roses") { ProceduralDemo() }
         entry("pbr", "PBR Materials") { PbrDemo() }

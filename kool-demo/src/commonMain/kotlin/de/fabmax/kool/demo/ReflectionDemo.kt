@@ -9,7 +9,6 @@ import de.fabmax.kool.math.toRad
 import de.fabmax.kool.modules.gltf.GltfFile
 import de.fabmax.kool.modules.gltf.loadGltfFile
 import de.fabmax.kool.modules.ui2.*
-import de.fabmax.kool.pipeline.SingleColorTexture
 import de.fabmax.kool.pipeline.deferred.*
 import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
 import de.fabmax.kool.pipeline.shading.ModeledShader
@@ -18,7 +17,7 @@ import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
 import kotlin.math.*
 
-class MultiLightDemo : DemoScene("Reflections") {
+class ReflectionDemo : DemoScene("Reflections") {
 
     private lateinit var deferredPipeline: DeferredPipeline
 
@@ -27,7 +26,6 @@ class MultiLightDemo : DemoScene("Reflections") {
             LightMesh(MdColor.RED),
             LightMesh(MdColor.AMBER),
             LightMesh(MdColor.GREEN))
-    private val noSsrMap = SingleColorTexture(Color(0f, 0f, 0f, 0f))
 
     private val lightChoices = listOf("1", "2", "3", "4")
 
@@ -92,10 +90,6 @@ class MultiLightDemo : DemoScene("Reflections") {
         }
         scene += Skybox.cube(envMaps.reflectionMap, 1f)
 
-        scene.onDispose += {
-            noSsrMap.dispose()
-        }
-
         deferredPipeline.sceneContent.apply {
             ctx.assetMgr.launch {
                 val floorAlbedo = loadAndPrepareTexture("${DemoLoader.materialPath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_COL_2K.jpg")
@@ -136,8 +130,8 @@ class MultiLightDemo : DemoScene("Reflections") {
 
                     modelShader = deferredKslPbrShader {
                         color { uniformColor(matColors[selectedColorIdx.value].linColor) }
-                        roughness { uniformProperty(this@MultiLightDemo.roughness.value) }
-                        metallic { uniformProperty(this@MultiLightDemo.metallic.value) }
+                        roughness { uniformProperty(this@ReflectionDemo.roughness.value) }
+                        metallic { uniformProperty(this@ReflectionDemo.metallic.value) }
                     }
                     bunnyMesh!!.shader = modelShader
                 }
@@ -306,6 +300,7 @@ class MultiLightDemo : DemoScene("Reflections") {
 
                 transform.transform(light.position.set(Vec3f.ZERO), 1f)
                 transform.transform(light.direction.set(Vec3f.NEG_X_AXIS), 0f)
+                light.isEncodingDirty = true
             }
         }
 
