@@ -8,6 +8,7 @@ import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.TextureCube
+import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.Color
 
@@ -71,6 +72,11 @@ open class KslPbrShader(cfg: Config, model: KslProgram = Model(cfg)) : KslLitSha
         }
 
         fun roughness(value: Float) = roughness { constProperty(value) }
+
+        fun enableImageBasedLighting(iblMaps: EnvironmentMaps) {
+            imageBasedAmbientColor(iblMaps.irradianceMap)
+            reflectionMap = iblMaps.reflectionMap
+        }
     }
 
     class Model(cfg: Config) : LitShaderModel<Config>("PBR Shader") {

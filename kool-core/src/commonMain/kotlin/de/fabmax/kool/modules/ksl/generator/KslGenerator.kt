@@ -136,6 +136,10 @@ abstract class KslGenerator {
     abstract fun builtinFract(func: KslBuiltinFractVector<*>): String
     abstract fun builtinInverseSqrt(func: KslBuiltinInverseSqrtScalar): String
     abstract fun builtinInverseSqrt(func: KslBuiltinInverseSqrtVector<*>): String
+    abstract fun builtinIsInf(func: KslBuiltinIsInfScalar): String
+    abstract fun builtinIsInf(func: KslBuiltinIsInfVector<*, *>): String
+    abstract fun builtinIsNan(func: KslBuiltinIsNanScalar): String
+    abstract fun builtinIsNan(func: KslBuiltinIsNanVector<*, *>): String
     abstract fun builtinLength(func: KslBuiltinLength<*>): String
     abstract fun builtinLog(func: KslBuiltinLogScalar): String
     abstract fun builtinLog(func: KslBuiltinLogVector<*>): String

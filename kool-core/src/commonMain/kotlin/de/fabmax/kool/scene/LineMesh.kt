@@ -4,8 +4,8 @@ import de.fabmax.kool.KoolException
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.spatial.BoundingBox
+import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.shading.unlitShader
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.PrimitiveType
 import de.fabmax.kool.util.Color
@@ -38,7 +38,9 @@ open class LineMesh(geometry: IndexedVertexList = IndexedVertexList(Attribute.PO
     init {
         geometry.primitiveType = PrimitiveType.LINES
         rayTest = MeshRayTest.nopTest()
-        shader = unlitShader {  }
+        shader = KslUnlitShader {
+            color { vertexColor() }
+        }
     }
 
     fun addLine(point0: Vec3f, point1: Vec3f, color: Color) = addLine(point0, color, point1, color)

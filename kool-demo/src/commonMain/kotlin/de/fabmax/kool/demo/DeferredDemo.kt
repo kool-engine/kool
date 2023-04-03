@@ -152,6 +152,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                 shader = KslUnlitShader {
                     vertices { isInstanced = true }
                     color { instanceColor(Attribute.COLORS) }
+                    colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB
                 }
             }
             +lightVolumeMesh
@@ -536,7 +537,6 @@ class DeferredDemo : DemoScene("Deferred Shading") {
         private fun gBufferShader(offset: Float, scale: Float) = KslUnlitShader {
             pipeline { depthTest = DepthCompareOp.DISABLED }
             color { textureData() }
-            colorSpaceConversion = ColorSpaceConversion.AS_IS
             modelCustomizer = {
                 fragmentStage {
                     main {

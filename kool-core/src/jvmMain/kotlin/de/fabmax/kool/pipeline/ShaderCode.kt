@@ -2,6 +2,7 @@ package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.platform.vk.pipeline.ShaderStage
 import de.fabmax.kool.util.logD
+import de.fabmax.kool.util.logE
 import org.lwjgl.vulkan.VK10
 
 actual class ShaderCode private constructor(private val vkCode: VkCode?, private val glCode: GlCode?) {
@@ -35,15 +36,31 @@ actual class ShaderCode private constructor(private val vkCode: VkCode?, private
 
     companion object {
         fun vkCodeFromSource(vertShaderSrc: String, fragShaderSrc: String): ShaderCode {
-            val vertShaderCode = ShaderStage.fromSource("vertShader", vertShaderSrc, VK10.VK_SHADER_STAGE_VERTEX_BIT)
-            val fragShaderCode = ShaderStage.fromSource("fragShader", fragShaderSrc, VK10.VK_SHADER_STAGE_FRAGMENT_BIT)
-
-            logD("ShaderCode") { "Successfully compiled shader: vertShader: ${vertShaderCode.code.size} bytes, fragShader: ${fragShaderCode.code.size} bytes" }
-            return ShaderCode(vertShaderCode, fragShaderCode)
+            try {
+                val vertShaderCode = ShaderStage.fromSource("vertShader", vertShaderSrc, VK10.VK_SHADER_STAGE_VERTEX_BIT)
+                val fragShaderCode = ShaderStage.fromSource("fragShader", fragShaderSrc, VK10.VK_SHADER_STAGE_FRAGMENT_BIT)
+                logD("ShaderCode") { "Successfully compiled shader: vertShader: ${vertShaderCode.code.size} bytes, fragShader: ${fragShaderCode.code.size} bytes" }
+                return ShaderCode(vertShaderCode, fragShaderCode)
+            } catch (e: Exception) {
+                logE { "Compilation failed: $e" }
+                dumpCode(vertShaderSrc, fragShaderSrc)
+                throw RuntimeException(e)
+            }
         }
 
         fun glCodeFromSource(vertexShaderSource: String, fraqmentShaderSource: String): ShaderCode {
             return ShaderCode(GlCode(vertexShaderSource, fraqmentShaderSource))
+        }
+
+        fun dumpCode(vertShader: String, fragShader: String) {
+            println("Vertex shader:\n\n")
+            vertShader.lines().forEachIndexed { i, l ->
+                println(String.format("%3d: %s", i+1, l))
+            }
+            println("Fragment shader:\n\n")
+            fragShader.lines().forEachIndexed { i, l ->
+                println(String.format("%3d: %s", i+1, l))
+            }
         }
     }
 }

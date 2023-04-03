@@ -173,6 +173,42 @@ class KslBuiltinInverseSqrtVector<V>(vec: KslVectorExpression<V, KslTypeFloat1>)
     override fun generateExpression(generator: KslGenerator) = generator.builtinInverseSqrt(this)
 }
 
+class KslBuiltinIsInfScalar(value: KslExprFloat1)
+    : KslBuiltinFunctionScalar<KslTypeBool1>(KslTypeBool1, value) {
+    override val name = "isInf"
+    override fun generateExpression(generator: KslGenerator) = generator.builtinIsInf(this)
+}
+
+abstract class KslBuiltinIsInfVector<V, B>(vec: KslVectorExpression<V, KslTypeFloat1>, returnType: B)
+    : KslBuiltinFunctionVector<B, KslTypeBool1>(returnType, vec) where V: KslFloatType, V: KslVector<KslTypeFloat1>, B: KslBoolType, B: KslVector<KslTypeBool1> {
+    override val name = "isInf"
+    override fun generateExpression(generator: KslGenerator) = generator.builtinIsInf(this)
+}
+class KslBuiltinIsInfVector2(vec: KslVectorExpression<KslTypeFloat2, KslTypeFloat1>)
+    : KslBuiltinIsInfVector<KslTypeFloat2, KslTypeBool2>(vec, KslTypeBool2)
+class KslBuiltinIsInfVector3(vec: KslVectorExpression<KslTypeFloat3, KslTypeFloat1>)
+    : KslBuiltinIsInfVector<KslTypeFloat3, KslTypeBool3>(vec, KslTypeBool3)
+class KslBuiltinIsInfVector4(vec: KslVectorExpression<KslTypeFloat4, KslTypeFloat1>)
+    : KslBuiltinIsInfVector<KslTypeFloat4, KslTypeBool4>(vec, KslTypeBool4)
+
+class KslBuiltinIsNanScalar(value: KslExprFloat1)
+    : KslBuiltinFunctionScalar<KslTypeBool1>(KslTypeBool1, value) {
+    override val name = "isNan"
+    override fun generateExpression(generator: KslGenerator) = generator.builtinIsNan(this)
+}
+
+abstract class KslBuiltinIsNanVector<V, B>(vec: KslVectorExpression<V, KslTypeFloat1>, returnType: B)
+    : KslBuiltinFunctionVector<B, KslTypeBool1>(returnType, vec) where V: KslFloatType, V: KslVector<KslTypeFloat1>, B: KslBoolType, B: KslVector<KslTypeBool1> {
+    override val name = "isNan"
+    override fun generateExpression(generator: KslGenerator) = generator.builtinIsNan(this)
+}
+class KslBuiltinIsNanVector2(vec: KslVectorExpression<KslTypeFloat2, KslTypeFloat1>)
+    : KslBuiltinIsNanVector<KslTypeFloat2, KslTypeBool2>(vec, KslTypeBool2)
+class KslBuiltinIsNanVector3(vec: KslVectorExpression<KslTypeFloat3, KslTypeFloat1>)
+    : KslBuiltinIsNanVector<KslTypeFloat3, KslTypeBool3>(vec, KslTypeBool3)
+class KslBuiltinIsNanVector4(vec: KslVectorExpression<KslTypeFloat4, KslTypeFloat1>)
+    : KslBuiltinIsNanVector<KslTypeFloat4, KslTypeBool4>(vec, KslTypeBool4)
+
 class KslBuiltinLength<V>(vec: KslVectorExpression<V, KslTypeFloat1>)
     : KslBuiltinFunctionScalar<KslTypeFloat1>(KslTypeFloat1, vec) where V: KslFloatType, V: KslVector<KslTypeFloat1> {
     override val name = "length"

@@ -2,8 +2,7 @@ package de.fabmax.kool.physics
 
 import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.BoundingBox
-import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
-import de.fabmax.kool.pipeline.shading.pbrShader
+import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.scene.Tags
 import de.fabmax.kool.scene.colorMesh
 import de.fabmax.kool.scene.group
@@ -77,7 +76,7 @@ abstract class CommonRigidActor : Releasable {
         return invTransform.transform(vec, w)
     }
 
-    open fun toMesh(meshColor: Color, materialCfg: PbrMaterialConfig.() -> Unit = { }) = group {
+    open fun toMesh(meshColor: Color, materialCfg: KslPbrShader.Config.() -> Unit = { }) = group {
         +colorMesh {
             generate {
                 color = meshColor
@@ -88,7 +87,8 @@ abstract class CommonRigidActor : Releasable {
                     }
                 }
             }
-            shader = pbrShader {
+            shader = KslPbrShader {
+                color { vertexColor() }
                 materialCfg()
             }
             onUpdate += {

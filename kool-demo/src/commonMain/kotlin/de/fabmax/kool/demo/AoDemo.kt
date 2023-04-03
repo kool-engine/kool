@@ -10,7 +10,6 @@ import de.fabmax.kool.modules.gltf.GltfFile
 import de.fabmax.kool.modules.gltf.loadGltfModel
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ksl.KslUnlitShader
-import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.modules.ksl.lang.b
 import de.fabmax.kool.modules.ksl.lang.g
 import de.fabmax.kool.modules.ksl.lang.getFloat4Port
@@ -324,7 +323,6 @@ class AoDemo : DemoScene("Ambient Occlusion") {
         private fun aoShader() = KslUnlitShader {
             pipeline { depthTest = DepthCompareOp.DISABLED }
             color { textureData() }
-            colorSpaceConversion = ColorSpaceConversion.AS_IS
             modelCustomizer = {
                 fragmentStage {
                     main {

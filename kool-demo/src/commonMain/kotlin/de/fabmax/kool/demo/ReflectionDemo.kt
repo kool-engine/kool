@@ -8,10 +8,10 @@ import de.fabmax.kool.math.randomF
 import de.fabmax.kool.math.toRad
 import de.fabmax.kool.modules.gltf.GltfFile
 import de.fabmax.kool.modules.gltf.loadGltfFile
+import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.deferred.*
 import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
-import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
@@ -251,7 +251,7 @@ class ReflectionDemo : DemoScene("Reflections") {
 
         private var isEnabled = true
         private var animPos = 0.0
-        private val lightMeshShader = ModeledShader.StaticColor()
+        private val lightMeshShader = KslUnlitShader { color { uniformColor() } }
         private val meshPos = MutableVec3f()
         private var anglePos = 0f
         private val rotOff = randomF(0f, 3f)
@@ -306,7 +306,7 @@ class ReflectionDemo : DemoScene("Reflections") {
 
         private fun updateSpotAngleMesh() {
             val r = 1f * tan(light.spotAngle.toRad() / 2)
-            val c = lightMeshShader.color
+            val c = MutableColor().set(lightMeshShader.color)
             val n = 40
 
             spotAngleMesh.clear()

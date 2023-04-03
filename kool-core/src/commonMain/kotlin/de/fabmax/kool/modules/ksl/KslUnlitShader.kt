@@ -20,7 +20,7 @@ open class KslUnlitShader(cfg: UnlitShaderConfig, model: KslProgram = Model(cfg)
         val colorCfg = ColorBlockConfig("baseColor")
         val pipelineCfg = PipelineConfig()
 
-        var colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB
+        var colorSpaceConversion = ColorSpaceConversion.AS_IS
         var alphaMode: AlphaMode = AlphaMode.Blend()
 
         var modelCustomizer: (KslProgram.() -> Unit)? = null

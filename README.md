@@ -13,8 +13,6 @@ as well (look below for a very short usage guide - that's all the documentation 
 
 I also have a few demos in place (roughly in order of creation; once loaded, you can also switch between them via the
 hamburger button in the upper left corner):
-- [Embedded UI](https://fabmax.github.io/kool/kool-js/?demo=ui): Integrated UI framework implemented completely within
-  the engine. Highly customizable, easy-to-use and blazing fast. I guess next thing is an editor then... :smile:
 - [Island](https://fabmax.github.io/kool/kool-js/?demo=phys-terrain): Height-map based
   island incl. some wind-affected vegetation + a basic controllable character.
 - [Physics - Ragdoll](https://fabmax.github.io/kool/kool-js/?demo=phys-ragdoll): Ragdoll physics demo.
@@ -24,9 +22,10 @@ hamburger button in the upper left corner):
   running over two gears. Uses a lot of multi shapes and revolute joints.
 - [Physics - Collision](https://fabmax.github.io/kool/kool-js/?demo=physics): The obligatory collision physics demo with
   various different shapes.
-- [Atmospheric Scattering](https://fabmax.github.io/kool/kool-js/?demo=atmosphere): Earth (and Moon) with volumetric atmosphere.
-  Lots of interactive controls for adjusting the appearance of the atmosphere. The planet itself is rendered by a highly customized
-  deferred pbr shader with extensions for rendering the oceans and night side.
+- [Embedded UI](https://fabmax.github.io/kool/kool-js/?demo=ui): Integrated UI framework implemented completely within
+  the engine. Highly customizable, easy-to-use and blazing fast. I guess next thing is an editor then... :smile:
+- [Creative Coding](https://fabmax.github.io/kool/kool-js/?demo=creative-coding): A few relatively simple demos
+  showcasing different techniques of generating procedural geometry.
 - [Procedural Geometry](https://fabmax.github.io/kool/kool-js/?demo=procedural): Small test-case for
   procedural geometry; all geometry is generated in code (even the roses! Textures are regular images though). Also some glass
   shading (shaft of the wine glass, the wine itself looks quite odd when shaded with refractions and is therefore opaque).
@@ -46,8 +45,6 @@ hamburger button in the upper left corner):
 - [Physical Based Rendering](https://fabmax.github.io/kool/kool-js/?demo=pbr): Interactive PBR demo 
   with image based lighting for various materials and environments (underlying PBR theory from
   [this](https://learnopengl.com/PBR/Theory) awesome article series).
-- [Procedural Tree](https://fabmax.github.io/kool/kool-js/?demo=tree): A simple procedural tree generator
-  based on a [space colonization algorithm](http://algorithmicbotany.org/papers/colonization.egwnp2007.large.pdf)
 - [Instanced / LOD Drawing](https://fabmax.github.io/kool/kool-js/?demo=instance): Instanced rendering
   demo of the Stanford Bunny. Uses six levels of detail to render up to 8000 instances.
 - [Mesh Simplification](https://fabmax.github.io/kool/kool-js/?demo=simplification): Interactive mesh

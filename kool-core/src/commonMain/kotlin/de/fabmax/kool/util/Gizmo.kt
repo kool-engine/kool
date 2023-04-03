@@ -5,7 +5,6 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.modules.ksl.blocks.ColorBlockConfig
-import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.pipeline.CullMethod
 import de.fabmax.kool.pipeline.DepthCompareOp
 import de.fabmax.kool.scene.*
@@ -43,7 +42,6 @@ class Gizmo : Group(), InputStack.PointerListener {
         isCastingShadow = false
         shader = KslUnlitShader {
             color { vertexColor() }
-            colorSpaceConversion = ColorSpaceConversion.AS_IS
             pipeline { cullMethod = CullMethod.NO_CULLING }
         }
     }
@@ -53,7 +51,6 @@ class Gizmo : Group(), InputStack.PointerListener {
                 vertexColor()
                 constColor(Color.WHITE.withAlpha(0.4f), ColorBlockConfig.MixMode.Multiply)
             }
-            colorSpaceConversion = ColorSpaceConversion.AS_IS
             pipeline {
                 depthTest = DepthCompareOp.GREATER_EQUAL
                 isWriteDepth = false
@@ -67,7 +64,6 @@ class Gizmo : Group(), InputStack.PointerListener {
                 vertexColor()
                 constColor(Color.WHITE.withAlpha(0.4f), ColorBlockConfig.MixMode.Multiply)
             }
-            colorSpaceConversion = ColorSpaceConversion.AS_IS
             pipeline {
                 cullMethod = CullMethod.NO_CULLING
                 depthTest = DepthCompareOp.GREATER_EQUAL

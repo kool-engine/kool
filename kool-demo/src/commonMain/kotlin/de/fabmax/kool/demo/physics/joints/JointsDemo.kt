@@ -7,6 +7,7 @@ import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.BoundingBox
 import de.fabmax.kool.modules.ksl.KslPbrShader
+import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.physics.*
 import de.fabmax.kool.physics.geometry.BoxGeometry
@@ -20,7 +21,6 @@ import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ao.AoPipeline
 import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
-import de.fabmax.kool.pipeline.shading.unlitShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.Color
@@ -624,8 +624,9 @@ class JointsDemo : DemoScene("Physics - Joints") {
 
         init {
             isCastingShadow = false
-            shader = unlitShader {
-                lineWidth = 3f
+            shader = KslUnlitShader {
+                color { vertexColor() }
+                pipeline { lineWidth = 3f }
             }
         }
 

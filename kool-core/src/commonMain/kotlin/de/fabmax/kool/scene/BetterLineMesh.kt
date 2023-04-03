@@ -4,7 +4,10 @@ import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.ksl.KslUnlitShader
-import de.fabmax.kool.modules.ksl.blocks.*
+import de.fabmax.kool.modules.ksl.blocks.cameraData
+import de.fabmax.kool.modules.ksl.blocks.convertColorSpace
+import de.fabmax.kool.modules.ksl.blocks.fragmentColorBlock
+import de.fabmax.kool.modules.ksl.blocks.mvpMatrix
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.BlendMode
@@ -124,7 +127,6 @@ class BetterLineMesh(geometry: IndexedVertexList, name: String? = null) : Mesh(g
             private val defaultCfg = LineShaderConfig().apply {
                 pipeline { cullMethod = CullMethod.NO_CULLING }
                 color { vertexColor() }
-                colorSpaceConversion = ColorSpaceConversion.AS_IS
             }
         }
 

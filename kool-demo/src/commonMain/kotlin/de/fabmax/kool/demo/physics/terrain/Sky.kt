@@ -5,6 +5,7 @@ import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.atmosphere.OpticalDepthLutPass
 import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.modules.ksl.blocks.ColorBlockConfig
+import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.modules.ksl.blocks.mvpMatrix
 import de.fabmax.kool.modules.ksl.lang.a
 import de.fabmax.kool.modules.ksl.lang.float4
@@ -215,6 +216,7 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
                     cullMethod = CullMethod.NO_CULLING
                     isWriteDepth = false
                 }
+                colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB
                 modelCustomizer = {
                     vertexStage {
                         main {

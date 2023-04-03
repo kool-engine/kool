@@ -6,16 +6,16 @@ import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.gltf.GltfFile
 import de.fabmax.kool.modules.gltf.loadGltfFile
+import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ui2.*
+import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ao.AoPipeline
 import de.fabmax.kool.pipeline.deferred.DeferredOutputShader
-import de.fabmax.kool.pipeline.deferred.DeferredPbrShader
 import de.fabmax.kool.pipeline.deferred.DeferredPipeline
 import de.fabmax.kool.pipeline.deferred.DeferredPipelineConfig
+import de.fabmax.kool.pipeline.deferred.deferredKslPbrShader
 import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
-import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
-import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.toString
@@ -221,30 +221,37 @@ class GltfDemo : DemoScene("glTF Models") {
             generate {
                 roundCylinder(4.1f, 0.2f)
             }
-            val pbrCfg = PbrMaterialConfig().apply {
-                if (!isDeferredShading) {
-                    shadowMaps += shadowsForward
-                    useScreenSpaceAmbientOcclusion(aoPipelineForward?.aoMap)
-                    useImageBasedLighting(envMaps)
-                }
 
-                useAlbedoMap("${DemoLoader.materialPath}/Fabric030/Fabric030_1K_Color2.jpg")
-                useNormalMap("${DemoLoader.materialPath}/Fabric030/Fabric030_1K_Normal.jpg")
-                useAmbientOcclusionMap("${DemoLoader.materialPath}/Fabric030/Fabric030_1K_AmbientOcclusion.jpg")
-                useRoughnessMap("${DemoLoader.materialPath}/Fabric030/Fabric030_1K_Roughness.jpg")
+            val colorMap = Texture2d("${DemoLoader.materialPath}/Fabric030/Fabric030_1K_Color2.jpg")
+            val normalMap = Texture2d("${DemoLoader.materialPath}/Fabric030/Fabric030_1K_Normal.jpg")
+            val aoMap = Texture2d("${DemoLoader.materialPath}/Fabric030/Fabric030_1K_AmbientOcclusion.jpg")
+            val roughnessMap = Texture2d("${DemoLoader.materialPath}/Fabric030/Fabric030_1K_Roughness.jpg")
+            onDispose += {
+                colorMap.dispose()
+                normalMap.dispose()
+                roughnessMap.dispose()
+                aoMap.dispose()
+            }
 
-                onDispose += {
-                    albedoMap?.dispose()
-                    normalMap?.dispose()
-                    roughnessMap?.dispose()
-                    aoMap?.dispose()
-                }
+            fun KslPbrShader.Config.materialConfig() {
+                color { textureColor(colorMap) }
+                normalMapping { setNormalMap(normalMap) }
+                ao { materialAo { textureProperty(aoMap) } }
+                roughness { textureProperty(roughnessMap) }
             }
 
             shader = if (isDeferredShading) {
-                DeferredPbrShader(pbrCfg)
+                deferredKslPbrShader {
+                    materialConfig()
+                }
             } else {
-                PbrShader(pbrCfg)
+                KslPbrShader {
+                    materialConfig()
+                    shadow { addShadowMaps(shadowsForward) }
+                    ao { enableSsao(aoPipelineForward?.aoMap) }
+                    imageBasedAmbientColor(envMaps.irradianceMap)
+                    reflectionMap = envMaps.reflectionMap
+                }
             }
         }
 

@@ -55,13 +55,12 @@ object Demos {
         entry("deferred", "Deferred Shading") { DeferredDemo() }
         entry("procedural", "Procedural Roses") { ProceduralDemo() }
         entry("pbr", "PBR Materials") { PbrDemo() }
-        entry("creative-coding", "Creative Coding") { CreativeCodingDemo() }
     }
 
     val techDemos = Category("Tech", false, 0.5f, 0.7f).apply {
+        entry("creative-coding", "Creative Coding") { CreativeCodingDemo() }
         entry("instance", "Instanced Drawing") { InstanceDemo() }
         entry("simplification", "Simplification") { SimplificationDemo() }
-        entry("tree", "Procedural Tree") { TreeDemo() }
         entry("ui", "User Interface") { UiDemo() }
     }
 

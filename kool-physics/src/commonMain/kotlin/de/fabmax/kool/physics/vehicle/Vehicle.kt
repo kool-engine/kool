@@ -1,10 +1,9 @@
 package de.fabmax.kool.physics.vehicle
 
 import de.fabmax.kool.math.Mat4f
+import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.physics.PhysicsWorld
 import de.fabmax.kool.physics.RigidBody
-import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
-import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.colorMesh
 import de.fabmax.kool.scene.group
 import de.fabmax.kool.util.Color
@@ -35,7 +34,7 @@ abstract class CommonVehicle(val vehicleProps: VehicleProperties) : RigidBody() 
     abstract var throttleInput: Float
     abstract var brakeInput: Float
 
-    override fun toMesh(meshColor: Color, materialCfg: PbrMaterialConfig.() -> Unit) = group {
+    override fun toMesh(meshColor: Color, materialCfg: KslPbrShader.Config.() -> Unit) = group {
         val wheelGroups = List(4) { i ->
             group {
                 +colorMesh {
@@ -43,7 +42,8 @@ abstract class CommonVehicle(val vehicleProps: VehicleProperties) : RigidBody() 
                         color = Color.DARK_GRAY.toLinear()
                         shapes[i].geometry.generateMesh(this)
                     }
-                    shader = pbrShader {
+                    shader = KslPbrShader {
+                        color { vertexColor() }
                         materialCfg()
                     }
                 }
@@ -63,7 +63,8 @@ abstract class CommonVehicle(val vehicleProps: VehicleProperties) : RigidBody() 
                     }
                 }
             }
-            shader = pbrShader {
+            shader = KslPbrShader {
+                color { vertexColor() }
                 materialCfg()
             }
         }

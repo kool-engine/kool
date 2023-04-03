@@ -1,33 +1,29 @@
 package de.fabmax.kool.demo.procedural
 
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.Vec4f
+import de.fabmax.kool.modules.ksl.KslPbrShader
+import de.fabmax.kool.modules.ksl.blocks.cameraData
+import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.GlslType
 import de.fabmax.kool.pipeline.deferred.DeferredPassSwapListener
 import de.fabmax.kool.pipeline.deferred.DeferredPasses
 import de.fabmax.kool.pipeline.deferred.deferredKslPbrShader
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
-import de.fabmax.kool.pipeline.shadermodel.RefractionSamplerNode
-import de.fabmax.kool.pipeline.shadermodel.StageInterfaceNode
-import de.fabmax.kool.pipeline.shadermodel.fragmentStage
-import de.fabmax.kool.pipeline.shadermodel.vertexStage
 import de.fabmax.kool.pipeline.shading.AlphaMode
-import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
-import de.fabmax.kool.pipeline.shading.PbrShader
-import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.colorMesh
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.SimpleShadowMap
 
-class Glas(val ibl: EnvironmentMaps) : Group(), DeferredPassSwapListener {
+class Glas(val ibl: EnvironmentMaps, shadowMap: SimpleShadowMap) : Group(), DeferredPassSwapListener {
 
-    private val glasShader: PbrShader
+    private val glasShader: GlassShader = GlassShader(ibl, shadowMap)
 
     init {
-        glasShader = glasShader()
-
         +makeWine()
         +makeBody()
         +makeShaft()
@@ -37,7 +33,7 @@ class Glas(val ibl: EnvironmentMaps) : Group(), DeferredPassSwapListener {
     }
 
     override fun onSwap(previousPasses: DeferredPasses, currentPasses: DeferredPasses) {
-        glasShader.refractionColorMap(currentPasses.lightingPass.colorTexture)
+        glasShader.refractionColorMap = currentPasses.lightingPass.colorTexture
     }
 
     private fun makeBody() = colorMesh {
@@ -47,11 +43,13 @@ class Glas(val ibl: EnvironmentMaps) : Group(), DeferredPassSwapListener {
             geometry.removeDegeneratedTriangles()
             geometry.generateNormals()
         }
-        shader = pbrShader {
-            useImageBasedLighting(ibl)
-            roughness = 0f
+        shader = KslPbrShader {
+            color { vertexColor() }
+            imageBasedAmbientColor(ibl.irradianceMap)
+            reflectionMap = ibl.reflectionMap
+            roughness(0f)
             alphaMode = AlphaMode.Blend()
-            reflectionStrength = 0.3f
+            reflectionStrength = Color(0.3f, 0.3f, 0.3f)
         }
     }
 
@@ -201,24 +199,64 @@ class Glas(val ibl: EnvironmentMaps) : Group(), DeferredPassSwapListener {
         }
     }
 
-    private fun glasShader(): PbrShader {
-        val glasCfg = PbrMaterialConfig().apply {
-            useImageBasedLighting(ibl)
-            roughness = 0f
-            alphaMode = AlphaMode.Blend()
-            isRefraction = true
-        }
-        val glasModel = PbrShader.defaultPbrModel(glasCfg).apply {
-            val ifThickness: StageInterfaceNode
-            vertexStage {
-                ifThickness = stageInterfaceNode("ifThickness", attributeNode(THICKNESS).output)
+    private class GlassShader(ibl: EnvironmentMaps, shadowMap: SimpleShadowMap, cfg: Config = glassShaderConfig(ibl, shadowMap))
+        : KslPbrShader(cfg, glassShaderModel(cfg))
+    {
+        var refractionColorMap by texture2d("tRefractionColor")
+
+        companion object {
+            fun glassShaderConfig(ibl: EnvironmentMaps, shadowMap: SimpleShadowMap) = Config().apply {
+                color { vertexColor() }
+                shadow { addShadowMap(shadowMap) }
+                roughness(0f)
+                enableImageBasedLighting(ibl)
             }
-            fragmentStage {
-                val refrSampler = findNodeByType<RefractionSamplerNode>()
-                refrSampler?.inMaterialThickness = ifThickness.output
+
+            fun glassShaderModel(cfg: Config) = Model(cfg).apply {
+                val matThickness = interStageFloat1()
+
+                vertexStage {
+                    main {
+                        matThickness.input set vertexAttribFloat1(THICKNESS.name)
+                    }
+                }
+
+                fragmentStage {
+                    val camData = cameraData()
+                    val refractionColorMap = texture2d("tRefractionColor")
+
+                    main {
+                        val materialColorPort = getFloat4Port("materialColor")
+                        val materialColorInput = float4Var(materialColorPort.input.input)
+
+                        val normal = getFloat3Port("normal")
+                        val worldPos = getFloat3Port("worldPos")
+                        val viewDir = float3Var(normalize(camData.position - worldPos))
+
+                        val refractionIor = 1.4f
+                        val refractionDir = float3Var(refract(viewDir, normalize(normal), (1f / refractionIor).const))
+                        val refractionPos = float3Var(worldPos + refractionDir * matThickness.output)
+                        val clipPos = float4Var(camData.viewProjMat * float4Value(refractionPos, 1f.const))
+                        val samplePos = float2Var(clipPos.xy / clipPos.w * 0.5f.const + 0.5f.const)
+
+                        val refractionColor = float4Var(Vec4f.ZERO.const)
+                        `if`((samplePos.x gt 0f.const) and (samplePos.x lt 1f.const) and
+                                (samplePos.y gt 0f.const) and (samplePos.y lt 1f.const)) {
+                            refractionColor set sampleTexture(refractionColorMap, samplePos)
+                        }
+                        `if`(refractionColor.a eq 0f.const) {
+                            // refraction sample pos out of screen bounds -> use reflection map instead
+                            val reflectionMaps = textureArrayCube("tReflectionMaps", 2).value
+                            refractionColor set sampleTexture(reflectionMaps[0], refractionDir)
+                        }
+
+                        val weight = 1f.const - materialColorInput.a
+                        val resultColor = float3Var(materialColorInput.rgb + refractionColor.rgb * weight)
+                        materialColorPort.input(float4Value(resultColor, 1f.const))
+                    }
+                }
             }
         }
-        return PbrShader(glasCfg, glasModel)
     }
 
     private class ExtrudeProps(val r: Float, val h: Float, val t: Float)

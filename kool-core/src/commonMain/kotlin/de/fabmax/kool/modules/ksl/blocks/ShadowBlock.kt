@@ -17,8 +17,8 @@ fun KslScopeBuilder.vertexShadowBlock(cfg: ShadowConfig, block: ShadowBlockVerte
 
 fun KslScopeBuilder.fragmentShadowBlock(vertexStage: ShadowBlockVertexStage, shadowFactors: KslArrayScalar<KslTypeFloat1>): ShadowBlockFragmentStage {
     val shadowBlock = ShadowBlockFragmentStage(
-        lightSpacePositions = vertexStage.positionsLightSpace!!.output,
-        lightSpaceNormalZs = vertexStage.normalZsLightSpace!!.output,
+        lightSpacePositions = vertexStage.positionsLightSpace?.output,
+        lightSpaceNormalZs = vertexStage.normalZsLightSpace?.output,
         shadowData = vertexStage.shadowData,
         shadowFactors = shadowFactors,
         name = parentStage.program.nextName("shadowBlock"),
@@ -83,8 +83,8 @@ class ShadowBlockVertexStage(cfg: ShadowConfig, name: String, parentScope: KslSc
 }
 
 class ShadowBlockFragmentStage(
-    lightSpacePositions: KslArrayVector<KslTypeFloat4, KslTypeFloat1>,
-    lightSpaceNormalZs: KslArrayScalar<KslTypeFloat1>,
+    lightSpacePositions: KslArrayVector<KslTypeFloat4, KslTypeFloat1>?,
+    lightSpaceNormalZs: KslArrayScalar<KslTypeFloat1>?,
     shadowData: ShadowData,
     shadowFactors: KslArrayScalar<KslTypeFloat1>,
     name: String,
@@ -94,6 +94,9 @@ class ShadowBlockFragmentStage(
     init {
         body.apply {
             check(parentStage is KslFragmentStage) { "SimpleShadowMapBlockFragmentStage can only be added to KslFragmentStage" }
+            if (lightSpacePositions == null || lightSpaceNormalZs == null) {
+                return@apply
+            }
 
             shadowData.shadowMapInfos.forEach { mapInfo ->
                 val lightIdx = mapInfo.shadowMap.lightIndex

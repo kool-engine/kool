@@ -34,6 +34,7 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
     override val depthBiasMatrix = Mat4d()
 
     override val shaderGenerator = ShaderGeneratorImplVk()
+    private val shaderCodes = mutableMapOf<String, ShaderCode>()
 
     val vkSystem: VkSystem
     private val vkScene = KoolVkScene()
@@ -99,7 +100,14 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
     }
 
     override fun generateKslShader(shader: KslShader, pipelineLayout: Pipeline.Layout): ShaderCode {
-        return shaderGenerator.generateKslShader(shader, pipelineLayout)
+        val src = KslGlslGeneratorVk(pipelineLayout).generateProgram(shader.program)
+        if (shader.program.dumpCode) {
+            src.dump()
+        }
+        val codeKey = src.vertexSrc + src.fragmentSrc
+        return shaderCodes.getOrPut(codeKey) {
+            ShaderCode.vkCodeFromSource(src.vertexSrc, src.fragmentSrc)
+        }
     }
 
     override fun drawFrame(ctx: Lwjgl3Context) {

@@ -19,7 +19,7 @@ class HelloRenderToTextureDemo : DemoScene("Hello RenderToTexture") {
             +colorMesh {
                 generate {
                     cube {
-                        colored()
+                        colored(linearSpace = false)
                         centered()
                     }
                 }

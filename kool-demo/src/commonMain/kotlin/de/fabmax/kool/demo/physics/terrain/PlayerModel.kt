@@ -2,7 +2,7 @@ package de.fabmax.kool.demo.physics.terrain
 
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.clamp
-import de.fabmax.kool.pipeline.shading.unlitShader
+import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.LineMesh
 import de.fabmax.kool.scene.Model
@@ -63,8 +63,9 @@ class PlayerModel(val model: Model, val playerController: PlayerController) : Gr
         addLine(Vec3f(0f, h, -r), Vec3f(0f, -h, -r), cb)
         addLine(Vec3f(0f, h, r), Vec3f(0f, -h, r), cb)
 
-        shader = unlitShader {
-            lineWidth = 2f
+        shader = KslUnlitShader {
+            color { vertexColor() }
+            pipeline { lineWidth = 2f }
         }
     }
 

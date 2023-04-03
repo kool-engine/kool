@@ -2,8 +2,8 @@ package de.fabmax.kool.demo
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.randomF
+import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.modules.ui2.*
-import de.fabmax.kool.pipeline.shading.unlitShader
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.colorMesh
 import de.fabmax.kool.scene.geometry.MeshBuilder
@@ -23,7 +23,9 @@ class LoadingScreen(val ctx: KoolContext) : Scene("Loading Screen") {
         setupUiScene(true)
 
         +colorMesh {
-            shader = unlitShader { }
+            shader = KslUnlitShader {
+                color { vertexColor() }
+            }
             val builder = MeshBuilder(geometry)
             onUpdate += {
                 geometry.clear()

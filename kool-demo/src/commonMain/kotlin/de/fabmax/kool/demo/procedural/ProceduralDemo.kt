@@ -71,7 +71,7 @@ class ProceduralDemo : DemoScene("Procedural Geometry") {
             aoPipeline?.radius = 0.6f
 
             sceneContent.apply {
-                +Glas(ibl).also { onSwap += it }
+                +Glas(ibl, shadowMap).also { onSwap += it }
                 +Vase()
                 +Table()
 
@@ -82,6 +82,7 @@ class ProceduralDemo : DemoScene("Procedural Geometry") {
             lightingPassContent += Skybox.cube(ibl.reflectionMap, 1f, hdrOutput = true)
         }
         shadowMap.drawNode = deferredPipeline.sceneContent
+
         +deferredPipeline.createDefaultOutputQuad()
     }
 

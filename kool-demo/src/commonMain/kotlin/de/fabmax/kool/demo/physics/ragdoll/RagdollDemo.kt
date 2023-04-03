@@ -21,7 +21,6 @@ import de.fabmax.kool.pipeline.GlslType
 import de.fabmax.kool.pipeline.ao.AoPipeline
 import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
-import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.*
 import kotlin.math.roundToInt
@@ -44,11 +43,12 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
     private val physicsTimeTxt = mutableStateOf("0.00 ms")
     private val timeFactorTxt = mutableStateOf("1.00 x")
 
-    private val bodyMaterialCfg: PbrMaterialConfig.() -> Unit = {
-        shadowMaps += shadows
-        useImageBasedLighting(ibl)
-        useScreenSpaceAmbientOcclusion(ao.aoMap)
-        roughness = 0.8f
+    private val bodyMaterialCfg: KslPbrShader.Config.() -> Unit = {
+        color { vertexColor() }
+        enableImageBasedLighting(ibl)
+        shadow { addShadowMaps(shadows) }
+        enableSsao(ao.aoMap)
+        roughness(0.8f)
     }
 
     override suspend fun AssetManager.loadResources(ctx: KoolContext) {
@@ -164,7 +164,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
             onUpdate += {
                 clear()
                 if (forceHelper.isActive) {
-                    addLine(forceHelper.forceAppPosGlobal, forceHelper.forceDragPos, MdColor.PINK.toLinear())
+                    addLine(forceHelper.forceAppPosGlobal, forceHelper.forceDragPos, MdColor.PINK)
                 }
             }
         }

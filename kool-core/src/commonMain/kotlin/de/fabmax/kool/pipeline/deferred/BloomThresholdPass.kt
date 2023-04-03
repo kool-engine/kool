@@ -63,8 +63,8 @@ class BloomThresholdPass(deferredPipeline: DeferredPipeline, cfg: DeferredPipeli
     class ThresholdShader(samples: Int, avgDownSampling: Boolean) : KslShader(program(samples, avgDownSampling), pipelineCfg) {
 
         var inputTexture by texture2d("tInput")
-        var lowerThreshold by uniform1f("uThresholdLower")
-        var upperThreshold by uniform1f("uThresholdUpper")
+        var lowerThreshold by uniform1f("uThresholdLower", 0.5f)
+        var upperThreshold by uniform1f("uThresholdUpper", 1f)
 
         companion object {
             private val pipelineCfg = PipelineConfig().apply {
@@ -85,6 +85,10 @@ class BloomThresholdPass(deferredPipeline: DeferredPipeline, cfg: DeferredPipeli
                         val sampleUv = paramFloat2("uv")
                         body {
                             val sample = float4Var(sampleTexture(inputTex, sampleUv))
+                            `if` (any(isNan(sample))) {
+                                sample set Vec4f.ZERO.const
+                            }
+
                             val brightness = float1Var(dot(sample.rgb, Vec3f(0.333f).const))
                             val w = float1Var(smoothStep(lowerThreshold, upperThreshold, brightness))
                             float4Value(sample.rgb * w, brightness * w)

@@ -402,6 +402,16 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
     fun inverseSqrt(value: KslScalarExpression<KslTypeFloat1>) = KslBuiltinInverseSqrtScalar(value)
     fun <V> inverseSqrt(vec: KslVectorExpression<V, KslTypeFloat1>) where V: KslFloatType, V: KslVector<KslTypeFloat1> = KslBuiltinInverseSqrtVector(vec)
 
+    fun isNan(value: KslScalarExpression<KslTypeFloat1>) = KslBuiltinIsNanScalar(value)
+    fun isNan(vec: KslVectorExpression<KslTypeFloat2, KslTypeFloat1>) = KslBuiltinIsNanVector2(vec)
+    fun isNan(vec: KslVectorExpression<KslTypeFloat3, KslTypeFloat1>) = KslBuiltinIsNanVector3(vec)
+    fun isNan(vec: KslVectorExpression<KslTypeFloat4, KslTypeFloat1>) = KslBuiltinIsNanVector4(vec)
+
+    fun isInf(value: KslScalarExpression<KslTypeFloat1>) = KslBuiltinIsNanScalar(value)
+    fun isInf(vec: KslVectorExpression<KslTypeFloat2, KslTypeFloat1>) = KslBuiltinIsInfVector2(vec)
+    fun isInf(vec: KslVectorExpression<KslTypeFloat3, KslTypeFloat1>) = KslBuiltinIsInfVector3(vec)
+    fun isInf(vec: KslVectorExpression<KslTypeFloat4, KslTypeFloat1>) = KslBuiltinIsInfVector4(vec)
+
     fun <V> length(arg: KslVectorExpression<V, KslTypeFloat1>) where V: KslFloatType, V: KslVector<KslTypeFloat1> = KslBuiltinLength(arg)
 
     fun log(value: KslScalarExpression<KslTypeFloat1>) = KslBuiltinLogScalar(value)

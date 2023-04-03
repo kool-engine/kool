@@ -214,6 +214,7 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
                     }
                     // make final normal value available to model customizer
                     val normal = float3Port("normal", bumpedNormal)
+                    val worldPos = float3Port("worldPos", positionWorldSpace.output)
 
                     // create an array with light strength values per light source (1.0 = full strength)
                     val shadowFactors = float1Array(lightData.maxLightCount, 1f.const)
@@ -255,7 +256,7 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
                         shadowFactors = shadowFactors,
                         aoFactor = aoFactor,
                         normal = normal,
-                        fragmentWorldPos = positionWorldSpace.output,
+                        fragmentWorldPos = worldPos,
                         baseColor = baseColor,
                         emissionColor = emissionColorPort
                     )
