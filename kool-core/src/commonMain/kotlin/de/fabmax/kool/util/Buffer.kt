@@ -187,12 +187,3 @@ expect fun createFloat32Buffer(capacity: Int): Float32Buffer
 
 expect fun createMixedBuffer(capacity: Int): MixedBuffer
 
-expect object BufferUtil {
-    fun inflate(zipData: Uint8Buffer): Uint8Buffer
-
-    fun deflate(data: Uint8Buffer): Uint8Buffer
-
-    fun encodeBase64(data: Uint8Buffer): String
-
-    fun decodeBase64(base64: String): Uint8Buffer
-}

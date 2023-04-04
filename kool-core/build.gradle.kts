@@ -77,9 +77,7 @@ kotlin {
                 progressiveMode = true
                 optIn("kotlinx.coroutines.ExperimentalCoroutinesApi")
                 optIn("kotlin.contracts.ExperimentalContracts")
-                optIn("kotlin.ExperimentalUnsignedTypes")
-                optIn("kotlin.ExperimentalStdlibApi")
-                optIn("kotlinx.serialization.ExperimentalSerializationApi")
+                optIn("kotlin.io.encoding.ExperimentalEncodingApi")
             }
         }
     }

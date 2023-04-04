@@ -156,8 +156,8 @@ fun main() {
 
                 if (model.animations.isNotEmpty()) {
                     model.enableAnimation(0)
-                    model.onUpdate += { updateEvt ->
-                        model.applyAnimation(updateEvt.deltaT)
+                    model.onUpdate += {
+                        model.applyAnimation(Time.deltaT)
                     }
                 }
             }

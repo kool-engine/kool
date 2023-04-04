@@ -49,7 +49,6 @@ kotlin {
         sourceSets.all {
             languageSettings.apply {
                 progressiveMode = true
-                optIn("kotlin.ExperimentalStdlibApi")
                 optIn("kotlin.contracts.ExperimentalContracts")
             }
         }
