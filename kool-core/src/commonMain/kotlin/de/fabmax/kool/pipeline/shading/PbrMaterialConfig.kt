@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package de.fabmax.kool.pipeline.shading
 
 import de.fabmax.kool.pipeline.Attribute
@@ -8,6 +10,7 @@ import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ShadowMap
 
+@Deprecated("Replaced by KslPbrShader")
 class PbrMaterialConfig {
     // shader configuration
     var albedoSource = Albedo.VERTEX_ALBEDO

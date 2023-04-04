@@ -119,41 +119,41 @@ lines of code:
 ```kotlin
 fun main() {
     val ctx = createDefaultContext()
-    
+
     ctx.scenes += scene {
         defaultCamTransform()
-    
+
         // Light setup
         lighting.singleLight {
             setSpot(Vec3f(5f, 6.25f, 7.5f), Vec3f(-1f, -1.25f, -1.5f), 45f)
             setColor(Color.WHITE, 300f)
         }
-        val shadows = listOf(SimpleShadowMap(this, lightIndex = 0))
+        val shadowMap = SimpleShadowMap(this, lightIndex = 0)
         val aoPipeline = AoPipeline.createForward(this)
-    
+
         // Add a ground plane
         +colorMesh {
             generate {
                 grid { }
             }
-            shader = pbrShader {
-                useStaticAlbedo(Color.WHITE)
-                useScreenSpaceAmbientOcclusion(aoPipeline.aoMap)
-                shadowMaps += shadows
+            shader = KslPbrShader {
+                color { constColor(Color.WHITE) }
+                shadow { addShadowMap(shadowMap) }
+                enableSsao(aoPipeline.aoMap)
             }
         }
 
         // Load a glTF 2.0 model
         ctx.assetMgr.launch {
             val materialCfg = GltfFile.ModelMaterialConfig(
-                    shadowMaps = shadows,
-                    scrSpcAmbientOcclusionMap = aoPipeline.aoMap
+                shadowMaps = listOf(shadowMap),
+                scrSpcAmbientOcclusionMap = aoPipeline.aoMap
             )
             val modelCfg = GltfFile.ModelGenerateConfig(materialConfig = materialCfg)
             loadGltfModel("path/to/model.glb", modelCfg)?.let { model ->
                 +model
                 model.translate(0f, 0.5f, 0f)
-    
+
                 if (model.animations.isNotEmpty()) {
                     model.enableAnimation(0)
                     model.onUpdate += { updateEvt ->

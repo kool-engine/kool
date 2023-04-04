@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package de.fabmax.kool.pipeline.shading
 
 import de.fabmax.kool.KoolContext
@@ -6,12 +8,14 @@ import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.Color
 
+@Deprecated("Replaced by KslUnlitShader")
 inline fun unlitShader(block: UnlitMaterialConfig.() -> Unit): UnlitShader {
     val cfg = UnlitMaterialConfig()
     cfg.block()
     return UnlitShader(cfg)
 }
 
+@Deprecated("Replaced by KslUnlitShader")
 open class UnlitShader(cfg: UnlitMaterialConfig, model: ShaderModel = defaultUnlitModel(cfg)) : ModeledShader(model) {
 
     private val cullMethod = cfg.cullMethod

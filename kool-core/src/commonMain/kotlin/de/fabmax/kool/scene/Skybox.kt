@@ -7,11 +7,10 @@ import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.modules.ksl.blocks.convertColorSpace
 import de.fabmax.kool.modules.ksl.blocks.mvpMatrix
 import de.fabmax.kool.modules.ksl.lang.*
-import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.pipeline.CullMethod
+import de.fabmax.kool.pipeline.TextureCube
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
-import de.fabmax.kool.pipeline.shadermodel.*
-import de.fabmax.kool.pipeline.shading.ModeledShader
-import de.fabmax.kool.pipeline.shading.Texture2dInput
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 
 fun Scene.skybox(ibl: EnvironmentMaps, lod: Float = 1f) {
@@ -27,22 +26,6 @@ object Skybox {
             else -> ColorSpaceConversion.sRGB_TO_LINEAR
         }
         return Cube(environmentMap, texLod, colorSpaceConversion)
-    }
-
-    fun sphere(environmentMap: Texture2d, texLod: Float = 0f, hdriInput: Boolean = true, hdrOutput: Boolean = false): Mesh {
-        return mesh(listOf(Attribute.POSITIONS, Attribute.TEXTURE_COORDS), "skybox-cube") {
-            generate {
-                vertexModFun = {
-                    texCoord.x = 1f - texCoord.x
-                }
-                uvSphere {
-                    steps = 10
-                }
-            }
-            isFrustumChecked = false
-            isCastingShadow = false
-            shader = SkyboxSphereShader(environmentMap, texLod, hdriInput, hdrOutput)
-        }
     }
 
     class Cube(skyTex: TextureCube? = null, texLod: Float = 0f, colorSpaceConversion: ColorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR)
@@ -111,60 +94,6 @@ object Skybox {
                     }
                 }
             }
-        }
-    }
-
-    class SkyboxSphereShader(environmentMap: Texture2d, texLod: Float = 0f, hdriInput: Boolean, hdrOutput: Boolean) :
-            ModeledShader(skyboxSphereShaderModel(texLod, hdriInput, hdrOutput)) {
-
-        val environmentMapTex = Texture2dInput("skyboxCube", environmentMap)
-
-        init {
-            onPipelineSetup += { builder, _, _ ->
-                builder.cullMethod = CullMethod.CULL_FRONT_FACES
-                builder.depthTest = DepthCompareOp.LESS_EQUAL
-            }
-            onPipelineCreated += { _, _, _ ->
-                environmentMapTex.connect(model)
-            }
-        }
-
-        companion object {
-            fun skyboxSphereShaderModel(texLod: Float, hdriInput: Boolean, hdrOutput: Boolean) = ShaderModel("skybox-sphere").apply {
-                val ifUv: StageInterfaceNode
-
-                vertexStage {
-                    val mvp = mvpNode()
-                    ifUv = stageInterfaceNode("ifUv", attrTexCoords().output)
-                    positionOutput = addNode(SkyboxPosNode(mvp, attrPositions().output, stage)).outPosition
-                }
-                fragmentStage {
-                    val sampler = texture2dSamplerNode(texture2dNode("skyboxSphere"), ifUv.output)
-                    if (texLod != 0f) {
-                        sampler.texLod = ShaderNodeIoVar(ModelVar1fConst(texLod))
-                    }
-
-                    when {
-                        hdriInput == hdrOutput -> colorOutput(sampler.outColor)
-                        hdriInput -> colorOutput(hdrToLdrNode(sampler.outColor).outColor)
-                        else -> colorOutput(gammaNode(sampler.outColor).outColor)
-                    }
-                }
-            }
-        }
-    }
-
-    class SkyboxPosNode(val mvp: UniformBufferMvp, val inPos: ShaderNodeIoVar, graph: ShaderGraph) : ShaderNode("skyboxPos", graph, ShaderStage.VERTEX_SHADER.mask) {
-        val outPosition = ShaderNodeIoVar(ModelVar4f("skyboxPos_outPosition"), this)
-
-        override fun setup(shaderGraph: ShaderGraph) {
-            super.setup(shaderGraph)
-            dependsOn(inPos)
-            dependsOn(mvp)
-        }
-
-        override fun generateCode(generator: CodeGenerator) {
-            generator.appendMain("${outPosition.declare()} = (${mvp.outMvpMat} * vec4(${inPos.ref3f()}, 0.0)).xyww;")
         }
     }
 }

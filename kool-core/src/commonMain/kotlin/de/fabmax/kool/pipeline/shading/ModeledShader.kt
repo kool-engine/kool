@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package de.fabmax.kool.pipeline.shading
 
 import de.fabmax.kool.KoolContext
@@ -6,6 +8,7 @@ import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.Color
 
+@Deprecated("Replaced by KslShader")
 open class ModeledShader(val model: ShaderModel) : Shader() {
 
     override fun onPipelineSetup(builder: Pipeline.Builder, mesh: Mesh, ctx: KoolContext) {

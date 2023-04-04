@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package de.fabmax.kool.pipeline.shading
 
 import de.fabmax.kool.KoolContext
@@ -11,12 +13,14 @@ import de.fabmax.kool.util.CascadedShadowMap
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.SimpleShadowMap
 
+@Deprecated("Replaced by KslPbrShader")
 fun pbrShader(cfgBlock: PbrMaterialConfig.() -> Unit): PbrShader {
     val cfg = PbrMaterialConfig()
     cfg.cfgBlock()
     return PbrShader(cfg)
 }
 
+@Deprecated("Replaced by KslPbrShader")
 open class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrModel(cfg)) : ModeledShader(model) {
 
     private val cullMethod = cfg.cullMethod

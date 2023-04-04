@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package de.fabmax.kool.pipeline.shading
 
 import de.fabmax.kool.KoolContext
@@ -9,12 +11,14 @@ import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ShadowMap
 import de.fabmax.kool.util.SimpleShadowMap
 
+@Deprecated("Replaced by KslBlinnPhongShader")
 fun phongShader(cfgBlock: PhongShader.PhongConfig.() -> Unit): PhongShader {
     val cfg = PhongShader.PhongConfig()
     cfg.cfgBlock()
     return PhongShader(cfg)
 }
 
+@Deprecated("Replaced by KslBlinnPhongShader")
 open class PhongShader(cfg: PhongConfig, model: ShaderModel = defaultPhongModel(cfg)) : ModeledShader(model) {
 
     private val cullMethod = cfg.cullMethod

@@ -1,11 +1,9 @@
 package de.fabmax.kool.scene
 
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.GlslType
-import de.fabmax.kool.pipeline.shadermodel.vertexStage
-import de.fabmax.kool.pipeline.shading.UnlitMaterialConfig
-import de.fabmax.kool.pipeline.shading.UnlitShader
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.PrimitiveType
 import de.fabmax.kool.scene.geometry.VertexView
@@ -25,13 +23,16 @@ open class PointMesh(geometry: IndexedVertexList = IndexedVertexList(Attribute.P
         geometry.primitiveType = PrimitiveType.POINTS
         rayTest = MeshRayTest.nopTest()
 
-        val unlitCfg = UnlitMaterialConfig()
-        val unlitModel = UnlitShader.defaultUnlitModel(unlitCfg).apply {
-            vertexStage {
-                pointSize(attributeNode(ATTRIB_POINT_SIZE).output)
+        shader = KslUnlitShader {
+            color { vertexColor() }
+            modelCustomizer = {
+                vertexStage {
+                    main {
+                        outPointSize set vertexAttribFloat1(ATTRIB_POINT_SIZE.name)
+                    }
+                }
             }
         }
-        shader = UnlitShader(unlitCfg, unlitModel)
     }
 
     fun addPoint(block: VertexView.() -> Unit): Int {

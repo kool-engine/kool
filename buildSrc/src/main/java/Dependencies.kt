@@ -1,9 +1,9 @@
 import org.gradle.internal.os.OperatingSystem
 
 object Versions {
-    val kotlinVersion = "1.8.10"
-    val kotlinCorroutinesVersion = "1.6.4"
-    val kotlinSerializationVersion = "1.4.1"
+    val kotlinVersion = "1.8.20"
+    val kotlinCorroutinesVersion = "1.7.0-Beta"
+    val kotlinSerializationVersion = "1.5.0"
 }
 
 object DepsCommon {
