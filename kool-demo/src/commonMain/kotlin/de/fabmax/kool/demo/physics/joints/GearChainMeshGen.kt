@@ -8,11 +8,11 @@ import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.GlslType
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
+import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.geometry.Profile
 import de.fabmax.kool.scene.geometry.SimpleShape
 import de.fabmax.kool.scene.geometry.simpleShape
-import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.ShadowMap
@@ -23,7 +23,7 @@ object GearChainMeshGen {
     private val attribMetallic = Attribute("aMetallic", GlslType.FLOAT)
     private val meshAttribs = listOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, attribRoughness, attribMetallic)
 
-    fun makeNiceGearMesh(ibl: EnvironmentMaps, aoMap: Texture2d, shadows: List<ShadowMap>) = mesh(meshAttribs) {
+    fun makeNiceGearMesh(ibl: EnvironmentMaps, aoMap: Texture2d, shadows: List<ShadowMap>) = Mesh(meshAttribs).apply {
         isFrustumChecked = false
         instances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT))
         generate {
@@ -169,7 +169,7 @@ object GearChainMeshGen {
         shader = makeMeshShader(ibl, aoMap, shadows)
     }
 
-    fun makeNiceAxleMesh(ibl: EnvironmentMaps, aoMap: Texture2d, shadows: List<ShadowMap>) = mesh(meshAttribs) {
+    fun makeNiceAxleMesh(ibl: EnvironmentMaps, aoMap: Texture2d, shadows: List<ShadowMap>) = Mesh(meshAttribs).apply {
         isFrustumChecked = false
         instances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT))
         generate {
@@ -270,7 +270,7 @@ object GearChainMeshGen {
         shader = makeMeshShader(ibl, aoMap, shadows)
     }
 
-    fun makeNiceInnerLinkMesh(ibl: EnvironmentMaps, aoMap: Texture2d, shadows: List<ShadowMap>) = mesh(meshAttribs) {
+    fun makeNiceInnerLinkMesh(ibl: EnvironmentMaps, aoMap: Texture2d, shadows: List<ShadowMap>) = Mesh(meshAttribs).apply {
         isFrustumChecked = false
         instances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT))
         generate {
@@ -325,7 +325,7 @@ object GearChainMeshGen {
         shader = makeMeshShader(ibl, aoMap, shadows)
     }
 
-    fun makeNiceOuterLinkMesh(ibl: EnvironmentMaps, aoMap: Texture2d, shadows: List<ShadowMap>) = mesh(meshAttribs) {
+    fun makeNiceOuterLinkMesh(ibl: EnvironmentMaps, aoMap: Texture2d, shadows: List<ShadowMap>) = Mesh(meshAttribs).apply {
         isFrustumChecked = false
         instances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT))
         generate {

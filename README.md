@@ -79,9 +79,9 @@ fun main() {
     val ctx = createDefaultContext()
     
     ctx.scenes += scene {
-        defaultCamTransform()
-    
-        +colorMesh {
+        defaultOrbitCamera()
+
+        colorMesh {
             generate {
                 cube {
                     colored()
@@ -94,7 +94,7 @@ fun main() {
                 roughness(0.25f)
             }
         }
-    
+
         lighting.singleLight {
             setDirectional(Vec3f(-1f, -1f, -1f))
             setColor(Color.WHITE, 5f)
@@ -104,8 +104,8 @@ fun main() {
     ctx.run()
 }
 ```
-The above example creates a new scene and sets up a mouse-controlled camera (with `defaultCamTransform()`).
-As you might have guessed the `+colorMesh { ... }` block creates a colored cube and adds it to the scene.
+The above example creates a new scene and sets up a mouse-controlled camera (with `defaultOrbitCamera()`).
+As you might have guessed the `colorMesh { ... }` block creates a colored cube and adds it to the scene.
 In order to draw the mesh on the screen it needs a shader, which is assigned with
 `shader = KslPbrShader { ... }`. This creates a simple PBR shader for a dielectric material
 with a rather smooth surface. Color information is taken from the corresponding vertex attribute.
@@ -121,7 +121,7 @@ fun main() {
     val ctx = createDefaultContext()
 
     ctx.scenes += scene {
-        defaultCamTransform()
+        defaultOrbitCamera()
 
         // Light setup
         lighting.singleLight {
@@ -132,7 +132,7 @@ fun main() {
         val aoPipeline = AoPipeline.createForward(this)
 
         // Add a ground plane
-        +colorMesh {
+        colorMesh {
             generate {
                 grid { }
             }
@@ -151,7 +151,7 @@ fun main() {
             )
             val modelCfg = GltfFile.ModelGenerateConfig(materialConfig = materialCfg)
             loadGltfModel("path/to/model.glb", modelCfg)?.let { model ->
-                +model
+                addNode(model)
                 model.translate(0f, 0.5f, 0f)
 
                 if (model.animations.isNotEmpty()) {
@@ -172,7 +172,7 @@ requires a position, direction and opening angle. Other than directional lights,
 (point-) position and objects are affected less by them, the farther they are away. This usually results in a much
 higher required light intensity: Here we use an intensity of 300.
 
-Next we create a `SimpleShadowMap` which computes the shadows casted by the light source we defined before.
+Next we create a `SimpleShadowMap` which computes the shadows cast by the light source we defined before.
 Moreover, the created `AoPipeline` computes an ambient occlusion map, which is later used by the shaders to
 further improve the visual appearance of the scene.
 
@@ -208,7 +208,7 @@ fun main() {
     val ctx = createDefaultContext()
     
     ctx.scenes += UiScene(clearScreen = true) {
-        +Panel(colors = Colors.singleColorLight(MdColor.LIGHT_GREEN)) {
+        Panel(colors = Colors.singleColorLight(MdColor.LIGHT_GREEN)) {
             modifier
                 .size(400.dp, 300.dp)
                 .align(AlignmentX.Center, AlignmentY.Center)

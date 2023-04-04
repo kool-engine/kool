@@ -37,7 +37,6 @@ class BloomThresholdPass(deferredPipeline: DeferredPipeline, cfg: DeferredPipeli
                 generateFullscreenQuad()
                 shader = outputShader
             }
-            +quad
         }
 
         deferredPipeline.passes.forEach { dependsOn(it.lightingPass) }

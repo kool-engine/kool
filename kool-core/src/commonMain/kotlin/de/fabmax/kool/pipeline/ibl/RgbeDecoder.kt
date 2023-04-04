@@ -33,9 +33,8 @@ class RgbeDecoder(parentScene: Scene, hdriTexture: Texture2d, brightness: Float 
     init {
         clearColor = null
         (drawNode as Group).apply {
-            +textureMesh {
+            textureMesh {
                 generateFullscreenQuad()
-
                 shader = RgbeDecoderShader(hdriTexture, brightness)
             }
         }

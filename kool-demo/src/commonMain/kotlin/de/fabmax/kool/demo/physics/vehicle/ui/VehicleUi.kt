@@ -19,23 +19,31 @@ class VehicleUi(val vehicle: DemoVehicle) {
         background = Color("00000070")
     )
 
-    val uiSurface = Panel(colors = menuColors) {
-        surface.sizes = getSizes(Settings.uiSize.use().sizes)
+    val uiSurface = UiSurface(colors = menuColors).apply {
+        content = {
+            Box {
+                modifier
+                    .backgroundColor(colors.background)
+                    .layout(ColumnLayout)
 
-        modifier
-            .background(null)
-            .layout(CellLayout)
-            .width(FitContent)
-            .height(FitContent)
-            .align(AlignmentX.Start, AlignmentY.Bottom)
-        dashboard()
+                surface.sizes = getSizes(Settings.uiSize.use().sizes)
 
-        surface.popup().apply {
-            modifier
-                .width(FitContent)
-                .height(FitContent)
-                .align(AlignmentX.Center, AlignmentY.Top)
-            timerUi()
+                modifier
+                    .background(null)
+                    .layout(CellLayout)
+                    .width(FitContent)
+                    .height(FitContent)
+                    .align(AlignmentX.Start, AlignmentY.Bottom)
+                dashboard()
+
+                surface.popup().apply {
+                    modifier
+                        .width(FitContent)
+                        .height(FitContent)
+                        .align(AlignmentX.Center, AlignmentY.Top)
+                    timerUi()
+                }
+            }
         }
     }
 

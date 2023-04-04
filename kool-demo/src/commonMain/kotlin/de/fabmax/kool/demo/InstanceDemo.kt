@@ -43,9 +43,8 @@ class InstanceDemo : DemoScene("Instanced Drawing") {
     }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
-        +orbitInputTransform {
-            +camera.apply {
-                this as PerspectiveCamera
+        orbitCamera {
+            camera.apply {
                 clipNear = 1f
                 clipFar = 500f
             }
@@ -70,7 +69,7 @@ class InstanceDemo : DemoScene("Instanced Drawing") {
             setColor(Color.WHITE, 5f)
         }
 
-        +lodController
+        addNode(lodController)
         addLods(model)
     }
 

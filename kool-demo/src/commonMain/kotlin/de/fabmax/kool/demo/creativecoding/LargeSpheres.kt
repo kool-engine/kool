@@ -7,8 +7,8 @@ import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ui2.UiScope
 import de.fabmax.kool.modules.ui2.remember
 import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
-import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.util.ColorGradient
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.MutableColor
@@ -21,7 +21,7 @@ class LargeSpheres(val resources: CreativeCodingDemo.Resources) : CreativeConten
         Attribute.INSTANCE_COLOR
     ))
 
-    private val mesh = mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS)) {
+    private val mesh = Mesh(Attribute.POSITIONS, Attribute.NORMALS).apply {
         instances = this@LargeSpheres.instances
         shader = KslPbrShader {
             vertices { isInstanced = true }
@@ -44,7 +44,7 @@ class LargeSpheres(val resources: CreativeCodingDemo.Resources) : CreativeConten
     private var settings = Settings()
 
     init {
-        +mesh
+        addNode(mesh)
         rebuildInstances(settings)
     }
 

@@ -16,21 +16,18 @@ import de.fabmax.kool.util.Time
  * @author fabmax
  */
 
-fun orbitInputTransform(name: String? = null, block: OrbitInputTransform.() -> Unit): OrbitInputTransform {
+fun Scene.orbitCamera(name: String? = null, block: OrbitInputTransform.() -> Unit): OrbitInputTransform {
     val sit = OrbitInputTransform(name)
+    sit.addNode(camera)
     sit.block()
+    addNode(sit)
     return sit
 }
 
-fun Scene.defaultCamTransform(): OrbitInputTransform {
-    val ct = orbitInputTransform {
-        // Set some initial rotation so that we look down on the scene
-        setMouseRotation(20f, -30f)
-        // Add camera to the transform group
-        +camera
+fun Scene.defaultOrbitCamera(yaw: Float = 20f, pitch: Float = -30f): OrbitInputTransform {
+    return orbitCamera {
+        setMouseRotation(yaw, pitch)
     }
-    +ct
-    return ct
 }
 
 open class OrbitInputTransform(name: String? = null) : Group(name), InputStack.PointerListener {
@@ -108,13 +105,13 @@ open class OrbitInputTransform(name: String? = null) : Group(name), InputStack.P
         }
     }
 
-    fun setMouseRotation(vertical: Float, horizontal: Float) = setMouseRotation(vertical.toDouble(), horizontal.toDouble())
+    fun setMouseRotation(yaw: Float, pitch: Float) = setMouseRotation(yaw.toDouble(), pitch.toDouble())
 
-    fun setMouseRotation(vertical: Double, horizontal: Double) {
-        vertRotAnimator.set(vertical)
-        horiRotAnimator.set(horizontal)
-        verticalRotation = vertical
-        horizontalRotation = horizontal
+    fun setMouseRotation(yaw: Double, pitch: Double) {
+        vertRotAnimator.set(yaw)
+        horiRotAnimator.set(pitch)
+        verticalRotation = yaw
+        horizontalRotation = pitch
     }
 
     fun setMouseTranslation(x: Float, y: Float, z: Float) = setMouseTranslation(x.toDouble(), y.toDouble(), z.toDouble())

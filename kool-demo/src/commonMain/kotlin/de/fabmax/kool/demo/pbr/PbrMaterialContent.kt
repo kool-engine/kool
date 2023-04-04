@@ -15,8 +15,8 @@ import de.fabmax.kool.util.Time
 
 class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrContent("PBR material") {
     private val shaders = mutableListOf<KslPbrShader>()
-    private var iblContent: Group? = null
-    private var nonIblContent: Group? = null
+    private var iblContent: Node? = null
+    private var nonIblContent: Node? = null
 
     private val selectedMatIdx = mutableStateOf(3)
     val currentMat: MaterialMaps get() = materials[selectedMatIdx.value]
@@ -62,15 +62,12 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrCont
         nonIblContent?.isVisible = !enabled
     }
 
-    override fun createContent(scene: Scene, envMaps: EnvironmentMaps, ctx: KoolContext): Group {
-        content = group {
+    override fun createContent(scene: Scene, envMaps: EnvironmentMaps, ctx: KoolContext): Node {
+        content = Group().apply {
             isVisible = false
 
             val ibl = makeSphere(true, scene, envMaps)
             val nonIbl = makeSphere(false, scene, envMaps).apply { isVisible = false }
-
-            +ibl
-            +nonIbl
 
             iblContent = ibl
             nonIblContent = nonIbl
@@ -93,34 +90,32 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrCont
         }
     }
 
-    private fun makeSphere(withIbl: Boolean, scene: Scene, envMaps: EnvironmentMaps) = group {
-        +textureMesh(isNormalMapped = true) {
-            geometry.addGeometry(sphereProto.detailSphere)
-            val shader = KslPbrShader{
-                color { textureColor() }
-                normalMapping { setNormalMap() }
-                roughness { textureProperty() }
-                metallic { textureProperty() }
-                ao { materialAo { textureProperty() } }
-                vertices {
-                    displacement {
-                        textureProperty()
-                        uniformProperty(displacement.value, mixMode = PropertyBlockConfig.MixMode.Multiply)
-                    }
-                }
-                if (withIbl) {
-                    imageBasedAmbientColor(envMaps.irradianceMap)
-                    reflectionMap = envMaps.reflectionMap
+    private fun Node.makeSphere(withIbl: Boolean, scene: Scene, envMaps: EnvironmentMaps) = textureMesh(isNormalMapped = true) {
+        geometry.addGeometry(sphereProto.detailSphere)
+        val shader = KslPbrShader{
+            color { textureColor() }
+            normalMapping { setNormalMap() }
+            roughness { textureProperty() }
+            metallic { textureProperty() }
+            ao { materialAo { textureProperty() } }
+            vertices {
+                displacement {
+                    textureProperty()
+                    uniformProperty(displacement.value, mixMode = PropertyBlockConfig.MixMode.Multiply)
                 }
             }
-            this.shader = shader
-            shaders += shader
-
-            updatePbrMaterial()
-
-            scene.onDispose += {
-                materials.forEach { it.disposeMaps() }
+            if (withIbl) {
+                imageBasedAmbientColor(envMaps.irradianceMap)
+                reflectionMap = envMaps.reflectionMap
             }
+        }
+        this.shader = shader
+        shaders += shader
+
+        updatePbrMaterial()
+
+        scene.onDispose += {
+            materials.forEach { it.disposeMaps() }
         }
     }
 

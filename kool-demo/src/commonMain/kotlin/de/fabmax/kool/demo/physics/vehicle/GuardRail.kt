@@ -17,7 +17,6 @@ import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.simpleShape
-import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.util.Float32Buffer
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.PolyUtil
@@ -44,7 +43,7 @@ class GuardRail {
         signs.forEach { it.joint.release() }
     }
 
-    private fun makeMesh() = mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS)) {
+    private fun makeMesh() = Mesh(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS).apply {
         isFrustumChecked = false
         instances = signInstances
 

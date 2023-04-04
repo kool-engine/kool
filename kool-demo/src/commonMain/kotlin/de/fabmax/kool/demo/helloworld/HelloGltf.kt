@@ -10,41 +10,44 @@ import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.pipeline.ao.AoPipeline
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.colorMesh
-import de.fabmax.kool.scene.defaultCamTransform
+import de.fabmax.kool.scene.defaultOrbitCamera
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.SimpleShadowMap
 import de.fabmax.kool.util.Time
 
 class HelloGltfDemo : DemoScene("Hello glTF") {
     override fun Scene.setupMainScene(ctx: KoolContext) {
-        defaultCamTransform()
+        defaultOrbitCamera()
 
+        // Light setup
         lighting.singleLight {
             setSpot(Vec3f(5f, 6.25f, 7.5f), Vec3f(-1f, -1.25f, -1.5f), 45f)
             setColor(Color.WHITE, 300f)
         }
-        val shadows = SimpleShadowMap(this, lightIndex = 0)
+        val shadowMap = SimpleShadowMap(this, lightIndex = 0)
         val aoPipeline = AoPipeline.createForward(this)
 
-        +colorMesh {
+        // Add a ground plane
+        colorMesh {
             generate {
                 grid { }
             }
             shader = KslPbrShader {
                 color { constColor(Color.WHITE) }
+                shadow { addShadowMap(shadowMap) }
                 enableSsao(aoPipeline.aoMap)
-                shadow { addShadowMap(shadows) }
             }
         }
 
+        // Load a glTF 2.0 model
         ctx.assetMgr.launch {
             val materialCfg = GltfFile.ModelMaterialConfig(
-                shadowMaps = listOf(shadows),
+                shadowMaps = listOf(shadowMap),
                 scrSpcAmbientOcclusionMap = aoPipeline.aoMap
             )
             val modelCfg = GltfFile.ModelGenerateConfig(materialConfig = materialCfg)
             loadGltfModel("${DemoLoader.modelPath}/BoxAnimated.gltf", modelCfg)?.let { model ->
-                +model
+                addNode(model)
                 model.translate(0f, 0.5f, 0f)
 
                 if (model.animations.isNotEmpty()) {

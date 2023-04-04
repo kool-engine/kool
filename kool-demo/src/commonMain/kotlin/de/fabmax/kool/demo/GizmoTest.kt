@@ -7,7 +7,7 @@ import de.fabmax.kool.modules.ksl.KslBlinnPhongShader
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.colorMesh
-import de.fabmax.kool.scene.defaultCamTransform
+import de.fabmax.kool.scene.defaultOrbitCamera
 import de.fabmax.kool.scene.group
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.Color
@@ -37,12 +37,12 @@ class GizmoTest : DemoScene("Gizmo Test") {
             }
         }
 
-        +group {
+        group {
             onUpdate += {
                 gizmo1.getGizmoTransform(this)
             }
 
-            +colorMesh {
+            colorMesh {
                 generate {
                     cube {
                         centered()
@@ -58,7 +58,7 @@ class GizmoTest : DemoScene("Gizmo Test") {
         }
 
         // gizmo must be added after scene objects for correct depth / alpha behavior
-        +gizmo1
+        addNode(gizmo1)
 
         gizmo2.setFixedScale(1f)
         gizmo2.axisHandleX.set(4f, 0f, 0f)
@@ -79,7 +79,7 @@ class GizmoTest : DemoScene("Gizmo Test") {
             hasPlaneXZ = true,
             hasPlaneYZ = false
         )
-        +gizmo2
+        addNode(gizmo2)
 
         var axX = 1f
         var axNegX = -1f
@@ -113,7 +113,7 @@ class GizmoTest : DemoScene("Gizmo Test") {
         InputStack.defaultInputHandler.pointerListeners += gizmo2
 
         // add cam transform after gizmo, so that gizmo can consume drag events before cam transform
-        defaultCamTransform()
+        defaultOrbitCamera()
 
         onUpdate += {
             transform1.update()

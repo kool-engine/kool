@@ -33,12 +33,13 @@ class UiDemo : DemoScene("UI Demo") {
     override fun Scene.setupMainScene(ctx: KoolContext) {
         setupUiScene(true)
 
-        +dockingHost.apply {
+        dockingHost.apply {
             onUpdate += {
                 // set a left margin for the demo menu band
                 dockingSurface.rootContainer.dockMarginStart.set(UiSizes.baseSize)
             }
         }
+        addNode(dockingHost)
 
         // Spawn a few windows, docked right, left and in center
         //
@@ -60,7 +61,7 @@ class UiDemo : DemoScene("UI Demo") {
         spawnWindow(TextStyleWindow(this@UiDemo))
 
         // add a sidebar for the demo menu
-        +Panel {
+        Panel {
             surface.colors = selectedColors.use()
             surface.sizes = Settings.uiSize.use().sizes
 
@@ -96,7 +97,7 @@ class UiDemo : DemoScene("UI Demo") {
     fun spawnWindow(window: DemoWindow, dockPath: List<Pair<DockingHost.DockPosition, Dimension>>? = null) {
         demoWindows += window
         dockingHost.apply {
-            +window.windowSurface
+            addNode(window.windowSurface)
             if (dockPath != null) {
                 dockWindow(window.windowScope, dockPath)
             } else {

@@ -52,7 +52,7 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
         clearColor = null
 
         (drawNode as Group).apply {
-            +mesh(listOf(Attribute.POSITIONS, Attribute.TEXTURE_COORDS)) {
+            mesh(Attribute.POSITIONS, Attribute.TEXTURE_COORDS) {
                 generateFullscreenQuad()
 
                 shader = aoPassShader

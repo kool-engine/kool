@@ -46,7 +46,7 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
         vertexColor()
     }
 
-    private val sunMesh = colorMesh {
+    private val sunMesh = ColorMesh().apply {
         isFrustumChecked = false
         generate {
             circle {
@@ -56,7 +56,7 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
         }
         shader = sunShader
     }
-    private val moonMesh = textureMesh {
+    private val moonMesh = TextureMesh().apply {
         isFrustumChecked = false
         generate {
             rect {
@@ -83,10 +83,10 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
     }
 
     val skyGroup = Group().apply {
-        +skybox
-        +sunMesh
-        +starMesh
-        +moonMesh
+        addNode(skybox)
+        addNode(sunMesh)
+        addNode(starMesh)
+        addNode(moonMesh)
     }
 
     lateinit var weightedEnvs: WeightedEnvMaps

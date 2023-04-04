@@ -4,8 +4,8 @@ import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.Light
+import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
-import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MutableColor
 
@@ -25,7 +25,7 @@ class DeferredPointLights(var isDynamic: Boolean) {
     //val lightShader = DeferredLightShader(Light.Type.POINT)
     val lightShader = DeferredLightShader(Light.Type.POINT)
 
-    val mesh = mesh(listOf(Attribute.POSITIONS)) {
+    val mesh = Mesh(listOf(Attribute.POSITIONS)).apply {
         isFrustumChecked = false
         instances = lightInstanceData
 

@@ -4,7 +4,7 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.util.Color
 
 fun WindowScope.TitleBar(
-    title: String = surface.name ?: "Window",
+    title: String = surface.name,
     isDraggable: Boolean = true,
     showTabsIfDocked: Boolean = true,
     hideTitleWhenTabbed: Boolean = true,
@@ -64,13 +64,13 @@ fun WindowScope.DockingTabsBar(
         Row(width = Grow.Std, height = sizes.gap * 3f) {
             modifier.backgroundColor(colors.secondaryVariant.mix(Color.BLACK, 0.2f))
 
-            dockingContainer.dockedWindows.use().forEachIndexed { i, wnd ->
+            dockingContainer.dockedWindows.use().forEach { wnd ->
                 Box {
                     modifier
                         .margin(horizontal = sizes.smallGap)
                         .alignY(AlignmentY.Bottom)
 
-                    Button(wnd.surface.name ?: "Window $i") {
+                    Button(wnd.surface.name) {
                         // set a bit different button style: click feedback is disabled (doesn't work with the way
                         // the tabs are switched)
                         // also we use a custom background to get a more "tabbie" look

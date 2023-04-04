@@ -70,7 +70,7 @@ class SimplificationDemo : DemoScene("Simplification") {
     }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
-        defaultCamTransform()
+        defaultOrbitCamera()
 
         lighting.lights.apply {
             clear()
@@ -78,9 +78,9 @@ class SimplificationDemo : DemoScene("Simplification") {
             add(Light().setDirectional(Vec3f(1f, -1f, -1f)).setColor(MdColor.CYAN.mix(Color.WHITE, 0.25f).toLinear(), 2f))
         }
 
-        +group {
-            +dispModel
-            +modelWireframe
+        group {
+            addNode(dispModel)
+            addNode(modelWireframe)
 
             onUpdate += {
                 if (isAutoRotate.value) {

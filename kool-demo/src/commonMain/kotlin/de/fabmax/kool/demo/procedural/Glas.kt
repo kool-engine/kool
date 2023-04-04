@@ -24,9 +24,9 @@ class Glas(val ibl: EnvironmentMaps, shadowMap: SimpleShadowMap) : Group(), Defe
     private val glasShader: GlassShader = GlassShader(ibl, shadowMap)
 
     init {
-        +makeWine()
-        +makeBody()
-        +makeShaft()
+        makeWine()
+        makeBody()
+        makeShaft()
 
         translate(7.5f, 0f, 2.5f)
         scale(0.9f)

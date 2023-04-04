@@ -18,7 +18,7 @@ class Circles : CreativeContent("Circles") {
     private val lineMesh = BetterLineMesh()
 
     init {
-        +lineMesh
+        addNode(lineMesh)
         rebuildLines(settings)
     }
 

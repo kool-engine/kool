@@ -38,7 +38,7 @@ class OpticalDepthLutPass :
         }
 
         (drawNode as Group).apply {
-            +mesh(listOf(Attribute.POSITIONS, Attribute.TEXTURE_COORDS)) {
+            mesh(listOf(Attribute.POSITIONS, Attribute.TEXTURE_COORDS)) {
                 generateFullscreenQuad()
                 shader = lutShader
 

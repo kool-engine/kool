@@ -10,7 +10,6 @@ import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenShaderPipelineCfg
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.util.Color
 
 class AoDenoisePass(aoPass: OffscreenRenderPass2d, depthComponent: String) :
@@ -35,12 +34,12 @@ class AoDenoisePass(aoPass: OffscreenRenderPass2d, depthComponent: String) :
     init {
         clearColor = null
 
-        denoiseMesh = mesh(listOf(Attribute.POSITIONS, Attribute.TEXTURE_COORDS)) {
+        denoiseMesh = Mesh(Attribute.POSITIONS, Attribute.TEXTURE_COORDS, name = "AoDenoiseMesh").apply {
             generateFullscreenQuad()
             shader = denoiseShader
         }
 
-        clearMesh = mesh(listOf(Attribute.POSITIONS, Attribute.TEXTURE_COORDS)) {
+        clearMesh = Mesh(Attribute.POSITIONS, Attribute.TEXTURE_COORDS, name = "AoClearMesh").apply {
             isVisible = false
             generateFullscreenQuad()
             shader = KslShader(KslProgram("AO Clear").apply {
@@ -54,8 +53,8 @@ class AoDenoisePass(aoPass: OffscreenRenderPass2d, depthComponent: String) :
         }
 
         (drawNode as Group).apply {
-            +denoiseMesh
-            +clearMesh
+            addNode(denoiseMesh)
+            addNode(clearMesh)
         }
     }
 

@@ -31,7 +31,7 @@ class DockingHost : Group() {
     var maxSplitDepth = 4
 
     init {
-        +dockingSurface
+        dockingSurface
     }
 
     fun dockWindow(window: WindowScope, path: List<Pair<DockPosition, Dimension>>, bringToTop: Boolean = true) {

@@ -30,16 +30,11 @@ class PlanarOrbits(resources: CreativeCodingDemo.Resources) : CreativeContent("P
     private val orbitMeshY = createMesh(resources)
     private val orbitMeshZ = createMesh(resources)
 
-    private val orbitGroupX = Group().apply { +orbitMeshX }
-    private val orbitGroupY = Group().apply { +orbitMeshY }
-    private val orbitGroupZ = Group().apply { +orbitMeshZ }
+    private val orbitGroupX = Group().apply { addNode(orbitMeshX) }
+    private val orbitGroupY = Group().apply { addNode(orbitMeshY) }
+    private val orbitGroupZ = Group().apply { addNode(orbitMeshZ) }
 
     init {
-        +sunMesh
-        +orbitGroupX
-        +orbitGroupY
-        +orbitGroupZ
-
         rebuildSun()
         rebuildOrbits()
 
@@ -52,16 +47,16 @@ class PlanarOrbits(resources: CreativeCodingDemo.Resources) : CreativeContent("P
         }
     }
 
-    private fun createMesh(resources: CreativeCodingDemo.Resources): Mesh {
-        return mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.METAL_ROUGH)) {
-            shader = KslPbrShader {
-                color { vertexColor() }
-                metallic { vertexProperty(Attribute.METAL_ROUGH, 0) }
-                roughness { vertexProperty(Attribute.METAL_ROUGH, 1) }
-                shadow { addShadowMaps(resources.shadowMaps) }
-                imageBasedAmbientColor(resources.imageEnv.irradianceMap)
-                reflectionMap = resources.imageEnv.reflectionMap
-            }
+    private fun createMesh(resources: CreativeCodingDemo.Resources): Mesh = mesh(
+        Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.METAL_ROUGH
+    ) {
+        shader = KslPbrShader {
+            color { vertexColor() }
+            metallic { vertexProperty(Attribute.METAL_ROUGH, 0) }
+            roughness { vertexProperty(Attribute.METAL_ROUGH, 1) }
+            shadow { addShadowMaps(resources.shadowMaps) }
+            imageBasedAmbientColor(resources.imageEnv.irradianceMap)
+            reflectionMap = resources.imageEnv.reflectionMap
         }
     }
 

@@ -41,7 +41,7 @@ class CreativeCodingDemo : DemoScene("Creative Coding") {
     }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
-        +contentGroup
+        addNode(contentGroup)
         selectContent(contentIndex.value)
 
         lighting.singleLight {
@@ -93,13 +93,12 @@ class CreativeCodingDemo : DemoScene("Creative Coding") {
     }
 
     private fun Scene.setupCamera() {
-        +orbitInputTransform {
+        orbitCamera {
             minZoom = 100.0
             maxZoom = 1000.0
             zoom = 400.0
             rightDragMethod = OrbitInputTransform.DragMethod.NONE
 
-            +camera
             camera.setClipRange(2f, 2000f)
             setMouseRotation(0f, -10f)
 

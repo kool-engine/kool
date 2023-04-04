@@ -1,6 +1,8 @@
 package de.fabmax.kool.modules.ui2
 
-fun Panel(
+import de.fabmax.kool.scene.Scene
+
+fun Scene.Panel(
     colors: Colors = Colors.darkColors(),
     sizes: Sizes = Sizes.medium,
     name: String = "Panel",
@@ -15,5 +17,6 @@ fun Panel(
             content()
         }
     }
+    addNode(surface)
     return surface
 }

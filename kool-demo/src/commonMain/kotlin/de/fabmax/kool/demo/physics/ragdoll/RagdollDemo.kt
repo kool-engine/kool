@@ -95,23 +95,25 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
         val groundAlbedo = loadAndPrepareTexture("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine.png")
         val groundNormal = loadAndPrepareTexture("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine_normal.png")
 
-        mainScene += textureMesh(isNormalMapped = true) {
-            isCastingShadow = false
-            generate {
-                rotate(-90f, Vec3f.X_AXIS)
-                rect {
-                    size.set(100f, 100f)
-                    origin.set(size.x, size.y, 0f).scale(-0.5f)
-                    generateTexCoords(20f)
+        mainScene.apply {
+            textureMesh(isNormalMapped = true) {
+                isCastingShadow = false
+                generate {
+                    rotate(-90f, Vec3f.X_AXIS)
+                    rect {
+                        size.set(100f, 100f)
+                        origin.set(size.x, size.y, 0f).scale(-0.5f)
+                        generateTexCoords(20f)
+                    }
                 }
-            }
-            shader = KslPbrShader {
-                color { textureColor(groundAlbedo) }
-                normalMapping { setNormalMap(groundNormal) }
-                shadow { addShadowMaps(shadows) }
-                imageBasedAmbientColor(ibl.irradianceMap)
-                enableSsao(ao.aoMap)
-                reflectionMap = ibl.reflectionMap
+                shader = KslPbrShader {
+                    color { textureColor(groundAlbedo) }
+                    normalMapping { setNormalMap(groundNormal) }
+                    shadow { addShadowMaps(shadows) }
+                    imageBasedAmbientColor(ibl.irradianceMap)
+                    enableSsao(ao.aoMap)
+                    reflectionMap = ibl.reflectionMap
+                }
             }
         }
 
@@ -126,7 +128,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
     override fun Scene.setupMainScene(ctx: KoolContext) {
         spawnDolls()
 
-        defaultCamTransform().apply {
+        defaultOrbitCamera().apply {
             setZoom(15.0, max = 50.0)
         }
 
@@ -136,7 +138,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
             InputStack.defaultInputHandler.pointerListeners -= forceHelper
         }
 
-        +colorMesh {
+        colorMesh {
             isFrustumChecked = false
             instances = bodyInstanceData
             generate {
@@ -155,7 +157,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
             }
         }
 
-        +lineMesh {
+        lineMesh {
             isCastingShadow = false
             shader = KslUnlitShader {
                 pipeline { lineWidth = 3f }

@@ -28,7 +28,7 @@ class ReflectionMapPass private constructor(parentScene: Scene, hdriMap: Texture
 
         val reflectionMapShader = ReflectionMapShader(hdriMap, cubeMap)
         (drawNode as Group).apply {
-            +mesh(listOf(Attribute.POSITIONS), "reflectionMap") {
+            mesh(Attribute.POSITIONS, name = "reflectionMap") {
                 generate {
                     cube { centered() }
                 }

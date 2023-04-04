@@ -4,6 +4,7 @@ import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.physics.PhysicsWorld
 import de.fabmax.kool.physics.RigidBody
+import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.colorMesh
 import de.fabmax.kool.scene.group
 import de.fabmax.kool.util.Color
@@ -34,10 +35,10 @@ abstract class CommonVehicle(val vehicleProps: VehicleProperties) : RigidBody() 
     abstract var throttleInput: Float
     abstract var brakeInput: Float
 
-    override fun toMesh(meshColor: Color, materialCfg: KslPbrShader.Config.() -> Unit) = group {
+    override fun toMesh(meshColor: Color, materialCfg: KslPbrShader.Config.() -> Unit) = Group().apply {
         val wheelGroups = List(4) { i ->
             group {
-                +colorMesh {
+                colorMesh {
                     generate {
                         color = Color.DARK_GRAY.toLinear()
                         shapes[i].geometry.generateMesh(this)
@@ -49,9 +50,9 @@ abstract class CommonVehicle(val vehicleProps: VehicleProperties) : RigidBody() 
                 }
             }
         }
-        wheelGroups.forEach { +it }
+        wheelGroups.forEach { addNode(it) }
 
-        +colorMesh {
+        colorMesh {
             generate {
                 // skip first 4 (wheel-)shapes and add the chassis shapes
                 color = meshColor
@@ -69,8 +70,8 @@ abstract class CommonVehicle(val vehicleProps: VehicleProperties) : RigidBody() 
             }
         }
         onUpdate += {
-            this@group.transform.set(this@CommonVehicle.transform)
-            this@group.setDirty()
+            this@apply.transform.set(this@CommonVehicle.transform)
+            this@apply.setDirty()
             for (i in 0..3) {
                 wheelGroups[i].transform.set(wheelInfos[i].transform)
                 wheelGroups[i].setDirty()

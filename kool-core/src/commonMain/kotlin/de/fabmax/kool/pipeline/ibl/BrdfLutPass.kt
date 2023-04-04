@@ -30,7 +30,7 @@ class BrdfLutPass(parentScene: Scene) :
     init {
         clearColor = null
         (drawNode as Group).apply {
-            +mesh(listOf(Attribute.POSITIONS, Attribute.TEXTURE_COORDS)) {
+            mesh(Attribute.POSITIONS, Attribute.TEXTURE_COORDS) {
                 generateFullscreenQuad()
                 shader = brdfLutShader()
             }

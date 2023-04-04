@@ -6,18 +6,26 @@ import de.fabmax.kool.math.spatial.BoundingBox
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.util.Disposable
 import de.fabmax.kool.util.LazyMat4d
+import de.fabmax.kool.util.UniqueId
+import de.fabmax.kool.util.logW
 
 /**
  * A scene node. This is the base class for all scene objects.
  *
  * @author fabmax
  */
-abstract class Node(var name: String? = null) : Disposable {
+open class Node(name: String? = null) : Disposable {
+
+    var name: String = name ?: getDefaultName()
 
     val onUpdate: MutableList<(RenderPass.UpdateEvent) -> Unit> = mutableListOf()
     val onDispose: MutableList<(KoolContext) -> Unit> = mutableListOf()
 
     val tags = Tags()
+
+    protected val childrenBounds = BoundingBox()
+    protected val intChildren = mutableListOf<Node>()
+    val children: List<Node> get() = intChildren
 
     /**
      * Axis-aligned bounds of this node in local coordinates.
@@ -65,14 +73,15 @@ abstract class Node(var name: String? = null) : Disposable {
      * Determines whether this node is checked for visibility during rendering. If true the node is only rendered
      * if it is within the camera frustum.
      */
-    open var isFrustumChecked = true
+    open var isFrustumChecked = false
 
     /**
      * Flag indicating if this node should be rendered. The flag is updated in the [collectDrawCommands] method based on
      * the [isVisible] flag and [isFrustumChecked]. I.e. it is false if this node is either explicitly hidden or outside
-     * of the camera frustum and frustum checking is enabled.
+     * the camera frustum and frustum checking is enabled.
      */
-    protected var isRendered = true
+    var isRendered = true
+        protected set
 
     /**
      * Called once on every new frame before draw commands are collected. Implementations should use this method to
@@ -85,10 +94,21 @@ abstract class Node(var name: String? = null) : Disposable {
 
         updateModelMat()
 
+        childrenBounds.clear()
+        for (i in intChildren.indices) {
+            intChildren[i].update(updateEvent)
+            childrenBounds.add(intChildren[i].bounds)
+        }
+        updateBounds()
+
         // update global center and radius
         toGlobalCoords(globalCenterMut.set(bounds.center))
         toGlobalCoords(globalExtentMut.set(bounds.max))
         globalRadius = globalCenter.distance(globalExtentMut)
+    }
+
+    protected open fun updateBounds() {
+        bounds.set(childrenBounds)
     }
 
     open fun updateModelMat() {
@@ -104,6 +124,11 @@ abstract class Node(var name: String? = null) : Disposable {
      */
     open fun collectDrawCommands(updateEvent: RenderPass.UpdateEvent) {
         isRendered = checkIsVisible(updateEvent.camera, updateEvent.ctx)
+        if (isRendered) {
+            for (i in intChildren.indices) {
+                intChildren[i].collectDrawCommands(updateEvent)
+            }
+        }
     }
 
     /**
@@ -112,9 +137,8 @@ abstract class Node(var name: String? = null) : Disposable {
      * @param ctx    the graphics engine context
      */
     override fun dispose(ctx: KoolContext) {
-        for (i in onDispose.indices) {
-            onDispose[i](ctx)
-        }
+        onDispose.forEach { it(ctx) }
+        children.forEach { it.dispose(ctx) }
     }
 
     /**
@@ -144,10 +168,20 @@ abstract class Node(var name: String? = null) : Disposable {
     }
 
     /**
-     * Performs a hit test with the given [RayTest]. Implementations should override this method and test
+     * Performs a hit test with the given [RayTest]. Subclasses should override this method and test
      * if their contents are hit by the ray.
      */
-    open fun rayTest(test: RayTest) { }
+    open fun rayTest(test: RayTest) {
+        for (i in intChildren.indices) {
+            val child = intChildren[i]
+            if (child.isVisible && child.isPickable) {
+                val d = child.bounds.hitDistanceSqr(test.ray)
+                if (d < Float.MAX_VALUE && d <= test.hitDistanceSqr) {
+                    child.rayTest(test)
+                }
+            }
+        }
+    }
 
     /**
      * Called during [collectDrawCommands]: Checks if this node is currently visible. If not rendering is skipped. Default
@@ -162,14 +196,74 @@ abstract class Node(var name: String? = null) : Disposable {
         return true
     }
 
+    open fun addNode(node: Node, index: Int = -1) {
+        if (node in children) {
+            logW { "Node ${node.name}($node) added multiple times to parent ${name}($this)" }
+        }
+
+        if (index >= 0) {
+            intChildren.add(index, node)
+        } else {
+            intChildren.add(node)
+        }
+        node.parent = this
+        bounds.add(node.bounds)
+    }
+
+    open fun removeNode(node: Node): Boolean {
+        if (intChildren.remove(node)) {
+            node.parent = null
+            return true
+        }
+        return false
+    }
+
+    open operator fun contains(node: Node): Boolean = intChildren.contains(node)
+
+    operator fun plusAssign(node: Node) {
+        addNode(node)
+    }
+
+    operator fun minusAssign(node: Node) {
+        removeNode(node)
+    }
+
+    @Deprecated("unary plus is deprecated for being ambiguous", replaceWith = ReplaceWith("addNode(this)"))
+    operator fun unaryPlus() {
+        logW { "Node.unaryPlus() is broken, use addNode() instead" }
+    }
+
+    open fun <R: Comparable<R>> sortChildrenBy(selector: (Node) -> R) {
+        intChildren.sortBy(selector)
+    }
+
+    open fun clearChildren() {
+        intChildren.forEach { it.parent = null }
+        intChildren.clear()
+    }
+
     /**
      * Searches for a node with the specified name. Returns null if no such node is found.
      */
-    open fun findNode(name: String): Node? = if (name == this.name) { this } else { null }
+    open fun findNode(name: String): Node? {
+        if (name == this.name) {
+            return this
+        }
+        for (i in children.indices) {
+            val found = children[i].findNode(name)
+            if (found != null) {
+                return found
+            }
+        }
+        return null
+    }
 
     open fun collectTag(result: MutableList<Node>, tag: String, value: String? = null) {
         if (tags.hasTag(tag, value)) {
             result += this
+        }
+        for (i in children.indices) {
+            children[i].collectTag(result, tag, value)
         }
     }
 
@@ -181,7 +275,13 @@ abstract class Node(var name: String? = null) : Disposable {
         return p as? T
     }
 
+    private fun getDefaultName(): String {
+        return UniqueId.nextId(this::class.simpleName ?: "unknown")
+    }
+
     companion object {
         private val MODEL_MAT_IDENTITY = Mat4d()
+
+        private val defaultNameIndices = mutableMapOf<String, Int>()
     }
 }

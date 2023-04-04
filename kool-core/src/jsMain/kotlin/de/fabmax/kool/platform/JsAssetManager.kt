@@ -147,7 +147,7 @@ class JsAssetManager internal constructor(props: JsContext.InitProps, val ctx: J
     }
 
     private fun Uint8Buffer.toDataUrl(mimeType: String): String {
-        val base64 = BufferUtil.binToBase64((this as Uint8BufferImpl).buffer)
+        val base64 = BufferUtil.encodeBase64(this)
         return "data:$mimeType;base64,$base64"
     }
 

@@ -31,7 +31,7 @@ class KslShaderTest : DemoScene("KslShader") {
     }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
-        defaultCamTransform()
+        defaultOrbitCamera()
 
         val lightPoses = listOf(
             Vec3f(5f, 5f, 3f) to Vec3f(-1f, -1f, -1f),
@@ -81,8 +81,8 @@ class KslShaderTest : DemoScene("KslShader") {
             }
         }
 
-        +group {
-            +colorMesh {
+        group {
+            colorMesh {
                 generate {
                     cube {
                         colored()
@@ -144,7 +144,7 @@ class KslShaderTest : DemoScene("KslShader") {
             }
         }
 
-        +mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS, Attribute.COLORS, Attribute.TANGENTS)) {
+        mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS, Attribute.COLORS, Attribute.TANGENTS)) {
             generate {
                 color = MdColor.LIGHT_GREEN
                 rect {

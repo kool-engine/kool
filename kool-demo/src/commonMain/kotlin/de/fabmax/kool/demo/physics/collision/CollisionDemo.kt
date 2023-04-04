@@ -59,7 +59,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
     }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
-        defaultCamTransform().apply {
+        defaultOrbitCamera().apply {
             zoomMethod = OrbitInputTransform.ZoomMethod.ZOOM_TRANSLATE
             panMethod = yPlanePan()
             translationBounds = BoundingBox(Vec3f(-50f), Vec3f(50f))
@@ -88,7 +88,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
         shapeTypes.forEach {
             if (it != ShapeType.MIXED) {
                 it.mesh.shader = instancedBodyShader(ibl)
-                +it.mesh
+                addNode(it.mesh)
             }
         }
 
@@ -141,7 +141,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
             timeFactorTxt.set("${physicsStepper.perfTimeFactor.toString(2)} x")
         }
 
-        +Skybox.cube(ibl.reflectionMap, 1f)
+        addNode(Skybox.cube(ibl.reflectionMap, 1f))
         physicsWorld.registerHandlers(this)
     }
 
@@ -279,7 +279,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
         frame += frameBk
 
         // render textured ground box
-        +textureMesh(isNormalMapped = true) {
+        textureMesh(isNormalMapped = true) {
             generate {
                 vertexModFun = {
                     texCoord.set(x / 10, z / 10)
@@ -301,7 +301,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
         }
 
         // render frame
-        +colorMesh {
+        colorMesh {
             generate {
                 frame.forEach {
                     val shape = it.shapes[0].geometry as BoxGeometry

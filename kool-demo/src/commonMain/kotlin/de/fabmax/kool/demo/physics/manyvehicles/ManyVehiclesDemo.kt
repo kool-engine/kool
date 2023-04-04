@@ -82,12 +82,12 @@ class ManyVehiclesDemo : DemoScene("Many Vehicles") {
             clipFar = 1000f
         }
 
-        defaultCamTransform().apply {
+        defaultOrbitCamera().apply {
             setZoom(100.0, max = 500.0)
         }
         makeGround()
 
-        +mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS)) {
+        mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS)) {
             isFrustumChecked = false
             instances = chassisInstances
             generate {
@@ -100,7 +100,7 @@ class ManyVehiclesDemo : DemoScene("Many Vehicles") {
             shader = chassisShader()
         }
 
-        +colorMesh {
+        colorMesh {
             isFrustumChecked = false
             instances = wheelInstances
             generate {
@@ -137,7 +137,7 @@ class ManyVehiclesDemo : DemoScene("Many Vehicles") {
         }
     }
 
-    private fun Group.makeGround() {
+    private fun Scene.makeGround() {
         val groundAlbedo = Texture2d("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine.png")
         val groundNormal = Texture2d("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine_normal.png")
         onDispose += {
@@ -145,7 +145,7 @@ class ManyVehiclesDemo : DemoScene("Many Vehicles") {
             groundNormal.dispose()
         }
 
-        val gndMesh = textureMesh(isNormalMapped = true, name = "ground") {
+        textureMesh(isNormalMapped = true, name = "ground") {
             generate {
                 isCastingShadow = false
                 vertexModFun = {
@@ -165,7 +165,6 @@ class ManyVehiclesDemo : DemoScene("Many Vehicles") {
                 reflectionMap = ibl.reflectionMap
             }
         }
-        +gndMesh
 
         val ground = RigidStatic().apply {
             simulationFilterData = groundSimFilterData

@@ -22,7 +22,7 @@ class LoadingScreen(val ctx: KoolContext) : Scene("Loading Screen") {
     init {
         setupUiScene(true)
 
-        +colorMesh {
+        colorMesh {
             shader = KslUnlitShader {
                 color { vertexColor() }
             }
@@ -66,7 +66,6 @@ class LoadingScreen(val ctx: KoolContext) : Scene("Loading Screen") {
                 }
             }
         }
-        +ui
         ui.inputMode = UiSurface.InputCaptureMode.CaptureDisabled
     }
 

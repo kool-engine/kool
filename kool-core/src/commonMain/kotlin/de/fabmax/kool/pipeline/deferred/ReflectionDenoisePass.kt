@@ -28,7 +28,7 @@ class ReflectionDenoisePass(reflectionPass: OffscreenRenderPass2d) :
         clearColor = Color(0f, 0f, 0f, 0f)
 
         (drawNode as Group).apply {
-            +mesh(listOf(Attribute.POSITIONS, Attribute.TEXTURE_COORDS)) {
+            mesh(Attribute.POSITIONS, Attribute.TEXTURE_COORDS) {
                 generateFullscreenQuad()
 
                 denoiseShader = DenoiseShader(reflectionPass.colorTexture)

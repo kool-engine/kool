@@ -19,7 +19,7 @@ class TerrainTiles(val terrain: Terrain, val sky: Sky) : Group() {
         isFrustumChecked = false
         for (y in 0 until TILE_CNT_XY) {
             for (x in 0 until TILE_CNT_XY) {
-                +mesh(
+                mesh(
                     listOf(
                         Attribute.POSITIONS,
                         Attribute.NORMALS,

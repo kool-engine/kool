@@ -19,10 +19,10 @@ import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.TextureProps
 import de.fabmax.kool.pipeline.ao.AoPipeline
+import de.fabmax.kool.scene.ColorMesh
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.scene.colorMesh
 import de.fabmax.kool.util.*
 import kotlin.math.atan2
 
@@ -255,17 +255,17 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         grass.setupGrass(grassColor)
         trees.setupTrees()
 
-        boxMesh?.let { +it }
-        bridgeMesh?.let { +it }
+        boxMesh?.let { addNode(it) }
+        bridgeMesh?.let { addNode(it) }
 
-        +trees.treeGroup
-        +grass.grassQuads
-        +camLocalGrass.grassQuads
-        +playerModel
-        +terrainTiles
-        +ocean.oceanMesh
-        +sky.skyGroup
-        +physicsObjects.debugLines
+        addNode(trees.treeGroup)
+        addNode(grass.grassQuads)
+        addNode(camLocalGrass.grassQuads)
+        addNode(playerModel)
+        addNode(terrainTiles)
+        addNode(ocean.oceanMesh)
+        addNode(sky.skyGroup)
+        addNode(physicsObjects.debugLines)
 
         oceanFloorPass.renderGroup += playerModel
         boxMesh?.let { oceanFloorPass.renderGroup += it }
@@ -303,10 +303,10 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         camRig = CharacterTrackingCamRig(ctx.inputMgr, false).apply {
             camera.setClipRange(0.5f, 5000f)
             trackedPose = physicsObjects.playerController.controller.actor.transform
-            +camera
             minZoom = 0.75f
             maxZoom = 100f
             pivotPoint.set(0.25f, 0.75f, 0f)
+            addNode(camera)
 
             setupCollisionAwareCamZoom(physicsObjects.world)
 
@@ -333,7 +333,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
             }
         }
         // don't forget to add the cam rig to the scene
-        +camRig
+        addNode(camRig)
         // player / tractor gun needs the camRig to know where it is aiming at
         physicsObjects.playerController.tractorGun.camRig = camRig
     }
@@ -423,7 +423,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         }
     }
 
-    private fun makeBoxMesh() = colorMesh {
+    private fun makeBoxMesh() = ColorMesh().apply {
         generate {
             color = MdColor.PURPLE.toLinear()
             physicsObjects.boxes[0].shapes[0].geometry.generateMesh(this)
@@ -441,7 +441,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         }
     }
 
-    private fun makeBridgeMesh() = colorMesh {
+    private fun makeBridgeMesh() = ColorMesh().apply {
         generate {
             color = MdColor.BROWN toneLin 700
             cube {

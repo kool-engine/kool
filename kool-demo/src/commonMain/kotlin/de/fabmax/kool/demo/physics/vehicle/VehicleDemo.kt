@@ -105,7 +105,7 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
 
         showLoadText("Creating Physics World")
         deferredPipeline.sceneContent.apply {
-            +vehicle.vehicleGroup
+            addNode(vehicle.vehicleGroup)
 
             makeGround()
             showLoadText("Creating Playground")
@@ -123,14 +123,14 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
             setColor(Color.WHITE, 0.75f)
         }
 
-        +ActorTrackingCamRig().apply {
+        val camRig = ActorTrackingCamRig().apply {
             trackedActor = vehicle.vehicle
             camera.setClipRange(1f, 1000f)
             camera.position.set(0f, 2.75f, 6f)
             camera.lookAt.set(0f, 1.75f, 0f)
-            +camera
+            addNode(camera)
         }
-        //vehicle.vehicleGroup += defaultCamTransform()
+        addNode(camRig)
 
         onUpdate += {
             updateDashboard()
@@ -209,7 +209,7 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
             addGuardRailSection(1395f, 1445f, true)
             addGuardRailSection(1460f, 1510f, true)
         }
-        +track!!
+        addNode(track!!)
 
         timer = TrackTimer(vehicle.vehicle, track!!, world).apply {
             enterPos = Vec3f(-15f, 2.5f, -40f)
@@ -239,7 +239,7 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
             groundNormal.dispose()
         }
 
-        val gndMesh = textureMesh(isNormalMapped = true, name = "ground") {
+        textureMesh(isNormalMapped = true, name = "ground") {
             generate {
                 isCastingShadow = false
                 vertexModFun = {
@@ -262,7 +262,6 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
                 }
             }
         }
-        +gndMesh
 
         val ground = RigidStatic().apply {
             //simulationFilterData = vehicleWorld.groundSimFilterData

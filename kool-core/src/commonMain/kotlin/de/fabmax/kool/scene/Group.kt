@@ -1,6 +1,5 @@
 package de.fabmax.kool.scene
 
-import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.BoundingBox
 import de.fabmax.kool.pipeline.RenderPass
@@ -10,16 +9,14 @@ import de.fabmax.kool.util.LazyMat4d
  * @author fabmax
  */
 
-fun group(name: String? = null, block: Group.() -> Unit): Group {
+fun Node.group(name: String? = null, block: Group.() -> Unit): Group {
     val tg = Group(name)
     tg.block()
+    addNode(tg)
     return tg
 }
 
 open class Group(name: String? = null) : Node(name) {
-    protected val intChildren = mutableListOf<Node>()
-    protected val childrenBounds = BoundingBox()
-    val children: List<Node> get() = intChildren
     val size: Int get() = intChildren.size
 
     val transform = Mat4d()
@@ -32,10 +29,6 @@ open class Group(name: String? = null) : Node(name) {
 
     init {
         setIdentity()
-
-        // be default, frustum culling is disabled for groups. Potential benefit is rather small, and it can cause
-        // problems if group content is not frustum checked as well (e.g. an instaned mesh)
-        isFrustumChecked = false
     }
 
     fun setDirty() {
@@ -48,15 +41,7 @@ open class Group(name: String? = null) : Node(name) {
         // parent model mat and toGlobalCoords() might yield wrong results
         super.update(updateEvent)
 
-        // call update on all children and update group bounding box
-        childrenBounds.clear()
-        for (i in intChildren.indices) {
-            intChildren[i].update(updateEvent)
-            childrenBounds.add(intChildren[i].bounds)
-        }
-
         // update bounds based on updated children bounds
-        setLocalBounds()
         globalCenterMut.set(bounds.center)
         globalExtentMut.set(bounds.max)
         modelMat.transform(globalCenterMut)
@@ -78,10 +63,6 @@ open class Group(name: String? = null) : Node(name) {
         }
     }
 
-    protected open fun setLocalBounds() {
-        bounds.set(childrenBounds)
-    }
-
     override fun updateModelMat() {
         super.updateModelMat()
         if (!isIdentity) {
@@ -95,15 +76,7 @@ open class Group(name: String? = null) : Node(name) {
             test.transformBy(invTransform.get())
         }
 
-        for (i in intChildren.indices) {
-            val child = intChildren[i]
-            if (child.isPickable && child.isVisible) {
-                val d = child.bounds.hitDistanceSqr(test.ray)
-                if (d < Float.MAX_VALUE && d <= test.hitDistanceSqr) {
-                    child.rayTest(test)
-                }
-            }
-        }
+        super.rayTest(test)
 
         if (!isIdentity) {
             // transform ray back to previous coordinates
@@ -116,89 +89,6 @@ open class Group(name: String? = null) : Node(name) {
     fun getInverseTransform(result: Mat4f): Mat4f {
         return result.set(invTransform.get())
     }
-
-    override fun collectDrawCommands(updateEvent: RenderPass.UpdateEvent) {
-        super.collectDrawCommands(updateEvent)
-
-        if (isRendered) {
-            for (i in intChildren.indices) {
-                intChildren[i].collectDrawCommands(updateEvent)
-            }
-        }
-    }
-
-    override fun dispose(ctx: KoolContext) {
-        super.dispose(ctx)
-        for (i in intChildren.indices) {
-            intChildren[i].dispose(ctx)
-        }
-    }
-
-    open fun addNode(node: Node, index: Int = -1) {
-        if (index >= 0) {
-            intChildren.add(index, node)
-        } else {
-            intChildren.add(node)
-        }
-        node.parent = this
-        bounds.add(node.bounds)
-    }
-
-    open fun <R: Comparable<R>> sortChildrenBy(selector: (Node) -> R) {
-        intChildren.sortBy(selector)
-    }
-
-    open fun removeNode(node: Node): Boolean {
-        if (intChildren.remove(node)) {
-            node.parent = null
-            return true
-        }
-        return false
-    }
-
-    open fun removeAllChildren() {
-        for (i in intChildren.indices) {
-            intChildren[i].parent = null
-        }
-        intChildren.clear()
-    }
-
-    override fun findNode(name: String): Node? {
-        if (name == this.name) {
-            return this
-        }
-        for (i in children.indices) {
-            val found = children[i].findNode(name)
-            if (found != null) {
-                return found
-            }
-        }
-        return null
-    }
-
-    override fun collectTag(result: MutableList<Node>, tag: String, value: String?) {
-        super.collectTag(result, tag, value)
-        for (i in children.indices) {
-            children[i].collectTag(result, tag, value)
-        }
-    }
-
-    open fun containsNode(node: Node): Boolean = intChildren.contains(node)
-
-    operator fun plusAssign(node: Node) {
-        addNode(node)
-    }
-
-    operator fun minusAssign(node: Node) {
-        removeNode(node)
-    }
-
-    operator fun Node.unaryPlus() {
-        addNode(this)
-    }
-
-    operator fun Node.unaryMinus() =
-        removeNode(this)
 
     fun translate(t: Vec3f) = translate(t.x, t.y, t.z)
 

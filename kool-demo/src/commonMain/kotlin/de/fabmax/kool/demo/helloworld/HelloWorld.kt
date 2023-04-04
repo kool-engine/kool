@@ -6,14 +6,14 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.colorMesh
-import de.fabmax.kool.scene.defaultCamTransform
+import de.fabmax.kool.scene.defaultOrbitCamera
 import de.fabmax.kool.util.Color
 
 class HelloWorldDemo : DemoScene("Hello World") {
     override fun Scene.setupMainScene(ctx: KoolContext) {
-        defaultCamTransform()
+        defaultOrbitCamera()
 
-        +colorMesh {
+        colorMesh {
             generate {
                 cube {
                     colored()

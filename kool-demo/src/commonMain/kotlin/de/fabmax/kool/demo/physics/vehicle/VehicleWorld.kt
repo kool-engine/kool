@@ -5,11 +5,11 @@ import de.fabmax.kool.physics.geometry.TriangleMeshGeometry
 import de.fabmax.kool.physics.vehicle.VehicleUtils
 import de.fabmax.kool.pipeline.deferred.DeferredPipeline
 import de.fabmax.kool.pipeline.deferred.deferredKslPbrShader
+import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.colorMesh
 import de.fabmax.kool.scene.geometry.IndexedVertexList
-import de.fabmax.kool.scene.group
 import de.fabmax.kool.util.Color
 
 class VehicleWorld(val scene: Scene, val physics: PhysicsWorld, val deferredPipeline: DeferredPipeline) {
@@ -20,8 +20,8 @@ class VehicleWorld(val scene: Scene, val physics: PhysicsWorld, val deferredPipe
     val obstacleSimFilterData = FilterData(VehicleUtils.COLLISION_FLAG_DRIVABLE_OBSTACLE, VehicleUtils.COLLISION_FLAG_DRIVABLE_OBSTACLE_AGAINST)
     val obstacleQryFilterData = FilterData { VehicleUtils.setupDrivableSurface(this) }
 
-    fun toPrettyMesh(actor: RigidActor, meshColor: Color, rough: Float = 0.8f, metal: Float = 0f): Node = group {
-        +colorMesh {
+    fun toPrettyMesh(actor: RigidActor, meshColor: Color, rough: Float = 0.8f, metal: Float = 0f): Node = Group().apply {
+        colorMesh {
             generate {
                 color = meshColor
                 actor.shapes.forEach { shape ->
@@ -37,8 +37,8 @@ class VehicleWorld(val scene: Scene, val physics: PhysicsWorld, val deferredPipe
                 metallic(metal)
             }
             onUpdate += {
-                this@group.transform.set(actor.transform)
-                this@group.setDirty()
+                this@apply.transform.set(actor.transform)
+                this@apply.setDirty()
             }
         }
     }

@@ -42,16 +42,13 @@ class ColorGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrConten
         nonIblContent?.isVisible = !enabled
     }
 
-    override fun createContent(scene: Scene, envMaps: EnvironmentMaps, ctx: KoolContext): Group {
-        content = group {
+    override fun createContent(scene: Scene, envMaps: EnvironmentMaps, ctx: KoolContext): Node {
+        content = Node().apply {
             isVisible = false
             isFrustumChecked = false
 
             val ibl = makeSpheres(true, envMaps)
             val nonIbl = makeSpheres(false, envMaps).apply { isVisible = false }
-
-            +ibl
-            +nonIbl
 
             iblContent = ibl
             nonIblContent = nonIbl
@@ -67,7 +64,7 @@ class ColorGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrConten
         }
     }
 
-    private fun makeSpheres(withIbl: Boolean, environmentMaps: EnvironmentMaps): Mesh {
+    private fun Node.makeSpheres(withIbl: Boolean, environmentMaps: EnvironmentMaps): Mesh {
         val nRows = 4
         val nCols = 5
         val spacing = 4.5f
@@ -82,7 +79,7 @@ class ColorGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrConten
         colors += MdColor.BLUE_GREY
         colors += Color(0.1f, 0.1f, 0.1f)
 
-        return mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS)) {
+        return mesh(Attribute.POSITIONS, Attribute.NORMALS) {
             isFrustumChecked = false
             geometry.addGeometry(sphereProto.simpleSphere)
             shader = instancedPbrShader(withIbl, environmentMaps).also { shaders += it }

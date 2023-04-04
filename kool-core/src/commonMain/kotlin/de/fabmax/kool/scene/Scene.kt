@@ -17,7 +17,7 @@ inline fun scene(name: String? = null, block: Scene.() -> Unit): Scene {
     return Scene(name).apply(block)
 }
 
-open class Scene(name: String? = null) : Group(name) {
+open class Scene(name: String? = null) : Node(name) {
 
     val lighting = Lighting()
     var camera: Camera = PerspectiveCamera()
@@ -34,9 +34,9 @@ open class Scene(name: String? = null) : Group(name) {
         get() = mutOffscreenPasses
 
     override var isFrustumChecked: Boolean
-        // frustum check is force disabled for Scenes
+        // frustum check is force disabled for Scenes (scene is always visible)
         get() = false
-        set(_) {}
+        set(_) { }
 
     private val disposables = mutableListOf<Disposable>()
 

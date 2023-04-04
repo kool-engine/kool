@@ -120,7 +120,7 @@ class GltfDemo : DemoScene("glTF Models") {
     override fun Scene.setupMainScene(ctx: KoolContext) {
         setupCamera()
 
-        +Skybox.cube(envMaps.reflectionMap, 1f)
+        addNode(Skybox.cube(envMaps.reflectionMap, 1f))
 
         makeDeferredContent()
         makeForwardContent()
@@ -146,25 +146,25 @@ class GltfDemo : DemoScene("glTF Models") {
 
     private fun Scene.makeForwardContent() {
         contentGroupForward.setupContentGroup(false)
-        +contentGroupForward
+        addNode(contentGroupForward)
     }
 
     private fun Scene.makeDeferredContent() {
         deferredPipeline.sceneContent.setupContentGroup(true)
 
         // main scene only contains a quad used to draw the deferred shading output
-        +contentGroupDeferred.apply {
+        contentGroupDeferred.apply {
             isFrustumChecked = false
             val outputMesh = deferredPipeline.createDefaultOutputQuad()
             (outputMesh.shader as? DeferredOutputShader)?.setupVignette(0f)
-            +outputMesh
+            addNode(outputMesh)
         }
+        addNode(contentGroupDeferred)
     }
 
     private fun Scene.setupCamera() {
-        orbitTransform = orbitInputTransform {
+        orbitTransform = orbitCamera {
             setMouseRotation(0f, -30f)
-            +camera
             zoom = currentModel.zoom
             translation.set(currentModel.lookAt)
 
@@ -189,7 +189,6 @@ class GltfDemo : DemoScene("glTF Models") {
                 }
             }
         }
-        +orbitTransform
     }
 
     private fun Scene.setupLighting() {
@@ -217,7 +216,7 @@ class GltfDemo : DemoScene("glTF Models") {
             }
         }
 
-        +textureMesh(isNormalMapped = true) {
+        textureMesh(isNormalMapped = true) {
             generate {
                 roundCylinder(4.1f, 0.2f)
             }
@@ -257,9 +256,9 @@ class GltfDemo : DemoScene("glTF Models") {
 
         models.forEach { model ->
             if (isDeferredShading) {
-                model.deferredModel?.let { +it }
+                model.deferredModel?.let { addNode(it) }
             } else {
-                model.forwardModel?.let { +it }
+                model.forwardModel?.let { addNode(it) }
             }
         }
     }

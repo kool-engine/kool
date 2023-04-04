@@ -11,25 +11,39 @@ import de.fabmax.kool.pipeline.shading.DepthShader
 import de.fabmax.kool.scene.animation.Skin
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
+import de.fabmax.kool.util.UniqueId
 
 
-inline fun mesh(attributes: List<Attribute>, name: String? = null, block: Mesh.() -> Unit): Mesh {
+fun Node.mesh(attributes: List<Attribute>, name: String? = null, block: Mesh.() -> Unit): Mesh {
     val mesh = Mesh(IndexedVertexList(attributes), name)
     mesh.block()
+    addNode(mesh)
     return mesh
 
 }
 
-fun colorMesh(name: String? = null, generate: Mesh.() -> Unit): Mesh {
-    return mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS), name, generate)
+fun Node.mesh(vararg attributes: Attribute, name: String? = null, block: Mesh.() -> Unit): Mesh {
+    val mesh = Mesh(IndexedVertexList(*attributes), name)
+    mesh.block()
+    addNode(mesh)
+    return mesh
+
 }
 
-fun textureMesh(name: String? = null, isNormalMapped: Boolean = false, generate: Mesh.() -> Unit): Mesh {
+fun Node.colorMesh(name: String? = null, block: Mesh.() -> Unit): Mesh {
+    return mesh(
+        Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS,
+        name = name ?: UniqueId.nextId("colorMesh"),
+        block = block
+    )
+}
+
+fun Node.textureMesh(name: String? = null, isNormalMapped: Boolean = false, block: Mesh.() -> Unit): Mesh {
     val attributes = mutableListOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS)
     if (isNormalMapped) {
         attributes += Attribute.TANGENTS
     }
-    val mesh = mesh(attributes, name, generate)
+    val mesh = mesh(attributes, name ?: UniqueId.nextId("textureMesh"), block)
     if (isNormalMapped) {
         mesh.geometry.generateTangents()
     }
@@ -40,6 +54,9 @@ fun textureMesh(name: String? = null, isNormalMapped: Boolean = false, generate:
  * Class for renderable geometry (triangles, lines, points).
  */
 open class Mesh(var geometry: IndexedVertexList, name: String? = null) : Node(name) {
+
+    constructor(attributes: List<Attribute>, name: String? = null) : this(IndexedVertexList(attributes), name)
+    constructor(vararg attributes: Attribute, name: String? = null) : this(IndexedVertexList(*attributes), name)
 
     val id = instanceId++
 
@@ -110,6 +127,10 @@ open class Mesh(var geometry: IndexedVertexList, name: String? = null) : Node(na
 
     override val bounds: BoundingBox
         get() = geometry.bounds
+
+    init {
+        isFrustumChecked = true
+    }
 
     open fun generate(generator: MeshBuilder.() -> Unit) {
         geometry.batchUpdate {
@@ -188,3 +209,23 @@ open class Mesh(var geometry: IndexedVertexList, name: String? = null) : Node(na
         private var instanceId = 1L
     }
 }
+
+/**
+ * Mesh with default attributes for vertex color based rendering:
+ * [Attribute.POSITIONS], [Attribute.NORMALS], [Attribute.COLORS]
+ */
+class ColorMesh(name: String? = null) : Mesh(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, name = name)
+
+/**
+ * Mesh with default attributes for texture color based rendering:
+ * [Attribute.POSITIONS], [Attribute.NORMALS], [Attribute.TEXTURE_COORDS] and [Attribute.TANGENTS] if
+ * isNormalMapped is true.
+ */
+class TextureMesh(isNormalMapped: Boolean = false, name: String? = null) : Mesh(
+    if (isNormalMapped) {
+        listOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS, Attribute.TANGENTS)
+    } else {
+        listOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS)
+    },
+    name = name
+)

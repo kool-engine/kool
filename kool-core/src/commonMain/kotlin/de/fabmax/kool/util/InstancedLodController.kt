@@ -15,7 +15,7 @@ class InstancedLodController<T: InstancedLodController.Instance<T>>(name: String
 
     override var isFrustumChecked: Boolean
         get() = false
-        set(_) {}
+        set(_) { }
 
     private val lods = mutableListOf<Lod>()
 

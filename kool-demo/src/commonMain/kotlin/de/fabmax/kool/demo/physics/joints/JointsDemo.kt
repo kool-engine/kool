@@ -92,11 +92,10 @@ class JointsDemo : DemoScene("Physics - Joints") {
     }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
-        defaultCamTransform().apply {
-            setMouseRotation(-20f, -20f)
+        defaultOrbitCamera(-20f, -20f).apply {
             setZoom(50.0, max = 200.0)
         }
-        (camera as PerspectiveCamera).apply {
+        camera.apply {
             clipNear = 1f
             clipFar = 1000f
         }
@@ -105,11 +104,11 @@ class JointsDemo : DemoScene("Physics - Joints") {
         lightSetup()
 
         // group containing physics bodies
-        +physMeshes
-        +niceMeshes
+        addNode(physMeshes)
+        addNode(niceMeshes)
 
         // ground plane
-        mainScene += textureMesh(isNormalMapped = true) {
+        textureMesh(isNormalMapped = true) {
             isCastingShadow = false
             generate {
                 rotate(-90f, Vec3f.X_AXIS)
@@ -129,7 +128,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
             }
         }
 
-        mainScene += Skybox.cube(ibl.reflectionMap, 1f)
+        addNode(Skybox.cube(ibl.reflectionMap, 1f))
 
         onUpdate += {
             if (resetPhysics) {
@@ -526,7 +525,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
         var mesh: Mesh? = null
 
         var factory: (RigidActor) -> Mesh = { proto ->
-            colorMesh {
+            Mesh(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS).apply {
                 isFrustumChecked = false
                 instances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT))
                 generate {

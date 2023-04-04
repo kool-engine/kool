@@ -181,7 +181,7 @@ open class KslShader(val program: KslProgram, val pipelineConfig: PipelineConfig
 
         program.vertexStage.attributes.values.asSequence().filter { it.inputRate == KslInputRate.Vertex }.forEach { vertexAttrib ->
             val attrib = verts.attributeByteOffsets.keys.find { it.name == vertexAttrib.name }
-                ?: throw NoSuchElementException("Mesh does not include required vertex attribute: ${vertexAttrib.name}")
+                ?: throw NoSuchElementException("Mesh does not include required vertex attribute: ${vertexAttrib.name} (for shader: ${program.name})")
             val off = verts.attributeByteOffsets[attrib]!!
             if (attrib.type.isInt) {
                 vertLayoutAttribsI += VertexLayout.VertexAttribute(attribLocation, off, attrib)

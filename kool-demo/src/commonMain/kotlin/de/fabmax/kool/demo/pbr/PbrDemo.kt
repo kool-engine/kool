@@ -58,8 +58,7 @@ class PbrDemo : DemoScene("PBR Materials") {
     override fun Scene.setupMainScene(ctx: KoolContext) {
         selectedLightSetup.setup(this)
 
-        +orbitInputTransform {
-            +camera
+        orbitCamera {
             // let the camera slowly rotate around vertical axis
             onUpdate += {
                 if (isAutoRotate.value) {
@@ -76,7 +75,7 @@ class PbrDemo : DemoScene("PBR Materials") {
             this += skybox
 
             pbrContent.forEach {
-                +it.createContent(this, envMaps, ctx)
+                addNode(it.createContent(this, envMaps, ctx))
             }
             selectedContent.show()
         }
@@ -162,7 +161,7 @@ class PbrDemo : DemoScene("PBR Materials") {
     }
 
     abstract class PbrContent(val name: String) {
-        var content: Group? = null
+        var content: Node? = null
         var autoRotate = true
 
         fun show() {
@@ -177,7 +176,7 @@ class PbrDemo : DemoScene("PBR Materials") {
 
         abstract fun UiScope.createContentMenu()
         abstract fun setUseImageBasedLighting(enabled: Boolean)
-        abstract fun createContent(scene: Scene, envMaps: EnvironmentMaps, ctx: KoolContext): Group
+        abstract fun createContent(scene: Scene, envMaps: EnvironmentMaps, ctx: KoolContext): Node
         abstract fun updateEnvironmentMap(envMaps: EnvironmentMaps)
     }
 

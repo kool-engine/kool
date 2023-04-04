@@ -15,7 +15,7 @@ import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.Skybox
-import de.fabmax.kool.scene.orbitInputTransform
+import de.fabmax.kool.scene.orbitCamera
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.SimpleShadowMap
@@ -35,11 +35,10 @@ class ProceduralDemo : DemoScene("Procedural Geometry") {
     }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
-        +orbitInputTransform {
+        orbitCamera {
             setMouseRotation(-20f, -10f)
             setMouseTranslation(0f, 16f, 0f)
             setZoom(40.0)
-            +camera
 
             onUpdate += {
                 if (isAutoRotate.value) {
@@ -71,19 +70,19 @@ class ProceduralDemo : DemoScene("Procedural Geometry") {
             aoPipeline?.radius = 0.6f
 
             sceneContent.apply {
-                +Glas(ibl, shadowMap).also { onSwap += it }
-                +Vase()
-                +Table()
+                addNode(Glas(ibl, shadowMap).also { onSwap += it })
+                addNode(Vase())
+                addNode(Table())
 
                 roses = Roses()
-                +roses
+                addNode(roses)
             }
 
             lightingPassContent += Skybox.cube(ibl.reflectionMap, 1f, hdrOutput = true)
         }
         shadowMap.drawNode = deferredPipeline.sceneContent
 
-        +deferredPipeline.createDefaultOutputQuad()
+        addNode(deferredPipeline.createDefaultOutputQuad())
     }
 
     override fun createMenu(menu: DemoMenu, ctx: KoolContext) = menuSurface {
@@ -121,7 +120,7 @@ class ProceduralDemo : DemoScene("Procedural Geometry") {
                 .margin(horizontal = 16.dp, vertical = 24.dp)
                 .onClick {
                     roses.children.forEach { it.dispose(ctx) }
-                    roses.removeAllChildren()
+                    roses.clearChildren()
                 }
         }
         LabeledSwitch("Replace last rose", isReplaceRose)

@@ -26,9 +26,8 @@ class IrradianceMapPass private constructor(parentScene: Scene, hdriMap: Texture
     init {
         clearColor = null
         (drawNode as Group).apply {
-            +mesh(listOf(Attribute.POSITIONS)) {
+            mesh(Attribute.POSITIONS) {
                 generateFullscreenCube()
-
                 shader = IrradianceMapPassShader(hdriMap, cubeMap)
             }
         }

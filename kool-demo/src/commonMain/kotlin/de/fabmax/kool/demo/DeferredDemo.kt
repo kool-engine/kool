@@ -92,11 +92,9 @@ class DeferredDemo : DemoScene("Deferred Shading") {
     }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
-        +orbitInputTransform {
+        orbitCamera {
             // Set some initial rotation so that we look down on the scene
             setMouseRotation(0f, -40f)
-            // Add camera to the transform group
-            +camera
             setZoom(28.0, max = 50.0)
 
             translation.set(0.0, -11.0, 0.0)
@@ -135,7 +133,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
             lightingPassContent += Skybox.cube(ibl.reflectionMap, 1f, hdrOutput = true)
         }
         deferredPipeline.sceneContent.makeContent()
-        +deferredPipeline.createDefaultOutputQuad()
+        addNode(deferredPipeline.createDefaultOutputQuad())
         makeLightOverlays()
 
         onUpdate += {
@@ -155,7 +153,6 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                     colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB
                 }
             }
-            +lightVolumeMesh
 
             val lightPosInsts = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.COLORS), MAX_LIGHTS)
             val lightVolInsts = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.COLORS), MAX_LIGHTS)
@@ -230,7 +227,6 @@ class DeferredDemo : DemoScene("Deferred Shading") {
             }
             shader = objectShader
         }
-        +objects
 
         lightPositionMesh = mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS)) {
             isFrustumChecked = false
@@ -251,9 +247,8 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                 }
             }
         }
-        +lightPositionMesh
 
-        +textureMesh(isNormalMapped = true) {
+        textureMesh(isNormalMapped = true) {
             generate {
                 rotate(90f, Vec3f.NEG_X_AXIS)
                 color = Color.WHITE

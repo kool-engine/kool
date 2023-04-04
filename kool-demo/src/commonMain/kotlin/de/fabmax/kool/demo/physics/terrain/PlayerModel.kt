@@ -21,10 +21,10 @@ class PlayerModel(val model: Model, val playerController: PlayerController) : Gr
         // set correct player model position (relative to player controller origin)
         model.translate(0f, -0.9f, 0f)
         model.rotate(180f, Vec3f.Y_AXIS)
-        +model
+        addNode(model)
 
         controllerShapeOutline = makeShapeOutline()
-        +controllerShapeOutline
+        addNode(controllerShapeOutline)
 
         onUpdate += {
             updateAnimation(Time.deltaT)

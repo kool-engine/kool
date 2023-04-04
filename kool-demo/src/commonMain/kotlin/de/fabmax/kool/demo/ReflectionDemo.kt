@@ -52,8 +52,7 @@ class ReflectionDemo : DemoScene("Reflections") {
     }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
-        +orbitInputTransform {
-            +camera
+        orbitCamera {
             zoomMethod = OrbitInputTransform.ZoomMethod.ZOOM_CENTER
             setZoom(17.0, max = 50.0)
             translation.set(0.0, 2.0, 0.0)
@@ -69,7 +68,7 @@ class ReflectionDemo : DemoScene("Reflections") {
         lighting.lights.clear()
         lights.forEach {
             lighting.lights.add(it.light)
-            +it
+            addNode(it)
         }
 
         setupDeferred(this, ctx)
@@ -101,7 +100,7 @@ class ReflectionDemo : DemoScene("Reflections") {
                     floorRoughness.dispose()
                 }
 
-                +textureMesh(isNormalMapped = true) {
+                textureMesh(isNormalMapped = true) {
                     generate {
                         rect {
                             rotate(-90f, Vec3f.X_AXIS)
@@ -126,7 +125,7 @@ class ReflectionDemo : DemoScene("Reflections") {
                     val modelCfg = GltfFile.ModelGenerateConfig(generateNormals = true, applyMaterials = false)
                     val model = it.makeModel(modelCfg)
                     bunnyMesh = model.meshes.values.first()
-                    +model
+                    addNode(model)
 
                     modelShader = deferredKslPbrShader {
                         color { uniformColor(matColors[selectedColorIdx.value].linColor) }
@@ -258,7 +257,7 @@ class ReflectionDemo : DemoScene("Reflections") {
 
         init {
             light.setSpot(Vec3f.ZERO, Vec3f.X_AXIS, 50f)
-            val lightMesh = colorMesh {
+            colorMesh {
                 isCastingShadow = false
                 generate {
                     uvSphere {
@@ -280,8 +279,7 @@ class ReflectionDemo : DemoScene("Reflections") {
                 }
                 shader = lightMeshShader
             }
-            +lightMesh
-            +spotAngleMesh
+            addNode(spotAngleMesh)
 
             onUpdate += {
                 if (isAutoRotate.value) {

@@ -82,7 +82,7 @@ class BloomBlurPass(kernelSize: Int, thresholdPass: BloomThresholdPass) :
 
     private fun Group.fullScreenQuad(quadShader: Shader) {
         isFrustumChecked = false
-        +mesh(listOf(Attribute.POSITIONS, Attribute.TEXTURE_COORDS)) {
+        mesh(Attribute.POSITIONS, Attribute.TEXTURE_COORDS) {
             generateFullscreenQuad()
             shader = quadShader
         }

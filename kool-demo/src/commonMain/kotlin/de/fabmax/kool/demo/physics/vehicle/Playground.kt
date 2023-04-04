@@ -10,7 +10,7 @@ import de.fabmax.kool.physics.Shape
 import de.fabmax.kool.physics.geometry.BoxGeometry
 import de.fabmax.kool.physics.joints.RevoluteJoint
 import de.fabmax.kool.pipeline.deferred.deferredKslPbrShader
-import de.fabmax.kool.scene.colorMesh
+import de.fabmax.kool.scene.ColorMesh
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.multiShape
 import de.fabmax.kool.scene.geometry.simpleShape
@@ -21,7 +21,7 @@ object Playground {
         makeBoxes(Mat4f().translate(-20f, 0f, 30f), vehicleWorld)
         //makeRocker(Mat4f().translate(0f, 0f, 30f), vehicleWorld)
 
-        vehicleWorld.deferredPipeline.sceneContent += colorMesh {
+        vehicleWorld.deferredPipeline.sceneContent += ColorMesh().apply {
             generate {
                 makeRamp(Mat4f().translate(-20f, 0f, 80f).rotate(180f, Vec3f.Y_AXIS))
                 makeBumps(Mat4f().translate(20f, 0f, 0f))

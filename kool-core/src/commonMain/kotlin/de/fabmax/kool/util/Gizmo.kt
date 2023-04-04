@@ -98,13 +98,13 @@ class Gizmo : Group(), InputStack.PointerListener {
     var gizmoListener: GizmoListener? = null
 
     init {
-        +dragGroup
+        addNode(dragGroup)
         dragGroup += scaleGroup
         scaleGroup.apply {
-            +lineMesh
-            +lineMeshHidden
-            +solidMesh
-            +solidMeshHidden
+            addNode(lineMesh)
+            addNode(lineMeshHidden)
+            addNode(solidMesh)
+            addNode(solidMeshHidden)
         }
         updateMesh()
 

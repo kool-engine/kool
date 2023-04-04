@@ -26,7 +26,7 @@ class OceanFloorRenderPass(mainScene: Scene, val terrainTiles: TerrainTiles) : O
             for (i in 0 until TerrainTiles.TILE_CNT_XY) {
                 for (j in 0 until TerrainTiles.TILE_CNT_XY) {
                     if (terrainTiles.getMinElevation(i, j) < Ocean.OCEAN_FLOOR_HEIGHT_THRESH) {
-                        +terrainTiles.getTile(i, j)
+                        addNode(terrainTiles.getTile(i, j))
                     }
                 }
             }
@@ -41,13 +41,6 @@ class OceanFloorRenderPass(mainScene: Scene, val terrainTiles: TerrainTiles) : O
                 resize(mapW, mapH, ctx)
             }
         }
-
-//        onBeforeRenderQueue += {
-//            (terrainTiles.terrainShader?.uniforms?.get(Terrain.TERRAIN_SHADER_DISCARD_HEIGHT) as? Uniform1f)?.value = OCEAN_FLOOR_HEIGHT_THRESH
-//        }
-//        onAfterRenderQueue += {
-//            (terrainTiles.terrainShader?.uniforms?.get(Terrain.TERRAIN_SHADER_DISCARD_HEIGHT) as? Uniform1f)?.value = 1000f
-//        }
 
         val proxyCamera = PerspectiveProxyCam(mainScene.camera as PerspectiveCamera)
         onBeforeCollectDrawCommands += {

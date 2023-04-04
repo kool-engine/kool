@@ -15,8 +15,8 @@ import de.fabmax.kool.util.Time
 class HelloRenderToTextureDemo : DemoScene("Hello RenderToTexture") {
     override fun Scene.setupMainScene(ctx: KoolContext) {
         // create offscreen content
-        val backgroundGroup = group {
-            +colorMesh {
+        val backgroundGroup = Group().apply {
+            colorMesh {
                 generate {
                     cube {
                         colored(linearSpace = false)
@@ -41,10 +41,10 @@ class HelloRenderToTextureDemo : DemoScene("Hello RenderToTexture") {
         }
 
         // create main scene and draw offscreen result on a quad
-        defaultCamTransform()
+        defaultOrbitCamera()
         addOffscreenPass(off)
 
-        +textureMesh {
+        textureMesh {
             generate {
                 rect {
                     size.set(2f, 2f)

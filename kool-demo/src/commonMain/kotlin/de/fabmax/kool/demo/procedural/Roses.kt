@@ -2,9 +2,9 @@ package de.fabmax.kool.demo.procedural
 
 import de.fabmax.kool.math.*
 import de.fabmax.kool.pipeline.deferred.deferredKslPbrShader
+import de.fabmax.kool.scene.ColorMesh
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.scene.colorMesh
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.simpleShape
@@ -32,11 +32,11 @@ class Roses : Group() {
     fun makeRose(seed: Int) {
         val rose = GeneratedRose(seed)
 
-        +group {
-            +rose.shaftMesh
-            +rose.shaftLeafMesh
-            +rose.leafMesh
-            +rose.blossomMesh
+        group {
+            addNode(rose.shaftMesh)
+            addNode(rose.shaftLeafMesh)
+            addNode(rose.leafMesh)
+            addNode(rose.blossomMesh)
         }
     }
 
@@ -54,7 +54,7 @@ class Roses : Group() {
         val shaftLeafTransform = Mat4f()
 
         init {
-            shaftMesh = colorMesh {
+            shaftMesh = ColorMesh().apply {
                 generate {
                     makeShaftGeometry()
                     geometry.removeDegeneratedTriangles()
@@ -65,7 +65,7 @@ class Roses : Group() {
                     roughness(0.3f)
                 }
             }
-            shaftLeafMesh = colorMesh {
+            shaftLeafMesh = ColorMesh().apply {
                 generate {
                     makeShaftLeafGeometry()
                     geometry.removeDegeneratedTriangles()
@@ -76,7 +76,7 @@ class Roses : Group() {
                     roughness(0.5f)
                 }
             }
-            leafMesh = colorMesh {
+            leafMesh = ColorMesh().apply {
                 generate {
                     makeLeafGeometry()
                     geometry.removeDegeneratedTriangles()
@@ -87,7 +87,7 @@ class Roses : Group() {
                     roughness(0.5f)
                 }
             }
-            blossomMesh = colorMesh {
+            blossomMesh = ColorMesh().apply {
                 generate {
                     makeBlossomGeometry()
                     geometry.removeDegeneratedTriangles()

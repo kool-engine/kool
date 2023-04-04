@@ -3,9 +3,9 @@ package de.fabmax.kool.pipeline.deferred
 import de.fabmax.kool.math.*
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.Light
+import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.geometry.MeshBuilder
-import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MutableColor
 import kotlin.math.PI
@@ -31,7 +31,7 @@ class DeferredSpotLights(val maxSpotAngle: Float) {
 
     val lightShader = DeferredLightShader(Light.Type.SPOT)
 
-    val mesh = mesh(listOf(Attribute.POSITIONS)) {
+    val mesh = Mesh(Attribute.POSITIONS, name = "DeferredSpotLights").apply {
         isFrustumChecked = false
         instances = lightInstanceData
 

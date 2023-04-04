@@ -43,16 +43,13 @@ class RoughnesMetalGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.P
         nonIblContent?.isVisible = !enabled
     }
 
-    override fun createContent(scene: Scene, envMaps: EnvironmentMaps, ctx: KoolContext): Group {
-        content = group {
+    override fun createContent(scene: Scene, envMaps: EnvironmentMaps, ctx: KoolContext): Node {
+        content = Node().apply {
             isVisible = false
             isFrustumChecked = false
 
             val ibl = makeSpheres(true, envMaps)
             val nonIbl = makeSpheres(false, envMaps).apply { isVisible = false }
-
-            +ibl
-            +nonIbl
 
             iblContent = ibl
             nonIblContent = nonIbl
@@ -68,12 +65,12 @@ class RoughnesMetalGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.P
         }
     }
 
-    private fun makeSpheres(withIbl: Boolean, envMaps: EnvironmentMaps): Mesh {
+    private fun Node.makeSpheres(withIbl: Boolean, envMaps: EnvironmentMaps): Mesh {
         val nRows = 7
         val nCols = 7
         val spacing = 2.5f
 
-        return mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS)) {
+        return mesh(Attribute.POSITIONS, Attribute.NORMALS) {
             isFrustumChecked = false
             geometry.addGeometry(sphereProto.simpleSphere)
             shader = instancedPbrShader(withIbl, envMaps).also { shaders += it }

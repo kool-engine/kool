@@ -167,7 +167,7 @@ class DeferredPipeline(val scene: Scene, val cfg: DeferredPipelineConfig) {
             outputShader.bloomMap = if (isBloomEnabled) bloom?.bloomMap else noBloomMap
         }
 
-        return textureMesh {
+        return Mesh(Attribute.POSITIONS, Attribute.TEXTURE_COORDS).apply {
             generateFullscreenQuad()
             shader = outputShader
         }
@@ -190,12 +190,12 @@ class DeferredPipeline(val scene: Scene, val cfg: DeferredPipelineConfig) {
 
     private fun setupLightingPassContent() {
         lightingPassContent.apply {
-            +mesh(listOf(Attribute.POSITIONS, Attribute.TEXTURE_COORDS)) {
+            mesh(listOf(Attribute.POSITIONS, Attribute.TEXTURE_COORDS)) {
                 generateFullscreenQuad()
                 shader = lightingPassShader
             }
-            +dynamicPointLights.mesh
-            +staticPointLights.mesh
+            addNode(dynamicPointLights.mesh)
+            addNode(staticPointLights.mesh)
         }
     }
 

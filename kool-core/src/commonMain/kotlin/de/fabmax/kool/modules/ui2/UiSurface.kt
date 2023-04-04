@@ -7,9 +7,9 @@ import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.pipeline.Shader
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.scene.Group
+import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.geometry.MeshBuilder
-import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.util.*
 
 open class UiSurface(
@@ -141,7 +141,7 @@ open class UiSurface(
         // re-add mesh layers in correct order
         meshLayers.values.forEach {
             if (it.isUsed) {
-                +it
+                addNode(it)
             } // todo: else we should dispose it probably?
         }
         perfRender = pt.takeMs().also { pt.reset() }
@@ -257,7 +257,7 @@ open class UiSurface(
         CaptureDisabled
     }
 
-    protected inner class UiInputHandler : InputStack.InputHandler(name ?: "UiSurface") {
+    protected inner class UiInputHandler : InputStack.InputHandler(name) {
         private val nodeResult = mutableListOf<UiNode>()
         private var focusedNode: Focusable? = null
         private var hoveredNode: UiNode? = null
@@ -518,7 +518,7 @@ open class UiSurface(
     }
 
     private class TextMesh(shader: Shader) {
-        val mesh = mesh(MsdfUiShader.MSDF_UI_MESH_ATTRIBS) {
+        val mesh = Mesh(MsdfUiShader.MSDF_UI_MESH_ATTRIBS).apply {
             isCastingShadow = false
             this.shader = shader
         }
@@ -573,7 +573,7 @@ open class UiSurface(
         private val textMeshes = mutableMapOf<Font, TextMesh>()
         private val imageMeshes = mutableMapOf<Texture2d, ImageMeshes>()
         private val customLayers = mutableMapOf<String, CustomLayer>()
-        private val plainMesh = mesh(Ui2Shader.UI_MESH_ATTRIBS) { shader = Ui2Shader() }
+        private val plainMesh = Mesh(Ui2Shader.UI_MESH_ATTRIBS).apply { shader = Ui2Shader() }
 
         val uiPrimitives = UiPrimitiveMesh()
         val plainBuilder = MeshBuilder(plainMesh.geometry).apply { isInvertFaceOrientation = true }
@@ -581,8 +581,8 @@ open class UiSurface(
         var isUsed = false
 
         init {
-            +uiPrimitives
-            +plainMesh
+            addNode(uiPrimitives)
+            addNode(plainMesh)
         }
 
         fun getTextBuilder(font: Font, ctx: KoolContext): MeshBuilder {

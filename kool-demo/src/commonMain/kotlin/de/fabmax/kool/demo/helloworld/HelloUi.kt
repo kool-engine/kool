@@ -10,7 +10,7 @@ class HelloUiDemo : DemoScene("Hello UI") {
     override fun Scene.setupMainScene(ctx: KoolContext) {
         setupUiScene(clearScreen = true)
 
-        +Panel(colors = Colors.singleColorLight(MdColor.LIGHT_GREEN)) {
+        Panel(colors = Colors.singleColorLight(MdColor.LIGHT_GREEN)) {
             modifier
                 .size(400.dp, 300.dp)
                 .align(AlignmentX.Center, AlignmentY.Center)

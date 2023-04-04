@@ -17,20 +17,22 @@ import kotlin.math.min
  * @author fabmax
  */
 
-fun lineMesh(name: String? = null, block: LineMesh.() -> Unit): LineMesh {
-    return LineMesh(name = name).apply(block)
+fun Node.lineMesh(name: String? = null, block: LineMesh.() -> Unit): LineMesh {
+    val lineMesh = LineMesh(name = name).apply(block)
+    addNode(lineMesh)
+    return lineMesh
 }
 
-fun wireframeMesh(triMesh: IndexedVertexList, lineColor: Color? = null): LineMesh {
-    val lines = LineMesh()
-    lines.addWireframe(triMesh, lineColor)
-    return lines
+fun Node.wireframeMesh(triMesh: IndexedVertexList, lineColor: Color? = null): LineMesh {
+    return lineMesh {
+        addWireframe(triMesh, lineColor)
+    }
 }
 
-fun normalMesh(geometry: IndexedVertexList, lineColor: Color? = null, len: Float = 1f): LineMesh {
-    val lines = LineMesh()
-    lines.addNormals(geometry, lineColor, len)
-    return lines
+fun Node.normalMesh(geometry: IndexedVertexList, lineColor: Color? = null, len: Float = 1f): LineMesh {
+    return lineMesh {
+        addNormals(geometry, lineColor, len)
+    }
 }
 
 open class LineMesh(geometry: IndexedVertexList = IndexedVertexList(Attribute.POSITIONS, Attribute.COLORS), name: String? = null) :

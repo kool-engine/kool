@@ -8,11 +8,11 @@ import de.fabmax.kool.physics.Material
 import de.fabmax.kool.physics.Shape
 import de.fabmax.kool.physics.geometry.*
 import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.simpleShape
-import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.util.PolyUtil
 import kotlin.math.*
 
@@ -146,7 +146,7 @@ enum class ShapeType {
 
     abstract val label: String
     val instances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.COLORS), 2000)
-    val mesh = mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS)) {
+    val mesh = Mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS)).apply {
         isFrustumChecked = false
         instances = this@ShapeType.instances
         generate {

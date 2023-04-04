@@ -7,19 +7,19 @@ import de.fabmax.kool.math.spatial.pointKdTree
 import de.fabmax.kool.physics.RigidStatic
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.deferred.deferredKslPbrShader
-import de.fabmax.kool.scene.Group
+import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.multiShape
 import de.fabmax.kool.scene.geometry.simpleShape
-import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.util.ColorGradient
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.TreeMap
 import de.fabmax.kool.util.createUint8Buffer
 import kotlin.math.*
 
-class Track(val world: VehicleWorld) : Group() {
+class Track(val world: VehicleWorld) : Node() {
 
     private val spline = SimpleSpline3f()
     private val numSamples = mutableListOf<Int>()
@@ -34,8 +34,8 @@ class Track(val world: VehicleWorld) : Group() {
     var subdivs = 1
     var columnDist = 64.5f
     var curbLen = 2.511f
-    val trackMesh = mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS, Attribute.TANGENTS)) {  }
-    val trackSupportMesh = mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, ATTRIBUTE_ROUGHNESS)) {  }
+    val trackMesh = Mesh(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS, Attribute.TANGENTS)
+    val trackSupportMesh = Mesh(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, ATTRIBUTE_ROUGHNESS)
 
     lateinit var trackActor: RigidStatic
         private set
@@ -43,9 +43,9 @@ class Track(val world: VehicleWorld) : Group() {
 
     init {
         isFrustumChecked = false
-        +trackMesh
-        +trackSupportMesh
-        +guardRail.guardRailMesh
+        addNode(trackMesh)
+        addNode(trackSupportMesh)
+        addNode(guardRail.guardRailMesh)
     }
 
     fun addControlPoint(ctrlPt: SimpleSpline3f.CtrlPoint, numSamples: Int = 20) {

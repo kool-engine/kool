@@ -78,12 +78,10 @@ class AoDemo : DemoScene("Ambient Occlusion") {
     }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
-        +orbitInputTransform {
+        orbitCamera {
             translation.set(0.0, -0.7, 0.0)
             // Set some initial rotation so that we look down on the scene
             setMouseRotation(0f, -30f)
-            // Add camera to the transform group
-            +camera
             setZoom(8.0)
 
             onUpdate += {
@@ -102,7 +100,7 @@ class AoDemo : DemoScene("Ambient Occlusion") {
         aoSamples.set(aoPipeline.kernelSz)
         aoMapSize.set(aoPipeline.mapSize)
 
-        +colorMesh("teapots") {
+        colorMesh("teapots") {
             generate {
                 for (x in -3..3) {
                     for (y in -3..3) {
@@ -130,7 +128,7 @@ class AoDemo : DemoScene("Ambient Occlusion") {
             this.shader = shader
         }
 
-        +textureMesh("ground", isNormalMapped = true) {
+        textureMesh("ground", isNormalMapped = true) {
             isCastingShadow = false
             generate {
                 // generate a cube (as set of rects for better control over tex coords)
