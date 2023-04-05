@@ -125,11 +125,13 @@ open class Mesh(var geometry: IndexedVertexList, name: String? = null) : Node(na
 
     var rayTest = MeshRayTest.boundsTest()
 
-    override val bounds: BoundingBox
-        get() = geometry.bounds
-
     init {
         isFrustumChecked = true
+    }
+
+    override fun computeLocalBounds(result: BoundingBox) {
+        super.computeLocalBounds(result)
+        result.add(geometry.bounds)
     }
 
     open fun generate(generator: MeshBuilder.() -> Unit) {

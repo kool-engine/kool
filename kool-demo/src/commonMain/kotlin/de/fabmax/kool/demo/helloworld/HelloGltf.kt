@@ -52,7 +52,7 @@ class HelloGltfDemo : DemoScene("Hello glTF") {
 
                 if (model.animations.isNotEmpty()) {
                     model.enableAnimation(0)
-                    model.onUpdate += {
+                    model.onUpdate {
                         model.applyAnimation(Time.deltaT)
                     }
                 }

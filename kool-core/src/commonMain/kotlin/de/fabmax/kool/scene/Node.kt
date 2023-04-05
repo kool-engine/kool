@@ -28,52 +28,62 @@ open class Node(name: String? = null) : Disposable {
     val children: List<Node> get() = intChildren
 
     /**
-     * Axis-aligned bounds of this node in local coordinates.
-     * Implementations should set and refresh their bounds on every frame if applicable.
+     * Axis-aligned bounding box of this node in parent coordinate frame.
      */
-    open val bounds = BoundingBox()
+    val bounds = BoundingBox()
+    private val tmpTransformVec = MutableVec3f()
+    private val tmpBounds = BoundingBox()
 
     /**
      * Center point of this node's bounds in global coordinates.
      */
-    open val globalCenter: Vec3f get() = globalCenterMut
+    val globalCenter: Vec3f get() = globalCenterMut
 
     /**
      * Radius of this node's bounding sphere in global coordinates.
      */
-    open var globalRadius = 0f
+    var globalRadius = 0f
         protected set
 
     protected val globalCenterMut = MutableVec3f()
     protected val globalExtentMut = MutableVec3f()
 
+    /**
+     * This node's transform matrix. Can be used to manipulate this node's position, size, etc.
+     */
+    val transform = Transform()
+
+    /**
+     * This node's model matrix, updated on each frame based on this node's transform and the model matrix of the
+     * parent node.
+     */
     val modelMat = Mat4d()
 
     private val modelMatInvLazy = LazyMat4d { modelMat.invert(it) }
-    val modelMatInv: Mat4d
+    val modelMatInverse: Mat4d
         get() = modelMatInvLazy.get()
 
     /**
      * Parent node is set when this node is added to a [Group]
      */
-    open var parent: Node? = null
+    var parent: Node? = null
 
     /**
      * Determines the visibility of this node. If visible is false this node will be skipped on
      * rendering.
      */
-    open var isVisible = true
+    var isVisible = true
 
     /**
      * Determines whether this node is considered for ray-picking tests.
      */
-    open var isPickable = true
+    var isPickable = true
 
     /**
      * Determines whether this node is checked for visibility during rendering. If true the node is only rendered
      * if it is within the camera frustum.
      */
-    open var isFrustumChecked = false
+    var isFrustumChecked = false
 
     /**
      * Flag indicating if this node should be rendered. The flag is updated in the [collectDrawCommands] method based on
@@ -99,20 +109,41 @@ open class Node(name: String? = null) : Disposable {
             intChildren[i].update(updateEvent)
             childrenBounds.add(intChildren[i].bounds)
         }
-        updateBounds()
+        computeLocalBounds(bounds)
 
         // update global center and radius
         toGlobalCoords(globalCenterMut.set(bounds.center))
         toGlobalCoords(globalExtentMut.set(bounds.max))
         globalRadius = globalCenter.distance(globalExtentMut)
+
+        // transform group bounds
+        transformBoundsToParentFrame()
     }
 
-    protected open fun updateBounds() {
-        bounds.set(childrenBounds)
+    private fun transformBoundsToParentFrame() {
+        if (!bounds.isEmpty && !transform.isIdentity) {
+            tmpBounds.clear()
+            tmpBounds.add(transform.matrix.transform(tmpTransformVec.set(bounds.min.x, bounds.min.y, bounds.min.z), 1f))
+            tmpBounds.add(transform.matrix.transform(tmpTransformVec.set(bounds.min.x, bounds.min.y, bounds.max.z), 1f))
+            tmpBounds.add(transform.matrix.transform(tmpTransformVec.set(bounds.min.x, bounds.max.y, bounds.min.z), 1f))
+            tmpBounds.add(transform.matrix.transform(tmpTransformVec.set(bounds.min.x, bounds.max.y, bounds.max.z), 1f))
+            tmpBounds.add(transform.matrix.transform(tmpTransformVec.set(bounds.max.x, bounds.min.y, bounds.min.z), 1f))
+            tmpBounds.add(transform.matrix.transform(tmpTransformVec.set(bounds.max.x, bounds.min.y, bounds.max.z), 1f))
+            tmpBounds.add(transform.matrix.transform(tmpTransformVec.set(bounds.max.x, bounds.max.y, bounds.min.z), 1f))
+            tmpBounds.add(transform.matrix.transform(tmpTransformVec.set(bounds.max.x, bounds.max.y, bounds.max.z), 1f))
+            bounds.set(tmpBounds)
+        }
+    }
+
+    protected open fun computeLocalBounds(result: BoundingBox) {
+        result.set(childrenBounds)
     }
 
     open fun updateModelMat() {
         modelMat.set(parent?.modelMat ?: MODEL_MAT_IDENTITY)
+        if (!transform.isIdentity) {
+            modelMat.mul(transform.matrix)
+        }
         modelMatInvLazy.isDirty = true
     }
 
@@ -158,12 +189,12 @@ open class Node(name: String? = null) : Disposable {
      * Transforms [vec] in-place from global to local coordinates.
      */
     open fun toLocalCoords(vec: MutableVec3f, w: Float = 1f): MutableVec3f {
-        modelMatInv.transform(vec, w)
+        modelMatInverse.transform(vec, w)
         return vec
     }
 
     open fun toLocalCoords(vec: MutableVec3d, w: Double = 1.0): MutableVec3d {
-        modelMatInv.transform(vec, w)
+        modelMatInverse.transform(vec, w)
         return vec
     }
 
@@ -172,6 +203,11 @@ open class Node(name: String? = null) : Disposable {
      * if their contents are hit by the ray.
      */
     open fun rayTest(test: RayTest) {
+        if (!transform.isIdentity) {
+            // transform ray to local coordinates
+            test.transformBy(transform.matrixInverse)
+        }
+
         for (i in intChildren.indices) {
             val child = intChildren[i]
             if (child.isVisible && child.isPickable) {
@@ -180,6 +216,11 @@ open class Node(name: String? = null) : Disposable {
                     child.rayTest(test)
                 }
             }
+        }
+
+        if (!transform.isIdentity) {
+            // transform ray back to previous coordinates
+            test.transformBy(transform.matrix)
         }
     }
 
@@ -273,6 +314,14 @@ open class Node(name: String? = null) : Disposable {
             p = p.parent
         }
         return p as? T
+    }
+
+    fun onUpdate(block: (RenderPass.UpdateEvent) -> Unit) {
+        onUpdate += block
+    }
+
+    fun onDispose(block: (KoolContext) -> Unit) {
+        onDispose += block
     }
 
     private fun getDefaultName(): String {

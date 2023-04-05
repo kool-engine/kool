@@ -8,6 +8,7 @@ import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.colorMesh
 import de.fabmax.kool.scene.defaultOrbitCamera
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.Time
 
 class HelloWorldDemo : DemoScene("Hello World") {
     override fun Scene.setupMainScene(ctx: KoolContext) {
@@ -24,6 +25,9 @@ class HelloWorldDemo : DemoScene("Hello World") {
                 color { vertexColor() }
                 metallic(0f)
                 roughness(0.25f)
+            }
+            onUpdate {
+                transform.rotate(Time.deltaT * 45f, Vec3f.X_AXIS)
             }
         }
 

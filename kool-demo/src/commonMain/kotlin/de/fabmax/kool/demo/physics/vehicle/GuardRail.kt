@@ -208,21 +208,12 @@ class GuardRail {
             pointLight.radius = sqrt(max(emission.x, emission.y) * 100f)
             actor.transform.transform(pointLight.position.set(0f, 0.5f, 0.1f))
 
-            buf.put(actor.transform.matrix)
+            buf.put(actor.transform.array)
             buf.put(emission.array)
         }
     }
 
     private class GuardRailShader(cfg: Config) : DeferredKslPbrShader(cfg) {
-//        private var uEmissionColor: UniformColor?  = null
-//
-//        init {
-//            onPipelineCreated += { _, _, _ ->
-//                uEmissionColor = model.findNode<PushConstantNodeColor>("uEmissiveColor")?.uniform
-//                uEmissionColor?.value?.set(VehicleDemo.color(500, false).scale(10f, MutableVec4f()))
-//            }
-//        }
-//
         companion object {
             fun createShader(): GuardRailShader {
                 val cfg = Config().apply {

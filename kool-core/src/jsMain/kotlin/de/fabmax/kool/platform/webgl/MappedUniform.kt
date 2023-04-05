@@ -180,7 +180,7 @@ class MappedUniformMat4f(val uniform: UniformMat4f, val location: WebGLUniformLo
     private val buf = Float32Array(16)
     override fun setUniform(ctx: JsContext): Boolean {
         for (i in 0..15) {
-            buf[i] = uniform.value.matrix[i]
+            buf[i] = uniform.value.array[i]
         }
         ctx.gl.uniformMatrix4fv(location, false, buf)
         return true
@@ -193,7 +193,7 @@ class MappedUniformMat4fv(val uniform: UniformMat4fv, val location: WebGLUniform
         var bufI = 0
         for (i in 0 until uniform.length) {
             for (j in 0 until 16) {
-                buf[bufI++] = uniform.value[i].matrix[j]
+                buf[bufI++] = uniform.value[i].array[j]
             }
         }
         ctx.gl.uniformMatrix4fv(location, false, buf)

@@ -93,7 +93,7 @@ class ColorGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrConten
                         mat.scale(1.5f)
 
                         addInstance {
-                            put(mat.matrix)
+                            put(mat.array)
                             put(colors[(y * nCols + x) % colors.size].toLinear().array)
                         }
                     }

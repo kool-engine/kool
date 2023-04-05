@@ -151,7 +151,7 @@ class InstanceDemo : DemoScene("Instanced Drawing") {
         }
 
         override fun addInstanceData(lod: Int, buffer: Float32Buffer, ctx: KoolContext) {
-            buffer.put(instanceModelMat.matrix)
+            buffer.put(instanceModelMat.array)
             if (isLodColors.value) {
                 buffer.put(lods[lod].color.array)
             } else {

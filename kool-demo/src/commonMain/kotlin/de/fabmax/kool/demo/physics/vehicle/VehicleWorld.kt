@@ -38,7 +38,7 @@ class VehicleWorld(val scene: Scene, val physics: PhysicsWorld, val deferredPipe
             }
             onUpdate += {
                 this@apply.transform.set(actor.transform)
-                this@apply.setDirty()
+                this@apply.transform.markDirty()
             }
         }
     }

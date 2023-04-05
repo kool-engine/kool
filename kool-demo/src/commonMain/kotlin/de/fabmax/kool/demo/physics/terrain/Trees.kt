@@ -78,7 +78,7 @@ class Trees(val terrain: Terrain, nTrees: Int, val wind: Wind, val sky: Sky) {
                 val pose = Mat4f().translate(pos).rotate(random.randomF(0f, 360f), Vec3f.Y_AXIS)
                 tree.instances += TreeInstance(Mat4f().set(pose), size, tree)
                 mesh.instances!!.addInstance {
-                    put(pose.scale(size).matrix)
+                    put(pose.scale(size).array)
                 }
             }
         }

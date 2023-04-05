@@ -72,7 +72,7 @@ class SmallSpheres(val resources: CreativeCodingDemo.Resources) : CreativeConten
 
             // add sphere instance properties: transform matrix + sphere color
             instances.addInstance {
-                put(transform.matrix)
+                put(transform.array)
                 put(color.array)
                 // metallic
                 put(randomF(0f, 0.5f) * settings.randomness)

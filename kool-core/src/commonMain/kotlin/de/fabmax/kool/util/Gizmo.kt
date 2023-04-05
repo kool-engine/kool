@@ -155,11 +155,11 @@ class Gizmo : Group(), InputStack.PointerListener {
     }
 
     fun getGizmoTransform(result: Mat4d): Mat4d {
-        return result.set(transform).mul(dragGroup.transform)
+        return result.set(transform.matrix).mul(dragGroup.transform.matrix)
     }
 
-    fun getGizmoTransform(target: Group) {
-        target.set(transform).mul(dragGroup.transform)
+    fun getGizmoTransform(target: Node) {
+        target.transform.set(transform.matrix).mul(dragGroup.transform.matrix)
     }
 
     fun getTranslation(result: MutableVec3f): MutableVec3f {
@@ -179,22 +179,22 @@ class Gizmo : Group(), InputStack.PointerListener {
     }
 
     fun setTranslation(translation: Vec3f) {
-        transform[0, 3] = translation.x.toDouble()
-        transform[1, 3] = translation.y.toDouble()
-        transform[2, 3] = translation.z.toDouble()
-        setDirty()
+        transform.matrix[0, 3] = translation.x.toDouble()
+        transform.matrix[1, 3] = translation.y.toDouble()
+        transform.matrix[2, 3] = translation.z.toDouble()
+        transform.markDirty()
     }
 
     fun setEulerAngles(euler: Vec3f) {
         tmpMat3.setRotate(euler.x, euler.y, euler.z)
-        transform.setRotation(tmpMat3)
-        setDirty()
+        transform.setRotate(tmpMat3)
+        transform.markDirty()
     }
 
     fun setQuatRotation(rotation: Vec4f) {
         tmpMat3.setRotate(rotation)
-        transform.setRotation(tmpMat3)
-        setDirty()
+        transform.setRotate(tmpMat3)
+        transform.markDirty()
     }
 
     private fun updateAxesVisibility() {
@@ -330,7 +330,7 @@ class Gizmo : Group(), InputStack.PointerListener {
 
         if (isDrag && !ptr.isDrag) {
             // user stopped dragging, apply drag transform
-            mul(dragGroup.transform)
+            mul(dragGroup.transform.matrix)
             dragGroup.setIdentity()
             gizmoListener?.onDragFinished(ctx)
             isDrag = false
@@ -395,8 +395,8 @@ class Gizmo : Group(), InputStack.PointerListener {
         if (pickPlane.intersectionPoint(pickRay, pickPoint)) {
             val dragDist = toLocalCoords(pickPoint).subtract(dragStartPos) * axis
             dragGroup.setIdentity()
-            gizmoListener?.onDragAxis(axis, dragDist, dragGroup.transform, ctx)
-            dragGroup.setDirty()
+            gizmoListener?.onDragAxis(axis, dragDist, dragGroup.transform.matrix, ctx)
+            dragGroup.transform.markDirty()
         }
     }
 
@@ -406,8 +406,8 @@ class Gizmo : Group(), InputStack.PointerListener {
         if (pickPlane.intersectionPoint(pickRay, pickPoint)) {
             val position = toLocalCoords(pickPoint).subtract(dragStartPos)
             dragGroup.setIdentity()
-            gizmoListener?.onDragPlane(normal, position, dragGroup.transform, ctx)
-            dragGroup.setDirty()
+            gizmoListener?.onDragPlane(normal, position, dragGroup.transform.matrix, ctx)
+            dragGroup.transform.markDirty()
         }
     }
 
@@ -435,8 +435,8 @@ class Gizmo : Group(), InputStack.PointerListener {
             }
 
             dragGroup.setIdentity()
-            gizmoListener?.onDragRotate(axis, (aStart - aDrag).toDeg(), dragGroup.transform, ctx)
-            dragGroup.setDirty()
+            gizmoListener?.onDragRotate(axis, (aStart - aDrag).toDeg(), dragGroup.transform.matrix, ctx)
+            dragGroup.transform.markDirty()
         }
     }
 

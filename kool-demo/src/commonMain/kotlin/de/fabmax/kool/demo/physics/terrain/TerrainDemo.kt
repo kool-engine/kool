@@ -434,7 +434,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
                 clear()
                 addInstances(physicsObjects.boxes.size) { buf ->
                     physicsObjects.boxes.forEach { box ->
-                        buf.put(box.transform.matrix)
+                        buf.put(box.transform.array)
                     }
                 }
             }
@@ -455,7 +455,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
                 insts.clear()
                 insts.addInstances(physicsObjects.chainBridge.segments.size) { buf ->
                     physicsObjects.chainBridge.segments.forEach { seg ->
-                        buf.put(seg.transform.matrix)
+                        buf.put(seg.transform.array)
                     }
                 }
             }

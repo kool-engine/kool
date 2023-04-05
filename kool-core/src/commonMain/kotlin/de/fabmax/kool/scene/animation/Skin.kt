@@ -34,7 +34,7 @@ class Skin {
         }
 
         fun updateJointTransform() {
-            jointTransform.set(joint.transform)
+            jointTransform.set(joint.transform.matrix)
             for (i in children.indices) {
                 children[i].updateJointTransform(jointTransform)
             }
@@ -42,7 +42,7 @@ class Skin {
         }
 
         private fun updateJointTransform(parentTransform: Mat4f) {
-            tmpMat4f.set(joint.transform)
+            tmpMat4f.set(joint.transform.matrix)
             jointTransform.set(parentTransform).mul(tmpMat4f)
             for (i in children.indices) {
                 children[i].updateJointTransform(jointTransform)

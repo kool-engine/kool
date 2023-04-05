@@ -133,11 +133,11 @@ class KslShaderTest : DemoScene("KslShader") {
 //            }
 
             onUpdate += {
-                setIdentity()
-                scale(1.5f)
-                translate(0.0, 0.0, 0.5)
-                rotate(rotationX, Vec3f.X_AXIS)
-                rotate(rotationY, Vec3f.Y_AXIS)
+                transform.setIdentity()
+                transform.scale(1.5f)
+                transform.translate(0.0, 0.0, 0.5)
+                transform.rotate(rotationX, Vec3f.X_AXIS)
+                transform.rotate(rotationY, Vec3f.Y_AXIS)
 
                 rotationX += Time.deltaT * 10f
                 rotationY += Time.deltaT * 13.7f
@@ -162,7 +162,7 @@ class KslShaderTest : DemoScene("KslShader") {
                     for (x in -2 .. 2) {
                         mat.setIdentity().translate(x * 2.5f, y * 2.5f, 0f)
                         addInstance {
-                            put(mat.matrix)
+                            put(mat.array)
                             put(mutColor.set(MdColor.PALETTE[i++ % MdColor.PALETTE.size]).toLinear().array)
                         }
                     }

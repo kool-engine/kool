@@ -244,10 +244,10 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
             world.scene.onRenderScene += {
                 transform.set(vehicle.transform)
                 transform.translate(vehicleProps.chassisCMOffset)
-                setDirty()
+                transform.markDirty()
                 for (i in 0..3) {
                     wheelTransforms[i].transform.set(vehicle.wheelInfos[i].transform)
-                    wheelTransforms[i].setDirty()
+                    wheelTransforms[i].transform.markDirty()
                 }
             }
         }

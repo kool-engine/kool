@@ -87,7 +87,7 @@ class ScaleAnimationChannel(name: String?, animationNode: AnimationNode): Animat
 class WeightAnimationChannel(name: String?, animationNode: AnimationNode): AnimationChannel<WeightKey>(name, animationNode)
 
 interface AnimationNode {
-    val name: String?
+    val name: String
 
     fun initTransform() { }
     fun applyTransform()
@@ -101,7 +101,7 @@ interface AnimationNode {
 }
 
 class AnimatedTransformGroup(val target: Group): AnimationNode {
-    override val name: String?
+    override val name: String
         get() = target.name
 
     private val initTranslation = MutableVec3d()
@@ -117,12 +117,12 @@ class AnimatedTransformGroup(val target: Group): AnimationNode {
 
     init {
         val vec4 = MutableVec4d()
-        target.transform.getCol(3, vec4)
+        target.transform.matrix.getCol(3, vec4)
         initTranslation.set(vec4.x, vec4.y, vec4.z)
-        target.transform.getRotation(initRotation)
-        val sx = target.transform.getCol(0, vec4).length()
-        val sy = target.transform.getCol(0, vec4).length()
-        val sz = target.transform.getCol(0, vec4).length()
+        target.transform.matrix.getRotation(initRotation)
+        val sx = target.transform.matrix.getCol(0, vec4).length()
+        val sy = target.transform.matrix.getCol(0, vec4).length()
+        val sz = target.transform.matrix.getCol(0, vec4).length()
         initScale.set(sx, sy, sz)
     }
 
@@ -147,14 +147,14 @@ class AnimatedTransformGroup(val target: Group): AnimationNode {
 
         if (firstWeightedTransform) {
             for (i in 0..15) {
-                target.transform.matrix[i] = weightedTransformMat.matrix[i] * weight
+                target.transform.matrix.array[i] = weightedTransformMat.array[i] * weight
             }
         } else {
             for (i in 0..15) {
-                target.transform.matrix[i] += weightedTransformMat.matrix[i] * weight
+                target.transform.matrix.array[i] += weightedTransformMat.array[i] * weight
             }
         }
-        target.setDirty()
+        target.transform.markDirty()
     }
 
     override fun setTranslation(translation: Vec3d) {
@@ -171,7 +171,7 @@ class AnimatedTransformGroup(val target: Group): AnimationNode {
 }
 
 class MorphAnimatedMesh(val target: Mesh): AnimationNode {
-    override val name: String?
+    override val name: String
         get() = target.name
 
     private var weights = FloatArray(1)

@@ -50,7 +50,7 @@ class DeferredPointLights(var isDynamic: Boolean) {
         lightInstanceData.addInstances(lightInstances.size) { buf ->
             for (i in 0 until lightInstances.size) {
                 encodeLight(lightInstances[i])
-                buf.put(modelMat.matrix)
+                buf.put(modelMat.array)
                 buf.put(encodedLightData)
             }
         }

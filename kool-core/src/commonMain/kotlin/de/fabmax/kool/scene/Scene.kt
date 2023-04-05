@@ -33,11 +33,6 @@ open class Scene(name: String? = null) : Node(name) {
     val offscreenPasses: List<OffscreenRenderPass>
         get() = mutOffscreenPasses
 
-    override var isFrustumChecked: Boolean
-        // frustum check is force disabled for Scenes (scene is always visible)
-        get() = false
-        set(_) { }
-
     private val disposables = mutableListOf<Disposable>()
 
     var framebufferCaptureMode = FramebufferCaptureMode.Disabled
@@ -100,6 +95,11 @@ open class Scene(name: String? = null) : Node(name) {
 
     fun dispose(disposable: Disposable) {
         disposables += disposable
+    }
+
+    override fun checkIsVisible(cam: Camera, ctx: KoolContext): Boolean {
+        // don't do frustum checking for Scene
+        return isVisible
     }
 
     override fun dispose(ctx: KoolContext) {

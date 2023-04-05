@@ -83,7 +83,7 @@ class RoughnesMetalGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.P
                         mat.translate((-(nCols - 1) * 0.5f + x) * spacing, ((nRows - 1) * 0.5f - y) * spacing, 0f)
 
                         addInstance {
-                            put(mat.matrix)
+                            put(mat.array)
                             val roughness = max(x / (nCols - 1).toFloat(), 0.05f)
                             val metallic = y / (nRows - 1).toFloat()
                             put(roughness)

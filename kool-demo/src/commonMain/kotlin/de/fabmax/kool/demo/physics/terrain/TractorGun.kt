@@ -214,7 +214,7 @@ class TractorGun(val physics: PhysicsObjects, val mainScene: Scene) {
 
         private fun updateDesiredPos() {
             camRig?.let {
-                lookTransform.set(it.transform).scale(1f / it.zoom)
+                lookTransform.set(it.transform.matrix).scale(1f / it.zoom)
                 lookTransform.transform(desiredPos.set(0f, 2.5f, -tractorDistance))
             }
         }

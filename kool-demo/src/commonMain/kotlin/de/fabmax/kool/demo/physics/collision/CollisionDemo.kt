@@ -108,7 +108,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
                         val body = typeBodies[i]
                         matBuf.set(body.rigidActor.transform).scale(body.scale)
 
-                        buf.put(matBuf.matrix)
+                        buf.put(matBuf.array)
 
                         if (drawBodyState.value) {
                             if (body.rigidActor.isActive) {

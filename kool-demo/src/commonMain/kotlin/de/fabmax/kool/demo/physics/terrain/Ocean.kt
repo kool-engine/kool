@@ -62,7 +62,7 @@ class Ocean(terrainTiles: TerrainTiles, val camera: Camera, val wind: Wind, val 
                     oceanInstances.clear()
                     oceanInstances.addInstances(visibleTileTraverser.result.size) { buf ->
                         for (i in visibleTileTraverser.result.indices) {
-                            buf.put(visibleTileTraverser.result[i].transform.matrix)
+                            buf.put(visibleTileTraverser.result[i].transform.array)
                         }
                     }
                 }

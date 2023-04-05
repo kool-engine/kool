@@ -93,6 +93,9 @@ fun main() {
                 metallic(0f)
                 roughness(0.25f)
             }
+            onUpdate {
+                transform.rotate(Time.deltaT * 45f, Vec3f.X_AXIS)
+            }
         }
 
         lighting.singleLight {
@@ -109,6 +112,8 @@ As you might have guessed the `colorMesh { ... }` block creates a colored cube a
 In order to draw the mesh on the screen it needs a shader, which is assigned with
 `shader = KslPbrShader { ... }`. This creates a simple PBR shader for a dielectric material
 with a rather smooth surface. Color information is taken from the corresponding vertex attribute.
+The `onUpdate`-block is called on each frame and modifies the cube transform to rotate it 45° per second around its
+X-axis.
 Finally, we set up a single directional scene light (of white color and an intensity of 5), so that our cube can shine
 in its full glory. The resulting scene looks like [this](https://fabmax.github.io/kool/kool-js/?demo=helloWorld).
 
@@ -156,7 +161,7 @@ fun main() {
 
                 if (model.animations.isNotEmpty()) {
                     model.enableAnimation(0)
-                    model.onUpdate += {
+                    model.onUpdate {
                         model.applyAnimation(Time.deltaT)
                     }
                 }

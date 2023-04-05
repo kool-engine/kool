@@ -496,7 +496,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
 
         fun putInstanceData(buf: Float32Buffer) {
             transform.scale(size.x, size.y, size.z, bufTransform)
-            buf.put(bufTransform.matrix)
+            buf.put(bufTransform.array)
             buf.put(mutColor.array)
         }
     }

@@ -416,7 +416,7 @@ class Mat4fAccessor(accessor: GltfAccessor) : DataStreamAccessor(accessor) {
 
     fun next(result: Mat4f): Mat4f {
         for (i in 0..15) {
-            result.matrix[i] = nextFloat()
+            result.array[i] = nextFloat()
         }
         advance()
         return result
@@ -426,7 +426,7 @@ class Mat4fAccessor(accessor: GltfAccessor) : DataStreamAccessor(accessor) {
 
     fun nextD(result: Mat4d): Mat4d {
         for (i in 0..15) {
-            result.matrix[i] = nextDouble()
+            result.array[i] = nextDouble()
         }
         advance()
         return result

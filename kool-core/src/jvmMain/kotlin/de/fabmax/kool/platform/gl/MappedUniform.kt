@@ -174,7 +174,7 @@ class MappedUniformMat4f(val uniform: UniformMat4f, val location: Int) : MappedU
     private val buf = createFloat32Buffer(16) as Float32BufferImpl
     override fun setUniform(ctx: Lwjgl3Context): Boolean {
         for (i in 0..15) {
-            buf[i] = uniform.value.matrix[i]
+            buf[i] = uniform.value.array[i]
         }
         glUniformMatrix4fv(location, false, buf.buffer)
         return true
@@ -187,7 +187,7 @@ class MappedUniformMat4fv(val uniform: UniformMat4fv, val location: Int) : Mappe
         var bufI = 0
         for (i in 0 until uniform.length) {
             for (j in 0 until 16) {
-                buf[bufI++] = uniform.value[i].matrix[j]
+                buf[bufI++] = uniform.value[i].array[j]
             }
         }
         glUniformMatrix4fv(location, false, buf.buffer)

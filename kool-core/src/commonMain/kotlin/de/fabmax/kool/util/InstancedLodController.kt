@@ -13,10 +13,6 @@ class InstancedLodController<T: InstancedLodController.Instance<T>>(name: String
 
     val instances = mutableListOf<T>()
 
-    override var isFrustumChecked: Boolean
-        get() = false
-        set(_) { }
-
     private val lods = mutableListOf<Lod>()
 
     fun getInstanceCount(lod: Int): Int {
@@ -139,7 +135,7 @@ class InstancedLodController<T: InstancedLodController.Instance<T>>(name: String
         }
 
         open fun addInstanceData(lod: Int, buffer: Float32Buffer, ctx: KoolContext) {
-            buffer.put(instanceModelMat.matrix)
+            buffer.put(instanceModelMat.array)
         }
     }
 }

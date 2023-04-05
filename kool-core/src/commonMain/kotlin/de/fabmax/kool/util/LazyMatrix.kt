@@ -4,11 +4,11 @@ import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.math.Mat4f
 
 class LazyMat4d(val update: (Mat4d) -> Unit) {
-    var isDirty = true
+    var isDirty = false
 
     private val mat = Mat4d()
 
-    fun clear() {
+    fun setIdentity() {
         isDirty = false
         mat.setIdentity()
     }
@@ -27,7 +27,7 @@ class LazyMat4f(val update: (Mat4f) -> Unit) {
 
     private val mat = Mat4f()
 
-    fun clear() {
+    fun setIdentity() {
         isDirty = false
         mat.setIdentity()
     }

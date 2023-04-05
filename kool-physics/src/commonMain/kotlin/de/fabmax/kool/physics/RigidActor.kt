@@ -93,7 +93,7 @@ abstract class CommonRigidActor : Releasable {
             }
             onUpdate += {
                 this@apply.transform.set(this@CommonRigidActor.transform)
-                this@apply.setDirty()
+                this@apply.transform.markDirty()
             }
         }
     }

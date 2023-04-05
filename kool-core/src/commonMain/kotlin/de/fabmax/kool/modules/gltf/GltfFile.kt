@@ -474,7 +474,7 @@ data class GltfFile(
 
         private fun Group.applyTransforms(transform: Mat4dStack, rootGroup: Group) {
             transform.push()
-            transform.mul(this.transform)
+            transform.mul(this.transform.matrix)
 
             children.filterIsInstance<Mesh>().forEach {
                 it.geometry.batchUpdate(true) {
@@ -507,7 +507,7 @@ data class GltfFile(
             model.nodes[modelNdName] = nodeGrp
 
             if (matrix != null) {
-                nodeGrp.transform.set(matrix.map { it.toDouble() })
+                nodeGrp.transform.matrix.set(matrix.map { it.toDouble() })
             } else {
                 if (translation != null) {
                     nodeGrp.translate(translation[0], translation[1], translation[2])

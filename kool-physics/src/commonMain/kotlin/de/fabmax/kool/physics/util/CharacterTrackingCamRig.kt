@@ -59,7 +59,7 @@ class CharacterTrackingCamRig(private val inputManager: InputManager, enableCurs
         zoomModifier = { desiredZoom ->
             var zoom = desiredZoom
             transform.transform(testDir.set(0f, 0f, 1f).norm(), 0f)
-            hitSweepGeometryPose.set(transform)
+            hitSweepGeometryPose.set(transform.matrix)
             if (world.sweepTest(hitSweepGeometry, hitSweepGeometryPose, testDir, desiredZoom, hitResult)) {
                 zoom = max(minZoom, hitResult.hitDistance)
             }

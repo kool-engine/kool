@@ -174,7 +174,7 @@ class UniformMat3fv(name: String, length: Int) : Uniform<Array<Mat3f>>(Array(len
 class UniformMat4f(name: String) : Uniform<Mat4f>(Mat4f(), name) {
     override fun putToBuffer(buffer: MixedBuffer, len: Int) {
         checkLen(4 * 16, len)
-        buffer.putFloat32(value.matrix)
+        buffer.putFloat32(value.array)
     }
 }
 
@@ -182,7 +182,7 @@ class UniformMat4fv(name: String, length: Int) : Uniform<Array<Mat4f>>(Array(len
     override fun putToBuffer(buffer: MixedBuffer, len: Int) {
         checkLen(4 * 16 * length, len)
         for (i in 0 until length) {
-            buffer.putFloat32(value[i].matrix)
+            buffer.putFloat32(value[i].array)
         }
     }
 }

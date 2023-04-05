@@ -71,10 +71,10 @@ abstract class CommonVehicle(val vehicleProps: VehicleProperties) : RigidBody() 
         }
         onUpdate += {
             this@apply.transform.set(this@CommonVehicle.transform)
-            this@apply.setDirty()
+            this@apply.transform.markDirty()
             for (i in 0..3) {
                 wheelGroups[i].transform.set(wheelInfos[i].transform)
-                wheelGroups[i].setDirty()
+                wheelGroups[i].transform.markDirty()
             }
         }
     }

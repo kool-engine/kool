@@ -110,7 +110,7 @@ class CamLocalGrass(val camera: Camera, val terrain: Terrain, val wind: Wind, va
                                 0f,
                                 1f
                             ) / (grass.p - 0.1f)).clamp(0f, 1f)
-                            buf.put(grass.transform.matrix)
+                            buf.put(grass.transform.array)
                             buf.put(distScale * grass.s)
                         }
                     }

@@ -563,7 +563,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
                     clear()
                     addInstances(bodies.size) { buf ->
                         for (i in bodies.indices) {
-                            buf.put(bodies[i].transform.matrix)
+                            buf.put(bodies[i].transform.array)
                         }
                     }
                 }

@@ -171,14 +171,14 @@ class DeferredDemo : DemoScene("Deferred Shading") {
 
                         if (lightPositionMesh.isVisible) {
                             lightPosInsts.addInstance {
-                                put(lightModelMat.matrix)
+                                put(lightModelMat.array)
                                 put(light.color.array)
                             }
                         }
                         if (lightVolumeMesh.isVisible) {
                             lightModelMat.scale(light.radius, light.radius, light.radius)
                             lightVolInsts.addInstance {
-                                put(lightModelMat.matrix)
+                                put(lightModelMat.array)
                                 put(light.color.array)
                             }
                         }

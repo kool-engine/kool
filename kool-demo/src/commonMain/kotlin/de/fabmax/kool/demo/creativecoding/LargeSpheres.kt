@@ -77,7 +77,7 @@ class LargeSpheres(val resources: CreativeCodingDemo.Resources) : CreativeConten
                 // add sphere instance properties: transform matrix + sphere color
                 instances.addInstance {
                     transform.push().scale(settings.sphereSize * sphereSize)
-                    put(transform.matrix)
+                    put(transform.array)
                     transform.pop()
                     put(color.array)
                 }

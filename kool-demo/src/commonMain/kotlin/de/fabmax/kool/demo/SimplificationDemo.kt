@@ -84,7 +84,7 @@ class SimplificationDemo : DemoScene("Simplification") {
 
             onUpdate += {
                 if (isAutoRotate.value) {
-                    rotate(Time.deltaT * 3f, Vec3f.Y_AXIS)
+                    transform.rotate(Time.deltaT * 3f, Vec3f.Y_AXIS)
                 }
             }
         }
