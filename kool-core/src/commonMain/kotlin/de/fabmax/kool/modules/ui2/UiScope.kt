@@ -52,7 +52,8 @@ inline fun UiScope.Popup(
 }
 
 inline fun <reified T: Any> UiScope.remember(provider: () -> T): T = uiNode.weakMemory.weakMemory(provider)
-fun <T: Any> UiScope.remember(initialState: T): MutableStateValue<T> = uiNode.weakMemory.weakMemory { mutableStateOf(initialState) }
+fun <T: Any?> UiScope.remember(initialState: T): MutableStateValue<T> = uiNode.weakMemory.weakMemory { mutableStateOf(initialState) }
+fun <T: Any?> UiScope.remember(initialState: T, onChange: (T) -> Unit) = uiNode.weakMemory.weakMemory { mutableStateOf(initialState).onChange(onChange) }
 fun UiScope.rememberScrollState(): ScrollState = uiNode.weakMemory.weakMemory { ScrollState() }
 fun UiScope.rememberListState(): LazyListState = uiNode.weakMemory.weakMemory { LazyListState() }
 fun UiScope.clearMemory() = uiNode.weakMemory.clear()
