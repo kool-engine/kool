@@ -78,6 +78,7 @@ kotlin {
                 optIn("kotlinx.coroutines.ExperimentalCoroutinesApi")
                 optIn("kotlin.contracts.ExperimentalContracts")
                 optIn("kotlin.io.encoding.ExperimentalEncodingApi")
+                optIn("kotlin.ExperimentalStdlibApi")
             }
         }
     }

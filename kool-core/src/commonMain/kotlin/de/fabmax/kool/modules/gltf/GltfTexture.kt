@@ -1,5 +1,6 @@
 package de.fabmax.kool.modules.gltf
 
+import de.fabmax.kool.Assets
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.TextureProps
 import kotlinx.serialization.Serializable
@@ -34,11 +35,11 @@ data class GltfTexture(
             } else {
                 "gltf_tex_$source"
             }
-            createdTex = Texture2d(TextureProps(), name) { assetMgr ->
+            createdTex = Texture2d(TextureProps(), name) {
                 if (uri != null) {
-                    assetMgr.loadTextureData(uri)
+                    Assets.loadTextureData(uri)
                 } else {
-                    assetMgr.createTextureData(imageRef.bufferViewRef!!.getData(), imageRef.mimeType!!)
+                    Assets.createTextureData(imageRef.bufferViewRef!!.getData(), imageRef.mimeType!!)
                 }
             }
         }

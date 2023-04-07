@@ -50,7 +50,8 @@ abstract class KoolContext {
     val screenDpi: Float
         get() = windowScale * 96f
 
-    abstract val assetMgr: AssetManager
+    @Deprecated("AssetManager is an object now", ReplaceWith("AssetManager"))
+    val assetMgr = Assets
 
     abstract val shaderGenerator: ShaderGenerator
 

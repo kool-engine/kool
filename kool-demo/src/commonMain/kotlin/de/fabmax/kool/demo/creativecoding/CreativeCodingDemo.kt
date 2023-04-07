@@ -1,6 +1,6 @@
 package de.fabmax.kool.demo.creativecoding
 
-import de.fabmax.kool.AssetManager
+import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.DemoLoader
 import de.fabmax.kool.demo.DemoScene
@@ -27,7 +27,7 @@ class CreativeCodingDemo : DemoScene("Creative Coding") {
 
     private lateinit var resources: Resources
 
-    override suspend fun AssetManager.loadResources(ctx: KoolContext) {
+    override suspend fun Assets.loadResources(ctx: KoolContext) {
         resources = Resources(
             EnvironmentHelper.hdriEnvironment(
                 mainScene,

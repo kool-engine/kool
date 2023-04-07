@@ -1,6 +1,6 @@
 package de.fabmax.kool.pipeline.ibl
 
-import de.fabmax.kool.AssetManager
+import de.fabmax.kool.Assets
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Color
@@ -37,7 +37,7 @@ object EnvironmentHelper {
         return renderPassEnvironment(scene, gradientPass, autoDispose)
     }
 
-    suspend fun hdriEnvironment(scene: Scene, hdriPath: String, assetManager: AssetManager, autoDispose: Boolean = true, brightness: Float = 1f): EnvironmentMaps {
+    suspend fun hdriEnvironment(scene: Scene, hdriPath: String, assetManager: Assets, autoDispose: Boolean = true, brightness: Float = 1f): EnvironmentMaps {
         val hdriTexProps = TextureProps(minFilter = FilterMethod.NEAREST, magFilter = FilterMethod.NEAREST, mipMapping = false, maxAnisotropy = 1)
         val hdri = assetManager.loadAndPrepareTexture(hdriPath, hdriTexProps)
         return hdriEnvironment(scene, hdri, autoDispose, brightness)

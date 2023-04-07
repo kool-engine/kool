@@ -1,5 +1,6 @@
 package de.fabmax.kool.platform
 
+import de.fabmax.kool.Assets
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.TextureData2d
 import de.fabmax.kool.util.*
@@ -21,7 +22,7 @@ import kotlin.math.round
 
 private typealias AwtFont = java.awt.Font
 
-internal class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, val ctx: Lwjgl3Context) {
+internal class FontMapGenerator(val maxWidth: Int, val maxHeight: Int) {
 
     private val canvas = BufferedImage(maxWidth, maxHeight, BufferedImage.TYPE_INT_ARGB)
     private val clearColor = Color(0, 0, 0, 0)
@@ -38,11 +39,11 @@ internal class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, val ctx: 
         availableFamilies = families
     }
 
-    internal fun loadCustomFonts(customTtfFonts: Map<String, String>, assetMgr: JvmAssetManager) {
+    internal fun loadCustomFonts(customTtfFonts: Map<String, String>) {
         customTtfFonts.forEach { (family, path) ->
             try {
                 val inStream = runBlocking {
-                    ByteArrayInputStream(assetMgr.loadAsset(path)!!.toArray())
+                    ByteArrayInputStream(Assets.loadAsset(path)!!.toArray())
                 }
                 val ttfFont = AwtFont.createFont(AwtFont.TRUETYPE_FONT, inStream)
                 customFonts[family] = ttfFont

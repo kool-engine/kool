@@ -38,7 +38,7 @@ actual fun Double.toString(precision: Int): String {
 actual inline fun <R> lock(lock: Any, block: () -> R): R = block()
 
 internal object JsImpl {
-    var ctx: JsContext? = null
+    private var ctx: JsContext? = null
     val gl: WebGL2RenderingContext
         get() = ctx?.gl ?: throw KoolException("Platform.createContext() not called")
 
@@ -48,5 +48,9 @@ internal object JsImpl {
         }
         ctx = JsContext()
         return ctx!!
+    }
+
+    fun requireContext(): JsContext {
+        return ctx ?: throw IllegalStateException("KoolContext was not yet created")
     }
 }

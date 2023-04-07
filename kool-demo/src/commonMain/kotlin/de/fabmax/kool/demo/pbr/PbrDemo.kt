@@ -1,5 +1,6 @@
 package de.fabmax.kool.demo.pbr
 
+import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.*
 import de.fabmax.kool.demo.menu.DemoMenu
@@ -69,7 +70,7 @@ class PbrDemo : DemoScene("PBR Materials") {
             setZoom(20.0)
         }
 
-        loadHdri(selectedHdriIdx.value, ctx) { hdri ->
+        loadHdri(selectedHdriIdx.value) { hdri ->
             envMaps = EnvironmentHelper.hdriEnvironment(this, hdri, false)
             skybox = Skybox.cube(envMaps.reflectionMap, 1f)
             this += skybox
@@ -131,7 +132,7 @@ class PbrDemo : DemoScene("PBR Materials") {
     }
 
     private fun updateHdri(idx: Int, ctx: KoolContext) {
-        loadHdri(idx, ctx) { tex ->
+        loadHdri(idx) { tex ->
             envMaps.let { oldEnvMap -> ctx.runDelayed(1) { oldEnvMap.dispose() } }
             envMaps = EnvironmentHelper.hdriEnvironment(mainScene, tex, false)
             skybox.skyboxShader.setSingleSky(envMaps.reflectionMap)
@@ -139,10 +140,10 @@ class PbrDemo : DemoScene("PBR Materials") {
         }
     }
 
-    private fun loadHdri(idx: Int, ctx: KoolContext, recv: (Texture2d) -> Unit) {
+    private fun loadHdri(idx: Int, recv: (Texture2d) -> Unit) {
         val tex = loadedHdris[idx]
         if (tex == null) {
-            ctx.assetMgr.launch {
+            Assets.launch {
                 val loadedTex = loadAndPrepareTexture(hdriTextures[idx].hdriPath, hdriTexProps)
                 loadedHdris[idx] = loadedTex
                 recv(loadedTex)

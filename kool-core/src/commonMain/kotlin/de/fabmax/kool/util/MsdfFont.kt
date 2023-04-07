@@ -1,5 +1,6 @@
 package de.fabmax.kool.util
 
+import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.TextureProps
@@ -142,12 +143,12 @@ class MsdfFont(
 
         val MSDF_TEX_PROPS = TextureProps(mipMapping = false, maxAnisotropy = 0)
 
-        suspend fun create(fontPath: String, ctx: KoolContext) = create("${fontPath}.png", "${fontPath}.json", ctx)
+        suspend fun create(fontPath: String) = create("${fontPath}.png", "${fontPath}.json")
 
-        suspend fun create(fontMapPath: String, fontMetaPath: String, ctx: KoolContext): MsdfFont {
-            val data = ctx.assetMgr.loadAsset(fontMetaPath) ?: throw IllegalStateException("Failed to load MsdfMeta $fontMetaPath")
+        suspend fun create(fontMapPath: String, fontMetaPath: String): MsdfFont {
+            val data = Assets.loadAsset(fontMetaPath) ?: throw IllegalStateException("Failed to load MsdfMeta $fontMetaPath")
             val meta = Json.Default.decodeFromString<MsdfMeta>(data.toArray().decodeToString())
-            val fontData = MsdfFontData(ctx.assetMgr.loadAndPrepareTexture(fontMapPath, MSDF_TEX_PROPS), meta)
+            val fontData = MsdfFontData(Assets.loadAndPrepareTexture(fontMapPath, MSDF_TEX_PROPS), meta)
             return MsdfFont(fontData)
         }
 

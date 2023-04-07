@@ -22,7 +22,6 @@ import java.util.concurrent.CompletableFuture
  * @author fabmax
  */
 class Lwjgl3Context : KoolContext() {
-    override val assetMgr = JvmAssetManager(this)
     override val inputMgr: JvmInputManager
 
     val renderBackend: RenderBackend

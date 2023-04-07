@@ -13,9 +13,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.select
 import kotlin.coroutines.CoroutineContext
 
-abstract class AssetManager : CoroutineScope {
+object Assets : CoroutineScope {
 
-    protected val job = Job()
+    internal val job = Job()
+    private const val NUM_LOAD_WORKERS = 8
 
     override val coroutineContext: CoroutineContext
         get() = job
@@ -51,30 +52,26 @@ abstract class AssetManager : CoroutineScope {
         }
     }
 
-    abstract val storage: KeyValueStorage
-
     private fun loadWorker(assetRefs: ReceiveChannel<AssetRef>, loadedAssets: SendChannel<LoadedAsset>) = launch {
         for (ref in assetRefs) {
             loadedAssets.send(loadAsset(ref))
         }
     }
 
-    open fun close() {
+    fun close() {
         job.cancel()
     }
 
     private suspend fun loadAsset(ref: AssetRef): LoadedAsset {
         return when(ref) {
-            is RawAssetRef -> loadRaw(ref)
-            is TextureAssetRef -> loadTexture(ref)
+            is RawAssetRef -> PlatformAssets.loadRaw(ref)
+            is TextureAssetRef -> PlatformAssets.loadTexture(ref)
         }
     }
 
-    protected abstract suspend fun loadRaw(rawRef: RawAssetRef): LoadedRawAsset
-
-    protected abstract suspend fun loadTexture(textureRef: TextureAssetRef): LoadedTextureAsset
-
-    abstract suspend fun waitForFonts()
+    suspend fun waitForFonts() {
+        PlatformAssets.waitForFonts()
+    }
 
     fun getOrCreateFontMap(font: AtlasFont, fontScale: Float): FontMap = loadedAtlasFontMaps.getOrPut(font) {
         updateFontMap(font, fontScale)
@@ -104,7 +101,9 @@ abstract class AssetManager : CoroutineScope {
         return map
     }
 
-    abstract fun createFontMapData(font: AtlasFont, fontScale: Float, outMetrics: MutableMap<Char, CharMetrics>): TextureData2d
+    fun createFontMapData(font: AtlasFont, fontScale: Float, outMetrics: MutableMap<Char, CharMetrics>): TextureData2d {
+        return PlatformAssets.createFontMapData(font, fontScale, outMetrics)
+    }
 
     /**
      * Opens a file chooser dialog for the user to select and load a file. Returns the loaded file or null if the
@@ -115,7 +114,9 @@ abstract class AssetManager : CoroutineScope {
      *                   supported on JVM, ignored on js).
      * @return The [LoadedFile] containing the file data or null if the operation was canceled.
      */
-    abstract suspend fun loadFileByUser(filterList: String? = null): LoadedFile?
+    suspend fun loadFileByUser(filterList: String? = null): LoadedFile? {
+        return PlatformAssets.loadFileByUser(filterList)
+    }
 
     /**
      * Opens a file chooser dialog for the user to select a destination file for the given data.
@@ -123,17 +124,19 @@ abstract class AssetManager : CoroutineScope {
      * @return On JVM the selected path is returned or null if the suer canceled the operation. On js null is always
      *         returned.
      */
-    abstract fun saveFileByUser(data: Uint8Buffer, fileName: String, mimeType: String = "application/octet-stream"): String?
+    fun saveFileByUser(data: Uint8Buffer, fileName: String, mimeType: String = "application/octet-stream"): String? {
+        return PlatformAssets.saveFileByUser(data, fileName, mimeType)
+    }
 
-    protected open fun isHttpAsset(assetPath: String): Boolean =
+    fun isHttpAsset(assetPath: String): Boolean =
             // maybe use something less naive here?
             assetPath.startsWith("http://", true) ||
             assetPath.startsWith("https://", true) ||
             assetPath.startsWith("data:", true)
 
-    fun launch(block: suspend AssetManager.() -> Unit) {
+    fun launch(block: suspend Assets.() -> Unit) {
         (this as CoroutineScope).launch {
-            block.invoke(this@AssetManager)
+            block.invoke(this@Assets)
         }
     }
 
@@ -168,7 +171,9 @@ abstract class AssetManager : CoroutineScope {
      * in a CPU accessible buffer. This is particular useful to do procedural stuff like building heightmap geometry
      * from a greyscale image.
      */
-    abstract suspend fun loadTextureData2d(imagePath: String, format: TexFormat? = null): TextureData2d
+    suspend fun loadTextureData2d(imagePath: String, format: TexFormat? = null): TextureData2d {
+        return PlatformAssets.loadTextureData2d(imagePath, format)
+    }
 
     suspend fun loadTextureAtlasData(assetPath: String, tilesX: Int, tilesY: Int, format: TexFormat? = null): TextureData {
         val ref = TextureAssetRef(assetPath, !isHttpAsset(assetPath), format, true, tilesX, tilesY)
@@ -181,7 +186,7 @@ abstract class AssetManager : CoroutineScope {
         return loaded.data ?: throw KoolException("Failed loading texture")
     }
 
-    open suspend fun loadCubeMapTextureData(ft: String, bk: String, lt: String, rt: String, up: String, dn: String): TextureDataCube {
+    suspend fun loadCubeMapTextureData(ft: String, bk: String, lt: String, rt: String, up: String, dn: String): TextureDataCube {
         val ftd = loadTextureData(ft)
         val bkd = loadTextureData(bk)
         val ltd = loadTextureData(lt)
@@ -191,18 +196,30 @@ abstract class AssetManager : CoroutineScope {
         return TextureDataCube(ftd, bkd, ltd, rtd, upd, dnd)
     }
 
-    abstract suspend fun createTextureData(texData: Uint8Buffer, mimeType: String): TextureData
+    suspend fun createTextureData(texData: Uint8Buffer, mimeType: String): TextureData {
+        return PlatformAssets.createTextureData(texData, mimeType)
+    }
 
-    abstract suspend fun loadAndPrepareTexture(assetPath: String, props: TextureProps = TextureProps()): Texture2d
+    suspend fun loadAndPrepareTexture(assetPath: String, props: TextureProps = TextureProps()): Texture2d {
+        return PlatformAssets.loadAndPrepareTexture(assetPath, props)
+    }
 
-    abstract suspend fun loadAndPrepareCubeMap(ft: String, bk: String, lt: String, rt: String, up: String, dn: String,
-                                       props: TextureProps = TextureProps()): TextureCube
+    suspend fun loadAndPrepareCubeMap(ft: String, bk: String, lt: String, rt: String, up: String, dn: String,
+                                      props: TextureProps = TextureProps()): TextureCube {
+        return PlatformAssets.loadAndPrepareCubeMap(ft, bk, lt, rt, up, dn, props)
+    }
 
-    abstract suspend fun loadAndPrepareTexture(texData: TextureData, props: TextureProps = TextureProps(), name: String? = null): Texture2d
+    suspend fun loadAndPrepareTexture(texData: TextureData, props: TextureProps = TextureProps(), name: String? = null): Texture2d {
+        return PlatformAssets.loadAndPrepareTexture(texData, props, name)
+    }
 
-    abstract suspend fun loadAndPrepareCubeMap(texData: TextureDataCube, props: TextureProps = TextureProps(), name: String? = null): TextureCube
+    suspend fun loadAndPrepareCubeMap(texData: TextureDataCube, props: TextureProps = TextureProps(), name: String? = null): TextureCube {
+        return PlatformAssets.loadAndPrepareCubeMap(texData, props, name)
+    }
 
-    abstract suspend fun loadAudioClip(assetPath: String): AudioClip
+    suspend fun loadAudioClip(assetPath: String): AudioClip {
+        return PlatformAssets.loadAudioClip(assetPath)
+    }
 
     fun assetPathToName(assetPath: String): String {
         return if (assetPath.startsWith("data:", true)) {
@@ -217,11 +234,7 @@ abstract class AssetManager : CoroutineScope {
         return "cubeMap(ft:${assetPathToName(ft)}, bk:${assetPathToName(bk)}, lt:${assetPathToName(lt)}, rt:${assetPathToName(rt)}, up:${assetPathToName(up)}, dn:${assetPathToName(dn)})"
     }
 
-    protected inner class AwaitedAsset(val ref: AssetRef, val awaiting: CompletableDeferred<LoadedAsset> = CompletableDeferred(job))
-
-    companion object {
-        const val NUM_LOAD_WORKERS = 8
-    }
+    private class AwaitedAsset(val ref: AssetRef, val awaiting: CompletableDeferred<LoadedAsset> = CompletableDeferred(job))
 }
 
 sealed class AssetRef
@@ -233,3 +246,25 @@ class LoadedRawAsset(ref: AssetRef, val data: Uint8Buffer?) : LoadedAsset(ref, d
 class LoadedTextureAsset(ref: AssetRef, val data: TextureData?) : LoadedAsset(ref, data != null)
 
 data class LoadedFile(val path: String?, val data: Uint8Buffer)
+
+expect object PlatformAssets {
+    internal suspend fun loadRaw(rawRef: RawAssetRef): LoadedRawAsset
+    internal suspend fun loadTexture(textureRef: TextureAssetRef): LoadedTextureAsset
+
+    internal suspend fun waitForFonts()
+    internal fun createFontMapData(font: AtlasFont, fontScale: Float, outMetrics: MutableMap<Char, CharMetrics>): TextureData2d
+
+    internal suspend fun loadFileByUser(filterList: String?): LoadedFile?
+    internal fun saveFileByUser(data: Uint8Buffer, fileName: String, mimeType: String = "application/octet-stream"): String?
+
+    internal suspend fun loadTextureData2d(imagePath: String, format: TexFormat?): TextureData2d
+    internal suspend fun createTextureData(texData: Uint8Buffer, mimeType: String): TextureData
+
+    internal suspend fun loadAndPrepareTexture(assetPath: String, props: TextureProps): Texture2d
+    internal suspend fun loadAndPrepareCubeMap(ft: String, bk: String, lt: String, rt: String, up: String, dn: String,
+                                      props: TextureProps): TextureCube
+    internal suspend fun loadAndPrepareTexture(texData: TextureData, props: TextureProps, name: String?): Texture2d
+    internal suspend fun loadAndPrepareCubeMap(texData: TextureDataCube, props: TextureProps, name: String?): TextureCube
+
+    internal suspend fun loadAudioClip(assetPath: String): AudioClip
+}

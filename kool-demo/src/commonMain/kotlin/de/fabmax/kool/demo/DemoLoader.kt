@@ -40,7 +40,7 @@ class DemoLoader(ctx: KoolContext, startScene: String? = null) {
     init {
         // load physics module early - in js, for some reason wasm file cannot be loaded if this happens later on
         Physics.loadPhysics()
-        Settings.loadSettings(ctx)
+        Settings.loadSettings()
 
         ctx.scenes += dbgOverlay.ui
         ctx.scenes += menu.ui

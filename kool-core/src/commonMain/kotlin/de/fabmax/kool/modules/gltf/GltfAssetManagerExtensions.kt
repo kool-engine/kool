@@ -1,13 +1,13 @@
 package de.fabmax.kool.modules.gltf
 
-import de.fabmax.kool.AssetManager
+import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolException
 import de.fabmax.kool.scene.Model
 import de.fabmax.kool.util.BufferUtil
 import de.fabmax.kool.util.DataStream
 import de.fabmax.kool.util.logW
 
-suspend fun AssetManager.loadGltfFile(assetPath: String): GltfFile? {
+suspend fun Assets.loadGltfFile(assetPath: String): GltfFile? {
     val file = when {
         isGltf(assetPath) -> loadGltf(assetPath)
         isBinaryGltf(assetPath) -> loadGlb(assetPath)
@@ -30,9 +30,9 @@ suspend fun AssetManager.loadGltfFile(assetPath: String): GltfFile? {
     return file
 }
 
-suspend fun AssetManager.loadGltfModel(assetPath: String,
-                                       modelCfg: GltfFile.ModelGenerateConfig = GltfFile.ModelGenerateConfig(),
-                                       scene: Int = 0): Model? {
+suspend fun Assets.loadGltfModel(assetPath: String,
+                                 modelCfg: GltfFile.ModelGenerateConfig = GltfFile.ModelGenerateConfig(),
+                                 scene: Int = 0): Model? {
     return loadGltfFile(assetPath)?.makeModel(modelCfg, scene)
 }
 
@@ -44,7 +44,7 @@ private fun isBinaryGltf(assetPath: String): Boolean{
     return assetPath.endsWith(".glb", true) || assetPath.endsWith(".glb.gz", true)
 }
 
-private suspend fun AssetManager.loadGltf(assetPath: String): GltfFile? {
+private suspend fun Assets.loadGltf(assetPath: String): GltfFile? {
     var data = loadAsset(assetPath)
     if (data != null && assetPath.endsWith(".gz", true)) {
         data = BufferUtil.inflate(data)
@@ -54,7 +54,7 @@ private suspend fun AssetManager.loadGltf(assetPath: String): GltfFile? {
     } else { null }
 }
 
-private suspend fun AssetManager.loadGlb(assetPath: String): GltfFile? {
+private suspend fun Assets.loadGlb(assetPath: String): GltfFile? {
     var data = loadAsset(assetPath) ?: return null
     if (assetPath.endsWith(".gz", true)) {
         data = BufferUtil.inflate(data)

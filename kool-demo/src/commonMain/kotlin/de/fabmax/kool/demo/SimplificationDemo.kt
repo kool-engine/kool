@@ -1,6 +1,6 @@
 package de.fabmax.kool.demo
 
-import de.fabmax.kool.AssetManager
+import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.Vec3f
@@ -62,7 +62,7 @@ class SimplificationDemo : DemoScene("Simplification") {
         models += cosModel
     }
 
-    override suspend fun AssetManager.loadResources(ctx: KoolContext) {
+    override suspend fun Assets.loadResources(ctx: KoolContext) {
         loadModel("Bunny", "${DemoLoader.modelPath}/bunny.gltf.gz", 1f, Vec3f(0f, -3f, 0f))
         loadModel("Cow", "${DemoLoader.modelPath}/cow.gltf.gz", 1f, Vec3f.ZERO)
         loadModel("Teapot", "${DemoLoader.modelPath}/teapot.gltf.gz", 1f, Vec3f(0f, -1.5f, 0f))
@@ -116,7 +116,7 @@ class SimplificationDemo : DemoScene("Simplification") {
         }
     }
 
-    private suspend fun AssetManager.loadModel(name: String, path: String, scale: Float, offset: Vec3f) {
+    private suspend fun Assets.loadModel(name: String, path: String, scale: Float, offset: Vec3f) {
         val modelCfg = GltfFile.ModelGenerateConfig(generateNormals = true, applyMaterials = false)
         loadGltfModel(path, modelCfg)?.let { model ->
             val mesh = model.meshes.values.first()

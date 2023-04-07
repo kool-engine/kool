@@ -1,6 +1,6 @@
 package de.fabmax.kool.demo.physics.collision
 
-import de.fabmax.kool.AssetManager
+import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.*
 import de.fabmax.kool.demo.menu.DemoMenu
@@ -46,7 +46,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
 
     private val shapeGenCtx = ShapeType.ShapeGeneratorContext()
 
-    override suspend fun AssetManager.loadResources(ctx: KoolContext) {
+    override suspend fun Assets.loadResources(ctx: KoolContext) {
         ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${DemoLoader.hdriPath}/colorful_studio_1k.rgbe.png", this)
 
         groundAlbedo = loadAndPrepareTexture("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine.png")

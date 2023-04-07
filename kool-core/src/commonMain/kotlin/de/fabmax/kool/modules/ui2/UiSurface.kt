@@ -188,8 +188,8 @@ open class UiSurface(
         return getMeshLayer(layer).plainBuilder
     }
 
-    fun getTextBuilder(font: Font, ctx: KoolContext, layer: Int): MeshBuilder {
-        return getMeshLayer(layer).getTextBuilder(font, ctx)
+    fun getTextBuilder(font: Font, layer: Int): MeshBuilder {
+        return getMeshLayer(layer).getTextBuilder(font)
     }
 
     fun applyFontScale(font: Font, ctx: KoolContext) {
@@ -538,8 +538,8 @@ open class UiSurface(
                 val shader = MsdfUiShader().apply { fontMap = font.data.map }
                 return TextMesh(shader)
             }
-            fun atlasTextMesh(font: AtlasFont, ctx: KoolContext): TextMesh {
-                val shader = Ui2Shader().apply { setFont(font, ctx) }
+            fun atlasTextMesh(font: AtlasFont): TextMesh {
+                val shader = Ui2Shader().apply { setFont(font) }
                 return TextMesh(shader)
             }
         }
@@ -584,10 +584,10 @@ open class UiSurface(
             addNode(plainMesh)
         }
 
-        fun getTextBuilder(font: Font, ctx: KoolContext): MeshBuilder {
+        fun getTextBuilder(font: Font): MeshBuilder {
             return textMeshes[font]?.builder ?: when (font) {
                 is MsdfFont -> getMsdfTextBuilder(font)
-                is AtlasFont -> getAtlasTextBuilder(font, ctx)
+                is AtlasFont -> getAtlasTextBuilder(font)
             }
         }
 
@@ -600,9 +600,9 @@ open class UiSurface(
             return textMesh.builder
         }
 
-        private fun getAtlasTextBuilder(font: AtlasFont, ctx: KoolContext): MeshBuilder {
+        private fun getAtlasTextBuilder(font: AtlasFont): MeshBuilder {
             val textMesh = textMeshes.getOrPut(font) {
-                TextMesh.atlasTextMesh(font, ctx).also { this += it.mesh }
+                TextMesh.atlasTextMesh(font).also { this += it.mesh }
             }
             textMesh.isUsed = true
             return textMesh.builder

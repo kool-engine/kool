@@ -1,5 +1,6 @@
 package de.fabmax.kool.demo
 
+import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.MutableVec3f
@@ -71,10 +72,10 @@ class ReflectionDemo : DemoScene("Reflections") {
             addNode(it)
         }
 
-        setupDeferred(this, ctx)
+        setupDeferred(this)
     }
 
-    private fun setupDeferred(scene: Scene, ctx: KoolContext) {
+    private fun setupDeferred(scene: Scene) {
         val envMaps = EnvironmentHelper.gradientColorEnvironment(
             mainScene, ColorGradient(Color.DARK_GRAY.mix(Color.BLACK, 0.75f), Color.DARK_GRAY, toLinear = true))
         val defCfg = DeferredPipelineConfig().apply {
@@ -90,7 +91,7 @@ class ReflectionDemo : DemoScene("Reflections") {
         scene += Skybox.cube(envMaps.reflectionMap, 1f)
 
         deferredPipeline.sceneContent.apply {
-            ctx.assetMgr.launch {
+            Assets.launch {
                 val floorAlbedo = loadAndPrepareTexture("${DemoLoader.materialPath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_COL_2K.jpg")
                 val floorNormal = loadAndPrepareTexture("${DemoLoader.materialPath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_NRM_2K.jpg")
                 val floorRoughness = loadAndPrepareTexture("${DemoLoader.materialPath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_REFL_2K.jpg")

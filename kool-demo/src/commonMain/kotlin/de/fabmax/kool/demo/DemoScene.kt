@@ -1,6 +1,6 @@
 package de.fabmax.kool.demo
 
-import de.fabmax.kool.AssetManager
+import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.demo.menu.TitleBgRenderer
@@ -45,7 +45,7 @@ abstract class DemoScene(val name: String) {
         if (demoState == State.NEW) {
             // load resources (async from AssetManager CoroutineScope)
             demoState = State.LOADING
-            ctx.assetMgr.launch {
+            Assets.launch {
                 loadResources(ctx)
                 demoState = State.SETUP
             }
@@ -65,7 +65,7 @@ abstract class DemoScene(val name: String) {
         lateInit(ctx)
     }
 
-    open suspend fun AssetManager.loadResources(ctx: KoolContext) { }
+    open suspend fun Assets.loadResources(ctx: KoolContext) { }
 
     abstract fun Scene.setupMainScene(ctx: KoolContext)
 

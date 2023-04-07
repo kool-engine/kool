@@ -34,7 +34,6 @@ import org.w3c.dom.events.UIEvent
  */
 @Suppress("UnsafeCastFromDynamic")
 class JsContext internal constructor() : KoolContext() {
-    override val assetMgr = JsAssetManager(this)
     override val inputMgr: JsInputManager
 
     override val shaderGenerator: ShaderGenerator = ShaderGeneratorImplWebGl()

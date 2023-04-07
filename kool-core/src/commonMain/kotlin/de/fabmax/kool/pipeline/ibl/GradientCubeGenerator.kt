@@ -1,6 +1,6 @@
 package de.fabmax.kool.pipeline.ibl
 
-import de.fabmax.kool.KoolContext
+import de.fabmax.kool.Assets
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.lang.KslProgram
@@ -80,7 +80,7 @@ class GradientCubeGenerator(scene: Scene, gradientTex: Texture1d, size: Int = 12
     }
 
     companion object {
-        suspend fun makeGradientTex(gradient: ColorGradient, ctx: KoolContext, size: Int = 256): Texture2d {
+        suspend fun makeGradientTex(gradient: ColorGradient, size: Int = 256): Texture2d {
             val buf = createUint8Buffer(size * 4)
 
             val color = MutableColor()
@@ -94,7 +94,7 @@ class GradientCubeGenerator(scene: Scene, gradientTex: Texture1d, size: Int = 12
 
             val data = TextureData2d(buf, size, 1, TexFormat.RGBA)
             val props = TextureProps(addressModeU = AddressMode.CLAMP_TO_EDGE, addressModeV = AddressMode.CLAMP_TO_EDGE, mipMapping = false, maxAnisotropy = 1)
-            return ctx.assetMgr.loadAndPrepareTexture(data, props, "gradientEnvTex")
+            return Assets.loadAndPrepareTexture(data, props, "gradientEnvTex")
         }
     }
 

@@ -1,6 +1,6 @@
 package de.fabmax.kool.platform
 
-import de.fabmax.kool.KoolContext
+import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolSetup
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.math.smoothStep
@@ -21,7 +21,7 @@ import kotlin.math.roundToInt
  * @author fabmax
  */
 
-class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, assetManager: JsAssetManager, val ctx: KoolContext) {
+class FontMapGenerator(val maxWidth: Int, val maxHeight: Int) {
 
     private val canvas = document.createElement("canvas") as HTMLCanvasElement
     private val canvasCtx: CanvasRenderingContext2D
@@ -36,7 +36,7 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, assetManager: JsAs
         canvasCtx = canvas.getContext("2d") as CanvasRenderingContext2D
 
         KoolSetup.config.customTtfFonts.forEach { (family, url) ->
-            loadFont(family, assetManager.makeAssetRef(url).url)
+            loadFont(family, Assets.makeAssetRef(url).url)
         }
     }
 

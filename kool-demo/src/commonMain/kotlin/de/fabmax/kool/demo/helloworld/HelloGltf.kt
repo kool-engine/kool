@@ -1,5 +1,6 @@
 package de.fabmax.kool.demo.helloworld
 
+import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.DemoLoader
 import de.fabmax.kool.demo.DemoScene
@@ -40,7 +41,7 @@ class HelloGltfDemo : DemoScene("Hello glTF") {
         }
 
         // Load a glTF 2.0 model
-        ctx.assetMgr.launch {
+        Assets.launch {
             val materialCfg = GltfFile.ModelMaterialConfig(
                 shadowMaps = listOf(shadowMap),
                 scrSpcAmbientOcclusionMap = aoPipeline.aoMap

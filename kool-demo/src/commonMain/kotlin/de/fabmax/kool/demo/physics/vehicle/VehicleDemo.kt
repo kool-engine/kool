@@ -1,6 +1,6 @@
 package de.fabmax.kool.demo.physics.vehicle
 
-import de.fabmax.kool.AssetManager
+import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.DemoLoader
 import de.fabmax.kool.demo.DemoScene
@@ -42,7 +42,7 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
 
     private lateinit var deferredPipeline: DeferredPipeline
 
-    override suspend fun AssetManager.loadResources(ctx: KoolContext) {
+    override suspend fun Assets.loadResources(ctx: KoolContext) {
         showLoadText("Loading IBL maps")
         val ibl = EnvironmentHelper.hdriEnvironment(
             mainScene,

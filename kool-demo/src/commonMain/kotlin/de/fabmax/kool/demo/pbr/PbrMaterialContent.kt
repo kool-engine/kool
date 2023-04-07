@@ -1,5 +1,6 @@
 package de.fabmax.kool.demo.pbr
 
+import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.*
 import de.fabmax.kool.math.Vec3f
@@ -146,29 +147,29 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrCont
         private val materials = mutableListOf(
                 MaterialMaps(
                         "Bamboo",
-                        Texture2d { it.loadTextureData("$assetPath/bamboo-wood-semigloss/bamboo-wood-semigloss-albedo.jpg") },
-                        Texture2d { it.loadTextureData("$assetPath/bamboo-wood-semigloss/bamboo-wood-semigloss-normal.jpg") },
-                        Texture2d { it.loadTextureData("$assetPath/bamboo-wood-semigloss/bamboo-wood-semigloss-roughness.jpg") },
+                        Texture2d { Assets.loadTextureData("$assetPath/bamboo-wood-semigloss/bamboo-wood-semigloss-albedo.jpg") },
+                        Texture2d { Assets.loadTextureData("$assetPath/bamboo-wood-semigloss/bamboo-wood-semigloss-normal.jpg") },
+                        Texture2d { Assets.loadTextureData("$assetPath/bamboo-wood-semigloss/bamboo-wood-semigloss-roughness.jpg") },
                         null,
-                        Texture2d { it.loadTextureData("$assetPath/bamboo-wood-semigloss/bamboo-wood-semigloss-ao.jpg") },
+                        Texture2d { Assets.loadTextureData("$assetPath/bamboo-wood-semigloss/bamboo-wood-semigloss-ao.jpg") },
                         null
                 ),
 
                 MaterialMaps(
                         "Castle Brick",
-                        Texture2d { it.loadTextureData("$assetPath/castle_brick/castle_brick_02_red_diff_2k.jpg") },
-                        Texture2d { it.loadTextureData("$assetPath/castle_brick/castle_brick_02_red_nor_2k.jpg") },
-                        Texture2d { it.loadTextureData("$assetPath/castle_brick/castle_brick_02_red_rough_2k.jpg") },
+                        Texture2d { Assets.loadTextureData("$assetPath/castle_brick/castle_brick_02_red_diff_2k.jpg") },
+                        Texture2d { Assets.loadTextureData("$assetPath/castle_brick/castle_brick_02_red_nor_2k.jpg") },
+                        Texture2d { Assets.loadTextureData("$assetPath/castle_brick/castle_brick_02_red_rough_2k.jpg") },
                         null,
-                        Texture2d { it.loadTextureData("$assetPath/castle_brick/castle_brick_02_red_ao_2k.jpg") },
-                        Texture2d { it.loadTextureData("$assetPath/castle_brick/castle_brick_02_red_disp_2k.jpg") }
+                        Texture2d { Assets.loadTextureData("$assetPath/castle_brick/castle_brick_02_red_ao_2k.jpg") },
+                        Texture2d { Assets.loadTextureData("$assetPath/castle_brick/castle_brick_02_red_disp_2k.jpg") }
                 ),
 
                 MaterialMaps(
                         "Granite",
-                        Texture2d { it.loadTextureData("$assetPath/granitesmooth1/granitesmooth1-albedo4.jpg") },
-                        Texture2d { it.loadTextureData("$assetPath/granitesmooth1/granitesmooth1-normal2.jpg") },
-                        Texture2d { it.loadTextureData("$assetPath/granitesmooth1/granitesmooth1-roughness3.jpg") },
+                        Texture2d { Assets.loadTextureData("$assetPath/granitesmooth1/granitesmooth1-albedo4.jpg") },
+                        Texture2d { Assets.loadTextureData("$assetPath/granitesmooth1/granitesmooth1-normal2.jpg") },
+                        Texture2d { Assets.loadTextureData("$assetPath/granitesmooth1/granitesmooth1-roughness3.jpg") },
                         null,
                         null,
                         null
@@ -176,39 +177,39 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrCont
 
                 MaterialMaps(
                         "Weave Steel",
-                        Texture2d { it.loadTextureData("$assetPath/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_COL_2K_METALNESS.jpg") },
-                        Texture2d { it.loadTextureData("$assetPath/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_NRM_2K_METALNESS.jpg") },
-                        Texture2d { it.loadTextureData("$assetPath/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_ROUGHNESS_2K_METALNESS.jpg") },
-                        Texture2d { it.loadTextureData("$assetPath/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_METALNESS_2K_METALNESS.jpg") },
-                        Texture2d { it.loadTextureData("$assetPath/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_AO_2K_METALNESS.jpg") },
-                        Texture2d { it.loadTextureData("$assetPath/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_DISP_2K_METALNESS.jpg") }
+                        Texture2d { Assets.loadTextureData("$assetPath/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_COL_2K_METALNESS.jpg") },
+                        Texture2d { Assets.loadTextureData("$assetPath/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_NRM_2K_METALNESS.jpg") },
+                        Texture2d { Assets.loadTextureData("$assetPath/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_ROUGHNESS_2K_METALNESS.jpg") },
+                        Texture2d { Assets.loadTextureData("$assetPath/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_METALNESS_2K_METALNESS.jpg") },
+                        Texture2d { Assets.loadTextureData("$assetPath/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_AO_2K_METALNESS.jpg") },
+                        Texture2d { Assets.loadTextureData("$assetPath/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_DISP_2K_METALNESS.jpg") }
                 ),
 
                 MaterialMaps(
                         "Scuffed Plastic",
-                        Texture2d { it.loadTextureData("$assetPath/scuffed-plastic-1/scuffed-plastic4-alb.jpg") },
-                        Texture2d { it.loadTextureData("$assetPath/scuffed-plastic-1/scuffed-plastic-normal.jpg") },
-                        Texture2d { it.loadTextureData("$assetPath/scuffed-plastic-1/scuffed-plastic-rough.jpg") },
+                        Texture2d { Assets.loadTextureData("$assetPath/scuffed-plastic-1/scuffed-plastic4-alb.jpg") },
+                        Texture2d { Assets.loadTextureData("$assetPath/scuffed-plastic-1/scuffed-plastic-normal.jpg") },
+                        Texture2d { Assets.loadTextureData("$assetPath/scuffed-plastic-1/scuffed-plastic-rough.jpg") },
                         null,
-                        Texture2d { it.loadTextureData("$assetPath/scuffed-plastic-1/scuffed-plastic-ao.jpg") },
+                        Texture2d { Assets.loadTextureData("$assetPath/scuffed-plastic-1/scuffed-plastic-ao.jpg") },
                         null
                 ),
 
                 MaterialMaps(
                         "Snow Covered Path",
-                        Texture2d { it.loadTextureData("$assetPath/snowcoveredpath/snowcoveredpath_albedo.jpg") },
-                        Texture2d { it.loadTextureData("$assetPath/snowcoveredpath/snowcoveredpath_normal-dx.jpg") },
-                        Texture2d { it.loadTextureData("$assetPath/snowcoveredpath/snowcoveredpath_roughness.jpg") },
+                        Texture2d { Assets.loadTextureData("$assetPath/snowcoveredpath/snowcoveredpath_albedo.jpg") },
+                        Texture2d { Assets.loadTextureData("$assetPath/snowcoveredpath/snowcoveredpath_normal-dx.jpg") },
+                        Texture2d { Assets.loadTextureData("$assetPath/snowcoveredpath/snowcoveredpath_roughness.jpg") },
                         null,
-                        Texture2d { it.loadTextureData("$assetPath/snowcoveredpath/snowcoveredpath_ao.jpg") },
-                        Texture2d { it.loadTextureData("$assetPath/snowcoveredpath/snowcoveredpath_height.jpg") }
+                        Texture2d { Assets.loadTextureData("$assetPath/snowcoveredpath/snowcoveredpath_ao.jpg") },
+                        Texture2d { Assets.loadTextureData("$assetPath/snowcoveredpath/snowcoveredpath_height.jpg") }
                 ),
 
                 MaterialMaps(
                         "Marble",
-                        Texture2d { it.loadTextureData("$assetPath/streaked-marble/streaked-marble-albedo2.jpg") },
-                        Texture2d { it.loadTextureData("$assetPath/streaked-marble/streaked-marble-normal.jpg") },
-                        Texture2d { it.loadTextureData("$assetPath/streaked-marble/streaked-marble-roughness1.jpg") },
+                        Texture2d { Assets.loadTextureData("$assetPath/streaked-marble/streaked-marble-albedo2.jpg") },
+                        Texture2d { Assets.loadTextureData("$assetPath/streaked-marble/streaked-marble-normal.jpg") },
+                        Texture2d { Assets.loadTextureData("$assetPath/streaked-marble/streaked-marble-roughness1.jpg") },
                         null,
                         null,
                         null
@@ -216,12 +217,12 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrCont
 
                 MaterialMaps(
                         "Onyx Tiles",
-                        Texture2d { it.loadTextureData("$assetPath/TilesOnyxOpaloBlack001/TilesOnyxOpaloBlack001_COL_2K.jpg") },
-                        Texture2d { it.loadTextureData("$assetPath/TilesOnyxOpaloBlack001/TilesOnyxOpaloBlack001_NRM_2K.jpg") },
-                        Texture2d { it.loadTextureData("$assetPath/TilesOnyxOpaloBlack001/TilesOnyxOpaloBlack001_REFL_2K.jpg") },
+                        Texture2d { Assets.loadTextureData("$assetPath/TilesOnyxOpaloBlack001/TilesOnyxOpaloBlack001_COL_2K.jpg") },
+                        Texture2d { Assets.loadTextureData("$assetPath/TilesOnyxOpaloBlack001/TilesOnyxOpaloBlack001_NRM_2K.jpg") },
+                        Texture2d { Assets.loadTextureData("$assetPath/TilesOnyxOpaloBlack001/TilesOnyxOpaloBlack001_REFL_2K.jpg") },
                         null,
                         null,
-                        Texture2d { it.loadTextureData("$assetPath/TilesOnyxOpaloBlack001/TilesOnyxOpaloBlack001_DISP_2K.jpg") }
+                        Texture2d { Assets.loadTextureData("$assetPath/TilesOnyxOpaloBlack001/TilesOnyxOpaloBlack001_DISP_2K.jpg") }
                 )
         )
     }

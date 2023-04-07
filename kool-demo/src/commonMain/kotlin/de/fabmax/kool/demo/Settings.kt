@@ -1,7 +1,6 @@
 package de.fabmax.kool.demo
 
-import de.fabmax.kool.KeyValueStorage
-import de.fabmax.kool.KoolContext
+import de.fabmax.kool.KeyValueStore
 import de.fabmax.kool.modules.ui2.MutableStateValue
 import de.fabmax.kool.modules.ui2.Sizes
 import de.fabmax.kool.util.logD
@@ -18,7 +17,6 @@ object Settings {
     )
     val defaultUiSize = UiSizeSetting("Large", Sizes.large)
 
-    private var settingsStore: KeyValueStorage? = null
     private val settings = mutableListOf<MutableStateSettings<*>>()
 
     val isFullscreen = MutableStateSettings("koolDemo.isFullscreen", false) { it.toBoolean() }
@@ -32,8 +30,7 @@ object Settings {
 
     val selectedDemo = MutableStateSettings("koolDemo.selectedDemo", Demos.defaultDemo) { it }
 
-    fun loadSettings(ctx: KoolContext) {
-        settingsStore = ctx.assetMgr.storage
+    fun loadSettings() {
         settings.forEach { it.load() }
     }
 
@@ -43,13 +40,13 @@ object Settings {
         init {
             settings += this
             onChange {
-                settingsStore?.storeString(key, "$it")
+                KeyValueStore.storeString(key, "$it")
                 logD { "Stored $key: $it" }
             }
         }
 
         fun load() {
-            settingsStore?.loadString(key)?.let { set(parser(it)) }
+            KeyValueStore.loadString(key)?.let { set(parser(it)) }
         }
     }
 

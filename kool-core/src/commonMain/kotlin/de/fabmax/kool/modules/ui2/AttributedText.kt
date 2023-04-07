@@ -215,7 +215,7 @@ open class AttributedTextNode(parent: UiNode?, surface: UiSurface)
                 origin.set(textX, textOrigin.y, 0f)
                 textX += metrics.baselineWidth
             }
-            val builder = getTextBuilder(attr.font, ctx)
+            val builder = getTextBuilder(attr.font)
             cache.addTextGeometry(builder.geometry, textProps, attr.color)
         }
 

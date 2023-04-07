@@ -1,10 +1,15 @@
-package de.fabmax.kool.platform
+package de.fabmax.kool
 
-import de.fabmax.kool.*
 import de.fabmax.kool.modules.audio.AudioClip
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.platform.FontMapGenerator
+import de.fabmax.kool.platform.HttpCache
+import de.fabmax.kool.platform.ImageAtlasTextureData
+import de.fabmax.kool.platform.ImageTextureData
 import de.fabmax.kool.util.*
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.lwjgl.PointerBuffer
 import org.lwjgl.util.nfd.NativeFileDialog
 import java.awt.image.BufferedImage
@@ -12,22 +17,21 @@ import java.io.*
 import java.util.*
 import javax.imageio.ImageIO
 
-class JvmAssetManager internal constructor(val ctx: Lwjgl3Context) : AssetManager() {
+actual object PlatformAssets {
 
-    private val fontGenerator = FontMapGenerator(MAX_GENERATED_TEX_WIDTH, MAX_GENERATED_TEX_HEIGHT, ctx)
+    private const val MAX_GENERATED_TEX_WIDTH = 2048
+    private const val MAX_GENERATED_TEX_HEIGHT = 2048
+
+    private val fontGenerator = FontMapGenerator(MAX_GENERATED_TEX_WIDTH, MAX_GENERATED_TEX_HEIGHT)
     private val imageIoLock = Any()
-    private val localAssetsPath = KoolSetup.config.assetPath
-
     private var fileChooserPath = System.getProperty("user.home")
-
-    override val storage = KeyValueStorageJvm(File(KoolSetup.config.storageDir))
 
     init {
         HttpCache.initCache(File(KoolSetup.config.httpCacheDir))
-        fontGenerator.loadCustomFonts(KoolSetup.config.customTtfFonts, this)
+        fontGenerator.loadCustomFonts(KoolSetup.config.customTtfFonts)
     }
 
-    override suspend fun loadRaw(rawRef: RawAssetRef): LoadedRawAsset {
+    internal actual suspend fun loadRaw(rawRef: RawAssetRef): LoadedRawAsset {
         return if (rawRef.isLocal) {
             loadLocalRaw(rawRef)
         } else {
@@ -55,7 +59,7 @@ class JvmAssetManager internal constructor(val ctx: Lwjgl3Context) : AssetManage
             withContext(Dispatchers.IO) {
                 try {
                     val f = HttpCache.loadHttpResource(httpRawRef.url)
-                            ?: throw IOException("Failed downloading ${httpRawRef.url}")
+                        ?: throw IOException("Failed downloading ${httpRawRef.url}")
                     FileInputStream(f).use { data = Uint8BufferImpl(it.readBytes()) }
                 } catch (e: Exception) {
                     logE { "Failed loading asset ${httpRawRef.url}: $e" }
@@ -70,7 +74,20 @@ class JvmAssetManager internal constructor(val ctx: Lwjgl3Context) : AssetManage
         return Uint8BufferImpl(Base64.getDecoder().decode(dataUrl.substring(dataIdx)))
     }
 
-    override suspend fun loadTexture(textureRef: TextureAssetRef): LoadedTextureAsset {
+    fun openLocalStream(assetPath: String): InputStream {
+        var resPath = assetPath.replace('\\', '/')
+        if (resPath.startsWith("/")) {
+            resPath = resPath.substring(1)
+        }
+        var inStream = ClassLoader.getSystemResourceAsStream(resPath)
+        if (inStream == null) {
+            // if asset wasn't found in resources try to load it from file system
+            inStream = FileInputStream("${KoolSetup.config.assetPath}/$assetPath")
+        }
+        return inStream
+    }
+
+    internal actual suspend fun loadTexture(textureRef: TextureAssetRef): LoadedTextureAsset {
         var data: ImageTextureData? = null
         withContext(Dispatchers.IO) {
             try {
@@ -107,25 +124,13 @@ class JvmAssetManager internal constructor(val ctx: Lwjgl3Context) : AssetManage
         }
     }
 
-    fun openLocalStream(assetPath: String): InputStream {
-        var resPath = assetPath.replace('\\', '/')
-        if (resPath.startsWith("/")) {
-            resPath = resPath.substring(1)
-        }
-        var inStream = ClassLoader.getSystemResourceAsStream(resPath)
-        if (inStream == null) {
-            // if asset wasn't found in resources try to load it from file system
-            inStream = FileInputStream("$localAssetsPath/$assetPath")
-        }
-        return inStream
+    internal actual suspend fun waitForFonts() { }
+
+    internal actual fun createFontMapData(font: AtlasFont, fontScale: Float, outMetrics: MutableMap<Char, CharMetrics>): TextureData2d {
+        return fontGenerator.createFontMapData(font, fontScale, outMetrics)
     }
 
-    override suspend fun waitForFonts() { }
-
-    override fun createFontMapData(font: AtlasFont, fontScale: Float, outMetrics: MutableMap<Char, CharMetrics>) =
-        fontGenerator.createFontMapData(font, fontScale, outMetrics)
-
-    override suspend fun loadFileByUser(filterList: String?): LoadedFile? {
+    internal actual suspend fun loadFileByUser(filterList: String?): LoadedFile? {
         chooseFile(filterList)?.let { file ->
             try {
                 return LoadedFile(
@@ -150,7 +155,7 @@ class JvmAssetManager internal constructor(val ctx: Lwjgl3Context) : AssetManage
         return null
     }
 
-    override fun saveFileByUser(data: Uint8Buffer, fileName: String, mimeType: String): String? {
+    internal actual fun saveFileByUser(data: Uint8Buffer, fileName: String, mimeType: String): String? {
         val outPath = PointerBuffer.allocateDirect(1)
         val result = NativeFileDialog.NFD_SaveDialog(null, fileChooserPath, outPath)
         if (result == NativeFileDialog.NFD_OKAY) {
@@ -167,12 +172,12 @@ class JvmAssetManager internal constructor(val ctx: Lwjgl3Context) : AssetManage
         return null
     }
 
-    override suspend fun loadTextureData2d(imagePath: String, format: TexFormat?): TextureData2d {
+    internal actual suspend fun loadTextureData2d(imagePath: String, format: TexFormat?): TextureData2d {
         // JVM implementation always loads images as ImageTextureData, which is a subclass of TextureData2d
-        return loadTextureData(imagePath, format) as ImageTextureData
+        return Assets.loadTextureData(imagePath, format) as ImageTextureData
     }
 
-    override suspend fun createTextureData(texData: Uint8Buffer, mimeType: String): TextureData {
+    internal actual suspend fun createTextureData(texData: Uint8Buffer, mimeType: String): TextureData {
         var img: BufferedImage?
         withContext(Dispatchers.IO) {
             img = synchronized(imageIoLock) {
@@ -182,10 +187,11 @@ class JvmAssetManager internal constructor(val ctx: Lwjgl3Context) : AssetManage
         return ImageTextureData(img!!, null)
     }
 
-    override suspend fun loadAndPrepareTexture(assetPath: String, props: TextureProps): Texture2d {
-        val tex = Texture2d(props, assetPathToName(assetPath)) { it.loadTextureData(assetPath) }
-        val data = loadTextureData(assetPath, props.format)
-        val deferred = CompletableDeferred<Texture2d>(job)
+    internal actual suspend fun loadAndPrepareTexture(assetPath: String, props: TextureProps): Texture2d {
+        val ctx = DesktopImpl.requireContext()
+        val tex = Texture2d(props, Assets.assetPathToName(assetPath)) { Assets.loadTextureData(assetPath) }
+        val data = Assets.loadTextureData(assetPath, props.format)
+        val deferred = CompletableDeferred<Texture2d>(Assets.job)
         ctx.runOnMainThread {
             ctx.renderBackend.loadTex2d(tex, data)
             deferred.complete(tex)
@@ -193,12 +199,14 @@ class JvmAssetManager internal constructor(val ctx: Lwjgl3Context) : AssetManage
         return deferred.await()
     }
 
-    override suspend fun loadAndPrepareCubeMap(ft: String, bk: String, lt: String, rt: String, up: String, dn: String,
-                                       props: TextureProps): TextureCube {
-        val name = cubeMapAssetPathToName(ft, bk, lt, rt, up, dn)
-        val tex = TextureCube(props, name) { it.loadCubeMapTextureData(ft, bk, lt, rt, up, dn) }
-        val data = loadCubeMapTextureData(ft, bk, lt, rt, up, dn)
-        val deferred = CompletableDeferred<TextureCube>(job)
+    internal actual suspend fun loadAndPrepareCubeMap(
+        ft: String, bk: String, lt: String, rt: String, up: String, dn: String, props: TextureProps
+    ): TextureCube {
+        val ctx = DesktopImpl.requireContext()
+        val name = Assets.cubeMapAssetPathToName(ft, bk, lt, rt, up, dn)
+        val tex = TextureCube(props, name) { Assets.loadCubeMapTextureData(ft, bk, lt, rt, up, dn) }
+        val data = Assets.loadCubeMapTextureData(ft, bk, lt, rt, up, dn)
+        val deferred = CompletableDeferred<TextureCube>(Assets.job)
         ctx.runOnMainThread {
             ctx.renderBackend.loadTexCube(tex, data)
             deferred.complete(tex)
@@ -206,8 +214,9 @@ class JvmAssetManager internal constructor(val ctx: Lwjgl3Context) : AssetManage
         return deferred.await()
     }
 
-    override suspend fun loadAndPrepareTexture(texData: TextureData, props: TextureProps, name: String?): Texture2d {
-        val deferred = CompletableDeferred<Texture2d>(job)
+    internal actual suspend fun loadAndPrepareTexture(texData: TextureData, props: TextureProps, name: String?): Texture2d {
+        val ctx = DesktopImpl.requireContext()
+        val deferred = CompletableDeferred<Texture2d>(Assets.job)
         ctx.runOnMainThread {
             val tex = Texture2d(props, name) { texData }
             ctx.renderBackend.loadTex2d(tex, texData)
@@ -216,8 +225,9 @@ class JvmAssetManager internal constructor(val ctx: Lwjgl3Context) : AssetManage
         return deferred.await()
     }
 
-    override suspend fun loadAndPrepareCubeMap(texData: TextureDataCube, props: TextureProps, name: String?): TextureCube {
-        val deferred = CompletableDeferred<TextureCube>(job)
+    internal actual suspend fun loadAndPrepareCubeMap(texData: TextureDataCube, props: TextureProps, name: String?): TextureCube {
+        val ctx = DesktopImpl.requireContext()
+        val deferred = CompletableDeferred<TextureCube>(Assets.job)
         ctx.runOnMainThread {
             val tex = TextureCube(props, name) { texData }
             ctx.renderBackend.loadTexCube(tex, texData)
@@ -226,17 +236,8 @@ class JvmAssetManager internal constructor(val ctx: Lwjgl3Context) : AssetManage
         return deferred.await()
     }
 
-    override suspend fun loadAudioClip(assetPath: String): AudioClip {
-        val asset = loadAsset(assetPath) ?: throw FileNotFoundException(assetPath)
+    internal actual suspend fun loadAudioClip(assetPath: String): AudioClip {
+        val asset = Assets.loadAsset(assetPath) ?: throw FileNotFoundException(assetPath)
         return AudioClip(asset.toArray())
-    }
-
-    fun loadTextureAsync(loader: suspend CoroutineScope.(AssetManager) -> TextureData): Deferred<TextureData> {
-        return async { loader(this@JvmAssetManager) }
-    }
-
-    companion object {
-        private const val MAX_GENERATED_TEX_WIDTH = 2048
-        private const val MAX_GENERATED_TEX_HEIGHT = 2048
     }
 }

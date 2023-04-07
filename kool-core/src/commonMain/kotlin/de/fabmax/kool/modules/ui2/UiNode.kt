@@ -237,8 +237,8 @@ abstract class UiNode(val parent: UiNode?, override val surface: UiSurface) : Ui
         return surface.getMeshLayer(modifier.zLayer + layerOffset).plainBuilder
     }
 
-    fun getTextBuilder(fontProps: Font, ctx: KoolContext, layerOffset: Int = 0): MeshBuilder {
-        return surface.getMeshLayer(modifier.zLayer + layerOffset).getTextBuilder(fontProps, ctx)
+    fun getTextBuilder(fontProps: Font, layerOffset: Int = 0): MeshBuilder {
+        return surface.getMeshLayer(modifier.zLayer + layerOffset).getTextBuilder(fontProps)
     }
 
     fun UiPrimitiveMesh.localRect(x: Float, y: Float, width: Float, height: Float, color: Color) {

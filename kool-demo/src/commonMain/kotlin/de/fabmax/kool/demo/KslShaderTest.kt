@@ -1,6 +1,6 @@
 package de.fabmax.kool.demo
 
-import de.fabmax.kool.AssetManager
+import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.MutableVec3f
@@ -20,7 +20,7 @@ class KslShaderTest : DemoScene("KslShader") {
     private lateinit var colorMap: Texture2d
     private lateinit var normalMap: Texture2d
 
-    override suspend fun AssetManager.loadResources(ctx: KoolContext) {
+    override suspend fun Assets.loadResources(ctx: KoolContext) {
         colorMap = loadAndPrepareTexture("${DemoLoader.materialPath}/castle_brick/castle_brick_02_red_diff_2k.jpg")
         normalMap = loadAndPrepareTexture("${DemoLoader.materialPath}/castle_brick/castle_brick_02_red_nor_2k.jpg")
 

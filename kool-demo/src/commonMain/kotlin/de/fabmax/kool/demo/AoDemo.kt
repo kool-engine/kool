@@ -1,6 +1,6 @@
 package de.fabmax.kool.demo
 
-import de.fabmax.kool.AssetManager
+import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.MutableVec3f
@@ -55,7 +55,7 @@ class AoDemo : DemoScene("Ambient Occlusion") {
         updateLighting(isSpotLight.value)
     }
 
-    override suspend fun AssetManager.loadResources(ctx: KoolContext) {
+    override suspend fun Assets.loadResources(ctx: KoolContext) {
         showLoadText("Loading Textures")
         ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${DemoLoader.hdriPath}/mossy_forest_1k.rgbe.png", this)
 

@@ -126,11 +126,11 @@ class SamplerDescriptor private constructor(binding: Int, private val sampler: T
                 if (tex.loadingState == Texture.LoadingState.NOT_LOADED) {
                     when (tex.loader) {
                         is AsyncTextureLoader -> {
-                            val deferredData = tex.loader.loadTextureDataAsync(sys.ctx)
+                            val deferredData = tex.loader.loadTextureDataAsync()
                             loadingTextures += LoadingTex(sys, tex, deferredData)
                         }
                         is SyncTextureLoader -> {
-                            val data = tex.loader.loadTextureDataSync(sys.ctx)
+                            val data = tex.loader.loadTextureDataSync()
                             tex.loadedTexture = getLoadedTex(tex, data, sys)
                             tex.loadingState = Texture.LoadingState.LOADED
                         }

@@ -1,6 +1,6 @@
 package de.fabmax.kool.demo
 
-import de.fabmax.kool.AssetManager
+import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.Mat4f
@@ -79,7 +79,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
         updateLights()
     }
 
-    override suspend fun AssetManager.loadResources(ctx: KoolContext) {
+    override suspend fun Assets.loadResources(ctx: KoolContext) {
         groundColor = loadAndPrepareTexture("${DemoLoader.materialPath}/futuristic-panels1/futuristic-panels1-albedo1.jpg")
         groundNormals = loadAndPrepareTexture("${DemoLoader.materialPath}/futuristic-panels1/futuristic-panels1-normal.jpg")
         groundRoughness = loadAndPrepareTexture("${DemoLoader.materialPath}/futuristic-panels1/futuristic-panels1-roughness.jpg")

@@ -51,7 +51,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
         roughness(0.8f)
     }
 
-    override suspend fun AssetManager.loadResources(ctx: KoolContext) {
+    override suspend fun Assets.loadResources(ctx: KoolContext) {
         ao = AoPipeline.createForward(mainScene).apply {
             mapSize = 0.7f
             radius = 0.5f

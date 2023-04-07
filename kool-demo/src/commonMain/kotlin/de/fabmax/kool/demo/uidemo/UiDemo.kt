@@ -1,6 +1,6 @@
 package de.fabmax.kool.demo.uidemo
 
-import de.fabmax.kool.AssetManager
+import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.DemoLoader
 import de.fabmax.kool.demo.DemoScene
@@ -26,7 +26,7 @@ class UiDemo : DemoScene("UI Demo") {
     var exampleImage: Texture2d? = null
     val dndContext = DragAndDropContext<DragAndDropWindow.DndItem>()
 
-    override suspend fun AssetManager.loadResources(ctx: KoolContext) {
+    override suspend fun Assets.loadResources(ctx: KoolContext) {
         exampleImage = loadAndPrepareTexture("${DemoLoader.materialPath}/uv_checker_map.jpg")
     }
 

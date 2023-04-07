@@ -117,7 +117,7 @@ open class TextNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surfac
             origin.set(oriX, oriY, 0f)
         }
 
-        val builder = getTextBuilder(modifier.font, ctx)
+        val builder = getTextBuilder(modifier.font)
         if (!isOddRotation) {
             textCache.addTextGeometry(builder.geometry, textProps, modifier.textColor, modifier.textRotation)
         } else {

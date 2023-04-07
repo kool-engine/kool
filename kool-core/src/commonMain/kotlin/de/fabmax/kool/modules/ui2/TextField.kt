@@ -138,7 +138,7 @@ open class TextFieldNode(parent: UiNode?, surface: UiSurface)
             isYAxisUp = false
             origin.set(textOrigin.x, textOrigin.y, 0f)
         }
-        textCache.addTextGeometry(getTextBuilder(txtFont, ctx).geometry, textProps, textColor)
+        textCache.addTextGeometry(getTextBuilder(txtFont).geometry, textProps, textColor)
 
         val draw = getUiPrimitives()
         val lineColor = if (isFocused) modifier.lineFocusedColor else modifier.lineColor

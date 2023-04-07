@@ -1,6 +1,6 @@
 package de.fabmax.kool.demo
 
-import de.fabmax.kool.AssetManager
+import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.*
@@ -95,7 +95,7 @@ class GltfDemo : DemoScene("glTF Models") {
         trackModel = currentModel.trackModel
     }
 
-    override suspend fun AssetManager.loadResources(ctx: KoolContext) {
+    override suspend fun Assets.loadResources(ctx: KoolContext) {
         showLoadText("Loading IBL Maps")
         envMaps = EnvironmentHelper.hdriEnvironment(mainScene, "${DemoLoader.hdriPath}/shanghai_bund_1k.rgbe.png", this)
 
@@ -387,7 +387,7 @@ class GltfDemo : DemoScene("glTF Models") {
 
         suspend fun load(isDeferredShading: Boolean, ctx: KoolContext): Model? {
             var model: Model? = null
-            ctx.assetMgr.loadGltfFile(assetPath)?.let {
+            Assets.loadGltfFile(assetPath)?.let {
                 val materialCfg = GltfFile.ModelMaterialConfig(
                     shadowMaps = if (isDeferredShading) deferredPipeline.shadowMaps else shadowsForward,
                     scrSpcAmbientOcclusionMap = if (isDeferredShading) deferredPipeline.aoPipeline?.aoMap else aoPipelineForward?.aoMap,

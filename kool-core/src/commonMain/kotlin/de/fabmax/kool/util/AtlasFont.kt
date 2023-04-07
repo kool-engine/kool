@@ -1,5 +1,6 @@
 package de.fabmax.kool.util
 
+import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.pipeline.TexFormat
@@ -30,7 +31,7 @@ class AtlasFont(
     override val lineHeight: Float get() = round(sizePts * heightEm * scale)
 
     override fun setScale(scale: Float, ctx: KoolContext) {
-        getOrLoadFontMap(ctx, scale)
+        getOrLoadFontMap(scale)
     }
 
     override fun textDimensions(text: String, result: TextMetrics, enforceSameWidthDigits: Boolean): TextMetrics {
@@ -60,14 +61,14 @@ class AtlasFont(
         return "AtlasFont { family: $family, size: $sizePts, style: $style, isExternalMap: $isExternalMap }"
     }
 
-    fun getOrLoadFontMap(ctx: KoolContext, scale: Float): FontMap {
+    fun getOrLoadFontMap(scale: Float): FontMap {
         if (isExternalMap) {
             return map ?: throw IllegalStateException("External font map has not yet been set for font $this")
         }
-        val map = map ?: ctx.assetMgr.getOrCreateFontMap(this, scale).also { map = it }
+        val map = map ?: Assets.getOrCreateFontMap(this, scale).also { map = it }
         if (this.scale != scale) {
             println("this.scale: ${this.scale} -> $scale")
-            ctx.assetMgr.updateFontMap(this, scale)
+            Assets.updateFontMap(this, scale)
             println("after update this.scale: ${this.scale}")
         }
         return map

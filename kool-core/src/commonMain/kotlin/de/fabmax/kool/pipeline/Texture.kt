@@ -1,6 +1,6 @@
 package de.fabmax.kool.pipeline
 
-import de.fabmax.kool.AssetManager
+import de.fabmax.kool.Assets
 import de.fabmax.kool.util.*
 import kotlinx.coroutines.CoroutineScope
 import kotlin.math.roundToInt
@@ -53,7 +53,7 @@ abstract class Texture(val props: TextureProps, val name: String?, val loader: T
 open class Texture1d(props: TextureProps = TextureProps(), name: String? = null, loader: TextureLoader?) :
         Texture(props, name, loader) {
 
-    constructor(props: TextureProps = TextureProps(), name: String? = null, loader: (suspend CoroutineScope.(AssetManager) -> TextureData1d)? = null) :
+    constructor(props: TextureProps = TextureProps(), name: String? = null, loader: (suspend CoroutineScope.() -> TextureData1d)? = null) :
             this(props, name, loader?.let { AsyncTextureLoader(it) })
 
     override val type = "1D"
@@ -62,14 +62,14 @@ open class Texture1d(props: TextureProps = TextureProps(), name: String? = null,
 open class Texture2d(props: TextureProps = TextureProps(), name: String? = null, loader: TextureLoader?) :
         Texture(props, name, loader) {
 
-    constructor(props: TextureProps = TextureProps(), name: String? = null, loader: (suspend CoroutineScope.(AssetManager) -> TextureData)? = null) :
+    constructor(props: TextureProps = TextureProps(), name: String? = null, loader: (suspend CoroutineScope.() -> TextureData)? = null) :
             this(props, name, loader?.let { AsyncTextureLoader(it) })
 
     constructor(props: TextureProps = TextureProps(), data: TextureData2d, name: String? = null) :
             this(props, name, BufferedTextureLoader(data))
 
     constructor(assetPath: String, name: String? = null, props: TextureProps = TextureProps()) :
-            this(props, name, AsyncTextureLoader { it.loadTextureData(assetPath, props.format) })
+            this(props, name, AsyncTextureLoader { Assets.loadTextureData(assetPath, props.format) })
 
     override val type = "2D"
 
@@ -90,7 +90,7 @@ open class Texture2d(props: TextureProps = TextureProps(), name: String? = null,
 open class Texture3d(props: TextureProps = TextureProps(), name: String? = null, loader: TextureLoader?) :
         Texture(props, name, loader) {
 
-    constructor(props: TextureProps = TextureProps(), name: String? = null, loader: (suspend CoroutineScope.(AssetManager) -> TextureData)? = null) :
+    constructor(props: TextureProps = TextureProps(), name: String? = null, loader: (suspend CoroutineScope.() -> TextureData)? = null) :
             this(props, name, loader?.let { AsyncTextureLoader(it) })
 
     constructor(props: TextureProps = TextureProps(), data: TextureData3d, name: String? = null) :
@@ -102,7 +102,7 @@ open class Texture3d(props: TextureProps = TextureProps(), name: String? = null,
 open class TextureCube(props: TextureProps = TextureProps(), name: String? = null, loader: TextureLoader?) :
         Texture(props, name, loader) {
 
-    constructor(props: TextureProps = TextureProps(), name: String? = null, loader: (suspend CoroutineScope.(AssetManager) -> TextureDataCube)? = null) :
+    constructor(props: TextureProps = TextureProps(), name: String? = null, loader: (suspend CoroutineScope.() -> TextureDataCube)? = null) :
             this(props, name, loader?.let { AsyncTextureLoader(it) })
 
     override val type = "Cube"

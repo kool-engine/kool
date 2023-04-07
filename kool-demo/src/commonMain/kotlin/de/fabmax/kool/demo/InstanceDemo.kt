@@ -1,6 +1,6 @@
 package de.fabmax.kool.demo
 
-import de.fabmax.kool.AssetManager
+import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.MutableVec3f
@@ -38,7 +38,7 @@ class InstanceDemo : DemoScene("Instanced Drawing") {
             Lod(10000, 1000f, MutableColor(MdColor.BLUE.toLinear()))
     )
 
-    override suspend fun AssetManager.loadResources(ctx: KoolContext) {
+    override suspend fun Assets.loadResources(ctx: KoolContext) {
         model = loadGltfFile("${DemoLoader.modelPath}/bunny.gltf.gz")!!
     }
 

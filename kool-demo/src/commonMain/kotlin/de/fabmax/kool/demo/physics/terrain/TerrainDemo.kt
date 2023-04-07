@@ -1,6 +1,6 @@
 package de.fabmax.kool.demo.physics.terrain
 
-import de.fabmax.kool.AssetManager
+import de.fabmax.kool.Assets
 import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.*
@@ -92,7 +92,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         }
     }
 
-    override suspend fun AssetManager.loadResources(ctx: KoolContext) {
+    override suspend fun Assets.loadResources(ctx: KoolContext) {
         showLoadText("Loading height map...")
         val heightMap = HeightMap.fromRawData(loadAsset("${DemoLoader.heightMapPath}/terrain_ocean.raw")!!, 200f, heightOffset = -50f)
         // more or less the same, but falls back to 8-bit height-resolution in javascript

@@ -288,7 +288,7 @@ abstract class MappedUniformTex(val texUnit: Int, val target: Int) : MappedUnifo
         if (texture.loadingState == Texture.LoadingState.NOT_LOADED) {
             when (texture.loader) {
                 is AsyncTextureLoader -> {
-                    val deferredData = texture.loader.loadTextureDataAsync(ctx)
+                    val deferredData = texture.loader.loadTextureDataAsync()
                     deferredData.invokeOnCompletion { ex ->
                         if (ex != null) {
                             logE { "Texture loading failed: $ex" }
@@ -300,7 +300,7 @@ abstract class MappedUniformTex(val texUnit: Int, val target: Int) : MappedUnifo
                     }
                 }
                 is SyncTextureLoader -> {
-                    val data = texture.loader.loadTextureDataSync(ctx)
+                    val data = texture.loader.loadTextureDataSync()
                     texture.loadedTexture = getLoadedTex(data, texture, ctx)
                     texture.loadingState = Texture.LoadingState.LOADED
                 }

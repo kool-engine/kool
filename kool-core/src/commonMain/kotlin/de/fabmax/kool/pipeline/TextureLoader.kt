@@ -1,18 +1,17 @@
 package de.fabmax.kool.pipeline
 
-import de.fabmax.kool.AssetManager
-import de.fabmax.kool.KoolContext
+import de.fabmax.kool.Assets
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 
 sealed class TextureLoader
 
-class AsyncTextureLoader(val loader: (suspend CoroutineScope.(AssetManager) -> TextureData)) : TextureLoader() {
+class AsyncTextureLoader(val loader: (suspend CoroutineScope.() -> TextureData)) : TextureLoader() {
     private var deferred: Deferred<TextureData>? = null
 
-    fun loadTextureDataAsync(ctx: KoolContext): Deferred<TextureData> {
-        val def = deferred ?: ctx.assetMgr.async { loader(ctx.assetMgr) }
+    fun loadTextureDataAsync(): Deferred<TextureData> {
+        val def = deferred ?: Assets.async { loader() }
         if (deferred == null) {
             deferred = def
         }
@@ -20,9 +19,9 @@ class AsyncTextureLoader(val loader: (suspend CoroutineScope.(AssetManager) -> T
     }
 }
 
-class SyncTextureLoader(val loader: (KoolContext) -> TextureData) : TextureLoader() {
-    fun loadTextureDataSync(ctx: KoolContext): TextureData {
-        return loader(ctx)
+class SyncTextureLoader(val loader: () -> TextureData) : TextureLoader() {
+    fun loadTextureDataSync(): TextureData {
+        return loader()
     }
 }
 

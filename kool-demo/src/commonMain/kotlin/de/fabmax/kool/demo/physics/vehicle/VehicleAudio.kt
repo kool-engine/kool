@@ -1,6 +1,6 @@
 package de.fabmax.kool.demo.physics.vehicle
 
-import de.fabmax.kool.AssetManager
+import de.fabmax.kool.Assets
 import de.fabmax.kool.demo.DemoLoader
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.math.randomI
@@ -42,7 +42,7 @@ class VehicleAudio(physicsWorld: PhysicsWorld) {
         physicsWorld.registerContactListener(contactListener)
     }
 
-    suspend fun loadAudio(assetMgr: AssetManager) {
+    suspend fun loadAudio(assetMgr: Assets) {
         assetMgr.apply {
             for (i in 1..5) {
                 crashSounds += loadAudioClip("${DemoLoader.soundPath}/car/crash$i.wav")

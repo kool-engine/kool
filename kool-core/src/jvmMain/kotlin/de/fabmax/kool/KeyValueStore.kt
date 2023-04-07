@@ -1,7 +1,5 @@
-package de.fabmax.kool.platform
+package de.fabmax.kool
 
-import de.fabmax.kool.KeyValueStorage
-import de.fabmax.kool.use
 import de.fabmax.kool.util.Uint8Buffer
 import de.fabmax.kool.util.Uint8BufferImpl
 import de.fabmax.kool.util.logE
@@ -14,8 +12,11 @@ import java.io.FileOutputStream
 import java.io.IOException
 import kotlin.concurrent.thread
 
-class KeyValueStorageJvm(val storageDir: File) : KeyValueStorage {
+actual object KeyValueStore {
 
+    private const val KEY_VALUE_STORAGE_NAME = ".keyValueStorage.json"
+
+    private val storageDir: File = File(KoolSetup.config.storageDir)
     private val keyValueStore = mutableMapOf<String, String>()
 
     init {
@@ -40,7 +41,7 @@ class KeyValueStorageJvm(val storageDir: File) : KeyValueStorage {
         })
     }
 
-    override fun storageKeys(): Set<String> {
+    actual fun storageKeys(): Set<String> {
         val keys = mutableSetOf<String>()
         keys += keyValueStore.keys
         storageDir.list()?.let {
@@ -49,7 +50,7 @@ class KeyValueStorageJvm(val storageDir: File) : KeyValueStorage {
         return keys
     }
 
-    override fun store(key: String, data: Uint8Buffer): Boolean {
+    actual fun store(key: String, data: Uint8Buffer): Boolean {
         return try {
             FileOutputStream(File(storageDir, key)).use { it.write(data.toArray()) }
             true
@@ -59,12 +60,12 @@ class KeyValueStorageJvm(val storageDir: File) : KeyValueStorage {
         }
     }
 
-    override fun storeString(key: String, data: String): Boolean {
+    actual fun storeString(key: String, data: String): Boolean {
         keyValueStore[key] = data
         return true
     }
 
-    override fun load(key: String): Uint8Buffer? {
+    actual fun load(key: String): Uint8Buffer? {
         val file = File(storageDir, key)
         if (!file.canRead()) {
             return null
@@ -77,11 +78,11 @@ class KeyValueStorageJvm(val storageDir: File) : KeyValueStorage {
         }
     }
 
-    override fun loadString(key: String): String? {
+    actual fun loadString(key: String): String? {
         return keyValueStore[key]
     }
 
-    override fun delete(key: String) {
+    actual fun delete(key: String) {
         keyValueStore.remove(key)
         val f = File(storageDir, key)
         if (f.exists()) {
@@ -89,8 +90,36 @@ class KeyValueStorageJvm(val storageDir: File) : KeyValueStorage {
         }
     }
 
-    companion object {
-        private const val KEY_VALUE_STORAGE_NAME = ".keyValueStorage.json"
+    actual fun getBoolean(key: String, defaultVal: Boolean): Boolean {
+        return loadString(key)?.toBooleanStrictOrNull() ?: defaultVal
+    }
+
+    actual fun setBoolean(key: String, value: Boolean) {
+        storeString(key, "$value")
+    }
+
+    actual fun getInt(key: String, defaultVal: Int): Int {
+        return loadString(key)?.toIntOrNull() ?: defaultVal
+    }
+
+    actual fun setInt(key: String, value: Int) {
+        storeString(key, "$value")
+    }
+
+    actual fun getFloat(key: String, defaultVal: Float): Float {
+        return loadString(key)?.toFloatOrNull() ?: defaultVal
+    }
+
+    actual fun setFloat(key: String, value: Float) {
+        storeString(key, "$value")
+    }
+
+    actual fun getDouble(key: String, defaultVal: Double): Double {
+        return loadString(key)?.toDoubleOrNull() ?: defaultVal
+    }
+
+    actual fun setDouble(key: String, value: Double) {
+        storeString(key, "$value")
     }
 
     @Serializable

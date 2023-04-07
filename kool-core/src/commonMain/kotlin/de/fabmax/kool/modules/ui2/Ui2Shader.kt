@@ -1,6 +1,5 @@
 package de.fabmax.kool.modules.ui2
 
-import de.fabmax.kool.KoolContext
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.blocks.mvpMatrix
 import de.fabmax.kool.modules.ksl.lang.*
@@ -11,8 +10,8 @@ import de.fabmax.kool.util.Color
 class Ui2Shader : KslShader(Model(), pipelineConfig) {
     var fontTex by texture2d("uFontTex", noFontTex)
 
-    fun setFont(font: AtlasFont, ctx: KoolContext) {
-        fontTex = font.getOrLoadFontMap(ctx, UiScale.measuredScale).texture
+    fun setFont(font: AtlasFont) {
+        fontTex = font.getOrLoadFontMap(UiScale.measuredScale).texture
     }
 
     private class Model : KslProgram("UI2 Shader") {
