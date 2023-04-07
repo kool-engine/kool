@@ -3,6 +3,7 @@ package de.fabmax.kool.modules.ui2
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.clamp
+import de.fabmax.kool.math.max
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.logE
 import kotlin.math.abs
@@ -167,7 +168,7 @@ open class LazyListNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, su
         padPrevItems.clear()
         padPrevItems += prevItems
         prevItems.clear()
-        var itemI = insertNewItemsBefore(insertBeforeItems)
+        var itemI = max(0, insertNewItemsBefore(insertBeforeItems))
 
         // pad oldChildren
         oldChildren.clear()
