@@ -2,6 +2,7 @@ package de.fabmax.kool.platform
 
 import de.fabmax.kool.DesktopImpl
 import de.fabmax.kool.KoolException
+import de.fabmax.kool.KoolSetup
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.util.Uint8BufferImpl
 import de.fabmax.kool.util.logD
@@ -12,13 +13,13 @@ import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryUtil
 import java.awt.image.BufferedImage
 
-open class GlfwWindow(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) {
+open class GlfwWindow(val ctx: Lwjgl3Context) {
 
     val windowPtr: Long
 
-    var windowWidth = props.width
+    var windowWidth = KoolSetup.config.windowSize.x
         private set
-    var windowHeight = props.height
+    var windowHeight = KoolSetup.config.windowSize.y
         private set
 
     var windowPosX = 0
@@ -26,9 +27,9 @@ open class GlfwWindow(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) {
     var windowPosY = 0
         private set
 
-    var framebufferWidth = props.width
+    var framebufferWidth = KoolSetup.config.windowSize.x
         private set
-    var framebufferHeight = props.height
+    var framebufferHeight = KoolSetup.config.windowSize.y
         private set
 
     var isFullscreen = false
@@ -50,8 +51,8 @@ open class GlfwWindow(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) {
         }
 
     private val fsMonitor: Long
-    private var windowedWidth = props.width
-    private var windowedHeight = props.height
+    private var windowedWidth = KoolSetup.config.windowSize.x
+    private var windowedHeight = KoolSetup.config.windowSize.y
     private var windowedPosX = 0
     private var windowedPosY = 0
 
@@ -62,13 +63,19 @@ open class GlfwWindow(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) {
         glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE)
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE)
 
-        windowPtr = glfwCreateWindow(props.width, props.height, props.title, 0L, 0L)
+        windowPtr = glfwCreateWindow(
+            KoolSetup.config.windowSize.x,
+            KoolSetup.config.windowSize.y,
+            KoolSetup.config.windowTitle,
+            0L,
+            0L
+        )
         if (windowPtr == MemoryUtil.NULL) {
             throw KoolException("Failed to create the GLFW window")
         }
 
-        if (props.icon.isNotEmpty()) {
-            setWindowIcon(props.icon)
+        if (KoolSetup.config.windowIcon.isNotEmpty()) {
+            setWindowIcon(KoolSetup.config.windowIcon)
         }
 
         val outInt1 = IntArray(1)
@@ -92,10 +99,10 @@ open class GlfwWindow(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) {
         glfwSetWindowFocusCallback(windowPtr) { _, isFocused -> onWindowFocusChanged(isFocused) }
         glfwSetWindowContentScaleCallback(windowPtr) { _, xScale, yScale -> onWindowContentScaleChanged(xScale, yScale) }
 
-        fsMonitor = if (props.monitor < 0) {
+        fsMonitor = if (KoolSetup.config.monitor < 0) {
             DesktopImpl.primaryMonitor.monitor
         } else {
-            DesktopImpl.monitors[props.monitor].monitor
+            DesktopImpl.monitors[KoolSetup.config.monitor].monitor
         }
         windowedWidth = windowWidth
         windowedHeight = windowHeight

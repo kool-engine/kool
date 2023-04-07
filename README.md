@@ -75,9 +75,7 @@ Code for all demos is available in kool-demo sub-project.
 
 Getting a basic scene on the screen is quite simple:
 ```kotlin
-fun main() {
-    val ctx = createDefaultContext()
-    
+fun main() = KoolApplication { ctx ->
     ctx.scenes += scene {
         defaultOrbitCamera()
 
@@ -103,11 +101,10 @@ fun main() {
             setColor(Color.WHITE, 5f)
         }
     }
-    
-    ctx.run()
 }
 ```
-The above example creates a new scene and sets up a mouse-controlled camera (with `defaultOrbitCamera()`).
+The above example creates an application with a single scene and sets up a mouse-controlled camera
+(with `defaultOrbitCamera()`).
 As you might have guessed the `colorMesh { ... }` block creates a colored cube and adds it to the scene.
 In order to draw the mesh on the screen it needs a shader, which is assigned with
 `shader = KslPbrShader { ... }`. This creates a simple PBR shader for a dielectric material
@@ -122,9 +119,7 @@ in its full glory. The resulting scene looks like [this](https://fabmax.github.i
 Model loading, animation and more advanced lighting with shadow mapping and ambient occlusion requires only a few more
 lines of code:
 ```kotlin
-fun main() {
-    val ctx = createDefaultContext()
-
+fun main() = KoolApplication { ctx ->
     ctx.scenes += scene {
         defaultOrbitCamera()
 
@@ -168,8 +163,6 @@ fun main() {
             }
         }
     }
-    
-    ctx.run()
 }
 ```
 First we set up the lighting. This is very similar to the previous example but this time we use a spot light, which

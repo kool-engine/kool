@@ -38,8 +38,8 @@ internal class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, val ctx: 
         availableFamilies = families
     }
 
-    internal fun loadCustomFonts(props: Lwjgl3Context.InitProps, assetMgr: JvmAssetManager) {
-        props.customFonts.forEach { (family, path) ->
+    internal fun loadCustomFonts(customTtfFonts: Map<String, String>, assetMgr: JvmAssetManager) {
+        customTtfFonts.forEach { (family, path) ->
             try {
                 val inStream = runBlocking {
                     ByteArrayInputStream(assetMgr.loadAsset(path)!!.toArray())

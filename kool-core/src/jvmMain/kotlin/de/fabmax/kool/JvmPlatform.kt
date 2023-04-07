@@ -16,22 +16,22 @@ import java.util.*
  * @author fabmax
  */
 
-actual fun createDefaultContext(localAssetPath: String): KoolContext {
-    return createContext {
-        this.localAssetPath = localAssetPath
-        renderBackend = Lwjgl3Context.Backend.OPEN_GL
-        title = "Kool App"
-    }
+actual fun defaultKoolConfig() = KoolConfig()
+
+/**
+ * Creates a new [KoolContext] based on the [KoolConfig] provided by [KoolSetup]. [KoolSetup.initialize] has to be
+ * called before invoking this function.
+ */
+actual fun createContext() = DesktopImpl.createContext()
+
+actual fun KoolApplication(config: KoolConfig, appBlock: (KoolContext) -> Unit) {
+    KoolSetup.initialize(config)
+    val ctx = createContext()
+    appBlock(ctx)
+    ctx.run()
 }
 
-fun createContext(block: Lwjgl3Context.InitProps.() -> Unit): KoolContext {
-    val props = Lwjgl3Context.InitProps()
-    props.block()
-    return DesktopImpl.createContext(props)
-}
-
-actual fun Double.toString(precision: Int): String =
-        java.lang.String.format(Locale.ENGLISH, "%.${precision.clamp(0, 12)}f", this)
+actual fun Double.toString(precision: Int): String = "%.${precision.clamp(0, 12)}f".format(Locale.ENGLISH, this)
 
 actual inline fun <R> lock(lock: Any, block: () -> R): R = synchronized(lock, block)
 
@@ -78,10 +78,10 @@ internal object DesktopImpl {
         primaryMonitor = primMon
     }
 
-    fun createContext(props: Lwjgl3Context.InitProps): KoolContext {
+    fun createContext(): KoolContext {
         synchronized(this) {
             if (ctx == null) {
-                ctx = Lwjgl3Context(props)
+                ctx = Lwjgl3Context()
             }
         }
         return ctx!!

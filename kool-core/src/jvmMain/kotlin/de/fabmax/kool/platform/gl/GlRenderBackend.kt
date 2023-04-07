@@ -2,6 +2,7 @@ package de.fabmax.kool.platform.gl
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolException
+import de.fabmax.kool.KoolSetup
 import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.generator.GlslGenerator
@@ -22,7 +23,7 @@ import org.lwjgl.opengl.GL20.GL_VERTEX_PROGRAM_POINT_SIZE
 import org.lwjgl.opengl.GL32.GL_TEXTURE_CUBE_MAP_SEAMLESS
 import java.nio.ByteBuffer
 
-class GlRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : RenderBackend {
+class GlRenderBackend(val ctx: Lwjgl3Context) : RenderBackend {
     override val apiName: String
     override val deviceName: String
 
@@ -46,21 +47,21 @@ class GlRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
     init {
         // do basic GLFW configuration before we create the window
         glfwDefaultWindowHints()
-        glfwWindowHint(GLFW_SAMPLES, props.msaaSamples)
+        glfwWindowHint(GLFW_SAMPLES, KoolSetup.config.msaaSamples)
 
         // create window
-        glfwWindow = GlfwWindow(props, ctx)
-        glfwWindow.isFullscreen = props.isFullscreen
+        glfwWindow = GlfwWindow(ctx)
+        glfwWindow.isFullscreen = KoolSetup.config.isFullscreen
 
         // make the OpenGL context current
         glfwMakeContextCurrent(glfwWindow.windowPtr)
-        if (props.isVsync) {
+        if (KoolSetup.config.isVsync) {
             glfwSwapInterval(1)
         } else {
             glfwSwapInterval(0)
         }
         // make the window visible
-        if (props.showWindowOnStart) {
+        if (KoolSetup.config.showWindowOnStart) {
             glfwWindow.isVisible = true
         }
 

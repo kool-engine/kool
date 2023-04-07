@@ -11,7 +11,7 @@ import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.events.KeyboardEvent
 import org.w3c.dom.events.MouseEvent
 
-class JsInputManager(private val canvas: HTMLCanvasElement, private val props: JsContext.InitProps) : InputManager() {
+class JsInputManager(private val canvas: HTMLCanvasElement) : InputManager() {
 
     private val pointerLockState = PointerLockState(canvas)
     private val virtualPointerPos = MutableVec2d()
@@ -22,6 +22,8 @@ class JsInputManager(private val canvas: HTMLCanvasElement, private val props: J
     override var cursorMode: CursorMode
         get() = pointerLockState.cursorMode
         set(value) { pointerLockState.cursorMode = value }
+
+    val excludedKeyCodes = mutableSetOf("F5", "F11")
 
     init {
         installInputHandlers()
@@ -157,7 +159,7 @@ class JsInputManager(private val canvas: HTMLCanvasElement, private val props: J
             charTyped(ev.key[0])
         }
 
-        if (!props.excludedKeyCodes.contains(ev.code)) {
+        if (!excludedKeyCodes.contains(ev.code)) {
             ev.preventDefault()
         }
     }
@@ -174,7 +176,7 @@ class JsInputManager(private val canvas: HTMLCanvasElement, private val props: J
             keyEvent(KeyEvent(keyCode, localKeyCode, KEY_EV_UP, mods))
         }
 
-        if (!props.excludedKeyCodes.contains(ev.code)) {
+        if (!excludedKeyCodes.contains(ev.code)) {
             ev.preventDefault()
         }
     }

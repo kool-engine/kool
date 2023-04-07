@@ -3,6 +3,7 @@ package de.fabmax.kool.platform
 import de.fabmax.kool.InputManager
 import de.fabmax.kool.KeyCode
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.KoolSetup
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.math.min
 import de.fabmax.kool.modules.ksl.KslShader
@@ -16,13 +17,12 @@ import java.awt.image.BufferedImage
 import java.net.URI
 import java.util.*
 import java.util.concurrent.CompletableFuture
-import javax.imageio.ImageIO
 
 /**
  * @author fabmax
  */
-class Lwjgl3Context(props: InitProps) : KoolContext() {
-    override val assetMgr = JvmAssetManager(props, this)
+class Lwjgl3Context : KoolContext() {
+    override val assetMgr = JvmAssetManager(this)
     override val inputMgr: JvmInputManager
 
     val renderBackend: RenderBackend
@@ -38,8 +38,8 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
         get() = renderBackend.glfwWindow.isFullscreen
         set(value) { renderBackend.glfwWindow.isFullscreen = value }
 
-    var maxFrameRate = props.maxFrameRate
-    var windowUnfocusedFrameRate = props.windowUnfocusedFrameRate
+    var maxFrameRate = KoolSetup.config.maxFrameRate
+    var windowNotFocusedFrameRate = KoolSetup.config.windowNotFocusedFrameRate
     private val mainThreadRunnables = mutableListOf<GpuThreadRunnable>()
 
     private var prevFrameTime = System.nanoTime()
@@ -79,10 +79,10 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
     }
 
     init {
-        renderBackend = if (props.renderBackend == Backend.VULKAN) {
-            VkRenderBackend(props, this)
+        renderBackend = if (KoolSetup.config.renderBackend == Backend.VULKAN) {
+            VkRenderBackend(this)
         } else {
-            GlRenderBackend(props, this)
+            GlRenderBackend(this)
         }
 
         projCorrectionMatrixScreen.set(renderBackend.projCorrectionMatrixScreen)
@@ -120,7 +120,7 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
             }
         }
 
-        if (windowUnfocusedFrameRate > 0 || maxFrameRate > 0) {
+        if (windowNotFocusedFrameRate > 0 || maxFrameRate > 0) {
             checkFrameRateLimits(prevFrameTime)
         }
 
@@ -140,7 +140,7 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
     private fun checkFrameRateLimits(prevTime: Long) {
         val t = System.nanoTime()
         val dtFocused = if (maxFrameRate > 0) 1.0 / maxFrameRate else 0.0
-        val dtUnfocused = if (windowUnfocusedFrameRate > 0) 1.0 / windowUnfocusedFrameRate else dtFocused
+        val dtUnfocused = if (windowNotFocusedFrameRate > 0) 1.0 / windowNotFocusedFrameRate else dtFocused
         val dtCurrent = (t - prevTime) / 1e9
         val dtCmp = if (isWindowFocused || inputMgr.isMouseOverWindow) dtFocused else dtUnfocused
         if (dtCmp > dtCurrent) {
@@ -238,60 +238,6 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
                 GLFW_KEY_F11 to InputManager.KEY_F11,
                 GLFW_KEY_F12 to InputManager.KEY_F12
         )
-    }
-
-    class InitProps(block: InitProps.() -> Unit = {}) {
-        var width = 1600
-        var height = 900
-        var title = "Kool"
-        var icon: List<BufferedImage> = DEFAULT_ICON?.let { listOf(it) } ?: emptyList()
-        var monitor = -1
-        var isFullscreen = false
-        var isWithHttpAssets = true
-        var showWindowOnStart = true
-        var isVsync = true
-        var windowUnfocusedFrameRate = 0
-        var maxFrameRate = 0
-
-        var renderBackend = Backend.OPEN_GL
-
-        var msaaSamples = 8
-
-        var localAssetPath = "./assets"
-        var storageDir = "./.storage"
-
-        val customFonts = mutableMapOf<String, String>()
-
-        init {
-            setWindowed(1600, 900)
-            this.block()
-        }
-
-        fun setWindowed(width: Int, height: Int) {
-            this.width = width
-            this.height = height
-            this.monitor = -1
-            this.isFullscreen = false
-        }
-
-        fun setFullscreen(monitor: Int = -1) {
-            this.width = 1600
-            this.height = 900
-            this.monitor = monitor
-            this.isFullscreen = true
-        }
-
-        companion object {
-            val DEFAULT_ICON: BufferedImage?
-
-            init {
-                DEFAULT_ICON = try {
-                    ImageIO.read(ClassLoader.getSystemResourceAsStream("icon.png"))
-                } catch (e: Exception) {
-                    null
-                }
-            }
-        }
     }
 
     enum class Backend(val displayName: String) {

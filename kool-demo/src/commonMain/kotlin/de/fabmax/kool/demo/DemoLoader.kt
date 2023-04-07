@@ -1,7 +1,6 @@
 package de.fabmax.kool.demo
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.createDefaultContext
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.util.DebugOverlay
@@ -11,7 +10,7 @@ import de.fabmax.kool.util.Time
  * @author fabmax
  */
 
-fun demo(startScene: String? = null, ctx: KoolContext = createDefaultContext()) {
+fun demo(startScene: String? = null, ctx: KoolContext) {
     // launch demo
     var demo = startScene
     if (demo != null) {

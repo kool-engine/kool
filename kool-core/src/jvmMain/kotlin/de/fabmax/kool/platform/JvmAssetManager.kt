@@ -12,23 +12,19 @@ import java.io.*
 import java.util.*
 import javax.imageio.ImageIO
 
-class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : AssetManager() {
+class JvmAssetManager internal constructor(val ctx: Lwjgl3Context) : AssetManager() {
 
     private val fontGenerator = FontMapGenerator(MAX_GENERATED_TEX_WIDTH, MAX_GENERATED_TEX_HEIGHT, ctx)
     private val imageIoLock = Any()
-    private val isWithHttp = props.isWithHttpAssets
-    private val localAssetsPath = props.localAssetPath
+    private val localAssetsPath = KoolSetup.config.assetPath
 
     private var fileChooserPath = System.getProperty("user.home")
 
-    override val storage = KeyValueStorageJvm(File(props.storageDir))
+    override val storage = KeyValueStorageJvm(File(KoolSetup.config.storageDir))
 
     init {
-        // inits http cache if not already happened
-        if (isWithHttp) {
-            HttpCache.initCache(File(".httpCache"))
-        }
-        fontGenerator.loadCustomFonts(props, this)
+        HttpCache.initCache(File(KoolSetup.config.httpCacheDir))
+        fontGenerator.loadCustomFonts(KoolSetup.config.customTtfFonts, this)
     }
 
     override suspend fun loadRaw(rawRef: RawAssetRef): LoadedRawAsset {
@@ -55,7 +51,7 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val c
         var data: Uint8BufferImpl? = null
         if (httpRawRef.url.startsWith("data:", true)) {
             data = decodeDataUrl(httpRawRef.url)
-        } else if (isWithHttp) {
+        } else {
             withContext(Dispatchers.IO) {
                 try {
                     val f = HttpCache.loadHttpResource(httpRawRef.url)
@@ -103,10 +99,6 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val c
     }
 
     private fun loadHttpTexture(httpTextureRef: TextureAssetRef): ImageTextureData {
-        if (!isWithHttp) {
-            throw FileNotFoundException("HTTP loading is disabled")
-        }
-
         val f = HttpCache.loadHttpResource(httpTextureRef.url)!!
         return FileInputStream(f).use {
             // ImageIO.read is not thread safe!

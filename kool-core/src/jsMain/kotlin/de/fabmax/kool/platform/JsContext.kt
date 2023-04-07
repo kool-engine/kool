@@ -2,6 +2,7 @@ package de.fabmax.kool.platform
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolException
+import de.fabmax.kool.KoolSetup
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.generator.GlslGenerator
 import de.fabmax.kool.pipeline.*
@@ -32,8 +33,8 @@ import org.w3c.dom.events.UIEvent
  * @author fabmax
  */
 @Suppress("UnsafeCastFromDynamic")
-class JsContext internal constructor(val props: InitProps) : KoolContext() {
-    override val assetMgr = JsAssetManager(props, this)
+class JsContext internal constructor() : KoolContext() {
+    override val assetMgr = JsAssetManager(this)
     override val inputMgr: JsInputManager
 
     override val shaderGenerator: ShaderGenerator = ShaderGeneratorImplWebGl()
@@ -70,8 +71,8 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
     private val doneRenderPasses = mutableSetOf<OffscreenRenderPass>()
 
     init {
-        canvas = document.getElementById(props.canvasName) as? HTMLCanvasElement ?:
-                throw IllegalStateException("canvas element not found! Add a canvas with id \"${props.canvasName}\" to your html.")
+        canvas = document.getElementById(KoolSetup.config.canvasName) as? HTMLCanvasElement ?:
+                throw IllegalStateException("canvas element not found! Add a canvas with id \"${KoolSetup.config.canvasName}\" to your html.")
 
         canvas.style.width = "100%"
         canvas.style.height = "100%"
@@ -134,7 +135,7 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
         // suppress context menu
         canvas.oncontextmenu = Event::preventDefault
 
-        inputMgr = JsInputManager(canvas, props)
+        inputMgr = JsInputManager(canvas)
     }
 
     private fun renderFrame(time: Double) {

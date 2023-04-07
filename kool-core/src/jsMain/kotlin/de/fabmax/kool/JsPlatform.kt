@@ -9,13 +9,19 @@ import de.fabmax.kool.platform.WebGL2RenderingContext
  * @author fabmax
  */
 
-actual fun createDefaultContext(localAssetPath: String): KoolContext {
-    val props = JsContext.InitProps()
-    props.localAssetPath = localAssetPath
-    return createContext(props)
-}
+actual fun defaultKoolConfig() = KoolConfig()
 
-fun createContext(props: JsContext.InitProps): KoolContext = JsImpl.createContext(props)
+/**
+ * Creates a new [KoolContext] based on the [KoolConfig] provided by [KoolSetup]. [KoolSetup.initialize] has to be
+ * called before invoking this function.
+ */
+actual fun createContext() = JsImpl.createContext()
+
+actual fun KoolApplication(config: KoolConfig, appBlock: (KoolContext) -> Unit) {
+    KoolSetup.initialize(config)
+    val ctx = createContext()
+    appBlock(ctx)
+}
 
 actual fun Double.toString(precision: Int): String {
     if (this.isNaN()) {
@@ -36,11 +42,11 @@ internal object JsImpl {
     val gl: WebGL2RenderingContext
         get() = ctx?.gl ?: throw KoolException("Platform.createContext() not called")
 
-    fun createContext(props: JsContext.InitProps): KoolContext {
+    fun createContext(): KoolContext {
         if (ctx != null) {
             throw KoolException("Context was already created (multi-context is currently not supported in js")
         }
-        ctx = JsContext(props)
+        ctx = JsContext()
         return ctx!!
     }
 }

@@ -22,7 +22,7 @@ import java.nio.LongBuffer
 import java.util.*
 import kotlin.math.max
 
-class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : RenderBackend {
+class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackend {
     override val apiName: String
     override val deviceName: String
 
@@ -46,7 +46,7 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
         val vkSetup = VkSetup().apply {
             isValidating = true
         }
-        vkSystem = VkSystem(props, vkSetup, vkScene, ctx)
+        vkSystem = VkSystem(vkSetup, vkScene, ctx)
         semaPool = SemaphorePool(vkSystem)
         vkSystem.addDependingResource(semaPool)
         apiName = "Vulkan ${vkSystem.physicalDevice.apiVersion}"

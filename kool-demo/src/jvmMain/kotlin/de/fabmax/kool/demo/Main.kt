@@ -1,12 +1,20 @@
 package de.fabmax.kool.demo
 
-import de.fabmax.kool.createContext
+import de.fabmax.kool.KoolApplication
+import de.fabmax.kool.KoolConfig
+import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.platform.Lwjgl3Context
 
 /**
  * @author fabmax
  */
-fun main() {
+fun main() = KoolApplication(
+    config = KoolConfig(
+        renderBackend = Lwjgl3Context.Backend.OPEN_GL,
+        windowTitle = "Kool Demo",
+        windowSize = Vec2i(1600, 900)
+    )
+) { ctx ->
     // uncomment to load assets locally instead of from web
     //Demo.setProperty("assets.base", ".")
 
@@ -14,16 +22,6 @@ fun main() {
     //Demo.setProperty("assets.hdri", "hdri")
     //Demo.setProperty("assets.materials", "materials")
     //Demo.setProperty("assets.models", "models")
-
-    val ctx = createContext {
-        renderBackend = Lwjgl3Context.Backend.OPEN_GL
-        title = "Kool Demo @ ${renderBackend.displayName}"
-        setWindowed(1600, 900)
-
-        // Local asset path: Only used in case assets are not loaded from web (set "assets.base" demo property
-        // from above to ".")
-        localAssetPath = "./assets"
-    }
 
     // launch demo
     demo(null, ctx)

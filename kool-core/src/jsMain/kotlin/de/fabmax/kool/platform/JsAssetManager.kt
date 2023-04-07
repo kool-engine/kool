@@ -19,10 +19,10 @@ import org.w3c.xhr.XMLHttpRequest
 import org.w3c.xhr.XMLHttpRequestResponseType
 import kotlin.js.Promise
 
-class JsAssetManager internal constructor(props: JsContext.InitProps, val ctx: JsContext) : AssetManager() {
+class JsAssetManager internal constructor(val ctx: JsContext) : AssetManager() {
 
-    private val fontGenerator = FontMapGenerator(MAX_GENERATED_TEX_WIDTH, MAX_GENERATED_TEX_HEIGHT, props, this, ctx)
-    private val localAssetsPath = props.localAssetPath
+    private val fontGenerator = FontMapGenerator(MAX_GENERATED_TEX_WIDTH, MAX_GENERATED_TEX_HEIGHT, this, ctx)
+    private val localAssetsPath = KoolSetup.config.assetPath
 
     private var fileLoadDeferred: CompletableDeferred<Uint8Buffer?>? = null
     private val onFileSelectionChanged: (Event) -> Unit = { loadSelectedFile() }

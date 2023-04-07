@@ -1,3 +1,4 @@
+import de.fabmax.kool.KoolApplication
 import de.fabmax.kool.demo.demo
 import kotlinx.browser.window
 import kotlin.collections.set
@@ -5,7 +6,7 @@ import kotlin.collections.set
 /**
  * @author fabmax
  */
-fun main() {
+fun main() = KoolApplication {
     // uncomment to load assets locally instead of from remote
     //Demo.setProperty("assets.base", ".")
 
@@ -15,12 +16,7 @@ fun main() {
     //Demo.setProperty("assets.models", "models")
 
     // launch demo
-    val params = getParams()
-    if ("webgpu" in params.keys) {
-        webGpuTest()
-    } else {
-        demo(getParams()["demo"])
-    }
+    demo(getParams()["demo"], it)
 }
 
 @Suppress("UNUSED_VARIABLE")
