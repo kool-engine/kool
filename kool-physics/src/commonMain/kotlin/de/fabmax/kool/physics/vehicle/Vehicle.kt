@@ -4,9 +4,8 @@ import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.physics.PhysicsWorld
 import de.fabmax.kool.physics.RigidBody
-import de.fabmax.kool.scene.Group
+import de.fabmax.kool.scene.ColorMesh
 import de.fabmax.kool.scene.colorMesh
-import de.fabmax.kool.scene.group
 import de.fabmax.kool.util.Color
 import kotlin.math.PI
 
@@ -35,43 +34,39 @@ abstract class CommonVehicle(val vehicleProps: VehicleProperties) : RigidBody() 
     abstract var throttleInput: Float
     abstract var brakeInput: Float
 
-    override fun toMesh(meshColor: Color, materialCfg: KslPbrShader.Config.() -> Unit) = Group().apply {
-        val wheelGroups = List(4) { i ->
-            group {
-                colorMesh {
-                    generate {
-                        color = Color.DARK_GRAY.toLinear()
-                        shapes[i].geometry.generateMesh(this)
-                    }
-                    shader = KslPbrShader {
-                        color { vertexColor() }
-                        materialCfg()
-                    }
+    override fun toMesh(meshColor: Color, materialCfg: KslPbrShader.Config.() -> Unit) = ColorMesh().apply {
+        generate {
+            // skip first 4 (wheel-)shapes and add the chassis shapes
+            color = meshColor
+            for (i in 4..shapes.lastIndex) {
+                val shape = shapes[i]
+                withTransform {
+                    transform.mul(shape.localPose)
+                    shape.geometry.generateMesh(this)
                 }
             }
         }
-        wheelGroups.forEach { addNode(it) }
+        shader = KslPbrShader {
+            color { vertexColor() }
+            materialCfg()
+        }
 
-        colorMesh {
-            generate {
-                // skip first 4 (wheel-)shapes and add the chassis shapes
-                color = meshColor
-                for (i in 4..shapes.lastIndex) {
-                    val shape = shapes[i]
-                    withTransform {
-                        transform.mul(shape.localPose)
-                        shape.geometry.generateMesh(this)
-                    }
+        val wheelGroups = List(4) { i ->
+            colorMesh {
+                generate {
+                    color = Color.DARK_GRAY.toLinear()
+                    shapes[i].geometry.generateMesh(this)
+                }
+                shader = KslPbrShader {
+                    color { vertexColor() }
+                    materialCfg()
                 }
             }
-            shader = KslPbrShader {
-                color { vertexColor() }
-                materialCfg()
-            }
         }
+
         onUpdate += {
-            this@apply.transform.set(this@CommonVehicle.transform)
-            this@apply.transform.markDirty()
+            transform.set(this@CommonVehicle.transform)
+            transform.markDirty()
             for (i in 0..3) {
                 wheelGroups[i].transform.set(wheelInfos[i].transform)
                 wheelGroups[i].transform.markDirty()

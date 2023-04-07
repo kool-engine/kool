@@ -5,11 +5,13 @@ import de.fabmax.kool.math.*
 import de.fabmax.kool.physics.HitResult
 import de.fabmax.kool.physics.PhysicsWorld
 import de.fabmax.kool.physics.geometry.BoxGeometry
-import de.fabmax.kool.scene.Group
+import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.Time
 import kotlin.math.*
 
-class CharacterTrackingCamRig(private val inputManager: InputManager, enableCursorLock: Boolean = true) : Group("PointerLockCamRig") {
+class CharacterTrackingCamRig(private val inputManager: InputManager, enableCursorLock: Boolean = true) :
+    Node("PointerLockCamRig") {
+
     var isCursorLocked: Boolean
         get() = inputManager.cursorMode == InputManager.CursorMode.LOCKED
         set(value) {
@@ -94,15 +96,15 @@ class CharacterTrackingCamRig(private val inputManager: InputManager, enableCurs
     private fun updateTracking(deltaT: Float) {
         trackedPose.transform(poseOrigin.set(Vec3f.ZERO))
 
-        setIdentity()
-        translate(poseOrigin)
-        rotate(lookPhi.toDeg() + 90f, Vec3f.Y_AXIS)
-        translate(pivotPoint)
-        rotate(lookTheta.toDeg() - 90f, Vec3f.X_AXIS)
+        transform.setIdentity()
+        transform.translate(poseOrigin)
+        transform.rotate(lookPhi.toDeg() + 90f, Vec3f.Y_AXIS)
+        transform.translate(pivotPoint)
+        transform.rotate(lookTheta.toDeg() - 90f, Vec3f.X_AXIS)
 
         val modZoom = zoomModifier(zoom)
         val wMod = (15f * deltaT).clamp(0.05f, 0.95f)
         actualZoom = modZoom * wMod + actualZoom * (1f - wMod)
-        scale(actualZoom)
+        transform.scale(actualZoom)
     }
 }

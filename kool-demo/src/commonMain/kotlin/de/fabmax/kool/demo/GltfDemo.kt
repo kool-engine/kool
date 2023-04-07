@@ -29,23 +29,38 @@ class GltfDemo : DemoScene("glTF Models") {
 
     private val foxAnimator = FoxAnimator()
     private val models = listOf(
-            GltfModel("Flight Helmet", "${DemoLoader.modelPath}/flight_helmet/FlightHelmet.gltf",
-                    4f, Vec3f.ZERO, false, Vec3d(0.0, 1.25, 0.0), false, 3.5),
-            GltfModel("Polly", "${DemoLoader.modelPath}/project_polly_jpg.glb",
-                    3f, Vec3f.ZERO, false, Vec3d(0.0, 1.25, 0.0), false, 3.5, normalizeBoneWeights = true),
-            GltfModel("Coffee Cart", "${DemoLoader.modelPath}/CoffeeCart_01.glb",
-                    2f, Vec3f(0f, -0.01f, 0f), false, Vec3d(0.0, 1.75, 0.0), false, 3.5),
-            GltfModel("Camera", "${DemoLoader.modelPath}/camera.glb",
-                    20f, Vec3f.ZERO, true, Vec3d(0.0, 0.5, 0.0), false, 5.0),
-            GltfModel("Fox", "${DemoLoader.modelPath}/fox.glb",
-                    0.01f, Vec3f.ZERO, false, Vec3d(0.0, 1.25, 0.0), true, 3.5)
-                    .apply { animate = { _, _ -> foxAnimator.animate(this) } },
-            GltfModel("Animated Box", "${DemoLoader.modelPath}/BoxAnimated.gltf",
-                    1f, Vec3f(0f, 0.5f, 0f), false, Vec3d(0.0, 1.5, 0.0), false, 5.0),
-            GltfModel("Morph Cube", "${DemoLoader.modelPath}/AnimatedMorphCube.glb",
-                    1f, Vec3f(0f, 1f, 0f), false, Vec3d(0.0, 1.0, 0.0), false, 3.5),
-            GltfModel("Alpha Mode Test", "${DemoLoader.modelPath}/AlphaBlendModeTest.glb",
-                    0.5f, Vec3f(0f, 0.06f, 0f), false, Vec3d(0.0, 0.75, 0.0), false, 3.5)
+        GltfModel(
+            "Flight Helmet", "${DemoLoader.modelPath}/flight_helmet/FlightHelmet.gltf",
+            4f, Vec3f.ZERO, false, Vec3d(0.0, 1.25, 0.0), false, 3.5
+        ),
+        GltfModel(
+            "Polly", "${DemoLoader.modelPath}/project_polly_jpg.glb",
+            3f, Vec3f.ZERO, false, Vec3d(0.0, 1.25, 0.0), false, 3.5, normalizeBoneWeights = true
+        ),
+        GltfModel(
+            "Coffee Cart", "${DemoLoader.modelPath}/CoffeeCart_01.glb",
+            2f, Vec3f(0f, -0.01f, 0f), false, Vec3d(0.0, 1.75, 0.0), false, 3.5
+        ),
+        GltfModel(
+            "Camera", "${DemoLoader.modelPath}/camera.glb",
+            20f, Vec3f.ZERO, true, Vec3d(0.0, 0.5, 0.0), false, 5.0
+        ),
+        GltfModel(
+            "Fox", "${DemoLoader.modelPath}/fox.glb",
+            0.01f, Vec3f.ZERO, false, Vec3d(0.0, 1.25, 0.0), true, 3.5
+        ).apply { animate = { _, _ -> foxAnimator.animate(this) } },
+        GltfModel(
+            "Animated Box", "${DemoLoader.modelPath}/BoxAnimated.gltf",
+            1f, Vec3f(0f, 0.5f, 0f), false, Vec3d(0.0, 1.5, 0.0), false, 5.0
+        ),
+        GltfModel(
+            "Morph Cube", "${DemoLoader.modelPath}/AnimatedMorphCube.glb",
+            1f, Vec3f(0f, 1f, 0f), false, Vec3d(0.0, 1.0, 0.0), false, 3.5
+        ),
+        GltfModel(
+            "Alpha Mode Test", "${DemoLoader.modelPath}/AlphaBlendModeTest.glb",
+            0.5f, Vec3f(0f, 0.06f, 0f), false, Vec3d(0.0, 0.75, 0.0), false, 3.5
+        )
     )
     private val selectedModelIdx = mutableStateOf(0)
     private val currentModel: GltfModel get() = models[selectedModelIdx.value]
@@ -58,10 +73,10 @@ class GltfDemo : DemoScene("glTF Models") {
 
     private val shadowsForward = mutableListOf<ShadowMap>()
     private var aoPipelineForward: AoPipeline? = null
-    private val contentGroupForward = Group()
+    private val contentGroupForward = Node()
 
     private lateinit var deferredPipeline: DeferredPipeline
-    private val contentGroupDeferred = Group()
+    private val contentGroupDeferred = Node()
 
     private var animationDeltaTime = 0f
     private val animationSpeed = mutableStateOf(0.5f)
@@ -107,7 +122,8 @@ class GltfDemo : DemoScene("glTF Models") {
         }
         shadowsForward += listOf(
             SimpleShadowMap(mainScene, 0, 2048, contentGroupForward),
-            SimpleShadowMap(mainScene, 1, 2048, contentGroupForward))
+            SimpleShadowMap(mainScene, 1, 2048, contentGroupForward)
+        )
 
         // load models
         models.forEach {
@@ -207,12 +223,12 @@ class GltfDemo : DemoScene("glTF Models") {
         })
     }
 
-    private fun Group.setupContentGroup(isDeferredShading: Boolean) {
-        rotate(-60.0, Vec3d.Y_AXIS)
+    private fun Node.setupContentGroup(isDeferredShading: Boolean) {
+        transform.rotate(-60.0, Vec3d.Y_AXIS)
         onUpdate += {
             if (isAutoRotate.value) {
-                setIdentity()
-                rotate(Time.gameTime * 3, Vec3d.Y_AXIS)
+                transform.setIdentity()
+                transform.rotate(Time.gameTime * 3, Vec3d.Y_AXIS)
             }
         }
 
@@ -373,24 +389,24 @@ class GltfDemo : DemoScene("glTF Models") {
             var model: Model? = null
             ctx.assetMgr.loadGltfFile(assetPath)?.let {
                 val materialCfg = GltfFile.ModelMaterialConfig(
-                        shadowMaps = if (isDeferredShading) deferredPipeline.shadowMaps else shadowsForward,
-                        scrSpcAmbientOcclusionMap = if (isDeferredShading) deferredPipeline.aoPipeline?.aoMap else aoPipelineForward?.aoMap,
-                        environmentMaps = envMaps,
-                        isDeferredShading = isDeferredShading,
-                        maxNumberOfJoints = 64
+                    shadowMaps = if (isDeferredShading) deferredPipeline.shadowMaps else shadowsForward,
+                    scrSpcAmbientOcclusionMap = if (isDeferredShading) deferredPipeline.aoPipeline?.aoMap else aoPipelineForward?.aoMap,
+                    environmentMaps = envMaps,
+                    isDeferredShading = isDeferredShading,
+                    maxNumberOfJoints = 64
                 )
                 val modelCfg = GltfFile.ModelGenerateConfig(
-                        generateNormals = generateNormals,
-                        materialConfig = materialCfg,
-                        loadAnimations = true,
-                        applyMorphTargets = true,
-                        applySkins = true,
-                        applyTransforms = true,
-                        mergeMeshesByMaterial = true
+                    generateNormals = generateNormals,
+                    materialConfig = materialCfg,
+                    loadAnimations = true,
+                    applyMorphTargets = true,
+                    applySkins = true,
+                    applyTransforms = true,
+                    mergeMeshesByMaterial = true
                 )
                 model = it.makeModel(modelCfg).apply {
-                    translate(translation)
-                    scale(scale)
+                    transform.translate(translation)
+                    transform.scale(scale)
 
                     if (normalizeBoneWeights) {
                         meshes.values.forEach { mesh ->
@@ -444,11 +460,11 @@ class GltfDemo : DemoScene("glTF Models") {
             model.applyAnimation(Time.deltaT)
 
             // move model according to animation speed
-            model.setIdentity()
+            model.transform.setIdentity()
             position.set(radius, 0.0, 0.0).rotate(angle.toDeg(), Vec3d.Y_AXIS)
-            model.translate(position)
-            model.rotate(angle.toDeg() + 180, Vec3d.Y_AXIS)
-            model.scale(0.01)
+            model.transform.translate(position)
+            model.transform.rotate(angle.toDeg() + 180, Vec3d.Y_AXIS)
+            model.transform.scale(0.01)
         }
     }
 }

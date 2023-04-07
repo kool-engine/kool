@@ -1,7 +1,7 @@
 package de.fabmax.kool.scene.animation
 
 import de.fabmax.kool.math.Mat4f
-import de.fabmax.kool.scene.Group
+import de.fabmax.kool.scene.Node
 
 class Skin {
     val nodes = mutableListOf<SkinNode>()
@@ -18,7 +18,7 @@ class Skin {
         nodes.filter { !it.hasParent }.forEach { it.printHierarchy("") }
     }
 
-    class SkinNode(val joint: Group, val inverseBindMatrix: Mat4f) {
+    class SkinNode(val joint: Node, val inverseBindMatrix: Mat4f) {
         val jointTransform = Mat4f()
 
         private val tmpMat4f = Mat4f()

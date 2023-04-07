@@ -48,7 +48,7 @@ class HelloGltfDemo : DemoScene("Hello glTF") {
             val modelCfg = GltfFile.ModelGenerateConfig(materialConfig = materialCfg)
             loadGltfModel("${DemoLoader.modelPath}/BoxAnimated.gltf", modelCfg)?.let { model ->
                 addNode(model)
-                model.translate(0f, 0.5f, 0f)
+                model.transform.translate(0f, 0.5f, 0f)
 
                 if (model.animations.isNotEmpty()) {
                     model.enableAnimation(0)

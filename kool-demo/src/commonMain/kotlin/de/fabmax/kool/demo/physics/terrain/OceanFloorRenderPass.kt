@@ -3,26 +3,27 @@ package de.fabmax.kool.demo.physics.terrain
 import de.fabmax.kool.pipeline.OffscreenRenderPass2d
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.renderPassConfig
-import de.fabmax.kool.scene.Group
+import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.scene.PerspectiveProxyCam
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.MdColor
 
-class OceanFloorRenderPass(mainScene: Scene, val terrainTiles: TerrainTiles) : OffscreenRenderPass2d(Group(), renderPassConfig {
-    name = "OceanFloorPass"
-    setDynamicSize()
-    addColorTexture(TexFormat.RGBA)
-    setDepthTexture(false)
-}) {
+class OceanFloorRenderPass(mainScene: Scene, val terrainTiles: TerrainTiles) :
+    OffscreenRenderPass2d(Node(), renderPassConfig {
+        name = "OceanFloorPass"
+        setDynamicSize()
+        addColorTexture(TexFormat.RGBA)
+        setDepthTexture(false)
+    }) {
 
-    val renderGroup: Group
-        get() = drawNode as Group
+    val renderGroup: Node
+        get() = drawNode
 
     init {
         isUpdateDrawNode = false
         clearColor = MdColor.GREY
-        (drawNode as Group).apply {
+        drawNode.apply {
             for (i in 0 until TerrainTiles.TILE_CNT_XY) {
                 for (j in 0 until TerrainTiles.TILE_CNT_XY) {
                     if (terrainTiles.getMinElevation(i, j) < Ocean.OCEAN_FLOOR_HEIGHT_THRESH) {

@@ -7,18 +7,18 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
 import de.fabmax.kool.scene.Camera
-import de.fabmax.kool.scene.Group
+import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.OrthographicCamera
 import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.util.logI
 
 class OpticalDepthLutPass :
-        OffscreenRenderPass2d(Group(), renderPassConfig {
-            name = "OpticalDepthLutPass"
-            setSize(LUT_SIZE_X, LUT_SIZE_Y)
-            addColorTexture(TexFormat.RG_F16)
-            clearDepthTexture()
-        }) {
+    OffscreenRenderPass2d(Node(), renderPassConfig {
+        name = "OpticalDepthLutPass"
+        setSize(LUT_SIZE_X, LUT_SIZE_Y)
+        addColorTexture(TexFormat.RG_F16)
+        clearDepthTexture()
+    }) {
 
     private val lutShader = OpticalDepthLutShader()
     var atmosphereRadius by lutShader::atmosphereRadius
@@ -37,7 +37,7 @@ class OpticalDepthLutPass :
             bottom = 0f
         }
 
-        (drawNode as Group).apply {
+        drawNode.apply {
             mesh(listOf(Attribute.POSITIONS, Attribute.TEXTURE_COORDS)) {
                 generateFullscreenQuad()
                 shader = lutShader

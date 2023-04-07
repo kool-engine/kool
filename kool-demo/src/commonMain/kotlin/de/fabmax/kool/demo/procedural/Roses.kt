@@ -3,8 +3,8 @@ package de.fabmax.kool.demo.procedural
 import de.fabmax.kool.math.*
 import de.fabmax.kool.pipeline.deferred.deferredKslPbrShader
 import de.fabmax.kool.scene.ColorMesh
-import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.simpleShape
@@ -17,7 +17,7 @@ import kotlin.math.cos
 import kotlin.math.pow
 import kotlin.math.sin
 
-class Roses : Group() {
+class Roses : Node() {
 
     init {
         makeRose(1234)
@@ -26,7 +26,7 @@ class Roses : Group() {
         makeRose(-336577773)
         makeRose(1339055691)
 
-        translate(-7.5f, 10.5f, 2.5f)
+        transform.translate(-7.5f, 10.5f, 2.5f)
     }
 
     fun makeRose(seed: Int) {

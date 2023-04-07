@@ -6,7 +6,6 @@ import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.pipeline.Shader
 import de.fabmax.kool.pipeline.Texture2d
-import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.geometry.MeshBuilder
@@ -16,7 +15,7 @@ open class UiSurface(
     colors: Colors = Colors.darkColors(),
     sizes: Sizes = Sizes.medium,
     name: String = "uiSurface"
-) : Group(name) {
+) : Node(name) {
 
     private val meshLayers = TreeMap<Int, MeshLayer>()
     private val onEachFrame = mutableListOf<(KoolContext) -> Unit>()
@@ -65,7 +64,7 @@ open class UiSurface(
 
     init {
         // mirror y-axis
-        scale(1f, -1f, 1f)
+        transform.scale(1f, -1f, 1f)
         onUpdate += {
             UiScale.windowScale.set(it.ctx.windowScale)
             viewportWidth.set(it.renderPass.viewport.width.toFloat())
@@ -568,7 +567,7 @@ open class UiSurface(
         }
     }
 
-    inner class MeshLayer : Group() {
+    inner class MeshLayer : Node() {
         private val msdfMeshes = mutableMapOf<MsdfFontData, TextMesh>()
         private val textMeshes = mutableMapOf<Font, TextMesh>()
         private val imageMeshes = mutableMapOf<Texture2d, ImageMeshes>()

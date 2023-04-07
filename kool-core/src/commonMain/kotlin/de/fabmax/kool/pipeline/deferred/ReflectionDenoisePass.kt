@@ -8,12 +8,13 @@ import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
-import de.fabmax.kool.scene.Group
+import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.util.Color
 
 class ReflectionDenoisePass(reflectionPass: OffscreenRenderPass2d) :
-    OffscreenRenderPass2d(Group(),
+    OffscreenRenderPass2d(
+        Node(),
         renderPassConfig {
             name = "ReflectionDenoisePass"
             setSize(reflectionPass.config.width, reflectionPass.config.height)
@@ -27,7 +28,7 @@ class ReflectionDenoisePass(reflectionPass: OffscreenRenderPass2d) :
     init {
         clearColor = Color(0f, 0f, 0f, 0f)
 
-        (drawNode as Group).apply {
+        drawNode.apply {
             mesh(Attribute.POSITIONS, Attribute.TEXTURE_COORDS) {
                 generateFullscreenQuad()
 

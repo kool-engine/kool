@@ -10,8 +10,8 @@ import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ui2.UiScope
 import de.fabmax.kool.modules.ui2.remember
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.multiShape
 import de.fabmax.kool.scene.geometry.simpleShape
@@ -30,9 +30,9 @@ class PlanarOrbits(resources: CreativeCodingDemo.Resources) : CreativeContent("P
     private val orbitMeshY = createMesh(resources)
     private val orbitMeshZ = createMesh(resources)
 
-    private val orbitGroupX = Group().apply { addNode(orbitMeshX) }
-    private val orbitGroupY = Group().apply { addNode(orbitMeshY) }
-    private val orbitGroupZ = Group().apply { addNode(orbitMeshZ) }
+    private val orbitGroupX = Node().apply { addNode(orbitMeshX) }
+    private val orbitGroupY = Node().apply { addNode(orbitMeshY) }
+    private val orbitGroupZ = Node().apply { addNode(orbitMeshZ) }
 
     init {
         rebuildSun()
@@ -40,9 +40,9 @@ class PlanarOrbits(resources: CreativeCodingDemo.Resources) : CreativeContent("P
 
         onUpdate += {
             if (settings.rotateOrbits) {
-                orbitGroupX.rotate(Time.deltaT * 5f, Vec3f.X_AXIS)
-                orbitGroupY.rotate(Time.deltaT * 5f, Vec3f.Y_AXIS)
-                orbitGroupZ.rotate(Time.deltaT * 5f, Vec3f.Z_AXIS)
+                orbitGroupX.transform.rotate(Time.deltaT * 5f, Vec3f.X_AXIS)
+                orbitGroupY.transform.rotate(Time.deltaT * 5f, Vec3f.Y_AXIS)
+                orbitGroupZ.transform.rotate(Time.deltaT * 5f, Vec3f.Z_AXIS)
             }
         }
     }
@@ -166,14 +166,14 @@ class PlanarOrbits(resources: CreativeCodingDemo.Resources) : CreativeContent("P
             }
             simpleShape(false) {
                 xy(radius + halfW, -halfH)
-                xy(radius + halfW,  halfH)
+                xy(radius + halfW, halfH)
             }
             simpleShape(false) {
                 xy(radius + halfW, halfH)
                 xy(radius - halfW, halfH)
             }
             simpleShape(false) {
-                xy(radius - halfW,  halfH)
+                xy(radius - halfW, halfH)
                 xy(radius - halfW, -halfH)
             }
         }

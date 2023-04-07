@@ -132,7 +132,7 @@ class GizmoTest : DemoScene("Gizmo Test") {
         val isDynScale1 = remember(gizmo1.isDynamicScale()).onChange {
             if (it) gizmo1.setDynamicScale() else gizmo1.setFixedScale()
         }
-        LabeledSwitch("Dynamic scale", isDynScale1)
+        LabeledSwitch("Distance independent scale", isDynScale1)
         translation(transform1)
         rotation(transform1)
 

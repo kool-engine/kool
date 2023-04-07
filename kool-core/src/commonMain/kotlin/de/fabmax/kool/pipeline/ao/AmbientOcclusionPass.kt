@@ -12,19 +12,19 @@ import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenShaderPipelineCfg
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
 import de.fabmax.kool.scene.Camera
-import de.fabmax.kool.scene.Group
+import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.util.createUint8Buffer
 import kotlin.math.*
 import kotlin.random.Random
 
 class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
-        OffscreenRenderPass2d(Group(), renderPassConfig {
-            name = "AmbientOcclusionPass"
-            setSize(width, height)
-            clearDepthTexture()
-            addColorTexture(TexFormat.R)
-        }) {
+    OffscreenRenderPass2d(Node(), renderPassConfig {
+        name = "AmbientOcclusionPass"
+        setSize(width, height)
+        clearDepthTexture()
+        addColorTexture(TexFormat.R)
+    }) {
 
     var sceneCam: Camera? = null
 
@@ -51,7 +51,7 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
     init {
         clearColor = null
 
-        (drawNode as Group).apply {
+        drawNode.apply {
             mesh(Attribute.POSITIONS, Attribute.TEXTURE_COORDS) {
                 generateFullscreenQuad()
 

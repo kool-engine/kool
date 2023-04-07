@@ -62,12 +62,16 @@ class DeferredDemo : DemoScene("Deferred Shading") {
     private val lights = mutableListOf<AnimatedLight>()
 
     private val colorMap = listOf(
-            ColorMap("Colorful", listOf(MdColor.RED, MdColor.PINK, MdColor.PURPLE, MdColor.DEEP_PURPLE,
-                    MdColor.INDIGO, MdColor.BLUE, MdColor.LIGHT_BLUE, MdColor.CYAN, MdColor.TEAL, MdColor.GREEN,
-                    MdColor.LIGHT_GREEN, MdColor.LIME, MdColor.YELLOW, MdColor.AMBER, MdColor.ORANGE, MdColor.DEEP_ORANGE)),
-            ColorMap("Hot-Cold", listOf(MdColor.PINK, MdColor.CYAN)),
-            ColorMap("Summer", listOf(MdColor.ORANGE, MdColor.BLUE, MdColor.GREEN)),
-            ColorMap("Sepia", listOf(MdColor.ORANGE tone 100))
+        ColorMap(
+            "Colorful", listOf(
+                MdColor.RED, MdColor.PINK, MdColor.PURPLE, MdColor.DEEP_PURPLE,
+                MdColor.INDIGO, MdColor.BLUE, MdColor.LIGHT_BLUE, MdColor.CYAN, MdColor.TEAL, MdColor.GREEN,
+                MdColor.LIGHT_GREEN, MdColor.LIME, MdColor.YELLOW, MdColor.AMBER, MdColor.ORANGE, MdColor.DEEP_ORANGE
+            )
+        ),
+        ColorMap("Hot-Cold", listOf(MdColor.PINK, MdColor.CYAN)),
+        ColorMap("Summer", listOf(MdColor.ORANGE, MdColor.BLUE, MdColor.GREEN)),
+        ColorMap("Sepia", listOf(MdColor.ORANGE tone 100))
     )
     val colorMapIdx = mutableStateOf(1)
 
@@ -188,7 +192,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
         }
     }
 
-    private fun Group.makeContent() {
+    private fun Node.makeContent() {
         objects = colorMesh {
             generate {
                 val sphereProtos = mutableListOf<IndexedVertexList>()
@@ -211,7 +215,11 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                             translate(x.toFloat(), 0f, y.toFloat())
                             if ((x + 100) % 2 == (y + 100) % 2) {
                                 cube {
-                                    size.set(rand.randomF(0.6f, 0.8f), rand.randomF(0.6f, 0.95f), rand.randomF(0.6f, 0.8f))
+                                    size.set(
+                                        rand.randomF(0.6f, 0.8f),
+                                        rand.randomF(0.6f, 0.95f),
+                                        rand.randomF(0.6f, 0.8f)
+                                    )
                                     origin.set(-size.x / 2, 0.1f, -size.z / 2)
                                 }
                             } else {
@@ -276,11 +284,11 @@ class DeferredDemo : DemoScene("Deferred Shading") {
 
         val objOffset = if (objects.isVisible) 0.7f else 0f
         val lightGroups = listOf(
-                LightGroup(Vec3f(1 - start, 0.45f, -start), Vec3f(1f, 0f, 0f), Vec3f(0f, 0f, 1f), rows - 1),
-                LightGroup(Vec3f(-start, 0.45f, 1 - start), Vec3f(0f, 0f, 1f), Vec3f(1f, 0f, 0f), rows - 1),
+            LightGroup(Vec3f(1 - start, 0.45f, -start), Vec3f(1f, 0f, 0f), Vec3f(0f, 0f, 1f), rows - 1),
+            LightGroup(Vec3f(-start, 0.45f, 1 - start), Vec3f(0f, 0f, 1f), Vec3f(1f, 0f, 0f), rows - 1),
 
-                LightGroup(Vec3f(1.5f - start, 0.45f + objOffset, start), Vec3f(1f, 0f, 0f), Vec3f(0f, 0f, -1f), rows - 2),
-                LightGroup(Vec3f(start, 0.45f + objOffset, 1.5f - start), Vec3f(0f, 0f, 1f), Vec3f(-1f, 0f, 0f), rows - 2)
+            LightGroup(Vec3f(1.5f - start, 0.45f + objOffset, start), Vec3f(1f, 0f, 0f), Vec3f(0f, 0f, -1f), rows - 2),
+            LightGroup(Vec3f(start, 0.45f + objOffset, 1.5f - start), Vec3f(0f, 0f, 1f), Vec3f(-1f, 0f, 0f), rows - 2)
         )
 
         if (forced) {

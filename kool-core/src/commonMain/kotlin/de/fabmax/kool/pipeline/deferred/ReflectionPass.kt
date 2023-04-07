@@ -11,13 +11,14 @@ import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
-import de.fabmax.kool.scene.Group
+import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.createUint8Buffer
 
 class ReflectionPass(val baseReflectionStep: Float) :
-    OffscreenRenderPass2d(Group(),
+    OffscreenRenderPass2d(
+        Node(),
         renderPassConfig {
             name = "ReflectionPass"
             setSize(0, 0)
@@ -35,7 +36,7 @@ class ReflectionPass(val baseReflectionStep: Float) :
     init {
         clearColor = Color(0f, 0f, 0f, 0f)
 
-        (drawNode as Group).apply {
+        drawNode.apply {
             mesh(Attribute.POSITIONS, Attribute.TEXTURE_COORDS) {
                 generateFullscreenQuad()
                 shader = ssrShader

@@ -6,12 +6,12 @@ import de.fabmax.kool.modules.ksl.KslLitShader
 import de.fabmax.kool.physics.geometry.HeightFieldGeometry
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.Texture2d
-import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.util.ShadowMap
 
-class TerrainTiles(val terrain: Terrain, val sky: Sky) : Group() {
+class TerrainTiles(val terrain: Terrain, val sky: Sky) : Node() {
 
     private val meshes = mutableMapOf<Vec2i, Mesh>()
 

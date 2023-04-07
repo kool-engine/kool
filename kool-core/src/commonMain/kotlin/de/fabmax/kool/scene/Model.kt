@@ -5,9 +5,9 @@ import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.scene.animation.Animation
 import de.fabmax.kool.scene.animation.Skin
 
-class Model(name: String? = null) : Group(name) {
+class Model(name: String? = null) : Node(name) {
 
-    val nodes = mutableMapOf<String, Group>()
+    val nodes = mutableMapOf<String, Node>()
     val meshes = mutableMapOf<String, Mesh>()
     val textures = mutableMapOf<String, Texture2d>()
 
@@ -47,10 +47,10 @@ class Model(name: String? = null) : Group(name) {
         printHierarchy("")
     }
 
-    private fun Group.printHierarchy(indent: String) {
+    private fun Node.printHierarchy(indent: String) {
         println("$indent$name [${children.filterIsInstance<Mesh>().count()} meshes]")
         children.forEach {
-            if (it is Group) {
+            if (it !is Mesh) {
                 it.printHierarchy("$indent    ")
             } else {
                 println("$indent    ${it.name}")

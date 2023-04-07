@@ -1,7 +1,6 @@
 package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Node
 
 open class OffscreenRenderPass2dPingPong(config: Config) : OffscreenRenderPass(Empty(),
@@ -14,8 +13,8 @@ open class OffscreenRenderPass2dPingPong(config: Config) : OffscreenRenderPass(E
 
     var pingPongPasses = 1
 
-    val pingContent = Group()
-    val pongContent = Group()
+    val pingContent = Node()
+    val pongContent = Node()
 
     val ping: OffscreenRenderPass2d = OffscreenRenderPass2d(pingContent, config)
     val pong: OffscreenRenderPass2d = OffscreenRenderPass2d(pongContent, config)

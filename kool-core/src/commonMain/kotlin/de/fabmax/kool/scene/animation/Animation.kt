@@ -1,8 +1,8 @@
 package de.fabmax.kool.scene.animation
 
 import de.fabmax.kool.math.*
-import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.TreeMap
 import kotlin.math.min
 
@@ -100,7 +100,7 @@ interface AnimationNode {
     fun setWeights(weights: FloatArray) { }
 }
 
-class AnimatedTransformGroup(val target: Group): AnimationNode {
+class AnimatedTransformGroup(val target: Node): AnimationNode {
     override val name: String
         get() = target.name
 
@@ -133,10 +133,10 @@ class AnimatedTransformGroup(val target: Group): AnimationNode {
     }
 
     override fun applyTransform() {
-        target.setIdentity()
-        target.translate(animTranslation)
-        target.mul(quatRotMat.setRotate(animRotation))
-        target.scale(animScale.x, animScale.y, animScale.z)
+        target.transform.setIdentity()
+        target.transform.translate(animTranslation)
+        target.transform.mul(quatRotMat.setRotate(animRotation))
+        target.transform.scale(animScale.x, animScale.y, animScale.z)
     }
 
     override fun applyTransformWeighted(weight: Float, firstWeightedTransform: Boolean) {

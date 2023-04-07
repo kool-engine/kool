@@ -4,7 +4,6 @@ import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.min
 import de.fabmax.kool.pipeline.RenderPass
-import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.logW
 import kotlin.math.max
@@ -17,7 +16,7 @@ interface DockingListener {
     fun onDockingContainerMerged(splitContainer: DockingContainer) { }
 }
 
-class DockingHost : Group() {
+class DockingHost : Node() {
 
     val dockingSurface = DockingSurface()
     val childSurfaces = mutableListOf<UiSurface>()

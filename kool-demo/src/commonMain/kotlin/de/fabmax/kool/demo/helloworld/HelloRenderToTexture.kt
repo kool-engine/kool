@@ -15,7 +15,7 @@ import de.fabmax.kool.util.Time
 class HelloRenderToTextureDemo : DemoScene("Hello RenderToTexture") {
     override fun Scene.setupMainScene(ctx: KoolContext) {
         // create offscreen content
-        val backgroundGroup = Group().apply {
+        val backgroundGroup = Node().apply {
             colorMesh {
                 generate {
                     cube {
@@ -25,7 +25,7 @@ class HelloRenderToTextureDemo : DemoScene("Hello RenderToTexture") {
                 }
                 shader = KslUnlitShader { color { vertexColor() } }
             }
-            onUpdate += { rotate(Time.deltaT * 30f, Vec3f.Y_AXIS) }
+            onUpdate += { transform.rotate(Time.deltaT * 30f, Vec3f.Y_AXIS) }
         }
 
         // setup offscreen pass

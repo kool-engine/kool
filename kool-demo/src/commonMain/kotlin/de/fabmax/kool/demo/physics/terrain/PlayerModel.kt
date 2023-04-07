@@ -3,14 +3,14 @@ package de.fabmax.kool.demo.physics.terrain
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.modules.ksl.KslUnlitShader
-import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.LineMesh
 import de.fabmax.kool.scene.Model
+import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.Time
 import kotlin.math.*
 
-class PlayerModel(val model: Model, val playerController: PlayerController) : Group("player-model") {
+class PlayerModel(val model: Model, val playerController: PlayerController) : Node("player-model") {
 
     private val controllerShapeOutline: LineMesh
     var isDrawShapeOutline: Boolean
@@ -19,8 +19,8 @@ class PlayerModel(val model: Model, val playerController: PlayerController) : Gr
 
     init {
         // set correct player model position (relative to player controller origin)
-        model.translate(0f, -0.9f, 0f)
-        model.rotate(180f, Vec3f.Y_AXIS)
+        model.transform.translate(0f, -0.9f, 0f)
+        model.transform.rotate(180f, Vec3f.Y_AXIS)
         addNode(model)
 
         controllerShapeOutline = makeShapeOutline()
@@ -71,10 +71,7 @@ class PlayerModel(val model: Model, val playerController: PlayerController) : Gr
 
     private fun updateAnimation(timeStep: Float) {
         // set transform group / model transform according to character position
-        set(playerController.playerTransform)
-//        setIdentity()
-//        translate(playerController.position)
-//        rotate(playerController.moveHeading, Vec3f.Y_AXIS)
+        transform.set(playerController.playerTransform)
 
         // determine which animation to use based on speed
         if (abs(playerController.moveSpeed) <= PlayerController.walkSpeed) {

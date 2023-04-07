@@ -27,12 +27,12 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 
 class SkyCubePass(opticalDepthLut: Texture2d, size: Int = 256) :
-        OffscreenRenderPassCube(Group(), renderPassConfig {
-            name = "SkyCubePass"
-            setSize(size, size)
-            addColorTexture(TexFormat.RGBA_F16)
-            clearDepthTexture()
-        }) {
+    OffscreenRenderPassCube(Node(), renderPassConfig {
+        name = "SkyCubePass"
+        setSize(size, size)
+        addColorTexture(TexFormat.RGBA_F16)
+        clearDepthTexture()
+    }) {
 
     val syncLights = mutableListOf<Light>()
 
@@ -76,7 +76,7 @@ class SkyCubePass(opticalDepthLut: Texture2d, size: Int = 256) :
             colorSpaceConversion = ColorSpaceConversion.AS_IS
         }
 
-        (drawNode as Group).apply {
+        drawNode.apply {
             // sky
             textureMesh {
                 generate {

@@ -3,9 +3,9 @@ package de.fabmax.kool.physics
 import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.BoundingBox
 import de.fabmax.kool.modules.ksl.KslPbrShader
-import de.fabmax.kool.scene.Group
+import de.fabmax.kool.scene.ColorMesh
+import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Tags
-import de.fabmax.kool.scene.colorMesh
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.LazyMat4f
 
@@ -76,25 +76,23 @@ abstract class CommonRigidActor : Releasable {
         return invTransform.transform(vec, w)
     }
 
-    open fun toMesh(meshColor: Color, materialCfg: KslPbrShader.Config.() -> Unit = { }) = Group().apply {
-        colorMesh {
-            generate {
-                color = meshColor
-                mutShapes.forEach { shape ->
-                    withTransform {
-                        transform.mul(shape.localPose)
-                        shape.geometry.generateMesh(this)
-                    }
+    open fun toMesh(meshColor: Color, materialCfg: KslPbrShader.Config.() -> Unit = { }): Node = ColorMesh().apply {
+        generate {
+            color = meshColor
+            mutShapes.forEach { shape ->
+                withTransform {
+                    transform.mul(shape.localPose)
+                    shape.geometry.generateMesh(this)
                 }
             }
-            shader = KslPbrShader {
-                color { vertexColor() }
-                materialCfg()
-            }
-            onUpdate += {
-                this@apply.transform.set(this@CommonRigidActor.transform)
-                this@apply.transform.markDirty()
-            }
+        }
+        shader = KslPbrShader {
+            color { vertexColor() }
+            materialCfg()
+        }
+        onUpdate += {
+            transform.set(this@CommonRigidActor.transform)
+            transform.markDirty()
         }
     }
 }

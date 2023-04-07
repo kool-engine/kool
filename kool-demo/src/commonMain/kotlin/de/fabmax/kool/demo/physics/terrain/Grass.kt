@@ -5,8 +5,8 @@ import de.fabmax.kool.math.Random
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.Texture2d
-import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.util.PerfTimer
@@ -14,12 +14,17 @@ import de.fabmax.kool.util.logD
 
 class Grass(val terrain: Terrain, val wind: Wind, val sky: Sky) {
 
-    val grassQuads = Group().apply { isFrustumChecked = false }
+    val grassQuads = Node().apply { isFrustumChecked = false }
 
     init {
         val gridSz = 8
         val meshDatas = MutableList(gridSz * gridSz) {
-            val data = IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS, Wind.WIND_SENSITIVITY)
+            val data = IndexedVertexList(
+                Attribute.POSITIONS,
+                Attribute.NORMALS,
+                Attribute.TEXTURE_COORDS,
+                Wind.WIND_SENSITIVITY
+            )
             val builder = MeshBuilder(data)
             builder to data
         }
@@ -50,7 +55,11 @@ class Grass(val terrain: Terrain, val wind: Wind, val sky: Sky) {
                 step.y = terrain.getTerrainHeightAt(step.x, step.z)
                 step.subtract(pos).scale(0.333f)
                 midOffset.set(step).rotate(90f, Vec3f.Y_AXIS)
-                topOffset.set(rand.randomF(-0.25f, 0.25f), rand.randomF(0.75f, 1.25f) * weights.y, rand.randomF(-0.25f, 0.25f))
+                topOffset.set(
+                    rand.randomF(-0.25f, 0.25f),
+                    rand.randomF(0.75f, 1.25f) * weights.y,
+                    rand.randomF(-0.25f, 0.25f)
+                )
                 builder.grassSprite(pos, step, topOffset, midOffset)
             }
         }

@@ -9,7 +9,7 @@ import de.fabmax.kool.modules.ksl.lang.y
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenCubeVertexStage
 import de.fabmax.kool.pipeline.shadermodel.*
-import de.fabmax.kool.scene.Group
+import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.textureMesh
 import de.fabmax.kool.util.ColorGradient
@@ -19,15 +19,15 @@ import de.fabmax.kool.util.logD
 import kotlin.math.PI
 
 class GradientCubeGenerator(scene: Scene, gradientTex: Texture1d, size: Int = 128) :
-        OffscreenRenderPassCube(Group(), renderPassConfig {
-            name = "GradientEnvGenerator"
-            setSize(size, size)
-            addColorTexture(TexFormat.RGBA_F16)
-            clearDepthTexture()
-        }) {
+    OffscreenRenderPassCube(Node(), renderPassConfig {
+        name = "GradientEnvGenerator"
+        setSize(size, size)
+        addColorTexture(TexFormat.RGBA_F16)
+        clearDepthTexture()
+    }) {
 
     init {
-        (drawNode as Group).apply {
+        drawNode.apply {
             textureMesh {
                 generate {
                     cube {

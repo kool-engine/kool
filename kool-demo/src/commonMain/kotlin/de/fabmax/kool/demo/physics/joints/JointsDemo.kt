@@ -571,7 +571,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
         }
     }
 
-    private inner class BodyMeshes(isNice: Boolean): Group() {
+    private inner class BodyMeshes(isNice: Boolean): Node() {
         var linkMeshO = BodyMesh(MdColor.BLUE_GREY.toLinear()) { addNode(it) }
         var linkMeshI = BodyMesh(MdColor.BLUE_GREY toneLin 350) { addNode(it) }
         var gearMesh = BodyMesh(MdColor.BLUE_GREY toneLin 200) { addNode(it) }

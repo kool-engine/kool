@@ -8,17 +8,17 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenShaderPipelineCfg
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
-import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.Color
 
 class AoDenoisePass(aoPass: OffscreenRenderPass2d, depthComponent: String) :
-        OffscreenRenderPass2d(Group(), renderPassConfig {
-            name = "AoDenoisePass"
-            setSize(aoPass.config.width, aoPass.config.height)
-            clearDepthTexture()
-            addColorTexture(TexFormat.R)
-        }) {
+    OffscreenRenderPass2d(Node(), renderPassConfig {
+        name = "AoDenoisePass"
+        setSize(aoPass.config.width, aoPass.config.height)
+        clearDepthTexture()
+        addColorTexture(TexFormat.R)
+    }) {
 
     private val denoiseShader = DenoiseShader(aoPass, depthComponent)
 
@@ -52,7 +52,7 @@ class AoDenoisePass(aoPass: OffscreenRenderPass2d, depthComponent: String) :
             }, fullscreenShaderPipelineCfg)
         }
 
-        (drawNode as Group).apply {
+        drawNode.apply {
             addNode(denoiseMesh)
             addNode(clearMesh)
         }

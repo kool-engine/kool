@@ -11,25 +11,25 @@ import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
 import de.fabmax.kool.pipeline.OffscreenRenderPass2d
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.renderPassConfig
-import de.fabmax.kool.scene.Group
+import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.util.logD
 
 
 class BrdfLutPass(parentScene: Scene) :
-        OffscreenRenderPass2d(Group(), renderPassConfig {
-            name = "BrdfLutPass"
-            setSize(512, 512)
-            addColorTexture(TexFormat.RG_F16)
-            clearDepthTexture()
-        }) {
+    OffscreenRenderPass2d(Node(), renderPassConfig {
+        name = "BrdfLutPass"
+        setSize(512, 512)
+        addColorTexture(TexFormat.RG_F16)
+        clearDepthTexture()
+    }) {
 
     var isAutoRemove = true
 
     init {
         clearColor = null
-        (drawNode as Group).apply {
+        drawNode.apply {
             mesh(Attribute.POSITIONS, Attribute.TEXTURE_COORDS) {
                 generateFullscreenQuad()
                 shader = brdfLutShader()

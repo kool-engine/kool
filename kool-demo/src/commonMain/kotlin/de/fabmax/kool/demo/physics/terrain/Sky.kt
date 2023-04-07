@@ -82,7 +82,7 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
         shader = starShader
     }
 
-    val skyGroup = Group().apply {
+    val skyGroup = Node().apply {
         addNode(skybox)
         addNode(sunMesh)
         addNode(starMesh)
@@ -184,7 +184,12 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
 
     }
 
-    private fun computeLightDirection(tilt: Float, progress: Float, orientation: Mat3f, direction: MutableVec3f = MutableVec3f()): Vec3f {
+    private fun computeLightDirection(
+        tilt: Float,
+        progress: Float,
+        orientation: Mat3f,
+        direction: MutableVec3f = MutableVec3f()
+    ): Vec3f {
         orientation
             .setIdentity()
             .rotate(tilt, Vec3f.Z_AXIS)
@@ -201,8 +206,8 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
         return (nightTime - 0.26f) * 2.083f
     }
 
-    private class SkyObjectShader(isPointShader: Boolean = false, colorBlock: ColorBlockConfig.() -> Unit)
-        : KslUnlitShader(config(isPointShader, colorBlock)) {
+    private class SkyObjectShader(isPointShader: Boolean = false, colorBlock: ColorBlockConfig.() -> Unit) :
+        KslUnlitShader(config(isPointShader, colorBlock)) {
 
         val orientation: Mat3f by uniformMat3f("uOrientation", Mat3f().setIdentity())
         var alpha: Float by uniform1f("uAlpha", 1f)

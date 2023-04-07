@@ -13,9 +13,9 @@ import de.fabmax.kool.physics.geometry.TriangleMeshGeometry
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.Texture3d
-import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
+import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.util.ShadowMap
@@ -23,7 +23,7 @@ import kotlin.math.sqrt
 
 class Trees(val terrain: Terrain, nTrees: Int, val wind: Wind, val sky: Sky) {
 
-    val treeGroup = Group().apply {
+    val treeGroup = Node().apply {
         isFrustumChecked = false
     }
 

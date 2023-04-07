@@ -6,19 +6,19 @@ import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenCubeVertexStage
-import de.fabmax.kool.scene.Group
+import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.util.logD
 
 class ReflectionMapPass private constructor(parentScene: Scene, hdriMap: Texture2d?, cubeMap: TextureCube?, size: Int) :
-        OffscreenRenderPassCube(Group(), renderPassConfig {
-            name = "ReflectionMapPass"
-            setSize(size, size)
-            mipLevels = 7
-            addColorTexture(TexFormat.RGBA_F16)
-            clearDepthTexture()
-        }) {
+    OffscreenRenderPassCube(Node(), renderPassConfig {
+        name = "ReflectionMapPass"
+        setSize(size, size)
+        mipLevels = 7
+        addColorTexture(TexFormat.RGBA_F16)
+        clearDepthTexture()
+    }) {
 
     var isAutoRemove = true
 
@@ -27,7 +27,7 @@ class ReflectionMapPass private constructor(parentScene: Scene, hdriMap: Texture
         isEnabled = true
 
         val reflectionMapShader = ReflectionMapShader(hdriMap, cubeMap)
-        (drawNode as Group).apply {
+        drawNode.apply {
             mesh(Attribute.POSITIONS, name = "reflectionMap") {
                 generate {
                     cube { centered() }

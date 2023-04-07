@@ -23,13 +23,17 @@ class CreativeCodingDemo : DemoScene("Creative Coding") {
     private val contentIndex = mutableStateOf(3)
     private val content: CreativeContent
         get() = contents[contentIndex.value]
-    private val contentGroup = Group()
+    private val contentGroup = Node()
 
     private lateinit var resources: Resources
 
     override suspend fun AssetManager.loadResources(ctx: KoolContext) {
         resources = Resources(
-            EnvironmentHelper.hdriEnvironment(mainScene, "${DemoLoader.hdriPath}/syferfontein_0d_clear_1k.rgbe.png", this),
+            EnvironmentHelper.hdriEnvironment(
+                mainScene,
+                "${DemoLoader.hdriPath}/syferfontein_0d_clear_1k.rgbe.png",
+                this
+            ),
             listOf(CascadedShadowMap(mainScene, 0, 2000f, nearOffset = -200f))
         )
 
@@ -105,7 +109,7 @@ class CreativeCodingDemo : DemoScene("Creative Coding") {
             onUpdate += {
                 if (isAutoRotate.value) {
                     verticalRotation += Time.deltaT * -3f
-                    contentGroup.rotate(Time.deltaT * 3f, Vec3f.Y_AXIS)
+                    contentGroup.transform.rotate(Time.deltaT * 3f, Vec3f.Y_AXIS)
                 }
             }
         }

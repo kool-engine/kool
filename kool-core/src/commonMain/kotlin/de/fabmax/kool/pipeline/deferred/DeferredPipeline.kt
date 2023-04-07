@@ -40,8 +40,8 @@ class DeferredPipeline(val scene: Scene, val cfg: DeferredPipelineConfig) {
     val bloom: Bloom?
     val shadowMaps: List<ShadowMap>
 
-    val sceneContent = Group()
-    val lightingPassContent = Group()
+    val sceneContent = Node()
+    val lightingPassContent = Node()
 
     val dynamicPointLights = DeferredPointLights(true)
     val staticPointLights = DeferredPointLights(false)
@@ -99,14 +99,13 @@ class DeferredPipeline(val scene: Scene, val cfg: DeferredPipelineConfig) {
         passes = createPasses()
 
         shadowMaps = cfg.shadowMaps ?: createShadowMapsFromSceneLights()
-        lightingPassShader = cfg.pbrSceneShader ?:
-                PbrSceneShader(PbrSceneShader.DeferredPbrConfig().apply {
-                    isScrSpcAmbientOcclusion = cfg.isWithAmbientOcclusion
-                    isScrSpcReflections = cfg.isWithScreenSpaceReflections
-                    maxLights = cfg.maxGlobalLights
-                    shadowCfg.addShadowMaps(this@DeferredPipeline.shadowMaps)
-                    useImageBasedLighting(cfg.environmentMaps)
-                })
+        lightingPassShader = cfg.pbrSceneShader ?: PbrSceneShader(PbrSceneShader.DeferredPbrConfig().apply {
+            isScrSpcAmbientOcclusion = cfg.isWithAmbientOcclusion
+            isScrSpcReflections = cfg.isWithScreenSpaceReflections
+            maxLights = cfg.maxGlobalLights
+            shadowCfg.addShadowMaps(this@DeferredPipeline.shadowMaps)
+            useImageBasedLighting(cfg.environmentMaps)
+        })
 
         setupLightingPassContent()
 

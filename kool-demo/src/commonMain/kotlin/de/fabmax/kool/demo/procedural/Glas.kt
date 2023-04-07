@@ -12,14 +12,14 @@ import de.fabmax.kool.pipeline.deferred.DeferredPasses
 import de.fabmax.kool.pipeline.deferred.deferredKslPbrShader
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.pipeline.shading.AlphaMode
-import de.fabmax.kool.scene.Group
+import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.colorMesh
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.SimpleShadowMap
 
-class Glas(val ibl: EnvironmentMaps, shadowMap: SimpleShadowMap) : Group(), DeferredPassSwapListener {
+class Glas(val ibl: EnvironmentMaps, shadowMap: SimpleShadowMap) : Node(), DeferredPassSwapListener {
 
     private val glasShader: GlassShader = GlassShader(ibl, shadowMap)
 
@@ -28,8 +28,8 @@ class Glas(val ibl: EnvironmentMaps, shadowMap: SimpleShadowMap) : Group(), Defe
         makeBody()
         makeShaft()
 
-        translate(7.5f, 0f, 2.5f)
-        scale(0.9f)
+        transform.translate(7.5f, 0f, 2.5f)
+        transform.scale(0.9f)
     }
 
     override fun onSwap(previousPasses: DeferredPasses, currentPasses: DeferredPasses) {

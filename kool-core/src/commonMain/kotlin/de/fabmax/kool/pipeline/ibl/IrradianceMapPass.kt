@@ -7,25 +7,25 @@ import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenCubeVertexStage
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenCube
-import de.fabmax.kool.scene.Group
+import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.util.logD
 import kotlin.math.PI
 
 class IrradianceMapPass private constructor(parentScene: Scene, hdriMap: Texture2d?, cubeMap: TextureCube?, size: Int) :
-        OffscreenRenderPassCube(Group(), renderPassConfig {
-            name = "IrradianceMapPass"
-            setSize(size, size)
-            addColorTexture(TexFormat.RGBA_F16)
-            clearDepthTexture()
-        }) {
+    OffscreenRenderPassCube(Node(), renderPassConfig {
+        name = "IrradianceMapPass"
+        setSize(size, size)
+        addColorTexture(TexFormat.RGBA_F16)
+        clearDepthTexture()
+    }) {
 
     var isAutoRemove = true
 
     init {
         clearColor = null
-        (drawNode as Group).apply {
+        drawNode.apply {
             mesh(Attribute.POSITIONS) {
                 generateFullscreenCube()
                 shader = IrradianceMapPassShader(hdriMap, cubeMap)

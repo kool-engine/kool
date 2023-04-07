@@ -8,17 +8,18 @@ import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
-import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.util.Color
 
-class BloomThresholdPass(deferredPipeline: DeferredPipeline, cfg: DeferredPipelineConfig) : OffscreenRenderPass2d(Group(), renderPassConfig {
-    name = "BloomThresholdPass"
-    setSize(0, 0)
-    addColorTexture(TexFormat.RGBA_F16)
-    clearDepthTexture()
-}) {
+class BloomThresholdPass(deferredPipeline: DeferredPipeline, cfg: DeferredPipelineConfig) :
+    OffscreenRenderPass2d(Node(), renderPassConfig {
+        name = "BloomThresholdPass"
+        setSize(0, 0)
+        addColorTexture(TexFormat.RGBA_F16)
+        clearDepthTexture()
+    }) {
 
     private val doAvgDownsampling = cfg.bloomAvgDownSampling
     private var samples = 3
@@ -30,7 +31,7 @@ class BloomThresholdPass(deferredPipeline: DeferredPipeline, cfg: DeferredPipeli
     init {
         clearColor = Color.BLACK
 
-        (drawNode as Group).apply {
+        drawNode.apply {
             isFrustumChecked = false
             quad = mesh(listOf(Attribute.POSITIONS, Attribute.TEXTURE_COORDS)) {
                 isFrustumChecked = false

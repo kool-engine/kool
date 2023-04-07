@@ -30,7 +30,7 @@ fun Scene.defaultOrbitCamera(yaw: Float = 20f, pitch: Float = -30f): OrbitInputT
     }
 }
 
-open class OrbitInputTransform(name: String? = null) : Group(name), InputStack.PointerListener {
+open class OrbitInputTransform(name: String? = null) : Node(name), InputStack.PointerListener {
     var leftDragMethod = DragMethod.ROTATE
     var middleDragMethod = DragMethod.NONE
     var rightDragMethod = DragMethod.PAN
@@ -134,7 +134,7 @@ open class OrbitInputTransform(name: String? = null) : Group(name), InputStack.P
 
         if (isKeepingStandardTransform) {
             mouseTransform.invert(mouseTransformInv)
-            mul(mouseTransformInv)
+            transform.mul(mouseTransformInv)
         }
 
         val z = zoomAnimator.actual
@@ -147,9 +147,9 @@ open class OrbitInputTransform(name: String? = null) : Group(name), InputStack.P
         mouseTransform.rotate(hr, horizontalAxis)
 
         if (isKeepingStandardTransform) {
-            mul(mouseTransform)
+            transform.mul(mouseTransform)
         } else {
-            set(mouseTransform)
+            transform.set(mouseTransform)
         }
     }
 

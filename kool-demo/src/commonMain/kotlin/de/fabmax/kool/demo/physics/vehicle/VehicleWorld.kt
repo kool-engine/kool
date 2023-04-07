@@ -5,7 +5,6 @@ import de.fabmax.kool.physics.geometry.TriangleMeshGeometry
 import de.fabmax.kool.physics.vehicle.VehicleUtils
 import de.fabmax.kool.pipeline.deferred.DeferredPipeline
 import de.fabmax.kool.pipeline.deferred.deferredKslPbrShader
-import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.colorMesh
@@ -17,10 +16,11 @@ class VehicleWorld(val scene: Scene, val physics: PhysicsWorld, val deferredPipe
     val defaultMaterial = Material(0.5f)
     val groundSimFilterData = FilterData(VehicleUtils.COLLISION_FLAG_GROUND, VehicleUtils.COLLISION_FLAG_GROUND_AGAINST)
     val groundQryFilterData = FilterData { VehicleUtils.setupDrivableSurface(this) }
-    val obstacleSimFilterData = FilterData(VehicleUtils.COLLISION_FLAG_DRIVABLE_OBSTACLE, VehicleUtils.COLLISION_FLAG_DRIVABLE_OBSTACLE_AGAINST)
+    val obstacleSimFilterData =
+        FilterData(VehicleUtils.COLLISION_FLAG_DRIVABLE_OBSTACLE, VehicleUtils.COLLISION_FLAG_DRIVABLE_OBSTACLE_AGAINST)
     val obstacleQryFilterData = FilterData { VehicleUtils.setupDrivableSurface(this) }
 
-    fun toPrettyMesh(actor: RigidActor, meshColor: Color, rough: Float = 0.8f, metal: Float = 0f): Node = Group().apply {
+    fun toPrettyMesh(actor: RigidActor, meshColor: Color, rough: Float = 0.8f, metal: Float = 0f): Node = Node().apply {
         colorMesh {
             generate {
                 color = meshColor

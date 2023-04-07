@@ -44,7 +44,11 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
 
     override suspend fun AssetManager.loadResources(ctx: KoolContext) {
         showLoadText("Loading IBL maps")
-        val ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${DemoLoader.hdriPath}/syferfontein_0d_clear_1k.rgbe.png", this)
+        val ibl = EnvironmentHelper.hdriEnvironment(
+            mainScene,
+            "${DemoLoader.hdriPath}/syferfontein_0d_clear_1k.rgbe.png",
+            this
+        )
         val shadows = CascadedShadowMap(mainScene, 0, maxRange = 400f, mapSizes = listOf(4096, 2048, 2048)).apply {
             mapRanges[0].set(0f, 0.03f)
             mapRanges[1].set(0.03f, 0.17f)
@@ -180,7 +184,7 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
         }
     }
 
-    private fun Group.makeTrack(world: VehicleWorld) {
+    private fun Node.makeTrack(world: VehicleWorld) {
         track = Track(world).generate {
             subdivs = 2
             addControlPoint(SimpleSpline3f.CtrlPoint(Vec3f(0f, 0.05f, -40f), Vec3f(-3f, 0f, 0f)))
@@ -231,7 +235,7 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
         }
     }
 
-    private fun Group.makeGround() {
+    private fun Node.makeGround() {
         val groundAlbedo = Texture2d("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine.png")
         val groundNormal = Texture2d("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine_normal.png")
         onDispose += {

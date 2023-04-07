@@ -3,7 +3,6 @@ package de.fabmax.kool.pipeline.deferred
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
-import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.scene.PerspectiveProxyCam
@@ -25,7 +24,6 @@ class MaterialPass(pipeline: DeferredPipeline, suffix: String) :
             }
         }) {
 
-    val content = drawNode as Group
     internal val alphaMeshes = mutableListOf<Mesh>()
 
     val positionFlags: Texture2d
@@ -63,8 +61,6 @@ class MaterialPass(pipeline: DeferredPipeline, suffix: String) :
         clearColors[1] = null
         clearColors[2] = null
         clearColors[3] = null
-
-        content.isFrustumChecked = false
     }
 
     override fun collectDrawCommands(ctx: KoolContext) {

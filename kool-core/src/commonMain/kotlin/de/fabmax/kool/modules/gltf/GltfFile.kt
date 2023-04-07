@@ -11,7 +11,6 @@ import de.fabmax.kool.pipeline.deferred.DeferredKslPbrShader
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.pipeline.shading.AlphaMode
 import de.fabmax.kool.pipeline.shading.DepthShader
-import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Model
 import de.fabmax.kool.scene.Node
@@ -144,7 +143,7 @@ data class GltfFile(
 
     private inner class ModelGenerator(val cfg: ModelGenerateConfig) {
         val modelAnimations = mutableListOf<Animation>()
-        val modelNodes = mutableMapOf<GltfNode, Group>()
+        val modelNodes = mutableMapOf<GltfNode, Node>()
         val meshesByMaterial = mutableMapOf<Int, MutableSet<Mesh>>()
         val meshMaterials = mutableMapOf<Mesh, GltfMaterial?>()
 
@@ -152,27 +151,26 @@ data class GltfFile(
             val model = Model(scene.name ?: "model_scene")
             scene.nodeRefs.forEach { nd -> model += nd.makeNode(model, cfg) }
 
-            if (cfg.loadAnimations) { makeTrsAnimations() }
-            if (cfg.loadAnimations) { makeSkins(model) }
+            if (cfg.loadAnimations) makeTrsAnimations()
+            if (cfg.loadAnimations) makeSkins(model)
             modelNodes.forEach { (node, grp) -> node.createMeshes(model, grp, cfg) }
-            if (cfg.loadAnimations) { makeMorphAnimations() }
+            if (cfg.loadAnimations) makeMorphAnimations()
             modelAnimations.filter { it.channels.isNotEmpty() }.forEach { modelAnim ->
                 modelAnim.prepareAnimation()
                 model.animations += modelAnim
             }
             model.disableAllAnimations()
 
-            if (cfg.applyTransforms && model.animations.isEmpty()) { applyTransforms(model) }
-            if (cfg.mergeMeshesByMaterial) { mergeMeshesByMaterial(model) }
-            if (cfg.sortNodesByAlpha) { model.sortNodesByAlpha() }
-            if (cfg.removeEmptyNodes) { model.removeEmpty() }
+            if (cfg.applyTransforms && model.animations.isEmpty()) applyTransforms(model)
+            if (cfg.mergeMeshesByMaterial) mergeMeshesByMaterial(model)
+            if (cfg.sortNodesByAlpha) model.sortNodesByAlpha()
+            if (cfg.removeEmptyNodes) model.removeEmpty()
 
             return model
         }
 
-        private fun Group.removeEmpty() {
-            val tgChildren = children.filterIsInstance<Group>()
-            tgChildren.forEach {
+        private fun Node.removeEmpty() {
+            children.filter { it !is Mesh }.forEach {
                 it.removeEmpty()
                 if (it.children.isEmpty()) {
                     removeNode(it)
@@ -185,7 +183,7 @@ data class GltfFile(
                 val modelAnim = Animation(anim.name)
                 modelAnimations += modelAnim
 
-                val animNodes = mutableMapOf<Group, AnimationNode>()
+                val animNodes = mutableMapOf<Node, AnimationNode>()
                 anim.channels.forEach { channel ->
                     val nodeGrp = modelNodes[channel.target.nodeRef]
                     if (nodeGrp != null) {
@@ -364,17 +362,23 @@ data class GltfFile(
                     var iAttrib = 0
                     for (m in morphTargets.indices) {
                         val w = outWeight.next()
-                        for (j in 0 until morphTargets[m].size) { startTan[iAttrib++] = w }
+                        for (j in 0 until morphTargets[m].size) {
+                            startTan[iAttrib++] = w
+                        }
                     }
                     iAttrib = 0
                     for (m in morphTargets.indices) {
                         val w = outWeight.next()
-                        for (j in 0 until morphTargets[m].size) { point[iAttrib++] = w }
+                        for (j in 0 until morphTargets[m].size) {
+                            point[iAttrib++] = w
+                        }
                     }
                     iAttrib = 0
                     for (m in morphTargets.indices) {
                         val w = outWeight.next()
-                        for (j in 0 until morphTargets[m].size) { endTan[iAttrib++] = w }
+                        for (j in 0 until morphTargets[m].size) {
+                            endTan[iAttrib++] = w
+                        }
                     }
                     CubicWeightKey(t, point, startTan, endTan)
 
@@ -424,15 +428,14 @@ data class GltfFile(
             }
         }
 
-        private fun Group.sortNodesByAlpha(): Float {
+        private fun Node.sortNodesByAlpha(): Float {
             val childAlphas = mutableMapOf<Node, Float>()
             var avgAlpha = 0f
             for (child in children) {
-                var a = 1f
-                if (child is Mesh && !child.isOpaque) {
-                    a = 0f
-                } else if (child is Group) {
-                    a = child.sortNodesByAlpha()
+                val a = if (child is Mesh && !child.isOpaque) {
+                    0f
+                } else {
+                    child.sortNodesByAlpha()
                 }
                 childAlphas[child] = a
                 avgAlpha += a
@@ -448,8 +451,8 @@ data class GltfFile(
             model.mergeMeshesByMaterial()
         }
 
-        private fun Group.mergeMeshesByMaterial() {
-            children.filterIsInstance<Group>().forEach { it.mergeMeshesByMaterial() }
+        private fun Node.mergeMeshesByMaterial() {
+            children.filter{ it.children.isNotEmpty() }.forEach { it.mergeMeshesByMaterial() }
 
             meshesByMaterial.values.forEach { sameMatMeshes ->
                 val mergeMeshes = children.filter { it in sameMatMeshes }.map { it as Mesh }
@@ -472,7 +475,7 @@ data class GltfFile(
             model.applyTransforms(transform, model)
         }
 
-        private fun Group.applyTransforms(transform: Mat4dStack, rootGroup: Group) {
+        private fun Node.applyTransforms(transform: Mat4dStack, rootGroup: Node) {
             transform.push()
             transform.mul(this.transform.matrix)
 
@@ -491,8 +494,7 @@ data class GltfFile(
                 }
             }
 
-            val childGroups = children.filterIsInstance<Group>()
-            childGroups.forEach {
+            children.filter { it.children.isNotEmpty() }.forEach {
                 it.applyTransforms(transform, rootGroup)
                 removeNode(it)
             }
@@ -500,9 +502,9 @@ data class GltfFile(
             transform.pop()
         }
 
-        private fun GltfNode.makeNode(model: Model, cfg: ModelGenerateConfig): Group {
+        private fun GltfNode.makeNode(model: Model, cfg: ModelGenerateConfig): Node {
             val modelNdName = name ?: "node_${model.nodes.size}"
-            val nodeGrp = Group(modelNdName)
+            val nodeGrp = Node(modelNdName)
             modelNodes[this] = nodeGrp
             model.nodes[modelNdName] = nodeGrp
 
@@ -510,14 +512,14 @@ data class GltfFile(
                 nodeGrp.transform.matrix.set(matrix.map { it.toDouble() })
             } else {
                 if (translation != null) {
-                    nodeGrp.translate(translation[0], translation[1], translation[2])
+                    nodeGrp.transform.translate(translation[0], translation[1], translation[2])
                 }
                 if (rotation != null) {
                     val rotMat = Mat4d().setRotate(Vec4d(rotation[0].toDouble(), rotation[1].toDouble(), rotation[2].toDouble(), rotation[3].toDouble()))
                     nodeGrp.transform.mul(rotMat)
                 }
                 if (scale != null) {
-                    nodeGrp.scale(scale[0], scale[1], scale[2])
+                    nodeGrp.transform.scale(scale[0], scale[1], scale[2])
                 }
             }
 
@@ -528,7 +530,7 @@ data class GltfFile(
             return nodeGrp
         }
 
-        private fun GltfNode.createMeshes(model: Model, nodeGrp: Group, cfg: ModelGenerateConfig) {
+        private fun GltfNode.createMeshes(model: Model, nodeGrp: Node, cfg: ModelGenerateConfig) {
             meshRef?.primitives?.forEachIndexed { index, prim ->
                 val name = "${meshRef?.name ?: "${nodeGrp.name}.mesh"}_$index"
                 val geometry = prim.toGeometry(cfg, accessors)
@@ -594,7 +596,7 @@ data class GltfFile(
                     matCfg.scrSpcAmbientOcclusionMap?.let {
                         enableSsao(it)
                     }
-                    matCfg.environmentMaps?.let {  ibl ->
+                    matCfg.environmentMaps?.let { ibl ->
                         imageBasedAmbientColor(ibl.irradianceMap)
                         reflectionMap = ibl.reflectionMap
                     }

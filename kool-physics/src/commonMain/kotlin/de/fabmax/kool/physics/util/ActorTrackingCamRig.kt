@@ -4,10 +4,10 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.toDeg
 import de.fabmax.kool.physics.RigidBody
-import de.fabmax.kool.scene.Group
+import de.fabmax.kool.scene.Node
 import kotlin.math.atan2
 
-class ActorTrackingCamRig : Group() {
+class ActorTrackingCamRig : Node() {
     var trackedActor: RigidBody? = null
         set(value) {
             field?.let {
@@ -44,9 +44,9 @@ class ActorTrackingCamRig : Group() {
         trackDelta.set(trackDirDesired).subtract(trackDirCurrent).scale(rotationStiffness * timeStep)
         trackDirCurrent.add(trackDelta)
 
-        setIdentity()
-        translate(trackPosCurrent)
+        transform.setIdentity()
+        transform.translate(trackPosCurrent)
         val ang = atan2(trackDirCurrent.x, trackDirCurrent.z).toDeg()
-        rotate(ang, Vec3f.Y_AXIS)
+        transform.rotate(ang, Vec3f.Y_AXIS)
     }
 }

@@ -243,7 +243,7 @@ class ReflectionDemo : DemoScene("Reflections") {
         updateLighting()
     }
 
-    private inner class LightMesh(val color: Color) : Group() {
+    private inner class LightMesh(val color: Color) : Node() {
         val light = Light()
 
         private val spotAngleMesh = LineMesh().apply { isCastingShadow = false }
@@ -290,11 +290,11 @@ class ReflectionDemo : DemoScene("Reflections") {
                 light.spotAngle = 60f - r * 20f
                 updateSpotAngleMesh()
 
-                setIdentity()
-                rotate(animPos.toFloat() * -10f, Vec3f.Y_AXIS)
-                translate(meshPos)
-                rotate(anglePos, Vec3f.Y_AXIS)
-                rotate(30f + 20f * r, Vec3f.Z_AXIS)
+                transform.setIdentity()
+                transform.rotate(animPos.toFloat() * -10f, Vec3f.Y_AXIS)
+                transform.translate(meshPos)
+                transform.rotate(anglePos, Vec3f.Y_AXIS)
+                transform.rotate(30f + 20f * r, Vec3f.Z_AXIS)
 
                 transform.transform(light.position.set(Vec3f.ZERO), 1f)
                 transform.transform(light.direction.set(Vec3f.NEG_X_AXIS), 0f)

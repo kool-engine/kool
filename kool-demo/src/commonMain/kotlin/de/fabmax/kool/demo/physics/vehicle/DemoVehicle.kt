@@ -12,8 +12,8 @@ import de.fabmax.kool.pipeline.deferred.DeferredKslPbrShader
 import de.fabmax.kool.pipeline.deferred.DeferredPointLights
 import de.fabmax.kool.pipeline.deferred.DeferredSpotLights
 import de.fabmax.kool.pipeline.deferred.deferredKslPbrShader
-import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Model
+import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.DriveAxes
 import de.fabmax.kool.util.Time
@@ -25,7 +25,7 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
     private val world: VehicleWorld get() = demo.vehicleWorld
 
     val vehicle: Vehicle
-    val vehicleGroup = Group()
+    val vehicleGroup = Node()
     val vehicleAudio = VehicleAudio(world.physics)
 
     private lateinit var recoverListener: InputManager.KeyEventListener
@@ -187,15 +187,17 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
     }
 
     private fun makeRaycastVehicle(world: VehicleWorld): Vehicle {
-        val vehicleMesh = ConvexMesh(listOf(
-            Vec3f(-1.05f, -0.65f,  2.5f), Vec3f(-1.05f, -0.4f,  2.75f),
-            Vec3f( 1.05f, -0.65f,  2.5f), Vec3f( 1.05f, -0.4f,  2.75f),
-            Vec3f(-0.95f, -0.65f, -2.5f), Vec3f(-0.95f, 0.25f, -2.6f),
-            Vec3f( 0.95f, -0.65f, -2.5f), Vec3f( 0.95f, 0.25f, -2.6f),
+        val vehicleMesh = ConvexMesh(
+            listOf(
+                Vec3f(-1.05f, -0.65f, 2.5f), Vec3f(-1.05f, -0.4f, 2.75f),
+                Vec3f(1.05f, -0.65f, 2.5f), Vec3f(1.05f, -0.4f, 2.75f),
+                Vec3f(-0.95f, -0.65f, -2.5f), Vec3f(-0.95f, 0.25f, -2.6f),
+                Vec3f(0.95f, -0.65f, -2.5f), Vec3f(0.95f, 0.25f, -2.6f),
 
-            Vec3f(-1.05f, -0.55f,  2.75f), Vec3f(1.05f, -0.55f,  2.75f),
-            Vec3f( -0.95f, 0.2f, 0f), Vec3f( 0.95f, 0.2f, 0f)
-        ))
+                Vec3f(-1.05f, -0.55f, 2.75f), Vec3f(1.05f, -0.55f, 2.75f),
+                Vec3f(-0.95f, 0.2f, 0f), Vec3f(0.95f, 0.2f, 0f)
+            )
+        )
 
         val vehicleProps = VehicleProperties().apply {
             chassisDims = Vec3f(2.1f, 0.98f, 5.4f)
@@ -230,11 +232,11 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
         world.physics.addActor(vehicle)
 
         vehicleGroup.apply {
-            val wheelTransforms = mutableListOf<Group>()
-            wheelTransforms += vehicleModel.findNode("Wheel_fl")!! as Group
-            wheelTransforms += vehicleModel.findNode("Wheel_fr")!! as Group
-            wheelTransforms += vehicleModel.findNode("Wheel_rl")!! as Group
-            wheelTransforms += vehicleModel.findNode("Wheel_rr")!! as Group
+            val wheelTransforms = mutableListOf<Node>()
+            wheelTransforms += vehicleModel.findNode("Wheel_fl")!!
+            wheelTransforms += vehicleModel.findNode("Wheel_fr")!!
+            wheelTransforms += vehicleModel.findNode("Wheel_rl")!!
+            wheelTransforms += vehicleModel.findNode("Wheel_rr")!!
 
             wheelTransforms.forEach {
                 vehicleModel -= it
@@ -252,7 +254,7 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
             }
         }
 
-        vehicleModel.translate(MutableVec3f(vehicleProps.chassisCMOffset).scale(-1f))
+        vehicleModel.transform.translate(MutableVec3f(vehicleProps.chassisCMOffset).scale(-1f))
 
         return vehicle
     }

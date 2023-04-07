@@ -11,7 +11,7 @@ import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import kotlin.math.*
 
-class Gizmo : Group(), InputStack.PointerListener {
+class Gizmo : Node(), InputStack.PointerListener {
 
     private var prevHoverHandle: Int = AXIS_NONE
     private var hoverHandle: Int = AXIS_NONE
@@ -34,8 +34,8 @@ class Gizmo : Group(), InputStack.PointerListener {
     private val tmpMat3 = Mat3f()
     private val tmpVec4d = MutableVec4d()
 
-    private val dragGroup = Group()
-    private val scaleGroup = Group()
+    private val dragGroup = Node()
+    private val scaleGroup = Node()
 
     private val lineMesh = BetterLineMesh()
     private val solidMesh = colorMesh {
@@ -86,7 +86,10 @@ class Gizmo : Group(), InputStack.PointerListener {
     private var hasAxisNegZ = false
 
     var properties = GizmoProperties()
-        set(value) { field = value; meshDirty = true }
+        set(value) {
+            field = value
+            meshDirty = true
+        }
 
     var axisHandleX = MutableVec3f(Vec3f.X_AXIS)
     var axisHandleY = MutableVec3f(Vec3f.Y_AXIS)
@@ -137,7 +140,7 @@ class Gizmo : Group(), InputStack.PointerListener {
                 val camDist = gizmoCenter.subtract(it.camera.globalPos).dot(it.camera.globalLookDir)
                 scale = camDist * dynamicScaleFactor
             }
-            scaleGroup.setIdentity().scale(scale)
+            scaleGroup.transform.setIdentity().scale(scale)
         }
     }
 
@@ -174,8 +177,8 @@ class Gizmo : Group(), InputStack.PointerListener {
         return getGizmoTransform(tmpMat4).getRotation(tmpVec4d).toMutableVec4f(result)
     }
 
-    fun setGizmoTransform(transform: Mat4d) {
-        set(transform)
+    fun setGizmoTransform(transformMatrix: Mat4d) {
+        transform.set(transformMatrix)
     }
 
     fun setTranslation(translation: Vec3f) {
@@ -330,8 +333,8 @@ class Gizmo : Group(), InputStack.PointerListener {
 
         if (isDrag && !ptr.isDrag) {
             // user stopped dragging, apply drag transform
-            mul(dragGroup.transform.matrix)
-            dragGroup.setIdentity()
+            transform.mul(dragGroup.transform.matrix)
+            dragGroup.transform.setIdentity()
             gizmoListener?.onDragFinished(ctx)
             isDrag = false
         }
@@ -394,7 +397,7 @@ class Gizmo : Group(), InputStack.PointerListener {
         toGlobalCoords(pickPlane.n.set(normal), 0f)
         if (pickPlane.intersectionPoint(pickRay, pickPoint)) {
             val dragDist = toLocalCoords(pickPoint).subtract(dragStartPos) * axis
-            dragGroup.setIdentity()
+            dragGroup.transform.setIdentity()
             gizmoListener?.onDragAxis(axis, dragDist, dragGroup.transform.matrix, ctx)
             dragGroup.transform.markDirty()
         }
@@ -405,7 +408,7 @@ class Gizmo : Group(), InputStack.PointerListener {
         toGlobalCoords(pickPlane.n.set(normal), 0f)
         if (pickPlane.intersectionPoint(pickRay, pickPoint)) {
             val position = toLocalCoords(pickPoint).subtract(dragStartPos)
-            dragGroup.setIdentity()
+            dragGroup.transform.setIdentity()
             gizmoListener?.onDragPlane(normal, position, dragGroup.transform.matrix, ctx)
             dragGroup.transform.markDirty()
         }
@@ -434,7 +437,7 @@ class Gizmo : Group(), InputStack.PointerListener {
                 }
             }
 
-            dragGroup.setIdentity()
+            dragGroup.transform.setIdentity()
             gizmoListener?.onDragRotate(axis, (aStart - aDrag).toDeg(), dragGroup.transform.matrix, ctx)
             dragGroup.transform.markDirty()
         }
@@ -459,7 +462,14 @@ class Gizmo : Group(), InputStack.PointerListener {
         isHoverHandle(AXIS_NEG_Z, hasAxisNegZ, axisHandleNegZ, np, pickNormalZ, cam)
     }
 
-    private fun isHoverHandle(axis: Int, isHandleActive: Boolean, handlePos: Vec3f, minDist: Float, normal: Vec3f, cam: Camera): Float {
+    private fun isHoverHandle(
+        axis: Int,
+        isHandleActive: Boolean,
+        handlePos: Vec3f,
+        minDist: Float,
+        normal: Vec3f,
+        cam: Camera
+    ): Float {
         val d = pickRay.distanceToPoint(toGlobalCoords(pickPoint.set(handlePos).scale(scale))) / scale
         val n = pickPoint.distance(cam.globalPos)
 
@@ -481,7 +491,15 @@ class Gizmo : Group(), InputStack.PointerListener {
         checkPlaneHover(PLANE_YZ, AXIS_X, properties.hasPlaneYZ, properties.hasRotationX, np, Vec3f.X_AXIS, cam)
     }
 
-    private fun checkPlaneHover(plane: Int, rotAxis: Int, isPlane: Boolean, isRot: Boolean, minDist: Float, normal: Vec3f, cam: Camera): Float {
+    private fun checkPlaneHover(
+        plane: Int,
+        rotAxis: Int,
+        isPlane: Boolean,
+        isRot: Boolean,
+        minDist: Float,
+        normal: Vec3f,
+        cam: Camera
+    ): Float {
         var returnDist = minDist
         val handleSize = properties.planeHandleSize * scale
 
@@ -495,16 +513,18 @@ class Gizmo : Group(), InputStack.PointerListener {
             val signY: Float
             when {
                 normal.x != 0f -> {
-                    pickX = pickPoint.y;    signX = camSign.y
-                    pickY = pickPoint.z;    signY = camSign.z
+                    pickX = pickPoint.y; signX = camSign.y
+                    pickY = pickPoint.z; signY = camSign.z
                 }
+
                 normal.y != 0f -> {
-                    pickX = pickPoint.x;    signX = camSign.x
-                    pickY = pickPoint.z;    signY = camSign.z
+                    pickX = pickPoint.x; signX = camSign.x
+                    pickY = pickPoint.z; signY = camSign.z
                 }
+
                 else -> {
-                    pickX = pickPoint.x;    signX = camSign.x
-                    pickY = pickPoint.y;    signY = camSign.y
+                    pickX = pickPoint.x; signX = camSign.x
+                    pickY = pickPoint.y; signY = camSign.y
                 }
             }
 

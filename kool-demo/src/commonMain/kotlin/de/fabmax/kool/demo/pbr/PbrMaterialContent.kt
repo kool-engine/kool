@@ -9,7 +9,10 @@ import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.SingleColorTexture
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
-import de.fabmax.kool.scene.*
+import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.scene.Node
+import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.scene.textureMesh
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Time
 
@@ -63,7 +66,7 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrCont
     }
 
     override fun createContent(scene: Scene, envMaps: EnvironmentMaps, ctx: KoolContext): Node {
-        content = Group().apply {
+        content = Node().apply {
             isVisible = false
 
             val ibl = makeSphere(true, scene, envMaps)
@@ -74,7 +77,7 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrCont
 
             onUpdate += {
                 if (autoRotate) {
-                    rotate(-2f * Time.deltaT, Vec3f.Y_AXIS)
+                    transform.rotate(-2f * Time.deltaT, Vec3f.Y_AXIS)
                 }
             }
         }
