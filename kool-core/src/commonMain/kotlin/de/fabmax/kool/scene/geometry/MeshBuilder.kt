@@ -108,7 +108,7 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
     fun setCoordSystem(origin: Vec3f, right: Vec3f, up: Vec3f, top: Vec3f? = null) {
         var topV = top
         if (topV == null) {
-            topV = cross(right, up)
+            topV = right.cross(up, MutableVec3f())
         }
 
         transform.setIdentity()

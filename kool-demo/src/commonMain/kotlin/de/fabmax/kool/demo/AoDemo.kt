@@ -3,8 +3,8 @@ package de.fabmax.kool.demo
 import de.fabmax.kool.AssetManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.menu.DemoMenu
+import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.math.scale
 import de.fabmax.kool.math.toDeg
 import de.fabmax.kool.modules.gltf.GltfFile
 import de.fabmax.kool.modules.gltf.loadGltfModel
@@ -230,7 +230,7 @@ class AoDemo : DemoScene("Ambient Occlusion") {
         if (enabled) {
             mainScene.lighting.singleLight {
                 val p = Vec3f(6f, 10f, -6f)
-                setSpot(p, scale(p, -1f).norm(), 40f)
+                setSpot(p, p.scale(-1f, MutableVec3f()).norm(), 40f)
                 setColor(Color.WHITE.mix(MdColor.AMBER, 0.2f).toLinear(), 500f)
             }
         } else {

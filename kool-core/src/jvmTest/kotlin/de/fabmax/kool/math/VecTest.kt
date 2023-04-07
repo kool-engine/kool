@@ -26,14 +26,14 @@ class VecTest {
     }
 
     @Test
-    fun vec3Add() = assertTrue(add(Vec3f(1f, 2f, 3f), Vec3f(2f, 3f, 4f)).isFuzzyEqual(Vec3f(3f, 5f, 7f)))
+    fun vec3Add() = assertTrue(MutableVec3f(1f, 2f, 3f).add(Vec3f(2f, 3f, 4f)).isFuzzyEqual(Vec3f(3f, 5f, 7f)))
 
     @Test
-    fun vec3Sub() = assertTrue(subtract(Vec3f(2f, 3f, 4f), Vec3f(1f, 2f, 3f)).isFuzzyEqual(Vec3f(1f, 1f, 1f)))
+    fun vec3Sub() = assertTrue(MutableVec3f(2f, 3f, 4f).subtract(Vec3f(1f, 2f, 3f)).isFuzzyEqual(Vec3f(1f, 1f, 1f)))
 
     @Test
     fun vec3Scale() {
-        assertTrue(scale(Vec3f(1f, 2f, 3f), 2f).isFuzzyEqual(Vec3f(2f, 4f, 6f)))
+        assertTrue(MutableVec3f(1f, 2f, 3f).scale(2f).isFuzzyEqual(Vec3f(2f, 4f, 6f)))
     }
 
     @Test
@@ -55,19 +55,16 @@ class VecTest {
     @Test
     fun vec3Cross() {
         // dot prod
-        assertTrue(cross(Vec3f.X_AXIS, Vec3f.Y_AXIS).isFuzzyEqual(Vec3f.Z_AXIS), "x * y != z")
-        assertTrue(cross(Vec3f.Z_AXIS, Vec3f.X_AXIS).isFuzzyEqual(Vec3f.Y_AXIS), "z * x != y")
-        assertTrue(cross(Vec3f.Y_AXIS, Vec3f.Z_AXIS).isFuzzyEqual(Vec3f.X_AXIS), "y * z != x")
+        assertTrue(Vec3f.X_AXIS.cross(Vec3f.Y_AXIS, MutableVec3f()).isFuzzyEqual(Vec3f.Z_AXIS), "x * y != z")
+        assertTrue(Vec3f.Z_AXIS.cross(Vec3f.X_AXIS, MutableVec3f()).isFuzzyEqual(Vec3f.Y_AXIS), "z * x != y")
+        assertTrue(Vec3f.Y_AXIS.cross(Vec3f.Z_AXIS, MutableVec3f()).isFuzzyEqual(Vec3f.X_AXIS), "y * z != x")
     }
 
     @Test
     fun vec3Rotate() {
         // dot prod
-        assertTrue(Vec3f.X_AXIS.rotate(90f, Vec3f.Z_AXIS, MutableVec3f()).isFuzzyEqual(Vec3f.Y_AXIS),
-                "x.rot(90, z) != y")
-        assertTrue(Vec3f.Y_AXIS.rotate(90f, Vec3f.X_AXIS, MutableVec3f()).isFuzzyEqual(Vec3f.Z_AXIS),
-                "y.rot(90, z) != z")
-        assertTrue(Vec3f.Z_AXIS.rotate(90f, Vec3f.Y_AXIS, MutableVec3f()).isFuzzyEqual(Vec3f.X_AXIS),
-                "z.rot(90, y) != x")
+        assertTrue(Vec3f.X_AXIS.rotate(90f, Vec3f.Z_AXIS, MutableVec3f()).isFuzzyEqual(Vec3f.Y_AXIS), "x.rot(90, z) != y")
+        assertTrue(Vec3f.Y_AXIS.rotate(90f, Vec3f.X_AXIS, MutableVec3f()).isFuzzyEqual(Vec3f.Z_AXIS), "y.rot(90, z) != z")
+        assertTrue(Vec3f.Z_AXIS.rotate(90f, Vec3f.Y_AXIS, MutableVec3f()).isFuzzyEqual(Vec3f.X_AXIS), "z.rot(90, y) != x")
     }
 }
