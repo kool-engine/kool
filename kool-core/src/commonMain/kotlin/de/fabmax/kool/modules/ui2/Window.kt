@@ -1,7 +1,7 @@
 package de.fabmax.kool.modules.ui2
 
-import de.fabmax.kool.InputManager
-import de.fabmax.kool.KoolContext
+import de.fabmax.kool.CursorShape
+import de.fabmax.kool.Input
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.util.Color
@@ -207,7 +207,7 @@ class WindowMoveDragHandler(val window: WindowScope) : Draggable {
 
             if (!windowState.isDrag) {
                 val dist = sqrt(mvX * mvX + mvY * mvY)
-                if (dist > InputManager.MAX_CLICK_MOVE_PX) {
+                if (dist > Input.MAX_CLICK_MOVE_PX) {
                     windowState.isDrag = true
                     windowState.dragStartX = window.uiNode.leftPx
                     windowState.dragStartY = window.uiNode.topPx
@@ -253,7 +253,7 @@ class WindowNode(parent:UiNode?, surface: UiSurface) : UiNode(parent, surface), 
 
     override fun onHover(ev: PointerEvent) {
         val borderFlags = getResizeBorderFlags(ev.position)
-        setResizeCursor(borderFlags, ev.ctx)
+        setResizeCursor(borderFlags)
         if (borderFlags == 0) {
             ev.reject()
         }
@@ -266,9 +266,9 @@ class WindowNode(parent:UiNode?, surface: UiSurface) : UiNode(parent, surface), 
 
         state.borderFlags = getResizeBorderFlags(ev.position)
         if (state.borderFlags and V_BORDER != 0) {
-            ev.ctx.inputMgr.cursorShape = InputManager.CursorShape.V_RESIZE
+            Input.cursorShape = CursorShape.V_RESIZE
         } else if (state.borderFlags and H_BORDER != 0) {
-            ev.ctx.inputMgr.cursorShape = InputManager.CursorShape.H_RESIZE
+            Input.cursorShape = CursorShape.H_RESIZE
         } else {
             ev.reject()
         }
@@ -284,7 +284,7 @@ class WindowNode(parent:UiNode?, surface: UiSurface) : UiNode(parent, surface), 
     }
 
     override fun onDrag(ev: PointerEvent) {
-        setResizeCursor(state.borderFlags, ev.ctx)
+        setResizeCursor(state.borderFlags)
 
         if (isDocked) {
             resizingDockingNode?.moveSplitEdgeTo(ev.screenPosition)
@@ -352,13 +352,13 @@ class WindowNode(parent:UiNode?, surface: UiSurface) : UiNode(parent, surface), 
         return Dp.fromPx(min(modifier.maxHeight.px, max(modifier.minHeight.px, heightPx)))
     }
 
-    private fun setResizeCursor(borderFlags: Int, ctx: KoolContext) {
+    private fun setResizeCursor(borderFlags: Int) {
         if (borderFlags and V_BORDER != 0) {
-            ctx.inputMgr.cursorShape = InputManager.CursorShape.V_RESIZE
+            Input.cursorShape = CursorShape.V_RESIZE
         } else if (borderFlags and H_BORDER != 0) {
-            ctx.inputMgr.cursorShape = InputManager.CursorShape.H_RESIZE
+            Input.cursorShape = CursorShape.H_RESIZE
         } else {
-            ctx.inputMgr.cursorShape = InputManager.CursorShape.DEFAULT
+            Input.cursorShape = CursorShape.DEFAULT
         }
     }
 

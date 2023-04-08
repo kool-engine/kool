@@ -69,7 +69,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
         physicsWorld.simStepper = physicsStepper
         physicsWorld.registerHandlers(mainScene)
 
-        val gravKeyListener = ctx.inputMgr.registerKeyListener(UniversalKeyCode(' '), "Change Gravity",  { true }) {
+        val gravKeyListener = Input.registerKeyListener(UniversalKeyCode(' '), "Change Gravity",  { true }) {
             if (it.isPressed) {
                 physicsWorld.gravity = Vec3f(0f, 0.5f, 0f)
                 physicsWorld.wakeUpAll()
@@ -121,7 +121,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
             groundAlbedo.dispose()
             groundNormal.dispose()
             physicsWorld.release()
-            ctx.inputMgr.removeKeyListener(gravKeyListener)
+            Input.removeKeyListener(gravKeyListener)
         }
     }
 
@@ -516,7 +516,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
 
         var isActive = false
 
-        override fun handlePointer(pointerState: InputManager.PointerState, ctx: KoolContext) {
+        override fun handlePointer(pointerState: Input.PointerState, ctx: KoolContext) {
             val dragPtr = pointerState.primaryPointer
             if (!dragPtr.isValid) { return }
             if (!(dragPtr.isMiddleButtonEvent || dragPtr.isMiddleButtonDown)) { return }

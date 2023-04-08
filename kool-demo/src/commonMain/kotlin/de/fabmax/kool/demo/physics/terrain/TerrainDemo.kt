@@ -1,7 +1,8 @@
 package de.fabmax.kool.demo.physics.terrain
 
 import de.fabmax.kool.Assets
-import de.fabmax.kool.InputManager
+import de.fabmax.kool.CursorMode
+import de.fabmax.kool.Input
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.*
 import de.fabmax.kool.demo.menu.DemoMenu
@@ -52,7 +53,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
     private var boxMesh: Mesh? = null
     private var bridgeMesh: Mesh? = null
 
-    private lateinit var escKeyListener: InputManager.KeyEventListener
+    private lateinit var escKeyListener: Input.KeyEventListener
 
     private val isSsao = mutableStateOf(true).onChange { ssao.isEnabled = it }
     private val isPlayerPbr = mutableStateOf(true).onChange { updatePlayerShader(it) }
@@ -85,7 +86,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
     }
 
     private val doubleClickListener = object : InputStack.PointerListener {
-        override fun handlePointer(pointerState: InputManager.PointerState, ctx: KoolContext) {
+        override fun handlePointer(pointerState: Input.PointerState, ctx: KoolContext) {
             if (pointerState.primaryPointer.isLeftButtonClicked && pointerState.primaryPointer.leftButtonRepeatedClickCount == 2) {
                 isCursorLocked.set(true)
             }
@@ -139,9 +140,9 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         val playerGltf = loadGltfModel("${DemoLoader.modelPath}/player.glb") ?: throw IllegalStateException("Failed loading model")
         playerModel = PlayerModel(playerGltf, physicsObjects.playerController)
 
-        escKeyListener = ctx.inputMgr.registerKeyListener(InputManager.KEY_ESC, "Exit cursor lock") {
+        escKeyListener = Input.registerKeyListener(Input.KEY_ESC, "Exit cursor lock") {
             isCursorLocked.set(false)
-            ctx.inputMgr.cursorMode = InputManager.CursorMode.NORMAL
+            Input.cursorMode = CursorMode.NORMAL
         }
         InputStack.defaultInputHandler.pointerListeners += doubleClickListener
     }
@@ -151,8 +152,8 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         normalMap.dispose()
         physicsObjects.release(ctx)
 
-        ctx.inputMgr.removeKeyListener(escKeyListener)
-        ctx.inputMgr.cursorMode = InputManager.CursorMode.NORMAL
+        Input.removeKeyListener(escKeyListener)
+        Input.cursorMode = CursorMode.NORMAL
         InputStack.defaultInputHandler.pointerListeners -= doubleClickListener
     }
 
@@ -273,7 +274,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         //defaultCamTransform()
 
         // setup camera tracking player
-        setupCamera(ctx)
+        setupCamera()
 
         updateTerrainShader(isGroundPbr.value)
         updateOceanShader(isGroundPbr.value)
@@ -299,8 +300,8 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         }
     }
 
-    private fun Scene.setupCamera(ctx: KoolContext) {
-        camRig = CharacterTrackingCamRig(ctx.inputMgr, false).apply {
+    private fun Scene.setupCamera() {
+        camRig = CharacterTrackingCamRig(false).apply {
             camera.setClipRange(0.5f, 5000f)
             trackedPose = physicsObjects.playerController.controller.actor.transform
             minZoom = 0.75f
@@ -316,15 +317,15 @@ class TerrainDemo : DemoScene("Terrain Demo") {
 
             // make sure onUpdate listener is called before internal one of CharacterTrackingCamRig, so we can
             // consume the scroll event if the tractor gun is active
-            onUpdate.add(0) { ev ->
+            onUpdate.add(0) {
                 // use camera look direction to control player move direction
                 physicsObjects.playerController.frontHeading = atan2(lookDirection.x, -lookDirection.z).toDeg()
 
                 val gun = physicsObjects.playerController.tractorGun
-                val ptr = ev.ctx.inputMgr.pointerState.primaryPointer
+                val ptr = Input.pointerState.primaryPointer
                 if (gun.tractorState == TractorGun.TractorState.TRACTOR) {
-                    ptr.consume(InputManager.CONSUMED_SCROLL_Y)
-                    if (ctx.inputMgr.isShiftDown) {
+                    ptr.consume(Input.CONSUMED_SCROLL_Y)
+                    if (Input.isShiftDown) {
                         gun.tractorDistance += ptr.deltaScroll.toFloat() * 0.25f
                     } else {
                         gun.rotationTorque += ptr.deltaScroll.toFloat()

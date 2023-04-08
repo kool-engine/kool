@@ -1,6 +1,7 @@
 package de.fabmax.kool.physics.util
 
-import de.fabmax.kool.InputManager
+import de.fabmax.kool.CursorMode
+import de.fabmax.kool.Input
 import de.fabmax.kool.math.*
 import de.fabmax.kool.physics.HitResult
 import de.fabmax.kool.physics.PhysicsWorld
@@ -9,16 +10,16 @@ import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.Time
 import kotlin.math.*
 
-class CharacterTrackingCamRig(private val inputManager: InputManager, enableCursorLock: Boolean = true) :
+class CharacterTrackingCamRig(enableCursorLock: Boolean = true) :
     Node("PointerLockCamRig") {
 
     var isCursorLocked: Boolean
-        get() = inputManager.cursorMode == InputManager.CursorMode.LOCKED
+        get() = Input.cursorMode == CursorMode.LOCKED
         set(value) {
             if (value) {
-                inputManager.cursorMode = InputManager.CursorMode.LOCKED
+                Input.cursorMode = CursorMode.LOCKED
             } else {
-                inputManager.cursorMode = InputManager.CursorMode.NORMAL
+                Input.cursorMode = CursorMode.NORMAL
             }
         }
 
@@ -78,7 +79,7 @@ class CharacterTrackingCamRig(private val inputManager: InputManager, enableCurs
         applyLookDirection()
 
         val div = 1000f / sensitivity
-        val ptr = inputManager.pointerState.primaryPointer
+        val ptr = Input.pointerState.primaryPointer
 
         lookPhi -= ptr.deltaX.toFloat() / div
         lookTheta = (lookTheta - ptr.deltaY.toFloat() / div).clamp(0.0001f, PI.toFloat() - 0.0001f)
@@ -87,8 +88,8 @@ class CharacterTrackingCamRig(private val inputManager: InputManager, enableCurs
         lookDirection.z = sin(lookTheta) * sin(lookPhi)
         lookDirection.y = cos(lookTheta)
 
-        if (!ptr.isConsumed(InputManager.CONSUMED_SCROLL_Y)) {
-            zoom *= 1f - inputManager.pointerState.primaryPointer.deltaScroll.toFloat() / 10f
+        if (!ptr.isConsumed(Input.CONSUMED_SCROLL_Y)) {
+            zoom *= 1f - Input.pointerState.primaryPointer.deltaScroll.toFloat() / 10f
             zoom = zoom.clamp(minZoom, maxZoom)
         }
     }

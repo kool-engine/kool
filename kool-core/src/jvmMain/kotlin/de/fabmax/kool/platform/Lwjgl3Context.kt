@@ -1,9 +1,6 @@
 package de.fabmax.kool.platform
 
-import de.fabmax.kool.InputManager
-import de.fabmax.kool.KeyCode
-import de.fabmax.kool.KoolContext
-import de.fabmax.kool.KoolSetup
+import de.fabmax.kool.*
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.math.min
 import de.fabmax.kool.modules.ksl.KslShader
@@ -22,8 +19,6 @@ import java.util.concurrent.CompletableFuture
  * @author fabmax
  */
 class Lwjgl3Context : KoolContext() {
-    override val inputMgr: JvmInputManager
-
     val renderBackend: RenderBackend
 
     override val shaderGenerator
@@ -90,7 +85,7 @@ class Lwjgl3Context : KoolContext() {
 
         SysInfo.set(renderBackend.apiName, renderBackend.deviceName)
 
-        inputMgr = JvmInputManager(renderBackend.glfwWindow.windowPtr, this)
+        PlatformInput.onContextCreated(this)
     }
 
     fun setWindowTitle(windowTitle: String) = renderBackend.glfwWindow.setWindowTitle(windowTitle)
@@ -141,7 +136,7 @@ class Lwjgl3Context : KoolContext() {
         val dtFocused = if (maxFrameRate > 0) 1.0 / maxFrameRate else 0.0
         val dtUnfocused = if (windowNotFocusedFrameRate > 0) 1.0 / windowNotFocusedFrameRate else dtFocused
         val dtCurrent = (t - prevTime) / 1e9
-        val dtCmp = if (isWindowFocused || inputMgr.isMouseOverWindow) dtFocused else dtUnfocused
+        val dtCmp = if (isWindowFocused || PlatformInput.isMouseOverWindow) dtFocused else dtUnfocused
         if (dtCmp > dtCurrent) {
             val untilFocused = t + ((dtFocused - dtCurrent) * 1e9).toLong()
             val untilUnfocused = t + ((dtUnfocused - dtCurrent) * 1e9).toLong()
@@ -152,7 +147,7 @@ class Lwjgl3Context : KoolContext() {
     private fun delayFrameRender(untilFocused: Long, untilUnfocused: Long) {
         while (!glfwWindowShouldClose(renderBackend.glfwWindow.windowPtr)) {
             val t = System.nanoTime()
-            val isFocused = isWindowFocused || inputMgr.isMouseOverWindow
+            val isFocused = isWindowFocused || PlatformInput.isMouseOverWindow
             if ((isFocused && t >= untilFocused) || (!isFocused && t >= untilUnfocused)) {
                 break
             }
@@ -196,46 +191,46 @@ class Lwjgl3Context : KoolContext() {
 
     companion object {
         val KEY_CODE_MAP: Map<Int, KeyCode> = mutableMapOf(
-                GLFW_KEY_LEFT_CONTROL to InputManager.KEY_CTRL_LEFT,
-                GLFW_KEY_RIGHT_CONTROL to InputManager.KEY_CTRL_RIGHT,
-                GLFW_KEY_LEFT_SHIFT to InputManager.KEY_SHIFT_LEFT,
-                GLFW_KEY_RIGHT_SHIFT to InputManager.KEY_SHIFT_RIGHT,
-                GLFW_KEY_LEFT_ALT to InputManager.KEY_ALT_LEFT,
-                GLFW_KEY_RIGHT_ALT to InputManager.KEY_ALT_RIGHT,
-                GLFW_KEY_LEFT_SUPER to InputManager.KEY_SUPER_LEFT,
-                GLFW_KEY_RIGHT_SUPER to InputManager.KEY_SUPER_RIGHT,
-                GLFW_KEY_ESCAPE to InputManager.KEY_ESC,
-                GLFW_KEY_MENU to InputManager.KEY_MENU,
-                GLFW_KEY_ENTER to InputManager.KEY_ENTER,
-                GLFW_KEY_KP_ENTER to InputManager.KEY_NP_ENTER,
-                GLFW_KEY_KP_DIVIDE to InputManager.KEY_NP_DIV,
-                GLFW_KEY_KP_MULTIPLY to InputManager.KEY_NP_MUL,
-                GLFW_KEY_KP_ADD to InputManager.KEY_NP_PLUS,
-                GLFW_KEY_KP_SUBTRACT to InputManager.KEY_NP_MINUS,
-                GLFW_KEY_BACKSPACE to InputManager.KEY_BACKSPACE,
-                GLFW_KEY_TAB to InputManager.KEY_TAB,
-                GLFW_KEY_DELETE to InputManager.KEY_DEL,
-                GLFW_KEY_INSERT to InputManager.KEY_INSERT,
-                GLFW_KEY_HOME to InputManager.KEY_HOME,
-                GLFW_KEY_END to InputManager.KEY_END,
-                GLFW_KEY_PAGE_UP to InputManager.KEY_PAGE_UP,
-                GLFW_KEY_PAGE_DOWN to InputManager.KEY_PAGE_DOWN,
-                GLFW_KEY_LEFT to InputManager.KEY_CURSOR_LEFT,
-                GLFW_KEY_RIGHT to InputManager.KEY_CURSOR_RIGHT,
-                GLFW_KEY_UP to InputManager.KEY_CURSOR_UP,
-                GLFW_KEY_DOWN to InputManager.KEY_CURSOR_DOWN,
-                GLFW_KEY_F1 to InputManager.KEY_F1,
-                GLFW_KEY_F2 to InputManager.KEY_F2,
-                GLFW_KEY_F3 to InputManager.KEY_F3,
-                GLFW_KEY_F4 to InputManager.KEY_F4,
-                GLFW_KEY_F5 to InputManager.KEY_F5,
-                GLFW_KEY_F6 to InputManager.KEY_F6,
-                GLFW_KEY_F7 to InputManager.KEY_F7,
-                GLFW_KEY_F8 to InputManager.KEY_F8,
-                GLFW_KEY_F9 to InputManager.KEY_F9,
-                GLFW_KEY_F10 to InputManager.KEY_F10,
-                GLFW_KEY_F11 to InputManager.KEY_F11,
-                GLFW_KEY_F12 to InputManager.KEY_F12
+                GLFW_KEY_LEFT_CONTROL to Input.KEY_CTRL_LEFT,
+                GLFW_KEY_RIGHT_CONTROL to Input.KEY_CTRL_RIGHT,
+                GLFW_KEY_LEFT_SHIFT to Input.KEY_SHIFT_LEFT,
+                GLFW_KEY_RIGHT_SHIFT to Input.KEY_SHIFT_RIGHT,
+                GLFW_KEY_LEFT_ALT to Input.KEY_ALT_LEFT,
+                GLFW_KEY_RIGHT_ALT to Input.KEY_ALT_RIGHT,
+                GLFW_KEY_LEFT_SUPER to Input.KEY_SUPER_LEFT,
+                GLFW_KEY_RIGHT_SUPER to Input.KEY_SUPER_RIGHT,
+                GLFW_KEY_ESCAPE to Input.KEY_ESC,
+                GLFW_KEY_MENU to Input.KEY_MENU,
+                GLFW_KEY_ENTER to Input.KEY_ENTER,
+                GLFW_KEY_KP_ENTER to Input.KEY_NP_ENTER,
+                GLFW_KEY_KP_DIVIDE to Input.KEY_NP_DIV,
+                GLFW_KEY_KP_MULTIPLY to Input.KEY_NP_MUL,
+                GLFW_KEY_KP_ADD to Input.KEY_NP_PLUS,
+                GLFW_KEY_KP_SUBTRACT to Input.KEY_NP_MINUS,
+                GLFW_KEY_BACKSPACE to Input.KEY_BACKSPACE,
+                GLFW_KEY_TAB to Input.KEY_TAB,
+                GLFW_KEY_DELETE to Input.KEY_DEL,
+                GLFW_KEY_INSERT to Input.KEY_INSERT,
+                GLFW_KEY_HOME to Input.KEY_HOME,
+                GLFW_KEY_END to Input.KEY_END,
+                GLFW_KEY_PAGE_UP to Input.KEY_PAGE_UP,
+                GLFW_KEY_PAGE_DOWN to Input.KEY_PAGE_DOWN,
+                GLFW_KEY_LEFT to Input.KEY_CURSOR_LEFT,
+                GLFW_KEY_RIGHT to Input.KEY_CURSOR_RIGHT,
+                GLFW_KEY_UP to Input.KEY_CURSOR_UP,
+                GLFW_KEY_DOWN to Input.KEY_CURSOR_DOWN,
+                GLFW_KEY_F1 to Input.KEY_F1,
+                GLFW_KEY_F2 to Input.KEY_F2,
+                GLFW_KEY_F3 to Input.KEY_F3,
+                GLFW_KEY_F4 to Input.KEY_F4,
+                GLFW_KEY_F5 to Input.KEY_F5,
+                GLFW_KEY_F6 to Input.KEY_F6,
+                GLFW_KEY_F7 to Input.KEY_F7,
+                GLFW_KEY_F8 to Input.KEY_F8,
+                GLFW_KEY_F9 to Input.KEY_F9,
+                GLFW_KEY_F10 to Input.KEY_F10,
+                GLFW_KEY_F11 to Input.KEY_F11,
+                GLFW_KEY_F12 to Input.KEY_F12
         )
     }
 

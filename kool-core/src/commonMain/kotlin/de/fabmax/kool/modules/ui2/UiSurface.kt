@@ -1,6 +1,7 @@
 package de.fabmax.kool.modules.ui2
 
-import de.fabmax.kool.InputManager
+import de.fabmax.kool.CursorMode
+import de.fabmax.kool.Input
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.pipeline.RenderPass
@@ -74,7 +75,7 @@ open class UiSurface(
                 onEachFrame[i](it.ctx)
             }
 
-            inputHandler.checkInputHandler(it.ctx)
+            inputHandler.checkInputHandler()
             if (requiresUpdate) {
                 requiresUpdate = false
                 updateUi(it)
@@ -292,7 +293,7 @@ open class UiSurface(
             }
         }
 
-        fun checkInputHandler(ctx: KoolContext) {
+        fun checkInputHandler() {
             if (inputMode == InputCaptureMode.CaptureDisabled) {
                 InputStack.remove(this)
                 return
@@ -308,7 +309,7 @@ open class UiSurface(
             // surface area
             val wasBlockingPointerInput = blockAllPointerInput
             blockAllPointerInput = false
-            val ptr = ctx.inputMgr.pointerState.primaryPointer
+            val ptr = Input.pointerState.primaryPointer
             if (ptr.isValid) {
                 val ptrPos = Vec2f(ptr.x.toFloat(), ptr.y.toFloat())
                 var isPointerOnSurface = dragNode != null || viewport.children.any { it.modifier.isBlocking && it.isInBounds(ptrPos) }
@@ -333,12 +334,12 @@ open class UiSurface(
             }
         }
 
-        override fun handlePointer(pointerState: InputManager.PointerState, ctx: KoolContext) {
+        override fun handlePointer(pointerState: Input.PointerState, ctx: KoolContext) {
             super.handlePointer(pointerState, ctx)
 
             val ptr = pointerState.primaryPointer
             nodeResult.clear()
-            if (ctx.inputMgr.cursorMode != InputManager.CursorMode.LOCKED) {
+            if (Input.cursorMode != CursorMode.LOCKED) {
                 viewport.collectNodesAt(ptr.x.toFloat(), ptr.y.toFloat(), nodeResult, hasPointerListener)
             }
             if (hoveredNode == null && dragNode == null && nodeResult.isEmpty()) {
@@ -356,7 +357,7 @@ open class UiSurface(
             dragNode?.let { handleDrag(it, ptrEv) }
         }
 
-        override fun handleKeyEvents(keyEvents: MutableList<InputManager.KeyEvent>, ctx: KoolContext) {
+        override fun handleKeyEvents(keyEvents: MutableList<Input.KeyEvent>, ctx: KoolContext) {
             if (!blockAllKeyboardInput) {
                 return
             }
@@ -460,12 +461,12 @@ open class UiSurface(
                 }
                 if (isWheelX && invokePointerCallback(node, ptrEv, mod.onWheelX)) {
                     // wheel x was consumed
-                    ptrEv.pointer.consume(InputManager.CONSUMED_SCROLL_X)
+                    ptrEv.pointer.consume(Input.CONSUMED_SCROLL_X)
                     isWheelX = false
                 }
                 if (isWheelY && invokePointerCallback(node, ptrEv, mod.onWheelY)) {
                     // wheel y was consumed
-                    ptrEv.pointer.consume(InputManager.CONSUMED_SCROLL_Y)
+                    ptrEv.pointer.consume(Input.CONSUMED_SCROLL_Y)
                     isWheelY = false
                 }
             }

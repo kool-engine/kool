@@ -1,5 +1,6 @@
 package de.fabmax.kool.demo
 
+import de.fabmax.kool.Input
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.physics.Physics
@@ -106,7 +107,7 @@ class DemoLoader(ctx: KoolContext, startScene: String? = null) {
                             menu.isExpanded = true
                             initShownMenu = true
                         }
-                        val ptr = ctx.inputMgr.pointerState.primaryPointer
+                        val ptr = Input.pointerState.primaryPointer
                         if (shouldAutoHideMenu <= 0f && (!ptr.isValid || ptr.x > UiSizes.menuWidth.px)) {
                             menu.isExpanded = false
                         }

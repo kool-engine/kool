@@ -3,7 +3,7 @@ package de.fabmax.kool
 import de.fabmax.kool.util.*
 import kotlin.math.abs
 
-abstract class InputManager internal constructor() {
+object Input {
 
     private val queuedKeyEvents: MutableList<KeyEvent> = mutableListOf()
     val keyEvents: MutableList<KeyEvent> = mutableListOf()
@@ -12,7 +12,11 @@ abstract class InputManager internal constructor() {
 
     private val keyHandlers = mutableMapOf<KeyCode, MutableList<KeyEventListener>>()
 
-    abstract var cursorMode: CursorMode
+    var cursorMode: CursorMode = CursorMode.NORMAL
+        set(value) {
+            field = value
+            PlatformInput.setCursorMode(value)
+        }
     var cursorShape: CursorShape = CursorShape.DEFAULT
 
     val pointerState = PointerState()
@@ -44,7 +48,7 @@ abstract class InputManager internal constructor() {
     fun getKeyCodeForChar(char: Char) = char.uppercaseChar().code
 
     internal fun onNewFrame(ctx: KoolContext) {
-        applyCursorShape()
+        PlatformInput.applyCursorShape(cursorShape)
         cursorShape = CursorShape.DEFAULT
 
         pointerState.onNewFrame(ctx)
@@ -77,8 +81,6 @@ abstract class InputManager internal constructor() {
 
         InputStack.handleInput(this, ctx)
     }
-
-    internal abstract fun applyCursorShape()
 
     fun keyEvent(ev: KeyEvent) {
         currentKeyMods = ev.modifiers
@@ -665,101 +667,104 @@ abstract class InputManager internal constructor() {
         }
     }
 
-    enum class CursorMode {
-        NORMAL,
-        LOCKED
-    }
+    const val MAX_CLICK_MOVE_PX = 15.0
+    const val MAX_CLICK_TIME_SECS = 0.25
+    const val DOUBLE_CLICK_INTERVAL_SECS = 0.35
 
-    enum class CursorShape {
-        DEFAULT,
-        TEXT,
-        CROSSHAIR,
-        HAND,
-        H_RESIZE,
-        V_RESIZE
-    }
+    const val LEFT_BUTTON = 0
+    const val LEFT_BUTTON_MASK = 1
+    const val RIGHT_BUTTON = 1
+    const val RIGHT_BUTTON_MASK = 2
+    const val MIDDLE_BUTTON = 2
+    const val MIDDLE_BUTTON_MASK = 4
+    const val BACK_BUTTON = 3
+    const val BACK_BUTTON_MASK = 8
+    const val FORWARD_BUTTON = 4
+    const val FORWARD_BUTTON_MASK = 16
 
-    companion object {
-        const val MAX_CLICK_MOVE_PX = 15.0
-        const val MAX_CLICK_TIME_SECS = 0.25
-        const val DOUBLE_CLICK_INTERVAL_SECS = 0.35
+    const val MAX_POINTERS = 10
+    const val MOUSE_POINTER_ID = -1000000
 
-        const val LEFT_BUTTON = 0
-        const val LEFT_BUTTON_MASK = 1
-        const val RIGHT_BUTTON = 1
-        const val RIGHT_BUTTON_MASK = 2
-        const val MIDDLE_BUTTON = 2
-        const val MIDDLE_BUTTON_MASK = 4
-        const val BACK_BUTTON = 3
-        const val BACK_BUTTON_MASK = 8
-        const val FORWARD_BUTTON = 4
-        const val FORWARD_BUTTON_MASK = 16
+    const val CONSUMED_ALL = -1     // 0xffffffff
+    const val CONSUMED_LEFT_BUTTON = LEFT_BUTTON_MASK
+    const val CONSUMED_RIGHT_BUTTON = RIGHT_BUTTON_MASK
+    const val CONSUMED_MIDDLE_BUTTON = MIDDLE_BUTTON_MASK
+    const val CONSUMED_BACK_BUTTON = BACK_BUTTON_MASK
+    const val CONSUMED_FORWARD_BUTTON = FORWARD_BUTTON_MASK
+    const val CONSUMED_SCROLL_X = 32
+    const val CONSUMED_SCROLL_Y = 64
+    const val CONSUMED_X = 128
+    const val CONSUMED_Y = 256
 
-        const val MAX_POINTERS = 10
-        const val MOUSE_POINTER_ID = -1000000
+    const val KEY_EV_UP = 1
+    const val KEY_EV_DOWN = 2
+    const val KEY_EV_REPEATED = 4
+    const val KEY_EV_CHAR_TYPED = 8
 
-        const val CONSUMED_ALL = -1     // 0xffffffff
-        const val CONSUMED_LEFT_BUTTON = LEFT_BUTTON_MASK
-        const val CONSUMED_RIGHT_BUTTON = RIGHT_BUTTON_MASK
-        const val CONSUMED_MIDDLE_BUTTON = MIDDLE_BUTTON_MASK
-        const val CONSUMED_BACK_BUTTON = BACK_BUTTON_MASK
-        const val CONSUMED_FORWARD_BUTTON = FORWARD_BUTTON_MASK
-        const val CONSUMED_SCROLL_X = 32
-        const val CONSUMED_SCROLL_Y = 64
-        const val CONSUMED_X = 128
-        const val CONSUMED_Y = 256
+    const val KEY_MOD_SHIFT = 1
+    const val KEY_MOD_CTRL = 2
+    const val KEY_MOD_ALT = 4
+    const val KEY_MOD_SUPER = 8
 
-        const val KEY_EV_UP = 1
-        const val KEY_EV_DOWN = 2
-        const val KEY_EV_REPEATED = 4
-        const val KEY_EV_CHAR_TYPED = 8
+    val KEY_CTRL_LEFT = UniversalKeyCode(-1, "CTRL_LEFT")
+    val KEY_CTRL_RIGHT = UniversalKeyCode(-2, "CTRL_RIGHT")
+    val KEY_SHIFT_LEFT = UniversalKeyCode(-3, "SHIFT_LEFT")
+    val KEY_SHIFT_RIGHT = UniversalKeyCode(-4, "SHIFT_RIGHT")
+    val KEY_ALT_LEFT = UniversalKeyCode(-5, "ALT_LEFT")
+    val KEY_ALT_RIGHT = UniversalKeyCode(-6, "ALT_RIGHT")
+    val KEY_SUPER_LEFT = UniversalKeyCode(-7, "SUPER_LEFT")
+    val KEY_SUPER_RIGHT = UniversalKeyCode(-8, "SUPER_RIGHT")
+    val KEY_ESC = UniversalKeyCode(-9, "ESC")
+    val KEY_MENU = UniversalKeyCode(-10, "MENU")
+    val KEY_ENTER = UniversalKeyCode(-11, "ENTER")
+    val KEY_NP_ENTER = UniversalKeyCode(-12, "NP_ENTER")
+    val KEY_NP_DIV = UniversalKeyCode(-13, "NP_DIV")
+    val KEY_NP_MUL = UniversalKeyCode(-14, "NP_MUL")
+    val KEY_NP_PLUS = UniversalKeyCode(-15, "NP_PLUS")
+    val KEY_NP_MINUS = UniversalKeyCode(-16, "NP_MINUS")
+    val KEY_BACKSPACE = UniversalKeyCode(-17, "BACKSPACE")
+    val KEY_TAB = UniversalKeyCode(-18, "TAB")
+    val KEY_DEL = UniversalKeyCode(-19, "DEL")
+    val KEY_INSERT = UniversalKeyCode(-20, "INSERT")
+    val KEY_HOME = UniversalKeyCode(-21, "HOME")
+    val KEY_END = UniversalKeyCode(-22, "END")
+    val KEY_PAGE_UP = UniversalKeyCode(-23, "PAGE_UP")
+    val KEY_PAGE_DOWN = UniversalKeyCode(-24, "PAGE_DOWN")
+    val KEY_CURSOR_LEFT = UniversalKeyCode(-25, "CURSOR_LEFT")
+    val KEY_CURSOR_RIGHT = UniversalKeyCode(-26, "CURSOR_RIGHT")
+    val KEY_CURSOR_UP = UniversalKeyCode(-27, "CURSOR_UP")
+    val KEY_CURSOR_DOWN = UniversalKeyCode(-28, "CURSOR_DOWN")
+    val KEY_F1 = UniversalKeyCode(-29, "F1")
+    val KEY_F2 = UniversalKeyCode(-30, "F2")
+    val KEY_F3 = UniversalKeyCode(-31, "F3")
+    val KEY_F4 = UniversalKeyCode(-32, "F4")
+    val KEY_F5 = UniversalKeyCode(-33, "F5")
+    val KEY_F6 = UniversalKeyCode(-34, "F6")
+    val KEY_F7 = UniversalKeyCode(-35, "F7")
+    val KEY_F8 = UniversalKeyCode(-36, "F8")
+    val KEY_F9 = UniversalKeyCode(-37, "F9")
+    val KEY_F10 = UniversalKeyCode(-38, "F10")
+    val KEY_F11 = UniversalKeyCode(-39, "F11")
+    val KEY_F12 = UniversalKeyCode(-40, "F12")
+}
 
-        const val KEY_MOD_SHIFT = 1
-        const val KEY_MOD_CTRL = 2
-        const val KEY_MOD_ALT = 4
-        const val KEY_MOD_SUPER = 8
+enum class CursorMode {
+    NORMAL,
+    LOCKED
+}
 
-        val KEY_CTRL_LEFT = UniversalKeyCode(-1, "CTRL_LEFT")
-        val KEY_CTRL_RIGHT = UniversalKeyCode(-2, "CTRL_RIGHT")
-        val KEY_SHIFT_LEFT = UniversalKeyCode(-3, "SHIFT_LEFT")
-        val KEY_SHIFT_RIGHT = UniversalKeyCode(-4, "SHIFT_RIGHT")
-        val KEY_ALT_LEFT = UniversalKeyCode(-5, "ALT_LEFT")
-        val KEY_ALT_RIGHT = UniversalKeyCode(-6, "ALT_RIGHT")
-        val KEY_SUPER_LEFT = UniversalKeyCode(-7, "SUPER_LEFT")
-        val KEY_SUPER_RIGHT = UniversalKeyCode(-8, "SUPER_RIGHT")
-        val KEY_ESC = UniversalKeyCode(-9, "ESC")
-        val KEY_MENU = UniversalKeyCode(-10, "MENU")
-        val KEY_ENTER = UniversalKeyCode(-11, "ENTER")
-        val KEY_NP_ENTER = UniversalKeyCode(-12, "NP_ENTER")
-        val KEY_NP_DIV = UniversalKeyCode(-13, "NP_DIV")
-        val KEY_NP_MUL = UniversalKeyCode(-14, "NP_MUL")
-        val KEY_NP_PLUS = UniversalKeyCode(-15, "NP_PLUS")
-        val KEY_NP_MINUS = UniversalKeyCode(-16, "NP_MINUS")
-        val KEY_BACKSPACE = UniversalKeyCode(-17, "BACKSPACE")
-        val KEY_TAB = UniversalKeyCode(-18, "TAB")
-        val KEY_DEL = UniversalKeyCode(-19, "DEL")
-        val KEY_INSERT = UniversalKeyCode(-20, "INSERT")
-        val KEY_HOME = UniversalKeyCode(-21, "HOME")
-        val KEY_END = UniversalKeyCode(-22, "END")
-        val KEY_PAGE_UP = UniversalKeyCode(-23, "PAGE_UP")
-        val KEY_PAGE_DOWN = UniversalKeyCode(-24, "PAGE_DOWN")
-        val KEY_CURSOR_LEFT = UniversalKeyCode(-25, "CURSOR_LEFT")
-        val KEY_CURSOR_RIGHT = UniversalKeyCode(-26, "CURSOR_RIGHT")
-        val KEY_CURSOR_UP = UniversalKeyCode(-27, "CURSOR_UP")
-        val KEY_CURSOR_DOWN = UniversalKeyCode(-28, "CURSOR_DOWN")
-        val KEY_F1 = UniversalKeyCode(-29, "F1")
-        val KEY_F2 = UniversalKeyCode(-30, "F2")
-        val KEY_F3 = UniversalKeyCode(-31, "F3")
-        val KEY_F4 = UniversalKeyCode(-32, "F4")
-        val KEY_F5 = UniversalKeyCode(-33, "F5")
-        val KEY_F6 = UniversalKeyCode(-34, "F6")
-        val KEY_F7 = UniversalKeyCode(-35, "F7")
-        val KEY_F8 = UniversalKeyCode(-36, "F8")
-        val KEY_F9 = UniversalKeyCode(-37, "F9")
-        val KEY_F10 = UniversalKeyCode(-38, "F10")
-        val KEY_F11 = UniversalKeyCode(-39, "F11")
-        val KEY_F12 = UniversalKeyCode(-40, "F12")
-    }
+enum class CursorShape {
+    DEFAULT,
+    TEXT,
+    CROSSHAIR,
+    HAND,
+    H_RESIZE,
+    V_RESIZE
+}
+
+internal expect object PlatformInput {
+    fun setCursorMode(cursorMode: CursorMode)
+    fun applyCursorShape(cursorShape: CursorShape)
 }
 
 sealed class KeyCode(val code: Int, val isLocal: Boolean, name: String?) {

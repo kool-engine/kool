@@ -1,6 +1,6 @@
 package de.fabmax.kool.util
 
-import de.fabmax.kool.InputManager
+import de.fabmax.kool.Input
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ksl.KslUnlitShader
@@ -316,7 +316,7 @@ class Gizmo : Node(), InputStack.PointerListener {
         stroke()
     }
 
-    override fun handlePointer(pointerState: InputManager.PointerState, ctx: KoolContext) {
+    override fun handlePointer(pointerState: Input.PointerState, ctx: KoolContext) {
         val ptr = pointerState.primaryPointer
         val scene = findParentOfType<Scene>() ?: return
         val cam = scene.mainRenderPass.camera
@@ -365,7 +365,7 @@ class Gizmo : Node(), InputStack.PointerListener {
         }
     }
 
-    private fun doDrag(pickRay: Ray, pointer: InputManager.Pointer, ctx: KoolContext) {
+    private fun doDrag(pickRay: Ray, pointer: Input.Pointer, ctx: KoolContext) {
         val localPickDir = lineMesh.toLocalCoords(MutableVec3f(pickRay.direction), 0f)
         val dotX = abs(localPickDir.dot(Vec3f.X_AXIS))
         val dotY = abs(localPickDir.dot(Vec3f.Y_AXIS))

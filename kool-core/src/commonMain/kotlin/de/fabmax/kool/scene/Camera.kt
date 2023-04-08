@@ -1,6 +1,6 @@
 package de.fabmax.kool.scene
 
-import de.fabmax.kool.InputManager
+import de.fabmax.kool.Input
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.*
 import de.fabmax.kool.pipeline.RenderPass
@@ -114,7 +114,7 @@ abstract class Camera(name: String = "camera") : Node(name) {
 
     protected abstract fun updateProjectionMatrix(renderPass: RenderPass, ctx: KoolContext)
 
-    fun computePickRay(pickRay: Ray, ptr: InputManager.Pointer, viewport: Viewport, ctx: KoolContext): Boolean {
+    fun computePickRay(pickRay: Ray, ptr: Input.Pointer, viewport: Viewport, ctx: KoolContext): Boolean {
         return ptr.isValid && computePickRay(pickRay, ptr.x.toFloat(), ptr.y.toFloat(), viewport, ctx)
     }
 
@@ -130,7 +130,7 @@ abstract class Camera(name: String = "camera") : Node(name) {
         return valid
     }
 
-    fun initRayTes(rayTest: RayTest, ptr: InputManager.Pointer, viewport: Viewport, ctx: KoolContext): Boolean {
+    fun initRayTes(rayTest: RayTest, ptr: Input.Pointer, viewport: Viewport, ctx: KoolContext): Boolean {
         return ptr.isValid && initRayTes(rayTest, ptr.x.toFloat(), ptr.y.toFloat(), viewport, ctx)
     }
 

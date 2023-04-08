@@ -1,6 +1,6 @@
 package de.fabmax.kool.util
 
-import de.fabmax.kool.InputManager
+import de.fabmax.kool.Input
 import de.fabmax.kool.KoolContext
 
 object InputStack {
@@ -8,7 +8,7 @@ object InputStack {
     val defaultInputHandler = InputHandler("InputStack.defaultInputHandler")
 
     private val handlerStack = mutableListOf(defaultInputHandler)
-    private val processableKeyEvents = mutableListOf<InputManager.KeyEvent>()
+    private val processableKeyEvents = mutableListOf<Input.KeyEvent>()
 
     fun pushTop(inputHandler: InputHandler) {
         remove(inputHandler)
@@ -33,7 +33,7 @@ object InputStack {
         }
     }
 
-    internal fun handleInput(inputManager: InputManager, ctx: KoolContext) {
+    internal fun handleInput(inputManager: Input, ctx: KoolContext) {
         processableKeyEvents.clear()
         processableKeyEvents.addAll(inputManager.keyEvents)
 
@@ -69,20 +69,20 @@ object InputStack {
         val pointerListeners = mutableListOf<PointerListener>()
         val keyboardListeners = mutableListOf<KeyboardListener>()
 
-        open fun handlePointer(pointerState: InputManager.PointerState, ctx: KoolContext) {
+        open fun handlePointer(pointerState: Input.PointerState, ctx: KoolContext) {
             pointerListeners.forEach { it.handlePointer(pointerState, ctx) }
         }
 
-        open fun handleKeyEvents(keyEvents: MutableList<InputManager.KeyEvent>, ctx: KoolContext) {
+        open fun handleKeyEvents(keyEvents: MutableList<Input.KeyEvent>, ctx: KoolContext) {
             keyboardListeners.forEach { it.handleKeyboard(keyEvents, ctx) }
         }
     }
 
     interface PointerListener {
-        fun handlePointer(pointerState: InputManager.PointerState, ctx: KoolContext)
+        fun handlePointer(pointerState: Input.PointerState, ctx: KoolContext)
     }
 
     interface KeyboardListener {
-        fun handleKeyboard(keyEvents: MutableList<InputManager.KeyEvent>, ctx: KoolContext)
+        fun handleKeyboard(keyEvents: MutableList<Input.KeyEvent>, ctx: KoolContext)
     }
 }

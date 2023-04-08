@@ -1,5 +1,6 @@
 package de.fabmax.kool.demo
 
+import de.fabmax.kool.Input
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.*
@@ -90,7 +91,7 @@ class GizmoTest : DemoScene("Gizmo Test") {
             }
 
             override fun onDragAxis(axis: Vec3f, distance: Float, targetTransform: Mat4d, ctx: KoolContext) {
-                if (axis.z != 0f || ctx.inputMgr.isAltDown) {
+                if (axis.z != 0f || Input.isAltDown) {
                     targetTransform.translate(axis.x * distance, axis.y * distance, axis.z * distance)
                 } else if (axis.x > 0f) {
                     gizmo2.axisHandleX.x = max(0.1f, axX + distance)

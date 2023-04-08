@@ -1,7 +1,7 @@
 package de.fabmax.kool.modules.ui2
 
 import de.fabmax.kool.Clipboard
-import de.fabmax.kool.InputManager
+import de.fabmax.kool.Input
 import de.fabmax.kool.LocalKeyCode
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.MutableVec2i
@@ -196,35 +196,35 @@ open class TextAreaNode(parent: UiNode?, surface: UiSurface) : BoxNode(parent, s
         }
     }
 
-    override fun onKeyEvent(keyEvent: InputManager.KeyEvent) {
+    override fun onKeyEvent(keyEvent: Input.KeyEvent) {
         if (keyEvent.isCharTyped) {
             editText("${keyEvent.typedChar}")
 
         } else if (keyEvent.isPressed) {
             when (keyEvent.keyCode) {
-                InputManager.KEY_BACKSPACE -> {
+                Input.KEY_BACKSPACE -> {
                     if (selectionHandler.isEmptySelection) {
                         selectionHandler.moveCaretLeft(wordWise = keyEvent.isCtrlDown, select = true)
                     }
                     editText("")
                 }
-                InputManager.KEY_DEL -> {
+                Input.KEY_DEL -> {
                     if (selectionHandler.isEmptySelection) {
                         selectionHandler.moveCaretRight(wordWise = keyEvent.isCtrlDown, select = true)
                     }
                     editText("")
                 }
-                InputManager.KEY_ENTER -> editText("\n")
-                InputManager.KEY_NP_ENTER -> editText("\n")
-                InputManager.KEY_CURSOR_LEFT -> selectionHandler.moveCaretLeft(wordWise = keyEvent.isCtrlDown, select = keyEvent.isShiftDown)
-                InputManager.KEY_CURSOR_RIGHT -> selectionHandler.moveCaretRight(wordWise = keyEvent.isCtrlDown, select = keyEvent.isShiftDown)
-                InputManager.KEY_CURSOR_UP -> selectionHandler.moveCaretLineUp(select = keyEvent.isShiftDown)
-                InputManager.KEY_CURSOR_DOWN -> selectionHandler.moveCaretLineDown(select = keyEvent.isShiftDown)
-                InputManager.KEY_PAGE_UP -> selectionHandler.moveCaretPageUp(select = keyEvent.isShiftDown)
-                InputManager.KEY_PAGE_DOWN -> selectionHandler.moveCaretPageDown(select = keyEvent.isShiftDown)
-                InputManager.KEY_HOME -> selectionHandler.moveCaretLineStart(select = keyEvent.isShiftDown)
-                InputManager.KEY_END -> selectionHandler.moveCaretLineEnd(select = keyEvent.isShiftDown)
-                InputManager.KEY_ESC -> {
+                Input.KEY_ENTER -> editText("\n")
+                Input.KEY_NP_ENTER -> editText("\n")
+                Input.KEY_CURSOR_LEFT -> selectionHandler.moveCaretLeft(wordWise = keyEvent.isCtrlDown, select = keyEvent.isShiftDown)
+                Input.KEY_CURSOR_RIGHT -> selectionHandler.moveCaretRight(wordWise = keyEvent.isCtrlDown, select = keyEvent.isShiftDown)
+                Input.KEY_CURSOR_UP -> selectionHandler.moveCaretLineUp(select = keyEvent.isShiftDown)
+                Input.KEY_CURSOR_DOWN -> selectionHandler.moveCaretLineDown(select = keyEvent.isShiftDown)
+                Input.KEY_PAGE_UP -> selectionHandler.moveCaretPageUp(select = keyEvent.isShiftDown)
+                Input.KEY_PAGE_DOWN -> selectionHandler.moveCaretPageDown(select = keyEvent.isShiftDown)
+                Input.KEY_HOME -> selectionHandler.moveCaretLineStart(select = keyEvent.isShiftDown)
+                Input.KEY_END -> selectionHandler.moveCaretLineEnd(select = keyEvent.isShiftDown)
+                Input.KEY_ESC -> {
                     selectionHandler.clearSelection()
                     surface.requestFocus(null)
                 }

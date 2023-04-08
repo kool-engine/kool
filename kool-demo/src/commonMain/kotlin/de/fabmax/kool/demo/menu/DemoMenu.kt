@@ -1,5 +1,6 @@
 package de.fabmax.kool.demo.menu
 
+import de.fabmax.kool.Input
 import de.fabmax.kool.demo.DemoLoader
 import de.fabmax.kool.demo.Settings
 import de.fabmax.kool.demo.UiSizes
@@ -48,7 +49,7 @@ class DemoMenu(val demoLoader: DemoLoader) {
                 MenuContent()
 
                 surface.onEachFrame {
-                    val ptr = it.inputMgr.pointerState.primaryPointer
+                    val ptr = Input.pointerState.primaryPointer
                     if (ptr.isAnyButtonEvent) {
                         val ptrPos = Vec2f(ptr.x.toFloat(), ptr.y.toFloat())
                         if (!uiNode.isInBounds(ptrPos)) {

@@ -3,6 +3,7 @@ package de.fabmax.kool.platform
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolException
 import de.fabmax.kool.KoolSetup
+import de.fabmax.kool.PlatformInput
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.generator.GlslGenerator
 import de.fabmax.kool.pipeline.*
@@ -34,8 +35,6 @@ import org.w3c.dom.events.UIEvent
  */
 @Suppress("UnsafeCastFromDynamic")
 class JsContext internal constructor() : KoolContext() {
-    override val inputMgr: JsInputManager
-
     override val shaderGenerator: ShaderGenerator = ShaderGeneratorImplWebGl()
 
     internal val queueRenderer = QueueRendererWebGl(this)
@@ -58,7 +57,7 @@ class JsContext internal constructor() : KoolContext() {
         }
     private var isFullscreenEnabled = false
 
-    private val canvas: HTMLCanvasElement
+    val canvas: HTMLCanvasElement
     internal val gl: WebGL2RenderingContext
     private val sysInfo = mutableListOf<String>()
 
@@ -134,7 +133,7 @@ class JsContext internal constructor() : KoolContext() {
         // suppress context menu
         canvas.oncontextmenu = Event::preventDefault
 
-        inputMgr = JsInputManager(canvas)
+        PlatformInput.onContextCreated(this)
     }
 
     private fun renderFrame(time: Double) {

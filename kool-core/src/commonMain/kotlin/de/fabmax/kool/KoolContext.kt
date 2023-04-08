@@ -46,16 +46,13 @@ abstract class KoolContext {
             }
         }
 
-    @Deprecated("Use windowScale instead", replaceWith = ReplaceWith("windowScale * 96f"))
-    val screenDpi: Float
-        get() = windowScale * 96f
-
-    @Deprecated("AssetManager is an object now", ReplaceWith("AssetManager"))
+    @Deprecated("AssetManager is an object now", ReplaceWith("Assets"))
     val assetMgr = Assets
 
-    abstract val shaderGenerator: ShaderGenerator
+    @Deprecated("InputManager is an object now", ReplaceWith("Input"))
+    val inputMgr = Input
 
-    abstract val inputMgr: InputManager
+    abstract val shaderGenerator: ShaderGenerator
 
     val engineStats = EngineStats()
 
@@ -174,7 +171,7 @@ abstract class KoolContext {
         for (i in frameTimes.indices) { sum += frameTimes[i] }
         fps = (frameTimes.size / sum) * 0.1 + fps * 0.9
 
-        inputMgr.onNewFrame(this)
+        Input.onNewFrame(this)
         for (i in onRender.indices) {
             onRender[i](this)
         }

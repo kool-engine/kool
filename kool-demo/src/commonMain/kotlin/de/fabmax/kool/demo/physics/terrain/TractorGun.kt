@@ -1,5 +1,6 @@
 package de.fabmax.kool.demo.physics.terrain
 
+import de.fabmax.kool.Input
 import de.fabmax.kool.math.*
 import de.fabmax.kool.physics.HitResult
 import de.fabmax.kool.physics.RigidDynamic
@@ -28,8 +29,8 @@ class TractorGun(val physics: PhysicsObjects, val mainScene: Scene) {
         }
 
     init {
-        mainScene.onUpdate += { ev ->
-            val ptr = ev.ctx.inputMgr.pointerState.primaryPointer
+        mainScene.onUpdate += {
+            val ptr = Input.pointerState.primaryPointer
             if (!ptr.isConsumed() && ptr.isLeftButtonEvent && ptr.isLeftButtonReleased) {
                 tractorState = if (tractorState == TractorState.TRACTOR) {
                     TractorState.DROP

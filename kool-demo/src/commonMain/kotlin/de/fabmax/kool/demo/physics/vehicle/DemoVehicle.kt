@@ -1,6 +1,6 @@
 package de.fabmax.kool.demo.physics.vehicle
 
-import de.fabmax.kool.InputManager
+import de.fabmax.kool.Input
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.LocalKeyCode
 import de.fabmax.kool.math.*
@@ -28,7 +28,7 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
     val vehicleGroup = Node()
     val vehicleAudio = VehicleAudio(world.physics)
 
-    private lateinit var recoverListener: InputManager.KeyEventListener
+    private lateinit var recoverListener: Input.KeyEventListener
     private val inputAxes = DriveAxes(ctx)
     private val throttleBrakeHandler = ThrottleBrakeHandler()
 
@@ -57,7 +57,7 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
 
         vehicleGroup += vehicleModel
         vehicle = makeRaycastVehicle(world)
-        registerKeyHandlers(ctx)
+        registerKeyHandlers()
 
         resetVehiclePos()
 
@@ -259,11 +259,11 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
         return vehicle
     }
 
-    private fun registerKeyHandlers(ctx: KoolContext) {
+    private fun registerKeyHandlers() {
         // throttle and brake are used in a digital fashion, set low r
 
         var prevRecoverTime = 0.0
-        recoverListener = ctx.inputMgr.registerKeyListener(LocalKeyCode('r'), "recover", filter = { it.isPressed }) {
+        recoverListener = Input.registerKeyListener(LocalKeyCode('r'), "recover", filter = { it.isPressed }) {
             val time = Time.gameTime
             val recoverHard = time - prevRecoverTime < 0.3
             prevRecoverTime = time
@@ -292,7 +292,7 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
     fun cleanUp(ctx: KoolContext) {
         inputAxes.dispose(ctx)
         vehicleAudio.stop()
-        ctx.inputMgr.removeKeyListener(recoverListener)
+        Input.removeKeyListener(recoverListener)
     }
 
     fun toggleSound(enabled: Boolean) {
