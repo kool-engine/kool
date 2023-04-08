@@ -136,7 +136,7 @@ object GrassShader {
         }
 
         colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
-        alphaMode = AlphaMode.Opaque()
+        alphaMode = AlphaMode.Opaque
 
         modelCustomizer = {
             //dumpCode = true

@@ -29,8 +29,6 @@ class GlRenderBackend(val ctx: Lwjgl3Context) : RenderBackend {
 
     override val glfwWindow: GlfwWindow
 
-    override val shaderGenerator = ShaderGeneratorImplGL()
-
     override val projCorrectionMatrixScreen = Mat4d()
     override val projCorrectionMatrixOffscreen = Mat4d()
     override val depthBiasMatrix = Mat4d().translate(0.5, 0.5, 0.5).scale(0.5, 0.5, 0.5)

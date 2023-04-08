@@ -81,7 +81,7 @@ class DepthShader(val cfg: Config) : KslShader(depthShaderProg(cfg), cfg.pipelin
     data class Config(
         val pipelineCfg: PipelineConfig = PipelineConfig(),
         val vertexCfg: BasicVertexConfig = BasicVertexConfig(),
-        var alphaMode: AlphaMode = AlphaMode.Opaque(),
+        var alphaMode: AlphaMode = AlphaMode.Opaque,
         var alphaMask: Texture2d? = null,
 
         var outputLinearDepth: Boolean = false,

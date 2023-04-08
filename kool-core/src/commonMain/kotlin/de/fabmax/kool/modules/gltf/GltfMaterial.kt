@@ -48,9 +48,9 @@ data class GltfMaterial(
         val colorFac = pbrMetallicRoughness.baseColorFactor
 
         cfg.alphaMode = when (alphaMode) {
-            ALPHA_MODE_BLEND -> AlphaMode.Blend()
+            ALPHA_MODE_BLEND -> AlphaMode.Blend
             ALPHA_MODE_MASK -> AlphaMode.Mask(alphaCutoff)
-            else -> AlphaMode.Opaque()
+            else -> AlphaMode.Opaque
         }
 
         cfg.pipeline {

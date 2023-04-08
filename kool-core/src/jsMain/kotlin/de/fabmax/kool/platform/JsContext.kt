@@ -7,11 +7,9 @@ import de.fabmax.kool.PlatformInput
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.generator.GlslGenerator
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.pipeline.shadermodel.ShaderGenerator
 import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.RGBA8
 import de.fabmax.kool.platform.webgl.LoadedTextureWebGl
 import de.fabmax.kool.platform.webgl.QueueRendererWebGl
-import de.fabmax.kool.platform.webgl.ShaderGeneratorImplWebGl
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Viewport
 import de.fabmax.kool.util.logE
@@ -35,7 +33,6 @@ import org.w3c.dom.events.UIEvent
  */
 @Suppress("UnsafeCastFromDynamic")
 class JsContext internal constructor() : KoolContext() {
-    override val shaderGenerator: ShaderGenerator = ShaderGeneratorImplWebGl()
 
     internal val queueRenderer = QueueRendererWebGl(this)
     internal val afterRenderActions = mutableListOf<() -> Unit>()

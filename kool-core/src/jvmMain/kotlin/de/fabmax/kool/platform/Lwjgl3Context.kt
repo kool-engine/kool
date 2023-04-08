@@ -21,9 +21,6 @@ import java.util.concurrent.CompletableFuture
 class Lwjgl3Context : KoolContext() {
     val renderBackend: RenderBackend
 
-    override val shaderGenerator
-        get() = renderBackend.shaderGenerator
-
     override val windowWidth: Int
         get() = renderBackend.glfwWindow.framebufferWidth
     override val windowHeight: Int

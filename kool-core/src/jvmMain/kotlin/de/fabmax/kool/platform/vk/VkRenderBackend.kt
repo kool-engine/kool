@@ -33,7 +33,6 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackend {
     override val projCorrectionMatrixOffscreen = Mat4d()
     override val depthBiasMatrix = Mat4d()
 
-    override val shaderGenerator = ShaderGeneratorImplVk()
     private val shaderCodes = mutableMapOf<String, ShaderCode>()
 
     val vkSystem: VkSystem

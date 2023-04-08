@@ -202,9 +202,7 @@ respository is loaded.
 Kool comes with an embedded UI framework, which is heavily inspired by [Jetpack Compose](https://github.com/JetBrains/compose-jb)
 but was implemented from scratch. Here is a small example:
 ```kotlin
-fun main() {
-    val ctx = createDefaultContext()
-    
+fun main() = KoolApplication { ctx ->
     ctx.scenes += UiScene(clearScreen = true) {
         Panel(colors = Colors.singleColorLight(MdColor.LIGHT_GREEN)) {
             modifier
@@ -227,8 +225,6 @@ fun main() {
             }
         }
     }
-    
-    ctx.run()
 }
 ```
 Here, we create a new `UiScene` and add a `Panel` to it, which serves as top-level container for our UI content. Within
@@ -253,9 +249,8 @@ used to generate the actual GLSL shader code. The benefit with this approach is 
 code in common code, and it should be relatively easy to add different generators which generate shader code for
 different backends in the future (e.g. WGSL, or metal). 
 
-This is still work in progress and most shaders in this project still use my old approach, which used blocks of
-pre-defined GLSL code. However, in case you are curious, you can take a look at
-[KslLitShader](kool-core/src/commonMain/kotlin/de/fabmax/kool/modules/ksl/KslLitShader.kt), which already
+This is still work in progress. However, in case you are curious, you can take a look at
+[KslLitShader](kool-core/src/commonMain/kotlin/de/fabmax/kool/modules/ksl/KslLitShader.kt), which 
 uses the new ksl approach (the interesting stuff happens in the `LitShaderModel` inner class).
 
 ## Physics Simulation

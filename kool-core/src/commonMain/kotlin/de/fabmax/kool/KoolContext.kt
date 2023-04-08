@@ -6,7 +6,6 @@ import de.fabmax.kool.pipeline.OffscreenRenderPass
 import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.pipeline.ShaderCode
 import de.fabmax.kool.pipeline.ibl.BrdfLutPass
-import de.fabmax.kool.pipeline.shadermodel.ShaderGenerator
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Profiling
 import de.fabmax.kool.util.Time
@@ -51,8 +50,6 @@ abstract class KoolContext {
 
     @Deprecated("InputManager is an object now", ReplaceWith("Input"))
     val inputMgr = Input
-
-    abstract val shaderGenerator: ShaderGenerator
 
     val engineStats = EngineStats()
 
