@@ -94,21 +94,21 @@ class TerrainDemo : DemoScene("Terrain Demo") {
 
     override suspend fun Assets.loadResources(ctx: KoolContext) {
         showLoadText("Loading height map...")
-        val heightMap = HeightMap.fromRawData(loadAsset("${DemoLoader.heightMapPath}/terrain_ocean.raw")!!, 200f, heightOffset = -50f)
+        val heightMap = HeightMap.fromRawData(loadBlobAsset("${DemoLoader.heightMapPath}/terrain_ocean.raw"), 200f, heightOffset = -50f)
         // more or less the same, but falls back to 8-bit height-resolution in javascript
         //heightMap = HeightMap.fromTextureData2d(loadTextureData2d("${Demo.heightMapPath}/terrain.png", TexFormat.R_F16), 200f)
 
         showLoadText("Loading textures...")
-        colorMap = loadAndPrepareTexture("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine.png")
-        normalMap = loadAndPrepareTexture("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine_normal.png")
-        oceanBump = loadAndPrepareTexture("${DemoLoader.materialPath}/ocean-bump-1k.jpg")
-        val moonTex = loadAndPrepareTexture("${DemoLoader.materialPath}/moon-blueish.png")
+        colorMap = loadTexture2d("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine.png")
+        normalMap = loadTexture2d("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine_normal.png")
+        oceanBump = loadTexture2d("${DemoLoader.materialPath}/ocean-bump-1k.jpg")
+        val moonTex = loadTexture2d("${DemoLoader.materialPath}/moon-blueish.png")
 
         val grassProps = TextureProps(
             addressModeU = AddressMode.CLAMP_TO_EDGE,
             addressModeV = AddressMode.CLAMP_TO_EDGE
         )
-        grassColor = loadAndPrepareTexture("${DemoLoader.materialPath}/grass_64.png", grassProps)
+        grassColor = loadTexture2d("${DemoLoader.materialPath}/grass_64.png", grassProps)
 
         showLoadText("Generating wind density texture...")
         wind = Wind()

@@ -79,14 +79,13 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackend {
         result.set(0, glfwWindow.framebufferHeight, glfwWindow.framebufferWidth, -glfwWindow.framebufferHeight)
     }
 
-    override fun loadTex2d(tex: Texture2d, data: TextureData) {
-        tex.loadedTexture = TextureLoader.loadTexture2d(vkSystem, tex.props, data)
-        tex.loadingState = Texture.LoadingState.LOADED
-        vkSystem.device.addDependingResource(tex.loadedTexture as LoadedTextureVk)
-    }
-
-    override fun loadTexCube(tex: TextureCube, data: TextureDataCube) {
-        tex.loadedTexture = TextureLoader.loadCubeMap(vkSystem, tex.props, data)
+    override fun uploadTextureToGpu(tex: Texture, data: TextureData) {
+        tex.loadedTexture = when (tex) {
+            is Texture2d -> TextureLoader.loadTexture2d(vkSystem, tex.props, data)
+            is Texture3d -> TextureLoader.loadTexture3d(vkSystem, tex.props, data)
+            is TextureCube -> TextureLoader.loadTextureCube(vkSystem, tex.props, data)
+            else -> throw IllegalArgumentException("Unsupported texture type: $tex")
+        }
         tex.loadingState = Texture.LoadingState.LOADED
         vkSystem.device.addDependingResource(tex.loadedTexture as LoadedTextureVk)
     }

@@ -67,6 +67,9 @@ object TextureLoader {
                     gl.texSubImage3D(TEXTURE_3D, 0, 0, 0, z, img.width, img.height, 1, img.format.glFormat, img.format.glType, img.data[z])
                 }
             }
+            else -> {
+                throw IllegalStateException("TextureData buffer must be either TextureData3d or ImageAtlasTextureData")
+            }
         }
         if (props.mipMapping) {
             gl.generateMipmap(TEXTURE_3D)
@@ -74,7 +77,11 @@ object TextureLoader {
         return tex
     }
 
-    fun loadTextureCube(ctx: JsContext, props: TextureProps, img: TextureDataCube) : LoadedTextureWebGl {
+    fun loadTextureCube(ctx: JsContext, props: TextureProps, img: TextureData) : LoadedTextureWebGl {
+        if (img !is TextureDataCube) {
+            throw IllegalArgumentException("Provided TextureData must be of type TextureDataCube")
+        }
+
         val gl = ctx.gl
         val tex = LoadedTextureWebGl(ctx, TEXTURE_CUBE_MAP, gl.createTexture(), img.estimateTexSize())
         tex.setSize(img.width, img.height, 1)

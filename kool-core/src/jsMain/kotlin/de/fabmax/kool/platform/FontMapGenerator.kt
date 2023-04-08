@@ -1,6 +1,5 @@
 package de.fabmax.kool.platform
 
-import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolSetup
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.math.smoothStep
@@ -36,7 +35,7 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int) {
         canvasCtx = canvas.getContext("2d") as CanvasRenderingContext2D
 
         KoolSetup.config.customTtfFonts.forEach { (family, url) ->
-            loadFont(family, Assets.makeAssetRef(url).url)
+            loadFont(family, url)
         }
     }
 

@@ -25,9 +25,6 @@ class AtlasFont(
     val isLoaded: Boolean get() = map != null
 
     override var scale = 1f
-        set(value) {
-            field = value
-        }
     override val lineHeight: Float get() = round(sizePts * heightEm * scale)
 
     override fun setScale(scale: Float, ctx: KoolContext) {
@@ -65,11 +62,9 @@ class AtlasFont(
         if (isExternalMap) {
             return map ?: throw IllegalStateException("External font map has not yet been set for font $this")
         }
-        val map = map ?: Assets.getOrCreateFontMap(this, scale).also { map = it }
+        val map = map ?: Assets.getOrCreateAtlasFontMap(this, scale).also { map = it }
         if (this.scale != scale) {
-            println("this.scale: ${this.scale} -> $scale")
-            Assets.updateFontMap(this, scale)
-            println("after update this.scale: ${this.scale}")
+            Assets.updateAtlasFontMap(this, scale)
         }
         return map
     }

@@ -44,11 +44,7 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
 
     override suspend fun Assets.loadResources(ctx: KoolContext) {
         showLoadText("Loading IBL maps")
-        val ibl = EnvironmentHelper.hdriEnvironment(
-            mainScene,
-            "${DemoLoader.hdriPath}/syferfontein_0d_clear_1k.rgbe.png",
-            this
-        )
+        val ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${DemoLoader.hdriPath}/syferfontein_0d_clear_1k.rgbe.png")
         val shadows = CascadedShadowMap(mainScene, 0, maxRange = 400f, mapSizes = listOf(4096, 2048, 2048)).apply {
             mapRanges[0].set(0f, 0.03f)
             mapRanges[1].set(0.03f, 0.17f)

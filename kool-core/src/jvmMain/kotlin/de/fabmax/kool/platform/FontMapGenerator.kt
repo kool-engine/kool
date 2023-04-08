@@ -43,7 +43,7 @@ internal class FontMapGenerator(val maxWidth: Int, val maxHeight: Int) {
         customTtfFonts.forEach { (family, path) ->
             try {
                 val inStream = runBlocking {
-                    ByteArrayInputStream(Assets.loadAsset(path)!!.toArray())
+                    ByteArrayInputStream(Assets.loadBlobAsset(path).toArray())
                 }
                 val ttfFont = AwtFont.createFont(AwtFont.TRUETYPE_FONT, inStream)
                 customFonts[family] = ttfFont

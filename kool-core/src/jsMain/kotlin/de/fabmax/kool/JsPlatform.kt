@@ -53,4 +53,8 @@ internal object JsImpl {
     fun requireContext(): JsContext {
         return ctx ?: throw IllegalStateException("KoolContext was not yet created")
     }
+
+    fun getContextOrNull(): JsContext? {
+        return ctx
+    }
 }

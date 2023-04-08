@@ -39,15 +39,26 @@ actual object PlatformAssets {
         document.body?.appendChild(this)
     }
 
-    internal actual suspend fun loadRaw(rawRef: RawAssetRef): LoadedRawAsset {
-        return LoadedRawAsset(rawRef, loadRaw(rawRef.url))
+    internal actual suspend fun loadBlob(blobRef: BlobAssetRef): LoadedBlobAsset {
+        return LoadedBlobAsset(blobRef, loadBlob(blobRef.path))
     }
 
     internal actual suspend fun loadTexture(textureRef: TextureAssetRef): LoadedTextureAsset {
-        return LoadedTextureAsset(textureRef, loadImage(textureRef))
+        val texData = ImageTextureData(loadImage(textureRef.path, textureRef.isHttp), textureRef.fmt)
+        return LoadedTextureAsset(textureRef, texData)
     }
 
-    private suspend fun loadRaw(url: String): Uint8Buffer? {
+    internal actual suspend fun loadTextureAtlas(textureRef: TextureAtlasAssetRef): LoadedTextureAsset {
+        val texData = ImageAtlasTextureData(
+            loadImage(textureRef.path, textureRef.isHttp),
+            textureRef.tilesX,
+            textureRef.tilesY,
+            textureRef.fmt
+        )
+        return LoadedTextureAsset(textureRef, texData)
+    }
+
+    private suspend fun loadBlob(url: String): Uint8Buffer? {
         val prefixedUrl = if (Assets.isHttpAsset(url)) url else "${KoolSetup.config.assetPath}/$url"
 
         val data = CompletableDeferred<Uint8Buffer?>(Assets.job)
@@ -67,9 +78,9 @@ actual object PlatformAssets {
         return data.await()
     }
 
-    private suspend fun loadImage(ref: TextureAssetRef): TextureData {
+    private suspend fun loadImage(path: String, isHttp: Boolean): Image {
         val deferred = CompletableDeferred<Image>()
-        val prefixedUrl = if (Assets.isHttpAsset(ref.url)) ref.url else "${KoolSetup.config.assetPath}/${ref.url}"
+        val prefixedUrl = if (isHttp) path else "${KoolSetup.config.assetPath}/${path}"
 
         val img = Image()
         img.onload = {
@@ -84,12 +95,7 @@ actual object PlatformAssets {
         }
         img.crossOrigin = ""
         img.src = prefixedUrl
-
-        return if (ref.isAtlas) {
-            ImageAtlasTextureData(deferred.await(), ref.tilesX, ref.tilesY, ref.fmt)
-        } else {
-            ImageTextureData(deferred.await(), ref.fmt)
-        }
+        return deferred.await()
     }
 
     internal actual suspend fun waitForFonts() {
@@ -151,41 +157,20 @@ actual object PlatformAssets {
         return BufferedImageTextureData(image, format)
     }
 
-    internal actual suspend fun createTextureData(texData: Uint8Buffer, mimeType: String): TextureData {
-        return loadImage(TextureAssetRef(texData.toDataUrl(mimeType), true, null, false))
+    internal actual suspend fun loadTextureDataFromBuffer(texData: Uint8Buffer, mimeType: String): TextureData {
+        return ImageTextureData(loadImage(texData.toDataUrl(mimeType), true), null)
     }
 
-    internal actual suspend fun loadAndPrepareTexture(assetPath: String, props: TextureProps): Texture2d {
-        val tex = Texture2d(props, Assets.assetPathToName(assetPath)) { Assets.loadTextureData(assetPath) }
-        val data = Assets.loadTextureData(assetPath, props.format)
-        tex.loadedTexture = TextureLoader.loadTexture2d(JsImpl.requireContext(), props, data)
-        tex.loadingState = Texture.LoadingState.LOADED
-        return tex
-    }
-
-    internal actual suspend fun loadAndPrepareCubeMap(
-        ft: String, bk: String, lt: String, rt: String, up: String, dn: String, props: TextureProps
-    ): TextureCube {
-        val name = Assets.cubeMapAssetPathToName(ft, bk, lt, rt, up, dn)
-        val tex = TextureCube(props, name) { Assets.loadCubeMapTextureData(ft, bk, lt, rt, up, dn) }
-        val data = Assets.loadCubeMapTextureData(ft, bk, lt, rt, up, dn)
-        tex.loadedTexture = TextureLoader.loadTextureCube(JsImpl.requireContext(), props, data)
-        tex.loadingState = Texture.LoadingState.LOADED
-        return tex
-    }
-
-    internal actual suspend fun loadAndPrepareTexture(texData: TextureData, props: TextureProps, name: String?): Texture2d {
-        val tex = Texture2d(props, name) { texData }
-        tex.loadedTexture = TextureLoader.loadTexture2d(JsImpl.requireContext(), props, texData)
-        tex.loadingState = Texture.LoadingState.LOADED
-        return tex
-    }
-
-    internal actual suspend fun loadAndPrepareCubeMap(texData: TextureDataCube, props: TextureProps, name: String?): TextureCube {
-        val tex = TextureCube(props, name) { texData }
-        tex.loadedTexture = TextureLoader.loadTextureCube(JsImpl.requireContext(), props, texData)
-        tex.loadingState = Texture.LoadingState.LOADED
-        return tex
+    internal actual suspend fun uploadTextureToGpu(texture: Texture, texData: TextureData): Boolean {
+        val ctx = JsImpl.getContextOrNull() ?: return false
+        texture.loadedTexture = when (texture) {
+            is Texture2d -> TextureLoader.loadTexture2d(ctx, texture.props, texData)
+            is Texture3d -> TextureLoader.loadTexture3d(ctx, texture.props, texData)
+            is TextureCube -> TextureLoader.loadTextureCube(ctx, texture.props, texData)
+            else -> throw IllegalArgumentException("Unsupported texture type: $texture")
+        }
+        texture.loadingState = Texture.LoadingState.LOADED
+        return true
     }
 
     internal actual suspend fun loadAudioClip(assetPath: String): AudioClip {

@@ -243,13 +243,13 @@ class GlRenderBackend(val ctx: Lwjgl3Context) : RenderBackend {
         // for now, we leave the cleanup to the system...
     }
 
-    override fun loadTex2d(tex: Texture2d, data: TextureData) {
-        tex.loadedTexture = TextureLoader.loadTexture2d(ctx, tex.props, data)
-        tex.loadingState = Texture.LoadingState.LOADED
-    }
-
-    override fun loadTexCube(tex: TextureCube, data: TextureDataCube) {
-        tex.loadedTexture = TextureLoader.loadTextureCube(ctx, tex.props, data)
+    override fun uploadTextureToGpu(tex: Texture, data: TextureData) {
+        tex.loadedTexture = when (tex) {
+            is Texture2d -> TextureLoader.loadTexture2d(ctx, tex.props, data)
+            is Texture3d -> TextureLoader.loadTexture3d(ctx, tex.props, data)
+            is TextureCube -> TextureLoader.loadTextureCube(ctx, tex.props, data)
+            else -> throw IllegalArgumentException("Unsupported texture type: $tex")
+        }
         tex.loadingState = Texture.LoadingState.LOADED
     }
 

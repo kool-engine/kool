@@ -80,11 +80,11 @@ class DeferredDemo : DemoScene("Deferred Shading") {
     }
 
     override suspend fun Assets.loadResources(ctx: KoolContext) {
-        groundColor = loadAndPrepareTexture("${DemoLoader.materialPath}/futuristic-panels1/futuristic-panels1-albedo1.jpg")
-        groundNormals = loadAndPrepareTexture("${DemoLoader.materialPath}/futuristic-panels1/futuristic-panels1-normal.jpg")
-        groundRoughness = loadAndPrepareTexture("${DemoLoader.materialPath}/futuristic-panels1/futuristic-panels1-roughness.jpg")
-        groundMetallic = loadAndPrepareTexture("${DemoLoader.materialPath}/futuristic-panels1/futuristic-panels1-metallic.jpg")
-        groundAo = loadAndPrepareTexture("${DemoLoader.materialPath}/futuristic-panels1/futuristic-panels1-ao.jpg")
+        groundColor = loadTexture2d("${DemoLoader.materialPath}/futuristic-panels1/futuristic-panels1-albedo1.jpg")
+        groundNormals = loadTexture2d("${DemoLoader.materialPath}/futuristic-panels1/futuristic-panels1-normal.jpg")
+        groundRoughness = loadTexture2d("${DemoLoader.materialPath}/futuristic-panels1/futuristic-panels1-roughness.jpg")
+        groundMetallic = loadTexture2d("${DemoLoader.materialPath}/futuristic-panels1/futuristic-panels1-metallic.jpg")
+        groundAo = loadTexture2d("${DemoLoader.materialPath}/futuristic-panels1/futuristic-panels1-ao.jpg")
 
         mainScene.onDispose += {
             groundColor.dispose()

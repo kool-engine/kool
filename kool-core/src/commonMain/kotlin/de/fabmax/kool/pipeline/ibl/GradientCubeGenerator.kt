@@ -94,7 +94,7 @@ class GradientCubeGenerator(scene: Scene, gradientTex: Texture1d, size: Int = 12
 
             val data = TextureData2d(buf, size, 1, TexFormat.RGBA)
             val props = TextureProps(addressModeU = AddressMode.CLAMP_TO_EDGE, addressModeV = AddressMode.CLAMP_TO_EDGE, mipMapping = false, maxAnisotropy = 1)
-            return Assets.loadAndPrepareTexture(data, props, "gradientEnvTex")
+            return Assets.loadTexture2d(data, props, "gradientEnvTex")
         }
     }
 

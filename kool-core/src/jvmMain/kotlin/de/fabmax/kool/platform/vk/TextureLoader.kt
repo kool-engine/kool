@@ -39,7 +39,11 @@ object TextureLoader {
         return tex
     }
 
-    fun loadCubeMap(sys: VkSystem, props: TextureProps, cubeImg: TextureDataCube) : LoadedTextureVk {
+    fun loadTextureCube(sys: VkSystem, props: TextureProps, cubeImg: TextureData) : LoadedTextureVk {
+        if (cubeImg !is TextureDataCube) {
+            throw IllegalArgumentException("Provided TextureData must be of type TextureDataCube")
+        }
+
         val width = cubeImg.width
         val height = cubeImg.height
         val dstFmt = checkFormat(cubeImg.format)
@@ -127,7 +131,11 @@ object TextureLoader {
         return tex
     }
 
-    fun loadTexture3d(sys: VkSystem, props: TextureProps, img: TextureData3d) : LoadedTextureVk {
+    fun loadTexture3d(sys: VkSystem, props: TextureProps, img: TextureData) : LoadedTextureVk {
+        if (img !is TextureData3d) {
+            throw IllegalArgumentException("Provided TextureData must be of type TextureData3d")
+        }
+
         val noMipMappingProps = props.copy(mipMapping = false)
         if (props.mipMapping) {
             logW { "Mip-mapping is not supported for 3D textures" }

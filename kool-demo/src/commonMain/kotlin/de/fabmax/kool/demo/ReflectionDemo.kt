@@ -92,9 +92,9 @@ class ReflectionDemo : DemoScene("Reflections") {
 
         deferredPipeline.sceneContent.apply {
             Assets.launch {
-                val floorAlbedo = loadAndPrepareTexture("${DemoLoader.materialPath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_COL_2K.jpg")
-                val floorNormal = loadAndPrepareTexture("${DemoLoader.materialPath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_NRM_2K.jpg")
-                val floorRoughness = loadAndPrepareTexture("${DemoLoader.materialPath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_REFL_2K.jpg")
+                val floorAlbedo = loadTexture2d("${DemoLoader.materialPath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_COL_2K.jpg")
+                val floorNormal = loadTexture2d("${DemoLoader.materialPath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_NRM_2K.jpg")
+                val floorRoughness = loadTexture2d("${DemoLoader.materialPath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_REFL_2K.jpg")
                 onDispose += {
                     floorAlbedo.dispose()
                     floorNormal.dispose()

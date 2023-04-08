@@ -75,7 +75,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
     private val material = Material(0.5f)
 
     override suspend fun Assets.loadResources(ctx: KoolContext) {
-        ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${DemoLoader.hdriPath}/colorful_studio_1k.rgbe.png", this)
+        ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${DemoLoader.hdriPath}/colorful_studio_1k.rgbe.png")
 
         Physics.awaitLoaded()
         val world = PhysicsWorld()
@@ -85,8 +85,8 @@ class JointsDemo : DemoScene("Physics - Joints") {
         constraintInfo = ConstraintsInfoMesh().apply { isVisible = false }
         mainScene += constraintInfo
 
-        groundAlbedo = loadAndPrepareTexture("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine.png")
-        groundNormal = loadAndPrepareTexture("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine_normal.png")
+        groundAlbedo = loadTexture2d("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine.png")
+        groundNormal = loadTexture2d("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine_normal.png")
 
         world.registerHandlers(mainScene)
     }

@@ -90,4 +90,8 @@ internal object DesktopImpl {
     fun requireContext(): Lwjgl3Context {
         return ctx ?: throw IllegalStateException("KoolContext was not yet created")
     }
+
+    fun getContextOrNull(): Lwjgl3Context? {
+        return ctx
+    }
 }

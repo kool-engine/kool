@@ -144,7 +144,7 @@ class PbrDemo : DemoScene("PBR Materials") {
         val tex = loadedHdris[idx]
         if (tex == null) {
             Assets.launch {
-                val loadedTex = loadAndPrepareTexture(hdriTextures[idx].hdriPath, hdriTexProps)
+                val loadedTex = loadTexture2d(hdriTextures[idx].hdriPath, hdriTexProps)
                 loadedHdris[idx] = loadedTex
                 recv(loadedTex)
             }

@@ -37,9 +37,9 @@ object EnvironmentHelper {
         return renderPassEnvironment(scene, gradientPass, autoDispose)
     }
 
-    suspend fun hdriEnvironment(scene: Scene, hdriPath: String, assetManager: Assets, autoDispose: Boolean = true, brightness: Float = 1f): EnvironmentMaps {
+    suspend fun hdriEnvironment(scene: Scene, hdriPath: String, autoDispose: Boolean = true, brightness: Float = 1f): EnvironmentMaps {
         val hdriTexProps = TextureProps(minFilter = FilterMethod.NEAREST, magFilter = FilterMethod.NEAREST, mipMapping = false, maxAnisotropy = 1)
-        val hdri = assetManager.loadAndPrepareTexture(hdriPath, hdriTexProps)
+        val hdri = Assets.loadTexture2d(hdriPath, hdriTexProps)
         return hdriEnvironment(scene, hdri, autoDispose, brightness)
     }
 

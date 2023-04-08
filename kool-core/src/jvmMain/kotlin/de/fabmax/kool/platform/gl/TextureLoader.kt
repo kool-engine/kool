@@ -7,8 +7,6 @@ import de.fabmax.kool.util.Uint16BufferImpl
 import de.fabmax.kool.util.Uint8BufferImpl
 import org.lwjgl.opengl.GL13.GL_TEXTURE_CUBE_MAP
 import org.lwjgl.opengl.GL30.*
-import java.lang.IllegalStateException
-import java.nio.ByteBuffer
 import kotlin.math.floor
 import kotlin.math.log2
 import kotlin.math.max
@@ -40,27 +38,27 @@ object TextureLoader {
     }
 
     fun loadTexture3d(ctx: Lwjgl3Context, props: TextureProps, img: TextureData) : LoadedTextureGl {
+        if (img !is TextureData3d) {
+            throw IllegalArgumentException("Provided TextureData must be of type TextureData3d")
+        }
+
         val tex = LoadedTextureGl(ctx, GL_TEXTURE_3D, glGenTextures(), img.estimateTexSize())
         tex.setSize(img.width, img.height, img.depth)
         tex.applySamplerProps(props)
 
-        if (img is TextureData3d) {
-            when (val buf = img.data) {
-                is Uint8BufferImpl -> {
-                    glTexImage3D(GL_TEXTURE_3D, 0, img.format.glInternalFormat, img.width, img.height, img.depth, 0, img.format.glFormat, img.format.glType, buf.buffer)
-                }
-                is Uint16BufferImpl -> {
-                    glTexImage3D(GL_TEXTURE_3D, 0, img.format.glInternalFormat, img.width, img.height, img.depth, 0, img.format.glFormat, img.format.glType, buf.buffer)
-                }
-                is Float32BufferImpl -> {
-                    glTexImage3D(GL_TEXTURE_3D, 0, img.format.glInternalFormat, img.width, img.height, img.depth, 0, img.format.glFormat, img.format.glType, buf.buffer)
-                }
-                else -> {
-                    throw IllegalStateException("TextureData buffer must be either a Uint8Buffer or Uin16Buffer")
-                }
+        when (val buf = img.data) {
+            is Uint8BufferImpl -> {
+                glTexImage3D(GL_TEXTURE_3D, 0, img.format.glInternalFormat, img.width, img.height, img.depth, 0, img.format.glFormat, img.format.glType, buf.buffer)
             }
-        } else {
-            throw IllegalArgumentException("Provided TextureData must be of type TextureData3d")
+            is Uint16BufferImpl -> {
+                glTexImage3D(GL_TEXTURE_3D, 0, img.format.glInternalFormat, img.width, img.height, img.depth, 0, img.format.glFormat, img.format.glType, buf.buffer)
+            }
+            is Float32BufferImpl -> {
+                glTexImage3D(GL_TEXTURE_3D, 0, img.format.glInternalFormat, img.width, img.height, img.depth, 0, img.format.glFormat, img.format.glType, buf.buffer)
+            }
+            else -> {
+                throw IllegalStateException("TextureData buffer must be either a Uint8Buffer or Uin16Buffer")
+            }
         }
         if (props.mipMapping) {
             glGenerateMipmap(GL_TEXTURE_3D)
@@ -68,7 +66,11 @@ object TextureLoader {
         return tex
     }
 
-    fun loadTextureCube(ctx: Lwjgl3Context, props: TextureProps, img: TextureDataCube) : LoadedTextureGl {
+    fun loadTextureCube(ctx: Lwjgl3Context, props: TextureProps, img: TextureData) : LoadedTextureGl {
+        if (img !is TextureDataCube) {
+            throw IllegalArgumentException("Provided TextureData must be of type TextureDataCube")
+        }
+
         val tex = LoadedTextureGl(ctx, GL_TEXTURE_CUBE_MAP, glGenTextures(), img.estimateTexSize())
         tex.setSize(img.width, img.height, 1)
         tex.applySamplerProps(props)

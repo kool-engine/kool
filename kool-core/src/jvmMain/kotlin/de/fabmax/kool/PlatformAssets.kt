@@ -1,7 +1,10 @@
 package de.fabmax.kool
 
 import de.fabmax.kool.modules.audio.AudioClip
-import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.TexFormat
+import de.fabmax.kool.pipeline.Texture
+import de.fabmax.kool.pipeline.TextureData
+import de.fabmax.kool.pipeline.TextureData2d
 import de.fabmax.kool.platform.FontMapGenerator
 import de.fabmax.kool.platform.HttpCache
 import de.fabmax.kool.platform.ImageAtlasTextureData
@@ -31,42 +34,42 @@ actual object PlatformAssets {
         fontGenerator.loadCustomFonts(KoolSetup.config.customTtfFonts)
     }
 
-    internal actual suspend fun loadRaw(rawRef: RawAssetRef): LoadedRawAsset {
-        return if (rawRef.isLocal) {
-            loadLocalRaw(rawRef)
+    internal actual suspend fun loadBlob(blobRef: BlobAssetRef): LoadedBlobAsset {
+        return if (blobRef.isHttp) {
+            loadHttpBlob(blobRef)
         } else {
-            loadHttpRaw(rawRef)
+            loadLocalBlob(blobRef)
         }
     }
 
-    private suspend fun loadLocalRaw(localRawRef: RawAssetRef): LoadedRawAsset {
+    private suspend fun loadLocalBlob(localRawRef: BlobAssetRef): LoadedBlobAsset {
         var data: Uint8BufferImpl? = null
         withContext(Dispatchers.IO) {
             try {
-                openLocalStream(localRawRef.url).use { data = Uint8BufferImpl(it.readBytes()) }
+                openLocalStream(localRawRef.path).use { data = Uint8BufferImpl(it.readBytes()) }
             } catch (e: Exception) {
-                logE { "Failed loading asset ${localRawRef.url}: $e" }
+                logE { "Failed loading asset ${localRawRef.path}: $e" }
             }
         }
-        return LoadedRawAsset(localRawRef, data)
+        return LoadedBlobAsset(localRawRef, data)
     }
 
-    private suspend fun loadHttpRaw(httpRawRef: RawAssetRef): LoadedRawAsset {
+    private suspend fun loadHttpBlob(httpRawRef: BlobAssetRef): LoadedBlobAsset {
         var data: Uint8BufferImpl? = null
-        if (httpRawRef.url.startsWith("data:", true)) {
-            data = decodeDataUrl(httpRawRef.url)
+        if (httpRawRef.path.startsWith("data:", true)) {
+            data = decodeDataUrl(httpRawRef.path)
         } else {
             withContext(Dispatchers.IO) {
                 try {
-                    val f = HttpCache.loadHttpResource(httpRawRef.url)
-                        ?: throw IOException("Failed downloading ${httpRawRef.url}")
+                    val f = HttpCache.loadHttpResource(httpRawRef.path)
+                        ?: throw IOException("Failed downloading ${httpRawRef.path}")
                     FileInputStream(f).use { data = Uint8BufferImpl(it.readBytes()) }
                 } catch (e: Exception) {
-                    logE { "Failed loading asset ${httpRawRef.url}: $e" }
+                    logE { "Failed loading asset ${httpRawRef.path}: $e" }
                 }
             }
         }
-        return LoadedRawAsset(httpRawRef, data)
+        return LoadedBlobAsset(httpRawRef, data)
     }
 
     private fun decodeDataUrl(dataUrl: String): Uint8BufferImpl {
@@ -91,40 +94,54 @@ actual object PlatformAssets {
         var data: ImageTextureData? = null
         withContext(Dispatchers.IO) {
             try {
-                data = if (textureRef.isLocal) {
-                    loadLocalTexture(textureRef)
+                data = if (textureRef.isHttp) {
+                    loadHttpTexture(textureRef.path, textureRef.fmt)
                 } else {
-                    loadHttpTexture(textureRef)
+                    loadLocalTexture(textureRef.path, textureRef.fmt)
                 }
             } catch (e: Exception) {
-                logE { "Failed loading texture ${textureRef.url}: $e" }
+                logE { "Failed loading texture ${textureRef.path}: $e" }
             }
         }
-        return if (textureRef.isAtlas) {
-            LoadedTextureAsset(textureRef, ImageAtlasTextureData(data!!, textureRef.tilesX, textureRef.tilesY))
-        } else {
-            LoadedTextureAsset(textureRef, data)
-        }
+        return LoadedTextureAsset(textureRef, data)
     }
 
-    private fun loadLocalTexture(localTextureRef: TextureAssetRef): ImageTextureData {
-        return openLocalStream(localTextureRef.url).use {
+    internal actual suspend fun loadTextureAtlas(textureRef: TextureAtlasAssetRef): LoadedTextureAsset {
+        var data: ImageTextureData? = null
+        withContext(Dispatchers.IO) {
+            try {
+                data = if (textureRef.isHttp) {
+                    loadHttpTexture(textureRef.path, textureRef.fmt)
+                } else {
+                    loadLocalTexture(textureRef.path, textureRef.fmt)
+                }
+            } catch (e: Exception) {
+                logE { "Failed loading texture ${textureRef.path}: $e" }
+            }
+        }
+        return LoadedTextureAsset(textureRef, ImageAtlasTextureData(data!!, textureRef.tilesX, textureRef.tilesY))
+    }
+
+    private fun loadLocalTexture(path: String, format: TexFormat?): ImageTextureData {
+        return openLocalStream(path).use {
             // ImageIO.read is not thread safe!
             val img = synchronized(imageIoLock) { ImageIO.read(it) }
-            ImageTextureData(img, localTextureRef.fmt)
+            ImageTextureData(img, format)
         }
     }
 
-    private fun loadHttpTexture(httpTextureRef: TextureAssetRef): ImageTextureData {
-        val f = HttpCache.loadHttpResource(httpTextureRef.url)!!
+    private fun loadHttpTexture(path: String, format: TexFormat?): ImageTextureData {
+        val f = HttpCache.loadHttpResource(path)!!
         return FileInputStream(f).use {
             // ImageIO.read is not thread safe!
             val img = synchronized(imageIoLock) { ImageIO.read(it) }
-            ImageTextureData(img, httpTextureRef.fmt)
+            ImageTextureData(img, format)
         }
     }
 
-    internal actual suspend fun waitForFonts() { }
+    internal actual suspend fun waitForFonts() {
+        // on JVM all fonts should be immediately available -> nothing to wait for
+    }
 
     internal actual fun createFontMapData(font: AtlasFont, fontScale: Float, outMetrics: MutableMap<Char, CharMetrics>): TextureData2d {
         return fontGenerator.createFontMapData(font, fontScale, outMetrics)
@@ -177,7 +194,7 @@ actual object PlatformAssets {
         return Assets.loadTextureData(imagePath, format) as ImageTextureData
     }
 
-    internal actual suspend fun createTextureData(texData: Uint8Buffer, mimeType: String): TextureData {
+    internal actual suspend fun loadTextureDataFromBuffer(texData: Uint8Buffer, mimeType: String): TextureData {
         var img: BufferedImage?
         withContext(Dispatchers.IO) {
             img = synchronized(imageIoLock) {
@@ -187,57 +204,20 @@ actual object PlatformAssets {
         return ImageTextureData(img!!, null)
     }
 
-    internal actual suspend fun loadAndPrepareTexture(assetPath: String, props: TextureProps): Texture2d {
-        val ctx = DesktopImpl.requireContext()
-        val tex = Texture2d(props, Assets.assetPathToName(assetPath)) { Assets.loadTextureData(assetPath) }
-        val data = Assets.loadTextureData(assetPath, props.format)
-        val deferred = CompletableDeferred<Texture2d>(Assets.job)
-        ctx.runOnMainThread {
-            ctx.renderBackend.loadTex2d(tex, data)
-            deferred.complete(tex)
-        }
-        return deferred.await()
-    }
+    internal actual suspend fun uploadTextureToGpu(texture: Texture, texData: TextureData): Boolean {
+        val ctx = DesktopImpl.getContextOrNull() ?: return false
 
-    internal actual suspend fun loadAndPrepareCubeMap(
-        ft: String, bk: String, lt: String, rt: String, up: String, dn: String, props: TextureProps
-    ): TextureCube {
-        val ctx = DesktopImpl.requireContext()
-        val name = Assets.cubeMapAssetPathToName(ft, bk, lt, rt, up, dn)
-        val tex = TextureCube(props, name) { Assets.loadCubeMapTextureData(ft, bk, lt, rt, up, dn) }
-        val data = Assets.loadCubeMapTextureData(ft, bk, lt, rt, up, dn)
-        val deferred = CompletableDeferred<TextureCube>(Assets.job)
+        val deferred = CompletableDeferred<Texture>(Assets.job)
         ctx.runOnMainThread {
-            ctx.renderBackend.loadTexCube(tex, data)
-            deferred.complete(tex)
+            ctx.renderBackend.uploadTextureToGpu(texture, texData)
+            deferred.complete(texture)
         }
-        return deferred.await()
-    }
-
-    internal actual suspend fun loadAndPrepareTexture(texData: TextureData, props: TextureProps, name: String?): Texture2d {
-        val ctx = DesktopImpl.requireContext()
-        val deferred = CompletableDeferred<Texture2d>(Assets.job)
-        ctx.runOnMainThread {
-            val tex = Texture2d(props, name) { texData }
-            ctx.renderBackend.loadTex2d(tex, texData)
-            deferred.complete(tex)
-        }
-        return deferred.await()
-    }
-
-    internal actual suspend fun loadAndPrepareCubeMap(texData: TextureDataCube, props: TextureProps, name: String?): TextureCube {
-        val ctx = DesktopImpl.requireContext()
-        val deferred = CompletableDeferred<TextureCube>(Assets.job)
-        ctx.runOnMainThread {
-            val tex = TextureCube(props, name) { texData }
-            ctx.renderBackend.loadTexCube(tex, texData)
-            deferred.complete(tex)
-        }
-        return deferred.await()
+        deferred.await()
+        return true
     }
 
     internal actual suspend fun loadAudioClip(assetPath: String): AudioClip {
-        val asset = Assets.loadAsset(assetPath) ?: throw FileNotFoundException(assetPath)
+        val asset = Assets.loadBlobAsset(assetPath)
         return AudioClip(asset.toArray())
     }
 }

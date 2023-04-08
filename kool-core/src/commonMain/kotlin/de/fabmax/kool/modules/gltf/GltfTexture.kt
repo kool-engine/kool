@@ -39,7 +39,7 @@ data class GltfTexture(
                 if (uri != null) {
                     Assets.loadTextureData(uri)
                 } else {
-                    Assets.createTextureData(imageRef.bufferViewRef!!.getData(), imageRef.mimeType!!)
+                    Assets.loadTextureDataFromBuffer(imageRef.bufferViewRef!!.getData(), imageRef.mimeType!!)
                 }
             }
         }

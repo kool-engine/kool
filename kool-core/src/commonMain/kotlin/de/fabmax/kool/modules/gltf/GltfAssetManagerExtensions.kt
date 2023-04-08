@@ -22,7 +22,7 @@ suspend fun Assets.loadGltfFile(assetPath: String): GltfFile? {
         m.buffers.filter { it.uri != null }.forEach {
             val uri = it.uri!!
             val bufferPath = if (uri.startsWith("data:", true)) { uri } else { "$modelBasePath/$uri" }
-            it.data = loadAsset(bufferPath)!!
+            it.data = loadBlobAsset(bufferPath)
         }
         m.images.filter { it.uri != null }.forEach { it.uri = "$modelBasePath/${it.uri}" }
         m.updateReferences()
@@ -44,18 +44,16 @@ private fun isBinaryGltf(assetPath: String): Boolean{
     return assetPath.endsWith(".glb", true) || assetPath.endsWith(".glb.gz", true)
 }
 
-private suspend fun Assets.loadGltf(assetPath: String): GltfFile? {
-    var data = loadAsset(assetPath)
-    if (data != null && assetPath.endsWith(".gz", true)) {
+private suspend fun Assets.loadGltf(assetPath: String): GltfFile {
+    var data = loadBlobAsset(assetPath)
+    if (assetPath.endsWith(".gz", true)) {
         data = BufferUtil.inflate(data)
     }
-    return if (data != null) {
-        GltfFile.fromJson(data.toArray().decodeToString())
-    } else { null }
+    return GltfFile.fromJson(data.toArray().decodeToString())
 }
 
-private suspend fun Assets.loadGlb(assetPath: String): GltfFile? {
-    var data = loadAsset(assetPath) ?: return null
+private suspend fun Assets.loadGlb(assetPath: String): GltfFile {
+    var data = loadBlobAsset(assetPath)
     if (assetPath.endsWith(".gz", true)) {
         data = BufferUtil.inflate(data)
     }

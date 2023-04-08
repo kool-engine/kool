@@ -146,9 +146,9 @@ class MsdfFont(
         suspend fun create(fontPath: String) = create("${fontPath}.png", "${fontPath}.json")
 
         suspend fun create(fontMapPath: String, fontMetaPath: String): MsdfFont {
-            val data = Assets.loadAsset(fontMetaPath) ?: throw IllegalStateException("Failed to load MsdfMeta $fontMetaPath")
+            val data = Assets.loadBlobAsset(fontMetaPath)
             val meta = Json.Default.decodeFromString<MsdfMeta>(data.toArray().decodeToString())
-            val fontData = MsdfFontData(Assets.loadAndPrepareTexture(fontMapPath, MSDF_TEX_PROPS), meta)
+            val fontData = MsdfFontData(Assets.loadTexture2d(fontMapPath, MSDF_TEX_PROPS), meta)
             return MsdfFont(fontData)
         }
 

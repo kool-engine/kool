@@ -97,7 +97,7 @@ class GltfDemo : DemoScene("glTF Models") {
 
     override suspend fun Assets.loadResources(ctx: KoolContext) {
         showLoadText("Loading IBL Maps")
-        envMaps = EnvironmentHelper.hdriEnvironment(mainScene, "${DemoLoader.hdriPath}/shanghai_bund_1k.rgbe.png", this)
+        envMaps = EnvironmentHelper.hdriEnvironment(mainScene, "${DemoLoader.hdriPath}/shanghai_bund_1k.rgbe.png")
 
         mainScene.setupLighting()
 

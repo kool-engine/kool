@@ -57,12 +57,12 @@ class AoDemo : DemoScene("Ambient Occlusion") {
 
     override suspend fun Assets.loadResources(ctx: KoolContext) {
         showLoadText("Loading Textures")
-        ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${DemoLoader.hdriPath}/mossy_forest_1k.rgbe.png", this)
+        ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${DemoLoader.hdriPath}/mossy_forest_1k.rgbe.png")
 
-        albedoMap = loadAndPrepareTexture("${DemoLoader.materialPath}/brown_planks_03/brown_planks_03_diff_2k.jpg")
-        ambientOcclusionMap = loadAndPrepareTexture("${DemoLoader.materialPath}/brown_planks_03/brown_planks_03_AO_2k.jpg")
-        normalMap = loadAndPrepareTexture("${DemoLoader.materialPath}/brown_planks_03/brown_planks_03_Nor_2k.jpg")
-        roughnessMap = loadAndPrepareTexture("${DemoLoader.materialPath}/brown_planks_03/brown_planks_03_rough_2k.jpg")
+        albedoMap = loadTexture2d("${DemoLoader.materialPath}/brown_planks_03/brown_planks_03_diff_2k.jpg")
+        ambientOcclusionMap = loadTexture2d("${DemoLoader.materialPath}/brown_planks_03/brown_planks_03_AO_2k.jpg")
+        normalMap = loadTexture2d("${DemoLoader.materialPath}/brown_planks_03/brown_planks_03_Nor_2k.jpg")
+        roughnessMap = loadTexture2d("${DemoLoader.materialPath}/brown_planks_03/brown_planks_03_rough_2k.jpg")
 
         mainScene.onDispose += {
             albedoMap.dispose()

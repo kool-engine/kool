@@ -27,7 +27,7 @@ class UiDemo : DemoScene("UI Demo") {
     val dndContext = DragAndDropContext<DragAndDropWindow.DndItem>()
 
     override suspend fun Assets.loadResources(ctx: KoolContext) {
-        exampleImage = loadAndPrepareTexture("${DemoLoader.materialPath}/uv_checker_map.jpg")
+        exampleImage = loadTexture2d("${DemoLoader.materialPath}/uv_checker_map.jpg")
     }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {

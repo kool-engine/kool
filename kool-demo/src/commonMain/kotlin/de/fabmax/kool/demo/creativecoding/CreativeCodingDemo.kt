@@ -29,11 +29,7 @@ class CreativeCodingDemo : DemoScene("Creative Coding") {
 
     override suspend fun Assets.loadResources(ctx: KoolContext) {
         resources = Resources(
-            EnvironmentHelper.hdriEnvironment(
-                mainScene,
-                "${DemoLoader.hdriPath}/syferfontein_0d_clear_1k.rgbe.png",
-                this
-            ),
+            EnvironmentHelper.hdriEnvironment(mainScene, "${DemoLoader.hdriPath}/syferfontein_0d_clear_1k.rgbe.png"),
             listOf(CascadedShadowMap(mainScene, 0, 2000f, nearOffset = -200f))
         )
 
