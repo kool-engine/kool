@@ -73,7 +73,7 @@ class AoDemo : DemoScene("Ambient Occlusion") {
 
         showLoadText("Loading Model")
         val modelCfg = GltfFile.ModelGenerateConfig(generateNormals = true, applyMaterials = false)
-        val model = loadGltfModel("${DemoLoader.modelPath}/teapot.gltf.gz", modelCfg)!!
+        val model = loadGltfModel("${DemoLoader.modelPath}/teapot.gltf.gz", modelCfg)
         teapotMesh = model.meshes.values.first()
     }
 

@@ -7,13 +7,13 @@ import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.platform.gl.GlRenderBackend
 import de.fabmax.kool.platform.vk.VkRenderBackend
+import de.fabmax.kool.util.RenderLoopCoroutineDispatcher
 import de.fabmax.kool.util.Viewport
 import org.lwjgl.glfw.GLFW.*
 import java.awt.Desktop
 import java.awt.image.BufferedImage
 import java.net.URI
 import java.util.*
-import java.util.concurrent.CompletableFuture
 
 /**
  * @author fabmax
@@ -31,7 +31,6 @@ class Lwjgl3Context : KoolContext() {
 
     var maxFrameRate = KoolSetup.config.maxFrameRate
     var windowNotFocusedFrameRate = KoolSetup.config.windowNotFocusedFrameRate
-    private val mainThreadRunnables = mutableListOf<GpuThreadRunnable>()
 
     private var prevFrameTime = System.nanoTime()
 
@@ -101,15 +100,7 @@ class Lwjgl3Context : KoolContext() {
     }
 
     internal fun renderFrame() {
-        synchronized(mainThreadRunnables) {
-            if (mainThreadRunnables.isNotEmpty()) {
-                for (r in mainThreadRunnables) {
-                    r.r()
-                    r.future.complete(null)
-                }
-                mainThreadRunnables.clear()
-            }
-        }
+        RenderLoopCoroutineDispatcher.executeDispatchedTasks()
 
         if (windowNotFocusedFrameRate > 0 || maxFrameRate > 0) {
             checkFrameRateLimits(prevFrameTime)
@@ -172,18 +163,6 @@ class Lwjgl3Context : KoolContext() {
 
     override fun getWindowViewport(result: Viewport) {
         renderBackend.getWindowViewport(result)
-    }
-
-    fun runOnMainThread(action: () -> Unit): CompletableFuture<Void> {
-        synchronized(mainThreadRunnables) {
-            val r = GpuThreadRunnable(action)
-            mainThreadRunnables += r
-            return r.future
-        }
-    }
-
-    private class GpuThreadRunnable(val r: () -> Unit) {
-        val future = CompletableFuture<Void>()
     }
 
     companion object {

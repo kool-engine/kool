@@ -8,7 +8,7 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.randomF
 import de.fabmax.kool.math.toRad
 import de.fabmax.kool.modules.gltf.GltfFile
-import de.fabmax.kool.modules.gltf.loadGltfFile
+import de.fabmax.kool.modules.gltf.loadGltfModel
 import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.deferred.*
@@ -122,19 +122,17 @@ class ReflectionDemo : DemoScene("Reflections") {
                     }
                 }
 
-                loadGltfFile("${DemoLoader.modelPath}/bunny.gltf.gz")?.let {
-                    val modelCfg = GltfFile.ModelGenerateConfig(generateNormals = true, applyMaterials = false)
-                    val model = it.makeModel(modelCfg)
-                    bunnyMesh = model.meshes.values.first()
-                    addNode(model)
+                val modelCfg = GltfFile.ModelGenerateConfig(generateNormals = true, applyMaterials = false)
+                val model = loadGltfModel("${DemoLoader.modelPath}/bunny.gltf.gz", modelCfg)
+                bunnyMesh = model.meshes.values.first()
+                addNode(model)
 
-                    modelShader = deferredKslPbrShader {
-                        color { uniformColor(matColors[selectedColorIdx.value].linColor) }
-                        roughness { uniformProperty(this@ReflectionDemo.roughness.value) }
-                        metallic { uniformProperty(this@ReflectionDemo.metallic.value) }
-                    }
-                    bunnyMesh!!.shader = modelShader
+                modelShader = deferredKslPbrShader {
+                    color { uniformColor(matColors[selectedColorIdx.value].linColor) }
+                    roughness { uniformProperty(this@ReflectionDemo.roughness.value) }
+                    metallic { uniformProperty(this@ReflectionDemo.metallic.value) }
                 }
+                bunnyMesh!!.shader = modelShader
             }
         }
     }

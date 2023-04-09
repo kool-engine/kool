@@ -14,7 +14,7 @@ internal actual object PlatformInput {
     private var currentCursorShape = CursorShape.DEFAULT
 
     actual fun setCursorMode(cursorMode: CursorMode) {
-        val ctx = DesktopImpl.getContextOrNull() ?: return
+        val ctx = KoolContext.getContextOrNull() as Lwjgl3Context? ?: return
         val windowHandle = ctx.renderBackend.glfwWindow.windowPtr
 
         if (cursorMode == CursorMode.NORMAL || ctx.isWindowFocused) {
@@ -23,7 +23,7 @@ internal actual object PlatformInput {
     }
 
     actual fun applyCursorShape(cursorShape: CursorShape) {
-        val ctx = DesktopImpl.getContextOrNull() ?: return
+        val ctx = KoolContext.requireContext() as Lwjgl3Context? ?: return
         val windowHandle = ctx.renderBackend.glfwWindow.windowPtr
 
         if (cursorShape != currentCursorShape) {

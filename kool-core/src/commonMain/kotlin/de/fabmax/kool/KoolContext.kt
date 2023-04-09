@@ -7,11 +7,10 @@ import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.pipeline.ShaderCode
 import de.fabmax.kool.pipeline.ibl.BrdfLutPass
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.util.Profiling
-import de.fabmax.kool.util.Time
-import de.fabmax.kool.util.Viewport
-import de.fabmax.kool.util.logD
-import kotlinx.coroutines.CompletableDeferred
+import de.fabmax.kool.util.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
 /**
@@ -94,7 +93,6 @@ abstract class KoolContext {
 
     val defaultPbrBrdfLut by lazy { BrdfLutPass(backgroundScene).also { addBackgroundRenderPass(it) }.copyColor() }
 
-    private val delayedCallbacks = mutableListOf<DelayedCallback>()
     internal val disposablePipelines = mutableListOf<Pipeline>()
 
     private val frameTimes = DoubleArray(25) { 0.017 }
@@ -102,6 +100,10 @@ abstract class KoolContext {
     abstract val windowWidth: Int
     abstract val windowHeight: Int
     abstract var isFullscreen: Boolean
+
+    init {
+        defaultContext = this
+    }
 
     abstract fun openUrl(url: String, sameWindow: Boolean = true)
 
@@ -115,16 +117,19 @@ abstract class KoolContext {
 
     abstract fun getWindowViewport(result: Viewport)
 
-    fun runDelayed(frames: Int, callback: (KoolContext) -> Unit) {
-        delayedCallbacks += DelayedCallback(Time.frameCount + frames, callback)
-    }
-
-    suspend fun delayFrames(frames: Int) {
-        if (frames > 0) {
-            val lock = CompletableDeferred<Any>()
-            runDelayed(frames) { lock.complete(Unit) }
-            lock.await()
-        }
+    /**
+     * Executes the given [callback] after [frames] frames on the render-loop thread. This is equivalent to launching
+     * a coroutine and using the [delayFrames] suspending function before executing the callback function:
+     * ```
+     * CoroutineScope(Dispatchers.RenderLoop).launch {
+     *     delayFrames(frames)
+     *     callback()
+     * }
+     * ```
+     */
+    fun runDelayed(frames: Int, callback: () -> Unit) = CoroutineScope(Dispatchers.RenderLoop).launch {
+        delayFrames(frames)
+        callback()
     }
 
     internal fun disposePipeline(pipeline: Pipeline) {
@@ -153,16 +158,6 @@ abstract class KoolContext {
         Time.gameTime += dt
         Time.frameCount++
 
-        if (delayedCallbacks.isNotEmpty()) {
-            for (i in delayedCallbacks.indices.reversed()) {
-                val callback = delayedCallbacks[i]
-                if (callback.callOnFrame <= Time.frameCount) {
-                    callback.callback(this)
-                    delayedCallbacks.removeAt(i)
-                }
-            }
-        }
-
         frameTimes[Time.frameCount % frameTimes.size] = dt
         var sum = 0.0
         for (i in frameTimes.indices) { sum += frameTimes[i] }
@@ -187,10 +182,18 @@ abstract class KoolContext {
         }
     }
 
-    private class DelayedCallback(val callOnFrame: Int, val callback: (KoolContext) -> Unit)
-
     companion object {
         // automatically updated by gradle script on build
         const val KOOL_VERSION = "0.11.0-SNAPSHOT"
+
+        private var defaultContext: KoolContext? = null
+
+        fun requireContext(): KoolContext {
+            return defaultContext ?: throw IllegalStateException("KoolContext was not yet created")
+        }
+
+        fun getContextOrNull(): KoolContext? {
+            return defaultContext
+        }
     }
 }

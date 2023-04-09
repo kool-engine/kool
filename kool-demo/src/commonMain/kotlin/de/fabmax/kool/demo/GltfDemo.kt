@@ -5,7 +5,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.gltf.GltfFile
-import de.fabmax.kool.modules.gltf.loadGltfFile
+import de.fabmax.kool.modules.gltf.loadGltfModel
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.Texture2d
@@ -385,42 +385,39 @@ class GltfDemo : DemoScene("glTF Models") {
 
         override fun toString() = name
 
-        suspend fun load(isDeferredShading: Boolean, ctx: KoolContext): Model? {
-            var model: Model? = null
-            Assets.loadGltfFile(assetPath)?.let {
-                val materialCfg = GltfFile.ModelMaterialConfig(
-                    shadowMaps = if (isDeferredShading) deferredPipeline.shadowMaps else shadowsForward,
-                    scrSpcAmbientOcclusionMap = if (isDeferredShading) deferredPipeline.aoPipeline?.aoMap else aoPipelineForward?.aoMap,
-                    environmentMaps = envMaps,
-                    isDeferredShading = isDeferredShading,
-                    maxNumberOfJoints = 64
-                )
-                val modelCfg = GltfFile.ModelGenerateConfig(
-                    generateNormals = generateNormals,
-                    materialConfig = materialCfg,
-                    loadAnimations = true,
-                    applyMorphTargets = true,
-                    applySkins = true,
-                    applyTransforms = true,
-                    mergeMeshesByMaterial = true
-                )
-                model = it.makeModel(modelCfg).apply {
-                    transform.translate(translation)
-                    transform.scale(scale)
+        suspend fun load(isDeferredShading: Boolean, ctx: KoolContext): Model {
+            val materialCfg = GltfFile.ModelMaterialConfig(
+                shadowMaps = if (isDeferredShading) deferredPipeline.shadowMaps else shadowsForward,
+                scrSpcAmbientOcclusionMap = if (isDeferredShading) deferredPipeline.aoPipeline?.aoMap else aoPipelineForward?.aoMap,
+                environmentMaps = envMaps,
+                isDeferredShading = isDeferredShading,
+                maxNumberOfJoints = 64
+            )
+            val modelCfg = GltfFile.ModelGenerateConfig(
+                generateNormals = generateNormals,
+                materialConfig = materialCfg,
+                loadAnimations = true,
+                applyMorphTargets = true,
+                applySkins = true,
+                applyTransforms = true,
+                mergeMeshesByMaterial = true
+            )
+            val model = Assets.loadGltfModel(assetPath, modelCfg).apply {
+                transform.translate(translation)
+                transform.scale(scale)
 
-                    if (normalizeBoneWeights) {
-                        meshes.values.forEach { mesh ->
-                            mesh.geometry.forEach { v ->
-                                v.weights.scale(1f / (v.weights.x + v.weights.y + v.weights.z + v.weights.w))
-                            }
+                if (normalizeBoneWeights) {
+                    meshes.values.forEach { mesh ->
+                        mesh.geometry.forEach { v ->
+                            v.weights.scale(1f / (v.weights.x + v.weights.y + v.weights.z + v.weights.w))
                         }
                     }
+                }
 
-                    enableAnimation(0)
-                    onUpdate += {
-                        isVisible = this@GltfModel.isVisible
-                        animate(animationDeltaTime, ctx)
-                    }
+                enableAnimation(0)
+                onUpdate += {
+                    isVisible = this@GltfModel.isVisible
+                    animate(animationDeltaTime, ctx)
                 }
             }
             if (isDeferredShading) {

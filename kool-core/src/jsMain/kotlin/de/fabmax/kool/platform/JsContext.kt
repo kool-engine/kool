@@ -11,6 +11,7 @@ import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.RGBA8
 import de.fabmax.kool.platform.webgl.LoadedTextureWebGl
 import de.fabmax.kool.platform.webgl.QueueRendererWebGl
 import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.util.RenderLoopCoroutineDispatcher
 import de.fabmax.kool.util.Viewport
 import de.fabmax.kool.util.logE
 import kotlinx.browser.document
@@ -134,6 +135,8 @@ class JsContext internal constructor() : KoolContext() {
     }
 
     private fun renderFrame(time: Double) {
+        RenderLoopCoroutineDispatcher.executeDispatchedTasks()
+
         // determine delta time
         val dt = (time - animationMillis) / 1000.0
         animationMillis = time

@@ -9,6 +9,7 @@ import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.MsdfFont
+import de.fabmax.kool.util.delayFrames
 
 abstract class DemoScene(val name: String) {
     var demoEntry: Demos.Entry? = null
@@ -37,7 +38,7 @@ abstract class DemoScene(val name: String) {
     suspend fun showLoadText(text: String, delayFrames: Int = 1) {
         loadingScreen?.let { ls ->
             ls.loadingText2.set(text)
-            ls.ctx.delayFrames(delayFrames)
+            delayFrames(delayFrames)
         }
     }
 

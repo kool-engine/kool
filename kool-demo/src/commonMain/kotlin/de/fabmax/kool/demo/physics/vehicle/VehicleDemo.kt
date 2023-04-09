@@ -57,7 +57,7 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
 
         showLoadText("Loading Vehicle Model")
         val modelCfg = GltfFile.ModelGenerateConfig(materialConfig = GltfFile.ModelMaterialConfig(isDeferredShading = true))
-        vehicleModel = loadGltfModel("${DemoLoader.modelPath}/kool-car.glb", modelCfg)!!
+        vehicleModel = loadGltfModel("${DemoLoader.modelPath}/kool-car.glb", modelCfg)
 
         showLoadText("Loading Physics")
         Physics.awaitLoaded()

@@ -118,16 +118,15 @@ class SimplificationDemo : DemoScene("Simplification") {
 
     private suspend fun Assets.loadModel(name: String, path: String, scale: Float, offset: Vec3f) {
         val modelCfg = GltfFile.ModelGenerateConfig(generateNormals = true, applyMaterials = false)
-        loadGltfModel(path, modelCfg)?.let { model ->
-            val mesh = model.meshes.values.first()
-            val geometry = mesh.geometry
-            for (i in 0 until geometry.numVertices) {
-                geometry.vertexIt.index = i
-                geometry.vertexIt.position.scale(scale).add(offset)
-            }
-            logD { "loaded: $name, bounds: ${geometry.bounds}" }
-            models += DemoModel(name, geometry)
+        val model = loadGltfModel(path, modelCfg)
+        val mesh = model.meshes.values.first()
+        val geometry = mesh.geometry
+        for (i in 0 until geometry.numVertices) {
+            geometry.vertexIt.index = i
+            geometry.vertexIt.position.scale(scale).add(offset)
         }
+        logD { "loaded: $name, bounds: ${geometry.bounds}" }
+        models += DemoModel(name, geometry)
     }
 
     private fun makeCosGrid(): IndexedVertexList {

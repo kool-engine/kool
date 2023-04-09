@@ -144,29 +144,32 @@ fun main() = KoolApplication { ctx ->
         }
 
         // Load a glTF 2.0 model
-        ctx.assetMgr.launch {
+        Assets.launch {
             val materialCfg = GltfFile.ModelMaterialConfig(
                 shadowMaps = listOf(shadowMap),
                 scrSpcAmbientOcclusionMap = aoPipeline.aoMap
             )
             val modelCfg = GltfFile.ModelGenerateConfig(materialConfig = materialCfg)
-            loadGltfModel("path/to/model.glb", modelCfg)?.let { model ->
-                addNode(model)
-                model.translate(0f, 0.5f, 0f)
+            val model = loadGltfModel("path/to/model.glb", modelCfg)
 
-                if (model.animations.isNotEmpty()) {
-                    model.enableAnimation(0)
-                    model.onUpdate {
-                        model.applyAnimation(Time.deltaT)
-                    }
+            model.transform.translate(0f, 0.5f, 0f)
+            if (model.animations.isNotEmpty()) {
+                model.enableAnimation(0)
+                model.onUpdate {
+                    model.applyAnimation(Time.deltaT)
                 }
+            }
+            
+            // Add model to scene, use RenderLoop coroutine context to make sure insertion happens at a safe time
+            withContext(Dispatchers.RenderLoop) {
+                addNode(model)
             }
         }
     }
 }
 ```
-First we set up the lighting. This is very similar to the previous example but this time we use a spot light, which
-requires a position, direction and opening angle. Other than directional lights, point and spot lights have a distinct
+First we set up the lighting. This is very similar to the previous example but this time we use a spot-light, which
+requires a position, direction and opening angle. Other than directional lights, point and spot-lights have a distinct
 (point-) position and objects are affected less by them, the farther they are away. This usually results in a much
 higher required light intensity: Here we use an intensity of 300.
 
@@ -180,22 +183,22 @@ color cube from the previous example, the ground plane uses a PBR shader. Howeve
 use the ambient occlusion and shadow maps we created before. Moreover, the shader should not use the vertex color
 attribute, but a simple pre-defined color (white in this case).
 
-Finally, we want to load a glTF 2.0 model. Resources are loaded via the asset manager. Since resource loading is a
+Finally, we want to load a glTF 2.0 model. Resources are loaded via the `Assets` object. Since resource loading is a
 potentially long-running operation we do that from within a coroutine launched with the asset manager:
-`ctx.assetMgr.launch { ... }`. By default, the built-in glTF parser creates shaders for all models it loads. The
+`Assets.launch { ... }`. By default, the built-in glTF parser creates shaders for all models it loads. The
 created shaders can be customized via a provided material configuration, which we use to pass the shadow and
 ambient occlusion maps we created during light setup. After we created the custom model / material configuration
 we can load the model with `loadGltfModel("path/to/model.glb", modelCfg)`. This (suspending) function returns the
-model or null in case of an error. If the model was successfully loaded the `let { ... }` block is executed and the
-model is added to the scene (`+model`). The `Model` class derives from `TransformGroup`, hence it is
-easy to manipulate the model. Here we move the model 0.5 units along the y-axis (up). If the model contains any
-animations, these can be easily activated. This example checks whether there are any animations and if so activates
-the first one. The `model.onUpdate { }` block is executed on every frame and updates the enabled animation.
+loaded model, which can then be customized and inserted into the scene. Here we move the model 0.5 units along the
+y-axis (up). If the model contains any animations, these can be easily activated. This example checks whether there
+are any animations and if so activates the first one. The `model.onUpdate { }` block is executed on every frame and
+updates the enabled animation. The model is inserted into the scene with `addNode(model)`, however we do that from
+the `Dispatchers.RenderLoop` context to avoid threading issues (on JVM the asset loader coroutines run on a different
+thread than the render-loop).
 
 The resulting scene looks like [this](https://fabmax.github.io/kool/kool-js/?demo=helloGltf). Here, the
 [Animated Box](https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0/BoxAnimated) from the glTF sample
-respository is loaded.
-
+repository is loaded.
 
 ## Kool UI
 

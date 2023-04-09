@@ -2,10 +2,7 @@ package de.fabmax.kool
 
 import de.fabmax.kool.modules.audio.AudioClip
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.platform.BufferedImageTextureData
-import de.fabmax.kool.platform.FontMapGenerator
-import de.fabmax.kool.platform.ImageAtlasTextureData
-import de.fabmax.kool.platform.ImageTextureData
+import de.fabmax.kool.platform.*
 import de.fabmax.kool.platform.webgl.TextureLoader
 import de.fabmax.kool.util.*
 import kotlinx.browser.document
@@ -162,7 +159,7 @@ actual object PlatformAssets {
     }
 
     internal actual suspend fun uploadTextureToGpu(texture: Texture, texData: TextureData): Boolean {
-        val ctx = JsImpl.getContextOrNull() ?: return false
+        val ctx = KoolContext.getContextOrNull() as? JsContext ?: return false
         texture.loadedTexture = when (texture) {
             is Texture2d -> TextureLoader.loadTexture2d(ctx, texture.props, texData)
             is Texture3d -> TextureLoader.loadTexture3d(ctx, texture.props, texData)

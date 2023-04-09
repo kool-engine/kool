@@ -25,9 +25,8 @@ internal actual object PlatformInput {
     }
 
     actual fun applyCursorShape(cursorShape: CursorShape) {
-        val canvas = JsImpl.getContextOrNull()?.canvas ?: return
         if (cursorShape != currentCursorShape) {
-            canvas.style.cursor = when (cursorShape) {
+            JsImpl.canvas.style.cursor = when (cursorShape) {
                 CursorShape.DEFAULT -> "default"
                 CursorShape.TEXT -> "text"
                 CursorShape.CROSSHAIR -> "crosshair"
@@ -250,11 +249,10 @@ internal actual object PlatformInput {
 
         var cursorMode = CursorMode.NORMAL
             set(value) {
-                val canvas = JsImpl.getContextOrNull()?.canvas ?: return
                 field = value
                 when (value) {
                     CursorMode.NORMAL -> exitPointerLock()
-                    CursorMode.LOCKED -> requestPointerLock(canvas)
+                    CursorMode.LOCKED -> requestPointerLock(JsImpl.canvas)
                 }
             }
 
@@ -287,10 +285,9 @@ internal actual object PlatformInput {
         }
 
         fun checkLockState() {
-            val canvas = JsImpl.getContextOrNull()?.canvas ?: return
             if (cursorMode == CursorMode.LOCKED && !hasPointerLock) {
                 // previous attempt to requestPointerLock() has failed, re-request it on user interaction
-                requestPointerLock(canvas)
+                requestPointerLock(JsImpl.canvas)
             }
         }
     }

@@ -3,6 +3,9 @@ package de.fabmax.kool.platform.gl
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.util.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.lwjgl.opengl.GL20.*
 import org.lwjgl.opengl.GL30.glBindBufferBase
 import org.lwjgl.opengl.GL31.GL_UNIFORM_BUFFER
@@ -281,17 +284,11 @@ abstract class MappedUniformTex(val texUnit: Int, val target: Int) : MappedUnifo
         if (texture.loadingState == Texture.LoadingState.NOT_LOADED) {
             when (texture.loader) {
                 is AsyncTextureLoader -> {
-                    val deferredData = texture.loader.loadTextureDataAsync()
-                    deferredData.invokeOnCompletion { ex ->
-                        ctx.runOnMainThread {
-                            if (ex != null) {
-                                logE { "Texture loading failed: $ex" }
-                                texture.loadingState = Texture.LoadingState.LOADING_FAILED
-                            } else {
-                                texture.loadedTexture = getLoadedTex(deferredData.getCompleted(), texture, ctx)
-                                texture.loadingState = Texture.LoadingState.LOADED
-                            }
-                        }
+                    texture.loadingState = Texture.LoadingState.LOADING
+                    CoroutineScope(Dispatchers.RenderLoop).launch {
+                        val texData = texture.loader.loadTextureDataAsync().await()
+                        texture.loadedTexture = getLoadedTex(texData, texture, ctx)
+                        texture.loadingState = Texture.LoadingState.LOADED
                     }
                 }
                 is SyncTextureLoader -> {
@@ -305,6 +302,7 @@ abstract class MappedUniformTex(val texUnit: Int, val target: Int) : MappedUnifo
                 }
                 else -> {
                     // loader is null
+                    texture.loadingState = Texture.LoadingState.LOADING_FAILED
                 }
             }
         }

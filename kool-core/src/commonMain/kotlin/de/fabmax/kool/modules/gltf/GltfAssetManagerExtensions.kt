@@ -7,18 +7,18 @@ import de.fabmax.kool.util.BufferUtil
 import de.fabmax.kool.util.DataStream
 import de.fabmax.kool.util.logW
 
-suspend fun Assets.loadGltfFile(assetPath: String): GltfFile? {
+suspend fun Assets.loadGltfFile(assetPath: String): GltfFile {
     val file = when {
         isGltf(assetPath) -> loadGltf(assetPath)
         isBinaryGltf(assetPath) -> loadGlb(assetPath)
-        else -> null
+        else -> throw IllegalArgumentException("Given asset path should end in .gltf, gltf.gz, glb or glb.gz")
     }
 
     val modelBasePath = if (assetPath.contains('/')) {
         assetPath.substring(0, assetPath.lastIndexOf('/'))
     } else { "." }
 
-    file?.let { m ->
+    file.let { m ->
         m.buffers.filter { it.uri != null }.forEach {
             val uri = it.uri!!
             val bufferPath = if (uri.startsWith("data:", true)) { uri } else { "$modelBasePath/$uri" }
@@ -30,17 +30,19 @@ suspend fun Assets.loadGltfFile(assetPath: String): GltfFile? {
     return file
 }
 
-suspend fun Assets.loadGltfModel(assetPath: String,
-                                 modelCfg: GltfFile.ModelGenerateConfig = GltfFile.ModelGenerateConfig(),
-                                 scene: Int = 0): Model? {
-    return loadGltfFile(assetPath)?.makeModel(modelCfg, scene)
+suspend fun Assets.loadGltfModel(
+    assetPath: String,
+    modelCfg: GltfFile.ModelGenerateConfig = GltfFile.ModelGenerateConfig(),
+    scene: Int = 0
+): Model {
+    return loadGltfFile(assetPath).makeModel(modelCfg, scene)
 }
 
-private fun isGltf(assetPath: String): Boolean{
+private fun isGltf(assetPath: String): Boolean {
     return assetPath.endsWith(".gltf", true) || assetPath.endsWith(".gltf.gz", true)
 }
 
-private fun isBinaryGltf(assetPath: String): Boolean{
+private fun isBinaryGltf(assetPath: String): Boolean {
     return assetPath.endsWith(".glb", true) || assetPath.endsWith(".glb.gz", true)
 }
 

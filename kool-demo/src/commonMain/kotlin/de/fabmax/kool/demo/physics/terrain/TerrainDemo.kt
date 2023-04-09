@@ -137,7 +137,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         bridgeMesh = makeBridgeMesh()
 
         showLoadText("Loading player model...")
-        val playerGltf = loadGltfModel("${DemoLoader.modelPath}/player.glb") ?: throw IllegalStateException("Failed loading model")
+        val playerGltf = loadGltfModel("${DemoLoader.modelPath}/player.glb")
         playerModel = PlayerModel(playerGltf, physicsObjects.playerController)
 
         escKeyListener = Input.registerKeyListener(Input.KEY_ESC, "Exit cursor lock") {

@@ -138,7 +138,7 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
 
         hours.forEachIndexed { i, h ->
             terrainDemo.showLoadText("Creating sky (${i * 100f / hours.lastIndex}%)...", 0)
-            precomputeSky(h / 24f, parentScene, skyLut.colorTexture!!, ctx)
+            precomputeSky(h / 24f, parentScene, skyLut.colorTexture!!)
         }
         weightedEnvs = WeightedEnvMaps(skies[0.5f]!!.envMaps, skies[0.5f]!!.envMaps)
 
@@ -149,14 +149,14 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
         }
     }
 
-    private suspend fun precomputeSky(timeOfDay: Float, parentScene: Scene, skyLut: Texture2d, ctx: KoolContext) {
+    private suspend fun precomputeSky(timeOfDay: Float, parentScene: Scene, skyLut: Texture2d) {
         val sunDir = computeLightDirection(SUN_TILT, sunProgress(timeOfDay), Mat3f())
         val sky = SkyCubeIblSystem(parentScene, skyLut)
         sky.skyPass.elevation = 90f - acos(-sunDir.y).toDeg()
         sky.skyPass.azimuth = atan2(sunDir.x, -sunDir.z).toDeg()
         sky.setupOffscreenPasses()
         skies[timeOfDay] = sky
-        ctx.delayFrames(1)
+        delayFrames(1)
     }
 
     fun updateLight(sceneLight: Light) {

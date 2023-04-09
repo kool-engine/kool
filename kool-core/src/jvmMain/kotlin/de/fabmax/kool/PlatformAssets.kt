@@ -5,12 +5,8 @@ import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.pipeline.TextureData
 import de.fabmax.kool.pipeline.TextureData2d
-import de.fabmax.kool.platform.FontMapGenerator
-import de.fabmax.kool.platform.HttpCache
-import de.fabmax.kool.platform.ImageAtlasTextureData
-import de.fabmax.kool.platform.ImageTextureData
+import de.fabmax.kool.platform.*
 import de.fabmax.kool.util.*
-import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.lwjgl.PointerBuffer
@@ -205,14 +201,10 @@ actual object PlatformAssets {
     }
 
     internal actual suspend fun uploadTextureToGpu(texture: Texture, texData: TextureData): Boolean {
-        val ctx = DesktopImpl.getContextOrNull() ?: return false
-
-        val deferred = CompletableDeferred<Texture>(Assets.job)
-        ctx.runOnMainThread {
+        withContext(Dispatchers.RenderLoop) {
+            val ctx = KoolContext.requireContext() as Lwjgl3Context
             ctx.renderBackend.uploadTextureToGpu(texture, texData)
-            deferred.complete(texture)
         }
-        deferred.await()
         return true
     }
 

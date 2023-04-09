@@ -2,6 +2,7 @@ package de.fabmax.kool
 
 import de.fabmax.kool.platform.JsContext
 import de.fabmax.kool.platform.WebGL2RenderingContext
+import org.w3c.dom.HTMLCanvasElement
 
 /**
  * Javascript / WebGL platform implementation
@@ -41,6 +42,8 @@ internal object JsImpl {
     private var ctx: JsContext? = null
     val gl: WebGL2RenderingContext
         get() = ctx?.gl ?: throw KoolException("Platform.createContext() not called")
+    val canvas: HTMLCanvasElement
+        get() = ctx?.canvas ?: throw KoolException("Platform.createContext() not called")
 
     fun createContext(): KoolContext {
         if (ctx != null) {
@@ -48,13 +51,5 @@ internal object JsImpl {
         }
         ctx = JsContext()
         return ctx!!
-    }
-
-    fun requireContext(): JsContext {
-        return ctx ?: throw IllegalStateException("KoolContext was not yet created")
-    }
-
-    fun getContextOrNull(): JsContext? {
-        return ctx
     }
 }
