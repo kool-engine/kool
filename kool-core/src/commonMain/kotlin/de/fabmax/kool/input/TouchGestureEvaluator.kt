@@ -1,6 +1,5 @@
-package de.fabmax.kool.util
+package de.fabmax.kool.input
 
-import de.fabmax.kool.Input
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec2d
 import de.fabmax.kool.math.Vec2d
@@ -14,14 +13,14 @@ open class TouchGestureEvaluator {
     var currentGesture = Gesture()
         protected set
 
-    private val activePointers = mutableListOf<Input.Pointer>()
+    private val activePointers = mutableListOf<Pointer>()
     private val tmpVec1 = MutableVec2d()
     private val tmpVec2 = MutableVec2d()
 
     protected val startPositions = mutableMapOf<Int, Vec2d>()
     protected var screenDpi = 96f
 
-    fun evaluate(pointerState: Input.PointerState, ctx: KoolContext) {
+    fun evaluate(pointerState: PointerState, ctx: KoolContext) {
         screenDpi = ctx.windowScale * 96f
         pointerState.getActivePointers(activePointers)
 
@@ -40,12 +39,12 @@ open class TouchGestureEvaluator {
         }
     }
 
-    protected open fun onGestureInit(pointers: MutableList<Input.Pointer>) {
+    protected open fun onGestureInit(pointers: MutableList<Pointer>) {
         pointers.forEach { startPositions[it.id] = Vec2d(it.x, it.y) }
         currentGesture.type = INDETERMINATE
     }
 
-    protected open fun onDetermineGesture(pointers: MutableList<Input.Pointer>) {
+    protected open fun onDetermineGesture(pointers: MutableList<Pointer>) {
         // remove any missing pointer
         startPositions.keys.removeAll { ptrId -> pointers.find { it.id == ptrId } == null }
 
@@ -60,7 +59,7 @@ open class TouchGestureEvaluator {
         }
     }
 
-    protected open fun isPinch(pointers: MutableList<Input.Pointer>): Boolean {
+    protected open fun isPinch(pointers: MutableList<Pointer>): Boolean {
         // two pointers moving in opposing direction
         if (pointers.size == 2) {
             tmpVec1.set(pointers[0].x, pointers[0].y).subtract(startPositions[pointers[0].id]!!)
@@ -81,7 +80,7 @@ open class TouchGestureEvaluator {
         return false
     }
 
-    protected open fun isTwoFingerDrag(pointers: MutableList<Input.Pointer>): Boolean {
+    protected open fun isTwoFingerDrag(pointers: MutableList<Pointer>): Boolean {
         // two pointers moving in same direction
         if (pointers.size == 2) {
             tmpVec1.set(pointers[0].x, pointers[0].y).subtract(startPositions[pointers[0].id]!!)
@@ -102,7 +101,7 @@ open class TouchGestureEvaluator {
         return false
     }
 
-    protected open fun handleGesture(pointers: MutableList<Input.Pointer>) {
+    protected open fun handleGesture(pointers: MutableList<Pointer>) {
         if (pointers.size == 2) {
             tmpVec1.set(pointers[0].x, pointers[0].y)
             tmpVec2.set(pointers[1].x, pointers[1].y)

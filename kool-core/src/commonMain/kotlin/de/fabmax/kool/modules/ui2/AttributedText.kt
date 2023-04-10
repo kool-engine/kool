@@ -1,8 +1,8 @@
 package de.fabmax.kool.modules.ui2
 
-import de.fabmax.kool.CursorShape
-import de.fabmax.kool.Input
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.input.CursorShape
+import de.fabmax.kool.input.PointerInput
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.scene.geometry.TextProps
 import de.fabmax.kool.util.Color
@@ -262,7 +262,7 @@ open class AttributedTextNode(parent: UiNode?, surface: UiSurface)
     }
 
     override fun onHover(ev: PointerEvent) {
-        Input.cursorShape = CursorShape.TEXT
+        PointerInput.cursorShape = CursorShape.TEXT
     }
 
     override fun onClick(ev: PointerEvent) {
@@ -274,7 +274,7 @@ open class AttributedTextNode(parent: UiNode?, surface: UiSurface)
     override fun onDragStart(ev: PointerEvent) = onClick(ev)
 
     override fun onDrag(ev: PointerEvent) {
-        Input.cursorShape = CursorShape.TEXT
+        PointerInput.cursorShape = CursorShape.TEXT
         if (Time.frameCount > dragStartFrame) {
             val txtI = charIndexFromLocalX(ev.position.x)
             if (txtI != modifier.caretPos) {

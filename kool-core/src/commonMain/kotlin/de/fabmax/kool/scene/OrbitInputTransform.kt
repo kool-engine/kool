@@ -1,12 +1,12 @@
 package de.fabmax.kool.scene
 
-import de.fabmax.kool.Input
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.input.InputStack
+import de.fabmax.kool.input.PointerState
 import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.BoundingBox
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.scene.animation.SpringDamperDouble
-import de.fabmax.kool.util.InputStack
 import de.fabmax.kool.util.Time
 
 /**
@@ -234,7 +234,7 @@ open class OrbitInputTransform(name: String? = null) : Node(name), InputStack.Po
         zoom = zoomAnimator.actual
     }
 
-    override fun handlePointer(pointerState: Input.PointerState, ctx: KoolContext) {
+    override fun handlePointer(pointerState: PointerState, ctx: KoolContext) {
         val dragPtr = pointerState.primaryPointer
         if (dragPtr.isConsumed()) {
             deltaPos.set(Vec2d.ZERO)

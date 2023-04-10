@@ -1,7 +1,7 @@
 package de.fabmax.kool.modules.ui2
 
-import de.fabmax.kool.Input
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.input.Pointer
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.util.Color
@@ -258,7 +258,7 @@ open class ScrollbarNode(parent: UiNode?, surface: UiSurface)
             }
         }
 
-        fun updateScrollPos(dragPointer: Input.Pointer) {
+        fun updateScrollPos(dragPointer: Pointer) {
             val dragPos = if (isVertical) {
                 dragPointer.dragDeltaY.toFloat()
             } else {

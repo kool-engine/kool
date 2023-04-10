@@ -1,5 +1,6 @@
-package de.fabmax.kool
+package de.fabmax.kool.input
 
+import de.fabmax.kool.JsImpl
 import de.fabmax.kool.math.MutableVec2d
 import de.fabmax.kool.platform.JsContext
 import de.fabmax.kool.platform.TouchEvent
@@ -61,7 +62,7 @@ internal actual object PlatformInput {
                 virtualPointerPos.x = (ev.clientX * window.devicePixelRatio - bounds.left)
                 virtualPointerPos.y = (ev.clientY * window.devicePixelRatio - bounds.top)
             }
-            Input.handleMouseMove(virtualPointerPos.x, virtualPointerPos.y)
+            PointerInput.handleMouseMove(virtualPointerPos.x, virtualPointerPos.y)
         }
         canvas.onmousedown = { ev ->
             PointerLockState.checkLockState()
@@ -69,7 +70,7 @@ internal actual object PlatformInput {
             mouseButtonState = ev.buttons.toInt()
             for (btn in 0..7) {
                 if (changeMask and (1 shl btn) != 0) {
-                    Input.handleMouseButtonState(btn, true)
+                    PointerInput.handleMouseButtonEvent(btn, true)
                 }
             }
         }
@@ -78,11 +79,11 @@ internal actual object PlatformInput {
             mouseButtonState = ev.buttons.toInt()
             for (btn in 0..7) {
                 if (changeMask and (1 shl btn) != 0) {
-                    Input.handleMouseButtonState(btn, false)
+                    PointerInput.handleMouseButtonEvent(btn, false)
                 }
             }
         }
-        canvas.onmouseleave = { Input.handleMouseExit() }
+        canvas.onmouseleave = { PointerInput.handleMouseExit() }
         canvas.onwheel = { ev ->
             // scroll amount is browser dependent, try to norm it to roughly 1.0 ticks per mouse scroll wheel tick
             var yTicks = -ev.deltaY.toFloat() / 3.0
@@ -92,7 +93,7 @@ internal actual object PlatformInput {
                 yTicks /= 30.0
                 xTicks /= 30.0
             }
-            Input.handleMouseScroll(xTicks, yTicks)
+            PointerInput.handleMouseScroll(xTicks, yTicks)
             ev.preventDefault()
         }
 
@@ -104,7 +105,7 @@ internal actual object PlatformInput {
             val changedTouches = (ev as TouchEvent).changedTouches
             for (i in 0 until changedTouches.length) {
                 val touch = changedTouches.item(i)
-                Input.handleTouchStart(touch.identifier, touch.elementX, touch.elementY)
+                PointerInput.handleTouchStart(touch.identifier, touch.elementX, touch.elementY)
             }
         }, false)
         canvas.addEventListener("touchend", { ev ->
@@ -112,7 +113,7 @@ internal actual object PlatformInput {
             val changedTouches = (ev as TouchEvent).changedTouches
             for (i in 0 until changedTouches.length) {
                 val touch = changedTouches.item(i)
-                Input.handleTouchEnd(touch.identifier)
+                PointerInput.handleTouchEnd(touch.identifier)
             }
         }, false)
         canvas.addEventListener("touchcancel", { ev ->
@@ -120,7 +121,7 @@ internal actual object PlatformInput {
             val changedTouches = (ev as TouchEvent).changedTouches
             for (i in 0 until changedTouches.length) {
                 val touch = changedTouches.item(i)
-                Input.handleTouchCancel(touch.identifier)
+                PointerInput.handleTouchCancel(touch.identifier)
             }
         }, false)
         canvas.addEventListener("touchmove", { ev ->
@@ -128,7 +129,7 @@ internal actual object PlatformInput {
             val changedTouches = (ev as TouchEvent).changedTouches
             for (i in 0 until changedTouches.length) {
                 val touch = changedTouches.item(i)
-                Input.handleTouchMove(touch.identifier, touch.elementX, touch.elementY)
+                PointerInput.handleTouchMove(touch.identifier, touch.elementX, touch.elementY)
             }
         }, false)
 
@@ -141,21 +142,25 @@ internal actual object PlatformInput {
         val localKeyCode = ev.toLocalKeyCode()
         var mods = 0
         if (keyCode.code != 0 || localKeyCode.code != 0) {
-            if (ev.altKey) { mods = mods or Input.KEY_MOD_ALT }
-            if (ev.ctrlKey) { mods = mods or Input.KEY_MOD_CTRL }
-            if (ev.shiftKey) { mods = mods or Input.KEY_MOD_SHIFT }
-            if (ev.metaKey) { mods = mods or Input.KEY_MOD_SUPER }
-
-            var event = Input.KEY_EV_DOWN
-            if (ev.repeat) {
-                event = event or Input.KEY_EV_REPEATED
+            if (ev.altKey) { mods = mods or KeyboardInput.KEY_MOD_ALT
             }
-            Input.keyEvent(Input.KeyEvent(keyCode, localKeyCode, event, mods))
+            if (ev.ctrlKey) { mods = mods or KeyboardInput.KEY_MOD_CTRL
+            }
+            if (ev.shiftKey) { mods = mods or KeyboardInput.KEY_MOD_SHIFT
+            }
+            if (ev.metaKey) { mods = mods or KeyboardInput.KEY_MOD_SUPER
+            }
+
+            var event = KeyboardInput.KEY_EV_DOWN
+            if (ev.repeat) {
+                event = event or KeyboardInput.KEY_EV_REPEATED
+            }
+            KeyboardInput.handleKeyEvent(KeyEvent(keyCode, localKeyCode, event, mods))
         }
         // do not issue an charType() if a modifier key is down (e.g. Ctrl+C), Shift is fine however (it's just
         // a capital letter then...)
-        if (ev.key.length == 1 && (mods and Input.KEY_MOD_SHIFT.inv()) == 0) {
-            Input.charTyped(ev.key[0])
+        if (ev.key.length == 1 && (mods and KeyboardInput.KEY_MOD_SHIFT.inv()) == 0) {
+            KeyboardInput.handleCharTyped(ev.key[0])
         }
 
         if (!excludedKeyCodes.contains(ev.code)) {
@@ -168,11 +173,15 @@ internal actual object PlatformInput {
         val localKeyCode = ev.toLocalKeyCode()
         if (keyCode.code != 0 || localKeyCode.code != 0) {
             var mods = 0
-            if (ev.altKey) { mods = mods or Input.KEY_MOD_ALT }
-            if (ev.ctrlKey) { mods = mods or Input.KEY_MOD_CTRL }
-            if (ev.shiftKey) { mods = mods or Input.KEY_MOD_SHIFT }
-            if (ev.metaKey) { mods = mods or Input.KEY_MOD_SUPER }
-            Input.keyEvent(Input.KeyEvent(keyCode, localKeyCode, Input.KEY_EV_UP, mods))
+            if (ev.altKey) { mods = mods or KeyboardInput.KEY_MOD_ALT
+            }
+            if (ev.ctrlKey) { mods = mods or KeyboardInput.KEY_MOD_CTRL
+            }
+            if (ev.shiftKey) { mods = mods or KeyboardInput.KEY_MOD_SHIFT
+            }
+            if (ev.metaKey) { mods = mods or KeyboardInput.KEY_MOD_SUPER
+            }
+            KeyboardInput.handleKeyEvent(KeyEvent(keyCode, localKeyCode, KeyboardInput.KEY_EV_UP, mods))
         }
 
         if (!excludedKeyCodes.contains(ev.code)) {
@@ -200,46 +209,46 @@ internal actual object PlatformInput {
     }
 
     val KEY_CODE_MAP: Map<String, UniversalKeyCode> = mutableMapOf(
-        "ControlLeft" to Input.KEY_CTRL_LEFT,
-        "ControlRight" to Input.KEY_CTRL_RIGHT,
-        "ShiftLeft" to Input.KEY_SHIFT_LEFT,
-        "ShiftRight" to Input.KEY_SHIFT_RIGHT,
-        "AltLeft" to Input.KEY_ALT_LEFT,
-        "AltRight" to Input.KEY_ALT_RIGHT,
-        "MetaLeft" to Input.KEY_SUPER_LEFT,
-        "MetaRight" to Input.KEY_SUPER_RIGHT,
-        "Escape" to Input.KEY_ESC,
-        "ContextMenu" to Input.KEY_MENU,
-        "Enter" to Input.KEY_ENTER,
-        "NumpadEnter" to Input.KEY_NP_ENTER,
-        "NumpadDivide" to Input.KEY_NP_DIV,
-        "NumpadMultiply" to Input.KEY_NP_MUL,
-        "NumpadAdd" to Input.KEY_NP_PLUS,
-        "NumpadSubtract" to Input.KEY_NP_MINUS,
-        "Backspace" to Input.KEY_BACKSPACE,
-        "Tab" to Input.KEY_TAB,
-        "Delete" to Input.KEY_DEL,
-        "Insert" to Input.KEY_INSERT,
-        "Home" to Input.KEY_HOME,
-        "End" to Input.KEY_END,
-        "PageUp" to Input.KEY_PAGE_UP,
-        "PageDown" to Input.KEY_PAGE_DOWN,
-        "ArrowLeft" to Input.KEY_CURSOR_LEFT,
-        "ArrowRight" to Input.KEY_CURSOR_RIGHT,
-        "ArrowUp" to Input.KEY_CURSOR_UP,
-        "ArrowDown" to Input.KEY_CURSOR_DOWN,
-        "F1" to Input.KEY_F1,
-        "F2" to Input.KEY_F2,
-        "F3" to Input.KEY_F3,
-        "F4" to Input.KEY_F4,
-        "F5" to Input.KEY_F5,
-        "F6" to Input.KEY_F6,
-        "F7" to Input.KEY_F7,
-        "F8" to Input.KEY_F8,
-        "F9" to Input.KEY_F9,
-        "F10" to Input.KEY_F10,
-        "F11" to Input.KEY_F11,
-        "F12" to Input.KEY_F12,
+        "ControlLeft" to KeyboardInput.KEY_CTRL_LEFT,
+        "ControlRight" to KeyboardInput.KEY_CTRL_RIGHT,
+        "ShiftLeft" to KeyboardInput.KEY_SHIFT_LEFT,
+        "ShiftRight" to KeyboardInput.KEY_SHIFT_RIGHT,
+        "AltLeft" to KeyboardInput.KEY_ALT_LEFT,
+        "AltRight" to KeyboardInput.KEY_ALT_RIGHT,
+        "MetaLeft" to KeyboardInput.KEY_SUPER_LEFT,
+        "MetaRight" to KeyboardInput.KEY_SUPER_RIGHT,
+        "Escape" to KeyboardInput.KEY_ESC,
+        "ContextMenu" to KeyboardInput.KEY_MENU,
+        "Enter" to KeyboardInput.KEY_ENTER,
+        "NumpadEnter" to KeyboardInput.KEY_NP_ENTER,
+        "NumpadDivide" to KeyboardInput.KEY_NP_DIV,
+        "NumpadMultiply" to KeyboardInput.KEY_NP_MUL,
+        "NumpadAdd" to KeyboardInput.KEY_NP_PLUS,
+        "NumpadSubtract" to KeyboardInput.KEY_NP_MINUS,
+        "Backspace" to KeyboardInput.KEY_BACKSPACE,
+        "Tab" to KeyboardInput.KEY_TAB,
+        "Delete" to KeyboardInput.KEY_DEL,
+        "Insert" to KeyboardInput.KEY_INSERT,
+        "Home" to KeyboardInput.KEY_HOME,
+        "End" to KeyboardInput.KEY_END,
+        "PageUp" to KeyboardInput.KEY_PAGE_UP,
+        "PageDown" to KeyboardInput.KEY_PAGE_DOWN,
+        "ArrowLeft" to KeyboardInput.KEY_CURSOR_LEFT,
+        "ArrowRight" to KeyboardInput.KEY_CURSOR_RIGHT,
+        "ArrowUp" to KeyboardInput.KEY_CURSOR_UP,
+        "ArrowDown" to KeyboardInput.KEY_CURSOR_DOWN,
+        "F1" to KeyboardInput.KEY_F1,
+        "F2" to KeyboardInput.KEY_F2,
+        "F3" to KeyboardInput.KEY_F3,
+        "F4" to KeyboardInput.KEY_F4,
+        "F5" to KeyboardInput.KEY_F5,
+        "F6" to KeyboardInput.KEY_F6,
+        "F7" to KeyboardInput.KEY_F7,
+        "F8" to KeyboardInput.KEY_F8,
+        "F9" to KeyboardInput.KEY_F9,
+        "F10" to KeyboardInput.KEY_F10,
+        "F11" to KeyboardInput.KEY_F11,
+        "F12" to KeyboardInput.KEY_F12,
         "Space" to UniversalKeyCode(' ')
     )
 
@@ -278,8 +287,8 @@ internal actual object PlatformInput {
                 // we lost pointer lock without requesting it via api -> user requested it by hitting the esc key
                 // report an esc key-event, so the application can react on it
                 logI { "pointer lock exited by user" }
-                Input.keyEvent(Input.KeyEvent(Input.KEY_ESC, Input.KEY_EV_DOWN, 0))
-                Input.keyEvent(Input.KeyEvent(Input.KEY_ESC, Input.KEY_EV_UP, 0))
+                KeyboardInput.handleKeyEvent(KeyEvent(KeyboardInput.KEY_ESC, KeyboardInput.KEY_EV_DOWN, 0))
+                KeyboardInput.handleKeyEvent(KeyEvent(KeyboardInput.KEY_ESC, KeyboardInput.KEY_EV_UP, 0))
             }
             isApiExitRequest = false
         }

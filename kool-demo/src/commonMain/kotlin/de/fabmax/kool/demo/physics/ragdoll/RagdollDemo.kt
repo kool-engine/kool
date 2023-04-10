@@ -1,8 +1,13 @@
 package de.fabmax.kool.demo.physics.ragdoll
 
-import de.fabmax.kool.*
+import de.fabmax.kool.Assets
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.*
 import de.fabmax.kool.demo.menu.DemoMenu
+import de.fabmax.kool.input.InputStack
+import de.fabmax.kool.input.KeyboardInput
+import de.fabmax.kool.input.PointerState
+import de.fabmax.kool.input.UniversalKeyCode
 import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.BoundingBox
 import de.fabmax.kool.modules.ksl.KslPbrShader
@@ -22,6 +27,7 @@ import de.fabmax.kool.pipeline.ao.AoPipeline
 import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.*
+import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
 import kotlin.math.roundToInt
 
@@ -69,7 +75,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
         physicsWorld.simStepper = physicsStepper
         physicsWorld.registerHandlers(mainScene)
 
-        val gravKeyListener = Input.registerKeyListener(UniversalKeyCode(' '), "Change Gravity",  { true }) {
+        val gravKeyListener = KeyboardInput.registerKeyListener(UniversalKeyCode(' '), "Change Gravity",  { true }) {
             if (it.isPressed) {
                 physicsWorld.gravity = Vec3f(0f, 0.5f, 0f)
                 physicsWorld.wakeUpAll()
@@ -121,7 +127,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
             groundAlbedo.dispose()
             groundNormal.dispose()
             physicsWorld.release()
-            Input.removeKeyListener(gravKeyListener)
+            KeyboardInput.removeKeyListener(gravKeyListener)
         }
     }
 
@@ -516,7 +522,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
 
         var isActive = false
 
-        override fun handlePointer(pointerState: Input.PointerState, ctx: KoolContext) {
+        override fun handlePointer(pointerState: PointerState, ctx: KoolContext) {
             val dragPtr = pointerState.primaryPointer
             if (!dragPtr.isValid) { return }
             if (!(dragPtr.isMiddleButtonEvent || dragPtr.isMiddleButtonDown)) { return }

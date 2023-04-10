@@ -1,8 +1,10 @@
 package de.fabmax.kool.demo.physics.vehicle
 
-import de.fabmax.kool.Input
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.LocalKeyCode
+import de.fabmax.kool.input.DriveAxes
+import de.fabmax.kool.input.InputStack
+import de.fabmax.kool.input.KeyboardInput
+import de.fabmax.kool.input.LocalKeyCode
 import de.fabmax.kool.math.*
 import de.fabmax.kool.physics.geometry.ConvexMesh
 import de.fabmax.kool.physics.geometry.ConvexMeshGeometry
@@ -15,7 +17,6 @@ import de.fabmax.kool.pipeline.deferred.deferredKslPbrShader
 import de.fabmax.kool.scene.Model
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.DriveAxes
 import de.fabmax.kool.util.Time
 import kotlin.math.abs
 import kotlin.math.atan2
@@ -28,7 +29,7 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
     val vehicleGroup = Node()
     val vehicleAudio = VehicleAudio(world.physics)
 
-    private lateinit var recoverListener: Input.KeyEventListener
+    private lateinit var recoverListener: InputStack.SimpleKeyListener
     private val inputAxes = DriveAxes(ctx)
     private val throttleBrakeHandler = ThrottleBrakeHandler()
 
@@ -263,7 +264,7 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
         // throttle and brake are used in a digital fashion, set low r
 
         var prevRecoverTime = 0.0
-        recoverListener = Input.registerKeyListener(LocalKeyCode('r'), "recover", filter = { it.isPressed }) {
+        recoverListener = KeyboardInput.registerKeyListener(LocalKeyCode('r'), "recover", filter = { it.isPressed }) {
             val time = Time.gameTime
             val recoverHard = time - prevRecoverTime < 0.3
             prevRecoverTime = time
@@ -292,7 +293,7 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
     fun cleanUp(ctx: KoolContext) {
         inputAxes.dispose(ctx)
         vehicleAudio.stop()
-        Input.removeKeyListener(recoverListener)
+        KeyboardInput.removeKeyListener(recoverListener)
     }
 
     fun toggleSound(enabled: Boolean) {

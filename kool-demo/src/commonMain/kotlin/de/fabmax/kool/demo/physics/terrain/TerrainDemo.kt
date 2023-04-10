@@ -1,11 +1,10 @@
 package de.fabmax.kool.demo.physics.terrain
 
 import de.fabmax.kool.Assets
-import de.fabmax.kool.CursorMode
-import de.fabmax.kool.Input
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.*
 import de.fabmax.kool.demo.menu.DemoMenu
+import de.fabmax.kool.input.*
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.toDeg
@@ -53,7 +52,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
     private var boxMesh: Mesh? = null
     private var bridgeMesh: Mesh? = null
 
-    private lateinit var escKeyListener: Input.KeyEventListener
+    private lateinit var escKeyListener: InputStack.SimpleKeyListener
 
     private val isSsao = mutableStateOf(true).onChange { ssao.isEnabled = it }
     private val isPlayerPbr = mutableStateOf(true).onChange { updatePlayerShader(it) }
@@ -86,7 +85,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
     }
 
     private val doubleClickListener = object : InputStack.PointerListener {
-        override fun handlePointer(pointerState: Input.PointerState, ctx: KoolContext) {
+        override fun handlePointer(pointerState: PointerState, ctx: KoolContext) {
             if (pointerState.primaryPointer.isLeftButtonClicked && pointerState.primaryPointer.leftButtonRepeatedClickCount == 2) {
                 isCursorLocked.set(true)
             }
@@ -140,9 +139,9 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         val playerGltf = loadGltfModel("${DemoLoader.modelPath}/player.glb")
         playerModel = PlayerModel(playerGltf, physicsObjects.playerController)
 
-        escKeyListener = Input.registerKeyListener(Input.KEY_ESC, "Exit cursor lock") {
+        escKeyListener = KeyboardInput.registerKeyListener(KeyboardInput.KEY_ESC, "Exit cursor lock") {
             isCursorLocked.set(false)
-            Input.cursorMode = CursorMode.NORMAL
+            PointerInput.cursorMode = CursorMode.NORMAL
         }
         InputStack.defaultInputHandler.pointerListeners += doubleClickListener
     }
@@ -152,8 +151,8 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         normalMap.dispose()
         physicsObjects.release(ctx)
 
-        Input.removeKeyListener(escKeyListener)
-        Input.cursorMode = CursorMode.NORMAL
+        KeyboardInput.removeKeyListener(escKeyListener)
+        PointerInput.cursorMode = CursorMode.NORMAL
         InputStack.defaultInputHandler.pointerListeners -= doubleClickListener
     }
 
@@ -322,10 +321,10 @@ class TerrainDemo : DemoScene("Terrain Demo") {
                 physicsObjects.playerController.frontHeading = atan2(lookDirection.x, -lookDirection.z).toDeg()
 
                 val gun = physicsObjects.playerController.tractorGun
-                val ptr = Input.pointerState.primaryPointer
+                val ptr = PointerInput.primaryPointer
                 if (gun.tractorState == TractorGun.TractorState.TRACTOR) {
-                    ptr.consume(Input.CONSUMED_SCROLL_Y)
-                    if (Input.isShiftDown) {
+                    ptr.consume(PointerInput.CONSUMED_SCROLL_Y)
+                    if (KeyboardInput.isShiftDown) {
                         gun.tractorDistance += ptr.deltaScroll.toFloat() * 0.25f
                     } else {
                         gun.rotationTorque += ptr.deltaScroll.toFloat()

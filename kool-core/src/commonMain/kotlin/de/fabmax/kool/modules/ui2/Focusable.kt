@@ -1,6 +1,6 @@
 package de.fabmax.kool.modules.ui2
 
-import de.fabmax.kool.Input
+import de.fabmax.kool.input.KeyEvent
 
 interface Focusable : UiScope {
     val isFocused: MutableStateValue<Boolean>
@@ -17,5 +17,5 @@ interface Focusable : UiScope {
         isFocused.set(false)
     }
 
-    fun onKeyEvent(keyEvent: Input.KeyEvent)
+    fun onKeyEvent(keyEvent: KeyEvent)
 }

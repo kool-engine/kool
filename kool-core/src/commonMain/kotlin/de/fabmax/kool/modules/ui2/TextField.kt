@@ -1,6 +1,8 @@
 package de.fabmax.kool.modules.ui2
 
-import de.fabmax.kool.*
+import de.fabmax.kool.Clipboard
+import de.fabmax.kool.KoolContext
+import de.fabmax.kool.input.*
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.scene.geometry.TextProps
 import de.fabmax.kool.util.Color
@@ -247,13 +249,13 @@ open class TextFieldNode(parent: UiNode?, surface: UiSurface)
     }
 
     override fun onHover(ev: PointerEvent) {
-        Input.cursorShape = CursorShape.TEXT
+        PointerInput.cursorShape = CursorShape.TEXT
     }
 
     override fun onDragStart(ev: PointerEvent) = onClick(ev)
 
     override fun onDrag(ev: PointerEvent) {
-        Input.cursorShape = CursorShape.TEXT
+        PointerInput.cursorShape = CursorShape.TEXT
         val selPos = textIndex(modifier.font, ev.position.x)
         if (selPos != editText.caretPosition) {
             editText.caretPosition = selPos
@@ -261,7 +263,7 @@ open class TextFieldNode(parent: UiNode?, surface: UiSurface)
         }
     }
 
-    override fun onKeyEvent(keyEvent: Input.KeyEvent) {
+    override fun onKeyEvent(keyEvent: KeyEvent) {
         if (!modifier.isEditable) {
             return
         }
@@ -274,34 +276,34 @@ open class TextFieldNode(parent: UiNode?, surface: UiSurface)
 
         } else if (keyEvent.isPressed) {
             when (keyEvent.keyCode) {
-                Input.KEY_BACKSPACE -> {
+                KeyboardInput.KEY_BACKSPACE -> {
                     editText.backspace()
                     isTextUpdate = true
                 }
-                Input.KEY_DEL -> {
+                KeyboardInput.KEY_DEL -> {
                     editText.deleteSelection()
                     isTextUpdate = true
                 }
-                Input.KEY_CURSOR_LEFT -> {
+                KeyboardInput.KEY_CURSOR_LEFT -> {
                     if (keyEvent.isCtrlDown) {
                         editText.moveCaret(EditableText.MOVE_WORD_LEFT, keyEvent.isShiftDown)
                     } else {
                         editText.moveCaret(EditableText.MOVE_LEFT, keyEvent.isShiftDown)
                     }
                 }
-                Input.KEY_CURSOR_RIGHT -> {
+                KeyboardInput.KEY_CURSOR_RIGHT -> {
                     if (keyEvent.isCtrlDown) {
                         editText.moveCaret(EditableText.MOVE_WORD_RIGHT, keyEvent.isShiftDown)
                     } else {
                         editText.moveCaret(EditableText.MOVE_RIGHT, keyEvent.isShiftDown)
                     }
                 }
-                Input.KEY_HOME -> editText.moveCaret(EditableText.MOVE_START, keyEvent.isShiftDown)
-                Input.KEY_END -> editText.moveCaret(EditableText.MOVE_END, keyEvent.isShiftDown)
-                Input.KEY_ESC -> surface.requestFocus(null)
-                Input.KEY_TAB -> surface.cycleFocus(backwards = keyEvent.isShiftDown)
-                Input.KEY_ENTER -> modifier.onEnterPressed?.invoke(editText.text)
-                Input.KEY_NP_ENTER -> modifier.onEnterPressed?.invoke(editText.text)
+                KeyboardInput.KEY_HOME -> editText.moveCaret(EditableText.MOVE_START, keyEvent.isShiftDown)
+                KeyboardInput.KEY_END -> editText.moveCaret(EditableText.MOVE_END, keyEvent.isShiftDown)
+                KeyboardInput.KEY_ESC -> surface.requestFocus(null)
+                KeyboardInput.KEY_TAB -> surface.cycleFocus(backwards = keyEvent.isShiftDown)
+                KeyboardInput.KEY_ENTER -> modifier.onEnterPressed?.invoke(editText.text)
+                KeyboardInput.KEY_NP_ENTER -> modifier.onEnterPressed?.invoke(editText.text)
                 else -> {
                     triggerUpdate = false
                     if (keyEvent.isCtrlDown) {

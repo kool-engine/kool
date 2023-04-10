@@ -1,9 +1,9 @@
 package de.fabmax.kool.demo.menu
 
-import de.fabmax.kool.Input
 import de.fabmax.kool.demo.DemoLoader
 import de.fabmax.kool.demo.Settings
 import de.fabmax.kool.demo.UiSizes
+import de.fabmax.kool.input.PointerInput
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.Color
@@ -49,7 +49,7 @@ class DemoMenu(val demoLoader: DemoLoader) {
                 MenuContent()
 
                 surface.onEachFrame {
-                    val ptr = Input.pointerState.primaryPointer
+                    val ptr = PointerInput.primaryPointer
                     if (ptr.isAnyButtonEvent) {
                         val ptrPos = Vec2f(ptr.x.toFloat(), ptr.y.toFloat())
                         if (!uiNode.isInBounds(ptrPos)) {

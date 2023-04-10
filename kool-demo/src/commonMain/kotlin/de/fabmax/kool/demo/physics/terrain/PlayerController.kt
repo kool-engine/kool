@@ -1,12 +1,12 @@
 package de.fabmax.kool.demo.physics.terrain
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.input.WalkAxes
 import de.fabmax.kool.math.*
 import de.fabmax.kool.physics.RigidActor
 import de.fabmax.kool.physics.RigidDynamic
 import de.fabmax.kool.physics.character.*
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.util.WalkAxes
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.max

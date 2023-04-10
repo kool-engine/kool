@@ -1,7 +1,7 @@
 package de.fabmax.kool.scene
 
-import de.fabmax.kool.Input
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.input.Pointer
 import de.fabmax.kool.math.Ray
 import de.fabmax.kool.pipeline.OffscreenRenderPass
 import de.fabmax.kool.pipeline.RenderPass
@@ -117,7 +117,7 @@ open class Scene(name: String? = null) : Node(name) {
         super.dispose(ctx)
     }
 
-    fun computePickRay(pointer: Input.Pointer, ctx: KoolContext, result: Ray): Boolean {
+    fun computePickRay(pointer: Pointer, ctx: KoolContext, result: Ray): Boolean {
         return camera.computePickRay(result, pointer, mainRenderPass.viewport, ctx)
     }
 

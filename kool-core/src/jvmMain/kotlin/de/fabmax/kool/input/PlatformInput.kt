@@ -1,5 +1,6 @@
-package de.fabmax.kool
+package de.fabmax.kool.input
 
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.util.logD
 import org.lwjgl.glfw.GLFW
@@ -40,7 +41,7 @@ internal actual object PlatformInput {
         installInputHandlers(windowHandle)
 
         ctx.onWindowFocusChanged += {
-            if (Input.cursorMode == CursorMode.LOCKED) {
+            if (PointerInput.cursorMode == CursorMode.LOCKED) {
                 if (!it.isWindowFocused) {
                     logD { "Switching to normal cursor mode because of focus loss" }
                     GLFW.glfwSetInputMode(windowHandle, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_NORMAL)
@@ -74,29 +75,29 @@ internal actual object PlatformInput {
     private fun installInputHandlers(windowHandle: Long) {
         // install mouse callbacks
         GLFW.glfwSetMouseButtonCallback(windowHandle) { _, btn, act, _ ->
-            Input.handleMouseButtonState(btn, act == GLFW.GLFW_PRESS)
+            PointerInput.handleMouseButtonEvent(btn, act == GLFW.GLFW_PRESS)
         }
         GLFW.glfwSetCursorPosCallback(windowHandle) { _, x, y ->
-            Input.handleMouseMove(x, y)
+            PointerInput.handleMouseMove(x, y)
         }
         GLFW.glfwSetCursorEnterCallback(windowHandle) { _, entered ->
             if (!entered) {
                 isMouseOverWindow = false
-                Input.handleMouseExit()
+                PointerInput.handleMouseExit()
             } else {
                 isMouseOverWindow = true
             }
         }
         GLFW.glfwSetScrollCallback(windowHandle) { _, xOff, yOff ->
-            Input.handleMouseScroll(xOff, yOff)
+            PointerInput.handleMouseScroll(xOff, yOff)
         }
 
         // install keyboard callbacks
         GLFW.glfwSetKeyCallback(windowHandle) { _, key, _, action, mods ->
             val event = when (action) {
-                GLFW.GLFW_PRESS -> Input.KEY_EV_DOWN
-                GLFW.GLFW_REPEAT -> Input.KEY_EV_DOWN or Input.KEY_EV_REPEATED
-                GLFW.GLFW_RELEASE -> Input.KEY_EV_UP
+                GLFW.GLFW_PRESS -> KeyboardInput.KEY_EV_DOWN
+                GLFW.GLFW_REPEAT -> KeyboardInput.KEY_EV_DOWN or KeyboardInput.KEY_EV_REPEATED
+                GLFW.GLFW_RELEASE -> KeyboardInput.KEY_EV_UP
                 else -> -1
             }
             if (event != -1) {
@@ -104,22 +105,22 @@ internal actual object PlatformInput {
                 val localKeyCode = LocalKeyCode(localCharKeyCodes[keyCode.code] ?: keyCode.code)
                 var keyMod = 0
                 if (mods and GLFW.GLFW_MOD_ALT != 0) {
-                    keyMod = keyMod or Input.KEY_MOD_ALT
+                    keyMod = keyMod or KeyboardInput.KEY_MOD_ALT
                 }
                 if (mods and GLFW.GLFW_MOD_CONTROL != 0) {
-                    keyMod = keyMod or Input.KEY_MOD_CTRL
+                    keyMod = keyMod or KeyboardInput.KEY_MOD_CTRL
                 }
                 if (mods and GLFW.GLFW_MOD_SHIFT != 0) {
-                    keyMod = keyMod or Input.KEY_MOD_SHIFT
+                    keyMod = keyMod or KeyboardInput.KEY_MOD_SHIFT
                 }
                 if (mods and GLFW.GLFW_MOD_SUPER != 0) {
-                    keyMod = keyMod or Input.KEY_MOD_SUPER
+                    keyMod = keyMod or KeyboardInput.KEY_MOD_SUPER
                 }
-                Input.keyEvent(Input.KeyEvent(keyCode, localKeyCode, event, keyMod))
+                KeyboardInput.handleKeyEvent(KeyEvent(keyCode, localKeyCode, event, keyMod))
             }
         }
         GLFW.glfwSetCharCallback(windowHandle) { _, codepoint ->
-            Input.charTyped(codepoint.toChar())
+            KeyboardInput.handleCharTyped(codepoint.toChar())
         }
     }
 

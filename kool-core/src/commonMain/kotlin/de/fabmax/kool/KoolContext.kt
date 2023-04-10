@@ -1,5 +1,7 @@
 package de.fabmax.kool
 
+import de.fabmax.kool.input.KeyboardInput
+import de.fabmax.kool.input.PointerInput
 import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.pipeline.OffscreenRenderPass
@@ -48,7 +50,7 @@ abstract class KoolContext {
     val assetMgr = Assets
 
     @Deprecated("InputManager is an object now", ReplaceWith("Input"))
-    val inputMgr = Input
+    val inputMgr = KeyboardInput
 
     val engineStats = EngineStats()
 
@@ -163,7 +165,8 @@ abstract class KoolContext {
         for (i in frameTimes.indices) { sum += frameTimes[i] }
         fps = (frameTimes.size / sum) * 0.1 + fps * 0.9
 
-        Input.onNewFrame(this)
+        KeyboardInput.onNewFrame(this)
+        PointerInput.onNewFrame(this)
         for (i in onRender.indices) {
             onRender[i](this)
         }

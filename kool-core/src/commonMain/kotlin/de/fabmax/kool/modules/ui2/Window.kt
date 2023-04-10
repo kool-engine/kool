@@ -1,7 +1,7 @@
 package de.fabmax.kool.modules.ui2
 
-import de.fabmax.kool.CursorShape
-import de.fabmax.kool.Input
+import de.fabmax.kool.input.CursorShape
+import de.fabmax.kool.input.PointerInput
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.util.Color
@@ -207,7 +207,7 @@ class WindowMoveDragHandler(val window: WindowScope) : Draggable {
 
             if (!windowState.isDrag) {
                 val dist = sqrt(mvX * mvX + mvY * mvY)
-                if (dist > Input.MAX_CLICK_MOVE_PX) {
+                if (dist > PointerInput.MAX_CLICK_MOVE_PX) {
                     windowState.isDrag = true
                     windowState.dragStartX = window.uiNode.leftPx
                     windowState.dragStartY = window.uiNode.topPx
@@ -266,9 +266,9 @@ class WindowNode(parent:UiNode?, surface: UiSurface) : UiNode(parent, surface), 
 
         state.borderFlags = getResizeBorderFlags(ev.position)
         if (state.borderFlags and V_BORDER != 0) {
-            Input.cursorShape = CursorShape.V_RESIZE
+            PointerInput.cursorShape = CursorShape.V_RESIZE
         } else if (state.borderFlags and H_BORDER != 0) {
-            Input.cursorShape = CursorShape.H_RESIZE
+            PointerInput.cursorShape = CursorShape.H_RESIZE
         } else {
             ev.reject()
         }
@@ -354,11 +354,11 @@ class WindowNode(parent:UiNode?, surface: UiSurface) : UiNode(parent, surface), 
 
     private fun setResizeCursor(borderFlags: Int) {
         if (borderFlags and V_BORDER != 0) {
-            Input.cursorShape = CursorShape.V_RESIZE
+            PointerInput.cursorShape = CursorShape.V_RESIZE
         } else if (borderFlags and H_BORDER != 0) {
-            Input.cursorShape = CursorShape.H_RESIZE
+            PointerInput.cursorShape = CursorShape.H_RESIZE
         } else {
-            Input.cursorShape = CursorShape.DEFAULT
+            PointerInput.cursorShape = CursorShape.DEFAULT
         }
     }
 

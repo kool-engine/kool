@@ -3,7 +3,7 @@ package de.fabmax.kool.platform
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolException
 import de.fabmax.kool.KoolSetup
-import de.fabmax.kool.PlatformInput
+import de.fabmax.kool.input.PlatformInput
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.generator.GlslGenerator
 import de.fabmax.kool.pipeline.*

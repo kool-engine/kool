@@ -1,7 +1,7 @@
 package de.fabmax.kool.modules.ui2
 
-import de.fabmax.kool.Input
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.input.Pointer
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.util.Color
@@ -215,7 +215,7 @@ fun <T: UiModifier> T.align(xAlignment: AlignmentX = alignX, yAlignment: Alignme
 fun <T: UiModifier> T.onMeasured(block: (UiNode) -> Unit): T { onMeasured = block; return this }
 fun <T: UiModifier> T.onPositioned(block: (UiNode) -> Unit): T { onPositioned = block; return this }
 
-class PointerEvent(val pointer: Input.Pointer, val ctx: KoolContext) {
+class PointerEvent(val pointer: Pointer, val ctx: KoolContext) {
     /**
      * Pointer position in UiNode local coordinates: (0, 0) = upper left node corner.
      */

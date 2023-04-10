@@ -1,8 +1,7 @@
 package de.fabmax.kool.modules.ui2
 
-import de.fabmax.kool.CursorMode
-import de.fabmax.kool.Input
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.input.*
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.pipeline.Shader
@@ -309,7 +308,7 @@ open class UiSurface(
             // surface area
             val wasBlockingPointerInput = blockAllPointerInput
             blockAllPointerInput = false
-            val ptr = Input.pointerState.primaryPointer
+            val ptr = PointerInput.primaryPointer
             if (ptr.isValid) {
                 val ptrPos = Vec2f(ptr.x.toFloat(), ptr.y.toFloat())
                 var isPointerOnSurface = dragNode != null || viewport.children.any { it.modifier.isBlocking && it.isInBounds(ptrPos) }
@@ -334,12 +333,12 @@ open class UiSurface(
             }
         }
 
-        override fun handlePointer(pointerState: Input.PointerState, ctx: KoolContext) {
+        override fun handlePointer(pointerState: PointerState, ctx: KoolContext) {
             super.handlePointer(pointerState, ctx)
 
             val ptr = pointerState.primaryPointer
             nodeResult.clear()
-            if (Input.cursorMode != CursorMode.LOCKED) {
+            if (PointerInput.cursorMode != CursorMode.LOCKED) {
                 viewport.collectNodesAt(ptr.x.toFloat(), ptr.y.toFloat(), nodeResult, hasPointerListener)
             }
             if (hoveredNode == null && dragNode == null && nodeResult.isEmpty()) {
@@ -357,7 +356,7 @@ open class UiSurface(
             dragNode?.let { handleDrag(it, ptrEv) }
         }
 
-        override fun handleKeyEvents(keyEvents: MutableList<Input.KeyEvent>, ctx: KoolContext) {
+        override fun handleKeyEvents(keyEvents: MutableList<KeyEvent>, ctx: KoolContext) {
             if (!blockAllKeyboardInput) {
                 return
             }
@@ -461,12 +460,12 @@ open class UiSurface(
                 }
                 if (isWheelX && invokePointerCallback(node, ptrEv, mod.onWheelX)) {
                     // wheel x was consumed
-                    ptrEv.pointer.consume(Input.CONSUMED_SCROLL_X)
+                    ptrEv.pointer.consume(PointerInput.CONSUMED_SCROLL_X)
                     isWheelX = false
                 }
                 if (isWheelY && invokePointerCallback(node, ptrEv, mod.onWheelY)) {
                     // wheel y was consumed
-                    ptrEv.pointer.consume(Input.CONSUMED_SCROLL_Y)
+                    ptrEv.pointer.consume(PointerInput.CONSUMED_SCROLL_Y)
                     isWheelY = false
                 }
             }

@@ -1,8 +1,9 @@
 package de.fabmax.kool.demo
 
-import de.fabmax.kool.Input
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.menu.DemoMenu
+import de.fabmax.kool.input.InputStack
+import de.fabmax.kool.input.KeyboardInput
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ksl.KslBlinnPhongShader
 import de.fabmax.kool.modules.ui2.*
@@ -13,7 +14,6 @@ import de.fabmax.kool.scene.group
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Gizmo
-import de.fabmax.kool.util.InputStack
 import de.fabmax.kool.util.MdColor
 
 class GizmoTest : DemoScene("Gizmo Test") {
@@ -91,7 +91,7 @@ class GizmoTest : DemoScene("Gizmo Test") {
             }
 
             override fun onDragAxis(axis: Vec3f, distance: Float, targetTransform: Mat4d, ctx: KoolContext) {
-                if (axis.z != 0f || Input.isAltDown) {
+                if (axis.z != 0f || KeyboardInput.isAltDown) {
                     targetTransform.translate(axis.x * distance, axis.y * distance, axis.z * distance)
                 } else if (axis.x > 0f) {
                     gizmo2.axisHandleX.x = max(0.1f, axX + distance)

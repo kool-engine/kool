@@ -1,6 +1,10 @@
 package de.fabmax.kool.platform
 
-import de.fabmax.kool.*
+import de.fabmax.kool.KoolContext
+import de.fabmax.kool.KoolSetup
+import de.fabmax.kool.input.KeyCode
+import de.fabmax.kool.input.KeyboardInput
+import de.fabmax.kool.input.PlatformInput
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.math.min
 import de.fabmax.kool.modules.ksl.KslShader
@@ -167,46 +171,46 @@ class Lwjgl3Context : KoolContext() {
 
     companion object {
         val KEY_CODE_MAP: Map<Int, KeyCode> = mutableMapOf(
-                GLFW_KEY_LEFT_CONTROL to Input.KEY_CTRL_LEFT,
-                GLFW_KEY_RIGHT_CONTROL to Input.KEY_CTRL_RIGHT,
-                GLFW_KEY_LEFT_SHIFT to Input.KEY_SHIFT_LEFT,
-                GLFW_KEY_RIGHT_SHIFT to Input.KEY_SHIFT_RIGHT,
-                GLFW_KEY_LEFT_ALT to Input.KEY_ALT_LEFT,
-                GLFW_KEY_RIGHT_ALT to Input.KEY_ALT_RIGHT,
-                GLFW_KEY_LEFT_SUPER to Input.KEY_SUPER_LEFT,
-                GLFW_KEY_RIGHT_SUPER to Input.KEY_SUPER_RIGHT,
-                GLFW_KEY_ESCAPE to Input.KEY_ESC,
-                GLFW_KEY_MENU to Input.KEY_MENU,
-                GLFW_KEY_ENTER to Input.KEY_ENTER,
-                GLFW_KEY_KP_ENTER to Input.KEY_NP_ENTER,
-                GLFW_KEY_KP_DIVIDE to Input.KEY_NP_DIV,
-                GLFW_KEY_KP_MULTIPLY to Input.KEY_NP_MUL,
-                GLFW_KEY_KP_ADD to Input.KEY_NP_PLUS,
-                GLFW_KEY_KP_SUBTRACT to Input.KEY_NP_MINUS,
-                GLFW_KEY_BACKSPACE to Input.KEY_BACKSPACE,
-                GLFW_KEY_TAB to Input.KEY_TAB,
-                GLFW_KEY_DELETE to Input.KEY_DEL,
-                GLFW_KEY_INSERT to Input.KEY_INSERT,
-                GLFW_KEY_HOME to Input.KEY_HOME,
-                GLFW_KEY_END to Input.KEY_END,
-                GLFW_KEY_PAGE_UP to Input.KEY_PAGE_UP,
-                GLFW_KEY_PAGE_DOWN to Input.KEY_PAGE_DOWN,
-                GLFW_KEY_LEFT to Input.KEY_CURSOR_LEFT,
-                GLFW_KEY_RIGHT to Input.KEY_CURSOR_RIGHT,
-                GLFW_KEY_UP to Input.KEY_CURSOR_UP,
-                GLFW_KEY_DOWN to Input.KEY_CURSOR_DOWN,
-                GLFW_KEY_F1 to Input.KEY_F1,
-                GLFW_KEY_F2 to Input.KEY_F2,
-                GLFW_KEY_F3 to Input.KEY_F3,
-                GLFW_KEY_F4 to Input.KEY_F4,
-                GLFW_KEY_F5 to Input.KEY_F5,
-                GLFW_KEY_F6 to Input.KEY_F6,
-                GLFW_KEY_F7 to Input.KEY_F7,
-                GLFW_KEY_F8 to Input.KEY_F8,
-                GLFW_KEY_F9 to Input.KEY_F9,
-                GLFW_KEY_F10 to Input.KEY_F10,
-                GLFW_KEY_F11 to Input.KEY_F11,
-                GLFW_KEY_F12 to Input.KEY_F12
+            GLFW_KEY_LEFT_CONTROL to KeyboardInput.KEY_CTRL_LEFT,
+            GLFW_KEY_RIGHT_CONTROL to KeyboardInput.KEY_CTRL_RIGHT,
+            GLFW_KEY_LEFT_SHIFT to KeyboardInput.KEY_SHIFT_LEFT,
+            GLFW_KEY_RIGHT_SHIFT to KeyboardInput.KEY_SHIFT_RIGHT,
+            GLFW_KEY_LEFT_ALT to KeyboardInput.KEY_ALT_LEFT,
+            GLFW_KEY_RIGHT_ALT to KeyboardInput.KEY_ALT_RIGHT,
+            GLFW_KEY_LEFT_SUPER to KeyboardInput.KEY_SUPER_LEFT,
+            GLFW_KEY_RIGHT_SUPER to KeyboardInput.KEY_SUPER_RIGHT,
+            GLFW_KEY_ESCAPE to KeyboardInput.KEY_ESC,
+            GLFW_KEY_MENU to KeyboardInput.KEY_MENU,
+            GLFW_KEY_ENTER to KeyboardInput.KEY_ENTER,
+            GLFW_KEY_KP_ENTER to KeyboardInput.KEY_NP_ENTER,
+            GLFW_KEY_KP_DIVIDE to KeyboardInput.KEY_NP_DIV,
+            GLFW_KEY_KP_MULTIPLY to KeyboardInput.KEY_NP_MUL,
+            GLFW_KEY_KP_ADD to KeyboardInput.KEY_NP_PLUS,
+            GLFW_KEY_KP_SUBTRACT to KeyboardInput.KEY_NP_MINUS,
+            GLFW_KEY_BACKSPACE to KeyboardInput.KEY_BACKSPACE,
+            GLFW_KEY_TAB to KeyboardInput.KEY_TAB,
+            GLFW_KEY_DELETE to KeyboardInput.KEY_DEL,
+            GLFW_KEY_INSERT to KeyboardInput.KEY_INSERT,
+            GLFW_KEY_HOME to KeyboardInput.KEY_HOME,
+            GLFW_KEY_END to KeyboardInput.KEY_END,
+            GLFW_KEY_PAGE_UP to KeyboardInput.KEY_PAGE_UP,
+            GLFW_KEY_PAGE_DOWN to KeyboardInput.KEY_PAGE_DOWN,
+            GLFW_KEY_LEFT to KeyboardInput.KEY_CURSOR_LEFT,
+            GLFW_KEY_RIGHT to KeyboardInput.KEY_CURSOR_RIGHT,
+            GLFW_KEY_UP to KeyboardInput.KEY_CURSOR_UP,
+            GLFW_KEY_DOWN to KeyboardInput.KEY_CURSOR_DOWN,
+            GLFW_KEY_F1 to KeyboardInput.KEY_F1,
+            GLFW_KEY_F2 to KeyboardInput.KEY_F2,
+            GLFW_KEY_F3 to KeyboardInput.KEY_F3,
+            GLFW_KEY_F4 to KeyboardInput.KEY_F4,
+            GLFW_KEY_F5 to KeyboardInput.KEY_F5,
+            GLFW_KEY_F6 to KeyboardInput.KEY_F6,
+            GLFW_KEY_F7 to KeyboardInput.KEY_F7,
+            GLFW_KEY_F8 to KeyboardInput.KEY_F8,
+            GLFW_KEY_F9 to KeyboardInput.KEY_F9,
+            GLFW_KEY_F10 to KeyboardInput.KEY_F10,
+            GLFW_KEY_F11 to KeyboardInput.KEY_F11,
+            GLFW_KEY_F12 to KeyboardInput.KEY_F12
         )
     }
 

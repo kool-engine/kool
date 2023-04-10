@@ -1,7 +1,7 @@
 package de.fabmax.kool.physics.util
 
-import de.fabmax.kool.CursorMode
-import de.fabmax.kool.Input
+import de.fabmax.kool.input.CursorMode
+import de.fabmax.kool.input.PointerInput
 import de.fabmax.kool.math.*
 import de.fabmax.kool.physics.HitResult
 import de.fabmax.kool.physics.PhysicsWorld
@@ -14,12 +14,12 @@ class CharacterTrackingCamRig(enableCursorLock: Boolean = true) :
     Node("PointerLockCamRig") {
 
     var isCursorLocked: Boolean
-        get() = Input.cursorMode == CursorMode.LOCKED
+        get() = PointerInput.cursorMode == CursorMode.LOCKED
         set(value) {
             if (value) {
-                Input.cursorMode = CursorMode.LOCKED
+                PointerInput.cursorMode = CursorMode.LOCKED
             } else {
-                Input.cursorMode = CursorMode.NORMAL
+                PointerInput.cursorMode = CursorMode.NORMAL
             }
         }
 
@@ -79,7 +79,7 @@ class CharacterTrackingCamRig(enableCursorLock: Boolean = true) :
         applyLookDirection()
 
         val div = 1000f / sensitivity
-        val ptr = Input.pointerState.primaryPointer
+        val ptr = PointerInput.primaryPointer
 
         lookPhi -= ptr.deltaX.toFloat() / div
         lookTheta = (lookTheta - ptr.deltaY.toFloat() / div).clamp(0.0001f, PI.toFloat() - 0.0001f)
@@ -88,8 +88,8 @@ class CharacterTrackingCamRig(enableCursorLock: Boolean = true) :
         lookDirection.z = sin(lookTheta) * sin(lookPhi)
         lookDirection.y = cos(lookTheta)
 
-        if (!ptr.isConsumed(Input.CONSUMED_SCROLL_Y)) {
-            zoom *= 1f - Input.pointerState.primaryPointer.deltaScroll.toFloat() / 10f
+        if (!ptr.isConsumed(PointerInput.CONSUMED_SCROLL_Y)) {
+            zoom *= 1f - PointerInput.primaryPointer.deltaScroll.toFloat() / 10f
             zoom = zoom.clamp(minZoom, maxZoom)
         }
     }
