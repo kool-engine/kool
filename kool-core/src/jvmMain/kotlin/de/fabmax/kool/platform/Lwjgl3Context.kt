@@ -1,7 +1,7 @@
 package de.fabmax.kool.platform
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.KoolSetup
+import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.input.KeyCode
 import de.fabmax.kool.input.KeyboardInput
 import de.fabmax.kool.input.PlatformInput
@@ -33,8 +33,8 @@ class Lwjgl3Context : KoolContext() {
         get() = renderBackend.glfwWindow.isFullscreen
         set(value) { renderBackend.glfwWindow.isFullscreen = value }
 
-    var maxFrameRate = KoolSetup.config.maxFrameRate
-    var windowNotFocusedFrameRate = KoolSetup.config.windowNotFocusedFrameRate
+    var maxFrameRate = KoolSystem.config.maxFrameRate
+    var windowNotFocusedFrameRate = KoolSystem.config.windowNotFocusedFrameRate
 
     private var prevFrameTime = System.nanoTime()
 
@@ -73,7 +73,7 @@ class Lwjgl3Context : KoolContext() {
     }
 
     init {
-        renderBackend = if (KoolSetup.config.renderBackend == Backend.VULKAN) {
+        renderBackend = if (KoolSystem.config.renderBackend == Backend.VULKAN) {
             VkRenderBackend(this)
         } else {
             GlRenderBackend(this)
@@ -86,6 +86,7 @@ class Lwjgl3Context : KoolContext() {
         SysInfo.set(renderBackend.apiName, renderBackend.deviceName)
 
         PlatformInput.onContextCreated(this)
+        KoolSystem.onContextCreated(this)
     }
 
     fun setWindowTitle(windowTitle: String) = renderBackend.glfwWindow.setWindowTitle(windowTitle)

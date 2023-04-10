@@ -1,9 +1,14 @@
 package de.fabmax.kool
 
-object KoolSetup {
+object KoolSystem {
     private var initConfig: KoolConfig? = null
+    private var defaultContext: KoolContext? = null
+
     var isInitialized = false
         private set
+
+    val isContextCreated: Boolean
+        get() = defaultContext != null
 
     val config: KoolConfig
         get() = initConfig ?: throw IllegalStateException("KoolSetup is not yet initialized. Call initialize(config) before accessing KoolSetup.config")
@@ -14,6 +19,18 @@ object KoolSetup {
         }
         initConfig = config
         isInitialized = true
+    }
+
+    internal fun onContextCreated(ctx: KoolContext) {
+        defaultContext = ctx
+    }
+
+    fun requireContext(): KoolContext {
+        return defaultContext ?: throw IllegalStateException("KoolContext was not yet created")
+    }
+
+    fun getContextOrNull(): KoolContext? {
+        return defaultContext
     }
 }
 

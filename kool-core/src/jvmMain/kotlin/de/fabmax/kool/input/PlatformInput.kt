@@ -1,6 +1,6 @@
 package de.fabmax.kool.input
 
-import de.fabmax.kool.KoolContext
+import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.util.logD
 import org.lwjgl.glfw.GLFW
@@ -15,7 +15,7 @@ internal actual object PlatformInput {
     private var currentCursorShape = CursorShape.DEFAULT
 
     actual fun setCursorMode(cursorMode: CursorMode) {
-        val ctx = KoolContext.getContextOrNull() as Lwjgl3Context? ?: return
+        val ctx = KoolSystem.getContextOrNull() as Lwjgl3Context? ?: return
         val windowHandle = ctx.renderBackend.glfwWindow.windowPtr
 
         if (cursorMode == CursorMode.NORMAL || ctx.isWindowFocused) {
@@ -24,7 +24,7 @@ internal actual object PlatformInput {
     }
 
     actual fun applyCursorShape(cursorShape: CursorShape) {
-        val ctx = KoolContext.requireContext() as Lwjgl3Context? ?: return
+        val ctx = KoolSystem.requireContext() as Lwjgl3Context? ?: return
         val windowHandle = ctx.renderBackend.glfwWindow.windowPtr
 
         if (cursorShape != currentCursorShape) {

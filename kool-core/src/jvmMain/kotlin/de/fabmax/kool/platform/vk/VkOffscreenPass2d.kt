@@ -3,6 +3,7 @@ package de.fabmax.kool.platform.vk
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.platform.vk.util.vkFormat
+import de.fabmax.kool.util.runDelayed
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
 
@@ -153,7 +154,7 @@ class VkOffscreenPass2d(val parentPass: OffscreenPass2dImpl) : OffscreenPass2dIm
             parentPass.offscreenPass.depthTexture?.clear()
         }
 
-        ctx.runDelayed(3) {
+        runDelayed(3) {
             rp?.destroyNow()
 
             colorTexs.forEachIndexed { i, loadedTex ->
@@ -176,7 +177,7 @@ class VkOffscreenPass2d(val parentPass: OffscreenPass2dImpl) : OffscreenPass2dIm
         dispose(ctx)
 
         isCreationBlocked = true
-        ctx.runDelayed(3) {
+        runDelayed(3) {
             isCreationBlocked = false
         }
     }
@@ -279,7 +280,7 @@ class VkOffscreenPass2d(val parentPass: OffscreenPass2dImpl) : OffscreenPass2dIm
         val vkBackend = ctx.renderBackend as VkRenderBackend
         val prev = loadedTexture
         if (prev != null) {
-            ctx.runDelayed(3) {
+            runDelayed(3) {
                 prev.dispose()
             }
         }

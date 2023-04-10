@@ -9,10 +9,10 @@ import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.pipeline.ShaderCode
 import de.fabmax.kool.pipeline.ibl.BrdfLutPass
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.util.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import de.fabmax.kool.util.Profiling
+import de.fabmax.kool.util.Time
+import de.fabmax.kool.util.Viewport
+import de.fabmax.kool.util.logD
 import kotlin.math.roundToInt
 
 /**
@@ -103,10 +103,6 @@ abstract class KoolContext {
     abstract val windowHeight: Int
     abstract var isFullscreen: Boolean
 
-    init {
-        defaultContext = this
-    }
-
     abstract fun openUrl(url: String, sameWindow: Boolean = true)
 
     abstract fun run()
@@ -118,21 +114,6 @@ abstract class KoolContext {
     abstract fun getSysInfos(): List<String>
 
     abstract fun getWindowViewport(result: Viewport)
-
-    /**
-     * Executes the given [callback] after [frames] frames on the render-loop thread. This is equivalent to launching
-     * a coroutine and using the [delayFrames] suspending function before executing the callback function:
-     * ```
-     * CoroutineScope(Dispatchers.RenderLoop).launch {
-     *     delayFrames(frames)
-     *     callback()
-     * }
-     * ```
-     */
-    fun runDelayed(frames: Int, callback: () -> Unit) = CoroutineScope(Dispatchers.RenderLoop).launch {
-        delayFrames(frames)
-        callback()
-    }
 
     internal fun disposePipeline(pipeline: Pipeline) {
         disposablePipelines += pipeline
@@ -188,15 +169,5 @@ abstract class KoolContext {
     companion object {
         // automatically updated by gradle script on build
         const val KOOL_VERSION = "0.11.0-SNAPSHOT"
-
-        private var defaultContext: KoolContext? = null
-
-        fun requireContext(): KoolContext {
-            return defaultContext ?: throw IllegalStateException("KoolContext was not yet created")
-        }
-
-        fun getContextOrNull(): KoolContext? {
-            return defaultContext
-        }
     }
 }

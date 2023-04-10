@@ -26,8 +26,8 @@ actual object PlatformAssets {
     private var fileChooserPath = System.getProperty("user.home")
 
     init {
-        HttpCache.initCache(File(KoolSetup.config.httpCacheDir))
-        fontGenerator.loadCustomFonts(KoolSetup.config.customTtfFonts)
+        HttpCache.initCache(File(KoolSystem.config.httpCacheDir))
+        fontGenerator.loadCustomFonts(KoolSystem.config.customTtfFonts)
     }
 
     internal actual suspend fun loadBlob(blobRef: BlobAssetRef): LoadedBlobAsset {
@@ -81,7 +81,7 @@ actual object PlatformAssets {
         var inStream = ClassLoader.getSystemResourceAsStream(resPath)
         if (inStream == null) {
             // if asset wasn't found in resources try to load it from file system
-            inStream = FileInputStream("${KoolSetup.config.assetPath}/$assetPath")
+            inStream = FileInputStream("${KoolSystem.config.assetPath}/$assetPath")
         }
         return inStream
     }
@@ -202,7 +202,7 @@ actual object PlatformAssets {
 
     internal actual suspend fun uploadTextureToGpu(texture: Texture, texData: TextureData) {
         withContext(Dispatchers.RenderLoop) {
-            val ctx = KoolContext.requireContext() as Lwjgl3Context
+            val ctx = KoolSystem.requireContext() as Lwjgl3Context
             ctx.renderBackend.uploadTextureToGpu(texture, texData)
         }
     }

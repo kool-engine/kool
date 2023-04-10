@@ -2,7 +2,7 @@ package de.fabmax.kool.platform
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolException
-import de.fabmax.kool.KoolSetup
+import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.input.PlatformInput
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.generator.GlslGenerator
@@ -67,8 +67,8 @@ class JsContext internal constructor() : KoolContext() {
     private val doneRenderPasses = mutableSetOf<OffscreenRenderPass>()
 
     init {
-        canvas = document.getElementById(KoolSetup.config.canvasName) as? HTMLCanvasElement ?:
-                throw IllegalStateException("canvas element not found! Add a canvas with id \"${KoolSetup.config.canvasName}\" to your html.")
+        canvas = document.getElementById(KoolSystem.config.canvasName) as? HTMLCanvasElement ?:
+                throw IllegalStateException("canvas element not found! Add a canvas with id \"${KoolSystem.config.canvasName}\" to your html.")
 
         canvas.style.width = "100%"
         canvas.style.height = "100%"
@@ -132,6 +132,7 @@ class JsContext internal constructor() : KoolContext() {
         canvas.oncontextmenu = Event::preventDefault
 
         PlatformInput.onContextCreated(this)
+        KoolSystem.onContextCreated(this)
     }
 
     private fun renderFrame(time: Double) {

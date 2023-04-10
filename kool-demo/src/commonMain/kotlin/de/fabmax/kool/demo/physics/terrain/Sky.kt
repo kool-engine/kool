@@ -142,7 +142,7 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
         }
         weightedEnvs = WeightedEnvMaps(skies[0.5f]!!.envMaps, skies[0.5f]!!.envMaps)
 
-        ctx.runDelayed(1) {
+        runDelayed(1) {
             parentScene.removeOffscreenPass(skyLut)
             skies.values.forEach { it.removeOffscreenPasses() }
             skyLut.dispose(ctx)

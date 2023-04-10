@@ -1,6 +1,6 @@
 package de.fabmax.kool.platform.vk
 
-import de.fabmax.kool.KoolSetup
+import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.platform.GlfwWindow
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.util.logD
@@ -18,7 +18,7 @@ class GlfwVkWindow(val sys: VkSystem, ctx: Lwjgl3Context) : GlfwWindow(ctx) {
 
     init {
         // make the window visible
-        if (KoolSetup.config.showWindowOnStart) {
+        if (KoolSystem.config.showWindowOnStart) {
             isVisible = true
         }
     }

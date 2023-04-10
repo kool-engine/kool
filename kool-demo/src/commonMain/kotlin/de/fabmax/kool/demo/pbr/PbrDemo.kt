@@ -17,6 +17,7 @@ import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Time
+import de.fabmax.kool.util.runDelayed
 
 /**
  * @author fabmax
@@ -111,7 +112,7 @@ class PbrDemo : DemoScene("PBR Materials") {
                     .selectedIndex(selectedHdriIdx.use())
                     .onItemSelected {
                         selectedHdriIdx.set(it)
-                        updateHdri(it, ctx)
+                        updateHdri(it)
                     }
             }
         }
@@ -131,9 +132,9 @@ class PbrDemo : DemoScene("PBR Materials") {
         LabeledSwitch("Auto rotate view", isAutoRotate)
     }
 
-    private fun updateHdri(idx: Int, ctx: KoolContext) {
+    private fun updateHdri(idx: Int) {
         loadHdri(idx) { tex ->
-            envMaps.let { oldEnvMap -> ctx.runDelayed(1) { oldEnvMap.dispose() } }
+            envMaps.let { oldEnvMap -> runDelayed(1) { oldEnvMap.dispose() } }
             envMaps = EnvironmentHelper.hdriEnvironment(mainScene, tex, false)
             skybox.skyboxShader.setSingleSky(envMaps.reflectionMap)
             pbrContent.forEach { it.updateEnvironmentMap(envMaps) }

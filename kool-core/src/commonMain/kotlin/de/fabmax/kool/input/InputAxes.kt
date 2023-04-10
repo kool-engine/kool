@@ -4,6 +4,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.util.Disposable
 import de.fabmax.kool.util.Time
+import de.fabmax.kool.util.runDelayed
 import kotlin.math.abs
 import kotlin.math.max
 
@@ -47,7 +48,7 @@ open class InputAxes(ctx: KoolContext) : Disposable {
     fun digital(name: String): Boolean = axes[name]?.digital == true
 
     override fun dispose(ctx: KoolContext) {
-        ctx.runDelayed(1) { ctx.onRender -= updateAxes }
+        runDelayed(1) { ctx.onRender -= updateAxes }
         axesList.forEach { ax ->
             ax.keyListeners.forEach { InputStack.defaultKeyboardListener.removeKeyListener(it) }
         }

@@ -6,6 +6,7 @@ import de.fabmax.kool.pipeline.drawqueue.DrawQueue
 import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.PerspectiveCamera
+import de.fabmax.kool.util.runDelayed
 
 open class OffscreenRenderPassCube(drawNode: Node, config: Config) : OffscreenRenderPass(drawNode, config) {
 
@@ -51,7 +52,7 @@ open class OffscreenRenderPassCube(drawNode: Node, config: Config) : OffscreenRe
         super.dispose(ctx)
         impl.dispose(ctx)
 
-        ctx.runDelayed(3) {
+        runDelayed(3) {
             if (config.depthAttachment?.providedTexture == null) {
                 depthTexture?.dispose()
             }

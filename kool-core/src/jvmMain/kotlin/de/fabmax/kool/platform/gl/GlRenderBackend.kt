@@ -2,7 +2,7 @@ package de.fabmax.kool.platform.gl
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolException
-import de.fabmax.kool.KoolSetup
+import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.generator.GlslGenerator
@@ -45,21 +45,21 @@ class GlRenderBackend(val ctx: Lwjgl3Context) : RenderBackend {
     init {
         // do basic GLFW configuration before we create the window
         glfwDefaultWindowHints()
-        glfwWindowHint(GLFW_SAMPLES, KoolSetup.config.msaaSamples)
+        glfwWindowHint(GLFW_SAMPLES, KoolSystem.config.msaaSamples)
 
         // create window
         glfwWindow = GlfwWindow(ctx)
-        glfwWindow.isFullscreen = KoolSetup.config.isFullscreen
+        glfwWindow.isFullscreen = KoolSystem.config.isFullscreen
 
         // make the OpenGL context current
         glfwMakeContextCurrent(glfwWindow.windowPtr)
-        if (KoolSetup.config.isVsync) {
+        if (KoolSystem.config.isVsync) {
             glfwSwapInterval(1)
         } else {
             glfwSwapInterval(0)
         }
         // make the window visible
-        if (KoolSetup.config.showWindowOnStart) {
+        if (KoolSystem.config.showWindowOnStart) {
             glfwWindow.isVisible = true
         }
 

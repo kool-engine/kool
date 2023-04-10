@@ -2,6 +2,7 @@ package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.scene.Node
+import de.fabmax.kool.util.runDelayed
 
 open class OffscreenRenderPass2d(drawNode: Node, config: Config) : OffscreenRenderPass(drawNode, config) {
 
@@ -24,7 +25,7 @@ open class OffscreenRenderPass2d(drawNode: Node, config: Config) : OffscreenRend
         super.dispose(ctx)
         impl.dispose(ctx)
 
-        ctx.runDelayed(3) {
+        runDelayed(3) {
             if (config.depthAttachment?.providedTexture == null) {
                 depthTexture?.dispose()
             }

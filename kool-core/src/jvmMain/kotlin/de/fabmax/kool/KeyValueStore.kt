@@ -16,7 +16,7 @@ actual object KeyValueStore {
 
     private const val KEY_VALUE_STORAGE_NAME = ".keyValueStorage.json"
 
-    private val storageDir: File = File(KoolSetup.config.storageDir)
+    private val storageDir: File = File(KoolSystem.config.storageDir)
     private val keyValueStore = mutableMapOf<String, String>()
 
     init {
