@@ -234,69 +234,67 @@ object Assets : CoroutineScope {
      *
      * @throws KoolException if loading failed
      */
-    suspend fun loadCubeMapTextureData(ft: String, bk: String, lt: String, rt: String, up: String, dn: String): TextureDataCube {
-        val ftd = loadTextureData(ft)
-        val bkd = loadTextureData(bk)
-        val ltd = loadTextureData(lt)
-        val rtd = loadTextureData(rt)
-        val upd = loadTextureData(up)
-        val dnd = loadTextureData(dn)
+    suspend fun loadCubeMapTextureData(
+        pathFront: String,
+        pathBack: String,
+        pathLeft: String,
+        pathRight: String,
+        pathUp: String,
+        pathDown: String
+    ): TextureDataCube {
+        val ftd = loadTextureData(pathFront)
+        val bkd = loadTextureData(pathBack)
+        val ltd = loadTextureData(pathLeft)
+        val rtd = loadTextureData(pathRight)
+        val upd = loadTextureData(pathUp)
+        val dnd = loadTextureData(pathDown)
         return TextureDataCube(ftd, bkd, ltd, rtd, upd, dnd)
     }
 
-    suspend fun loadTexture2d(assetPath: String, props: TextureProps = TextureProps()): Texture2d {
-        val texData = loadTextureData(assetPath)
-        val tex = Texture2d(props, trimAssetPath(assetPath)) { texData }
-        if (!PlatformAssets.uploadTextureToGpu(tex, texData)) {
-            logW { "Failed to upload Texture2d ${trimAssetPath(assetPath)} to GPU" }
-        }
+    suspend fun loadTexture1d(texData: TextureData1d, props: TextureProps = TextureProps(), name: String? = null): Texture1d {
+        val tex = Texture1d(props, name) { texData }
+        PlatformAssets.uploadTextureToGpu(tex, texData)
         return tex
     }
 
     suspend fun loadTexture2d(texData: TextureData, props: TextureProps = TextureProps(), name: String? = null): Texture2d {
         val tex = Texture2d(props, name) { texData }
-        if (!PlatformAssets.uploadTextureToGpu(tex, texData)) {
-            logW { "Failed to upload Texture2d $name to GPU" }
-        }
+        PlatformAssets.uploadTextureToGpu(tex, texData)
         return tex
     }
 
-    suspend fun loadTexture3d(assetPath: String, tilesX: Int, tilesY: Int, props: TextureProps = TextureProps()): Texture3d {
-        val texData = loadTextureAtlasData(assetPath, tilesX, tilesY)
-        val tex = Texture3d(props, trimAssetPath(assetPath)) { texData }
-        if (!PlatformAssets.uploadTextureToGpu(tex, texData)) {
-            logW { "Failed to upload Texture3d ${trimAssetPath(assetPath)} to GPU" }
-        }
-        return tex
+    suspend fun loadTexture2d(assetPath: String, props: TextureProps = TextureProps()): Texture2d {
+        return loadTexture2d(loadTextureData(assetPath), props, trimAssetPath(assetPath))
     }
 
     suspend fun loadTexture3d(texData: TextureData, props: TextureProps = TextureProps(), name: String? = null): Texture3d {
         val tex = Texture3d(props, name) { texData }
-        if (!PlatformAssets.uploadTextureToGpu(tex, texData)) {
-            logW { "Failed to upload Texture3d $name to GPU" }
-        }
+        PlatformAssets.uploadTextureToGpu(tex, texData)
         return tex
     }
 
-    suspend fun loadCubeMap(
-        ft: String, bk: String, lt: String, rt: String, up: String, dn: String, props: TextureProps = TextureProps()
-    ): TextureCube {
-        val name = trimCubeMapAssetPath(ft, bk, lt, rt, up, dn)
-        val texData = loadCubeMapTextureData(ft, bk, lt, rt, up, dn)
-        val tex = TextureCube(props, name) { texData }
-        if (!PlatformAssets.uploadTextureToGpu(tex, texData)) {
-            logW { "Failed to upload TextureCube $name to GPU" }
-        }
-        return tex
+    suspend fun loadTexture3d(assetPath: String, tilesX: Int, tilesY: Int, props: TextureProps = TextureProps()): Texture3d {
+        return loadTexture3d(loadTextureAtlasData(assetPath, tilesX, tilesY), props, trimAssetPath(assetPath))
     }
 
     suspend fun loadCubeMap(texData: TextureDataCube, props: TextureProps = TextureProps(), name: String? = null): TextureCube {
         val tex = TextureCube(props, name) { texData }
         PlatformAssets.uploadTextureToGpu(tex, texData)
-        if (!PlatformAssets.uploadTextureToGpu(tex, texData)) {
-            logW { "Failed to upload TextureCube $name to GPU" }
-        }
         return tex
+    }
+
+    suspend fun loadCubeMap(
+        pathFront: String,
+        pathBack: String,
+        pathLeft: String,
+        pathRight: String,
+        pathUp: String,
+        pathDown: String,
+        props: TextureProps = TextureProps()
+    ): TextureCube {
+        val name = trimCubeMapAssetPath(pathFront, pathBack, pathLeft, pathRight, pathUp, pathDown)
+        val texData = loadCubeMapTextureData(pathFront, pathBack, pathLeft, pathRight, pathUp, pathDown)
+        return loadCubeMap(texData, props, name)
     }
 
     suspend fun loadAudioClip(assetPath: String): AudioClip {
@@ -358,7 +356,7 @@ expect object PlatformAssets {
 
     internal suspend fun loadTextureData2d(imagePath: String, format: TexFormat?): TextureData2d
     internal suspend fun loadTextureDataFromBuffer(texData: Uint8Buffer, mimeType: String): TextureData
-    internal suspend fun uploadTextureToGpu(texture: Texture, texData: TextureData): Boolean
+    internal suspend fun uploadTextureToGpu(texture: Texture, texData: TextureData)
 
     internal suspend fun loadAudioClip(assetPath: String): AudioClip
 }

@@ -7,7 +7,9 @@ import de.fabmax.kool.platform.webgl.TextureLoader
 import de.fabmax.kool.util.*
 import kotlinx.browser.document
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.await
+import kotlinx.coroutines.withContext
 import org.khronos.webgl.ArrayBuffer
 import org.khronos.webgl.Uint8Array
 import org.w3c.dom.Element
@@ -158,16 +160,18 @@ actual object PlatformAssets {
         return ImageTextureData(loadImage(texData.toDataUrl(mimeType), true), null)
     }
 
-    internal actual suspend fun uploadTextureToGpu(texture: Texture, texData: TextureData): Boolean {
-        val ctx = KoolContext.getContextOrNull() as? JsContext ?: return false
-        texture.loadedTexture = when (texture) {
-            is Texture2d -> TextureLoader.loadTexture2d(ctx, texture.props, texData)
-            is Texture3d -> TextureLoader.loadTexture3d(ctx, texture.props, texData)
-            is TextureCube -> TextureLoader.loadTextureCube(ctx, texture.props, texData)
-            else -> throw IllegalArgumentException("Unsupported texture type: $texture")
+    internal actual suspend fun uploadTextureToGpu(texture: Texture, texData: TextureData) {
+        withContext(Dispatchers.RenderLoop) {
+            val ctx = KoolContext.requireContext() as JsContext
+            texture.loadedTexture = when (texture) {
+                is Texture1d -> TextureLoader.loadTexture1d(ctx, texture.props, texData)
+                is Texture2d -> TextureLoader.loadTexture2d(ctx, texture.props, texData)
+                is Texture3d -> TextureLoader.loadTexture3d(ctx, texture.props, texData)
+                is TextureCube -> TextureLoader.loadTextureCube(ctx, texture.props, texData)
+                else -> throw IllegalArgumentException("Unsupported texture type: $texture")
+            }
+            texture.loadingState = Texture.LoadingState.LOADED
         }
-        texture.loadingState = Texture.LoadingState.LOADED
-        return true
     }
 
     internal actual suspend fun loadAudioClip(assetPath: String): AudioClip {

@@ -200,12 +200,11 @@ actual object PlatformAssets {
         return ImageTextureData(img!!, null)
     }
 
-    internal actual suspend fun uploadTextureToGpu(texture: Texture, texData: TextureData): Boolean {
+    internal actual suspend fun uploadTextureToGpu(texture: Texture, texData: TextureData) {
         withContext(Dispatchers.RenderLoop) {
             val ctx = KoolContext.requireContext() as Lwjgl3Context
             ctx.renderBackend.uploadTextureToGpu(texture, texData)
         }
-        return true
     }
 
     internal actual suspend fun loadAudioClip(assetPath: String): AudioClip {

@@ -80,6 +80,7 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackend {
 
     override fun uploadTextureToGpu(tex: Texture, data: TextureData) {
         tex.loadedTexture = when (tex) {
+            is Texture1d -> TextureLoader.loadTexture1d(vkSystem, tex.props, data)
             is Texture2d -> TextureLoader.loadTexture2d(vkSystem, tex.props, data)
             is Texture3d -> TextureLoader.loadTexture3d(vkSystem, tex.props, data)
             is TextureCube -> TextureLoader.loadTextureCube(vkSystem, tex.props, data)

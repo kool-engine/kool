@@ -60,7 +60,7 @@ class LoadedTextureVk(val sys: VkSystem, val format: TexFormat, val textureImage
 
         fun fromTexData(sys: VkSystem, texProps: TextureProps, data: TextureData): LoadedTextureVk {
             return when(data) {
-                is TextureData1d -> TextureLoader.loadTexture2d(sys, texProps, data)
+                is TextureData1d -> TextureLoader.loadTexture1d(sys, texProps, data)
                 is TextureData2d -> TextureLoader.loadTexture2d(sys, texProps, data)
                 is TextureData3d -> TextureLoader.loadTexture3d(sys, texProps, data)
                 is TextureDataCube -> TextureLoader.loadTextureCube(sys, texProps, data)

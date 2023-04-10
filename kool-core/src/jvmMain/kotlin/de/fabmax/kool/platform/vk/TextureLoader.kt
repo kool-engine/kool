@@ -103,6 +103,14 @@ object TextureLoader {
         return tex
     }
 
+    fun loadTexture1d(sys: VkSystem, props: TextureProps, img: TextureData) : LoadedTextureVk {
+        // 1d texture internally uses a 2d texture
+        if (img.height != 1) {
+            throw IllegalArgumentException("Supplied texture data is not 1-dimensional")
+        }
+        return loadTexture2d(sys, props, img)
+    }
+
     fun loadTexture2d(sys: VkSystem, props: TextureProps, img: TextureData) : LoadedTextureVk {
         val width = img.width
         val height = img.height
