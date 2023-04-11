@@ -7,27 +7,30 @@ import de.fabmax.kool.util.logW
 object InputStack {
 
     val defaultInputHandler = InputHandler("InputStack.defaultInputHandler")
-    val defaultKeyboardListener = SimpleKeyboardListener()
 
-    private val handlerStack = mutableListOf(defaultInputHandler)
-    private val processableKeyEvents = mutableListOf<KeyEvent>()
+    val handlerStack = mutableListOf(defaultInputHandler)
 
-    init {
-        defaultInputHandler.keyboardListeners += defaultKeyboardListener
-    }
+    val onInputStackChanged = mutableListOf<() -> Unit>()
 
     fun pushTop(inputHandler: InputHandler) {
-        remove(inputHandler)
+        if (inputHandler in handlerStack) {
+            remove(inputHandler)
+        }
         handlerStack += inputHandler
+        fireInputStackChanged()
     }
 
     fun pushBottom(inputHandler: InputHandler) {
-        remove(inputHandler)
+        if (inputHandler in handlerStack) {
+            remove(inputHandler)
+        }
         handlerStack.add(0, inputHandler)
+        fireInputStackChanged()
     }
 
     fun remove(inputHandler: InputHandler) {
         handlerStack -= inputHandler
+        fireInputStackChanged()
     }
 
     fun popAboveAndIncluding(inputHandler: InputHandler) {
@@ -37,12 +40,14 @@ object InputStack {
                 break
             }
         }
+        fireInputStackChanged()
+    }
+
+    private fun fireInputStackChanged() {
+        onInputStackChanged.forEach { it() }
     }
 
     internal fun handleInput(keyEvents: MutableList<KeyEvent>, ctx: KoolContext) {
-        processableKeyEvents.clear()
-        processableKeyEvents.addAll(keyEvents)
-
         var pointerBlocked = false
 
         for (i in handlerStack.lastIndex downTo 0) {
@@ -55,14 +60,14 @@ object InputStack {
                 }
             }
 
-            if (processableKeyEvents.isNotEmpty()) {
-                handler.handleKeyEvents(processableKeyEvents, ctx)
+            if (keyEvents.isNotEmpty()) {
+                handler.handleKeyEvents(keyEvents, ctx)
                 if (handler.blockAllKeyboardInput) {
-                    processableKeyEvents.clear()
+                    keyEvents.clear()
                 }
             }
 
-            if (pointerBlocked && processableKeyEvents.isEmpty()) {
+            if (pointerBlocked && keyEvents.isEmpty()) {
                 break
             }
         }
@@ -75,6 +80,12 @@ object InputStack {
         val pointerListeners = mutableListOf<PointerListener>()
         val keyboardListeners = mutableListOf<KeyboardListener>()
 
+        val simpleKeyboardListener = SimpleKeyboardListener()
+
+        init {
+            keyboardListeners += simpleKeyboardListener
+        }
+
         open fun handlePointer(pointerState: PointerState, ctx: KoolContext) {
             pointerListeners.forEach { it.handlePointer(pointerState, ctx) }
         }
@@ -82,6 +93,17 @@ object InputStack {
         open fun handleKeyEvents(keyEvents: MutableList<KeyEvent>, ctx: KoolContext) {
             keyboardListeners.forEach { it.handleKeyboard(keyEvents, ctx) }
         }
+
+        fun addKeyListener(
+            keyCode: KeyCode,
+            name: String,
+            filter: (KeyEvent) -> Boolean = { true },
+            callback: (KeyEvent) -> Unit
+        ): SimpleKeyListener = simpleKeyboardListener.addKeyListener(keyCode, name, filter, callback)
+
+        fun addKeyListener(listener: SimpleKeyListener) = simpleKeyboardListener.addKeyListener(listener)
+
+        fun removeKeyListener(listener: SimpleKeyListener) = simpleKeyboardListener.removeKeyListener(listener)
     }
 
     interface PointerListener {
@@ -93,26 +115,26 @@ object InputStack {
     }
 
     class SimpleKeyboardListener : KeyboardListener {
-        private val keyListeners = mutableMapOf<KeyCode, MutableList<SimpleKeyListener>>()
+        val keyListeners = mutableMapOf<KeyCode, MutableList<SimpleKeyListener>>()
 
-        fun registerKeyListener(
+        fun addKeyListener(
             keyCode: KeyCode,
             name: String,
             filter: (KeyEvent) -> Boolean = { true },
             callback: (KeyEvent) -> Unit
         ): SimpleKeyListener {
-            return registerKeyListener(SimpleKeyListener(keyCode, name, filter, callback))
+            return addKeyListener(SimpleKeyListener(keyCode, name, filter, callback))
         }
 
-        fun registerKeyListener(handler: SimpleKeyListener): SimpleKeyListener {
-            val listeners = keyListeners.getOrPut(handler.keyCode) { mutableListOf() }
+        fun addKeyListener(listener: SimpleKeyListener): SimpleKeyListener {
+            val listeners = keyListeners.getOrPut(listener.keyCode) { mutableListOf() }
             if (listeners.isNotEmpty()) {
-                logW { "Multiple bindings for key ${handler.keyCode}: ${listeners.map { it.name }}" }
+                logW { "Multiple bindings for key ${listener.keyCode}: ${listeners.map { it.name }}" }
             }
 
-            listeners += handler
-            logD { "Registered key handler: \"${handler.name}\" [keyCode=${handler.keyCode}]" }
-            return handler
+            listeners += listener
+            logD { "Registered key handler: \"${listener.name}\" [keyCode=${listener.keyCode}]" }
+            return listener
         }
 
         fun removeKeyListener(listener: SimpleKeyListener) {
@@ -155,9 +177,25 @@ object InputStack {
     class SimpleKeyListener(
         val keyCode: KeyCode,
         val name: String,
-        val filter: (KeyEvent) -> Boolean = { true },
+        val filter: (KeyEvent) -> Boolean = KEY_FILTER_ALL,
         val callback: (KeyEvent) -> Unit
     ) {
         operator fun invoke(evt: KeyEvent) = callback.invoke(evt)
+
+        fun getKeyInfo(): String {
+            return when (filter) {
+                KEY_FILTER_CTRL_PRESSED -> "Ctrl+${keyCode.name}"
+                KEY_FILTER_ALT_PRESSED -> "Alt+${keyCode.name}"
+                KEY_FILTER_SHIFT_PRESSED -> "Shift+${keyCode.name}"
+                KEY_FILTER_SUPER_PRESSED -> "Super+${keyCode.name}"
+                else -> keyCode.name
+            }
+        }
     }
+
+    val KEY_FILTER_ALL: (KeyEvent) -> Boolean = { true }
+    val KEY_FILTER_CTRL_PRESSED: (KeyEvent) -> Boolean = { it.isCtrlDown }
+    val KEY_FILTER_ALT_PRESSED: (KeyEvent) -> Boolean = { it.isAltDown }
+    val KEY_FILTER_SHIFT_PRESSED: (KeyEvent) -> Boolean = { it.isShiftDown }
+    val KEY_FILTER_SUPER_PRESSED: (KeyEvent) -> Boolean = { it.isSuperDown }
 }

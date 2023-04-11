@@ -49,8 +49,8 @@ abstract class KoolContext {
     @Deprecated("AssetManager is an object now", ReplaceWith("Assets"))
     val assetMgr = Assets
 
-    @Deprecated("InputManager is an object now", ReplaceWith("Input"))
-    val inputMgr = KeyboardInput
+    @Deprecated("InputManager is an object now", ReplaceWith("PointerInput"))
+    val inputMgr = PointerInput
 
     val engineStats = EngineStats()
 

@@ -13,17 +13,17 @@ object KeyboardInput {
     val isAltDown: Boolean get() = (currentKeyMods and KEY_MOD_ALT) != 0
     val isSuperDown: Boolean get() = (currentKeyMods and KEY_MOD_SUPER) != 0
 
-    fun registerKeyListener(
+    fun addKeyListener(
         keyCode: KeyCode,
         name: String,
         filter: (KeyEvent) -> Boolean = { true },
         callback: (KeyEvent) -> Unit
     ): InputStack.SimpleKeyListener {
-        return InputStack.defaultKeyboardListener.registerKeyListener(keyCode, name, filter, callback)
+        return InputStack.defaultInputHandler.addKeyListener(keyCode, name, filter, callback)
     }
 
     fun removeKeyListener(listener: InputStack.SimpleKeyListener) {
-        InputStack.defaultKeyboardListener.removeKeyListener(listener)
+        InputStack.defaultInputHandler.removeKeyListener(listener)
     }
 
     fun getKeyCodeForChar(char: Char) = char.uppercaseChar().code

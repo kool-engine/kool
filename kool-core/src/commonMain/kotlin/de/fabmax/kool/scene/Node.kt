@@ -269,11 +269,6 @@ open class Node(name: String? = null) : Disposable {
         removeNode(node)
     }
 
-    @Deprecated("unary plus is deprecated for being ambiguous", replaceWith = ReplaceWith("addNode(this)"))
-    operator fun unaryPlus() {
-        logW { "Node.unaryPlus() is broken, use addNode() instead" }
-    }
-
     open fun <R: Comparable<R>> sortChildrenBy(selector: (Node) -> R) {
         intChildren.sortBy(selector)
     }

@@ -264,7 +264,7 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
         // throttle and brake are used in a digital fashion, set low r
 
         var prevRecoverTime = 0.0
-        recoverListener = KeyboardInput.registerKeyListener(LocalKeyCode('r'), "recover", filter = { it.isPressed }) {
+        recoverListener = KeyboardInput.addKeyListener(LocalKeyCode('r'), "recover", filter = { it.isPressed }) {
             val time = Time.gameTime
             val recoverHard = time - prevRecoverTime < 0.3
             prevRecoverTime = time

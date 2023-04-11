@@ -139,7 +139,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         val playerGltf = loadGltfModel("${DemoLoader.modelPath}/player.glb")
         playerModel = PlayerModel(playerGltf, physicsObjects.playerController)
 
-        escKeyListener = KeyboardInput.registerKeyListener(KeyboardInput.KEY_ESC, "Exit cursor lock") {
+        escKeyListener = KeyboardInput.addKeyListener(KeyboardInput.KEY_ESC, "Exit cursor lock") {
             isCursorLocked.set(false)
             PointerInput.cursorMode = CursorMode.NORMAL
         }
