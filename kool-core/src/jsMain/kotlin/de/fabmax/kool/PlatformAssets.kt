@@ -108,7 +108,7 @@ actual object PlatformAssets {
         return fontGenerator.createFontMapData(font, fontScale, outMetrics)
     }
 
-    internal actual suspend fun loadFileByUser(filterList: String?): LoadedFile? {
+    internal actual suspend fun loadFileByUser(filterList: List<FileFilterItem>): LoadedFile? {
         val deferred = CompletableDeferred<Uint8Buffer?>()
         fileLoadDeferred = deferred
         fileChooser.asDynamic().click()
@@ -132,11 +132,22 @@ actual object PlatformAssets {
         }
     }
 
-    internal actual fun saveFileByUser(data: Uint8Buffer, fileName: String, mimeType: String): String? {
+    internal actual fun saveFileByUser(
+        data: Uint8Buffer,
+        defaultFileName: String?,
+        filterList: List<FileFilterItem>,
+        mimeType: String
+    ): String? {
+        val fName = if (defaultFileName != null && filterList.isNotEmpty()) {
+            val extension = filterList.first().fileExtensions.split(',')[0]
+            "${defaultFileName}.${extension}"
+        } else {
+            defaultFileName
+        }
         document.body?.let { body ->
             val element = document.createElement("a")
             element.setAttribute("href", data.toDataUrl(mimeType))
-            element.setAttribute("download", fileName)
+            fName?.let { element.setAttribute("download", it) }
 
             element.asDynamic().style.display = "none"
             body.appendChild(element)

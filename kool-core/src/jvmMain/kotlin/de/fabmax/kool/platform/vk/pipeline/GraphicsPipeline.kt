@@ -5,6 +5,7 @@ import de.fabmax.kool.platform.vk.*
 import de.fabmax.kool.platform.vk.util.bitValue
 import de.fabmax.kool.scene.geometry.PrimitiveType
 import de.fabmax.kool.util.logD
+import de.fabmax.kool.util.memStack
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkPipelineViewportStateCreateInfo

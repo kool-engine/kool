@@ -6,6 +6,7 @@ import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.pipeline.TextureCube
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.platform.vk.util.vkFormat
+import de.fabmax.kool.util.memStack
 import de.fabmax.kool.util.runDelayed
 import org.lwjgl.util.vma.Vma
 import org.lwjgl.vulkan.VK10.*

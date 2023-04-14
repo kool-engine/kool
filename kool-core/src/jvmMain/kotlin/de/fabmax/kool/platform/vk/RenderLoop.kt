@@ -1,6 +1,7 @@
 package de.fabmax.kool.platform.vk
 
 import de.fabmax.kool.util.logI
+import de.fabmax.kool.util.memStack
 import org.lwjgl.glfw.GLFW.glfwPollEvents
 import org.lwjgl.glfw.GLFW.glfwWindowShouldClose
 import org.lwjgl.vulkan.KHRSwapchain.*

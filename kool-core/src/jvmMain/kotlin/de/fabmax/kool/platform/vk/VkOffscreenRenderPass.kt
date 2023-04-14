@@ -1,6 +1,7 @@
 package de.fabmax.kool.platform.vk
 
 import de.fabmax.kool.util.logD
+import de.fabmax.kool.util.memStack
 import org.lwjgl.util.vma.Vma
 import org.lwjgl.vulkan.VK10.*
 

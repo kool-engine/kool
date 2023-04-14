@@ -2,7 +2,7 @@ package de.fabmax.kool.physics.vehicle
 
 import de.fabmax.kool.math.*
 import de.fabmax.kool.physics.*
-import de.fabmax.kool.platform.vk.memStack
+import de.fabmax.kool.util.memStack
 import org.lwjgl.system.MemoryStack
 import physx.common.PxIDENTITYEnum
 import physx.common.PxQuat

@@ -2,6 +2,7 @@ package de.fabmax.kool.platform.vk
 
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logI
+import de.fabmax.kool.util.memStack
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*

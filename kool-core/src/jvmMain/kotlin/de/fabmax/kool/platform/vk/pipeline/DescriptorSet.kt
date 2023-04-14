@@ -5,7 +5,7 @@ import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.platform.vk.VkSystem
 import de.fabmax.kool.platform.vk.callocVkDescriptorSetAllocateInfo
 import de.fabmax.kool.platform.vk.callocVkWriteDescriptorSetN
-import de.fabmax.kool.platform.vk.memStack
+import de.fabmax.kool.util.memStack
 import org.lwjgl.vulkan.VK10.*
 
 class DescriptorSet(val graphicsPipeline: GraphicsPipeline) {

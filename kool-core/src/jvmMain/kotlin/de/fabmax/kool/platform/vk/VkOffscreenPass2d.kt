@@ -3,6 +3,7 @@ package de.fabmax.kool.platform.vk
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.platform.vk.util.vkFormat
+import de.fabmax.kool.util.memStack
 import de.fabmax.kool.util.runDelayed
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer

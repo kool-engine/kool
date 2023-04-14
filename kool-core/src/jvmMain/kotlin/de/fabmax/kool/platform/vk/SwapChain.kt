@@ -1,6 +1,7 @@
 package de.fabmax.kool.platform.vk
 
 import de.fabmax.kool.util.logD
+import de.fabmax.kool.util.memStack
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.util.vma.Vma.VMA_MEMORY_USAGE_GPU_ONLY

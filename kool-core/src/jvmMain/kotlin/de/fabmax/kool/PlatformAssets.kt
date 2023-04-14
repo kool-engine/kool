@@ -6,10 +6,11 @@ import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.pipeline.TextureData
 import de.fabmax.kool.pipeline.TextureData2d
 import de.fabmax.kool.platform.*
+import de.fabmax.kool.util.memStack
 import de.fabmax.kool.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.lwjgl.PointerBuffer
+import org.lwjgl.util.nfd.NFDFilterItem
 import org.lwjgl.util.nfd.NativeFileDialog
 import java.awt.image.BufferedImage
 import java.io.*
@@ -23,7 +24,8 @@ actual object PlatformAssets {
 
     private val fontGenerator = FontMapGenerator(MAX_GENERATED_TEX_WIDTH, MAX_GENERATED_TEX_HEIGHT)
     private val imageIoLock = Any()
-    private var fileChooserPath = System.getProperty("user.home")
+    private var saveFileChooserPath = System.getProperty("user.home")
+    private var loadFileChooserPath = System.getProperty("user.home")
 
     init {
         HttpCache.initCache(File(KoolSystem.config.httpCacheDir))
@@ -143,46 +145,78 @@ actual object PlatformAssets {
         return fontGenerator.createFontMapData(font, fontScale, outMetrics)
     }
 
-    internal actual suspend fun loadFileByUser(filterList: String?): LoadedFile? {
-        chooseFile(filterList)?.let { file ->
+    internal actual suspend fun loadFileByUser(filterList: List<FileFilterItem>): LoadedFile? {
+        loadFileChooser(filterList)?.let { loadFile ->
             try {
-                return LoadedFile(
-                    file.absolutePath,
-                    Uint8BufferImpl(file.readBytes())
-                )
+                return LoadedFile(loadFile.absolutePath, Uint8BufferImpl(loadFile.readBytes()))
             } catch (e: IOException) {
+                logE { "Loading file $loadFile failed: $e" }
                 e.printStackTrace()
             }
         }
         return null
     }
 
-    fun chooseFile(filterList: String? = null): File? {
-        val outPath = PointerBuffer.allocateDirect(1)
-        val result = NativeFileDialog.NFD_OpenDialog(filterList, fileChooserPath, outPath)
-        if (result == NativeFileDialog.NFD_OKAY) {
-            val file = File(outPath.stringUTF8)
-            fileChooserPath = file.parent
-            return file
-        }
-        return null
-    }
-
-    internal actual fun saveFileByUser(data: Uint8Buffer, fileName: String, mimeType: String): String? {
-        val outPath = PointerBuffer.allocateDirect(1)
-        val result = NativeFileDialog.NFD_SaveDialog(null, fileChooserPath, outPath)
-        if (result == NativeFileDialog.NFD_OKAY) {
-            val file = File(outPath.stringUTF8)
-            file.parentFile.mkdirs()
-            fileChooserPath = file.parent
+    internal actual fun saveFileByUser(
+        data: Uint8Buffer,
+        defaultFileName: String?,
+        filterList: List<FileFilterItem>,
+        mimeType: String
+    ): String? {
+        return saveFileChooser(defaultFileName, filterList)?.let { saveFile ->
+            saveFile.parentFile?.mkdirs()
             try {
-                FileOutputStream(file).use { it.write(data.toArray()) }
-                return file.absolutePath
+                saveFile.writeBytes(data.toArray())
             } catch (e: IOException) {
+                logE { "Saving file $saveFile failed: $e" }
                 e.printStackTrace()
             }
+            saveFile.absolutePath
         }
-        return null
+    }
+
+    fun loadFileChooser(filterList: List<FileFilterItem> = emptyList()): File? {
+        memStack {
+            val outPath = callocPointer(1)
+            var fileFilters: NFDFilterItem.Buffer? = null
+            if (filterList.isNotEmpty()) {
+                fileFilters = NFDFilterItem.calloc(filterList.size)
+                filterList.forEachIndexed { i, filterItem ->
+                    fileFilters[i].set(filterItem.name.toByteBuffer(), filterItem.fileExtensions.toByteBuffer())
+                }
+            }
+
+            val result = NativeFileDialog.NFD_OpenDialog(outPath, fileFilters, loadFileChooserPath)
+            return if (result == NativeFileDialog.NFD_OKAY) {
+                val file = File(outPath.stringUTF8)
+                loadFileChooserPath = file.parent
+                file
+            } else {
+                null
+            }
+        }
+    }
+
+    fun saveFileChooser(defaultFileName: String? = null, filterList: List<FileFilterItem> = emptyList()): File? {
+        memStack {
+            val outPath = callocPointer(1)
+            var fileFilters: NFDFilterItem.Buffer? = null
+            if (filterList.isNotEmpty()) {
+                fileFilters = NFDFilterItem.calloc(filterList.size)
+                filterList.forEachIndexed { i, filterItem ->
+                    fileFilters[i].set(filterItem.name.toByteBuffer(), filterItem.fileExtensions.toByteBuffer())
+                }
+            }
+
+            val result = NativeFileDialog.NFD_SaveDialog(outPath, fileFilters, saveFileChooserPath, defaultFileName)
+            return if (result == NativeFileDialog.NFD_OKAY) {
+                val file = File(outPath.stringUTF8)
+                saveFileChooserPath = file.parent
+                file
+            } else {
+                null
+            }
+        }
     }
 
     internal actual suspend fun loadTextureData2d(imagePath: String, format: TexFormat?): TextureData2d {

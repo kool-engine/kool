@@ -128,22 +128,26 @@ object Assets : CoroutineScope {
      * user canceled the dialog or loading failed. On JVM the returned [LoadedFile] also contains the path of the
      * loaded file.
      *
-     * @param filterList Optional file filter list as comma-separated string of file extensions (e.g. "jpg,png"; only
-     *                   supported on JVM, ignored on js).
+     * @param filterList Optional file filter list (e.g. ("Images", "jpg,png"); only supported on JVM, ignored on js).
      * @return The [LoadedFile] containing the file data or null if the operation was canceled.
      */
-    suspend fun loadFileByUser(filterList: String? = null): LoadedFile? {
+    suspend fun loadFileByUser(filterList: List<FileFilterItem> = emptyList()): LoadedFile? {
         return PlatformAssets.loadFileByUser(filterList)
     }
 
     /**
      * Opens a file chooser dialog for the user to select a destination file for the given data.
      *
-     * @return On JVM the selected path is returned or null if the suer canceled the operation. On js null is always
+     * @return On JVM the selected path is returned or null if the user canceled the operation. On js null is always
      *         returned.
      */
-    fun saveFileByUser(data: Uint8Buffer, fileName: String, mimeType: String = "application/octet-stream"): String? {
-        return PlatformAssets.saveFileByUser(data, fileName, mimeType)
+    fun saveFileByUser(
+        data: Uint8Buffer,
+        defaultFileName: String? = null,
+        filterList: List<FileFilterItem> = emptyList(),
+        mimeType: String = "application/octet-stream"
+    ): String? {
+        return PlatformAssets.saveFileByUser(data, defaultFileName, filterList, mimeType)
     }
 
     fun isHttpAsset(assetPath: String): Boolean =
@@ -343,6 +347,8 @@ class LoadedTextureAsset(ref: AssetRef, val data: TextureData?) : LoadedAsset(re
 
 data class LoadedFile(val path: String?, val data: Uint8Buffer)
 
+data class FileFilterItem(val name: String, val fileExtensions: String)
+
 expect object PlatformAssets {
     internal suspend fun loadBlob(blobRef: BlobAssetRef): LoadedBlobAsset
     internal suspend fun loadTexture(textureRef: TextureAssetRef): LoadedTextureAsset
@@ -351,8 +357,13 @@ expect object PlatformAssets {
     internal suspend fun waitForFonts()
     internal fun createFontMapData(font: AtlasFont, fontScale: Float, outMetrics: MutableMap<Char, CharMetrics>): TextureData2d
 
-    internal suspend fun loadFileByUser(filterList: String?): LoadedFile?
-    internal fun saveFileByUser(data: Uint8Buffer, fileName: String, mimeType: String = "application/octet-stream"): String?
+    internal suspend fun loadFileByUser(filterList: List<FileFilterItem>): LoadedFile?
+    internal fun saveFileByUser(
+        data: Uint8Buffer,
+        defaultFileName: String?,
+        filterList: List<FileFilterItem>,
+        mimeType: String = "application/octet-stream"
+    ): String?
 
     internal suspend fun loadTextureData2d(imagePath: String, format: TexFormat?): TextureData2d
     internal suspend fun loadTextureDataFromBuffer(texData: Uint8Buffer, mimeType: String): TextureData

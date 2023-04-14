@@ -1,5 +1,6 @@
 package de.fabmax.kool.platform.vk
 
+import de.fabmax.kool.util.memStack
 import org.lwjgl.system.MemoryUtil
 import org.lwjgl.vulkan.VK10.*
 import java.nio.ByteBuffer

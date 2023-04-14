@@ -2,6 +2,7 @@ package de.fabmax.kool.platform.vk
 
 import de.fabmax.kool.KoolException
 import de.fabmax.kool.util.logW
+import de.fabmax.kool.util.memStack
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer

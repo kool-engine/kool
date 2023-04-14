@@ -13,7 +13,7 @@ object DepsCommon {
 }
 
 object DepsJvm {
-    val lwjglVersion = "3.3.1"
+    val lwjglVersion = "3.3.2"
     val nativeLibsSuffix = OperatingSystem.current().let {
         when {
             it.isLinux -> "natives-linux"

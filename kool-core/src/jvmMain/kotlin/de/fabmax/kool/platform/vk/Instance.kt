@@ -1,9 +1,6 @@
 package de.fabmax.kool.platform.vk
 
-import de.fabmax.kool.util.logD
-import de.fabmax.kool.util.logE
-import de.fabmax.kool.util.logI
-import de.fabmax.kool.util.logW
+import de.fabmax.kool.util.*
 import org.lwjgl.PointerBuffer
 import org.lwjgl.glfw.GLFWVulkan
 import org.lwjgl.system.MemoryStack

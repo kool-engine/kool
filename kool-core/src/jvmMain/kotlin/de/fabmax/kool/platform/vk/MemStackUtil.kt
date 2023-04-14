@@ -2,15 +2,6 @@ package de.fabmax.kool.platform.vk
 
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.*
-import kotlin.contracts.InvocationKind
-import kotlin.contracts.contract
-
-inline fun <R> memStack(block: (MemoryStack.() -> R)): R {
-    contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    return MemoryStack.stackPush().use { stack ->
-        stack.block()
-    }
-}
 
 inline fun <T> MemoryStack.allocStruct(block: T.() -> Unit, factory: (MemoryStack) -> T): T {
     val struct = factory(this)

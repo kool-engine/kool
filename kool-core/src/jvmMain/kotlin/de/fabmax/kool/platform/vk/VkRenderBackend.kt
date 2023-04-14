@@ -12,6 +12,7 @@ import de.fabmax.kool.platform.vk.util.bitValue
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MixedBufferImpl
 import de.fabmax.kool.util.Viewport
+import de.fabmax.kool.util.memStack
 import org.lwjgl.PointerBuffer
 import org.lwjgl.glfw.GLFW.glfwSetWindowShouldClose
 import org.lwjgl.system.MemoryStack
