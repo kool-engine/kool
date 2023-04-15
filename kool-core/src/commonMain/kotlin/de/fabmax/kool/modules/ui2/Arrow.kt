@@ -7,6 +7,13 @@ import kotlin.math.min
 interface ArrowScope : UiScope {
     override val modifier: ArrowModifier
     val isHovered: Boolean
+
+    companion object {
+        const val ROTATION_RIGHT = 0f
+        const val ROTATION_DOWN = 90f
+        const val ROTATION_LEFT = 180f
+        const val ROTATION_UP = 270f
+    }
 }
 
 open class ArrowModifier(surface: UiSurface) : UiModifier(surface) {
@@ -25,7 +32,7 @@ fun <T: ArrowModifier> T.colors(
     return this
 }
 
-inline fun UiScope.Arrow(rotation: Float, block: ArrowScope.() -> Unit): ArrowScope {
+inline fun UiScope.Arrow(rotation: Float = ArrowScope.ROTATION_RIGHT, block: ArrowScope.() -> Unit): ArrowScope {
     val arrow = uiNode.createChild(ArrowNode::class, ArrowNode.factory)
     arrow.modifier
         .rotation(rotation)
