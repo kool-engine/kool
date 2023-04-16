@@ -1,4 +1,3 @@
 package de.fabmax.kool.editor
 
-expect class AppLoadService(editor: KoolEditor) {
-}
+expect class AppLoadService(editor: KoolEditor)

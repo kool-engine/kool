@@ -1,30 +1,18 @@
 package de.fabmax.kool.app
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.editor.api.ClassFactory
 import de.fabmax.kool.editor.api.EditorAwareApp
-import de.fabmax.kool.modules.ksl.KslPbrShader
+import de.fabmax.kool.editor.model.MProject
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.scene.colorMesh
 import de.fabmax.kool.scene.defaultOrbitCamera
-import de.fabmax.kool.util.MdColor
+
+expect object AppClassFactory : ClassFactory
 
 class App : EditorAwareApp {
-    override fun startApp(ctx: KoolContext, isInEditor: Boolean): List<Scene> {
-        val scene = Scene().apply {
-            defaultOrbitCamera()
-
-            colorMesh {
-                generate {
-                    color = MdColor.LIGHT_GREEN.toLinear()
-                    cube {
-                        centered()
-                    }
-                }
-                shader = KslPbrShader {
-                    color { vertexColor() }
-                }
-            }
-        }
+    override fun startApp(project: MProject, isInEditor: Boolean, ctx: KoolContext): List<Scene> {
+        val scene = project.scenes[0].createScene(AppClassFactory)
+        scene.defaultOrbitCamera()
         return listOf(scene)
     }
 }

@@ -1,5 +1,9 @@
 @file:Suppress("UNUSED_VARIABLE")
 
+plugins {
+    kotlin("plugin.serialization") version Versions.kotlinVersion
+}
+
 kotlin {
     jvm {
         compilations.all {
@@ -17,6 +21,9 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
+                api(DepsCommon.kotlinCoroutines)
+                implementation(DepsCommon.kotlinSerialization)
+                implementation(DepsCommon.kotlinSerializationJson)
                 api(project(":kool-core"))
                 api(project(":kool-physics"))
             }

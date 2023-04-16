@@ -20,11 +20,9 @@ import kotlin.io.path.walk
 
 actual class AppLoadService actual constructor(private val editor: KoolEditor) {
 
-    // todo: jar path is hardcoded for now, discover it dynamically
-    private val appJarPath = Path.of("kool-editor-template/build/libs/kool-editor-template-jvm-0.11.0-SNAPSHOT.jar")
-
-    // todo: app project path is hardcoded for now, make it configurable
-    private val watchPath = Path.of("kool-editor-template/src")
+    // todo: paths are hardcoded for now
+    private val appJarPath = Path.of(KoolEditor.PROJECT_JAR_PATH)
+    private val watchPath = Path.of(KoolEditor.PROJECT_SRC_DIR)
 
     private val watchPaths = mutableMapOf<WatchKey, Path>()
     private val changeEventQueue = ArrayBlockingQueue<FileChangeEvent>(100)
@@ -124,7 +122,7 @@ actual class AppLoadService actual constructor(private val editor: KoolEditor) {
         logI { "Loading app from jar: $jarPath" }
         try {
             val loader = URLClassLoader(arrayOf(jarPath.toUri().toURL()), this.javaClass.classLoader)
-            val appClass = loader.loadClass("de.fabmax.kool.app.App")
+            val appClass = loader.loadClass(KoolEditor.PROJECT_MAIN_CLASS)
             val app = appClass.getDeclaredConstructor().newInstance()
             val editorAware = app as EditorAwareApp
             editor.loadApp(editorAware)

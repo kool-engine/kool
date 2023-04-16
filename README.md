@@ -1,18 +1,19 @@
-# kool - A Vulkan / OpenGL graphics engine written in Kotlin
+# kool - A OpenGL / Vulkan graphics engine written in Kotlin
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/de.fabmax.kool/kool-core/badge.svg)](https://maven-badges.herokuapp.com/maven-central/de.fabmax.kool/kool-core)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/fabmax/kool/blob/master/LICENSE)
 
-A multi-platform Vulkan / OpenGL based graphics engine that works on Desktop Java and browsers with
-WebGL2. Android support is currently suspended but it should be quite easy to get that going again.
+A multi-platform OpenGL / Vulkan based game engine that works on Desktop Java and browsers with
+WebGL2. Android support is currently suspended, but it should be quite easy to get that going again.
 
-I finally made my first actual game with this: [Blocks and Belts](https://fabmaxx.itch.io/blocks-and-belts).
+I started working on a graphical scene editor, which should make it much easier to create new projects with this engine.
+However, the editor is still in a super early state and not very useful yet. So, for now, this is very much a code-only
+game engine. I recommend taking a look at the demos listed below in case you are curious (all demo source code is
+available in the `kool-demo` subproject).
+
+I also made an actual game with this: [Blocks and Belts](https://fabmaxx.itch.io/blocks-and-belts).
 Give it a try (it's free)!
 
-If you are adventurous, you might be able to use this for your own projects
-as well (look below for a very short usage guide - that's all the documentation there is)
-
-I also have a few demos in place (roughly in order of creation; once loaded, you can also switch between them via the
-hamburger button in the upper left corner):
+## Demos
 - [Island](https://fabmax.github.io/kool/kool-js/?demo=phys-terrain): Height-map based
   island incl. some wind-affected vegetation + a basic controllable character.
 - [Physics - Ragdoll](https://fabmax.github.io/kool/kool-js/?demo=phys-ragdoll): Ragdoll physics demo.
@@ -53,11 +54,11 @@ hamburger button in the upper left corner):
 Code for all demos is available in kool-demo sub-project.
 
 ## Engine Features / Noticeable Stuff:
-
-- Physics simulation (based on Nvidia PhysX 5, using [physx-jni](https://github.com/fabmax/physx-jni) on Java and [physx-js-webidl](https://github.com/fabmax/physx-js-webidl) on javascript)
+- Physics simulation (based on Nvidia PhysX 5.1, using [physx-jni](https://github.com/fabmax/physx-jni) on Java and [physx-js-webidl](https://github.com/fabmax/physx-js-webidl) on javascript)
 - Kotlin DSL based shader language (translates into GLSL)
 - Neat little integrated GUI framework (the API is heavily inspired by [Jetpack Compose](https://github.com/JetBrains/compose-jb) but the implementation is my own)
-- Vulkan rendering backend (on JVM)
+- [MSDF](https://github.com/Chlumsky/msdf-atlas-gen) Font support for text rendering in arbitrary font sizes
+- Experimental Vulkan rendering backend (on JVM)
 - Support for physical based rendering (with metallic workflow) and image-based lighting
 - (Almost) complete support for [glTF 2.0](https://github.com/KhronosGroup/glTF) model format (including animations, morph targets and skins)
 - Skin / armature mesh animation (vertex shader based)

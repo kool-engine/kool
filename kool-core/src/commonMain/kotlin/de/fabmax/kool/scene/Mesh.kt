@@ -216,14 +216,14 @@ open class Mesh(var geometry: IndexedVertexList, name: String? = null) : Node(na
  * Mesh with default attributes for vertex color based rendering:
  * [Attribute.POSITIONS], [Attribute.NORMALS], [Attribute.COLORS]
  */
-class ColorMesh(name: String? = null) : Mesh(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, name = name)
+open class ColorMesh(name: String? = null) : Mesh(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, name = name)
 
 /**
  * Mesh with default attributes for texture color based rendering:
  * [Attribute.POSITIONS], [Attribute.NORMALS], [Attribute.TEXTURE_COORDS] and [Attribute.TANGENTS] if
  * isNormalMapped is true.
  */
-class TextureMesh(isNormalMapped: Boolean = false, name: String? = null) : Mesh(
+open class TextureMesh(isNormalMapped: Boolean = false, name: String? = null) : Mesh(
     if (isNormalMapped) {
         listOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS, Attribute.TANGENTS)
     } else {

@@ -287,8 +287,8 @@ internal actual object PlatformInput {
                 // we lost pointer lock without requesting it via api -> user requested it by hitting the esc key
                 // report an esc key-event, so the application can react on it
                 logI { "pointer lock exited by user" }
-                KeyboardInput.handleKeyEvent(KeyEvent(KeyboardInput.KEY_ESC, KeyboardInput.KEY_EV_DOWN, 0))
-                KeyboardInput.handleKeyEvent(KeyEvent(KeyboardInput.KEY_ESC, KeyboardInput.KEY_EV_UP, 0))
+                KeyboardInput.handleKeyEvent(KeyEvent(KeyboardInput.KEY_ESC, KeyboardInput.KEY_ESC, KeyboardInput.KEY_EV_DOWN, 0))
+                KeyboardInput.handleKeyEvent(KeyEvent(KeyboardInput.KEY_ESC, KeyboardInput.KEY_ESC, KeyboardInput.KEY_EV_UP, 0))
             }
             isApiExitRequest = false
         }
