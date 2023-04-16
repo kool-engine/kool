@@ -1,27 +1,39 @@
 package de.fabmax.kool.input
 
-class KeyEvent(keyCode: KeyCode, localKeyCode: KeyCode, event: Int, modifiers: Int) {
+data class KeyEvent(
     /**
-     * Key code for US keyboard layout
+     * Keyboard-layout independent keycode.
      */
-    var keyCode = keyCode
-        internal set
+    val keyCode: KeyCode,
 
     /**
-     * Key code for local keyboard layout
+     * Keyboard-layout specific keycode.
      */
-    var localKeyCode = localKeyCode
-        internal set
+    val localKeyCode: KeyCode,
 
-    var modifiers = modifiers
-        internal set
-    var event = event
-        internal set
-    var typedChar: Char = 0.toChar()
-        internal set
+    /**
+     * Key event type: Bit mask with possible values
+     * - [KeyboardInput.KEY_EV_UP]
+     * - [KeyboardInput.KEY_EV_DOWN]
+     * - [KeyboardInput.KEY_EV_REPEATED]
+     * - [KeyboardInput.KEY_EV_CHAR_TYPED]
+     */
+    val event: Int,
 
-    constructor(keyCode: KeyCode, event: Int, modifiers: Int) : this(keyCode, keyCode, event, modifiers)
+    /**
+     * Key event modifiers: Bit mask with possible values
+     * - [KeyboardInput.KEY_MOD_SHIFT]
+     * - [KeyboardInput.KEY_MOD_CTRL]
+     * - [KeyboardInput.KEY_MOD_ALT]
+     * - [KeyboardInput.KEY_MOD_SUPER]
+     */
+    val modifiers: Int,
 
+    /**
+     * Typed character, only valid if [event] is [KeyboardInput.KEY_EV_CHAR_TYPED].
+     */
+    val typedChar: Char = 0.toChar()
+) {
     val isPressed: Boolean get() = (event and KeyboardInput.KEY_EV_DOWN) != 0
     val isRepeated: Boolean get() = (event and KeyboardInput.KEY_EV_REPEATED) != 0
     val isReleased: Boolean get() = (event and KeyboardInput.KEY_EV_UP) != 0

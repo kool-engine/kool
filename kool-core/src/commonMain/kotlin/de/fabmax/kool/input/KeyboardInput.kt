@@ -44,8 +44,13 @@ object KeyboardInput {
     }
 
     fun handleCharTyped(typedChar: Char) {
-        val ev = KeyEvent(LocalKeyCode(typedChar.code), KEY_EV_CHAR_TYPED or currentKeyRepeated, currentKeyMods)
-        ev.typedChar = typedChar
+        val ev = KeyEvent(
+            UniversalKeyCode(typedChar.code),
+            LocalKeyCode(typedChar.code),
+            KEY_EV_CHAR_TYPED or currentKeyRepeated,
+            currentKeyMods,
+            typedChar
+        )
         queuedKeyEvents.add(ev)
     }
 

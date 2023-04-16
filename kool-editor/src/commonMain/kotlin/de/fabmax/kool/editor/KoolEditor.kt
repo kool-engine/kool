@@ -1,8 +1,11 @@
 package de.fabmax.kool.editor
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.editor.actions.EditorActions
 import de.fabmax.kool.editor.api.EditorAwareApp
 import de.fabmax.kool.editor.menu.EditorMenu
+import de.fabmax.kool.input.InputStack
+import de.fabmax.kool.input.LocalKeyCode
 import de.fabmax.kool.modules.ui2.MutableStateValue
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.runOnMainThread
@@ -14,9 +17,32 @@ class KoolEditor(val ctx: KoolContext) {
 
     val menu = EditorMenu(this)
 
+    private val editorInputContext = InputStack.InputHandler("Editor input")
+
     init {
         AppLoadService(this)
         ctx.scenes += menu
+
+        registerKeyBindings()
+    }
+
+    private fun registerKeyBindings() {
+        editorInputContext.addKeyListener(
+            name = "Undo",
+            keyCode = LocalKeyCode('Z'),
+            filter = InputStack.KEY_FILTER_CTRL_PRESSED
+        ) {
+            EditorActions.undo()
+        }
+        editorInputContext.addKeyListener(
+            name = "Redo",
+            keyCode = LocalKeyCode('Y'),
+            filter = InputStack.KEY_FILTER_CTRL_PRESSED
+        ) {
+            EditorActions.redo()
+        }
+
+        InputStack.pushTop(editorInputContext)
     }
 
     private fun bringEditorMenuToTop() {
@@ -41,6 +67,7 @@ class KoolEditor(val ctx: KoolContext) {
             ctx.scenes += newApp.appScenes
 
             bringEditorMenuToTop()
+            EditorActions.clear()
             appReloadListeners.forEach { it.onAppReload(oldApp, newApp) }
         }
     }

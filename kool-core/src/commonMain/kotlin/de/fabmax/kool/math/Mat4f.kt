@@ -679,6 +679,13 @@ open class Mat4f {
         return result
     }
 
+    fun setOrigin(origin: MutableVec3f): Mat4f {
+        this[0, 3] = origin.x
+        this[1, 3] = origin.y
+        this[2, 3] = origin.z
+        return this
+    }
+
     fun getRotation(result: Mat3f): Mat3f {
         result[0, 0] = this[0, 0]
         result[0, 1] = this[0, 1]
@@ -741,6 +748,26 @@ open class Mat4f {
             result[k] = (this[k, i] + this[i, k]) * s
         }
         return result
+    }
+
+    fun getScale(result: MutableVec3f): MutableVec3f {
+        val ax = this[0, 0]
+        val ay = this[1, 0]
+        val az = this[2, 0]
+
+        val bx = this[0, 1]
+        val by = this[1, 1]
+        val bz = this[2, 1]
+
+        val cx = this[0, 2]
+        val cy = this[1, 2]
+        val cz = this[2, 2]
+
+        return result.set(
+            sqrt(ax*ax + ay*ay + az*az),
+            sqrt(bx*bx + by*by + bz*bz),
+            sqrt(cx*cx + cy*cy + cz*cz)
+        )
     }
 
     fun toBuffer(buffer: Float32Buffer): Float32Buffer {

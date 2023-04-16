@@ -9,20 +9,18 @@ import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
 
-class SceneObjectTree(val editor: KoolEditor) : Composable, KoolEditor.AppReloadListener {
+class SceneObjectTree(val editor: KoolEditor, val sceneBrowser: SceneBrowser) : Composable, KoolEditor.AppReloadListener {
 
     private val treeItemMap = mutableMapOf<Node, SceneObjectItem>()
     private val treeItems = mutableListOf<SceneObjectItem>()
     private val isTreeValid = mutableStateOf(false)
-
-    private var selectedItem = mutableStateOf<Node?>(null)
 
     init {
         editor.appReloadListeners += this
     }
 
     override fun onAppReload(oldApp: KoolEditor.AppContext?, newApp: KoolEditor.AppContext) {
-        selectedItem.set(null)
+        sceneBrowser.selectedObject.set(null)
         treeItemMap.clear()
         isTreeValid.set(false)
     }
@@ -36,7 +34,9 @@ class SceneObjectTree(val editor: KoolEditor) : Composable, KoolEditor.AppReload
             isTreeValid.set(true)
         }
 
-        LazyList {
+        LazyList(
+            containerModifier = { it.backgroundColor(null) }
+        ) {
             items(treeItems) {
                 sceneObjectItem(it)
             }
@@ -45,13 +45,19 @@ class SceneObjectTree(val editor: KoolEditor) : Composable, KoolEditor.AppReload
 
     private fun UiScope.sceneObjectItem(item: SceneObjectItem) = Row(width = Grow.Std) {
         modifier
-            .height(sizes.largeGap * 1.3f)
+            .height(sizes.lineHeight)
+            .padding(horizontal = sizes.gap)
             .onClick {
-                selectedItem.set(item.node)
+                if (it.pointer.isLeftButtonClicked) {
+                    sceneBrowser.selectedObject.set(item.node)
+                    if (it.pointer.leftButtonRepeatedClickCount == 2 && item.isExpandable) {
+                        item.toggleExpanded()
+                    }
+                }
             }
 
-        if (item.node === selectedItem.use()) {
-            modifier.backgroundColor(colors.secondaryVariant.withAlpha(0.4f))
+        if (item.node === sceneBrowser.selectedObject.use()) {
+            modifier.backgroundColor(colors.secondaryVariantAlpha(0.5f))
         }
 
         // tree-depth based indentation
@@ -63,16 +69,13 @@ class SceneObjectTree(val editor: KoolEditor) : Composable, KoolEditor.AppReload
         if (item.isExpandable) {
             Box {
                 modifier
-                    .size(sizes.largeGap, FitContent)
+                    .size(sizes.lineHeight, FitContent)
                     .alignY(AlignmentY.Center)
                 Arrow {
                     modifier
                         .rotation(if (item.isExpanded.use()) ROTATION_DOWN else ROTATION_RIGHT)
                         .align(AlignmentX.Center, AlignmentY.Center)
-                        .onClick {
-                            item.isExpanded.set(!item.isExpanded.value)
-                            isTreeValid.set(false)
-                        }
+                        .onClick { item.toggleExpanded() }
                 }
             }
         } else {
@@ -81,8 +84,9 @@ class SceneObjectTree(val editor: KoolEditor) : Composable, KoolEditor.AppReload
 
         Text(item.name) {
             modifier
+                .margin(horizontal = sizes.smallGap)
                 .alignY(AlignmentY.Center)
-            if (item.node === selectedItem.use()) {
+            if (item.node === sceneBrowser.selectedObject.use()) {
                 modifier.textColor(colors.primary)
             }
         }
@@ -107,14 +111,21 @@ class SceneObjectTree(val editor: KoolEditor) : Composable, KoolEditor.AppReload
         }
     }
 
-    private class SceneObjectItem(
+    private inner class SceneObjectItem(
         val node: Node,
         val type: SceneObjectType,
         val depth: Int
     ) {
         val name: String get() = node.name
         val isExpandable: Boolean get() = node.children.isNotEmpty()
-        val isExpanded = mutableStateOf(false)
+        val isExpanded = mutableStateOf(true)
+
+        fun toggleExpanded() {
+            if (isExpandable) {
+                isExpanded.set(!isExpanded.value)
+                isTreeValid.set(false)
+            }
+        }
     }
 
     private enum class SceneObjectType {

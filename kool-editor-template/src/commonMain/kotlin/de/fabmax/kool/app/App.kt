@@ -15,7 +15,7 @@ class App : EditorAwareApp {
 
             colorMesh {
                 generate {
-                    color = MdColor.BLUE.toLinear()
+                    color = MdColor.LIGHT_GREEN.toLinear()
                     cube {
                         centered()
                     }

@@ -18,6 +18,16 @@ class Transform {
         isIdentity = false
     }
 
+    fun getPosition(result: MutableVec3d): MutableVec3d {
+        return matrix.getOrigin(result)
+    }
+
+    fun setPosition(position: MutableVec3d): Transform {
+        matrix.setOrigin(position)
+        markDirty()
+        return this
+    }
+
     fun setIdentity(): Transform {
         matrix.setIdentity()
         lazyInvMatrix.setIdentity()
