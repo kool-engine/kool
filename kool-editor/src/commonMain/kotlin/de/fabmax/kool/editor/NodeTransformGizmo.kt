@@ -59,6 +59,8 @@ class NodeTransformGizmo(editor: KoolEditor) : Node("Node transform gizmo") {
                     it.updateModelMat(true)
                 } else {
                     gizmo.transform.set(it.transform.matrix)
+                    gizmo.transform.matrix.resetScale()
+                    gizmo.setFixedScale(it.globalRadius * 1.5f)
                 }
             }
         }

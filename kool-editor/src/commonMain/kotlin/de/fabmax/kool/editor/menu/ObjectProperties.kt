@@ -50,6 +50,9 @@ class ObjectProperties(val editor: KoolEditor) {
     ) {
         modifier.backgroundColor(colors.background.withAlpha(0.8f))
 
+        // clear gizmo transform object, will be set below if transform editor is available
+        transformGizmo.setTransformObject(null)
+
         TitleBar()
         objectProperties()
 
@@ -89,7 +92,6 @@ class ObjectProperties(val editor: KoolEditor) {
             }
         }
 
-        transformGizmo.setTransformObject(null)
         when (selectedObject) {
             is Scene -> sceneProperties(selectedObject)
             is Mesh -> meshProperties(selectedObject)

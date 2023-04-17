@@ -7,6 +7,8 @@ import de.fabmax.kool.editor.menu.EditorMenu
 import de.fabmax.kool.editor.model.*
 import de.fabmax.kool.input.InputStack
 import de.fabmax.kool.input.LocalKeyCode
+import de.fabmax.kool.input.PointerState
+import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.modules.ui2.MutableStateValue
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
@@ -36,6 +38,7 @@ class KoolEditor(val ctx: KoolContext) {
         ctx.scenes += menu
 
         registerKeyBindings()
+        registerSceneObjectPicking()
     }
 
     private fun registerKeyBindings() {
@@ -55,6 +58,24 @@ class KoolEditor(val ctx: KoolContext) {
         }
 
         InputStack.pushTop(editorInputContext)
+    }
+
+    private fun registerSceneObjectPicking() {
+        editorInputContext.pointerListeners += object : InputStack.PointerListener {
+            val rayTest = RayTest()
+
+            override fun handlePointer(pointerState: PointerState, ctx: KoolContext) {
+                val appScene = loadedApp.value?.appScenes?.get(0) ?: return
+                val ptr = pointerState.primaryPointer
+                if (ptr.isLeftButtonClicked) {
+                    if (appScene.computePickRay(ptr, ctx, rayTest.ray)) {
+                        rayTest.clear()
+                        appScene.rayTest(rayTest)
+                        menu.sceneBrowser.selectedObject.set(rayTest.hitNode)
+                    }
+                }
+            }
+        }
     }
 
     private fun bringEditorMenuToTop() {
