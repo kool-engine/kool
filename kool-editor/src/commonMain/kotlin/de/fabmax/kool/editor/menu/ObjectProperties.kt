@@ -1,6 +1,7 @@
 package de.fabmax.kool.editor.menu
 
 import de.fabmax.kool.editor.KoolEditor
+import de.fabmax.kool.editor.NodeTransformGizmo
 import de.fabmax.kool.editor.actions.EditorActions
 import de.fabmax.kool.editor.actions.SetTransformAction
 import de.fabmax.kool.math.Mat3d
@@ -22,6 +23,8 @@ class ObjectProperties(val editor: KoolEditor) {
     private val tmpNodeScale = MutableVec3d()
     private val tmpNodeRotMat = Mat3d()
 
+    private val transformGizmo = NodeTransformGizmo(editor)
+
     init {
         transformProperties.onChangedByEditor += {
             editor.menu.sceneBrowser.selectedObject.value?.let { selectedNd ->
@@ -37,6 +40,7 @@ class ObjectProperties(val editor: KoolEditor) {
                 EditorActions.applyAction(SetTransformAction(selectedNd, oldTransform, newTransform))
             }
         }
+        editor.editorContent += transformGizmo
     }
 
     val windowSurface: UiSurface = Window(
@@ -83,10 +87,9 @@ class ObjectProperties(val editor: KoolEditor) {
                     modifier.alignY(AlignmentY.Center)
                 }
             }
-
-            // Don't forget undo / redo!
         }
 
+        transformGizmo.setTransformObject(null)
         when (selectedObject) {
             is Scene -> sceneProperties(selectedObject)
             is Mesh -> meshProperties(selectedObject)
@@ -103,6 +106,7 @@ class ObjectProperties(val editor: KoolEditor) {
 
     fun UiScope.meshProperties(mesh: Mesh) {
         transformEditor(transformProperties)
+        transformGizmo.setTransformObject(mesh)
 
         // - material (simple)
     }
@@ -115,6 +119,6 @@ class ObjectProperties(val editor: KoolEditor) {
     }
 
     fun UiScope.nodeProperties(node: Node) {
-        transformEditor(transformProperties)
+        //transformEditor(transformProperties)
     }
 }

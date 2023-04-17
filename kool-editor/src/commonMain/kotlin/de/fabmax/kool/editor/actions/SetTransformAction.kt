@@ -5,9 +5,12 @@ import de.fabmax.kool.scene.Node
 
 class SetTransformAction(
     private val editedNode: Node,
-    private val oldTransform: Mat4d,
-    private val newTransform: Mat4d
+    oldTransform: Mat4d,
+    newTransform: Mat4d
 ) : EditorAction {
+
+    private val oldTransform = Mat4d().set(oldTransform)
+    private val newTransform = Mat4d().set(newTransform)
 
     override fun apply() {
         editedNode.transform.set(newTransform)

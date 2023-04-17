@@ -319,6 +319,10 @@ class Gizmo : Node(), InputStack.PointerListener {
     }
 
     override fun handlePointer(pointerState: PointerState, ctx: KoolContext) {
+        if (!isVisible) {
+            return
+        }
+
         val ptr = pointerState.primaryPointer
         val scene = findParentOfType<Scene>() ?: return
         val cam = scene.mainRenderPass.camera

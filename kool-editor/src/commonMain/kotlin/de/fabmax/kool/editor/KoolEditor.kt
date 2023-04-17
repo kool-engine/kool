@@ -8,6 +8,7 @@ import de.fabmax.kool.editor.model.*
 import de.fabmax.kool.input.InputStack
 import de.fabmax.kool.input.LocalKeyCode
 import de.fabmax.kool.modules.ui2.MutableStateValue
+import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.logW
@@ -20,7 +21,10 @@ import java.io.File
 class KoolEditor(val ctx: KoolContext) {
 
     private val projectModel: MProject = loadProjectModel()
-    private val editorInputContext = InputStack.InputHandler("Editor input")
+    val editorInputContext = InputStack.InputHandler("Editor input")
+    val editorContent = Node("Editor Content").apply {
+        tags["hidden"] = "true"
+    }
 
     val loadedApp = MutableStateValue<AppContext?>(null)
     val appReloadListeners = mutableListOf<AppReloadListener>()
@@ -71,6 +75,7 @@ class KoolEditor(val ctx: KoolContext) {
             }
 
             val newApp = AppContext(app, app.startApp(projectModel, true, ctx))
+            newApp.appScenes.forEach { it.addNode(editorContent) }
             loadedApp.set(newApp)
             ctx.scenes += newApp.appScenes
 

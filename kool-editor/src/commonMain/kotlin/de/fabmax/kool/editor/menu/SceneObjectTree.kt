@@ -106,7 +106,10 @@ class SceneObjectTree(val editor: KoolEditor, val sceneBrowser: SceneBrowser) : 
         add(item)
         if (item.isExpanded.value) {
             node.children.forEach {
-                appendNode(it, depth + 1)
+                // fixme: somewhat hacky way to hide editor objects in the scene graph
+                if (!it.tags.hasTag("hidden")) {
+                    appendNode(it, depth + 1)
+                }
             }
         }
     }

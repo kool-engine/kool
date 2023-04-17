@@ -10,7 +10,10 @@ import de.fabmax.kool.util.UniqueId
 import de.fabmax.kool.util.logW
 
 /**
- * A scene node. This is the base class for all scene objects.
+ * A scene node. Scene nodes have a [transform], which controls the position, orientation and size of the node and all
+ * its child-nodes.
+ * Moreover, this is the base class for all other scene objects (e.g. [Mesh]). On its own, a Node acts as a group for
+ * an arbitrary number of child-nodes.
  *
  * @author fabmax
  */
@@ -139,12 +142,18 @@ open class Node(name: String? = null) : Disposable {
         result.set(childrenBounds)
     }
 
-    open fun updateModelMat() {
+    open fun updateModelMat(recursive: Boolean = false) {
         modelMat.set(parent?.modelMat ?: MODEL_MAT_IDENTITY)
         if (!transform.isIdentity) {
             modelMat.mul(transform.matrix)
         }
         modelMatInvLazy.isDirty = true
+
+        if (recursive) {
+            for (i in children.indices) {
+                children[i].updateModelMat(true)
+            }
+        }
     }
 
     /**

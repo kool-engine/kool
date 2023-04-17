@@ -194,8 +194,8 @@ object InputStack {
     }
 
     val KEY_FILTER_ALL: (KeyEvent) -> Boolean = { true }
-    val KEY_FILTER_CTRL_PRESSED: (KeyEvent) -> Boolean = { it.isCtrlDown }
-    val KEY_FILTER_ALT_PRESSED: (KeyEvent) -> Boolean = { it.isAltDown }
-    val KEY_FILTER_SHIFT_PRESSED: (KeyEvent) -> Boolean = { it.isShiftDown }
-    val KEY_FILTER_SUPER_PRESSED: (KeyEvent) -> Boolean = { it.isSuperDown }
+    val KEY_FILTER_CTRL_PRESSED: (KeyEvent) -> Boolean = { it.isPressed && it.isCtrlDown }
+    val KEY_FILTER_ALT_PRESSED: (KeyEvent) -> Boolean = { it.isPressed && it.isAltDown }
+    val KEY_FILTER_SHIFT_PRESSED: (KeyEvent) -> Boolean = { it.isPressed && it.isShiftDown }
+    val KEY_FILTER_SUPER_PRESSED: (KeyEvent) -> Boolean = { it.isPressed && it.isSuperDown }
 }
