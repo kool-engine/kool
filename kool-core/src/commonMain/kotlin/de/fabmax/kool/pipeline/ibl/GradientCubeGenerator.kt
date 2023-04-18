@@ -9,8 +9,8 @@ import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenCubeVertexStage
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.textureMesh
+import de.fabmax.kool.util.launchDelayed
 import de.fabmax.kool.util.logD
-import de.fabmax.kool.util.runDelayed
 import kotlin.math.PI
 
 class GradientCubeGenerator(scene: Scene, gradientTex: Texture1d, size: Int = 128) :
@@ -37,7 +37,7 @@ class GradientCubeGenerator(scene: Scene, gradientTex: Texture1d, size: Int = 12
         onAfterDraw += { ctx ->
             logD { "Generated gradient cube map" }
             scene.removeOffscreenPass(this)
-            runDelayed(1) { dispose(ctx) }
+            launchDelayed(1) { dispose(ctx) }
         }
     }
 

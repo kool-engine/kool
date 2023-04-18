@@ -14,8 +14,8 @@ import de.fabmax.kool.pipeline.renderPassConfig
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.textureMesh
+import de.fabmax.kool.util.launchDelayed
 import de.fabmax.kool.util.logD
-import de.fabmax.kool.util.runDelayed
 import kotlin.math.max
 
 class RgbeDecoder(parentScene: Scene, hdriTexture: Texture2d, brightness: Float = 1f) :
@@ -44,7 +44,7 @@ class RgbeDecoder(parentScene: Scene, hdriTexture: Texture2d, brightness: Float 
         onAfterDraw += { ctx ->
             logD { "Converted RGBe to linear: ${hdriTexture.name}" }
             parentScene.removeOffscreenPass(this)
-            runDelayed(1) {
+            launchDelayed(1) {
                 dispose(ctx)
             }
         }

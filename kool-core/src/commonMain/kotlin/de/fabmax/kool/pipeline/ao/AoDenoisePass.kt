@@ -11,7 +11,7 @@ import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.runDelayed
+import de.fabmax.kool.util.launchDelayed
 
 class AoDenoisePass(aoPass: OffscreenRenderPass2d, depthComponent: String) :
     OffscreenRenderPass2d(Node(), renderPassConfig {
@@ -66,7 +66,7 @@ class AoDenoisePass(aoPass: OffscreenRenderPass2d, depthComponent: String) :
             denoiseMesh.isVisible = false
             clearMesh.isVisible = true
 
-            runDelayed(5) {
+            launchDelayed(5) {
                 isEnabled = false
                 denoiseMesh.isVisible = true
                 clearMesh.isVisible = false

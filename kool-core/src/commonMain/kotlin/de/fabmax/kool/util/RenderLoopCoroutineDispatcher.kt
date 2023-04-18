@@ -41,7 +41,7 @@ suspend fun delayFrames(numFrames: Int) {
  * }
  * ```
  */
-inline fun runDelayed(frames: Int, crossinline block: suspend () -> Unit) = CoroutineScope(Dispatchers.RenderLoop).launch {
+inline fun launchDelayed(frames: Int, crossinline block: suspend () -> Unit) = CoroutineScope(Dispatchers.RenderLoop).launch {
     delayFrames(frames)
     block()
 }
@@ -55,6 +55,6 @@ inline fun runDelayed(frames: Int, crossinline block: suspend () -> Unit) = Coro
  * }
  * ```
  */
-inline fun runOnMainThread(crossinline block: suspend () -> Unit) = CoroutineScope(Dispatchers.RenderLoop).launch {
+inline fun launchOnMainThread(crossinline block: suspend () -> Unit) = CoroutineScope(Dispatchers.RenderLoop).launch {
     block()
 }

@@ -281,7 +281,7 @@ class GltfDemo : DemoScene("glTF Models") {
 
     private fun cycleModel(prevModel: GltfModel, newModel: GltfModel, ctx: KoolContext) {
         prevModel.isVisible = false
-        runDelayed(1) {
+        launchDelayed(1) {
             prevModel.forwardModel?.dispose(ctx)
             prevModel.deferredModel?.dispose(ctx)
         }

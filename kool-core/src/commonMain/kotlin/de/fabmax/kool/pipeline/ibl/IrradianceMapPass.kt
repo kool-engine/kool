@@ -10,8 +10,8 @@ import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenCube
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.mesh
+import de.fabmax.kool.util.launchDelayed
 import de.fabmax.kool.util.logD
-import de.fabmax.kool.util.runDelayed
 import kotlin.math.PI
 
 class IrradianceMapPass private constructor(parentScene: Scene, hdriMap: Texture2d?, cubeMap: TextureCube?, size: Int) :
@@ -42,7 +42,7 @@ class IrradianceMapPass private constructor(parentScene: Scene, hdriMap: Texture
             }
             if (isAutoRemove) {
                 parentScene.removeOffscreenPass(this)
-                runDelayed(1) { dispose(ctx) }
+                launchDelayed(1) { dispose(ctx) }
             } else {
                 isEnabled = false
             }

@@ -17,7 +17,7 @@ import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Time
-import de.fabmax.kool.util.runDelayed
+import de.fabmax.kool.util.launchDelayed
 
 /**
  * @author fabmax
@@ -134,7 +134,7 @@ class PbrDemo : DemoScene("PBR Materials") {
 
     private fun updateHdri(idx: Int) {
         loadHdri(idx) { tex ->
-            envMaps.let { oldEnvMap -> runDelayed(1) { oldEnvMap.dispose() } }
+            envMaps.let { oldEnvMap -> launchDelayed(1) { oldEnvMap.dispose() } }
             envMaps = EnvironmentHelper.hdriEnvironment(mainScene, tex, false)
             skybox.skyboxShader.setSingleSky(envMaps.reflectionMap)
             pbrContent.forEach { it.updateEnvironmentMap(envMaps) }

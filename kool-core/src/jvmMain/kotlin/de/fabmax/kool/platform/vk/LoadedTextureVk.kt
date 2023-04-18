@@ -2,8 +2,8 @@ package de.fabmax.kool.platform.vk
 
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.platform.vk.util.vkBytesPerPx
+import de.fabmax.kool.util.launchDelayed
 import de.fabmax.kool.util.logD
-import de.fabmax.kool.util.runDelayed
 import org.lwjgl.vulkan.VK10.vkDestroySampler
 import java.util.concurrent.atomic.AtomicLong
 
@@ -49,7 +49,7 @@ class LoadedTextureVk(val sys: VkSystem, val format: TexFormat, val textureImage
     override fun dispose() {
         if (!isDestroyed) {
             // fixme: kinda hacky... also might be depending resource of something else than sys.device
-            runDelayed(sys.swapChain?.nImages ?: 3) {
+            launchDelayed(sys.swapChain?.nImages ?: 3) {
                 sys.device.removeDependingResource(this)
                 destroy()
             }
