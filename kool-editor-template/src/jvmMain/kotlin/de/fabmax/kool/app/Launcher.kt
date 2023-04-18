@@ -4,12 +4,12 @@ import de.fabmax.kool.ApplicationCallbacks
 import de.fabmax.kool.KoolApplication
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.editor.model.MProject
-import de.fabmax.kool.util.runOnMainThread
+import de.fabmax.kool.util.launchOnMainThread
 
 fun main() = KoolApplication { ctx ->
     val app = App()
 
-    runOnMainThread {
+    launchOnMainThread {
         val projModel = MProject.loadFromAssets() ?: throw IllegalStateException("kool-project.json not found")
         ctx.scenes += app.startApp(projModel, false, ctx)
     }

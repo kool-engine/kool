@@ -9,20 +9,18 @@ import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
 
-class SceneObjectTree(val editor: KoolEditor, val sceneBrowser: SceneBrowser) : Composable, KoolEditor.AppReloadListener {
+class SceneObjectTree(val editor: KoolEditor, val sceneBrowser: SceneBrowser) : Composable {
 
     private val treeItemMap = mutableMapOf<Node, SceneObjectItem>()
     private val treeItems = mutableListOf<SceneObjectItem>()
     private val isTreeValid = mutableStateOf(false)
 
     init {
-        editor.appReloadListeners += this
-    }
-
-    override fun onAppReload(oldApp: KoolEditor.AppContext?, newApp: KoolEditor.AppContext) {
-        sceneBrowser.selectedObject.set(null)
-        treeItemMap.clear()
-        isTreeValid.set(false)
+        editor.appLoader.appReloadListeners += {
+            sceneBrowser.selectedObject.set(null)
+            treeItemMap.clear()
+            isTreeValid.set(false)
+        }
     }
 
     override fun UiScope.compose() {

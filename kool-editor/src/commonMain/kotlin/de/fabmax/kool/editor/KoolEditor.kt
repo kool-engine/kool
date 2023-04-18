@@ -14,7 +14,6 @@ import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.logW
-import de.fabmax.kool.util.runOnMainThread
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -29,16 +28,17 @@ class KoolEditor(val ctx: KoolContext) {
     }
 
     val loadedApp = MutableStateValue<AppContext?>(null)
-    val appReloadListeners = mutableListOf<AppReloadListener>()
-
+    val appLoader = AppLoader(this)
     val menu = EditorMenu(this)
 
     init {
-        AppLoadService(this)
         ctx.scenes += menu
 
         registerKeyBindings()
         registerSceneObjectPicking()
+
+        appLoader.appReloadListeners += this::handleAppReload
+        appLoader.reloadApp()
     }
 
     private fun registerKeyBindings() {
@@ -78,32 +78,26 @@ class KoolEditor(val ctx: KoolContext) {
         }
     }
 
+    private fun handleAppReload(app: EditorAwareApp) {
+        val oldApp = loadedApp.value
+        oldApp?.let { oldAppCtx ->
+            ctx.scenes -= oldAppCtx.appScenes.toSet()
+            oldAppCtx.appScenes.forEach { it.dispose(ctx) }
+            oldAppCtx.app.onDispose(true, ctx)
+        }
+
+        val newApp = AppContext(app, app.startApp(projectModel, true, ctx))
+        newApp.appScenes.forEach { it.addNode(editorContent) }
+        loadedApp.set(newApp)
+        ctx.scenes += newApp.appScenes
+
+        bringEditorMenuToTop()
+        EditorActions.clear()
+    }
+
     private fun bringEditorMenuToTop() {
         ctx.scenes -= menu
         ctx.scenes += menu
-    }
-
-    /**
-     * Invoked by AppLoadService when the edited app has changed and was reloaded.
-     */
-    fun loadApp(app: EditorAwareApp) {
-        runOnMainThread {
-            val oldApp = loadedApp.value
-            oldApp?.let { oldAppCtx ->
-                ctx.scenes -= oldAppCtx.appScenes.toSet()
-                oldAppCtx.appScenes.forEach { it.dispose(ctx) }
-                oldAppCtx.app.onDispose(true, ctx)
-            }
-
-            val newApp = AppContext(app, app.startApp(projectModel, true, ctx))
-            newApp.appScenes.forEach { it.addNode(editorContent) }
-            loadedApp.set(newApp)
-            ctx.scenes += newApp.appScenes
-
-            bringEditorMenuToTop()
-            EditorActions.clear()
-            appReloadListeners.forEach { it.onAppReload(oldApp, newApp) }
-        }
     }
 
     private fun loadProjectModel(): MProject {

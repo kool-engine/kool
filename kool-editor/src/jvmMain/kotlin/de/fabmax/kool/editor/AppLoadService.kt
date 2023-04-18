@@ -2,140 +2,91 @@ package de.fabmax.kool.editor
 
 import de.fabmax.kool.editor.api.EditorAwareApp
 import de.fabmax.kool.util.logD
-import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logI
 import de.fabmax.kool.util.logW
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.net.URLClassLoader
-import java.nio.file.*
-import java.util.concurrent.ArrayBlockingQueue
+import java.nio.file.Path
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.concurrent.thread
-import kotlin.io.path.PathWalkOption
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 import kotlin.io.path.exists
-import kotlin.io.path.isDirectory
-import kotlin.io.path.walk
 
-actual class AppLoadService actual constructor(private val editor: KoolEditor) {
+actual class AppLoadService actual constructor() {
 
     // todo: paths are hardcoded for now
     private val appJarPath = Path.of(KoolEditor.PROJECT_JAR_PATH)
-    private val watchPath = Path.of(KoolEditor.PROJECT_SRC_DIR)
+    private val watchPath = KoolEditor.PROJECT_SRC_DIR
 
-    private val watchPaths = mutableMapOf<WatchKey, Path>()
-    private val changeEventQueue = ArrayBlockingQueue<FileChangeEvent>(100)
     private val buildInProgress = AtomicBoolean(false)
+    private val watcher = DirectoryWatcher(setOf(watchPath))
 
-    private val watcher = thread(isDaemon = true) {
-        logD { "Watching for file system changes in $watchPath" }
-
-        val watchService = FileSystems.getDefault().newWatchService()
-        watchPath.walk(PathWalkOption.INCLUDE_DIRECTORIES).forEach {
-            try {
-                if (it.isDirectory()) {
-                    val key = it.register(
-                        watchService,
-                        StandardWatchEventKinds.ENTRY_CREATE,
-                        StandardWatchEventKinds.ENTRY_DELETE,
-                        StandardWatchEventKinds.ENTRY_MODIFY
-                    )
-                    watchPaths[key] = it
-                }
-            } catch (e: Exception) {
-                logE { "Directory watching failed for path $it" }
-                e.printStackTrace()
-            }
-        }
-
-        try {
-            var watchKey = watchService.take()
-            while (watchKey != null) {
-                for (event in watchKey.pollEvents()) {
-                    val file = event.context() as? Path
-                    val dir = watchPaths[watchKey]
-                    if (file != null && dir != null) {
-                        val fileChangeEvent = FileChangeEvent(dir.resolve(file), event)
-                        if (fileChangeEvent.isRelevant()) {
-                            changeEventQueue.put(fileChangeEvent)
-                        }
-                    }
-                }
-                watchKey.reset()
-                watchKey = watchService.take()
-            }
-        } catch (e: Exception) {
-            logI("AppLoader.watcher") { "File system watcher terminated by $e" }
-        }
-    }
+    actual var hasAppChanged = true
+        private set
 
     private val loader = thread(isDaemon = true) {
-        var shouldReloadApp = false
+        var changeFlag = false
         while (true) {
-            val changeEvent = changeEventQueue.poll(500, TimeUnit.MILLISECONDS)
-            if (changeEvent != null) {
-                logD { "File changed: ${changeEvent.path}; ${changeEvent.watchEvent.kind()}" }
-                shouldReloadApp = true
+            val changeEvent = watcher.changeEvents.poll(CHANGE_FLAG_TIMEOUT_MS, TimeUnit.MILLISECONDS)
 
-            } else if (shouldReloadApp) {
-                shouldReloadApp = false
-                buildApp()
+            if (changeEvent != null) {
+                logD { "File changed: ${changeEvent.path}; ${changeEvent.type}" }
+                changeFlag = true
+
+            } else if (changeFlag) {
+                // file system changes where detected in the past and the poll timeout passed without a new change
+                //   -> all file changes where written, and it should be safe to trigger the rebuild
+                changeFlag = false
+                hasAppChanged = true
             }
         }
     }
 
-    init {
-        if (appJarPath.exists()) {
-            reloadAppJar(appJarPath)
-        }
-    }
+    actual suspend fun buildApp() {
+        logI("AppLoader.loader") { "Executing gradle build" }
 
-    private fun buildApp() {
-        if (!buildInProgress.getAndSet(true)) {
+        suspendCoroutine { continuation ->
             thread {
-                logI("AppLoader.loader") { "Executing gradle build" }
-                val p = Runtime.getRuntime().exec(arrayOf("gradlew.bat", ":kool-editor-template:jvmJar"))
-
+                val buildProcess = Runtime.getRuntime().exec(arrayOf("gradlew.bat", ":kool-editor-template:jvmJar"))
                 thread {
-                    BufferedReader(InputStreamReader(p.inputStream)).lines().forEach {
-                        logI("AppLoader.gradleBuild") { it }
+                    BufferedReader(InputStreamReader(buildProcess.inputStream)).lines().forEach {
+                        logD("AppLoader.gradleBuild") { it }
                     }
                 }
                 thread {
-                    BufferedReader(InputStreamReader(p.errorStream)).lines().forEach {
+                    BufferedReader(InputStreamReader(buildProcess.errorStream)).lines().forEach {
                         logW("AppLoader.gradleBuild") { it }
                     }
                 }
-                val exitCode = p.waitFor()
+                val exitCode = buildProcess.waitFor()
                 logI { "Gradle build finished (exit code: $exitCode)" }
+                hasAppChanged = false
 
                 if (exitCode == 0) {
-                    reloadAppJar(appJarPath)
+                    continuation.resume(Unit)
+                } else {
+                    continuation.resumeWith(Result.failure(IllegalStateException("Build failed")))
                 }
-                buildInProgress.set(false)
             }
         }
     }
 
-    private fun reloadAppJar(jarPath: Path) {
-        logI { "Loading app from jar: $jarPath" }
-        try {
-            val loader = URLClassLoader(arrayOf(jarPath.toUri().toURL()), this.javaClass.classLoader)
-            val appClass = loader.loadClass(KoolEditor.PROJECT_MAIN_CLASS)
-            val app = appClass.getDeclaredConstructor().newInstance()
-            val editorAware = app as EditorAwareApp
-            editor.loadApp(editorAware)
-
-        } catch (e: Exception) {
-            logE { "Failed to load app: $e" }
-            e.printStackTrace()
+    actual suspend fun loadApp(): EditorAwareApp {
+        if (!appJarPath.exists()) {
+            buildApp()
         }
+
+        logI { "Loading app from jar: $appJarPath" }
+        val loader = URLClassLoader(arrayOf(appJarPath.toUri().toURL()), this.javaClass.classLoader)
+        val appClass = loader.loadClass(KoolEditor.PROJECT_MAIN_CLASS)
+        val app = appClass.getDeclaredConstructor().newInstance()
+        return app as EditorAwareApp
     }
 
-    private data class FileChangeEvent(val path: Path, val watchEvent: WatchEvent<*>) {
-        fun isRelevant(): Boolean {
-            return !path.isDirectory()
-        }
+    companion object {
+        private const val CHANGE_FLAG_TIMEOUT_MS = 300L
     }
 }
