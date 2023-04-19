@@ -17,11 +17,16 @@ import de.fabmax.kool.util.Time
  */
 
 fun Scene.orbitCamera(name: String? = null, block: OrbitInputTransform.() -> Unit): OrbitInputTransform {
-    val sit = OrbitInputTransform(name)
-    sit.addNode(camera)
-    sit.block()
-    addNode(sit)
-    return sit
+    val orbitCam = OrbitInputTransform(name)
+    orbitCam.addNode(camera)
+    orbitCam.block()
+    addNode(orbitCam)
+
+    InputStack.defaultInputHandler.pointerListeners += orbitCam
+    onDispose += {
+        InputStack.defaultInputHandler.pointerListeners -= orbitCam
+    }
+    return orbitCam
 }
 
 fun Scene.defaultOrbitCamera(yaw: Float = 20f, pitch: Float = -30f): OrbitInputTransform {
@@ -97,11 +102,6 @@ open class OrbitInputTransform(name: String? = null) : Node(name), InputStack.Po
 
         onUpdate += { (rp, ctx) ->
             doCamTransform(rp, ctx)
-        }
-
-        InputStack.defaultInputHandler.pointerListeners += this
-        onDispose += {
-            InputStack.defaultInputHandler.pointerListeners -= this
         }
     }
 

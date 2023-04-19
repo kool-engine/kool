@@ -706,7 +706,7 @@ open class Mat4d {
         return result
     }
 
-    fun setOrigin(origin: MutableVec3d): Mat4d {
+    fun setOrigin(origin: Vec3d): Mat4d {
         this[0, 3] = origin.x
         this[1, 3] = origin.y
         this[2, 3] = origin.z

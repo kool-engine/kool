@@ -679,7 +679,7 @@ open class Mat4f {
         return result
     }
 
-    fun setOrigin(origin: MutableVec3f): Mat4f {
+    fun setOrigin(origin: Vec3f): Mat4f {
         this[0, 3] = origin.x
         this[1, 3] = origin.y
         this[2, 3] = origin.z
