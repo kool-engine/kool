@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class MCommonNodeProperties(
-    val hierarchyPath: List<String>,
+    val hierarchyPath: MutableList<String>,
     val transform: MTransform
 ) {
     val name: String get() = hierarchyPath.last()

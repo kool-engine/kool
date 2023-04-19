@@ -4,14 +4,12 @@ import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.NodeTransformGizmo
 import de.fabmax.kool.editor.actions.EditorActions
 import de.fabmax.kool.editor.actions.SetTransformAction
+import de.fabmax.kool.editor.model.MSceneNode
 import de.fabmax.kool.math.Mat3d
 import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.math.MutableVec3d
 import de.fabmax.kool.modules.ui2.*
-import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.scene.Node
-import de.fabmax.kool.scene.Scene
 
 class ObjectProperties(val editor: KoolEditor) {
 
@@ -32,12 +30,16 @@ class ObjectProperties(val editor: KoolEditor) {
                 transformProperties.getRotation(tmpNodeRot)
                 transformProperties.getScale(tmpNodeScale)
 
-                val oldTransform = Mat4d().set(selectedNd.transform.matrix)
-                val newTransform = Mat4d()
-                    .setRotate(tmpNodeRot.x, tmpNodeRot.y, tmpNodeRot.z)
-                    .scale(tmpNodeScale)
-                    .setOrigin(tmpNodePos)
-                EditorActions.applyAction(SetTransformAction(selectedNd, oldTransform, newTransform))
+                val sceneNode = selectedNd.created
+                if (sceneNode != null) {
+                    val oldTransform = Mat4d().set(sceneNode.transform.matrix)
+                    val newTransform = Mat4d()
+                        .setRotate(tmpNodeRot.x, tmpNodeRot.y, tmpNodeRot.z)
+                        .scale(tmpNodeScale)
+                        .setOrigin(tmpNodePos)
+
+                    applyTransformAction(selectedNd, oldTransform, newTransform)
+                }
             }
         }
         editor.editorContent += transformGizmo
@@ -57,13 +59,11 @@ class ObjectProperties(val editor: KoolEditor) {
         objectProperties()
 
         surface.onEachFrame {
-            editor.menu.sceneBrowser.selectedObject.value?.let { selectedNd ->
+            editor.menu.sceneBrowser.selectedObject.value?.created?.let { selectedNd ->
                 selectedNd.transform.getPosition(tmpNodePos)
                 transformProperties.setPosition(tmpNodePos)
-
                 selectedNd.transform.matrix.getRotation(tmpNodeRotMat)
                 transformProperties.setRotation(tmpNodeRotMat.getEulerAngles(tmpNodeRot))
-
                 selectedNd.transform.matrix.getScale(tmpNodeScale)
                 transformProperties.setScale(tmpNodeScale)
             }
@@ -86,41 +86,53 @@ class ObjectProperties(val editor: KoolEditor) {
                 }
                 return@Column
             } else {
-                Text(selectedObject.name) {
+                Text(selectedObject.nodeProperties.name) {
                     modifier.alignY(AlignmentY.Center)
                 }
             }
         }
 
-        when (selectedObject) {
-            is Scene -> sceneProperties(selectedObject)
-            is Mesh -> meshProperties(selectedObject)
-            is Camera -> cameraProperties(selectedObject)
-            is Node -> nodeProperties(selectedObject)
+        val sceneNode = selectedObject?.created
+        when (sceneNode) {
+//            is Scene -> sceneProperties(sceneNode, selectedObject)
+            is Mesh -> meshProperties(sceneNode, selectedObject)
+//            is Camera -> cameraProperties(sceneNode, selectedObject)
+//            is Node -> nodeProperties(sceneNode, selectedObject)
         }
     }
 
-    fun UiScope.sceneProperties(scene: Scene) {
-        // - clear color
-        // - lighting
-        // - skybox
-    }
+//    fun UiScope.sceneProperties(scene: Scene, nodeModel: MSceneNode<*>) {
+//        // - clear color
+//        // - lighting
+//        // - skybox
+//    }
 
-    fun UiScope.meshProperties(mesh: Mesh) {
+    fun UiScope.meshProperties(mesh: Mesh, nodeModel: MSceneNode<*>) {
         transformEditor(transformProperties)
-        transformGizmo.setTransformObject(mesh)
+        transformGizmo.setTransformObject(nodeModel)
 
         // - material (simple)
     }
 
-    fun UiScope.cameraProperties(cam: Camera) {
-        // transform? (is usually determined by parent transform node)
-        // perspective / ortho
-        // clip near/far
-        // fovy
-    }
+//    fun UiScope.cameraProperties(cam: Camera, nodeModel: MSceneNode<*>) {
+//        // transform? (is usually determined by parent transform node)
+//        // perspective / ortho
+//        // clip near/far
+//        // fovy
+//    }
 
-    fun UiScope.nodeProperties(node: Node) {
-        //transformEditor(transformProperties)
+//    fun UiScope.nodeProperties(node: Node, nodeModel: MSceneNode<*>) {
+//        //transformEditor(transformProperties)
+//    }
+
+    companion object {
+        fun applyTransformAction(nodeModel: MSceneNode<*>, oldTransform: Mat4d, newTransform: Mat4d) {
+            val setTransform = SetTransformAction(
+                editedNodeModel = nodeModel,
+                oldTransform = oldTransform,
+                newTransform = newTransform
+            )
+            EditorActions.applyAction(setTransform)
+        }
     }
 }

@@ -1,6 +1,8 @@
 package de.fabmax.kool.editor.menu
 
 import de.fabmax.kool.editor.KoolEditor
+import de.fabmax.kool.editor.model.MScene
+import de.fabmax.kool.editor.model.MSceneNode
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.modules.ui2.ArrowScope.Companion.ROTATION_DOWN
 import de.fabmax.kool.modules.ui2.ArrowScope.Companion.ROTATION_RIGHT
@@ -11,24 +13,22 @@ import de.fabmax.kool.scene.Scene
 
 class SceneObjectTree(val editor: KoolEditor, val sceneBrowser: SceneBrowser) : Composable {
 
-    private val treeItemMap = mutableMapOf<Node, SceneObjectItem>()
+    private val treeItemMap = mutableMapOf<MSceneNode<*>, SceneObjectItem>()
     private val treeItems = mutableListOf<SceneObjectItem>()
     private val isTreeValid = mutableStateOf(false)
 
-    init {
-        editor.appLoader.appReloadListeners += {
-            sceneBrowser.selectedObject.set(null)
-            treeItemMap.clear()
-            isTreeValid.set(false)
-        }
+    fun refreshSceneTree() {
+        isTreeValid.set(false)
     }
 
     override fun UiScope.compose() {
-        val app = editor.loadedApp.use() ?: return
+        editor.selectedScene.use()
 
         if (!isTreeValid.use()) {
             treeItems.clear()
-            app.appScenes.forEach { treeItems.appendNode(it, 0) }
+            editor.projectModel.scenes.forEach {
+                treeItems.appendNode(it, it.created, 0)
+            }
             isTreeValid.set(true)
         }
 
@@ -90,15 +90,18 @@ class SceneObjectTree(val editor: KoolEditor, val sceneBrowser: SceneBrowser) : 
         }
     }
 
-    private fun MutableList<SceneObjectItem>.appendNode(node: Node, depth: Int) {
-        val item = treeItemMap.getOrPut(node) {
+    private fun MutableList<SceneObjectItem>.appendNode(scene: MScene, node: Node?, depth: Int) {
+        node ?: return
+        val nodeModel = scene.nodesToNodeModels[node] ?: return
+
+        val item = treeItemMap.getOrPut(nodeModel) {
             val type = when (node) {
                 is Scene -> SceneObjectType.SCENE
                 is Mesh -> SceneObjectType.MESH
                 is Camera -> SceneObjectType.CAMERA
                 else -> SceneObjectType.NODE
             }
-            SceneObjectItem(node, type, depth)
+            SceneObjectItem(nodeModel, type, depth)
         }
 
         add(item)
@@ -106,19 +109,19 @@ class SceneObjectTree(val editor: KoolEditor, val sceneBrowser: SceneBrowser) : 
             node.children.forEach {
                 // fixme: somewhat hacky way to hide editor objects in the scene graph
                 if (!it.tags.hasTag("hidden")) {
-                    appendNode(it, depth + 1)
+                    appendNode(scene, it, depth + 1)
                 }
             }
         }
     }
 
     private inner class SceneObjectItem(
-        val node: Node,
+        val node: MSceneNode<*>,
         val type: SceneObjectType,
         val depth: Int
     ) {
-        val name: String get() = node.name
-        val isExpandable: Boolean get() = node.children.isNotEmpty()
+        val name: String get() = node.nodeProperties.name
+        val isExpandable: Boolean get() = node.created?.children?.isNotEmpty() == true
         val isExpanded = mutableStateOf(true)
 
         fun toggleExpanded() {

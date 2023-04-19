@@ -1,8 +1,8 @@
 package de.fabmax.kool.editor
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.editor.actions.EditorActions
-import de.fabmax.kool.editor.actions.SetTransformAction
+import de.fabmax.kool.editor.menu.ObjectProperties
+import de.fabmax.kool.editor.model.MSceneNode
 import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.scene.Node
@@ -10,7 +10,7 @@ import de.fabmax.kool.util.Gizmo
 
 class NodeTransformGizmo(editor: KoolEditor) : Node("Node transform gizmo") {
 
-    private var transformObject: Node? = null
+    private var transformObject: MSceneNode<*>? = null
     private var hasTransformAuthority = false
 
     private val gizmo = Gizmo()
@@ -32,7 +32,8 @@ class NodeTransformGizmo(editor: KoolEditor) : Node("Node transform gizmo") {
 
         override fun onDragStart(ctx: KoolContext) {
             transformObject?.let {
-                startTransform.set(it.transform.matrix)
+                val transformNode = it.created ?: return
+                startTransform.set(transformNode.transform.matrix)
                 hasTransformAuthority = true
             }
         }
@@ -40,7 +41,8 @@ class NodeTransformGizmo(editor: KoolEditor) : Node("Node transform gizmo") {
         override fun onDragFinished(ctx: KoolContext) {
             hasTransformAuthority = false
             transformObject?.let {
-                EditorActions.applyAction(SetTransformAction(it, startTransform, it.transform.matrix))
+                val transformNode = it.created ?: return
+                ObjectProperties.applyTransformAction(it, startTransform, transformNode.transform.matrix)
             }
         }
     }
@@ -53,7 +55,7 @@ class NodeTransformGizmo(editor: KoolEditor) : Node("Node transform gizmo") {
         editor.editorInputContext.pointerListeners += gizmo
 
         gizmo.onUpdate {
-            transformObject?.let {
+            transformObject?.created?.let {
                 if (hasTransformAuthority) {
                     gizmo.getGizmoTransform(it)
                     it.updateModelMat(true)
@@ -66,10 +68,10 @@ class NodeTransformGizmo(editor: KoolEditor) : Node("Node transform gizmo") {
         }
     }
 
-    fun setTransformObject(node: Node?) {
+    fun setTransformObject(node: MSceneNode<*>?) {
         transformObject = node
         gizmo.isVisible = node != null
-        node?.let {
+        node?.created?.let {
             gizmo.setFixedScale(it.globalRadius * 1.5f)
         }
     }

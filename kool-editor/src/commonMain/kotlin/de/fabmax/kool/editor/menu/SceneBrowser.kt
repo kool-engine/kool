@@ -1,12 +1,12 @@
 package de.fabmax.kool.editor.menu
 
 import de.fabmax.kool.editor.KoolEditor
+import de.fabmax.kool.editor.model.MSceneNode
 import de.fabmax.kool.modules.ui2.*
-import de.fabmax.kool.scene.Node
 
 class SceneBrowser(editor: KoolEditor) {
 
-    val selectedObject = mutableStateOf<Node?>(null)
+    val selectedObject = mutableStateOf<MSceneNode<*>?>(null)
 
     private val windowState = WindowState().apply { setWindowSize(Dp(300f), Dp(600f)) }
     private val sceneObjectTree = SceneObjectTree(editor, this)
@@ -23,4 +23,9 @@ class SceneBrowser(editor: KoolEditor) {
     }
 
     val windowScope: WindowScope = windowSurface.windowScope!!
+
+    fun refreshSceneTree() {
+        sceneObjectTree.refreshSceneTree()
+    }
+
 }

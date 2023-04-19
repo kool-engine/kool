@@ -1,10 +1,10 @@
 package de.fabmax.kool.editor.actions
 
+import de.fabmax.kool.editor.model.MSceneNode
 import de.fabmax.kool.math.Mat4d
-import de.fabmax.kool.scene.Node
 
 class SetTransformAction(
-    private val editedNode: Node,
+    private val editedNodeModel: MSceneNode<*>,
     oldTransform: Mat4d,
     newTransform: Mat4d
 ) : EditorAction {
@@ -13,10 +13,12 @@ class SetTransformAction(
     private val newTransform = Mat4d().set(newTransform)
 
     override fun apply() {
-        editedNode.transform.set(newTransform)
+        editedNodeModel.nodeProperties.transform.set(newTransform)
+        editedNodeModel.created?.transform?.set(newTransform)
     }
 
     override fun undo() {
-        editedNode.transform.set(oldTransform)
+        editedNodeModel.nodeProperties.transform.set(oldTransform)
+        editedNodeModel.created?.transform?.set(oldTransform)
     }
 }

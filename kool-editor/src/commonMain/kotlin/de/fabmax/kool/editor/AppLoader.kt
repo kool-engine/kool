@@ -8,6 +8,8 @@ expect class AppLoadService() {
     var hasAppChanged: Boolean
         private set
 
+    fun addIgnorePath(path: String)
+
     suspend fun buildApp()
 
     suspend fun loadApp(): EditorAwareApp
@@ -25,6 +27,10 @@ class AppLoader(val editor: KoolEditor) {
                 reloadApp()
             }
         }
+    }
+
+    fun addIgnorePath(path: String) {
+        loadService.addIgnorePath(path)
     }
 
     fun reloadApp() {

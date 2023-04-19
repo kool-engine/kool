@@ -5,6 +5,7 @@ import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logI
 import de.fabmax.kool.util.logW
 import java.io.BufferedReader
+import java.io.File
 import java.io.InputStreamReader
 import java.net.URLClassLoader
 import java.nio.file.Path
@@ -27,15 +28,22 @@ actual class AppLoadService actual constructor() {
     actual var hasAppChanged = true
         private set
 
+    val ignoredPaths = mutableSetOf<File>()
+
+    actual fun addIgnorePath(path: String) {
+        ignoredPaths.add(File(path))
+    }
+
     private val loader = thread(isDaemon = true) {
         var changeFlag = false
         while (true) {
             val changeEvent = watcher.changeEvents.poll(CHANGE_FLAG_TIMEOUT_MS, TimeUnit.MILLISECONDS)
 
             if (changeEvent != null) {
-                logD { "File changed: ${changeEvent.path}; ${changeEvent.type}" }
-                changeFlag = true
-
+                if (changeEvent.path.toFile() !in ignoredPaths) {
+                    logD { "File changed: ${changeEvent.path}; ${changeEvent.type}" }
+                    changeFlag = true
+                }
             } else if (changeFlag) {
                 // file system changes where detected in the past and the poll timeout passed without a new change
                 //   -> all file changes where written, and it should be safe to trigger the rebuild

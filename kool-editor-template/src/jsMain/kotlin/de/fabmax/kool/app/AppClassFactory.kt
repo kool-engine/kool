@@ -1,11 +1,11 @@
 package de.fabmax.kool.app
 
 import de.fabmax.kool.editor.api.ClassFactory
-import de.fabmax.kool.editor.model.MProceduralMesh
+import de.fabmax.kool.editor.model.MMesh
 import de.fabmax.kool.scene.Mesh
 
 actual object AppClassFactory : ClassFactory {
-    override fun createProceduralMesh(procMesh: MProceduralMesh): Mesh {
+    override fun createProceduralMesh(procMesh: MMesh): Mesh {
         // Unfortunately, reflective class creation is not possible on JS
         // todo: generate this file
         return when (procMesh.generatorClass) {

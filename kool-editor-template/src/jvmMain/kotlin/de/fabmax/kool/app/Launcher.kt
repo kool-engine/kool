@@ -11,7 +11,10 @@ fun main() = KoolApplication { ctx ->
 
     launchOnMainThread {
         val projModel = MProject.loadFromAssets() ?: throw IllegalStateException("kool-project.json not found")
-        ctx.scenes += app.startApp(projModel, false, ctx)
+        app.startApp(projModel, false, ctx)
+        projModel.created?.let {
+            ctx.scenes += it
+        }
     }
 
     ctx.applicationCallbacks = object : ApplicationCallbacks {
