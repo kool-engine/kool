@@ -117,9 +117,9 @@ class GuardRail {
                 }
             }
             color = poleColor
-            cube {
+            cube(centered = true) {
                 size.set(0.1f, 2f, 0.1f)
-                origin.set(-0.05f, -2f, -0.05f)
+                origin.set(0f, -1f, 0f)
             }
 
             geometry.generateNormals()

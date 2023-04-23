@@ -38,7 +38,7 @@ object FullscreenShaderUtil {
     fun Mesh.generateFullscreenCube() {
         isFrustumChecked = false
         generate {
-            cube { centered() }
+            cube(centered = true) { }
         }
     }
 

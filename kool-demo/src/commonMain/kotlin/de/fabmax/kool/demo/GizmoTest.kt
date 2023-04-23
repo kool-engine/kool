@@ -45,9 +45,7 @@ class GizmoTest : DemoScene("Gizmo Test") {
 
             colorMesh {
                 generate {
-                    cube {
-                        centered()
-                    }
+                    cube(centered = true) { }
                 }
                 shader = KslBlinnPhongShader {
                     color {

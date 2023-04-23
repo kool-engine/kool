@@ -82,9 +82,8 @@ fun main() = KoolApplication { ctx ->
 
         colorMesh {
             generate {
-                cube {
+                cube(centered = true) {
                     colored()
-                    centered()
                 }
             }
             shader = KslPbrShader {

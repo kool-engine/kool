@@ -18,9 +18,8 @@ class HelloRenderToTextureDemo : DemoScene("Hello RenderToTexture") {
         val backgroundGroup = Node().apply {
             colorMesh {
                 generate {
-                    cube {
+                    cube(centered = true) {
                         colored(linearSpace = false)
-                        centered()
                     }
                 }
                 shader = KslUnlitShader { color { vertexColor() } }

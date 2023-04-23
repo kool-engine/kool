@@ -86,9 +86,8 @@ object Playground {
         withTransform {
             transform.mul(frame)
             rotate(-11f, 0f, 0f)
-            cube {
+            cube(centered = true) {
                 size.set(10f, 2f, 10f)
-                centered()
             }
         }
     }

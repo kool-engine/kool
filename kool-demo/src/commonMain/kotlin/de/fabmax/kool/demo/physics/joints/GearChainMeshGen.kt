@@ -245,9 +245,9 @@ object GearChainMeshGen {
                 height = 7f
                 origin.set(0f, -6f, 0f)
             }
-            cube {
+            cube(centered = true) {
                 size.set(0.3f, 4f, 4.5f)
-                origin.set(-1.3f, -6f, -size.z / 2f)
+                origin.set(-1.15f, -4f, 0f)
             }
             withTransform {
                 rotate(90f, Vec3f.Z_AXIS)

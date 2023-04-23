@@ -91,9 +91,8 @@ class ManyVehiclesDemo : DemoScene("Many Vehicles") {
             isFrustumChecked = false
             instances = chassisInstances
             generate {
-                cube {
+                cube(centered = true) {
                     size.set(vehicleProps.chassisDims)
-                    centered()
                     origin.subtract(vehicleProps.chassisCMOffset)
                 }
             }

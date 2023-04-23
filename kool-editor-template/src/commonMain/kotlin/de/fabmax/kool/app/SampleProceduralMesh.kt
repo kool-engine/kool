@@ -9,9 +9,7 @@ class SampleProceduralMesh : ColorMesh() {
     init {
         generate {
             color = MdColor.LIGHT_GREEN.toLinear()
-            cube {
-                centered()
-            }
+            cube(centered = true) { }
         }
         shader = KslPbrShader {
             color { vertexColor() }

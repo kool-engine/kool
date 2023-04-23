@@ -84,15 +84,14 @@ class KslShaderTest : DemoScene("KslShader") {
         group {
             colorMesh {
                 generate {
-                    cube {
+                    cube(centered = true) {
                         colored()
                         size.set(0.5f, 0.5f, 0.5f)
-                        centered()
                     }
-                    cube {
+                    cube(centered = true) {
                         colored()
-                        origin.set(0.0f, 0.25f, 0.0f)
                         size.set(0.2f, 0.2f, 0.2f)
+                        origin.set(0.1f, 0.35f, 0.1f)
                     }
 
                     color = MdColor.LIME.toLinear()

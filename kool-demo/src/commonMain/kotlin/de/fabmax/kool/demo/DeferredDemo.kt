@@ -214,13 +214,13 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                         withTransform {
                             translate(x.toFloat(), 0f, y.toFloat())
                             if ((x + 100) % 2 == (y + 100) % 2) {
-                                cube {
+                                cube(centered = true) {
                                     size.set(
                                         rand.randomF(0.6f, 0.8f),
                                         rand.randomF(0.6f, 0.95f),
                                         rand.randomF(0.6f, 0.8f)
                                     )
-                                    origin.set(-size.x / 2, 0.1f, -size.z / 2)
+                                    origin.set(0f, 0.1f + size.y * 0.5f, 0f)
                                 }
                             } else {
                                 geometry(sphereProtos[rand.randomI(sphereProtos.indices)])

@@ -35,9 +35,7 @@ object Skybox {
 
         init {
             generate {
-                cube {
-                    centered()
-                }
+                cube(centered = true) { }
             }
             isFrustumChecked = false
             isCastingShadow = false

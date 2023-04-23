@@ -16,9 +16,8 @@ class HelloWorldDemo : DemoScene("Hello World") {
 
         colorMesh {
             generate {
-                cube {
+                cube(centered = true) {
                     colored()
-                    centered()
                 }
             }
             shader = KslPbrShader {

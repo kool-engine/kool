@@ -284,9 +284,10 @@ class CollisionDemo : DemoScene("Physics - Collision") {
                 vertexModFun = {
                     texCoord.set(x / 10, z / 10)
                 }
-                cube {
+                cube(centered = true) {
                     size.set(groundShape.size)
-                    origin.set(size).scale(-0.5f).add(ground.position)
+                    //origin.set(size).scale(-0.5f).add(ground.position)
+                    origin.set(ground.position)
                 }
             }
             shader = KslPbrShader {
@@ -305,9 +306,10 @@ class CollisionDemo : DemoScene("Physics - Collision") {
             generate {
                 frame.forEach {
                     val shape = it.shapes[0].geometry as BoxGeometry
-                    cube {
+                    cube(centered = true) {
                         size.set(shape.size)
-                        origin.set(size).scale(-0.5f).add(it.position)
+                        //origin.set(size).scale(-0.5f).add(it.position)
+                        origin.set(it.position)
                     }
                 }
             }

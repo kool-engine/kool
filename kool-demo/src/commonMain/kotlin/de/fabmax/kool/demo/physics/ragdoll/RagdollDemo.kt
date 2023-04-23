@@ -148,9 +148,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
             isFrustumChecked = false
             instances = bodyInstanceData
             generate {
-                cube {
-                    centered()
-                }
+                cube(centered = true) { }
             }
             shader = instancedBodyShader()
             onUpdate += {

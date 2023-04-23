@@ -87,21 +87,21 @@ enum class ShapeType {
         override val label = "Multi Shape"
 
         override fun MeshBuilder.generateMesh() {
-            cube {
+            cube(centered = true) {
                 size.set(0.5f, 0.5f, 2f)
-                origin.set(size).scale(-0.5f).add(Vec3f(1f, 0f, 0f))
+                origin.set(1f, 0f, 0f)
             }
-            cube {
+            cube(centered = true) {
                 size.set(0.5f, 0.5f, 2f)
-                origin.set(size).scale(-0.5f).add(Vec3f(-1f, 0f, 0f))
+                origin.set(-1f, 0f, 0f)
             }
-            cube {
+            cube(centered = true) {
                 size.set(2.5f, 0.5f, 0.5f)
-                origin.set(size).scale(-0.5f).add(Vec3f(0f, 0f, 1.25f))
+                origin.set(0f, 0f, 1.25f)
             }
-            cube {
+            cube(centered = true) {
                 size.set(2.5f, 0.5f, 0.5f)
-                origin.set(size).scale(-0.5f).add(Vec3f(0f, 0f, -1.25f))
+                origin.set(0f, 0f, -1.25f)
             }
         }
 
