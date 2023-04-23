@@ -3,6 +3,7 @@ package de.fabmax.kool.editor.menu
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.MsdfFont
 
@@ -37,3 +38,6 @@ class EditorMenu(editor: KoolEditor) : Scene("EditorMenu") {
 val Sizes.lineHeight: Dimension get() = largeGap * 1.3f
 
 val Sizes.boldText: MsdfFont get() = (normalText as MsdfFont).copy(weight = 0.075f)
+
+val Colors.hoverBg: Color get() = secondaryVariantAlpha(0.35f)
+val Colors.selectionBg: Color get() = secondaryVariantAlpha(0.5f)

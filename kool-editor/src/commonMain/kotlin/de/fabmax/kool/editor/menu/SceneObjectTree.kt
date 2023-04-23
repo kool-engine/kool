@@ -18,6 +18,24 @@ class SceneObjectTree(val editor: KoolEditor, val sceneBrowser: SceneBrowser) : 
     private val treeItems = mutableListOf<SceneObjectItem>()
     private val isTreeValid = mutableStateOf(false)
 
+    private val contextMenuItems = SubMenuItem<SceneObjectItem> {
+        subMenu("Add child object") {
+            subMenu("Mesh") {
+                item("Box") { }
+                item("Rect") { }
+                item("Sphere") { }
+                item("Cylinder") { }
+                item("Empty Mesh") { }
+            }
+            item("glTF Model") { }
+            item("Group") { }
+        }
+        divider()
+        item("Focus object") { }
+    }
+
+    private val itemPopupMenu = ContextPopupMenu(contextMenuItems)
+
     fun refreshSceneTree() {
         isTreeValid.set(false)
     }
@@ -36,9 +54,17 @@ class SceneObjectTree(val editor: KoolEditor, val sceneBrowser: SceneBrowser) : 
         LazyList(
             containerModifier = { it.backgroundColor(null) }
         ) {
-            items(treeItems) {
-                sceneObjectItem(it)
+            items(treeItems) { item ->
+                sceneObjectItem(item).apply {
+                    modifier.onClick {
+                        if (it.pointer.isRightButtonClicked) {
+                            itemPopupMenu.show(it.screenPosition, item)
+                        }
+                    }
+                }
             }
+
+            itemPopupMenu()
         }
     }
 
@@ -56,7 +82,7 @@ class SceneObjectTree(val editor: KoolEditor, val sceneBrowser: SceneBrowser) : 
             }
 
         if (item.node === EditorState.selectedObject.use()) {
-            modifier.backgroundColor(colors.secondaryVariantAlpha(0.5f))
+            modifier.backgroundColor(colors.selectionBg)
         }
 
         // tree-depth based indentation

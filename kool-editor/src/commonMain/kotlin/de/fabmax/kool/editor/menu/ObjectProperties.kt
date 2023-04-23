@@ -78,7 +78,7 @@ class ObjectProperties(editor: KoolEditor) : EditorPanel(editor) {
 
         Row(width = Grow.Std, height = sizes.gap * 3f) {
             modifier
-                .backgroundColor(colors.secondaryVariantAlpha(0.5f))
+                .backgroundColor(colors.selectionBg)
                 .padding(horizontal = sizes.gap)
 
             if (selectedObject == null) {

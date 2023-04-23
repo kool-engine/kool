@@ -87,6 +87,12 @@ open class Pointer {
         internal set
     var isForwardButtonClicked = false
         internal set
+    val isAnyButtonClicked: Boolean
+        get() = isLeftButtonClicked
+                || isRightButtonClicked
+                || isMiddleButtonClicked
+                || isBackButtonClicked
+                || isForwardButtonClicked
 
     var leftButtonRepeatedClickCount = 0
         internal set
