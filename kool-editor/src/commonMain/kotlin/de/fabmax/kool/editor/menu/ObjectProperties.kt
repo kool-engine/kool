@@ -1,5 +1,6 @@
 package de.fabmax.kool.editor.menu
 
+import de.fabmax.kool.editor.EditorState
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.NodeTransformGizmo
 import de.fabmax.kool.editor.actions.EditorActions
@@ -11,7 +12,7 @@ import de.fabmax.kool.math.MutableVec3d
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.scene.Mesh
 
-class ObjectProperties(val editor: KoolEditor) {
+class ObjectProperties(editor: KoolEditor) : EditorPanel(editor) {
 
     private val windowState = WindowState().apply { setWindowSize(Dp(300f), Dp(600f)) }
     private val transformProperties = TransformProperties()
@@ -25,7 +26,7 @@ class ObjectProperties(val editor: KoolEditor) {
 
     init {
         transformProperties.onChangedByEditor += {
-            editor.menu.sceneBrowser.selectedObject.value?.let { selectedNd ->
+            EditorState.selectedObject.value?.let { selectedNd ->
                 transformProperties.getPosition(tmpNodePos)
                 transformProperties.getRotation(tmpNodeRot)
                 transformProperties.getScale(tmpNodeScale)
@@ -45,7 +46,7 @@ class ObjectProperties(val editor: KoolEditor) {
         editor.editorContent += transformGizmo
     }
 
-    val windowSurface: UiSurface = Window(
+    override val windowSurface: UiSurface = Window(
         windowState,
         colors = EditorMenu.EDITOR_THEME_COLORS,
         name = "Object Properties"
@@ -59,7 +60,7 @@ class ObjectProperties(val editor: KoolEditor) {
         objectProperties()
 
         surface.onEachFrame {
-            editor.menu.sceneBrowser.selectedObject.value?.created?.let { selectedNd ->
+            EditorState.selectedObject.value?.created?.let { selectedNd ->
                 selectedNd.transform.getPosition(tmpNodePos)
                 transformProperties.setPosition(tmpNodePos)
                 selectedNd.transform.matrix.getRotation(tmpNodeRotMat)
@@ -70,10 +71,10 @@ class ObjectProperties(val editor: KoolEditor) {
         }
     }
 
-    val windowScope: WindowScope = windowSurface.windowScope!!
+    override val windowScope: WindowScope = windowSurface.windowScope!!
 
     fun UiScope.objectProperties() = Column(Grow.Std, Grow.Std) {
-        val selectedObject = editor.menu.sceneBrowser.selectedObject.use()
+        val selectedObject = EditorState.selectedObject.use()
 
         Row(width = Grow.Std, height = sizes.gap * 3f) {
             modifier

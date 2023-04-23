@@ -1,17 +1,14 @@
 package de.fabmax.kool.editor.menu
 
 import de.fabmax.kool.editor.KoolEditor
-import de.fabmax.kool.editor.model.MSceneNode
 import de.fabmax.kool.modules.ui2.*
 
-class SceneBrowser(editor: KoolEditor) {
-
-    val selectedObject = mutableStateOf<MSceneNode<*>?>(null)
+class SceneBrowser(editor: KoolEditor) : EditorPanel(editor) {
 
     private val windowState = WindowState().apply { setWindowSize(Dp(300f), Dp(600f)) }
     private val sceneObjectTree = SceneObjectTree(editor, this)
 
-    val windowSurface: UiSurface = Window(
+    override val windowSurface: UiSurface = Window(
         windowState,
         colors = EditorMenu.EDITOR_THEME_COLORS,
         name = "Scene Browser"
@@ -22,7 +19,7 @@ class SceneBrowser(editor: KoolEditor) {
         sceneObjectTree()
     }
 
-    val windowScope: WindowScope = windowSurface.windowScope!!
+    override val windowScope: WindowScope = windowSurface.windowScope!!
 
     fun refreshSceneTree() {
         sceneObjectTree.refreshSceneTree()

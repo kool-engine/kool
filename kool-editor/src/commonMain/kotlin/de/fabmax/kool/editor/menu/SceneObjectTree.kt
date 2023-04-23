@@ -1,5 +1,6 @@
 package de.fabmax.kool.editor.menu
 
+import de.fabmax.kool.editor.EditorState
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.model.MScene
 import de.fabmax.kool.editor.model.MSceneNode
@@ -22,11 +23,11 @@ class SceneObjectTree(val editor: KoolEditor, val sceneBrowser: SceneBrowser) : 
     }
 
     override fun UiScope.compose() {
-        editor.selectedScene.use()
+        EditorState.selectedScene.use()
 
         if (!isTreeValid.use()) {
             treeItems.clear()
-            editor.projectModel.scenes.forEach {
+            EditorState.projectModel.scenes.forEach {
                 treeItems.appendNode(it, it.created, 0)
             }
             isTreeValid.set(true)
@@ -47,14 +48,14 @@ class SceneObjectTree(val editor: KoolEditor, val sceneBrowser: SceneBrowser) : 
             .padding(horizontal = sizes.gap)
             .onClick {
                 if (it.pointer.isLeftButtonClicked) {
-                    sceneBrowser.selectedObject.set(item.node)
+                    EditorState.selectedObject.set(item.node)
                     if (it.pointer.leftButtonRepeatedClickCount == 2 && item.isExpandable) {
                         item.toggleExpanded()
                     }
                 }
             }
 
-        if (item.node === sceneBrowser.selectedObject.use()) {
+        if (item.node === EditorState.selectedObject.use()) {
             modifier.backgroundColor(colors.secondaryVariantAlpha(0.5f))
         }
 
@@ -84,7 +85,7 @@ class SceneObjectTree(val editor: KoolEditor, val sceneBrowser: SceneBrowser) : 
             modifier
                 .margin(horizontal = sizes.smallGap)
                 .alignY(AlignmentY.Center)
-            if (item.node === sceneBrowser.selectedObject.use()) {
+            if (item.node === EditorState.selectedObject.use()) {
                 modifier.textColor(colors.primary)
             }
         }

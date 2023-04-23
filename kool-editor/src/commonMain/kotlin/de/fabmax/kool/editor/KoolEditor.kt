@@ -5,21 +5,12 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.editor.actions.EditorActions
 import de.fabmax.kool.editor.api.EditorAwareApp
 import de.fabmax.kool.editor.menu.EditorMenu
-import de.fabmax.kool.editor.model.*
 import de.fabmax.kool.input.InputStack
 import de.fabmax.kool.input.LocalKeyCode
 import de.fabmax.kool.input.PointerState
 import de.fabmax.kool.math.RayTest
-import de.fabmax.kool.modules.ui2.MutableStateValue
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.OrbitInputTransform
-import de.fabmax.kool.util.MdColor
-import de.fabmax.kool.util.logD
-import de.fabmax.kool.util.logW
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
-import java.io.File
 
 class KoolEditor(val ctx: KoolContext) {
 
@@ -32,10 +23,6 @@ class KoolEditor(val ctx: KoolContext) {
         tags["hidden"] = "true"
         addNode(editorCameraTransform)
     }
-
-    val projectModel: MProject = loadProjectModel()
-    val loadedApp = MutableStateValue<EditorAwareApp?>(null)
-    val selectedScene = MutableStateValue<MScene?>(null)
 
     val appLoader = AppLoader(this)
     val menu = EditorMenu(this)
@@ -57,7 +44,7 @@ class KoolEditor(val ctx: KoolContext) {
         var wasFocused = false
         editorContent.onUpdate {
             if (wasFocused && !ctx.isWindowFocused) {
-                saveProject(projectModel)
+                EditorState.saveProject()
             }
             wasFocused = ctx.isWindowFocused
         }
@@ -65,7 +52,7 @@ class KoolEditor(val ctx: KoolContext) {
         // auto save on exit
         ctx.applicationCallbacks = object : ApplicationCallbacks {
             override fun onWindowCloseRequest(ctx: KoolContext): Boolean {
-                saveProject(projectModel)
+                EditorState.saveProject()
                 return true
             }
         }
@@ -95,14 +82,14 @@ class KoolEditor(val ctx: KoolContext) {
             val rayTest = RayTest()
 
             override fun handlePointer(pointerState: PointerState, ctx: KoolContext) {
-                val sceneModel = selectedScene.value ?: return
+                val sceneModel = EditorState.selectedScene.value ?: return
                 val appScene = sceneModel.created ?: return
                 val ptr = pointerState.primaryPointer
                 if (ptr.isLeftButtonClicked) {
                     if (appScene.computePickRay(ptr, ctx, rayTest.ray)) {
                         rayTest.clear()
                         appScene.rayTest(rayTest)
-                        menu.sceneBrowser.selectedObject.set(sceneModel.nodesToNodeModels[rayTest.hitNode])
+                        EditorState.selectedObject.set(sceneModel.nodesToNodeModels[rayTest.hitNode])
                     }
                 }
             }
@@ -112,15 +99,15 @@ class KoolEditor(val ctx: KoolContext) {
     private fun handleAppReload(app: EditorAwareApp) {
         // clear scene objects from old app
         editorCameraTransform.clearChildren()
-        projectModel.created?.let { oldScenes ->
+        EditorState.projectModel.created?.let { oldScenes ->
             ctx.scenes -= oldScenes.toSet()
             oldScenes.forEach { it.dispose(ctx) }
         }
-        loadedApp.value?.onDispose(true, ctx)
+        EditorState.loadedApp.value?.onDispose(true, ctx)
 
         // add scene objects from new app
-        app.startApp(projectModel, true, ctx)
-        projectModel.created?.let { newScenes ->
+        app.startApp(EditorState.projectModel, true, ctx)
+        EditorState.projectModel.created?.let { newScenes ->
             ctx.scenes += newScenes.toSet()
             newScenes.forEach {
                 it.dispose(ctx)
@@ -128,12 +115,7 @@ class KoolEditor(val ctx: KoolContext) {
                 editorCameraTransform.addNode(it.camera)
             }
         }
-        loadedApp.set(app)
-
-        if (selectedScene.value == null) {
-            selectedScene.set(projectModel.scenes.getOrNull(0))
-        }
-        menu.sceneBrowser.refreshSceneTree()
+        EditorState.loadedApp.set(app)
 
         bringEditorMenuToTop()
         EditorActions.clear()
@@ -142,50 +124,7 @@ class KoolEditor(val ctx: KoolContext) {
     private fun bringEditorMenuToTop() {
         ctx.scenes -= menu
         ctx.scenes += menu
-    }
-
-    private fun loadProjectModel(): MProject {
-        val projFile = File(PROJECT_MODEL_PATH)
-        return try {
-            Json.decodeFromString<MProject>(projFile.readText())
-        } catch (e: Exception) {
-            logW { "Project not found at ${projFile.absolutePath}, creating new empty project" }
-            val proj = newProject()
-            saveProject(proj)
-            proj
-        }
-    }
-
-    private fun newProject(): MProject {
-        val testScene = MScene(
-            nodeProperties = MCommonNodeProperties(
-                hierarchyPath = mutableListOf("New Scene"),
-                transform = MTransform.IDENTITY
-            ),
-            clearColor = MColor(MdColor.GREY tone 900),
-            meshes = mutableListOf(
-                MMesh(
-                    MCommonNodeProperties(
-                        hierarchyPath = mutableListOf("New Scene", "Test Mesh"),
-                        transform = MTransform.IDENTITY
-                    ),
-                    generatorClass = "de.fabmax.kool.app.SampleProceduralMesh"
-                )
-            )
-        )
-
-        val projectModel =  MProject(
-            mainClass = PROJECT_MAIN_CLASS,
-            scenes = listOf(testScene)
-        )
-        return projectModel
-    }
-
-    private fun saveProject(projModel: MProject) {
-        val modelPath = File(PROJECT_MODEL_PATH)
-        modelPath.parentFile.mkdirs()
-        modelPath.writeText(Json.encodeToString(projModel))
-        logD { "Saved project to ${modelPath.absolutePath}" }
+        menu.sceneBrowser.refreshSceneTree()
     }
 
     companion object {
