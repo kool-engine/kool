@@ -270,29 +270,55 @@ multiplatform approach much easier.
 
 ## Usage
 
-If you are adventurous, you can use kool as a library in your own (multiplatform-)projects. I published a version on
-maven central a while ago, however that's very much outdated. Here is a gradle snippet in case you want to try anyway
-(but I would recommend to clone this project and use one of the demos as starting point):
+If you are adventurous, you can use kool as a library in your own (multiplatform-) projects. Currently, I only publish
+snapshot versions but the core APIs should stay mostly stable now.
 
-Gradle setup:
-```groovy
-// JVM dependencies
-dependencies {
-    implementation "de.fabmax.kool:kool-core-jvm:0.8.0"
-
-    // On JVM, lwjgl runtime dependencies have to be included as well
-    def lwjglVersion = "3.3.0"
-    def lwjglNatives = "natives-windows"    // alternatively: natives-linux or natives-macos, depending on your OS
-    runtime "org.lwjgl:lwjgl:${lwjglVersion}:${lwjglNatives}"
-    runtime "org.lwjgl:lwjgl-glfw:${lwjglVersion}:${lwjglNatives}"
-    runtime "org.lwjgl:lwjgl-jemalloc:${lwjglVersion}:${lwjglNatives}"
-    runtime "org.lwjgl:lwjgl-opengl:${lwjglVersion}:${lwjglNatives}"
-    runtime "org.lwjgl:lwjgl-vma:${lwjglVersion}:$lwjglNatives"
-    runtime "org.lwjgl:lwjgl-shaderc:${lwjglVersion}:$lwjglNatives"
+Gradle (kotlin) setup:
+```kotlin
+plugins {
+    kotlin("multiplatform") version "1.8.20"
 }
 
-// or alternatively for javascript
-dependencies {
-    implementation "de.fabmax.kool:kool-core-js:0.8.0"
+repositories {
+    mavenCentral()
+    // snapshot repo containing kool libraries:
+    maven("https://oss.sonatype.org/content/repositories/snapshots")
+}
+
+kotlin {
+    // kotlin multiplatform (jvm + js) setup:
+    jvm {
+        jvmToolchain(11)
+    }
+    js(IR) {
+        browser()
+    }
+    
+    sourceSets {
+        // kool dependencies
+        val commonMain by getting {
+            dependencies {
+                implementation("de.fabmax.kool:kool-core:0.11.0-SNAPSHOT")
+                implementation("de.fabmax.kool:kool-physics:0.11.0-SNAPSHOT")
+            }
+        }
+
+        // on JVM, additional runtime libraries are required
+        val jvmMain by getting {
+            val platform = "natives-windows"
+            val physxVersion = "2.0.5"
+            val lwjglVersion = "3.3.2"
+            val lwjglLibs = listOf("glfw", "opengl", "jemalloc", "nfd", "stb", "vma", "shaderc")
+            dependencies {
+                runtimeOnly("de.fabmax:physx-jni:$physxVersion:$platform")
+                runtimeOnly("org.lwjgl:lwjgl:$lwjglVersion:$platform")
+                lwjglLibs.forEach { lib ->
+                    runtimeOnly("org.lwjgl:lwjgl-$lib:$lwjglVersion:$platform")
+                }
+            }
+        }
+        
+        val jsMain by getting
+    }
 }
 ```

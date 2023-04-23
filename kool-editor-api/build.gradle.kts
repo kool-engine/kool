@@ -6,12 +6,7 @@ plugins {
 
 kotlin {
     jvm {
-        compilations.all {
-            kotlinOptions {
-                jvmTarget = "1.8"
-                freeCompilerArgs = freeCompilerArgs + "-Xbackend-threads=0"
-            }
-        }
+        jvmToolchain(11)
     }
     js(IR) {
         binaries.library()

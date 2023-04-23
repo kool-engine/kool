@@ -5,7 +5,10 @@ import de.fabmax.kool.util.launchOnMainThread
 
 fun main() = KoolApplication { ctx ->
     launchOnMainThread {
-        val projModel = MProject.loadFromAssets() ?: throw IllegalStateException("kool-project.json missing in assets")
-        ctx.scenes += App().startApp(projModel, false, ctx)
+        val projModel = MProject.loadFromAssets() ?: throw IllegalStateException("kool-project.json not found")
+        App().startApp(projModel, false, ctx)
+        projModel.created?.let {
+            ctx.scenes += it
+        }
     }
 }
