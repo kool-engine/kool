@@ -6,7 +6,7 @@ import kotlinx.serialization.Transient
 
 
 @Serializable
-data class MGroupNode(
+data class MGroup(
     override val nodeProperties: MCommonNodeProperties,
 ) : MSceneNode<Node> {
 

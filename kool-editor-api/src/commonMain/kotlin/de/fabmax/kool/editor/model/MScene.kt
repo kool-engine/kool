@@ -12,8 +12,8 @@ class MScene(
     override val nodeProperties: MCommonNodeProperties,
     val clearColor: MColor,
 
-    val groupNodes: MutableMap<Long, MGroupNode> = mutableMapOf(),
-    val meshes: MutableMap<Long, MMesh> = mutableMapOf(),
+    val groups: MutableSet<MGroup> = mutableSetOf(),
+    val meshes: MutableSet<MMesh> = mutableSetOf(),
     //todo: val models: MutableMap<Long, MModel>
 ) : MSceneNode<Scene> {
 
@@ -22,9 +22,13 @@ class MScene(
 
     @Transient
     override val childNodes: MutableMap<Long, MSceneNode<*>> = mutableMapOf()
-
     @Transient
     val nodesToNodeModels: MutableMap<Node, MSceneNode<*>> = mutableMapOf()
+
+    @Transient
+    private val groupsByIds: MutableMap<Long, MGroup> = groups.associateBy { it.nodeProperties.id }.toMutableMap()
+    @Transient
+    private val meshesByIds: MutableMap<Long, MMesh> = meshes.associateBy { it.nodeProperties.id }.toMutableMap()
 
     override fun create(): Scene {
         nodesToNodeModels.clear()
@@ -42,7 +46,7 @@ class MScene(
     }
 
     fun getSceneNode(id: Long): MSceneNode<*>? {
-        val sceneNode = groupNodes[id] ?: meshes[id]
+        val sceneNode = groupsByIds[id] ?: meshesByIds[id]
         if (sceneNode == null) {
             logE { "Scene node not found (id: $id)" }
         }
@@ -57,8 +61,14 @@ class MScene(
     fun addSceneNode(node: MSceneNode<*>, parent: MSceneNode<*>) {
         val nodeId = node.nodeProperties.id
         when (node) {
-            is MMesh -> meshes[nodeId] = node
-            is MGroupNode -> groupNodes[nodeId] = node
+            is MMesh -> {
+                meshes += node
+                meshesByIds[nodeId] = node
+            }
+            is MGroup -> {
+                groups += node
+                groupsByIds[nodeId] = node
+            }
             else -> throw IllegalArgumentException("Unknown node type: $node")
         }
 
@@ -84,15 +94,21 @@ class MScene(
     fun removeSceneNode(node: MSceneNode<*>, parent: MSceneNode<*>) {
         val nodeId = node.nodeProperties.id
         when (node) {
-            is MMesh -> meshes -= nodeId
-            is MGroupNode -> groupNodes -= nodeId
+            is MMesh -> {
+                meshes -= node
+                meshesByIds -= nodeId
+            }
+            is MGroup -> {
+                groups -= node
+                groupsByIds -= nodeId
+            }
             else -> throw IllegalArgumentException("Unknown node type: $node")
         }
+
         // also remove children of node
         node.childNodes.values.forEach { child ->
             removeSceneNode(child, node)
         }
-
         parent.nodeProperties.children -= nodeId
 
         node.created?.let { createdNode ->

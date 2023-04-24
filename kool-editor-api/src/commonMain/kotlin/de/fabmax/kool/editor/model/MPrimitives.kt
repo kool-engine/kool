@@ -12,13 +12,11 @@ data class MTransform(
     val rotation: MVec4,
     val scale: MVec3
 ) {
-    companion object {
-        val IDENTITY = MTransform(
-            position = MVec3(Vec3d.ZERO),
-            rotation = MVec4(Vec4d.W_AXIS),
-            scale = MVec3(Vec3d(1.0, 1.0, 1.0))
-        )
-    }
+    constructor(matrix: Mat4d): this(
+        position = MVec3(matrix.getOrigin(MutableVec3d())),
+        rotation = MVec4(matrix.getRotation(MutableVec4d())),
+        scale = MVec3(matrix.getScale(MutableVec3d()))
+    )
 
     fun toTransform(result: Transform): Transform {
         toMat4d(result.matrix)
@@ -33,15 +31,17 @@ data class MTransform(
             .setOrigin(position.toVec3d())
     }
 
-    fun set(matrix: Mat4d) {
-        position.set(matrix.getOrigin(MutableVec3d()))
-        rotation.set(matrix.getRotation(MutableVec4d()))
-        scale.set(matrix.getScale(MutableVec3d()))
+    companion object {
+        val IDENTITY = MTransform(
+            position = MVec3(Vec3d.ZERO),
+            rotation = MVec4(Vec4d.W_AXIS),
+            scale = MVec3(Vec3d(1.0, 1.0, 1.0))
+        )
     }
 }
 
 @Serializable
-data class MVec2(var x: Double, var y: Double) {
+data class MVec2(val x: Double, val y: Double) {
     constructor(vec: Vec2d): this(vec.x, vec.y)
     constructor(vec: Vec2f): this(vec.x.toDouble(), vec.y.toDouble())
 
@@ -52,20 +52,10 @@ data class MVec2(var x: Double, var y: Double) {
     fun toVec2d(result: MutableVec2d = MutableVec2d()): MutableVec2d {
         return result.set(x, y)
     }
-
-    fun set(vec: Vec2f) {
-        x = vec.x.toDouble()
-        y = vec.y.toDouble()
-    }
-
-    fun set(vec: Vec2d) {
-        x = vec.x
-        y = vec.y
-    }
 }
 
 @Serializable
-data class MVec3(var x: Double, var y: Double, var z: Double) {
+data class MVec3(val x: Double, val y: Double, val z: Double) {
     constructor(vec: Vec3d): this(vec.x, vec.y, vec.z)
     constructor(vec: Vec3f): this(vec.x.toDouble(), vec.y.toDouble(), vec.z.toDouble())
 
@@ -76,22 +66,10 @@ data class MVec3(var x: Double, var y: Double, var z: Double) {
     fun toVec3d(result: MutableVec3d = MutableVec3d()): MutableVec3d {
         return result.set(x, y, z)
     }
-
-    fun set(vec: Vec3f) {
-        x = vec.x.toDouble()
-        y = vec.y.toDouble()
-        z = vec.z.toDouble()
-    }
-
-    fun set(vec: Vec3d) {
-        x = vec.x
-        y = vec.y
-        z = vec.z
-    }
 }
 
 @Serializable
-data class MVec4(var x: Double, var y: Double, var z: Double, var w: Double) {
+data class MVec4(val x: Double, val y: Double, val z: Double, val w: Double) {
     constructor(vec: Vec4d): this(vec.x, vec.y, vec.z, vec.w)
     constructor(vec: Vec4f): this(vec.x.toDouble(), vec.y.toDouble(), vec.z.toDouble(), vec.w.toDouble())
 
@@ -102,34 +80,13 @@ data class MVec4(var x: Double, var y: Double, var z: Double, var w: Double) {
     fun toVec4d(result: MutableVec4d = MutableVec4d()): MutableVec4d {
         return result.set(x, y, z, w)
     }
-
-    fun set(vec: Vec4f) {
-        x = vec.x.toDouble()
-        y = vec.y.toDouble()
-        z = vec.z.toDouble()
-        w = vec.w.toDouble()
-    }
-
-    fun set(vec: Vec4d) {
-        x = vec.x
-        y = vec.y
-        z = vec.z
-        w = vec.w
-    }
 }
 
 @Serializable
-data class MColor(var r: Float, var g: Float, var b: Float, var a: Float) {
+data class MColor(val r: Float, val g: Float, val b: Float, val a: Float) {
     constructor(color: Color): this(color.r, color.g, color.b, color.a)
 
     fun toColor(result: MutableColor = MutableColor()): MutableColor {
         return result.set(r, g, b, a)
-    }
-
-    fun set(vec: Vec4f) {
-        r = vec.x
-        g = vec.y
-        b = vec.z
-        a = vec.w
     }
 }

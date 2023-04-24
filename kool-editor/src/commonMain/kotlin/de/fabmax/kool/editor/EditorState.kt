@@ -41,8 +41,8 @@ object EditorState {
                 children = mutableSetOf(2L)
             ),
             clearColor = MColor(MdColor.GREY tone 900),
-            meshes = mutableMapOf(
-                2L to MMesh(
+            meshes = mutableSetOf(
+                MMesh(
                     MCommonNodeProperties(
                         id = 2L,
                         name = "Default Cube",
