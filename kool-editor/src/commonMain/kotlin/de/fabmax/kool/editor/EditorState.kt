@@ -40,10 +40,10 @@ object EditorState {
             meshes = mutableListOf(
                 MMesh(
                     MCommonNodeProperties(
-                        hierarchyPath = mutableListOf("New Scene", "Test Mesh"),
+                        hierarchyPath = mutableListOf("New Scene", "Default Cube"),
                         transform = MTransform.IDENTITY
                     ),
-                    generatorClass = "de.fabmax.kool.app.SampleProceduralMesh"
+                    meshType = MMeshType.Box(MVec3(1.0, 1.0, 1.0))
                 )
             )
         )
@@ -58,7 +58,13 @@ object EditorState {
     fun saveProject() {
         val modelPath = File(KoolEditor.PROJECT_MODEL_PATH)
         modelPath.parentFile.mkdirs()
-        modelPath.writeText(Json.encodeToString(projectModel))
+
+        //modelPath.writeText(Json.encodeToString(projectModel))
+        val json = Json {
+            prettyPrint = true
+        }
+        modelPath.writeText(json.encodeToString(projectModel))
+
         logD { "Saved project to ${modelPath.absolutePath}" }
     }
 

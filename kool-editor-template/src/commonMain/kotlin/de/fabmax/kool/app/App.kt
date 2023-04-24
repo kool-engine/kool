@@ -10,7 +10,7 @@ expect object AppClassFactory : ClassFactory
 
 class App : EditorAwareApp {
     override fun startApp(projectModel: MProject, isInEditor: Boolean, ctx: KoolContext) {
-        val scenes = projectModel.create(AppClassFactory)
+        val scenes = projectModel.create()
 
         if (!isInEditor) {
             // fixme: camera not yet included in project model, add a default one

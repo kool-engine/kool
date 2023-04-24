@@ -1,7 +1,6 @@
 package de.fabmax.kool.editor.model
 
 import de.fabmax.kool.Assets
-import de.fabmax.kool.editor.api.ClassFactory
 import de.fabmax.kool.scene.Scene
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -17,8 +16,8 @@ data class MProject(
     @Transient
     override var created: List<Scene>? = null
 
-    override fun create(classFactory: ClassFactory): List<Scene> {
-        val createdScenes = scenes.map { it.create(classFactory) }
+    override fun create(): List<Scene> {
+        val createdScenes = scenes.map { it.create() }
         created = createdScenes
         return createdScenes
     }

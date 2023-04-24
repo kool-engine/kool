@@ -7,7 +7,7 @@ import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.MsdfFont
 
-class EditorMenu(editor: KoolEditor) : Scene("EditorMenu") {
+class EditorUi(editor: KoolEditor) : Scene("EditorMenu") {
 
     private val dockingHost = DockingHost()
 

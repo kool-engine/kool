@@ -48,7 +48,7 @@ class ObjectProperties(editor: KoolEditor) : EditorPanel(editor) {
 
     override val windowSurface: UiSurface = Window(
         windowState,
-        colors = EditorMenu.EDITOR_THEME_COLORS,
+        colors = EditorUi.EDITOR_THEME_COLORS,
         name = "Object Properties"
     ) {
         modifier.backgroundColor(colors.background.withAlpha(0.8f))

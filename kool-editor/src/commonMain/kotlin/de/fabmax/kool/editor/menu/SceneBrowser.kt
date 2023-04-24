@@ -10,7 +10,7 @@ class SceneBrowser(editor: KoolEditor) : EditorPanel(editor) {
 
     override val windowSurface: UiSurface = Window(
         windowState,
-        colors = EditorMenu.EDITOR_THEME_COLORS,
+        colors = EditorUi.EDITOR_THEME_COLORS,
         name = "Scene Browser"
     ) {
         modifier.backgroundColor(colors.background.withAlpha(0.8f))

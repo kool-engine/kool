@@ -6,7 +6,7 @@ import de.fabmax.kool.modules.ui2.WindowScope
 
 abstract class EditorPanel(val editor: KoolEditor) {
 
-    val menu: EditorMenu get() = editor.menu
+    val menu: EditorUi get() = editor.menu
 
     abstract val windowSurface: UiSurface
     abstract val windowScope: WindowScope

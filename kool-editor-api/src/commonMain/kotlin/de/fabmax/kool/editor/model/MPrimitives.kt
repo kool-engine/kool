@@ -41,6 +41,30 @@ data class MTransform(
 }
 
 @Serializable
+data class MVec2(var x: Double, var y: Double) {
+    constructor(vec: Vec2d): this(vec.x, vec.y)
+    constructor(vec: Vec2f): this(vec.x.toDouble(), vec.y.toDouble())
+
+    fun toVec2f(result: MutableVec2f = MutableVec2f()): MutableVec2f {
+        return result.set(x.toFloat(), y.toFloat())
+    }
+
+    fun toVec2d(result: MutableVec2d = MutableVec2d()): MutableVec2d {
+        return result.set(x, y)
+    }
+
+    fun set(vec: Vec2f) {
+        x = vec.x.toDouble()
+        y = vec.y.toDouble()
+    }
+
+    fun set(vec: Vec2d) {
+        x = vec.x
+        y = vec.y
+    }
+}
+
+@Serializable
 data class MVec3(var x: Double, var y: Double, var z: Double) {
     constructor(vec: Vec3d): this(vec.x, vec.y, vec.z)
     constructor(vec: Vec3f): this(vec.x.toDouble(), vec.y.toDouble(), vec.z.toDouble())

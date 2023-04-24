@@ -2,8 +2,7 @@ package de.fabmax.kool.editor.menu
 
 import de.fabmax.kool.editor.EditorState
 import de.fabmax.kool.editor.KoolEditor
-import de.fabmax.kool.editor.model.MScene
-import de.fabmax.kool.editor.model.MSceneNode
+import de.fabmax.kool.editor.model.*
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.modules.ui2.ArrowScope.Companion.ROTATION_DOWN
 import de.fabmax.kool.modules.ui2.ArrowScope.Companion.ROTATION_RIGHT
@@ -11,6 +10,7 @@ import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.util.UniqueId
 
 class SceneObjectTree(val editor: KoolEditor, val sceneBrowser: SceneBrowser) : Composable {
 
@@ -18,14 +18,30 @@ class SceneObjectTree(val editor: KoolEditor, val sceneBrowser: SceneBrowser) : 
     private val treeItems = mutableListOf<SceneObjectItem>()
     private val isTreeValid = mutableStateOf(false)
 
-    private val contextMenuItems = SubMenuItem<SceneObjectItem> {
+    private val contextMenuItems = SubMenuItem {
+        item("Delete object") {
+            deleteNode(it)
+        }
         subMenu("Add child object") {
             subMenu("Mesh") {
-                item("Box") { }
-                item("Rect") { }
-                item("Sphere") { }
-                item("Cylinder") { }
-                item("Empty Mesh") { }
+                item("Box") {
+                    addNewMesh(it, MMeshType.Box(MVec3(1.0, 1.0, 1.0)))
+                }
+                item("Rect") {
+                    addNewMesh(it, MMeshType.Rect(MVec2(1.0, 1.0)))
+                }
+                item("Ico-Sphere") {
+                    addNewMesh(it, MMeshType.IcoSphere(1f, 3))
+                }
+                item("UV-Sphere") {
+                    addNewMesh(it, MMeshType.UvSphere(1f, 20))
+                }
+                item("Cylinder") {
+                    addNewMesh(it, MMeshType.Cylinder(1f, 1f, 1f, 20))
+                }
+                item("Empty Mesh") {
+                    addNewMesh(it, MMeshType.Empty)
+                }
             }
             item("glTF Model") { }
             item("Group") { }
@@ -40,10 +56,29 @@ class SceneObjectTree(val editor: KoolEditor, val sceneBrowser: SceneBrowser) : 
         isTreeValid.set(false)
     }
 
+    private fun deleteNode(node: SceneObjectItem) {
+        val parentScene = EditorState.selectedScene.value ?: return
+        parentScene.removeNode(node.node)
+        refreshSceneTree()
+
+        if (EditorState.selectedObject.value == node.node) {
+            EditorState.selectedObject.set(null)
+        }
+    }
+
+    private fun addNewMesh(parent: SceneObjectItem, meshType: MMeshType) {
+        val parentScene = EditorState.selectedScene.value ?: return
+        val hierarchyPath = parent.node.nodeProperties.hierarchyPath + UniqueId.nextId(meshType.name)
+        val meshProps = MCommonNodeProperties(hierarchyPath.toMutableList(), MTransform.IDENTITY)
+        parentScene.addNode(MMesh(meshProps, meshType))
+        refreshSceneTree()
+    }
+
     override fun UiScope.compose() {
         EditorState.selectedScene.use()
 
         if (!isTreeValid.use()) {
+            println("refresh tree")
             treeItems.clear()
             EditorState.projectModel.scenes.forEach {
                 treeItems.appendNode(it, it.created, 0)
