@@ -25,7 +25,7 @@ interface MeshRayTest {
 
             override fun rayTest(test: RayTest) {
                 val mesh = this.mesh ?: return
-                val distSqr = mesh.bounds.hitDistanceSqr(test.ray)
+                val distSqr = mesh.geometry.bounds.hitDistanceSqr(test.ray)
                 if (distSqr < Float.MAX_VALUE && distSqr <= test.hitDistanceSqr) {
                     test.setHit(mesh, sqrt(distSqr))
                 }

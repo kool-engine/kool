@@ -167,7 +167,19 @@ open class Mesh(var geometry: IndexedVertexList, name: String? = null) : Node(na
         return (isCastingShadowLevelMask and (1 shl shadowMapLevel)) != 0
     }
 
-    override fun rayTest(test: RayTest) = rayTest.rayTest(test)
+    override fun rayTest(test: RayTest) {
+        super.rayTest(test)
+
+        if (!transform.isIdentity) {
+            // transform ray to local coordinates
+            test.transformBy(transform.matrixInverse)
+        }
+        rayTest.rayTest(test)
+        if (!transform.isIdentity) {
+            // transform ray back to previous coordinates
+            test.transformBy(transform.matrix)
+        }
+    }
 
     /**
      * Deletes all buffers associated with this mesh.

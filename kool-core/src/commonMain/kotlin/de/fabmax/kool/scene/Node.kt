@@ -212,24 +212,26 @@ open class Node(name: String? = null) : Disposable {
      * if their contents are hit by the ray.
      */
     open fun rayTest(test: RayTest) {
-        if (!transform.isIdentity) {
-            // transform ray to local coordinates
-            test.transformBy(transform.matrixInverse)
-        }
+        if (children.isNotEmpty()) {
+            if (!transform.isIdentity) {
+                // transform ray to local coordinates
+                test.transformBy(transform.matrixInverse)
+            }
 
-        for (i in intChildren.indices) {
-            val child = intChildren[i]
-            if (child.isVisible && child.isPickable) {
-                val d = child.bounds.hitDistanceSqr(test.ray)
-                if (d < Float.MAX_VALUE && d <= test.hitDistanceSqr) {
-                    child.rayTest(test)
+            for (i in intChildren.indices) {
+                val child = intChildren[i]
+                if (child.isVisible && child.isPickable) {
+                    val d = child.bounds.hitDistanceSqr(test.ray)
+                    if (d < Float.MAX_VALUE && d <= test.hitDistanceSqr) {
+                        child.rayTest(test)
+                    }
                 }
             }
-        }
 
-        if (!transform.isIdentity) {
-            // transform ray back to previous coordinates
-            test.transformBy(transform.matrix)
+            if (!transform.isIdentity) {
+                // transform ray back to previous coordinates
+                test.transformBy(transform.matrix)
+            }
         }
     }
 
