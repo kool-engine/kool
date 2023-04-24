@@ -16,6 +16,9 @@ data class MMesh(
     @Transient
     override var created: Mesh? = null
 
+    @Transient
+    override val childNodes: MutableMap<Long, MSceneNode<*>> = mutableMapOf()
+
     override fun create(): Mesh {
         val mesh = ColorMesh()
         mesh.name = nodeProperties.name

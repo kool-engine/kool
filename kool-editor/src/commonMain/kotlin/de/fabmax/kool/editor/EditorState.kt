@@ -20,6 +20,8 @@ object EditorState {
     val selectedScene = MutableStateValue(projectModel.scenes.getOrNull(0))
     val selectedObject = mutableStateOf<MSceneNode<*>?>(null)
 
+    private val uniqueNameIds = mutableMapOf<String, Int>()
+
     private fun loadProjectModel(): MProject {
         val projFile = File(KoolEditor.PROJECT_MODEL_PATH)
         return try {
@@ -33,14 +35,17 @@ object EditorState {
     private fun newProject(): MProject {
         val testScene = MScene(
             nodeProperties = MCommonNodeProperties(
-                hierarchyPath = mutableListOf("New Scene"),
-                transform = MTransform.IDENTITY
+                id = 1L,
+                name = "New Scene",
+                transform = MTransform.IDENTITY,
+                children = mutableSetOf(2L)
             ),
             clearColor = MColor(MdColor.GREY tone 900),
-            meshes = mutableListOf(
-                MMesh(
+            meshes = mutableMapOf(
+                2L to MMesh(
                     MCommonNodeProperties(
-                        hierarchyPath = mutableListOf("New Scene", "Default Cube"),
+                        id = 2L,
+                        name = "Default Cube",
                         transform = MTransform.IDENTITY
                     ),
                     meshType = MMeshType.Box(MVec3(1.0, 1.0, 1.0))
@@ -48,7 +53,7 @@ object EditorState {
             )
         )
 
-        val projectModel =  MProject(
+        val projectModel = MProject(
             mainClass = KoolEditor.PROJECT_MAIN_CLASS,
             scenes = listOf(testScene)
         )
@@ -67,5 +72,4 @@ object EditorState {
 
         logD { "Saved project to ${modelPath.absolutePath}" }
     }
-
 }

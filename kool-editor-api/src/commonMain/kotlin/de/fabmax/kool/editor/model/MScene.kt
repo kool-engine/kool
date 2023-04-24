@@ -3,7 +3,7 @@ package de.fabmax.kool.editor.model
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.util.logW
+import de.fabmax.kool.util.logE
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 
@@ -12,110 +12,93 @@ class MScene(
     override val nodeProperties: MCommonNodeProperties,
     val clearColor: MColor,
 
-    val groupNodes: MutableList<MGroupNode> = mutableListOf(),
-    val meshes: MutableList<MMesh> = mutableListOf(),
-    //todo: val models: List<MModel>
+    val groupNodes: MutableMap<Long, MGroupNode> = mutableMapOf(),
+    val meshes: MutableMap<Long, MMesh> = mutableMapOf(),
+    //todo: val models: MutableMap<Long, MModel>
 ) : MSceneNode<Scene> {
 
     @Transient
     override var created: Scene? = null
 
     @Transient
-    private val createdSceneNodes = mutableMapOf<List<String>, Pair<Node, MSceneNode<*>>>()
+    override val childNodes: MutableMap<Long, MSceneNode<*>> = mutableMapOf()
 
     @Transient
-    private val mutNodesToNodeModels = mutableMapOf<Node, MSceneNode<*>>()
-    val nodesToNodeModels: Map<Node, MSceneNode<*>> get() = mutNodesToNodeModels
+    val nodesToNodeModels: MutableMap<Node, MSceneNode<*>> = mutableMapOf()
 
     override fun create(): Scene {
-        mutNodesToNodeModels.clear()
-        createdSceneNodes.clear()
+        nodesToNodeModels.clear()
 
         val scene = Scene(name = nodeProperties.name).apply {
             mainRenderPass.clearColor = clearColor.toColor()
-
-            groupNodes.forEach { groupModel ->
-                val node = groupModel.create()
-                createdSceneNodes[groupModel.nodeProperties.hierarchyPath] = node to groupModel
-            }
-            meshes.forEach { meshModel ->
-                val mesh = meshModel.create()
-                createdSceneNodes[meshModel.nodeProperties.hierarchyPath] = mesh to meshModel
-            }
-
-            createdSceneNodes.values.forEach { (node, model) -> mutNodesToNodeModels[node] = model }
-            restoreHierarchy(createdSceneNodes)
         }
-        mutNodesToNodeModels[scene] = this
+        nodesToNodeModels[scene] = this
         created = scene
+
+        nodeProperties.children.forEach { childId ->
+            addSceneNode(childId, this)
+        }
         return scene
     }
 
-    fun removeNode(modelNode: MSceneNode<*>) {
-        when (modelNode) {
-            is MMesh -> meshes -= modelNode
-            is MGroupNode -> groupNodes -= modelNode
-            else -> throw IllegalArgumentException("Unknown node type: $modelNode")
+    fun getSceneNode(id: Long): MSceneNode<*>? {
+        val sceneNode = groupNodes[id] ?: meshes[id]
+        if (sceneNode == null) {
+            logE { "Scene node not found (id: $id)" }
         }
-
-        val createdScene = created ?: return
-        val node = modelNode.created ?: return
-        val parent = createdScene.getOrCreateNodeByPath(modelNode.parentPath, createdSceneNodes)
-        parent.removeNode(node)
-
-        createdSceneNodes.remove(modelNode.nodeProperties.hierarchyPath)
-        mutNodesToNodeModels.remove(node)
-
-        node.dispose(KoolSystem.requireContext())
+        return sceneNode
     }
 
-    fun addNode(modelNode: MSceneNode<*>) {
-        when (modelNode) {
-            is MMesh -> meshes += modelNode
-            is MGroupNode -> groupNodes += modelNode
-            else -> throw IllegalArgumentException("Unknown node type: $modelNode")
-        }
-
-        val createdScene = created ?: return
-
-        val node = modelNode.created ?: modelNode.create()
-        val parent = createdScene.getOrCreateNodeByPath(modelNode.parentPath, createdSceneNodes)
-        parent.addNode(node)
-
-        createdSceneNodes[modelNode.nodeProperties.hierarchyPath] = node to modelNode
-        mutNodesToNodeModels[node] = modelNode
+    fun addSceneNode(id: Long, parent: MSceneNode<*>) {
+        val toBeCreated = getSceneNode(id) ?: return
+        addSceneNode(toBeCreated, parent)
     }
 
-    private fun Scene.restoreHierarchy(sceneNodes: Map<List<String>, Pair<Node, MSceneNode<*>>>) {
-        sceneNodes.values.forEach { (node, modelNode) ->
-            val parent = getOrCreateNodeByPath(modelNode.parentPath, sceneNodes)
-            parent.addNode(node)
+    fun addSceneNode(node: MSceneNode<*>, parent: MSceneNode<*>) {
+        val nodeId = node.nodeProperties.id
+        when (node) {
+            is MMesh -> meshes[nodeId] = node
+            is MGroupNode -> groupNodes[nodeId] = node
+            else -> throw IllegalArgumentException("Unknown node type: $node")
         }
-    }
 
-    private fun Scene.getOrCreateNodeByPath(
-        path: List<String>,
-        sceneNodes: Map<List<String>, Pair<Node, MSceneNode<*>>>
-    ): Node {
-        if (path.size == 1) {
-            if (path[0] != name) {
-                throw IllegalStateException("Path name does not match scene name (path[0]: ${path[0]}, scene name: $name)")
+        val parentNode = parent.created ?: throw IllegalStateException("Parent node must be created first")
+        val createdNode = node.create()
+        nodesToNodeModels[createdNode] = node
+        parentNode.addNode(createdNode)
+
+        parent.nodeProperties.children += nodeId
+        parent.childNodes[nodeId] = node
+
+        if (node.childNodes.keys.containsAll(node.nodeProperties.children)) {
+            node.childNodes.values.forEach { childNode ->
+                addSceneNode(childNode, node)
             }
-            return this
+        } else {
+            node.nodeProperties.children.forEach { childId ->
+                addSceneNode(childId, node)
+            }
         }
-        var node = sceneNodes[path]?.first
-        if (node == null) {
-            logW { "Scene node at path not found: $path, inserting empty node" }
-            node = Node(path.last())
-            val parent = getOrCreateNodeByPath(path.parentPath, sceneNodes)
-            parent.addNode(node)
-        }
-        return node
     }
 
-    private val MSceneNode<*>.parentPath: List<String>
-        get() = nodeProperties.hierarchyPath.parentPath
+    fun removeSceneNode(node: MSceneNode<*>, parent: MSceneNode<*>) {
+        val nodeId = node.nodeProperties.id
+        when (node) {
+            is MMesh -> meshes -= nodeId
+            is MGroupNode -> groupNodes -= nodeId
+            else -> throw IllegalArgumentException("Unknown node type: $node")
+        }
+        // also remove children of node
+        node.childNodes.values.forEach { child ->
+            removeSceneNode(child, node)
+        }
 
-    private val List<String>.parentPath: List<String>
-        get() = subList(0, lastIndex)
+        parent.nodeProperties.children -= nodeId
+
+        node.created?.let { createdNode ->
+            parent.created?.removeNode(createdNode)
+            createdNode.dispose(KoolSystem.requireContext())
+            node.created = null
+        }
+    }
 }

@@ -2,6 +2,9 @@ package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.editor.EditorState
 import de.fabmax.kool.editor.KoolEditor
+import de.fabmax.kool.editor.actions.AddObjectAction
+import de.fabmax.kool.editor.actions.EditorActions
+import de.fabmax.kool.editor.actions.RemoveObjectAction
 import de.fabmax.kool.editor.model.*
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.modules.ui2.ArrowScope.Companion.ROTATION_DOWN
@@ -10,7 +13,6 @@ import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.util.UniqueId
 
 class SceneObjectTree(val editor: KoolEditor, val sceneBrowser: SceneBrowser) : Composable {
 
@@ -18,7 +20,7 @@ class SceneObjectTree(val editor: KoolEditor, val sceneBrowser: SceneBrowser) : 
     private val treeItems = mutableListOf<SceneObjectItem>()
     private val isTreeValid = mutableStateOf(false)
 
-    private val contextMenuItems = SubMenuItem {
+    private val contextMenu = SubMenuItem {
         item("Delete object") {
             deleteNode(it)
         }
@@ -50,28 +52,28 @@ class SceneObjectTree(val editor: KoolEditor, val sceneBrowser: SceneBrowser) : 
         item("Focus object") { }
     }
 
-    private val itemPopupMenu = ContextPopupMenu(contextMenuItems)
+    private val itemPopupMenu = ContextPopupMenu(contextMenu)
 
     fun refreshSceneTree() {
         isTreeValid.set(false)
     }
 
-    private fun deleteNode(node: SceneObjectItem) {
-        val parentScene = EditorState.selectedScene.value ?: return
-        parentScene.removeNode(node.node)
-        refreshSceneTree()
-
-        if (EditorState.selectedObject.value == node.node) {
-            EditorState.selectedObject.set(null)
-        }
-    }
-
     private fun addNewMesh(parent: SceneObjectItem, meshType: MMeshType) {
         val parentScene = EditorState.selectedScene.value ?: return
-        val hierarchyPath = parent.node.nodeProperties.hierarchyPath + UniqueId.nextId(meshType.name)
-        val meshProps = MCommonNodeProperties(hierarchyPath.toMutableList(), MTransform.IDENTITY)
-        parentScene.addNode(MMesh(meshProps, meshType))
-        refreshSceneTree()
+        val id = EditorState.projectModel.nextId()
+        val meshProps = MCommonNodeProperties(
+            id = id,
+            name = "${meshType.name}-$id",
+            MTransform.IDENTITY
+        )
+        val mesh = MMesh(meshProps, meshType)
+        EditorActions.applyAction(AddObjectAction(mesh, parent.node, parentScene, this))
+    }
+
+    private fun deleteNode(node: SceneObjectItem) {
+        val parentScene = EditorState.selectedScene.value ?: return
+        val parentNode = parentScene.nodesToNodeModels[node.node.created?.parent] ?: return
+        EditorActions.applyAction(RemoveObjectAction(node.node, parentNode, parentScene, this))
     }
 
     override fun UiScope.compose() {
@@ -105,7 +107,7 @@ class SceneObjectTree(val editor: KoolEditor, val sceneBrowser: SceneBrowser) : 
     private fun UiScope.sceneObjectItem(item: SceneObjectItem) = Row(width = Grow.Std) {
         modifier
             .height(sizes.lineHeight)
-            .padding(horizontal = sizes.gap)
+            //.padding(horizontal = sizes.smallGap)
             .onClick {
                 if (it.pointer.isLeftButtonClicked) {
                     EditorState.selectedObject.set(item.node)
@@ -125,11 +127,11 @@ class SceneObjectTree(val editor: KoolEditor, val sceneBrowser: SceneBrowser) : 
         }
 
         // expand / collapse arrow
-        if (item.isExpandable) {
-            Box {
-                modifier
-                    .size(sizes.lineHeight, FitContent)
-                    .alignY(AlignmentY.Center)
+        Box {
+            modifier
+                .size(sizes.lineHeight, FitContent)
+                .alignY(AlignmentY.Center)
+            if (item.isExpandable) {
                 Arrow {
                     modifier
                         .rotation(if (item.isExpanded.use()) ROTATION_DOWN else ROTATION_RIGHT)
@@ -137,13 +139,11 @@ class SceneObjectTree(val editor: KoolEditor, val sceneBrowser: SceneBrowser) : 
                         .onClick { item.toggleExpanded() }
                 }
             }
-        } else {
-            Box(width = sizes.largeGap) { }
         }
 
         Text(item.name) {
             modifier
-                .margin(horizontal = sizes.smallGap)
+                //.margin(end = sizes.smallGap)
                 .alignY(AlignmentY.Center)
             if (item.node === EditorState.selectedObject.use()) {
                 modifier.textColor(colors.primary)

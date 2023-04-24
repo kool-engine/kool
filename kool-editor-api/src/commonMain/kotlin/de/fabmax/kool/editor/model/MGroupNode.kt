@@ -13,6 +13,9 @@ data class MGroupNode(
     @Transient
     override var created: Node? = null
 
+    @Transient
+    override val childNodes: MutableMap<Long, MSceneNode<*>> = mutableMapOf()
+
     override fun create(): Node {
         val node = Node(nodeProperties.name)
         nodeProperties.transform.toTransform(node.transform)

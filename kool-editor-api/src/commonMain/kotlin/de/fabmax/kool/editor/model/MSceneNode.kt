@@ -6,4 +6,6 @@ interface MSceneNode<T: Node> : Creatable<T> {
 
     val nodeProperties: MCommonNodeProperties
 
+    val childNodes: MutableMap<Long, MSceneNode<*>>
+
 }
