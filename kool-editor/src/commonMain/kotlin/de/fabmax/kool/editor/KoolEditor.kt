@@ -4,7 +4,7 @@ import de.fabmax.kool.ApplicationCallbacks
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.editor.actions.EditorActions
 import de.fabmax.kool.editor.api.EditorAwareApp
-import de.fabmax.kool.editor.menu.EditorUi
+import de.fabmax.kool.editor.ui.EditorUi
 import de.fabmax.kool.input.InputStack
 import de.fabmax.kool.input.LocalKeyCode
 import de.fabmax.kool.input.PointerState

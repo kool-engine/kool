@@ -1,7 +1,7 @@
-package de.fabmax.kool.editor
+package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.editor.menu.ObjectProperties
+import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.model.MSceneNode
 import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.math.Vec3f
@@ -57,10 +57,15 @@ class NodeTransformGizmo(editor: KoolEditor) : Node("Node transform gizmo") {
         gizmo.onUpdate {
             transformObject?.created?.let {
                 if (hasTransformAuthority) {
-                    gizmo.getGizmoTransform(it)
+                    val gizmoTransform = Mat4d()
+                    gizmo.getGizmoTransform(gizmoTransform)
+                    it.parent?.transform?.matrixInverse?.let { toLocal ->
+                        gizmoTransform.mul(toLocal)
+                    }
+                    it.transform.set(gizmoTransform)
                     it.updateModelMat(true)
                 } else {
-                    gizmo.transform.set(it.transform.matrix)
+                    gizmo.transform.set(it.modelMat)
                     gizmo.transform.matrix.resetScale()
                     gizmo.setFixedScale(it.globalRadius * 1.5f)
                 }

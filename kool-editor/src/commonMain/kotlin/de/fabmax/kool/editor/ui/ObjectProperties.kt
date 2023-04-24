@@ -1,8 +1,7 @@
-package de.fabmax.kool.editor.menu
+package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.editor.EditorState
 import de.fabmax.kool.editor.KoolEditor
-import de.fabmax.kool.editor.NodeTransformGizmo
 import de.fabmax.kool.editor.actions.EditorActions
 import de.fabmax.kool.editor.actions.SetTransformAction
 import de.fabmax.kool.editor.model.MSceneNode

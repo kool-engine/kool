@@ -1,4 +1,4 @@
-package de.fabmax.kool.editor.menu
+package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.math.MutableVec3d
 import de.fabmax.kool.math.Vec3d

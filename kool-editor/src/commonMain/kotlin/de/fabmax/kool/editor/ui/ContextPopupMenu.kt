@@ -1,4 +1,4 @@
-package de.fabmax.kool.editor.menu
+package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.input.PointerInput
 import de.fabmax.kool.math.Vec2f

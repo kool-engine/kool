@@ -1,4 +1,4 @@
-package de.fabmax.kool.editor.menu
+package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.editor.EditorState
 import de.fabmax.kool.editor.KoolEditor
@@ -78,7 +78,6 @@ class SceneObjectTree(val editor: KoolEditor, val sceneBrowser: SceneBrowser) : 
         EditorState.selectedScene.use()
 
         if (!isTreeValid.use()) {
-            println("refresh tree")
             treeItems.clear()
             EditorState.projectModel.scenes.forEach {
                 treeItems.appendNode(it, it.created, 0)
