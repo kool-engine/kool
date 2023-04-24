@@ -131,7 +131,7 @@ class KoolEditor(val ctx: KoolContext) {
         // todo: don't use hard-coded project paths
         const val PROJECT_DIR = "kool-editor-template"
         const val PROJECT_SRC_DIR = "${PROJECT_DIR}/src"
-        const val PROJECT_JAR_PATH = "${PROJECT_DIR}/build/libs/kool-editor-template-jvm-0.11.0-SNAPSHOT.jar"
+        const val PROJECT_CLASS_PATH = "${PROJECT_DIR}/build/classes/kotlin/jvm/main"
         const val PROJECT_MODEL_PATH = "${PROJECT_DIR}/src/commonMain/resources/kool-project.json"
         const val PROJECT_MAIN_CLASS = "de.fabmax.kool.app.App"
     }

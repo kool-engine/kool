@@ -19,7 +19,7 @@ import kotlin.io.path.exists
 actual class AppLoadService actual constructor() {
 
     // todo: paths are hardcoded for now
-    private val appJarPath = Path.of(KoolEditor.PROJECT_JAR_PATH)
+    private val appClassPath = Path.of(KoolEditor.PROJECT_CLASS_PATH)
     private val watchPath = KoolEditor.PROJECT_SRC_DIR
 
     private val buildInProgress = AtomicBoolean(false)
@@ -58,7 +58,7 @@ actual class AppLoadService actual constructor() {
 
         suspendCoroutine { continuation ->
             thread {
-                val buildProcess = Runtime.getRuntime().exec(arrayOf("gradlew.bat", ":kool-editor-template:jvmJar"))
+                val buildProcess = Runtime.getRuntime().exec(arrayOf("gradlew.bat", ":kool-editor-template:jvmMainClasses"))
                 thread {
                     BufferedReader(InputStreamReader(buildProcess.inputStream)).lines().forEach {
                         logD("AppLoader.gradleBuild") { it }
@@ -83,12 +83,12 @@ actual class AppLoadService actual constructor() {
     }
 
     actual suspend fun loadApp(): EditorAwareApp {
-        if (!appJarPath.exists()) {
+        if (!appClassPath.exists()) {
             buildApp()
         }
 
-        logI { "Loading app from jar: $appJarPath" }
-        val loader = URLClassLoader(arrayOf(appJarPath.toUri().toURL()), this.javaClass.classLoader)
+        logI { "Loading app from directory: $appClassPath" }
+        val loader = URLClassLoader(arrayOf(appClassPath.toUri().toURL()), this.javaClass.classLoader)
         val appClass = loader.loadClass(KoolEditor.PROJECT_MAIN_CLASS)
         val app = appClass.getDeclaredConstructor().newInstance()
         return app as EditorAwareApp
