@@ -75,17 +75,19 @@ open class MutableStateValue<T: Any?>(initValue: T) : MutableState() {
 }
 
 /**
- * Usage:
- *  val count = mutableStateOf(0)
- *  val strCount = providedState(count) { toString() }
+ * Auto-transforms a mutable state into a different type. Usage:
+ * ```
+ *     val count = mutableStateOf(0)
+ *     val strCount = transformedState(count) { toString() }
+ * ```
  */
-fun <T, S> providedStateOf(value: MutableStateValue<T>, formatter: T.() -> S) = ProvidedStateValue<T, S>(value, formatter)
-class ProvidedStateValue<T: Any?, S: Any?>(sourceState: MutableStateValue<T>, formatter: T.() -> S)
-    : MutableStateValue<S>( formatter(sourceState.value) ) {
+fun <T, S> transformedStateOf(value: MutableStateValue<T>, transformer: T.() -> S) = TransformedStateValue(value, transformer)
+class TransformedStateValue<T: Any?, S: Any?>(sourceState: MutableStateValue<T>, transformer: T.() -> S)
+    : MutableStateValue<S>(transformer(sourceState.value)) {
 
     init {
         sourceState.onChange {
-            set( formatter(it) )
+            set(transformer(it))
         }
     }
 }
