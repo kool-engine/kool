@@ -74,6 +74,22 @@ open class MutableStateValue<T: Any?>(initValue: T) : MutableState() {
     }
 }
 
+/**
+ * Usage:
+ *  val count = mutableStateOf(0)
+ *  val strCount = providedState(count) { toString() }
+ */
+fun <T, S> providedStateOf(value: MutableStateValue<T>, formatter: T.() -> S) = ProvidedStateValue<T, S>(value, formatter)
+class ProvidedStateValue<T: Any?, S: Any?>(sourceState: MutableStateValue<T>, formatter: T.() -> S)
+    : MutableStateValue<S>( formatter(sourceState.value) ) {
+
+    init {
+        sourceState.onChange {
+            set( formatter(it) )
+        }
+    }
+}
+
 class MutableStateList<T>(private val values: MutableList<T> = mutableListOf()) :
     MutableState(), MutableList<T> by values
 {
