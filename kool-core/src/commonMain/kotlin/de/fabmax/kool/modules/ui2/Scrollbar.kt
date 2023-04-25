@@ -5,6 +5,8 @@ import de.fabmax.kool.input.Pointer
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.util.Color
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
 interface ScrollbarScope : UiScope {
     override val modifier: ScrollbarModifier
@@ -57,55 +59,72 @@ enum class ScrollbarOrientation {
     Vertical
 }
 
-inline fun UiScope.Scrollbar(block: ScrollbarScope.() -> Unit) {
+inline fun UiScope.Scrollbar(block: ScrollbarScope.() -> Unit): ScrollbarScope {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+    }
+
     val scrollBar = uiNode.createChild(ScrollbarNode::class, ScrollbarNode.factory)
     scrollBar.modifier.onClick(scrollBar)
         .zLayer(UiSurface.LAYER_FLOATING)
         .hoverListener(scrollBar)
         .dragListener(scrollBar)
     scrollBar.block()
+    return scrollBar
 }
 
-inline fun UiScope.VerticalScrollbar(block: ScrollbarScope.() -> Unit) = Scrollbar {
-    modifier
-        .orientation(ScrollbarOrientation.Vertical)
-        .width(8.dp)
-        .height(Grow.Std)
-        .alignX(AlignmentX.End)
-
-    // try to be smart: add some margin if parent scope (which hopefully is a cell) already contains a horizontal scrollbar
-    val horizontalBar = uiNode.parent?.children?.find { it is ScrollbarScope && it.isHorizontal }
-    if (horizontalBar != null) {
-        val horizontalBarHeight = (horizontalBar.modifier.height as? Dp) ?: 8.dp
-        if (horizontalBar.modifier.alignY == AlignmentY.Bottom) {
-            modifier.margin(bottom = horizontalBarHeight)
-        } else if (horizontalBar.modifier.alignY == AlignmentY.Top) {
-            modifier.margin(top = horizontalBarHeight)
-        }
+inline fun UiScope.VerticalScrollbar(block: ScrollbarScope.() -> Unit): ScrollbarScope {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
     }
 
-    block()
+    return Scrollbar {
+        modifier
+            .orientation(ScrollbarOrientation.Vertical)
+            .width(8.dp)
+            .height(Grow.Std)
+            .alignX(AlignmentX.End)
+
+        // try to be smart: add some margin if parent scope (which hopefully is a cell) already contains a horizontal scrollbar
+        val horizontalBar = uiNode.parent?.children?.find { it is ScrollbarScope && it.isHorizontal }
+        if (horizontalBar != null) {
+            val horizontalBarHeight = (horizontalBar.modifier.height as? Dp) ?: 8.dp
+            if (horizontalBar.modifier.alignY == AlignmentY.Bottom) {
+                modifier.margin(bottom = horizontalBarHeight)
+            } else if (horizontalBar.modifier.alignY == AlignmentY.Top) {
+                modifier.margin(top = horizontalBarHeight)
+            }
+        }
+
+        block()
+    }
 }
 
-inline fun UiScope.HorizontalScrollbar(block: ScrollbarScope.() -> Unit) = Scrollbar {
-    modifier
-        .orientation(ScrollbarOrientation.Horizontal)
-        .height(8.dp)
-        .width(Grow.Std)
-        .alignY(AlignmentY.Bottom)
-
-    // try to be smart: add some margin if parent scope (which hopefully is a cell) already contains a vertical scrollbar
-    val verticalBar = uiNode.parent?.children?.find { it is ScrollbarScope && it.isVertical }
-    if (verticalBar != null) {
-        val verticalBarWidth = (verticalBar.modifier.width as? Dp) ?: 8.dp
-        if (verticalBar.modifier.alignX == AlignmentX.End) {
-            modifier.margin(end = verticalBarWidth)
-        } else if (verticalBar.modifier.alignX == AlignmentX.Start) {
-            modifier.margin(start = verticalBarWidth)
-        }
+inline fun UiScope.HorizontalScrollbar(block: ScrollbarScope.() -> Unit): ScrollbarScope {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
     }
 
-    block()
+    return Scrollbar {
+        modifier
+            .orientation(ScrollbarOrientation.Horizontal)
+            .height(8.dp)
+            .width(Grow.Std)
+            .alignY(AlignmentY.Bottom)
+
+        // try to be smart: add some margin if parent scope (which hopefully is a cell) already contains a vertical scrollbar
+        val verticalBar = uiNode.parent?.children?.find { it is ScrollbarScope && it.isVertical }
+        if (verticalBar != null) {
+            val verticalBarWidth = (verticalBar.modifier.width as? Dp) ?: 8.dp
+            if (verticalBar.modifier.alignX == AlignmentX.End) {
+                modifier.margin(end = verticalBarWidth)
+            } else if (verticalBar.modifier.alignX == AlignmentX.Start) {
+                modifier.margin(start = verticalBarWidth)
+            }
+        }
+
+        block()
+    }
 }
 
 open class ScrollbarNode(parent: UiNode?, surface: UiSurface)

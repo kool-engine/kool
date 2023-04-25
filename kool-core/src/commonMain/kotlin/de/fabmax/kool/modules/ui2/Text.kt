@@ -8,6 +8,8 @@ import de.fabmax.kool.scene.geometry.TextProps
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Font
 import de.fabmax.kool.util.TextMetrics
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
 interface TextScope : UiScope {
     override val modifier: TextModifier
@@ -50,6 +52,10 @@ fun <T: TextModifier> T.textAlign(alignX: AlignmentX = textAlignX, alignY: Align
 fun <T: TextModifier> T.textRotation(rotation: Float): T { textRotation = rotation; return this }
 
 inline fun UiScope.Text(text: String = "", block: TextScope.() -> Unit): TextScope {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+    }
+
     val textNd = uiNode.createChild(TextNode::class, TextNode.factory)
     textNd.modifier.text(text)
     textNd.block()

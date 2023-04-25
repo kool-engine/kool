@@ -6,7 +6,7 @@ fun Scene.Panel(
     colors: Colors = Colors.darkColors(),
     sizes: Sizes = Sizes.medium,
     name: String = "Panel",
-    content: UiScope.() -> Any
+    block: UiScope.() -> Any
 ): UiSurface {
     val surface = UiSurface(colors, sizes, name)
     surface.content = {
@@ -14,7 +14,7 @@ fun Scene.Panel(
             modifier
                 .backgroundColor(colors.background)
                 .layout(ColumnLayout)
-            content()
+            block()
         }
     }
     addNode(surface)

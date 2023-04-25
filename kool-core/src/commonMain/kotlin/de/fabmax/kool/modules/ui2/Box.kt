@@ -1,6 +1,8 @@
 package de.fabmax.kool.modules.ui2
 
 import de.fabmax.kool.util.Color
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
 interface ColumnScope: UiScope {
     fun divider(
@@ -41,6 +43,10 @@ inline fun UiScope.Column(
     height: Dimension = FitContent,
     block: ColumnScope.() -> Unit
 ): ColumnScope {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+    }
+
     val column = uiNode.createChild(ColumnNode::class, ColumnNode.factory)
     column.modifier.size(width, height).layout(ColumnLayout)
     column.block()
@@ -52,6 +58,10 @@ inline fun UiScope.ReverseColumn(
     height: Dimension = FitContent,
     block: ColumnScope.() -> Unit
 ): ColumnScope {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+    }
+
     val column = uiNode.createChild(ColumnNode::class, ColumnNode.factory)
     column.modifier.size(width, height).layout(ReverseColumnLayout)
     column.block()
@@ -63,6 +73,10 @@ inline fun UiScope.Row(
     height: Dimension = FitContent,
     block: RowScope.() -> Unit
 ): RowScope {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+    }
+
     val row = uiNode.createChild(RowNode::class, RowNode.factory)
     row.modifier.size(width, height).layout(RowLayout)
     row.block()
@@ -74,6 +88,10 @@ inline fun UiScope.ReverseRow(
     height: Dimension = FitContent,
     block: RowScope.() -> Unit
 ): RowScope {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+    }
+
     val row = uiNode.createChild(RowNode::class, RowNode.factory)
     row.modifier.size(width, height).layout(ReverseRowLayout)
     row.block()
@@ -85,6 +103,10 @@ inline fun UiScope.Box(
     height: Dimension = FitContent,
     block: UiScope.() -> Unit
 ): UiScope {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+    }
+
     val box = uiNode.createChild(BoxNode::class, BoxNode.factory)
     box.modifier.size(width, height)
     box.block()

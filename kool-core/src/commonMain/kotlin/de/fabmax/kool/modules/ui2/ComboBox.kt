@@ -6,6 +6,8 @@ import de.fabmax.kool.math.clamp
 import de.fabmax.kool.scene.geometry.TextProps
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Font
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.round
@@ -37,6 +39,10 @@ fun <T: ComboBoxModifier> T.selectedIndex(index: Int): T { this.selectedIndex = 
 fun <T: ComboBoxModifier> T.onItemSelected(block: ((Int) -> Unit)?): T { this.onItemSelected = block; return this }
 
 inline fun UiScope.ComboBox(block: ComboBoxScope.() -> Unit): ComboBoxScope {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+    }
+
     val comboBox = uiNode.createChild(ComboBoxNode::class, ComboBoxNode.factory)
     comboBox.modifier
         .padding(horizontal = sizes.gap, vertical = sizes.smallGap)

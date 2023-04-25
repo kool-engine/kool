@@ -2,6 +2,8 @@ package de.fabmax.kool.modules.ui2
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.util.Color
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.math.min
 
 interface ArrowScope : UiScope {
@@ -33,6 +35,10 @@ fun <T: ArrowModifier> T.colors(
 }
 
 inline fun UiScope.Arrow(rotation: Float = ArrowScope.ROTATION_RIGHT, block: ArrowScope.() -> Unit): ArrowScope {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+    }
+
     val arrow = uiNode.createChild(ArrowNode::class, ArrowNode.factory)
     arrow.modifier
         .rotation(rotation)

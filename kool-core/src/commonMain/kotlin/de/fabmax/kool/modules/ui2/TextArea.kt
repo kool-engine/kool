@@ -11,6 +11,8 @@ import de.fabmax.kool.math.clamp
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MsdfFont
 import de.fabmax.kool.util.TextCaretNavigation
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.math.max
 import kotlin.math.min
 
@@ -92,6 +94,10 @@ fun UiScope.TextArea(
     state: LazyListState = rememberListState(),
     block: TextAreaScope.() -> Unit
 ) {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+    }
+
     val textArea = uiNode.createChild(TextAreaNode::class, TextAreaNode.factory)
     textArea.listState = state
     textArea.modifier

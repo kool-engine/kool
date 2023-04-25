@@ -9,6 +9,8 @@ import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.EditableText
 import de.fabmax.kool.util.Font
 import de.fabmax.kool.util.Time
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
@@ -65,6 +67,10 @@ fun <T: TextFieldModifier> T.colors(
 }
 
 inline fun UiScope.TextField(text: String = "", block: TextFieldScope.() -> Unit): TextFieldScope {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+    }
+
     val textField = uiNode.createChild(TextFieldNode::class, TextFieldNode.factory)
     surface.onEachFrame(textField::updateCaretBlinkState)
     textField.modifier

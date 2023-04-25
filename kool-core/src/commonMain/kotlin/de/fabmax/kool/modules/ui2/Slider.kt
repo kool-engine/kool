@@ -4,6 +4,8 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.util.Color
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.math.floor
 
 interface SliderScope : UiScope {
@@ -49,6 +51,10 @@ enum class SliderOrientation {
 }
 
 inline fun UiScope.Slider(value: Float = 0.5f, min: Float = 0f, max: Float = 1f, block: SliderScope.() -> Unit): SliderScope {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+    }
+
     val slider = uiNode.createChild(SliderNode::class, SliderNode.factory)
     slider.modifier
         .value(value)

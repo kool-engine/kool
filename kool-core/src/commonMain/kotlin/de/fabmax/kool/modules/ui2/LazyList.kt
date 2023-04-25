@@ -6,6 +6,8 @@ import de.fabmax.kool.math.clamp
 import de.fabmax.kool.math.max
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.logE
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.math.abs
 import kotlin.math.round
 import kotlin.math.roundToInt
@@ -74,6 +76,10 @@ fun UiScope.LazyList(
     state: LazyListState = rememberListState(),
     block: LazyListScope.() -> Unit
 ) {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+    }
+
     Box {
         modifier
             .width(width)

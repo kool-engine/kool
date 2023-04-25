@@ -2,6 +2,8 @@ package de.fabmax.kool.modules.ui2
 
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.util.Time
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
@@ -150,6 +152,10 @@ fun <T: ScrollPaneModifier> T.onScrollPosChanged(block: (Float, Float) -> Unit):
 }
 
 inline fun UiScope.ScrollPane(state: ScrollState, block: ScrollPaneScope.() -> Unit): ScrollPaneScope {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+    }
+
     val scrollPane = uiNode.createChild(ScrollPaneNode::class, ScrollPaneNode.factory)
     scrollPane.state = state
     scrollPane.block()

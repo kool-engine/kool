@@ -10,6 +10,8 @@ import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.util.Color
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.math.max
 import kotlin.math.min
 
@@ -41,6 +43,10 @@ sealed class ImageSize {
 }
 
 inline fun UiScope.Image(imageTex: Texture2d? = null, block: ImageScope.() -> Unit): ImageScope {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+    }
+
     val image = uiNode.createChild(ImageNode::class, ImageNode.factory)
     image.modifier.image(imageTex)
     image.block()

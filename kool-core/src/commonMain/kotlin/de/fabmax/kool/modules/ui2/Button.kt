@@ -4,6 +4,8 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Time
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
 interface ButtonScope : UiScope {
     override val modifier: ButtonModifier
@@ -33,6 +35,10 @@ fun <T: ButtonModifier> T.colors(
 }
 
 inline fun UiScope.Button(text: String = "", block: ButtonScope.() -> Unit): TextScope {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+    }
+
     val button = uiNode.createChild(ButtonNode::class, ButtonNode.factory)
     button.modifier
         .text(text)

@@ -4,6 +4,8 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ColorGradient
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.math.*
 
 interface ColorWheelScope : UiScope {
@@ -26,7 +28,16 @@ fun <T: ColorWheelModifier> T.saturation(saturation: Float): T { this.saturation
 fun <T: ColorWheelModifier> T.value(value: Float): T { this.value = value; return this }
 fun <T: ColorWheelModifier> T.onChange(block: (Float, Float, Float) -> Unit): T { onChange = block; return this }
 
-inline fun UiScope.ColorWheel(hue: Float = 0f, saturation: Float = 1f, value: Float = 1f, block: ColorWheelScope.() -> Unit): ColorWheelScope {
+inline fun UiScope.ColorWheel(
+    hue: Float = 0f,
+    saturation: Float = 1f,
+    value: Float = 1f,
+    block: ColorWheelScope.() -> Unit
+): ColorWheelScope {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+    }
+
     val colorChooser = uiNode.createChild(ColorWheelNode::class, ColorWheelNode.factory)
     colorChooser.modifier
         .hue(hue).saturation(saturation).value(value)

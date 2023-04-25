@@ -109,7 +109,7 @@ fun Window(
     colors: Colors = Colors.darkColors(),
     sizes: Sizes = Sizes.medium,
     name: String = "Window",
-    content: WindowScope.() -> Unit
+    block: WindowScope.() -> Unit
 ): UiSurface {
     val surface = UiSurface(colors, sizes, name)
 
@@ -134,7 +134,7 @@ fun Window(
             (surface.parent as? DockingHost)?.let { window.modifier.dockingHost(it) }
 
             // compose user supplied window content
-            window.content()
+            window.block()
 
             window.modifier.backgroundColor?.let { bgColor ->
                 if (window.isDocked) {

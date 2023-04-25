@@ -4,6 +4,8 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.util.Color
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.math.abs
 import kotlin.math.floor
 
@@ -106,6 +108,10 @@ fun <T: SwitchModifier> T.colors(
 }
 
 inline fun UiScope.Checkbox(state: Boolean? = null, block: CheckboxScope.() -> Unit): CheckboxScope {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+    }
+
     val checkbox = uiNode.createChild(CheckboxNode::class, CheckboxNode.factory)
     state?.let { checkbox.modifier.toggleState(it) }
     checkbox.block()
@@ -113,6 +119,10 @@ inline fun UiScope.Checkbox(state: Boolean? = null, block: CheckboxScope.() -> U
 }
 
 inline fun UiScope.RadioButton(state: Boolean? = null, block: RadioButtonScope.() -> Unit): RadioButtonScope {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+    }
+
     val radioButton = uiNode.createChild(RadioButtonNode::class, RadioButtonNode.factory)
     state?.let { radioButton.modifier.toggleState(it) }
     radioButton.block()
@@ -120,6 +130,10 @@ inline fun UiScope.RadioButton(state: Boolean? = null, block: RadioButtonScope.(
 }
 
 inline fun UiScope.Switch(state: Boolean? = null, block: SwitchScope.() -> Unit): SwitchScope {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+    }
+
     val switch = uiNode.createChild(SwitchNode::class, SwitchNode.factory)
     state?.let { switch.modifier.toggleState(it) }
     switch.block()
