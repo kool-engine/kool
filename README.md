@@ -1,14 +1,13 @@
 # kool - A OpenGL / Vulkan graphics engine written in Kotlin
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/de.fabmax.kool/kool-core/badge.svg)](https://maven-badges.herokuapp.com/maven-central/de.fabmax.kool/kool-core)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/fabmax/kool/blob/master/LICENSE)
 
 A multi-platform OpenGL / Vulkan based game engine that works on Desktop Java and browsers with
-WebGL2. Android support is currently suspended, but it should be quite easy to get that going again.
+WebGL2.
 
 I started working on a graphical scene editor, which should make it much easier to create new projects with this engine.
 However, the editor is still in a super early state and not very useful yet. So, for now, this is very much a code-only
 game engine. I recommend taking a look at the demos listed below in case you are curious (all demo source code is
-available in the `kool-demo` subproject).
+available in the `kool-demo` subproject). I also publish snapshots of the library, see [below](#usage).
 
 I also made an actual game with this: [Blocks and Belts](https://fabmaxx.itch.io/blocks-and-belts).
 Give it a try (it's free)!
@@ -18,17 +17,17 @@ Give it a try (it's free)!
   island incl. some wind-affected vegetation + a basic controllable character.
 - [Physics - Ragdoll](https://fabmax.github.io/kool/kool-js/?demo=phys-ragdoll): Ragdoll physics demo.
 - [Physics - Vehicle](https://fabmax.github.io/kool/kool-js/?demo=phys-vehicle): A drivable vehicle (W, A, S, D /
-  cursor keys, R to reset) based on the nVidia PhysX vehicles SDK.
+  cursor keys, R to reset) based on the Nvidia PhysX vehicles SDK.
 - [Physics - Joints](https://fabmax.github.io/kool/kool-js/?demo=phys-joints): Physics demo consisting of a chain
   running over two gears. Uses a lot of multi shapes and revolute joints.
 - [Physics - Collision](https://fabmax.github.io/kool/kool-js/?demo=physics): The obligatory collision physics demo with
   various different shapes.
 - [Embedded UI](https://fabmax.github.io/kool/kool-js/?demo=ui): Integrated UI framework implemented completely within
-  the engine. Highly customizable, easy-to-use and blazing fast. I guess next thing is an editor then... :smile:
+  the engine. Fast, highly customizable and easy-to-use.
 - [Creative Coding](https://fabmax.github.io/kool/kool-js/?demo=creative-coding): A few relatively simple demos
   showcasing different techniques of generating procedural geometry.
 - [Procedural Geometry](https://fabmax.github.io/kool/kool-js/?demo=procedural): Small test-case for
-  procedural geometry; all geometry is generated in code (even the roses! Textures are regular images though). Also some glass
+  procedural geometry; all geometry is generated in code (even the roses! Textures are regular images though). Also, some glass
   shading (shaft of the wine glass, the wine itself looks quite odd when shaded with refractions and is therefore opaque).
 - [glTF Models](https://fabmax.github.io/kool/kool-js/?demo=gltf): Various demo models loaded from glTF / glb format
   - Flight Helmet from [glTF sample models](https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0/FlightHelmet)
@@ -42,21 +41,21 @@ Give it a try (it's free)!
   [this](http://john-chapman-graphics.blogspot.com/2013/01/ssao-tutorial.html) article by John
   Chapman with slightly optimized sampling (also shamelessly recreated his demo scene).
 - [Screen-space Reflections](https://fabmax.github.io/kool/kool-js/?demo=ssr): A simple PBR shaded
-  model with screen-space reflections and up to four spot lights with dynamic shadows.
+  model with screen-space reflections and up to four spot-lights with dynamic shadows.
 - [Physical Based Rendering](https://fabmax.github.io/kool/kool-js/?demo=pbr): Interactive PBR demo 
   with image based lighting for various materials and environments (underlying PBR theory from
   [this](https://learnopengl.com/PBR/Theory) awesome article series).
 - [Instanced / LOD Drawing](https://fabmax.github.io/kool/kool-js/?demo=instance): Instanced rendering
   demo of the Stanford Bunny. Uses six levels of detail to render up to 8000 instances.
 - [Mesh Simplification](https://fabmax.github.io/kool/kool-js/?demo=simplification): Interactive mesh
-  simplification demo (based on traditional [error quadrics](https://www.cs.cmu.edu/~./garland/Papers/quadrics.pdf))
+  simplification demo (based on traditional [error-quadrics](https://www.cs.cmu.edu/~./garland/Papers/quadrics.pdf))
 
 Code for all demos is available in kool-demo sub-project.
 
 ## Engine Features / Noticeable Stuff:
 - Physics simulation (based on Nvidia PhysX 5.1, using [physx-jni](https://github.com/fabmax/physx-jni) on Java and [physx-js-webidl](https://github.com/fabmax/physx-js-webidl) on javascript)
 - Kotlin DSL based shader language (translates into GLSL)
-- Neat little integrated GUI framework (the API is heavily inspired by [Jetpack Compose](https://github.com/JetBrains/compose-jb) but the implementation is my own)
+- Neat little integrated GUI framework. The API is heavily inspired by [Jetpack Compose](https://github.com/JetBrains/compose-jb) but the implementation is different, as it needs to run within the OpenGL context.
 - [MSDF](https://github.com/Chlumsky/msdf-atlas-gen) Font support for text rendering in arbitrary font sizes
 - Experimental Vulkan rendering backend (on JVM)
 - Support for physical based rendering (with metallic workflow) and image-based lighting
@@ -82,8 +81,9 @@ fun main() = KoolApplication { ctx ->
 
         colorMesh {
             generate {
-                cube(centered = true) {
+                cube {
                     colored()
+                    centered()
                 }
             }
             shader = KslPbrShader {
@@ -304,7 +304,7 @@ kotlin {
 
         // on JVM, additional runtime libraries are required
         val jvmMain by getting {
-            val platform = "natives-windows"
+            val platform = "natives-windows"    // and / or "natives-linux", "natives-macos"
             val physxVersion = "2.0.5"
             val lwjglVersion = "3.3.2"
             val lwjglLibs = listOf("glfw", "opengl", "jemalloc", "nfd", "stb", "vma", "shaderc")
