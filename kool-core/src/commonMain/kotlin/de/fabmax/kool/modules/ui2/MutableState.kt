@@ -74,6 +74,24 @@ open class MutableStateValue<T: Any?>(initValue: T) : MutableState() {
     }
 }
 
+/**
+ * Auto-transforms a mutable state into a different type. Usage:
+ * ```
+ *     val count = mutableStateOf(0)
+ *     val strCount = transformedState(count) { toString() }
+ * ```
+ */
+fun <T, S> transformedStateOf(value: MutableStateValue<T>, transformer: T.() -> S) = TransformedStateValue(value, transformer)
+class TransformedStateValue<T: Any?, S: Any?>(sourceState: MutableStateValue<T>, transformer: T.() -> S)
+    : MutableStateValue<S>(transformer(sourceState.value)) {
+
+    init {
+        sourceState.onChange {
+            set(transformer(it))
+        }
+    }
+}
+
 class MutableStateList<T>(private val values: MutableList<T> = mutableListOf()) :
     MutableState(), MutableList<T> by values
 {

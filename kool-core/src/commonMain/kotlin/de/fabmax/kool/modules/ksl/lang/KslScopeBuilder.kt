@@ -103,10 +103,18 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
     fun float3Value(x: Float, y: Float, z: Float) = KslValueFloat3(x, y, z)
     fun float3Value(x: KslExpression<KslTypeFloat1>, y: KslExpression<KslTypeFloat1>, z: KslExpression<KslTypeFloat1>) =
         KslValueFloat3(x, y, z)
+    fun float3Value(xy: KslVectorExpression<KslTypeFloat2, KslTypeFloat1>, z: KslExpression<KslTypeFloat1>) =
+        KslValueFloat3(xy.x, xy.y, z)
 
     fun float4Value(x: Float, y: Float, z: Float, w: Float) = KslValueFloat4(x, y, z, w)
     fun float4Value(x: KslExpression<KslTypeFloat1>, y: KslExpression<KslTypeFloat1>, z: KslExpression<KslTypeFloat1>, w: KslExpression<KslTypeFloat1>) =
         KslValueFloat4(x, y, z, w)
+    fun float4Value(xy: KslVectorExpression<KslTypeFloat2, KslTypeFloat1>, z: Float, w: Float) =
+        float4Value(xy, z.const, w.const)
+    fun float4Value(xy: KslVectorExpression<KslTypeFloat2, KslTypeFloat1>, z: KslExpression<KslTypeFloat1>, w: KslExpression<KslTypeFloat1>) =
+        KslValueFloat4(xy.x, xy.y, z, w)
+    fun float4Value(xy: KslVectorExpression<KslTypeFloat2, KslTypeFloat1>, zw: KslVectorExpression<KslTypeFloat2, KslTypeFloat1>) =
+        KslValueFloat4(xy.x, xy.y, zw.z, zw.w)
     fun float4Value(xyz: KslVectorExpression<KslTypeFloat3, KslTypeFloat1>, w: Float) =
         float4Value(xyz, w.const)
     fun float4Value(xyz: KslVectorExpression<KslTypeFloat3, KslTypeFloat1>, w: KslExpression<KslTypeFloat1>) =
@@ -118,10 +126,18 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
     fun int3Value(x: Int, y: Int, z: Int) = KslValueInt3(x, y, z)
     fun int3Value(x: KslExpression<KslTypeInt1>, y: KslExpression<KslTypeInt1>, z: KslExpression<KslTypeInt1>) =
         KslValueInt3(x, y, z)
+    fun int3Value(xy: KslVectorExpression<KslTypeInt2, KslTypeInt1>, z: KslExpression<KslTypeInt1>) =
+        KslValueInt3(xy.x, xy.y, z)
 
     fun int4Value(x: Int, y: Int, z: Int, w: Int) = KslValueInt4(x, y, z, w)
     fun int4Value(x: KslExpression<KslTypeInt1>, y: KslExpression<KslTypeInt1>, z: KslExpression<KslTypeInt1>, w: KslExpression<KslTypeInt1>) =
         KslValueInt4(x, y, z, w)
+    fun int4Value(xy: KslVectorExpression<KslTypeInt2, KslTypeInt1>, z: Int, w: Int) =
+        int4Value(xy, z.const, w.const)
+    fun int4Value(xy: KslVectorExpression<KslTypeInt2, KslTypeInt1>, z: KslExpression<KslTypeInt1>, w: KslExpression<KslTypeInt1>) =
+        KslValueInt4(xy.x, xy.y, z, w)
+    fun int4Value(xy: KslVectorExpression<KslTypeInt2, KslTypeInt1>, zw: KslVectorExpression<KslTypeInt2, KslTypeInt1>) =
+        KslValueInt4(xy.x, xy.y, zw.z, zw.w)
     fun int4Value(xyz: KslVectorExpression<KslTypeInt3, KslTypeInt1>, w: Int) =
         int4Value(xyz, w.const)
     fun int4Value(xyz: KslVectorExpression<KslTypeInt3, KslTypeInt1>, w: KslExpression<KslTypeInt1>) =
