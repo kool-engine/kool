@@ -69,7 +69,9 @@ class MScene(
                 groups += node
                 groupsByIds[nodeId] = node
             }
-            else -> throw IllegalArgumentException("Unknown node type: $node")
+            is MScene -> {
+                throw IllegalArgumentException("Scene cannot act as a child node")
+            }
         }
 
         val parentNode = parent.created ?: throw IllegalStateException("Parent node must be created first")
@@ -102,7 +104,9 @@ class MScene(
                 groups -= node
                 groupsByIds -= nodeId
             }
-            else -> throw IllegalArgumentException("Unknown node type: $node")
+            is MScene -> {
+                throw IllegalArgumentException("Scene cannot act as a child node")
+            }
         }
 
         // also remove children of node

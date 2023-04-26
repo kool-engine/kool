@@ -48,7 +48,7 @@ object EditorState {
                         name = "Default Cube",
                         transform = MTransform.IDENTITY
                     ),
-                    meshType = MMeshType.Box(MVec3(1.0, 1.0, 1.0))
+                    shape = MMeshShape.Box(MVec3(1.0, 1.0, 1.0))
                 )
             )
         )

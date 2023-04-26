@@ -27,22 +27,22 @@ class SceneObjectTree(val editor: KoolEditor, val sceneBrowser: SceneBrowser) : 
         subMenu("Add child object") {
             subMenu("Mesh") {
                 item("Box") {
-                    addNewMesh(it, MMeshType.Box(MVec3(1.0, 1.0, 1.0)))
+                    addNewMesh(it, MMeshShape.defaultBox)
                 }
                 item("Rect") {
-                    addNewMesh(it, MMeshType.Rect(MVec2(1.0, 1.0)))
+                    addNewMesh(it, MMeshShape.defaultRect)
                 }
                 item("Ico-Sphere") {
-                    addNewMesh(it, MMeshType.IcoSphere(1f, 3))
+                    addNewMesh(it, MMeshShape.defaultIcoSphere)
                 }
                 item("UV-Sphere") {
-                    addNewMesh(it, MMeshType.UvSphere(1f, 20))
+                    addNewMesh(it, MMeshShape.defaultUvSphere)
                 }
                 item("Cylinder") {
-                    addNewMesh(it, MMeshType.Cylinder(1f, 1f, 1f, 20))
+                    addNewMesh(it, MMeshShape.defaultCylinder)
                 }
-                item("Empty Mesh") {
-                    addNewMesh(it, MMeshType.Empty)
+                item("Empty") {
+                    addNewMesh(it, MMeshShape.Empty)
                 }
             }
             item("glTF Model") { }
@@ -58,7 +58,7 @@ class SceneObjectTree(val editor: KoolEditor, val sceneBrowser: SceneBrowser) : 
         isTreeValid.set(false)
     }
 
-    private fun addNewMesh(parent: SceneObjectItem, meshType: MMeshType) {
+    private fun addNewMesh(parent: SceneObjectItem, meshType: MMeshShape) {
         val parentScene = EditorState.selectedScene.value ?: return
         val id = EditorState.projectModel.nextId()
         val meshProps = MCommonNodeProperties(

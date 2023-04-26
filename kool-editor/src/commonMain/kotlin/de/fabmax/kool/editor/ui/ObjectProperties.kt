@@ -4,16 +4,19 @@ import de.fabmax.kool.editor.EditorState
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.actions.EditorActions
 import de.fabmax.kool.editor.actions.SetTransformAction
+import de.fabmax.kool.editor.model.MGroup
+import de.fabmax.kool.editor.model.MMesh
+import de.fabmax.kool.editor.model.MScene
 import de.fabmax.kool.editor.model.MSceneNode
 import de.fabmax.kool.math.Mat3d
 import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.math.MutableVec3d
 import de.fabmax.kool.modules.ui2.*
-import de.fabmax.kool.scene.Mesh
 
 class ObjectProperties(editor: KoolEditor) : EditorPanel(editor) {
 
     private val windowState = WindowState().apply { setWindowSize(Dp(300f), Dp(600f)) }
+
     private val transformProperties = TransformProperties()
 
     private val tmpNodePos = MutableVec3d()
@@ -84,46 +87,45 @@ class ObjectProperties(editor: KoolEditor) : EditorPanel(editor) {
                 Text("Nothing selected") {
                     modifier.alignY(AlignmentY.Center)
                 }
-                return@Column
             } else {
                 Text(selectedObject.nodeProperties.name) {
                     modifier.alignY(AlignmentY.Center)
                 }
             }
         }
+        selectedObject ?: return@Column
 
-        val sceneNode = selectedObject?.created
-        when (sceneNode) {
-//            is Scene -> sceneProperties(sceneNode, selectedObject)
-            is Mesh -> meshProperties(sceneNode, selectedObject)
-//            is Camera -> cameraProperties(sceneNode, selectedObject)
-//            is Node -> nodeProperties(sceneNode, selectedObject)
+        when (selectedObject) {
+            is MScene -> sceneProperties(selectedObject)
+            is MGroup -> groupProperties(selectedObject)
+            is MMesh -> meshProperties(selectedObject)
         }
     }
 
-//    fun UiScope.sceneProperties(scene: Scene, nodeModel: MSceneNode<*>) {
-//        // - clear color
-//        // - lighting
-//        // - skybox
-//    }
+    fun UiScope.sceneProperties(nodeModel: MScene) {
+        // - clear color
+        // - lighting
+        // - skybox
+        // - camera
 
-    fun UiScope.meshProperties(mesh: Mesh, nodeModel: MSceneNode<*>) {
-        transformEditor(transformProperties)
+        // place holder
+        Text(nodeModel.nodeProperties.name) {  }
+    }
+
+    fun UiScope.groupProperties(nodeModel: MGroup) {
         transformGizmo.setTransformObject(nodeModel)
+
+        transformEditor(transformProperties)
+    }
+
+    fun UiScope.meshProperties(nodeModel: MMesh) {
+        transformGizmo.setTransformObject(nodeModel)
+
+        transformEditor(transformProperties)
+        meshTypeProperties(nodeModel)
 
         // - material (simple)
     }
-
-//    fun UiScope.cameraProperties(cam: Camera, nodeModel: MSceneNode<*>) {
-//        // transform? (is usually determined by parent transform node)
-//        // perspective / ortho
-//        // clip near/far
-//        // fovy
-//    }
-
-//    fun UiScope.nodeProperties(node: Node, nodeModel: MSceneNode<*>) {
-//        //transformEditor(transformProperties)
-//    }
 
     companion object {
         fun applyTransformAction(nodeModel: MSceneNode<*>, oldTransform: Mat4d, newTransform: Mat4d) {

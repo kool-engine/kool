@@ -3,12 +3,13 @@ package de.fabmax.kool.editor.ui
 import de.fabmax.kool.math.MutableVec3d
 import de.fabmax.kool.math.Vec3d
 import de.fabmax.kool.modules.ui2.*
-import de.fabmax.kool.toString
 import de.fabmax.kool.util.MdColor
 
 fun UiScope.transformEditor(props: TransformProperties) = collapsapsablePanel("Transform") {
     Column(width = Grow.Std) {
-        modifier.padding(horizontal = sizes.gap)
+        modifier
+            .padding(horizontal = sizes.gap)
+            .margin(bottom = sizes.smallGap)
 
         position(props)
         rotation(props)
@@ -68,7 +69,10 @@ private fun UiScope.xyzTextFields(
                 .font(boldTxt)
                 .textColor(MdColor.RED tone 300)
         }
-        transformTextField(props, x, precision)
+        doubleTextField(x.use(), precision, width = Grow.Std) {
+            x.set(it)
+            props.onChangedByEditor.forEach { it() }
+        }
 
         Text("Y") {
             modifier
@@ -77,7 +81,10 @@ private fun UiScope.xyzTextFields(
                 .font(boldTxt)
                 .textColor(MdColor.GREEN tone 300)
         }
-        transformTextField(props, y, precision)
+        doubleTextField(y.use(), precision, width = Grow.Std) {
+            y.set(it)
+            props.onChangedByEditor.forEach { it() }
+        }
 
         Text("Z") {
             modifier
@@ -86,34 +93,11 @@ private fun UiScope.xyzTextFields(
                 .font(boldTxt)
                 .textColor(MdColor.BLUE tone 300)
         }
-        transformTextField(props, z, precision)
-    }
-}
-
-private fun UiScope.transformTextField(
-    props: TransformProperties,
-    state: MutableStateValue<Double>,
-    precision: Int
-) = TextField {
-    var text by remember(state.value.toString(precision))
-    if (!isFocused.use()) {
-        text = state.use().toString(precision)
-    }
-    modifier
-        .text(text)
-        .margin(start = sizes.smallGap)
-        .alignY(AlignmentY.Center)
-        .width(Grow.Std)
-        .textAlignX(AlignmentX.End)
-        .onChange { text = it }
-        .onEnterPressed { txt ->
-            txt.toDoubleOrNull()?.let {
-                state.set(it)
-                props.onChangedByEditor.forEach { it() }
-                // unfocus text field
-                surface.requestFocus(null)
-            }
+        doubleTextField(z.use(), precision, width = Grow.Std) {
+            z.set(it)
+            props.onChangedByEditor.forEach { it() }
         }
+    }
 }
 
 class TransformProperties {
