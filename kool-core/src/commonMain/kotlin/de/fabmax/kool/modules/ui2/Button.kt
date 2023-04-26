@@ -34,12 +34,16 @@ fun <T: ButtonModifier> T.colors(
     return this
 }
 
-inline fun UiScope.Button(text: String = "", block: ButtonScope.() -> Unit): TextScope {
+inline fun UiScope.Button(
+    text: String = "",
+    scopeName: String? = null,
+    block: ButtonScope.() -> Unit
+): TextScope {
     contract {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)
     }
 
-    val button = uiNode.createChild(ButtonNode::class, ButtonNode.factory)
+    val button = uiNode.createChild(scopeName, ButtonNode::class, ButtonNode.factory)
     button.modifier
         .text(text)
         .colors(textColor = colors.onSecondary)

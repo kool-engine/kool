@@ -107,34 +107,46 @@ fun <T: SwitchModifier> T.colors(
     return this
 }
 
-inline fun UiScope.Checkbox(state: Boolean? = null, block: CheckboxScope.() -> Unit): CheckboxScope {
+inline fun UiScope.Checkbox(
+    state: Boolean? = null,
+    scopeName: String? = null,
+    block: CheckboxScope.() -> Unit
+): CheckboxScope {
     contract {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)
     }
 
-    val checkbox = uiNode.createChild(CheckboxNode::class, CheckboxNode.factory)
+    val checkbox = uiNode.createChild(scopeName, CheckboxNode::class, CheckboxNode.factory)
     state?.let { checkbox.modifier.toggleState(it) }
     checkbox.block()
     return checkbox
 }
 
-inline fun UiScope.RadioButton(state: Boolean? = null, block: RadioButtonScope.() -> Unit): RadioButtonScope {
+inline fun UiScope.RadioButton(
+    state: Boolean? = null,
+    scopeName: String? = null,
+    block: RadioButtonScope.() -> Unit
+): RadioButtonScope {
     contract {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)
     }
 
-    val radioButton = uiNode.createChild(RadioButtonNode::class, RadioButtonNode.factory)
+    val radioButton = uiNode.createChild(scopeName, RadioButtonNode::class, RadioButtonNode.factory)
     state?.let { radioButton.modifier.toggleState(it) }
     radioButton.block()
     return radioButton
 }
 
-inline fun UiScope.Switch(state: Boolean? = null, block: SwitchScope.() -> Unit): SwitchScope {
+inline fun UiScope.Switch(
+    state: Boolean? = null,
+    scopeName: String? = null,
+    block: SwitchScope.() -> Unit
+): SwitchScope {
     contract {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)
     }
 
-    val switch = uiNode.createChild(SwitchNode::class, SwitchNode.factory)
+    val switch = uiNode.createChild(scopeName, SwitchNode::class, SwitchNode.factory)
     state?.let { switch.modifier.toggleState(it) }
     switch.block()
     return switch

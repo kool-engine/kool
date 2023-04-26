@@ -66,12 +66,16 @@ fun <T: TextFieldModifier> T.colors(
     return this
 }
 
-inline fun UiScope.TextField(text: String = "", block: TextFieldScope.() -> Unit): TextFieldScope {
+inline fun UiScope.TextField(
+    text: String = "",
+    scopeName: String? = null,
+    block: TextFieldScope.() -> Unit
+): TextFieldScope {
     contract {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)
     }
 
-    val textField = uiNode.createChild(TextFieldNode::class, TextFieldNode.factory)
+    val textField = uiNode.createChild(scopeName, TextFieldNode::class, TextFieldNode.factory)
     surface.onEachFrame(textField::updateCaretBlinkState)
     textField.modifier
         .text(text)

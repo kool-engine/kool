@@ -51,12 +51,16 @@ fun <T: TextModifier> T.textAlign(alignX: AlignmentX = textAlignX, alignY: Align
 
 fun <T: TextModifier> T.textRotation(rotation: Float): T { textRotation = rotation; return this }
 
-inline fun UiScope.Text(text: String = "", block: TextScope.() -> Unit): TextScope {
+inline fun UiScope.Text(
+    text: String = "",
+    scopeName: String? = null,
+    block: TextScope.() -> Unit
+): TextScope {
     contract {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)
     }
 
-    val textNd = uiNode.createChild(TextNode::class, TextNode.factory)
+    val textNd = uiNode.createChild(scopeName, TextNode::class, TextNode.factory)
     textNd.modifier.text(text)
     textNd.block()
     return textNd

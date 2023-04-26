@@ -34,12 +34,16 @@ fun <T: ArrowModifier> T.colors(
     return this
 }
 
-inline fun UiScope.Arrow(rotation: Float = ArrowScope.ROTATION_RIGHT, block: ArrowScope.() -> Unit): ArrowScope {
+inline fun UiScope.Arrow(
+    rotation: Float = ArrowScope.ROTATION_RIGHT,
+    scopeName: String? = null,
+    block: ArrowScope.() -> Unit
+): ArrowScope {
     contract {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)
     }
 
-    val arrow = uiNode.createChild(ArrowNode::class, ArrowNode.factory)
+    val arrow = uiNode.createChild(scopeName, ArrowNode::class, ArrowNode.factory)
     arrow.modifier
         .rotation(rotation)
         .hoverListener(arrow)

@@ -41,13 +41,14 @@ interface RowScope: UiScope {
 inline fun UiScope.Column(
     width: Dimension = FitContent,
     height: Dimension = FitContent,
+    scopeName: String? = null,
     block: ColumnScope.() -> Unit
 ): ColumnScope {
     contract {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)
     }
 
-    val column = uiNode.createChild(ColumnNode::class, ColumnNode.factory)
+    val column = uiNode.createChild(scopeName, ColumnNode::class, ColumnNode.factory)
     column.modifier.size(width, height).layout(ColumnLayout)
     column.block()
     return column
@@ -56,13 +57,14 @@ inline fun UiScope.Column(
 inline fun UiScope.ReverseColumn(
     width: Dimension = FitContent,
     height: Dimension = FitContent,
+    scopeName: String? = null,
     block: ColumnScope.() -> Unit
 ): ColumnScope {
     contract {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)
     }
 
-    val column = uiNode.createChild(ColumnNode::class, ColumnNode.factory)
+    val column = uiNode.createChild(scopeName, ColumnNode::class, ColumnNode.factory)
     column.modifier.size(width, height).layout(ReverseColumnLayout)
     column.block()
     return column
@@ -71,13 +73,14 @@ inline fun UiScope.ReverseColumn(
 inline fun UiScope.Row(
     width: Dimension = FitContent,
     height: Dimension = FitContent,
+    scopeName: String? = null,
     block: RowScope.() -> Unit
 ): RowScope {
     contract {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)
     }
 
-    val row = uiNode.createChild(RowNode::class, RowNode.factory)
+    val row = uiNode.createChild(scopeName, RowNode::class, RowNode.factory)
     row.modifier.size(width, height).layout(RowLayout)
     row.block()
     return row
@@ -86,13 +89,14 @@ inline fun UiScope.Row(
 inline fun UiScope.ReverseRow(
     width: Dimension = FitContent,
     height: Dimension = FitContent,
+    scopeName: String? = null,
     block: RowScope.() -> Unit
 ): RowScope {
     contract {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)
     }
 
-    val row = uiNode.createChild(RowNode::class, RowNode.factory)
+    val row = uiNode.createChild(scopeName, RowNode::class, RowNode.factory)
     row.modifier.size(width, height).layout(ReverseRowLayout)
     row.block()
     return row
@@ -101,13 +105,14 @@ inline fun UiScope.ReverseRow(
 inline fun UiScope.Box(
     width: Dimension = FitContent,
     height: Dimension = FitContent,
+    scopeName: String? = null,
     block: UiScope.() -> Unit
 ): UiScope {
     contract {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)
     }
 
-    val box = uiNode.createChild(BoxNode::class, BoxNode.factory)
+    val box = uiNode.createChild(scopeName, BoxNode::class, BoxNode.factory)
     box.modifier.size(width, height)
     box.block()
     return box

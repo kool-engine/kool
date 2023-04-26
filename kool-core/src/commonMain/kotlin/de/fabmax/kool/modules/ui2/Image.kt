@@ -42,12 +42,16 @@ sealed class ImageSize {
     class FixedScale(val scale: Float = 1f) : ImageSize()
 }
 
-inline fun UiScope.Image(imageTex: Texture2d? = null, block: ImageScope.() -> Unit): ImageScope {
+inline fun UiScope.Image(
+    imageTex: Texture2d? = null,
+    scopeName: String? = null,
+    block: ImageScope.() -> Unit
+): ImageScope {
     contract {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)
     }
 
-    val image = uiNode.createChild(ImageNode::class, ImageNode.factory)
+    val image = uiNode.createChild(scopeName, ImageNode::class, ImageNode.factory)
     image.modifier.image(imageTex)
     image.block()
     return image

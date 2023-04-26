@@ -196,8 +196,8 @@ open class UiSurface(
         font.setScale(UiScale.measuredScale, ctx)
     }
 
-    fun popup(): UiScope {
-        return viewport.Box { }
+    fun popup(scopeName: String? = null): UiScope {
+        return viewport.Box(scopeName = scopeName) { }
     }
 
     private fun composeContent() {

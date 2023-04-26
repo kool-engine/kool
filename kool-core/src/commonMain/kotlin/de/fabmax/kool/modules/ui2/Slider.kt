@@ -50,12 +50,18 @@ enum class SliderOrientation {
     Vertical
 }
 
-inline fun UiScope.Slider(value: Float = 0.5f, min: Float = 0f, max: Float = 1f, block: SliderScope.() -> Unit): SliderScope {
+inline fun UiScope.Slider(
+    value: Float = 0.5f,
+    min: Float = 0f,
+    max: Float = 1f,
+    scopeName: String? = null,
+    block: SliderScope.() -> Unit
+): SliderScope {
     contract {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)
     }
 
-    val slider = uiNode.createChild(SliderNode::class, SliderNode.factory)
+    val slider = uiNode.createChild(scopeName, SliderNode::class, SliderNode.factory)
     slider.modifier
         .value(value)
         .minValue(min)

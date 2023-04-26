@@ -74,6 +74,7 @@ fun UiScope.LazyList(
     vScrollbarModifier: ((ScrollbarModifier) -> Unit)? = null,
     hScrollbarModifier: ((ScrollbarModifier) -> Unit)? = null,
     state: LazyListState = rememberListState(),
+    scopeName: String? = null,
     block: LazyListScope.() -> Unit
 ) {
     contract {
@@ -95,7 +96,7 @@ fun UiScope.LazyList(
             if (isGrowHeight) modifier.height(Grow.Std)
             scrollPaneModifier?.let { it(modifier) }
 
-            val lazyList = uiNode.createChild(LazyListNode::class, LazyListNode.factory)
+            val lazyList = uiNode.createChild(scopeName, LazyListNode::class, LazyListNode.factory)
             lazyList.state = state
             lazyList.modifier
                 .orientation(listOrientation)
@@ -188,7 +189,7 @@ open class LazyListNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, su
         }
 
         while (itemI < state.numTotalItems && availableSpace > 0f) {
-            val itemBox = createChild(ListItemBox::class, ListItemBox.factory)
+            val itemBox = createChild(null, ListItemBox::class, ListItemBox.factory)
             itemBox.makeItem(itemI, ctx)
             prevItems += itemBox
 

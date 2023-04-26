@@ -38,12 +38,15 @@ fun <T: ComboBoxModifier> T.items(items: List<Any>): T { this.items = items; ret
 fun <T: ComboBoxModifier> T.selectedIndex(index: Int): T { this.selectedIndex = index; return this }
 fun <T: ComboBoxModifier> T.onItemSelected(block: ((Int) -> Unit)?): T { this.onItemSelected = block; return this }
 
-inline fun UiScope.ComboBox(block: ComboBoxScope.() -> Unit): ComboBoxScope {
+inline fun UiScope.ComboBox(
+    scopeName: String? = null,
+    block: ComboBoxScope.() -> Unit
+): ComboBoxScope {
     contract {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)
     }
 
-    val comboBox = uiNode.createChild(ComboBoxNode::class, ComboBoxNode.factory)
+    val comboBox = uiNode.createChild(scopeName, ComboBoxNode::class, ComboBoxNode.factory)
     comboBox.modifier
         .padding(horizontal = sizes.gap, vertical = sizes.smallGap)
         .hoverListener(comboBox)

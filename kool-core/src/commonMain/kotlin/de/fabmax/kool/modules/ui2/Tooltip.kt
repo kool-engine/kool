@@ -30,8 +30,9 @@ fun UiScope.Tooltip(
     text: String,
     yOffset: Dp = (-30).dp,
     target: UiScope? = this,
-    tooltipState: TooltipState = remember { TooltipState() }
-) = Tooltip(tooltipState, target) {
+    tooltipState: TooltipState = remember { TooltipState() },
+    scopeName: String? = null
+) = Tooltip(tooltipState, target, scopeName) {
     modifier
         .margin(top = Dp.fromPx(tooltipState.pointerY.use()) + yOffset)
         .layout(CellLayout)
@@ -50,13 +51,18 @@ fun UiScope.Tooltip(
     }
 }
 
-inline fun UiScope.Tooltip(tooltipState: TooltipState, target: UiScope? = this, block: UiScope.() -> Unit) {
+inline fun UiScope.Tooltip(
+    tooltipState: TooltipState,
+    target: UiScope? = this,
+    scopeName: String? = null,
+    block: UiScope.() -> Unit
+) {
     contract {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)
     }
 
     target?.modifier?.hoverListener(tooltipState)
     if (tooltipState.use()) {
-        Popup(tooltipState.pointerX.use(), tooltipState.pointerY.use(), block = block)
+        Popup(tooltipState.pointerX.use(), tooltipState.pointerY.use(), scopeName = scopeName, block = block)
     }
 }

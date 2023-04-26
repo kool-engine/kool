@@ -9,6 +9,8 @@ import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Font
 import de.fabmax.kool.util.MsdfFont
 import de.fabmax.kool.util.Time
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
@@ -101,8 +103,16 @@ fun <T: AttributedTextModifier> T.cursorPos(cursor: Int): T {
     return this
 }
 
-inline fun UiScope.AttributedText(text: TextLine, block: AttributedTextScope.() -> Unit = { }): AttributedTextScope {
-    val textNd = uiNode.createChild(AttributedTextNode::class, AttributedTextNode.factory)
+inline fun UiScope.AttributedText(
+    text: TextLine,
+    scopeName: String? = null,
+    block: AttributedTextScope.() -> Unit = { }
+): AttributedTextScope {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+    }
+
+    val textNd = uiNode.createChild(scopeName, AttributedTextNode::class, AttributedTextNode.factory)
     textNd.modifier.text = text
     textNd.modifier
         .onClick(textNd)

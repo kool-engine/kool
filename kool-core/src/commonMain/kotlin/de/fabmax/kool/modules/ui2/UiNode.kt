@@ -25,6 +25,8 @@ abstract class UiNode(val parent: UiNode?, override val surface: UiSurface) : Ui
     val children: List<UiNode> get() = mutChildren
     val weakMemory = WeakMemory()
 
+    private var scopeName: String? = null
+
     var contentWidthPx = 0f
         private set
     var contentHeightPx = 0f
@@ -156,6 +158,15 @@ abstract class UiNode(val parent: UiNode?, override val surface: UiSurface) : Ui
         }
     }
 
+    private fun setScopeName(scopeName: String?) {
+        if (scopeName != this.scopeName) {
+            this.scopeName = scopeName
+
+            weakMemory.clear()
+            oldChildren.clear()
+        }
+    }
+
     open fun render(ctx: KoolContext) {
         modifier.background?.renderUi(this)
         modifier.border?.renderUi(this)
@@ -197,7 +208,7 @@ abstract class UiNode(val parent: UiNode?, override val surface: UiSurface) : Ui
         }
     }
 
-    fun <T: UiNode> createChild(type: KClass<T>, factory: (UiNode, UiSurface) -> T): T {
+    fun <T: UiNode> createChild(scopeName: String?, type: KClass<T>, factory: (UiNode, UiSurface) -> T): T {
         var child: T? = null
         if (oldChildren.isNotEmpty()) {
             val old = oldChildren.removeLast()
@@ -210,6 +221,7 @@ abstract class UiNode(val parent: UiNode?, override val surface: UiSurface) : Ui
             child = factory(this, surface)
         }
         child.applyDefaults()
+        child.setScopeName(scopeName)
         mutChildren += child
         return child
     }

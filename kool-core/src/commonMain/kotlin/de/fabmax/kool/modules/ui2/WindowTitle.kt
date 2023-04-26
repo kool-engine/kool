@@ -10,17 +10,18 @@ fun WindowScope.TitleBar(
     hideTitleWhenTabbed: Boolean = true,
     onCloseAction: ((PointerEvent) -> Unit)? = null,
     onMinimizeAction: ((PointerEvent) -> Unit)? = null,
-    onMaximizeAction: ((PointerEvent) -> Unit)? = null
+    onMaximizeAction: ((PointerEvent) -> Unit)? = null,
+    scopeName: String? = null
 ) {
     val isTabbed = if (showTabsIfDocked) {
-        DockingTabsBar(onCloseAction = onCloseAction)
+        DockingTabsBar(onCloseAction = onCloseAction, scopeName = scopeName)
     } else {
         false
     }
 
     if (!isTabbed || !hideTitleWhenTabbed) {
         val windowModifier = modifier
-        Row(Grow.Std, height = sizes.gap * 3f) {
+        Row(Grow.Std, height = sizes.gap * 3f, scopeName = scopeName) {
             val cornerR = if (isDocked) 0f else sizes.gap.px
             modifier
                 .padding(horizontal = sizes.gap)
@@ -56,12 +57,13 @@ fun WindowScope.TitleBar(
 
 fun WindowScope.DockingTabsBar(
     isDragToUndock: Boolean = true,
-    onCloseAction: ((PointerEvent) -> Unit)? = null
+    onCloseAction: ((PointerEvent) -> Unit)? = null,
+    scopeName: String? = null
 ): Boolean {
     val dockingContainer = windowState.dockedTo.use()
 
     if (dockingContainer != null && dockingContainer.dockedWindows.size > 1) {
-        Row(width = Grow.Std, height = sizes.gap * 3f) {
+        Row(width = Grow.Std, height = sizes.gap * 3f, scopeName = scopeName) {
             modifier.backgroundColor(colors.secondaryVariant.mix(Color.BLACK, 0.2f))
 
             dockingContainer.dockedWindows.use().forEach { wnd ->
@@ -161,24 +163,21 @@ fun UiScope.CloseButton(
     background: Color = colors.background,
     backgroundHover: Color = colors.backgroundVariant,
     buttonMod: ((ButtonModifier) -> Unit)? = null,
-    onClick: (PointerEvent) -> Unit) =
-    TitleBarButton(onClick, CloseButtonBackground(foreground, foregroundHover, background, backgroundHover), buttonMod)
+    onClick: (PointerEvent) -> Unit) = TitleBarButton(onClick, CloseButtonBackground(foreground, foregroundHover, background, backgroundHover), buttonMod)
 fun UiScope.MinimizeButton(
     foreground: Color = colors.secondary,
     foregroundHover: Color = colors.primary,
     background: Color = colors.background,
     backgroundHover: Color = colors.backgroundVariant,
     buttonMod: ((ButtonModifier) -> Unit)? = null,
-    onClick: (PointerEvent) -> Unit) =
-    TitleBarButton(onClick, MinimizeButtonBackground(foreground, foregroundHover, background, backgroundHover), buttonMod)
+    onClick: (PointerEvent) -> Unit) = TitleBarButton(onClick, MinimizeButtonBackground(foreground, foregroundHover, background, backgroundHover), buttonMod)
 fun UiScope.MaximizeButton(
     foreground: Color = colors.secondary,
     foregroundHover: Color = colors.primary,
     background: Color = colors.background,
     backgroundHover: Color = colors.backgroundVariant,
     buttonMod: ((ButtonModifier) -> Unit)? = null,
-    onClick: (PointerEvent) -> Unit) =
-    TitleBarButton(onClick, MaximizeButtonBackground(foreground, foregroundHover, background, backgroundHover), buttonMod)
+    onClick: (PointerEvent) -> Unit) = TitleBarButton(onClick, MaximizeButtonBackground(foreground, foregroundHover, background, backgroundHover), buttonMod)
 
 abstract class TitleButtonBg : UiRenderer<UiNode> {
     var isHovered = false

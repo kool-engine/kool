@@ -37,9 +37,10 @@ inline fun UiScope.Popup(
     width: Dimension = FitContent,
     height: Dimension = FitContent,
     layout: Layout = ColumnLayout,
+    scopeName: String? = null,
     block: UiScope.() -> Unit
 ): UiScope {
-    return surface.popup().apply {
+    return surface.popup(scopeName).apply {
         modifier
             .margin(start = Dp.fromPx(screenPxX), top = Dp.fromPx(screenPxY))
             .width(width)

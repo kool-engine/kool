@@ -14,13 +14,14 @@ fun UiScope.ScrollArea(
     vScrollbarModifier: ((ScrollbarModifier) -> Unit)? = null,
     hScrollbarModifier: ((ScrollbarModifier) -> Unit)? = null,
     state: ScrollState = rememberScrollState(),
+    scopeName: String? = null,
     block: ScrollPaneScope.() -> Unit
 ) {
     contract {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)
     }
 
-    Box {
+    Box(scopeName = scopeName) {
         modifier
             .width(width)
             .height(height)

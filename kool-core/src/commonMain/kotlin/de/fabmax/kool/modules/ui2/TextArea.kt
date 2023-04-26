@@ -92,13 +92,14 @@ fun UiScope.TextArea(
     vScrollbarModifier: ((ScrollbarModifier) -> Unit)? = null,
     hScrollbarModifier: ((ScrollbarModifier) -> Unit)? = null,
     state: LazyListState = rememberListState(),
+    scopeName: String? = null,
     block: TextAreaScope.() -> Unit
 ) {
     contract {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)
     }
 
-    val textArea = uiNode.createChild(TextAreaNode::class, TextAreaNode.factory)
+    val textArea = uiNode.createChild(scopeName, TextAreaNode::class, TextAreaNode.factory)
     textArea.listState = state
     textArea.modifier
         .size(width, height)
@@ -143,7 +144,7 @@ open class TextAreaNode(parent: UiNode?, surface: UiSurface) : BoxNode(parent, s
             modifier.width(Grow.MinFit)
             scrollPaneModifier?.let { it(modifier) }
 
-            linesHolder = uiNode.createChild(LazyListNode::class, LazyListNode.factory)
+            linesHolder = uiNode.createChild(null, LazyListNode::class, LazyListNode.factory)
             linesHolder.state = listState
             linesHolder.modifier
                 .orientation(ListOrientation.Vertical)

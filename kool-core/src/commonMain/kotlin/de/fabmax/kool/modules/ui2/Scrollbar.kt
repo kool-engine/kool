@@ -59,12 +59,15 @@ enum class ScrollbarOrientation {
     Vertical
 }
 
-inline fun UiScope.Scrollbar(block: ScrollbarScope.() -> Unit): ScrollbarScope {
+inline fun UiScope.Scrollbar(
+    scopeName: String? = null,
+    block: ScrollbarScope.() -> Unit
+): ScrollbarScope {
     contract {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)
     }
 
-    val scrollBar = uiNode.createChild(ScrollbarNode::class, ScrollbarNode.factory)
+    val scrollBar = uiNode.createChild(scopeName, ScrollbarNode::class, ScrollbarNode.factory)
     scrollBar.modifier.onClick(scrollBar)
         .zLayer(UiSurface.LAYER_FLOATING)
         .hoverListener(scrollBar)
@@ -73,12 +76,15 @@ inline fun UiScope.Scrollbar(block: ScrollbarScope.() -> Unit): ScrollbarScope {
     return scrollBar
 }
 
-inline fun UiScope.VerticalScrollbar(block: ScrollbarScope.() -> Unit): ScrollbarScope {
+inline fun UiScope.VerticalScrollbar(
+    scopeName: String? = null,
+    block: ScrollbarScope.() -> Unit
+): ScrollbarScope {
     contract {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)
     }
 
-    return Scrollbar {
+    return Scrollbar(scopeName = scopeName) {
         modifier
             .orientation(ScrollbarOrientation.Vertical)
             .width(8.dp)
@@ -100,12 +106,15 @@ inline fun UiScope.VerticalScrollbar(block: ScrollbarScope.() -> Unit): Scrollba
     }
 }
 
-inline fun UiScope.HorizontalScrollbar(block: ScrollbarScope.() -> Unit): ScrollbarScope {
+inline fun UiScope.HorizontalScrollbar(
+    scopeName: String? = null,
+    block: ScrollbarScope.() -> Unit
+): ScrollbarScope {
     contract {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)
     }
 
-    return Scrollbar {
+    return Scrollbar(scopeName = scopeName) {
         modifier
             .orientation(ScrollbarOrientation.Horizontal)
             .height(8.dp)

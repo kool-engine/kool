@@ -151,12 +151,16 @@ fun <T: ScrollPaneModifier> T.onScrollPosChanged(block: (Float, Float) -> Unit):
     return this
 }
 
-inline fun UiScope.ScrollPane(state: ScrollState, block: ScrollPaneScope.() -> Unit): ScrollPaneScope {
+inline fun UiScope.ScrollPane(
+    state: ScrollState,
+    scopeName: String? = null,
+    block: ScrollPaneScope.() -> Unit
+): ScrollPaneScope {
     contract {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)
     }
 
-    val scrollPane = uiNode.createChild(ScrollPaneNode::class, ScrollPaneNode.factory)
+    val scrollPane = uiNode.createChild(scopeName, ScrollPaneNode::class, ScrollPaneNode.factory)
     scrollPane.state = state
     scrollPane.block()
     return scrollPane

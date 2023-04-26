@@ -32,13 +32,14 @@ inline fun UiScope.ColorWheel(
     hue: Float = 0f,
     saturation: Float = 1f,
     value: Float = 1f,
+    scopeName: String? = null,
     block: ColorWheelScope.() -> Unit
 ): ColorWheelScope {
     contract {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)
     }
 
-    val colorChooser = uiNode.createChild(ColorWheelNode::class, ColorWheelNode.factory)
+    val colorChooser = uiNode.createChild(scopeName, ColorWheelNode::class, ColorWheelNode.factory)
     colorChooser.modifier
         .hue(hue).saturation(saturation).value(value)
         .dragListener(colorChooser)

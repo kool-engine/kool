@@ -114,10 +114,10 @@ fun Window(
     val surface = UiSurface(colors, sizes, name)
 
     // create the initial empty window scope
-    surface.windowScope = surface.viewport.createChild(WindowNode::class, WindowNode.factory).apply { this.state = state }
+    surface.windowScope = surface.viewport.createChild(name, WindowNode::class, WindowNode.factory).apply { this.state = state }
 
     surface.content = {
-        val window = uiNode.createChild(WindowNode::class, WindowNode.factory)
+        val window = uiNode.createChild(name, WindowNode::class, WindowNode.factory)
         window.state = state
         window.modifier.layout(ColumnLayout)
 
