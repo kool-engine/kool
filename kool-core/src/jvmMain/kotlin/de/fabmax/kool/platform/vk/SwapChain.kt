@@ -77,7 +77,7 @@ class SwapChain(val sys: VkSystem) : VkResource() {
             vkGetSwapchainImagesKHR(sys.device.vkDevice, vkSwapChain, ip, imgs)
             for (i in 0 until ip[0]) {
                 images += imgs[i]
-                imageViews += ImageView(sys, imgs[i], imageFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1, VK_IMAGE_VIEW_TYPE_2D)
+                imageViews += ImageView(sys, imgs[i], imageFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1, VK_IMAGE_VIEW_TYPE_2D, 1)
                     .also { addDependingResource(it) }
             }
 

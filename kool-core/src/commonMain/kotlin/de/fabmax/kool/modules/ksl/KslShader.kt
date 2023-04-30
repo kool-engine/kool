@@ -80,10 +80,10 @@ open class KslShader(val program: KslProgram, val pipelineConfig: PipelineConfig
             descBuilder.descriptors += ubo
 
             ubo.name = kslUbo.name
-            if (kslUbo.uniforms.values.any { u -> u.value in program.vertexStage.main.dependencies.keys }) {
+            if (kslUbo.uniforms.values.any { u -> program.vertexStage.dependsOn(u) }) {
                 ubo.stages += ShaderStage.VERTEX_SHADER
             }
-            if (kslUbo.uniforms.values.any { u -> u.value in program.fragmentStage.main.dependencies.keys }) {
+            if (kslUbo.uniforms.values.any { u -> program.fragmentStage.dependsOn(u) }) {
                 ubo.stages += ShaderStage.FRAGMENT_SHADER
             }
 
@@ -159,10 +159,10 @@ open class KslShader(val program: KslProgram, val pipelineConfig: PipelineConfig
                     else -> throw IllegalStateException("Unsupported sampler uniform type: ${type.typeName}")
                 }
                 desc.name = sampler.name
-                if (sampler.value in program.vertexStage.main.dependencies.keys) {
+                if (program.vertexStage.dependsOn(sampler)) {
                     desc.stages += ShaderStage.VERTEX_SHADER
                 }
-                if (sampler.value in program.fragmentStage.main.dependencies.keys) {
+                if (program.fragmentStage.dependsOn(sampler)) {
                     desc.stages += ShaderStage.FRAGMENT_SHADER
                 }
                 descBuilder.descriptors += desc

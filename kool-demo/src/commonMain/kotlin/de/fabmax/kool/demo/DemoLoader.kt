@@ -50,8 +50,6 @@ class DemoLoader(ctx: KoolContext, startScene: String? = null) {
         val loadScene = startScene ?: Settings.selectedDemo.value
         val loadDemo = Demos.demos[loadScene] ?: Demos.demos[Demos.defaultDemo]!!
         switchDemo = loadDemo
-
-        ctx.run()
     }
 
     fun loadDemo(demo: Demos.Entry) {

@@ -14,7 +14,7 @@ class KslGlslGeneratorVk(private val pipelineLayout: Pipeline.Layout) : GlslGene
     }
 
     override fun StringBuilder.generateUniformSamplers(stage: KslShaderStage) {
-        val samplers = stage.program.uniformSamplers.values.filter { it.value in stage.main.dependencies }
+        val samplers = stage.getUsedSamplers()
         if (samplers.isNotEmpty()) {
             appendLine("// texture samplers")
             for (u in samplers) {
@@ -27,7 +27,7 @@ class KslGlslGeneratorVk(private val pipelineLayout: Pipeline.Layout) : GlslGene
     }
 
     override fun StringBuilder.generateUbos(stage: KslShaderStage) {
-        val ubos = stage.program.uniformBuffers.filter { it.uniforms.values.any { u -> u.value in stage.main.dependencies } }
+        val ubos = stage.getUsedUbos()
         if (ubos.isNotEmpty()) {
             appendLine("// uniform buffer objects")
             for (ubo in ubos) {

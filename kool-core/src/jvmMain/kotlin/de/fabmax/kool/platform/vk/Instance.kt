@@ -7,6 +7,7 @@ import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryUtil
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
+import org.lwjgl.vulkan.VK11.VK_API_VERSION_1_1
 
 class Instance(val sys: VkSystem, appName: String) : VkResource() {
 
@@ -36,7 +37,7 @@ class Instance(val sys: VkSystem, appName: String) : VkResource() {
                 applicationVersion(VK_MAKE_VERSION(1, 0, 0))
                 pEngineName(UTF8("Kool"))
                 engineVersion(VK_MAKE_VERSION(1, 0, 0))
-                apiVersion(VK_API_VERSION_1_0)
+                apiVersion(VK_API_VERSION_1_1)
             }
 
             val createInfo = callocVkInstanceCreateInfo {

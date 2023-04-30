@@ -28,7 +28,7 @@ object TextureLoader {
 
         val textureImage = Image(sys, imgConfig)
         val textureImageView =  ImageView(sys, textureImage.vkImage, textureImage.format, VK_IMAGE_ASPECT_COLOR_BIT,
-                textureImage.mipLevels, VK_IMAGE_VIEW_TYPE_CUBE)
+                textureImage.mipLevels, VK_IMAGE_VIEW_TYPE_CUBE, 6)
         val sampler = createSampler(sys, props, textureImage)
 
         val tex =  LoadedTextureVk(sys, format, textureImage, textureImageView, sampler)
@@ -227,11 +227,15 @@ object TextureLoader {
     }
 
     private fun reshape(dstFormat: TexFormat, img: TextureData): ByteBuffer {
-        if (img.data !is Uint8BufferImpl) {
-            TODO("Other texture data buffers than Uint8 are not yet implemented, provided: ${img.data::class}, dstFormat: $dstFormat")
+        val imgData = img.data
+        return when (imgData) {
+            is Uint8BufferImpl -> reshapeUint8(dstFormat, img, imgData)
+            is Float32BufferImpl -> reshapeFloat32(dstFormat, img, imgData)
+            else -> TODO("Other texture data buffers than Uint8 and Float32 are not yet implemented, provided: ${img.data::class}, dstFormat: $dstFormat")
         }
-        val imgData = img.data as Uint8BufferImpl
+    }
 
+    private fun reshapeUint8(dstFormat: TexFormat, img: TextureData, imgData: Uint8BufferImpl): ByteBuffer {
         // make sure buffer position is at 0
         imgData.buffer.rewind()
 
@@ -250,6 +254,44 @@ object TextureLoader {
             }
         }
         return imgData.buffer
+    }
+
+    private fun reshapeFloat32(dstFormat: TexFormat, img: TextureData, imgData: Float32BufferImpl): ByteBuffer {
+        // make sure buffer position is at 0
+        imgData.buffer.rewind()
+
+        if (img.format == dstFormat) {
+            val reshaped = createUint8Buffer(img.width * img.height * img.depth * img.format.channels * 2)
+            for (i in 0 until img.width * img.height * img.depth * img.format.channels) {
+                reshaped.putF16(i, imgData[i])
+            }
+            return (reshaped as Uint8BufferImpl).buffer
+
+        } else if (img.format == TexFormat.RGB_F16 && dstFormat == TexFormat.RGBA_F16) {
+            val reshaped = createUint8Buffer(img.width * img.height * img.depth * 8)
+            for (i in 0 until img.width * img.height * img.depth) {
+                reshaped.putF16(i*4+0, imgData[i*3+0])
+                reshaped.putF16(i*4+1, imgData[i*3+1])
+                reshaped.putF16(i*4+2, imgData[i*3+2])
+                reshaped.putF16(i*4+3, 1f)
+            }
+            return (reshaped as Uint8BufferImpl).buffer
+        }
+        throw IllegalArgumentException("${img.format} -> $dstFormat not implemented")
+    }
+
+    private fun Uint8Buffer.putF16(index: Int, f32: Float) {
+        // from: https://stackoverflow.com/questions/3026441/float32-to-float16
+        val f32bits = f32.toBits()
+        var f16bits = (f32bits shr 31) shl 5
+        var tmp = (f32bits shr 23) and 0xff
+        tmp = (tmp - 0x70) and ((((0x70 - tmp) shr 4) shr 27) and 0x1f)
+        f16bits = (f16bits or tmp) shl 10
+        f16bits = f16bits or ((f32bits shr 13) and 0x3ff)
+
+        val byteI = index * 2
+        this[byteI] = (f16bits and 0xff).toByte()
+        this[byteI+1] = (f16bits shr 8).toByte()
     }
 
     private fun copyBufferToImage(sys: VkSystem, buffer: Buffer, image: Image, width: Int, height: Int, depth: Int) {

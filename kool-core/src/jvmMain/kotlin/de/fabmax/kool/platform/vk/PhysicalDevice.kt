@@ -12,8 +12,8 @@ class PhysicalDevice(val sys: VkSystem) : VkResource() {
 
     val vkPhysicalDevice: VkPhysicalDevice
     val queueFamiliyIndices: QueueFamilyIndices
-    val vkDeviceProperties = VkPhysicalDeviceProperties.malloc()
-    val vkDeviceFeatures = VkPhysicalDeviceFeatures.malloc()
+    val vkDeviceProperties = VkPhysicalDeviceProperties.calloc()
+    val vkDeviceFeatures = VkPhysicalDeviceFeatures.calloc()
     val msaaSamples: Int
 
     val deviceName: String
@@ -80,7 +80,7 @@ class PhysicalDevice(val sys: VkSystem) : VkResource() {
 
     fun findSupportedFormat(candidates: List<Int>, tiling: Int, features: Int): Int {
         memStack {
-            val props = VkFormatProperties.malloc(this)
+            val props = VkFormatProperties.calloc(this)
             candidates.forEach { format ->
                 vkGetPhysicalDeviceFormatProperties(vkPhysicalDevice, format, props)
                 if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures() and features) == features) {

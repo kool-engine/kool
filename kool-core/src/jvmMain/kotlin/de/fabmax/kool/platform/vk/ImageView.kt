@@ -4,12 +4,20 @@ import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.memStack
 import org.lwjgl.vulkan.VK10.*
 
-class ImageView(val sys: VkSystem, image: Long, format: Int, aspectFlags: Int, mipLevels: Int, viewType: Int) : VkResource() {
+class ImageView(val sys: VkSystem, image: Long, format: Int, aspectFlags: Int, mipLevels: Int, viewType: Int, layerCount: Int) : VkResource() {
 
     val vkImageView: Long
 
     constructor(sys: VkSystem, image: Image, aspectFlags: Int):
-            this(sys, image.vkImage, image.format, aspectFlags, image.mipLevels, if (image.depth > 1) VK_IMAGE_VIEW_TYPE_3D else VK_IMAGE_VIEW_TYPE_2D)
+            this(
+                sys,
+                image.vkImage,
+                image.format,
+                aspectFlags,
+                image.mipLevels,
+                if (image.depth > 1) VK_IMAGE_VIEW_TYPE_3D else VK_IMAGE_VIEW_TYPE_2D,
+                image.arrayLayers
+            )
 
     init {
         memStack {
@@ -23,7 +31,7 @@ class ImageView(val sys: VkSystem, image: Long, format: Int, aspectFlags: Int, m
                     it.baseMipLevel(0)
                     it.levelCount(mipLevels)
                     it.baseArrayLayer(0)
-                    it.layerCount(1)
+                    it.layerCount(layerCount)
                 }
             }
             vkImageView = checkCreatePointer { vkCreateImageView(sys.device.vkDevice, createInfo, null, it) }
