@@ -31,6 +31,8 @@ class RgbeDecoder(parentScene: Scene, hdriTexture: Texture2d, brightness: Float 
         addMipLevels(drawMipLevels = false)
     }) {
 
+    var isAutoRemove = true
+
     init {
         clearColor = null
         drawNode.apply {
@@ -43,9 +45,11 @@ class RgbeDecoder(parentScene: Scene, hdriTexture: Texture2d, brightness: Float 
         // this pass only needs to be rendered once, remove it immediately after first render
         onAfterDraw += { ctx ->
             logD { "Converted RGBe to linear: ${hdriTexture.name}" }
-            parentScene.removeOffscreenPass(this)
-            launchDelayed(1) {
-                dispose(ctx)
+            if (isAutoRemove) {
+                parentScene.removeOffscreenPass(this)
+                launchDelayed(1) { dispose(ctx) }
+            } else {
+                isEnabled = false
             }
         }
     }

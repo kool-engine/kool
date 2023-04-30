@@ -2,6 +2,7 @@ package de.fabmax.kool.modules.ksl.blocks
 
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.ksl.lang.*
+import de.fabmax.kool.pipeline.ibl.ReflectionMapPass
 import kotlin.math.PI
 
 fun KslScopeBuilder.pbrMaterialBlock(reflectionMaps: KslArrayExpression<KslTypeColorSamplerCube>?,
@@ -73,9 +74,10 @@ class PbrMaterialBlock(
             if (reflectionMaps != null) {
                 // sample reflection map in reflection direction
                 val r = inAmbientOrientation * reflect(-viewDir, inNormal)
-                reflectionColor set sampleTexture(reflectionMaps[0], r, roughness * 6f.const).rgb * inReflectionMapWeights.x
+                val mipLevel = float1Var((1f.const - pow(1f.const - roughness, 1.25f.const)) * (ReflectionMapPass.REFLECTION_MIP_LEVELS - 1).toFloat().const)
+                reflectionColor set sampleTexture(reflectionMaps[0], r, mipLevel).rgb * inReflectionMapWeights.x
                 `if` (inReflectionMapWeights.y gt 0f.const) {
-                    reflectionColor += sampleTexture(reflectionMaps[1], r, roughness * 6f.const).rgb * inReflectionMapWeights.y
+                    reflectionColor += sampleTexture(reflectionMaps[1], r, mipLevel).rgb * inReflectionMapWeights.y
                 }
             }
             reflectionColor set reflectionColor * inReflectionStrength

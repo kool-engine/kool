@@ -476,12 +476,13 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackend {
                 val renderPassInfo = renderPassBeginInfo(rp, rp.frameBuffer, offscreenPass)
 
                 vkPass2d.transitionTexLayout(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+                val mipLevels = offscreenPass.config.mipLevels
                 for (mipLevel in 0 until vkPass2d.renderMipLevels) {
                     offscreenPass.onSetupMipLevel?.invoke(mipLevel, ctx)
                     offscreenPass.applyMipViewport(mipLevel)
                     vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE)
                     setViewport(commandBuffer, offscreenPass.viewport)
-                    renderDrawQueue(commandBuffer, offscreenPass.drawQueue.commands, 0, rp, 1, true)
+                    renderDrawQueue(commandBuffer, offscreenPass.drawQueue.commands, mipLevel, rp, mipLevels, true)
                     vkCmdEndRenderPass(commandBuffer)
                     vkPass2d.copyMipView(commandBuffer, mipLevel)
                 }
@@ -498,13 +499,15 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackend {
                 val renderPassInfo = renderPassBeginInfo(rp, rp.frameBuffer, offscreenPass)
 
                 vkPassCube.transitionTexLayout(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
-                for (mipLevel in 0 until offscreenPass.config.mipLevels) {
+                val mipLevels = offscreenPass.config.mipLevels
+                for (mipLevel in 0 until mipLevels) {
                     offscreenPass.onSetupMipLevel?.invoke(mipLevel, ctx)
                     offscreenPass.applyMipViewport(mipLevel)
                     for (view in cubeRenderPassViews) {
+                        val imageI = mipLevel * 6 + view.index
                         vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE)
                         setViewport(commandBuffer, offscreenPass.viewport)
-                        renderDrawQueue(commandBuffer, offscreenPass.drawQueues[view.index].commands, view.index, rp, 6, true)
+                        renderDrawQueue(commandBuffer, offscreenPass.drawQueues[view.index].commands, imageI, rp, 6 * mipLevels, true)
                         vkCmdEndRenderPass(commandBuffer)
                         vkPassCube.copyView(commandBuffer, view, mipLevel)
                     }
@@ -584,9 +587,8 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackend {
     }
 
     companion object {
-        // fixme: for some reason (timing / sync) last view is not copied sometimes? super duper fix: render last view twice
-        private val cubeRenderPassViews = Array(7) {
-            i -> OffscreenRenderPassCube.ViewDirection.values()[i % OffscreenRenderPassCube.ViewDirection.values().size]
+        private val cubeRenderPassViews = Array(6) {
+            i -> OffscreenRenderPassCube.ViewDirection.values()[i]
         }
     }
 }

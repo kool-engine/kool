@@ -21,7 +21,7 @@ class ColorGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrConten
     private var iblContent: Mesh? = null
     private var nonIblContent: Mesh? = null
 
-    private val roughness = mutableStateOf(0.1f).onChange { shaders.forEach { s -> s.roughness = it } }
+    private val roughness = mutableStateOf(0.3f).onChange { shaders.forEach { s -> s.roughness = it } }
     private val metallic = mutableStateOf(0f).onChange { shaders.forEach { s -> s.metallic = it } }
 
     override fun UiScope.createContentMenu() {

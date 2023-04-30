@@ -16,7 +16,7 @@ class ReflectionMapPass private constructor(parentScene: Scene, hdriMap: Texture
     OffscreenRenderPassCube(Node(), renderPassConfig {
         name = "ReflectionMapPass"
         setSize(size, size)
-        mipLevels = 7
+        mipLevels = REFLECTION_MIP_LEVELS
         addColorTexture(TexFormat.RGBA_F16)
         clearDepthTexture()
     }) {
@@ -38,15 +38,15 @@ class ReflectionMapPass private constructor(parentScene: Scene, hdriMap: Texture
         }
 
         onSetupMipLevel = { mipLevel, _ ->
-            reflectionMapShader.uRoughness = mipLevel.toFloat() / (config.mipLevels - 1)
+            reflectionMapShader.uRoughness = mipLevel.toFloat() / (config.mipLevels - 1) * 0.55f
         }
 
         // this pass only needs to be rendered once, remove it immediately after first render
         onAfterDraw += { ctx ->
             if (hdriMap != null) {
-                logD { "Generated reflection map from HDRI: ${hdriMap.name}" }
+                logD { "Generated reflection map from HDRI: ${hdriMap.name}, size: $size x $size" }
             } else {
-                logD { "Generated reflection map from cube map: ${cubeMap?.name}" }
+                logD { "Generated reflection map from cube map: ${cubeMap?.name}, size: $size x $size" }
             }
             if (isAutoRemove) {
                 parentScene.removeOffscreenPass(this)
@@ -108,6 +108,8 @@ class ReflectionMapPass private constructor(parentScene: Scene, hdriMap: Texture
     }
 
     companion object {
+        const val REFLECTION_MIP_LEVELS = 6
+
         fun reflectionMap(scene: Scene, envTex: Texture, size: Int = 256): ReflectionMapPass {
             return when (envTex) {
                 is Texture2d -> ReflectionMapPass(scene, envTex, null, size)

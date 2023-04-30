@@ -86,8 +86,7 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrCont
     }
 
     override fun updateEnvironmentMap(envMaps: EnvironmentMaps) {
-        iblContent?.children?.forEach {
-            it as Mesh
+        (iblContent as Mesh?)?.let {
             val pbrShader = it.shader as KslPbrShader
             pbrShader.ambientMap = envMaps.irradianceMap
             pbrShader.reflectionMap = envMaps.reflectionMap

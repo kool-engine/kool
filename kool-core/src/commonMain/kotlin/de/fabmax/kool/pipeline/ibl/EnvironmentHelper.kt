@@ -5,6 +5,9 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ColorGradient
+import de.fabmax.kool.util.RenderLoop
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 object EnvironmentHelper {
 
@@ -40,7 +43,9 @@ object EnvironmentHelper {
     suspend fun hdriEnvironment(scene: Scene, hdriPath: String, autoDispose: Boolean = true, brightness: Float = 1f): EnvironmentMaps {
         val hdriTexProps = TextureProps(minFilter = FilterMethod.NEAREST, magFilter = FilterMethod.NEAREST, mipMapping = false, maxAnisotropy = 1)
         val hdri = Assets.loadTexture2d(hdriPath, hdriTexProps)
-        return hdriEnvironment(scene, hdri, autoDispose, brightness)
+        return withContext(Dispatchers.RenderLoop) {
+            hdriEnvironment(scene, hdri, autoDispose, brightness)
+        }
     }
 
     fun hdriEnvironment(scene: Scene, hdri: Texture2d, autoDispose: Boolean = true, brightness: Float = 1f): EnvironmentMaps {
