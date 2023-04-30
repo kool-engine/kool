@@ -1,5 +1,6 @@
 # kool - A OpenGL / Vulkan graphics engine written in Kotlin
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/fabmax/kool/blob/master/LICENSE)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/de.fabmax.kool/kool-core/badge.svg)](https://central.sonatype.com/artifact/de.fabmax.kool/kool-core)
 
 A multi-platform OpenGL / Vulkan based game engine that works on Desktop Java and browsers with
 WebGL2.
@@ -7,7 +8,7 @@ WebGL2.
 I started working on a graphical scene editor, which should make it much easier to create new projects with this engine.
 However, the editor is still in a super early state and not very useful yet. So, for now, this is very much a code-only
 game engine. I recommend taking a look at the demos listed below in case you are curious (all demo source code is
-available in the `kool-demo` subproject). I also publish snapshots of the library, see [below](#usage).
+available in the `kool-demo` subproject). The library is also published on maven central, see [below](#usage).
 
 I also made an actual game with this: [Blocks and Belts](https://fabmaxx.itch.io/blocks-and-belts).
 Give it a try (it's free)!
@@ -269,10 +270,10 @@ multiplatform approach much easier.
 
 ## Usage
 
-If you are adventurous, you can use kool as a library in your own (multiplatform-) projects. Currently, I only publish
-snapshot versions but the core APIs should stay mostly stable now.
+If you are adventurous, you can use kool as a library in your own (multiplatform-) projects. The library is published
+on maven central. 
 
-Gradle (kotlin) setup:
+Basic `build.gradle.kts` project setup:
 ```kotlin
 plugins {
     kotlin("multiplatform") version "1.8.20"
@@ -280,8 +281,6 @@ plugins {
 
 repositories {
     mavenCentral()
-    // snapshot repo containing kool libraries:
-    maven("https://oss.sonatype.org/content/repositories/snapshots")
 }
 
 kotlin {
@@ -297,8 +296,8 @@ kotlin {
         // kool dependencies
         val commonMain by getting {
             dependencies {
-                implementation("de.fabmax.kool:kool-core:0.11.0-SNAPSHOT")
-                implementation("de.fabmax.kool:kool-physics:0.11.0-SNAPSHOT")
+                implementation("de.fabmax.kool:kool-core:0.11.0")
+                implementation("de.fabmax.kool:kool-physics:0.11.0")
             }
         }
 
