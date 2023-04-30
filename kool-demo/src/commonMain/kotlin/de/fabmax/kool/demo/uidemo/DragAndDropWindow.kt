@@ -122,7 +122,7 @@ sealed class DragAndDropWindow(val uiDemo: UiDemo, name: String) : UiDemo.DemoWi
         lateinit var targetNode: UiNode
         override val dropTarget: UiNode get() = targetNode
 
-        override fun receive(dragItem: DndItem, source: DragAndDropHandler<DndItem>): Boolean {
+        override fun receive(dragItem: DndItem, source: DragAndDropHandler<DndItem>?): Boolean {
             // Remove item first. This way the item is moved from its initial position to the end of the list in case
             // the item is dropped over the source list
             items.remove(dragItem)
@@ -132,7 +132,7 @@ sealed class DragAndDropWindow(val uiDemo: UiDemo, name: String) : UiDemo.DemoWi
             return true
         }
 
-        override fun onDragStart(dragItem: DndItem, dragPointer: PointerEvent, source: DragAndDropHandler<DndItem>) {
+        override fun onDragStart(dragItem: DndItem, dragPointer: PointerEvent, source: DragAndDropHandler<DndItem>?) {
             if (source === this) {
                 isDragInProgress.set(true)
                 dragPosX.set(dragPointer.screenPosition.x)
@@ -144,7 +144,7 @@ sealed class DragAndDropWindow(val uiDemo: UiDemo, name: String) : UiDemo.DemoWi
         override fun onDrag(
             dragItem: DndItem,
             dragPointer: PointerEvent,
-            source: DragAndDropHandler<DndItem>,
+            source: DragAndDropHandler<DndItem>?,
             hovering: DragAndDropHandler<DndItem>?
         ) {
             isDragHover.set(hovering === this)
@@ -155,7 +155,7 @@ sealed class DragAndDropWindow(val uiDemo: UiDemo, name: String) : UiDemo.DemoWi
         override fun onDragEnd(
             dragItem: DndItem,
             dragPointer: PointerEvent,
-            source: DragAndDropHandler<DndItem>,
+            source: DragAndDropHandler<DndItem>?,
             target: DragAndDropHandler<DndItem>?,
             success: Boolean
         ) {

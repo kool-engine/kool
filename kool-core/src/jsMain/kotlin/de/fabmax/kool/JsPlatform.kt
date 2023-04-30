@@ -22,6 +22,7 @@ actual fun KoolApplication(config: KoolConfig, appBlock: (KoolContext) -> Unit) 
     KoolSystem.initialize(config)
     val ctx = createContext()
     appBlock(ctx)
+    ctx.run()
 }
 
 actual fun Double.toString(precision: Int): String {
