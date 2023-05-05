@@ -17,11 +17,14 @@ import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.VertexView
 import de.fabmax.kool.util.Color
 
-fun Node.betterLineMesh(block: BetterLineMesh.() -> Unit): BetterLineMesh {
-    val mesh = BetterLineMesh().apply(block)
+fun Node.addBetterLineMesh(name: String? = null, block: BetterLineMesh.() -> Unit): BetterLineMesh {
+    val mesh = BetterLineMesh(name).apply(block)
     addNode(mesh)
     return mesh
 }
+
+@Deprecated("to be replaced by addBetterLineMesh()", ReplaceWith("addBetterLineMesh() { block() }"))
+fun Node.betterLineMesh(block: BetterLineMesh.() -> Unit) = addBetterLineMesh(null, block)
 
 class BetterLineMesh(geometry: IndexedVertexList, name: String? = null) : Mesh(geometry, name) {
 

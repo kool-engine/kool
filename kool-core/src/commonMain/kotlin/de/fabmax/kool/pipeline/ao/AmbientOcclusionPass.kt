@@ -13,7 +13,7 @@ import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenShaderPipelineCfg
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
 import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Node
-import de.fabmax.kool.scene.mesh
+import de.fabmax.kool.scene.addMesh
 import de.fabmax.kool.util.createUint8Buffer
 import kotlin.math.*
 import kotlin.random.Random
@@ -52,7 +52,7 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
         clearColor = null
 
         drawNode.apply {
-            mesh(Attribute.POSITIONS, Attribute.TEXTURE_COORDS) {
+            addMesh(Attribute.POSITIONS, Attribute.TEXTURE_COORDS) {
                 generateFullscreenQuad()
 
                 shader = aoPassShader

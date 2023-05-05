@@ -10,7 +10,7 @@ import de.fabmax.kool.modules.gltf.loadGltfModel
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.pipeline.ao.AoPipeline
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.scene.colorMesh
+import de.fabmax.kool.scene.addColorMesh
 import de.fabmax.kool.scene.defaultOrbitCamera
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.RenderLoop
@@ -32,7 +32,7 @@ class HelloGltfDemo : DemoScene("Hello glTF") {
         val aoPipeline = AoPipeline.createForward(this)
 
         // Add a ground plane
-        colorMesh {
+        addColorMesh {
             generate {
                 grid { }
             }

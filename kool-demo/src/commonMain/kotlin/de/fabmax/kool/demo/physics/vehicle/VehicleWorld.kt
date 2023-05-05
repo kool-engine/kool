@@ -7,7 +7,7 @@ import de.fabmax.kool.pipeline.deferred.DeferredPipeline
 import de.fabmax.kool.pipeline.deferred.deferredKslPbrShader
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.scene.colorMesh
+import de.fabmax.kool.scene.addColorMesh
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.util.Color
 
@@ -21,7 +21,7 @@ class VehicleWorld(val scene: Scene, val physics: PhysicsWorld, val deferredPipe
     val obstacleQryFilterData = FilterData { VehicleUtils.setupDrivableSurface(this) }
 
     fun toPrettyMesh(actor: RigidActor, meshColor: Color, rough: Float = 0.8f, metal: Float = 0f): Node = Node().apply {
-        colorMesh {
+        addColorMesh {
             generate {
                 color = meshColor
                 actor.shapes.forEach { shape ->

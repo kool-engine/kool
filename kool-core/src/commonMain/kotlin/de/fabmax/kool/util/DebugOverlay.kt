@@ -51,7 +51,7 @@ class DebugOverlay(position: Position = Position.UPPER_RIGHT) {
                 }
             }
 
-            Panel(
+            addPanel(
                 name = "overview",
                 sizes = Sizes.small,
                 colors = Colors.darkColors(primary = Color("b2ff00"), background = Color("10101080"))

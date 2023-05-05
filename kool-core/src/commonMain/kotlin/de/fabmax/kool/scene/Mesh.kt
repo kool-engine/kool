@@ -14,41 +14,51 @@ import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.util.UniqueId
 
 
-fun Node.mesh(attributes: List<Attribute>, name: String? = null, block: Mesh.() -> Unit): Mesh {
+fun Node.addMesh(attributes: List<Attribute>, name: String? = null, block: Mesh.() -> Unit): Mesh {
     val mesh = Mesh(IndexedVertexList(attributes), name)
     mesh.block()
     addNode(mesh)
     return mesh
-
 }
 
-fun Node.mesh(vararg attributes: Attribute, name: String? = null, block: Mesh.() -> Unit): Mesh {
+fun Node.addMesh(vararg attributes: Attribute, name: String? = null, block: Mesh.() -> Unit): Mesh {
     val mesh = Mesh(IndexedVertexList(*attributes), name)
     mesh.block()
     addNode(mesh)
     return mesh
-
 }
 
-fun Node.colorMesh(name: String? = null, block: Mesh.() -> Unit): Mesh {
-    return mesh(
+fun Node.addColorMesh(name: String? = null, block: Mesh.() -> Unit): Mesh {
+    return addMesh(
         Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS,
         name = name ?: UniqueId.nextId("colorMesh"),
         block = block
     )
 }
 
-fun Node.textureMesh(name: String? = null, isNormalMapped: Boolean = false, block: Mesh.() -> Unit): Mesh {
+fun Node.addTextureMesh(name: String? = null, isNormalMapped: Boolean = false, block: Mesh.() -> Unit): Mesh {
     val attributes = mutableListOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS)
     if (isNormalMapped) {
         attributes += Attribute.TANGENTS
     }
-    val mesh = mesh(attributes, name ?: UniqueId.nextId("textureMesh"), block)
+    val mesh = addMesh(attributes, name ?: UniqueId.nextId("textureMesh"), block)
     if (isNormalMapped) {
         mesh.geometry.generateTangents()
     }
     return mesh
 }
+
+@Deprecated("to be replaced by addMesh()", ReplaceWith("addMesh(attributes, name) { block() }"))
+fun Node.mesh(attributes: List<Attribute>, name: String? = null, block: Mesh.() -> Unit) = addMesh(attributes, name, block)
+
+@Deprecated("to be replaced by addMesh()", ReplaceWith("addMesh(attributes, name) { block() }"))
+fun Node.mesh(vararg attributes: Attribute, name: String? = null, block: Mesh.() -> Unit) = addMesh(*attributes, name = name, block = block)
+
+@Deprecated("to be replaced by addColorMesh()", ReplaceWith("addColorMesh(name) { block() }"))
+fun Node.colorMesh(name: String? = null, block: Mesh.() -> Unit) = addColorMesh(name, block)
+
+@Deprecated("to be replaced by addTextureMesh()", ReplaceWith("addTextureMesh(name, isNormalMapped) { block() }"))
+fun Node.textureMesh(name: String? = null, isNormalMapped: Boolean = false, block: Mesh.() -> Unit) = addTextureMesh(name, isNormalMapped, block)
 
 /**
  * Class for renderable geometry (triangles, lines, points).
@@ -216,7 +226,7 @@ open class Mesh(var geometry: IndexedVertexList, name: String? = null) : Node(na
             }
             rayTest.onMeshDataChanged(this)
         }
-        updateEvent.renderPass.addMesh(this, updateEvent.ctx)
+        updateEvent.renderPass.appendMeshToDrawQueue(this, updateEvent.ctx)
     }
 
     companion object {

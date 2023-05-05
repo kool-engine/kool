@@ -61,7 +61,7 @@ class UiDemo : DemoScene("UI Demo") {
         spawnWindow(TextStyleWindow(this@UiDemo))
 
         // add a sidebar for the demo menu
-        Panel {
+        addPanel {
             surface.colors = selectedColors.use()
             surface.sizes = Settings.uiSize.use().sizes
 

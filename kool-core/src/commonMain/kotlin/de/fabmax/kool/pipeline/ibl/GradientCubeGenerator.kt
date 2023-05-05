@@ -8,7 +8,7 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenCubeVertexStage
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.scene.textureMesh
+import de.fabmax.kool.scene.addTextureMesh
 import de.fabmax.kool.util.launchDelayed
 import de.fabmax.kool.util.logD
 import kotlin.math.PI
@@ -23,7 +23,7 @@ class GradientCubeGenerator(scene: Scene, gradientTex: Texture1d, size: Int = 12
 
     init {
         drawNode.apply {
-            textureMesh {
+            addTextureMesh {
                 generate {
                     cube(centered = true) { }
                 }

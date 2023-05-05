@@ -107,7 +107,7 @@ abstract class RenderPass(var drawNode: Node) {
         }
     }
 
-    open fun addMesh(mesh: Mesh, ctx: KoolContext): DrawCommand? {
+    open fun appendMeshToDrawQueue(mesh: Mesh, ctx: KoolContext): DrawCommand? {
         return drawQueue.addMesh(mesh, ctx)
     }
 

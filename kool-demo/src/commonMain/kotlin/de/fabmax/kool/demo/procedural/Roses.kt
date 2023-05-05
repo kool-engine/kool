@@ -5,10 +5,10 @@ import de.fabmax.kool.pipeline.deferred.deferredKslPbrShader
 import de.fabmax.kool.scene.ColorMesh
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
+import de.fabmax.kool.scene.addGroup
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.simpleShape
-import de.fabmax.kool.scene.group
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ColorGradient
 import de.fabmax.kool.util.MdColor
@@ -32,7 +32,7 @@ class Roses : Node() {
     fun makeRose(seed: Int) {
         val rose = GeneratedRose(seed)
 
-        group {
+        addGroup {
             addNode(rose.shaftMesh)
             addNode(rose.shaftLeafMesh)
             addNode(rose.leafMesh)

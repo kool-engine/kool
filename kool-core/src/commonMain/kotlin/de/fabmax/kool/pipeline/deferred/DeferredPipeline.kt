@@ -189,7 +189,7 @@ class DeferredPipeline(val scene: Scene, val cfg: DeferredPipelineConfig) {
 
     private fun setupLightingPassContent() {
         lightingPassContent.apply {
-            mesh(listOf(Attribute.POSITIONS, Attribute.TEXTURE_COORDS)) {
+            addMesh(Attribute.POSITIONS, Attribute.TEXTURE_COORDS) {
                 generateFullscreenQuad()
                 shader = lightingPassShader
             }

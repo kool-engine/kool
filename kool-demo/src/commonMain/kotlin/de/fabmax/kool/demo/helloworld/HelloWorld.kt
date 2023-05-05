@@ -5,7 +5,7 @@ import de.fabmax.kool.demo.DemoScene
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.scene.colorMesh
+import de.fabmax.kool.scene.addColorMesh
 import de.fabmax.kool.scene.defaultOrbitCamera
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Time
@@ -14,7 +14,7 @@ class HelloWorldDemo : DemoScene("Hello World") {
     override fun Scene.setupMainScene(ctx: KoolContext) {
         defaultOrbitCamera()
 
-        colorMesh {
+        addColorMesh {
             generate {
                 cube(centered = true) {
                     colored()

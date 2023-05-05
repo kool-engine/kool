@@ -8,7 +8,7 @@ import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
-import de.fabmax.kool.scene.mesh
+import de.fabmax.kool.scene.addMesh
 import de.fabmax.kool.util.ShadowMap
 
 class TerrainTiles(val terrain: Terrain, val sky: Sky) : Node() {
@@ -19,14 +19,12 @@ class TerrainTiles(val terrain: Terrain, val sky: Sky) : Node() {
         isFrustumChecked = false
         for (y in 0 until TILE_CNT_XY) {
             for (x in 0 until TILE_CNT_XY) {
-                mesh(
-                    listOf(
-                        Attribute.POSITIONS,
-                        Attribute.NORMALS,
-                        Attribute.TEXTURE_COORDS,
-                        Terrain.TERRAIN_GRID_COORDS,
-                        Attribute.TANGENTS
-                    )
+                addMesh(
+                    Attribute.POSITIONS,
+                    Attribute.NORMALS,
+                    Attribute.TEXTURE_COORDS,
+                    Terrain.TERRAIN_GRID_COORDS,
+                    Attribute.TANGENTS
                 ) {
                     meshes[Vec2i(x, y)] = this
                     generate {

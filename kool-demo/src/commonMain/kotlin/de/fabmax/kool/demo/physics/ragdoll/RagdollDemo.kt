@@ -102,7 +102,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
         val groundNormal = loadTexture2d("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine_normal.png")
 
         mainScene.apply {
-            textureMesh(isNormalMapped = true) {
+            addTextureMesh(isNormalMapped = true) {
                 isCastingShadow = false
                 generate {
                     rotate(-90f, Vec3f.X_AXIS)
@@ -144,7 +144,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
             InputStack.defaultInputHandler.pointerListeners -= forceHelper
         }
 
-        colorMesh {
+        addColorMesh {
             isFrustumChecked = false
             instances = bodyInstanceData
             generate {
@@ -161,7 +161,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
             }
         }
 
-        lineMesh {
+        addLineMesh {
             isCastingShadow = false
             shader = KslUnlitShader {
                 pipeline { lineWidth = 3f }

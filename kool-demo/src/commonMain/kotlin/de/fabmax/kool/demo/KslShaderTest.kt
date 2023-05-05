@@ -81,8 +81,8 @@ class KslShaderTest : DemoScene("KslShader") {
             }
         }
 
-        group {
-            colorMesh {
+        addGroup {
+            addColorMesh {
                 generate {
                     cube(centered = true) {
                         colored()
@@ -143,7 +143,7 @@ class KslShaderTest : DemoScene("KslShader") {
             }
         }
 
-        mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS, Attribute.COLORS, Attribute.TANGENTS)) {
+        addMesh(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS, Attribute.COLORS, Attribute.TANGENTS) {
             generate {
                 color = MdColor.LIGHT_GREEN
                 rect {

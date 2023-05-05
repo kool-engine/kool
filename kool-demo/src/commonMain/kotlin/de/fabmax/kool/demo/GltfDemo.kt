@@ -232,7 +232,7 @@ class GltfDemo : DemoScene("glTF Models") {
             }
         }
 
-        textureMesh(isNormalMapped = true) {
+        addTextureMesh(isNormalMapped = true) {
             generate {
                 roundCylinder(4.1f, 0.2f)
             }

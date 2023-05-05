@@ -4,6 +4,7 @@ object Versions {
     val kotlinVersion = "1.8.20"
     val kotlinCoroutinesVersion = "1.7.0-Beta"
     val kotlinSerializationVersion = "1.5.0"
+    val dokkaVersion = "1.8.10"
 }
 
 object DepsCommon {

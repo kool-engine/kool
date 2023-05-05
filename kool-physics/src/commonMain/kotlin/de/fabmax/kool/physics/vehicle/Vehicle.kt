@@ -5,7 +5,7 @@ import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.physics.PhysicsWorld
 import de.fabmax.kool.physics.RigidBody
 import de.fabmax.kool.scene.ColorMesh
-import de.fabmax.kool.scene.colorMesh
+import de.fabmax.kool.scene.addColorMesh
 import de.fabmax.kool.util.Color
 import kotlin.math.PI
 
@@ -52,7 +52,7 @@ abstract class CommonVehicle(val vehicleProps: VehicleProperties) : RigidBody() 
         }
 
         val wheelGroups = List(4) { i ->
-            colorMesh {
+            addColorMesh {
                 generate {
                     color = Color.DARK_GRAY.toLinear()
                     shapes[i].geometry.generateMesh(this)

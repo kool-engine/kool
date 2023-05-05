@@ -68,9 +68,9 @@ class MaterialPass(pipeline: DeferredPipeline, suffix: String) :
         super.collectDrawCommands(ctx)
     }
 
-    override fun addMesh(mesh: Mesh, ctx: KoolContext): DrawCommand? {
+    override fun appendMeshToDrawQueue(mesh: Mesh, ctx: KoolContext): DrawCommand? {
         return if (mesh.isOpaque) {
-            super.addMesh(mesh, ctx)
+            super.appendMeshToDrawQueue(mesh, ctx)
         } else {
             alphaMeshes += mesh
             null

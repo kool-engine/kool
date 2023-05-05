@@ -78,7 +78,7 @@ class SkyCubePass(opticalDepthLut: Texture2d, size: Int = 256) :
 
         drawNode.apply {
             // sky
-            textureMesh {
+            addTextureMesh {
                 generate {
                     icoSphere {
                         steps = 2
@@ -88,7 +88,7 @@ class SkyCubePass(opticalDepthLut: Texture2d, size: Int = 256) :
             }
 
             // ground
-            colorMesh {
+            addColorMesh {
                 generate {
                     translate(0f, -0.011f, 0f)
                     rotate(-90f, Vec3f.X_AXIS)

@@ -11,11 +11,7 @@ object FitContent : Dimension {
     }
 }
 
-class Grow(val weight: Float, val min: Dimension = Dp.ZERO, val max: Dimension = Dp.UNBOUNDED) : Dimension {
-    override fun toString(): String {
-        return "Grow(weight=$weight)"
-    }
-
+data class Grow(val weight: Float, val min: Dimension = Dp.ZERO, val max: Dimension = Dp.UNBOUNDED) : Dimension {
     fun clampPx(px: Float, contentSize: Float): Float {
         val minPx = if (min is Dp) min.px else contentSize
         val maxPx = if (max is Dp) max.px else contentSize

@@ -9,7 +9,7 @@ import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenCubeVertexStage
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenCube
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.scene.mesh
+import de.fabmax.kool.scene.addMesh
 import de.fabmax.kool.util.launchDelayed
 import de.fabmax.kool.util.logD
 import kotlin.math.PI
@@ -27,7 +27,7 @@ class IrradianceMapPass private constructor(parentScene: Scene, hdriMap: Texture
     init {
         clearColor = null
         drawNode.apply {
-            mesh(Attribute.POSITIONS) {
+            addMesh(Attribute.POSITIONS) {
                 generateFullscreenCube()
                 shader = IrradianceMapPassShader(hdriMap, cubeMap)
             }

@@ -7,7 +7,7 @@ import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
 import de.fabmax.kool.pipeline.shading.BlurShader
 import de.fabmax.kool.pipeline.shading.BlurShaderConfig
 import de.fabmax.kool.scene.Node
-import de.fabmax.kool.scene.mesh
+import de.fabmax.kool.scene.addMesh
 import de.fabmax.kool.util.Color
 import kotlin.math.sqrt
 
@@ -82,7 +82,7 @@ class BloomBlurPass(kernelSize: Int, thresholdPass: BloomThresholdPass) :
 
     private fun Node.fullScreenQuad(quadShader: Shader) {
         isFrustumChecked = false
-        mesh(Attribute.POSITIONS, Attribute.TEXTURE_COORDS) {
+        addMesh(Attribute.POSITIONS, Attribute.TEXTURE_COORDS) {
             generateFullscreenQuad()
             shader = quadShader
         }

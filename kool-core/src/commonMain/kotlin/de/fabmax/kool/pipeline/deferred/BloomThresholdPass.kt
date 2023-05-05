@@ -10,7 +10,7 @@ import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
-import de.fabmax.kool.scene.mesh
+import de.fabmax.kool.scene.addMesh
 import de.fabmax.kool.util.Color
 
 class BloomThresholdPass(deferredPipeline: DeferredPipeline, cfg: DeferredPipelineConfig) :
@@ -33,7 +33,7 @@ class BloomThresholdPass(deferredPipeline: DeferredPipeline, cfg: DeferredPipeli
 
         drawNode.apply {
             isFrustumChecked = false
-            quad = mesh(listOf(Attribute.POSITIONS, Attribute.TEXTURE_COORDS)) {
+            quad = addMesh(Attribute.POSITIONS, Attribute.TEXTURE_COORDS) {
                 isFrustumChecked = false
                 generateFullscreenQuad()
                 shader = outputShader

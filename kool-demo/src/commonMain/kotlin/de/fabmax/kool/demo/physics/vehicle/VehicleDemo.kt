@@ -239,7 +239,7 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
             groundNormal.dispose()
         }
 
-        textureMesh(isNormalMapped = true, name = "ground") {
+        addTextureMesh(isNormalMapped = true, name = "ground") {
             generate {
                 isCastingShadow = false
                 vertexModFun = {

@@ -147,7 +147,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
 
     private fun Scene.makeLightOverlays() {
         apply {
-            lightVolumeMesh = wireframeMesh(deferredPipeline.dynamicPointLights.mesh.geometry).apply {
+            lightVolumeMesh = addWireframeMesh(deferredPipeline.dynamicPointLights.mesh.geometry).apply {
                 isFrustumChecked = false
                 isVisible = false
                 isCastingShadow = false
@@ -193,7 +193,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
     }
 
     private fun Node.makeContent() {
-        objects = colorMesh {
+        objects = addColorMesh {
             generate {
                 val sphereProtos = mutableListOf<IndexedVertexList>()
                 for (i in 0..10) {
@@ -236,7 +236,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
             shader = objectShader
         }
 
-        lightPositionMesh = mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS)) {
+        lightPositionMesh = addMesh(Attribute.POSITIONS, Attribute.NORMALS) {
             isFrustumChecked = false
             isVisible = true
             isCastingShadow = false
@@ -256,7 +256,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
             }
         }
 
-        textureMesh(isNormalMapped = true) {
+        addTextureMesh(isNormalMapped = true) {
             generate {
                 rotate(90f, Vec3f.NEG_X_AXIS)
                 color = Color.WHITE

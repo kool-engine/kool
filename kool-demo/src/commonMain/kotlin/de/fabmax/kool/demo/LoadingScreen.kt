@@ -5,7 +5,7 @@ import de.fabmax.kool.math.randomF
 import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.scene.colorMesh
+import de.fabmax.kool.scene.addColorMesh
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
@@ -17,12 +17,10 @@ class LoadingScreen(val ctx: KoolContext) : Scene("Loading Screen") {
     val loadingText1 = mutableStateOf("")
     val loadingText2 = mutableStateOf("")
 
-    private val ui: UiSurface
-
     init {
         setupUiScene(true)
 
-        colorMesh {
+        addColorMesh {
             shader = KslUnlitShader {
                 color { vertexColor() }
             }
@@ -33,7 +31,7 @@ class LoadingScreen(val ctx: KoolContext) : Scene("Loading Screen") {
             }
         }
 
-        ui = Panel(sizes = Sizes.large) {
+        val ui = addPanel(sizes = Sizes.large) {
             modifier
                 .size(Grow.Std, Grow.Std)
                 .alignX(AlignmentX.Center)

@@ -8,7 +8,7 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenCubeVertexStage
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.scene.mesh
+import de.fabmax.kool.scene.addMesh
 import de.fabmax.kool.util.launchDelayed
 import de.fabmax.kool.util.logD
 
@@ -29,7 +29,7 @@ class ReflectionMapPass private constructor(parentScene: Scene, hdriMap: Texture
 
         val reflectionMapShader = ReflectionMapShader(hdriMap, cubeMap)
         drawNode.apply {
-            mesh(Attribute.POSITIONS, name = "reflectionMap") {
+            addMesh(Attribute.POSITIONS, name = "reflectionMap") {
                 generate {
                     cube(centered = true) { }
                 }

@@ -40,7 +40,7 @@ class Gizmo : Node(), InputStack.PointerListener {
     private val scaleGroup = Node()
 
     private val lineMesh = BetterLineMesh()
-    private val solidMesh = colorMesh {
+    private val solidMesh = addColorMesh {
         isCastingShadow = false
         shader = KslUnlitShader {
             color { vertexColor() }
@@ -59,7 +59,7 @@ class Gizmo : Node(), InputStack.PointerListener {
             }
         }
     }
-    private val solidMeshHidden = colorMesh {
+    private val solidMeshHidden = addColorMesh {
         isCastingShadow = false
         shader = KslUnlitShader {
             color {

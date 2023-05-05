@@ -70,7 +70,7 @@ class RoughnesMetalGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.P
         val nCols = 7
         val spacing = 2.5f
 
-        return mesh(Attribute.POSITIONS, Attribute.NORMALS) {
+        return addMesh(Attribute.POSITIONS, Attribute.NORMALS) {
             isFrustumChecked = false
             geometry.addGeometry(sphereProto.simpleSphere)
             shader = instancedPbrShader(withIbl, envMaps).also { shaders += it }

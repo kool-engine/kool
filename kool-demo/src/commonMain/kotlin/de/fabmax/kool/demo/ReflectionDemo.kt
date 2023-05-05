@@ -101,7 +101,7 @@ class ReflectionDemo : DemoScene("Reflections") {
                     floorRoughness.dispose()
                 }
 
-                textureMesh(isNormalMapped = true) {
+                addTextureMesh(isNormalMapped = true) {
                     generate {
                         rect {
                             rotate(-90f, Vec3f.X_AXIS)
@@ -256,7 +256,7 @@ class ReflectionDemo : DemoScene("Reflections") {
 
         init {
             light.setSpot(Vec3f.ZERO, Vec3f.X_AXIS, 50f)
-            colorMesh {
+            addColorMesh {
                 isCastingShadow = false
                 generate {
                     uvSphere {

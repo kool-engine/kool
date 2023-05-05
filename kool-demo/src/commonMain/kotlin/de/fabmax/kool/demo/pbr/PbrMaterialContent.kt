@@ -13,7 +13,7 @@ import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.scene.textureMesh
+import de.fabmax.kool.scene.addTextureMesh
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Time
 
@@ -93,7 +93,7 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrCont
         }
     }
 
-    private fun Node.makeSphere(withIbl: Boolean, scene: Scene, envMaps: EnvironmentMaps) = textureMesh(isNormalMapped = true) {
+    private fun Node.makeSphere(withIbl: Boolean, scene: Scene, envMaps: EnvironmentMaps) = addTextureMesh(isNormalMapped = true) {
         geometry.addGeometry(sphereProto.detailSphere)
         val shader = KslPbrShader{
             color { textureColor() }

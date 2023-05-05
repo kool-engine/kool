@@ -13,9 +13,9 @@ import de.fabmax.kool.pipeline.deferred.deferredKslPbrShader
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.pipeline.shading.AlphaMode
 import de.fabmax.kool.scene.Node
-import de.fabmax.kool.scene.colorMesh
+import de.fabmax.kool.scene.addColorMesh
+import de.fabmax.kool.scene.addMesh
 import de.fabmax.kool.scene.geometry.MeshBuilder
-import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.SimpleShadowMap
 
@@ -36,7 +36,7 @@ class Glas(val ibl: EnvironmentMaps, shadowMap: SimpleShadowMap) : Node(), Defer
         glasShader.refractionColorMap = currentPasses.lightingPass.colorTexture
     }
 
-    private fun makeBody() = colorMesh {
+    private fun makeBody() = addColorMesh {
         isOpaque = false
         generate {
             makeBodyGeometry()
@@ -53,7 +53,7 @@ class Glas(val ibl: EnvironmentMaps, shadowMap: SimpleShadowMap) : Node(), Defer
         }
     }
 
-    private fun makeShaft() = mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, THICKNESS)) {
+    private fun makeShaft() = addMesh(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, THICKNESS) {
         generate {
             makeShaftGeometry()
             geometry.removeDegeneratedTriangles()
@@ -64,7 +64,7 @@ class Glas(val ibl: EnvironmentMaps, shadowMap: SimpleShadowMap) : Node(), Defer
         shader = glasShader
     }
 
-    private fun makeWine() = colorMesh {
+    private fun makeWine() = addColorMesh {
         generate {
             makeWineGeometry()
             geometry.removeDegeneratedTriangles()

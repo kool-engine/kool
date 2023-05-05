@@ -8,9 +8,9 @@ import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ksl.KslBlinnPhongShader
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.scene.colorMesh
+import de.fabmax.kool.scene.addColorMesh
+import de.fabmax.kool.scene.addGroup
 import de.fabmax.kool.scene.defaultOrbitCamera
-import de.fabmax.kool.scene.group
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Gizmo
@@ -38,12 +38,12 @@ class GizmoTest : DemoScene("Gizmo Test") {
             }
         }
 
-        group {
+        addGroup {
             onUpdate += {
                 gizmo1.getGizmoTransform(this)
             }
 
-            colorMesh {
+            addColorMesh {
                 generate {
                     cube(centered = true) { }
                 }

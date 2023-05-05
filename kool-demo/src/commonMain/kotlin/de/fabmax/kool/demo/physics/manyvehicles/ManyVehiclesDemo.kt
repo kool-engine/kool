@@ -87,7 +87,7 @@ class ManyVehiclesDemo : DemoScene("Many Vehicles") {
         }
         makeGround()
 
-        mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS)) {
+        addMesh(Attribute.POSITIONS, Attribute.NORMALS) {
             isFrustumChecked = false
             instances = chassisInstances
             generate {
@@ -99,7 +99,7 @@ class ManyVehiclesDemo : DemoScene("Many Vehicles") {
             shader = chassisShader()
         }
 
-        colorMesh {
+        addColorMesh {
             isFrustumChecked = false
             instances = wheelInstances
             generate {
@@ -144,7 +144,7 @@ class ManyVehiclesDemo : DemoScene("Many Vehicles") {
             groundNormal.dispose()
         }
 
-        textureMesh(isNormalMapped = true, name = "ground") {
+        addTextureMesh(isNormalMapped = true, name = "ground") {
             generate {
                 isCastingShadow = false
                 vertexModFun = {

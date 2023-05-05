@@ -12,10 +12,10 @@ import de.fabmax.kool.modules.ui2.remember
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
+import de.fabmax.kool.scene.addMesh
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.multiShape
 import de.fabmax.kool.scene.geometry.simpleShape
-import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.util.ColorGradient
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.Time
@@ -47,7 +47,7 @@ class PlanarOrbits(resources: CreativeCodingDemo.Resources) : CreativeContent("P
         }
     }
 
-    private fun createMesh(resources: CreativeCodingDemo.Resources): Mesh = mesh(
+    private fun createMesh(resources: CreativeCodingDemo.Resources): Mesh = addMesh(
         Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.METAL_ROUGH
     ) {
         shader = KslPbrShader {

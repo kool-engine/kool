@@ -16,7 +16,7 @@ class HelloRenderToTextureDemo : DemoScene("Hello RenderToTexture") {
     override fun Scene.setupMainScene(ctx: KoolContext) {
         // create offscreen content
         val backgroundGroup = Node().apply {
-            colorMesh {
+            addColorMesh {
                 generate {
                     cube(centered = true) {
                         colored(linearSpace = false)
@@ -43,7 +43,7 @@ class HelloRenderToTextureDemo : DemoScene("Hello RenderToTexture") {
         defaultOrbitCamera()
         addOffscreenPass(off)
 
-        textureMesh {
+        addTextureMesh {
             generate {
                 rect {
                     size.set(2f, 2f)

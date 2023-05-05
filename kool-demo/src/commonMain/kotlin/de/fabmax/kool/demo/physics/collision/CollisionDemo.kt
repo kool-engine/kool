@@ -279,7 +279,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
         frame += frameBk
 
         // render textured ground box
-        textureMesh(isNormalMapped = true) {
+        addTextureMesh(isNormalMapped = true) {
             generate {
                 vertexModFun = {
                     texCoord.set(x / 10, z / 10)
@@ -302,7 +302,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
         }
 
         // render frame
-        colorMesh {
+        addColorMesh {
             generate {
                 frame.forEach {
                     val shape = it.shapes[0].geometry as BoxGeometry

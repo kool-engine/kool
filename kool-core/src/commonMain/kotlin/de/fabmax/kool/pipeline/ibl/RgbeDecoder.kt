@@ -13,7 +13,7 @@ import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.renderPassConfig
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.scene.textureMesh
+import de.fabmax.kool.scene.addTextureMesh
 import de.fabmax.kool.util.launchDelayed
 import de.fabmax.kool.util.logD
 import kotlin.math.max
@@ -36,7 +36,7 @@ class RgbeDecoder(parentScene: Scene, hdriTexture: Texture2d, brightness: Float 
     init {
         clearColor = null
         drawNode.apply {
-            textureMesh {
+            addTextureMesh {
                 generateFullscreenQuad()
                 shader = RgbeDecoderShader(hdriTexture, brightness)
             }

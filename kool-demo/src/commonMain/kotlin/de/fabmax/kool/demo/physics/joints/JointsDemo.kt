@@ -108,7 +108,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
         addNode(niceMeshes)
 
         // ground plane
-        textureMesh(isNormalMapped = true) {
+        addTextureMesh(isNormalMapped = true) {
             isCastingShadow = false
             generate {
                 rotate(-90f, Vec3f.X_AXIS)

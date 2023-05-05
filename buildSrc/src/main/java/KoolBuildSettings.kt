@@ -1,5 +1,5 @@
 object KoolBuildSettings {
 
-    val isRelease = true
+    val isRelease = false
 
 }

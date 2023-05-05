@@ -28,25 +28,34 @@ class DragAndDropContext<T: Any> {
     fun drag(dragPointerEvent: PointerEvent) {
         val item = dragItem ?: return
 
-        val hovering = handlers.find { handler ->
+        handlers.forEach { handler ->
             val target = handler.dropTarget
-            target != null
+            val isHovered = target != null
                     && target.isInBounds(dragPointerEvent.screenPosition)
                     && target.surface.isOnTop(dragPointerEvent.screenPosition)
+
+            handler.onDrag(item, dragPointerEvent, sourceHandler, isHovered)
         }
-        handlers.forEach { it.onDrag(item, dragPointerEvent, sourceHandler, hovering) }
     }
 
     fun endDrag(dragPointerEvent: PointerEvent) {
         val item = dragItem ?: return
 
-        val targetHandler = handlers.find { handler ->
+        var success = false
+        var targetHandler: DragAndDropHandler<T>? = null
+        for (handler in handlers) {
             val target = handler.dropTarget
-            target != null
+            val isHovered = target != null
                     && target.isInBounds(dragPointerEvent.screenPosition)
                     && target.surface.isOnTop(dragPointerEvent.screenPosition)
+            if (isHovered) {
+                success = handler.receive(item, dragPointerEvent, sourceHandler)
+            }
+            if (success) {
+                targetHandler = handler
+                break
+            }
         }
-        val success = targetHandler?.receive(item, sourceHandler) ?: false
         handlers.forEach { it.onDragEnd(item, dragPointerEvent, sourceHandler, targetHandler, success) }
     }
 }
@@ -54,10 +63,10 @@ class DragAndDropContext<T: Any> {
 interface DragAndDropHandler<T: Any> {
     val dropTarget: UiNode?
 
-    fun receive(dragItem: T, source: DragAndDropHandler<T>?): Boolean
+    fun receive(dragItem: T, dragPointer: PointerEvent, source: DragAndDropHandler<T>?): Boolean
 
     fun onDragStart(dragItem: T, dragPointer: PointerEvent, source: DragAndDropHandler<T>?) { }
-    fun onDrag(dragItem: T, dragPointer: PointerEvent, source: DragAndDropHandler<T>?, hovering: DragAndDropHandler<T>?) { }
+    fun onDrag(dragItem: T, dragPointer: PointerEvent, source: DragAndDropHandler<T>?, isHovered: Boolean) { }
     fun onDragEnd(dragItem: T, dragPointer: PointerEvent, source: DragAndDropHandler<T>?, target: DragAndDropHandler<T>?, success: Boolean) { }
 }
 

@@ -1,10 +1,11 @@
 plugins {
     kotlin("multiplatform") version Versions.kotlinVersion apply false
+    id("org.jetbrains.dokka") version Versions.dokkaVersion apply false
 }
 
 allprojects {
     group = "de.fabmax.kool"
-    version = "0.11.0"
+    version = "0.12.0-SNAPSHOT"
 
     repositories {
         mavenLocal()
@@ -13,5 +14,6 @@ allprojects {
 
     subprojects {
         apply(plugin = "kotlin-multiplatform")
+        apply(plugin = "org.jetbrains.dokka")
     }
 }

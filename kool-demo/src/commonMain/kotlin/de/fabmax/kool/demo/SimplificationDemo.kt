@@ -78,7 +78,7 @@ class SimplificationDemo : DemoScene("Simplification") {
             add(Light().setDirectional(Vec3f(1f, -1f, -1f)).setColor(MdColor.CYAN.mix(Color.WHITE, 0.25f).toLinear(), 2f))
         }
 
-        group {
+        addGroup {
             addNode(dispModel)
             addNode(modelWireframe)
 

@@ -7,12 +7,15 @@ import de.fabmax.kool.math.spatial.BoundingBox
  * @author fabmax
  */
 
-fun Node.group(name: String? = null, block: Node.() -> Unit): Node {
+fun Node.addGroup(name: String? = null, block: Node.() -> Unit): Node {
     val tg = Node(name)
     tg.block()
     addNode(tg)
     return tg
 }
+
+@Deprecated("to be replaced by addGroup()", ReplaceWith("addGroup(name) { block() }"))
+fun Node.group(name: String? = null, block: Node.() -> Unit) = addGroup(name, block)
 
 @Deprecated("Replaced by Node", replaceWith = ReplaceWith("Node"))
 open class Group(name: String? = null) : Node(name) {

@@ -35,7 +35,7 @@ class DemoMenu(val demoLoader: DemoLoader) {
         }
 
     val ui = UiScene {
-        Panel(colors = Colors.neon) {
+        addPanel(colors = Colors.neon) {
             surface.sizes = Settings.uiSize.use().sizes
 
             modifier

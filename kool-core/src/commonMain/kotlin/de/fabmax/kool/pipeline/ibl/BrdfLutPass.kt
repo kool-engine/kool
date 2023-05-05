@@ -13,7 +13,7 @@ import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.renderPassConfig
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.scene.mesh
+import de.fabmax.kool.scene.addMesh
 import de.fabmax.kool.util.launchDelayed
 import de.fabmax.kool.util.logD
 
@@ -31,7 +31,7 @@ class BrdfLutPass(parentScene: Scene) :
     init {
         clearColor = null
         drawNode.apply {
-            mesh(Attribute.POSITIONS, Attribute.TEXTURE_COORDS) {
+            addMesh(Attribute.POSITIONS, Attribute.TEXTURE_COORDS) {
                 generateFullscreenQuad()
                 shader = brdfLutShader()
             }

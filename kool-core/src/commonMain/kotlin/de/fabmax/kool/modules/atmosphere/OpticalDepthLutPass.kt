@@ -9,7 +9,7 @@ import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
 import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.OrthographicCamera
-import de.fabmax.kool.scene.mesh
+import de.fabmax.kool.scene.addMesh
 import de.fabmax.kool.util.logI
 
 class OpticalDepthLutPass :
@@ -38,7 +38,7 @@ class OpticalDepthLutPass :
         }
 
         drawNode.apply {
-            mesh(listOf(Attribute.POSITIONS, Attribute.TEXTURE_COORDS)) {
+            addMesh(Attribute.POSITIONS, Attribute.TEXTURE_COORDS) {
                 generateFullscreenQuad()
                 shader = lutShader
 

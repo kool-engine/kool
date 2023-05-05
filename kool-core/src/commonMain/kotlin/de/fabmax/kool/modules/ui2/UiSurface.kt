@@ -74,7 +74,7 @@ open class UiSurface(
                 onEachFrame[i](it.ctx)
             }
 
-            inputHandler.checkInputHandler()
+            inputHandler.checkInputHandler(it.ctx)
             if (requiresUpdate) {
                 requiresUpdate = false
                 updateUi(it)
@@ -292,7 +292,7 @@ open class UiSurface(
             }
         }
 
-        fun checkInputHandler() {
+        fun checkInputHandler(ctx: KoolContext) {
             if (inputMode == InputCaptureMode.CaptureDisabled) {
                 InputStack.remove(this)
                 return
@@ -309,9 +309,10 @@ open class UiSurface(
             val wasBlockingPointerInput = blockAllPointerInput
             blockAllPointerInput = false
             val ptr = PointerInput.primaryPointer
+            var isPointerOnSurface = false
             if (ptr.isValid) {
                 val ptrPos = Vec2f(ptr.x.toFloat(), ptr.y.toFloat())
-                var isPointerOnSurface = dragNode != null || viewport.children.any { it.modifier.isBlocking && it.isInBounds(ptrPos) }
+                isPointerOnSurface = dragNode != null || viewport.children.any { it.modifier.isBlocking && it.isInBounds(ptrPos) }
 
                 if (dragNode == null && inputMode == InputCaptureMode.CaptureOverBackground) {
                     nodeResult.clear()
@@ -324,6 +325,13 @@ open class UiSurface(
                 if (isPointerOnSurface && (wasBlockingPointerInput || !ptr.isDrag)) {
                     blockAllPointerInput = true
                 }
+            }
+
+            if (!isPointerOnSurface) {
+                hoveredNode?.let { stopHover(it, PointerEvent(ptr, ctx)) }
+            }
+            if (dragNode != null && !ptr.isDrag) {
+                dragNode?.let { stopDrag(it, PointerEvent(ptr, ctx)) }
             }
 
             if (blockAllPointerInput || blockAllKeyboardInput) {
@@ -382,8 +390,7 @@ open class UiSurface(
                 }
             } else {
                 // hovering stopped, cannot be rejected...
-                invokePointerCallback(currentHover, ptrEv, currentHover.modifier.onExit)
-                hoveredNode = null
+                stopHover(currentHover, ptrEv)
             }
         }
 
@@ -397,9 +404,18 @@ open class UiSurface(
                 }
             } else {
                 // dragging stopped, cannot be rejected...
-                invokePointerCallback(currentDrag, ptrEv, currentDrag.modifier.onDragEnd)
-                dragNode = null
+                stopDrag(currentDrag, ptrEv)
             }
+        }
+
+        private fun stopHover(currentHover: UiNode, ptrEv: PointerEvent) {
+            invokePointerCallback(currentHover, ptrEv, currentHover.modifier.onExit)
+            hoveredNode = null
+        }
+
+        private fun stopDrag(currentDrag: UiNode, ptrEv: PointerEvent) {
+            invokePointerCallback(currentDrag, ptrEv, currentDrag.modifier.onDragEnd)
+            dragNode = null
         }
 
         fun handlePointerEvents(relevantNodes: List<UiNode>, ptrEv: PointerEvent) {

@@ -100,7 +100,7 @@ class AoDemo : DemoScene("Ambient Occlusion") {
         aoSamples.set(aoPipeline.kernelSz)
         aoMapSize.set(aoPipeline.mapSize)
 
-        colorMesh("teapots") {
+        addColorMesh("teapots") {
             generate {
                 for (x in -3..3) {
                     for (y in -3..3) {
@@ -128,7 +128,7 @@ class AoDemo : DemoScene("Ambient Occlusion") {
             this.shader = shader
         }
 
-        textureMesh("ground", isNormalMapped = true) {
+        addTextureMesh("ground", isNormalMapped = true) {
             isCastingShadow = false
             generate {
                 // generate a cube (as set of rects for better control over tex coords)

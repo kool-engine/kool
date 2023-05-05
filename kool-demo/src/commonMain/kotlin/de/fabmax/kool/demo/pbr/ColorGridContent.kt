@@ -79,7 +79,7 @@ class ColorGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrConten
         colors += MdColor.BLUE_GREY
         colors += Color(0.1f, 0.1f, 0.1f)
 
-        return mesh(Attribute.POSITIONS, Attribute.NORMALS) {
+        return addMesh(Attribute.POSITIONS, Attribute.NORMALS) {
             isFrustumChecked = false
             geometry.addGeometry(sphereProto.simpleSphere)
             shader = instancedPbrShader(withIbl, environmentMaps).also { shaders += it }
