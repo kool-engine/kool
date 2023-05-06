@@ -31,6 +31,11 @@ typealias KslExprInt2 = KslVectorExpression<KslTypeInt2, KslTypeInt1>
 typealias KslExprInt3 = KslVectorExpression<KslTypeInt3, KslTypeInt1>
 typealias KslExprInt4 = KslVectorExpression<KslTypeInt4, KslTypeInt1>
 
+typealias KslExprUint1 = KslScalarExpression<KslTypeUint1>
+typealias KslExprUint2 = KslVectorExpression<KslTypeUint2, KslTypeUint1>
+typealias KslExprUint3 = KslVectorExpression<KslTypeUint3, KslTypeUint1>
+typealias KslExprUint4 = KslVectorExpression<KslTypeUint4, KslTypeUint1>
+
 typealias KslExprBool1 = KslScalarExpression<KslTypeBool1>
 typealias KslExprBool2 = KslVectorExpression<KslTypeBool2, KslTypeBool1>
 typealias KslExprBool3 = KslVectorExpression<KslTypeBool3, KslTypeBool1>
@@ -49,6 +54,11 @@ typealias KslExprInt1Array = KslScalarArrayExpression<KslTypeInt1>
 typealias KslExprInt2Array = KslVectorArrayExpression<KslTypeInt2, KslTypeInt1>
 typealias KslExprInt3Array = KslVectorArrayExpression<KslTypeInt3, KslTypeInt1>
 typealias KslExprInt4Array = KslVectorArrayExpression<KslTypeInt4, KslTypeInt1>
+
+typealias KslExprUint1Array = KslScalarArrayExpression<KslTypeUint1>
+typealias KslExprUint2Array = KslVectorArrayExpression<KslTypeUint2, KslTypeUint1>
+typealias KslExprUint3Array = KslVectorArrayExpression<KslTypeUint3, KslTypeUint1>
+typealias KslExprUint4Array = KslVectorArrayExpression<KslTypeUint4, KslTypeUint1>
 
 typealias KslExprBool1Array = KslScalarArrayExpression<KslTypeBool1>
 typealias KslExprBool2Array = KslVectorArrayExpression<KslTypeBool2, KslTypeBool1>

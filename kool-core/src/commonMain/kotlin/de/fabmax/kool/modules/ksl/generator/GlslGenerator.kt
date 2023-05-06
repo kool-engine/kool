@@ -159,8 +159,7 @@ open class GlslGenerator : KslGenerator() {
         if (samplers.isNotEmpty()) {
             appendLine("// texture samplers")
             for (u in samplers) {
-                val arraySuffix = if (u.value is KslArray<*>) { "[${u.arraySize}]" } else { "" }
-                appendLine("uniform ${glslTypeName(u.expressionType)} ${u.value.name()}${arraySuffix};")
+                appendLine("uniform ${glslTypeName(u.expressionType)} ${u.value.name()};")
             }
             appendLine()
         }
@@ -177,8 +176,7 @@ open class GlslGenerator : KslGenerator() {
 
                 appendLine("${layoutPrefix}uniform ${ubo.name} {")
                 for (u in ubo.uniforms.values) {
-                    val arraySuffix = if (u.value is KslArray<*>) { "[${u.arraySize}]" } else { "" }
-                    appendLine("    highp ${glslTypeName(u.expressionType)} ${u.value.name()}${arraySuffix};")
+                    appendLine("    highp ${glslTypeName(u.expressionType)} ${u.value.name()};")
                 }
                 appendLine("};")
             }
@@ -201,8 +199,7 @@ open class GlslGenerator : KslGenerator() {
             appendLine("// custom vertex stage outputs")
             vertexStage.interStageVars.forEach { interStage ->
                 val value = interStage.input
-                val arraySuffix = if (value is KslArray<*>) { "[${value.arraySize}]" } else { "" }
-                appendLine("${interStage.interpolation.glsl()} out ${glslTypeName(value.expressionType)} ${value.name()}${arraySuffix};")
+                appendLine("${interStage.interpolation.glsl()} out ${glslTypeName(value.expressionType)} ${value.name()};")
             }
             appendLine()
         }
@@ -213,8 +210,7 @@ open class GlslGenerator : KslGenerator() {
             appendLine("// custom fragment stage inputs")
             fragmentStage.interStageVars.forEach { interStage ->
                 val value = interStage.output
-                val arraySuffix = if (value is KslArray<*>) { "[${value.arraySize}]" } else { "" }
-                appendLine("${interStage.interpolation.glsl()} in ${glslTypeName(value.expressionType)} ${value.name()}${arraySuffix};")
+                appendLine("${interStage.interpolation.glsl()} in ${glslTypeName(value.expressionType)} ${value.name()};")
             }
             appendLine()
         }
@@ -251,10 +247,15 @@ open class GlslGenerator : KslGenerator() {
     }
 
     override fun opDeclareArray(op: KslDeclareArray): String {
-        val initExpr = op.elements.joinToString { it.generateExpression(this) }
         val array = op.declareVar
-        val typeName = glslTypeName(array.expressionType.elemType)
-        return "$typeName ${array.name()}[${array.arraySize}] = ${typeName}[](${initExpr});"
+        val typeName = glslTypeName(array.expressionType)
+
+        return if (op.elements.size == 1 && op.elements[0].expressionType == array.expressionType) {
+            "$typeName ${array.name()} = ${op.elements[0].generateExpression(this)};"
+        } else {
+            val initExpr = op.elements.joinToString { it.generateExpression(this) }
+            "$typeName ${array.name()} = ${typeName}(${initExpr});"
+        }
     }
 
     override fun opAssign(op: KslAssign<*>): String {
@@ -456,7 +457,7 @@ open class GlslGenerator : KslGenerator() {
             KslTypeDepthSampler2dArray -> "sampler2DArrayShadow"
             KslTypeDepthSamplerCubeArray -> "samplerCubeArrayShadow"
 
-            is KslTypeArray<*> -> glslTypeName(type.elemType)
+            is KslTypeArray<*> -> "${glslTypeName(type.elemType)}[${type.arraySize}]"
         }
     }
 

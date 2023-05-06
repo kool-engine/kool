@@ -109,7 +109,7 @@ open class KslPbrShader(cfg: Config, model: KslProgram = Model(cfg)) : KslLitSha
                 null
             }
 
-            val material = pbrMaterialBlock(reflectionMaps, brdfLut) {
+            val material = pbrMaterialBlock(cfg.maxNumberOfLights, reflectionMaps, brdfLut) {
                 inCamPos(camData.position)
                 inNormal(normal)
                 inFragmentPos(fragmentWorldPos)

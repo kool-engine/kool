@@ -5,20 +5,30 @@ import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.ibl.ReflectionMapPass
 import kotlin.math.PI
 
-fun KslScopeBuilder.pbrMaterialBlock(reflectionMaps: KslArrayExpression<KslTypeColorSamplerCube>?,
-                                     brdfLut: KslExpression<KslTypeColorSampler2d>,
-                                     block: PbrMaterialBlock.() -> Unit): PbrMaterialBlock {
-    val pbrMaterialBlock = PbrMaterialBlock(parentStage.program.nextName("pbrMaterialBlock"), reflectionMaps, brdfLut, this)
+fun KslScopeBuilder.pbrMaterialBlock(
+    maxNumberOfLights: Int,
+    reflectionMaps: KslArrayExpression<KslTypeColorSamplerCube>?,
+    brdfLut: KslExpression<KslTypeColorSampler2d>,
+    block: PbrMaterialBlock.() -> Unit
+): PbrMaterialBlock {
+    val pbrMaterialBlock = PbrMaterialBlock(
+        maxNumberOfLights,
+        parentStage.program.nextName("pbrMaterialBlock"),
+        reflectionMaps,
+        brdfLut,
+        this
+    )
     ops += pbrMaterialBlock.apply(block)
     return pbrMaterialBlock
 }
 
 class PbrMaterialBlock(
+    maxNumberOfLights: Int,
     name: String,
     reflectionMaps: KslArrayExpression<KslTypeColorSamplerCube>?,
     brdfLut: KslExpression<KslTypeColorSampler2d>,
     parentScope: KslScopeBuilder
-) : LitMaterialBlock(name, parentScope) {
+) : LitMaterialBlock(maxNumberOfLights, name, parentScope) {
 
     val inRoughness = inFloat1("inRoughness", KslValueFloat1(0.5f))
     val inMetallic = inFloat1("inMetallic", KslValueFloat1(0f))

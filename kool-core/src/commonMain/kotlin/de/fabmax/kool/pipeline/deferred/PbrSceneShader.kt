@@ -199,7 +199,7 @@ open class PbrSceneShader(cfg: DeferredPbrConfig, model: Model = Model(cfg)) :
                         null
                     }
 
-                    val material = pbrMaterialBlock(reflectionMaps, brdfLut) {
+                    val material = pbrMaterialBlock(cfg.maxLights, reflectionMaps, brdfLut) {
                         inCamPos(camData.position)
                         inNormal(worldNrm)
                         inFragmentPos(worldPos)

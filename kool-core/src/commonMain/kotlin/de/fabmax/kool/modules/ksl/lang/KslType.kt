@@ -59,7 +59,41 @@ object KslTypeMat2 : KslFloatType("mat2"), KslMatrix<KslTypeFloat2>
 object KslTypeMat3 : KslFloatType("mat3"), KslMatrix<KslTypeFloat3>
 object KslTypeMat4 : KslFloatType("mat4"), KslMatrix<KslTypeFloat4>
 
-class KslTypeArray<T: KslType>(val elemType: T) : KslType("array<${elemType.typeName}>")
+open class KslTypeArray<T: KslType>(val elemType: T, val arraySize: Int) : KslType("array<${elemType.typeName}>[$arraySize]") {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is KslTypeArray<*>) return false
+        return elemType == other.elemType && arraySize == other.arraySize
+    }
+
+    override fun hashCode(): Int {
+        return 31 * elemType.hashCode() + arraySize
+    }
+}
+
+class KslTypeFloat1Array(arraySize: Int) : KslTypeArray<KslTypeFloat1>(KslTypeFloat1, arraySize)
+class KslTypeFloat2Array(arraySize: Int) : KslTypeArray<KslTypeFloat2>(KslTypeFloat2, arraySize)
+class KslTypeFloat3Array(arraySize: Int) : KslTypeArray<KslTypeFloat3>(KslTypeFloat3, arraySize)
+class KslTypeFloat4Array(arraySize: Int) : KslTypeArray<KslTypeFloat4>(KslTypeFloat4, arraySize)
+
+class KslTypeInt1Array(arraySize: Int) : KslTypeArray<KslTypeInt1>(KslTypeInt1, arraySize)
+class KslTypeInt2Array(arraySize: Int) : KslTypeArray<KslTypeInt2>(KslTypeInt2, arraySize)
+class KslTypeInt3Array(arraySize: Int) : KslTypeArray<KslTypeInt3>(KslTypeInt3, arraySize)
+class KslTypeInt4Array(arraySize: Int) : KslTypeArray<KslTypeInt4>(KslTypeInt4, arraySize)
+
+class KslTypeUint1Array(arraySize: Int) : KslTypeArray<KslTypeUint1>(KslTypeUint1, arraySize)
+class KslTypeUint2Array(arraySize: Int) : KslTypeArray<KslTypeUint2>(KslTypeUint2, arraySize)
+class KslTypeUint3Array(arraySize: Int) : KslTypeArray<KslTypeUint3>(KslTypeUint3, arraySize)
+class KslTypeUint4Array(arraySize: Int) : KslTypeArray<KslTypeUint4>(KslTypeUint4, arraySize)
+
+class KslTypeBool1Array(arraySize: Int) : KslTypeArray<KslTypeBool1>(KslTypeBool1, arraySize)
+class KslTypeBool2Array(arraySize: Int) : KslTypeArray<KslTypeBool2>(KslTypeBool2, arraySize)
+class KslTypeBool3Array(arraySize: Int) : KslTypeArray<KslTypeBool3>(KslTypeBool3, arraySize)
+class KslTypeBool4Array(arraySize: Int) : KslTypeArray<KslTypeBool4>(KslTypeBool4, arraySize)
+
+class KslTypeMat2Array(arraySize: Int) : KslTypeArray<KslTypeMat2>(KslTypeMat2, arraySize)
+class KslTypeMat3Array(arraySize: Int) : KslTypeArray<KslTypeMat3>(KslTypeMat3, arraySize)
+class KslTypeMat4Array(arraySize: Int) : KslTypeArray<KslTypeMat4>(KslTypeMat4, arraySize)
 
 sealed class KslTypeColorSampler<C: KslFloatType>(typeName: String) : KslTypeSampler<KslTypeFloat4>(typeName)
 sealed class KslTypeDepthSampler<C: KslFloatType>(typeName: String) : KslTypeSampler<KslTypeFloat1>(typeName)
