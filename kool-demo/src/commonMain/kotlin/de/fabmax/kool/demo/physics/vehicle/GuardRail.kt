@@ -21,10 +21,7 @@ import de.fabmax.kool.util.Float32Buffer
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.PolyUtil
 import de.fabmax.kool.util.Time
-import kotlin.math.PI
-import kotlin.math.cos
-import kotlin.math.sin
-import kotlin.math.sqrt
+import kotlin.math.*
 
 class GuardRail {
 

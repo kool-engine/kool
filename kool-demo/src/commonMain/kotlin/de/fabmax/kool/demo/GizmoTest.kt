@@ -4,7 +4,10 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.input.InputStack
 import de.fabmax.kool.input.KeyboardInput
-import de.fabmax.kool.math.*
+import de.fabmax.kool.math.Mat3f
+import de.fabmax.kool.math.Mat4d
+import de.fabmax.kool.math.MutableVec3f
+import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.ksl.KslBlinnPhongShader
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.scene.Scene
@@ -15,6 +18,8 @@ import de.fabmax.kool.toString
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Gizmo
 import de.fabmax.kool.util.MdColor
+import kotlin.math.max
+import kotlin.math.min
 
 class GizmoTest : DemoScene("Gizmo Test") {
     private val gizmo1 = Gizmo()

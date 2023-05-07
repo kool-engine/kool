@@ -123,8 +123,8 @@ actual object KeyValueStore {
     }
 
     @Serializable
-    data class KeyValueEntry(val k: String, val v: String)
+    private data class KeyValueEntry(val k: String, val v: String)
 
     @Serializable
-    data class KeyValueStore(val keyValues: List<KeyValueEntry>)
+    private data class KeyValueStore(val keyValues: List<KeyValueEntry>)
 }

@@ -6,7 +6,6 @@ import de.fabmax.kool.input.KeyCode
 import de.fabmax.kool.input.KeyboardInput
 import de.fabmax.kool.input.PlatformInput
 import de.fabmax.kool.math.clamp
-import de.fabmax.kool.math.min
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.platform.gl.GlRenderBackend
@@ -18,6 +17,7 @@ import java.awt.Desktop
 import java.awt.image.BufferedImage
 import java.net.URI
 import java.util.*
+import kotlin.math.min
 
 /**
  * @author fabmax

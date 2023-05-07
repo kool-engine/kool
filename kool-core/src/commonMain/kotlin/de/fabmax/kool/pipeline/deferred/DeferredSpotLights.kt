@@ -8,10 +8,7 @@ import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MutableColor
-import kotlin.math.PI
-import kotlin.math.abs
-import kotlin.math.cos
-import kotlin.math.sin
+import kotlin.math.*
 
 
 class DeferredSpotLights(val maxSpotAngle: Float) {
@@ -139,10 +136,10 @@ class DeferredSpotLights(val maxSpotAngle: Float) {
             val vp = Vec3f(x, y, z)
             val iv = vertex(vp, vp)
             if (i > 0) {
-                geometry.addTriIndices(iCenter, iv, iv-1)
+                geometry.addTriIndices(iCenter, iv, iv - 1)
             }
-            if (i == steps-1) {
-                geometry.addTriIndices(iCenter, iv-steps+1, iv)
+            if (i == steps - 1) {
+                geometry.addTriIndices(iCenter, iv - steps + 1, iv)
             }
         }
 

@@ -1,6 +1,9 @@
 package de.fabmax.kool.physics.vehicle
 
-import de.fabmax.kool.math.*
+import de.fabmax.kool.math.Mat4f
+import de.fabmax.kool.math.MutableVec3f
+import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.toRad
 import de.fabmax.kool.physics.*
 import de.fabmax.kool.util.memStack
 import org.lwjgl.system.MemoryStack
@@ -13,6 +16,7 @@ import physx.physics.*
 import physx.support.Vector_PxReal
 import physx.vehicle2.*
 import kotlin.math.abs
+import kotlin.math.max
 
 actual class Vehicle actual constructor(vehicleProps: VehicleProperties, val world: PhysicsWorld, pose: Mat4f)
     : CommonVehicle(vehicleProps) {

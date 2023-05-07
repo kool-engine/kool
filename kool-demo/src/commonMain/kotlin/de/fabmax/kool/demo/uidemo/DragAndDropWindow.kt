@@ -1,12 +1,12 @@
 package de.fabmax.kool.demo.uidemo
 
-import de.fabmax.kool.math.min
 import de.fabmax.kool.math.randomF
 import de.fabmax.kool.math.randomI
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.Color
 import kotlin.math.floor
 import kotlin.math.max
+import kotlin.math.min
 
 sealed class DragAndDropWindow(val uiDemo: UiDemo, name: String) : UiDemo.DemoWindow {
 

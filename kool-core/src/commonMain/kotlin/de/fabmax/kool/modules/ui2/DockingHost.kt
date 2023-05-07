@@ -2,7 +2,6 @@ package de.fabmax.kool.modules.ui2
 
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.Vec2f
-import de.fabmax.kool.math.min
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.logW
@@ -197,24 +196,24 @@ class DockingHost : Node() {
             Box {
                 when (position) {
                     DockPosition.Top -> {
-                        modifier.width(min(300.dp, maxW) * hoverScale)
-                        modifier.height(min(100.dp, maxH) * hoverScale)
+                        modifier.width(minOf(300.dp, maxW) * hoverScale)
+                        modifier.height(minOf(100.dp, maxH) * hoverScale)
                     }
                     DockPosition.End -> {
-                        modifier.width(min(100.dp, maxW) * hoverScale)
-                        modifier.height(min(300.dp, maxH) * hoverScale)
+                        modifier.width(minOf(100.dp, maxW) * hoverScale)
+                        modifier.height(minOf(300.dp, maxH) * hoverScale)
                     }
                     DockPosition.Bottom -> {
-                        modifier.width(min(300.dp, maxW) * hoverScale)
-                        modifier.height(min(100.dp, maxH) * hoverScale)
+                        modifier.width(minOf(300.dp, maxW) * hoverScale)
+                        modifier.height(minOf(100.dp, maxH) * hoverScale)
                     }
                     DockPosition.Start -> {
-                        modifier.width(min(100.dp, maxW) * hoverScale)
-                        modifier.height(min(300.dp, maxH) * hoverScale)
+                        modifier.width(minOf(100.dp, maxW) * hoverScale)
+                        modifier.height(minOf(300.dp, maxH) * hoverScale)
                     }
                     DockPosition.Center -> {
-                        modifier.width(min(200.dp, maxW) * hoverScale)
-                        modifier.height(min(200.dp, maxH) * hoverScale)
+                        modifier.width(minOf(200.dp, maxW) * hoverScale)
+                        modifier.height(minOf(200.dp, maxH) * hoverScale)
                     }
                 }
 

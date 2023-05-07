@@ -3,10 +3,10 @@ package de.fabmax.kool.modules.ui2
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.clamp
-import de.fabmax.kool.math.min
 import de.fabmax.kool.util.Time
 import kotlin.math.abs
 import kotlin.math.max
+import kotlin.math.min
 
 class DockingContainer(
     val dockingHost: DockingHost,

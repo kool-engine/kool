@@ -32,6 +32,7 @@ value class Dp(val value: Float): Dimension, Comparable<Dp> {
     operator fun plus(other: Dp): Dp = Dp(value + other.value)
     operator fun minus(other: Dp): Dp = Dp(value - other.value)
     operator fun times(factor: Float): Dp = Dp(value * factor)
+    operator fun times(factor: Int): Dp = Dp(value * factor)
 
     override fun compareTo(other: Dp): Int = value.compareTo(other.value)
 

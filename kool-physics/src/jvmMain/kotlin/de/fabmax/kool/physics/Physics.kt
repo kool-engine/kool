@@ -1,7 +1,5 @@
 package de.fabmax.kool.physics
 
-import de.fabmax.kool.math.max
-import de.fabmax.kool.math.min
 import de.fabmax.kool.util.logI
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -19,6 +17,8 @@ import physx.vehicle2.PxVehicleAxesEnum
 import physx.vehicle2.PxVehicleFrame
 import physx.vehicle2.PxVehicleTopLevelFunctions
 import kotlin.coroutines.CoroutineContext
+import kotlin.math.max
+import kotlin.math.min
 
 actual object Physics : CoroutineScope {
 
