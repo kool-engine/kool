@@ -3,6 +3,7 @@ package de.fabmax.kool.modules.ui2
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.input.*
 import de.fabmax.kool.math.Vec2f
+import de.fabmax.kool.modules.ui2.docking.Dock
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.pipeline.Shader
 import de.fabmax.kool.pipeline.Texture2d
@@ -16,6 +17,15 @@ open class UiSurface(
     sizes: Sizes = Sizes.medium,
     name: String = "uiSurface"
 ) : Node(name) {
+
+    constructor(
+        colors: Colors = Colors.darkColors(),
+        sizes: Sizes = Sizes.medium,
+        name: String = "uiSurface",
+        block: UiScope.() -> Unit
+    ) : this(colors, sizes, name) {
+        content = block
+    }
 
     private val meshLayers = TreeMap<Int, MeshLayer>()
     private val onEachFrame = mutableListOf<(KoolContext) -> Unit>()
@@ -37,11 +47,7 @@ open class UiSurface(
     private val focusableNodes = mutableListOf<Focusable>()
 
     var lastInputTime = 0.0
-
-    // top-level window scope if this UiSurface hosts a window
-    var windowScope: WindowScope? = null
-    val isWindowFocused: Boolean
-        get() = windowScope?.windowState?.isFocused?.value ?: true
+    var isFocused = mutableStateOf(false).onChange { if (it) setFocusedSurface(this) }
 
     var colors: Colors by colorsState::value
     var sizes: Sizes by sizesState::value
@@ -66,7 +72,6 @@ open class UiSurface(
         // mirror y-axis
         transform.scale(1f, -1f, 1f)
         onUpdate += {
-            UiScale.windowScale.set(it.ctx.windowScale)
             viewportWidth.set(it.renderPass.viewport.width.toFloat())
             viewportHeight.set(it.renderPass.viewport.height.toFloat())
 
@@ -74,10 +79,12 @@ open class UiSurface(
                 onEachFrame[i](it.ctx)
             }
 
-            inputHandler.checkInputHandler(it.ctx)
-            if (requiresUpdate) {
-                requiresUpdate = false
-                updateUi(it)
+            if (isVisible) {
+                inputHandler.checkInputHandler(it.ctx)
+                if (requiresUpdate) {
+                    requiresUpdate = false
+                    updateUi(it)
+                }
             }
         }
         onDispose += {
@@ -86,30 +93,13 @@ open class UiSurface(
     }
 
     /**
-     * Brings this surface to top inside a [DockingHost] context.
-     */
-    fun bringToTop() {
-        // kinda hacky: docked surfaces are ordered by their time of last user input
-        // give this surface an input time 1ms in the future to force it on top
-        lastInputTime = Time.gameTime + 0.001
-
-        windowScope?.let {
-            it.windowState.dockedTo.value?.bringToTop(it)
-        }
-    }
-
-    /**
-     * Checks whether this [UiSurface] / window is on top (i.e. visible) at the specified screen position within a
-     * [DockingHost] context.
+     * Checks whether this [UiSurface] is on top (i.e. visible) at the specified screen position within a
+     * [Dock] context. For this to work this surface needs to be a child of [Dock]. If no parent [Dock] is found,
+     * true is returned.
      */
     fun isOnTop(screenPositionPx: Vec2f): Boolean {
-        // if this ui surface is not inside a DockingHost, it is probably on top
-        val dockingHost = parent as? DockingHost ?: return true
-
-        return dockingHost.children.filterIsInstance<UiSurface>().filter { surface ->
-            surface !is DockingHost.DockingSurface
-                    && surface.viewport.children.any { it.modifier.isBlocking && it.isInBounds(screenPositionPx) }
-        }.lastOrNull() === this
+        val parentDock = findParentOfType<Dock>() ?: return true
+        return parentDock.isSurfaceOnTop(this, screenPositionPx)
     }
 
     private fun updateUi(updateEvent: RenderPass.UpdateEvent) {
@@ -299,7 +289,7 @@ open class UiSurface(
             }
 
             // keyboard input is blocked by this UiSurface as soon as a ui element is focused
-            blockAllKeyboardInput = isWindowFocused && focusedNode != null
+            blockAllKeyboardInput = isFocused.value && focusedNode != null
 
             // pointer input is blocked as soon as the pointer is above this surface OR if drag is active
             // the drag check is needed to avoid losing the pointer while dragging, e.g., a slider and accidentally
@@ -373,7 +363,7 @@ open class UiSurface(
 
             if (keyEvents.isNotEmpty()) {
                 focusedNode?.let { focusable ->
-                    lastInputTime = Time.gameTime
+                    onInput()
                     for (keyEv in keyEvents) {
                         focusable.onKeyEvent(keyEv)
                     }
@@ -395,7 +385,7 @@ open class UiSurface(
         }
 
         private fun handleDrag(currentDrag: UiNode, ptrEv: PointerEvent) {
-            lastInputTime = Time.gameTime
+            onInput()
             val ptr = ptrEv.pointer
             if (ptr.isDrag) {
                 // dragging continues, drag event can be rejected, by dragNode to stop dragging
@@ -432,27 +422,14 @@ open class UiSurface(
 
             wasDrag = ptr.isDrag
 
-            // kind of hacky: if pointer is close to the window border any ongoing hover is stopped so that we can
-            // hover (and drag / resize) the window border
-            val isCloseToWindowBorder = windowScope?.let {
-                it.uiNode.toLocal(ptrEv.screenPosition, ptrEv.position)
-                it.getResizeBorderFlags(ptrEv.position) != 0
-            } == true
-            if (isCloseToWindowBorder && hoveredNode !== windowScope?.uiNode) {
-                hoveredNode?.let { invokePointerCallback(it, ptrEv, it.modifier.onExit) }
-                hoveredNode = null
-            }
-
             relevantNodes.forEach { node ->
                 val mod = node.modifier
 
                 // onPointer is called for any node below pointer position
                 invokePointerCallback(node, ptrEv, mod.onPointer)
 
-                val windowResizeGuard = !isCloseToWindowBorder || node === windowScope?.uiNode
-
                 // check for new hover nodes (if no drag is in progress)
-                if (windowResizeGuard && dragNode == null && mod.hasAnyHoverCallback
+                if (dragNode == null && mod.hasAnyHoverCallback
                     && hoveredNode?.let { nodeComparator.compare(node, it) < 0 } != false) {
                     // stop hovering of previous hoveredNode - we found a new one on top of it
                     hoveredNode?.let { invokePointerCallback(it, ptrEv, it.modifier.onExit) }
@@ -462,17 +439,17 @@ open class UiSurface(
                     }
                 }
 
-                if (windowResizeGuard && isDragStart && dragNode == null && mod.hasAnyDragCallback
+                if (isDragStart && dragNode == null && mod.hasAnyDragCallback
                     && invokePointerCallback(node, ptrEv, mod.onDragStart, true)) {
                     dragNode = node
-                    lastInputTime = Time.gameTime
+                    onInput()
                 }
 
                 if (isAnyClick && invokePointerCallback(node, ptrEv, mod.onClick)) {
                     // click was consumed
                     ptrEv.pointer.consume()
                     isAnyClick = false
-                    lastInputTime = Time.gameTime
+                    onInput()
                 }
                 if (isWheelX && invokePointerCallback(node, ptrEv, mod.onWheelX)) {
                     // wheel x was consumed
@@ -485,6 +462,11 @@ open class UiSurface(
                     isWheelY = false
                 }
             }
+        }
+
+        private fun onInput() {
+            lastInputTime = Time.gameTime
+            isFocused.set(true)
         }
 
         private fun invokePointerCallback(
@@ -678,5 +660,18 @@ open class UiSurface(
         }
 
         private val hasPointerListener: (UiNode) -> Boolean = { it.modifier.hasAnyPointerCallback }
+
+        private var focusedSurface: UiSurface? = null
+        private fun setFocusedSurface(surface: UiSurface?) {
+            if (surface != focusedSurface) {
+                focusedSurface?.isFocused?.set(false)
+                focusedSurface = surface
+
+                surface?.let {
+                    it.isFocused.set(true)
+                    it.lastInputTime = Time.gameTime
+                }
+            }
+        }
     }
 }

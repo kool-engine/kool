@@ -17,16 +17,12 @@ sealed class DockNodeInter(
     override val isEmpty: Boolean
         get() = childNodes.isEmpty()
 
-    override fun insertDragItem(dragItem: Dockable, position: SlotPosition) {
+    override fun insertItem(dragItem: Dockable, position: SlotPosition) {
         if (position == SlotPosition.Center) {
             throw IllegalArgumentException("Center dock position is only valid for DockNodeLeaf")
         } else {
-            insertChildNodeIntoParent(position).dock(dragItem)
+            insertChildNodeIntoParent(position, dragItem.preferredWidth, dragItem.preferredHeight).dock(dragItem)
         }
-    }
-
-    override fun undock(dockable: Dockable) {
-        childNodes.forEach { it.undock(dockable) }
     }
 
     override fun getLeafNodeAt(screenPosPx: Vec2f): DockNodeLeaf? {
@@ -39,7 +35,6 @@ sealed class DockNodeInter(
     }
 
     fun removeChildNode(child: DockNode) {
-        //println("remove ${child.getPath()} from ${getPath()}")
         childNodes -= child
         child.parent = null
 

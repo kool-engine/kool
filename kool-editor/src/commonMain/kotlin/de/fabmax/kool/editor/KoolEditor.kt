@@ -25,10 +25,10 @@ class KoolEditor(val ctx: KoolContext) {
     }
 
     val appLoader = AppLoader(this)
-    val menu = EditorUi(this)
+    val ui = EditorUi(this)
 
     init {
-        ctx.scenes += menu
+        ctx.scenes += ui
 
         registerKeyBindings()
         registerSceneObjectPicking()
@@ -122,9 +122,9 @@ class KoolEditor(val ctx: KoolContext) {
     }
 
     private fun bringEditorMenuToTop() {
-        ctx.scenes -= menu
-        ctx.scenes += menu
-        menu.sceneBrowser.refreshSceneTree()
+        ctx.scenes -= ui
+        ctx.scenes += ui
+        ui.sceneBrowser.refreshSceneTree()
     }
 
     companion object {

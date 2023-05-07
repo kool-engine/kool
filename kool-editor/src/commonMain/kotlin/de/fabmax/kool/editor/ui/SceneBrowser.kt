@@ -1,28 +1,26 @@
 package de.fabmax.kool.editor.ui
 
-import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.modules.ui2.*
 
-class SceneBrowser(editor: KoolEditor) : EditorPanel(editor) {
+class SceneBrowser(ui: EditorUi) : EditorPanel("Scene Browser", ui) {
 
-    private val windowState = WindowState().apply { setWindowSize(Dp(300f), Dp(600f)) }
-    private val sceneObjectTree = SceneObjectTree(editor, this)
+    private val sceneObjectTree = SceneObjectTree(this)
 
-    override val windowSurface: UiSurface = Window(
-        windowState,
-        colors = EditorUi.EDITOR_THEME_COLORS,
-        name = "Scene Browser"
+    override val windowSurface: UiSurface = WindowSurface(
+        windowBounds,
+        colors = EditorUi.EDITOR_THEME_COLORS
     ) {
         modifier.backgroundColor(colors.background.withAlpha(0.8f))
 
-        TitleBar()
-        sceneObjectTree()
+        Column(Grow.Std, Grow.Std) {
+            TitleBar(windowBounds)
+            sceneObjectTree()
+        }
     }
-
-    override val windowScope: WindowScope = windowSurface.windowScope!!
 
     fun refreshSceneTree() {
         sceneObjectTree.refreshSceneTree()
     }
 
+    //override fun UiScope.windowContent() = sceneObjectTree()
 }

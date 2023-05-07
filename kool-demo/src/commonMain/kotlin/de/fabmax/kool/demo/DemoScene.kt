@@ -5,6 +5,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.demo.menu.TitleBgRenderer
 import de.fabmax.kool.modules.ui2.*
+import de.fabmax.kool.modules.ui2.docking.DockableBounds
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
@@ -22,10 +23,14 @@ abstract class DemoScene(val name: String) {
     val isMenu = mutableStateOf(true)
     val isMenuMinimized = mutableStateOf(false)
 
-    private val windowState = WindowState().apply {
-        setWindowLocation(Dp(100f), Dp(100f), AlignmentX.End, AlignmentY.Top)
-        setWindowSize(UiSizes.menuWidth, FitContent)
-    }
+    private val menuWindowBounds = DockableBounds(
+        name,
+        floatingX = UiSizes.baseSize * 2f,
+        floatingY = UiSizes.baseSize * 2f,
+        floatingWidth = UiSizes.menuWidth,
+        floatingHeight = FitContent,
+        floatingAlignmentX = AlignmentX.End
+    )
 
     var demoLoader: DemoLoader? = null
     var loadingScreen: LoadingScreen? = null
@@ -82,49 +87,52 @@ abstract class DemoScene(val name: String) {
         val accent = demoEntry?.color ?: MdColor.PINK
         val titleTxt = title ?: demoEntry?.title ?: "Demo"
 
-        windowState.setWindowSize(UiSizes.menuWidth, FitContent)
-        return Window(
-            windowState,
+        return WindowSurface(
+            menuWindowBounds,
             colors = Colors.singleColorDark(accent, Color("101010d0"))
         ) {
             if (!isMenu.use()) {
                 // reset window location, so that it will appear at default location when it is shown again
-                windowState.setWindowLocation(Dp(100f), Dp(100f), AlignmentX.End, AlignmentY.Top)
+                menuWindowBounds.setFloatingBounds(
+                    x = UiSizes.baseSize * 2f,
+                    y = UiSizes.baseSize * 2f,
+                    width = UiSizes.menuWidth,
+                    height = FitContent,
+                    alignmentX = AlignmentX.End,
+                    alignmentY = AlignmentY.Top
+                )
                 isMenuMinimized.set(false)
                 // hide window
                 surface.isVisible = false
-                return@Window
+                return@WindowSurface
             }
+
             surface.isVisible = true
-
             surface.sizes = Settings.uiSize.use().sizes
-            val cornerRadius = sizes.gap
-            modifier
-                .align(AlignmentX.End, AlignmentY.Top)
-                .margin(UiSizes.baseSize * 2f)
-                .background(RoundRectBackground(colors.background, cornerRadius))
-                .isResizable(false, true)
-                .isMinimizedToTitle(isMenuMinimized.use())
 
-            TitleBar(titleTxt, cornerRadius, isMenuMinimized.value)
+            Column(Grow.Std, Grow.Std) {
+                val cornerRadius = sizes.gap
+                modifier.background(RoundRectBackground(colors.background, cornerRadius))
 
-            if (!isMenuMinimized.value) {
-                ScrollArea(
-                    withHorizontalScrollbar = false,
-                    containerModifier = { it.background(null) }
-                ) {
-                    modifier.width(Grow.Std).margin(top = sizes.smallGap, bottom = sizes.smallGap * 0.5f)
-                    Column(width = Grow.Std, block = block)
+                TitleBar(titleTxt, cornerRadius)
+
+                if (!isMenuMinimized.use()) {
+                    ScrollArea(
+                        withHorizontalScrollbar = false,
+                        containerModifier = { it.background(null) }
+                    ) {
+                        modifier.width(Grow.Std).margin(top = sizes.smallGap, bottom = sizes.smallGap * 0.5f)
+                        Column(width = Grow.Std, block = block)
+                    }
                 }
             }
         }
     }
 
-    private fun WindowScope.TitleBar(titleTxt: String, cornerRadius: Dp, bottomRounded: Boolean) {
+    private fun UiScope.TitleBar(titleTxt: String, cornerRadius: Dp) {
         val titleFrom = demoEntry?.category?.fromColor ?: 0f
         val titleTo = demoEntry?.category?.toColor ?: 0.2f
 
-        val isMinimized = modifier.isMinimizedToTitle
         var isMinimizeHovered by remember(false)
 
         Box {
@@ -132,12 +140,13 @@ abstract class DemoScene(val name: String) {
                 .width(Grow.Std)
                 .height(UiSizes.baseSize)
                 .background(RoundRectBackground(colors.primary, cornerRadius))
-                .dragListener(WindowMoveDragHandler(this@TitleBar))
+
+            with(menuWindowBounds) { registerDragCallbacks() }
 
             val titleFont = (sizes.largeText as MsdfFont).copy(glowColor = DemoMenu.titleTextGlowColor)
             Text(titleTxt) {
                 val bgRadius = cornerRadius.px + 1f
-                val bottomRadius = if (bottomRounded) bgRadius else 0f
+                val bottomRadius = if (isMenuMinimized.use()) bgRadius else 0f
                 modifier
                     .width(Grow.Std)
                     .height(UiSizes.baseSize)
@@ -156,14 +165,19 @@ abstract class DemoScene(val name: String) {
                     .background(CircularBackground(minButtonBgColor))
                     .zLayer(UiSurface.LAYER_FLOATING)
 
-                Arrow(if (isMinimized) 90f else -90f) {
+                Arrow(if (isMenuMinimized.use()) 90f else -90f) {
                     modifier
                         .size(Grow.Std, Grow.Std)
                         .margin(sizes.smallGap * 0.7f)
                         .colors(colors.primaryVariant, Color.WHITE)
-                        .onClick { isMenuMinimized.toggle() }
                         .onEnter { isMinimizeHovered = true }
                         .onExit { isMinimizeHovered = false }
+                        .onClick {
+                            isMenuMinimized.toggle()
+                            if (isMenuMinimized.value) {
+                                menuWindowBounds.setFloatingBounds(height = FitContent)
+                            }
+                        }
                 }
             }
         }

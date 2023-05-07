@@ -231,7 +231,7 @@ open class AttributedTextNode(parent: UiNode?, surface: UiSurface)
         }
 
         // caret
-        if (modifier.isCaretVisible && surface.isWindowFocused) {
+        if (modifier.isCaretVisible && surface.isFocused.use()) {
             surface.onEachFrame(::updateCaretBlinkState)
             val caretX = charIndexToLocalX(modifier.caretPos)
             if (isCaretBlink.use()) {

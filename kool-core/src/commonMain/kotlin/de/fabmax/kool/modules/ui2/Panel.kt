@@ -1,40 +1,56 @@
 package de.fabmax.kool.modules.ui2
 
 import de.fabmax.kool.scene.Node
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
-fun Panel(
+fun UiScope.Panel(
+    layout: Layout = ColumnLayout,
+    scopeName: String? = null,
+    block: UiScope.() -> Unit
+) {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+    }
+
+    Box(scopeName = scopeName) {
+        modifier
+            .layout(layout)
+            .backgroundColor(colors.background)
+        block()
+    }
+}
+
+fun PanelSurface(
     colors: Colors = Colors.darkColors(),
     sizes: Sizes = Sizes.medium,
     name: String = "Panel",
-    block: UiScope.() -> Any
+    layout: Layout = ColumnLayout,
+    block: UiScope.() -> Unit
 ): UiSurface {
     val panelSurface = UiSurface(colors, sizes, name)
     panelSurface.content = {
-        Box {
-            modifier
-                .backgroundColor(colors.background)
-                .layout(ColumnLayout)
-            block()
-        }
+        Panel(layout, name, block)
     }
     return panelSurface
 }
 
-fun Node.addPanel(
+fun Node.addPanelSurface(
     colors: Colors = Colors.darkColors(),
     sizes: Sizes = Sizes.medium,
     name: String = "Panel",
-    block: UiScope.() -> Any
+    layout: Layout = ColumnLayout,
+    block: UiScope.() -> Unit
 ): UiSurface {
-    val panelSurface = de.fabmax.kool.modules.ui2.Panel(colors, sizes, name, block)
+    val panelSurface = PanelSurface(colors, sizes, name, layout, block)
     addNode(panelSurface)
     return panelSurface
 }
 
-@Deprecated("Use addPanel() instead to avoid confusing it with non-adding Panel()", replaceWith = ReplaceWith("addPanel(colors, sizes, name) { block() }"))
+@Deprecated("Use addPanelSurface() instead", replaceWith = ReplaceWith("addPanelSurface(colors, sizes, name) { block() }"))
 fun Node.Panel(
     colors: Colors = Colors.darkColors(),
     sizes: Sizes = Sizes.medium,
     name: String = "Panel",
-    block: UiScope.() -> Any
-): UiSurface = addPanel(colors, sizes, name, block)
+    block: UiScope.() -> Unit
+): UiSurface = addPanelSurface(colors, sizes, name, block = block)

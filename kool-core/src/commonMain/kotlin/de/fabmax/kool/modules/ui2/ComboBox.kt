@@ -62,7 +62,7 @@ inline fun UiScope.ComboBox(
 
     if (comboBox.isExpanded.use()) {
         Popup(comboBox.leftPx, comboBox.bottomPx) {
-            modifier.border(RectBorder(colors.primaryVariantAlpha(0.5f), 1.dp))
+            modifier.border(RectBorder(colors.primaryVariantAlpha(0.5f), sizes.borderWidth))
 
             comboBox.modifier.items.forEachIndexed { i, item ->
                 val hovered = comboBox.hoveredItem.use()

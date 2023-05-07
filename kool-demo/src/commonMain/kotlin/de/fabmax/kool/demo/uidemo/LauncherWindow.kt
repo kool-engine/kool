@@ -3,39 +3,13 @@ package de.fabmax.kool.demo.uidemo
 import de.fabmax.kool.modules.ui2.*
 import kotlin.reflect.KClass
 
-class LauncherWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
+class LauncherWindow(uiDemo: UiDemo) : DemoWindow("Window Launcher", uiDemo, false) {
 
-    private val windowState = WindowState().apply { setWindowSize(Dp(250f), FitContent) }
-
-    override val windowSurface = Window(windowState, name = "Window Launcher") {
-        surface.sizes = uiDemo.selectedUiSize.use()
-        surface.colors = uiDemo.selectedColors.use()
-
-        var isMinimizedToTitle by remember(false)
-        modifier
-            .isMinimizedToTitle(isMinimizedToTitle)
-            .isResizable(false, false)
-
-        TitleBar(
-            onMinimizeAction = if (!isDocked && !isMinimizedToTitle) {
-                { isMinimizedToTitle = true }
-            } else {
-                null
-            },
-            onMaximizeAction = if (!isDocked && isMinimizedToTitle) {
-                { isMinimizedToTitle = false }
-            } else {
-                null
-            }
-        )
-        if (!isMinimizedToTitle) {
-            WindowContent()
-        }
+    init {
+        windowBounds.setFloatingBounds(width = Dp(250f))
     }
 
-    override val windowScope = windowSurface.windowScope!!
-
-    private fun UiScope.WindowContent() = Column(Grow.Std) {
+    override fun UiScope.windowContent() = Column(Grow.Std) {
         var allowMultiInstances by remember(false)
 
         Button("UI Basics") {
@@ -90,11 +64,11 @@ class LauncherWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
         }
     }
 
-    private fun <T: UiDemo.DemoWindow> launchOrBringToTop(multiAllowed: Boolean, windowClass: KClass<T>, factory: () -> T) {
+    private fun <T: DemoWindow> launchOrBringToTop(multiAllowed: Boolean, windowClass: KClass<T>, factory: () -> T) {
         if (!multiAllowed) {
             val existing = uiDemo.demoWindows.find { it::class == windowClass }
             if (existing != null) {
-                existing.windowSurface.bringToTop()
+                existing.windowSurface.isFocused.set(true)
                 return
             }
         }

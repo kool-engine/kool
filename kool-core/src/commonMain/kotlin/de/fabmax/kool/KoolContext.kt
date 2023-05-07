@@ -4,6 +4,7 @@ import de.fabmax.kool.input.KeyboardInput
 import de.fabmax.kool.input.PointerInput
 import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.modules.ksl.KslShader
+import de.fabmax.kool.modules.ui2.UiScale
 import de.fabmax.kool.pipeline.OffscreenRenderPass
 import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.pipeline.ShaderCode
@@ -26,6 +27,8 @@ abstract class KoolContext {
             if (userValue != field) {
                 logD { "Window scale changed: (${(userValue * 100f).roundToInt()} %)" }
                 field = userValue
+                UiScale.windowScale.set(field)
+                UiScale.measuredScale = UiScale.windowScale.value * UiScale.uiScale.value
                 onWindowScaleChanged.forEach { it(this) }
             }
         }
@@ -168,6 +171,6 @@ abstract class KoolContext {
 
     companion object {
         // automatically updated by gradle script on build
-        const val KOOL_VERSION = "0.11.0"
+        const val KOOL_VERSION = "0.12.0-SNAPSHOT"
     }
 }

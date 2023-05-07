@@ -2,6 +2,7 @@ package de.fabmax.kool.modules.ui2
 
 import de.fabmax.kool.math.clamp
 import kotlin.jvm.JvmInline
+import kotlin.math.round
 
 sealed interface Dimension
 
@@ -45,5 +46,10 @@ value class Dp(val value: Float): Dimension, Comparable<Dp> {
         val UNBOUNDED = Dp(1e9f)
 
         fun fromPx(px: Float) = Dp(px / UiScale.measuredScale)
+
+        fun roundToWholePx(dp: Float): Dp {
+            val pxf = dp * UiScale.measuredScale
+            return fromPx(round(pxf))
+        }
     }
 }

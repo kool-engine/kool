@@ -6,7 +6,7 @@ object UiScale {
     var windowScale = mutableStateOf(1f)
 
     var measuredScale = 1f
-        private set
+        internal set
 
     fun updateScale(surface: UiSurface) {
         measuredScale = uiScale.use(surface) * windowScale.use(surface)

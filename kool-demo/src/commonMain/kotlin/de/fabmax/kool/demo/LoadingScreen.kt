@@ -31,11 +31,10 @@ class LoadingScreen(val ctx: KoolContext) : Scene("Loading Screen") {
             }
         }
 
-        val ui = addPanel(sizes = Sizes.large) {
+        val ui = addPanelSurface(sizes = Sizes.large) {
             modifier
                 .size(Grow.Std, Grow.Std)
                 .alignX(AlignmentX.Center)
-                .layout(ColumnLayout)
                 .background(null)
             Box {
                 modifier.height(Grow(0.83f))

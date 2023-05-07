@@ -2,7 +2,7 @@ package de.fabmax.kool.modules.ui2.docking
 
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.modules.ui2.*
-import de.fabmax.kool.util.logW
+import de.fabmax.kool.util.logE
 
 class DockNodeLeaf(
     dock: Dock,
@@ -15,50 +15,64 @@ class DockNodeLeaf(
     override val isEmpty: Boolean
         get() = dockedItems.isEmpty()
 
+    private var topItem: Dockable? = null
+    val dockItemOnTop: Dockable?
+        get() = topItem ?: dockedItems.firstOrNull()
+
     override val nodeName: String
         get() = "$index:leaf"
 
-    override val slots: DockSlots = LeafSlots()
+    override val slots: DockSlots = LeafSlots(this)
 
-    fun dock(dockable: Dockable, index: Int = 0) {
+    override fun insertItem(dragItem: Dockable, position: SlotPosition) {
+        if (position == SlotPosition.Center) {
+            dock(dragItem)
+        } else {
+            insertChildNodeIntoParent(position, dragItem.preferredWidth, dragItem.preferredHeight).dock(dragItem)
+        }
+    }
+
+    fun dock(dockable: Dockable, index: Int = 0, usePreferredSize: Boolean = dockedItems.isEmpty()) {
+        if (usePreferredSize) {
+            val p = parent
+            val prefH = dockable.preferredHeight
+            val prefW = dockable.preferredWidth
+            when {
+                p is DockNodeColumn && p.childNodes.size > 1 && prefH != null -> height.set(prefH)
+                p is DockNodeRow && p.childNodes.size > 1 && prefW != null -> width.set(prefW)
+            }
+            parent?.checkChildNodesForGrow()
+        }
+
         if (index in dockedItems.indices) {
             dockedItems.add(index, dockable)
         } else {
             dockedItems.add(dockable)
         }
-        dockable.onDocked(this)
+        dockable.dockedTo.set(this)
     }
 
-    override fun insertDragItem(dragItem: Dockable, position: SlotPosition) {
-        if (position == SlotPosition.Center) {
-            dock(dragItem)
+    fun bringToTop(dockable: Dockable) {
+        if (dockable !in dockedItems) {
+            logE { "bringToTop() called with an Dockable not docked to this node" }
         } else {
-            insertChildNodeIntoParent(position).dock(dragItem)
-        }
-    }
-
-    override fun undock(dockable: Dockable) {
-        if (dockedItems.remove(dockable)) {
-            dockable.onUndocked(this)
-        }
-        if (isEmpty) {
-            parent?.removeChildNode(this)
+            topItem = dockable
         }
     }
 
     fun isOnTop(dockable: Dockable): Boolean {
-        return dockable === dockedItems.getOrNull(0)
+        return dockable == dockItemOnTop
     }
 
-    fun bringToTop(dockable: Dockable) {
-        if (isOnTop(dockable)) {
-            return
+    fun undock(dockable: Dockable, removeIfEmpty: Boolean = true) {
+        if (topItem == dockable) {
+            topItem = null
         }
-        if (dockedItems.remove(dockable)) {
-            dockedItems.add(0, dockable)
-            dockedItems.forEachIndexed { index, item -> item.dockOrderIndex = index }
-        } else {
-            logW { "requested Dockable $dockable to be on top, but is not present in docked items" }
+        if (dockedItems.remove(dockable) && dockable.dockedTo.value == this) {
+            dockable.dockedTo.set(null)
+        }
+        if (removeIfEmpty && isEmpty) {
+            parent?.removeChildNode(this)
         }
     }
 
@@ -71,12 +85,12 @@ class DockNodeLeaf(
 
     override fun UiScope.composeNodeContent() { }
 
-    private class LeafSlots : DockSlots() {
-        val left = SlotBox(SlotPosition.Left) //{ dockNode.insertChildNode(SlotPosition.Left) }
-        val top = SlotBox(SlotPosition.Top) //{ dockNode.insertChildNode(SlotPosition.Top) }
-        val center = SlotBox(SlotPosition.Center) //{ dockNode.parent?.removeChildNode(dockNode) }
-        val bottom = SlotBox(SlotPosition.Bottom) //{ dockNode.insertChildNode(SlotPosition.Bottom) }
-        val right = SlotBox(SlotPosition.Right) //{ dockNode.insertChildNode(SlotPosition.Right) }
+    private class LeafSlots(val dockNode: DockNodeLeaf) : DockSlots() {
+        val left = SlotBox(SlotPosition.Left)
+        val top = SlotBox(SlotPosition.Top)
+        val center = SlotBox(SlotPosition.Center)
+        val bottom = SlotBox(SlotPosition.Bottom)
+        val right = SlotBox(SlotPosition.Right)
         override val boxes = listOf(left, top, center, bottom, right)
 
         override fun UiScope.compose() = Row {

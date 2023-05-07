@@ -8,35 +8,25 @@ import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.MsdfFont
 import kotlin.math.min
 
-class TextAreaWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
-
-    private val windowState = WindowState().apply { setWindowSize(Dp(1200f), Dp(800f)) }
+class TextAreaWindow(uiDemo: UiDemo) : DemoWindow("Text Area", uiDemo) {
 
     private val lines = mutableStateListOf<TextLine>()
 
     init {
+        windowBounds.setFloatingBounds(width = Dp(1200f), height = Dp(800f))
         val r = Random(randomI())
         for (i in 0 until 100) {
             val str = "$i: ${randomText(r)}"
             val spans = randomStyle(str, r)
             lines += TextLine(spans)
         }
-
-//        lines += TextLine(listOf("a" to TextAttributes(MsdfFont.DEFAULT_FONT.copy(sizePts = 50f), MdColor.PINK)))
     }
 
-    override val windowSurface: UiSurface = Window(windowState, name = "Text Area") {
-        surface.sizes = uiDemo.selectedUiSize.use()
-        surface.colors = uiDemo.selectedColors.use()
-
+    override fun UiScope.modifyWindow() {
         modifier.backgroundColor(MdColor.GREY tone 900)
-
-        TitleBar(onCloseAction = { uiDemo.closeWindow(this@TextAreaWindow, it.ctx) })
-        WindowContent()
     }
-    override val windowScope: WindowScope = windowSurface.windowScope!!
 
-    fun UiScope.WindowContent() = TextArea(
+    override fun UiScope.windowContent() = TextArea(
         ListTextLineProvider(lines),
         hScrollbarModifier = { it.margin(start = sizes.gap, end = sizes.gap * 2f,bottom = sizes.gap) },
         vScrollbarModifier = { it.margin(sizes.gap) }

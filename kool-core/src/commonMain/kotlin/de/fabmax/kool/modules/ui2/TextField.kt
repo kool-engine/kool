@@ -163,7 +163,7 @@ open class TextFieldNode(parent: UiNode?, surface: UiSurface)
         val caretX = textX(modifier.font, editText.caretPosition)
 
         // blinking caret
-        if (isCaretBlink.use() && surface.isWindowFocused) {
+        if (isCaretBlink.use() && surface.isFocused.use()) {
             localRect(caretX, textOrigin.y + 4.dp.px - h, caretWidth.px, h, modifier.cursorColor)
         }
 

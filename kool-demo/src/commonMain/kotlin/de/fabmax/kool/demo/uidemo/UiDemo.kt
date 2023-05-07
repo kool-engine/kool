@@ -8,20 +8,22 @@ import de.fabmax.kool.demo.Settings
 import de.fabmax.kool.demo.UiSizes
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.modules.ui2.*
+import de.fabmax.kool.modules.ui2.docking.Dock
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MsdfFont
+import de.fabmax.kool.util.launchDelayed
 
 class UiDemo : DemoScene("UI Demo") {
 
-    val selectedColors = mutableStateOf(Colors.darkColors())
+    val selectedColors = mutableStateOf(Colors.darkColors()).onChange { dock.dockingSurface.colors = it }
     val selectedUiSize = mutableStateOf(Sizes.medium)
 
+    val dock = Dock()
     val demoWindows = mutableListOf<DemoWindow>()
 
     private val windowSpawnLocation = MutableVec2f(320f, 64f)
-    private val dockingHost = DockingHost()
 
     var exampleImage: Texture2d? = null
     val dndContext = DragAndDropContext<DragAndDropWindow.DndItem>()
@@ -33,103 +35,99 @@ class UiDemo : DemoScene("UI Demo") {
     override fun Scene.setupMainScene(ctx: KoolContext) {
         setupUiScene(true)
 
-        dockingHost.apply {
-            onUpdate += {
-                // set a left margin for the demo menu band
-                dockingSurface.rootContainer.dockMarginStart.set(UiSizes.baseSize)
+        dock.dockingSurface.colors = selectedColors.value
+        dock.dockingPaneComposable = Composable {
+            Box(Grow.Std, Grow.Std) {
+                modifier.margin(start = UiSizes.baseSize)
+                dock.root()
             }
         }
-        addNode(dockingHost)
 
-        // Spawn a few windows, docked right, left and in center
-        //
-        // Specifying the docking path is a bit cumbersome right now:
-        // Docking nodes are organized as a bin-tree, only leaf nodes can contain docked windows.
-        // The docking path specifies the path in the tree where to dock the given window, starting at the root node.
-        // The numbers define the split weights in case tree nodes have to be spawned to complete the path.
-        // If the internal tree structure conflicts with the given path, the window is docked in the next best slot.
-        //
-        // The LauncherWindow is docked at Start (left) position below the root node. Splitting it with an absolute
-        // width of 250 dp, remaining screen space remain will be empty.
-        // Then, the ThemeEditorWindow is spawned on the right side of the empty side (path: root -> end/right -> end/right),
-        // taking 30 % of the empty space.
+        addNode(dock)
 
-        spawnWindow(LauncherWindow(this@UiDemo), listOf(DockingHost.DockPosition.Start to Dp(250f)))
-        spawnWindow(ThemeEditorWindow(this@UiDemo), listOf(DockingHost.DockPosition.End to Grow.Std, DockingHost.DockPosition.End to Grow(0.3f)))
+        // setup initial dock layout: one row with three leafs as children (left, center, right)
+        dock.createNodeLayout(
+            listOf(
+                "0:row",
+                "0:row/0:leaf",
+                "0:row/1:leaf",
+                "0:row/2:leaf"
+            )
+        )
+
+        // Spawn launcher and theme editor windows docked to the left and right dock nodes
+        spawnWindow(LauncherWindow(this@UiDemo), "0:row/0:leaf")
+        spawnWindow(ThemeEditorWindow(this@UiDemo), "0:row/2:leaf")
 
         // TextStyleWindow is spawned as a floating window
         spawnWindow(TextStyleWindow(this@UiDemo))
 
         // add a sidebar for the demo menu
-        addPanel {
-            surface.colors = selectedColors.use()
-            surface.sizes = Settings.uiSize.use().sizes
+        sideBar()
+    }
 
-            val fgColor: Color
-            val bgColor: Color
-            if (colors.isLight) {
-                fgColor = colors.primary
-                bgColor = colors.secondaryVariant.mix(Color.BLACK, 0.3f)
-            } else {
-                fgColor = colors.secondary
-                bgColor = colors.backgroundVariant
-            }
+    private fun Scene.sideBar() = addPanelSurface {
+        surface.colors = selectedColors.use()
+        surface.sizes = Settings.uiSize.use().sizes
 
+        val fgColor: Color
+        val bgColor: Color
+        if (colors.isLight) {
+            fgColor = colors.primary
+            bgColor = colors.secondaryVariant.mix(Color.BLACK, 0.3f)
+        } else {
+            fgColor = colors.secondary
+            bgColor = colors.backgroundVariant
+        }
+
+        modifier
+            .width(UiSizes.baseSize)
+            .height(Grow.Std)
+            .backgroundColor(bgColor)
+            .layout(CellLayout)
+            .onClick { demoLoader?.menu?.isExpanded = true }
+
+        Text("UI Demo") {
+            val font = MsdfFont(sizePts = sizes.largeText.sizePts * 1.25f, weight = MsdfFont.WEIGHT_BOLD)
             modifier
-                .width(UiSizes.baseSize)
-                .height(Grow.Std)
-                .backgroundColor(bgColor)
-                .layout(CellLayout)
-                .onClick { demoLoader?.menu?.isExpanded = true }
-
-            Text("UI Demo") {
-                val font = MsdfFont(sizePts = sizes.largeText.sizePts * 1.25f, weight = MsdfFont.WEIGHT_BOLD)
-                modifier
-                    .textColor(fgColor)
-                    .textRotation(270f)
-                    .font(font)
-                    .margin(top = UiSizes.baseSize)
-                    .align(AlignmentX.Center, AlignmentY.Top)
-            }
+                .textColor(fgColor)
+                .textRotation(270f)
+                .font(font)
+                .margin(top = UiSizes.baseSize)
+                .align(AlignmentX.Center, AlignmentY.Top)
         }
     }
 
-    fun spawnWindow(window: DemoWindow, dockPath: List<Pair<DockingHost.DockPosition, Dimension>>? = null) {
+    fun spawnWindow(window: DemoWindow, dockPath: String? = null) {
         demoWindows += window
-        dockingHost.apply {
-            addNode(window.windowSurface)
-            if (dockPath != null) {
-                dockWindow(window.windowScope, dockPath)
-            } else {
-                window.windowScope.windowState.setWindowLocation(Dp(windowSpawnLocation.x), Dp(windowSpawnLocation.y))
-                windowSpawnLocation.x += 32f
-                windowSpawnLocation.y += 32f
 
-                if (windowSpawnLocation.y > 480f) {
-                    windowSpawnLocation.y -= 416
-                    windowSpawnLocation.x -= 384
+        dock.addDockableSurface(window.windowBounds, window.windowSurface)
+        dockPath?.let {
+            dock.getLeafAtPath(it)?.dock(window.windowBounds)
+        }
 
-                    if (windowSpawnLocation.x > 480f) {
-                        windowSpawnLocation.x = 320f
-                    }
-                }
+        window.windowBounds.setFloatingBounds(Dp(windowSpawnLocation.x), Dp(windowSpawnLocation.y))
+        windowSpawnLocation.x += 32f
+        windowSpawnLocation.y += 32f
+        if (windowSpawnLocation.y > 480f) {
+            windowSpawnLocation.y -= 416
+            windowSpawnLocation.x -= 384
+
+            if (windowSpawnLocation.x > 480f) {
+                windowSpawnLocation.x = 320f
             }
         }
-        window.windowSurface.bringToTop()
+
+        launchDelayed(1) {
+            window.windowSurface.isFocused.set(true)
+        }
     }
 
     fun closeWindow(window: DemoWindow, ctx: KoolContext) {
-        dockingHost.undockWindow(window.windowScope)
-        dockingHost -= window.windowSurface
+        dock.removeDockableSurface(window.windowSurface)
         demoWindows -= window
         window.onClose()
         window.windowSurface.dispose(ctx)
     }
-
-    interface DemoWindow {
-        val windowSurface: UiSurface
-        val windowScope: WindowScope
-
-        fun onClose() { }
-    }
 }
+

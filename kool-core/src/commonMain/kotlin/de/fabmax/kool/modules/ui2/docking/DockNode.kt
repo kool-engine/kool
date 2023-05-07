@@ -40,8 +40,6 @@ sealed class DockNode(
     override var dropTarget: UiNode? = null
         protected set
 
-    abstract fun undock(dockable: Dockable)
-
     override fun onDrag(
         dragItem: Dockable,
         dragPointer: PointerEvent,
@@ -75,13 +73,13 @@ sealed class DockNode(
     override fun receive(dragItem: Dockable, dragPointer: PointerEvent, source: DragAndDropHandler<Dockable>?): Boolean {
         val receiverSlot = slots.boxes.find { dragPointer.screenPosition in it }
         if (receiverSlot != null) {
-            insertDragItem(dragItem, receiverSlot.position)
+            insertItem(dragItem, receiverSlot.position)
             return true
         }
         return false
     }
 
-    protected abstract fun insertDragItem(dragItem: Dockable, position: SlotPosition)
+    protected abstract fun insertItem(dragItem: Dockable, position: SlotPosition)
 
     fun isInBounds(screenPosPx: Vec2f): Boolean {
         return uiNode?.isInBounds(screenPosPx) == true
@@ -101,22 +99,26 @@ sealed class DockNode(
 
     fun isLeftEdgeMovable(): Boolean {
         val node = uiNode ?: return false
-        return node.leftPx > dock.dockingSurface.viewport.leftPx + 0.5f
+        val rootNode = dock.root.uiNode ?: return false
+        return node.leftPx > rootNode.leftPx + 0.5f
     }
 
     fun isRightEdgeMovable(): Boolean {
         val node = uiNode ?: return false
-        return node.rightPx < dock.dockingSurface.viewport.rightPx - 0.5f
+        val rootNode = dock.root.uiNode ?: return false
+        return node.rightPx < rootNode.rightPx - 0.5f
     }
 
     fun isTopEdgeMovable(): Boolean {
         val node = uiNode ?: return false
-        return node.topPx > dock.dockingSurface.viewport.topPx + 0.5f
+        val rootNode = dock.root.uiNode ?: return false
+        return node.topPx > rootNode.topPx + 0.5f
     }
 
     fun isBottomEdgeMovable(): Boolean {
         val node = uiNode ?: return false
-        return node.bottomPx < dock.dockingSurface.viewport.bottomPx - 0.5f
+        val rootNode = dock.root.uiNode ?: return false
+        return node.bottomPx < rootNode.bottomPx - 0.5f
     }
 
     fun moveLeftEdgeTo(screenX: Float) {
@@ -177,8 +179,8 @@ sealed class DockNode(
 
     protected fun insertChildNodeIntoParent(
         position: SlotPosition,
-        widthHint: Dimension = Grow.Std,
-        heightHint: Dimension = Grow.Std
+        widthHint: Dp?,
+        heightHint: Dp?
     ): DockNodeLeaf {
         var p = parent
         if (p == null || p::class != position.requiredNodeType) {
@@ -188,7 +190,9 @@ sealed class DockNode(
                 insertParentColumn()
             }
         }
-        val insertNode = insertChildNodeIntoParent(p, position, widthHint, heightHint)
+        val insertWidth = widthHint ?: Grow.Std
+        val insertHeigh = heightHint ?: Grow.Std
+        val insertNode = insertChildNodeIntoParent(p, position, insertWidth, insertHeigh)
         p.checkChildNodesForGrow()
         return insertNode
     }
@@ -233,18 +237,18 @@ sealed class DockNode(
     private fun insertChildNodeIntoParent(
         parent: DockNodeInter,
         position: SlotPosition,
-        widthHint: Dimension = Grow.Std,
-        heightHint: Dimension = Grow.Std
+        insertWidth: Dimension,
+        insertHeight: Dimension
     ): DockNodeLeaf {
         val (selfW, insertW) = if (position.requiredNodeType == DockNodeRow::class) {
-            computeInsertDimensions(nodeWidthPx, width.value, widthHint)
+            computeInsertDimensions(nodeWidthPx, width.value, insertWidth)
         } else {
             width.value to width.value
         }
         val (selfH, insertH) = if (position.requiredNodeType == DockNodeRow::class) {
             height.value to height.value
         } else {
-            computeInsertDimensions(nodeHeightPx, height.value, heightHint)
+            computeInsertDimensions(nodeHeightPx, height.value, insertHeight)
         }
 
         val insertIdx = if (position == SlotPosition.Left || position == SlotPosition.Top) {
@@ -302,17 +306,12 @@ sealed class DockNode(
     override fun UiScope.compose() = Box(width.use(), height.use()) {
         this@DockNode.uiNode = uiNode
         modifier
-            //.border(DebugBorder)
             .onPositioned {
                 boundsLeftDp.set(Dp.fromPx(it.leftPx))
                 boundsRightDp.set(Dp.fromPx(it.rightPx))
                 boundsTopDp.set(Dp.fromPx(it.topPx))
                 boundsBottomDp.set(Dp.fromPx(it.bottomPx))
             }
-
-        //Column {
-        //    Text(getPath()) { }
-        //}
 
         composeNodeContent()
 
@@ -399,13 +398,13 @@ sealed class DockNode(
         ) {
             Box {
                 slotUiNode = uiNode
-                val alphaMod = if (isHovered.use()) 1f else 0.5f
+                val alphaMod = if (isHovered.use()) 1f else 0.7f
                 modifier
                     .size(width, height)
                     .margin(vertical = marginV, horizontal = marginH)
                     .align(xAlignment = alignX, yAlignment = alignY)
-                    .background(RoundRectBackground(MdColor.LIME.withAlpha(0.4f * alphaMod), sizes.smallGap))
-                    .border(RoundRectBorder(MdColor.LIME.withAlpha(1f * alphaMod), sizes.smallGap, 1.dp))
+                    .background(RoundRectBackground(colors.primaryAlpha(0.8f * alphaMod), sizes.smallGap))
+                    .border(RoundRectBorder(colors.primaryAlpha(1f * alphaMod), sizes.smallGap, sizes.smallGap * 0.5f))
             }
         }
 
@@ -414,7 +413,7 @@ sealed class DockNode(
         }
     }
 
-    protected enum class SlotPosition(val requiredNodeType: KClass<*>) {
+    enum class SlotPosition(val requiredNodeType: KClass<*>) {
         Center(DockNodeLeaf::class),
         Left(DockNodeRow::class),
         Right(DockNodeRow::class),

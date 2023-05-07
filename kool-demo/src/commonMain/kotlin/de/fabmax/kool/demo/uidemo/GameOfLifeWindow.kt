@@ -8,9 +8,7 @@ import de.fabmax.kool.util.ColorGradient
 import de.fabmax.kool.util.MdColor
 import kotlin.math.min
 
-class GameOfLifeWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
-
-    private val windowState = WindowState()
+class GameOfLifeWindow(uiDemo: UiDemo) : DemoWindow("Conway`s Game of Life", uiDemo) {
 
     private val world = GameWorld()
     private val worldRenderer = GameWorldRenderer()
@@ -28,12 +26,7 @@ class GameOfLifeWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
         world.loadAsciiState(GameWorld.gliderGun)
     }
 
-    override val windowSurface = Window(windowState, name = "Conway`s Game of Life") {
-        surface.sizes = uiDemo.selectedUiSize.use()
-        surface.colors = uiDemo.selectedColors.use()
-
-        TitleBar(onCloseAction = { uiDemo.closeWindow(this@GameOfLifeWindow, it.ctx) })
-
+    override fun UiScope.windowContent() = Column(Grow.Std, Grow.Std) {
         worldPanel()
         renderPanel()
 
@@ -58,8 +51,6 @@ class GameOfLifeWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
             worldRenderer()
         }
     }
-
-    override val windowScope: WindowScope = windowSurface.windowScope!!
 
     private abstract class CollapsablePanel(val title: String) : Composable {
         val isCollapsed = mutableStateOf(false)

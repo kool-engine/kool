@@ -2,66 +2,94 @@ package de.fabmax.kool.modules.ui2.docking
 
 import de.fabmax.kool.input.CursorShape
 import de.fabmax.kool.input.PointerInput
-import de.fabmax.kool.math.*
+import de.fabmax.kool.math.MutableVec2f
+import de.fabmax.kool.math.MutableVec4f
+import de.fabmax.kool.math.Vec2f
+import de.fabmax.kool.math.clamp
 import de.fabmax.kool.modules.ui2.*
-
 
 class DockableBounds(
     override val name: String,
-    val dock: Dock?,
+    val dock: Dock? = null,
     val undockSizeBehavior: UndockSizeBehavior = UndockSizeBehavior.UsePreviousUndockedSize,
-    initialX: Dp = Dp.ZERO,
-    initialY: Dp = Dp.ZERO,
-    initialWidth: Dimension = FitContent,
-    initialHeight: Dimension = FitContent
+    floatingX: Dp = Dp.ZERO,
+    floatingY: Dp = Dp.ZERO,
+    floatingWidth: Dimension = FitContent,
+    floatingHeight: Dimension = FitContent,
+    floatingAlignmentX: AlignmentX = AlignmentX.Start,
+    floatingAlignmentY: AlignmentY = AlignmentY.Top
 ): Dockable {
 
-    val dockedTo: DockNode? get() = dockedToState.value
-    override val isDocked: Boolean get() = dockedToState.value != null
+    override val dockedTo = mutableStateOf<DockNodeLeaf?>(null)
+    override val isDocked: MutableStateValue<Boolean> = transformedStateOf(dockedTo) { it != null }
 
-    override var dockOrderIndex = 0
+    override val preferredWidth: Dp?
+        get() = floatingWidth.value as? Dp
+    override val preferredHeight: Dp?
+        get() = floatingHeight.value as? Dp
 
-    val floatingX = mutableStateOf(initialX)
-    val floatingY = mutableStateOf(initialY)
-    val floatingWidth = mutableStateOf(initialWidth)
-    val floatingHeight = mutableStateOf(initialHeight)
+    val floatingX = mutableStateOf(floatingX)
+    val floatingY = mutableStateOf(floatingY)
+    val floatingWidth = mutableStateOf(floatingWidth)
+    val floatingHeight = mutableStateOf(floatingHeight)
+    val floatingAlignmentX = mutableStateOf(floatingAlignmentX)
+    val floatingAlignmentY = mutableStateOf(floatingAlignmentY)
 
     var minWidthFloating = Dp(50f)
     var minHeightFloating = Dp(50f)
 
-    private val dragStartItemBounds = mutableStateOf(Vec4f.ZERO)
-    private val dockedToState = mutableStateOf<DockNode?>(null)
+    private var surface: UiSurface? = null
+    private val dragStartItemBounds = MutableVec4f()
+    private val currentItemBounds = MutableVec4f()
+    private val currentWidthPx: Float get() = currentItemBounds.z - currentItemBounds.x
+    private val currentHeightPx: Float get() = currentItemBounds.w - currentItemBounds.y
 
-    private var currentWidthPx = 0f
-    private var currentHeightPx = 0f
     private var floatingWidthPx = 0f
     private var floatingHeightPx = 0f
     private var resizeDragEdgeMask = 0
 
-    fun setFloatingBounds(x: Dp, y: Dp, width: Dimension, height: Dimension) {
+    fun setFloatingBounds(
+        x: Dp = floatingX.value,
+        y: Dp = floatingY.value,
+        width: Dimension = floatingWidth.value,
+        height: Dimension = floatingHeight.value,
+        alignmentX: AlignmentX = floatingAlignmentX.value,
+        alignmentY: AlignmentY = floatingAlignmentY.value
+    ) {
         floatingX.set(x)
         floatingY.set(y)
         floatingWidth.set(width)
         floatingHeight.set(height)
+        floatingAlignmentX.set(alignmentX)
+        floatingAlignmentY.set(alignmentY)
     }
 
-    fun UiScope.registerDragCallbacks() {
+    override fun isInBounds(screenPosPx: Vec2f): Boolean {
+        return screenPosPx.x in currentItemBounds.x .. currentItemBounds.z
+                && screenPosPx.y in currentItemBounds.y .. currentItemBounds.w
+    }
+
+    fun UiScope.registerDragCallbacks(resizeEdgeAware: Boolean = true) {
         modifier
+            .onClick { it.isConsumed = true }
             .onDragStart {
-                if (it.getResizeEdgeMask() != 0) {
+                if (resizeEdgeAware && getResizeEdgeMask(it) != 0) {
                     // do not initiate move drag when pointer is on an edge, instead the drag will resize the dockItem
                     it.isConsumed = false
                 } else {
-                    dockedTo?.undock(this@DockableBounds)
+                    dockedTo.value?.undock(this@DockableBounds)
                     val itemBounds = uiNode.undockedBounds4f
                     moveUndockBoundsUnderPointer(itemBounds, it)
                     dragStartItemBounds.set(itemBounds)
                     dock?.dndContext?.startDrag(this@DockableBounds, it, null)
+                    println("start drag, dock: $dock")
                 }
             }
             .onDrag {
-                floatingX.set(Dp.fromPx(dragStartItemBounds.value.x + it.pointer.dragDeltaX.toFloat()))
-                floatingY.set(Dp.fromPx(dragStartItemBounds.value.y + it.pointer.dragDeltaY.toFloat()))
+                floatingX.set(Dp.fromPx(dragStartItemBounds.x + it.pointer.dragDeltaX.toFloat()))
+                floatingY.set(Dp.fromPx(dragStartItemBounds.y + it.pointer.dragDeltaY.toFloat()))
+                floatingAlignmentX.set(AlignmentX.Start)
+                floatingAlignmentY.set(AlignmentY.Top)
                 dock?.dndContext?.drag(it)
             }
             .onDragEnd {
@@ -91,58 +119,100 @@ class DockableBounds(
     }
 
     fun UiScope.registerResizeCallbacks() {
-        modifier
-            .onHover {
-                setResizeCursorShape(it.getResizeEdgeMask())
-            }
-            .onDragStart {
-                val edgeMask = it.getResizeEdgeMask()
-                setResizeCursorShape(edgeMask)
-                if (edgeMask == 0) {
-                    // don't proceed with drag if the cursor is not over an edge
-                    it.isConsumed = false
-                } else {
-                    resizeDragEdgeMask = edgeMask
-                    dragStartItemBounds.set(uiNode.bounds4f)
-                }
-            }
-            .onDrag {
-                setResizeCursorShape(resizeDragEdgeMask)
-                if (isDocked) {
-                    if (resizeDragEdgeMask and CURSOR_LEFT_EDGE != 0) {
-                        dockedTo?.moveLeftEdgeTo(it.screenPosition.x)
-                    }
-                    if (resizeDragEdgeMask and CURSOR_RIGHT_EDGE != 0) {
-                        dockedTo?.moveRightEdgeTo(it.screenPosition.x)
-                    }
-                    if (resizeDragEdgeMask and CURSOR_TOP_EDGE != 0) {
-                        dockedTo?.moveTopEdgeTo(it.screenPosition.y)
-                    }
-                    if (resizeDragEdgeMask and CURSOR_BOTTOM_EDGE != 0) {
-                        dockedTo?.moveBottomEdgeTo(it.screenPosition.y)
-                    }
+        // add an empty click listener - updates the UiSurface lastInputTime to move the window on top
+        modifier.onClick { it.isConsumed = true }
 
-                } else {
-                    if (resizeDragEdgeMask and CURSOR_LEFT_EDGE != 0) {
-                        val w = maxOf(minWidthFloating, Dp.fromPx(dragStartItemBounds.value.z - it.clampedPos.x))
-                        floatingWidth.set(w)
-                        floatingX.set(Dp.fromPx(dragStartItemBounds.value.z) - w)
-                    }
-                    if (resizeDragEdgeMask and CURSOR_RIGHT_EDGE != 0) {
-                        val w = maxOf(minWidthFloating, Dp.fromPx(it.clampedPos.x - dragStartItemBounds.value.x))
-                        floatingWidth.set(w)
-                    }
-                    if (resizeDragEdgeMask and CURSOR_TOP_EDGE != 0) {
-                        val h = maxOf(minHeightFloating, Dp.fromPx(dragStartItemBounds.value.w - it.clampedPos.y))
-                        floatingHeight.set(h)
-                        floatingY.set(Dp.fromPx(dragStartItemBounds.value.w) - h)
-                    }
-                    if (resizeDragEdgeMask and CURSOR_BOTTOM_EDGE != 0) {
-                        val h = maxOf(minHeightFloating, Dp.fromPx(it.clampedPos.y - dragStartItemBounds.value.y))
-                        floatingHeight.set(h)
-                    }
-                }
+        if (modifier.layout == CellLayout) {
+            registerBoxResizeCallbacks(uiNode)
+        } else {
+            registerNonBoxResizeCallbacks()
+        }
+    }
+
+    private fun UiScope.registerBoxResizeCallbacks(resizeNode: UiNode) {
+        ResizeBox(resizeNode, RESIZE_EDGE_TOP, Grow.Std, RESIZE_MARGIN, alignY = AlignmentY.Top)
+        ResizeBox(resizeNode, RESIZE_EDGE_BOTTOM, Grow.Std, RESIZE_MARGIN, alignY = AlignmentY.Bottom)
+        ResizeBox(resizeNode, RESIZE_EDGE_RIGHT, RESIZE_MARGIN, Grow.Std, alignX = AlignmentX.End)
+        ResizeBox(resizeNode, RESIZE_EDGE_LEFT, RESIZE_MARGIN, Grow.Std, alignX = AlignmentX.Start)
+    }
+
+    private fun UiScope.ResizeBox(
+        resizeNode: UiNode,
+        edgeMask: Int,
+        width: Dimension,
+        height: Dimension,
+        alignX: AlignmentX = AlignmentX.Center,
+        alignY: AlignmentY = AlignmentY.Center
+    ) = Box {
+        modifier
+            .align(alignX, alignY)
+            .size(width, height)
+            .zLayer(UiSurface.LAYER_FLOATING)
+            .onEnter { setResizeCursorShape(filterResizeEdgeMaskByDockNode(edgeMask)) }
+            .onHover { setResizeCursorShape(filterResizeEdgeMaskByDockNode(edgeMask)) }
+            .onDragStart { resizeDragStart(resizeNode, filterResizeEdgeMaskByDockNode(edgeMask), it) }
+            .onDrag { resizeDrag(it) }
+    }
+
+    private fun UiScope.registerNonBoxResizeCallbacks() {
+        modifier
+            .onEnter { setResizeCursorShape(getResizeEdgeMask(it)) }
+            .onHover { setResizeCursorShape(getResizeEdgeMask(it)) }
+            .onDragStart { resizeDragStart(uiNode, getResizeEdgeMask(it), it) }
+            .onDrag { resizeDrag(it) }
+    }
+
+    private fun resizeDragStart(resizeNode: UiNode, edgeMask: Int, ptrEv: PointerEvent) {
+        setResizeCursorShape(edgeMask)
+        if (edgeMask == 0) {
+            // don't proceed with drag if the cursor is not over an edge
+            ptrEv.isConsumed = false
+        } else {
+            resizeDragEdgeMask = edgeMask
+            dragStartItemBounds.set(resizeNode.bounds4f)
+        }
+    }
+
+    private fun resizeDrag(ptrEv: PointerEvent) {
+        setResizeCursorShape(resizeDragEdgeMask)
+        if (isDocked.value) {
+            if (resizeDragEdgeMask and RESIZE_EDGE_LEFT != 0) {
+                dockedTo.value?.moveLeftEdgeTo(ptrEv.screenPosition.x)
             }
+            if (resizeDragEdgeMask and RESIZE_EDGE_RIGHT != 0) {
+                dockedTo.value?.moveRightEdgeTo(ptrEv.screenPosition.x)
+            }
+            if (resizeDragEdgeMask and RESIZE_EDGE_TOP != 0) {
+                dockedTo.value?.moveTopEdgeTo(ptrEv.screenPosition.y)
+            }
+            if (resizeDragEdgeMask and RESIZE_EDGE_BOTTOM != 0) {
+                dockedTo.value?.moveBottomEdgeTo(ptrEv.screenPosition.y)
+            }
+
+        } else {
+            if (resizeDragEdgeMask and RESIZE_EDGE_LEFT != 0) {
+                val w = maxOf(minWidthFloating, Dp.fromPx(dragStartItemBounds.z - ptrEv.clampedPos.x))
+                floatingWidth.set(w)
+                floatingX.set(Dp.fromPx(dragStartItemBounds.z) - w)
+                floatingAlignmentX.set(AlignmentX.Start)
+            }
+            if (resizeDragEdgeMask and RESIZE_EDGE_RIGHT != 0) {
+                val w = maxOf(minWidthFloating, Dp.fromPx(ptrEv.clampedPos.x - dragStartItemBounds.x))
+                floatingWidth.set(w)
+                floatingAlignmentX.set(AlignmentX.Start)
+            }
+            if (resizeDragEdgeMask and RESIZE_EDGE_TOP != 0) {
+                val h = maxOf(minHeightFloating, Dp.fromPx(dragStartItemBounds.w - ptrEv.clampedPos.y))
+                floatingHeight.set(h)
+                floatingY.set(Dp.fromPx(dragStartItemBounds.w) - h)
+                floatingAlignmentY.set(AlignmentY.Top)
+            }
+            if (resizeDragEdgeMask and RESIZE_EDGE_BOTTOM != 0) {
+                val h = maxOf(minHeightFloating, Dp.fromPx(ptrEv.clampedPos.y - dragStartItemBounds.y))
+                floatingHeight.set(h)
+                floatingAlignmentY.set(AlignmentY.Top)
+            }
+        }
     }
 
     private val PointerEvent.clampedPos: Vec2f
@@ -161,24 +231,23 @@ class DockableBounds(
         return pos
     }
 
-    private fun PointerEvent.getResizeEdgeMask(): Int {
+    fun getResizeEdgeMask(ptrEv: PointerEvent): Int {
         var mask = 0
-        if (position.x < RESIZE_MARGIN.px) mask = mask or CURSOR_LEFT_EDGE
-        if (position.x > currentWidthPx - RESIZE_MARGIN.px) mask = mask or CURSOR_RIGHT_EDGE
-        if (position.y < RESIZE_MARGIN.px) mask = mask or CURSOR_TOP_EDGE
-        if (position.y > currentHeightPx - RESIZE_MARGIN.px) mask = mask or CURSOR_BOTTOM_EDGE
+        if (ptrEv.position.x < RESIZE_MARGIN.px) mask = mask or RESIZE_EDGE_LEFT
+        if (ptrEv.position.x > currentWidthPx - RESIZE_MARGIN.px) mask = mask or RESIZE_EDGE_RIGHT
+        if (ptrEv.position.y < RESIZE_MARGIN.px) mask = mask or RESIZE_EDGE_TOP
+        if (ptrEv.position.y > currentHeightPx - RESIZE_MARGIN.px) mask = mask or RESIZE_EDGE_BOTTOM
+        return filterResizeEdgeMaskByDockNode(mask)
+    }
 
-        val dockNode = dockedTo
-        if (dockNode != null) {
-            var resizableEdgeMask = 0
-            if (dockNode.isLeftEdgeMovable()) resizableEdgeMask = resizableEdgeMask or CURSOR_LEFT_EDGE
-            if (dockNode.isRightEdgeMovable()) resizableEdgeMask = resizableEdgeMask or CURSOR_RIGHT_EDGE
-            if (dockNode.isTopEdgeMovable()) resizableEdgeMask = resizableEdgeMask or CURSOR_TOP_EDGE
-            if (dockNode.isBottomEdgeMovable()) resizableEdgeMask = resizableEdgeMask or CURSOR_BOTTOM_EDGE
-            mask = mask and resizableEdgeMask
-        }
-
-        return mask
+    private fun filterResizeEdgeMaskByDockNode(inputEdgeMask: Int): Int {
+        val dockNode = dockedTo.value ?: return inputEdgeMask
+        var nodeEdgeMask = 0
+        if (dockNode.isLeftEdgeMovable()) nodeEdgeMask = nodeEdgeMask or RESIZE_EDGE_LEFT
+        if (dockNode.isRightEdgeMovable()) nodeEdgeMask = nodeEdgeMask or RESIZE_EDGE_RIGHT
+        if (dockNode.isTopEdgeMovable()) nodeEdgeMask = nodeEdgeMask or RESIZE_EDGE_TOP
+        if (dockNode.isBottomEdgeMovable()) nodeEdgeMask = nodeEdgeMask or RESIZE_EDGE_BOTTOM
+        return inputEdgeMask and nodeEdgeMask
     }
 
     private val UiNode.bounds4f: MutableVec4f get() = MutableVec4f(leftPx, topPx, rightPx, bottomPx)
@@ -194,23 +263,35 @@ class DockableBounds(
     }
 
     fun UiScope.applySizeAndPosition() {
-        val x: Dp
-        val y: Dp
         val w: Dimension
         val h: Dimension
 
-        val dockNode = dockedToState.use()
+        val dockNode = dockedTo.use()
         if (dockNode == null) {
-            x = floatingX.use()
-            y = floatingY.use()
+            val x = floatingX.use()
+            val y = floatingY.use()
             w = floatingWidth.use()
             h = floatingHeight.use()
+
+            modifier.align(floatingAlignmentX.use(), floatingAlignmentY.use())
+            if (modifier.alignX == AlignmentX.End) {
+                modifier.margin(end = x)
+            } else {
+                modifier.margin(start = x)
+            }
+            if (modifier.alignY == AlignmentY.Top) {
+                modifier.margin(top = y)
+            } else {
+                modifier.margin(bottom = y)
+            }
+
         } else {
-            x = dockNode.boundsLeftDp.use()
-            y = dockNode.boundsTopDp.use()
+            val x = dockNode.boundsLeftDp.use()
+            val y = dockNode.boundsTopDp.use()
             w = dockNode.boundsRightDp.use() - x
             h = dockNode.boundsBottomDp.use() - y
 
+            modifier.margin(start = x, top = y)
             if (undockSizeBehavior == UndockSizeBehavior.KeepSize) {
                 floatingX.set(x)
                 floatingY.set(y)
@@ -220,34 +301,25 @@ class DockableBounds(
         }
 
         modifier
-            .margin(start = x, top = y)
             .size(w, h)
             .onPositioned {
-                currentWidthPx = it.widthPx
-                currentHeightPx = it.heightPx
-                if (!isDocked) {
+                currentItemBounds.set(it.bounds4f)
+                if (!isDocked.value) {
                     floatingWidthPx = currentWidthPx
                     floatingHeightPx = currentHeightPx
                 }
             }
-    }
-
-    override fun onDocked(dockNode: DockNodeLeaf) {
-        dockedToState.set(dockNode)
-    }
-
-    override fun onUndocked(dockNode: DockNodeLeaf) {
-        dockedToState.set(null)
+        this@DockableBounds.surface = surface
     }
 
     companion object {
-        private val RESIZE_MARGIN = Dp(6f)
+        val RESIZE_MARGIN = Dp(6f)
 
-        private const val CURSOR_NO_EDGE = 0
-        private const val CURSOR_LEFT_EDGE = 1
-        private const val CURSOR_RIGHT_EDGE = 2
-        private const val CURSOR_TOP_EDGE = 4
-        private const val CURSOR_BOTTOM_EDGE = 8
+        const val RESIZE_EDGE_NONE = 0
+        const val RESIZE_EDGE_LEFT = 1
+        const val RESIZE_EDGE_RIGHT = 2
+        const val RESIZE_EDGE_TOP = 4
+        const val RESIZE_EDGE_BOTTOM = 8
     }
 
     enum class UndockSizeBehavior {

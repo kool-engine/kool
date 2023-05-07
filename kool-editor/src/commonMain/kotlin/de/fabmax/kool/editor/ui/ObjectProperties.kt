@@ -1,7 +1,6 @@
 package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.editor.EditorState
-import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.actions.EditorActions
 import de.fabmax.kool.editor.actions.SetTransformAction
 import de.fabmax.kool.editor.model.MGroup
@@ -13,9 +12,9 @@ import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.math.MutableVec3d
 import de.fabmax.kool.modules.ui2.*
 
-class ObjectProperties(editor: KoolEditor) : EditorPanel(editor) {
+class ObjectProperties(ui: EditorUi) : EditorPanel("Object Properties", ui) {
 
-    private val windowState = WindowState().apply { setWindowSize(Dp(300f), Dp(600f)) }
+    //private val windowState = WindowState().apply { setWindowSize(Dp(300f), Dp(600f)) }
 
     private val transformProperties = TransformProperties()
 
@@ -24,7 +23,7 @@ class ObjectProperties(editor: KoolEditor) : EditorPanel(editor) {
     private val tmpNodeScale = MutableVec3d()
     private val tmpNodeRotMat = Mat3d()
 
-    private val transformGizmo = NodeTransformGizmo(editor)
+    private val transformGizmo = NodeTransformGizmo(ui.editor)
 
     init {
         transformProperties.onChangedByEditor += {
@@ -45,21 +44,22 @@ class ObjectProperties(editor: KoolEditor) : EditorPanel(editor) {
                 }
             }
         }
-        editor.editorContent += transformGizmo
+        ui.editor.editorContent += transformGizmo
     }
 
-    override val windowSurface: UiSurface = Window(
-        windowState,
-        colors = EditorUi.EDITOR_THEME_COLORS,
-        name = "Object Properties"
+    override val windowSurface: UiSurface = WindowSurface(
+        windowBounds,
+        colors = EditorUi.EDITOR_THEME_COLORS
     ) {
         modifier.backgroundColor(colors.background.withAlpha(0.8f))
 
         // clear gizmo transform object, will be set below if transform editor is available
         transformGizmo.setTransformObject(null)
 
-        TitleBar()
-        objectProperties()
+        Column(Grow.Std, Grow.Std) {
+            TitleBar(windowBounds)
+            objectProperties()
+        }
 
         surface.onEachFrame {
             EditorState.selectedObject.value?.created?.let { selectedNd ->
@@ -73,7 +73,22 @@ class ObjectProperties(editor: KoolEditor) : EditorPanel(editor) {
         }
     }
 
-    override val windowScope: WindowScope = windowSurface.windowScope!!
+//    override fun UiScope.windowContent() {
+//        // clear gizmo transform object, will be set below if transform editor is available
+//        transformGizmo.setTransformObject(null)
+//        objectProperties()
+//
+//        surface.onEachFrame {
+//            EditorState.selectedObject.value?.created?.let { selectedNd ->
+//                selectedNd.transform.getPosition(tmpNodePos)
+//                transformProperties.setPosition(tmpNodePos)
+//                selectedNd.transform.matrix.getRotation(tmpNodeRotMat)
+//                transformProperties.setRotation(tmpNodeRotMat.getEulerAngles(tmpNodeRot))
+//                selectedNd.transform.matrix.getScale(tmpNodeScale)
+//                transformProperties.setScale(tmpNodeScale)
+//            }
+//        }
+//    }
 
     fun UiScope.objectProperties() = Column(Grow.Std, Grow.Std) {
         val selectedObject = EditorState.selectedObject.use()

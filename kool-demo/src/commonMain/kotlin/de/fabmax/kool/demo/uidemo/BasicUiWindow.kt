@@ -3,20 +3,13 @@ package de.fabmax.kool.demo.uidemo
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.Color
 
-class BasicUiWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
+class BasicUiWindow(uiDemo: UiDemo) : DemoWindow("Demo Window", uiDemo) {
 
-    private val windowState = WindowState().apply { setWindowSize(Dp(500f), Dp(700f)) }
-
-    override val windowSurface: UiSurface = Window(windowState, name = "Demo Window") {
-        surface.sizes = uiDemo.selectedUiSize.use()
-        surface.colors = uiDemo.selectedColors.use()
-
-        TitleBar(onCloseAction = { uiDemo.closeWindow(this@BasicUiWindow, it.ctx) })
-        WindowContent()
+    init {
+        windowBounds.setFloatingBounds(width = Dp(500f), height = Dp(700f))
     }
-    override val windowScope: WindowScope = windowSurface.windowScope!!
 
-    fun UiScope.WindowContent() = Column(Grow.Std, Grow.Std) {
+    override fun UiScope.windowContent() = Column(Grow.Std, Grow.Std) {
         modifier
             .padding(horizontal = sizes.gap, vertical = sizes.largeGap)
 
@@ -97,6 +90,7 @@ class BasicUiWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
                     .items(items)
                     .selectedIndex(selectedIndex)
                     .onItemSelected { selectedIndex = it }
+                Tooltip("You can also change this by using the scroll wheel while hovering")
             }
         }
 

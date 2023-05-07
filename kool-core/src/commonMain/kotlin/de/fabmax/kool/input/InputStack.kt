@@ -13,24 +13,29 @@ object InputStack {
     val onInputStackChanged = mutableListOf<() -> Unit>()
 
     fun pushTop(inputHandler: InputHandler) {
-        if (inputHandler in handlerStack) {
-            remove(inputHandler)
+        if (handlerStack.lastOrNull() != inputHandler) {
+            if (inputHandler in handlerStack) {
+                remove(inputHandler)
+            }
+            handlerStack += inputHandler
+            fireInputStackChanged()
         }
-        handlerStack += inputHandler
-        fireInputStackChanged()
     }
 
     fun pushBottom(inputHandler: InputHandler) {
-        if (inputHandler in handlerStack) {
-            remove(inputHandler)
+        if (handlerStack.firstOrNull() != inputHandler) {
+            if (inputHandler in handlerStack) {
+                remove(inputHandler)
+            }
+            handlerStack.add(0, inputHandler)
+            fireInputStackChanged()
         }
-        handlerStack.add(0, inputHandler)
-        fireInputStackChanged()
     }
 
     fun remove(inputHandler: InputHandler) {
-        handlerStack -= inputHandler
-        fireInputStackChanged()
+        if (handlerStack.remove(inputHandler)) {
+            fireInputStackChanged()
+        }
     }
 
     fun popAboveAndIncluding(inputHandler: InputHandler) {

@@ -5,20 +5,13 @@ import de.fabmax.kool.toString
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.MsdfFont
 
-class TextStyleWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
+class TextStyleWindow(uiDemo: UiDemo) : DemoWindow("MSDF Text Style", uiDemo) {
 
-    private val windowState = WindowState().apply { setWindowSize(Dp(1200f), Dp(800f)) }
-
-    override val windowSurface: UiSurface = Window(windowState, name = "MSDF Text Style") {
-        surface.sizes = uiDemo.selectedUiSize.use()
-        surface.colors = uiDemo.selectedColors.use()
-
-        TitleBar(onCloseAction = { uiDemo.closeWindow(this@TextStyleWindow, it.ctx) })
-        WindowContent()
+    init {
+        windowBounds.setFloatingBounds(width = Dp(1200f), height = Dp(800f))
     }
-    override val windowScope: WindowScope = windowSurface.windowScope!!
 
-    fun UiScope.WindowContent() = Column(Grow.Std, Grow.Std) {
+    override fun UiScope.windowContent() = Column(Grow.Std, Grow.Std) {
         var displayText by remember("Hello kool UI!")
         val fontSize = remember(150f)
         val rotation = remember(0f)

@@ -7,9 +7,7 @@ import de.fabmax.kool.util.Font
 import de.fabmax.kool.util.MdColor
 import kotlin.math.roundToInt
 
-class ThemeEditorWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
-
-    private val windowState = WindowState().apply { setWindowSize(Dp(500f), Dp(700f)) }
+class ThemeEditorWindow(uiDemo: UiDemo) : DemoWindow("Theme Editor", uiDemo) {
 
     private val presetsDark = listOf(
         "Yellow" to Colors.singleColorDark(MdColor.YELLOW),
@@ -67,13 +65,12 @@ class ThemeEditorWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
     private val selectedPreset = mutableStateOf(16)
     private val selectedColor = mutableStateOf(0)
 
-    override val windowSurface = Window(windowState, name = "Theme Editor") {
-        surface.sizes = uiDemo.selectedUiSize.use()
-        surface.colors = uiDemo.selectedColors.use()
+    init {
+        windowBounds.setFloatingBounds(width = Dp(500f), height = Dp(700f))
+    }
+
+    override fun UiScope.windowContent() = Column(Grow.Std, Grow.Std) {
         uiDemo.selectedColors.set(makeColors())
-
-        TitleBar(onCloseAction = { uiDemo.closeWindow(this@ThemeEditorWindow, it.ctx) })
-
         val entry = colorEntries[selectedColor.use()]
 
         Column(Grow.Std, Grow.Std) {
@@ -198,8 +195,6 @@ class ThemeEditorWindow(val uiDemo: UiDemo) : UiDemo.DemoWindow {
             }
         }
     }
-
-    override val windowScope: WindowScope = windowSurface.windowScope!!
 
     init {
         applyPreset()

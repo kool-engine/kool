@@ -31,7 +31,7 @@ data class Sizes(
             gap: Dp = Dp(8f),
             smallGap: Dp = Dp(4f),
             largeGap: Dp = Dp(16f),
-            borderWidth: Dp = Dp(1f)
+            borderWidth: Dp = Dp.roundToWholePx(1f)
         ): Sizes = Sizes(
             normalText,
             largeText,
@@ -55,7 +55,7 @@ data class Sizes(
             gap: Dp = Dp(10f),
             smallGap: Dp = Dp(5f),
             largeGap: Dp = Dp(20f),
-            borderWidth: Dp = Dp(1.25f)
+            borderWidth: Dp = Dp.roundToWholePx(1.25f)
         ): Sizes = Sizes(
             normalText,
             largeText,
@@ -79,7 +79,7 @@ data class Sizes(
             gap: Dp = Dp(12f),
             smallGap: Dp = Dp(6f),
             largeGap: Dp = Dp(24f),
-            borderWidth: Dp = Dp(1.5f)
+            borderWidth: Dp = Dp.roundToWholePx(1.5f)
         ): Sizes = Sizes(
             normalText,
             largeText,

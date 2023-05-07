@@ -8,23 +8,13 @@ import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
 
-sealed class DragAndDropWindow(val uiDemo: UiDemo, name: String) : UiDemo.DemoWindow {
-
-    private val windowState = WindowState().apply { setWindowSize(Dp(500f), Dp(700f)) }
-
-    override val windowSurface: UiSurface = Window(windowState, name = name) {
-        surface.sizes = uiDemo.selectedUiSize.use()
-        surface.colors = uiDemo.selectedColors.use()
-
-        TitleBar(onCloseAction = { uiDemo.closeWindow(this@DragAndDropWindow, it.ctx) })
-        WindowContent()
-    }
-    override val windowScope: WindowScope get() = windowSurface.windowScope!!
+sealed class DragAndDropWindow(name: String, uiDemo: UiDemo) : DemoWindow(name, uiDemo) {
 
     private val items = mutableStateListOf<DndItem>()
     private val dndHandler = DndHandler()
 
     init {
+        windowBounds.setFloatingBounds(width = Dp(500f), height = Dp(700f))
         for (i in 0..9) {
             items += DndItem.random()
         }
@@ -35,7 +25,7 @@ sealed class DragAndDropWindow(val uiDemo: UiDemo, name: String) : UiDemo.DemoWi
         uiDemo.dndContext.removeHandler(dndHandler)
     }
 
-    private fun UiScope.WindowContent() = Column(Grow.Std, Grow.Std) {
+    override fun UiScope.windowContent() = Column(Grow.Std, Grow.Std) {
         Text("Draggable items:") {
             modifier
                 .margin(sizes.gap)
@@ -169,8 +159,8 @@ sealed class DragAndDropWindow(val uiDemo: UiDemo, name: String) : UiDemo.DemoWi
         }
     }
 
-    class A(uiDemo: UiDemo) : DragAndDropWindow(uiDemo, "Drag and Drop A")
-    class B(uiDemo: UiDemo) : DragAndDropWindow(uiDemo, "Drag and Drop B")
+    class A(uiDemo: UiDemo) : DragAndDropWindow("Drag and Drop A", uiDemo)
+    class B(uiDemo: UiDemo) : DragAndDropWindow("Drag and Drop B", uiDemo)
 
     class DndItem(val label: String, val color: Color) {
         companion object {

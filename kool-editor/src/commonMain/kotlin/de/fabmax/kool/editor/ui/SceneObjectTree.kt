@@ -1,7 +1,6 @@
 package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.editor.EditorState
-import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.actions.AddObjectAction
 import de.fabmax.kool.editor.actions.EditorActions
 import de.fabmax.kool.editor.actions.RemoveObjectAction
@@ -14,7 +13,7 @@ import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
 
-class SceneObjectTree(val editor: KoolEditor, val sceneBrowser: SceneBrowser) : Composable {
+class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
 
     private val treeItemMap = mutableMapOf<MSceneNode<*>, SceneObjectItem>()
     private val treeItems = mutableListOf<SceneObjectItem>()

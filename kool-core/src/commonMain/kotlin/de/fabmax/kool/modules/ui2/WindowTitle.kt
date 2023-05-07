@@ -1,11 +1,16 @@
 package de.fabmax.kool.modules.ui2
 
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.modules.ui2.docking.DockableBounds
 import de.fabmax.kool.util.Color
 
-fun WindowScope.TitleBar(
-    title: String = surface.name,
+fun UiScope.TitleBar(
+    windowBounds: DockableBounds,
+    title: String = windowBounds.name,
+    focusedBackgroundColor: Color = colors.secondary,
+    unfocusedBackgroundColor: Color = colors.secondaryVariant,
     isDraggable: Boolean = true,
+    isMinimizedToTitle: Boolean = false,
     showTabsIfDocked: Boolean = true,
     hideTitleWhenTabbed: Boolean = true,
     onCloseAction: ((PointerEvent) -> Unit)? = null,
@@ -14,21 +19,23 @@ fun WindowScope.TitleBar(
     scopeName: String? = null
 ) {
     val isTabbed = if (showTabsIfDocked) {
-        DockingTabsBar(onCloseAction = onCloseAction, scopeName = scopeName)
+        DockingTabsBar(windowBounds, onCloseAction = onCloseAction, scopeName = scopeName)
     } else {
         false
     }
 
     if (!isTabbed || !hideTitleWhenTabbed) {
-        val windowModifier = modifier
         Row(Grow.Std, height = sizes.gap * 3f, scopeName = scopeName) {
-            val cornerR = if (isDocked) 0f else sizes.gap.px
+            val color = if (surface.isFocused.use()) focusedBackgroundColor else unfocusedBackgroundColor
+            val cornerR = if (windowBounds.isDocked.use()) 0f else sizes.gap.px
             modifier
                 .padding(horizontal = sizes.gap)
-                .background(TitleBarBackground(windowModifier.titleBarColor, cornerR, windowModifier.isMinimizedToTitle))
+                .background(TitleBarBackground(color, cornerR, isMinimizedToTitle))
 
             if (isDraggable) {
-                modifier.dragListener(WindowMoveDragHandler(this@TitleBar))
+                with(windowBounds) {
+                    registerDragCallbacks()
+                }
             }
 
             Text(title) {
@@ -55,24 +62,25 @@ fun WindowScope.TitleBar(
     }
 }
 
-fun WindowScope.DockingTabsBar(
+fun UiScope.DockingTabsBar(
+    windowBounds: DockableBounds,
     isDragToUndock: Boolean = true,
     onCloseAction: ((PointerEvent) -> Unit)? = null,
     scopeName: String? = null
 ): Boolean {
-    val dockingContainer = windowState.dockedTo.use()
+    val dockNode = windowBounds.dockedTo.use()
 
-    if (dockingContainer != null && dockingContainer.dockedWindows.size > 1) {
+    if (dockNode != null && dockNode.dockedItems.use().size > 1) {
         Row(width = Grow.Std, height = sizes.gap * 3f, scopeName = scopeName) {
             modifier.backgroundColor(colors.secondaryVariant.mix(Color.BLACK, 0.2f))
 
-            dockingContainer.dockedWindows.use().forEach { wnd ->
+            dockNode.dockedItems.forEach { item ->
                 Box {
                     modifier
                         .margin(horizontal = sizes.smallGap)
                         .alignY(AlignmentY.Bottom)
 
-                    Button(wnd.surface.name) {
+                    Button(item.name) {
                         // set a bit different button style: click feedback is disabled (doesn't work with the way
                         // the tabs are switched)
                         // also we use a custom background to get a more "tabbie" look
@@ -85,9 +93,9 @@ fun WindowScope.DockingTabsBar(
                             .background(RectBackground(bgColor))
                             .isClickFeedback(false)
                             .textAlignX(AlignmentX.Start)
-                            .onClick { wnd.surface.bringToTop() }
+                            .onClick { dockNode.bringToTop(item) }
 
-                        if (wnd == this@DockingTabsBar && onCloseAction != null) {
+                        if (item == this@DockingTabsBar && onCloseAction != null) {
                             modifier
                                 .text(modifier.text + "       ")
                                 .padding(end = 0.dp)
@@ -104,15 +112,17 @@ fun WindowScope.DockingTabsBar(
                         }
                     }
 
-                    if (wnd == this@DockingTabsBar) {
+                    if (item == windowBounds) {
                         // active tab indicator
                         Box(Grow.Std, sizes.borderWidth * 2f) {
                             modifier
-                                .backgroundColor(if (windowState.isFocused.use()) colors.primary else colors.primaryVariant)
+                                .backgroundColor(if (surface.isFocused.use()) colors.primary else colors.primaryVariant)
                                 .alignY(AlignmentY.Bottom)
                         }
                         if (isDragToUndock) {
-                            modifier.dragListener(WindowMoveDragHandler(this@DockingTabsBar))
+                            with(windowBounds) {
+                                registerDragCallbacks(false)
+                            }
                         }
                     }
                 }

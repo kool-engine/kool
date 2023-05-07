@@ -2,36 +2,49 @@ package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.modules.ui2.*
+import de.fabmax.kool.modules.ui2.docking.Dock
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.MsdfFont
 
-class EditorUi(editor: KoolEditor) : Scene("EditorMenu") {
+class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
 
-    private val dockingHost = DockingHost()
+    val dock = Dock()
 
-    val sceneBrowser = SceneBrowser(editor)
-    val objectProperties = ObjectProperties(editor)
+    val sceneBrowser = SceneBrowser(this)
+    val objectProperties = ObjectProperties(this)
 
     init {
         setupUiScene()
-        addNode(dockingHost)
+
+        addNode(dock)
+        dock.createNodeLayout(
+            listOf(
+                "0:row",
+                "0:row/0:leaf",
+                "0:row/1:leaf",
+                "0:row/2:leaf"
+            )
+        )
+
+        dock.dockingPaneComposable = Composable {
+//            Box(Grow.Std, Grow.Std) {
+//                modifier.margin(start =48.dp)
+                dock.root()
+//            }
+        }
 
         // add scene browser panel and dock it to the left side of the screen
-        dockingHost.addNode(sceneBrowser.windowSurface)
-        dockingHost.dockWindow(sceneBrowser.windowScope, listOf(DockingHost.DockPosition.Start to Dp(300f)))
+        dock.addDockableSurface(sceneBrowser.windowBounds, sceneBrowser.windowSurface)
+        dock.getLeafAtPath("0/0")?.dock(sceneBrowser.windowBounds)
 
         // add object properties panel and dock it to the right side of the screen
-        dockingHost.addNode(objectProperties.windowSurface)
-        dockingHost.dockWindow(objectProperties.windowScope, listOf(
-            DockingHost.DockPosition.End to Grow.Std,
-            DockingHost.DockPosition.End to Dp(300f)
-        ))
+        dock.addDockableSurface(objectProperties.windowBounds, objectProperties.windowSurface)
+        dock.getLeafAtPath("0/2")?.dock(objectProperties.windowBounds)
     }
 
     companion object {
-        val EDITOR_THEME_COLORS = Colors.singleColorDark(MdColor.LIGHT_BLUE)
+        val EDITOR_THEME_COLORS = Colors.darkColors()
     }
 }
 
