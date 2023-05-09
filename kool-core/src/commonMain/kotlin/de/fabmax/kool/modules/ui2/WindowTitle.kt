@@ -69,12 +69,13 @@ fun UiScope.DockingTabsBar(
     scopeName: String? = null
 ): Boolean {
     val dockNode = windowBounds.dockedTo.use()
+    val nodeCount = dockNode?.dockedItems?.use()?.count { !it.isHidden } ?: 0
 
-    if (dockNode != null && dockNode.dockedItems.use().size > 1) {
+    if (dockNode != null && nodeCount > 1) {
         Row(width = Grow.Std, height = sizes.gap * 3f, scopeName = scopeName) {
             modifier.backgroundColor(colors.secondaryVariant.mix(Color.BLACK, 0.2f))
 
-            dockNode.dockedItems.forEach { item ->
+            dockNode.dockedItems.filter { !it.isHidden }.forEach { item ->
                 Box {
                     modifier
                         .margin(horizontal = sizes.smallGap)

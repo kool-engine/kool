@@ -1,8 +1,12 @@
 package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.editor.KoolEditor
-import de.fabmax.kool.modules.ui2.*
+import de.fabmax.kool.modules.ui2.Colors
+import de.fabmax.kool.modules.ui2.Dimension
+import de.fabmax.kool.modules.ui2.Sizes
 import de.fabmax.kool.modules.ui2.docking.Dock
+import de.fabmax.kool.modules.ui2.docking.DockableBounds
+import de.fabmax.kool.modules.ui2.setupUiScene
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MsdfFont
@@ -27,12 +31,8 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
             )
         )
 
-        dock.dockingPaneComposable = Composable {
-//            Box(Grow.Std, Grow.Std) {
-//                modifier.margin(start =48.dp)
-                dock.root()
-//            }
-        }
+        val centerSpacer = DockableBounds("EmptyDockable", dock, isHidden = true)
+        dock.getLeafAtPath("0:row/1:leaf")?.dock(centerSpacer)
 
         // add scene browser panel and dock it to the left side of the screen
         dock.addDockableSurface(sceneBrowser.windowBounds, sceneBrowser.windowSurface)

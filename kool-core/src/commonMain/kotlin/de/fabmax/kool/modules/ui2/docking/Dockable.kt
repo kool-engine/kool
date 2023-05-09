@@ -6,6 +6,7 @@ import de.fabmax.kool.modules.ui2.MutableStateValue
 
 interface Dockable {
     val name: String
+    val isHidden: Boolean
 
     val preferredWidth: Dp?
     val preferredHeight: Dp?

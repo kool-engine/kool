@@ -85,6 +85,8 @@ open class UiSurface(
                     requiresUpdate = false
                     updateUi(it)
                 }
+            } else {
+                InputStack.remove(inputHandler)
             }
         }
         onDispose += {

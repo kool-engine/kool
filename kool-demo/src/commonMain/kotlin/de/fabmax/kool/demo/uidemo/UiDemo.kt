@@ -9,6 +9,7 @@ import de.fabmax.kool.demo.UiSizes
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.modules.ui2.docking.Dock
+import de.fabmax.kool.modules.ui2.docking.DockableBounds
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Color
@@ -54,6 +55,10 @@ class UiDemo : DemoScene("UI Demo") {
                 "0:row/2:leaf"
             )
         )
+
+        // add a hidden empty dockable to the center node to avoid, center node being removed on undock
+        val centerSpacer = DockableBounds("EmptyDockable", dock, isHidden = true)
+        dock.getLeafAtPath("0:row/1:leaf")?.dock(centerSpacer)
 
         // Spawn launcher and theme editor windows docked to the left and right dock nodes
         spawnWindow(LauncherWindow(this@UiDemo), "0:row/0:leaf")
@@ -130,4 +135,3 @@ class UiDemo : DemoScene("UI Demo") {
         window.windowSurface.dispose(ctx)
     }
 }
-

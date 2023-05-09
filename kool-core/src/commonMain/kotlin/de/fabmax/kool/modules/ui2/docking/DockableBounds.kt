@@ -17,7 +17,8 @@ class DockableBounds(
     floatingWidth: Dimension = FitContent,
     floatingHeight: Dimension = FitContent,
     floatingAlignmentX: AlignmentX = AlignmentX.Start,
-    floatingAlignmentY: AlignmentY = AlignmentY.Top
+    floatingAlignmentY: AlignmentY = AlignmentY.Top,
+    override val isHidden: Boolean = false
 ): Dockable {
 
     override val dockedTo = mutableStateOf<DockNodeLeaf?>(null)
