@@ -280,6 +280,8 @@ plugins {
 
 repositories {
     mavenCentral()
+    // or, in case you want to use the latest snapshots:
+    // maven("https://oss.sonatype.org/content/repositories/snapshots")
 }
 
 kotlin {
@@ -297,6 +299,10 @@ kotlin {
             dependencies {
                 implementation("de.fabmax.kool:kool-core:0.11.0")
                 implementation("de.fabmax.kool:kool-physics:0.11.0")
+
+                // or the latest snapshot version:
+                // implementation("de.fabmax.kool:kool-core:0.12.0-SNAPSHOT")
+                // implementation("de.fabmax.kool:kool-physics:0.11.0-SNAPSHOT")
             }
         }
 

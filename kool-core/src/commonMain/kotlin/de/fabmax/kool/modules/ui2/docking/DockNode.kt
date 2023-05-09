@@ -3,7 +3,6 @@ package de.fabmax.kool.modules.ui2.docking
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.modules.ui2.*
-import de.fabmax.kool.util.MdColor
 import kotlin.reflect.KClass
 
 sealed class DockNode(
@@ -25,7 +24,7 @@ sealed class DockNode(
     val boundsTopDp = mutableStateOf(Dp.ZERO)
     val boundsBottomDp = mutableStateOf(Dp.ZERO)
 
-    var isPreviewDockPosition = false
+    var isPreviewDockPosition = true
 
     private val drawSlotSelector = mutableStateOf(false)
     private val dockPreview = mutableStateOf<SlotPosition?>(null)
@@ -362,8 +361,8 @@ sealed class DockNode(
         modifier.size(Grow.Std, Grow.Std)
         if (withBg) {
             modifier
-                .background(RoundRectBackground(MdColor.LIGHT_BLUE.withAlpha(0.1f), sizes.smallGap))
-                .border(RoundRectBorder(MdColor.LIGHT_BLUE.withAlpha(0.5f), sizes.smallGap, 1.dp))
+                .background(RoundRectBackground(colors.secondaryAlpha(0.1f), sizes.smallGap))
+                .border(RoundRectBorder(colors.primaryAlpha(0.3f), sizes.smallGap, sizes.smallGap * 0.5f))
         }
     }
 
