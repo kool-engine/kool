@@ -14,7 +14,7 @@ sealed class DragAndDropWindow(name: String, uiDemo: UiDemo) : DemoWindow(name, 
     private val dndHandler = DndHandler()
 
     init {
-        windowBounds.setFloatingBounds(width = Dp(500f), height = Dp(700f))
+        windowDockable.setFloatingBounds(width = Dp(500f), height = Dp(700f))
         for (i in 0..9) {
             items += DndItem.random()
         }

@@ -66,7 +66,7 @@ class ThemeEditorWindow(uiDemo: UiDemo) : DemoWindow("Theme Editor", uiDemo) {
     private val selectedColor = mutableStateOf(0)
 
     init {
-        windowBounds.setFloatingBounds(width = Dp(500f), height = Dp(700f))
+        windowDockable.setFloatingBounds(width = Dp(500f), height = Dp(700f))
     }
 
     override fun UiScope.windowContent() = Column(Grow.Std, Grow.Std) {

@@ -8,7 +8,7 @@ import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.modules.ui2.*
 
-class DockableBounds(
+class UiDockable(
     override val name: String,
     val dock: Dock? = null,
     val undockSizeBehavior: UndockSizeBehavior = UndockSizeBehavior.UsePreviousUndockedSize,
@@ -78,12 +78,11 @@ class DockableBounds(
                     // do not initiate move drag when pointer is on an edge, instead the drag will resize the dockItem
                     it.isConsumed = false
                 } else {
-                    dockedTo.value?.undock(this@DockableBounds)
+                    dockedTo.value?.undock(this@UiDockable)
                     val itemBounds = uiNode.undockedBounds4f
                     moveUndockBoundsUnderPointer(itemBounds, it)
                     dragStartItemBounds.set(itemBounds)
-                    dock?.dndContext?.startDrag(this@DockableBounds, it, null)
-                    println("start drag, dock: $dock")
+                    dock?.dndContext?.startDrag(this@UiDockable, it, null)
                 }
             }
             .onDrag {
@@ -310,7 +309,7 @@ class DockableBounds(
                     floatingHeightPx = currentHeightPx
                 }
             }
-        this@DockableBounds.surface = surface
+        this@UiDockable.surface = surface
     }
 
     companion object {

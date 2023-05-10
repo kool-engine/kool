@@ -13,7 +13,7 @@ class TextAreaWindow(uiDemo: UiDemo) : DemoWindow("Text Area", uiDemo) {
     private val lines = mutableStateListOf<TextLine>()
 
     init {
-        windowBounds.setFloatingBounds(width = Dp(1200f), height = Dp(800f))
+        windowDockable.setFloatingBounds(width = Dp(1200f), height = Dp(800f))
         val r = Random(randomI())
         for (i in 0 until 100) {
             val str = "$i: ${randomText(r)}"

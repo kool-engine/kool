@@ -48,7 +48,7 @@ class ObjectProperties(ui: EditorUi) : EditorPanel("Object Properties", ui) {
     }
 
     override val windowSurface: UiSurface = WindowSurface(
-        windowBounds,
+        windowDockable,
         colors = EditorUi.EDITOR_THEME_COLORS
     ) {
         modifier.backgroundColor(colors.background.withAlpha(0.8f))
@@ -57,7 +57,7 @@ class ObjectProperties(ui: EditorUi) : EditorPanel("Object Properties", ui) {
         transformGizmo.setTransformObject(null)
 
         Column(Grow.Std, Grow.Std) {
-            TitleBar(windowBounds)
+            TitleBar(windowDockable)
             objectProperties()
         }
 
@@ -72,23 +72,6 @@ class ObjectProperties(ui: EditorUi) : EditorPanel("Object Properties", ui) {
             }
         }
     }
-
-//    override fun UiScope.windowContent() {
-//        // clear gizmo transform object, will be set below if transform editor is available
-//        transformGizmo.setTransformObject(null)
-//        objectProperties()
-//
-//        surface.onEachFrame {
-//            EditorState.selectedObject.value?.created?.let { selectedNd ->
-//                selectedNd.transform.getPosition(tmpNodePos)
-//                transformProperties.setPosition(tmpNodePos)
-//                selectedNd.transform.matrix.getRotation(tmpNodeRotMat)
-//                transformProperties.setRotation(tmpNodeRotMat.getEulerAngles(tmpNodeRot))
-//                selectedNd.transform.matrix.getScale(tmpNodeScale)
-//                transformProperties.setScale(tmpNodeScale)
-//            }
-//        }
-//    }
 
     fun UiScope.objectProperties() = Column(Grow.Std, Grow.Std) {
         val selectedObject = EditorState.selectedObject.use()

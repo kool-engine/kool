@@ -1,12 +1,12 @@
 package de.fabmax.kool.modules.ui2
 
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.modules.ui2.docking.DockableBounds
+import de.fabmax.kool.modules.ui2.docking.UiDockable
 import de.fabmax.kool.util.Color
 
 fun UiScope.TitleBar(
-    windowBounds: DockableBounds,
-    title: String = windowBounds.name,
+    windowDockable: UiDockable,
+    title: String = windowDockable.name,
     focusedBackgroundColor: Color = colors.secondary,
     unfocusedBackgroundColor: Color = colors.secondaryVariant,
     isDraggable: Boolean = true,
@@ -19,7 +19,7 @@ fun UiScope.TitleBar(
     scopeName: String? = null
 ) {
     val isTabbed = if (showTabsIfDocked) {
-        DockingTabsBar(windowBounds, onCloseAction = onCloseAction, scopeName = scopeName)
+        DockingTabsBar(windowDockable, onCloseAction = onCloseAction, scopeName = scopeName)
     } else {
         false
     }
@@ -27,13 +27,13 @@ fun UiScope.TitleBar(
     if (!isTabbed || !hideTitleWhenTabbed) {
         Row(Grow.Std, height = sizes.gap * 3f, scopeName = scopeName) {
             val color = if (surface.isFocused.use()) focusedBackgroundColor else unfocusedBackgroundColor
-            val cornerR = if (windowBounds.isDocked.use()) 0f else sizes.gap.px
+            val cornerR = if (windowDockable.isDocked.use()) 0f else sizes.gap.px
             modifier
                 .padding(horizontal = sizes.gap)
                 .background(TitleBarBackground(color, cornerR, isMinimizedToTitle))
 
             if (isDraggable) {
-                with(windowBounds) {
+                with(windowDockable) {
                     registerDragCallbacks()
                 }
             }
@@ -63,12 +63,12 @@ fun UiScope.TitleBar(
 }
 
 fun UiScope.DockingTabsBar(
-    windowBounds: DockableBounds,
+    windowDockable: UiDockable,
     isDragToUndock: Boolean = true,
     onCloseAction: ((PointerEvent) -> Unit)? = null,
     scopeName: String? = null
 ): Boolean {
-    val dockNode = windowBounds.dockedTo.use()
+    val dockNode = windowDockable.dockedTo.use()
     val nodeCount = dockNode?.dockedItems?.use()?.count { !it.isHidden } ?: 0
 
     if (dockNode != null && nodeCount > 1) {
@@ -113,7 +113,7 @@ fun UiScope.DockingTabsBar(
                         }
                     }
 
-                    if (item == windowBounds) {
+                    if (item == windowDockable) {
                         // active tab indicator
                         Box(Grow.Std, sizes.borderWidth * 2f) {
                             modifier
@@ -121,7 +121,7 @@ fun UiScope.DockingTabsBar(
                                 .alignY(AlignmentY.Bottom)
                         }
                         if (isDragToUndock) {
-                            with(windowBounds) {
+                            with(windowDockable) {
                                 registerDragCallbacks(false)
                             }
                         }

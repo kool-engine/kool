@@ -8,7 +8,7 @@ import de.fabmax.kool.util.MsdfFont
 class TextStyleWindow(uiDemo: UiDemo) : DemoWindow("MSDF Text Style", uiDemo) {
 
     init {
-        windowBounds.setFloatingBounds(width = Dp(1200f), height = Dp(800f))
+        windowDockable.setFloatingBounds(width = Dp(1200f), height = Dp(800f))
     }
 
     override fun UiScope.windowContent() = Column(Grow.Std, Grow.Std) {

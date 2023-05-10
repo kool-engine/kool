@@ -1,13 +1,13 @@
 package de.fabmax.kool.modules.ui2
 
-import de.fabmax.kool.modules.ui2.docking.DockableBounds
+import de.fabmax.kool.modules.ui2.docking.UiDockable
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.Color
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
 fun UiScope.Window(
-    windowBounds: DockableBounds,
+    windowDockable: UiDockable,
     backgroundColor: Color? = colors.background,
     borderColor: Color? = colors.secondaryVariantAlpha(0.3f),
     block: UiScope.() -> Unit
@@ -16,16 +16,16 @@ fun UiScope.Window(
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)
     }
 
-    Box(scopeName = windowBounds.name) {
+    Box(scopeName = windowDockable.name) {
         backgroundColor?.let { color ->
-            if (windowBounds.isDocked.use()) {
+            if (windowDockable.isDocked.use()) {
                 modifier.background(RectBackground(color))
             } else {
                 modifier.background(RoundRectBackground(color, sizes.gap))
             }
         }
         borderColor?.let { color ->
-            if (windowBounds.isDocked.use()) {
+            if (windowDockable.isDocked.use()) {
                 modifier.border(RectBorder(color, sizes.borderWidth))
             } else {
                 modifier.border(RoundRectBorder(color, sizes.gap, sizes.borderWidth))
@@ -34,7 +34,7 @@ fun UiScope.Window(
 
         block()
 
-        with (windowBounds) {
+        with (windowDockable) {
             applySizeAndPosition()
             registerResizeCallbacks()
         }
@@ -42,24 +42,26 @@ fun UiScope.Window(
 }
 
 fun WindowSurface(
-    windowBounds: DockableBounds,
+    windowDockable: UiDockable,
     colors: Colors = Colors.darkColors(),
     sizes: Sizes = Sizes.medium,
-    backgroundColor: Color? = colors.background,
-    borderColor: Color? = colors.secondaryVariantAlpha(0.3f),
+    backgroundColor: (UiScope.() -> Color?) = { surface.colors.background },
+    borderColor: (UiScope.() -> Color?) = { surface.colors.secondaryVariantAlpha(0.3f) },
     hideIfDockedInBackground: Boolean = true,
     block: UiScope.() -> Unit
 ): UiSurface {
-    val windowSurface = UiSurface(colors, sizes, windowBounds.name)
+    val windowSurface = UiSurface(colors, sizes, windowDockable.name)
     windowSurface.content = {
-        Window(windowBounds, backgroundColor, borderColor, block)
+        Window(windowDockable, backgroundColor(), borderColor(), block)
     }
     if (hideIfDockedInBackground) {
         windowSurface.onUpdate {
-            windowBounds.dockedTo.value?.let { dockNode ->
-                if (windowSurface.isVisible && !dockNode.isOnTop(windowBounds)) {
+            windowDockable.dockedTo.value?.let { dockNode ->
+                if (!dockNode.dock.isVisible) {
                     windowSurface.isVisible = false
-                } else if (!windowSurface.isVisible && dockNode.isOnTop(windowBounds)) {
+                } else if (windowSurface.isVisible && !dockNode.isOnTop(windowDockable)) {
+                    windowSurface.isVisible = false
+                } else if (!windowSurface.isVisible && dockNode.isOnTop(windowDockable)) {
                     windowSurface.isVisible = true
                 }
             }
@@ -69,15 +71,15 @@ fun WindowSurface(
 }
 
 fun Node.addWindowSurface(
-    windowBounds: DockableBounds,
+    windowDockable: UiDockable,
     colors: Colors = Colors.darkColors(),
     sizes: Sizes = Sizes.medium,
-    backgroundColor: Color? = colors.background,
-    borderColor: Color? = colors.secondaryVariantAlpha(0.3f),
+    backgroundColor: (UiScope.() -> Color?) = { colors.background },
+    borderColor: (UiScope.() -> Color?) = { colors.secondaryVariantAlpha(0.3f) },
     hideIfDockedInBackground: Boolean = true,
     block: UiScope.() -> Unit
 ): UiSurface {
-    val windowSurface = WindowSurface(windowBounds, colors, sizes, backgroundColor, borderColor, hideIfDockedInBackground, block)
+    val windowSurface = WindowSurface(windowDockable, colors, sizes, backgroundColor, borderColor, hideIfDockedInBackground, block)
     addNode(windowSurface)
     return windowSurface
 }

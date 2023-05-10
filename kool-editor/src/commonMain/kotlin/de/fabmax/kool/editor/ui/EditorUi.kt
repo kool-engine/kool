@@ -5,7 +5,7 @@ import de.fabmax.kool.modules.ui2.Colors
 import de.fabmax.kool.modules.ui2.Dimension
 import de.fabmax.kool.modules.ui2.Sizes
 import de.fabmax.kool.modules.ui2.docking.Dock
-import de.fabmax.kool.modules.ui2.docking.DockableBounds
+import de.fabmax.kool.modules.ui2.docking.UiDockable
 import de.fabmax.kool.modules.ui2.setupUiScene
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Color
@@ -31,16 +31,16 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
             )
         )
 
-        val centerSpacer = DockableBounds("EmptyDockable", dock, isHidden = true)
+        val centerSpacer = UiDockable("EmptyDockable", dock, isHidden = true)
         dock.getLeafAtPath("0:row/1:leaf")?.dock(centerSpacer)
 
         // add scene browser panel and dock it to the left side of the screen
-        dock.addDockableSurface(sceneBrowser.windowBounds, sceneBrowser.windowSurface)
-        dock.getLeafAtPath("0/0")?.dock(sceneBrowser.windowBounds)
+        dock.addDockableSurface(sceneBrowser.windowDockable, sceneBrowser.windowSurface)
+        dock.getLeafAtPath("0/0")?.dock(sceneBrowser.windowDockable)
 
         // add object properties panel and dock it to the right side of the screen
-        dock.addDockableSurface(objectProperties.windowBounds, objectProperties.windowSurface)
-        dock.getLeafAtPath("0/2")?.dock(objectProperties.windowBounds)
+        dock.addDockableSurface(objectProperties.windowDockable, objectProperties.windowSurface)
+        dock.getLeafAtPath("0/2")?.dock(objectProperties.windowDockable)
     }
 
     companion object {

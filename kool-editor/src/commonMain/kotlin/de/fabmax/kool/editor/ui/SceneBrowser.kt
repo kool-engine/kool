@@ -7,13 +7,13 @@ class SceneBrowser(ui: EditorUi) : EditorPanel("Scene Browser", ui) {
     private val sceneObjectTree = SceneObjectTree(this)
 
     override val windowSurface: UiSurface = WindowSurface(
-        windowBounds,
+        windowDockable,
         colors = EditorUi.EDITOR_THEME_COLORS
     ) {
         modifier.backgroundColor(colors.background.withAlpha(0.8f))
 
         Column(Grow.Std, Grow.Std) {
-            TitleBar(windowBounds)
+            TitleBar(windowDockable)
             sceneObjectTree()
         }
     }
@@ -21,6 +21,4 @@ class SceneBrowser(ui: EditorUi) : EditorPanel("Scene Browser", ui) {
     fun refreshSceneTree() {
         sceneObjectTree.refreshSceneTree()
     }
-
-    //override fun UiScope.windowContent() = sceneObjectTree()
 }

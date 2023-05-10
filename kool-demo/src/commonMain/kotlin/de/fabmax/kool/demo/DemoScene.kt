@@ -5,7 +5,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.demo.menu.TitleBgRenderer
 import de.fabmax.kool.modules.ui2.*
-import de.fabmax.kool.modules.ui2.docking.DockableBounds
+import de.fabmax.kool.modules.ui2.docking.UiDockable
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
@@ -23,7 +23,7 @@ abstract class DemoScene(val name: String) {
     val isMenu = mutableStateOf(true)
     val isMenuMinimized = mutableStateOf(false)
 
-    private val menuWindowBounds = DockableBounds(
+    private val menuDockable = UiDockable(
         name,
         floatingX = UiSizes.baseSize * 2f,
         floatingY = UiSizes.baseSize * 2f,
@@ -88,12 +88,12 @@ abstract class DemoScene(val name: String) {
         val titleTxt = title ?: demoEntry?.title ?: "Demo"
 
         return WindowSurface(
-            menuWindowBounds,
+            menuDockable,
             colors = Colors.singleColorDark(accent, Color("101010d0"))
         ) {
             if (!isMenu.use()) {
                 // reset window location, so that it will appear at default location when it is shown again
-                menuWindowBounds.setFloatingBounds(
+                menuDockable.setFloatingBounds(
                     x = UiSizes.baseSize * 2f,
                     y = UiSizes.baseSize * 2f,
                     width = UiSizes.menuWidth,
@@ -141,7 +141,7 @@ abstract class DemoScene(val name: String) {
                 .height(UiSizes.baseSize)
                 .background(RoundRectBackground(colors.primary, cornerRadius))
 
-            with(menuWindowBounds) { registerDragCallbacks() }
+            with(menuDockable) { registerDragCallbacks() }
 
             val titleFont = (sizes.largeText as MsdfFont).copy(glowColor = DemoMenu.titleTextGlowColor)
             Text(titleTxt) {
@@ -175,7 +175,7 @@ abstract class DemoScene(val name: String) {
                         .onClick {
                             isMenuMinimized.toggle()
                             if (isMenuMinimized.value) {
-                                menuWindowBounds.setFloatingBounds(height = FitContent)
+                                menuDockable.setFloatingBounds(height = FitContent)
                             }
                         }
                 }

@@ -9,7 +9,7 @@ import de.fabmax.kool.demo.UiSizes
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.modules.ui2.docking.Dock
-import de.fabmax.kool.modules.ui2.docking.DockableBounds
+import de.fabmax.kool.modules.ui2.docking.UiDockable
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Color
@@ -57,7 +57,7 @@ class UiDemo : DemoScene("UI Demo") {
         )
 
         // add a hidden empty dockable to the center node to avoid, center node being removed on undock
-        val centerSpacer = DockableBounds("EmptyDockable", dock, isHidden = true)
+        val centerSpacer = UiDockable("EmptyDockable", dock, isHidden = true)
         dock.getLeafAtPath("0:row/1:leaf")?.dock(centerSpacer)
 
         // Spawn launcher and theme editor windows docked to the left and right dock nodes
@@ -106,12 +106,12 @@ class UiDemo : DemoScene("UI Demo") {
     fun spawnWindow(window: DemoWindow, dockPath: String? = null) {
         demoWindows += window
 
-        dock.addDockableSurface(window.windowBounds, window.windowSurface)
+        dock.addDockableSurface(window.windowDockable, window.windowSurface)
         dockPath?.let {
-            dock.getLeafAtPath(it)?.dock(window.windowBounds)
+            dock.getLeafAtPath(it)?.dock(window.windowDockable)
         }
 
-        window.windowBounds.setFloatingBounds(Dp(windowSpawnLocation.x), Dp(windowSpawnLocation.y))
+        window.windowDockable.setFloatingBounds(Dp(windowSpawnLocation.x), Dp(windowSpawnLocation.y))
         windowSpawnLocation.x += 32f
         windowSpawnLocation.y += 32f
         if (windowSpawnLocation.y > 480f) {

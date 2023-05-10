@@ -6,7 +6,7 @@ import de.fabmax.kool.util.Color
 class BasicUiWindow(uiDemo: UiDemo) : DemoWindow("Demo Window", uiDemo) {
 
     init {
-        windowBounds.setFloatingBounds(width = Dp(500f), height = Dp(700f))
+        windowDockable.setFloatingBounds(width = Dp(500f), height = Dp(700f))
     }
 
     override fun UiScope.windowContent() = Column(Grow.Std, Grow.Std) {

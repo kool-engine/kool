@@ -32,7 +32,7 @@ class DockNodeLeaf(
         }
     }
 
-    fun dock(dockable: Dockable, index: Int = 0, usePreferredSize: Boolean = dockedItems.isEmpty()) {
+    fun dock(dockable: Dockable, index: Int = -1, bringToTop: Boolean = true, usePreferredSize: Boolean = dockedItems.isEmpty()) {
         if (usePreferredSize) {
             val p = parent
             val prefH = dockable.preferredHeight
@@ -50,6 +50,10 @@ class DockNodeLeaf(
             dockedItems.add(dockable)
         }
         dockable.dockedTo.set(this)
+
+        if (bringToTop) {
+            bringToTop(dockable)
+        }
     }
 
     fun bringToTop(dockable: Dockable) {

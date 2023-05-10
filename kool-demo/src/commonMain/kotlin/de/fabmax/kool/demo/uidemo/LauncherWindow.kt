@@ -6,7 +6,7 @@ import kotlin.reflect.KClass
 class LauncherWindow(uiDemo: UiDemo) : DemoWindow("Window Launcher", uiDemo, false) {
 
     init {
-        windowBounds.setFloatingBounds(width = Dp(250f))
+        windowDockable.setFloatingBounds(width = Dp(250f))
     }
 
     override fun UiScope.windowContent() = Column(Grow.Std) {

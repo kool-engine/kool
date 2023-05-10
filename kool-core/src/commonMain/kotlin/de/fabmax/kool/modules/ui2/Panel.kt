@@ -1,10 +1,12 @@
 package de.fabmax.kool.modules.ui2
 
 import de.fabmax.kool.scene.Node
+import de.fabmax.kool.util.Color
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
 fun UiScope.Panel(
+    backgroundColor: Color? = colors.background,
     layout: Layout = ColumnLayout,
     scopeName: String? = null,
     block: UiScope.() -> Unit
@@ -16,7 +18,7 @@ fun UiScope.Panel(
     Box(scopeName = scopeName) {
         modifier
             .layout(layout)
-            .backgroundColor(colors.background)
+            .backgroundColor(backgroundColor)
         block()
     }
 }
@@ -25,12 +27,13 @@ fun PanelSurface(
     colors: Colors = Colors.darkColors(),
     sizes: Sizes = Sizes.medium,
     name: String = "Panel",
+    backgroundColor: (UiScope.() -> Color?) = { surface.colors.background },
     layout: Layout = ColumnLayout,
     block: UiScope.() -> Unit
 ): UiSurface {
     val panelSurface = UiSurface(colors, sizes, name)
     panelSurface.content = {
-        Panel(layout, name, block)
+        Panel(backgroundColor(), layout, name, block)
     }
     return panelSurface
 }
@@ -39,10 +42,11 @@ fun Node.addPanelSurface(
     colors: Colors = Colors.darkColors(),
     sizes: Sizes = Sizes.medium,
     name: String = "Panel",
+    backgroundColor: (UiScope.() -> Color?) = { colors.background },
     layout: Layout = ColumnLayout,
     block: UiScope.() -> Unit
 ): UiSurface {
-    val panelSurface = PanelSurface(colors, sizes, name, layout, block)
+    val panelSurface = PanelSurface(colors, sizes, name, backgroundColor, layout, block)
     addNode(panelSurface)
     return panelSurface
 }
