@@ -14,8 +14,6 @@ import de.fabmax.kool.modules.ui2.*
 
 class ObjectProperties(ui: EditorUi) : EditorPanel("Object Properties", ui) {
 
-    //private val windowState = WindowState().apply { setWindowSize(Dp(300f), Dp(600f)) }
-
     private val transformProperties = TransformProperties()
 
     private val tmpNodePos = MutableVec3d()

@@ -4,50 +4,42 @@ import de.fabmax.kool.editor.api.EditorAwareApp
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logI
 import de.fabmax.kool.util.logW
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import java.io.BufferedReader
-import java.io.File
 import java.io.InputStreamReader
 import java.net.URLClassLoader
 import java.nio.file.Path
-import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.concurrent.thread
+import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 import kotlin.io.path.exists
 
-actual class AppLoadService actual constructor() {
+actual class AppLoadService actual constructor(watchDirs: Set<String>, appLoadClassPath: String) : CoroutineScope {
+
+    override val coroutineContext: CoroutineContext = Job()
 
     // todo: paths are hardcoded for now
-    private val appClassPath = Path.of(KoolEditor.PROJECT_CLASS_PATH)
-    private val watchPath = KoolEditor.PROJECT_SRC_DIR
+    private val appClassPath = Path.of(appLoadClassPath)
 
     private val buildInProgress = AtomicBoolean(false)
-    private val watcher = DirectoryWatcher(setOf(watchPath))
+    private val watcher = DirectoryWatcher(watchDirs)
 
     actual var hasAppChanged = true
         private set
 
-    val ignoredPaths = mutableSetOf<File>()
+    val ignoredPaths = mutableSetOf<Path>()
 
     actual fun addIgnorePath(path: String) {
-        ignoredPaths.add(File(path))
+        ignoredPaths.add(Path.of(path))
     }
 
-    private val loader = thread(isDaemon = true) {
-        var changeFlag = false
+    private val loader = launch {
         while (true) {
-            val changeEvent = watcher.changeEvents.poll(CHANGE_FLAG_TIMEOUT_MS, TimeUnit.MILLISECONDS)
-
-            if (changeEvent != null) {
-                if (changeEvent.path.toFile() !in ignoredPaths) {
-                    logD { "File changed: ${changeEvent.path}; ${changeEvent.type}" }
-                    changeFlag = true
-                }
-            } else if (changeFlag) {
-                // file system changes where detected in the past and the poll timeout passed without a new change
-                //   -> all file changes where written, and it should be safe to trigger the rebuild
-                changeFlag = false
+            if (watcher.changes.receive().any { it.path !in ignoredPaths }) {
                 hasAppChanged = true
             }
         }
@@ -89,12 +81,8 @@ actual class AppLoadService actual constructor() {
 
         logI { "Loading app from directory: $appClassPath" }
         val loader = URLClassLoader(arrayOf(appClassPath.toUri().toURL()), this.javaClass.classLoader)
-        val appClass = loader.loadClass(KoolEditor.PROJECT_MAIN_CLASS)
+        val appClass = loader.loadClass(KoolEditor.APP_PROJECT_MAIN_CLASS)
         val app = appClass.getDeclaredConstructor().newInstance()
         return app as EditorAwareApp
-    }
-
-    companion object {
-        private const val CHANGE_FLAG_TIMEOUT_MS = 300L
     }
 }

@@ -23,7 +23,7 @@ object EditorState {
     private val uniqueNameIds = mutableMapOf<String, Int>()
 
     private fun loadProjectModel(): MProject {
-        val projFile = File(KoolEditor.PROJECT_MODEL_PATH)
+        val projFile = File(KoolEditor.APP_PROJECT_MODEL_PATH)
         return try {
             Json.decodeFromString<MProject>(projFile.readText())
         } catch (e: Exception) {
@@ -54,14 +54,14 @@ object EditorState {
         )
 
         val projectModel = MProject(
-            mainClass = KoolEditor.PROJECT_MAIN_CLASS,
+            mainClass = KoolEditor.APP_PROJECT_MAIN_CLASS,
             scenes = listOf(testScene)
         )
         return projectModel
     }
 
     fun saveProject() {
-        val modelPath = File(KoolEditor.PROJECT_MODEL_PATH)
+        val modelPath = File(KoolEditor.APP_PROJECT_MODEL_PATH)
         modelPath.parentFile.mkdirs()
 
         //modelPath.writeText(Json.encodeToString(projectModel))

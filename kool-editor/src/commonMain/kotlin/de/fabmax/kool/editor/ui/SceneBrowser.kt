@@ -10,7 +10,7 @@ class SceneBrowser(ui: EditorUi) : EditorPanel("Scene Browser", ui) {
         windowDockable,
         colors = EditorUi.EDITOR_THEME_COLORS
     ) {
-        modifier.backgroundColor(colors.background.withAlpha(0.8f))
+        modifier.backgroundColor(colors.backgroundAlpha(0.8f))
 
         Column(Grow.Std, Grow.Std) {
             TitleBar(windowDockable)

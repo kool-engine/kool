@@ -17,6 +17,7 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
 
     val sceneBrowser = SceneBrowser(this)
     val objectProperties = ObjectProperties(this)
+    val assetBrowser = AssetBrowser(this)
 
     init {
         setupUiScene()
@@ -25,14 +26,16 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
         dock.createNodeLayout(
             listOf(
                 "0:row",
-                "0:row/0:leaf",
-                "0:row/1:leaf",
-                "0:row/2:leaf"
+                "0/0:leaf",
+                "0/1:col",
+                "0/2:leaf",
+                "0/1/0:leaf",
+                "0/1/1:leaf",
             )
         )
 
         val centerSpacer = UiDockable("EmptyDockable", dock, isHidden = true)
-        dock.getLeafAtPath("0:row/1:leaf")?.dock(centerSpacer)
+        dock.getLeafAtPath("0/1/0")?.dock(centerSpacer)
 
         // add scene browser panel and dock it to the left side of the screen
         dock.addDockableSurface(sceneBrowser.windowDockable, sceneBrowser.windowSurface)
@@ -41,6 +44,9 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
         // add object properties panel and dock it to the right side of the screen
         dock.addDockableSurface(objectProperties.windowDockable, objectProperties.windowSurface)
         dock.getLeafAtPath("0/2")?.dock(objectProperties.windowDockable)
+
+        dock.addDockableSurface(assetBrowser.windowDockable, assetBrowser.windowSurface)
+        dock.getLeafAtPath("0/1/1")?.dock(assetBrowser.windowDockable)
     }
 
     companion object {

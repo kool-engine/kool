@@ -4,7 +4,7 @@ import de.fabmax.kool.editor.api.EditorAwareApp
 import de.fabmax.kool.util.launchOnMainThread
 import de.fabmax.kool.util.logE
 
-expect class AppLoadService() {
+expect class AppLoadService(watchDirs: Set<String>, appLoadClassPath: String) {
     var hasAppChanged: Boolean
         private set
 
@@ -15,10 +15,10 @@ expect class AppLoadService() {
     suspend fun loadApp(): EditorAwareApp
 }
 
-class AppLoader(val editor: KoolEditor) {
+class AppLoader(val editor: KoolEditor, watchDirs: Set<String>, appLoadClassPath: String) {
     val appReloadListeners = mutableListOf<(EditorAwareApp) -> Unit>()
 
-    private val loadService = AppLoadService()
+    private val loadService = AppLoadService(watchDirs, appLoadClassPath)
     private var isBuildInProgress = false
 
     init {

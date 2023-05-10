@@ -24,7 +24,8 @@ class KoolEditor(val ctx: KoolContext) {
         addNode(editorCameraTransform)
     }
 
-    val appLoader = AppLoader(this)
+    val appLoader = AppLoader(this, APP_PROJECT_SRC_DIRS, APP_PROJECT_CLASS_PATH)
+    val appAssets = AppAssets(APP_ASSETS_DIR)
     val ui = EditorUi(this)
 
     init {
@@ -34,7 +35,6 @@ class KoolEditor(val ctx: KoolContext) {
         registerSceneObjectPicking()
         registerAutoSave()
 
-        appLoader.addIgnorePath(PROJECT_MODEL_PATH)
         appLoader.appReloadListeners += this::handleAppReload
         appLoader.reloadApp()
     }
@@ -129,10 +129,17 @@ class KoolEditor(val ctx: KoolContext) {
 
     companion object {
         // todo: don't use hard-coded project paths
-        const val PROJECT_DIR = "kool-editor-template"
-        const val PROJECT_SRC_DIR = "${PROJECT_DIR}/src"
-        const val PROJECT_CLASS_PATH = "${PROJECT_DIR}/build/classes/kotlin/jvm/main"
-        const val PROJECT_MODEL_PATH = "${PROJECT_DIR}/src/commonMain/resources/kool-project.json"
-        const val PROJECT_MAIN_CLASS = "de.fabmax.kool.app.App"
+        const val APP_PROJECT_DIR = "kool-editor-template"
+        const val APP_PROJECT_CLASS_PATH = "${APP_PROJECT_DIR}/build/classes/kotlin/jvm/main"
+        const val APP_PROJECT_MODEL_PATH = "${APP_PROJECT_DIR}/src/commonMain/resources/kool-project.json"
+        const val APP_PROJECT_MAIN_CLASS = "de.fabmax.kool.app.App"
+
+        val APP_PROJECT_SRC_DIRS = setOf(
+            "${APP_PROJECT_DIR}/src/commonMain/kotlin",
+            "${APP_PROJECT_DIR}/src/jsMain/kotlin",
+            "${APP_PROJECT_DIR}/src/jvmMain/kotlin"
+        )
+
+        const val APP_ASSETS_DIR = "$APP_PROJECT_DIR/src/commonMain/resources/assets"
     }
 }
