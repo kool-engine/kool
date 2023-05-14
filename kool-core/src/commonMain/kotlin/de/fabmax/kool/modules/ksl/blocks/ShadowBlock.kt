@@ -6,7 +6,6 @@ import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.util.CascadedShadowMap
 import de.fabmax.kool.util.ShadowMap
 import de.fabmax.kool.util.SimpleShadowMap
-import kotlin.math.abs
 
 fun KslScopeBuilder.vertexShadowBlock(cfg: ShadowConfig, block: ShadowBlockVertexStage.() -> Unit): ShadowBlockVertexStage {
     val shadowBlock = ShadowBlockVertexStage(cfg, parentStage.program.nextName("shadowBlock"), this)
@@ -75,7 +74,7 @@ class ShadowBlockVertexStage(cfg: ShadowConfig, name: String, parentScope: KslSc
                     val normalLightSpace = float3Var(normalize((viewProj * float4Value(inNormalWorldSpace, 0f.const)).xyz))
                     normalZsLightSpace!!.input[subMapIdx] set normalLightSpace.z
                     positionsLightSpace!!.input[subMapIdx] set viewProj * float4Value(inPositionWorldSpace, 1f.const)
-                    positionsLightSpace!!.input[subMapIdx].xyz += normalLightSpace * abs(subMap.shaderDepthOffset).const
+                    positionsLightSpace!!.input[subMapIdx].xyz += normalLightSpace * subMap.shaderDepthOffset.const * sign(normalLightSpace.z)
                 }
             }
         }
@@ -107,7 +106,7 @@ class ShadowBlockFragmentStage(
                         val subMapIdx = mapInfo.fromIndexIncl
                         val posLightSpace = lightSpacePositions[subMapIdx]
 
-                        `if` (lightSpaceNormalZs[subMapIdx] lt 0f.const) {
+                        `if` (shadowData.shadowCfg.flipBacksideNormals.const or (lightSpaceNormalZs[subMapIdx] lt 0f.const)) {
                             // normal points towards light source, compute shadow factor
                             shadowFactors[lightIdx] set getShadowMapFactor(shadowData.depthMaps.value[subMapIdx], posLightSpace, mapInfo.samplePattern)
                         }.`else` {
@@ -116,7 +115,7 @@ class ShadowBlockFragmentStage(
                         }
                     }
                     is CascadedShadowMap -> {
-                        `if`(lightSpaceNormalZs[mapInfo.fromIndexIncl] lt 0f.const) {
+                        `if`(shadowData.shadowCfg.flipBacksideNormals.const or (lightSpaceNormalZs[mapInfo.fromIndexIncl] lt 0f.const)) {
                             // normal points towards light source, compute shadow factor
                             val sampleW = float1Var(0f.const)
                             val sampleSum = float1Var(0f.const)
@@ -160,6 +159,7 @@ class ShadowBlockFragmentStage(
 
 class ShadowConfig {
     val shadowMaps = mutableListOf<ShadowMapConfig>()
+    var flipBacksideNormals = false
 
     fun addShadowMap(shadowMap: ShadowMap, samplePattern: List<Vec2f> = SAMPLE_PATTERN_4x4) {
         shadowMaps += ShadowMapConfig(shadowMap, samplePattern)

@@ -16,7 +16,7 @@ fun KslProgram.shadowData(shadowCfg: ShadowConfig): ShadowData {
     return (dataBlocks.find { it is ShadowData } as? ShadowData) ?: ShadowData(shadowCfg, this)
 }
 
-class ShadowData(shadowCfg: ShadowConfig, program: KslProgram) : KslDataBlock, KslShaderListener {
+class ShadowData(val shadowCfg: ShadowConfig, program: KslProgram) : KslDataBlock, KslShaderListener {
     override val name = NAME
 
     val shadowMapInfos: List<ShadowMapInfo>
