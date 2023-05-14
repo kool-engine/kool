@@ -19,8 +19,7 @@ class KslGlslGeneratorVk(private val pipelineLayout: Pipeline.Layout) : GlslGene
             appendLine("// texture samplers")
             for (u in samplers) {
                 val (set, desc) = pipelineLayout.findDescriptorByName(u.name)!!
-                val arraySuffix = if (u.value is KslArray<*>) { "[${u.arraySize}]" } else { "" }
-                appendLine("layout(set=${set.set}, binding=${desc.binding}) uniform ${glslTypeName(u.expressionType)} ${u.value.name()}${arraySuffix};")
+                appendLine("layout(set=${set.set}, binding=${desc.binding}) uniform ${glslTypeName(u.expressionType)} ${u.value.name()};")
             }
             appendLine()
         }
@@ -34,8 +33,7 @@ class KslGlslGeneratorVk(private val pipelineLayout: Pipeline.Layout) : GlslGene
                 val (set, desc) = pipelineLayout.findDescriptorByName(ubo.name)!!
                 appendLine("layout(std140, set=${set.set}, binding=${desc.binding}) uniform ${ubo.name} {")
                 for (u in ubo.uniforms.values) {
-                    val arraySuffix = if (u.value is KslArray<*>) { "[${u.arraySize}]" } else { "" }
-                    appendLine("    highp ${glslTypeName(u.expressionType)} ${u.value.name()}${arraySuffix};")
+                    appendLine("    highp ${glslTypeName(u.expressionType)} ${u.value.name()};")
                 }
                 appendLine("};")
             }
@@ -49,17 +47,9 @@ class KslGlslGeneratorVk(private val pipelineLayout: Pipeline.Layout) : GlslGene
             var location = 0
             vertexStage.interStageVars.forEach { interStage ->
                 val value = interStage.input
-                val arraySuffix: String
-                val locationIncrement: Int
-                if (value is KslArray<*>) {
-                    arraySuffix = "[${value.arraySize}]"
-                    locationIncrement = value.arraySize
-                } else {
-                    arraySuffix = ""
-                    locationIncrement = 1
-                }
+                val locationIncrement: Int = if (value is KslArray<*>) value.arraySize else 1
 
-                appendLine("layout(location=${location}) ${interStage.interpolation.glsl()} out ${glslTypeName(value.expressionType)} ${value.name()}${arraySuffix};")
+                appendLine("layout(location=${location}) ${interStage.interpolation.glsl()} out ${glslTypeName(value.expressionType)} ${value.name()};")
                 location += locationIncrement
             }
             appendLine()
@@ -72,17 +62,9 @@ class KslGlslGeneratorVk(private val pipelineLayout: Pipeline.Layout) : GlslGene
             var location = 0
             fragmentStage.interStageVars.forEach { interStage ->
                 val value = interStage.input
-                val arraySuffix: String
-                val locationIncrement: Int
-                if (value is KslArray<*>) {
-                    arraySuffix = "[${value.arraySize}]"
-                    locationIncrement = value.arraySize
-                } else {
-                    arraySuffix = ""
-                    locationIncrement = 1
-                }
+                val locationIncrement: Int = if (value is KslArray<*>) value.arraySize else 1
 
-                appendLine("layout(location=${location}) ${interStage.interpolation.glsl()} in ${glslTypeName(value.expressionType)} ${value.name()}${arraySuffix};")
+                appendLine("layout(location=${location}) ${interStage.interpolation.glsl()} in ${glslTypeName(value.expressionType)} ${value.name()};")
                 location += locationIncrement
             }
             appendLine()
