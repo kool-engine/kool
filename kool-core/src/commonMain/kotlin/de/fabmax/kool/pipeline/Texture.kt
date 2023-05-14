@@ -6,7 +6,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlin.math.roundToInt
 
 /**
- * Describes a texture by it's properties and a loader function which is called once the texture is used.
+ * Describes a texture by its properties and a loader function which is called once the texture is used.
  */
 abstract class Texture(val props: TextureProps, val name: String?, val loader: TextureLoader? = null) {
 
