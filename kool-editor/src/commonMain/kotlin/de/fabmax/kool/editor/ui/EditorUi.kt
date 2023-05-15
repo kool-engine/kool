@@ -1,12 +1,9 @@
 package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.editor.KoolEditor
-import de.fabmax.kool.modules.ui2.Colors
-import de.fabmax.kool.modules.ui2.Dimension
-import de.fabmax.kool.modules.ui2.Sizes
+import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.modules.ui2.docking.Dock
 import de.fabmax.kool.modules.ui2.docking.UiDockable
-import de.fabmax.kool.modules.ui2.setupUiScene
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MsdfFont
@@ -19,8 +16,17 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
     val objectProperties = ObjectProperties(this)
     val assetBrowser = AssetBrowser(this)
 
+    val appLoaderState = mutableStateOf("")
+
     init {
         setupUiScene()
+
+        dock.dockingPaneComposable = Composable {
+            Column(Grow.Std, Grow.Std) {
+                dock.root()
+                statusBar()
+            }
+        }
 
         addNode(dock)
         dock.createNodeLayout(
@@ -49,12 +55,25 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
         dock.getLeafAtPath("0/1/1")?.dock(assetBrowser.windowDockable)
     }
 
+    fun UiScope.statusBar() = Row(width = Grow.Std, height = sizes.baseSize) {
+        modifier.backgroundColor(colors.background)
+
+        Box(width = Grow.Std) {  }
+
+        Box(width = sizes.baseSize * 8f, height = Grow.Std) {
+            Text(appLoaderState.use()) {
+                modifier.alignY(AlignmentY.Center)
+            }
+        }
+    }
+
     companion object {
         val EDITOR_THEME_COLORS = Colors.darkColors()
     }
 }
 
-val Sizes.lineHeight: Dimension get() = largeGap * 1.3f
+val Sizes.lineHeight: Dp get() = largeGap * 1.3f
+val Sizes.baseSize: Dp get() = largeGap * 2f
 
 val Sizes.boldText: MsdfFont get() = (normalText as MsdfFont).copy(weight = 0.075f)
 

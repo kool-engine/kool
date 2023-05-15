@@ -5,7 +5,11 @@ import de.fabmax.kool.modules.ui2.Dp
 import de.fabmax.kool.modules.ui2.UiSurface
 import de.fabmax.kool.modules.ui2.docking.UiDockable
 
-abstract class EditorPanel(name: String, val ui: EditorUi, defaultWidth: Dp = Dp(300f), defaultHeight: Dp = Dp(600f)) {
+abstract class EditorPanel(
+    name: String,
+    val ui: EditorUi,
+    defaultWidth: Dp = ui.dock.dockingSurface.sizes.baseSize * 8,
+    defaultHeight: Dp = ui.dock.dockingSurface.sizes.baseSize * 8) {
 
     val editor: KoolEditor get() = ui.editor
 

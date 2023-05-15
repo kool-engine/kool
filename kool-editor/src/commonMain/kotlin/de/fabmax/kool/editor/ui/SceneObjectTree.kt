@@ -89,13 +89,25 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         LazyList(
             containerModifier = { it.backgroundColor(null) }
         ) {
-            items(treeItems) { item ->
+            var hoveredIndex by remember(-1)
+            itemsIndexed(treeItems) { i, item ->
                 sceneObjectItem(item).apply {
-                    modifier.onClick {
-                        if (it.pointer.isRightButtonClicked) {
-                            itemPopupMenu.show(it.screenPosition, item)
+                    modifier
+                        .onEnter { hoveredIndex = i }
+                        .onExit { hoveredIndex = -1 }
+                        .onClick {
+                            if (it.pointer.isRightButtonClicked) {
+                                itemPopupMenu.show(it.screenPosition, item)
+                            }
                         }
+
+                    if (i == 0) {
+                        modifier.margin(top = sizes.smallGap)
                     }
+                    if (hoveredIndex == i) {
+                        modifier.background(RoundRectBackground(colors.hoverBg, sizes.smallGap))
+                    }
+
                 }
             }
 
@@ -105,8 +117,8 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
 
     private fun UiScope.sceneObjectItem(item: SceneObjectItem) = Row(width = Grow.Std) {
         modifier
+            .margin(horizontal = sizes.smallGap)
             .height(sizes.lineHeight)
-            //.padding(horizontal = sizes.smallGap)
             .onClick {
                 if (it.pointer.isLeftButtonClicked) {
                     EditorState.selectedObject.set(item.node)
@@ -115,10 +127,6 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
                     }
                 }
             }
-
-        if (item.node === EditorState.selectedObject.use()) {
-            modifier.backgroundColor(colors.selectionBg)
-        }
 
         // tree-depth based indentation
         if (item.depth > 0) {
@@ -142,7 +150,6 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
 
         Text(item.name) {
             modifier
-                //.margin(end = sizes.smallGap)
                 .alignY(AlignmentY.Center)
             if (item.node === EditorState.selectedObject.use()) {
                 modifier.textColor(colors.primary)

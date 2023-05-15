@@ -11,9 +11,20 @@ import kotlin.io.path.*
 actual class AppAssets actual constructor(assetsBaseDir: String) : CoroutineScope {
     override val coroutineContext: CoroutineContext = Job()
 
-    actual val assets = mutableStateOf<List<AppAsset>>(emptyList())
+    actual val rootAssets = mutableStateOf<List<AppAsset>>(emptyList())
 
     private val assetsDir = Path.of(assetsBaseDir)
+    private val assetsByPath = mutableMapOf<String, AppAsset>()
+
+    private val assetsNameComparator = Comparator<AppAsset> { a, b ->
+        if (a.type == AppAssetType.Directory && b.type != AppAssetType.Directory) {
+            -1
+        } else if (a.type != AppAssetType.Directory && b.type == AppAssetType.Directory) {
+            1
+        } else {
+            a.path.compareTo(b.path)
+        }
+    }
 
     init {
         if (!assetsDir.exists()) {
@@ -32,17 +43,32 @@ actual class AppAssets actual constructor(assetsBaseDir: String) : CoroutineScop
     }
 
     private fun updateAssets() {
-        val assets = mutableListOf<AppAsset>()
-        assetsDir.walk(PathWalkOption.INCLUDE_DIRECTORIES).forEach { path ->
+        val rootAssets = mutableListOf<AppAsset>()
+        val assetPaths = mutableSetOf<String>()
+        assetsByPath.values.forEach { it.children.clear() }
+
+        assetsDir.walk(PathWalkOption.INCLUDE_DIRECTORIES).filter { it != assetsDir }.forEach { path ->
             val assetType = when {
                 path.isDirectory() -> AppAssetType.Directory
                 path.isTexture() -> AppAssetType.Texture
                 path.isModel() -> AppAssetType.Model
                 else -> AppAssetType.Unknown
             }
-            assets += AppAsset(path.name, path.pathString, assetType)
+            val pathString = path.pathString.replace('\\', '/').removeSuffix("/")
+            val appAsset = assetsByPath.getOrPut(pathString) { AppAsset(path.name, pathString, assetType) }
+            val parentPath = pathString.replaceAfterLast('/', "").removeSuffix("/")
+            val parent = assetsByPath[parentPath]
+
+            if (parent != null) {
+                parent.children += appAsset
+            } else {
+                rootAssets += appAsset
+            }
+            assetPaths += pathString
         }
-        this.assets.set(assets)
+        assetsByPath.keys.retainAll(assetPaths)
+        assetsByPath.values.forEach { it.children.sortWith(assetsNameComparator) }
+        this.rootAssets.set(rootAssets)
     }
 
     private fun Path.isTexture(): Boolean {

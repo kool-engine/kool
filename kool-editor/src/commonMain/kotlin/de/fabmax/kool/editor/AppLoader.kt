@@ -23,8 +23,11 @@ class AppLoader(val editor: KoolEditor, watchDirs: Set<String>, appLoadClassPath
 
     init {
         editor.editorContent.onUpdate {
-            if (loadService.hasAppChanged && !isBuildInProgress && editor.ctx.isWindowFocused) {
-                reloadApp()
+            if (loadService.hasAppChanged) {
+                editor.ui.appLoaderState.set("App sources changed on disc")
+                if (!isBuildInProgress && editor.ctx.isWindowFocused) {
+                    reloadApp()
+                }
             }
         }
     }
@@ -39,11 +42,15 @@ class AppLoader(val editor: KoolEditor, watchDirs: Set<String>, appLoadClassPath
             launchOnMainThread {
                 try {
                     if (loadService.hasAppChanged) {
+                        editor.ui.appLoaderState.set("Building app...")
                         loadService.buildApp()
                     }
+                    editor.ui.appLoaderState.set("Loading app...")
                     val app = loadService.loadApp()
+                    editor.ui.appLoaderState.set("App is running")
                     appReloadListeners.forEach { it(app) }
                 } catch (e: Exception) {
+                    editor.ui.appLoaderState.set("Failed loading app!")
                     logE { "Failed (re-)loading app: $e" }
                 }
                 isBuildInProgress = false
