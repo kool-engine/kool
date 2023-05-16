@@ -1,5 +1,6 @@
 package de.fabmax.kool.editor
 
+import de.fabmax.kool.modules.ui2.mutableStateListOf
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -12,6 +13,7 @@ actual class AppAssets actual constructor(assetsBaseDir: String) : CoroutineScop
     override val coroutineContext: CoroutineContext = Job()
 
     actual val rootAssets = mutableStateOf<List<AppAsset>>(emptyList())
+    actual val modelAssets = mutableStateListOf<AppAsset>()
 
     private val assetsDir = Path.of(assetsBaseDir)
     private val assetsByPath = mutableMapOf<String, AppAsset>()
@@ -47,17 +49,21 @@ actual class AppAssets actual constructor(assetsBaseDir: String) : CoroutineScop
         val assetPaths = mutableSetOf<String>()
         assetsByPath.values.forEach { it.children.clear() }
 
-        assetsDir.walk(PathWalkOption.INCLUDE_DIRECTORIES).filter { it != assetsDir }.forEach { path ->
+        assetsDir.walk(PathWalkOption.INCLUDE_DIRECTORIES).forEach { path ->
             val assetType = when {
                 path.isDirectory() -> AppAssetType.Directory
                 path.isTexture() -> AppAssetType.Texture
                 path.isModel() -> AppAssetType.Model
                 else -> AppAssetType.Unknown
             }
-            val pathString = path.pathString.replace('\\', '/').removeSuffix("/")
-            val appAsset = assetsByPath.getOrPut(pathString) { AppAsset(path.name, pathString, assetType) }
+            val pathString = path.pathString
+                .removePrefix(assetsDir.pathString)
+                .replace('\\', '/').removeSuffix("/")
             val parentPath = pathString.replaceAfterLast('/', "").removeSuffix("/")
             val parent = assetsByPath[parentPath]
+            val appAsset = assetsByPath.getOrPut(pathString) {
+                AppAsset(path.name, pathString, assetType).apply { if (parent == null) isExpanded.set(true) }
+            }
 
             if (parent != null) {
                 parent.children += appAsset
@@ -69,6 +75,12 @@ actual class AppAssets actual constructor(assetsBaseDir: String) : CoroutineScop
         assetsByPath.keys.retainAll(assetPaths)
         assetsByPath.values.forEach { it.children.sortWith(assetsNameComparator) }
         this.rootAssets.set(rootAssets)
+
+        modelAssets.clear()
+        assetsByPath.values
+            .filter { it.type == AppAssetType.Model }
+            .sortedBy { it.name }
+            .forEach { modelAssets += it }
     }
 
     private fun Path.isTexture(): Boolean {

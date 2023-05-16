@@ -15,8 +15,12 @@ expect class AppLoadService(watchDirs: Set<String>, appLoadClassPath: String) {
     suspend fun loadApp(): EditorAwareApp
 }
 
+fun interface AppReloadListener {
+    suspend fun onAppReloaded(loadedApp: EditorAwareApp)
+}
+
 class AppLoader(val editor: KoolEditor, watchDirs: Set<String>, appLoadClassPath: String) {
-    val appReloadListeners = mutableListOf<(EditorAwareApp) -> Unit>()
+    val appReloadListeners = mutableListOf<AppReloadListener>()
 
     private val loadService = AppLoadService(watchDirs, appLoadClassPath)
     private var isBuildInProgress = false
@@ -48,7 +52,7 @@ class AppLoader(val editor: KoolEditor, watchDirs: Set<String>, appLoadClassPath
                     editor.ui.appLoaderState.set("Loading app...")
                     val app = loadService.loadApp()
                     editor.ui.appLoaderState.set("App is running")
-                    appReloadListeners.forEach { it(app) }
+                    appReloadListeners.forEach { it.onAppReloaded(app) }
                 } catch (e: Exception) {
                     editor.ui.appLoaderState.set("Failed loading app!")
                     logE { "Failed (re-)loading app: $e" }

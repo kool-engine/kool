@@ -4,30 +4,37 @@ import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.scene.ColorMesh
 import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.MdColor
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 
 @Serializable
-data class MMesh(
-    override val nodeProperties: MCommonNodeProperties,
-    var shape: MMeshShape
-) : MSceneNode<Mesh> {
+class MMesh(
+    override val nodeId: Long
+) : MSceneNode(), Creatable<Mesh> {
 
-    @Transient
-    override var created: Mesh? = null
-    @Transient
-    override val childNodes: MutableMap<Long, MSceneNode<*>> = mutableMapOf()
+    var shape: MMeshShape = MMeshShape.Box(MVec3(1.0, 1.0, 1.0))
+
     @Transient
     val shapeMutableState = mutableStateOf(shape).onChange { shape = it }
 
-    override fun create(): Mesh {
-        val mesh = ColorMesh()
-        mesh.name = nodeProperties.name
+    override val creatable: Creatable<out Node>
+        get() = this
+
+    @Transient
+    private var created: Mesh? = null
+
+    override fun getOrNull() = created
+
+    override suspend fun getOrCreate() = created ?: create()
+
+    private fun create(): Mesh {
+        val mesh = ColorMesh(name)
         mesh.shader = KslPbrShader {
             color { constColor(MdColor.LIGHT_GREEN.toLinear()) }
         }
-        nodeProperties.transform.toTransform(mesh.transform)
+        transform.toTransform(mesh.transform)
         created = mesh
         generateMeshType()
         return mesh
@@ -41,12 +48,16 @@ data class MMesh(
 }
 
 @Serializable
-sealed class MMeshShape(val name: String) {
+sealed class MMeshShape {
+
+    abstract val name: String
 
     abstract fun generate(mesh: Mesh)
 
     @Serializable
-    data class Box(val size: MVec3) : MMeshShape("Box") {
+    data class Box(val size: MVec3) : MMeshShape() {
+        override val name: String get() = "Box"
+
         override fun generate(mesh: Mesh) {
             mesh.generate {
                 cube(centered = true) {
@@ -57,7 +68,9 @@ sealed class MMeshShape(val name: String) {
     }
 
     @Serializable
-    data class IcoSphere(val radius: Double, val subDivisions: Int) : MMeshShape("Ico-Sphere") {
+    data class IcoSphere(val radius: Double, val subDivisions: Int) : MMeshShape() {
+        override val name: String get() = "Ico-Sphere"
+
         override fun generate(mesh: Mesh) {
             mesh.generate {
                 icoSphere {
@@ -69,7 +82,9 @@ sealed class MMeshShape(val name: String) {
     }
 
     @Serializable
-    data class UvSphere(val radius: Double, val steps: Int) : MMeshShape("UV-Sphere") {
+    data class UvSphere(val radius: Double, val steps: Int) : MMeshShape() {
+        override val name: String get() = "UV-Sphere"
+
         override fun generate(mesh: Mesh) {
             mesh.generate {
                 uvSphere {
@@ -81,21 +96,27 @@ sealed class MMeshShape(val name: String) {
     }
 
     @Serializable
-    data class Rect(val size: MVec2) : MMeshShape("Rect") {
+    data class Rect(val size: MVec2) : MMeshShape() {
+        override val name: String get() = "Rect"
+
         override fun generate(mesh: Mesh) {
             TODO()
         }
     }
 
     @Serializable
-    data class Cylinder(val topRadius: Double, val bottomRadius: Double, val length: Double, val steps: Int) : MMeshShape("Cylinder") {
+    data class Cylinder(val topRadius: Double, val bottomRadius: Double, val length: Double, val steps: Int) : MMeshShape() {
+        override val name: String get() = "Cylinder"
+
         override fun generate(mesh: Mesh) {
             TODO()
         }
     }
 
     @Serializable
-    object Empty : MMeshShape("Empty") {
+    object Empty : MMeshShape() {
+        override val name: String get() = "Empty"
+
         override fun generate(mesh: Mesh) {
             mesh.geometry.clear()
         }

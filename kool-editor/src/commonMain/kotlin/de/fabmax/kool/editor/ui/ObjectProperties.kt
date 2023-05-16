@@ -3,10 +3,7 @@ package de.fabmax.kool.editor.ui
 import de.fabmax.kool.editor.EditorState
 import de.fabmax.kool.editor.actions.EditorActions
 import de.fabmax.kool.editor.actions.SetTransformAction
-import de.fabmax.kool.editor.model.MGroup
-import de.fabmax.kool.editor.model.MMesh
-import de.fabmax.kool.editor.model.MScene
-import de.fabmax.kool.editor.model.MSceneNode
+import de.fabmax.kool.editor.model.*
 import de.fabmax.kool.math.Mat3d
 import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.math.MutableVec3d
@@ -30,8 +27,7 @@ class ObjectProperties(ui: EditorUi) : EditorPanel("Object Properties", ui) {
                 transformProperties.getRotation(tmpNodeRot)
                 transformProperties.getScale(tmpNodeScale)
 
-                val sceneNode = selectedNd.created
-                if (sceneNode != null) {
+                selectedNd.creatable.getOrNull()?.let { sceneNode ->
                     val oldTransform = Mat4d().set(sceneNode.transform.matrix)
                     val newTransform = Mat4d()
                         .setRotate(tmpNodeRot.x, tmpNodeRot.y, tmpNodeRot.z)
@@ -84,7 +80,7 @@ class ObjectProperties(ui: EditorUi) : EditorPanel("Object Properties", ui) {
                     modifier.alignY(AlignmentY.Center)
                 }
             } else {
-                Text(selectedObject.nodeProperties.name) {
+                Text(selectedObject.name) {
                     modifier.alignY(AlignmentY.Center)
                 }
             }
@@ -105,7 +101,7 @@ class ObjectProperties(ui: EditorUi) : EditorPanel("Object Properties", ui) {
         // - camera
 
         // place holder
-        Text(nodeModel.nodeProperties.name) {  }
+        Text(nodeModel.name) {  }
     }
 
     fun UiScope.groupProperties(nodeModel: MGroup) {
@@ -124,7 +120,7 @@ class ObjectProperties(ui: EditorUi) : EditorPanel("Object Properties", ui) {
     }
 
     companion object {
-        fun applyTransformAction(nodeModel: MSceneNode<*>, oldTransform: Mat4d, newTransform: Mat4d) {
+        fun applyTransformAction(nodeModel: MSceneNode, oldTransform: Mat4d, newTransform: Mat4d) {
             val setTransform = SetTransformAction(
                 editedNodeModel = nodeModel,
                 oldTransform = oldTransform,

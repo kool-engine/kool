@@ -2,10 +2,10 @@ package de.fabmax.kool.editor.model
 
 interface Creatable<T: Any> {
 
-    var created: T?
+    val isCreated: Boolean
+        get() = getOrNull() != null
 
-    val isCreated: Boolean get() = created != null
-
-    fun create(): T
+    fun getOrNull(): T?
+    suspend fun getOrCreate(): T
 
 }

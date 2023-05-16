@@ -1,124 +1,114 @@
 package de.fabmax.kool.editor.model
 
-import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.logE
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 
 @Serializable
-class MScene(
-    override val nodeProperties: MCommonNodeProperties,
-    val clearColor: MColor,
+class MScene(override val nodeId: Long) : MSceneNode(), Creatable<Scene> {
 
-    val groups: MutableSet<MGroup> = mutableSetOf(),
-    val meshes: MutableSet<MMesh> = mutableSetOf(),
-    //todo: val models: MutableMap<Long, MModel>
-) : MSceneNode<Scene> {
+    var clearColor: MColor = MColor(MdColor.GREY tone 900)
+
+    val sceneNodes: MutableSet<MSceneNode> = mutableSetOf()
 
     @Transient
-    override var created: Scene? = null
+    val nodesToNodeModels: MutableMap<Node, MSceneNode> = mutableMapOf()
+    @Transient
+    private val resolvedNodes: MutableMap<Long, MSceneNode> = mutableMapOf()
+
+    override val creatable: Creatable<out Node>
+        get() = this
 
     @Transient
-    override val childNodes: MutableMap<Long, MSceneNode<*>> = mutableMapOf()
-    @Transient
-    val nodesToNodeModels: MutableMap<Node, MSceneNode<*>> = mutableMapOf()
+    private var created: Scene? = null
 
-    @Transient
-    private val groupsByIds: MutableMap<Long, MGroup> = groups.associateBy { it.nodeProperties.id }.toMutableMap()
-    @Transient
-    private val meshesByIds: MutableMap<Long, MMesh> = meshes.associateBy { it.nodeProperties.id }.toMutableMap()
+    override fun getOrNull() = created
 
-    override fun create(): Scene {
+    override suspend fun getOrCreate() = created ?: create()
+
+    private suspend fun create(): Scene {
         nodesToNodeModels.clear()
 
-        val scene = Scene(name = nodeProperties.name).apply {
+        val scene = Scene(name = name).apply {
             mainRenderPass.clearColor = clearColor.toColor()
         }
-        nodesToNodeModels[scene] = this
         created = scene
+        nodesToNodeModels[scene] = this
 
-        nodeProperties.children.forEach { childId ->
-            addSceneNode(childId, this)
+        childIds.forEach { childId ->
+            getSceneNode<MSceneNode>(childId)?.let { addSceneNode(it) }
         }
         return scene
     }
 
-    fun getSceneNode(id: Long): MSceneNode<*>? {
-        val sceneNode = groupsByIds[id] ?: meshesByIds[id]
-        if (sceneNode == null) {
-            logE { "Scene node not found (id: $id)" }
-        }
-        return sceneNode
-    }
-
-    fun addSceneNode(id: Long, parent: MSceneNode<*>) {
-        val toBeCreated = getSceneNode(id) ?: return
-        addSceneNode(toBeCreated, parent)
-    }
-
-    fun addSceneNode(node: MSceneNode<*>, parent: MSceneNode<*>) {
-        val nodeId = node.nodeProperties.id
-        when (node) {
-            is MMesh -> {
-                meshes += node
-                meshesByIds[nodeId] = node
-            }
-            is MGroup -> {
-                groups += node
-                groupsByIds[nodeId] = node
-            }
-            is MScene -> {
-                throw IllegalArgumentException("Scene cannot act as a child node")
-            }
-        }
-
-        val parentNode = parent.created ?: throw IllegalStateException("Parent node must be created first")
-        val createdNode = node.create()
-        nodesToNodeModels[createdNode] = node
-        parentNode.addNode(createdNode)
-
-        parent.nodeProperties.children += nodeId
-        parent.childNodes[nodeId] = node
-
-        if (node.childNodes.keys.containsAll(node.nodeProperties.children)) {
-            node.childNodes.values.forEach { childNode ->
-                addSceneNode(childNode, node)
-            }
+    inline fun <reified T: MSceneNode> getSceneNode(id: Long): T? {
+        val sceneNode = resolveNodes()[id]
+        return if (sceneNode is T) {
+            sceneNode
         } else {
-            node.nodeProperties.children.forEach { childId ->
-                addSceneNode(childId, node)
-            }
+            logE { "Scene node not found or has incorrect type (id: $id, is ${sceneNode}, should be ${T::class})" }
+            null
         }
     }
 
-    fun removeSceneNode(node: MSceneNode<*>, parent: MSceneNode<*>) {
-        val nodeId = node.nodeProperties.id
-        when (node) {
-            is MMesh -> {
-                meshes -= node
-                meshesByIds -= nodeId
+    fun resolveNodes(): Map<Long, MSceneNode> {
+        if (resolvedNodes.isEmpty()) {
+            resolvedNodes[nodeId] = this
+            sceneNodes.forEach {
+                resolvedNodes[it.nodeId] = it
             }
-            is MGroup -> {
-                groups -= node
-                groupsByIds -= nodeId
-            }
-            is MScene -> {
-                throw IllegalArgumentException("Scene cannot act as a child node")
-            }
+        }
+        return resolvedNodes
+    }
+
+    suspend fun addSceneNode(nodeModel: MSceneNode) {
+        if (nodeModel is MScene) {
+            throw IllegalArgumentException("MSceneNodes cannot be nested")
         }
 
-        // also remove children of node
-        node.childNodes.values.forEach { child ->
-            removeSceneNode(child, node)
-        }
-        parent.nodeProperties.children -= nodeId
+        val nodeId = nodeModel.nodeId
+        val node = nodeModel.creatable.getOrCreate()
+        sceneNodes += nodeModel
+        resolvedNodes[nodeId] = nodeModel
+        nodesToNodeModels[node] = nodeModel
 
-        node.created?.let { createdNode ->
-            parent.created?.removeNode(createdNode)
-            createdNode.dispose(KoolSystem.requireContext())
-            node.created = null
+        (getSceneNode<MSceneNode>(nodeModel.parentId) ?: this).let { parent ->
+            val parentNode = parent.creatable.getOrCreate()
+            parentNode.addNode(node)
+            parent.childIds += nodeId
+            parent.resolvedChildren[nodeId] = nodeModel
+            nodeModel.parentId = parent.nodeId
         }
+
+        nodeModel.childIds.forEach { subChildId ->
+            getSceneNode<MSceneNode>(subChildId)?.let { addSceneNode(it) }
+        }
+    }
+
+    fun removeSceneNode(nodeModel: MSceneNode) {
+        nodeModel.childIds.forEach { subChildId ->
+            getSceneNode<MSceneNode>(subChildId)?.let { removeSceneNode(it) }
+        }
+
+        val nodeId = nodeModel.nodeId
+        val node = nodeModel.created
+        sceneNodes -= nodeModel
+        resolvedNodes -= nodeId
+        nodesToNodeModels.remove(node)
+
+        getSceneNode<MSceneNode>(nodeModel.parentId)?.let { parent ->
+            node?.let { parent.created?.removeNode(it) }
+            parent.childIds -= nodeId
+            parent.resolvedChildren -= nodeId
+        }
+
+//        node?.dispose(KoolSystem.requireContext())
+//        // also remove children of node
+//        nodeModel.resolvedChildren.values.forEach { subChildModel ->
+//            removeSceneNode(subChildModel)
+//        }
     }
 }

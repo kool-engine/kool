@@ -31,7 +31,7 @@ class AssetBrowser(editorUi: EditorUi) : EditorPanel(
         }
     }
 
-    private fun UiScope.directoryTree() = Box(width = 350.dp, height = Grow.Std) {
+    private fun UiScope.directoryTree() = Box(width = sizes.baseSize * 6, height = Grow.Std) {
         modifier
             .margin(sizes.gap)
 
@@ -54,7 +54,7 @@ class AssetBrowser(editorUi: EditorUi) : EditorPanel(
                                 asset.isExpanded.set(!asset.isExpanded.value)
                             }
                         }
-                        .margin(start = sizes.smallGap + sizes.largeGap * lvl, end = sizes.smallGap)
+                        .margin(horizontal = sizes.smallGap)
 
                     if (i == 0) {
                         modifier.margin(top = sizes.smallGap)
@@ -62,6 +62,9 @@ class AssetBrowser(editorUi: EditorUi) : EditorPanel(
                     if (hoveredIndex == i) {
                         modifier.background(RoundRectBackground(colors.hoverBg, sizes.smallGap))
                     }
+
+                    // tree-depth based indentation
+                    Box(width = sizes.gap * lvl) { }
 
                     // expand / collapse arrow
                     Box {
@@ -172,7 +175,7 @@ class AssetBrowser(editorUi: EditorUi) : EditorPanel(
                     .size(sizes.baseSize * 2, sizes.baseSize * 2)
                     .alignX(AlignmentX.Center)
                     .margin(sizes.smallGap)
-                    .backgroundColor(color)
+                    .background(RoundRectBackground(color, sizes.gap))
                     .onEnter { isHovered = true }
                     .onExit { isHovered = false }
             }

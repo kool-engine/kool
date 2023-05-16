@@ -55,7 +55,7 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
         dock.getLeafAtPath("0/1/1")?.dock(assetBrowser.windowDockable)
     }
 
-    fun UiScope.statusBar() = Row(width = Grow.Std, height = sizes.baseSize) {
+    fun UiScope.statusBar() = Row(width = Grow.Std, height = sizes.lineHeightLarger) {
         modifier.backgroundColor(colors.background)
 
         Box(width = Grow.Std) {  }
@@ -72,8 +72,9 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
     }
 }
 
-val Sizes.lineHeight: Dp get() = largeGap * 1.3f
 val Sizes.baseSize: Dp get() = largeGap * 2f
+val Sizes.lineHeight: Dp get() = baseSize * (2f/3f)
+val Sizes.lineHeightLarger: Dp get() = baseSize * 0.75f
 
 val Sizes.boldText: MsdfFont get() = (normalText as MsdfFont).copy(weight = 0.075f)
 

@@ -9,23 +9,27 @@ import kotlinx.serialization.json.Json
 import kotlin.math.max
 
 @Serializable
-data class MProject(
-    val mainClass: String,
-    val scenes: List<MScene>
-) : Creatable<List<Scene>> {
+class MProject : Creatable<List<Scene>> {
+
+    var mainClass = ""
+    val scenes: MutableList<MScene> = mutableListOf()
 
     @Transient
-    override var created: List<Scene>? = null
+    private var created: List<Scene>? = null
 
     @Transient
     private var nextId = -1L
 
-    override fun create(): List<Scene> {
-        val createdScenes = scenes.map { it.create() }
+    override fun getOrNull(): List<Scene>? = created
+
+    override suspend fun getOrCreate() = created ?: create()
+
+    private suspend fun create(): List<Scene> {
+        val createdScenes = scenes.map { it.getOrCreate() }
         created = createdScenes
         scenes.forEach {
             it.nodesToNodeModels.values.forEach { sceneNode ->
-                nextId = max(nextId, sceneNode.nodeProperties.id + 1)
+                nextId = max(nextId, sceneNode.nodeId + 1)
             }
         }
         return createdScenes

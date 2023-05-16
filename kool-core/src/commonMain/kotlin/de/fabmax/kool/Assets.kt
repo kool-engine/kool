@@ -15,6 +15,12 @@ import kotlin.coroutines.CoroutineContext
 
 object Assets : CoroutineScope {
 
+    var assetsBasePath = KoolSystem.config.assetPath
+        set(value) {
+            field = value
+            logI { "Asset base path set to: $value" }
+        }
+
     internal val job = Job()
     private const val NUM_LOAD_WORKERS = 8
 

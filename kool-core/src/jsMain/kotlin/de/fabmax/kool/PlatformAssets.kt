@@ -58,7 +58,7 @@ actual object PlatformAssets {
     }
 
     private suspend fun loadBlob(url: String): Uint8Buffer? {
-        val prefixedUrl = if (Assets.isHttpAsset(url)) url else "${KoolSystem.config.assetPath}/$url"
+        val prefixedUrl = if (Assets.isHttpAsset(url)) url else "${Assets.assetsBasePath}/$url"
 
         val data = CompletableDeferred<Uint8Buffer?>(Assets.job)
         val req = XMLHttpRequest()
@@ -79,7 +79,7 @@ actual object PlatformAssets {
 
     private suspend fun loadImage(path: String, isHttp: Boolean): Image {
         val deferred = CompletableDeferred<Image>()
-        val prefixedUrl = if (isHttp) path else "${KoolSystem.config.assetPath}/${path}"
+        val prefixedUrl = if (isHttp) path else "${Assets.assetsBasePath}/${path}"
 
         val img = Image()
         img.onload = {
@@ -189,7 +189,7 @@ actual object PlatformAssets {
         return if (Assets.isHttpAsset(assetPath)) {
             AudioClip(assetPath)
         } else {
-            AudioClip("${KoolSystem.config.assetPath}/$assetPath")
+            AudioClip("${Assets.assetsBasePath}/$assetPath")
         }
     }
 

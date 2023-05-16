@@ -13,8 +13,10 @@ import de.fabmax.kool.util.Color
  * @author fabmax
  */
 
-fun pointMesh(name: String? = null, block: PointMesh.() -> Unit): PointMesh {
-    return PointMesh(name = name).apply(block)
+fun Node.addPointMesh(name: String? = null, block: PointMesh.() -> Unit): PointMesh {
+    val pointMesh = PointMesh(name = name).apply(block)
+    addNode(pointMesh)
+    return pointMesh
 }
 
 open class PointMesh(geometry: IndexedVertexList = IndexedVertexList(Attribute.POSITIONS, ATTRIB_POINT_SIZE, Attribute.COLORS), name: String? = null) :

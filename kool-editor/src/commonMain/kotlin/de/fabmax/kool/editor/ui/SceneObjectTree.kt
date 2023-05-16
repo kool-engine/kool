@@ -1,10 +1,13 @@
 package de.fabmax.kool.editor.ui
 
+import de.fabmax.kool.Assets
+import de.fabmax.kool.editor.AppAsset
 import de.fabmax.kool.editor.EditorState
 import de.fabmax.kool.editor.actions.AddObjectAction
 import de.fabmax.kool.editor.actions.EditorActions
 import de.fabmax.kool.editor.actions.RemoveObjectAction
 import de.fabmax.kool.editor.model.*
+import de.fabmax.kool.modules.gltf.loadGltfModel
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.modules.ui2.ArrowScope.Companion.ROTATION_DOWN
 import de.fabmax.kool.modules.ui2.ArrowScope.Companion.ROTATION_RIGHT
@@ -12,67 +15,51 @@ import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.util.RenderLoop
+import de.fabmax.kool.util.logI
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
 
-    private val treeItemMap = mutableMapOf<MSceneNode<*>, SceneObjectItem>()
+    private val treeItemMap = mutableMapOf<MSceneNode, SceneObjectItem>()
     private val treeItems = mutableListOf<SceneObjectItem>()
     private val isTreeValid = mutableStateOf(false)
 
-    private val contextMenu = SubMenuItem {
-        item("Delete object") {
-            deleteNode(it)
-        }
-        subMenu("Add child object") {
-            subMenu("Mesh") {
-                item("Box") {
-                    addNewMesh(it, MMeshShape.defaultBox)
-                }
-                item("Rect") {
-                    addNewMesh(it, MMeshShape.defaultRect)
-                }
-                item("Ico-Sphere") {
-                    addNewMesh(it, MMeshShape.defaultIcoSphere)
-                }
-                item("UV-Sphere") {
-                    addNewMesh(it, MMeshShape.defaultUvSphere)
-                }
-                item("Cylinder") {
-                    addNewMesh(it, MMeshShape.defaultCylinder)
-                }
-                item("Empty") {
-                    addNewMesh(it, MMeshShape.Empty)
-                }
-            }
-            item("glTF Model") { }
-            item("Group") { }
-        }
-        divider()
-        item("Focus object") { }
-    }
-
-    private val itemPopupMenu = ContextPopupMenu(contextMenu)
+    private val itemPopupMenu = ContextPopupMenu<SceneObjectItem>()
 
     fun refreshSceneTree() {
         isTreeValid.set(false)
     }
 
-    private fun addNewMesh(parent: SceneObjectItem, meshType: MMeshShape) {
+    private fun addNewMesh(parent: SceneObjectItem, meshShape: MMeshShape) {
         val parentScene = EditorState.selectedScene.value ?: return
         val id = EditorState.projectModel.nextId()
-        val meshProps = MCommonNodeProperties(
-            id = id,
-            name = "${meshType.name}-$id",
-            MTransform.IDENTITY
-        )
-        val mesh = MMesh(meshProps, meshType)
-        EditorActions.applyAction(AddObjectAction(mesh, parent.node, parentScene, this))
+        val mesh = MMesh(id).apply {
+            name = "${meshShape.name}-$id"
+            transform = MTransform.IDENTITY
+            shape = meshShape
+        }
+        mesh.parentId = parent.nodeModel.nodeId
+        EditorActions.applyAction(AddObjectAction(mesh, parentScene, this))
+    }
+
+    private fun addNewModel(parent: SceneObjectItem, modelAsset: AppAsset) {
+        val parentScene = EditorState.selectedScene.value ?: return
+        val id = EditorState.projectModel.nextId()
+        logI { "Adding model ${modelAsset.name}" }
+
+        Assets.launch {
+            val model = loadGltfModel(modelAsset.path)
+            withContext(Dispatchers.RenderLoop) {
+                parentScene.created?.addNode(model)
+            }
+        }
     }
 
     private fun deleteNode(node: SceneObjectItem) {
         val parentScene = EditorState.selectedScene.value ?: return
-        val parentNode = parentScene.nodesToNodeModels[node.node.created?.parent] ?: return
-        EditorActions.applyAction(RemoveObjectAction(node.node, parentNode, parentScene, this))
+        EditorActions.applyAction(RemoveObjectAction(node.nodeModel, parentScene, this))
     }
 
     override fun UiScope.compose() {
@@ -97,7 +84,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
                         .onExit { hoveredIndex = -1 }
                         .onClick {
                             if (it.pointer.isRightButtonClicked) {
-                                itemPopupMenu.show(it.screenPosition, item)
+                                itemPopupMenu.show(it.screenPosition, makeMenu(), item)
                             }
                         }
 
@@ -115,13 +102,56 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         }
     }
 
+    private fun makeMenu() = SubMenuItem {
+        item("Delete object") {
+            deleteNode(it)
+        }
+        subMenu("Add child object") {
+            subMenu("Mesh") {
+                item("Box") {
+                    addNewMesh(it, MMeshShape.defaultBox)
+                }
+                item("Rect") {
+                    addNewMesh(it, MMeshShape.defaultRect)
+                }
+                item("Ico-Sphere") {
+                    addNewMesh(it, MMeshShape.defaultIcoSphere)
+                }
+                item("UV-Sphere") {
+                    addNewMesh(it, MMeshShape.defaultUvSphere)
+                }
+                item("Cylinder") {
+                    addNewMesh(it, MMeshShape.defaultCylinder)
+                }
+                item("Empty") {
+                    addNewMesh(it, MMeshShape.Empty)
+                }
+            }
+            subMenu("glTF Model") {
+                item("Import Model") {
+                    logI { "Not yet implemented" }
+                }
+                divider()
+                sceneBrowser.editor.appAssets.modelAssets.forEach { modelAsset ->
+                    item(modelAsset.name) {
+                        addNewModel(it, modelAsset)
+                    }
+                }
+
+            }
+            item("Group") { }
+        }
+        divider()
+        item("Focus object") { }
+    }
+
     private fun UiScope.sceneObjectItem(item: SceneObjectItem) = Row(width = Grow.Std) {
         modifier
             .margin(horizontal = sizes.smallGap)
             .height(sizes.lineHeight)
             .onClick {
                 if (it.pointer.isLeftButtonClicked) {
-                    EditorState.selectedObject.set(item.node)
+                    EditorState.selectedObject.set(item.nodeModel)
                     if (it.pointer.leftButtonRepeatedClickCount == 2 && item.isExpandable) {
                         item.toggleExpanded()
                     }
@@ -130,7 +160,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
 
         // tree-depth based indentation
         if (item.depth > 0) {
-            Box(width = sizes.largeGap * item.depth.toFloat()) { }
+            Box(width = sizes.gap * item.depth) { }
         }
 
         // expand / collapse arrow
@@ -151,7 +181,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         Text(item.name) {
             modifier
                 .alignY(AlignmentY.Center)
-            if (item.node === EditorState.selectedObject.use()) {
+            if (item.nodeModel === EditorState.selectedObject.use()) {
                 modifier.textColor(colors.primary)
             }
         }
@@ -183,12 +213,12 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
     }
 
     private inner class SceneObjectItem(
-        val node: MSceneNode<*>,
+        val nodeModel: MSceneNode,
         val type: SceneObjectType,
         val depth: Int
     ) {
-        val name: String get() = node.nodeProperties.name
-        val isExpandable: Boolean get() = node.created?.children?.isNotEmpty() == true
+        val name: String get() = nodeModel.name
+        val isExpandable: Boolean get() = nodeModel.created?.children?.isNotEmpty() == true
         val isExpanded = mutableStateOf(true)
 
         fun toggleExpanded() {

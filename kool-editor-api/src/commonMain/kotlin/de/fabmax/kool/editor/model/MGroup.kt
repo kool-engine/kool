@@ -4,23 +4,23 @@ import de.fabmax.kool.scene.Node
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 
-
 @Serializable
-data class MGroup(
-    override val nodeProperties: MCommonNodeProperties,
-) : MSceneNode<Node> {
+class MGroup(override val nodeId: Long) : MSceneNode(), Creatable<Node> {
+
+    override val creatable: Creatable<out Node>
+        get() = this
 
     @Transient
-    override var created: Node? = null
+    private var created: Node? = null
 
-    @Transient
-    override val childNodes: MutableMap<Long, MSceneNode<*>> = mutableMapOf()
+    override fun getOrNull() = created
 
-    override fun create(): Node {
-        val node = Node(nodeProperties.name)
-        nodeProperties.transform.toTransform(node.transform)
+    override suspend fun getOrCreate() = created ?: create()
+
+    private fun create(): Node {
+        val node = Node(name)
+        transform.toTransform(node.transform)
         created = node
         return node
     }
-
 }

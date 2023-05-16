@@ -53,7 +53,7 @@ fun UiScope.meshTypeProperties(nodeModel: MMesh) = collapsapsablePanel("Mesh Typ
 
             ComboBox {
                 modifier
-                    .width(Grow.Std)
+                    .size(Grow.Std, sizes.lineHeight)
                     .items(ShapeOptions.items)
                     .selectedIndex(ShapeOptions.indexOfShape(nodeModel.shape))
                     .onItemSelected {

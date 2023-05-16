@@ -1,6 +1,7 @@
 package de.fabmax.kool.editor
 
 import de.fabmax.kool.ApplicationCallbacks
+import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.editor.actions.EditorActions
 import de.fabmax.kool.editor.api.EditorAwareApp
@@ -29,13 +30,15 @@ class KoolEditor(val ctx: KoolContext) {
     val ui = EditorUi(this)
 
     init {
+        Assets.assetsBasePath = APP_ASSETS_DIR
+
         ctx.scenes += ui
 
         registerKeyBindings()
         registerSceneObjectPicking()
         registerAutoSave()
 
-        appLoader.appReloadListeners += this::handleAppReload
+        appLoader.appReloadListeners += AppReloadListener { handleAppReload(it) }
         appLoader.reloadApp()
     }
 
@@ -83,7 +86,7 @@ class KoolEditor(val ctx: KoolContext) {
 
             override fun handlePointer(pointerState: PointerState, ctx: KoolContext) {
                 val sceneModel = EditorState.selectedScene.value ?: return
-                val appScene = sceneModel.created ?: return
+                val appScene = sceneModel.getOrNull() ?: return
                 val ptr = pointerState.primaryPointer
                 if (ptr.isLeftButtonClicked) {
                     if (appScene.computePickRay(ptr, ctx, rayTest.ray)) {
@@ -96,10 +99,10 @@ class KoolEditor(val ctx: KoolContext) {
         }
     }
 
-    private fun handleAppReload(app: EditorAwareApp) {
+    private suspend fun handleAppReload(app: EditorAwareApp) {
         // clear scene objects from old app
         editorCameraTransform.clearChildren()
-        EditorState.projectModel.created?.let { oldScenes ->
+        EditorState.projectModel.getOrNull()?.let { oldScenes ->
             ctx.scenes -= oldScenes.toSet()
             oldScenes.forEach { it.dispose(ctx) }
         }
@@ -107,7 +110,7 @@ class KoolEditor(val ctx: KoolContext) {
 
         // add scene objects from new app
         app.startApp(EditorState.projectModel, true, ctx)
-        EditorState.projectModel.created?.let { newScenes ->
+        EditorState.projectModel.getOrNull()?.let { newScenes ->
             ctx.scenes += newScenes.toSet()
             newScenes.forEach {
                 it.dispose(ctx)

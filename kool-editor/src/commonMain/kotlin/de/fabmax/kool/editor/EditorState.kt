@@ -1,10 +1,12 @@
 package de.fabmax.kool.editor
 
 import de.fabmax.kool.editor.api.EditorAwareApp
-import de.fabmax.kool.editor.model.*
+import de.fabmax.kool.editor.model.MMesh
+import de.fabmax.kool.editor.model.MProject
+import de.fabmax.kool.editor.model.MScene
+import de.fabmax.kool.editor.model.MSceneNode
 import de.fabmax.kool.modules.ui2.MutableStateValue
 import de.fabmax.kool.modules.ui2.mutableStateOf
-import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logW
 import kotlinx.serialization.decodeFromString
@@ -18,7 +20,7 @@ object EditorState {
     val loadedApp = MutableStateValue<EditorAwareApp?>(null)
 
     val selectedScene = MutableStateValue(projectModel.scenes.getOrNull(0))
-    val selectedObject = mutableStateOf<MSceneNode<*>?>(null)
+    val selectedObject = mutableStateOf<MSceneNode?>(null)
 
     private val uniqueNameIds = mutableMapOf<String, Int>()
 
@@ -32,32 +34,16 @@ object EditorState {
         }
     }
 
-    private fun newProject(): MProject {
-        val testScene = MScene(
-            nodeProperties = MCommonNodeProperties(
-                id = 1L,
-                name = "New Scene",
-                transform = MTransform.IDENTITY,
-                children = mutableSetOf(2L)
-            ),
-            clearColor = MColor(MdColor.GREY tone 900),
-            meshes = mutableSetOf(
-                MMesh(
-                    MCommonNodeProperties(
-                        id = 2L,
-                        name = "Default Cube",
-                        transform = MTransform.IDENTITY
-                    ),
-                    shape = MMeshShape.Box(MVec3(1.0, 1.0, 1.0))
-                )
-            )
-        )
-
-        val projectModel = MProject(
-            mainClass = KoolEditor.APP_PROJECT_MAIN_CLASS,
-            scenes = listOf(testScene)
-        )
-        return projectModel
+    private fun newProject() = MProject().apply {
+        mainClass = KoolEditor.APP_PROJECT_MAIN_CLASS
+        scenes += MScene(nodeId = 1L).apply {
+            name = "New Scene"
+            sceneNodes += MMesh(nodeId = 2L).apply {
+                parentId = 1L
+                name = "Default Cube"
+            }
+            childIds += 2L
+        }
     }
 
     fun saveProject() {

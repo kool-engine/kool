@@ -4,14 +4,15 @@ import de.fabmax.kool.input.PointerInput
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.modules.ui2.*
 
-class ContextPopupMenu<T: Any>(menu: SubMenuItem<T>? = null) : Composable {
+class ContextPopupMenu<T: Any> : Composable {
 
-    val menu = mutableStateOf(menu)
+    private val menu = mutableStateOf<SubMenuItem<T>?>(null)
 
     private var screenPosPx = mutableStateOf(Vec2f.ZERO)
     private var contextItem = mutableStateOf<T?>(null)
 
-    fun show(screenPosPx: Vec2f, contextItem: T) {
+    fun show(screenPosPx: Vec2f, menu: SubMenuItem<T>, contextItem: T) {
+        this.menu.set(menu)
         this.screenPosPx.set(screenPosPx)
         this.contextItem.set(contextItem)
     }

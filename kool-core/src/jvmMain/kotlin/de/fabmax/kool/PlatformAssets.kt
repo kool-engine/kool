@@ -6,7 +6,6 @@ import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.pipeline.TextureData
 import de.fabmax.kool.pipeline.TextureData2d
 import de.fabmax.kool.platform.*
-import de.fabmax.kool.util.memStack
 import de.fabmax.kool.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -83,7 +82,7 @@ actual object PlatformAssets {
         var inStream = ClassLoader.getSystemResourceAsStream(resPath)
         if (inStream == null) {
             // if asset wasn't found in resources try to load it from file system
-            inStream = FileInputStream("${KoolSystem.config.assetPath}/$assetPath")
+            inStream = FileInputStream("${Assets.assetsBasePath}/$assetPath")
         }
         return inStream
     }
