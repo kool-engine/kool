@@ -91,6 +91,7 @@ class ObjectProperties(ui: EditorUi) : EditorPanel("Object Properties", ui) {
             is MScene -> sceneProperties(selectedObject)
             is MGroup -> groupProperties(selectedObject)
             is MMesh -> meshProperties(selectedObject)
+            is MModel -> modelProperties(selectedObject)
         }
     }
 
@@ -106,17 +107,20 @@ class ObjectProperties(ui: EditorUi) : EditorPanel("Object Properties", ui) {
 
     fun UiScope.groupProperties(nodeModel: MGroup) {
         transformGizmo.setTransformObject(nodeModel)
-
         transformEditor(transformProperties)
     }
 
     fun UiScope.meshProperties(nodeModel: MMesh) {
         transformGizmo.setTransformObject(nodeModel)
-
         transformEditor(transformProperties)
         meshTypeProperties(nodeModel)
 
         // - material (simple)
+    }
+
+    fun UiScope.modelProperties(nodeModel: MModel) {
+        transformGizmo.setTransformObject(nodeModel)
+        transformEditor(transformProperties)
     }
 
     companion object {

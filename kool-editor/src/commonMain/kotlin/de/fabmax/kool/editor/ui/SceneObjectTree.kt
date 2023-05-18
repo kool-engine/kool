@@ -1,13 +1,11 @@
 package de.fabmax.kool.editor.ui
 
-import de.fabmax.kool.Assets
 import de.fabmax.kool.editor.AppAsset
 import de.fabmax.kool.editor.EditorState
 import de.fabmax.kool.editor.actions.AddObjectAction
 import de.fabmax.kool.editor.actions.EditorActions
 import de.fabmax.kool.editor.actions.RemoveObjectAction
 import de.fabmax.kool.editor.model.*
-import de.fabmax.kool.modules.gltf.loadGltfModel
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.modules.ui2.ArrowScope.Companion.ROTATION_DOWN
 import de.fabmax.kool.modules.ui2.ArrowScope.Companion.ROTATION_RIGHT
@@ -15,10 +13,7 @@ import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.util.RenderLoop
 import de.fabmax.kool.util.logI
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
 
@@ -37,7 +32,6 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         val id = EditorState.projectModel.nextId()
         val mesh = MMesh(id).apply {
             name = "${meshShape.name}-$id"
-            transform = MTransform.IDENTITY
             shape = meshShape
         }
         mesh.parentId = parent.nodeModel.nodeId
@@ -47,14 +41,11 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
     private fun addNewModel(parent: SceneObjectItem, modelAsset: AppAsset) {
         val parentScene = EditorState.selectedScene.value ?: return
         val id = EditorState.projectModel.nextId()
-        logI { "Adding model ${modelAsset.name}" }
-
-        Assets.launch {
-            val model = loadGltfModel(modelAsset.path)
-            withContext(Dispatchers.RenderLoop) {
-                parentScene.created?.addNode(model)
-            }
+        val model = MModel(id, modelAsset.path).apply {
+            name = modelAsset.name
         }
+        model.parentId = parent.nodeModel.nodeId
+        EditorActions.applyAction(AddObjectAction(model, parentScene, this))
     }
 
     private fun deleteNode(node: SceneObjectItem) {

@@ -70,7 +70,7 @@ class NodeTransformGizmo(editor: KoolEditor) : Node("Node transform gizmo") {
                 } else {
                     gizmo.transform.set(it.modelMat)
                     gizmo.transform.matrix.resetScale()
-                    gizmo.setFixedScale(it.globalRadius * 1.5f)
+                    gizmo.setFixedScale(it.globalRadius + 0.5f)
                 }
             }
         }
@@ -80,7 +80,7 @@ class NodeTransformGizmo(editor: KoolEditor) : Node("Node transform gizmo") {
         transformNodeModel = nodeModel
         gizmo.isVisible = nodeModel != null
         nodeModel?.created?.let {
-            gizmo.setFixedScale(it.globalRadius * 1.5f)
+            gizmo.setFixedScale(it.globalRadius + 0.5f)
         }
     }
 }

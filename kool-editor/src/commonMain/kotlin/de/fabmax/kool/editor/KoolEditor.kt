@@ -5,6 +5,7 @@ import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.editor.actions.EditorActions
 import de.fabmax.kool.editor.api.EditorAwareApp
+import de.fabmax.kool.editor.model.MSceneNode
 import de.fabmax.kool.editor.ui.EditorUi
 import de.fabmax.kool.input.InputStack
 import de.fabmax.kool.input.LocalKeyCode
@@ -92,7 +93,17 @@ class KoolEditor(val ctx: KoolContext) {
                     if (appScene.computePickRay(ptr, ctx, rayTest.ray)) {
                         rayTest.clear()
                         appScene.rayTest(rayTest)
-                        EditorState.selectedObject.set(sceneModel.nodesToNodeModels[rayTest.hitNode])
+
+                        var it = rayTest.hitNode
+                        var selectedNodeModel: MSceneNode? = null
+                        while (it != null) {
+                            selectedNodeModel = sceneModel.nodesToNodeModels[it]
+                            if (selectedNodeModel != null) {
+                                break
+                            }
+                            it = it.parent
+                        }
+                        EditorState.selectedObject.set(selectedNodeModel)
                     }
                 }
             }
