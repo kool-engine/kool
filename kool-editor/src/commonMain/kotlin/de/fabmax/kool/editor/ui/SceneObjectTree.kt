@@ -1,7 +1,9 @@
 package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.editor.AppAsset
+import de.fabmax.kool.editor.AppReloadListener
 import de.fabmax.kool.editor.EditorState
+import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.actions.AddObjectAction
 import de.fabmax.kool.editor.actions.EditorActions
 import de.fabmax.kool.editor.actions.RemoveObjectAction
@@ -9,19 +11,25 @@ import de.fabmax.kool.editor.model.*
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.modules.ui2.ArrowScope.Companion.ROTATION_DOWN
 import de.fabmax.kool.modules.ui2.ArrowScope.Companion.ROTATION_RIGHT
-import de.fabmax.kool.scene.Camera
-import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.scene.Node
-import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.scene.*
+import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.logI
 
 class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
 
-    private val treeItemMap = mutableMapOf<MSceneNode, SceneObjectItem>()
+    private val modelTreeItemMap = mutableMapOf<MSceneNode, SceneObjectItem>()
+    private val nodeTreeItemMap = mutableMapOf<Node, SceneObjectItem>()
     private val treeItems = mutableListOf<SceneObjectItem>()
     private val isTreeValid = mutableStateOf(false)
 
     private val itemPopupMenu = ContextPopupMenu<SceneObjectItem>()
+
+    init {
+        sceneBrowser.editor.appLoader.appReloadListeners += AppReloadListener {
+            nodeTreeItemMap.clear()
+        }
+    }
 
     fun refreshSceneTree() {
         isTreeValid.set(false)
@@ -59,7 +67,9 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         if (!isTreeValid.use()) {
             treeItems.clear()
             EditorState.projectModel.scenes.forEach {
-                treeItems.appendNode(it, it.created, 0)
+                it.created?.let { node ->
+                    treeItems.appendNode(it, node, it, 0)
+                }
             }
             isTreeValid.set(true)
         }
@@ -172,45 +182,68 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         Text(item.name) {
             modifier
                 .alignY(AlignmentY.Center)
-            if (item.nodeModel === EditorState.selectedObject.use()) {
-                modifier.textColor(colors.primary)
+            val textColor = if (item.nodeModel === EditorState.selectedObject.use()) {
+                if (item.type != SceneObjectType.NON_MODEL_NODE) {
+                    colors.primary
+                } else {
+                    colors.primary.mix(Color.BLACK, 0.3f)
+                }
+            } else {
+                if (item.type != SceneObjectType.NON_MODEL_NODE) {
+                    Color.WHITE
+                } else {
+                    MdColor.GREY tone 500
+                }
             }
+            modifier.textColor(textColor)
         }
     }
 
-    private fun MutableList<SceneObjectItem>.appendNode(scene: MScene, node: Node?, depth: Int) {
-        node ?: return
-        val nodeModel = scene.nodesToNodeModels[node] ?: return
+    private fun MutableList<SceneObjectItem>.appendNode(scene: MScene, node: Node, selectModel: MSceneNode, depth: Int) {
+        // get nodeModel for node, this should be equal to [selectModel] for regular objects but can be null if node
+        // does not correspond to a scene model item (e.g. child meshes of a gltf model)
+        val nodeModel = scene.nodesToNodeModels[node]
 
-        val item = treeItemMap.getOrPut(nodeModel) {
-            val type = when (node) {
-                is Scene -> SceneObjectType.SCENE
-                is Mesh -> SceneObjectType.MESH
-                is Camera -> SceneObjectType.CAMERA
-                else -> SceneObjectType.NODE
+        val item = if (nodeModel != null) {
+            modelTreeItemMap.getOrPut(nodeModel) {
+                val type = when (node) {
+                    is Scene -> SceneObjectType.SCENE
+                    is Mesh -> SceneObjectType.MESH
+                    is Camera -> SceneObjectType.CAMERA
+                    is Model -> SceneObjectType.MODEL
+                    else -> SceneObjectType.GROUP
+                }
+                SceneObjectItem(node, nodeModel, type, depth)
             }
-            SceneObjectItem(nodeModel, type, depth)
+        } else {
+            nodeTreeItemMap.getOrPut(node) {
+                SceneObjectItem(node, selectModel, SceneObjectType.NON_MODEL_NODE, depth)
+            }
         }
+
+        // update item node, it can change when model / app is reloaded
+        item.node = node
 
         add(item)
         if (item.isExpanded.value) {
             node.children.forEach {
-                // fixme: somewhat hacky way to hide editor objects in the scene graph
-                if (!it.tags.hasTag("hidden")) {
-                    appendNode(scene, it, depth + 1)
+                if (!it.tags.hasTag(KoolEditor.TAG_EDITOR_SUPPORT_CONTENT)) {
+                    val childNodeModel = scene.nodesToNodeModels[it]
+                    appendNode(scene, it, childNodeModel ?: selectModel, depth + 1)
                 }
             }
         }
     }
 
     private inner class SceneObjectItem(
+        var node: Node,
         val nodeModel: MSceneNode,
         val type: SceneObjectType,
         val depth: Int
     ) {
-        val name: String get() = nodeModel.name
-        val isExpandable: Boolean get() = nodeModel.created?.children?.isNotEmpty() == true
-        val isExpanded = mutableStateOf(true)
+        val name: String get() = node.name
+        val isExpandable: Boolean get() = node.children.isNotEmpty()
+        val isExpanded = mutableStateOf(type.startExpanded)
 
         fun toggleExpanded() {
             if (isExpandable) {
@@ -220,10 +253,12 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         }
     }
 
-    private enum class SceneObjectType {
+    private enum class SceneObjectType(val startExpanded: Boolean = false) {
+        NON_MODEL_NODE,
         CAMERA,
+        GROUP(true),
         MESH,
-        NODE,
-        SCENE
+        MODEL,
+        SCENE(true)
     }
 }

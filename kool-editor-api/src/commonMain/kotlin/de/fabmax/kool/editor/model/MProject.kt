@@ -1,6 +1,7 @@
 package de.fabmax.kool.editor.model
 
 import de.fabmax.kool.Assets
+import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.scene.Scene
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -24,8 +25,10 @@ class MProject : Creatable<List<Scene>> {
 
     override suspend fun getOrCreate() = created ?: create()
 
-    private suspend fun create(): List<Scene> {
-        val createdScenes = scenes.map { it.getOrCreate() }
+    override suspend fun create(): List<Scene> {
+        created?.forEach { it.dispose(KoolSystem.requireContext()) }
+
+        val createdScenes = scenes.map { it.create() }
         created = createdScenes
         scenes.forEach {
             it.nodesToNodeModels.values.forEach { sceneNode ->

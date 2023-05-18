@@ -18,6 +18,7 @@ sealed class MSceneNode {
     val resolvedChildren: MutableMap<Long, MSceneNode> = mutableMapOf()
 
     abstract val creatable: Creatable<out Node>
+    abstract fun disposeCreatedNode()
 }
 
 val MSceneNode.created: Node? get() = creatable.getOrNull()

@@ -7,5 +7,6 @@ interface Creatable<T: Any> {
 
     fun getOrNull(): T?
     suspend fun getOrCreate(): T
+    suspend fun create(): T
 
 }

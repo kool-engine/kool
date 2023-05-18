@@ -1,5 +1,6 @@
 package de.fabmax.kool.editor.model
 
+import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.scene.ColorMesh
@@ -29,7 +30,9 @@ class MMesh(
 
     override suspend fun getOrCreate() = created ?: create()
 
-    private fun create(): Mesh {
+    override suspend fun create(): Mesh {
+        disposeCreatedNode()
+
         val mesh = ColorMesh(name)
         mesh.shader = KslPbrShader {
             color { constColor(MdColor.LIGHT_GREEN.toLinear()) }
@@ -38,6 +41,11 @@ class MMesh(
         created = mesh
         generateMeshType()
         return mesh
+    }
+
+    override fun disposeCreatedNode() {
+        created?.dispose(KoolSystem.requireContext())
+        created = null
     }
 
     fun generateMeshType() {

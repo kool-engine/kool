@@ -39,7 +39,9 @@ actual class AppLoadService actual constructor(watchDirs: Set<String>, appLoadCl
 
     private val loader = launch {
         while (true) {
-            if (watcher.changes.receive().any { it.path !in ignoredPaths }) {
+            val changes = watcher.changes.receive().filter { it.path !in ignoredPaths }
+            if (changes.isNotEmpty()) {
+                logD { "File change detected: ${changes[0].path}, ${changes[0].type}}" }
                 hasAppChanged = true
             }
         }

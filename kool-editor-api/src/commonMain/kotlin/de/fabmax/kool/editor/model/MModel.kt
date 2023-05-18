@@ -1,6 +1,7 @@
 package de.fabmax.kool.editor.model
 
 import de.fabmax.kool.Assets
+import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.modules.gltf.loadGltfModel
 import de.fabmax.kool.scene.Model
 import de.fabmax.kool.scene.Node
@@ -23,11 +24,18 @@ class MModel(
 
     override suspend fun getOrCreate() = created ?: create()
 
-    private suspend fun create(): Model {
+    override suspend fun create(): Model {
+        disposeCreatedNode()
+
         val model = Assets.loadGltfModel(modelPath)
+        model.name = name
         transform.toTransform(model.transform)
         created = model
         return model
     }
 
+    override fun disposeCreatedNode() {
+        created?.dispose(KoolSystem.requireContext())
+        created = null
+    }
 }

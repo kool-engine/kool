@@ -49,6 +49,7 @@ class DirectoryWatcher(val watchPaths: Set<String>, val eventTimeoutMs: Long = 1
                     runBlocking {
                         changes.send(changeEvents.copy())
                     }
+                    changeEvents.clear()
                 }
             }
         } catch (e: Exception) {

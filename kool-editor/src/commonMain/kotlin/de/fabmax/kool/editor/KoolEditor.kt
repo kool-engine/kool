@@ -22,7 +22,7 @@ class KoolEditor(val ctx: KoolContext) {
         InputStack.defaultInputHandler.pointerListeners += this
     }
     val editorContent = Node("Editor Content").apply {
-        tags["hidden"] = "true"
+        tags[TAG_EDITOR_SUPPORT_CONTENT] = "true"
         addNode(editorCameraTransform)
     }
 
@@ -142,6 +142,8 @@ class KoolEditor(val ctx: KoolContext) {
     }
 
     companion object {
+        const val TAG_EDITOR_SUPPORT_CONTENT = "%editor-content-hidden"
+
         // todo: don't use hard-coded project paths
         const val APP_PROJECT_DIR = "kool-editor-template"
         const val APP_PROJECT_CLASS_PATH = "${APP_PROJECT_DIR}/build/classes/kotlin/jvm/main"

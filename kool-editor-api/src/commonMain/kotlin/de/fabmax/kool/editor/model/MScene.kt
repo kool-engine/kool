@@ -1,5 +1,6 @@
 package de.fabmax.kool.editor.model
 
+import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.MdColor
@@ -29,8 +30,8 @@ class MScene(override val nodeId: Long) : MSceneNode(), Creatable<Scene> {
 
     override suspend fun getOrCreate() = created ?: create()
 
-    private suspend fun create(): Scene {
-        nodesToNodeModels.clear()
+    override suspend fun create(): Scene {
+        disposeCreatedNode()
 
         val scene = Scene(name = name).apply {
             mainRenderPass.clearColor = clearColor.toColor()
@@ -42,6 +43,15 @@ class MScene(override val nodeId: Long) : MSceneNode(), Creatable<Scene> {
             getSceneNode<MSceneNode>(childId)?.let { addSceneNode(it) }
         }
         return scene
+    }
+
+    override fun disposeCreatedNode() {
+        resolvedNodes.values.filter { it !== this }.forEach { it.disposeCreatedNode() }
+        nodesToNodeModels.values.filter { it !== this }.forEach { it.disposeCreatedNode() }
+        nodesToNodeModels.clear()
+
+        created?.dispose(KoolSystem.requireContext())
+        created = null
     }
 
     inline fun <reified T: MSceneNode> getSceneNode(id: Long): T? {
@@ -89,8 +99,9 @@ class MScene(override val nodeId: Long) : MSceneNode(), Creatable<Scene> {
     }
 
     fun removeSceneNode(nodeModel: MSceneNode) {
-        nodeModel.childIds.forEach { subChildId ->
-            getSceneNode<MSceneNode>(subChildId)?.let { removeSceneNode(it) }
+        val childNodes = nodeModel.childIds.mapNotNull { getSceneNode<MSceneNode>(it) }
+        childNodes.forEach {
+            removeSceneNode(it)
         }
 
         val nodeId = nodeModel.nodeId

@@ -1,5 +1,6 @@
 package de.fabmax.kool.editor.model
 
+import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.scene.Node
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -17,10 +18,17 @@ class MGroup(override val nodeId: Long) : MSceneNode(), Creatable<Node> {
 
     override suspend fun getOrCreate() = created ?: create()
 
-    private fun create(): Node {
+    override suspend fun create(): Node {
+        disposeCreatedNode()
+
         val node = Node(name)
         transform.toTransform(node.transform)
         created = node
         return node
+    }
+
+    override fun disposeCreatedNode() {
+        created?.dispose(KoolSystem.requireContext())
+        created = null
     }
 }
