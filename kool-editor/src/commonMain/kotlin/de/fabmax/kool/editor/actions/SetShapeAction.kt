@@ -1,21 +1,25 @@
 package de.fabmax.kool.editor.actions
 
-import de.fabmax.kool.editor.model.MMesh
-import de.fabmax.kool.editor.model.MMeshShape
+import de.fabmax.kool.editor.data.MeshComponentData
+import de.fabmax.kool.editor.data.MeshShapeData
+import de.fabmax.kool.editor.model.MSceneNode
 
 class SetShapeAction(
-    private val editedMeshModel: MMesh,
-    private val oldShape: MMeshShape,
-    private val newShape: MMeshShape
+    private val nodeModel: MSceneNode,
+    private val editedMeshData: MeshComponentData,
+    private val oldShape: MeshShapeData,
+    private val newShape: MeshShapeData
 ) : EditorAction {
 
     override fun apply() {
-        editedMeshModel.shapeMutableState.set(newShape)
-        editedMeshModel.generateMeshType()
+        editedMeshData.shape = newShape
+        nodeModel.regenerateMesh()
+        nodeModel.markModified()
     }
 
     override fun undo() {
-        editedMeshModel.shapeMutableState.set(oldShape)
-        editedMeshModel.generateMeshType()
+        editedMeshData.shape = oldShape
+        nodeModel.regenerateMesh()
+        nodeModel.markModified()
     }
 }

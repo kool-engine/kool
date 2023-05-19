@@ -1,4 +1,4 @@
-package de.fabmax.kool.editor.model
+package de.fabmax.kool.editor.data
 
 import de.fabmax.kool.math.*
 import de.fabmax.kool.scene.Transform
@@ -7,15 +7,15 @@ import de.fabmax.kool.util.MutableColor
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class MTransform(
-    val position: MVec3,
-    val rotation: MVec4,
-    val scale: MVec3
+data class TransformData(
+    val position: Vec3Data,
+    val rotation: Vec4Data,
+    val scale: Vec3Data
 ) {
     constructor(matrix: Mat4d): this(
-        position = MVec3(matrix.getOrigin(MutableVec3d())),
-        rotation = MVec4(matrix.getRotation(MutableVec4d())),
-        scale = MVec3(matrix.getScale(MutableVec3d()))
+        position = Vec3Data(matrix.getOrigin(MutableVec3d())),
+        rotation = Vec4Data(matrix.getRotation(MutableVec4d())),
+        scale = Vec3Data(matrix.getScale(MutableVec3d()))
     )
 
     fun toTransform(result: Transform): Transform {
@@ -32,16 +32,16 @@ data class MTransform(
     }
 
     companion object {
-        val IDENTITY = MTransform(
-            position = MVec3(Vec3d.ZERO),
-            rotation = MVec4(Vec4d.W_AXIS),
-            scale = MVec3(Vec3d(1.0, 1.0, 1.0))
+        val IDENTITY = TransformData(
+            position = Vec3Data(Vec3d.ZERO),
+            rotation = Vec4Data(Vec4d.W_AXIS),
+            scale = Vec3Data(Vec3d(1.0, 1.0, 1.0))
         )
     }
 }
 
 @Serializable
-data class MVec2(val x: Double, val y: Double) {
+data class Vec2Data(val x: Double, val y: Double) {
     constructor(vec: Vec2d): this(vec.x, vec.y)
     constructor(vec: Vec2f): this(vec.x.toDouble(), vec.y.toDouble())
 
@@ -55,7 +55,7 @@ data class MVec2(val x: Double, val y: Double) {
 }
 
 @Serializable
-data class MVec3(val x: Double, val y: Double, val z: Double) {
+data class Vec3Data(val x: Double, val y: Double, val z: Double) {
     constructor(vec: Vec3d): this(vec.x, vec.y, vec.z)
     constructor(vec: Vec3f): this(vec.x.toDouble(), vec.y.toDouble(), vec.z.toDouble())
 
@@ -69,7 +69,7 @@ data class MVec3(val x: Double, val y: Double, val z: Double) {
 }
 
 @Serializable
-data class MVec4(val x: Double, val y: Double, val z: Double, val w: Double) {
+data class Vec4Data(val x: Double, val y: Double, val z: Double, val w: Double) {
     constructor(vec: Vec4d): this(vec.x, vec.y, vec.z, vec.w)
     constructor(vec: Vec4f): this(vec.x.toDouble(), vec.y.toDouble(), vec.z.toDouble(), vec.w.toDouble())
 
@@ -83,7 +83,7 @@ data class MVec4(val x: Double, val y: Double, val z: Double, val w: Double) {
 }
 
 @Serializable
-data class MColor(val r: Float, val g: Float, val b: Float, val a: Float) {
+data class ColorData(val r: Float, val g: Float, val b: Float, val a: Float) {
     constructor(color: Color): this(color.r, color.g, color.b, color.a)
 
     fun toColor(result: MutableColor = MutableColor()): MutableColor {

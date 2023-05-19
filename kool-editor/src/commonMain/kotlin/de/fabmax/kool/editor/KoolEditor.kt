@@ -56,7 +56,7 @@ class KoolEditor(val ctx: KoolContext) {
         // auto save on exit
         ctx.applicationCallbacks = object : ApplicationCallbacks {
             override fun onWindowCloseRequest(ctx: KoolContext): Boolean {
-                EditorState.saveProject()
+//                EditorState.saveProject()
                 return true
             }
         }
@@ -87,7 +87,7 @@ class KoolEditor(val ctx: KoolContext) {
 
             override fun handlePointer(pointerState: PointerState, ctx: KoolContext) {
                 val sceneModel = EditorState.selectedScene.value ?: return
-                val appScene = sceneModel.getOrNull() ?: return
+                val appScene = sceneModel.node
                 val ptr = pointerState.primaryPointer
                 if (ptr.isLeftButtonClicked) {
                     if (appScene.computePickRay(ptr, ctx, rayTest.ray)) {
@@ -97,13 +97,13 @@ class KoolEditor(val ctx: KoolContext) {
                         var it = rayTest.hitNode
                         var selectedNodeModel: MSceneNode? = null
                         while (it != null) {
-                            selectedNodeModel = sceneModel.nodesToNodeModels[it]
+                            selectedNodeModel = sceneModel.nodesToNodeModels[it] as? MSceneNode
                             if (selectedNodeModel != null) {
                                 break
                             }
                             it = it.parent
                         }
-                        EditorState.selectedObject.set(selectedNodeModel)
+                        EditorState.selectedNode.set(selectedNodeModel)
                     }
                 }
             }
@@ -113,7 +113,7 @@ class KoolEditor(val ctx: KoolContext) {
     private suspend fun handleAppReload(app: EditorAwareApp) {
         // clear scene objects from old app
         editorCameraTransform.clearChildren()
-        EditorState.projectModel.getOrNull()?.let { oldScenes ->
+        EditorState.projectModel.getCreatedScenes().map { it.node }.let { oldScenes ->
             ctx.scenes -= oldScenes.toSet()
             oldScenes.forEach { it.dispose(ctx) }
         }
@@ -121,7 +121,7 @@ class KoolEditor(val ctx: KoolContext) {
 
         // add scene objects from new app
         app.startApp(EditorState.projectModel, true, ctx)
-        EditorState.projectModel.getOrNull()?.let { newScenes ->
+        EditorState.projectModel.getCreatedScenes().map { it.node }.let { newScenes ->
             ctx.scenes += newScenes.toSet()
             newScenes.forEach {
                 it.dispose(ctx)
@@ -130,6 +130,9 @@ class KoolEditor(val ctx: KoolContext) {
             }
         }
         EditorState.loadedApp.set(app)
+        if (EditorState.selectedScene.value == null) {
+            EditorState.selectedScene.set(EditorState.projectModel.getCreatedScenes().getOrNull(0))
+        }
 
         bringEditorMenuToTop()
         EditorActions.clear()

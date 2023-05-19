@@ -12,12 +12,12 @@ expect object AppClassFactory : ClassFactory
 
 class App : EditorAwareApp {
     override suspend fun startApp(projectModel: MProject, isInEditor: Boolean, ctx: KoolContext) {
-        val scenes = projectModel.create()
+        projectModel.create()
 
         if (!isInEditor) {
             // fixme: camera not yet included in project model, add a default one
-            scenes.forEach {
-                it.defaultOrbitCamera()
+            projectModel.getCreatedScenes().forEach {
+                it.node.defaultOrbitCamera()
             }
         }
     }
@@ -28,9 +28,9 @@ class App : EditorAwareApp {
         launchOnMainThread {
             val projModel = MProject.loadFromAssets() ?: throw IllegalStateException("kool-project.json not found")
             app.startApp(projModel, false, ctx)
-            val createdScenes = projModel.getOrNull() ?: throw IllegalStateException("Scene creation failed")
+            val createdScenes = projModel.getCreatedScenes()
             createdScenes.forEach {
-                ctx.scenes += it
+                ctx.scenes += it.node
             }
         }
 

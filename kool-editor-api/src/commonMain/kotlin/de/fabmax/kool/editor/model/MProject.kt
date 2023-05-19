@@ -1,55 +1,38 @@
 package de.fabmax.kool.editor.model
 
 import de.fabmax.kool.Assets
-import de.fabmax.kool.KoolSystem
-import de.fabmax.kool.scene.Scene
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
+import de.fabmax.kool.editor.data.ProjectData
+import de.fabmax.kool.editor.data.SceneData
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
-import kotlin.math.max
 
-@Serializable
-class MProject : Creatable<List<Scene>> {
+class MProject(val projectData: ProjectData) {
 
-    var mainClass = ""
-    val scenes: MutableList<MScene> = mutableListOf()
+    private val created: MutableMap<SceneData, MScene> = mutableMapOf()
 
-    @Transient
-    private var created: List<Scene>? = null
+    suspend fun create() {
+        created.values.forEach { it.disposeCreatedScene() }
+        created.keys.retainAll(projectData.scenes.toSet())
 
-    @Transient
-    private var nextId = -1L
-
-    override fun getOrNull(): List<Scene>? = created
-
-    override suspend fun getOrCreate() = created ?: create()
-
-    override suspend fun create(): List<Scene> {
-        created?.forEach { it.dispose(KoolSystem.requireContext()) }
-
-        val createdScenes = scenes.map { it.create() }
-        created = createdScenes
-        scenes.forEach {
-            it.nodesToNodeModels.values.forEach { sceneNode ->
-                nextId = max(nextId, sceneNode.nodeId + 1)
-            }
+        projectData.scenes.forEach { sceneData ->
+            val sceneModel = created.getOrPut(sceneData) { MScene(sceneData, this) }
+            sceneModel.sceneData = sceneData
+            sceneModel.create()
         }
-        return createdScenes
     }
 
+    fun getCreatedScenes(): List<MScene> = created.values.toList()
+
     fun nextId(): Long {
-        if (nextId < 0) {
-            throw IllegalStateException("create() must be called first")
-        }
-        return nextId++
+        return projectData.nextId++
     }
 
     companion object {
         suspend fun loadFromAssets(): MProject? {
             return try {
                 val json = Assets.loadBlobAsset("kool-project.json").toArray().decodeToString()
-                Json.decodeFromString(json)
+                val projectData: ProjectData = Json.decodeFromString(json)
+                MProject(projectData)
             } catch (e: Exception) {
                 null
             }

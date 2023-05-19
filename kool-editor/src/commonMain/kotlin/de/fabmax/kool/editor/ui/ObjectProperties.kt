@@ -3,7 +3,9 @@ package de.fabmax.kool.editor.ui
 import de.fabmax.kool.editor.EditorState
 import de.fabmax.kool.editor.actions.EditorActions
 import de.fabmax.kool.editor.actions.SetTransformAction
-import de.fabmax.kool.editor.model.*
+import de.fabmax.kool.editor.data.MeshComponentData
+import de.fabmax.kool.editor.model.MScene
+import de.fabmax.kool.editor.model.MSceneNode
 import de.fabmax.kool.math.Mat3d
 import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.math.MutableVec3d
@@ -22,20 +24,20 @@ class ObjectProperties(ui: EditorUi) : EditorPanel("Object Properties", ui) {
 
     init {
         transformProperties.onChangedByEditor += {
-            EditorState.selectedObject.value?.let { selectedNd ->
+            val selectedNd = EditorState.selectedNode.value as? MSceneNode
+            if (selectedNd != null) {
                 transformProperties.getPosition(tmpNodePos)
                 transformProperties.getRotation(tmpNodeRot)
                 transformProperties.getScale(tmpNodeScale)
 
-                selectedNd.creatable.getOrNull()?.let { sceneNode ->
-                    val oldTransform = Mat4d().set(sceneNode.transform.matrix)
-                    val newTransform = Mat4d()
-                        .setRotate(tmpNodeRot.x, tmpNodeRot.y, tmpNodeRot.z)
-                        .scale(tmpNodeScale)
-                        .setOrigin(tmpNodePos)
+                val sceneNode = selectedNd.node
+                val oldTransform = Mat4d().set(sceneNode.transform.matrix)
+                val newTransform = Mat4d()
+                    .setRotate(tmpNodeRot.x, tmpNodeRot.y, tmpNodeRot.z)
+                    .scale(tmpNodeScale)
+                    .setOrigin(tmpNodePos)
 
-                    applyTransformAction(selectedNd, oldTransform, newTransform)
-                }
+                applyTransformAction(selectedNd, oldTransform, newTransform)
             }
         }
         ui.editor.editorContent += transformGizmo
@@ -56,19 +58,20 @@ class ObjectProperties(ui: EditorUi) : EditorPanel("Object Properties", ui) {
         }
 
         surface.onEachFrame {
-            EditorState.selectedObject.value?.created?.let { selectedNd ->
-                selectedNd.transform.getPosition(tmpNodePos)
+            val selectedNd = EditorState.selectedNode.value as? MSceneNode
+            if (selectedNd != null) {
+                selectedNd.node.transform.getPosition(tmpNodePos)
                 transformProperties.setPosition(tmpNodePos)
-                selectedNd.transform.matrix.getRotation(tmpNodeRotMat)
+                selectedNd.node.transform.matrix.getRotation(tmpNodeRotMat)
                 transformProperties.setRotation(tmpNodeRotMat.getEulerAngles(tmpNodeRot))
-                selectedNd.transform.matrix.getScale(tmpNodeScale)
+                selectedNd.node.transform.matrix.getScale(tmpNodeScale)
                 transformProperties.setScale(tmpNodeScale)
             }
         }
     }
 
     fun UiScope.objectProperties() = Column(Grow.Std, Grow.Std) {
-        val selectedObject = EditorState.selectedObject.use()
+        val selectedObject = EditorState.selectedNode.use()
 
         Row(width = Grow.Std, height = sizes.gap * 3f) {
             modifier
@@ -89,39 +92,46 @@ class ObjectProperties(ui: EditorUi) : EditorPanel("Object Properties", ui) {
 
         when (selectedObject) {
             is MScene -> sceneProperties(selectedObject)
-            is MGroup -> groupProperties(selectedObject)
-            is MMesh -> meshProperties(selectedObject)
-            is MModel -> modelProperties(selectedObject)
+            is MSceneNode -> nodeProperties(selectedObject)
         }
     }
 
-    fun UiScope.sceneProperties(nodeModel: MScene) {
-        // - clear color
+    fun UiScope.nodeProperties(nodeModel: MSceneNode) {
+        transformGizmo.setTransformObject(nodeModel)
+        transformEditor(transformProperties)
+
+        nodeModel.nodeData.components.forEach {
+            when (it) {
+                is MeshComponentData -> meshTypeProperties(nodeModel, it)
+                else -> {}
+            }
+        }
+    }
+
+    fun UiScope.sceneProperties(sceneModel: MScene) {
+        sceneBackground(sceneModel)
+
         // - lighting
-        // - skybox
         // - camera
-
-        // place holder
-        Text(nodeModel.name) {  }
     }
 
-    fun UiScope.groupProperties(nodeModel: MGroup) {
-        transformGizmo.setTransformObject(nodeModel)
-        transformEditor(transformProperties)
-    }
-
-    fun UiScope.meshProperties(nodeModel: MMesh) {
-        transformGizmo.setTransformObject(nodeModel)
-        transformEditor(transformProperties)
-        meshTypeProperties(nodeModel)
-
-        // - material (simple)
-    }
-
-    fun UiScope.modelProperties(nodeModel: MModel) {
-        transformGizmo.setTransformObject(nodeModel)
-        transformEditor(transformProperties)
-    }
+//    fun UiScope.groupProperties(nodeModel: MGroup) {
+//        transformGizmo.setTransformObject(nodeModel)
+//        transformEditor(transformProperties)
+//    }
+//
+//    fun UiScope.meshProperties(nodeModel: MMesh) {
+//        transformGizmo.setTransformObject(nodeModel)
+//        transformEditor(transformProperties)
+//        meshTypeProperties(nodeModel)
+//
+//        // - material
+//    }
+//
+//    fun UiScope.modelProperties(nodeModel: MModel) {
+//        transformGizmo.setTransformObject(nodeModel)
+//        transformEditor(transformProperties)
+//    }
 
     companion object {
         fun applyTransformAction(nodeModel: MSceneNode, oldTransform: Mat4d, newTransform: Mat4d) {

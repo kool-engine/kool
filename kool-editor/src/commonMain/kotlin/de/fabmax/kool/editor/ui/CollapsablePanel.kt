@@ -2,7 +2,10 @@ package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.modules.ui2.*
 
-fun UiScope.collapsapsablePanel(title: String, block: ColumnScope.() -> Any) = Column(Grow.Std) {
+fun UiScope.collapsapsablePanel(title: String, scopeName: String? = null, block: ColumnScope.() -> Any) = Column(
+    Grow.Std,
+    scopeName = scopeName
+) {
     var isCollapsed by remember(false)
     var isHovered by remember(false)
 

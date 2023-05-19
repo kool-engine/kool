@@ -6,7 +6,7 @@ import de.fabmax.kool.editor.model.MSceneNode
 import de.fabmax.kool.editor.ui.SceneObjectTree
 import de.fabmax.kool.util.launchOnMainThread
 
-class AddObjectAction(
+class AddNodeAction(
     private val addNodeModel: MSceneNode,
     private val parentSceneModel: MScene,
     private val sceneTree: SceneObjectTree
@@ -20,8 +20,8 @@ class AddObjectAction(
     }
 
     override fun undo() {
-        if (EditorState.selectedObject.value == addNodeModel) {
-            EditorState.selectedObject.set(null)
+        if (EditorState.selectedNode.value == addNodeModel) {
+            EditorState.selectedNode.set(null)
         }
         parentSceneModel.removeSceneNode(addNodeModel)
         sceneTree.refreshSceneTree()
