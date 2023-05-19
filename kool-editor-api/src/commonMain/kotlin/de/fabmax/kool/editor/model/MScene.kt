@@ -1,9 +1,11 @@
 package de.fabmax.kool.editor.model
 
 import de.fabmax.kool.KoolSystem
-import de.fabmax.kool.editor.api.EditorEventListener
+import de.fabmax.kool.editor.data.SceneBackgroundData
 import de.fabmax.kool.editor.data.SceneData
+import de.fabmax.kool.modules.ksl.KslLitShader
 import de.fabmax.kool.modules.ui2.mutableStateOf
+import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.logE
@@ -28,6 +30,27 @@ class MScene(var sceneData: SceneData, val project: MProject) : MNode {
     val nodesToNodeModels: MutableMap<Node, MNode> = mutableMapOf()
     private val nodeModels: MutableMap<Long, MSceneNode> = mutableMapOf()
 
+    private val sceneBackgroundListener = SceneBackgroundListener {
+        when (it) {
+            is SceneBackgroundData.Hdri -> TODO()
+            is SceneBackgroundData.SingleColor -> {
+                val bgColor = it.color.toColor()
+                node.mainRenderPass.clearColor = bgColor
+
+                val linColor = bgColor.toLinear()
+                fun Node.applyBgColor() {
+                    if (this is Mesh) {
+                        (this.shader as? KslLitShader)?.let {
+                            it.ambientFactor = linColor
+                        }
+                    }
+                    children.forEach { it.applyBgColor() }
+                }
+                node.applyBgColor()
+            }
+        }
+    }
+
     suspend fun create(): Scene {
         disposeCreatedScene()
 
@@ -43,7 +66,10 @@ class MScene(var sceneData: SceneData, val project: MProject) : MNode {
         sceneData.rootNodeIds.forEach { childId ->
             resolveNode(childId)?.let { addSceneNode(it) }
         }
-        sceneData.background.applyBackground(scene)
+
+        sceneEditorEventListeners += sceneBackgroundListener
+        SceneBackgroundListener.invoke(sceneData.background, this)
+
         return scene
     }
 
@@ -90,24 +116,6 @@ class MScene(var sceneData: SceneData, val project: MProject) : MNode {
 
         val parent = nodeModels[nodeModel.nodeData.parentId] ?: this
         parent.removeChild(nodeModel)
-
-//        val nodeId = nodeModel.nodeId
-//        val node = nodeModel.created
-//        sceneNodes -= nodeModel
-//        resolvedNodes -= nodeId
-//        nodesToNodeModels.remove(node)
-
-//        getSceneNode<MSceneNode>(nodeModel.parentId)?.let { parent ->
-//            node?.let { parent.created?.removeNode(it) }
-//            parent.childIds -= nodeId
-//            parent.resolvedChildren -= nodeId
-//        }
-
-//        node?.dispose(KoolSystem.requireContext())
-//        // also remove children of node
-//        nodeModel.resolvedChildren.values.forEach { subChildModel ->
-//            removeSceneNode(subChildModel)
-//        }
     }
 
     override fun addChild(child: MSceneNode) {

@@ -1,5 +1,7 @@
 package de.fabmax.kool.editor.ui
 
+import de.fabmax.kool.editor.actions.EditorActions
+import de.fabmax.kool.editor.actions.SetBackgroundAction
 import de.fabmax.kool.editor.data.SceneBackgroundData
 import de.fabmax.kool.editor.model.MScene
 import de.fabmax.kool.modules.ui2.*
@@ -76,7 +78,9 @@ private fun UiScope.singleColorBgProperties(sceneModel: MScene, singleColorBg: S
     ColorChooserV(hue, sat, bri, null, hexString) { color ->
         val bg = SceneBackgroundData.SingleColor(color)
         sceneModel.backgroundMutableState.set(bg)
-        bg.applyBackground(sceneModel.node)
+        EditorActions.applyAction(
+            SetBackgroundAction(sceneModel, bg)
+        )
     }
 }
 

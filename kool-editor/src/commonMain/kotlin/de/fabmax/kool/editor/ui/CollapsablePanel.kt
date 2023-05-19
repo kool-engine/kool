@@ -9,9 +9,9 @@ fun UiScope.collapsapsablePanel(title: String, scopeName: String? = null, block:
     var isCollapsed by remember(false)
     var isHovered by remember(false)
 
-    Row(width = Grow.Std, height = sizes.lineHeight) {
+    Row(width = Grow.Std, height = sizes.lineHeightLarger) {
         modifier
-            .backgroundColor(colors.secondaryVariantAlpha(if (isHovered) 0.5f else 0.25f))
+            .backgroundColor(if (isHovered) colors.hoverBg else null)
             .onClick { isCollapsed = !isCollapsed }
             .onEnter { isHovered = true }
             .onExit { isHovered = false }
@@ -26,8 +26,11 @@ fun UiScope.collapsapsablePanel(title: String, scopeName: String? = null, block:
         }
     }
     if (!isCollapsed) {
-        block()
-    } else {
-        divider(colors.secondaryVariantAlpha(0.75f), horizontalMargin = 0.dp, thickness = 1.dp)
+        Column(width = Grow.Std) {
+            modifier
+                .padding(start = sizes.largeGap)
+                .backgroundColor(colors.backgroundVariant)
+            block()
+        }
     }
 }

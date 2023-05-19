@@ -1,7 +1,30 @@
 package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.modules.ui2.*
+import de.fabmax.kool.modules.ui2.docking.UiDockable
 import de.fabmax.kool.toString
+
+fun UiScope.EditorTitleBar(windowDockable: UiDockable) {
+    Row(Grow.Std, height = sizes.lineHeightTitle) {
+        val cornerR = if (windowDockable.isDocked.use()) 0f else sizes.gap.px
+        modifier
+            .margin(sizes.borderWidth)
+            .padding(horizontal = sizes.gap - sizes.borderWidth)
+            .background(TitleBarBackground(UiColors.titleBg, cornerR, false))
+
+        with(windowDockable) {
+            registerDragCallbacks()
+        }
+
+        Text(windowDockable.name) {
+            modifier
+                .width(Grow.Std)
+                .textColor(UiColors.titleText)
+                .font(sizes.boldText)
+                .alignY(AlignmentY.Center)
+        }
+    }
+}
 
 fun UiScope.doubleTextField(
     value: Double,

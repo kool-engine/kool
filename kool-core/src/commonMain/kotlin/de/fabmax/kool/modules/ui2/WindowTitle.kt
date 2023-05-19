@@ -9,6 +9,8 @@ fun UiScope.TitleBar(
     title: String = windowDockable.name,
     focusedBackgroundColor: Color = colors.secondary,
     unfocusedBackgroundColor: Color = colors.secondaryVariant,
+    focusedTextColor: Color = colors.onSecondary,
+    unfocusedTextColor: Color = colors.onSecondary,
     isDraggable: Boolean = true,
     isMinimizedToTitle: Boolean = false,
     showTabsIfDocked: Boolean = true,
@@ -42,7 +44,7 @@ fun UiScope.TitleBar(
                 modifier
                     .width(Grow.Std)
                     .margin(horizontal = sizes.gap, vertical = sizes.smallGap * 0.5f)
-                    .textColor(colors.onSecondary)
+                    .textColor(if (surface.isFocused.use()) focusedTextColor else unfocusedTextColor)
                     .alignY(AlignmentY.Center)
             }
 

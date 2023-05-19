@@ -18,9 +18,12 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
 
     val appLoaderState = mutableStateOf("")
 
+    val centerSlot = UiDockable("Center slot", dock, isHidden = true)
+
     init {
         setupUiScene()
 
+        dock.dockingSurface.colors = EDITOR_THEME_COLORS
         dock.dockingPaneComposable = Composable {
             Column(Grow.Std, Grow.Std) {
                 dock.root()
@@ -40,8 +43,7 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
             )
         )
 
-        val centerSpacer = UiDockable("EmptyDockable", dock, isHidden = true)
-        dock.getLeafAtPath("0/1/0")?.dock(centerSpacer)
+        dock.getLeafAtPath("0/1/0")?.dock(centerSlot)
 
         // add scene browser panel and dock it to the left side of the screen
         dock.addDockableSurface(sceneBrowser.windowDockable, sceneBrowser.windowSurface)
@@ -56,7 +58,7 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
     }
 
     fun UiScope.statusBar() = Row(width = Grow.Std, height = sizes.lineHeightLarger) {
-        modifier.backgroundColor(colors.background)
+        modifier.backgroundColor(UiColors.bgMid)
 
         Box(width = Grow.Std) {  }
 
@@ -68,15 +70,30 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
     }
 
     companion object {
-        val EDITOR_THEME_COLORS = Colors.darkColors()
+        val EDITOR_THEME_COLORS = Colors.darkColors(
+            background = Color("232933ff"),
+            backgroundVariant = Color("161a20ff"),
+            onBackground = Color("dbe6ffff"),
+            secondary = Color("7786a5ff"),
+            secondaryVariant = Color("4d566bff")
+        )
     }
 }
 
 val Sizes.baseSize: Dp get() = largeGap * 2f
 val Sizes.lineHeight: Dp get() = baseSize * (2f/3f)
 val Sizes.lineHeightLarger: Dp get() = baseSize * 0.75f
+val Sizes.lineHeightTitle: Dp get() = baseSize
 
 val Sizes.boldText: MsdfFont get() = (normalText as MsdfFont).copy(weight = 0.075f)
+val Sizes.italicText: MsdfFont get() = (normalText as MsdfFont).copy(italic = MsdfFont.ITALIC_STD)
 
 val Colors.hoverBg: Color get() = secondaryVariantAlpha(0.35f)
 val Colors.selectionBg: Color get() = secondaryVariantAlpha(0.5f)
+
+object UiColors {
+    val border = Color("0f1114ff")
+    val titleBg = Color("343a49ff")
+    val bgMid = Color("1b2028ff")
+    val titleText =  Color("dbe6ffff") //Color("B9CDF7")
+}

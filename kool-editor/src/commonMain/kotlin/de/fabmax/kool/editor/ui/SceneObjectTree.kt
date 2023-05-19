@@ -19,7 +19,6 @@ import de.fabmax.kool.modules.ui2.ArrowScope.Companion.ROTATION_DOWN
 import de.fabmax.kool.modules.ui2.ArrowScope.Companion.ROTATION_RIGHT
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.logI
 
 class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
@@ -192,9 +191,9 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
                 }
             } else {
                 if (item.type != SceneObjectType.NON_MODEL_NODE) {
-                    Color.WHITE
+                    colors.onBackground
                 } else {
-                    MdColor.GREY tone 500
+                    colors.onBackground.mix(Color.BLACK, 0.3f)
                 }
             }
             modifier.textColor(textColor)

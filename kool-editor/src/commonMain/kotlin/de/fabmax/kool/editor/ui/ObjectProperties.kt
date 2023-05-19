@@ -4,6 +4,7 @@ import de.fabmax.kool.editor.EditorState
 import de.fabmax.kool.editor.actions.EditorActions
 import de.fabmax.kool.editor.actions.SetTransformAction
 import de.fabmax.kool.editor.data.MeshComponentData
+import de.fabmax.kool.editor.model.MNode
 import de.fabmax.kool.editor.model.MScene
 import de.fabmax.kool.editor.model.MSceneNode
 import de.fabmax.kool.math.Mat3d
@@ -43,18 +44,13 @@ class ObjectProperties(ui: EditorUi) : EditorPanel("Object Properties", ui) {
         ui.editor.editorContent += transformGizmo
     }
 
-    override val windowSurface: UiSurface = WindowSurface(
-        windowDockable,
-        colors = EditorUi.EDITOR_THEME_COLORS
-    ) {
-        modifier.backgroundColor(colors.background.withAlpha(0.8f))
-
+    override val windowSurface: UiSurface = EditorPanelWindow {
         // clear gizmo transform object, will be set below if transform editor is available
         transformGizmo.setTransformObject(null)
 
         Column(Grow.Std, Grow.Std) {
-            TitleBar(windowDockable)
-            objectProperties()
+            EditorTitleBar(windowDockable)
+            objectProperties(EditorState.selectedNode.use())
         }
 
         surface.onEachFrame {
@@ -70,21 +66,25 @@ class ObjectProperties(ui: EditorUi) : EditorPanel("Object Properties", ui) {
         }
     }
 
-    fun UiScope.objectProperties() = Column(Grow.Std, Grow.Std) {
-        val selectedObject = EditorState.selectedNode.use()
-
-        Row(width = Grow.Std, height = sizes.gap * 3f) {
+    fun UiScope.objectProperties(selectedObject: MNode?) = Column(Grow.Std, Grow.Std, scopeName = selectedObject?.name) {
+        Row(width = Grow.Std, height = sizes.lineHeightLarger) {
             modifier
-                .backgroundColor(colors.selectionBg)
+                //.backgroundColor(colors.selectionBg)
                 .padding(horizontal = sizes.gap)
 
             if (selectedObject == null) {
                 Text("Nothing selected") {
-                    modifier.alignY(AlignmentY.Center)
+                    modifier
+                        .width(Grow.Std)
+                        .textAlignX(AlignmentX.Center)
+                        .alignY(AlignmentY.Bottom)
+                        .font(sizes.italicText)
                 }
             } else {
                 Text(selectedObject.name) {
-                    modifier.alignY(AlignmentY.Center)
+                    modifier
+                        .alignY(AlignmentY.Center)
+                        .font(sizes.boldText)
                 }
             }
         }

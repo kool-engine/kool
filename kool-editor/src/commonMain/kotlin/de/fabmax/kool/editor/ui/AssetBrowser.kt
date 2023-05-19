@@ -18,10 +18,9 @@ class AssetBrowser(editorUi: EditorUi) : EditorPanel(
     private var rootAssets: List<AppAsset> = emptyList()
     private val selectedDirectory = mutableStateOf<AppAsset?>(null)
 
-    override val windowSurface = WindowSurface(windowDockable) {
-        modifier.backgroundColor(colors.backgroundAlpha(0.8f))
+    override val windowSurface = EditorPanelWindow {
         Column(Grow.Std, Grow.Std) {
-            TitleBar(windowDockable)
+            EditorTitleBar(windowDockable)
             Row(Grow.Std, Grow.Std) {
                 rootAssets = editor.appAssets.rootAssets.use()
 
@@ -40,7 +39,7 @@ class AssetBrowser(editorUi: EditorUi) : EditorPanel(
         }
 
         LazyList(
-            containerModifier = { it.backgroundColor(colors.onBackgroundAlpha(0.05f)) }
+            containerModifier = { it.backgroundColor(colors.backgroundVariant) }
         ) {
             var hoveredIndex by remember(-1)
             itemsIndexed(flattenedDirectoryTree()) { i, (lvl, asset) ->
@@ -127,7 +126,7 @@ class AssetBrowser(editorUi: EditorUi) : EditorPanel(
 
         ScrollArea(containerModifier = {
             it
-                .backgroundColor(colors.onBackgroundAlpha(0.05f))
+                .backgroundColor(colors.backgroundVariant)
                 .onPositioned { nd ->
                     areaWidth = nd.widthPx
                 }

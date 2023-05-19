@@ -13,6 +13,7 @@ import de.fabmax.kool.input.PointerState
 import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.OrbitInputTransform
+import kotlin.math.roundToInt
 
 class KoolEditor(val ctx: KoolContext) {
 
@@ -56,7 +57,7 @@ class KoolEditor(val ctx: KoolContext) {
         // auto save on exit
         ctx.applicationCallbacks = object : ApplicationCallbacks {
             override fun onWindowCloseRequest(ctx: KoolContext): Boolean {
-//                EditorState.saveProject()
+                EditorState.saveProject()
                 return true
             }
         }
@@ -122,16 +123,32 @@ class KoolEditor(val ctx: KoolContext) {
         // add scene objects from new app
         app.startApp(EditorState.projectModel, true, ctx)
         EditorState.projectModel.getCreatedScenes().map { it.node }.let { newScenes ->
-            ctx.scenes += newScenes.toSet()
-            newScenes.forEach {
-                it.dispose(ctx)
-                it.addNode(editorContent)
-                editorCameraTransform.addNode(it.camera)
+            ctx.scenes += newScenes
+            newScenes.forEach { scene ->
+                scene.dispose(ctx)
+                scene.addNode(editorContent)
+                editorCameraTransform.addNode(scene.camera)
+
+                scene.onRenderScene += {
+                    val dockNode = ui.centerSlot.dockedTo.value
+                    if (dockNode != null) {
+                        val x = dockNode.boundsLeftDp.value.px.roundToInt()
+                        val w = dockNode.boundsRightDp.value.px.roundToInt() - x
+                        val h = dockNode.boundsBottomDp.value.px.roundToInt() - dockNode.boundsTopDp.value.px.roundToInt()
+                        val y = it.windowHeight - dockNode.boundsBottomDp.value.px.roundToInt()
+
+                        scene.mainRenderPass.useWindowViewport = false
+                        scene.mainRenderPass.viewport.set(x, y, w, h)
+                    }
+                }
             }
         }
         EditorState.loadedApp.set(app)
         if (EditorState.selectedScene.value == null) {
             EditorState.selectedScene.set(EditorState.projectModel.getCreatedScenes().getOrNull(0))
+        }
+        if (EditorState.selectedNode.value == null) {
+            EditorState.selectedNode.set(EditorState.selectedScene.value)
         }
 
         bringEditorMenuToTop()

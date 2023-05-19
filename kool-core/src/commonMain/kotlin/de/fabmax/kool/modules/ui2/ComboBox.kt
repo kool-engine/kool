@@ -37,6 +37,22 @@ fun <T: ComboBoxModifier> T.textColor(color: Color): T { textColor = color; retu
 fun <T: ComboBoxModifier> T.items(items: List<Any>): T { this.items = items; return this }
 fun <T: ComboBoxModifier> T.selectedIndex(index: Int): T { this.selectedIndex = index; return this }
 fun <T: ComboBoxModifier> T.onItemSelected(block: ((Int) -> Unit)?): T { this.onItemSelected = block; return this }
+fun <T: ComboBoxModifier> T.colors(
+    textColor: Color = this.textColor,
+    textBackgroundColor: Color = this.textBackgroundColor,
+    textBackgroundHoverColor: Color = this.textBackgroundHoverColor,
+    expanderColor: Color = this.expanderColor,
+    expanderHoverColor: Color = this.expanderHoverColor,
+    expanderArrowColor: Color = this.expanderArrowColor
+): T {
+    this.textColor = textColor
+    this.textBackgroundColor = textBackgroundColor
+    this.textBackgroundHoverColor = textBackgroundHoverColor
+    this.expanderColor = expanderColor
+    this.expanderHoverColor = expanderHoverColor
+    this.expanderArrowColor = expanderArrowColor
+    return this
+}
 
 inline fun UiScope.ComboBox(
     scopeName: String? = null,

@@ -1,8 +1,7 @@
 package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.editor.KoolEditor
-import de.fabmax.kool.modules.ui2.Dp
-import de.fabmax.kool.modules.ui2.UiSurface
+import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.modules.ui2.docking.UiDockable
 
 abstract class EditorPanel(
@@ -21,4 +20,12 @@ abstract class EditorPanel(
         windowDockable.setFloatingBounds(width = defaultWidth, height = defaultHeight)
     }
 
+    protected fun EditorPanelWindow(block: UiScope.() -> Unit) = WindowSurface(
+        windowDockable,
+        colors = EditorUi.EDITOR_THEME_COLORS,
+        borderColor = { UiColors.border }
+    ) {
+        modifier.backgroundColor(colors.background)
+        block()
+    }
 }
