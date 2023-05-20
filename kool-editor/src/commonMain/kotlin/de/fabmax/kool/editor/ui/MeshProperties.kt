@@ -49,28 +49,16 @@ fun UiScope.meshTypeProperties(nodeModel: SceneNodeModel, meshComponent: MeshCom
             .padding(horizontal = sizes.gap)
             .margin(bottom = sizes.smallGap)
 
-        Row(width = Grow.Std, height = sizes.lineHeight) {
-            modifier.margin(top = sizes.smallGap)
-            Text("Shape:") {
-                modifier
-                    .width(sizes.baseSize * 3f)
-                    .font(sizes.boldText)
-                    .alignY(AlignmentY.Center)
-            }
-
-            ComboBox {
-                modifier
-                    .size(Grow.Std, sizes.lineHeight)
-                    .items(ShapeOptions.items)
-                    .selectedIndex(ShapeOptions.indexOfShape(shape))
-                    .onItemSelected {
-                        val shapeType = ShapeOptions.items[it]
-                        if (!shapeType.type.isInstance(shape)) {
-                            EditorActions.applyAction(
-                                SetShapeAction(nodeModel, meshComponent, shape, shapeType.factory())
-                            )
-                        }
-                    }
+        val selectedIndex = remember(ShapeOptions.indexOfShape(shape))
+        labeledCombobox(
+            label = "Shape:",
+            items = ShapeOptions.items,
+            selectedIndex = selectedIndex
+        ) {
+            if (!it.type.isInstance(shape)) {
+                EditorActions.applyAction(
+                    SetShapeAction(nodeModel, meshComponent, shape, it.factory())
+                )
             }
         }
 

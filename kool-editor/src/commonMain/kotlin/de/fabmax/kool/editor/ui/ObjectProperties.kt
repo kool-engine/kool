@@ -51,7 +51,7 @@ class ObjectProperties(ui: EditorUi) : EditorPanel("Object Properties", ui) {
         transformGizmo.setTransformObject(null)
 
         Column(Grow.Std, Grow.Std) {
-            EditorTitleBar(windowDockable)
+            editorTitleBar(windowDockable)
             objectProperties(EditorState.selectedNode.use())
         }
 

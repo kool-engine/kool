@@ -1,7 +1,7 @@
 package de.fabmax.kool.editor.ui
 
-import de.fabmax.kool.editor.AppAsset
 import de.fabmax.kool.editor.AppReloadListener
+import de.fabmax.kool.editor.AssetItem
 import de.fabmax.kool.editor.EditorState
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.actions.AddNodeAction
@@ -49,7 +49,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         EditorActions.applyAction(AddNodeAction(mesh, parent.nodeModel, parentScene, this))
     }
 
-    private fun addNewModel(parent: SceneObjectItem, modelAsset: AppAsset) {
+    private fun addNewModel(parent: SceneObjectItem, modelAsset: AssetItem) {
         val parentScene = EditorState.selectedScene.value ?: return
         val id = EditorState.projectModel.nextId()
         val nodeData = SceneNodeData(modelAsset.name, id)
@@ -135,7 +135,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
                     logI { "Not yet implemented" }
                 }
                 divider()
-                sceneBrowser.editor.appAssets.modelAssets.forEach { modelAsset ->
+                sceneBrowser.editor.availableAssets.modelAssets.forEach { modelAsset ->
                     item(modelAsset.name) {
                         addNewModel(it, modelAsset)
                     }
@@ -229,7 +229,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         add(item)
         if (item.isExpanded.value) {
             node.children.forEach {
-                if (!it.tags.hasTag(KoolEditor.TAG_EDITOR_SUPPORT_CONTENT)) {
+                if (it.isVisible && !it.tags.hasTag(KoolEditor.TAG_EDITOR_SUPPORT_CONTENT)) {
                     val childNodeModel = scene.nodesToNodeModels[it]
                     appendNode(scene, nodeModel, it, childNodeModel ?: selectModel, depth + 1)
                 }

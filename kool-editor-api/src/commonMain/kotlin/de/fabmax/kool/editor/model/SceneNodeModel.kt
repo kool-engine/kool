@@ -1,21 +1,19 @@
 package de.fabmax.kool.editor.model
 
-import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.editor.api.AppAssets
 import de.fabmax.kool.editor.data.SceneBackgroundData
 import de.fabmax.kool.editor.data.SceneNodeData
 import de.fabmax.kool.editor.data.TransformComponentData
 import de.fabmax.kool.editor.data.TransformData
 import de.fabmax.kool.editor.model.ecs.*
-import de.fabmax.kool.modules.gltf.loadGltfModel
+import de.fabmax.kool.modules.gltf.GltfFile
 import de.fabmax.kool.modules.ksl.KslLitShader
 import de.fabmax.kool.modules.ksl.KslPbrShader
-import de.fabmax.kool.scene.ColorMesh
-import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.scene.Model
-import de.fabmax.kool.scene.Node
+import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
+import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.MdColor
+import de.fabmax.kool.util.launchOnMainThread
 
 class SceneNodeModel(val nodeData: SceneNodeData, val scene: SceneModel) : EditorModelEntity(nodeData.components), EditorNodeModel {
 
@@ -35,23 +33,7 @@ class SceneNodeModel(val nodeData: SceneNodeData, val scene: SceneModel) : Edito
     private val meshComponentMeshes = mutableMapOf<MeshComponent, Mesh>()
     private val modelComponentModels = mutableMapOf<ModelComponent, Model>()
 
-    private val backgroundUpdater = getOrPutComponent {
-        UpdateSceneBackgroundComponent {
-            when (val bg = it.sceneBackground) {
-                is SceneBackgroundData.Hdri -> TODO()
-                is SceneBackgroundData.SingleColor -> node.setBackgroundColor(bg.color.toColor().toLinear())
-            }
-        }
-    }
-
-    private fun Node.setBackgroundColor(bgColor: Color) {
-        if (this is Mesh && (this === node || this !in scene.nodesToNodeModels)) {
-            (this.shader as? KslLitShader)?.let {
-                it.ambientFactor = bgColor
-            }
-        }
-        children.forEach { it.setBackgroundColor(bgColor) }
-    }
+    private val backgroundUpdater = getOrPutComponent { BackgroundUpdater() }
 
     override fun addChild(child: SceneNodeModel) {
         nodeData.childNodeIds += child.nodeId
@@ -64,10 +46,13 @@ class SceneNodeModel(val nodeData: SceneNodeData, val scene: SceneModel) : Edito
     }
 
     suspend fun create() {
+        val ibl = scene.sceneBackground.loadedEnvironmentMaps
+        backgroundUpdater.isIblShaded = ibl != null
+
         disposeCreatedNode()
         var createdNode: Node? = null
         for (meshComponent in getComponents<MeshComponent>()) {
-            val mesh = meshComponent.createMesh()
+            val mesh = meshComponent.createMesh(ibl)
             meshComponentMeshes[meshComponent] = mesh
             if (createdNode == null) {
                 createdNode = mesh
@@ -77,7 +62,7 @@ class SceneNodeModel(val nodeData: SceneNodeData, val scene: SceneModel) : Edito
         }
 
         for (modelComponent in getComponents<ModelComponent>()) {
-            val model = modelComponent.createModel()
+            val model = modelComponent.createModel(ibl)
             modelComponentModels[modelComponent] = model
             if (createdNode == null) {
                 createdNode = model
@@ -95,17 +80,18 @@ class SceneNodeModel(val nodeData: SceneNodeData, val scene: SceneModel) : Edito
         created = createdNode
     }
 
-    private suspend fun ModelComponent.createModel(): Model {
-        val model = Assets.loadGltfModel(componentData.modelPath)
+    private suspend fun ModelComponent.createModel(ibl: EnvironmentMaps?): Model {
+        val modelCfg = GltfFile.ModelGenerateConfig(
+            materialConfig = GltfFile.ModelMaterialConfig(environmentMaps = ibl)
+        )
+        val model = AppAssets.loadModel(componentData).makeModel(modelCfg)
         model.name = name
         return model
     }
 
-    private fun MeshComponent.createMesh(): Mesh {
+    private fun MeshComponent.createMesh(ibl: EnvironmentMaps?): Mesh {
         return ColorMesh(name).apply {
-            shader = KslPbrShader {
-                color { constColor(MdColor.LIGHT_GREEN.toLinear()) }
-            }
+            shader = defaultPbrShader(ibl)
             generateGeometry(this)
         }
     }
@@ -131,6 +117,107 @@ class SceneNodeModel(val nodeData: SceneNodeData, val scene: SceneModel) : Edito
         val mesh = meshComponentMeshes[meshComponent]
         if (mesh != null) {
             meshComponent.generateGeometry(mesh)
+        }
+    }
+
+    private fun defaultPbrShader(ibl: EnvironmentMaps?): KslPbrShader {
+        return KslPbrShader {
+            color { vertexColor() }
+            ibl?.let {
+                enableImageBasedLighting(ibl)
+            }
+        }
+    }
+
+    private fun replaceCreatedNode(newNode: Node) {
+        created?.let {
+            it.parent?.let {  parent ->
+                val ndIdx = parent.children.indexOf(it)
+                parent.removeNode(it)
+                parent.addNode(newNode, ndIdx)
+            }
+            scene.nodesToNodeModels -= it
+            it.dispose(KoolSystem.requireContext())
+        }
+        transform.transformState.value.toTransform(newNode.transform)
+        created = newNode
+        scene.nodesToNodeModels[newNode] = this
+    }
+
+    private inner class BackgroundUpdater : UpdateSceneBackgroundComponent {
+        var skybox: Skybox.Cube? = null
+        var isIblShaded = false
+
+        override fun updateBackground(background: SceneBackgroundComponent) {
+            when (val bg = background.backgroundState.value) {
+                is SceneBackgroundData.Hdri -> background.loadedEnvironmentMaps?.let { updateHdriBg(it) }
+                is SceneBackgroundData.SingleColor -> updateSingleColorBg(bg.color.toColor().toLinear())
+            }
+        }
+
+        private fun updateSingleColorBg(bgColor: Color) {
+            meshComponentMeshes.values.forEach { mesh ->
+                val isLit = mesh.shader is KslLitShader
+                if (isLit) {
+                    if (isIblShaded) {
+                        mesh.shader = defaultPbrShader(null)
+                    }
+                    (mesh.shader as KslLitShader).ambientFactor = bgColor
+                }
+            }
+
+            if (isIblShaded) {
+                // recreate models without ibl lighting
+                recreateModels(null)
+            } else {
+                modelComponentModels.values.forEach { model ->
+                    model.meshes.values.forEach { mesh ->
+                        (mesh.shader as? KslLitShader)?.ambientFactor = bgColor
+                    }
+                }
+            }
+            isIblShaded = false
+        }
+
+        private fun updateHdriBg(maps: EnvironmentMaps) {
+            meshComponentMeshes.values.forEach { mesh ->
+                val isLit = mesh.shader is KslLitShader
+                if (isLit) {
+                    if (!isIblShaded) {
+                        mesh.shader = defaultPbrShader(maps)
+                    } else {
+                        (mesh.shader as KslLitShader).ambientMap = maps.irradianceMap
+                        (mesh.shader as? KslPbrShader)?.reflectionMap = maps.reflectionMap
+                    }
+                }
+            }
+            if (!isIblShaded) {
+                // recreate models with ibl lighting
+                recreateModels(maps)
+            } else {
+                modelComponentModels.values.forEach { model ->
+                    model.meshes.values.forEach { mesh ->
+                        (mesh.shader as? KslLitShader)?.ambientMap = maps.irradianceMap
+                        (mesh.shader as? KslPbrShader)?.reflectionMap = maps.reflectionMap
+                    }
+                }
+            }
+            isIblShaded = true
+        }
+
+        private fun recreateModels(ibl: EnvironmentMaps?) {
+            launchOnMainThread {
+                modelComponentModels.forEach { (modelComponent, oldModel) ->
+                    val newModel = modelComponent.createModel(ibl)
+                    if (node == oldModel) {
+                        replaceCreatedNode(newModel)
+                    } else {
+                        val idx = node.children.indexOf(oldModel)
+                        node.removeNode(oldModel)
+                        node.addNode(newModel, idx)
+                    }
+                }
+            }
         }
     }
 }

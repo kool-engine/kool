@@ -4,6 +4,7 @@ import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.editor.model.SceneModel
 import de.fabmax.kool.modules.ui2.MutableStateList
 import de.fabmax.kool.modules.ui2.mutableStateOf
+import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.util.Color
 
 class SceneBackgroundComponent(override val componentData: SceneBackgroundComponentData)
@@ -12,6 +13,8 @@ class SceneBackgroundComponent(override val componentData: SceneBackgroundCompon
     constructor(color: Color) : this(SceneBackgroundComponentData(SceneBackgroundData.SingleColor(color)))
 
     val backgroundState = mutableStateOf(componentData.sceneBackground).onChange { componentData.sceneBackground = it }
+
+    var loadedEnvironmentMaps: EnvironmentMaps? = null
 }
 
 class TransformComponent(override val componentData: TransformComponentData) : EditorDataComponent<TransformComponentData> {
@@ -27,12 +30,12 @@ class ModelComponent(override val componentData: ModelComponentData) : EditorDat
 }
 
 fun interface UpdateSceneBackgroundComponent : EditorModelComponent {
-    fun updateBackground(newBackground: SceneBackgroundComponentData)
+    fun updateBackground(background: SceneBackgroundComponent)
 
     companion object {
-        fun updateBackground(sceneModel: SceneModel, newBackground: SceneBackgroundComponentData) {
+        fun updateBackground(sceneModel: SceneModel) {
             sceneModel.project.getSceneComponents<UpdateSceneBackgroundComponent>(sceneModel).forEach {
-                it.updateBackground(newBackground)
+                it.updateBackground(sceneModel.sceneBackground)
             }
         }
     }

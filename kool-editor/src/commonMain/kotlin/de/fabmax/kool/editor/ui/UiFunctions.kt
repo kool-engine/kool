@@ -4,7 +4,7 @@ import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.modules.ui2.docking.UiDockable
 import de.fabmax.kool.toString
 
-fun UiScope.EditorTitleBar(windowDockable: UiDockable) {
+fun UiScope.editorTitleBar(windowDockable: UiDockable) {
     Row(Grow.Std, height = sizes.lineHeightTitle) {
         val cornerR = if (windowDockable.isDocked.use()) 0f else sizes.gap.px
         modifier
@@ -76,4 +76,62 @@ fun UiScope.intTextField(
                 surface.requestFocus(null)
             }
         }
+}
+
+fun <T: Any> UiScope.labeledCombobox(
+    label: String,
+    items: List<T>,
+    selectedIndex: MutableStateValue<Int>,
+    onItemSelected: (T) -> Unit
+) = Row(width = Grow.Std, height = sizes.lineHeight, scopeName = label) {
+    modifier.margin(top = sizes.smallGap)
+    Text(label) {
+        modifier
+            .width(sizes.baseSize * 3f)
+            .font(sizes.boldText)
+            .alignY(AlignmentY.Center)
+    }
+
+    ComboBox {
+        modifier
+            .size(Grow.Std, sizes.lineHeight)
+            .items(items)
+            .selectedIndex(selectedIndex.use())
+            .onItemSelected {
+                selectedIndex.set(it)
+                onItemSelected(items[it])
+            }
+    }
+}
+
+fun UiScope.labeledSlider(
+    label: String,
+    value: MutableStateValue<Float>,
+    min: Float = 0f,
+    max: Float = 1f,
+    precision: Int = 3,
+    onChange: (Float) -> Unit
+) = Column(Grow.Std, scopeName = label) {
+    Row(width = Grow.Std, height = sizes.lineHeight) {
+        modifier.margin(top = sizes.smallGap)
+        Text(label) {
+            modifier
+                .width(Grow.Std)
+                .font(sizes.boldText)
+                .alignY(AlignmentY.Center)
+        }
+        Text(value.use().toString(precision)) {
+            modifier.alignY(AlignmentY.Center)
+        }
+    }
+    Row(width = Grow.Std, height = sizes.lineHeight) {
+        Slider(value.use(), min, max) {
+            modifier
+                .width(Grow.Std)
+                .onChange {
+                    value.set(it)
+                    onChange(it)
+                }
+        }
+    }
 }

@@ -1,7 +1,7 @@
 package de.fabmax.kool.editor.ui
 
-import de.fabmax.kool.editor.AppAsset
 import de.fabmax.kool.editor.AppAssetType
+import de.fabmax.kool.editor.AssetItem
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.MdColor
 import kotlin.math.floor
@@ -15,14 +15,14 @@ class AssetBrowser(editorUi: EditorUi) : EditorPanel(
     defaultHeight = Dp(350f)
 ) {
 
-    private var rootAssets: List<AppAsset> = emptyList()
-    private val selectedDirectory = mutableStateOf<AppAsset?>(null)
+    private var rootAssets: List<AssetItem> = emptyList()
+    private val selectedDirectory = mutableStateOf<AssetItem?>(null)
 
     override val windowSurface = EditorPanelWindow {
         Column(Grow.Std, Grow.Std) {
-            EditorTitleBar(windowDockable)
+            editorTitleBar(windowDockable)
             Row(Grow.Std, Grow.Std) {
-                rootAssets = editor.appAssets.rootAssets.use()
+                rootAssets = editor.availableAssets.rootAssets.use()
 
                 directoryTree()
                 directoryContent()
@@ -31,15 +31,12 @@ class AssetBrowser(editorUi: EditorUi) : EditorPanel(
     }
 
     private fun UiScope.directoryTree() = Box(width = sizes.baseSize * 6, height = Grow.Std) {
-        modifier
-            .margin(sizes.gap)
-
         if (selectedDirectory.value == null) {
             selectedDirectory.set(rootAssets.find { it.type == AppAssetType.Directory })
         }
 
         LazyList(
-            containerModifier = { it.backgroundColor(colors.backgroundVariant) }
+            containerModifier = { it.backgroundColor(colors.background) }
         ) {
             var hoveredIndex by remember(-1)
             itemsIndexed(flattenedDirectoryTree()) { i, (lvl, asset) ->
@@ -95,17 +92,17 @@ class AssetBrowser(editorUi: EditorUi) : EditorPanel(
         }
     }
 
-    private val AppAsset.isExpandable: Boolean get() {
+    private val AssetItem.isExpandable: Boolean get() {
         return type == AppAssetType.Directory && children.any { it.type == AppAssetType.Directory }
     }
 
-    private fun UiScope.flattenedDirectoryTree(): List<Pair<Int, AppAsset>> {
-        val result = mutableListOf<Pair<Int, AppAsset>>()
+    private fun UiScope.flattenedDirectoryTree(): List<Pair<Int, AssetItem>> {
+        val result = mutableListOf<Pair<Int, AssetItem>>()
         rootAssets.forEach { appendDirectories(it, 0, result) }
         return result
     }
 
-    private fun UiScope.appendDirectories(asset: AppAsset, level: Int, result: MutableList<Pair<Int, AppAsset>>) {
+    private fun UiScope.appendDirectories(asset: AssetItem, level: Int, result: MutableList<Pair<Int, AssetItem>>) {
         if (asset.type == AppAssetType.Directory) {
             result += level to asset
             if (asset.isExpanded.use()) {
@@ -117,19 +114,15 @@ class AssetBrowser(editorUi: EditorUi) : EditorPanel(
     }
 
     private fun UiScope.directoryContent() = Box(width = Grow.Std, height = Grow.Std) {
-        modifier.margin(sizes.gap)
-
         var areaWidth by remember(0f)
         val gridSize = sizes.baseSize * 3f
 
         val dirAssets = selectedDirectory.use()?.children ?: emptyList()
 
         ScrollArea(containerModifier = {
-            it
-                .backgroundColor(colors.backgroundVariant)
-                .onPositioned { nd ->
-                    areaWidth = nd.widthPx
-                }
+            it.onPositioned { nd ->
+                areaWidth = nd.widthPx
+            }
         }) {
             if (areaWidth > 0f) {
                 val cols = max(1, floor(areaWidth / gridSize.px).toInt())
@@ -147,7 +140,7 @@ class AssetBrowser(editorUi: EditorUi) : EditorPanel(
         }
     }
 
-    private fun UiScope.AssetItem(item: AppAsset, gridSize: Dp) {
+    private fun UiScope.AssetItem(item: AssetItem, gridSize: Dp) {
         Column(width = gridSize) {
             val color = when (item.type) {
                 AppAssetType.Unknown -> MdColor.PINK

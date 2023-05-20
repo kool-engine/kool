@@ -9,11 +9,11 @@ class SceneBackgroundComponentData(var sceneBackground: SceneBackgroundData) : C
 @Serializable
 sealed interface SceneBackgroundData {
     @Serializable
-    class SingleColor(val color: ColorData) : SceneBackgroundData {
+    data class SingleColor(val color: ColorData) : SceneBackgroundData {
         constructor(color: Color) : this(ColorData(color))
     }
 
     @Serializable
-    class Hdri(val hdriPath: String) : SceneBackgroundData
+    data class Hdri(val hdriPath: String, val skyLod: Float = 1.5f) : SceneBackgroundData
 }
 

@@ -4,6 +4,7 @@ import de.fabmax.kool.ApplicationCallbacks
 import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.editor.actions.EditorActions
+import de.fabmax.kool.editor.api.AppAssets
 import de.fabmax.kool.editor.api.EditorAwareApp
 import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.editor.ui.EditorUi
@@ -28,11 +29,13 @@ class KoolEditor(val ctx: KoolContext) {
     }
 
     val appLoader = AppLoader(this, APP_PROJECT_SRC_DIRS, APP_PROJECT_CLASS_PATH)
-    val appAssets = AppAssets(APP_ASSETS_DIR)
+    val availableAssets = AvailableAssets(APP_ASSETS_DIR)
     val ui = EditorUi(this)
 
     init {
+        instance = this
         Assets.assetsBasePath = APP_ASSETS_DIR
+        AppAssets.impl = CachedAppAssets()
 
         ctx.scenes += ui
 
@@ -162,6 +165,9 @@ class KoolEditor(val ctx: KoolContext) {
     }
 
     companion object {
+        lateinit var instance: KoolEditor
+            private set
+
         const val TAG_EDITOR_SUPPORT_CONTENT = "%editor-content-hidden"
 
         // todo: don't use hard-coded project paths

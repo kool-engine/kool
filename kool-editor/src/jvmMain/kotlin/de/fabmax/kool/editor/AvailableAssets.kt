@@ -9,16 +9,17 @@ import java.nio.file.Path
 import kotlin.coroutines.CoroutineContext
 import kotlin.io.path.*
 
-actual class AppAssets actual constructor(assetsBaseDir: String) : CoroutineScope {
+actual class AvailableAssets actual constructor(assetsBaseDir: String) : CoroutineScope {
     override val coroutineContext: CoroutineContext = Job()
 
-    actual val rootAssets = mutableStateOf<List<AppAsset>>(emptyList())
-    actual val modelAssets = mutableStateListOf<AppAsset>()
+    actual val rootAssets = mutableStateOf<List<AssetItem>>(emptyList())
+    actual val modelAssets = mutableStateListOf<AssetItem>()
+    actual val textureAssets = mutableStateListOf<AssetItem>()
 
     private val assetsDir = Path.of(assetsBaseDir)
-    private val assetsByPath = mutableMapOf<String, AppAsset>()
+    private val assetsByPath = mutableMapOf<String, AssetItem>()
 
-    private val assetsNameComparator = Comparator<AppAsset> { a, b ->
+    private val assetsNameComparator = Comparator<AssetItem> { a, b ->
         if (a.type == AppAssetType.Directory && b.type != AppAssetType.Directory) {
             -1
         } else if (a.type != AppAssetType.Directory && b.type == AppAssetType.Directory) {
@@ -45,7 +46,7 @@ actual class AppAssets actual constructor(assetsBaseDir: String) : CoroutineScop
     }
 
     private fun updateAssets() {
-        val rootAssets = mutableListOf<AppAsset>()
+        val rootAssets = mutableListOf<AssetItem>()
         val assetPaths = mutableSetOf<String>()
         assetsByPath.values.forEach { it.children.clear() }
 
@@ -61,14 +62,14 @@ actual class AppAssets actual constructor(assetsBaseDir: String) : CoroutineScop
                 .replace('\\', '/').removeSuffix("/")
             val parentPath = pathString.replaceAfterLast('/', "").removeSuffix("/")
             val parent = assetsByPath[parentPath]
-            val appAsset = assetsByPath.getOrPut(pathString) {
-                AppAsset(path.name, pathString, assetType).apply { if (parent == null) isExpanded.set(true) }
+            val assetItem = assetsByPath.getOrPut(pathString) {
+                AssetItem(path.name, pathString, assetType).apply { if (parent == null) isExpanded.set(true) }
             }
 
             if (parent != null) {
-                parent.children += appAsset
+                parent.children += assetItem
             } else {
-                rootAssets += appAsset
+                rootAssets += assetItem
             }
             assetPaths += pathString
         }
@@ -76,11 +77,16 @@ actual class AppAssets actual constructor(assetsBaseDir: String) : CoroutineScop
         assetsByPath.values.forEach { it.children.sortWith(assetsNameComparator) }
         this.rootAssets.set(rootAssets)
 
-        modelAssets.clear()
+        filterAssetsByType(AppAssetType.Model, modelAssets)
+        filterAssetsByType(AppAssetType.Texture, textureAssets)
+    }
+
+    private fun filterAssetsByType(type: AppAssetType, result: MutableList<AssetItem>) {
+        result.clear()
         assetsByPath.values
-            .filter { it.type == AppAssetType.Model }
+            .filter { it.type == type }
             .sortedBy { it.name }
-            .forEach { modelAssets += it }
+            .forEach { result += it }
     }
 
     private fun Path.isTexture(): Boolean {
