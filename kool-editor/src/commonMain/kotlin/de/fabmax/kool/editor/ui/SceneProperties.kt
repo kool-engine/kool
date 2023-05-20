@@ -2,8 +2,10 @@ package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.editor.actions.EditorActions
 import de.fabmax.kool.editor.actions.SetBackgroundAction
+import de.fabmax.kool.editor.data.SceneBackgroundComponentData
 import de.fabmax.kool.editor.data.SceneBackgroundData
-import de.fabmax.kool.editor.model.MScene
+import de.fabmax.kool.editor.model.SceneModel
+import de.fabmax.kool.editor.model.ecs.SceneBackgroundComponent
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.logI
@@ -19,15 +21,15 @@ private object BackgroundTypeOptions {
         BackgroundTypeOption("HDRI image", SceneBackgroundData.Hdri::class) { SceneBackgroundData.Hdri("") },
     )
 
-    fun indexOfBackground(background: SceneBackgroundData): Int {
-        return when (background) {
+    fun indexOfBackground(background: SceneBackgroundComponentData): Int {
+        return when (background.sceneBackground) {
             is SceneBackgroundData.SingleColor -> 0
             is SceneBackgroundData.Hdri -> 1
         }
     }
 }
 
-fun UiScope.sceneBackground(sceneModel: MScene) = collapsapsablePanel("Scene Background") {
+fun UiScope.sceneBackground(sceneModel: SceneModel, sceneBackgroundComponent: SceneBackgroundComponent) = collapsapsablePanel("Scene Background") {
     Column(width = Grow.Std) {
         modifier
             .padding(horizontal = sizes.gap)
@@ -46,25 +48,24 @@ fun UiScope.sceneBackground(sceneModel: MScene) = collapsapsablePanel("Scene Bac
                 modifier
                     .size(Grow.Std, sizes.lineHeight)
                     .items(BackgroundTypeOptions.items)
-                    .selectedIndex(BackgroundTypeOptions.indexOfBackground(sceneModel.sceneData.background))
+                    .selectedIndex(BackgroundTypeOptions.indexOfBackground(sceneModel.sceneBackground.componentData))
                     .onItemSelected {
                         val bgType = BackgroundTypeOptions.items[it]
-                        if (!bgType.type.isInstance(sceneModel.sceneData.background)) {
-                            //EditorActions.applyAction(SetShapeAction(nodeModel, nodeModel.shape, shapeType.factory()))
+                        if (!bgType.type.isInstance(sceneModel.sceneBackground.componentData)) {
                             logI { "Set bg: $bgType" }
                         }
                     }
             }
         }
 
-        when (val type = sceneModel.backgroundMutableState.use()) {
+        when (val type = sceneBackgroundComponent.backgroundState.use()) {
             is SceneBackgroundData.Hdri -> hdriBgProperties(sceneModel, type)
             is SceneBackgroundData.SingleColor -> singleColorBgProperties(sceneModel, type)
         }
     }
 }
 
-private fun UiScope.singleColorBgProperties(sceneModel: MScene, singleColorBg: SceneBackgroundData.SingleColor) = Column(
+private fun UiScope.singleColorBgProperties(sceneModel: SceneModel, singleColorBg: SceneBackgroundData.SingleColor) = Column(
     width = Grow.Std,
     scopeName = "singleColorBg"
 ) {
@@ -76,15 +77,16 @@ private fun UiScope.singleColorBgProperties(sceneModel: MScene, singleColorBg: S
     val hexString = remember(bgColor.toHexString(false))
 
     ColorChooserV(hue, sat, bri, null, hexString) { color ->
-        val bg = SceneBackgroundData.SingleColor(color)
-        sceneModel.backgroundMutableState.set(bg)
+        val oldBg = sceneModel.sceneBackground.componentData
+        val newBg = SceneBackgroundComponentData(SceneBackgroundData.SingleColor(color))
+        // fixme: apply EditorAction only on end of drag to avoid spamming undo / redo history
         EditorActions.applyAction(
-            SetBackgroundAction(sceneModel, bg)
+            SetBackgroundAction(sceneModel, oldBg, newBg)
         )
     }
 }
 
-private fun UiScope.hdriBgProperties(sceneModel: MScene, hdriBg: SceneBackgroundData.Hdri) = Column(
+private fun UiScope.hdriBgProperties(sceneModel: SceneModel, hdriBg: SceneBackgroundData.Hdri) = Column(
     width = Grow.Std,
     scopeName = "hdriBg"
 ) {

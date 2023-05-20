@@ -1,23 +1,14 @@
 package de.fabmax.kool.editor.actions
 
-import de.fabmax.kool.editor.data.SceneBackgroundData
-import de.fabmax.kool.editor.model.MScene
-import de.fabmax.kool.editor.model.SceneBackgroundListener
+import de.fabmax.kool.editor.data.SceneBackgroundComponentData
+import de.fabmax.kool.editor.model.SceneModel
+import de.fabmax.kool.editor.model.ecs.UpdateSceneBackgroundComponent
 
 class SetBackgroundAction(
-    val scene: MScene,
-    val oldBackground: SceneBackgroundData
+    val sceneModel: SceneModel,
+    val oldBackground: SceneBackgroundComponentData,
+    val newBackground: SceneBackgroundComponentData
 ) : EditorAction {
-
-    private val newBackground: SceneBackgroundData = scene.sceneData.background
-
-    override fun apply() {
-        scene.sceneData.background = newBackground
-        SceneBackgroundListener.invoke(newBackground, scene)
-    }
-
-    override fun undo() {
-        scene.sceneData.background = oldBackground
-        SceneBackgroundListener.invoke(oldBackground, scene)
-    }
+    override fun apply() = UpdateSceneBackgroundComponent.updateBackground(sceneModel, newBackground)
+    override fun undo() = UpdateSceneBackgroundComponent.updateBackground(sceneModel, oldBackground)
 }

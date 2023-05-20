@@ -4,14 +4,14 @@ import de.fabmax.kool.ApplicationCallbacks
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.editor.api.ClassFactory
 import de.fabmax.kool.editor.api.EditorAwareApp
-import de.fabmax.kool.editor.model.MProject
+import de.fabmax.kool.editor.model.EditorProject
 import de.fabmax.kool.scene.defaultOrbitCamera
 import de.fabmax.kool.util.launchOnMainThread
 
 expect object AppClassFactory : ClassFactory
 
 class App : EditorAwareApp {
-    override suspend fun startApp(projectModel: MProject, isInEditor: Boolean, ctx: KoolContext) {
+    override suspend fun startApp(projectModel: EditorProject, isInEditor: Boolean, ctx: KoolContext) {
         projectModel.create()
 
         if (!isInEditor) {
@@ -26,7 +26,7 @@ class App : EditorAwareApp {
         val app = App()
 
         launchOnMainThread {
-            val projModel = MProject.loadFromAssets() ?: throw IllegalStateException("kool-project.json not found")
+            val projModel = EditorProject.loadFromAssets() ?: throw IllegalStateException("kool-project.json not found")
             app.startApp(projModel, false, ctx)
             val createdScenes = projModel.getCreatedScenes()
             createdScenes.forEach {

@@ -1,14 +1,16 @@
 package de.fabmax.kool.editor.actions
 
 import de.fabmax.kool.editor.EditorState
-import de.fabmax.kool.editor.model.MScene
-import de.fabmax.kool.editor.model.MSceneNode
+import de.fabmax.kool.editor.model.EditorNodeModel
+import de.fabmax.kool.editor.model.SceneModel
+import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.editor.ui.SceneObjectTree
 import de.fabmax.kool.util.launchOnMainThread
 
 class RemoveNodeAction(
-    private val removeNodeModel: MSceneNode,
-    private val parentSceneModel: MScene,
+    private val removeNodeModel: SceneNodeModel,
+    private val parentNodeModel: EditorNodeModel,
+    private val parentSceneModel: SceneModel,
     private val sceneTree: SceneObjectTree
 ) : EditorAction {
 
@@ -16,7 +18,7 @@ class RemoveNodeAction(
         if (EditorState.selectedNode.value == removeNodeModel) {
             EditorState.selectedNode.set(null)
         }
-        parentSceneModel.removeSceneNode(removeNodeModel)
+        parentSceneModel.removeSceneNode(removeNodeModel, parentNodeModel)
         sceneTree.refreshSceneTree()
     }
 
@@ -24,7 +26,7 @@ class RemoveNodeAction(
         // fixme: this will not work in case removed node has children, because children will not be present in scene
         //  anymore -> deepcopy child node models before removal and re-add them in correct order on undo
         launchOnMainThread {
-            parentSceneModel.addSceneNode(removeNodeModel)
+            parentSceneModel.addSceneNode(removeNodeModel, parentNodeModel)
             sceneTree.refreshSceneTree()
         }
     }

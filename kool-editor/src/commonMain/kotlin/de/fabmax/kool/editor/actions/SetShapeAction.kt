@@ -1,25 +1,33 @@
 package de.fabmax.kool.editor.actions
 
-import de.fabmax.kool.editor.data.MeshComponentData
 import de.fabmax.kool.editor.data.MeshShapeData
-import de.fabmax.kool.editor.model.MSceneNode
+import de.fabmax.kool.editor.model.SceneNodeModel
+import de.fabmax.kool.editor.model.ecs.MeshComponent
+import de.fabmax.kool.util.logE
 
 class SetShapeAction(
-    private val nodeModel: MSceneNode,
-    private val editedMeshData: MeshComponentData,
+    private val nodeModel: SceneNodeModel,
+    private val editedMeshComponent: MeshComponent,
     private val oldShape: MeshShapeData,
     private val newShape: MeshShapeData
 ) : EditorAction {
 
     override fun apply() {
-        editedMeshData.shape = newShape
-        nodeModel.regenerateMesh()
-        nodeModel.markModified()
+        replaceShape(oldShape, newShape)
     }
 
     override fun undo() {
-        editedMeshData.shape = oldShape
-        nodeModel.regenerateMesh()
-        nodeModel.markModified()
+        replaceShape(newShape, oldShape)
+    }
+
+    private fun replaceShape(old: MeshShapeData, new: MeshShapeData) {
+        val oldIdx = editedMeshComponent.shapesState.indexOf(old)
+        if (oldIdx < 0) {
+            logE { "Replace shape not found when trying to replace ${old.name} by ${new.name} in mesh ${nodeModel.name}" }
+            editedMeshComponent.shapesState.add(new)
+        } else {
+            editedMeshComponent.shapesState[oldIdx] = new
+        }
+        nodeModel.regenerateGeometry(editedMeshComponent)
     }
 }

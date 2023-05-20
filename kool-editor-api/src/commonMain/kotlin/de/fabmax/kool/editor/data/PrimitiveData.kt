@@ -27,8 +27,15 @@ data class TransformData(
     fun toMat4d(result: Mat4d = Mat4d()): Mat4d {
         return result
             .setRotate(rotation.toVec4d())
-            .scale(scale.x, scale.y, scale.z)
+            .scale(scale.toVec3d())
             .setOrigin(position.toVec3d())
+    }
+
+    fun toMat4f(result: Mat4f = Mat4f()): Mat4f {
+        return result
+            .setRotate(rotation.toVec4f())
+            .scale(scale.toVec3f())
+            .setOrigin(position.toVec3f())
     }
 
     companion object {

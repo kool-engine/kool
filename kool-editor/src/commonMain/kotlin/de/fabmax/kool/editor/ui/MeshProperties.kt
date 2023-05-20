@@ -2,9 +2,9 @@ package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.editor.actions.EditorActions
 import de.fabmax.kool.editor.actions.SetShapeAction
-import de.fabmax.kool.editor.data.MeshComponentData
 import de.fabmax.kool.editor.data.MeshShapeData
-import de.fabmax.kool.editor.model.MSceneNode
+import de.fabmax.kool.editor.model.SceneNodeModel
+import de.fabmax.kool.editor.model.ecs.MeshComponent
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.MdColor
@@ -37,10 +37,13 @@ private object ShapeOptions {
     }
 }
 
-fun UiScope.meshTypeProperties(nodeModel: MSceneNode, meshComponent: MeshComponentData) = collapsapsablePanel(
+fun UiScope.meshTypeProperties(nodeModel: SceneNodeModel, meshComponent: MeshComponent) = collapsapsablePanel(
     title = "Mesh Type",
     scopeName = "${nodeModel.nodeData.nodeId}"
 ) {
+    // todo: support multiple primitives per mesh
+    val shape = meshComponent.shapesState.use().getOrNull(0) ?: return@collapsapsablePanel Unit
+
     Column(width = Grow.Std) {
         modifier
             .padding(horizontal = sizes.gap)
@@ -59,19 +62,19 @@ fun UiScope.meshTypeProperties(nodeModel: MSceneNode, meshComponent: MeshCompone
                 modifier
                     .size(Grow.Std, sizes.lineHeight)
                     .items(ShapeOptions.items)
-                    .selectedIndex(ShapeOptions.indexOfShape(meshComponent.shape))
+                    .selectedIndex(ShapeOptions.indexOfShape(shape))
                     .onItemSelected {
                         val shapeType = ShapeOptions.items[it]
-                        if (!shapeType.type.isInstance(meshComponent.shape)) {
+                        if (!shapeType.type.isInstance(shape)) {
                             EditorActions.applyAction(
-                                SetShapeAction(nodeModel, meshComponent, meshComponent.shape, shapeType.factory())
+                                SetShapeAction(nodeModel, meshComponent, shape, shapeType.factory())
                             )
                         }
                     }
             }
         }
 
-        when (val shapeType = meshComponent.shape) {
+        when (val shapeType = shape) {
             is MeshShapeData.Box -> boxProperties(nodeModel, meshComponent, shapeType)
             is MeshShapeData.Rect -> TODO()
             is MeshShapeData.IcoSphere -> icoSphereProperties(nodeModel, meshComponent, shapeType)
@@ -82,7 +85,7 @@ fun UiScope.meshTypeProperties(nodeModel: MSceneNode, meshComponent: MeshCompone
     }
 }
 
-private fun UiScope.boxProperties(nodeModel: MSceneNode, meshComponent: MeshComponentData, box: MeshShapeData.Box) = Column(
+private fun UiScope.boxProperties(nodeModel: SceneNodeModel, meshComponent: MeshComponent, box: MeshShapeData.Box) = Column(
     width = Grow.Std,
     scopeName = "boxProperties"
 ) {
@@ -106,7 +109,7 @@ private fun UiScope.boxProperties(nodeModel: MSceneNode, meshComponent: MeshComp
         doubleTextField(box.size.x, 3, width = Grow.Std) {
             val x = if (!it.isFinite()) 1.0 else abs(it)
             EditorActions.applyAction(
-                SetShapeAction(nodeModel, meshComponent, meshComponent.shape, MeshShapeData.Box(box.size.copy(x = x)))
+                SetShapeAction(nodeModel, meshComponent, box, MeshShapeData.Box(box.size.copy(x = x)))
             )
         }
 
@@ -120,7 +123,7 @@ private fun UiScope.boxProperties(nodeModel: MSceneNode, meshComponent: MeshComp
         doubleTextField(box.size.y, 3, width = Grow.Std) {
             val y = if (!it.isFinite()) 1.0 else abs(it)
             EditorActions.applyAction(
-                SetShapeAction(nodeModel, meshComponent, meshComponent.shape, MeshShapeData.Box(box.size.copy(y = y)))
+                SetShapeAction(nodeModel, meshComponent, box, MeshShapeData.Box(box.size.copy(y = y)))
             )
         }
 
@@ -134,13 +137,13 @@ private fun UiScope.boxProperties(nodeModel: MSceneNode, meshComponent: MeshComp
         doubleTextField(box.size.z, 3, width = Grow.Std) {
             val z = if (!it.isFinite()) 1.0 else abs(it)
             EditorActions.applyAction(
-                SetShapeAction(nodeModel, meshComponent, meshComponent.shape, MeshShapeData.Box(box.size.copy(z = z)))
+                SetShapeAction(nodeModel, meshComponent, box, MeshShapeData.Box(box.size.copy(z = z)))
             )
         }
     }
 }
 
-private fun UiScope.icoSphereProperties(nodeModel: MSceneNode, meshComponent: MeshComponentData, icoSphere: MeshShapeData.IcoSphere) = Column(
+private fun UiScope.icoSphereProperties(nodeModel: SceneNodeModel, meshComponent: MeshComponent, icoSphere: MeshShapeData.IcoSphere) = Column(
     width = Grow.Std,
     scopeName = "icoSphereProperties"
 ) {
@@ -156,7 +159,7 @@ private fun UiScope.icoSphereProperties(nodeModel: MSceneNode, meshComponent: Me
         doubleTextField(icoSphere.radius, 3, width = sizes.baseSize * 2f) {
             val r = if (!it.isFinite()) 1.0 else abs(it)
             EditorActions.applyAction(
-                SetShapeAction(nodeModel, meshComponent, meshComponent.shape, icoSphere.copy(radius = r))
+                SetShapeAction(nodeModel, meshComponent, icoSphere, icoSphere.copy(radius = r))
             )
         }
     }
@@ -172,13 +175,13 @@ private fun UiScope.icoSphereProperties(nodeModel: MSceneNode, meshComponent: Me
         intTextField(icoSphere.subDivisions, width = sizes.baseSize * 2f) {
             val s = it.clamp(0, 7)
             EditorActions.applyAction(
-                SetShapeAction(nodeModel, meshComponent, meshComponent.shape, icoSphere.copy(subDivisions = s))
+                SetShapeAction(nodeModel, meshComponent, icoSphere, icoSphere.copy(subDivisions = s))
             )
         }
     }
 }
 
-private fun UiScope.uvSphereProperties(nodeModel: MSceneNode, meshComponent: MeshComponentData, uvSphere: MeshShapeData.UvSphere) = Column(
+private fun UiScope.uvSphereProperties(nodeModel: SceneNodeModel, meshComponent: MeshComponent, uvSphere: MeshShapeData.UvSphere) = Column(
     width = Grow.Std,
     scopeName = "uvSphereProperties"
 ) {
@@ -194,7 +197,7 @@ private fun UiScope.uvSphereProperties(nodeModel: MSceneNode, meshComponent: Mes
         doubleTextField(uvSphere.radius, 3, width = sizes.baseSize * 2f) {
             val r = if (!it.isFinite()) 1.0 else abs(it)
             EditorActions.applyAction(
-                SetShapeAction(nodeModel, meshComponent, meshComponent.shape, uvSphere.copy(radius = r))
+                SetShapeAction(nodeModel, meshComponent, uvSphere, uvSphere.copy(radius = r))
             )
         }
     }
@@ -210,7 +213,7 @@ private fun UiScope.uvSphereProperties(nodeModel: MSceneNode, meshComponent: Mes
         intTextField(uvSphere.steps, width = sizes.baseSize * 2f) {
             val s = it.clamp(3, 100)
             EditorActions.applyAction(
-                SetShapeAction(nodeModel, meshComponent, meshComponent.shape, uvSphere.copy(steps = s))
+                SetShapeAction(nodeModel, meshComponent, uvSphere, uvSphere.copy(steps = s))
             )
         }
     }

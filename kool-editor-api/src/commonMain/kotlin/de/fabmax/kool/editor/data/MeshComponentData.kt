@@ -1,13 +1,23 @@
 package de.fabmax.kool.editor.data
 
 import de.fabmax.kool.scene.geometry.MeshBuilder
+import de.fabmax.kool.util.MdColor
 import kotlinx.serialization.Serializable
 
 @Serializable
-class MeshComponentData(var shape: MeshShapeData) : ComponentData
+class MeshComponentData() : ComponentData {
+    val shapes = mutableListOf<MeshShapeData>()
+
+    constructor(singleShape: MeshShapeData) : this() {
+        shapes += singleShape
+    }
+}
 
 @Serializable
 sealed class MeshShapeData {
+
+    var pose = TransformData.IDENTITY
+    var vertexColor = ColorData(MdColor.GREY)
 
     abstract val name: String
 

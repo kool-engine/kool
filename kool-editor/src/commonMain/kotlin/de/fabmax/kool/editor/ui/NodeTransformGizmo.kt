@@ -2,7 +2,7 @@ package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.editor.KoolEditor
-import de.fabmax.kool.editor.model.MSceneNode
+import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.scene.Node
@@ -10,7 +10,7 @@ import de.fabmax.kool.util.Gizmo
 
 class NodeTransformGizmo(editor: KoolEditor) : Node("Node transform gizmo") {
 
-    private var transformNodeModel: MSceneNode? = null
+    private var transformNodeModel: SceneNodeModel? = null
     private var hasTransformAuthority = false
 
     private val gizmo = Gizmo()
@@ -75,7 +75,7 @@ class NodeTransformGizmo(editor: KoolEditor) : Node("Node transform gizmo") {
         }
     }
 
-    fun setTransformObject(nodeModel: MSceneNode?) {
+    fun setTransformObject(nodeModel: SceneNodeModel?) {
         transformNodeModel = nodeModel
         gizmo.isVisible = nodeModel != null
         nodeModel?.node?.let {
