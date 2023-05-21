@@ -3,6 +3,7 @@ package de.fabmax.kool.editor
 import de.fabmax.kool.editor.api.EditorAwareApp
 import de.fabmax.kool.util.launchOnMainThread
 import de.fabmax.kool.util.logE
+import kotlin.reflect.KClass
 
 expect class AppLoadService(watchDirs: Set<String>, appLoadClassPath: String) {
     var hasAppChanged: Boolean
@@ -12,12 +13,14 @@ expect class AppLoadService(watchDirs: Set<String>, appLoadClassPath: String) {
 
     suspend fun buildApp()
 
-    suspend fun loadApp(): EditorAwareApp
+    suspend fun loadApp(): LoadedApp
 }
 
 fun interface AppReloadListener {
-    suspend fun onAppReloaded(loadedApp: EditorAwareApp)
+    suspend fun onAppReloaded(loadedApp: LoadedApp)
 }
+
+class LoadedApp(val app: EditorAwareApp, val scriptClasses: List<KClass<*>>)
 
 class AppLoader(val editor: KoolEditor, watchDirs: Set<String>, appLoadClassPath: String) {
     val appReloadListeners = mutableListOf<AppReloadListener>()

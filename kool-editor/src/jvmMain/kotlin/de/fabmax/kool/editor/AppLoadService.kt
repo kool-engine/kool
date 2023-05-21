@@ -1,7 +1,10 @@
 package de.fabmax.kool.editor
 
 import de.fabmax.kool.editor.api.EditorAwareApp
+import de.fabmax.kool.editor.api.KoolScript
+import de.fabmax.kool.editor.api.ScriptLoader
 import de.fabmax.kool.util.logD
+import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logI
 import de.fabmax.kool.util.logW
 import kotlinx.coroutines.CoroutineScope
@@ -16,7 +19,8 @@ import kotlin.concurrent.thread
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
-import kotlin.io.path.exists
+import kotlin.io.path.*
+import kotlin.reflect.KClass
 
 actual class AppLoadService actual constructor(watchDirs: Set<String>, appLoadClassPath: String) : CoroutineScope {
 
@@ -76,15 +80,42 @@ actual class AppLoadService actual constructor(watchDirs: Set<String>, appLoadCl
         }
     }
 
-    actual suspend fun loadApp(): EditorAwareApp {
+    actual suspend fun loadApp(): LoadedApp {
         if (!appClassPath.exists()) {
             buildApp()
         }
 
         logI { "Loading app from directory: $appClassPath" }
         val loader = URLClassLoader(arrayOf(appClassPath.toUri().toURL()), this.javaClass.classLoader)
+        ScriptLoader.appScriptLoader = ScriptLoader.ReflectionAppScriptLoader(loader)
+        val scriptClasses = examineClasses(loader, appClassPath)
+
         val appClass = loader.loadClass(KoolEditor.APP_PROJECT_MAIN_CLASS)
         val app = appClass.getDeclaredConstructor().newInstance()
-        return app as EditorAwareApp
+        return LoadedApp(app as EditorAwareApp, scriptClasses)
+    }
+
+    private fun examineClasses(loader: URLClassLoader, classpath: Path): List<KClass<*>> {
+        val scriptClasses = mutableListOf<KClass<*>>()
+        classpath.walk(PathWalkOption.INCLUDE_DIRECTORIES).forEach {
+            if (!it.isDirectory() && it.name.endsWith(".class")) {
+                val className = it.pathString
+                    .removePrefix(classpath.pathString)
+                    .replace('\\', '/')
+                    .removePrefix("/")
+                    .removeSuffix(".class")
+                    .replace('/', '.')
+
+                try {
+                    val clazz = loader.loadClass(className)
+                    if (clazz.superclass == KoolScript::class.java) {
+                        scriptClasses += clazz.kotlin
+                    }
+                } catch (e: Exception) {
+                    logE { "Failed examining class $className: $e" }
+                }
+            }
+        }
+        return scriptClasses
     }
 }

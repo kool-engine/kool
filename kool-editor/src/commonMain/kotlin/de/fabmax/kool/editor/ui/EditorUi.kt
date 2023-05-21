@@ -75,7 +75,8 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
             backgroundVariant = Color("161a20ff"),
             onBackground = Color("dbe6ffff"),
             secondary = Color("7786a5ff"),
-            secondaryVariant = Color("4d566bff")
+            secondaryVariant = Color("4d566bff"),
+            onSecondary = Color.WHITE
         )
     }
 }

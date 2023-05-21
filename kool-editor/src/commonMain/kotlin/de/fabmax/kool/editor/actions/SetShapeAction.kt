@@ -1,8 +1,8 @@
 package de.fabmax.kool.editor.actions
 
 import de.fabmax.kool.editor.data.MeshShapeData
+import de.fabmax.kool.editor.model.MeshComponent
 import de.fabmax.kool.editor.model.SceneNodeModel
-import de.fabmax.kool.editor.model.ecs.MeshComponent
 import de.fabmax.kool.util.logE
 
 class SetShapeAction(

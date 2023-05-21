@@ -133,7 +133,7 @@ class ContextPopupMenu<T: Any> : Composable {
         modifier
             .margin(start = x, top = y)
             .background(RoundRectBackground(colors.background, sizes.smallGap))
-            .border(RoundRectBorder(colors.secondaryVariant, sizes.smallGap, Dp.fromPx(1f)))
+            .border(RoundRectBorder(colors.secondaryVariant, sizes.smallGap, sizes.borderWidth))
             .padding(sizes.smallGap)
             .zLayer(z)
         block()

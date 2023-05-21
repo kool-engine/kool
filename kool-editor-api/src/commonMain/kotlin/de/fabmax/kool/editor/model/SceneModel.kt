@@ -4,31 +4,26 @@ import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.editor.api.AppAssets
 import de.fabmax.kool.editor.data.SceneBackgroundData
 import de.fabmax.kool.editor.data.SceneNodeData
-import de.fabmax.kool.editor.model.ecs.EditorModelEntity
-import de.fabmax.kool.editor.model.ecs.SceneBackgroundComponent
-import de.fabmax.kool.editor.model.ecs.UpdateSceneBackgroundComponent
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.Skybox
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.logE
 
-class SceneModel(val sceneData: SceneNodeData, val project: EditorProject) : EditorModelEntity(sceneData.components), EditorNodeModel {
+class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : EditorNodeModel(sceneData) {
 
-    override val nodeId: Long
-        get() = sceneData.nodeId
-    override val name: String
-        get() = sceneData.name
     override val node: Scene
         get() = created ?: throw IllegalStateException("Scene was not yet created")
 
     private var created: Scene? = null
+    override val isCreated: Boolean
+        get() = created != null
 
     val nodesToNodeModels: MutableMap<Node, EditorNodeModel> = mutableMapOf()
     private val nodeModels: MutableMap<Long, SceneNodeModel> = mutableMapOf()
 
     val sceneBackground = getOrPutComponent { SceneBackgroundComponent(MdColor.GREY tone 900) }
-    private val backgroundUpdater = getOrPutComponent<UpdateSceneBackgroundComponent> { BackgroundUpdater() }
+    private val backgroundUpdater = getOrPutComponent { BackgroundUpdater() }
 
     init {
         project.entities += this
@@ -37,14 +32,16 @@ class SceneModel(val sceneData: SceneNodeData, val project: EditorProject) : Edi
     suspend fun create(): Scene {
         disposeCreatedScene()
 
-        val scene = Scene(name = sceneData.name)
+        val scene = Scene(name)
         created = scene
         nodesToNodeModels[scene] = this
         initBackground()
 
-        sceneData.childNodeIds.forEach { childId ->
+        nodeData.childNodeIds.forEach { childId ->
             resolveNode(childId)?.let { addSceneNode(it, this) }
         }
+        nodesToNodeModels.values.forEach { it.createComponents() }
+
         return scene
     }
 
@@ -52,7 +49,6 @@ class SceneModel(val sceneData: SceneNodeData, val project: EditorProject) : Edi
         (sceneBackground.backgroundState.value as? SceneBackgroundData.Hdri)?.let {
             sceneBackground.loadedEnvironmentMaps = AppAssets.loadHdriEnvironment(node, it.hdriPath)
         }
-        backgroundUpdater.updateBackground(sceneBackground)
     }
 
     fun disposeCreatedScene() {
@@ -61,6 +57,7 @@ class SceneModel(val sceneData: SceneNodeData, val project: EditorProject) : Edi
 
         created?.dispose(KoolSystem.requireContext())
         created = null
+        backgroundUpdater.skybox = null
     }
 
     private fun resolveNode(nodeId: Long): SceneNodeModel? {
@@ -104,17 +101,21 @@ class SceneModel(val sceneData: SceneNodeData, val project: EditorProject) : Edi
     }
 
     override fun addChild(child: SceneNodeModel) {
-        sceneData.childNodeIds += child.nodeId
+        nodeData.childNodeIds += child.nodeId
         node.addNode(child.node)
     }
 
     override fun removeChild(child: SceneNodeModel) {
-        sceneData.childNodeIds -= child.nodeId
+        nodeData.childNodeIds -= child.nodeId
         node.removeNode(child.node)
     }
 
     private inner class BackgroundUpdater : UpdateSceneBackgroundComponent {
-        private var skybox: Skybox.Cube? = null
+        var skybox: Skybox.Cube? = null
+
+        override suspend fun onCreate(nodeModel: EditorNodeModel) {
+            updateBackground(sceneBackground)
+        }
 
         override fun updateBackground(background: SceneBackgroundComponent) {
             sceneBackground.backgroundState.set(background.backgroundState.value)
@@ -139,8 +140,9 @@ class SceneModel(val sceneData: SceneNodeData, val project: EditorProject) : Edi
                 skybox.skyboxShader.lod = hdriBg.skyLod
                 if (this.skybox == null) {
                     this.skybox = skybox
-                    node.addNode(skybox, 0)
                 }
+                node.removeNode(skybox)
+                node.addNode(skybox, 0)
             }
         }
     }

@@ -3,8 +3,8 @@ package de.fabmax.kool.editor.ui
 import de.fabmax.kool.editor.actions.EditorActions
 import de.fabmax.kool.editor.actions.SetShapeAction
 import de.fabmax.kool.editor.data.MeshShapeData
+import de.fabmax.kool.editor.model.MeshComponent
 import de.fabmax.kool.editor.model.SceneNodeModel
-import de.fabmax.kool.editor.model.ecs.MeshComponent
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.MdColor

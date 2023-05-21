@@ -5,7 +5,7 @@ import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.editor.actions.EditorActions
 import de.fabmax.kool.editor.api.AppAssets
-import de.fabmax.kool.editor.api.EditorAwareApp
+import de.fabmax.kool.editor.api.AppState
 import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.editor.ui.EditorUi
 import de.fabmax.kool.input.InputStack
@@ -114,17 +114,20 @@ class KoolEditor(val ctx: KoolContext) {
         }
     }
 
-    private suspend fun handleAppReload(app: EditorAwareApp) {
+    private suspend fun handleAppReload(loadedApp: LoadedApp) {
         // clear scene objects from old app
         editorCameraTransform.clearChildren()
         EditorState.projectModel.getCreatedScenes().map { it.node }.let { oldScenes ->
             ctx.scenes -= oldScenes.toSet()
             oldScenes.forEach { it.dispose(ctx) }
         }
-        EditorState.loadedApp.value?.onDispose(true, ctx)
+        EditorState.loadedApp.value?.app?.onDispose(ctx)
 
         // add scene objects from new app
-        app.startApp(EditorState.projectModel, true, ctx)
+        AppState.isInEditorState.set(true)
+        AppState.isEditModeState.set(true)
+
+        loadedApp.app.startApp(EditorState.projectModel, ctx)
         EditorState.projectModel.getCreatedScenes().map { it.node }.let { newScenes ->
             ctx.scenes += newScenes
             newScenes.forEach { scene ->
@@ -146,7 +149,7 @@ class KoolEditor(val ctx: KoolContext) {
                 }
             }
         }
-        EditorState.loadedApp.set(app)
+        EditorState.loadedApp.set(loadedApp)
         if (EditorState.selectedScene.value == null) {
             EditorState.selectedScene.set(EditorState.projectModel.getCreatedScenes().getOrNull(0))
         }

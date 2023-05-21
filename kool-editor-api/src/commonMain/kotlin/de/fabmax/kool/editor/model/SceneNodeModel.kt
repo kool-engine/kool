@@ -6,7 +6,6 @@ import de.fabmax.kool.editor.data.SceneBackgroundData
 import de.fabmax.kool.editor.data.SceneNodeData
 import de.fabmax.kool.editor.data.TransformComponentData
 import de.fabmax.kool.editor.data.TransformData
-import de.fabmax.kool.editor.model.ecs.*
 import de.fabmax.kool.modules.gltf.GltfFile
 import de.fabmax.kool.modules.ksl.KslLitShader
 import de.fabmax.kool.modules.ksl.KslPbrShader
@@ -15,17 +14,13 @@ import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.launchOnMainThread
 
-class SceneNodeModel(val nodeData: SceneNodeData, val scene: SceneModel) : EditorModelEntity(nodeData.components), EditorNodeModel {
+class SceneNodeModel(nodeData: SceneNodeData, val scene: SceneModel) : EditorNodeModel(nodeData) {
 
-    override val nodeId: Long
-        get() = nodeData.nodeId
-    override val name: String
-        get() = nodeData.name
     override val node: Node
         get() = created ?: throw IllegalStateException("Node was not yet created")
 
     private var created: Node? = null
-    val isCreated: Boolean
+    override val isCreated: Boolean
         get() = created != null
 
     val transform = getOrPutComponent { TransformComponent(TransformComponentData(TransformData.IDENTITY)) }
@@ -76,7 +71,6 @@ class SceneNodeModel(val nodeData: SceneNodeData, val scene: SceneModel) : Edito
         }
 
         createdNode.name = nodeData.name
-        transform.transformState.value.toTransform(createdNode.transform)
         created = createdNode
     }
 
@@ -168,7 +162,7 @@ class SceneNodeModel(val nodeData: SceneNodeData, val scene: SceneModel) : Edito
 
             if (isIblShaded) {
                 // recreate models without ibl lighting
-                recreateModels(null)
+                recreateModels(null, bgColor)
             } else {
                 modelComponentModels.values.forEach { model ->
                     model.meshes.values.forEach { mesh ->
@@ -193,7 +187,7 @@ class SceneNodeModel(val nodeData: SceneNodeData, val scene: SceneModel) : Edito
             }
             if (!isIblShaded) {
                 // recreate models with ibl lighting
-                recreateModels(maps)
+                recreateModels(maps, null)
             } else {
                 modelComponentModels.values.forEach { model ->
                     model.meshes.values.forEach { mesh ->
@@ -205,16 +199,27 @@ class SceneNodeModel(val nodeData: SceneNodeData, val scene: SceneModel) : Edito
             isIblShaded = true
         }
 
-        private fun recreateModels(ibl: EnvironmentMaps?) {
+        private fun recreateModels(ibl: EnvironmentMaps?, bgColor: Color?) {
             launchOnMainThread {
+                val newModels = mutableMapOf<ModelComponent, Model>()
                 modelComponentModels.forEach { (modelComponent, oldModel) ->
                     val newModel = modelComponent.createModel(ibl)
+                    newModels[modelComponent] = newModel
                     if (node == oldModel) {
                         replaceCreatedNode(newModel)
                     } else {
                         val idx = node.children.indexOf(oldModel)
                         node.removeNode(oldModel)
                         node.addNode(newModel, idx)
+                    }
+                }
+                modelComponentModels.putAll(newModels)
+
+                bgColor?.let {
+                    modelComponentModels.values.forEach { model ->
+                        model.meshes.values.forEach { mesh ->
+                            (mesh.shader as? KslLitShader)?.ambientFactor = bgColor
+                        }
                     }
                 }
             }

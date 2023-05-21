@@ -1,6 +1,5 @@
 package de.fabmax.kool.editor
 
-import de.fabmax.kool.editor.api.EditorAwareApp
 import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.editor.model.EditorNodeModel
 import de.fabmax.kool.editor.model.EditorProject
@@ -18,7 +17,7 @@ import java.io.File
 object EditorState {
 
     val projectModel: EditorProject = loadProjectModel()
-    val loadedApp = MutableStateValue<EditorAwareApp?>(null)
+    val loadedApp = MutableStateValue<LoadedApp?>(null)
 
     val selectedScene = MutableStateValue<SceneModel?>(null)
     val selectedNode = mutableStateOf<EditorNodeModel?>(null)

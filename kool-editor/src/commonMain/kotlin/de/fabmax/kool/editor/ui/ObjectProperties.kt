@@ -3,15 +3,13 @@ package de.fabmax.kool.editor.ui
 import de.fabmax.kool.editor.EditorState
 import de.fabmax.kool.editor.actions.EditorActions
 import de.fabmax.kool.editor.actions.SetTransformAction
-import de.fabmax.kool.editor.model.EditorNodeModel
-import de.fabmax.kool.editor.model.SceneModel
-import de.fabmax.kool.editor.model.SceneNodeModel
-import de.fabmax.kool.editor.model.ecs.MeshComponent
-import de.fabmax.kool.editor.model.ecs.SceneBackgroundComponent
-import de.fabmax.kool.editor.model.ecs.TransformComponent
+import de.fabmax.kool.editor.data.ScriptComponentData
+import de.fabmax.kool.editor.model.*
+import de.fabmax.kool.input.PointerInput
 import de.fabmax.kool.math.Mat3d
 import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.math.MutableVec3d
+import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.modules.ui2.*
 
 class ObjectProperties(ui: EditorUi) : EditorPanel("Object Properties", ui) {
@@ -97,10 +95,13 @@ class ObjectProperties(ui: EditorUi) : EditorPanel("Object Properties", ui) {
         for (component in selectedObject.components.use()) {
             when (component) {
                 is MeshComponent -> meshComponent(selectedObject, component)
-                is SceneBackgroundComponent -> sceneBackgroundComponent(selectedObject, component)
+                is SceneBackgroundComponent -> sceneBackgroundComponent(selectedObject)
+                is ScriptComponent -> scriptComponent(component)
                 is TransformComponent -> transformComponent(selectedObject)
             }
         }
+
+        addComponentSelector(selectedObject)
     }
 
     fun UiScope.meshComponent(nodeModel: EditorNodeModel, meshComponent: MeshComponent) {
@@ -109,9 +110,31 @@ class ObjectProperties(ui: EditorUi) : EditorPanel("Object Properties", ui) {
         }
     }
 
-    fun UiScope.sceneBackgroundComponent(nodeModel: EditorNodeModel, sceneBackgroundComponent: SceneBackgroundComponent) {
+    fun UiScope.sceneBackgroundComponent(nodeModel: EditorNodeModel) {
         (nodeModel as? SceneModel)?.let {
-            sceneBackground(it, sceneBackgroundComponent)
+            val editor = remember { SceneBackgroundEditor(it) }
+            editor.sceneModel = it
+            editor()
+        }
+    }
+
+    fun UiScope.scriptComponent(scriptComponent: ScriptComponent) = collapsapsablePanel(
+        title = "Script",
+        scopeName = scriptComponent.componentData.scriptClassName
+    ) {
+        Column(width = Grow.Std) {
+            modifier
+                .padding(horizontal = sizes.gap)
+                .margin(bottom = sizes.smallGap)
+
+            menuRow {
+                Text(scriptComponent.componentData.scriptClassName) {
+                    modifier
+                        .alignY(AlignmentY.Center)
+                        .font(sizes.italicText)
+                }
+            }
+            labeledSwitch("Run in edit mode", scriptComponent.runInEditMode) {  }
         }
     }
 
@@ -119,6 +142,65 @@ class ObjectProperties(ui: EditorUi) : EditorPanel("Object Properties", ui) {
         (nodeModel as? SceneNodeModel)?.let {
             transformGizmo.setTransformObject(it)
             transformEditor(transformProperties)
+        }
+    }
+
+    fun UiScope.addComponentSelector(nodeModel: EditorNodeModel) {
+        if (nodeModel !is SceneNodeModel) {
+            // currently there are no useful components we can add to a scene...
+            return
+        }
+
+        var isScriptPopupOpen by remember(false)
+
+        // make this some kind of combobox / menu, once there are more options
+        val button = Button("Add script") {
+            modifier
+                .width(sizes.baseSize * 5)
+                .margin(top = sizes.gap)
+                .alignX(AlignmentX.Center)
+                .onClick { isScriptPopupOpen = true }
+        }
+
+        if (isScriptPopupOpen) {
+            Popup(button.uiNode.leftPx, button.uiNode.bottomPx) {
+                Column {
+                    modifier
+                        .background(RoundRectBackground(colors.background, sizes.smallGap))
+                        .border(RoundRectBorder(colors.secondaryVariant, sizes.smallGap, sizes.borderWidth))
+                        .padding(sizes.smallGap)
+
+                    var hoverIdx by remember(-1)
+                    val scriptClasses = EditorState.loadedApp.use()?.scriptClasses ?: emptyList()
+                    scriptClasses.forEachIndexed { i, scriptClass ->
+                        scriptClass.qualifiedName?.let { scriptFqn ->
+                            Text(scriptFqn) {
+                                modifier
+                                    .size(Grow.Std, sizes.lineHeight)
+                                    .padding(horizontal = sizes.gap)
+                                    .onEnter { hoverIdx = i }
+                                    .onExit { hoverIdx = -1 }
+                                    .onClick {
+                                        isScriptPopupOpen = false
+                                        nodeModel.addComponent(ScriptComponent(ScriptComponentData(scriptFqn)))
+                                    }
+
+                                if (i == hoverIdx) {
+                                    modifier.background(RoundRectBackground(colors.hoverBg, sizes.smallGap))
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // close popup menu on any button event outside popup menu
+                surface.onEachFrame {
+                    val ptr = PointerInput.primaryPointer
+                    if (ptr.isAnyButtonEvent && !uiNode.isInBounds(Vec2f(ptr.x.toFloat(), ptr.y.toFloat()))) {
+                        isScriptPopupOpen = false
+                    }
+                }
+            }
         }
     }
 

@@ -83,12 +83,10 @@ fun <T: Any> UiScope.labeledCombobox(
     items: List<T>,
     selectedIndex: MutableStateValue<Int>,
     onItemSelected: (T) -> Unit
-) = Row(width = Grow.Std, height = sizes.lineHeight, scopeName = label) {
-    modifier.margin(top = sizes.smallGap)
+) = menuRow {
     Text(label) {
         modifier
             .width(sizes.baseSize * 3f)
-            .font(sizes.boldText)
             .alignY(AlignmentY.Center)
     }
 
@@ -112,12 +110,10 @@ fun UiScope.labeledSlider(
     precision: Int = 3,
     onChange: (Float) -> Unit
 ) = Column(Grow.Std, scopeName = label) {
-    Row(width = Grow.Std, height = sizes.lineHeight) {
-        modifier.margin(top = sizes.smallGap)
+    menuRow {
         Text(label) {
             modifier
                 .width(Grow.Std)
-                .font(sizes.boldText)
                 .alignY(AlignmentY.Center)
         }
         Text(value.use().toString(precision)) {
@@ -125,6 +121,7 @@ fun UiScope.labeledSlider(
         }
     }
     Row(width = Grow.Std, height = sizes.lineHeight) {
+        modifier.margin(top = sizes.smallGap)
         Slider(value.use(), min, max) {
             modifier
                 .width(Grow.Std)
@@ -135,3 +132,34 @@ fun UiScope.labeledSlider(
         }
     }
 }
+
+fun UiScope.labeledSwitch(
+    label: String,
+    state: MutableStateValue<Boolean>,
+    onToggle: (Boolean) -> Unit
+) = menuRow {
+    Text(label) {
+        modifier
+            .width(Grow.Std)
+            .alignY(AlignmentY.Center)
+            .onClick {
+                state.set(!state.value)
+                onToggle(state.value)
+            }
+    }
+
+    Switch(state.use()) {
+        modifier
+            .size(FitContent, sizes.lineHeight)
+            .onToggle {
+                state.set(it)
+                onToggle(it)
+            }
+    }
+}
+
+inline fun UiScope.menuRow(block: RowScope.() -> Unit) = Row(width = Grow.Std, height = sizes.lineHeight) {
+    modifier.margin(top = sizes.smallGap)
+    block()
+}
+
