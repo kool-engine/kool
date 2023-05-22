@@ -10,11 +10,26 @@ abstract class MutableState {
         private set
     private val usedBy = mutableListOf<UiSurface>()
 
+    protected var suppressUpdate = false
+        set(value) {
+            field = value
+            if (!value && isStateChanged) {
+                // suppress flag is cleared, trigger an update if state changed
+                triggerUpdate()
+            }
+        }
+
+    private fun triggerUpdate() {
+        for (i in usedBy.indices) {
+            usedBy[i].triggerUpdate()
+        }
+    }
+
     protected fun stateChanged() {
         if (!isStateChanged) {
             isStateChanged = true
-            for (i in usedBy.indices) {
-                usedBy[i].triggerUpdate()
+            if (!suppressUpdate) {
+                triggerUpdate()
             }
         }
     }
@@ -95,36 +110,46 @@ class TransformedStateValue<T: Any?, S: Any?>(sourceState: MutableStateValue<T>,
 class MutableStateList<T>(private val values: MutableList<T> = mutableListOf()) :
     MutableState(), MutableList<T> by values
 {
+
     fun use(surface: UiSurface): MutableStateList<T> {
         usedBy(surface)
         return this
     }
 
     override fun add(element: T): Boolean {
-        stateChanged()
-        return values.add(element)
+        val result = values.add(element)
+        if (result) {
+            stateChanged()
+        }
+        return result
     }
 
     override fun add(index: Int, element: T) {
-        stateChanged()
         values.add(index, element)
+        stateChanged()
     }
 
     override fun addAll(index: Int, elements: Collection<T>): Boolean {
-        stateChanged()
-        return values.addAll(index, elements)
+        val result = values.addAll(index, elements)
+        if (result) {
+            stateChanged()
+        }
+        return result
     }
 
     override fun addAll(elements: Collection<T>): Boolean {
-        stateChanged()
-        return values.addAll(elements)
+        val result = values.addAll(elements)
+        if (result) {
+            stateChanged()
+        }
+        return result
     }
 
     override fun clear() {
-        if (isNotEmpty()) {
-            stateChanged()
+        if (values.isNotEmpty()) {
+            values.clear()
         }
-        values.clear()
+        stateChanged()
     }
 
     override fun remove(element: T): Boolean {
@@ -144,8 +169,9 @@ class MutableStateList<T>(private val values: MutableList<T> = mutableListOf()) 
     }
 
     override fun removeAt(index: Int): T {
+        val result = values.removeAt(index)
         stateChanged()
-        return values.removeAt(index)
+        return result
     }
 
     override fun retainAll(elements: Collection<T>): Boolean {
@@ -157,7 +183,14 @@ class MutableStateList<T>(private val values: MutableList<T> = mutableListOf()) 
     }
 
     override fun set(index: Int, element: T): T {
+        val result = values.set(index, element)
         stateChanged()
-        return values.set(index, element)
+        return result
+    }
+
+    fun atomic(block: MutableStateList<T>.() -> Unit) {
+        suppressUpdate = true
+        block()
+        suppressUpdate = false
     }
 }

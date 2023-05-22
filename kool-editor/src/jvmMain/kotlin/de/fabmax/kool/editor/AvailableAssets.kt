@@ -1,7 +1,7 @@
 package de.fabmax.kool.editor
 
+import de.fabmax.kool.modules.ui2.MutableStateList
 import de.fabmax.kool.modules.ui2.mutableStateListOf
-import de.fabmax.kool.modules.ui2.mutableStateOf
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -12,7 +12,7 @@ import kotlin.io.path.*
 actual class AvailableAssets actual constructor(assetsBaseDir: String) : CoroutineScope {
     override val coroutineContext: CoroutineContext = Job()
 
-    actual val rootAssets = mutableStateOf<List<AssetItem>>(emptyList())
+    actual val rootAssets = mutableStateListOf<AssetItem>()
     actual val modelAssets = mutableStateListOf<AssetItem>()
     actual val textureAssets = mutableStateListOf<AssetItem>()
 
@@ -57,13 +57,15 @@ actual class AvailableAssets actual constructor(assetsBaseDir: String) : Corouti
                 path.isModel() -> AppAssetType.Model
                 else -> AppAssetType.Unknown
             }
-            val pathString = path.pathString
-                .removePrefix(assetsDir.pathString)
-                .replace('\\', '/').removeSuffix("/")
+
+            val pathString = path.pathString.replace('\\', '/').removeSuffix("/")
             val parentPath = pathString.replaceAfterLast('/', "").removeSuffix("/")
             val parent = assetsByPath[parentPath]
+
+            // assetPath: asset path relative to top-level asset dir, so that it is found by asset loader
+            val assetPath = pathString.removePrefix(assetsDir.pathString)
             val assetItem = assetsByPath.getOrPut(pathString) {
-                AssetItem(path.name, pathString, assetType).apply { if (parent == null) isExpanded.set(true) }
+                AssetItem(path.name, assetPath, assetType).apply { if (parent == null) isExpanded.set(true) }
             }
 
             if (parent != null) {
@@ -75,18 +77,24 @@ actual class AvailableAssets actual constructor(assetsBaseDir: String) : Corouti
         }
         assetsByPath.keys.retainAll(assetPaths)
         assetsByPath.values.forEach { it.children.sortWith(assetsNameComparator) }
-        this.rootAssets.set(rootAssets)
 
         filterAssetsByType(AppAssetType.Model, modelAssets)
         filterAssetsByType(AppAssetType.Texture, textureAssets)
+
+        this.rootAssets.atomic {
+            clear()
+            addAll(rootAssets)
+        }
     }
 
-    private fun filterAssetsByType(type: AppAssetType, result: MutableList<AssetItem>) {
-        result.clear()
-        assetsByPath.values
-            .filter { it.type == type }
-            .sortedBy { it.name }
-            .forEach { result += it }
+    private fun filterAssetsByType(type: AppAssetType, result: MutableStateList<AssetItem>) {
+        result.atomic {
+            clear()
+            assetsByPath.values
+                .filter { it.type == type }
+                .sortedBy { it.name }
+                .forEach { add(it) }
+        }
     }
 
     private fun Path.isTexture(): Boolean {
