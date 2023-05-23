@@ -85,6 +85,7 @@ val Sizes.baseSize: Dp get() = largeGap * 2f
 val Sizes.lineHeight: Dp get() = baseSize * (2f/3f)
 val Sizes.lineHeightLarger: Dp get() = baseSize * 0.75f
 val Sizes.lineHeightTitle: Dp get() = baseSize
+val Sizes.textFieldPadding: Dp get() = smallGap * 0.75f
 
 val Sizes.boldText: MsdfFont get() = (normalText as MsdfFont).copy(weight = 0.075f)
 val Sizes.italicText: MsdfFont get() = (normalText as MsdfFont).copy(italic = MsdfFont.ITALIC_STD)

@@ -32,8 +32,8 @@ open class TextFieldModifier(surface: UiSurface) : UiModifier(surface) {
     var hintColor: Color by property { it.colors.onBackgroundAlpha(0.5f) }
     var selectionColor: Color by property { it.colors.primaryAlpha(0.5f) }
     var cursorColor: Color by property { it.colors.onBackground }
-    var lineColor: Color by property { it.colors.primaryVariant }
-    var lineFocusedColor: Color by property { it.colors.primary }
+    var lineColor: Color? by property { it.colors.primaryVariant }
+    var lineFocusedColor: Color? by property { it.colors.primary }
 
     var onChange: ((String) -> Unit)? by property(null)
     var onEnterPressed: ((String) -> Unit)? by property(null)
@@ -54,8 +54,8 @@ fun <T: TextFieldModifier> T.colors(
     hintColor: Color = this.hintColor,
     selectionColor: Color = this.selectionColor,
     cursorColor: Color = this.cursorColor,
-    lineColor: Color = this.lineColor,
-    lineColorFocused: Color = this.lineFocusedColor
+    lineColor: Color? = this.lineColor,
+    lineColorFocused: Color? = this.lineFocusedColor
 ): T {
     this.textColor = textColor
     this.hintColor = hintColor
@@ -151,7 +151,9 @@ open class TextFieldNode(parent: UiNode?, surface: UiSurface)
 
         val draw = getUiPrimitives()
         val lineColor = if (isFocused) modifier.lineFocusedColor else modifier.lineColor
-        draw.localRect(paddingStartPx, lineY, innerWidthPx, 1.dp.px, lineColor)
+        lineColor?.let {
+            draw.localRect(paddingStartPx, lineY, innerWidthPx, 1.dp.px, it)
+        }
 
         if (isFocused) {
             draw.renderCaretAndSelection()

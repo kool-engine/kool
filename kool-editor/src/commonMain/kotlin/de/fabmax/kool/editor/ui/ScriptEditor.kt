@@ -19,15 +19,9 @@ class ScriptEditor(val scriptComponent: ScriptComponent) : Composable {
     override fun UiScope.compose() = Column(width = Grow.Std) {
         modifier
             .padding(horizontal = sizes.gap)
+            .padding(top = sizes.gap)
             .margin(bottom = sizes.smallGap)
 
-        menuRow {
-            Text(scriptComponent.componentData.scriptClassName) {
-                modifier
-                    .alignY(AlignmentY.Center)
-                    .font(sizes.italicText)
-            }
-        }
         labeledSwitch("Run in edit mode", scriptComponent.runInEditMode) {  }
 
         val scriptProperties = scriptComponent.scriptInstance.use()?.let {
@@ -35,7 +29,7 @@ class ScriptEditor(val scriptComponent: ScriptComponent) : Composable {
         }
 
         if (!scriptProperties.isNullOrEmpty()) {
-            divider(colors.secondaryVariantAlpha(0.5f), marginTop = sizes.gap)
+            divider(colors.secondaryVariantAlpha(0.5f), marginTop = sizes.gap, marginBottom = sizes.smallGap)
         }
 
         scriptProperties?.forEach { prop ->
@@ -301,4 +295,28 @@ class ScriptEditor(val scriptComponent: ScriptComponent) : Composable {
 
     private val ScriptProperty.precision: Int
         get() = precisionForValue(max - min)
+
+    companion object {
+        fun camelCaseToWords(camelCase: String, allUppercase: Boolean = true): String {
+            val words = mutableListOf<String>()
+            var word = StringBuilder()
+            camelCase.forEach {
+                if (word.isEmpty() || it.isLowerCase() || it.isDigit()) {
+                    word.append(it)
+
+                } else {
+                    words += word.toString()
+                    word = StringBuilder().append(it)
+                }
+            }
+            if (word.isNotEmpty()) {
+                words += word.toString()
+            }
+            return if (allUppercase) {
+                words.joinToString(" ") { it.lowercase().replaceFirstChar { c -> c.uppercase() } }
+            } else {
+                words.joinToString(" ") { it.lowercase() }.replaceFirstChar { c -> c.uppercase() }
+            }
+        }
+    }
 }

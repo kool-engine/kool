@@ -35,8 +35,10 @@ fun UiScope.doubleTextField(
     onSet: (Double) -> Unit
 ) = TextField {
     var text by remember(value.toString(precision))
+    var bgColor = colors.secondaryAlpha(0.5f)
     if (!isFocused.use()) {
         text = value.toString(precision)
+        bgColor = colors.secondaryAlpha(0.25f)
     }
     modifier
         .text(text)
@@ -44,6 +46,9 @@ fun UiScope.doubleTextField(
         .margin(start = sizes.smallGap)
         .alignY(AlignmentY.Center)
         .textAlignX(AlignmentX.End)
+        .colors(lineColor = null, lineColorFocused = null)
+        .background(RoundRectBackground(bgColor, sizes.textFieldPadding))
+        .padding(sizes.textFieldPadding)
         .onChange { text = it }
         .onEnterPressed { txt ->
             val d = txt.toDoubleOrNull()
@@ -88,16 +93,16 @@ fun UiScope.xyRow(
     yPrecision: Int = precisionForValue(y),
     onSet: (Double, Double) -> Unit
 ) = Column(width = Grow.Std) {
-    Row(height = sizes.lineHeight) {
-        modifier.margin(top = sizes.smallGap)
+    menuRow {
         Text(label) {
             modifier.alignY(AlignmentY.Center)
         }
     }
-    Row(width = Grow.Std, height = sizes.lineHeight) {
-        modifier.margin(start = sizes.gap)
+    menuRow(Dp.ZERO) {
         Text("X") {
             modifier
+                .width(sizes.largeGap * 0.75f)
+                .textAlignX(AlignmentX.End)
                 .alignY(AlignmentY.Center)
                 .textColor(MdColor.RED tone 300)
         }
@@ -105,7 +110,8 @@ fun UiScope.xyRow(
 
         Text("Y") {
             modifier
-                .margin(start = sizes.gap)
+                .width(sizes.largeGap)
+                .textAlignX(AlignmentX.End)
                 .alignY(AlignmentY.Center)
                 .textColor(MdColor.GREEN tone 300)
         }
@@ -123,16 +129,16 @@ fun UiScope.xyzRow(
     zPrecision: Int = precisionForValue(z),
     onSet: (Double, Double, Double) -> Unit
 ) = Column(width = Grow.Std) {
-    Row(height = sizes.lineHeight) {
-        modifier.margin(top = sizes.smallGap)
+    menuRow {
         Text(label) {
             modifier.alignY(AlignmentY.Center)
         }
     }
-    Row(width = Grow.Std, height = sizes.lineHeight) {
-        modifier.margin(start = sizes.gap)
+    menuRow(Dp.ZERO) {
         Text("X") {
             modifier
+                .width(sizes.largeGap * 0.75f)
+                .textAlignX(AlignmentX.End)
                 .alignY(AlignmentY.Center)
                 .textColor(MdColor.RED tone 300)
         }
@@ -140,7 +146,8 @@ fun UiScope.xyzRow(
 
         Text("Y") {
             modifier
-                .margin(start = sizes.gap)
+                .width(sizes.largeGap)
+                .textAlignX(AlignmentX.End)
                 .alignY(AlignmentY.Center)
                 .textColor(MdColor.GREEN tone 300)
         }
@@ -148,7 +155,8 @@ fun UiScope.xyzRow(
 
         Text("Z") {
             modifier
-                .margin(start = sizes.gap)
+                .width(sizes.largeGap)
+                .textAlignX(AlignmentX.End)
                 .alignY(AlignmentY.Center)
                 .textColor(MdColor.BLUE tone 300)
         }
@@ -168,16 +176,16 @@ fun UiScope.xyzwRow(
     wPrecision: Int = precisionForValue(w),
     onSet: (Double, Double, Double, Double) -> Unit
 ) = Column(width = Grow.Std) {
-    Row(height = sizes.lineHeight) {
-        modifier.margin(top = sizes.smallGap)
+    menuRow {
         Text(label) {
             modifier.alignY(AlignmentY.Center)
         }
     }
-    Row(width = Grow.Std, height = sizes.lineHeight) {
-        modifier.margin(start = sizes.gap)
+    menuRow(Dp.ZERO) {
         Text("X") {
             modifier
+                .width(sizes.largeGap * 0.75f)
+                .textAlignX(AlignmentX.End)
                 .alignY(AlignmentY.Center)
                 .textColor(MdColor.RED tone 300)
         }
@@ -185,7 +193,8 @@ fun UiScope.xyzwRow(
 
         Text("Y") {
             modifier
-                .margin(start = sizes.gap)
+                .width(sizes.largeGap)
+                .textAlignX(AlignmentX.End)
                 .alignY(AlignmentY.Center)
                 .textColor(MdColor.GREEN tone 300)
         }
@@ -193,7 +202,8 @@ fun UiScope.xyzwRow(
 
         Text("Z") {
             modifier
-                .margin(start = sizes.gap)
+                .width(sizes.largeGap)
+                .textAlignX(AlignmentX.End)
                 .alignY(AlignmentY.Center)
                 .textColor(MdColor.BLUE tone 300)
         }
@@ -201,7 +211,8 @@ fun UiScope.xyzwRow(
 
         Text("W") {
             modifier
-                .margin(start = sizes.gap)
+                .width(sizes.largeGap)
+                .textAlignX(AlignmentX.End)
                 .alignY(AlignmentY.Center)
                 .textColor(MdColor.AMBER tone 300)
         }
@@ -224,6 +235,7 @@ fun <T: Any> UiScope.labeledCombobox(
     ComboBox {
         modifier
             .size(Grow.Std, sizes.lineHeight)
+            .colors(textBackgroundColor = colors.secondaryAlpha(0.25f), textBackgroundHoverColor = colors.secondaryAlpha(0.5f))
             .items(items)
             .selectedIndex(selectedIndex.use())
             .onItemSelected {
@@ -262,15 +274,14 @@ fun UiScope.labeledSlider(
     menuRow {
         Text(label) {
             modifier
-                .width(Grow.Std)
+                .width(Grow(1f))
                 .alignY(AlignmentY.Center)
         }
-        doubleTextField(value.use().toDouble(), precision, width = sizes.baseSize * 2) {
+        doubleTextField(value.use().toDouble(), precision, width = Grow(0.35f)) {
             value.set(it.toFloat())
         }
     }
-    Row(width = Grow.Std, height = sizes.lineHeight) {
-        modifier.margin(top = sizes.smallGap)
+    menuRow {
         Slider(value.use(), min, max) {
             modifier
                 .width(Grow.Std)
@@ -307,8 +318,8 @@ fun UiScope.labeledSwitch(
     }
 }
 
-inline fun UiScope.menuRow(block: RowScope.() -> Unit) = Row(width = Grow.Std, height = sizes.lineHeight) {
-    modifier.margin(top = sizes.smallGap)
+inline fun UiScope.menuRow(marginTop: Dp = sizes.smallGap, block: RowScope.() -> Unit) = Row(width = Grow.Std, height = sizes.lineHeight) {
+    modifier.margin(top = marginTop)//.border(DebugBorder)
     block()
 }
 

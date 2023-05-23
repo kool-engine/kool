@@ -125,12 +125,20 @@ class ObjectProperties(ui: EditorUi) : EditorPanel("Object Properties", ui) {
         }
     }
 
-    fun UiScope.scriptComponent(scriptComponent: ScriptComponent) = collapsapsablePanel(
-        title = "Script",
-        scopeName = scriptComponent.componentData.scriptClassName
-    ) {
-        val scriptEditor = remember { ScriptEditor(scriptComponent) }
-        scriptEditor()
+    fun UiScope.scriptComponent(scriptComponent: ScriptComponent) {
+        val title = remember {
+            val simpleName = scriptComponent.scriptClassNameState.value
+                .replaceBeforeLast('.', "")
+                .removePrefix(".")
+            ScriptEditor.camelCaseToWords(simpleName)
+        }
+        collapsapsablePanel(
+            title = title,
+            scopeName = scriptComponent.componentData.scriptClassName
+        ) {
+            val scriptEditor = remember { ScriptEditor(scriptComponent) }
+            scriptEditor()
+        }
     }
 
     fun UiScope.transformComponent(nodeModel: EditorNodeModel) {
