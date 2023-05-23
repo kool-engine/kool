@@ -1,13 +1,11 @@
 package de.fabmax.kool.editor.model
 
-import de.fabmax.kool.editor.api.ScriptLoader
 import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.modules.ui2.MutableStateList
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.logD
 
 class SceneBackgroundComponent(override val componentData: SceneBackgroundComponentData)
     : EditorDataComponent<SceneBackgroundComponentData> {
@@ -43,17 +41,6 @@ class MeshComponent(override val componentData: MeshComponentData) : EditorDataC
 
 class ModelComponent(override val componentData: ModelComponentData) : EditorDataComponent<ModelComponentData> {
     val modelPathState = mutableStateOf(componentData.modelPath).onChange { componentData.modelPath = it }
-}
-
-class ScriptComponent(override val componentData: ScriptComponentData) : EditorDataComponent<ScriptComponentData> {
-    val scriptClassNameState = mutableStateOf(componentData.scriptClassName).onChange { componentData.scriptClassName = it }
-    val runInEditMode = mutableStateOf(componentData.runInEditMode).onChange { componentData.runInEditMode = it }
-
-    override suspend fun onCreate(nodeModel: EditorNodeModel) {
-        logD { "Attaching script ${componentData.scriptClassName} to node ${nodeModel.name}" }
-        val script = ScriptLoader.newScriptInstance(componentData.scriptClassName)
-        script.init(nodeModel, this)
-    }
 }
 
 fun interface UpdateSceneBackgroundComponent : EditorModelComponent {

@@ -19,6 +19,7 @@ kotlin {
                 api(DepsCommon.kotlinCoroutines)
                 implementation(DepsCommon.kotlinSerialization)
                 implementation(DepsCommon.kotlinSerializationJson)
+                implementation(DepsCommon.kotlinReflection)
                 api(project(":kool-core"))
                 api(project(":kool-physics"))
             }

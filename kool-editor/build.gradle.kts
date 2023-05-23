@@ -11,6 +11,7 @@ kotlin {
                 implementation(DepsCommon.kotlinCoroutines)
                 implementation(DepsCommon.kotlinSerialization)
                 implementation(DepsCommon.kotlinSerializationJson)
+                implementation(DepsCommon.kotlinReflection)
                 implementation(project(":kool-core"))
                 implementation(project(":kool-physics"))
                 implementation(project(":kool-editor-api"))

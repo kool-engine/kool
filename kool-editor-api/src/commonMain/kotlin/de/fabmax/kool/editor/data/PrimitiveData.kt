@@ -51,6 +51,7 @@ data class TransformData(
 data class Vec2Data(val x: Double, val y: Double) {
     constructor(vec: Vec2d): this(vec.x, vec.y)
     constructor(vec: Vec2f): this(vec.x.toDouble(), vec.y.toDouble())
+    constructor(vec: Vec2i): this(vec.x.toDouble(), vec.y.toDouble())
 
     fun toVec2f(result: MutableVec2f = MutableVec2f()): MutableVec2f {
         return result.set(x.toFloat(), y.toFloat())
@@ -59,12 +60,17 @@ data class Vec2Data(val x: Double, val y: Double) {
     fun toVec2d(result: MutableVec2d = MutableVec2d()): MutableVec2d {
         return result.set(x, y)
     }
+
+    fun toVec2i(result: MutableVec2i = MutableVec2i()): MutableVec2i {
+        return result.also { it.x = x.toInt(); it.y = y.toInt() }
+    }
 }
 
 @Serializable
 data class Vec3Data(val x: Double, val y: Double, val z: Double) {
     constructor(vec: Vec3d): this(vec.x, vec.y, vec.z)
     constructor(vec: Vec3f): this(vec.x.toDouble(), vec.y.toDouble(), vec.z.toDouble())
+    constructor(vec: Vec3i): this(vec.x.toDouble(), vec.y.toDouble(), vec.z.toDouble())
 
     fun toVec3f(result: MutableVec3f = MutableVec3f()): MutableVec3f {
         return result.set(x.toFloat(), y.toFloat(), z.toFloat())
@@ -73,12 +79,17 @@ data class Vec3Data(val x: Double, val y: Double, val z: Double) {
     fun toVec3d(result: MutableVec3d = MutableVec3d()): MutableVec3d {
         return result.set(x, y, z)
     }
+
+    fun toVec3i(result: MutableVec3i = MutableVec3i()): MutableVec3i {
+        return result.set(x.toInt(), y.toInt(), z.toInt())
+    }
 }
 
 @Serializable
 data class Vec4Data(val x: Double, val y: Double, val z: Double, val w: Double) {
     constructor(vec: Vec4d): this(vec.x, vec.y, vec.z, vec.w)
     constructor(vec: Vec4f): this(vec.x.toDouble(), vec.y.toDouble(), vec.z.toDouble(), vec.w.toDouble())
+    constructor(vec: Vec4i): this(vec.x.toDouble(), vec.y.toDouble(), vec.z.toDouble(), vec.w.toDouble())
 
     fun toVec4f(result: MutableVec4f = MutableVec4f()): MutableVec4f {
         return result.set(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
@@ -86,6 +97,10 @@ data class Vec4Data(val x: Double, val y: Double, val z: Double, val w: Double) 
 
     fun toVec4d(result: MutableVec4d = MutableVec4d()): MutableVec4d {
         return result.set(x, y, z, w)
+    }
+
+    fun toVec4i(result: MutableVec4i = MutableVec4i()): MutableVec4i {
+        return result.set(x.toInt(), y.toInt(), z.toInt(), w.toInt())
     }
 }
 

@@ -9,6 +9,8 @@ fun UiScope.ScrollArea(
     height: Dimension = Grow.Std,
     withVerticalScrollbar: Boolean = true,
     withHorizontalScrollbar: Boolean = true,
+    isScrollableVertical: Boolean = true,
+    isScrollableHorizontal: Boolean = true,
     scrollbarColor: Color? = null,
     containerModifier: ((UiModifier) -> Unit)? = null,
     vScrollbarModifier: ((ScrollbarModifier) -> Unit)? = null,
@@ -26,15 +28,23 @@ fun UiScope.ScrollArea(
             .width(width)
             .height(height)
             .backgroundColor(colors.backgroundVariant)
-            .onWheelX { state.scrollDpX(it.pointer.deltaScrollX.toFloat() * -20f) }
-            .onWheelY { state.scrollDpY(it.pointer.deltaScrollY.toFloat() * -50f) }
+            .onWheelX {
+                if (isScrollableHorizontal) {
+                    state.scrollDpX(it.pointer.deltaScrollX.toFloat() * -20f)
+                }
+            }
+            .onWheelY {
+                if (isScrollableVertical) {
+                    state.scrollDpY(it.pointer.deltaScrollY.toFloat() * -50f)
+                }
+            }
 
         containerModifier?.invoke(modifier)
 
         ScrollPane(state) {
             block()
         }
-        if (withVerticalScrollbar) {
+        if (isScrollableVertical && withVerticalScrollbar) {
             VerticalScrollbar {
                 modifier
                     .relativeBarPos(state.relativeBarPosY)
@@ -44,7 +54,7 @@ fun UiScope.ScrollArea(
                 vScrollbarModifier?.invoke(modifier)
             }
         }
-        if (withHorizontalScrollbar) {
+        if (isScrollableHorizontal && withHorizontalScrollbar) {
             HorizontalScrollbar {
                 modifier
                     .relativeBarPos(state.relativeBarPosX)

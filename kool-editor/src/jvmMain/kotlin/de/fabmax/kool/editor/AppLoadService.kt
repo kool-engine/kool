@@ -95,8 +95,8 @@ actual class AppLoadService actual constructor(watchDirs: Set<String>, appLoadCl
         return LoadedApp(app as EditorAwareApp, scriptClasses)
     }
 
-    private fun examineClasses(loader: URLClassLoader, classpath: Path): List<KClass<*>> {
-        val scriptClasses = mutableListOf<KClass<*>>()
+    private fun examineClasses(loader: URLClassLoader, classpath: Path): Map<KClass<*>, AppScript> {
+        val scriptClasses = mutableMapOf<KClass<*>, AppScript>()
         classpath.walk(PathWalkOption.INCLUDE_DIRECTORIES).forEach {
             if (!it.isDirectory() && it.name.endsWith(".class")) {
                 val className = it.pathString
@@ -107,9 +107,10 @@ actual class AppLoadService actual constructor(watchDirs: Set<String>, appLoadCl
                     .replace('/', '.')
 
                 try {
-                    val clazz = loader.loadClass(className)
-                    if (clazz.superclass == KoolScript::class.java) {
-                        scriptClasses += clazz.kotlin
+                    val scriptClass = loader.loadClass(className)
+                    val kclass = scriptClass.kotlin
+                    if (KoolScript::class.java.isAssignableFrom(scriptClass.superclass)) {
+                        scriptClasses[kclass] = AppScript(kclass, ScriptReflection.getEditableProperties(kclass))
                     }
                 } catch (e: Exception) {
                     logE { "Failed examining class $className: $e" }

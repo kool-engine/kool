@@ -14,15 +14,15 @@ class AddNodeAction(
     private val sceneTree: SceneObjectTree
 ) : EditorAction {
 
-    private var isFirstAdd = true
+    private var isFirstApply = true
 
     override fun apply() {
         launchOnMainThread {
             parentSceneModel.addSceneNode(addNodeModel, parentNodeModel)
             sceneTree.refreshSceneTree()
 
-            if (isFirstAdd) {
-                isFirstAdd = false
+            if (isFirstApply) {
+                isFirstApply = false
                 addNodeModel.createComponents()
             }
         }

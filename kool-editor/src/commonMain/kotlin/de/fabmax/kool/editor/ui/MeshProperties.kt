@@ -7,7 +7,6 @@ import de.fabmax.kool.editor.model.MeshComponent
 import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.modules.ui2.*
-import de.fabmax.kool.util.MdColor
 import kotlin.math.abs
 import kotlin.reflect.KClass
 
@@ -77,57 +76,15 @@ private fun UiScope.boxProperties(nodeModel: SceneNodeModel, meshComponent: Mesh
     width = Grow.Std,
     scopeName = "boxProperties"
 ) {
-    Row(height = sizes.lineHeight) {
-        modifier.margin(top = sizes.smallGap)
-        Text("Size:") {
-            modifier
-                .font(sizes.boldText)
-                .alignY(AlignmentY.Center)
-        }
-    }
-    Row(width = Grow.Std, height = sizes.lineHeight) {
-        modifier.margin(start = sizes.gap)
-
-        Text("X") {
-            modifier
-                .alignY(AlignmentY.Center)
-                .font(sizes.boldText)
-                .textColor(MdColor.RED tone 300)
-        }
-        doubleTextField(box.size.x, 3, width = Grow.Std) {
-            val x = if (!it.isFinite()) 1.0 else abs(it)
-            EditorActions.applyAction(
-                SetShapeAction(nodeModel, meshComponent, box, MeshShapeData.Box(box.size.copy(x = x)))
-            )
-        }
-
-        Text("Y") {
-            modifier
-                .margin(start = sizes.gap)
-                .alignY(AlignmentY.Center)
-                .font(sizes.boldText)
-                .textColor(MdColor.GREEN tone 300)
-        }
-        doubleTextField(box.size.y, 3, width = Grow.Std) {
-            val y = if (!it.isFinite()) 1.0 else abs(it)
-            EditorActions.applyAction(
-                SetShapeAction(nodeModel, meshComponent, box, MeshShapeData.Box(box.size.copy(y = y)))
-            )
-        }
-
-        Text("Z") {
-            modifier
-                .margin(start = sizes.gap)
-                .alignY(AlignmentY.Center)
-                .font(sizes.boldText)
-                .textColor(MdColor.BLUE tone 300)
-        }
-        doubleTextField(box.size.z, 3, width = Grow.Std) {
-            val z = if (!it.isFinite()) 1.0 else abs(it)
-            EditorActions.applyAction(
-                SetShapeAction(nodeModel, meshComponent, box, MeshShapeData.Box(box.size.copy(z = z)))
-            )
-        }
+    xyzRow(
+        label = "Size:",
+        x = box.size.x,
+        y = box.size.y,
+        z = box.size.z
+    ) { x, y, z ->
+        EditorActions.applyAction(
+            SetShapeAction(nodeModel, meshComponent, box, MeshShapeData.Box(box.size.copy(x, y, z)))
+        )
     }
 }
 

@@ -3,7 +3,6 @@ package de.fabmax.kool.editor.ui
 import de.fabmax.kool.math.MutableVec3d
 import de.fabmax.kool.math.Vec3d
 import de.fabmax.kool.modules.ui2.*
-import de.fabmax.kool.util.MdColor
 
 fun UiScope.transformEditor(props: TransformProperties) = collapsapsablePanel("Transform") {
     Column(width = Grow.Std) {
@@ -17,87 +16,34 @@ fun UiScope.transformEditor(props: TransformProperties) = collapsapsablePanel("T
     }
 }
 
-private fun UiScope.position(props: TransformProperties) = xyzTextFields(
-    title = "Position:",
-    props = props,
-    x = props.px,
-    y = props.py,
-    z = props.pz,
-    precision = 3
-)
+private fun UiScope.position(props: TransformProperties) = xyzRow(
+    label = "Position:",
+    x = props.px.use(),
+    y = props.py.use(),
+    z = props.pz.use()
+) { x, y, z ->
+    props.setPosition(x, y, z)
+    props.onChangedByEditor.forEach { it() }
+}
 
-private fun UiScope.rotation(props: TransformProperties) = xyzTextFields(
-    title = "Rotation:",
-    props = props,
-    x = props.rx,
-    y = props.ry,
-    z = props.rz,
-    precision = 1
-)
+private fun UiScope.rotation(props: TransformProperties) = xyzRow(
+    label = "Rotation:",
+    x = props.rx.use(),
+    y = props.ry.use(),
+    z = props.rz.use()
+) { x, y, z ->
+    props.setRotation(x, y, z)
+    props.onChangedByEditor.forEach { it() }
+}
 
-private fun UiScope.scale(props: TransformProperties) = xyzTextFields(
-    title = "Scale:",
-    props = props,
-    x = props.sx,
-    y = props.sy,
-    z = props.sz,
-    precision = 3
-)
-
-private fun UiScope.xyzTextFields(
-    title: String,
-    props: TransformProperties,
-    x: MutableStateValue<Double>,
-    y: MutableStateValue<Double>,
-    z: MutableStateValue<Double>,
-    precision: Int
-) = Column(width = Grow.Std) {
-    val boldTxt = sizes.boldText
-    Row(height = sizes.lineHeight) {
-        modifier.margin(top = sizes.smallGap)
-        Text(title) {
-            modifier
-                .font(boldTxt)
-                .alignY(AlignmentY.Center)
-        }
-    }
-    Row(width = Grow.Std, height = sizes.lineHeight) {
-        modifier.margin(start = sizes.gap)
-        Text("X") {
-            modifier
-                .alignY(AlignmentY.Center)
-                .font(boldTxt)
-                .textColor(MdColor.RED tone 300)
-        }
-        doubleTextField(x.use(), precision, width = Grow.Std) {
-            x.set(it)
-            props.onChangedByEditor.forEach { it() }
-        }
-
-        Text("Y") {
-            modifier
-                .margin(start = sizes.gap)
-                .alignY(AlignmentY.Center)
-                .font(boldTxt)
-                .textColor(MdColor.GREEN tone 300)
-        }
-        doubleTextField(y.use(), precision, width = Grow.Std) {
-            y.set(it)
-            props.onChangedByEditor.forEach { it() }
-        }
-
-        Text("Z") {
-            modifier
-                .margin(start = sizes.gap)
-                .alignY(AlignmentY.Center)
-                .font(boldTxt)
-                .textColor(MdColor.BLUE tone 300)
-        }
-        doubleTextField(z.use(), precision, width = Grow.Std) {
-            z.set(it)
-            props.onChangedByEditor.forEach { it() }
-        }
-    }
+private fun UiScope.scale(props: TransformProperties) = xyzRow(
+    label = "Scale:",
+    x = props.sx.use(),
+    y = props.sy.use(),
+    z = props.sz.use()
+) { x, y, z ->
+    props.setScale(x, y, z)
+    props.onChangedByEditor.forEach { it() }
 }
 
 class TransformProperties {
@@ -127,21 +73,27 @@ class TransformProperties {
         return result.set(sx.value, sy.value, sz.value)
     }
 
-    fun setPosition(position: Vec3d) {
-        px.set(position.x)
-        py.set(position.y)
-        pz.set(position.z)
+    fun setPosition(position: Vec3d) = setPosition(position.x, position.y, position.z)
+
+    fun setPosition(x: Double, y: Double, z: Double) {
+        px.set(x)
+        py.set(y)
+        pz.set(z)
     }
 
-    fun setRotation(rotation: Vec3d) {
-        rx.set(rotation.x)
-        ry.set(rotation.y)
-        rz.set(rotation.z)
+    fun setRotation(position: Vec3d) = setRotation(position.x, position.y, position.z)
+
+    fun setRotation(x: Double, y: Double, z: Double) {
+        rx.set(x)
+        ry.set(y)
+        rz.set(z)
     }
 
-    fun setScale(scale: Vec3d) {
-        sx.set(scale.x)
-        sy.set(scale.y)
-        sz.set(scale.z)
+    fun setScale(scale: Vec3d) = setScale(scale.x, scale.y, scale.z)
+
+    fun setScale(x: Double, y: Double, z: Double) {
+        sx.set(x)
+        sy.set(y)
+        sz.set(z)
     }
 }

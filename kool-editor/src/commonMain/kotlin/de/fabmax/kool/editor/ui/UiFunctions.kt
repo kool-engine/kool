@@ -3,6 +3,8 @@ package de.fabmax.kool.editor.ui
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.modules.ui2.docking.UiDockable
 import de.fabmax.kool.toString
+import de.fabmax.kool.util.MdColor
+import kotlin.math.*
 
 fun UiScope.editorTitleBar(windowDockable: UiDockable) {
     Row(Grow.Std, height = sizes.lineHeightTitle) {
@@ -28,7 +30,7 @@ fun UiScope.editorTitleBar(windowDockable: UiDockable) {
 
 fun UiScope.doubleTextField(
     value: Double,
-    precision: Int,
+    precision: Int = precisionForValue(value),
     width: Dimension = FitContent,
     onSet: (Double) -> Unit
 ) = TextField {
@@ -78,6 +80,135 @@ fun UiScope.intTextField(
         }
 }
 
+fun UiScope.xyRow(
+    label: String,
+    x: Double,
+    y: Double,
+    xPrecision: Int = precisionForValue(x),
+    yPrecision: Int = precisionForValue(y),
+    onSet: (Double, Double) -> Unit
+) = Column(width = Grow.Std) {
+    Row(height = sizes.lineHeight) {
+        modifier.margin(top = sizes.smallGap)
+        Text(label) {
+            modifier.alignY(AlignmentY.Center)
+        }
+    }
+    Row(width = Grow.Std, height = sizes.lineHeight) {
+        modifier.margin(start = sizes.gap)
+        Text("X") {
+            modifier
+                .alignY(AlignmentY.Center)
+                .textColor(MdColor.RED tone 300)
+        }
+        doubleTextField(x, xPrecision, width = Grow.Std) { onSet(it, y) }
+
+        Text("Y") {
+            modifier
+                .margin(start = sizes.gap)
+                .alignY(AlignmentY.Center)
+                .textColor(MdColor.GREEN tone 300)
+        }
+        doubleTextField(y, yPrecision, width = Grow.Std) { onSet(x, it) }
+    }
+}
+
+fun UiScope.xyzRow(
+    label: String,
+    x: Double,
+    y: Double,
+    z: Double,
+    xPrecision: Int = precisionForValue(x),
+    yPrecision: Int = precisionForValue(y),
+    zPrecision: Int = precisionForValue(z),
+    onSet: (Double, Double, Double) -> Unit
+) = Column(width = Grow.Std) {
+    Row(height = sizes.lineHeight) {
+        modifier.margin(top = sizes.smallGap)
+        Text(label) {
+            modifier.alignY(AlignmentY.Center)
+        }
+    }
+    Row(width = Grow.Std, height = sizes.lineHeight) {
+        modifier.margin(start = sizes.gap)
+        Text("X") {
+            modifier
+                .alignY(AlignmentY.Center)
+                .textColor(MdColor.RED tone 300)
+        }
+        doubleTextField(x, xPrecision, width = Grow.Std) { onSet(it, y, z) }
+
+        Text("Y") {
+            modifier
+                .margin(start = sizes.gap)
+                .alignY(AlignmentY.Center)
+                .textColor(MdColor.GREEN tone 300)
+        }
+        doubleTextField(y, yPrecision, width = Grow.Std) { onSet(x, it, z) }
+
+        Text("Z") {
+            modifier
+                .margin(start = sizes.gap)
+                .alignY(AlignmentY.Center)
+                .textColor(MdColor.BLUE tone 300)
+        }
+        doubleTextField(z, zPrecision, width = Grow.Std) { onSet(x, y, it) }
+    }
+}
+
+fun UiScope.xyzwRow(
+    label: String,
+    x: Double,
+    y: Double,
+    z: Double,
+    w: Double,
+    xPrecision: Int = precisionForValue(x),
+    yPrecision: Int = precisionForValue(y),
+    zPrecision: Int = precisionForValue(z),
+    wPrecision: Int = precisionForValue(w),
+    onSet: (Double, Double, Double, Double) -> Unit
+) = Column(width = Grow.Std) {
+    Row(height = sizes.lineHeight) {
+        modifier.margin(top = sizes.smallGap)
+        Text(label) {
+            modifier.alignY(AlignmentY.Center)
+        }
+    }
+    Row(width = Grow.Std, height = sizes.lineHeight) {
+        modifier.margin(start = sizes.gap)
+        Text("X") {
+            modifier
+                .alignY(AlignmentY.Center)
+                .textColor(MdColor.RED tone 300)
+        }
+        doubleTextField(x, xPrecision, width = Grow.Std) { onSet(it, y, z, w) }
+
+        Text("Y") {
+            modifier
+                .margin(start = sizes.gap)
+                .alignY(AlignmentY.Center)
+                .textColor(MdColor.GREEN tone 300)
+        }
+        doubleTextField(y, yPrecision, width = Grow.Std) { onSet(x, it, z, w) }
+
+        Text("Z") {
+            modifier
+                .margin(start = sizes.gap)
+                .alignY(AlignmentY.Center)
+                .textColor(MdColor.BLUE tone 300)
+        }
+        doubleTextField(z, zPrecision, width = Grow.Std) { onSet(x, y, it, w) }
+
+        Text("W") {
+            modifier
+                .margin(start = sizes.gap)
+                .alignY(AlignmentY.Center)
+                .textColor(MdColor.AMBER tone 300)
+        }
+        doubleTextField(w, wPrecision, width = Grow.Std) { onSet(x, y, z, it) }
+    }
+}
+
 fun <T: Any> UiScope.labeledCombobox(
     label: String,
     items: List<T>,
@@ -102,12 +233,30 @@ fun <T: Any> UiScope.labeledCombobox(
     }
 }
 
+fun precisionForValue(value: Double): Int {
+    if (value == 0.0) {
+        return 4
+    }
+    val log = 3.5 - log10(abs(value))
+    val digits = if (log.isFinite()) log.roundToInt() else 4
+    return min(4, max(1, digits))
+}
+
+fun precisionForValue(value: Float): Int {
+    if (value == 0f) {
+        return 4
+    }
+    val log = 3.5f - log10(abs(value))
+    val digits = if (log.isFinite()) log.roundToInt() else 4
+    return min(4, max(1, digits))
+}
+
 fun UiScope.labeledSlider(
     label: String,
     value: MutableStateValue<Float>,
     min: Float = 0f,
     max: Float = 1f,
-    precision: Int = 3,
+    precision: Int = precisionForValue(max - min),
     onChange: (Float) -> Unit
 ) = Column(Grow.Std, scopeName = label) {
     menuRow {
@@ -116,8 +265,8 @@ fun UiScope.labeledSlider(
                 .width(Grow.Std)
                 .alignY(AlignmentY.Center)
         }
-        Text(value.use().toString(precision)) {
-            modifier.alignY(AlignmentY.Center)
+        doubleTextField(value.use().toDouble(), precision, width = sizes.baseSize * 2) {
+            value.set(it.toFloat())
         }
     }
     Row(width = Grow.Std, height = sizes.lineHeight) {

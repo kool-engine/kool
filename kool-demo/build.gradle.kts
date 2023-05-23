@@ -10,7 +10,6 @@ kotlin {
     js(IR) {
         binaries.executable()
         browser {
-            @Suppress("OPT_IN_IS_NOT_ENABLED")
             @OptIn(ExperimentalDistributionDsl::class)
             distribution {
                 directory = File("${rootDir}/dist/kool-demo")

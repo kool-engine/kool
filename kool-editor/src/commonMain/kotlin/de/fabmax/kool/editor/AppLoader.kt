@@ -20,7 +20,9 @@ fun interface AppReloadListener {
     suspend fun onAppReloaded(loadedApp: LoadedApp)
 }
 
-class LoadedApp(val app: EditorAwareApp, val scriptClasses: List<KClass<*>>)
+class LoadedApp(val app: EditorAwareApp, val scriptClasses: Map<KClass<*>, AppScript>)
+
+class AppScript(val klass: KClass<*>, val properties: List<ScriptProperty>)
 
 class AppLoader(val editor: KoolEditor, watchDirs: Set<String>, appLoadClassPath: String) {
     val appReloadListeners = mutableListOf<AppReloadListener>()
@@ -59,6 +61,7 @@ class AppLoader(val editor: KoolEditor, watchDirs: Set<String>, appLoadClassPath
                 } catch (e: Exception) {
                     editor.ui.appLoaderState.set("Failed loading app!")
                     logE { "Failed (re-)loading app: $e" }
+                    e.printStackTrace()
                 }
                 isBuildInProgress = false
             }

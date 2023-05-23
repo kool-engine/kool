@@ -1,7 +1,7 @@
 import org.gradle.internal.os.OperatingSystem
 
 object Versions {
-    val kotlinVersion = "1.8.20"
+    val kotlinVersion = "1.8.21"
     val kotlinCoroutinesVersion = "1.7.1"
     val kotlinSerializationVersion = "1.5.0"
     val dokkaVersion = "1.8.10"
@@ -11,6 +11,7 @@ object DepsCommon {
     val kotlinCoroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.kotlinCoroutinesVersion}"
     val kotlinSerialization = "org.jetbrains.kotlinx:kotlinx-serialization-core:${Versions.kotlinSerializationVersion}"
     val kotlinSerializationJson = "org.jetbrains.kotlinx:kotlinx-serialization-json:${Versions.kotlinSerializationVersion}"
+    val kotlinReflection = "org.jetbrains.kotlin:kotlin-reflect:${Versions.kotlinVersion}"
 }
 
 object DepsJvm {

@@ -66,42 +66,49 @@ class ObjectProperties(ui: EditorUi) : EditorPanel("Object Properties", ui) {
         }
     }
 
-    fun UiScope.objectProperties(selectedObject: EditorNodeModel?) = Column(Grow.Std, Grow.Std, scopeName = selectedObject?.name) {
-        Row(width = Grow.Std, height = sizes.lineHeightLarger) {
-            modifier
-                .padding(horizontal = sizes.gap)
+    fun UiScope.objectProperties(selectedObject: EditorNodeModel?) = ScrollArea(
+        containerModifier = { it.backgroundColor(null) },
+        isScrollableHorizontal = false
+    ) {
+        modifier.width(Grow.Std)
+
+        Column(Grow.Std, Grow.Std, scopeName = selectedObject?.name) {
+            Row(width = Grow.Std, height = sizes.lineHeightLarger) {
+                modifier
+                    .padding(horizontal = sizes.gap)
+
+                if (selectedObject == null) {
+                    Text("Nothing selected") {
+                        modifier
+                            .width(Grow.Std)
+                            .textAlignX(AlignmentX.Center)
+                            .alignY(AlignmentY.Bottom)
+                            .font(sizes.italicText)
+                    }
+                } else {
+                    Text(selectedObject.name) {
+                        modifier
+                            .alignY(AlignmentY.Center)
+                            .font(sizes.boldText)
+                    }
+                }
+            }
 
             if (selectedObject == null) {
-                Text("Nothing selected") {
-                    modifier
-                        .width(Grow.Std)
-                        .textAlignX(AlignmentX.Center)
-                        .alignY(AlignmentY.Bottom)
-                        .font(sizes.italicText)
-                }
-            } else {
-                Text(selectedObject.name) {
-                    modifier
-                        .alignY(AlignmentY.Center)
-                        .font(sizes.boldText)
+                return@Column
+            }
+
+            for (component in selectedObject.components.use()) {
+                when (component) {
+                    is MeshComponent -> meshComponent(selectedObject, component)
+                    is SceneBackgroundComponent -> sceneBackgroundComponent(selectedObject)
+                    is ScriptComponent -> scriptComponent(component)
+                    is TransformComponent -> transformComponent(selectedObject)
                 }
             }
-        }
 
-        if (selectedObject == null) {
-            return@Column
+            addComponentSelector(selectedObject)
         }
-
-        for (component in selectedObject.components.use()) {
-            when (component) {
-                is MeshComponent -> meshComponent(selectedObject, component)
-                is SceneBackgroundComponent -> sceneBackgroundComponent(selectedObject)
-                is ScriptComponent -> scriptComponent(component)
-                is TransformComponent -> transformComponent(selectedObject)
-            }
-        }
-
-        addComponentSelector(selectedObject)
     }
 
     fun UiScope.meshComponent(nodeModel: EditorNodeModel, meshComponent: MeshComponent) {
@@ -122,20 +129,8 @@ class ObjectProperties(ui: EditorUi) : EditorPanel("Object Properties", ui) {
         title = "Script",
         scopeName = scriptComponent.componentData.scriptClassName
     ) {
-        Column(width = Grow.Std) {
-            modifier
-                .padding(horizontal = sizes.gap)
-                .margin(bottom = sizes.smallGap)
-
-            menuRow {
-                Text(scriptComponent.componentData.scriptClassName) {
-                    modifier
-                        .alignY(AlignmentY.Center)
-                        .font(sizes.italicText)
-                }
-            }
-            labeledSwitch("Run in edit mode", scriptComponent.runInEditMode) {  }
-        }
+        val scriptEditor = remember { ScriptEditor(scriptComponent) }
+        scriptEditor()
     }
 
     fun UiScope.transformComponent(nodeModel: EditorNodeModel) {
@@ -171,9 +166,9 @@ class ObjectProperties(ui: EditorUi) : EditorPanel("Object Properties", ui) {
                         .padding(sizes.smallGap)
 
                     var hoverIdx by remember(-1)
-                    val scriptClasses = EditorState.loadedApp.use()?.scriptClasses ?: emptyList()
+                    val scriptClasses = EditorState.loadedApp.use()?.scriptClasses?.values ?: emptyList()
                     scriptClasses.forEachIndexed { i, scriptClass ->
-                        scriptClass.qualifiedName?.let { scriptFqn ->
+                        scriptClass.klass.qualifiedName?.let { scriptFqn ->
                             Text(scriptFqn) {
                                 modifier
                                     .size(Grow.Std, sizes.lineHeight)
