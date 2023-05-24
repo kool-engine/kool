@@ -17,13 +17,11 @@ class EditorProject(val projectData: ProjectData) {
     private val created: MutableMap<Long, SceneModel> = mutableMapOf()
 
     suspend fun create() {
-        created.values.forEach { it.disposeCreatedScene() }
-        created.keys.retainAll(projectData.sceneNodeIds.toSet())
-
         projectData.sceneNodeIds.forEach { sceneNodeId ->
             val sceneData = sceneNodeData[sceneNodeId]
             if (sceneData != null) {
-                created.getOrPut(sceneNodeId) { SceneModel(sceneData, this) }.create()
+                val sceneModel = created.getOrPut(sceneNodeId) { SceneModel(sceneData, this) }
+                sceneModel.createScene()
             }
         }
     }
@@ -48,7 +46,7 @@ class EditorProject(val projectData: ProjectData) {
         return entities.filter(predicate).flatMap { it.components }.filterIsInstance<T>()
     }
 
-    inline fun <reified T: EditorModelComponent> getSceneComponents(sceneModel: SceneModel): List<T> {
+    inline fun <reified T: EditorModelComponent> getComponentsInScene(sceneModel: SceneModel): List<T> {
         return getComponentsFromEntities { it === sceneModel || (it is SceneNodeModel && it.scene === sceneModel) }
     }
 

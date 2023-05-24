@@ -4,7 +4,6 @@ import de.fabmax.kool.editor.api.KoolScript
 import de.fabmax.kool.editor.api.ScriptLoader
 import de.fabmax.kool.editor.data.ScriptComponentData
 import de.fabmax.kool.modules.ui2.mutableStateOf
-import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logE
 
 class ScriptComponent(override val componentData: ScriptComponentData) : EditorDataComponent<ScriptComponentData> {
@@ -14,12 +13,12 @@ class ScriptComponent(override val componentData: ScriptComponentData) : EditorD
 
     val scriptInstance = mutableStateOf<KoolScript?>(null)
 
-    override suspend fun onCreate(nodeModel: EditorNodeModel) {
-        logD { "Attaching script ${componentData.scriptClassName} to node ${nodeModel.name}" }
-
+    override suspend fun createComponent(nodeModel: EditorNodeModel) {
         val script = ScriptLoader.newScriptInstance(componentData.scriptClassName)
         scriptInstance.set(script)
+    }
 
+    override suspend fun initComponent(nodeModel: EditorNodeModel) {
         val removeProps = mutableListOf<String>()
         componentData.propertyValues.forEach { (name, value) ->
             if (!setProperty(name, value.get())) {
@@ -28,7 +27,7 @@ class ScriptComponent(override val componentData: ScriptComponentData) : EditorD
         }
         removeProps.forEach { componentData.propertyValues -= it }
 
-        script.init(nodeModel, this)
+        scriptInstance.value!!.init(nodeModel, this)
     }
 
     fun setProperty(name: String, value: Any): Boolean {

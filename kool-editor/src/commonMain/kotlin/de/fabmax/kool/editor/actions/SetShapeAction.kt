@@ -28,6 +28,6 @@ class SetShapeAction(
         } else {
             editedMeshComponent.shapesState[oldIdx] = new
         }
-        nodeModel.regenerateGeometry(editedMeshComponent)
+        editedMeshComponent.updateGeometry()
     }
 }

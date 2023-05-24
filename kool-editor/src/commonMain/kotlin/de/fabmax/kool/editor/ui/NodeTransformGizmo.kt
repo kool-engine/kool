@@ -8,7 +8,7 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.Gizmo
 
-class NodeTransformGizmo(editor: KoolEditor) : Node("Node transform gizmo") {
+class NodeTransformGizmo(private val editor: KoolEditor) : Node("Node transform gizmo") {
 
     private var transformNodeModel: SceneNodeModel? = null
     private var hasTransformAuthority = false
@@ -48,12 +48,10 @@ class NodeTransformGizmo(editor: KoolEditor) : Node("Node transform gizmo") {
     }
 
     init {
-        gizmo.isVisible = false
         addNode(gizmo)
+        hideGizmo()
 
         gizmo.gizmoListener = gizmoListener
-        editor.editorInputContext.pointerListeners += gizmo
-
         gizmo.onUpdate {
             transformNodeModel?.node?.let {
                 if (hasTransformAuthority) {
@@ -75,11 +73,28 @@ class NodeTransformGizmo(editor: KoolEditor) : Node("Node transform gizmo") {
         }
     }
 
+    private fun hideGizmo() {
+        gizmo.isVisible = false
+        editor.editorInputContext.pointerListeners -= gizmo
+    }
+
+    private fun showGizmo() {
+        gizmo.isVisible = true
+        if (gizmo !in KoolEditor.instance.editorInputContext.pointerListeners) {
+           editor.editorInputContext.pointerListeners += gizmo
+        }
+    }
+
     fun setTransformObject(nodeModel: SceneNodeModel?) {
         transformNodeModel = nodeModel
         gizmo.isVisible = nodeModel != null
         nodeModel?.node?.let {
             gizmo.setFixedScale(it.globalRadius + 0.5f)
+        }
+        if (nodeModel != null) {
+            showGizmo()
+        } else {
+            hideGizmo()
         }
     }
 }

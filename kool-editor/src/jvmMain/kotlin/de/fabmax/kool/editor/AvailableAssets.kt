@@ -48,6 +48,7 @@ actual class AvailableAssets actual constructor(assetsBaseDir: String) : Corouti
     private fun updateAssets() {
         val rootAssets = mutableListOf<AssetItem>()
         val assetPaths = mutableSetOf<String>()
+        val pathPrefix = assetsDir.pathString.replace('\\', '/')
         assetsByPath.values.forEach { it.children.clear() }
 
         assetsDir.walk(PathWalkOption.INCLUDE_DIRECTORIES).forEach { path ->
@@ -63,7 +64,7 @@ actual class AvailableAssets actual constructor(assetsBaseDir: String) : Corouti
             val parent = assetsByPath[parentPath]
 
             // assetPath: asset path relative to top-level asset dir, so that it is found by asset loader
-            val assetPath = pathString.removePrefix(assetsDir.pathString)
+            val assetPath = pathString.removePrefix(pathPrefix).removePrefix("/")
             val assetItem = assetsByPath.getOrPut(pathString) {
                 AssetItem(path.name, assetPath, assetType).apply { if (parent == null) isExpanded.set(true) }
             }

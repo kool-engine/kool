@@ -1,6 +1,7 @@
 package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.editor.EditorState
+import de.fabmax.kool.editor.actions.AddComponentAction
 import de.fabmax.kool.editor.actions.EditorActions
 import de.fabmax.kool.editor.actions.SetTransformAction
 import de.fabmax.kool.editor.data.ScriptComponentData
@@ -185,7 +186,12 @@ class ObjectProperties(ui: EditorUi) : EditorPanel("Object Properties", ui) {
                                     .onExit { hoverIdx = -1 }
                                     .onClick {
                                         isScriptPopupOpen = false
-                                        nodeModel.addComponent(ScriptComponent(ScriptComponentData(scriptFqn)))
+                                        EditorActions.applyAction(
+                                            AddComponentAction(
+                                                nodeModel,
+                                                ScriptComponent(ScriptComponentData(scriptFqn))
+                                            )
+                                        )
                                     }
 
                                 if (i == hoverIdx) {

@@ -36,8 +36,12 @@ abstract class EditorNodeModel(val nodeData: SceneNodeData) {
         }
     }
 
-    suspend fun createComponents() {
-        components.forEach { it.onCreate(this) }
+    open suspend fun createComponents() {
+        components.forEach { it.createComponent(this) }
+    }
+
+    open suspend fun initComponents() {
+        components.forEach { it.initComponent(this) }
     }
 
     fun addComponent(component: EditorModelComponent) {
@@ -47,7 +51,8 @@ abstract class EditorNodeModel(val nodeData: SceneNodeData) {
         }
         if (isCreated) {
             launchOnMainThread {
-                component.onCreate(this)
+                component.createComponent(this)
+                component.initComponent(this)
             }
         }
     }

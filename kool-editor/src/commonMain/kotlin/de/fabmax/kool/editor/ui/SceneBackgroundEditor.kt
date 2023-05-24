@@ -42,7 +42,7 @@ class SceneBackgroundEditor(var sceneModel: SceneModel) : Composable {
                 }
             }
 
-            divider(colors.secondaryVariantAlpha(0.5f), marginTop = sizes.gap, marginBottom = sizes.smallGap)
+            divider(colors.secondaryVariantAlpha(0.5f), marginTop = sizes.smallGap)
 
             when (val type = sceneBackgroundComponent.backgroundState.use()) {
                 is SceneBackgroundData.Hdri -> hdriBgProperties(sceneModel, type)
