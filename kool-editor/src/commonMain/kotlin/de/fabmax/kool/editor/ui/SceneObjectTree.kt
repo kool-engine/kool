@@ -126,6 +126,9 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
                 item("Cylinder") {
                     addNewMesh(it, MeshShapeData.defaultCylinder)
                 }
+                item("Capsule") {
+                    addNewMesh(it, MeshShapeData.defaultCapsule)
+                }
                 item("Empty") {
                     addNewMesh(it, MeshShapeData.Empty)
                 }

@@ -263,6 +263,35 @@ fun precisionForValue(value: Float): Int {
     return min(4, max(1, digits))
 }
 
+fun UiScope.labeledDoubleTextField(
+    label: String,
+    value: Double,
+    precision: Int = precisionForValue(value),
+    valueWidth: Dimension = sizes.baseSize * 2,
+    onSet: (Double) -> Unit
+) = menuRow {
+    Text(label) {
+        modifier
+            .width(Grow.Std)
+            .alignY(AlignmentY.Center)
+    }
+    doubleTextField(value, precision, valueWidth, onSet)
+}
+
+fun UiScope.labeledIntTextField(
+    label: String,
+    value: Int,
+    valueWidth: Dimension = sizes.baseSize * 2,
+    onSet: (Int) -> Unit
+) = menuRow {
+    Text(label) {
+        modifier
+            .width(Grow.Std)
+            .alignY(AlignmentY.Center)
+    }
+    intTextField(value, valueWidth, onSet)
+}
+
 fun UiScope.labeledSlider(
     label: String,
     value: MutableStateValue<Float>,
@@ -274,7 +303,7 @@ fun UiScope.labeledSlider(
     menuRow {
         Text(label) {
             modifier
-                .width(Grow(1f))
+                .width(Grow.Std)
                 .alignY(AlignmentY.Center)
         }
         doubleTextField(value.use().toDouble(), precision, width = Grow(0.35f)) {
@@ -291,6 +320,31 @@ fun UiScope.labeledSlider(
                     onChange(it)
                 }
         }
+    }
+}
+
+fun UiScope.labeledCheckbox(
+    label: String,
+    state: MutableStateValue<Boolean>,
+    onToggle: (Boolean) -> Unit
+) = menuRow {
+    Text(label) {
+        modifier
+            .width(Grow.Std)
+            .alignY(AlignmentY.Center)
+            .onClick {
+                state.set(!state.value)
+                onToggle(state.value)
+            }
+    }
+
+    Checkbox(state.use()) {
+        modifier
+            .size(FitContent, sizes.lineHeight)
+            .onToggle {
+                state.set(it)
+                onToggle(it)
+            }
     }
 }
 
@@ -320,7 +374,7 @@ fun UiScope.labeledSwitch(
 }
 
 inline fun UiScope.menuRow(marginTop: Dp = sizes.smallGap, block: RowScope.() -> Unit) = Row(width = Grow.Std, height = sizes.lineHeight) {
-    modifier.margin(top = marginTop)//.border(DebugBorder)
+    modifier.margin(top = marginTop)
     block()
 }
 

@@ -21,6 +21,7 @@ private object ShapeOptions {
         ShapeOption("Ico-Sphere", MeshShapeData.IcoSphere::class) { MeshShapeData.defaultIcoSphere },
         ShapeOption("UV-Sphere", MeshShapeData.UvSphere::class) { MeshShapeData.defaultUvSphere },
         ShapeOption("Cylinder", MeshShapeData.Cylinder::class) { MeshShapeData.defaultCylinder },
+        ShapeOption("Capsule", MeshShapeData.Capsule::class) { MeshShapeData.defaultCapsule },
         ShapeOption("Empty", MeshShapeData.Empty::class) { MeshShapeData.Empty },
     )
 
@@ -31,6 +32,7 @@ private object ShapeOptions {
             is MeshShapeData.IcoSphere -> 2
             is MeshShapeData.UvSphere -> 3
             is MeshShapeData.Cylinder -> 4
+            is MeshShapeData.Capsule -> 5
             MeshShapeData.Empty -> 5
         }
     }
@@ -66,7 +68,8 @@ fun UiScope.meshTypeProperties(nodeModel: SceneNodeModel, meshComponent: MeshCom
             is MeshShapeData.Rect -> rectProperties(nodeModel, meshComponent, shapeType)
             is MeshShapeData.IcoSphere -> icoSphereProperties(nodeModel, meshComponent, shapeType)
             is MeshShapeData.UvSphere -> uvSphereProperties(nodeModel, meshComponent, shapeType)
-            is MeshShapeData.Cylinder -> TODO()
+            is MeshShapeData.Cylinder -> cylinderProperties(nodeModel, meshComponent, shapeType)
+            is MeshShapeData.Capsule -> capsuleProperties(nodeModel, meshComponent, shapeType)
             MeshShapeData.Empty -> {}
         }
     }
@@ -90,7 +93,7 @@ private fun UiScope.boxProperties(nodeModel: SceneNodeModel, meshComponent: Mesh
 
 private fun UiScope.rectProperties(nodeModel: SceneNodeModel, meshComponent: MeshComponent, rect: MeshShapeData.Rect) = Column(
     width = Grow.Std,
-    scopeName = "boxProperties"
+    scopeName = "rectProperties"
 ) {
     xyRow(
         label = "Size:",
@@ -107,37 +110,17 @@ private fun UiScope.icoSphereProperties(nodeModel: SceneNodeModel, meshComponent
     width = Grow.Std,
     scopeName = "icoSphereProperties"
 ) {
-    Row(width = Grow.Std, height = sizes.lineHeight) {
-        modifier.margin(top = sizes.smallGap)
-
-        Text("Radius:") {
-            modifier
-                .width(Grow.Std)
-                .alignY(AlignmentY.Center)
-                .font(sizes.boldText)
-        }
-        doubleTextField(icoSphere.radius, 3, width = sizes.baseSize * 2f) {
-            val r = if (!it.isFinite()) 1.0 else abs(it)
-            EditorActions.applyAction(
-                SetShapeAction(nodeModel, meshComponent, icoSphere, icoSphere.copy(radius = r))
-            )
-        }
+    labeledDoubleTextField("Radius:", icoSphere.radius) {
+        val r = if (!it.isFinite()) 1.0 else abs(it)
+        EditorActions.applyAction(
+            SetShapeAction(nodeModel, meshComponent, icoSphere, icoSphere.copy(radius = r))
+        )
     }
-    Row(width = Grow.Std, height = sizes.lineHeight) {
-        modifier.margin(top = sizes.smallGap)
-
-        Text("Sub-divisions:") {
-            modifier
-                .width(Grow.Std)
-                .alignY(AlignmentY.Center)
-                .font(sizes.boldText)
-        }
-        intTextField(icoSphere.subDivisions, width = sizes.baseSize * 2f) {
-            val s = it.clamp(0, 7)
-            EditorActions.applyAction(
-                SetShapeAction(nodeModel, meshComponent, icoSphere, icoSphere.copy(subDivisions = s))
-            )
-        }
+    labeledIntTextField("Sub-divisions:", icoSphere.subDivisions) {
+        val s = it.clamp(0, 7)
+        EditorActions.applyAction(
+            SetShapeAction(nodeModel, meshComponent, icoSphere, icoSphere.copy(subDivisions = s))
+        )
     }
 }
 
@@ -145,36 +128,89 @@ private fun UiScope.uvSphereProperties(nodeModel: SceneNodeModel, meshComponent:
     width = Grow.Std,
     scopeName = "uvSphereProperties"
 ) {
-    Row(width = Grow.Std, height = sizes.lineHeight) {
-        modifier.margin(top = sizes.smallGap)
+    labeledDoubleTextField("Radius:", uvSphere.radius) {
+        val r = if (!it.isFinite()) 1.0 else abs(it)
+        EditorActions.applyAction(
+            SetShapeAction(nodeModel, meshComponent, uvSphere, uvSphere.copy(radius = r))
+        )
+    }
+    labeledIntTextField("Steps:", uvSphere.steps) {
+        val s = it.clamp(3, 100)
+        EditorActions.applyAction(
+            SetShapeAction(nodeModel, meshComponent, uvSphere, uvSphere.copy(steps = s))
+        )
+    }
+}
 
-        Text("Radius:") {
-            modifier
-                .width(Grow.Std)
-                .alignY(AlignmentY.Center)
-                .font(sizes.boldText)
-        }
-        doubleTextField(uvSphere.radius, 3, width = sizes.baseSize * 2f) {
-            val r = if (!it.isFinite()) 1.0 else abs(it)
+private fun UiScope.cylinderProperties(nodeModel: SceneNodeModel, meshComponent: MeshComponent, cylinder: MeshShapeData.Cylinder) = Column(
+    width = Grow.Std,
+    scopeName = "cylinderProperties"
+) {
+    val isUniRadius = remember(cylinder.topRadius == cylinder.bottomRadius)
+
+    labeledCheckbox("Uniform radius:", isUniRadius) {
+        if (cylinder.topRadius != cylinder.bottomRadius) {
             EditorActions.applyAction(
-                SetShapeAction(nodeModel, meshComponent, uvSphere, uvSphere.copy(radius = r))
+                SetShapeAction(nodeModel, meshComponent, cylinder, cylinder.copy(topRadius = cylinder.bottomRadius))
             )
         }
     }
-    Row(width = Grow.Std, height = sizes.lineHeight) {
-        modifier.margin(top = sizes.smallGap)
 
-        Text("Steps:") {
-            modifier
-                .width(Grow.Std)
-                .alignY(AlignmentY.Center)
-                .font(sizes.boldText)
-        }
-        intTextField(uvSphere.steps, width = sizes.baseSize * 2f) {
-            val s = it.clamp(3, 100)
+    if (isUniRadius.use()) {
+        labeledDoubleTextField("Radius:", cylinder.bottomRadius) {
+            val r = if (!it.isFinite()) 1.0 else abs(it)
             EditorActions.applyAction(
-                SetShapeAction(nodeModel, meshComponent, uvSphere, uvSphere.copy(steps = s))
+                SetShapeAction(nodeModel, meshComponent, cylinder, cylinder.copy(bottomRadius = r, topRadius = r))
             )
         }
+    } else {
+        labeledDoubleTextField("Top-radius:", cylinder.topRadius) {
+            val r = if (!it.isFinite()) 1.0 else abs(it)
+            EditorActions.applyAction(
+                SetShapeAction(nodeModel, meshComponent, cylinder, cylinder.copy(topRadius = r))
+            )
+        }
+        labeledDoubleTextField("Bottom-radius:", cylinder.bottomRadius) {
+            val r = if (!it.isFinite()) 1.0 else abs(it)
+            EditorActions.applyAction(
+                SetShapeAction(nodeModel, meshComponent, cylinder, cylinder.copy(bottomRadius = r))
+            )
+        }
+    }
+    labeledDoubleTextField("Height:", cylinder.height) {
+        val l = if (!it.isFinite()) 1.0 else abs(it)
+        EditorActions.applyAction(
+            SetShapeAction(nodeModel, meshComponent, cylinder, cylinder.copy(height = l))
+        )
+    }
+    labeledIntTextField("Steps:", cylinder.steps) {
+        val s = it.clamp(3, 100)
+        EditorActions.applyAction(
+            SetShapeAction(nodeModel, meshComponent, cylinder, cylinder.copy(steps = s))
+        )
+    }
+}
+
+private fun UiScope.capsuleProperties(nodeModel: SceneNodeModel, meshComponent: MeshComponent, capsule: MeshShapeData.Capsule) = Column(
+    width = Grow.Std,
+    scopeName = "capsuleProperties"
+) {
+    labeledDoubleTextField("Radius:", capsule.radius) {
+        val r = if (!it.isFinite()) 1.0 else abs(it)
+        EditorActions.applyAction(
+            SetShapeAction(nodeModel, meshComponent, capsule, capsule.copy(radius = r))
+        )
+    }
+    labeledDoubleTextField("Height:", capsule.height) {
+        val l = if (!it.isFinite()) 1.0 else abs(it)
+        EditorActions.applyAction(
+            SetShapeAction(nodeModel, meshComponent, capsule, capsule.copy(height = l))
+        )
+    }
+    labeledIntTextField("Steps:", capsule.steps) {
+        val s = it.clamp(3, 100)
+        EditorActions.applyAction(
+            SetShapeAction(nodeModel, meshComponent, capsule, capsule.copy(steps = s))
+        )
     }
 }

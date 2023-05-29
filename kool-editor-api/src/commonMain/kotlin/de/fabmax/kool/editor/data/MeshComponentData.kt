@@ -1,6 +1,8 @@
 package de.fabmax.kool.editor.data
 
+import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.scene.geometry.MeshBuilder
+import de.fabmax.kool.scene.geometry.simpleShape
 import de.fabmax.kool.util.MdColor
 import kotlinx.serialization.Serializable
 
@@ -79,11 +81,41 @@ sealed class MeshShapeData {
     }
 
     @Serializable
-    data class Cylinder(val topRadius: Double, val bottomRadius: Double, val length: Double, val steps: Int) : MeshShapeData() {
+    data class Cylinder(val topRadius: Double, val bottomRadius: Double, val height: Double, val steps: Int) : MeshShapeData() {
         override val name: String get() = "Cylinder"
 
         override fun generate(builder: MeshBuilder) {
-            TODO()
+            builder.apply {
+                cylinder {
+                    height = this@Cylinder.height.toFloat()
+                    topRadius = this@Cylinder.topRadius.toFloat()
+                    bottomRadius = this@Cylinder.bottomRadius.toFloat()
+                    steps = this@Cylinder.steps
+                }
+            }
+        }
+    }
+
+    @Serializable
+    data class Capsule(val radius: Double, val height: Double, val steps: Int) : MeshShapeData() {
+        override val name: String get() = "Capsule"
+
+        override fun generate(builder: MeshBuilder) {
+            builder.withTransform {
+                profile {
+                    val r = radius.toFloat()
+                    val h = height.toFloat()
+                    val hh = h / 2f
+                    simpleShape(false) {
+                        xyArc(Vec2f(hh + r, 0f), Vec2f(hh, 0f), 90f, steps / 2, true)
+                        xyArc(Vec2f(-hh, r), Vec2f(-hh, 0f), 90f, steps / 2, true)
+                    }
+                    for (i in 0 .. steps) {
+                        sample()
+                        rotate(360f / steps, 0f, 0f)
+                    }
+                }
+            }
         }
     }
 
@@ -102,5 +134,6 @@ sealed class MeshShapeData {
         val defaultUvSphere = UvSphere(1.0, 20)
         val defaultRect = Rect(Vec2Data(1.0, 1.0))
         val defaultCylinder = Cylinder(1.0, 1.0, 1.0, 16)
+        val defaultCapsule = Capsule(1.0, 1.0, 16)
     }
 }
