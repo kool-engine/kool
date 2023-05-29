@@ -39,6 +39,7 @@ object Skybox {
             }
             isFrustumChecked = false
             isCastingShadow = false
+            rayTest = MeshRayTest.nopTest()
             skyboxShader = KslSkyCubeShader(colorSpaceConversion).apply {
                 setSingleSky(skyTex)
                 lod = texLod

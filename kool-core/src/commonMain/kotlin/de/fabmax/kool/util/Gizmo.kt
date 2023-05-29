@@ -51,7 +51,7 @@ class Gizmo : Node(), InputStack.PointerListener {
         shader = BetterLineMesh.LineShader {
             color {
                 vertexColor()
-                constColor(Color.WHITE.withAlpha(0.4f), ColorBlockConfig.MixMode.Multiply)
+                constColor(Color.WHITE.withAlpha(0.4f), ColorBlockConfig.BlendMode.Multiply)
             }
             pipeline {
                 depthTest = DepthCompareOp.GREATER_EQUAL
@@ -64,7 +64,7 @@ class Gizmo : Node(), InputStack.PointerListener {
         shader = KslUnlitShader {
             color {
                 vertexColor()
-                constColor(Color.WHITE.withAlpha(0.4f), ColorBlockConfig.MixMode.Multiply)
+                constColor(Color.WHITE.withAlpha(0.4f), ColorBlockConfig.BlendMode.Multiply)
             }
             pipeline {
                 cullMethod = CullMethod.NO_CULLING

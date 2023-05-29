@@ -55,7 +55,7 @@ class ColorBlockFragmentStage(
         body.apply {
             check(parentStage is KslFragmentStage) { "ColorBlockFragmentStage can only be added to KslFragmentStage" }
 
-            if (cfg.colorSources.isEmpty() || cfg.colorSources.first().mixMode != ColorBlockConfig.MixMode.Set) {
+            if (cfg.colorSources.isEmpty() || cfg.colorSources.first().blendMode != ColorBlockConfig.BlendMode.Set) {
                 outColor set Color.BLACK.const
             }
 
@@ -75,7 +75,7 @@ class ColorBlockFragmentStage(
                         texColor
                     }
                 }
-                mixColor(source.mixMode, colorValue)
+                mixColor(source.blendMode, colorValue)
             }
         }
     }
@@ -91,12 +91,12 @@ class ColorBlockFragmentStage(
             ?: parentStage.program.vertexStage.main.run { vertexColorBlock(cfg) }
     }
 
-    private fun KslScopeBuilder.mixColor(mixMode: ColorBlockConfig.MixMode, value: KslExprFloat4) {
+    private fun KslScopeBuilder.mixColor(mixMode: ColorBlockConfig.BlendMode, value: KslExprFloat4) {
         when (mixMode) {
-            ColorBlockConfig.MixMode.Set -> outColor set value
-            ColorBlockConfig.MixMode.Multiply -> outColor *= value
-            ColorBlockConfig.MixMode.Add -> outColor += value
-            ColorBlockConfig.MixMode.Subtract -> outColor -= value
+            ColorBlockConfig.BlendMode.Set -> outColor set value
+            ColorBlockConfig.BlendMode.Multiply -> outColor *= value
+            ColorBlockConfig.BlendMode.Add -> outColor += value
+            ColorBlockConfig.BlendMode.Subtract -> outColor -= value
         }
     }
 }
@@ -105,15 +105,15 @@ data class ColorBlockConfig(
     val colorName: String,
     val colorSources: MutableList<ColorSource> = mutableListOf()
 ) {
-    fun constColor(constColor: Color, mixMode: MixMode = MixMode.Set) {
+    fun constColor(constColor: Color, mixMode: BlendMode = BlendMode.Set) {
         colorSources += ConstColor(constColor, mixMode)
     }
 
-    fun uniformColor(defaultColor: Color? = null, uniformName: String = "u${colorName}", mixMode: MixMode = MixMode.Set) {
+    fun uniformColor(defaultColor: Color? = null, uniformName: String = "u${colorName}", mixMode: BlendMode = BlendMode.Set) {
         colorSources += UniformColor(defaultColor, uniformName, mixMode)
     }
 
-    fun vertexColor(attribute: Attribute = Attribute.COLORS, mixMode: MixMode = MixMode.Set) {
+    fun vertexColor(attribute: Attribute = Attribute.COLORS, mixMode: BlendMode = BlendMode.Set) {
         colorSources += VertexColor(attribute, mixMode)
     }
 
@@ -134,7 +134,7 @@ data class ColorBlockConfig(
                      textureName: String = "t${colorName}",
                      coordAttribute: Attribute = Attribute.TEXTURE_COORDS,
                      gamma: Float = Color.GAMMA_sRGB_TO_LINEAR,
-                     mixMode: MixMode = MixMode.Set) {
+                     mixMode: BlendMode = BlendMode.Set) {
         colorSources += TextureColor(defaultTexture, textureName, coordAttribute, gamma, mixMode)
     }
 
@@ -151,11 +151,11 @@ data class ColorBlockConfig(
     fun textureData(defaultTexture: Texture2d? = null,
                     textureName: String = "tColor",
                     coordAttribute: Attribute = Attribute.TEXTURE_COORDS,
-                    mixMode: MixMode = MixMode.Set) =
+                    mixMode: BlendMode = BlendMode.Set) =
         textureColor(defaultTexture, textureName, coordAttribute, 1f, mixMode)
 
-    fun instanceColor(attribute: Attribute = Attribute.INSTANCE_COLOR, mixMode: MixMode = MixMode.Set) {
-        colorSources += InstanceColor(attribute, mixMode)
+    fun instanceColor(attribute: Attribute = Attribute.INSTANCE_COLOR, blendMode: BlendMode = BlendMode.Set) {
+        colorSources += InstanceColor(attribute, blendMode)
     }
 
     val primaryUniform: UniformColor?
@@ -164,14 +164,14 @@ data class ColorBlockConfig(
     val primaryTexture: TextureColor?
         get() = colorSources.find { it is TextureColor } as? TextureColor
 
-    sealed class ColorSource(val mixMode: MixMode)
-    class ConstColor(val constColor: Color, mixMode: MixMode) : ColorSource(mixMode)
-    class UniformColor(val defaultColor: Color?, val uniformName: String, mixMode: MixMode) : ColorSource(mixMode)
-    class VertexColor(val colorAttrib: Attribute, mixMode: MixMode) : ColorSource(mixMode)
-    class TextureColor(val defaultTexture: Texture2d?, val textureName: String, val coordAttribute: Attribute, val gamma: Float, mixMode: MixMode) : ColorSource(mixMode)
-    class InstanceColor(val colorAttrib: Attribute, mixMode: MixMode) : ColorSource(mixMode)
+    sealed class ColorSource(val blendMode: BlendMode)
+    class ConstColor(val constColor: Color, blendMode: BlendMode) : ColorSource(blendMode)
+    class UniformColor(val defaultColor: Color?, val uniformName: String, blendMode: BlendMode) : ColorSource(blendMode)
+    class VertexColor(val colorAttrib: Attribute, blendMode: BlendMode) : ColorSource(blendMode)
+    class TextureColor(val defaultTexture: Texture2d?, val textureName: String, val coordAttribute: Attribute, val gamma: Float, blendMode: BlendMode) : ColorSource(blendMode)
+    class InstanceColor(val colorAttrib: Attribute, blendMode: BlendMode) : ColorSource(blendMode)
 
-    enum class MixMode {
+    enum class BlendMode {
         Set,
         Multiply,
         Add,

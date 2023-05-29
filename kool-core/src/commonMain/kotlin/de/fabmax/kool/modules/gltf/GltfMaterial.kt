@@ -65,13 +65,13 @@ data class GltfMaterial(
                 useVertexColor -> {
                     vertexColor()
                     if (colorFactor != Color.WHITE) {
-                        uniformColor(colorFactor, mixMode = ColorBlockConfig.MixMode.Multiply)
+                        uniformColor(colorFactor, mixMode = ColorBlockConfig.BlendMode.Multiply)
                     }
                 }
                 baseColorTexture != null -> {
                     textureColor(baseColorTexture)
                     if (colorFactor != Color.WHITE) {
-                        uniformColor(colorFactor, mixMode = ColorBlockConfig.MixMode.Multiply)
+                        uniformColor(colorFactor, mixMode = ColorBlockConfig.BlendMode.Multiply)
                     }
                 }
                 else -> {
@@ -84,7 +84,7 @@ data class GltfMaterial(
             if (emissiveTexture != null) {
                 textureColor(emissiveTexture)
                 if (emissiveFactor != null) {
-                    uniformColor(Color(emissiveFactor[0], emissiveFactor[1], emissiveFactor[2], 1f), mixMode = ColorBlockConfig.MixMode.Multiply)
+                    uniformColor(Color(emissiveFactor[0], emissiveFactor[1], emissiveFactor[2], 1f), mixMode = ColorBlockConfig.BlendMode.Multiply)
                 }
             } else if (emissiveFactor != null) {
                 uniformColor(Color(emissiveFactor[0], emissiveFactor[1], emissiveFactor[2], 1f))

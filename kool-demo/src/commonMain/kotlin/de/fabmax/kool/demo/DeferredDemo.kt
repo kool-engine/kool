@@ -251,7 +251,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                 vertices { isInstanced = true }
                 emission {
                     instanceColor(Attribute.COLORS)
-                    constColor(Color(2f, 2f, 2f), mixMode = ColorBlockConfig.MixMode.Multiply)
+                    constColor(Color(2f, 2f, 2f), mixMode = ColorBlockConfig.BlendMode.Multiply)
                 }
             }
         }
