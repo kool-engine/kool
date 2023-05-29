@@ -31,7 +31,7 @@ class ReflectionMapPass private constructor(parentScene: Scene, hdriMap: Texture
         drawNode.apply {
             addMesh(Attribute.POSITIONS, name = "reflectionMap") {
                 generate {
-                    cube(centered = true) { }
+                    cube { }
                 }
                 shader = reflectionMapShader
             }

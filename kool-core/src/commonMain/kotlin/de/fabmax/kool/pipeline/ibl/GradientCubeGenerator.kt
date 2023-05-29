@@ -25,7 +25,7 @@ class GradientCubeGenerator(scene: Scene, gradientTex: Texture1d, size: Int = 12
         drawNode.apply {
             addTextureMesh {
                 generate {
-                    cube(centered = true) { }
+                    cube { }
                 }
                 shader = GradientEnvShader(gradientTex)
             }

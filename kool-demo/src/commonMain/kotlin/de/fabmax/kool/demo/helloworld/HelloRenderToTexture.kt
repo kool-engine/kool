@@ -18,7 +18,7 @@ class HelloRenderToTextureDemo : DemoScene("Hello RenderToTexture") {
         val backgroundGroup = Node().apply {
             addColorMesh {
                 generate {
-                    cube(centered = true) {
+                    cube {
                         colored(linearSpace = false)
                     }
                 }

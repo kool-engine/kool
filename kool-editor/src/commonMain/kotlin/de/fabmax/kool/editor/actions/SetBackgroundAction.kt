@@ -12,11 +12,11 @@ class SetBackgroundAction(
 
     override fun apply() {
         sceneModel.sceneBackground.backgroundState.set(newBackground)
-        UpdateSceneBackgroundComponent.updateBackground(sceneModel)
+        UpdateSceneBackgroundComponent.updateSceneBackground(sceneModel)
     }
 
     override fun undo() {
         sceneModel.sceneBackground.backgroundState.set(oldBackground)
-        UpdateSceneBackgroundComponent.updateBackground(sceneModel)
+        UpdateSceneBackgroundComponent.updateSceneBackground(sceneModel)
     }
 }

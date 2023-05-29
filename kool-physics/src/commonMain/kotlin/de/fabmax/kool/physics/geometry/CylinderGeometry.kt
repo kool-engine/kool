@@ -20,7 +20,6 @@ abstract class CommonCylinderGeometry(val length: Float, val radius: Float) {
                     height = this@CommonCylinderGeometry.length
                     radius = this@CommonCylinderGeometry.radius
                     steps = 32
-                    origin.set(0f, -height/2f, 0f)
                 }
             }
         }

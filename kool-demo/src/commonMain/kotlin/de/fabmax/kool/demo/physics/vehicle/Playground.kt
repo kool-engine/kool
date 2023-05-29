@@ -86,7 +86,7 @@ object Playground {
         withTransform {
             transform.mul(frame)
             rotate(-11f, 0f, 0f)
-            cube(centered = true) {
+            cube {
                 size.set(10f, 2f, 10f)
             }
         }
@@ -100,7 +100,6 @@ object Playground {
                     transform.mul(frame)
                     translate(2f * s, -0.375f, i * 3.1f + s * 0.4f)
                     rotate(90f, Vec3f.Z_AXIS)
-                    translate(0f, -2f, 0f)
                     color = c
                     cylinder {
                         radius = 0.5f

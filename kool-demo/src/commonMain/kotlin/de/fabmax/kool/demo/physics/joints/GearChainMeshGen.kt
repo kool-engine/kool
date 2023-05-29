@@ -243,9 +243,9 @@ object GearChainMeshGen {
             cylinder {
                 radius = 0.6f
                 height = 7f
-                origin.set(0f, -6f, 0f)
+                origin.set(0f, -2.5f, 0f)
             }
-            cube(centered = true) {
+            cube {
                 size.set(0.3f, 4f, 4.5f)
                 origin.set(-1.15f, -4f, 0f)
             }
@@ -256,14 +256,14 @@ object GearChainMeshGen {
                     cylinder {
                         radius = 0.2f
                         height = 0.5f
-                        origin.set(it.x, 0.4f, it.y)
+                        origin.set(it.x, 0.65f, it.y)
                     }
                 }
                 color = MdColor.BLUE_GREY toneLin 200
                 cylinder {
                     radius = 1f
                     height = 18.7f
-                    origin.set(-4f, 1.3f, 0f)
+                    origin.set(-4f, 10.65f, 0f)
                 }
             }
         }
@@ -387,7 +387,7 @@ object GearChainMeshGen {
             metal = 1f
             for (s in -1..1 step 2) {
                 cylinder {
-                    origin.set(1.5f * s, -0.9f, 0f)
+                    origin.set(1.5f * s, 0f, 0f)
                     steps = 16
                     radius = 0.18f
                     height = 1.8f

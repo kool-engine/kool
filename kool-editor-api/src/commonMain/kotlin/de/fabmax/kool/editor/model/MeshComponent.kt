@@ -8,6 +8,7 @@ import de.fabmax.kool.modules.ui2.MutableStateList
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.ColorMesh
 import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.scene.MeshRayTest
 import de.fabmax.kool.util.Color
 
 class MeshComponent(override val componentData: MeshComponentData) :
@@ -31,6 +32,7 @@ class MeshComponent(override val componentData: MeshComponentData) :
         }
         _mesh = ColorMesh()
         mesh.shader = defaultPbrShader(sceneNode.scene.sceneBackground.loadedEnvironmentMaps)
+        mesh.rayTest = MeshRayTest.geometryTest(mesh)
         updateGeometry()
     }
 

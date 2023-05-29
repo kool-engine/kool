@@ -302,7 +302,7 @@ kotlin {
 
                 // or the latest snapshot version:
                 // implementation("de.fabmax.kool:kool-core:0.12.0-SNAPSHOT")
-                // implementation("de.fabmax.kool:kool-physics:0.11.0-SNAPSHOT")
+                // implementation("de.fabmax.kool:kool-physics:0.12.0-SNAPSHOT")
             }
         }
 

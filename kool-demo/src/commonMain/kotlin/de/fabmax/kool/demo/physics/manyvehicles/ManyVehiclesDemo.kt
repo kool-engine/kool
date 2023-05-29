@@ -91,7 +91,7 @@ class ManyVehiclesDemo : DemoScene("Many Vehicles") {
             isFrustumChecked = false
             instances = chassisInstances
             generate {
-                cube(centered = true) {
+                cube {
                     size.set(vehicleProps.chassisDims)
                     origin.subtract(vehicleProps.chassisCMOffset)
                 }
@@ -105,7 +105,6 @@ class ManyVehiclesDemo : DemoScene("Many Vehicles") {
             generate {
                 color = Color.DARK_GRAY.toLinear()
                 rotate(90f, Vec3f.Z_AXIS)
-                translate(0f, -vehicleProps.wheelWidthFront * 0.5f, 0f)
                 cylinder {
                     radius = vehicleProps.wheelRadiusFront
                     height = vehicleProps.wheelWidthFront

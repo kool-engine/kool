@@ -84,11 +84,11 @@ class KslShaderTest : DemoScene("KslShader") {
         addGroup {
             addColorMesh {
                 generate {
-                    cube(centered = true) {
+                    cube {
                         colored()
                         size.set(0.5f, 0.5f, 0.5f)
                     }
-                    cube(centered = true) {
+                    cube {
                         colored()
                         size.set(0.2f, 0.2f, 0.2f)
                         origin.set(0.1f, 0.35f, 0.1f)

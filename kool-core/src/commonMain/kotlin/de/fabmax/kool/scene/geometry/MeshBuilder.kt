@@ -565,21 +565,17 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
         }
     }
 
-    inline fun cube(centered: Boolean = false, block: CubeProps.() -> Unit) {
+    inline fun cube(centered: Boolean = true, block: CubeProps.() -> Unit) {
         val props = CubeProps()
         props.block()
-        if (centered || props.isOriginCentered) {
-            centeredCube(props)
-        } else {
-            logW { "Generating non-centered cube geometry, centered origin will soon become the default" }
-            @Suppress("DEPRECATION")
-            cube(props)
+        if (!centered) {
+            logE { "non-centered cube origin is not supported anymore" }
         }
+        cube(props)
     }
 
-    fun centeredCube(props: CubeProps) {
+    fun cube(props: CubeProps) {
         val tmpPos = MutableVec3f()
-        props.fixNegativeSize()
 
         val oX = props.origin.x
         val oY = props.origin.y
@@ -655,86 +651,23 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
         }
     }
 
-    @Deprecated("Will be replaced by centeredCube(), which uses a centered origin")
-    fun cube(props: CubeProps) {
-        val tmpPos = MutableVec3f()
-        props.fixNegativeSize()
-
-        // front
-        withColor(props.frontColor ?: color) {
-            val i0 = vertex(tmpPos.set(props.origin.x, props.origin.y, props.origin.z + props.size.z), Vec3f.Z_AXIS, Vec2f(0f, 1f))
-            val i1 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y, props.origin.z + props.size.z), Vec3f.Z_AXIS, Vec2f(1f, 1f))
-            val i2 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y + props.size.y, props.origin.z + props.size.z), Vec3f.Z_AXIS, Vec2f(1f, 0f))
-            val i3 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.size.y, props.origin.z + props.size.z), Vec3f.Z_AXIS, Vec2f(0f, 0f))
-            addTriIndices(i0, i1, i2)
-            addTriIndices(i0, i2, i3)
-        }
-
-        // right
-        withColor(props.rightColor ?: color) {
-            val i0 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y, props.origin.z), Vec3f.X_AXIS, Vec2f(1f, 1f))
-            val i1 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y + props.size.y, props.origin.z), Vec3f.X_AXIS, Vec2f(1f, 0f))
-            val i2 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y + props.size.y, props.origin.z + props.size.z), Vec3f.X_AXIS, Vec2f(0f, 0f))
-            val i3 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y, props.origin.z + props.size.z), Vec3f.X_AXIS, Vec2f(0f, 1f))
-            addTriIndices(i0, i1, i2)
-            addTriIndices(i0, i2, i3)
-        }
-
-        // back
-        withColor(props.backColor ?: color) {
-            val i0 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.size.y, props.origin.z), Vec3f.NEG_Z_AXIS, Vec2f(1f, 0f))
-            val i1 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y + props.size.y, props.origin.z), Vec3f.NEG_Z_AXIS, Vec2f(0f, 0f))
-            val i2 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y, props.origin.z), Vec3f.NEG_Z_AXIS, Vec2f(0f, 1f))
-            val i3 = vertex(tmpPos.set(props.origin.x, props.origin.y, props.origin.z), Vec3f.NEG_Z_AXIS, Vec2f(1f, 1f))
-            addTriIndices(i0, i1, i2)
-            addTriIndices(i0, i2, i3)
-        }
-
-        // left
-        withColor(props.leftColor ?: color) {
-            val i0 = vertex(tmpPos.set(props.origin.x, props.origin.y, props.origin.z + props.size.z), Vec3f.NEG_X_AXIS, Vec2f(1f, 1f))
-            val i1 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.size.y, props.origin.z + props.size.z), Vec3f.NEG_X_AXIS, Vec2f(1f, 0f))
-            val i2 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.size.y, props.origin.z), Vec3f.NEG_X_AXIS, Vec2f(0f, 0f))
-            val i3 = vertex(tmpPos.set(props.origin.x, props.origin.y, props.origin.z), Vec3f.NEG_X_AXIS, Vec2f(0f, 1f))
-            addTriIndices(i0, i1, i2)
-            addTriIndices(i0, i2, i3)
-        }
-
-        // top
-        withColor(props.topColor ?: color) {
-            val i0 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.size.y, props.origin.z + props.size.z), Vec3f.Y_AXIS, Vec2f(0f, 1f))
-            val i1 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y + props.size.y, props.origin.z + props.size.z), Vec3f.Y_AXIS, Vec2f(1f, 1f))
-            val i2 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y + props.size.y, props.origin.z), Vec3f.Y_AXIS, Vec2f(1f, 0f))
-            val i3 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.size.y, props.origin.z), Vec3f.Y_AXIS, Vec2f(0f, 0f))
-            addTriIndices(i0, i1, i2)
-            addTriIndices(i0, i2, i3)
-        }
-
-        // bottom
-        withColor(props.bottomColor ?: color) {
-            val i0 = vertex(tmpPos.set(props.origin.x, props.origin.y, props.origin.z), Vec3f.NEG_Y_AXIS, Vec2f(0f, 1f))
-            val i1 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y, props.origin.z), Vec3f.NEG_Y_AXIS, Vec2f(1f, 1f))
-            val i2 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y, props.origin.z + props.size.z), Vec3f.NEG_Y_AXIS, Vec2f(1f, 0f))
-            val i3 = vertex(tmpPos.set(props.origin.x, props.origin.y, props.origin.z + props.size.z), Vec3f.NEG_Y_AXIS, Vec2f(0f, 0f))
-            addTriIndices(i0, i1, i2)
-            addTriIndices(i0, i2, i3)
-        }
-    }
-
     inline fun cylinder(block: CylinderProps.() -> Unit) {
         val props = CylinderProps()
         props.block()
         cylinder(props)
     }
 
-    fun cylinder(props: CylinderProps) {
+    fun cylinder(props: CylinderProps) = withTransform {
         val tmpNrm = MutableVec3f()
-        props.fixNegativeSize()
+
+        translate(props.origin)
+        val yb = props.height * -0.5f
+        val yt = props.height * 0.5f
 
         // bottom
         if (props.bottomFill) {
             withTransform {
-                translate(props.origin)
+                translate(0f, yb, 0f)
                 rotate(90f, Vec3f.X_AXIS)
                 circle {
                     steps = props.steps
@@ -745,7 +678,7 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
         // top
         if (props.topFill) {
             withTransform {
-                translate(props.origin.x, props.origin.y + props.height, props.origin.z)
+                translate(0f, yt, 0f)
                 rotate(-90f, Vec3f.X_AXIS)
                 circle {
                     steps = props.steps
@@ -762,18 +695,18 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
             val c = cos(i * PI * 2 / props.steps).toFloat()
             val s = sin(i * PI * 2 / props.steps).toFloat()
 
-            val px2 = props.origin.x + props.bottomRadius * c
-            val pz2 = props.origin.z + props.bottomRadius * s
-            val px3 = props.origin.x + props.topRadius * c
-            val pz3 = props.origin.z + props.topRadius * s
+            val px2 = props.bottomRadius * c
+            val pz2 = props.bottomRadius * s
+            val px3 = props.topRadius * c
+            val pz3 = props.topRadius * s
 
             tmpNrm.set(c, 0f, s).rotate(nrmAng, s, 0f, c)
             val i2 = vertex {
-                position.set(px2, props.origin.y, pz2)
+                position.set(px2, yb, pz2)
                 normal.set(tmpNrm)
             }
             val i3 = vertex {
-                position.set(px3, props.origin.y + props.height, pz3)
+                position.set(px3, yt, pz3)
                 normal.set(tmpNrm)
             }
 
@@ -1191,7 +1124,6 @@ class RectProps {
 class CubeProps {
     val origin = MutableVec3f()
     val size = MutableVec3f(1f, 1f, 1f)
-    var isOriginCentered = false
 
     var width: Float
         get() = size.x
@@ -1209,23 +1141,6 @@ class CubeProps {
     var rightColor: Color? = null
     var frontColor: Color? = null
     var backColor: Color? = null
-
-    fun fixNegativeSize() {
-        if (size.x < 0) {
-            size.x = -size.x
-        }
-        if (size.y < 0) {
-            size.y = -size.y
-        }
-        if (size.z < 0) {
-            size.z = -size.z
-        }
-    }
-
-    @Deprecated("Use cube(centered = true) { } instead, centered origin will become the default soon")
-    fun centered() {
-        isOriginCentered = true
-    }
 
     fun colored(linearSpace: Boolean = true) {
         if (linearSpace) {
@@ -1261,13 +1176,6 @@ class CylinderProps {
             bottomRadius = value
             topRadius = value
         }
-
-    fun fixNegativeSize() {
-        if (height < 0) {
-            origin.y += height
-            height = -height
-        }
-    }
 }
 
 class TextProps(var font: Font) {

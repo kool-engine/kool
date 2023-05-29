@@ -114,7 +114,7 @@ class GuardRail {
                 }
             }
             color = poleColor
-            cube(centered = true) {
+            cube {
                 size.set(0.1f, 2f, 0.1f)
                 origin.set(0f, -1f, 0f)
             }

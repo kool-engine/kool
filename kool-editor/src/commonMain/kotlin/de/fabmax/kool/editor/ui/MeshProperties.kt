@@ -63,7 +63,7 @@ fun UiScope.meshTypeProperties(nodeModel: SceneNodeModel, meshComponent: MeshCom
 
         when (val shapeType = shape) {
             is MeshShapeData.Box -> boxProperties(nodeModel, meshComponent, shapeType)
-            is MeshShapeData.Rect -> TODO()
+            is MeshShapeData.Rect -> rectProperties(nodeModel, meshComponent, shapeType)
             is MeshShapeData.IcoSphere -> icoSphereProperties(nodeModel, meshComponent, shapeType)
             is MeshShapeData.UvSphere -> uvSphereProperties(nodeModel, meshComponent, shapeType)
             is MeshShapeData.Cylinder -> TODO()
@@ -84,6 +84,21 @@ private fun UiScope.boxProperties(nodeModel: SceneNodeModel, meshComponent: Mesh
     ) { x, y, z ->
         EditorActions.applyAction(
             SetShapeAction(nodeModel, meshComponent, box, MeshShapeData.Box(box.size.copy(x, y, z)))
+        )
+    }
+}
+
+private fun UiScope.rectProperties(nodeModel: SceneNodeModel, meshComponent: MeshComponent, rect: MeshShapeData.Rect) = Column(
+    width = Grow.Std,
+    scopeName = "boxProperties"
+) {
+    xyRow(
+        label = "Size:",
+        x = rect.size.x,
+        y = rect.size.y
+    ) { x, y ->
+        EditorActions.applyAction(
+            SetShapeAction(nodeModel, meshComponent, rect, MeshShapeData.Rect(rect.size.copy(x, y)))
         )
     }
 }

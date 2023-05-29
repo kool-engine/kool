@@ -26,9 +26,9 @@ class SceneBackgroundComponent(override val componentData: SceneBackgroundCompon
 }
 
 interface UpdateSceneBackgroundComponent : EditorModelComponent {
-    fun updateBackground(background: SceneBackgroundComponent) {
-        when (val bg = background.backgroundState.value) {
-            is SceneBackgroundData.Hdri -> background.loadedEnvironmentMaps?.let { updateHdriBg(bg, it) }
+    fun updateBackground(sceneBackground: SceneBackgroundComponent) {
+        when (val bg = sceneBackground.backgroundState.value) {
+            is SceneBackgroundData.Hdri -> sceneBackground.loadedEnvironmentMaps?.let { updateHdriBg(bg, it) }
             is SceneBackgroundData.SingleColor -> updateSingleColorBg(bg.color.toColor())
         }
     }
@@ -37,7 +37,7 @@ interface UpdateSceneBackgroundComponent : EditorModelComponent {
     fun updateHdriBg(hdriBg: SceneBackgroundData.Hdri, ibl: EnvironmentMaps)
 
     companion object {
-        fun updateBackground(sceneModel: SceneModel) {
+        fun updateSceneBackground(sceneModel: SceneModel) {
             sceneModel.project.getComponentsInScene<UpdateSceneBackgroundComponent>(sceneModel).forEach {
                 it.updateBackground(sceneModel.sceneBackground)
             }

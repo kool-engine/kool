@@ -9,7 +9,7 @@ expect class BoxGeometry(size: Vec3f) : CommonBoxGeometry, CollisionGeometry
 
 abstract class CommonBoxGeometry(val size: Vec3f) {
     open fun generateMesh(target: MeshBuilder) {
-        target.cube(centered = true) {
+        target.cube {
             size.set(this@CommonBoxGeometry.size)
         }
     }

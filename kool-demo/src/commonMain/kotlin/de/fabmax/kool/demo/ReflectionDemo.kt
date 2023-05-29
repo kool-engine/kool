@@ -263,13 +263,14 @@ class ReflectionDemo : DemoScene("Reflections") {
                         radius = 0.1f
                     }
                     rotate(90f, Vec3f.Z_AXIS)
+                    translate(0f, 0.45f, 0f)
                     cylinder {
                         bottomRadius = 0.015f
                         topRadius = 0.015f
-                        height = 0.85f
+                        height = 0.9f
                         steps = 4
                     }
-                    translate(0f, 0.85f, 0f)
+                    translate(0f, 0.45f, 0f)
                     cylinder {
                         bottomRadius = 0.1f
                         topRadius = 0.0025f

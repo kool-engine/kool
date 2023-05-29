@@ -444,7 +444,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
     private fun makeBridgeMesh() = ColorMesh().apply {
         generate {
             color = MdColor.BROWN toneLin 700
-            cube(centered = true) {
+            cube {
                 size.set(2f, 0.2f, 1.1f)
             }
         }

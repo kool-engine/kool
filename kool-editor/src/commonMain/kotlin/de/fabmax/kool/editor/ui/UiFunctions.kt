@@ -279,6 +279,7 @@ fun UiScope.labeledSlider(
         }
         doubleTextField(value.use().toDouble(), precision, width = Grow(0.35f)) {
             value.set(it.toFloat())
+            onChange(it.toFloat())
         }
     }
     menuRow {

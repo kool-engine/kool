@@ -214,7 +214,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                         withTransform {
                             translate(x.toFloat(), 0f, y.toFloat())
                             if ((x + 100) % 2 == (y + 100) % 2) {
-                                cube(centered = true) {
+                                cube {
                                     size.set(
                                         rand.randomF(0.6f, 0.8f),
                                         rand.randomF(0.6f, 0.95f),

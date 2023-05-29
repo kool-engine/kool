@@ -29,7 +29,7 @@ sealed class MeshShapeData {
 
         override fun generate(builder: MeshBuilder) {
             builder.apply {
-                cube(centered = true) {
+                cube {
                     size.set(this@Box.size.toVec3f())
                 }
             }
@@ -69,7 +69,12 @@ sealed class MeshShapeData {
         override val name: String get() = "Rect"
 
         override fun generate(builder: MeshBuilder) {
-            TODO()
+            builder.apply {
+                grid {
+                    sizeX = size.x.toFloat()
+                    sizeY = size.y.toFloat()
+                }
+            }
         }
     }
 
@@ -87,7 +92,7 @@ sealed class MeshShapeData {
         override val name: String get() = "Empty"
 
         override fun generate(builder: MeshBuilder) {
-            builder.clear()
+            // empty - nothing to generate
         }
     }
 

@@ -16,7 +16,7 @@ class HelloWorldDemo : DemoScene("Hello World") {
 
         addColorMesh {
             generate {
-                cube(centered = true) {
+                cube {
                     colored()
                 }
             }
