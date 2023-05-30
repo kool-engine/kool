@@ -20,7 +20,7 @@ object AppAssets : AppAssetsLoader {
 
     override suspend fun loadHdriEnvironment(scene: Scene, path: String): EnvironmentMaps = impl.loadHdriEnvironment(scene, path)
     override suspend fun loadModel(model: ModelComponentData): GltfFile = impl.loadModel(model)
-    override suspend fun loadTexture2d(path: String): Texture2d = Assets.loadTexture2d(path)
+    override suspend fun loadTexture2d(path: String): Texture2d = impl.loadTexture2d(path)
 
     class DefaultLoader : AppAssetsLoader {
         override suspend fun loadHdriEnvironment(scene: Scene, path: String): EnvironmentMaps {

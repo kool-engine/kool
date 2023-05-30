@@ -27,6 +27,7 @@ abstract class EditorNodeModel(val nodeData: SceneNodeData) {
     private fun createComponentsFromData(componentData: List<ComponentData>) {
         componentData.forEach { data ->
             when (data) {
+                is MaterialHolderData -> components += MaterialHolderComponent(data)
                 is MeshComponentData -> components += MeshComponent(data)
                 is ModelComponentData -> components += ModelComponent(data)
                 is SceneBackgroundComponentData -> components += SceneBackgroundComponent(data)

@@ -90,12 +90,22 @@ val Sizes.textFieldPadding: Dp get() = smallGap * 0.75f
 val Sizes.boldText: MsdfFont get() = (normalText as MsdfFont).copy(weight = 0.075f)
 val Sizes.italicText: MsdfFont get() = (normalText as MsdfFont).copy(italic = MsdfFont.ITALIC_STD)
 
+// weak hovered background: hovered list items, hovered collapsable panel header
 val Colors.hoverBg: Color get() = secondaryVariantAlpha(0.35f)
-val Colors.selectionBg: Color get() = secondaryVariantAlpha(0.5f)
+
+// text fields, combo-boxes, right side slider track
+val Colors.componentBg: Color get() = secondaryAlpha(0.25f)
+// focused text field, hovered combo-boxes
+val Colors.componentBgHovered: Color get() = secondaryAlpha(0.5f)
+
+// buttons, combo-box expander, left side slider track
+val Colors.elevatedComponentBg: Color get() = secondaryVariant
+// hovered buttons / cb expander
+val Colors.elevatedComponentBgHovered: Color get() = secondary
 
 object UiColors {
     val border = Color("0f1114ff")
     val titleBg = Color("343a49ff")
     val bgMid = Color("1b2028ff")
-    val titleText =  Color("dbe6ffff") //Color("B9CDF7")
+    val titleText =  Color("dbe6ffff")
 }

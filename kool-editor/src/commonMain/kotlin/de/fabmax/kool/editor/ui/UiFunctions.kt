@@ -3,6 +3,7 @@ package de.fabmax.kool.editor.ui
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.modules.ui2.docking.UiDockable
 import de.fabmax.kool.toString
+import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 import kotlin.math.*
 
@@ -35,20 +36,16 @@ fun UiScope.doubleTextField(
     onSet: (Double) -> Unit
 ) = TextField {
     var text by remember(value.toString(precision))
-    var bgColor = colors.secondaryAlpha(0.5f)
     if (!isFocused.use()) {
         text = value.toString(precision)
-        bgColor = colors.secondaryAlpha(0.25f)
     }
+    defaultTextfieldStyle()
     modifier
         .text(text)
         .width(width)
         .margin(start = sizes.smallGap)
         .alignY(AlignmentY.Center)
         .textAlignX(AlignmentX.End)
-        .colors(lineColor = null, lineColorFocused = null)
-        .background(RoundRectBackground(bgColor, sizes.textFieldPadding))
-        .padding(sizes.textFieldPadding)
         .onChange { text = it }
         .onEnterPressed { txt ->
             val d = txt.toDoubleOrNull()
@@ -69,6 +66,7 @@ fun UiScope.intTextField(
     if (!isFocused.use()) {
         text = value.toString()
     }
+    defaultTextfieldStyle()
     modifier
         .text(text)
         .width(width)
@@ -233,9 +231,9 @@ fun <T: Any> UiScope.labeledCombobox(
     }
 
     ComboBox {
+        defaultComboBoxStyle()
         modifier
             .size(Grow.Std, sizes.lineHeight)
-            .colors(textBackgroundColor = colors.secondaryAlpha(0.25f), textBackgroundHoverColor = colors.secondaryAlpha(0.5f))
             .items(items)
             .selectedIndex(selectedIndex.use())
             .onItemSelected {
@@ -261,6 +259,61 @@ fun precisionForValue(value: Float): Int {
     val log = 3.5f - log10(abs(value))
     val digits = if (log.isFinite()) log.roundToInt() else 4
     return min(4, max(1, digits))
+}
+
+fun UiScope.labeledColorPicker(
+    label: String,
+    pickerColor: MutableStateValue<Color>,
+    isWithAlpha: Boolean = false,
+    boxWidth: Dimension = sizes.baseSize * 2,
+    onShow: ((Color) -> Unit)? = null,
+    onHide: ((Color) -> Unit)? = null,
+    onPreview: (Color) -> Unit
+) = menuRow {
+
+    val colorPickerPopup = remember {
+        val popup = AutoPopup()
+        popup.popupContent = Composable {
+            modifier
+                .background(RoundRectBackground(colors.background, sizes.smallGap))
+                .border(RoundRectBorder(colors.secondaryVariant, sizes.smallGap, sizes.borderWidth))
+                .padding(sizes.smallGap)
+
+            val previewColor = pickerColor.value
+            val hsv = previewColor.toHsv()
+            val hue = remember(hsv.x)
+            val sat = remember(hsv.y)
+            val bri = remember(hsv.z)
+            val alpha = if (isWithAlpha) remember(previewColor.a) else null
+            val hexString = remember(previewColor.toHexString(isWithAlpha))
+
+            ColorChooserV(hue, sat, bri, alpha, hexString) { color ->
+                pickerColor.set(color)
+                onPreview(color)
+            }
+        }
+        popup.onShow = { onShow?.invoke(pickerColor.value) }
+        popup.onHide = { onHide?.invoke(pickerColor.value) }
+        popup
+    }
+    colorPickerPopup()
+
+    Text(label) {
+        modifier
+            .width(Grow.Std)
+            .alignY(AlignmentY.Center)
+    }
+
+    Box(width = boxWidth, height = Grow.Std) {
+        var isHovered by remember(false)
+        val borderColor = if (isHovered) colors.elevatedComponentBgHovered else colors.elevatedComponentBg
+        modifier
+            .backgroundColor(pickerColor.use())
+            .border(RectBorder(borderColor, sizes.borderWidth))
+            .onEnter { isHovered = true }
+            .onExit { isHovered = false }
+            .onClick { colorPickerPopup.show(it) }
+    }
 }
 
 fun UiScope.labeledDoubleTextField(
@@ -298,6 +351,7 @@ fun UiScope.labeledSlider(
     min: Float = 0f,
     max: Float = 1f,
     precision: Int = precisionForValue(max - min),
+    valueWidth: Dimension = sizes.baseSize * 2,
     onChange: (Float) -> Unit
 ) = Column(Grow.Std, scopeName = label) {
     menuRow {
@@ -306,13 +360,14 @@ fun UiScope.labeledSlider(
                 .width(Grow.Std)
                 .alignY(AlignmentY.Center)
         }
-        doubleTextField(value.use().toDouble(), precision, width = Grow(0.35f)) {
+        doubleTextField(value.use().toDouble(), precision, valueWidth) {
             value.set(it.toFloat())
             onChange(it.toFloat())
         }
     }
     menuRow {
         Slider(value.use(), min, max) {
+            defaultSliderStyle()
             modifier
                 .width(Grow.Std)
                 .onChange {
@@ -378,3 +433,31 @@ inline fun UiScope.menuRow(marginTop: Dp = sizes.smallGap, block: RowScope.() ->
     block()
 }
 
+fun ColumnScope.menuDivider(marginTop: Dp = sizes.smallGap, marginBottom: Dp = Dp.ZERO) {
+    divider(colors.secondaryVariantAlpha(0.75f), marginTop = marginTop, marginBottom = marginBottom)
+}
+
+fun ButtonScope.defaultButtonStyle() {
+    modifier.colors(buttonColor = colors.elevatedComponentBg, buttonHoverColor = colors.elevatedComponentBgHovered)
+}
+
+fun ComboBoxScope.defaultComboBoxStyle() {
+    modifier.colors(
+        textBackgroundColor = colors.componentBg,
+        textBackgroundHoverColor = colors.componentBgHovered,
+        expanderColor = colors.elevatedComponentBg,
+        expanderHoverColor = colors.elevatedComponentBgHovered
+    )
+}
+
+fun SliderScope.defaultSliderStyle() {
+    modifier.colors(trackColor = colors.elevatedComponentBg, trackColorActive = colors.elevatedComponentBgHovered)
+}
+
+fun TextFieldScope.defaultTextfieldStyle() {
+    val bgColor = if (isFocused.use()) colors.componentBgHovered else colors.componentBg
+    modifier
+        .colors(lineColor = null, lineColorFocused = null)
+        .background(RoundRectBackground(bgColor, sizes.textFieldPadding))
+        .padding(sizes.textFieldPadding)
+}

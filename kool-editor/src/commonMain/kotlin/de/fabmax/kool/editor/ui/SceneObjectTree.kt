@@ -7,10 +7,7 @@ import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.actions.AddNodeAction
 import de.fabmax.kool.editor.actions.EditorActions
 import de.fabmax.kool.editor.actions.RemoveNodeAction
-import de.fabmax.kool.editor.data.MeshComponentData
-import de.fabmax.kool.editor.data.MeshShapeData
-import de.fabmax.kool.editor.data.ModelComponentData
-import de.fabmax.kool.editor.data.SceneNodeData
+import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.editor.model.EditorNodeModel
 import de.fabmax.kool.editor.model.SceneModel
 import de.fabmax.kool.editor.model.SceneNodeModel
@@ -28,8 +25,6 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
     private val treeItems = mutableListOf<SceneObjectItem>()
     private val isTreeValid = mutableStateOf(false)
 
-    private val itemPopupMenu = ContextPopupMenu<SceneObjectItem>()
-
     init {
         sceneBrowser.editor.appLoader.appReloadListeners += AppReloadListener {
             nodeTreeItemMap.clear()
@@ -45,6 +40,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         val id = EditorState.projectModel.nextId()
         val nodeData = SceneNodeData("${meshShape.name}-$id", id)
         nodeData.components += MeshComponentData(meshShape)
+        nodeData.components += MaterialHolderData(-1)
         val mesh = SceneNodeModel(nodeData, parentScene)
         EditorActions.applyAction(AddNodeAction(mesh, parent.nodeModel, parentScene, this))
     }
@@ -80,6 +76,8 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
             containerModifier = { it.backgroundColor(null) }
         ) {
             var hoveredIndex by remember(-1)
+            val itemPopupMenu = remember { ContextPopupMenu<SceneObjectItem>() }
+
             itemsIndexed(treeItems) { i, item ->
                 sceneObjectItem(item).apply {
                     modifier

@@ -67,7 +67,7 @@ class ObjectProperties(ui: EditorUi) : EditorPanel("Object Properties", ui) {
         }
     }
 
-    fun UiScope.objectProperties(selectedObject: EditorNodeModel?) = ScrollArea(
+    private fun UiScope.objectProperties(selectedObject: EditorNodeModel?) = ScrollArea(
         containerModifier = { it.backgroundColor(null) },
         isScrollableHorizontal = false
     ) {
@@ -101,6 +101,7 @@ class ObjectProperties(ui: EditorUi) : EditorPanel("Object Properties", ui) {
 
             for (component in selectedObject.components.use()) {
                 when (component) {
+                    is MaterialHolderComponent -> materialComponent(selectedObject, component)
                     is MeshComponent -> meshComponent(selectedObject, component)
                     is SceneBackgroundComponent -> sceneBackgroundComponent(selectedObject)
                     is ScriptComponent -> scriptComponent(component)
@@ -112,13 +113,21 @@ class ObjectProperties(ui: EditorUi) : EditorPanel("Object Properties", ui) {
         }
     }
 
-    fun UiScope.meshComponent(nodeModel: EditorNodeModel, meshComponent: MeshComponent) {
+    private fun UiScope.materialComponent(nodeModel: EditorNodeModel, materialComponent: MaterialHolderComponent) {
+        (nodeModel as? SceneNodeModel)?.let {
+            val editor = remember { MaterialEditor(nodeModel, materialComponent) }
+            editor.materialHolder = materialComponent
+            editor()
+        }
+    }
+
+    private fun UiScope.meshComponent(nodeModel: EditorNodeModel, meshComponent: MeshComponent) {
         (nodeModel as? SceneNodeModel)?.let {
             meshTypeProperties(nodeModel, meshComponent)
         }
     }
 
-    fun UiScope.sceneBackgroundComponent(nodeModel: EditorNodeModel) {
+    private fun UiScope.sceneBackgroundComponent(nodeModel: EditorNodeModel) {
         (nodeModel as? SceneModel)?.let {
             val editor = remember { SceneBackgroundEditor(it) }
             editor.sceneModel = it
@@ -126,7 +135,7 @@ class ObjectProperties(ui: EditorUi) : EditorPanel("Object Properties", ui) {
         }
     }
 
-    fun UiScope.scriptComponent(scriptComponent: ScriptComponent) {
+    private fun UiScope.scriptComponent(scriptComponent: ScriptComponent) {
         val title = remember {
             val simpleName = scriptComponent.scriptClassNameState.value
                 .replaceBeforeLast('.', "")
@@ -142,14 +151,14 @@ class ObjectProperties(ui: EditorUi) : EditorPanel("Object Properties", ui) {
         }
     }
 
-    fun UiScope.transformComponent(nodeModel: EditorNodeModel) {
+    private fun UiScope.transformComponent(nodeModel: EditorNodeModel) {
         (nodeModel as? SceneNodeModel)?.let {
             transformGizmo.setTransformObject(it)
             transformEditor(transformProperties)
         }
     }
 
-    fun UiScope.addComponentSelector(nodeModel: EditorNodeModel) {
+    private fun UiScope.addComponentSelector(nodeModel: EditorNodeModel) {
         if (nodeModel !is SceneNodeModel) {
             // currently there are no useful components we can add to a scene...
             return
@@ -159,6 +168,7 @@ class ObjectProperties(ui: EditorUi) : EditorPanel("Object Properties", ui) {
 
         // make this some kind of combobox / menu, once there are more options
         val button = Button("Add script") {
+            defaultButtonStyle()
             modifier
                 .width(sizes.baseSize * 5)
                 .margin(top = sizes.gap)

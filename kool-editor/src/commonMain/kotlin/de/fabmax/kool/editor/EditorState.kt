@@ -23,6 +23,7 @@ object EditorState {
     val selectedNode = mutableStateOf<EditorNodeModel?>(null)
 
     private val uniqueNameIds = mutableMapOf<String, Int>()
+    private val prettyJson = Json { prettyPrint = true }
 
     private fun loadProjectModel(): EditorProject {
         val projFile = File(KoolEditor.APP_PROJECT_MODEL_PATH)
@@ -53,12 +54,7 @@ object EditorState {
     fun saveProject() {
         val modelPath = File(KoolEditor.APP_PROJECT_MODEL_PATH)
         modelPath.parentFile.mkdirs()
-
-        //modelPath.writeText(Json.encodeToString(projectModel))
-        val json = Json {
-            prettyPrint = true
-        }
-        modelPath.writeText(json.encodeToString(projectModel.projectData))
+        modelPath.writeText(prettyJson.encodeToString(projectModel.projectData))
 
         logD { "Saved project to ${modelPath.absolutePath}" }
     }

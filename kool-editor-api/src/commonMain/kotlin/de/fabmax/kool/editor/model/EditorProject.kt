@@ -1,6 +1,7 @@
 package de.fabmax.kool.editor.model
 
 import de.fabmax.kool.Assets
+import de.fabmax.kool.editor.data.MaterialData
 import de.fabmax.kool.editor.data.ProjectData
 import de.fabmax.kool.editor.data.SceneNodeData
 import kotlinx.serialization.decodeFromString
@@ -14,9 +15,16 @@ class EditorProject(val projectData: ProjectData) {
     val sceneNodeData: Map<Long, SceneNodeData>
         get() = _sceneNodeData
 
+    private val _materials = mutableMapOf<Long, MaterialModel>()
+    val materials: Map<Long, MaterialModel>
+        get() = _materials
+
     private val created: MutableMap<Long, SceneModel> = mutableMapOf()
 
     suspend fun create() {
+        projectData.materials.forEach { (id, data) ->
+            _materials[id] = MaterialModel(data.copy(id = id), this)
+        }
         projectData.sceneNodeIds.forEach { sceneNodeId ->
             val sceneData = sceneNodeData[sceneNodeId]
             if (sceneData != null) {
@@ -42,8 +50,21 @@ class EditorProject(val projectData: ProjectData) {
         _sceneNodeData -= data.nodeId
     }
 
+    fun createNewMaterial(): MaterialModel {
+        val id = nextId()
+        val newMat = MaterialData(id, "Material-$id")
+        val matModel = MaterialModel(newMat, this)
+        _materials[id] = matModel
+        projectData.materials[id] = newMat
+        return matModel
+    }
+
+    inline fun <reified T: EditorModelComponent> getAllComponents(): List<T> {
+        return entities.flatMap { it.components.filterIsInstance<T>() }
+    }
+
     inline fun <reified T: EditorModelComponent> getComponentsFromEntities(predicate: (EditorNodeModel) -> Boolean): List<T> {
-        return entities.filter(predicate).flatMap { it.components }.filterIsInstance<T>()
+        return entities.filter(predicate).flatMap { it.components.filterIsInstance<T>() }
     }
 
     inline fun <reified T: EditorModelComponent> getComponentsInScene(sceneModel: SceneModel): List<T> {

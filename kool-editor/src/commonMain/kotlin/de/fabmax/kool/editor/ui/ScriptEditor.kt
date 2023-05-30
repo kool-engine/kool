@@ -29,7 +29,7 @@ class ScriptEditor(val scriptComponent: ScriptComponent) : Composable {
         }
 
         if (!scriptProperties.isNullOrEmpty()) {
-            divider(colors.secondaryVariantAlpha(0.5f), marginTop = sizes.smallGap)
+            menuDivider()
         }
 
         scriptProperties?.forEach { prop ->

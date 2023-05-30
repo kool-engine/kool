@@ -33,13 +33,13 @@ private object ShapeOptions {
             is MeshShapeData.UvSphere -> 3
             is MeshShapeData.Cylinder -> 4
             is MeshShapeData.Capsule -> 5
-            MeshShapeData.Empty -> 5
+            MeshShapeData.Empty -> 6
         }
     }
 }
 
 fun UiScope.meshTypeProperties(nodeModel: SceneNodeModel, meshComponent: MeshComponent) = collapsapsablePanel(
-    title = "Mesh Type",
+    title = "Mesh",
     scopeName = "${nodeModel.nodeData.nodeId}"
 ) {
     // todo: support multiple primitives per mesh
@@ -63,6 +63,8 @@ fun UiScope.meshTypeProperties(nodeModel: SceneNodeModel, meshComponent: MeshCom
             }
         }
 
+        menuDivider()
+
         when (val shapeType = shape) {
             is MeshShapeData.Box -> boxProperties(nodeModel, meshComponent, shapeType)
             is MeshShapeData.Rect -> rectProperties(nodeModel, meshComponent, shapeType)
@@ -70,7 +72,7 @@ fun UiScope.meshTypeProperties(nodeModel: SceneNodeModel, meshComponent: MeshCom
             is MeshShapeData.UvSphere -> uvSphereProperties(nodeModel, meshComponent, shapeType)
             is MeshShapeData.Cylinder -> cylinderProperties(nodeModel, meshComponent, shapeType)
             is MeshShapeData.Capsule -> capsuleProperties(nodeModel, meshComponent, shapeType)
-            MeshShapeData.Empty -> {}
+            MeshShapeData.Empty -> { }
         }
     }
 }
@@ -147,6 +149,7 @@ private fun UiScope.cylinderProperties(nodeModel: SceneNodeModel, meshComponent:
     scopeName = "cylinderProperties"
 ) {
     val isUniRadius = remember(cylinder.topRadius == cylinder.bottomRadius)
+    isUniRadius.set(cylinder.topRadius == cylinder.bottomRadius)
 
     labeledCheckbox("Uniform radius:", isUniRadius) {
         if (cylinder.topRadius != cylinder.bottomRadius) {

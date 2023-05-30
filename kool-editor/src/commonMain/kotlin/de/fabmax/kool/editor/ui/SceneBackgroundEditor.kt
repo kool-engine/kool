@@ -8,6 +8,7 @@ import de.fabmax.kool.editor.api.AppAssets
 import de.fabmax.kool.editor.data.SceneBackgroundComponentData
 import de.fabmax.kool.editor.data.SceneBackgroundData
 import de.fabmax.kool.editor.model.SceneModel
+import de.fabmax.kool.editor.model.UpdateSceneBackgroundComponent
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.ibl.ReflectionMapPass
 import de.fabmax.kool.util.MdColor
@@ -17,6 +18,8 @@ import kotlin.reflect.KClass
 class SceneBackgroundEditor(var sceneModel: SceneModel) : Composable {
 
     private val editorSingleBgColor = mutableStateOf(MdColor.GREY tone 900)
+    private val editorSingleBgColorOld = mutableStateOf(MdColor.GREY tone 900)
+
     private val selectedHdri = mutableStateOf(0)
     private val skyLod = mutableStateOf(2f)
 
@@ -42,7 +45,7 @@ class SceneBackgroundEditor(var sceneModel: SceneModel) : Composable {
                 }
             }
 
-            divider(colors.secondaryVariantAlpha(0.5f), marginTop = sizes.smallGap)
+            menuDivider()
 
             when (val type = sceneBackgroundComponent.backgroundState.use()) {
                 is SceneBackgroundData.Hdri -> hdriBgProperties(sceneModel, type)
@@ -76,19 +79,19 @@ class SceneBackgroundEditor(var sceneModel: SceneModel) : Composable {
         scopeName = "singleColorBg"
     ) {
         editorSingleBgColor.set(singleColorBg.color.toColor())
-        val bgColor = editorSingleBgColor.value
-        val hsv = bgColor.toHsv()
-        val hue = remember(hsv.x)
-        val sat = remember(hsv.y)
-        val bri = remember(hsv.z)
-        val hexString = remember(bgColor.toHexString(false))
-
-        ColorChooserV(hue, sat, bri, null, hexString) { color ->
-            editorSingleBgColor.set(color)
-            val oldBg = sceneModel.sceneBackground.backgroundState.value
-            val newBg = SceneBackgroundData.SingleColor(color)
-            // fixme: apply EditorAction only on end of drag to avoid spamming undo / redo history
-            EditorActions.applyAction(SetBackgroundAction(sceneModel, oldBg, newBg))
+        labeledColorPicker(
+            "Background color:",
+            editorSingleBgColor,
+            onShow = { editorSingleBgColorOld.set(it) },
+            onHide = {
+                val oldBg = SceneBackgroundData.SingleColor(editorSingleBgColorOld.value)
+                val newBg = SceneBackgroundData.SingleColor(it)
+                EditorActions.applyAction(SetBackgroundAction(sceneModel, oldBg, newBg))
+            }
+        ) { previewColor ->
+            // preview: set background without editor action to avoid spamming undo / redo history
+            sceneModel.sceneBackground.backgroundState.set(SceneBackgroundData.SingleColor(previewColor))
+            UpdateSceneBackgroundComponent.updateSceneBackground(sceneModel)
         }
     }
 

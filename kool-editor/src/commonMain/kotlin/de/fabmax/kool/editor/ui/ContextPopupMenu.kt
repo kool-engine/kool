@@ -1,47 +1,37 @@
 package de.fabmax.kool.editor.ui
 
-import de.fabmax.kool.input.PointerInput
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.modules.ui2.*
 
-class ContextPopupMenu<T: Any> : Composable {
+class ContextPopupMenu<T: Any> : AutoPopup() {
 
     private val menu = mutableStateOf<SubMenuItem<T>?>(null)
 
-    private var screenPosPx = mutableStateOf(Vec2f.ZERO)
     private var contextItem = mutableStateOf<T?>(null)
 
+    init {
+        popupContent = Composable {
+            val item = contextItem.use()
+            val rootMenu = menu.use()
+            if (item != null && rootMenu != null) {
+                modifier
+                    .layout(CellLayout)
+                    .backgroundColor(null)
+
+                menuList(rootMenu.menuItems.use(), item, Dp.ZERO, Dp.ZERO, modifier.zLayer)
+            }
+        }
+    }
+
     fun show(screenPosPx: Vec2f, menu: SubMenuItem<T>, contextItem: T) {
+        super.show(screenPosPx)
         this.menu.set(menu)
-        this.screenPosPx.set(screenPosPx)
         this.contextItem.set(contextItem)
     }
 
-    fun hide() {
+    override fun hide() {
+        super.hide()
         contextItem.set(null)
-    }
-
-    override fun UiScope.compose() {
-        val pos = screenPosPx.use()
-        val item = contextItem.use()
-        val rootMenu = menu.use()
-        if (item != null && rootMenu != null) {
-            menu(rootMenu, pos, item)
-        }
-    }
-
-    private fun UiScope.menu(rootMenu: SubMenuItem<T>, screenPosPx: Vec2f, contextItem: T) = Popup(screenPosPx.x, screenPosPx.y, layout = CellLayout) {
-        modifier.backgroundColor(null)
-
-        // close popup menu on any button event outside popup menu
-        surface.onEachFrame {
-            val ptr = PointerInput.primaryPointer
-            if (ptr.isAnyButtonEvent && !uiNode.isInBounds(Vec2f(ptr.x.toFloat(), ptr.y.toFloat()))) {
-                hide()
-            }
-        }
-
-        menuList(rootMenu.menuItems.use(), contextItem, Dp.ZERO, Dp.ZERO, modifier.zLayer)
     }
 
     private fun UiScope.menuList(items: List<ContextMenuItem<T>>, contextItem: T, x: Dp, y: Dp, z: Int) {
@@ -109,7 +99,7 @@ class ContextPopupMenu<T: Any> : Composable {
                         }
                     }
                     is Divider -> {
-                        divider(marginTop = sizes.smallGap * 0.5f, marginBottom = sizes.smallGap * 0.5f, thickness = Dp.fromPx(1f))
+                        menuDivider(marginTop = sizes.smallGap * 0.5f, marginBottom = sizes.smallGap * 0.5f)
                     }
                 }
             }

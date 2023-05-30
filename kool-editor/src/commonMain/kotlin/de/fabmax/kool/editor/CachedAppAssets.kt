@@ -2,6 +2,7 @@ package de.fabmax.kool.editor
 
 import de.fabmax.kool.Assets
 import de.fabmax.kool.editor.api.AppAssetsLoader
+import de.fabmax.kool.editor.data.MaterialData
 import de.fabmax.kool.editor.data.ModelComponentData
 import de.fabmax.kool.modules.gltf.GltfFile
 import de.fabmax.kool.modules.gltf.loadGltfFile
@@ -14,6 +15,7 @@ class CachedAppAssets : AppAssetsLoader {
     private val loadedHdris = mutableMapOf<String, EnvironmentMaps>()
     private val loadedModels = mutableMapOf<String, GltfFile>()
     private val loadedTextures2d = mutableMapOf<String, Texture2d>()
+    private val loadedMaterials = mutableMapOf<String, MaterialData>()
 
     override suspend fun loadHdriEnvironment(scene: Scene, path: String): EnvironmentMaps {
         return loadedHdris.getOrPut(path) {
