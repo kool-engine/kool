@@ -154,6 +154,10 @@ open class UiSurface(
         inputHandler.requestFocus(focusable)
     }
 
+    fun unfocus(focusable: Focusable) {
+        inputHandler.unfocus(focusable)
+    }
+
     fun cycleFocus(backwards: Boolean = false) {
         inputHandler.cycleFocus(backwards)
     }
@@ -270,6 +274,12 @@ open class UiSurface(
                 focusedNode?.onFocusLost()
                 focusedNode = focusable
                 focusable?.onFocusGain()
+            }
+        }
+
+        fun unfocus(focusable: Focusable) {
+            if (focusedNode === focusable) {
+                requestFocus(null)
             }
         }
 

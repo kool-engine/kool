@@ -2,11 +2,11 @@ package de.fabmax.kool.modules.ui2
 
 import de.fabmax.kool.input.KeyEvent
 
-interface Focusable : UiScope {
+interface Focusable {
     val isFocused: MutableStateValue<Boolean>
 
-    fun requestFocus() {
-        surface.requestFocus(this)
+    fun UiScope.requestFocus() {
+        surface.requestFocus(this@Focusable)
     }
 
     fun onFocusGain() {
