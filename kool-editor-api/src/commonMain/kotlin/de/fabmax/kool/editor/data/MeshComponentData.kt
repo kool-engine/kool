@@ -97,14 +97,14 @@ sealed class MeshShapeData {
     }
 
     @Serializable
-    data class Capsule(val radius: Double, val height: Double, val steps: Int) : MeshShapeData() {
+    data class Capsule(val radius: Double, val length: Double, val steps: Int) : MeshShapeData() {
         override val name: String get() = "Capsule"
 
         override fun generate(builder: MeshBuilder) {
             builder.withTransform {
                 profile {
                     val r = radius.toFloat()
-                    val h = height.toFloat()
+                    val h = length.toFloat()
                     val hh = h / 2f
                     simpleShape(false) {
                         xyArc(Vec2f(hh + r, 0f), Vec2f(hh, 0f), 90f, steps / 2, true)

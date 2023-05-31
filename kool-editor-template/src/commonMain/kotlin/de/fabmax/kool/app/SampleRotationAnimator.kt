@@ -8,10 +8,10 @@ import de.fabmax.kool.util.Time
 
 class SampleRotationAnimator : KoolScript() {
 
-    @EditorInfo("Rotation speed:")
+    @EditorInfo("Rotation speed:", -360.0, 360.0)
     var rotationSpeed = Vec3f(17f, 31f, 19f)
 
-    @EditorInfo("Speed multiplier:", -10f, 10f)
+    @EditorInfo("Speed multiplier:", -10.0, 10.0)
     var speedMulti = 1f
 
     private lateinit var transform: TransformComponent

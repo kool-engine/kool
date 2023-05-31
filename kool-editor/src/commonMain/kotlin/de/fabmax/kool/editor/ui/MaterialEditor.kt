@@ -4,23 +4,20 @@ import de.fabmax.kool.editor.EditorState
 import de.fabmax.kool.editor.actions.EditorActions
 import de.fabmax.kool.editor.actions.SetMaterialAction
 import de.fabmax.kool.editor.actions.UpdateMaterialAction
-import de.fabmax.kool.editor.data.ColorData
-import de.fabmax.kool.editor.data.ConstColorAttribute
-import de.fabmax.kool.editor.data.MaterialData
-import de.fabmax.kool.editor.model.MaterialHolderComponent
-import de.fabmax.kool.editor.model.MaterialModel
+import de.fabmax.kool.editor.data.*
+import de.fabmax.kool.editor.model.MaterialComponent
 import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.editor.model.updateMaterial
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.Color
 
-class MaterialEditor(var sceneNodeModel: SceneNodeModel, var materialHolder: MaterialHolderComponent) : Composable {
+class MaterialEditor(var sceneNodeModel: SceneNodeModel, var materialComponent: MaterialComponent) : Composable {
 
-    private var undoMaterial: MaterialData? = null
+    private var undoMaterial: MaterialShaderData? = null
 
     override fun UiScope.compose() = collapsapsablePanel(
         title = "Material",
-        scopeName = "material-${materialHolder.materialData?.id}"
+        scopeName = "material-${materialComponent.materialData?.id}"
     ) {
 
         Column(width = Grow.Std) {
@@ -32,35 +29,42 @@ class MaterialEditor(var sceneNodeModel: SceneNodeModel, var materialHolder: Mat
             val selectedIndex = remember(idx)
             selectedIndex.set(idx)
             labeledCombobox("Material:", items, selectedIndex) { item ->
-                EditorActions.applyAction(SetMaterialAction(sceneNodeModel, materialHolder, item.getMaterialModel()))
+                EditorActions.applyAction(SetMaterialAction(sceneNodeModel, materialComponent, item.getMaterialModel()))
             }
 
-            materialHolder.materialModelState.use()?.let { selectedMaterial ->
+            materialComponent.materialState.use()?.let { selectedMaterial ->
                 menuDivider()
                 materialEditor(selectedMaterial)
             }
         }
     }
 
-    private fun UiScope.materialEditor(material: MaterialModel) {
-        val materialData = material.materialState.use()
-        val baseColor = materialData.baseColor as? ConstColorAttribute
+    private fun UiScope.materialEditor(material: MaterialData) {
+        when (val shaderData = material.shaderData) {
+            is BlinnPhongShaderData -> TODO()
+            is PbrShaderData -> pbrMaterialEditor(material, shaderData)
+            is UnlitShaderData -> TODO()
+        }
+    }
+
+    private fun UiScope.pbrMaterialEditor(material: MaterialData, pbrData: PbrShaderData) {
+        val baseColor = pbrData.baseColor as? ConstColorAttribute
         if (baseColor != null) {
             val colorState = remember(baseColor.color.toColor().toSrgb() as Color)
             labeledColorPicker(
                 "Base color:",
                 colorState,
-                onShow = { undoMaterial = materialData },
+                onShow = { undoMaterial = material.shaderData },
                 onHide = { color ->
                     undoMaterial?.let {
                         val applyColor = ConstColorAttribute(ColorData(color.toLinear()))
-                        val applyMaterial = materialData.copy(baseColor = applyColor)
+                        val applyMaterial = pbrData.copy(baseColor = applyColor)
                         EditorActions.applyAction(UpdateMaterialAction(material, applyMaterial, it))
                     }
                 }
             ) { color ->
                 val previewBaseColor = ConstColorAttribute(ColorData(color.toLinear()))
-                material.materialState.set(materialData.copy(baseColor = previewBaseColor))
+                material.shaderData = pbrData.copy(baseColor = previewBaseColor)
                 EditorState.projectModel.updateMaterial(material)
             }
         }
@@ -68,23 +72,23 @@ class MaterialEditor(var sceneNodeModel: SceneNodeModel, var materialHolder: Mat
 
     private fun makeMaterialItemsAndIndex(): Pair<List<MaterialItem>, Int> {
         val items = mutableListOf(
-            MaterialItem("None", null),
+            MaterialItem("Default", null),
             MaterialItem("New material", null)
         )
         var index = 0
         EditorState.projectModel.materials.values.forEachIndexed { i, material ->
-            if (materialHolder.isHoldingMaterial(material)) {
+            if (materialComponent.isHoldingMaterial(material)) {
                 index = i + 2
             }
-            items += MaterialItem(material.materialState.value.name, material)
+            items += MaterialItem(material.name, material)
         }
         return items to index
     }
 
-    private class MaterialItem(val itemText: String, val material: MaterialModel?) {
+    private class MaterialItem(val itemText: String, val material: MaterialData?) {
         override fun toString(): String = itemText
 
-        fun getMaterialModel(): MaterialModel? {
+        fun getMaterialModel(): MaterialData? {
             return material ?: if (itemText == "New material") EditorState.projectModel.createNewMaterial() else null
         }
     }

@@ -1,17 +1,17 @@
 package de.fabmax.kool.editor.model
 
-import de.fabmax.kool.editor.data.ConstColorAttribute
-import de.fabmax.kool.editor.data.MeshComponentData
-import de.fabmax.kool.editor.data.SceneBackgroundData
+import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.modules.ksl.KslLitShader
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ui2.MutableStateList
+import de.fabmax.kool.pipeline.Shader
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.ColorMesh
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshRayTest
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
+import de.fabmax.kool.util.launchOnMainThread
 
 class MeshComponent(override val componentData: MeshComponentData) :
     EditorDataComponent<MeshComponentData>,
@@ -31,19 +31,17 @@ class MeshComponent(override val componentData: MeshComponentData) :
     private var isIblShaded = false
 
     override suspend fun createComponent(nodeModel: EditorNodeModel) {
-        val sceneNode = requireNotNull(nodeModel as? SceneNodeModel) {
+        sceneNode = requireNotNull(nodeModel as? SceneNodeModel) {
             "MeshComponent is only allowed in SceneNodeModels (parent node is of type ${nodeModel::class})"
         }
-        this.sceneNode = sceneNode
 
         _mesh = ColorMesh()
-        mesh.shader = defaultPbrShader(sceneNode.scene.sceneBackground.loadedEnvironmentMaps)
         mesh.rayTest = MeshRayTest.geometryTest(mesh)
         updateGeometry()
     }
 
     override suspend fun initComponent(nodeModel: EditorNodeModel) {
-        sceneNode?.getComponent<MaterialHolderComponent>()?.let { updateMaterial(it.materialModelState.value) }
+        mesh.shader = defaultPbrShader(sceneNode!!.scene.sceneBackground.loadedEnvironmentMaps)
     }
 
     fun updateGeometry() {
@@ -58,19 +56,22 @@ class MeshComponent(override val componentData: MeshComponentData) :
         }
     }
 
-    private fun defaultPbrShader(ibl: EnvironmentMaps?): KslPbrShader {
-        return KslPbrShader {
-            color { uniformColor(MdColor.GREY.toLinear()) }
-            ibl?.let {
-                enableImageBasedLighting(ibl)
+    private suspend fun defaultPbrShader(ibl: EnvironmentMaps?): Shader {
+        val materialHolder = sceneNode?.getComponent<MaterialComponent>()
+        return materialHolder?.materialData?.createShader(ibl)
+            ?: KslPbrShader {
+                color { uniformColor(MdColor.GREY.toLinear()) }
+                ibl?.let {
+                    enableImageBasedLighting(ibl)
+                }
             }
-        }
     }
 
-    override fun updateMaterial(material: MaterialModel?) {
-        val holder = sceneNode?.getComponent<MaterialHolderComponent>()
+    override fun updateMaterial(material: MaterialData?) {
+        val holder = sceneNode?.getComponent<MaterialComponent>()
         if (holder?.isHoldingMaterial(material) != false) {
-            val baseColor = (holder?.materialData?.baseColor as? ConstColorAttribute)?.color?.toColor()
+            val pbrData = holder?.materialData?.shaderData as PbrShaderData?
+            val baseColor = (pbrData?.baseColor as? ConstColorAttribute)?.color?.toColor()
             (mesh.shader as? KslLitShader)?.color = baseColor ?: MdColor.GREY.toLinear()
         }
     }
@@ -79,7 +80,9 @@ class MeshComponent(override val componentData: MeshComponentData) :
         val isLit = mesh.shader is KslLitShader
         if (isLit) {
             if (isIblShaded) {
-                mesh.shader = defaultPbrShader(null)
+                launchOnMainThread {
+                    mesh.shader = defaultPbrShader(null)
+                }
             }
             (mesh.shader as KslLitShader).ambientFactor = bgColorSrgb.toLinear()
         }
@@ -89,7 +92,9 @@ class MeshComponent(override val componentData: MeshComponentData) :
     override fun updateHdriBg(hdriBg: SceneBackgroundData.Hdri, ibl: EnvironmentMaps) {
         if (mesh.shader is KslLitShader) {
             if (!isIblShaded) {
-                mesh.shader = defaultPbrShader(ibl)
+                launchOnMainThread {
+                    mesh.shader = defaultPbrShader(ibl)
+                }
             } else {
                 (mesh.shader as KslLitShader).ambientMap = ibl.irradianceMap
                 (mesh.shader as? KslPbrShader)?.reflectionMap = ibl.reflectionMap

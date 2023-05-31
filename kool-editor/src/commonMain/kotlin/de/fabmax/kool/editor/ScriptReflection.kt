@@ -14,8 +14,8 @@ class ScriptProperty(
     val name: String,
     val type: KType,
     val label: String,
-    val min: Float,
-    val max: Float
+    val min: Double,
+    val max: Double
 ) {
     val isRanged: Boolean
         get() = min > Float.NEGATIVE_INFINITY && max < Float.POSITIVE_INFINITY

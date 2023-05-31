@@ -1,5 +1,10 @@
 package de.fabmax.kool.editor.ui
 
+import de.fabmax.kool.editor.actions.EditorAction
+import de.fabmax.kool.editor.actions.EditorActions
+import de.fabmax.kool.input.CursorShape
+import de.fabmax.kool.input.PointerInput
+import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.modules.ui2.docking.UiDockable
 import de.fabmax.kool.toString
@@ -33,12 +38,29 @@ fun UiScope.doubleTextField(
     value: Double,
     precision: Int = precisionForValue(value),
     width: Dimension = FitContent,
-    onSet: (Double) -> Unit
+    dragChangeSpeed: Double = 0.0,
+    minValue: Double = Double.NEGATIVE_INFINITY,
+    maxValue: Double = Double.POSITIVE_INFINITY,
+    editHandler: ValueEditHandler<Double>
 ) = TextField {
     var text by remember(value.toString(precision))
+    var wasFocuesd by remember(false)
+    var dragStartValue by remember(value)
+
     if (!isFocused.use()) {
-        text = value.toString(precision)
+        if (wasFocuesd) {
+            // focus lost, apply edited value
+            text.parseDouble(minValue, maxValue)?.let { editHandler.onEditEnd(dragStartValue, it) }
+        } else {
+            text = value.toString(precision)
+        }
+    } else if (!wasFocuesd) {
+        // gained focus
+        dragStartValue = value
+        editHandler.onEditStart(dragStartValue)
     }
+    wasFocuesd = isFocused.value
+
     defaultTextfieldStyle()
     modifier
         .text(text)
@@ -47,25 +69,64 @@ fun UiScope.doubleTextField(
         .alignY(AlignmentY.Center)
         .textAlignX(AlignmentX.End)
         .onChange { text = it }
-        .onEnterPressed { txt ->
-            val d = txt.toDoubleOrNull()
-            if (d != null && d.isFinite()) {
-                onSet(d)
-                // unfocus text field
-                surface.requestFocus(null)
-            }
+        .onEnterPressed {
+            // unfocus text field, onSet() is called in focus lost handler
+            surface.requestFocus(null)
         }
+
+    if (!wasFocuesd && dragChangeSpeed != 0.0) {
+        modifier.clearDragCallbacks()
+        modifier.clearHoverCallbacks()
+        modifier
+            .onHover { PointerInput.cursorShape = CursorShape.H_RESIZE }
+            .onDragStart {
+                dragStartValue = value
+                editHandler.onEditStart(dragStartValue)
+            }
+            .onDrag {
+                val dragVal = dragStartValue + dragChangeSpeed * Dp.fromPx(it.pointer.dragDeltaX.toFloat()).value
+                editHandler.onEdit(dragVal.clamp(minValue, maxValue))
+            }
+            .onDragEnd {
+                editHandler.onEditEnd(dragStartValue, value)
+            }
+    }
+}
+
+fun String.parseDouble(min: Double = Double.NEGATIVE_INFINITY, max: Double = Double.POSITIVE_INFINITY): Double? {
+    var d = replace(',', '.').toDoubleOrNull()
+    if (d != null && d.isFinite()) {
+        d = d.clamp(min, max)
+    }
+    return d
 }
 
 fun UiScope.intTextField(
     value: Int,
     width: Dimension = FitContent,
-    onSet: (Int) -> Unit
+    dragChangeSpeed: Double = 0.0,
+    minValue: Int = Int.MIN_VALUE,
+    maxValue: Int = Int.MAX_VALUE,
+    editHandler: ValueEditHandler<Int>
 ) = TextField {
     var text by remember(value.toString())
+    var wasFocuesd by remember(false)
+    var dragStartValue by remember(value)
+
     if (!isFocused.use()) {
-        text = value.toString()
+        if (wasFocuesd) {
+            // focus lost, apply edited value
+            text.parseInt(minValue, maxValue)?.let { editHandler.onEditEnd(dragStartValue, it) }
+        } else {
+            text = value.toString()
+        }
+    } else if (!wasFocuesd) {
+        // gained focus
+        dragStartValue = value
+        editHandler.onEditStart(dragStartValue)
     }
+    wasFocuesd = isFocused.value
+
     defaultTextfieldStyle()
     modifier
         .text(text)
@@ -74,22 +135,46 @@ fun UiScope.intTextField(
         .alignY(AlignmentY.Center)
         .textAlignX(AlignmentX.End)
         .onChange { text = it }
-        .onEnterPressed { txt ->
-            txt.toIntOrNull()?.let {
-                onSet(it)
-                // unfocus text field
-                surface.requestFocus(null)
-            }
+        .onEnterPressed {
+            // unfocus text field, onSet() is called in focus lost handler
+            surface.requestFocus(null)
         }
+
+    if (!wasFocuesd && dragChangeSpeed != 0.0) {
+        modifier.clearDragCallbacks()
+        modifier.clearHoverCallbacks()
+        modifier
+            .onHover { PointerInput.cursorShape = CursorShape.H_RESIZE }
+            .onDragStart {
+                dragStartValue = value
+                editHandler.onEditStart(dragStartValue)
+            }
+            .onDrag {
+                val dragVal = (dragStartValue + dragChangeSpeed * Dp.fromPx(it.pointer.dragDeltaX.toFloat()).value).roundToInt()
+                editHandler.onEdit(dragVal.clamp(minValue, maxValue))
+            }
+            .onDragEnd {
+                editHandler.onEditEnd(dragStartValue, value)
+            }
+    }
+}
+
+fun String.parseInt(min: Int = Int.MIN_VALUE, max: Int = Int.MAX_VALUE): Int? {
+    var i = toIntOrNull()
+    if (i != null) {
+        i = i.clamp(min, max)
+    }
+    return i
 }
 
 fun UiScope.xyRow(
     label: String,
-    x: Double,
-    y: Double,
-    xPrecision: Int = precisionForValue(x),
-    yPrecision: Int = precisionForValue(y),
-    onSet: (Double, Double) -> Unit
+    xy: Vec2d,
+    precision: Vec2i = Vec2i(precisionForValue(xy.x), precisionForValue(xy.y)),
+    minValues: Vec2d? = null,
+    maxValues: Vec2d? = null,
+    dragChangeSpeed: Vec2d = Vec2d.ZERO,
+    editHandler: ValueEditHandler<Vec2d>
 ) = Column(width = Grow.Std) {
     menuRow {
         Text(label) {
@@ -97,6 +182,17 @@ fun UiScope.xyRow(
         }
     }
     menuRow(Dp.ZERO) {
+        val xEditHandler = object : ValueEditHandler<Double> {
+            override fun onEditStart(startValue: Double) = editHandler.onEditStart(Vec2d(startValue, xy.y))
+            override fun onEdit(value: Double) = editHandler.onEdit(Vec2d(value, xy.y))
+            override fun onEditEnd(startValue: Double, endValue: Double) = editHandler.onEditEnd(Vec2d(startValue, xy.y), Vec2d(endValue, xy.y))
+        }
+        val yEditHandler = object : ValueEditHandler<Double> {
+            override fun onEditStart(startValue: Double) = editHandler.onEditStart(Vec2d(xy.x, startValue))
+            override fun onEdit(value: Double) = editHandler.onEdit(Vec2d(xy.x, value))
+            override fun onEditEnd(startValue: Double, endValue: Double) = editHandler.onEditEnd(Vec2d(xy.x, startValue), Vec2d(xy.x, endValue))
+        }
+
         Text("X") {
             modifier
                 .width(sizes.largeGap * 0.75f)
@@ -104,7 +200,9 @@ fun UiScope.xyRow(
                 .alignY(AlignmentY.Center)
                 .textColor(MdColor.RED tone 300)
         }
-        doubleTextField(x, xPrecision, width = Grow.Std) { onSet(it, y) }
+        val minX = minValues?.x ?: Double.NEGATIVE_INFINITY
+        val maxX = maxValues?.x ?: Double.POSITIVE_INFINITY
+        doubleTextField(xy.x, precision.x, Grow.Std, dragChangeSpeed.x, minX, maxX, editHandler = xEditHandler)
 
         Text("Y") {
             modifier
@@ -113,19 +211,20 @@ fun UiScope.xyRow(
                 .alignY(AlignmentY.Center)
                 .textColor(MdColor.GREEN tone 300)
         }
-        doubleTextField(y, yPrecision, width = Grow.Std) { onSet(x, it) }
+        val minY = minValues?.y ?: Double.NEGATIVE_INFINITY
+        val maxY = maxValues?.y ?: Double.POSITIVE_INFINITY
+        doubleTextField(xy.y, precision.y, Grow.Std, dragChangeSpeed.y, minY, maxY, editHandler = yEditHandler)
     }
 }
 
 fun UiScope.xyzRow(
     label: String,
-    x: Double,
-    y: Double,
-    z: Double,
-    xPrecision: Int = precisionForValue(x),
-    yPrecision: Int = precisionForValue(y),
-    zPrecision: Int = precisionForValue(z),
-    onSet: (Double, Double, Double) -> Unit
+    xyz: Vec3d,
+    precision: Vec3i = Vec3i(precisionForValue(xyz.x), precisionForValue(xyz.y), precisionForValue(xyz.z)),
+    minValues: Vec3d? = null,
+    maxValues: Vec3d? = null,
+    dragChangeSpeed: Vec3d = Vec3d.ZERO,
+    editHandler: ValueEditHandler<Vec3d>
 ) = Column(width = Grow.Std) {
     menuRow {
         Text(label) {
@@ -133,6 +232,22 @@ fun UiScope.xyzRow(
         }
     }
     menuRow(Dp.ZERO) {
+        val xEditHandler = object : ValueEditHandler<Double> {
+            override fun onEditStart(startValue: Double) = editHandler.onEditStart(Vec3d(startValue, xyz.y, xyz.z))
+            override fun onEdit(value: Double) = editHandler.onEdit(Vec3d(value, xyz.y, xyz.z))
+            override fun onEditEnd(startValue: Double, endValue: Double) = editHandler.onEditEnd(Vec3d(startValue, xyz.y, xyz.z), Vec3d(endValue, xyz.y, xyz.z))
+        }
+        val yEditHandler = object : ValueEditHandler<Double> {
+            override fun onEditStart(startValue: Double) = editHandler.onEditStart(Vec3d(xyz.x, startValue, xyz.z))
+            override fun onEdit(value: Double) = editHandler.onEdit(Vec3d(xyz.x, value, xyz.z))
+            override fun onEditEnd(startValue: Double, endValue: Double) = editHandler.onEditEnd(Vec3d(xyz.x, startValue, xyz.z), Vec3d(xyz.x, endValue, xyz.z))
+        }
+        val zEditHandler = object : ValueEditHandler<Double> {
+            override fun onEditStart(startValue: Double) = editHandler.onEditStart(Vec3d(xyz.x, xyz.y, startValue))
+            override fun onEdit(value: Double) = editHandler.onEdit(Vec3d(xyz.x, xyz.y, value))
+            override fun onEditEnd(startValue: Double, endValue: Double) = editHandler.onEditEnd(Vec3d(xyz.x, xyz.y, startValue), Vec3d(xyz.x, xyz.y, endValue))
+        }
+
         Text("X") {
             modifier
                 .width(sizes.largeGap * 0.75f)
@@ -140,7 +255,9 @@ fun UiScope.xyzRow(
                 .alignY(AlignmentY.Center)
                 .textColor(MdColor.RED tone 300)
         }
-        doubleTextField(x, xPrecision, width = Grow.Std) { onSet(it, y, z) }
+        val minX = minValues?.x ?: Double.NEGATIVE_INFINITY
+        val maxX = maxValues?.x ?: Double.POSITIVE_INFINITY
+        doubleTextField(xyz.x, precision.x, Grow.Std, dragChangeSpeed.x, minX, maxX, editHandler = xEditHandler)
 
         Text("Y") {
             modifier
@@ -149,7 +266,9 @@ fun UiScope.xyzRow(
                 .alignY(AlignmentY.Center)
                 .textColor(MdColor.GREEN tone 300)
         }
-        doubleTextField(y, yPrecision, width = Grow.Std) { onSet(x, it, z) }
+        val minY = minValues?.y ?: Double.NEGATIVE_INFINITY
+        val maxY = maxValues?.y ?: Double.POSITIVE_INFINITY
+        doubleTextField(xyz.y, precision.y, Grow.Std, dragChangeSpeed.y, minY, maxY, editHandler = yEditHandler)
 
         Text("Z") {
             modifier
@@ -158,21 +277,20 @@ fun UiScope.xyzRow(
                 .alignY(AlignmentY.Center)
                 .textColor(MdColor.BLUE tone 300)
         }
-        doubleTextField(z, zPrecision, width = Grow.Std) { onSet(x, y, it) }
+        val minZ = minValues?.z ?: Double.NEGATIVE_INFINITY
+        val maxZ = maxValues?.z ?: Double.POSITIVE_INFINITY
+        doubleTextField(xyz.z, precision.z, Grow.Std, dragChangeSpeed.z, minZ, maxZ, editHandler = zEditHandler)
     }
 }
 
 fun UiScope.xyzwRow(
     label: String,
-    x: Double,
-    y: Double,
-    z: Double,
-    w: Double,
-    xPrecision: Int = precisionForValue(x),
-    yPrecision: Int = precisionForValue(y),
-    zPrecision: Int = precisionForValue(z),
-    wPrecision: Int = precisionForValue(w),
-    onSet: (Double, Double, Double, Double) -> Unit
+    xyzw: Vec4d,
+    precision: Vec4i = Vec4i(precisionForValue(xyzw.x), precisionForValue(xyzw.y), precisionForValue(xyzw.z), precisionForValue(xyzw.w)),
+    minValues: Vec4d? = null,
+    maxValues: Vec4d? = null,
+    dragChangeSpeed: Vec4d = Vec4d.ZERO,
+    editHandler: ValueEditHandler<Vec4d>
 ) = Column(width = Grow.Std) {
     menuRow {
         Text(label) {
@@ -180,6 +298,27 @@ fun UiScope.xyzwRow(
         }
     }
     menuRow(Dp.ZERO) {
+        val xEditHandler = object : ValueEditHandler<Double> {
+            override fun onEditStart(startValue: Double) = editHandler.onEditStart(Vec4d(startValue, xyzw.y, xyzw.z, xyzw.w))
+            override fun onEdit(value: Double) = editHandler.onEdit(Vec4d(value, xyzw.y, xyzw.z, xyzw.w))
+            override fun onEditEnd(startValue: Double, endValue: Double) = editHandler.onEditEnd(Vec4d(startValue, xyzw.y, xyzw.z, xyzw.w), Vec4d(endValue, xyzw.y, xyzw.z, xyzw.w))
+        }
+        val yEditHandler = object : ValueEditHandler<Double> {
+            override fun onEditStart(startValue: Double) = editHandler.onEditStart(Vec4d(xyzw.x, startValue, xyzw.z, xyzw.w))
+            override fun onEdit(value: Double) = editHandler.onEdit(Vec4d(xyzw.x, value, xyzw.z, xyzw.w))
+            override fun onEditEnd(startValue: Double, endValue: Double) = editHandler.onEditEnd(Vec4d(xyzw.x, startValue, xyzw.z, xyzw.w), Vec4d(xyzw.x, endValue, xyzw.z, xyzw.w))
+        }
+        val zEditHandler = object : ValueEditHandler<Double> {
+            override fun onEditStart(startValue: Double) = editHandler.onEditStart(Vec4d(xyzw.x, xyzw.y, startValue, xyzw.w))
+            override fun onEdit(value: Double) = editHandler.onEdit(Vec4d(xyzw.x, xyzw.y, value, xyzw.w))
+            override fun onEditEnd(startValue: Double, endValue: Double) = editHandler.onEditEnd(Vec4d(xyzw.x, xyzw.y, startValue, xyzw.w), Vec4d(xyzw.x, xyzw.y, endValue, xyzw.w))
+        }
+        val wEditHandler = object : ValueEditHandler<Double> {
+            override fun onEditStart(startValue: Double) = editHandler.onEditStart(Vec4d(xyzw.x, xyzw.y, xyzw.z, startValue))
+            override fun onEdit(value: Double) = editHandler.onEdit(Vec4d(xyzw.x, xyzw.y, xyzw.z, value))
+            override fun onEditEnd(startValue: Double, endValue: Double) = editHandler.onEditEnd(Vec4d(xyzw.x, xyzw.y, xyzw.z, startValue), Vec4d(xyzw.x, xyzw.y, xyzw.z, endValue))
+        }
+
         Text("X") {
             modifier
                 .width(sizes.largeGap * 0.75f)
@@ -187,7 +326,9 @@ fun UiScope.xyzwRow(
                 .alignY(AlignmentY.Center)
                 .textColor(MdColor.RED tone 300)
         }
-        doubleTextField(x, xPrecision, width = Grow.Std) { onSet(it, y, z, w) }
+        val minX = minValues?.x ?: Double.NEGATIVE_INFINITY
+        val maxX = maxValues?.x ?: Double.POSITIVE_INFINITY
+        doubleTextField(xyzw.x, precision.x, Grow.Std, dragChangeSpeed.x, minX, maxX, editHandler = xEditHandler)
 
         Text("Y") {
             modifier
@@ -196,7 +337,9 @@ fun UiScope.xyzwRow(
                 .alignY(AlignmentY.Center)
                 .textColor(MdColor.GREEN tone 300)
         }
-        doubleTextField(y, yPrecision, width = Grow.Std) { onSet(x, it, z, w) }
+        val minY = minValues?.y ?: Double.NEGATIVE_INFINITY
+        val maxY = maxValues?.y ?: Double.POSITIVE_INFINITY
+        doubleTextField(xyzw.y, precision.y, Grow.Std, dragChangeSpeed.y, minY, maxY, editHandler = yEditHandler)
 
         Text("Z") {
             modifier
@@ -205,7 +348,9 @@ fun UiScope.xyzwRow(
                 .alignY(AlignmentY.Center)
                 .textColor(MdColor.BLUE tone 300)
         }
-        doubleTextField(z, zPrecision, width = Grow.Std) { onSet(x, y, it, w) }
+        val minZ = minValues?.z ?: Double.NEGATIVE_INFINITY
+        val maxZ = maxValues?.z ?: Double.POSITIVE_INFINITY
+        doubleTextField(xyzw.z, precision.z, Grow.Std, dragChangeSpeed.z, minZ, maxZ, editHandler = zEditHandler)
 
         Text("W") {
             modifier
@@ -214,7 +359,9 @@ fun UiScope.xyzwRow(
                 .alignY(AlignmentY.Center)
                 .textColor(MdColor.AMBER tone 300)
         }
-        doubleTextField(w, wPrecision, width = Grow.Std) { onSet(x, y, z, it) }
+        val minW = minValues?.w ?: Double.NEGATIVE_INFINITY
+        val maxW = maxValues?.w ?: Double.POSITIVE_INFINITY
+        doubleTextField(xyzw.w, precision.w, Grow.Std, dragChangeSpeed.w, minW, maxW, editHandler = wEditHandler)
     }
 }
 
@@ -245,20 +392,13 @@ fun <T: Any> UiScope.labeledCombobox(
 
 fun precisionForValue(value: Double): Int {
     if (value == 0.0) {
-        return 4
+        return 3
+    } else if (!value.isFinite()) {
+        return 2
     }
     val log = 3.5 - log10(abs(value))
-    val digits = if (log.isFinite()) log.roundToInt() else 4
-    return min(4, max(1, digits))
-}
-
-fun precisionForValue(value: Float): Int {
-    if (value == 0f) {
-        return 4
-    }
-    val log = 3.5f - log10(abs(value))
-    val digits = if (log.isFinite()) log.roundToInt() else 4
-    return min(4, max(1, digits))
+    val digits = if (log.isFinite()) log.roundToInt() else 3
+    return min(3, max(1, digits))
 }
 
 fun UiScope.labeledColorPicker(
@@ -321,38 +461,44 @@ fun UiScope.labeledDoubleTextField(
     value: Double,
     precision: Int = precisionForValue(value),
     valueWidth: Dimension = sizes.baseSize * 2,
-    onSet: (Double) -> Unit
+    dragChangeSpeed: Double = 0.0,
+    minValue: Double = Double.NEGATIVE_INFINITY,
+    maxValue: Double = Double.POSITIVE_INFINITY,
+    editHandler: ValueEditHandler<Double>
 ) = menuRow {
     Text(label) {
         modifier
             .width(Grow.Std)
             .alignY(AlignmentY.Center)
     }
-    doubleTextField(value, precision, valueWidth, onSet)
+    doubleTextField(value, precision, valueWidth, dragChangeSpeed, minValue, maxValue, editHandler)
 }
 
 fun UiScope.labeledIntTextField(
     label: String,
     value: Int,
     valueWidth: Dimension = sizes.baseSize * 2,
-    onSet: (Int) -> Unit
+    dragChangeSpeed: Double = 0.0,
+    minValue: Int = Int.MIN_VALUE,
+    maxValue: Int = Int.MAX_VALUE,
+    editHandler: ValueEditHandler<Int>
 ) = menuRow {
     Text(label) {
         modifier
             .width(Grow.Std)
             .alignY(AlignmentY.Center)
     }
-    intTextField(value, valueWidth, onSet)
+    intTextField(value, valueWidth, dragChangeSpeed, minValue, maxValue, editHandler)
 }
 
 fun UiScope.labeledSlider(
     label: String,
-    value: MutableStateValue<Float>,
-    min: Float = 0f,
-    max: Float = 1f,
+    value: Double,
+    min: Double = 0.0,
+    max: Double = 1.0,
     precision: Int = precisionForValue(max - min),
     valueWidth: Dimension = sizes.baseSize * 2,
-    onChange: (Float) -> Unit
+    editHandler: ValueEditHandler<Double>,
 ) = Column(Grow.Std, scopeName = label) {
     menuRow {
         Text(label) {
@@ -360,19 +506,19 @@ fun UiScope.labeledSlider(
                 .width(Grow.Std)
                 .alignY(AlignmentY.Center)
         }
-        doubleTextField(value.use().toDouble(), precision, valueWidth) {
-            value.set(it.toFloat())
-            onChange(it.toFloat())
-        }
+        doubleTextField(value, precision, valueWidth, 0.0, min, max, editHandler)
     }
     menuRow {
-        Slider(value.use(), min, max) {
+        var dragStartValue by remember(value)
+        Slider(value.toFloat(), min.toFloat(), max.toFloat()) {
             defaultSliderStyle()
             modifier
                 .width(Grow.Std)
-                .onChange {
-                    value.set(it)
-                    onChange(it)
+                .onChange { editHandler.onEdit(it.toDouble()) }
+                .onDragEnd { editHandler.onEditEnd(dragStartValue, value) }
+                .onDragStart {
+                    editHandler.onEditStart(value)
+                    dragStartValue = value
                 }
         }
     }
@@ -460,4 +606,17 @@ fun TextFieldScope.defaultTextfieldStyle() {
         .colors(lineColor = null, lineColorFocused = null)
         .background(RoundRectBackground(bgColor, sizes.textFieldPadding))
         .padding(sizes.textFieldPadding)
+}
+
+fun interface ValueEditHandler<T> {
+    fun onEditStart(startValue: T) = onEdit(startValue)
+    fun onEdit(value: T)
+    fun onEditEnd(startValue: T, endValue: T) = onEdit(endValue)
+}
+
+fun interface ActionValueEditHandler<T> : ValueEditHandler<T> {
+    override fun onEdit(value: T) = makeEditAction(value, value).apply()
+    override fun onEditEnd(startValue: T, endValue: T) = EditorActions.applyAction(makeEditAction(startValue, endValue))
+
+    fun makeEditAction(undoValue: T, applyValue: T) : EditorAction
 }

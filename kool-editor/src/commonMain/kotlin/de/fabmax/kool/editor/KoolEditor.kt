@@ -12,8 +12,11 @@ import de.fabmax.kool.input.InputStack
 import de.fabmax.kool.input.LocalKeyCode
 import de.fabmax.kool.input.PointerState
 import de.fabmax.kool.math.RayTest
+import de.fabmax.kool.modules.ui2.docking.DockNode
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.OrbitInputTransform
+import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.scene.scene
 import kotlin.math.roundToInt
 
 class KoolEditor(val ctx: KoolContext) {
@@ -27,6 +30,7 @@ class KoolEditor(val ctx: KoolContext) {
         tags[TAG_EDITOR_SUPPORT_CONTENT] = "true"
         addNode(editorCameraTransform)
     }
+    val editorOverlay = scene("editor-overlay") { addNode(editorContent) }
 
     val appLoader = AppLoader(this, APP_PROJECT_SRC_DIRS, APP_PROJECT_CLASS_PATH)
     val availableAssets = AvailableAssets(APP_ASSETS_DIR)
@@ -117,9 +121,13 @@ class KoolEditor(val ctx: KoolContext) {
     private suspend fun handleAppReload(loadedApp: LoadedApp) {
         // clear scene objects from old app
         editorCameraTransform.clearChildren()
+        editorCameraTransform.addNode(editorOverlay.camera)
+
         EditorState.projectModel.getCreatedScenes().map { it.node }.let { oldScenes ->
             ctx.scenes -= oldScenes.toSet()
-            oldScenes.forEach { it.dispose(ctx) }
+            oldScenes.forEach {
+                it.dispose(ctx)
+            }
         }
         EditorState.loadedApp.value?.app?.onDispose(ctx)
 
@@ -131,24 +139,11 @@ class KoolEditor(val ctx: KoolContext) {
         EditorState.projectModel.getCreatedScenes().map { it.node }.let { newScenes ->
             ctx.scenes += newScenes
             newScenes.forEach { scene ->
-                scene.dispose(ctx)
-                scene.addNode(editorContent)
                 editorCameraTransform.addNode(scene.camera)
-
-                scene.onRenderScene += {
-                    val dockNode = ui.centerSlot.dockedTo.value
-                    if (dockNode != null) {
-                        val x = dockNode.boundsLeftDp.value.px.roundToInt()
-                        val w = dockNode.boundsRightDp.value.px.roundToInt() - x
-                        val h = dockNode.boundsBottomDp.value.px.roundToInt() - dockNode.boundsTopDp.value.px.roundToInt()
-                        val y = it.windowHeight - dockNode.boundsBottomDp.value.px.roundToInt()
-
-                        scene.mainRenderPass.useWindowViewport = false
-                        scene.mainRenderPass.viewport.set(x, y, w, h)
-                    }
-                }
+                ui.centerSlot.dockedTo.value?.let { scene.setViewportToDockNode(it) }
             }
         }
+
         EditorState.loadedApp.set(loadedApp)
         if (EditorState.selectedScene.value == null) {
             EditorState.selectedScene.set(EditorState.projectModel.getCreatedScenes().getOrNull(0))
@@ -161,7 +156,25 @@ class KoolEditor(val ctx: KoolContext) {
         EditorActions.clear()
     }
 
+    private fun Scene.setViewportToDockNode(dockNode: DockNode) {
+        mainRenderPass.useWindowViewport = false
+        onRenderScene += {
+            val x = dockNode.boundsLeftDp.value.px.roundToInt()
+            val w = dockNode.boundsRightDp.value.px.roundToInt() - x
+            val h = dockNode.boundsBottomDp.value.px.roundToInt() - dockNode.boundsTopDp.value.px.roundToInt()
+            val y = it.windowHeight - dockNode.boundsBottomDp.value.px.roundToInt()
+            mainRenderPass.viewport.set(x, y, w, h)
+        }
+    }
+
     private fun bringEditorMenuToTop() {
+        ctx.scenes -= editorOverlay
+        ctx.scenes += editorOverlay
+        editorOverlay.mainRenderPass.clearColor = null
+        editorOverlay.mainRenderPass.clearDepth = false
+        editorOverlay.onRenderScene.clear()
+        ui.centerSlot.dockedTo.value?.let { editorOverlay.setViewportToDockNode(it) }
+
         ctx.scenes -= ui
         ctx.scenes += ui
         ui.sceneBrowser.refreshSceneTree()

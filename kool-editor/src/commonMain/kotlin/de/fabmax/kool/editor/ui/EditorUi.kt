@@ -13,7 +13,7 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
     val dock = Dock()
 
     val sceneBrowser = SceneBrowser(this)
-    val objectProperties = ObjectProperties(this)
+    val objectProperties = ObjectPropertyEditor(this)
     val assetBrowser = AssetBrowser(this)
 
     val appLoaderState = mutableStateOf("")

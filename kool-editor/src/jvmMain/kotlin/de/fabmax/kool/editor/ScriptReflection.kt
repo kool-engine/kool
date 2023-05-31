@@ -24,8 +24,8 @@ actual object ScriptReflection {
 
                 val info = it.annotations.filterIsInstance<EditorInfo>().firstOrNull()
                 val label = if (info != null && info.label.isNotBlank()) info.label else it.name
-                val min = info?.min ?: Float.NEGATIVE_INFINITY
-                val max = info?.max ?: Float.POSITIVE_INFINITY
+                val min = info?.min ?: Double.NEGATIVE_INFINITY
+                val max = info?.max ?: Double.POSITIVE_INFINITY
                 ScriptProperty(it.name, propertyType, label, min, max)
             }
     }

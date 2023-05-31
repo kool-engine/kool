@@ -2,21 +2,21 @@ package de.fabmax.kool.editor.actions
 
 import de.fabmax.kool.editor.EditorState
 import de.fabmax.kool.editor.data.MaterialData
-import de.fabmax.kool.editor.model.MaterialModel
+import de.fabmax.kool.editor.data.MaterialShaderData
 import de.fabmax.kool.editor.model.updateMaterial
 
 class UpdateMaterialAction(
-    val materialModel: MaterialModel,
-    val applyMaterial: MaterialData,
-    val undoMaterial: MaterialData
+    val materialData: MaterialData,
+    val applyMaterial: MaterialShaderData,
+    val undoMaterial: MaterialShaderData
 ) : EditorAction {
     override fun apply() {
-        materialModel.materialState.set(applyMaterial)
-        EditorState.projectModel.updateMaterial(materialModel)
+        materialData.shaderData = applyMaterial
+        EditorState.projectModel.updateMaterial(materialData)
     }
 
     override fun undo() {
-        materialModel.materialState.set(undoMaterial)
-        EditorState.projectModel.updateMaterial(materialModel)
+        materialData.shaderData = undoMaterial
+        EditorState.projectModel.updateMaterial(materialData)
     }
 }

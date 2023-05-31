@@ -40,7 +40,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         val id = EditorState.projectModel.nextId()
         val nodeData = SceneNodeData("${meshShape.name}-$id", id)
         nodeData.components += MeshComponentData(meshShape)
-        nodeData.components += MaterialHolderData(-1)
+        nodeData.components += MaterialComponentData(-1)
         val mesh = SceneNodeModel(nodeData, parentScene)
         EditorActions.applyAction(AddNodeAction(mesh, parent.nodeModel, parentScene, this))
     }

@@ -1,8 +1,12 @@
 package de.fabmax.kool.editor.ui
 
-import de.fabmax.kool.math.MutableVec3d
+import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.math.Vec3d
 import de.fabmax.kool.modules.ui2.*
+
+private val POS_DRAG_CHANGE_SPEED = Vec3d(0.01)
+private val ROT_DRAG_CHANGE_SPEED = Vec3d(0.1)
+private val SCALE_DRAG_CHANGE_SPEED = Vec3d(0.01)
 
 fun UiScope.transformEditor(props: TransformProperties) = collapsapsablePanel("Transform") {
     Column(width = Grow.Std) {
@@ -18,33 +22,24 @@ fun UiScope.transformEditor(props: TransformProperties) = collapsapsablePanel("T
 
 private fun UiScope.position(props: TransformProperties) = xyzRow(
     label = "Position:",
-    x = props.px.use(),
-    y = props.py.use(),
-    z = props.pz.use()
-) { x, y, z ->
-    props.setPosition(x, y, z)
-    props.onChangedByEditor.forEach { it() }
-}
+    xyz = Vec3d(props.px.use(), props.py.use(), props.pz.use()),
+    dragChangeSpeed = POS_DRAG_CHANGE_SPEED,
+    editHandler = props.posEditHandler
+)
 
 private fun UiScope.rotation(props: TransformProperties) = xyzRow(
     label = "Rotation:",
-    x = props.rx.use(),
-    y = props.ry.use(),
-    z = props.rz.use()
-) { x, y, z ->
-    props.setRotation(x, y, z)
-    props.onChangedByEditor.forEach { it() }
-}
+    xyz = Vec3d(props.rx.use(), props.ry.use(), props.rz.use()),
+    dragChangeSpeed = ROT_DRAG_CHANGE_SPEED,
+    editHandler = props.rotEditHandler
+)
 
 private fun UiScope.scale(props: TransformProperties) = xyzRow(
     label = "Scale:",
-    x = props.sx.use(),
-    y = props.sy.use(),
-    z = props.sz.use()
-) { x, y, z ->
-    props.setScale(x, y, z)
-    props.onChangedByEditor.forEach { it() }
-}
+    xyz = Vec3d(props.sx.use(), props.sy.use(), props.sz.use()),
+    dragChangeSpeed = SCALE_DRAG_CHANGE_SPEED,
+    editHandler = props.scaleEditHandler
+)
 
 class TransformProperties {
     val px = mutableStateOf(0.0)
@@ -59,18 +54,66 @@ class TransformProperties {
     val sy = mutableStateOf(0.0)
     val sz = mutableStateOf(0.0)
 
-    val onChangedByEditor = mutableListOf<() -> Unit>()
+    val editHandlers = mutableListOf<ValueEditHandler<Mat4d>>()
 
-    fun getPosition(result: MutableVec3d): MutableVec3d {
-        return result.set(px.value, py.value, pz.value)
+    private val editStartTransform = Mat4d()
+    private val editTransform = Mat4d()
+
+    private fun Mat4d.captureTransform() {
+        setRotate(rx.value, ry.value, rz.value)
+        scale(sx.value, sy.value, sz.value)
+        setOrigin(Vec3d(px.value, py.value, pz.value))
     }
 
-    fun getRotation(result: MutableVec3d): MutableVec3d {
-        return result.set(rx.value, ry.value, rz.value)
+    val posEditHandler = object : ValueEditHandler<Vec3d> {
+        override fun onEditStart(startValue: Vec3d) {
+            editStartTransform.captureTransform()
+            editHandlers.forEach { it.onEditStart(editStartTransform) }
+        }
+        override fun onEdit(value: Vec3d) {
+            setPosition(value)
+            editTransform.captureTransform()
+            editHandlers.forEach { it.onEdit(editTransform) }
+        }
+        override fun onEditEnd(startValue: Vec3d, endValue: Vec3d) {
+            setPosition(endValue)
+            editTransform.captureTransform()
+            editHandlers.forEach { it.onEditEnd(editStartTransform, editTransform) }
+        }
     }
 
-    fun getScale(result: MutableVec3d): MutableVec3d {
-        return result.set(sx.value, sy.value, sz.value)
+    val rotEditHandler = object : ValueEditHandler<Vec3d> {
+        override fun onEditStart(startValue: Vec3d) {
+            editStartTransform.captureTransform()
+            editHandlers.forEach { it.onEditStart(editStartTransform) }
+        }
+        override fun onEdit(value: Vec3d) {
+            setRotation(value)
+            editTransform.captureTransform()
+            editHandlers.forEach { it.onEdit(editTransform) }
+        }
+        override fun onEditEnd(startValue: Vec3d, endValue: Vec3d) {
+            setRotation(endValue)
+            editTransform.captureTransform()
+            editHandlers.forEach { it.onEditEnd(editStartTransform, editTransform) }
+        }
+    }
+
+    val scaleEditHandler = object : ValueEditHandler<Vec3d> {
+        override fun onEditStart(startValue: Vec3d) {
+            editStartTransform.captureTransform()
+            editHandlers.forEach { it.onEditStart(editStartTransform) }
+        }
+        override fun onEdit(value: Vec3d) {
+            setScale(value)
+            editTransform.captureTransform()
+            editHandlers.forEach { it.onEdit(editTransform) }
+        }
+        override fun onEditEnd(startValue: Vec3d, endValue: Vec3d) {
+            setScale(endValue)
+            editTransform.captureTransform()
+            editHandlers.forEach { it.onEditEnd(editStartTransform, editTransform) }
+        }
     }
 
     fun setPosition(position: Vec3d) = setPosition(position.x, position.y, position.z)

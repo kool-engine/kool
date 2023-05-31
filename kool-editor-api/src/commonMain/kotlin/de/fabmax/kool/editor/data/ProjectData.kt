@@ -4,12 +4,9 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 class ProjectData(var mainClass: String) {
-
-    val sceneNodes: MutableSet<SceneNodeData> = mutableSetOf()
-    val sceneNodeIds: MutableList<Long> = mutableListOf()
-
-    val materials: MutableMap<Long, MaterialData> = mutableMapOf()
-
     var nextId = 1L
 
+    val sceneNodeIds: MutableList<Long> = mutableListOf()
+    val sceneNodes: MutableSet<SceneNodeData> = mutableSetOf()
+    val materials: MutableList<MaterialData> = mutableListOf()
 }

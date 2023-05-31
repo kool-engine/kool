@@ -42,7 +42,7 @@ class NodeTransformGizmo(private val editor: KoolEditor) : Node("Node transform 
             hasTransformAuthority = false
             transformNodeModel?.let {
                 val transformNode = it.node
-                ObjectProperties.applyTransformAction(it, startTransform, transformNode.transform.matrix)
+                ObjectPropertyEditor.applyTransformAction(it, startTransform, transformNode.transform.matrix)
             }
         }
     }

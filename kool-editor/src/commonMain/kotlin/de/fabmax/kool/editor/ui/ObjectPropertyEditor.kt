@@ -13,7 +13,7 @@ import de.fabmax.kool.math.MutableVec3d
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.modules.ui2.*
 
-class ObjectProperties(ui: EditorUi) : EditorPanel("Object Properties", ui) {
+class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", ui) {
 
     private val transformProperties = TransformProperties()
 
@@ -25,21 +25,17 @@ class ObjectProperties(ui: EditorUi) : EditorPanel("Object Properties", ui) {
     private val transformGizmo = NodeTransformGizmo(ui.editor)
 
     init {
-        transformProperties.onChangedByEditor += {
-            val selectedNd = EditorState.selectedNode.value as? SceneNodeModel
-            if (selectedNd != null) {
-                transformProperties.getPosition(tmpNodePos)
-                transformProperties.getRotation(tmpNodeRot)
-                transformProperties.getScale(tmpNodeScale)
+        transformProperties.editHandlers += object : ValueEditHandler<Mat4d> {
+            override fun onEdit(value: Mat4d) {
+                val selectedNd = EditorState.selectedNode.value as? SceneNodeModel
+                selectedNd?.node?.transform?.set(value)
+            }
 
-                val sceneNode = selectedNd.node
-                val oldTransform = Mat4d().set(sceneNode.transform.matrix)
-                val newTransform = Mat4d()
-                    .setRotate(tmpNodeRot.x, tmpNodeRot.y, tmpNodeRot.z)
-                    .scale(tmpNodeScale)
-                    .setOrigin(tmpNodePos)
-
-                applyTransformAction(selectedNd, oldTransform, newTransform)
+            override fun onEditEnd(startValue: Mat4d, endValue: Mat4d) {
+                val selectedNd = EditorState.selectedNode.value as? SceneNodeModel
+                if (selectedNd != null) {
+                    applyTransformAction(selectedNd, startValue, endValue)
+                }
             }
         }
         ui.editor.editorContent += transformGizmo
@@ -101,7 +97,7 @@ class ObjectProperties(ui: EditorUi) : EditorPanel("Object Properties", ui) {
 
             for (component in selectedObject.components.use()) {
                 when (component) {
-                    is MaterialHolderComponent -> materialComponent(selectedObject, component)
+                    is MaterialComponent -> materialComponent(selectedObject, component)
                     is MeshComponent -> meshComponent(selectedObject, component)
                     is SceneBackgroundComponent -> sceneBackgroundComponent(selectedObject)
                     is ScriptComponent -> scriptComponent(component)
@@ -113,10 +109,10 @@ class ObjectProperties(ui: EditorUi) : EditorPanel("Object Properties", ui) {
         }
     }
 
-    private fun UiScope.materialComponent(nodeModel: EditorNodeModel, materialComponent: MaterialHolderComponent) {
+    private fun UiScope.materialComponent(nodeModel: EditorNodeModel, materialComponent: MaterialComponent) {
         (nodeModel as? SceneNodeModel)?.let {
             val editor = remember { MaterialEditor(nodeModel, materialComponent) }
-            editor.materialHolder = materialComponent
+            editor.materialComponent = materialComponent
             editor()
         }
     }

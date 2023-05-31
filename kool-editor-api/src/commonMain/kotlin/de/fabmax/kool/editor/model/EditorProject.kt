@@ -2,6 +2,7 @@ package de.fabmax.kool.editor.model
 
 import de.fabmax.kool.Assets
 import de.fabmax.kool.editor.data.MaterialData
+import de.fabmax.kool.editor.data.PbrShaderData
 import de.fabmax.kool.editor.data.ProjectData
 import de.fabmax.kool.editor.data.SceneNodeData
 import kotlinx.serialization.decodeFromString
@@ -15,16 +16,13 @@ class EditorProject(val projectData: ProjectData) {
     val sceneNodeData: Map<Long, SceneNodeData>
         get() = _sceneNodeData
 
-    private val _materials = mutableMapOf<Long, MaterialModel>()
-    val materials: Map<Long, MaterialModel>
+    private val _materials = projectData.materials.associateBy { it.id }.toMutableMap()
+    val materials: Map<Long, MaterialData>
         get() = _materials
 
     private val created: MutableMap<Long, SceneModel> = mutableMapOf()
 
     suspend fun create() {
-        projectData.materials.forEach { (id, data) ->
-            _materials[id] = MaterialModel(data.copy(id = id), this)
-        }
         projectData.sceneNodeIds.forEach { sceneNodeId ->
             val sceneData = sceneNodeData[sceneNodeId]
             if (sceneData != null) {
@@ -50,13 +48,12 @@ class EditorProject(val projectData: ProjectData) {
         _sceneNodeData -= data.nodeId
     }
 
-    fun createNewMaterial(): MaterialModel {
+    fun createNewMaterial(): MaterialData {
         val id = nextId()
-        val newMat = MaterialData(id, "Material-$id")
-        val matModel = MaterialModel(newMat, this)
-        _materials[id] = matModel
-        projectData.materials[id] = newMat
-        return matModel
+        val newMat = MaterialData(id, "Material-$id", PbrShaderData())
+        _materials[id] = newMat
+        projectData.materials += newMat
+        return newMat
     }
 
     inline fun <reified T: EditorModelComponent> getAllComponents(): List<T> {

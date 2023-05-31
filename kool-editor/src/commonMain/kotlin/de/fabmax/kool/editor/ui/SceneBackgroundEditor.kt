@@ -118,19 +118,20 @@ class SceneBackgroundEditor(var sceneModel: SceneModel) : Composable {
             }
         }
 
-        labeledSlider(
+        labeledDoubleTextField(
             label = "Skybox blurriness:",
-            value = skyLod,
-            min = 0f,
-            max = ReflectionMapPass.REFLECTION_MIP_LEVELS.toFloat(),
-            precision = 2
-        ) {
-            val oldBg = sceneModel.sceneBackground.backgroundState.value as? SceneBackgroundData.Hdri
-            if (oldBg != null) {
-                val newBg = oldBg.copy(skyLod = skyLod.value)
-                EditorActions.applyAction(SetBackgroundAction(sceneModel, oldBg, newBg))
+            value = skyLod.use().toDouble(),
+            precision = 2,
+            minValue = 0.0,
+            maxValue = ReflectionMapPass.REFLECTION_MIP_LEVELS.toDouble(),
+            dragChangeSpeed = 0.01,
+            editHandler = ActionValueEditHandler { undoValue, applyValue ->
+                skyLod.set(applyValue.toFloat())
+                val oldBg = hdriBg.copy(skyLod = undoValue.toFloat())
+                val newBg = hdriBg.copy(skyLod = applyValue.toFloat())
+                SetBackgroundAction(sceneModel, oldBg, newBg)
             }
-        }
+        )
     }
 
     private fun UiScope.availableHdriTextures(): List<AssetItem> {
