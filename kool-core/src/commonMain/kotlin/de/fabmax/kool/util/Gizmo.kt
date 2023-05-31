@@ -365,8 +365,8 @@ class Gizmo : Node(), InputStack.PointerListener {
             checkHoverPlanes(cam)
         }
 
-        if (isAnyHover) {
-            // consumer pointer whenever it is hovering the gizmo
+        if (isAnyHover && ptr.isAnyButtonEvent) {
+            // consumer any pointer button event whenever it is hovering the gizmo
             ptr.consume()
         }
     }

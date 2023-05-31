@@ -93,6 +93,31 @@ open class UiModifier(val surface: UiSurface) {
                 onDrag.isNotEmpty() ||
                 onDragEnd.isNotEmpty()
 
+    fun clearHoverCallbacks() {
+        onEnter.clear()
+        onExit.clear()
+        onHover.clear()
+    }
+
+    fun clearDragCallbacks() {
+        onDragStart.clear()
+        onDrag.clear()
+        onDragEnd.clear()
+    }
+
+    fun clearPointerCallbacks() {
+        onPointer.clear()
+        onClick.clear()
+        onWheelX.clear()
+        onWheelY.clear()
+        onEnter.clear()
+        onExit.clear()
+        onHover.clear()
+        onDragStart.clear()
+        onDrag.clear()
+        onDragEnd.clear()
+    }
+
     protected open inner class PropertyHolder<T>(private val defaultVal: (UiSurface) -> T) {
         var field = defaultVal(surface)
 

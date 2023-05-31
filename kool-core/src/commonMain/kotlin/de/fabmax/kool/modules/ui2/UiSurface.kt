@@ -120,6 +120,7 @@ open class UiSurface(
 
         viewport.setBounds(0f, 0f, viewportWidth.use(this), viewportHeight.use(this))
         viewport.applyDefaults()
+        viewport.modifier.padding(Dp.UNBOUNDED_NEGATIVE)
         composeContent()
         perfCompose = pt.takeMs().also { pt.reset() }
 
