@@ -403,13 +403,18 @@ fun precisionForValue(value: Double): Int {
 
 fun UiScope.labeledColorPicker(
     label: String,
-    pickerColor: MutableStateValue<Color>,
+    pickerColor: Color,
     isWithAlpha: Boolean = false,
     boxWidth: Dimension = sizes.baseSize * 2,
-    onShow: ((Color) -> Unit)? = null,
-    onHide: ((Color) -> Unit)? = null,
-    onPreview: (Color) -> Unit
+    editHandler: ValueEditHandler<Color>
 ) = menuRow {
+    val currentColor = remember(pickerColor)
+    var editColor by remember(pickerColor)
+    var editStartColor by remember(pickerColor)
+
+    // proxy current picker color in currentColor so that following remember block always uses the up-to-date value
+    // instead of the initial value, captured when remember was first called
+    currentColor.set(pickerColor)
 
     val colorPickerPopup = remember {
         val popup = AutoPopup()
@@ -419,21 +424,23 @@ fun UiScope.labeledColorPicker(
                 .border(RoundRectBorder(colors.secondaryVariant, sizes.smallGap, sizes.borderWidth))
                 .padding(sizes.smallGap)
 
-            val previewColor = pickerColor.value
-            val hsv = previewColor.toHsv()
+            val hsv = currentColor.use().toHsv()
             val hue = remember(hsv.x)
             val sat = remember(hsv.y)
             val bri = remember(hsv.z)
-            val alpha = if (isWithAlpha) remember(previewColor.a) else null
-            val hexString = remember(previewColor.toHexString(isWithAlpha))
+            val alpha = if (isWithAlpha) remember(currentColor.value.a) else null
+            val hexString = remember(currentColor.value.toHexString(isWithAlpha))
 
-            ColorChooserV(hue, sat, bri, alpha, hexString) { color ->
-                pickerColor.set(color)
-                onPreview(color)
+            ColorChooserV(hue, sat, bri, alpha, hexString, scopeName = label) { color ->
+                editColor = color
+                editHandler.onEdit(color)
             }
         }
-        popup.onShow = { onShow?.invoke(pickerColor.value) }
-        popup.onHide = { onHide?.invoke(pickerColor.value) }
+        popup.onShow = {
+            editHandler.onEditStart(currentColor.value)
+            editStartColor = currentColor.value
+        }
+        popup.onHide = { editHandler.onEditEnd(editStartColor, editColor) }
         popup
     }
     colorPickerPopup()
@@ -448,7 +455,7 @@ fun UiScope.labeledColorPicker(
         var isHovered by remember(false)
         val borderColor = if (isHovered) colors.elevatedComponentBgHovered else colors.elevatedComponentBg
         modifier
-            .backgroundColor(pickerColor.use())
+            .backgroundColor(pickerColor)
             .border(RectBorder(borderColor, sizes.borderWidth))
             .onEnter { isHovered = true }
             .onExit { isHovered = false }

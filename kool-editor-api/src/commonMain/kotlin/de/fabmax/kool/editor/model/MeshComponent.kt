@@ -72,7 +72,12 @@ class MeshComponent(override val componentData: MeshComponentData) :
         if (holder?.isHoldingMaterial(material) != false) {
             val pbrData = holder?.materialData?.shaderData as PbrShaderData?
             val baseColor = (pbrData?.baseColor as? ConstColorAttribute)?.color?.toColor()
-            (mesh.shader as? KslLitShader)?.color = baseColor ?: MdColor.GREY.toLinear()
+            val emissionColor = (pbrData?.emission as? ConstColorAttribute)?.color?.toColor()
+
+            (mesh.shader as? KslLitShader)?.let {  shader ->
+                shader.color = baseColor ?: MdColor.GREY.toLinear()
+                shader.emission = emissionColor ?: MdColor.GREY.toLinear()
+            }
         }
     }
 

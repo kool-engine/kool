@@ -8,7 +8,6 @@ import de.fabmax.kool.editor.api.AppAssets
 import de.fabmax.kool.editor.data.SceneBackgroundComponentData
 import de.fabmax.kool.editor.data.SceneBackgroundData
 import de.fabmax.kool.editor.model.SceneModel
-import de.fabmax.kool.editor.model.UpdateSceneBackgroundComponent
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.ibl.ReflectionMapPass
 import de.fabmax.kool.util.MdColor
@@ -81,18 +80,13 @@ class SceneBackgroundEditor(var sceneModel: SceneModel) : Composable {
         editorSingleBgColor.set(singleColorBg.color.toColor())
         labeledColorPicker(
             "Background color:",
-            editorSingleBgColor,
-            onShow = { editorSingleBgColorOld.set(it) },
-            onHide = {
-                val oldBg = SceneBackgroundData.SingleColor(editorSingleBgColorOld.value)
-                val newBg = SceneBackgroundData.SingleColor(it)
-                EditorActions.applyAction(SetBackgroundAction(sceneModel, oldBg, newBg))
+            editorSingleBgColor.use(),
+            editHandler = ActionValueEditHandler { undoValue, applyValue ->
+                val oldBg = SceneBackgroundData.SingleColor(undoValue)
+                val newBg = SceneBackgroundData.SingleColor(applyValue)
+                SetBackgroundAction(sceneModel, oldBg, newBg)
             }
-        ) { previewColor ->
-            // preview: set background without editor action to avoid spamming undo / redo history
-            sceneModel.sceneBackground.backgroundState.set(SceneBackgroundData.SingleColor(previewColor))
-            UpdateSceneBackgroundComponent.updateSceneBackground(sceneModel)
-        }
+        )
     }
 
     private fun UiScope.hdriBgProperties(sceneModel: SceneModel, hdriBg: SceneBackgroundData.Hdri) = Column(

@@ -7,9 +7,7 @@ import de.fabmax.kool.editor.actions.UpdateMaterialAction
 import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.editor.model.MaterialComponent
 import de.fabmax.kool.editor.model.SceneNodeModel
-import de.fabmax.kool.editor.model.updateMaterial
 import de.fabmax.kool.modules.ui2.*
-import de.fabmax.kool.util.Color
 
 class MaterialEditor(var sceneNodeModel: SceneNodeModel, var materialComponent: MaterialComponent) : Composable {
 
@@ -48,26 +46,36 @@ class MaterialEditor(var sceneNodeModel: SceneNodeModel, var materialComponent: 
     }
 
     private fun UiScope.pbrMaterialEditor(material: MaterialData, pbrData: PbrShaderData) {
-        val baseColor = pbrData.baseColor as? ConstColorAttribute
-        if (baseColor != null) {
-            val colorState = remember(baseColor.color.toColor().toSrgb() as Color)
-            labeledColorPicker(
-                "Base color:",
-                colorState,
-                onShow = { undoMaterial = material.shaderData },
-                onHide = { color ->
-                    undoMaterial?.let {
-                        val applyColor = ConstColorAttribute(ColorData(color.toLinear()))
-                        val applyMaterial = pbrData.copy(baseColor = applyColor)
-                        EditorActions.applyAction(UpdateMaterialAction(material, applyMaterial, it))
-                    }
-                }
-            ) { color ->
-                val previewBaseColor = ConstColorAttribute(ColorData(color.toLinear()))
-                material.shaderData = pbrData.copy(baseColor = previewBaseColor)
-                EditorState.projectModel.updateMaterial(material)
+        // shader setting callback functions need to use cast material.shaderData instead of pbrData because otherwise
+        // pbrData is captured on first invocation and will never be updated
+
+        (pbrData.baseColor as? ConstColorAttribute)?.let { baseColor ->
+            colorSetting("Base color:", baseColor, material) {
+                (material.shaderData as PbrShaderData).copy(baseColor = it)
             }
         }
+        (pbrData.emission as? ConstColorAttribute)?.let { emission ->
+            colorSetting("Emission color:", emission, material) {
+                (material.shaderData as PbrShaderData).copy(emission = it)
+            }
+        }
+    }
+
+    private inline fun UiScope.colorSetting(
+        label: String,
+        colorAttr: ConstColorAttribute,
+        material: MaterialData,
+        crossinline shaderDataSetter: (ConstColorAttribute) -> MaterialShaderData
+    ) {
+        labeledColorPicker(
+            label,
+            colorAttr.color.toColor().toSrgb(),
+            editHandler = ActionValueEditHandler { undoValue, applyValue ->
+                val undoMaterial = shaderDataSetter(ConstColorAttribute(ColorData(undoValue.toLinear())))
+                val applyMaterial = shaderDataSetter(ConstColorAttribute(ColorData(applyValue.toLinear())))
+                UpdateMaterialAction(material, applyMaterial, undoMaterial)
+            }
+        )
     }
 
     private fun makeMaterialItemsAndIndex(): Pair<List<MaterialItem>, Int> {

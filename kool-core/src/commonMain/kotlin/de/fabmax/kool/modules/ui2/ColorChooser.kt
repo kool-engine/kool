@@ -10,9 +10,10 @@ fun UiScope.ColorChooserH(
     value: MutableStateValue<Float>,
     alpha: MutableStateValue<Float>? = null,
     hexString: MutableStateValue<String>? = null,
+    scopeName: String? = null,
     onChange: ((Color) -> Unit)? = null
 ) {
-    Row(Grow(1f, min = FitContent)) {
+    Row(Grow(1f, min = FitContent), scopeName = scopeName) {
         modifier.margin(sizes.gap)
         ColorWheel(hue.use(), saturation.use(), value.use()) {
             modifier
@@ -35,9 +36,10 @@ fun UiScope.ColorChooserV(
     value: MutableStateValue<Float>,
     alpha: MutableStateValue<Float>? = null,
     hexString: MutableStateValue<String>? = null,
+    scopeName: String? = null,
     onChange: ((Color) -> Unit)? = null
 ) {
-    Column(Grow(1f, min = FitContent)) {
+    Column(Grow(1f, min = FitContent), scopeName = scopeName) {
         modifier.margin(sizes.gap)
         ColorWheel(hue.use(), saturation.use(), value.use()) {
             modifier
