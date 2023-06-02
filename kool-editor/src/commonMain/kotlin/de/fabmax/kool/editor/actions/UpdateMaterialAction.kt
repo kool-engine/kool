@@ -1,9 +1,9 @@
 package de.fabmax.kool.editor.actions
 
 import de.fabmax.kool.editor.EditorState
+import de.fabmax.kool.editor.components.updateMaterial
 import de.fabmax.kool.editor.data.MaterialData
 import de.fabmax.kool.editor.data.MaterialShaderData
-import de.fabmax.kool.editor.model.updateMaterial
 
 class UpdateMaterialAction(
     val materialData: MaterialData,

@@ -4,8 +4,11 @@ import de.fabmax.kool.editor.EditorState
 import de.fabmax.kool.editor.actions.AddComponentAction
 import de.fabmax.kool.editor.actions.EditorActions
 import de.fabmax.kool.editor.actions.SetTransformAction
+import de.fabmax.kool.editor.components.*
 import de.fabmax.kool.editor.data.ScriptComponentData
-import de.fabmax.kool.editor.model.*
+import de.fabmax.kool.editor.model.EditorNodeModel
+import de.fabmax.kool.editor.model.SceneModel
+import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.input.PointerInput
 import de.fabmax.kool.math.Mat3d
 import de.fabmax.kool.math.Mat4d

@@ -1,6 +1,8 @@
 package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.editor.KoolEditor
+import de.fabmax.kool.math.Vec2d
+import de.fabmax.kool.math.Vec3d
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.modules.ui2.docking.Dock
 import de.fabmax.kool.modules.ui2.docking.UiDockable
@@ -108,4 +110,18 @@ object UiColors {
     val titleBg = Color("343a49ff")
     val bgMid = Color("1b2028ff")
     val titleText =  Color("dbe6ffff")
+}
+
+object DragChangeRates {
+    const val RANGE_0_TO_1 = 0.005
+    const val POSITION = 0.01
+    const val SCALE = 0.01
+    const val ROTATION = 0.1
+    const val SIZE = 0.01
+
+    val SIZE_VEC2 = Vec2d(SIZE)
+    val SIZE_VEC3 = Vec3d(SIZE)
+    val POSITION_VEC3 = Vec3d(POSITION)
+    val SCALE_VEC3 = Vec3d(SCALE)
+    val ROTATION_VEC3 = Vec3d(ROTATION)
 }

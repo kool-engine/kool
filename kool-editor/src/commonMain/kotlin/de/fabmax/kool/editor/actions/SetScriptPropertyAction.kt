@@ -1,7 +1,7 @@
 package de.fabmax.kool.editor.actions
 
+import de.fabmax.kool.editor.components.ScriptComponent
 import de.fabmax.kool.editor.data.PropertyValue
-import de.fabmax.kool.editor.model.ScriptComponent
 
 class SetScriptPropertyAction(
     val scriptComponent: ScriptComponent,

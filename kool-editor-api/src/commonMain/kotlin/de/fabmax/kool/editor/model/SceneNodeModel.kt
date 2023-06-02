@@ -1,6 +1,9 @@
 package de.fabmax.kool.editor.model
 
 import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.editor.components.MeshComponent
+import de.fabmax.kool.editor.components.ModelComponent
+import de.fabmax.kool.editor.components.TransformComponent
 import de.fabmax.kool.editor.data.SceneNodeData
 import de.fabmax.kool.editor.data.TransformComponentData
 import de.fabmax.kool.editor.data.TransformData

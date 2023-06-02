@@ -1,6 +1,8 @@
 package de.fabmax.kool.editor.model
 
 import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.editor.components.SceneBackgroundComponent
+import de.fabmax.kool.editor.components.UpdateSceneBackgroundComponent
 import de.fabmax.kool.editor.data.SceneBackgroundData
 import de.fabmax.kool.editor.data.SceneNodeData
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
@@ -117,6 +119,8 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : EditorN
 
     private inner class BackgroundUpdater : UpdateSceneBackgroundComponent {
         var skybox: Skybox.Cube? = null
+
+        override suspend fun createComponent(nodeModel: EditorNodeModel) { }
 
         override suspend fun initComponent(nodeModel: EditorNodeModel) {
             updateBackground(sceneBackground)

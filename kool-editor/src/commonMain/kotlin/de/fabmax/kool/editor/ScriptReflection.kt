@@ -1,6 +1,6 @@
 package de.fabmax.kool.editor
 
-import de.fabmax.kool.editor.model.ScriptComponent
+import de.fabmax.kool.editor.components.ScriptComponent
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
 

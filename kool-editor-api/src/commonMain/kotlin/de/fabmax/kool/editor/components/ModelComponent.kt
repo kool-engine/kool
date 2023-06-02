@@ -1,9 +1,10 @@
-package de.fabmax.kool.editor.model
+package de.fabmax.kool.editor.components
 
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.editor.api.AppAssets
 import de.fabmax.kool.editor.data.ModelComponentData
 import de.fabmax.kool.editor.data.SceneBackgroundData
+import de.fabmax.kool.editor.model.EditorNodeModel
 import de.fabmax.kool.modules.gltf.GltfFile
 import de.fabmax.kool.modules.ksl.KslLitShader
 import de.fabmax.kool.modules.ksl.KslPbrShader
@@ -14,26 +15,21 @@ import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.launchOnMainThread
 
 class ModelComponent(override val componentData: ModelComponentData) :
+    SceneNodeComponent(),
     EditorDataComponent<ModelComponentData>,
     UpdateSceneBackgroundComponent
 {
     val modelPathState = mutableStateOf(componentData.modelPath).onChange { componentData.modelPath = it }
 
-    private lateinit var nodeModel: SceneNodeModel
     private var _model: Model? = null
     val model: Model
         get() = _model ?: throw IllegalStateException("ModelComponent was not yet created")
 
-    val isCreated: Boolean
-        get() = _model != null
-
     private var isIblShaded = false
 
     override suspend fun createComponent(nodeModel: EditorNodeModel) {
-        this.nodeModel = requireNotNull(nodeModel as? SceneNodeModel) {
-            "MeshComponent is only allowed in scene nodes (parent node is of type ${nodeModel::class})"
-        }
-        _model = createModel(this.nodeModel.scene.sceneBackground.loadedEnvironmentMaps)
+        super.createComponent(nodeModel)
+        _model = createModel(scene.sceneBackground.loadedEnvironmentMaps)
     }
 
     override fun updateSingleColorBg(bgColorSrgb: Color) {
@@ -73,12 +69,12 @@ class ModelComponent(override val componentData: ModelComponentData) :
             val oldModel = model
             _model = createModel(ibl)
 
-            if (nodeModel.node == oldModel) {
-                nodeModel.replaceCreatedNode(model)
+            if (sceneNode.node == oldModel) {
+                sceneNode.replaceCreatedNode(model)
             } else {
-                val idx = nodeModel.node.children.indexOf(oldModel)
-                nodeModel.node.removeNode(oldModel)
-                nodeModel.node.addNode(model, idx)
+                val idx = sceneNode.node.children.indexOf(oldModel)
+                sceneNode.node.removeNode(oldModel)
+                sceneNode.node.addNode(model, idx)
                 oldModel.dispose(KoolSystem.requireContext())
             }
 

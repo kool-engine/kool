@@ -1,13 +1,15 @@
 package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.editor.EditorState
+import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.actions.EditorActions
 import de.fabmax.kool.editor.actions.SetMaterialAction
 import de.fabmax.kool.editor.actions.UpdateMaterialAction
+import de.fabmax.kool.editor.components.MaterialComponent
 import de.fabmax.kool.editor.data.*
-import de.fabmax.kool.editor.model.MaterialComponent
 import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.modules.ui2.*
+import de.fabmax.kool.util.Color
 
 class MaterialEditor(var sceneNodeModel: SceneNodeModel, var materialComponent: MaterialComponent) : Composable {
 
@@ -54,6 +56,16 @@ class MaterialEditor(var sceneNodeModel: SceneNodeModel, var materialComponent: 
                 (material.shaderData as PbrShaderData).copy(baseColor = it)
             }
         }
+        (pbrData.roughness as? ConstValueAttribute)?.let { roughness ->
+            floatSetting("Roughness:", roughness, 0f, 1f, material) {
+                (material.shaderData as PbrShaderData).copy(roughness = it)
+            }
+        }
+        (pbrData.metallic as? ConstValueAttribute)?.let { metallic ->
+            floatSetting("Metallic:", metallic, 0f, 1f, material) {
+                (material.shaderData as PbrShaderData).copy(metallic = it)
+            }
+        }
         (pbrData.emission as? ConstColorAttribute)?.let { emission ->
             colorSetting("Emission color:", emission, material) {
                 (material.shaderData as PbrShaderData).copy(emission = it)
@@ -61,18 +73,78 @@ class MaterialEditor(var sceneNodeModel: SceneNodeModel, var materialComponent: 
         }
     }
 
-    private inline fun UiScope.colorSetting(
+    private fun UiScope.colorSetting(
         label: String,
         colorAttr: ConstColorAttribute,
         material: MaterialData,
-        crossinline shaderDataSetter: (ConstColorAttribute) -> MaterialShaderData
+        shaderDataSetter: (MaterialAttribute) -> MaterialShaderData
     ) {
-        labeledColorPicker(
-            label,
-            colorAttr.color.toColor().toSrgb(),
+        val availableTextures = KoolEditor.instance.availableAssets.textureAssets.use()
+                .filter { !it.name.lowercase().endsWith(".rgbe.png") }
+
+        menuRow {
+            Text(label) {
+                modifier
+                    .width(Grow.Std)
+                    .alignY(AlignmentY.Center)
+            }
+
+            Box(width = sizes.baseSize * 2f, height = sizes.lineHeight) {
+                val colorEditHandler = ActionValueEditHandler<Color> { undoValue, applyValue ->
+                    val undoMaterial = shaderDataSetter(ConstColorAttribute(ColorData(undoValue.toLinear())))
+                    val applyMaterial = shaderDataSetter(ConstColorAttribute(ColorData(applyValue.toLinear())))
+                    UpdateMaterialAction(material, applyMaterial, undoMaterial)
+                }
+                colorPicker(colorAttr.color.toColor().toSrgb(), editHandler = colorEditHandler).apply {
+                    modifier.width(sizes.baseSize * 2f + sizes.smallGap)
+                }
+//                Text("uv_checker_map.png") {
+//                    modifier
+//                        .size(sizes.baseSize * 2f + sizes.smallGap, sizes.lineHeight)
+//                        .padding(start = sizes.smallGap)
+//                        .background(RoundRectBackground(colors.componentBg, sizes.smallGap))
+//                        .onClick {
+//                            availableTextures.getOrNull(0)?.let { tex ->
+//                                val mat = shaderDataSetter(MapAttribute(tex.path))
+//                                EditorActions.applyAction(UpdateMaterialAction(material, mat, mat))
+//                            }
+//                        }
+//                }
+            }
+            Box(width = sizes.largeGap * 1.51f) {
+                Box(width = sizes.largeGap * 1.51f + sizes.smallGap, height = sizes.lineHeight) {
+                    var isHovered by remember(false)
+                    val bgColor = if (isHovered) colors.elevatedComponentBgHovered else colors.elevatedComponentBg
+                    modifier
+                        .margin(start = sizes.smallGap * -1)
+                        .background(RoundRectBackground(bgColor, sizes.smallGap))
+                        .onEnter { isHovered = true }
+                        .onExit { isHovered = false }
+                }
+            }
+        }
+    }
+
+    private inline fun UiScope.floatSetting(
+        label: String,
+        floatAttr: ConstValueAttribute,
+        min: Float,
+        max: Float,
+        material: MaterialData,
+        crossinline shaderDataSetter: (ConstValueAttribute) -> MaterialShaderData
+    ) {
+        var editValue by remember(floatAttr.value)
+        labeledDoubleTextField(
+            label = label,
+            value = floatAttr.value.toDouble(),
+            precision = precisionForValue((max - min).toDouble()),
+            dragChangeSpeed = DragChangeRates.RANGE_0_TO_1,
+            minValue = min.toDouble(),
+            maxValue = max.toDouble(),
             editHandler = ActionValueEditHandler { undoValue, applyValue ->
-                val undoMaterial = shaderDataSetter(ConstColorAttribute(ColorData(undoValue.toLinear())))
-                val applyMaterial = shaderDataSetter(ConstColorAttribute(ColorData(applyValue.toLinear())))
+                editValue = applyValue.toFloat()
+                val undoMaterial = shaderDataSetter(ConstValueAttribute(undoValue.toFloat()))
+                val applyMaterial = shaderDataSetter(ConstValueAttribute(editValue))
                 UpdateMaterialAction(material, applyMaterial, undoMaterial)
             }
         )

@@ -118,7 +118,7 @@ class SceneBackgroundEditor(var sceneModel: SceneModel) : Composable {
             precision = 2,
             minValue = 0.0,
             maxValue = ReflectionMapPass.REFLECTION_MIP_LEVELS.toDouble(),
-            dragChangeSpeed = 0.01,
+            dragChangeSpeed = DragChangeRates.RANGE_0_TO_1 * ReflectionMapPass.REFLECTION_MIP_LEVELS,
             editHandler = ActionValueEditHandler { undoValue, applyValue ->
                 skyLod.set(applyValue.toFloat())
                 val oldBg = hdriBg.copy(skyLod = undoValue.toFloat())

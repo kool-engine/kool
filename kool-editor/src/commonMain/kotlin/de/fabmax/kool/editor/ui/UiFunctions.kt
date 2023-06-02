@@ -65,7 +65,6 @@ fun UiScope.doubleTextField(
     modifier
         .text(text)
         .width(width)
-        .margin(start = sizes.smallGap)
         .alignY(AlignmentY.Center)
         .textAlignX(AlignmentX.End)
         .onChange { text = it }
@@ -131,7 +130,6 @@ fun UiScope.intTextField(
     modifier
         .text(text)
         .width(width)
-        .margin(start = sizes.smallGap)
         .alignY(AlignmentY.Center)
         .textAlignX(AlignmentX.End)
         .onChange { text = it }
@@ -196,6 +194,7 @@ fun UiScope.xyRow(
         Text("X") {
             modifier
                 .width(sizes.largeGap * 0.75f)
+                .margin(end = sizes.smallGap)
                 .textAlignX(AlignmentX.End)
                 .alignY(AlignmentY.Center)
                 .textColor(MdColor.RED tone 300)
@@ -207,6 +206,7 @@ fun UiScope.xyRow(
         Text("Y") {
             modifier
                 .width(sizes.largeGap)
+                .margin(end = sizes.smallGap)
                 .textAlignX(AlignmentX.End)
                 .alignY(AlignmentY.Center)
                 .textColor(MdColor.GREEN tone 300)
@@ -251,6 +251,7 @@ fun UiScope.xyzRow(
         Text("X") {
             modifier
                 .width(sizes.largeGap * 0.75f)
+                .margin(end = sizes.smallGap)
                 .textAlignX(AlignmentX.End)
                 .alignY(AlignmentY.Center)
                 .textColor(MdColor.RED tone 300)
@@ -262,6 +263,7 @@ fun UiScope.xyzRow(
         Text("Y") {
             modifier
                 .width(sizes.largeGap)
+                .margin(end = sizes.smallGap)
                 .textAlignX(AlignmentX.End)
                 .alignY(AlignmentY.Center)
                 .textColor(MdColor.GREEN tone 300)
@@ -273,6 +275,7 @@ fun UiScope.xyzRow(
         Text("Z") {
             modifier
                 .width(sizes.largeGap)
+                .margin(end = sizes.smallGap)
                 .textAlignX(AlignmentX.End)
                 .alignY(AlignmentY.Center)
                 .textColor(MdColor.BLUE tone 300)
@@ -322,6 +325,7 @@ fun UiScope.xyzwRow(
         Text("X") {
             modifier
                 .width(sizes.largeGap * 0.75f)
+                .margin(end = sizes.smallGap)
                 .textAlignX(AlignmentX.End)
                 .alignY(AlignmentY.Center)
                 .textColor(MdColor.RED tone 300)
@@ -333,6 +337,7 @@ fun UiScope.xyzwRow(
         Text("Y") {
             modifier
                 .width(sizes.largeGap)
+                .margin(end = sizes.smallGap)
                 .textAlignX(AlignmentX.End)
                 .alignY(AlignmentY.Center)
                 .textColor(MdColor.GREEN tone 300)
@@ -344,6 +349,7 @@ fun UiScope.xyzwRow(
         Text("Z") {
             modifier
                 .width(sizes.largeGap)
+                .margin(end = sizes.smallGap)
                 .textAlignX(AlignmentX.End)
                 .alignY(AlignmentY.Center)
                 .textColor(MdColor.BLUE tone 300)
@@ -355,6 +361,7 @@ fun UiScope.xyzwRow(
         Text("W") {
             modifier
                 .width(sizes.largeGap)
+                .margin(end = sizes.smallGap)
                 .textAlignX(AlignmentX.End)
                 .alignY(AlignmentY.Center)
                 .textColor(MdColor.AMBER tone 300)
@@ -408,6 +415,20 @@ fun UiScope.labeledColorPicker(
     boxWidth: Dimension = sizes.baseSize * 2,
     editHandler: ValueEditHandler<Color>
 ) = menuRow {
+    Text(label) {
+        modifier
+            .width(Grow.Std)
+            .alignY(AlignmentY.Center)
+    }
+    colorPicker(pickerColor, isWithAlpha, boxWidth, editHandler)
+}
+
+fun UiScope.colorPicker(
+    pickerColor: Color,
+    isWithAlpha: Boolean = false,
+    boxWidth: Dimension = sizes.baseSize * 2,
+    editHandler: ValueEditHandler<Color>
+): UiScope {
     val currentColor = remember(pickerColor)
     var editColor by remember(pickerColor)
     var editStartColor by remember(pickerColor)
@@ -431,7 +452,7 @@ fun UiScope.labeledColorPicker(
             val alpha = if (isWithAlpha) remember(currentColor.value.a) else null
             val hexString = remember(currentColor.value.toHexString(isWithAlpha))
 
-            ColorChooserV(hue, sat, bri, alpha, hexString, scopeName = label) { color ->
+            ColorChooserV(hue, sat, bri, alpha, hexString) { color ->
                 editColor = color
                 editHandler.onEdit(color)
             }
@@ -445,18 +466,12 @@ fun UiScope.labeledColorPicker(
     }
     colorPickerPopup()
 
-    Text(label) {
-        modifier
-            .width(Grow.Std)
-            .alignY(AlignmentY.Center)
-    }
-
-    Box(width = boxWidth, height = Grow.Std) {
+    return Box(width = boxWidth, height = Grow.Std) {
         var isHovered by remember(false)
         val borderColor = if (isHovered) colors.elevatedComponentBgHovered else colors.elevatedComponentBg
         modifier
-            .backgroundColor(pickerColor)
-            .border(RectBorder(borderColor, sizes.borderWidth))
+            .background(RoundRectBackground(pickerColor, sizes.smallGap))
+            .border(RoundRectBorder(borderColor, sizes.smallGap, sizes.borderWidth))
             .onEnter { isHovered = true }
             .onExit { isHovered = false }
             .onClick { colorPickerPopup.show(it) }

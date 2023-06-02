@@ -2,13 +2,11 @@ package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.editor.actions.EditorActions
 import de.fabmax.kool.editor.actions.SetShapeAction
+import de.fabmax.kool.editor.components.MeshComponent
 import de.fabmax.kool.editor.data.MeshShapeData
 import de.fabmax.kool.editor.data.Vec2Data
 import de.fabmax.kool.editor.data.Vec3Data
-import de.fabmax.kool.editor.model.MeshComponent
 import de.fabmax.kool.editor.model.SceneNodeModel
-import de.fabmax.kool.math.Vec2d
-import de.fabmax.kool.math.Vec3d
 import de.fabmax.kool.modules.ui2.*
 import kotlin.reflect.KClass
 
@@ -87,7 +85,7 @@ private fun UiScope.boxProperties(nodeModel: SceneNodeModel, meshComponent: Mesh
     xyzRow(
         label = "Size:",
         xyz = box.size.toVec3d(),
-        dragChangeSpeed = Vec3d(0.01),
+        dragChangeSpeed = DragChangeRates.SIZE_VEC3,
         editHandler = ActionValueEditHandler { undo, apply ->
             SetShapeAction(nodeModel, meshComponent, box.copy(size = Vec3Data(undo)), box.copy(size = Vec3Data(apply)), shapeI)
         }
@@ -102,7 +100,7 @@ private fun UiScope.rectProperties(nodeModel: SceneNodeModel, meshComponent: Mes
     xyRow(
         label = "Size:",
         xy = rect.size.toVec2d(),
-        dragChangeSpeed = Vec2d(0.01),
+        dragChangeSpeed = DragChangeRates.SIZE_VEC2,
         editHandler = ActionValueEditHandler { undo, apply ->
             SetShapeAction(nodeModel, meshComponent, rect.copy(size = Vec2Data(undo)), rect.copy(size = Vec2Data(apply)), shapeI)
         }
@@ -117,7 +115,7 @@ private fun UiScope.icoSphereProperties(nodeModel: SceneNodeModel, meshComponent
     labeledDoubleTextField(
         label = "Radius:",
         value = icoSphere.radius,
-        dragChangeSpeed = 0.01,
+        dragChangeSpeed = DragChangeRates.SIZE,
         editHandler = ActionValueEditHandler { undo, apply ->
             SetShapeAction(nodeModel, meshComponent, icoSphere.copy(radius = undo), icoSphere.copy(radius = apply), shapeI)
         }
@@ -142,7 +140,7 @@ private fun UiScope.uvSphereProperties(nodeModel: SceneNodeModel, meshComponent:
     labeledDoubleTextField(
         label = "Radius:",
         value = uvSphere.radius,
-        dragChangeSpeed = 0.01,
+        dragChangeSpeed = DragChangeRates.SIZE,
         editHandler = ActionValueEditHandler { undo, apply ->
             SetShapeAction(nodeModel, meshComponent, uvSphere.copy(radius = undo), uvSphere.copy(radius = apply), shapeI)
         }
@@ -177,7 +175,7 @@ private fun UiScope.cylinderProperties(nodeModel: SceneNodeModel, meshComponent:
         labeledDoubleTextField(
             label = "Radius:",
             value = cylinder.bottomRadius,
-            dragChangeSpeed = 0.01,
+            dragChangeSpeed = DragChangeRates.SIZE,
             editHandler = ActionValueEditHandler { undo, apply ->
                 SetShapeAction(nodeModel, meshComponent, cylinder.copy(bottomRadius = undo, topRadius = undo), cylinder.copy(bottomRadius = apply, topRadius = apply), shapeI)
             }
@@ -186,7 +184,7 @@ private fun UiScope.cylinderProperties(nodeModel: SceneNodeModel, meshComponent:
         labeledDoubleTextField(
             label = "Top-radius:",
             value = cylinder.topRadius,
-            dragChangeSpeed = 0.01,
+            dragChangeSpeed = DragChangeRates.SIZE,
             editHandler = ActionValueEditHandler { undo, apply ->
                 SetShapeAction(nodeModel, meshComponent, cylinder.copy(topRadius = undo), cylinder.copy(topRadius = apply), shapeI)
             }
@@ -194,7 +192,7 @@ private fun UiScope.cylinderProperties(nodeModel: SceneNodeModel, meshComponent:
         labeledDoubleTextField(
             label = "Bottom-radius:",
             value = cylinder.bottomRadius,
-            dragChangeSpeed = 0.01,
+            dragChangeSpeed = DragChangeRates.SIZE,
             editHandler = ActionValueEditHandler { undo, apply ->
                 SetShapeAction(nodeModel, meshComponent, cylinder.copy(bottomRadius = undo), cylinder.copy(bottomRadius = apply), shapeI)
             }
@@ -203,7 +201,7 @@ private fun UiScope.cylinderProperties(nodeModel: SceneNodeModel, meshComponent:
     labeledDoubleTextField(
         label = "Height:",
         value = cylinder.height,
-        dragChangeSpeed = 0.01,
+        dragChangeSpeed = DragChangeRates.SIZE,
         editHandler = ActionValueEditHandler { undo, apply ->
             SetShapeAction(nodeModel, meshComponent, cylinder.copy(height = undo), cylinder.copy(height = apply), shapeI)
         }
@@ -228,7 +226,7 @@ private fun UiScope.capsuleProperties(nodeModel: SceneNodeModel, meshComponent: 
     labeledDoubleTextField(
         label = "Radius:",
         value = capsule.radius,
-        dragChangeSpeed = 0.01,
+        dragChangeSpeed = DragChangeRates.SIZE,
         editHandler = ActionValueEditHandler { undo, apply ->
             SetShapeAction(nodeModel, meshComponent, capsule.copy(radius = undo), capsule.copy(radius = apply), shapeI)
         }
@@ -236,7 +234,7 @@ private fun UiScope.capsuleProperties(nodeModel: SceneNodeModel, meshComponent: 
     labeledDoubleTextField(
         label = "Length:",
         value = capsule.length,
-        dragChangeSpeed = 0.01,
+        dragChangeSpeed = DragChangeRates.SIZE,
         editHandler = ActionValueEditHandler { undo, apply ->
             SetShapeAction(nodeModel, meshComponent, capsule.copy(length = undo), capsule.copy(length = apply), shapeI)
         }

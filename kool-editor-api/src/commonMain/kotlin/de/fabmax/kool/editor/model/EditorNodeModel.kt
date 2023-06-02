@@ -1,5 +1,6 @@
 package de.fabmax.kool.editor.model
 
+import de.fabmax.kool.editor.components.*
 import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.modules.ui2.mutableStateListOf
 import de.fabmax.kool.scene.Node

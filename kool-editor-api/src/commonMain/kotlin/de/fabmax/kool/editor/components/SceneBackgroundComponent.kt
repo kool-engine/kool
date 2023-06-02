@@ -1,8 +1,10 @@
-package de.fabmax.kool.editor.model
+package de.fabmax.kool.editor.components
 
 import de.fabmax.kool.editor.api.AppAssets
 import de.fabmax.kool.editor.data.SceneBackgroundComponentData
 import de.fabmax.kool.editor.data.SceneBackgroundData
+import de.fabmax.kool.editor.model.EditorNodeModel
+import de.fabmax.kool.editor.model.SceneModel
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.util.Color
@@ -23,6 +25,8 @@ class SceneBackgroundComponent(override val componentData: SceneBackgroundCompon
         val hdriBg = backgroundState.value as? SceneBackgroundData.Hdri ?: return
         loadedEnvironmentMaps = AppAssets.loadHdriEnvironment(scene.node, hdriBg.hdriPath)
     }
+
+    override suspend fun initComponent(nodeModel: EditorNodeModel) { }
 }
 
 interface UpdateSceneBackgroundComponent : EditorModelComponent {

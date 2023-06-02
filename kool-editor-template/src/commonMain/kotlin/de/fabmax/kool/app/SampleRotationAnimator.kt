@@ -2,7 +2,7 @@ package de.fabmax.kool.app
 
 import de.fabmax.kool.editor.api.EditorInfo
 import de.fabmax.kool.editor.api.KoolScript
-import de.fabmax.kool.editor.model.TransformComponent
+import de.fabmax.kool.editor.components.TransformComponent
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.util.Time
 
@@ -17,7 +17,7 @@ class SampleRotationAnimator : KoolScript() {
     private lateinit var transform: TransformComponent
 
     override fun onInit() {
-        transform = nodeModel.getComponent<TransformComponent>()!!
+        transform = node.getComponent<TransformComponent>()!!
     }
 
     override fun onUpdate() {

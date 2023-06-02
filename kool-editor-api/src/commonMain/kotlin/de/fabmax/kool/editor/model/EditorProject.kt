@@ -1,6 +1,7 @@
 package de.fabmax.kool.editor.model
 
 import de.fabmax.kool.Assets
+import de.fabmax.kool.editor.components.EditorModelComponent
 import de.fabmax.kool.editor.data.MaterialData
 import de.fabmax.kool.editor.data.PbrShaderData
 import de.fabmax.kool.editor.data.ProjectData

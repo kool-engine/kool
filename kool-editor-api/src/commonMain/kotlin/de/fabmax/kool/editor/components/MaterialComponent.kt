@@ -1,10 +1,14 @@
-package de.fabmax.kool.editor.model
+package de.fabmax.kool.editor.components
 
 import de.fabmax.kool.editor.data.MaterialComponentData
 import de.fabmax.kool.editor.data.MaterialData
+import de.fabmax.kool.editor.model.EditorNodeModel
+import de.fabmax.kool.editor.model.EditorProject
 import de.fabmax.kool.modules.ui2.mutableStateOf
 
-class MaterialComponent(override val componentData: MaterialComponentData) : EditorDataComponent<MaterialComponentData> {
+class MaterialComponent(override val componentData: MaterialComponentData) :
+    SceneNodeComponent(),
+    EditorDataComponent<MaterialComponentData> {
 
     val materialState = mutableStateOf<MaterialData?>(null).onChange {
         componentData.materialId = it?.id ?: -1
@@ -17,10 +21,8 @@ class MaterialComponent(override val componentData: MaterialComponentData) : Edi
     }
 
     override suspend fun createComponent(nodeModel: EditorNodeModel) {
-        val sceneNode = requireNotNull(nodeModel as? SceneNodeModel) {
-            "MaterialHolderComponent is only allowed in SceneNodeModels (parent node is of type ${nodeModel::class})"
-        }
-        materialState.set(sceneNode.scene.project.materials[componentData.materialId])
+        super.createComponent(nodeModel)
+        materialState.set(scene.project.materials[componentData.materialId])
     }
 }
 

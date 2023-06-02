@@ -1,10 +1,12 @@
 package de.fabmax.kool.editor.data
 
 import de.fabmax.kool.editor.api.AppAssets
-import de.fabmax.kool.modules.ksl.KslPbrShader
-import de.fabmax.kool.modules.ksl.KslShader
+import de.fabmax.kool.modules.ksl.*
+import de.fabmax.kool.modules.ksl.blocks.ColorBlockConfig
+import de.fabmax.kool.modules.ksl.blocks.PropertyBlockConfig
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.GlslType
+import de.fabmax.kool.pipeline.Shader
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
@@ -21,84 +23,19 @@ data class MaterialData(
     var shaderData: MaterialShaderData
 ) {
 
-    suspend fun createShader(ibl: EnvironmentMaps?): KslShader {
-        return when (val data = shaderData) {
-            is BlinnPhongShaderData -> TODO()
-            is PbrShaderData -> createPbrShader(data, ibl)
-            is UnlitShaderData -> TODO()
-        }
-    }
+    suspend fun createShader(ibl: EnvironmentMaps?): KslShader = shaderData.createShader(ibl)
+    suspend fun updateShader(shader: Shader?, ibl: EnvironmentMaps?): Boolean = shaderData.updateShader(shader, ibl)
 
-    private suspend fun createPbrShader(pbrData: PbrShaderData, ibl: EnvironmentMaps?): KslPbrShader {
-        val colorMap = (pbrData.baseColor as? MapAttribute)?.let { AppAssets.loadTexture2d(it.mapPath) }
-        val roughnessMap = (pbrData.roughness as? MapAttribute)?.let { AppAssets.loadTexture2d(it.mapPath) }
-        val metallicMap = (pbrData.metallic as? MapAttribute)?.let { AppAssets.loadTexture2d(it.mapPath) }
-        val emissionMap = (pbrData.emission as? MapAttribute)?.let { AppAssets.loadTexture2d(it.mapPath) }
-        val normalMap = pbrData.normalMap?.let { AppAssets.loadTexture2d(it.mapPath) }
-        val aoMap = pbrData.aoMap?.let { AppAssets.loadTexture2d(it.mapPath) }
-        val displacementMap = pbrData.displacementMap?.let { AppAssets.loadTexture2d(it.mapPath) }
+    fun matchesShader(shader: Shader?): Boolean = shaderData.matchesShader(shader)
 
-        return KslPbrShader {
-            color {
-                when (val color = pbrData.baseColor) {
-                    is ConstColorAttribute -> uniformColor(color.color.toColor())
-                    is ConstValueAttribute -> uniformColor(Color(color.value, color.value, color.value).toLinear())
-                    is MapAttribute -> textureColor(colorMap)
-                    is VertexAttribute -> vertexColor(Attribute(color.attribName, GlslType.VEC_4F))
-                }
-            }
-            emission {
-                when (val color = pbrData.emission) {
-                    is ConstColorAttribute -> uniformColor(color.color.toColor())
-                    is ConstValueAttribute -> uniformColor(Color(color.value, color.value, color.value).toLinear())
-                    is MapAttribute -> textureColor(emissionMap)
-                    is VertexAttribute -> vertexColor(Attribute(color.attribName, GlslType.VEC_4F))
-                }
-            }
-            roughness {
-                when (val rough = pbrData.roughness) {
-                    is ConstColorAttribute -> uniformProperty(rough.color.r)
-                    is ConstValueAttribute -> uniformProperty(rough.value)
-                    is MapAttribute -> textureProperty(roughnessMap, rough.singleChannelIndex)
-                    is VertexAttribute -> vertexProperty(Attribute(rough.attribName, GlslType.FLOAT))
-                }
-            }
-            metallic {
-                when (val metal = pbrData.metallic) {
-                    is ConstColorAttribute -> uniformProperty(metal.color.r)
-                    is ConstValueAttribute -> uniformProperty(metal.value)
-                    is MapAttribute -> textureProperty(metallicMap, metal.singleChannelIndex)
-                    is VertexAttribute -> vertexProperty(Attribute(metal.attribName, GlslType.FLOAT))
-                }
-            }
-            pbrData.aoMap?.let {
-                ao {
-                    materialAo {
-                        textureProperty(aoMap, it.singleChannelIndex)
-                    }
-                }
-            }
-            pbrData.displacementMap?.let {
-                vertices {
-                    displacement {
-                        textureProperty(displacementMap, it.singleChannelIndex)
-                    }
-                }
-            }
-            normalMap?.let {
-                normalMapping {
-                    setNormalMap(normalMap)
-                }
-            }
-            ibl?.let {
-                enableImageBasedLighting(ibl)
-            }
-        }
-    }
 }
 
 @Serializable
-sealed interface MaterialShaderData
+sealed interface MaterialShaderData {
+    fun matchesShader(shader: Shader?): Boolean
+    suspend fun createShader(ibl: EnvironmentMaps?): KslShader
+    suspend fun updateShader(shader: Shader?, ibl: EnvironmentMaps?): Boolean
+}
 
 @Serializable
 data class PbrShaderData(
@@ -109,7 +46,134 @@ data class PbrShaderData(
     val normalMap: MapAttribute? = null,
     val aoMap: MapAttribute? = null,
     val displacementMap: MapAttribute? = null
-) : MaterialShaderData
+) : MaterialShaderData {
+
+    override fun matchesShader(shader: Shader?): Boolean {
+        if (shader !is KslPbrShader) {
+            return false
+        }
+        return baseColor.matchesCfg(shader.colorCfg)
+                && roughness.matchesCfg(shader.roughnessCfg)
+                && metallic.matchesCfg(shader.metallicCfg)
+                && emission.matchesCfg(shader.emissionCfg)
+                && aoMap?.matchesCfg(shader.materialAoCfg) != false
+                && displacementMap?.matchesCfg(shader.displacementCfg) != false
+                && shader.isNormalMapped == (normalMap != null)
+    }
+
+    override suspend fun createShader(ibl: EnvironmentMaps?): KslPbrShader {
+        val shader = KslPbrShader {
+            color {
+                when (val color = baseColor) {
+                    is ConstColorAttribute -> uniformColor()
+                    is ConstValueAttribute -> uniformColor()
+                    is MapAttribute -> textureColor()
+                    is VertexAttribute -> vertexColor(Attribute(color.attribName, GlslType.VEC_4F))
+                }
+            }
+            emission {
+                when (val color = emission) {
+                    is ConstColorAttribute -> uniformColor()
+                    is ConstValueAttribute -> uniformColor()
+                    is MapAttribute -> textureColor()
+                    is VertexAttribute -> vertexColor(Attribute(color.attribName, GlslType.VEC_4F))
+                }
+            }
+            roughness {
+                when (val rough = roughness) {
+                    is ConstColorAttribute -> uniformProperty()
+                    is ConstValueAttribute -> uniformProperty()
+                    is MapAttribute -> textureProperty()
+                    is VertexAttribute -> vertexProperty(Attribute(rough.attribName, GlslType.FLOAT))
+                }
+            }
+            metallic {
+                when (val metal = metallic) {
+                    is ConstColorAttribute -> uniformProperty()
+                    is ConstValueAttribute -> uniformProperty()
+                    is MapAttribute -> textureProperty()
+                    is VertexAttribute -> vertexProperty(Attribute(metal.attribName, GlslType.FLOAT))
+                }
+            }
+            this@PbrShaderData.aoMap?.let {
+                ao {
+                    materialAo {
+                        textureProperty(null, it.singleChannelIndex)
+                    }
+                }
+            }
+            this@PbrShaderData.displacementMap?.let {
+                vertices {
+                    displacement {
+                        textureProperty(null, it.singleChannelIndex)
+                    }
+                }
+            }
+            this@PbrShaderData.normalMap?.let {
+                normalMapping {
+                    setNormalMap()
+                }
+            }
+            ibl?.let {
+                enableImageBasedLighting(ibl)
+            }
+        }
+        updateShader(shader, ibl)
+        return shader
+    }
+
+    override suspend fun updateShader(shader: Shader?, ibl: EnvironmentMaps?): Boolean {
+        if (!matchesShader(shader)) {
+            return false
+        }
+        val pbrShader = shader as? KslPbrShader ?: return false
+
+        if (ibl != null && shader.ambientCfg is KslLitShader.AmbientColor.Uniform) {
+            return false
+        }
+
+        val colorMap = (baseColor as? MapAttribute)?.let { AppAssets.loadTexture2d(it.mapPath) }
+        val roughnessMap = (roughness as? MapAttribute)?.let { AppAssets.loadTexture2d(it.mapPath) }
+        val metallicMap = (metallic as? MapAttribute)?.let { AppAssets.loadTexture2d(it.mapPath) }
+        val emissionMap = (emission as? MapAttribute)?.let { AppAssets.loadTexture2d(it.mapPath) }
+        val normalMap = normalMap?.let { AppAssets.loadTexture2d(it.mapPath) }
+        val aoMap = aoMap?.let { AppAssets.loadTexture2d(it.mapPath) }
+        val displacementMap = displacementMap?.let { AppAssets.loadTexture2d(it.mapPath) }
+
+        when (val color = baseColor) {
+            is ConstColorAttribute -> pbrShader.color = color.color.toColor()
+            is ConstValueAttribute -> pbrShader.color = Color(color.value, color.value, color.value)
+            is MapAttribute -> pbrShader.colorMap = colorMap
+            is VertexAttribute -> { }
+        }
+        when (val color = emission) {
+            is ConstColorAttribute -> pbrShader.emission = color.color.toColor()
+            is ConstValueAttribute -> pbrShader.emission = Color(color.value, color.value, color.value)
+            is MapAttribute -> pbrShader.emissionMap = emissionMap
+            is VertexAttribute -> { }
+        }
+        when (val rough = roughness) {
+            is ConstColorAttribute -> pbrShader.roughness = rough.color.r
+            is ConstValueAttribute -> pbrShader.roughness = rough.value
+            is MapAttribute -> pbrShader.roughnessMap = roughnessMap
+            is VertexAttribute -> { }
+        }
+        when (val metal = metallic) {
+            is ConstColorAttribute -> pbrShader.metallic = metal.color.r
+            is ConstValueAttribute -> pbrShader.metallic = metal.value
+            is MapAttribute -> pbrShader.metallicMap = metallicMap
+            is VertexAttribute -> { }
+        }
+        pbrShader.normalMap = normalMap
+        pbrShader.materialAoMap = aoMap
+        pbrShader.displacementMap = displacementMap
+        ibl?.let {
+            pbrShader.ambientMap = ibl.irradianceMap
+            pbrShader.reflectionMap = ibl.reflectionMap
+        }
+        return true
+    }
+}
 
 @Serializable
 data class BlinnPhongShaderData(
@@ -117,24 +181,75 @@ data class BlinnPhongShaderData(
     val specularColor: MaterialAttribute = ConstColorAttribute(ColorData(Color.WHITE)),
     val shininess: MaterialAttribute = ConstValueAttribute(16f),
     val specularStrength: MaterialAttribute = ConstValueAttribute(1f),
-) : MaterialShaderData
+) : MaterialShaderData {
+
+    override fun matchesShader(shader: Shader?): Boolean {
+        if (shader !is KslBlinnPhongShader) {
+            return false
+        }
+        return true
+    }
+
+    override suspend fun createShader(ibl: EnvironmentMaps?): KslShader {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun updateShader(shader: Shader?, ibl: EnvironmentMaps?): Boolean {
+        TODO("Not yet implemented")
+    }
+}
 
 @Serializable
 data class UnlitShaderData(
     val baseColor: MaterialAttribute = ConstColorAttribute(ColorData(MdColor.GREY))
-) : MaterialShaderData
+) : MaterialShaderData {
+
+    override fun matchesShader(shader: Shader?): Boolean {
+        if (shader !is KslUnlitShader) {
+            return false
+        }
+        return true
+    }
+
+    override suspend fun createShader(ibl: EnvironmentMaps?): KslShader {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun updateShader(shader: Shader?, ibl: EnvironmentMaps?): Boolean {
+        TODO("Not yet implemented")
+    }
+}
 
 @Serializable
-sealed interface MaterialAttribute
+sealed interface MaterialAttribute {
+    fun matchesCfg(cfg: ColorBlockConfig): Boolean {
+        return false
+    }
+    fun matchesCfg(cfg: PropertyBlockConfig): Boolean {
+        return false
+    }
+}
 
 @Serializable
-class ConstColorAttribute(val color: ColorData) : MaterialAttribute
+class ConstColorAttribute(val color: ColorData) : MaterialAttribute {
+    override fun matchesCfg(cfg: ColorBlockConfig): Boolean {
+        return cfg.colorSources.any { it is ColorBlockConfig.UniformColor }
+    }
+}
 
 @Serializable
-class ConstValueAttribute(val value: Float) : MaterialAttribute
+class ConstValueAttribute(val value: Float) : MaterialAttribute {
+    override fun matchesCfg(cfg: PropertyBlockConfig): Boolean {
+        return cfg.propertySources.any { it is PropertyBlockConfig.UniformProperty }
+    }
+}
 
 @Serializable
-class VertexAttribute(val attribName: String) : MaterialAttribute
+class VertexAttribute(val attribName: String) : MaterialAttribute {
+    override fun matchesCfg(cfg: PropertyBlockConfig): Boolean {
+        return cfg.propertySources.any { it is PropertyBlockConfig.VertexProperty }
+    }
+}
 
 @Serializable
 class MapAttribute(val mapPath: String, val channels: String? = null) : MaterialAttribute {
@@ -148,4 +263,12 @@ class MapAttribute(val mapPath: String, val channels: String? = null) : Material
                 else -> 0
             }
         }
+
+    override fun matchesCfg(cfg: ColorBlockConfig): Boolean {
+        return cfg.colorSources.any { it is ColorBlockConfig.TextureColor }
+    }
+
+    override fun matchesCfg(cfg: PropertyBlockConfig): Boolean {
+        return cfg.propertySources.any { it is PropertyBlockConfig.TextureProperty }
+    }
 }

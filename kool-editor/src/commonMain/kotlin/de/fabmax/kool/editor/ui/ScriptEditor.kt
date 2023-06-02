@@ -3,11 +3,11 @@ package de.fabmax.kool.editor.ui
 import de.fabmax.kool.editor.EditorState
 import de.fabmax.kool.editor.ScriptProperty
 import de.fabmax.kool.editor.actions.SetScriptPropertyAction
+import de.fabmax.kool.editor.components.ScriptComponent
 import de.fabmax.kool.editor.data.PropertyValue
 import de.fabmax.kool.editor.data.Vec2Data
 import de.fabmax.kool.editor.data.Vec3Data
 import de.fabmax.kool.editor.data.Vec4Data
-import de.fabmax.kool.editor.model.ScriptComponent
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.logW

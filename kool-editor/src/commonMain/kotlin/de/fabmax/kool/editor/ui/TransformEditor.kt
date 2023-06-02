@@ -4,10 +4,6 @@ import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.math.Vec3d
 import de.fabmax.kool.modules.ui2.*
 
-private val POS_DRAG_CHANGE_SPEED = Vec3d(0.01)
-private val ROT_DRAG_CHANGE_SPEED = Vec3d(0.1)
-private val SCALE_DRAG_CHANGE_SPEED = Vec3d(0.01)
-
 fun UiScope.transformEditor(props: TransformProperties) = collapsapsablePanel("Transform") {
     Column(width = Grow.Std) {
         modifier
@@ -23,21 +19,21 @@ fun UiScope.transformEditor(props: TransformProperties) = collapsapsablePanel("T
 private fun UiScope.position(props: TransformProperties) = xyzRow(
     label = "Position:",
     xyz = Vec3d(props.px.use(), props.py.use(), props.pz.use()),
-    dragChangeSpeed = POS_DRAG_CHANGE_SPEED,
+    dragChangeSpeed = DragChangeRates.POSITION_VEC3,
     editHandler = props.posEditHandler
 )
 
 private fun UiScope.rotation(props: TransformProperties) = xyzRow(
     label = "Rotation:",
     xyz = Vec3d(props.rx.use(), props.ry.use(), props.rz.use()),
-    dragChangeSpeed = ROT_DRAG_CHANGE_SPEED,
+    dragChangeSpeed = DragChangeRates.ROTATION_VEC3,
     editHandler = props.rotEditHandler
 )
 
 private fun UiScope.scale(props: TransformProperties) = xyzRow(
     label = "Scale:",
     xyz = Vec3d(props.sx.use(), props.sy.use(), props.sz.use()),
-    dragChangeSpeed = SCALE_DRAG_CHANGE_SPEED,
+    dragChangeSpeed = DragChangeRates.SCALE_VEC3,
     editHandler = props.scaleEditHandler
 )
 
