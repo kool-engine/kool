@@ -23,7 +23,7 @@ class VertexDisplacementBlock(
         body.apply {
             check(parentStage is KslVertexStage) { "VertexDisplacementBlock can only be added to KslVertexStage" }
 
-            if (cfg.propertySources.isEmpty() || cfg.propertySources.first().mixMode != PropertyBlockConfig.MixMode.Set) {
+            if (cfg.propertySources.isEmpty() || cfg.propertySources.first().blendMode != PropertyBlockConfig.BlendMode.Set) {
                 outProperty set 0f.const
             }
 
@@ -53,7 +53,7 @@ class VertexDisplacementBlock(
                         }
                     }
                 }
-                mixValue(source.mixMode, propertyValue)
+                mixValue(source.blendMode, propertyValue)
             }
         }
     }
@@ -69,12 +69,12 @@ class VertexDisplacementBlock(
             .find { it != null }
     }
 
-    private fun KslScopeBuilder.mixValue(mixMode: PropertyBlockConfig.MixMode, value: KslExprFloat1) {
-        when (mixMode) {
-            PropertyBlockConfig.MixMode.Set -> outProperty set value
-            PropertyBlockConfig.MixMode.Multiply -> outProperty *= value
-            PropertyBlockConfig.MixMode.Add -> outProperty += value
-            PropertyBlockConfig.MixMode.Subtract -> outProperty -= value
+    private fun KslScopeBuilder.mixValue(blendMode: PropertyBlockConfig.BlendMode, value: KslExprFloat1) {
+        when (blendMode) {
+            PropertyBlockConfig.BlendMode.Set -> outProperty set value
+            PropertyBlockConfig.BlendMode.Multiply -> outProperty *= value
+            PropertyBlockConfig.BlendMode.Add -> outProperty += value
+            PropertyBlockConfig.BlendMode.Subtract -> outProperty -= value
         }
     }
 }

@@ -83,7 +83,7 @@ class PropertyBlockFragmentStage(
         body.apply {
             check(parentStage is KslFragmentStage) { "PropertyBlockFragmentStage can only be added to KslFragmentStage" }
 
-            if (cfg.propertySources.isEmpty() || cfg.propertySources.first().mixMode != PropertyBlockConfig.MixMode.Set) {
+            if (cfg.propertySources.isEmpty() || cfg.propertySources.first().blendMode != PropertyBlockConfig.BlendMode.Set) {
                 outProperty set 0f.const
             }
 
@@ -113,7 +113,7 @@ class PropertyBlockFragmentStage(
                         }
                     }
                 }
-                mixValue(source.mixMode, propertyValue)
+                mixValue(source.blendMode, propertyValue)
             }
         }
     }
@@ -136,12 +136,12 @@ class PropertyBlockFragmentStage(
             .find { it != null }
     }
 
-    private fun KslScopeBuilder.mixValue(mixMode: PropertyBlockConfig.MixMode, value: KslExprFloat1) {
-        when (mixMode) {
-            PropertyBlockConfig.MixMode.Set -> outProperty set value
-            PropertyBlockConfig.MixMode.Multiply -> outProperty *= value
-            PropertyBlockConfig.MixMode.Add -> outProperty += value
-            PropertyBlockConfig.MixMode.Subtract -> outProperty -= value
+    private fun KslScopeBuilder.mixValue(blendMode: PropertyBlockConfig.BlendMode, value: KslExprFloat1) {
+        when (blendMode) {
+            PropertyBlockConfig.BlendMode.Set -> outProperty set value
+            PropertyBlockConfig.BlendMode.Multiply -> outProperty *= value
+            PropertyBlockConfig.BlendMode.Add -> outProperty += value
+            PropertyBlockConfig.BlendMode.Subtract -> outProperty -= value
         }
     }
 }
@@ -151,28 +151,28 @@ data class PropertyBlockConfig(
     val propertySources: MutableList<PropertySource> = mutableListOf()
 ) {
 
-    fun constProperty(value: Float, mixMode: MixMode = MixMode.Set) {
-        propertySources += ConstProperty(value, mixMode)
+    fun constProperty(value: Float, blendMode: BlendMode = BlendMode.Set) {
+        propertySources += ConstProperty(value, blendMode)
     }
 
-    fun uniformProperty(defaultValue: Float = 0f, uniformName: String = "u${propertyName}", mixMode: MixMode = MixMode.Set) {
-        propertySources += UniformProperty(defaultValue, uniformName, mixMode)
+    fun uniformProperty(defaultValue: Float = 0f, uniformName: String = "u${propertyName}", blendMode: BlendMode = BlendMode.Set) {
+        propertySources += UniformProperty(defaultValue, uniformName, blendMode)
     }
 
-    fun vertexProperty(attribute: Attribute, channel: Int = 0, mixMode: MixMode = MixMode.Set) {
-        propertySources += VertexProperty(attribute, channel, mixMode)
+    fun vertexProperty(attribute: Attribute, channel: Int = 0, blendMode: BlendMode = BlendMode.Set) {
+        propertySources += VertexProperty(attribute, channel, blendMode)
     }
 
     fun textureProperty(defaultTexture: Texture2d? = null,
                         channel: Int = 0,
                         textureName: String = "t${propertyName}",
                         coordAttribute: Attribute = Attribute.TEXTURE_COORDS,
-                        mixMode: MixMode = MixMode.Set) {
-        propertySources += TextureProperty(defaultTexture, channel, textureName, coordAttribute, mixMode)
+                        blendMode: BlendMode = BlendMode.Set) {
+        propertySources += TextureProperty(defaultTexture, channel, textureName, coordAttribute, blendMode)
     }
 
-    fun instanceProperty(attribute: Attribute, channel: Int = 0, mixMode: MixMode = MixMode.Set) {
-        propertySources += InstanceProperty(attribute, channel, mixMode)
+    fun instanceProperty(attribute: Attribute, channel: Int = 0, blendMode: BlendMode = BlendMode.Set) {
+        propertySources += InstanceProperty(attribute, channel, blendMode)
     }
 
     val primaryUniform: UniformProperty?
@@ -181,12 +181,12 @@ data class PropertyBlockConfig(
     val primaryTexture: TextureProperty?
         get() = propertySources.find { it is TextureProperty } as? TextureProperty
 
-    sealed class PropertySource(val mixMode: MixMode)
-    class ConstProperty(val value: Float, mixMode: MixMode) : PropertySource(mixMode)
-    class UniformProperty(val defaultValue: Float?, val uniformName: String, mixMode: MixMode) : PropertySource(mixMode)
-    class VertexProperty(val propertyAttrib: Attribute, val channel: Int, mixMode: MixMode) : PropertySource(mixMode)
-    class TextureProperty(val defaultTexture: Texture2d?, val channel: Int, val textureName: String, val coordAttribute: Attribute, mixMode: MixMode) : PropertySource(mixMode)
-    class InstanceProperty(val propertyAttrib: Attribute, val channel: Int, mixMode: MixMode) : PropertySource(mixMode)
+    sealed class PropertySource(val blendMode: BlendMode)
+    class ConstProperty(val value: Float, blendMode: BlendMode) : PropertySource(blendMode)
+    class UniformProperty(val defaultValue: Float?, val uniformName: String, blendMode: BlendMode) : PropertySource(blendMode)
+    class VertexProperty(val propertyAttrib: Attribute, val channel: Int, blendMode: BlendMode) : PropertySource(blendMode)
+    class TextureProperty(val defaultTexture: Texture2d?, val channel: Int, val textureName: String, val coordAttribute: Attribute, blendMode: BlendMode) : PropertySource(blendMode)
+    class InstanceProperty(val propertyAttrib: Attribute, val channel: Int, blendMode: BlendMode) : PropertySource(blendMode)
 
     fun isEmptyOrConst(constValue: Float): Boolean {
         if (propertySources.size == 1) {
@@ -198,7 +198,7 @@ data class PropertyBlockConfig(
         return propertySources.isEmpty()
     }
 
-    enum class MixMode {
+    enum class BlendMode {
         Set,
         Multiply,
         Add,

@@ -104,7 +104,7 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrCont
             vertices {
                 displacement {
                     textureProperty()
-                    uniformProperty(displacement.value, mixMode = PropertyBlockConfig.MixMode.Multiply)
+                    uniformProperty(displacement.value, blendMode = PropertyBlockConfig.BlendMode.Multiply)
                 }
             }
             if (withIbl) {

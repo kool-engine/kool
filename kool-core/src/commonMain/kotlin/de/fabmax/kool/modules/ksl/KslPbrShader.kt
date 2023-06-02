@@ -11,6 +11,7 @@ import de.fabmax.kool.pipeline.TextureCube
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.copy
 
 open class KslPbrShader(cfg: Config, model: KslProgram = Model(cfg)) : KslLitShader(cfg, model) {
 
@@ -27,6 +28,9 @@ open class KslPbrShader(cfg: Config, model: KslProgram = Model(cfg)) : KslLitSha
     var reflectionStrength: Vec4f by uniform4f("uReflectionStrength", cfg.reflectionStrength)
 
     var brdfLut: Texture2d? by texture2d("tBrdfLut")
+
+    val roughnessCfg = PropertyBlockConfig(cfg.roughnessCfg.propertyName, cfg.roughnessCfg.propertySources.copy().toMutableList())
+    val metallicCfg = PropertyBlockConfig(cfg.metallicCfg.propertyName, cfg.metallicCfg.propertySources.copy().toMutableList())
 
     var reflectionMap: TextureCube?
         get() = reflectionMaps[0]

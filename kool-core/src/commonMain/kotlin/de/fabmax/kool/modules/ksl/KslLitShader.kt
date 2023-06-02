@@ -11,6 +11,7 @@ import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.TextureCube
 import de.fabmax.kool.pipeline.shading.AlphaMode
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.copy
 
 abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader(model, cfg.pipelineCfg) {
 
@@ -41,15 +42,23 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
     val ambientMaps: Array<TextureCube?> by textureCubeArray("tAmbientTextures", 2)
     var ambientMapWeights by uniform2f("tAmbientWeights", Vec2f.X_AXIS)
 
+    val ambientCfg = cfg.ambientColor
+    val colorCfg = ColorBlockConfig(cfg.colorCfg.colorName, cfg.colorCfg.colorSources.copy().toMutableList())
+    val emissionCfg = ColorBlockConfig(cfg.emissionCfg.colorName, cfg.emissionCfg.colorSources.copy().toMutableList())
+    val materialAoCfg = PropertyBlockConfig(cfg.aoCfg.materialAo.propertyName, cfg.aoCfg.materialAo.propertySources.copy().toMutableList())
+    val displacementCfg = PropertyBlockConfig(cfg.vertexCfg.displacementCfg.propertyName, cfg.vertexCfg.displacementCfg.propertySources.copy().toMutableList())
+    val isNormalMapped = cfg.normalMapCfg.isNormalMapped
+    val isSsao = cfg.aoCfg.isSsao
+
     init {
-        when (val ambient = cfg.ambientColor) {
-            is AmbientColor.Uniform -> ambientFactor = ambient.color
+        when (ambientCfg) {
+            is AmbientColor.Uniform -> ambientFactor = ambientCfg.color
             is AmbientColor.ImageBased -> {
-                ambientMap = ambient.ambientMap
-                ambientFactor = ambient.ambientFactor
+                ambientMap = ambientCfg.ambientMap
+                ambientFactor = ambientCfg.ambientFactor
             }
             is AmbientColor.DualImageBased -> {
-                ambientFactor = ambient.colorFactor
+                ambientFactor = ambientCfg.colorFactor
             }
         }
     }

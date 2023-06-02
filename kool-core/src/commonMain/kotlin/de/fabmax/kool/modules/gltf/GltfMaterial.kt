@@ -110,7 +110,7 @@ data class GltfMaterial(
                     textureProperty(roughnessTexture, 1, texName)
                 }
                 if (pbrMetallicRoughness.roughnessFactor != 1f) {
-                    constProperty(pbrMetallicRoughness.roughnessFactor, mixMode = PropertyBlockConfig.MixMode.Multiply)
+                    constProperty(pbrMetallicRoughness.roughnessFactor, blendMode = PropertyBlockConfig.BlendMode.Multiply)
                 }
             } else {
                 constProperty(pbrMetallicRoughness.roughnessFactor)
@@ -130,7 +130,7 @@ data class GltfMaterial(
                     textureProperty(roughnessTexture, 2, texName)
                 }
                 if (pbrMetallicRoughness.metallicFactor != 1f) {
-                    constProperty(pbrMetallicRoughness.metallicFactor, mixMode = PropertyBlockConfig.MixMode.Multiply)
+                    constProperty(pbrMetallicRoughness.metallicFactor, blendMode = PropertyBlockConfig.BlendMode.Multiply)
                 }
             } else {
                 constProperty(pbrMetallicRoughness.metallicFactor)
@@ -151,7 +151,7 @@ data class GltfMaterial(
                 }
                 val occlusionFactor = this@GltfMaterial.occlusionTexture?.strength ?: 1f
                 if (occlusionFactor != 1f) {
-                    constProperty(occlusionFactor, mixMode = PropertyBlockConfig.MixMode.Multiply)
+                    constProperty(occlusionFactor, blendMode = PropertyBlockConfig.BlendMode.Multiply)
                 }
             }
         }
