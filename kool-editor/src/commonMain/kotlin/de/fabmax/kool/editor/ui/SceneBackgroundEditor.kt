@@ -129,8 +129,7 @@ class SceneBackgroundEditor(var sceneModel: SceneModel) : Composable {
     }
 
     private fun UiScope.availableHdriTextures(): List<AssetItem> {
-        return KoolEditor.instance.availableAssets.textureAssets.use()
-            .filter { it.name.lowercase().endsWith(".rgbe.png") }
+        return KoolEditor.instance.availableAssets.hdriTextureAssets.use()
     }
 
     private data class BackgroundTypeOption<T: SceneBackgroundData>(val name: String, val type: KClass<T>) {

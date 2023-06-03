@@ -39,7 +39,7 @@ class KoolEditor(val ctx: KoolContext) {
     init {
         instance = this
         Assets.assetsBasePath = APP_ASSETS_DIR
-        AppAssets.impl = CachedAppAssets()
+        AppAssets.impl = CachedAppAssets
 
         ctx.scenes += ui
 

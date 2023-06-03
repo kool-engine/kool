@@ -15,6 +15,7 @@ actual class AvailableAssets actual constructor(assetsBaseDir: String) : Corouti
     actual val rootAssets = mutableStateListOf<AssetItem>()
     actual val modelAssets = mutableStateListOf<AssetItem>()
     actual val textureAssets = mutableStateListOf<AssetItem>()
+    actual val hdriTextureAssets = mutableStateListOf<AssetItem>()
 
     private val assetsDir = Path.of(assetsBaseDir)
     private val assetsByPath = mutableMapOf<String, AssetItem>()
@@ -80,7 +81,8 @@ actual class AvailableAssets actual constructor(assetsBaseDir: String) : Corouti
         assetsByPath.values.forEach { it.children.sortWith(assetsNameComparator) }
 
         filterAssetsByType(AppAssetType.Model, modelAssets)
-        filterAssetsByType(AppAssetType.Texture, textureAssets)
+        filterAssetsByType(AppAssetType.Texture, textureAssets) { !it.name.lowercase().endsWith(".rgbe.png") }
+        filterAssetsByType(AppAssetType.Texture, hdriTextureAssets) { it.name.lowercase().endsWith(".rgbe.png") }
 
         this.rootAssets.atomic {
             clear()
@@ -88,11 +90,12 @@ actual class AvailableAssets actual constructor(assetsBaseDir: String) : Corouti
         }
     }
 
-    private fun filterAssetsByType(type: AppAssetType, result: MutableStateList<AssetItem>) {
+    private fun filterAssetsByType(type: AppAssetType, result: MutableStateList<AssetItem>, filter: (AssetItem) -> Boolean = { true }) {
         result.atomic {
             clear()
             assetsByPath.values
                 .filter { it.type == type }
+                .filter(filter)
                 .sortedBy { it.name }
                 .forEach { add(it) }
         }

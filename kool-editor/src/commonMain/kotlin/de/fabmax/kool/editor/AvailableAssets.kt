@@ -8,6 +8,7 @@ expect class AvailableAssets(assetsBaseDir: String) {
 
     val modelAssets: MutableStateList<AssetItem>
     val textureAssets: MutableStateList<AssetItem>
+    val hdriTextureAssets: MutableStateList<AssetItem>
 }
 
 class AssetItem(val name: String, val path: String, val type: AppAssetType) {

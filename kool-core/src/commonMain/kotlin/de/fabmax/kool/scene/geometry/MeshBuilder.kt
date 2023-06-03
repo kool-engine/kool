@@ -594,8 +594,8 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
         withColor(props.frontColor ?: color) {
             val i0 = vertex(tmpPos.set(oX - eX, oY - eY, oZ + eZ), Vec3f.Z_AXIS, uvLowLt)
             val i1 = vertex(tmpPos.set(oX + eX, oY - eY, oZ + eZ), Vec3f.Z_AXIS, uvLowRt)
-            val i2 = vertex(tmpPos.set(oX + eX, oY + eY, oZ + eZ), Vec3f.Z_AXIS, uvUpLt)
-            val i3 = vertex(tmpPos.set(oX - eX, oY + eY, oZ + eZ), Vec3f.Z_AXIS, uvUpRt)
+            val i2 = vertex(tmpPos.set(oX + eX, oY + eY, oZ + eZ), Vec3f.Z_AXIS, uvUpRt)
+            val i3 = vertex(tmpPos.set(oX - eX, oY + eY, oZ + eZ), Vec3f.Z_AXIS, uvUpLt)
             addTriIndices(i0, i1, i2)
             addTriIndices(i0, i2, i3)
         }

@@ -50,6 +50,7 @@ class MeshComponent(override val componentData: MeshComponentData) :
                     it.generate(this)
                 }
             }
+            geometry.generateTangents()
         }
     }
 

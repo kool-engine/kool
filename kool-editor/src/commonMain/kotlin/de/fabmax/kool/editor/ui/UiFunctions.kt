@@ -1,5 +1,9 @@
 package de.fabmax.kool.editor.ui
 
+import de.fabmax.kool.editor.AppAssetType
+import de.fabmax.kool.editor.AssetItem
+import de.fabmax.kool.editor.CachedAppAssets
+import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.actions.EditorAction
 import de.fabmax.kool.editor.actions.EditorActions
 import de.fabmax.kool.input.CursorShape
@@ -596,9 +600,52 @@ fun UiScope.labeledSwitch(
     }
 }
 
+fun UiScope.okButton(xAlign: AlignmentX = AlignmentX.End, onClick: (PointerEvent) -> Unit) = menuRow {
+    if (xAlign != AlignmentX.Start) {
+        Box(width = Grow.Std) { }
+    }
+    Button("OK") {
+        modifier
+            .size(sizes.baseSize * 2, sizes.lineHeight)
+            .alignY(AlignmentY.Center)
+            .onClick(onClick)
+    }
+    if (xAlign == AlignmentX.Center) {
+        Box(width = Grow.Std) { }
+    }
+}
+
 inline fun UiScope.menuRow(marginTop: Dp = sizes.smallGap, block: RowScope.() -> Unit) = Row(width = Grow.Std, height = sizes.lineHeight) {
     modifier.margin(top = marginTop)
     block()
+}
+
+fun UiScope.textureSelector(selectedTexPath: String, withNoneOption: Boolean, onSelect: (AssetItem) -> Unit) = Column {
+    val textures = mutableListOf<AssetItem>()
+    if (withNoneOption) {
+        textures += AssetItem("None", "", AppAssetType.Texture)
+    }
+    textures += KoolEditor.instance.availableAssets.textureAssets
+
+    ComboBox {
+        modifier
+            .size(sizes.baseSize * 6, sizes.lineHeight)
+            .items(textures)
+            .selectedIndex(textures.indexOfFirst { it.path == selectedTexPath })
+            .onItemSelected {
+                onSelect(textures[it])
+            }
+    }
+
+    if (selectedTexPath.isNotEmpty()) {
+        val tex = CachedAppAssets.getTextureWhenLoaded(selectedTexPath).use()
+        Image(tex) {
+            modifier
+                .margin(top = sizes.gap)
+                .size(sizes.baseSize * 6, sizes.baseSize * 6)
+                .imageZ(UiSurface.LAYER_BACKGROUND)
+        }
+    }
 }
 
 fun ColumnScope.menuDivider(marginTop: Dp = sizes.smallGap, marginBottom: Dp = Dp.ZERO) {
@@ -628,6 +675,15 @@ fun TextFieldScope.defaultTextfieldStyle() {
         .colors(lineColor = null, lineColorFocused = null)
         .background(RoundRectBackground(bgColor, sizes.textFieldPadding))
         .padding(sizes.textFieldPadding)
+}
+
+fun UiScope.defaultPopupStyle(layout: Layout = ColumnLayout) {
+    modifier
+        .background(RoundRectBackground(colors.background, sizes.smallGap))
+        .border(RoundRectBorder(colors.secondaryVariant, sizes.smallGap, sizes.borderWidth))
+        .padding(sizes.smallGap)
+        .layout(layout)
+        .padding(sizes.gap)
 }
 
 fun interface ValueEditHandler<T> {

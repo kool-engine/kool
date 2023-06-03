@@ -7,15 +7,20 @@ import de.fabmax.kool.math.Vec2f
 
 fun UiScope.AutoPopup(
     hideOnEsc: Boolean = true,
+    hideOnOutsideClick: Boolean = true,
     scopeName: String? = null,
     block: UiScope.() -> Unit
 ): AutoPopup = remember {
-    val popup = AutoPopup(hideOnEsc, scopeName)
+    val popup = AutoPopup(hideOnEsc, hideOnOutsideClick, scopeName)
     popup.popupContent = Composable(block)
     popup
 }
 
-open class AutoPopup(val hideOnEsc: Boolean = true, private val scopeName: String? = null) : Composable, Focusable {
+open class AutoPopup(
+    val hideOnEsc: Boolean = true,
+    val hideOnOutsideClick: Boolean = true,
+    private val scopeName: String? = null
+) : Composable, Focusable {
 
     val isVisible = mutableStateOf(false)
     val screenPosPx = mutableStateOf(Vec2f.ZERO)
@@ -60,11 +65,13 @@ open class AutoPopup(val hideOnEsc: Boolean = true, private val scopeName: Strin
 
                 popupContent()
 
-                // somewhat hacky way to close popup menu on any button event outside popup menu
-                surface.onEachFrame {
-                    val ptr = PointerInput.primaryPointer
-                    if (ptr.isAnyButtonEvent && !uiNode.isInBounds(Vec2f(ptr.x.toFloat(), ptr.y.toFloat()))) {
-                        hide()
+                if (hideOnOutsideClick) {
+                    // somewhat hacky way to close popup menu on any button event outside popup menu
+                    surface.onEachFrame {
+                        val ptr = PointerInput.primaryPointer
+                        if (ptr.isAnyButtonEvent && !uiNode.isInBounds(Vec2f(ptr.x.toFloat(), ptr.y.toFloat()))) {
+                            hide()
+                        }
                     }
                 }
             }

@@ -4,6 +4,7 @@ import de.fabmax.kool.editor.api.AppAssets
 import de.fabmax.kool.modules.ksl.*
 import de.fabmax.kool.modules.ksl.blocks.ColorBlockConfig
 import de.fabmax.kool.modules.ksl.blocks.PropertyBlockConfig
+import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.GlslType
 import de.fabmax.kool.pipeline.Shader
@@ -11,6 +12,7 @@ import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
 
 @Serializable
@@ -22,6 +24,8 @@ data class MaterialData(
     val name: String,
     var shaderData: MaterialShaderData
 ) {
+    @Transient
+    val shaderDataState = mutableStateOf(shaderData).onChange { shaderData = it }
 
     suspend fun createShader(ibl: EnvironmentMaps?): KslShader = shaderData.createShader(ibl)
     suspend fun updateShader(shader: Shader?, ibl: EnvironmentMaps?): Boolean = shaderData.updateShader(shader, ibl)
@@ -263,6 +267,9 @@ class MapAttribute(val mapPath: String, val channels: String? = null) : Material
                 else -> 0
             }
         }
+
+    val mapName: String
+        get() = mapPath.replaceBeforeLast("/", "").removePrefix("/")
 
     override fun matchesCfg(cfg: ColorBlockConfig): Boolean {
         return cfg.colorSources.any { it is ColorBlockConfig.TextureColor }

@@ -1,13 +1,13 @@
 package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.editor.EditorState
-import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.actions.EditorActions
 import de.fabmax.kool.editor.actions.SetMaterialAction
 import de.fabmax.kool.editor.actions.UpdateMaterialAction
 import de.fabmax.kool.editor.components.MaterialComponent
 import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.editor.model.SceneNodeModel
+import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.Color
 
@@ -40,7 +40,7 @@ class MaterialEditor(var sceneNodeModel: SceneNodeModel, var materialComponent: 
     }
 
     private fun UiScope.materialEditor(material: MaterialData) {
-        when (val shaderData = material.shaderData) {
+        when (val shaderData = material.shaderDataState.use()) {
             is BlinnPhongShaderData -> TODO()
             is PbrShaderData -> pbrMaterialEditor(material, shaderData)
             is UnlitShaderData -> TODO()
@@ -51,10 +51,8 @@ class MaterialEditor(var sceneNodeModel: SceneNodeModel, var materialComponent: 
         // shader setting callback functions need to use cast material.shaderData instead of pbrData because otherwise
         // pbrData is captured on first invocation and will never be updated
 
-        (pbrData.baseColor as? ConstColorAttribute)?.let { baseColor ->
-            colorSetting("Base color:", baseColor, material) {
-                (material.shaderData as PbrShaderData).copy(baseColor = it)
-            }
+        colorSetting("Base color:", pbrData.baseColor, material) {
+            (material.shaderData as PbrShaderData).copy(baseColor = it)
         }
         (pbrData.roughness as? ConstValueAttribute)?.let { roughness ->
             floatSetting("Roughness:", roughness, 0f, 1f, material) {
@@ -66,66 +64,150 @@ class MaterialEditor(var sceneNodeModel: SceneNodeModel, var materialComponent: 
                 (material.shaderData as PbrShaderData).copy(metallic = it)
             }
         }
-        (pbrData.emission as? ConstColorAttribute)?.let { emission ->
-            colorSetting("Emission color:", emission, material) {
-                (material.shaderData as PbrShaderData).copy(emission = it)
-            }
+        colorSetting("Emission color:", pbrData.emission, material) {
+            (material.shaderData as PbrShaderData).copy(emission = it)
+        }
+        textureSetting("Normal map:", pbrData.normalMap, material) {
+            (material.shaderData as PbrShaderData).copy(normalMap = it)
         }
     }
 
     private fun UiScope.colorSetting(
         label: String,
-        colorAttr: ConstColorAttribute,
+        colorAttr: MaterialAttribute,
         material: MaterialData,
         shaderDataSetter: (MaterialAttribute) -> MaterialShaderData
-    ) {
-        val availableTextures = KoolEditor.instance.availableAssets.textureAssets.use()
-                .filter { !it.name.lowercase().endsWith(".rgbe.png") }
+    ) = menuRow {
 
-        menuRow {
-            Text(label) {
-                modifier
-                    .width(Grow.Std)
-                    .alignY(AlignmentY.Center)
-            }
+        Text(label) {
+            modifier
+                .width(Grow.Std)
+                .alignY(AlignmentY.Center)
+        }
 
-            Box(width = sizes.baseSize * 2f, height = sizes.lineHeight) {
-                val colorEditHandler = ActionValueEditHandler<Color> { undoValue, applyValue ->
-                    val undoMaterial = shaderDataSetter(ConstColorAttribute(ColorData(undoValue.toLinear())))
-                    val applyMaterial = shaderDataSetter(ConstColorAttribute(ColorData(applyValue.toLinear())))
+        Box(height = sizes.lineHeight) {
+            var isHovered by remember(false)
+            val sourcePopup = remember {
+                MaterialColorSourcePopup(colorAttr) { undoValue, applyValue ->
+                    val undoMaterial = shaderDataSetter(undoValue)
+                    val applyMaterial = shaderDataSetter(applyValue)
                     UpdateMaterialAction(material, applyMaterial, undoMaterial)
                 }
-                colorPicker(colorAttr.color.toColor().toSrgb(), editHandler = colorEditHandler).apply {
-                    modifier.width(sizes.baseSize * 2f + sizes.smallGap)
-                }
-//                Text("uv_checker_map.png") {
-//                    modifier
-//                        .size(sizes.baseSize * 2f + sizes.smallGap, sizes.lineHeight)
-//                        .padding(start = sizes.smallGap)
-//                        .background(RoundRectBackground(colors.componentBg, sizes.smallGap))
-//                        .onClick {
-//                            availableTextures.getOrNull(0)?.let { tex ->
-//                                val mat = shaderDataSetter(MapAttribute(tex.path))
-//                                EditorActions.applyAction(UpdateMaterialAction(material, mat, mat))
-//                            }
-//                        }
-//                }
             }
-            Box(width = sizes.largeGap * 1.51f) {
-                Box(width = sizes.largeGap * 1.51f + sizes.smallGap, height = sizes.lineHeight) {
-                    var isHovered by remember(false)
-                    val bgColor = if (isHovered) colors.elevatedComponentBgHovered else colors.elevatedComponentBg
+            sourcePopup.editColorAttr = colorAttr
+
+            var width: Dimension = sizes.baseSize * 2
+            var text: String? = null
+            var textAlign = AlignmentX.Start
+            var bgColor = if (isHovered) colors.componentBgHovered else colors.componentBg
+            val borderColor = if (isHovered) colors.elevatedComponentBgHovered else colors.elevatedComponentBg
+
+            when (colorAttr) {
+                is ConstColorAttribute -> {
+                    bgColor = colorAttr.color.toColor().toSrgb()
+                }
+                is ConstValueAttribute -> {
+                    val f = colorAttr.value
+                    bgColor = Color(f, f, f, 1f).toSrgb()
+                }
+                is MapAttribute -> {
+                    text = colorAttr.mapName
+                    width = sizes.baseSize * 4
+                }
+                is VertexAttribute -> {
+                    text = "Vertex"
+                    textAlign = AlignmentX.Center
+                }
+            }
+
+            modifier
+                .width(width)
+                .onEnter { isHovered = true }
+                .onExit { isHovered = false }
+                .background(RoundRectBackground(bgColor, sizes.smallGap))
+                .border(RoundRectBorder(borderColor, sizes.smallGap, sizes.borderWidth))
+                .onClick {
+                    sourcePopup.show(Vec2f(uiNode.leftPx, uiNode.bottomPx))
+                }
+
+            text?.let {
+                Text(text) {
                     modifier
-                        .margin(start = sizes.smallGap * -1)
-                        .background(RoundRectBackground(bgColor, sizes.smallGap))
-                        .onEnter { isHovered = true }
-                        .onExit { isHovered = false }
+                        .padding(sizes.smallGap)
+                        .align(textAlign, AlignmentY.Center)
                 }
             }
+            sourcePopup()
         }
     }
 
-    private inline fun UiScope.floatSetting(
+    private fun UiScope.textureSetting(
+        label: String,
+        texAttr: MapAttribute?,
+        material: MaterialData,
+        shaderDataSetter: (MapAttribute?) -> MaterialShaderData
+    ) = menuRow {
+
+        Text(label) {
+            modifier
+                .width(Grow.Std)
+                .alignY(AlignmentY.Center)
+        }
+
+        Box(height = sizes.lineHeight) {
+            var isHovered by remember(false)
+            var editStartTex by remember(texAttr)
+            var editTex by remember(texAttr)
+            editTex = texAttr
+
+            val editHandler = ActionValueEditHandler<MapAttribute?> { undoValue, applyValue ->
+                val undoMaterial = shaderDataSetter(undoValue)
+                val applyMaterial = shaderDataSetter(applyValue)
+                UpdateMaterialAction(material, applyMaterial, undoMaterial)
+            }
+            val texPopup = remember {
+                AutoPopup(hideOnOutsideClick = false).apply {
+                    popupContent = Composable {
+                        defaultPopupStyle()
+                        textureSelector(editTex?.mapPath ?: "", true) {
+                            editTex = if (it.path.isEmpty()) null else MapAttribute(it.path)
+                            editHandler.onEdit(editTex)
+                        }
+                        okButton { hide() }
+                    }
+                    onShow = {
+                        editStartTex = editTex
+                        editHandler.onEditStart(editStartTex)
+                    }
+                    onHide = {
+                        editHandler.onEditEnd(editStartTex, editTex)
+                    }
+                }
+            }
+
+            val bgColor = if (isHovered) colors.componentBgHovered else colors.componentBg
+            val borderColor = if (isHovered) colors.elevatedComponentBgHovered else colors.elevatedComponentBg
+
+            modifier
+                .width(sizes.baseSize * 4)
+                .onEnter { isHovered = true }
+                .onExit { isHovered = false }
+                .background(RoundRectBackground(bgColor, sizes.smallGap))
+                .border(RoundRectBorder(borderColor, sizes.smallGap, sizes.borderWidth))
+                .onClick {
+                    texPopup.show(Vec2f(uiNode.leftPx, uiNode.bottomPx))
+                }
+
+            Text(texAttr?.mapName ?: "None selected") {
+                modifier
+                    .padding(sizes.smallGap)
+                    .alignY(AlignmentY.Center)
+            }
+            texPopup()
+        }
+    }
+
+        private inline fun UiScope.floatSetting(
         label: String,
         floatAttr: ConstValueAttribute,
         min: Float,
