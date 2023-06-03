@@ -128,7 +128,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
                     addNewMesh(it, MeshShapeData.defaultCapsule)
                 }
                 item("Empty") {
-                    addNewMesh(it, MeshShapeData.Empty)
+                    addNewMesh(it, MeshShapeData.Empty())
                 }
             }
             subMenu("glTF Model") {

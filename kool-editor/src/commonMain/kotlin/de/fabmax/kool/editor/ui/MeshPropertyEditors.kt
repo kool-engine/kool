@@ -22,7 +22,7 @@ private object ShapeOptions {
         ShapeOption("UV-Sphere", MeshShapeData.UvSphere::class) { MeshShapeData.defaultUvSphere },
         ShapeOption("Cylinder", MeshShapeData.Cylinder::class) { MeshShapeData.defaultCylinder },
         ShapeOption("Capsule", MeshShapeData.Capsule::class) { MeshShapeData.defaultCapsule },
-        ShapeOption("Empty", MeshShapeData.Empty::class) { MeshShapeData.Empty },
+        ShapeOption("Empty", MeshShapeData.Empty::class) { MeshShapeData.Empty() },
     )
 
     fun indexOfShape(shape: MeshShapeData): Int {
@@ -33,7 +33,7 @@ private object ShapeOptions {
             is MeshShapeData.UvSphere -> 3
             is MeshShapeData.Cylinder -> 4
             is MeshShapeData.Capsule -> 5
-            MeshShapeData.Empty -> 6
+            is MeshShapeData.Empty -> 6
         }
     }
 }
@@ -72,7 +72,21 @@ fun UiScope.meshTypeProperties(nodeModel: SceneNodeModel, meshComponent: MeshCom
             is MeshShapeData.UvSphere -> uvSphereProperties(nodeModel, meshComponent, shapeType)
             is MeshShapeData.Cylinder -> cylinderProperties(nodeModel, meshComponent, shapeType)
             is MeshShapeData.Capsule -> capsuleProperties(nodeModel, meshComponent, shapeType)
-            MeshShapeData.Empty -> { }
+            is MeshShapeData.Empty -> { }
+        }
+
+        if (shape.hasUvs) {
+            val shapeI = meshComponent.shapesState.indexOf(shape)
+            xyRow(
+                label = "Texture coordinate scale:",
+                xy = shape.uvScale.toVec2d(),
+                dragChangeSpeed = DragChangeRates.SIZE_VEC2,
+                editHandler = ActionValueEditHandler { undoValue, applyValue ->
+                    val undoShape = shape.copyShape(uvScale = Vec2Data(undoValue))
+                    val applyShape = shape.copyShape(uvScale = Vec2Data(applyValue))
+                    SetShapeAction(nodeModel, meshComponent, undoShape, applyShape, shapeI)
+                }
+            )
         }
     }
 }

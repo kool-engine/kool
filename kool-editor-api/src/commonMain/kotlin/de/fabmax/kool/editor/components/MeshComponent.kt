@@ -47,6 +47,10 @@ class MeshComponent(override val componentData: MeshComponentData) :
                 withTransform {
                     it.pose.toMat4f(transform)
                     color = it.vertexColor.toColor()
+                    vertexModFun = {
+                        texCoord.x *= it.uvScale.x.toFloat()
+                        texCoord.y *= it.uvScale.y.toFloat()
+                    }
                     it.generate(this)
                 }
             }

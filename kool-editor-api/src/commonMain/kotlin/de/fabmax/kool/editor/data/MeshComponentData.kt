@@ -20,14 +20,33 @@ sealed class MeshShapeData {
 
     var pose = TransformData.IDENTITY
     var vertexColor = ColorData(MdColor.GREY)
+    var uvScale = Vec2Data(1.0, 1.0)
 
     abstract val name: String
+    abstract val hasUvs: Boolean
 
     abstract fun generate(builder: MeshBuilder)
+
+    fun copyShape(pose: TransformData = TransformData.IDENTITY, vertexColor: ColorData = this.vertexColor, uvScale: Vec2Data = this.uvScale): MeshShapeData {
+        val copied = when (this) {
+            is Box -> copy()
+            is Capsule -> copy()
+            is Cylinder -> copy()
+            is Empty -> copy()
+            is IcoSphere -> copy()
+            is Rect -> copy()
+            is UvSphere -> copy()
+        }
+        copied.pose = pose
+        copied.vertexColor = vertexColor
+        copied.uvScale = uvScale
+        return copied
+    }
 
     @Serializable
     data class Box(val size: Vec3Data) : MeshShapeData() {
         override val name: String get() = "Box"
+        override val hasUvs: Boolean = true
 
         override fun generate(builder: MeshBuilder) {
             builder.apply {
@@ -41,6 +60,7 @@ sealed class MeshShapeData {
     @Serializable
     data class IcoSphere(val radius: Double, val subDivisions: Int) : MeshShapeData() {
         override val name: String get() = "Ico-Sphere"
+        override val hasUvs: Boolean = true
 
         override fun generate(builder: MeshBuilder) {
             builder.apply {
@@ -55,6 +75,7 @@ sealed class MeshShapeData {
     @Serializable
     data class UvSphere(val radius: Double, val steps: Int) : MeshShapeData() {
         override val name: String get() = "UV-Sphere"
+        override val hasUvs: Boolean = true
 
         override fun generate(builder: MeshBuilder) {
             builder.apply {
@@ -69,6 +90,7 @@ sealed class MeshShapeData {
     @Serializable
     data class Rect(val size: Vec2Data) : MeshShapeData() {
         override val name: String get() = "Rect"
+        override val hasUvs: Boolean = true
 
         override fun generate(builder: MeshBuilder) {
             builder.apply {
@@ -83,6 +105,7 @@ sealed class MeshShapeData {
     @Serializable
     data class Cylinder(val topRadius: Double, val bottomRadius: Double, val height: Double, val steps: Int) : MeshShapeData() {
         override val name: String get() = "Cylinder"
+        override val hasUvs: Boolean = true
 
         override fun generate(builder: MeshBuilder) {
             builder.apply {
@@ -99,6 +122,7 @@ sealed class MeshShapeData {
     @Serializable
     data class Capsule(val radius: Double, val length: Double, val steps: Int) : MeshShapeData() {
         override val name: String get() = "Capsule"
+        override val hasUvs: Boolean = false
 
         override fun generate(builder: MeshBuilder) {
             builder.withTransform {
@@ -120,8 +144,9 @@ sealed class MeshShapeData {
     }
 
     @Serializable
-    object Empty : MeshShapeData() {
+    data class Empty(val dummy: Unit = Unit) : MeshShapeData() {
         override val name: String get() = "Empty"
+        override val hasUvs: Boolean = false
 
         override fun generate(builder: MeshBuilder) {
             // empty - nothing to generate
