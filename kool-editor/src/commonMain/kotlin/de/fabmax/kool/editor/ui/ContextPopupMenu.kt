@@ -3,7 +3,7 @@ package de.fabmax.kool.editor.ui
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.modules.ui2.*
 
-class ContextPopupMenu<T: Any> : AutoPopup() {
+class ContextPopupMenu<T: Any>(hideOnOutsideClick: Boolean = true) : AutoPopup(hideOnOutsideClick = hideOnOutsideClick) {
 
     private val menu = mutableStateOf<SubMenuItem<T>?>(null)
 

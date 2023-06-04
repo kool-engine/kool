@@ -7,6 +7,7 @@ import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.Gizmo
+import kotlin.math.sqrt
 
 class NodeTransformGizmo(private val editor: KoolEditor) : Node("Node transform gizmo") {
 
@@ -67,7 +68,7 @@ class NodeTransformGizmo(private val editor: KoolEditor) : Node("Node transform 
                 } else {
                     gizmo.transform.set(it.modelMat)
                     gizmo.transform.matrix.resetScale()
-                    gizmo.setFixedScale(it.globalRadius + 0.5f)
+                    gizmo.setFixedScale(sqrt(it.globalRadius) + 0.5f)
                 }
             }
         }
@@ -89,7 +90,7 @@ class NodeTransformGizmo(private val editor: KoolEditor) : Node("Node transform 
         transformNodeModel = nodeModel
         gizmo.isVisible = nodeModel != null
         nodeModel?.node?.let {
-            gizmo.setFixedScale(it.globalRadius + 0.5f)
+            gizmo.setFixedScale(sqrt(it.globalRadius) + 0.5f)
         }
         if (nodeModel != null) {
             showGizmo()

@@ -1,8 +1,6 @@
 package de.fabmax.kool.editor.components
 
-import de.fabmax.kool.editor.data.MaterialData
-import de.fabmax.kool.editor.data.MeshComponentData
-import de.fabmax.kool.editor.data.SceneBackgroundData
+import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.editor.model.EditorNodeModel
 import de.fabmax.kool.modules.ksl.KslLitShader
 import de.fabmax.kool.modules.ksl.KslPbrShader
@@ -30,11 +28,17 @@ class MeshComponent(override val componentData: MeshComponentData) :
 
     private var isIblShaded = false
 
+    constructor(): this(MeshComponentData(MeshShapeData.Box(Vec3Data(1.0, 1.0, 1.0))))
+
     override suspend fun createComponent(nodeModel: EditorNodeModel) {
         super.createComponent(nodeModel)
         _mesh = Mesh(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS, Attribute.TANGENTS)
         mesh.rayTest = MeshRayTest.geometryTest(mesh)
         updateGeometry()
+
+        if (sceneNode.isCreated) {
+            sceneNode.node.addNode(mesh)
+        }
     }
 
     override suspend fun initComponent(nodeModel: EditorNodeModel) {

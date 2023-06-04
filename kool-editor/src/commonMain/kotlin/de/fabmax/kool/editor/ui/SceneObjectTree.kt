@@ -16,7 +16,7 @@ import de.fabmax.kool.modules.ui2.ArrowScope.Companion.ROTATION_DOWN
 import de.fabmax.kool.modules.ui2.ArrowScope.Companion.ROTATION_RIGHT
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.logI
+import de.fabmax.kool.util.logE
 
 class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
 
@@ -50,6 +50,14 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         val id = EditorState.projectModel.nextId()
         val nodeData = SceneNodeData(modelAsset.name, id)
         nodeData.components += ModelComponentData(modelAsset.path)
+        val mesh = SceneNodeModel(nodeData, parentScene)
+        EditorActions.applyAction(AddNodeAction(mesh, parent.nodeModel, parentScene, this))
+    }
+
+    private fun addEmptyNode(parent: SceneObjectItem) {
+        val parentScene = EditorState.selectedScene.value ?: return
+        val id = EditorState.projectModel.nextId()
+        val nodeData = SceneNodeData("Empty-$id", id)
         val mesh = SceneNodeModel(nodeData, parentScene)
         EditorActions.applyAction(AddNodeAction(mesh, parent.nodeModel, parentScene, this))
     }
@@ -131,9 +139,9 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
                     addNewMesh(it, MeshShapeData.Empty())
                 }
             }
-            subMenu("glTF Model") {
-                item("Import Model") {
-                    logI { "Not yet implemented" }
+            subMenu("glTF model") {
+                item("Import model") {
+                    logE { "Not yet implemented" }
                 }
                 divider()
                 sceneBrowser.editor.availableAssets.modelAssets.forEach { modelAsset ->
@@ -143,7 +151,9 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
                 }
 
             }
-            item("Group") { }
+            item("Empty node") {
+                addEmptyNode(it)
+            }
         }
         divider()
         item("Focus object") { }

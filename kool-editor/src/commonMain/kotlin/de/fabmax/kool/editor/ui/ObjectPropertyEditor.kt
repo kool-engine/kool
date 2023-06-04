@@ -185,57 +185,8 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", ui) 
     }
 
     private fun UiScope.addComponentSelector(nodeModel: EditorNodeModel) {
-        val popup = remember {
-            val popup = AutoPopup(hideOnOutsideClick = false)
-            popup.popupContent = Composable {
-                Column {
-                    modifier
-                        .background(RoundRectBackground(colors.background, sizes.smallGap))
-                        .border(RoundRectBorder(colors.secondaryVariant, sizes.smallGap, sizes.borderWidth))
-                        .padding(sizes.smallGap)
+        val popup = remember { ContextPopupMenu<EditorNodeModel>(false) }
 
-                    // fixme: only for testing...
-                    Button("Material") {
-                        modifier
-                            .width(Grow.Std)
-                            .margin(bottom = sizes.smallGap)
-                            .onClick {
-                                EditorActions.applyAction(AddComponentAction(nodeModel, MaterialComponent()))
-                            }
-                    }
-
-                    var hoverIdx by remember(-1)
-                    val scriptClasses = EditorState.loadedApp.use()?.scriptClasses?.values ?: emptyList()
-                    scriptClasses.forEachIndexed { i, scriptClass ->
-                        scriptClass.klass.qualifiedName?.let { scriptFqn ->
-                            Text(scriptFqn) {
-                                modifier
-                                    .size(Grow.Std, sizes.lineHeight)
-                                    .padding(horizontal = sizes.gap)
-                                    .onEnter { hoverIdx = i }
-                                    .onExit { hoverIdx = -1 }
-                                    .onClick {
-                                        EditorActions.applyAction(
-                                            AddComponentAction(
-                                                nodeModel,
-                                                ScriptComponent(ScriptComponentData(scriptFqn))
-                                            )
-                                        )
-                                        popup.hide()
-                                    }
-
-                                if (i == hoverIdx) {
-                                    modifier.background(RoundRectBackground(colors.hoverBg, sizes.smallGap))
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            popup
-        }
-
-        // make this some kind of combobox / menu, once there are more options
         Button("Add component") {
             defaultButtonStyle()
             modifier
@@ -243,10 +194,39 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", ui) 
                 .margin(top = sizes.gap)
                 .alignX(AlignmentX.Center)
                 .onClick {
-                    popup.toggleVisibility(Vec2f(uiNode.leftPx, uiNode.bottomPx))
+                    if (!popup.isVisible.use()) {
+                        popup.show(Vec2f(uiNode.leftPx, uiNode.bottomPx), makeAddComponentMenu(nodeModel), nodeModel)
+                    } else {
+                        popup.hide()
+                    }
                 }
         }
         popup()
+    }
+
+    private fun makeAddComponentMenu(node: EditorNodeModel): SubMenuItem<EditorNodeModel> = SubMenuItem {
+        if (node.getComponent<MeshComponent>() == null && node.getComponent<ModelComponent>() == null) {
+            item("Mesh") {
+                EditorActions.applyAction(AddComponentAction(it, MeshComponent()))
+            }
+        }
+        if (node.getComponent<MaterialComponent>() == null) {
+            item("Material") {
+                EditorActions.applyAction(AddComponentAction(it, MaterialComponent()))
+            }
+        }
+        val scriptClasses = EditorState.loadedApp.value?.scriptClasses?.values ?: emptyList()
+        if (scriptClasses.isNotEmpty()) {
+            subMenu("Scripts") {
+                scriptClasses.forEach { script ->
+                    item(script.simpleName) {
+                        EditorActions.applyAction(
+                            AddComponentAction(node, ScriptComponent(ScriptComponentData(script.klass.qualifiedName!!)))
+                        )
+                    }
+                }
+            }
+        }
     }
 
     companion object {

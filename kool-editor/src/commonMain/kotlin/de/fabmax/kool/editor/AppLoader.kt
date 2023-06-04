@@ -1,6 +1,7 @@
 package de.fabmax.kool.editor
 
 import de.fabmax.kool.editor.api.EditorAwareApp
+import de.fabmax.kool.editor.ui.ScriptEditor
 import de.fabmax.kool.util.launchOnMainThread
 import de.fabmax.kool.util.logE
 import kotlin.reflect.KClass
@@ -22,7 +23,9 @@ fun interface AppReloadListener {
 
 class LoadedApp(val app: EditorAwareApp, val scriptClasses: Map<KClass<*>, AppScript>)
 
-class AppScript(val klass: KClass<*>, val properties: List<ScriptProperty>)
+class AppScript(val klass: KClass<*>, val properties: List<ScriptProperty>) {
+    val simpleName = ScriptEditor.camelCaseToWords(klass.simpleName ?: "<unknown>")
+}
 
 class AppLoader(val editor: KoolEditor, watchDirs: Set<String>, appLoadClassPath: String) {
     val appReloadListeners = mutableListOf<AppReloadListener>()

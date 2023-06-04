@@ -109,6 +109,7 @@ class ModelComponent(override val componentData: ModelComponentData) :
                 }
             }
         }
+        model.name = sceneNode.name
         return model
     }
 
