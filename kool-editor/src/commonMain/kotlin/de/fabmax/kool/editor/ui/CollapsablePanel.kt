@@ -5,7 +5,7 @@ import de.fabmax.kool.modules.ui2.*
 fun UiScope.collapsapsablePanel(
     title: String,
     headerContent: (RowScope.() -> Unit)? = null,
-    block: ColumnScope.() -> Any
+    block: ColumnScope.() -> Any?
 ) = Column(
     Grow.Std,
     scopeName = title

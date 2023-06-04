@@ -10,6 +10,8 @@ class MaterialComponent(override val componentData: MaterialComponentData) :
     SceneNodeComponent(),
     EditorDataComponent<MaterialComponentData> {
 
+    constructor(): this(MaterialComponentData(-1L))
+
     val materialState = mutableStateOf<MaterialData?>(null).onChange {
         componentData.materialId = it?.id ?: -1
     }

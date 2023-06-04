@@ -19,6 +19,10 @@ open class KslShader(val program: KslProgram, val pipelineConfig: PipelineConfig
 
     val pipelineCfg = pipelineConfig.copy()
 
+    val requiredVertexAttributes: Set<Attribute> = program.vertexStage.attributes.values.map {
+        Attribute(it.name, it.expressionType.glslType)
+    }.toSet()
+
     private val connectUniformListeners = mutableListOf<ConnectUniformListener>()
 
     override fun onPipelineSetup(builder: Pipeline.Builder, mesh: Mesh, ctx: KoolContext) {

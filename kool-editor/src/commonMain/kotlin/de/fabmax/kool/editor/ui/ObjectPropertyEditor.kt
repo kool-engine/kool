@@ -10,7 +10,6 @@ import de.fabmax.kool.editor.data.ScriptComponentData
 import de.fabmax.kool.editor.model.EditorNodeModel
 import de.fabmax.kool.editor.model.SceneModel
 import de.fabmax.kool.editor.model.SceneNodeModel
-import de.fabmax.kool.input.PointerInput
 import de.fabmax.kool.math.Mat3d
 import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.math.MutableVec3d
@@ -186,30 +185,24 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", ui) 
     }
 
     private fun UiScope.addComponentSelector(nodeModel: EditorNodeModel) {
-        if (nodeModel !is SceneNodeModel) {
-            // currently there are no useful components we can add to a scene...
-            return
-        }
-
-        var isScriptPopupOpen by remember(false)
-
-        // make this some kind of combobox / menu, once there are more options
-        val button = Button("Add script") {
-            defaultButtonStyle()
-            modifier
-                .width(sizes.baseSize * 5)
-                .margin(top = sizes.gap)
-                .alignX(AlignmentX.Center)
-                .onClick { isScriptPopupOpen = true }
-        }
-
-        if (isScriptPopupOpen) {
-            Popup(button.uiNode.leftPx, button.uiNode.bottomPx) {
+        val popup = remember {
+            val popup = AutoPopup(hideOnOutsideClick = false)
+            popup.popupContent = Composable {
                 Column {
                     modifier
                         .background(RoundRectBackground(colors.background, sizes.smallGap))
                         .border(RoundRectBorder(colors.secondaryVariant, sizes.smallGap, sizes.borderWidth))
                         .padding(sizes.smallGap)
+
+                    // fixme: only for testing...
+                    Button("Material") {
+                        modifier
+                            .width(Grow.Std)
+                            .margin(bottom = sizes.smallGap)
+                            .onClick {
+                                EditorActions.applyAction(AddComponentAction(nodeModel, MaterialComponent()))
+                            }
+                    }
 
                     var hoverIdx by remember(-1)
                     val scriptClasses = EditorState.loadedApp.use()?.scriptClasses?.values ?: emptyList()
@@ -222,13 +215,13 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", ui) 
                                     .onEnter { hoverIdx = i }
                                     .onExit { hoverIdx = -1 }
                                     .onClick {
-                                        isScriptPopupOpen = false
                                         EditorActions.applyAction(
                                             AddComponentAction(
                                                 nodeModel,
                                                 ScriptComponent(ScriptComponentData(scriptFqn))
                                             )
                                         )
+                                        popup.hide()
                                     }
 
                                 if (i == hoverIdx) {
@@ -238,16 +231,22 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", ui) 
                         }
                     }
                 }
-
-                // close popup menu on any button event outside popup menu
-                surface.onEachFrame {
-                    val ptr = PointerInput.primaryPointer
-                    if (ptr.isAnyButtonEvent && !uiNode.isInBounds(Vec2f(ptr.x.toFloat(), ptr.y.toFloat()))) {
-                        isScriptPopupOpen = false
-                    }
-                }
             }
+            popup
         }
+
+        // make this some kind of combobox / menu, once there are more options
+        Button("Add component") {
+            defaultButtonStyle()
+            modifier
+                .width(sizes.baseSize * 5)
+                .margin(top = sizes.gap)
+                .alignX(AlignmentX.Center)
+                .onClick {
+                    popup.toggleVisibility(Vec2f(uiNode.leftPx, uiNode.bottomPx))
+                }
+        }
+        popup()
     }
 
     companion object {

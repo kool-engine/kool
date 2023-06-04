@@ -39,12 +39,12 @@ class MaterialEditor(var sceneNodeModel: SceneNodeModel, var materialComponent: 
             }
         }
     ) {
-        Column(width = Grow.Std) {
-            modifier
-                .padding(horizontal = sizes.gap)
-                .margin(bottom = sizes.smallGap)
+        materialComponent.materialState.use()?.let { selectedMaterial ->
+            Column(width = Grow.Std) {
+                modifier
+                    .padding(horizontal = sizes.gap)
+                    .margin(bottom = sizes.smallGap)
 
-            materialComponent.materialState.use()?.let { selectedMaterial ->
                 labeledTextField("Name:", selectedMaterial.name) {
                     EditorActions.applyAction(RenameMaterialAction(selectedMaterial, it, selectedMaterial.name))
                 }

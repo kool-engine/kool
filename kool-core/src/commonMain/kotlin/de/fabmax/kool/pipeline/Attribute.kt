@@ -1,5 +1,7 @@
 package de.fabmax.kool.pipeline
 
+import de.fabmax.kool.modules.ksl.lang.*
+
 /**
  * @author fabmax
  */
@@ -19,6 +21,24 @@ enum class GlslType(val channels: Int, val byteSize: Int, val isInt: Boolean, va
     MAT_3F(3, 36, false, "mat3"),
     MAT_4F(4, 64, false, "mat4")
 }
+
+val KslType.glslType: GlslType
+    get() = when (this) {
+        KslTypeFloat1 -> GlslType.FLOAT
+        KslTypeFloat2 -> GlslType.VEC_2F
+        KslTypeFloat3 -> GlslType.VEC_3F
+        KslTypeFloat4 -> GlslType.VEC_4F
+
+        KslTypeInt1 -> GlslType.INT
+        KslTypeInt2 -> GlslType.VEC_2I
+        KslTypeInt3 -> GlslType.VEC_3I
+        KslTypeInt4 -> GlslType.VEC_4I
+
+        KslTypeMat2 -> GlslType.MAT_2F
+        KslTypeMat3 -> GlslType.MAT_3F
+        KslTypeMat4 -> GlslType.MAT_4F
+        else -> throw IllegalArgumentException("KslType has no corresponding glsl type: $this")
+    }
 
 data class Attribute(val name: String, val type: GlslType) {
     val props = PlatformAttributeProps(this)

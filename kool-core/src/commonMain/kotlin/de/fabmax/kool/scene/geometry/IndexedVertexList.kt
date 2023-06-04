@@ -112,6 +112,10 @@ class IndexedVertexList(val vertexAttributes: List<Attribute>) {
         vertexIt = VertexView(this, 0)
     }
 
+    fun hasAttributes(requiredAttributes: Set<Attribute>): Boolean {
+        return vertexAttributes.containsAll(requiredAttributes)
+    }
+
     fun getMorphAttributes(): List<Attribute> {
         val morphAttribs = mutableListOf<Attribute>()
         vertexAttributes.forEach { a ->
