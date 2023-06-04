@@ -38,55 +38,59 @@ private object ShapeOptions {
     }
 }
 
-fun UiScope.meshTypeProperties(nodeModel: SceneNodeModel, meshComponent: MeshComponent) = collapsapsablePanel(
-    title = "Mesh",
-    scopeName = "${nodeModel.nodeData.nodeId}"
-) {
+fun UiScope.meshTypeProperties(nodeModel: SceneNodeModel, meshComponent: MeshComponent) {
     // todo: support multiple primitives per mesh
-    val shape = meshComponent.shapesState.use().getOrNull(0) ?: return@collapsapsablePanel Unit
+    val shape = meshComponent.shapesState.use().getOrNull(0) ?: return
 
-    Column(width = Grow.Std) {
-        modifier
-            .padding(horizontal = sizes.gap)
-            .margin(bottom = sizes.smallGap)
+    collapsapsablePanel(
+        title = "Mesh",
+        headerContent = {
+            var selectedIndex by remember(0)
+            selectedIndex = ShapeOptions.indexOfShape(shape)
 
-        val selectedIndex = remember(ShapeOptions.indexOfShape(shape))
-        labeledCombobox(
-            label = "Shape:",
-            items = ShapeOptions.items,
-            selectedIndex = selectedIndex
-        ) {
-            if (!it.type.isInstance(shape)) {
-                EditorActions.applyAction(
-                    SetShapeAction(nodeModel, meshComponent, shape, it.factory())
-                )
+            Box(Grow.Std) { }
+            ComboBox {
+                defaultComboBoxStyle()
+                modifier
+                    .margin(end = sizes.gap)
+                    .size(sizes.baseSize * 4, sizes.lineHeight)
+                    .alignY(AlignmentY.Center)
+                    .items(ShapeOptions.items)
+                    .selectedIndex(selectedIndex)
+                    .onItemSelected {
+                        EditorActions.applyAction(SetShapeAction(nodeModel, meshComponent, shape, ShapeOptions.items[it].factory()))
+                    }
             }
         }
+    ) {
+        Column(width = Grow.Std) {
+            modifier
+                .padding(horizontal = sizes.gap)
+                .margin(bottom = sizes.gap)
 
-        menuDivider()
+            when (val shapeType = shape) {
+                is MeshShapeData.Box -> boxProperties(nodeModel, meshComponent, shapeType)
+                is MeshShapeData.Rect -> rectProperties(nodeModel, meshComponent, shapeType)
+                is MeshShapeData.IcoSphere -> icoSphereProperties(nodeModel, meshComponent, shapeType)
+                is MeshShapeData.UvSphere -> uvSphereProperties(nodeModel, meshComponent, shapeType)
+                is MeshShapeData.Cylinder -> cylinderProperties(nodeModel, meshComponent, shapeType)
+                is MeshShapeData.Capsule -> capsuleProperties(nodeModel, meshComponent, shapeType)
+                is MeshShapeData.Empty -> { }
+            }
 
-        when (val shapeType = shape) {
-            is MeshShapeData.Box -> boxProperties(nodeModel, meshComponent, shapeType)
-            is MeshShapeData.Rect -> rectProperties(nodeModel, meshComponent, shapeType)
-            is MeshShapeData.IcoSphere -> icoSphereProperties(nodeModel, meshComponent, shapeType)
-            is MeshShapeData.UvSphere -> uvSphereProperties(nodeModel, meshComponent, shapeType)
-            is MeshShapeData.Cylinder -> cylinderProperties(nodeModel, meshComponent, shapeType)
-            is MeshShapeData.Capsule -> capsuleProperties(nodeModel, meshComponent, shapeType)
-            is MeshShapeData.Empty -> { }
-        }
-
-        if (shape.hasUvs) {
-            val shapeI = meshComponent.shapesState.indexOf(shape)
-            xyRow(
-                label = "Texture coordinate scale:",
-                xy = shape.uvScale.toVec2d(),
-                dragChangeSpeed = DragChangeRates.SIZE_VEC2,
-                editHandler = ActionValueEditHandler { undoValue, applyValue ->
-                    val undoShape = shape.copyShape(uvScale = Vec2Data(undoValue))
-                    val applyShape = shape.copyShape(uvScale = Vec2Data(applyValue))
-                    SetShapeAction(nodeModel, meshComponent, undoShape, applyShape, shapeI)
-                }
-            )
+            if (shape.hasUvs) {
+                val shapeI = meshComponent.shapesState.indexOf(shape)
+                xyRow(
+                    label = "Texture coordinate scale:",
+                    xy = shape.uvScale.toVec2d(),
+                    dragChangeSpeed = DragChangeRates.SIZE_VEC2,
+                    editHandler = ActionValueEditHandler { undoValue, applyValue ->
+                        val undoShape = shape.copyShape(uvScale = Vec2Data(undoValue))
+                        val applyShape = shape.copyShape(uvScale = Vec2Data(applyValue))
+                        SetShapeAction(nodeModel, meshComponent, undoShape, applyShape, shapeI)
+                    }
+                )
+            }
         }
     }
 }
@@ -177,15 +181,16 @@ private fun UiScope.cylinderProperties(nodeModel: SceneNodeModel, meshComponent:
 ) {
     val shapeI = meshComponent.shapesState.indexOf(cylinder)
 
-    val isUniRadius = remember(cylinder.topRadius == cylinder.bottomRadius)
+    var isUniRadius by remember(cylinder.topRadius == cylinder.bottomRadius)
     labeledCheckbox("Uniform radius:", isUniRadius) {
-        if (cylinder.topRadius != cylinder.bottomRadius) {
+        isUniRadius = it
+        if (isUniRadius && cylinder.topRadius != cylinder.bottomRadius) {
             EditorActions.applyAction(
                 SetShapeAction(nodeModel, meshComponent, cylinder, cylinder.copy(topRadius = cylinder.bottomRadius))
             )
         }
     }
-    if (isUniRadius.use()) {
+    if (isUniRadius) {
         labeledDoubleTextField(
             label = "Radius:",
             value = cylinder.bottomRadius,

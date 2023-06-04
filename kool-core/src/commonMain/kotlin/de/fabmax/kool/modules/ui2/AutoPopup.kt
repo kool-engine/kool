@@ -37,6 +37,7 @@ open class AutoPopup(
     open fun show(screenPosPx: Vec2f) {
         this.screenPosPx.set(screenPosPx)
         isVisible.set(true)
+        parentSurface?.requestFocus(this@AutoPopup)
         onShow?.invoke()
     }
 
@@ -48,20 +49,26 @@ open class AutoPopup(
         onHide?.invoke()
     }
 
+    open fun toggleVisibility(showScreenPosPx: Vec2f) {
+        if (isVisible.value) {
+            hide()
+        } else {
+            show(showScreenPosPx)
+        }
+    }
+
     override fun UiScope.compose() {
         parentSurface = surface
 
         if (isVisible.use()) {
-            surface.requestFocus(this@AutoPopup)
-
             val pos = screenPosPx.use()
             Popup(pos.x, pos.y, scopeName = scopeName) {
                 modifier
                     .onPositioned { checkPopupPos(it) }
-                    .onHover {  }
-                    .onEnter {  }
-                    .onDrag {  }
-                    .onClick {  }
+                    .onHover { }
+                    .onEnter { }
+                    .onDrag { }
+                    .onClick { surface.requestFocus(this@AutoPopup) }
 
                 popupContent()
 

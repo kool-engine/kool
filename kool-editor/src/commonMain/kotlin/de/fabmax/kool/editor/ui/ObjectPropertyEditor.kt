@@ -3,6 +3,7 @@ package de.fabmax.kool.editor.ui
 import de.fabmax.kool.editor.EditorState
 import de.fabmax.kool.editor.actions.AddComponentAction
 import de.fabmax.kool.editor.actions.EditorActions
+import de.fabmax.kool.editor.actions.RenameNodeAction
 import de.fabmax.kool.editor.actions.SetTransformAction
 import de.fabmax.kool.editor.components.*
 import de.fabmax.kool.editor.data.ScriptComponentData
@@ -48,9 +49,17 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", ui) 
         // clear gizmo transform object, will be set below if transform editor is available
         transformGizmo.setTransformObject(null)
 
+        val selectedObject = EditorState.selectedNode.use()
+        val title = when (selectedObject) {
+            is SceneModel -> "Scene Properties"
+            is SceneNodeModel -> "Node Properties"
+            null -> "Object Properties"
+            else -> "Object Properties <unknown type>"
+        }
+
         Column(Grow.Std, Grow.Std) {
-            editorTitleBar(windowDockable)
-            objectProperties(EditorState.selectedNode.use())
+            editorTitleBar(windowDockable, title)
+            objectProperties(selectedObject)
         }
 
         surface.onEachFrame {
@@ -72,8 +81,8 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", ui) 
     ) {
         modifier.width(Grow.Std)
 
-        Column(Grow.Std, Grow.Std, scopeName = selectedObject?.name) {
-            Row(width = Grow.Std, height = sizes.lineHeightLarger) {
+        Column(Grow.Std, Grow.Std, scopeName = selectedObject?.nameState?.value) {
+            Row(width = Grow.Std, height = sizes.baseSize) {
                 modifier
                     .padding(horizontal = sizes.gap)
 
@@ -81,15 +90,35 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", ui) 
                     Text("Nothing selected") {
                         modifier
                             .width(Grow.Std)
+                            .alignY(AlignmentY.Center)
                             .textAlignX(AlignmentX.Center)
-                            .alignY(AlignmentY.Bottom)
                             .font(sizes.italicText)
                     }
                 } else {
-                    Text(selectedObject.name) {
+                    Text("Name:") {
                         modifier
                             .alignY(AlignmentY.Center)
-                            .font(sizes.boldText)
+                            .margin(end = sizes.largeGap)
+                    }
+
+                    var editName by remember(selectedObject.name)
+                    TextField(editName) {
+                        if (!isFocused.use()) {
+                            editName = selectedObject.name
+                        }
+
+                        defaultTextfieldStyle()
+                        modifier
+                            .hint("Object name")
+                            .width(Grow.Std)
+                            .alignY(AlignmentY.Center)
+                            .padding(vertical = sizes.smallGap)
+                            .onChange {
+                                editName = it
+                            }
+                            .onEnterPressed {
+                                EditorActions.applyAction(RenameNodeAction(selectedObject, it, selectedObject.name))
+                            }
                     }
                 }
             }
@@ -142,8 +171,7 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", ui) 
             ScriptEditor.camelCaseToWords(simpleName)
         }
         collapsapsablePanel(
-            title = title,
-            scopeName = scriptComponent.componentData.scriptClassName
+            title = title
         ) {
             val scriptEditor = remember { ScriptEditor(scriptComponent) }
             scriptEditor()

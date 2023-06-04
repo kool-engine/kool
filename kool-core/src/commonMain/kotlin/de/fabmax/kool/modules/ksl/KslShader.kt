@@ -17,6 +17,8 @@ open class KslShader(val program: KslProgram, val pipelineConfig: PipelineConfig
     val texSamplers3d = mutableMapOf<String, TextureSampler3d>()
     val texSamplersCube = mutableMapOf<String, TextureSamplerCube>()
 
+    val pipelineCfg = pipelineConfig.copy()
+
     private val connectUniformListeners = mutableListOf<ConnectUniformListener>()
 
     override fun onPipelineSetup(builder: Pipeline.Builder, mesh: Mesh, ctx: KoolContext) {

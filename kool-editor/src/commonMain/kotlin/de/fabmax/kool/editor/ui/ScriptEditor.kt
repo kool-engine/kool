@@ -18,9 +18,11 @@ class ScriptEditor(val scriptComponent: ScriptComponent) : Composable {
         modifier
             .padding(horizontal = sizes.gap)
             .padding(top = sizes.gap)
-            .margin(bottom = sizes.smallGap)
+            .margin(bottom = sizes.gap)
 
-        labeledSwitch("Run in edit mode", scriptComponent.runInEditMode) {  }
+        labeledSwitch("Run in edit mode", scriptComponent.runInEditMode.use()) {
+            scriptComponent.runInEditMode.set(it)
+        }
 
         val scriptProperties = scriptComponent.scriptInstance.use()?.let {
             EditorState.loadedApp.use()?.scriptClasses?.get(it::class)?.properties

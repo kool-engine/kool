@@ -16,7 +16,7 @@ import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 import kotlin.math.*
 
-fun UiScope.editorTitleBar(windowDockable: UiDockable) {
+fun UiScope.editorTitleBar(windowDockable: UiDockable, title: String = windowDockable.name) {
     Row(Grow.Std, height = sizes.lineHeightTitle) {
         val cornerR = if (windowDockable.isDocked.use()) 0f else sizes.gap.px
         modifier
@@ -28,7 +28,7 @@ fun UiScope.editorTitleBar(windowDockable: UiDockable) {
             registerDragCallbacks()
         }
 
-        Text(windowDockable.name) {
+        Text(title) {
             modifier
                 .width(Grow.Std)
                 .textColor(UiColors.titleText)
@@ -69,6 +69,7 @@ fun UiScope.doubleTextField(
     modifier
         .text(text)
         .width(width)
+        .padding(horizontal = sizes.smallTextFieldPadding)
         .alignY(AlignmentY.Center)
         .textAlignX(AlignmentX.End)
         .onChange { text = it }
@@ -134,6 +135,7 @@ fun UiScope.intTextField(
     modifier
         .text(text)
         .width(width)
+        .padding(horizontal = sizes.smallTextFieldPadding)
         .alignY(AlignmentY.Center)
         .textAlignX(AlignmentX.End)
         .onChange { text = it }
@@ -379,7 +381,8 @@ fun UiScope.xyzwRow(
 fun <T: Any> UiScope.labeledCombobox(
     label: String,
     items: List<T>,
-    selectedIndex: MutableStateValue<Int>,
+    selectedIndex: Int,
+    boxWidth: Dimension = Grow.Std,
     onItemSelected: (T) -> Unit
 ) = menuRow {
     Text(label) {
@@ -391,11 +394,10 @@ fun <T: Any> UiScope.labeledCombobox(
     ComboBox {
         defaultComboBoxStyle()
         modifier
-            .size(Grow.Std, sizes.lineHeight)
+            .size(boxWidth, sizes.lineHeight)
             .items(items)
-            .selectedIndex(selectedIndex.use())
+            .selectedIndex(selectedIndex)
             .onItemSelected {
-                selectedIndex.set(it)
                 onItemSelected(items[it])
             }
     }
@@ -517,6 +519,35 @@ fun UiScope.labeledIntTextField(
     intTextField(value, valueWidth, dragChangeSpeed, minValue, maxValue, editHandler)
 }
 
+fun UiScope.labeledTextField(
+    label: String,
+    text: String,
+    valueWidth: Dimension = sizes.baseSize * 4,
+    onEdited: (String) -> Unit
+) = menuRow {
+    Text(label) {
+        modifier
+            .width(Grow.Std)
+            .alignY(AlignmentY.Center)
+    }
+
+    var editText by remember(text)
+    TextField(editText) {
+        if (!isFocused.use()) {
+            editText = text
+        }
+
+        defaultTextfieldStyle()
+        modifier
+            .width(valueWidth)
+            .onChange { editText = it }
+            .onEnterPressed {
+                onEdited(editText)
+                surface.unfocus(this)
+            }
+    }
+}
+
 fun UiScope.labeledSlider(
     label: String,
     value: Double,
@@ -552,7 +583,7 @@ fun UiScope.labeledSlider(
 
 fun UiScope.labeledCheckbox(
     label: String,
-    state: MutableStateValue<Boolean>,
+    state: Boolean,
     onToggle: (Boolean) -> Unit
 ) = menuRow {
     Text(label) {
@@ -560,16 +591,14 @@ fun UiScope.labeledCheckbox(
             .width(Grow.Std)
             .alignY(AlignmentY.Center)
             .onClick {
-                state.set(!state.value)
-                onToggle(state.value)
+                onToggle(!state)
             }
     }
 
-    Checkbox(state.use()) {
+    Checkbox(state) {
         modifier
             .size(FitContent, sizes.lineHeight)
             .onToggle {
-                state.set(it)
                 onToggle(it)
             }
     }
@@ -577,7 +606,7 @@ fun UiScope.labeledCheckbox(
 
 fun UiScope.labeledSwitch(
     label: String,
-    state: MutableStateValue<Boolean>,
+    state: Boolean,
     onToggle: (Boolean) -> Unit
 ) = menuRow {
     Text(label) {
@@ -585,16 +614,14 @@ fun UiScope.labeledSwitch(
             .width(Grow.Std)
             .alignY(AlignmentY.Center)
             .onClick {
-                state.set(!state.value)
-                onToggle(state.value)
+                onToggle(!state)
             }
     }
 
-    Switch(state.use()) {
+    Switch(state) {
         modifier
             .size(FitContent, sizes.lineHeight)
             .onToggle {
-                state.set(it)
                 onToggle(it)
             }
     }
@@ -657,12 +684,14 @@ fun ButtonScope.defaultButtonStyle() {
 }
 
 fun ComboBoxScope.defaultComboBoxStyle() {
-    modifier.colors(
-        textBackgroundColor = colors.componentBg,
-        textBackgroundHoverColor = colors.componentBgHovered,
-        expanderColor = colors.elevatedComponentBg,
-        expanderHoverColor = colors.elevatedComponentBgHovered
-    )
+    modifier
+        .clearWheelCallbacks()
+        .colors(
+            textBackgroundColor = colors.componentBg,
+            textBackgroundHoverColor = colors.componentBgHovered,
+            expanderColor = colors.elevatedComponentBg,
+            expanderHoverColor = colors.elevatedComponentBgHovered
+        )
 }
 
 fun SliderScope.defaultSliderStyle() {
@@ -673,8 +702,8 @@ fun TextFieldScope.defaultTextfieldStyle() {
     val bgColor = if (isFocused.use()) colors.componentBgHovered else colors.componentBg
     modifier
         .colors(lineColor = null, lineColorFocused = null)
-        .background(RoundRectBackground(bgColor, sizes.textFieldPadding))
-        .padding(sizes.textFieldPadding)
+        .background(RoundRectBackground(bgColor, sizes.smallTextFieldPadding))
+        .padding(horizontal = sizes.gap, vertical = sizes.smallTextFieldPadding)
 }
 
 fun UiScope.defaultPopupStyle(layout: Layout = ColumnLayout) {
@@ -687,7 +716,7 @@ fun UiScope.defaultPopupStyle(layout: Layout = ColumnLayout) {
 }
 
 fun interface ValueEditHandler<T> {
-    fun onEditStart(startValue: T) = onEdit(startValue)
+    fun onEditStart(startValue: T) { }
     fun onEdit(value: T)
     fun onEditEnd(startValue: T, endValue: T) = onEdit(endValue)
 }

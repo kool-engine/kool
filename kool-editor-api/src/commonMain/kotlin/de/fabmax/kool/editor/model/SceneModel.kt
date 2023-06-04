@@ -30,6 +30,7 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : EditorN
 
     init {
         project.entities += this
+        nameState.onChange { created?.name = it }
     }
 
     suspend fun createScene() {

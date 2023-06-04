@@ -23,6 +23,10 @@ class SceneNodeModel(nodeData: SceneNodeData, val scene: SceneModel) : EditorNod
 
     private val modelComponentModels = mutableMapOf<ModelComponent, Model>()
 
+    init {
+        nameState.onChange { created?.name = it }
+    }
+
     override fun addChild(child: SceneNodeModel) {
         nodeData.childNodeIds += child.nodeId
         node.addNode(child.node)

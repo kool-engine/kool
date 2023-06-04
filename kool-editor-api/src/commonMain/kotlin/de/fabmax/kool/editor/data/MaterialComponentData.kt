@@ -6,6 +6,7 @@ import de.fabmax.kool.modules.ksl.blocks.ColorBlockConfig
 import de.fabmax.kool.modules.ksl.blocks.PropertyBlockConfig
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.pipeline.CullMethod
 import de.fabmax.kool.pipeline.GlslType
 import de.fabmax.kool.pipeline.Shader
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
@@ -21,9 +22,11 @@ data class MaterialComponentData(var materialId: Long) : ComponentData
 @Serializable
 data class MaterialData(
     val id: Long,
-    val name: String,
+    var name: String,
     var shaderData: MaterialShaderData
 ) {
+    @Transient
+    val nameState = mutableStateOf(name).onChange { name = it }
     @Transient
     val shaderDataState = mutableStateOf(shaderData).onChange { shaderData = it }
 
@@ -36,9 +39,19 @@ data class MaterialData(
 
 @Serializable
 sealed interface MaterialShaderData {
+    val genericSettings: GenericMaterialSettings
+
     fun matchesShader(shader: Shader?): Boolean
     suspend fun createShader(ibl: EnvironmentMaps?): KslShader
     suspend fun updateShader(shader: Shader?, ibl: EnvironmentMaps?): Boolean
+
+    fun copy(genericSettings: GenericMaterialSettings = this.genericSettings): MaterialShaderData {
+        return when (this) {
+            is BlinnPhongShaderData -> copy(baseColor = baseColor, genericSettings = genericSettings)
+            is PbrShaderData -> copy(baseColor = baseColor, genericSettings = genericSettings)
+            is UnlitShaderData -> copy(baseColor = baseColor, genericSettings = genericSettings)
+        }
+    }
 }
 
 @Serializable
@@ -49,7 +62,8 @@ data class PbrShaderData(
     val emission: MaterialAttribute = ConstColorAttribute(ColorData(Color.BLACK)),
     val normalMap: MapAttribute? = null,
     val aoMap: MapAttribute? = null,
-    val displacementMap: MapAttribute? = null
+    val displacementMap: MapAttribute? = null,
+    override val genericSettings: GenericMaterialSettings = GenericMaterialSettings()
 ) : MaterialShaderData {
 
     override fun matchesShader(shader: Shader?): Boolean {
@@ -63,10 +77,16 @@ data class PbrShaderData(
                 && aoMap?.matchesCfg(shader.materialAoCfg) != false
                 && displacementMap?.matchesCfg(shader.displacementCfg) != false
                 && shader.isNormalMapped == (normalMap != null)
+                && genericSettings.matchesPipelineConfig(shader.pipelineCfg)
     }
 
     override suspend fun createShader(ibl: EnvironmentMaps?): KslPbrShader {
         val shader = KslPbrShader {
+            pipeline {
+                if (genericSettings.isTwoSided) {
+                    cullMethod = CullMethod.NO_CULLING
+                }
+            }
             color {
                 when (val color = baseColor) {
                     is ConstColorAttribute -> uniformColor()
@@ -185,13 +205,11 @@ data class BlinnPhongShaderData(
     val specularColor: MaterialAttribute = ConstColorAttribute(ColorData(Color.WHITE)),
     val shininess: MaterialAttribute = ConstValueAttribute(16f),
     val specularStrength: MaterialAttribute = ConstValueAttribute(1f),
+    override val genericSettings: GenericMaterialSettings = GenericMaterialSettings()
 ) : MaterialShaderData {
 
     override fun matchesShader(shader: Shader?): Boolean {
-        if (shader !is KslBlinnPhongShader) {
-            return false
-        }
-        return true
+        TODO("Not yet implemented")
     }
 
     override suspend fun createShader(ibl: EnvironmentMaps?): KslShader {
@@ -205,14 +223,12 @@ data class BlinnPhongShaderData(
 
 @Serializable
 data class UnlitShaderData(
-    val baseColor: MaterialAttribute = ConstColorAttribute(ColorData(MdColor.GREY))
+    val baseColor: MaterialAttribute = ConstColorAttribute(ColorData(MdColor.GREY)),
+    override val genericSettings: GenericMaterialSettings = GenericMaterialSettings()
 ) : MaterialShaderData {
 
     override fun matchesShader(shader: Shader?): Boolean {
-        if (shader !is KslUnlitShader) {
-            return false
-        }
-        return true
+        TODO("Not yet implemented")
     }
 
     override suspend fun createShader(ibl: EnvironmentMaps?): KslShader {
@@ -278,4 +294,13 @@ class MapAttribute(val mapPath: String, val channels: String? = null) : Material
     override fun matchesCfg(cfg: PropertyBlockConfig): Boolean {
         return cfg.propertySources.any { it is PropertyBlockConfig.TextureProperty }
     }
+}
+
+@Serializable
+data class GenericMaterialSettings(val isTwoSided: Boolean = false) {
+
+    fun matchesPipelineConfig(cfg: KslShader.PipelineConfig): Boolean {
+        return isTwoSided == (cfg.cullMethod == CullMethod.NO_CULLING)
+    }
+
 }

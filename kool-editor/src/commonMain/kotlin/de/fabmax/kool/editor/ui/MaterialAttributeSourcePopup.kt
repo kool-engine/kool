@@ -6,14 +6,23 @@ import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.MdColor
 
-class MaterialColorSourcePopup(
-    var editColorAttr: MaterialAttribute,
+class MaterialAttributeSourcePopup(
+    var editMatAttr: MaterialAttribute,
+    val isColor: Boolean,
+    val defaultColor: Color = Color.BLACK,
+    val minValue: Float = 0f,
+    val maxValue: Float = 1f,
+    val defaultValue: Float = 0.5f,
     var editHandler: ActionValueEditHandler<MaterialAttribute>
 ) : AutoPopup(hideOnOutsideClick = false) {
 
-    private var editStartAttr = editColorAttr
+    private var editStartAttr = editMatAttr
+
+    private var lastColorAttr = defaultColorAttrib()
+    private var lastValueAttr = defaultValueAttrib()
+    private var lastTextureAttr = defaultTextureAttrib()
+    private var lastVertexAttr = defaultVertexAttrib()
 
     private val availableTextures: List<AssetItem>
         get() = KoolEditor.instance.availableAssets.textureAssets
@@ -24,11 +33,16 @@ class MaterialColorSourcePopup(
         }
 
         onShow = {
-            editStartAttr = editColorAttr
+            editStartAttr = editMatAttr
             editHandler.onEditStart(editStartAttr)
+
+            lastColorAttr = editMatAttr as? ConstColorAttribute ?: defaultColorAttrib()
+            lastValueAttr = editMatAttr as? ConstValueAttribute ?: defaultValueAttrib()
+            lastTextureAttr = editMatAttr as? MapAttribute ?: defaultTextureAttrib()
+            lastVertexAttr = editMatAttr as? VertexAttribute ?: defaultVertexAttrib()
         }
         onHide = {
-            editHandler.onEditEnd(editStartAttr, editColorAttr)
+            editHandler.onEditEnd(editStartAttr, editMatAttr)
         }
     }
 
@@ -40,76 +54,23 @@ class MaterialColorSourcePopup(
     private fun UiScope.content() {
         defaultPopupStyle()
 
-        val colorMode = when (editColorAttr) {
+        val colorMode = when (editMatAttr) {
             is ConstColorAttribute -> ColorMode.COLOR
-            is ConstValueAttribute -> ColorMode.COLOR
+            is ConstValueAttribute -> ColorMode.VALUE
             is MapAttribute -> ColorMode.TEXTURE
             is VertexAttribute -> ColorMode.VERTEX
         }
 
         Row(width = sizes.baseSize * 6, height = sizes.lineHeight) {
-            Text("Color") {
-                var isHovered by remember(false)
-                if (isHovered) {
-                    modifier.backgroundColor(colors.componentBgHovered)
-                } else if (colorMode == ColorMode.COLOR) {
-                    modifier.backgroundColor(colors.componentBg)
-                }
-
-                modifier
-                    .size(Grow.Std, Grow.Std)
-                    .textAlignX(AlignmentX.Center)
-                    .onEnter { isHovered = true }
-                    .onExit { isHovered = false }
-
-                if (colorMode != ColorMode.COLOR) {
-                    modifier.onClick {
-                        setEditAttrib(defaultColorAttrib())
-                    }
-                }
+            if (isColor) {
+                modeButton("Color", ColorMode.COLOR, colorMode, lastColorAttr)
+            } else {
+                modeButton("Value", ColorMode.VALUE, colorMode, lastValueAttr)
             }
             divider(verticalMargin = Dp.ZERO)
-            Text("Texture") {
-                var isHovered by remember(false)
-                if (isHovered) {
-                    modifier.backgroundColor(colors.componentBgHovered)
-                } else if (colorMode == ColorMode.TEXTURE) {
-                    modifier.backgroundColor(colors.componentBg)
-                }
-
-                modifier
-                    .size(Grow.Std, Grow.Std)
-                    .textAlignX(AlignmentX.Center)
-                    .onEnter { isHovered = true }
-                    .onExit { isHovered = false }
-
-                if (colorMode != ColorMode.TEXTURE) {
-                    modifier.onClick {
-                        setEditAttrib(defaultTextureAttrib())
-                    }
-                }
-            }
+            modeButton("Texture", ColorMode.TEXTURE, colorMode, lastTextureAttr)
             divider(verticalMargin = Dp.ZERO)
-            Text("Vertex") {
-                var isHovered by remember(false)
-                if (isHovered) {
-                    modifier.backgroundColor(colors.componentBgHovered)
-                } else if (colorMode == ColorMode.VERTEX) {
-                    modifier.backgroundColor(colors.componentBg)
-                }
-
-                modifier
-                    .size(Grow.Std, Grow.Std)
-                    .textAlignX(AlignmentX.Center)
-                    .onEnter { isHovered = true }
-                    .onExit { isHovered = false }
-
-                if (colorMode != ColorMode.VERTEX) {
-                    modifier.onClick {
-                        setEditAttrib(defaultVertexAttrib())
-                    }
-                }
-            }
+            modeButton("Vertex", ColorMode.VERTEX, colorMode, lastVertexAttr)
         }
         Box {
             modifier
@@ -119,6 +80,7 @@ class MaterialColorSourcePopup(
         }
 
         when (colorMode) {
+            ColorMode.VALUE -> valueSelector()
             ColorMode.COLOR -> colorSelector()
             ColorMode.TEXTURE -> textureSelector()
             ColorMode.VERTEX -> vertexAttrSelector()
@@ -126,8 +88,48 @@ class MaterialColorSourcePopup(
         okButton { hide() }
     }
 
+    private fun UiScope.modeButton(
+        name: String,
+        mode: ColorMode,
+        activeMode: ColorMode,
+        defaultSelectionAttrib: MaterialAttribute
+    ) = Text(name) {
+        var isHovered by remember(false)
+        if (isHovered) {
+            modifier.backgroundColor(colors.componentBgHovered)
+        } else if (activeMode == mode) {
+            modifier.backgroundColor(colors.componentBg)
+        }
+
+        modifier
+            .size(Grow.Std, Grow.Std)
+            .textAlignX(AlignmentX.Center)
+            .onEnter { isHovered = true }
+            .onExit { isHovered = false }
+
+        if (activeMode != mode) {
+            modifier.onClick {
+                setEditAttrib(defaultSelectionAttrib)
+            }
+        }
+    }
+
+    private fun UiScope.valueSelector() {
+        val valueAttr = editMatAttr as ConstValueAttribute
+
+        labeledSlider(
+            label = "Value:",
+            value = valueAttr.value.toDouble(),
+            min = minValue.toDouble(),
+            max = maxValue.toDouble()
+        ) {
+            lastValueAttr = ConstValueAttribute(it.toFloat())
+            setEditAttrib(lastValueAttr)
+        }
+    }
+
     private fun UiScope.colorSelector() {
-        val color = when (val attr = editColorAttr) {
+        val color = when (val attr = editMatAttr) {
             is ConstColorAttribute -> {
                 attr.color.toColor().toSrgb()
             }
@@ -146,19 +148,21 @@ class MaterialColorSourcePopup(
         val hexString = remember(color.toHexString())
 
         ColorChooserV(hue, sat, bri, alpha, hexString) { editColor ->
-            setEditAttrib(ConstColorAttribute(ColorData(editColor.toLinear())))
+            lastColorAttr = ConstColorAttribute(ColorData(editColor.toLinear()))
+            setEditAttrib(lastColorAttr)
         }
     }
 
     private fun UiScope.textureSelector() {
-        val texAttr = editColorAttr as MapAttribute
+        val texAttr = editMatAttr as MapAttribute
         textureSelector(texAttr.mapPath, false) {
-            setEditAttrib(MapAttribute(it.path))
+            lastTextureAttr = MapAttribute(it.path)
+            setEditAttrib(lastTextureAttr)
         }
     }
 
     private fun UiScope.vertexAttrSelector() {
-        val vertAttr = editColorAttr as VertexAttribute
+        val vertAttr = editMatAttr as VertexAttribute
 
         menuRow {
             Text("Attribute name:") {
@@ -182,11 +186,13 @@ class MaterialColorSourcePopup(
         }
     }
 
-    private fun defaultColorAttrib() = ConstColorAttribute(ColorData(MdColor.GREY.toLinear()))
+    private fun defaultColorAttrib() = ConstColorAttribute(ColorData(defaultColor))
+    private fun defaultValueAttrib() = ConstValueAttribute(defaultValue)
     private fun defaultTextureAttrib() = MapAttribute(availableTextures.getOrNull(0)?.path ?: "")
     private fun defaultVertexAttrib() = VertexAttribute(Attribute.COLORS.name)
 
     enum class ColorMode {
+        VALUE,
         COLOR,
         TEXTURE,
         VERTEX

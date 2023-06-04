@@ -8,7 +8,7 @@ fun UiScope.transformEditor(props: TransformProperties) = collapsapsablePanel("T
     Column(width = Grow.Std) {
         modifier
             .padding(horizontal = sizes.gap)
-            .margin(bottom = sizes.smallGap)
+            .margin(bottom = sizes.gap)
 
         position(props)
         rotation(props)

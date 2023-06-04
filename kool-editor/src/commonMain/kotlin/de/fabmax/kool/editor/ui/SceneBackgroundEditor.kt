@@ -28,9 +28,10 @@ class SceneBackgroundEditor(var sceneModel: SceneModel) : Composable {
         Column(width = Grow.Std) {
             modifier
                 .padding(horizontal = sizes.gap)
-                .margin(bottom = sizes.smallGap)
+                .margin(bottom = sizes.gap)
 
-            val selectedIndex = remember(BackgroundTypeOptions.indexOfBackground(sceneBackgroundComponent.componentData))
+            var selectedIndex by remember(0)
+            selectedIndex = BackgroundTypeOptions.indexOfBackground(sceneBackgroundComponent.componentData)
             labeledCombobox(
                 label = "Type:",
                 items = BackgroundTypeOptions.items,
@@ -55,22 +56,15 @@ class SceneBackgroundEditor(var sceneModel: SceneModel) : Composable {
 
     private fun UiScope.selectHdriBackground() {
         val hdriTexture = availableHdriTextures().getOrNull(selectedHdri.value) ?: return
-        launchOnMainThread {
-            sceneModel.sceneBackground.loadedEnvironmentMaps = AppAssets.loadHdriEnvironment(sceneModel.node, hdriTexture.path)
-            val oldBg = sceneModel.sceneBackground.backgroundState.value
-            val newBg = SceneBackgroundData.Hdri(hdriTexture.path, skyLod.value)
-            EditorActions.applyAction(SetBackgroundAction(sceneModel, oldBg, newBg))
-            // refresh scene tree to update skybox visibility
-            KoolEditor.instance.ui.sceneBrowser.refreshSceneTree()
-        }
+        val oldBg = sceneModel.sceneBackground.backgroundState.value
+        val newBg = SceneBackgroundData.Hdri(hdriTexture.path, skyLod.value)
+        EditorActions.applyAction(SetBackgroundAction(sceneModel, oldBg, newBg))
     }
 
     private fun selectSingleColorBackground() {
         val oldBg = sceneModel.sceneBackground.backgroundState.value
         val newBg = SceneBackgroundData.SingleColor(editorSingleBgColor.value)
         EditorActions.applyAction(SetBackgroundAction(sceneModel, oldBg, newBg))
-        // refresh scene tree to update skybox visibility
-        KoolEditor.instance.ui.sceneBrowser.refreshSceneTree()
     }
 
     private fun UiScope.singleColorBgProperties(sceneModel: SceneModel, singleColorBg: SceneBackgroundData.SingleColor) = Column(
@@ -100,7 +94,7 @@ class SceneBackgroundEditor(var sceneModel: SceneModel) : Composable {
         labeledCombobox(
             label = "HDRI texture:",
             items = hdriTextures,
-            selectedIndex = selectedHdri
+            selectedIndex = selectedHdri.use()
         ) {
             if (it.path != hdriBg.hdriPath) {
                 launchOnMainThread {

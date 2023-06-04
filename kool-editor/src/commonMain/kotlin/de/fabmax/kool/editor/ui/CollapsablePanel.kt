@@ -2,9 +2,13 @@ package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.modules.ui2.*
 
-fun UiScope.collapsapsablePanel(title: String, scopeName: String? = null, block: ColumnScope.() -> Any) = Column(
+fun UiScope.collapsapsablePanel(
+    title: String,
+    headerContent: (RowScope.() -> Unit)? = null,
+    block: ColumnScope.() -> Any
+) = Column(
     Grow.Std,
-    scopeName = scopeName
+    scopeName = title
 ) {
     var isCollapsed by remember(false)
     var isHovered by remember(false)
@@ -24,11 +28,12 @@ fun UiScope.collapsapsablePanel(title: String, scopeName: String? = null, block:
         Text(title) {
             modifier.alignY(AlignmentY.Center)
         }
+        headerContent?.invoke(this)
     }
     if (!isCollapsed) {
         Column(width = Grow.Std) {
             modifier
-                .padding(start = sizes.largeGap)
+                .padding(start = sizes.largeGap, bottom = sizes.smallGap)
                 .backgroundColor(colors.backgroundVariant)
             block()
         }

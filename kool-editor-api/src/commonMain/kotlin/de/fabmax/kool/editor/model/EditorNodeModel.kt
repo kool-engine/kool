@@ -3,6 +3,7 @@ package de.fabmax.kool.editor.model
 import de.fabmax.kool.editor.components.*
 import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.modules.ui2.mutableStateListOf
+import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.launchOnMainThread
 
@@ -10,6 +11,8 @@ abstract class EditorNodeModel(val nodeData: SceneNodeData) {
 
     val nodeId: Long
         get() = nodeData.nodeId
+
+    var nameState = mutableStateOf(nodeData.name).onChange { nodeData.name = it }
     val name: String
         get() = nodeData.name
 

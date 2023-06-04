@@ -92,9 +92,11 @@ class MeshComponent(override val componentData: MeshComponentData) :
             if (isIblShaded) {
                 launchOnMainThread {
                     createMeshShader(updateBg = false)
+                    (mesh.shader as KslLitShader).ambientFactor = bgColorSrgb.toLinear()
                 }
+            } else {
+                (mesh.shader as KslLitShader).ambientFactor = bgColorSrgb.toLinear()
             }
-            (mesh.shader as KslLitShader).ambientFactor = bgColorSrgb.toLinear()
         }
         isIblShaded = false
     }
