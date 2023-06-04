@@ -16,7 +16,7 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
 
     val sceneBrowser = SceneBrowser(this)
     val objectProperties = ObjectPropertyEditor(this)
-    val assetBrowser = AssetBrowser(this)
+    val resourceBrowser = ResourceBrowser(this)
 
     val appLoaderState = mutableStateOf("")
 
@@ -55,8 +55,8 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
         dock.addDockableSurface(objectProperties.windowDockable, objectProperties.windowSurface)
         dock.getLeafAtPath("0/2")?.dock(objectProperties.windowDockable)
 
-        dock.addDockableSurface(assetBrowser.windowDockable, assetBrowser.windowSurface)
-        dock.getLeafAtPath("0/1/1")?.dock(assetBrowser.windowDockable)
+        dock.addDockableSurface(resourceBrowser.windowDockable, resourceBrowser.windowSurface)
+        dock.getLeafAtPath("0/1/1")?.dock(resourceBrowser.windowDockable)
     }
 
     fun UiScope.statusBar() = Row(width = Grow.Std, height = sizes.lineHeightLarger) {
@@ -94,6 +94,9 @@ val Sizes.italicText: MsdfFont get() = (normalText as MsdfFont).copy(italic = Ms
 
 // weak hovered background: hovered list items, hovered collapsable panel header
 val Colors.hoverBg: Color get() = secondaryVariantAlpha(0.35f)
+
+val Colors.weakComponentBg: Color get() = secondaryAlpha(0.15f)
+val Colors.weakComponentBgHovered: Color get() = secondaryAlpha(0.25f)
 
 // text fields, combo-boxes, right side slider track
 val Colors.componentBg: Color get() = secondaryAlpha(0.25f)

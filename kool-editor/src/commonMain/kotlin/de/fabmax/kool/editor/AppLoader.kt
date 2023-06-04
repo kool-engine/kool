@@ -23,7 +23,8 @@ fun interface AppReloadListener {
 
 class LoadedApp(val app: EditorAwareApp, val scriptClasses: Map<KClass<*>, AppScript>)
 
-class AppScript(val klass: KClass<*>, val properties: List<ScriptProperty>) {
+class AppScript(klass: KClass<*>, val properties: List<ScriptProperty>) {
+    val qualifiedName = klass.qualifiedName ?: "<unknown>"
     val simpleName = ScriptEditor.camelCaseToWords(klass.simpleName ?: "<unknown>")
 }
 

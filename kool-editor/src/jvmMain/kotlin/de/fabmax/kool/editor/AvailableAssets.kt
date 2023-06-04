@@ -67,7 +67,7 @@ actual class AvailableAssets actual constructor(assetsBaseDir: String) : Corouti
             // assetPath: asset path relative to top-level asset dir, so that it is found by asset loader
             val assetPath = pathString.removePrefix(pathPrefix).removePrefix("/")
             val assetItem = assetsByPath.getOrPut(pathString) {
-                AssetItem(path.name, assetPath, assetType).apply { if (parent == null) isExpanded.set(true) }
+                AssetItem(path.name, assetPath, assetType)
             }
 
             if (parent != null) {

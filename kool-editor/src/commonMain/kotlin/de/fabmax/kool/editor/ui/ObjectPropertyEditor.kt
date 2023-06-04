@@ -205,12 +205,12 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", ui) 
     }
 
     private fun makeAddComponentMenu(node: EditorNodeModel): SubMenuItem<EditorNodeModel> = SubMenuItem {
-        if (node.getComponent<MeshComponent>() == null && node.getComponent<ModelComponent>() == null) {
+        if (node !is SceneModel && node.getComponent<MeshComponent>() == null && node.getComponent<ModelComponent>() == null) {
             item("Mesh") {
                 EditorActions.applyAction(AddComponentAction(it, MeshComponent()))
             }
         }
-        if (node.getComponent<MaterialComponent>() == null) {
+        if (node !is SceneModel && node.getComponent<MaterialComponent>() == null) {
             item("Material") {
                 EditorActions.applyAction(AddComponentAction(it, MaterialComponent()))
             }
@@ -221,7 +221,7 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", ui) 
                 scriptClasses.forEach { script ->
                     item(script.simpleName) {
                         EditorActions.applyAction(
-                            AddComponentAction(node, ScriptComponent(ScriptComponentData(script.klass.qualifiedName!!)))
+                            AddComponentAction(node, ScriptComponent(ScriptComponentData(script.qualifiedName)))
                         )
                     }
                 }
