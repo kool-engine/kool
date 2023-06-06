@@ -49,7 +49,7 @@ inline fun UiScope.Column(
     }
 
     val column = uiNode.createChild(scopeName, ColumnNode::class, ColumnNode.factory)
-    column.modifier.size(width, height).padding(Dp.UNBOUNDED_NEGATIVE).layout(ColumnLayout)
+    column.modifier.size(width, height).layout(ColumnLayout)
     column.block()
     return column
 }
@@ -65,7 +65,7 @@ inline fun UiScope.ReverseColumn(
     }
 
     val column = uiNode.createChild(scopeName, ColumnNode::class, ColumnNode.factory)
-    column.modifier.size(width, height).padding(Dp.UNBOUNDED_NEGATIVE).layout(ReverseColumnLayout)
+    column.modifier.size(width, height).layout(ReverseColumnLayout)
     column.block()
     return column
 }
@@ -81,7 +81,7 @@ inline fun UiScope.Row(
     }
 
     val row = uiNode.createChild(scopeName, RowNode::class, RowNode.factory)
-    row.modifier.size(width, height).padding(Dp.UNBOUNDED_NEGATIVE).layout(RowLayout)
+    row.modifier.size(width, height).layout(RowLayout)
     row.block()
     return row
 }
@@ -97,7 +97,7 @@ inline fun UiScope.ReverseRow(
     }
 
     val row = uiNode.createChild(scopeName, RowNode::class, RowNode.factory)
-    row.modifier.size(width, height).padding(Dp.UNBOUNDED_NEGATIVE).layout(ReverseRowLayout)
+    row.modifier.size(width, height).layout(ReverseRowLayout)
     row.block()
     return row
 }
@@ -113,7 +113,7 @@ inline fun UiScope.Box(
     }
 
     val box = uiNode.createChild(scopeName, BoxNode::class, BoxNode.factory)
-    box.modifier.size(width, height).padding(Dp.UNBOUNDED_NEGATIVE)
+    box.modifier.size(width, height)
     box.block()
     return box
 }

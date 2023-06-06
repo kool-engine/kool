@@ -44,7 +44,6 @@ value class Dp(val value: Float): Dimension, Comparable<Dp> {
     companion object {
         val ZERO = Dp(0f)
         val UNBOUNDED = Dp(1e9f)
-        val UNBOUNDED_NEGATIVE = Dp(-1e9f)
 
         fun fromPx(px: Float) = Dp(px / UiScale.measuredScale)
 

@@ -144,17 +144,23 @@ abstract class UiNode(val parent: UiNode?, override val surface: UiSurface) : Ui
 
     fun computeChildLocationX(child: UiNode, measuredChildWidth: Float): Float {
         return leftPx + when (child.modifier.alignX) {
-            AlignmentX.Start -> max(paddingStartPx, child.marginStartPx)
+            AlignmentX.Start -> if (paddingStartPx != 0f) max(paddingStartPx, child.marginStartPx) else child.marginStartPx
             AlignmentX.Center -> (widthPx - measuredChildWidth) * 0.5f
-            AlignmentX.End -> widthPx - measuredChildWidth - max(paddingEndPx, child.marginEndPx)
+            AlignmentX.End -> {
+                val marginPadding = if (paddingEndPx != 0f) max(paddingEndPx, child.marginEndPx) else child.marginEndPx
+                widthPx - measuredChildWidth - marginPadding
+            }
         }
     }
 
     fun computeChildLocationY(child: UiNode, measuredChildHeight: Float): Float {
         return topPx + when (child.modifier.alignY) {
-            AlignmentY.Top -> max(paddingTopPx, child.marginTopPx)
+            AlignmentY.Top -> if (paddingTopPx != 0f) max(paddingTopPx, child.marginTopPx) else child.marginTopPx
             AlignmentY.Center -> (heightPx - measuredChildHeight) * 0.5f
-            AlignmentY.Bottom -> heightPx - measuredChildHeight - max(paddingBottomPx, child.marginBottomPx)
+            AlignmentY.Bottom -> {
+                val marginPadding = if (paddingBottomPx != 0f) max(paddingBottomPx, child.marginBottomPx) else child.marginBottomPx
+                heightPx - measuredChildHeight - marginPadding
+            }
         }
     }
 
