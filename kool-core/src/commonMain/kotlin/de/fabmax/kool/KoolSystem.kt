@@ -35,5 +35,8 @@ object KoolSystem {
 }
 
 expect class KoolConfig {
+    /**
+     * Base path used by [Assets] to look for assets to be loaded (textures, models, etc.).
+     */
     val assetPath: String
 }

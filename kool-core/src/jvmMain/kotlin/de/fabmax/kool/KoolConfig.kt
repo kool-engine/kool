@@ -6,7 +6,19 @@ import java.awt.image.BufferedImage
 import javax.imageio.ImageIO
 
 actual data class KoolConfig(
+    /**
+     * Base path used by [Assets] to look for assets to be loaded (textures, models, etc.).
+     */
     actual val assetPath: String = "./assets",
+
+    /**
+     * Alternative base path used by [Assets] to look for assets using the classloader. This can be used to place
+     * assets into the resources directory under /src/commonMain/resources/[classloaderAssetPath]. The classloader
+     * asset path is preferred by the [Assets] loader. If a requested asset is not found in the classloader resources
+     * the regular file-system based [assetPath] is used.
+     */
+    val classloaderAssetPath: String = "",
+
     val storageDir: String = "./.storage",
     val httpCacheDir: String = "./.httpCache",
 

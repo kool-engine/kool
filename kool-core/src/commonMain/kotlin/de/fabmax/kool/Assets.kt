@@ -17,8 +17,10 @@ object Assets : CoroutineScope {
 
     var assetsBasePath = KoolSystem.config.assetPath
         set(value) {
-            field = value
-            logI { "Asset base path set to: $value" }
+            if (field != value) {
+                logI { "Asset base changed from $field to: $value" }
+                field = value
+            }
         }
 
     internal val job = Job()
