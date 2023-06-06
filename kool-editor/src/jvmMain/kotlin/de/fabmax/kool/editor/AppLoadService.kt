@@ -11,6 +11,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import java.io.BufferedReader
+import java.io.File
 import java.io.InputStreamReader
 import java.net.URLClassLoader
 import java.nio.file.Path
@@ -22,15 +23,14 @@ import kotlin.coroutines.suspendCoroutine
 import kotlin.io.path.*
 import kotlin.reflect.KClass
 
-actual class AppLoadService actual constructor(watchDirs: Set<String>, appLoadClassPath: String) : CoroutineScope {
+actual class AppLoadService actual constructor(val paths: ProjectPaths) : CoroutineScope {
 
     override val coroutineContext: CoroutineContext = Job()
 
-    // todo: paths are hardcoded for now
-    private val appClassPath = Path.of(appLoadClassPath)
+    private val appClassPath = Path.of(paths.classPath)
 
     private val buildInProgress = AtomicBoolean(false)
-    private val watcher = DirectoryWatcher(watchDirs)
+    private val watcher = DirectoryWatcher(paths.srcPaths)
 
     actual var hasAppChanged = true
         private set
@@ -56,7 +56,15 @@ actual class AppLoadService actual constructor(watchDirs: Set<String>, appLoadCl
 
         suspendCoroutine { continuation ->
             thread {
-                val buildProcess = Runtime.getRuntime().exec(arrayOf("gradlew.bat", ":kool-editor-template:jvmMainClasses"))
+                val isWindows = "windows" in System.getProperty("os.name").lowercase()
+                val gradleDir = File(paths.gradleRootDir).canonicalFile
+                val gradlewCmd = if (isWindows) "$gradleDir\\gradlew.bat" else "$gradleDir/gradlew"
+                logI { "Building app: $gradlewCmd ${paths.gradleBuildTask}" }
+
+                val buildProcess = ProcessBuilder()
+                    .command(gradlewCmd, paths.gradleBuildTask)
+                    .directory(gradleDir)
+                    .start()
                 thread {
                     BufferedReader(InputStreamReader(buildProcess.inputStream)).lines().forEach {
                         logD("AppLoader.gradleBuild") { it }
@@ -90,7 +98,7 @@ actual class AppLoadService actual constructor(watchDirs: Set<String>, appLoadCl
         ScriptLoader.appScriptLoader = ScriptLoader.ReflectionAppScriptLoader(loader)
         val scriptClasses = examineClasses(loader, appClassPath)
 
-        val appClass = loader.loadClass(KoolEditor.APP_PROJECT_MAIN_CLASS)
+        val appClass = loader.loadClass(paths.appMainClass)
         val app = appClass.getDeclaredConstructor().newInstance()
         return LoadedApp(app as EditorAwareApp, scriptClasses)
     }

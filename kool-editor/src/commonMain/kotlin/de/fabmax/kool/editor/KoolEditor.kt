@@ -19,7 +19,7 @@ import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.scene
 import kotlin.math.roundToInt
 
-class KoolEditor(val ctx: KoolContext) {
+class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
 
     val editorInputContext = InputStack.InputHandler("Editor input")
     val editorCameraTransform = OrbitInputTransform("Camera input transform").apply {
@@ -32,13 +32,13 @@ class KoolEditor(val ctx: KoolContext) {
     }
     val editorOverlay = scene("editor-overlay") { addNode(editorContent) }
 
-    val appLoader = AppLoader(this, APP_PROJECT_SRC_DIRS, APP_PROJECT_CLASS_PATH)
-    val availableAssets = AvailableAssets(APP_ASSETS_DIR)
+    val appLoader = AppLoader(this, paths)
+    val availableAssets = AvailableAssets(paths.assetsPath)
     val ui = EditorUi(this)
 
     init {
         instance = this
-        Assets.assetsBasePath = APP_ASSETS_DIR
+        Assets.assetsBasePath = paths.assetsPath
         AppAssets.impl = CachedAppAssets
 
         ctx.scenes += ui
@@ -185,19 +185,5 @@ class KoolEditor(val ctx: KoolContext) {
             private set
 
         const val TAG_EDITOR_SUPPORT_CONTENT = "%editor-content-hidden"
-
-        // todo: don't use hard-coded project paths
-        const val APP_PROJECT_DIR = "kool-editor-template"
-        const val APP_PROJECT_CLASS_PATH = "${APP_PROJECT_DIR}/build/classes/kotlin/jvm/main"
-        const val APP_PROJECT_MODEL_PATH = "${APP_PROJECT_DIR}/src/commonMain/resources/kool-project.json"
-        const val APP_PROJECT_MAIN_CLASS = "de.fabmax.kool.app.App"
-
-        val APP_PROJECT_SRC_DIRS = setOf(
-            "${APP_PROJECT_DIR}/src/commonMain/kotlin",
-            "${APP_PROJECT_DIR}/src/jsMain/kotlin",
-            "${APP_PROJECT_DIR}/src/jvmMain/kotlin"
-        )
-
-        const val APP_ASSETS_DIR = "$APP_PROJECT_DIR/src/commonMain/resources/assets"
     }
 }

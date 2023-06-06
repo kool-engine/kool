@@ -6,7 +6,7 @@ import de.fabmax.kool.util.launchOnMainThread
 import de.fabmax.kool.util.logE
 import kotlin.reflect.KClass
 
-expect class AppLoadService(watchDirs: Set<String>, appLoadClassPath: String) {
+expect class AppLoadService(paths: ProjectPaths) {
     var hasAppChanged: Boolean
         private set
 
@@ -28,10 +28,10 @@ class AppScript(klass: KClass<*>, val properties: List<ScriptProperty>) {
     val simpleName = ScriptEditor.camelCaseToWords(klass.simpleName ?: "<unknown>")
 }
 
-class AppLoader(val editor: KoolEditor, watchDirs: Set<String>, appLoadClassPath: String) {
+class AppLoader(val editor: KoolEditor, paths: ProjectPaths) {
     val appReloadListeners = mutableListOf<AppReloadListener>()
 
-    private val loadService = AppLoadService(watchDirs, appLoadClassPath)
+    private val loadService = AppLoadService(paths)
     private var isBuildInProgress = false
 
     init {

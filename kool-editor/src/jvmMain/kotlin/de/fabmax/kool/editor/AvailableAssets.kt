@@ -52,7 +52,7 @@ actual class AvailableAssets actual constructor(assetsBaseDir: String) : Corouti
         val pathPrefix = assetsDir.pathString.replace('\\', '/')
         assetsByPath.values.forEach { it.children.clear() }
 
-        assetsDir.walk(PathWalkOption.INCLUDE_DIRECTORIES).forEach { path ->
+        assetsDir.walk(PathWalkOption.INCLUDE_DIRECTORIES).filter { it.name != "kool-project.json" }.forEach { path ->
             val assetType = when {
                 path.isDirectory() -> AppAssetType.Directory
                 path.isTexture() -> AppAssetType.Texture

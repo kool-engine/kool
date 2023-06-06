@@ -81,7 +81,7 @@ fun UiScope.meshTypeProperties(nodeModel: SceneNodeModel, meshComponent: MeshCom
             if (shape.hasUvs) {
                 val shapeI = meshComponent.shapesState.indexOf(shape)
                 xyRow(
-                    label = "Texture coordinate scale:",
+                    label = "Texture scale:",
                     xy = shape.uvScale.toVec2d(),
                     dragChangeSpeed = DragChangeRates.SIZE_VEC2,
                     editHandler = ActionValueEditHandler { undoValue, applyValue ->

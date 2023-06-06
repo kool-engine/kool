@@ -26,7 +26,7 @@ object EditorState {
     private val prettyJson = Json { prettyPrint = true }
 
     private fun loadProjectModel(): EditorProject {
-        val projFile = File(KoolEditor.APP_PROJECT_MODEL_PATH)
+        val projFile = File(KoolEditor.instance.paths.projectFile)
         return try {
             val projData = Json.decodeFromString<ProjectData>(projFile.readText())
             EditorProject(projData)
@@ -37,7 +37,7 @@ object EditorState {
     }
 
     private fun newProject() = EditorProject(
-        ProjectData(KoolEditor.APP_PROJECT_MAIN_CLASS).apply {
+        ProjectData(KoolEditor.instance.paths.appMainClass).apply {
             val sceneId = nextId++
             val boxId = nextId++
             sceneNodeIds += sceneId
@@ -52,7 +52,7 @@ object EditorState {
     )
 
     fun saveProject() {
-        val modelPath = File(KoolEditor.APP_PROJECT_MODEL_PATH)
+        val modelPath = File(KoolEditor.instance.paths.projectFile)
         modelPath.parentFile.mkdirs()
         modelPath.writeText(prettyJson.encodeToString(projectModel.projectData))
 
