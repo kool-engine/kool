@@ -7,13 +7,17 @@ kotlin {
     jvm {
         jvmToolchain(11)
     }
+
+    jvm("editor") {
+        jvmToolchain(11)
+    }
+
     js(IR) {
         binaries.executable()
         browser {
-            @Suppress("OPT_IN_IS_NOT_ENABLED")
             @OptIn(ExperimentalDistributionDsl::class)
             distribution {
-                directory = File("${rootDir}/dist/kool-demo")
+                directory = File("${projectDir}/jsDist")
             }
             commonWebpackConfig {
                 mode = if (KoolBuildSettings.isRelease) {
@@ -56,6 +60,12 @@ kotlin {
             }
         }
 
+        val editorMain by getting {
+            dependencies {
+                implementation(project(":kool-editor"))
+            }
+        }
+
         sourceSets.all {
             languageSettings.apply {
                 progressiveMode = true
@@ -64,6 +74,26 @@ kotlin {
     }
 }
 
+configurations.filter { "editor" in it.name }.forEach {
+    // editor related configurations need some custom attribute to distinguish them from regular jvm configs
+    it.attributes.attribute(Attribute.of("de.fabmax.kool-editor", String::class.java), "editor")
+}
+
 tasks["clean"].doLast {
-    delete("${rootDir}/dist/kool-editor")
+    delete("${projectDir}/jsDist")
+}
+
+task("runEditor", JavaExec::class) {
+    group = "editor"
+    dependsOn("editorMainClasses")
+
+    val editorConfig = configurations.getByName("editorRuntimeClasspath").copyRecursive()
+
+    classpath = editorConfig.fileCollection { true } + files("$buildDir/classes/kotlin/editor/main")
+    mainClass.set("EditorLauncherKt")
+    workingDir = File(projectDir, ".editor")
+
+    if (!workingDir.exists()) {
+        workingDir.mkdir()
+    }
 }
