@@ -1,5 +1,6 @@
 package de.fabmax.kool.platform
 
+import de.fabmax.kool.DropFile
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolException
 import de.fabmax.kool.KoolSystem
@@ -28,6 +29,7 @@ import org.w3c.dom.HTMLImageElement
 import org.w3c.dom.ImageData
 import org.w3c.dom.events.Event
 import org.w3c.dom.events.UIEvent
+import org.w3c.files.get
 
 /**
  * @author fabmax
@@ -122,6 +124,25 @@ class JsContext internal constructor() : KoolContext() {
         window.onblur = {
             isWindowFocused = false
             null
+        }
+
+        window.ondragenter = {
+            it.preventDefault()
+        }
+        window.ondragover = {
+            it.preventDefault()
+        }
+        window.ondrop = { e ->
+            e.dataTransfer?.files?.let { fileList ->
+                val dropFiles = mutableListOf<DropFile>()
+                for (i in 0 until fileList.length) {
+                    fileList[i]?.let { dropFiles += DropFile(it) }
+                }
+                if (dropFiles.isNotEmpty()) {
+                    applicationCallbacks.onFileDrop(dropFiles)
+                }
+            }
+            e.preventDefault()
         }
 
         windowScale = window.devicePixelRatio.toFloat()

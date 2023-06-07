@@ -1,17 +1,22 @@
 package de.fabmax.kool.platform
 
 import de.fabmax.kool.DesktopImpl
+import de.fabmax.kool.DropFile
 import de.fabmax.kool.KoolException
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.util.Uint8BufferImpl
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logW
+import org.lwjgl.PointerBuffer
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.glfw.GLFWImage
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryUtil
 import java.awt.image.BufferedImage
+import java.io.File
+import java.nio.file.LinkOption
+import kotlin.io.path.*
 
 open class GlfwWindow(val ctx: Lwjgl3Context) {
 
@@ -98,6 +103,7 @@ open class GlfwWindow(val ctx: Lwjgl3Context) {
         glfwSetWindowCloseCallback(windowPtr) { onWindowCloseRequest() }
         glfwSetWindowFocusCallback(windowPtr) { _, isFocused -> onWindowFocusChanged(isFocused) }
         glfwSetWindowContentScaleCallback(windowPtr) { _, xScale, yScale -> onWindowContentScaleChanged(xScale, yScale) }
+        glfwSetDropCallback(windowPtr) { _, numFiles, pathPtr -> onFileDrop(numFiles, pathPtr) }
 
         fsMonitor = if (KoolSystem.config.monitor < 0) {
             DesktopImpl.primaryMonitor.monitor
@@ -161,6 +167,24 @@ open class GlfwWindow(val ctx: Lwjgl3Context) {
             logD { "Window close request was suppressed by application callback" }
             glfwSetWindowShouldClose(windowPtr, false)
         }
+    }
+
+    @OptIn(ExperimentalPathApi::class)
+    protected open fun onFileDrop(numFiles: Int, pathPtr: Long) {
+        val files = mutableListOf<DropFile>()
+        val pathPtrs = PointerBuffer.create(pathPtr, numFiles)
+        repeat(numFiles) { i ->
+            val file = File(MemoryUtil.memUTF8(pathPtrs[i]))
+            if (file.isDirectory) {
+                val dirPath = file.toPath()
+                dirPath.walk(PathWalkOption.INCLUDE_DIRECTORIES)
+                    .filter { it.isRegularFile(LinkOption.NOFOLLOW_LINKS) }
+                    .forEach { files += DropFile(it.toFile(), it.relativeTo(dirPath.parent).pathString) }
+            } else {
+                files += DropFile(file)
+            }
+        }
+        ctx.applicationCallbacks.onFileDrop(files)
     }
 
     fun setWindowTitle(windowTitle: String) {
