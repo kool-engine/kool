@@ -122,7 +122,7 @@ class ContextPopupMenu<T: Any>(hideOnOutsideClick: Boolean = true) : AutoPopup(h
     private inline fun UiScope.menuColumn(x: Dp, y: Dp, z: Int, block: ColumnScope.() -> Unit) = Column {
         modifier
             .margin(start = x, top = y)
-            .background(RoundRectBackground(colors.background, sizes.smallGap))
+            .background(RoundRectBackground(UiColors.bgMid, sizes.smallGap))
             .border(RoundRectBorder(colors.secondaryVariant, sizes.smallGap, sizes.borderWidth))
             .padding(sizes.smallGap)
             .zLayer(z)

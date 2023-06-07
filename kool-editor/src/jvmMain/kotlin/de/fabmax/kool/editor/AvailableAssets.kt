@@ -1,10 +1,14 @@
 package de.fabmax.kool.editor
 
+import de.fabmax.kool.LoadableFile
 import de.fabmax.kool.modules.ui2.MutableStateList
 import de.fabmax.kool.modules.ui2.mutableStateListOf
+import de.fabmax.kool.util.logD
+import de.fabmax.kool.util.logE
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.coroutines.CoroutineContext
 import kotlin.io.path.*
@@ -35,6 +39,32 @@ actual class AvailableAssets actual constructor(assetsBaseDir: String) : Corouti
             assetsDir.createDirectories()
         }
         updateAssets()
+    }
+
+    actual fun createAssetDir(createPath: String) {
+        val path = Path(assetsDir.pathString, createPath)
+        path.createDirectories()
+    }
+
+    actual fun deleteAssetDir(deletePath: String) {
+        val path = Path(assetsDir.pathString, deletePath)
+        path.deleteRecursively()
+    }
+
+    actual fun importAssets(targetPath: String, assetFiles: List<LoadableFile>) {
+        assetFiles.forEach { importAsset(targetPath, it) }
+    }
+
+    private fun importAsset(targetPath: String, assetFile: LoadableFile) {
+        logD { "Importing asset file: ${assetFile.selectionPath}" }
+
+        val dest = Path(assetsDir.pathString, targetPath, assetFile.selectionPath)
+        try {
+            dest.parent.createDirectories()
+            Files.copy(assetFile.file.toPath(), dest)
+        } catch (e: Exception) {
+            logE { "Failed importing asset file: $e" }
+        }
     }
 
     private val assetsWatcher = DirectoryWatcher(setOf(assetsBaseDir))

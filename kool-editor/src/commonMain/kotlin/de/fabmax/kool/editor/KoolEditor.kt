@@ -3,6 +3,7 @@ package de.fabmax.kool.editor
 import de.fabmax.kool.ApplicationCallbacks
 import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.LoadableFile
 import de.fabmax.kool.editor.actions.EditorActions
 import de.fabmax.kool.editor.api.AppAssets
 import de.fabmax.kool.editor.api.AppState
@@ -36,22 +37,35 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
     val availableAssets = AvailableAssets(paths.assetsPath)
     val ui = EditorUi(this)
 
+    private val editorAppCallbacks = object : ApplicationCallbacks {
+        override fun onWindowCloseRequest(ctx: KoolContext): Boolean {
+            EditorState.saveProject()
+            return true
+        }
+
+        override fun onFileDrop(droppedFiles: List<LoadableFile>) {
+            val targetPath = ui.resourceBrowser.selectedDirectory.value?.path ?: ""
+            availableAssets.importAssets(targetPath, droppedFiles)
+        }
+    }
+
     init {
         instance = this
         Assets.assetsBasePath = paths.assetsPath
         AppAssets.impl = CachedAppAssets
 
+        ctx.applicationCallbacks = editorAppCallbacks
         ctx.scenes += ui
 
         registerKeyBindings()
         registerSceneObjectPicking()
-        registerAutoSave()
+        registerAutoSaveOnFocusLoss()
 
         appLoader.appReloadListeners += AppReloadListener { handleAppReload(it) }
         appLoader.reloadApp()
     }
 
-    private fun registerAutoSave() {
+    private fun registerAutoSaveOnFocusLoss() {
         // auto save on window focus loss
         var wasFocused = false
         editorContent.onUpdate {
@@ -59,14 +73,6 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
                 EditorState.saveProject()
             }
             wasFocused = ctx.isWindowFocused
-        }
-
-        // auto save on exit
-        ctx.applicationCallbacks = object : ApplicationCallbacks {
-            override fun onWindowCloseRequest(ctx: KoolContext): Boolean {
-                EditorState.saveProject()
-                return true
-            }
         }
     }
 

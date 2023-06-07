@@ -1,5 +1,6 @@
 package de.fabmax.kool.editor
 
+import de.fabmax.kool.LoadableFile
 import de.fabmax.kool.modules.ui2.MutableStateList
 
 expect class AvailableAssets(assetsBaseDir: String) {
@@ -8,6 +9,10 @@ expect class AvailableAssets(assetsBaseDir: String) {
     val modelAssets: MutableStateList<AssetItem>
     val textureAssets: MutableStateList<AssetItem>
     val hdriTextureAssets: MutableStateList<AssetItem>
+
+    fun createAssetDir(createPath: String)
+    fun deleteAssetDir(deletePath: String)
+    fun importAssets(targetPath: String, assetFiles: List<LoadableFile>)
 }
 
 class AssetItem(val name: String, val path: String, val type: AppAssetType) {

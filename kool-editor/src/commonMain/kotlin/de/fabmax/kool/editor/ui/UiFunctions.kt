@@ -708,9 +708,8 @@ fun TextFieldScope.defaultTextfieldStyle() {
 
 fun UiScope.defaultPopupStyle(layout: Layout = ColumnLayout) {
     modifier
-        .background(RoundRectBackground(colors.background, sizes.smallGap))
+        .background(RoundRectBackground(UiColors.bgMid, sizes.smallGap))
         .border(RoundRectBorder(colors.secondaryVariant, sizes.smallGap, sizes.borderWidth))
-        .padding(sizes.smallGap)
         .layout(layout)
         .padding(sizes.gap)
 }

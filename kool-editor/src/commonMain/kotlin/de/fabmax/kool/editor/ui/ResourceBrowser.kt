@@ -1,5 +1,7 @@
 package de.fabmax.kool.editor.ui
 
+import de.fabmax.kool.Assets
+import de.fabmax.kool.FileFilterItem
 import de.fabmax.kool.editor.AppAssetType
 import de.fabmax.kool.editor.AppScript
 import de.fabmax.kool.editor.AssetItem
@@ -21,7 +23,8 @@ class ResourceBrowser(editorUi: EditorUi) : EditorPanel(
 
     private val browserItems = mutableMapOf<String, BrowserItem>()
     private val expandedDirTree = mutableListOf<BrowserDir>()
-    private val selectedDirectory = mutableStateOf<BrowserDir?>(null)
+
+    val selectedDirectory = mutableStateOf<BrowserDir?>(null)
 
     override val windowSurface = EditorPanelWindow {
         Column(Grow.Std, Grow.Std) {
@@ -39,7 +42,7 @@ class ResourceBrowser(editorUi: EditorUi) : EditorPanel(
         val travPaths = mutableSetOf<String>()
         expandedDirTree.clear()
 
-        val dirSpacer = browserItems.getOrPut("/!spacer") { BrowserDir(-1, "", "/!spacer") } as BrowserDir
+        val dirSpacer = browserItems.getOrPut("/!spacer") { BrowserDir(0, "", "/!spacer", BrowserCategory.SPACER) } as BrowserDir
 
         editor.availableAssets.rootAssets.use().forEach { traverseAssetItem(0, it, travPaths, true) }
 
@@ -50,11 +53,16 @@ class ResourceBrowser(editorUi: EditorUi) : EditorPanel(
         refreshScripts(travPaths)
 
         browserItems.keys.retainAll(travPaths)
+        selectedDirectory.value?.path?.let {
+            if (it !in browserItems.keys) {
+                selectedDirectory.set(browserItems.values.firstOrNull { it is BrowserDir && it.level == 0 } as BrowserDir?)
+            }
+        }
     }
 
     private fun refreshMaterials(traversedPaths: MutableSet<String>) {
         val materialDir = browserItems.getOrPut("/materials") {
-            BrowserDir(0, "Materials", "/materials")
+            BrowserDir(0, "Materials", "/materials", BrowserCategory.MATERIALS)
         } as BrowserDir
         expandedDirTree += materialDir
         traversedPaths += "/materials"
@@ -69,7 +77,7 @@ class ResourceBrowser(editorUi: EditorUi) : EditorPanel(
 
     private fun refreshScripts(traversedPaths: MutableSet<String>) {
         val scriptDir = browserItems.getOrPut("/scripts") {
-            BrowserDir(0, "Scripts", "/scripts")
+            BrowserDir(0, "Scripts", "/scripts", BrowserCategory.SCRIPTS)
         } as BrowserDir
         expandedDirTree += scriptDir
         traversedPaths += "/scripts"
@@ -87,8 +95,8 @@ class ResourceBrowser(editorUi: EditorUi) : EditorPanel(
         var item = browserItems[assetItem.path]
         if (item == null || !assetItem.type.matchesBrowserItemType(item)) {
             item = if (assetItem.type == AppAssetType.Directory) {
-                val name = if (level == 0) assetItem.name.replaceFirstChar { it.uppercase() } else assetItem.name
-                BrowserDir(level, name, assetItem.path).apply {
+                val name = if (level == 0) "Assets" else assetItem.name
+                BrowserDir(level, name, assetItem.path, BrowserCategory.ASSETS).apply {
                     isExpandable.set(assetItem.children.any { it.type == AppAssetType.Directory })
                 }
             } else {
@@ -118,13 +126,15 @@ class ResourceBrowser(editorUi: EditorUi) : EditorPanel(
             selectedDirectory.set(browserItems.values.firstOrNull { it is BrowserDir && it.level == 0 } as BrowserDir?)
         }
 
+        val dirPopupMenu = remember { ContextPopupMenu<BrowserDir>() }
+        dirPopupMenu()
+
         LazyList(
             containerModifier = { it.backgroundColor(colors.background) }
         ) {
             var hoveredIndex by remember(-1)
             itemsIndexed(expandedDirTree) { i, dir ->
-                if (dir.level < 0) {
-                    // spacer
+                if (dir.category == BrowserCategory.SPACER) {
                     Box(height = sizes.gap) { }
 
                 } else {
@@ -132,10 +142,14 @@ class ResourceBrowser(editorUi: EditorUi) : EditorPanel(
                         modifier
                             .onEnter { hoveredIndex = i }
                             .onExit { hoveredIndex = -1 }
-                            .onClick {
-                                selectedDirectory.set(dir)
-                                if (it.pointer.leftButtonRepeatedClickCount == 2) {
-                                    dir.isExpanded.set(!dir.isExpanded.value)
+                            .onClick { evt ->
+                                if (evt.pointer.isLeftButtonClicked) {
+                                    selectedDirectory.set(dir)
+                                    if (evt.pointer.leftButtonRepeatedClickCount == 2 && dir.level > 0) {
+                                        dir.isExpanded.set(!dir.isExpanded.value)
+                                    }
+                                } else if (evt.pointer.isRightButtonClicked) {
+                                    makeDirPopupMenu(dir)?.let { dirPopupMenu.show(evt.screenPosition, it, dir) }
                                 }
                             }
                             .margin(horizontal = sizes.smallGap)
@@ -186,6 +200,35 @@ class ResourceBrowser(editorUi: EditorUi) : EditorPanel(
                     }
                 }
             }
+        }
+    }
+
+    private fun makeDirPopupMenu(dir: BrowserDir): SubMenuItem<BrowserDir>? {
+        return when (dir.category) {
+            BrowserCategory.ASSETS -> SubMenuItem {
+                item("New directory") {  }
+                if (dir.level > 0) {
+                    item("Rename directory") {  }
+                    item("Delete directory") { editor.availableAssets.deleteAssetDir(it.path) }
+                }
+                divider()
+                subMenu("Import") {
+                    item("Textures") { importAssets(it, filterListTextures) }
+                    item("Models") { importAssets(it, filterListModels) }
+                    item("Other") { importAssets(it, emptyList()) }
+                }
+            }
+            BrowserCategory.MATERIALS -> SubMenuItem {
+                item("New material") { }
+            }
+            else -> null
+        }
+    }
+
+    private fun importAssets(targetDir: BrowserDir, filterList: List<FileFilterItem>) {
+        Assets.launch {
+            val importFiles = loadFileByUser(filterList, true)
+            editor.availableAssets.importAssets(targetDir.path, importFiles)
         }
     }
 
@@ -266,17 +309,32 @@ class ResourceBrowser(editorUi: EditorUi) : EditorPanel(
 
         private val AppScript.path: String
             get() = "/scripts/$qualifiedName"
+
+        private val filterListTextures = listOf(
+            FileFilterItem("Images", ".jpg, .png, .hdr")
+        )
+
+        private val filterListModels = listOf(
+            FileFilterItem("glTF Models", ".glb, .glb.gz, .gltf, .gltf.gz")
+        )
     }
 
-    private sealed class BrowserItem(val level: Int, val name: String, val path: String)
+    enum class BrowserCategory {
+        ASSETS,
+        MATERIALS,
+        SCRIPTS,
+        SPACER
+    }
 
-    private class BrowserDir(level: Int, name: String, path: String) : BrowserItem(level, name, path) {
+    sealed class BrowserItem(val level: Int, val name: String, val path: String, val category: BrowserCategory)
+
+    class BrowserDir(level: Int, name: String, path: String, category: BrowserCategory) : BrowserItem(level, name, path, category) {
         val isExpanded = mutableStateOf(level == 0)
         val isExpandable = mutableStateOf(false)
         val children = mutableListOf<BrowserItem>()
     }
 
-    private class BrowserAssetItem(level: Int, asset: AssetItem) : BrowserItem(level, asset.name, asset.path) {
+    class BrowserAssetItem(level: Int, asset: AssetItem) : BrowserItem(level, asset.name, asset.path, BrowserCategory.ASSETS) {
         val itemColor: Color = when (asset.type) {
             AppAssetType.Unknown -> MdColor.PINK
             AppAssetType.Directory -> MdColor.AMBER
@@ -285,7 +343,7 @@ class ResourceBrowser(editorUi: EditorUi) : EditorPanel(
         }
     }
 
-    private class BrowserMaterialItem(level: Int, material: MaterialData) : BrowserItem(level, material.name, material.path)
+    class BrowserMaterialItem(level: Int, material: MaterialData) : BrowserItem(level, material.name, material.path, BrowserCategory.MATERIALS)
 
-    private class BrowserScriptItem(level: Int, script: AppScript) : BrowserItem(level, script.simpleName, script.path)
+    class BrowserScriptItem(level: Int, script: AppScript) : BrowserItem(level, script.simpleName, script.path, BrowserCategory.SCRIPTS)
 }
