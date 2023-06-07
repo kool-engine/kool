@@ -132,15 +132,15 @@ object Assets : CoroutineScope {
     }
 
     /**
-     * Opens a file chooser dialog for the user to select and load a file. Returns the loaded file or null if the
-     * user canceled the dialog or loading failed. On JVM the returned [LoadedFile] also contains the path of the
-     * loaded file.
+     * Opens a file chooser dialog for the user to select and load a file. Returns the selected files or an empty list
+     * if the user canceled the dialog or loading failed.
      *
-     * @param filterList Optional file filter list (e.g. ("Images", "jpg,png"); only supported on JVM, ignored on js).
-     * @return The [LoadedFile] containing the file data or null if the operation was canceled.
+     * @param filterList Optional file filter list (e.g. ("Images", ".jpg, .png"); only supported on JVM, ignored on js).
+     * @param multiSelect Determines if multiple files can be selected or only a single one.
+     * @return The list of [LoadableFile]s selected by the user (is empty if the operation was canceled).
      */
-    suspend fun loadFileByUser(filterList: List<FileFilterItem> = emptyList()): LoadedFile? {
-        return PlatformAssets.loadFileByUser(filterList)
+    suspend fun loadFileByUser(filterList: List<FileFilterItem> = emptyList(), multiSelect: Boolean = false): List<LoadableFile> {
+        return PlatformAssets.loadFileByUser(filterList, multiSelect)
     }
 
     /**
@@ -149,7 +149,7 @@ object Assets : CoroutineScope {
      * @return On JVM the selected path is returned or null if the user canceled the operation. On js null is always
      *         returned.
      */
-    fun saveFileByUser(
+    suspend fun saveFileByUser(
         data: Uint8Buffer,
         defaultFileName: String? = null,
         filterList: List<FileFilterItem> = emptyList(),
@@ -349,11 +349,9 @@ data class TextureAtlasAssetRef(
     val tilesY: Int = 1,
 ) : AssetRef(path)
 
-sealed class LoadedAsset(val ref: AssetRef, val successfull: Boolean)
+sealed class LoadedAsset(val ref: AssetRef, val successful: Boolean)
 class LoadedBlobAsset(ref: AssetRef, val data: Uint8Buffer?) : LoadedAsset(ref, data != null)
 class LoadedTextureAsset(ref: AssetRef, val data: TextureData?) : LoadedAsset(ref, data != null)
-
-data class LoadedFile(val path: String?, val data: Uint8Buffer)
 
 data class FileFilterItem(val name: String, val fileExtensions: String)
 
@@ -365,8 +363,8 @@ expect object PlatformAssets {
     internal suspend fun waitForFonts()
     internal fun createFontMapData(font: AtlasFont, fontScale: Float, outMetrics: MutableMap<Char, CharMetrics>): TextureData2d
 
-    internal suspend fun loadFileByUser(filterList: List<FileFilterItem>): LoadedFile?
-    internal fun saveFileByUser(
+    internal suspend fun loadFileByUser(filterList: List<FileFilterItem>, multiSelect: Boolean): List<LoadableFile>
+    internal suspend fun saveFileByUser(
         data: Uint8Buffer,
         defaultFileName: String?,
         filterList: List<FileFilterItem>,

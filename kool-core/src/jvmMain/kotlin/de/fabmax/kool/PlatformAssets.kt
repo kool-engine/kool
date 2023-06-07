@@ -9,6 +9,7 @@ import de.fabmax.kool.platform.*
 import de.fabmax.kool.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.lwjgl.system.MemoryUtil
 import org.lwjgl.util.nfd.NFDFilterItem
 import org.lwjgl.util.nfd.NativeFileDialog
 import java.awt.image.BufferedImage
@@ -142,19 +143,11 @@ actual object PlatformAssets {
         return fontGenerator.createFontMapData(font, fontScale, outMetrics)
     }
 
-    internal actual suspend fun loadFileByUser(filterList: List<FileFilterItem>): LoadedFile? {
-        loadFileChooser(filterList)?.let { loadFile ->
-            try {
-                return LoadedFile(loadFile.absolutePath, Uint8BufferImpl(loadFile.readBytes()))
-            } catch (e: IOException) {
-                logE { "Loading file $loadFile failed: $e" }
-                e.printStackTrace()
-            }
-        }
-        return null
+    internal actual suspend fun loadFileByUser(filterList: List<FileFilterItem>, multiSelect: Boolean): List<LoadableFile> {
+        return openFileChooser(filterList, multiSelect).map { LoadableFile(it) }
     }
 
-    internal actual fun saveFileByUser(
+    internal actual suspend fun saveFileByUser(
         data: Uint8Buffer,
         defaultFileName: String?,
         filterList: List<FileFilterItem>,
@@ -172,46 +165,77 @@ actual object PlatformAssets {
         }
     }
 
-    fun loadFileChooser(filterList: List<FileFilterItem> = emptyList()): File? {
-        memStack {
-            val outPath = callocPointer(1)
-            var fileFilters: NFDFilterItem.Buffer? = null
-            if (filterList.isNotEmpty()) {
-                fileFilters = NFDFilterItem.calloc(filterList.size)
-                filterList.forEachIndexed { i, filterItem ->
-                    fileFilters[i].set(filterItem.name.toByteBuffer(), filterItem.fileExtensions.toByteBuffer())
+    suspend fun openFileChooser(filterList: List<FileFilterItem> = emptyList(), multiSelect: Boolean = false): List<File> {
+        // apparently file dialog functions need to be called from main thread
+        // unfortunately, this means the main loop is blocked while the dialog is open
+        return withContext(Dispatchers.RenderLoop) {
+            memStack {
+                var fileFilters: NFDFilterItem.Buffer? = null
+                if (filterList.isNotEmpty()) {
+                    fileFilters = NFDFilterItem.calloc(filterList.size)
+                    filterList.forEachIndexed { i, filterItem ->
+                        // make sure file extensions do not contain leading '.' and are separated by ',' with no space
+                        val extensions = filterItem.fileExtensions
+                            .split(',')
+                            .joinToString(",") { it.trim().removePrefix(".") }
+                        fileFilters[i].set(filterItem.name.toByteBuffer(), extensions.toByteBuffer())
+                    }
                 }
-            }
 
-            val result = NativeFileDialog.NFD_OpenDialog(outPath, fileFilters, loadFileChooserPath)
-            return if (result == NativeFileDialog.NFD_OKAY) {
-                val file = File(outPath.stringUTF8)
-                loadFileChooserPath = file.parent
-                file
-            } else {
-                null
+                val files = mutableListOf<File>()
+                val outPath = callocPointer(1)
+                if (multiSelect) {
+                    val result = NativeFileDialog.NFD_OpenDialogMultiple(outPath, fileFilters, loadFileChooserPath)
+                    if (result == NativeFileDialog.NFD_OKAY) {
+                        val pathSetPtr = outPath.get(0)
+                        val count = IntArray(1)
+                        NativeFileDialog.NFD_PathSet_GetCount(pathSetPtr, count)
+                        for (i in 0 until count[0]) {
+                            if (NativeFileDialog.NFD_PathSet_GetPath(pathSetPtr, i, outPath) == NativeFileDialog.NFD_OKAY) {
+                                files += File(outPath.getStringUTF8(0))
+                                MemoryUtil.memFree(outPath)
+                            }
+                        }
+                        NativeFileDialog.NFD_PathSet_Free(pathSetPtr)
+                    }
+                } else {
+                    val result = NativeFileDialog.NFD_OpenDialog(outPath, fileFilters, loadFileChooserPath)
+                    if (result == NativeFileDialog.NFD_OKAY) {
+                        files += File(outPath.getStringUTF8(0))
+                        MemoryUtil.memFree(outPath)
+                    }
+                }
+
+                if (files.isNotEmpty()) {
+                    loadFileChooserPath = files.first().parent
+                }
+                files
             }
         }
     }
 
-    fun saveFileChooser(defaultFileName: String? = null, filterList: List<FileFilterItem> = emptyList()): File? {
-        memStack {
-            val outPath = callocPointer(1)
-            var fileFilters: NFDFilterItem.Buffer? = null
-            if (filterList.isNotEmpty()) {
-                fileFilters = NFDFilterItem.calloc(filterList.size)
-                filterList.forEachIndexed { i, filterItem ->
-                    fileFilters[i].set(filterItem.name.toByteBuffer(), filterItem.fileExtensions.toByteBuffer())
+    suspend fun saveFileChooser(defaultFileName: String? = null, filterList: List<FileFilterItem> = emptyList()): File? {
+        // apparently file dialog functions need to be called from main thread
+        // unfortunately, this means the main loop is blocked while the dialog is open
+        return withContext(Dispatchers.RenderLoop) {
+            memStack {
+                val outPath = callocPointer(1)
+                var fileFilters: NFDFilterItem.Buffer? = null
+                if (filterList.isNotEmpty()) {
+                    fileFilters = NFDFilterItem.calloc(filterList.size)
+                    filterList.forEachIndexed { i, filterItem ->
+                        fileFilters[i].set(filterItem.name.toByteBuffer(), filterItem.fileExtensions.toByteBuffer())
+                    }
                 }
-            }
 
-            val result = NativeFileDialog.NFD_SaveDialog(outPath, fileFilters, saveFileChooserPath, defaultFileName)
-            return if (result == NativeFileDialog.NFD_OKAY) {
-                val file = File(outPath.stringUTF8)
-                saveFileChooserPath = file.parent
-                file
-            } else {
-                null
+                val result = NativeFileDialog.NFD_SaveDialog(outPath, fileFilters, saveFileChooserPath, defaultFileName)
+                if (result == NativeFileDialog.NFD_OKAY) {
+                    val file = File(outPath.stringUTF8)
+                    saveFileChooserPath = file.parent
+                    file
+                } else {
+                    null
+                }
             }
         }
     }

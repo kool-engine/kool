@@ -1,9 +1,9 @@
 package de.fabmax.kool.platform
 
-import de.fabmax.kool.DropFile
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolException
 import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.LoadableFile
 import de.fabmax.kool.input.PlatformInput
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.generator.GlslGenerator
@@ -134,9 +134,9 @@ class JsContext internal constructor() : KoolContext() {
         }
         window.ondrop = { e ->
             e.dataTransfer?.files?.let { fileList ->
-                val dropFiles = mutableListOf<DropFile>()
+                val dropFiles = mutableListOf<LoadableFile>()
                 for (i in 0 until fileList.length) {
-                    fileList[i]?.let { dropFiles += DropFile(it) }
+                    fileList[i]?.let { dropFiles += LoadableFile(it) }
                 }
                 if (dropFiles.isNotEmpty()) {
                     applicationCallbacks.onFileDrop(dropFiles)

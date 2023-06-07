@@ -1,7 +1,5 @@
 package de.fabmax.kool
 
-import de.fabmax.kool.util.Uint8Buffer
-
 interface ApplicationCallbacks {
 
     /**
@@ -27,12 +25,5 @@ interface ApplicationCallbacks {
      * containing the drag and drop state (e.g. cursor position) before files are dropped but this is currently not
      * possible due to limited drag and drop support of GLFW on JVM.
      */
-    fun onFileDrop(droppedFiles: List<DropFile>) { }
-}
-
-expect class DropFile {
-    val name: String
-    val size: Long
-
-    suspend fun read(): Uint8Buffer
+    fun onFileDrop(droppedFiles: List<LoadableFile>) { }
 }

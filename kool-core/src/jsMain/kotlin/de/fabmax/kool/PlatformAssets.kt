@@ -12,15 +12,12 @@ import kotlinx.coroutines.await
 import kotlinx.coroutines.withContext
 import org.khronos.webgl.ArrayBuffer
 import org.khronos.webgl.Uint8Array
-import org.w3c.dom.Element
 import org.w3c.dom.Image
-import org.w3c.dom.events.Event
 import org.w3c.files.FileList
 import org.w3c.files.get
 import org.w3c.xhr.ARRAYBUFFER
 import org.w3c.xhr.XMLHttpRequest
 import org.w3c.xhr.XMLHttpRequestResponseType
-import kotlin.js.Promise
 
 actual object PlatformAssets {
 
@@ -28,15 +25,6 @@ actual object PlatformAssets {
     private const val MAX_GENERATED_TEX_HEIGHT = 2048
 
     private val fontGenerator = FontMapGenerator(MAX_GENERATED_TEX_WIDTH, MAX_GENERATED_TEX_HEIGHT)
-
-    private var fileLoadDeferred: CompletableDeferred<Uint8Buffer?>? = null
-    private val onFileSelectionChanged: (Event) -> Unit = { loadSelectedFile() }
-    private val fileChooser: Element = document.createElement("input").apply {
-        setAttribute("type", "file")
-        addEventListener("change", onFileSelectionChanged)
-        asDynamic().style.display = "none"
-        document.body?.appendChild(this)
-    }
 
     internal actual suspend fun loadBlob(blobRef: BlobAssetRef): LoadedBlobAsset {
         return LoadedBlobAsset(blobRef, loadBlob(blobRef.path))
@@ -108,31 +96,39 @@ actual object PlatformAssets {
         return fontGenerator.createFontMapData(font, fontScale, outMetrics)
     }
 
-    internal actual suspend fun loadFileByUser(filterList: List<FileFilterItem>): LoadedFile? {
-        val deferred = CompletableDeferred<Uint8Buffer?>()
-        fileLoadDeferred = deferred
-        fileChooser.asDynamic().click()
-        try {
-            return deferred.await()?.let { LoadedFile(null, it) }
-        } catch (e: Exception) {
-            logE { "Failed loading file: $e" }
+    internal actual suspend fun loadFileByUser(filterList: List<FileFilterItem>, multiSelect: Boolean): List<LoadableFile> {
+        document.body?.let { body ->
+            val accept = filterList.joinToString { item ->
+                item.fileExtensions
+                    .split(',')
+                    .joinToString(", ") { ".${it.trim().removePrefix(".")}" }
+            }
+
+            val deferred = CompletableDeferred<FileList>()
+            val chooser = document.createElement("input")
+            chooser.setAttribute("type", "file")
+            chooser.setAttribute("accept", accept)
+            if (multiSelect) {
+                chooser.setAttribute("multiple", "true")
+            }
+            chooser.addEventListener("change", callback = { deferred.complete(chooser.asDynamic().files as FileList) })
+            chooser.asDynamic().style.display = "none"
+            body.appendChild(chooser)
+            chooser.asDynamic().click()
+
+            val fileList = deferred.await()
+            val selectedFiles = mutableListOf<LoadableFile>()
+            for (i in 0 until fileList.length) {
+                fileList[i]?.let { selectedFiles += LoadableFile(it) }
+            }
+
+            body.removeChild(chooser)
+            return selectedFiles
         }
-        return null
+        return emptyList()
     }
 
-    private fun loadSelectedFile() {
-        val fileList = fileChooser.asDynamic().files as FileList
-        if (fileList.length > 0) {
-            val file = fileList[0]!!
-            logD { "User selected file: ${file.name}" }
-            val bufferPromise = file.asDynamic().arrayBuffer() as Promise<ArrayBuffer>
-            bufferPromise.then(
-                { data -> fileLoadDeferred?.complete(Uint8BufferImpl(Uint8Array(data))) },
-                { e -> fileLoadDeferred?.completeExceptionally(e) })
-        }
-    }
-
-    internal actual fun saveFileByUser(
+    internal actual suspend fun saveFileByUser(
         data: Uint8Buffer,
         defaultFileName: String?,
         filterList: List<FileFilterItem>,

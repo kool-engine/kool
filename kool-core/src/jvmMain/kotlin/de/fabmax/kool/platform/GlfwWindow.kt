@@ -1,9 +1,9 @@
 package de.fabmax.kool.platform
 
 import de.fabmax.kool.DesktopImpl
-import de.fabmax.kool.DropFile
 import de.fabmax.kool.KoolException
 import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.LoadableFile
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.util.Uint8BufferImpl
 import de.fabmax.kool.util.logD
@@ -171,7 +171,7 @@ open class GlfwWindow(val ctx: Lwjgl3Context) {
 
     @OptIn(ExperimentalPathApi::class)
     protected open fun onFileDrop(numFiles: Int, pathPtr: Long) {
-        val files = mutableListOf<DropFile>()
+        val files = mutableListOf<LoadableFile>()
         val pathPtrs = PointerBuffer.create(pathPtr, numFiles)
         repeat(numFiles) { i ->
             val file = File(MemoryUtil.memUTF8(pathPtrs[i]))
@@ -179,9 +179,9 @@ open class GlfwWindow(val ctx: Lwjgl3Context) {
                 val dirPath = file.toPath()
                 dirPath.walk(PathWalkOption.INCLUDE_DIRECTORIES)
                     .filter { it.isRegularFile(LinkOption.NOFOLLOW_LINKS) }
-                    .forEach { files += DropFile(it.toFile(), it.relativeTo(dirPath.parent).pathString) }
+                    .forEach { files += LoadableFile(it.toFile(), it.relativeTo(dirPath.parent).pathString) }
             } else {
-                files += DropFile(file)
+                files += LoadableFile(file)
             }
         }
         ctx.applicationCallbacks.onFileDrop(files)
