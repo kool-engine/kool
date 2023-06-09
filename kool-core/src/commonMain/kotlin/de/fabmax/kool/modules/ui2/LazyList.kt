@@ -66,6 +66,8 @@ fun UiScope.LazyList(
     listOrientation: ListOrientation = ListOrientation.Vertical,
     withVerticalScrollbar: Boolean = true,
     withHorizontalScrollbar: Boolean = false,
+    isScrollableVertical: Boolean = true,
+    isScrollableHorizontal: Boolean = true,
     scrollbarColor: Color? = null,
     isGrowWidth: Boolean = true,
     isGrowHeight: Boolean = false,
@@ -86,8 +88,16 @@ fun UiScope.LazyList(
             .width(width)
             .height(height)
             .backgroundColor(colors.backgroundVariant)
-            .onWheelX { state.scrollDpX(it.pointer.deltaScrollX.toFloat() * -20f) }
-            .onWheelY { state.scrollDpY(it.pointer.deltaScrollY.toFloat() * -50f) }
+            .onWheelX {
+                if (isScrollableHorizontal) {
+                    state.scrollDpX(it.pointer.deltaScrollX.toFloat() * -20f)
+                }
+            }
+            .onWheelY {
+                if (isScrollableVertical) {
+                    state.scrollDpY(it.pointer.deltaScrollY.toFloat() * -50f)
+                }
+            }
 
         containerModifier?.invoke(modifier)
 

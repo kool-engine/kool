@@ -2,6 +2,7 @@ package de.fabmax.kool.modules.ui2
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec4f
+import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.scene.geometry.TextProps
 import de.fabmax.kool.util.Color
@@ -15,12 +16,14 @@ import kotlin.math.round
 interface ComboBoxScope : UiScope {
     override val modifier: ComboBoxModifier
     val isHovered: Boolean
+    val popupMenu: AutoPopup
 }
 
 open class ComboBoxModifier(surface: UiSurface) : UiModifier(surface) {
     var font: Font by property { it.sizes.normalText }
     var items: List<Any> by property(emptyList())
     var selectedIndex: Int by property(0)
+    var maxNumVisibleItems: Int by property(10)
 
     var textColor: Color by property { it.colors.onBackground }
     var textBackgroundColor: Color by property { it.colors.secondaryVariantAlpha(0.5f) }
@@ -28,6 +31,12 @@ open class ComboBoxModifier(surface: UiSurface) : UiModifier(surface) {
     var expanderColor: Color by property { it.colors.secondaryVariant }
     var expanderHoverColor: Color by property { it.colors.secondary }
     var expanderArrowColor: Color by property { it.colors.onSecondary }
+
+    var popupTextColor: Color by property { it.colors.onBackground }
+    var popupBackgroundColor: Color by property { it.colors.backgroundVariant }
+    var popupHoverColor: Color by property { it.colors.secondary }
+    var popupHoverTextColor: Color by property { it.colors.onSecondary }
+    var popupBorderColor: Color by property { it.colors.primaryVariantAlpha(0.5f) }
 
     var onItemSelected: ((Int) -> Unit)? by property(null)
 }
@@ -37,6 +46,7 @@ fun <T: ComboBoxModifier> T.textColor(color: Color): T { textColor = color; retu
 fun <T: ComboBoxModifier> T.items(items: List<Any>): T { this.items = items; return this }
 fun <T: ComboBoxModifier> T.selectedIndex(index: Int): T { this.selectedIndex = index; return this }
 fun <T: ComboBoxModifier> T.onItemSelected(block: ((Int) -> Unit)?): T { this.onItemSelected = block; return this }
+
 fun <T: ComboBoxModifier> T.colors(
     textColor: Color = this.textColor,
     textBackgroundColor: Color = this.textBackgroundColor,
@@ -51,6 +61,21 @@ fun <T: ComboBoxModifier> T.colors(
     this.expanderColor = expanderColor
     this.expanderHoverColor = expanderHoverColor
     this.expanderArrowColor = expanderArrowColor
+    return this
+}
+
+fun <T: ComboBoxModifier> T.popupColors(
+    popupTextColor: Color = this.popupTextColor,
+    popupBackgroundColor: Color = this.popupBackgroundColor,
+    popupHoverColor: Color = this.popupHoverColor,
+    popupHoverTextColor: Color = this.popupHoverTextColor,
+    popupBorderColor: Color = this.popupBorderColor
+): T {
+    this.popupTextColor = popupTextColor
+    this.popupBackgroundColor = popupBackgroundColor
+    this.popupHoverColor = popupHoverColor
+    this.popupHoverTextColor = popupHoverTextColor
+    this.popupBorderColor = popupBorderColor
     return this
 }
 
@@ -75,40 +100,7 @@ inline fun UiScope.ComboBox(
             }
         }
     comboBox.block()
-
-    if (comboBox.isExpanded.use()) {
-        Popup(comboBox.leftPx, comboBox.bottomPx) {
-            modifier
-                .zLayer(comboBox.modifier.zLayer + UiSurface.LAYER_POPUP)
-                .border(RectBorder(colors.primaryVariantAlpha(0.5f), sizes.borderWidth))
-
-            comboBox.modifier.items.forEachIndexed { i, item ->
-                val hovered = comboBox.hoveredItem.use()
-                Text(item.toString()) {
-                    modifier
-                        .width(Grow.Std)
-                        .padding(horizontal = sizes.gap, vertical = sizes.smallGap * 0.5f)
-                        .onEnter {
-                            comboBox.hoveredItem.set(i)
-                        }
-                        .onExit {
-                            comboBox.hoveredItem.set(-1)
-                        }
-                        .onClick {
-                            comboBox.modifier.onItemSelected?.invoke(i)
-                            comboBox.isExpanded.set(false)
-                            comboBox.hoveredItem.set(-1)
-                        }
-                    if (i == hovered) {
-                        modifier
-                            .backgroundColor(comboBox.modifier.expanderHoverColor)
-                            .textColor(comboBox.modifier.expanderArrowColor)
-                    }
-                }
-            }
-        }
-    }
-
+    comboBox.popupMenu()
     return comboBox
 }
 
@@ -119,10 +111,9 @@ open class ComboBoxNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, su
     private val textProps = TextProps(Font.DEFAULT_FONT)
     private val textCache = CachedTextGeometry(this)
 
-    private var isHoveredState = mutableStateOf(false)
+    private val isHoveredState = mutableStateOf(false)
 
-    var isExpanded = mutableStateOf(false)
-    var hoveredItem = mutableStateOf(-1)
+    override val popupMenu = AutoPopup()
 
     private val selectedText: String
         get() {
@@ -132,6 +123,11 @@ open class ComboBoxNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, su
                 modifier.items[modifier.selectedIndex.clamp(0, modifier.items.lastIndex)].toString()
             }
         }
+
+    override fun applyDefaults() {
+        super.applyDefaults()
+        popupMenu.popupContent = defaultComboBoxPopupMenu
+    }
 
     override fun measureContentSize(ctx: KoolContext) {
         surface.applyFontScale(modifier.font, ctx)
@@ -208,10 +204,60 @@ open class ComboBoxNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, su
     }
 
     override fun onClick(ev: PointerEvent) {
-        isExpanded.set(!isExpanded.value)
+        if (!popupMenu.isVisible.value) {
+            // show popup menu if it's not visible, hiding it is handled implicitly by AutoPopup
+            popupMenu.show(Vec2f(uiNode.leftPx, uiNode.bottomPx))
+        }
+    }
+
+    val defaultComboBoxPopupMenu = Composable {
+        var hoveredIndex by remember(-1)
+        val cbModifier = this@ComboBoxNode.modifier
+
+        modifier
+            .zLayer(cbModifier.zLayer + UiSurface.LAYER_POPUP)
+            .background(RoundRectBackground(cbModifier.popupBackgroundColor, sizes.smallGap))
+            .border(RoundRectBorder(cbModifier.popupBorderColor, sizes.smallGap, sizes.borderWidth))
+            .padding(sizes.smallGap)
+            .height((Dp.fromPx(sizes.normalText.lineHeight) + sizes.smallGap) * min(cbModifier.maxNumVisibleItems, cbModifier.items.size) + sizes.gap)
+
+        LazyList(
+            withHorizontalScrollbar = false,
+            isScrollableHorizontal = false,
+            vScrollbarModifier = { it.zLayer(cbModifier.zLayer + UiSurface.LAYER_POPUP + UiSurface.LAYER_FLOATING) }
+        ) {
+            itemsIndexed(cbModifier.items) { i, item ->
+                Text(item.toString()) {
+                    modifier
+                        .width(Grow.Std)
+                        .padding(horizontal = sizes.gap, vertical = sizes.smallGap * 0.5f)
+                        .textColor(cbModifier.popupTextColor)
+                        .onEnter { hoveredIndex = i }
+                        .onExit { hoveredIndex = -1 }
+                        .onClick {
+                            cbModifier.onItemSelected?.invoke(i)
+                            popupMenu.hide()
+                            hoveredIndex = -1
+                        }
+                    if (i == hoveredIndex) {
+                        modifier
+                            .background(RoundRectBackground(cbModifier.popupHoverColor, sizes.smallGap))
+                            .textColor(cbModifier.popupHoverTextColor)
+                    }
+                    if (cbModifier.items.size > cbModifier.maxNumVisibleItems) {
+                        // make some space for the scrollbar
+                        modifier.margin(end = sizes.gap)
+                    }
+                }
+            }
+        }
     }
 
     companion object {
         val factory: (UiNode, UiSurface) -> ComboBoxNode = { parent, surface -> ComboBoxNode(parent, surface) }
     }
+}
+
+fun interface ComboBoxPopupMenu {
+    fun UiScope.composePopupMenu(items: List<Any>): Any
 }

@@ -81,7 +81,7 @@ class BasicUiWindow(uiDemo: UiDemo) : DemoWindow("Demo Window", uiDemo) {
         Row {
             Text("Combo-box") { modifier.alignY(AlignmentY.Center) }
 
-            val items = remember { List(8) { "Item ${it + 1}" } }
+            val items = remember { List(20) { "Item ${it + 1}" } }
             var selectedIndex by remember(0)
             ComboBox {
                 modifier

@@ -4,6 +4,7 @@ import de.fabmax.kool.input.KeyEvent
 import de.fabmax.kool.input.KeyboardInput
 import de.fabmax.kool.input.PointerInput
 import de.fabmax.kool.math.Vec2f
+import de.fabmax.kool.util.launchDelayed
 
 fun UiScope.AutoPopup(
     hideOnEsc: Boolean = true,
@@ -76,8 +77,10 @@ open class AutoPopup(
                     // somewhat hacky way to close popup menu on any button event outside popup menu
                     surface.onEachFrame {
                         val ptr = PointerInput.primaryPointer
-                        if (ptr.isAnyButtonEvent && !uiNode.isInBounds(Vec2f(ptr.x.toFloat(), ptr.y.toFloat()))) {
-                            hide()
+                        if (ptr.isAnyButtonReleased && !uiNode.isInBounds(Vec2f(ptr.x.toFloat(), ptr.y.toFloat()))) {
+                            // hide AutoPopup with 1 frame delay to give outside click handlers the chance to hide
+                            // the menu explicitly
+                            launchDelayed(1) { hide() }
                         }
                     }
                 }

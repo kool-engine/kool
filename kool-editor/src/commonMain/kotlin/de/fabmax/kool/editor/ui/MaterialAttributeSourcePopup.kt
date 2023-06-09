@@ -15,7 +15,7 @@ class MaterialAttributeSourcePopup(
     val maxValue: Float = 1f,
     val defaultValue: Float = 0.5f,
     var editHandler: ActionValueEditHandler<MaterialAttribute>
-) : AutoPopup(hideOnOutsideClick = false) {
+) : AutoPopup() {
 
     private var editStartAttr = editMatAttr
 

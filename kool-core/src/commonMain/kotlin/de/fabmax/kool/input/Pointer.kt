@@ -70,12 +70,24 @@ open class Pointer {
     val isMiddleButtonPressed: Boolean get() = isMiddleButtonEvent && isMiddleButtonDown
     val isBackButtonPressed: Boolean get() = isBackButtonEvent && isBackButtonDown
     val isForwardButtonPressed: Boolean get() = isForwardButtonEvent && isForwardButtonDown
+    val isAnyButtonPressed: Boolean
+        get() = isLeftButtonPressed
+                || isRightButtonPressed
+                || isMiddleButtonPressed
+                || isBackButtonPressed
+                || isForwardButtonPressed
 
     val isLeftButtonReleased: Boolean get() = isLeftButtonEvent && !isLeftButtonDown
     val isRightButtonReleased: Boolean get() = isRightButtonEvent && !isRightButtonDown
     val isMiddleButtonReleased: Boolean get() = isMiddleButtonEvent && !isMiddleButtonDown
     val isBackButtonReleased: Boolean get() = isBackButtonEvent && !isBackButtonDown
     val isForwardButtonReleased: Boolean get() = isForwardButtonEvent && !isForwardButtonDown
+    val isAnyButtonReleased: Boolean
+        get() = isLeftButtonReleased
+                || isRightButtonReleased
+                || isMiddleButtonReleased
+                || isBackButtonReleased
+                || isForwardButtonReleased
 
     var isLeftButtonClicked = false
         internal set

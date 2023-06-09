@@ -655,6 +655,7 @@ fun UiScope.textureSelector(selectedTexPath: String, withNoneOption: Boolean, on
     textures += KoolEditor.instance.availableAssets.textureAssets
 
     ComboBox {
+        defaultComboBoxStyle()
         modifier
             .size(sizes.baseSize * 6, sizes.lineHeight)
             .items(textures)
@@ -691,6 +692,12 @@ fun ComboBoxScope.defaultComboBoxStyle() {
             textBackgroundHoverColor = colors.componentBgHovered,
             expanderColor = colors.elevatedComponentBg,
             expanderHoverColor = colors.elevatedComponentBgHovered
+        )
+        .popupColors(
+            popupBackgroundColor = UiColors.bgMid,
+            popupHoverColor = colors.componentBgHovered,
+            popupHoverTextColor = colors.onBackground,
+            popupBorderColor = colors.secondaryVariant
         )
 }
 
