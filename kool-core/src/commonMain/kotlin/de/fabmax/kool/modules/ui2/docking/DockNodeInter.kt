@@ -102,7 +102,16 @@ class DockNodeRow(
 
     override fun UiScope.composeNodeContent() {
         Row(Grow.Std, Grow.Std) {
-            childNodes.use().forEach { it() }
+            val borderW = dock.borderWidth.use()
+            val borderC = dock.borderColor.use()
+            childNodes.use().forEachIndexed { i, dockNode ->
+                if (i > 0 && borderW.value > 0f) {
+                    Box(width = borderW, height = Grow.Std) {
+                        modifier.backgroundColor(borderC)
+                    }
+                }
+                dockNode()
+            }
         }
     }
 
@@ -184,7 +193,16 @@ class DockNodeColumn(
 
     override fun UiScope.composeNodeContent() {
         Column(Grow.Std, Grow.Std) {
-            childNodes.use().forEach { it() }
+            val borderW = dock.borderWidth.use()
+            val borderC = dock.borderColor.use()
+            childNodes.use().forEachIndexed { i, dockNode ->
+                if (i > 0 && borderW.value > 0f) {
+                    Box(width = Grow.Std, height = borderW) {
+                        modifier.backgroundColor(borderC)
+                    }
+                }
+                dockNode()
+            }
         }
     }
 

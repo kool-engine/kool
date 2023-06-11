@@ -10,6 +10,7 @@ fun UiScope.Window(
     windowDockable: UiDockable,
     backgroundColor: Color? = colors.background,
     borderColor: Color? = colors.secondaryVariantAlpha(0.3f),
+    isResizable: Boolean = true,
     block: UiScope.() -> Unit
 ) {
     contract {
@@ -36,7 +37,9 @@ fun UiScope.Window(
 
         with (windowDockable) {
             applySizeAndPosition()
-            registerResizeCallbacks()
+            if (isResizable) {
+                registerResizeCallbacks()
+            }
         }
     }
 }
@@ -47,12 +50,13 @@ fun WindowSurface(
     sizes: Sizes = Sizes.medium,
     backgroundColor: (UiScope.() -> Color?) = { surface.colors.background },
     borderColor: (UiScope.() -> Color?) = { surface.colors.secondaryVariantAlpha(0.3f) },
+    isResizable: Boolean = true,
     hideIfDockedInBackground: Boolean = true,
     block: UiScope.() -> Unit
 ): UiSurface {
     val windowSurface = UiSurface(colors, sizes, windowDockable.name)
     windowSurface.content = {
-        Window(windowDockable, backgroundColor(), borderColor(), block)
+        Window(windowDockable, backgroundColor(), borderColor(), isResizable, block)
     }
     if (hideIfDockedInBackground) {
         windowSurface.onUpdate {
@@ -76,10 +80,11 @@ fun Node.addWindowSurface(
     sizes: Sizes = Sizes.medium,
     backgroundColor: (UiScope.() -> Color?) = { colors.background },
     borderColor: (UiScope.() -> Color?) = { colors.secondaryVariantAlpha(0.3f) },
+    isResizable: Boolean = true,
     hideIfDockedInBackground: Boolean = true,
     block: UiScope.() -> Unit
 ): UiSurface {
-    val windowSurface = WindowSurface(windowDockable, colors, sizes, backgroundColor, borderColor, hideIfDockedInBackground, block)
+    val windowSurface = WindowSurface(windowDockable, colors, sizes, backgroundColor, borderColor, isResizable, hideIfDockedInBackground, block)
     addNode(windowSurface)
     return windowSurface
 }

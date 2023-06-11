@@ -4,17 +4,17 @@ import de.fabmax.kool.demo.DemoLoader
 import de.fabmax.kool.demo.Settings
 import de.fabmax.kool.demo.UiSizes
 import de.fabmax.kool.input.PointerInput
+import de.fabmax.kool.math.Easing
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.MsdfFont
-import kotlin.math.sqrt
 
 class DemoMenu(val demoLoader: DemoLoader) {
 
     private val isExpandedState = mutableStateOf(false)
-    private val menuPositionAnimator = AnimationState(0.1f)
+    private val menuPositionAnimator = AnimatedFloatBidir(0.2f)
 
     private val drawerButton = DrawerButton(this)
     private val navDemoButton = NavDemoButton(this)
@@ -30,7 +30,7 @@ class DemoMenu(val demoLoader: DemoLoader) {
         set(value) {
             if (value != isExpandedState.value) {
                 isExpandedState.set(value)
-                menuPositionAnimator.start()
+                menuPositionAnimator.start(if (value) 1f else 0f)
             }
         }
 
@@ -66,8 +66,8 @@ class DemoMenu(val demoLoader: DemoLoader) {
     }
 
     private fun UiScope.MenuContent() = Row {
-        val p = menuPositionAnimator.progressAndUse()
-        val position = if (isExpandedState.use()) UiSizes.menuWidth * (sqrt(p) - 1f) else UiSizes.menuWidth * -p * p
+        val p = 1f - Easing.quadRev(menuPositionAnimator.progressAndUse())
+        val position = UiSizes.menuWidth * -p
         modifier
             .margin(start = position)
             .width(UiSizes.menuWidth)

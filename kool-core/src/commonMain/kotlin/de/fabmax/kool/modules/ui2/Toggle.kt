@@ -161,7 +161,7 @@ abstract class ToggleNode(
     abstract val buttonWidth: Dp
     abstract val buttonHeight: Dp
 
-    private val toggleAnimator = AnimationState(0.1f)
+    private val toggleAnimator = AnimatedFloat(0.1f)
     private var isFirst = true
     private var prevState = false
 

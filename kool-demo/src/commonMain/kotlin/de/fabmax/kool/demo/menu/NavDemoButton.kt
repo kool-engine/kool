@@ -8,7 +8,7 @@ import de.fabmax.kool.util.Color
 class NavDemoButton(val menu: DemoMenu) : Composable {
 
     private val isHovered = mutableStateOf(false)
-    private val animator = AnimationState(0.25f)
+    private val animator = AnimatedFloat(0.25f)
 
     override fun UiScope.compose() = Box {
         modifier

@@ -54,6 +54,7 @@ class DockNodeLeaf(
         if (bringToTop) {
             bringToTop(dockable)
         }
+        dock.onDocked(dockable)
     }
 
     fun bringToTop(dockable: Dockable) {
@@ -78,6 +79,7 @@ class DockNodeLeaf(
         if (removeIfEmpty && isEmpty) {
             parent?.removeChildNode(this)
         }
+        dock.onUndocked(dockable)
     }
 
     override fun getLeafNodeAt(screenPosPx: Vec2f): DockNodeLeaf? {

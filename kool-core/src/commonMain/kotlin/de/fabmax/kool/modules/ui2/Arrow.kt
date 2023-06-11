@@ -56,7 +56,7 @@ class ArrowNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface), 
     override val isHovered: Boolean get() = isHoveredState.value
 
     private var isHoveredState = mutableStateOf(false)
-    private val rotationAnimator = AnimationState(0.1f)
+    private val rotationAnimator = AnimatedFloat(0.1f)
     private var isFirst = true
     private var prevRotation = 0f
 

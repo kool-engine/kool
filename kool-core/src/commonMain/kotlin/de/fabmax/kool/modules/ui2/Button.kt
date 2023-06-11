@@ -60,7 +60,7 @@ class ButtonNode(parent: UiNode?, surface: UiSurface) : TextNode(parent, surface
     override val isHovered: Boolean get() = isHoveredState.value
 
     private var isHoveredState = mutableStateOf(false)
-    private val clickAnimator = AnimationState(0.3f)
+    private val clickAnimator = AnimatedFloat(0.3f)
     private val clickPos = MutableVec2f()
 
     override fun render(ctx: KoolContext) {
