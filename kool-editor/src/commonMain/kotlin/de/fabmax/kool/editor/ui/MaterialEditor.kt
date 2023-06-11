@@ -296,7 +296,7 @@ class MaterialEditor(var sceneNodeModel: SceneNodeModel, var materialComponent: 
                 UpdateMaterialAction(material, applyMaterial, undoMaterial)
             }
             val texPopup = remember {
-                AutoPopup(hideOnOutsideClick = false).apply {
+                AutoPopup().apply {
                     popupContent = Composable {
                         defaultPopupStyle()
                         textureSelector(editTex?.mapPath ?: "", true) {

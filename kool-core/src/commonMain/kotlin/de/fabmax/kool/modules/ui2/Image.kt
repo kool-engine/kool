@@ -9,6 +9,7 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
+import de.fabmax.kool.scene.geometry.Usage
 import de.fabmax.kool.util.Color
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -195,6 +196,7 @@ class ImageMesh : Mesh(IndexedVertexList(Ui2Shader.UI_MESH_ATTRIBS)) {
     val builder = MeshBuilder(geometry).apply { isInvertFaceOrientation = true }
 
     init {
+        geometry.usage = Usage.DYNAMIC
         isCastingShadow = false
     }
 

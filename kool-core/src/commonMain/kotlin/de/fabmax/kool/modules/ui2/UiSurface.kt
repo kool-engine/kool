@@ -10,6 +10,7 @@ import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.geometry.MeshBuilder
+import de.fabmax.kool.scene.geometry.Usage
 import de.fabmax.kool.util.*
 
 open class UiSurface(
@@ -529,6 +530,7 @@ open class UiSurface(
     private class TextMesh(shader: Shader) {
         val mesh = Mesh(MsdfUiShader.MSDF_UI_MESH_ATTRIBS).apply {
             isCastingShadow = false
+            geometry.usage = Usage.DYNAMIC
             this.shader = shader
         }
         val builder = MeshBuilder(mesh.geometry)
@@ -592,6 +594,7 @@ open class UiSurface(
         init {
             addNode(uiPrimitives)
             addNode(plainMesh)
+            plainMesh.geometry.usage = Usage.DYNAMIC
         }
 
         fun getTextBuilder(font: Font): MeshBuilder {

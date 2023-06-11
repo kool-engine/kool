@@ -13,6 +13,13 @@ import de.fabmax.kool.util.MsdfFont
 class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
 
     val dock = Dock()
+    val statusBar = PanelSurface(colors = EDITOR_THEME_COLORS) {
+        modifier
+            .alignY(AlignmentY.Bottom)
+            .size(Grow.Std, sizes.baseSize)
+            .backgroundColor(UiColors.bgMid)
+        statusBar()
+    }
 
     val sceneBrowser = SceneBrowser(this)
     val objectProperties = ObjectPropertyEditor(this)
@@ -28,11 +35,12 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
         dock.dockingSurface.colors = EDITOR_THEME_COLORS
         dock.dockingPaneComposable = Composable {
             Column(Grow.Std, Grow.Std) {
+                modifier.margin(bottom = sizes.baseSize)
                 dock.root()
-                statusBar()
             }
         }
 
+        addNode(statusBar)
         addNode(dock)
         dock.createNodeLayout(
             listOf(
@@ -59,9 +67,7 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
         dock.getLeafAtPath("0/1/1")?.dock(resourceBrowser.windowDockable)
     }
 
-    fun UiScope.statusBar() = Row(width = Grow.Std, height = sizes.lineHeightLarger) {
-        modifier.backgroundColor(UiColors.bgMid)
-
+    private fun UiScope.statusBar() = Row(width = Grow.Std, height = sizes.lineHeightLarger) {
         Box(width = Grow.Std) {  }
 
         Box(width = sizes.baseSize * 8f, height = Grow.Std) {

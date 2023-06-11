@@ -2,6 +2,7 @@ package de.fabmax.kool.modules.ui2
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec2f
+import de.fabmax.kool.modules.ui2.Layout.Companion.LAYOUT_EPS
 import kotlin.math.max
 import kotlin.math.round
 
@@ -80,9 +81,9 @@ private object HorizontalLayout {
 
             val growSpaceW = growSpace.x / growSpace.y
             val growSpaceH = heightPx - max(paddingTopPx, child.marginTopPx) - max(paddingBottomPx, child.marginBottomPx)
-            val layoutW = round(child.computeWidthFromDimension(growSpaceW))
-            val layoutH = round(child.computeHeightFromDimension(growSpaceH))
-            val layoutY = round(uiNode.computeChildLocationY(child, layoutH))
+            val layoutW = round(child.computeWidthFromDimension(growSpaceW) + LAYOUT_EPS)
+            val layoutH = round(child.computeHeightFromDimension(growSpaceH) + LAYOUT_EPS)
+            val layoutY = round(uiNode.computeChildLocationY(child, layoutH) + LAYOUT_EPS)
 
             val cw = child.modifier.width
             if (cw is Grow) {
@@ -94,13 +95,13 @@ private object HorizontalLayout {
             if (isStartToEnd) {
                 x += round(max(prevMargin, child.marginStartPx))
                 prevMargin = child.marginEndPx
-                layoutX = round(x)
+                layoutX = round(x + LAYOUT_EPS)
                 x += layoutW
             } else {
                 x -= round(max(prevMargin, child.marginEndPx))
                 prevMargin = child.marginStartPx
                 x -= layoutW
-                layoutX = round(x)
+                layoutX = round(x + LAYOUT_EPS)
             }
 
             child.setBounds(layoutX, layoutY, layoutX + layoutW, layoutY + layoutH)

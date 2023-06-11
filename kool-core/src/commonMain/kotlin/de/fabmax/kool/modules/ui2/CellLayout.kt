@@ -1,6 +1,7 @@
 package de.fabmax.kool.modules.ui2
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.modules.ui2.Layout.Companion.LAYOUT_EPS
 import kotlin.math.max
 import kotlin.math.round
 
@@ -50,10 +51,10 @@ object CellLayout : Layout {
                 val growSpaceW = widthPx - max(paddingStartPx, child.marginStartPx) - max(paddingEndPx, child.marginEndPx)
                 val growSpaceH = heightPx - max(paddingTopPx, child.marginTopPx) - max(paddingBottomPx, child.marginBottomPx)
 
-                val childWidth = round(child.computeWidthFromDimension(growSpaceW))
-                val childHeight = round(child.computeHeightFromDimension(growSpaceH))
-                val childX = round(computeChildLocationX(child, childWidth))
-                val childY = round(computeChildLocationY(child, childHeight))
+                val childWidth = round(child.computeWidthFromDimension(growSpaceW) + LAYOUT_EPS)
+                val childHeight = round(child.computeHeightFromDimension(growSpaceH) + LAYOUT_EPS)
+                val childX = round(computeChildLocationX(child, childWidth) + LAYOUT_EPS)
+                val childY = round(computeChildLocationY(child, childHeight) + LAYOUT_EPS)
 
                 child.setBounds(childX, childY, childX + childWidth, childY + childHeight)
             }

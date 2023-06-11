@@ -2,6 +2,7 @@ package de.fabmax.kool.modules.ui2
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec2f
+import de.fabmax.kool.modules.ui2.Layout.Companion.LAYOUT_EPS
 import kotlin.math.max
 import kotlin.math.round
 
@@ -80,9 +81,9 @@ private object VerticalLayout {
 
             val growSpaceH = growSpace.x / growSpace.y
             val growSpaceW = widthPx - max(paddingStartPx, child.marginStartPx) - max(paddingEndPx, child.marginEndPx)
-            val layoutW = round(child.computeWidthFromDimension(growSpaceW))
-            val layoutH = round(child.computeHeightFromDimension(growSpaceH))
-            val layoutX = round(uiNode.computeChildLocationX(child, layoutW))
+            val layoutW = round(child.computeWidthFromDimension(growSpaceW) + LAYOUT_EPS)
+            val layoutH = round(child.computeHeightFromDimension(growSpaceH) + LAYOUT_EPS)
+            val layoutX = round(uiNode.computeChildLocationX(child, layoutW) + LAYOUT_EPS)
 
             val ch = child.modifier.height
             if (ch is Grow) {
@@ -94,13 +95,13 @@ private object VerticalLayout {
             if (isTopToBottom) {
                 y += round(max(prevMargin, child.marginTopPx))
                 prevMargin = child.marginBottomPx
-                layoutY = round(y)
+                layoutY = round(y + LAYOUT_EPS)
                 y += layoutH
             } else {
                 y -= round(max(prevMargin, child.marginBottomPx))
                 prevMargin = child.marginTopPx
                 y -= layoutH
-                layoutY = round(y)
+                layoutY = round(y + LAYOUT_EPS)
             }
 
             child.setBounds(layoutX, layoutY, layoutX + layoutW, layoutY + layoutH)
