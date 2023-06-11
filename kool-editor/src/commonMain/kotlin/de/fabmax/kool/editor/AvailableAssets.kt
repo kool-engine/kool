@@ -11,7 +11,8 @@ expect class AvailableAssets(assetsBaseDir: String) {
     val hdriTextureAssets: MutableStateList<AssetItem>
 
     fun createAssetDir(createPath: String)
-    fun deleteAssetDir(deletePath: String)
+    fun renameAsset(sourcePath: String, destPath: String)
+    fun deleteAsset(deletePath: String)
     fun importAssets(targetPath: String, assetFiles: List<LoadableFile>)
 }
 

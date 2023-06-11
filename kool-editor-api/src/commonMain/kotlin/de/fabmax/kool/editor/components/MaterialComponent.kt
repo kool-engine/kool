@@ -24,7 +24,7 @@ class MaterialComponent(override val componentData: MaterialComponentData) :
 
     override suspend fun createComponent(nodeModel: EditorNodeModel) {
         super.createComponent(nodeModel)
-        materialState.set(scene.project.materials[componentData.materialId])
+        materialState.set(scene.project.materialsById[componentData.materialId])
     }
 }
 

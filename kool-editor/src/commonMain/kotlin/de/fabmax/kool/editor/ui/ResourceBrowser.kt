@@ -6,6 +6,8 @@ import de.fabmax.kool.editor.AppAssetType
 import de.fabmax.kool.editor.AppScript
 import de.fabmax.kool.editor.AssetItem
 import de.fabmax.kool.editor.EditorState
+import de.fabmax.kool.editor.actions.DeleteMaterialAction
+import de.fabmax.kool.editor.actions.EditorActions
 import de.fabmax.kool.editor.data.MaterialData
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.Color
@@ -53,14 +55,14 @@ class ResourceBrowser(editorUi: EditorUi) : EditorPanel(
         refreshScripts(travPaths)
 
         browserItems.keys.retainAll(travPaths)
-        selectedDirectory.value?.path?.let {
-            if (it !in browserItems.keys) {
+        selectedDirectory.value?.path?.let { selectedDir ->
+            if (selectedDir !in browserItems.keys) {
                 selectedDirectory.set(browserItems.values.firstOrNull { it is BrowserDir && it.level == 0 } as BrowserDir?)
             }
         }
     }
 
-    private fun refreshMaterials(traversedPaths: MutableSet<String>) {
+    private fun UiScope.refreshMaterials(traversedPaths: MutableSet<String>) {
         val materialDir = browserItems.getOrPut("/materials") {
             BrowserDir(0, "Materials", "/materials", BrowserCategory.MATERIALS)
         } as BrowserDir
@@ -68,7 +70,7 @@ class ResourceBrowser(editorUi: EditorUi) : EditorPanel(
         traversedPaths += "/materials"
 
         materialDir.children.clear()
-        EditorState.projectModel.materials.values.forEach {
+        EditorState.projectModel.materials.use().forEach {
             val materialItem = browserItems.getOrPut(it.path) { BrowserMaterialItem(1, it) }
             materialDir.children += materialItem
             traversedPaths += materialItem.path
@@ -96,9 +98,7 @@ class ResourceBrowser(editorUi: EditorUi) : EditorPanel(
         if (item == null || !assetItem.type.matchesBrowserItemType(item)) {
             item = if (assetItem.type == AppAssetType.Directory) {
                 val name = if (level == 0) "Assets" else assetItem.name
-                BrowserDir(level, name, assetItem.path, BrowserCategory.ASSETS).apply {
-                    isExpandable.set(assetItem.children.any { it.type == AppAssetType.Directory })
-                }
+                BrowserDir(level, name, assetItem.path, BrowserCategory.ASSETS)
             } else {
                 BrowserAssetItem(level, assetItem)
             }
@@ -108,6 +108,7 @@ class ResourceBrowser(editorUi: EditorUi) : EditorPanel(
             if (addToDirTree) {
                 expandedDirTree.add(item)
             }
+            item.isExpandable.set(assetItem.children.any { it.type == AppAssetType.Directory })
             item.children.clear()
             assetItem.children.forEach {
                 item.children += traverseAssetItem(level + 1, it, traversedPaths, addToDirTree && item.isExpanded.use())
@@ -126,7 +127,7 @@ class ResourceBrowser(editorUi: EditorUi) : EditorPanel(
             selectedDirectory.set(browserItems.values.firstOrNull { it is BrowserDir && it.level == 0 } as BrowserDir?)
         }
 
-        val dirPopupMenu = remember { ContextPopupMenu<BrowserDir>() }
+        val dirPopupMenu = remember { ContextPopupMenu<BrowserItem>() }
         dirPopupMenu()
 
         LazyList(
@@ -149,7 +150,7 @@ class ResourceBrowser(editorUi: EditorUi) : EditorPanel(
                                         dir.isExpanded.set(!dir.isExpanded.value)
                                     }
                                 } else if (evt.pointer.isRightButtonClicked) {
-                                    makeDirPopupMenu(dir)?.let { dirPopupMenu.show(evt.screenPosition, it, dir) }
+                                    makeAssetDirPopupMenu(dir, dir.level > 0)?.let { dirPopupMenu.show(evt.screenPosition, it, dir) }
                                 }
                             }
                             .margin(horizontal = sizes.smallGap)
@@ -203,20 +204,22 @@ class ResourceBrowser(editorUi: EditorUi) : EditorPanel(
         }
     }
 
-    private fun makeDirPopupMenu(dir: BrowserDir): SubMenuItem<BrowserDir>? {
+    private fun makeAssetDirPopupMenu(
+        dir: BrowserDir,
+        withRenameItem: Boolean,
+        withDeleteItem: Boolean = withRenameItem
+    ): SubMenuItem<BrowserItem>? {
         return when (dir.category) {
             BrowserCategory.ASSETS -> SubMenuItem {
-                item("New directory") {  }
-                if (dir.level > 0) {
-                    item("Rename directory") {  }
-                    item("Delete directory") { editor.availableAssets.deleteAssetDir(it.path) }
+                createDirectoryItem()
+                if (withRenameItem) {
+                    renameDirectoryItem()
+                }
+                if (withDeleteItem) {
+                    deleteDirectoryItem()
                 }
                 divider()
-                subMenu("Import") {
-                    item("Textures") { importAssets(it, filterListTextures) }
-                    item("Models") { importAssets(it, filterListModels) }
-                    item("Other") { importAssets(it, emptyList()) }
-                }
+                importAssetsMenu()
             }
             BrowserCategory.MATERIALS -> SubMenuItem {
                 item("New material") { }
@@ -225,22 +228,23 @@ class ResourceBrowser(editorUi: EditorUi) : EditorPanel(
         }
     }
 
-    private fun importAssets(targetDir: BrowserDir, filterList: List<FileFilterItem>) {
-        Assets.launch {
-            val importFiles = loadFileByUser(filterList, true)
-            editor.availableAssets.importAssets(targetDir.path, importFiles)
-        }
-    }
-
-    private val AssetItem.isExpandable: Boolean get() {
-        return type == AppAssetType.Directory && children.any { it.type == AppAssetType.Directory }
-    }
-
     private fun UiScope.directoryContent() = Box(width = Grow.Std, height = Grow.Std) {
         var areaWidth by remember(0f)
         val gridSize = sizes.baseSize * 3f
 
-        val dirAssets = selectedDirectory.use()?.children ?: emptyList()
+        val dir = selectedDirectory.use()
+        val dirItems = dir?.children ?: emptyList()
+
+        val popupMenu = remember { ContextPopupMenu<BrowserItem>() }
+        popupMenu()
+
+        if (dir?.category == BrowserCategory.ASSETS) {
+            modifier.onClick { evt ->
+                if (evt.pointer.isRightButtonClicked) {
+                    makeAssetDirPopupMenu(dir, false)?.let { popupMenu.show(evt.screenPosition, it, dir) }
+                }
+            }
+        }
 
         ScrollArea(containerModifier = {
             it.onPositioned { nd ->
@@ -252,10 +256,10 @@ class ResourceBrowser(editorUi: EditorUi) : EditorPanel(
                 val cols = max(1, floor(areaWidth / gridSize.px).toInt())
 
                 Column {
-                    for (i in dirAssets.indices step cols) {
+                    for (i in dirItems.indices step cols) {
                         Row {
-                            for (j in i until min(i + cols, dirAssets.size)) {
-                                browserItem(dirAssets[j], gridSize)
+                            for (j in i until min(i + cols, dirItems.size)) {
+                                browserItem(dirItems[j], gridSize, popupMenu)
                             }
                         }
                     }
@@ -264,7 +268,7 @@ class ResourceBrowser(editorUi: EditorUi) : EditorPanel(
         }
     }
 
-    private fun UiScope.browserItem(item: BrowserItem, gridSize: Dp) {
+    private fun UiScope.browserItem(item: BrowserItem, gridSize: Dp, itemPopupMenu: ContextPopupMenu<BrowserItem>) {
         Column(width = gridSize) {
             val color = when (item) {
                 is BrowserDir -> MdColor.AMBER
@@ -278,10 +282,14 @@ class ResourceBrowser(editorUi: EditorUi) : EditorPanel(
             }
 
             modifier
-                .onClick {
-                    if (item is BrowserDir && it.pointer.leftButtonRepeatedClickCount == 2) {
-                        selectedDirectory.value?.isExpanded?.set(true)
-                        selectedDirectory.set(item)
+                .onClick { evt ->
+                    if (evt.pointer.isLeftButtonClicked) {
+                        if (item is BrowserDir && evt.pointer.leftButtonRepeatedClickCount == 2) {
+                            selectedDirectory.value?.isExpanded?.set(true)
+                            selectedDirectory.set(item)
+                        }
+                    } else if (evt.pointer.isRightButtonClicked) {
+                        makeAssetItemPopupMenu(item)?.let { itemPopupMenu.show(evt.screenPosition, it, item) }
                     }
                 }
 
@@ -300,6 +308,76 @@ class ResourceBrowser(editorUi: EditorUi) : EditorPanel(
                     .alignX(AlignmentX.Center)
                     .margin(sizes.smallGap)
             }
+        }
+    }
+
+    private fun makeAssetItemPopupMenu(item: BrowserItem): SubMenuItem<BrowserItem>? {
+        return when (item) {
+            is BrowserAssetItem -> SubMenuItem {
+                renameAssetItem()
+                deleteAssetItem()
+            }
+            is BrowserMaterialItem -> SubMenuItem {
+                item("Delete material") {
+                    OkCancelTextDialog("Delete Material", "Delete material \"${item.name}\"?") {
+                        EditorActions.applyAction(DeleteMaterialAction(item.material))
+                    }
+                }
+            }
+            is BrowserDir -> SubMenuItem {
+                renameDirectoryItem()
+                deleteDirectoryItem()
+            }
+            else -> null
+        }
+    }
+
+    private fun SubMenuItem<BrowserItem>.createDirectoryItem() = item("Create directory") { item ->
+        OkCancelEnterTextDialog("Create New Directory", hint = "Directory name") {
+            if (it.isNotBlank()) {
+                editor.availableAssets.createAssetDir("${item.path}/${it.trim()}")
+            }
+        }
+    }
+
+    private fun SubMenuItem<BrowserItem>.renameDirectoryItem() = item("Rename directory") { item ->
+        OkCancelEnterTextDialog("Rename Directory", item.path, hint = "New directory name") {
+            if (it.isNotBlank()) {
+                editor.availableAssets.renameAsset(item.path, it.trim())
+            }
+        }
+    }
+
+    private fun SubMenuItem<BrowserItem>.deleteDirectoryItem() = item("Delete directory") { item ->
+        OkCancelTextDialog("Delete Directory", "Delete directory \"${item.name}\" including all its contents?\nThis cannot be undone.") {
+            editor.availableAssets.deleteAsset(item.path)
+        }
+    }
+
+    private fun SubMenuItem<BrowserItem>.renameAssetItem() = item("Rename asset file") { item ->
+        OkCancelEnterTextDialog("Rename Asset File", item.path, hint = "New asset file name") {
+            if (it.isNotBlank()) {
+                editor.availableAssets.renameAsset(item.path, it.trim())
+            }
+        }
+    }
+
+    private fun SubMenuItem<BrowserItem>.deleteAssetItem() = item("Delete asset file") { item ->
+        OkCancelTextDialog("Delete Asset File", "Delete asset file \"${item.name}\"? This cannot be undone.") {
+            editor.availableAssets.deleteAsset(item.path)
+        }
+    }
+
+    private fun SubMenuItem<BrowserItem>.importAssetsMenu() = subMenu("Import") {
+        importAssetsItem("Textures", filterListTextures)
+        importAssetsItem("Models", filterListModels)
+        importAssetsItem("Other", emptyList())
+    }
+
+    private fun SubMenuItem<BrowserItem>.importAssetsItem(label: String, filterList: List<FileFilterItem>) = item(label) { item ->
+        Assets.launch {
+            val importFiles = loadFileByUser(filterList, true)
+            editor.availableAssets.importAssets(item.path, importFiles)
         }
     }
 
@@ -343,7 +421,7 @@ class ResourceBrowser(editorUi: EditorUi) : EditorPanel(
         }
     }
 
-    class BrowserMaterialItem(level: Int, material: MaterialData) : BrowserItem(level, material.name, material.path, BrowserCategory.MATERIALS)
+    class BrowserMaterialItem(level: Int, val material: MaterialData) : BrowserItem(level, material.name, material.path, BrowserCategory.MATERIALS)
 
     class BrowserScriptItem(level: Int, script: AppScript) : BrowserItem(level, script.simpleName, script.path, BrowserCategory.SCRIPTS)
 }

@@ -10,6 +10,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.StandardCopyOption
 import kotlin.coroutines.CoroutineContext
 import kotlin.io.path.*
 
@@ -46,9 +47,20 @@ actual class AvailableAssets actual constructor(assetsBaseDir: String) : Corouti
         path.createDirectories()
     }
 
-    actual fun deleteAssetDir(deletePath: String) {
+    actual fun renameAsset(sourcePath: String, destPath: String) {
+        val source = Path(assetsDir.pathString, sourcePath)
+        val dest = Path(assetsDir.pathString, destPath)
+        dest.parent.createDirectories()
+        source.moveTo(dest, StandardCopyOption.ATOMIC_MOVE)
+    }
+
+    actual fun deleteAsset(deletePath: String) {
         val path = Path(assetsDir.pathString, deletePath)
-        path.deleteRecursively()
+        if (path.isDirectory()) {
+            path.deleteRecursively()
+        } else {
+            path.deleteIfExists()
+        }
     }
 
     actual fun importAssets(targetPath: String, assetFiles: List<LoadableFile>) {

@@ -337,13 +337,13 @@ class MaterialEditor(var sceneNodeModel: SceneNodeModel, var materialComponent: 
         }
     }
 
-    private fun makeMaterialItemsAndIndex(): Pair<List<MaterialItem>, Int> {
+    private fun UiScope.makeMaterialItemsAndIndex(): Pair<List<MaterialItem>, Int> {
         val items = mutableListOf(
             MaterialItem("Default", null),
             MaterialItem("New material", null)
         )
         var index = 0
-        EditorState.projectModel.materials.values.forEachIndexed { i, material ->
+        EditorState.projectModel.materials.use().forEachIndexed { i, material ->
             if (materialComponent.isHoldingMaterial(material)) {
                 index = i + 2
             }

@@ -16,7 +16,11 @@ import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 import kotlin.math.*
 
-fun UiScope.editorTitleBar(windowDockable: UiDockable, title: String = windowDockable.name) {
+fun UiScope.editorTitleBar(
+    windowDockable: UiDockable,
+    title: String = windowDockable.name,
+    onClose: ((PointerEvent) -> Unit)? = null
+) {
     Row(Grow.Std, height = sizes.lineHeightTitle) {
         val cornerR = if (windowDockable.isDocked.use()) 0f else sizes.gap.px
         modifier
@@ -34,6 +38,45 @@ fun UiScope.editorTitleBar(windowDockable: UiDockable, title: String = windowDoc
                 .textColor(UiColors.titleText)
                 .font(sizes.boldText)
                 .alignY(AlignmentY.Center)
+        }
+
+        onClose?.let { action ->
+            Button {
+                modifier
+                    .size(sizes.largeGap, sizes.largeGap)
+                    .padding(Dp.ZERO)
+                    .alignY(AlignmentY.Center)
+                    .isClickFeedback(false)
+                    .background(remember { CloseButtonBackground() })
+                    .onClick(action)
+            }
+        }
+    }
+}
+
+class CloseButtonBackground : UiRenderer<UiNode> {
+    override fun renderUi(node: UiNode) = node.run {
+        val r = innerWidthPx * 0.5f
+        val fgColor = colors.onBackground
+        val bgColor =
+        if ((node as ButtonNode).isHovered) {
+            MdColor.RED
+        } else {
+            colors.componentBg
+        }
+        getUiPrimitives().localCircle(widthPx * 0.5f, heightPx * 0.5f, r, bgColor)
+
+        getPlainBuilder().configured(fgColor) {
+            translate(widthPx * 0.5f, heightPx * 0.5f, 0f)
+            rotate(45f, Vec3f.Z_AXIS)
+            rect {
+                size.set(r * 1.3f, 1.dp.px)
+                origin.set(size.x * -0.5f, size.y * -0.5f, 0f)
+            }
+            rect {
+                size.set(1.dp.px, r * 1.3f)
+                origin.set(size.x * -0.5f, size.y * -0.5f, 0f)
+            }
         }
     }
 }

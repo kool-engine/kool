@@ -6,6 +6,7 @@ import de.fabmax.kool.editor.data.MaterialData
 import de.fabmax.kool.editor.data.PbrShaderData
 import de.fabmax.kool.editor.data.ProjectData
 import de.fabmax.kool.editor.data.SceneNodeData
+import de.fabmax.kool.modules.ui2.mutableStateListOf
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 
@@ -17,9 +18,13 @@ class EditorProject(val projectData: ProjectData) {
     val sceneNodeData: Map<Long, SceneNodeData>
         get() = _sceneNodeData
 
-    private val _materials = projectData.materials.associateBy { it.id }.toMutableMap()
-    val materials: Map<Long, MaterialData>
-        get() = _materials
+    private val _materialsById = projectData.materials.associateBy { it.id }.toMutableMap()
+    val materialsById: Map<Long, MaterialData>
+        get() = _materialsById
+    val materials = mutableStateListOf<MaterialData>().apply {
+        addAll(projectData.materials)
+        sortBy { it.name }
+    }
 
     private val created: MutableMap<Long, SceneModel> = mutableMapOf()
 
@@ -52,9 +57,21 @@ class EditorProject(val projectData: ProjectData) {
     fun createNewMaterial(): MaterialData {
         val id = nextId()
         val newMat = MaterialData(id, "Material-$id", PbrShaderData())
-        _materials[id] = newMat
-        projectData.materials += newMat
+        addMaterial(newMat)
         return newMat
+    }
+
+    fun removeMaterial(material: MaterialData) {
+        _materialsById -= material.id
+        projectData.materials -= material
+        materials -= material
+    }
+
+    fun addMaterial(material: MaterialData) {
+        _materialsById[material.id] = material
+        projectData.materials += material
+        materials += material
+        materials.sortBy { it.name }
     }
 
     inline fun <reified T: EditorModelComponent> getAllComponents(): List<T> {
