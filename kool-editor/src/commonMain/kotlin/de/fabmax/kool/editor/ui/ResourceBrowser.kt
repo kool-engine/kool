@@ -20,7 +20,7 @@ class ResourceBrowser(editorUi: EditorUi) : EditorPanel(
     "Resource Browser",
     editorUi,
     defaultWidth = Dp(600f),
-    defaultHeight = Dp(350f)
+    defaultHeight = Dp(300f)
 ) {
 
     private val browserItems = mutableMapOf<String, BrowserItem>()

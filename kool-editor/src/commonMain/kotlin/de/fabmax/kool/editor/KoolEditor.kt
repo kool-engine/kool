@@ -146,7 +146,7 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
             ctx.scenes += newScenes
             newScenes.forEach { scene ->
                 editorCameraTransform.addNode(scene.camera)
-                ui.centerSlot.dockedTo.value?.let { scene.setViewportToDockNode(it) }
+                ui.sceneView.applyViewportTo(scene)
             }
         }
 
@@ -179,7 +179,7 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
         editorOverlay.mainRenderPass.clearColor = null
         editorOverlay.mainRenderPass.clearDepth = false
         editorOverlay.onRenderScene.clear()
-        ui.centerSlot.dockedTo.value?.let { editorOverlay.setViewportToDockNode(it) }
+        ui.sceneView.applyViewportTo(editorOverlay)
 
         ctx.scenes -= ui
         ctx.scenes += ui

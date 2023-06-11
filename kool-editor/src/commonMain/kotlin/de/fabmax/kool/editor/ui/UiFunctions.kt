@@ -19,14 +19,22 @@ import kotlin.math.*
 fun UiScope.editorTitleBar(
     windowDockable: UiDockable,
     title: String = windowDockable.name,
+    roundedTop: Boolean = false,
     onClose: ((PointerEvent) -> Unit)? = null
 ) {
     Row(Grow.Std, height = sizes.lineHeightTitle) {
-        val cornerR = if (windowDockable.isDocked.use()) 0f else sizes.gap.px
         modifier
-            .margin(sizes.borderWidth)
             .padding(horizontal = sizes.gap - sizes.borderWidth)
-            .background(TitleBarBackground(UiColors.titleBg, cornerR, false))
+
+        if (roundedTop) {
+            modifier.background(TitleBarBackground(UiColors.titleBg, sizes.gap.px, false))
+        } else {
+            modifier.backgroundColor(UiColors.titleBg)
+        }
+
+        if (!windowDockable.isDocked.use()) {
+            modifier.margin(sizes.borderWidth)
+        }
 
         with(windowDockable) {
             registerDragCallbacks()

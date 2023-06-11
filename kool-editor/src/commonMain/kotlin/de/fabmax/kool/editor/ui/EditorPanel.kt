@@ -8,7 +8,8 @@ abstract class EditorPanel(
     name: String,
     val ui: EditorUi,
     defaultWidth: Dp = ui.dock.dockingSurface.sizes.baseSize * 8,
-    defaultHeight: Dp = ui.dock.dockingSurface.sizes.baseSize * 8) {
+    defaultHeight: Dp = ui.dock.dockingSurface.sizes.baseSize * 8
+) {
 
     val editor: KoolEditor get() = ui.editor
 
@@ -20,12 +21,16 @@ abstract class EditorPanel(
         windowDockable.setFloatingBounds(width = defaultWidth, height = defaultHeight)
     }
 
-    protected fun EditorPanelWindow(block: UiScope.() -> Unit) = WindowSurface(
+    protected fun EditorPanelWindow(isResizable: Boolean = true, block: UiScope.() -> Unit) = WindowSurface(
         windowDockable,
         colors = EditorUi.EDITOR_THEME_COLORS,
-        borderColor = { UiColors.border }
+        borderColor = { null },
+        isResizable = isResizable,
     ) {
         modifier.backgroundColor(colors.background)
+        if (!windowDockable.isDocked.value) {
+            modifier.border(RectBorder(UiColors.border, sizes.borderWidth))
+        }
         block()
     }
 }

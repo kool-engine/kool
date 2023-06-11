@@ -8,7 +8,7 @@ import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.modules.ui2.docking.UiDockable
 import de.fabmax.kool.util.launchDelayed
 
-abstract class EditorDialog(name: String, val ui: EditorUi = KoolEditor.instance.ui) {
+abstract class EditorDialog(name: String, val ui: EditorUi = KoolEditor.instance.ui, isResizable: Boolean = false) {
 
     val dialogDockable = UiDockable(name).apply {
         setFloatingBounds(Dp.ZERO, Dp.ZERO, Dp(500f), FitContent, AlignmentX.Center, AlignmentY.Center)
@@ -17,9 +17,11 @@ abstract class EditorDialog(name: String, val ui: EditorUi = KoolEditor.instance
     val dialogActions = mutableListOf<DialogAction>()
     val onClose = mutableListOf<() -> Unit>()
 
-    val dialog = WindowSurface(dialogDockable, EditorUi.EDITOR_THEME_COLORS) {
+    val dialog = WindowSurface(dialogDockable, EditorUi.EDITOR_THEME_COLORS, borderColor = { null }, isResizable = isResizable) {
+        modifier.border(RoundRectBorder(UiColors.border, sizes.gap, sizes.borderWidth))
+
         Column(Grow.Std, Grow.Std) {
-            editorTitleBar(dialogDockable) { onCloseClicked() }
+            editorTitleBar(dialogDockable, roundedTop = true) { onCloseClicked() }
             Box(width = Grow.Std, height = Grow.Std) {
                 modifier.padding(horizontal = sizes.largeGap * 1.5f, vertical = sizes.largeGap)
                 dialogContent()

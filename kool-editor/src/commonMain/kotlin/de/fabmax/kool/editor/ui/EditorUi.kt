@@ -5,7 +5,6 @@ import de.fabmax.kool.math.Vec2d
 import de.fabmax.kool.math.Vec3d
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.modules.ui2.docking.Dock
-import de.fabmax.kool.modules.ui2.docking.UiDockable
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MsdfFont
@@ -21,50 +20,56 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
         statusBar()
     }
 
+    val sceneView = SceneView(this)
     val sceneBrowser = SceneBrowser(this)
     val objectProperties = ObjectPropertyEditor(this)
     val resourceBrowser = ResourceBrowser(this)
 
     val appLoaderState = mutableStateOf("")
 
-    val centerSlot = UiDockable("Center slot", dock, isHidden = true)
-
     init {
         setupUiScene()
 
-        dock.dockingSurface.colors = EDITOR_THEME_COLORS
-        dock.dockingPaneComposable = Composable {
-            Column(Grow.Std, Grow.Std) {
-                modifier.margin(bottom = sizes.baseSize)
-                dock.root()
+        addNode(statusBar)
+
+        dock.apply {
+            borderWidth.set(Dp.fromPx(1f))
+            borderColor.set(UiColors.border)
+            dockingSurface.colors = EDITOR_THEME_COLORS
+            dockingPaneComposable = Composable {
+                Column(Grow.Std, Grow.Std) {
+                    modifier.margin(bottom = sizes.baseSize)
+                    root()
+                }
             }
+
+            createNodeLayout(
+                listOf(
+                    "0:row",
+                    "0/0:leaf",
+                    "0/1:col",
+                    "0/2:leaf",
+                    "0/1/0:leaf",
+                    "0/1/1:leaf",
+                )
+            )
+
+            addDockableSurface(sceneView.windowDockable, sceneView.windowSurface)
+            getLeafAtPath("0/1/0")?.dock(sceneView.windowDockable)
+
+            // add scene browser panel and dock it to the left side of the screen
+            addDockableSurface(sceneBrowser.windowDockable, sceneBrowser.windowSurface)
+            getLeafAtPath("0/0")?.dock(sceneBrowser.windowDockable)
+
+            // add object properties panel and dock it to the right side of the screen
+            addDockableSurface(objectProperties.windowDockable, objectProperties.windowSurface)
+            getLeafAtPath("0/2")?.dock(objectProperties.windowDockable)
+
+            addDockableSurface(resourceBrowser.windowDockable, resourceBrowser.windowSurface)
+            getLeafAtPath("0/1/1")?.dock(resourceBrowser.windowDockable)
         }
 
-        addNode(statusBar)
         addNode(dock)
-        dock.createNodeLayout(
-            listOf(
-                "0:row",
-                "0/0:leaf",
-                "0/1:col",
-                "0/2:leaf",
-                "0/1/0:leaf",
-                "0/1/1:leaf",
-            )
-        )
-
-        dock.getLeafAtPath("0/1/0")?.dock(centerSlot)
-
-        // add scene browser panel and dock it to the left side of the screen
-        dock.addDockableSurface(sceneBrowser.windowDockable, sceneBrowser.windowSurface)
-        dock.getLeafAtPath("0/0")?.dock(sceneBrowser.windowDockable)
-
-        // add object properties panel and dock it to the right side of the screen
-        dock.addDockableSurface(objectProperties.windowDockable, objectProperties.windowSurface)
-        dock.getLeafAtPath("0/2")?.dock(objectProperties.windowDockable)
-
-        dock.addDockableSurface(resourceBrowser.windowDockable, resourceBrowser.windowSurface)
-        dock.getLeafAtPath("0/1/1")?.dock(resourceBrowser.windowDockable)
     }
 
     private fun UiScope.statusBar() = Row(width = Grow.Std, height = sizes.lineHeightLarger) {
