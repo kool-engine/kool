@@ -1,8 +1,11 @@
 *.iml
 .gradle
+.httpCache
 .idea
+.storage
 build
-/dist
+dist
+kotlin-js-store
 *.kjsm
 *.meta.js
 /local.properties
