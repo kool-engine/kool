@@ -72,6 +72,16 @@ Code for all demos is available in kool-demo sub-project.
 - Shadow mapping for multiple light sources (only spot and directional lights for now)
 - Basic audio support
 
+## Usage
+
+If you are adventurous, you can use kool as a library in your own (multiplatform-) projects. The library is published
+on maven central, and there is a separate repo containing a minimal template project to get you started:
+
+[https://github.com/fabmax/kool-templates](https://github.com/fabmax/kool-templates)
+
+The demos mentioned above and examples shown below should give you a rough idea on how to do stuff (documentation is
+still a bit of a weak spot).
+
 ## A Hello World Example
 
 Getting a basic scene on the screen is quite simple:
@@ -266,62 +276,3 @@ conclusion that all of them had some kind of flaw. So I decided to write my own 
 This was quite a bit of work (and is an ongoing project), but I think it was worth it: By writing my own bindings
 I get the features I need, and, even better, I get the same features for javascript and JVM, which makes the
 multiplatform approach much easier.
-
-## Usage
-
-If you are adventurous, you can use kool as a library in your own (multiplatform-) projects. The library is published
-on maven central. 
-
-Basic `build.gradle.kts` project setup:
-```kotlin
-plugins {
-    kotlin("multiplatform") version "1.8.20"
-}
-
-repositories {
-    mavenCentral()
-    // or, in case you want to use the latest snapshots:
-    // maven("https://oss.sonatype.org/content/repositories/snapshots")
-}
-
-kotlin {
-    // kotlin multiplatform (jvm + js) setup:
-    jvm {
-        jvmToolchain(11)
-    }
-    js(IR) {
-        browser()
-    }
-    
-    sourceSets {
-        // kool dependencies
-        val commonMain by getting {
-            dependencies {
-                implementation("de.fabmax.kool:kool-core:0.11.0")
-                implementation("de.fabmax.kool:kool-physics:0.11.0")
-
-                // or the latest snapshot version:
-                // implementation("de.fabmax.kool:kool-core:0.12.0-SNAPSHOT")
-                // implementation("de.fabmax.kool:kool-physics:0.12.0-SNAPSHOT")
-            }
-        }
-
-        // on JVM, additional runtime libraries are required
-        val jvmMain by getting {
-            val platform = "natives-windows"    // and / or "natives-linux", "natives-macos"
-            val physxVersion = "2.0.5"
-            val lwjglVersion = "3.3.2"
-            val lwjglLibs = listOf("glfw", "opengl", "jemalloc", "nfd", "stb", "vma", "shaderc")
-            dependencies {
-                runtimeOnly("de.fabmax:physx-jni:$physxVersion:$platform")
-                runtimeOnly("org.lwjgl:lwjgl:$lwjglVersion:$platform")
-                lwjglLibs.forEach { lib ->
-                    runtimeOnly("org.lwjgl:lwjgl-$lib:$lwjglVersion:$platform")
-                }
-            }
-        }
-        
-        val jsMain by getting
-    }
-}
-```
