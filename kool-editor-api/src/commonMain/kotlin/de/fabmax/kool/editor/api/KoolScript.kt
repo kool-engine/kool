@@ -14,7 +14,7 @@ abstract class KoolScript {
         private set
 
     private val onUpdateHandler: (RenderPass.UpdateEvent) -> Unit = {
-        if (!AppState.isEditMode || scriptComponent.componentData.runInEditMode) {
+        if (AppState.appMode == AppMode.PLAY || scriptComponent.componentData.runInEditMode) {
             onUpdate()
         }
     }

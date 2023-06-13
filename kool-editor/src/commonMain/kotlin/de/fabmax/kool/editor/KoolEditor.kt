@@ -6,6 +6,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.LoadableFile
 import de.fabmax.kool.editor.actions.EditorActions
 import de.fabmax.kool.editor.api.AppAssets
+import de.fabmax.kool.editor.api.AppMode
 import de.fabmax.kool.editor.api.AppState
 import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.editor.ui.EditorUi
@@ -137,11 +138,12 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
         }
         EditorState.loadedApp.value?.app?.onDispose(ctx)
 
-        // add scene objects from new app
         AppState.isInEditorState.set(true)
-        AppState.isEditModeState.set(true)
+        AppState.appModeState.set(AppMode.EDIT)
 
         loadedApp.app.startApp(EditorState.projectModel, ctx)
+
+        // add scene objects from new app
         EditorState.projectModel.getCreatedScenes().map { it.node }.let { newScenes ->
             ctx.scenes += newScenes
             newScenes.forEach { scene ->

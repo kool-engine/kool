@@ -40,6 +40,9 @@ class AnimatedFloatBidir(var fwdDuration: Float, var bwdDuration: Float = fwdDur
     private var target = 0f
     override val isActive: Boolean get() = value != target
 
+    val isForward: Boolean
+        get() = value <= target
+
     init {
         target = if (initValue > 0f) 1f else 0f
     }
