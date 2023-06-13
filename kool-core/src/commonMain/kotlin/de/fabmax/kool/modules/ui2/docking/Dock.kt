@@ -5,16 +5,14 @@ import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.UniqueId
-import de.fabmax.kool.util.launchOnMainThread
 import de.fabmax.kool.util.logE
 
 class Dock(name: String? = null) : Node(name = name ?: UniqueId.nextId("Dock")) {
 
-    private val dockedNodes = Node(name = "${name}.dockableNodes")
-    private val floatingNodes = Node(name = "${name}.floatingNodes")
-    private val dockablesBySurface = mutableMapOf<UiSurface, Dockable>()
-    private val surfacesByDockable = mutableMapOf<Dockable, UiSurface>()
+    private val dockableNodes = Node(name = "${name}.dockableNodes")
+    private val dockables = mutableMapOf<UiSurface, Dockable>()
     val dockingSurface = UiSurface(name = "${name}.dockingSurface")
+    val dockingSurfaceOverlay = UiSurface(name = "${name}.dockingSurfaceOverlay")
 
     val borderWidth = mutableStateOf(Dp.ZERO)
     val borderColor = mutableStateOf(Color.BLACK)
@@ -27,14 +25,21 @@ class Dock(name: String? = null) : Node(name = name ?: UniqueId.nextId("Dock")) 
     var dockingPaneComposable = Composable { root() }
 
     init {
-        addNode(dockedNodes)
         addNode(dockingSurface)
-        addNode(floatingNodes)
+        addNode(dockableNodes)
+        addNode(dockingSurfaceOverlay)
 
         dockingSurface.inputMode = UiSurface.InputCaptureMode.CaptureDisabled
         dockingSurface.content = {
             dndContext.clearHandlers()
             dockingPaneComposable()
+            dndContext.registerHandler(dndOverlayVisibilityListener)
+        }
+
+        dockingSurfaceOverlay.isVisible = false
+        dockingSurfaceOverlay.inputMode = UiSurface.InputCaptureMode.CaptureDisabled
+        dockingSurfaceOverlay.content = {
+            root.composeOverlay(this)
         }
 
         onUpdate {
@@ -43,60 +48,34 @@ class Dock(name: String? = null) : Node(name = name ?: UniqueId.nextId("Dock")) 
     }
 
     private fun sortDockablesDrawOrder() {
-        dockedNodes.sortChildrenBy { (it as UiSurface).order }
-        floatingNodes.sortChildrenBy { (it as UiSurface).order }
+        dockableNodes.sortChildrenBy { (it as UiSurface).order }
     }
 
     private val UiSurface.order: Double
-        get() = lastInputTime
-//        get() {
-//            val dockable = dockables[this]
-//            return when {
-//                dockable == null -> 0.0
-//                dockable.isDocked.value -> {
-//                    val isOnTop = dockable.dockedTo.value?.isOnTop(dockable) != false
-//                    lastInputTime - if (isOnTop) 1e9 else 1e10
-//                }
-//                else -> lastInputTime
-//            }
-//        }
+        get() {
+            val dockable = dockables[this]
+            return when {
+                dockable == null -> 0.0
+                dockable.isDocked.value -> {
+                    val isOnTop = dockable.dockedTo.value?.isOnTop(dockable) != false
+                    lastInputTime - if (isOnTop) 1e9 else 1e10
+                }
+                else -> lastInputTime
+            }
+        }
 
     fun addDockableSurface(dockable: Dockable, drawNode: UiSurface) {
-        if (dockable.isDocked.value) {
-            dockedNodes += drawNode
-        } else {
-            floatingNodes += drawNode
-        }
-        dockablesBySurface[drawNode] = dockable
-        surfacesByDockable[dockable] = drawNode
+        dockableNodes += drawNode
+        dockables[drawNode] = dockable
     }
 
     fun removeDockableSurface(drawNode: UiSurface) {
-        if (dockedNodes.removeNode(drawNode)) {
-            val dockable = dockablesBySurface.remove(drawNode)
+        if (dockableNodes.removeNode(drawNode)) {
+            val dockable = dockables.remove(drawNode)
             if (dockable == null) {
                 logE { "dockable for UiSurface ${drawNode.name} not found" }
             } else {
-                surfacesByDockable.remove(dockable)
                 dockable.dockedTo.value?.undock(dockable)
-            }
-        }
-    }
-
-    internal fun onDocked(dockable: Dockable) {
-        launchOnMainThread {
-            surfacesByDockable[dockable]?.let { drawNode ->
-                floatingNodes -= drawNode
-                dockedNodes += drawNode
-            }
-        }
-    }
-
-    internal fun onUndocked(dockable: Dockable) {
-        launchOnMainThread {
-            surfacesByDockable[dockable]?.let { drawNode ->
-                floatingNodes += drawNode
-                dockedNodes -= drawNode
             }
         }
     }
@@ -131,7 +110,7 @@ class Dock(name: String? = null) : Node(name = name ?: UniqueId.nextId("Dock")) 
 
     fun createNodeLayout(nodePaths: List<String>) {
         // undock any existing dockable
-        dockablesBySurface.values.forEach { it.dockedTo.value?.undock(it) }
+        dockables.values.forEach { it.dockedTo.value?.undock(it) }
 
         // create new node hierarchy
         nodePaths.forEach { path ->
@@ -163,9 +142,9 @@ class Dock(name: String? = null) : Node(name = name ?: UniqueId.nextId("Dock")) 
         return if (surface == dockingSurface) {
             true
         } else {
-            dockedNodes.children
+            dockableNodes.children
                 .map { it as UiSurface }
-                .filter { dockablesBySurface[it]?.isInBounds(screenPosPx) == true }
+                .filter { dockables[it]?.isInBounds(screenPosPx) == true }
                 .maxByOrNull { it.order } == surface
         }
     }
@@ -178,5 +157,27 @@ class Dock(name: String? = null) : Node(name = name ?: UniqueId.nextId("Dock")) 
             }
         }
         root.printH("")
+    }
+
+    private val dndOverlayVisibilityListener = object : DragAndDropHandler<Dockable> {
+        override val dropTarget: UiNode? = null
+
+        override fun receive(dragItem: Dockable, dragPointer: PointerEvent, source: DragAndDropHandler<Dockable>?): Boolean {
+            return false
+        }
+
+        override fun onDragStart(dragItem: Dockable, dragPointer: PointerEvent, source: DragAndDropHandler<Dockable>?) {
+            dockingSurfaceOverlay.isVisible = true
+        }
+
+        override fun onDragEnd(
+            dragItem: Dockable,
+            dragPointer: PointerEvent,
+            source: DragAndDropHandler<Dockable>?,
+            target: DragAndDropHandler<Dockable>?,
+            success: Boolean
+        ) {
+            dockingSurfaceOverlay.isVisible = false
+        }
     }
 }

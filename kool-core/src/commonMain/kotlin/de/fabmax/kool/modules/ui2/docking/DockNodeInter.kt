@@ -34,6 +34,11 @@ sealed class DockNodeInter(
         return null
     }
 
+    override fun composeOverlay(uiScope: UiScope) {
+        super.composeOverlay(uiScope)
+        childNodes.forEach { it.composeOverlay(uiScope) }
+    }
+
     fun removeChildNode(child: DockNode) {
         childNodes -= child
         child.parent = null

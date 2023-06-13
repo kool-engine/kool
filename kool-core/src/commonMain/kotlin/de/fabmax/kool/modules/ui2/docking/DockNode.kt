@@ -314,13 +314,23 @@ sealed class DockNode(
 
         composeNodeContent()
 
-        dockPreview.use()?.let { dockPreview(it) }
-        if (drawSlotSelector.use()) {
-            slots()
-        }
-
         this@DockNode.dropTarget = uiNode
         dock.dndContext.registerHandler(this@DockNode)
+    }
+
+    internal open fun composeOverlay(uiScope: UiScope) {
+        uiScope.apply {
+            Box {
+                modifier
+                    .margin(start = boundsLeftDp.use(), top = boundsTopDp.use())
+                    .size(boundsRightDp.use() - boundsLeftDp.use(), boundsBottomDp.use() - boundsTopDp.use())
+
+                dockPreview.use()?.let { dockPreview(it) }
+                if (drawSlotSelector.use()) {
+                    slots()
+                }
+            }
+        }
     }
 
     protected abstract fun UiScope.composeNodeContent()
