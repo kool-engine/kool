@@ -305,7 +305,9 @@ class ResourceBrowser(editorUi: EditorUi) : EditorPanel(
 
             Text(item.name) {
                 modifier
-                    .alignX(AlignmentX.Center)
+                    .width(Grow.Std)
+                    .isWrapText(true)
+                    .textAlignX(AlignmentX.Center)
                     .margin(sizes.smallGap)
             }
         }
