@@ -5,6 +5,7 @@ actual data class KoolConfig(
 
     val canvasName: String = "glCanvas",
     val isGlobalKeyEventGrabbing: Boolean = true,
+    val isJsCanvasToWindowFitting: Boolean = true,
 
     val customTtfFonts: Map<String, String> = emptyMap(),
 )

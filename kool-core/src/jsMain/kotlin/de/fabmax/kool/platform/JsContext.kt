@@ -30,6 +30,7 @@ import org.w3c.dom.ImageData
 import org.w3c.dom.events.Event
 import org.w3c.dom.events.UIEvent
 import org.w3c.files.get
+import kotlin.math.roundToInt
 
 /**
  * @author fabmax
@@ -68,14 +69,27 @@ class JsContext internal constructor() : KoolContext() {
     private val openRenderPasses = mutableListOf<OffscreenRenderPass>()
     private val doneRenderPasses = mutableSetOf<OffscreenRenderPass>()
 
+    private var canvasFixedWidth = -1
+    private var canvasFixedHeight = -1
+
     init {
         canvas = document.getElementById(KoolSystem.config.canvasName) as? HTMLCanvasElement ?:
                 throw IllegalStateException("canvas element not found! Add a canvas with id \"${KoolSystem.config.canvasName}\" to your html.")
 
-        canvas.style.width = "100%"
-        canvas.style.height = "100%"
-        canvas.width = (window.innerWidth * window.devicePixelRatio).toInt()
-        canvas.height = (window.innerHeight * window.devicePixelRatio).toInt()
+        // set canvas style to desired size so that render resolution can be set according to window scale
+        if (KoolSystem.config.isJsCanvasToWindowFitting) {
+            canvas.style.width = "100%"
+            canvas.style.height = "100%"
+            canvas.width = (window.innerWidth * window.devicePixelRatio).toInt()
+            canvas.height = (window.innerHeight * window.devicePixelRatio).toInt()
+        } else {
+            canvasFixedWidth = canvas.width
+            canvasFixedHeight = canvas.height
+            canvas.style.width = "${canvasFixedWidth}px"
+            canvas.style.height = "${canvasFixedHeight}px"
+            canvas.width = (canvasFixedWidth * window.devicePixelRatio).roundToInt()
+            canvas.height = (canvasFixedHeight * window.devicePixelRatio).roundToInt()
+        }
 
         // try to get a WebGL2 context first and use WebGL version 1 as fallback
         var webGlCtx = canvas.getContext("webgl2")
@@ -163,12 +177,18 @@ class JsContext internal constructor() : KoolContext() {
         val dt = (time - animationMillis) / 1000.0
         animationMillis = time
 
-        // update viewport size
+        // update viewport size according to window scale
         windowScale = window.devicePixelRatio.toFloat()
-        windowWidth = (window.innerWidth * window.devicePixelRatio).toInt()
-        windowHeight = (window.innerHeight * window.devicePixelRatio).toInt()
-        if (windowWidth != canvas.width || windowHeight!= canvas.height) {
-            // resize canvas to viewport
+        if (KoolSystem.config.isJsCanvasToWindowFitting) {
+            windowWidth = (window.innerWidth * window.devicePixelRatio).toInt()
+            windowHeight = (window.innerHeight * window.devicePixelRatio).toInt()
+        } else {
+            windowWidth = (canvasFixedWidth * window.devicePixelRatio).toInt()
+            windowHeight = (canvasFixedHeight * window.devicePixelRatio).toInt()
+        }
+        if (windowWidth != canvas.width || windowHeight != canvas.height) {
+            // resize canvas to viewport, this only affects the render resolution, actual canvas size is determined
+            // by canvas.style.width / canvas.style.height set on init
             canvas.width = windowWidth
             canvas.height = windowHeight
         }
