@@ -15,8 +15,22 @@ import kotlin.math.tan
  */
 abstract class Camera(name: String = "camera") : Node(name) {
 
+    /**
+     * Camera position within the camera [transform] frame.
+     */
     val position = MutableVec3f(0f, 0f, 1f)
+
+    /**
+     * Camera look-at position within the camera [transform] frame. Camera look direction is determined by
+     * norm(lookAt - position).
+     */
     val lookAt = MutableVec3f(Vec3f.ZERO)
+
+    /**
+     * Camera up direction within the camera [transform] frame. Usually, the default value of [Vec3f.Y_AXIS] should
+     * work fine. But, the up-direction must not be collinear to the look direction, i.e. a different up direction
+     * is needed if the camera looks exactly up- or downwards.
+     */
     val up = MutableVec3f(Vec3f.Y_AXIS)
 
     var aspectRatio = 1.0f
@@ -63,6 +77,12 @@ abstract class Camera(name: String = "camera") : Node(name) {
     private val tmpVec4 = MutableVec4f()
 
     val onCameraUpdated = mutableListOf<(KoolContext) -> Unit>()
+
+    fun setupCamera(position: Vec3f? = null, up: Vec3f? = null, lookAt: Vec3f? = null) {
+        position?.let { this.position.set(it) }
+        up?.let { this.up.set(up) }
+        lookAt?.let { this.lookAt.set(it) }
+    }
 
     fun setClipRange(near: Float, far: Float) {
         clipNear = near

@@ -95,12 +95,12 @@ open class OffscreenRenderPassCube(drawNode: Node, config: Config) : OffscreenRe
 
     private fun defaultCubeMapCameraConfig() {
         val camDirs = mutableMapOf(
-                ViewDirection.FRONT to ViewConfig(Vec3f(0f, 0f, 1f), Vec3f.NEG_Y_AXIS),
-                ViewDirection.BACK  to ViewConfig(Vec3f(0f, 0f, -1f), Vec3f.NEG_Y_AXIS),
-                ViewDirection.LEFT  to ViewConfig(Vec3f(-1f, 0f, 0f), Vec3f.NEG_Y_AXIS),
-                ViewDirection.RIGHT to ViewConfig(Vec3f(1f, 0f, 0f), Vec3f.NEG_Y_AXIS),
-                ViewDirection.UP    to ViewConfig(Vec3f(0f, 1f, 0f), Vec3f.Z_AXIS),
-                ViewDirection.DOWN  to ViewConfig(Vec3f(0f, -1f, 0f), Vec3f.NEG_Z_AXIS)
+            ViewDirection.FRONT to ViewConfig(Vec3f( 0f,  0f,  1f), Vec3f.NEG_Y_AXIS),
+            ViewDirection.BACK  to ViewConfig(Vec3f( 0f,  0f, -1f), Vec3f.NEG_Y_AXIS),
+            ViewDirection.LEFT  to ViewConfig(Vec3f(-1f,  0f,  0f), Vec3f.NEG_Y_AXIS),
+            ViewDirection.RIGHT to ViewConfig(Vec3f( 1f,  0f,  0f), Vec3f.NEG_Y_AXIS),
+            ViewDirection.UP    to ViewConfig(Vec3f( 0f,  1f,  0f), Vec3f.Z_AXIS),
+            ViewDirection.DOWN  to ViewConfig(Vec3f( 0f, -1f,  0f), Vec3f.NEG_Z_AXIS)
         )
 
         val cam = camera
@@ -114,8 +114,7 @@ open class OffscreenRenderPassCube(drawNode: Node, config: Config) : OffscreenRe
 
         onSetupView = { viewDir, _ ->
             val viewCfg = camDirs[viewDir]!!
-            camera.lookAt.set(viewCfg.lookAt)
-            camera.up.set(viewCfg.up)
+            camera.setupCamera(position = Vec3f.ZERO, up = viewCfg.up, lookAt = viewCfg.lookAt)
         }
     }
 

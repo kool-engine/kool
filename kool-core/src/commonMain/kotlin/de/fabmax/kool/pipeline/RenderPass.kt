@@ -64,8 +64,13 @@ abstract class RenderPass(var drawNode: Node) {
         if (ctx.isProfileRenderPasses) {
             Profiling.enter(profileTag("update"))
         }
+        val updateEvent = setupUpdateEvent(ctx)
         if (isUpdateDrawNode) {
-            drawNode.update(setupUpdateEvent(ctx))
+            drawNode.update(updateEvent)
+        }
+        if (camera.parent == null) {
+            // camera is not attached to any node, make sure it gets updated anyway
+            camera.update(updateEvent)
         }
         if (ctx.isProfileRenderPasses) {
             Profiling.exit(profileTag("update"))
