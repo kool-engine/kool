@@ -27,7 +27,7 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                implementation(DepsCommon.kotlinCoroutines)
+                api(DepsCommon.kotlinCoroutines)
                 implementation(DepsCommon.kotlinSerialization)
                 implementation(DepsCommon.kotlinSerializationJson)
             }
@@ -41,8 +41,6 @@ kotlin {
 
         val jvmMain by getting {
             dependencies {
-                implementation(kotlin("reflect"))
-
                 implementation(DepsJvm.lwjgl())
                 implementation(DepsJvm.lwjgl("glfw"))
                 implementation(DepsJvm.lwjgl("jemalloc"))
