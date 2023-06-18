@@ -218,7 +218,7 @@ abstract class UiNode(val parent: UiNode?, override val surface: UiSurface) : Ui
         var child: T? = null
         if (oldChildren.isNotEmpty()) {
             val old = oldChildren.removeLast()
-            if (old::class === type) {
+            if (old::class == type) {
                 @Suppress("UNCHECKED_CAST")
                 child = old as T
             }

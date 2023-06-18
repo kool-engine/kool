@@ -30,6 +30,7 @@ kotlin {
                 api(DepsCommon.kotlinCoroutines)
                 implementation(DepsCommon.kotlinSerialization)
                 implementation(DepsCommon.kotlinSerializationJson)
+                implementation(DepsCommon.kotlinReflection)
             }
         }
         val commonTest by getting {
