@@ -102,7 +102,7 @@ object InputStack {
         fun addKeyListener(
             keyCode: KeyCode,
             name: String,
-            filter: (KeyEvent) -> Boolean = { true },
+            filter: (KeyEvent) -> Boolean = KEY_FILTER_KEY_PRESSED,
             callback: (KeyEvent) -> Unit
         ): SimpleKeyListener = simpleKeyboardListener.addKeyListener(keyCode, name, filter, callback)
 
@@ -125,7 +125,7 @@ object InputStack {
         fun addKeyListener(
             keyCode: KeyCode,
             name: String,
-            filter: (KeyEvent) -> Boolean = { true },
+            filter: (KeyEvent) -> Boolean = KEY_FILTER_KEY_PRESSED,
             callback: (KeyEvent) -> Unit
         ): SimpleKeyListener {
             return addKeyListener(SimpleKeyListener(keyCode, name, filter, callback))
@@ -182,7 +182,7 @@ object InputStack {
     class SimpleKeyListener(
         val keyCode: KeyCode,
         val name: String,
-        val filter: (KeyEvent) -> Boolean = KEY_FILTER_ALL,
+        val filter: (KeyEvent) -> Boolean = KEY_FILTER_KEY_PRESSED,
         val callback: (KeyEvent) -> Unit
     ) {
         operator fun invoke(evt: KeyEvent) = callback.invoke(evt)
@@ -199,6 +199,8 @@ object InputStack {
     }
 
     val KEY_FILTER_ALL: (KeyEvent) -> Boolean = { true }
+    val KEY_FILTER_KEY_PRESSED: (KeyEvent) -> Boolean = { it.isPressed }
+    val KEY_FILTER_KEY_RELEASED: (KeyEvent) -> Boolean = { it.isReleased }
     val KEY_FILTER_CTRL_PRESSED: (KeyEvent) -> Boolean = { it.isPressed && it.isCtrlDown }
     val KEY_FILTER_ALT_PRESSED: (KeyEvent) -> Boolean = { it.isPressed && it.isAltDown }
     val KEY_FILTER_SHIFT_PRESSED: (KeyEvent) -> Boolean = { it.isPressed && it.isShiftDown }

@@ -31,10 +31,20 @@ open class InputAxes(ctx: KoolContext) : Disposable {
     fun registerAxis(name: String, posKeyCodes: Set<KeyCode>, negKeyCodes: Set<KeyCode>): Axis {
         val axis = Axis(name)
         for (key in posKeyCodes) {
-            axis.keyListeners += InputStack.defaultInputHandler.addKeyListener(key, name, callback = axis::processPositiveKeyInputEvent)
+            axis.keyListeners += InputStack.defaultInputHandler.addKeyListener(
+                key,
+                name,
+                InputStack.KEY_FILTER_ALL,
+                axis::processPositiveKeyInputEvent
+            )
         }
         for (key in negKeyCodes) {
-            axis.keyListeners += InputStack.defaultInputHandler.addKeyListener(key, name, callback = axis::processNegativeKeyInputEvent)
+            axis.keyListeners += InputStack.defaultInputHandler.addKeyListener(
+                key,
+                name,
+                InputStack.KEY_FILTER_ALL,
+                axis::processNegativeKeyInputEvent
+            )
         }
         axes[name] = axis
         axesList += axis
