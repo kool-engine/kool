@@ -1,5 +1,6 @@
 package de.fabmax.kool.editor.ui
 
+import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.api.AppMode
 import de.fabmax.kool.editor.api.AppState
 import de.fabmax.kool.math.Easing
@@ -64,8 +65,9 @@ fun UiScope.appModeControlButtons() {
                 .onExit { resetButtonBg.hoverAnimator.start(0f) }
                 .onClick {
                     resetButtonBg.clickAnimator.start()
+                    KoolEditor.instance.modeController.resetApp()
                 }
-                .border(CircularBorder(colors.background, 2.dp))
+                .border(CircularBorder(colors.background, sizes.borderWidth * 2))
         }
         Button {
             modifier
@@ -79,13 +81,9 @@ fun UiScope.appModeControlButtons() {
                 .onExit { pauseButtonBg.hoverAnimator.start(0f) }
                 .onClick {
                     pauseButtonBg.clickAnimator.start()
-                    if (AppState.appMode == AppMode.PLAY) {
-                        AppState.appModeState.set(AppMode.PAUSE)
-                    } else if (AppState.appMode == AppMode.PAUSE) {
-                        AppState.appModeState.set(AppMode.PLAY)
-                    }
+                    KoolEditor.instance.modeController.togglePause()
                 }
-                .border(CircularBorder(colors.background, 2.dp))
+                .border(CircularBorder(colors.background, sizes.borderWidth * 2))
         }
         Button {
             modifier
@@ -97,13 +95,13 @@ fun UiScope.appModeControlButtons() {
                 .onExit { playButtonBg.hoverAnimator.start(0f) }
                 .onClick {
                     playButtonBg.clickAnimator.start()
-                    if (AppState.appMode == AppMode.EDIT) {
-                        AppState.appModeState.set(AppMode.PLAY)
+                    if (AppState.isEditMode) {
+                        KoolEditor.instance.modeController.startApp()
                     } else {
-                        AppState.appModeState.set(AppMode.EDIT)
+                        KoolEditor.instance.modeController.stopApp()
                     }
                 }
-                .border(CircularBorder(colors.background, 2.dp))
+                .border(CircularBorder(colors.background, sizes.borderWidth * 2))
         }
     }
 }

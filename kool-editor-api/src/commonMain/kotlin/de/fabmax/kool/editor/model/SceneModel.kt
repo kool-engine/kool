@@ -49,6 +49,9 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : EditorN
 
         nodeData.childNodeIds.forEach { childId ->
             resolveNode(childId)?.let {
+                if (!it.isCreated) {
+                    it.createComponents()
+                }
                 addSceneNode(it, this)
             }
         }
@@ -71,12 +74,12 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : EditorN
         backgroundUpdater.skybox = null
     }
 
-    private suspend fun resolveNode(nodeId: Long): SceneNodeModel? {
+    private fun resolveNode(nodeId: Long): SceneNodeModel? {
         val nodeModel = nodeModels[nodeId]
         return if (nodeModel != null) nodeModel else {
             val nodeData = project.sceneNodeData[nodeId]
             if (nodeData != null) {
-                SceneNodeModel(nodeData, this).also { it.createComponents() }
+                SceneNodeModel(nodeData, this)
             } else {
                 logE { "Failed to resolve node with ID $nodeId in scene $name" }
                 null
@@ -84,17 +87,19 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : EditorN
         }
     }
 
-    suspend fun addSceneNode(nodeModel: SceneNodeModel, parent: EditorNodeModel) {
+    fun addSceneNode(nodeModel: SceneNodeModel, parent: EditorNodeModel) {
+        require(nodeModel.isCreated) { "SceneNodeModel needs to be created before being added to SceneModel" }
+
         project.entities += nodeModel
         project.addSceneNodeData(nodeModel.nodeData)
         nodeModels[nodeModel.nodeId] = nodeModel
         nodesToNodeModels[nodeModel.node] = nodeModel
         parent.addChild(nodeModel)
 
-        if (nodeModel.isCreated) {
-            nodeModel.getComponents<UpdateSceneBackgroundComponent>().forEach { it.updateBackground(sceneBackground) }
-        }
-        nodeModel.nodeData.childNodeIds.mapNotNull { resolveNode(it) }.forEach { addSceneNode(it, nodeModel) }
+        nodeModel.getComponents<UpdateSceneBackgroundComponent>().forEach { it.updateBackground(sceneBackground) }
+        nodeModel.nodeData.childNodeIds
+            .mapNotNull { resolveNode(it) }
+            .forEach { addSceneNode(it, nodeModel) }
     }
 
     fun removeSceneNode(nodeModel: SceneNodeModel, parent: EditorNodeModel) {

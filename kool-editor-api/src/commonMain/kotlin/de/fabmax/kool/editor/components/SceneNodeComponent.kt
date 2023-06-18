@@ -6,7 +6,7 @@ import de.fabmax.kool.editor.model.SceneNodeModel
 
 abstract class SceneNodeComponent : EditorModelComponent {
 
-    protected var _sceneNode: SceneNodeModel? = null
+    private var _sceneNode: SceneNodeModel? = null
     val sceneNode: SceneNodeModel
         get() = requireNotNull(_sceneNode) { "SceneNodeComponent was not yet created" }
 

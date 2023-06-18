@@ -7,6 +7,7 @@ import de.fabmax.kool.editor.data.PbrShaderData
 import de.fabmax.kool.editor.data.ProjectData
 import de.fabmax.kool.editor.data.SceneNodeData
 import de.fabmax.kool.modules.ui2.mutableStateListOf
+import de.fabmax.kool.util.launchOnMainThread
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 
@@ -35,6 +36,12 @@ class EditorProject(val projectData: ProjectData) {
                 val sceneModel = created.getOrPut(sceneNodeId) { SceneModel(sceneData, this) }
                 sceneModel.createScene()
             }
+        }
+    }
+
+    fun reset() {
+        launchOnMainThread {
+            created.values.forEach { it.initComponents() }
         }
     }
 

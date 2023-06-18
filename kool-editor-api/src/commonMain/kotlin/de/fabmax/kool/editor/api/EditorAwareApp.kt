@@ -12,7 +12,21 @@ interface EditorAwareApp {
      * (re-)loaded or by the Launcher when the app was started in standalone mode. The two modes can be distinguished
      * via [AppState.isInEditor]
      */
-    suspend fun startApp(projectModel: EditorProject, ctx: KoolContext)
+    suspend fun loadApp(projectModel: EditorProject, ctx: KoolContext)
+
+    /**
+     * Called after the app is loaded and starts the app execution. This function is either called
+     * directly after [loadApp] in case the app runs in standalone mode or when the user enables play mode in the
+     * editor. The two modes can be distinguished via [AppState.isInEditor]
+     */
+    fun startApp(ctx: KoolContext) { }
+
+    /**
+     * Called only by the editor, when the reset button is clicked during play mode and should reset all app state
+     * to the initial state. This is kind of optional, since the app can also be stopped and restarted, which will
+     * trigger a full app reload. However, a full reload is much slower.
+     */
+    fun resetApp(ctx: KoolContext) { }
 
     /**
      * Called on app shutdown - either because the app reloaded and the old version is about to be discarded or the
@@ -23,11 +37,12 @@ interface EditorAwareApp {
     fun launchStandalone(ctx: KoolContext) {
         launchOnMainThread {
             val projModel = EditorProject.loadFromAssets() ?: throw IllegalStateException("kool-project.json not found")
-            startApp(projModel, ctx)
+            loadApp(projModel, ctx)
             val createdScenes = projModel.getCreatedScenes()
             createdScenes.forEach {
                 ctx.scenes += it.node
             }
+            startApp(ctx)
         }
 
         ctx.applicationCallbacks = object : ApplicationCallbacks {

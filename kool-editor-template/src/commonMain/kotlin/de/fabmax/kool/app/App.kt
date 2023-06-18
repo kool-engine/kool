@@ -7,7 +7,7 @@ import de.fabmax.kool.editor.model.EditorProject
 import de.fabmax.kool.scene.defaultOrbitCamera
 
 class App : EditorAwareApp {
-    override suspend fun startApp(projectModel: EditorProject, ctx: KoolContext) {
+    override suspend fun loadApp(projectModel: EditorProject, ctx: KoolContext) {
         projectModel.create()
 
         if (!AppState.isInEditor) {

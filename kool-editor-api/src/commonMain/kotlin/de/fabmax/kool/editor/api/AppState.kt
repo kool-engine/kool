@@ -8,7 +8,10 @@ object AppState {
     var appModeState = mutableStateOf(AppMode.PLAY)
 
     val isInEditor: Boolean get() = isInEditorState.value
+
     val appMode: AppMode get() = appModeState.value
+    val isEditMode: Boolean get() = appMode == AppMode.EDIT
+    val isPlayMode: Boolean get() = appMode == AppMode.PLAY || appMode == AppMode.PAUSE
 
 }
 

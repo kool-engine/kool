@@ -35,6 +35,7 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
     val editorOverlay = scene("editor-overlay") { addNode(editorContent) }
 
     val appLoader = AppLoader(this, paths)
+    val modeController = AppModeController(this)
     val availableAssets = AvailableAssets(paths.assetsPath)
     val ui = EditorUi(this)
 
@@ -141,7 +142,7 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
         AppState.isInEditorState.set(true)
         AppState.appModeState.set(AppMode.EDIT)
 
-        loadedApp.app.startApp(EditorState.projectModel, ctx)
+        loadedApp.app.loadApp(EditorState.projectModel, ctx)
 
         // add scene objects from new app
         EditorState.projectModel.getCreatedScenes().map { it.node }.let { newScenes ->
