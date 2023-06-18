@@ -13,7 +13,7 @@ class App : EditorAwareApp {
         if (!AppState.isInEditor) {
             // fixme: camera not yet included in project model, add a default one
             projectModel.getCreatedScenes().forEach {
-                it.node.defaultOrbitCamera()
+                it.drawNode.defaultOrbitCamera()
             }
         }
     }

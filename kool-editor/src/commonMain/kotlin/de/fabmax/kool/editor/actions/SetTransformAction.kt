@@ -15,11 +15,11 @@ class SetTransformAction(
 
     override fun apply() {
         editedNodeModel.transform.transformState.set(TransformData(newTransform))
-        editedNodeModel.node.transform.set(newTransform)
+        editedNodeModel.drawNode.transform.set(newTransform)
     }
 
     override fun undo() {
         editedNodeModel.transform.transformState.set(TransformData(oldTransform))
-        editedNodeModel.node.transform.set(oldTransform)
+        editedNodeModel.drawNode.transform.set(oldTransform)
     }
 }

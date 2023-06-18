@@ -5,12 +5,14 @@ import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.LoadableFile
 import de.fabmax.kool.editor.actions.EditorActions
+import de.fabmax.kool.editor.actions.deleteSelectedNode
 import de.fabmax.kool.editor.api.AppAssets
 import de.fabmax.kool.editor.api.AppMode
 import de.fabmax.kool.editor.api.AppState
 import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.editor.ui.EditorUi
 import de.fabmax.kool.input.InputStack
+import de.fabmax.kool.input.KeyboardInput
 import de.fabmax.kool.input.LocalKeyCode
 import de.fabmax.kool.input.PointerState
 import de.fabmax.kool.math.RayTest
@@ -93,6 +95,12 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
         ) {
             EditorActions.redo()
         }
+        editorInputContext.addKeyListener(
+            name = "Delete selected object",
+            keyCode = KeyboardInput.KEY_DEL
+        ) {
+            EditorState.deleteSelectedNode()
+        }
 
         InputStack.pushTop(editorInputContext)
     }
@@ -103,7 +111,7 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
 
             override fun handlePointer(pointerState: PointerState, ctx: KoolContext) {
                 val sceneModel = EditorState.selectedScene.value ?: return
-                val appScene = sceneModel.node
+                val appScene = sceneModel.drawNode
                 val ptr = pointerState.primaryPointer
                 if (ptr.isLeftButtonClicked) {
                     if (appScene.computePickRay(ptr, ctx, rayTest.ray)) {
@@ -131,7 +139,7 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
         editorCameraTransform.clearChildren()
         editorCameraTransform.addNode(editorOverlay.camera)
 
-        EditorState.projectModel.getCreatedScenes().map { it.node }.let { oldScenes ->
+        EditorState.projectModel.getCreatedScenes().map { it.drawNode }.let { oldScenes ->
             ctx.scenes -= oldScenes.toSet()
             oldScenes.forEach {
                 it.dispose(ctx)
@@ -145,7 +153,7 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
         loadedApp.app.loadApp(EditorState.projectModel, ctx)
 
         // add scene objects from new app
-        EditorState.projectModel.getCreatedScenes().map { it.node }.let { newScenes ->
+        EditorState.projectModel.getCreatedScenes().map { it.drawNode }.let { newScenes ->
             ctx.scenes += newScenes
             newScenes.forEach { scene ->
                 editorCameraTransform.addNode(scene.camera)

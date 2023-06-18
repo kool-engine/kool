@@ -31,7 +31,7 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", ui) 
         transformProperties.editHandlers += object : ValueEditHandler<Mat4d> {
             override fun onEdit(value: Mat4d) {
                 val selectedNd = EditorState.selectedNode.value as? SceneNodeModel
-                selectedNd?.node?.transform?.set(value)
+                selectedNd?.drawNode?.transform?.set(value)
             }
 
             override fun onEditEnd(startValue: Mat4d, endValue: Mat4d) {
@@ -64,11 +64,11 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", ui) 
         surface.onEachFrame {
             val selectedNd = EditorState.selectedNode.value as? SceneNodeModel
             if (selectedNd != null) {
-                selectedNd.node.transform.getPosition(tmpNodePos)
+                selectedNd.drawNode.transform.getPosition(tmpNodePos)
                 transformProperties.setPosition(tmpNodePos)
-                selectedNd.node.transform.matrix.getRotation(tmpNodeRotMat)
+                selectedNd.drawNode.transform.matrix.getRotation(tmpNodeRotMat)
                 transformProperties.setRotation(tmpNodeRotMat.getEulerAngles(tmpNodeRot))
-                selectedNd.node.transform.matrix.getScale(tmpNodeScale)
+                selectedNd.drawNode.transform.matrix.getScale(tmpNodeScale)
                 transformProperties.setScale(tmpNodeScale)
             }
         }

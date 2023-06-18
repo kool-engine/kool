@@ -5,8 +5,8 @@ import de.fabmax.kool.editor.AssetItem
 import de.fabmax.kool.editor.EditorState
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.actions.AddNodeAction
+import de.fabmax.kool.editor.actions.DeleteNodeAction
 import de.fabmax.kool.editor.actions.EditorActions
-import de.fabmax.kool.editor.actions.RemoveNodeAction
 import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.editor.model.EditorNodeModel
 import de.fabmax.kool.editor.model.SceneModel
@@ -41,8 +41,8 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         val nodeData = SceneNodeData("${meshShape.name}-$id", id)
         nodeData.components += MeshComponentData(meshShape)
         nodeData.components += MaterialComponentData(-1)
-        val mesh = SceneNodeModel(nodeData, parentScene)
-        EditorActions.applyAction(AddNodeAction(mesh, parent.nodeModel, parentScene, this))
+        val mesh = SceneNodeModel(nodeData, parent.nodeModel, parentScene)
+        EditorActions.applyAction(AddNodeAction(mesh))
     }
 
     private fun addNewModel(parent: SceneObjectItem, modelAsset: AssetItem) {
@@ -50,23 +50,21 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         val id = EditorState.projectModel.nextId()
         val nodeData = SceneNodeData(modelAsset.name, id)
         nodeData.components += ModelComponentData(modelAsset.path)
-        val mesh = SceneNodeModel(nodeData, parentScene)
-        EditorActions.applyAction(AddNodeAction(mesh, parent.nodeModel, parentScene, this))
+        val mesh = SceneNodeModel(nodeData, parent.nodeModel, parentScene)
+        EditorActions.applyAction(AddNodeAction(mesh))
     }
 
     private fun addEmptyNode(parent: SceneObjectItem) {
         val parentScene = EditorState.selectedScene.value ?: return
         val id = EditorState.projectModel.nextId()
         val nodeData = SceneNodeData("Empty-$id", id)
-        val mesh = SceneNodeModel(nodeData, parentScene)
-        EditorActions.applyAction(AddNodeAction(mesh, parent.nodeModel, parentScene, this))
+        val mesh = SceneNodeModel(nodeData, parent.nodeModel, parentScene)
+        EditorActions.applyAction(AddNodeAction(mesh))
     }
 
     private fun deleteNode(node: SceneObjectItem) {
-        val parentScene = EditorState.selectedScene.value ?: return
-        val parentNode = node.parentModel ?: return
         val removeNode = node.nodeModel as? SceneNodeModel ?: return
-        EditorActions.applyAction(RemoveNodeAction(removeNode, parentNode, parentScene, this))
+        EditorActions.applyAction(DeleteNodeAction(removeNode))
     }
 
     override fun UiScope.compose() {
@@ -75,7 +73,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         if (!isTreeValid.use()) {
             treeItems.clear()
             EditorState.projectModel.getCreatedScenes().forEach {
-                treeItems.appendNode(it, null, it.node, it, 0)
+                treeItems.appendNode(it, it.drawNode, it, 0)
             }
             isTreeValid.set(true)
         }
@@ -212,7 +210,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         }
     }
 
-    private fun MutableList<SceneObjectItem>.appendNode(scene: SceneModel, parent: EditorNodeModel?, node: Node, selectModel: EditorNodeModel, depth: Int) {
+    private fun MutableList<SceneObjectItem>.appendNode(scene: SceneModel, node: Node, selectModel: EditorNodeModel, depth: Int) {
         // get nodeModel for node, this should be equal to [selectModel] for regular objects but can be null if node
         // does not correspond to a scene model item (e.g. child meshes of a gltf model)
         val nodeModel = scene.nodesToNodeModels[node]
@@ -226,11 +224,11 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
                     is Model -> SceneObjectType.MODEL
                     else -> SceneObjectType.GROUP
                 }
-                SceneObjectItem(node, nodeModel, parent, type, depth)
+                SceneObjectItem(node, nodeModel, type, depth)
             }
         } else {
             nodeTreeItemMap.getOrPut(node) {
-                SceneObjectItem(node, selectModel, null, SceneObjectType.NON_MODEL_NODE, depth)
+                SceneObjectItem(node, selectModel, SceneObjectType.NON_MODEL_NODE, depth)
             }
         }
 
@@ -242,7 +240,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
             node.children.forEach {
                 if (it.isVisible && !it.tags.hasTag(KoolEditor.TAG_EDITOR_SUPPORT_CONTENT)) {
                     val childNodeModel = scene.nodesToNodeModels[it]
-                    appendNode(scene, nodeModel, it, childNodeModel ?: selectModel, depth + 1)
+                    appendNode(scene, it, childNodeModel ?: selectModel, depth + 1)
                 }
             }
         }
@@ -251,7 +249,6 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
     private inner class SceneObjectItem(
         var node: Node,
         val nodeModel: EditorNodeModel,
-        val parentModel: EditorNodeModel?,
         val type: SceneObjectType,
         val depth: Int
     ) {

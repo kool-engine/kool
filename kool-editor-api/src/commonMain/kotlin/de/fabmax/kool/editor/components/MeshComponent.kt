@@ -37,7 +37,7 @@ class MeshComponent(override val componentData: MeshComponentData) :
         updateGeometry()
 
         if (sceneNode.isCreated) {
-            sceneNode.node.addNode(mesh)
+            sceneNode.drawNode.addNode(mesh)
         }
     }
 

@@ -40,7 +40,7 @@ interface EditorAwareApp {
             loadApp(projModel, ctx)
             val createdScenes = projModel.getCreatedScenes()
             createdScenes.forEach {
-                ctx.scenes += it.node
+                ctx.scenes += it.drawNode
             }
             startApp(ctx)
         }

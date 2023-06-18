@@ -10,9 +10,9 @@ import de.fabmax.kool.editor.data.TransformData
 import de.fabmax.kool.scene.Model
 import de.fabmax.kool.scene.Node
 
-class SceneNodeModel(nodeData: SceneNodeData, val scene: SceneModel) : EditorNodeModel(nodeData) {
+class SceneNodeModel(nodeData: SceneNodeData, val parent: EditorNodeModel, val scene: SceneModel) : EditorNodeModel(nodeData) {
 
-    override val node: Node
+    override val drawNode: Node
         get() = created ?: throw IllegalStateException("Node was not yet created")
 
     private var created: Node? = null
@@ -29,12 +29,12 @@ class SceneNodeModel(nodeData: SceneNodeData, val scene: SceneModel) : EditorNod
 
     override fun addChild(child: SceneNodeModel) {
         nodeData.childNodeIds += child.nodeId
-        node.addNode(child.node)
+        drawNode.addNode(child.drawNode)
     }
 
     override fun removeChild(child: SceneNodeModel) {
         nodeData.childNodeIds -= child.nodeId
-        node.removeNode(child.node)
+        drawNode.removeNode(child.drawNode)
     }
 
     override suspend fun createComponents() {

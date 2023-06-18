@@ -118,12 +118,12 @@ class ModelComponent(override val componentData: ModelComponentData) :
             val oldModel = model
             _model = createModel(ibl)
 
-            if (sceneNode.node == oldModel) {
+            if (sceneNode.drawNode == oldModel) {
                 sceneNode.replaceCreatedNode(model)
             } else {
-                val idx = sceneNode.node.children.indexOf(oldModel)
-                sceneNode.node.removeNode(oldModel)
-                sceneNode.node.addNode(model, idx)
+                val idx = sceneNode.drawNode.children.indexOf(oldModel)
+                sceneNode.drawNode.removeNode(oldModel)
+                sceneNode.drawNode.addNode(model, idx)
                 oldModel.dispose(KoolSystem.requireContext())
             }
 

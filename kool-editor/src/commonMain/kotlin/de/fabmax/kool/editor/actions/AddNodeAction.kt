@@ -1,17 +1,12 @@
 package de.fabmax.kool.editor.actions
 
 import de.fabmax.kool.editor.EditorState
-import de.fabmax.kool.editor.model.EditorNodeModel
-import de.fabmax.kool.editor.model.SceneModel
+import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.model.SceneNodeModel
-import de.fabmax.kool.editor.ui.SceneObjectTree
 import de.fabmax.kool.util.launchOnMainThread
 
 class AddNodeAction(
-    private val addNodeModel: SceneNodeModel,
-    private val parentNodeModel: EditorNodeModel,
-    private val parentSceneModel: SceneModel,
-    private val sceneTree: SceneObjectTree
+    private val addNodeModel: SceneNodeModel
 ) : EditorAction {
 
     override fun apply() {
@@ -21,8 +16,8 @@ class AddNodeAction(
                 addNodeModel.createComponents()
             }
 
-            parentSceneModel.addSceneNode(addNodeModel, parentNodeModel)
-            sceneTree.refreshSceneTree()
+            addNodeModel.scene.addSceneNode(addNodeModel)
+            KoolEditor.instance.ui.sceneBrowser.refreshSceneTree()
 
             if (needsInit) {
                 addNodeModel.initComponents()
@@ -34,7 +29,7 @@ class AddNodeAction(
         if (EditorState.selectedNode.value == addNodeModel) {
             EditorState.selectedNode.set(null)
         }
-        parentSceneModel.removeSceneNode(addNodeModel, parentNodeModel)
-        sceneTree.refreshSceneTree()
+        addNodeModel.scene.removeSceneNode(addNodeModel)
+        KoolEditor.instance.ui.sceneBrowser.refreshSceneTree()
     }
 }

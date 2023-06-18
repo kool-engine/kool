@@ -34,7 +34,7 @@ class SceneBackgroundComponent(override val componentData: SceneBackgroundCompon
         }
         // early load hdri background (if applicable) so that other components can already use it during creation
         val hdriBg = backgroundState.value as? SceneBackgroundData.Hdri ?: return
-        loadedEnvironmentMaps = AppAssets.loadHdriEnvironment(sceneModel!!.node, hdriBg.hdriPath)
+        loadedEnvironmentMaps = AppAssets.loadHdriEnvironment(sceneModel!!.drawNode, hdriBg.hdriPath)
     }
 
     override suspend fun initComponent(nodeModel: EditorNodeModel) {
@@ -45,7 +45,7 @@ class SceneBackgroundComponent(override val componentData: SceneBackgroundCompon
         val scene = sceneModel ?: return
         launchOnMainThread {
             if (bgData is SceneBackgroundData.Hdri) {
-                scene.sceneBackground.loadedEnvironmentMaps = AppAssets.loadHdriEnvironment(scene.node, bgData.hdriPath)
+                scene.sceneBackground.loadedEnvironmentMaps = AppAssets.loadHdriEnvironment(scene.drawNode, bgData.hdriPath)
                 UpdateSceneBackgroundComponent.updateSceneBackground(scene)
             } else {
                 scene.sceneBackground.loadedEnvironmentMaps = null

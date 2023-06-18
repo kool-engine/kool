@@ -15,7 +15,7 @@ import de.fabmax.kool.util.logE
 
 class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : EditorNodeModel(sceneData) {
 
-    override val node: Scene
+    override val drawNode: Scene
         get() = created ?: throw IllegalStateException("Scene was not yet created")
 
     private var created: Scene? = null
@@ -48,11 +48,11 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : EditorN
         super.createComponents()
 
         nodeData.childNodeIds.forEach { childId ->
-            resolveNode(childId)?.let {
+            resolveNode(childId, this)?.let {
                 if (!it.isCreated) {
                     it.createComponents()
                 }
-                addSceneNode(it, this)
+                addSceneNode(it)
             }
         }
     }
@@ -74,12 +74,12 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : EditorN
         backgroundUpdater.skybox = null
     }
 
-    private fun resolveNode(nodeId: Long): SceneNodeModel? {
+    private fun resolveNode(nodeId: Long, parent: EditorNodeModel): SceneNodeModel? {
         val nodeModel = nodeModels[nodeId]
         return if (nodeModel != null) nodeModel else {
             val nodeData = project.sceneNodeData[nodeId]
             if (nodeData != null) {
-                SceneNodeModel(nodeData, this)
+                SceneNodeModel(nodeData, parent, this)
             } else {
                 logE { "Failed to resolve node with ID $nodeId in scene $name" }
                 null
@@ -87,40 +87,40 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : EditorN
         }
     }
 
-    fun addSceneNode(nodeModel: SceneNodeModel, parent: EditorNodeModel) {
+    fun addSceneNode(nodeModel: SceneNodeModel) {
         require(nodeModel.isCreated) { "SceneNodeModel needs to be created before being added to SceneModel" }
 
         project.entities += nodeModel
         project.addSceneNodeData(nodeModel.nodeData)
         nodeModels[nodeModel.nodeId] = nodeModel
-        nodesToNodeModels[nodeModel.node] = nodeModel
-        parent.addChild(nodeModel)
+        nodesToNodeModels[nodeModel.drawNode] = nodeModel
+        nodeModel.parent.addChild(nodeModel)
 
         nodeModel.getComponents<UpdateSceneBackgroundComponent>().forEach { it.updateBackground(sceneBackground) }
         nodeModel.nodeData.childNodeIds
-            .mapNotNull { resolveNode(it) }
-            .forEach { addSceneNode(it, nodeModel) }
+            .mapNotNull { resolveNode(it, nodeModel) }
+            .forEach { addSceneNode(it) }
     }
 
-    fun removeSceneNode(nodeModel: SceneNodeModel, parent: EditorNodeModel) {
-        nodeModel.nodeData.childNodeIds.mapNotNull { nodeModels[nodeId] }.forEach { removeSceneNode(it, nodeModel) }
+    fun removeSceneNode(nodeModel: SceneNodeModel) {
+        nodeModel.nodeData.childNodeIds.mapNotNull { nodeModels[nodeId] }.forEach { removeSceneNode(it) }
 
         project.entities -= nodeModel
         project.removeSceneNodeData(nodeModel.nodeData)
         nodeModels -= nodeModel.nodeId
-        nodesToNodeModels -= nodeModel.node
+        nodesToNodeModels -= nodeModel.drawNode
 
-        parent.removeChild(nodeModel)
+        nodeModel.parent.removeChild(nodeModel)
     }
 
     override fun addChild(child: SceneNodeModel) {
         nodeData.childNodeIds += child.nodeId
-        node.addNode(child.node)
+        drawNode.addNode(child.drawNode)
     }
 
     override fun removeChild(child: SceneNodeModel) {
         nodeData.childNodeIds -= child.nodeId
-        node.removeNode(child.node)
+        drawNode.removeNode(child.drawNode)
     }
 
     private inner class BackgroundUpdater : UpdateSceneBackgroundComponent {
@@ -133,12 +133,12 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : EditorN
         }
 
         override fun updateSingleColorBg(bgColorSrgb: Color) {
-            node.mainRenderPass.clearColor = bgColorSrgb
+            drawNode.mainRenderPass.clearColor = bgColorSrgb
             skybox?.isVisible = false
         }
 
         override fun updateHdriBg(hdriBg: SceneBackgroundData.Hdri, ibl: EnvironmentMaps) {
-            node.mainRenderPass.clearColor = null
+            drawNode.mainRenderPass.clearColor = null
             val skybox = this.skybox ?: Skybox.Cube()
             skybox.name = "Skybox"
             skybox.isVisible = true
@@ -147,8 +147,8 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : EditorN
             if (this.skybox == null) {
                 this.skybox = skybox
             }
-            node.removeNode(skybox)
-            node.addNode(skybox, 0)
+            drawNode.removeNode(skybox)
+            drawNode.addNode(skybox, 0)
         }
     }
 }

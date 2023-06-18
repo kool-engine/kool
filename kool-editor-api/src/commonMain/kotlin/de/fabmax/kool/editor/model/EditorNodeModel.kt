@@ -16,7 +16,7 @@ abstract class EditorNodeModel(val nodeData: SceneNodeData) {
     val name: String
         get() = nodeData.name
 
-    abstract val node: Node
+    abstract val drawNode: Node
     abstract val isCreated: Boolean
 
     val components = mutableStateListOf<EditorModelComponent>()

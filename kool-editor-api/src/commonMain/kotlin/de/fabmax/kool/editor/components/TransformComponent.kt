@@ -17,7 +17,7 @@ class TransformComponent(override val componentData: TransformComponentData) :
             componentData.transform = it
         }
         if (isCreated) {
-            it.toTransform(sceneNode.node.transform)
+            it.toTransform(sceneNode.drawNode.transform)
         }
     }
 
@@ -25,7 +25,7 @@ class TransformComponent(override val componentData: TransformComponentData) :
 
     override suspend fun initComponent(nodeModel: EditorNodeModel) {
         transformState.set(componentData.transform)
-        componentData.transform.toTransform(nodeModel.node.transform)
+        componentData.transform.toTransform(nodeModel.drawNode.transform)
     }
 
     fun getMatrix(): Mat4d = transformState.value.toMat4d(tmpMat)

@@ -98,7 +98,7 @@ class SceneBackgroundEditor(var sceneModel: SceneModel) : Composable {
         ) {
             if (it.path != hdriBg.hdriPath) {
                 launchOnMainThread {
-                    sceneModel.sceneBackground.loadedEnvironmentMaps = AppAssets.loadHdriEnvironment(sceneModel.node, it.path)
+                    sceneModel.sceneBackground.loadedEnvironmentMaps = AppAssets.loadHdriEnvironment(sceneModel.drawNode, it.path)
                     val oldBg = sceneModel.sceneBackground.backgroundState.value
                     val newBg = SceneBackgroundData.Hdri(it.path, skyLod.value)
                     EditorActions.applyAction(SetBackgroundAction(sceneModel, oldBg, newBg))

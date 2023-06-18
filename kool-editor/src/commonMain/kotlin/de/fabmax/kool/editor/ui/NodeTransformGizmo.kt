@@ -33,7 +33,7 @@ class NodeTransformGizmo(private val editor: KoolEditor) : Node("Node transform 
 
         override fun onDragStart(ctx: KoolContext) {
             transformNodeModel?.let {
-                val transformNode = it.node
+                val transformNode = it.drawNode
                 startTransform.set(transformNode.transform.matrix)
                 hasTransformAuthority = true
             }
@@ -42,7 +42,7 @@ class NodeTransformGizmo(private val editor: KoolEditor) : Node("Node transform 
         override fun onDragFinished(ctx: KoolContext) {
             hasTransformAuthority = false
             transformNodeModel?.let {
-                val transformNode = it.node
+                val transformNode = it.drawNode
                 ObjectPropertyEditor.applyTransformAction(it, startTransform, transformNode.transform.matrix)
             }
         }
@@ -54,7 +54,7 @@ class NodeTransformGizmo(private val editor: KoolEditor) : Node("Node transform 
 
         gizmo.gizmoListener = gizmoListener
         gizmo.onUpdate {
-            transformNodeModel?.node?.let {
+            transformNodeModel?.drawNode?.let {
                 if (hasTransformAuthority) {
                     val gizmoTransform = Mat4d()
                     val tmp = Mat4d()
@@ -89,7 +89,7 @@ class NodeTransformGizmo(private val editor: KoolEditor) : Node("Node transform 
     fun setTransformObject(nodeModel: SceneNodeModel?) {
         transformNodeModel = nodeModel
         gizmo.isVisible = nodeModel != null
-        nodeModel?.node?.let {
+        nodeModel?.drawNode?.let {
             gizmo.setFixedScale(sqrt(it.globalRadius) + 0.5f)
         }
         if (nodeModel != null) {
