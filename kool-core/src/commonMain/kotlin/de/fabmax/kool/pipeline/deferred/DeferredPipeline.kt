@@ -258,11 +258,10 @@ class DeferredPipeline(val scene: Scene, val cfg: DeferredPipelineConfig) {
     private fun createShadowMapsFromSceneLights(): List<ShadowMap> {
         val shadows = mutableListOf<ShadowMap>()
         for (i in 0 until min(maxGlobalLights, scene.lighting.lights.size)) {
-            val light = scene.lighting.lights[i]
-            val shadowMap: ShadowMap? = when (light.type) {
-                Light.Type.DIRECTIONAL -> CascadedShadowMap(scene, i, drawNode = sceneContent)
-                Light.Type.SPOT -> SimpleShadowMap(scene, i, drawNode = sceneContent)
-                Light.Type.POINT -> {
+            val shadowMap: ShadowMap? = when (scene.lighting.lights[i]) {
+                is Light.Directional -> CascadedShadowMap(scene, i, drawNode = sceneContent)
+                is Light.Spot -> SimpleShadowMap(scene, i, drawNode = sceneContent)
+                is Light.Point -> {
                     logW { "Point light shadow maps not yet supported" }
                     null
                 }

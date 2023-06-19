@@ -22,8 +22,7 @@ class DeferredPointLights(var isDynamic: Boolean) {
     private val modelMat = Mat4f()
     private val encodedLightData = FloatArray(8)
 
-    //val lightShader = DeferredLightShader(Light.Type.POINT)
-    val lightShader = DeferredLightShader(Light.Type.POINT)
+    val lightShader = DeferredLightShader(Light.Point.ENCODING)
 
     val mesh = Mesh(listOf(Attribute.POSITIONS)).apply {
         isFrustumChecked = false
@@ -64,7 +63,7 @@ class DeferredPointLights(var isDynamic: Boolean) {
         encodedLightData[0] = light.position.x
         encodedLightData[1] = light.position.y
         encodedLightData[2] = light.position.z
-        encodedLightData[3] = Light.Type.POINT.encoded
+        encodedLightData[3] = Light.Point.ENCODING
 
         encodedLightData[4] = light.color.r * light.intensity
         encodedLightData[5] = light.color.g * light.intensity

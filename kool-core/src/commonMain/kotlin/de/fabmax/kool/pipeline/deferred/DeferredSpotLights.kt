@@ -26,7 +26,7 @@ class DeferredSpotLights(val maxSpotAngle: Float) {
     private val encodedLightData = FloatArray(12)
     private val tmpLightDir = MutableVec3f()
 
-    val lightShader = DeferredLightShader(Light.Type.SPOT)
+    val lightShader = DeferredLightShader(Light.Spot.ENCODING)
 
     val mesh = Mesh(Attribute.POSITIONS, name = "DeferredSpotLights").apply {
         isFrustumChecked = false
@@ -67,7 +67,7 @@ class DeferredSpotLights(val maxSpotAngle: Float) {
         encodedLightData[0] = light.position.x
         encodedLightData[1] = light.position.y
         encodedLightData[2] = light.position.z
-        encodedLightData[3] = Light.Type.SPOT.encoded
+        encodedLightData[3] = Light.Spot.ENCODING
 
         encodedLightData[4] = tmpLightDir.x
         encodedLightData[5] = tmpLightDir.y

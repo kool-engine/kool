@@ -74,8 +74,8 @@ class SimplificationDemo : DemoScene("Simplification") {
 
         lighting.lights.apply {
             clear()
-            add(Light().setDirectional(Vec3f(-1f, -1f, 1f)).setColor(MdColor.RED.mix(Color.WHITE, 0.25f).toLinear(), 2f))
-            add(Light().setDirectional(Vec3f(1f, -1f, -1f)).setColor(MdColor.CYAN.mix(Color.WHITE, 0.25f).toLinear(), 2f))
+            add(Light.Directional().setup(Vec3f(-1f, -1f, 1f)).setColor(MdColor.RED.mix(Color.WHITE, 0.25f).toLinear(), 2f))
+            add(Light.Directional().setup(Vec3f(1f, -1f, -1f)).setColor(MdColor.CYAN.mix(Color.WHITE, 0.25f).toLinear(), 2f))
         }
 
         addGroup {

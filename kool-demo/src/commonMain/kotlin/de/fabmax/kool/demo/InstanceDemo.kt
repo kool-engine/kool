@@ -64,8 +64,8 @@ class InstanceDemo : DemoScene("Instanced Drawing") {
             }
         }
 
-        lighting.singleLight {
-            setDirectional(Vec3f(-1f))
+        lighting.singleDirectionalLight {
+            setup(Vec3f(-1f))
             setColor(Color.WHITE, 5f)
         }
 

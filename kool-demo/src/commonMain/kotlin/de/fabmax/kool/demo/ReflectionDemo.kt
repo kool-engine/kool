@@ -3,7 +3,6 @@ package de.fabmax.kool.demo
 import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.menu.DemoMenu
-import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.randomF
 import de.fabmax.kool.math.toRad
@@ -29,6 +28,7 @@ class ReflectionDemo : DemoScene("Reflections") {
             LightMesh(MdColor.GREEN))
 
     private val lightChoices = listOf("1", "2", "3", "4")
+    private val lightGroup = Node("light-group")
 
     private val isSsrEnabled = mutableStateOf(true).onChange { deferredPipeline.isSsrEnabled = it }
     private val ssrMapSize = mutableStateOf(0.5f).onChange { deferredPipeline.reflectionMapSize = it }
@@ -66,10 +66,15 @@ class ReflectionDemo : DemoScene("Reflections") {
             }
         }
 
+        addNode(lightGroup)
+        lightGroup.onUpdate {
+            lightGroup.transform.rotate(Time.deltaT * -3f, Vec3f.Y_AXIS)
+        }
+
         lighting.lights.clear()
         lights.forEach {
             lighting.lights.add(it.light)
-            addNode(it)
+            lightGroup.addNode(it)
         }
 
         setupDeferred(this)
@@ -243,19 +248,19 @@ class ReflectionDemo : DemoScene("Reflections") {
     }
 
     private inner class LightMesh(val color: Color) : Node() {
-        val light = Light()
+        val light = Light.Spot()
 
         private val spotAngleMesh = LineMesh().apply { isCastingShadow = false }
 
         private var isEnabled = true
         private var animPos = 0.0
         private val lightMeshShader = KslUnlitShader { color { uniformColor() } }
-        private val meshPos = MutableVec3f()
-        private var anglePos = 0f
         private val rotOff = randomF(0f, 3f)
 
         init {
-            light.setSpot(Vec3f.ZERO, Vec3f.X_AXIS, 50f)
+            light.setup(Vec3f.ZERO, Vec3f.X_AXIS, 50f)
+            addNode(light)
+
             addColorMesh {
                 isCastingShadow = false
                 generate {
@@ -282,23 +287,10 @@ class ReflectionDemo : DemoScene("Reflections") {
             addNode(spotAngleMesh)
 
             onUpdate += {
-                if (isAutoRotate.value) {
-                    animPos += Time.deltaT
-                }
-
+                animPos += Time.deltaT
                 val r = cos(animPos / 15 + rotOff).toFloat() * lightRandomness.value
-                light.spotAngle = 60f - r * 20f
                 updateSpotAngleMesh()
-
-                transform.setIdentity()
-                transform.rotate(animPos.toFloat() * -10f, Vec3f.Y_AXIS)
-                transform.translate(meshPos)
-                transform.rotate(anglePos, Vec3f.Y_AXIS)
-                transform.rotate(30f + 20f * r, Vec3f.Z_AXIS)
-
-                transform.transform(light.position.set(Vec3f.ZERO), 1f)
-                transform.transform(light.direction.set(Vec3f.NEG_X_AXIS), 0f)
-                light.isEncodingDirty = true
+                light.setup(Vec3f.ZERO, Vec3f.NEG_X_AXIS, 60f - r * 20f)
             }
         }
 
@@ -322,10 +314,13 @@ class ReflectionDemo : DemoScene("Reflections") {
         }
 
         fun setup(angPos: Float) {
-            val x = cos(angPos.toRad()) * 10f
-            val z = sin(angPos.toRad()) * 10f
-            meshPos.set(x, 9f, -z)
-            anglePos = angPos
+            val r = cos(angPos / 15f + rotOff) * lightRandomness.value
+
+            transform.setIdentity()
+            transform.rotate(angPos, Vec3f.Y_AXIS)
+            transform.translate(10f, 9f, 0f)
+            transform.rotate(30f + 20f * r, Vec3f.Z_AXIS)
+
             val color = Color.WHITE.mix(color, lightSaturation.value, MutableColor())
             light.setColor(color.toLinear(), lightPower.value)
             lightMeshShader.color = color

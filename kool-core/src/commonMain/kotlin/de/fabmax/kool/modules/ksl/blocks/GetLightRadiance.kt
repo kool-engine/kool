@@ -15,7 +15,7 @@ class GetLightRadiance(parentScope: KslScopeBuilder, isFiniteSoi: Boolean) :
 
         body {
             val radiance = float3Var()
-            `if` (encLightPos.w eq Light.Type.DIRECTIONAL.encoded.const) {
+            `if` (encLightPos.w eq Light.Directional.ENCODING.const) {
                 radiance set encLightColor.rgb
 
             }.`else` {
@@ -26,7 +26,7 @@ class GetLightRadiance(parentScope: KslScopeBuilder, isFiniteSoi: Boolean) :
                     strength *= clamp((lightRadius - dist) / lightRadius, 0f.const, 1f.const)
                 }
 
-                `if`(encLightPos.w eq Light.Type.POINT.encoded.const) {
+                `if`(encLightPos.w eq Light.Point.ENCODING.const) {
                     radiance set encLightColor.rgb * strength
                 }.`else` {
                     // spot light

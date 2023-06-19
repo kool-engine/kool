@@ -148,12 +148,12 @@ class JointsDemo : DemoScene("Physics - Joints") {
             lights.clear()
             val l1 = Vec3f(80f, 120f, 100f)
             val l2 = Vec3f(-30f, 100f, 100f)
-            lights += Light().apply {
-                setSpot(l1, MutableVec3f(l1).scale(-1f).norm(), 45f)
+            lights += Light.Spot().apply {
+                setup(l1, MutableVec3f(l1).scale(-1f).norm(), 45f)
                 setColor(Color.WHITE.mix(MdColor.AMBER, 0.1f), 50000f)
             }
-            lights += Light().apply {
-                setSpot(l2, MutableVec3f(l2).scale(-1f).norm(), 45f)
+            lights += Light.Spot().apply {
+                setup(l2, MutableVec3f(l2).scale(-1f).norm(), 45f)
                 setColor(Color.WHITE.mix(MdColor.LIGHT_BLUE, 0.1f), 25000f)
             }
         }

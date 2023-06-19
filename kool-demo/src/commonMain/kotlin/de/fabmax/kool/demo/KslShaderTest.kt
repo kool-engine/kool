@@ -42,29 +42,18 @@ class KslShaderTest : DemoScene("KslShader") {
 
         lighting.apply {
             lights.clear()
-//            lights += Light().apply {
-//                setSpot(lightPoses[0].first, lightPoses[0].second, 60f)
-//                setColor(MdColor.AMBER.toLinear(), 20f)
-//            }
-//            lights += Light().apply {
-//                setSpot(lightPoses[1].first, lightPoses[1].second, 60f)
-//                setColor(MdColor.LIGHT_BLUE.toLinear(), 30f)
-//
-////                setDirectional(Vec3f(-1f, 1f, -1f))
-////                setColor(Color.WHITE, 0.2f)
-//            }
-            lights += Light().apply {
-                setSpot(lightPoses[2].first, lightPoses[2].second, 60f)
+            lights += Light.Spot().apply {
+                setup(lightPoses[2].first, lightPoses[2].second, 60f)
                 setColor(MdColor.LIGHT_GREEN.toLinear(), 30f)
             }
-            lights += Light().apply {
-                setSpot(lightPoses[3].first, lightPoses[3].second, 60f)
+            lights += Light.Spot().apply {
+                setup(lightPoses[3].first, lightPoses[3].second, 60f)
                 setColor(MdColor.ORANGE.toLinear(), 30f)
             }
         }
 
         val shadowMaps = List(lighting.lights.size) { i ->
-            if (lighting.lights[i].type == Light.Type.DIRECTIONAL) {
+            if (lighting.lights[i] is Light.Directional) {
                 CascadedShadowMap(this, i).apply { setMapRanges(0.05f, 0.25f, 1f) }
             } else {
                 SimpleShadowMap(this, i, 2048)
@@ -77,7 +66,7 @@ class KslShaderTest : DemoScene("KslShader") {
             lighting.lights.forEachIndexed { i, light ->
                 val pos = lightRotTransform.transform(MutableVec3f(lightPoses[i].first), 1f)
                 val dir = lightRotTransform.transform(MutableVec3f(lightPoses[i].second), 0f)
-                light.setSpot(pos, dir, 60f)
+                (light as Light.Spot).setup(pos, dir, 60f)
             }
         }
 

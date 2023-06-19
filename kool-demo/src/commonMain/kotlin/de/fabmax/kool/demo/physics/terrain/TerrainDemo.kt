@@ -19,10 +19,7 @@ import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.TextureProps
 import de.fabmax.kool.pipeline.ao.AoPipeline
-import de.fabmax.kool.scene.ColorMesh
-import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.scene.MeshInstanceList
-import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.*
 import kotlin.math.atan2
 
@@ -228,11 +225,9 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         mainRenderPass.clearColor = null
 
         // lighting
-        lighting.apply {
-            singleLight {
-                setDirectional(Vec3f(-1f, -1f, -1f))
-                setColor(Color.WHITE, 1f)
-            }
+        lighting.singleDirectionalLight {
+            setup(Vec3f(-1f, -1f, -1f))
+            setColor(Color.WHITE, 1f)
         }
         shadowMap = CascadedShadowMap(this@setupMainScene, 0, 300f).apply {
             setMapRanges(0.035f, 0.17f, 1f)
@@ -285,7 +280,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
 
         onUpdate += {
             wind.updateWind(Time.deltaT)
-            sky.updateLight(lighting.lights[0])
+            sky.updateLight(lighting.lights[0] as Light.Directional)
 
             (playerModel.model.meshes.values.first().shader as KslLitShader).apply {
                 updateSky(sky.weightedEnvs)

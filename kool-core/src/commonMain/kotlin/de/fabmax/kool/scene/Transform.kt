@@ -22,7 +22,7 @@ class Transform {
         return matrix.getOrigin(result)
     }
 
-    fun setPosition(position: MutableVec3d): Transform {
+    fun setPosition(position: Vec3d): Transform {
         matrix.setOrigin(position)
         markDirty()
         return this

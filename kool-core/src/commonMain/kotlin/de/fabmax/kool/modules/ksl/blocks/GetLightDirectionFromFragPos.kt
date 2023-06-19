@@ -12,7 +12,7 @@ class GetLightDirectionFromFragPos(parentScope: KslScopeBuilder) :
 
         body {
             val dir = float3Var()
-            `if` (encLightPos.w eq Light.Type.DIRECTIONAL.encoded.const) {
+            `if` (encLightPos.w eq Light.Directional.ENCODING.const) {
                 dir set encLightPos.xyz * -(1f.const)
             }.`else` {
                 dir set encLightPos.xyz - fragPos

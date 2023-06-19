@@ -13,7 +13,7 @@ import de.fabmax.kool.scene.Light
  * 2nd pass shader for deferred pbr shading: Uses textures with view space position, normals, albedo, roughness,
  * metallic and texture-based AO and computes the final color output.
  */
-class DeferredLightShader(lightType: Light.Type, model: Model = Model(lightType)) :
+class DeferredLightShader(encodedLightType: Float, model: Model = Model(encodedLightType)) :
     KslShader(
         model,
         PipelineConfig(
@@ -35,7 +35,7 @@ class DeferredLightShader(lightType: Light.Type, model: Model = Model(lightType)
         emissiveAo = materialPass.emissiveAo
     }
 
-    class Model(lightType: Light.Type) : KslProgram("Defferred light shader") {
+    class Model(encodedLightType: Float) : KslProgram("Defferred light shader") {
         init {
             val fragPos = interStageFloat4()
 
@@ -56,7 +56,7 @@ class DeferredLightShader(lightType: Light.Type, model: Model = Model(lightType)
 
                     lightColor.input set instanceAttribFloat4(Attribute.COLORS.name)
                     lightPos.input set instanceAttribFloat4(LIGHT_POS.name)
-                    if (lightType != Light.Type.POINT) {
+                    if (encodedLightType != Light.Point.ENCODING) {
                         lightDir.input set instanceAttribFloat4(LIGHT_DIR.name)
                     } else {
                         lightDir.input set Vec4f.ZERO.const

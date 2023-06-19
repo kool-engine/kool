@@ -91,14 +91,14 @@ class SimpleShadowMap(val scene: Scene, override val lightIndex: Int, mapSize: I
     }
 
     private fun setupCamera(light: Light) {
-        when (light.type) {
-            Light.Type.DIRECTIONAL -> setupDirectionalLightCamera(light)
-            Light.Type.SPOT -> setupSpotLightCamera(light)
-            Light.Type.POINT -> TODO()  // point lights require a cube map render passe instead of 2d...
+        when (light) {
+            is Light.Directional -> setupDirectionalLightCamera(light)
+            is Light.Spot -> setupSpotLightCamera(light)
+            is Light.Point -> TODO()  // point lights require a cube map render passe instead of 2d...
         }
     }
 
-    private fun setupSpotLightCamera(light: Light) {
+    private fun setupSpotLightCamera(light: Light.Spot) {
         var cam = camera
         if (cam !is PerspectiveCamera) {
             cam = PerspectiveCamera()
@@ -114,7 +114,7 @@ class SimpleShadowMap(val scene: Scene, override val lightIndex: Int, mapSize: I
         cam.clipFar = clipFar
     }
 
-    private fun setupDirectionalLightCamera(light: Light) {
+    private fun setupDirectionalLightCamera(light: Light.Directional) {
         var cam = camera
         if (cam !is OrthographicCamera) {
             cam = OrthographicCamera().apply { isKeepAspectRatio = false }

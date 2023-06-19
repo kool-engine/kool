@@ -47,8 +47,8 @@ class ProceduralDemo : DemoScene("Procedural Geometry") {
             }
         }
 
-        lighting.singleLight {
-            setDirectional(Vec3f(-1f, -0.3f, -1f))
+        lighting.singleDirectionalLight {
+            setup(Vec3f(-1f, -0.3f, -1f))
             setColor(MdColor.AMBER.mix(Color.WHITE, 0.5f).toLinear(), 3f)
         }
 

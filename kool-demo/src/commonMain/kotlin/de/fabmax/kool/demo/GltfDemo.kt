@@ -209,16 +209,16 @@ class GltfDemo : DemoScene("glTF Models") {
 
     private fun Scene.setupLighting() {
         lighting.lights.clear()
-        lighting.lights.add(Light().apply {
+        lighting.lights.add(Light.Spot().apply {
             val pos = Vec3f(7f, 8f, 8f)
             val lookAt = Vec3f.ZERO
-            setSpot(pos, lookAt.subtract(pos, MutableVec3f()).norm(), 25f)
+            setup(pos, lookAt.subtract(pos, MutableVec3f()).norm(), 25f)
             setColor(Color.WHITE.mix(MdColor.AMBER, 0.3f).toLinear(), 500f)
         })
-        lighting.lights.add(Light().apply {
+        lighting.lights.add(Light.Spot().apply {
             val pos = Vec3f(-7f, 8f, 8f)
             val lookAt = Vec3f.ZERO
-            setSpot(pos, lookAt.subtract(pos, MutableVec3f()).norm(), 25f)
+            setup(pos, lookAt.subtract(pos, MutableVec3f()).norm(), 25f)
             setColor(Color.WHITE.mix(MdColor.AMBER, 0.3f).toLinear(), 500f)
         })
     }

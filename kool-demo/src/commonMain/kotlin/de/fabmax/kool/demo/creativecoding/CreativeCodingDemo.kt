@@ -44,8 +44,8 @@ class CreativeCodingDemo : DemoScene("Creative Coding") {
         addNode(contentGroup)
         selectContent(contentIndex.value)
 
-        lighting.singleLight {
-            setDirectional(Vec3f(-1f, -0.5f, -1f))
+        lighting.singleDirectionalLight {
+            setup(Vec3f(-1f, -0.5f, -1f))
             setColor(MdColor.AMBER tone 100, 3f)
         }
 

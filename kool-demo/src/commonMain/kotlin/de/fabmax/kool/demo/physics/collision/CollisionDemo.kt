@@ -77,8 +77,8 @@ class CollisionDemo : DemoScene("Physics - Collision") {
         shadows.add(shadowMap)
         aoPipeline = AoPipeline.createForward(this)
 
-        lighting.singleLight {
-            setDirectional(Vec3f(0.8f, -1.2f, 1f))
+        lighting.singleDirectionalLight {
+            setup(Vec3f(0.8f, -1.2f, 1f))
         }
 
         makeGround(ibl, physicsWorld)

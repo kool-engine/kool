@@ -24,8 +24,8 @@ class HelloGltfDemo : DemoScene("Hello glTF") {
         defaultOrbitCamera()
 
         // Light setup
-        lighting.singleLight {
-            setSpot(Vec3f(5f, 6.25f, 7.5f), Vec3f(-1f, -1.25f, -1.5f), 45f)
+        lighting.singleSpotLight {
+            setup(Vec3f(5f, 6.25f, 7.5f), Vec3f(-1f, -1.25f, -1.5f), 45f)
             setColor(Color.WHITE, 300f)
         }
         val shadowMap = SimpleShadowMap(this, lightIndex = 0)

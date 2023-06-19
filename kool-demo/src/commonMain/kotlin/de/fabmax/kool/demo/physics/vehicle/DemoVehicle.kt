@@ -321,7 +321,7 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
                 reverseTriggerTime = 0f
             }
 
-            if (isReverse && brakeIn == 0f && forwardSpeed > -0.1f) {
+            if (isReverse && brakeIn == 0f && forwardSpeed > -0.5f) {
                 isReverse = false
             }
 

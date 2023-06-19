@@ -159,7 +159,7 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
         delayFrames(1)
     }
 
-    fun updateLight(sceneLight: Light) {
+    fun updateLight(sceneLight: Light.Directional) {
         computeLightDirection(SUN_TILT, sunProgress(timeOfDay), sunShader.orientation, sunDirection)
         computeLightDirection(MOON_TILT, moonProgress(timeOfDay), moonShader.orientation, moonDirection)
 
@@ -172,14 +172,14 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
             val sunColor = sunColorGradient.getColorInterpolated(abs(sunProgress - 0.5f) * 2f, MutableColor())
             val sunIntensity = smoothStep(0.0f, 0.06f, sunProgress) * (1f - smoothStep(0.94f, 1.0f, sunProgress))
             sceneLight.setColor(sunColor, sunIntensity * 1.5f)
-            sceneLight.setDirectional(sunDirection)
+            sceneLight.setup(sunDirection)
 
         } else {
             // nighttime -> light is the moon
             val moonProgress = moonProgress(timeOfDay)
             val moonIntensity = smoothStep(0.0f, 0.06f, moonProgress) * (1f - smoothStep(0.94f, 1.0f, moonProgress))
             sceneLight.setColor(moonColor, moonIntensity * 0.07f)
-            sceneLight.setDirectional(moonDirection)
+            sceneLight.setup(moonDirection)
         }
 
     }

@@ -34,7 +34,7 @@ class SkyCubePass(opticalDepthLut: Texture2d, size: Int = 256) :
         clearDepthTexture()
     }) {
 
-    val syncLights = mutableListOf<Light>()
+    val syncLights = mutableListOf<Light.Directional>()
 
     var azimuth = 0f
         set(value) {
@@ -56,8 +56,8 @@ class SkyCubePass(opticalDepthLut: Texture2d, size: Int = 256) :
             10f to Color.WHITE,
             90f to Color.WHITE,
     )
-    private val sunLight = Light()
-            .setDirectional(Vec3f(-1f, -1f, -1f))
+    private val sunLight = Light.Directional()
+            .setup(Vec3f(-1f, -1f, -1f))
             .setColor(Color.WHITE, 3f)
 
     val groundShader: KslPbrShader
@@ -115,14 +115,18 @@ class SkyCubePass(opticalDepthLut: Texture2d, size: Int = 256) :
     private fun updateSunLight() {
         val phi = -azimuth.toRad()
         val theta = (PI.toFloat() / 2f) - elevation.toRad()
-        sunLight.direction.z = -sin(theta) * cos(phi)
-        sunLight.direction.x = -sin(theta) * sin(phi)
-        sunLight.direction.y = -cos(theta)
+
+        val dir = Vec3f(
+            z = -sin(theta) * cos(phi),
+            x = -sin(theta) * sin(phi),
+            y = -cos(theta)
+        )
+        sunLight.setup(dir)
 
         val syncColor = lightGradient.getColorInterpolated(elevation, MutableColor(), -90f, 90f)
         val strength = sqrt(syncColor.r * syncColor.r + syncColor.g * syncColor.g + syncColor.b * syncColor.b)
         for (light in syncLights) {
-            light.setDirectional(sunLight.direction)
+            light.setup(sunLight.direction)
             light.setColor(syncColor, strength * sunLight.color.a)
         }
     }
