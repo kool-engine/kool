@@ -28,6 +28,9 @@ fun randomD(min: Double, max: Double): Double = defaultRandomInstance.randomD(mi
 fun randomF(): Float = defaultRandomInstance.randomF()
 fun randomF(min: Float, max: Float): Float = defaultRandomInstance.randomF(min, max)
 
+fun randomInUnitCube(result: MutableVec3f = MutableVec3f()) = defaultRandomInstance.randomInUnitCube(result)
+fun randomInUnitSphere(result: MutableVec3f = MutableVec3f()) = defaultRandomInstance.randomInUnitSphere(result)
+
 open class Random(seed: Int) {
     private var x = seed
     private var y = 362436000
@@ -89,5 +92,22 @@ open class Random(seed: Int) {
 
         nextGaussian = x2 * w
         return x1 * w
+    }
+
+    fun randomInUnitCube(result: MutableVec3f = MutableVec3f()): MutableVec3f {
+        result.x = randomF(-1f, 1f)
+        result.y = randomF(-1f, 1f)
+        result.z = randomF(-1f, 1f)
+        return result
+    }
+
+    fun randomInUnitSphere(result: MutableVec3f = MutableVec3f()): MutableVec3f {
+        var guard = 0
+        do {
+            result.x = randomF(-1f, 1f)
+            result.y = randomF(-1f, 1f)
+            result.z = randomF(-1f, 1f)
+        } while (result.sqrLength() > 1f && guard++ < 100)
+        return result
     }
 }

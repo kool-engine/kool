@@ -30,6 +30,8 @@ abstract class KslGenerator {
     open fun valueExpression(value: KslValue<*>): String = value.name()
     open fun arrayValueExpression(arrayAccessor: KslArrayAccessor<*>): String =
         "${arrayAccessor.array.generateExpression(this)}[${arrayAccessor.index.generateExpression(this)}]"
+    open fun matrixColExpression(matrixAccessor: KslMatrixAccessor<*>): String =
+        "${matrixAccessor.matrix.generateExpression(this)}[${matrixAccessor.colIndex.generateExpression(this)}]"
     open fun vectorSwizzleExpression(swizzleExpr: KslVectorAccessor<*>): String = "${swizzleExpr.vector.generateExpression(this)}.${swizzleExpr.components}"
 
     abstract fun castExpression(castExpr: KslExpressionCast<*>): String
@@ -64,6 +66,8 @@ abstract class KslGenerator {
     open fun varAssignable(assignable: KslVar<*>): String = assignable.name()
     open fun arrayValueAssignable(arrayAccessor: KslArrayAccessor<*>): String =
         "${arrayAccessor.array.generateExpression(this)}[${arrayAccessor.index.generateExpression(this)}]"
+    open fun matrixColAssignable(matrixAccessor: KslMatrixAccessor<*>): String =
+        "${matrixAccessor.matrix.generateExpression(this)}[${matrixAccessor.colIndex.generateExpression(this)}]"
     open fun vectorSwizzleAssignable(swizzleAssignable: KslVectorAccessor<*>): String =
         "${swizzleAssignable.vector.generateExpression(this)}.${swizzleAssignable.components}"
 

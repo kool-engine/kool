@@ -5,8 +5,11 @@ import de.fabmax.kool.modules.ksl.model.KslMutatedState
 
 open class KslArrayAccessor<T: KslType>(
     val array: KslExpression<KslTypeArray<T>>,
-    val index: KslExpression<KslTypeInt1>)
-    : KslExpression<T>, KslAssignable<T> {
+    val index: KslExpression<KslTypeInt1>
+) :
+    KslExpression<T>,
+    KslAssignable<T>
+{
 
     override val expressionType = array.expressionType.elemType
     override val assignType = array.expressionType.elemType
