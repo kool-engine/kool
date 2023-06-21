@@ -106,9 +106,8 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
                 isCastingShadow = false
                 generate {
                     rotate(-90f, Vec3f.X_AXIS)
-                    rect {
+                    centeredRect {
                         size.set(100f, 100f)
-                        origin.set(size.x, size.y, 0f).scale(-0.5f)
                         generateTexCoords(20f)
                     }
                 }

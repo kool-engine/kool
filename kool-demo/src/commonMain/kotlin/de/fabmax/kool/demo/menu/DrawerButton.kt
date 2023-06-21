@@ -52,20 +52,23 @@ class DrawerButton(val menu: DemoMenu) : Composable {
                 withTransform {
                     translate(tx, hh, 0f)
                     rotate(animationP * 45f, Vec3f.Z_AXIS)
-                    rect {
+                    centeredRect {
+                        isCenteredOrigin = false
                         origin.set(hx, -ph / 2f, 0f)
                         size.set(w, ph)
                         zeroTexCoords()
                     }
                 }
-                rect {
+                centeredRect {
+                    isCenteredOrigin = false
                     origin.set(hx, -ph / 2f, 0f)
                     size.set(hw, ph)
                 }
                 withTransform {
                     translate(tx, -hh, 0f)
                     rotate(animationP * -45f, Vec3f.Z_AXIS)
-                    rect {
+                    centeredRect {
+                        isCenteredOrigin = false
                         origin.set(hx, -ph / 2f, 0f)
                         size.set(w, ph)
                     }

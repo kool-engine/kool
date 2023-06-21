@@ -59,9 +59,9 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
     private val moonMesh = TextureMesh().apply {
         isFrustumChecked = false
         generate {
-            rect {
+            centeredRect {
                 size.set(0.17f, 0.17f)
-                origin.set(size.x * -0.5f, size.y * -0.5f, -1f)
+                origin.set(0f, 0f, -1f)
             }
         }
         shader = moonShader

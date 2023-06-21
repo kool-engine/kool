@@ -256,7 +256,8 @@ class Gizmo : Node(), InputStack.PointerListener {
             // plane handles
             if (properties.hasPlaneXY && hoverPlane == PLANE_XY) {
                 color = properties.planeColorXY
-                rect {
+                centeredRect {
+                    isCenteredOrigin = false
                     size.set(properties.planeHandleSize * camSign.x, properties.planeHandleSize * camSign.y)
                 }
             }
@@ -264,7 +265,8 @@ class Gizmo : Node(), InputStack.PointerListener {
                 withTransform {
                     rotate(90f, Vec3f.X_AXIS)
                     color = properties.planeColorXZ
-                    rect {
+                    centeredRect {
+                        isCenteredOrigin = false
                         size.set(properties.planeHandleSize * camSign.x, properties.planeHandleSize * camSign.z)
                     }
                 }
@@ -273,7 +275,8 @@ class Gizmo : Node(), InputStack.PointerListener {
                 withTransform {
                     rotate(-90f, Vec3f.Y_AXIS)
                     color = properties.planeColorYZ
-                    rect {
+                    centeredRect {
+                        isCenteredOrigin = false
                         size.set(properties.planeHandleSize * camSign.z, properties.planeHandleSize * camSign.y)
                     }
                 }

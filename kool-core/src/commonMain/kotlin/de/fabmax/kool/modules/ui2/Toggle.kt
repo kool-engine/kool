@@ -234,11 +234,13 @@ class CheckboxNode(parent: UiNode?, surface: UiSurface) : ToggleNode(parent, sur
                 val sz = buttonWidth.px * 0.8f * p
                 translate(c.x, c.y - sz * 0.2f, 0f)
                 rotate(45f, Vec3f.Z_AXIS)
-                rect {
+                centeredRect {
+                    isCenteredOrigin = false
                     size.set(sz * 0.6f, sz * 0.2f)
                     origin.set(size.x * -0.333f, size.y * 2f, 0f)
                 }
-                rect {
+                centeredRect {
+                    isCenteredOrigin = false
                     size.set(sz * 0.2f, sz)
                     origin.set(size.x, size.y * -0.5f, 0f)
                 }

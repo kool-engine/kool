@@ -135,7 +135,8 @@ class KslShaderTest : DemoScene("KslShader") {
         addMesh(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS, Attribute.COLORS, Attribute.TANGENTS) {
             generate {
                 color = MdColor.LIGHT_GREEN
-                rect {
+                centeredRect {
+                    isCenteredOrigin = false
                     origin.set(-1.25f, -1.25f, 0f)
                     size.set(2.4f, 2.4f)
                 }

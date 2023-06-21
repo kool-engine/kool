@@ -13,8 +13,7 @@ object FullscreenShaderUtil {
     fun Mesh.generateFullscreenQuad(mirrorTexCoordsY: Boolean = true) {
         isFrustumChecked = false
         generate {
-            rect {
-                origin.set(-1f, -1f, 0f)
+            centeredRect {
                 size.set(2f, 2f)
                 if (mirrorTexCoordsY) {
                     mirrorTexCoordsY()

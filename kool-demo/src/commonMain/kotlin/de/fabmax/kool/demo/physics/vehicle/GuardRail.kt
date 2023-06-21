@@ -81,9 +81,9 @@ class GuardRail {
                     if (pos in arrowLtPos) { emmision.x = 1f }
                     if (pos in arrowRtPos) { emmision.y = 1f }
                     color = bgColor
-                    rect {
+                    centeredRect {
                         size.set(sz, sz)
-                        origin.set(-sz / 2 + x * sz, -sz / 2 + y * sz, 0.14f)
+                        origin.set(x * sz, y * sz, 0.14f)
                     }
                     emmision.set(0f, 0f)
                 }

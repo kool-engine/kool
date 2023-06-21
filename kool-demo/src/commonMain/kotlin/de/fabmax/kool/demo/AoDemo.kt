@@ -137,9 +137,8 @@ class AoDemo : DemoScene("Ambient Occlusion") {
                 // top
                 withTransform {
                     rotate(90f, Vec3f.NEG_X_AXIS)
-                    rect {
+                    centeredRect {
                         size.set(12f, 12f)
-                        origin.set(size.x, size.y, 0f).scale(-0.5f)
                         setUvs(0.06f, 0f, size.x * texScale, size.y * texScale)
                     }
                 }
@@ -148,9 +147,8 @@ class AoDemo : DemoScene("Ambient Occlusion") {
                 withTransform {
                     translate(0f, -0.25f, 0f)
                     rotate(90f, Vec3f.X_AXIS)
-                    rect {
+                    centeredRect {
                         size.set(12f, 12f)
-                        origin.set(size.x, size.y, 0f).scale(-0.5f)
                         setUvs(0.06f, 0f, size.x * texScale, size.y * texScale)
                     }
                 }
@@ -160,9 +158,8 @@ class AoDemo : DemoScene("Ambient Occlusion") {
                     translate(-6f, -0.125f, 0f)
                     rotate(90f, Vec3f.NEG_Y_AXIS)
                     rotate(90f, Vec3f.Z_AXIS)
-                    rect {
+                    centeredRect {
                         size.set(0.25f, 12f)
-                        origin.set(size.x, size.y, 0f).scale(-0.5f)
                         setUvs(0.06f - size.x * texScale, 0f, size.x * texScale, size.y * texScale)
                     }
                 }
@@ -172,9 +169,8 @@ class AoDemo : DemoScene("Ambient Occlusion") {
                     translate(6f, -0.125f, 0f)
                     rotate(90f, Vec3f.Y_AXIS)
                     rotate(-90f, Vec3f.Z_AXIS)
-                    rect {
+                    centeredRect {
                         size.set(0.25f, 12f)
-                        origin.set(size.x, size.y, 0f).scale(-0.5f)
                         setUvs(0.06f + 12 * texScale, 0f, size.x * texScale, size.y * texScale)
                     }
                 }
@@ -182,9 +178,8 @@ class AoDemo : DemoScene("Ambient Occlusion") {
                 // front
                 withTransform {
                     translate(0f, -0.125f, 6f)
-                    rect {
+                    centeredRect {
                         size.set(12f, 0.25f)
-                        origin.set(size.x, size.y, 0f).scale(-0.5f)
                         setUvs(0.06f, 12f * texScale, size.x * texScale, size.y * texScale)
                     }
                 }
@@ -193,9 +188,8 @@ class AoDemo : DemoScene("Ambient Occlusion") {
                 withTransform {
                     translate(0f, -0.125f, -6f)
                     rotate(180f, Vec3f.X_AXIS)
-                    rect {
+                    centeredRect {
                         size.set(12f, 0.25f)
-                        origin.set(size.x, size.y, 0f).scale(-0.5f)
                         setUvs(0.06f, -0.25f * texScale, size.x * texScale, size.y * texScale)
                     }
                 }

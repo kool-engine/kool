@@ -108,10 +108,9 @@ class ReflectionDemo : DemoScene("Reflections") {
 
                 addTextureMesh(isNormalMapped = true) {
                     generate {
-                        rect {
+                        centeredRect {
                             rotate(-90f, Vec3f.X_AXIS)
                             size.set(100f, 100f)
-                            origin.set(-size.x / 2, -size.y / 2, 0f)
                             generateTexCoords(4f)
                         }
                     }

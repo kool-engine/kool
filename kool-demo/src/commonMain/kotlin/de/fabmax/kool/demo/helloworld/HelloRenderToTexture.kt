@@ -45,9 +45,8 @@ class HelloRenderToTextureDemo : DemoScene("Hello RenderToTexture") {
 
         addTextureMesh {
             generate {
-                rect {
+                centeredRect {
                     size.set(2f, 2f)
-                    origin.set(-1f, -1f, 0f)
                 }
             }
             shader = KslUnlitShader {

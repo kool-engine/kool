@@ -16,9 +16,8 @@ abstract class CommonPlaneGeometry {
         target.apply {
             withTransform {
                 rotate(90f, Vec3f.Y_AXIS)
-                rect {
+                centeredRect {
                     size.set(1000f, 1000f)
-                    origin.set(size.x * -0.5f, size.y * -0.5f, 0f)
                 }
             }
         }

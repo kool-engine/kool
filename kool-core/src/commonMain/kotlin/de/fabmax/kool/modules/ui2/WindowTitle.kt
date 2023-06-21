@@ -210,13 +210,11 @@ class CloseButtonBackground(
         getPlainBuilder().configured(fgColor) {
             translate(widthPx * 0.5f, heightPx * 0.5f, 0f)
             rotate(45f, Vec3f.Z_AXIS)
-            rect {
+            centeredRect {
                 size.set(r * 1.3f, r * 0.2f)
-                origin.set(size.x * -0.5f, size.y * -0.5f, 0f)
             }
-            rect {
+            centeredRect {
                 size.set(r * 0.2f, r * 1.3f)
-                origin.set(size.x * -0.5f, size.y * -0.5f, 0f)
             }
         }
     }

@@ -393,8 +393,16 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
         }
     }
 
+    inline fun centeredRect(block: RectProps.() -> Unit) {
+        val props = RectProps()
+        props.block()
+        rect(props)
+    }
+
+    @Deprecated("Default behavior will change to centered origin", ReplaceWith("centeredRect { block() }"))
     inline fun rect(block: RectProps.() -> Unit) {
         val props = RectProps()
+        props.isCenteredOrigin = false
         props.block()
         rect(props)
     }
@@ -402,24 +410,32 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
     fun rect(props: RectProps) {
         props.fixNegativeSize()
 
+        val hx = props.size.x * 0.5f
+        val hy = props.size.y * 0.5f
+
+        if (!props.isCenteredOrigin) {
+            transform.push()
+            translate(hx, hy, 0f)
+        }
+
         if (props.cornerRadius == 0f) {
             val i0 = vertex {
-                position.set(props.origin.x, props.origin.y, props.origin.z)
+                position.set(props.origin.x - hx, props.origin.y - hy, props.origin.z)
                 normal.set(Vec3f.Z_AXIS)
                 texCoord.set(props.texCoordLowerLeft)
             }
             val i1 = vertex {
-                position.set(props.origin.x + props.size.x, props.origin.y, props.origin.z)
+                position.set(props.origin.x + hx, props.origin.y - hy, props.origin.z)
                 normal.set(Vec3f.Z_AXIS)
                 texCoord.set(props.texCoordLowerRight)
             }
             val i2 = vertex {
-                position.set(props.origin.x + props.size.x, props.origin.y + props.size.y, props.origin.z)
+                position.set(props.origin.x + hx, props.origin.y + hy, props.origin.z)
                 normal.set(Vec3f.Z_AXIS)
                 texCoord.set(props.texCoordUpperRight)
             }
             val i3 = vertex {
-                position.set(props.origin.x, props.origin.y + props.size.y, props.origin.z)
+                position.set(props.origin.x - hx, props.origin.y + hy, props.origin.z)
                 normal.set(Vec3f.Z_AXIS)
                 texCoord.set(props.texCoordUpperLeft)
             }
@@ -427,8 +443,8 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
             addTriIndices(i0, i2, i3)
 
         } else {
-            val x = props.origin.x
-            val y = props.origin.y
+            val x = props.origin.x - hx
+            val y = props.origin.y - hy
             val z = props.origin.z
             val w = props.size.x
             val h = props.size.y
@@ -506,6 +522,10 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
                 uvCenter.set(-uI, vI).add(props.texCoordLowerRight)
                 uvRadius = uI
             }
+        }
+
+        if (!props.isCenteredOrigin) {
+            transform.pop()
         }
     }
 
@@ -1063,6 +1083,7 @@ class SphereProps {
 class RectProps {
     var cornerRadius = 0f
     var cornerSteps = 8
+    var isCenteredOrigin = true
     val origin = MutableVec3f()
     val size = MutableVec2f(1f, 1f)
 
