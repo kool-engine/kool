@@ -58,6 +58,7 @@ class QueueRendererGl(backend: GlRenderBackend, val ctx: Lwjgl3Context) {
         var numPrimitives = 0
         for (cmd in queue.commands) {
             cmd.pipeline?.let { pipeline ->
+                val t = System.nanoTime()
                 glAttribs.setupPipelineAttribs(pipeline)
 
                 if (cmd.geometry.numIndices > 0) {
@@ -74,6 +75,7 @@ class QueueRendererGl(backend: GlRenderBackend, val ctx: Lwjgl3Context) {
                         ctx.engineStats.addDrawCommandCount(1)
                     }
                 }
+                cmd.mesh.drawTime = (System.nanoTime() - t) / 1e6
             }
         }
         ctx.engineStats.addPrimitiveCount(numPrimitives)

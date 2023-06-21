@@ -13,6 +13,11 @@ object KoolSystem {
     val config: KoolConfig
         get() = initConfig ?: throw IllegalStateException("KoolSetup is not yet initialized. Call initialize(config) before accessing KoolSetup.config")
 
+    val isJavascript: Boolean
+        get() = requireContext().isJavascript
+    val isJvm: Boolean
+        get() = requireContext().isJvm
+
     fun initialize(config: KoolConfig) {
         if (isInitialized && config != initConfig) {
             throw IllegalStateException("KoolSetup is already initialized")

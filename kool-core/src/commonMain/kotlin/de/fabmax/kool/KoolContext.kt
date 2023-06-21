@@ -102,6 +102,9 @@ abstract class KoolContext {
 
     private val frameTimes = DoubleArray(25) { 0.017 }
 
+    abstract val isJavascript: Boolean
+    abstract val isJvm: Boolean
+
     abstract val windowWidth: Int
     abstract val windowHeight: Int
     abstract var isFullscreen: Boolean

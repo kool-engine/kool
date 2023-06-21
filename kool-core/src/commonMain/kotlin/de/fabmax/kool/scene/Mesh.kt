@@ -135,6 +135,12 @@ open class Mesh(var geometry: IndexedVertexList, name: String? = null) : Node(na
 
     var rayTest = MeshRayTest.boundsTest()
 
+    /**
+     * Time the latest draw call took (in ms).
+     */
+    var drawTime = 0.0
+        internal set
+
     init {
         isFrustumChecked = true
     }

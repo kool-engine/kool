@@ -354,6 +354,7 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackend {
             drawQueue.forEach { cmd ->
                 val pipelineCfg = cmd.pipeline
                 if (!cmd.mesh.geometry.isEmpty() && pipelineCfg != null) {
+                    val t = System.nanoTime()
                     pipelineCfg.onUpdate.forEach { it(cmd) }
 
                     if (!sys.pipelineManager.hasPipeline(pipelineCfg, renderPass.vkRenderPass)) {
@@ -447,6 +448,7 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackend {
                             ctx.engineStats.addPrimitiveCount(cmd.mesh.geometry.numPrimitives * instanceCnt)
                         }
                     }
+                    cmd.mesh.drawTime = (System.nanoTime() - t) / 1e6
                 }
             }
         }

@@ -25,6 +25,9 @@ import kotlin.math.min
 class Lwjgl3Context : KoolContext() {
     val renderBackend: RenderBackend
 
+    override val isJavascript = false
+    override val isJvm = true
+
     override val windowWidth: Int
         get() = renderBackend.glfwWindow.framebufferWidth
     override val windowHeight: Int

@@ -41,6 +41,9 @@ class JsContext internal constructor() : KoolContext() {
     internal val queueRenderer = QueueRendererWebGl(this)
     internal val afterRenderActions = mutableListOf<() -> Unit>()
 
+    override val isJavascript = true
+    override val isJvm = false
+
     override var windowWidth = 0
         private set
     override var windowHeight = 0

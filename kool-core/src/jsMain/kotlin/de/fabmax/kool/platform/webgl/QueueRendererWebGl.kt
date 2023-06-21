@@ -7,6 +7,7 @@ import de.fabmax.kool.platform.WebGL2RenderingContext
 import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.COLOR
 import de.fabmax.kool.platform.glOp
 import de.fabmax.kool.util.Profiling
+import de.fabmax.kool.util.Time
 import org.khronos.webgl.Float32Array
 import org.khronos.webgl.WebGLRenderingContext.Companion.BACK
 import org.khronos.webgl.WebGLRenderingContext.Companion.BLEND
@@ -71,6 +72,7 @@ class QueueRendererWebGl(val ctx: JsContext) {
         var numPrimitives = 0
         for (cmd in queue.commands) {
             cmd.pipeline?.let { pipeline ->
+                val t = Time.precisionTime
                 glAttribs.setupPipelineAttribs(pipeline)
 
                 if (cmd.geometry.numIndices > 0) {
@@ -88,6 +90,7 @@ class QueueRendererWebGl(val ctx: JsContext) {
                         }
                     }
                 }
+                cmd.mesh.drawTime = (Time.precisionTime - t) * 1e3
             }
         }
         ctx.engineStats.addPrimitiveCount(numPrimitives)
