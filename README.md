@@ -25,6 +25,8 @@ Give it a try (it's free)!
   various different shapes.
 - [Embedded UI](https://fabmax.github.io/kool/kool-js/?demo=ui): Integrated UI framework implemented completely within
   the engine. Fast, highly customizable and easy-to-use.
+- [CPU Particles](https://fabmax.github.io/kool/kool-js/?demo=bees): Two teams of bees fighting against each other.
+  Purely CPU based (single-threaded even) so not as fast as it could be(e). Also, JVM is _much_ faster than JS.
 - [Creative Coding](https://fabmax.github.io/kool/kool-js/?demo=creative-coding): A few relatively simple demos
   showcasing different techniques of generating procedural geometry.
 - [Procedural Geometry](https://fabmax.github.io/kool/kool-js/?demo=procedural): Small test-case for

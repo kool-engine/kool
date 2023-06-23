@@ -11,7 +11,7 @@ class BeeShader(
     deadColor: Color,
     cfg: Config = Config().apply {
         pipeline { cullMethod = CullMethod.NO_CULLING }
-        color { uniformColor(aliveColor.toLinear()) }
+        color { textureColor() }
         shininess(5f)
         specularStrength(0.25f)
         ambientColor = AmbientColor.Uniform(BeeDemo.bgColor.toLinear())
@@ -26,24 +26,21 @@ class BeeShader(
                     val j = rotQuat.y
                     val k = rotQuat.z
 
-                    val s = float1Var(sqrt(r*r + i*i + j*j + k*k))
-                    s set 1f.const / (s * s)
-
                     val rotMat = mat3Var()
                     rotMat[0] set float3Value(
-                        1f.const - 2f.const * s * (j*j + k*k),
-                        2f.const * s * (i*j + k*r),
-                        2f.const * s * (i*k - j*r)
+                        1f.const - 2f.const * (j*j + k*k),
+                        2f.const * (i*j + k*r),
+                        2f.const * (i*k - j*r)
                     )
                     rotMat[1] set float3Value(
-                        2f.const * s * (i*j - k*r),
-                        1f.const - 2f.const * s * (i*i + k*k),
-                        2f.const * s * (j*k + i*r)
+                        2f.const * (i*j - k*r),
+                        1f.const - 2f.const * (i*i + k*k),
+                        2f.const * (j*k + i*r)
                     )
                     rotMat[2] set float3Value(
-                        2f.const * s * (i*k + j*r),
-                        2f.const * s * (j*k - i*r),
-                        1f.const - 2f.const * s * (i*i + j*j)
+                        2f.const * (i*k + j*r),
+                        2f.const * (j*k - i*r),
+                        1f.const - 2f.const * (i*i + j*j)
                     )
 
                     val globalPos = instanceAttribFloat4(BeeDemo.ATTR_POSITION.name)
@@ -62,8 +59,13 @@ class BeeShader(
                 main {
                     val colorPort = getFloat4Port("baseColor")
                     val color = float4Var(colorPort.input.input)
+
+                    val accentColor = float4Var(aliveColor.toLinear().const)
                     `if`(aliveness.output gt 0.01f.const) {
-                        color set deadColor.toLinear().const
+                        accentColor set deadColor.toLinear().const
+                    }
+                    `if`(color.r eq color.b) {
+                        color.rgb set accentColor.rgb * color.r
                     }
                     colorPort.input(color)
                 }

@@ -5,6 +5,7 @@ import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
+import de.fabmax.kool.scene.geometry.RectUvs
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.PerfTimer
 import de.fabmax.kool.util.Time
@@ -22,18 +23,24 @@ class BeeSystem(val team: Int) {
 
     var aliveBees = 0
 
+    val beeShader: BeeShader
+
     val beeInstances = MeshInstanceList(BeeConfig.maxBeesPerTeam, BeeDemo.ATTR_POSITION, BeeDemo.ATTR_ROTATION)
-    val beeMesh = Mesh(Attribute.POSITIONS, Attribute.NORMALS).apply {
+    val beeMesh = Mesh(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS).apply {
         instances = beeInstances
-
-        val aliveColor = if (team == 0) MdColor.BLUE else MdColor.AMBER
-        val deadColor = if (team == 0) MdColor.PURPLE else MdColor.DEEP_ORANGE
-
-        shader = BeeShader(aliveColor, deadColor)
         generate {
-            rotate(90f, Vec3f.X_AXIS)
-            centeredRect {
-                size.set(1f, 2f)
+            //scale(10f)
+            cube {
+                size.set(0.7f, 0.7f, 1f)
+                val s = 1/32f
+                uvs = listOf(
+                    RectUvs(Vec2f(0*s, 0*s), Vec2f(7*s, 0*s), Vec2f(0*s, 10*s), Vec2f(7*s, 10*s)),      // top
+                    RectUvs(Vec2f(21*s, 10*s), Vec2f(14*s, 10*s), Vec2f(21*s, 0*s), Vec2f(14*s, 0*s)),  // bottom
+                    RectUvs(Vec2f(21*s, 0*s), Vec2f(28*s, 0*s), Vec2f(21*s, 10*s), Vec2f(28*s, 10*s)),  // left
+                    RectUvs(Vec2f(14*s, 10*s), Vec2f(7*s, 10*s), Vec2f(14*s, 0*s), Vec2f(7*s, 0*s)),    // right
+                    RectUvs(Vec2f(0*s, 10*s), Vec2f(7*s, 10*s), Vec2f(0*s, 17*s), Vec2f(7*s, 17*s)),    // front
+                    RectUvs(Vec2f(14*s, 17*s), Vec2f(7*s, 17*s), Vec2f(14*s, 10*s), Vec2f(7*s, 10*s))   // back
+                )
             }
         }
     }
@@ -49,6 +56,11 @@ class BeeSystem(val team: Int) {
     val instanceUpdateTime = mutableStateOf(0.0)
 
     init {
+        val aliveColor = if (team == 0) MdColor.BLUE else MdColor.AMBER
+        val deadColor = if (team == 0) MdColor.PURPLE else MdColor.DEEP_ORANGE
+        beeShader = BeeShader(aliveColor, deadColor)
+        beeMesh.shader = beeShader
+
         spawnBees()
 
         beeMesh.onUpdate {
@@ -121,7 +133,13 @@ class BeeSystem(val team: Int) {
     fun getRandomBee() = Bee(randomI(0, max(1, aliveBees - 1)))
 
     @JvmInline
-    value class Bee(val index: Int)
+    value class Bee(val index: Int) {
+        init {
+            if (index < 0) {
+                throw IllegalArgumentException("negative index!")
+            }
+        }
+    }
 
     @JvmInline
     value class EnemyBee(val index: Int)
@@ -153,7 +171,8 @@ class BeeSystem(val team: Int) {
         pos.add(tmpVec3a.set(vel).scale(dt))
 
         // update rotation by current velocity direction
-        if (abs(vel * Vec3f.Y_AXIS / vel.length()) < 0.99f) {
+        val speed = vel.length()
+        if (speed > 1f && abs(vel * Vec3f.Y_AXIS / speed) < 0.99f) {
             val right = Vec3f.Y_AXIS.cross(vel, tmpVec3a).norm()
             val up = vel.cross(right, tmpVec3b).norm()
             tmpMat3.setColVec(0, right)
@@ -196,7 +215,7 @@ class BeeSystem(val team: Int) {
         val vel = velocity
         val target = enemy
 
-        val v = randomInUnitSphere(tmpVec3a).scale(BeeConfig.speedJitter * dt)
+        val v = randomInUnitCube(tmpVec3a).scale(BeeConfig.speedJitter * dt)
         vel.add(v).scale(1f - BeeConfig.speedDamping * dt)
 
         // swarming

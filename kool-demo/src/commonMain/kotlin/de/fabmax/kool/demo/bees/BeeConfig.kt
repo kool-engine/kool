@@ -16,14 +16,14 @@ object BeeConfig {
     var teamAttraction = 5f
     var teamRepulsion = -4f
 
-    var chaseForce = 50f
-    var attackDistance = 4f
+    var chaseForce = 20f
+    var attackDistance = 5f
     var attackForce = 500f
-    var hitDistance = 0.5f
+    var hitDistance = 1f
 
-    val worldSize: Vec3f = Vec3f(100f, 20f, 30f)
+    val worldSize: Vec3f = Vec3f(100f, 50f, 50f)
     val worldExtent: Vec3f = worldSize.scale(0.5f, MutableVec3f())
 
     val gravity = -20f
-    val decayTime = 4f
+    val decayTime = 6f
 }

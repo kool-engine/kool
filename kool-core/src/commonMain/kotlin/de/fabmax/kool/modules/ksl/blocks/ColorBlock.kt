@@ -75,7 +75,7 @@ class ColorBlockFragmentStage(
                         texColor
                     }
                 }
-                mixColor(source.blendMode, colorValue)
+                blendColor(source.blendMode, colorValue)
             }
         }
     }
@@ -91,8 +91,8 @@ class ColorBlockFragmentStage(
             ?: parentStage.program.vertexStage.main.run { vertexColorBlock(cfg) }
     }
 
-    private fun KslScopeBuilder.mixColor(mixMode: ColorBlockConfig.BlendMode, value: KslExprFloat4) {
-        when (mixMode) {
+    private fun KslScopeBuilder.blendColor(blendMode: ColorBlockConfig.BlendMode, value: KslExprFloat4) {
+        when (blendMode) {
             ColorBlockConfig.BlendMode.Set -> outColor set value
             ColorBlockConfig.BlendMode.Multiply -> outColor *= value
             ColorBlockConfig.BlendMode.Add -> outColor += value
@@ -105,16 +105,16 @@ data class ColorBlockConfig(
     val colorName: String,
     val colorSources: MutableList<ColorSource> = mutableListOf()
 ) {
-    fun constColor(constColor: Color, mixMode: BlendMode = BlendMode.Set) {
-        colorSources += ConstColor(constColor, mixMode)
+    fun constColor(constColor: Color, blendMode: BlendMode = BlendMode.Set) {
+        colorSources += ConstColor(constColor, blendMode)
     }
 
-    fun uniformColor(defaultColor: Color? = null, uniformName: String = "u${colorName}", mixMode: BlendMode = BlendMode.Set) {
-        colorSources += UniformColor(defaultColor, uniformName, mixMode)
+    fun uniformColor(defaultColor: Color? = null, uniformName: String = "u${colorName}", blendMode: BlendMode = BlendMode.Set) {
+        colorSources += UniformColor(defaultColor, uniformName, blendMode)
     }
 
-    fun vertexColor(attribute: Attribute = Attribute.COLORS, mixMode: BlendMode = BlendMode.Set) {
-        colorSources += VertexColor(attribute, mixMode)
+    fun vertexColor(attribute: Attribute = Attribute.COLORS, blendMode: BlendMode = BlendMode.Set) {
+        colorSources += VertexColor(attribute, blendMode)
     }
 
     /**
@@ -127,15 +127,15 @@ data class ColorBlockConfig(
      * @param coordAttribute Vertex attribute to use for the texture coordinates
      * @param gamma Color space conversion gama value. Default is 2.2 (sRGB -> linear), use a value of 1.0 to disable
      *              color space conversion
-     * @param mixMode Mix mode for this color value. This is useful to combine multiple color sources (e.g.
+     * @param blendMode Blend mode for this color value. This is useful to combine multiple color sources (e.g.
      *                texture color and an instance color based color tint)
      */
     fun textureColor(defaultTexture: Texture2d? = null,
                      textureName: String = "t${colorName}",
                      coordAttribute: Attribute = Attribute.TEXTURE_COORDS,
                      gamma: Float = Color.GAMMA_sRGB_TO_LINEAR,
-                     mixMode: BlendMode = BlendMode.Set) {
-        colorSources += TextureColor(defaultTexture, textureName, coordAttribute, gamma, mixMode)
+                     blendMode: BlendMode = BlendMode.Set) {
+        colorSources += TextureColor(defaultTexture, textureName, coordAttribute, gamma, blendMode)
     }
 
     /**
@@ -145,14 +145,14 @@ data class ColorBlockConfig(
      * @param defaultTexture Texture to bind to this attribute
      * @param textureName Name of the texture used in the generated shader code
      * @param coordAttribute Vertex attribute to use for the texture coordinates
-     * @param mixMode Mix mode for this color value. This is useful to combine multiple color sources (e.g.
+     * @param blendMode Blend mode for this color value. This is useful to combine multiple color sources (e.g.
      *                texture color and an instance color based color tint)
      */
     fun textureData(defaultTexture: Texture2d? = null,
                     textureName: String = "tColor",
                     coordAttribute: Attribute = Attribute.TEXTURE_COORDS,
-                    mixMode: BlendMode = BlendMode.Set) =
-        textureColor(defaultTexture, textureName, coordAttribute, 1f, mixMode)
+                    blendMode: BlendMode = BlendMode.Set) =
+        textureColor(defaultTexture, textureName, coordAttribute, 1f, blendMode)
 
     fun instanceColor(attribute: Attribute = Attribute.INSTANCE_COLOR, blendMode: BlendMode = BlendMode.Set) {
         colorSources += InstanceColor(attribute, blendMode)

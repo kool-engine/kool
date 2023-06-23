@@ -254,7 +254,7 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
             shader = deferredKslPbrShader {
                 color {
                     textureColor(groundAlbedo)
-                    constColor(color(100), mixMode = ColorBlockConfig.BlendMode.Multiply)
+                    constColor(color(100), blendMode = ColorBlockConfig.BlendMode.Multiply)
                 }
                 normalMapping {
                     setNormalMap(groundNormal)

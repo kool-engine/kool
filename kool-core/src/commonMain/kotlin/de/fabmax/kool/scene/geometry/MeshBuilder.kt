@@ -605,67 +605,68 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
         val eY = props.size.y * 0.5f
         val eZ = props.size.z * 0.5f
 
-        val uvUpLt = Vec2f(0f, 0f)
-        val uvUpRt = Vec2f(1f, 0f)
-        val uvLowLt = Vec2f(0f, 1f)
-        val uvLowRt = Vec2f(1f, 1f)
-
         // front
-        withColor(props.frontColor ?: color) {
-            val i0 = vertex(tmpPos.set(oX - eX, oY - eY, oZ + eZ), Vec3f.Z_AXIS, uvLowLt)
-            val i1 = vertex(tmpPos.set(oX + eX, oY - eY, oZ + eZ), Vec3f.Z_AXIS, uvLowRt)
-            val i2 = vertex(tmpPos.set(oX + eX, oY + eY, oZ + eZ), Vec3f.Z_AXIS, uvUpRt)
-            val i3 = vertex(tmpPos.set(oX - eX, oY + eY, oZ + eZ), Vec3f.Z_AXIS, uvUpLt)
+        withColor(props.colors.getOrElse(CubeProps.FACE_FRONT) { color }) {
+            val uv = props.uvs.getOrElse(CubeProps.FACE_FRONT) { RectUvs.ZERO }
+            val i0 = vertex(tmpPos.set(oX - eX, oY - eY, oZ + eZ), Vec3f.Z_AXIS, uv.lowLt)
+            val i1 = vertex(tmpPos.set(oX + eX, oY - eY, oZ + eZ), Vec3f.Z_AXIS, uv.lowRt)
+            val i2 = vertex(tmpPos.set(oX + eX, oY + eY, oZ + eZ), Vec3f.Z_AXIS, uv.upRt)
+            val i3 = vertex(tmpPos.set(oX - eX, oY + eY, oZ + eZ), Vec3f.Z_AXIS, uv.upLt)
             addTriIndices(i0, i1, i2)
             addTriIndices(i0, i2, i3)
         }
 
         // right
-        withColor(props.rightColor ?: color) {
-            val i0 = vertex(tmpPos.set(oX + eX, oY - eY, oZ - eZ), Vec3f.X_AXIS, uvLowRt)
-            val i1 = vertex(tmpPos.set(oX + eX, oY + eY, oZ - eZ), Vec3f.X_AXIS, uvUpRt)
-            val i2 = vertex(tmpPos.set(oX + eX, oY + eY, oZ + eZ), Vec3f.X_AXIS, uvUpLt)
-            val i3 = vertex(tmpPos.set(oX + eX, oY - eY, oZ + eZ), Vec3f.X_AXIS, uvLowLt)
+        withColor(props.colors.getOrElse(CubeProps.FACE_RIGHT) { color }) {
+            val uv = props.uvs.getOrElse(CubeProps.FACE_RIGHT) { RectUvs.ZERO }
+            val i0 = vertex(tmpPos.set(oX + eX, oY - eY, oZ - eZ), Vec3f.X_AXIS, uv.lowLt)
+            val i1 = vertex(tmpPos.set(oX + eX, oY + eY, oZ - eZ), Vec3f.X_AXIS, uv.lowRt)
+            val i2 = vertex(tmpPos.set(oX + eX, oY + eY, oZ + eZ), Vec3f.X_AXIS, uv.upRt)
+            val i3 = vertex(tmpPos.set(oX + eX, oY - eY, oZ + eZ), Vec3f.X_AXIS, uv.upLt)
             addTriIndices(i0, i1, i2)
             addTriIndices(i0, i2, i3)
         }
 
         // back
-        withColor(props.backColor ?: color) {
-            val i0 = vertex(tmpPos.set(oX - eX, oY + eY, oZ - eZ), Vec3f.NEG_Z_AXIS, uvUpRt)
-            val i1 = vertex(tmpPos.set(oX + eX, oY + eY, oZ - eZ), Vec3f.NEG_Z_AXIS, uvUpLt)
-            val i2 = vertex(tmpPos.set(oX + eX, oY - eY, oZ - eZ), Vec3f.NEG_Z_AXIS, uvLowLt)
-            val i3 = vertex(tmpPos.set(oX - eX, oY - eY, oZ - eZ), Vec3f.NEG_Z_AXIS, uvLowRt)
+        withColor(props.colors.getOrElse(CubeProps.FACE_BACK) { color }) {
+            val uv = props.uvs.getOrElse(CubeProps.FACE_BACK) { RectUvs.ZERO }
+            val i0 = vertex(tmpPos.set(oX - eX, oY + eY, oZ - eZ), Vec3f.NEG_Z_AXIS, uv.lowLt)
+            val i1 = vertex(tmpPos.set(oX + eX, oY + eY, oZ - eZ), Vec3f.NEG_Z_AXIS, uv.lowRt)
+            val i2 = vertex(tmpPos.set(oX + eX, oY - eY, oZ - eZ), Vec3f.NEG_Z_AXIS, uv.upRt)
+            val i3 = vertex(tmpPos.set(oX - eX, oY - eY, oZ - eZ), Vec3f.NEG_Z_AXIS, uv.upLt)
             addTriIndices(i0, i1, i2)
             addTriIndices(i0, i2, i3)
         }
 
         // left
-        withColor(props.leftColor ?: color) {
-            val i0 = vertex(tmpPos.set(oX - eX, oY - eY, oZ + eZ), Vec3f.NEG_X_AXIS, uvLowRt)
-            val i1 = vertex(tmpPos.set(oX - eX, oY + eY, oZ + eZ), Vec3f.NEG_X_AXIS, uvUpRt)
-            val i2 = vertex(tmpPos.set(oX - eX, oY + eY, oZ - eZ), Vec3f.NEG_X_AXIS, uvUpLt)
-            val i3 = vertex(tmpPos.set(oX - eX, oY - eY, oZ - eZ), Vec3f.NEG_X_AXIS, uvLowLt)
+        withColor(props.colors.getOrElse(CubeProps.FACE_LEFT) { color }) {
+            val uv = props.uvs.getOrElse(CubeProps.FACE_LEFT) { RectUvs.ZERO }
+            val i0 = vertex(tmpPos.set(oX - eX, oY - eY, oZ + eZ), Vec3f.NEG_X_AXIS, uv.lowLt)
+            val i1 = vertex(tmpPos.set(oX - eX, oY + eY, oZ + eZ), Vec3f.NEG_X_AXIS, uv.lowRt)
+            val i2 = vertex(tmpPos.set(oX - eX, oY + eY, oZ - eZ), Vec3f.NEG_X_AXIS, uv.upRt)
+            val i3 = vertex(tmpPos.set(oX - eX, oY - eY, oZ - eZ), Vec3f.NEG_X_AXIS, uv.upLt)
             addTriIndices(i0, i1, i2)
             addTriIndices(i0, i2, i3)
         }
 
         // top
-        withColor(props.topColor ?: color) {
-            val i0 = vertex(tmpPos.set(oX - eX, oY + eY, oZ + eZ), Vec3f.Y_AXIS, uvLowLt)
-            val i1 = vertex(tmpPos.set(oX + eX, oY + eY, oZ + eZ), Vec3f.Y_AXIS, uvLowRt)
-            val i2 = vertex(tmpPos.set(oX + eX, oY + eY, oZ - eZ), Vec3f.Y_AXIS, uvUpRt)
-            val i3 = vertex(tmpPos.set(oX - eX, oY + eY, oZ - eZ), Vec3f.Y_AXIS, uvUpLt)
+        withColor(props.colors.getOrElse(CubeProps.FACE_TOP) { color }) {
+            val uv = props.uvs.getOrElse(CubeProps.FACE_TOP) { RectUvs.ZERO }
+            val i0 = vertex(tmpPos.set(oX - eX, oY + eY, oZ + eZ), Vec3f.Y_AXIS, uv.lowLt)
+            val i1 = vertex(tmpPos.set(oX + eX, oY + eY, oZ + eZ), Vec3f.Y_AXIS, uv.lowRt)
+            val i2 = vertex(tmpPos.set(oX + eX, oY + eY, oZ - eZ), Vec3f.Y_AXIS, uv.upRt)
+            val i3 = vertex(tmpPos.set(oX - eX, oY + eY, oZ - eZ), Vec3f.Y_AXIS, uv.upLt)
             addTriIndices(i0, i1, i2)
             addTriIndices(i0, i2, i3)
         }
 
         // bottom
-        withColor(props.bottomColor ?: color) {
-            val i0 = vertex(tmpPos.set(oX - eX, oY - eY, oZ - eZ), Vec3f.NEG_Y_AXIS, uvLowLt)
-            val i1 = vertex(tmpPos.set(oX + eX, oY - eY, oZ - eZ), Vec3f.NEG_Y_AXIS, uvLowRt)
-            val i2 = vertex(tmpPos.set(oX + eX, oY - eY, oZ + eZ), Vec3f.NEG_Y_AXIS, uvUpRt)
-            val i3 = vertex(tmpPos.set(oX - eX, oY - eY, oZ + eZ), Vec3f.NEG_Y_AXIS, uvUpLt)
+        withColor(props.colors.getOrElse(CubeProps.FACE_BOTTOM) { color }) {
+            val uv = props.uvs.getOrElse(CubeProps.FACE_BOTTOM) { RectUvs.ZERO }
+            val i0 = vertex(tmpPos.set(oX - eX, oY - eY, oZ - eZ), Vec3f.NEG_Y_AXIS, uv.lowLt)
+            val i1 = vertex(tmpPos.set(oX + eX, oY - eY, oZ - eZ), Vec3f.NEG_Y_AXIS, uv.lowRt)
+            val i2 = vertex(tmpPos.set(oX + eX, oY - eY, oZ + eZ), Vec3f.NEG_Y_AXIS, uv.upRt)
+            val i3 = vertex(tmpPos.set(oX - eX, oY - eY, oZ + eZ), Vec3f.NEG_Y_AXIS, uv.upLt)
             addTriIndices(i0, i1, i2)
             addTriIndices(i0, i2, i3)
         }
@@ -1156,29 +1157,57 @@ class CubeProps {
         get() = size.z
         set(value) { size.z = value }
 
-    var topColor: Color? = null
-    var bottomColor: Color? = null
-    var leftColor: Color? = null
-    var rightColor: Color? = null
-    var frontColor: Color? = null
-    var backColor: Color? = null
+    var colors: List<Color> = emptyList()
+    var uvs: List<RectUvs> = fullFaceUvs
 
     fun colored(linearSpace: Boolean = true) {
-        if (linearSpace) {
-            frontColor = MdColor.RED.toLinear()
-            rightColor = MdColor.AMBER.toLinear()
-            backColor = MdColor.INDIGO.toLinear()
-            leftColor = MdColor.CYAN.toLinear()
-            topColor = MdColor.PURPLE.toLinear()
-            bottomColor = MdColor.GREEN.toLinear()
-        } else {
-            frontColor = MdColor.RED
-            rightColor = MdColor.AMBER
-            backColor = MdColor.INDIGO
-            leftColor = MdColor.CYAN
-            topColor = MdColor.PURPLE
-            bottomColor = MdColor.GREEN
-        }
+        colors = if (linearSpace) defaultColorsLinear else defaultColorsSrgb
+    }
+
+    companion object {
+        const val FACE_TOP = 0
+        const val FACE_BOTTOM = 1
+        const val FACE_LEFT = 2
+        const val FACE_RIGHT = 3
+        const val FACE_FRONT = 4
+        const val FACE_BACK = 5
+
+        val defaultColorsSrgb = listOf(
+            MdColor.RED,
+            MdColor.AMBER,
+            MdColor.INDIGO,
+            MdColor.CYAN,
+            MdColor.PURPLE,
+            MdColor.GREEN
+        )
+        val defaultColorsLinear = listOf(
+            MdColor.RED.toLinear(),
+            MdColor.AMBER.toLinear(),
+            MdColor.INDIGO.toLinear(),
+            MdColor.CYAN.toLinear(),
+            MdColor.PURPLE.toLinear(),
+            MdColor.GREEN.toLinear()
+        )
+
+        val fullFaceUvs = listOf(
+            RectUvs(Vec2f(0f, 0f), Vec2f(1f, 0f), Vec2f(0f, 1f), Vec2f(1f, 1f)),
+            RectUvs(Vec2f(0f, 0f), Vec2f(1f, 0f), Vec2f(0f, 1f), Vec2f(1f, 1f)),
+            RectUvs(Vec2f(0f, 0f), Vec2f(1f, 0f), Vec2f(0f, 1f), Vec2f(1f, 1f)),
+            RectUvs(Vec2f(0f, 0f), Vec2f(1f, 0f), Vec2f(0f, 1f), Vec2f(1f, 1f)),
+            RectUvs(Vec2f(0f, 0f), Vec2f(1f, 0f), Vec2f(0f, 1f), Vec2f(1f, 1f)),
+            RectUvs(Vec2f(0f, 0f), Vec2f(1f, 0f), Vec2f(0f, 1f), Vec2f(1f, 1f))
+        )
+    }
+}
+
+class RectUvs(
+    val upLt: Vec2f,
+    val upRt: Vec2f,
+    val lowLt: Vec2f,
+    val lowRt: Vec2f
+) {
+    companion object {
+        val ZERO = RectUvs(Vec2f.ZERO, Vec2f.ZERO, Vec2f.ZERO, Vec2f.ZERO)
     }
 }
 
