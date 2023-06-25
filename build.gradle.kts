@@ -3,6 +3,16 @@ plugins {
     id("org.jetbrains.dokka") version Versions.dokkaVersion apply false
 }
 
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:0.21.0")
+    }
+}
+
 allprojects {
     group = "de.fabmax.kool"
     version = "0.12.0-SNAPSHOT"
@@ -15,5 +25,6 @@ allprojects {
     subprojects {
         apply(plugin = "kotlin-multiplatform")
         apply(plugin = "org.jetbrains.dokka")
+        apply(plugin = "kotlinx-atomicfu")
     }
 }

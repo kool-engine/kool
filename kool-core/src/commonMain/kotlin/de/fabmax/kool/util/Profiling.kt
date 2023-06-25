@@ -1,8 +1,9 @@
 package de.fabmax.kool.util
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.lock
 import de.fabmax.kool.toString
+import kotlinx.atomicfu.locks.SynchronizedObject
+import kotlinx.atomicfu.locks.synchronized
 import kotlin.math.abs
 
 inline fun <T> profiled(tag: String, block: () -> T): T {
@@ -12,7 +13,7 @@ inline fun <T> profiled(tag: String, block: () -> T): T {
     return retVal
 }
 
-object Profiling {
+object Profiling : SynchronizedObject() {
 
     private val timers = mutableMapOf<String, SectionTimer>()
     private var lastPrint = Time.precisionTime
@@ -21,11 +22,11 @@ object Profiling {
     private var autoPrinter: ((KoolContext) -> Unit)? = null
 
     fun enter(tag: String) {
-        lock(timers) { timers.getOrPut(tag) { SectionTimer(tag) } }.enter()
+        synchronized(this) { timers.getOrPut(tag) { SectionTimer(tag) } }.enter()
     }
 
     fun exit(tag: String) {
-        lock(timers) { timers[tag] }?.exit()
+        synchronized(this) { timers[tag] }?.exit()
     }
 
     private class SectionTimer(val tag: String) {
@@ -51,7 +52,7 @@ object Profiling {
         lastPrint = Time.precisionTime
         lastPrintFrameIdx = Time.frameCount
 
-        lock(timers) {
+        synchronized(this) {
             println(" Profiling statistics for last ${deltaT.toString(0)} ms / $numFrames frames")
             println(" Tag                            | ms/frame | Relative | Total ms ")
             println("-----------------------------------------------------------------")

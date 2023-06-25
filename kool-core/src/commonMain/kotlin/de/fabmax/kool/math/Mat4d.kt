@@ -1,8 +1,9 @@
 package de.fabmax.kool.math
 
 import de.fabmax.kool.KoolException
-import de.fabmax.kool.lock
 import de.fabmax.kool.util.Float32Buffer
+import kotlinx.atomicfu.locks.SynchronizedObject
+import kotlinx.atomicfu.locks.synchronized
 import kotlin.math.*
 
 open class Mat4d {
@@ -37,7 +38,7 @@ open class Mat4d {
     }
 
     fun rotate(angleDeg: Double, axX: Double, axY: Double, axZ: Double): Mat4d {
-        return lock(tmpMatLock) {
+        return synchronized(Mat4d) {
             tmpMatA.setRotate(angleDeg, axX, axY, axZ)
             set(mul(tmpMatA, tmpMatB))
         }
@@ -48,14 +49,14 @@ open class Mat4d {
     fun rotate(angleDeg: Double, axis: Vec3d) = rotate(angleDeg, axis.x, axis.y, axis.z)
 
     fun rotate(eulerX: Double, eulerY: Double, eulerZ: Double): Mat4d {
-        return lock(tmpMatLock) {
+        return synchronized(Mat4d) {
             tmpMatA.setRotate(eulerX, eulerY, eulerZ)
             set(mul(tmpMatA, tmpMatB))
         }
     }
 
     fun rotate(angleDeg: Double, axX: Double, axY: Double, axZ: Double, result: Mat4d): Mat4d {
-        return lock(tmpMatLock) {
+        return synchronized(Mat4d) {
             tmpMatA.setRotate(angleDeg, axX, axY, axZ)
             mul(tmpMatA, result)
         }
@@ -101,7 +102,7 @@ open class Mat4d {
     }
 
     fun transpose(): Mat4d {
-        return lock(tmpMatLock) {
+        return synchronized(Mat4d) {
             set(transpose(tmpMatA))
         }
     }
@@ -118,7 +119,7 @@ open class Mat4d {
     }
 
     fun invert(eps: Double = 0.0): Boolean {
-        return lock(tmpMatLock) { invert(tmpMatA, eps).also { if (it) set(tmpMatA) } }
+        return synchronized(Mat4d) { invert(tmpMatA, eps).also { if (it) set(tmpMatA) } }
     }
 
     fun invert(result: Mat4d, eps: Double = 0.0): Boolean {
@@ -271,7 +272,7 @@ open class Mat4d {
     }
 
     fun mul(other: Mat4d): Mat4d {
-        return lock(tmpMatLock) {
+        return synchronized(Mat4d) {
             mul(other, tmpMatA)
             set(tmpMatA)
         }
@@ -838,8 +839,7 @@ open class Mat4d {
         }
     }
 
-    companion object {
-        private val tmpMatLock = Any()
+    companion object : SynchronizedObject() {
         private val tmpMatA = Mat4d()
         private val tmpMatB = Mat4d()
     }

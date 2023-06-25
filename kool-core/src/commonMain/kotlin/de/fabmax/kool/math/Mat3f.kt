@@ -1,7 +1,8 @@
 package de.fabmax.kool.math
 
-import de.fabmax.kool.lock
 import de.fabmax.kool.util.Float32Buffer
+import kotlinx.atomicfu.locks.SynchronizedObject
+import kotlinx.atomicfu.locks.synchronized
 import kotlin.math.*
 
 class Mat3f {
@@ -13,7 +14,7 @@ class Mat3f {
     }
 
     fun rotate(angleDeg: Float, axX: Float, axY: Float, axZ: Float): Mat3f {
-        return lock(tmpMatLock) {
+        return synchronized(Mat3f) {
             tmpMatA.setRotate(angleDeg, axX, axY, axZ)
             set(mul(tmpMatA, tmpMatB))
         }
@@ -22,7 +23,7 @@ class Mat3f {
     fun rotate(angleDeg: Float, axis: Vec3f) = rotate(angleDeg, axis.x, axis.y, axis.z)
 
     fun rotate(eulerX: Float, eulerY: Float, eulerZ: Float): Mat3f {
-        return lock(tmpMatLock) {
+        return synchronized(Mat3f) {
             tmpMatA.setRotate(eulerX, eulerY, eulerZ)
             set(mul(tmpMatA, tmpMatB))
         }
@@ -72,7 +73,7 @@ class Mat3f {
     }
 
     fun invert(): Boolean {
-        return lock(tmpMatLock) { invert(tmpMatA).also { if (it) set(tmpMatA) } }
+        return synchronized(Mat3f) { invert(tmpMatA).also { if (it) set(tmpMatA) } }
     }
 
     fun invert(result: Mat3f): Boolean {
@@ -110,7 +111,7 @@ class Mat3f {
     }
 
     fun mul(other: Mat3f): Mat3f {
-        return lock(tmpMatLock) {
+        return synchronized(Mat3f) {
             mul(other, tmpMatA)
             set(tmpMatA)
         }
@@ -352,8 +353,7 @@ class Mat3f {
         }
     }
 
-    companion object {
-        private val tmpMatLock = Any()
+    companion object : SynchronizedObject() {
         private val tmpMatA = Mat3f()
         private val tmpMatB = Mat3f()
     }

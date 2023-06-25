@@ -1,8 +1,9 @@
 package de.fabmax.kool.math
 
 import de.fabmax.kool.KoolException
-import de.fabmax.kool.lock
 import de.fabmax.kool.util.Float32Buffer
+import kotlinx.atomicfu.locks.SynchronizedObject
+import kotlinx.atomicfu.locks.synchronized
 import kotlin.math.*
 
 /**
@@ -37,7 +38,7 @@ open class Mat4f {
     }
 
     fun rotate(angleDeg: Float, axX: Float, axY: Float, axZ: Float): Mat4f {
-        return lock(tmpMatLock) {
+        return synchronized(Mat4f) {
             tmpMatA.setRotate(angleDeg, axX, axY, axZ)
             set(mul(tmpMatA, tmpMatB))
         }
@@ -46,14 +47,14 @@ open class Mat4f {
     fun rotate(angleDeg: Float, axis: Vec3f) = rotate(angleDeg, axis.x, axis.y, axis.z)
 
     fun rotate(eulerX: Float, eulerY: Float, eulerZ: Float): Mat4f {
-        return lock(tmpMatLock) {
+        return synchronized(Mat4f) {
             tmpMatA.setRotate(eulerX, eulerY, eulerZ)
             set(mul(tmpMatA, tmpMatB))
         }
     }
 
     fun rotate(angleDeg: Float, axX: Float, axY: Float, axZ: Float, result: Mat4f): Mat4f {
-        return lock(tmpMatLock) {
+        return synchronized(Mat4f) {
             tmpMatA.setRotate(angleDeg, axX, axY, axZ)
             mul(tmpMatA, result)
         }
@@ -68,7 +69,7 @@ open class Mat4f {
     }
 
     fun rotate(rotationMat: Mat3f) {
-        return lock(tmpMatLock) {
+        return synchronized(Mat4f) {
             tmpMatA.setIdentity().setRotation(rotationMat)
             set(mul(tmpMatA, tmpMatB))
         }
@@ -106,7 +107,7 @@ open class Mat4f {
     }
 
     fun transpose(): Mat4f {
-        return lock(tmpMatLock) {
+        return synchronized(Mat4f) {
             set(transpose(tmpMatA))
         }
     }
@@ -123,7 +124,7 @@ open class Mat4f {
     }
 
     fun invert(eps: Float = 0.0f): Boolean {
-        return lock(tmpMatLock) { invert(tmpMatA, eps).also { if (it) set(tmpMatA) } }
+        return synchronized(Mat4f) { invert(tmpMatA, eps).also { if (it) set(tmpMatA) } }
     }
 
     fun invert(result: Mat4f, eps: Float = 0.0f): Boolean {
@@ -258,7 +259,7 @@ open class Mat4f {
     }
 
     fun mul(other: Mat4f): Mat4f {
-        return lock(tmpMatLock) {
+        return synchronized(Mat4f) {
             mul(other, tmpMatA)
             set(tmpMatA)
         }
@@ -793,8 +794,7 @@ open class Mat4f {
         }
     }
 
-    companion object {
-        private val tmpMatLock = Any()
+    companion object : SynchronizedObject() {
         private val tmpMatA = Mat4f()
         private val tmpMatB = Mat4f()
     }

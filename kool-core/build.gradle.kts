@@ -5,6 +5,7 @@ import java.util.*
 
 plugins {
     kotlin("plugin.serialization") version Versions.kotlinVersion
+//    id("org.jetbrains.kotlin.plugin.atomicfu") version Versions.kotlinVersion
     `maven-publish`
     signing
 }

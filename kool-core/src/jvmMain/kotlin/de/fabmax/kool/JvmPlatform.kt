@@ -33,8 +33,6 @@ actual fun KoolApplication(config: KoolConfig, appBlock: (KoolContext) -> Unit) 
 
 actual fun Double.toString(precision: Int): String = "%.${precision.clamp(0, 12)}f".format(Locale.ENGLISH, this)
 
-actual inline fun <R> lock(lock: Any, block: () -> R): R = synchronized(lock, block)
-
 internal object DesktopImpl {
     private var ctx: Lwjgl3Context? = null
 

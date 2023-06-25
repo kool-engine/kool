@@ -1,7 +1,8 @@
 package de.fabmax.kool.math
 
-import de.fabmax.kool.lock
 import de.fabmax.kool.util.Float32Buffer
+import kotlinx.atomicfu.locks.SynchronizedObject
+import kotlinx.atomicfu.locks.synchronized
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
@@ -16,7 +17,7 @@ class Mat3d {
     }
 
     fun rotate(angleDeg: Double, axX: Double, axY: Double, axZ: Double): Mat3d {
-        return lock(tmpMatLock) {
+        return synchronized(Mat3d) {
             tmpMatA.setRotate(angleDeg, axX, axY, axZ)
             set(mul(tmpMatA, tmpMatB))
         }
@@ -25,7 +26,7 @@ class Mat3d {
     fun rotate(angleDeg: Double, axis: Vec3d) = rotate(angleDeg, axis.x, axis.y, axis.z)
 
     fun rotate(eulerX: Double, eulerY: Double, eulerZ: Double): Mat3d {
-        return lock(tmpMatLock) {
+        return synchronized(Mat3d) {
             tmpMatA.setRotate(eulerX, eulerY, eulerZ)
             set(mul(tmpMatA, tmpMatB))
         }
@@ -75,7 +76,7 @@ class Mat3d {
     }
 
     fun invert(): Boolean {
-        return lock(tmpMatLock) { invert(tmpMatA).also { if (it) set(tmpMatA) } }
+        return synchronized(Mat3d) { invert(tmpMatA).also { if (it) set(tmpMatA) } }
     }
 
     fun invert(result: Mat3d): Boolean {
@@ -113,7 +114,7 @@ class Mat3d {
     }
 
     fun mul(other: Mat3d): Mat3d {
-        return lock(tmpMatLock) {
+        return synchronized(Mat3d) {
             mul(other, tmpMatA)
             set(tmpMatA)
         }
@@ -357,8 +358,7 @@ class Mat3d {
         }
     }
 
-    companion object {
-        private val tmpMatLock = Any()
+    companion object : SynchronizedObject() {
         private val tmpMatA = Mat3d()
         private val tmpMatB = Mat3d()
     }

@@ -37,8 +37,6 @@ actual fun Double.toString(precision: Int): String {
     return js("d.toFixed(precision)").toString()
 }
 
-actual inline fun <R> lock(lock: Any, block: () -> R): R = block()
-
 internal object JsImpl {
     private var ctx: JsContext? = null
     val gl: WebGL2RenderingContext
