@@ -8,13 +8,13 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                implementation(DepsCommon.kotlinCoroutines)
-                implementation(DepsCommon.kotlinSerialization)
-                implementation(DepsCommon.kotlinSerializationJson)
-                implementation(DepsCommon.kotlinReflection)
-                implementation(project(":kool-core"))
-                implementation(project(":kool-physics"))
-                implementation(project(":kool-editor-api"))
+                api(DepsCommon.kotlinCoroutines)
+                api(DepsCommon.kotlinSerialization)
+                api(DepsCommon.kotlinSerializationJson)
+                api(DepsCommon.kotlinReflection)
+                api(project(":kool-core"))
+                api(project(":kool-physics"))
+                api(project(":kool-editor-api"))
             }
         }
         val commonTest by getting {
@@ -26,7 +26,6 @@ kotlin {
 
         val jvmMain by getting {
             dependencies {
-                implementation(DepsJvm.lwjgl())
                 runtimeOnly(DepsJvm.lwjglNatives())
                 runtimeOnly(DepsJvm.lwjglNatives("glfw"))
                 runtimeOnly(DepsJvm.lwjglNatives("jemalloc"))

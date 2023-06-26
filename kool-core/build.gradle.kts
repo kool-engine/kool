@@ -5,7 +5,6 @@ import java.util.*
 
 plugins {
     kotlin("plugin.serialization") version Versions.kotlinVersion
-//    id("org.jetbrains.kotlin.plugin.atomicfu") version Versions.kotlinVersion
     `maven-publish`
     signing
 }
@@ -43,15 +42,15 @@ kotlin {
 
         val jvmMain by getting {
             dependencies {
-                implementation(DepsJvm.lwjgl())
-                implementation(DepsJvm.lwjgl("glfw"))
-                implementation(DepsJvm.lwjgl("jemalloc"))
-                implementation(DepsJvm.lwjgl("opengl"))
-                implementation(DepsJvm.lwjgl("vulkan"))
-                implementation(DepsJvm.lwjgl("vma"))
-                implementation(DepsJvm.lwjgl("shaderc"))
-                implementation(DepsJvm.lwjgl("nfd"))
-                implementation(DepsJvm.lwjgl("stb"))
+                api(DepsJvm.lwjgl())
+                api(DepsJvm.lwjgl("glfw"))
+                api(DepsJvm.lwjgl("jemalloc"))
+                api(DepsJvm.lwjgl("opengl"))
+                api(DepsJvm.lwjgl("vulkan"))
+                api(DepsJvm.lwjgl("vma"))
+                api(DepsJvm.lwjgl("shaderc"))
+                api(DepsJvm.lwjgl("nfd"))
+                api(DepsJvm.lwjgl("stb"))
             }
         }
         val jvmTest by getting {

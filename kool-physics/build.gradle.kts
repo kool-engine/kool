@@ -20,24 +20,20 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation(DepsCommon.kotlinCoroutines)
-                implementation(project(":kool-core"))
+                api(project(":kool-core"))
             }
         }
 
         val jvmMain by getting {
             dependencies {
-                implementation(DepsJvm.lwjgl())
-                runtimeOnly(DepsJvm.lwjglNatives())
-
                 api(DepsJvm.physxJni)
-                runtimeOnly(DepsJvm.physxJniRuntime)
             }
         }
 
         val jsMain by getting {
             dependencies {
-                implementation(npm("physx-js-webidl", "2.0.5"))
-                //implementation(npm(File("$projectDir/npm/physx-js-webidl")))
+                api(npm("physx-js-webidl", "2.0.5"))
+                //api(npm(File("$projectDir/npm/physx-js-webidl")))
             }
         }
 

@@ -43,7 +43,6 @@ kotlin {
 
         val jvmMain by getting {
             dependencies {
-                implementation(DepsJvm.lwjgl())
                 runtimeOnly(DepsJvm.lwjglNatives())
                 runtimeOnly(DepsJvm.lwjglNatives("glfw"))
                 runtimeOnly(DepsJvm.lwjglNatives("jemalloc"))

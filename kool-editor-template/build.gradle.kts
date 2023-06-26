@@ -6,10 +6,7 @@ import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
 kotlin {
     jvm {
         jvmToolchain(11)
-    }
-
-    jvm("editor") {
-        jvmToolchain(11)
+        compilations.create("editor")
     }
 
     js(IR) {
@@ -60,7 +57,7 @@ kotlin {
             }
         }
 
-        val editorMain by getting {
+        val jvmEditor by getting {
             dependencies {
                 implementation(project(":kool-editor"))
             }
@@ -85,11 +82,11 @@ tasks["clean"].doLast {
 
 task("runEditor", JavaExec::class) {
     group = "editor"
-    dependsOn("editorMainClasses")
+    dependsOn("jvmEditorClasses")
 
-    val editorConfig = configurations.getByName("editorRuntimeClasspath").copyRecursive()
+    val editorConfig = configurations.getByName("jvmEditorRuntimeClasspath").copyRecursive()
 
-    classpath = editorConfig.fileCollection { true } + files("$buildDir/classes/kotlin/editor/main")
+    classpath = editorConfig.fileCollection { true } + files("$buildDir/classes/kotlin/jvm/editor")
     mainClass.set("EditorLauncherKt")
     workingDir = File(projectDir, ".editor")
 
