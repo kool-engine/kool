@@ -55,21 +55,21 @@ class ScriptEditor(val scriptComponent: ScriptComponent) : Composable {
     }
 
     private fun UiScope.doubleEditor(prop: ScriptProperty) {
-        val propValue = remember(prop.get(scriptComponent) as Double)
+        val propValue = prop.get(scriptComponent) as Double
         val editHandler = ActionValueEditHandler<Double> { undoValue, applyValue ->
             val newValue = PropertyValue(d1 = applyValue)
             val oldValue = PropertyValue(d1 = undoValue)
             SetScriptPropertyAction(scriptComponent, prop.name, oldValue, newValue) {
-                propValue.set(it.d1!!)
-                prop.set(scriptComponent, propValue.value)
+                surface.triggerUpdate()
+                prop.set(scriptComponent, it.d1!!)
                 scriptComponent.componentData.propertyValues[prop.name] = it
             }
         }
 
         labeledDoubleTextField(
             prop.label,
-            propValue.use(),
-            prop.getPrecision(propValue.value),
+            propValue,
+            prop.getPrecision(propValue),
             dragChangeSpeed = prop.dragChangeSpeed,
             minValue = prop.min,
             maxValue = prop.max,
@@ -78,20 +78,20 @@ class ScriptEditor(val scriptComponent: ScriptComponent) : Composable {
     }
 
     private fun UiScope.vec2dEditor(prop: ScriptProperty) {
-        val propValue = remember(prop.get(scriptComponent) as Vec2d)
+        val propValue = prop.get(scriptComponent) as Vec2d
         val editHandler = ActionValueEditHandler<Vec2d> { undoValue, applyValue ->
             val newValue = PropertyValue(d2 = Vec2Data(applyValue))
             val oldValue = PropertyValue(d2 = Vec2Data(undoValue))
             SetScriptPropertyAction(scriptComponent, prop.name, oldValue, newValue) {
-                propValue.set(it.d2!!.toVec2d())
-                prop.set(scriptComponent, MutableVec2d(propValue.value))
+                surface.triggerUpdate()
+                prop.set(scriptComponent, it.d2!!.toVec2d())
                 scriptComponent.componentData.propertyValues[prop.name] = it
             }
         }
 
         xyRow(
             prop.label,
-            propValue.use(),
+            propValue,
             dragChangeSpeed = Vec2d(prop.dragChangeSpeed),
             minValues = Vec2d(prop.min),
             maxValues = Vec2d(prop.max),
@@ -100,20 +100,20 @@ class ScriptEditor(val scriptComponent: ScriptComponent) : Composable {
     }
 
     private fun UiScope.vec3dEditor(prop: ScriptProperty) {
-        val propValue = remember(prop.get(scriptComponent) as Vec3d)
+        val propValue = prop.get(scriptComponent) as Vec3d
         val editHandler = ActionValueEditHandler<Vec3d> { undoValue, applyValue ->
             val newValue = PropertyValue(d3 = Vec3Data(applyValue))
             val oldValue = PropertyValue(d3 = Vec3Data(undoValue))
             SetScriptPropertyAction(scriptComponent, prop.name, oldValue, newValue) {
-                propValue.set(it.d3!!.toVec3d())
-                prop.set(scriptComponent, MutableVec3d(propValue.value))
+                surface.triggerUpdate()
+                prop.set(scriptComponent, it.d3!!.toVec3d())
                 scriptComponent.componentData.propertyValues[prop.name] = it
             }
         }
 
         xyzRow(
             prop.label,
-            propValue.use(),
+            propValue,
             dragChangeSpeed = Vec3d(prop.dragChangeSpeed),
             minValues = Vec3d(prop.min),
             maxValues = Vec3d(prop.max),
@@ -122,20 +122,20 @@ class ScriptEditor(val scriptComponent: ScriptComponent) : Composable {
     }
 
     private fun UiScope.vec4dEditor(prop: ScriptProperty) {
-        val propValue = remember(prop.get(scriptComponent) as Vec4d)
+        val propValue = prop.get(scriptComponent) as Vec4d
         val editHandler = ActionValueEditHandler<Vec4d> { undoValue, applyValue ->
             val newValue = PropertyValue(d4 = Vec4Data(applyValue))
             val oldValue = PropertyValue(d4 = Vec4Data(undoValue))
             SetScriptPropertyAction(scriptComponent, prop.name, oldValue, newValue) {
-                propValue.set(it.d4!!.toVec4d())
-                prop.set(scriptComponent, MutableVec4d(propValue.value))
+                surface.triggerUpdate()
+                prop.set(scriptComponent, it.d4!!.toVec4d())
                 scriptComponent.componentData.propertyValues[prop.name] = it
             }
         }
 
         xyzwRow(
             prop.label,
-            propValue.use(),
+            propValue,
             dragChangeSpeed = Vec4d(prop.dragChangeSpeed),
             minValues = Vec4d(prop.min),
             maxValues = Vec4d(prop.max),
@@ -144,21 +144,21 @@ class ScriptEditor(val scriptComponent: ScriptComponent) : Composable {
     }
 
     private fun UiScope.floatEditor(prop: ScriptProperty) {
-        val propValue = remember(prop.get(scriptComponent) as Float)
+        val propValue = prop.get(scriptComponent) as Float
         val editHandler = ActionValueEditHandler<Double> { undoValue, applyValue ->
             val newValue = PropertyValue(f1 = applyValue.toFloat())
             val oldValue = PropertyValue(f1 = undoValue.toFloat())
             SetScriptPropertyAction(scriptComponent, prop.name, oldValue, newValue) {
-                propValue.set(it.f1!!)
-                prop.set(scriptComponent, propValue.value)
+                surface.triggerUpdate()
+                prop.set(scriptComponent, it.f1!!)
                 scriptComponent.componentData.propertyValues[prop.name] = it
             }
         }
 
         labeledDoubleTextField(
             prop.label,
-            propValue.use().toDouble(),
-            prop.getPrecision(propValue.value.toDouble()),
+            propValue.toDouble(),
+            prop.getPrecision(propValue.toDouble()),
             dragChangeSpeed = prop.dragChangeSpeed,
             minValue = prop.min,
             maxValue = prop.max,
@@ -167,20 +167,20 @@ class ScriptEditor(val scriptComponent: ScriptComponent) : Composable {
     }
 
     private fun UiScope.vec2fEditor(prop: ScriptProperty) {
-        val propValue = remember(prop.get(scriptComponent) as Vec2f)
+        val propValue = prop.get(scriptComponent) as Vec2f
         val editHandler = ActionValueEditHandler<Vec2d> { undoValue, applyValue ->
             val newValue = PropertyValue(f2 = Vec2Data(applyValue))
             val oldValue = PropertyValue(f2 = Vec2Data(undoValue))
             SetScriptPropertyAction(scriptComponent, prop.name, oldValue, newValue) {
-                propValue.set(it.f2!!.toVec2f())
-                prop.set(scriptComponent, MutableVec2f(propValue.value))
+                surface.triggerUpdate()
+                prop.set(scriptComponent, it.f2!!.toVec2f())
                 scriptComponent.componentData.propertyValues[prop.name] = it
             }
         }
 
         xyRow(
             prop.label,
-            propValue.use().toVec2d(),
+            propValue.toVec2d(),
             dragChangeSpeed = Vec2d(prop.dragChangeSpeed),
             minValues = Vec2d(prop.min),
             maxValues = Vec2d(prop.max),
@@ -189,20 +189,20 @@ class ScriptEditor(val scriptComponent: ScriptComponent) : Composable {
     }
 
     private fun UiScope.vec3fEditor(prop: ScriptProperty) {
-        val propValue = remember(prop.get(scriptComponent) as Vec3f)
+        val propValue = prop.get(scriptComponent) as Vec3f
         val editHandler = ActionValueEditHandler<Vec3d> { undoValue, applyValue ->
             val newValue = PropertyValue(f3 = Vec3Data(applyValue))
             val oldValue = PropertyValue(f3 = Vec3Data(undoValue))
             SetScriptPropertyAction(scriptComponent, prop.name, oldValue, newValue) {
-                propValue.set(it.f3!!.toVec3f())
-                prop.set(scriptComponent, MutableVec3f(propValue.value))
+                surface.triggerUpdate()
+                prop.set(scriptComponent, it.f3!!.toVec3f())
                 scriptComponent.componentData.propertyValues[prop.name] = it
             }
         }
 
         xyzRow(
             prop.label,
-            propValue.use().toVec3d(),
+            propValue.toVec3d(),
             dragChangeSpeed = Vec3d(prop.dragChangeSpeed),
             minValues = Vec3d(prop.min),
             maxValues = Vec3d(prop.max),
@@ -211,20 +211,20 @@ class ScriptEditor(val scriptComponent: ScriptComponent) : Composable {
     }
 
     private fun UiScope.vec4fEditor(prop: ScriptProperty) {
-        val propValue = remember(prop.get(scriptComponent) as Vec4f)
+        val propValue = prop.get(scriptComponent) as Vec4f
         val editHandler = ActionValueEditHandler<Vec4d> { undoValue, applyValue ->
             val newValue = PropertyValue(f4 = Vec4Data(applyValue))
             val oldValue = PropertyValue(f4 = Vec4Data(undoValue))
             SetScriptPropertyAction(scriptComponent, prop.name, oldValue, newValue) {
-                propValue.set(it.f4!!.toVec4f())
-                prop.set(scriptComponent, MutableVec4f(propValue.value))
+                surface.triggerUpdate()
+                prop.set(scriptComponent, it.f4!!.toVec4f())
                 scriptComponent.componentData.propertyValues[prop.name] = it
             }
         }
 
         xyzwRow(
             prop.label,
-            propValue.use().toVec4d(),
+            propValue.toVec4d(),
             dragChangeSpeed = Vec4d(prop.dragChangeSpeed),
             minValues = Vec4d(prop.min),
             maxValues = Vec4d(prop.max),
@@ -233,20 +233,20 @@ class ScriptEditor(val scriptComponent: ScriptComponent) : Composable {
     }
 
     private fun UiScope.intEditor(prop: ScriptProperty) {
-        val propValue = remember(prop.get(scriptComponent) as Int)
+        val propValue = prop.get(scriptComponent) as Int
         val editHandler = ActionValueEditHandler<Int> { undoValue, applyValue ->
             val newValue = PropertyValue(i1 = applyValue)
             val oldValue = PropertyValue(i1 = undoValue)
             SetScriptPropertyAction(scriptComponent, prop.name, oldValue, newValue) {
-                propValue.set(it.i1!!)
-                prop.set(scriptComponent, propValue.value)
+                surface.triggerUpdate()
+                prop.set(scriptComponent, it.i1!!)
                 scriptComponent.componentData.propertyValues[prop.name] = it
             }
         }
 
         labeledIntTextField(
             prop.label,
-            propValue.use(),
+            propValue,
             dragChangeSpeed = prop.dragChangeSpeed,
             minValue = prop.min.toInt(),
             maxValue = prop.max.toInt(),
@@ -255,20 +255,20 @@ class ScriptEditor(val scriptComponent: ScriptComponent) : Composable {
     }
 
     private fun UiScope.vec2iEditor(prop: ScriptProperty) {
-        val propValue = remember(prop.get(scriptComponent) as Vec2i)
+        val propValue = prop.get(scriptComponent) as Vec2i
         val editHandler = ActionValueEditHandler<Vec2d> { undoValue, applyValue ->
             val newValue = PropertyValue(i2 = Vec2Data(applyValue))
             val oldValue = PropertyValue(i2 = Vec2Data(undoValue))
             SetScriptPropertyAction(scriptComponent, prop.name, oldValue, newValue) {
-                propValue.set(it.i2!!.toVec2i())
-                prop.set(scriptComponent, MutableVec2i(propValue.value))
+                surface.triggerUpdate()
+                prop.set(scriptComponent, it.i2!!.toVec2i())
                 scriptComponent.componentData.propertyValues[prop.name] = it
             }
         }
 
         xyRow(
             prop.label,
-            propValue.use().toVec2d(),
+            propValue.toVec2d(),
             dragChangeSpeed = Vec2d(prop.dragChangeSpeed),
             minValues = Vec2d(prop.min),
             maxValues = Vec2d(prop.max),
@@ -277,20 +277,20 @@ class ScriptEditor(val scriptComponent: ScriptComponent) : Composable {
     }
 
     private fun UiScope.vec3iEditor(prop: ScriptProperty) {
-        val propValue = remember(prop.get(scriptComponent) as Vec3i)
+        val propValue = prop.get(scriptComponent) as Vec3i
         val editHandler = ActionValueEditHandler<Vec3d> { undoValue, applyValue ->
             val newValue = PropertyValue(i3 = Vec3Data(applyValue))
             val oldValue = PropertyValue(i3 = Vec3Data(undoValue))
             SetScriptPropertyAction(scriptComponent, prop.name, oldValue, newValue) {
-                propValue.set(it.i3!!.toVec3i())
-                prop.set(scriptComponent, MutableVec3i(propValue.value))
+                surface.triggerUpdate()
+                prop.set(scriptComponent, it.i3!!.toVec3i())
                 scriptComponent.componentData.propertyValues[prop.name] = it
             }
         }
 
         xyzRow(
             prop.label,
-            propValue.use().toVec3d(),
+            propValue.toVec3d(),
             dragChangeSpeed = Vec3d(prop.dragChangeSpeed),
             minValues = Vec3d(prop.min),
             maxValues = Vec3d(prop.max),
@@ -299,20 +299,20 @@ class ScriptEditor(val scriptComponent: ScriptComponent) : Composable {
     }
 
     private fun UiScope.vec4iEditor(prop: ScriptProperty) {
-        val propValue = remember(prop.get(scriptComponent) as Vec4i)
+        val propValue = prop.get(scriptComponent) as Vec4i
         val editHandler = ActionValueEditHandler<Vec4d> { undoValue, applyValue ->
             val newValue = PropertyValue(i4 = Vec4Data(applyValue))
             val oldValue = PropertyValue(i4 = Vec4Data(undoValue))
             SetScriptPropertyAction(scriptComponent, prop.name, oldValue, newValue) {
-                propValue.set(it.i4!!.toVec4i())
-                prop.set(scriptComponent, MutableVec4i(propValue.value))
+                surface.triggerUpdate()
+                prop.set(scriptComponent, it.i4!!.toVec4i())
                 scriptComponent.componentData.propertyValues[prop.name] = it
             }
         }
 
         xyzwRow(
             prop.label,
-            propValue.use().toVec4d(),
+            propValue.toVec4d(),
             dragChangeSpeed = Vec4d(prop.dragChangeSpeed),
             minValues = Vec4d(prop.min),
             maxValues = Vec4d(prop.max),
