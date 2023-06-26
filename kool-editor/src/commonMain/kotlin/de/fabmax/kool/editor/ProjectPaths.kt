@@ -14,6 +14,7 @@ data class ProjectPaths(
         "${projectDir}/src/jsMain/kotlin",
         "${projectDir}/src/jvmMain/kotlin"
     ),
+    val jsAppScriptsPath: String? = "$projectDir/src/jsMain/kotlin/AppScripts.kt",
 
     val classPath: String = "${projectDir}/build/classes/kotlin/jvm/main",
     val appMainClass: String = "de.fabmax.kool.app.App"

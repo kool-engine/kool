@@ -51,7 +51,7 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", ui) 
         val selectedObject = EditorState.selectedNode.use()
         val title = when (selectedObject) {
             is SceneModel -> "Scene Properties"
-            is SceneNodeModel -> "Node Properties"
+            is SceneNodeModel -> "Scene Object Properties"
             null -> "Object Properties"
             else -> "Object Properties <unknown type>"
         }
@@ -219,7 +219,7 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", ui) 
         if (scriptClasses.isNotEmpty()) {
             subMenu("Scripts") {
                 scriptClasses.forEach { script ->
-                    item(script.simpleName) {
+                    item(script.prettyName) {
                         EditorActions.applyAction(
                             AddComponentAction(node, ScriptComponent(ScriptComponentData(script.qualifiedName)))
                         )

@@ -425,5 +425,5 @@ class ResourceBrowser(editorUi: EditorUi) : EditorPanel(
 
     class BrowserMaterialItem(level: Int, val material: MaterialData) : BrowserItem(level, material.name, material.path, BrowserCategory.MATERIALS)
 
-    class BrowserScriptItem(level: Int, script: AppScript) : BrowserItem(level, script.simpleName, script.path, BrowserCategory.SCRIPTS)
+    class BrowserScriptItem(level: Int, script: AppScript) : BrowserItem(level, script.prettyName, script.path, BrowserCategory.SCRIPTS)
 }

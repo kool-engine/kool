@@ -15,8 +15,12 @@ class ScriptComponent(override val componentData: ScriptComponentData) : EditorD
     val scriptInstance = mutableStateOf<KoolScript?>(null)
 
     override suspend fun createComponent(nodeModel: EditorNodeModel) {
-        val script = ScriptLoader.newScriptInstance(componentData.scriptClassName)
-        scriptInstance.set(script)
+        try {
+            val script = ScriptLoader.newScriptInstance(componentData.scriptClassName)
+            scriptInstance.set(script)
+        } catch (e: Exception) {
+            logE { "Failed to initialize ScriptComponents for node ${nodeModel.name}: $e" }
+        }
     }
 
     override suspend fun initComponent(nodeModel: EditorNodeModel) {
@@ -28,7 +32,7 @@ class ScriptComponent(override val componentData: ScriptComponentData) : EditorD
         }
         removeProps.forEach { componentData.propertyValues -= it }
 
-        scriptInstance.value!!.init(nodeModel, this)
+        scriptInstance.value?.init(nodeModel, this)
     }
 
     fun setProperty(name: String, value: Any): Boolean {

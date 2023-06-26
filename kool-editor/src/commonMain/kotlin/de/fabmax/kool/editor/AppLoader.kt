@@ -25,7 +25,8 @@ class LoadedApp(val app: EditorAwareApp, val scriptClasses: Map<KClass<*>, AppSc
 
 class AppScript(klass: KClass<*>, val properties: List<ScriptProperty>) {
     val qualifiedName = klass.qualifiedName ?: "<unknown>"
-    val simpleName = ScriptEditor.camelCaseToWords(klass.simpleName ?: "<unknown>")
+    val simpleName = klass.simpleName
+    val prettyName = ScriptEditor.camelCaseToWords(klass.simpleName ?: "<unknown>")
 }
 
 class AppLoader(val editor: KoolEditor, paths: ProjectPaths) {

@@ -37,6 +37,12 @@ actual class AppLoadService actual constructor(val paths: ProjectPaths) : Corout
 
     val ignoredPaths = mutableSetOf<Path>()
 
+    init {
+        paths.jsAppScriptsPath?.let {
+            ignoredPaths.add(Path.of(it))
+        }
+    }
+
     actual fun addIgnorePath(path: String) {
         ignoredPaths.add(Path.of(path))
     }
@@ -97,6 +103,11 @@ actual class AppLoadService actual constructor(val paths: ProjectPaths) : Corout
         val loader = URLClassLoader(arrayOf(appClassPath.toUri().toURL()), this.javaClass.classLoader)
         ScriptLoader.appScriptLoader = ScriptLoader.ReflectionAppScriptLoader(loader)
         val scriptClasses = examineClasses(loader, appClassPath)
+
+        paths.jsAppScriptsPath?.let { genPath ->
+            logI { "Generating Javascript script bindings: $genPath" }
+            JsAppScriptsGenerator.generateAppScripts(scriptClasses.values.toList(), genPath)
+        }
 
         val appClass = loader.loadClass(paths.appMainClass)
         val app = appClass.getDeclaredConstructor().newInstance()
