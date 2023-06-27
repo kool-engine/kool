@@ -54,11 +54,34 @@ internal actual object PlatformInput {
     }
 
     private fun deriveLocalKeyCodes() {
-        for (c in 'A'..'Z') {
-            val localName = GLFW.glfwGetKeyName(c.code, 0) ?: ""
+        val printableKeys = mutableListOf<Int>()
+        for (c in GLFW.GLFW_KEY_0..GLFW.GLFW_KEY_9) { printableKeys += c }
+        for (c in GLFW.GLFW_KEY_A..GLFW.GLFW_KEY_Z) { printableKeys += c }
+        for (c in GLFW.GLFW_KEY_KP_0..GLFW.GLFW_KEY_KP_9) { printableKeys += c }
+        printableKeys += GLFW.GLFW_KEY_APOSTROPHE
+        printableKeys += GLFW.GLFW_KEY_COMMA
+        printableKeys += GLFW.GLFW_KEY_MINUS
+        printableKeys += GLFW.GLFW_KEY_PERIOD
+        printableKeys += GLFW.GLFW_KEY_SLASH
+        printableKeys += GLFW.GLFW_KEY_SEMICOLON
+        printableKeys += GLFW.GLFW_KEY_EQUAL
+        printableKeys += GLFW.GLFW_KEY_LEFT_BRACKET
+        printableKeys += GLFW.GLFW_KEY_RIGHT_BRACKET
+        printableKeys += GLFW.GLFW_KEY_BACKSLASH
+        //printableKeys += GLFW.GLFW_KEY_WORLD_1
+        printableKeys += GLFW.GLFW_KEY_WORLD_2
+        printableKeys += GLFW.GLFW_KEY_KP_DECIMAL
+        printableKeys += GLFW.GLFW_KEY_KP_DIVIDE
+        printableKeys += GLFW.GLFW_KEY_KP_MULTIPLY
+        printableKeys += GLFW.GLFW_KEY_KP_SUBTRACT
+        printableKeys += GLFW.GLFW_KEY_KP_ADD
+        printableKeys += GLFW.GLFW_KEY_KP_EQUAL
+
+        printableKeys.forEach { c ->
+            val localName = GLFW.glfwGetKeyName(c, 0) ?: ""
             if (localName.isNotBlank()) {
                 val localChar = localName[0].uppercaseChar()
-                localCharKeyCodes[c.code] = localChar.code
+                localCharKeyCodes[c] = localChar.code
             }
         }
     }

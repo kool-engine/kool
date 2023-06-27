@@ -44,6 +44,7 @@ interface TextAreaScope : UiScope {
 open class TextAreaModifier(surface: UiSurface) : UiModifier(surface) {
     var lineStartPadding: Dp by property(Dp(0f))
     var lineEndPadding: Dp by property(Dp(100f))
+    var firstLineTopPadding: Dp by property(Dp(0f))
     var lastLineBottomPadding: Dp by property(Dp(16f))
 
     var editorHandler: TextEditorHandler? by property(null)
@@ -57,6 +58,7 @@ open class TextAreaModifier(surface: UiSurface) : UiModifier(surface) {
 
 fun <T: TextAreaModifier> T.lineStartPadding(padding: Dp): T { lineStartPadding = padding; return this }
 fun <T: TextAreaModifier> T.lineEndPadding(padding: Dp): T { lineEndPadding = padding; return this }
+fun <T: TextAreaModifier> T.firstLineTopPadding(padding: Dp): T { firstLineTopPadding = padding; return this }
 fun <T: TextAreaModifier> T.lastLineBottomPadding(padding: Dp): T { lastLineBottomPadding = padding; return this }
 
 fun <T: TextAreaModifier> T.onSelectionChanged(block: ((Int, Int, Int, Int) -> Unit)?): T {
@@ -192,6 +194,11 @@ open class TextAreaNode(parent: UiNode?, surface: UiSurface) : BoxNode(parent, s
                         .onPointer { selectionHandler.onPointer(this, lineIndex, it) }
 
                     modifier.padding(start = textAreaMod.lineStartPadding, end = textAreaMod.lineEndPadding)
+                    if (lineIndex == 0) {
+                        modifier
+                            .textAlignY(AlignmentY.Bottom)
+                            .padding(top = textAreaMod.firstLineTopPadding)
+                    }
                     if (lineIndex == lineProvider.lastIndex) {
                         modifier
                             .textAlignY(AlignmentY.Top)
