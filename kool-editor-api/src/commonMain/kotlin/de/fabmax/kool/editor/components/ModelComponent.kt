@@ -1,6 +1,5 @@
 package de.fabmax.kool.editor.components
 
-import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.editor.api.AppAssets
 import de.fabmax.kool.editor.data.MaterialData
 import de.fabmax.kool.editor.data.ModelComponentData
@@ -12,6 +11,7 @@ import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.Model
+import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.launchOnMainThread
 import de.fabmax.kool.util.logE
@@ -19,6 +19,7 @@ import de.fabmax.kool.util.logE
 class ModelComponent(override val componentData: ModelComponentData) :
     SceneNodeComponent(),
     EditorDataComponent<ModelComponentData>,
+    ContentComponent,
     UpdateMaterialComponent,
     UpdateSceneBackgroundComponent
 {
@@ -27,6 +28,9 @@ class ModelComponent(override val componentData: ModelComponentData) :
     private var _model: Model? = null
     val model: Model
         get() = _model ?: throw IllegalStateException("ModelComponent was not yet created")
+
+    override val contentNode: Node
+        get() = model
 
     private var isIblShaded = false
 
@@ -115,17 +119,8 @@ class ModelComponent(override val componentData: ModelComponentData) :
 
     private fun recreateModel(ibl: EnvironmentMaps?, bgColor: Color?) {
         launchOnMainThread {
-            val oldModel = model
             _model = createModel(ibl)
-
-            if (sceneNode.drawNode == oldModel) {
-                sceneNode.replaceCreatedNode(model)
-            } else {
-                val idx = sceneNode.drawNode.children.indexOf(oldModel)
-                sceneNode.drawNode.removeNode(oldModel)
-                sceneNode.drawNode.addNode(model, idx)
-                oldModel.dispose(KoolSystem.requireContext())
-            }
+            sceneNode.replaceCreatedNode(model)
 
             bgColor?.let {
                 model.meshes.values.forEach { mesh ->

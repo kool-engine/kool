@@ -11,6 +11,7 @@ import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.Skybox
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
+import de.fabmax.kool.util.launchDelayed
 import de.fabmax.kool.util.logE
 
 class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : EditorNodeModel(sceneData) {
@@ -37,6 +38,9 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : EditorN
         disposeCreatedScene()
 
         val scene = Scene(name)
+        // clear default lighting
+        scene.lighting.clear()
+
         created = scene
         nodesToNodeModels[scene] = this
 
@@ -66,7 +70,7 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : EditorN
     }
 
     private fun disposeCreatedScene() {
-        nodeModels.values.forEach { it.disposeCreatedNode() }
+        nodeModels.values.forEach { it.disposeAndClearCreatedNode() }
         nodesToNodeModels.clear()
 
         created?.dispose(KoolSystem.requireContext())
@@ -100,6 +104,7 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : EditorN
         nodeModel.nodeData.childNodeIds
             .mapNotNull { resolveNode(it, nodeModel) }
             .forEach { addSceneNode(it) }
+        nodeModel.onNodeAdded()
     }
 
     fun removeSceneNode(nodeModel: SceneNodeModel) {
@@ -111,6 +116,12 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : EditorN
         nodesToNodeModels -= nodeModel.drawNode
 
         nodeModel.parent.removeChild(nodeModel)
+
+        launchDelayed(1) {
+            // dispose but don't clear draw node (so that we can add it again on undo)
+            nodeModel.drawNode.dispose(KoolSystem.requireContext())
+            nodeModel.onNodeRemoved()
+        }
     }
 
     override fun addChild(child: SceneNodeModel) {

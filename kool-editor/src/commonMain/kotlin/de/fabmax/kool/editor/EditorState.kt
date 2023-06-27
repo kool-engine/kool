@@ -4,6 +4,7 @@ import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.editor.model.EditorNodeModel
 import de.fabmax.kool.editor.model.EditorProject
 import de.fabmax.kool.editor.model.SceneModel
+import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.modules.ui2.MutableStateValue
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.util.MdColor
@@ -47,6 +48,10 @@ object EditorState {
             }
             sceneNodes += SceneNodeData("Default Cube", boxId).apply {
                 components += MeshComponentData(MeshShapeData.Box(Vec3Data(1.0, 1.0, 1.0)))
+            }
+            sceneNodes += SceneNodeData("Directional Light", boxId).apply {
+                components += DiscreteLightComponentData(LightTypeData.Directional())
+                components += TransformComponentData(TransformData(Mat4d().setRotate(EditorDefaults.DEFAULT_LIGHT_ROTATION)))
             }
         }
     )

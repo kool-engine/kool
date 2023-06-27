@@ -31,6 +31,7 @@ abstract class EditorNodeModel(val nodeData: SceneNodeData) {
     private fun createComponentsFromData(componentData: List<ComponentData>) {
         componentData.forEach { data ->
             when (data) {
+                is DiscreteLightComponentData -> components += DiscreteLightComponent(data)
                 is MaterialComponentData -> components += MaterialComponent(data)
                 is MeshComponentData -> components += MeshComponent(data)
                 is ModelComponentData -> components += ModelComponent(data)
@@ -47,6 +48,14 @@ abstract class EditorNodeModel(val nodeData: SceneNodeData) {
 
     open suspend fun initComponents() {
         components.forEach { it.initComponent(this) }
+    }
+
+    open fun onNodeAdded() {
+        components.forEach { it.onNodeAdded(this) }
+    }
+
+    open fun onNodeRemoved() {
+        components.forEach { it.onNodeRemoved(this) }
     }
 
     fun addComponent(component: EditorModelComponent) {

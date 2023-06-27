@@ -1,9 +1,6 @@
 package de.fabmax.kool.editor.ui
 
-import de.fabmax.kool.editor.AppReloadListener
-import de.fabmax.kool.editor.AssetItem
-import de.fabmax.kool.editor.EditorState
-import de.fabmax.kool.editor.KoolEditor
+import de.fabmax.kool.editor.*
 import de.fabmax.kool.editor.actions.AddNodeAction
 import de.fabmax.kool.editor.actions.DeleteNodeAction
 import de.fabmax.kool.editor.actions.EditorActions
@@ -11,6 +8,7 @@ import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.editor.model.EditorNodeModel
 import de.fabmax.kool.editor.model.SceneModel
 import de.fabmax.kool.editor.model.SceneNodeModel
+import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.modules.ui2.ArrowScope.Companion.ROTATION_DOWN
 import de.fabmax.kool.modules.ui2.ArrowScope.Companion.ROTATION_RIGHT
@@ -52,6 +50,22 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         nodeData.components += ModelComponentData(modelAsset.path)
         val mesh = SceneNodeModel(nodeData, parent.nodeModel, parentScene)
         EditorActions.applyAction(AddNodeAction(mesh))
+    }
+
+    private fun addNewLight(parent: SceneObjectItem, lightType: LightTypeData) {
+        val parentScene = EditorState.selectedScene.value ?: return
+        val id = EditorState.projectModel.nextId()
+        val nodeData = SceneNodeData("${lightType.name}-$id", id)
+        nodeData.components += DiscreteLightComponentData(lightType)
+        val light = SceneNodeModel(nodeData, parent.nodeModel, parentScene)
+
+        val transform = Mat4d().translate(EditorDefaults.DEFAULT_LIGHT_POSITION)
+        if (lightType !is LightTypeData.Point) {
+            transform.mul(Mat4d().setRotate(EditorDefaults.DEFAULT_LIGHT_ROTATION))
+        }
+        light.transform.componentData.transform = TransformData(transform)
+
+        EditorActions.applyAction(AddNodeAction(light))
     }
 
     private fun addEmptyNode(parent: SceneObjectItem) {
@@ -148,6 +162,17 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
                     }
                 }
 
+            }
+            subMenu("Light") {
+                item("Directional") {
+                    addNewLight(it, LightTypeData.Directional())
+                }
+                item("Spot") {
+                    addNewLight(it, LightTypeData.Spot())
+                }
+                item("Point") {
+                    addNewLight(it, LightTypeData.Point())
+                }
             }
             item("Empty node") {
                 addEmptyNode(it)

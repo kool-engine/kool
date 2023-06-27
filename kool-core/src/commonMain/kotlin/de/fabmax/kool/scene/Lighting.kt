@@ -9,6 +9,10 @@ import de.fabmax.kool.util.Color
 class Lighting {
     val lights = mutableListOf<Light>(Light.Directional().setup(Vec3f(-0.8f, -1.2f, -1f)).setColor(Color.WHITE, 1f))
 
+    fun clear() {
+        lights.clear()
+    }
+
     fun singleDirectionalLight(block: Light.Directional.() -> Unit) {
         lights.clear()
         lights += Light.Directional().apply(block)

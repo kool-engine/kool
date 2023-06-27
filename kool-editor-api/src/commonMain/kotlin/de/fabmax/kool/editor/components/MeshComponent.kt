@@ -9,6 +9,7 @@ import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshRayTest
+import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.launchOnMainThread
@@ -17,6 +18,7 @@ import de.fabmax.kool.util.logD
 class MeshComponent(override val componentData: MeshComponentData) :
     SceneNodeComponent(),
     EditorDataComponent<MeshComponentData>,
+    ContentComponent,
     UpdateMaterialComponent,
     UpdateSceneBackgroundComponent
 {
@@ -25,6 +27,9 @@ class MeshComponent(override val componentData: MeshComponentData) :
     private var _mesh: Mesh? = null
     val mesh: Mesh
         get() = _mesh ?: throw IllegalStateException("MeshComponent was not yet created")
+
+    override val contentNode: Node
+        get() = mesh
 
     private var isIblShaded = false
 
@@ -47,15 +52,15 @@ class MeshComponent(override val componentData: MeshComponentData) :
 
     fun updateGeometry() {
         mesh.generate {
-            shapesState.forEach {
+            shapesState.forEach { shape ->
                 withTransform {
-                    it.pose.toMat4f(transform)
-                    color = it.vertexColor.toColor()
+                    shape.pose.toMat4f(transform)
+                    color = shape.vertexColor.toColor()
                     vertexModFun = {
-                        texCoord.x *= it.uvScale.x.toFloat()
-                        texCoord.y *= it.uvScale.y.toFloat()
+                        texCoord.x *= shape.uvScale.x.toFloat()
+                        texCoord.y *= shape.uvScale.y.toFloat()
                     }
-                    it.generate(this)
+                    shape.generate(this)
                 }
             }
             geometry.generateTangents()
