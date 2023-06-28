@@ -141,10 +141,10 @@ class MaterialAttributeSourcePopup(
         }
 
         val hsv = color.toHsv()
-        val hue = remember(0f).apply { set(hsv.x) }
-        val sat = remember(0f).apply { set(hsv.y) }
-        val bri = remember(0f).apply { set(hsv.z) }
-        val alpha = remember(0f).apply { set(color.a) }
+        val hue = remember(hsv.x)
+        val sat = remember(hsv.y)
+        val bri = remember(hsv.z)
+        val alpha = remember(color.a)
         val hexString = remember(color.toHexString())
 
         ColorChooserV(hue, sat, bri, alpha, hexString) { editColor ->

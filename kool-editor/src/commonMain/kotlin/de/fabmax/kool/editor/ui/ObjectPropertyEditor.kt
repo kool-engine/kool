@@ -127,6 +127,7 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", ui) 
 
             for (component in selectedObject.components.use()) {
                 when (component) {
+                    is DiscreteLightComponent -> discreteLightComponent(component)
                     is MaterialComponent -> materialComponent(component)
                     is MeshComponent -> meshComponent(component)
                     is SceneBackgroundComponent -> sceneBackgroundComponent(component)
@@ -137,6 +138,12 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", ui) 
 
             addComponentSelector(selectedObject)
         }
+    }
+
+    private fun UiScope.discreteLightComponent(lightComponent: DiscreteLightComponent) {
+        val editor = remember { LightEditor(lightComponent) }
+        editor.lightComponent = lightComponent
+        editor()
     }
 
     private fun UiScope.materialComponent(materialComponent: MaterialComponent) {

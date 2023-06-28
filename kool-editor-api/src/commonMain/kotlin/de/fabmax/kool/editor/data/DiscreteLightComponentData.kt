@@ -13,7 +13,7 @@ sealed class LightTypeData {
     abstract val intensity: Float
 
     @Serializable
-    class Directional(
+    data class Directional(
         override val color: ColorData = ColorData(Color.WHITE),
         override val intensity: Float = 1.5f,
     ) : LightTypeData() {
@@ -21,7 +21,7 @@ sealed class LightTypeData {
     }
 
     @Serializable
-    class Point(
+    data class Point(
         override val color: ColorData = ColorData(Color.WHITE),
         override val intensity: Float = 1000f,
     ) : LightTypeData() {
@@ -29,7 +29,7 @@ sealed class LightTypeData {
     }
 
     @Serializable
-    class Spot(
+    data class Spot(
         override val color: ColorData = ColorData(Color.WHITE),
         override val intensity: Float = 1000f,
         val spotAngle: Float = 60f,
