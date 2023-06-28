@@ -17,7 +17,9 @@ class SceneBackgroundComponent(override val componentData: SceneBackgroundCompon
 
     constructor(color: Color) : this(SceneBackgroundComponentData(SceneBackgroundData.SingleColor(color)))
 
-    private var sceneModel: SceneModel? = null
+    private var _sceneModel: SceneModel? = null
+    val sceneModel: SceneModel
+        get() = requireNotNull(_sceneModel) { "SceneBackgroundComponent was not yet created" }
 
     val backgroundState = mutableStateOf(componentData.sceneBackground).onChange {
         if (AppState.isEditMode) {
@@ -29,12 +31,12 @@ class SceneBackgroundComponent(override val componentData: SceneBackgroundCompon
     var loadedEnvironmentMaps: EnvironmentMaps? = null
 
     override suspend fun createComponent(nodeModel: EditorNodeModel) {
-        sceneModel = requireNotNull(nodeModel as? SceneModel) {
+        _sceneModel = requireNotNull(nodeModel as? SceneModel) {
             "SceneBackgroundComponent is only allowed in scenes (parent node is of type ${nodeModel::class})"
         }
         // early load hdri background (if applicable) so that other components can already use it during creation
         val hdriBg = backgroundState.value as? SceneBackgroundData.Hdri ?: return
-        loadedEnvironmentMaps = AppAssets.loadHdriEnvironment(sceneModel!!.drawNode, hdriBg.hdriPath)
+        loadedEnvironmentMaps = AppAssets.loadHdriEnvironment(sceneModel.drawNode, hdriBg.hdriPath)
     }
 
     override suspend fun initComponent(nodeModel: EditorNodeModel) {
@@ -42,7 +44,7 @@ class SceneBackgroundComponent(override val componentData: SceneBackgroundCompon
     }
 
     private fun applyBackground(bgData: SceneBackgroundData) {
-        val scene = sceneModel ?: return
+        val scene = _sceneModel ?: return
         launchOnMainThread {
             if (bgData is SceneBackgroundData.Hdri) {
                 scene.sceneBackground.loadedEnvironmentMaps = AppAssets.loadHdriEnvironment(scene.drawNode, bgData.hdriPath)

@@ -5,16 +5,16 @@ import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.actions.EditorActions
 import de.fabmax.kool.editor.actions.SetBackgroundAction
 import de.fabmax.kool.editor.api.AppAssets
+import de.fabmax.kool.editor.components.SceneBackgroundComponent
 import de.fabmax.kool.editor.data.SceneBackgroundComponentData
 import de.fabmax.kool.editor.data.SceneBackgroundData
-import de.fabmax.kool.editor.model.SceneModel
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.ibl.ReflectionMapPass
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.launchOnMainThread
 import kotlin.reflect.KClass
 
-class SceneBackgroundEditor(var sceneModel: SceneModel) : Composable {
+class SceneBackgroundEditor(var backgroundComponent: SceneBackgroundComponent) : Composable {
 
     private val editorSingleBgColor = mutableStateOf(MdColor.GREY tone 900)
     private val editorSingleBgColorOld = mutableStateOf(MdColor.GREY tone 900)
@@ -23,21 +23,19 @@ class SceneBackgroundEditor(var sceneModel: SceneModel) : Composable {
     private val skyLod = mutableStateOf(2f)
 
     override fun UiScope.compose() = collapsapsablePanel("Scene Background") {
-        val sceneBackgroundComponent = sceneModel.sceneBackground
-
         Column(width = Grow.Std) {
             modifier
                 .padding(horizontal = sizes.gap)
                 .margin(bottom = sizes.gap)
 
             var selectedIndex by remember(0)
-            selectedIndex = BackgroundTypeOptions.indexOfBackground(sceneBackgroundComponent.componentData)
+            selectedIndex = BackgroundTypeOptions.indexOfBackground(backgroundComponent.componentData)
             labeledCombobox(
                 label = "Type:",
                 items = BackgroundTypeOptions.items,
                 selectedIndex = selectedIndex
             ) {
-                if (!it.type.isInstance(sceneModel.sceneBackground.backgroundState.use())) {
+                if (!it.type.isInstance(backgroundComponent.backgroundState.use())) {
                     when (it.type) {
                         SceneBackgroundData.Hdri::class -> selectHdriBackground()
                         SceneBackgroundData.SingleColor::class -> selectSingleColorBackground()
@@ -47,27 +45,27 @@ class SceneBackgroundEditor(var sceneModel: SceneModel) : Composable {
 
             menuDivider()
 
-            when (val type = sceneBackgroundComponent.backgroundState.use()) {
-                is SceneBackgroundData.Hdri -> hdriBgProperties(sceneModel, type)
-                is SceneBackgroundData.SingleColor -> singleColorBgProperties(sceneModel, type)
+            when (val type = backgroundComponent.backgroundState.use()) {
+                is SceneBackgroundData.Hdri -> hdriBgProperties(type)
+                is SceneBackgroundData.SingleColor -> singleColorBgProperties(type)
             }
         }
     }
 
     private fun UiScope.selectHdriBackground() {
         val hdriTexture = availableHdriTextures().getOrNull(selectedHdri.value) ?: return
-        val oldBg = sceneModel.sceneBackground.backgroundState.value
+        val oldBg = backgroundComponent.backgroundState.value
         val newBg = SceneBackgroundData.Hdri(hdriTexture.path, skyLod.value)
-        EditorActions.applyAction(SetBackgroundAction(sceneModel, oldBg, newBg))
+        EditorActions.applyAction(SetBackgroundAction(backgroundComponent, oldBg, newBg))
     }
 
     private fun selectSingleColorBackground() {
-        val oldBg = sceneModel.sceneBackground.backgroundState.value
+        val oldBg = backgroundComponent.backgroundState.value
         val newBg = SceneBackgroundData.SingleColor(editorSingleBgColor.value)
-        EditorActions.applyAction(SetBackgroundAction(sceneModel, oldBg, newBg))
+        EditorActions.applyAction(SetBackgroundAction(backgroundComponent, oldBg, newBg))
     }
 
-    private fun UiScope.singleColorBgProperties(sceneModel: SceneModel, singleColorBg: SceneBackgroundData.SingleColor) = Column(
+    private fun UiScope.singleColorBgProperties(singleColorBg: SceneBackgroundData.SingleColor) = Column(
         width = Grow.Std,
         scopeName = "singleColorBg"
     ) {
@@ -78,12 +76,12 @@ class SceneBackgroundEditor(var sceneModel: SceneModel) : Composable {
             editHandler = ActionValueEditHandler { undoValue, applyValue ->
                 val oldBg = SceneBackgroundData.SingleColor(undoValue)
                 val newBg = SceneBackgroundData.SingleColor(applyValue)
-                SetBackgroundAction(sceneModel, oldBg, newBg)
+                SetBackgroundAction(backgroundComponent, oldBg, newBg)
             }
         )
     }
 
-    private fun UiScope.hdriBgProperties(sceneModel: SceneModel, hdriBg: SceneBackgroundData.Hdri) = Column(
+    private fun UiScope.hdriBgProperties(hdriBg: SceneBackgroundData.Hdri) = Column(
         width = Grow.Std,
         scopeName = "hdriBg"
     ) {
@@ -98,10 +96,10 @@ class SceneBackgroundEditor(var sceneModel: SceneModel) : Composable {
         ) {
             if (it.path != hdriBg.hdriPath) {
                 launchOnMainThread {
-                    sceneModel.sceneBackground.loadedEnvironmentMaps = AppAssets.loadHdriEnvironment(sceneModel.drawNode, it.path)
-                    val oldBg = sceneModel.sceneBackground.backgroundState.value
+                    backgroundComponent.loadedEnvironmentMaps = AppAssets.loadHdriEnvironment(backgroundComponent.sceneModel.drawNode, it.path)
+                    val oldBg = backgroundComponent.backgroundState.value
                     val newBg = SceneBackgroundData.Hdri(it.path, skyLod.value)
-                    EditorActions.applyAction(SetBackgroundAction(sceneModel, oldBg, newBg))
+                    EditorActions.applyAction(SetBackgroundAction(backgroundComponent, oldBg, newBg))
                 }
             }
         }
@@ -117,7 +115,7 @@ class SceneBackgroundEditor(var sceneModel: SceneModel) : Composable {
                 skyLod.set(applyValue.toFloat())
                 val oldBg = hdriBg.copy(skyLod = undoValue.toFloat())
                 val newBg = hdriBg.copy(skyLod = applyValue.toFloat())
-                SetBackgroundAction(sceneModel, oldBg, newBg)
+                SetBackgroundAction(backgroundComponent, oldBg, newBg)
             }
         )
     }

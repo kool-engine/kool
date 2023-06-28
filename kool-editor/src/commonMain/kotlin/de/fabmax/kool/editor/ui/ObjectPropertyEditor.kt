@@ -128,9 +128,9 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", ui) 
 
             for (component in selectedObject.components.use()) {
                 when (component) {
-                    is MaterialComponent -> materialComponent(selectedObject, component)
-                    is MeshComponent -> meshComponent(selectedObject, component)
-                    is SceneBackgroundComponent -> sceneBackgroundComponent(selectedObject)
+                    is MaterialComponent -> materialComponent(component)
+                    is MeshComponent -> meshComponent(component)
+                    is SceneBackgroundComponent -> sceneBackgroundComponent(component)
                     is ScriptComponent -> scriptComponent(component)
                     is TransformComponent -> transformComponent(selectedObject)
                 }
@@ -140,26 +140,20 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", ui) 
         }
     }
 
-    private fun UiScope.materialComponent(nodeModel: EditorNodeModel, materialComponent: MaterialComponent) {
-        (nodeModel as? SceneNodeModel)?.let {
-            val editor = remember { MaterialEditor(nodeModel, materialComponent) }
-            editor.materialComponent = materialComponent
-            editor()
-        }
+    private fun UiScope.materialComponent(materialComponent: MaterialComponent) {
+        val editor = remember { MaterialEditor(materialComponent) }
+        editor.materialComponent = materialComponent
+        editor()
     }
 
-    private fun UiScope.meshComponent(nodeModel: EditorNodeModel, meshComponent: MeshComponent) {
-        (nodeModel as? SceneNodeModel)?.let {
-            meshTypeProperties(nodeModel, meshComponent)
-        }
+    private fun UiScope.meshComponent(meshComponent: MeshComponent) {
+        meshTypeProperties(meshComponent)
     }
 
-    private fun UiScope.sceneBackgroundComponent(nodeModel: EditorNodeModel) {
-        (nodeModel as? SceneModel)?.let {
-            val editor = remember { SceneBackgroundEditor(it) }
-            editor.sceneModel = it
-            editor()
-        }
+    private fun UiScope.sceneBackgroundComponent(backgroundComponent: SceneBackgroundComponent) {
+        val editor = remember { SceneBackgroundEditor(backgroundComponent) }
+        editor.backgroundComponent = backgroundComponent
+        editor()
     }
 
     private fun UiScope.scriptComponent(scriptComponent: ScriptComponent) {

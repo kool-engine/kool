@@ -6,7 +6,6 @@ import de.fabmax.kool.editor.components.MeshComponent
 import de.fabmax.kool.editor.data.MeshShapeData
 import de.fabmax.kool.editor.data.Vec2Data
 import de.fabmax.kool.editor.data.Vec3Data
-import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.modules.ui2.*
 import kotlin.reflect.KClass
 
@@ -38,7 +37,7 @@ private object ShapeOptions {
     }
 }
 
-fun UiScope.meshTypeProperties(nodeModel: SceneNodeModel, meshComponent: MeshComponent) {
+fun UiScope.meshTypeProperties(meshComponent: MeshComponent) {
     // todo: support multiple primitives per mesh
     val shape = meshComponent.shapesState.use().getOrNull(0) ?: return
 
@@ -58,7 +57,7 @@ fun UiScope.meshTypeProperties(nodeModel: SceneNodeModel, meshComponent: MeshCom
                     .items(ShapeOptions.items)
                     .selectedIndex(selectedIndex)
                     .onItemSelected {
-                        EditorActions.applyAction(SetShapeAction(nodeModel, meshComponent, shape, ShapeOptions.items[it].factory()))
+                        EditorActions.applyAction(SetShapeAction(meshComponent, shape, ShapeOptions.items[it].factory()))
                     }
             }
         }
@@ -69,12 +68,12 @@ fun UiScope.meshTypeProperties(nodeModel: SceneNodeModel, meshComponent: MeshCom
                 .margin(bottom = sizes.gap)
 
             when (val shapeType = shape) {
-                is MeshShapeData.Box -> boxProperties(nodeModel, meshComponent, shapeType)
-                is MeshShapeData.Rect -> rectProperties(nodeModel, meshComponent, shapeType)
-                is MeshShapeData.IcoSphere -> icoSphereProperties(nodeModel, meshComponent, shapeType)
-                is MeshShapeData.UvSphere -> uvSphereProperties(nodeModel, meshComponent, shapeType)
-                is MeshShapeData.Cylinder -> cylinderProperties(nodeModel, meshComponent, shapeType)
-                is MeshShapeData.Capsule -> capsuleProperties(nodeModel, meshComponent, shapeType)
+                is MeshShapeData.Box -> boxProperties(meshComponent, shapeType)
+                is MeshShapeData.Rect -> rectProperties(meshComponent, shapeType)
+                is MeshShapeData.IcoSphere -> icoSphereProperties(meshComponent, shapeType)
+                is MeshShapeData.UvSphere -> uvSphereProperties(meshComponent, shapeType)
+                is MeshShapeData.Cylinder -> cylinderProperties(meshComponent, shapeType)
+                is MeshShapeData.Capsule -> capsuleProperties(meshComponent, shapeType)
                 is MeshShapeData.Empty -> { }
             }
 
@@ -87,7 +86,7 @@ fun UiScope.meshTypeProperties(nodeModel: SceneNodeModel, meshComponent: MeshCom
                     editHandler = ActionValueEditHandler { undoValue, applyValue ->
                         val undoShape = shape.copyShape(uvScale = Vec2Data(undoValue))
                         val applyShape = shape.copyShape(uvScale = Vec2Data(applyValue))
-                        SetShapeAction(nodeModel, meshComponent, undoShape, applyShape, shapeI)
+                        SetShapeAction(meshComponent, undoShape, applyShape, shapeI)
                     }
                 )
             }
@@ -95,7 +94,7 @@ fun UiScope.meshTypeProperties(nodeModel: SceneNodeModel, meshComponent: MeshCom
     }
 }
 
-private fun UiScope.boxProperties(nodeModel: SceneNodeModel, meshComponent: MeshComponent, box: MeshShapeData.Box) = Column(
+private fun UiScope.boxProperties(meshComponent: MeshComponent, box: MeshShapeData.Box) = Column(
     width = Grow.Std,
     scopeName = "boxProperties"
 ) {
@@ -105,12 +104,12 @@ private fun UiScope.boxProperties(nodeModel: SceneNodeModel, meshComponent: Mesh
         xyz = box.size.toVec3d(),
         dragChangeSpeed = DragChangeRates.SIZE_VEC3,
         editHandler = ActionValueEditHandler { undo, apply ->
-            SetShapeAction(nodeModel, meshComponent, box.copy(size = Vec3Data(undo)), box.copy(size = Vec3Data(apply)), shapeI)
+            SetShapeAction(meshComponent, box.copy(size = Vec3Data(undo)), box.copy(size = Vec3Data(apply)), shapeI)
         }
     )
 }
 
-private fun UiScope.rectProperties(nodeModel: SceneNodeModel, meshComponent: MeshComponent, rect: MeshShapeData.Rect) = Column(
+private fun UiScope.rectProperties(meshComponent: MeshComponent, rect: MeshShapeData.Rect) = Column(
     width = Grow.Std,
     scopeName = "rectProperties"
 ) {
@@ -120,12 +119,12 @@ private fun UiScope.rectProperties(nodeModel: SceneNodeModel, meshComponent: Mes
         xy = rect.size.toVec2d(),
         dragChangeSpeed = DragChangeRates.SIZE_VEC2,
         editHandler = ActionValueEditHandler { undo, apply ->
-            SetShapeAction(nodeModel, meshComponent, rect.copy(size = Vec2Data(undo)), rect.copy(size = Vec2Data(apply)), shapeI)
+            SetShapeAction(meshComponent, rect.copy(size = Vec2Data(undo)), rect.copy(size = Vec2Data(apply)), shapeI)
         }
     )
 }
 
-private fun UiScope.icoSphereProperties(nodeModel: SceneNodeModel, meshComponent: MeshComponent, icoSphere: MeshShapeData.IcoSphere) = Column(
+private fun UiScope.icoSphereProperties(meshComponent: MeshComponent, icoSphere: MeshShapeData.IcoSphere) = Column(
     width = Grow.Std,
     scopeName = "icoSphereProperties"
 ) {
@@ -135,7 +134,7 @@ private fun UiScope.icoSphereProperties(nodeModel: SceneNodeModel, meshComponent
         value = icoSphere.radius,
         dragChangeSpeed = DragChangeRates.SIZE,
         editHandler = ActionValueEditHandler { undo, apply ->
-            SetShapeAction(nodeModel, meshComponent, icoSphere.copy(radius = undo), icoSphere.copy(radius = apply), shapeI)
+            SetShapeAction(meshComponent, icoSphere.copy(radius = undo), icoSphere.copy(radius = apply), shapeI)
         }
     )
     labeledIntTextField(
@@ -145,12 +144,12 @@ private fun UiScope.icoSphereProperties(nodeModel: SceneNodeModel, meshComponent
         minValue = 0,
         maxValue = 7,
         editHandler = ActionValueEditHandler { undo, apply ->
-            SetShapeAction(nodeModel, meshComponent, icoSphere.copy(subDivisions = undo), icoSphere.copy(subDivisions = apply), shapeI)
+            SetShapeAction(meshComponent, icoSphere.copy(subDivisions = undo), icoSphere.copy(subDivisions = apply), shapeI)
         }
     )
 }
 
-private fun UiScope.uvSphereProperties(nodeModel: SceneNodeModel, meshComponent: MeshComponent, uvSphere: MeshShapeData.UvSphere) = Column(
+private fun UiScope.uvSphereProperties(meshComponent: MeshComponent, uvSphere: MeshShapeData.UvSphere) = Column(
     width = Grow.Std,
     scopeName = "uvSphereProperties"
 ) {
@@ -160,7 +159,7 @@ private fun UiScope.uvSphereProperties(nodeModel: SceneNodeModel, meshComponent:
         value = uvSphere.radius,
         dragChangeSpeed = DragChangeRates.SIZE,
         editHandler = ActionValueEditHandler { undo, apply ->
-            SetShapeAction(nodeModel, meshComponent, uvSphere.copy(radius = undo), uvSphere.copy(radius = apply), shapeI)
+            SetShapeAction(meshComponent, uvSphere.copy(radius = undo), uvSphere.copy(radius = apply), shapeI)
         }
     )
     labeledIntTextField(
@@ -170,12 +169,12 @@ private fun UiScope.uvSphereProperties(nodeModel: SceneNodeModel, meshComponent:
         minValue = 3,
         maxValue = 100,
         editHandler = ActionValueEditHandler { undo, apply ->
-            SetShapeAction(nodeModel, meshComponent, uvSphere.copy(steps = undo), uvSphere.copy(steps = apply), shapeI)
+            SetShapeAction(meshComponent, uvSphere.copy(steps = undo), uvSphere.copy(steps = apply), shapeI)
         }
     )
 }
 
-private fun UiScope.cylinderProperties(nodeModel: SceneNodeModel, meshComponent: MeshComponent, cylinder: MeshShapeData.Cylinder) = Column(
+private fun UiScope.cylinderProperties(meshComponent: MeshComponent, cylinder: MeshShapeData.Cylinder) = Column(
     width = Grow.Std,
     scopeName = "cylinderProperties"
 ) {
@@ -186,7 +185,7 @@ private fun UiScope.cylinderProperties(nodeModel: SceneNodeModel, meshComponent:
         isUniRadius = it
         if (isUniRadius && cylinder.topRadius != cylinder.bottomRadius) {
             EditorActions.applyAction(
-                SetShapeAction(nodeModel, meshComponent, cylinder, cylinder.copy(topRadius = cylinder.bottomRadius))
+                SetShapeAction(meshComponent, cylinder, cylinder.copy(topRadius = cylinder.bottomRadius))
             )
         }
     }
@@ -196,7 +195,7 @@ private fun UiScope.cylinderProperties(nodeModel: SceneNodeModel, meshComponent:
             value = cylinder.bottomRadius,
             dragChangeSpeed = DragChangeRates.SIZE,
             editHandler = ActionValueEditHandler { undo, apply ->
-                SetShapeAction(nodeModel, meshComponent, cylinder.copy(bottomRadius = undo, topRadius = undo), cylinder.copy(bottomRadius = apply, topRadius = apply), shapeI)
+                SetShapeAction(meshComponent, cylinder.copy(bottomRadius = undo, topRadius = undo), cylinder.copy(bottomRadius = apply, topRadius = apply), shapeI)
             }
         )
     } else {
@@ -205,7 +204,7 @@ private fun UiScope.cylinderProperties(nodeModel: SceneNodeModel, meshComponent:
             value = cylinder.topRadius,
             dragChangeSpeed = DragChangeRates.SIZE,
             editHandler = ActionValueEditHandler { undo, apply ->
-                SetShapeAction(nodeModel, meshComponent, cylinder.copy(topRadius = undo), cylinder.copy(topRadius = apply), shapeI)
+                SetShapeAction(meshComponent, cylinder.copy(topRadius = undo), cylinder.copy(topRadius = apply), shapeI)
             }
         )
         labeledDoubleTextField(
@@ -213,7 +212,7 @@ private fun UiScope.cylinderProperties(nodeModel: SceneNodeModel, meshComponent:
             value = cylinder.bottomRadius,
             dragChangeSpeed = DragChangeRates.SIZE,
             editHandler = ActionValueEditHandler { undo, apply ->
-                SetShapeAction(nodeModel, meshComponent, cylinder.copy(bottomRadius = undo), cylinder.copy(bottomRadius = apply), shapeI)
+                SetShapeAction(meshComponent, cylinder.copy(bottomRadius = undo), cylinder.copy(bottomRadius = apply), shapeI)
             }
         )
     }
@@ -222,7 +221,7 @@ private fun UiScope.cylinderProperties(nodeModel: SceneNodeModel, meshComponent:
         value = cylinder.height,
         dragChangeSpeed = DragChangeRates.SIZE,
         editHandler = ActionValueEditHandler { undo, apply ->
-            SetShapeAction(nodeModel, meshComponent, cylinder.copy(height = undo), cylinder.copy(height = apply), shapeI)
+            SetShapeAction(meshComponent, cylinder.copy(height = undo), cylinder.copy(height = apply), shapeI)
         }
     )
     labeledIntTextField(
@@ -232,12 +231,12 @@ private fun UiScope.cylinderProperties(nodeModel: SceneNodeModel, meshComponent:
         minValue = 3,
         maxValue = 100,
         editHandler = ActionValueEditHandler { undo, apply ->
-            SetShapeAction(nodeModel, meshComponent, cylinder.copy(steps = undo), cylinder.copy(steps = apply), shapeI)
+            SetShapeAction(meshComponent, cylinder.copy(steps = undo), cylinder.copy(steps = apply), shapeI)
         }
     )
 }
 
-private fun UiScope.capsuleProperties(nodeModel: SceneNodeModel, meshComponent: MeshComponent, capsule: MeshShapeData.Capsule) = Column(
+private fun UiScope.capsuleProperties(meshComponent: MeshComponent, capsule: MeshShapeData.Capsule) = Column(
     width = Grow.Std,
     scopeName = "capsuleProperties"
 ) {
@@ -247,7 +246,7 @@ private fun UiScope.capsuleProperties(nodeModel: SceneNodeModel, meshComponent: 
         value = capsule.radius,
         dragChangeSpeed = DragChangeRates.SIZE,
         editHandler = ActionValueEditHandler { undo, apply ->
-            SetShapeAction(nodeModel, meshComponent, capsule.copy(radius = undo), capsule.copy(radius = apply), shapeI)
+            SetShapeAction(meshComponent, capsule.copy(radius = undo), capsule.copy(radius = apply), shapeI)
         }
     )
     labeledDoubleTextField(
@@ -255,7 +254,7 @@ private fun UiScope.capsuleProperties(nodeModel: SceneNodeModel, meshComponent: 
         value = capsule.length,
         dragChangeSpeed = DragChangeRates.SIZE,
         editHandler = ActionValueEditHandler { undo, apply ->
-            SetShapeAction(nodeModel, meshComponent, capsule.copy(length = undo), capsule.copy(length = apply), shapeI)
+            SetShapeAction(meshComponent, capsule.copy(length = undo), capsule.copy(length = apply), shapeI)
         }
     )
     labeledIntTextField(
@@ -265,7 +264,7 @@ private fun UiScope.capsuleProperties(nodeModel: SceneNodeModel, meshComponent: 
         minValue = 3,
         maxValue = 100,
         editHandler = ActionValueEditHandler { undo, apply ->
-            SetShapeAction(nodeModel, meshComponent, capsule.copy(steps = undo), capsule.copy(steps = apply), shapeI)
+            SetShapeAction(meshComponent, capsule.copy(steps = undo), capsule.copy(steps = apply), shapeI)
         }
     )
 }

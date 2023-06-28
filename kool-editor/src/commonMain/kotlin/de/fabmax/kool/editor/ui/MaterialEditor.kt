@@ -7,13 +7,12 @@ import de.fabmax.kool.editor.actions.SetMaterialAction
 import de.fabmax.kool.editor.actions.UpdateMaterialAction
 import de.fabmax.kool.editor.components.MaterialComponent
 import de.fabmax.kool.editor.data.*
-import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 
-class MaterialEditor(var sceneNodeModel: SceneNodeModel, var materialComponent: MaterialComponent) : Composable {
+class MaterialEditor(var materialComponent: MaterialComponent) : Composable {
 
     private var undoMaterial: MaterialShaderData? = null
 
@@ -34,7 +33,7 @@ class MaterialEditor(var sceneNodeModel: SceneNodeModel, var materialComponent: 
                     .items(items)
                     .selectedIndex(selectedIndex)
                     .onItemSelected {
-                        EditorActions.applyAction(SetMaterialAction(sceneNodeModel, materialComponent, items[it].getMaterialModel()))
+                        EditorActions.applyAction(SetMaterialAction(materialComponent, items[it].getMaterialModel()))
                     }
             }
         }
