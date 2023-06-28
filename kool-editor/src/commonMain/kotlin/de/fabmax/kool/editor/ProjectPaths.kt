@@ -7,7 +7,16 @@ data class ProjectPaths(
     val gradleRootDir: String = projectDir,
     val gradleBuildTask: String = "jvmMainClasses",
 
-    val assetsPath: String = "$projectDir/src/commonMain/resources",
+    /**
+     * Assets base dir of all assets / files available via kool asset loader (incl. project files, etc).
+     */
+    val assetsBasePath: String = "$projectDir/src/commonMain/resources",
+
+    /**
+     * Subdirectory within [assetsBasePath] containing "usable" assets (textures, etc.) selectable via the
+     * asset browser.
+     */
+    val assetsSubDir: String = "assets",
 
     val srcPaths: Set<String> = setOf(
         "${projectDir}/src/commonMain/kotlin",

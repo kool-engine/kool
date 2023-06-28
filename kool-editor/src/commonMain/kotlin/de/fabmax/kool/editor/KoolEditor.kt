@@ -38,7 +38,7 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
 
     val appLoader = AppLoader(this, paths)
     val modeController = AppModeController(this)
-    val availableAssets = AvailableAssets(paths.assetsPath)
+    val availableAssets = AvailableAssets(paths.assetsBasePath, paths.assetsSubDir)
     val ui = EditorUi(this)
 
     private val editorAppCallbacks = object : ApplicationCallbacks {
@@ -55,7 +55,7 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
 
     init {
         instance = this
-        Assets.assetsBasePath = paths.assetsPath
+        Assets.assetsBasePath = paths.assetsBasePath
         AppAssets.impl = CachedAppAssets
 
         ctx.applicationCallbacks = editorAppCallbacks

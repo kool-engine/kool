@@ -3,7 +3,7 @@ package de.fabmax.kool.editor
 import de.fabmax.kool.LoadableFile
 import de.fabmax.kool.modules.ui2.MutableStateList
 
-expect class AvailableAssets(assetsBaseDir: String) {
+expect class AvailableAssets(assetsBaseDir: String, browserSubDir: String) {
     val rootAssets: MutableStateList<AssetItem>
 
     val modelAssets: MutableStateList<AssetItem>

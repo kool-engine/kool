@@ -14,7 +14,7 @@ import java.nio.file.StandardCopyOption
 import kotlin.coroutines.CoroutineContext
 import kotlin.io.path.*
 
-actual class AvailableAssets actual constructor(assetsBaseDir: String) : CoroutineScope {
+actual class AvailableAssets actual constructor(assetsBaseDir: String, browserSubDir: String) : CoroutineScope {
     override val coroutineContext: CoroutineContext = Job()
 
     actual val rootAssets = mutableStateListOf<AssetItem>()
@@ -22,7 +22,7 @@ actual class AvailableAssets actual constructor(assetsBaseDir: String) : Corouti
     actual val textureAssets = mutableStateListOf<AssetItem>()
     actual val hdriTextureAssets = mutableStateListOf<AssetItem>()
 
-    private val assetsDir = Path.of(assetsBaseDir)
+    private val assetsDir = Path.of(assetsBaseDir, browserSubDir)
     private val assetsByPath = mutableMapOf<String, AssetItem>()
 
     private val assetsNameComparator = Comparator<AssetItem> { a, b ->
@@ -91,10 +91,10 @@ actual class AvailableAssets actual constructor(assetsBaseDir: String) : Corouti
     private fun updateAssets() {
         val rootAssets = mutableListOf<AssetItem>()
         val assetPaths = mutableSetOf<String>()
-        val pathPrefix = assetsDir.pathString.replace('\\', '/')
+        val pathPrefix = assetsDir.parent.pathString.replace('\\', '/')
         assetsByPath.values.forEach { it.children.clear() }
 
-        assetsDir.walk(PathWalkOption.INCLUDE_DIRECTORIES).filter { it.name != "kool-project.json" }.forEach { path ->
+        assetsDir.walk(PathWalkOption.INCLUDE_DIRECTORIES).forEach { path ->
             val assetType = when {
                 path.isDirectory() -> AppAssetType.Directory
                 path.isTexture() -> AppAssetType.Texture
