@@ -10,12 +10,12 @@ class SetShapeAction(
     private val replaceIndex: Int = editedMeshComponent.shapesState.indexOf(oldShape)
 ) : EditorAction {
 
-    override fun apply() {
+    override fun doAction() {
         editedMeshComponent.shapesState[replaceIndex] = newShape
         editedMeshComponent.updateGeometry()
     }
 
-    override fun undo() {
+    override fun undoAction() {
         editedMeshComponent.shapesState[replaceIndex] = oldShape
         editedMeshComponent.updateGeometry()
     }

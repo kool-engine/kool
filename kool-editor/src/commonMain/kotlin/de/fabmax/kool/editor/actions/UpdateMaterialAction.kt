@@ -10,12 +10,12 @@ class UpdateMaterialAction(
     val applyMaterial: MaterialShaderData,
     val undoMaterial: MaterialShaderData
 ) : EditorAction {
-    override fun apply() {
+    override fun doAction() {
         materialData.shaderDataState.set(applyMaterial)
         EditorState.projectModel.updateMaterial(materialData)
     }
 
-    override fun undo() {
+    override fun undoAction() {
         materialData.shaderDataState.set(undoMaterial)
         EditorState.projectModel.updateMaterial(materialData)
     }

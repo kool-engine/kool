@@ -7,7 +7,6 @@ import de.fabmax.kool.editor.AppScript
 import de.fabmax.kool.editor.AssetItem
 import de.fabmax.kool.editor.EditorState
 import de.fabmax.kool.editor.actions.DeleteMaterialAction
-import de.fabmax.kool.editor.actions.EditorActions
 import de.fabmax.kool.editor.data.MaterialData
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.Color
@@ -322,7 +321,7 @@ class ResourceBrowser(editorUi: EditorUi) : EditorPanel(
             is BrowserMaterialItem -> SubMenuItem {
                 item("Delete material") {
                     OkCancelTextDialog("Delete Material", "Delete material \"${item.name}\"?") {
-                        EditorActions.applyAction(DeleteMaterialAction(item.material))
+                        DeleteMaterialAction(item.material).apply()
                     }
                 }
             }

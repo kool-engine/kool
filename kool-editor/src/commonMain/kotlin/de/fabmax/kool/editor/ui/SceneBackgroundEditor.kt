@@ -2,7 +2,6 @@ package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.editor.AssetItem
 import de.fabmax.kool.editor.KoolEditor
-import de.fabmax.kool.editor.actions.EditorActions
 import de.fabmax.kool.editor.actions.SetBackgroundAction
 import de.fabmax.kool.editor.api.AppAssets
 import de.fabmax.kool.editor.components.SceneBackgroundComponent
@@ -56,13 +55,13 @@ class SceneBackgroundEditor(var backgroundComponent: SceneBackgroundComponent) :
         val hdriTexture = availableHdriTextures().getOrNull(selectedHdri.value) ?: return
         val oldBg = backgroundComponent.backgroundState.value
         val newBg = SceneBackgroundData.Hdri(hdriTexture.path, skyLod.value)
-        EditorActions.applyAction(SetBackgroundAction(backgroundComponent, oldBg, newBg))
+        SetBackgroundAction(backgroundComponent, oldBg, newBg).apply()
     }
 
     private fun selectSingleColorBackground() {
         val oldBg = backgroundComponent.backgroundState.value
         val newBg = SceneBackgroundData.SingleColor(editorSingleBgColor.value)
-        EditorActions.applyAction(SetBackgroundAction(backgroundComponent, oldBg, newBg))
+        SetBackgroundAction(backgroundComponent, oldBg, newBg).apply()
     }
 
     private fun UiScope.singleColorBgProperties(singleColorBg: SceneBackgroundData.SingleColor) = Column(
@@ -99,7 +98,7 @@ class SceneBackgroundEditor(var backgroundComponent: SceneBackgroundComponent) :
                     backgroundComponent.loadedEnvironmentMaps = AppAssets.loadHdriEnvironment(backgroundComponent.sceneModel.drawNode, it.path)
                     val oldBg = backgroundComponent.backgroundState.value
                     val newBg = SceneBackgroundData.Hdri(it.path, skyLod.value)
-                    EditorActions.applyAction(SetBackgroundAction(backgroundComponent, oldBg, newBg))
+                    SetBackgroundAction(backgroundComponent, oldBg, newBg).apply()
                 }
             }
         }

@@ -9,7 +9,7 @@ class AddNodeAction(
     private val addNodeModel: SceneNodeModel
 ) : EditorAction {
 
-    override fun apply() {
+    override fun doAction() {
         launchOnMainThread {
             val needsInit = !addNodeModel.isCreated
             if (needsInit) {
@@ -25,7 +25,7 @@ class AddNodeAction(
         }
     }
 
-    override fun undo() {
+    override fun undoAction() {
         if (EditorState.selectedNode.value == addNodeModel) {
             EditorState.selectedNode.set(null)
         }

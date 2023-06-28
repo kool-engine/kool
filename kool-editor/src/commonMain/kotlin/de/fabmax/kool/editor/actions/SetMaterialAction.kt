@@ -10,11 +10,11 @@ class SetMaterialAction(
 
     private val prevMaterial = materialComponent.materialData
 
-    override fun apply() {
+    override fun doAction() {
         materialComponent.materialState.set(setMaterialModel)
     }
 
-    override fun undo() {
+    override fun undoAction() {
         materialComponent.materialState.set(prevMaterial)
     }
 }

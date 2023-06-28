@@ -11,7 +11,7 @@ class SetBackgroundAction(
     val newBackground: SceneBackgroundData
 ) : EditorAction {
 
-    override fun apply() {
+    override fun doAction() {
         backgroundComponent.backgroundState.set(newBackground)
         launchOnMainThread {
             // refresh scene tree to update skybox visibility (delayed, so that it's called after bg was applied)
@@ -19,7 +19,7 @@ class SetBackgroundAction(
         }
     }
 
-    override fun undo() {
+    override fun undoAction() {
         backgroundComponent.backgroundState.set(oldBackground)
         launchOnMainThread {
             // refresh scene tree to update skybox visibility (delayed, so that it's called after bg was applied)

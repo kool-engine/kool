@@ -8,7 +8,7 @@ class RemoveComponentAction(
     val removeComponent: EditorModelComponent
 ) : EditorAction {
 
-    override fun apply() = nodeModel.removeComponent(removeComponent)
-    override fun undo() = nodeModel.addComponent(removeComponent)
+    override fun doAction() = nodeModel.removeComponent(removeComponent)
+    override fun undoAction() = nodeModel.addComponent(removeComponent)
 
 }

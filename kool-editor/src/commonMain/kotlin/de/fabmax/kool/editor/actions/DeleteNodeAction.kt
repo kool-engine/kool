@@ -9,7 +9,7 @@ class DeleteNodeAction(
     private val removeNodeModel: SceneNodeModel
 ) : EditorAction {
 
-    override fun apply() {
+    override fun doAction() {
         if (EditorState.selectedNode.value == removeNodeModel) {
             EditorState.selectedNode.set(null)
         }
@@ -17,7 +17,7 @@ class DeleteNodeAction(
         KoolEditor.instance.ui.sceneBrowser.refreshSceneTree()
     }
 
-    override fun undo() {
+    override fun undoAction() {
         // fixme: this will not work in case removed node has children, because children will not be present in scene
         //  anymore -> deepcopy child node models before removal and re-add them in correct order on undo
         launchOnMainThread {
@@ -29,5 +29,5 @@ class DeleteNodeAction(
 
 fun EditorState.deleteSelectedNode() {
     val node = selectedNode.value as? SceneNodeModel ?: return
-    EditorActions.applyAction(DeleteNodeAction(node))
+    DeleteNodeAction(node).apply()
 }

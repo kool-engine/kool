@@ -1,7 +1,6 @@
 package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.editor.EditorState
-import de.fabmax.kool.editor.actions.EditorActions
 import de.fabmax.kool.editor.actions.RenameMaterialAction
 import de.fabmax.kool.editor.actions.SetMaterialAction
 import de.fabmax.kool.editor.actions.UpdateMaterialAction
@@ -33,7 +32,7 @@ class MaterialEditor(var materialComponent: MaterialComponent) : Composable {
                     .items(items)
                     .selectedIndex(selectedIndex)
                     .onItemSelected {
-                        EditorActions.applyAction(SetMaterialAction(materialComponent, items[it].getMaterialModel()))
+                        SetMaterialAction(materialComponent, items[it].getMaterialModel()).apply()
                     }
             }
         }
@@ -45,7 +44,7 @@ class MaterialEditor(var materialComponent: MaterialComponent) : Composable {
                     .margin(bottom = sizes.smallGap)
 
                 labeledTextField("Name:", selectedMaterial.name) {
-                    EditorActions.applyAction(RenameMaterialAction(selectedMaterial, it, selectedMaterial.name))
+                    RenameMaterialAction(selectedMaterial, it, selectedMaterial.name).apply()
                 }
 
                 menuDivider()
@@ -63,7 +62,7 @@ class MaterialEditor(var materialComponent: MaterialComponent) : Composable {
 
             val undoMaterial = material.shaderData
             val applyMaterial = material.shaderData.copy(genericSettings = material.shaderData.genericSettings.copy(it))
-            EditorActions.applyAction(UpdateMaterialAction(material, applyMaterial, undoMaterial))
+            UpdateMaterialAction(material, applyMaterial, undoMaterial).apply()
         }
     }
 

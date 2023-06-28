@@ -20,20 +20,20 @@ object EditorActions {
             actionStack.removeFirst()
             actionPtr--
         }
-        action.apply()
+        action.doAction()
     }
 
     fun undo() {
         if (actionPtr >= 0) {
             val undoAction = actionStack[actionPtr--]
-            undoAction.undo()
+            undoAction.undoAction()
         }
     }
 
     fun redo() {
         if (actionPtr < actionStack.lastIndex) {
             val redoAction = actionStack[++actionPtr]
-            redoAction.apply()
+            redoAction.doAction()
         }
     }
 

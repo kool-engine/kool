@@ -2,7 +2,6 @@ package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.editor.EditorState
 import de.fabmax.kool.editor.actions.AddComponentAction
-import de.fabmax.kool.editor.actions.EditorActions
 import de.fabmax.kool.editor.actions.RenameNodeAction
 import de.fabmax.kool.editor.actions.SetTransformAction
 import de.fabmax.kool.editor.components.*
@@ -116,7 +115,7 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", ui) 
                                 editName = it
                             }
                             .onEnterPressed {
-                                EditorActions.applyAction(RenameNodeAction(selectedObject, it, selectedObject.name))
+                                RenameNodeAction(selectedObject, it, selectedObject.name).apply()
                             }
                     }
                 }
@@ -201,12 +200,12 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", ui) 
     private fun makeAddComponentMenu(node: EditorNodeModel): SubMenuItem<EditorNodeModel> = SubMenuItem {
         if (node !is SceneModel && node.getComponent<MeshComponent>() == null && node.getComponent<ModelComponent>() == null) {
             item("Mesh") {
-                EditorActions.applyAction(AddComponentAction(it, MeshComponent()))
+                AddComponentAction(it, MeshComponent()).apply()
             }
         }
         if (node !is SceneModel && node.getComponent<MaterialComponent>() == null) {
             item("Material") {
-                EditorActions.applyAction(AddComponentAction(it, MaterialComponent()))
+                AddComponentAction(it, MaterialComponent()).apply()
             }
         }
         val scriptClasses = EditorState.loadedApp.value?.scriptClasses?.values ?: emptyList()
@@ -214,9 +213,7 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", ui) 
             subMenu("Scripts") {
                 scriptClasses.forEach { script ->
                     item(script.prettyName) {
-                        EditorActions.applyAction(
-                            AddComponentAction(node, ScriptComponent(ScriptComponentData(script.qualifiedName)))
-                        )
+                        AddComponentAction(node, ScriptComponent(ScriptComponentData(script.qualifiedName))).apply()
                     }
                 }
             }
@@ -225,12 +222,11 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", ui) 
 
     companion object {
         fun applyTransformAction(nodeModel: SceneNodeModel, oldTransform: Mat4d, newTransform: Mat4d) {
-            val setTransform = SetTransformAction(
+            SetTransformAction(
                 editedNodeModel = nodeModel,
                 oldTransform = oldTransform,
                 newTransform = newTransform
-            )
-            EditorActions.applyAction(setTransform)
+            ).apply()
         }
     }
 }

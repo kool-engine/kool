@@ -11,11 +11,11 @@ class SetScriptPropertyAction(
     val setPropertyBlock: (PropertyValue) -> Unit
 ) : EditorAction {
 
-    override fun apply() {
+    override fun doAction() {
         setPropertyBlock(newValue)
     }
 
-    override fun undo() {
+    override fun undoAction() {
         setPropertyBlock(undoValue)
     }
 

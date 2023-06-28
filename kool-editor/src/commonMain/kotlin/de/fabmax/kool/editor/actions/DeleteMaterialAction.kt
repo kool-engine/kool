@@ -6,12 +6,12 @@ import de.fabmax.kool.editor.data.MaterialData
 class DeleteMaterialAction(
     val materialToDelete: MaterialData
 ) : EditorAction {
-    override fun apply() {
+    override fun doAction() {
         // todo: collect material users and clear their material
         EditorState.projectModel.removeMaterial(materialToDelete)
     }
 
-    override fun undo() {
+    override fun undoAction() {
         EditorState.projectModel.addMaterial(materialToDelete)
     }
 }

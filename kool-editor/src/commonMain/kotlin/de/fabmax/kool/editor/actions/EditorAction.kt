@@ -1,8 +1,10 @@
 package de.fabmax.kool.editor.actions
 
 interface EditorAction {
+    fun doAction()
+    fun undoAction()
 
-    fun apply()
-    fun undo()
-
+    fun apply() {
+        EditorActions.applyAction(this)
+    }
 }

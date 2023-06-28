@@ -8,7 +8,7 @@ class AddComponentAction(
     val addComponent: EditorModelComponent
 ) : EditorAction {
 
-    override fun apply() = nodeModel.addComponent(addComponent)
-    override fun undo() = nodeModel.removeComponent(addComponent)
+    override fun doAction() = nodeModel.addComponent(addComponent)
+    override fun undoAction() = nodeModel.removeComponent(addComponent)
 
 }

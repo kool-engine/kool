@@ -1,6 +1,5 @@
 package de.fabmax.kool.editor.ui
 
-import de.fabmax.kool.editor.actions.EditorActions
 import de.fabmax.kool.editor.actions.SetShapeAction
 import de.fabmax.kool.editor.components.MeshComponent
 import de.fabmax.kool.editor.data.MeshShapeData
@@ -57,7 +56,7 @@ fun UiScope.meshTypeProperties(meshComponent: MeshComponent) {
                     .items(ShapeOptions.items)
                     .selectedIndex(selectedIndex)
                     .onItemSelected {
-                        EditorActions.applyAction(SetShapeAction(meshComponent, shape, ShapeOptions.items[it].factory()))
+                        SetShapeAction(meshComponent, shape, ShapeOptions.items[it].factory()).apply()
                     }
             }
         }
@@ -184,9 +183,7 @@ private fun UiScope.cylinderProperties(meshComponent: MeshComponent, cylinder: M
     labeledCheckbox("Uniform radius:", isUniRadius) {
         isUniRadius = it
         if (isUniRadius && cylinder.topRadius != cylinder.bottomRadius) {
-            EditorActions.applyAction(
-                SetShapeAction(meshComponent, cylinder, cylinder.copy(topRadius = cylinder.bottomRadius))
-            )
+            SetShapeAction(meshComponent, cylinder, cylinder.copy(topRadius = cylinder.bottomRadius)).apply()
         }
     }
     if (isUniRadius) {

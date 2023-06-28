@@ -8,12 +8,12 @@ class RenameNodeAction(
     val applyName: String,
     val undoName: String
 ) : EditorAction {
-    override fun apply() {
+    override fun doAction() {
         nodeModel.nameState.set(applyName)
         KoolEditor.instance.ui.sceneBrowser.refreshSceneTree()
     }
 
-    override fun undo() {
+    override fun undoAction() {
         nodeModel.nameState.set(undoName)
         KoolEditor.instance.ui.sceneBrowser.refreshSceneTree()
     }

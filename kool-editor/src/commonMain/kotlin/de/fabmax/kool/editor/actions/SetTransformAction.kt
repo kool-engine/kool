@@ -13,12 +13,12 @@ class SetTransformAction(
     private val oldTransform = Mat4d().set(oldTransform)
     private val newTransform = Mat4d().set(newTransform)
 
-    override fun apply() {
+    override fun doAction() {
         editedNodeModel.transform.transformState.set(TransformData(newTransform))
         editedNodeModel.drawNode.transform.set(newTransform)
     }
 
-    override fun undo() {
+    override fun undoAction() {
         editedNodeModel.transform.transformState.set(TransformData(oldTransform))
         editedNodeModel.drawNode.transform.set(oldTransform)
     }

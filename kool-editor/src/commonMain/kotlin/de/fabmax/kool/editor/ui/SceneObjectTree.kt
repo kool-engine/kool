@@ -3,7 +3,6 @@ package de.fabmax.kool.editor.ui
 import de.fabmax.kool.editor.*
 import de.fabmax.kool.editor.actions.AddNodeAction
 import de.fabmax.kool.editor.actions.DeleteNodeAction
-import de.fabmax.kool.editor.actions.EditorActions
 import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.editor.model.EditorNodeModel
 import de.fabmax.kool.editor.model.SceneModel
@@ -40,7 +39,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         nodeData.components += MeshComponentData(meshShape)
         nodeData.components += MaterialComponentData(-1)
         val mesh = SceneNodeModel(nodeData, parent.nodeModel, parentScene)
-        EditorActions.applyAction(AddNodeAction(mesh))
+        AddNodeAction(mesh).apply()
     }
 
     private fun addNewModel(parent: SceneObjectItem, modelAsset: AssetItem) {
@@ -49,7 +48,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         val nodeData = SceneNodeData(modelAsset.name, id)
         nodeData.components += ModelComponentData(modelAsset.path)
         val mesh = SceneNodeModel(nodeData, parent.nodeModel, parentScene)
-        EditorActions.applyAction(AddNodeAction(mesh))
+        AddNodeAction(mesh).apply()
     }
 
     private fun addNewLight(parent: SceneObjectItem, lightType: LightTypeData) {
@@ -65,7 +64,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         }
         light.transform.componentData.transform = TransformData(transform)
 
-        EditorActions.applyAction(AddNodeAction(light))
+        AddNodeAction(light).apply()
     }
 
     private fun addEmptyNode(parent: SceneObjectItem) {
@@ -73,12 +72,12 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         val id = EditorState.projectModel.nextId()
         val nodeData = SceneNodeData("Empty-$id", id)
         val mesh = SceneNodeModel(nodeData, parent.nodeModel, parentScene)
-        EditorActions.applyAction(AddNodeAction(mesh))
+        AddNodeAction(mesh).apply()
     }
 
     private fun deleteNode(node: SceneObjectItem) {
         val removeNode = node.nodeModel as? SceneNodeModel ?: return
-        EditorActions.applyAction(DeleteNodeAction(removeNode))
+        DeleteNodeAction(removeNode).apply()
     }
 
     override fun UiScope.compose() {

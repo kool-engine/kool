@@ -5,7 +5,6 @@ import de.fabmax.kool.editor.AssetItem
 import de.fabmax.kool.editor.CachedAppAssets
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.actions.EditorAction
-import de.fabmax.kool.editor.actions.EditorActions
 import de.fabmax.kool.input.CursorShape
 import de.fabmax.kool.input.PointerInput
 import de.fabmax.kool.math.*
@@ -777,8 +776,8 @@ fun interface ValueEditHandler<T> {
 }
 
 fun interface ActionValueEditHandler<T> : ValueEditHandler<T> {
-    override fun onEdit(value: T) = makeEditAction(value, value).apply()
-    override fun onEditEnd(startValue: T, endValue: T) = EditorActions.applyAction(makeEditAction(startValue, endValue))
+    override fun onEdit(value: T) = makeEditAction(value, value).doAction()
+    override fun onEditEnd(startValue: T, endValue: T) = makeEditAction(startValue, endValue).apply()
 
     fun makeEditAction(undoValue: T, applyValue: T) : EditorAction
 }
