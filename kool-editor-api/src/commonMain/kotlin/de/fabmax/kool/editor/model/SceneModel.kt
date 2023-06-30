@@ -1,6 +1,7 @@
 package de.fabmax.kool.editor.model
 
 import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.editor.components.EditorModelComponent
 import de.fabmax.kool.editor.components.SceneBackgroundComponent
 import de.fabmax.kool.editor.components.UpdateSceneBackgroundComponent
 import de.fabmax.kool.editor.data.SceneBackgroundData
@@ -134,7 +135,10 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : EditorN
         drawNode.removeNode(child.drawNode)
     }
 
-    private inner class BackgroundUpdater : UpdateSceneBackgroundComponent {
+    private inner class BackgroundUpdater :
+        EditorModelComponent(),
+        UpdateSceneBackgroundComponent
+    {
         var skybox: Skybox.Cube? = null
 
         override suspend fun createComponent(nodeModel: EditorNodeModel) { }

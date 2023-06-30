@@ -7,12 +7,19 @@ import de.fabmax.kool.editor.model.EditorNodeModel
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.util.logE
 
-class ScriptComponent(override val componentData: ScriptComponentData) : EditorDataComponent<ScriptComponentData> {
+class ScriptComponent(override val componentData: ScriptComponentData) :
+    EditorModelComponent(),
+    EditorDataComponent<ScriptComponentData>
+{
 
     val scriptClassNameState = mutableStateOf(componentData.scriptClassName).onChange { componentData.scriptClassName = it }
     val runInEditMode = mutableStateOf(componentData.runInEditMode).onChange { componentData.runInEditMode = it }
 
     val scriptInstance = mutableStateOf<KoolScript?>(null)
+
+    init {
+        componentOrder = COMPONENT_ORDER_LATE
+    }
 
     override suspend fun createComponent(nodeModel: EditorNodeModel) {
         try {

@@ -1,7 +1,6 @@
 package de.fabmax.kool.editor.model
 
 import de.fabmax.kool.Assets
-import de.fabmax.kool.editor.components.EditorModelComponent
 import de.fabmax.kool.editor.data.MaterialData
 import de.fabmax.kool.editor.data.PbrShaderData
 import de.fabmax.kool.editor.data.ProjectData
@@ -81,15 +80,15 @@ class EditorProject(val projectData: ProjectData) {
         materials.sortBy { it.name }
     }
 
-    inline fun <reified T: EditorModelComponent> getAllComponents(): List<T> {
+    inline fun <reified T: Any> getAllComponents(): List<T> {
         return entities.flatMap { it.components.filterIsInstance<T>() }
     }
 
-    inline fun <reified T: EditorModelComponent> getComponentsFromEntities(predicate: (EditorNodeModel) -> Boolean): List<T> {
+    inline fun <reified T: Any> getComponentsFromEntities(predicate: (EditorNodeModel) -> Boolean): List<T> {
         return entities.filter(predicate).flatMap { it.components.filterIsInstance<T>() }
     }
 
-    inline fun <reified T: EditorModelComponent> getComponentsInScene(sceneModel: SceneModel): List<T> {
+    inline fun <reified T: Any> getComponentsInScene(sceneModel: SceneModel): List<T> {
         return getComponentsFromEntities { it === sceneModel || (it is SceneNodeModel && it.scene === sceneModel) }
     }
 

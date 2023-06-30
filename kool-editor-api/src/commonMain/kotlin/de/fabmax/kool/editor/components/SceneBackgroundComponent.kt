@@ -12,6 +12,7 @@ import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.launchOnMainThread
 
 class SceneBackgroundComponent(override val componentData: SceneBackgroundComponentData) :
+    EditorModelComponent(),
     EditorDataComponent<SceneBackgroundComponentData>
 {
 
@@ -57,7 +58,7 @@ class SceneBackgroundComponent(override val componentData: SceneBackgroundCompon
     }
 }
 
-interface UpdateSceneBackgroundComponent : EditorModelComponent {
+interface UpdateSceneBackgroundComponent {
     fun updateBackground(sceneBackground: SceneBackgroundComponent) {
         when (val bg = sceneBackground.backgroundState.value) {
             is SceneBackgroundData.Hdri -> sceneBackground.loadedEnvironmentMaps?.let { updateHdriBg(bg, it) }

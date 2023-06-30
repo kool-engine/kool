@@ -23,6 +23,10 @@ class TransformComponent(override val componentData: TransformComponentData) :
 
     private val tmpMat = Mat4d()
 
+    init {
+        componentOrder = COMPONENT_ORDER_EARLY
+    }
+
     override suspend fun initComponent(nodeModel: EditorNodeModel) {
         transformState.set(componentData.transform)
         componentData.transform.toTransform(nodeModel.drawNode.transform)

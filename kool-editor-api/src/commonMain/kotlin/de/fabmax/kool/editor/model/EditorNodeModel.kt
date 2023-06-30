@@ -40,6 +40,7 @@ abstract class EditorNodeModel(val nodeData: SceneNodeData) {
                 is TransformComponentData -> components += TransformComponent(data)
             }
         }
+        components.sortByDependencies()
     }
 
     open suspend fun createComponents() {
@@ -59,6 +60,10 @@ abstract class EditorNodeModel(val nodeData: SceneNodeData) {
     }
 
     fun addComponent(component: EditorModelComponent) {
+        if (!component.areDependenciesMetBy(components)) {
+            throw IllegalStateException("Unable to add ${component::class}: there are unmet component dependencies")
+        }
+
         components += component
         if (component is EditorDataComponent<*>) {
             nodeData.components += component.componentData
@@ -90,11 +95,11 @@ abstract class EditorNodeModel(val nodeData: SceneNodeData) {
         return c as T
     }
 
-    inline fun <reified T: EditorModelComponent> getComponent(): T? {
+    inline fun <reified T: Any> getComponent(): T? {
         return components.filterIsInstance<T>().firstOrNull()
     }
 
-    inline fun <reified T: EditorModelComponent> getComponents(): List<T> {
+    inline fun <reified T: Any> getComponents(): List<T> {
         return components.filterIsInstance<T>()
     }
 }

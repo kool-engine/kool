@@ -34,6 +34,10 @@ class ModelComponent(override val componentData: ModelComponentData) :
 
     private var isIblShaded = false
 
+    init {
+        dependsOn(MaterialComponent::class, isOptional = true)
+    }
+
     override suspend fun createComponent(nodeModel: EditorNodeModel) {
         super.createComponent(nodeModel)
         _model = createModel(scene.sceneBackground.loadedEnvironmentMaps)

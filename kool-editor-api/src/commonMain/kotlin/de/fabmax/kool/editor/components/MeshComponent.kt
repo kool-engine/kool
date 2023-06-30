@@ -35,6 +35,10 @@ class MeshComponent(override val componentData: MeshComponentData) :
 
     constructor(): this(MeshComponentData(MeshShapeData.Box(Vec3Data(1.0, 1.0, 1.0))))
 
+    init {
+        dependsOn(MaterialComponent::class, isOptional = true)
+    }
+
     override suspend fun createComponent(nodeModel: EditorNodeModel) {
         super.createComponent(nodeModel)
         _mesh = Mesh(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS, Attribute.TANGENTS)

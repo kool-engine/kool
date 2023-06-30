@@ -44,7 +44,7 @@ class MaterialComponent(override val componentData: MaterialComponentData) :
     }
 }
 
-interface UpdateMaterialComponent : EditorModelComponent {
+interface UpdateMaterialComponent {
     fun updateMaterial(material: MaterialData?)
 }
 
