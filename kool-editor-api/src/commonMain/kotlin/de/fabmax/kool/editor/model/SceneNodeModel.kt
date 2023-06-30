@@ -1,7 +1,6 @@
 package de.fabmax.kool.editor.model
 
 import de.fabmax.kool.KoolSystem
-import de.fabmax.kool.editor.components.ContentComponent
 import de.fabmax.kool.editor.components.ModelComponent
 import de.fabmax.kool.editor.components.TransformComponent
 import de.fabmax.kool.editor.data.SceneNodeData
@@ -37,22 +36,15 @@ class SceneNodeModel(nodeData: SceneNodeData, val parent: EditorNodeModel, val s
         drawNode.removeNode(child.drawNode)
     }
 
-    override suspend fun createComponents() {
-        disposeAndClearCreatedNode()
-
-        super.createComponents()
-
-        val createdNode = getComponent<ContentComponent>()?.contentNode ?: Node()
-        createdNode.name = nodeData.name
-        created = createdNode
-    }
-
     fun disposeAndClearCreatedNode() {
-        created?.dispose(KoolSystem.requireContext())
+        created?.let {
+            it.dispose(KoolSystem.requireContext())
+            it.parent?.removeNode(it)
+        }
         created = null
     }
 
-    fun replaceCreatedNode(newNode: Node) {
+    fun setContentNode(newNode: Node) {
         created?.let {
             it.parent?.let { parent ->
                 val ndIdx = parent.children.indexOf(it)

@@ -40,10 +40,6 @@ class SceneBackgroundComponent(override val componentData: SceneBackgroundCompon
         loadedEnvironmentMaps = AppAssets.loadHdriEnvironment(sceneModel.drawNode, hdriBg.hdriPath)
     }
 
-    override suspend fun initComponent(nodeModel: EditorNodeModel) {
-        backgroundState.set(componentData.sceneBackground)
-    }
-
     private fun applyBackground(bgData: SceneBackgroundData) {
         val scene = _sceneModel ?: return
         launchOnMainThread {

@@ -12,8 +12,11 @@ abstract class EditorModelComponent {
     var componentOrder = COMPONENT_ORDER_DEFAULT
         protected set
 
-    abstract suspend fun createComponent(nodeModel: EditorNodeModel)
-    abstract suspend fun initComponent(nodeModel: EditorNodeModel)
+    open suspend fun createComponent(nodeModel: EditorNodeModel) {
+        require(areDependenciesMetBy(nodeModel.components)) {
+            "Unable to create component ${this::class.simpleName} in node ${nodeModel.name}: There are unmet component dependencies"
+        }
+    }
 
     protected fun dependsOn(componentType: KClass<*>, isOptional: Boolean = false) {
         _dependencies += ComponentDependency(componentType, isOptional)
@@ -38,13 +41,20 @@ abstract class EditorModelComponent {
 fun MutableList<EditorModelComponent>.sortByDependencies() {
     val sorted = mutableListOf<EditorModelComponent>()
 
+    // pre sort components: early order first
     sortBy { it.componentOrder }
 
     while (isNotEmpty()) {
         val iter = iterator()
-        var anyAdded = false
+        var lastAdded: EditorModelComponent? = null
         while (iter.hasNext()) {
             val candidate = iter.next()
+
+            if (lastAdded != null && lastAdded.componentOrder < candidate.componentOrder) {
+                // do not add different componentOrder components in the same loop iteration
+                // we might have skipped other components with earlier order because of missing dependencies
+                break
+            }
 
             // check whether candidate component has optional dependencies to yet unprocessed components
             // if so, areDependenciesMetBy() would return true (because unmet dependencies are optional) and
@@ -56,10 +66,10 @@ fun MutableList<EditorModelComponent>.sortByDependencies() {
             if (!unsortedOptionalDeps && candidate.areDependenciesMetBy(sorted)) {
                 sorted += candidate
                 iter.remove()
-                anyAdded = true
+                lastAdded = candidate
             }
         }
-        if (!anyAdded) {
+        if (lastAdded == null) {
             throw IllegalStateException("Unable to sort EditModelComponents (missing or cyclic component dependencies)")
         }
     }

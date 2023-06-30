@@ -46,7 +46,6 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : EditorN
         nodesToNodeModels[scene] = this
 
         createComponents()
-        initComponents()
     }
 
     override suspend fun createComponents() {
@@ -59,14 +58,6 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : EditorN
                 }
                 addSceneNode(it)
             }
-        }
-    }
-
-    override suspend fun initComponents() {
-        super.initComponents()
-
-        nodesToNodeModels.values.filter { it !== this }.forEach {
-            it.initComponents()
         }
     }
 
@@ -141,9 +132,7 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : EditorN
     {
         var skybox: Skybox.Cube? = null
 
-        override suspend fun createComponent(nodeModel: EditorNodeModel) { }
-
-        override suspend fun initComponent(nodeModel: EditorNodeModel) {
+        override suspend fun createComponent(nodeModel: EditorNodeModel) {
             updateBackground(sceneBackground)
         }
 

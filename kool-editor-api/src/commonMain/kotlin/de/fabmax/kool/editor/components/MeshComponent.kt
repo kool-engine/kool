@@ -41,17 +41,15 @@ class MeshComponent(override val componentData: MeshComponentData) :
 
     override suspend fun createComponent(nodeModel: EditorNodeModel) {
         super.createComponent(nodeModel)
+
         _mesh = Mesh(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS, Attribute.TANGENTS)
+        mesh.name = nodeModel.name
         mesh.rayTest = MeshRayTest.geometryTest(mesh)
+
         updateGeometry()
-
-        if (sceneNode.isCreated) {
-            sceneNode.drawNode.addNode(mesh)
-        }
-    }
-
-    override suspend fun initComponent(nodeModel: EditorNodeModel) {
         createMeshShader()
+
+        sceneNode.setContentNode(mesh)
     }
 
     fun updateGeometry() {

@@ -17,10 +17,9 @@ abstract class SceneNodeComponent : EditorModelComponent() {
         get() = sceneNode.scene
 
     override suspend fun createComponent(nodeModel: EditorNodeModel) {
+        super.createComponent(nodeModel)
         _sceneNode = requireNotNull(nodeModel as? SceneNodeModel) {
             "SceneNodeComponent is only allowed as member of SceneNodeModels (but node is of type ${nodeModel::class})"
         }
     }
-
-    override suspend fun initComponent(nodeModel: EditorNodeModel) { }
 }

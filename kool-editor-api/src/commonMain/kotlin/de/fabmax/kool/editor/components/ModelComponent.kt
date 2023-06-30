@@ -41,11 +41,9 @@ class ModelComponent(override val componentData: ModelComponentData) :
     override suspend fun createComponent(nodeModel: EditorNodeModel) {
         super.createComponent(nodeModel)
         _model = createModel(scene.sceneBackground.loadedEnvironmentMaps)
-    }
 
-    override suspend fun initComponent(nodeModel: EditorNodeModel) {
-        super.initComponent(nodeModel)
-        sceneNode.getComponent<MaterialComponent>()?.let { updateMaterial(it.materialData) }
+        model.name = nodeModel.name
+        sceneNode.setContentNode(model)
     }
 
     override fun updateMaterial(material: MaterialData?) {
@@ -124,7 +122,7 @@ class ModelComponent(override val componentData: ModelComponentData) :
     private fun recreateModel(ibl: EnvironmentMaps?, bgColor: Color?) {
         launchOnMainThread {
             _model = createModel(ibl)
-            sceneNode.replaceCreatedNode(model)
+            sceneNode.setContentNode(model)
 
             bgColor?.let {
                 model.meshes.values.forEach { mesh ->

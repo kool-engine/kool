@@ -37,11 +37,6 @@ class MaterialComponent(override val componentData: MaterialComponentData) :
         super.createComponent(nodeModel)
         materialState.set(scene.project.materialsById[componentData.materialId])
     }
-
-    override suspend fun initComponent(nodeModel: EditorNodeModel) {
-        super.initComponent(nodeModel)
-        materialState.set(scene.project.materialsById[componentData.materialId])
-    }
 }
 
 interface UpdateMaterialComponent {

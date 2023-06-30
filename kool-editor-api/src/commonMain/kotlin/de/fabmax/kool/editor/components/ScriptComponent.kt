@@ -22,24 +22,29 @@ class ScriptComponent(override val componentData: ScriptComponentData) :
     }
 
     override suspend fun createComponent(nodeModel: EditorNodeModel) {
+        super.createComponent(nodeModel)
+
         try {
             val script = ScriptLoader.newScriptInstance(componentData.scriptClassName)
             scriptInstance.set(script)
+
+            // set script member properties from componentData, remove them in case they don't exist anymore (e.g.
+            // because script has changed)
+            val removeProps = mutableListOf<String>()
+            componentData.propertyValues.forEach { (name, value) ->
+                if (!setProperty(name, value.get())) {
+                    removeProps += name
+                }
+            }
+            removeProps.forEach { componentData.propertyValues -= it }
+
+            // invoke script init callback
+            scriptInstance.value?.init(nodeModel, this)
+
         } catch (e: Exception) {
             logE { "Failed to initialize ScriptComponents for node ${nodeModel.name}: $e" }
+            e.printStackTrace()
         }
-    }
-
-    override suspend fun initComponent(nodeModel: EditorNodeModel) {
-        val removeProps = mutableListOf<String>()
-        componentData.propertyValues.forEach { (name, value) ->
-            if (!setProperty(name, value.get())) {
-                removeProps += name
-            }
-        }
-        removeProps.forEach { componentData.propertyValues -= it }
-
-        scriptInstance.value?.init(nodeModel, this)
     }
 
     fun setProperty(name: String, value: Any): Boolean {

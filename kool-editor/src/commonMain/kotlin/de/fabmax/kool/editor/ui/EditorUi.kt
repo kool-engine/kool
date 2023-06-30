@@ -25,7 +25,7 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
     val objectProperties = ObjectPropertyEditor(this)
     val resourceBrowser = ResourceBrowser(this)
 
-    val appLoaderState = mutableStateOf("")
+    val appStateInfo = mutableStateOf("")
 
     init {
         setupUiScene()
@@ -76,7 +76,7 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
         Box(width = Grow.Std) {  }
 
         Box(width = sizes.baseSize * 8f, height = Grow.Std) {
-            Text(appLoaderState.use()) {
+            Text(appStateInfo.use()) {
                 modifier.alignY(AlignmentY.Center)
             }
         }

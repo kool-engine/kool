@@ -57,7 +57,7 @@ class DiscreteLightComponent(override val componentData: DiscreteLightComponentD
             }
         }
         light.setColor(lightData.color.toColor(), lightData.intensity)
-        sceneNode.replaceCreatedNode(light)
+        sceneNode.setContentNode(light)
 
         if (idx >= 0) {
             sceneLights[idx] = light

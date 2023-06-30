@@ -54,6 +54,8 @@ fun UiScope.appModeControlButtons() {
             .alignX(AlignmentX.Center)
 
         val p = 1f - Easing.quadRev(playStopAnimator.progressAndUse())
+
+        // reset / rewind running app
         Button {
             modifier
                 .size(btnSzOuter, btnSzOuter)
@@ -69,6 +71,8 @@ fun UiScope.appModeControlButtons() {
                 }
                 .border(CircularBorder(colors.background, sizes.borderWidth * 2))
         }
+
+        // pause running app
         Button {
             modifier
                 .size(btnSzOuter, btnSzOuter)
@@ -85,6 +89,8 @@ fun UiScope.appModeControlButtons() {
                 }
                 .border(CircularBorder(colors.background, sizes.borderWidth * 2))
         }
+
+        // start / stop app
         Button {
             modifier
                 .size(btnSzCenter, btnSzCenter)

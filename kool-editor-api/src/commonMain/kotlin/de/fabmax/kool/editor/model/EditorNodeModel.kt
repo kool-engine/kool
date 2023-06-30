@@ -47,10 +47,6 @@ abstract class EditorNodeModel(val nodeData: SceneNodeData) {
         components.forEach { it.createComponent(this) }
     }
 
-    open suspend fun initComponents() {
-        components.forEach { it.initComponent(this) }
-    }
-
     open fun onNodeAdded() {
         components.forEach { it.onNodeAdded(this) }
     }
@@ -60,10 +56,6 @@ abstract class EditorNodeModel(val nodeData: SceneNodeData) {
     }
 
     fun addComponent(component: EditorModelComponent) {
-        if (!component.areDependenciesMetBy(components)) {
-            throw IllegalStateException("Unable to add ${component::class}: there are unmet component dependencies")
-        }
-
         components += component
         if (component is EditorDataComponent<*>) {
             nodeData.components += component.componentData
@@ -71,7 +63,6 @@ abstract class EditorNodeModel(val nodeData: SceneNodeData) {
         if (isCreated) {
             launchOnMainThread {
                 component.createComponent(this)
-                component.initComponent(this)
             }
         }
     }

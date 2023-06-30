@@ -18,10 +18,6 @@ class AddNodeAction(
 
             addNodeModel.scene.addSceneNode(addNodeModel)
             KoolEditor.instance.ui.sceneBrowser.refreshSceneTree()
-
-            if (needsInit) {
-                addNodeModel.initComponents()
-            }
         }
     }
 

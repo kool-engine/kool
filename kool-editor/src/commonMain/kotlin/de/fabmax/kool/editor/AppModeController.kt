@@ -11,6 +11,7 @@ class AppModeController(val editor: KoolEditor) {
         logI { "Start app" }
         AppState.appModeState.set(AppMode.PLAY)
         EditorState.loadedApp.value?.app?.startApp(KoolSystem.requireContext())
+        editor.ui.appStateInfo.set("App is running")
     }
 
     fun togglePause() {
@@ -18,9 +19,11 @@ class AppModeController(val editor: KoolEditor) {
             if (AppState.appMode == AppMode.PLAY) {
                 logI { "Pause app" }
                 AppState.appModeState.set(AppMode.PAUSE)
+                editor.ui.appStateInfo.set("App is paused")
             } else if (AppState.appMode == AppMode.PAUSE) {
                 logI { "Unpause app" }
                 AppState.appModeState.set(AppMode.PLAY)
+                editor.ui.appStateInfo.set("App is running")
             }
         }
     }
@@ -33,8 +36,7 @@ class AppModeController(val editor: KoolEditor) {
 
     fun resetApp() {
         logI { "Reset app" }
-        EditorState.projectModel.reset()
-        EditorState.loadedApp.value?.app?.resetApp(KoolSystem.requireContext())
+        editor.appLoader.reloadApp()
     }
 
 }

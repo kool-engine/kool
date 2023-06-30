@@ -58,6 +58,9 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
         Assets.assetsBasePath = paths.assetsBasePath
         AppAssets.impl = CachedAppAssets
 
+        AppState.isInEditorState.set(true)
+        AppState.appModeState.set(AppMode.EDIT)
+
         ctx.applicationCallbacks = editorAppCallbacks
         ctx.scenes += ui
 
@@ -139,6 +142,7 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
         editorCameraTransform.clearChildren()
         editorCameraTransform.addNode(editorOverlay.camera)
 
+        // dispose old scene + objects
         EditorState.projectModel.getCreatedScenes().map { it.drawNode }.let { oldScenes ->
             ctx.scenes -= oldScenes.toSet()
             oldScenes.forEach {
@@ -147,9 +151,7 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
         }
         EditorState.loadedApp.value?.app?.onDispose(ctx)
 
-        AppState.isInEditorState.set(true)
-        AppState.appModeState.set(AppMode.EDIT)
-
+        // initialize newly loaded app
         loadedApp.app.loadApp(EditorState.projectModel, ctx)
 
         // add scene objects from new app
@@ -167,6 +169,12 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
         }
         if (EditorState.selectedNode.value == null) {
             EditorState.selectedNode.set(EditorState.selectedScene.value)
+        }
+
+        if (AppState.appMode == AppMode.EDIT) {
+            ui.appStateInfo.set("App is in edit mode")
+        } else {
+            ui.appStateInfo.set("App is running")
         }
 
         bringEditorMenuToTop()
