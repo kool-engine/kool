@@ -1,8 +1,9 @@
 package de.fabmax.kool.math.noise
 
 import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.math.Random
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.randomI
+import kotlin.random.Random
 
 /**
  * Similar to Perlin noise, but better?

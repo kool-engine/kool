@@ -1,9 +1,10 @@
 package de.fabmax.kool.math
 
 import de.fabmax.kool.util.Time
-import kotlin.math.abs
 import kotlin.math.ln
 import kotlin.math.sqrt
+import kotlin.random.Random
+import kotlin.random.nextInt
 
 val defaultRandomInstance = Random((Time.precisionTime * 1e3).toInt())
 
@@ -13,7 +14,7 @@ val defaultRandomInstance = Random((Time.precisionTime * 1e3).toInt())
 fun randomI(): Int = defaultRandomInstance.randomI()
 
 /**
- * Returns a random integer in range of [min] .. [max] (inclusive)
+ * Returns a random integer in range of [min] .. [max] (inclusive!)
  */
 fun randomI(min: Int, max: Int): Int = defaultRandomInstance.randomI(min, max)
 
@@ -28,10 +29,66 @@ fun randomD(min: Double, max: Double): Double = defaultRandomInstance.randomD(mi
 fun randomF(): Float = defaultRandomInstance.randomF()
 fun randomF(min: Float, max: Float): Float = defaultRandomInstance.randomF(min, max)
 
+fun randomGaussianF(mu: Float, sigma: Float) = defaultRandomInstance.randomGaussianF(mu, sigma)
+fun randomGaussianF() = defaultRandomInstance.randomGaussianF()
+
 fun randomInUnitCube(result: MutableVec3f = MutableVec3f()) = defaultRandomInstance.randomInUnitCube(result)
 fun randomInUnitSphere(result: MutableVec3f = MutableVec3f()) = defaultRandomInstance.randomInUnitSphere(result)
 
-open class Random(seed: Int) {
+/**
+ * Returns a random integer in range of [Int.MIN_VALUE] .. [Int.MAX_VALUE]. Same as [Random.nextInt].
+ */
+fun Random.randomI() = nextInt()
+
+/**
+ * Returns a random integer in range of [min] .. [max] (inclusive!).
+ */
+fun Random.randomI(min: Int, max: Int) = nextInt(min, max + 1)
+
+/**
+ * Returns a random integer in the given range.
+ */
+fun Random.randomI(rng: IntRange) = nextInt(rng)
+
+fun Random.randomF() = nextFloat()
+fun Random.randomF(min: Float, max: Float) = nextFloat() * (max - min) + min
+
+fun Random.randomD() = nextDouble()
+fun Random.randomD(min: Double, max: Double) = nextDouble() * (max - min) + min
+
+fun Random.randomGaussianF(mu: Float, sigma: Float) = mu + randomGaussianF() * sigma
+fun Random.randomGaussianF(): Float {
+    var x1: Float
+    var x2: Float
+    var w: Float
+    do {
+        x1 = randomF(-1f, 1f)
+        x2 = randomF(-1f, 1f)
+        w = x1 * x1 + x2 * x2
+    } while (w >= 1f || w == 0f)
+    w = sqrt(-2 * ln(w) / w)
+
+    return x1 * w
+}
+
+fun Random.randomInUnitCube(result: MutableVec3f = MutableVec3f()): MutableVec3f {
+    result.x = randomF(-1f, 1f)
+    result.y = randomF(-1f, 1f)
+    result.z = randomF(-1f, 1f)
+    return result
+}
+
+fun Random.randomInUnitSphere(result: MutableVec3f = MutableVec3f()): MutableVec3f {
+    var guard = 0
+    do {
+        result.x = randomF(-1f, 1f)
+        result.y = randomF(-1f, 1f)
+        result.z = randomF(-1f, 1f)
+    } while (result.sqrLength() > 1f && guard++ < 100)
+    return result
+}
+
+class KissRandom(seed: Int) : Random() {
     private var x = seed
     private var y = 362436000
     private var z = 521288629
@@ -41,38 +98,29 @@ open class Random(seed: Int) {
     private var nextGaussian = 0f
 
     /**
-     * Implements 32-bit KISS RNG
+     * 32-bit KISS RNG
      * https://de.wikipedia.org/wiki/KISS_(Zufallszahlengenerator)
+     *
+     * Slower than the default Random implementation (on JVM slightly, Javascript drastically) but is
+     * supposed to have better statistical properties.
      */
-    open fun randomI(): Int {
+    override fun nextBits(bitCount: Int): Int {
         // linear congruential generator
         x = 69069 * x + 12345
 
         // xorshift
         y = y xor (y shl 13)
-        y = y xor (y shr 17)
+        y = y xor (y ushr 17)
         y = y xor (y shl 5)
 
         // multiply with carry
         val t = 698769069L * z + c
-        c = (t shr 32).toInt()
+        c = (t ushr 32).toInt()
         z = t.toInt()
 
-        return x + y + z
+        val r = x + y + z
+        return if (bitCount == 32) r else r ushr (32 - bitCount)
     }
-    fun randomI(min: Int, max: Int): Int = (randomF() * (max - min + 0.9999999f)).toInt() + min
-    fun randomI(rng: IntRange): Int = randomI(rng.first, rng.last)
-
-    fun randomF(): Float = abs(randomI() / Int.MIN_VALUE.toFloat())
-    fun randomF(min: Float, max: Float): Float = randomF() * (max - min) + min
-
-    fun randomD(): Double {
-        val l = (abs(randomI().toLong()) shl 32) or abs(randomI().toLong())
-        return abs(l) / Long.MAX_VALUE.toDouble()
-    }
-    fun randomD(min: Double, max: Double): Double = randomD() * (max - min) + min
-
-    fun randomGaussianF(mu: Float, sigma: Float) = mu + randomGaussianF() * sigma
 
     fun randomGaussianF(): Float {
         if (hasNextGaussian) {
@@ -91,23 +139,21 @@ open class Random(seed: Int) {
         w = sqrt(-2 * ln(w) / w)
 
         nextGaussian = x2 * w
+        hasNextGaussian = true
         return x1 * w
     }
+}
 
-    fun randomInUnitCube(result: MutableVec3f = MutableVec3f()): MutableVec3f {
-        result.x = randomF(-1f, 1f)
-        result.y = randomF(-1f, 1f)
-        result.z = randomF(-1f, 1f)
-        return result
-    }
+class TableRandom(tableSize: Int = 1024 * 1024, generator: Random = defaultRandomInstance) : Random() {
+    private val random = IntArray(tableSize) { generator.nextInt() }
+    private var index = 0
 
-    fun randomInUnitSphere(result: MutableVec3f = MutableVec3f()): MutableVec3f {
-        var guard = 0
-        do {
-            result.x = randomF(-1f, 1f)
-            result.y = randomF(-1f, 1f)
-            result.z = randomF(-1f, 1f)
-        } while (result.sqrLength() > 1f && guard++ < 100)
-        return result
+    override fun nextBits(bitCount: Int): Int {
+        val r = random[index++]
+        if (index == random.size) {
+            index = 0
+        }
+
+        return if (bitCount == 32) r else r ushr (32 - bitCount)
     }
 }

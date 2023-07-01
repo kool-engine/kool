@@ -4,9 +4,9 @@ import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.math.Random
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.randomF
+import de.fabmax.kool.math.randomI
 import de.fabmax.kool.modules.gltf.GltfFile
 import de.fabmax.kool.modules.gltf.loadGltfFile
 import de.fabmax.kool.modules.ksl.KslPbrShader
@@ -15,6 +15,7 @@ import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.*
 import kotlin.math.roundToInt
+import kotlin.random.Random
 
 class InstanceDemo : DemoScene("Instanced Drawing") {
 

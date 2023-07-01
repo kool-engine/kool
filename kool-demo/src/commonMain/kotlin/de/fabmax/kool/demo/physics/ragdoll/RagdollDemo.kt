@@ -30,6 +30,7 @@ import de.fabmax.kool.scene.*
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
 import kotlin.math.roundToInt
+import kotlin.random.Random
 
 class RagdollDemo : DemoScene("Ragdoll Demo") {
 

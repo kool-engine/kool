@@ -3,7 +3,8 @@ package de.fabmax.kool.pipeline.deferred
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.math.Random
+import de.fabmax.kool.math.randomF
+import de.fabmax.kool.math.randomI
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.modules.ksl.blocks.convertColorSpace
@@ -15,6 +16,7 @@ import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.addMesh
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.createUint8Buffer
+import kotlin.random.Random
 
 class ReflectionPass(val baseReflectionStep: Float) :
     OffscreenRenderPass2d(

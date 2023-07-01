@@ -18,6 +18,7 @@ import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.TreeMap
 import de.fabmax.kool.util.createUint8Buffer
 import kotlin.math.*
+import kotlin.random.Random
 
 class Track(val world: VehicleWorld) : Node() {
 

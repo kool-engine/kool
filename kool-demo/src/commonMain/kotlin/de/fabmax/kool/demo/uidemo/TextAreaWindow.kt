@@ -1,12 +1,13 @@
 package de.fabmax.kool.demo.uidemo
 
-import de.fabmax.kool.math.Random
+import de.fabmax.kool.math.randomF
 import de.fabmax.kool.math.randomI
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.MsdfFont
 import kotlin.math.min
+import kotlin.random.Random
 
 class TextAreaWindow(uiDemo: UiDemo) : DemoWindow("Text Area", uiDemo) {
 

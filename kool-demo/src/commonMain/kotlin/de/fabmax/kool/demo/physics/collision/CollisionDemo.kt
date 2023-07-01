@@ -20,6 +20,7 @@ import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
 import kotlin.math.max
 import kotlin.math.roundToInt
+import kotlin.random.Random
 
 class CollisionDemo : DemoScene("Physics - Collision") {
 

@@ -1,9 +1,9 @@
 package de.fabmax.kool.demo.physics.collision
 
 import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.math.Random
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.randomF
 import de.fabmax.kool.physics.Material
 import de.fabmax.kool.physics.Shape
 import de.fabmax.kool.physics.geometry.*
@@ -15,6 +15,7 @@ import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.simpleShape
 import de.fabmax.kool.util.PolyUtil
 import kotlin.math.*
+import kotlin.random.Random
 
 enum class ShapeType {
     BOX {
@@ -28,11 +29,6 @@ enum class ShapeType {
             val sz = genCtx.rand.randomF(2f, 3f)
             val mass = sx * sy * sz
             return CollisionShapes(mass, Shape(BoxGeometry(Vec3f(sx, sy, sz)), genCtx.material))
-//            return CollisionShapes(mass, Shape(BoxGeometry(Vec3f(sx, sy, sz)), genCtx.material, simFilterData = FilterData {
-//                setCollisionGroup(0)
-//                setCollidesWithEverything()
-//                word2 = Physics.NOTIFY_TOUCH_FOUND
-//            }))
         }
     },
 

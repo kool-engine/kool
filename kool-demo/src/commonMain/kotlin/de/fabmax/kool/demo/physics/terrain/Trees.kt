@@ -20,6 +20,7 @@ import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.util.ShadowMap
 import kotlin.math.sqrt
+import kotlin.random.Random
 
 class Trees(val terrain: Terrain, nTrees: Int, val wind: Wind, val sky: Sky) {
 

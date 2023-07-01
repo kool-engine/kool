@@ -13,6 +13,7 @@ import de.fabmax.kool.util.Time
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.profiled
 import kotlin.math.sqrt
+import kotlin.random.Random
 
 class CamLocalGrass(val camera: Camera, val terrain: Terrain, val wind: Wind, val sky: Sky) {
 

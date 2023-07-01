@@ -2,8 +2,8 @@ package de.fabmax.kool.demo.physics.terrain
 
 import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.math.Random
 import de.fabmax.kool.math.clamp
+import de.fabmax.kool.math.randomF
 import de.fabmax.kool.math.spatial.InRadiusTraverser
 import de.fabmax.kool.math.spatial.pointKdTree
 import de.fabmax.kool.scene.geometry.MeshBuilder
@@ -11,6 +11,7 @@ import de.fabmax.kool.scene.geometry.simpleShape
 import de.fabmax.kool.util.ColorGradient
 import de.fabmax.kool.util.MdColor
 import kotlin.math.*
+import kotlin.random.Random
 
 class LowPolyTree(seed: Int = 1337) {
 

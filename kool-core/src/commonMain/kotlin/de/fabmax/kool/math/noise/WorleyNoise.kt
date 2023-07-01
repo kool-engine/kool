@@ -7,6 +7,7 @@ import de.fabmax.kool.math.spatial.Vec3fAdapter
 import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.sqrt
+import kotlin.random.Random
 
 class WorleyNoise2d(val gridSizeX: Int, val gridSizeY: Int, seed: Int = 19937) : Noise2d {
 

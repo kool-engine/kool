@@ -1,8 +1,8 @@
 package de.fabmax.kool.demo.physics.terrain
 
 import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.math.Random
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.randomF
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.scene.Mesh
@@ -11,6 +11,7 @@ import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.util.PerfTimer
 import de.fabmax.kool.util.logD
+import kotlin.random.Random
 
 class Grass(val terrain: Terrain, val wind: Wind, val sky: Sky) {
 

@@ -1,5 +1,7 @@
 package de.fabmax.kool.math
 
+import kotlin.random.Random
+
 abstract class PointDistribution {
 
     abstract fun nextPoint(): Vec3f

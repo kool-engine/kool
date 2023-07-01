@@ -1,9 +1,9 @@
 package de.fabmax.kool.demo.menu
 
 import de.fabmax.kool.demo.Demos
-import de.fabmax.kool.math.Random
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.randomI
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.blocks.mvpMatrix
 import de.fabmax.kool.modules.ksl.lang.*
@@ -17,6 +17,7 @@ import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.util.Time
 import de.fabmax.kool.util.createUint8Buffer
+import kotlin.random.Random
 
 class TitleBgRenderer(
     val titleBgMesh: BgMesh,
