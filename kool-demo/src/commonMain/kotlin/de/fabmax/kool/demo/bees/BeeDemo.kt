@@ -5,13 +5,13 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.*
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.MutableVec3f
+import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.spatial.BoundingBox
 import de.fabmax.kool.modules.ui2.Grow
 import de.fabmax.kool.modules.ui2.Text
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.scene.addLineMesh
-import de.fabmax.kool.scene.defaultOrbitCamera
+import de.fabmax.kool.scene.*
+import de.fabmax.kool.scene.geometry.RectUvs
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
@@ -21,6 +21,9 @@ class BeeDemo : DemoScene("Fighting Bees") {
 
     private val beeSystemA = BeeSystem(0)
     private val beeSystemB = BeeSystem(1)
+
+    private val beeMeshA = beeMesh(beeSystemA.beeInstances)
+    private val beeMeshB = beeMesh(beeSystemB.beeInstances)
 
     private lateinit var beeTex: Texture2d
 
@@ -51,10 +54,11 @@ class BeeDemo : DemoScene("Fighting Bees") {
 
         mainRenderPass.clearColor = bgColor
 
-        beeSystemA.beeShader.colorMap = beeTex
-        beeSystemB.beeShader.colorMap = beeTex
-        addNode(beeSystemA.beeMesh)
-        addNode(beeSystemB.beeMesh)
+        beeMeshA.shader = BeeShader(MdColor.BLUE, MdColor.PURPLE).apply { colorMap = beeTex }
+        beeMeshB.shader = BeeShader(MdColor.AMBER, MdColor.DEEP_ORANGE).apply { colorMap = beeTex }
+
+        addNode(beeMeshA)
+        addNode(beeMeshB)
 
         addLineMesh {
             addBoundingBox(BoundingBox(
@@ -63,6 +67,10 @@ class BeeDemo : DemoScene("Fighting Bees") {
             ), Color.WHITE)
         }
 
+        onUpdate {
+            beeSystemA.updateBees()
+            beeSystemB.updateBees()
+        }
         onDispose {
             beeTex.dispose()
         }
@@ -87,9 +95,28 @@ class BeeDemo : DemoScene("Fighting Bees") {
         }
         MenuRow {
             val t = beeSystemA.instanceUpdateTime.use() + beeSystemB.instanceUpdateTime.use() +
-                    beeSystemA.beeMesh.drawTime + beeSystemB.beeMesh.drawTime
+                    beeMeshA.drawTime + beeMeshB.drawTime
             Text("Bee drawing:") { labelStyle(Grow.Std) }
             Text("${t.toString(2)} ms") { labelStyle() }
+        }
+    }
+
+    private fun beeMesh(instances: MeshInstanceList) = Mesh(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS).apply {
+        this.instances = instances
+        generate {
+            //scale(10f)
+            cube {
+                size.set(0.7f, 0.7f, 1f)
+                val s = 1/32f
+                uvs = listOf(
+                    RectUvs(Vec2f(0*s, 0*s), Vec2f(7*s, 0*s), Vec2f(0*s, 10*s), Vec2f(7*s, 10*s)),      // top
+                    RectUvs(Vec2f(21*s, 10*s), Vec2f(14*s, 10*s), Vec2f(21*s, 0*s), Vec2f(14*s, 0*s)),  // bottom
+                    RectUvs(Vec2f(21*s, 0*s), Vec2f(28*s, 0*s), Vec2f(21*s, 10*s), Vec2f(28*s, 10*s)),  // left
+                    RectUvs(Vec2f(14*s, 10*s), Vec2f(7*s, 10*s), Vec2f(14*s, 0*s), Vec2f(7*s, 0*s)),    // right
+                    RectUvs(Vec2f(0*s, 10*s), Vec2f(7*s, 10*s), Vec2f(0*s, 17*s), Vec2f(7*s, 17*s)),    // front
+                    RectUvs(Vec2f(14*s, 17*s), Vec2f(7*s, 17*s), Vec2f(14*s, 10*s), Vec2f(7*s, 10*s))   // back
+                )
+            }
         }
     }
 

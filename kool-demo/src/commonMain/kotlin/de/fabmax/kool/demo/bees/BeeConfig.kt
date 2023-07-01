@@ -7,7 +7,7 @@ import de.fabmax.kool.modules.ui2.mutableStateOf
 
 object BeeConfig {
     val maxBeesPerTeam = 50_000
-    val beesPerTeam = mutableStateOf(if (KoolSystem.isJavascript) maxBeesPerTeam / 10 else maxBeesPerTeam)
+    val beesPerTeam = mutableStateOf(if (KoolSystem.isJavascript) maxBeesPerTeam / 5 else maxBeesPerTeam)
 
     var maxSpawnSpeed = 20f
 

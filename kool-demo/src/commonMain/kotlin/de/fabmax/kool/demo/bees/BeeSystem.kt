@@ -2,11 +2,7 @@ package de.fabmax.kool.demo.bees
 
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ui2.mutableStateOf
-import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
-import de.fabmax.kool.scene.geometry.RectUvs
-import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.PerfTimer
 import de.fabmax.kool.util.Time
 import kotlin.jvm.JvmInline
@@ -14,8 +10,11 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sign
+import kotlin.random.Random
 
 class BeeSystem(val team: Int) {
+    val beeInstances = MeshInstanceList(BeeConfig.maxBeesPerTeam, BeeDemo.ATTR_POSITION, BeeDemo.ATTR_ROTATION)
+
     val positions = Array(BeeConfig.maxBeesPerTeam + 1) { MutableVec4f(Vec4f.W_AXIS) }
     val rotations = Array(BeeConfig.maxBeesPerTeam) { MutableVec4f(Vec4f.W_AXIS) }
     val velocities = Array(BeeConfig.maxBeesPerTeam) { MutableVec3f() }
@@ -23,29 +22,9 @@ class BeeSystem(val team: Int) {
 
     var aliveBees = 0
 
-    val beeShader: BeeShader
-
-    val beeInstances = MeshInstanceList(BeeConfig.maxBeesPerTeam, BeeDemo.ATTR_POSITION, BeeDemo.ATTR_ROTATION)
-    val beeMesh = Mesh(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS).apply {
-        instances = beeInstances
-        generate {
-            //scale(10f)
-            cube {
-                size.set(0.7f, 0.7f, 1f)
-                val s = 1/32f
-                uvs = listOf(
-                    RectUvs(Vec2f(0*s, 0*s), Vec2f(7*s, 0*s), Vec2f(0*s, 10*s), Vec2f(7*s, 10*s)),      // top
-                    RectUvs(Vec2f(21*s, 10*s), Vec2f(14*s, 10*s), Vec2f(21*s, 0*s), Vec2f(14*s, 0*s)),  // bottom
-                    RectUvs(Vec2f(21*s, 0*s), Vec2f(28*s, 0*s), Vec2f(21*s, 10*s), Vec2f(28*s, 10*s)),  // left
-                    RectUvs(Vec2f(14*s, 10*s), Vec2f(7*s, 10*s), Vec2f(14*s, 0*s), Vec2f(7*s, 0*s)),    // right
-                    RectUvs(Vec2f(0*s, 10*s), Vec2f(7*s, 10*s), Vec2f(0*s, 17*s), Vec2f(7*s, 17*s)),    // front
-                    RectUvs(Vec2f(14*s, 17*s), Vec2f(7*s, 17*s), Vec2f(14*s, 10*s), Vec2f(7*s, 10*s))   // back
-                )
-            }
-        }
-    }
-
     lateinit var enemyBees: BeeSystem
+
+    private val random = Random(17 + team * 31)
 
     private val tmpVec4 = MutableVec4f()
     private val tmpVec3a = MutableVec3f()
@@ -56,45 +35,41 @@ class BeeSystem(val team: Int) {
     val instanceUpdateTime = mutableStateOf(0.0)
 
     init {
-        val aliveColor = if (team == 0) MdColor.BLUE else MdColor.AMBER
-        val deadColor = if (team == 0) MdColor.PURPLE else MdColor.DEEP_ORANGE
-        beeShader = BeeShader(aliveColor, deadColor)
-        beeMesh.shader = beeShader
-
         spawnBees()
+    }
 
-        beeMesh.onUpdate {
-            val dt = min(0.02f, Time.deltaT)
-            val pt = PerfTimer()
+    fun updateBees() {
+        val dt = min(0.02f, Time.deltaT)
+        val pt = PerfTimer()
 
-            // update alive bees
-            var newAliveCnt = 0
-            repeat(aliveBees) { i ->
-                val bee = Bee(i)
-                if (!bee.isDecayed) {
-                    bee.update(dt)
-                    if (i != newAliveCnt) {
-                        rotations[newAliveCnt].set(rotations[i])
-                        positions[newAliveCnt].set(positions[i])
-                        velocities[newAliveCnt].set(velocities[i])
-                        enemies[newAliveCnt] = enemies[i]
-                    }
-                    newAliveCnt++
+        // update alive bees
+        var newAliveCnt = 0
+        repeat(aliveBees) { i ->
+            val bee = Bee(i)
+            if (!bee.isDecayed) {
+                bee.update(dt)
+                if (i != newAliveCnt) {
+                    // keep the particle attribute arrays packed
+                    rotations[newAliveCnt].set(rotations[i])
+                    positions[newAliveCnt].set(positions[i])
+                    velocities[newAliveCnt].set(velocities[i])
+                    enemies[newAliveCnt] = enemies[i]
                 }
+                newAliveCnt++
             }
-            aliveBees = newAliveCnt
-
-            // spawn new bees if there are too few
-            spawnBees()
-            // kill bees if there are to many
-            killBees()
-            beeUpdateTime.set(pt.takeMs())
-
-            // copy mesh instance data
-            pt.reset()
-            updateInstances()
-            instanceUpdateTime.set(pt.takeMs())
         }
+        aliveBees = newAliveCnt
+
+        // spawn new bees if there are too few
+        spawnBees()
+        // kill bees if there are to many
+        killBees()
+        beeUpdateTime.set(pt.takeMs())
+
+        // copy mesh instance data
+        pt.reset()
+        updateInstances()
+        instanceUpdateTime.set(pt.takeMs())
     }
 
     private fun updateInstances() {
@@ -112,11 +87,11 @@ class BeeSystem(val team: Int) {
         while (aliveBees < n) {
             val spawned = Bee(aliveBees++)
 
-            spawned.rotation.setRotation(randomF(0f, 360f), randomInUnitSphere(tmpVec3a).norm())
-            spawned.position.set(randomInUnitSphere(tmpVec3a).scale(BeeConfig.worldSize.x * 0.05f))
+            spawned.rotation.setRotation(randomF(0f, 360f), random.randomInUnitSphere(tmpVec3a).norm())
+            spawned.position.set(random.randomInUnitSphere(tmpVec3a).scale(BeeConfig.worldSize.x * 0.05f))
             spawned.position.x += -BeeConfig.worldSize.x * 0.4f + BeeConfig.worldSize.x * 0.8f * team
             spawned.enemy = EnemyBee(BeeConfig.maxBeesPerTeam)
-            randomInUnitSphere(spawned.velocity).scale(BeeConfig.maxSpawnSpeed)
+            random.randomInUnitSphere(spawned.velocity).scale(BeeConfig.maxSpawnSpeed)
         }
     }
 
@@ -130,7 +105,7 @@ class BeeSystem(val team: Int) {
         }
     }
 
-    fun getRandomBee() = Bee(randomI(0, max(1, aliveBees - 1)))
+    fun getRandomBee() = Bee(random.randomI(0, max(1, aliveBees - 1)))
 
     @JvmInline
     value class Bee(val index: Int) {
@@ -215,7 +190,7 @@ class BeeSystem(val team: Int) {
         val vel = velocity
         val target = enemy
 
-        val v = randomInUnitCube(tmpVec3a).scale(BeeConfig.speedJitter * dt)
+        val v = random.randomInUnitCube(tmpVec3a).scale(BeeConfig.speedJitter * dt)
         vel.add(v).scale(1f - BeeConfig.speedDamping * dt)
 
         // swarming
@@ -246,7 +221,6 @@ class BeeSystem(val team: Int) {
                 vel.add(delta.scale(BeeConfig.attackForce * dt / dist))
                 if (dist < BeeConfig.hitDistance) {
                     target.kill()
-                    //enemy = EnemyBee(enemyBees.getRandomBee().index)
                 }
             }
         }
