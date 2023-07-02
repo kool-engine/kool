@@ -25,7 +25,7 @@ actual class ConvexMesh actual constructor(actual val points: List<Vec3f>) : Rel
             desc.points.count = points.size
             desc.points.stride = 12
             desc.points.data = vec3Vector.data()
-            pxConvexMesh = Physics.cooking.createConvexMesh(desc, Physics.physics.physicsInsertionCallback)
+            pxConvexMesh = PxTopLevelFunctions.CreateConvexMesh(Physics.cookingParams, desc)
 
             vec3Vector.destroy()
 

@@ -2,12 +2,12 @@ package de.fabmax.kool.physics.geometry
 
 import de.fabmax.kool.physics.MemoryStack
 import de.fabmax.kool.physics.Physics
+import de.fabmax.kool.physics.PxTopLevelFunctions
 import de.fabmax.kool.physics.Releasable
 import de.fabmax.kool.util.HeightMap
 import physx.PxHeightField
 import physx.PxHeightFieldFormatEnum
 import physx.Vector_PxHeightFieldSample
-import physx.physicsInsertionCallback
 import kotlin.math.max
 import kotlin.math.roundToInt
 
@@ -49,7 +49,7 @@ actual class HeightField actual constructor(actual val heightMap: HeightMap, act
             desc.samples.data = samples.data()
             desc.samples.stride = 4 //PxHeightFieldSample.SIZEOF
 
-            pxHeightField = Physics.cooking.createHeightField(desc, Physics.physics.physicsInsertionCallback)
+            pxHeightField = PxTopLevelFunctions.CreateHeightField(desc)
         }
     }
 

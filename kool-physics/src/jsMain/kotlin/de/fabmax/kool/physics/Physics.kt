@@ -49,8 +49,6 @@ actual object Physics : CoroutineScope {
         private set
     lateinit var cookingParams: PxCookingParams
         private set
-    lateinit var cooking: PxCooking
-        private set
 
     actual fun loadPhysics() {
         if (!isLoading) {
@@ -70,7 +68,6 @@ actual object Physics : CoroutineScope {
 
                 cookingParams = PxCookingParams(scale)
                 cookingParams.suppressTriangleMeshRemapTable = true
-                cooking = PxTopLevelFunctions.CreateCooking(PxTopLevelFunctions.PHYSICS_VERSION, foundation, cookingParams)
 
                 // init vehicle simulation framework
                 PxVehicleTopLevelFunctions.InitVehicleExtension(foundation)

@@ -14,8 +14,8 @@ import physx.*
 actual class PhysicsWorld actual constructor(scene: Scene?, val isContinuousCollisionDetection: Boolean) : CommonPhysicsWorld(), Releasable {
     val pxScene: PxScene
 
-    private val raycastResult = PxRaycastBuffer10()
-    private val sweepResult = PxSweepBuffer10()
+    private val raycastResult = PxRaycastResult()
+    private val sweepResult = PxSweepResult()
     private val bufPxGravity = Vec3f(0f, -9.81f, 0f).toPxVec3(PxVec3())
     private val bufGravity = MutableVec3f()
     actual var gravity: Vec3f

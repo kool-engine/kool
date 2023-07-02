@@ -1,11 +1,11 @@
 package de.fabmax.kool.physics.geometry
 
-import de.fabmax.kool.physics.MemoryStack
-import de.fabmax.kool.physics.Physics
-import de.fabmax.kool.physics.Releasable
-import de.fabmax.kool.physics.toPxVec3
+import de.fabmax.kool.physics.*
 import de.fabmax.kool.scene.geometry.IndexedVertexList
-import physx.*
+import physx.PxTriangleMesh
+import physx.Vector_PxU32
+import physx.Vector_PxVec3
+import physx.destroy
 
 actual class TriangleMesh actual constructor(actual val geometry: IndexedVertexList) : Releasable {
 
@@ -43,7 +43,7 @@ actual class TriangleMesh actual constructor(actual val geometry: IndexedVertexL
             desc.triangles = triangles
 
             // cook mesh
-            pxTriangleMesh = Physics.cooking.createTriangleMesh(desc, Physics.physics.physicsInsertionCallback)
+            pxTriangleMesh = PxTopLevelFunctions.CreateTriangleMesh(Physics.cookingParams, desc)
 
             pointVector.destroy()
             indexVector.destroy()

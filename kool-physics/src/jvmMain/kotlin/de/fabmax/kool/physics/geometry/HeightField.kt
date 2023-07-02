@@ -6,6 +6,7 @@ import de.fabmax.kool.physics.createPxHeightFieldDesc
 import de.fabmax.kool.physics.createPxHeightFieldSample
 import de.fabmax.kool.util.HeightMap
 import org.lwjgl.system.MemoryStack
+import physx.PxTopLevelFunctions
 import physx.geometry.PxHeightField
 import physx.geometry.PxHeightFieldFormatEnum
 import physx.geometry.PxHeightFieldSample
@@ -51,7 +52,7 @@ actual class HeightField actual constructor(actual val heightMap: HeightMap, act
             desc.samples.data = samples.data()
             desc.samples.stride = PxHeightFieldSample.SIZEOF
 
-            pxHeightField = Physics.cooking.createHeightField(desc, Physics.physics.physicsInsertionCallback)
+            pxHeightField = PxTopLevelFunctions.CreateHeightField(desc)
         }
     }
 

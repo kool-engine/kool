@@ -6,6 +6,7 @@ import de.fabmax.kool.physics.*
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import org.lwjgl.system.MemoryStack
+import physx.PxTopLevelFunctions
 import physx.common.PxVec3
 import physx.cooking.PxConvexFlagEnum
 import physx.geometry.PxConvexMesh
@@ -29,7 +30,7 @@ actual class ConvexMesh actual constructor(actual val points: List<Vec3f>) : Rel
             desc.points.count = points.size
             desc.points.stride = PxVec3.SIZEOF
             desc.points.data = vec3Vector.data()
-            pxConvexMesh = Physics.cooking.createConvexMesh(desc, Physics.physics.physicsInsertionCallback)
+            pxConvexMesh = PxTopLevelFunctions.CreateConvexMesh(Physics.cookingParams, desc)
 
             vec3Vector.destroy()
 

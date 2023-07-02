@@ -5,7 +5,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import physx.PxTopLevelFunctions
 import physx.common.*
-import physx.cooking.PxCooking
 import physx.cooking.PxCookingParams
 import physx.cooking.PxMeshMidPhaseEnum
 import physx.cooking.PxMidphaseDesc
@@ -45,7 +44,6 @@ actual object Physics : CoroutineScope {
     val foundation: PxFoundation
     val physics: PxPhysics
     val cookingParams: PxCookingParams
-    val cooking: PxCooking
 
     init {
         val version = PxTopLevelFunctions.getPHYSICS_VERSION()
@@ -71,7 +69,6 @@ actual object Physics : CoroutineScope {
             mbvH34Desc = bvh34
         }
         cookingParams.suppressTriangleMeshRemapTable = true
-        cooking = PxTopLevelFunctions.CreateCooking(version, foundation, cookingParams)
 
         // init vehicle simulation framework
         PxVehicleTopLevelFunctions.InitVehicleExtension(foundation)

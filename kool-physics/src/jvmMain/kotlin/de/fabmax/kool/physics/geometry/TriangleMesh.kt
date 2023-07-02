@@ -3,6 +3,7 @@ package de.fabmax.kool.physics.geometry
 import de.fabmax.kool.physics.*
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import org.lwjgl.system.MemoryStack
+import physx.PxTopLevelFunctions
 import physx.common.PxVec3
 import physx.geometry.PxTriangleMesh
 import physx.support.Vector_PxU32
@@ -44,7 +45,7 @@ actual class TriangleMesh actual constructor(actual val geometry: IndexedVertexL
             desc.triangles = triangles
 
             // cook mesh
-            pxTriangleMesh = Physics.cooking.createTriangleMesh(desc, Physics.physics.physicsInsertionCallback)
+            pxTriangleMesh = PxTopLevelFunctions.CreateTriangleMesh(Physics.cookingParams, desc)
 
             pointVector.destroy()
             indexVector.destroy()
