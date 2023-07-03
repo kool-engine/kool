@@ -35,6 +35,10 @@ class SceneBackgroundComponent(override val componentData: SceneBackgroundCompon
         _sceneModel = requireNotNull(nodeModel as? SceneModel) {
             "SceneBackgroundComponent is only allowed in scenes (parent node is of type ${nodeModel::class})"
         }
+
+        // re-sync public state with componentData state
+        backgroundState.set(componentData.sceneBackground)
+
         // early load hdri background (if applicable) so that other components can already use it during creation
         val hdriBg = backgroundState.value as? SceneBackgroundData.Hdri ?: return
         loadedEnvironmentMaps = AppAssets.loadHdriEnvironment(sceneModel.drawNode, hdriBg.hdriPath)

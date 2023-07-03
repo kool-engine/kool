@@ -13,6 +13,7 @@ class App : EditorAwareApp {
         if (!AppState.isInEditor) {
             // fixme: camera not yet included in project model, add a default one
             projectModel.getCreatedScenes().forEach {
+                it.drawNode.camera.setClipRange(0.1f, 1000f)
                 it.drawNode.defaultOrbitCamera()
             }
         }

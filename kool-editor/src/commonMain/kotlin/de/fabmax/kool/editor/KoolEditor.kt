@@ -10,6 +10,7 @@ import de.fabmax.kool.editor.api.AppAssets
 import de.fabmax.kool.editor.api.AppMode
 import de.fabmax.kool.editor.api.AppState
 import de.fabmax.kool.editor.model.SceneNodeModel
+import de.fabmax.kool.editor.overlays.GridOverlay
 import de.fabmax.kool.editor.ui.EditorUi
 import de.fabmax.kool.input.InputStack
 import de.fabmax.kool.input.KeyboardInput
@@ -27,14 +28,23 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
 
     val editorInputContext = InputStack.InputHandler("Editor input")
     val editorCameraTransform = OrbitInputTransform("Camera input transform").apply {
+        minZoom = 1.0
+        maxZoom = 1000.0
         setMouseRotation(20f, -30f)
         InputStack.defaultInputHandler.pointerListeners += this
     }
+
+    val gridOverlay = GridOverlay()
+
     val editorContent = Node("Editor Content").apply {
         tags[TAG_EDITOR_SUPPORT_CONTENT] = "true"
         addNode(editorCameraTransform)
+        addNode(gridOverlay)
     }
-    val editorOverlay = scene("editor-overlay") { addNode(editorContent) }
+    val editorOverlay = scene("editor-overlay") {
+        camera.setClipRange(0.1f, 1000f)
+        addNode(editorContent)
+    }
 
     val appLoader = AppLoader(this, paths)
     val modeController = AppModeController(this)
@@ -158,6 +168,7 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
         EditorState.projectModel.getCreatedScenes().map { it.drawNode }.let { newScenes ->
             ctx.scenes += newScenes
             newScenes.forEach { scene ->
+                scene.camera.setClipRange(0.1f, 1000f)
                 editorCameraTransform.addNode(scene.camera)
                 ui.sceneView.applyViewportTo(scene)
             }

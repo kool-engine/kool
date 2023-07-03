@@ -50,7 +50,9 @@ open class KslUnlitShader(cfg: UnlitShaderConfig, model: KslProgram = Model(cfg)
                         inModelMat(modelMatrix().matrix)
                         inLocalPos(vertexAttribFloat3(Attribute.POSITIONS.name))
                     }
-                    outPosition set viewProj * float4Value(vertexBlock.outWorldPos, 1f)
+
+                    val worldPos = float3Port("worldPos", vertexBlock.outWorldPos)
+                    outPosition set viewProj * float4Value(worldPos, 1f)
                 }
             }
             fragmentStage {
