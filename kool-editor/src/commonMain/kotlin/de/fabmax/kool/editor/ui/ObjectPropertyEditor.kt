@@ -179,7 +179,8 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", ui) 
 
     private fun UiScope.transformComponent(nodeModel: EditorNodeModel) {
         (nodeModel as? SceneNodeModel)?.let {
-            transformGizmo.setTransformObject(it)
+            // todo add button to enable gizmo
+            //transformGizmo.setTransformObject(it)
             transformEditor(transformProperties)
         }
     }

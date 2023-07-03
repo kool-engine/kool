@@ -7,6 +7,7 @@ import de.fabmax.kool.math.smoothStep
 import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.modules.ksl.blocks.cameraData
 import de.fabmax.kool.modules.ksl.lang.*
+import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.LineMesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.addLineMesh
@@ -26,20 +27,22 @@ class GridOverlay : Node("Grid overlay") {
         }
 
         onUpdate {
-            updateShader(it.camera.globalPos, yPlaneShader)
+            updateShader(it.camera, yPlaneShader)
         }
     }
 
-    private fun updateShader(camPos: Vec3f, shader: GridShader) {
-        val scale = abs(camPos.y) / 16
+    private fun updateShader(cam: Camera, shader: GridShader) {
+        val h = cam.globalPos.distance(cam.globalLookAt)
+
+        val scale = abs(h) / 16
         var sDiscrete = 1f / 16f
         while (sDiscrete < scale) {
             sDiscrete *= 4f
         }
         val lowerDiscrete = sDiscrete / 4f
 
-        val offsetX = (camPos.x / (32f * sDiscrete)).roundToInt() * 32f * sDiscrete
-        val offsetZ = (camPos.z / (32f * sDiscrete)).roundToInt() * 32f * sDiscrete
+        val offsetX = (cam.globalPos.x / (32f * sDiscrete)).roundToInt() * 32f * sDiscrete
+        val offsetZ = (cam.globalPos.z / (32f * sDiscrete)).roundToInt() * 32f * sDiscrete
         val wx = (scale - lowerDiscrete) / (sDiscrete - lowerDiscrete)
 
         shader.posOffset = Vec3f(offsetX, 0f, offsetZ)

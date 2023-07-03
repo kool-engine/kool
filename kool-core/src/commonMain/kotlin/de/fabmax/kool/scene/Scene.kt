@@ -107,6 +107,8 @@ open class Scene(name: String? = null) : Node(name) {
         disposables.clear()
 
         mainRenderPass.dispose(ctx)
+        mutOffscreenPasses.removeAll(remOffscreenPasses)
+        remOffscreenPasses.clear()
         for (i in offscreenPasses.indices) {
             offscreenPasses[i].dispose(ctx)
         }

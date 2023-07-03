@@ -121,7 +121,7 @@ abstract class KoolContext {
 
     abstract fun getWindowViewport(result: Viewport)
 
-    internal fun disposePipeline(pipeline: Pipeline) {
+    fun disposePipeline(pipeline: Pipeline) {
         disposablePipelines += pipeline
     }
 

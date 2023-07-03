@@ -11,6 +11,7 @@ import de.fabmax.kool.editor.api.AppMode
 import de.fabmax.kool.editor.api.AppState
 import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.editor.overlays.GridOverlay
+import de.fabmax.kool.editor.overlays.SelectionOverlay
 import de.fabmax.kool.editor.ui.EditorUi
 import de.fabmax.kool.input.InputStack
 import de.fabmax.kool.input.KeyboardInput
@@ -22,6 +23,7 @@ import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.OrbitInputTransform
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.scene
+import de.fabmax.kool.util.logW
 import kotlin.math.roundToInt
 
 class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
@@ -34,16 +36,19 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
         InputStack.defaultInputHandler.pointerListeners += this
     }
 
+    val editorOverlay = scene("editor-overlay") {
+        camera.setClipRange(0.1f, 1000f)
+    }
     val gridOverlay = GridOverlay()
+    val selectionOverlay = SelectionOverlay(this)
 
     val editorContent = Node("Editor Content").apply {
         tags[TAG_EDITOR_SUPPORT_CONTENT] = "true"
         addNode(editorCameraTransform)
         addNode(gridOverlay)
-    }
-    val editorOverlay = scene("editor-overlay") {
-        camera.setClipRange(0.1f, 1000f)
-        addNode(editorContent)
+        addNode(selectionOverlay)
+
+        editorOverlay.addNode(this)
     }
 
     val appLoader = AppLoader(this, paths)
@@ -156,18 +161,27 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
         EditorState.projectModel.getCreatedScenes().map { it.drawNode }.let { oldScenes ->
             ctx.scenes -= oldScenes.toSet()
             oldScenes.forEach {
+                it.removeOffscreenPass(selectionOverlay.selectionPass)
                 it.dispose(ctx)
             }
         }
         EditorState.loadedApp.value?.app?.onDispose(ctx)
+        selectionOverlay.selectionPass.disposePipelines(ctx)
 
         // initialize newly loaded app
         loadedApp.app.loadApp(EditorState.projectModel, ctx)
 
         // add scene objects from new app
         EditorState.projectModel.getCreatedScenes().map { it.drawNode }.let { newScenes ->
-            ctx.scenes += newScenes
-            newScenes.forEach { scene ->
+            if (newScenes.size != 1) {
+                logW { "Unusual number of scene, currently only single scene setups are supported" }
+            }
+            newScenes.firstOrNull()?.let { scene ->
+                ctx.scenes += scene
+
+                scene.addOffscreenPass(selectionOverlay.selectionPass)
+                selectionOverlay.selectionPass.drawNode = scene
+
                 scene.camera.setClipRange(0.1f, 1000f)
                 editorCameraTransform.addNode(scene.camera)
                 ui.sceneView.applyViewportTo(scene)
