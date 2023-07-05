@@ -78,7 +78,7 @@ actual object PlatformAssets {
     fun openLocalStream(assetPath: String): InputStream {
         val resPath = (KoolSystem.config.classloaderAssetPath + "/" + assetPath.replace('\\', '/'))
             .removePrefix("/")
-        var inStream = ClassLoader.getSystemResourceAsStream(resPath)
+        var inStream = this::class.java.classLoader.getResourceAsStream(resPath)
         if (inStream == null) {
             // if asset wasn't found in resources try to load it from file system
             inStream = FileInputStream("${Assets.assetsBasePath}/$assetPath")

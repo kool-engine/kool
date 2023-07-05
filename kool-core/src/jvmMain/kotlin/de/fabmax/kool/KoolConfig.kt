@@ -41,7 +41,7 @@ actual data class KoolConfig(
 
         init {
             DEFAULT_ICON = try {
-                ImageIO.read(ClassLoader.getSystemResourceAsStream("icon.png"))
+                ImageIO.read(KoolConfig::class.java.classLoader.getResourceAsStream("icon.png"))
             } catch (e: Exception) {
                 null
             }
