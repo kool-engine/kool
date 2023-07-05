@@ -5,6 +5,25 @@
 
 package physx
 
+external interface PxExtensionTopLevelFunctions {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * @param sdk        WebIDL type: [PxPhysics] (Ref)
+     * @param plane      WebIDL type: [PxPlane] (Const, Ref)
+     * @param material   WebIDL type: [PxMaterial] (Ref)
+     * @param filterData WebIDL type: [PxFilterData] (Const, Ref)
+     * @return WebIDL type: [PxRigidStatic]
+     */
+    fun CreatePlane(sdk: PxPhysics, plane: PxPlane, material: PxMaterial, filterData: PxFilterData): PxRigidStatic
+
+}
+
+fun PxExtensionTopLevelFunctionsFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxExtensionTopLevelFunctions = js("_module.wrapPointer(ptr, _module.PxExtensionTopLevelFunctions)")
+
 external interface PxCollectionExt {
     /**
      * Native object address.
@@ -538,20 +557,20 @@ external interface PxSerialization {
 
     /**
      * @param inputData WebIDL type: [PxInputData] (Ref)
-     * @param cooking   WebIDL type: [PxCooking] (Ref)
+     * @param params    WebIDL type: [PxCookingParams] (Const, Ref)
      * @param sr        WebIDL type: [PxSerializationRegistry] (Ref)
      * @return WebIDL type: [PxCollection]
      */
-    fun createCollectionFromXml(inputData: PxInputData, cooking: PxCooking, sr: PxSerializationRegistry): PxCollection
+    fun createCollectionFromXml(inputData: PxInputData, params: PxCookingParams, sr: PxSerializationRegistry): PxCollection
 
     /**
      * @param inputData    WebIDL type: [PxInputData] (Ref)
-     * @param cooking      WebIDL type: [PxCooking] (Ref)
+     * @param params       WebIDL type: [PxCookingParams] (Const, Ref)
      * @param sr           WebIDL type: [PxSerializationRegistry] (Ref)
      * @param externalRefs WebIDL type: [PxCollection] (Const)
      * @return WebIDL type: [PxCollection]
      */
-    fun createCollectionFromXml(inputData: PxInputData, cooking: PxCooking, sr: PxSerializationRegistry, externalRefs: PxCollection): PxCollection
+    fun createCollectionFromXml(inputData: PxInputData, params: PxCookingParams, sr: PxSerializationRegistry, externalRefs: PxCollection): PxCollection
 
     /**
      * @param memBlock WebIDL type: VoidPtr
@@ -580,20 +599,20 @@ external interface PxSerialization {
      * @param outputStream WebIDL type: [PxOutputStream] (Ref)
      * @param collection   WebIDL type: [PxCollection] (Ref)
      * @param sr           WebIDL type: [PxSerializationRegistry] (Ref)
-     * @param cooking      WebIDL type: [PxCooking]
+     * @param params       WebIDL type: [PxCookingParams] (Const)
      * @return WebIDL type: boolean
      */
-    fun serializeCollectionToXml(outputStream: PxOutputStream, collection: PxCollection, sr: PxSerializationRegistry, cooking: PxCooking): Boolean
+    fun serializeCollectionToXml(outputStream: PxOutputStream, collection: PxCollection, sr: PxSerializationRegistry, params: PxCookingParams): Boolean
 
     /**
      * @param outputStream WebIDL type: [PxOutputStream] (Ref)
      * @param collection   WebIDL type: [PxCollection] (Ref)
      * @param sr           WebIDL type: [PxSerializationRegistry] (Ref)
-     * @param cooking      WebIDL type: [PxCooking]
+     * @param params       WebIDL type: [PxCookingParams] (Const)
      * @param externalRefs WebIDL type: [PxCollection] (Const)
      * @return WebIDL type: boolean
      */
-    fun serializeCollectionToXml(outputStream: PxOutputStream, collection: PxCollection, sr: PxSerializationRegistry, cooking: PxCooking, externalRefs: PxCollection): Boolean
+    fun serializeCollectionToXml(outputStream: PxOutputStream, collection: PxCollection, sr: PxSerializationRegistry, params: PxCookingParams, externalRefs: PxCollection): Boolean
 
     /**
      * @param outputStream WebIDL type: [PxOutputStream] (Ref)
@@ -647,6 +666,394 @@ external interface PxSerializationRegistry {
 }
 
 fun PxSerializationRegistryFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxSerializationRegistry = js("_module.wrapPointer(ptr, _module.PxSerializationRegistry)")
+
+external interface PxGjkQueryProximityInfoResult {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * WebIDL type: boolean
+     */
+    var success: Boolean
+    /**
+     * WebIDL type: [PxVec3] (Value)
+     */
+    var pointA: PxVec3
+    /**
+     * WebIDL type: [PxVec3] (Value)
+     */
+    var pointB: PxVec3
+    /**
+     * WebIDL type: [PxVec3] (Value)
+     */
+    var separatingAxis: PxVec3
+    /**
+     * WebIDL type: float
+     */
+    var separation: Float
+}
+
+fun PxGjkQueryProximityInfoResult(_module: dynamic = PhysXJsLoader.physXJs): PxGjkQueryProximityInfoResult = js("new _module.PxGjkQueryProximityInfoResult()")
+
+fun PxGjkQueryProximityInfoResultFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxGjkQueryProximityInfoResult = js("_module.wrapPointer(ptr, _module.PxGjkQueryProximityInfoResult)")
+
+fun PxGjkQueryProximityInfoResult.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface PxGjkQueryRaycastResult {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * WebIDL type: boolean
+     */
+    var success: Boolean
+    /**
+     * WebIDL type: float
+     */
+    var t: Float
+    /**
+     * WebIDL type: [PxVec3] (Value)
+     */
+    var n: PxVec3
+    /**
+     * WebIDL type: [PxVec3] (Value)
+     */
+    var p: PxVec3
+}
+
+fun PxGjkQueryRaycastResult(_module: dynamic = PhysXJsLoader.physXJs): PxGjkQueryRaycastResult = js("new _module.PxGjkQueryRaycastResult()")
+
+fun PxGjkQueryRaycastResultFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxGjkQueryRaycastResult = js("_module.wrapPointer(ptr, _module.PxGjkQueryRaycastResult)")
+
+fun PxGjkQueryRaycastResult.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface PxGjkQuerySweepResult {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * WebIDL type: boolean
+     */
+    var success: Boolean
+    /**
+     * WebIDL type: float
+     */
+    var t: Float
+    /**
+     * WebIDL type: [PxVec3] (Value)
+     */
+    var n: PxVec3
+    /**
+     * WebIDL type: [PxVec3] (Value)
+     */
+    var p: PxVec3
+}
+
+fun PxGjkQuerySweepResult(_module: dynamic = PhysXJsLoader.physXJs): PxGjkQuerySweepResult = js("new _module.PxGjkQuerySweepResult()")
+
+fun PxGjkQuerySweepResultFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxGjkQuerySweepResult = js("_module.wrapPointer(ptr, _module.PxGjkQuerySweepResult)")
+
+fun PxGjkQuerySweepResult.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface PxGjkQuery {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * @param a               WebIDL type: [Support] (Const, Ref)
+     * @param b               WebIDL type: [Support] (Const, Ref)
+     * @param poseA           WebIDL type: [PxTransform] (Const, Ref)
+     * @param poseB           WebIDL type: [PxTransform] (Const, Ref)
+     * @param contactDistance WebIDL type: float
+     * @param toleranceLength WebIDL type: float
+     * @param result          WebIDL type: [PxGjkQueryProximityInfoResult] (Ref)
+     * @return WebIDL type: boolean
+     */
+    fun proximityInfo(a: Support, b: Support, poseA: PxTransform, poseB: PxTransform, contactDistance: Float, toleranceLength: Float, result: PxGjkQueryProximityInfoResult): Boolean
+
+    /**
+     * @param shape    WebIDL type: [Support] (Const, Ref)
+     * @param pose     WebIDL type: [PxTransform] (Const, Ref)
+     * @param rayStart WebIDL type: [PxVec3] (Const, Ref)
+     * @param unitDir  WebIDL type: [PxVec3] (Const, Ref)
+     * @param maxDist  WebIDL type: float
+     * @param result   WebIDL type: [PxGjkQueryRaycastResult] (Ref)
+     * @return WebIDL type: boolean
+     */
+    fun raycast(shape: Support, pose: PxTransform, rayStart: PxVec3, unitDir: PxVec3, maxDist: Float, result: PxGjkQueryRaycastResult): Boolean
+
+    /**
+     * @param a     WebIDL type: [Support] (Const, Ref)
+     * @param b     WebIDL type: [Support] (Const, Ref)
+     * @param poseA WebIDL type: [PxTransform] (Const, Ref)
+     * @param poseB WebIDL type: [PxTransform] (Const, Ref)
+     * @return WebIDL type: boolean
+     */
+    fun overlap(a: Support, b: Support, poseA: PxTransform, poseB: PxTransform): Boolean
+
+    /**
+     * @param a       WebIDL type: [Support] (Const, Ref)
+     * @param b       WebIDL type: [Support] (Const, Ref)
+     * @param poseA   WebIDL type: [PxTransform] (Const, Ref)
+     * @param poseB   WebIDL type: [PxTransform] (Const, Ref)
+     * @param unitDir WebIDL type: [PxVec3] (Const, Ref)
+     * @param maxDist WebIDL type: float
+     * @param result  WebIDL type: [PxGjkQuerySweepResult] (Ref)
+     * @return WebIDL type: boolean
+     */
+    fun sweep(a: Support, b: Support, poseA: PxTransform, poseB: PxTransform, unitDir: PxVec3, maxDist: Float, result: PxGjkQuerySweepResult): Boolean
+
+}
+
+fun PxGjkQueryFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxGjkQuery = js("_module.wrapPointer(ptr, _module.PxGjkQuery)")
+
+fun PxGjkQuery.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface PxGjkQueryExt {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * @param a               WebIDL type: [Support] (Const, Ref)
+     * @param b               WebIDL type: [Support] (Const, Ref)
+     * @param poseA           WebIDL type: [PxTransform] (Const, Ref)
+     * @param poseB           WebIDL type: [PxTransform] (Const, Ref)
+     * @param contactDistance WebIDL type: float
+     * @param toleranceLength WebIDL type: float
+     * @param contactBuffer   WebIDL type: [PxContactBuffer] (Ref)
+     * @return WebIDL type: boolean
+     */
+    fun generateContacts(a: Support, b: Support, poseA: PxTransform, poseB: PxTransform, contactDistance: Float, toleranceLength: Float, contactBuffer: PxContactBuffer): Boolean
+
+}
+
+fun PxGjkQueryExtFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxGjkQueryExt = js("_module.wrapPointer(ptr, _module.PxGjkQueryExt)")
+
+fun PxGjkQueryExt.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface Support {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * @return WebIDL type: float
+     */
+    fun getMargin(): Float
+
+    /**
+     * @param dir WebIDL type: [PxVec3] (Const, Ref)
+     * @return WebIDL type: [PxVec3] (Value)
+     */
+    fun supportLocal(dir: PxVec3): PxVec3
+
+}
+
+fun SupportFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): Support = js("_module.wrapPointer(ptr, _module.Support)")
+
+fun Support.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+val Support.margin
+    get() = getMargin()
+
+external interface BoxSupport : Support {
+    /**
+     * WebIDL type: [PxVec3] (Value)
+     */
+    var halfExtents: PxVec3
+    /**
+     * WebIDL type: float
+     */
+    var margin: Float
+}
+
+/**
+ * @param halfExtents WebIDL type: [PxVec3] (Const, Ref)
+ */
+fun BoxSupport(halfExtents: PxVec3, _module: dynamic = PhysXJsLoader.physXJs): BoxSupport = js("new _module.BoxSupport(halfExtents)")
+
+/**
+ * @param halfExtents WebIDL type: [PxVec3] (Const, Ref)
+ * @param margin      WebIDL type: float
+ */
+fun BoxSupport(halfExtents: PxVec3, margin: Float, _module: dynamic = PhysXJsLoader.physXJs): BoxSupport = js("new _module.BoxSupport(halfExtents, margin)")
+
+fun BoxSupportFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): BoxSupport = js("_module.wrapPointer(ptr, _module.BoxSupport)")
+
+fun BoxSupport.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface CapsuleSupport : Support {
+    /**
+     * WebIDL type: float
+     */
+    var radius: Float
+    /**
+     * WebIDL type: float
+     */
+    var halfHeight: Float
+}
+
+/**
+ * @param radius     WebIDL type: float
+ * @param halfHeight WebIDL type: float
+ */
+fun CapsuleSupport(radius: Float, halfHeight: Float, _module: dynamic = PhysXJsLoader.physXJs): CapsuleSupport = js("new _module.CapsuleSupport(radius, halfHeight)")
+
+fun CapsuleSupportFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): CapsuleSupport = js("_module.wrapPointer(ptr, _module.CapsuleSupport)")
+
+fun CapsuleSupport.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface ConvexGeomSupport : Support
+
+fun ConvexGeomSupport(_module: dynamic = PhysXJsLoader.physXJs): ConvexGeomSupport = js("new _module.ConvexGeomSupport()")
+
+/**
+ * @param geom WebIDL type: [PxGeometry] (Const, Ref)
+ */
+fun ConvexGeomSupport(geom: PxGeometry, _module: dynamic = PhysXJsLoader.physXJs): ConvexGeomSupport = js("new _module.ConvexGeomSupport(geom)")
+
+/**
+ * @param geom   WebIDL type: [PxGeometry] (Const, Ref)
+ * @param margin WebIDL type: float
+ */
+fun ConvexGeomSupport(geom: PxGeometry, margin: Float, _module: dynamic = PhysXJsLoader.physXJs): ConvexGeomSupport = js("new _module.ConvexGeomSupport(geom, margin)")
+
+fun ConvexGeomSupportFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): ConvexGeomSupport = js("_module.wrapPointer(ptr, _module.ConvexGeomSupport)")
+
+fun ConvexGeomSupport.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface ConvexMeshSupport : Support {
+    /**
+     * WebIDL type: [PxVec3] (Value)
+     */
+    var scale: PxVec3
+    /**
+     * WebIDL type: [PxQuat] (Value)
+     */
+    var scaleRotation: PxQuat
+    /**
+     * WebIDL type: float
+     */
+    var margin: Float
+}
+
+/**
+ * @param convexMesh WebIDL type: [PxConvexMesh] (Const, Ref)
+ */
+fun ConvexMeshSupport(convexMesh: PxConvexMesh, _module: dynamic = PhysXJsLoader.physXJs): ConvexMeshSupport = js("new _module.ConvexMeshSupport(convexMesh)")
+
+/**
+ * @param convexMesh WebIDL type: [PxConvexMesh] (Const, Ref)
+ * @param scale      WebIDL type: [PxVec3] (Const, Ref)
+ */
+fun ConvexMeshSupport(convexMesh: PxConvexMesh, scale: PxVec3, _module: dynamic = PhysXJsLoader.physXJs): ConvexMeshSupport = js("new _module.ConvexMeshSupport(convexMesh, scale)")
+
+/**
+ * @param convexMesh    WebIDL type: [PxConvexMesh] (Const, Ref)
+ * @param scale         WebIDL type: [PxVec3] (Const, Ref)
+ * @param scaleRotation WebIDL type: [PxQuat] (Const, Ref)
+ */
+fun ConvexMeshSupport(convexMesh: PxConvexMesh, scale: PxVec3, scaleRotation: PxQuat, _module: dynamic = PhysXJsLoader.physXJs): ConvexMeshSupport = js("new _module.ConvexMeshSupport(convexMesh, scale, scaleRotation)")
+
+/**
+ * @param convexMesh    WebIDL type: [PxConvexMesh] (Const, Ref)
+ * @param scale         WebIDL type: [PxVec3] (Const, Ref)
+ * @param scaleRotation WebIDL type: [PxQuat] (Const, Ref)
+ * @param margin        WebIDL type: float
+ */
+fun ConvexMeshSupport(convexMesh: PxConvexMesh, scale: PxVec3, scaleRotation: PxQuat, margin: Float, _module: dynamic = PhysXJsLoader.physXJs): ConvexMeshSupport = js("new _module.ConvexMeshSupport(convexMesh, scale, scaleRotation, margin)")
+
+fun ConvexMeshSupportFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): ConvexMeshSupport = js("_module.wrapPointer(ptr, _module.ConvexMeshSupport)")
+
+fun ConvexMeshSupport.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface SphereSupport : Support {
+    /**
+     * WebIDL type: float
+     */
+    var radius: Float
+}
+
+/**
+ * @param radius WebIDL type: float
+ */
+fun SphereSupport(radius: Float, _module: dynamic = PhysXJsLoader.physXJs): SphereSupport = js("new _module.SphereSupport(radius)")
+
+fun SphereSupportFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): SphereSupport = js("_module.wrapPointer(ptr, _module.SphereSupport)")
+
+fun SphereSupport.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface CustomSupport : Support {
+    /**
+     * @return WebIDL type: float
+     */
+    fun getCustomMargin(): Float
+
+    /**
+     * @param dir    WebIDL type: [PxVec3] (Const, Ref)
+     * @param result WebIDL type: [PxVec3] (Ref)
+     */
+    fun getCustomSupportLocal(dir: PxVec3, result: PxVec3)
+
+}
+
+fun CustomSupportFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): CustomSupport = js("_module.wrapPointer(ptr, _module.CustomSupport)")
+
+fun CustomSupport.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+val CustomSupport.customMargin
+    get() = getCustomMargin()
+
+external interface CustomSupportImpl : CustomSupport {
+    /**
+     * return WebIDL type: float
+     */
+    var getCustomMargin: () -> Float
+
+    /**
+     * param dir    WebIDL type: [PxVec3] (Const, Ref)
+     * param result WebIDL type: [PxVec3] (Ref)
+     */
+    var getCustomSupportLocal: (dir: Int, result: Int) -> Unit
+
+}
+
+fun CustomSupportImpl(_module: dynamic = PhysXJsLoader.physXJs): CustomSupportImpl = js("new _module.CustomSupportImpl()")
 
 external interface PxD6Joint : PxJoint {
     /**
@@ -742,26 +1149,6 @@ external interface PxD6Joint : PxJoint {
      */
     fun getDriveVelocity(linear: PxVec3, angular: PxVec3)
 
-    /**
-     * @param tolerance WebIDL type: float
-     */
-    fun setProjectionLinearTolerance(tolerance: Float)
-
-    /**
-     * @return WebIDL type: float
-     */
-    fun getProjectionLinearTolerance(): Float
-
-    /**
-     * @param tolerance WebIDL type: float
-     */
-    fun setProjectionAngularTolerance(tolerance: Float)
-
-    /**
-     * @return WebIDL type: float
-     */
-    fun getProjectionAngularTolerance(): Float
-
 }
 
 fun PxD6JointFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxD6Joint = js("_module.wrapPointer(ptr, _module.PxD6Joint)")
@@ -780,12 +1167,6 @@ val PxD6Joint.swingZAngle
 var PxD6Joint.drivePosition
     get() = getDrivePosition()
     set(value) { setDrivePosition(value) }
-var PxD6Joint.projectionLinearTolerance
-    get() = getProjectionLinearTolerance()
-    set(value) { setProjectionLinearTolerance(value) }
-var PxD6Joint.projectionAngularTolerance
-    get() = getProjectionAngularTolerance()
-    set(value) { setProjectionAngularTolerance(value) }
 
 external interface PxD6JointDrive : PxSpring {
     /**
@@ -993,41 +1374,13 @@ fun PxDistanceJointFlags.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
-external interface PxFixedJoint : PxJoint {
-    /**
-     * @param tolerance WebIDL type: float
-     */
-    fun setProjectionLinearTolerance(tolerance: Float)
-
-    /**
-     * @return WebIDL type: float
-     */
-    fun getProjectionLinearTolerance(): Float
-
-    /**
-     * @param tolerance WebIDL type: float
-     */
-    fun setProjectionAngularTolerance(tolerance: Float)
-
-    /**
-     * @return WebIDL type: float
-     */
-    fun getProjectionAngularTolerance(): Float
-
-}
+external interface PxFixedJoint : PxJoint
 
 fun PxFixedJointFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxFixedJoint = js("_module.wrapPointer(ptr, _module.PxFixedJoint)")
 
 fun PxFixedJoint.destroy() {
     PhysXJsLoader.destroy(this)
 }
-
-var PxFixedJoint.projectionLinearTolerance
-    get() = getProjectionLinearTolerance()
-    set(value) { setProjectionLinearTolerance(value) }
-var PxFixedJoint.projectionAngularTolerance
-    get() = getProjectionAngularTolerance()
-    set(value) { setProjectionAngularTolerance(value) }
 
 external interface PxJoint : PxBase {
     /**
@@ -1352,26 +1705,6 @@ external interface PxPrismaticJoint : PxJoint {
      */
     fun getPrismaticJointFlags(): PxPrismaticJointFlags
 
-    /**
-     * @param tolerance WebIDL type: float
-     */
-    fun setProjectionLinearTolerance(tolerance: Float)
-
-    /**
-     * @return WebIDL type: float
-     */
-    fun getProjectionLinearTolerance(): Float
-
-    /**
-     * @param tolerance WebIDL type: float
-     */
-    fun setProjectionAngularTolerance(tolerance: Float)
-
-    /**
-     * @return WebIDL type: float
-     */
-    fun getProjectionAngularTolerance(): Float
-
 }
 
 fun PxPrismaticJointFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxPrismaticJoint = js("_module.wrapPointer(ptr, _module.PxPrismaticJoint)")
@@ -1388,12 +1721,6 @@ val PxPrismaticJoint.velocity
 var PxPrismaticJoint.prismaticJointFlags
     get() = getPrismaticJointFlags()
     set(value) { setPrismaticJointFlags(value) }
-var PxPrismaticJoint.projectionLinearTolerance
-    get() = getProjectionLinearTolerance()
-    set(value) { setProjectionLinearTolerance(value) }
-var PxPrismaticJoint.projectionAngularTolerance
-    get() = getProjectionAngularTolerance()
-    set(value) { setProjectionAngularTolerance(value) }
 
 external interface PxPrismaticJointFlags {
     /**
@@ -1498,26 +1825,6 @@ external interface PxRevoluteJoint : PxJoint {
      */
     fun getRevoluteJointFlags(): PxRevoluteJointFlags
 
-    /**
-     * @param tolerance WebIDL type: float
-     */
-    fun setProjectionLinearTolerance(tolerance: Float)
-
-    /**
-     * @return WebIDL type: float
-     */
-    fun getProjectionLinearTolerance(): Float
-
-    /**
-     * @param tolerance WebIDL type: float
-     */
-    fun setProjectionAngularTolerance(tolerance: Float)
-
-    /**
-     * @return WebIDL type: float
-     */
-    fun getProjectionAngularTolerance(): Float
-
 }
 
 fun PxRevoluteJointFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxRevoluteJoint = js("_module.wrapPointer(ptr, _module.PxRevoluteJoint)")
@@ -1543,12 +1850,6 @@ var PxRevoluteJoint.driveGearRatio
 var PxRevoluteJoint.revoluteJointFlags
     get() = getRevoluteJointFlags()
     set(value) { setRevoluteJointFlags(value) }
-var PxRevoluteJoint.projectionLinearTolerance
-    get() = getProjectionLinearTolerance()
-    set(value) { setProjectionLinearTolerance(value) }
-var PxRevoluteJoint.projectionAngularTolerance
-    get() = getProjectionAngularTolerance()
-    set(value) { setProjectionAngularTolerance(value) }
 
 external interface PxRevoluteJointFlags {
     /**
@@ -1617,16 +1918,6 @@ external interface PxSphericalJoint : PxJoint {
      */
     fun getSphericalJointFlags(): PxSphericalJointFlags
 
-    /**
-     * @param tolerance WebIDL type: float
-     */
-    fun setProjectionLinearTolerance(tolerance: Float)
-
-    /**
-     * @return WebIDL type: float
-     */
-    fun getProjectionLinearTolerance(): Float
-
 }
 
 fun PxSphericalJointFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxSphericalJoint = js("_module.wrapPointer(ptr, _module.PxSphericalJoint)")
@@ -1643,9 +1934,6 @@ val PxSphericalJoint.swingZAngle
 var PxSphericalJoint.sphericalJointFlags
     get() = getSphericalJointFlags()
     set(value) { setSphericalJointFlags(value) }
-var PxSphericalJoint.projectionLinearTolerance
-    get() = getProjectionLinearTolerance()
-    set(value) { setProjectionLinearTolerance(value) }
 
 external interface PxSphericalJointFlags {
     /**

@@ -167,6 +167,34 @@ external interface NativeArrayHelpers {
     fun getRealAt(base: PxRealPtr, index: Int): Float
 
     /**
+     * @param base  WebIDL type: VoidPtr
+     * @param index WebIDL type: long
+     * @param value WebIDL type: octet
+     */
+    fun setU8At(base: Any, index: Int, value: Byte)
+
+    /**
+     * @param base  WebIDL type: VoidPtr
+     * @param index WebIDL type: long
+     * @param value WebIDL type: unsigned short
+     */
+    fun setU16At(base: Any, index: Int, value: Short)
+
+    /**
+     * @param base  WebIDL type: VoidPtr
+     * @param index WebIDL type: long
+     * @param value WebIDL type: unsigned long
+     */
+    fun setU32At(base: Any, index: Int, value: Int)
+
+    /**
+     * @param base  WebIDL type: VoidPtr
+     * @param index WebIDL type: long
+     * @param value WebIDL type: float
+     */
+    fun setRealAt(base: Any, index: Int, value: Float)
+
+    /**
      * @param voidPtr WebIDL type: VoidPtr
      * @return WebIDL type: [PxU8Ptr] (Value)
      */
@@ -245,6 +273,27 @@ external interface NativeArrayHelpers {
      * @return WebIDL type: [PxControllerObstacleHit]
      */
     fun getControllerObstacleHitAt(base: PxControllerObstacleHit, index: Int): PxControllerObstacleHit
+
+    /**
+     * @param base  WebIDL type: [PxDebugPoint]
+     * @param index WebIDL type: long
+     * @return WebIDL type: [PxDebugPoint]
+     */
+    fun getDebugPointAt(base: PxDebugPoint, index: Int): PxDebugPoint
+
+    /**
+     * @param base  WebIDL type: [PxDebugLine]
+     * @param index WebIDL type: long
+     * @return WebIDL type: [PxDebugLine]
+     */
+    fun getDebugLineAt(base: PxDebugLine, index: Int): PxDebugLine
+
+    /**
+     * @param base  WebIDL type: [PxDebugTriangle]
+     * @param index WebIDL type: long
+     * @return WebIDL type: [PxDebugTriangle]
+     */
+    fun getDebugTriangleAt(base: PxDebugTriangle, index: Int): PxDebugTriangle
 
     /**
      * @param base  WebIDL type: [PxObstacle]
@@ -587,6 +636,50 @@ fun Vector_PxVec3(size: Int, _module: dynamic = PhysXJsLoader.physXJs): Vector_P
 fun Vector_PxVec3FromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): Vector_PxVec3 = js("_module.wrapPointer(ptr, _module.Vector_PxVec3)")
 
 fun Vector_PxVec3.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface Vector_PxVec4 {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * @param index WebIDL type: unsigned long
+     * @return WebIDL type: [PxVec4] (Ref)
+     */
+    fun at(index: Int): PxVec4
+
+    /**
+     * @return WebIDL type: [PxVec4]
+     */
+    fun data(): PxVec4
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun size(): Int
+
+    /**
+     * @param value WebIDL type: [PxVec4] (Ref)
+     */
+    fun push_back(value: PxVec4)
+
+    fun clear()
+
+}
+
+fun Vector_PxVec4(_module: dynamic = PhysXJsLoader.physXJs): Vector_PxVec4 = js("new _module.Vector_PxVec4()")
+
+/**
+ * @param size WebIDL type: unsigned long
+ */
+fun Vector_PxVec4(size: Int, _module: dynamic = PhysXJsLoader.physXJs): Vector_PxVec4 = js("new _module.Vector_PxVec4(size)")
+
+fun Vector_PxVec4FromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): Vector_PxVec4 = js("_module.wrapPointer(ptr, _module.Vector_PxVec4)")
+
+fun Vector_PxVec4.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
@@ -942,16 +1035,6 @@ external interface PxOmniPvd {
     val ptr: Int
 
     /**
-     * @return WebIDL type: [OmniPvdWriter] (Platforms=windows;linux;macos)
-     */
-    fun getWriter(): OmniPvdWriter
-
-    /**
-     * @return WebIDL type: [OmniPvdFileWriteStream] (Platforms=windows;linux;macos)
-     */
-    fun getFileWriteStream(): OmniPvdFileWriteStream
-
-    /**
      * @return WebIDL type: boolean
      */
     fun startSampling(): Boolean
@@ -965,45 +1048,6 @@ fun PxOmniPvdFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): Px
 fun PxOmniPvd.destroy() {
     PhysXJsLoader.destroy(this)
 }
-
-val PxOmniPvd.writer
-    get() = getWriter()
-val PxOmniPvd.fileWriteStream
-    get() = getFileWriteStream()
-
-external interface OmniPvdWriter {
-    /**
-     * Native object address.
-     */
-    val ptr: Int
-
-    /**
-     * @param writeStream WebIDL type: [OmniPvdFileWriteStream]
-     */
-    fun setWriteStream(writeStream: OmniPvdFileWriteStream)
-
-}
-
-fun OmniPvdWriterFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): OmniPvdWriter = js("_module.wrapPointer(ptr, _module.OmniPvdWriter)")
-
-fun OmniPvdWriter.destroy() {
-    PhysXJsLoader.destroy(this)
-}
-
-external interface OmniPvdFileWriteStream {
-    /**
-     * Native object address.
-     */
-    val ptr: Int
-
-    /**
-     * @param fileName WebIDL type: DOMString
-     */
-    fun setFileName(fileName: String)
-
-}
-
-fun OmniPvdFileWriteStreamFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): OmniPvdFileWriteStream = js("_module.wrapPointer(ptr, _module.OmniPvdFileWriteStream)")
 
 object PxVisualizationParameterEnum {
     val eSCALE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVisualizationParameterEnum_eSCALE()

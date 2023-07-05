@@ -922,344 +922,290 @@ fun PxVec3.destroy() {
 val PxVec3.normalized
     get() = getNormalized()
 
-external interface PxCudaTopLevelFunctions {
+external interface PxVec4 {
     /**
      * Native object address.
      */
     val ptr: Int
 
     /**
-     * @param foundation WebIDL type: [PxFoundation] (Ref)
-     * @param desc       WebIDL type: [PxCudaContextManagerDesc] (Const, Ref)
-     * @return WebIDL type: [PxCudaContextManager]
+     * WebIDL type: float
      */
-    fun CreateCudaContextManager(foundation: PxFoundation, desc: PxCudaContextManagerDesc): PxCudaContextManager
+    var x: Float
+    /**
+     * WebIDL type: float
+     */
+    var y: Float
+    /**
+     * WebIDL type: float
+     */
+    var z: Float
+    /**
+     * WebIDL type: float
+     */
+    var w: Float
+
+    /**
+     * @return WebIDL type: boolean
+     */
+    fun isZero(): Boolean
+
+    /**
+     * @return WebIDL type: boolean
+     */
+    fun isFinite(): Boolean
+
+    /**
+     * @return WebIDL type: boolean
+     */
+    fun isNormalized(): Boolean
+
+    /**
+     * @return WebIDL type: float
+     */
+    fun magnitudeSquared(): Float
+
+    /**
+     * @return WebIDL type: float
+     */
+    fun magnitude(): Float
+
+    /**
+     * @param v WebIDL type: [PxVec4] (Const, Ref)
+     * @return WebIDL type: float
+     */
+    fun dot(v: PxVec4): Float
+
+    /**
+     * @return WebIDL type: [PxVec4] (Value)
+     */
+    fun getNormalized(): PxVec4
+
+    /**
+     * @return WebIDL type: float
+     */
+    fun normalize(): Float
+
+    /**
+     * @param a WebIDL type: [PxVec4] (Const, Ref)
+     * @return WebIDL type: [PxVec4] (Value)
+     */
+    fun multiply(a: PxVec4): PxVec4
+
+    /**
+     * @param v WebIDL type: [PxVec4] (Const, Ref)
+     * @return WebIDL type: [PxVec4] (Value)
+     */
+    fun minimum(v: PxVec4): PxVec4
+
+    /**
+     * @param v WebIDL type: [PxVec4] (Const, Ref)
+     * @return WebIDL type: [PxVec4] (Value)
+     */
+    fun maximum(v: PxVec4): PxVec4
+
+    /**
+     * @return WebIDL type: [PxVec3] (Value)
+     */
+    fun getXYZ(): PxVec3
 
 }
 
-fun PxCudaTopLevelFunctionsFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxCudaTopLevelFunctions = js("_module.wrapPointer(ptr, _module.PxCudaTopLevelFunctions)")
+fun PxVec4(_module: dynamic = PhysXJsLoader.physXJs): PxVec4 = js("new _module.PxVec4()")
 
-external interface CUcontext
+/**
+ * @param x WebIDL type: float
+ * @param y WebIDL type: float
+ * @param z WebIDL type: float
+ * @param w WebIDL type: float
+ */
+fun PxVec4(x: Float, y: Float, z: Float, w: Float, _module: dynamic = PhysXJsLoader.physXJs): PxVec4 = js("new _module.PxVec4(x, y, z, w)")
 
-fun CUcontextFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): CUcontext = js("_module.wrapPointer(ptr, _module.CUcontext)")
+fun PxVec4FromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxVec4 = js("_module.wrapPointer(ptr, _module.PxVec4)")
 
-fun CUcontext.destroy() {
+fun PxVec4.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
-external interface CUdevice
+val PxVec4.normalized
+    get() = getNormalized()
+val PxVec4.xYZ
+    get() = getXYZ()
 
-fun CUdeviceFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): CUdevice = js("_module.wrapPointer(ptr, _module.CUdevice)")
-
-fun CUdevice.destroy() {
-    PhysXJsLoader.destroy(this)
-}
-
-external interface CUmodule
-
-fun CUmoduleFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): CUmodule = js("_module.wrapPointer(ptr, _module.CUmodule)")
-
-fun CUmodule.destroy() {
-    PhysXJsLoader.destroy(this)
-}
-
-external interface PxCudaContext
-
-fun PxCudaContextFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxCudaContext = js("_module.wrapPointer(ptr, _module.PxCudaContext)")
-
-external interface PxCudaContextManager {
+external interface PxDebugPoint {
     /**
      * Native object address.
      */
     val ptr: Int
 
-    fun acquireContext()
+    /**
+     * WebIDL type: [PxVec3] (Value)
+     */
+    var pos: PxVec3
+    /**
+     * WebIDL type: unsigned long
+     */
+    var color: Int
+}
 
-    fun releaseContext()
+fun PxDebugPointFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxDebugPoint = js("_module.wrapPointer(ptr, _module.PxDebugPoint)")
+
+external interface PxDebugLine {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
 
     /**
-     * @return WebIDL type: [CUcontext]
+     * WebIDL type: [PxVec3] (Value)
      */
-    fun getContext(): CUcontext
+    var pos0: PxVec3
+    /**
+     * WebIDL type: unsigned long
+     */
+    var color0: Int
+    /**
+     * WebIDL type: [PxVec3] (Value)
+     */
+    var pos1: PxVec3
+    /**
+     * WebIDL type: unsigned long
+     */
+    var color1: Int
+}
+
+fun PxDebugLineFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxDebugLine = js("_module.wrapPointer(ptr, _module.PxDebugLine)")
+
+external interface PxDebugTriangle {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
 
     /**
-     * @return WebIDL type: [PxCudaContext]
+     * WebIDL type: [PxVec3] (Value)
      */
-    fun getCudaContext(): PxCudaContext
-
+    var pos0: PxVec3
     /**
-     * @return WebIDL type: boolean
+     * WebIDL type: unsigned long
      */
-    fun contextIsValid(): Boolean
-
+    var color0: Int
     /**
-     * @return WebIDL type: boolean
+     * WebIDL type: [PxVec3] (Value)
      */
-    fun supportsArchSM10(): Boolean
-
+    var pos1: PxVec3
     /**
-     * @return WebIDL type: boolean
+     * WebIDL type: unsigned long
      */
-    fun supportsArchSM11(): Boolean
-
+    var color1: Int
     /**
-     * @return WebIDL type: boolean
+     * WebIDL type: [PxVec3] (Value)
      */
-    fun supportsArchSM12(): Boolean
-
+    var pos2: PxVec3
     /**
-     * @return WebIDL type: boolean
+     * WebIDL type: unsigned long
      */
-    fun supportsArchSM13(): Boolean
+    var color2: Int
+}
 
-    /**
-     * @return WebIDL type: boolean
-     */
-    fun supportsArchSM20(): Boolean
+fun PxDebugTriangleFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxDebugTriangle = js("_module.wrapPointer(ptr, _module.PxDebugTriangle)")
 
+external interface PxRenderBuffer {
     /**
-     * @return WebIDL type: boolean
+     * Native object address.
      */
-    fun supportsArchSM30(): Boolean
-
-    /**
-     * @return WebIDL type: boolean
-     */
-    fun supportsArchSM35(): Boolean
-
-    /**
-     * @return WebIDL type: boolean
-     */
-    fun supportsArchSM50(): Boolean
-
-    /**
-     * @return WebIDL type: boolean
-     */
-    fun supportsArchSM52(): Boolean
-
-    /**
-     * @return WebIDL type: boolean
-     */
-    fun supportsArchSM60(): Boolean
-
-    /**
-     * @return WebIDL type: boolean
-     */
-    fun isIntegrated(): Boolean
-
-    /**
-     * @return WebIDL type: boolean
-     */
-    fun canMapHostMemory(): Boolean
-
-    /**
-     * @return WebIDL type: long
-     */
-    fun getDriverVersion(): Int
-
-    /**
-     * @return WebIDL type: unsigned long long
-     */
-    fun getDeviceTotalMemBytes(): Long
-
-    /**
-     * @return WebIDL type: long
-     */
-    fun getMultiprocessorCount(): Int
+    val ptr: Int
 
     /**
      * @return WebIDL type: unsigned long
      */
-    fun getClockRate(): Int
+    fun getNbPoints(): Int
 
     /**
-     * @return WebIDL type: long
+     * @return WebIDL type: [PxDebugPoint] (Const)
      */
-    fun getSharedMemPerBlock(): Int
+    fun getPoints(): PxDebugPoint
 
     /**
-     * @return WebIDL type: long
+     * @param point WebIDL type: [PxDebugPoint] (Const, Ref)
      */
-    fun getSharedMemPerMultiprocessor(): Int
+    fun addPoint(point: PxDebugPoint)
 
     /**
      * @return WebIDL type: unsigned long
      */
-    fun getMaxThreadsPerBlock(): Int
+    fun getNbLines(): Int
 
     /**
-     * @return WebIDL type: DOMString (Const)
+     * @return WebIDL type: [PxDebugLine] (Const)
      */
-    fun getDeviceName(): String
+    fun getLines(): PxDebugLine
 
     /**
-     * @return WebIDL type: [CUdevice]
+     * @param line WebIDL type: [PxDebugLine] (Const, Ref)
      */
-    fun getDevice(): CUdevice
+    fun addLine(line: PxDebugLine)
 
     /**
-     * @return WebIDL type: [PxCudaInteropModeEnum] (enum)
+     * @param nbLines WebIDL type: unsigned long (Const)
+     * @return WebIDL type: [PxDebugLine]
      */
-    fun getInteropMode(): Int
+    fun reserveLines(nbLines: Int): PxDebugLine
 
     /**
-     * @param flag WebIDL type: boolean
+     * @param nbLines WebIDL type: unsigned long (Const)
+     * @return WebIDL type: [PxDebugPoint]
      */
-    fun setUsingConcurrentStreams(flag: Boolean)
+    fun reservePoints(nbLines: Int): PxDebugPoint
 
     /**
-     * @return WebIDL type: boolean
+     * @return WebIDL type: unsigned long
      */
-    fun getUsingConcurrentStreams(): Boolean
+    fun getNbTriangles(): Int
 
     /**
-     * @return WebIDL type: long
+     * @return WebIDL type: [PxDebugTriangle] (Const)
      */
-    fun usingDedicatedGPU(): Int
+    fun getTriangles(): PxDebugTriangle
 
     /**
-     * @return WebIDL type: [CUmodule]
+     * @param triangle WebIDL type: [PxDebugTriangle] (Const, Ref)
      */
-    fun getCuModules(): CUmodule
-
-    fun release()
-
-}
-
-fun PxCudaContextManagerFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxCudaContextManager = js("_module.wrapPointer(ptr, _module.PxCudaContextManager)")
-
-val PxCudaContextManager.context
-    get() = getContext()
-val PxCudaContextManager.cudaContext
-    get() = getCudaContext()
-val PxCudaContextManager.driverVersion
-    get() = getDriverVersion()
-val PxCudaContextManager.deviceTotalMemBytes
-    get() = getDeviceTotalMemBytes()
-val PxCudaContextManager.multiprocessorCount
-    get() = getMultiprocessorCount()
-val PxCudaContextManager.clockRate
-    get() = getClockRate()
-val PxCudaContextManager.sharedMemPerBlock
-    get() = getSharedMemPerBlock()
-val PxCudaContextManager.sharedMemPerMultiprocessor
-    get() = getSharedMemPerMultiprocessor()
-val PxCudaContextManager.maxThreadsPerBlock
-    get() = getMaxThreadsPerBlock()
-val PxCudaContextManager.deviceName
-    get() = getDeviceName()
-val PxCudaContextManager.device
-    get() = getDevice()
-val PxCudaContextManager.interopMode
-    get() = getInteropMode()
-val PxCudaContextManager.cuModules
-    get() = getCuModules()
-
-var PxCudaContextManager.usingConcurrentStreams
-    get() = getUsingConcurrentStreams()
-    set(value) { setUsingConcurrentStreams(value) }
-
-external interface PxCudaContextManagerDesc {
-    /**
-     * Native object address.
-     */
-    val ptr: Int
+    fun addTriangle(triangle: PxDebugTriangle)
 
     /**
-     * WebIDL type: [CUcontext]
+     * @param other WebIDL type: [PxRenderBuffer] (Const, Ref)
      */
-    var ctx: CUcontext
-    /**
-     * WebIDL type: VoidPtr
-     */
-    var graphicsDevice: Any
-    /**
-     * WebIDL type: DOMString
-     */
-    var appGUID: String
-    /**
-     * WebIDL type: [PxCudaInteropModeEnum] (enum)
-     */
-    var interopMode: Int
-}
+    fun append(other: PxRenderBuffer)
 
-fun PxCudaContextManagerDesc(_module: dynamic = PhysXJsLoader.physXJs): PxCudaContextManagerDesc = js("new _module.PxCudaContextManagerDesc()")
-
-fun PxCudaContextManagerDescFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxCudaContextManagerDesc = js("_module.wrapPointer(ptr, _module.PxCudaContextManagerDesc)")
-
-fun PxCudaContextManagerDesc.destroy() {
-    PhysXJsLoader.destroy(this)
-}
-
-external interface PxgDynamicsMemoryConfig {
-    /**
-     * Native object address.
-     */
-    val ptr: Int
+    fun clear()
 
     /**
-     * WebIDL type: unsigned long
+     * @param delta WebIDL type: [PxVec3] (Const, Ref)
      */
-    var tempBufferCapacity: Int
-    /**
-     * WebIDL type: unsigned long
-     */
-    var maxRigidContactCount: Int
-    /**
-     * WebIDL type: unsigned long
-     */
-    var maxRigidPatchCount: Int
-    /**
-     * WebIDL type: unsigned long
-     */
-    var heapCapacity: Int
-    /**
-     * WebIDL type: unsigned long
-     */
-    var foundLostPairsCapacity: Int
-    /**
-     * WebIDL type: unsigned long
-     */
-    var foundLostAggregatePairsCapacity: Int
-    /**
-     * WebIDL type: unsigned long
-     */
-    var totalAggregatePairsCapacity: Int
-    /**
-     * WebIDL type: unsigned long
-     */
-    var maxSoftBodyContacts: Int
-    /**
-     * WebIDL type: unsigned long
-     */
-    var maxFemClothContacts: Int
-    /**
-     * WebIDL type: unsigned long
-     */
-    var maxParticleContacts: Int
-    /**
-     * WebIDL type: unsigned long
-     */
-    var collisionStackSize: Int
-    /**
-     * WebIDL type: unsigned long
-     */
-    var maxHairContacts: Int
+    fun shift(delta: PxVec3)
 
     /**
      * @return WebIDL type: boolean
      */
-    fun isValid(): Boolean
+    fun empty(): Boolean
 
 }
 
-fun PxgDynamicsMemoryConfig(_module: dynamic = PhysXJsLoader.physXJs): PxgDynamicsMemoryConfig = js("new _module.PxgDynamicsMemoryConfig()")
+fun PxRenderBufferFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxRenderBuffer = js("_module.wrapPointer(ptr, _module.PxRenderBuffer)")
 
-fun PxgDynamicsMemoryConfigFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxgDynamicsMemoryConfig = js("_module.wrapPointer(ptr, _module.PxgDynamicsMemoryConfig)")
-
-fun PxgDynamicsMemoryConfig.destroy() {
-    PhysXJsLoader.destroy(this)
-}
+val PxRenderBuffer.nbPoints
+    get() = getNbPoints()
+val PxRenderBuffer.points
+    get() = getPoints()
+val PxRenderBuffer.nbLines
+    get() = getNbLines()
+val PxRenderBuffer.lines
+    get() = getLines()
+val PxRenderBuffer.nbTriangles
+    get() = getNbTriangles()
+val PxRenderBuffer.triangles
+    get() = getTriangles()
 
 object PxBaseFlagEnum {
     val eOWNS_MEMORY: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxBaseFlagEnum_eOWNS_MEMORY()
@@ -1283,10 +1229,18 @@ object PxIDENTITYEnum {
     val PxIdentity: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxIDENTITYEnum_PxIdentity()
 }
 
-object PxCudaInteropModeEnum {
-    val NO_INTEROP: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxCudaInteropModeEnum_NO_INTEROP()
-    val D3D10_INTEROP: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxCudaInteropModeEnum_D3D10_INTEROP()
-    val D3D11_INTEROP: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxCudaInteropModeEnum_D3D11_INTEROP()
-    val OGL_INTEROP: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxCudaInteropModeEnum_OGL_INTEROP()
+object PxDebugColorEnum {
+    val eARGB_BLACK: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_BLACK()
+    val eARGB_RED: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_RED()
+    val eARGB_GREEN: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_GREEN()
+    val eARGB_BLUE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_BLUE()
+    val eARGB_YELLOW: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_YELLOW()
+    val eARGB_MAGENTA: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_MAGENTA()
+    val eARGB_CYAN: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_CYAN()
+    val eARGB_WHITE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_WHITE()
+    val eARGB_GREY: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_GREY()
+    val eARGB_DARKRED: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_DARKRED()
+    val eARGB_DARKGREEN: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_DARKGREEN()
+    val eARGB_DARKBLUE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_DARKBLUE()
 }
 

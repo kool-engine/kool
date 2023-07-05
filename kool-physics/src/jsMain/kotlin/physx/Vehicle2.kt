@@ -1394,7 +1394,11 @@ external interface PxVehiclePhysXRoadGeometryQueryParams {
     /**
      * WebIDL type: [PxQueryFilterData] (Value)
      */
-    var filterData: PxQueryFilterData
+    var defaultFilterData: PxQueryFilterData
+    /**
+     * WebIDL type: [PxQueryFilterData] (Nullable)
+     */
+    var filterDataEntries: PxQueryFilterData?
     /**
      * WebIDL type: [PxQueryFilterCallback]
      */

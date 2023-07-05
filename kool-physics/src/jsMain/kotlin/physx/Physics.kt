@@ -2109,17 +2109,29 @@ external interface PxAggregate : PxBase {
     fun addActor(actor: PxActor): Boolean
 
     /**
-     * @param actor        WebIDL type: [PxActor] (Ref)
-     * @param bvhStructure WebIDL type: [PxBVHStructure] (Const)
+     * @param actor WebIDL type: [PxActor] (Ref)
+     * @param bvh   WebIDL type: [PxBVH] (Const)
      * @return WebIDL type: boolean
      */
-    fun addActor(actor: PxActor, bvhStructure: PxBVHStructure): Boolean
+    fun addActor(actor: PxActor, bvh: PxBVH): Boolean
 
     /**
      * @param actor WebIDL type: [PxActor] (Ref)
      * @return WebIDL type: boolean
      */
     fun removeActor(actor: PxActor): Boolean
+
+    /**
+     * @param articulation WebIDL type: [PxArticulationReducedCoordinate] (Ref)
+     * @return WebIDL type: boolean
+     */
+    fun addArticulation(articulation: PxArticulationReducedCoordinate): Boolean
+
+    /**
+     * @param articulation WebIDL type: [PxArticulationReducedCoordinate] (Ref)
+     * @return WebIDL type: boolean
+     */
+    fun removeArticulation(articulation: PxArticulationReducedCoordinate): Boolean
 
     /**
      * @return WebIDL type: unsigned long
@@ -2130,6 +2142,11 @@ external interface PxAggregate : PxBase {
      * @return WebIDL type: unsigned long
      */
     fun getMaxNbActors(): Int
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun getMaxNbShapes(): Int
 
     /**
      * @return WebIDL type: [PxScene]
@@ -2149,6 +2166,8 @@ val PxAggregate.nbActors
     get() = getNbActors()
 val PxAggregate.maxNbActors
     get() = getMaxNbActors()
+val PxAggregate.maxNbShapes
+    get() = getMaxNbShapes()
 val PxAggregate.scene
     get() = getScene()
 val PxAggregate.selfCollision
@@ -2865,12 +2884,12 @@ external interface PxPhysics {
     fun getFoundation(): PxFoundation
 
     /**
-     * @param size                WebIDL type: unsigned long
+     * @param maxActor            WebIDL type: unsigned long
      * @param maxShape            WebIDL type: unsigned long
      * @param enableSelfCollision WebIDL type: boolean
      * @return WebIDL type: [PxAggregate]
      */
-    fun createAggregate(size: Int, maxShape: Int, enableSelfCollision: Boolean): PxAggregate
+    fun createAggregate(maxActor: Int, maxShape: Int, enableSelfCollision: Boolean): PxAggregate
 
     /**
      * @return WebIDL type: [PxTolerancesScale] (Const, Ref)
@@ -3244,11 +3263,11 @@ external interface PxScene : PxSceneSQSystem {
     fun addActor(actor: PxActor): Boolean
 
     /**
-     * @param actor        WebIDL type: [PxActor] (Ref)
-     * @param bvhStructure WebIDL type: [PxBVHStructure] (Const)
+     * @param actor WebIDL type: [PxActor] (Ref)
+     * @param bvh   WebIDL type: [PxBVH] (Const)
      * @return WebIDL type: boolean
      */
-    fun addActor(actor: PxActor, bvhStructure: PxBVHStructure): Boolean
+    fun addActor(actor: PxActor, bvh: PxBVH): Boolean
 
     /**
      * @param actor WebIDL type: [PxActor] (Ref)
@@ -3320,17 +3339,6 @@ external interface PxScene : PxSceneSQSystem {
     /**
      * @return WebIDL type: unsigned long
      */
-    fun getNbSoftBodies(): Int
-
-    /**
-     * @param type WebIDL type: [PxParticleSolverTypeEnum] (enum)
-     * @return WebIDL type: unsigned long
-     */
-    fun getNbParticleSystems(type: Int): Int
-
-    /**
-     * @return WebIDL type: unsigned long
-     */
     fun getNbArticulations(): Int
 
     /**
@@ -3351,21 +3359,9 @@ external interface PxScene : PxSceneSQSystem {
     fun setDominanceGroupPair(group1: Byte, group2: Byte, dominance: PxDominanceGroupPair)
 
     /**
-     * @param group1 WebIDL type: octet
-     * @param group2 WebIDL type: octet
-     * @return WebIDL type: [PxDominanceGroupPair] (Platforms=windows;linux, Value)
-     */
-    fun getDominanceGroupPair(group1: Byte, group2: Byte): PxDominanceGroupPair
-
-    /**
      * @return WebIDL type: [PxCpuDispatcher]
      */
     fun getCpuDispatcher(): PxCpuDispatcher
-
-    /**
-     * @return WebIDL type: [PxCudaContextManager] (Platforms=windows;linux)
-     */
-    fun getCudaContextManager(): PxCudaContextManager
 
     /**
      * @return WebIDL type: octet
@@ -3648,6 +3644,11 @@ external interface PxScene : PxSceneSQSystem {
     fun getSolverType(): Int
 
     /**
+     * @return WebIDL type: [PxRenderBuffer] (Const, Ref)
+     */
+    fun getRenderBuffer(): PxRenderBuffer
+
+    /**
      * @param param WebIDL type: [PxVisualizationParameterEnum] (enum)
      * @param value WebIDL type: float
      * @return WebIDL type: boolean
@@ -3834,8 +3835,6 @@ fun PxSceneFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxSc
 
 val PxScene.wakeCounterResetValue
     get() = getWakeCounterResetValue()
-val PxScene.nbSoftBodies
-    get() = getNbSoftBodies()
 val PxScene.nbArticulations
     get() = getNbArticulations()
 val PxScene.nbConstraints
@@ -3844,8 +3843,6 @@ val PxScene.nbAggregates
     get() = getNbAggregates()
 val PxScene.cpuDispatcher
     get() = getCpuDispatcher()
-val PxScene.cudaContextManager
-    get() = getCudaContextManager()
 val PxScene.filterShaderDataSize
     get() = getFilterShaderDataSize()
 val PxScene.filterShader
@@ -3858,6 +3855,8 @@ val PxScene.frictionType
     get() = getFrictionType()
 val PxScene.solverType
     get() = getSolverType()
+val PxScene.renderBuffer
+    get() = getRenderBuffer()
 val PxScene.broadPhaseType
     get() = getBroadPhaseType()
 val PxScene.nbBroadPhaseRegions
@@ -3986,10 +3985,6 @@ external interface PxSceneDesc {
      */
     var cpuDispatcher: PxCpuDispatcher
     /**
-     * WebIDL type: [PxCudaContextManager] (Platforms=windows;linux)
-     */
-    var cudaContextManager: PxCudaContextManager
-    /**
      * WebIDL type: VoidPtr
      */
     var userData: Any
@@ -4037,10 +4032,6 @@ external interface PxSceneDesc {
      * WebIDL type: [PxBounds3] (Value)
      */
     var sanityBounds: PxBounds3
-    /**
-     * WebIDL type: [PxgDynamicsMemoryConfig] (Platforms=windows;linux, Value)
-     */
-    var gpuDynamicsConfig: PxgDynamicsMemoryConfig
     /**
      * WebIDL type: unsigned long
      */
@@ -4470,9 +4461,11 @@ external interface SimpleQueryFilterCallback : PxQueryFilterCallback {
     /**
      * @param filterData WebIDL type: [PxFilterData] (Const, Ref)
      * @param hit        WebIDL type: [PxQueryHit] (Const, Ref)
+     * @param shape      WebIDL type: [PxShape] (Const)
+     * @param actor      WebIDL type: [PxRigidActor] (Const)
      * @return WebIDL type: unsigned long
      */
-    fun simplePostFilter(filterData: PxFilterData, hit: PxQueryHit): Int
+    fun simplePostFilter(filterData: PxFilterData, hit: PxQueryHit, shape: PxShape, actor: PxRigidActor): Int
 
 }
 
@@ -4495,9 +4488,11 @@ external interface PxQueryFilterCallbackImpl : SimpleQueryFilterCallback {
     /**
      * param filterData WebIDL type: [PxFilterData] (Const, Ref)
      * param hit        WebIDL type: [PxQueryHit] (Const, Ref)
+     * param shape      WebIDL type: [PxShape] (Const)
+     * param actor      WebIDL type: [PxRigidActor] (Const)
      * return WebIDL type: unsigned long
      */
-    var simplePostFilter: (filterData: Int, hit: Int) -> Int
+    var simplePostFilter: (filterData: Int, hit: Int, shape: Int, actor: Int) -> Int
 
 }
 
@@ -5106,11 +5101,6 @@ external interface PxShape : PxRefCounted {
     var userData: Any
 
     /**
-     * @return WebIDL type: [PxGeometryTypeEnum] (enum)
-     */
-    fun getGeometryType(): Int
-
-    /**
      * @param geometry WebIDL type: [PxGeometry] (Const, Ref)
      */
     fun setGeometry(geometry: PxGeometry)
@@ -5255,8 +5245,6 @@ external interface PxShape : PxRefCounted {
 
 fun PxShapeFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxShape = js("_module.wrapPointer(ptr, _module.PxShape)")
 
-val PxShape.geometryType
-    get() = getGeometryType()
 val PxShape.actor
     get() = getActor()
 val PxShape.nbMaterials
@@ -5415,7 +5403,6 @@ object PxActorTypeEnum {
     val ePBD_PARTICLESYSTEM: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxActorTypeEnum_ePBD_PARTICLESYSTEM()
     val eFLIP_PARTICLESYSTEM: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxActorTypeEnum_eFLIP_PARTICLESYSTEM()
     val eMPM_PARTICLESYSTEM: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxActorTypeEnum_eMPM_PARTICLESYSTEM()
-    val eCUSTOM_PARTICLESYSTEM: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxActorTypeEnum_eCUSTOM_PARTICLESYSTEM()
     val eHAIRSYSTEM: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxActorTypeEnum_eHAIRSYSTEM()
 }
 
@@ -5530,9 +5517,6 @@ object PxCombineModeEnum {
 
 object PxConstraintFlagEnum {
     val eBROKEN: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxConstraintFlagEnum_eBROKEN()
-    val ePROJECT_TO_ACTOR0: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxConstraintFlagEnum_ePROJECT_TO_ACTOR0()
-    val ePROJECT_TO_ACTOR1: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxConstraintFlagEnum_ePROJECT_TO_ACTOR1()
-    val ePROJECTION: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxConstraintFlagEnum_ePROJECTION()
     val eCOLLISION_ENABLED: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxConstraintFlagEnum_eCOLLISION_ENABLED()
     val eVISUALIZATION: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxConstraintFlagEnum_eVISUALIZATION()
     val eDRIVE_LIMITS_ARE_FORCES: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxConstraintFlagEnum_eDRIVE_LIMITS_ARE_FORCES()
@@ -5540,6 +5524,8 @@ object PxConstraintFlagEnum {
     val eDISABLE_PREPROCESSING: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxConstraintFlagEnum_eDISABLE_PREPROCESSING()
     val eENABLE_EXTENDED_LIMITS: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxConstraintFlagEnum_eENABLE_EXTENDED_LIMITS()
     val eGPU_COMPATIBLE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxConstraintFlagEnum_eGPU_COMPATIBLE()
+    val eALWAYS_UPDATE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxConstraintFlagEnum_eALWAYS_UPDATE()
+    val eDISABLE_CONSTRAINT: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxConstraintFlagEnum_eDISABLE_CONSTRAINT()
 }
 
 object PxContactPairHeaderFlagEnum {
@@ -5622,13 +5608,6 @@ object PxPairFlagEnum {
     val eNEXT_FREE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPairFlagEnum_eNEXT_FREE()
     val eCONTACT_DEFAULT: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPairFlagEnum_eCONTACT_DEFAULT()
     val eTRIGGER_DEFAULT: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPairFlagEnum_eTRIGGER_DEFAULT()
-}
-
-object PxParticleSolverTypeEnum {
-    val ePBD: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxParticleSolverTypeEnum_ePBD()
-    val eFLIP: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxParticleSolverTypeEnum_eFLIP()
-    val eMPM: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxParticleSolverTypeEnum_eMPM()
-    val eCUSTOM: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxParticleSolverTypeEnum_eCUSTOM()
 }
 
 object PxPruningStructureTypeEnum {

@@ -20,9 +20,9 @@ fun PxBoxGeometry.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
-external interface PxBVHStructure : PxBase
+external interface PxBVH : PxBase
 
-fun PxBVHStructureFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxBVHStructure = js("_module.wrapPointer(ptr, _module.PxBVHStructure)")
+fun PxBVHFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxBVH = js("_module.wrapPointer(ptr, _module.PxBVH)")
 
 external interface PxCapsuleGeometry : PxGeometry
 
@@ -86,11 +86,6 @@ external interface PxContactBuffer {
      * @return WebIDL type: boolean
      */
     fun contact(pt: PxContactPoint): Boolean
-
-    /**
-     * @return WebIDL type: [PxContactPoint] (Platforms=windows;linux;macos)
-     */
-    fun contact(): PxContactPoint
 
 }
 
@@ -274,183 +269,6 @@ fun PxConvexMeshGeometryFlags.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
-external interface PxCustomGeometry : PxGeometry {
-    /**
-     * @return WebIDL type: boolean
-     */
-    fun isValid(): Boolean
-
-}
-
-/**
- * @param callbacks WebIDL type: [SimpleCustomGeometryCallbacks] (Ref)
- */
-fun PxCustomGeometry(callbacks: SimpleCustomGeometryCallbacks, _module: dynamic = PhysXJsLoader.physXJs): PxCustomGeometry = js("new _module.PxCustomGeometry(callbacks)")
-
-fun PxCustomGeometryFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxCustomGeometry = js("_module.wrapPointer(ptr, _module.PxCustomGeometry)")
-
-fun PxCustomGeometry.destroy() {
-    PhysXJsLoader.destroy(this)
-}
-
-external interface SimpleCustomGeometryCallbacks {
-    /**
-     * Native object address.
-     */
-    val ptr: Int
-
-    /**
-     * WebIDL type: float
-     */
-    var persistentContactManifold_outBreakingThreshold: Float
-
-    /**
-     * @param geometry WebIDL type: [PxGeometry] (Const, Ref)
-     * @return WebIDL type: [PxBounds3]
-     */
-    fun getLocalBoundsImpl(geometry: PxGeometry): PxBounds3
-
-    /**
-     * @param geom0             WebIDL type: [PxGeometry] (Const, Ref)
-     * @param geom1             WebIDL type: [PxGeometry] (Const, Ref)
-     * @param pose0             WebIDL type: [PxTransform] (Const, Ref)
-     * @param pose1             WebIDL type: [PxTransform] (Const, Ref)
-     * @param contactDistance   WebIDL type: float
-     * @param meshContactMargin WebIDL type: float
-     * @param toleranceLength   WebIDL type: float
-     * @param contactBuffer     WebIDL type: [PxContactBuffer] (Ref)
-     * @return WebIDL type: boolean
-     */
-    fun generateContactsImpl(geom0: PxGeometry, geom1: PxGeometry, pose0: PxTransform, pose1: PxTransform, contactDistance: Float, meshContactMargin: Float, toleranceLength: Float, contactBuffer: PxContactBuffer): Boolean
-
-    /**
-     * @param origin   WebIDL type: [PxVec3] (Const, Ref)
-     * @param unitDir  WebIDL type: [PxVec3] (Const, Ref)
-     * @param geom     WebIDL type: [PxGeometry] (Const, Ref)
-     * @param pose     WebIDL type: [PxTransform] (Const, Ref)
-     * @param maxDist  WebIDL type: float
-     * @param hitFlags WebIDL type: [PxHitFlags] (Ref)
-     * @param maxHits  WebIDL type: unsigned long
-     * @param rayHits  WebIDL type: [PxGeomRaycastHit]
-     * @param stride   WebIDL type: unsigned long
-     * @return WebIDL type: unsigned long
-     */
-    fun raycastImpl(origin: PxVec3, unitDir: PxVec3, geom: PxGeometry, pose: PxTransform, maxDist: Float, hitFlags: PxHitFlags, maxHits: Int, rayHits: PxGeomRaycastHit, stride: Int): Int
-
-    /**
-     * @param geom0 WebIDL type: [PxGeometry] (Const, Ref)
-     * @param pose0 WebIDL type: [PxTransform] (Const, Ref)
-     * @param geom1 WebIDL type: [PxGeometry] (Const, Ref)
-     * @param pose1 WebIDL type: [PxTransform] (Const, Ref)
-     * @return WebIDL type: boolean
-     */
-    fun overlapImpl(geom0: PxGeometry, pose0: PxTransform, geom1: PxGeometry, pose1: PxTransform): Boolean
-
-    /**
-     * @param unitDir   WebIDL type: [PxVec3] (Const, Ref)
-     * @param maxDist   WebIDL type: float
-     * @param geom0     WebIDL type: [PxGeometry] (Const, Ref)
-     * @param pose0     WebIDL type: [PxTransform] (Const, Ref)
-     * @param geom1     WebIDL type: [PxGeometry] (Const, Ref)
-     * @param pose1     WebIDL type: [PxTransform] (Const, Ref)
-     * @param sweepHit  WebIDL type: [PxGeomSweepHit] (Ref)
-     * @param hitFlags  WebIDL type: [PxHitFlags] (Ref)
-     * @param inflation WebIDL type: float
-     * @return WebIDL type: boolean
-     */
-    fun sweepImpl(unitDir: PxVec3, maxDist: Float, geom0: PxGeometry, pose0: PxTransform, geom1: PxGeometry, pose1: PxTransform, sweepHit: PxGeomSweepHit, hitFlags: PxHitFlags, inflation: Float): Boolean
-
-    /**
-     * @param geometry       WebIDL type: [PxGeometry] (Const, Ref)
-     * @param massProperties WebIDL type: [PxMassProperties] (Ref)
-     */
-    fun computeMassPropertiesImpl(geometry: PxGeometry, massProperties: PxMassProperties)
-
-    /**
-     * @param geometry WebIDL type: [PxGeometry] (Const, Ref)
-     * @return WebIDL type: boolean
-     */
-    fun usePersistentContactManifoldImpl(geometry: PxGeometry): Boolean
-
-}
-
-fun SimpleCustomGeometryCallbacksFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): SimpleCustomGeometryCallbacks = js("_module.wrapPointer(ptr, _module.SimpleCustomGeometryCallbacks)")
-
-fun SimpleCustomGeometryCallbacks.destroy() {
-    PhysXJsLoader.destroy(this)
-}
-
-external interface SimpleCustomGeometryCallbacksImpl : SimpleCustomGeometryCallbacks {
-    /**
-     * param geometry WebIDL type: [PxGeometry] (Const, Ref)
-     * return WebIDL type: [PxBounds3]
-     */
-    var getLocalBoundsImpl: (geometry: Int) -> PxBounds3
-
-    /**
-     * param geom0             WebIDL type: [PxGeometry] (Const, Ref)
-     * param geom1             WebIDL type: [PxGeometry] (Const, Ref)
-     * param pose0             WebIDL type: [PxTransform] (Const, Ref)
-     * param pose1             WebIDL type: [PxTransform] (Const, Ref)
-     * param contactDistance   WebIDL type: float
-     * param meshContactMargin WebIDL type: float
-     * param toleranceLength   WebIDL type: float
-     * param contactBuffer     WebIDL type: [PxContactBuffer] (Ref)
-     * return WebIDL type: boolean
-     */
-    var generateContactsImpl: (geom0: Int, geom1: Int, pose0: Int, pose1: Int, contactDistance: Float, meshContactMargin: Float, toleranceLength: Float, contactBuffer: Int) -> Boolean
-
-    /**
-     * param origin   WebIDL type: [PxVec3] (Const, Ref)
-     * param unitDir  WebIDL type: [PxVec3] (Const, Ref)
-     * param geom     WebIDL type: [PxGeometry] (Const, Ref)
-     * param pose     WebIDL type: [PxTransform] (Const, Ref)
-     * param maxDist  WebIDL type: float
-     * param hitFlags WebIDL type: [PxHitFlags] (Ref)
-     * param maxHits  WebIDL type: unsigned long
-     * param rayHits  WebIDL type: [PxGeomRaycastHit]
-     * param stride   WebIDL type: unsigned long
-     * return WebIDL type: unsigned long
-     */
-    var raycastImpl: (origin: Int, unitDir: Int, geom: Int, pose: Int, maxDist: Float, hitFlags: Int, maxHits: Int, rayHits: Int, stride: Int) -> Int
-
-    /**
-     * param geom0 WebIDL type: [PxGeometry] (Const, Ref)
-     * param pose0 WebIDL type: [PxTransform] (Const, Ref)
-     * param geom1 WebIDL type: [PxGeometry] (Const, Ref)
-     * param pose1 WebIDL type: [PxTransform] (Const, Ref)
-     * return WebIDL type: boolean
-     */
-    var overlapImpl: (geom0: Int, pose0: Int, geom1: Int, pose1: Int) -> Boolean
-
-    /**
-     * param unitDir   WebIDL type: [PxVec3] (Const, Ref)
-     * param maxDist   WebIDL type: float
-     * param geom0     WebIDL type: [PxGeometry] (Const, Ref)
-     * param pose0     WebIDL type: [PxTransform] (Const, Ref)
-     * param geom1     WebIDL type: [PxGeometry] (Const, Ref)
-     * param pose1     WebIDL type: [PxTransform] (Const, Ref)
-     * param sweepHit  WebIDL type: [PxGeomSweepHit] (Ref)
-     * param hitFlags  WebIDL type: [PxHitFlags] (Ref)
-     * param inflation WebIDL type: float
-     * return WebIDL type: boolean
-     */
-    var sweepImpl: (unitDir: Int, maxDist: Float, geom0: Int, pose0: Int, geom1: Int, pose1: Int, sweepHit: Int, hitFlags: Int, inflation: Float) -> Boolean
-
-    /**
-     * param geometry       WebIDL type: [PxGeometry] (Const, Ref)
-     * param massProperties WebIDL type: [PxMassProperties] (Ref)
-     */
-    var computeMassPropertiesImpl: (geometry: Int, massProperties: Int) -> Unit
-
-    /**
-     * param geometry WebIDL type: [PxGeometry] (Const, Ref)
-     * return WebIDL type: boolean
-     */
-    var usePersistentContactManifoldImpl: (geometry: Int) -> Boolean
-
-}
-
 external interface PxGeometry {
     /**
      * Native object address.
@@ -627,19 +445,19 @@ external interface PxGeometryQuery {
     fun pointDistance(point: PxVec3, geom: PxGeometry, pose: PxTransform, closestPoint: PxVec3): Float
 
     /**
-     * @param geom WebIDL type: [PxGeometry] (Const, Ref)
-     * @param pose WebIDL type: [PxTransform] (Const, Ref)
-     * @return WebIDL type: [PxBounds3] (Value)
+     * @param bounds WebIDL type: [PxBounds3] (Ref)
+     * @param geom   WebIDL type: [PxGeometry] (Const, Ref)
+     * @param pose   WebIDL type: [PxTransform] (Const, Ref)
      */
-    fun getWorldBounds(geom: PxGeometry, pose: PxTransform): PxBounds3
+    fun computeGeomBounds(bounds: PxBounds3, geom: PxGeometry, pose: PxTransform)
 
     /**
+     * @param bounds    WebIDL type: [PxBounds3] (Ref)
      * @param geom      WebIDL type: [PxGeometry] (Const, Ref)
      * @param pose      WebIDL type: [PxTransform] (Const, Ref)
      * @param inflation WebIDL type: float
-     * @return WebIDL type: [PxBounds3] (Value)
      */
-    fun getWorldBounds(geom: PxGeometry, pose: PxTransform, inflation: Float): PxBounds3
+    fun computeGeomBounds(bounds: PxBounds3, geom: PxGeometry, pose: PxTransform, inflation: Float)
 
     /**
      * @param geom WebIDL type: [PxGeometry] (Const, Ref)
@@ -1303,6 +1121,7 @@ object PxGeometryTypeEnum {
     val eCONVEXMESH: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxGeometryTypeEnum_eCONVEXMESH()
     val eTRIANGLEMESH: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxGeometryTypeEnum_eTRIANGLEMESH()
     val eHEIGHTFIELD: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxGeometryTypeEnum_eHEIGHTFIELD()
+    val eCUSTOM: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxGeometryTypeEnum_eCUSTOM()
 }
 
 object PxHeightFieldFlagEnum {

@@ -120,39 +120,6 @@ fun PxConvexMeshDesc.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
-external interface PxCooking {
-    /**
-     * Native object address.
-     */
-    val ptr: Int
-
-    fun release()
-
-    /**
-     * @param desc              WebIDL type: [PxConvexMeshDesc] (Const, Ref)
-     * @param insertionCallback WebIDL type: [PxInsertionCallback] (Ref)
-     * @return WebIDL type: [PxConvexMesh]
-     */
-    fun createConvexMesh(desc: PxConvexMeshDesc, insertionCallback: PxInsertionCallback): PxConvexMesh
-
-    /**
-     * @param desc              WebIDL type: [PxTriangleMeshDesc] (Const, Ref)
-     * @param insertionCallback WebIDL type: [PxInsertionCallback] (Ref)
-     * @return WebIDL type: [PxTriangleMesh]
-     */
-    fun createTriangleMesh(desc: PxTriangleMeshDesc, insertionCallback: PxInsertionCallback): PxTriangleMesh
-
-    /**
-     * @param desc              WebIDL type: [PxHeightFieldDesc] (Const, Ref)
-     * @param insertionCallback WebIDL type: [PxInsertionCallback] (Ref)
-     * @return WebIDL type: [PxHeightField]
-     */
-    fun createHeightField(desc: PxHeightFieldDesc, insertionCallback: PxInsertionCallback): PxHeightField
-
-}
-
-fun PxCookingFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxCooking = js("_module.wrapPointer(ptr, _module.PxCooking)")
-
 external interface PxCookingParams {
     /**
      * Native object address.

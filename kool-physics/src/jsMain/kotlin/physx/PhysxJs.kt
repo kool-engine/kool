@@ -96,20 +96,6 @@ external interface PxTopLevelFunctions {
     fun CreatePvd(foundation: PxFoundation): PxPvd
 
     /**
-     * @param host                  WebIDL type: DOMString
-     * @param port                  WebIDL type: long
-     * @param timeoutInMilliseconds WebIDL type: unsigned long
-     * @return WebIDL type: [PxPvdTransport] (Platforms=windows;linux;macos)
-     */
-    fun DefaultPvdSocketTransportCreate(host: String, port: Int, timeoutInMilliseconds: Int): PxPvdTransport
-
-    /**
-     * @param foundation WebIDL type: [PxFoundation] (Ref)
-     * @return WebIDL type: [PxOmniPvd] (Platforms=windows;linux;macos)
-     */
-    fun CreateOmniPvd(foundation: PxFoundation): PxOmniPvd
-
-    /**
      * @param physics     WebIDL type: [PxPhysics] (Ref)
      * @param actor0      WebIDL type: [PxRigidActor] (Nullable)
      * @param localFrame0 WebIDL type: [PxTransform] (Ref)
@@ -188,14 +174,6 @@ external interface PxTopLevelFunctions {
      * @return WebIDL type: [PxHeightField]
      */
     fun CreateHeightField(desc: PxHeightFieldDesc): PxHeightField
-
-    /**
-     * @param version    WebIDL type: unsigned long
-     * @param foundation WebIDL type: [PxFoundation] (Ref)
-     * @param scale      WebIDL type: [PxCookingParams] (Const, Ref)
-     * @return WebIDL type: [PxCooking]
-     */
-    fun CreateCooking(version: Int, foundation: PxFoundation, scale: PxCookingParams): PxCooking
 
 }
 

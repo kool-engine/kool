@@ -7,7 +7,6 @@ buildscript {
     repositories {
         mavenCentral()
     }
-
     dependencies {
         classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:0.21.0")
     }
@@ -15,7 +14,7 @@ buildscript {
 
 allprojects {
     group = "de.fabmax.kool"
-    version = "0.12.0-SNAPSHOT"
+    version = "0.12.1-SNAPSHOT"
 
     repositories {
         mavenLocal()
