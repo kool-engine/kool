@@ -3,31 +3,36 @@ package de.fabmax.kool.editor.actions
 import de.fabmax.kool.editor.EditorState
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.model.SceneNodeModel
+import de.fabmax.kool.util.copy
 import de.fabmax.kool.util.launchOnMainThread
 
 class DeleteNodeAction(
-    private val removeNodeModel: SceneNodeModel
+    private val removeNodeModels: List<SceneNodeModel>
 ) : EditorAction {
 
+    constructor(removeNodeModel: SceneNodeModel): this(listOf(removeNodeModel))
+
     override fun doAction() {
-        if (EditorState.selectedNode.value == removeNodeModel) {
-            EditorState.selectedNode.set(null)
+        EditorState.selection.removeAll(removeNodeModels)
+        removeNodeModels.forEach {
+            it.scene.removeSceneNode(it)
         }
-        removeNodeModel.scene.removeSceneNode(removeNodeModel)
         KoolEditor.instance.ui.sceneBrowser.refreshSceneTree()
     }
 
     override fun undoAction() {
-        // fixme: this will not work in case removed node has children, because children will not be present in scene
+        // fixme: this will not work in case removed nodes have children, because children will not be present in scene
         //  anymore -> deepcopy child node models before removal and re-add them in correct order on undo
         launchOnMainThread {
-            removeNodeModel.scene.addSceneNode(removeNodeModel)
+            removeNodeModels.forEach {
+                it.scene.addSceneNode(it)
+            }
             KoolEditor.instance.ui.sceneBrowser.refreshSceneTree()
         }
     }
 }
 
-fun EditorState.deleteSelectedNode() {
-    val node = selectedNode.value as? SceneNodeModel ?: return
-    DeleteNodeAction(node).apply()
+fun EditorState.deleteSelectedNodes() {
+    val deleteNodes = selection.copy().filterIsInstance<SceneNodeModel>()
+    DeleteNodeAction(deleteNodes).apply()
 }

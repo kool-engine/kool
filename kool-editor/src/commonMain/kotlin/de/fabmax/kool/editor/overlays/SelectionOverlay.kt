@@ -7,7 +7,7 @@ import de.fabmax.kool.editor.components.ContentComponent
 import de.fabmax.kool.editor.model.EditorNodeModel
 import de.fabmax.kool.editor.ui.EditorUi
 import de.fabmax.kool.math.Vec2f
-import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.modules.ksl.lang.*
@@ -28,7 +28,7 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
     private val overlayMesh = Mesh(Attribute.POSITIONS, Attribute.TEXTURE_COORDS)
     private val outlineShader = SelectionOutlineShader(selectionPass.colorTexture)
 
-    private var prevSelection: EditorNodeModel? = null
+    private val prevSelection = mutableSetOf<EditorNodeModel>()
     private val meshSelection = mutableSetOf<Mesh>()
 
     var selectionColor by outlineShader::outlineColor
@@ -41,21 +41,21 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
 
         selectionColor = EditorUi.EDITOR_THEME_COLORS.primary
 
-        onUpdate {
+        onUpdate { evt ->
             if (selectionPass.isEnabled) {
                 val vp = editor.editorOverlay.mainRenderPass.viewport
                 val sceneWidth = (vp.width * 0.75f).roundToInt()
                 val sceneHeight = (vp.height * 0.75f).roundToInt()
                 if (sceneWidth != selectionPass.width || sceneHeight != selectionPass.height) {
-                    selectionPass.resize(sceneWidth, sceneHeight, it.ctx)
+                    selectionPass.resize(sceneWidth, sceneHeight, evt.ctx)
                 }
             }
 
-            val selectedNode = EditorState.selectedNode.value
-            if (selectedNode != prevSelection) {
-                prevSelection = selectedNode
+            if (prevSelection.size != EditorState.selection.size || EditorState.selection.any { it !in prevSelection }) {
+                prevSelection.clear()
+                prevSelection += EditorState.selection
                 meshSelection.clear()
-                selectedNode?.getComponent<ContentComponent>()?.contentNode?.selectChildMeshes()
+                prevSelection.forEach { it.getComponent<ContentComponent>()?.contentNode?.selectChildMeshes() }
 
                 launchDelayed(1) {
                     // delay disable by 1 frame, so that selectionPass clears its output
@@ -78,11 +78,15 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
         renderPassConfig {
             name = "SelectionPass"
             setDynamicSize()
-            //addColorTexture(TexFormat.RGBA)
             addColorTexture(TexFormat.R)
+            addColorTexture {
+                colorFormat = TexFormat.R
+                magFilter = FilterMethod.NEAREST
+                minFilter = FilterMethod.NEAREST
+            }
         }
     ) {
-        private val selectionPipelines = mutableMapOf<Long, Pipeline?>()
+        private val selectionPipelines = mutableMapOf<Long, ShaderAndPipeline?>()
 
         init {
             camera = editor.editorOverlay.camera
@@ -95,21 +99,20 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
             onAfterCollectDrawCommands += { ctx ->
                 // replace regular object shaders by selection shader
                 for (i in drawQueue.commands.indices) {
-                    setupDrawCommand(drawQueue.commands[i], ctx)
+                    setupDrawCommand(i, drawQueue.commands[i], ctx)
                 }
             }
         }
 
-        fun disposePipelines(ctx: KoolContext) {
-            selectionPipelines.values.forEach { it?.let { ctx.disposePipeline(it) } }
-            selectionPipelines.clear()
+        private fun setupDrawCommand(i: Int, cmd: DrawCommand, ctx: KoolContext) {
+            cmd.pipeline = null
+            getPipeline(cmd.mesh, ctx)?.let { (shader, pipeline) ->
+                shader.color = selectionColors[i % selectionColors.size]
+                cmd.pipeline = pipeline
+            }
         }
 
-        private fun setupDrawCommand(cmd: DrawCommand, ctx: KoolContext) {
-            cmd.pipeline = getPipeline(cmd.mesh, ctx)
-        }
-
-        private fun getPipeline(mesh: Mesh, ctx: KoolContext): Pipeline? {
+        private fun getPipeline(mesh: Mesh, ctx: KoolContext): ShaderAndPipeline? {
             if (!mesh.geometry.hasAttribute(Attribute.POSITIONS)) {
                 return null
             }
@@ -123,21 +126,29 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
                         }
                         morphAttributes += mesh.geometry.getMorphAttributes()
                     }
-                    color { constColor(Color.WHITE) }
+                    color { uniformColor(Color.WHITE) }
                 }
-                shader.createPipeline(mesh, ctx)
+                ShaderAndPipeline(shader, shader.createPipeline(mesh, ctx))
             }
+        }
+
+        fun disposePipelines(ctx: KoolContext) {
+            selectionPipelines.values.forEach { it?.let { ctx.disposePipeline(it.pipeline) } }
+            selectionPipelines.clear()
         }
 
         override fun dispose(ctx: KoolContext) {
             super.dispose(ctx)
-            selectionPipelines.values.filterNotNull().forEach { ctx.disposePipeline(it) }
+            disposePipelines(ctx)
         }
     }
 
     companion object {
         private const val defaultMaxNumberOfJoints = 16
+        private val selectionColors = (1..255).map { Vec4f(it/255f, 0f, 0f, 1f) }
     }
+
+    private data class ShaderAndPipeline(val shader: KslUnlitShader, val pipeline: Pipeline)
 
     private class SelectionOutlineShader(selectionMask: Texture2d?) : KslShader(Model(), pipelineCfg) {
         var outlineColor by uniform4f("uOutlineColor", Color.WHITE)
@@ -156,27 +167,31 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
                         val mask = texture2d("tSelectionMask")
                         val texelSz = float2Var(Vec2f(1f, 1f).const / textureSize2d(mask).toFloat2())
 
-                        val avgMask = float3Var(Vec3f.ZERO.const)
-                        val maxMask = float3Var(Vec3f.ZERO.const)
-                        samplePattern.forEach {
-                            val maskVal = float3Var(sampleTexture(mask, uv.output + it.const * texelSz).rgb)
-                            avgMask += maskVal
-                            maxMask set max(maxMask, maskVal)
-                        }
-                        // needed in case maxMask should be used as outline color - would allow distinct outline colors
-                        // per selected object
-                        //maxSamples.forEach {
-                        //    maxMask set max(maxMask, float3Var(sampleTexture(mask, uv.output + it.const * texelSz).rgb))
-                        //}
+                        val minMask = float1Var(2f.const)
+                        val maxMask = float1Var((-1f).const)
+                        val minMaskCount = float1Var(0f.const)
+                        val maxMaskCount = float1Var(0f.const)
 
-                        avgMask set avgMask / samplePattern.size.toFloat().const
-                        val dotMax = float1Var(dot(maxMask, maxMask))
-                        val dif = float1Var(abs(dot(avgMask, avgMask) - dotMax) / dotMax)
-                        `if`((dotMax gt 0.1f.const) and (dif gt 0.05f.const)) {
-                            val a = smoothStep(0f.const, 0.25f.const, dif) * (1f.const - smoothStep(0.75f.const, 1f.const, dif))
-                            val outlineColor = float4Var(uniformFloat4("uOutlineColor"))
-                            outlineColor.a *= a
-                            colorOutput(outlineColor)
+                        samplePattern.forEach {
+                            val maskVal = float1Var(sampleTexture(mask, uv.output + it.const * texelSz).r)
+//                            minMask set min(minMask, maskVal)
+//                            maxMask set max(maxMask, maskVal)
+                            `if`(maskVal lt minMask) {
+                                minMask set maskVal
+                                minMaskCount set 0f.const
+                            }
+                            `if`(maskVal gt maxMask) {
+                                maxMask set maskVal
+                                maxMaskCount set 0f.const
+                            }
+                            minMaskCount += (maskVal eq minMask).toFloat1()
+                            maxMaskCount += (maskVal eq maxMask).toFloat1()
+                        }
+
+                        `if`(minMask ne maxMask) {
+                            val color = float4Var(uniformFloat4("uOutlineColor"))
+                            color.a set clamp(min(minMaskCount, maxMaskCount) / max(minMaskCount, maxMaskCount) * 4f.const, 0f.const, 1f.const)
+                            colorOutput(color)
                         }.`else` {
                             discard()
                         }
@@ -185,27 +200,18 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
             }
 
             companion object {
-                val cfg = PipelineConfig()
-
-                val rE = 1.5f
-                val rC = 1.25f
+                private const val rE = 1f
+                private const val rC = 1f
                 val samplePattern = listOf(
+                    //Vec2f(0f, 0f),
                     Vec2f(-rC, -rC),
-                    Vec2f(0f, -rE),
                     Vec2f(rC, -rC),
-                    Vec2f(-rE, 0f),
-                    Vec2f(0f, 0f),
-                    Vec2f(rE, 0f),
                     Vec2f(-rC, rC),
-                    Vec2f(0f, rE),
-                    Vec2f(rC, rC)
-                )
-
-                val maxSamples = listOf(
-                    Vec2f(-2f, -2f),
-                    Vec2f(-2f, 2f),
-                    Vec2f(2f, -2f),
-                    Vec2f(2f, 2f)
+                    Vec2f(rC, rC),
+                    Vec2f(0f, -rE),
+                    Vec2f(-rE, 0f),
+                    Vec2f(rE, 0f),
+                    Vec2f(0f, rE)
                 )
             }
         }

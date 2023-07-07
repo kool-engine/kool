@@ -22,8 +22,8 @@ class AddNodeAction(
     }
 
     override fun undoAction() {
-        if (EditorState.selectedNode.value == addNodeModel) {
-            EditorState.selectedNode.set(null)
+        if (addNodeModel in EditorState.selection) {
+            EditorState.selection -= addNodeModel
         }
         addNodeModel.scene.removeSceneNode(addNodeModel)
         KoolEditor.instance.ui.sceneBrowser.refreshSceneTree()

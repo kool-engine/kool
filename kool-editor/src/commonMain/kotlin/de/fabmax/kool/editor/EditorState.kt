@@ -4,8 +4,9 @@ import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.editor.model.EditorNodeModel
 import de.fabmax.kool.editor.model.EditorProject
 import de.fabmax.kool.editor.model.SceneModel
+import de.fabmax.kool.input.KeyboardInput
 import de.fabmax.kool.math.Mat4d
-import de.fabmax.kool.modules.ui2.MutableStateValue
+import de.fabmax.kool.modules.ui2.mutableStateListOf
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.logD
@@ -18,13 +19,34 @@ import java.io.File
 object EditorState {
 
     val projectModel: EditorProject = loadProjectModel()
-    val loadedApp = MutableStateValue<LoadedApp?>(null)
+    val loadedApp = mutableStateOf<LoadedApp?>(null)
 
-    val selectedScene = MutableStateValue<SceneModel?>(null)
-    val selectedNode = mutableStateOf<EditorNodeModel?>(null)
+    val activeScene = mutableStateOf<SceneModel?>(null)
+    val selection = mutableStateListOf<EditorNodeModel>()
 
-    private val uniqueNameIds = mutableMapOf<String, Int>()
     private val prettyJson = Json { prettyPrint = true }
+
+    fun select(nodeModel: EditorNodeModel?, expandIfShiftIsDown: Boolean = true, removeIfSelected: Boolean = true) {
+        val nodeModels = mutableListOf<EditorNodeModel>()
+        nodeModel?.let { nodeModels += it }
+        select(nodeModels, expandIfShiftIsDown, removeIfSelected)
+    }
+
+    fun select(nodeModels: List<EditorNodeModel>, expandIfShiftIsDown: Boolean = true, removeIfSelected: Boolean = false) {
+        if (!expandIfShiftIsDown || !KeyboardInput.isShiftDown) {
+            selection.clear()
+        }
+        val addToSelection = nodeModels.toMutableSet()
+        if (removeIfSelected) {
+            val alreadySelected = nodeModels.toMutableSet()
+            alreadySelected.retainAll(selection)
+            selection -= alreadySelected
+            addToSelection -= alreadySelected
+        }
+
+        addToSelection -= selection
+        selection += addToSelection
+    }
 
     private fun loadProjectModel(): EditorProject {
         val projFile = File(KoolEditor.instance.paths.projectFile)

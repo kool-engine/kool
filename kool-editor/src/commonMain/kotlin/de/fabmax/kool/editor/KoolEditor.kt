@@ -5,7 +5,7 @@ import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.LoadableFile
 import de.fabmax.kool.editor.actions.EditorActions
-import de.fabmax.kool.editor.actions.deleteSelectedNode
+import de.fabmax.kool.editor.actions.deleteSelectedNodes
 import de.fabmax.kool.editor.api.AppAssets
 import de.fabmax.kool.editor.api.AppMode
 import de.fabmax.kool.editor.api.AppState
@@ -117,7 +117,7 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
             name = "Delete selected object",
             keyCode = KeyboardInput.KEY_DEL
         ) {
-            EditorState.deleteSelectedNode()
+            EditorState.deleteSelectedNodes()
         }
 
         InputStack.pushTop(editorInputContext)
@@ -128,7 +128,7 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
             val rayTest = RayTest()
 
             override fun handlePointer(pointerState: PointerState, ctx: KoolContext) {
-                val sceneModel = EditorState.selectedScene.value ?: return
+                val sceneModel = EditorState.activeScene.value ?: return
                 val appScene = sceneModel.drawNode
                 val ptr = pointerState.primaryPointer
                 if (ptr.isLeftButtonClicked) {
@@ -145,7 +145,7 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
                             }
                             it = it.parent
                         }
-                        EditorState.selectedNode.set(selectedNodeModel)
+                        EditorState.select(selectedNodeModel)
                     }
                 }
             }
@@ -189,11 +189,11 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
         }
 
         EditorState.loadedApp.set(loadedApp)
-        if (EditorState.selectedScene.value == null) {
-            EditorState.selectedScene.set(EditorState.projectModel.getCreatedScenes().getOrNull(0))
+        if (EditorState.activeScene.value == null) {
+            EditorState.activeScene.set(EditorState.projectModel.getCreatedScenes().getOrNull(0))
         }
-        if (EditorState.selectedNode.value == null) {
-            EditorState.selectedNode.set(EditorState.selectedScene.value)
+        if (EditorState.selection.isEmpty()) {
+            EditorState.activeScene.value?.let { EditorState.selection.add(it) }
         }
 
         if (AppState.appMode == AppMode.EDIT) {

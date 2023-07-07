@@ -31,12 +31,14 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", ui) 
     init {
         transformProperties.editHandlers += object : ValueEditHandler<Mat4d> {
             override fun onEdit(value: Mat4d) {
-                val selectedNd = EditorState.selectedNode.value as? SceneNodeModel
+                // todo: support transforming multiple objects at once
+                val selectedNd = EditorState.selection.firstOrNull() as? SceneNodeModel
                 selectedNd?.drawNode?.transform?.set(value)
             }
 
             override fun onEditEnd(startValue: Mat4d, endValue: Mat4d) {
-                val selectedNd = EditorState.selectedNode.value as? SceneNodeModel
+                // todo: support transforming multiple objects at once
+                val selectedNd = EditorState.selection.firstOrNull() as? SceneNodeModel
                 if (selectedNd != null) {
                     applyTransformAction(selectedNd, startValue, endValue)
                 }
@@ -49,7 +51,8 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", ui) 
         // clear gizmo transform object, will be set below if transform editor is available
         transformGizmo.setTransformObject(null)
 
-        val selectedObject = EditorState.selectedNode.use()
+        val selObjs = EditorState.selection.use()
+        val selectedObject = if (selObjs.size == 1) selObjs[0] else null
         val title = when (selectedObject) {
             is SceneModel -> "Scene Properties"
             is SceneNodeModel -> "Scene Object Properties"
@@ -63,7 +66,7 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", ui) 
         }
 
         surface.onEachFrame {
-            val selectedNd = EditorState.selectedNode.value as? SceneNodeModel
+            val selectedNd = EditorState.selection.firstOrNull() as? SceneNodeModel
             if (selectedNd != null) {
                 selectedNd.drawNode.transform.getPosition(tmpNodePos)
                 transformProperties.setPosition(tmpNodePos)
@@ -87,7 +90,9 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", ui) 
                     .padding(horizontal = sizes.gap)
 
                 if (selectedObject == null) {
-                    Text("Nothing selected") {
+                    val n = EditorState.selection.size
+                    val txt = if (n == 0) "Nothing selected" else "$n objects selected"
+                    Text(txt) {
                         modifier
                             .width(Grow.Std)
                             .alignY(AlignmentY.Center)
