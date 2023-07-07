@@ -26,6 +26,13 @@ class SceneNodeModel(nodeData: SceneNodeData, val parent: EditorNodeModel, val s
         nameState.onChange { created?.name = it }
     }
 
+    override suspend fun createComponents() {
+        super.createComponents()
+        if (created == null) {
+            created = Node(name)
+        }
+    }
+
     override fun addChild(child: SceneNodeModel) {
         nodeData.childNodeIds += child.nodeId
         drawNode.addNode(child.drawNode)

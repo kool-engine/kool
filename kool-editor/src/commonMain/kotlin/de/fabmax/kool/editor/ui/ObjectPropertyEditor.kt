@@ -1,10 +1,12 @@
 package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.editor.EditorState
+import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.actions.AddComponentAction
 import de.fabmax.kool.editor.actions.RenameNodeAction
 import de.fabmax.kool.editor.actions.SetTransformAction
 import de.fabmax.kool.editor.components.*
+import de.fabmax.kool.editor.data.ModelComponentData
 import de.fabmax.kool.editor.data.ScriptComponentData
 import de.fabmax.kool.editor.model.EditorNodeModel
 import de.fabmax.kool.editor.model.SceneModel
@@ -186,7 +188,7 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", ui) 
     }
 
     private fun UiScope.addComponentSelector(nodeModel: EditorNodeModel) {
-        val popup = remember { ContextPopupMenu<EditorNodeModel>(false) }
+        val popup = remember { ContextPopupMenu<EditorNodeModel>() }
 
         Button("Add component") {
             defaultButtonStyle()
@@ -206,26 +208,7 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", ui) 
     }
 
     private fun makeAddComponentMenu(node: EditorNodeModel): SubMenuItem<EditorNodeModel> = SubMenuItem {
-        if (node !is SceneModel && node.getComponent<MeshComponent>() == null && node.getComponent<ModelComponent>() == null) {
-            item("Mesh") {
-                AddComponentAction(it, MeshComponent()).apply()
-            }
-        }
-        if (node !is SceneModel && node.getComponent<MaterialComponent>() == null) {
-            item("Material") {
-                AddComponentAction(it, MaterialComponent()).apply()
-            }
-        }
-        val scriptClasses = EditorState.loadedApp.value?.scriptClasses?.values ?: emptyList()
-        if (scriptClasses.isNotEmpty()) {
-            subMenu("Scripts") {
-                scriptClasses.forEach { script ->
-                    item(script.prettyName) {
-                        AddComponentAction(node, ScriptComponent(ScriptComponentData(script.qualifiedName))).apply()
-                    }
-                }
-            }
-        }
+        addComponentOptions.filter { it.accept(node) }.forEach { it.addMenuItems(this) }
     }
 
     companion object {
@@ -236,5 +219,84 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", ui) 
                 newTransform = newTransform
             ).apply()
         }
+
+        private val addComponentOptions = listOf(
+            ComponentAdder.AddMeshComponent,
+            ComponentAdder.AddModelComponent,
+            ComponentAdder.AddMaterialComponent,
+            ComponentAdder.AddLightComponent,
+            ComponentAdder.AddShadowMapComponent,
+            ComponentAdder.AddScriptComponent,
+        )
+    }
+
+    private sealed class ComponentAdder<T: EditorModelComponent>(val name: String) {
+        abstract fun accept(nodeModel: EditorNodeModel): Boolean
+
+        open fun addMenuItems(parentMenu: SubMenuItem<EditorNodeModel>) = parentMenu.item(name) { addComponent(it) }
+        open fun createComponent(): T? = null
+
+        fun addComponent(target: EditorNodeModel) {
+            createComponent()?.let { AddComponentAction(target, it).apply() }
+        }
+
+        object AddLightComponent : ComponentAdder<DiscreteLightComponent>("Light") {
+            override fun createComponent(): DiscreteLightComponent = DiscreteLightComponent()
+            override fun accept(nodeModel: EditorNodeModel) =
+                nodeModel is SceneNodeModel && !nodeModel.hasComponent<ContentComponent>()
+        }
+
+        object AddShadowMapComponent : ComponentAdder<ShadowMapComponent>("Shadow") {
+            override fun createComponent(): ShadowMapComponent = ShadowMapComponent()
+            override fun accept(nodeModel: EditorNodeModel) = nodeModel.hasComponent<DiscreteLightComponent>()
+        }
+
+        object AddMeshComponent : ComponentAdder<MeshComponent>("Mesh") {
+            override fun createComponent(): MeshComponent = MeshComponent()
+            override fun accept(nodeModel: EditorNodeModel) =
+                nodeModel is SceneNodeModel && !nodeModel.hasComponent<ContentComponent>()
+        }
+
+        object AddModelComponent : ComponentAdder<ModelComponent>("Model") {
+            override fun accept(nodeModel: EditorNodeModel) =
+                nodeModel is SceneNodeModel && !nodeModel.hasComponent<ContentComponent>()
+
+            override fun addMenuItems(parentMenu: SubMenuItem<EditorNodeModel>) {
+                val models = KoolEditor.instance.availableAssets.modelAssets
+                if (models.isNotEmpty()) {
+                    parentMenu.subMenu(name) {
+                        models.forEach { model ->
+                            item(model.name) {
+                                AddComponentAction(it, ModelComponent(ModelComponentData(model.path))).apply()
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        object AddMaterialComponent : ComponentAdder<MaterialComponent>("Material") {
+            override fun createComponent(): MaterialComponent = MaterialComponent()
+            override fun accept(nodeModel: EditorNodeModel) = !nodeModel.hasComponent<MaterialComponent>()
+                    && (nodeModel.hasComponent<MeshComponent>() || nodeModel.hasComponent<ModelComponent>())
+        }
+
+        object AddScriptComponent : ComponentAdder<ScriptComponent>("Script") {
+            override fun accept(nodeModel: EditorNodeModel) = true
+
+            override fun addMenuItems(parentMenu: SubMenuItem<EditorNodeModel>) {
+                val scriptClasses = EditorState.loadedApp.value?.scriptClasses?.values ?: emptyList()
+                if (scriptClasses.isNotEmpty()) {
+                    parentMenu.subMenu(name) {
+                        scriptClasses.forEach { script ->
+                            item(script.prettyName) {
+                                AddComponentAction(it, ScriptComponent(ScriptComponentData(script.qualifiedName))).apply()
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
     }
 }

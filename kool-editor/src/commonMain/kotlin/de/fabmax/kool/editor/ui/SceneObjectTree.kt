@@ -71,8 +71,8 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         val parentScene = EditorState.selectedScene.value ?: return
         val id = EditorState.projectModel.nextId()
         val nodeData = SceneNodeData("Empty-$id", id)
-        val mesh = SceneNodeModel(nodeData, parent.nodeModel, parentScene)
-        AddNodeAction(mesh).apply()
+        val empty = SceneNodeModel(nodeData, parent.nodeModel, parentScene)
+        AddNodeAction(empty).apply()
     }
 
     private fun deleteNode(node: SceneObjectItem) {

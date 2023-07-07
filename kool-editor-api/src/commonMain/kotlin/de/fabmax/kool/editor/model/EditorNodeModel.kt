@@ -37,6 +37,7 @@ abstract class EditorNodeModel(val nodeData: SceneNodeData) {
                 is ModelComponentData -> components += ModelComponent(data)
                 is SceneBackgroundComponentData -> components += SceneBackgroundComponent(data)
                 is ScriptComponentData -> components += ScriptComponent(data)
+                is ShadowMapComponentData -> components += ShadowMapComponent(data)
                 is TransformComponentData -> components += TransformComponent(data)
             }
         }
@@ -85,6 +86,8 @@ abstract class EditorNodeModel(val nodeData: SceneNodeData) {
         }
         return c as T
     }
+
+    inline fun <reified T: Any> hasComponent(): Boolean = getComponent<T>() != null
 
     inline fun <reified T: Any> getComponent(): T? {
         return components.filterIsInstance<T>().firstOrNull()
