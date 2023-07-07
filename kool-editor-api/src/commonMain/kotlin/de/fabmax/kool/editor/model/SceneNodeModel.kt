@@ -1,12 +1,10 @@
 package de.fabmax.kool.editor.model
 
 import de.fabmax.kool.KoolSystem
-import de.fabmax.kool.editor.components.ModelComponent
 import de.fabmax.kool.editor.components.TransformComponent
 import de.fabmax.kool.editor.data.SceneNodeData
 import de.fabmax.kool.editor.data.TransformComponentData
 import de.fabmax.kool.editor.data.TransformData
-import de.fabmax.kool.scene.Model
 import de.fabmax.kool.scene.Node
 
 class SceneNodeModel(nodeData: SceneNodeData, val parent: EditorNodeModel, val scene: SceneModel) : EditorNodeModel(nodeData) {
@@ -19,8 +17,6 @@ class SceneNodeModel(nodeData: SceneNodeData, val parent: EditorNodeModel, val s
         get() = created != null
 
     val transform = getOrPutComponent { TransformComponent(TransformComponentData(TransformData.IDENTITY)) }
-
-    private val modelComponentModels = mutableMapOf<ModelComponent, Model>()
 
     init {
         nameState.onChange { created?.name = it }

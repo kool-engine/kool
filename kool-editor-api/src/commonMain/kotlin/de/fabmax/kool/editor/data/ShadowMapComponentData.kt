@@ -3,21 +3,24 @@ package de.fabmax.kool.editor.data
 import kotlinx.serialization.Serializable
 
 @Serializable
-class ShadowMapComponentData(var shadowMap: ShadowMapData) : ComponentData
+class ShadowMapComponentData(
+    var shadowMap: ShadowMapTypeData,
+    var clipNear: Float = 0.5f,
+    var clipFar: Float = 200f
+) : ComponentData
 
 @Serializable
-sealed class ShadowMapData {
+sealed class ShadowMapTypeData {
     @Serializable
-    class Single(val mapInfo: ShadowMapInfo) : ShadowMapData()
+    class Single(val mapInfo: ShadowMapInfo) : ShadowMapTypeData()
 
     @Serializable
-    class Cascaded(val mapInfos: List<ShadowMapInfo>) : ShadowMapData()
+    class Cascaded(val mapInfos: List<ShadowMapInfo>) : ShadowMapTypeData()
 }
 
 @Serializable
 data class ShadowMapInfo(
-    val mapWidth: Int,
-    val mapHeight: Int,
-    val rangeNear: Float,
-    val rangeFar: Float
+    val mapSize: Int = 2048,
+    val rangeNear: Float = 0f,
+    val rangeFar: Float = 1f
 )

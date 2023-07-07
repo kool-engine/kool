@@ -11,9 +11,7 @@ import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 
-class MaterialEditor(var materialComponent: MaterialComponent) : Composable {
-
-    private var undoMaterial: MaterialShaderData? = null
+class MaterialEditor(override var component: MaterialComponent) : ComponentEditor<MaterialComponent> {
 
     override fun UiScope.compose() = collapsapsablePanel(
         title = "Material",
@@ -32,12 +30,12 @@ class MaterialEditor(var materialComponent: MaterialComponent) : Composable {
                     .items(items)
                     .selectedIndex(selectedIndex)
                     .onItemSelected {
-                        SetMaterialAction(materialComponent, items[it].getMaterialModel()).apply()
+                        SetMaterialAction(component, items[it].getMaterialModel()).apply()
                     }
             }
         }
     ) {
-        materialComponent.materialState.use()?.let { selectedMaterial ->
+        component.materialState.use()?.let { selectedMaterial ->
             Column(width = Grow.Std) {
                 modifier
                     .padding(horizontal = sizes.gap)
@@ -342,7 +340,7 @@ class MaterialEditor(var materialComponent: MaterialComponent) : Composable {
         )
         var index = 0
         EditorState.projectModel.materials.use().forEachIndexed { i, material ->
-            if (materialComponent.isHoldingMaterial(material)) {
+            if (component.isHoldingMaterial(material)) {
                 index = i + 2
             }
             items += MaterialItem(material.name, material)

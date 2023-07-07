@@ -129,11 +129,12 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", ui) 
 
             for (component in selectedObject.components.use()) {
                 when (component) {
-                    is DiscreteLightComponent -> discreteLightComponent(component)
-                    is MaterialComponent -> materialComponent(component)
-                    is MeshComponent -> meshComponent(component)
-                    is SceneBackgroundComponent -> sceneBackgroundComponent(component)
-                    is ScriptComponent -> scriptComponent(component)
+                    is DiscreteLightComponent -> componentEditor(component) { LightEditor(component) }
+                    is MaterialComponent -> componentEditor(component) { MaterialEditor(component) }
+                    is MeshComponent -> meshTypeProperties(component)
+                    is SceneBackgroundComponent -> componentEditor(component) { SceneBackgroundEditor(component) }
+                    is ScriptComponent -> componentEditor(component) { ScriptEditor(component) }
+                    is ShadowMapComponent -> componentEditor(component) { ShadowMapEditor(component) }
                     is TransformComponent -> transformComponent(selectedObject)
                 }
             }
@@ -142,41 +143,10 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", ui) 
         }
     }
 
-    private fun UiScope.discreteLightComponent(lightComponent: DiscreteLightComponent) {
-        val editor = remember { LightEditor(lightComponent) }
-        editor.lightComponent = lightComponent
+    private inline fun <T: EditorModelComponent> UiScope.componentEditor(component: T, editorProvider: () -> ComponentEditor<T>) {
+        val editor = remember(editorProvider)
+        editor.component = component
         editor()
-    }
-
-    private fun UiScope.materialComponent(materialComponent: MaterialComponent) {
-        val editor = remember { MaterialEditor(materialComponent) }
-        editor.materialComponent = materialComponent
-        editor()
-    }
-
-    private fun UiScope.meshComponent(meshComponent: MeshComponent) {
-        meshTypeProperties(meshComponent)
-    }
-
-    private fun UiScope.sceneBackgroundComponent(backgroundComponent: SceneBackgroundComponent) {
-        val editor = remember { SceneBackgroundEditor(backgroundComponent) }
-        editor.backgroundComponent = backgroundComponent
-        editor()
-    }
-
-    private fun UiScope.scriptComponent(scriptComponent: ScriptComponent) {
-        val title = remember {
-            val simpleName = scriptComponent.scriptClassNameState.value
-                .replaceBeforeLast('.', "")
-                .removePrefix(".")
-            ScriptEditor.camelCaseToWords(simpleName)
-        }
-        collapsapsablePanel(
-            title = title
-        ) {
-            val scriptEditor = remember { ScriptEditor(scriptComponent) }
-            scriptEditor()
-        }
     }
 
     private fun UiScope.transformComponent(nodeModel: EditorNodeModel) {

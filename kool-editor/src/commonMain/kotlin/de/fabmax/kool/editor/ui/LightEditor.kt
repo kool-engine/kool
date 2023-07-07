@@ -7,14 +7,14 @@ import de.fabmax.kool.editor.data.LightTypeData
 import de.fabmax.kool.modules.ui2.*
 import kotlin.reflect.KClass
 
-class LightEditor(var lightComponent: DiscreteLightComponent) : Composable {
+class LightEditor(override var component: DiscreteLightComponent) : ComponentEditor<DiscreteLightComponent> {
 
-    private val currentLight: LightTypeData get() = lightComponent.lightState.value
+    private val currentLight: LightTypeData get() = component.lightState.value
     private val lightTypeIndex: Int
         get() = lightTypes.indexOfFirst { it.lightType.isInstance(currentLight) }
 
     override fun UiScope.compose() = collapsapsablePanel(title = "Light") {
-        lightComponent.lightState.use().let { light ->
+        component.lightState.use().let { light ->
             Column(width = Grow.Std) {
                 modifier
                     .padding(horizontal = sizes.gap)
@@ -29,7 +29,7 @@ class LightEditor(var lightComponent: DiscreteLightComponent) : Composable {
                         LightTypeData.Spot::class -> LightTypeData.Spot(color)
                         else -> LightTypeData.Point(color)
                     }
-                    SetDiscreteLightAction(lightComponent, newLight).apply()
+                    SetDiscreteLightAction(component, newLight).apply()
                 }
 
                 menuDivider()
@@ -49,7 +49,7 @@ class LightEditor(var lightComponent: DiscreteLightComponent) : Composable {
                 is LightTypeData.Point -> light.copy(color = ColorData(it))
                 is LightTypeData.Spot -> light.copy(color = ColorData(it))
             }
-            SetDiscreteLightAction(lightComponent, chgLight).apply()
+            SetDiscreteLightAction(component, chgLight).apply()
         }
 
         val light = currentLight
@@ -60,16 +60,16 @@ class LightEditor(var lightComponent: DiscreteLightComponent) : Composable {
                 is LightTypeData.Point -> light.copy(intensity = it.toFloat())
                 is LightTypeData.Spot -> light.copy(intensity = it.toFloat())
             }
-            SetDiscreteLightAction(lightComponent, chgLight).apply()
+            SetDiscreteLightAction(component, chgLight).apply()
         }
     }
 
     private fun UiScope.spotSettings(spot: LightTypeData.Spot) {
         labeledDoubleTextField("Angle:", spot.spotAngle.toDouble(), minValue = 0.0, maxValue = 120.0, dragChangeSpeed = 0.5) {
-            SetDiscreteLightAction(lightComponent, spot.copy(spotAngle = it.toFloat())).apply()
+            SetDiscreteLightAction(component, spot.copy(spotAngle = it.toFloat())).apply()
         }
         labeledDoubleTextField("Hardness:", spot.coreRatio.toDouble(), minValue = 0.0, maxValue = 1.0, dragChangeSpeed = 0.01) {
-            SetDiscreteLightAction(lightComponent, spot.copy(coreRatio = it.toFloat())).apply()
+            SetDiscreteLightAction(component, spot.copy(coreRatio = it.toFloat())).apply()
         }
     }
 
