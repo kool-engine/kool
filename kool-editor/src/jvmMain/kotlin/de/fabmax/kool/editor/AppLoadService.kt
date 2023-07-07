@@ -58,37 +58,46 @@ actual class AppLoadService actual constructor(val paths: ProjectPaths) : Corout
     }
 
     actual suspend fun buildApp() {
+        if (buildInProgress.getAndSet(true)) {
+            logW("AppLoader.loader") { "Build is already in progress" }
+            return
+        }
+
         logI("AppLoader.loader") { "Executing gradle build" }
 
         suspendCoroutine { continuation ->
             thread {
-                val isWindows = "windows" in System.getProperty("os.name").lowercase()
-                val gradleDir = File(paths.gradleRootDir).canonicalFile
-                val gradlewCmd = if (isWindows) "$gradleDir\\gradlew.bat" else "$gradleDir/gradlew"
-                logI { "Building app: $gradlewCmd ${paths.gradleBuildTask}" }
+                try {
+                    val isWindows = "windows" in System.getProperty("os.name").lowercase()
+                    val gradleDir = File(paths.gradleRootDir).canonicalFile
+                    val gradlewCmd = if (isWindows) "$gradleDir\\gradlew.bat" else "$gradleDir/gradlew"
+                    logI { "Building app: $gradlewCmd ${paths.gradleBuildTask}" }
 
-                val buildProcess = ProcessBuilder()
-                    .command(gradlewCmd, paths.gradleBuildTask)
-                    .directory(gradleDir)
-                    .start()
-                thread {
-                    BufferedReader(InputStreamReader(buildProcess.inputStream)).lines().forEach {
-                        logD("AppLoader.gradleBuild") { it }
+                    val buildProcess = ProcessBuilder()
+                        .command(gradlewCmd, paths.gradleBuildTask)
+                        .directory(gradleDir)
+                        .start()
+                    thread {
+                        BufferedReader(InputStreamReader(buildProcess.inputStream)).lines().forEach {
+                            logD("AppLoader.gradleBuild") { it }
+                        }
                     }
-                }
-                thread {
-                    BufferedReader(InputStreamReader(buildProcess.errorStream)).lines().forEach {
-                        logW("AppLoader.gradleBuild") { it }
+                    thread {
+                        BufferedReader(InputStreamReader(buildProcess.errorStream)).lines().forEach {
+                            logW("AppLoader.gradleBuild") { it }
+                        }
                     }
-                }
-                val exitCode = buildProcess.waitFor()
-                logI { "Gradle build finished (exit code: $exitCode)" }
-                hasAppChanged = false
+                    val exitCode = buildProcess.waitFor()
+                    logI { "Gradle build finished (exit code: $exitCode)" }
+                    hasAppChanged = false
 
-                if (exitCode == 0) {
-                    continuation.resume(Unit)
-                } else {
-                    continuation.resumeWith(Result.failure(IllegalStateException("Build failed")))
+                    if (exitCode == 0) {
+                        continuation.resume(Unit)
+                    } else {
+                        continuation.resumeWith(Result.failure(IllegalStateException("Build failed")))
+                    }
+                } finally {
+                    buildInProgress.set(false)
                 }
             }
         }
@@ -106,7 +115,7 @@ actual class AppLoadService actual constructor(val paths: ProjectPaths) : Corout
 
         paths.jsAppScriptsPath?.let { genPath ->
             logI { "Generating Javascript script bindings: $genPath" }
-            JsAppScriptsGenerator.generateAppScripts(scriptClasses.values.toList(), genPath)
+            JsAppScriptsGenerator.generateScriptBindings(scriptClasses.values.toList(), genPath)
         }
 
         val appClass = loader.loadClass(paths.appMainClass)

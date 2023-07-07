@@ -4,13 +4,13 @@ import java.io.File
 
 object JsAppScriptsGenerator {
 
-    fun generateAppScripts(appScripts: List<AppScript>, filePath: String) {
+    fun generateScriptBindings(appScripts: List<AppScript>, filePath: String) {
         val source = StringBuilder()
         source.appendImports(appScripts)
         source.appendLine("""
             // GENERATED FILE! Do not edit manually ////////////////////////////
             
-            object AppScripts : ScriptLoader.AppScriptLoader {
+            object ScriptBindings : ScriptLoader.AppScriptLoader {
                 override fun newScriptInstance(scriptClassName: String): KoolScript {
                     return when (scriptClassName) {${makeConstructorMappings(appScripts)}
                         else -> throw IllegalArgumentException("${"\$"}scriptClassName not mapped.")

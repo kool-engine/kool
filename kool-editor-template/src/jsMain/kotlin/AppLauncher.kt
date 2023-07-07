@@ -3,6 +3,6 @@ import de.fabmax.kool.app.App
 import de.fabmax.kool.editor.api.ScriptLoader
 
 fun main() = KoolApplication { ctx ->
-    ScriptLoader.appScriptLoader = AppScripts
+    ScriptLoader.appScriptLoader = ScriptBindings
     App().launchStandalone(ctx)
 }
