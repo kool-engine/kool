@@ -8,7 +8,7 @@ import de.fabmax.kool.modules.ui2.Grow
 import de.fabmax.kool.modules.ui2.UiScope
 import kotlin.reflect.KClass
 
-class ShadowMapEditor(override var component: ShadowMapComponent) : ComponentEditor<ShadowMapComponent> {
+class ShadowMapEditor(component: ShadowMapComponent) : ComponentEditor<ShadowMapComponent>(component) {
     override fun UiScope.compose() = collapsapsablePanel("Shadow Map") {
         Column(width = Grow.Std) {
             val shadowMap = component.shadowMapState.use()

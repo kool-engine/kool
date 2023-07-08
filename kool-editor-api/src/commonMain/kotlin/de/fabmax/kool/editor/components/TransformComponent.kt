@@ -17,8 +17,8 @@ class TransformComponent(override val componentData: TransformComponentData) :
         if (AppState.isEditMode) {
             componentData.transform = it
         }
-        if (isCreated) {
-            it.toTransform(sceneNode.drawNode.transform)
+        if (nodeModel.isCreated) {
+            it.toTransform(nodeModel.drawNode.transform)
         }
     }
 

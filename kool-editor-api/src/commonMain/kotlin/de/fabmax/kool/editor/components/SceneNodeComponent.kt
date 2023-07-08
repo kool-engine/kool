@@ -6,20 +6,16 @@ import de.fabmax.kool.editor.model.SceneNodeModel
 
 abstract class SceneNodeComponent : EditorModelComponent() {
 
-    private var _sceneNode: SceneNodeModel? = null
-    val sceneNode: SceneNodeModel
-        get() = requireNotNull(_sceneNode) { "SceneNodeComponent was not yet created" }
+    override val nodeModel: SceneNodeModel
+        get() = super.nodeModel as SceneNodeModel
 
-    val isCreated: Boolean
-        get() = _sceneNode?.isCreated == true
-
-    val scene: SceneModel
-        get() = sceneNode.scene
+    val sceneModel: SceneModel
+        get() = nodeModel.scene
 
     override suspend fun createComponent(nodeModel: EditorNodeModel) {
-        super.createComponent(nodeModel)
-        _sceneNode = requireNotNull(nodeModel as? SceneNodeModel) {
-            "SceneNodeComponent is only allowed as member of SceneNodeModels (but node is of type ${nodeModel::class})"
+        require(nodeModel is SceneNodeModel) {
+            "SceneNodeComponent is only allowed as member of SceneNodeModels (but nodeModel is of type ${nodeModel::class})"
         }
+        super.createComponent(nodeModel)
     }
 }

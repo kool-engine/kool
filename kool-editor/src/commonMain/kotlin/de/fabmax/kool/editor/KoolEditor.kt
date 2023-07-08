@@ -18,13 +18,10 @@ import de.fabmax.kool.input.KeyboardInput
 import de.fabmax.kool.input.LocalKeyCode
 import de.fabmax.kool.input.PointerState
 import de.fabmax.kool.math.RayTest
-import de.fabmax.kool.modules.ui2.docking.DockNode
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.OrbitInputTransform
-import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.scene
 import de.fabmax.kool.util.logW
-import kotlin.math.roundToInt
 
 class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
 
@@ -85,6 +82,12 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
 
         appLoader.appReloadListeners += AppReloadListener { handleAppReload(it) }
         appLoader.reloadApp()
+    }
+
+    fun setEditorOverlayVisibility(isVisible: Boolean) {
+        editorOverlay.children.filter { it != editorCameraTransform }.forEach {
+            it.isVisible = isVisible
+        }
     }
 
     private fun registerAutoSaveOnFocusLoss() {
@@ -198,23 +201,14 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
 
         if (AppState.appMode == AppMode.EDIT) {
             ui.appStateInfo.set("App is in edit mode")
+            setEditorOverlayVisibility(true)
         } else {
             ui.appStateInfo.set("App is running")
+            setEditorOverlayVisibility(false)
         }
 
         bringEditorMenuToTop()
         EditorActions.clear()
-    }
-
-    private fun Scene.setViewportToDockNode(dockNode: DockNode) {
-        mainRenderPass.useWindowViewport = false
-        onRenderScene += {
-            val x = dockNode.boundsLeftDp.value.px.roundToInt()
-            val w = dockNode.boundsRightDp.value.px.roundToInt() - x
-            val h = dockNode.boundsBottomDp.value.px.roundToInt() - dockNode.boundsTopDp.value.px.roundToInt()
-            val y = it.windowHeight - dockNode.boundsBottomDp.value.px.roundToInt()
-            mainRenderPass.viewport.set(x, y, w, h)
-        }
     }
 
     private fun bringEditorMenuToTop() {

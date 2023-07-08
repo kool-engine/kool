@@ -49,22 +49,23 @@ class ShadowMapComponent(override val componentData: ShadowMapComponentData) :
     private fun updateShadowMap(shadowMapInfo: ShadowMapTypeData, clipNear: Float, clipFar: Float) {
         logD { "Update shadow map: $shadowMapInfo, near: $clipNear, far: $clipFar" }
 
-        val light = sceneNode.getComponent<DiscreteLightComponent>()
+        val light = nodeModel.getComponent<DiscreteLightComponent>()
         if (light == null) {
-            logE { "Unable to get DiscreteLightComponent of sceneNode ${sceneNode.name}" }
+            logE { "Unable to get DiscreteLightComponent of sceneNode ${nodeModel.name}" }
             return
         }
 
-        val scene = scene.drawNode
+        val scene = sceneModel.drawNode
         val lighting = scene.lighting
         val lightIdx = lighting.lights.indexOf(light.light)
         if (lightIdx < 0) {
-            logE { "Invalid lightIndex for shadow map light of sceneNode ${sceneNode.name}" }
+            logE { "Invalid lightIndex for shadow map light of sceneNode ${nodeModel.name}" }
             return
         }
 
         // dispose old shadow map
         shadowMap?.let {
+            sceneModel.shaderData.shadowMaps -= it
             val ctx = KoolSystem.requireContext()
             when (it) {
                 is SimpleShadowMap -> {
@@ -72,7 +73,7 @@ class ShadowMapComponent(override val componentData: ShadowMapComponentData) :
                     it.dispose(ctx)
                 }
                 is CascadedShadowMap -> {
-                    it.cascades.forEach { pass ->
+                    it.subMaps.forEach { pass ->
                         scene.removeOffscreenPass(pass)
                         pass.dispose(ctx)
                     }
@@ -102,6 +103,8 @@ class ShadowMapComponent(override val componentData: ShadowMapComponentData) :
                     }
                 }
             }
+        }.also {
+            sceneModel.shaderData.shadowMaps += it
         }
     }
 }

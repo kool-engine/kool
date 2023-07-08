@@ -10,10 +10,7 @@ import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.Skybox
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.MdColor
-import de.fabmax.kool.util.launchDelayed
-import de.fabmax.kool.util.logE
+import de.fabmax.kool.util.*
 
 class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : EditorNodeModel(sceneData) {
 
@@ -29,6 +26,8 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : EditorN
 
     val sceneBackground = getOrPutComponent { SceneBackgroundComponent(MdColor.GREY tone 900) }
     private val backgroundUpdater = getOrPutComponent { BackgroundUpdater() }
+
+    val shaderData = SceneShaderData()
 
     init {
         project.entities += this
@@ -136,8 +135,8 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : EditorN
             updateBackground(sceneBackground)
         }
 
-        override fun updateSingleColorBg(bgColorSrgb: Color) {
-            drawNode.mainRenderPass.clearColor = bgColorSrgb
+        override fun updateSingleColorBg(bgColorLinear: Color) {
+            drawNode.mainRenderPass.clearColor = bgColorLinear.toSrgb()
             skybox?.isVisible = false
         }
 
@@ -154,5 +153,14 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : EditorN
             drawNode.removeNode(skybox)
             drawNode.addNode(skybox, 0)
         }
+    }
+
+    class SceneShaderData {
+        var environmentMaps: EnvironmentMaps? = null
+        var ambientColorLinear: Color = Color.BLACK
+
+        val shadowMaps = mutableListOf<ShadowMap>()
+
+        // todo: AO
     }
 }

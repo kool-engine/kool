@@ -21,7 +21,7 @@ class MaterialComponent(override val componentData: MaterialComponentData) :
         }
         if (isCreated) {
             launchOnMainThread {
-                sceneNode.getComponents<UpdateMaterialComponent>().forEach { it.updateMaterial(mat) }
+                nodeModel.getComponents<UpdateMaterialComponent>().forEach { it.updateMaterial(mat) }
             }
         }
     }
@@ -35,7 +35,7 @@ class MaterialComponent(override val componentData: MaterialComponentData) :
 
     override suspend fun createComponent(nodeModel: EditorNodeModel) {
         super.createComponent(nodeModel)
-        materialState.set(scene.project.materialsById[componentData.materialId])
+        materialState.set(sceneModel.project.materialsById[componentData.materialId])
     }
 }
 

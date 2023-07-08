@@ -11,7 +11,7 @@ import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 
-class MaterialEditor(override var component: MaterialComponent) : ComponentEditor<MaterialComponent> {
+class MaterialEditor(component: MaterialComponent) : ComponentEditor<MaterialComponent>(component) {
 
     override fun UiScope.compose() = collapsapsablePanel(
         title = "Material",

@@ -9,6 +9,12 @@ abstract class EditorModelComponent {
     val dependencies: List<ComponentDependency>
         get() = _dependencies
 
+    private var _nodeModel: EditorNodeModel? = null
+    open val nodeModel: EditorNodeModel
+        get() = requireNotNull(_nodeModel) { "nodeModel can only be accessed after component was created" }
+    val isCreated: Boolean
+        get() = _nodeModel != null
+
     var componentOrder = COMPONENT_ORDER_DEFAULT
         protected set
 
@@ -16,6 +22,7 @@ abstract class EditorModelComponent {
         require(areDependenciesMetBy(nodeModel.components)) {
             "Unable to create component ${this::class.simpleName} in node ${nodeModel.name}: There are unmet component dependencies"
         }
+        _nodeModel = nodeModel
     }
 
     protected fun dependsOn(componentType: KClass<*>, isOptional: Boolean = false) {

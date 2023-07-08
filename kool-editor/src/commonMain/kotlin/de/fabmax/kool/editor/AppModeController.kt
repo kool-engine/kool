@@ -11,6 +11,7 @@ class AppModeController(val editor: KoolEditor) {
         logI { "Start app" }
         AppState.appModeState.set(AppMode.PLAY)
         EditorState.loadedApp.value?.app?.startApp(KoolSystem.requireContext())
+        editor.setEditorOverlayVisibility(false)
         editor.ui.appStateInfo.set("App is running")
     }
 
@@ -31,6 +32,7 @@ class AppModeController(val editor: KoolEditor) {
     fun stopApp() {
         logI { "Stop app" }
         AppState.appModeState.set(AppMode.EDIT)
+        editor.setEditorOverlayVisibility(true)
         editor.appLoader.reloadApp()
     }
 

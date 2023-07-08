@@ -27,7 +27,7 @@ class ModelComponent(override val componentData: ModelComponentData) :
 
     private var _model: Model? = null
     val model: Model
-        get() = _model ?: throw IllegalStateException("ModelComponent was not yet created")
+        get() = requireNotNull(_model) { "ModelComponent was not yet created" }
 
     override val contentNode: Node
         get() = model
@@ -40,18 +40,18 @@ class ModelComponent(override val componentData: ModelComponentData) :
 
     override suspend fun createComponent(nodeModel: EditorNodeModel) {
         super.createComponent(nodeModel)
-        _model = createModel(scene.sceneBackground.loadedEnvironmentMaps)
+        _model = createModel(sceneModel.shaderData.environmentMaps)
 
         model.name = nodeModel.name
-        sceneNode.setContentNode(model)
+        this.nodeModel.setContentNode(model)
     }
 
     override fun updateMaterial(material: MaterialData?) {
-        val holder = sceneNode.getComponent<MaterialComponent>() ?: return
+        val holder = nodeModel.getComponent<MaterialComponent>() ?: return
         if (holder.isHoldingMaterial(material)) {
             launchOnMainThread {
-                val ibl = scene.sceneBackground.loadedEnvironmentMaps
-                val bgColor = (scene.sceneBackground.backgroundState.value as? SceneBackgroundData.SingleColor)?.color?.toColor()?.toLinear()
+                val ibl = sceneModel.shaderData.environmentMaps
+                val bgColor = sceneModel.shaderData.ambientColorLinear
 
                 if (material == null) {
                     // recreate model with default materials
@@ -69,14 +69,13 @@ class ModelComponent(override val componentData: ModelComponentData) :
         }
     }
 
-    override fun updateSingleColorBg(bgColorSrgb: Color) {
-        val linColor = bgColorSrgb.toLinear()
+    override fun updateSingleColorBg(bgColorLinear: Color) {
         if (isIblShaded) {
             // recreate models without ibl lighting
-            recreateModel(null, linColor)
+            recreateModel(null, bgColorLinear)
         } else {
             model.meshes.values.forEach { mesh ->
-                (mesh.shader as? KslLitShader)?.ambientFactor = linColor
+                (mesh.shader as? KslLitShader)?.ambientFactor = bgColorLinear
             }
         }
     }
@@ -84,7 +83,7 @@ class ModelComponent(override val componentData: ModelComponentData) :
     override fun updateHdriBg(hdriBg: SceneBackgroundData.Hdri, ibl: EnvironmentMaps) {
         if (!isIblShaded) {
             // recreate models with ibl lighting
-            recreateModel(ibl, null)
+            recreateModel(ibl, sceneModel.shaderData.ambientColorLinear)
         } else {
             model.meshes.values.forEach { mesh ->
                 (mesh.shader as? KslLitShader)?.ambientMap = ibl.irradianceMap
@@ -94,7 +93,7 @@ class ModelComponent(override val componentData: ModelComponentData) :
     }
 
     private suspend fun createModel(ibl: EnvironmentMaps?): Model {
-        val material = sceneNode.getComponent<MaterialComponent>()?.materialData
+        val material = nodeModel.getComponent<MaterialComponent>()?.materialData
         val modelCfg = GltfFile.ModelGenerateConfig(
             materialConfig = GltfFile.ModelMaterialConfig(environmentMaps = ibl),
             applyMaterials = material == null
@@ -115,19 +114,17 @@ class ModelComponent(override val componentData: ModelComponentData) :
                 }
             }
         }
-        model.name = sceneNode.name
+        model.name = nodeModel.name
         return model
     }
 
-    private fun recreateModel(ibl: EnvironmentMaps?, bgColor: Color?) {
+    private fun recreateModel(ibl: EnvironmentMaps?, bgColor: Color) {
         launchOnMainThread {
             _model = createModel(ibl)
-            sceneNode.setContentNode(model)
+            nodeModel.setContentNode(model)
 
-            bgColor?.let {
-                model.meshes.values.forEach { mesh ->
-                    (mesh.shader as? KslLitShader)?.ambientFactor = bgColor
-                }
+            model.meshes.values.forEach { mesh ->
+                (mesh.shader as? KslLitShader)?.ambientFactor = bgColor
             }
         }
     }

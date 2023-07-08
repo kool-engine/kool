@@ -13,7 +13,9 @@ import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.launchOnMainThread
 import kotlin.reflect.KClass
 
-class SceneBackgroundEditor(override var component: SceneBackgroundComponent) : ComponentEditor<SceneBackgroundComponent> {
+class SceneBackgroundEditor(component: SceneBackgroundComponent) :
+    ComponentEditor<SceneBackgroundComponent>(component)
+{
 
     private val editorSingleBgColor = mutableStateOf(MdColor.GREY tone 900)
 
@@ -94,7 +96,7 @@ class SceneBackgroundEditor(override var component: SceneBackgroundComponent) : 
         ) {
             if (it.path != hdriBg.hdriPath) {
                 launchOnMainThread {
-                    component.loadedEnvironmentMaps = AppAssets.loadHdriEnvironment(component.sceneModel.drawNode, it.path)
+                    sceneModel.shaderData.environmentMaps = AppAssets.loadHdriEnvironment(component.sceneModel.drawNode, it.path)
                     val oldBg = component.backgroundState.value
                     val newBg = SceneBackgroundData.Hdri(it.path, skyLod.value)
                     SetBackgroundAction(component, oldBg, newBg).apply()

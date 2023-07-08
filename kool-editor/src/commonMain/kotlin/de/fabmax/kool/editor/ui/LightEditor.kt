@@ -7,7 +7,7 @@ import de.fabmax.kool.editor.data.LightTypeData
 import de.fabmax.kool.modules.ui2.*
 import kotlin.reflect.KClass
 
-class LightEditor(override var component: DiscreteLightComponent) : ComponentEditor<DiscreteLightComponent> {
+class LightEditor(component: DiscreteLightComponent) : ComponentEditor<DiscreteLightComponent>(component) {
 
     private val currentLight: LightTypeData get() = component.lightState.value
     private val lightTypeIndex: Int

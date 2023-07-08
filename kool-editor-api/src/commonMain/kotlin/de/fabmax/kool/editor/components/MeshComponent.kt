@@ -26,7 +26,7 @@ class MeshComponent(override val componentData: MeshComponentData) :
 
     private var _mesh: Mesh? = null
     val mesh: Mesh
-        get() = _mesh ?: throw IllegalStateException("MeshComponent was not yet created")
+        get() = requireNotNull(_mesh) { "MeshComponent was not yet created" }
 
     override val contentNode: Node
         get() = mesh
@@ -49,7 +49,7 @@ class MeshComponent(override val componentData: MeshComponentData) :
         updateGeometry()
         createMeshShader()
 
-        sceneNode.setContentNode(mesh)
+        this.nodeModel.setContentNode(mesh)
     }
 
     fun updateGeometry() {
@@ -70,27 +70,30 @@ class MeshComponent(override val componentData: MeshComponentData) :
     }
 
     private suspend fun createMeshShader(updateBg: Boolean = true) {
-        logD { "${sceneNode.name}: (re-)creating shader" }
-        val ibl = scene.sceneBackground.loadedEnvironmentMaps
-        val materialData = sceneNode.getComponent<MaterialComponent>()?.materialData
+        logD { "${nodeModel.name}: (re-)creating shader" }
+        val ibl = sceneModel.shaderData.environmentMaps
+
+        val materialData = nodeModel.getComponent<MaterialComponent>()?.materialData
         if (materialData != null) {
             mesh.shader = materialData.createShader(ibl)
+
         } else {
             mesh.shader = KslPbrShader {
                 color { uniformColor(MdColor.GREY.toLinear()) }
+                shadow {  }
                 ibl?.let {
                     enableImageBasedLighting(ibl)
                 }
             }
         }
-        if (updateBg) updateBackground(scene.sceneBackground)
+        if (updateBg) updateBackground(sceneModel.sceneBackground)
     }
 
     override fun updateMaterial(material: MaterialData?) {
-        val holder = sceneNode.getComponent<MaterialComponent>()
+        val holder = nodeModel.getComponent<MaterialComponent>()
         if (holder?.isHoldingMaterial(material) != false) {
             launchOnMainThread {
-                val ibl = scene.sceneBackground.loadedEnvironmentMaps
+                val ibl = sceneModel.shaderData.environmentMaps
                 if (material == null || !material.updateShader(mesh.shader, ibl)) {
                     createMeshShader()
                 }
@@ -98,15 +101,15 @@ class MeshComponent(override val componentData: MeshComponentData) :
         }
     }
 
-    override fun updateSingleColorBg(bgColorSrgb: Color) {
+    override fun updateSingleColorBg(bgColorLinear: Color) {
         if (mesh.shader is KslLitShader) {
             if (isIblShaded) {
                 launchOnMainThread {
                     createMeshShader(updateBg = false)
-                    (mesh.shader as KslLitShader).ambientFactor = bgColorSrgb.toLinear()
+                    (mesh.shader as KslLitShader).ambientFactor = bgColorLinear
                 }
             } else {
-                (mesh.shader as KslLitShader).ambientFactor = bgColorSrgb.toLinear()
+                (mesh.shader as KslLitShader).ambientFactor = bgColorLinear
             }
         }
         isIblShaded = false

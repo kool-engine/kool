@@ -12,7 +12,7 @@ import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.logW
 
-class ScriptEditor(override var component: ScriptComponent) : ComponentEditor<ScriptComponent> {
+class ScriptEditor(component: ScriptComponent) : ComponentEditor<ScriptComponent>(component) {
 
     private val scriptName: String get() = component.scriptClassNameState.value
         .replaceBeforeLast('.', "")
