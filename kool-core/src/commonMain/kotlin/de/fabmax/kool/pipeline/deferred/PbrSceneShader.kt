@@ -14,7 +14,7 @@ import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.Color
-import kotlin.math.abs
+import de.fabmax.kool.util.ShadowMap
 
 /**
  * 2nd pass shader for deferred pbr shading: Uses textures with view space position, normals, albedo, roughness,
@@ -62,7 +62,16 @@ open class PbrSceneShader(cfg: DeferredPbrConfig, model: Model = Model(cfg)) :
             reflectionMapWeights = Vec2f.X_AXIS
         }
 
+    private val shadowMapBuffer = mutableListOf<ShadowMap>()
+    var shadowMaps: List<ShadowMap>
+        get() = shadowMapBuffer
+        set(value) {
+            shadowMapBuffer.clear()
+            shadowMapBuffer += value
+        }
+
     init {
+        shadowMaps = cfg.shadowCfg.shadowMaps.map { it.shadowMap }
         reflectionMap = cfg.reflectionMap
         when (val ambient = cfg.ambientColor) {
             is KslLitShader.AmbientColor.Uniform -> ambientFactor = ambient.color
@@ -80,6 +89,16 @@ open class PbrSceneShader(cfg: DeferredPbrConfig, model: Model = Model(cfg)) :
         super.onPipelineSetup(builder, mesh, ctx)
         if (brdfLut == null) {
             brdfLut = ctx.defaultPbrBrdfLut
+        }
+    }
+
+    override fun onPipelineCreated(pipeline: Pipeline, mesh: Mesh, ctx: KoolContext) {
+        super.onPipelineCreated(pipeline, mesh, ctx)
+
+        getShadowDataUniforms()?.let { uniforms ->
+            pipeline.onUpdate += {
+                uniforms.updateShadowMaps(shadowMapBuffer)
+            }
         }
     }
 
@@ -148,29 +167,26 @@ open class PbrSceneShader(cfg: DeferredPbrConfig, model: Model = Model(cfg)) :
                     // create an array with light strength values per light source (1.0 = full strength)
                     val shadowFactors = float1Array(lightData.maxLightCount, 1f.const)
                     val avgShadow = float1Var(0f.const)
-                    if (shadowData.numSubMaps > 0) {
-                        val lightSpacePositions = float4Array(shadowData.numSubMaps, Vec4f.ZERO.const)
-                        val lightSpaceNormalZs = float1Array(shadowData.numSubMaps, 0f.const)
+                    val lightSpacePositions = float4Array(shadowData.shadowCfg.maxNumShadowMaps, Vec4f.ZERO.const)
+                    val lightSpaceNormalZs = float1Array(shadowData.shadowCfg.maxNumShadowMaps, 0f.const)
 
-                        // transform positions to light space
-                        shadowData.shadowMapInfos.forEach { mapInfo ->
-                            mapInfo.subMaps.forEachIndexed { i, subMap ->
-                                val subMapIdx = mapInfo.fromIndexIncl + i
-                                val viewProj = shadowData.shadowMapViewProjMats[subMapIdx]
-                                val normalLightSpace = float3Var(normalize((viewProj * float4Value(worldNrm, 0f.const)).xyz))
-                                lightSpaceNormalZs[subMapIdx] set normalLightSpace.z
-                                lightSpacePositions[subMapIdx] set viewProj * float4Value(worldPos, 1f.const)
-                                lightSpacePositions[subMapIdx].xyz += normalLightSpace * abs(subMap.shaderDepthOffset).const
-                            }
-                        }
-
-                        // adjust light strength values by shadow maps
-                        fragmentShadowBlock(lightSpacePositions, lightSpaceNormalZs, shadowData, shadowFactors)
-                        fori(0.const, lightData.lightCount) { i ->
-                            avgShadow += shadowFactors[i]
-                        }
-                        avgShadow /= max(1f.const, lightData.lightCount.toFloat1())
+                    val totalSubMaps = int1Var(shadowData.lightIndices[shadowData.numActiveShadows])
+                    totalSubMaps set shadowData.shadowMapIndexRanges[shadowData.numActiveShadows - 1.const].y
+                    repeat(totalSubMaps) { subMapIdx ->
+                        val viewProj = shadowData.shadowMapViewProjMats[subMapIdx]
+                        val normalLightSpace = float3Var(normalize((viewProj * float4Value(worldNrm, 0f.const)).xyz))
+                        lightSpaceNormalZs[subMapIdx] set normalLightSpace.z
+                        lightSpacePositions[subMapIdx] set viewProj * float4Value(worldPos, 1f.const)
+                        lightSpacePositions[subMapIdx].xyz += normalLightSpace * shadowData.shadowMapDepthOffsets[subMapIdx] * sign(normalLightSpace.z)
                     }
+
+                    // adjust light strength values by shadow maps
+                    fragmentShadowBlock(lightSpacePositions, lightSpaceNormalZs, shadowData, shadowFactors)
+                    fori(0.const, lightData.lightCount) { i ->
+                        avgShadow += shadowFactors[i]
+                    }
+                    avgShadow /= max(1f.const, lightData.lightCount.toFloat1())
+
                     val ambientShadowFac = uniformFloat1("uAmbientShadowFactor")
                     val shadowStr = float1Var((1f.const - avgShadow) * ambientShadowFac)
                     irradiance set irradiance * (1f.const - shadowStr)

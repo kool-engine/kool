@@ -231,10 +231,9 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         }
         shadowMap = CascadedShadowMap(this@setupMainScene, 0, 300f).apply {
             setMapRanges(0.035f, 0.17f, 1f)
-            cascades.forEach {
+            subMaps.forEach {
                 it.directionalCamNearOffset = -200f
                 it.setDefaultDepthOffset(true)
-
                 oceanFloorPass.dependsOn(it)
             }
         }

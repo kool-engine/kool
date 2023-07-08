@@ -417,6 +417,11 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
         ops += loop
     }
 
+    fun repeat(times: KslScalarExpression<KslTypeInt1>, block: KslScopeBuilder.(KslScalarExpression<KslTypeInt1>) -> Unit) {
+        val i = int1Var(0.const)
+        `for`(i, i lt times, 1.const, block)
+    }
+
     fun `while`(whileExpr: KslScalarExpression<KslTypeBool1>, block: KslScopeBuilder.() -> Unit) {
         val loop = KslLoopWhile(whileExpr, this).apply { body.block() }
         ops += loop
@@ -551,13 +556,13 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
     fun log2(value: KslScalarExpression<KslTypeFloat1>) = KslBuiltinLog2Scalar(value)
     fun <V> log2(vec: KslVectorExpression<V, KslTypeFloat1>) where V: KslFloatType, V: KslVector<KslTypeFloat1> = KslBuiltinLog2Vector(vec)
 
-    fun <S> max(a: KslScalarExpression<S>, b: KslScalarExpression<S>) where S: KslFloatType, S: KslScalar = KslBuiltinMaxScalar(a, b)
+    fun <S> max(a: KslScalarExpression<S>, b: KslScalarExpression<S>) where S: KslNumericType, S: KslScalar = KslBuiltinMaxScalar(a, b)
     fun <V, S> max(a: KslVectorExpression<V, S>, b: KslVectorExpression<V, S>)
-        where V: KslFloatType, V: KslVector<S>, S: KslFloatType, S: KslScalar = KslBuiltinMaxVector(a, b)
+        where V: KslNumericType, V: KslVector<S>, S: KslNumericType, S: KslScalar = KslBuiltinMaxVector(a, b)
 
-    fun <S> min(a: KslScalarExpression<S>, b: KslScalarExpression<S>) where S: KslFloatType, S: KslScalar = KslBuiltinMinScalar(a, b)
+    fun <S> min(a: KslScalarExpression<S>, b: KslScalarExpression<S>) where S: KslNumericType, S: KslScalar = KslBuiltinMinScalar(a, b)
     fun <V, S> min(a: KslVectorExpression<V, S>, b: KslVectorExpression<V, S>)
-        where V: KslFloatType, V: KslVector<S>, S: KslFloatType, S: KslScalar = KslBuiltinMinVector(a, b)
+        where V: KslNumericType, V: KslVector<S>, S: KslNumericType, S: KslScalar = KslBuiltinMinVector(a, b)
 
     fun mix(x: KslScalarExpression<KslTypeFloat1>, y: KslScalarExpression<KslTypeFloat1>, a: KslScalarExpression<KslTypeFloat1>) =
         KslBuiltinMixScalar(x, y, a)

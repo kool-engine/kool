@@ -19,6 +19,8 @@ import kotlin.math.sqrt
 sealed interface ShadowMap {
     val lightIndex: Int
     var isShadowMapEnabled: Boolean
+    val subMaps: List<SimpleShadowMap>
+
     fun setupSampler(sampler: TextureSampler2d?)
 }
 
@@ -50,6 +52,8 @@ class SimpleShadowMap(val scene: Scene, override val lightIndex: Int, mapSize: I
     override var isShadowMapEnabled: Boolean
         get() = isEnabled
         set(value) { isEnabled = value }
+
+    override val subMaps = listOf(this)
 
     init {
         isUpdateDrawNode = false
@@ -190,7 +194,7 @@ class CascadedShadowMap(
         MapRange(near, far)
     }
 
-    val cascades = Array(numCascades) { level ->
+    override val subMaps = List(numCascades) { level ->
         SimpleShadowMap(scene, lightIndex, mapSizes?.get(level) ?: 2048, drawNode).apply {
             name = "CascadedShadopwMap-level-$level"
             shadowMapLevel = level
@@ -200,27 +204,27 @@ class CascadedShadowMap(
     }
 
     var drawNode: Node
-        get() = cascades[0].drawNode
+        get() = subMaps[0].drawNode
         set(value) {
-            cascades.forEach { it.drawNode = value }
+            subMaps.forEach { it.drawNode = value }
         }
 
     override var isShadowMapEnabled: Boolean
-        get() = cascades[0].isEnabled
-        set(value) { cascades.forEach { it.isEnabled = value } }
+        get() = subMaps[0].isEnabled
+        set(value) { subMaps.forEach { it.isEnabled = value } }
 
     init {
         if (numCascades > 8) {
             throw KoolException("Too many shadow cascades: $numCascades (maximum is 8)")
         }
 
-        cascades[0].onBeforeCollectDrawCommands += {
+        subMaps[0].onBeforeCollectDrawCommands += {
             for (i in 0 until numCascades) {
                 val near = mapRanges[i].near * maxRange
                 val far = mapRanges[i].far * maxRange
                 val farOverlap = 2f * sqrt(far)
-                cascades[i].clipNear = near
-                cascades[i].clipFar = far + farOverlap
+                subMaps[i].clipNear = near
+                subMaps[i].clipFar = far + farOverlap
             }
         }
     }
@@ -236,7 +240,7 @@ class CascadedShadowMap(
 
     override fun setupSampler(sampler: TextureSampler2d?) {
         if (sampler != null) {
-            cascades.forEachIndexed { i, cascade ->
+            subMaps.forEachIndexed { i, cascade ->
                 sampler.textures[i] = cascade.depthTexture
             }
         }

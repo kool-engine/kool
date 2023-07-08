@@ -272,15 +272,6 @@ open class KslShader(val program: KslProgram, val pipelineConfig: PipelineConfig
     protected fun uniformMat4f(uniformName: String?, defaultVal: Mat4f? = null): UniformInputMat4f =
         UniformInputMat4f(uniformName, defaultVal).also { connectUniformListeners += it }
 
-    protected fun texture1d(uniformName: String?, defaultVal: Texture1d? = null): UniformInputTexture1d =
-        UniformInputTexture1d(uniformName, defaultVal).also { connectUniformListeners += it }
-    protected fun texture2d(uniformName: String?, defaultVal: Texture2d? = null): UniformInputTexture2d =
-        UniformInputTexture2d(uniformName, defaultVal).also { connectUniformListeners += it }
-    protected fun texture3d(uniformName: String?, defaultVal: Texture3d? = null): UniformInputTexture3d =
-        UniformInputTexture3d(uniformName, defaultVal).also { connectUniformListeners += it }
-    protected fun textureCube(uniformName: String?, defaultVal: TextureCube? = null): UniformInputTextureCube =
-        UniformInputTextureCube(uniformName, defaultVal).also { connectUniformListeners += it }
-
     protected fun uniform1fv(uniformName: String?, arraySize: Int): UniformInput1fv =
         UniformInput1fv(uniformName, arraySize).also { connectUniformListeners += it }
     protected fun uniform2fv(uniformName: String?, arraySize: Int): UniformInput2fv =
@@ -289,6 +280,29 @@ open class KslShader(val program: KslProgram, val pipelineConfig: PipelineConfig
         UniformInput3fv(uniformName, arraySize).also { connectUniformListeners += it }
     protected fun uniform4fv(uniformName: String?, arraySize: Int): UniformInput4fv =
         UniformInput4fv(uniformName, arraySize).also { connectUniformListeners += it }
+
+    protected fun uniform1iv(uniformName: String?, arraySize: Int): UniformInput1iv =
+        UniformInput1iv(uniformName, arraySize).also { connectUniformListeners += it }
+    protected fun uniform2iv(uniformName: String?, arraySize: Int): UniformInput2iv =
+        UniformInput2iv(uniformName, arraySize).also { connectUniformListeners += it }
+    protected fun uniform3iv(uniformName: String?, arraySize: Int): UniformInput3iv =
+        UniformInput3iv(uniformName, arraySize).also { connectUniformListeners += it }
+    protected fun uniform4iv(uniformName: String?, arraySize: Int): UniformInput4iv =
+        UniformInput4iv(uniformName, arraySize).also { connectUniformListeners += it }
+
+    protected fun uniformMat3fv(uniformName: String?, arraySize: Int): UniformInputMat3fv =
+        UniformInputMat3fv(uniformName, arraySize).also { connectUniformListeners += it }
+    protected fun uniformMat4fv(uniformName: String?, arraySize: Int): UniformInputMat4fv =
+        UniformInputMat4fv(uniformName, arraySize).also { connectUniformListeners += it }
+
+    protected fun texture1d(uniformName: String?, defaultVal: Texture1d? = null): UniformInputTexture1d =
+        UniformInputTexture1d(uniformName, defaultVal).also { connectUniformListeners += it }
+    protected fun texture2d(uniformName: String?, defaultVal: Texture2d? = null): UniformInputTexture2d =
+        UniformInputTexture2d(uniformName, defaultVal).also { connectUniformListeners += it }
+    protected fun texture3d(uniformName: String?, defaultVal: Texture3d? = null): UniformInputTexture3d =
+        UniformInputTexture3d(uniformName, defaultVal).also { connectUniformListeners += it }
+    protected fun textureCube(uniformName: String?, defaultVal: TextureCube? = null): UniformInputTextureCube =
+        UniformInputTextureCube(uniformName, defaultVal).also { connectUniformListeners += it }
 
     protected fun texture1dArray(uniformName: String?, arraySize: Int): UniformInputTextureArray1d =
         UniformInputTextureArray1d(uniformName, arraySize).also { connectUniformListeners += it }
@@ -403,50 +417,6 @@ open class KslShader(val program: KslProgram, val pipelineConfig: PipelineConfig
         operator fun setValue(thisRef: Any?, property: KProperty<*>, value: Mat4f) = (uniform?.value ?: buffer).set(value)
     }
 
-    protected inner class UniformInputTexture1d(val uniformName: String?, defaultVal: Texture1d?) : ConnectUniformListener {
-        var uniform: TextureSampler1d? = null
-        private var buffer: Texture1d? = defaultVal
-        override val isConnected: Boolean = uniform != null
-        override fun connect() { uniform = texSamplers1d[uniformName]?.apply { texture = buffer } }
-        operator fun getValue(thisRef: Any?, property: KProperty<*>): Texture1d? = uniform?.texture ?: buffer
-        operator fun setValue(thisRef: Any?, property: KProperty<*>, value: Texture1d?) {
-            uniform?.let { it.texture = value } ?: run { buffer = value }
-        }
-    }
-
-    protected inner class UniformInputTexture2d(val uniformName: String?, defaultVal: Texture2d?) : ConnectUniformListener {
-        var uniform: TextureSampler2d? = null
-        private var buffer: Texture2d? = defaultVal
-        override val isConnected: Boolean = uniform != null
-        override fun connect() { uniform = texSamplers2d[uniformName]?.apply { texture = buffer } }
-        operator fun getValue(thisRef: Any?, property: KProperty<*>): Texture2d? = uniform?.texture ?: buffer
-        operator fun setValue(thisRef: Any?, property: KProperty<*>, value: Texture2d?) {
-            uniform?.let { it.texture = value } ?: run { buffer = value }
-        }
-    }
-
-    protected inner class UniformInputTexture3d(val uniformName: String?, defaultVal: Texture3d?) : ConnectUniformListener {
-        var uniform: TextureSampler3d? = null
-        private var buffer: Texture3d? = defaultVal
-        override val isConnected: Boolean = uniform != null
-        override fun connect() { uniform = texSamplers3d[uniformName]?.apply { texture = buffer } }
-        operator fun getValue(thisRef: Any?, property: KProperty<*>): Texture3d? = uniform?.texture ?: buffer
-        operator fun setValue(thisRef: Any?, property: KProperty<*>, value: Texture3d?) {
-            uniform?.let { it.texture = value } ?: run { buffer = value }
-        }
-    }
-
-    protected inner class UniformInputTextureCube(val uniformName: String?, defaultVal: TextureCube?) : ConnectUniformListener {
-        var uniform: TextureSamplerCube? = null
-        private var buffer: TextureCube? = defaultVal
-        override val isConnected: Boolean = uniform != null
-        override fun connect() { uniform = texSamplersCube[uniformName]?.apply { texture = buffer } }
-        operator fun getValue(thisRef: Any?, property: KProperty<*>): TextureCube? = uniform?.texture ?: buffer
-        operator fun setValue(thisRef: Any?, property: KProperty<*>, value: TextureCube?) {
-            uniform?.let { it.texture = value } ?: run { buffer = value }
-        }
-    }
-
     protected inner class UniformInput1fv(val uniformName: String?, val arraySize: Int) : ConnectUniformListener {
         private var uniform: Uniform1fv? = null
         private val buffer = FloatArray(arraySize)
@@ -497,6 +467,128 @@ open class KslShader(val program: KslProgram, val pipelineConfig: PipelineConfig
             }
         }
         operator fun getValue(thisRef: Any?, property: KProperty<*>): Array<MutableVec4f> = uniform?.value ?: buffer
+    }
+
+    protected inner class UniformInput1iv(val uniformName: String?, val arraySize: Int) : ConnectUniformListener {
+        private var uniform: Uniform1iv? = null
+        private val buffer = IntArray(arraySize)
+        override val isConnected: Boolean = uniform != null
+        override fun connect() {
+            uniform = (uniforms[uniformName] as? Uniform1iv)?.apply {
+                check(length == arraySize) { "Mismatching uniform array size: $length != $arraySize" }
+                value = buffer
+            }
+        }
+        operator fun getValue(thisRef: Any?, property: KProperty<*>): IntArray = uniform?.value ?: buffer
+    }
+
+    protected inner class UniformInput2iv(val uniformName: String?, val arraySize: Int) : ConnectUniformListener {
+        private var uniform: Uniform2iv? = null
+        private val buffer = Array(arraySize) { MutableVec2i(Vec2i.ZERO) }
+        override val isConnected: Boolean = uniform != null
+        override fun connect() {
+            uniform = (uniforms[uniformName] as? Uniform2iv)?.apply {
+                check(length == arraySize) { "Mismatching uniform array size: $length != $arraySize" }
+                value = buffer
+            }
+        }
+        operator fun getValue(thisRef: Any?, property: KProperty<*>): Array<MutableVec2i> = uniform?.value ?: buffer
+    }
+
+    protected inner class UniformInput3iv(val uniformName: String?, val arraySize: Int) : ConnectUniformListener {
+        private var uniform: Uniform3iv? = null
+        private val buffer = Array(arraySize) { MutableVec3i(Vec3i.ZERO) }
+        override val isConnected: Boolean = uniform != null
+        override fun connect() {
+            uniform = (uniforms[uniformName] as? Uniform3iv)?.apply {
+                check(length == arraySize) { "Mismatching uniform array size: $length != $arraySize" }
+                value = buffer
+            }
+        }
+        operator fun getValue(thisRef: Any?, property: KProperty<*>): Array<MutableVec3i> = uniform?.value ?: buffer
+    }
+
+    protected inner class UniformInput4iv(val uniformName: String?, val arraySize: Int) : ConnectUniformListener {
+        private var uniform: Uniform4iv? = null
+        private val buffer = Array(arraySize) { MutableVec4i(Vec4i.ZERO) }
+        override val isConnected: Boolean = uniform != null
+        override fun connect() {
+            uniform = (uniforms[uniformName] as? Uniform4iv)?.apply {
+                check(length == arraySize) { "Mismatching uniform array size: $length != $arraySize" }
+                value = buffer
+            }
+        }
+        operator fun getValue(thisRef: Any?, property: KProperty<*>): Array<MutableVec4i> = uniform?.value ?: buffer
+    }
+
+    protected inner class UniformInputMat3fv(val uniformName: String?, val arraySize: Int) : ConnectUniformListener {
+        var uniform: UniformMat3fv? = null
+        private val buffer = Array(arraySize) { Mat3f() }
+        override val isConnected: Boolean = uniform != null
+        override fun connect() {
+            uniform = (uniforms[uniformName] as? UniformMat3fv)?.apply {
+                check(length == arraySize) { "Mismatching uniform array size: $length != $arraySize" }
+                buffer.forEachIndexed { i, m -> value[i] = m }
+            }
+        }
+        operator fun getValue(thisRef: Any?, property: KProperty<*>): Array<Mat3f> = uniform?.value ?: buffer
+    }
+
+    protected inner class UniformInputMat4fv(val uniformName: String?, val arraySize: Int) : ConnectUniformListener {
+        var uniform: UniformMat4fv? = null
+        private val buffer = Array(arraySize) { Mat4f() }
+        override val isConnected: Boolean = uniform != null
+        override fun connect() {
+            uniform = (uniforms[uniformName] as? UniformMat4fv)?.apply {
+                check(length == arraySize) { "Mismatching uniform array size: $length != $arraySize" }
+                buffer.forEachIndexed { i, m -> value[i] = m }
+            }
+        }
+        operator fun getValue(thisRef: Any?, property: KProperty<*>): Array<Mat4f> = uniform?.value ?: buffer
+    }
+
+    protected inner class UniformInputTexture1d(val uniformName: String?, defaultVal: Texture1d?) : ConnectUniformListener {
+        var uniform: TextureSampler1d? = null
+        private var buffer: Texture1d? = defaultVal
+        override val isConnected: Boolean = uniform != null
+        override fun connect() { uniform = texSamplers1d[uniformName]?.apply { texture = buffer } }
+        operator fun getValue(thisRef: Any?, property: KProperty<*>): Texture1d? = uniform?.texture ?: buffer
+        operator fun setValue(thisRef: Any?, property: KProperty<*>, value: Texture1d?) {
+            uniform?.let { it.texture = value } ?: run { buffer = value }
+        }
+    }
+
+    protected inner class UniformInputTexture2d(val uniformName: String?, defaultVal: Texture2d?) : ConnectUniformListener {
+        var uniform: TextureSampler2d? = null
+        private var buffer: Texture2d? = defaultVal
+        override val isConnected: Boolean = uniform != null
+        override fun connect() { uniform = texSamplers2d[uniformName]?.apply { texture = buffer } }
+        operator fun getValue(thisRef: Any?, property: KProperty<*>): Texture2d? = uniform?.texture ?: buffer
+        operator fun setValue(thisRef: Any?, property: KProperty<*>, value: Texture2d?) {
+            uniform?.let { it.texture = value } ?: run { buffer = value }
+        }
+    }
+
+    protected inner class UniformInputTexture3d(val uniformName: String?, defaultVal: Texture3d?) : ConnectUniformListener {
+        var uniform: TextureSampler3d? = null
+        private var buffer: Texture3d? = defaultVal
+        override val isConnected: Boolean = uniform != null
+        override fun connect() { uniform = texSamplers3d[uniformName]?.apply { texture = buffer } }
+        operator fun getValue(thisRef: Any?, property: KProperty<*>): Texture3d? = uniform?.texture ?: buffer
+        operator fun setValue(thisRef: Any?, property: KProperty<*>, value: Texture3d?) {
+            uniform?.let { it.texture = value } ?: run { buffer = value }
+        }
+    }
+
+    protected inner class UniformInputTextureCube(val uniformName: String?, defaultVal: TextureCube?) : ConnectUniformListener {
+        var uniform: TextureSamplerCube? = null
+        private var buffer: TextureCube? = defaultVal
+        override val isConnected: Boolean = uniform != null
+        override fun connect() { uniform = texSamplersCube[uniformName]?.apply { texture = buffer } }
+        operator fun getValue(thisRef: Any?, property: KProperty<*>): TextureCube? = uniform?.texture ?: buffer
+        operator fun setValue(thisRef: Any?, property: KProperty<*>, value: TextureCube?) {
+            uniform?.let { it.texture = value } ?: run { buffer = value }
+        }
     }
 
     protected inner class UniformInputTextureArray1d(val uniformName: String?, val arrSize: Int) : ConnectUniformListener {

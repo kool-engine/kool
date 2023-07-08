@@ -49,7 +49,7 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
             mapRanges[0].set(0f, 0.03f)
             mapRanges[1].set(0.03f, 0.17f)
             mapRanges[2].set(0.17f, 1f)
-            cascades.forEachIndexed { i, map ->
+            subMaps.forEachIndexed { i, map ->
                 map.directionalCamNearOffset = -120f
                 map.shaderDepthOffset = if (i == 0) -0.0004f else -0.002f
             }
