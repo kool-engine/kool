@@ -112,7 +112,6 @@ abstract class DemoScene(val name: String) {
 
             Column(Grow.Std, Grow.Std) {
                 val cornerRadius = sizes.gap
-                modifier.background(RoundRectBackground(colors.background, cornerRadius))
 
                 TitleBar(titleTxt, cornerRadius)
 
