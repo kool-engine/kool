@@ -46,7 +46,7 @@ class DiscreteLightComponent(override val componentData: DiscreteLightComponentD
 
     private fun updateLight(lightData: LightTypeData) {
         val lighting = sceneModel.drawNode.lighting
-        val lightIdx = light.lightIndex
+        val lightIdx = lighting.lights.indexOf(light)
 
         light = when (lightData) {
             is LightTypeData.Directional -> if (light is Light.Directional) light else Light.Directional()
@@ -63,7 +63,7 @@ class DiscreteLightComponent(override val componentData: DiscreteLightComponentD
         light.setColor(lightData.color.toColorLinear(), lightData.intensity)
         nodeModel.setContentNode(light)
 
-        if (lightIdx >= 0) {
+        if (lightIdx in lighting.lights.indices) {
             lighting.lights[lightIdx] = light
         } else {
             lighting.addLight(light)

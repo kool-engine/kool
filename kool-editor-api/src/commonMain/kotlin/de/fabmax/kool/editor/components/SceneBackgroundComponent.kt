@@ -21,16 +21,16 @@ class SceneBackgroundComponent(override val componentData: SceneBackgroundCompon
         SceneBackgroundComponentData(SceneBackgroundData.SingleColor(ColorData(color, isLinear)))
     )
 
-    private var _sceneModel: SceneModel? = null
-    val sceneModel: SceneModel
-        get() = requireNotNull(_sceneModel) { "SceneBackgroundComponent was not yet created" }
-
     val backgroundState = mutableStateOf(componentData.sceneBackground).onChange {
         if (AppState.isEditMode) {
             componentData.sceneBackground = it
         }
         applyBackground(it)
     }
+
+    private var _sceneModel: SceneModel? = null
+    val sceneModel: SceneModel
+        get() = requireNotNull(_sceneModel) { "SceneBackgroundComponent was not yet created" }
 
     override suspend fun createComponent(nodeModel: EditorNodeModel) {
         _sceneModel = requireNotNull(nodeModel as? SceneModel) {
@@ -59,9 +59,6 @@ class SceneBackgroundComponent(override val componentData: SceneBackgroundCompon
                     UpdateSceneBackgroundComponent.updateSceneBackground(scene)
                 }
                 is SceneBackgroundData.SingleColor -> {
-                    println("scene bg srgb r: ${bgData.color.toColorSrgb().r}")
-                    println("scene bg linear r: ${bgData.color.toColorLinear().r}")
-
                     scene.shaderData.environmentMaps = null
                     scene.shaderData.ambientColorLinear = bgData.color.toColorLinear()
                     UpdateSceneBackgroundComponent.updateSceneBackground(scene)

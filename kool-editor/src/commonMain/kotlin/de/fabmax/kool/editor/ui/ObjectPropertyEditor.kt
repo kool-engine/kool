@@ -140,6 +140,7 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", ui) 
                     is SceneBackgroundComponent -> componentEditor(component) { SceneBackgroundEditor(component) }
                     is ScriptComponent -> componentEditor(component) { ScriptEditor(component) }
                     is ShadowMapComponent -> componentEditor(component) { ShadowMapEditor(component) }
+                    is SsaoComponent -> componentEditor(component) { SsaoEditor(component) }
                     is TransformComponent -> transformComponent(selectedObject)
                 }
             }
@@ -202,6 +203,7 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", ui) 
             ComponentAdder.AddLightComponent,
             ComponentAdder.AddShadowMapComponent,
             ComponentAdder.AddScriptComponent,
+            ComponentAdder.AddSsaoComponent,
         )
     }
 
@@ -215,6 +217,14 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", ui) 
             createComponent()?.let { AddComponentAction(target, it).apply() }
         }
 
+
+        object AddSsaoComponent : ComponentAdder<SsaoComponent>("Screen-space Ambient Occlusion") {
+            override fun createComponent(): SsaoComponent = SsaoComponent()
+            override fun accept(nodeModel: EditorNodeModel) =
+                nodeModel is SceneModel && !nodeModel.hasComponent<SsaoComponent>()
+        }
+
+
         object AddLightComponent : ComponentAdder<DiscreteLightComponent>("Light") {
             override fun createComponent(): DiscreteLightComponent = DiscreteLightComponent()
             override fun accept(nodeModel: EditorNodeModel) =
@@ -223,7 +233,8 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", ui) 
 
         object AddShadowMapComponent : ComponentAdder<ShadowMapComponent>("Shadow") {
             override fun createComponent(): ShadowMapComponent = ShadowMapComponent()
-            override fun accept(nodeModel: EditorNodeModel) = nodeModel.hasComponent<DiscreteLightComponent>()
+            override fun accept(nodeModel: EditorNodeModel) =
+                nodeModel.hasComponent<DiscreteLightComponent>() && !nodeModel.hasComponent<ShadowMapComponent>()
         }
 
         object AddMeshComponent : ComponentAdder<MeshComponent>("Mesh") {

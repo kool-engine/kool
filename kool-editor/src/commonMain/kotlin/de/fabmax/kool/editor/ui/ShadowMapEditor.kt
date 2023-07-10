@@ -1,5 +1,6 @@
 package de.fabmax.kool.editor.ui
 
+import de.fabmax.kool.editor.actions.SetShadowMapTypeAction
 import de.fabmax.kool.editor.components.ShadowMapComponent
 import de.fabmax.kool.editor.data.ShadowMapInfo
 import de.fabmax.kool.editor.data.ShadowMapTypeData
@@ -14,7 +15,7 @@ class ShadowMapEditor(component: ShadowMapComponent) : ComponentEditor<ShadowMap
             val shadowMap = component.shadowMapState.use()
             val selected = typeOptions.indexOfFirst { it.shadowMapType.isInstance(shadowMap) }
             labeledCombobox("Type:", typeOptions, selected) {
-                component.shadowMapState.set(it.create())
+                SetShadowMapTypeAction(component, it.create()).apply()
             }
         }
     }

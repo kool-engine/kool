@@ -6,6 +6,7 @@ import de.fabmax.kool.modules.ksl.KslLitShader
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ui2.MutableStateList
 import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshRayTest
@@ -18,7 +19,8 @@ class MeshComponent(override val componentData: MeshComponentData) :
     ContentComponent,
     UpdateMaterialComponent,
     UpdateSceneBackgroundComponent,
-    UpdateShadowMapsComponent
+    UpdateShadowMapsComponent,
+    UpdateSsaoComponent
 {
     val shapesState = MutableStateList(componentData.shapes)
 
@@ -30,6 +32,7 @@ class MeshComponent(override val componentData: MeshComponentData) :
         get() = mesh
 
     private var isIblShaded = false
+    private var isSsaoEnabled = false
 
     constructor(): this(MeshComponentData(MeshShapeData.Box(Vec3Data(1.0, 1.0, 1.0))))
 
@@ -70,6 +73,7 @@ class MeshComponent(override val componentData: MeshComponentData) :
     private suspend fun createMeshShader(updateBg: Boolean = true) {
         logD { "${nodeModel.name}: (re-)creating shader" }
         val ibl = sceneModel.shaderData.environmentMaps
+        val ssao = sceneModel.shaderData.ssaoMap
 
         val materialData = nodeModel.getComponent<MaterialComponent>()?.materialData
         if (materialData != null) {
@@ -81,6 +85,9 @@ class MeshComponent(override val componentData: MeshComponentData) :
                 shadow { addShadowMaps(sceneModel.shaderData.shadowMaps) }
                 ibl?.let {
                     enableImageBasedLighting(ibl)
+                }
+                ssao?.let {
+                    ao { enableSsao(it) }
                 }
             }
         }
@@ -129,5 +136,16 @@ class MeshComponent(override val componentData: MeshComponentData) :
 
     override fun updateShadowMaps(shadowMaps: List<ShadowMap>) {
         (mesh.shader as? KslLitShader)?.shadowMaps = shadowMaps
+    }
+
+    override fun updateSsao(ssaoMap: Texture2d?) {
+        val needsSsaoEnabled = ssaoMap != null
+        if (needsSsaoEnabled != isSsaoEnabled) {
+            isSsaoEnabled = needsSsaoEnabled
+            launchOnMainThread {
+                createMeshShader(updateBg = false)
+            }
+        }
+        (mesh.shader as? KslLitShader)?.ssaoMap = ssaoMap
     }
 }

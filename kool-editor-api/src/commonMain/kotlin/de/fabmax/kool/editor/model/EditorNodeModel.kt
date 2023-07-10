@@ -38,6 +38,7 @@ abstract class EditorNodeModel(val nodeData: SceneNodeData) {
                 is SceneBackgroundComponentData -> components += SceneBackgroundComponent(data)
                 is ScriptComponentData -> components += ScriptComponent(data)
                 is ShadowMapComponentData -> components += ShadowMapComponent(data)
+                is SsaoComponentData -> components += SsaoComponent(data)
                 is TransformComponentData -> components += TransformComponent(data)
             }
         }

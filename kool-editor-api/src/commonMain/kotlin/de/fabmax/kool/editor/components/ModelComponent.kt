@@ -9,6 +9,7 @@ import de.fabmax.kool.modules.gltf.GltfFile
 import de.fabmax.kool.modules.ksl.KslLitShader
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ui2.mutableStateOf
+import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.Model
 import de.fabmax.kool.scene.Node
@@ -23,7 +24,8 @@ class ModelComponent(override val componentData: ModelComponentData) :
     ContentComponent,
     UpdateMaterialComponent,
     UpdateSceneBackgroundComponent,
-    UpdateShadowMapsComponent
+    UpdateShadowMapsComponent,
+    UpdateSsaoComponent
 {
     val modelPathState = mutableStateOf(componentData.modelPath).onChange { componentData.modelPath = it }
 
@@ -35,6 +37,7 @@ class ModelComponent(override val componentData: ModelComponentData) :
         get() = model
 
     private var isIblShaded = false
+    private var isSsaoEnabled = false
 
     init {
         dependsOn(MaterialComponent::class, isOptional = true)
@@ -97,15 +100,28 @@ class ModelComponent(override val componentData: ModelComponentData) :
         }
     }
 
+    override fun updateSsao(ssaoMap: Texture2d?) {
+        val needsSsaoEnabled = ssaoMap != null
+        if (needsSsaoEnabled != isSsaoEnabled) {
+            // recreate models with changed ssao setting
+            recreateModel()
+        }
+        model.meshes.values.forEach { mesh ->
+            (mesh.shader as? KslLitShader)?.ssaoMap = ssaoMap
+        }
+    }
+
     private suspend fun createModel(): Model {
         val ibl = sceneModel.shaderData.environmentMaps
+        val ssao = sceneModel.shaderData.ssaoMap
         val shadows = sceneModel.shaderData.shadowMaps
         val material = nodeModel.getComponent<MaterialComponent>()?.materialData
         val modelCfg = GltfFile.ModelGenerateConfig(
-            materialConfig = GltfFile.ModelMaterialConfig(environmentMaps = ibl, shadowMaps = shadows),
+            materialConfig = GltfFile.ModelMaterialConfig(environmentMaps = ibl, shadowMaps = shadows, scrSpcAmbientOcclusionMap = ssao),
             applyMaterials = material == null
         )
         isIblShaded = ibl != null
+        isSsaoEnabled = ssao != null
 
         val model = AppAssets.loadModel(componentData).makeModel(modelCfg)
         if (material != null) {
@@ -136,6 +152,7 @@ class ModelComponent(override val componentData: ModelComponentData) :
     private fun recreateModel() {
         launchOnMainThread {
             _model = createModel()
+            // set newly created model as new content node, this also disposes any previous model
             nodeModel.setContentNode(model)
         }
     }

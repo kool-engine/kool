@@ -6,6 +6,7 @@ import de.fabmax.kool.editor.components.SceneBackgroundComponent
 import de.fabmax.kool.editor.components.UpdateSceneBackgroundComponent
 import de.fabmax.kool.editor.data.SceneBackgroundData
 import de.fabmax.kool.editor.data.SceneNodeData
+import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
@@ -161,6 +162,6 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : EditorN
 
         val shadowMaps = mutableListOf<ShadowMap>()
 
-        // todo: AO
+        var ssaoMap: Texture2d? = null
     }
 }
