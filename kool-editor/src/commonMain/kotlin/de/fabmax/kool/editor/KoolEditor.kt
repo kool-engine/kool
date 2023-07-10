@@ -11,6 +11,7 @@ import de.fabmax.kool.editor.api.AppMode
 import de.fabmax.kool.editor.api.AppState
 import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.editor.overlays.GridOverlay
+import de.fabmax.kool.editor.overlays.LightIndicatorOverlay
 import de.fabmax.kool.editor.overlays.SelectionOverlay
 import de.fabmax.kool.editor.ui.EditorUi
 import de.fabmax.kool.input.InputStack
@@ -37,12 +38,14 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
         camera.setClipRange(0.1f, 1000f)
     }
     val gridOverlay = GridOverlay()
+    val lightOverlay = LightIndicatorOverlay()
     val selectionOverlay = SelectionOverlay(this)
 
     val editorContent = Node("Editor Content").apply {
         tags[TAG_EDITOR_SUPPORT_CONTENT] = "true"
         addNode(editorCameraTransform)
         addNode(gridOverlay)
+        addNode(lightOverlay)
         addNode(selectionOverlay)
 
         editorOverlay.addNode(this)
@@ -181,6 +184,8 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
             }
             newScenes.firstOrNull()?.let { scene ->
                 ctx.scenes += scene
+
+                lightOverlay.displayLighting = scene.lighting
 
                 scene.addOffscreenPass(selectionOverlay.selectionPass)
                 selectionOverlay.selectionPass.drawNode = scene

@@ -312,7 +312,7 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
     /*
      * Based on https://schneide.blog/2016/07/15/generating-an-icosphere-in-c/
      */
-    private class IcoGenerator {
+    class IcoGenerator {
         val x = 0.525731112f
         val z = 0.850650808f
         val n = 0f
@@ -583,6 +583,19 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
             val y1 = centerY + sin(a1) * radius
             line(x0, y0, x1, y1, width)
         }
+    }
+
+    fun line3d(p1: Vec3f, p2: Vec3f, normal: Vec3f, width: Float) {
+        val d = p2.subtract(p1, MutableVec3f()).norm()
+        val o = d.cross(normal, MutableVec3f()).norm().scale(width * 0.5f)
+
+        val i0 = vertex { position.set(p1).add(o); this.normal.set(normal) }
+        val i1 = vertex { position.set(p1).subtract(o); this.normal.set(normal) }
+        val i2 = vertex { position.set(p2).subtract(o); this.normal.set(normal) }
+        val i3 = vertex { position.set(p2).add(o); this.normal.set(normal) }
+
+        addTriIndices(i0, i1, i2)
+        addTriIndices(i0, i2, i3)
     }
 
     inline fun cube(centered: Boolean = true, block: CubeProps.() -> Unit) {

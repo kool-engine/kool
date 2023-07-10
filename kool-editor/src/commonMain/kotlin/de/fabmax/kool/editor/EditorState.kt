@@ -75,7 +75,11 @@ object EditorState {
             }
             sceneNodes += SceneNodeData("Directional Light", boxId).apply {
                 components += DiscreteLightComponentData(LightTypeData.Directional())
-                components += TransformComponentData(TransformData(Mat4d().setRotate(EditorDefaults.DEFAULT_LIGHT_ROTATION)))
+                components += TransformComponentData(TransformData(
+                    Mat4d()
+                        .translate(10f, 10f, 10f)
+                        .mul(Mat4d().setRotate(EditorDefaults.DEFAULT_LIGHT_ROTATION))
+                ))
             }
         }
     )

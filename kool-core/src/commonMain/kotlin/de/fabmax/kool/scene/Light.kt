@@ -32,6 +32,14 @@ sealed class Light : Node() {
         )
     }
 
+    override fun toGlobalCoords(vec: MutableVec3f, w: Float): MutableVec3f {
+        return if (parent == null) {
+            transform.transform(vec, w)
+        } else {
+            super.toGlobalCoords(vec, w)
+        }
+    }
+
     protected fun setTransformByDirectionAndPos(direction: Vec3f = Vec3f.X_AXIS, pos: Vec3d = Vec3d.ZERO) {
         val dir = direction.toMutableVec3d().norm()
         val v = if (abs(dir.dot(Vec3d.Y_AXIS)) > 0.9f) {
@@ -135,13 +143,8 @@ sealed class Light : Node() {
 
         override fun updateEncodedValues() {
             encodeColor()
-            if (parent == null) {
-                transform.transform(_position.set(Vec3f.ZERO))
-                transform.transform(_direction.set(Vec3f.X_AXIS), 0f)
-            } else {
-                toGlobalCoords(_position.set(Vec3f.ZERO))
-                toGlobalCoords(_direction.set(Vec3f.X_AXIS), 0f)
-            }
+            transform.transform(_position.set(Vec3f.ZERO))
+            transform.transform(_direction.set(Vec3f.X_AXIS), 0f)
 
             encodedPosition.set(_position, ENCODING)
             encodedDirection.set(direction, cos((spotAngle / 2).toRad()))
