@@ -2,6 +2,7 @@ package de.fabmax.kool.editor.components
 
 import de.fabmax.kool.editor.api.AppAssets
 import de.fabmax.kool.editor.api.AppState
+import de.fabmax.kool.editor.data.ColorData
 import de.fabmax.kool.editor.data.SceneBackgroundComponentData
 import de.fabmax.kool.editor.data.SceneBackgroundData
 import de.fabmax.kool.editor.model.EditorNodeModel
@@ -16,7 +17,9 @@ class SceneBackgroundComponent(override val componentData: SceneBackgroundCompon
     EditorDataComponent<SceneBackgroundComponentData>
 {
 
-    constructor(color: Color) : this(SceneBackgroundComponentData(SceneBackgroundData.SingleColor(color)))
+    constructor(color: Color, isLinear: Boolean = true) : this(
+        SceneBackgroundComponentData(SceneBackgroundData.SingleColor(ColorData(color, isLinear)))
+    )
 
     private var _sceneModel: SceneModel? = null
     val sceneModel: SceneModel
@@ -42,7 +45,7 @@ class SceneBackgroundComponent(override val componentData: SceneBackgroundCompon
                 sceneModel.shaderData.environmentMaps = AppAssets.loadHdriEnvironment(sceneModel.drawNode, bgState.hdriPath)
             }
             is SceneBackgroundData.SingleColor -> {
-                sceneModel.shaderData.ambientColorLinear = bgState.color.toColor().toLinear()
+                sceneModel.shaderData.ambientColorLinear = bgState.color.toColorLinear()
             }
         }
     }
@@ -56,8 +59,11 @@ class SceneBackgroundComponent(override val componentData: SceneBackgroundCompon
                     UpdateSceneBackgroundComponent.updateSceneBackground(scene)
                 }
                 is SceneBackgroundData.SingleColor -> {
+                    println("scene bg srgb r: ${bgData.color.toColorSrgb().r}")
+                    println("scene bg linear r: ${bgData.color.toColorLinear().r}")
+
                     scene.shaderData.environmentMaps = null
-                    scene.shaderData.ambientColorLinear = bgData.color.toColor().toLinear()
+                    scene.shaderData.ambientColorLinear = bgData.color.toColorLinear()
                     UpdateSceneBackgroundComponent.updateSceneBackground(scene)
                 }
             }

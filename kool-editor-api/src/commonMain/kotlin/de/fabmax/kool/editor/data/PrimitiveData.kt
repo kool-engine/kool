@@ -105,10 +105,24 @@ data class Vec4Data(val x: Double, val y: Double, val z: Double, val w: Double) 
 }
 
 @Serializable
-data class ColorData(val r: Float, val g: Float, val b: Float, val a: Float) {
-    constructor(color: Color): this(color.r, color.g, color.b, color.a)
+data class ColorData(val r: Float, val g: Float, val b: Float, val a: Float, val isLinear: Boolean = true) {
+    constructor(color: Color, isLinear: Boolean = true): this(color.r, color.g, color.b, color.a, isLinear)
 
-    fun toColor(result: MutableColor = MutableColor()): MutableColor {
-        return result.set(r, g, b, a)
+    fun toColorLinear(result: MutableColor = MutableColor()): MutableColor {
+        result.set(r, g, b, a)
+        if (!isLinear) {
+            val c = result.toLinear()
+            result.set(c)
+        }
+        return result
+    }
+
+    fun toColorSrgb(result: MutableColor = MutableColor()): MutableColor {
+        result.set(r, g, b, a)
+        if (isLinear) {
+            val c = result.toSrgb()
+            result.set(c)
+        }
+        return result
     }
 }

@@ -43,11 +43,11 @@ class LightEditor(component: DiscreteLightComponent) : ComponentEditor<DiscreteL
     }
 
     private fun UiScope.colorSettings() {
-        labeledColorPicker("Color:", currentLight.color.toColor()) {
+        labeledColorPicker("Color:", currentLight.color.toColorSrgb()) {
             val chgLight = when (val light = currentLight) {
-                is LightTypeData.Directional -> light.copy(color = ColorData(it))
-                is LightTypeData.Point -> light.copy(color = ColorData(it))
-                is LightTypeData.Spot -> light.copy(color = ColorData(it))
+                is LightTypeData.Directional -> light.copy(color = ColorData(it.toLinear()))
+                is LightTypeData.Point -> light.copy(color = ColorData(it.toLinear()))
+                is LightTypeData.Spot -> light.copy(color = ColorData(it.toLinear()))
             }
             SetDiscreteLightAction(component, chgLight).apply()
         }

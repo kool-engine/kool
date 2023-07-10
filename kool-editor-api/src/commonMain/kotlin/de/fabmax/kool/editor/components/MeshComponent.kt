@@ -55,7 +55,7 @@ class MeshComponent(override val componentData: MeshComponentData) :
             shapesState.forEach { shape ->
                 withTransform {
                     shape.pose.toMat4f(transform)
-                    color = shape.vertexColor.toColor()
+                    color = shape.vertexColor.toColorLinear()
                     vertexModFun = {
                         texCoord.x *= shape.uvScale.x.toFloat()
                         texCoord.y *= shape.uvScale.y.toFloat()

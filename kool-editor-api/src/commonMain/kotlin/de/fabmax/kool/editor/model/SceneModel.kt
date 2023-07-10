@@ -24,7 +24,7 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : EditorN
     val nodesToNodeModels: MutableMap<Node, EditorNodeModel> = mutableMapOf()
     private val nodeModels: MutableMap<Long, SceneNodeModel> = mutableMapOf()
 
-    val sceneBackground = getOrPutComponent { SceneBackgroundComponent(MdColor.GREY tone 900) }
+    val sceneBackground = getOrPutComponent { SceneBackgroundComponent(MdColor.GREY toneLin 900) }
     private val backgroundUpdater = getOrPutComponent { BackgroundUpdater() }
 
     val shaderData = SceneShaderData()

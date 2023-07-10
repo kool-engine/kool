@@ -66,7 +66,9 @@ object EditorState {
             sceneNodeIds += sceneId
             sceneNodes += SceneNodeData("New Scene", sceneId).apply {
                 childNodeIds += boxId
-                components += SceneBackgroundComponentData(SceneBackgroundData.SingleColor(MdColor.GREY tone 900))
+                components += SceneBackgroundComponentData(
+                    SceneBackgroundData.SingleColor(ColorData(MdColor.GREY toneLin 900))
+                )
             }
             sceneNodes += SceneNodeData("Default Cube", boxId).apply {
                 components += MeshComponentData(MeshShapeData.Box(Vec3Data(1.0, 1.0, 1.0)))

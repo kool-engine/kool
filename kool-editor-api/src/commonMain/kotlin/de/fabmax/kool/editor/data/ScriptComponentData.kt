@@ -48,7 +48,7 @@ data class PropertyValue(
             i3 != null -> i3.toVec3i()
             i4 != null -> i4.toVec4i()
 
-            color != null -> color.toColor()
+            color != null -> color.toColorLinear()
             transform != null -> transform.toMat4d()
             str != null -> str
             else -> throw IllegalStateException("PropertyValue has no non-null value")

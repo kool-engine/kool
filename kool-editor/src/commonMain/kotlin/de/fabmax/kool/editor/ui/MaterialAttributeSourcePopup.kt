@@ -131,7 +131,7 @@ class MaterialAttributeSourcePopup(
     private fun UiScope.colorSelector() {
         val color = when (val attr = editMatAttr) {
             is ConstColorAttribute -> {
-                attr.color.toColor().toSrgb()
+                attr.color.toColorLinear().toSrgb()
             }
             is ConstValueAttribute -> {
                 val f = attr.value

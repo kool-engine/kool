@@ -5,6 +5,7 @@ import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.actions.SetBackgroundAction
 import de.fabmax.kool.editor.api.AppAssets
 import de.fabmax.kool.editor.components.SceneBackgroundComponent
+import de.fabmax.kool.editor.data.ColorData
 import de.fabmax.kool.editor.data.SceneBackgroundComponentData
 import de.fabmax.kool.editor.data.SceneBackgroundData
 import de.fabmax.kool.modules.ui2.*
@@ -61,7 +62,7 @@ class SceneBackgroundEditor(component: SceneBackgroundComponent) :
 
     private fun selectSingleColorBackground() {
         val oldBg = component.backgroundState.value
-        val newBg = SceneBackgroundData.SingleColor(editorSingleBgColor.value)
+        val newBg = SceneBackgroundData.SingleColor(ColorData(editorSingleBgColor.value, false))
         SetBackgroundAction(component, oldBg, newBg).apply()
     }
 
@@ -69,13 +70,13 @@ class SceneBackgroundEditor(component: SceneBackgroundComponent) :
         width = Grow.Std,
         scopeName = "singleColorBg"
     ) {
-        editorSingleBgColor.set(singleColorBg.color.toColor())
+        editorSingleBgColor.set(singleColorBg.color.toColorSrgb())
         labeledColorPicker(
             "Background color:",
             editorSingleBgColor.use(),
             editHandler = ActionValueEditHandler { undoValue, applyValue ->
-                val oldBg = SceneBackgroundData.SingleColor(undoValue)
-                val newBg = SceneBackgroundData.SingleColor(applyValue)
+                val oldBg = SceneBackgroundData.SingleColor(ColorData(undoValue, false))
+                val newBg = SceneBackgroundData.SingleColor(ColorData(applyValue, false))
                 SetBackgroundAction(component, oldBg, newBg)
             }
         )

@@ -126,7 +126,7 @@ class MaterialEditor(component: MaterialComponent) : ComponentEditor<MaterialCom
 
             when (colorAttr) {
                 is ConstColorAttribute -> {
-                    bgColor = colorAttr.color.toColor().toSrgb()
+                    bgColor = colorAttr.color.toColorLinear().toSrgb()
                 }
                 is ConstValueAttribute -> {
                     val f = colorAttr.value

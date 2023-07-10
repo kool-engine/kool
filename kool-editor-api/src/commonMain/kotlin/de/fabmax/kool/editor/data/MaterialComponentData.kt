@@ -56,10 +56,10 @@ sealed interface MaterialShaderData {
 
 @Serializable
 data class PbrShaderData(
-    val baseColor: MaterialAttribute = ConstColorAttribute(ColorData(MdColor.GREY)),
+    val baseColor: MaterialAttribute = ConstColorAttribute(ColorData(MdColor.GREY toneLin 500)),
     val roughness: MaterialAttribute = ConstValueAttribute(0.5f),
     val metallic: MaterialAttribute = ConstValueAttribute(0f),
-    val emission: MaterialAttribute = ConstColorAttribute(ColorData(Color.BLACK)),
+    val emission: MaterialAttribute = ConstColorAttribute(ColorData(Color.BLACK.toLinear())),
     val normalMap: MapAttribute? = null,
     val aoMap: MapAttribute? = null,
     val displacementMap: MapAttribute? = null,
@@ -165,13 +165,13 @@ data class PbrShaderData(
         val displacementMap = displacementMap?.let { AppAssets.loadTexture2d(it.mapPath) }
 
         when (val color = baseColor) {
-            is ConstColorAttribute -> pbrShader.color = color.color.toColor()
+            is ConstColorAttribute -> pbrShader.color = color.color.toColorLinear()
             is ConstValueAttribute -> pbrShader.color = Color(color.value, color.value, color.value)
             is MapAttribute -> pbrShader.colorMap = colorMap
             is VertexAttribute -> { }
         }
         when (val color = emission) {
-            is ConstColorAttribute -> pbrShader.emission = color.color.toColor()
+            is ConstColorAttribute -> pbrShader.emission = color.color.toColorLinear()
             is ConstValueAttribute -> pbrShader.emission = Color(color.value, color.value, color.value)
             is MapAttribute -> pbrShader.emissionMap = emissionMap
             is VertexAttribute -> { }
@@ -201,8 +201,8 @@ data class PbrShaderData(
 
 @Serializable
 data class BlinnPhongShaderData(
-    val baseColor: MaterialAttribute = ConstColorAttribute(ColorData(MdColor.GREY)),
-    val specularColor: MaterialAttribute = ConstColorAttribute(ColorData(Color.WHITE)),
+    val baseColor: MaterialAttribute = ConstColorAttribute(ColorData(MdColor.GREY toneLin 500)),
+    val specularColor: MaterialAttribute = ConstColorAttribute(ColorData(Color.WHITE.toLinear())),
     val shininess: MaterialAttribute = ConstValueAttribute(16f),
     val specularStrength: MaterialAttribute = ConstValueAttribute(1f),
     override val genericSettings: GenericMaterialSettings = GenericMaterialSettings()
@@ -223,7 +223,7 @@ data class BlinnPhongShaderData(
 
 @Serializable
 data class UnlitShaderData(
-    val baseColor: MaterialAttribute = ConstColorAttribute(ColorData(MdColor.GREY)),
+    val baseColor: MaterialAttribute = ConstColorAttribute(ColorData(MdColor.GREY toneLin 500)),
     override val genericSettings: GenericMaterialSettings = GenericMaterialSettings()
 ) : MaterialShaderData {
 

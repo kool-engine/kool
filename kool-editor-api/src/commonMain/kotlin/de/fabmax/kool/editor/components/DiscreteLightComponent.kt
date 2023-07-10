@@ -60,7 +60,7 @@ class DiscreteLightComponent(override val componentData: DiscreteLightComponentD
             }
         }
         light.lightIndex = lightIdx
-        light.setColor(lightData.color.toColor(), lightData.intensity)
+        light.setColor(lightData.color.toColorLinear(), lightData.intensity)
         nodeModel.setContentNode(light)
 
         if (lightIdx >= 0) {

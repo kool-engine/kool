@@ -19,7 +19,7 @@ class MeshComponentData() : ComponentData {
 sealed class MeshShapeData {
 
     var pose = TransformData.IDENTITY
-    var vertexColor = ColorData(MdColor.GREY)
+    var vertexColor = ColorData(MdColor.GREY.toLinear())
     var uvScale = Vec2Data(1.0, 1.0)
 
     abstract val name: String
