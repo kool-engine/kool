@@ -77,14 +77,15 @@ class ShadowDataUniforms(
     val shadowDepthMaps: TextureSampler2d
 ) {
 
-    fun updateShadowMaps(shadowMaps: List<ShadowMap>) {
-        setDummyDepthMaps()
+    private var prevUsedSubMaps = -1
 
+    fun updateShadowMaps(shadowMaps: List<ShadowMap>) {
         val maxMaps = lightIndices.length
         val maxSubMaps = shadowMapViewProjMats.length
         var mapI = 0
         var subMapI = 0
         var numActive = 0
+        var usedSubMaps = 0
 
         while (mapI < shadowMaps.size && mapI < maxMaps && subMapI < maxSubMaps) {
             val map = shadowMaps[mapI]
@@ -96,21 +97,22 @@ class ShadowDataUniforms(
                     shadowMapViewProjMats.value[subMapI + i].set(subMap.lightViewProjMat)
                     shadowMapDepthOffsets.value[subMapI + i] = subMap.shaderDepthOffset
                     shadowDepthMaps.textures[subMapI + i] = subMap.depthTexture
+                    usedSubMaps++
                 }
             }
-
             subMapI += map.subMaps.size
             mapI++
         }
-        numActiveMaps.value = numActive
-    }
 
-    private fun setDummyDepthMaps() {
-        if (shadowDepthMaps.textures.last() == null) {
-            for (i in shadowDepthMaps.textures.indices) {
+        // set an empty dummy texture to the remaining (unused) shadow map texture slots
+        if (prevUsedSubMaps != usedSubMaps) {
+            prevUsedSubMaps = usedSubMaps
+            for (i in numActive .. shadowDepthMaps.textures.lastIndex) {
                 shadowDepthMaps.textures[i] = dummyDepthTex
             }
         }
+
+        numActiveMaps.value = numActive
     }
 
     companion object {

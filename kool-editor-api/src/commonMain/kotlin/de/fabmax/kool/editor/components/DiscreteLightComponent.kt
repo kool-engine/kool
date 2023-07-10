@@ -37,7 +37,7 @@ class DiscreteLightComponent(override val componentData: DiscreteLightComponentD
     }
 
     override fun onNodeRemoved(nodeModel: EditorNodeModel) {
-        sceneModel.drawNode.lighting.lights -= light
+        sceneModel.drawNode.lighting.removeLight(light)
     }
 
     override fun onNodeAdded(nodeModel: EditorNodeModel) {
@@ -45,24 +45,28 @@ class DiscreteLightComponent(override val componentData: DiscreteLightComponentD
     }
 
     private fun updateLight(lightData: LightTypeData) {
-        val sceneLights = sceneModel.drawNode.lighting.lights
-        val idx = sceneLights.indexOf(light)
+        val lighting = sceneModel.drawNode.lighting
+        val lightIdx = light.lightIndex
 
         light = when (lightData) {
-            is LightTypeData.Directional -> Light.Directional()
-            is LightTypeData.Point -> Light.Point()
-            is LightTypeData.Spot -> Light.Spot().apply {
-                spotAngle = lightData.spotAngle
-                coreRatio = lightData.coreRatio
+            is LightTypeData.Directional -> if (light is Light.Directional) light else Light.Directional()
+            is LightTypeData.Point -> if (light is Light.Point) light else Light.Point()
+            is LightTypeData.Spot -> {
+                val spot = light as? Light.Spot ?: Light.Spot()
+                spot.apply {
+                    spotAngle = lightData.spotAngle
+                    coreRatio = lightData.coreRatio
+                }
             }
         }
+        light.lightIndex = lightIdx
         light.setColor(lightData.color.toColor(), lightData.intensity)
         nodeModel.setContentNode(light)
 
-        if (idx >= 0) {
-            sceneLights[idx] = light
+        if (lightIdx >= 0) {
+            lighting.lights[lightIdx] = light
         } else {
-            sceneLights += light
+            lighting.addLight(light)
         }
     }
 }

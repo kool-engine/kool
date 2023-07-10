@@ -10,17 +10,15 @@ import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshRayTest
 import de.fabmax.kool.scene.Node
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.MdColor
-import de.fabmax.kool.util.launchOnMainThread
-import de.fabmax.kool.util.logD
+import de.fabmax.kool.util.*
 
 class MeshComponent(override val componentData: MeshComponentData) :
     SceneNodeComponent(),
     EditorDataComponent<MeshComponentData>,
     ContentComponent,
     UpdateMaterialComponent,
-    UpdateSceneBackgroundComponent
+    UpdateSceneBackgroundComponent,
+    UpdateShadowMapsComponent
 {
     val shapesState = MutableStateList(componentData.shapes)
 
@@ -80,7 +78,7 @@ class MeshComponent(override val componentData: MeshComponentData) :
         } else {
             mesh.shader = KslPbrShader {
                 color { uniformColor(MdColor.GREY.toLinear()) }
-                shadow {  }
+                shadow { addShadowMaps(sceneModel.shaderData.shadowMaps) }
                 ibl?.let {
                     enableImageBasedLighting(ibl)
                 }
@@ -129,4 +127,7 @@ class MeshComponent(override val componentData: MeshComponentData) :
         isIblShaded = true
     }
 
+    override fun updateShadowMaps(shadowMaps: List<ShadowMap>) {
+        (mesh.shader as? KslLitShader)?.shadowMaps = shadowMaps
+    }
 }

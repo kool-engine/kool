@@ -7,6 +7,8 @@ import kotlin.math.abs
 import kotlin.math.cos
 
 sealed class Light : Node() {
+    var lightIndex = -1
+
     val color = MutableColor(Color.WHITE)
 
     val encodedPosition = MutableVec4f()

@@ -17,14 +17,14 @@ import kotlin.math.pow
 import kotlin.math.sqrt
 
 sealed interface ShadowMap {
-    val lightIndex: Int
+    var lightIndex: Int
     var isShadowMapEnabled: Boolean
     val subMaps: List<SimpleShadowMap>
 
     fun setupSampler(sampler: TextureSampler2d?)
 }
 
-class SimpleShadowMap(val scene: Scene, override val lightIndex: Int, mapSize: Int = 2048, drawNode: Node = scene) :
+class SimpleShadowMap(val scene: Scene, override var lightIndex: Int, mapSize: Int = 2048, drawNode: Node = scene) :
         DepthMapPass(drawNode, renderPassConfig {
             name = "SimpleShadowMap"
             setSize(mapSize, mapSize)
@@ -181,13 +181,20 @@ class SimpleShadowMap(val scene: Scene, override val lightIndex: Int, mapSize: I
 
 class CascadedShadowMap(
     scene: Scene,
-    override val lightIndex: Int,
+    lightIndex: Int,
     var maxRange: Float = 100f,
     val numCascades: Int = 3,
     nearOffset: Float = -20f,
     mapSizes: List<Int>? = null,
     drawNode: Node = scene
 ) : ShadowMap {
+
+    override var lightIndex: Int = lightIndex
+        set(value) {
+            field = value
+            subMaps.forEach { it.lightIndex = value }
+        }
+
     val mapRanges = Array(numCascades) { i ->
         val near = i.toFloat().pow(2) / numCascades.toFloat().pow(2) + 0.001f
         val far = (i + 1).toFloat().pow(2) / numCascades.toFloat().pow(2)

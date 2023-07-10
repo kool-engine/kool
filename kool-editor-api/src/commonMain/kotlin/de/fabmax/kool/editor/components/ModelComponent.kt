@@ -13,6 +13,7 @@ import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.Model
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.ShadowMap
 import de.fabmax.kool.util.launchOnMainThread
 import de.fabmax.kool.util.logE
 
@@ -21,7 +22,8 @@ class ModelComponent(override val componentData: ModelComponentData) :
     EditorDataComponent<ModelComponentData>,
     ContentComponent,
     UpdateMaterialComponent,
-    UpdateSceneBackgroundComponent
+    UpdateSceneBackgroundComponent,
+    UpdateShadowMapsComponent
 {
     val modelPathState = mutableStateOf(componentData.modelPath).onChange { componentData.modelPath = it }
 
@@ -40,7 +42,7 @@ class ModelComponent(override val componentData: ModelComponentData) :
 
     override suspend fun createComponent(nodeModel: EditorNodeModel) {
         super.createComponent(nodeModel)
-        _model = createModel(sceneModel.shaderData.environmentMaps)
+        _model = createModel()
 
         model.name = nodeModel.name
         this.nodeModel.setContentNode(model)
@@ -50,19 +52,16 @@ class ModelComponent(override val componentData: ModelComponentData) :
         val holder = nodeModel.getComponent<MaterialComponent>() ?: return
         if (holder.isHoldingMaterial(material)) {
             launchOnMainThread {
-                val ibl = sceneModel.shaderData.environmentMaps
-                val bgColor = sceneModel.shaderData.ambientColorLinear
-
                 if (material == null) {
                     // recreate model with default materials
-                    recreateModel(ibl, bgColor)
+                    recreateModel()
                 } else {
                     // update model shaders and recreate model in case update fails
                     val updateFail = model.meshes.values.any {
-                        !material.updateShader(it.shader, ibl)
+                        !material.updateShader(it.shader, sceneModel.shaderData.environmentMaps)
                     }
                     if (updateFail) {
-                        recreateModel(ibl, bgColor)
+                        recreateModel()
                     }
                 }
             }
@@ -72,7 +71,7 @@ class ModelComponent(override val componentData: ModelComponentData) :
     override fun updateSingleColorBg(bgColorLinear: Color) {
         if (isIblShaded) {
             // recreate models without ibl lighting
-            recreateModel(null, bgColorLinear)
+            recreateModel()
         } else {
             model.meshes.values.forEach { mesh ->
                 (mesh.shader as? KslLitShader)?.ambientFactor = bgColorLinear
@@ -83,7 +82,7 @@ class ModelComponent(override val componentData: ModelComponentData) :
     override fun updateHdriBg(hdriBg: SceneBackgroundData.Hdri, ibl: EnvironmentMaps) {
         if (!isIblShaded) {
             // recreate models with ibl lighting
-            recreateModel(ibl, sceneModel.shaderData.ambientColorLinear)
+            recreateModel()
         } else {
             model.meshes.values.forEach { mesh ->
                 (mesh.shader as? KslLitShader)?.ambientMap = ibl.irradianceMap
@@ -92,10 +91,18 @@ class ModelComponent(override val componentData: ModelComponentData) :
         }
     }
 
-    private suspend fun createModel(ibl: EnvironmentMaps?): Model {
+    override fun updateShadowMaps(shadowMaps: List<ShadowMap>) {
+        model.meshes.values.forEach { mesh ->
+            (mesh.shader as? KslLitShader)?.shadowMaps = shadowMaps
+        }
+    }
+
+    private suspend fun createModel(): Model {
+        val ibl = sceneModel.shaderData.environmentMaps
+        val shadows = sceneModel.shaderData.shadowMaps
         val material = nodeModel.getComponent<MaterialComponent>()?.materialData
         val modelCfg = GltfFile.ModelGenerateConfig(
-            materialConfig = GltfFile.ModelMaterialConfig(environmentMaps = ibl),
+            materialConfig = GltfFile.ModelMaterialConfig(environmentMaps = ibl, shadowMaps = shadows),
             applyMaterials = material == null
         )
         isIblShaded = ibl != null
@@ -114,18 +121,22 @@ class ModelComponent(override val componentData: ModelComponentData) :
                 }
             }
         }
+
+        if (!isIblShaded) {
+            val bgColor = sceneModel.shaderData.ambientColorLinear
+            model.meshes.values.forEach { mesh ->
+                (mesh.shader as? KslLitShader)?.ambientFactor = bgColor
+            }
+        }
+
         model.name = nodeModel.name
         return model
     }
 
-    private fun recreateModel(ibl: EnvironmentMaps?, bgColor: Color) {
+    private fun recreateModel() {
         launchOnMainThread {
-            _model = createModel(ibl)
+            _model = createModel()
             nodeModel.setContentNode(model)
-
-            model.meshes.values.forEach { mesh ->
-                (mesh.shader as? KslLitShader)?.ambientFactor = bgColor
-            }
         }
     }
 }
