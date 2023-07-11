@@ -423,7 +423,7 @@ open class KslShader(val program: KslProgram, val pipelineConfig: PipelineConfig
         override val isConnected: Boolean = uniform != null
         override fun connect() {
             uniform = (uniforms[uniformName] as? Uniform1fv)?.apply {
-                check(length == arraySize) { "Mismatching uniform array size: $length != $arraySize" }
+                check(size == arraySize) { "Mismatching uniform array size: $size != $arraySize" }
                 value = buffer
             }
         }
@@ -436,7 +436,7 @@ open class KslShader(val program: KslProgram, val pipelineConfig: PipelineConfig
         override val isConnected: Boolean = uniform != null
         override fun connect() {
             uniform = (uniforms[uniformName] as? Uniform2fv)?.apply {
-                check(length == arraySize) { "Mismatching uniform array size: $length != $arraySize" }
+                check(size == arraySize) { "Mismatching uniform array size: $size != $arraySize" }
                 value = buffer
             }
         }
@@ -449,7 +449,7 @@ open class KslShader(val program: KslProgram, val pipelineConfig: PipelineConfig
         override val isConnected: Boolean = uniform != null
         override fun connect() {
             uniform = (uniforms[uniformName] as? Uniform3fv)?.apply {
-                check(length == arraySize) { "Mismatching uniform array size: $length != $arraySize" }
+                check(size == arraySize) { "Mismatching uniform array size: $size != $arraySize" }
                 value = buffer
             }
         }
@@ -462,7 +462,7 @@ open class KslShader(val program: KslProgram, val pipelineConfig: PipelineConfig
         override val isConnected: Boolean = uniform != null
         override fun connect() {
             uniform = (uniforms[uniformName] as? Uniform4fv)?.apply {
-                check(length == arraySize) { "Mismatching uniform array size: $length != $arraySize" }
+                check(size == arraySize) { "Mismatching uniform array size: $size != $arraySize" }
                 value = buffer
             }
         }
@@ -475,7 +475,7 @@ open class KslShader(val program: KslProgram, val pipelineConfig: PipelineConfig
         override val isConnected: Boolean = uniform != null
         override fun connect() {
             uniform = (uniforms[uniformName] as? Uniform1iv)?.apply {
-                check(length == arraySize) { "Mismatching uniform array size: $length != $arraySize" }
+                check(size == arraySize) { "Mismatching uniform array size: $size != $arraySize" }
                 value = buffer
             }
         }
@@ -488,7 +488,7 @@ open class KslShader(val program: KslProgram, val pipelineConfig: PipelineConfig
         override val isConnected: Boolean = uniform != null
         override fun connect() {
             uniform = (uniforms[uniformName] as? Uniform2iv)?.apply {
-                check(length == arraySize) { "Mismatching uniform array size: $length != $arraySize" }
+                check(size == arraySize) { "Mismatching uniform array size: $size != $arraySize" }
                 value = buffer
             }
         }
@@ -501,7 +501,7 @@ open class KslShader(val program: KslProgram, val pipelineConfig: PipelineConfig
         override val isConnected: Boolean = uniform != null
         override fun connect() {
             uniform = (uniforms[uniformName] as? Uniform3iv)?.apply {
-                check(length == arraySize) { "Mismatching uniform array size: $length != $arraySize" }
+                check(size == arraySize) { "Mismatching uniform array size: $size != $arraySize" }
                 value = buffer
             }
         }
@@ -514,7 +514,7 @@ open class KslShader(val program: KslProgram, val pipelineConfig: PipelineConfig
         override val isConnected: Boolean = uniform != null
         override fun connect() {
             uniform = (uniforms[uniformName] as? Uniform4iv)?.apply {
-                check(length == arraySize) { "Mismatching uniform array size: $length != $arraySize" }
+                check(size == arraySize) { "Mismatching uniform array size: $size != $arraySize" }
                 value = buffer
             }
         }
@@ -527,7 +527,7 @@ open class KslShader(val program: KslProgram, val pipelineConfig: PipelineConfig
         override val isConnected: Boolean = uniform != null
         override fun connect() {
             uniform = (uniforms[uniformName] as? UniformMat3fv)?.apply {
-                check(length == arraySize) { "Mismatching uniform array size: $length != $arraySize" }
+                check(size == arraySize) { "Mismatching uniform array size: $size != $arraySize" }
                 buffer.forEachIndexed { i, m -> value[i] = m }
             }
         }
@@ -540,7 +540,7 @@ open class KslShader(val program: KslProgram, val pipelineConfig: PipelineConfig
         override val isConnected: Boolean = uniform != null
         override fun connect() {
             uniform = (uniforms[uniformName] as? UniformMat4fv)?.apply {
-                check(length == arraySize) { "Mismatching uniform array size: $length != $arraySize" }
+                check(size == arraySize) { "Mismatching uniform array size: $size != $arraySize" }
                 buffer.forEachIndexed { i, m -> value[i] = m }
             }
         }

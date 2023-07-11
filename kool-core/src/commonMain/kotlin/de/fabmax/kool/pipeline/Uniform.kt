@@ -12,11 +12,14 @@ sealed class Uniform<T>(
     /**
      * Number of elements in case this is an array type (1 otherwise)
      */
-    val length: Int = 1
+    val size: Int = 1
 ) {
 
+    @Deprecated("", replaceWith = ReplaceWith("size"))
+    val length: Int get() = size
+
     val isArray: Boolean
-        get() = length > 1
+        get() = size > 1
 
     /**
      * Appends this uniform's data to the supplied buffer at its current position. Does not check for alignment, i.e.
@@ -106,9 +109,9 @@ class UniformColor(name: String) : Uniform<MutableColor>(MutableColor(), name) {
 
 class Uniform1fv(name: String, length: Int) : Uniform<FloatArray>(FloatArray(length), name, length) {
     override fun putToBuffer(buffer: MixedBuffer, len: Int) {
-        checkLen(4 * length, len)
-        val padLen = (len - 4 * length) / length
-        for (i in 0 until length) {
+        checkLen(4 * size, len)
+        val padLen = (len - 4 * size) / size
+        for (i in 0 until size) {
             buffer.putFloat32(value[i])
             putPadding(buffer, padLen)
         }
@@ -117,9 +120,9 @@ class Uniform1fv(name: String, length: Int) : Uniform<FloatArray>(FloatArray(len
 
 class Uniform2fv(name: String, length: Int) : Uniform<Array<MutableVec2f>>(Array(length) { MutableVec2f() }, name, length) {
     override fun putToBuffer(buffer: MixedBuffer, len: Int) {
-        checkLen(8 * length, len)
-        val padLen = (len - 8 * length) / length
-        for (i in 0 until length) {
+        checkLen(8 * size, len)
+        val padLen = (len - 8 * size) / size
+        for (i in 0 until size) {
             buffer.putFloat32(value[i].array)
             putPadding(buffer, padLen)
         }
@@ -128,9 +131,9 @@ class Uniform2fv(name: String, length: Int) : Uniform<Array<MutableVec2f>>(Array
 
 class Uniform3fv(name: String, length: Int) : Uniform<Array<MutableVec3f>>(Array(length) { MutableVec3f() }, name, length) {
     override fun putToBuffer(buffer: MixedBuffer, len: Int) {
-        checkLen(12 * length, len)
-        val padLen = (len - 12 * length) / length
-        for (i in 0 until length) {
+        checkLen(12 * size, len)
+        val padLen = (len - 12 * size) / size
+        for (i in 0 until size) {
             buffer.putFloat32(value[i].array)
             putPadding(buffer, padLen)
         }
@@ -139,9 +142,9 @@ class Uniform3fv(name: String, length: Int) : Uniform<Array<MutableVec3f>>(Array
 
 class Uniform4fv(name: String, length: Int) : Uniform<Array<MutableVec4f>>(Array(length) { MutableVec4f() }, name, length) {
     override fun putToBuffer(buffer: MixedBuffer, len: Int) {
-        checkLen(16 * length, len)
+        checkLen(16 * size, len)
         // Uniform4f arrays never contain padding
-        for (i in 0 until length) {
+        for (i in 0 until size) {
             buffer.putFloat32(value[i].array)
         }
     }
@@ -160,9 +163,9 @@ class UniformMat3f(name: String) : Uniform<Mat3f>(Mat3f(), name) {
 
 class UniformMat3fv(name: String, length: Int) : Uniform<Array<Mat3f>>(Array(length) { Mat3f() }, name, length) {
     override fun putToBuffer(buffer: MixedBuffer, len: Int) {
-        checkLen(3 * 12 * length, len)
-        val padLen = (len - 3 * 12 * length) / (3 * length)
-        for (i in 0 until length) {
+        checkLen(3 * 12 * size, len)
+        val padLen = (len - 3 * 12 * size) / (3 * size)
+        for (i in 0 until size) {
             for (m in 0..2) {
                 buffer.putFloat32(value[i].matrix, m * 3, 3)
                 putPadding(buffer, padLen)
@@ -180,8 +183,8 @@ class UniformMat4f(name: String) : Uniform<Mat4f>(Mat4f(), name) {
 
 class UniformMat4fv(name: String, length: Int) : Uniform<Array<Mat4f>>(Array(length) { Mat4f() }, name, length) {
     override fun putToBuffer(buffer: MixedBuffer, len: Int) {
-        checkLen(4 * 16 * length, len)
-        for (i in 0 until length) {
+        checkLen(4 * 16 * size, len)
+        for (i in 0 until size) {
             buffer.putFloat32(value[i].array)
         }
     }
@@ -237,9 +240,9 @@ class Uniform4i(name: String) : Uniform<MutableVec4i>(MutableVec4i(), name) {
 
 class Uniform1iv(name: String, length: Int) : Uniform<IntArray>(IntArray(length), name, length) {
     override fun putToBuffer(buffer: MixedBuffer, len: Int) {
-        checkLen(4 * length, len)
-        val padLen = (len - 4 * length) / length
-        for (i in 0 until length) {
+        checkLen(4 * size, len)
+        val padLen = (len - 4 * size) / size
+        for (i in 0 until size) {
             buffer.putInt32(value[i])
             putPadding(buffer, padLen)
         }
@@ -248,9 +251,9 @@ class Uniform1iv(name: String, length: Int) : Uniform<IntArray>(IntArray(length)
 
 class Uniform2iv(name: String, length: Int) : Uniform<Array<MutableVec2i>>(Array(length) { MutableVec2i() }, name, length) {
     override fun putToBuffer(buffer: MixedBuffer, len: Int) {
-        checkLen(8 * length, len)
-        val padLen = (len - 8 * length) / length
-        for (i in 0 until length) {
+        checkLen(8 * size, len)
+        val padLen = (len - 8 * size) / size
+        for (i in 0 until size) {
             buffer.putInt32(value[i].array)
             putPadding(buffer, padLen)
         }
@@ -259,9 +262,9 @@ class Uniform2iv(name: String, length: Int) : Uniform<Array<MutableVec2i>>(Array
 
 class Uniform3iv(name: String, length: Int) : Uniform<Array<MutableVec3i>>(Array(length) { MutableVec3i() }, name, length) {
     override fun putToBuffer(buffer: MixedBuffer, len: Int) {
-        checkLen(12 * length, len)
-        val padLen = (len - 12 * length) / length
-        for (i in 0 until length) {
+        checkLen(12 * size, len)
+        val padLen = (len - 12 * size) / size
+        for (i in 0 until size) {
             buffer.putInt32(value[i].array)
             putPadding(buffer, padLen)
         }
@@ -270,8 +273,8 @@ class Uniform3iv(name: String, length: Int) : Uniform<Array<MutableVec3i>>(Array
 
 class Uniform4iv(name: String, length: Int) : Uniform<Array<MutableVec4i>>(Array(length) { MutableVec4i() }, name, length) {
     override fun putToBuffer(buffer: MixedBuffer, len: Int) {
-        checkLen(16 * length, len)
-        for (i in 0 until length) {
+        checkLen(16 * size, len)
+        for (i in 0 until size) {
             buffer.putInt32(value[i].array)
         }
     }

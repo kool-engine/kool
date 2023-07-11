@@ -3,7 +3,9 @@ package de.fabmax.kool.modules.ksl.blocks
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.ksl.lang.*
+import de.fabmax.kool.util.CascadedShadowMap
 import de.fabmax.kool.util.ShadowMap
+import de.fabmax.kool.util.SimpleShadowMap
 
 fun KslScopeBuilder.vertexShadowBlock(cfg: ShadowConfig, block: ShadowBlockVertexStage.() -> Unit): ShadowBlockVertexStage {
     val shadowBlock = ShadowBlockVertexStage(cfg, parentStage.program.nextName("shadowBlock"), this)
@@ -59,23 +61,21 @@ class ShadowBlockVertexStage(cfg: ShadowConfig, name: String, parentScope: KslSc
 
             parentScope.parentStage.program.apply {
                 shadowData = shadowData(cfg)
-
-                positionsLightSpace = interStageFloat4Array(cfg.maxNumShadowMaps)
-                normalZsLightSpace = interStageFloat1Array(cfg.maxNumShadowMaps)
+                if (shadowData.numSubMaps > 0) {
+                    positionsLightSpace = interStageFloat4Array(shadowData.numSubMaps)
+                    normalZsLightSpace = interStageFloat1Array(shadowData.numSubMaps)
+                }
             }
 
-            `if`(shadowData.numActiveShadows gt 0.const) {
-                val totalSubMaps = int1Var(shadowData.shadowMapIndexRanges[shadowData.numActiveShadows - 1.const].y)
-                repeat(totalSubMaps) { subMapIdx ->
+            shadowData.shadowMapInfos.forEach { mapInfo ->
+                mapInfo.subMaps.forEachIndexed { i, subMap ->
+                    val subMapIdx = mapInfo.fromIndexIncl + i
                     val viewProj = shadowData.shadowMapViewProjMats[subMapIdx]
                     val normalLightSpace = float3Var(normalize((viewProj * float4Value(inNormalWorldSpace, 0f.const)).xyz))
                     normalZsLightSpace!!.input[subMapIdx] set normalLightSpace.z
                     positionsLightSpace!!.input[subMapIdx] set viewProj * float4Value(inPositionWorldSpace, 1f.const)
-                    positionsLightSpace!!.input[subMapIdx].xyz += normalLightSpace * shadowData.shadowMapDepthOffsets[subMapIdx] * sign(normalLightSpace.z)
+                    positionsLightSpace!!.input[subMapIdx].xyz += normalLightSpace * subMap.shaderDepthOffset.const * sign(normalLightSpace.z)
                 }
-
-                // fixme: we need to reference lightIndices here to prevent it being removed from ubo
-                totalSubMaps set shadowData.lightIndices[shadowData.numActiveShadows]
             }
         }
     }
@@ -84,8 +84,8 @@ class ShadowBlockVertexStage(cfg: ShadowConfig, name: String, parentScope: KslSc
 class ShadowBlockFragmentStage(
     lightSpacePositions: KslArrayVector<KslTypeFloat4, KslTypeFloat1>?,
     lightSpaceNormalZs: KslArrayScalar<KslTypeFloat1>?,
-    private val shadowData: ShadowData,
-    private val shadowFactors: KslArrayScalar<KslTypeFloat1>,
+    val shadowData: ShadowData,
+    val shadowFactors: KslArrayScalar<KslTypeFloat1>,
     name: String,
     parentScope: KslScopeBuilder
 ) : KslBlock(name, parentScope) {
@@ -97,17 +97,17 @@ class ShadowBlockFragmentStage(
                 return@apply
             }
 
-            repeat(shadowData.numActiveShadows) { mapI ->
-                val lightIdx = shadowData.lightIndices[mapI]
-                val mapRange = shadowData.shadowMapIndexRanges[mapI]
-                val numSubMaps = mapRange.y - mapRange.x
+            shadowData.shadowMapInfos.forEach { mapInfo ->
+                val lightIdx = mapInfo.shadowMap.lightIndex
+                shadowFactors[lightIdx] set 1f.const
 
-                `if`(numSubMaps eq 1.const) {
-                    // only one sub-map -> SimpleShadowMap
-                    sampleSimpleShadowMap(lightSpacePositions, lightSpaceNormalZs, lightIdx, mapRange.x)
-                }.`else` {
-                    // more than one sub-map -> CascadedShadowMap
-                    sampleCascadedShadowMap(lightSpacePositions, lightSpaceNormalZs, lightIdx, mapRange)
+                when (mapInfo.shadowMap) {
+                    is SimpleShadowMap -> {
+                        sampleSimpleShadowMap(lightSpacePositions, lightSpaceNormalZs, mapInfo)
+                    }
+                    is CascadedShadowMap -> {
+                        sampleCascadedShadowMap(lightSpacePositions, lightSpaceNormalZs, mapInfo)
+                    }
                 }
             }
         }
@@ -116,13 +116,15 @@ class ShadowBlockFragmentStage(
     private fun KslScopeBuilder.sampleSimpleShadowMap(
         lightSpacePositions: KslArrayVector<KslTypeFloat4, KslTypeFloat1>,
         lightSpaceNormalZs: KslArrayScalar<KslTypeFloat1>,
-        lightIdx: KslExprInt1,
-        subMapI: KslExprInt1
+        mapInfo: ShadowData.ShadowMapInfo
     ) {
-        val posLightSpace = lightSpacePositions[subMapI]
-        `if` (shadowData.shadowCfg.flipBacksideNormals.const or (lightSpaceNormalZs[subMapI] lt 0f.const)) {
+        val lightIdx = mapInfo.shadowMap.lightIndex
+        val subMapIdx = mapInfo.fromIndexIncl
+        val posLightSpace = lightSpacePositions[subMapIdx]
+
+        `if` (shadowData.shadowCfg.flipBacksideNormals.const or (lightSpaceNormalZs[subMapIdx] lt 0f.const)) {
             // normal points towards light source, compute shadow factor
-            shadowFactors[lightIdx] set getShadowMapFactor(shadowData.depthMaps.value[subMapI], posLightSpace, ShadowConfig.SAMPLE_PATTERN_4x4)
+            shadowFactors[lightIdx] set getShadowMapFactor(shadowData.depthMaps.value[subMapIdx], posLightSpace, mapInfo.samplePattern)
         }.`else` {
             // normal points away from light source, set shadow factor to 0 (shadowed)
             shadowFactors[lightIdx] set 0f.const
@@ -132,18 +134,17 @@ class ShadowBlockFragmentStage(
     private fun KslScopeBuilder.sampleCascadedShadowMap(
         lightSpacePositions: KslArrayVector<KslTypeFloat4, KslTypeFloat1>,
         lightSpaceNormalZs: KslArrayScalar<KslTypeFloat1>,
-        lightIdx: KslExprInt1,
-        mapRange: KslExprInt2
+        mapInfo: ShadowData.ShadowMapInfo
     ) {
-        val from = mapRange.x
-        val to = mapRange.y
-        `if`(shadowData.shadowCfg.flipBacksideNormals.const or (lightSpaceNormalZs[from] lt 0f.const)) {
+        val lightIdx = mapInfo.shadowMap.lightIndex
+
+        `if`(shadowData.shadowCfg.flipBacksideNormals.const or (lightSpaceNormalZs[mapInfo.fromIndexIncl] lt 0f.const)) {
             // normal points towards light source, compute shadow factor
             val sampleW = float1Var(0f.const)
             val sampleSum = float1Var(0f.const)
             val projPos = float3Var()
 
-            fori(from, to) { i ->
+            for (i in mapInfo.fromIndexIncl until mapInfo.toIndexExcl) {
                 // check for each shadow map (sorted from high detail to low detail) if projected
                 // position is inside map bounds, if so sample it and stop
                 val posLightSpace = lightSpacePositions[i]
@@ -159,7 +160,7 @@ class ShadowBlockFragmentStage(
                     val w = float1Var(c * (1f.const - sampleW))
 
                     // projected position is inside shadow map bounds, sample shadow map
-                    sampleSum += getShadowMapFactor(shadowData.depthMaps.value[i], posLightSpace, ShadowConfig.SAMPLE_PATTERN_4x4) * w
+                    sampleSum += getShadowMapFactor(shadowData.depthMaps.value[i], posLightSpace, mapInfo.samplePattern) * w
                     sampleW += w
                 }
             }
@@ -176,7 +177,6 @@ class ShadowBlockFragmentStage(
 
 class ShadowConfig {
     val shadowMaps = mutableListOf<ShadowMapConfig>()
-    var maxNumShadowMaps = 4
     var flipBacksideNormals = false
 
     fun addShadowMap(shadowMap: ShadowMap, samplePattern: List<Vec2f> = SAMPLE_PATTERN_4x4) {

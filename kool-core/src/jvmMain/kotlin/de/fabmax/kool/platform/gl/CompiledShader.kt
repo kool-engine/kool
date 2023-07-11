@@ -73,7 +73,7 @@ class CompiledShader(val prog: Int, pipeline: Pipeline, val renderBackend: GlRen
 
         MemoryStack.stackPush().use { stack ->
             val uniformNames = desc.uniforms.map {
-                if (it.length > 1) { MemoryUtil.memASCII("${it.name}[0]") } else { MemoryUtil.memASCII(it.name) }
+                if (it.size > 1) MemoryUtil.memASCII("${it.name}[0]") else MemoryUtil.memASCII(it.name)
             }.toTypedArray()
             val namePointers = stack.pointers(*uniformNames)
             glGetUniformIndices(prog, namePointers, indices)

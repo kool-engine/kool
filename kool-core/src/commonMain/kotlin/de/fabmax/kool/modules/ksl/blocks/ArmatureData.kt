@@ -29,7 +29,7 @@ class ArmatureData(maxBones: Int, program: KslProgram) : KslDataBlock, KslShader
     override fun onUpdate(cmd: DrawCommand) {
         uBoneTransforms?.let { mats ->
             cmd.mesh.skin?.let {
-                for (i in 0 until min(it.nodes.size, mats.length)) {
+                for (i in 0 until min(it.nodes.size, mats.size)) {
                     val nd = it.nodes[i]
                     mats.value[i].set(nd.jointTransform)
                 }

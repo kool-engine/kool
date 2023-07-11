@@ -34,6 +34,8 @@ class MeshComponent(override val componentData: MeshComponentData) :
     private var isIblShaded = false
     private var isSsaoEnabled = false
 
+    private var shaderUpdateScheduled = false
+
     constructor(): this(MeshComponentData(MeshShapeData.Box(Vec3Data(1.0, 1.0, 1.0))))
 
     init {
@@ -92,6 +94,7 @@ class MeshComponent(override val componentData: MeshComponentData) :
             }
         }
         if (updateBg) updateBackground(sceneModel.sceneBackground)
+        shaderUpdateScheduled = false
     }
 
     override fun updateMaterial(material: MaterialData?) {
@@ -127,7 +130,7 @@ class MeshComponent(override val componentData: MeshComponentData) :
                     createMeshShader(updateBg = false)
                 }
             } else {
-                (mesh.shader as KslLitShader).ambientMap = ibl.irradianceMap
+                (mesh.shader as? KslLitShader)?.ambientMap = ibl.irradianceMap
                 (mesh.shader as? KslPbrShader)?.reflectionMap = ibl.reflectionMap
             }
         }
@@ -135,7 +138,13 @@ class MeshComponent(override val componentData: MeshComponentData) :
     }
 
     override fun updateShadowMaps(shadowMaps: List<ShadowMap>) {
-        (mesh.shader as? KslLitShader)?.shadowMaps = shadowMaps
+        (mesh.shader as? KslLitShader)?.let {
+            if (shadowMaps != it.shadowMaps) {
+                launchOnMainThread {
+                    createMeshShader(updateBg = false)
+                }
+            }
+        }
     }
 
     override fun updateSsao(ssaoMap: Texture2d?) {

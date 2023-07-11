@@ -83,7 +83,7 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
     private fun setupUboLayout(desc: UniformBuffer, blockIndex: Int) {
         val bufferSize = ctx.gl.getActiveUniformBlockParameter(prog, blockIndex, UNIFORM_BLOCK_DATA_SIZE)
         val uniformNames = desc.uniforms.map {
-            if (it.length > 1) { "${it.name}[0]" } else { it.name }
+            if (it.size > 1) "${it.name}[0]" else it.name
         }.toTypedArray()
 
         val indices = ctx.gl.getUniformIndices(prog, uniformNames)

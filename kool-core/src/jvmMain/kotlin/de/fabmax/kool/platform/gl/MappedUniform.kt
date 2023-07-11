@@ -89,9 +89,9 @@ class MappedUniform4f(val uniform: Uniform4f, val location: Int) : MappedUniform
 }
 
 class MappedUniform1fv(val uniform: Uniform1fv, val location: Int) : MappedUniform {
-    private val buffer = createFloat32Buffer(uniform.length) as Float32BufferImpl
+    private val buffer = createFloat32Buffer(uniform.size) as Float32BufferImpl
     override fun setUniform(ctx: Lwjgl3Context): Boolean {
-        for (i in 0 until uniform.length) {
+        for (i in 0 until uniform.size) {
             buffer[i] = uniform.value[i]
         }
         glUniform1fv(location, buffer.buffer)
@@ -100,10 +100,10 @@ class MappedUniform1fv(val uniform: Uniform1fv, val location: Int) : MappedUnifo
 }
 
 class MappedUniform2fv(val uniform: Uniform2fv, val location: Int) : MappedUniform {
-    private val buffer = createFloat32Buffer(2 * uniform.length) as Float32BufferImpl
+    private val buffer = createFloat32Buffer(2 * uniform.size) as Float32BufferImpl
     override fun setUniform(ctx: Lwjgl3Context): Boolean {
         var j = 0
-        for (i in 0 until uniform.length) {
+        for (i in 0 until uniform.size) {
             buffer[j++] = uniform.value[i].x
             buffer[j++] = uniform.value[i].y
         }
@@ -113,10 +113,10 @@ class MappedUniform2fv(val uniform: Uniform2fv, val location: Int) : MappedUnifo
 }
 
 class MappedUniform3fv(val uniform: Uniform3fv, val location: Int) : MappedUniform {
-    private val buffer = createFloat32Buffer(3 * uniform.length) as Float32BufferImpl
+    private val buffer = createFloat32Buffer(3 * uniform.size) as Float32BufferImpl
     override fun setUniform(ctx: Lwjgl3Context): Boolean {
         var j = 0
-        for (i in 0 until uniform.length) {
+        for (i in 0 until uniform.size) {
             buffer[j++] = uniform.value[i].x
             buffer[j++] = uniform.value[i].y
             buffer[j++] = uniform.value[i].z
@@ -127,10 +127,10 @@ class MappedUniform3fv(val uniform: Uniform3fv, val location: Int) : MappedUnifo
 }
 
 class MappedUniform4fv(val uniform: Uniform4fv, val location: Int) : MappedUniform {
-    private val buffer = createFloat32Buffer(4 * uniform.length) as Float32BufferImpl
+    private val buffer = createFloat32Buffer(4 * uniform.size) as Float32BufferImpl
     override fun setUniform(ctx: Lwjgl3Context): Boolean {
         var j = 0
-        for (i in 0 until uniform.length) {
+        for (i in 0 until uniform.size) {
             buffer[j++] = uniform.value[i].x
             buffer[j++] = uniform.value[i].y
             buffer[j++] = uniform.value[i].z
@@ -160,10 +160,10 @@ class MappedUniformMat3f(val uniform: UniformMat3f, val location: Int) : MappedU
 }
 
 class MappedUniformMat3fv(val uniform: UniformMat3fv, val location: Int) : MappedUniform {
-    private val buf = createFloat32Buffer(9 * uniform.length) as Float32BufferImpl
+    private val buf = createFloat32Buffer(9 * uniform.size) as Float32BufferImpl
     override fun setUniform(ctx: Lwjgl3Context): Boolean {
         var bufI = 0
-        for (i in 0 until uniform.length) {
+        for (i in 0 until uniform.size) {
             for (j in 0 until 8) {
                 buf[bufI++] = uniform.value[i].matrix[j]
             }
@@ -185,10 +185,10 @@ class MappedUniformMat4f(val uniform: UniformMat4f, val location: Int) : MappedU
 }
 
 class MappedUniformMat4fv(val uniform: UniformMat4fv, val location: Int) : MappedUniform {
-    private val buf = createFloat32Buffer(16 * uniform.length) as Float32BufferImpl
+    private val buf = createFloat32Buffer(16 * uniform.size) as Float32BufferImpl
     override fun setUniform(ctx: Lwjgl3Context): Boolean {
         var bufI = 0
-        for (i in 0 until uniform.length) {
+        for (i in 0 until uniform.size) {
             for (j in 0 until 16) {
                 buf[bufI++] = uniform.value[i].array[j]
             }
@@ -227,9 +227,9 @@ class MappedUniform4i(val uniform: Uniform4i, val location: Int) : MappedUniform
 }
 
 class MappedUniform1iv(val uniform: Uniform1iv, val location: Int) : MappedUniform {
-    private val buffer = createUint32Buffer(uniform.length) as Uint32BufferImpl
+    private val buffer = createUint32Buffer(uniform.size) as Uint32BufferImpl
     override fun setUniform(ctx: Lwjgl3Context): Boolean {
-        for (i in 0 until uniform.length) {
+        for (i in 0 until uniform.size) {
             buffer[i] = uniform.value[i]
         }
         glUniform1iv(location, buffer.buffer)
@@ -238,10 +238,10 @@ class MappedUniform1iv(val uniform: Uniform1iv, val location: Int) : MappedUnifo
 }
 
 class MappedUniform2iv(val uniform: Uniform2iv, val location: Int) : MappedUniform {
-    private val buffer = createUint32Buffer(2 * uniform.length) as Uint32BufferImpl
+    private val buffer = createUint32Buffer(2 * uniform.size) as Uint32BufferImpl
     override fun setUniform(ctx: Lwjgl3Context): Boolean {
         var j = 0
-        for (i in 0 until uniform.length) {
+        for (i in 0 until uniform.size) {
             buffer[j++] = uniform.value[i].x
             buffer[j++] = uniform.value[i].y
         }
@@ -251,10 +251,10 @@ class MappedUniform2iv(val uniform: Uniform2iv, val location: Int) : MappedUnifo
 }
 
 class MappedUniform3iv(val uniform: Uniform3iv, val location: Int) : MappedUniform {
-    private val buffer = createUint32Buffer(3 * uniform.length) as Uint32BufferImpl
+    private val buffer = createUint32Buffer(3 * uniform.size) as Uint32BufferImpl
     override fun setUniform(ctx: Lwjgl3Context): Boolean {
         var j = 0
-        for (i in 0 until uniform.length) {
+        for (i in 0 until uniform.size) {
             buffer[j++] = uniform.value[i].x
             buffer[j++] = uniform.value[i].y
             buffer[j++] = uniform.value[i].z
@@ -265,10 +265,10 @@ class MappedUniform3iv(val uniform: Uniform3iv, val location: Int) : MappedUnifo
 }
 
 class MappedUniform4iv(val uniform: Uniform4iv, val location: Int) : MappedUniform {
-    private val buffer = createUint32Buffer(4 * uniform.length) as Uint32BufferImpl
+    private val buffer = createUint32Buffer(4 * uniform.size) as Uint32BufferImpl
     override fun setUniform(ctx: Lwjgl3Context): Boolean {
         var j = 0
-        for (i in 0 until uniform.length) {
+        for (i in 0 until uniform.size) {
             buffer[j++] = uniform.value[i].x
             buffer[j++] = uniform.value[i].y
             buffer[j++] = uniform.value[i].z

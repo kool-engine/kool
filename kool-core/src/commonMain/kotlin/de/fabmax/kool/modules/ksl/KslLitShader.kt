@@ -1,16 +1,16 @@
 package de.fabmax.kool.modules.ksl
 
-import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Mat3f
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.modules.ksl.blocks.*
 import de.fabmax.kool.modules.ksl.lang.*
-import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.pipeline.BlendMode
+import de.fabmax.kool.pipeline.Texture2d
+import de.fabmax.kool.pipeline.TextureCube
 import de.fabmax.kool.pipeline.shading.AlphaMode
-import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.ShadowMap
 import de.fabmax.kool.util.copy
 
 abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader(model, cfg.pipelineCfg) {
@@ -50,16 +50,12 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
     val isNormalMapped = cfg.normalMapCfg.isNormalMapped
     val isSsao = cfg.aoCfg.isSsao
 
-    private val shadowMapBuffer = mutableListOf<ShadowMap>()
-    var shadowMaps: List<ShadowMap>
-        get() = shadowMapBuffer
-        set(value) {
-            shadowMapBuffer.clear()
-            shadowMapBuffer += value
-        }
+    /**
+     * Read-only list of shadow maps used by this shader. To modify the shadow maps, the shader has to be re-created.
+     */
+    val shadowMaps = cfg.shadowCfg.shadowMaps.map { it.shadowMap }
 
     init {
-        shadowMaps = cfg.shadowCfg.shadowMaps.map { it.shadowMap }
         when (ambientCfg) {
             is AmbientColor.Uniform -> ambientFactor = ambientCfg.color
             is AmbientColor.ImageBased -> {
@@ -68,16 +64,6 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
             }
             is AmbientColor.DualImageBased -> {
                 ambientFactor = ambientCfg.colorFactor
-            }
-        }
-    }
-
-    override fun onPipelineCreated(pipeline: Pipeline, mesh: Mesh, ctx: KoolContext) {
-        super.onPipelineCreated(pipeline, mesh, ctx)
-
-        getShadowDataUniforms()?.let { uniforms ->
-            pipeline.onUpdate += {
-                uniforms.updateShadowMaps(shadowMapBuffer)
             }
         }
     }

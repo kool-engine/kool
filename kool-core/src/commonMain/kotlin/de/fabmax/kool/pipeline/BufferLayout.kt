@@ -68,24 +68,24 @@ class Std140BufferLayout(uniforms: List<Uniform<*>>) : BufferLayout(uniforms) {
                 is Uniform3f -> 12
                 is Uniform4f -> 16
                 is UniformColor -> 16
-                is Uniform1fv -> 16 * u.length
-                is Uniform3fv -> 16 * u.length
-                is Uniform2fv -> 16 * u.length
-                is Uniform4fv -> 16 * u.length
+                is Uniform1fv -> 16 * u.size
+                is Uniform3fv -> 16 * u.size
+                is Uniform2fv -> 16 * u.size
+                is Uniform4fv -> 16 * u.size
 
                 is Uniform1i -> 4
                 is Uniform2i -> 8
                 is Uniform3i -> 12
                 is Uniform4i -> 16
-                is Uniform1iv -> 16 * u.length
-                is Uniform2iv -> 16 * u.length
-                is Uniform3iv -> 16 * u.length
-                is Uniform4iv -> 16 * u.length
+                is Uniform1iv -> 16 * u.size
+                is Uniform2iv -> 16 * u.size
+                is Uniform3iv -> 16 * u.size
+                is Uniform4iv -> 16 * u.size
 
                 is UniformMat3f -> 3 * 16
                 is UniformMat4f -> 4 * 16
-                is UniformMat3fv -> 3 * 16 * u.length
-                is UniformMat4fv -> 4 * 16 * u.length
+                is UniformMat3fv -> 3 * 16 * u.size
+                is UniformMat4fv -> 4 * 16 * u.size
             }
         }
     }

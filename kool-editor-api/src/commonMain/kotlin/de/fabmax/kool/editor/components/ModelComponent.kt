@@ -13,10 +13,7 @@ import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.Model
 import de.fabmax.kool.scene.Node
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.ShadowMap
-import de.fabmax.kool.util.launchOnMainThread
-import de.fabmax.kool.util.logE
+import de.fabmax.kool.util.*
 
 class ModelComponent(override val componentData: ModelComponentData) :
     SceneNodeComponent(),
@@ -38,6 +35,7 @@ class ModelComponent(override val componentData: ModelComponentData) :
 
     private var isIblShaded = false
     private var isSsaoEnabled = false
+    private var shaderShaowMaps: List<ShadowMap> = emptyList()
 
     init {
         dependsOn(MaterialComponent::class, isOptional = true)
@@ -95,8 +93,8 @@ class ModelComponent(override val componentData: ModelComponentData) :
     }
 
     override fun updateShadowMaps(shadowMaps: List<ShadowMap>) {
-        model.meshes.values.forEach { mesh ->
-            (mesh.shader as? KslLitShader)?.shadowMaps = shadowMaps
+        if (shadowMaps != shaderShaowMaps) {
+            recreateModel()
         }
     }
 
@@ -112,12 +110,14 @@ class ModelComponent(override val componentData: ModelComponentData) :
     }
 
     private suspend fun createModel(): Model {
+        logD { "${nodeModel.name}: (re-)loading model" }
+
+        shaderShaowMaps = sceneModel.shaderData.shadowMaps.copy()
         val ibl = sceneModel.shaderData.environmentMaps
         val ssao = sceneModel.shaderData.ssaoMap
-        val shadows = sceneModel.shaderData.shadowMaps
         val material = nodeModel.getComponent<MaterialComponent>()?.materialData
         val modelCfg = GltfFile.ModelGenerateConfig(
-            materialConfig = GltfFile.ModelMaterialConfig(environmentMaps = ibl, shadowMaps = shadows, scrSpcAmbientOcclusionMap = ssao),
+            materialConfig = GltfFile.ModelMaterialConfig(environmentMaps = ibl, shadowMaps = shaderShaowMaps, scrSpcAmbientOcclusionMap = ssao),
             applyMaterials = material == null
         )
         isIblShaded = ibl != null
