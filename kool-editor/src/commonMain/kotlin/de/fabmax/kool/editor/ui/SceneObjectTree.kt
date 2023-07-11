@@ -8,6 +8,7 @@ import de.fabmax.kool.editor.model.EditorNodeModel
 import de.fabmax.kool.editor.model.SceneModel
 import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.math.Mat4d
+import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.modules.ui2.ArrowScope.Companion.ROTATION_DOWN
 import de.fabmax.kool.modules.ui2.ArrowScope.Companion.ROTATION_RIGHT
@@ -214,10 +215,8 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
             }
         }
 
-        Text(item.name) {
-            modifier
-                .alignY(AlignmentY.Center)
-            val textColor = if (item.nodeModel in EditorState.selection.use()) {
+        Box(width = Grow.Std, height = Grow.Std) {
+            val fgColor = if (item.nodeModel in EditorState.selection.use()) {
                 if (item.type != SceneObjectType.NON_MODEL_NODE) {
                     colors.primary
                 } else {
@@ -230,8 +229,25 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
                     colors.onBackground.mix(Color.BLACK, 0.3f)
                 }
             }
-            modifier.textColor(textColor)
+
+            Text(item.name) {
+                modifier
+                    .alignY(AlignmentY.Center)
+                    .textColor(fgColor)
+            }
+
+            val icons = sceneBrowser.ui.iconMap
+            Image {
+                modifier
+                    .alignX(AlignmentX.End)
+                    .alignY(AlignmentY.Center)
+                    .margin(end = sizes.smallGap)
+                    .size(icons.iconSize.dp, icons.iconSize.dp)
+                    .imageProvider(icons.iconProvider(Vec2i(12, 0)))
+                    .tint(fgColor)
+            }
         }
+
     }
 
     private fun MutableList<SceneObjectItem>.appendNode(scene: SceneModel, node: Node, selectModel: EditorNodeModel, depth: Int) {

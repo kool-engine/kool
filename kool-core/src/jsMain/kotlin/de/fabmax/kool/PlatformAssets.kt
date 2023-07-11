@@ -31,7 +31,12 @@ actual object PlatformAssets {
     }
 
     internal actual suspend fun loadTexture(textureRef: TextureAssetRef): LoadedTextureAsset {
-        val texData = ImageTextureData(loadImage(textureRef.path, textureRef.isHttp), textureRef.fmt)
+        val img = loadImage(textureRef.path, textureRef.isHttp)
+        val texData = if (textureRef.props?.preferredSize != null) {
+            BufferedImageTextureData(img, textureRef.props)
+        } else {
+            ImageTextureData(img, textureRef.props?.format)
+        }
         return LoadedTextureAsset(textureRef, texData)
     }
 
@@ -40,7 +45,7 @@ actual object PlatformAssets {
             loadImage(textureRef.path, textureRef.isHttp),
             textureRef.tilesX,
             textureRef.tilesY,
-            textureRef.fmt
+            textureRef.props?.format
         )
         return LoadedTextureAsset(textureRef, texData)
     }
@@ -158,12 +163,12 @@ actual object PlatformAssets {
         return "data:$mimeType;base64,$base64"
     }
 
-    internal actual suspend fun loadTextureData2d(imagePath: String, format: TexFormat?): TextureData2d {
-        val image = (Assets.loadTextureData(imagePath, format) as ImageTextureData).image
-        return BufferedImageTextureData(image, format)
+    internal actual suspend fun loadTextureData2d(imagePath: String, props: TextureProps?): TextureData2d {
+        val image = (Assets.loadTextureData(imagePath, props) as ImageTextureData).image
+        return BufferedImageTextureData(image, props)
     }
 
-    internal actual suspend fun loadTextureDataFromBuffer(texData: Uint8Buffer, mimeType: String): TextureData {
+    internal actual suspend fun loadTextureDataFromBuffer(texData: Uint8Buffer, mimeType: String, props: TextureProps?): TextureData {
         return ImageTextureData(loadImage(texData.toDataUrl(mimeType), true), null)
     }
 
@@ -188,5 +193,4 @@ actual object PlatformAssets {
             AudioClip("${Assets.assetsBasePath}/$assetPath")
         }
     }
-
 }

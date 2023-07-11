@@ -17,6 +17,10 @@ class AsyncTextureLoader(val loader: (suspend CoroutineScope.() -> TextureData))
         }
         return def
     }
+
+    fun invalidate() {
+        deferred = null
+    }
 }
 
 class SyncTextureLoader(val loader: () -> TextureData) : TextureLoader() {

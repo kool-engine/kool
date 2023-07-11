@@ -42,6 +42,7 @@ kotlin {
 
         val jvmMain by getting {
             dependencies {
+                implementation("com.github.weisj:jsvg:1.0.0")
                 api(DepsJvm.lwjgl())
                 api(DepsJvm.lwjgl("glfw"))
                 api(DepsJvm.lwjgl("jemalloc"))

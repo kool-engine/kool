@@ -194,8 +194,8 @@ object Assets : CoroutineScope {
      *
      * @throws KoolException if loading failed
      */
-    suspend fun loadTextureData(assetPath: String, format: TexFormat? = null): TextureData {
-        val ref = TextureAssetRef(assetPath, format)
+    suspend fun loadTextureData(assetPath: String, props: TextureProps? = null): TextureData {
+        val ref = TextureAssetRef(assetPath, props)
         val awaitedAsset = AwaitedAsset(ref)
         awaitedAssetsChannel.send(awaitedAsset)
         val loaded = awaitedAsset.awaiting.await() as LoadedTextureAsset
@@ -209,8 +209,8 @@ object Assets : CoroutineScope {
      * Loads the texture data from the given byte buffer using the image type specified in [mimeType] to decode the
      * image (e.g. 'image/png') and returns the image as [TextureData].
      */
-    suspend fun loadTextureDataFromBuffer(texData: Uint8Buffer, mimeType: String): TextureData {
-        return PlatformAssets.loadTextureDataFromBuffer(texData, mimeType)
+    suspend fun loadTextureDataFromBuffer(texData: Uint8Buffer, mimeType: String, props: TextureProps? = null): TextureData {
+        return PlatformAssets.loadTextureDataFromBuffer(texData, mimeType, props)
     }
 
     /**
@@ -220,8 +220,8 @@ object Assets : CoroutineScope {
      *
      * @throws KoolException if loading failed
      */
-    suspend fun loadTextureData2d(imagePath: String, format: TexFormat? = null): TextureData2d {
-        return PlatformAssets.loadTextureData2d(imagePath, format)
+    suspend fun loadTextureData2d(imagePath: String, props: TextureProps? = null): TextureData2d {
+        return PlatformAssets.loadTextureData2d(imagePath, props)
     }
 
     /**
@@ -230,8 +230,8 @@ object Assets : CoroutineScope {
      *
      * @throws KoolException if loading failed
      */
-    suspend fun loadTextureAtlasData(assetPath: String, tilesX: Int, tilesY: Int, format: TexFormat? = null): TextureData {
-        val ref = TextureAtlasAssetRef(assetPath, format, tilesX, tilesY)
+    suspend fun loadTextureAtlasData(assetPath: String, tilesX: Int, tilesY: Int, props: TextureProps? = null): TextureData {
+        val ref = TextureAtlasAssetRef(assetPath, props, tilesX, tilesY)
         val awaitedAsset = AwaitedAsset(ref)
         awaitedAssetsChannel.send(awaitedAsset)
         val loaded = awaitedAsset.awaiting.await() as LoadedTextureAsset
@@ -339,12 +339,12 @@ data class BlobAssetRef(
 
 data class TextureAssetRef(
     val path: String,
-    val fmt: TexFormat?
+    val props: TextureProps?
 ) : AssetRef(path)
 
 data class TextureAtlasAssetRef(
     val path: String,
-    val fmt: TexFormat?,
+    val props: TextureProps?,
     val tilesX: Int = 1,
     val tilesY: Int = 1,
 ) : AssetRef(path)
@@ -368,12 +368,29 @@ expect object PlatformAssets {
         data: Uint8Buffer,
         defaultFileName: String?,
         filterList: List<FileFilterItem>,
-        mimeType: String = "application/octet-stream"
+        mimeType: String = MimeType.BINARY_DATA
     ): String?
 
-    internal suspend fun loadTextureData2d(imagePath: String, format: TexFormat?): TextureData2d
-    internal suspend fun loadTextureDataFromBuffer(texData: Uint8Buffer, mimeType: String): TextureData
+    internal suspend fun loadTextureData2d(imagePath: String, props: TextureProps?): TextureData2d
+    internal suspend fun loadTextureDataFromBuffer(texData: Uint8Buffer, mimeType: String, props: TextureProps?): TextureData
     internal suspend fun uploadTextureToGpu(texture: Texture, texData: TextureData)
 
     internal suspend fun loadAudioClip(assetPath: String): AudioClip
+}
+
+object MimeType {
+    const val BINARY_DATA = "application/octet-stream"
+    const val IMAGE_PNG = "image/png"
+    const val IMAGE_JPG = "image/jpeg"
+    const val IMAGE_SVG = "image/svg+xml"
+
+    fun forFileName(fileName: String): String {
+        return when (fileName.substringAfterLast('.').lowercase()) {
+            "png" -> IMAGE_PNG
+            "jpg" -> IMAGE_JPG
+            "jpeg" -> IMAGE_JPG
+            "svg" -> IMAGE_SVG
+            else -> BINARY_DATA
+        }
+    }
 }

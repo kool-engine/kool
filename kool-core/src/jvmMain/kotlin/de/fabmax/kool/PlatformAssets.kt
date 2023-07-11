@@ -1,10 +1,12 @@
 package de.fabmax.kool
 
+import com.github.weisj.jsvg.parser.SVGLoader
+import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.modules.audio.AudioClip
-import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.pipeline.TextureData
 import de.fabmax.kool.pipeline.TextureData2d
+import de.fabmax.kool.pipeline.TextureProps
 import de.fabmax.kool.platform.*
 import de.fabmax.kool.util.*
 import kotlinx.coroutines.Dispatchers
@@ -12,10 +14,13 @@ import kotlinx.coroutines.withContext
 import org.lwjgl.system.MemoryUtil
 import org.lwjgl.util.nfd.NFDFilterItem
 import org.lwjgl.util.nfd.NativeFileDialog
+import java.awt.RenderingHints
+import java.awt.geom.AffineTransform
 import java.awt.image.BufferedImage
 import java.io.*
 import java.util.*
 import javax.imageio.ImageIO
+import kotlin.math.roundToInt
 
 actual object PlatformAssets {
 
@@ -91,9 +96,9 @@ actual object PlatformAssets {
         withContext(Dispatchers.IO) {
             try {
                 data = if (textureRef.isHttp) {
-                    loadHttpTexture(textureRef.path, textureRef.fmt)
+                    loadHttpTexture(textureRef.path, textureRef.props)
                 } else {
-                    loadLocalTexture(textureRef.path, textureRef.fmt)
+                    loadLocalTexture(textureRef.path, textureRef.props)
                 }
             } catch (e: Exception) {
                 logE { "Failed loading texture ${textureRef.path}: $e" }
@@ -107,9 +112,9 @@ actual object PlatformAssets {
         withContext(Dispatchers.IO) {
             try {
                 data = if (textureRef.isHttp) {
-                    loadHttpTexture(textureRef.path, textureRef.fmt)
+                    loadHttpTexture(textureRef.path, textureRef.props)
                 } else {
-                    loadLocalTexture(textureRef.path, textureRef.fmt)
+                    loadLocalTexture(textureRef.path, textureRef.props)
                 }
             } catch (e: Exception) {
                 logE { "Failed loading texture ${textureRef.path}: $e" }
@@ -118,20 +123,27 @@ actual object PlatformAssets {
         return LoadedTextureAsset(textureRef, ImageAtlasTextureData(data!!, textureRef.tilesX, textureRef.tilesY))
     }
 
-    private fun loadLocalTexture(path: String, format: TexFormat?): ImageTextureData {
-        return openLocalStream(path).use {
-            // ImageIO.read is not thread safe!
-            val img = synchronized(imageIoLock) { ImageIO.read(it) }
-            ImageTextureData(img, format)
-        }
+    private fun loadLocalTexture(path: String, props: TextureProps?): ImageTextureData {
+        return readImageData(openLocalStream(path), MimeType.forFileName(path), props)
     }
 
-    private fun loadHttpTexture(path: String, format: TexFormat?): ImageTextureData {
+    private fun loadHttpTexture(path: String, props: TextureProps?): ImageTextureData {
         val f = HttpCache.loadHttpResource(path)!!
-        return FileInputStream(f).use {
-            // ImageIO.read is not thread safe!
-            val img = synchronized(imageIoLock) { ImageIO.read(it) }
-            ImageTextureData(img, format)
+        return readImageData(FileInputStream(f), MimeType.forFileName(path), props)
+    }
+
+    private fun readImageData(inStream: InputStream, mimeType: String, props: TextureProps?): ImageTextureData {
+        return inStream.use {
+            when (mimeType) {
+                MimeType.IMAGE_SVG -> renderSvg(inStream, props)
+                else -> {
+                    var img = synchronized(imageIoLock) { ImageIO.read(it) }
+                    if (props?.preferredSize != null && props.preferredSize != Vec2i(img.width, img.height)) {
+                        img = resizeImage(img, props.preferredSize)
+                    }
+                    ImageTextureData(img, props?.format)
+                }
+            }
         }
     }
 
@@ -240,19 +252,15 @@ actual object PlatformAssets {
         }
     }
 
-    internal actual suspend fun loadTextureData2d(imagePath: String, format: TexFormat?): TextureData2d {
+    internal actual suspend fun loadTextureData2d(imagePath: String, props: TextureProps?): TextureData2d {
         // JVM implementation always loads images as ImageTextureData, which is a subclass of TextureData2d
-        return Assets.loadTextureData(imagePath, format) as ImageTextureData
+        return Assets.loadTextureData(imagePath, props) as ImageTextureData
     }
 
-    internal actual suspend fun loadTextureDataFromBuffer(texData: Uint8Buffer, mimeType: String): TextureData {
-        var img: BufferedImage?
-        withContext(Dispatchers.IO) {
-            img = synchronized(imageIoLock) {
-                ImageIO.read(ByteArrayInputStream(texData.toArray()))
-            }
+    internal actual suspend fun loadTextureDataFromBuffer(texData: Uint8Buffer, mimeType: String, props: TextureProps?): TextureData {
+        return withContext(Dispatchers.IO) {
+            readImageData(ByteArrayInputStream(texData.toArray()), mimeType, props)
         }
-        return ImageTextureData(img!!, null)
     }
 
     internal actual suspend fun uploadTextureToGpu(texture: Texture, texData: TextureData) {
@@ -265,5 +273,33 @@ actual object PlatformAssets {
     internal actual suspend fun loadAudioClip(assetPath: String): AudioClip {
         val asset = Assets.loadBlobAsset(assetPath)
         return AudioClip(asset.toArray())
+    }
+
+    private fun renderSvg(inStream: InputStream, props: TextureProps?): ImageTextureData {
+        val svgDoc = SVGLoader().load(inStream) ?: throw IllegalStateException("Failed loading SVG image")
+        val size = svgDoc.size()
+        val scaleX = if (props?.preferredSize != null) props.preferredSize.x / size.width else 1f
+        val scaleY = if (props?.preferredSize != null) props.preferredSize.y / size.height else 1f
+
+        val img = BufferedImage((size.width * scaleX).roundToInt(), (size.height * scaleY).roundToInt(), BufferedImage.TYPE_4BYTE_ABGR)
+        val g = img.createGraphics()
+        g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE)
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
+        g.scale(scaleX.toDouble(), scaleY.toDouble())
+        svgDoc.render(null, g)
+        g.dispose()
+
+        return ImageTextureData(img, props?.format)
+    }
+
+    private fun resizeImage(img: BufferedImage, size: Vec2i): BufferedImage {
+        val scaleX = size.x.toDouble() / img.width
+        val scaleY = size.y.toDouble() / img.height
+        val resized = BufferedImage((img.width * scaleX).roundToInt(), (img.height * scaleY).roundToInt(), BufferedImage.TYPE_4BYTE_ABGR)
+        val g = resized.createGraphics()
+        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC)
+        g.drawImage(img, AffineTransform().apply { scale(scaleX, scaleY) }, null)
+        g.dispose()
+        return resized
     }
 }

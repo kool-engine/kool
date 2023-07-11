@@ -1,6 +1,7 @@
 package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.Assets
+import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.util.*
 import kotlinx.coroutines.CoroutineScope
 import kotlin.math.roundToInt
@@ -69,7 +70,7 @@ open class Texture2d(props: TextureProps = TextureProps(), name: String? = null,
             this(props, name, BufferedTextureLoader(data))
 
     constructor(assetPath: String, name: String? = null, props: TextureProps = TextureProps()) :
-            this(props, name, AsyncTextureLoader { Assets.loadTextureData(assetPath, props.format) })
+            this(props, name, AsyncTextureLoader { Assets.loadTextureData(assetPath, props) })
 
     override val type = "2D"
 
@@ -156,14 +157,21 @@ class GradientTexture(gradient: ColorGradient, size: Int = 256, isClamped: Boole
 }
 
 data class TextureProps(
-        val format: TexFormat = TexFormat.RGBA,
-        val addressModeU: AddressMode = AddressMode.REPEAT,
-        val addressModeV: AddressMode = AddressMode.REPEAT,
-        val addressModeW: AddressMode = AddressMode.REPEAT,
-        val minFilter: FilterMethod = FilterMethod.LINEAR,
-        val magFilter: FilterMethod = FilterMethod.LINEAR,
-        val mipMapping: Boolean = true,
-        val maxAnisotropy: Int = 4)
+    val format: TexFormat = TexFormat.RGBA,
+    val addressModeU: AddressMode = AddressMode.REPEAT,
+    val addressModeV: AddressMode = AddressMode.REPEAT,
+    val addressModeW: AddressMode = AddressMode.REPEAT,
+    val minFilter: FilterMethod = FilterMethod.LINEAR,
+    val magFilter: FilterMethod = FilterMethod.LINEAR,
+    val mipMapping: Boolean = true,
+    val maxAnisotropy: Int = 4,
+
+    /**
+     * If non-null, the loader implementation will try to scale the loaded texture image to the given size in pixels.
+     * This is particular useful to scale vector (SVG) images to a desired resolution on load.
+     */
+    val preferredSize: Vec2i? = null
+)
 
 enum class FilterMethod {
     NEAREST,
