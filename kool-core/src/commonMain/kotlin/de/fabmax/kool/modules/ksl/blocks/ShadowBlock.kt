@@ -109,7 +109,6 @@ class ShadowBlockFragmentStage(
                     // more than one sub-map -> CascadedShadowMap
                     sampleCascadedShadowMap(lightSpacePositions, lightSpaceNormalZs, lightIdx, mapRange)
                 }
-
             }
         }
     }
@@ -129,7 +128,6 @@ class ShadowBlockFragmentStage(
             shadowFactors[lightIdx] set 0f.const
         }
     }
-
 
     private fun KslScopeBuilder.sampleCascadedShadowMap(
         lightSpacePositions: KslArrayVector<KslTypeFloat4, KslTypeFloat1>,

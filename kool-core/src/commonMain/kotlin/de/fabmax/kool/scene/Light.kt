@@ -69,11 +69,7 @@ sealed class Light : Node() {
 
         override fun updateEncodedValues() {
             encodeColor()
-            if (parent == null) {
-                transform.transform(_direction.set(Vec3f.X_AXIS), 0f)
-            } else {
-                toGlobalCoords(_direction.set(Vec3f.X_AXIS), 0f)
-            }
+            toGlobalCoords(_direction.set(Vec3f.X_AXIS), 0f)
 
             // directional light direction is intentionally stored in position instead of direction, for
             // easier / faster decoding in the shader
@@ -103,12 +99,7 @@ sealed class Light : Node() {
 
         override fun updateEncodedValues() {
             encodeColor()
-            if (parent == null) {
-                transform.transform(_position.set(Vec3f.ZERO))
-            } else {
-                toGlobalCoords(_position.set(Vec3f.ZERO))
-            }
-
+            toGlobalCoords(_position.set(Vec3f.ZERO))
             encodedPosition.set(_position, ENCODING)
         }
 
@@ -143,8 +134,8 @@ sealed class Light : Node() {
 
         override fun updateEncodedValues() {
             encodeColor()
-            transform.transform(_position.set(Vec3f.ZERO))
-            transform.transform(_direction.set(Vec3f.X_AXIS), 0f)
+            toGlobalCoords(_position.set(Vec3f.ZERO))
+            toGlobalCoords(_direction.set(Vec3f.X_AXIS), 0f)
 
             encodedPosition.set(_position, ENCODING)
             encodedDirection.set(direction, cos((spotAngle / 2).toRad()))

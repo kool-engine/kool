@@ -66,9 +66,13 @@ class VertexTransformBlock(cfg: BasicVertexConfig, name: String, parentScope: Ks
                 localPos += normalize(localNormal) * displacement
             }
 
-            outWorldPos set (outModelMat * float4Value(localPos, 1f)).xyz
-            outWorldNormal set normalize((outModelMat * float4Value(localNormal, 0f)).xyz)
-            outWorldTangent set float4Value(float4Value((outModelMat * localTangent).xyz, 0f).xyz, inLocalTangent.w)
+            val worldPos = float4Var(outModelMat * float4Value(localPos, 1f))
+            val worldNrm = float4Var(outModelMat * float4Value(localNormal, 0f))
+            val worldTan = float4Var(outModelMat * localTangent)
+
+            outWorldPos set worldPos.xyz
+            outWorldNormal set normalize(worldNrm.xyz)
+            outWorldTangent set float4Value(worldTan.xyz, inLocalTangent.w)
         }
     }
 
