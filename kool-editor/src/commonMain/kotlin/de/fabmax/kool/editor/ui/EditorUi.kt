@@ -27,8 +27,6 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
 
     val appStateInfo = mutableStateOf("")
 
-    val iconMap = IconMap()
-
     init {
         setupUiScene()
 

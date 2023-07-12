@@ -8,7 +8,6 @@ import de.fabmax.kool.editor.model.EditorNodeModel
 import de.fabmax.kool.editor.model.SceneModel
 import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.math.Mat4d
-import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.modules.ui2.ArrowScope.Companion.ROTATION_DOWN
 import de.fabmax.kool.modules.ui2.ArrowScope.Companion.ROTATION_RIGHT
@@ -215,36 +214,51 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
             }
         }
 
-        Box(width = Grow.Std, height = Grow.Std) {
-            val fgColor = if (item.nodeModel in EditorState.selection.use()) {
-                if (item.type != SceneObjectType.NON_MODEL_NODE) {
-                    colors.primary
-                } else {
-                    colors.primary.mix(Color.BLACK, 0.3f)
-                }
+        val fgColor = if (item.nodeModel in EditorState.selection.use()) {
+            if (item.type != SceneObjectType.NON_MODEL_NODE) {
+                colors.primary
             } else {
-                if (item.type != SceneObjectType.NON_MODEL_NODE) {
-                    colors.onBackground
-                } else {
-                    colors.onBackground.mix(Color.BLACK, 0.3f)
-                }
+                colors.primary.mix(Color.BLACK, 0.3f)
             }
+        } else {
+            if (item.type != SceneObjectType.NON_MODEL_NODE) {
+                colors.onBackground
+            } else {
+                colors.onBackground.mix(Color.BLACK, 0.3f)
+            }
+        }
 
+        // type icon
+        Image {
+            val icon = when (item.type) {
+                SceneObjectType.NON_MODEL_NODE -> IconMap.NODE_CIRCLE
+                SceneObjectType.CAMERA -> IconMap.CAMERA
+                SceneObjectType.LIGHT -> IconMap.LIGHT
+                SceneObjectType.GROUP -> IconMap.CIRCLE_DOT
+                SceneObjectType.MESH -> IconMap.CUBE
+                SceneObjectType.MODEL -> IconMap.TREE
+                SceneObjectType.SCENE -> IconMap.WORLD
+            }
+            modifier
+                .alignX(AlignmentX.End)
+                .alignY(AlignmentY.Center)
+                .margin(end = sizes.smallGap)
+                .iconImage(icon, fgColor)
+        }
+
+        Box(width = Grow.Std, height = Grow.Std) {
             Text(item.name) {
                 modifier
                     .alignY(AlignmentY.Center)
                     .textColor(fgColor)
             }
 
-            val icons = sceneBrowser.ui.iconMap
             Image {
                 modifier
                     .alignX(AlignmentX.End)
                     .alignY(AlignmentY.Center)
                     .margin(end = sizes.smallGap)
-                    .size(icons.iconSize.dp, icons.iconSize.dp)
-                    .imageProvider(icons.iconProvider(Vec2i(12, 0)))
-                    .tint(fgColor)
+                    .iconImage(IconMap.EYE, fgColor)
             }
         }
 
@@ -262,6 +276,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
                     is Mesh -> SceneObjectType.MESH
                     is Camera -> SceneObjectType.CAMERA
                     is Model -> SceneObjectType.MODEL
+                    is Light -> SceneObjectType.LIGHT
                     else -> SceneObjectType.GROUP
                 }
                 SceneObjectItem(node, nodeModel, type, depth)
@@ -307,6 +322,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
     private enum class SceneObjectType(val startExpanded: Boolean = false) {
         NON_MODEL_NODE,
         CAMERA,
+        LIGHT,
         GROUP(true),
         MESH,
         MODEL,
