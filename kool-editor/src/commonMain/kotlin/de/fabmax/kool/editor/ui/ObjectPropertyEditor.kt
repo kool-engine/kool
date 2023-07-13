@@ -84,7 +84,7 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", ui) 
     ) {
         modifier.width(Grow.Std)
 
-        Column(Grow.Std, Grow.Std, scopeName = selectedObject?.nameState?.value) {
+        Column(Grow.Std, Grow.Std, scopeName = "node-${selectedObject?.nodeId}") {
             Row(width = Grow.Std, height = sizes.baseSize) {
                 modifier
                     .padding(horizontal = sizes.gap)
@@ -136,7 +136,7 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", ui) 
                 when (component) {
                     is DiscreteLightComponent -> componentEditor(component) { LightEditor(component) }
                     is MaterialComponent -> componentEditor(component) { MaterialEditor(component) }
-                    is MeshComponent -> meshTypeProperties(component)
+                    is MeshComponent -> componentEditor(component) { MeshEditor(component) }
                     is SceneBackgroundComponent -> componentEditor(component) { SceneBackgroundEditor(component) }
                     is ScriptComponent -> componentEditor(component) { ScriptEditor(component) }
                     is ShadowMapComponent -> componentEditor(component) { ShadowMapEditor(component) }
@@ -149,10 +149,12 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", ui) 
         }
     }
 
-    private inline fun <T: EditorModelComponent> UiScope.componentEditor(component: T, editorProvider: () -> ComponentEditor<T>) {
-        val editor = remember(editorProvider)
-        editor.component = component
-        editor()
+    private inline fun <reified T: EditorModelComponent> UiScope.componentEditor(component: T, editorProvider: () -> ComponentEditor<T>) {
+        Box(width = Grow.Std, scopeName = "comp-${T::class.simpleName}") {
+            val editor = remember(editorProvider)
+            editor.component = component
+            editor()
+        }
     }
 
     private fun UiScope.transformComponent(nodeModel: EditorNodeModel) {

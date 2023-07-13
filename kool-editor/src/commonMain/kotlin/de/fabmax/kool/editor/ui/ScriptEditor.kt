@@ -18,7 +18,7 @@ class ScriptEditor(component: ScriptComponent) : ComponentEditor<ScriptComponent
         .replaceBeforeLast('.', "")
         .removePrefix(".")
 
-    override fun UiScope.compose() = collapsapsablePanel(scriptName) {
+    override fun UiScope.compose() = componentPanel(scriptName, ::removeComponent) {
         Column(width = Grow.Std) {
             modifier
                 .padding(horizontal = sizes.gap)

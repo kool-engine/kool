@@ -13,8 +13,9 @@ import de.fabmax.kool.util.MdColor
 
 class MaterialEditor(component: MaterialComponent) : ComponentEditor<MaterialComponent>(component) {
 
-    override fun UiScope.compose() = collapsapsablePanel(
+    override fun UiScope.compose() = componentPanel(
         title = "Material",
+        onRemove = ::removeComponent,
         headerContent = {
             val (items, idx) = makeMaterialItemsAndIndex()
             var selectedIndex by remember(idx)

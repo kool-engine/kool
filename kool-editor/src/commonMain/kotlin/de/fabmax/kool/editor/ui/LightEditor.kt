@@ -13,7 +13,7 @@ class LightEditor(component: DiscreteLightComponent) : ComponentEditor<DiscreteL
     private val lightTypeIndex: Int
         get() = lightTypes.indexOfFirst { it.lightType.isInstance(currentLight) }
 
-    override fun UiScope.compose() = collapsapsablePanel(title = "Light") {
+    override fun UiScope.compose() = componentPanel(title = "Light", ::removeComponent) {
         component.lightState.use().let { light ->
             Column(width = Grow.Std) {
                 modifier

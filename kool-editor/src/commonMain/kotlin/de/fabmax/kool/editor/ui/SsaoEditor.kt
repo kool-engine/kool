@@ -8,7 +8,7 @@ import de.fabmax.kool.modules.ui2.*
 
 class SsaoEditor(component: SsaoComponent) : ComponentEditor<SsaoComponent>(component) {
 
-    override fun UiScope.compose() = collapsapsablePanel(title = "Screen-space Ambient Occlusion") {
+    override fun UiScope.compose() = componentPanel(title = "Screen-space Ambient Occlusion", ::removeComponent) {
         component.ssaoState.use().let { ssao ->
             Column(width = Grow.Std) {
                 modifier
