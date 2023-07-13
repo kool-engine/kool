@@ -14,6 +14,7 @@ import de.fabmax.kool.editor.overlays.GridOverlay
 import de.fabmax.kool.editor.overlays.LightIndicatorOverlay
 import de.fabmax.kool.editor.overlays.SelectionOverlay
 import de.fabmax.kool.editor.ui.EditorUi
+import de.fabmax.kool.editor.ui.TransformGizmoOverlay
 import de.fabmax.kool.input.InputStack
 import de.fabmax.kool.input.KeyboardInput
 import de.fabmax.kool.input.LocalKeyCode
@@ -39,6 +40,7 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
     }
     val gridOverlay = GridOverlay()
     val lightOverlay = LightIndicatorOverlay()
+    val gizmoOverlay = TransformGizmoOverlay(this)
     val selectionOverlay = SelectionOverlay(this)
 
     val editorContent = Node("Editor Content").apply {
@@ -47,6 +49,7 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
         addNode(gridOverlay)
         addNode(lightOverlay)
         addNode(selectionOverlay)
+        addNode(gizmoOverlay)
 
         editorOverlay.addNode(this)
     }

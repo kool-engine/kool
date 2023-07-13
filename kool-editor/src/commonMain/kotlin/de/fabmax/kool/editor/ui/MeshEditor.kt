@@ -16,6 +16,7 @@ class MeshEditor(component: MeshComponent) : ComponentEditor<MeshComponent>(comp
 
         componentPanel(
             title = "Mesh",
+            imageIcon = IconMap.CUBE,
             onRemove = ::removeComponent,
 
             headerContent = {
@@ -42,13 +43,13 @@ class MeshEditor(component: MeshComponent) : ComponentEditor<MeshComponent>(comp
                     .padding(horizontal = sizes.gap)
                     .margin(bottom = sizes.gap)
 
-                when (val shapeType = shape) {
-                    is MeshShapeData.Box -> boxProperties(component, shapeType)
-                    is MeshShapeData.Rect -> rectProperties(component, shapeType)
-                    is MeshShapeData.IcoSphere -> icoSphereProperties(component, shapeType)
-                    is MeshShapeData.UvSphere -> uvSphereProperties(component, shapeType)
-                    is MeshShapeData.Cylinder -> cylinderProperties(component, shapeType)
-                    is MeshShapeData.Capsule -> capsuleProperties(component, shapeType)
+                when (shape) {
+                    is MeshShapeData.Box -> boxProperties(shape)
+                    is MeshShapeData.Rect -> rectProperties(shape)
+                    is MeshShapeData.IcoSphere -> icoSphereProperties(shape)
+                    is MeshShapeData.UvSphere -> uvSphereProperties(shape)
+                    is MeshShapeData.Cylinder -> cylinderProperties(shape)
+                    is MeshShapeData.Capsule -> capsuleProperties(shape)
                     is MeshShapeData.Empty -> { }
                 }
 
@@ -56,11 +57,13 @@ class MeshEditor(component: MeshComponent) : ComponentEditor<MeshComponent>(comp
                     val shapeI = component.shapesState.indexOf(shape)
                     xyRow(
                         label = "Texture scale:",
-                        xy = shape.uvScale.toVec2d(),
+                        xy = shape.common.uvScale.toVec2d(),
                         dragChangeSpeed = DragChangeRates.SIZE_VEC2,
                         editHandler = ActionValueEditHandler { undoValue, applyValue ->
-                            val undoShape = shape.copyShape(uvScale = Vec2Data(undoValue))
-                            val applyShape = shape.copyShape(uvScale = Vec2Data(applyValue))
+                            // make sure up-to-date shape is used as base for SetShapeAction
+                            val baseShape = component.shapesState[shapeI]
+                            val undoShape = baseShape.copyShape(shape.common.copy(uvScale = Vec2Data(undoValue)))
+                            val applyShape = baseShape.copyShape(shape.common.copy(uvScale = Vec2Data(applyValue)))
                             SetShapeAction(component, undoShape, applyShape, shapeI)
                         }
                     )
@@ -69,47 +72,47 @@ class MeshEditor(component: MeshComponent) : ComponentEditor<MeshComponent>(comp
         }
     }
 
-    private fun UiScope.boxProperties(meshComponent: MeshComponent, box: MeshShapeData.Box) = Column(
+    private fun UiScope.boxProperties(box: MeshShapeData.Box) = Column(
         width = Grow.Std,
         scopeName = "boxProperties"
     ) {
-        val shapeI = meshComponent.shapesState.indexOf(box)
+        val shapeI = component.shapesState.indexOf(box)
         xyzRow(
             label = "Size:",
             xyz = box.size.toVec3d(),
             dragChangeSpeed = DragChangeRates.SIZE_VEC3,
             editHandler = ActionValueEditHandler { undo, apply ->
-                SetShapeAction(meshComponent, box.copy(size = Vec3Data(undo)), box.copy(size = Vec3Data(apply)), shapeI)
+                SetShapeAction(component, box.copy(size = Vec3Data(undo)), box.copy(size = Vec3Data(apply)), shapeI)
             }
         )
     }
 
-    private fun UiScope.rectProperties(meshComponent: MeshComponent, rect: MeshShapeData.Rect) = Column(
+    private fun UiScope.rectProperties(rect: MeshShapeData.Rect) = Column(
         width = Grow.Std,
         scopeName = "rectProperties"
     ) {
-        val shapeI = meshComponent.shapesState.indexOf(rect)
+        val shapeI = component.shapesState.indexOf(rect)
         xyRow(
             label = "Size:",
             xy = rect.size.toVec2d(),
             dragChangeSpeed = DragChangeRates.SIZE_VEC2,
             editHandler = ActionValueEditHandler { undo, apply ->
-                SetShapeAction(meshComponent, rect.copy(size = Vec2Data(undo)), rect.copy(size = Vec2Data(apply)), shapeI)
+                SetShapeAction(component, rect.copy(size = Vec2Data(undo)), rect.copy(size = Vec2Data(apply)), shapeI)
             }
         )
     }
 
-    private fun UiScope.icoSphereProperties(meshComponent: MeshComponent, icoSphere: MeshShapeData.IcoSphere) = Column(
+    private fun UiScope.icoSphereProperties(icoSphere: MeshShapeData.IcoSphere) = Column(
         width = Grow.Std,
         scopeName = "icoSphereProperties"
     ) {
-        val shapeI = meshComponent.shapesState.indexOf(icoSphere)
+        val shapeI = component.shapesState.indexOf(icoSphere)
         labeledDoubleTextField(
             label = "Radius:",
             value = icoSphere.radius,
             dragChangeSpeed = DragChangeRates.SIZE,
             editHandler = ActionValueEditHandler { undo, apply ->
-                SetShapeAction(meshComponent, icoSphere.copy(radius = undo), icoSphere.copy(radius = apply), shapeI)
+                SetShapeAction(component, icoSphere.copy(radius = undo), icoSphere.copy(radius = apply), shapeI)
             }
         )
         labeledIntTextField(
@@ -119,22 +122,22 @@ class MeshEditor(component: MeshComponent) : ComponentEditor<MeshComponent>(comp
             minValue = 0,
             maxValue = 7,
             editHandler = ActionValueEditHandler { undo, apply ->
-                SetShapeAction(meshComponent, icoSphere.copy(subDivisions = undo), icoSphere.copy(subDivisions = apply), shapeI)
+                SetShapeAction(component, icoSphere.copy(subDivisions = undo), icoSphere.copy(subDivisions = apply), shapeI)
             }
         )
     }
 
-    private fun UiScope.uvSphereProperties(meshComponent: MeshComponent, uvSphere: MeshShapeData.UvSphere) = Column(
+    private fun UiScope.uvSphereProperties(uvSphere: MeshShapeData.UvSphere) = Column(
         width = Grow.Std,
         scopeName = "uvSphereProperties"
     ) {
-        val shapeI = meshComponent.shapesState.indexOf(uvSphere)
+        val shapeI = component.shapesState.indexOf(uvSphere)
         labeledDoubleTextField(
             label = "Radius:",
             value = uvSphere.radius,
             dragChangeSpeed = DragChangeRates.SIZE,
             editHandler = ActionValueEditHandler { undo, apply ->
-                SetShapeAction(meshComponent, uvSphere.copy(radius = undo), uvSphere.copy(radius = apply), shapeI)
+                SetShapeAction(component, uvSphere.copy(radius = undo), uvSphere.copy(radius = apply), shapeI)
             }
         )
         labeledIntTextField(
@@ -144,22 +147,22 @@ class MeshEditor(component: MeshComponent) : ComponentEditor<MeshComponent>(comp
             minValue = 3,
             maxValue = 100,
             editHandler = ActionValueEditHandler { undo, apply ->
-                SetShapeAction(meshComponent, uvSphere.copy(steps = undo), uvSphere.copy(steps = apply), shapeI)
+                SetShapeAction(component, uvSphere.copy(steps = undo), uvSphere.copy(steps = apply), shapeI)
             }
         )
     }
 
-    private fun UiScope.cylinderProperties(meshComponent: MeshComponent, cylinder: MeshShapeData.Cylinder) = Column(
+    private fun UiScope.cylinderProperties(cylinder: MeshShapeData.Cylinder) = Column(
         width = Grow.Std,
         scopeName = "cylinderProperties"
     ) {
-        val shapeI = meshComponent.shapesState.indexOf(cylinder)
+        val shapeI = component.shapesState.indexOf(cylinder)
 
         var isUniRadius by remember(cylinder.topRadius == cylinder.bottomRadius)
         labeledCheckbox("Uniform radius:", isUniRadius) {
             isUniRadius = it
             if (isUniRadius && cylinder.topRadius != cylinder.bottomRadius) {
-                SetShapeAction(meshComponent, cylinder, cylinder.copy(topRadius = cylinder.bottomRadius)).apply()
+                SetShapeAction(component, cylinder, cylinder.copy(topRadius = cylinder.bottomRadius)).apply()
             }
         }
         if (isUniRadius) {
@@ -168,7 +171,7 @@ class MeshEditor(component: MeshComponent) : ComponentEditor<MeshComponent>(comp
                 value = cylinder.bottomRadius,
                 dragChangeSpeed = DragChangeRates.SIZE,
                 editHandler = ActionValueEditHandler { undo, apply ->
-                    SetShapeAction(meshComponent, cylinder.copy(bottomRadius = undo, topRadius = undo), cylinder.copy(bottomRadius = apply, topRadius = apply), shapeI)
+                    SetShapeAction(component, cylinder.copy(bottomRadius = undo, topRadius = undo), cylinder.copy(bottomRadius = apply, topRadius = apply), shapeI)
                 }
             )
         } else {
@@ -177,7 +180,7 @@ class MeshEditor(component: MeshComponent) : ComponentEditor<MeshComponent>(comp
                 value = cylinder.topRadius,
                 dragChangeSpeed = DragChangeRates.SIZE,
                 editHandler = ActionValueEditHandler { undo, apply ->
-                    SetShapeAction(meshComponent, cylinder.copy(topRadius = undo), cylinder.copy(topRadius = apply), shapeI)
+                    SetShapeAction(component, cylinder.copy(topRadius = undo), cylinder.copy(topRadius = apply), shapeI)
                 }
             )
             labeledDoubleTextField(
@@ -185,7 +188,7 @@ class MeshEditor(component: MeshComponent) : ComponentEditor<MeshComponent>(comp
                 value = cylinder.bottomRadius,
                 dragChangeSpeed = DragChangeRates.SIZE,
                 editHandler = ActionValueEditHandler { undo, apply ->
-                    SetShapeAction(meshComponent, cylinder.copy(bottomRadius = undo), cylinder.copy(bottomRadius = apply), shapeI)
+                    SetShapeAction(component, cylinder.copy(bottomRadius = undo), cylinder.copy(bottomRadius = apply), shapeI)
                 }
             )
         }
@@ -194,7 +197,7 @@ class MeshEditor(component: MeshComponent) : ComponentEditor<MeshComponent>(comp
             value = cylinder.height,
             dragChangeSpeed = DragChangeRates.SIZE,
             editHandler = ActionValueEditHandler { undo, apply ->
-                SetShapeAction(meshComponent, cylinder.copy(height = undo), cylinder.copy(height = apply), shapeI)
+                SetShapeAction(component, cylinder.copy(height = undo), cylinder.copy(height = apply), shapeI)
             }
         )
         labeledIntTextField(
@@ -204,22 +207,22 @@ class MeshEditor(component: MeshComponent) : ComponentEditor<MeshComponent>(comp
             minValue = 3,
             maxValue = 100,
             editHandler = ActionValueEditHandler { undo, apply ->
-                SetShapeAction(meshComponent, cylinder.copy(steps = undo), cylinder.copy(steps = apply), shapeI)
+                SetShapeAction(component, cylinder.copy(steps = undo), cylinder.copy(steps = apply), shapeI)
             }
         )
     }
 
-    private fun UiScope.capsuleProperties(meshComponent: MeshComponent, capsule: MeshShapeData.Capsule) = Column(
+    private fun UiScope.capsuleProperties(capsule: MeshShapeData.Capsule) = Column(
         width = Grow.Std,
         scopeName = "capsuleProperties"
     ) {
-        val shapeI = meshComponent.shapesState.indexOf(capsule)
+        val shapeI = component.shapesState.indexOf(capsule)
         labeledDoubleTextField(
             label = "Radius:",
             value = capsule.radius,
             dragChangeSpeed = DragChangeRates.SIZE,
             editHandler = ActionValueEditHandler { undo, apply ->
-                SetShapeAction(meshComponent, capsule.copy(radius = undo), capsule.copy(radius = apply), shapeI)
+                SetShapeAction(component, capsule.copy(radius = undo), capsule.copy(radius = apply), shapeI)
             }
         )
         labeledDoubleTextField(
@@ -227,7 +230,7 @@ class MeshEditor(component: MeshComponent) : ComponentEditor<MeshComponent>(comp
             value = capsule.length,
             dragChangeSpeed = DragChangeRates.SIZE,
             editHandler = ActionValueEditHandler { undo, apply ->
-                SetShapeAction(meshComponent, capsule.copy(length = undo), capsule.copy(length = apply), shapeI)
+                SetShapeAction(component, capsule.copy(length = undo), capsule.copy(length = apply), shapeI)
             }
         )
         labeledIntTextField(
@@ -237,7 +240,7 @@ class MeshEditor(component: MeshComponent) : ComponentEditor<MeshComponent>(comp
             minValue = 3,
             maxValue = 100,
             editHandler = ActionValueEditHandler { undo, apply ->
-                SetShapeAction(meshComponent, capsule.copy(steps = undo), capsule.copy(steps = apply), shapeI)
+                SetShapeAction(component, capsule.copy(steps = undo), capsule.copy(steps = apply), shapeI)
             }
         )
     }

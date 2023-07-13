@@ -18,33 +18,34 @@ class MeshComponentData() : ComponentData {
 @Serializable
 sealed class MeshShapeData {
 
-    var pose = TransformData.IDENTITY
-    var vertexColor = ColorData(MdColor.GREY.toLinear())
-    var uvScale = Vec2Data(1.0, 1.0)
-
     abstract val name: String
     abstract val hasUvs: Boolean
+    abstract val common: CommonShapeData
 
     abstract fun generate(builder: MeshBuilder)
 
-    fun copyShape(pose: TransformData = TransformData.IDENTITY, vertexColor: ColorData = this.vertexColor, uvScale: Vec2Data = this.uvScale): MeshShapeData {
+    fun copyShape(common: CommonShapeData = this.common): MeshShapeData {
         val copied = when (this) {
-            is Box -> copy()
-            is Capsule -> copy()
-            is Cylinder -> copy()
-            is Empty -> copy()
-            is IcoSphere -> copy()
-            is Rect -> copy()
-            is UvSphere -> copy()
+            is Box -> copy(common = common)
+            is Capsule -> copy(common = common)
+            is Cylinder -> copy(common = common)
+            is Empty -> copy(common = common)
+            is IcoSphere -> copy(common = common)
+            is Rect -> copy(common = common)
+            is UvSphere -> copy(common = common)
         }
-        copied.pose = pose
-        copied.vertexColor = vertexColor
-        copied.uvScale = uvScale
         return copied
     }
 
     @Serializable
-    data class Box(val size: Vec3Data) : MeshShapeData() {
+    data class CommonShapeData(
+        val pose: TransformData = TransformData.IDENTITY,
+        val vertexColor: ColorData = ColorData(MdColor.GREY.toLinear()),
+        val uvScale: Vec2Data = Vec2Data(1.0, 1.0)
+    )
+
+    @Serializable
+    data class Box(val size: Vec3Data, override val common: CommonShapeData = CommonShapeData()) : MeshShapeData() {
         override val name: String get() = "Box"
         override val hasUvs: Boolean = true
 
@@ -58,7 +59,12 @@ sealed class MeshShapeData {
     }
 
     @Serializable
-    data class IcoSphere(val radius: Double, val subDivisions: Int) : MeshShapeData() {
+    data class IcoSphere(
+        val radius: Double,
+        val subDivisions: Int,
+        override val common: CommonShapeData = CommonShapeData()
+    ) : MeshShapeData() {
+
         override val name: String get() = "Ico-Sphere"
         override val hasUvs: Boolean = true
 
@@ -73,7 +79,12 @@ sealed class MeshShapeData {
     }
 
     @Serializable
-    data class UvSphere(val radius: Double, val steps: Int) : MeshShapeData() {
+    data class UvSphere(
+        val radius: Double,
+        val steps: Int,
+        override val common: CommonShapeData = CommonShapeData()
+    ) : MeshShapeData() {
+
         override val name: String get() = "UV-Sphere"
         override val hasUvs: Boolean = true
 
@@ -88,7 +99,7 @@ sealed class MeshShapeData {
     }
 
     @Serializable
-    data class Rect(val size: Vec2Data) : MeshShapeData() {
+    data class Rect(val size: Vec2Data, override val common: CommonShapeData = CommonShapeData()) : MeshShapeData() {
         override val name: String get() = "Rect"
         override val hasUvs: Boolean = true
 
@@ -103,7 +114,14 @@ sealed class MeshShapeData {
     }
 
     @Serializable
-    data class Cylinder(val topRadius: Double, val bottomRadius: Double, val height: Double, val steps: Int) : MeshShapeData() {
+    data class Cylinder
+        (val topRadius: Double,
+         val bottomRadius: Double,
+         val height: Double,
+         val steps: Int,
+         override val common: CommonShapeData = CommonShapeData()
+    ) : MeshShapeData() {
+
         override val name: String get() = "Cylinder"
         override val hasUvs: Boolean = true
 
@@ -120,7 +138,13 @@ sealed class MeshShapeData {
     }
 
     @Serializable
-    data class Capsule(val radius: Double, val length: Double, val steps: Int) : MeshShapeData() {
+    data class Capsule(
+        val radius: Double,
+        val length: Double,
+        val steps: Int,
+        override val common: CommonShapeData = CommonShapeData()
+    ) : MeshShapeData() {
+
         override val name: String get() = "Capsule"
         override val hasUvs: Boolean = false
 
@@ -144,7 +168,7 @@ sealed class MeshShapeData {
     }
 
     @Serializable
-    data class Empty(val dummy: Unit = Unit) : MeshShapeData() {
+    data class Empty(override val common: CommonShapeData = CommonShapeData()) : MeshShapeData() {
         override val name: String get() = "Empty"
         override val hasUvs: Boolean = false
 

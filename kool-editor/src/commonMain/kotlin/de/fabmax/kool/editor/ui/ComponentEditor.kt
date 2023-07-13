@@ -23,11 +23,13 @@ abstract class ComponentEditor<T: EditorModelComponent>(var component: T ) : Com
 
 fun UiScope.componentPanel(
     title: String,
+    imageIcon: ImageIconMap.IconImageProvider? = null,
     onRemove: (() -> Unit)? = null,
     headerContent: (RowScope.() -> Unit)? = null,
     block: ColumnScope.() -> Any?
 ) = collapsapsablePanel(
     title,
+    imageIcon,
     headerContent = {
         headerContent?.invoke(this)
         onRemove?.let { remove ->

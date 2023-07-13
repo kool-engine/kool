@@ -4,52 +4,20 @@ import de.fabmax.kool.editor.EditorState
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.actions.AddComponentAction
 import de.fabmax.kool.editor.actions.RenameNodeAction
-import de.fabmax.kool.editor.actions.SetTransformAction
 import de.fabmax.kool.editor.components.*
 import de.fabmax.kool.editor.data.ModelComponentData
 import de.fabmax.kool.editor.data.ScriptComponentData
 import de.fabmax.kool.editor.model.EditorNodeModel
 import de.fabmax.kool.editor.model.SceneModel
 import de.fabmax.kool.editor.model.SceneNodeModel
-import de.fabmax.kool.math.Mat3d
-import de.fabmax.kool.math.Mat4d
-import de.fabmax.kool.math.MutableVec3d
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.modules.ui2.*
 
 class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", ui) {
 
-    private val transformProperties = TransformProperties()
-
-    private val tmpNodePos = MutableVec3d()
-    private val tmpNodeRot = MutableVec3d()
-    private val tmpNodeScale = MutableVec3d()
-    private val tmpNodeRotMat = Mat3d()
-
-    private val transformGizmo = NodeTransformGizmo(ui.editor)
-
-    init {
-        transformProperties.editHandlers += object : ValueEditHandler<Mat4d> {
-            override fun onEdit(value: Mat4d) {
-                // todo: support transforming multiple objects at once
-                val selectedNd = EditorState.selection.firstOrNull() as? SceneNodeModel
-                selectedNd?.drawNode?.transform?.set(value)
-            }
-
-            override fun onEditEnd(startValue: Mat4d, endValue: Mat4d) {
-                // todo: support transforming multiple objects at once
-                val selectedNd = EditorState.selection.firstOrNull() as? SceneNodeModel
-                if (selectedNd != null) {
-                    applyTransformAction(selectedNd, startValue, endValue)
-                }
-            }
-        }
-        ui.editor.editorContent += transformGizmo
-    }
-
     override val windowSurface: UiSurface = EditorPanelWindow {
-        // clear gizmo transform object, will be set below if transform editor is available
-        transformGizmo.setTransformObject(null)
+        // clear gizmo transform object, will be set by transform editor if available
+        ui.editor.gizmoOverlay.setTransformObject(null)
 
         val selObjs = EditorState.selection.use()
         val selectedObject = if (selObjs.size == 1) selObjs[0] else null
@@ -63,18 +31,6 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", ui) 
         Column(Grow.Std, Grow.Std) {
             editorTitleBar(windowDockable, IconMap.PROPERTIES, title)
             objectProperties(selectedObject)
-        }
-
-        surface.onEachFrame {
-            val selectedNd = EditorState.selection.firstOrNull() as? SceneNodeModel
-            if (selectedNd != null) {
-                selectedNd.drawNode.transform.getPosition(tmpNodePos)
-                transformProperties.setPosition(tmpNodePos)
-                selectedNd.drawNode.transform.matrix.getRotation(tmpNodeRotMat)
-                transformProperties.setRotation(tmpNodeRotMat.getEulerAngles(tmpNodeRot))
-                selectedNd.drawNode.transform.matrix.getScale(tmpNodeScale)
-                transformProperties.setScale(tmpNodeScale)
-            }
         }
     }
 
@@ -141,7 +97,7 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", ui) 
                     is ScriptComponent -> componentEditor(component) { ScriptEditor(component) }
                     is ShadowMapComponent -> componentEditor(component) { ShadowMapEditor(component) }
                     is SsaoComponent -> componentEditor(component) { SsaoEditor(component) }
-                    is TransformComponent -> transformComponent(selectedObject)
+                    is TransformComponent -> componentEditor(component) { TransformEditor(component) }
                 }
             }
 
@@ -154,14 +110,6 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", ui) 
             val editor = remember(editorProvider)
             editor.component = component
             editor()
-        }
-    }
-
-    private fun UiScope.transformComponent(nodeModel: EditorNodeModel) {
-        (nodeModel as? SceneNodeModel)?.let {
-            // todo add button to enable gizmo
-            //transformGizmo.setTransformObject(it)
-            transformEditor(transformProperties)
         }
     }
 
@@ -190,14 +138,6 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", ui) 
     }
 
     companion object {
-        fun applyTransformAction(nodeModel: SceneNodeModel, oldTransform: Mat4d, newTransform: Mat4d) {
-            SetTransformAction(
-                editedNodeModel = nodeModel,
-                oldTransform = oldTransform,
-                newTransform = newTransform
-            ).apply()
-        }
-
         private val addComponentOptions = listOf(
             ComponentAdder.AddMeshComponent,
             ComponentAdder.AddModelComponent,

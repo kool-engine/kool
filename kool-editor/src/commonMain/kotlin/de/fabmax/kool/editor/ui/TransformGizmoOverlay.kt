@@ -2,6 +2,7 @@ package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.editor.KoolEditor
+import de.fabmax.kool.editor.actions.SetTransformAction
 import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.math.Vec3f
@@ -9,7 +10,7 @@ import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.Gizmo
 import kotlin.math.sqrt
 
-class NodeTransformGizmo(private val editor: KoolEditor) : Node("Node transform gizmo") {
+class TransformGizmoOverlay(private val editor: KoolEditor) : Node("Transform gizmo") {
 
     private var transformNodeModel: SceneNodeModel? = null
     private var hasTransformAuthority = false
@@ -43,7 +44,12 @@ class NodeTransformGizmo(private val editor: KoolEditor) : Node("Node transform 
             hasTransformAuthority = false
             transformNodeModel?.let {
                 val transformNode = it.drawNode
-                ObjectPropertyEditor.applyTransformAction(it, startTransform, transformNode.transform.matrix)
+
+                SetTransformAction(
+                    editedNodeModel = it,
+                    oldTransform = startTransform,
+                    newTransform = transformNode.transform.matrix
+                ).apply()
             }
         }
     }

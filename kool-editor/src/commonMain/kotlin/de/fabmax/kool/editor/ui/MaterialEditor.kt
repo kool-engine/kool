@@ -15,6 +15,7 @@ class MaterialEditor(component: MaterialComponent) : ComponentEditor<MaterialCom
 
     override fun UiScope.compose() = componentPanel(
         title = "Material",
+        imageIcon = IconMap.PALETTE,
         onRemove = ::removeComponent,
         headerContent = {
             val (items, idx) = makeMaterialItemsAndIndex()

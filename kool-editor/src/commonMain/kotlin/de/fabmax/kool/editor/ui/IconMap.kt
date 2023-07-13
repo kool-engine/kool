@@ -86,6 +86,9 @@ object IconMap {
     val NODE_CIRCLE = iconMap.IconImageProvider(15, 1)
     val FOLDER = iconMap.IconImageProvider(16, 1)
     val FOLDER_OPEN = iconMap.IconImageProvider(17, 1)
+    val SHADOW_INNER = iconMap.IconImageProvider(18, 1)
+    val SHADOW = iconMap.IconImageProvider(19, 1)
+    val TRANSFORM = iconMap.IconImageProvider(0, 2)
 }
 
 fun ImageModifier.iconImage(imgProvider: ImageIconMap.IconImageProvider, tintColor: Color? = null) {

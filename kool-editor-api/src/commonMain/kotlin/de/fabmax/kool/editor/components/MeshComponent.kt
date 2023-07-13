@@ -59,11 +59,11 @@ class MeshComponent(override val componentData: MeshComponentData) :
         mesh.generate {
             shapesState.forEach { shape ->
                 withTransform {
-                    shape.pose.toMat4f(transform)
-                    color = shape.vertexColor.toColorLinear()
+                    shape.common.pose.toMat4f(transform)
+                    color = shape.common.vertexColor.toColorLinear()
                     vertexModFun = {
-                        texCoord.x *= shape.uvScale.x.toFloat()
-                        texCoord.y *= shape.uvScale.y.toFloat()
+                        texCoord.x *= shape.common.uvScale.x.toFloat()
+                        texCoord.y *= shape.common.uvScale.y.toFloat()
                     }
                     shape.generate(this)
                 }

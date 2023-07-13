@@ -1,41 +1,89 @@
 package de.fabmax.kool.editor.ui
 
+import de.fabmax.kool.editor.EditorState
+import de.fabmax.kool.editor.actions.SetTransformAction
+import de.fabmax.kool.editor.components.TransformComponent
+import de.fabmax.kool.editor.model.SceneNodeModel
+import de.fabmax.kool.math.Mat3d
 import de.fabmax.kool.math.Mat4d
+import de.fabmax.kool.math.MutableVec3d
 import de.fabmax.kool.math.Vec3d
 import de.fabmax.kool.modules.ui2.*
 
-fun UiScope.transformEditor(props: TransformProperties) = collapsapsablePanel("Transform") {
-    Column(width = Grow.Std) {
-        modifier
-            .padding(horizontal = sizes.gap)
-            .margin(bottom = sizes.gap)
 
-        position(props)
-        rotation(props)
-        scale(props)
+class TransformEditor(component: TransformComponent) : ComponentEditor<TransformComponent>(component) {
+
+    private val transformProperties = TransformProperties()
+
+    private val tmpNodePos = MutableVec3d()
+    private val tmpNodeRot = MutableVec3d()
+    private val tmpNodeScale = MutableVec3d()
+    private val tmpNodeRotMat = Mat3d()
+
+    init {
+        transformProperties.editHandlers += object : ValueEditHandler<Mat4d> {
+            override fun onEdit(value: Mat4d) {
+                component.nodeModel.drawNode.transform.set(value)
+            }
+
+            override fun onEditEnd(startValue: Mat4d, endValue: Mat4d) {
+                SetTransformAction(
+                    editedNodeModel = component.nodeModel,
+                    oldTransform = startValue,
+                    newTransform = endValue
+                ).apply()
+            }
+        }
     }
+
+    override fun UiScope.compose() = collapsapsablePanel("Transform", IconMap.TRANSFORM) {
+        //KoolEditor.instance.gizmoOverlay.setTransformObject(nodeModel as? SceneNodeModel)
+
+        Column(width = Grow.Std) {
+            modifier
+                .padding(horizontal = sizes.gap)
+                .margin(bottom = sizes.gap)
+
+            position()
+            rotation()
+            scale()
+        }
+
+        surface.onEachFrame {
+            val selectedNd = EditorState.selection.firstOrNull() as? SceneNodeModel
+            if (selectedNd != null) {
+                selectedNd.drawNode.transform.getPosition(tmpNodePos)
+                transformProperties.setPosition(tmpNodePos)
+                selectedNd.drawNode.transform.matrix.getRotation(tmpNodeRotMat)
+                transformProperties.setRotation(tmpNodeRotMat.getEulerAngles(tmpNodeRot))
+                selectedNd.drawNode.transform.matrix.getScale(tmpNodeScale)
+                transformProperties.setScale(tmpNodeScale)
+            }
+        }
+    }
+
+    private fun UiScope.position() = xyzRow(
+        label = "Position:",
+        xyz = Vec3d(transformProperties.px.use(), transformProperties.py.use(), transformProperties.pz.use()),
+        dragChangeSpeed = DragChangeRates.POSITION_VEC3,
+        editHandler = transformProperties.posEditHandler
+    )
+
+    private fun UiScope.rotation() = xyzRow(
+        label = "Rotation:",
+        xyz = Vec3d(transformProperties.rx.use(), transformProperties.ry.use(), transformProperties.rz.use()),
+        dragChangeSpeed = DragChangeRates.ROTATION_VEC3,
+        editHandler = transformProperties.rotEditHandler
+    )
+
+    private fun UiScope.scale() = xyzRow(
+        label = "Scale:",
+        xyz = Vec3d(transformProperties.sx.use(), transformProperties.sy.use(), transformProperties.sz.use()),
+        dragChangeSpeed = DragChangeRates.SCALE_VEC3,
+        editHandler = transformProperties.scaleEditHandler
+    )
+
 }
-
-private fun UiScope.position(props: TransformProperties) = xyzRow(
-    label = "Position:",
-    xyz = Vec3d(props.px.use(), props.py.use(), props.pz.use()),
-    dragChangeSpeed = DragChangeRates.POSITION_VEC3,
-    editHandler = props.posEditHandler
-)
-
-private fun UiScope.rotation(props: TransformProperties) = xyzRow(
-    label = "Rotation:",
-    xyz = Vec3d(props.rx.use(), props.ry.use(), props.rz.use()),
-    dragChangeSpeed = DragChangeRates.ROTATION_VEC3,
-    editHandler = props.rotEditHandler
-)
-
-private fun UiScope.scale(props: TransformProperties) = xyzRow(
-    label = "Scale:",
-    xyz = Vec3d(props.sx.use(), props.sy.use(), props.sz.use()),
-    dragChangeSpeed = DragChangeRates.SCALE_VEC3,
-    editHandler = props.scaleEditHandler
-)
 
 class TransformProperties {
     val px = mutableStateOf(0.0)

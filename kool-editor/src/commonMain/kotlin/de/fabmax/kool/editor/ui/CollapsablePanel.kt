@@ -4,6 +4,7 @@ import de.fabmax.kool.modules.ui2.*
 
 fun UiScope.collapsapsablePanel(
     title: String,
+    imageIcon: ImageIconMap.IconImageProvider? = null,
     headerContent: (RowScope.() -> Unit)? = null,
     block: ColumnScope.() -> Any?
 ) = Column(
@@ -22,8 +23,15 @@ fun UiScope.collapsapsablePanel(
 
         Arrow (if (isCollapsed) 0f else 90f) {
             modifier
-                .margin(horizontal = sizes.gap)
+                .margin(start = sizes.gap, end = if (imageIcon == null) sizes.gap else sizes.smallGap)
                 .alignY(AlignmentY.Center)
+        }
+        imageIcon?.let {
+            Image {
+                modifier
+                    .margin(end = sizes.smallGap, top = sizes.lineHeightLarger * 0.5f - IconMap.iconSize * 0.5f)
+                    .iconImage(it, UiColors.titleText)
+            }
         }
         Text(title) {
             modifier.alignY(AlignmentY.Center)
