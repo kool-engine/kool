@@ -63,7 +63,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
             mapSize = 0.7f
             radius = 0.5f
         }
-        shadows += SimpleShadowMap(mainScene, 0, 4096).apply {
+        shadows += SimpleShadowMap(mainScene, mainScene.lighting.lights[0], 4096).apply {
             setDefaultDepthOffset(true)
             shadowBounds = BoundingBox(Vec3f(-20f, 0f, -20f), Vec3f(20f, 10f, 20f))
         }

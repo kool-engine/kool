@@ -28,7 +28,7 @@ class HelloGltfDemo : DemoScene("Hello glTF") {
             setup(Vec3f(5f, 6.25f, 7.5f), Vec3f(-1f, -1.25f, -1.5f), 45f)
             setColor(Color.WHITE, 300f)
         }
-        val shadowMap = SimpleShadowMap(this, lightIndex = 0)
+        val shadowMap = SimpleShadowMap(this, lighting.lights[0])
         val aoPipeline = AoPipeline.createForward(this)
 
         // Add a ground plane

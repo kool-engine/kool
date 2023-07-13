@@ -65,8 +65,8 @@ class SkyCubePass(opticalDepthLut: Texture2d, size: Int = 256) :
 
     init {
         lighting = Lighting().apply {
-            lights.clear()
-            lights += sunLight
+            clear()
+            addLight(sunLight)
         }
 
         groundShader = KslPbrShader {

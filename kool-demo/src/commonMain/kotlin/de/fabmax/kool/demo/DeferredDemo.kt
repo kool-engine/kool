@@ -108,7 +108,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
         }
 
         // don't use any global lights
-        lighting.lights.clear()
+        lighting.clear()
         // no need to clear the screen, as we draw a fullscreen quad containing the deferred render output every frame
         mainRenderPass.clearColor = null
 

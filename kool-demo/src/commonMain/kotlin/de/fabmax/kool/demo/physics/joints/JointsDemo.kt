@@ -145,25 +145,25 @@ class JointsDemo : DemoScene("Physics - Joints") {
     private fun Scene.lightSetup() {
         aoPipeline = AoPipeline.createForward(this)
         lighting.apply {
-            lights.clear()
+            clear()
             val l1 = Vec3f(80f, 120f, 100f)
             val l2 = Vec3f(-30f, 100f, 100f)
-            lights += Light.Spot().apply {
+            addSpotLight {
                 setup(l1, MutableVec3f(l1).scale(-1f).norm(), 45f)
                 setColor(Color.WHITE.mix(MdColor.AMBER, 0.1f), 50000f)
             }
-            lights += Light.Spot().apply {
+            addSpotLight {
                 setup(l2, MutableVec3f(l2).scale(-1f).norm(), 45f)
                 setColor(Color.WHITE.mix(MdColor.LIGHT_BLUE, 0.1f), 25000f)
             }
         }
-        shadows.add(SimpleShadowMap(this, 0).apply {
+        shadows.add(SimpleShadowMap(this, lighting.lights[0]).apply {
             clipNear = 100f
             clipFar = 500f
             shaderDepthOffset = -0.2f
             shadowBounds = BoundingBox(Vec3f(-75f, -20f, -75f), Vec3f(75f, 20f, 75f))
         })
-        shadows.add(SimpleShadowMap(this, 1).apply {
+        shadows.add(SimpleShadowMap(this, lighting.lights[1]).apply {
             clipNear = 100f
             clipFar = 500f
             shaderDepthOffset = -0.2f

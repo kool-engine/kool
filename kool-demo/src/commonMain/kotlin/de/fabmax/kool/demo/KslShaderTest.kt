@@ -41,22 +41,22 @@ class KslShaderTest : DemoScene("KslShader") {
         )
 
         lighting.apply {
-            lights.clear()
-            lights += Light.Spot().apply {
+            clear()
+            addSpotLight {
                 setup(lightPoses[2].first, lightPoses[2].second, 60f)
                 setColor(MdColor.LIGHT_GREEN.toLinear(), 30f)
             }
-            lights += Light.Spot().apply {
+            addSpotLight {
                 setup(lightPoses[3].first, lightPoses[3].second, 60f)
                 setColor(MdColor.ORANGE.toLinear(), 30f)
             }
         }
 
-        val shadowMaps = List(lighting.lights.size) { i ->
-            if (lighting.lights[i] is Light.Directional) {
-                CascadedShadowMap(this, i).apply { setMapRanges(0.05f, 0.25f, 1f) }
+        val shadowMaps = lighting.lights.map { light ->
+            if (light is Light.Directional) {
+                CascadedShadowMap(this, light).apply { setMapRanges(0.05f, 0.25f, 1f) }
             } else {
-                SimpleShadowMap(this, i, 2048)
+                SimpleShadowMap(this, light, 2048)
             }
         }
 

@@ -52,7 +52,7 @@ class ProceduralDemo : DemoScene("Procedural Geometry") {
             setColor(MdColor.AMBER.mix(Color.WHITE, 0.5f).toLinear(), 3f)
         }
 
-        val shadowMap = SimpleShadowMap(this@setupMainScene, 0).apply {
+        val shadowMap = SimpleShadowMap(this@setupMainScene, lighting.lights[0]).apply {
             setDefaultDepthOffset(true)
             shadowBounds = BoundingBox(Vec3f(-30f, 0f, -30f), Vec3f(30f, 60f, 30f))
         }

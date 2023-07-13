@@ -24,10 +24,13 @@ sealed class Light : Node() {
     }
 
     protected fun encodeColor() {
+        // intensity (alpha) is multiplied on color channels, so that color.w can be used by subclasses to encode
+        // other values
+        val intensity = if (isVisible) color.a else 0f
         encodedColor.set(
-            color.r * color.a,
-            color.g * color.a,
-            color.b * color.a,
+            color.r * intensity,
+            color.g * intensity,
+            color.b * intensity,
             1f
         )
     }

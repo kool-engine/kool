@@ -232,12 +232,12 @@ class PbrDemo : DemoScene("PBR Materials") {
         private const val lightStrength = 250f
         private const val lightExtent = 10f
         private val lightSetups = listOf(
-                LightSetup("None") { lighting.lights.clear() },
+                LightSetup("None") { lighting.clear() },
 
                 LightSetup("Front x1") {
                     val light1 = Light.Point().setup(Vec3f(0f, 0f, lightExtent * 1.5f)).setColor(Color.WHITE, lightStrength * 2f)
-                    lighting.lights.clear()
-                    lighting.lights.add(light1)
+                    lighting.clear()
+                    lighting.addLight(light1)
                 },
 
                 LightSetup("Front x4") {
@@ -245,17 +245,17 @@ class PbrDemo : DemoScene("PBR Materials") {
                     val light2 = Light.Point().setup(Vec3f(-lightExtent, -lightExtent, lightExtent)).setColor(Color.WHITE, lightStrength)
                     val light3 = Light.Point().setup(Vec3f(-lightExtent, lightExtent, lightExtent)).setColor(Color.WHITE, lightStrength)
                     val light4 = Light.Point().setup(Vec3f(lightExtent, -lightExtent, lightExtent)).setColor(Color.WHITE, lightStrength)
-                    lighting.lights.clear()
-                    lighting.lights.add(light1)
-                    lighting.lights.add(light2)
-                    lighting.lights.add(light3)
-                    lighting.lights.add(light4)
+                    lighting.clear()
+                    lighting.addLight(light1)
+                    lighting.addLight(light2)
+                    lighting.addLight(light3)
+                    lighting.addLight(light4)
                 },
 
                 LightSetup("Top x1") {
                     val light1 = Light.Point().setup(Vec3f(0f, lightExtent * 1.5f, 0f)).setColor(Color.WHITE, lightStrength * 2f)
-                    lighting.lights.clear()
-                    lighting.lights.add(light1)
+                    lighting.clear()
+                    lighting.addLight(light1)
                 },
 
                 LightSetup("Top x4") {
@@ -263,11 +263,11 @@ class PbrDemo : DemoScene("PBR Materials") {
                     val light2 = Light.Point().setup(Vec3f(-lightExtent, lightExtent, -lightExtent)).setColor(Color.WHITE, lightStrength)
                     val light3 = Light.Point().setup(Vec3f(-lightExtent, lightExtent, lightExtent)).setColor(Color.WHITE, lightStrength)
                     val light4 = Light.Point().setup(Vec3f(lightExtent, lightExtent, -lightExtent)).setColor(Color.WHITE, lightStrength)
-                    lighting.lights.clear()
-                    lighting.lights.add(light1)
-                    lighting.lights.add(light2)
-                    lighting.lights.add(light3)
-                    lighting.lights.add(light4)
+                    lighting.clear()
+                    lighting.addLight(light1)
+                    lighting.addLight(light2)
+                    lighting.addLight(light3)
+                    lighting.addLight(light4)
                 }
         )
     }

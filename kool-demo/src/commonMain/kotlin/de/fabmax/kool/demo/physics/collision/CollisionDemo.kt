@@ -74,13 +74,13 @@ class CollisionDemo : DemoScene("Physics - Collision") {
             clipFar = 500f
         }
 
-        val shadowMap = CascadedShadowMap(this, 0, maxRange = 300f)
-        shadows.add(shadowMap)
-        aoPipeline = AoPipeline.createForward(this)
-
         lighting.singleDirectionalLight {
             setup(Vec3f(0.8f, -1.2f, 1f))
         }
+
+        val shadowMap = CascadedShadowMap(this, lighting.lights[0], maxRange = 300f)
+        shadows.add(shadowMap)
+        aoPipeline = AoPipeline.createForward(this)
 
         makeGround(ibl, physicsWorld)
         shapeGenCtx.material = Material(friction.value, friction.value, restitution.value)

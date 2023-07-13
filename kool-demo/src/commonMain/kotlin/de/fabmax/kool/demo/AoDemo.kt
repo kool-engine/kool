@@ -91,7 +91,7 @@ class AoDemo : DemoScene("Ambient Occlusion") {
             }
         }
 
-        shadows.add(SimpleShadowMap(this, 0, 2048))
+        shadows.add(SimpleShadowMap(this, lighting.lights[0], 2048))
         aoPipeline = AoPipeline.createForward(this)
 
         aoRadius.set(aoPipeline.radius)
@@ -228,9 +228,12 @@ class AoDemo : DemoScene("Ambient Occlusion") {
                 setColor(Color.WHITE.mix(MdColor.AMBER, 0.2f).toLinear(), 500f)
             }
         } else {
-            mainScene.lighting.lights.clear()
+            mainScene.lighting.clear()
         }
-        shadows.forEach { it.isShadowMapEnabled = enabled }
+        shadows.forEach {
+            it.light = mainScene.lighting.lights.getOrNull(0)
+            it.isShadowMapEnabled = enabled
+        }
     }
 
     override fun createMenu(menu: DemoMenu, ctx: KoolContext) = menuSurface {

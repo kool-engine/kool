@@ -72,10 +72,10 @@ class SimplificationDemo : DemoScene("Simplification") {
     override fun Scene.setupMainScene(ctx: KoolContext) {
         defaultOrbitCamera()
 
-        lighting.lights.apply {
+        lighting.apply {
             clear()
-            add(Light.Directional().setup(Vec3f(-1f, -1f, 1f)).setColor(MdColor.RED.mix(Color.WHITE, 0.25f).toLinear(), 2f))
-            add(Light.Directional().setup(Vec3f(1f, -1f, -1f)).setColor(MdColor.CYAN.mix(Color.WHITE, 0.25f).toLinear(), 2f))
+            addLight(Light.Directional().setup(Vec3f(-1f, -1f, 1f)).setColor(MdColor.RED.mix(Color.WHITE, 0.25f).toLinear(), 2f))
+            addLight(Light.Directional().setup(Vec3f(1f, -1f, -1f)).setColor(MdColor.CYAN.mix(Color.WHITE, 0.25f).toLinear(), 2f))
         }
 
         addGroup {

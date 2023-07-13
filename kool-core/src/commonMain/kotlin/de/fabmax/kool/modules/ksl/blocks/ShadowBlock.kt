@@ -98,8 +98,8 @@ class ShadowBlockFragmentStage(
             }
 
             shadowData.shadowMapInfos.forEach { mapInfo ->
-                val lightIdx = mapInfo.shadowMap.lightIndex
-                shadowFactors[lightIdx] set 1f.const
+                val light = requireNotNull(mapInfo.shadowMap.light) { "ShadowMap light must be set before creating a shader with it" }
+                shadowFactors[light.lightIndex] set 1f.const
 
                 when (mapInfo.shadowMap) {
                     is SimpleShadowMap -> {
@@ -118,16 +118,16 @@ class ShadowBlockFragmentStage(
         lightSpaceNormalZs: KslArrayScalar<KslTypeFloat1>,
         mapInfo: ShadowData.ShadowMapInfo
     ) {
-        val lightIdx = mapInfo.shadowMap.lightIndex
+        val light = requireNotNull(mapInfo.shadowMap.light) { "ShadowMap light must be set before creating a shader with it" }
         val subMapIdx = mapInfo.fromIndexIncl
         val posLightSpace = lightSpacePositions[subMapIdx]
 
         `if` (shadowData.shadowCfg.flipBacksideNormals.const or (lightSpaceNormalZs[subMapIdx] lt 0f.const)) {
             // normal points towards light source, compute shadow factor
-            shadowFactors[lightIdx] set getShadowMapFactor(shadowData.depthMaps.value[subMapIdx], posLightSpace, mapInfo.samplePattern)
+            shadowFactors[light.lightIndex] set getShadowMapFactor(shadowData.depthMaps.value[subMapIdx], posLightSpace, mapInfo.samplePattern)
         }.`else` {
             // normal points away from light source, set shadow factor to 0 (shadowed)
-            shadowFactors[lightIdx] set 0f.const
+            shadowFactors[light.lightIndex] set 0f.const
         }
     }
 
@@ -136,7 +136,7 @@ class ShadowBlockFragmentStage(
         lightSpaceNormalZs: KslArrayScalar<KslTypeFloat1>,
         mapInfo: ShadowData.ShadowMapInfo
     ) {
-        val lightIdx = mapInfo.shadowMap.lightIndex
+        val lightIdx = mapInfo.shadowMap.light?.lightIndex ?: 0
 
         `if`(shadowData.shadowCfg.flipBacksideNormals.const or (lightSpaceNormalZs[mapInfo.fromIndexIncl] lt 0f.const)) {
             // normal points towards light source, compute shadow factor

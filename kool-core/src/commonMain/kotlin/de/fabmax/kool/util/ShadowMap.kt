@@ -17,20 +17,22 @@ import kotlin.math.pow
 import kotlin.math.sqrt
 
 sealed interface ShadowMap {
-    var lightIndex: Int
+    var light: Light?
     var isShadowMapEnabled: Boolean
     val subMaps: List<SimpleShadowMap>
 
     fun setupSampler(sampler: TextureSampler2d?)
 }
 
-class SimpleShadowMap(val scene: Scene, override var lightIndex: Int, mapSize: Int = 2048, drawNode: Node = scene) :
-        DepthMapPass(drawNode, renderPassConfig {
-            name = "SimpleShadowMap"
-            setSize(mapSize, mapSize)
-            setDepthTexture(true)
-            clearColorTexture()
-        }), ShadowMap {
+class SimpleShadowMap(val scene: Scene, override var light: Light?, mapSize: Int = 2048, drawNode: Node = scene) :
+    DepthMapPass(drawNode, renderPassConfig {
+        name = "SimpleShadowMap"
+        setSize(mapSize, mapSize)
+        setDepthTexture(true)
+        clearColorTexture()
+    }),
+    ShadowMap
+{
 
     val lightViewProjMat = Mat4d()
 
@@ -64,12 +66,9 @@ class SimpleShadowMap(val scene: Scene, override var lightIndex: Int, mapSize: I
         }
 
         onBeforeCollectDrawCommands += { ctx ->
-            if (lightIndex < scene.lighting.lights.size) {
-                val light = scene.lighting.lights[lightIndex]
-                setupCamera(light)
-                camera.updateCamera(this, ctx)
-                ctx.depthBiasMatrix.mul(camera.viewProj, lightViewProjMat)
-            }
+            light?.let { setupCamera(it) }
+            camera.updateCamera(this, ctx)
+            ctx.depthBiasMatrix.mul(camera.viewProj, lightViewProjMat)
         }
     }
 
@@ -181,7 +180,7 @@ class SimpleShadowMap(val scene: Scene, override var lightIndex: Int, mapSize: I
 
 class CascadedShadowMap(
     scene: Scene,
-    lightIndex: Int,
+    light: Light? = null,
     var maxRange: Float = 100f,
     val numCascades: Int = 3,
     nearOffset: Float = -20f,
@@ -189,10 +188,10 @@ class CascadedShadowMap(
     drawNode: Node = scene
 ) : ShadowMap {
 
-    override var lightIndex: Int = lightIndex
+    override var light: Light? = light
         set(value) {
             field = value
-            subMaps.forEach { it.lightIndex = value }
+            subMaps.forEach { it.light = value }
         }
 
     val mapRanges = Array(numCascades) { i ->
@@ -202,7 +201,7 @@ class CascadedShadowMap(
     }
 
     override val subMaps = List(numCascades) { level ->
-        SimpleShadowMap(scene, lightIndex, mapSizes?.get(level) ?: 2048, drawNode).apply {
+        SimpleShadowMap(scene, light, mapSizes?.get(level) ?: 2048, drawNode).apply {
             name = "CascadedShadopwMap-level-$level"
             shadowMapLevel = level
             directionalCamNearOffset = nearOffset

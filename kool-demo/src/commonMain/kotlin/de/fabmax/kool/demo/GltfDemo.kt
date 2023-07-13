@@ -121,8 +121,8 @@ class GltfDemo : DemoScene("glTF Models") {
             radius = 0.2f
         }
         shadowsForward += listOf(
-            SimpleShadowMap(mainScene, 0, 2048, contentGroupForward),
-            SimpleShadowMap(mainScene, 1, 2048, contentGroupForward)
+            SimpleShadowMap(mainScene, mainScene.lighting.lights[0], 2048, contentGroupForward),
+            SimpleShadowMap(mainScene, mainScene.lighting.lights[1], 2048, contentGroupForward)
         )
 
         // load models
@@ -208,19 +208,19 @@ class GltfDemo : DemoScene("glTF Models") {
     }
 
     private fun Scene.setupLighting() {
-        lighting.lights.clear()
-        lighting.lights.add(Light.Spot().apply {
+        lighting.clear()
+        lighting.addSpotLight {
             val pos = Vec3f(7f, 8f, 8f)
             val lookAt = Vec3f.ZERO
             setup(pos, lookAt.subtract(pos, MutableVec3f()).norm(), 25f)
             setColor(Color.WHITE.mix(MdColor.AMBER, 0.3f).toLinear(), 500f)
-        })
-        lighting.lights.add(Light.Spot().apply {
+        }
+        lighting.addSpotLight {
             val pos = Vec3f(-7f, 8f, 8f)
             val lookAt = Vec3f.ZERO
             setup(pos, lookAt.subtract(pos, MutableVec3f()).norm(), 25f)
             setColor(Color.WHITE.mix(MdColor.AMBER, 0.3f).toLinear(), 500f)
-        })
+        }
     }
 
     private fun Node.setupContentGroup(isDeferredShading: Boolean) {

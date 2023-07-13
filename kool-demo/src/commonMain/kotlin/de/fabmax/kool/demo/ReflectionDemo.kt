@@ -71,9 +71,9 @@ class ReflectionDemo : DemoScene("Reflections") {
             lightGroup.transform.rotate(Time.deltaT * -3f, Vec3f.Y_AXIS)
         }
 
-        lighting.lights.clear()
+        lighting.clear()
         lights.forEach {
-            lighting.lights.add(it.light)
+            lighting.addLight(it.light)
             lightGroup.addNode(it)
         }
 
@@ -328,17 +328,15 @@ class ReflectionDemo : DemoScene("Reflections") {
 
         fun enable(lighting: Lighting) {
             isEnabled = true
-            lighting.lights.apply {
-                if (!contains(light)) {
-                    add(light)
-                }
+            if (!lighting.lights.contains(light)) {
+                lighting.addLight(light)
             }
             updateVisibility()
         }
 
         fun disable(lighting: Lighting) {
             isEnabled = false
-            lighting.lights.remove(light)
+            lighting.removeLight(light)
             updateVisibility()
         }
 

@@ -2,7 +2,6 @@ package de.fabmax.kool.input
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.util.logD
-import de.fabmax.kool.util.logW
 
 object InputStack {
 
@@ -133,10 +132,6 @@ object InputStack {
 
         fun addKeyListener(listener: SimpleKeyListener): SimpleKeyListener {
             val listeners = keyListeners.getOrPut(listener.keyCode) { mutableListOf() }
-            if (listeners.isNotEmpty()) {
-                logW { "Multiple bindings for key ${listener.keyCode}: ${listeners.map { it.name }}" }
-            }
-
             listeners += listener
             logD { "Registered key handler: \"${listener.name}\" [keyCode=${listener.keyCode}]" }
             return listener

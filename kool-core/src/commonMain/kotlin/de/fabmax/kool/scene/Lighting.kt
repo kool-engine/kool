@@ -2,12 +2,17 @@ package de.fabmax.kool.scene
 
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.logW
 
 /**
  * @author fabmax
  */
 class Lighting {
-    val lights = mutableListOf<Light>()
+    private val _lights = mutableListOf<Light>()
+    val lights: List<Light>
+        get() = _lights
+
+    var maxNumberOfLights = 8
 
     init {
         singleDirectionalLight {
@@ -16,12 +21,41 @@ class Lighting {
     }
 
     fun addLight(light: Light) {
+        if (light in _lights) {
+            logW { "light is already present in lights list" }
+            return
+        }
+        if (_lights.size >= maxNumberOfLights) {
+            logW { "Unable to add light: Maximum number of lights (${maxNumberOfLights}) reached. Consider increasing Scene.lighting.maxNumberOfLights" }
+            return
+        }
         light.lightIndex = lights.size
-        lights += light
+        _lights += light
+    }
+
+    inline fun addDirectionalLight(block: Light.Directional.() -> Unit): Light.Directional {
+        val light = Light.Directional()
+        light.block()
+        addLight(light)
+        return light
+    }
+
+    inline fun addSpotLight(block: Light.Spot.() -> Unit): Light.Spot {
+        val light = Light.Spot()
+        light.block()
+        addLight(light)
+        return light
+    }
+
+    inline fun addPointLight(block: Light.Point.() -> Unit): Light.Point {
+        val light = Light.Point()
+        light.block()
+        addLight(light)
+        return light
     }
 
     fun removeLight(light: Light) {
-        lights -= light
+        _lights -= light
         light.lightIndex = -1
         lights.forEachIndexed { i, it ->
             it.lightIndex = i
@@ -30,21 +64,21 @@ class Lighting {
 
     fun clear() {
         lights.forEach { it.lightIndex = -1 }
-        lights.clear()
+        _lights.clear()
     }
 
     fun singleDirectionalLight(block: Light.Directional.() -> Unit) {
-        lights.clear()
+        clear()
         addLight(Light.Directional().apply(block))
     }
 
     fun singlePointLight(block: Light.Point.() -> Unit) {
-        lights.clear()
+        clear()
         addLight(Light.Point().apply(block))
     }
 
     fun singleSpotLight(block: Light.Spot.() -> Unit) {
-        lights.clear()
+        clear()
         addLight(Light.Spot().apply(block))
     }
 }
