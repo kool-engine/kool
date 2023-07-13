@@ -23,7 +23,7 @@ class SceneBackgroundEditor(component: SceneBackgroundComponent) :
     private val selectedHdri = mutableStateOf(0)
     private val skyLod = mutableStateOf(2f)
 
-    override fun UiScope.compose() = componentPanel("Scene Background") {
+    override fun UiScope.compose() = componentPanel("Scene Background", IconMap.BACKGROUND) {
         Column(width = Grow.Std) {
             modifier
                 .padding(horizontal = sizes.gap)

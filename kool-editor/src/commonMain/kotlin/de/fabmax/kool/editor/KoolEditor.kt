@@ -4,8 +4,9 @@ import de.fabmax.kool.ApplicationCallbacks
 import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.LoadableFile
+import de.fabmax.kool.editor.actions.DeleteNodeAction
 import de.fabmax.kool.editor.actions.EditorActions
-import de.fabmax.kool.editor.actions.deleteSelectedNodes
+import de.fabmax.kool.editor.actions.SetVisibilityAction
 import de.fabmax.kool.editor.api.AppAssets
 import de.fabmax.kool.editor.api.AppMode
 import de.fabmax.kool.editor.api.AppState
@@ -123,10 +124,30 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
             EditorActions.redo()
         }
         editorInputContext.addKeyListener(
-            name = "Delete selected object",
+            name = "Delete selected objects",
             keyCode = KeyboardInput.KEY_DEL
         ) {
-            EditorState.deleteSelectedNodes()
+            DeleteNodeAction(EditorState.getSelectedSceneNodes()).apply()
+        }
+        editorInputContext.addKeyListener(
+            name = "Hide selected objects",
+            keyCode = LocalKeyCode('H'),
+            filter = { it.isPressed && !it.isAltDown }
+        ) {
+            val selection = EditorState.getSelectedSceneNodes()
+            SetVisibilityAction(selection, selection.any { !it.isVisibleState.value }).apply()
+        }
+        editorInputContext.addKeyListener(
+            name = "Unhide all hidden objects",
+            keyCode = LocalKeyCode('H'),
+            filter = { it.isPressed && it.isAltDown }
+        ) {
+            EditorState.activeScene.value?.nodesToNodeModels?.values
+                ?.filterIsInstance<SceneNodeModel>()
+                ?.filter { !it.isVisibleState.value }
+                ?.let { nodes ->
+                    SetVisibilityAction(nodes, true).apply()
+                }
         }
 
         InputStack.pushTop(editorInputContext)

@@ -53,9 +53,6 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : EditorN
 
         nodeData.childNodeIds.forEach { childId ->
             resolveNode(childId, this)?.let {
-                if (!it.isCreated) {
-                    it.createComponents()
-                }
                 addSceneNode(it)
             }
         }
@@ -83,8 +80,10 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : EditorN
         }
     }
 
-    fun addSceneNode(nodeModel: SceneNodeModel) {
-        require(nodeModel.isCreated) { "SceneNodeModel needs to be created before being added to SceneModel" }
+    suspend fun addSceneNode(nodeModel: SceneNodeModel) {
+        if (!nodeModel.isCreated) {
+            nodeModel.createComponents()
+        }
 
         project.entities += nodeModel
         project.addSceneNodeData(nodeModel.nodeData)

@@ -4,11 +4,13 @@ import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.editor.model.EditorNodeModel
 import de.fabmax.kool.editor.model.EditorProject
 import de.fabmax.kool.editor.model.SceneModel
+import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.input.KeyboardInput
 import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.modules.ui2.mutableStateListOf
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.util.MdColor
+import de.fabmax.kool.util.copy
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logW
 import kotlinx.serialization.decodeFromString
@@ -46,6 +48,14 @@ object EditorState {
 
         addToSelection -= selection
         selection += addToSelection
+    }
+
+    fun getSelectedNodes(filter: (EditorNodeModel) -> Boolean = { true }): List<EditorNodeModel> {
+        return selection.copy().filter(filter)
+    }
+
+    fun getSelectedSceneNodes(filter: (SceneNodeModel) -> Boolean = { true }): List<SceneNodeModel> {
+        return selection.copy().filterIsInstance<SceneNodeModel>().filter(filter)
     }
 
     private fun loadProjectModel(): EditorProject {

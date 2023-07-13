@@ -3,7 +3,6 @@ package de.fabmax.kool.editor.actions
 import de.fabmax.kool.editor.EditorState
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.model.SceneNodeModel
-import de.fabmax.kool.util.copy
 import de.fabmax.kool.util.launchOnMainThread
 
 class DeleteNodeAction(
@@ -30,9 +29,4 @@ class DeleteNodeAction(
             KoolEditor.instance.ui.sceneBrowser.refreshSceneTree()
         }
     }
-}
-
-fun EditorState.deleteSelectedNodes() {
-    val deleteNodes = selection.copy().filterIsInstance<SceneNodeModel>()
-    DeleteNodeAction(deleteNodes).apply()
 }

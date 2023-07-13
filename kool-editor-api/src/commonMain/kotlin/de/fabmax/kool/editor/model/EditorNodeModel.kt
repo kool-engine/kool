@@ -1,5 +1,6 @@
 package de.fabmax.kool.editor.model
 
+import de.fabmax.kool.editor.api.AppState
 import de.fabmax.kool.editor.components.*
 import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.modules.ui2.mutableStateListOf
@@ -12,9 +13,18 @@ abstract class EditorNodeModel(val nodeData: SceneNodeData) {
     val nodeId: Long
         get() = nodeData.nodeId
 
-    var nameState = mutableStateOf(nodeData.name).onChange { nodeData.name = it }
+    val nameState = mutableStateOf(nodeData.name).onChange { nodeData.name = it }
     val name: String
         get() = nodeData.name
+
+    val isVisibleState = mutableStateOf(nodeData.isVisible).onChange {
+        if (AppState.isEditMode) {
+            nodeData.isVisible = it
+        }
+        if (isCreated) {
+            drawNode.isVisible = it
+        }
+    }
 
     abstract val drawNode: Node
     abstract val isCreated: Boolean
@@ -47,6 +57,8 @@ abstract class EditorNodeModel(val nodeData: SceneNodeData) {
 
     open suspend fun createComponents() {
         components.forEach { it.createComponent(this) }
+        isVisibleState.set(nodeData.isVisible)
+        drawNode.isVisible = isVisibleState.value
     }
 
     open fun onNodeAdded() {

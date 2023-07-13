@@ -13,8 +13,7 @@ import de.fabmax.kool.util.*
 
 class ShadowMapComponent(override val componentData: ShadowMapComponentData) :
     SceneNodeComponent(),
-    EditorDataComponent<ShadowMapComponentData>,
-    UpdateShadowMapsComponent
+    EditorDataComponent<ShadowMapComponentData>
 {
     val shadowMapState = mutableStateOf(componentData.shadowMap).onChange {
         if (AppState.isEditMode) { componentData.shadowMap = it }
@@ -31,8 +30,6 @@ class ShadowMapComponent(override val componentData: ShadowMapComponentData) :
         updateShadowMap(componentData.shadowMap, componentData.clipNear, it)
     }
 
-    private val light: Light?
-        get() = nodeModel.getComponent<DiscreteLightComponent>()?.light
     private var shadowMap: ShadowMap? = null
 
     constructor() : this(
@@ -56,24 +53,38 @@ class ShadowMapComponent(override val componentData: ShadowMapComponentData) :
     }
 
     override fun onNodeAdded(nodeModel: EditorNodeModel) {
-        updateShadowMap(componentData.shadowMap, componentData.clipNear, componentData.clipFar)
+        updateShadowMap()
+    }
+
+    fun updateLight(light: Light) {
+        val current = shadowMap?.light
+        if (current != null && current::class == light::class) {
+            shadowMap?.light = light
+        } else {
+            updateShadowMap()
+        }
+    }
+
+    private fun updateShadowMap() {
+        if (isCreated) {
+            updateShadowMap(componentData.shadowMap, componentData.clipNear, componentData.clipFar)
+        }
     }
 
     private fun updateShadowMap(shadowMapInfo: ShadowMapTypeData, clipNear: Float, clipFar: Float) {
         logD { "Update shadow map: $shadowMapInfo, near: $clipNear, far: $clipFar" }
 
-        val light = this.light
+        val light = nodeModel.getComponent<DiscreteLightComponent>()?.light
         if (light == null) {
             logE { "Unable to get DiscreteLightComponent of sceneNode ${nodeModel.name}" }
             return
         }
-
-        val scene = sceneModel.drawNode
-        val lightIdx = light.lightIndex
-        if (lightIdx < 0) {
-            logE { "Invalid lightIndex for shadow map light of sceneNode ${nodeModel.name}" }
+        if (light is Light.Point) {
+            logE { "Point light shadow maps are not yet supported" }
             return
         }
+
+        val scene = sceneModel.drawNode
 
         // dispose old shadow map
         disposeShadowMap()
@@ -81,7 +92,7 @@ class ShadowMapComponent(override val componentData: ShadowMapComponentData) :
         // create new shadow map
         shadowMap = when (shadowMapInfo) {
             is ShadowMapTypeData.Single -> {
-                SimpleShadowMap(scene, lightIdx, shadowMapInfo.mapInfo.mapSize).apply {
+                SimpleShadowMap(scene, light, shadowMapInfo.mapInfo.mapSize).apply {
                     this.clipNear = clipNear
                     this.clipFar = clipFar
                 }
@@ -89,7 +100,7 @@ class ShadowMapComponent(override val componentData: ShadowMapComponentData) :
             is ShadowMapTypeData.Cascaded -> {
                 CascadedShadowMap(
                     scene,
-                    lightIdx,
+                    light,
                     clipFar,
                     shadowMapInfo.mapInfos.size,
                     mapSizes = shadowMapInfo.mapInfos.map { it.mapSize }
@@ -124,19 +135,6 @@ class ShadowMapComponent(override val componentData: ShadowMapComponentData) :
                 }
             }
         }
-    }
-
-    /**
-     * Called when a (different) ShadowMapComponent is added to or removed from the scene. This potentially changes
-     * the lightIndex of this ShadowMap's light.
-     */
-    override fun updateShadowMaps(shadowMaps: List<ShadowMap>) {
-        val lightIdx = light?.lightIndex ?: -1
-        if (lightIdx < 0) {
-            logE { "Unable to get light (-index) of shadow map (for node: ${nodeModel.name})" }
-            return
-        }
-        shadowMap?.lightIndex = lightIdx
     }
 }
 

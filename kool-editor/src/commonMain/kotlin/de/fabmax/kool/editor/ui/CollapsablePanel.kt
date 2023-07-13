@@ -29,7 +29,8 @@ fun UiScope.collapsapsablePanel(
         imageIcon?.let {
             Image {
                 modifier
-                    .margin(end = sizes.smallGap, top = sizes.lineHeightLarger * 0.5f - IconMap.iconSize * 0.5f)
+                    .margin(end = sizes.smallGap)
+                    .alignY(AlignmentY.Center)
                     .iconImage(it, UiColors.titleText)
             }
         }

@@ -3,6 +3,7 @@ package de.fabmax.kool.editor.ui
 import de.fabmax.kool.editor.*
 import de.fabmax.kool.editor.actions.AddNodeAction
 import de.fabmax.kool.editor.actions.DeleteNodeAction
+import de.fabmax.kool.editor.actions.SetVisibilityAction
 import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.editor.model.EditorNodeModel
 import de.fabmax.kool.editor.model.SceneModel
@@ -98,7 +99,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
             val itemPopupMenu = remember { ContextPopupMenu<SceneObjectItem>() }
 
             itemsIndexed(treeItems) { i, item ->
-                sceneObjectItem(item).apply {
+                sceneObjectItem(item, hoveredIndex == i).apply {
                     modifier
                         .onEnter { hoveredIndex = i }
                         .onExit { hoveredIndex = -1 }
@@ -111,10 +112,6 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
                     if (i == 0) {
                         modifier.margin(top = sizes.smallGap)
                     }
-                    if (hoveredIndex == i) {
-                        modifier.background(RoundRectBackground(colors.hoverBg, sizes.smallGap))
-                    }
-
                 }
             }
 
@@ -181,7 +178,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         item("Focus object") { }
     }
 
-    private fun UiScope.sceneObjectItem(item: SceneObjectItem) = Row(width = Grow.Std) {
+    private fun UiScope.sceneObjectItem(item: SceneObjectItem, isHovered: Boolean) = Row(width = Grow.Std) {
         modifier
             .margin(horizontal = sizes.smallGap)
             .height(sizes.lineHeight)
@@ -193,6 +190,9 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
                     }
                 }
             }
+        if (isHovered) {
+            modifier.background(RoundRectBackground(colors.hoverBg, sizes.smallGap))
+        }
 
         // tree-depth based indentation
         if (item.depth > 0) {
@@ -202,7 +202,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         // expand / collapse arrow
         Box {
             modifier
-                .size(sizes.lineHeight, FitContent)
+                .size(sizes.lineHeight * 0.8f, FitContent)
                 .alignY(AlignmentY.Center)
             if (item.isExpandable) {
                 Arrow {
@@ -228,6 +228,9 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
             }
         }
 
+        val isVisible = item.nodeModel.isVisibleState.use()
+        val fgColorVis = if (isVisible) fgColor else fgColor.withAlpha(0.5f)
+
         // type icon
         Image {
             val icon = when (item.type) {
@@ -243,22 +246,30 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
                 .alignX(AlignmentX.End)
                 .alignY(AlignmentY.Center)
                 .margin(end = sizes.smallGap)
-                .iconImage(icon, fgColor)
+                .iconImage(icon, fgColorVis)
         }
 
         Box(width = Grow.Std, height = Grow.Std) {
             Text(item.name) {
                 modifier
                     .alignY(AlignmentY.Center)
-                    .textColor(fgColor)
+                    .textColor(fgColorVis)
             }
 
-            Image {
-                modifier
-                    .alignX(AlignmentX.End)
-                    .alignY(AlignmentY.Center)
-                    .margin(end = sizes.smallGap)
-                    .iconImage(IconMap.EYE, fgColor)
+            if (item.type.isHideable) {
+                val eyeColor = when {
+                    isHovered -> fgColor
+                    !isVisible -> fgColor
+                    else -> fgColor.withAlpha(0.5f)
+                }
+                Image {
+                    modifier
+                        .alignX(AlignmentX.End)
+                        .alignY(AlignmentY.Center)
+                        .margin(end = sizes.smallGap)
+                        .iconImage(if (isVisible) IconMap.EYE else IconMap.EYE_OFF, eyeColor)
+                        .onClick { SetVisibilityAction(item.nodeModel as SceneNodeModel, !isVisible).apply() }
+                }
             }
         }
 
@@ -293,7 +304,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         add(item)
         if (item.isExpanded.value) {
             node.children.forEach {
-                if (it.isVisible && !it.tags.hasTag(KoolEditor.TAG_EDITOR_SUPPORT_CONTENT)) {
+                if (!it.tags.hasTag(KoolEditor.TAG_EDITOR_SUPPORT_CONTENT)) {
                     val childNodeModel = scene.nodesToNodeModels[it]
                     appendNode(scene, it, childNodeModel ?: selectModel, depth + 1)
                 }
@@ -319,13 +330,13 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         }
     }
 
-    private enum class SceneObjectType(val startExpanded: Boolean = false) {
-        NON_MODEL_NODE,
-        CAMERA,
+    private enum class SceneObjectType(val startExpanded: Boolean = false, val isHideable: Boolean = true) {
+        NON_MODEL_NODE(isHideable = false),
+        CAMERA(isHideable = false),
         LIGHT,
         GROUP(true),
         MESH,
         MODEL,
-        SCENE(true)
+        SCENE(true, isHideable = false)
     }
 }

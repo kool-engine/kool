@@ -89,10 +89,12 @@ object IconMap {
     val SHADOW_INNER = iconMap.IconImageProvider(18, 1)
     val SHADOW = iconMap.IconImageProvider(19, 1)
     val TRANSFORM = iconMap.IconImageProvider(0, 2)
+    val BACKGROUND = iconMap.IconImageProvider(1, 2)
 }
 
-fun ImageModifier.iconImage(imgProvider: ImageIconMap.IconImageProvider, tintColor: Color? = null) {
+fun ImageModifier.iconImage(imgProvider: ImageIconMap.IconImageProvider, tintColor: Color? = null): ImageModifier {
     size(IconMap.iconSize, IconMap.iconSize)
     imageProvider(imgProvider)
     tintColor?.let { tint(it) }
+    return this
 }
