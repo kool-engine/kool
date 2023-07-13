@@ -24,9 +24,9 @@
      inkscape:document-units="mm"
      showgrid="false"
      units="px"
-     inkscape:zoom="7.0298199"
-     inkscape:cx="305.0576"
-     inkscape:cy="22.83131"
+     inkscape:zoom="14.05964"
+     inkscape:cx="389.09247"
+     inkscape:cy="48.614332"
      inkscape:window-width="2400"
      inkscape:window-height="1411"
      inkscape:window-x="4791"
@@ -968,6 +968,26 @@
     <path
        d="m 98.425,9.525001 m 0,-0.79375 a 0.79375,0.79375 0 1 0 0,1.5875 0.79375,0.79375 0 1 0 0,-1.5875"
        id="path8933-4-0"
+       style="fill:none;stroke:#ffffff;stroke-width:0.396875;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+    <path
+       stroke="none"
+       d="m 101.6,6.3500003 h 6.35 V 12.7 h -6.35 z"
+       fill="none"
+       id="path9954"
+       style="stroke-width:0.529167;stroke-linecap:round;stroke-linejoin:round" />
+    <path
+       d="m 102.92292,7.4083336 h 1.05833 l 0.79375,0.79375 h 1.85208 a 0.52916666,0.52916666 0 0 1 0.52917,0.5291667 v 2.1166667 a 0.52916666,0.52916666 0 0 1 -0.52917,0.529167 h -3.70416 a 0.52916666,0.52916666 0 0 1 -0.52917,-0.529167 V 7.9375003 a 0.52916666,0.52916666 0 0 1 0.52917,-0.5291667"
+       id="path9956"
+       style="fill:none;stroke:#ffffff;stroke-width:0.396875;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none" />
+    <path
+       stroke="none"
+       d="m 107.95,6.3500003 h 6.35 V 12.7 h -6.35 z"
+       fill="none"
+       id="path10261"
+       style="stroke-width:0.529167;stroke-linecap:round;stroke-linejoin:round" />
+    <path
+       d="m 109.27292,11.377084 0.72945,-1.9449525 a 0.26458333,0.26458333 0 0 1 0.24765,-0.1717146 h 3.25623 a 0.26458333,0.26458333 0 0 1 0.26088,0.307975 l -0.26353,1.3787441 a 0.52916666,0.52916666 0 0 1 -0.51964,0.429948 h -3.71104 a 0.52916666,0.52916666 0 0 1 -0.52917,-0.529167 V 7.9375003 a 0.52916666,0.52916666 0 0 1 0.52917,-0.5291667 h 1.05833 l 0.79375,0.79375 h 1.85208 a 0.52916666,0.52916666 0 0 1 0.52917,0.5291667 v 0.5291666"
+       id="path10263"
        style="fill:none;stroke:#ffffff;stroke-width:0.396875;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
   </g>
 </svg>

@@ -17,6 +17,7 @@ import kotlin.math.*
 
 fun UiScope.editorTitleBar(
     windowDockable: UiDockable,
+    imageIcon: ImageIconMap.IconImageProvider? = null,
     title: String = windowDockable.name,
     roundedTop: Boolean = false,
     onClose: ((PointerEvent) -> Unit)? = null
@@ -37,6 +38,14 @@ fun UiScope.editorTitleBar(
 
         with(windowDockable) {
             registerDragCallbacks()
+        }
+
+        imageIcon?.let {
+            Image {
+                modifier
+                    .margin(end = sizes.gap, top = sizes.lineHeightTitle * 0.5f - IconMap.iconSize * 0.55f)
+                    .iconImage(it, UiColors.titleText)
+            }
         }
 
         Text(title) {

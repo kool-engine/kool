@@ -29,7 +29,7 @@ class ResourceBrowser(editorUi: EditorUi) : EditorPanel(
 
     override val windowSurface = EditorPanelWindow {
         Column(Grow.Std, Grow.Std) {
-            editorTitleBar(windowDockable)
+            editorTitleBar(windowDockable, IconMap.TREE)
             Row(Grow.Std, Grow.Std) {
                 refreshBrowserItems()
 
@@ -162,7 +162,26 @@ class ResourceBrowser(editorUi: EditorUi) : EditorPanel(
                             modifier.background(RoundRectBackground(colors.hoverBg, sizes.smallGap))
                         }
 
-                        if (dir.level > 0) {
+                        val fgColor = if (dir == selectedDirectory.value) colors.primary else colors.onBackground
+
+                        if (dir.level == 0) {
+                            // top level category
+                            val icon = when (dir.category) {
+                                BrowserCategory.ASSETS -> IconMap.PICTURE
+                                BrowserCategory.MATERIALS -> IconMap.PALETTE
+                                BrowserCategory.SCRIPTS -> IconMap.CODE
+                                else -> null
+                            }
+                            icon?.let {
+                                Image {
+                                    modifier
+                                        .alignY(AlignmentY.Center)
+                                        .margin(start = sizes.smallGap, end = sizes.gap)
+                                        .iconImage(it, fgColor)
+                                }
+                            }
+
+                        } else {
                             // tree-depth based indentation
                             Box(width = sizes.gap * dir.level) { }
 
@@ -182,15 +201,20 @@ class ResourceBrowser(editorUi: EditorUi) : EditorPanel(
                                     }
                                 }
                             }
+                            Image {
+                                val ico = if (dir.isExpanded.use()) IconMap.FOLDER_OPEN else IconMap.FOLDER
+                                modifier
+                                    .alignY(AlignmentY.Center)
+                                    .margin(end = sizes.smallGap)
+                                    .iconImage(ico, fgColor)
+                            }
                         }
 
                         Text(dir.name) {
                             modifier
                                 .alignY(AlignmentY.Center)
                                 .width(Grow.Std)
-                            if (dir == selectedDirectory.value) {
-                                modifier.textColor(colors.primary)
-                            }
+                                .textColor(fgColor)
                             if (dir.level == 0) {
                                 modifier
                                     .margin(start = sizes.gap)

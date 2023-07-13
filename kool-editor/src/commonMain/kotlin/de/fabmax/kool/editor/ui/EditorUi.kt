@@ -123,7 +123,7 @@ object UiColors {
     val border = Color("0f1114ff")
     val titleBg = Color("343a49ff")
     val bgMid = EditorUi.EDITOR_THEME_COLORS.background.mix(EditorUi.EDITOR_THEME_COLORS.backgroundVariant, 0.5f)
-    val titleText =  Color("dbe6ffff")
+    val titleText = Color("dbe6ffff")
 }
 
 object DragChangeRates {

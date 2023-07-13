@@ -55,13 +55,13 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", ui) 
         val selectedObject = if (selObjs.size == 1) selObjs[0] else null
         val title = when (selectedObject) {
             is SceneModel -> "Scene Properties"
-            is SceneNodeModel -> "Scene Object Properties"
+            is SceneNodeModel -> "Object Properties"
             null -> "Object Properties"
             else -> "Object Properties <unknown type>"
         }
 
         Column(Grow.Std, Grow.Std) {
-            editorTitleBar(windowDockable, title)
+            editorTitleBar(windowDockable, IconMap.PROPERTIES, title)
             objectProperties(selectedObject)
         }
 
