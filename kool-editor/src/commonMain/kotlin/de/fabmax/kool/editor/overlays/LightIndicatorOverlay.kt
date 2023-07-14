@@ -171,7 +171,7 @@ class LightIndicatorOverlay : Node("Light overlay") {
             pointInstances.clear()
 
             displayLighting?.lights?.let { lights ->
-                lights.forEach { light ->
+                lights.filter { it.isVisible }.forEach { light ->
                     val instances: MeshInstanceList
                     val yzScale: Float
                     when (light) {

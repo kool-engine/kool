@@ -1,4 +1,4 @@
-package de.fabmax.kool.editor.ui
+package de.fabmax.kool.editor.overlays
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.editor.KoolEditor

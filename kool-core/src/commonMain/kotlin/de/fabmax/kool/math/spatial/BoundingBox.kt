@@ -1,6 +1,5 @@
 package de.fabmax.kool.math.spatial
 
-import de.fabmax.kool.KoolException
 import de.fabmax.kool.math.*
 import kotlin.math.max
 import kotlin.math.min
@@ -20,6 +19,8 @@ open class BoundingBox() {
 
     var isEmpty = true
         private set
+
+    val isNotEmpty: Boolean get() = !isEmpty
 
     val min: Vec3f = mutMin
     val max: Vec3f = mutMax
@@ -47,18 +48,20 @@ open class BoundingBox() {
         }
     }
 
-    private fun addPoint(point: Vec3f) {
+    private fun addPoint(point: Vec3f) = addPoint(point.x, point.y, point.z)
+
+    private fun addPoint(x: Float, y: Float, z: Float) {
         if (isEmpty) {
-            mutMin.set(point)
-            mutMax.set(point)
+            mutMin.set(x, y, z)
+            mutMax.set(x, y, z)
             isEmpty = false
         } else {
-            if (point.x < min.x) { mutMin.x = point.x }
-            if (point.y < min.y) { mutMin.y = point.y }
-            if (point.z < min.z) { mutMin.z = point.z }
-            if (point.x > max.x) { mutMax.x = point.x }
-            if (point.y > max.y) { mutMax.y = point.y }
-            if (point.z > max.z) { mutMax.z = point.z }
+            if (x < min.x) { mutMin.x = x }
+            if (y < min.y) { mutMin.y = y }
+            if (z < min.z) { mutMin.z = z }
+            if (x > max.x) { mutMax.x = x }
+            if (y > max.y) { mutMax.y = y }
+            if (z > max.z) { mutMax.z = z }
         }
     }
 
@@ -109,9 +112,16 @@ open class BoundingBox() {
         return this
     }
 
+    fun add(point: Vec3f, radius: Float): BoundingBox {
+        addPoint(point.x - radius, point.y - radius, point.z - radius)
+        addPoint(point.x + radius, point.y + radius, point.z + radius)
+        updateSizeAndCenter()
+        return this
+    }
+
     fun expand(e: Vec3f): BoundingBox {
         if (isEmpty) {
-            throw KoolException("Empty BoundingBox cannot be expanded")
+            throw IllegalStateException("Empty BoundingBox cannot be expanded")
         }
         mutMin -= e
         mutMax += e
@@ -121,7 +131,7 @@ open class BoundingBox() {
 
     fun signedExpand(e: Vec3f): BoundingBox {
         if (isEmpty) {
-            throw KoolException("Empty BoundingBox cannot be expanded")
+            throw IllegalStateException("Empty BoundingBox cannot be expanded")
         }
         if (e.x > 0) mutMax.x += e.x else mutMin.x += e.x
         if (e.y > 0) mutMax.y += e.y else mutMin.y += e.y
@@ -159,7 +169,7 @@ open class BoundingBox() {
 
     fun move(x: Float, y: Float, z: Float): BoundingBox {
         if (isEmpty) {
-            throw KoolException("Empty BoundingBox cannot be moved")
+            throw IllegalStateException("Empty BoundingBox cannot be moved")
         }
         mutMin.x += x
         mutMin.y += y

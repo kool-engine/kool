@@ -178,6 +178,7 @@ sealed class MeshShapeData {
     }
 
     companion object {
+        val defaultEmpty = Empty()
         val defaultBox = Box(Vec3Data(1.0, 1.0, 1.0))
         val defaultIcoSphere = IcoSphere(1.0, 2)
         val defaultUvSphere = UvSphere(1.0, 20)

@@ -81,6 +81,12 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         DeleteNodeAction(removeNode).apply()
     }
 
+    private fun focusNode(node: SceneObjectItem) {
+        (node.nodeModel as? SceneNodeModel)?.let { nodeModel ->
+            sceneBrowser.editor.editorCameraTransform.focusObject(nodeModel)
+        }
+    }
+
     override fun UiScope.compose() {
         EditorState.activeScene.use()
 
@@ -120,62 +126,33 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
     }
 
     private fun makeMenu() = SubMenuItem {
-        item("Delete object") {
-            deleteNode(it)
-        }
+        item("Delete object") { deleteNode(it) }
         subMenu("Add child object") {
             subMenu("Mesh") {
-                item("Box") {
-                    addNewMesh(it, MeshShapeData.defaultBox)
-                }
-                item("Rect") {
-                    addNewMesh(it, MeshShapeData.defaultRect)
-                }
-                item("Ico-Sphere") {
-                    addNewMesh(it, MeshShapeData.defaultIcoSphere)
-                }
-                item("UV-Sphere") {
-                    addNewMesh(it, MeshShapeData.defaultUvSphere)
-                }
-                item("Cylinder") {
-                    addNewMesh(it, MeshShapeData.defaultCylinder)
-                }
-                item("Capsule") {
-                    addNewMesh(it, MeshShapeData.defaultCapsule)
-                }
-                item("Empty") {
-                    addNewMesh(it, MeshShapeData.Empty())
-                }
+                item("Box") { addNewMesh(it, MeshShapeData.defaultBox) }
+                item("Rect") { addNewMesh(it, MeshShapeData.defaultRect) }
+                item("Ico-Sphere") { addNewMesh(it, MeshShapeData.defaultIcoSphere) }
+                item("UV-Sphere") { addNewMesh(it, MeshShapeData.defaultUvSphere) }
+                item("Cylinder") { addNewMesh(it, MeshShapeData.defaultCylinder) }
+                item("Capsule") { addNewMesh(it, MeshShapeData.defaultCapsule) }
+                item("Empty") { addNewMesh(it, MeshShapeData.defaultEmpty) }
             }
             subMenu("glTF model") {
-                item("Import model") {
-                    logE { "Not yet implemented" }
-                }
+                item("Import model") { logE { "Not yet implemented" } }
                 divider()
                 sceneBrowser.editor.availableAssets.modelAssets.forEach { modelAsset ->
-                    item(modelAsset.name) {
-                        addNewModel(it, modelAsset)
-                    }
+                    item(modelAsset.name) { addNewModel(it, modelAsset) }
                 }
-
             }
             subMenu("Light") {
-                item("Directional") {
-                    addNewLight(it, LightTypeData.Directional())
-                }
-                item("Spot") {
-                    addNewLight(it, LightTypeData.Spot())
-                }
-                item("Point") {
-                    addNewLight(it, LightTypeData.Point())
-                }
+                item("Directional") { addNewLight(it, LightTypeData.Directional()) }
+                item("Spot") { addNewLight(it, LightTypeData.Spot()) }
+                item("Point") { addNewLight(it, LightTypeData.Point()) }
             }
-            item("Empty node") {
-                addEmptyNode(it)
-            }
+            item("Empty node") { addEmptyNode(it) }
         }
         divider()
-        item("Focus object") { }
+        item("Focus object") { focusNode(it) }
     }
 
     private fun UiScope.sceneObjectItem(item: SceneObjectItem, isHovered: Boolean) = Row(width = Grow.Std) {

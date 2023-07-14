@@ -14,27 +14,21 @@ import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.editor.overlays.GridOverlay
 import de.fabmax.kool.editor.overlays.LightIndicatorOverlay
 import de.fabmax.kool.editor.overlays.SelectionOverlay
+import de.fabmax.kool.editor.overlays.TransformGizmoOverlay
 import de.fabmax.kool.editor.ui.EditorUi
-import de.fabmax.kool.editor.ui.TransformGizmoOverlay
 import de.fabmax.kool.input.InputStack
 import de.fabmax.kool.input.KeyboardInput
 import de.fabmax.kool.input.LocalKeyCode
 import de.fabmax.kool.input.PointerState
 import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.scene.Node
-import de.fabmax.kool.scene.OrbitInputTransform
 import de.fabmax.kool.scene.scene
 import de.fabmax.kool.util.logW
 
 class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
 
     val editorInputContext = InputStack.InputHandler("Editor input")
-    val editorCameraTransform = OrbitInputTransform("Camera input transform").apply {
-        minZoom = 1.0
-        maxZoom = 1000.0
-        setMouseRotation(20f, -30f)
-        InputStack.defaultInputHandler.pointerListeners += this
-    }
+    val editorCameraTransform = EditorCamTransform(this)
 
     val editorOverlay = scene("editor-overlay") {
         camera.setClipRange(0.1f, 1000f)
@@ -148,6 +142,12 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
                 ?.let { nodes ->
                     SetVisibilityAction(nodes, true).apply()
                 }
+        }
+        editorInputContext.addKeyListener(
+            name = "Focus selected object",
+            keyCode = KeyboardInput.KEY_NP_DECIMAL
+        ) {
+            editorCameraTransform.focusSelectedObject()
         }
 
         InputStack.pushTop(editorInputContext)
