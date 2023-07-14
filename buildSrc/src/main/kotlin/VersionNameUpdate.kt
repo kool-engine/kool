@@ -1,12 +1,10 @@
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
-import java.io.File
 import java.io.FileReader
 import java.io.FileWriter
 import java.text.SimpleDateFormat
 import java.util.*
-import java.util.concurrent.TimeUnit
 
 open class VersionNameUpdate : DefaultTask() {
     @Input
