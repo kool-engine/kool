@@ -6,6 +6,7 @@ import de.fabmax.kool.editor.data.MaterialData
 import de.fabmax.kool.editor.data.ModelComponentData
 import de.fabmax.kool.editor.data.SceneBackgroundData
 import de.fabmax.kool.editor.model.EditorNodeModel
+import de.fabmax.kool.editor.model.UpdateMaxNumLightsComponent
 import de.fabmax.kool.modules.gltf.GltfFile
 import de.fabmax.kool.modules.ksl.KslLitShader
 import de.fabmax.kool.modules.ksl.KslPbrShader
@@ -25,7 +26,8 @@ class ModelComponent(override val componentData: ModelComponentData) :
     UpdateMaterialComponent,
     UpdateSceneBackgroundComponent,
     UpdateShadowMapsComponent,
-    UpdateSsaoComponent
+    UpdateSsaoComponent,
+    UpdateMaxNumLightsComponent
 {
     val modelPathState = mutableStateOf(componentData.modelPath).onChange { componentData.modelPath = it }
 
@@ -109,6 +111,10 @@ class ModelComponent(override val componentData: ModelComponentData) :
         }
     }
 
+    override fun updateMaxNumLightsComponent(newMaxNumLights: Int) {
+        recreateModel()
+    }
+
     private suspend fun createModel(): Model {
         logD { "${nodeModel.name}: (re-)loading model" }
 
@@ -117,7 +123,12 @@ class ModelComponent(override val componentData: ModelComponentData) :
         val ssao = sceneModel.shaderData.ssaoMap
         val material = nodeModel.getComponent<MaterialComponent>()?.materialData
         val modelCfg = GltfFile.ModelGenerateConfig(
-            materialConfig = GltfFile.ModelMaterialConfig(environmentMaps = ibl, shadowMaps = shaderShaowMaps, scrSpcAmbientOcclusionMap = ssao),
+            materialConfig = GltfFile.ModelMaterialConfig(
+                environmentMaps = ibl,
+                shadowMaps = shaderShaowMaps,
+                scrSpcAmbientOcclusionMap = ssao,
+                maxNumberOfLights = sceneModel.maxNumLightsState.value
+            ),
             applyMaterials = material == null
         )
         isIblShaded = ibl != null

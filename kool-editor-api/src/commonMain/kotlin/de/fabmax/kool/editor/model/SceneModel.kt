@@ -1,11 +1,13 @@
 package de.fabmax.kool.editor.model
 
 import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.editor.api.AppState
 import de.fabmax.kool.editor.components.EditorModelComponent
 import de.fabmax.kool.editor.components.SceneBackgroundComponent
 import de.fabmax.kool.editor.components.UpdateSceneBackgroundComponent
 import de.fabmax.kool.editor.data.SceneBackgroundData
 import de.fabmax.kool.editor.data.SceneNodeData
+import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.Node
@@ -14,6 +16,18 @@ import de.fabmax.kool.scene.Skybox
 import de.fabmax.kool.util.*
 
 class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : EditorNodeModel(sceneData) {
+
+    val maxNumLightsState = mutableStateOf(nodeData.maxNumLights).onChange {
+        if (AppState.isEditMode) {
+            nodeData.maxNumLights = it
+        }
+        if (isCreated) {
+            drawNode.lighting.maxNumberOfLights = it
+            project.getComponentsInScene<UpdateMaxNumLightsComponent>(this).forEach {  comp ->
+                comp.updateMaxNumLightsComponent(it)
+            }
+        }
+    }
 
     override val drawNode: Scene
         get() = created ?: throw IllegalStateException("Scene was not yet created")
@@ -40,8 +54,12 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : EditorN
         disposeCreatedScene()
 
         val scene = Scene(name)
-        // clear default lighting
-        scene.lighting.clear()
+
+        maxNumLightsState.set(nodeData.maxNumLights)
+        scene.lighting.apply {
+            clear()
+            maxNumberOfLights = maxNumLightsState.value
+        }
 
         created = scene
         nodesToNodeModels[scene] = this
@@ -164,4 +182,8 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : EditorN
 
         var ssaoMap: Texture2d? = null
     }
+}
+
+interface UpdateMaxNumLightsComponent {
+    fun updateMaxNumLightsComponent(newMaxNumLights: Int)
 }

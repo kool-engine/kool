@@ -138,6 +138,7 @@ data class GltfFile(
         val scrSpcAmbientOcclusionMap: Texture2d? = null,
         val environmentMaps: EnvironmentMaps? = null,
         val isDeferredShading: Boolean = false,
+        val maxNumberOfLights: Int = 4,
         val maxNumberOfJoints: Int = 64
     )
 
@@ -590,6 +591,7 @@ data class GltfFile(
                 }
 
                 cfg.materialConfig.let { matCfg ->
+                    maxNumberOfLights = matCfg.maxNumberOfLights
                     shadow {
                         addShadowMaps(matCfg.shadowMaps)
                     }

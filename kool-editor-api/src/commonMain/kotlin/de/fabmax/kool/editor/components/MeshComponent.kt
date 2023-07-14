@@ -3,6 +3,7 @@ package de.fabmax.kool.editor.components
 import de.fabmax.kool.editor.api.AppState
 import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.editor.model.EditorNodeModel
+import de.fabmax.kool.editor.model.UpdateMaxNumLightsComponent
 import de.fabmax.kool.modules.ksl.KslLitShader
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ui2.MutableStateList
@@ -22,7 +23,8 @@ class MeshComponent(override val componentData: MeshComponentData) :
     UpdateMaterialComponent,
     UpdateSceneBackgroundComponent,
     UpdateShadowMapsComponent,
-    UpdateSsaoComponent
+    UpdateSsaoComponent,
+    UpdateMaxNumLightsComponent
 {
     val shapesState = MutableStateList(componentData.shapes)
 
@@ -94,6 +96,7 @@ class MeshComponent(override val componentData: MeshComponentData) :
             mesh.shader = KslPbrShader {
                 color { uniformColor(MdColor.GREY.toLinear()) }
                 shadow { addShadowMaps(sceneModel.shaderData.shadowMaps) }
+                maxNumberOfLights = sceneModel.maxNumLightsState.value
                 ibl?.let {
                     enableImageBasedLighting(ibl)
                 }
@@ -157,6 +160,10 @@ class MeshComponent(override val componentData: MeshComponentData) :
             recreateShader()
         }
         (mesh?.shader as? KslLitShader)?.ssaoMap = ssaoMap
+    }
+
+    override fun updateMaxNumLightsComponent(newMaxNumLights: Int) {
+        recreateShader()
     }
 
     private fun recreateShader() {

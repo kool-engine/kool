@@ -144,10 +144,14 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
                     item(modelAsset.name) { addNewModel(it, modelAsset) }
                 }
             }
-            subMenu("Light") {
-                item("Directional") { addNewLight(it, LightTypeData.Directional()) }
-                item("Spot") { addNewLight(it, LightTypeData.Spot()) }
-                item("Point") { addNewLight(it, LightTypeData.Point()) }
+            EditorState.activeScene.value?.let { sceneModel ->
+                if (sceneModel.drawNode.lighting.lights.size < sceneModel.maxNumLightsState.value) {
+                    subMenu("Light") {
+                        item("Directional") { addNewLight(it, LightTypeData.Directional()) }
+                        item("Spot") { addNewLight(it, LightTypeData.Spot()) }
+                        item("Point") { addNewLight(it, LightTypeData.Point()) }
+                    }
+                }
             }
             item("Empty node") { addEmptyNode(it) }
         }

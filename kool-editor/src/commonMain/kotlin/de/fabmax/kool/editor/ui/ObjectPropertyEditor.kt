@@ -4,6 +4,7 @@ import de.fabmax.kool.editor.EditorState
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.actions.AddComponentAction
 import de.fabmax.kool.editor.actions.RenameNodeAction
+import de.fabmax.kool.editor.actions.SetNumberOfLightsAction
 import de.fabmax.kool.editor.components.*
 import de.fabmax.kool.editor.data.ModelComponentData
 import de.fabmax.kool.editor.data.ScriptComponentData
@@ -88,6 +89,10 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", ui) 
                 return@Column
             }
 
+            if (selectedObject is SceneModel) {
+                sceneSettings(selectedObject)
+            }
+
             for (component in selectedObject.components.use()) {
                 when (component) {
                     is DiscreteLightComponent -> componentEditor(component) { LightEditor(component) }
@@ -113,6 +118,16 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", ui) 
         }
     }
 
+
+    private fun UiScope.sceneSettings(sceneModel: SceneModel) {
+        Row(width = Grow.Std) {
+            modifier.margin(start = sizes.gap, end = sizes.gap, bottom = sizes.gap)
+            labeledIntTextField("Max number of lights:", sceneModel.maxNumLightsState.use(), minValue = 0, maxValue = 8) {
+                SetNumberOfLightsAction(sceneModel, it).apply()
+            }
+        }
+    }
+
     private fun UiScope.addComponentSelector(nodeModel: EditorNodeModel) {
         val popup = remember { ContextPopupMenu<EditorNodeModel>() }
 
@@ -120,7 +135,7 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", ui) 
             defaultButtonStyle()
             modifier
                 .width(sizes.baseSize * 5)
-                .margin(top = sizes.gap)
+                .margin(vertical = sizes.gap)
                 .alignX(AlignmentX.Center)
                 .onClick {
                     if (!popup.isVisible.use()) {

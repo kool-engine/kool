@@ -12,7 +12,7 @@ class Lighting {
     val lights: List<Light>
         get() = _lights
 
-    var maxNumberOfLights = 8
+    var maxNumberOfLights = 4
 
     init {
         singleDirectionalLight {
