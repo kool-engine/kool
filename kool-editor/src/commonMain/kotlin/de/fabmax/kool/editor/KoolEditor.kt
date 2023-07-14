@@ -188,7 +188,7 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
                             }
                             it = it.parent
                         }
-                        EditorState.select(selectedNodeModel)
+                        EditorState.selectSingle(selectedNodeModel)
                     }
                 }
             }

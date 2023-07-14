@@ -28,26 +28,27 @@ object EditorState {
 
     private val prettyJson = Json { prettyPrint = true }
 
-    fun select(nodeModel: EditorNodeModel?, expandIfShiftIsDown: Boolean = true, removeIfSelected: Boolean = true) {
-        val nodeModels = mutableListOf<EditorNodeModel>()
-        nodeModel?.let { nodeModels += it }
-        select(nodeModels, expandIfShiftIsDown, removeIfSelected)
+    fun selectSingle(selectModel: EditorNodeModel?, expandIfShiftIsDown: Boolean = true, toggleSelect: Boolean = true) {
+        selectModel ?: return
+
+        if (toggleSelect && selectModel in selection) {
+            reduceSelection(listOf(selectModel))
+        } else if (expandIfShiftIsDown && KeyboardInput.isShiftDown) {
+            expandSelection(listOf(selectModel))
+        } else {
+            setSelection(listOf(selectModel))
+        }
     }
 
-    fun select(nodeModels: List<EditorNodeModel>, expandIfShiftIsDown: Boolean = true, removeIfSelected: Boolean = false) {
-        if (!expandIfShiftIsDown || !KeyboardInput.isShiftDown) {
-            selection.clear()
-        }
-        val addToSelection = nodeModels.toMutableSet()
-        if (removeIfSelected) {
-            val alreadySelected = nodeModels.toMutableSet()
-            alreadySelected.retainAll(selection)
-            selection -= alreadySelected
-            addToSelection -= alreadySelected
-        }
+    fun expandSelection(addModels: List<EditorNodeModel>) = setSelection(selection.toSet() + addModels.toSet())
 
-        addToSelection -= selection
-        selection += addToSelection
+    fun reduceSelection(removeModels: List<EditorNodeModel>) = setSelection(selection.toSet() - removeModels.toSet())
+
+    fun setSelection(selectModels: Collection<EditorNodeModel>) {
+        selection.atomic {
+            clear()
+            addAll(selectModels)
+        }
     }
 
     fun getSelectedNodes(filter: (EditorNodeModel) -> Boolean = { true }): List<EditorNodeModel> {

@@ -161,7 +161,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
             .height(sizes.lineHeight)
             .onClick {
                 if (it.pointer.isLeftButtonClicked) {
-                    EditorState.select(item.nodeModel)
+                    EditorState.selectSingle(item.nodeModel)
                     if (it.pointer.leftButtonRepeatedClickCount == 2 && item.isExpandable) {
                         item.toggleExpanded()
                     }

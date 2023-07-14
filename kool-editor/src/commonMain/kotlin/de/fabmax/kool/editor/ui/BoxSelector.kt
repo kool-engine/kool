@@ -2,7 +2,9 @@ package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.editor.EditorState
 import de.fabmax.kool.editor.KoolEditor
+import de.fabmax.kool.editor.model.EditorNodeModel
 import de.fabmax.kool.editor.model.SceneNodeModel
+import de.fabmax.kool.input.KeyboardInput
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec3f
@@ -18,6 +20,8 @@ import kotlin.math.*
 class BoxSelector : Composable {
 
     val isBoxSelect = mutableStateOf(false)
+
+    private val startSelection = mutableSetOf<EditorNodeModel>()
 
     override fun UiScope.compose() {
         var boxSelectStart by remember(Vec2f.ZERO)
@@ -35,6 +39,10 @@ class BoxSelector : Composable {
                     isBoxSelect.set(true)
                     boxSelectStart = it.screenPosition
                     boxSelectCursor = it.screenPosition
+                    startSelection.clear()
+                    if (KeyboardInput.isShiftDown || KeyboardInput.isAltDown) {
+                        startSelection += EditorState.selection
+                    }
                     // explicitly consume pointer, to avoid camera movement during box select
                     it.pointer.consume()
                 } else {
@@ -96,12 +104,13 @@ class BoxSelector : Composable {
             TODO()
         }
 
-        val boxSelection = scene.sceneNodes.filter { camHelper.testSceneNode(it) }
-
-        EditorState.selection.atomic {
-            clear()
-            addAll(boxSelection)
+        val boxSelection = scene.sceneNodes.filter { camHelper.testSceneNode(it) }.toSet()
+        val newSelection = if (KeyboardInput.isAltDown) {
+            startSelection - boxSelection
+        } else {
+            startSelection + boxSelection
         }
+        EditorState.setSelection(newSelection)
     }
 
     private abstract class BoxIntersectHelper(val cam: Camera, boxMin: Vec2f, boxMax: Vec2f, viewport: Viewport) {
