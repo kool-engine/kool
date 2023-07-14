@@ -16,7 +16,7 @@ import org.w3c.dom.events.MouseEvent
 
 internal actual object PlatformInput {
 
-    val excludedKeyCodes = mutableSetOf("F5", "F11")
+    val excludedKeyCodes = mutableSetOf("F5", "F11", "F12")
 
     private val virtualPointerPos = MutableVec2d()
     private var currentCursorShape = CursorShape.DEFAULT
@@ -148,14 +148,10 @@ internal actual object PlatformInput {
         val localKeyCode = ev.toLocalKeyCode()
         var mods = 0
         if (keyCode.code != 0 || localKeyCode.code != 0) {
-            if (ev.altKey) { mods = mods or KeyboardInput.KEY_MOD_ALT
-            }
-            if (ev.ctrlKey) { mods = mods or KeyboardInput.KEY_MOD_CTRL
-            }
-            if (ev.shiftKey) { mods = mods or KeyboardInput.KEY_MOD_SHIFT
-            }
-            if (ev.metaKey) { mods = mods or KeyboardInput.KEY_MOD_SUPER
-            }
+            if (ev.altKey) mods = mods or KeyboardInput.KEY_MOD_ALT
+            if (ev.ctrlKey) mods = mods or KeyboardInput.KEY_MOD_CTRL
+            if (ev.shiftKey) mods = mods or KeyboardInput.KEY_MOD_SHIFT
+            if (ev.metaKey) mods = mods or KeyboardInput.KEY_MOD_SUPER
 
             var event = KeyboardInput.KEY_EV_DOWN
             if (ev.repeat) {
@@ -179,14 +175,10 @@ internal actual object PlatformInput {
         val localKeyCode = ev.toLocalKeyCode()
         if (keyCode.code != 0 || localKeyCode.code != 0) {
             var mods = 0
-            if (ev.altKey) { mods = mods or KeyboardInput.KEY_MOD_ALT
-            }
-            if (ev.ctrlKey) { mods = mods or KeyboardInput.KEY_MOD_CTRL
-            }
-            if (ev.shiftKey) { mods = mods or KeyboardInput.KEY_MOD_SHIFT
-            }
-            if (ev.metaKey) { mods = mods or KeyboardInput.KEY_MOD_SUPER
-            }
+            if (ev.altKey) mods = mods or KeyboardInput.KEY_MOD_ALT
+            if (ev.ctrlKey) mods = mods or KeyboardInput.KEY_MOD_CTRL
+            if (ev.shiftKey) mods = mods or KeyboardInput.KEY_MOD_SHIFT
+            if (ev.metaKey) mods = mods or KeyboardInput.KEY_MOD_SUPER
             KeyboardInput.handleKeyEvent(KeyEvent(keyCode, localKeyCode, KeyboardInput.KEY_EV_UP, mods))
         }
 
@@ -231,6 +223,7 @@ internal actual object PlatformInput {
         "NumpadMultiply" to KeyboardInput.KEY_NP_MUL,
         "NumpadAdd" to KeyboardInput.KEY_NP_PLUS,
         "NumpadSubtract" to KeyboardInput.KEY_NP_MINUS,
+        "NumpadDecimal" to KeyboardInput.KEY_NP_DECIMAL,
         "Backspace" to KeyboardInput.KEY_BACKSPACE,
         "Tab" to KeyboardInput.KEY_TAB,
         "Delete" to KeyboardInput.KEY_DEL,
@@ -256,6 +249,30 @@ internal actual object PlatformInput {
         "F11" to KeyboardInput.KEY_F11,
         "F12" to KeyboardInput.KEY_F12,
         "Space" to UniversalKeyCode(' ')
+
+
+        /*
+
+        printableKeys += GLFW.GLFW_KEY_APOSTROPHE
+        printableKeys += GLFW.GLFW_KEY_COMMA
+        printableKeys += GLFW.GLFW_KEY_MINUS
+        printableKeys += GLFW.GLFW_KEY_PERIOD
+        printableKeys += GLFW.GLFW_KEY_SLASH
+        printableKeys += GLFW.GLFW_KEY_SEMICOLON
+        printableKeys += GLFW.GLFW_KEY_EQUAL
+        printableKeys += GLFW.GLFW_KEY_LEFT_BRACKET
+        printableKeys += GLFW.GLFW_KEY_RIGHT_BRACKET
+        printableKeys += GLFW.GLFW_KEY_BACKSLASH
+        //printableKeys += GLFW.GLFW_KEY_WORLD_1
+        printableKeys += GLFW.GLFW_KEY_WORLD_2
+        printableKeys += GLFW.GLFW_KEY_KP_DECIMAL
+        printableKeys += GLFW.GLFW_KEY_KP_DIVIDE
+        printableKeys += GLFW.GLFW_KEY_KP_MULTIPLY
+        printableKeys += GLFW.GLFW_KEY_KP_SUBTRACT
+        printableKeys += GLFW.GLFW_KEY_KP_ADD
+        printableKeys += GLFW.GLFW_KEY_KP_EQUAL
+         */
+
     )
 
     private object PointerLockState {
