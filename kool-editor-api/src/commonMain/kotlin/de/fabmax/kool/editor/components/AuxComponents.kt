@@ -8,5 +8,5 @@ interface EditorDataComponent<T: ComponentData> {
 }
 
 interface ContentComponent {
-    val contentNode: Node
+    val contentNode: Node?
 }

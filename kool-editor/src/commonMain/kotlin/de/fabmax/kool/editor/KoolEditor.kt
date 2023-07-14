@@ -136,18 +136,31 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
             keyCode = LocalKeyCode('H'),
             filter = { it.isPressed && it.isAltDown }
         ) {
-            EditorState.activeScene.value?.nodesToNodeModels?.values
-                ?.filterIsInstance<SceneNodeModel>()
-                ?.filter { !it.isVisibleState.value }
-                ?.let { nodes ->
-                    SetVisibilityAction(nodes, true).apply()
-                }
+            EditorState.activeScene.value?.sceneNodes?.filter { !it.isVisibleState.value } ?.let { nodes ->
+                SetVisibilityAction(nodes, true).apply()
+            }
         }
         editorInputContext.addKeyListener(
             name = "Focus selected object",
             keyCode = KeyboardInput.KEY_NP_DECIMAL
         ) {
             editorCameraTransform.focusSelectedObject()
+        }
+        editorInputContext.addKeyListener(
+            name = "Toggle box select",
+            keyCode = LocalKeyCode('B')
+        ) {
+            ui.sceneView.isBoxSelectMode.set(!ui.sceneView.isBoxSelectMode.value)
+        }
+        editorInputContext.addKeyListener(
+            name = "Cancel current operation",
+            keyCode = KeyboardInput.KEY_ESC
+        ) {
+            // for now, we take the naive approach and check any possible operation that can be canceled
+            // this might not scale well when we have more possible operations...
+
+            // disable box select
+            ui.sceneView.isBoxSelectMode.set(false)
         }
 
         InputStack.pushTop(editorInputContext)

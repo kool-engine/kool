@@ -1,6 +1,7 @@
 package de.fabmax.kool.editor.components
 
 import de.fabmax.kool.editor.api.AppAssets
+import de.fabmax.kool.editor.api.AppState
 import de.fabmax.kool.editor.data.MaterialData
 import de.fabmax.kool.editor.data.ModelComponentData
 import de.fabmax.kool.editor.data.SceneBackgroundData
@@ -11,9 +12,11 @@ import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
+import de.fabmax.kool.scene.MeshRayTest
 import de.fabmax.kool.scene.Model
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.*
+import kotlinx.atomicfu.atomic
 
 class ModelComponent(override val componentData: ModelComponentData) :
     SceneNodeComponent(),
@@ -26,13 +29,12 @@ class ModelComponent(override val componentData: ModelComponentData) :
 {
     val modelPathState = mutableStateOf(componentData.modelPath).onChange { componentData.modelPath = it }
 
-    private var _model: Model? = null
-    val model: Model
-        get() = requireNotNull(_model) { "ModelComponent was not yet created" }
+    var model: Model? = null
 
-    override val contentNode: Node
+    override val contentNode: Node?
         get() = model
 
+    private val isRecreatingModel = atomic(false)
     private var isIblShaded = false
     private var isSsaoEnabled = false
     private var shaderShaowMaps: List<ShadowMap> = emptyList()
@@ -43,17 +45,15 @@ class ModelComponent(override val componentData: ModelComponentData) :
 
     override suspend fun createComponent(nodeModel: EditorNodeModel) {
         super.createComponent(nodeModel)
-        _model = createModel()
-
-        model.name = nodeModel.name
-        this.nodeModel.setContentNode(model)
+        recreateModel()
     }
 
     override fun updateMaterial(material: MaterialData?) {
         val holder = nodeModel.getComponent<MaterialComponent>() ?: return
+        val model = this.model
         if (holder.isHoldingMaterial(material)) {
             launchOnMainThread {
-                if (material == null) {
+                if (material == null || model == null) {
                     // recreate model with default materials
                     recreateModel()
                 } else {
@@ -74,7 +74,7 @@ class ModelComponent(override val componentData: ModelComponentData) :
             // recreate models without ibl lighting
             recreateModel()
         } else {
-            model.meshes.values.forEach { mesh ->
+            model?.meshes?.values?.forEach { mesh ->
                 (mesh.shader as? KslLitShader)?.ambientFactor = bgColorLinear
             }
         }
@@ -85,7 +85,7 @@ class ModelComponent(override val componentData: ModelComponentData) :
             // recreate models with ibl lighting
             recreateModel()
         } else {
-            model.meshes.values.forEach { mesh ->
+            model?.meshes?.values?.forEach { mesh ->
                 (mesh.shader as? KslLitShader)?.ambientMap = ibl.irradianceMap
                 (mesh.shader as? KslPbrShader)?.reflectionMap = ibl.reflectionMap
             }
@@ -104,7 +104,7 @@ class ModelComponent(override val componentData: ModelComponentData) :
             // recreate models with changed ssao setting
             recreateModel()
         }
-        model.meshes.values.forEach { mesh ->
+        model?.meshes?.values?.forEach { mesh ->
             (mesh.shader as? KslLitShader)?.ssaoMap = ssaoMap
         }
     }
@@ -145,15 +145,24 @@ class ModelComponent(override val componentData: ModelComponentData) :
             }
         }
 
+        if (AppState.isInEditor) {
+            model.meshes.values.forEach { it.rayTest = MeshRayTest.geometryTest(it) }
+        }
+
         model.name = nodeModel.name
+        model.isVisible = nodeModel.isVisibleState.value
         return model
     }
 
     private fun recreateModel() {
-        launchOnMainThread {
-            _model = createModel()
-            // set newly created model as new content node, this also disposes any previous model
-            nodeModel.setContentNode(model)
+        if (!isRecreatingModel.getAndSet(true)) {
+            launchOnMainThread {
+                isRecreatingModel.lazySet(false)
+                model = createModel().also {
+                    // set newly created model as new content node, this also disposes any previous model
+                    nodeModel.setContentNode(it)
+                }
+            }
         }
     }
 }

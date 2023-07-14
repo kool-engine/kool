@@ -6,7 +6,21 @@ import kotlin.math.roundToInt
 
 class SceneView(ui: EditorUi) : EditorPanel("Scene View", ui) {
 
+    var isBoxSelectMode = mutableStateOf(false).onChange {
+        if (it) {
+            // enabled box selection mode
+            windowSurface.inputHandler.blockAllPointerInput = false
+            windowSurface.inputMode = UiSurface.InputCaptureMode.CaptureInsideBounds
+        } else {
+            // disabled box selection mode
+            windowSurface.inputHandler.blockAllPointerInput = true
+            windowSurface.inputMode = UiSurface.InputCaptureMode.CaptureOverBackground
+            boxSelector.isBoxSelect.set(false)
+        }
+    }
+
     private var viewBox: UiNode? = null
+    private val boxSelector = BoxSelector()
 
     override val windowSurface: UiSurface = EditorPanelWindow(false) {
         modifier.background(null)
@@ -17,12 +31,17 @@ class SceneView(ui: EditorUi) : EditorPanel("Scene View", ui) {
                 modifier
                     .padding(horizontal = sizes.gap - sizes.borderWidth)
                     .backgroundColor(UiColors.titleBg)
+                    .onPointer { it.pointer.consume() }
             }
             Box(width = Grow.Std, height = Grow.Std) {
                 modifier
                     .padding(Dp.ZERO)
                     .background(null)
                 viewBox = uiNode
+
+                if (isBoxSelectMode.use()) {
+                    boxSelector()
+                }
             }
         }
 

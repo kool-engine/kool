@@ -1,5 +1,6 @@
 package de.fabmax.kool.editor.components
 
+import de.fabmax.kool.editor.api.AppState
 import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.editor.model.EditorNodeModel
 import de.fabmax.kool.modules.ksl.KslLitShader
@@ -12,6 +13,7 @@ import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshRayTest
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.*
+import kotlinx.atomicfu.atomic
 
 class MeshComponent(override val componentData: MeshComponentData) :
     SceneNodeComponent(),
@@ -24,17 +26,14 @@ class MeshComponent(override val componentData: MeshComponentData) :
 {
     val shapesState = MutableStateList(componentData.shapes)
 
-    private var _mesh: Mesh? = null
-    val mesh: Mesh
-        get() = requireNotNull(_mesh) { "MeshComponent was not yet created" }
+    var mesh: Mesh? = null
 
-    override val contentNode: Node
+    override val contentNode: Node?
         get() = mesh
 
+    private val isRecreatingShader = atomic(false)
     private var isIblShaded = false
     private var isSsaoEnabled = false
-
-    private var shaderUpdateScheduled = false
 
     constructor(): this(MeshComponentData(MeshShapeData.Box(Vec3Data(1.0, 1.0, 1.0))))
 
@@ -45,17 +44,22 @@ class MeshComponent(override val componentData: MeshComponentData) :
     override suspend fun createComponent(nodeModel: EditorNodeModel) {
         super.createComponent(nodeModel)
 
-        _mesh = Mesh(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS, Attribute.TANGENTS)
-        mesh.name = nodeModel.name
-        mesh.rayTest = MeshRayTest.geometryTest(mesh)
+        mesh = Mesh(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS, Attribute.TANGENTS).apply {
+            name = nodeModel.name
+            isVisible = nodeModel.isVisibleState.value
+
+            if (AppState.isInEditor) {
+                rayTest = MeshRayTest.geometryTest(this)
+            }
+            this@MeshComponent.nodeModel.setContentNode(this)
+        }
 
         updateGeometry()
-        createMeshShader()
-
-        this.nodeModel.setContentNode(mesh)
+        recreateShader()
     }
 
     fun updateGeometry() {
+        val mesh = this.mesh ?: return
         mesh.generate {
             shapesState.forEach { shape ->
                 withTransform {
@@ -70,9 +74,14 @@ class MeshComponent(override val componentData: MeshComponentData) :
             }
             geometry.generateTangents()
         }
+
+        // force ray test mesh update
+        mesh.rayTest.onMeshDataChanged(mesh)
     }
 
-    private suspend fun createMeshShader(updateBg: Boolean = true) {
+    private suspend fun createMeshShader() {
+        val mesh = this.mesh ?: return
+
         logD { "${nodeModel.name}: (re-)creating shader" }
         val ibl = sceneModel.shaderData.environmentMaps
         val ssao = sceneModel.shaderData.ssaoMap
@@ -91,13 +100,16 @@ class MeshComponent(override val componentData: MeshComponentData) :
                 ssao?.let {
                     ao { enableSsao(it) }
                 }
+            }.apply {
+                if (ibl == null) {
+                    ambientFactor = sceneModel.shaderData.ambientColorLinear
+                }
             }
         }
-        if (updateBg) updateBackground(sceneModel.sceneBackground)
-        shaderUpdateScheduled = false
     }
 
     override fun updateMaterial(material: MaterialData?) {
+        val mesh = this.mesh ?: return
         val holder = nodeModel.getComponent<MaterialComponent>()
         if (holder?.isHoldingMaterial(material) != false) {
             launchOnMainThread {
@@ -110,39 +122,30 @@ class MeshComponent(override val componentData: MeshComponentData) :
     }
 
     override fun updateSingleColorBg(bgColorLinear: Color) {
-        if (mesh.shader is KslLitShader) {
-            if (isIblShaded) {
-                launchOnMainThread {
-                    createMeshShader(updateBg = false)
-                    (mesh.shader as KslLitShader).ambientFactor = bgColorLinear
-                }
-            } else {
-                (mesh.shader as KslLitShader).ambientFactor = bgColorLinear
-            }
+        if (isIblShaded) {
+            // recreate shader without ibl lighting
+            recreateShader()
+        } else {
+            (mesh?.shader as? KslLitShader)?.ambientFactor = bgColorLinear
         }
         isIblShaded = false
     }
 
     override fun updateHdriBg(hdriBg: SceneBackgroundData.Hdri, ibl: EnvironmentMaps) {
-        if (mesh.shader is KslLitShader) {
-            if (!isIblShaded) {
-                launchOnMainThread {
-                    createMeshShader(updateBg = false)
-                }
-            } else {
-                (mesh.shader as? KslLitShader)?.ambientMap = ibl.irradianceMap
-                (mesh.shader as? KslPbrShader)?.reflectionMap = ibl.reflectionMap
-            }
+        if (!isIblShaded) {
+            // recreate shader without ibl lighting
+            recreateShader()
+        } else {
+            (mesh?.shader as? KslLitShader)?.ambientMap = ibl.irradianceMap
+            (mesh?.shader as? KslPbrShader)?.reflectionMap = ibl.reflectionMap
         }
         isIblShaded = true
     }
 
     override fun updateShadowMaps(shadowMaps: List<ShadowMap>) {
-        (mesh.shader as? KslLitShader)?.let {
+        (mesh?.shader as? KslLitShader)?.let {
             if (shadowMaps != it.shadowMaps) {
-                launchOnMainThread {
-                    createMeshShader(updateBg = false)
-                }
+                recreateShader()
             }
         }
     }
@@ -151,10 +154,17 @@ class MeshComponent(override val componentData: MeshComponentData) :
         val needsSsaoEnabled = ssaoMap != null
         if (needsSsaoEnabled != isSsaoEnabled) {
             isSsaoEnabled = needsSsaoEnabled
+            recreateShader()
+        }
+        (mesh?.shader as? KslLitShader)?.ssaoMap = ssaoMap
+    }
+
+    private fun recreateShader() {
+        if (!isRecreatingShader.getAndSet(true)) {
             launchOnMainThread {
-                createMeshShader(updateBg = false)
+                isRecreatingShader.lazySet(false)
+                createMeshShader()
             }
         }
-        (mesh.shader as? KslLitShader)?.ssaoMap = ssaoMap
     }
 }

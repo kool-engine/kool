@@ -14,9 +14,7 @@ import de.fabmax.kool.util.logW
 
 class ScriptEditor(component: ScriptComponent) : ComponentEditor<ScriptComponent>(component) {
 
-    private val scriptName: String get() = component.scriptClassNameState.value
-        .replaceBeforeLast('.', "")
-        .removePrefix(".")
+    private val scriptName: String get() = camelCaseToWords(component.scriptClassNameState.value)
 
     override fun UiScope.compose() = componentPanel(scriptName, IconMap.CODE, ::removeComponent) {
         Column(width = Grow.Std) {
@@ -345,9 +343,11 @@ class ScriptEditor(component: ScriptComponent) : ComponentEditor<ScriptComponent
 
     companion object {
         fun camelCaseToWords(camelCase: String, allUppercase: Boolean = true): String {
+            val simpleName = camelCase.substringAfterLast('.')
+
             val words = mutableListOf<String>()
             var word = StringBuilder()
-            camelCase.forEach {
+            simpleName.forEach {
                 if (word.isEmpty() || it.isLowerCase() || it.isDigit()) {
                     word.append(it)
 

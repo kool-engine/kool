@@ -56,9 +56,8 @@ abstract class EditorNodeModel(val nodeData: SceneNodeData) {
     }
 
     open suspend fun createComponents() {
-        components.forEach { it.createComponent(this) }
         isVisibleState.set(nodeData.isVisible)
-        drawNode.isVisible = isVisibleState.value
+        components.forEach { it.createComponent(this) }
     }
 
     open fun onNodeAdded() {

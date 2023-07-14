@@ -4,7 +4,6 @@ import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.spatial.*
 import de.fabmax.kool.scene.geometry.PrimitiveType
-import de.fabmax.kool.util.logD
 import kotlin.math.sqrt
 
 interface MeshRayTest {
@@ -48,11 +47,10 @@ interface MeshRayTest {
         private val rayTraverser = TriangleHitTraverser<Triangle>()
 
         override fun onMeshDataChanged(mesh: Mesh) {
-            logD { "rebuild tree for mesh ${mesh.name}" }
-            if (mesh.geometry.primitiveType == PrimitiveType.TRIANGLES) {
-                triangleTree = triangleKdTree(Triangle.getTriangles(mesh.geometry))
+            triangleTree = if (mesh.geometry.primitiveType == PrimitiveType.TRIANGLES) {
+                triangleKdTree(Triangle.getTriangles(mesh.geometry))
             } else {
-                triangleTree = null
+                null
             }
         }
 
@@ -71,10 +69,10 @@ interface MeshRayTest {
         private val rayTraverser = NearestEdgeToRayTraverser<Edge<Vec3f>>()
 
         override fun onMeshDataChanged(mesh: Mesh) {
-            if (mesh.geometry.primitiveType == PrimitiveType.LINES) {
-                edgeTree = edgeKdTree(Edge.getEdges(mesh.geometry))
+            edgeTree = if (mesh.geometry.primitiveType == PrimitiveType.LINES) {
+                edgeKdTree(Edge.getEdges(mesh.geometry))
             } else {
-                edgeTree = null
+                null
             }
         }
 

@@ -20,8 +20,12 @@ class EditorCamTransform(val editor: KoolEditor) : OrbitInputTransform("Editor c
         minZoom = 1.0
         maxZoom = 1000.0
         zoomAnimator.stiffness = 500.0
+        horiRotAnimator.stiffness = 500.0
+        vertRotAnimator.stiffness = 500.0
         setMouseRotation(20f, -30f)
         InputStack.defaultInputHandler.pointerListeners += this
+
+        middleDragMethod = DragMethod.ROTATE
 
         onUpdate {
             panTarget?.let { animatePan(it) }
