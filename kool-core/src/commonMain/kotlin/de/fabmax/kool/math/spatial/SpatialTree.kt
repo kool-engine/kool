@@ -75,7 +75,7 @@ abstract class SpatialTree<T: Any>(val itemAdapter: ItemAdapter<T>) : Collection
         val isLeaf
             get() = children.isEmpty()
         val isEmpty
-            get() = children.isEmpty() && items.isEmpty()
+            get() = children.isEmpty() && itemsUnbounded.isEmpty()
         val isNotEmpty
             get() = !isEmpty
 
@@ -89,12 +89,12 @@ abstract class SpatialTree<T: Any>(val itemAdapter: ItemAdapter<T>) : Collection
          * Item list, depending on implementation the list can be shared between multiple nodes, meaning not all
          * element within the list belong to this node. Therefore, when using this list one must consider [nodeRange].
          *
-         * Non-leaf nodes can but don't have to supply items of sub-nodes.
+         * Non-leaf nodes can, but don't have to, supply items of sub-nodes.
          */
-        abstract val items: List<T>
+        abstract val itemsUnbounded: List<T>
 
         /**
-         * Range within [items] in which elements belong to this node.
+         * Range within [itemsUnbounded] in which elements belong to this node.
          */
         abstract val nodeRange: IntRange
     }

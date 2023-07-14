@@ -42,7 +42,7 @@ open class KdTree<T: Any>(items: List<T>, itemAdapter: ItemAdapter<T>, bucketSz:
     inner class KdNode(override val nodeRange: IntRange, bucketSz: Int) : Node() {
         override val children = mutableListOf<KdNode>()
         override val size: Int
-        override val items: List<T>
+        override val itemsUnbounded: List<T>
             get() = this@KdTree.items
 
         init {
@@ -50,7 +50,7 @@ open class KdTree<T: Any>(items: List<T>, itemAdapter: ItemAdapter<T>, bucketSz:
             size = nodeRange.last - nodeRange.first + 1
             bounds.batchUpdate {
                 for (i in nodeRange) {
-                    val it = items[i]
+                    val it = itemsUnbounded[i]
                     add(itemAdapter.getMin(it, tmpVec))
                     add(itemAdapter.getMax(it, tmpVec))
                 }
@@ -72,7 +72,7 @@ open class KdTree<T: Any>(items: List<T>, itemAdapter: ItemAdapter<T>, bucketSz:
             } else {
                 // this is a leaf node
                 for (i in nodeRange) {
-                    itemAdapter.setNode(items[i], this)
+                    itemAdapter.setNode(itemsUnbounded[i], this)
                 }
             }
         }
@@ -80,7 +80,7 @@ open class KdTree<T: Any>(items: List<T>, itemAdapter: ItemAdapter<T>, bucketSz:
         fun contains(item: T): Boolean {
             if (isLeaf) {
                 for (i in nodeRange) {
-                    if (items[i] == item) {
+                    if (itemsUnbounded[i] == item) {
                         return true
                     }
                 }

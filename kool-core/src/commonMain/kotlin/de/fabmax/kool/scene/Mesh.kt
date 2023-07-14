@@ -11,6 +11,7 @@ import de.fabmax.kool.pipeline.shading.DepthShader
 import de.fabmax.kool.scene.animation.Skin
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
+import de.fabmax.kool.util.Time
 import de.fabmax.kool.util.UniqueId
 
 
@@ -135,6 +136,8 @@ open class Mesh(var geometry: IndexedVertexList, name: String? = null) : Node(na
 
     var rayTest = MeshRayTest.boundsTest()
 
+    private var lastGeomUpdateFrame = -1
+
     /**
      * Time the latest draw call took (in ms).
      */
@@ -225,8 +228,12 @@ open class Mesh(var geometry: IndexedVertexList, name: String? = null) : Node(na
         }
 
         // update bounds and ray test if geometry has changed
-        if (geometry.hasChanged && !geometry.isBatchUpdate) {
-            // don't clear the hasChanged flag yet, is done by rendering backend after vertex buffers are updated
+        if (geometry.hasChanged && !geometry.isBatchUpdate && lastGeomUpdateFrame < Time.frameCount) {
+            // don't clear the hasChanged flag yet, this is done by rendering backend after vertex buffers are updated
+            // however, we store the frame index here to avoid doing stuff multiple times if there are multiple
+            // render-passes (e.g. shadow map + normal render)
+            lastGeomUpdateFrame = Time.frameCount
+
             if (geometry.isRebuildBoundsOnSync) {
                 geometry.rebuildBounds()
             }

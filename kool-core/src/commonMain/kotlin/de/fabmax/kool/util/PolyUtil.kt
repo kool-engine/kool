@@ -364,7 +364,7 @@ object PolyUtil {
 
         override fun traverseLeaf(tree: SpatialTree<PolyVertex>, leaf: SpatialTree<PolyVertex>.Node) {
             for (i in leaf.nodeRange) {
-                val it = leaf.items[i]
+                val it = leaf.itemsUnbounded[i]
                 val inBounds = it.x >= min.x && it.x <= max.x && it.y >= min.y && it.y <= max.y
                 val isOther = it.index != v1.index && it.index != v2.index && it.index != v3.index
 
@@ -414,7 +414,7 @@ object PolyUtil {
 
         override fun traverseLeaf(tree: SpatialTree<PolyEdge>, leaf: SpatialTree<PolyEdge>.Node) {
             for (i in leaf.nodeRange) {
-                val it = leaf.items[i]
+                val it = leaf.itemsUnbounded[i]
                 val minX = min(it.pt0.x, it.pt1.x)
                 val minY = min(it.pt0.y, it.pt1.y)
                 val maxX = max(it.pt0.x, it.pt1.x)

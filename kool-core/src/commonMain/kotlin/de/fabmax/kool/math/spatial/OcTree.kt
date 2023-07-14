@@ -117,8 +117,8 @@ open class OcTree<T: Any>(itemAdapter: ItemAdapter<T>, items: List<T> = emptyLis
 
         fun collectElements(node: OcTree<T>.OcNode) {
             if (node.isLeaf) {
-                if (node.items.isNotEmpty()) {
-                    elementIts += node.items.iterator()
+                if (node.itemsUnbounded.isNotEmpty()) {
+                    elementIts += node.itemsUnbounded.iterator()
                 }
             } else {
                 for (i in node.children.indices) {
@@ -200,11 +200,11 @@ open class OcTree<T: Any>(itemAdapter: ItemAdapter<T>, items: List<T> = emptyLis
 
         private val tmpVec = MutableVec3f()
         private var mutItems = mutableListOf<T>()
-        override val items
+        override val itemsUnbounded
             get() = mutItems
 
         override val nodeRange: IntRange
-            get() = items.indices
+            get() = itemsUnbounded.indices
 
         var depth = depth
             private set

@@ -80,7 +80,7 @@ class InViewFrustumTraverser<T: Any> : SpatialTreeTraverser<T>() {
     override fun traverseLeaf(tree: SpatialTree<T>, leaf: SpatialTree<T>.Node) {
         val cam = this.cam ?: return
         for (i in leaf.nodeRange) {
-            val item = leaf.items[i]
+            val item = leaf.itemsUnbounded[i]
             if (filter(item)) {
                 val elemR = if (fixedRadius > 0f) {
                     fixedRadius

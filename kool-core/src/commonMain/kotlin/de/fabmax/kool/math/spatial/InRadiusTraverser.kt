@@ -35,7 +35,7 @@ open class InRadiusTraverser<T: Any> : CenterPointTraverser<T>() {
 
     override fun traverseLeaf(tree: SpatialTree<T>, leaf: SpatialTree<T>.Node) {
         for (i in leaf.nodeRange) {
-            val it = leaf.items[i]
+            val it = leaf.itemsUnbounded[i]
             if (filter(it) && pointDistance.itemSqrDistanceToPoint(tree, it, center) < radiusSqr) {
                 result += it
             }
@@ -46,7 +46,7 @@ open class InRadiusTraverser<T: Any> : CenterPointTraverser<T>() {
 open class BoundingSphereInRadiusTraverser<T: Any> : InRadiusTraverser<T>() {
     override fun traverseLeaf(tree: SpatialTree<T>, leaf: SpatialTree<T>.Node) {
         for (i in leaf.nodeRange) {
-            val it = leaf.items[i]
+            val it = leaf.itemsUnbounded[i]
             if (filter(it)) {
                 val rx = tree.itemAdapter.getSzX(it) / 2
                 val ry = tree.itemAdapter.getSzY(it) / 2

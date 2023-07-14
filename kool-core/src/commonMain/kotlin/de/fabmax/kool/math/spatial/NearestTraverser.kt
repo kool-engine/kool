@@ -64,7 +64,7 @@ open class NearestTraverser<T: Any> : CenterPointTraverser<T>() {
 
     override fun traverseLeaf(tree: SpatialTree<T>, leaf: SpatialTree<T>.Node) {
         for (i in leaf.nodeRange) {
-            val it = leaf.items[i]
+            val it = leaf.itemsUnbounded[i]
             if (filter(it)) {
                 val dSqr = pointDistance.itemSqrDistanceToPoint(tree, it, center)
                 if (dSqr < sqrDist) {
@@ -140,7 +140,7 @@ open class KNearestTraverser<T: Any> : CenterPointTraverser<T>() {
 
     override fun traverseLeaf(tree: SpatialTree<T>, leaf: SpatialTree<T>.Node) {
         for (i in leaf.nodeRange) {
-            val it = leaf.items[i]
+            val it = leaf.itemsUnbounded[i]
             if (filter(it)) {
                 val dSqr = pointDistance.itemSqrDistanceToPoint(tree, it, center)
                 if (dSqr < radiusSqr && (items.size < k || dSqr < items.peek().dSqr)) {
@@ -222,7 +222,7 @@ open class NearestToRayTraverser<T: Any> : SpatialTreeTraverser<T>() {
 
     override fun traverseLeaf(tree: SpatialTree<T>, leaf: SpatialTree<T>.Node) {
         for (i in leaf.nodeRange) {
-            val it = leaf.items[i]
+            val it = leaf.itemsUnbounded[i]
             if (filter(it)) {
                 val dSqr = rayDistance.itemSqrDistanceToRay(tree, it, ray)
                 if (dSqr < distanceSqr) {
