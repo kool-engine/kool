@@ -31,7 +31,7 @@ open class UiSurface(
     private val meshLayers = TreeMap<Int, MeshLayer>()
     private val onEachFrame = mutableListOf<(KoolContext) -> Unit>()
 
-    protected val inputHandler = UiInputHandler()
+    val inputHandler = UiInputHandler()
     val viewportWidth = mutableStateOf(0f)
     val viewportHeight = mutableStateOf(0f)
     val viewport = BoxNode(null, this).apply { modifier.layout(CellLayout) }
@@ -253,12 +253,21 @@ open class UiSurface(
         CaptureDisabled
     }
 
-    protected inner class UiInputHandler : InputStack.InputHandler(name) {
+    inner class UiInputHandler : InputStack.InputHandler(name) {
         private val nodeResult = mutableListOf<UiNode>()
         private var focusedNode: Focusable? = null
         private var hoveredNode: UiNode? = null
         private var wasDrag = false
         private var dragNode: UiNode? = null
+
+        private var isCapturePointer = false
+
+        init {
+            // default behavior of UiInputHandler is to block all captured pointer input, however applications can
+            // disable blockAllPointerInput in order to pass through non-consumed pointer events to following
+            // input handlers
+            blockAllPointerInput = true
+        }
 
         private val nodeComparator = Comparator<UiNode> { a, b ->
             if (a.modifier.zLayer == b.modifier.zLayer) {
@@ -309,8 +318,8 @@ open class UiSurface(
             // leaving the surface bounds
             // the other way around we do not start to block the input while drag is active when the pointer enters the
             // surface area
-            val wasBlockingPointerInput = blockAllPointerInput
-            blockAllPointerInput = false
+            val wasBlockingPointerInput = isCapturePointer
+            isCapturePointer = false
             val ptr = PointerInput.primaryPointer
             var isPointerOnSurface = false
             if (ptr.isValid) {
@@ -326,7 +335,7 @@ open class UiSurface(
                 }
 
                 if (isPointerOnSurface && (wasBlockingPointerInput || !ptr.isDrag)) {
-                    blockAllPointerInput = true
+                    isCapturePointer = true
                 }
             }
 
@@ -337,7 +346,7 @@ open class UiSurface(
                 dragNode?.let { stopDrag(it, PointerEvent(ptr, ctx)) }
             }
 
-            if (blockAllPointerInput || blockAllKeyboardInput) {
+            if (isCapturePointer || blockAllKeyboardInput) {
                 InputStack.pushTop(this)
             } else {
                 InputStack.remove(this)

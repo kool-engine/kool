@@ -174,24 +174,29 @@ abstract class Camera(name: String = "camera") : Node(name) {
         tmpVec4.set(world.x, world.y, world.z, 1f)
         viewProj.transform(tmpVec4)
         if (tmpVec4.w.isFuzzyZero()) {
+            result.set(Vec3f.ZERO)
             return false
         }
         result.set(tmpVec4.x, tmpVec4.y, tmpVec4.z).scale(1f / tmpVec4.w)
-        return true
+        return result.x in -1f..1f && result.y in -1f..1f && result.z in -1f..1f
     }
 
     fun project(world: Vec3f, result: MutableVec4f): MutableVec4f =
-            viewProj.transform(result.set(world.x, world.y, world.z, 1f))
+        viewProj.transform(result.set(world.x, world.y, world.z, 1f))
+
+    fun projectViewport(world: Vec3f, viewport: Viewport, result: MutableVec3f): Boolean {
+        val projectOk = project(world, result)
+        result.x = (1f + result.x) * 0.5f * viewport.width
+        result.y = (1f - (1f + result.y) * 0.5f) * viewport.height
+        result.z = (1f + result.z) * 0.5f
+        return projectOk
+    }
 
     fun projectScreen(world: Vec3f, viewport: Viewport, ctx: KoolContext, result: MutableVec3f): Boolean {
-        if (!project(world, result)) {
-            return false
-        }
-        result.x = (1 + result.x) * 0.5f * viewport.width + viewport.x
-        result.y = ctx.windowHeight - (1 + result.y) * 0.5f * viewport.height + viewport.y
-        result.z = (1 + result.z) * 0.5f
-
-        return true
+        val projectOk = projectViewport(world, viewport, result)
+        result.x += viewport.x
+        result.y += ctx.windowHeight - viewport.y - viewport.height
+        return projectOk
     }
 
     fun unProjectScreen(screen: Vec3f, viewport: Viewport, ctx: KoolContext, result: MutableVec3f): Boolean {
