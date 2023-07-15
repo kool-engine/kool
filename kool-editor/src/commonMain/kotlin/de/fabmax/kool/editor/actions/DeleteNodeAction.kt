@@ -14,7 +14,7 @@ class DeleteNodeAction(
     override fun doAction() {
         EditorState.selection.removeAll(removeNodeModels)
         removeNodeModels.forEach {
-            it.scene.removeSceneNode(it)
+            it.sceneModel.removeSceneNode(it)
         }
         KoolEditor.instance.ui.sceneBrowser.refreshSceneTree()
     }
@@ -24,7 +24,7 @@ class DeleteNodeAction(
         //  anymore -> deepcopy child node models before removal and re-add them in correct order on undo
         launchOnMainThread {
             removeNodeModels.forEach {
-                it.scene.addSceneNode(it)
+                it.sceneModel.addSceneNode(it)
             }
             KoolEditor.instance.ui.sceneBrowser.refreshSceneTree()
         }

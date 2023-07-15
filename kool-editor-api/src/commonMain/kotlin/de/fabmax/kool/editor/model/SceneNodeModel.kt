@@ -7,26 +7,15 @@ import de.fabmax.kool.editor.data.TransformComponentData
 import de.fabmax.kool.editor.data.TransformData
 import de.fabmax.kool.scene.Node
 
-class SceneNodeModel(nodeData: SceneNodeData, val parent: EditorNodeModel, val scene: SceneModel) : EditorNodeModel(nodeData) {
+class SceneNodeModel(nodeData: SceneNodeData, val parent: EditorNodeModel, val sceneModel: SceneModel) : EditorNodeModel(nodeData) {
 
-    override val drawNode: Node
-        get() = created ?: throw IllegalStateException("Node was not yet created")
+    override var drawNode: Node = Node(nodeData.name)
+        private set
 
-    private var created: Node? = null
-    override val isCreated: Boolean
-        get() = created != null
-
-    val transform = getOrPutComponent { TransformComponent(TransformComponentData(TransformData.IDENTITY)) }
+    val transform = getOrPutComponent { TransformComponent(this, TransformComponentData(TransformData.IDENTITY)) }
 
     init {
-        nameState.onChange { created?.name = it }
-    }
-
-    override suspend fun createComponents() {
-        super.createComponents()
-        if (created == null) {
-            created = Node(name)
-        }
+        nameState.onChange { drawNode.name = it }
     }
 
     override fun addChild(child: SceneNodeModel) {
@@ -40,29 +29,31 @@ class SceneNodeModel(nodeData: SceneNodeData, val parent: EditorNodeModel, val s
     }
 
     fun disposeAndClearCreatedNode() {
-        created?.let {
-            it.dispose(KoolSystem.requireContext())
-            it.parent?.removeNode(it)
-        }
-        created = null
+        drawNode.dispose(KoolSystem.requireContext())
+        drawNode.parent?.removeNode(drawNode)
     }
 
-    fun setContentNode(newNode: Node) {
-        created?.let {
-            it.parent?.let { parent ->
-                val ndIdx = parent.children.indexOf(it)
-                parent.removeNode(it)
-                parent.addNode(newNode, ndIdx)
-            }
-            scene.nodesToNodeModels -= it
-            it.dispose(KoolSystem.requireContext())
-
-            newNode.onUpdate += it.onUpdate
-            it.onUpdate.clear()
+    fun setDrawNode(newDrawNode: Node) {
+        val oldDrawNode = drawNode
+        var ndIdx = -1
+        oldDrawNode.parent?.let { parent ->
+            ndIdx = parent.children.indexOf(oldDrawNode)
+            parent.removeNode(oldDrawNode)
         }
-        transform.transformState.value.toTransform(newNode.transform)
-        newNode.name = nodeData.name
-        created = newNode
-        scene.nodesToNodeModels[newNode] = this
+
+        // todo: newDrawNode.children += oldDrawNode.children
+        newDrawNode.onUpdate += oldDrawNode.onUpdate
+        oldDrawNode.onUpdate.clear()
+        oldDrawNode.dispose(KoolSystem.requireContext())
+
+        transform.transformState.value.toTransform(newDrawNode.transform)
+        newDrawNode.name = nodeData.name
+        drawNode = newDrawNode
+
+        val wasInSceneModel = sceneModel.nodesToNodeModels.remove(oldDrawNode) != null
+        if (wasInSceneModel) {
+            sceneModel.nodesToNodeModels[newDrawNode] = this
+            parent.drawNode.addNode(newDrawNode, ndIdx)
+        }
     }
 }

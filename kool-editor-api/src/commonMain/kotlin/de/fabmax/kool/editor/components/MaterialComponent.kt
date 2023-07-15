@@ -3,17 +3,17 @@ package de.fabmax.kool.editor.components
 import de.fabmax.kool.editor.api.AppState
 import de.fabmax.kool.editor.data.MaterialComponentData
 import de.fabmax.kool.editor.data.MaterialData
-import de.fabmax.kool.editor.model.EditorNodeModel
 import de.fabmax.kool.editor.model.EditorProject
+import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.util.launchOnMainThread
 
-class MaterialComponent(override val componentData: MaterialComponentData) :
-    SceneNodeComponent(),
+class MaterialComponent(nodeModel: SceneNodeModel, override val componentData: MaterialComponentData) :
+    SceneNodeComponent(nodeModel),
     EditorDataComponent<MaterialComponentData>
 {
 
-    constructor(): this(MaterialComponentData(-1L))
+    constructor(nodeModel: SceneNodeModel): this(nodeModel, MaterialComponentData(-1L))
 
     val materialState = mutableStateOf<MaterialData?>(null).onChange { mat ->
         if (AppState.isEditMode) {
@@ -33,8 +33,8 @@ class MaterialComponent(override val componentData: MaterialComponentData) :
         return material?.id == materialData?.id
     }
 
-    override suspend fun createComponent(nodeModel: EditorNodeModel) {
-        super.createComponent(nodeModel)
+    override suspend fun createComponent() {
+        super.createComponent()
         materialState.set(sceneModel.project.materialsById[componentData.materialId])
     }
 }

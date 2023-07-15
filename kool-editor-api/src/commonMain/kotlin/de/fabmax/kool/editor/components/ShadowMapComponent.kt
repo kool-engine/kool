@@ -5,14 +5,14 @@ import de.fabmax.kool.editor.api.AppState
 import de.fabmax.kool.editor.data.ShadowMapComponentData
 import de.fabmax.kool.editor.data.ShadowMapInfo
 import de.fabmax.kool.editor.data.ShadowMapTypeData
-import de.fabmax.kool.editor.model.EditorNodeModel
 import de.fabmax.kool.editor.model.SceneModel
+import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.scene.Light
 import de.fabmax.kool.util.*
 
-class ShadowMapComponent(override val componentData: ShadowMapComponentData) :
-    SceneNodeComponent(),
+class ShadowMapComponent(nodeModel: SceneNodeModel, override val componentData: ShadowMapComponentData) :
+    SceneNodeComponent(nodeModel),
     EditorDataComponent<ShadowMapComponentData>
 {
     val shadowMapState = mutableStateOf(componentData.shadowMap).onChange {
@@ -32,27 +32,25 @@ class ShadowMapComponent(override val componentData: ShadowMapComponentData) :
 
     private var shadowMap: ShadowMap? = null
 
-    constructor() : this(
-        ShadowMapComponentData(
-            ShadowMapTypeData.Single(ShadowMapInfo())
-        )
+    constructor(nodeModel: SceneNodeModel) : this(
+        nodeModel, ShadowMapComponentData(ShadowMapTypeData.Single(ShadowMapInfo()))
     )
 
     init {
         dependsOn(DiscreteLightComponent::class)
     }
 
-    override suspend fun createComponent(nodeModel: EditorNodeModel) {
-        super.createComponent(nodeModel)
+    override suspend fun createComponent() {
+        super.createComponent()
         shadowMapState.set(componentData.shadowMap)
     }
 
-    override fun onNodeRemoved(nodeModel: EditorNodeModel) {
+    override fun onNodeRemoved() {
         disposeShadowMap()
         UpdateShadowMapsComponent.updateShadowMaps(sceneModel)
     }
 
-    override fun onNodeAdded(nodeModel: EditorNodeModel) {
+    override fun onNodeAdded() {
         updateShadowMap()
     }
 
@@ -84,22 +82,20 @@ class ShadowMapComponent(override val componentData: ShadowMapComponentData) :
             return
         }
 
-        val scene = sceneModel.drawNode
-
         // dispose old shadow map
         disposeShadowMap()
 
         // create new shadow map
         shadowMap = when (shadowMapInfo) {
             is ShadowMapTypeData.Single -> {
-                SimpleShadowMap(scene, light, shadowMapInfo.mapInfo.mapSize).apply {
+                SimpleShadowMap(sceneModel.drawNode, light, shadowMapInfo.mapInfo.mapSize).apply {
                     this.clipNear = clipNear
                     this.clipFar = clipFar
                 }
             }
             is ShadowMapTypeData.Cascaded -> {
                 CascadedShadowMap(
-                    scene,
+                    sceneModel.drawNode,
                     light,
                     clipFar,
                     shadowMapInfo.mapInfos.size,

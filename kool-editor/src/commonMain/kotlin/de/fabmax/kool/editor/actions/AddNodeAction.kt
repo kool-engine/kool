@@ -16,7 +16,7 @@ class AddNodeAction(
                 addNodeModel.createComponents()
             }
 
-            addNodeModel.scene.addSceneNode(addNodeModel)
+            addNodeModel.sceneModel.addSceneNode(addNodeModel)
             KoolEditor.instance.ui.sceneBrowser.refreshSceneTree()
         }
     }
@@ -25,7 +25,7 @@ class AddNodeAction(
         if (addNodeModel in EditorState.selection) {
             EditorState.selection -= addNodeModel
         }
-        addNodeModel.scene.removeSceneNode(addNodeModel)
+        addNodeModel.sceneModel.removeSceneNode(addNodeModel)
         KoolEditor.instance.ui.sceneBrowser.refreshSceneTree()
     }
 }

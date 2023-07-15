@@ -3,13 +3,13 @@ package de.fabmax.kool.editor.components
 import de.fabmax.kool.editor.api.AppState
 import de.fabmax.kool.editor.data.TransformComponentData
 import de.fabmax.kool.editor.data.TransformData
-import de.fabmax.kool.editor.model.EditorNodeModel
+import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.scene.Node
 
-class TransformComponent(override val componentData: TransformComponentData) :
-    SceneNodeComponent(),
+class TransformComponent(nodeModel: SceneNodeModel, override val componentData: TransformComponentData) :
+    SceneNodeComponent(nodeModel),
     EditorDataComponent<TransformComponentData>
 {
 
@@ -28,8 +28,8 @@ class TransformComponent(override val componentData: TransformComponentData) :
         componentOrder = COMPONENT_ORDER_EARLY
     }
 
-    override suspend fun createComponent(nodeModel: EditorNodeModel) {
-        super.createComponent(nodeModel)
+    override suspend fun createComponent() {
+        super.createComponent()
         transformState.set(componentData.transform)
     }
 

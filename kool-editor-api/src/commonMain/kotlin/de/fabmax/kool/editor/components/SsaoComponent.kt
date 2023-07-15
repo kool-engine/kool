@@ -3,18 +3,17 @@ package de.fabmax.kool.editor.components
 import de.fabmax.kool.editor.api.AppState
 import de.fabmax.kool.editor.data.SsaoComponentData
 import de.fabmax.kool.editor.data.SsaoSettings
-import de.fabmax.kool.editor.model.EditorNodeModel
 import de.fabmax.kool.editor.model.SceneModel
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ao.AoPipeline
 
-class SsaoComponent(override val componentData: SsaoComponentData) :
-    EditorModelComponent(),
+class SsaoComponent(override val nodeModel: SceneModel, override val componentData: SsaoComponentData) :
+    EditorModelComponent(nodeModel),
     EditorDataComponent<SsaoComponentData>
 {
 
-    constructor(): this(SsaoComponentData())
+    constructor(nodeModel: SceneModel): this(nodeModel, SsaoComponentData())
 
     val ssaoState = mutableStateOf(componentData.settings).onChange {
         if (AppState.isEditMode) {
@@ -23,20 +22,12 @@ class SsaoComponent(override val componentData: SsaoComponentData) :
         applySettings(it)
     }
 
-    private var _sceneModel: SceneModel? = null
-    val sceneModel: SceneModel
-        get() = requireNotNull(_sceneModel) { "SceneBackgroundComponent was not yet created" }
-
     private var aoPipeline: AoPipeline? = null
 
-    override suspend fun createComponent(nodeModel: EditorNodeModel) {
-        _sceneModel = requireNotNull(nodeModel as? SceneModel) {
-            "SceneBackgroundComponent is only allowed in scenes (parent node is of type ${nodeModel::class})"
-        }
-
-        aoPipeline = AoPipeline.createForward(sceneModel.drawNode)
-        sceneModel.shaderData.ssaoMap = aoPipeline?.aoMap
-        UpdateSsaoComponent.updateSceneSsao(sceneModel)
+    override suspend fun createComponent() {
+        aoPipeline = AoPipeline.createForward(nodeModel.drawNode)
+        nodeModel.shaderData.ssaoMap = aoPipeline?.aoMap
+        UpdateSsaoComponent.updateSceneSsao(nodeModel)
 
         // re-sync public state with componentData state
         ssaoState.set(componentData.settings)

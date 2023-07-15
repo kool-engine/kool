@@ -15,6 +15,7 @@ import de.fabmax.kool.math.toRad
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Viewport
+import de.fabmax.kool.util.logE
 import kotlin.math.*
 
 class BoxSelector : Composable {
@@ -141,7 +142,7 @@ class BoxSelector : Composable {
         private fun testMesh(mesh: Mesh): Boolean {
             return when (val meshTest = mesh.rayTest) {
                 is MeshRayTest.TriangleGeometry -> testTriMesh(mesh, meshTest)
-                is MeshRayTest.LineGeometry -> testLineMesh(mesh, meshTest)
+                is MeshRayTest.LineGeometry -> testLineMesh(/*mesh, meshTest*/)
                 else -> false
             }
         }
@@ -155,8 +156,9 @@ class BoxSelector : Composable {
             return false
         }
 
-        private fun testLineMesh(mesh: Mesh, meshTest: MeshRayTest.LineGeometry): Boolean {
-            TODO()
+        private fun testLineMesh(/*mesh: Mesh, meshTest: MeshRayTest.LineGeometry*/): Boolean {
+            logE { "line mesh selection is not yet implemented" }
+            return false
         }
 
         private fun testProjPoint(pt: Vec3f): Boolean {

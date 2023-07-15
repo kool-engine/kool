@@ -7,8 +7,8 @@ import de.fabmax.kool.editor.model.EditorNodeModel
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.util.logE
 
-class ScriptComponent(override val componentData: ScriptComponentData) :
-    EditorModelComponent(),
+class ScriptComponent(nodeModel: EditorNodeModel, override val componentData: ScriptComponentData) :
+    EditorModelComponent(nodeModel),
     EditorDataComponent<ScriptComponentData>
 {
 
@@ -21,8 +21,8 @@ class ScriptComponent(override val componentData: ScriptComponentData) :
         componentOrder = COMPONENT_ORDER_LATE
     }
 
-    override suspend fun createComponent(nodeModel: EditorNodeModel) {
-        super.createComponent(nodeModel)
+    override suspend fun createComponent() {
+        super.createComponent()
 
         try {
             val script = ScriptLoader.newScriptInstance(componentData.scriptClassName)

@@ -9,11 +9,9 @@ class SceneView(ui: EditorUi) : EditorPanel("Scene View", ui) {
     var isBoxSelectMode = mutableStateOf(false).onChange {
         if (it) {
             // enabled box selection mode
-            windowSurface.inputHandler.blockAllPointerInput = false
-            windowSurface.inputMode = UiSurface.InputCaptureMode.CaptureInsideBounds
+            windowSurface.inputMode = UiSurface.InputCaptureMode.CapturePassthrough
         } else {
             // disabled box selection mode
-            windowSurface.inputHandler.blockAllPointerInput = true
             windowSurface.inputMode = UiSurface.InputCaptureMode.CaptureOverBackground
             boxSelector.isBoxSelect.set(false)
         }

@@ -4,14 +4,14 @@ import de.fabmax.kool.editor.api.AppState
 import de.fabmax.kool.editor.data.ColorData
 import de.fabmax.kool.editor.data.DiscreteLightComponentData
 import de.fabmax.kool.editor.data.LightTypeData
-import de.fabmax.kool.editor.model.EditorNodeModel
+import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.scene.Light
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.Color
 
-class DiscreteLightComponent(override val componentData: DiscreteLightComponentData) :
-    SceneNodeComponent(),
+class DiscreteLightComponent(nodeModel: SceneNodeModel, override val componentData: DiscreteLightComponentData) :
+    SceneNodeComponent(nodeModel),
     EditorDataComponent<DiscreteLightComponentData>,
     ContentComponent
 {
@@ -28,19 +28,19 @@ class DiscreteLightComponent(override val componentData: DiscreteLightComponentD
     override val contentNode: Node
         get() = light
 
-    constructor(): this(DiscreteLightComponentData(LightTypeData.Directional(ColorData(Color.WHITE), 3f)))
+    constructor(nodeModel: SceneNodeModel): this(nodeModel, DiscreteLightComponentData(LightTypeData.Directional(ColorData(Color.WHITE), 3f)))
 
-    override suspend fun createComponent(nodeModel: EditorNodeModel) {
-        super.createComponent(nodeModel)
+    override suspend fun createComponent() {
+        super.createComponent()
         lightState.set(componentData.light)
         updateLight(componentData.light)
     }
 
-    override fun onNodeRemoved(nodeModel: EditorNodeModel) {
+    override fun onNodeRemoved() {
         sceneModel.drawNode.lighting.removeLight(light)
     }
 
-    override fun onNodeAdded(nodeModel: EditorNodeModel) {
+    override fun onNodeAdded() {
         updateLight(componentData.light)
     }
 
@@ -60,7 +60,7 @@ class DiscreteLightComponent(override val componentData: DiscreteLightComponentD
             }
         }
         light.setColor(lightData.color.toColorLinear(), lightData.intensity)
-        nodeModel.setContentNode(light)
+        nodeModel.setDrawNode(light)
         lighting.addLight(light)
 
         nodeModel.getComponent<ShadowMapComponent>()?.updateLight(light)

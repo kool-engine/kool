@@ -3,26 +3,23 @@ package de.fabmax.kool.editor.components
 import de.fabmax.kool.editor.model.EditorNodeModel
 import kotlin.reflect.KClass
 
-abstract class EditorModelComponent {
+abstract class EditorModelComponent(open val nodeModel: EditorNodeModel) {
 
     private val _dependencies: MutableList<ComponentDependency> = mutableListOf()
     val dependencies: List<ComponentDependency>
         get() = _dependencies
 
-    private var _nodeModel: EditorNodeModel? = null
-    open val nodeModel: EditorNodeModel
-        get() = requireNotNull(_nodeModel) { "nodeModel can only be accessed after component was created" }
-    val isCreated: Boolean
-        get() = _nodeModel != null
+    var isCreated: Boolean = false
+        protected set
 
     var componentOrder = COMPONENT_ORDER_DEFAULT
         protected set
 
-    open suspend fun createComponent(nodeModel: EditorNodeModel) {
+    open suspend fun createComponent() {
+        isCreated = true
         require(areDependenciesMetBy(nodeModel.components)) {
             "Unable to create component ${this::class.simpleName} in node ${nodeModel.name}: There are unmet component dependencies"
         }
-        _nodeModel = nodeModel
     }
 
     protected fun dependsOn(componentType: KClass<*>, isOptional: Boolean = false) {
@@ -33,8 +30,8 @@ abstract class EditorModelComponent {
         return dependencies.all { dep -> dep.isOptional || components.any { s -> dep.type.isInstance(s) } }
     }
 
-    open fun onNodeRemoved(nodeModel: EditorNodeModel) { }
-    open fun onNodeAdded(nodeModel: EditorNodeModel) { }
+    open fun onNodeRemoved() { }
+    open fun onNodeAdded() { }
 
     data class ComponentDependency(val type: KClass<*>, val isOptional: Boolean)
 

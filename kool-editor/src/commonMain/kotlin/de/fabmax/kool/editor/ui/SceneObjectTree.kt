@@ -4,6 +4,10 @@ import de.fabmax.kool.editor.*
 import de.fabmax.kool.editor.actions.AddNodeAction
 import de.fabmax.kool.editor.actions.DeleteNodeAction
 import de.fabmax.kool.editor.actions.SetVisibilityAction
+import de.fabmax.kool.editor.components.ContentComponent
+import de.fabmax.kool.editor.components.DiscreteLightComponent
+import de.fabmax.kool.editor.components.MeshComponent
+import de.fabmax.kool.editor.components.ModelComponent
 import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.editor.model.EditorNodeModel
 import de.fabmax.kool.editor.model.SceneModel
@@ -12,7 +16,7 @@ import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.modules.ui2.ArrowScope.Companion.ROTATION_DOWN
 import de.fabmax.kool.modules.ui2.ArrowScope.Companion.ROTATION_RIGHT
-import de.fabmax.kool.scene.*
+import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.logE
 
@@ -92,8 +96,10 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
 
         if (!isTreeValid.use()) {
             treeItems.clear()
-            EditorState.projectModel.getCreatedScenes().forEach {
-                treeItems.appendNode(it, it.drawNode, it, 0)
+            EditorState.projectModel.getCreatedScenes().forEach { sceneModel ->
+                sceneModel.drawNode.let {
+                    treeItems.appendNode(sceneModel, it, sceneModel, 0)
+                }
             }
             isTreeValid.set(true)
         }
@@ -218,10 +224,10 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
                 SceneObjectType.NON_MODEL_NODE -> IconMap.NODE_CIRCLE
                 SceneObjectType.CAMERA -> IconMap.CAMERA
                 SceneObjectType.LIGHT -> IconMap.LIGHT
-                SceneObjectType.GROUP -> IconMap.CIRCLE_DOT
+                SceneObjectType.GROUP -> IconMap.QUAD_BOX
                 SceneObjectType.MESH -> IconMap.CUBE
                 SceneObjectType.MODEL -> IconMap.TREE
-                SceneObjectType.SCENE -> IconMap.WORLD
+                SceneObjectType.SCENE -> IconMap.RECT_OUTSIDE
             }
             modifier
                 .alignX(AlignmentX.End)
@@ -263,19 +269,11 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
 
         val item = if (nodeModel != null) {
             modelTreeItemMap.getOrPut(nodeModel) {
-                val type = when (node) {
-                    is Scene -> SceneObjectType.SCENE
-                    is Mesh -> SceneObjectType.MESH
-                    is Camera -> SceneObjectType.CAMERA
-                    is Model -> SceneObjectType.MODEL
-                    is Light -> SceneObjectType.LIGHT
-                    else -> SceneObjectType.GROUP
-                }
-                SceneObjectItem(node, nodeModel, type, depth)
+                SceneObjectItem(node, nodeModel, depth)
             }
         } else {
             nodeTreeItemMap.getOrPut(node) {
-                SceneObjectItem(node, selectModel, SceneObjectType.NON_MODEL_NODE, depth)
+                SceneObjectItem(node, selectModel, depth, SceneObjectType.NON_MODEL_NODE)
             }
         }
 
@@ -294,14 +292,41 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
     }
 
     private inner class SceneObjectItem(
-        var node: Node,
+        node: Node,
         val nodeModel: EditorNodeModel,
-        val type: SceneObjectType,
-        val depth: Int
+        val depth: Int,
+        val forcedType: SceneObjectType? = null
     ) {
+        var node: Node = node
+            set(value) {
+                field = value
+                type = getNodeType()
+            }
+
         val name: String get() = node.name
+
+        var type: SceneObjectType = getNodeType()
+
         val isExpandable: Boolean get() = node.children.isNotEmpty()
         val isExpanded = mutableStateOf(type.startExpanded)
+
+        private fun getNodeType(): SceneObjectType {
+            if (forcedType != null) {
+                return forcedType
+            }
+
+            if (nodeModel is SceneModel) {
+                return SceneObjectType.SCENE
+            }
+
+            return when (nodeModel.getComponent<ContentComponent>()) {
+                is MeshComponent -> SceneObjectType.MESH
+                is ModelComponent -> SceneObjectType.MODEL
+                is DiscreteLightComponent -> SceneObjectType.LIGHT
+                // CameraComponent -> SceneObjectType.CAMERA
+                else -> SceneObjectType.GROUP
+            }
+        }
 
         fun toggleExpanded() {
             if (isExpandable) {

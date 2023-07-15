@@ -82,7 +82,7 @@ class EditorProject(val projectData: ProjectData) {
     }
 
     inline fun <reified T: Any> getComponentsInScene(sceneModel: SceneModel): List<T> {
-        return getComponentsFromEntities { it === sceneModel || (it is SceneNodeModel && it.scene === sceneModel) }
+        return getComponentsFromEntities { it === sceneModel || (it is SceneNodeModel && it.sceneModel === sceneModel) }
     }
 
     companion object {

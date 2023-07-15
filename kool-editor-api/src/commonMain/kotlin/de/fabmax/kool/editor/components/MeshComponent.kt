@@ -2,7 +2,7 @@ package de.fabmax.kool.editor.components
 
 import de.fabmax.kool.editor.api.AppState
 import de.fabmax.kool.editor.data.*
-import de.fabmax.kool.editor.model.EditorNodeModel
+import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.editor.model.UpdateMaxNumLightsComponent
 import de.fabmax.kool.modules.ksl.KslLitShader
 import de.fabmax.kool.modules.ksl.KslPbrShader
@@ -12,12 +12,11 @@ import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshRayTest
-import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.*
 import kotlinx.atomicfu.atomic
 
-class MeshComponent(override val componentData: MeshComponentData) :
-    SceneNodeComponent(),
+class MeshComponent(nodeModel: SceneNodeModel, override val componentData: MeshComponentData) :
+    SceneNodeComponent(nodeModel),
     EditorDataComponent<MeshComponentData>,
     ContentComponent,
     UpdateMaterialComponent,
@@ -30,21 +29,21 @@ class MeshComponent(override val componentData: MeshComponentData) :
 
     var mesh: Mesh? = null
 
-    override val contentNode: Node?
+    override val contentNode: Mesh?
         get() = mesh
 
     private val isRecreatingShader = atomic(false)
     private var isIblShaded = false
     private var isSsaoEnabled = false
 
-    constructor(): this(MeshComponentData(MeshShapeData.Box(Vec3Data(1.0, 1.0, 1.0))))
+    constructor(nodeModel: SceneNodeModel): this(nodeModel, MeshComponentData(MeshShapeData.Box(Vec3Data(1.0, 1.0, 1.0))))
 
     init {
         dependsOn(MaterialComponent::class, isOptional = true)
     }
 
-    override suspend fun createComponent(nodeModel: EditorNodeModel) {
-        super.createComponent(nodeModel)
+    override suspend fun createComponent() {
+        super.createComponent()
 
         mesh = Mesh(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS, Attribute.TANGENTS).apply {
             name = nodeModel.name
@@ -53,7 +52,7 @@ class MeshComponent(override val componentData: MeshComponentData) :
             if (AppState.isInEditor) {
                 rayTest = MeshRayTest.geometryTest(this)
             }
-            this@MeshComponent.nodeModel.setContentNode(this)
+            nodeModel.setDrawNode(this)
         }
 
         updateGeometry()

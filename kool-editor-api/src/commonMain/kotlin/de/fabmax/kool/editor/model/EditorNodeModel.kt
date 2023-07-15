@@ -13,7 +13,11 @@ abstract class EditorNodeModel(val nodeData: SceneNodeData) {
     val nodeId: Long
         get() = nodeData.nodeId
 
-    val nameState = mutableStateOf(nodeData.name).onChange { nodeData.name = it }
+    val nameState = mutableStateOf(nodeData.name).onChange {
+        nodeData.name = it
+        drawNode.name = it
+    }
+
     val name: String
         get() = nodeData.name
 
@@ -21,15 +25,14 @@ abstract class EditorNodeModel(val nodeData: SceneNodeData) {
         if (AppState.isEditMode) {
             nodeData.isVisible = it
         }
-        if (isCreated) {
-            drawNode.isVisible = it
-        }
+        drawNode.isVisible = it
     }
 
-    abstract val drawNode: Node
-    abstract val isCreated: Boolean
-
     val components = mutableStateListOf<EditorModelComponent>()
+    abstract val drawNode: Node
+
+    var isCreated: Boolean = false
+        private set
 
     init {
         createComponentsFromData(nodeData.components)
@@ -38,34 +41,40 @@ abstract class EditorNodeModel(val nodeData: SceneNodeData) {
     abstract fun addChild(child: SceneNodeModel)
     abstract fun removeChild(child: SceneNodeModel)
 
+    private val requireSceneNode: SceneNodeModel
+        get() = requireNotNull(this as? SceneNodeModel) { "$name is not a SceneNodeModel" }
+    private val requireScene: SceneModel
+        get() = requireNotNull(this as? SceneModel) { "$name is not a SceneModel" }
+
     private fun createComponentsFromData(componentData: List<ComponentData>) {
         componentData.forEach { data ->
             when (data) {
-                is DiscreteLightComponentData -> components += DiscreteLightComponent(data)
-                is MaterialComponentData -> components += MaterialComponent(data)
-                is MeshComponentData -> components += MeshComponent(data)
-                is ModelComponentData -> components += ModelComponent(data)
-                is SceneBackgroundComponentData -> components += SceneBackgroundComponent(data)
-                is ScriptComponentData -> components += ScriptComponent(data)
-                is ShadowMapComponentData -> components += ShadowMapComponent(data)
-                is SsaoComponentData -> components += SsaoComponent(data)
-                is TransformComponentData -> components += TransformComponent(data)
+                is DiscreteLightComponentData -> components += DiscreteLightComponent(requireSceneNode, data)
+                is MaterialComponentData -> components += MaterialComponent(requireSceneNode, data)
+                is MeshComponentData -> components += MeshComponent(requireSceneNode, data)
+                is ModelComponentData -> components += ModelComponent(requireSceneNode, data)
+                is SceneBackgroundComponentData -> components += SceneBackgroundComponent(requireScene, data)
+                is ScriptComponentData -> components += ScriptComponent(this, data)
+                is ShadowMapComponentData -> components += ShadowMapComponent(requireSceneNode, data)
+                is SsaoComponentData -> components += SsaoComponent(requireScene, data)
+                is TransformComponentData -> components += TransformComponent(requireSceneNode, data)
             }
         }
         components.sortByDependencies()
     }
 
     open suspend fun createComponents() {
+        isCreated = true
         isVisibleState.set(nodeData.isVisible)
-        components.forEach { it.createComponent(this) }
+        components.forEach { it.createComponent() }
     }
 
     open fun onNodeAdded() {
-        components.forEach { it.onNodeAdded(this) }
+        components.forEach { it.onNodeAdded() }
     }
 
     open fun onNodeRemoved() {
-        components.forEach { it.onNodeRemoved(this) }
+        components.forEach { it.onNodeRemoved() }
     }
 
     fun addComponent(component: EditorModelComponent) {
@@ -75,7 +84,7 @@ abstract class EditorNodeModel(val nodeData: SceneNodeData) {
         }
         if (isCreated) {
             launchOnMainThread {
-                component.createComponent(this)
+                component.createComponent()
             }
         }
     }

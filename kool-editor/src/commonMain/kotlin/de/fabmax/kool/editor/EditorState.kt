@@ -29,16 +29,22 @@ object EditorState {
     private val prettyJson = Json { prettyPrint = true }
 
     fun selectSingle(selectModel: EditorNodeModel?, expandIfShiftIsDown: Boolean = true, toggleSelect: Boolean = true) {
-        selectModel ?: return
+        val selectList = selectModel?.let { listOf(it) } ?: emptyList()
 
         if (toggleSelect && selectModel in selection) {
-            reduceSelection(listOf(selectModel))
+            if (expandIfShiftIsDown && KeyboardInput.isShiftDown) {
+                reduceSelection(selectList)
+            } else {
+                clearSelection()
+            }
         } else if (expandIfShiftIsDown && KeyboardInput.isShiftDown) {
-            expandSelection(listOf(selectModel))
+            expandSelection(selectList)
         } else {
-            setSelection(listOf(selectModel))
+            setSelection(selectList)
         }
     }
+
+    fun clearSelection() = setSelection(emptyList())
 
     fun expandSelection(addModels: List<EditorNodeModel>) = setSelection(selection.toSet() + addModels.toSet())
 

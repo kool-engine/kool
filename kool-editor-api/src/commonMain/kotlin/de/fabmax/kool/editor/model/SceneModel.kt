@@ -21,48 +21,38 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : EditorN
         if (AppState.isEditMode) {
             nodeData.maxNumLights = it
         }
-        if (isCreated) {
-            drawNode.lighting.maxNumberOfLights = it
-            project.getComponentsInScene<UpdateMaxNumLightsComponent>(this).forEach {  comp ->
-                comp.updateMaxNumLightsComponent(it)
-            }
+        drawNode.lighting.maxNumberOfLights = it
+        project.getComponentsInScene<UpdateMaxNumLightsComponent>(this).forEach {  comp ->
+            comp.updateMaxNumLightsComponent(it)
         }
     }
 
-    override val drawNode: Scene
-        get() = created ?: throw IllegalStateException("Scene was not yet created")
-
-    private var created: Scene? = null
-    override val isCreated: Boolean
-        get() = created != null
+    override var drawNode: Scene = Scene(name)
 
     val nodesToNodeModels: MutableMap<Node, EditorNodeModel> = mutableMapOf()
     private val nodeModels: MutableMap<Long, SceneNodeModel> = mutableMapOf()
     val sceneNodes: List<SceneNodeModel> get() = nodesToNodeModels.values.filterIsInstance<SceneNodeModel>()
 
-    val sceneBackground = getOrPutComponent { SceneBackgroundComponent(MdColor.GREY toneLin 900) }
+    val sceneBackground = getOrPutComponent { SceneBackgroundComponent(this, MdColor.GREY toneLin 900) }
     private val backgroundUpdater = getOrPutComponent { BackgroundUpdater() }
 
     val shaderData = SceneShaderData()
 
     init {
         project.entities += this
-        nameState.onChange { created?.name = it }
     }
 
     suspend fun createScene() {
         disposeCreatedScene()
 
-        val scene = Scene(name)
+        drawNode = Scene(name)
+        nodesToNodeModels[drawNode] = this
 
         maxNumLightsState.set(nodeData.maxNumLights)
-        scene.lighting.apply {
+        drawNode.lighting.apply {
             clear()
             maxNumberOfLights = maxNumLightsState.value
         }
-
-        created = scene
-        nodesToNodeModels[scene] = this
 
         createComponents()
     }
@@ -81,8 +71,7 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : EditorN
         nodeModels.values.forEach { it.disposeAndClearCreatedNode() }
         nodesToNodeModels.clear()
 
-        created?.dispose(KoolSystem.requireContext())
-        created = null
+        drawNode.dispose(KoolSystem.requireContext())
         backgroundUpdater.skybox = null
     }
 
@@ -145,12 +134,12 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : EditorN
     }
 
     private inner class BackgroundUpdater :
-        EditorModelComponent(),
+        EditorModelComponent(this@SceneModel),
         UpdateSceneBackgroundComponent
     {
         var skybox: Skybox.Cube? = null
 
-        override suspend fun createComponent(nodeModel: EditorNodeModel) {
+        override suspend fun createComponent() {
             updateBackground(sceneBackground)
         }
 

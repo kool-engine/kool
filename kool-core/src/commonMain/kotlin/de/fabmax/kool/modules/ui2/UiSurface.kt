@@ -248,6 +248,13 @@ open class UiSurface(
         CaptureOverBackground,
 
         /**
+         * Similar to [CaptureInsideBounds] but never blocks pointer input. This way, non-consumed pointer events
+         * can be processed by following input handlers. However, this also means that used pointer events have to
+         * be explicitly consumed via [Pointer.consume].
+         */
+        CapturePassthrough,
+
+        /**
          * Pointer is not used at all.
          */
         CaptureDisabled
@@ -261,13 +268,6 @@ open class UiSurface(
         private var dragNode: UiNode? = null
 
         private var isCapturePointer = false
-
-        init {
-            // default behavior of UiInputHandler is to block all captured pointer input, however applications can
-            // disable blockAllPointerInput in order to pass through non-consumed pointer events to following
-            // input handlers
-            blockAllPointerInput = true
-        }
 
         private val nodeComparator = Comparator<UiNode> { a, b ->
             if (a.modifier.zLayer == b.modifier.zLayer) {
@@ -344,6 +344,12 @@ open class UiSurface(
             }
             if (dragNode != null && !ptr.isDrag) {
                 dragNode?.let { stopDrag(it, PointerEvent(ptr, ctx)) }
+            }
+
+            blockAllPointerInput = if (isCapturePointer && inputMode != InputCaptureMode.CapturePassthrough) {
+                isCapturePointer
+            } else {
+                false
             }
 
             if (isCapturePointer || blockAllKeyboardInput) {

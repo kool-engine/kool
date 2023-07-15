@@ -336,7 +336,5 @@ open class Node(name: String? = null) : Disposable {
 
     companion object {
         private val MODEL_MAT_IDENTITY = Mat4d()
-
-        private val defaultNameIndices = mutableMapOf<String, Int>()
     }
 }

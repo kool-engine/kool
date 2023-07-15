@@ -5,7 +5,7 @@ import de.fabmax.kool.editor.api.AppState
 import de.fabmax.kool.editor.data.MaterialData
 import de.fabmax.kool.editor.data.ModelComponentData
 import de.fabmax.kool.editor.data.SceneBackgroundData
-import de.fabmax.kool.editor.model.EditorNodeModel
+import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.editor.model.UpdateMaxNumLightsComponent
 import de.fabmax.kool.modules.gltf.GltfFile
 import de.fabmax.kool.modules.ksl.KslLitShader
@@ -15,12 +15,11 @@ import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.MeshRayTest
 import de.fabmax.kool.scene.Model
-import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.*
 import kotlinx.atomicfu.atomic
 
-class ModelComponent(override val componentData: ModelComponentData) :
-    SceneNodeComponent(),
+class ModelComponent(nodeModel: SceneNodeModel, override val componentData: ModelComponentData) :
+    SceneNodeComponent(nodeModel),
     EditorDataComponent<ModelComponentData>,
     ContentComponent,
     UpdateMaterialComponent,
@@ -33,7 +32,7 @@ class ModelComponent(override val componentData: ModelComponentData) :
 
     var model: Model? = null
 
-    override val contentNode: Node?
+    override val contentNode: Model?
         get() = model
 
     private val isRecreatingModel = atomic(false)
@@ -45,8 +44,8 @@ class ModelComponent(override val componentData: ModelComponentData) :
         dependsOn(MaterialComponent::class, isOptional = true)
     }
 
-    override suspend fun createComponent(nodeModel: EditorNodeModel) {
-        super.createComponent(nodeModel)
+    override suspend fun createComponent() {
+        super.createComponent()
         recreateModel()
     }
 
@@ -171,7 +170,7 @@ class ModelComponent(override val componentData: ModelComponentData) :
                 isRecreatingModel.lazySet(false)
                 model = createModel().also {
                     // set newly created model as new content node, this also disposes any previous model
-                    nodeModel.setContentNode(it)
+                    nodeModel.setDrawNode(it)
                 }
             }
         }
