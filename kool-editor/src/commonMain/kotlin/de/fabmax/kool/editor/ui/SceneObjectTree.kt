@@ -111,6 +111,9 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
             val itemPopupMenu = remember { ContextPopupMenu<SceneObjectItem>() }
 
             itemsIndexed(treeItems) { i, item ->
+                if (item.node != item.nodeModel.drawNode) {
+                    refreshSceneTree()
+                }
                 sceneObjectItem(item, hoveredIndex == i).apply {
                     modifier
                         .onEnter { hoveredIndex = i }
@@ -227,7 +230,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
                 SceneObjectType.GROUP -> IconMap.QUAD_BOX
                 SceneObjectType.MESH -> IconMap.CUBE
                 SceneObjectType.MODEL -> IconMap.TREE
-                SceneObjectType.SCENE -> IconMap.RECT_OUTSIDE
+                SceneObjectType.SCENE -> IconMap.WORLD
             }
             modifier
                 .alignX(AlignmentX.End)

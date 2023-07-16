@@ -10,6 +10,7 @@ import de.fabmax.kool.editor.data.Vec3Data
 import de.fabmax.kool.editor.data.Vec4Data
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ui2.*
+import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logW
 
 class ScriptEditor(component: ScriptComponent) : ComponentEditor<ScriptComponent>(component) {
@@ -29,6 +30,9 @@ class ScriptEditor(component: ScriptComponent) : ComponentEditor<ScriptComponent
 
             val scriptProperties = component.scriptInstance.use()?.let {
                 EditorState.loadedApp.use()?.scriptClasses?.get(it::class)?.properties
+            }
+            if (scriptProperties == null) {
+                logE { "Unable to get script class for script ${component.scriptInstance.value}" }
             }
 
             if (!scriptProperties.isNullOrEmpty()) {

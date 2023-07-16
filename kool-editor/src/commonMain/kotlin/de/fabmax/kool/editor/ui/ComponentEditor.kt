@@ -8,7 +8,6 @@ import de.fabmax.kool.editor.model.SceneModel
 import de.fabmax.kool.modules.ui2.*
 
 abstract class ComponentEditor<T: EditorModelComponent>(var component: T ) : Composable {
-
     open val nodeModel: EditorNodeModel
         get() = component.nodeModel
 
@@ -18,7 +17,6 @@ abstract class ComponentEditor<T: EditorModelComponent>(var component: T ) : Com
     protected fun removeComponent() {
         RemoveComponentAction(nodeModel, component).apply()
     }
-
 }
 
 fun UiScope.componentPanel(

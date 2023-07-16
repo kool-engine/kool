@@ -10,6 +10,7 @@ import de.fabmax.kool.pipeline.deferred.DeferredPipeline
 import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.scene.PerspectiveProxyCam
 import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.util.launchOnMainThread
 
 abstract class AoPipeline {
 
@@ -66,13 +67,17 @@ abstract class AoPipeline {
         }
     }
 
-    class ForwardAoPipeline(scene: Scene) : AoPipeline() {
+    abstract fun removeAndDispose(ctx: KoolContext)
+
+    class ForwardAoPipeline(val scene: Scene) : AoPipeline() {
         val depthPass: NormalLinearDepthMapPass
         override val aoPass: AmbientOcclusionPass
         override val denoisePass: AoDenoisePass
 
         private var mapWidth = 0
         private var mapHeight = 0
+
+        private val onRenderSceneCallback: (KoolContext) -> Unit = { onRenderScene(it) }
 
         init {
             val proxyCamera = PerspectiveProxyCam(scene.camera as PerspectiveCamera)
@@ -94,27 +99,41 @@ abstract class AoPipeline {
             scene.addOffscreenPass(aoPass)
             scene.addOffscreenPass(denoisePass)
 
-            scene.onRenderScene += { ctx ->
-                val mapW = (scene.mainRenderPass.viewport.width * mapSize).toInt()
-                val mapH = (scene.mainRenderPass.viewport.height * mapSize).toInt()
+            scene.onRenderScene += onRenderSceneCallback
+        }
 
-                if (isEnabled && mapW > 0 && mapH > 0 && (mapW != aoPass.width || mapH != aoPass.height)) {
-                    depthPass.resize(mapW, mapH, ctx)
-                    aoPass.resize(mapW, mapH, ctx)
-                }
-                if (isEnabled && mapW > 0 && mapH > 0 && (mapW != denoisePass.width || mapH != denoisePass.height)) {
-                    denoisePass.resize(mapW, mapH, ctx)
-                }
+        private fun onRenderScene(ctx: KoolContext) {
+            val mapW = (scene.mainRenderPass.viewport.width * mapSize).toInt()
+            val mapH = (scene.mainRenderPass.viewport.height * mapSize).toInt()
+
+            if (isEnabled && mapW > 0 && mapH > 0 && (mapW != aoPass.width || mapH != aoPass.height)) {
+                depthPass.resize(mapW, mapH, ctx)
+                aoPass.resize(mapW, mapH, ctx)
             }
+            if (isEnabled && mapW > 0 && mapH > 0 && (mapW != denoisePass.width || mapH != denoisePass.height)) {
+                denoisePass.resize(mapW, mapH, ctx)
+            }
+
         }
 
         override fun updateEnabled() {
             super.updateEnabled()
             depthPass.isEnabled = isEnabled
         }
+
+        override fun removeAndDispose(ctx: KoolContext) {
+            launchOnMainThread {
+                scene.removeOffscreenPass(depthPass)
+                scene.removeOffscreenPass(aoPass)
+                scene.removeOffscreenPass(denoisePass)
+                depthPass.dispose(ctx)
+                aoPass.dispose(ctx)
+                denoisePass.dispose(ctx)
+            }
+        }
     }
 
-    class DeferredAoPipeline(deferredPipeline: DeferredPipeline) : AoPipeline(), DeferredPassSwapListener {
+    class DeferredAoPipeline(val deferredPipeline: DeferredPipeline) : AoPipeline(), DeferredPassSwapListener {
         override val aoPass: AmbientOcclusionPass
         override val denoisePass: AoDenoisePass
 
@@ -148,6 +167,15 @@ abstract class AoPipeline {
             }
             if (denoisePass.isEnabled && (width != denoisePass.width || height != denoisePass.height)) {
                 denoisePass.resize(width, height, ctx)
+            }
+        }
+
+        override fun removeAndDispose(ctx: KoolContext) {
+            launchOnMainThread {
+                deferredPipeline.scene.removeOffscreenPass(aoPass)
+                deferredPipeline.scene.removeOffscreenPass(denoisePass)
+                aoPass.dispose(ctx)
+                denoisePass.dispose(ctx)
             }
         }
     }

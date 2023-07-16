@@ -10,7 +10,7 @@ class SceneBrowser(ui: EditorUi) : EditorPanel("Scene Browser", ui) {
 
     override val windowSurface: UiSurface = EditorPanelWindow {
         Column(Grow.Std, Grow.Std) {
-            editorTitleBar(windowDockable, IconMap.WORLD)
+            editorTitleBar(windowDockable, IconMap.LIST_TREE)
             sceneObjectTree()
         }
     }

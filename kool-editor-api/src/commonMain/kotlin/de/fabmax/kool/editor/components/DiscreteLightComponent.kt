@@ -36,12 +36,9 @@ class DiscreteLightComponent(nodeModel: SceneNodeModel, override val componentDa
         updateLight(componentData.light)
     }
 
-    override fun onNodeRemoved() {
+    override fun destroyComponent() {
         sceneModel.drawNode.lighting.removeLight(light)
-    }
-
-    override fun onNodeAdded() {
-        updateLight(componentData.light)
+        super.destroyComponent()
     }
 
     private fun updateLight(lightData: LightTypeData) {

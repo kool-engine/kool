@@ -38,7 +38,7 @@ class ModelComponent(nodeModel: SceneNodeModel, override val componentData: Mode
     private val isRecreatingModel = atomic(false)
     private var isIblShaded = false
     private var isSsaoEnabled = false
-    private var shaderShaowMaps: List<ShadowMap> = emptyList()
+    private var shaderShadowMaps: List<ShadowMap> = emptyList()
 
     init {
         dependsOn(MaterialComponent::class, isOptional = true)
@@ -94,7 +94,7 @@ class ModelComponent(nodeModel: SceneNodeModel, override val componentData: Mode
     }
 
     override fun updateShadowMaps(shadowMaps: List<ShadowMap>) {
-        if (shadowMaps != shaderShaowMaps) {
+        if (shadowMaps != shaderShadowMaps) {
             recreateModel()
         }
     }
@@ -117,14 +117,14 @@ class ModelComponent(nodeModel: SceneNodeModel, override val componentData: Mode
     private suspend fun createModel(): Model {
         logD { "${nodeModel.name}: (re-)loading model" }
 
-        shaderShaowMaps = sceneModel.shaderData.shadowMaps.copy()
+        shaderShadowMaps = sceneModel.shaderData.shadowMaps.copy()
         val ibl = sceneModel.shaderData.environmentMaps
         val ssao = sceneModel.shaderData.ssaoMap
         val material = nodeModel.getComponent<MaterialComponent>()?.materialData
         val modelCfg = GltfFile.ModelGenerateConfig(
             materialConfig = GltfFile.ModelMaterialConfig(
                 environmentMaps = ibl,
-                shadowMaps = shaderShaowMaps,
+                shadowMaps = shaderShadowMaps,
                 scrSpcAmbientOcclusionMap = ssao,
                 maxNumberOfLights = sceneModel.maxNumLightsState.value
             ),

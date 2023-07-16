@@ -22,6 +22,10 @@ abstract class EditorModelComponent(open val nodeModel: EditorNodeModel) {
         }
     }
 
+    open fun destroyComponent() {
+        isCreated = false
+    }
+
     protected fun dependsOn(componentType: KClass<*>, isOptional: Boolean = false) {
         _dependencies += ComponentDependency(componentType, isOptional)
     }
@@ -29,9 +33,6 @@ abstract class EditorModelComponent(open val nodeModel: EditorNodeModel) {
     fun areDependenciesMetBy(components: List<EditorModelComponent>): Boolean {
         return dependencies.all { dep -> dep.isOptional || components.any { s -> dep.type.isInstance(s) } }
     }
-
-    open fun onNodeRemoved() { }
-    open fun onNodeAdded() { }
 
     data class ComponentDependency(val type: KClass<*>, val isOptional: Boolean)
 

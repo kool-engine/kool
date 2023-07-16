@@ -30,7 +30,7 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : EditorN
     override var drawNode: Scene = Scene(name)
 
     val nodesToNodeModels: MutableMap<Node, EditorNodeModel> = mutableMapOf()
-    private val nodeModels: MutableMap<Long, SceneNodeModel> = mutableMapOf()
+    val nodeModels: MutableMap<Long, SceneNodeModel> = mutableMapOf()
     val sceneNodes: List<SceneNodeModel> get() = nodesToNodeModels.values.filterIsInstance<SceneNodeModel>()
 
     val sceneBackground = getOrPutComponent { SceneBackgroundComponent(this, MdColor.GREY toneLin 900) }
@@ -68,7 +68,7 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : EditorN
     }
 
     private fun disposeCreatedScene() {
-        nodeModels.values.forEach { it.disposeAndClearCreatedNode() }
+        nodeModels.values.forEach { it.destroyComponents() }
         nodesToNodeModels.clear()
 
         drawNode.dispose(KoolSystem.requireContext())
@@ -91,6 +91,8 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : EditorN
     suspend fun addSceneNode(nodeModel: SceneNodeModel) {
         if (!nodeModel.isCreated) {
             nodeModel.createComponents()
+        } else {
+            logW { "Adding a scene node which is already created" }
         }
 
         project.entities += nodeModel
@@ -103,7 +105,6 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : EditorN
         nodeModel.nodeData.childNodeIds
             .mapNotNull { resolveNode(it, nodeModel) }
             .forEach { addSceneNode(it) }
-        nodeModel.onNodeAdded()
     }
 
     fun removeSceneNode(nodeModel: SceneNodeModel) {
@@ -117,9 +118,7 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : EditorN
         nodeModel.parent.removeChild(nodeModel)
 
         launchDelayed(1) {
-            // dispose but don't clear draw node (so that we can add it again on undo)
-            nodeModel.drawNode.dispose(KoolSystem.requireContext())
-            nodeModel.onNodeRemoved()
+            nodeModel.destroyComponents()
         }
     }
 
@@ -140,6 +139,7 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : EditorN
         var skybox: Skybox.Cube? = null
 
         override suspend fun createComponent() {
+            super.createComponent()
             updateBackground(sceneBackground)
         }
 

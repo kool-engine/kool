@@ -27,6 +27,13 @@ class AppScript(klass: KClass<*>, val properties: List<ScriptProperty>) {
     val qualifiedName = klass.qualifiedName ?: "<unknown>"
     val simpleName = klass.simpleName
     val prettyName = ScriptEditor.camelCaseToWords(klass.simpleName ?: "<unknown>")
+
+    fun dumpProperties() {
+        println(qualifiedName)
+        properties.forEach {
+            println("    ${it.name}: ${it.type}")
+        }
+    }
 }
 
 class AppLoader(val editor: KoolEditor, paths: ProjectPaths) {

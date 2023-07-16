@@ -28,8 +28,7 @@ actual object ScriptLoader {
     class ReflectionAppScriptLoader(val classLoader: ClassLoader) : AppScriptLoader {
         override fun newScriptInstance(scriptClassName: String): KoolScript {
             val clazz = classLoader.loadClass(scriptClassName)
-            val script = clazz.getDeclaredConstructor().newInstance() as KoolScript
-            return script
+            return clazz.getDeclaredConstructor().newInstance() as KoolScript
         }
     }
 }

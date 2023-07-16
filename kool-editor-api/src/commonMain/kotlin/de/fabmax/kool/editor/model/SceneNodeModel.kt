@@ -28,11 +28,6 @@ class SceneNodeModel(nodeData: SceneNodeData, val parent: EditorNodeModel, val s
         drawNode.removeNode(child.drawNode)
     }
 
-    fun disposeAndClearCreatedNode() {
-        drawNode.dispose(KoolSystem.requireContext())
-        drawNode.parent?.removeNode(drawNode)
-    }
-
     fun setDrawNode(newDrawNode: Node) {
         val oldDrawNode = drawNode
         var ndIdx = -1
@@ -41,7 +36,12 @@ class SceneNodeModel(nodeData: SceneNodeData, val parent: EditorNodeModel, val s
             parent.removeNode(oldDrawNode)
         }
 
-        // todo: newDrawNode.children += oldDrawNode.children
+        val childNodes = nodeData.childNodeIds.mapNotNull { sceneModel.nodeModels[it] }
+        childNodes.forEach {
+            oldDrawNode.removeNode(it.drawNode)
+            newDrawNode.addNode(it.drawNode)
+        }
+
         newDrawNode.onUpdate += oldDrawNode.onUpdate
         oldDrawNode.onUpdate.clear()
         oldDrawNode.dispose(KoolSystem.requireContext())

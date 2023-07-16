@@ -1,5 +1,6 @@
 package de.fabmax.kool.editor.components
 
+import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.editor.api.AppState
 import de.fabmax.kool.editor.data.SsaoComponentData
 import de.fabmax.kool.editor.data.SsaoSettings
@@ -25,6 +26,7 @@ class SsaoComponent(override val nodeModel: SceneModel, override val componentDa
     private var aoPipeline: AoPipeline? = null
 
     override suspend fun createComponent() {
+        super.createComponent()
         aoPipeline = AoPipeline.createForward(nodeModel.drawNode)
         nodeModel.shaderData.ssaoMap = aoPipeline?.aoMap
         UpdateSsaoComponent.updateSceneSsao(nodeModel)
@@ -32,6 +34,13 @@ class SsaoComponent(override val nodeModel: SceneModel, override val componentDa
         // re-sync public state with componentData state
         ssaoState.set(componentData.settings)
         applySettings(ssaoState.value)
+    }
+
+    override fun destroyComponent() {
+        aoPipeline?.removeAndDispose(KoolSystem.requireContext())
+        nodeModel.shaderData.ssaoMap = null
+        UpdateSsaoComponent.updateSceneSsao(nodeModel)
+        super.destroyComponent()
     }
 
     private fun applySettings(ssaoSettings: SsaoSettings) {

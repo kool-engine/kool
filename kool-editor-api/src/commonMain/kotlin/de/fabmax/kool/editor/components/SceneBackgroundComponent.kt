@@ -28,6 +28,8 @@ class SceneBackgroundComponent(override val nodeModel: SceneModel, override val 
     }
 
     override suspend fun createComponent() {
+        super.createComponent()
+
         // re-sync public state with componentData state
         backgroundState.set(componentData.sceneBackground)
 

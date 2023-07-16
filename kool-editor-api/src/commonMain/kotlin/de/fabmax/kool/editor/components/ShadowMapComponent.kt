@@ -43,15 +43,13 @@ class ShadowMapComponent(nodeModel: SceneNodeModel, override val componentData: 
     override suspend fun createComponent() {
         super.createComponent()
         shadowMapState.set(componentData.shadowMap)
+        updateShadowMap()
     }
 
-    override fun onNodeRemoved() {
+    override fun destroyComponent() {
         disposeShadowMap()
         UpdateShadowMapsComponent.updateShadowMaps(sceneModel)
-    }
-
-    override fun onNodeAdded() {
-        updateShadowMap()
+        super.destroyComponent()
     }
 
     fun updateLight(light: Light) {
@@ -64,9 +62,7 @@ class ShadowMapComponent(nodeModel: SceneNodeModel, override val componentData: 
     }
 
     private fun updateShadowMap() {
-        if (isCreated) {
-            updateShadowMap(componentData.shadowMap, componentData.clipNear, componentData.clipFar)
-        }
+        updateShadowMap(componentData.shadowMap, componentData.clipNear, componentData.clipFar)
     }
 
     private fun updateShadowMap(shadowMapInfo: ShadowMapTypeData, clipNear: Float, clipFar: Float) {

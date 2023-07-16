@@ -1,5 +1,6 @@
 package de.fabmax.kool.editor.model
 
+import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.editor.api.AppState
 import de.fabmax.kool.editor.components.*
 import de.fabmax.kool.editor.data.*
@@ -66,15 +67,20 @@ abstract class EditorNodeModel(val nodeData: SceneNodeData) {
     open suspend fun createComponents() {
         isCreated = true
         isVisibleState.set(nodeData.isVisible)
-        components.forEach { it.createComponent() }
+        components.forEach {
+            it.createComponent()
+            check(it.isCreated) { "Component not created: $it" }
+        }
     }
 
-    open fun onNodeAdded() {
-        components.forEach { it.onNodeAdded() }
-    }
-
-    open fun onNodeRemoved() {
-        components.forEach { it.onNodeRemoved() }
+    open fun destroyComponents() {
+        components.forEach {
+            it.destroyComponent()
+            check(!it.isCreated) { "Component not destroyed: $it" }
+        }
+        drawNode.dispose(KoolSystem.requireContext())
+        drawNode.parent?.removeNode(drawNode)
+        isCreated = false
     }
 
     fun addComponent(component: EditorModelComponent) {
@@ -93,6 +99,9 @@ abstract class EditorNodeModel(val nodeData: SceneNodeData) {
         components -= component
         if (component is EditorDataComponent<*>) {
             nodeData.components -= component.componentData
+        }
+        if (component.isCreated) {
+            component.destroyComponent()
         }
     }
 

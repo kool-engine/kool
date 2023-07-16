@@ -33,8 +33,6 @@ class MeshComponent(nodeModel: SceneNodeModel, override val componentData: MeshC
         get() = mesh
 
     private val isRecreatingShader = atomic(false)
-    private var isIblShaded = false
-    private var isSsaoEnabled = false
 
     constructor(nodeModel: SceneNodeModel): this(nodeModel, MeshComponentData(MeshShapeData.Box(Vec3Data(1.0, 1.0, 1.0))))
 
@@ -83,9 +81,10 @@ class MeshComponent(nodeModel: SceneNodeModel, override val componentData: MeshC
     private suspend fun createMeshShader() {
         val mesh = this.mesh ?: return
 
-        logD { "${nodeModel.name}: (re-)creating shader" }
         val ibl = sceneModel.shaderData.environmentMaps
         val ssao = sceneModel.shaderData.ssaoMap
+
+        logD { "${nodeModel.name}: (re-)creating shader, ibl: ${ibl != null}, ssao: ${ssao != null}" }
 
         val materialData = nodeModel.getComponent<MaterialComponent>()?.materialData
         if (materialData != null) {
@@ -124,24 +123,23 @@ class MeshComponent(nodeModel: SceneNodeModel, override val componentData: MeshC
     }
 
     override fun updateSingleColorBg(bgColorLinear: Color) {
-        if (isIblShaded) {
-            // recreate shader without ibl lighting
+        val shader = mesh?.shader as? KslLitShader ?: return
+        if (shader.ambientCfg !is KslLitShader.AmbientColor.Uniform) {
             recreateShader()
         } else {
             (mesh?.shader as? KslLitShader)?.ambientFactor = bgColorLinear
         }
-        isIblShaded = false
     }
 
     override fun updateHdriBg(hdriBg: SceneBackgroundData.Hdri, ibl: EnvironmentMaps) {
-        if (!isIblShaded) {
-            // recreate shader without ibl lighting
+        val shader = mesh?.shader as? KslLitShader ?: return
+        val pbrShader = shader as? KslPbrShader
+        if (shader.ambientCfg !is KslLitShader.AmbientColor.ImageBased) {
             recreateShader()
         } else {
-            (mesh?.shader as? KslLitShader)?.ambientMap = ibl.irradianceMap
-            (mesh?.shader as? KslPbrShader)?.reflectionMap = ibl.reflectionMap
+            shader.ambientMap = ibl.irradianceMap
+            pbrShader?.reflectionMap = ibl.reflectionMap
         }
-        isIblShaded = true
     }
 
     override fun updateShadowMaps(shadowMaps: List<ShadowMap>) {
@@ -153,12 +151,12 @@ class MeshComponent(nodeModel: SceneNodeModel, override val componentData: MeshC
     }
 
     override fun updateSsao(ssaoMap: Texture2d?) {
+        val shader = mesh?.shader as? KslLitShader ?: return
         val needsSsaoEnabled = ssaoMap != null
-        if (needsSsaoEnabled != isSsaoEnabled) {
-            isSsaoEnabled = needsSsaoEnabled
+        if (shader.isSsao != needsSsaoEnabled) {
             recreateShader()
         }
-        (mesh?.shader as? KslLitShader)?.ssaoMap = ssaoMap
+        shader.ssaoMap = ssaoMap
     }
 
     override fun updateMaxNumLightsComponent(newMaxNumLights: Int) {
