@@ -21,6 +21,7 @@ import de.fabmax.kool.input.KeyboardInput
 import de.fabmax.kool.input.LocalKeyCode
 import de.fabmax.kool.input.PointerState
 import de.fabmax.kool.math.RayTest
+import de.fabmax.kool.modules.ui2.docking.DockLayout
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.scene
 import de.fabmax.kool.util.logW
@@ -57,7 +58,8 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
     private val editorAppCallbacks = object : ApplicationCallbacks {
         override fun onWindowCloseRequest(ctx: KoolContext): Boolean {
             EditorState.saveProject()
-            return true
+            saveEditorConfig()
+            return PlatformCallbacks.onWindowCloseRequest(ctx)
         }
 
         override fun onFileDrop(droppedFiles: List<LoadableFile>) {
@@ -80,8 +82,9 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
         registerKeyBindings()
         registerSceneObjectPicking()
         registerAutoSaveOnFocusLoss()
-
         appLoader.appReloadListeners += AppReloadListener { handleAppReload(it) }
+
+        PlatformCallbacks.onEditorStarted(ctx)
         appLoader.reloadApp()
     }
 
@@ -264,6 +267,10 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
         ctx.scenes -= ui
         ctx.scenes += ui
         ui.sceneBrowser.refreshSceneTree()
+    }
+
+    private fun saveEditorConfig() {
+        DockLayout.saveLayout(ui.dock, "editor.ui.layout")
     }
 
     companion object {

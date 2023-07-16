@@ -5,9 +5,12 @@ import de.fabmax.kool.math.Vec2d
 import de.fabmax.kool.math.Vec3d
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.modules.ui2.docking.Dock
+import de.fabmax.kool.modules.ui2.docking.DockLayout
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MsdfFont
+import de.fabmax.kool.util.logI
+import de.fabmax.kool.util.logW
 
 class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
 
@@ -43,30 +46,41 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
                 }
             }
 
-            createNodeLayout(
-                listOf(
-                    "0:row",
-                    "0/0:leaf",
-                    "0/1:col",
-                    "0/2:leaf",
-                    "0/1/0:leaf",
-                    "0/1/1:leaf",
-                )
-            )
-
             addDockableSurface(sceneView.windowDockable, sceneView.windowSurface)
-            getLeafAtPath("0/1/0")?.dock(sceneView.windowDockable)
-
-            // add scene browser panel and dock it to the left side of the screen
             addDockableSurface(sceneBrowser.windowDockable, sceneBrowser.windowSurface)
-            getLeafAtPath("0/0")?.dock(sceneBrowser.windowDockable)
-
-            // add object properties panel and dock it to the right side of the screen
             addDockableSurface(objectProperties.windowDockable, objectProperties.windowSurface)
-            getLeafAtPath("0/2")?.dock(objectProperties.windowDockable)
-
             addDockableSurface(resourceBrowser.windowDockable, resourceBrowser.windowSurface)
-            getLeafAtPath("0/1/1")?.dock(resourceBrowser.windowDockable)
+
+            val restoredLayout = DockLayout.loadLayout("editor.ui.layout", this) { windowName ->
+                when (windowName) {
+                    "Scene View" -> sceneView.windowDockable
+                    "Scene Browser" -> sceneBrowser.windowDockable
+                    "Object Properties" -> objectProperties.windowDockable
+                    "Resource Browser" -> resourceBrowser.windowDockable
+                    else -> {
+                        logW { "Unable to restore layout - window not found: $windowName" }
+                        null
+                    }
+                }
+            }
+
+            if (!restoredLayout) {
+                logI { "Setting default window layout" }
+                createNodeLayout(
+                    listOf(
+                        "0:row",
+                        "0/0:leaf",
+                        "0/1:col",
+                        "0/2:leaf",
+                        "0/1/0:leaf",
+                        "0/1/1:leaf",
+                    )
+                )
+                getLeafAtPath("0/1/0")?.dock(sceneView.windowDockable)
+                getLeafAtPath("0/0")?.dock(sceneBrowser.windowDockable)
+                getLeafAtPath("0/2")?.dock(objectProperties.windowDockable)
+                getLeafAtPath("0/1/1")?.dock(resourceBrowser.windowDockable)
+            }
         }
 
         addNode(dock)

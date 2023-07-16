@@ -97,7 +97,7 @@ class DockLayout(val nodes: List<Node>) {
                 NodeType.Column -> DockNodeColumn(dock, null, w, h)
                 NodeType.Leaf -> {
                     val node = DockNodeLeaf(dock, null, w, h)
-                    items.forEach {  itemName ->
+                    items.forEach { itemName ->
                         itemProvider(itemName)?.let { node.dock(it) }
                     }
                     node

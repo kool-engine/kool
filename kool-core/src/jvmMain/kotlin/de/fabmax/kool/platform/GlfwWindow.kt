@@ -45,6 +45,16 @@ open class GlfwWindow(val ctx: Lwjgl3Context) {
             }
         }
 
+    var isMaximized: Boolean
+        get() = glfwGetWindowAttrib(windowPtr, GLFW_MAXIMIZED) != 0
+        set(value) {
+            if (value) {
+                glfwMaximizeWindow(windowPtr)
+            } else {
+                glfwRestoreWindow(windowPtr)
+            }
+        }
+
     var isVisible = false
         set(value) {
             field = value
