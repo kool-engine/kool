@@ -11,11 +11,6 @@ class AddNodeAction(
 
     override fun doAction() {
         launchOnMainThread {
-            val needsInit = !addNodeModel.isCreated
-            if (needsInit) {
-                addNodeModel.createComponents()
-            }
-
             addNodeModel.sceneModel.addSceneNode(addNodeModel)
             KoolEditor.instance.ui.sceneBrowser.refreshSceneTree()
         }

@@ -45,7 +45,11 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : EditorN
     suspend fun createScene() {
         disposeCreatedScene()
 
-        drawNode = Scene(name)
+        drawNode = Scene(name).apply {
+            onUpdate { ev ->
+                onNodeUpdate.forEach { it(ev) }
+            }
+        }
         nodesToNodeModels[drawNode] = this
 
         maxNumLightsState.set(nodeData.maxNumLights)

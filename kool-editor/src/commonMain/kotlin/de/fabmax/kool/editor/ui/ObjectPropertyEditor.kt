@@ -98,6 +98,7 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", ui) 
                     is DiscreteLightComponent -> componentEditor(component) { LightEditor(component) }
                     is MaterialComponent -> componentEditor(component) { MaterialEditor(component) }
                     is MeshComponent -> componentEditor(component) { MeshEditor(component) }
+                    is ModelComponent -> componentEditor(component) { ModelEditor(component) }
                     is SceneBackgroundComponent -> componentEditor(component) { SceneBackgroundEditor(component) }
                     is ScriptComponent -> componentEditor(component) { ScriptEditor(component) }
                     is ShadowMapComponent -> componentEditor(component) { ShadowMapEditor(component) }

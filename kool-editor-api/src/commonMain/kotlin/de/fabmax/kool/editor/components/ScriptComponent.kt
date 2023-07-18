@@ -39,7 +39,7 @@ class ScriptComponent(nodeModel: EditorNodeModel, override val componentData: Sc
             removeProps.forEach { componentData.propertyValues -= it }
 
             // invoke script init callback
-            scriptInstance.value?.init(nodeModel, this)
+            script.init(nodeModel, this)
 
         } catch (e: Exception) {
             logE { "Failed to initialize ScriptComponents for node ${nodeModel.name}: $e" }

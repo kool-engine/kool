@@ -15,6 +15,7 @@ import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.MeshRayTest
 import de.fabmax.kool.scene.Model
+import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.*
 import kotlinx.atomicfu.atomic
 
@@ -28,7 +29,31 @@ class ModelComponent(nodeModel: SceneNodeModel, override val componentData: Mode
     UpdateSsaoComponent,
     UpdateMaxNumLightsComponent
 {
-    val modelPathState = mutableStateOf(componentData.modelPath).onChange { componentData.modelPath = it }
+    val modelPathState = mutableStateOf(componentData.modelPath).onChange {
+        if (AppState.isEditMode) {
+            componentData.modelPath = it
+        }
+        gltfState.set(null)
+        recreateModel()
+    }
+
+    val sceneIndexState = mutableStateOf(componentData.sceneIndex).onChange {
+        if (AppState.isEditMode) {
+            componentData.sceneIndex = it
+        }
+        recreateModel()
+    }
+
+    val animationIndexState = mutableStateOf(componentData.animationIndex).onChange {
+        if (AppState.isEditMode) {
+            componentData.animationIndex = it
+        }
+        model?.apply {
+            enableAnimation(it)
+        }
+    }
+
+    val gltfState = mutableStateOf<GltfFile?>(null)
 
     var model: Model? = null
 
@@ -114,7 +139,7 @@ class ModelComponent(nodeModel: SceneNodeModel, override val componentData: Mode
         recreateModel()
     }
 
-    private suspend fun createModel(): Model {
+    private suspend fun createModel(): Model? {
         logD { "${nodeModel.name}: (re-)loading model" }
 
         shaderShadowMaps = sceneModel.shaderData.shadowMaps.copy()
@@ -133,7 +158,10 @@ class ModelComponent(nodeModel: SceneNodeModel, override val componentData: Mode
         isIblShaded = ibl != null
         isSsaoEnabled = ssao != null
 
-        val model = AppAssets.loadModel(componentData).makeModel(modelCfg)
+        val gltfFile = gltfState.value ?: AppAssets.loadModel(componentData.modelPath).also { gltfState.set(it) } ?: return null
+        val loadScene = if (sceneIndexState.value in gltfFile.scenes.indices) sceneIndexState.value else 0
+
+        val model = gltfFile.makeModel(modelCfg, loadScene)
         if (material != null) {
             model.meshes.forEach { (name, mesh) ->
                 val shader = material.createShader(ibl)
@@ -159,6 +187,15 @@ class ModelComponent(nodeModel: SceneNodeModel, override val componentData: Mode
             model.meshes.values.forEach { it.rayTest = MeshRayTest.geometryTest(it) }
         }
 
+        if (animationIndexState.value >= 0) {
+            model.animations.getOrNull(animationIndexState.value)?.weight = 1f
+        }
+        model.onUpdate {
+            if (animationIndexState.value >= 0) {
+                model.applyAnimation(Time.deltaT)
+            }
+        }
+
         model.name = nodeModel.name
         model.isVisible = nodeModel.isVisibleState.value
         return model
@@ -168,10 +205,11 @@ class ModelComponent(nodeModel: SceneNodeModel, override val componentData: Mode
         if (!isRecreatingModel.getAndSet(true)) {
             launchOnMainThread {
                 isRecreatingModel.lazySet(false)
-                model = createModel().also {
-                    // set newly created model as new content node, this also disposes any previous model
-                    nodeModel.setDrawNode(it)
-                }
+                model = createModel()
+
+                // set newly created model as new content node (or an empty Node in case model loading failed)
+                // this also disposes any previous model
+                nodeModel.setDrawNode(model ?: Node(nodeModel.name))
             }
         }
     }

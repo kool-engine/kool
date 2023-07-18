@@ -5,6 +5,7 @@ import de.fabmax.kool.editor.components.TransformComponent
 import de.fabmax.kool.editor.data.SceneNodeData
 import de.fabmax.kool.editor.data.TransformComponentData
 import de.fabmax.kool.editor.data.TransformData
+import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.scene.Node
 
 class SceneNodeModel(nodeData: SceneNodeData, val parent: EditorNodeModel, val sceneModel: SceneModel) : EditorNodeModel(nodeData) {
@@ -14,8 +15,11 @@ class SceneNodeModel(nodeData: SceneNodeData, val parent: EditorNodeModel, val s
 
     val transform = getOrPutComponent { TransformComponent(this, TransformComponentData(TransformData.IDENTITY)) }
 
+    private val nodeUpdateCb: (RenderPass.UpdateEvent) -> Unit = { ev -> onNodeUpdate.forEach { cb -> cb(ev) } }
+
     init {
         nameState.onChange { drawNode.name = it }
+        drawNode.onUpdate += nodeUpdateCb
     }
 
     override fun addChild(child: SceneNodeModel) {
@@ -41,14 +45,13 @@ class SceneNodeModel(nodeData: SceneNodeData, val parent: EditorNodeModel, val s
             oldDrawNode.removeNode(it.drawNode)
             newDrawNode.addNode(it.drawNode)
         }
-
-        newDrawNode.onUpdate += oldDrawNode.onUpdate
-        oldDrawNode.onUpdate.clear()
+        oldDrawNode.onUpdate -= nodeUpdateCb
         oldDrawNode.dispose(KoolSystem.requireContext())
 
         transform.transformState.value.toTransform(newDrawNode.transform)
         newDrawNode.name = nodeData.name
         drawNode = newDrawNode
+        drawNode.onUpdate += nodeUpdateCb
 
         val wasInSceneModel = sceneModel.nodesToNodeModels.remove(oldDrawNode) != null
         if (wasInSceneModel) {

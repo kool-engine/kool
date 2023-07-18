@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 sealed interface ComponentData
 
 @Serializable
-class ModelComponentData(var modelPath: String) : ComponentData
+class ModelComponentData(var modelPath: String, var sceneIndex: Int = 0, var animationIndex: Int = -1) : ComponentData
 
 @Serializable
 class TransformComponentData(var transform: TransformData) : ComponentData

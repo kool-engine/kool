@@ -6,6 +6,7 @@ import de.fabmax.kool.editor.components.*
 import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.modules.ui2.mutableStateListOf
 import de.fabmax.kool.modules.ui2.mutableStateOf
+import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.launchOnMainThread
 
@@ -34,6 +35,8 @@ abstract class EditorNodeModel(val nodeData: SceneNodeData) {
 
     var isCreated: Boolean = false
         private set
+
+    val onNodeUpdate: MutableList<(RenderPass.UpdateEvent) -> Unit> = mutableListOf()
 
     init {
         createComponentsFromData(nodeData.components)

@@ -91,6 +91,9 @@ object IconMap {
     val TRANSFORM = iconMap.IconImageProvider(0, 2)
     val BACKGROUND = iconMap.IconImageProvider(1, 2)
     val LIST_TREE = iconMap.IconImageProvider(2, 2)
+    val DOWNLOAD = iconMap.IconImageProvider(3, 2)
+    val CONSOLE = iconMap.IconImageProvider(4, 2)
+    val GITHUB = iconMap.IconImageProvider(5, 2)
 }
 
 fun ImageModifier.iconImage(imgProvider: ImageIconMap.IconImageProvider, tintColor: Color? = null): ImageModifier {

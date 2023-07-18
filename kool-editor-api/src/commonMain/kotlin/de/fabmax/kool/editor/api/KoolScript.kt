@@ -21,12 +21,12 @@ abstract class KoolScript {
 
     fun init(nodeModel: EditorNodeModel, scriptComponent: ScriptComponent) {
         _node?.let { old ->
-            old.drawNode.onUpdate -= onUpdateHandler
+            old.onNodeUpdate -= onUpdateHandler
         }
         this.scriptComponent = scriptComponent
 
         this._node = nodeModel
-        nodeModel.drawNode.onUpdate += onUpdateHandler
+        nodeModel.onNodeUpdate += onUpdateHandler
         onInit()
     }
 
