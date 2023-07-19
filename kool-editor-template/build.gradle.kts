@@ -13,16 +13,16 @@ kotlin {
         binaries.executable()
         browser {
             @OptIn(ExperimentalDistributionDsl::class)
-            distribution {
-                directory = File("${projectDir}/jsDist")
-            }
-            commonWebpackConfig {
+            distribution(Action {
+                outputDirectory.set(File("${projectDir}/jsDist"))
+            })
+            commonWebpackConfig(Action {
                 mode = if (KoolBuildSettings.isRelease) {
                     KotlinWebpackConfig.Mode.PRODUCTION
                 } else {
                     KotlinWebpackConfig.Mode.DEVELOPMENT
                 }
-            }
+            })
         }
     }
 

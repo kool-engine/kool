@@ -11,16 +11,16 @@ kotlin {
         binaries.executable()
         browser {
             @OptIn(ExperimentalDistributionDsl::class)
-            distribution {
-                directory = File("${rootDir}/dist/kool-demo")
-            }
-            commonWebpackConfig {
+            distribution(Action {
+                outputDirectory.set(File("${rootDir}/dist/kool-demo"))
+            })
+            commonWebpackConfig(Action {
                 mode = if (KoolBuildSettings.isRelease) {
                     KotlinWebpackConfig.Mode.PRODUCTION
                 } else {
                     KotlinWebpackConfig.Mode.DEVELOPMENT
                 }
-            }
+            })
         }
     }
 
@@ -30,6 +30,11 @@ kotlin {
                 implementation(DepsCommon.kotlinCoroutines)
                 implementation(DepsCommon.kotlinSerialization)
                 implementation(DepsCommon.kotlinSerializationJson)
+
+                // fixme: with intellij kotlin 1.9 plugin, project dependencies seem to have issues
+                //  in jvm / js platform sources no kool-core class can be resolved, while in common sources
+                //  everything is fine
+                //  --> stay on kotlin 1.8 plugin for now (seems to work fine with kotlin 1.9)
                 implementation(project(":kool-core"))
                 implementation(project(":kool-physics"))
             }
