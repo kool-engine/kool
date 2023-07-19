@@ -2,7 +2,7 @@ package de.fabmax.kool.modules.ui2
 
 class DragAndDropContext<T: Any> {
 
-    private val handlers = mutableSetOf<DragAndDropHandler<T>>()
+    val handlers = mutableSetOf<DragAndDropHandler<T>>()
 
     private var sourceHandler: DragAndDropHandler<T>? = null
     private var dragItem: T? = null
@@ -73,9 +73,9 @@ interface DragAndDropHandler<T: Any> {
 fun <M: UiModifier, T: Any> M.installDragAndDropHandler(
     dndContext: DragAndDropContext<T>,
     handler: DragAndDropHandler<T>,
-    dragItem: T
+    dragItem: () -> T
 ): M {
-    onDragStart { dndContext.startDrag(dragItem, it, handler) }
+    onDragStart { dndContext.startDrag(dragItem(), it, handler) }
     onDrag { dndContext.drag(it) }
     onDragEnd { dndContext.endDrag(it) }
     return this

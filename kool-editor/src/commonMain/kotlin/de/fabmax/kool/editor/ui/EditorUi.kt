@@ -30,6 +30,8 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
 
     val appStateInfo = mutableStateOf("")
 
+    val dndController = DndController(this)
+
     init {
         setupUiScene()
 

@@ -12,6 +12,8 @@ abstract class EditorPanel(
 ) {
 
     val editor: KoolEditor get() = ui.editor
+    val dnd: DndController get() = ui.dndController
+    val dndCtx: DragAndDropContext<EditorDndItem> get() = ui.dndController.dndContext
 
     val windowDockable = UiDockable(name, ui.dock)
 

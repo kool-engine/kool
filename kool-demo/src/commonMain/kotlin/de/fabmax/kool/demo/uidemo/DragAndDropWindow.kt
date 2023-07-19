@@ -87,7 +87,7 @@ sealed class DragAndDropWindow(name: String, uiDemo: UiDemo) : DemoWindow(name, 
                 .backgroundColor(item.color)
                 .onEnter { isHovered = true }
                 .onExit { isHovered = false }
-                .installDragAndDropHandler(uiDemo.dndContext, dndHandler, item)
+                .installDragAndDropHandler(uiDemo.dndContext, dndHandler) { item }
 
             if (isHovered) {
                 modifier.border(RectBorder(colors.primary, 2.dp))

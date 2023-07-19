@@ -128,6 +128,7 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : EditorN
 
     override fun addChild(child: SceneNodeModel) {
         nodeData.childNodeIds += child.nodeId
+        child.parent = this
         drawNode.addNode(child.drawNode)
     }
 

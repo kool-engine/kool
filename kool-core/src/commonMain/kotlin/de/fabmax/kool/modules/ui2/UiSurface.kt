@@ -47,6 +47,8 @@ open class UiSurface(
 
     private val focusableNodes = mutableListOf<Focusable>()
 
+    val onCompose = mutableListOf<() -> Unit>()
+
     var lastInputTime = 0.0
     var isFocused = mutableStateOf(false).onChange { if (it) setFocusedSurface(this) }
 
@@ -95,6 +97,10 @@ open class UiSurface(
         }
     }
 
+    fun onCompose(block: () -> Unit) {
+        onCompose += block
+    }
+
     /**
      * Checks whether this [UiSurface] is on top (i.e. visible) at the specified screen position within a
      * [Dock] context. For this to work this surface needs to be a child of [Dock]. If no parent [Dock] is found,
@@ -107,6 +113,8 @@ open class UiSurface(
 
     private fun updateUi(updateEvent: RenderPass.UpdateEvent) {
         val pt = PerfTimer()
+        onCompose.forEach { it() }
+
         nodeIndex = 0
         registeredState.forEach { it.clearUsage(this) }
         registeredState.clear()

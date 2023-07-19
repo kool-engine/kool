@@ -3,6 +3,7 @@ package de.fabmax.kool.editor.ui
 import de.fabmax.kool.editor.*
 import de.fabmax.kool.editor.actions.AddNodeAction
 import de.fabmax.kool.editor.actions.DeleteNodeAction
+import de.fabmax.kool.editor.actions.MoveSceneNodeAction
 import de.fabmax.kool.editor.actions.SetVisibilityAction
 import de.fabmax.kool.editor.components.ContentComponent
 import de.fabmax.kool.editor.components.DiscreteLightComponent
@@ -26,6 +27,9 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
     private val nodeTreeItemMap = mutableMapOf<Node, SceneObjectItem>()
     private val treeItems = mutableListOf<SceneObjectItem>()
     private val isTreeValid = mutableStateOf(false)
+
+    private val dnd: DndController get() = sceneBrowser.dnd
+    private val dndCtx: DragAndDropContext<EditorDndItem> get() = dnd.dndContext
 
     init {
         sceneBrowser.editor.appLoader.appReloadListeners += AppReloadListener {
@@ -111,7 +115,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
             val itemPopupMenu = remember { ContextPopupMenu<SceneObjectItem>() }
 
             itemsIndexed(treeItems) { i, item ->
-                if (item.node != item.nodeModel.drawNode) {
+                if (item.type != SceneObjectType.NON_MODEL_NODE && item.node != item.nodeModel.drawNode) {
                     refreshSceneTree()
                 }
                 sceneObjectItem(item, hoveredIndex == i).apply {
@@ -180,6 +184,17 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
                     }
                 }
             }
+
+        if (item.type != SceneObjectType.NON_MODEL_NODE) {
+            val handler = rememberItemDndHandler(item)
+            modifier.installDragAndDropHandler(dndCtx, handler) { EditorDndItem(item) }
+            if (handler.isHovered.use()) {
+                // drag-and-drop hover is not covered by regular hover callbacks, instead we have to handle
+                // it separately here...
+                modifier.background(RoundRectBackground(colors.hoverBg, sizes.smallGap))
+            }
+        }
+
         if (isHovered) {
             modifier.background(RoundRectBackground(colors.hoverBg, sizes.smallGap))
         }
@@ -272,16 +287,17 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
 
         val item = if (nodeModel != null) {
             modelTreeItemMap.getOrPut(nodeModel) {
-                SceneObjectItem(node, nodeModel, depth)
+                SceneObjectItem(node, nodeModel)
             }
         } else {
             nodeTreeItemMap.getOrPut(node) {
-                SceneObjectItem(node, selectModel, depth, SceneObjectType.NON_MODEL_NODE)
+                SceneObjectItem(node, selectModel, SceneObjectType.NON_MODEL_NODE)
             }
         }
 
         // update item node, it can change when model / app is reloaded
         item.node = node
+        item.depth = depth
 
         add(item)
         if (item.isExpanded.value) {
@@ -297,9 +313,9 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
     private inner class SceneObjectItem(
         node: Node,
         val nodeModel: EditorNodeModel,
-        val depth: Int,
         val forcedType: SceneObjectType? = null
     ) {
+        var depth = 0
         var node: Node = node
             set(value) {
                 field = value
@@ -336,6 +352,33 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
                 isExpanded.set(!isExpanded.value)
                 isTreeValid.set(false)
             }
+        }
+    }
+
+    private fun UiScope.rememberItemDndHandler(treeItem: SceneObjectItem): TreeItemDndHandler {
+        val handler = remember { TreeItemDndHandler(treeItem, uiNode) }
+        handler.dropTarget = uiNode
+        KoolEditor.instance.ui.dndController.registerHandler(handler, surface)
+        return handler
+    }
+
+    private inner class TreeItemDndHandler(val treeItem: SceneObjectItem, dropTarget: UiNode) : DndHandler(dropTarget) {
+        override fun receive(
+            dragItem: EditorDndItem,
+            dragPointer: PointerEvent,
+            source: DragAndDropHandler<EditorDndItem>?
+        ): Boolean {
+            val dragTreeItem = dragItem.item as? SceneObjectItem ?: return false
+            if (dragTreeItem == treeItem
+                || treeItem.type == SceneObjectType.NON_MODEL_NODE
+                || dragTreeItem.type == SceneObjectType.NON_MODEL_NODE
+            ) {
+                return false
+            }
+
+            val dragSceneNode = dragTreeItem.nodeModel as? SceneNodeModel ?: return false
+            MoveSceneNodeAction(dragSceneNode, treeItem.nodeModel).apply()
+            return true
         }
     }
 
