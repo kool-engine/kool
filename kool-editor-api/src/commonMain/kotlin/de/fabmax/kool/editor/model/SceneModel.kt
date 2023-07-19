@@ -15,7 +15,7 @@ import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.Skybox
 import de.fabmax.kool.util.*
 
-class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : EditorNodeModel(sceneData) {
+class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : NodeModel(sceneData) {
 
     val maxNumLightsState = mutableStateOf(nodeData.maxNumLights).onChange {
         if (AppState.isEditMode) {
@@ -29,7 +29,7 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : EditorN
 
     override var drawNode: Scene = Scene(name)
 
-    val nodesToNodeModels: MutableMap<Node, EditorNodeModel> = mutableMapOf()
+    val nodesToNodeModels: MutableMap<Node, NodeModel> = mutableMapOf()
     val nodeModels: MutableMap<Long, SceneNodeModel> = mutableMapOf()
     val sceneNodes: List<SceneNodeModel> get() = nodesToNodeModels.values.filterIsInstance<SceneNodeModel>()
 
@@ -79,7 +79,7 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : EditorN
         backgroundUpdater.skybox = null
     }
 
-    private fun resolveNode(nodeId: Long, parent: EditorNodeModel): SceneNodeModel? {
+    private fun resolveNode(nodeId: Long, parent: NodeModel): SceneNodeModel? {
         val nodeModel = nodeModels[nodeId]
         return if (nodeModel != null) nodeModel else {
             val nodeData = project.sceneNodeData[nodeId]

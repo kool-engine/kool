@@ -3,11 +3,11 @@ package de.fabmax.kool.editor.components
 import de.fabmax.kool.editor.api.KoolScript
 import de.fabmax.kool.editor.api.ScriptLoader
 import de.fabmax.kool.editor.data.ScriptComponentData
-import de.fabmax.kool.editor.model.EditorNodeModel
+import de.fabmax.kool.editor.model.NodeModel
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.util.logE
 
-class ScriptComponent(nodeModel: EditorNodeModel, override val componentData: ScriptComponentData) :
+class ScriptComponent(nodeModel: NodeModel, override val componentData: ScriptComponentData) :
     EditorModelComponent(nodeModel),
     EditorDataComponent<ScriptComponentData>
 {

@@ -4,7 +4,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.editor.EditorState
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.components.ContentComponent
-import de.fabmax.kool.editor.model.EditorNodeModel
+import de.fabmax.kool.editor.model.NodeModel
 import de.fabmax.kool.editor.ui.EditorUi
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec4f
@@ -28,7 +28,7 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
     private val overlayMesh = Mesh(Attribute.POSITIONS, Attribute.TEXTURE_COORDS)
     private val outlineShader = SelectionOutlineShader(selectionPass.colorTexture)
 
-    private val prevSelection = mutableSetOf<EditorNodeModel>()
+    private val prevSelection = mutableSetOf<NodeModel>()
     private val meshSelection = mutableSetOf<Mesh>()
 
     var selectionColor by outlineShader::outlineColor

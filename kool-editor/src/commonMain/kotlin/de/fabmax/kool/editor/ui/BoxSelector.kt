@@ -2,7 +2,7 @@ package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.editor.EditorState
 import de.fabmax.kool.editor.KoolEditor
-import de.fabmax.kool.editor.model.EditorNodeModel
+import de.fabmax.kool.editor.model.NodeModel
 import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.input.KeyboardInput
 import de.fabmax.kool.math.MutableVec3f
@@ -22,7 +22,7 @@ class BoxSelector : Composable {
 
     val isBoxSelect = mutableStateOf(false)
 
-    private val startSelection = mutableSetOf<EditorNodeModel>()
+    private val startSelection = mutableSetOf<NodeModel>()
 
     override fun UiScope.compose() {
         var boxSelectStart by remember(Vec2f.ZERO)

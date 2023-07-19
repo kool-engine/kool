@@ -1,10 +1,10 @@
 package de.fabmax.kool.editor.actions
 
 import de.fabmax.kool.editor.KoolEditor
-import de.fabmax.kool.editor.model.EditorNodeModel
+import de.fabmax.kool.editor.model.NodeModel
 
 class RenameNodeAction(
-    val nodeModel: EditorNodeModel,
+    val nodeModel: NodeModel,
     val applyName: String,
     val undoName: String
 ) : EditorAction {

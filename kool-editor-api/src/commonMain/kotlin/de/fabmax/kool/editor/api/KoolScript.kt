@@ -1,13 +1,13 @@
 package de.fabmax.kool.editor.api
 
 import de.fabmax.kool.editor.components.ScriptComponent
-import de.fabmax.kool.editor.model.EditorNodeModel
+import de.fabmax.kool.editor.model.NodeModel
 import de.fabmax.kool.pipeline.RenderPass
 
 abstract class KoolScript {
 
-    private var _node: EditorNodeModel? = null
-    protected val node: EditorNodeModel
+    private var _node: NodeModel? = null
+    protected val node: NodeModel
         get() = _node ?: throw IllegalStateException("KoolScript is not yet initialized")
 
     protected lateinit var scriptComponent: ScriptComponent
@@ -19,7 +19,7 @@ abstract class KoolScript {
         }
     }
 
-    fun init(nodeModel: EditorNodeModel, scriptComponent: ScriptComponent) {
+    fun init(nodeModel: NodeModel, scriptComponent: ScriptComponent) {
         _node?.let { old ->
             old.onNodeUpdate -= onUpdateHandler
         }

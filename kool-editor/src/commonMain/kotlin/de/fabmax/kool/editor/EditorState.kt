@@ -1,8 +1,8 @@
 package de.fabmax.kool.editor
 
 import de.fabmax.kool.editor.data.*
-import de.fabmax.kool.editor.model.EditorNodeModel
 import de.fabmax.kool.editor.model.EditorProject
+import de.fabmax.kool.editor.model.NodeModel
 import de.fabmax.kool.editor.model.SceneModel
 import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.input.KeyboardInput
@@ -24,11 +24,11 @@ object EditorState {
     val loadedApp = mutableStateOf<LoadedApp?>(null)
 
     val activeScene = mutableStateOf<SceneModel?>(null)
-    val selection = mutableStateListOf<EditorNodeModel>()
+    val selection = mutableStateListOf<NodeModel>()
 
     private val prettyJson = Json { prettyPrint = true }
 
-    fun selectSingle(selectModel: EditorNodeModel?, expandIfShiftIsDown: Boolean = true, toggleSelect: Boolean = true) {
+    fun selectSingle(selectModel: NodeModel?, expandIfShiftIsDown: Boolean = true, toggleSelect: Boolean = true) {
         val selectList = selectModel?.let { listOf(it) } ?: emptyList()
 
         if (toggleSelect && selectModel in selection) {
@@ -46,18 +46,18 @@ object EditorState {
 
     fun clearSelection() = setSelection(emptyList())
 
-    fun expandSelection(addModels: List<EditorNodeModel>) = setSelection(selection.toSet() + addModels.toSet())
+    fun expandSelection(addModels: List<NodeModel>) = setSelection(selection.toSet() + addModels.toSet())
 
-    fun reduceSelection(removeModels: List<EditorNodeModel>) = setSelection(selection.toSet() - removeModels.toSet())
+    fun reduceSelection(removeModels: List<NodeModel>) = setSelection(selection.toSet() - removeModels.toSet())
 
-    fun setSelection(selectModels: Collection<EditorNodeModel>) {
+    fun setSelection(selectModels: Collection<NodeModel>) {
         selection.atomic {
             clear()
             addAll(selectModels)
         }
     }
 
-    fun getSelectedNodes(filter: (EditorNodeModel) -> Boolean = { true }): List<EditorNodeModel> {
+    fun getSelectedNodes(filter: (NodeModel) -> Boolean = { true }): List<NodeModel> {
         return selection.copy().filter(filter)
     }
 

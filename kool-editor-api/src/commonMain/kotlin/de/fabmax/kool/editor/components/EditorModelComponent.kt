@@ -1,9 +1,9 @@
 package de.fabmax.kool.editor.components
 
-import de.fabmax.kool.editor.model.EditorNodeModel
+import de.fabmax.kool.editor.model.NodeModel
 import kotlin.reflect.KClass
 
-abstract class EditorModelComponent(open val nodeModel: EditorNodeModel) {
+abstract class EditorModelComponent(open val nodeModel: NodeModel) {
 
     private val _dependencies: MutableList<ComponentDependency> = mutableListOf()
     val dependencies: List<ComponentDependency>

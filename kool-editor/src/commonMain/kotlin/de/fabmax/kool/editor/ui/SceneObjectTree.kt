@@ -10,7 +10,7 @@ import de.fabmax.kool.editor.components.DiscreteLightComponent
 import de.fabmax.kool.editor.components.MeshComponent
 import de.fabmax.kool.editor.components.ModelComponent
 import de.fabmax.kool.editor.data.*
-import de.fabmax.kool.editor.model.EditorNodeModel
+import de.fabmax.kool.editor.model.NodeModel
 import de.fabmax.kool.editor.model.SceneModel
 import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.math.Mat4d
@@ -23,7 +23,7 @@ import de.fabmax.kool.util.logE
 
 class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
 
-    private val modelTreeItemMap = mutableMapOf<EditorNodeModel, SceneObjectItem>()
+    private val modelTreeItemMap = mutableMapOf<NodeModel, SceneObjectItem>()
     private val nodeTreeItemMap = mutableMapOf<Node, SceneObjectItem>()
     private val treeItems = mutableListOf<SceneObjectItem>()
     private val isTreeValid = mutableStateOf(false)
@@ -186,12 +186,20 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
             }
 
         if (item.type != SceneObjectType.NON_MODEL_NODE) {
+            // create dnd handler (handles reception of dropped dnd items)
             val handler = rememberItemDndHandler(item)
-            modifier.installDragAndDropHandler(dndCtx, handler) { EditorDndItem(item) }
+
+            // drag-and-drop hover is not covered by regular hover callbacks, instead we have to handle
+            // it separately here...
             if (handler.isHovered.use()) {
-                // drag-and-drop hover is not covered by regular hover callbacks, instead we have to handle
-                // it separately here...
                 modifier.background(RoundRectBackground(colors.hoverBg, sizes.smallGap))
+            }
+
+            // install drag and drop handler (handles dragging / sending this item to somewhere else)
+            if (item.nodeModel is SceneNodeModel) {
+                modifier.installDragAndDropHandler(dndCtx, handler) { DndItemFlavor.SCENE_NODE_MODEL.itemOf(item.nodeModel) }
+            } else if (item.nodeModel is SceneModel) {
+                modifier.installDragAndDropHandler(dndCtx, handler) { DndItemFlavor.SCENE_MODEL.itemOf(item.nodeModel) }
             }
         }
 
@@ -280,7 +288,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
 
     }
 
-    private fun MutableList<SceneObjectItem>.appendNode(scene: SceneModel, node: Node, selectModel: EditorNodeModel, depth: Int) {
+    private fun MutableList<SceneObjectItem>.appendNode(scene: SceneModel, node: Node, selectModel: NodeModel, depth: Int) {
         // get nodeModel for node, this should be equal to [selectModel] for regular objects but can be null if node
         // does not correspond to a scene model item (e.g. child meshes of a gltf model)
         val nodeModel = scene.nodesToNodeModels[node]
@@ -312,7 +320,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
 
     private inner class SceneObjectItem(
         node: Node,
-        val nodeModel: EditorNodeModel,
+        val nodeModel: NodeModel,
         val forcedType: SceneObjectType? = null
     ) {
         var depth = 0
@@ -362,23 +370,18 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         return handler
     }
 
-    private inner class TreeItemDndHandler(val treeItem: SceneObjectItem, dropTarget: UiNode) : DndHandler(dropTarget) {
-        override fun receive(
+    private inner class TreeItemDndHandler(val treeItem: SceneObjectItem, dropTarget: UiNode) :
+        DndHandler(dropTarget, setOf(DndItemFlavor.SCENE_NODE_MODEL))
+    {
+        override fun onMatchingReceive(
             dragItem: EditorDndItem,
             dragPointer: PointerEvent,
             source: DragAndDropHandler<EditorDndItem>?
-        ): Boolean {
-            val dragTreeItem = dragItem.item as? SceneObjectItem ?: return false
-            if (dragTreeItem == treeItem
-                || treeItem.type == SceneObjectType.NON_MODEL_NODE
-                || dragTreeItem.type == SceneObjectType.NON_MODEL_NODE
-            ) {
-                return false
+        ) {
+            val dragTreeItem = dragItem.get(DndItemFlavor.SCENE_NODE_MODEL)
+            if (dragTreeItem != treeItem.nodeModel) {
+                MoveSceneNodeAction(dragTreeItem, treeItem.nodeModel).apply()
             }
-
-            val dragSceneNode = dragTreeItem.nodeModel as? SceneNodeModel ?: return false
-            MoveSceneNodeAction(dragSceneNode, treeItem.nodeModel).apply()
-            return true
         }
     }
 

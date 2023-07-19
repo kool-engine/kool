@@ -11,7 +11,7 @@ import kotlinx.serialization.json.Json
 
 class EditorProject(val projectData: ProjectData) {
 
-    val entities = mutableListOf<EditorNodeModel>()
+    val entities = mutableListOf<NodeModel>()
 
     private val _sceneNodeData = projectData.sceneNodes.associateBy { it.nodeId }.toMutableMap()
     val sceneNodeData: Map<Long, SceneNodeData>
@@ -77,7 +77,7 @@ class EditorProject(val projectData: ProjectData) {
         return entities.flatMap { it.components.filterIsInstance<T>() }
     }
 
-    inline fun <reified T: Any> getComponentsFromEntities(predicate: (EditorNodeModel) -> Boolean): List<T> {
+    inline fun <reified T: Any> getComponentsFromEntities(predicate: (NodeModel) -> Boolean): List<T> {
         return entities.filter(predicate).flatMap { it.components.filterIsInstance<T>() }
     }
 

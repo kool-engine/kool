@@ -8,7 +8,7 @@ import de.fabmax.kool.editor.data.TransformData
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.scene.Node
 
-class SceneNodeModel(nodeData: SceneNodeData, var parent: EditorNodeModel, val sceneModel: SceneModel) : EditorNodeModel(nodeData) {
+class SceneNodeModel(nodeData: SceneNodeData, var parent: NodeModel, val sceneModel: SceneModel) : NodeModel(nodeData) {
 
     override var drawNode: Node = Node(nodeData.name)
         private set

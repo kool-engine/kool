@@ -10,7 +10,7 @@ import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.launchOnMainThread
 
-abstract class EditorNodeModel(val nodeData: SceneNodeData) {
+abstract class NodeModel(val nodeData: SceneNodeData) {
 
     val nodeId: Long
         get() = nodeData.nodeId
