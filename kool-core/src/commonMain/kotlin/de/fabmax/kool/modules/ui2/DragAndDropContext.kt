@@ -1,5 +1,8 @@
 package de.fabmax.kool.modules.ui2
 
+import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.input.PointerInput
+
 class DragAndDropContext<T: Any> {
 
     val handlers = mutableSetOf<DragAndDropHandler<T>>()
@@ -40,6 +43,7 @@ class DragAndDropContext<T: Any> {
 
     fun endDrag(dragPointerEvent: PointerEvent) {
         val item = dragItem ?: return
+        dragItem = null
 
         var success = false
         var targetHandler: DragAndDropHandler<T>? = null
@@ -57,6 +61,13 @@ class DragAndDropContext<T: Any> {
             }
         }
         handlers.forEach { it.onDragEnd(item, dragPointerEvent, sourceHandler, targetHandler, success) }
+    }
+
+    fun cancelDrag() {
+        val item = dragItem ?: return
+        dragItem = null
+        val pointerEvent = PointerEvent(PointerInput.primaryPointer, KoolSystem.requireContext())
+        handlers.forEach { it.onDragEnd(item, pointerEvent, sourceHandler, null, false) }
     }
 }
 

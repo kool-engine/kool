@@ -164,6 +164,8 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
 
             // disable box select
             ui.sceneView.isBoxSelectMode.set(false)
+            // cancel any ongoing drag
+            ui.dndController.dndContext.cancelDrag()
         }
 
         InputStack.pushTop(editorInputContext)
