@@ -18,17 +18,17 @@ class MeshEditor(component: MeshComponent) : ComponentEditor<MeshComponent>(comp
             title = "Mesh",
             imageIcon = IconMap.CUBE,
             onRemove = ::removeComponent,
+            titleWidth = sizes.baseSize * 2.3f,
 
             headerContent = {
                 var selectedIndex by remember(0)
                 selectedIndex = ShapeOptions.indexOfShape(shape)
 
-                Box(Grow.Std) { }
                 ComboBox {
                     defaultComboBoxStyle()
                     modifier
-                        .margin(end = sizes.gap)
-                        .size(sizes.baseSize * 4, sizes.lineHeight)
+                        .margin(horizontal = sizes.gap)
+                        .size(Grow.Std, sizes.lineHeight)
                         .alignY(AlignmentY.Center)
                         .items(ShapeOptions.items)
                         .selectedIndex(selectedIndex)

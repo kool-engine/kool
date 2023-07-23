@@ -6,6 +6,7 @@ import de.fabmax.kool.editor.components.EditorModelComponent
 import de.fabmax.kool.editor.model.NodeModel
 import de.fabmax.kool.editor.model.SceneModel
 import de.fabmax.kool.modules.ui2.*
+import de.fabmax.kool.util.MdColor
 
 abstract class ComponentEditor<T: EditorModelComponent>(var component: T ) : Composable {
     open val nodeModel: NodeModel
@@ -23,21 +24,20 @@ fun UiScope.componentPanel(
     title: String,
     imageIcon: ImageIconMap.IconImageProvider? = null,
     onRemove: (() -> Unit)? = null,
+    titleWidth: Dimension = Grow.Std,
     headerContent: (RowScope.() -> Unit)? = null,
     block: ColumnScope.() -> Any?
 ) = collapsapsablePanel(
     title,
     imageIcon,
+    titleWidth = titleWidth,
     headerContent = {
         headerContent?.invoke(this)
         onRemove?.let { remove ->
-            if (headerContent == null) {
-                Box(width = Grow.Std) { }
-            }
             Box {
                 var isHovered by remember(false)
                 val fgColor = colors.onBackground
-                val bgColor = if (isHovered) colors.elevatedComponentBgHovered else null
+                val bgColor = if (isHovered) MdColor.RED else colors.componentBg
 
                 modifier
                     .alignY(AlignmentY.Center)
@@ -46,10 +46,7 @@ fun UiScope.componentPanel(
                     .onEnter { isHovered = true }
                     .onExit { isHovered = false }
                     .onClick { remove() }
-
-                bgColor?.let {
-                    modifier.background(RoundRectBackground(it, sizes.smallGap * 0.5f))
-                }
+                    .background(CircularBackground(bgColor))
 
                 Image {
                     modifier.iconImage(IconMap.TRASH, fgColor)
@@ -57,5 +54,5 @@ fun UiScope.componentPanel(
             }
         }
     },
-    block
+    block = block
 )

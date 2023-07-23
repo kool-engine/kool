@@ -7,10 +7,7 @@ import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.modules.ui2.docking.Dock
 import de.fabmax.kool.modules.ui2.docking.DockLayout
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.MsdfFont
-import de.fabmax.kool.util.logI
-import de.fabmax.kool.util.logW
+import de.fabmax.kool.util.*
 
 class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
 
@@ -134,6 +131,9 @@ val Colors.componentBgHovered: Color get() = secondaryAlpha(0.5f)
 val Colors.elevatedComponentBg: Color get() = secondaryVariant
 // hovered buttons / cb expander
 val Colors.elevatedComponentBgHovered: Color get() = secondary
+
+val Colors.dndAcceptableBg: Color get() = MdColor.GREEN.withAlpha(0.3f)
+val Colors.dndAcceptableBgHovered: Color get() = MdColor.GREEN.withAlpha(0.5f)
 
 object UiColors {
     val border = Color("0f1114ff")

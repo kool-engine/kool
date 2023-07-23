@@ -121,7 +121,9 @@ class MaterialAttributeSourcePopup(
             label = "Value:",
             value = valueAttr.value.toDouble(),
             min = minValue.toDouble(),
-            max = maxValue.toDouble()
+            max = maxValue.toDouble(),
+            labelWidth = Grow.Std,
+            valueWidth = sizes.baseSize * 2
         ) {
             lastValueAttr = ConstValueAttribute(it.toFloat())
             setEditAttrib(lastValueAttr)

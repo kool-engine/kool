@@ -72,10 +72,10 @@ interface DragAndDropHandler<T: Any> {
 
 fun <M: UiModifier, T: Any> M.installDragAndDropHandler(
     dndContext: DragAndDropContext<T>,
-    handler: DragAndDropHandler<T>,
-    dragItem: () -> T
+    handler: DragAndDropHandler<T>?,
+    dragItem: () -> T?
 ): M {
-    onDragStart { dndContext.startDrag(dragItem(), it, handler) }
+    onDragStart { dragItem()?.let { item -> dndContext.startDrag(item, it, handler) } }
     onDrag { dndContext.drag(it) }
     onDragEnd { dndContext.endDrag(it) }
     return this

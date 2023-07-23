@@ -293,12 +293,15 @@ class ResourceBrowser(editorUi: EditorUi) : EditorPanel(
 
     private fun UiScope.browserItem(item: BrowserItem, gridSize: Dp, itemPopupMenu: ContextPopupMenu<BrowserItem>) {
         Column(width = gridSize) {
+            modifier.installDragAndDropHandler(dndCtx, null) { item.makeDndItem() }
+
             val color = when (item) {
                 is BrowserDir -> MdColor.AMBER
                 is BrowserAssetItem -> item.itemColor
                 is BrowserMaterialItem -> MdColor.GREY
                 is BrowserScriptItem -> MdColor.PURPLE
             }
+
             var isHovered by remember(false)
             if (isHovered) {
                 modifier.background(RoundRectBackground(color.withAlpha(0.25f), sizes.smallGap))
@@ -429,7 +432,23 @@ class ResourceBrowser(editorUi: EditorUi) : EditorPanel(
         SPACER
     }
 
-    sealed class BrowserItem(val level: Int, val name: String, val path: String, val category: BrowserCategory)
+    sealed class BrowserItem(val level: Int, val name: String, val path: String, val category: BrowserCategory) {
+        fun makeDndItem(): EditorDndItem<*>? {
+            return when (this) {
+                is BrowserDir -> DndItemFlavor.BROWSER_ITEM.itemOf(this)
+                is BrowserAssetItem -> {
+                    when (this.asset.type) {
+                        AppAssetType.Unknown -> DndItemFlavor.BROWSER_ITEM.itemOf(this)
+                        AppAssetType.Directory -> DndItemFlavor.BROWSER_ITEM.itemOf(this)
+                        AppAssetType.Texture -> DndItemFlavor.BROWSER_ITEM_TEXTURE.itemOf(this)
+                        AppAssetType.Model -> DndItemFlavor.BROWSER_ITEM_MODEL.itemOf(this)
+                    }
+                }
+                is BrowserMaterialItem -> null
+                is BrowserScriptItem -> null
+            }
+        }
+    }
 
     class BrowserDir(level: Int, name: String, path: String, category: BrowserCategory) : BrowserItem(level, name, path, category) {
         val isExpanded = mutableStateOf(level == 0)
@@ -437,7 +456,7 @@ class ResourceBrowser(editorUi: EditorUi) : EditorPanel(
         val children = mutableListOf<BrowserItem>()
     }
 
-    class BrowserAssetItem(level: Int, asset: AssetItem) : BrowserItem(level, asset.name, asset.path, BrowserCategory.ASSETS) {
+    class BrowserAssetItem(level: Int, val asset: AssetItem) : BrowserItem(level, asset.name, asset.path, BrowserCategory.ASSETS) {
         val itemColor: Color = when (asset.type) {
             AppAssetType.Unknown -> MdColor.PINK
             AppAssetType.Directory -> MdColor.AMBER

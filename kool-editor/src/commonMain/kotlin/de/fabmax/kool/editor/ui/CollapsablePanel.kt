@@ -6,6 +6,7 @@ fun UiScope.collapsapsablePanel(
     title: String,
     imageIcon: ImageIconMap.IconImageProvider? = null,
     headerContent: (RowScope.() -> Unit)? = null,
+    titleWidth: Dimension = Grow.Std,
     block: ColumnScope.() -> Any?
 ) = Column(
     Grow.Std,
@@ -35,7 +36,9 @@ fun UiScope.collapsapsablePanel(
             }
         }
         Text(title) {
-            modifier.alignY(AlignmentY.Center)
+            modifier
+                .width(titleWidth)
+                .alignY(AlignmentY.Center)
         }
         headerContent?.invoke(this)
     }

@@ -102,7 +102,8 @@ fun UiScope.doubleTextField(
     dragChangeSpeed: Double = 0.0,
     minValue: Double = Double.NEGATIVE_INFINITY,
     maxValue: Double = Double.POSITIVE_INFINITY,
-    editHandler: ValueEditHandler<Double>
+    editHandler: ValueEditHandler<Double>,
+    textFieldModifier: ((TextFieldModifier) -> Unit)? = null
 ) = TextField {
     var text by remember(value.toString(precision))
     var wasFocuesd by remember(false)
@@ -152,6 +153,7 @@ fun UiScope.doubleTextField(
                 editHandler.onEditEnd(dragStartValue, value)
             }
     }
+    textFieldModifier?.invoke(modifier)
 }
 
 fun String.parseDouble(min: Double = Double.NEGATIVE_INFINITY, max: Double = Double.POSITIVE_INFINITY): Double? {
@@ -168,7 +170,8 @@ fun UiScope.intTextField(
     dragChangeSpeed: Double = 0.0,
     minValue: Int = Int.MIN_VALUE,
     maxValue: Int = Int.MAX_VALUE,
-    editHandler: ValueEditHandler<Int>
+    editHandler: ValueEditHandler<Int>,
+    textFieldModifier: ((TextFieldModifier) -> Unit)? = null
 ) = TextField {
     var text by remember(value.toString())
     var wasFocuesd by remember(false)
@@ -218,6 +221,7 @@ fun UiScope.intTextField(
                 editHandler.onEditEnd(dragStartValue, value)
             }
     }
+    textFieldModifier?.invoke(modifier)
 }
 
 fun String.parseInt(min: Int = Int.MIN_VALUE, max: Int = Int.MAX_VALUE): Int? {
@@ -439,19 +443,20 @@ fun <T: Any> UiScope.labeledCombobox(
     label: String,
     items: List<T>,
     selectedIndex: Int,
-    boxWidth: Dimension = Grow.Std,
+    labelWidth: Dimension = sizes.baseSize * 3,
+    valueWidth: Dimension = Grow.Std,
     onItemSelected: (T) -> Unit
 ) = menuRow {
     Text(label) {
         modifier
-            .width(sizes.baseSize * 3f)
+            .width(labelWidth)
             .alignY(AlignmentY.Center)
     }
 
     ComboBox {
         defaultComboBoxStyle()
         modifier
-            .size(boxWidth, sizes.lineHeight)
+            .size(valueWidth, sizes.lineHeight)
             .items(items)
             .selectedIndex(selectedIndex)
             .onItemSelected {
@@ -545,46 +550,52 @@ fun UiScope.labeledDoubleTextField(
     label: String,
     value: Double,
     precision: Int = precisionForValue(value),
-    valueWidth: Dimension = sizes.baseSize * 2,
+    labelWidth: Dimension = sizes.baseSize * 5,
+    valueWidth: Dimension = Grow.Std,
     dragChangeSpeed: Double = 0.0,
     minValue: Double = Double.NEGATIVE_INFINITY,
     maxValue: Double = Double.POSITIVE_INFINITY,
+    textFieldModifier: ((TextFieldModifier) -> Unit)? = null,
     editHandler: ValueEditHandler<Double>
 ) = menuRow {
     Text(label) {
         modifier
-            .width(Grow.Std)
+            .width(labelWidth)
             .alignY(AlignmentY.Center)
     }
-    doubleTextField(value, precision, valueWidth, dragChangeSpeed, minValue, maxValue, editHandler)
+    doubleTextField(value, precision, valueWidth, dragChangeSpeed, minValue, maxValue, editHandler, textFieldModifier)
 }
 
 fun UiScope.labeledIntTextField(
     label: String,
     value: Int,
-    valueWidth: Dimension = sizes.baseSize * 2,
+    labelWidth: Dimension = sizes.baseSize * 5,
+    valueWidth: Dimension = Grow.Std,
     dragChangeSpeed: Double = 0.0,
     minValue: Int = Int.MIN_VALUE,
     maxValue: Int = Int.MAX_VALUE,
+    textFieldModifier: ((TextFieldModifier) -> Unit)? = null,
     editHandler: ValueEditHandler<Int>
 ) = menuRow {
     Text(label) {
         modifier
-            .width(Grow.Std)
+            .width(labelWidth)
             .alignY(AlignmentY.Center)
     }
-    intTextField(value, valueWidth, dragChangeSpeed, minValue, maxValue, editHandler)
+    intTextField(value, valueWidth, dragChangeSpeed, minValue, maxValue, editHandler, textFieldModifier)
 }
 
 fun UiScope.labeledTextField(
     label: String,
     text: String,
-    valueWidth: Dimension = sizes.baseSize * 4,
+    labelWidth: Dimension = sizes.baseSize * 3,
+    valueWidth: Dimension = Grow.Std,
+    textFieldModifier: ((TextFieldModifier) -> Unit)? = null,
     onEdited: (String) -> Unit
 ) = menuRow {
     Text(label) {
         modifier
-            .width(Grow.Std)
+            .width(labelWidth)
             .alignY(AlignmentY.Center)
     }
 
@@ -602,6 +613,7 @@ fun UiScope.labeledTextField(
                 onEdited(editText)
                 surface.unfocus(this)
             }
+        textFieldModifier?.invoke(modifier)
     }
 }
 
@@ -611,13 +623,14 @@ fun UiScope.labeledSlider(
     min: Double = 0.0,
     max: Double = 1.0,
     precision: Int = precisionForValue(max - min),
-    valueWidth: Dimension = sizes.baseSize * 2,
+    labelWidth: Dimension = sizes.baseSize * 5,
+    valueWidth: Dimension = Grow.Std,
     editHandler: ValueEditHandler<Double>,
 ) = Column(Grow.Std, scopeName = label) {
     menuRow {
         Text(label) {
             modifier
-                .width(Grow.Std)
+                .width(labelWidth)
                 .alignY(AlignmentY.Center)
         }
         doubleTextField(value, precision, valueWidth, 0.0, min, max, editHandler)

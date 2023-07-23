@@ -28,8 +28,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
     private val treeItems = mutableListOf<SceneObjectItem>()
     private val isTreeValid = mutableStateOf(false)
 
-    private val dnd: DndController get() = sceneBrowser.dnd
-    private val dndCtx: DragAndDropContext<EditorDndItem> get() = dnd.dndContext
+    private val dndCtx: DragAndDropContext<EditorDndItem<*>> get() = sceneBrowser.dnd.dndContext
 
     init {
         sceneBrowser.editor.appLoader.appReloadListeners += AppReloadListener {
@@ -285,7 +284,6 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
                 }
             }
         }
-
     }
 
     private fun MutableList<SceneObjectItem>.appendNode(scene: SceneModel, node: Node, selectModel: NodeModel, depth: Int) {
@@ -374,9 +372,9 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         DndHandler(dropTarget, setOf(DndItemFlavor.SCENE_NODE_MODEL))
     {
         override fun onMatchingReceive(
-            dragItem: EditorDndItem,
+            dragItem: EditorDndItem<*>,
             dragPointer: PointerEvent,
-            source: DragAndDropHandler<EditorDndItem>?
+            source: DragAndDropHandler<EditorDndItem<*>>?
         ) {
             val dragTreeItem = dragItem.get(DndItemFlavor.SCENE_NODE_MODEL)
             if (dragTreeItem != treeItem.nodeModel) {

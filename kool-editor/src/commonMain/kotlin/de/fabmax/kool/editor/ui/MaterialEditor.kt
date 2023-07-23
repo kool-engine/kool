@@ -1,6 +1,7 @@
 package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.editor.EditorState
+import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.actions.RenameMaterialAction
 import de.fabmax.kool.editor.actions.SetMaterialAction
 import de.fabmax.kool.editor.actions.UpdateMaterialAction
@@ -17,17 +18,17 @@ class MaterialEditor(component: MaterialComponent) : ComponentEditor<MaterialCom
         title = "Material",
         imageIcon = IconMap.PALETTE,
         onRemove = ::removeComponent,
+        titleWidth = sizes.baseSize * 2.3f,
         headerContent = {
             val (items, idx) = makeMaterialItemsAndIndex()
             var selectedIndex by remember(idx)
             selectedIndex = idx
 
-            Box(Grow.Std) { }
             ComboBox {
                 defaultComboBoxStyle()
                 modifier
-                    .margin(end = sizes.gap)
-                    .size(sizes.baseSize * 4, sizes.lineHeight)
+                    .margin(horizontal = sizes.gap)
+                    .size(Grow.Std, sizes.lineHeight)
                     .alignY(AlignmentY.Center)
                     .items(items)
                     .selectedIndex(selectedIndex)
@@ -95,6 +96,65 @@ class MaterialEditor(component: MaterialComponent) : ComponentEditor<MaterialCom
         }
     }
 
+    private fun RowScope.materialSetting(
+        label: String,
+        labelWidth: Dimension,
+        valueColor: Color?,
+        material: MaterialData,
+        shaderDataSetter: (MapAttribute) -> MaterialShaderData,
+        sourcePopup: AutoPopup,
+        isOpaqueBox: Boolean,
+        block: UiScope.(Pair<Boolean, Boolean>) -> Unit
+    ) {
+        Text(label) {
+            modifier
+                .width(labelWidth)
+                .alignY(AlignmentY.Center)
+        }
+
+        Box(height = sizes.lineHeight) {
+            val dndHandler = rememberTextureDndHandler(material, shaderDataSetter, uiNode)
+            var isHovered by remember(false)
+            val hover = isHovered || dndHandler.isHovered.use()
+            val drag = dndHandler.isDrag.use()
+
+            val bgColor =  when {
+                valueColor != null -> when {
+                    drag && hover -> valueColor.mix(MdColor.GREEN, 0.5f)
+                    drag -> valueColor.mix(MdColor.GREEN, 0.3f)
+                    else -> valueColor
+                }
+                drag && hover -> colors.dndAcceptableBgHovered
+                drag -> colors.dndAcceptableBg
+                hover -> colors.componentBgHovered
+                else -> colors.componentBg
+            }
+            val borderColor = when {
+                drag -> MdColor.GREEN
+                hover -> colors.elevatedComponentBgHovered
+                else -> colors.elevatedComponentBg
+            }
+
+            modifier
+                .width(Grow.Std)
+                .onEnter { isHovered = true }
+                .onExit { isHovered = false }
+                .onClick {
+                    sourcePopup.toggleVisibility(Vec2f(uiNode.leftPx, uiNode.bottomPx))
+                }
+
+            if (isOpaqueBox) {
+                modifier
+                    .background(RoundRectBackground(bgColor, sizes.smallGap))
+                    .border(RoundRectBorder(borderColor, sizes.smallGap, sizes.borderWidth))
+            }
+
+            block(hover to drag)
+
+            sourcePopup()
+        }
+    }
+
     private fun UiScope.colorSetting(
         label: String,
         colorAttr: MaterialAttribute,
@@ -103,57 +163,38 @@ class MaterialEditor(component: MaterialComponent) : ComponentEditor<MaterialCom
         shaderDataSetter: (MaterialAttribute) -> MaterialShaderData
     ) = menuRow {
 
-        Text(label) {
-            modifier
-                .width(Grow.Std)
-                .alignY(AlignmentY.Center)
+        var valueColor: Color? = null
+        var text: String? = null
+        var labelWidth = sizes.baseSize * 5
+        var textAlign = AlignmentX.Start
+        when (colorAttr) {
+            is ConstColorAttribute -> {
+                valueColor = colorAttr.color.toColorLinear().toSrgb()
+            }
+            is ConstValueAttribute -> {
+                val f = colorAttr.value
+                valueColor = Color(f, f, f, 1f).toSrgb()
+            }
+            is MapAttribute -> {
+                text = colorAttr.mapName
+                labelWidth = sizes.baseSize * 3
+            }
+            is VertexAttribute -> {
+                text = "Vertex"
+                textAlign = AlignmentX.Center
+            }
         }
 
-        Box(height = sizes.lineHeight) {
-            var isHovered by remember(false)
-            val sourcePopup = remember {
-                MaterialAttributeSourcePopup(colorAttr, true, default) { undoValue, applyValue ->
-                    val undoMaterial = shaderDataSetter(undoValue)
-                    val applyMaterial = shaderDataSetter(applyValue)
-                    UpdateMaterialAction(material, applyMaterial, undoMaterial)
-                }
+        val sourcePopup = remember {
+            MaterialAttributeSourcePopup(colorAttr, true, default) { undoValue, applyValue ->
+                val undoMaterial = shaderDataSetter(undoValue)
+                val applyMaterial = shaderDataSetter(applyValue)
+                UpdateMaterialAction(material, applyMaterial, undoMaterial)
             }
-            sourcePopup.editMatAttr = colorAttr
+        }
+        sourcePopup.editMatAttr = colorAttr
 
-            var width: Dimension = sizes.baseSize * 2
-            var text: String? = null
-            var textAlign = AlignmentX.Start
-            var bgColor = if (isHovered) colors.componentBgHovered else colors.componentBg
-            val borderColor = if (isHovered) colors.elevatedComponentBgHovered else colors.elevatedComponentBg
-
-            when (colorAttr) {
-                is ConstColorAttribute -> {
-                    bgColor = colorAttr.color.toColorLinear().toSrgb()
-                }
-                is ConstValueAttribute -> {
-                    val f = colorAttr.value
-                    bgColor = Color(f, f, f, 1f).toSrgb()
-                }
-                is MapAttribute -> {
-                    text = colorAttr.mapName
-                    width = sizes.baseSize * 4
-                }
-                is VertexAttribute -> {
-                    text = "Vertex"
-                    textAlign = AlignmentX.Center
-                }
-            }
-
-            modifier
-                .width(width)
-                .onEnter { isHovered = true }
-                .onExit { isHovered = false }
-                .background(RoundRectBackground(bgColor, sizes.smallGap))
-                .border(RoundRectBorder(borderColor, sizes.smallGap, sizes.borderWidth))
-                .onClick {
-                    sourcePopup.toggleVisibility(Vec2f(uiNode.leftPx, uiNode.bottomPx))
-                }
-
+        materialSetting(label, labelWidth, valueColor, material, shaderDataSetter, sourcePopup, true) {
             text?.let {
                 Text(text) {
                     modifier
@@ -161,82 +202,68 @@ class MaterialEditor(component: MaterialComponent) : ComponentEditor<MaterialCom
                         .align(textAlign, AlignmentY.Center)
                 }
             }
-            sourcePopup()
         }
     }
 
-    private inline fun UiScope.floatSetting(
+    private fun UiScope.floatSetting(
         label: String,
         floatAttr: MaterialAttribute,
         min: Float,
         max: Float,
         default: Float,
         material: MaterialData,
-        crossinline shaderDataSetter: (MaterialAttribute) -> MaterialShaderData
+        shaderDataSetter: (MaterialAttribute) -> MaterialShaderData
     ) = menuRow {
 
-        Text(label) {
-            modifier
-                .width(Grow.Std)
-                .alignY(AlignmentY.Center)
+        val doubleVal: Double
+        val text: String
+        val isTextField: Boolean
+        var labelWidth = sizes.baseSize * 5
+        var textAlign = AlignmentX.Start
+        when (floatAttr) {
+            is ConstColorAttribute -> {
+                doubleVal = floatAttr.color.r.toDouble()
+                text = "${floatAttr.color.r}"
+                isTextField = true
+            }
+            is ConstValueAttribute -> {
+                doubleVal = floatAttr.value.toDouble()
+                text = "${floatAttr.value}"
+                isTextField = true
+            }
+            is MapAttribute -> {
+                text = floatAttr.mapName
+                doubleVal = 0.0
+                isTextField = false
+                labelWidth = sizes.baseSize * 3
+            }
+            is VertexAttribute -> {
+                text = "Vertex"
+                doubleVal = 0.0
+                textAlign = AlignmentX.Center
+                isTextField = false
+            }
         }
 
-        Box(height = sizes.lineHeight) {
-            var isHovered by remember(false)
-            val sourcePopup = remember {
-                MaterialAttributeSourcePopup(floatAttr, false, minValue = min, maxValue = max, defaultValue = default) { undoValue, applyValue ->
-                    val undoMaterial = shaderDataSetter(undoValue)
-                    val applyMaterial = shaderDataSetter(applyValue)
-                    UpdateMaterialAction(material, applyMaterial, undoMaterial)
-                }
+        val sourcePopup = remember {
+            MaterialAttributeSourcePopup(floatAttr, false, minValue = min, maxValue = max, defaultValue = default) { undoValue, applyValue ->
+                val undoMaterial = shaderDataSetter(undoValue)
+                val applyMaterial = shaderDataSetter(applyValue)
+                UpdateMaterialAction(material, applyMaterial, undoMaterial)
             }
-            sourcePopup.editMatAttr = floatAttr
+        }
+        sourcePopup.editMatAttr = floatAttr
 
-            var width: Dimension = sizes.baseSize * 2
-            val doubleVal: Double
-            val text: String
-            val isTextField: Boolean
-            var textAlign = AlignmentX.Start
-            val bgColor = if (isHovered) colors.componentBgHovered else colors.componentBg
-            val borderColor = if (isHovered) colors.elevatedComponentBgHovered else colors.elevatedComponentBg
-
-            when (floatAttr) {
-                is ConstColorAttribute -> {
-                    doubleVal = floatAttr.color.r.toDouble()
-                    text = "${floatAttr.color.r}"
-                    isTextField = true
-                }
-                is ConstValueAttribute -> {
-                    doubleVal = floatAttr.value.toDouble()
-                    text = "${floatAttr.value}"
-                    isTextField = true
-                }
-                is MapAttribute -> {
-                    text = floatAttr.mapName
-                    doubleVal = 0.0
-                    width = sizes.baseSize * 4
-                    isTextField = false
-                }
-                is VertexAttribute -> {
-                    text = "Vertex"
-                    doubleVal = 0.0
-                    textAlign = AlignmentX.Center
-                    isTextField = false
-                }
-            }
-
-            modifier
-                .width(width)
-                .onEnter { isHovered = true }
-                .onExit { isHovered = false }
-
+        materialSetting(
+            label = label,
+            labelWidth = labelWidth,
+            valueColor = null,
+            material = material,
+            shaderDataSetter = shaderDataSetter,
+            sourcePopup = sourcePopup,
+            isOpaqueBox = !isTextField
+        ) { (isHover, isDrag) ->
             if (!isTextField) {
-                modifier
-                    .background(RoundRectBackground(bgColor, sizes.smallGap))
-                    .border(RoundRectBorder(borderColor, sizes.smallGap, sizes.borderWidth))
-                    .onClick {
-                        sourcePopup.toggleVisibility(Vec2f(uiNode.leftPx, uiNode.bottomPx))
-                    }
                 Text(text) {
                     modifier
                         .padding(horizontal = sizes.gap, vertical = sizes.smallGap)
@@ -246,15 +273,21 @@ class MaterialEditor(component: MaterialComponent) : ComponentEditor<MaterialCom
                 val txtField = doubleTextField(
                     value = doubleVal,
                     precision = precisionForValue((max - min).toDouble()),
-                    width = sizes.baseSize * 2,
+                    width = Grow.Std,
                     dragChangeSpeed = DragChangeRates.RANGE_0_TO_1,
                     minValue = min.toDouble(),
                     maxValue = max.toDouble(),
                     editHandler = ActionValueEditHandler { undoValue, applyValue ->
-                        //editValue = applyValue.toFloat()
                         val undoMaterial = shaderDataSetter(ConstValueAttribute(undoValue.toFloat()))
                         val applyMaterial = shaderDataSetter(ConstValueAttribute(applyValue.toFloat()))
                         UpdateMaterialAction(material, applyMaterial, undoMaterial)
+                    },
+                    textFieldModifier = {
+                        if (isDrag) {
+                            it
+                                .border(RoundRectBorder(MdColor.GREEN, sizes.smallTextFieldPadding, sizes.borderWidth))
+                                .backgroundColor(if (isHover) colors.dndAcceptableBgHovered else colors.dndAcceptableBg)
+                        }
                     }
                 )
 
@@ -264,8 +297,6 @@ class MaterialEditor(component: MaterialComponent) : ComponentEditor<MaterialCom
                     }
                 }
             }
-
-            sourcePopup()
         }
     }
 
@@ -275,63 +306,40 @@ class MaterialEditor(component: MaterialComponent) : ComponentEditor<MaterialCom
         material: MaterialData,
         shaderDataSetter: (MapAttribute?) -> MaterialShaderData
     ) = menuRow {
-
-        Text(label) {
-            modifier
-                .width(Grow.Std)
-                .alignY(AlignmentY.Center)
+        var editStartTex by remember(texAttr)
+        var editTex by remember(texAttr)
+        editTex = texAttr
+        val editHandler = ActionValueEditHandler<MapAttribute?> { undoValue, applyValue ->
+            val undoMaterial = shaderDataSetter(undoValue)
+            val applyMaterial = shaderDataSetter(applyValue)
+            UpdateMaterialAction(material, applyMaterial, undoMaterial)
+        }
+        val texPopup = remember {
+            AutoPopup().apply {
+                popupContent = Composable {
+                    defaultPopupStyle()
+                    textureSelector(editTex?.mapPath ?: "", true) {
+                        editTex = if (it.path.isEmpty()) null else MapAttribute(it.path)
+                        editHandler.onEdit(editTex)
+                    }
+                    okButton { hide() }
+                }
+                onShow = {
+                    editStartTex = editTex
+                    editHandler.onEditStart(editStartTex)
+                }
+                onHide = {
+                    editHandler.onEditEnd(editStartTex, editTex)
+                }
+            }
         }
 
-        Box(height = sizes.lineHeight) {
-            var isHovered by remember(false)
-            var editStartTex by remember(texAttr)
-            var editTex by remember(texAttr)
-            editTex = texAttr
-
-            val editHandler = ActionValueEditHandler<MapAttribute?> { undoValue, applyValue ->
-                val undoMaterial = shaderDataSetter(undoValue)
-                val applyMaterial = shaderDataSetter(applyValue)
-                UpdateMaterialAction(material, applyMaterial, undoMaterial)
-            }
-            val texPopup = remember {
-                AutoPopup().apply {
-                    popupContent = Composable {
-                        defaultPopupStyle()
-                        textureSelector(editTex?.mapPath ?: "", true) {
-                            editTex = if (it.path.isEmpty()) null else MapAttribute(it.path)
-                            editHandler.onEdit(editTex)
-                        }
-                        okButton { hide() }
-                    }
-                    onShow = {
-                        editStartTex = editTex
-                        editHandler.onEditStart(editStartTex)
-                    }
-                    onHide = {
-                        editHandler.onEditEnd(editStartTex, editTex)
-                    }
-                }
-            }
-
-            val bgColor = if (isHovered) colors.componentBgHovered else colors.componentBg
-            val borderColor = if (isHovered) colors.elevatedComponentBgHovered else colors.elevatedComponentBg
-
-            modifier
-                .width(sizes.baseSize * 4)
-                .onEnter { isHovered = true }
-                .onExit { isHovered = false }
-                .background(RoundRectBackground(bgColor, sizes.smallGap))
-                .border(RoundRectBorder(borderColor, sizes.smallGap, sizes.borderWidth))
-                .onClick {
-                    texPopup.toggleVisibility(Vec2f(uiNode.leftPx, uiNode.bottomPx))
-                }
-
+        materialSetting(label, sizes.baseSize * 3, null, material, shaderDataSetter, texPopup, true) {
             Text(texAttr?.mapName ?: "None selected") {
                 modifier
                     .padding(horizontal = sizes.gap, vertical = sizes.smallGap)
                     .alignY(AlignmentY.Center)
             }
-            texPopup()
         }
     }
 
@@ -348,6 +356,37 @@ class MaterialEditor(component: MaterialComponent) : ComponentEditor<MaterialCom
             items += MaterialItem(material.name, material)
         }
         return items to index
+    }
+
+    private fun UiScope.rememberTextureDndHandler(
+        material: MaterialData,
+        shaderDataSetter: (MapAttribute) -> MaterialShaderData,
+        dropTarget: UiNode
+    ): TextureDndHandler {
+        val handler = remember { TextureDndHandler(material, shaderDataSetter, dropTarget) }
+        handler.dropTarget = uiNode
+        KoolEditor.instance.ui.dndController.registerHandler(handler, surface)
+        return handler
+    }
+
+    private inner class TextureDndHandler(
+        val material: MaterialData,
+        val shaderDataSetter: (MapAttribute) -> MaterialShaderData,
+        dropTarget: UiNode
+    ) :
+        DndHandler(dropTarget, setOf(DndItemFlavor.ASSET_ITEM_TEXTURE))
+    {
+        override fun onMatchingReceive(
+            dragItem: EditorDndItem<*>,
+            dragPointer: PointerEvent,
+            source: DragAndDropHandler<EditorDndItem<*>>?
+        ) {
+            val dragTextureItem = dragItem.get(DndItemFlavor.ASSET_ITEM_TEXTURE)
+            val applyMaterial = shaderDataSetter(MapAttribute(dragTextureItem.path))
+            if (applyMaterial != material.shaderData) {
+                UpdateMaterialAction(material, applyMaterial, material.shaderData).apply()
+            }
+        }
     }
 
     private class MaterialItem(val itemText: String, val material: MaterialData?) {
