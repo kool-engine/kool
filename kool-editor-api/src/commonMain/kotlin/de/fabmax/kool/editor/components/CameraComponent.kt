@@ -36,6 +36,10 @@ class CameraComponent(nodeModel: SceneNodeModel, override val componentData: Cam
     private fun updateCamera(cameraData: CameraTypeData, forceReplaceNode: Boolean) {
         val updateCamera = cameraData.updateOrCreateCamera(camera)
         if (forceReplaceNode || updateCamera != camera) {
+            if (sceneModel.drawNode.camera == camera) {
+                sceneModel.drawNode.camera = updateCamera
+            }
+
             camera = updateCamera
             nodeModel.setDrawNode(camera)
         }

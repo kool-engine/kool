@@ -12,7 +12,7 @@ import de.fabmax.kool.editor.api.AppMode
 import de.fabmax.kool.editor.api.AppState
 import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.editor.overlays.GridOverlay
-import de.fabmax.kool.editor.overlays.LightIndicatorOverlay
+import de.fabmax.kool.editor.overlays.SceneObjectsOverlay
 import de.fabmax.kool.editor.overlays.SelectionOverlay
 import de.fabmax.kool.editor.overlays.TransformGizmoOverlay
 import de.fabmax.kool.editor.ui.EditorUi
@@ -23,6 +23,7 @@ import de.fabmax.kool.input.PointerState
 import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.modules.ui2.docking.DockLayout
 import de.fabmax.kool.scene.Node
+import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.scene.scene
 import de.fabmax.kool.util.logW
 
@@ -35,7 +36,7 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
         camera.setClipRange(0.1f, 1000f)
     }
     val gridOverlay = GridOverlay()
-    val lightOverlay = LightIndicatorOverlay()
+    val lightOverlay = SceneObjectsOverlay()
     val gizmoOverlay = TransformGizmoOverlay(this)
     val selectionOverlay = SelectionOverlay(this)
 
@@ -232,7 +233,10 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
                 scene.addOffscreenPass(selectionOverlay.selectionPass)
                 selectionOverlay.selectionPass.drawNode = scene
 
-                scene.camera.setClipRange(0.1f, 1000f)
+                // replace original scene cam with editor cam
+                val editorCam = PerspectiveCamera()
+                editorCam.setClipRange(0.1f, 1000f)
+                scene.camera = editorCam
                 editorCameraTransform.addNode(scene.camera)
                 ui.sceneView.applyViewportTo(scene)
             }

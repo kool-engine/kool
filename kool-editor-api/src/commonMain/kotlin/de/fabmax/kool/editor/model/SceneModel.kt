@@ -2,6 +2,7 @@ package de.fabmax.kool.editor.model
 
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.editor.api.AppState
+import de.fabmax.kool.editor.components.CameraComponent
 import de.fabmax.kool.editor.components.EditorModelComponent
 import de.fabmax.kool.editor.components.SceneBackgroundComponent
 import de.fabmax.kool.editor.components.UpdateSceneBackgroundComponent
@@ -10,6 +11,7 @@ import de.fabmax.kool.editor.data.SceneNodeData
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
+import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.Skybox
@@ -22,8 +24,20 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : NodeMod
             nodeData.maxNumLights = it
         }
         drawNode.lighting.maxNumberOfLights = it
-        project.getComponentsInScene<UpdateMaxNumLightsComponent>(this).forEach {  comp ->
+        project.getComponentsInScene<UpdateMaxNumLightsComponent>(this).forEach { comp ->
             comp.updateMaxNumLightsComponent(it)
+        }
+    }
+
+    val cameraState = mutableStateOf<CameraComponent?>(null).onChange {
+        if (AppState.isEditMode) {
+            nodeData.cameraNodeId = it?.nodeModel?.nodeId ?: -1L
+        } else {
+            // only set scene cam if not in edit mode. In edit mode, editor camera is used instead
+            it?.camera?.let { cam -> drawNode.camera = cam }
+        }
+        project.getComponentsInScene<UpdateSceneCameraComponent>(this).forEach { comp ->
+            comp.updateSceneCameraComponent(it?.camera)
         }
     }
 
@@ -68,6 +82,14 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : NodeMod
             resolveNode(childId, this)?.let {
                 addSceneNode(it)
             }
+        }
+
+        val cam = nodeModels[nodeData.cameraNodeId]?.getComponent<CameraComponent>()
+        if (cam != null) {
+            cameraState.set(cam)
+            drawNode.camera = cam.camera
+        } else {
+            logW { "Scene $name has no camera attached" }
         }
     }
 
@@ -180,4 +202,8 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : NodeMod
 
 interface UpdateMaxNumLightsComponent {
     fun updateMaxNumLightsComponent(newMaxNumLights: Int)
+}
+
+interface UpdateSceneCameraComponent {
+    fun updateSceneCameraComponent(newCamera: Camera?)
 }

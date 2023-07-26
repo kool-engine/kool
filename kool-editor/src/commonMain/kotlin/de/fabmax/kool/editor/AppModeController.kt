@@ -8,9 +8,19 @@ import de.fabmax.kool.util.logI
 class AppModeController(val editor: KoolEditor) {
 
     fun startApp() {
+        val app = EditorState.loadedApp.value?.app ?: return
+        val sceneModel = EditorState.projectModel.getCreatedScenes().getOrNull(0) ?: return
+
         logI { "Start app" }
+
+        // fixme: a bit hacky currently: restore app scene camera (was replaced by custom editor cam during
+        //  editor app load)
+        sceneModel.cameraState.value?.camera?.let { cam ->
+            sceneModel.drawNode.camera = cam
+        }
+
         AppState.appModeState.set(AppMode.PLAY)
-        EditorState.loadedApp.value?.app?.startApp(KoolSystem.requireContext())
+        app.startApp(KoolSystem.requireContext())
         editor.setEditorOverlayVisibility(false)
         editor.ui.appStateInfo.set("App is running")
     }

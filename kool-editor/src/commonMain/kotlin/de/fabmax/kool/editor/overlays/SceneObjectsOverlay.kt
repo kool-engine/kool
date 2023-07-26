@@ -15,16 +15,15 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.tan
 
-class LightIndicatorOverlay : Node("Light overlay") {
+class SceneObjectsOverlay : Node("Scene objects overlay") {
 
     var displayLighting: Lighting? = null
-
 
     private val directionInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.COLORS))
     private val spotInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.COLORS))
     private val pointInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.COLORS))
 
-    private val directionalMesh = Mesh(Attribute.POSITIONS, Attribute.NORMALS, name = "Directionals").apply {
+    private val directionalMesh = Mesh(Attribute.POSITIONS, Attribute.NORMALS, name = "Directional lights").apply {
         isCastingShadow = false
         instances = directionInstances
         generate {
@@ -78,7 +77,7 @@ class LightIndicatorOverlay : Node("Light overlay") {
         }
     }
 
-    private val spotMesh = Mesh(Attribute.POSITIONS, Attribute.NORMALS, name = "Spots").apply {
+    private val spotMesh = Mesh(Attribute.POSITIONS, Attribute.NORMALS, name = "Spot lights").apply {
         isCastingShadow = false
         instances = spotInstances
         generate {
@@ -127,7 +126,7 @@ class LightIndicatorOverlay : Node("Light overlay") {
         }
     }
 
-    private val pointMesh = Mesh(Attribute.POSITIONS, Attribute.NORMALS, name = "Points").apply {
+    private val pointMesh = Mesh(Attribute.POSITIONS, Attribute.NORMALS, name = "Point lights").apply {
         isCastingShadow = false
         instances = pointInstances
         generate {
@@ -163,6 +162,9 @@ class LightIndicatorOverlay : Node("Light overlay") {
         addNode(spotMesh)
         addNode(pointMesh)
         addNode(directionalMesh)
+
+        // todo: addNode(cameraMesh)
+        // todo: addNode(emptyNodeMesh)
 
         val lightMat = Mat4f()
         onUpdate {
