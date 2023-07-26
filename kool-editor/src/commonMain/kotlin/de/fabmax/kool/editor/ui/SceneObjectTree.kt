@@ -5,10 +5,7 @@ import de.fabmax.kool.editor.actions.AddNodeAction
 import de.fabmax.kool.editor.actions.DeleteNodeAction
 import de.fabmax.kool.editor.actions.MoveSceneNodeAction
 import de.fabmax.kool.editor.actions.SetVisibilityAction
-import de.fabmax.kool.editor.components.ContentComponent
-import de.fabmax.kool.editor.components.DiscreteLightComponent
-import de.fabmax.kool.editor.components.MeshComponent
-import de.fabmax.kool.editor.components.ModelComponent
+import de.fabmax.kool.editor.components.*
 import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.editor.model.NodeModel
 import de.fabmax.kool.editor.model.SceneModel
@@ -348,7 +345,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
                 is MeshComponent -> SceneObjectType.MESH
                 is ModelComponent -> SceneObjectType.MODEL
                 is DiscreteLightComponent -> SceneObjectType.LIGHT
-                // CameraComponent -> SceneObjectType.CAMERA
+                is CameraComponent -> SceneObjectType.CAMERA
                 else -> SceneObjectType.GROUP
             }
         }

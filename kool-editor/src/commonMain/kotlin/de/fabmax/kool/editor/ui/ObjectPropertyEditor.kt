@@ -163,6 +163,7 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", ui) 
             ComponentAdder.AddShadowMapComponent,
             ComponentAdder.AddScriptComponent,
             ComponentAdder.AddSsaoComponent,
+            ComponentAdder.AddCameraComponent,
         )
     }
 
@@ -182,6 +183,12 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", ui) 
             override fun createComponent(target: NodeModel): SsaoComponent = SsaoComponent(target as SceneModel)
             override fun accept(nodeModel: NodeModel) =
                 nodeModel is SceneModel && !nodeModel.hasComponent<SsaoComponent>()
+        }
+
+        object AddCameraComponent : ComponentAdder<CameraComponent>("Camera") {
+            override fun createComponent(target: NodeModel): CameraComponent = CameraComponent(target as SceneNodeModel)
+            override fun accept(nodeModel: NodeModel) =
+                nodeModel is SceneNodeModel && !nodeModel.hasComponent<ContentComponent>()
         }
 
 

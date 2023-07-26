@@ -369,7 +369,7 @@ class ResourceBrowser(editorUi: EditorUi) : EditorPanel(
     }
 
     private fun SubMenuItem<BrowserItem>.renameDirectoryItem() = item("Rename directory") { item ->
-        OkCancelEnterTextDialog("Rename Directory", item.path, hint = "New directory name") {
+        OkCancelEnterTextDialog("Rename / Move Directory", item.path, hint = "New directory name") {
             if (it.isNotBlank()) {
                 editor.availableAssets.renameAsset(item.path, it.trim())
             }
@@ -383,7 +383,7 @@ class ResourceBrowser(editorUi: EditorUi) : EditorPanel(
     }
 
     private fun SubMenuItem<BrowserItem>.renameAssetItem() = item("Rename asset file") { item ->
-        OkCancelEnterTextDialog("Rename Asset File", item.path, hint = "New asset file name") {
+        OkCancelEnterTextDialog("Rename / Move Asset File", item.path, hint = "New asset file name") {
             if (it.isNotBlank()) {
                 editor.availableAssets.renameAsset(item.path, it.trim())
             }

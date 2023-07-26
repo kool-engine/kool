@@ -53,6 +53,7 @@ abstract class NodeModel(val nodeData: SceneNodeData) {
     private fun createComponentsFromData(componentData: List<ComponentData>) {
         componentData.forEach { data ->
             when (data) {
+                is CameraComponentData -> components += CameraComponent(requireSceneNode, data)
                 is DiscreteLightComponentData -> components += DiscreteLightComponent(requireSceneNode, data)
                 is MaterialComponentData -> components += MaterialComponent(requireSceneNode, data)
                 is MeshComponentData -> components += MeshComponent(requireSceneNode, data)

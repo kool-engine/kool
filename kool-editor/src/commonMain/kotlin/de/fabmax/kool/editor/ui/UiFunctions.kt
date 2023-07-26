@@ -56,17 +56,19 @@ fun UiScope.editorTitleBar(
                 .alignY(AlignmentY.Center)
         }
 
-        onClose?.let { action ->
-            Button {
-                modifier
-                    .size(sizes.largeGap, sizes.largeGap)
-                    .padding(Dp.ZERO)
-                    .alignY(AlignmentY.Center)
-                    .isClickFeedback(false)
-                    .background(remember { CloseButtonBackground() })
-                    .onClick(action)
-            }
-        }
+        onClose?.let { closeButton(onClose) }
+    }
+}
+
+fun UiScope.closeButton(action: (PointerEvent) -> Unit) {
+    Button {
+        modifier
+            .size(sizes.largeGap, sizes.largeGap)
+            .padding(Dp.ZERO)
+            .alignY(AlignmentY.Center)
+            .isClickFeedback(false)
+            .background(remember { CloseButtonBackground() })
+            .onClick(action)
     }
 }
 

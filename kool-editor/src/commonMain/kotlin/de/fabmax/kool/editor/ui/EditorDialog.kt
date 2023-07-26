@@ -21,9 +21,32 @@ abstract class EditorDialog(name: String, val ui: EditorUi = KoolEditor.instance
         modifier.border(RoundRectBorder(UiColors.border, sizes.gap, sizes.borderWidth))
 
         Column(Grow.Std, Grow.Std) {
-            editorTitleBar(dialogDockable, roundedTop = true) { onCloseClicked() }
+            Row(Grow.Std, height = sizes.lineHeightTitle) {
+                modifier
+                    .padding(horizontal = sizes.gap * 1.5f)
+                    .background(TitleBarBackground(UiColors.titleBg, sizes.gap.px, false))
+
+                if (!dialogDockable.isDocked.use()) {
+                    modifier.margin(sizes.borderWidth)
+                }
+                with(dialogDockable) {
+                    registerDragCallbacks()
+                }
+
+                Text(dialogDockable.name) {
+                    modifier
+                        .width(Grow.Std)
+                        .textColor(UiColors.titleText)
+                        .font(sizes.boldText)
+                        .alignY(AlignmentY.Center)
+                }
+
+                closeButton { onCloseClicked() }
+            }
+
+
             Box(width = Grow.Std, height = Grow.Std) {
-                modifier.padding(horizontal = sizes.largeGap * 1.5f, vertical = sizes.largeGap)
+                modifier.padding(horizontal = sizes.largeGap, vertical = sizes.largeGap)
                 dialogContent()
             }
             if (dialogActions.isNotEmpty()) {
