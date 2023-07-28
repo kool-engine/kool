@@ -1,27 +1,33 @@
 package de.fabmax.kool.editor.overlays
 
+import de.fabmax.kool.editor.EditorState
+import de.fabmax.kool.editor.components.CameraComponent
+import de.fabmax.kool.editor.components.ContentComponent
+import de.fabmax.kool.editor.model.SceneModel
 import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.math.toRad
 import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.CullMethod
-import de.fabmax.kool.scene.*
+import de.fabmax.kool.scene.Light
+import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.scene.MeshInstanceList
+import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.geometry.MeshBuilder
+import de.fabmax.kool.util.MdColor
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
-import kotlin.math.tan
 
 class SceneObjectsOverlay : Node("Scene objects overlay") {
-
-    var displayLighting: Lighting? = null
 
     private val directionInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.COLORS))
     private val spotInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.COLORS))
     private val pointInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.COLORS))
+    private val cameraInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.COLORS))
+    private val groupInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.COLORS))
 
     private val directionalMesh = Mesh(Attribute.POSITIONS, Attribute.NORMALS, name = "Directional lights").apply {
         isCastingShadow = false
@@ -30,19 +36,7 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
             uvSphere {
                 radius = 0.15f
             }
-
-            line3d(Vec3f.ZERO, Vec3f(1.5f, 0f, 0f), Vec3f.Z_AXIS, lineW)
-            line3d(Vec3f.ZERO, Vec3f(1.5f, 0f, 0f), Vec3f.Y_AXIS, lineW)
-            withTransform {
-                rotate(-90f, Vec3f.Z_AXIS)
-                translate(0f, 1.6f, 0f)
-                cylinder {
-                    bottomRadius = 0.15f
-                    topRadius = 0f
-                    height = 0.2f
-                    topFill = false
-                }
-            }
+            generateArrow()
 
             for (i in 0 until 63) {
                 val a1 = i / 63f * 2f * PI.toFloat()
@@ -84,27 +78,15 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
             uvSphere {
                 radius = 0.15f
             }
-
-            line3d(Vec3f.ZERO, Vec3f(1.5f, 0f, 0f), Vec3f.Z_AXIS, lineW)
-            line3d(Vec3f.ZERO, Vec3f(1.5f, 0f, 0f), Vec3f.Y_AXIS, lineW)
-            withTransform {
-                rotate(-90f, Vec3f.Z_AXIS)
-                translate(0f, 1.6f, 0f)
-                cylinder {
-                    bottomRadius = 0.15f
-                    topRadius = 0f
-                    height = 0.2f
-                    topFill = false
-                }
-            }
+            generateArrow()
 
             for (i in 0 until 63) {
                 val a1 = i / 63f * 2f * PI.toFloat()
-                val z1 = cos(a1)
-                val y1 = sin(a1)
+                val z1 = cos(a1) * 0.85f
+                val y1 = sin(a1) * 0.85f
                 val a2 = (i + 1) / 63f * 2f * PI.toFloat()
-                val z2 = cos(a2)
-                val y2 = sin(a2)
+                val z2 = cos(a2) * 0.85f
+                val y2 = sin(a2) * 0.85f
 
                 val nrm = Vec3f(0f, y1, z1)
                 line3d(Vec3f(1f, y1, z1), Vec3f(1f, y2, z2), nrm, lineW)
@@ -158,45 +140,155 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
         }
     }
 
+    private val cameraMesh = Mesh(Attribute.POSITIONS, Attribute.NORMALS, name = "Cameras").apply {
+        isCastingShadow = false
+        instances = cameraInstances
+        generate {
+            rotate(90f, Vec3f.Y_AXIS)
+            generateArrow()
+
+            cube {
+                size.set(0.4f, 0.3f, 0.2f)
+            }
+
+            val pts = listOf(
+                Vec3f(1f, 0.6f, 1f),
+                Vec3f(1f, 0.6f, -1f),
+                Vec3f(1f, -0.6f, -1f),
+                Vec3f(1f, -0.6f, 1f),
+            )
+
+            pts.forEachIndexed { i, pt ->
+                line3d(Vec3f.ZERO, pt, Vec3f.Y_AXIS, lineW)
+                line3d(Vec3f.ZERO, pt, Vec3f.Z_AXIS, lineW)
+
+                val p2 = pts[(i + 1) % 4]
+                line3d(pt, p2, Vec3f.X_AXIS, lineW)
+                line3d(pt, p2, if (pt.y == p2.y) Vec3f.Y_AXIS else Vec3f.Z_AXIS, lineW)
+            }
+        }
+
+        shader = KslUnlitShader {
+            vertices { isInstanced = true }
+            pipeline { cullMethod = CullMethod.NO_CULLING }
+            color { instanceColor(Attribute.COLORS) }
+        }
+    }
+
+    private val groupMesh = Mesh(Attribute.POSITIONS, Attribute.COLORS, Attribute.NORMALS, name = "Groups").apply {
+        isCastingShadow = false
+        instances = groupInstances
+        generate {
+            color = MdColor.RED
+            line3d(Vec3f.ZERO, Vec3f.X_AXIS, Vec3f.Y_AXIS, lineW)
+            line3d(Vec3f.ZERO, Vec3f.X_AXIS, Vec3f.Z_AXIS, lineW)
+            color = MdColor.GREEN
+            line3d(Vec3f.ZERO, Vec3f.Y_AXIS, Vec3f.X_AXIS, lineW)
+            line3d(Vec3f.ZERO, Vec3f.Y_AXIS, Vec3f.Z_AXIS, lineW)
+            color = MdColor.BLUE
+            line3d(Vec3f.ZERO, Vec3f.Z_AXIS, Vec3f.Y_AXIS, lineW)
+            line3d(Vec3f.ZERO, Vec3f.Z_AXIS, Vec3f.X_AXIS, lineW)
+        }
+
+        shader = KslUnlitShader {
+            vertices { isInstanced = true }
+            pipeline { cullMethod = CullMethod.NO_CULLING }
+            color {
+                vertexColor()
+            }
+        }
+    }
+
+    private val tmpMat = Mat4f()
+
     init {
         addNode(spotMesh)
         addNode(pointMesh)
         addNode(directionalMesh)
 
-        // todo: addNode(cameraMesh)
-        // todo: addNode(emptyNodeMesh)
+        addNode(cameraMesh)
+        addNode(groupMesh)
 
-        val lightMat = Mat4f()
         onUpdate {
-            directionInstances.clear()
-            spotInstances.clear()
-            pointInstances.clear()
+            EditorState.activeScene.value?.let { sceneModel ->
+                addLightInstances(sceneModel)
+                addCameraInstances(sceneModel)
+                addGroupInstances(sceneModel)
+            }
+        }
+    }
 
-            displayLighting?.lights?.let { lights ->
-                lights.filter { it.isVisible }.forEach { light ->
-                    val instances: MeshInstanceList
-                    val yzScale: Float
-                    when (light) {
-                        is Light.Directional -> {
-                            yzScale = 1f
-                            instances = directionInstances
-                        }
-                        is Light.Point -> {
-                            yzScale = 1f
-                            instances = pointInstances
-                        }
-                        is Light.Spot -> {
-                            yzScale = tan(light.spotAngle.toRad() / 2f)
-                            instances = spotInstances
-                        }
-                    }
+    private fun addLightInstances(sceneModel: SceneModel) {
+        directionInstances.clear()
+        spotInstances.clear()
+        pointInstances.clear()
 
-                    lightMat.set(light.transform.matrix).scale(1f, yzScale, yzScale)
-                    instances.addInstance {
-                        put(lightMat.array)
-                        put(light.color.array)
-                    }
+        sceneModel.drawNode.lighting.lights
+            .filter { it.isVisible }
+            .forEach { light ->
+                val instances = when (light) {
+                    is Light.Directional -> directionInstances
+                    is Light.Point -> pointInstances
+                    is Light.Spot -> spotInstances
                 }
+
+                tmpMat.set(light.transform.matrix)
+                instances.addInstance {
+                    put(tmpMat.array)
+                    put(light.color.array)
+                }
+            }
+    }
+
+    private fun addCameraInstances(sceneModel: SceneModel) {
+        cameraInstances.clear()
+
+        // fixme: query is executed every frame and will become quite slow for larger scenes
+        sceneModel.project.getComponentsInScene<CameraComponent>(sceneModel)
+            .filter { it.nodeModel.isVisibleState.value }
+            .forEach {
+                val isActive = it.sceneModel.cameraState.value == it
+                val color = if (isActive) MdColor.GREY tone 300 else MdColor.GREY tone 700
+                tmpMat.set(it.nodeModel.drawNode.modelMat)
+                cameraInstances.addInstance {
+                    put(tmpMat.array)
+                    put(color.r)
+                    put(color.g)
+                    put(color.b)
+                    put(color.a)
+                }
+            }
+    }
+
+    private fun addGroupInstances(sceneModel: SceneModel) {
+        groupInstances.clear()
+
+        // fixme: query is executed every frame and will become quite slow for larger scenes
+        sceneModel.nodeModels.values.filter { it.components.none { c -> c is ContentComponent } }
+            .filter { it.isVisibleState.value }
+            .forEach {
+                tmpMat.set(it.drawNode.modelMat)
+                groupInstances.addInstance {
+                    put(tmpMat.array)
+                    put(1f)
+                    put(1f)
+                    put(1f)
+                    put(1f)
+                }
+            }
+    }
+
+    private fun MeshBuilder.generateArrow() {
+        line3d(Vec3f.ZERO, Vec3f(1.5f, 0f, 0f), Vec3f.Z_AXIS, lineW)
+        line3d(Vec3f.ZERO, Vec3f(1.5f, 0f, 0f), Vec3f.Y_AXIS, lineW)
+        withTransform {
+            rotate(-90f, Vec3f.Z_AXIS)
+            translate(0f, 1.6f, 0f)
+            cylinder {
+                bottomRadius = 0.15f
+                topRadius = 0f
+                height = 0.2f
+                topFill = false
             }
         }
     }
