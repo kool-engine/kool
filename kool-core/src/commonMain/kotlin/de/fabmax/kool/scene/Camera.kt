@@ -366,7 +366,7 @@ open class PerspectiveCamera(name: String = "perspectiveCam") : Camera(name) {
     }
 }
 
-open class PerspectiveProxyCam(val sceneCam: PerspectiveCamera) : PerspectiveCamera() {
+open class PerspectiveProxyCam(var sceneCam: PerspectiveCamera) : PerspectiveCamera() {
     init {
         useViewportAspectRatio = false
         projCorrectionMode = ProjCorrectionMode.OFFSCREEN

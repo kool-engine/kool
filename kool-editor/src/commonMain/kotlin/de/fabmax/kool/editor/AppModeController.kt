@@ -3,6 +3,9 @@ package de.fabmax.kool.editor
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.editor.api.AppMode
 import de.fabmax.kool.editor.api.AppState
+import de.fabmax.kool.editor.components.SsaoComponent
+import de.fabmax.kool.pipeline.ao.AoPipeline
+import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.util.logI
 
 class AppModeController(val editor: KoolEditor) {
@@ -17,6 +20,11 @@ class AppModeController(val editor: KoolEditor) {
         //  editor app load)
         sceneModel.cameraState.value?.camera?.let { cam ->
             sceneModel.drawNode.camera = cam
+
+            (cam as? PerspectiveCamera)?.let {
+                val aoPipeline = sceneModel.getComponent<SsaoComponent>()?.aoPipeline as? AoPipeline.ForwardAoPipeline
+                aoPipeline?.proxyCamera?.sceneCam = it
+            }
         }
 
         AppState.appModeState.set(AppMode.PLAY)

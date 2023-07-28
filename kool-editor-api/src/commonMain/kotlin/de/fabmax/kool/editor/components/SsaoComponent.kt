@@ -23,7 +23,7 @@ class SsaoComponent(override val nodeModel: SceneModel, override val componentDa
         applySettings(it)
     }
 
-    private var aoPipeline: AoPipeline? = null
+    var aoPipeline: AoPipeline? = null
 
     override suspend fun createComponent() {
         super.createComponent()

@@ -79,8 +79,9 @@ abstract class AoPipeline {
 
         private val onRenderSceneCallback: (KoolContext) -> Unit = { onRenderScene(it) }
 
+        val proxyCamera = PerspectiveProxyCam(scene.camera as PerspectiveCamera)
+
         init {
-            val proxyCamera = PerspectiveProxyCam(scene.camera as PerspectiveCamera)
             depthPass = NormalLinearDepthMapPass(scene, mapWidth, mapHeight)
             depthPass.camera = proxyCamera
             depthPass.isUpdateDrawNode = false

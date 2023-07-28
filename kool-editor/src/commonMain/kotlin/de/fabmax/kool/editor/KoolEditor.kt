@@ -10,6 +10,7 @@ import de.fabmax.kool.editor.actions.SetVisibilityAction
 import de.fabmax.kool.editor.api.AppAssets
 import de.fabmax.kool.editor.api.AppMode
 import de.fabmax.kool.editor.api.AppState
+import de.fabmax.kool.editor.components.SsaoComponent
 import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.editor.overlays.GridOverlay
 import de.fabmax.kool.editor.overlays.SceneObjectsOverlay
@@ -22,6 +23,7 @@ import de.fabmax.kool.input.LocalKeyCode
 import de.fabmax.kool.input.PointerState
 import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.modules.ui2.docking.DockLayout
+import de.fabmax.kool.pipeline.ao.AoPipeline
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.scene.scene
@@ -221,14 +223,13 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
         loadedApp.app.loadApp(EditorState.projectModel, ctx)
 
         // add scene objects from new app
-        EditorState.projectModel.getCreatedScenes().map { it.drawNode }.let { newScenes ->
+        EditorState.projectModel.getCreatedScenes().let { newScenes ->
             if (newScenes.size != 1) {
                 logW { "Unusual number of scene, currently only single scene setups are supported" }
             }
-            newScenes.firstOrNull()?.let { scene ->
+            newScenes.firstOrNull()?.let { sceneModel ->
+                val scene = sceneModel.drawNode
                 ctx.scenes += scene
-
-                lightOverlay.displayLighting = scene.lighting
 
                 scene.addOffscreenPass(selectionOverlay.selectionPass)
                 selectionOverlay.selectionPass.drawNode = scene
@@ -239,6 +240,9 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
                 scene.camera = editorCam
                 editorCameraTransform.addNode(scene.camera)
                 ui.sceneView.applyViewportTo(scene)
+
+                val aoPipeline = sceneModel.getComponent<SsaoComponent>()?.aoPipeline as? AoPipeline.ForwardAoPipeline
+                aoPipeline?.proxyCamera?.sceneCam = editorCam
             }
         }
 
