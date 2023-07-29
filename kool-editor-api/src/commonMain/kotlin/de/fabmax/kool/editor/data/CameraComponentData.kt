@@ -17,42 +17,45 @@ sealed class CameraTypeData {
 
     abstract fun createCamera(): Camera
 
-    open fun updateOrCreateCamera(existingCamera: Camera): Camera {
-        existingCamera.name = name
-        return existingCamera
-    }
+    abstract fun updateOrCreateCamera(existingCamera: Camera): Camera
 
     @Serializable
-    class Perspective(val fovY: Float = 60f, override val clipNear: Float = 0.1f, override val clipFar: Float = 1000f) : CameraTypeData() {
+    data class Perspective(val fovY: Float = 60f, override val clipNear: Float = 0.1f, override val clipFar: Float = 1000f) : CameraTypeData() {
         override val name: String = "Perspective"
 
-        override fun createCamera(): PerspectiveCamera = PerspectiveCamera(name).apply {
-            setClipRange(clipNear, clipFar)
-            this.fovY = this@Perspective.fovY
+        private fun applyCamProperties(target: PerspectiveCamera) {
+            target.setClipRange(clipNear, clipFar)
+            target.fovY = this@Perspective.fovY
+            target.name = name
         }
+
+        override fun createCamera(): PerspectiveCamera = PerspectiveCamera(name).also { applyCamProperties(it) }
 
         override fun updateOrCreateCamera(existingCamera: Camera): PerspectiveCamera {
             val perspectiveCam = if (existingCamera is PerspectiveCamera) existingCamera else createCamera()
-            super.updateOrCreateCamera(existingCamera)
+            applyCamProperties(perspectiveCam)
             return perspectiveCam
         }
     }
 
     @Serializable
-    class Orthographic(val height: Float, override val clipNear: Float, override val clipFar: Float) : CameraTypeData() {
+    data class Orthographic(val height: Float, override val clipNear: Float = 0.1f, override val clipFar: Float = 1000f) : CameraTypeData() {
         override val name: String = "Orthographic"
 
-        override fun createCamera(): OrthographicCamera = OrthographicCamera(name).apply {
-            setClipRange(clipNear, clipFar)
-            top = height * 0.5f
-            bottom = height * -0.5f
-            isKeepAspectRatio = true
+        private fun applyCamProperties(target: OrthographicCamera) {
+            target.setClipRange(clipNear, clipFar)
+            target.top = height * 0.5f
+            target.bottom = height * -0.5f
+            target.isKeepAspectRatio = true
+            target.name = name
         }
 
+        override fun createCamera(): OrthographicCamera = OrthographicCamera(name).also { applyCamProperties(it) }
+
         override fun updateOrCreateCamera(existingCamera: Camera): OrthographicCamera {
-            val perspectiveCam = if (existingCamera is OrthographicCamera) existingCamera else createCamera()
-            super.updateOrCreateCamera(existingCamera)
-            return perspectiveCam
+            val orthographicCam = if (existingCamera is OrthographicCamera) existingCamera else createCamera()
+            applyCamProperties(orthographicCam)
+            return orthographicCam
         }
     }
 }

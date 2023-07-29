@@ -27,9 +27,10 @@ class LightEditor(component: DiscreteLightComponent) : ComponentEditor<DiscreteL
                     val newLight = when (it.lightType) {
                         LightTypeData.Directional::class -> LightTypeData.Directional(color)
                         LightTypeData.Spot::class -> LightTypeData.Spot(color)
-                        else -> LightTypeData.Point(color)
+                        LightTypeData.Point::class -> LightTypeData.Point(color)
+                        else -> throw IllegalStateException("Unsupported light type: ${it.lightType}")
                     }
-                    SetDiscreteLightAction(component, newLight).apply()
+                    SetDiscreteLightAction(component, newLight, currentLight).apply()
                 }
 
                 menuDivider()
@@ -43,34 +44,83 @@ class LightEditor(component: DiscreteLightComponent) : ComponentEditor<DiscreteL
     }
 
     private fun UiScope.colorSettings() {
-        labeledColorPicker("Color:", currentLight.color.toColorSrgb()) {
-            val chgLight = when (val light = currentLight) {
-                is LightTypeData.Directional -> light.copy(color = ColorData(it.toLinear()))
-                is LightTypeData.Point -> light.copy(color = ColorData(it.toLinear()))
-                is LightTypeData.Spot -> light.copy(color = ColorData(it.toLinear()))
+        labeledColorPicker(
+            label = "Color:",
+            pickerColor = currentLight.color.toColorSrgb(),
+            editHandler = ActionValueEditHandler { undoValue, applyValue ->
+                val applyLight: LightTypeData
+                val undoLight: LightTypeData
+                when (val light = currentLight) {
+                    is LightTypeData.Directional -> {
+                        applyLight = light.copy(color = ColorData(applyValue.toLinear()))
+                        undoLight = light.copy(color = ColorData(undoValue.toLinear()))
+                    }
+                    is LightTypeData.Point -> {
+                        applyLight = light.copy(color = ColorData(applyValue.toLinear()))
+                        undoLight = light.copy(color = ColorData(undoValue.toLinear()))
+                    }
+                    is LightTypeData.Spot -> {
+                        applyLight = light.copy(color = ColorData(applyValue.toLinear()))
+                        undoLight = light.copy(color = ColorData(undoValue.toLinear()))
+                    }
+                }
+                SetDiscreteLightAction(component, applyLight, undoLight)
             }
-            SetDiscreteLightAction(component, chgLight).apply()
-        }
+        )
 
-        val light = currentLight
-        val dragChangeSpeed = if (light is LightTypeData.Directional) 0.05 else 10.0
-        labeledDoubleTextField("Strength:", light.intensity.toDouble(), minValue = 0.0, dragChangeSpeed = dragChangeSpeed) {
-            val chgLight = when (light) {
-                is LightTypeData.Directional -> light.copy(intensity = it.toFloat())
-                is LightTypeData.Point -> light.copy(intensity = it.toFloat())
-                is LightTypeData.Spot -> light.copy(intensity = it.toFloat())
+        val dragChangeSpeed = DragChangeRates.RANGE_0_TO_1 * if (currentLight is LightTypeData.Directional) 5.0 else 1000.0
+        labeledDoubleTextField(
+            label = "Strength:",
+            value = currentLight.intensity.toDouble(),
+            minValue = 0.0,
+            dragChangeSpeed = dragChangeSpeed,
+            editHandler = ActionValueEditHandler { undoValue, applyValue ->
+                val applyLight: LightTypeData
+                val undoLight: LightTypeData
+                when (val light = currentLight) {
+                    is LightTypeData.Directional -> {
+                        applyLight = light.copy(intensity = applyValue.toFloat())
+                        undoLight = light.copy(intensity = undoValue.toFloat())
+                    }
+                    is LightTypeData.Point -> {
+                        applyLight = light.copy(intensity = applyValue.toFloat())
+                        undoLight = light.copy(intensity = undoValue.toFloat())
+                    }
+                    is LightTypeData.Spot -> {
+                        applyLight = light.copy(intensity = applyValue.toFloat())
+                        undoLight = light.copy(intensity = undoValue.toFloat())
+                    }
+                }
+                SetDiscreteLightAction(component, applyLight, undoLight)
             }
-            SetDiscreteLightAction(component, chgLight).apply()
-        }
+        )
     }
 
     private fun UiScope.spotSettings(spot: LightTypeData.Spot) {
-        labeledDoubleTextField("Angle:", spot.spotAngle.toDouble(), minValue = 0.0, maxValue = 120.0, dragChangeSpeed = 0.5) {
-            SetDiscreteLightAction(component, spot.copy(spotAngle = it.toFloat())).apply()
-        }
-        labeledDoubleTextField("Hardness:", spot.coreRatio.toDouble(), minValue = 0.0, maxValue = 1.0, dragChangeSpeed = 0.01) {
-            SetDiscreteLightAction(component, spot.copy(coreRatio = it.toFloat())).apply()
-        }
+        labeledDoubleTextField(
+            label = "Angle:",
+            value = spot.spotAngle.toDouble(),
+            minValue = 0.0,
+            maxValue = 120.0,
+            dragChangeSpeed = DragChangeRates.RANGE_0_TO_1 * 90,
+            editHandler = ActionValueEditHandler { undoValue, applyValue ->
+                val applyLight = spot.copy(spotAngle = applyValue.toFloat())
+                val undoLight = spot.copy(spotAngle = undoValue.toFloat())
+                SetDiscreteLightAction(component, applyLight, undoLight)
+            }
+        )
+        labeledDoubleTextField(
+            label = "Hardness:",
+            value = spot.coreRatio.toDouble(),
+            minValue = 0.0,
+            maxValue = 1.0,
+            dragChangeSpeed = DragChangeRates.RANGE_0_TO_1,
+            editHandler = ActionValueEditHandler { undoValue, applyValue ->
+                val applyLight = spot.copy(coreRatio = applyValue.toFloat())
+                val undoLight = spot.copy(coreRatio = undoValue.toFloat())
+                SetDiscreteLightAction(component, applyLight, undoLight)
+            }
+        )
     }
 
     private class LightTypeOption<T: LightTypeData>(val name: String, val lightType: KClass<T>) {

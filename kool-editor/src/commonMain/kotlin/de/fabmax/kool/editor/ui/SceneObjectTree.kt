@@ -382,7 +382,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
 
     private enum class SceneObjectType(val startExpanded: Boolean = false, val isHideable: Boolean = true) {
         NON_MODEL_NODE(isHideable = false),
-        CAMERA(isHideable = false),
+        CAMERA,
         LIGHT,
         GROUP(true),
         MESH,

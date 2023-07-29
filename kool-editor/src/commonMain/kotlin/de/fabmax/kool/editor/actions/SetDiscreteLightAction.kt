@@ -5,16 +5,15 @@ import de.fabmax.kool.editor.data.LightTypeData
 
 class SetDiscreteLightAction(
     val lightComponent: DiscreteLightComponent,
-    val setLightData: LightTypeData
+    val setLightData: LightTypeData,
+    val undoLightData: LightTypeData
 ) : EditorAction {
-
-    private val prevLightData = lightComponent.lightState.value
 
     override fun doAction() {
         lightComponent.lightState.set(setLightData)
     }
 
     override fun undoAction() {
-        lightComponent.lightState.set(prevLightData)
+        lightComponent.lightState.set(undoLightData)
     }
 }

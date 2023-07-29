@@ -95,6 +95,7 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", ui) 
 
             for (component in selectedObject.components.use()) {
                 when (component) {
+                    is CameraComponent -> componentEditor(component) { CameraEditor(component) }
                     is DiscreteLightComponent -> componentEditor(component) { LightEditor(component) }
                     is MaterialComponent -> componentEditor(component) { MaterialEditor(component) }
                     is MeshComponent -> componentEditor(component) { MeshEditor(component) }

@@ -58,7 +58,7 @@ class MaterialEditor(component: MaterialComponent) : ComponentEditor<MaterialCom
 
     private fun UiScope.genericSettings(material: MaterialData) {
         var isTwoSided by remember(material.shaderData.genericSettings.isTwoSided)
-        labeledSwitch("Is two-sided:", isTwoSided) {
+        labeledCheckbox("Is two-sided:", isTwoSided) {
             isTwoSided = it
 
             val undoMaterial = material.shaderData
