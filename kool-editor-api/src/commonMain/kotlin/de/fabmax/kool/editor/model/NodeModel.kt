@@ -82,6 +82,7 @@ abstract class NodeModel(val nodeData: SceneNodeData) {
             it.destroyComponent()
             check(!it.isCreated) { "Component not destroyed: $it" }
         }
+        onNodeUpdate.clear()
         drawNode.dispose(KoolSystem.requireContext())
         drawNode.parent?.removeNode(drawNode)
         isCreated = false

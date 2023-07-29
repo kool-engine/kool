@@ -90,6 +90,10 @@ open class Scene(name: String? = null) : Node(name) {
             disposables[i].dispose(updateEvent.ctx)
         }
         disposables.clear()
+
+        // update lights not attached
+        lighting.onUpdate(updateEvent)
+
         super.update(updateEvent)
     }
 

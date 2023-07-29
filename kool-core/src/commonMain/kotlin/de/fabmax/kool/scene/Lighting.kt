@@ -1,6 +1,7 @@
 package de.fabmax.kool.scene
 
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.logW
 
@@ -17,6 +18,15 @@ class Lighting {
     init {
         singleDirectionalLight {
             setup(Vec3f(-0.8f, -1.2f, -1f)).setColor(Color.WHITE, 1f)
+        }
+    }
+
+    fun onUpdate(updateEvent: RenderPass.UpdateEvent) {
+        // if lights are not attached to the scene graph, their update function is not called, do this here instead
+        for (i in lights.indices) {
+            if (lights[i].parent == null) {
+                lights[i].update(updateEvent)
+            }
         }
     }
 

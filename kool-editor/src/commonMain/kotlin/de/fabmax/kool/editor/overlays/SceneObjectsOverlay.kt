@@ -232,7 +232,7 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
                     is Light.Spot -> spotInstances
                 }
 
-                tmpMat.set(light.transform.matrix)
+                tmpMat.set(light.modelMat)
                 instances.addInstance {
                     put(tmpMat.array)
                     put(light.color.array)
