@@ -148,17 +148,6 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : NodeMod
         }
     }
 
-    override fun addChild(child: SceneNodeModel) {
-        nodeData.childNodeIds += child.nodeId
-        child.parent = this
-        drawNode.addNode(child.drawNode)
-    }
-
-    override fun removeChild(child: SceneNodeModel) {
-        nodeData.childNodeIds -= child.nodeId
-        drawNode.removeNode(child.drawNode)
-    }
-
     private inner class BackgroundUpdater :
         EditorModelComponent(this@SceneModel),
         UpdateSceneBackgroundComponent

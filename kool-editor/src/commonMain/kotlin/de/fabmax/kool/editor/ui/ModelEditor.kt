@@ -33,7 +33,6 @@ class ModelEditor(component: ModelComponent) : ComponentEditor<ModelComponent>(c
                     }
 
                 val handler = remember { ModelDndHandler(uiNode) }
-                handler.dropTarget = uiNode
                 KoolEditor.instance.ui.dndController.registerHandler(handler, surface)
 
                 if (handler.isDrag.use()) {

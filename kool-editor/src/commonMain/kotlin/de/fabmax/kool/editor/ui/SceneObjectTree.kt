@@ -168,10 +168,9 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         item("Focus object") { focusNode(it) }
     }
 
-    private fun UiScope.sceneObjectItem(item: SceneObjectItem, isHovered: Boolean) = Row(width = Grow.Std) {
+    private fun UiScope.sceneObjectItem(item: SceneObjectItem, isHovered: Boolean) {
         modifier
             .margin(horizontal = sizes.smallGap)
-            .height(sizes.lineHeight)
             .onClick {
                 if (it.pointer.isLeftButtonClicked) {
                     EditorState.selectSingle(item.nodeModel)
@@ -180,29 +179,57 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
                     }
                 }
             }
-
-        if (item.type != SceneObjectType.NON_MODEL_NODE) {
-            // create dnd handler (handles reception of dropped dnd items)
-            val handler = rememberItemDndHandler(item)
-
-            // drag-and-drop hover is not covered by regular hover callbacks, instead we have to handle
-            // it separately here...
-            if (handler.isHovered.use()) {
-                modifier.background(RoundRectBackground(colors.hoverBg, sizes.smallGap))
-            }
-
-            // install drag and drop handler (handles dragging / sending this item to somewhere else)
-            if (item.nodeModel is SceneNodeModel) {
-                modifier.installDragAndDropHandler(dndCtx, handler) { DndItemFlavor.SCENE_NODE_MODEL.itemOf(item.nodeModel) }
-            } else if (item.nodeModel is SceneModel) {
-                modifier.installDragAndDropHandler(dndCtx, handler) { DndItemFlavor.SCENE_MODEL.itemOf(item.nodeModel) }
-            }
-        }
-
         if (isHovered) {
             modifier.background(RoundRectBackground(colors.hoverBg, sizes.smallGap))
         }
 
+        sceneObjectDndHandler(item)
+        sceneObjectLabel(item, isHovered)
+    }
+
+    private fun UiScope.sceneObjectDndHandler(item: SceneObjectItem) {
+        if (item.type != SceneObjectType.NON_MODEL_NODE) {
+            // create dnd handler (handles reception of dropped dnd items)
+            val dndHandler = rememberItemDndHandler(item)
+
+            // drag-and-drop hover is not covered by regular hover callbacks, instead we have to handle
+            // it separately here...
+            if (dndHandler.isHovered.use()) {
+                when (dndHandler.insertPos.use()) {
+                    -1 -> {
+                        // top border hovered, dropped item will be inserted before this node
+                        Box(width = Grow.Std, height = 1.5f.dp) {
+                            modifier
+                                .margin(start = sizes.gap * item.depth)
+                                .backgroundColor(colors.elevatedComponentBgHovered)
+                        }
+                    }
+                    0 -> {
+                        // center hovered, dropped item will be inserted as a child of this node
+                        modifier.background(RoundRectBackground(colors.hoverBg, sizes.smallGap))
+                    }
+                    1 -> {
+                        // bottom border hovered, dropped item will be inserted after this node
+                        Box(width = Grow.Std, height = 1.5f.dp) {
+                            modifier
+                                .margin(start = sizes.gap * item.depth)
+                                .alignY(AlignmentY.Bottom)
+                                .backgroundColor(colors.elevatedComponentBgHovered)
+                        }
+                    }
+                }
+            }
+
+            // install drag and drop handler (handles dragging / sending this item to somewhere else)
+            if (item.nodeModel is SceneNodeModel) {
+                modifier.installDragAndDropHandler(dndCtx, dndHandler) { DndItemFlavor.SCENE_NODE_MODEL.itemOf(item.nodeModel) }
+            } else if (item.nodeModel is SceneModel) {
+                modifier.installDragAndDropHandler(dndCtx, dndHandler) { DndItemFlavor.SCENE_MODEL.itemOf(item.nodeModel) }
+            }
+        }
+    }
+
+    private fun UiScope.sceneObjectLabel(item: SceneObjectItem, isHovered: Boolean) = Row(width = Grow.Std, height = sizes.lineHeight) {
         // tree-depth based indentation
         if (item.depth > 0) {
             Box(width = sizes.gap * item.depth) { }
@@ -269,7 +296,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
                 val eyeColor = when {
                     isHovered -> fgColor
                     !isVisible -> fgColor
-                    else -> fgColor.withAlpha(0.5f)
+                    else -> fgColor.withAlpha(0.4f)
                 }
                 Image {
                     modifier
@@ -360,22 +387,52 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
 
     private fun UiScope.rememberItemDndHandler(treeItem: SceneObjectItem): TreeItemDndHandler {
         val handler = remember { TreeItemDndHandler(treeItem, uiNode) }
-        handler.dropTarget = uiNode
+        handler.treeItem = treeItem
         KoolEditor.instance.ui.dndController.registerHandler(handler, surface)
         return handler
     }
 
-    private inner class TreeItemDndHandler(val treeItem: SceneObjectItem, dropTarget: UiNode) :
+    private inner class TreeItemDndHandler(var treeItem: SceneObjectItem, dropTarget: UiNode) :
         DndHandler(dropTarget, setOf(DndItemFlavor.SCENE_NODE_MODEL))
     {
+        // insert pos: -1 if top border is hovered, 0 if center is hovered, +1 if bottom border is hovered
+        val insertPos = mutableStateOf(0)
+
+        override fun onMatchingHover(
+            dragItem: EditorDndItem<*>,
+            dragPointer: PointerEvent,
+            source: DragAndDropHandler<EditorDndItem<*>>?,
+            isHovered: Boolean
+        ) {
+            super.onMatchingHover(dragItem, dragPointer, source, isHovered)
+
+            val h = dropTarget.heightPx
+            val hoverPtrPos = dropTarget.toLocal(dragPointer.screenPosition)
+
+            when {
+                hoverPtrPos.y < h * 0.25f -> insertPos.set(-1)
+                hoverPtrPos.y > h * 0.75f -> insertPos.set(1)
+                else -> insertPos.set(0)
+            }
+        }
+
         override fun onMatchingReceive(
             dragItem: EditorDndItem<*>,
             dragPointer: PointerEvent,
             source: DragAndDropHandler<EditorDndItem<*>>?
         ) {
             val dragTreeItem = dragItem.get(DndItemFlavor.SCENE_NODE_MODEL)
-            if (dragTreeItem != treeItem.nodeModel) {
-                MoveSceneNodeAction(dragTreeItem, treeItem.nodeModel).apply()
+            val self = treeItem.nodeModel
+            if (dragTreeItem != self) {
+                when {
+                    insertPos.value == -1 && self is SceneNodeModel -> {
+                        MoveSceneNodeAction(dragTreeItem, self.parent, NodeModel.InsertionPos.Before(self)).apply()
+                    }
+                    insertPos.value == 1 && self is SceneNodeModel -> {
+                        MoveSceneNodeAction(dragTreeItem, self.parent, NodeModel.InsertionPos.After(self)).apply()
+                    }
+                    else -> MoveSceneNodeAction(dragTreeItem, self, NodeModel.InsertionPos.End).apply()
+                }
             }
         }
     }

@@ -11,5 +11,5 @@ class SceneNodeData(
     var cameraNodeId: Long = -1L
 ) {
     val components: MutableList<ComponentData> = mutableListOf()
-    val childNodeIds: MutableSet<Long> = mutableSetOf()
+    val childNodeIds: MutableList<Long> = mutableListOf()
 }

@@ -9,6 +9,7 @@ import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.launchOnMainThread
+import kotlin.math.max
 
 abstract class NodeModel(val nodeData: SceneNodeData) {
 
@@ -42,8 +43,44 @@ abstract class NodeModel(val nodeData: SceneNodeData) {
         createComponentsFromData(nodeData.components)
     }
 
-    abstract fun addChild(child: SceneNodeModel)
-    abstract fun removeChild(child: SceneNodeModel)
+    fun addChild(child: SceneNodeModel, insertionPos: InsertionPos = InsertionPos.End) {
+        // addChild() is called during scene creation for all child nodes of this NodeModel, in that case
+        // the IDs of the children already exist in nodeData.childNodeIds -> only insert node ID if it isn't
+        // already present
+        val insertId = child.nodeId !in nodeData.childNodeIds
+
+        when (insertionPos) {
+            is InsertionPos.After -> {
+                if (insertId) {
+                    val insertIdx = nodeData.childNodeIds.indexOf(insertionPos.that.nodeId) + 1
+                    nodeData.childNodeIds.add(insertIdx, child.nodeId)
+                }
+                val insertSceneIdx = drawNode.children.indexOf(insertionPos.that.drawNode) + 1
+                drawNode.addNode(child.drawNode, insertSceneIdx)
+            }
+            is InsertionPos.Before -> {
+                if (insertId) {
+                    val insertIdx = max(0, nodeData.childNodeIds.indexOf(insertionPos.that.nodeId))
+                    nodeData.childNodeIds.add(insertIdx, child.nodeId)
+                }
+                val insertSceneIdx = max(0, drawNode.children.indexOf(insertionPos.that.drawNode))
+                drawNode.addNode(child.drawNode, insertSceneIdx)
+            }
+            InsertionPos.End -> {
+                if (insertId) {
+                    nodeData.childNodeIds += child.nodeId
+                }
+                drawNode.addNode(child.drawNode)
+            }
+        }
+
+        child.parent = this
+    }
+
+    fun removeChild(child: SceneNodeModel) {
+        nodeData.childNodeIds -= child.nodeId
+        drawNode.removeNode(child.drawNode)
+    }
 
     private val requireSceneNode: SceneNodeModel
         get() = requireNotNull(this as? SceneNodeModel) { "$name is not a SceneNodeModel" }
@@ -130,5 +167,11 @@ abstract class NodeModel(val nodeData: SceneNodeData) {
 
     inline fun <reified T: Any> getComponents(): List<T> {
         return components.filterIsInstance<T>()
+    }
+
+    sealed class InsertionPos {
+        data object End : InsertionPos()
+        data class Before(val that: NodeModel) : InsertionPos()
+        data class After(val that: NodeModel) : InsertionPos()
     }
 }

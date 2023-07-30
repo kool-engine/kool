@@ -364,7 +364,6 @@ class MaterialEditor(component: MaterialComponent) : ComponentEditor<MaterialCom
         dropTarget: UiNode
     ): TextureDndHandler {
         val handler = remember { TextureDndHandler(material, shaderDataSetter, dropTarget) }
-        handler.dropTarget = uiNode
         KoolEditor.instance.ui.dndController.registerHandler(handler, surface)
         return handler
     }

@@ -39,7 +39,7 @@ class EditorDndItem<T: Any>(val item: T, val flavors: Map<DndItemFlavor<*>, (T) 
 }
 
 open class DndHandler(
-    override var dropTarget: UiNode,
+    override val dropTarget: UiNode,
     val acceptedFlavors: Set<DndItemFlavor<*>> = emptySet()
 ) : DragAndDropHandler<EditorDndItem<*>> {
 
