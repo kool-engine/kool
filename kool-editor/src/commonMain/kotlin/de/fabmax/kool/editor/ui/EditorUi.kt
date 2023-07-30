@@ -27,7 +27,9 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
     val sceneView = SceneView(this)
     val sceneBrowser = SceneBrowser(this)
     val objectProperties = ObjectPropertyEditor(this)
-    val resourceBrowser = ResourceBrowser(this)
+    val assetBrowser = AssetBrowser(this)
+    val materialBrowser = MaterialBrowser(this)
+    val scriptBrowser = ScriptBrowser(this)
 
     val appStateInfo = mutableStateOf("")
 
@@ -52,14 +54,18 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
             addDockableSurface(sceneView.windowDockable, sceneView.windowSurface)
             addDockableSurface(sceneBrowser.windowDockable, sceneBrowser.windowSurface)
             addDockableSurface(objectProperties.windowDockable, objectProperties.windowSurface)
-            addDockableSurface(resourceBrowser.windowDockable, resourceBrowser.windowSurface)
+            addDockableSurface(assetBrowser.windowDockable, assetBrowser.windowSurface)
+            addDockableSurface(materialBrowser.windowDockable, materialBrowser.windowSurface)
+            addDockableSurface(scriptBrowser.windowDockable, scriptBrowser.windowSurface)
 
             val restoredLayout = DockLayout.loadLayout("editor.ui.layout", this) { windowName ->
                 when (windowName) {
-                    "Scene View" -> sceneView.windowDockable
-                    "Scene Browser" -> sceneBrowser.windowDockable
-                    "Object Properties" -> objectProperties.windowDockable
-                    "Resource Browser" -> resourceBrowser.windowDockable
+                    sceneView.name -> sceneView.windowDockable
+                    sceneBrowser.name -> sceneBrowser.windowDockable
+                    objectProperties.name -> objectProperties.windowDockable
+                    assetBrowser.name -> assetBrowser.windowDockable
+                    materialBrowser.name -> materialBrowser.windowDockable
+                    scriptBrowser.name -> scriptBrowser.windowDockable
                     else -> {
                         logW { "Unable to restore layout - window not found: $windowName" }
                         null
@@ -72,17 +78,22 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
                 createNodeLayout(
                     listOf(
                         "0:row",
-                        "0/0:leaf",
-                        "0/1:col",
-                        "0/2:leaf",
-                        "0/1/0:leaf",
-                        "0/1/1:leaf",
+                        "0/0:col",
+                        "0/0/0:row",
+                        "0/0/0/0:leaf",
+                        "0/0/0/1:leaf",
+                        "0/0/1:leaf",
+                        "0/1:leaf",
                     )
                 )
-                getLeafAtPath("0/1/0")?.dock(sceneView.windowDockable)
-                getLeafAtPath("0/0")?.dock(sceneBrowser.windowDockable)
-                getLeafAtPath("0/2")?.dock(objectProperties.windowDockable)
-                getLeafAtPath("0/1/1")?.dock(resourceBrowser.windowDockable)
+                getLeafAtPath("0/0/0/0")?.dock(sceneBrowser.windowDockable)
+                getLeafAtPath("0/0/0/1")?.dock(sceneView.windowDockable)
+                getLeafAtPath("0/1")?.dock(objectProperties.windowDockable)
+                getLeafAtPath("0/0/1")?.dock(assetBrowser.windowDockable)
+                getLeafAtPath("0/0/1")?.dock(materialBrowser.windowDockable)
+                getLeafAtPath("0/0/1")?.dock(scriptBrowser.windowDockable)
+
+                getLeafAtPath("0/0/1")?.bringToTop(assetBrowser.windowDockable)
             }
         }
 

@@ -7,6 +7,7 @@ import de.fabmax.kool.editor.model.SceneModel
 import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.input.KeyboardInput
 import de.fabmax.kool.math.Mat4d
+import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.ui2.mutableStateListOf
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.util.MdColor
@@ -84,22 +85,32 @@ object EditorState {
     private fun newProject() = EditorProject(
         ProjectData(KoolEditor.instance.paths.appMainClass).apply {
             val sceneId = nextId++
+            val camId = nextId++
             val boxId = nextId++
+            val lightId = nextId++
             sceneNodeIds += sceneId
-            sceneNodes += SceneNodeData("New Scene", sceneId).apply {
-                childNodeIds += boxId
+            sceneNodes += SceneNodeData("New Scene", sceneId, cameraNodeId = camId).apply {
+                childNodeIds += listOf(camId, boxId, lightId)
                 components += SceneBackgroundComponentData(
                     SceneBackgroundData.SingleColor(ColorData(MdColor.GREY toneLin 900))
                 )
             }
+            sceneNodes += SceneNodeData("Camera", camId).apply {
+                components += CameraComponentData(CameraTypeData.Perspective())
+                components += TransformComponentData(TransformData(
+                    Mat4d()
+                        .translate(0f, 2.5f, 5f)
+                        .rotate(-30f, Vec3f.X_AXIS)
+                ))
+            }
             sceneNodes += SceneNodeData("Default Cube", boxId).apply {
                 components += MeshComponentData(MeshShapeData.Box(Vec3Data(1.0, 1.0, 1.0)))
             }
-            sceneNodes += SceneNodeData("Directional Light", boxId).apply {
+            sceneNodes += SceneNodeData("Directional Light", lightId).apply {
                 components += DiscreteLightComponentData(LightTypeData.Directional())
                 components += TransformComponentData(TransformData(
                     Mat4d()
-                        .translate(10f, 10f, 10f)
+                        .translate(3f, 3f, 3f)
                         .mul(Mat4d().setRotate(EditorDefaults.DEFAULT_LIGHT_ROTATION))
                 ))
             }

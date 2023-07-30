@@ -69,7 +69,7 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
         }
 
         override fun onFileDrop(droppedFiles: List<LoadableFile>) {
-            val targetPath = ui.resourceBrowser.selectedDirectory.value?.path ?: ""
+            val targetPath = ui.assetBrowser.selectedDirectory.value?.path ?: ""
             availableAssets.importAssets(targetPath, droppedFiles)
         }
     }

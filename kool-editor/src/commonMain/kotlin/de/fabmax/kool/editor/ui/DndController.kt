@@ -150,39 +150,39 @@ abstract class DndItemFlavor<T: Any> {
         override fun getTyped(item: Any): AssetItem = item as AssetItem
     }
 
-    data object BROWSER_ITEM : DndItemFlavor<ResourceBrowser.BrowserItem>() {
-        override val flavorMappings: Map<DndItemFlavor<*>, (ResourceBrowser.BrowserItem) -> Any> = mapOf(this to { it })
+    data object BROWSER_ITEM : DndItemFlavor<BrowserPanel.BrowserItem>() {
+        override val flavorMappings: Map<DndItemFlavor<*>, (BrowserPanel.BrowserItem) -> Any> = mapOf(this to { it })
 
-        override fun getTyped(item: Any): ResourceBrowser.BrowserItem = item as ResourceBrowser.BrowserItem
+        override fun getTyped(item: Any): BrowserPanel.BrowserItem = item as BrowserPanel.BrowserItem
     }
 
-    data object BROWSER_ITEM_ASSET : DndItemFlavor<ResourceBrowser.BrowserAssetItem>() {
-        override val flavorMappings: Map<DndItemFlavor<*>, (ResourceBrowser.BrowserAssetItem) -> Any> = mapOf(
+    data object BROWSER_ITEM_ASSET : DndItemFlavor<BrowserPanel.BrowserAssetItem>() {
+        override val flavorMappings: Map<DndItemFlavor<*>, (BrowserPanel.BrowserAssetItem) -> Any> = mapOf(
             this to { it },
             ASSET_ITEM to { it.asset }
         )
 
-        override fun getTyped(item: Any): ResourceBrowser.BrowserAssetItem = item as ResourceBrowser.BrowserAssetItem
+        override fun getTyped(item: Any): BrowserPanel.BrowserAssetItem = item as BrowserPanel.BrowserAssetItem
     }
 
-    data object BROWSER_ITEM_TEXTURE : DndItemFlavor<ResourceBrowser.BrowserAssetItem>() {
-        override val flavorMappings: Map<DndItemFlavor<*>, (ResourceBrowser.BrowserAssetItem) -> Any> = mapOf(
+    data object BROWSER_ITEM_TEXTURE : DndItemFlavor<BrowserPanel.BrowserAssetItem>() {
+        override val flavorMappings: Map<DndItemFlavor<*>, (BrowserPanel.BrowserAssetItem) -> Any> = mapOf(
             this to { it },
             ASSET_ITEM to { it.asset },
             ASSET_ITEM_TEXTURE to { it.asset }
         )
 
-        override fun getTyped(item: Any): ResourceBrowser.BrowserAssetItem = item as ResourceBrowser.BrowserAssetItem
+        override fun getTyped(item: Any): BrowserPanel.BrowserAssetItem = item as BrowserPanel.BrowserAssetItem
     }
 
-    data object BROWSER_ITEM_MODEL : DndItemFlavor<ResourceBrowser.BrowserAssetItem>() {
-        override val flavorMappings: Map<DndItemFlavor<*>, (ResourceBrowser.BrowserAssetItem) -> Any> = mapOf(
+    data object BROWSER_ITEM_MODEL : DndItemFlavor<BrowserPanel.BrowserAssetItem>() {
+        override val flavorMappings: Map<DndItemFlavor<*>, (BrowserPanel.BrowserAssetItem) -> Any> = mapOf(
             this to { it },
             ASSET_ITEM to { it.asset },
             ASSET_ITEM_MODEL to { it.asset }
         )
 
-        override fun getTyped(item: Any): ResourceBrowser.BrowserAssetItem = item as ResourceBrowser.BrowserAssetItem
+        override fun getTyped(item: Any): BrowserPanel.BrowserAssetItem = item as BrowserPanel.BrowserAssetItem
     }
 
     data object NODE_MODEL : DndItemFlavor<NodeModel>() {

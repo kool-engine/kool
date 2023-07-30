@@ -54,7 +54,7 @@ abstract class EditorPanel(
 
         val isDocked = windowDockable.isDocked.use()
         if (isDocked) {
-            Row(width = Grow.Std, height = Grow.Std) {
+            Row(width = Grow.Std, height = Grow.Std, scopeName = name) {
                 windowDockable.dockedTo.use()?.let { dockNode ->
                     val isPanelBarLeft = dockNode.boundsRightDp.value.px < dockNode.dock.root.boundsRightDp.value.px * 0.99f
                     if (isPanelBarLeft) {
