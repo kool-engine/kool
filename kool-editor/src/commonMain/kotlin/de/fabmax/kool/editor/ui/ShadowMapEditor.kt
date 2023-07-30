@@ -8,7 +8,7 @@ import de.fabmax.kool.modules.ui2.*
 import kotlin.reflect.KClass
 
 class ShadowMapEditor(component: ShadowMapComponent) : ComponentEditor<ShadowMapComponent>(component) {
-    override fun UiScope.compose() = componentPanel("Shadow Map", IconMap.SHADOW, ::removeComponent) {
+    override fun UiScope.compose() = componentPanel("Shadow Map", IconMap.small.SHADOW, ::removeComponent) {
         Column(width = Grow.Std) {
             modifier
                 .padding(horizontal = sizes.gap)

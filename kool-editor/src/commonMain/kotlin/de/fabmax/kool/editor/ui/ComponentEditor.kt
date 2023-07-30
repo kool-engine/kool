@@ -22,7 +22,7 @@ abstract class ComponentEditor<T: EditorModelComponent>(var component: T ) : Com
 
 fun UiScope.componentPanel(
     title: String,
-    imageIcon: ImageIconMap.IconImageProvider? = null,
+    imageIcon: IconProvider? = null,
     onRemove: (() -> Unit)? = null,
     titleWidth: Dimension = Grow.Std,
     headerContent: (RowScope.() -> Unit)? = null,
@@ -49,7 +49,7 @@ fun UiScope.componentPanel(
                     .background(CircularBackground(bgColor))
 
                 Image {
-                    modifier.iconImage(IconMap.TRASH, fgColor)
+                    modifier.iconImage(IconMap.small.TRASH, fgColor)
                 }
             }
         }

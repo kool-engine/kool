@@ -17,7 +17,7 @@ class ScriptEditor(component: ScriptComponent) : ComponentEditor<ScriptComponent
 
     private val scriptName: String get() = camelCaseToWords(component.scriptClassNameState.value)
 
-    override fun UiScope.compose() = componentPanel(scriptName, IconMap.CODE, ::removeComponent) {
+    override fun UiScope.compose() = componentPanel(scriptName, IconMap.small.CODE, ::removeComponent) {
         Column(width = Grow.Std) {
             modifier
                 .padding(horizontal = sizes.gap)

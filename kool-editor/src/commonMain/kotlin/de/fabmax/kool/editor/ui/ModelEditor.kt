@@ -13,7 +13,7 @@ class ModelEditor(component: ModelComponent) : ComponentEditor<ModelComponent>(c
 
     override fun UiScope.compose() = componentPanel(
         title = "Model",
-        imageIcon = IconMap.TREE,
+        imageIcon = IconMap.small.TREE,
         onRemove = ::removeComponent,
         titleWidth = sizes.baseSize * 2.3f,
         headerContent = {

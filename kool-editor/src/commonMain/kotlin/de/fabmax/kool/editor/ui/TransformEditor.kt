@@ -36,7 +36,7 @@ class TransformEditor(component: TransformComponent) : ComponentEditor<Transform
         }
     }
 
-    override fun UiScope.compose() = collapsapsablePanel("Transform", IconMap.TRANSFORM) {
+    override fun UiScope.compose() = collapsapsablePanel("Transform", IconMap.small.TRANSFORM) {
         //KoolEditor.instance.gizmoOverlay.setTransformObject(nodeModel as? SceneNodeModel)
 
         Column(width = Grow.Std) {

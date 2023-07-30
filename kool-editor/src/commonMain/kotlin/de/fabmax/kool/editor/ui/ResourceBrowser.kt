@@ -29,7 +29,7 @@ class ResourceBrowser(editorUi: EditorUi) : EditorPanel(
 
     override val windowSurface = EditorPanelWindow {
         Column(Grow.Std, Grow.Std) {
-            editorTitleBar(windowDockable, IconMap.TREE)
+            editorTitleBar(windowDockable, IconMap.small.TREE)
             Row(Grow.Std, Grow.Std) {
                 refreshBrowserItems()
 
@@ -167,9 +167,9 @@ class ResourceBrowser(editorUi: EditorUi) : EditorPanel(
                         if (dir.level == 0) {
                             // top level category
                             val icon = when (dir.category) {
-                                BrowserCategory.ASSETS -> IconMap.PICTURE
-                                BrowserCategory.MATERIALS -> IconMap.PALETTE
-                                BrowserCategory.SCRIPTS -> IconMap.CODE
+                                BrowserCategory.ASSETS -> IconMap.small.PICTURE
+                                BrowserCategory.MATERIALS -> IconMap.small.PALETTE
+                                BrowserCategory.SCRIPTS -> IconMap.small.CODE
                                 else -> null
                             }
                             icon?.let {
@@ -202,7 +202,7 @@ class ResourceBrowser(editorUi: EditorUi) : EditorPanel(
                                 }
                             }
                             Image {
-                                val ico = if (dir.isExpanded.use()) IconMap.FOLDER_OPEN else IconMap.FOLDER
+                                val ico = if (dir.isExpanded.use()) IconMap.small.FOLDER_OPEN else IconMap.small.FOLDER
                                 modifier
                                     .alignY(AlignmentY.Center)
                                     .margin(end = sizes.smallGap)

@@ -4,7 +4,7 @@ import de.fabmax.kool.modules.ui2.*
 
 fun UiScope.collapsapsablePanel(
     title: String,
-    imageIcon: ImageIconMap.IconImageProvider? = null,
+    imageIcon: IconProvider? = null,
     headerContent: (RowScope.() -> Unit)? = null,
     titleWidth: Dimension = Grow.Std,
     block: ColumnScope.() -> Any?

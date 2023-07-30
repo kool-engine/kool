@@ -30,7 +30,7 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", ui) 
         }
 
         Column(Grow.Std, Grow.Std) {
-            editorTitleBar(windowDockable, IconMap.PROPERTIES, title)
+            editorTitleBar(windowDockable, IconMap.small.PROPERTIES, title)
             objectProperties(selectedObject)
         }
     }
