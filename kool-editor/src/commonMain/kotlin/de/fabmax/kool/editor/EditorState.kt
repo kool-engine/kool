@@ -26,6 +26,8 @@ object EditorState {
     val activeScene = mutableStateOf<SceneModel?>(null)
     val selection = mutableStateListOf<NodeModel>()
 
+    val onSelectionChanged = mutableListOf<(List<NodeModel>) -> Unit>()
+
     private val prettyJson = Json { prettyPrint = true }
 
     fun selectSingle(selectModel: NodeModel?, expandIfShiftIsDown: Boolean = true, toggleSelect: Boolean = true) {
@@ -51,9 +53,12 @@ object EditorState {
     fun reduceSelection(removeModels: List<NodeModel>) = setSelection(selection.toSet() - removeModels.toSet())
 
     fun setSelection(selectModels: Collection<NodeModel>) {
-        selection.atomic {
-            clear()
-            addAll(selectModels)
+        if (selection != selectModels) {
+            selection.atomic {
+                clear()
+                addAll(selectModels)
+            }
+            onSelectionChanged.forEach { it(selection) }
         }
     }
 

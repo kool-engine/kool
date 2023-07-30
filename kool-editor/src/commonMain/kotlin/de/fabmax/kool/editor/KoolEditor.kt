@@ -17,6 +17,7 @@ import de.fabmax.kool.editor.overlays.SceneObjectsOverlay
 import de.fabmax.kool.editor.overlays.SelectionOverlay
 import de.fabmax.kool.editor.overlays.TransformGizmoOverlay
 import de.fabmax.kool.editor.ui.EditorUi
+import de.fabmax.kool.editor.ui.FloatingToolbar
 import de.fabmax.kool.input.InputStack
 import de.fabmax.kool.input.KeyboardInput
 import de.fabmax.kool.input.LocalKeyCode
@@ -30,6 +31,8 @@ import de.fabmax.kool.scene.scene
 import de.fabmax.kool.util.logW
 
 class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
+
+    init { instance = this }
 
     val editorInputContext = InputStack.InputHandler("Editor input")
     val editorCameraTransform = EditorCamTransform(this)
@@ -72,7 +75,6 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
     }
 
     init {
-        instance = this
         Assets.assetsBasePath = paths.assetsBasePath
         AppAssets.impl = CachedAppAssets
 
@@ -95,6 +97,7 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
         editorOverlay.children.filter { it != editorCameraTransform }.forEach {
             it.isVisible = isVisible
         }
+        ui.sceneView.isShowToolbar.set(isVisible)
     }
 
     private fun registerAutoSaveOnFocusLoss() {
@@ -156,7 +159,25 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
             name = "Toggle box select",
             keyCode = LocalKeyCode('B')
         ) {
-            ui.sceneView.isBoxSelectMode.set(!ui.sceneView.isBoxSelectMode.value)
+            ui.sceneView.toolbar.toggleActionMode(FloatingToolbar.EditActionMode.BOX_SELECT)
+        }
+        editorInputContext.addKeyListener(
+            name = "Toggle move object",
+            keyCode = LocalKeyCode('G')
+        ) {
+            ui.sceneView.toolbar.toggleActionMode(FloatingToolbar.EditActionMode.MOVE)
+        }
+        editorInputContext.addKeyListener(
+            name = "Toggle rotate object",
+            keyCode = LocalKeyCode('R')
+        ) {
+            ui.sceneView.toolbar.toggleActionMode(FloatingToolbar.EditActionMode.ROTATE)
+        }
+        editorInputContext.addKeyListener(
+            name = "Toggle scale object",
+            keyCode = LocalKeyCode('S')
+        ) {
+            ui.sceneView.toolbar.toggleActionMode(FloatingToolbar.EditActionMode.SCALE)
         }
         editorInputContext.addKeyListener(
             name = "Cancel current operation",
@@ -182,7 +203,7 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
                 val sceneModel = EditorState.activeScene.value ?: return
                 val appScene = sceneModel.drawNode
                 val ptr = pointerState.primaryPointer
-                if (ptr.isLeftButtonClicked) {
+                if (ptr.isLeftButtonClicked && !ptr.isConsumed()) {
                     if (appScene.computePickRay(ptr, ctx, rayTest.ray)) {
                         rayTest.clear()
                         appScene.rayTest(rayTest)

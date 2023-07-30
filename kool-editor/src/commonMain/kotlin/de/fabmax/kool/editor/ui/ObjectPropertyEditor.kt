@@ -17,9 +17,6 @@ import de.fabmax.kool.modules.ui2.*
 class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", ui) {
 
     override val windowSurface: UiSurface = EditorPanelWindow {
-        // clear gizmo transform object, will be set by transform editor if available
-        ui.editor.gizmoOverlay.setTransformObject(null)
-
         val selObjs = EditorState.selection.use()
         val selectedObject = if (selObjs.size == 1) selObjs[0] else null
         val title = when (selectedObject) {
@@ -30,7 +27,7 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", ui) 
         }
 
         Column(Grow.Std, Grow.Std) {
-            editorTitleBar(windowDockable, IconMap.small.PROPERTIES, title)
+            editorTitleBar(windowDockable, IconMap.medium.PROPERTIES, title)
             objectProperties(selectedObject)
         }
     }

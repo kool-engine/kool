@@ -29,7 +29,7 @@ class ResourceBrowser(editorUi: EditorUi) : EditorPanel(
 
     override val windowSurface = EditorPanelWindow {
         Column(Grow.Std, Grow.Std) {
-            editorTitleBar(windowDockable, IconMap.small.TREE)
+            editorTitleBar(windowDockable, IconMap.medium.TREE)
             Row(Grow.Std, Grow.Std) {
                 refreshBrowserItems()
 

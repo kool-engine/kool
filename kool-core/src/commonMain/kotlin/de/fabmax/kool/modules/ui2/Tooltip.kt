@@ -1,5 +1,6 @@
 package de.fabmax.kool.modules.ui2
 
+import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Time
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -31,6 +32,8 @@ fun UiScope.Tooltip(
     yOffset: Dp = (-30).dp,
     target: UiScope? = this,
     tooltipState: TooltipState = remember { TooltipState() },
+    backgroundColor: Color = colors.backgroundVariant,
+    borderColor: Color? = colors.primaryVariantAlpha(0.5f),
     scopeName: String? = null
 ) = Tooltip(tooltipState, target, scopeName) {
     modifier
@@ -38,10 +41,12 @@ fun UiScope.Tooltip(
         .layout(CellLayout)
         .background(UiRenderer { node ->
             node.apply {
-                node.getUiPrimitives(UiSurface.LAYER_BACKGROUND)
-                    .localRoundRect(0f, 0f, widthPx, heightPx, heightPx * 0.5f, colors.backgroundVariant)
-                node.getUiPrimitives(UiSurface.LAYER_BACKGROUND)
-                    .localRoundRectBorder(0f, 0f, widthPx, heightPx, heightPx * 0.5f, sizes.borderWidth.px, colors.primaryVariantAlpha(0.5f))
+                getUiPrimitives(UiSurface.LAYER_BACKGROUND)
+                    .localRoundRect(0f, 0f, widthPx, heightPx, heightPx * 0.5f, backgroundColor)
+                borderColor?.let {
+                    getUiPrimitives(UiSurface.LAYER_BACKGROUND)
+                        .localRoundRectBorder(0f, 0f, widthPx, heightPx, heightPx * 0.5f, sizes.borderWidth.px, it)
+                }
             }
         })
     Text(text) {

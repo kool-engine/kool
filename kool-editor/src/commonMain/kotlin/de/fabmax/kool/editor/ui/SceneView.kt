@@ -6,7 +6,7 @@ import kotlin.math.roundToInt
 
 class SceneView(ui: EditorUi) : EditorPanel("Scene View", ui) {
 
-    var isBoxSelectMode = mutableStateOf(false).onChange {
+    val isBoxSelectMode = mutableStateOf(false).onChange {
         if (it) {
             // enabled box selection mode
             windowSurface.inputMode = UiSurface.InputCaptureMode.CapturePassthrough
@@ -16,6 +16,9 @@ class SceneView(ui: EditorUi) : EditorPanel("Scene View", ui) {
             boxSelector.isBoxSelect.set(false)
         }
     }
+
+    val isShowToolbar = mutableStateOf(true)
+    val toolbar = FloatingToolbar(ui)
 
     private var viewBox: UiNode? = null
     private val boxSelector = BoxSelector()
@@ -44,6 +47,9 @@ class SceneView(ui: EditorUi) : EditorPanel("Scene View", ui) {
         }
 
         appModeControlButtons()
+        if (isShowToolbar.use()) {
+            toolbar()
+        }
     }
 
     init {
