@@ -84,7 +84,7 @@ class FloatingToolbar(val ui: EditorUi) : Composable {
             isClickFeedback -> colors.elevatedComponentBgHovered
             isHovered -> colors.componentBgHovered
             toggleState -> colors.componentBg
-            else -> null //colors.componentBg
+            else -> null
         }
 
         bgColor?.let {

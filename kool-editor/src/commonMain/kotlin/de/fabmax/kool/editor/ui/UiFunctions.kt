@@ -34,18 +34,17 @@ fun UiScope.editorTitleBar(
 
         if (!windowDockable.isDocked.use()) {
             modifier.margin(sizes.borderWidth)
+            imageIcon?.let {
+                Image {
+                    modifier
+                        .margin(end = sizes.gap, top = sizes.lineHeightTitle * 0.5f - IconMap.medium.iconSize * 0.55f)
+                        .iconImage(it, UiColors.titleText)
+                }
+            }
         }
 
         with(windowDockable) {
             registerDragCallbacks()
-        }
-
-        imageIcon?.let {
-            Image {
-                modifier
-                    .margin(end = sizes.gap, top = sizes.lineHeightTitle * 0.5f - IconMap.medium.iconSize * 0.55f)
-                    .iconImage(it, UiColors.titleText)
-            }
         }
 
         Text(title) {
@@ -766,7 +765,7 @@ fun ComboBoxScope.defaultComboBoxStyle() {
             expanderHoverColor = colors.elevatedComponentBgHovered
         )
         .popupColors(
-            popupBackgroundColor = UiColors.bgMid,
+            popupBackgroundColor = colors.backgroundMid,
             popupHoverColor = colors.componentBgHovered,
             popupHoverTextColor = colors.onBackground,
             popupBorderColor = colors.secondaryVariant
@@ -787,7 +786,7 @@ fun TextFieldScope.defaultTextfieldStyle() {
 
 fun UiScope.defaultPopupStyle(layout: Layout = ColumnLayout) {
     modifier
-        .background(RoundRectBackground(UiColors.bgMid, sizes.smallGap))
+        .background(RoundRectBackground(colors.backgroundMid, sizes.smallGap))
         .border(RoundRectBorder(colors.secondaryVariant, sizes.smallGap, sizes.borderWidth))
         .layout(layout)
         .padding(sizes.gap)

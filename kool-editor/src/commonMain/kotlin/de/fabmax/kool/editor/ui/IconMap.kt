@@ -104,6 +104,8 @@ object IconMap {
         val DOWNLOAD = IconProvider(this, iconMap.IconImageProvider(3, 2))
         val CONSOLE = IconProvider(this, iconMap.IconImageProvider(4, 2))
         val GITHUB = IconProvider(this, iconMap.IconImageProvider(5, 2))
+        val MAGNET = IconProvider(this, iconMap.IconImageProvider(6, 2))
+        val MAGNET_OFF = IconProvider(this, iconMap.IconImageProvider(7, 2))
     }
 }
 

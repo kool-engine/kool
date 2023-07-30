@@ -17,6 +17,7 @@ import kotlin.math.min
 
 class ResourceBrowser(editorUi: EditorUi) : EditorPanel(
     "Resource Browser",
+    IconMap.medium.TREE,
     editorUi,
     defaultWidth = Dp(600f),
     defaultHeight = Dp(300f)
@@ -27,9 +28,9 @@ class ResourceBrowser(editorUi: EditorUi) : EditorPanel(
 
     val selectedDirectory = mutableStateOf<BrowserDir?>(null)
 
-    override val windowSurface = EditorPanelWindow {
+    override val windowSurface = editorPanelWithPanelBar {
         Column(Grow.Std, Grow.Std) {
-            editorTitleBar(windowDockable, IconMap.medium.TREE)
+            editorTitleBar(windowDockable, icon)
             Row(Grow.Std, Grow.Std) {
                 refreshBrowserItems()
 

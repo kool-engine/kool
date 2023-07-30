@@ -4,13 +4,13 @@ import de.fabmax.kool.modules.ui2.Column
 import de.fabmax.kool.modules.ui2.Grow
 import de.fabmax.kool.modules.ui2.UiSurface
 
-class SceneBrowser(ui: EditorUi) : EditorPanel("Scene Browser", ui) {
+class SceneBrowser(ui: EditorUi) : EditorPanel("Scene Browser", IconMap.medium.LIST_TREE, ui) {
 
     private val sceneObjectTree = SceneObjectTree(this)
 
-    override val windowSurface: UiSurface = EditorPanelWindow {
+    override val windowSurface: UiSurface = editorPanelWithPanelBar {
         Column(Grow.Std, Grow.Std) {
-            editorTitleBar(windowDockable, IconMap.medium.LIST_TREE)
+            editorTitleBar(windowDockable, icon)
             sceneObjectTree()
         }
     }

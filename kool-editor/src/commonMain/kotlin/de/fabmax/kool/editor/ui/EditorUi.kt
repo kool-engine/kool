@@ -15,9 +15,13 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
     val statusBar = PanelSurface(colors = EDITOR_THEME_COLORS) {
         modifier
             .alignY(AlignmentY.Bottom)
-            .size(Grow.Std, sizes.baseSize)
-            .backgroundColor(UiColors.bgMid)
-        statusBar()
+            .size(Grow.Std, sizes.statusBarHeight)
+            .backgroundColor(colors.backgroundMid)
+
+        Column(width = Grow.Std, height = Grow.Std) {
+            divider(UiColors.titleBg, horizontalMargin = Dp.ZERO)
+            statusBar()
+        }
     }
 
     val sceneView = SceneView(this)
@@ -36,11 +40,11 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
 
         dock.apply {
             borderWidth.set(Dp.fromPx(1f))
-            borderColor.set(UiColors.border)
+            borderColor.set(UiColors.titleBg)
             dockingSurface.colors = EDITOR_THEME_COLORS
             dockingPaneComposable = Composable {
                 Column(Grow.Std, Grow.Std) {
-                    modifier.margin(bottom = sizes.baseSize)
+                    modifier.margin(bottom = sizes.statusBarHeight)
                     root()
                 }
             }
@@ -85,10 +89,12 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
         addNode(dock)
     }
 
-    private fun UiScope.statusBar() = Row(width = Grow.Std, height = sizes.lineHeightLarger) {
+    private fun UiScope.statusBar() = Row(width = Grow.Std, height = Grow.Std) {
         Box(width = Grow.Std) {  }
 
-        Box(width = sizes.baseSize * 8f, height = Grow.Std) {
+        divider(colors.secondaryVariantAlpha(0.75f), marginStart = sizes.gap, marginEnd = sizes.gap)
+
+        Box(width = sizes.baseSize * 6f, height = Grow.Std) {
             Text(appStateInfo.use()) {
                 modifier.alignY(AlignmentY.Center)
             }
@@ -105,7 +111,10 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
             onSecondary = Color.WHITE
         )
     }
+
+    private val Sizes.statusBarHeight: Dp get() = lineHeightLarger
 }
+
 
 val Sizes.baseSize: Dp get() = largeGap * 2f
 val Sizes.lineHeight: Dp get() = baseSize * (2f/3f)
@@ -135,10 +144,11 @@ val Colors.elevatedComponentBgHovered: Color get() = secondary
 val Colors.dndAcceptableBg: Color get() = MdColor.GREEN.withAlpha(0.3f)
 val Colors.dndAcceptableBgHovered: Color get() = MdColor.GREEN.withAlpha(0.5f)
 
+val Colors.backgroundMid: Color get() = background.mix(backgroundVariant, 0.5f)
+
 object UiColors {
     val border = Color("0f1114ff")
     val titleBg = Color("343a49ff")
-    val bgMid = EditorUi.EDITOR_THEME_COLORS.background.mix(EditorUi.EDITOR_THEME_COLORS.backgroundVariant, 0.5f)
     val titleText = Color("dbe6ffff")
 }
 

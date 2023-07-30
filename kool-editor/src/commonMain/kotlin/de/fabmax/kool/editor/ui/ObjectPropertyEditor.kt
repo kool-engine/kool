@@ -14,9 +14,9 @@ import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.modules.ui2.*
 
-class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", ui) {
+class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", IconMap.medium.PROPERTIES, ui) {
 
-    override val windowSurface: UiSurface = EditorPanelWindow {
+    override val windowSurface: UiSurface = editorPanelWithPanelBar {
         val selObjs = EditorState.selection.use()
         val selectedObject = if (selObjs.size == 1) selObjs[0] else null
         val title = when (selectedObject) {
@@ -27,7 +27,7 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", ui) 
         }
 
         Column(Grow.Std, Grow.Std) {
-            editorTitleBar(windowDockable, IconMap.medium.PROPERTIES, title)
+            editorTitleBar(windowDockable, icon, title)
             objectProperties(selectedObject)
         }
     }
