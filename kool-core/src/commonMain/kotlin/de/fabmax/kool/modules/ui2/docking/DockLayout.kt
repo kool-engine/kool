@@ -58,7 +58,8 @@ class DockLayout(val nodes: List<Node>) {
 
     companion object {
         fun saveLayout(dock: Dock, key: String) {
-            KeyValueStore.store(key, Json.encodeToString(serializeLayout(dock)).encodeToByteArray().toBuffer())
+            val json = Json { prettyPrint = true }
+            KeyValueStore.store(key, json.encodeToString(serializeLayout(dock)).encodeToByteArray().toBuffer())
         }
 
         fun loadLayout(key: String, target: Dock, itemProvider: (String) -> Dockable? = { null }): Boolean {
@@ -88,7 +89,7 @@ class DockLayout(val nodes: List<Node>) {
     }
 
     @Serializable
-    class Node(val path: String, val nodeType: NodeType, val width: NodeDim, val height: NodeDim, val items: List<String>) {
+    class Node(val path: String, val nodeType: NodeType, val width: NodeDim, val height: NodeDim, val items: List<String>, val topItem: String? = null) {
         fun toNode(dock: Dock, itemProvider: (String) -> Dockable?): DockNode {
             val w = width.toDimension()
             val h = height.toDimension()
@@ -99,6 +100,9 @@ class DockLayout(val nodes: List<Node>) {
                     val node = DockNodeLeaf(dock, null, w, h)
                     items.forEach { itemName ->
                         itemProvider(itemName)?.let { node.dock(it) }
+                    }
+                    topItem?.let { top ->
+                        node.dockedItems.find { it.name == top }?.let { node.bringToTop(it) }
                     }
                     node
                 }
@@ -115,12 +119,16 @@ class DockLayout(val nodes: List<Node>) {
                     is DockNodeColumn -> NodeType.Column
                     is DockNodeRow -> NodeType.Row
                 }
-                val items = if (node is DockNodeLeaf) {
-                    node.dockedItems.map { it.name }
+                val items: List<String>
+                val topItem: String?
+                if (node is DockNodeLeaf) {
+                    items = node.dockedItems.map { it.name }
+                    topItem = node.dockItemOnTop?.name
                 } else {
-                    emptyList()
+                    items = emptyList()
+                    topItem = null
                 }
-                return Node(path, nodeType, width, height, items)
+                return Node(path, nodeType, width, height, items, topItem)
             }
         }
     }
