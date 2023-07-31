@@ -56,7 +56,8 @@ abstract class EditorPanel(
         if (isDocked) {
             Row(width = Grow.Std, height = Grow.Std, scopeName = name) {
                 windowDockable.dockedTo.use()?.let { dockNode ->
-                    val isPanelBarLeft = dockNode.boundsRightDp.value.px < dockNode.dock.root.boundsRightDp.value.px * 0.99f
+                    val isPanelBarLeft = dockNode.boundsLeftDp.value.px < 1f
+                            || dockNode.boundsRightDp.value.px < dockNode.dock.root.boundsRightDp.value.px * 0.99f
                     if (isPanelBarLeft) {
                         panelBar(dockNode)
                         Box(width = sizes.borderWidth, height = Grow.Std) { modifier.backgroundColor(UiColors.titleBg) }
@@ -76,7 +77,6 @@ abstract class EditorPanel(
 
     private fun UiScope.panelBar(dockNode: DockNodeLeaf) = Column(width = sizes.baseSize - sizes.borderWidth, height = Grow.Std) {
         modifier.backgroundColor(colors.backgroundMid)
-        //modifier.backgroundColor(UiColors.titleBg)
 
         dockNode.dockedItems.mapNotNull { editorPanels[it.name] }.forEach { panel ->
             panelButton(panel, dockNode)
@@ -102,7 +102,7 @@ abstract class EditorPanel(
 
         modifier
             .alignX(AlignmentX.Center)
-            .margin(sizes.smallGap)
+            .margin(start = sizes.smallGap, end = sizes.gap, top = sizes.smallGap, bottom = sizes.gap)
             .padding(sizes.smallGap * 0.5f)
             .onPointer { isClickFeedback = it.pointer.isLeftButtonDown }
             .onEnter { isHovered = true }

@@ -14,7 +14,7 @@ kotlin {
                 api(DepsCommon.kotlinReflection)
                 api(project(":kool-core"))
                 api(project(":kool-physics"))
-                api(project(":kool-editor-api"))
+                api(project(":kool-editor-lib"))
             }
         }
         val commonTest by getting {

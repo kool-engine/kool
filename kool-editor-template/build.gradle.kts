@@ -31,7 +31,7 @@ kotlin {
             dependencies {
                 implementation(project(":kool-core"))
                 implementation(project(":kool-physics"))
-                implementation(project(":kool-editor-api"))
+                implementation(project(":kool-editor-lib"))
             }
         }
         val commonTest by getting {

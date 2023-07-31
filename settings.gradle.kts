@@ -12,5 +12,5 @@ include("kool-physics")
 include("kool-demo")
 
 include("kool-editor")
-include("kool-editor-api")
+include("kool-editor-lib")
 include("kool-editor-template")

@@ -106,6 +106,8 @@ object IconMap {
         val GITHUB = IconProvider(this, iconMap.IconImageProvider(5, 2))
         val MAGNET = IconProvider(this, iconMap.IconImageProvider(6, 2))
         val MAGNET_OFF = IconProvider(this, iconMap.IconImageProvider(7, 2))
+        val LOCK_OPEN = IconProvider(this, iconMap.IconImageProvider(8, 2))
+        val LOCK = IconProvider(this, iconMap.IconImageProvider(9, 2))
     }
 }
 
