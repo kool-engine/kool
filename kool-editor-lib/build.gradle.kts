@@ -1,5 +1,3 @@
-@file:Suppress("UNUSED_VARIABLE")
-
 plugins {
     kotlin("plugin.serialization") version Versions.kotlinVersion
 }

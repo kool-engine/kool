@@ -1,5 +1,3 @@
-@file:Suppress("UNUSED_VARIABLE")
-
 import java.io.FileInputStream
 import java.util.*
 

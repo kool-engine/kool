@@ -1,5 +1,3 @@
-@file:Suppress("UNUSED_VARIABLE")
-
 kotlin {
     jvm {
         jvmToolchain(11)

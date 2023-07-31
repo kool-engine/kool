@@ -22,13 +22,6 @@ interface EditorAwareApp {
     fun startApp(ctx: KoolContext) { }
 
     /**
-     * Called only by the editor, when the reset button is clicked during play mode and should reset all app state
-     * to the initial state. This is kind of optional, since the app can also be stopped and restarted, which will
-     * trigger a full app reload. However, a full reload is much slower.
-     */
-    fun resetApp(ctx: KoolContext) { }
-
-    /**
      * Called on app shutdown - either because the app reloaded and the old version is about to be discarded or the
      * application is about to close.
      */
