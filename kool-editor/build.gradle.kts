@@ -13,6 +13,7 @@ kotlin {
                 api(project(":kool-core"))
                 api(project(":kool-physics"))
                 api(project(":kool-editor-lib"))
+                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
             }
         }
         val commonTest by getting {

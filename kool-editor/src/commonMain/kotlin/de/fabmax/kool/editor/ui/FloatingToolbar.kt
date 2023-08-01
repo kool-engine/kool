@@ -49,73 +49,26 @@ class FloatingToolbar(val ui: EditorUi) : Composable {
 
         Box(height = sizes.smallGap * 0.5f) { }
 
-        imageButton(IconMap.medium.SELECT, "Box-select [B]", mode == EditActionMode.BOX_SELECT) {
+        iconButton(IconMap.medium.SELECT, "Box-select [B]", mode == EditActionMode.BOX_SELECT) {
             toggleActionMode(EditActionMode.BOX_SELECT)
         }
-        imageButton(IconMap.medium.CIRCLE_CROSSHAIR, "Locate selected object [NP Decimal]") {
+        iconButton(IconMap.medium.CIRCLE_CROSSHAIR, "Locate selected object [NP Decimal]") {
             ui.editor.editorCameraTransform.focusSelectedObject()
         }
 
         menuDivider()
 
-        imageButton(IconMap.medium.MOVE, "Move selected object [G]", mode == EditActionMode.MOVE) {
+        iconButton(IconMap.medium.MOVE, "Move selected object [G]", mode == EditActionMode.MOVE) {
             toggleActionMode(EditActionMode.MOVE)
         }
-        imageButton(IconMap.medium.ROTATE, "Rotate selected object [R]", mode == EditActionMode.ROTATE) {
+        iconButton(IconMap.medium.ROTATE, "Rotate selected object [R]", mode == EditActionMode.ROTATE) {
             toggleActionMode(EditActionMode.ROTATE)
         }
-        imageButton(IconMap.medium.SCALE, "Scale selected object [S]", mode == EditActionMode.SCALE) {
+        iconButton(IconMap.medium.SCALE, "Scale selected object [S]", mode == EditActionMode.SCALE) {
             toggleActionMode(EditActionMode.SCALE)
         }
 
         Box(height = sizes.smallGap * 0.5f) { }
-    }
-
-    private fun UiScope.imageButton(
-        icon: IconProvider,
-        tooltip: String,
-        toggleState: Boolean = false,
-        onClick: (() -> Unit)? = null
-    ) = Box {
-        var isHovered by remember(false)
-        var isClickFeedback by remember(false)
-
-        val bgColor = when {
-            isClickFeedback -> colors.elevatedComponentBgHovered
-            isHovered -> colors.componentBgHovered
-            toggleState -> colors.componentBg
-            else -> null
-        }
-
-        bgColor?.let {
-            modifier.background(RoundRectBackground(it, sizes.smallGap))
-        }
-
-        modifier
-            .alignX(AlignmentX.Center)
-            .margin(vertical = sizes.smallGap)
-            .padding(sizes.smallGap * 0.5f)
-            .onPointer { isClickFeedback = it.pointer.isLeftButtonDown }
-            .onEnter { isHovered = true }
-            .onExit {
-                isHovered = false
-                isClickFeedback = false
-            }
-            .onClick {
-                onClick?.invoke()
-            }
-
-        Image {
-            val tint = when {
-                toggleState -> colors.primary
-                else -> colors.onBackground
-            }
-            modifier
-                .align(AlignmentX.Center, AlignmentY.Center)
-                .iconImage(icon, tint)
-        }
-
-        Tooltip(tooltip, borderColor = colors.secondaryVariant)
     }
 
     companion object {

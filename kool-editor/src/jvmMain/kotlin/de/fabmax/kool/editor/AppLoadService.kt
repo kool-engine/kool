@@ -79,12 +79,14 @@ actual class AppLoadService actual constructor(val paths: ProjectPaths) : Corout
                         .start()
                     thread {
                         BufferedReader(InputStreamReader(buildProcess.inputStream)).lines().forEach {
-                            logD("AppLoader.gradleBuild") { it }
+                            if (it.isNotEmpty()) {
+                                logD("gradle") { "  $it" }
+                            }
                         }
                     }
                     thread {
                         BufferedReader(InputStreamReader(buildProcess.errorStream)).lines().forEach {
-                            logW("AppLoader.gradleBuild") { it }
+                            logE("gradle") { "  $it" }
                         }
                     }
                     val exitCode = buildProcess.waitFor()

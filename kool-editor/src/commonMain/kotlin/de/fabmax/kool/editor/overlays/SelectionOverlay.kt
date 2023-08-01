@@ -5,7 +5,6 @@ import de.fabmax.kool.editor.EditorState
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.components.ContentComponent
 import de.fabmax.kool.editor.model.NodeModel
-import de.fabmax.kool.editor.ui.EditorUi
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.modules.ksl.KslShader
@@ -39,9 +38,9 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
         overlayMesh.isVisible = false
         addNode(overlayMesh)
 
-        selectionColor = EditorUi.EDITOR_THEME_COLORS.primary
-
         onUpdate { evt ->
+            selectionColor = editor.ui.uiColors.value.primary
+
             if (selectionPass.isEnabled) {
                 val vp = editor.editorOverlay.mainRenderPass.viewport
                 val sceneWidth = (vp.width * 0.75f).roundToInt()

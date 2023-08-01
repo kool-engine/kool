@@ -166,7 +166,7 @@ open class LazyListNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, su
     override fun indices(numItems: Int, block: UiScope.(Int) -> Unit)  {
         itemBlock = block
         state.numTotalItems = numItems
-        if (modifier.isAutoScrollToEnd && state.itemsTo > 0) {
+        if (modifier.isAutoScrollToEnd && state.itemsTo > 0 && state.itemsTo < state.numTotalItems - 1) {
             // auto scroll to last list item if modifier flag is set and list was layouted before
             state.scrollToItem.set(state.numTotalItems - 1)
         }

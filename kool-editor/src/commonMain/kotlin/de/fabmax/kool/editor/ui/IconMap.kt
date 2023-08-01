@@ -108,6 +108,7 @@ object IconMap {
         val MAGNET_OFF = IconProvider(this, iconMap.IconImageProvider(7, 2))
         val LOCK_OPEN = IconProvider(this, iconMap.IconImageProvider(8, 2))
         val LOCK = IconProvider(this, iconMap.IconImageProvider(9, 2))
+        val SCROLL_LOCK = IconProvider(this, iconMap.IconImageProvider(10, 2))
     }
 }
 

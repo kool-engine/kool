@@ -20,9 +20,10 @@ fun UiScope.editorTitleBar(
     imageIcon: IconProvider? = null,
     title: String = windowDockable.name,
     roundedTop: Boolean = false,
-    onClose: ((PointerEvent) -> Unit)? = null
+    onClose: ((PointerEvent) -> Unit)? = null,
+    titleBlock: (RowScope.() -> Unit)? = null
 ) {
-    Row(Grow.Std, height = sizes.lineHeightTitle) {
+    Row(Grow.Std, sizes.lineHeightTitle) {
         modifier
             .padding(horizontal = sizes.gap - sizes.borderWidth)
 
@@ -49,13 +50,17 @@ fun UiScope.editorTitleBar(
 
         Text(title) {
             modifier
-                .width(Grow.Std)
                 .textColor(UiColors.titleText)
                 .font(sizes.boldText)
                 .alignY(AlignmentY.Center)
         }
 
-        onClose?.let { closeButton(onClose) }
+        titleBlock?.let { it() }
+
+        onClose?.let {
+            Box(width = Grow.Std) {  }
+            closeButton(onClose)
+        }
     }
 }
 
@@ -747,8 +752,51 @@ fun UiScope.textureSelector(selectedTexPath: String, withNoneOption: Boolean, on
     }
 }
 
+fun UiScope.iconButton(
+    icon: IconProvider,
+    tooltip: String? = null,
+    toggleState: Boolean = false,
+    tint: Color = colors.onBackground,
+    onClick: (PointerEvent) -> Unit
+) = Box {
+    var isHovered by remember(false)
+    var isClickFeedback by remember(false)
+
+    val bgColor = when {
+        isClickFeedback -> colors.elevatedComponentBgHovered
+        toggleState || isHovered -> colors.componentBgHovered
+        else -> null
+    }
+
+    bgColor?.let {
+        modifier.background(RoundRectBackground(it, sizes.smallGap))
+    }
+
+    modifier
+        .align(AlignmentX.Center, AlignmentY.Center)
+        .margin(sizes.smallGap)
+        .padding(sizes.smallGap * 0.5f)
+        .onPointer { isClickFeedback = it.pointer.isLeftButtonDown }
+        .onEnter { isHovered = true }
+        .onExit {
+            isHovered = false
+            isClickFeedback = false
+        }
+        .onClick(onClick)
+
+    Image {
+        modifier
+            .align(AlignmentX.Center, AlignmentY.Center)
+            .iconImage(icon, tint)
+    }
+
+    tooltip?.let {
+        Tooltip(it, borderColor = colors.secondaryVariant)
+    }
+}
+
 fun ColumnScope.menuDivider(marginTop: Dp = sizes.smallGap, marginBottom: Dp = Dp.ZERO) {
-    divider(colors.secondaryVariantAlpha(0.75f), marginTop = marginTop, marginBottom = marginBottom)
+    divider(colors.dividerColor, marginTop = marginTop, marginBottom = marginBottom)
 }
 
 fun ButtonScope.defaultButtonStyle() {
@@ -758,6 +806,7 @@ fun ButtonScope.defaultButtonStyle() {
 fun ComboBoxScope.defaultComboBoxStyle() {
     modifier
         .clearWheelCallbacks()
+        .padding(vertical = sizes.smallTextFieldPadding)
         .colors(
             textBackgroundColor = colors.componentBg,
             textBackgroundHoverColor = colors.componentBgHovered,

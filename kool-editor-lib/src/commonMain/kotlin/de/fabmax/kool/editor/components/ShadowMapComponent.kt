@@ -66,7 +66,7 @@ class ShadowMapComponent(nodeModel: SceneNodeModel, override val componentData: 
     }
 
     private fun updateShadowMap(shadowMapInfo: ShadowMapTypeData, clipNear: Float, clipFar: Float) {
-        logD { "Update shadow map: $shadowMapInfo, near: $clipNear, far: $clipFar" }
+        logD { "Update shadow map: ${shadowMapInfo::class.simpleName}, near: $clipNear, far: $clipFar" }
 
         val light = nodeModel.getComponent<DiscreteLightComponent>()?.light
         if (light == null) {

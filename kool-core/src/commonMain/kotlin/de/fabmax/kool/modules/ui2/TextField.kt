@@ -76,7 +76,9 @@ inline fun UiScope.TextField(
     }
 
     val textField = uiNode.createChild(scopeName, TextFieldNode::class, TextFieldNode.factory)
-    surface.onEachFrame(textField::updateCaretBlinkState)
+    if (textField.isFocused.use()) {
+        surface.onEachFrame(textField::updateCaretBlinkState)
+    }
     textField.modifier
         .text(text)
         .onClick(textField)

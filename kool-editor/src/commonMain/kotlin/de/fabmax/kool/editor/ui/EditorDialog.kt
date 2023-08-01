@@ -17,7 +17,10 @@ abstract class EditorDialog(name: String, val ui: EditorUi = KoolEditor.instance
     val dialogActions = mutableListOf<DialogAction>()
     val onClose = mutableListOf<() -> Unit>()
 
-    val dialog = WindowSurface(dialogDockable, EditorUi.EDITOR_THEME_COLORS, borderColor = { null }, isResizable = isResizable) {
+    val dialog = WindowSurface(dialogDockable, borderColor = { null }, isResizable = isResizable) {
+        surface.colors = ui.uiColors.use()
+        surface.sizes = ui.uiSizes.use()
+
         modifier.border(RoundRectBorder(UiColors.border, sizes.gap, sizes.borderWidth))
 
         Column(Grow.Std, Grow.Std) {

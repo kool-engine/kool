@@ -114,12 +114,12 @@ fun UiScope.appModeControlButtons() {
 
 private open class ModeButtonBg(val playStopAnimator: AnimatedFloatBidir, val accent: Color) : UiRenderer<UiNode> {
     var fgColor = ColorGradient(
-        EditorUi.EDITOR_THEME_COLORS.onBackgroundAlpha(0.5f),
-        EditorUi.EDITOR_THEME_COLORS.onBackground.mix(accent, 0.9f)
+        KoolEditor.instance.ui.uiColors.value.onBackgroundAlpha(0.5f),
+        KoolEditor.instance.ui.uiColors.value.onBackground.mix(accent, 0.9f)
     )
     var bgColor = ColorGradient(
-        UiColors.titleBg.mix(EditorUi.EDITOR_THEME_COLORS.secondaryVariant, 0.5f),
-        EditorUi.EDITOR_THEME_COLORS.secondaryVariant.mix(accent, 0.1f)
+        UiColors.titleBg.mix(KoolEditor.instance.ui.uiColors.value.secondaryVariant, 0.5f),
+        KoolEditor.instance.ui.uiColors.value.secondaryVariant.mix(accent, 0.1f)
     )
     val hoverAnimator = AnimatedFloatBidir(0.15f, 0.3f)
     val clickAnimator = AnimatedFloat(0.15f)
@@ -163,8 +163,8 @@ private class PlayButtonBg(playStopAnimator: AnimatedFloatBidir) : ModeButtonBg(
 
     init {
         fgColor = ColorGradient(
-            EditorUi.EDITOR_THEME_COLORS.onBackgroundAlpha(0.5f),
-            EditorUi.EDITOR_THEME_COLORS.onBackground
+            KoolEditor.instance.ui.uiColors.value.onBackgroundAlpha(0.5f),
+            KoolEditor.instance.ui.uiColors.value.onBackground
         )
         bgColor = ColorGradient(UiColors.titleBg.mix(accent, 0.3f), accent)
     }
@@ -216,7 +216,7 @@ private class PlayButtonBg(playStopAnimator: AnimatedFloatBidir) : ModeButtonBg(
 }
 
 private class PauseButtonBg(playStopAnimator: AnimatedFloatBidir, val playPauseAnimator: AnimatedFloatBidir)
-    : ModeButtonBg(playStopAnimator, EditorUi.EDITOR_THEME_COLORS.primary)
+    : ModeButtonBg(playStopAnimator, KoolEditor.instance.ui.uiColors.value.primary)
 {
     private val pPlay = listOf(
         Vec3f(1f, 0f, 0f),
@@ -265,7 +265,7 @@ private class PauseButtonBg(playStopAnimator: AnimatedFloatBidir, val playPauseA
 }
 
 private class ResetButtonBg(playStopAnimator: AnimatedFloatBidir)
-    : ModeButtonBg(playStopAnimator, EditorUi.EDITOR_THEME_COLORS.primary)
+    : ModeButtonBg(playStopAnimator, KoolEditor.instance.ui.uiColors.value.primary)
 {
     override fun UiNode.buttonFg(pHover: Float) {
         val r = innerWidthPx * 0.35f

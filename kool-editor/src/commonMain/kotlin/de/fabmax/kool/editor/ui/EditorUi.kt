@@ -1,5 +1,6 @@
 package de.fabmax.kool.editor.ui
 
+import de.fabmax.kool.Assets
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.math.Vec2d
 import de.fabmax.kool.math.Vec3d
@@ -8,11 +9,22 @@ import de.fabmax.kool.modules.ui2.docking.Dock
 import de.fabmax.kool.modules.ui2.docking.DockLayout
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.*
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 
 class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
 
+    val uiColors = mutableStateOf(EDITOR_THEME_COLORS)
+    val uiSizes = mutableStateOf(Sizes.medium)
+
+    val uiFont = mutableStateOf(MsdfFont.DEFAULT_FONT)
+    val consoleFont = mutableStateOf(MsdfFont.DEFAULT_FONT)
+
     val dock = Dock()
     val statusBar = PanelSurface(colors = EDITOR_THEME_COLORS) {
+        surface.colors = uiColors.use()
+        surface.sizes = uiSizes.use()
+
         modifier
             .alignY(AlignmentY.Bottom)
             .size(Grow.Std, sizes.statusBarHeight)
@@ -30,12 +42,31 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
     val assetBrowser = AssetBrowser(this)
     val materialBrowser = MaterialBrowser(this)
     val scriptBrowser = ScriptBrowser(this)
+    val console = ConsolePanel(this)
 
     val appStateInfo = mutableStateOf("")
 
     val dndController = DndController(this)
 
     init {
+        Assets.launch {
+            val uiTex = loadTexture2d("assets/fonts/gidole/font-gidole-regular.png", MsdfFont.MSDF_TEX_PROPS)
+            val uiMeta = loadBlobAsset("assets/fonts/gidole/font-gidole-meta.json")
+            val uiFont = MsdfFont(MsdfFontData(uiTex, Json.decodeFromString(uiMeta.toArray().decodeToString())))
+            this@EditorUi.uiFont.set(uiFont)
+
+            val sz = uiSizes.value
+            uiSizes.set(sz.copy(
+                normalText = uiFont.copy(sizePts = sz.normalText.sizePts),
+                largeText = uiFont.copy(sizePts = sz.largeText.sizePts),
+            ))
+
+            val consoleTex = loadTexture2d("assets/fonts/hack/font-hack-regular.png", MsdfFont.MSDF_TEX_PROPS)
+            val consoleMeta = loadBlobAsset("assets/fonts/hack/font-hack-meta.json")
+            val consoleFont = MsdfFont(MsdfFontData(consoleTex, Json.decodeFromString(consoleMeta.toArray().decodeToString())))
+            this@EditorUi.consoleFont.set(consoleFont)
+        }
+
         setupUiScene()
 
         addNode(statusBar)
@@ -57,6 +88,7 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
             addDockableSurface(assetBrowser.windowDockable, assetBrowser.windowSurface)
             addDockableSurface(materialBrowser.windowDockable, materialBrowser.windowSurface)
             addDockableSurface(scriptBrowser.windowDockable, scriptBrowser.windowSurface)
+            addDockableSurface(console.windowDockable, console.windowSurface)
 
             val restoredLayout = DockLayout.loadLayout("editor.ui.layout", this) { windowName ->
                 when (windowName) {
@@ -66,6 +98,7 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
                     assetBrowser.name -> assetBrowser.windowDockable
                     materialBrowser.name -> materialBrowser.windowDockable
                     scriptBrowser.name -> scriptBrowser.windowDockable
+                    console.name -> console.windowDockable
                     else -> {
                         logW { "Unable to restore layout - window not found: $windowName" }
                         null
@@ -92,6 +125,7 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
                 getLeafAtPath("0/0/1")?.dock(assetBrowser.windowDockable)
                 getLeafAtPath("0/0/1")?.dock(materialBrowser.windowDockable)
                 getLeafAtPath("0/0/1")?.dock(scriptBrowser.windowDockable)
+                getLeafAtPath("0/0/1")?.dock(console.windowDockable)
 
                 getLeafAtPath("0/0/1")?.bringToTop(assetBrowser.windowDockable)
             }
@@ -103,7 +137,7 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
     private fun UiScope.statusBar() = Row(width = Grow.Std, height = Grow.Std) {
         Box(width = Grow.Std) {  }
 
-        divider(colors.secondaryVariantAlpha(0.75f), marginStart = sizes.gap, marginEnd = sizes.gap)
+        divider(colors.dividerColor, marginStart = sizes.gap, marginEnd = sizes.gap)
 
         Box(width = sizes.baseSize * 6f, height = Grow.Std) {
             Text(appStateInfo.use()) {
@@ -113,7 +147,7 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
     }
 
     companion object {
-        val EDITOR_THEME_COLORS = Colors.darkColors(
+        private val EDITOR_THEME_COLORS = Colors.darkColors(
             background = Color("232933ff"),
             backgroundVariant = Color("161a20ff"),
             onBackground = Color("dbe6ffff"),
@@ -156,6 +190,8 @@ val Colors.dndAcceptableBg: Color get() = MdColor.GREEN.withAlpha(0.3f)
 val Colors.dndAcceptableBgHovered: Color get() = MdColor.GREEN.withAlpha(0.5f)
 
 val Colors.backgroundMid: Color get() = background.mix(backgroundVariant, 0.5f)
+
+val Colors.dividerColor: Color get() = secondaryVariantAlpha(0.75f)
 
 object UiColors {
     val border = Color("0f1114ff")

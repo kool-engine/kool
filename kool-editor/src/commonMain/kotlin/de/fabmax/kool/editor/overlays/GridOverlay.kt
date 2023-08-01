@@ -1,6 +1,6 @@
 package de.fabmax.kool.editor.overlays
 
-import de.fabmax.kool.editor.ui.EditorUi
+import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.smoothStep
@@ -48,6 +48,7 @@ class GridOverlay : Node("Grid overlay") {
         shader.posOffset = Vec3f(offsetX, 0f, offsetZ)
         shader.scale = Vec2f(scale, sDiscrete)
         shader.majorWeight = smoothStep(0f, 0.1f, wx) * 0.75f + smoothStep(0.8f, 1f, wx) * 0.25f
+        shader.superTickColor = KoolEditor.instance.ui.uiColors.value.primaryVariant.withAlpha(0.4f)
     }
 
     private fun LineMesh.makeGrid() {
@@ -139,7 +140,7 @@ class GridOverlay : Node("Grid overlay") {
         var posOffset by uniform3f("uPosOffset", Vec3f.ZERO)
 
         var lineColor by uniform4f("uLineColor", Color.LIGHT_GRAY.withAlpha(0.4f))
-        var superTickColor by uniform4f("uSuperTickColor", EditorUi.EDITOR_THEME_COLORS.primaryVariant.withAlpha(0.4f))
+        var superTickColor by uniform4f("uSuperTickColor")
         var majorWeight by uniform1f("uMajorWeight", 0.5f)
     }
 }

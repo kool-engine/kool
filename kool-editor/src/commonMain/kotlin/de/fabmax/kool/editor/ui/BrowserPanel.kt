@@ -22,12 +22,11 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
     protected val expandedDirTree = mutableListOf<BrowserDir>()
     val selectedDirectory = mutableStateOf<BrowserDir?>(null)
 
-    private val treePanelWidth = mutableStateOf(Dp(275f))
+    private val treePanelSize = mutableStateOf(Dp(275f))
 
     init {
-        val treeW = KeyValueStore.getFloat("editor.ui.[$name].treeWidth", 275f)
-        treePanelWidth.set(Dp(treeW))
-        println("tree w: $treeW")
+        val treeW = KeyValueStore.getFloat("editor.ui.[$name].treeSize", 275f)
+        treePanelSize.set(Dp(treeW))
     }
 
     override val windowSurface = editorPanelWithPanelBar {
@@ -44,12 +43,12 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
     }
 
     private fun UiScope.treeWidthHandle() = Row(height = Grow.Std) {
-        var startDragWidth by remember(treePanelWidth.value)
+        var startDragWidth by remember(treePanelSize.value)
         modifier
             .onHover {  PointerInput.cursorShape = CursorShape.H_RESIZE }
-            .onDragStart { startDragWidth = treePanelWidth.value }
-            .onDrag { treePanelWidth.set(startDragWidth + Dp.fromPx(it.pointer.dragDeltaX.toFloat())) }
-            .onDragEnd { KeyValueStore.setFloat("editor.ui.[$name].treeWidth", treePanelWidth.value.value) }
+            .onDragStart { startDragWidth = treePanelSize.value }
+            .onDrag { treePanelSize.set(startDragWidth + Dp.fromPx(it.pointer.dragDeltaX.toFloat())) }
+            .onDragEnd { KeyValueStore.setFloat("editor.ui.[$name].treeSize", treePanelSize.value.value) }
 
         Box(width = sizes.smallGap, height = Grow.Std) {
             modifier.backgroundColor(colors.background)
@@ -84,7 +83,7 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
 
     protected abstract fun makeItemPopupMenu(item: BrowserItem, isTreeItem: Boolean): SubMenuItem<BrowserItem>?
 
-    fun UiScope.treeView() = Box(width = treePanelWidth.use(), height = Grow.Std) {
+    fun UiScope.treeView() = Box(width = treePanelSize.use(), height = Grow.Std) {
         if (selectedDirectory.value == null) {
             selectDefaultDir()
         }
@@ -154,18 +153,13 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
                             .alignY(AlignmentY.Center)
                             .width(Grow.Std)
                             .textColor(fgColor)
-                        if (dir.level == 0) {
-                            modifier
-                                .margin(start = sizes.gap)
-                                .font(sizes.boldText)
-                        }
                     }
                 }
             }
         }
     }
 
-    fun UiScope.directoryView() = Box(width = Grow.Std, height = Grow.Std) {
+    private fun UiScope.directoryView() = Box(width = Grow.Std, height = Grow.Std) {
         var areaWidth by remember(0f)
         val gridSize = sizes.baseSize * 3f
 
