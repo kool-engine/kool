@@ -14,7 +14,7 @@ import java.nio.file.StandardCopyOption
 import kotlin.coroutines.CoroutineContext
 import kotlin.io.path.*
 
-actual class AvailableAssets actual constructor(assetsBaseDir: String, browserSubDir: String) : CoroutineScope {
+actual class AvailableAssets actual constructor(assetsBaseDir: String, val browserSubDir: String) : CoroutineScope {
     override val coroutineContext: CoroutineContext = Job()
 
     actual val rootAssets = mutableStateListOf<AssetItem>()
@@ -43,19 +43,22 @@ actual class AvailableAssets actual constructor(assetsBaseDir: String, browserSu
     }
 
     actual fun createAssetDir(createPath: String) {
-        val path = Path(assetsDir.pathString, createPath)
+        val path = Path(assetsDir.pathString, createPath.removePrefix(browserSubDir))
+        logD { "Create asset directory: $path" }
         path.createDirectories()
     }
 
     actual fun renameAsset(sourcePath: String, destPath: String) {
-        val source = Path(assetsDir.pathString, sourcePath)
-        val dest = Path(assetsDir.pathString, destPath)
+        val source = Path(assetsDir.pathString, sourcePath.removePrefix(browserSubDir))
+        val dest = Path(assetsDir.pathString, destPath.removePrefix(browserSubDir))
+        logD { "Rename asset: $source -> $dest" }
         dest.parent.createDirectories()
         source.moveTo(dest, StandardCopyOption.ATOMIC_MOVE)
     }
 
     actual fun deleteAsset(deletePath: String) {
-        val path = Path(assetsDir.pathString, deletePath)
+        val path = Path(assetsDir.pathString, deletePath.removePrefix(browserSubDir))
+        logD { "Delete asset path: $path" }
         if (path.isDirectory()) {
             path.deleteRecursively()
         } else {

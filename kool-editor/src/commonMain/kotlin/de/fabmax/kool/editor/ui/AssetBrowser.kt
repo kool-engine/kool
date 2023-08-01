@@ -67,6 +67,11 @@ class AssetBrowser(ui: EditorUi) : BrowserPanel("Asset Browser", IconMap.medium.
                 divider()
                 importAssetsMenu()
 
+            } else if (item is BrowserDir && item == selectedDirectory.value) {
+                // item view empty space popup menu
+                createDirectoryItem()
+                importAssetsMenu()
+
             } else if (item is BrowserDir) {
                 // item view directory popup menu
                 renameDirectoryItem()
