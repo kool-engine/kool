@@ -26,11 +26,12 @@ fun UiScope.editorTitleBar(
     Row(Grow.Std, sizes.lineHeightTitle) {
         modifier
             .padding(horizontal = sizes.gap - sizes.borderWidth)
+            .zLayer(UiSurface.LAYER_FLOATING)
 
         if (roundedTop) {
-            modifier.background(TitleBarBackground(UiColors.titleBg, sizes.gap.px, false))
+            modifier.background(remember { TitleBgRenderer(sizes.gap.px) })
         } else {
-            modifier.backgroundColor(UiColors.titleBg)
+            modifier.background(remember { TitleBgRenderer() })
         }
 
         if (!windowDockable.isDocked.use()) {
@@ -51,7 +52,7 @@ fun UiScope.editorTitleBar(
         Text(title) {
             modifier
                 .textColor(UiColors.titleText)
-                .font(sizes.boldText)
+                .font(sizes.boldText.copy(glowColor = Color.BLACK.withAlpha(0.75f)))
                 .alignY(AlignmentY.Center)
         }
 

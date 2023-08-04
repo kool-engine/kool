@@ -644,19 +644,19 @@ open class UiSurface(
             return textMesh.builder
         }
 
-        fun addCustomLayer(key: String, block: () -> Node): Boolean {
+        fun addCustomLayer(key: String, order: Int = -1, block: () -> Node): Boolean {
             val layer = customLayers.getOrPut(key) { CustomLayer(block()) }
             val isFirstUsage = !layer.isUsed
             if (isFirstUsage) {
-                addNode(layer.drawNode)
+                addNode(layer.drawNode, order)
             }
             layer.isUsed = true
             return isFirstUsage
         }
 
-        fun addImage(image: Texture2d): ImageMesh {
+        fun addImage(image: Texture2d, order: Int = -1): ImageMesh {
             val imgMesh = imageMeshes.getOrPut(image) { ImageMeshes() }.getUnusedMesh()
-            addNode(imgMesh)
+            addNode(imgMesh, order)
             return imgMesh
         }
 

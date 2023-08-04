@@ -34,7 +34,7 @@ class ConsolePanel(ui: EditorUi) : EditorPanel("Console", IconMap.medium.CONSOLE
                         .onDragStart {  }
                         .alignY(AlignmentY.Center)
 
-                    divider(colors.dividerColor, marginStart = sizes.largeGap, marginEnd = sizes.largeGap, verticalMargin = sizes.smallGap)
+                    divider(colors.secondaryAlpha(0.75f), marginStart = sizes.largeGap, marginEnd = sizes.largeGap, verticalMargin = sizes.smallGap)
 
                     Text("Level:") {
                         modifier.alignY(AlignmentY.Center)
@@ -53,7 +53,7 @@ class ConsolePanel(ui: EditorUi) : EditorPanel("Console", IconMap.medium.CONSOLE
                             }
                     }
 
-                    divider(colors.dividerColor, marginStart = sizes.largeGap, marginEnd = sizes.largeGap, verticalMargin = sizes.smallGap)
+                    divider(colors.secondaryAlpha(0.75f), marginStart = sizes.largeGap, marginEnd = sizes.largeGap, verticalMargin = sizes.smallGap)
 
                     Text("Filter:") {
                         modifier.alignY(AlignmentY.Center)
@@ -108,6 +108,7 @@ class ConsolePanel(ui: EditorUi) : EditorPanel("Console", IconMap.medium.CONSOLE
                 if (msg.isAccepted) {
                     filteredLogMessages += msg
                     windowSurface.triggerUpdate()
+                    println(msg)
                 }
             }
         }
@@ -301,7 +302,7 @@ class ConsolePanel(ui: EditorUi) : EditorPanel("Console", IconMap.medium.CONSOLE
         }
 
         override fun toString(): String {
-            return "$fmtTime $level ${message}${if (tag != null) " [${tag}]" else ""}"
+            return "$fmtTime f:${fmtStr("$frameIdx", 6)} ${level.indicator}: ${message}${if (tag != null) " [${tag}]" else ""}"
         }
     }
 
