@@ -22,6 +22,12 @@ class TransformComponent(nodeModel: SceneNodeModel, override val componentData: 
         }
     }
 
+    val isFixedScaleRatio = mutableStateOf(componentData.isFixedScaleRatio).onChange {
+        if (AppState.isEditMode) {
+            componentData.isFixedScaleRatio = it
+        }
+    }
+
     private val tmpMat = Mat4d()
 
     init {

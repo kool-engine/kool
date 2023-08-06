@@ -112,10 +112,11 @@ class TransformGizmoOverlay(private val editor: KoolEditor) : Node("Transform gi
                 .scale(distance / gizmoScale.toDouble())
                 .add(MutableVec3d().set(axis))
         )
+        val f = ori.distance(scaled) / ori.distance(base)
         val s = MutableVec3d(axX, axY, axZ)
-            .scale(ori.distance(scaled) / ori.distance(base))
+            .scale(f)
             .add(Vec3d(1.0 - axX, 1.0 - axY, 1.0 - axZ))
-        scaleSelection(s)
+        scaleSelection(s, f)
     }
 
     private fun applyTransformMode() {
@@ -183,9 +184,13 @@ class TransformGizmoOverlay(private val editor: KoolEditor) : Node("Transform gi
         applySelectionTransform(false)
     }
 
-    private fun scaleSelection(scale: Vec3d) {
+    private fun scaleSelection(scale: Vec3d, singleScale: Double) {
         selection.forEach { node ->
-            node.dragScale.set(node.startScale).mul(scale)
+            if (node.nodeModel.transform.isFixedScaleRatio.value) {
+                node.dragScale.set(node.startScale).scale(singleScale)
+            } else {
+                node.dragScale.set(node.startScale).mul(scale)
+            }
         }
         applySelectionTransform(false)
     }

@@ -9,4 +9,4 @@ sealed interface ComponentData
 class ModelComponentData(var modelPath: String, var sceneIndex: Int = 0, var animationIndex: Int = -1) : ComponentData
 
 @Serializable
-class TransformComponentData(var transform: TransformData) : ComponentData
+class TransformComponentData(var transform: TransformData, var isFixedScaleRatio: Boolean = true) : ComponentData

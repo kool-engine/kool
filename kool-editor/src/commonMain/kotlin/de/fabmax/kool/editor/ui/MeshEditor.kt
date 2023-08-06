@@ -55,7 +55,7 @@ class MeshEditor(component: MeshComponent) : ComponentEditor<MeshComponent>(comp
 
                 if (shape.hasUvs) {
                     val shapeI = component.shapesState.indexOf(shape)
-                    xyRow(
+                    labeledXyRow(
                         label = "Texture scale:",
                         xy = shape.common.uvScale.toVec2d(),
                         dragChangeSpeed = DragChangeRates.SIZE_VEC2,
@@ -77,7 +77,7 @@ class MeshEditor(component: MeshComponent) : ComponentEditor<MeshComponent>(comp
         scopeName = "boxProperties"
     ) {
         val shapeI = component.shapesState.indexOf(box)
-        xyzRow(
+        labeledXyzRow(
             label = "Size:",
             xyz = box.size.toVec3d(),
             dragChangeSpeed = DragChangeRates.SIZE_VEC3,
@@ -92,7 +92,7 @@ class MeshEditor(component: MeshComponent) : ComponentEditor<MeshComponent>(comp
         scopeName = "rectProperties"
     ) {
         val shapeI = component.shapesState.indexOf(rect)
-        xyRow(
+        labeledXyRow(
             label = "Size:",
             xy = rect.size.toVec2d(),
             dragChangeSpeed = DragChangeRates.SIZE_VEC2,

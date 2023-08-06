@@ -99,7 +99,7 @@ class ScriptEditor(component: ScriptComponent) : ComponentEditor<ScriptComponent
             }
         }
 
-        xyRow(
+        labeledXyRow(
             prop.label,
             propValue,
             dragChangeSpeed = Vec2d(prop.dragChangeSpeed),
@@ -121,7 +121,7 @@ class ScriptEditor(component: ScriptComponent) : ComponentEditor<ScriptComponent
             }
         }
 
-        xyzRow(
+        labeledXyzRow(
             prop.label,
             propValue,
             dragChangeSpeed = Vec3d(prop.dragChangeSpeed),
@@ -143,7 +143,7 @@ class ScriptEditor(component: ScriptComponent) : ComponentEditor<ScriptComponent
             }
         }
 
-        xyzwRow(
+        labeledXyzwRow(
             prop.label,
             propValue,
             dragChangeSpeed = Vec4d(prop.dragChangeSpeed),
@@ -188,7 +188,7 @@ class ScriptEditor(component: ScriptComponent) : ComponentEditor<ScriptComponent
             }
         }
 
-        xyRow(
+        labeledXyRow(
             prop.label,
             propValue.toVec2d(),
             dragChangeSpeed = Vec2d(prop.dragChangeSpeed),
@@ -210,7 +210,7 @@ class ScriptEditor(component: ScriptComponent) : ComponentEditor<ScriptComponent
             }
         }
 
-        xyzRow(
+        labeledXyzRow(
             prop.label,
             propValue.toVec3d(),
             dragChangeSpeed = Vec3d(prop.dragChangeSpeed),
@@ -232,7 +232,7 @@ class ScriptEditor(component: ScriptComponent) : ComponentEditor<ScriptComponent
             }
         }
 
-        xyzwRow(
+        labeledXyzwRow(
             prop.label,
             propValue.toVec4d(),
             dragChangeSpeed = Vec4d(prop.dragChangeSpeed),
@@ -276,7 +276,7 @@ class ScriptEditor(component: ScriptComponent) : ComponentEditor<ScriptComponent
             }
         }
 
-        xyRow(
+        labeledXyRow(
             prop.label,
             propValue.toVec2d(),
             dragChangeSpeed = Vec2d(prop.dragChangeSpeed),
@@ -298,7 +298,7 @@ class ScriptEditor(component: ScriptComponent) : ComponentEditor<ScriptComponent
             }
         }
 
-        xyzRow(
+        labeledXyzRow(
             prop.label,
             propValue.toVec3d(),
             dragChangeSpeed = Vec3d(prop.dragChangeSpeed),
@@ -320,7 +320,7 @@ class ScriptEditor(component: ScriptComponent) : ComponentEditor<ScriptComponent
             }
         }
 
-        xyzwRow(
+        labeledXyzwRow(
             prop.label,
             propValue.toVec4d(),
             dragChangeSpeed = Vec4d(prop.dragChangeSpeed),
