@@ -2,24 +2,20 @@ package de.fabmax.kool.editor.actions
 
 import de.fabmax.kool.editor.data.TransformData
 import de.fabmax.kool.editor.model.SceneNodeModel
-import de.fabmax.kool.math.Mat4d
 
 class SetTransformAction(
     private val editedNodeModel: SceneNodeModel,
-    oldTransform: Mat4d,
-    newTransform: Mat4d
+    private val oldTransform: TransformData,
+    private val newTransform: TransformData
 ) : EditorAction {
 
-    private val oldTransform = Mat4d().set(oldTransform)
-    private val newTransform = Mat4d().set(newTransform)
-
     override fun doAction() {
-        editedNodeModel.transform.transformState.set(TransformData(newTransform))
-        editedNodeModel.drawNode.transform.set(newTransform)
+        editedNodeModel.transform.transformState.set(newTransform)
+        newTransform.toTransform(editedNodeModel.drawNode.transform)
     }
 
     override fun undoAction() {
-        editedNodeModel.transform.transformState.set(TransformData(oldTransform))
-        editedNodeModel.drawNode.transform.set(oldTransform)
+        editedNodeModel.transform.transformState.set(oldTransform)
+        oldTransform.toTransform(editedNodeModel.drawNode.transform)
     }
 }

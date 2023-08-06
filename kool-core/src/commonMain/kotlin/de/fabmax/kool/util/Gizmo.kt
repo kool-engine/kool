@@ -93,12 +93,12 @@ class Gizmo : Node(), InputStack.PointerListener {
             meshDirty = true
         }
 
-    var axisHandleX = MutableVec3f(Vec3f.X_AXIS)
-    var axisHandleY = MutableVec3f(Vec3f.Y_AXIS)
-    var axisHandleZ = MutableVec3f(Vec3f.Z_AXIS)
-    var axisHandleNegX = MutableVec3f(Vec3f.NEG_X_AXIS)
-    var axisHandleNegY = MutableVec3f(Vec3f.NEG_Y_AXIS)
-    var axisHandleNegZ = MutableVec3f(Vec3f.NEG_Z_AXIS)
+    private var axisHandleX = MutableVec3f(Vec3f.X_AXIS)
+    private var axisHandleY = MutableVec3f(Vec3f.Y_AXIS)
+    private var axisHandleZ = MutableVec3f(Vec3f.Z_AXIS)
+    private var axisHandleNegX = MutableVec3f(Vec3f.NEG_X_AXIS)
+    private var axisHandleNegY = MutableVec3f(Vec3f.NEG_Y_AXIS)
+    private var axisHandleNegZ = MutableVec3f(Vec3f.NEG_Z_AXIS)
 
     var gizmoListener: GizmoListener? = null
 
@@ -216,12 +216,12 @@ class Gizmo : Node(), InputStack.PointerListener {
 
         lineMesh.clear()
 
-        if (hasAxisX) lineMesh.line(Vec3f.ZERO, axisHandleX, properties.axisColorX, 5f)
-        if (hasAxisY) lineMesh.line(Vec3f.ZERO, axisHandleY, properties.axisColorY, 5f)
-        if (hasAxisZ) lineMesh.line(Vec3f.ZERO, axisHandleZ, properties.axisColorZ, 5f)
-        if (hasAxisNegX) lineMesh.line(Vec3f.ZERO, axisHandleNegX, properties.axisColorNegX, 5f)
-        if (hasAxisNegY) lineMesh.line(Vec3f.ZERO, axisHandleNegY, properties.axisColorNegY, 5f)
-        if (hasAxisNegZ) lineMesh.line(Vec3f.ZERO, axisHandleNegZ, properties.axisColorNegZ, 5f)
+        if (hasAxisX) lineMesh.line(Vec3f.ZERO, axisHandleX.set(properties.axisLenX, 0f, 0f), properties.axisColorX, 5f)
+        if (hasAxisY) lineMesh.line(Vec3f.ZERO, axisHandleY.set(0f, properties.axisLenY, 0f), properties.axisColorY, 5f)
+        if (hasAxisZ) lineMesh.line(Vec3f.ZERO, axisHandleZ.set(0f, 0f, properties.axisLenZ), properties.axisColorZ, 5f)
+        if (hasAxisNegX) lineMesh.line(Vec3f.ZERO, axisHandleNegX.set(-properties.axisLenNegX, 0f, 0f), properties.axisColorNegX, 5f)
+        if (hasAxisNegY) lineMesh.line(Vec3f.ZERO, axisHandleNegY.set(0f, -properties.axisLenNegY, 0f), properties.axisColorNegY, 5f)
+        if (hasAxisNegZ) lineMesh.line(Vec3f.ZERO, axisHandleNegZ.set(0f, 0f, -properties.axisLenNegZ), properties.axisColorNegZ, 5f)
 
         if (properties.hasRotationX) lineMesh.rotationHandle(Vec3f.X_AXIS, properties.rotationAxisColorX, hoverRot == AXIS_X)
         if (properties.hasRotationY) lineMesh.rotationHandle(Vec3f.Y_AXIS, properties.rotationAxisColorY, hoverRot == AXIS_Y)
@@ -246,19 +246,50 @@ class Gizmo : Node(), InputStack.PointerListener {
     private fun generateSolidMesh() {
         solidMesh.generate {
             // axis handles
-            if (hasAxisX) axisHandle(properties.axisHandleColorX, axisHandleX, hoverHandle == AXIS_X)
-            if (hasAxisY) axisHandle(properties.axisHandleColorY, axisHandleY, hoverHandle == AXIS_Y)
-            if (hasAxisZ) axisHandle(properties.axisHandleColorZ, axisHandleZ, hoverHandle == AXIS_Z)
-            if (hasAxisNegX) axisHandle(properties.axisHandleColorX, axisHandleNegX, hoverHandle == AXIS_NEG_X)
-            if (hasAxisNegY) axisHandle(properties.axisHandleColorY, axisHandleNegY, hoverHandle == AXIS_NEG_Y)
-            if (hasAxisNegZ) axisHandle(properties.axisHandleColorZ, axisHandleNegZ, hoverHandle == AXIS_NEG_Z)
+            if (hasAxisX) {
+                withTransform {
+                    rotate(-90f, Vec3f.Z_AXIS)
+                    axisHandle(properties.axisHandleColorX, properties.axisLenX, hoverHandle == AXIS_X)
+                }
+            }
+            if (hasAxisY) {
+                axisHandle(properties.axisHandleColorY, properties.axisLenY, hoverHandle == AXIS_Y)
+            }
+            if (hasAxisZ) {
+                withTransform {
+                    rotate(90f, Vec3f.X_AXIS)
+                    axisHandle(properties.axisHandleColorZ, properties.axisLenZ, hoverHandle == AXIS_Z)
+                }
+            }
+            if (hasAxisNegX) {
+                withTransform {
+                    rotate(90f, Vec3f.Z_AXIS)
+                    axisHandle(properties.axisHandleColorX, properties.axisLenNegX, hoverHandle == AXIS_NEG_X)
+                }
+            }
+            if (hasAxisNegY) {
+                withTransform {
+                    rotate(180f, Vec3f.Z_AXIS)
+                    axisHandle(properties.axisHandleColorY, properties.axisLenNegY, hoverHandle == AXIS_NEG_Y)
+                }
+            }
+            if (hasAxisNegZ) {
+                withTransform {
+                    rotate(-90f, Vec3f.X_AXIS)
+                    axisHandle(properties.axisHandleColorZ, properties.axisLenNegZ, hoverHandle == AXIS_NEG_Z)
+                }
+            }
 
             // plane handles
+            val planeSzX = properties.planeHandleSize
+            val planeSzY = properties.planeHandleSize
+            val planeOriX = planeSzX * 0.5f + properties.planeHandleGap
+            val planeOriY = planeSzY * 0.5f + properties.planeHandleGap
             if (properties.hasPlaneXY && hoverPlane == PLANE_XY) {
                 color = properties.planeColorXY
                 centeredRect {
-                    isCenteredOrigin = false
-                    size.set(properties.planeHandleSize * camSign.x, properties.planeHandleSize * camSign.y)
+                    origin.set(planeOriX * camSign.x, planeOriY * camSign.y, 0f)
+                    size.set(planeSzX, planeSzY)
                 }
             }
             if (properties.hasPlaneXZ && hoverPlane == PLANE_XZ) {
@@ -266,8 +297,8 @@ class Gizmo : Node(), InputStack.PointerListener {
                     rotate(90f, Vec3f.X_AXIS)
                     color = properties.planeColorXZ
                     centeredRect {
-                        isCenteredOrigin = false
-                        size.set(properties.planeHandleSize * camSign.x, properties.planeHandleSize * camSign.z)
+                        origin.set(planeOriX * camSign.x, planeOriY * camSign.z, 0f)
+                        size.set(planeSzX, planeSzY)
                     }
                 }
             }
@@ -276,8 +307,8 @@ class Gizmo : Node(), InputStack.PointerListener {
                     rotate(-90f, Vec3f.Y_AXIS)
                     color = properties.planeColorYZ
                     centeredRect {
-                        isCenteredOrigin = false
-                        size.set(properties.planeHandleSize * camSign.z, properties.planeHandleSize * camSign.y)
+                        origin.set(planeOriX * camSign.z, planeOriY * camSign.y, 0f)
+                        size.set(planeSzX, planeSzY)
                     }
                 }
             }
@@ -285,12 +316,27 @@ class Gizmo : Node(), InputStack.PointerListener {
 
     }
 
-    private fun MeshBuilder.axisHandle(color: Color, position: Vec3f, isHovered: Boolean) {
+    private fun MeshBuilder.axisHandle(color: Color, len: Float, isHovered: Boolean) {
         this.color = color
-        icoSphere {
-            center.set(position)
-            steps = 1
-            radius = if (isHovered) properties.axesHandleRadiusHovered else properties.axesHandleRadius
+        val r = if (isHovered) properties.axesHandleRadiusHovered else properties.axesHandleRadius
+        when (properties.axesHandleShape) {
+            AxisHandleShape.ARROW -> cylinder {
+                origin.set(0f, len, 0f)
+                steps = 8
+                height = r * 2f
+                bottomRadius = r
+                topRadius = 0f
+                topFill = false
+            }
+            AxisHandleShape.SPHERE -> icoSphere {
+                center.set(0f, len, 0f)
+                steps = 1
+                radius = r
+            }
+            AxisHandleShape.CUBE -> cube {
+                origin.set(0f, len, 0f)
+                size.set(r, r, r)
+            }
         }
     }
 
@@ -313,11 +359,17 @@ class Gizmo : Node(), InputStack.PointerListener {
     }
 
     private fun BetterLineMesh.planeHandleBorder(axisX: Vec3f, axisY: Vec3f, signX: Float, signY: Float, color: Color) {
-        val x = MutableVec3f(axisX).scale(properties.planeHandleSize * signX)
-        val y = MutableVec3f(axisY).scale(properties.planeHandleSize * signY)
-        moveTo(x, color, 3f)
-        lineTo(x.add(y), color, 3f)
-        lineTo(y, color, 3f)
+        this.color = color
+        this.width = properties.lineWidth
+        val sX = MutableVec3f(axisX).scale(properties.planeHandleSize * signX)
+        val sY = MutableVec3f(axisY).scale(properties.planeHandleSize * signY)
+        val g = MutableVec3f(axisX).scale(properties.planeHandleGap * signX)
+            .add(MutableVec3f(axisY).scale(properties.planeHandleGap * signY))
+        moveTo(g)
+        lineTo(MutableVec3f(g).add(sX))
+        lineTo(MutableVec3f(g).add(sX).add(sY))
+        lineTo(MutableVec3f(g).add(sY))
+        lineTo(g)
         stroke()
     }
 
@@ -510,6 +562,7 @@ class Gizmo : Node(), InputStack.PointerListener {
         cam: Camera
     ): Float {
         var returnDist = minDist
+        val handleGap = properties.planeHandleGap * scale
         val handleSize = properties.planeHandleSize * scale
 
         toGlobalCoords(pickPlane.n.set(normal), 0f)
@@ -538,7 +591,11 @@ class Gizmo : Node(), InputStack.PointerListener {
             }
 
             if (d < minDist) {
-                if (isPlane && isInInterval(pickX, handleSize * signX) && isInInterval(pickY, handleSize * signY)) {
+                val boundAx = handleGap * signX
+                val boundBx = (handleGap + handleSize) * signX
+                val boundAy = handleGap * signY
+                val boundBy = (handleGap + handleSize) * signY
+                if (isPlane && isInInterval(pickX, boundAx, boundBx) && isInInterval(pickY, boundAy, boundBy)) {
                     hoverRot = AXIS_NONE
                     hoverPlane = plane
                     returnDist = d
@@ -553,8 +610,8 @@ class Gizmo : Node(), InputStack.PointerListener {
         return returnDist
     }
 
-    private fun isInInterval(value: Float, bound: Float): Boolean {
-        return if (bound < 0f) value > bound && value < 0f else value > 0f && value < bound
+    private fun isInInterval(value: Float, boundA: Float, boundB: Float): Boolean {
+        return value > min(boundA, boundB) && value < max(boundA, boundB)
     }
 
     interface GizmoListener {
@@ -566,6 +623,13 @@ class Gizmo : Node(), InputStack.PointerListener {
     }
 
     data class GizmoProperties(
+        var axisLenX: Float = 1f,
+        var axisLenY: Float = 1f,
+        var axisLenZ: Float = 1f,
+        var axisLenNegX: Float = 1f,
+        var axisLenNegY: Float = 1f,
+        var axisLenNegZ: Float = 1f,
+
         var axisColorX: Color = MdColor.RED,
         var axisColorY: Color = MdColor.GREEN,
         var axisColorZ: Color = MdColor.BLUE,
@@ -583,15 +647,17 @@ class Gizmo : Node(), InputStack.PointerListener {
         var rotationAxisColorY: Color = MdColor.GREEN,
         var rotationAxisColorZ: Color = MdColor.BLUE,
 
-        var planeColorXY: Color = MdColor.AMBER,
-        var planeColorXZ: Color = MdColor.PURPLE,
-        var planeColorYZ: Color = MdColor.CYAN,
+        var planeColorXY: Color = MdColor.BLUE,
+        var planeColorXZ: Color = MdColor.GREEN,
+        var planeColorYZ: Color = MdColor.RED,
 
         var axesHandleRadius: Float = 0.075f,
         var axesHandleRadiusHovered: Float = 0.1f,
+        var axesHandleShape: AxisHandleShape = AxisHandleShape.SPHERE,
         var rotationHandleRadius: Float = 0.75f,
         var rotationHandleGrabDist: Float = 0.075f,
         var planeHandleSize: Float = 0.33f,
+        var planeHandleGap: Float = 0.15f,
 
         var lineWidth: Float = 3f,
         var lineWidthHovered: Float = 7f,
@@ -611,7 +677,43 @@ class Gizmo : Node(), InputStack.PointerListener {
         var hasPlaneXY: Boolean = true,
         var hasPlaneXZ: Boolean = true,
         var hasPlaneYZ: Boolean = true
-    )
+    ) {
+        fun setAxesLengths(len: Float) {
+            axisLenX = len
+            axisLenY = len
+            axisLenZ = len
+            axisLenNegX = len
+            axisLenNegY = len
+            axisLenNegZ = len
+        }
+
+        fun setAxisHandlesEnabled(enabled: Boolean) {
+            hasAxisX = enabled
+            hasAxisY = enabled
+            hasAxisZ = enabled
+            hasAxisNegX = enabled
+            hasAxisNegY = enabled
+            hasAxisNegZ = enabled
+        }
+
+        fun setPlaneHandlesEnabled(enabled: Boolean) {
+            hasPlaneXY = enabled
+            hasPlaneXZ = enabled
+            hasPlaneYZ = enabled
+        }
+
+        fun setRotationHandlesEnabled(enabled: Boolean) {
+            hasRotationX = enabled
+            hasRotationY = enabled
+            hasRotationZ = enabled
+        }
+    }
+
+    enum class AxisHandleShape {
+        ARROW,
+        SPHERE,
+        CUBE
+    }
 
     companion object {
         private const val AXIS_NONE = -1

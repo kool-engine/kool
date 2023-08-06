@@ -19,7 +19,6 @@ import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Gizmo
 import de.fabmax.kool.util.MdColor
 import kotlin.math.max
-import kotlin.math.min
 
 class GizmoTest : DemoScene("Gizmo Test") {
     private val gizmo1 = Gizmo()
@@ -65,9 +64,9 @@ class GizmoTest : DemoScene("Gizmo Test") {
         addNode(gizmo1)
 
         gizmo2.setFixedScale(1f)
-        gizmo2.axisHandleX.set(4f, 0f, 0f)
         gizmo2.setGizmoTransform(Mat4d().translate(0.0, 0.0, 3.0))
         gizmo2.properties = Gizmo.GizmoProperties(
+            axisLenX = 4f,
             axisColorX = Color.WHITE,
             axisColorNegX = Color.WHITE,
             axisHandleColorX = MdColor.AMBER,
@@ -86,20 +85,20 @@ class GizmoTest : DemoScene("Gizmo Test") {
         addNode(gizmo2)
 
         var axX = 1f
-        var axNegX = -1f
+        var axNegX = 1f
         gizmo2.gizmoListener = object : Gizmo.GizmoListener {
             override fun onDragStart(ctx: KoolContext) {
-                axX = gizmo2.axisHandleX.x
-                axNegX = gizmo2.axisHandleNegX.x
+                axX = gizmo2.properties.axisLenX
+                axNegX = gizmo2.properties.axisLenNegX
             }
 
             override fun onDragAxis(axis: Vec3f, distance: Float, targetTransform: Mat4d, ctx: KoolContext) {
                 if (axis.z != 0f || KeyboardInput.isAltDown) {
                     targetTransform.translate(axis.x * distance, axis.y * distance, axis.z * distance)
                 } else if (axis.x > 0f) {
-                    gizmo2.axisHandleX.x = max(0.1f, axX + distance)
+                    gizmo2.properties.axisLenX = max(0.1f, axX + distance)
                 } else {
-                    gizmo2.axisHandleNegX.x = min(-0.1f, axNegX - distance)
+                    gizmo2.properties.axisLenNegX = max(0.1f, axNegX + distance)
                 }
                 gizmo2.updateMesh()
             }
