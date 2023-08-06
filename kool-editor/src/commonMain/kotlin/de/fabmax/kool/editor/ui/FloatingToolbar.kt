@@ -17,9 +17,8 @@ class FloatingToolbar(val ui: EditorUi) : Composable {
 
     private fun updateGizmo() {
         if (actionMode.value in transformTools) {
-            val editModel = EditorState.getSelectedSceneNodes().getOrNull(0)
             launchOnMainThread {
-                ui.editor.gizmoOverlay.setTransformObject(editModel)
+                ui.editor.gizmoOverlay.setTransformObjects(EditorState.getSelectedSceneNodes())
                 ui.editor.gizmoOverlay.transformMode = when (actionMode.value) {
                     EditActionMode.MOVE -> TransformGizmoOverlay.TransformMode.MOVE
                     EditActionMode.ROTATE -> TransformGizmoOverlay.TransformMode.ROTATE

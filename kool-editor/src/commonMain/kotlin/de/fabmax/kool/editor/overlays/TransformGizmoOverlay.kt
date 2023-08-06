@@ -7,13 +7,17 @@ import de.fabmax.kool.editor.data.TransformData
 import de.fabmax.kool.editor.data.Vec3Data
 import de.fabmax.kool.editor.data.Vec4Data
 import de.fabmax.kool.editor.model.SceneNodeModel
+import de.fabmax.kool.input.KeyboardInput
 import de.fabmax.kool.math.*
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.Gizmo
 import kotlin.math.abs
+import kotlin.math.max
 import kotlin.math.sqrt
 
 class TransformGizmoOverlay(private val editor: KoolEditor) : Node("Transform gizmo") {
+
+    var orientationMode = OrientationMode.LOCAL
 
     var transformMode = TransformMode.MOVE
         set(value) {
@@ -25,6 +29,8 @@ class TransformGizmoOverlay(private val editor: KoolEditor) : Node("Transform gi
     private var hasTransformAuthority = false
 
     private val gizmo = Gizmo()
+    private val globalGizmoPos = MutableVec3d()
+    private val globalGizmoOrientation = MutableVec4d()
     private var gizmoScale = 1f
     private val gizmoToGlobal = Mat4d()
 
@@ -71,15 +77,8 @@ class TransformGizmoOverlay(private val editor: KoolEditor) : Node("Transform gi
 
         gizmo.gizmoListener = gizmoListener
         gizmo.onUpdate {
-            selection.getOrNull(0)?.nodeModel?.drawNode?.let {
-                if (!hasTransformAuthority) {
-                    gizmo.transform.set(it.modelMat)
-
-                    gizmoScale = sqrt(it.globalRadius) + 0.5f
-                    gizmo.transform.matrix.resetScale()
-                    gizmo.setFixedScale(gizmoScale)
-                    gizmoToGlobal.set(gizmo.transform.matrix)
-                }
+            if (selection.isNotEmpty() && !hasTransformAuthority) {
+                updateGizmoTransformFromSelection()
             }
         }
     }
@@ -149,17 +148,20 @@ class TransformGizmoOverlay(private val editor: KoolEditor) : Node("Transform gi
     }
 
     private fun applySelectionTransform(withUndo: Boolean) {
+        val transformNodes = mutableListOf<SceneNodeModel>()
+        val undoTransforms = mutableListOf<TransformData>()
+        val applyTransforms = mutableListOf<TransformData>()
+
         selection.forEach {
-            val action = SetTransformAction(
-                editedNodeModel = it.nodeModel,
-                oldTransform = TransformData(Vec3Data(it.startPosition), Vec4Data(it.startRotation), Vec3Data(it.startScale)),
-                newTransform = TransformData(Vec3Data(it.dragPosition), Vec4Data(it.dragRotation), Vec3Data(it.dragScale)),
-            )
-            if (withUndo) {
-                action.apply()
-            } else {
-                action.doAction()
-            }
+            transformNodes += it.nodeModel
+            undoTransforms += TransformData(Vec3Data(it.startPosition), Vec4Data(it.startRotation), Vec3Data(it.startScale))
+            applyTransforms += TransformData(Vec3Data(it.dragPosition), Vec4Data(it.dragRotation), Vec3Data(it.dragScale))
+        }
+        val action = SetTransformAction(transformNodes, undoTransforms, applyTransforms)
+        if (withUndo) {
+            action.apply()
+        } else {
+            action.doAction()
         }
     }
 
@@ -175,21 +177,46 @@ class TransformGizmoOverlay(private val editor: KoolEditor) : Node("Transform gi
     private fun rotateSelection(globalAxis: Vec3d, angle: Double) {
         val m = Mat3d()
         val ax = MutableVec3d()
+        val globalRot = Mat4d().rotate(angle, globalAxis)
         selection.forEach { node ->
             val axisInParentFrame = node.globalToNode.transform(ax.set(globalAxis), 0.0)
             m.setRotate(node.startRotation)
                 .rotate(angle, axisInParentFrame)
                 .getRotation(node.dragRotation)
+
+            if (selection.size > 1) {
+                // in case of multi selection, gizmo position is not the same as the node position -> node needs
+                // to be translated as well
+                val globalPos = node.nodeToGlobal.getOrigin(MutableVec3d()).subtract(globalGizmoPos)
+                globalRot.transform(globalPos)
+                globalPos.add(globalGizmoPos)
+                node.globalToParent.transform(globalPos, 1.0, node.dragPosition)
+            }
         }
+
         applySelectionTransform(false)
     }
 
     private fun scaleSelection(scale: Vec3d, singleScale: Double) {
+        val globalScale = Mat4d()
+        if (!KeyboardInput.isAltDown) {
+            globalScale.scale(singleScale)
+        }
+
         selection.forEach { node ->
             if (node.nodeModel.transform.isFixedScaleRatio.value) {
                 node.dragScale.set(node.startScale).scale(singleScale)
             } else {
                 node.dragScale.set(node.startScale).mul(scale)
+            }
+
+            if (selection.size > 1) {
+                // in case of multi selection, gizmo position is not the same as the node position -> node needs
+                // to be translated as well
+                val globalPos = node.nodeToGlobal.getOrigin(MutableVec3d()).subtract(globalGizmoPos)
+                globalScale.transform(globalPos)
+                globalPos.add(globalGizmoPos)
+                node.globalToParent.transform(globalPos, 1.0, node.dragPosition)
             }
         }
         applySelectionTransform(false)
@@ -217,17 +244,59 @@ class TransformGizmoOverlay(private val editor: KoolEditor) : Node("Transform gi
 
     fun setTransformObjects(nodeModels: List<SceneNodeModel>) {
         selection.clear()
-        nodeModels.forEach {
-            // todo: handle multi selection
-            selection += NodeTransformData(it)
-            gizmo.setFixedScale(sqrt(it.drawNode.globalRadius) + 0.5f)
-        }
-
+        nodeModels.forEach { selection += NodeTransformData(it) }
         if (selection.isNotEmpty()) {
+            updateGizmoTransformFromSelection()
             showGizmo()
         } else {
             hideGizmo()
         }
+    }
+
+    private fun updateGizmoTransformFromSelection() {
+        var parentOrientation = Vec4d.W_AXIS
+        var radius = 0f
+        var isSameParent = true
+
+        // determine gizmo position and size
+        globalGizmoPos.set(Vec3d.ZERO)
+        selection.forEach { globalGizmoPos.add(it.nodeModel.drawNode.globalCenter.toVec3d()) }
+        globalGizmoPos.scale(1.0 / selection.size)
+
+        selection.forEach {
+            val d = it.nodeModel.drawNode.globalCenter.toVec3d().distance(globalGizmoPos).toFloat()
+            radius = max(radius, it.nodeModel.drawNode.globalRadius + d)
+
+            isSameParent = isSameParent && it.nodeModel.drawNode.parent == selection[0].nodeModel.drawNode.parent
+            if (isSameParent) {
+                parentOrientation = it.nodeModel.drawNode.parent?.modelMat?.getRotation(MutableVec4d()) ?: Vec4d.W_AXIS
+            }
+        }
+
+        // determine gizmo orientation
+        globalGizmoOrientation.set(Vec4d.W_AXIS)
+        if (orientationMode == OrientationMode.LOCAL) {
+            if (selection.size == 1) {
+                // use local orientation of single selected object
+                globalGizmoOrientation.set(selection[0].nodeModel.drawNode.modelMat.getRotation(MutableVec4d()))
+
+            } else if (isSameParent) {
+                // local orientation is undefined for multiple selected objects, use parent as fallback if all selected
+                // objects have the same parent (or global orientation if not)
+                globalGizmoOrientation.set(parentOrientation)
+            }
+        } else if (orientationMode == OrientationMode.PARENT && isSameParent) {
+            // use parent orientation if selected objects all have the same parent
+            globalGizmoOrientation.set(parentOrientation)
+        }
+
+        // apply gizmo transform
+        gizmoScale = sqrt(radius) + 0.5f
+        gizmo.transform
+            .setRotate(globalGizmoOrientation)
+            .setPosition(globalGizmoPos)
+        gizmo.setFixedScale(gizmoScale)
+        gizmoToGlobal.set(gizmo.transform.matrix)
     }
 
     private class NodeTransformData(val nodeModel: SceneNodeModel) {
@@ -261,6 +330,12 @@ class TransformGizmoOverlay(private val editor: KoolEditor) : Node("Transform gi
             dragRotation.set(startRotation)
             dragScale.set(startScale)
         }
+    }
+
+    enum class OrientationMode {
+        LOCAL,
+        PARENT,
+        GLOBAL
     }
 
     enum class TransformMode {

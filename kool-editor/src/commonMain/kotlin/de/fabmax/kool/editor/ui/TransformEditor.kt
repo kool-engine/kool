@@ -22,9 +22,9 @@ class TransformEditor(component: TransformComponent) : ComponentEditor<Transform
 
             override fun onEditEnd(startValue: TransformData, endValue: TransformData) {
                 SetTransformAction(
-                    editedNodeModel = component.nodeModel,
-                    oldTransform = startValue,
-                    newTransform = endValue
+                    nodeModel = component.nodeModel,
+                    undoTransform = startValue,
+                    applyTransform = endValue
                 ).apply()
             }
         }
