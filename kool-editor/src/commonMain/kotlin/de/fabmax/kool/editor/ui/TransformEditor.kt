@@ -200,7 +200,7 @@ class TransformEditor(component: TransformComponent) : ComponentEditor<Transform
                 return if (component.isFixedScaleRatio.value) {
                     val fx = abs(scaleValue.x / lastEditVal.x - 1.0)
                     val fy = abs(scaleValue.y / lastEditVal.y - 1.0)
-                    val fz = abs(scaleValue.y / lastEditVal.y - 1.0)
+                    val fz = abs(scaleValue.z / lastEditVal.z - 1.0)
                     lastEditVal.set(scaleValue)
                     val s = when {
                         fx > fy && fx > fz -> scaleValue.x / startTransformData.scale.x

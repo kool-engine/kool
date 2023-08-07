@@ -283,11 +283,11 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
             setEditorOverlayVisibility(false)
         }
 
-        bringEditorMenuToTop()
+        updateOverlays()
         EditorActions.clear()
     }
 
-    private fun bringEditorMenuToTop() {
+    private fun updateOverlays() {
         ctx.scenes -= editorOverlay
         ctx.scenes += editorOverlay
         editorOverlay.mainRenderPass.clearColor = null
@@ -298,6 +298,8 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
         ctx.scenes -= ui
         ctx.scenes += ui
         ui.sceneBrowser.refreshSceneTree()
+
+        selectionOverlay.invalidateSelection()
     }
 
     private fun saveEditorConfig() {

@@ -1,6 +1,7 @@
 package de.fabmax.kool.editor.overlays
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.editor.EditorState
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.components.ContentComponent
@@ -18,6 +19,8 @@ import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.launchDelayed
+import de.fabmax.kool.util.logD
+import de.fabmax.kool.util.logT
 import kotlin.math.max
 import kotlin.math.roundToInt
 
@@ -65,6 +68,12 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
         }
     }
 
+    fun invalidateSelection() {
+        prevSelection.clear()
+        meshSelection.clear()
+        selectionPass.disposePipelines(KoolSystem.requireContext())
+    }
+
     private fun Node.selectChildMeshes() {
         if (this is Mesh) {
             meshSelection += this
@@ -100,6 +109,10 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
                 for (i in drawQueue.commands.indices) {
                     setupDrawCommand(i, drawQueue.commands[i], ctx)
                 }
+                if (drawQueue.commands.size != meshSelection.size) {
+                    logD { "Invalidating selection overlay: draw queue size (${drawQueue.commands.size}) != selection size (${meshSelection.size})" }
+                    invalidateSelection()
+                }
             }
         }
 
@@ -116,6 +129,7 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
                 return null
             }
             return selectionPipelines.getOrPut(mesh.id) {
+                logT { "Creating selection shader for mesh ${mesh.id}" }
                 val shader = KslUnlitShader {
                     pipeline { cullMethod = CullMethod.NO_CULLING }
                     vertices {
@@ -173,8 +187,6 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
 
                         samplePattern.forEach {
                             val maskVal = float1Var(sampleTexture(mask, uv.output + it.const * texelSz).r)
-//                            minMask set min(minMask, maskVal)
-//                            maxMask set max(maxMask, maskVal)
                             `if`(maskVal lt minMask) {
                                 minMask set maskVal
                                 minMaskCount set 0f.const
