@@ -56,8 +56,6 @@ class ModelEditor(component: ModelComponent) : ComponentEditor<ModelComponent>(c
 
             val gltf = component.gltfState.use()
             if (gltf != null) {
-                menuDivider()
-
                 val scenes = gltf.scenes.mapIndexed { i, scene -> SceneOption(scene.name ?: "Scene $i", i) }
                 labeledCombobox("Scene:", scenes, component.sceneIndexState.use()) {
                     SetModelSceneAction(component, it.index).apply()

@@ -1,6 +1,7 @@
 package de.fabmax.kool.editor.overlays
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.editor.EditorState
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.actions.SetTransformAction
 import de.fabmax.kool.editor.data.TransformData
@@ -16,8 +17,6 @@ import kotlin.math.max
 import kotlin.math.sqrt
 
 class TransformGizmoOverlay(private val editor: KoolEditor) : Node("Transform gizmo") {
-
-    var orientationMode = OrientationMode.LOCAL
 
     var transformMode = TransformMode.MOVE
         set(value) {
@@ -275,7 +274,7 @@ class TransformGizmoOverlay(private val editor: KoolEditor) : Node("Transform gi
 
         // determine gizmo orientation
         globalGizmoOrientation.set(Vec4d.W_AXIS)
-        if (orientationMode == OrientationMode.LOCAL) {
+        if (EditorState.transformMode.value == EditorState.TransformOrientation.LOCAL) {
             if (selection.size == 1) {
                 // use local orientation of single selected object
                 globalGizmoOrientation.set(selection[0].nodeModel.drawNode.modelMat.getRotation(MutableVec4d()))
@@ -285,7 +284,7 @@ class TransformGizmoOverlay(private val editor: KoolEditor) : Node("Transform gi
                 // objects have the same parent (or global orientation if not)
                 globalGizmoOrientation.set(parentOrientation)
             }
-        } else if (orientationMode == OrientationMode.PARENT && isSameParent) {
+        } else if (EditorState.transformMode.value == EditorState.TransformOrientation.PARENT && isSameParent) {
             // use parent orientation if selected objects all have the same parent
             globalGizmoOrientation.set(parentOrientation)
         }
@@ -330,12 +329,6 @@ class TransformGizmoOverlay(private val editor: KoolEditor) : Node("Transform gi
             dragRotation.set(startRotation)
             dragScale.set(startScale)
         }
-    }
-
-    enum class OrientationMode {
-        LOCAL,
-        PARENT,
-        GLOBAL
     }
 
     enum class TransformMode {

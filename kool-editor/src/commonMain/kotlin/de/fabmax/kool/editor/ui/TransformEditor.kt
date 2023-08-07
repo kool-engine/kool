@@ -1,10 +1,12 @@
 package de.fabmax.kool.editor.ui
 
+import de.fabmax.kool.editor.EditorState
 import de.fabmax.kool.editor.actions.SetTransformAction
 import de.fabmax.kool.editor.components.TransformComponent
 import de.fabmax.kool.editor.data.TransformData
 import de.fabmax.kool.editor.data.Vec3Data
 import de.fabmax.kool.editor.data.Vec4Data
+import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ui2.*
 import kotlin.math.abs
@@ -42,10 +44,7 @@ class TransformEditor(component: TransformComponent) : ComponentEditor<Transform
         }
 
         val transformData = component.transformState.use()
-        transformProperties.setPosition(transformData.position.toVec3d())
-        transformProperties.setScale(transformData.scale.toVec3d())
-        val rotMat = Mat3d().setRotate(transformData.rotation.toVec4d())
-        transformProperties.setRotation(rotMat.getEulerAngles(MutableVec3d()))
+        transformProperties.setTransformData(transformData, EditorState.transformMode.use())
     }
 
     private fun UiScope.position() = labeledXyzRow(
@@ -104,7 +103,9 @@ class TransformEditor(component: TransformComponent) : ComponentEditor<Transform
 
         val editHandlers = mutableListOf<ValueEditHandler<TransformData>>()
 
+        private var editTransformData = TransformData(Mat4d())
         private var startTransformData = TransformData(Mat4d())
+        private var startTransformDataParentFrame = TransformData(Mat4d())
 
         private fun captureTransform() {
             startTransformData = TransformData(
@@ -112,6 +113,7 @@ class TransformEditor(component: TransformComponent) : ComponentEditor<Transform
                 Vec4Data(rQuatX.value, rQuatY.value, rQuatZ.value, rQuatW.value),
                 Vec3Data(sx.value, sy.value, sz.value)
             )
+            startTransformDataParentFrame = editTransformData
         }
 
         val posEditHandler = object : ValueEditHandler<Vec3d> {
@@ -122,12 +124,14 @@ class TransformEditor(component: TransformComponent) : ComponentEditor<Transform
             override fun onEdit(value: Vec3d) {
                 setPosition(value)
                 val editData = startTransformData.copy(position = Vec3Data(value))
-                editHandlers.forEach { it.onEdit(editData) }
+                val parentFrameData = fromSelectedReferenceFrameToComponent(editData)
+                editHandlers.forEach { it.onEdit(parentFrameData) }
             }
             override fun onEditEnd(startValue: Vec3d, endValue: Vec3d) {
                 setPosition(endValue)
                 val editData = startTransformData.copy(position = Vec3Data(endValue))
-                editHandlers.forEach { it.onEditEnd(startTransformData, editData) }
+                val parentFrameData = fromSelectedReferenceFrameToComponent(editData)
+                editHandlers.forEach { it.onEditEnd(startTransformDataParentFrame, parentFrameData) }
             }
         }
 
@@ -139,12 +143,14 @@ class TransformEditor(component: TransformComponent) : ComponentEditor<Transform
             override fun onEdit(value: Vec3d) {
                 setRotation(value)
                 val editData = startTransformData.copy(rotation = Vec4Data(rQuatX.value, rQuatY.value, rQuatZ.value, rQuatW.value))
-                editHandlers.forEach { it.onEdit(editData) }
+                val parentFrameData = fromSelectedReferenceFrameToComponent(editData)
+                editHandlers.forEach { it.onEdit(parentFrameData) }
             }
             override fun onEditEnd(startValue: Vec3d, endValue: Vec3d) {
                 setRotation(endValue)
                 val editData = startTransformData.copy(rotation = Vec4Data(rQuatX.value, rQuatY.value, rQuatZ.value, rQuatW.value))
-                editHandlers.forEach { it.onEditEnd(startTransformData, editData) }
+                val parentFrameData = fromSelectedReferenceFrameToComponent(editData)
+                editHandlers.forEach { it.onEditEnd(startTransformDataParentFrame, parentFrameData) }
             }
         }
 
@@ -156,12 +162,14 @@ class TransformEditor(component: TransformComponent) : ComponentEditor<Transform
             override fun onEdit(value: Vec4d) {
                 setRotation(value)
                 val editData = startTransformData.copy(rotation = Vec4Data(rQuatX.value, rQuatY.value, rQuatZ.value, rQuatW.value))
-                editHandlers.forEach { it.onEdit(editData) }
+                val parentFrameData = fromSelectedReferenceFrameToComponent(editData)
+                editHandlers.forEach { it.onEdit(parentFrameData) }
             }
             override fun onEditEnd(startValue: Vec4d, endValue: Vec4d) {
                 setRotation(endValue)
                 val editData = startTransformData.copy(rotation = Vec4Data(rQuatX.value, rQuatY.value, rQuatZ.value, rQuatW.value))
-                editHandlers.forEach { it.onEditEnd(startTransformData, editData) }
+                val parentFrameData = fromSelectedReferenceFrameToComponent(editData)
+                editHandlers.forEach { it.onEditEnd(startTransformDataParentFrame, parentFrameData) }
             }
         }
 
@@ -177,13 +185,15 @@ class TransformEditor(component: TransformComponent) : ComponentEditor<Transform
             override fun onEdit(value: Vec3d) {
                 val editData = computeScale(value)
                 setScale(editData.scale.toVec3d())
-                editHandlers.forEach { it.onEdit(editData) }
+                val parentFrameData = fromSelectedReferenceFrameToComponent(editData)
+                editHandlers.forEach { it.onEdit(parentFrameData) }
             }
 
             override fun onEditEnd(startValue: Vec3d, endValue: Vec3d) {
                 val editData = computeScale(endValue)
                 setScale(editData.scale.toVec3d())
-                editHandlers.forEach { it.onEditEnd(startTransformData, editData) }
+                val parentFrameData = fromSelectedReferenceFrameToComponent(editData)
+                editHandlers.forEach { it.onEditEnd(startTransformData, parentFrameData) }
             }
 
             private fun computeScale(scaleValue: Vec3d): TransformData {
@@ -204,21 +214,80 @@ class TransformEditor(component: TransformComponent) : ComponentEditor<Transform
             }
         }
 
-        fun setPosition(position: Vec3d) = setPosition(position.x, position.y, position.z)
+        fun setTransformData(transformData: TransformData, transformMode: EditorState.TransformOrientation) {
+            editTransformData = transformData
 
-        fun setPosition(x: Double, y: Double, z: Double) {
-            px.set(x)
-            py.set(y)
-            pz.set(z)
+            val translatedTd = fromComponentToSelectedReferenceFrame(transformData, transformMode)
+            setPosition(translatedTd.position.toVec3d())
+            setScale(translatedTd.scale.toVec3d())
+
+            val rotMat = Mat3d().setRotate(translatedTd.rotation.toVec4d())
+            setRotation(rotMat.getEulerAngles(MutableVec3d()))
         }
 
-        fun setRotation(eulerRotation: Vec3d) = setRotation(eulerRotation.x, eulerRotation.y, eulerRotation.z)
+        private fun fromComponentToSelectedReferenceFrame(
+            transformData: TransformData,
+            transformMode: EditorState.TransformOrientation
+        ): TransformData {
+            return when (transformMode) {
+                EditorState.TransformOrientation.LOCAL -> {
+                    // local orientation doesn't make much sense for the transform editor -> use default (parent)
+                    // frame instead
+                    transformData
+                    // todo: maybe local mode would make sense to apply relative orientation changes:
+                    //  in idle, pos / rot are 0.0, scale is 1.0, entering a value then changes the property by that
+                    //  amount within the local orientation
+                }
+                EditorState.TransformOrientation.PARENT -> {
+                    // component transform data already is in parent frame -> no further transforming needed
+                    transformData
+                }
+                EditorState.TransformOrientation.GLOBAL -> {
+                    val parent = component.nodeModel.parent
+                    if (parent is SceneNodeModel) {
+                        TransformData(component.nodeModel.drawNode.modelMat)
+                    } else {
+                        // parent node is the scene -> parent reference frame == global reference frame
+                        transformData
+                    }
+                }
+            }
+        }
 
-        fun setRotation(x: Double, y: Double, z: Double) {
-            rEulerX.set(x)
-            rEulerY.set(y)
-            rEulerZ.set(z)
-            val mat = Mat3d().setRotate(x, y, z)
+        private fun fromSelectedReferenceFrameToComponent(transformData: TransformData): TransformData {
+            // reverse transform transformData into component parent frame
+            return when (EditorState.transformMode.value) {
+                EditorState.TransformOrientation.LOCAL -> {
+                    transformData
+                }
+                EditorState.TransformOrientation.PARENT -> {
+                    transformData
+                }
+                EditorState.TransformOrientation.GLOBAL -> {
+                    val parent = component.nodeModel.parent
+                    if (parent is SceneNodeModel) {
+                        val globalToParent = parent.drawNode.modelMatInverse
+                        val m = globalToParent.mul(transformData.toMat4d(Mat4d()), Mat4d())
+                        TransformData(m)
+                    } else {
+                        // parent node is the scene -> parent reference frame == global reference frame
+                        transformData
+                    }
+                }
+            }
+        }
+
+        private fun setPosition(position: Vec3d) {
+            px.set(position.x)
+            py.set(position.y)
+            pz.set(position.z)
+        }
+
+        private fun setRotation(eulerRotation: Vec3d) {
+            rEulerX.set(eulerRotation.x)
+            rEulerY.set(eulerRotation.y)
+            rEulerZ.set(eulerRotation.z)
+            val mat = Mat3d().setRotate(eulerRotation.x, eulerRotation.y, eulerRotation.z)
             val q = mat.getRotation(MutableVec4d())
             rQuatX.set(q.x)
             rQuatY.set(q.y)
@@ -226,27 +295,22 @@ class TransformEditor(component: TransformComponent) : ComponentEditor<Transform
             rQuatW.set(q.w)
         }
 
-        fun setRotation(quaternionRotation: Vec4d) =
-            setRotation(quaternionRotation.x, quaternionRotation.y, quaternionRotation.z, quaternionRotation.w)
-
-        fun setRotation(x: Double, y: Double, z: Double, w: Double) {
-            rQuatX.set(x)
-            rQuatY.set(y)
-            rQuatZ.set(z)
-            rQuatW.set(w)
-            val mat = Mat3d().setRotate(Vec4d(x, y, z, w))
+        private fun setRotation(quaternionRotation: Vec4d) {
+            rQuatX.set(quaternionRotation.x)
+            rQuatY.set(quaternionRotation.y)
+            rQuatZ.set(quaternionRotation.z)
+            rQuatW.set(quaternionRotation.w)
+            val mat = Mat3d().setRotate(Vec4d(quaternionRotation.x, quaternionRotation.y, quaternionRotation.z, quaternionRotation.w))
             val e = mat.getEulerAngles(MutableVec3d())
             rEulerX.set(e.x)
             rEulerY.set(e.y)
             rEulerZ.set(e.z)
         }
 
-        fun setScale(scale: Vec3d) = setScale(scale.x, scale.y, scale.z)
-
-        fun setScale(x: Double, y: Double, z: Double) {
-            sx.set(x)
-            sy.set(y)
-            sz.set(z)
+        private fun setScale(scale: Vec3d) {
+            sx.set(scale.x)
+            sy.set(scale.y)
+            sz.set(scale.z)
         }
     }
 }

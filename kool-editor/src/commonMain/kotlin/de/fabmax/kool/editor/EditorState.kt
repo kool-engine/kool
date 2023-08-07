@@ -25,9 +25,11 @@ object EditorState {
     val loadedApp = mutableStateOf<LoadedApp?>(null)
 
     val activeScene = mutableStateOf<SceneModel?>(null)
-    val selection = mutableStateListOf<NodeModel>()
 
+    val selection = mutableStateListOf<NodeModel>()
     val onSelectionChanged = mutableListOf<(List<NodeModel>) -> Unit>()
+
+    val transformMode = mutableStateOf(TransformOrientation.GLOBAL)
 
     private val prettyJson = Json { prettyPrint = true }
 
@@ -123,5 +125,11 @@ object EditorState {
         modelPath.writeText(prettyJson.encodeToString(projectModel.projectData))
 
         logD { "Saved project to ${modelPath.absolutePath}" }
+    }
+
+    enum class TransformOrientation(val label: String) {
+        LOCAL("Local"),
+        PARENT("Parent"),
+        GLOBAL("Global")
     }
 }

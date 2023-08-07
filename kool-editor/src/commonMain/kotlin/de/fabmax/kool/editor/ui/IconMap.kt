@@ -109,6 +109,10 @@ object IconMap {
         val LOCK_OPEN = IconProvider(this, iconMap.IconImageProvider(8, 2))
         val LOCK = IconProvider(this, iconMap.IconImageProvider(9, 2))
         val SCROLL_LOCK = IconProvider(this, iconMap.IconImageProvider(10, 2))
+        val COPY = IconProvider(this, iconMap.IconImageProvider(11, 2))
+        val PASTE = IconProvider(this, iconMap.IconImageProvider(12, 2))
+        val SAVE = IconProvider(this, iconMap.IconImageProvider(13, 2))
+        val SETTINGS = IconProvider(this, iconMap.IconImageProvider(14, 2))
     }
 }
 

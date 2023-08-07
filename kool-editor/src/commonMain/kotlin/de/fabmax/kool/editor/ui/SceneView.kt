@@ -1,5 +1,6 @@
 package de.fabmax.kool.editor.ui
 
+import de.fabmax.kool.editor.EditorState
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.modules.ui2.docking.DockNodeLeaf
 import de.fabmax.kool.scene.Scene
@@ -60,11 +61,30 @@ class SceneView(ui: EditorUi) : EditorPanel("Scene View", IconMap.medium.CAMERA,
         windowDockable.setFloatingBounds(width = Grow.Std, height = Grow.Std)
     }
 
-    private fun UiScope.panelBar(dockNode: DockNodeLeaf) {
+    private fun RowScope.panelBar(dockNode: DockNodeLeaf) {
         if (dockNode.dockedItems.size > 1) {
             dockNode.dockedItems.mapNotNull { editorPanels[it.name] }.forEach { panel ->
                 panelButton(panel, dockNode)
             }
+        }
+
+        Box(width = Grow.Std) {  }
+
+        Text("Transform Mode:") {
+            modifier
+                .alignY(AlignmentY.Center)
+                .margin(end = sizes.gap)
+        }
+        ComboBox {
+            defaultComboBoxStyle()
+            modifier
+                .width(sizes.baseSize * 2.5f)
+                .alignY(AlignmentY.Center)
+                .items(EditorState.TransformOrientation.entries.map { it.label })
+                .selectedIndex(EditorState.transformMode.use().ordinal)
+                .onItemSelected { i ->
+                    EditorState.transformMode.set(EditorState.TransformOrientation.entries[i])
+                }
         }
     }
 
