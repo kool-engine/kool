@@ -4,8 +4,8 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.editor.EditorState
 import de.fabmax.kool.editor.KoolEditor
-import de.fabmax.kool.editor.components.ContentComponent
 import de.fabmax.kool.editor.model.NodeModel
+import de.fabmax.kool.editor.model.SceneModel
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.modules.ksl.KslShader
@@ -30,6 +30,7 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
     private val overlayMesh = Mesh(Attribute.POSITIONS, Attribute.TEXTURE_COORDS)
     private val outlineShader = SelectionOutlineShader(selectionPass.colorTexture)
 
+    private var updateSelection = false
     private val prevSelection = mutableSetOf<NodeModel>()
     private val meshSelection = mutableSetOf<Mesh>()
 
@@ -40,6 +41,8 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
         overlayMesh.shader = outlineShader
         overlayMesh.isVisible = false
         addNode(overlayMesh)
+
+        EditorState.onSelectionChanged += { updateSelection = true }
 
         onUpdate { evt ->
             selectionColor = editor.ui.uiColors.value.primary
@@ -53,11 +56,14 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
                 }
             }
 
-            if (prevSelection.size != EditorState.selection.size || EditorState.selection.any { it !in prevSelection }) {
+            if (updateSelection) {
+                updateSelection = false
                 prevSelection.clear()
                 prevSelection += EditorState.selection
                 meshSelection.clear()
-                prevSelection.forEach { it.getComponent<ContentComponent>()?.contentNode?.selectChildMeshes() }
+                prevSelection
+                    .filter { it !is SceneModel }
+                    .forEach { it.drawNode.selectChildMeshes() }
 
                 launchDelayed(1) {
                     // delay disable by 1 frame, so that selectionPass clears its output

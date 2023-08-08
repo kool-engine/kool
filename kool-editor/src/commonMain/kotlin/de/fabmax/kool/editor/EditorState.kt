@@ -14,6 +14,7 @@ import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.copy
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logW
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -31,7 +32,11 @@ object EditorState {
 
     val transformMode = mutableStateOf(TransformOrientation.GLOBAL)
 
-    private val prettyJson = Json { prettyPrint = true }
+    @OptIn(ExperimentalSerializationApi::class)
+    val jsonCodec = Json {
+        prettyPrint = true
+        prettyPrintIndent = "  "
+    }
 
     fun selectSingle(selectModel: NodeModel?, expandIfShiftIsDown: Boolean = true, toggleSelect: Boolean = true) {
         val selectList = selectModel?.let { listOf(it) } ?: emptyList()
@@ -122,7 +127,7 @@ object EditorState {
     fun saveProject() {
         val modelPath = File(KoolEditor.instance.paths.projectFile)
         modelPath.parentFile.mkdirs()
-        modelPath.writeText(prettyJson.encodeToString(projectModel.projectData))
+        modelPath.writeText(jsonCodec.encodeToString(projectModel.projectData))
 
         logD { "Saved project to ${modelPath.absolutePath}" }
     }

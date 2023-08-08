@@ -127,6 +127,27 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
             EditorActions.redo()
         }
         editorInputContext.addKeyListener(
+            name = "Copy",
+            keyCode = LocalKeyCode('C'),
+            filter = InputStack.KEY_FILTER_CTRL_PRESSED
+        ) {
+            EditorCopyAndPaste.copySelection()
+        }
+        editorInputContext.addKeyListener(
+            name = "Paste",
+            keyCode = LocalKeyCode('V'),
+            filter = InputStack.KEY_FILTER_CTRL_PRESSED
+        ) {
+            EditorCopyAndPaste.paste()
+        }
+        editorInputContext.addKeyListener(
+            name = "Duplicate",
+            keyCode = LocalKeyCode('D'),
+            filter = InputStack.KEY_FILTER_CTRL_PRESSED
+        ) {
+            EditorCopyAndPaste.duplicateSelection()
+        }
+        editorInputContext.addKeyListener(
             name = "Delete selected objects",
             keyCode = KeyboardInput.KEY_DEL
         ) {

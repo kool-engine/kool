@@ -6,21 +6,28 @@ import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.util.launchOnMainThread
 
 class AddNodeAction(
-    private val addNodeModel: SceneNodeModel
+    private val addNodeModels: List<SceneNodeModel>
 ) : EditorAction {
+
+    constructor(addNodeModel: SceneNodeModel): this(listOf(addNodeModel))
 
     override fun doAction() {
         launchOnMainThread {
-            addNodeModel.sceneModel.addSceneNode(addNodeModel)
+            // todo: the naive loop approach does not work if addNodeModels form a hierarchy
+            addNodeModels.forEach {
+                it.sceneModel.addSceneNode(it)
+            }
             KoolEditor.instance.ui.sceneBrowser.refreshSceneTree()
         }
     }
 
     override fun undoAction() {
-        if (addNodeModel in EditorState.selection) {
-            EditorState.selection -= addNodeModel
+        addNodeModels.forEach { addNodeModel ->
+            if (addNodeModel in EditorState.selection) {
+                EditorState.selection -= addNodeModel
+            }
+            addNodeModel.sceneModel.removeSceneNode(addNodeModel)
         }
-        addNodeModel.sceneModel.removeSceneNode(addNodeModel)
         KoolEditor.instance.ui.sceneBrowser.refreshSceneTree()
     }
 }

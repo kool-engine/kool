@@ -28,9 +28,8 @@ class ScriptEditor(component: ScriptComponent) : ComponentEditor<ScriptComponent
                 component.runInEditMode.set(it)
             }
 
-            val scriptProperties = component.scriptInstance.use()?.let {
-                EditorState.loadedApp.use()?.scriptClasses?.get(it::class)?.properties
-            }
+            val script = component.scriptInstance.use() ?: return@Column
+            val scriptProperties = EditorState.loadedApp.use()?.scriptClasses?.get(script::class)?.properties
             if (scriptProperties == null) {
                 logE { "Unable to get script class for script ${component.scriptInstance.value}" }
             }

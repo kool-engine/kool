@@ -120,7 +120,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
                         .onExit { hoveredIndex = -1 }
                         .onClick {
                             if (it.pointer.isRightButtonClicked) {
-                                itemPopupMenu.show(it.screenPosition, makeMenu(), item)
+                                itemPopupMenu.show(it.screenPosition, makeMenu(item), item)
                             }
                         }
 
@@ -134,8 +134,10 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         }
     }
 
-    private fun makeMenu() = SubMenuItem {
-        item("Delete object") { deleteNode(it) }
+    private fun makeMenu(item: SceneObjectItem) = SubMenuItem {
+        if (item.type != SceneObjectType.SCENE) {
+            item("Delete object") { deleteNode(it) }
+        }
         subMenu("Add child object") {
             subMenu("Mesh") {
                 item("Box") { addNewMesh(it, MeshShapeData.defaultBox) }
@@ -164,8 +166,10 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
             }
             item("Empty node") { addEmptyNode(it) }
         }
-        divider()
-        item("Focus object") { focusNode(it) }
+        if (item.type != SceneObjectType.SCENE) {
+            divider()
+            item("Focus object") { focusNode(it) }
+        }
     }
 
     private fun UiScope.sceneObjectItem(item: SceneObjectItem, isHovered: Boolean) {
