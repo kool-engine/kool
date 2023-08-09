@@ -4,7 +4,6 @@ import de.fabmax.kool.editor.EditorState
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.actions.AddComponentAction
 import de.fabmax.kool.editor.actions.RenameNodeAction
-import de.fabmax.kool.editor.actions.SetNumberOfLightsAction
 import de.fabmax.kool.editor.components.*
 import de.fabmax.kool.editor.data.ModelComponentData
 import de.fabmax.kool.editor.data.ScriptComponentData
@@ -86,10 +85,6 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", Icon
                 return@Column
             }
 
-            if (selectedObject is SceneModel) {
-                sceneSettings(selectedObject)
-            }
-
             for (component in selectedObject.components.use()) {
                 when (component) {
                     is CameraComponent -> componentEditor(component) { CameraEditor(component) }
@@ -97,6 +92,7 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", Icon
                     is MaterialComponent -> componentEditor(component) { MaterialEditor(component) }
                     is MeshComponent -> componentEditor(component) { MeshEditor(component) }
                     is ModelComponent -> componentEditor(component) { ModelEditor(component) }
+                    is ScenePropertiesComponent -> componentEditor(component) { ScenePropertiesEditor(component) }
                     is SceneBackgroundComponent -> componentEditor(component) { SceneBackgroundEditor(component) }
                     is ScriptComponent -> componentEditor(component) { ScriptEditor(component) }
                     is ShadowMapComponent -> componentEditor(component) { ShadowMapEditor(component) }
@@ -114,15 +110,6 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", Icon
             val editor = remember(editorProvider)
             editor.component = component
             editor()
-        }
-    }
-
-    private fun UiScope.sceneSettings(sceneModel: SceneModel) {
-        Row(width = Grow.Std) {
-            modifier.margin(start = sizes.gap, end = sizes.gap, bottom = sizes.smallGap)
-            labeledIntTextField("Max number of lights:", sceneModel.maxNumLightsState.use(), minValue = 0, maxValue = 8) {
-                SetNumberOfLightsAction(sceneModel, it).apply()
-            }
         }
     }
 

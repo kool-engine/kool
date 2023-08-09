@@ -37,7 +37,7 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
 
                 treeView()
                 treeWidthHandle()
-                directoryView()
+                directoryContentView()
             }
         }
     }
@@ -119,7 +119,7 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
                     val fgColor = if (dir == selectedDirectory.value) colors.primary else colors.onBackground
 
                     // tree-depth based indentation
-                    Box(width = sizes.gap * dir.level) { }
+                    Box(width = sizes.treeIndentation * dir.level) { }
 
                     // expand / collapse arrow
                     Box {
@@ -159,7 +159,7 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
         }
     }
 
-    private fun UiScope.directoryView() = Box(width = Grow.Std, height = Grow.Std) {
+    private fun UiScope.directoryContentView() = Box(width = Grow.Std, height = Grow.Std) {
         var areaWidth by remember(0f)
         val gridSize = sizes.baseSize * 3f
 

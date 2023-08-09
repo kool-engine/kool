@@ -137,7 +137,7 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
     private fun UiScope.statusBar() = Row(width = Grow.Std, height = Grow.Std) {
         Box(width = Grow.Std) {  }
 
-        divider(colors.dividerColor, marginStart = sizes.gap, marginEnd = sizes.gap)
+        divider(colors.strongDividerColor, marginStart = sizes.gap, marginEnd = sizes.gap)
 
         Box(width = sizes.baseSize * 6f, height = Grow.Std) {
             Text(appStateInfo.use()) {
@@ -162,6 +162,7 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
 
 
 val Sizes.baseSize: Dp get() = largeGap * 2f
+val Sizes.treeIndentation: Dp get() = gap * 1.5f
 val Sizes.lineHeight: Dp get() = baseSize * (2f/3f)
 val Sizes.lineHeightLarger: Dp get() = baseSize * 0.9f
 val Sizes.lineHeightTitle: Dp get() = baseSize
@@ -191,7 +192,8 @@ val Colors.dndAcceptableBgHovered: Color get() = MdColor.GREEN.withAlpha(0.5f)
 
 val Colors.backgroundMid: Color get() = background.mix(backgroundVariant, 0.5f)
 
-val Colors.dividerColor: Color get() = secondaryVariantAlpha(0.75f)
+val Colors.weakDividerColor: Color get() = secondaryVariantAlpha(0.75f)
+val Colors.strongDividerColor: Color get() = secondaryAlpha(0.75f)
 
 object UiColors {
     val border = Color("0f1114ff")

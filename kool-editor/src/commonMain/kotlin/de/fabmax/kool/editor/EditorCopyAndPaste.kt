@@ -36,7 +36,8 @@ object EditorCopyAndPaste {
                         logD { "Pasting ${copyData.size} objects from clipboard" }
                         sanitizeCopiedNodeIds(copyData)
 
-                        val parent = if (EditorState.selection.size == 1) EditorState.selection[0] else scene
+                        val selection = EditorState.getSelectedNodes()
+                        val parent = if (selection.size == 1) selection[0] else scene
                         val sceneNodes = copyData.map { SceneNodeModel(it, parent, scene) }
                         AddNodeAction(sceneNodes).apply()
                         EditorState.setSelection(sceneNodes)

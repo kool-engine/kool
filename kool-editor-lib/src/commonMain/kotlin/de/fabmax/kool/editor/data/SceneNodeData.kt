@@ -6,9 +6,7 @@ import kotlinx.serialization.Serializable
 class SceneNodeData(
     var name: String,
     var nodeId: Long,
-    var isVisible: Boolean = true,
-    var maxNumLights: Int = 4,
-    var cameraNodeId: Long = -1L
+    var isVisible: Boolean = true
 ) {
     val components: MutableList<ComponentData> = mutableListOf()
     val childNodeIds: MutableList<Long> = mutableListOf()

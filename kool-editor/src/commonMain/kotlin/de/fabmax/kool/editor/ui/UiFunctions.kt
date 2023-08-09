@@ -828,8 +828,8 @@ fun UiScope.iconButton(
     boxBlock?.invoke(this)
 }
 
-fun ColumnScope.menuDivider(marginTop: Dp = sizes.smallGap, marginBottom: Dp = Dp.ZERO) {
-    divider(colors.dividerColor, marginTop = marginTop, marginBottom = marginBottom)
+fun ColumnScope.menuDivider(marginTop: Dp = sizes.smallGap, marginBottom: Dp = Dp.ZERO, color: Color = colors.weakDividerColor) {
+    divider(color, marginTop = marginTop, marginBottom = marginBottom)
 }
 
 fun ButtonScope.defaultButtonStyle() {

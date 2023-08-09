@@ -40,7 +40,7 @@ class ConsolePanel(ui: EditorUi) : EditorPanel("Console", IconMap.medium.CONSOLE
                         .onDragStart {  }
                         .alignY(AlignmentY.Center)
 
-                    divider(colors.secondaryAlpha(0.75f), marginStart = sizes.largeGap, marginEnd = sizes.largeGap, verticalMargin = sizes.smallGap)
+                    divider(colors.strongDividerColor, marginStart = sizes.largeGap, marginEnd = sizes.largeGap, verticalMargin = sizes.smallGap)
 
                     Text("Level:") {
                         modifier.alignY(AlignmentY.Center)

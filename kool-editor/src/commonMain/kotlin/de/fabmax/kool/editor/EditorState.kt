@@ -96,8 +96,9 @@ object EditorState {
             val boxId = nextId++
             val lightId = nextId++
             sceneNodeIds += sceneId
-            sceneNodes += SceneNodeData("New Scene", sceneId, cameraNodeId = camId).apply {
+            sceneNodes += SceneNodeData("New Scene", sceneId).apply {
                 childNodeIds += listOf(camId, boxId, lightId)
+                components += ScenePropertiesComponentData(cameraNodeId = camId)
                 components += SceneBackgroundComponentData(
                     SceneBackgroundData.SingleColor(ColorData(MdColor.GREY toneLin 900))
                 )

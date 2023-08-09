@@ -236,7 +236,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
     private fun UiScope.sceneObjectLabel(item: SceneObjectItem, isHovered: Boolean) = Row(width = Grow.Std, height = sizes.lineHeight) {
         // tree-depth based indentation
         if (item.depth > 0) {
-            Box(width = sizes.gap * item.depth) { }
+            Box(width = sizes.treeIndentation * item.depth) { }
         }
 
         // expand / collapse arrow

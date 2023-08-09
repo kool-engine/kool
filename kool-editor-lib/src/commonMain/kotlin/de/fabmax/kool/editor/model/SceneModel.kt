@@ -2,12 +2,10 @@ package de.fabmax.kool.editor.model
 
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.editor.api.AppState
-import de.fabmax.kool.editor.components.CameraComponent
-import de.fabmax.kool.editor.components.EditorModelComponent
-import de.fabmax.kool.editor.components.SceneBackgroundComponent
-import de.fabmax.kool.editor.components.UpdateSceneBackgroundComponent
+import de.fabmax.kool.editor.components.*
 import de.fabmax.kool.editor.data.SceneBackgroundData
 import de.fabmax.kool.editor.data.SceneNodeData
+import de.fabmax.kool.editor.data.ScenePropertiesComponentData
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
@@ -19,9 +17,11 @@ import de.fabmax.kool.util.*
 
 class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : NodeModel(sceneData) {
 
-    val maxNumLightsState = mutableStateOf(nodeData.maxNumLights).onChange {
+    val sceneProperties = getOrPutComponent { ScenePropertiesComponent(this, ScenePropertiesComponentData()) }
+
+    val maxNumLightsState = mutableStateOf(sceneProperties.componentData.maxNumLights).onChange {
         if (AppState.isEditMode) {
-            nodeData.maxNumLights = it
+            sceneProperties.componentData.maxNumLights = it
         }
         drawNode.lighting.maxNumberOfLights = it
         project.getComponentsInScene<UpdateMaxNumLightsComponent>(this).forEach { comp ->
@@ -31,7 +31,7 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : NodeMod
 
     val cameraState = mutableStateOf<CameraComponent?>(null).onChange {
         if (AppState.isEditMode) {
-            nodeData.cameraNodeId = it?.nodeModel?.nodeId ?: -1L
+            sceneProperties.componentData.cameraNodeId = it?.nodeModel?.nodeId ?: -1L
         } else {
             // only set scene cam if not in edit mode. In edit mode, editor camera is used instead
             it?.camera?.let { cam -> drawNode.camera = cam }
@@ -66,7 +66,7 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : NodeMod
         }
         nodesToNodeModels[drawNode] = this
 
-        maxNumLightsState.set(nodeData.maxNumLights)
+        maxNumLightsState.set(sceneProperties.componentData.maxNumLights)
         drawNode.lighting.apply {
             clear()
             maxNumberOfLights = maxNumLightsState.value
@@ -84,7 +84,7 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : NodeMod
             }
         }
 
-        val cam = nodeModels[nodeData.cameraNodeId]?.getComponent<CameraComponent>()
+        val cam = nodeModels[sceneProperties.componentData.cameraNodeId]?.getComponent<CameraComponent>()
         if (cam != null) {
             cameraState.set(cam)
             drawNode.camera = cam.camera
@@ -146,6 +146,10 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : NodeMod
         launchDelayed(1) {
             nodeModel.destroyComponents()
         }
+    }
+
+    inline fun <reified T: Any> getComponentsInScene(): List<T> {
+        return project.getComponentsInScene(this)
     }
 
     private inner class BackgroundUpdater :

@@ -9,7 +9,6 @@ class ScriptComponentData(
     var propertyValues: MutableMap<String, PropertyValue> = mutableMapOf()
 ) : ComponentData
 
-
 @Serializable
 data class PropertyValue(
     val d1: Double? = null,

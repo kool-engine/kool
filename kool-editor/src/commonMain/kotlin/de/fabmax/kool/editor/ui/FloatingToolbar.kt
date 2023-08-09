@@ -62,7 +62,7 @@ class FloatingToolbar(val ui: EditorUi) : Composable {
             ui.editor.editorCameraTransform.focusSelectedObject()
         }
 
-        menuDivider()
+        menuDivider(color = colors.strongDividerColor)
 
         iconButton(IconMap.medium.MOVE, "Move selected object [G]", mode == EditActionMode.MOVE) {
             toggleActionMode(EditActionMode.MOVE)
