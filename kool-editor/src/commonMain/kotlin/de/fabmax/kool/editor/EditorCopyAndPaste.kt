@@ -16,6 +16,9 @@ object EditorCopyAndPaste {
         val selection = EditorState.getSelectedSceneNodes()
         if (selection.isNotEmpty()) {
             logD { "Copy ${selection.size} selected objects" }
+            if (selection.any { it.nodeData.childNodeIds.isNotEmpty() }) {
+                logW { "Copied nodes contain child nodes, hierarchy won't be preserved during copy and paste. All copied nodes will be flattened" }
+            }
             val json = EditorState.jsonCodec.encodeToString(selection.map { it.nodeData })
             Clipboard.copyToClipboard(json)
         } else {

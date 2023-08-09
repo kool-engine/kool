@@ -23,8 +23,14 @@ class ConsolePanel(ui: EditorUi) : EditorPanel("Console", IconMap.medium.CONSOLE
     private var minLevel = mutableStateOf(Log.Level.DEBUG)
     private var messageFilter: Regex? = null
 
+    private var notificationLevel: Log.Level = Log.Level.TRACE
+
     override val windowSurface = editorPanelWithPanelBar(backgroundColor = { colors.backgroundVariant }) {
         checkConsoleFont()
+
+        // clear notification bubble if console is visible
+        notificationBubble.set(null)
+        notificationLevel = Log.Level.TRACE
 
         Column(Grow.Std, Grow.Std) {
             editorTitleBar(windowDockable, icon) {
@@ -108,12 +114,25 @@ class ConsolePanel(ui: EditorUi) : EditorPanel("Console", IconMap.medium.CONSOLE
                 if (msg.isAccepted) {
                     filteredLogMessages += msg
                     windowSurface.triggerUpdate()
+                    checkNotification(msg)
+
+                    // also forward log message to system out
                     println(msg)
                 }
             }
         }
         // set minimum log level to TRACE, actual message filtering is done dynamically within this class
         Log.level = Log.Level.TRACE
+    }
+
+    private fun checkNotification(msg: LogMessage) {
+        if (msg.level.level >= Log.Level.WARN.level
+            && msg.level.level >= notificationLevel.level
+            && windowDockable.dockedTo.value?.isOnTop(windowDockable) == false) {
+
+            val notiColor = levelFonts[msg.level]?.background ?: Color.MAGENTA
+            notificationBubble.set(NotificationBubble(notiColor))
+        }
     }
 
     private fun updateFilter() {

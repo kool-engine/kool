@@ -20,6 +20,8 @@ abstract class EditorPanel(
 
     val windowDockable = UiDockable(name, ui.dock)
 
+    val notificationBubble = mutableStateOf<NotificationBubble?>(null)
+
     abstract val windowSurface: UiSurface
 
     init {
@@ -92,10 +94,27 @@ abstract class EditorPanel(
 
 
     fun UiScope.panelButton(panel: EditorPanel, dockNode: DockNodeLeaf) {
-        iconButton(panel.icon, panel.name, panel == this@EditorPanel) {
+        val panelNoti = panel.notificationBubble.use()
+
+        val notiBubble: (UiScope.() -> Unit)? = if (panelNoti != null) {
+            {
+                Box {
+                    modifier
+                        .zLayer(200)
+                        .size(sizes.gap, sizes.gap)
+                        .background(CircularBackground(panelNoti.color))
+                        .align(AlignmentX.End, AlignmentY.Top)
+                        .margin(sizes.smallGap * 0.5f)
+                }
+            }
+        } else null
+
+        iconButton(panel.icon, panel.name, panel == this@EditorPanel, boxBlock = notiBubble) {
             dockNode.bringToTop(panel.windowDockable)
         }
     }
+
+    data class NotificationBubble(val color: Color)
 
     companion object {
         val editorPanels = mutableMapOf<String, EditorPanel>()

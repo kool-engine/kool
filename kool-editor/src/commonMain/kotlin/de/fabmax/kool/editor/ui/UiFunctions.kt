@@ -787,6 +787,7 @@ fun UiScope.iconButton(
     toggleState: Boolean = false,
     tint: Color = colors.onBackground,
     margin: Dp = sizes.smallGap,
+    boxBlock: (UiScope.() -> Unit)? = null,
     onClick: (PointerEvent) -> Unit
 ) = Box {
     var isHovered by remember(false)
@@ -823,6 +824,8 @@ fun UiScope.iconButton(
     tooltip?.let {
         Tooltip(it, borderColor = colors.secondaryVariant)
     }
+
+    boxBlock?.invoke(this)
 }
 
 fun ColumnScope.menuDivider(marginTop: Dp = sizes.smallGap, marginBottom: Dp = Dp.ZERO) {
