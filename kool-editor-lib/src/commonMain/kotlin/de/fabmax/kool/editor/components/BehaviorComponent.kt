@@ -1,21 +1,21 @@
 package de.fabmax.kool.editor.components
 
-import de.fabmax.kool.editor.api.KoolScript
-import de.fabmax.kool.editor.api.ScriptLoader
-import de.fabmax.kool.editor.data.ScriptComponentData
+import de.fabmax.kool.editor.api.BehaviorLoader
+import de.fabmax.kool.editor.api.KoolBehavior
+import de.fabmax.kool.editor.data.BehaviorComponentData
 import de.fabmax.kool.editor.model.NodeModel
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.util.logE
 
-class ScriptComponent(nodeModel: NodeModel, override val componentData: ScriptComponentData) :
+class BehaviorComponent(nodeModel: NodeModel, override val componentData: BehaviorComponentData) :
     EditorModelComponent(nodeModel),
-    EditorDataComponent<ScriptComponentData>
+    EditorDataComponent<BehaviorComponentData>
 {
 
-    val scriptClassNameState = mutableStateOf(componentData.scriptClassName).onChange { componentData.scriptClassName = it }
+    val behaviorClassNameState = mutableStateOf(componentData.behaviorClassName).onChange { componentData.behaviorClassName = it }
     val runInEditMode = mutableStateOf(componentData.runInEditMode).onChange { componentData.runInEditMode = it }
 
-    val scriptInstance = mutableStateOf<KoolScript?>(null)
+    val behaviorInstance = mutableStateOf<KoolBehavior?>(null)
 
     init {
         componentOrder = COMPONENT_ORDER_LATE
@@ -25,8 +25,8 @@ class ScriptComponent(nodeModel: NodeModel, override val componentData: ScriptCo
         super.createComponent()
 
         try {
-            val script = ScriptLoader.newScriptInstance(componentData.scriptClassName)
-            scriptInstance.set(script)
+            val behavior = BehaviorLoader.newInstance(componentData.behaviorClassName)
+            behaviorInstance.set(behavior)
 
             // set script member properties from componentData, remove them in case they don't exist anymore (e.g.
             // because script has changed)
@@ -39,25 +39,25 @@ class ScriptComponent(nodeModel: NodeModel, override val componentData: ScriptCo
             removeProps.forEach { componentData.propertyValues -= it }
 
             // invoke script init callback
-            script.init(nodeModel, this)
+            behavior.init(nodeModel, this)
 
         } catch (e: Exception) {
-            logE { "Failed to initialize ScriptComponents for node ${nodeModel.name}: $e" }
+            logE { "Failed to initialize BehaviorComponent for node ${nodeModel.name}: $e" }
             e.printStackTrace()
         }
     }
 
     fun setProperty(name: String, value: Any): Boolean {
         return try {
-            scriptInstance.value?.let { ScriptLoader.setScriptProperty(it, name, value) }
+            behaviorInstance.value?.let { BehaviorLoader.setProperty(it, name, value) }
             true
         } catch (e: Exception) {
-            logE { "${componentData.scriptClassName}: Failed setting property $name to value $value: $e" }
+            logE { "${componentData.behaviorClassName}: Failed setting property $name to value $value: $e" }
             false
         }
     }
 
     fun getProperty(name: String): Any? {
-        return scriptInstance.value?.let { ScriptLoader.getScriptProperty(it, name) }
+        return behaviorInstance.value?.let { BehaviorLoader.getProperty(it, name) }
     }
 }

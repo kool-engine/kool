@@ -3,19 +3,19 @@ package de.fabmax.kool.editor.ui
 import de.fabmax.kool.editor.EditorState
 import de.fabmax.kool.modules.ui2.UiScope
 
-class ScriptBrowser(ui: EditorUi) : BrowserPanel("Script Browser", IconMap.medium.CODE, ui) {
+class BehaviorBrowser(ui: EditorUi) : BrowserPanel("Behavior Browser", IconMap.medium.CODE, ui) {
 
     override fun UiScope.collectBrowserDirs(traversedPaths: MutableSet<String>) {
-        val scriptDir = browserItems.getOrPut("/scripts") {
-            BrowserDir(0, "Scripts", "/scripts")
+        val scriptDir = browserItems.getOrPut("/behaviors") {
+            BrowserDir(0, "Behaviors", "/behaviors")
         } as BrowserDir
         expandedDirTree += scriptDir
-        traversedPaths += "/scripts"
+        traversedPaths += "/behaviors"
 
         scriptDir.children.clear()
-        EditorState.loadedApp.value?.scriptClasses?.values?.forEach {
-            val scriptItem = browserItems.getOrPut("/scripts/${it.qualifiedName}") {
-                BrowserScriptItem(1, it)
+        EditorState.loadedApp.value?.behaviorClasses?.values?.forEach {
+            val scriptItem = browserItems.getOrPut("/behaviors/${it.qualifiedName}") {
+                BrowserBehaviorItem(1, it)
             }
             scriptDir.children += scriptItem
             traversedPaths += scriptItem.path

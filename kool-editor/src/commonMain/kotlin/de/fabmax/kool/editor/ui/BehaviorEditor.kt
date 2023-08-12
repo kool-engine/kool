@@ -1,9 +1,9 @@
 package de.fabmax.kool.editor.ui
 
+import de.fabmax.kool.editor.BehaviorProperty
 import de.fabmax.kool.editor.EditorState
-import de.fabmax.kool.editor.ScriptProperty
-import de.fabmax.kool.editor.actions.SetScriptPropertyAction
-import de.fabmax.kool.editor.components.ScriptComponent
+import de.fabmax.kool.editor.actions.SetBehaviorPropertyAction
+import de.fabmax.kool.editor.components.BehaviorComponent
 import de.fabmax.kool.editor.data.PropertyValue
 import de.fabmax.kool.editor.data.Vec2Data
 import de.fabmax.kool.editor.data.Vec3Data
@@ -13,11 +13,11 @@ import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logW
 
-class ScriptEditor(component: ScriptComponent) : ComponentEditor<ScriptComponent>(component) {
+class BehaviorEditor(component: BehaviorComponent) : ComponentEditor<BehaviorComponent>(component) {
 
-    private val scriptName: String get() = camelCaseToWords(component.scriptClassNameState.value)
+    private val behaviorName: String get() = camelCaseToWords(component.behaviorClassNameState.value)
 
-    override fun UiScope.compose() = componentPanel(scriptName, IconMap.small.CODE, ::removeComponent) {
+    override fun UiScope.compose() = componentPanel(behaviorName, IconMap.small.CODE, ::removeComponent) {
         Column(width = Grow.Std) {
             modifier
                 .padding(horizontal = sizes.gap)
@@ -28,10 +28,10 @@ class ScriptEditor(component: ScriptComponent) : ComponentEditor<ScriptComponent
                 component.runInEditMode.set(it)
             }
 
-            val script = component.scriptInstance.use() ?: return@Column
-            val scriptProperties = EditorState.loadedApp.use()?.scriptClasses?.get(script::class)?.properties
+            val script = component.behaviorInstance.use() ?: return@Column
+            val scriptProperties = EditorState.loadedApp.use()?.behaviorClasses?.get(script::class)?.properties
             if (scriptProperties == null) {
-                logE { "Unable to get script class for script ${component.scriptInstance.value}" }
+                logE { "Unable to get KoolBehavior class for behavior ${component.behaviorInstance.value}" }
             }
 
             if (!scriptProperties.isNullOrEmpty()) {
@@ -56,19 +56,19 @@ class ScriptEditor(component: ScriptComponent) : ComponentEditor<ScriptComponent
                     Vec4i::class -> vec4iEditor(prop)
 
                     else -> {
-                        logW { "Type is not editable: ${prop.type} (in script: ${component.scriptInstance})" }
+                        logW { "Type is not editable: ${prop.type} (in behavior: ${component.behaviorInstance})" }
                     }
                 }
             }
         }
     }
 
-    private fun UiScope.doubleEditor(prop: ScriptProperty) {
+    private fun UiScope.doubleEditor(prop: BehaviorProperty) {
         val propValue = prop.get(component) as Double
         val editHandler = ActionValueEditHandler<Double> { undoValue, applyValue ->
             val newValue = PropertyValue(d1 = applyValue)
             val oldValue = PropertyValue(d1 = undoValue)
-            SetScriptPropertyAction(component, prop.name, oldValue, newValue) {
+            SetBehaviorPropertyAction(component, prop.name, oldValue, newValue) {
                 surface.triggerUpdate()
                 prop.set(component, it.d1!!)
                 component.componentData.propertyValues[prop.name] = it
@@ -86,12 +86,12 @@ class ScriptEditor(component: ScriptComponent) : ComponentEditor<ScriptComponent
         )
     }
 
-    private fun UiScope.vec2dEditor(prop: ScriptProperty) {
+    private fun UiScope.vec2dEditor(prop: BehaviorProperty) {
         val propValue = prop.get(component) as Vec2d
         val editHandler = ActionValueEditHandler<Vec2d> { undoValue, applyValue ->
             val newValue = PropertyValue(d2 = Vec2Data(applyValue))
             val oldValue = PropertyValue(d2 = Vec2Data(undoValue))
-            SetScriptPropertyAction(component, prop.name, oldValue, newValue) {
+            SetBehaviorPropertyAction(component, prop.name, oldValue, newValue) {
                 surface.triggerUpdate()
                 prop.set(component, it.d2!!.toVec2d())
                 component.componentData.propertyValues[prop.name] = it
@@ -108,12 +108,12 @@ class ScriptEditor(component: ScriptComponent) : ComponentEditor<ScriptComponent
         )
     }
 
-    private fun UiScope.vec3dEditor(prop: ScriptProperty) {
+    private fun UiScope.vec3dEditor(prop: BehaviorProperty) {
         val propValue = prop.get(component) as Vec3d
         val editHandler = ActionValueEditHandler<Vec3d> { undoValue, applyValue ->
             val newValue = PropertyValue(d3 = Vec3Data(applyValue))
             val oldValue = PropertyValue(d3 = Vec3Data(undoValue))
-            SetScriptPropertyAction(component, prop.name, oldValue, newValue) {
+            SetBehaviorPropertyAction(component, prop.name, oldValue, newValue) {
                 surface.triggerUpdate()
                 prop.set(component, it.d3!!.toVec3d())
                 component.componentData.propertyValues[prop.name] = it
@@ -130,12 +130,12 @@ class ScriptEditor(component: ScriptComponent) : ComponentEditor<ScriptComponent
         )
     }
 
-    private fun UiScope.vec4dEditor(prop: ScriptProperty) {
+    private fun UiScope.vec4dEditor(prop: BehaviorProperty) {
         val propValue = prop.get(component) as Vec4d
         val editHandler = ActionValueEditHandler<Vec4d> { undoValue, applyValue ->
             val newValue = PropertyValue(d4 = Vec4Data(applyValue))
             val oldValue = PropertyValue(d4 = Vec4Data(undoValue))
-            SetScriptPropertyAction(component, prop.name, oldValue, newValue) {
+            SetBehaviorPropertyAction(component, prop.name, oldValue, newValue) {
                 surface.triggerUpdate()
                 prop.set(component, it.d4!!.toVec4d())
                 component.componentData.propertyValues[prop.name] = it
@@ -152,12 +152,12 @@ class ScriptEditor(component: ScriptComponent) : ComponentEditor<ScriptComponent
         )
     }
 
-    private fun UiScope.floatEditor(prop: ScriptProperty) {
+    private fun UiScope.floatEditor(prop: BehaviorProperty) {
         val propValue = prop.get(component) as Float
         val editHandler = ActionValueEditHandler<Double> { undoValue, applyValue ->
             val newValue = PropertyValue(f1 = applyValue.toFloat())
             val oldValue = PropertyValue(f1 = undoValue.toFloat())
-            SetScriptPropertyAction(component, prop.name, oldValue, newValue) {
+            SetBehaviorPropertyAction(component, prop.name, oldValue, newValue) {
                 surface.triggerUpdate()
                 prop.set(component, it.f1!!)
                 component.componentData.propertyValues[prop.name] = it
@@ -175,12 +175,12 @@ class ScriptEditor(component: ScriptComponent) : ComponentEditor<ScriptComponent
         )
     }
 
-    private fun UiScope.vec2fEditor(prop: ScriptProperty) {
+    private fun UiScope.vec2fEditor(prop: BehaviorProperty) {
         val propValue = prop.get(component) as Vec2f
         val editHandler = ActionValueEditHandler<Vec2d> { undoValue, applyValue ->
             val newValue = PropertyValue(f2 = Vec2Data(applyValue))
             val oldValue = PropertyValue(f2 = Vec2Data(undoValue))
-            SetScriptPropertyAction(component, prop.name, oldValue, newValue) {
+            SetBehaviorPropertyAction(component, prop.name, oldValue, newValue) {
                 surface.triggerUpdate()
                 prop.set(component, it.f2!!.toVec2f())
                 component.componentData.propertyValues[prop.name] = it
@@ -197,12 +197,12 @@ class ScriptEditor(component: ScriptComponent) : ComponentEditor<ScriptComponent
         )
     }
 
-    private fun UiScope.vec3fEditor(prop: ScriptProperty) {
+    private fun UiScope.vec3fEditor(prop: BehaviorProperty) {
         val propValue = prop.get(component) as Vec3f
         val editHandler = ActionValueEditHandler<Vec3d> { undoValue, applyValue ->
             val newValue = PropertyValue(f3 = Vec3Data(applyValue))
             val oldValue = PropertyValue(f3 = Vec3Data(undoValue))
-            SetScriptPropertyAction(component, prop.name, oldValue, newValue) {
+            SetBehaviorPropertyAction(component, prop.name, oldValue, newValue) {
                 surface.triggerUpdate()
                 prop.set(component, it.f3!!.toVec3f())
                 component.componentData.propertyValues[prop.name] = it
@@ -219,12 +219,12 @@ class ScriptEditor(component: ScriptComponent) : ComponentEditor<ScriptComponent
         )
     }
 
-    private fun UiScope.vec4fEditor(prop: ScriptProperty) {
+    private fun UiScope.vec4fEditor(prop: BehaviorProperty) {
         val propValue = prop.get(component) as Vec4f
         val editHandler = ActionValueEditHandler<Vec4d> { undoValue, applyValue ->
             val newValue = PropertyValue(f4 = Vec4Data(applyValue))
             val oldValue = PropertyValue(f4 = Vec4Data(undoValue))
-            SetScriptPropertyAction(component, prop.name, oldValue, newValue) {
+            SetBehaviorPropertyAction(component, prop.name, oldValue, newValue) {
                 surface.triggerUpdate()
                 prop.set(component, it.f4!!.toVec4f())
                 component.componentData.propertyValues[prop.name] = it
@@ -241,12 +241,12 @@ class ScriptEditor(component: ScriptComponent) : ComponentEditor<ScriptComponent
         )
     }
 
-    private fun UiScope.intEditor(prop: ScriptProperty) {
+    private fun UiScope.intEditor(prop: BehaviorProperty) {
         val propValue = prop.get(component) as Int
         val editHandler = ActionValueEditHandler<Int> { undoValue, applyValue ->
             val newValue = PropertyValue(i1 = applyValue)
             val oldValue = PropertyValue(i1 = undoValue)
-            SetScriptPropertyAction(component, prop.name, oldValue, newValue) {
+            SetBehaviorPropertyAction(component, prop.name, oldValue, newValue) {
                 surface.triggerUpdate()
                 prop.set(component, it.i1!!)
                 component.componentData.propertyValues[prop.name] = it
@@ -263,12 +263,12 @@ class ScriptEditor(component: ScriptComponent) : ComponentEditor<ScriptComponent
         )
     }
 
-    private fun UiScope.vec2iEditor(prop: ScriptProperty) {
+    private fun UiScope.vec2iEditor(prop: BehaviorProperty) {
         val propValue = prop.get(component) as Vec2i
         val editHandler = ActionValueEditHandler<Vec2d> { undoValue, applyValue ->
             val newValue = PropertyValue(i2 = Vec2Data(applyValue))
             val oldValue = PropertyValue(i2 = Vec2Data(undoValue))
-            SetScriptPropertyAction(component, prop.name, oldValue, newValue) {
+            SetBehaviorPropertyAction(component, prop.name, oldValue, newValue) {
                 surface.triggerUpdate()
                 prop.set(component, it.i2!!.toVec2i())
                 component.componentData.propertyValues[prop.name] = it
@@ -285,12 +285,12 @@ class ScriptEditor(component: ScriptComponent) : ComponentEditor<ScriptComponent
         )
     }
 
-    private fun UiScope.vec3iEditor(prop: ScriptProperty) {
+    private fun UiScope.vec3iEditor(prop: BehaviorProperty) {
         val propValue = prop.get(component) as Vec3i
         val editHandler = ActionValueEditHandler<Vec3d> { undoValue, applyValue ->
             val newValue = PropertyValue(i3 = Vec3Data(applyValue))
             val oldValue = PropertyValue(i3 = Vec3Data(undoValue))
-            SetScriptPropertyAction(component, prop.name, oldValue, newValue) {
+            SetBehaviorPropertyAction(component, prop.name, oldValue, newValue) {
                 surface.triggerUpdate()
                 prop.set(component, it.i3!!.toVec3i())
                 component.componentData.propertyValues[prop.name] = it
@@ -307,12 +307,12 @@ class ScriptEditor(component: ScriptComponent) : ComponentEditor<ScriptComponent
         )
     }
 
-    private fun UiScope.vec4iEditor(prop: ScriptProperty) {
+    private fun UiScope.vec4iEditor(prop: BehaviorProperty) {
         val propValue = prop.get(component) as Vec4i
         val editHandler = ActionValueEditHandler<Vec4d> { undoValue, applyValue ->
             val newValue = PropertyValue(i4 = Vec4Data(applyValue))
             val oldValue = PropertyValue(i4 = Vec4Data(undoValue))
-            SetScriptPropertyAction(component, prop.name, oldValue, newValue) {
+            SetBehaviorPropertyAction(component, prop.name, oldValue, newValue) {
                 surface.triggerUpdate()
                 prop.set(component, it.i4!!.toVec4i())
                 component.componentData.propertyValues[prop.name] = it
@@ -333,7 +333,7 @@ class ScriptEditor(component: ScriptComponent) : ComponentEditor<ScriptComponent
     private fun Vec3i.toVec3d() = Vec3d(x.toDouble(), y.toDouble(), z.toDouble())
     private fun Vec4i.toVec4d() = Vec4d(x.toDouble(), y.toDouble(), z.toDouble(), w.toDouble())
 
-    private fun ScriptProperty.getPrecision(value: Double): Int {
+    private fun BehaviorProperty.getPrecision(value: Double): Int {
         return if (isRanged) {
             precisionForValue(max - min)
         } else {
@@ -341,7 +341,7 @@ class ScriptEditor(component: ScriptComponent) : ComponentEditor<ScriptComponent
         }
     }
 
-    private val ScriptProperty.dragChangeSpeed: Double
+    private val BehaviorProperty.dragChangeSpeed: Double
         get() = if (isRanged) (max - min) / 1000.0 else 0.05
 
     companion object {

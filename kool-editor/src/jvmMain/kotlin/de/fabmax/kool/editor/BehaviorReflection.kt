@@ -8,10 +8,10 @@ import kotlin.reflect.KMutableProperty
 import kotlin.reflect.KVisibility
 import kotlin.reflect.full.declaredMemberProperties
 
-actual object ScriptReflection {
+actual object BehaviorReflection {
 
-    actual fun getEditableProperties(scriptClass: KClass<*>): List<ScriptProperty> {
-        return scriptClass.declaredMemberProperties
+    actual fun getEditableProperties(behaviorClass: KClass<*>): List<BehaviorProperty> {
+        return behaviorClass.declaredMemberProperties
             .filter {
                 it is KMutableProperty<*>
                         && it.visibility == KVisibility.PUBLIC
@@ -26,7 +26,7 @@ actual object ScriptReflection {
                 val label = if (info != null && info.label.isNotBlank()) info.label else it.name
                 val min = info?.min ?: Double.NEGATIVE_INFINITY
                 val max = info?.max ?: Double.POSITIVE_INFINITY
-                ScriptProperty(it.name, propertyType, label, min, max)
+                BehaviorProperty(it.name, propertyType, label, min, max)
             }
     }
 

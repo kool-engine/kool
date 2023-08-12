@@ -1,8 +1,8 @@
 package de.fabmax.kool.editor
 
+import de.fabmax.kool.editor.api.BehaviorLoader
 import de.fabmax.kool.editor.api.EditorAwareApp
-import de.fabmax.kool.editor.api.KoolScript
-import de.fabmax.kool.editor.api.ScriptLoader
+import de.fabmax.kool.editor.api.KoolBehavior
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logI
@@ -38,7 +38,7 @@ actual class AppLoadService actual constructor(val paths: ProjectPaths) : Corout
     val ignoredPaths = mutableSetOf<Path>()
 
     init {
-        paths.jsAppScriptsPath?.let {
+        paths.jsAppBehaviorBindingsPath?.let {
             ignoredPaths.add(Path.of(it))
         }
     }
@@ -112,21 +112,21 @@ actual class AppLoadService actual constructor(val paths: ProjectPaths) : Corout
 
         logI { "Loading app from directory: $appClassPath" }
         val loader = URLClassLoader(arrayOf(appClassPath.toUri().toURL()), this.javaClass.classLoader)
-        ScriptLoader.appScriptLoader = ScriptLoader.ReflectionAppScriptLoader(loader)
-        val scriptClasses = examineClasses(loader, appClassPath)
+        BehaviorLoader.appBehaviorLoader = BehaviorLoader.ReflectionAppBehaviorLoader(loader)
+        val behaviorClasses = examineClasses(loader, appClassPath)
 
-        paths.jsAppScriptsPath?.let { genPath ->
-            logI { "Generating Javascript script bindings: $genPath" }
-            JsAppScriptsGenerator.generateScriptBindings(scriptClasses.values.toList(), genPath)
+        paths.jsAppBehaviorBindingsPath?.let { genPath ->
+            logI { "Generating Javascript behavior bindings: $genPath" }
+            JsAppBehaviorBindingsGenerator.generateBehaviorBindings(behaviorClasses.values.toList(), genPath)
         }
 
         val appClass = loader.loadClass(paths.appMainClass)
         val app = appClass.getDeclaredConstructor().newInstance()
-        return LoadedApp(app as EditorAwareApp, scriptClasses)
+        return LoadedApp(app as EditorAwareApp, behaviorClasses)
     }
 
-    private fun examineClasses(loader: URLClassLoader, classpath: Path): Map<KClass<*>, AppScript> {
-        val scriptClasses = mutableMapOf<KClass<*>, AppScript>()
+    private fun examineClasses(loader: URLClassLoader, classpath: Path): Map<KClass<*>, AppBehavior> {
+        val behaviorClasses = mutableMapOf<KClass<*>, AppBehavior>()
         classpath.walk(PathWalkOption.INCLUDE_DIRECTORIES).forEach {
             if (!it.isDirectory() && it.name.endsWith(".class")) {
                 val className = it.pathString
@@ -137,16 +137,16 @@ actual class AppLoadService actual constructor(val paths: ProjectPaths) : Corout
                     .replace('/', '.')
 
                 try {
-                    val scriptClass = loader.loadClass(className)
-                    val kclass = scriptClass.kotlin
-                    if (KoolScript::class.java.isAssignableFrom(scriptClass.superclass)) {
-                        scriptClasses[kclass] = AppScript(kclass, ScriptReflection.getEditableProperties(kclass))
+                    val behaviorClass = loader.loadClass(className)
+                    val kclass = behaviorClass.kotlin
+                    if (KoolBehavior::class.java.isAssignableFrom(behaviorClass.superclass)) {
+                        behaviorClasses[kclass] = AppBehavior(kclass, BehaviorReflection.getEditableProperties(kclass))
                     }
                 } catch (e: Exception) {
                     logE { "Failed examining class $className: $e" }
                 }
             }
         }
-        return scriptClasses
+        return behaviorClasses
     }
 }

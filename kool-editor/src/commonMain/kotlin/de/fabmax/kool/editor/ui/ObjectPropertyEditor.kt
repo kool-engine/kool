@@ -5,8 +5,8 @@ import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.actions.AddComponentAction
 import de.fabmax.kool.editor.actions.RenameNodeAction
 import de.fabmax.kool.editor.components.*
+import de.fabmax.kool.editor.data.BehaviorComponentData
 import de.fabmax.kool.editor.data.ModelComponentData
-import de.fabmax.kool.editor.data.ScriptComponentData
 import de.fabmax.kool.editor.model.NodeModel
 import de.fabmax.kool.editor.model.SceneModel
 import de.fabmax.kool.editor.model.SceneNodeModel
@@ -94,7 +94,7 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", Icon
                     is ModelComponent -> componentEditor(component) { ModelEditor(component) }
                     is ScenePropertiesComponent -> componentEditor(component) { ScenePropertiesEditor(component) }
                     is SceneBackgroundComponent -> componentEditor(component) { SceneBackgroundEditor(component) }
-                    is ScriptComponent -> componentEditor(component) { ScriptEditor(component) }
+                    is BehaviorComponent -> componentEditor(component) { BehaviorEditor(component) }
                     is ShadowMapComponent -> componentEditor(component) { ShadowMapEditor(component) }
                     is SsaoComponent -> componentEditor(component) { SsaoEditor(component) }
                     is TransformComponent -> componentEditor(component) { TransformEditor(component) }
@@ -219,16 +219,16 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", Icon
                     && (nodeModel.hasComponent<MeshComponent>() || nodeModel.hasComponent<ModelComponent>())
         }
 
-        object AddScriptComponent : ComponentAdder<ScriptComponent>("Script") {
+        object AddScriptComponent : ComponentAdder<BehaviorComponent>("Behavior") {
             override fun accept(nodeModel: NodeModel) = true
 
             override fun addMenuItems(target: NodeModel, parentMenu: SubMenuItem<NodeModel>) {
-                val scriptClasses = EditorState.loadedApp.value?.scriptClasses?.values ?: emptyList()
+                val scriptClasses = EditorState.loadedApp.value?.behaviorClasses?.values ?: emptyList()
                 if (scriptClasses.isNotEmpty()) {
                     parentMenu.subMenu(name) {
                         scriptClasses.forEach { script ->
                             item(script.prettyName) {
-                                AddComponentAction(it, ScriptComponent(target, ScriptComponentData(script.qualifiedName))).apply()
+                                AddComponentAction(it, BehaviorComponent(target, BehaviorComponentData(script.qualifiedName))).apply()
                             }
                         }
                     }

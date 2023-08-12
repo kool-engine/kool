@@ -97,7 +97,7 @@ abstract class NodeModel(val nodeData: SceneNodeData) {
                 is ModelComponentData -> components += ModelComponent(requireSceneNode, data)
                 is SceneBackgroundComponentData -> components += SceneBackgroundComponent(requireScene, data)
                 is ScenePropertiesComponentData -> components += ScenePropertiesComponent(requireScene, data)
-                is ScriptComponentData -> components += ScriptComponent(this, data)
+                is BehaviorComponentData -> components += BehaviorComponent(this, data)
                 is ShadowMapComponentData -> components += ShadowMapComponent(requireSceneNode, data)
                 is SsaoComponentData -> components += SsaoComponent(requireScene, data)
                 is TransformComponentData -> components += TransformComponent(requireSceneNode, data)

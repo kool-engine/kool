@@ -1,7 +1,7 @@
 package de.fabmax.kool.app
 
 import de.fabmax.kool.editor.api.EditorInfo
-import de.fabmax.kool.editor.api.KoolScript
+import de.fabmax.kool.editor.api.KoolBehavior
 import de.fabmax.kool.editor.components.TransformComponent
 import de.fabmax.kool.editor.data.Vec4Data
 import de.fabmax.kool.math.Mat3d
@@ -9,7 +9,7 @@ import de.fabmax.kool.math.MutableVec4d
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.util.Time
 
-class SampleRotationAnimator : KoolScript() {
+class SampleRotationAnimator : KoolBehavior() {
 
     @EditorInfo("Rotation speed:", -360.0, 360.0)
     var rotationSpeed = Vec3f(17f, 31f, 19f)

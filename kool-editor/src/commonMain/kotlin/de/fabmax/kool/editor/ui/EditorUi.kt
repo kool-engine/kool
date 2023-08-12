@@ -41,7 +41,7 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
     val objectProperties = ObjectPropertyEditor(this)
     val assetBrowser = AssetBrowser(this)
     val materialBrowser = MaterialBrowser(this)
-    val scriptBrowser = ScriptBrowser(this)
+    val behaviorBrowser = BehaviorBrowser(this)
     val console = ConsolePanel(this)
 
     val appStateInfo = mutableStateOf("")
@@ -87,7 +87,7 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
             addDockableSurface(objectProperties.windowDockable, objectProperties.windowSurface)
             addDockableSurface(assetBrowser.windowDockable, assetBrowser.windowSurface)
             addDockableSurface(materialBrowser.windowDockable, materialBrowser.windowSurface)
-            addDockableSurface(scriptBrowser.windowDockable, scriptBrowser.windowSurface)
+            addDockableSurface(behaviorBrowser.windowDockable, behaviorBrowser.windowSurface)
             addDockableSurface(console.windowDockable, console.windowSurface)
 
             val restoredLayout = DockLayout.loadLayout("editor.ui.layout", this) { windowName ->
@@ -97,7 +97,7 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
                     objectProperties.name -> objectProperties.windowDockable
                     assetBrowser.name -> assetBrowser.windowDockable
                     materialBrowser.name -> materialBrowser.windowDockable
-                    scriptBrowser.name -> scriptBrowser.windowDockable
+                    behaviorBrowser.name -> behaviorBrowser.windowDockable
                     console.name -> console.windowDockable
                     else -> {
                         logW { "Unable to restore layout - window not found: $windowName" }
@@ -124,7 +124,7 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
                 getLeafAtPath("0/1")?.dock(objectProperties.windowDockable)
                 getLeafAtPath("0/0/1")?.dock(assetBrowser.windowDockable)
                 getLeafAtPath("0/0/1")?.dock(materialBrowser.windowDockable)
-                getLeafAtPath("0/0/1")?.dock(scriptBrowser.windowDockable)
+                getLeafAtPath("0/0/1")?.dock(behaviorBrowser.windowDockable)
                 getLeafAtPath("0/0/1")?.dock(console.windowDockable)
 
                 getLeafAtPath("0/0/1")?.bringToTop(assetBrowser.windowDockable)

@@ -3,8 +3,8 @@ package de.fabmax.kool.editor.data
 import kotlinx.serialization.Serializable
 
 @Serializable
-class ScriptComponentData(
-    var scriptClassName: String,
+class BehaviorComponentData(
+    var behaviorClassName: String,
     var runInEditMode: Boolean = false,
     var propertyValues: MutableMap<String, PropertyValue> = mutableMapOf()
 ) : ComponentData

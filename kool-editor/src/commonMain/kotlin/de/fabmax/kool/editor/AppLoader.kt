@@ -1,7 +1,7 @@
 package de.fabmax.kool.editor
 
 import de.fabmax.kool.editor.api.EditorAwareApp
-import de.fabmax.kool.editor.ui.ScriptEditor
+import de.fabmax.kool.editor.ui.BehaviorEditor
 import de.fabmax.kool.util.launchOnMainThread
 import de.fabmax.kool.util.logE
 import kotlin.reflect.KClass
@@ -21,12 +21,12 @@ fun interface AppReloadListener {
     suspend fun onAppReloaded(loadedApp: LoadedApp)
 }
 
-class LoadedApp(val app: EditorAwareApp, val scriptClasses: Map<KClass<*>, AppScript>)
+class LoadedApp(val app: EditorAwareApp, val behaviorClasses: Map<KClass<*>, AppBehavior>)
 
-class AppScript(klass: KClass<*>, val properties: List<ScriptProperty>) {
+class AppBehavior(klass: KClass<*>, val properties: List<BehaviorProperty>) {
     val qualifiedName = klass.qualifiedName ?: "<unknown>"
     val simpleName = klass.simpleName
-    val prettyName = ScriptEditor.camelCaseToWords(klass.simpleName ?: "<unknown>")
+    val prettyName = BehaviorEditor.camelCaseToWords(klass.simpleName ?: "<unknown>")
 
     fun dumpProperties() {
         println(qualifiedName)

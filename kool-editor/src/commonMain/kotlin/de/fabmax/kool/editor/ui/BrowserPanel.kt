@@ -2,7 +2,7 @@ package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.KeyValueStore
 import de.fabmax.kool.editor.AppAssetType
-import de.fabmax.kool.editor.AppScript
+import de.fabmax.kool.editor.AppBehavior
 import de.fabmax.kool.editor.AssetItem
 import de.fabmax.kool.editor.data.MaterialData
 import de.fabmax.kool.input.CursorShape
@@ -210,7 +210,7 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
             is BrowserDir -> MdColor.AMBER
             is BrowserAssetItem -> item.itemColor
             is BrowserMaterialItem -> MdColor.GREY
-            is BrowserScriptItem -> MdColor.PURPLE
+            is BrowserBehaviorItem -> MdColor.PURPLE
         }
 
         var isHovered by remember(false)
@@ -262,7 +262,7 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
                     }
                 }
                 is BrowserMaterialItem -> null
-                is BrowserScriptItem -> null
+                is BrowserBehaviorItem -> null
             }
         }
     }
@@ -284,5 +284,5 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
 
     class BrowserMaterialItem(level: Int, val material: MaterialData) : BrowserItem(level, material.name, "/materials/${material.name}")
 
-    class BrowserScriptItem(level: Int, script: AppScript) : BrowserItem(level, script.prettyName, "/paths/${script.qualifiedName}")
+    class BrowserBehaviorItem(level: Int, script: AppBehavior) : BrowserItem(level, script.prettyName, "/paths/${script.qualifiedName}")
 }
