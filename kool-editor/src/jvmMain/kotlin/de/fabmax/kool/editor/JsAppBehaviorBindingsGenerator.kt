@@ -42,7 +42,7 @@ object JsAppBehaviorBindingsGenerator {
 
     private fun StringBuilder.appendImports(appBehaviors: List<AppBehavior>) {
         val imports = defaultImports + appBehaviors.map { it.qualifiedName }
-        imports.forEach {
+        imports.sorted().forEach {
             appendLine("import $it")
         }
         appendLine()

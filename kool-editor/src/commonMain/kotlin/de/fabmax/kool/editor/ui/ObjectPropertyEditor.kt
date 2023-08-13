@@ -115,21 +115,22 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", Icon
 
     private fun UiScope.addComponentSelector(nodeModel: NodeModel) {
         val popup = remember { ContextPopupMenu<NodeModel>() }
+        var popupPos by remember(Vec2f.ZERO)
 
-        Button("Add component") {
-            defaultButtonStyle()
-            modifier
-                .width(sizes.baseSize * 5)
-                .margin(vertical = sizes.gap)
-                .alignX(AlignmentX.Center)
-                .onClick {
-                    if (!popup.isVisible.use()) {
-                        popup.show(Vec2f(uiNode.leftPx, uiNode.bottomPx), makeAddComponentMenu(nodeModel), nodeModel)
-                    } else {
-                        popup.hide()
-                    }
-                }
+        val button = iconTextButton(
+            icon = IconMap.small.PLUS,
+            text = "Add Component",
+            width = sizes.baseSize * 5,
+            margin = sizes.gap
+        ) {
+            if (!popup.isVisible.use()) {
+                popup.show(popupPos, makeAddComponentMenu(nodeModel), nodeModel)
+            } else {
+                popup.hide()
+            }
         }
+
+        popupPos = Vec2f(button.uiNode.leftPx, button.uiNode.bottomPx)
         popup()
     }
 

@@ -6,6 +6,7 @@ import de.fabmax.kool.editor.data.PbrShaderData
 import de.fabmax.kool.editor.data.ProjectData
 import de.fabmax.kool.editor.data.SceneNodeData
 import de.fabmax.kool.modules.ui2.mutableStateListOf
+import de.fabmax.kool.util.logE
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 
@@ -27,7 +28,40 @@ class EditorProject(val projectData: ProjectData) {
 
     private val created: MutableMap<Long, SceneModel> = mutableMapOf()
 
+    private fun checkProjectModelConsistency() {
+        val nodeMap = projectData.sceneNodes.associateBy { it.nodeId }
+        val referencedNodeIds = mutableSetOf<Long>()
+
+        fun collectChildNodeIds(node: SceneNodeData) {
+            node.childNodeIds.forEach { childId ->
+                val child = nodeMap[childId]
+                if (child == null) {
+                    logE { "Node \"${node.name}\" references non-existing child node $childId" }
+                } else {
+                    referencedNodeIds += childId
+                    collectChildNodeIds(child)
+                }
+            }
+        }
+
+        projectData.sceneNodeIds.forEach { sceneId ->
+            val scene = nodeMap[sceneId]
+            if (scene == null) {
+                logE { "Project references non-existing scene $sceneId" }
+            } else {
+                referencedNodeIds += sceneId
+                collectChildNodeIds(scene)
+            }
+        }
+
+        val unreferencedIds = nodeMap.keys - referencedNodeIds
+        if (unreferencedIds.isNotEmpty()) {
+            logE { "Project contains unreferenced nodes: ${unreferencedIds.map { "$it: ${nodeMap[it]?.name}" }}" }
+        }
+    }
+
     suspend fun create() {
+        checkProjectModelConsistency()
         projectData.sceneNodeIds.forEach { sceneNodeId ->
             val sceneData = sceneNodeData[sceneNodeId]
             if (sceneData != null) {

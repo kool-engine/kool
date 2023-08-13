@@ -90,7 +90,7 @@ object EditorState {
     }
 
     private fun newProject() = EditorProject(
-        ProjectData(KoolEditor.instance.paths.appMainClass).apply {
+        ProjectData().apply {
             val sceneId = nextId++
             val camId = nextId++
             val boxId = nextId++

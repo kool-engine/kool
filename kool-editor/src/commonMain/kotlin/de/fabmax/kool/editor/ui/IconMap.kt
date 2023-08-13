@@ -113,6 +113,10 @@ object IconMap {
         val PASTE = IconProvider(this, iconMap.IconImageProvider(12, 2))
         val SAVE = IconProvider(this, iconMap.IconImageProvider(13, 2))
         val SETTINGS = IconProvider(this, iconMap.IconImageProvider(14, 2))
+        val FILTER = IconProvider(this, iconMap.IconImageProvider(15, 2))
+        val SEARCH = IconProvider(this, iconMap.IconImageProvider(16, 2))
+        val PLUS = IconProvider(this, iconMap.IconImageProvider(17, 2))
+        val MINUS = IconProvider(this, iconMap.IconImageProvider(18, 2))
     }
 }
 

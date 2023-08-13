@@ -186,6 +186,7 @@ val Colors.componentBgHovered: Color get() = secondaryAlpha(0.5f)
 val Colors.elevatedComponentBg: Color get() = secondaryVariant
 // hovered buttons / cb expander
 val Colors.elevatedComponentBgHovered: Color get() = secondary
+val Colors.elevatedComponentClickFeedback: Color get() = UiColors.secondaryBright
 
 val Colors.dndAcceptableBg: Color get() = MdColor.GREEN.withAlpha(0.3f)
 val Colors.dndAcceptableBgHovered: Color get() = MdColor.GREEN.withAlpha(0.5f)
@@ -199,6 +200,7 @@ object UiColors {
     val border = Color("0f1114ff")
     val titleBg = Color("343a49ff")
     val titleText = Color("dbe6ffff")
+    val secondaryBright = Color("a0b3d8ff")
 }
 
 object DragChangeRates {

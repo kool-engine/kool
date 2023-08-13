@@ -828,6 +828,65 @@ fun UiScope.iconButton(
     boxBlock?.invoke(this)
 }
 
+fun UiScope.iconTextButton(
+    icon: IconProvider,
+    text: String,
+    tooltip: String? = null,
+    toggleState: Boolean = false,
+    tint: Color = Color.WHITE,
+    width: Dimension = FitContent,
+    margin: Dp = sizes.smallGap,
+    boxBlock: (UiScope.() -> Unit)? = null,
+    onClick: (PointerEvent) -> Unit
+) = Box {
+    var isHovered by remember(false)
+    var isClickFeedback by remember(false)
+
+    val bgColor = when {
+        isClickFeedback -> colors.elevatedComponentClickFeedback
+        toggleState || isHovered -> colors.elevatedComponentBgHovered
+        else -> colors.elevatedComponentBg
+    }
+
+    modifier.background(RoundRectBackground(bgColor, sizes.smallGap))
+
+    modifier
+        .align(AlignmentX.Center, AlignmentY.Center)
+        .margin(margin)
+        .width(width)
+        .height(sizes.largeGap * 1.35f)
+        .onPointer { isClickFeedback = it.pointer.isLeftButtonDown }
+        .onEnter { isHovered = true }
+        .onExit {
+            isHovered = false
+            isClickFeedback = false
+        }
+        .onClick(onClick)
+
+    Row {
+        modifier
+            .align(AlignmentX.Center, AlignmentY.Center)
+
+        Image {
+            modifier
+                .alignY(AlignmentY.Center)
+                .iconImage(icon, tint)
+                .margin(end = sizes.gap)
+        }
+        Text(text) {
+            modifier
+                .alignY(AlignmentY.Center)
+                .textColor(tint)
+        }
+    }
+
+    tooltip?.let {
+        Tooltip(it, borderColor = colors.secondaryVariant)
+    }
+
+    boxBlock?.invoke(this)
+}
+
 fun ColumnScope.menuDivider(marginTop: Dp = sizes.smallGap, marginBottom: Dp = Dp.ZERO, color: Color = colors.weakDividerColor) {
     divider(color, marginTop = marginTop, marginBottom = marginBottom)
 }
