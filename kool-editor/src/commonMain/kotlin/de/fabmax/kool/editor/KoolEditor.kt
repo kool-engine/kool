@@ -28,6 +28,7 @@ import de.fabmax.kool.pipeline.ao.AoPipeline
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.scene.scene
+import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.logW
 
 class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
@@ -36,9 +37,16 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
 
     val editorInputContext = InputStack.InputHandler("Editor input")
     val editorCameraTransform = EditorCamTransform(this)
+    private val editorBackgroundScene = scene("editor-camera") {
+        addNode(editorCameraTransform)
+        mainRenderPass.clearColor = Color.BLACK
+        mainRenderPass.clearDepth = false
+    }
 
     val editorOverlay = scene("editor-overlay") {
         camera.setClipRange(0.1f, 1000f)
+        mainRenderPass.clearColor = null
+        mainRenderPass.clearDepth = false
     }
     val gridOverlay = GridOverlay()
     val lightOverlay = SceneObjectsOverlay()
@@ -47,7 +55,6 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
 
     val editorContent = Node("Editor Content").apply {
         tags[TAG_EDITOR_SUPPORT_CONTENT] = "true"
-        addNode(editorCameraTransform)
         addNode(gridOverlay)
         addNode(lightOverlay)
         addNode(selectionOverlay)
@@ -82,6 +89,10 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
         AppState.appModeState.set(AppMode.EDIT)
 
         ctx.applicationCallbacks = editorAppCallbacks
+
+        // editor background needs to be the first scene, not only because its background but also because it hosts
+        // the editor camera controller, which is also used by other scenes, and we want it to update first
+        ctx.scenes += editorBackgroundScene
         ctx.scenes += ui
 
         registerKeyBindings()
@@ -94,7 +105,7 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
     }
 
     fun setEditorOverlayVisibility(isVisible: Boolean) {
-        editorOverlay.children.filter { it != editorCameraTransform }.forEach {
+        editorOverlay.children.forEach {
             it.isVisible = isVisible
         }
         ui.sceneView.isShowToolbar.set(isVisible)
@@ -248,6 +259,7 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
     private suspend fun handleAppReload(loadedApp: LoadedApp) {
         // clear scene objects from old app
         editorCameraTransform.clearChildren()
+        editorCameraTransform.addNode(editorBackgroundScene.camera)
         editorCameraTransform.addNode(editorOverlay.camera)
 
         // dispose old scene + objects
@@ -311,9 +323,9 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
     private fun updateOverlays() {
         ctx.scenes -= editorOverlay
         ctx.scenes += editorOverlay
-        editorOverlay.mainRenderPass.clearColor = null
-        editorOverlay.mainRenderPass.clearDepth = false
+
         editorOverlay.onRenderScene.clear()
+        ui.sceneView.applyViewportTo(editorBackgroundScene)
         ui.sceneView.applyViewportTo(editorOverlay)
 
         ctx.scenes -= ui
