@@ -12,13 +12,8 @@ import de.fabmax.kool.modules.ui2.mutableStateListOf
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.copy
-import de.fabmax.kool.util.logD
-import de.fabmax.kool.util.logW
 import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import java.io.File
 
 object EditorState {
 
@@ -78,18 +73,7 @@ object EditorState {
         return selection.copy().filterIsInstance<SceneNodeModel>().filter(filter)
     }
 
-    private fun loadProjectModel(): EditorProject {
-        val projFile = File(KoolEditor.instance.paths.projectFile)
-        return try {
-            val projData = Json.decodeFromString<ProjectData>(projFile.readText())
-            EditorProject(projData)
-        } catch (e: Exception) {
-            logW { "Project not found at ${projFile.absolutePath}, creating new empty project" }
-            newProject()
-        }
-    }
-
-    private fun newProject() = EditorProject(
+    fun newProject() = EditorProject(
         ProjectData().apply {
             val sceneId = nextId++
             val camId = nextId++
@@ -125,13 +109,9 @@ object EditorState {
         }
     )
 
-    fun saveProject() {
-        val modelPath = File(KoolEditor.instance.paths.projectFile)
-        modelPath.parentFile.mkdirs()
-        modelPath.writeText(jsonCodec.encodeToString(projectModel.projectData))
+    private fun loadProjectModel(): EditorProject = PlatformFunctions.loadProjectModel(KoolEditor.instance.paths.projectFile)
 
-        logD { "Saved project to ${modelPath.absolutePath}" }
-    }
+    fun saveProject() = PlatformFunctions.saveProjectModel(KoolEditor.instance.paths.projectFile)
 
     enum class TransformOrientation(val label: String) {
         LOCAL("Local"),

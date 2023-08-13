@@ -8,9 +8,9 @@ import kotlin.reflect.KMutableProperty
 import kotlin.reflect.KVisibility
 import kotlin.reflect.full.declaredMemberProperties
 
-actual object BehaviorReflection {
+object BehaviorReflection {
 
-    actual fun getEditableProperties(behaviorClass: KClass<*>): List<BehaviorProperty> {
+    fun getEditableProperties(behaviorClass: KClass<*>): List<BehaviorProperty> {
         return behaviorClass.declaredMemberProperties
             .filter {
                 it is KMutableProperty<*>
@@ -30,7 +30,7 @@ actual object BehaviorReflection {
             }
     }
 
-    actual val editableTypes = setOf<KClass<*>>(
+    private val editableTypes = setOf<KClass<*>>(
         Int::class,
         Vec2i::class,
         Vec3i::class,

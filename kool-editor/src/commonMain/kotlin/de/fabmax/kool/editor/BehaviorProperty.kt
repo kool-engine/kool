@@ -1,14 +1,7 @@
 package de.fabmax.kool.editor
 
 import de.fabmax.kool.editor.components.BehaviorComponent
-import kotlin.reflect.KClass
 import kotlin.reflect.KType
-
-expect object BehaviorReflection {
-    val editableTypes: Set<KClass<*>>
-
-    fun getEditableProperties(behaviorClass: KClass<*>): List<BehaviorProperty>
-}
 
 class BehaviorProperty(
     val name: String,

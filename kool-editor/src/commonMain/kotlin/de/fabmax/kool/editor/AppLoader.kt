@@ -18,15 +18,13 @@ expect class AppLoadService(paths: ProjectPaths) {
 }
 
 fun interface AppReloadListener {
-    suspend fun onAppReloaded(loadedApp: LoadedApp)
+    fun onAppReloaded(loadedApp: LoadedApp)
 }
 
 class LoadedApp(val app: EditorAwareApp, val behaviorClasses: Map<KClass<*>, AppBehavior>)
 
-class AppBehavior(klass: KClass<*>, val properties: List<BehaviorProperty>) {
-    val qualifiedName = klass.qualifiedName ?: "<unknown>"
-    val simpleName = klass.simpleName
-    val prettyName = BehaviorEditor.camelCaseToWords(klass.simpleName ?: "<unknown>")
+class AppBehavior(val simpleName: String, val qualifiedName: String, val properties: List<BehaviorProperty>) {
+    val prettyName = BehaviorEditor.camelCaseToWords(simpleName)
 
     fun dumpProperties() {
         println(qualifiedName)

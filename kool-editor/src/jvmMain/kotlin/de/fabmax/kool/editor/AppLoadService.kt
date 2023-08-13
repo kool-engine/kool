@@ -47,6 +47,7 @@ actual class AppLoadService actual constructor(val paths: ProjectPaths) : Corout
         ignoredPaths.add(Path.of(path))
     }
 
+    @Suppress("unused")
     private val loader = launch {
         while (true) {
             val changes = watcher.changes.receive().filter { it.path !in ignoredPaths }
@@ -140,7 +141,9 @@ actual class AppLoadService actual constructor(val paths: ProjectPaths) : Corout
                     val behaviorClass = loader.loadClass(className)
                     val kclass = behaviorClass.kotlin
                     if (KoolBehavior::class.java.isAssignableFrom(behaviorClass.superclass)) {
-                        behaviorClasses[kclass] = AppBehavior(kclass, BehaviorReflection.getEditableProperties(kclass))
+                        val simple = kclass.simpleName ?: "<unknown>"
+                        val qualified = kclass.qualifiedName ?: "<unknown>"
+                        behaviorClasses[kclass] = AppBehavior(simple, qualified, BehaviorReflection.getEditableProperties(kclass))
                     }
                 } catch (e: Exception) {
                     logE { "Failed examining class $className: $e" }

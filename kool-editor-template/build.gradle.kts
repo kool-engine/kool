@@ -61,6 +61,13 @@ kotlin {
             }
         }
 
+        val jsMain by getting {
+            dependencies {
+                // fixme: editor dependency should only be included if js editor project is build
+                implementation(project(":kool-editor"))
+            }
+        }
+
         sourceSets.all {
             languageSettings.apply {
                 progressiveMode = true

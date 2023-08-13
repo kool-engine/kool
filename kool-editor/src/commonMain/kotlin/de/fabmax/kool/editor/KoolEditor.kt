@@ -29,6 +29,7 @@ import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.scene.scene
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.launchOnMainThread
 import de.fabmax.kool.util.logW
 
 class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
@@ -98,7 +99,11 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
         registerKeyBindings()
         registerSceneObjectPicking()
         registerAutoSaveOnFocusLoss()
-        appLoader.appReloadListeners += AppReloadListener { handleAppReload(it) }
+        appLoader.appReloadListeners += AppReloadListener {
+            launchOnMainThread {
+                handleAppReload(it)
+            }
+        }
 
         PlatformFunctions.onEditorStarted(ctx)
         appLoader.reloadApp()

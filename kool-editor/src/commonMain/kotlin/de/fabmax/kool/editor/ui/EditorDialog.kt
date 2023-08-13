@@ -1,8 +1,8 @@
 package de.fabmax.kool.editor.ui
 
-import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.editor.KoolEditor
+import de.fabmax.kool.editor.PlatformFunctions
 import de.fabmax.kool.input.KeyEvent
 import de.fabmax.kool.input.KeyboardInput
 import de.fabmax.kool.modules.ui2.*
@@ -200,12 +200,9 @@ class BrowsePathDialog(title: String, path: String, val hint: String, val onEnte
                 .margin(start = sizes.largeGap)
                 .onClick {
                     launchOnMainThread {
-                        val result = Assets.loadFileByUser()
-                        if (result.isNotEmpty()) {
-                            text.set(result[0].file.path)
-                        }
+                        PlatformFunctions.chooseFilePath()?.let { text.set(it) }
                     }
-            }
+                }
         }
     }
 }

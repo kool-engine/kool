@@ -1,13 +1,19 @@
 package de.fabmax.kool.editor
 
+import de.fabmax.kool.Assets
 import de.fabmax.kool.KeyValueStore
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.editor.data.ProjectData
+import de.fabmax.kool.editor.model.EditorProject
 import de.fabmax.kool.editor.ui.OkCancelBrowsePathDialog
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logW
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import java.io.File
 import java.io.IOException
 
@@ -50,6 +56,24 @@ actual object PlatformFunctions {
         return true
     }
 
+    actual fun loadProjectModel(path: String): EditorProject {
+        val projFile = File(path)
+        return try {
+            val projData = Json.decodeFromString<ProjectData>(projFile.readText())
+            EditorProject(projData)
+        } catch (e: Exception) {
+            logW { "Project not found at ${projFile.absolutePath}, creating new empty project" }
+            EditorState.newProject()
+        }
+    }
+
+    actual fun saveProjectModel(path: String) {
+        val modelPath = File(path)
+        modelPath.parentFile.mkdirs()
+        modelPath.writeText(EditorState.jsonCodec.encodeToString(EditorState.projectModel.projectData))
+        logD { "Saved project to ${modelPath.absolutePath}" }
+    }
+
     actual fun editBehavior(behaviorSourcePath: String) {
         val behaviorPath = File(behaviorSourcePath).canonicalPath
         logD { "Edit behavior source: $behaviorPath" }
@@ -71,5 +95,10 @@ actual object PlatformFunctions {
         } catch (e: Exception) {
             logE { "Failed launching IntelliJ: ${e.message}" }
         }
+    }
+
+    actual suspend fun chooseFilePath(): String? {
+        val result = Assets.loadFileByUser()
+        return result.getOrNull(0)?.file?.path
     }
 }
