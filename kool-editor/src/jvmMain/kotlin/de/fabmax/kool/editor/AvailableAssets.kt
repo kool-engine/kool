@@ -31,7 +31,7 @@ actual class AvailableAssets actual constructor(assetsBaseDir: String, val brows
         } else if (a.type != AppAssetType.Directory && b.type == AppAssetType.Directory) {
             1
         } else {
-            a.path.compareTo(b.path)
+            a.path.lowercase().compareTo(b.path.lowercase())
         }
     }
 
@@ -73,7 +73,7 @@ actual class AvailableAssets actual constructor(assetsBaseDir: String, val brows
     private fun importAsset(targetPath: String, assetFile: LoadableFile) {
         logD { "Importing asset file: ${assetFile.selectionPath}" }
 
-        val dest = Path(assetsDir.pathString, targetPath, assetFile.selectionPath)
+        val dest = Path(assetsDir.pathString, targetPath.removePrefix(browserSubDir), assetFile.selectionPath)
         try {
             dest.parent.createDirectories()
             Files.copy(assetFile.file.toPath(), dest)

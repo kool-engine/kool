@@ -836,19 +836,22 @@ fun UiScope.iconTextButton(
     tint: Color = Color.WHITE,
     width: Dimension = FitContent,
     margin: Dp = sizes.smallGap,
+    bgColor: Color = colors.elevatedComponentBg,
+    bgColorHovered: Color = colors.elevatedComponentBg,
+    bgColorClicked: Color = colors.elevatedComponentBg,
     boxBlock: (UiScope.() -> Unit)? = null,
     onClick: (PointerEvent) -> Unit
 ) = Box {
     var isHovered by remember(false)
     var isClickFeedback by remember(false)
 
-    val bgColor = when {
-        isClickFeedback -> colors.elevatedComponentClickFeedback
-        toggleState || isHovered -> colors.elevatedComponentBgHovered
-        else -> colors.elevatedComponentBg
+    val color = when {
+        isClickFeedback -> bgColorClicked
+        toggleState || isHovered -> bgColorHovered
+        else -> bgColor
     }
 
-    modifier.background(RoundRectBackground(bgColor, sizes.smallGap))
+    modifier.background(RoundRectBackground(color, sizes.smallGap))
 
     modifier
         .align(AlignmentX.Center, AlignmentY.Center)
@@ -871,13 +874,15 @@ fun UiScope.iconTextButton(
             modifier
                 .alignY(AlignmentY.Center)
                 .iconImage(icon, tint)
-                .margin(end = sizes.gap)
+                .margin(horizontal = sizes.gap)
         }
         Text(text) {
             modifier
                 .alignY(AlignmentY.Center)
                 .textColor(tint)
+                .margin(horizontal = sizes.gap)
         }
+        Box(width = sizes.gap) { }
     }
 
     tooltip?.let {

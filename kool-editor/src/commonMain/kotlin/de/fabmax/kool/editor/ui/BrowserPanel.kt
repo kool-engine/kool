@@ -31,7 +31,7 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
 
     override val windowSurface = editorPanelWithPanelBar {
         Column(Grow.Std, Grow.Std) {
-            editorTitleBar(windowDockable, icon)
+            editorTitleBar(windowDockable, icon) { titleBar() }
             Row(Grow.Std, Grow.Std) {
                 refreshBrowserItems()
 
@@ -41,6 +41,8 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
             }
         }
     }
+
+    protected open fun UiScope.titleBar() { }
 
     private fun UiScope.treeWidthHandle() = Row(height = Grow.Std) {
         var startDragWidth by remember(treePanelSize.value)

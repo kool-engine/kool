@@ -4,9 +4,51 @@ import de.fabmax.kool.Assets
 import de.fabmax.kool.FileFilterItem
 import de.fabmax.kool.editor.AppAssetType
 import de.fabmax.kool.editor.AssetItem
-import de.fabmax.kool.modules.ui2.UiScope
+import de.fabmax.kool.math.Vec2f
+import de.fabmax.kool.modules.ui2.*
 
 class AssetBrowser(ui: EditorUi) : BrowserPanel("Asset Browser", IconMap.medium.PICTURE, ui) {
+
+    override fun UiScope.titleBar() {
+        Row {
+            val popup = remember { ContextPopupMenu<BrowserItem>() }
+            var popupPos by remember(Vec2f.ZERO)
+
+            // register drag callbacks, to block window drag
+            modifier
+                .onDragStart {  }
+                .alignY(AlignmentY.Center)
+
+            divider(colors.strongDividerColor, marginStart = sizes.largeGap, marginEnd = sizes.largeGap, verticalMargin = sizes.gap)
+
+            val button = iconTextButton(
+                icon = IconMap.small.PLUS,
+                text = "Import Assets",
+                bgColor = colors.componentBg,
+                bgColorHovered = colors.componentBgHovered,
+                bgColorClicked = colors.elevatedComponentBgHovered,
+                width = sizes.baseSize * 4
+            ) {
+                if (!popup.isVisible.use()) {
+                    selectedDirectory.use()?.let {
+                        popup.show(popupPos, makeImportAssetsMenu(), it)
+                    }
+                } else {
+                    popup.hide()
+                }
+            }
+
+            popupPos = Vec2f(button.uiNode.leftPx, button.uiNode.bottomPx)
+            popup()
+        }
+    }
+
+    private fun makeImportAssetsMenu(): SubMenuItem<BrowserItem> = SubMenuItem {
+        importAssetsItem("Textures", filterListTextures)
+        importAssetsItem("Models", filterListModels)
+        importAssetsItem("Other", emptyList())
+    }
+
     override fun UiScope.collectBrowserDirs(traversedPaths: MutableSet<String>) {
         editor.availableAssets.rootAssets.use().forEach {
             traverseAssetItem(0, it, traversedPaths, true)
