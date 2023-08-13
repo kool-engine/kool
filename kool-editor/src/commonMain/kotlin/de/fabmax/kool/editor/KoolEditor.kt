@@ -72,7 +72,7 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
         override fun onWindowCloseRequest(ctx: KoolContext): Boolean {
             EditorState.saveProject()
             saveEditorConfig()
-            return PlatformCallbacks.onWindowCloseRequest(ctx)
+            return PlatformFunctions.onWindowCloseRequest(ctx)
         }
 
         override fun onFileDrop(droppedFiles: List<LoadableFile>) {
@@ -100,7 +100,7 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
         registerAutoSaveOnFocusLoss()
         appLoader.appReloadListeners += AppReloadListener { handleAppReload(it) }
 
-        PlatformCallbacks.onEditorStarted(ctx)
+        PlatformFunctions.onEditorStarted(ctx)
         appLoader.reloadApp()
     }
 
@@ -109,6 +109,13 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
             it.isVisible = isVisible
         }
         ui.sceneView.isShowToolbar.set(isVisible)
+    }
+
+    fun editBehaviorSource(behavior: AppBehavior) = editBehaviorSource(behavior.qualifiedName)
+
+    fun editBehaviorSource(behaviorClassName: String) {
+        val sourcePath = "${paths.commonSrcPath}/${behaviorClassName.replace('.', '/')}.kt"
+        PlatformFunctions.editBehavior(sourcePath)
     }
 
     private fun registerAutoSaveOnFocusLoss() {

@@ -117,6 +117,7 @@ object IconMap {
         val SEARCH = IconProvider(this, iconMap.IconImageProvider(16, 2))
         val PLUS = IconProvider(this, iconMap.IconImageProvider(17, 2))
         val MINUS = IconProvider(this, iconMap.IconImageProvider(18, 2))
+        val EDIT = IconProvider(this, iconMap.IconImageProvider(19, 2))
     }
 }
 

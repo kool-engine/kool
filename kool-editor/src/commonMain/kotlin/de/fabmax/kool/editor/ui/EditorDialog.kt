@@ -1,5 +1,6 @@
 package de.fabmax.kool.editor.ui
 
+import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.input.KeyEvent
@@ -7,6 +8,7 @@ import de.fabmax.kool.input.KeyboardInput
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.modules.ui2.docking.UiDockable
 import de.fabmax.kool.util.launchDelayed
+import de.fabmax.kool.util.launchOnMainThread
 
 abstract class EditorDialog(name: String, val ui: EditorUi = KoolEditor.instance.ui, isResizable: Boolean = false) {
 
@@ -156,7 +158,6 @@ fun OkCancelTextDialog(
     show()
 }
 
-
 fun OkCancelEnterTextDialog(
     title: String,
     text: String = "",
@@ -164,6 +165,58 @@ fun OkCancelEnterTextDialog(
     onCancel: (() -> Unit)? = null,
     onOk: (String) -> Unit
 ) = EnterTextDialog(title, text, hint, onOk).apply {
+    launchDelayed(1) { dialog.isFocused.set(true) }
+    addOkAction {
+        onOk(this.text.value)
+        hide()
+    }
+    addCancelAction(action = onCancel)
+    show()
+}
+
+class BrowsePathDialog(title: String, path: String, val hint: String, val onEnterPressed: (String) -> Unit) : EditorDialog(title) {
+    val text = mutableStateOf(path)
+    override fun UiScope.dialogContent() = Row(width = Grow.Std) {
+        TextField(text.use()) {
+            defaultTextfieldStyle()
+            modifier
+                .alignY(AlignmentY.Center)
+                .width(Grow.Std)
+                .hint(hint)
+                .onChange { text.set(it) }
+                .onEnterPressed {
+                    onEnterPressed(it)
+                    hide()
+                }
+            remember { surface.requestFocus(this) }
+        }
+        Button("...") {
+            defaultButtonStyle()
+
+            Tooltip("Browse")
+
+            modifier
+                .alignY(AlignmentY.Center)
+                .margin(start = sizes.largeGap)
+                .onClick {
+                    launchOnMainThread {
+                        val result = Assets.loadFileByUser()
+                        if (result.isNotEmpty()) {
+                            text.set(result[0].file.path)
+                        }
+                    }
+            }
+        }
+    }
+}
+
+fun OkCancelBrowsePathDialog(
+    title: String,
+    path: String = "",
+    hint: String = "",
+    onCancel: (() -> Unit)? = null,
+    onOk: (String) -> Unit
+) = BrowsePathDialog(title, path, hint, onOk).apply {
     launchDelayed(1) { dialog.isFocused.set(true) }
     addOkAction {
         onOk(this.text.value)

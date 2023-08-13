@@ -3,9 +3,15 @@ package de.fabmax.kool.editor
 import de.fabmax.kool.KeyValueStore
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.editor.ui.OkCancelBrowsePathDialog
 import de.fabmax.kool.platform.Lwjgl3Context
+import de.fabmax.kool.util.logD
+import de.fabmax.kool.util.logE
+import de.fabmax.kool.util.logW
+import java.io.File
+import java.io.IOException
 
-actual object PlatformCallbacks {
+actual object PlatformFunctions {
 
     actual fun onEditorStarted(ctx: KoolContext) {
         ctx as Lwjgl3Context
@@ -44,4 +50,26 @@ actual object PlatformCallbacks {
         return true
     }
 
+    actual fun editBehavior(behaviorSourcePath: String) {
+        val behaviorPath = File(behaviorSourcePath).canonicalPath
+        logD { "Edit behavior source: $behaviorPath" }
+
+        val ideaPath = KeyValueStore.loadString("editor.idea.path") ?: "idea64"
+
+        try {
+            ProcessBuilder()
+                .command(ideaPath, behaviorSourcePath)
+                .start()
+        } catch (e: IOException) {
+            logW { "IntelliJ executable not found" }
+
+            OkCancelBrowsePathDialog("Select IntelliJ Path (idea64)", "idea64", "path/to/idea64") { path ->
+                KeyValueStore.storeString("editor.idea.path", path)
+                editBehavior(behaviorSourcePath)
+            }
+
+        } catch (e: Exception) {
+            logE { "Failed launching IntelliJ: ${e.message}" }
+        }
+    }
 }

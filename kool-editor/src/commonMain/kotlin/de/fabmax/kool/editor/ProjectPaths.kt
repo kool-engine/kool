@@ -18,11 +18,11 @@ data class ProjectPaths(
      */
     val assetsSubDir: String = "assets",
 
-    val srcPaths: Set<String> = setOf(
-        "${projectDir}/src/commonMain/kotlin",
-        "${projectDir}/src/jsMain/kotlin",
-        "${projectDir}/src/jvmMain/kotlin"
-    ),
+    val commonSrcPath: String = "${projectDir}/src/commonMain/kotlin",
+    val jvmSrcPath: String = "${projectDir}/src/jvmMain/kotlin",
+    val jsSrcPath: String = "${projectDir}/src/jsMain/kotlin",
+    val srcPaths: Set<String> = setOf(commonSrcPath, jvmSrcPath, jsSrcPath),
+
     val jsAppBehaviorBindingsPath: String? = "$projectDir/src/jsMain/kotlin/BehaviorBindings.kt",
 
     val classPath: String = "${projectDir}/build/classes/kotlin/jvm/main",

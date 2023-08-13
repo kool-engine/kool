@@ -85,6 +85,8 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
 
     protected abstract fun makeItemPopupMenu(item: BrowserItem, isTreeItem: Boolean): SubMenuItem<BrowserItem>?
 
+    protected open fun onItemDoubleClick(item: BrowserItem) { }
+
     fun UiScope.treeView() = Box(width = treePanelSize.use(), height = Grow.Std) {
         if (selectedDirectory.value == null) {
             selectDefaultDir()
@@ -223,9 +225,13 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
         modifier
             .onClick { evt ->
                 if (evt.pointer.isLeftButtonClicked) {
-                    if (item is BrowserDir && evt.pointer.leftButtonRepeatedClickCount == 2) {
-                        selectedDirectory.value?.isExpanded?.set(true)
-                        selectedDirectory.set(item)
+                    if (evt.pointer.leftButtonRepeatedClickCount == 2) {
+                        if (item is BrowserDir) {
+                            selectedDirectory.value?.isExpanded?.set(true)
+                            selectedDirectory.set(item)
+                        } else {
+                            onItemDoubleClick(item)
+                        }
                     }
                 } else if (evt.pointer.isRightButtonClicked) {
                     makeItemPopupMenu(item, false)?.let { itemPopupMenu.show(evt.screenPosition, it, item) }
@@ -286,5 +292,5 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
 
     class BrowserMaterialItem(level: Int, val material: MaterialData) : BrowserItem(level, material.name, "/materials/${material.name}")
 
-    class BrowserBehaviorItem(level: Int, script: AppBehavior) : BrowserItem(level, script.prettyName, "/paths/${script.qualifiedName}")
+    class BrowserBehaviorItem(level: Int, val behavior: AppBehavior) : BrowserItem(level, behavior.prettyName, "/paths/${behavior.qualifiedName}")
 }

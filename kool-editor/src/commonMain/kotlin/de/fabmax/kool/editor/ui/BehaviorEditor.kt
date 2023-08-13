@@ -2,6 +2,7 @@ package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.editor.BehaviorProperty
 import de.fabmax.kool.editor.EditorState
+import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.actions.SetBehaviorPropertyAction
 import de.fabmax.kool.editor.components.BehaviorComponent
 import de.fabmax.kool.editor.data.PropertyValue
@@ -17,7 +18,19 @@ class BehaviorEditor(component: BehaviorComponent) : ComponentEditor<BehaviorCom
 
     private val behaviorName: String get() = camelCaseToWords(component.behaviorClassNameState.value)
 
-    override fun UiScope.compose() = componentPanel(behaviorName, IconMap.small.CODE, ::removeComponent) {
+    override fun UiScope.compose() = componentPanel(
+        title = behaviorName,
+        imageIcon = IconMap.small.CODE,
+        onRemove = ::removeComponent,
+
+        headerContent = {
+            iconButton(IconMap.small.EDIT, "Edit source code") {
+                KoolEditor.instance.editBehaviorSource(component.componentData.behaviorClassName)
+            }
+            Box(width = sizes.smallGap) {  }
+        }
+    ) {
+
         Column(width = Grow.Std) {
             modifier
                 .padding(horizontal = sizes.gap)
@@ -28,17 +41,17 @@ class BehaviorEditor(component: BehaviorComponent) : ComponentEditor<BehaviorCom
                 component.runInEditMode.set(it)
             }
 
-            val script = component.behaviorInstance.use() ?: return@Column
-            val scriptProperties = EditorState.loadedApp.use()?.behaviorClasses?.get(script::class)?.properties
-            if (scriptProperties == null) {
+            val behavior = component.behaviorInstance.use() ?: return@Column
+            val behaviorProperties = EditorState.loadedApp.use()?.behaviorClasses?.get(behavior::class)?.properties
+            if (behaviorProperties == null) {
                 logE { "Unable to get KoolBehavior class for behavior ${component.behaviorInstance.value}" }
             }
 
-            if (!scriptProperties.isNullOrEmpty()) {
+            if (!behaviorProperties.isNullOrEmpty()) {
                 menuDivider()
             }
 
-            scriptProperties?.forEach { prop ->
+            behaviorProperties?.forEach { prop ->
                 when (prop.type.classifier) {
                     Double::class -> doubleEditor(prop)
                     Vec2d::class -> vec2dEditor(prop)

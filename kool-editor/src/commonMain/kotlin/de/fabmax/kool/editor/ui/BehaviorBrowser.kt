@@ -1,6 +1,7 @@
 package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.editor.EditorState
+import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.modules.ui2.UiScope
 
 class BehaviorBrowser(ui: EditorUi) : BrowserPanel("Behavior Browser", IconMap.medium.CODE, ui) {
@@ -23,6 +24,18 @@ class BehaviorBrowser(ui: EditorUi) : BrowserPanel("Behavior Browser", IconMap.m
     }
 
     override fun makeItemPopupMenu(item: BrowserItem, isTreeItem: Boolean): SubMenuItem<BrowserItem>? {
-        return null
+        return if (item is BrowserBehaviorItem) {
+            SubMenuItem {
+                item("Edit") { KoolEditor.instance.editBehaviorSource(item.behavior) }
+            }
+        } else {
+            null
+        }
+    }
+
+    override fun onItemDoubleClick(item: BrowserItem) {
+        if (item is BrowserBehaviorItem) {
+            KoolEditor.instance.editBehaviorSource(item.behavior)
+        }
     }
 }
