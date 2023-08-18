@@ -10,6 +10,7 @@ import de.fabmax.kool.demo.helloworld.HelloWorldDemo
 import de.fabmax.kool.demo.pbr.PbrDemo
 import de.fabmax.kool.demo.physics.collision.CollisionDemo
 import de.fabmax.kool.demo.physics.joints.JointsDemo
+import de.fabmax.kool.demo.physics.manybodies.ManyBodiesDemo
 import de.fabmax.kool.demo.physics.manyvehicles.ManyVehiclesDemo
 import de.fabmax.kool.demo.physics.ragdoll.RagdollDemo
 import de.fabmax.kool.demo.physics.terrain.TerrainDemo
@@ -71,6 +72,7 @@ object Demos {
         entry("hellogltf", "Hello glTF") { HelloGltfDemo() }
         entry("hellobuffers", "Hello RenderToTexture") { HelloRenderToTextureDemo() }
         entry("hello-ui", "Hello UI") { HelloUiDemo() }
+        entry("manybodies", "Many Bodies") { ManyBodiesDemo() }
         entry("manyvehicles", "Many Vehicles") { ManyVehiclesDemo() }
         entry("ksl-test", "Ksl Shading Test") { KslShaderTest() }
         entry("gizmo-test", "Gizmo Test") { GizmoTest() }

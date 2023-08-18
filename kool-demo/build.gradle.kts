@@ -56,6 +56,12 @@ kotlin {
                 runtimeOnly(DepsJvm.lwjglNatives("stb"))
 
                 runtimeOnly(DepsJvm.physxJniRuntime)
+
+                // use this for CUDA acceleration of physics demos (remove above physxJniRuntime dependency)
+                //   requires CUDA enabled physx-jni library in directory kool-demo/libs
+                //   grab the library from GitHub releases: https://github.com/fabmax/physx-jni/releases
+                //   also make sure to use the same version as used by kool-physics
+                //runtimeOnly(files("${projectDir}/libs/physx-jni-natives-windows-cuda-2.2.1.jar"))
             }
         }
 

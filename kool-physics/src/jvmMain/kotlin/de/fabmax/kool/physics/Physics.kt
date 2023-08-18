@@ -3,6 +3,7 @@ package de.fabmax.kool.physics
 import de.fabmax.kool.util.logI
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import org.lwjgl.system.MemoryStack
 import physx.PxTopLevelFunctions
 import physx.common.*
 import physx.cooking.PxCookingParams
@@ -42,6 +43,7 @@ actual object Physics : CoroutineScope {
 
     // default PhysX facilities
     val foundation: PxFoundation
+    val cudaManager: PxCudaContextManager?
     val physics: PxPhysics
     val cookingParams: PxCookingParams
 
@@ -49,6 +51,14 @@ actual object Physics : CoroutineScope {
         val version = PxTopLevelFunctions.getPHYSICS_VERSION()
         val allocator = PxDefaultAllocator()
         foundation = PxTopLevelFunctions.CreateFoundation(version, allocator, KoolErrorCallback())
+
+        MemoryStack.stackPush().use { mem ->
+            val desc = PxCudaContextManagerDesc.createAt(mem, MemoryStack::nmalloc)
+            cudaManager = PxCudaTopLevelFunctions.CreateCudaContextManager(foundation, desc)
+            if (cudaManager == null) {
+                logI { "CUDA acceleration for PhysX not available (any internal error message complaining about PhysX GPU library is fine)" }
+            }
+        }
 
         val pvd: PxPvd? = null
 //        val pvd = PxTopLevelFunctions.CreatePvd(foundation)
