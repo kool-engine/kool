@@ -10,7 +10,6 @@ import de.fabmax.kool.scene.geometry.Usage
 import de.fabmax.kool.util.logE
 import org.lwjgl.opengl.GL33.*
 import org.lwjgl.system.MemoryStack
-import org.lwjgl.system.MemoryUtil
 
 class CompiledShader(val prog: Int, pipeline: Pipeline, val renderBackend: GlRenderBackend, val ctx: Lwjgl3Context) {
 
@@ -73,7 +72,7 @@ class CompiledShader(val prog: Int, pipeline: Pipeline, val renderBackend: GlRen
 
         MemoryStack.stackPush().use { stack ->
             val uniformNames = desc.uniforms.map {
-                if (it.size > 1) MemoryUtil.memASCII("${it.name}[0]") else MemoryUtil.memASCII(it.name)
+                if (it.size > 1) stack.ASCII("${it.name}[0]") else stack.ASCII(it.name)
             }.toTypedArray()
             val namePointers = stack.pointers(*uniformNames)
             glGetUniformIndices(prog, namePointers, indices)

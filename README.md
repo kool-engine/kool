@@ -6,12 +6,17 @@ A multi-platform OpenGL / Vulkan based game engine that works on Desktop Java an
 WebGL2.
 
 I started working on a graphical scene editor, which should make it much easier to create new projects with this engine.
-However, the editor is still in a super early state and not very useful yet. So, for now, this is very much a code-only
+However, the editor is still in an early state and not very useful yet (In case you are curious you can start it by
+running the gradle task `:kool-editor-template:runEditor`). Apart from that, this is very much a code-only
 game engine. I recommend taking a look at the demos listed below in case you are curious (all demo source code is
 available in the `kool-demo` subproject). The library is also published on maven central, see [below](#usage).
 
 I also made an actual game with this: [Blocks and Belts](https://fabmaxx.itch.io/blocks-and-belts).
 Give it a try (it's free)!
+
+## Get In Touch
+
+Feel free to join the [Discord Server](https://discord.gg/GvsJj2Pk3K)!
 
 ## Demos
 - [Island](https://fabmax.github.io/kool/kool-js/?demo=phys-terrain): Height-map based
