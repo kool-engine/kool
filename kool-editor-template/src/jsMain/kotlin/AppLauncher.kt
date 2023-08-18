@@ -10,7 +10,7 @@ fun main() = KoolApplication { ctx ->
     BehaviorLoader.appBehaviorLoader = BehaviorBindings
     //App().launchStandalone(ctx)
 
-    val paths = ProjectPaths(".", gradleRootDir = "", gradleBuildTask = "")
+    val paths = ProjectPaths(".", gradleRootDir = "", gradleBuildTask = "", assetsBasePath = ".")
     LoadedAppProxy.loadedApp = LoadedApp(App(), emptyMap())
     KoolEditor(ctx, paths)
 }

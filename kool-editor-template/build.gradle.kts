@@ -76,6 +76,22 @@ kotlin {
     }
 }
 
+tasks["jsBrowserDistribution"].doLast {
+    // collect assets required to run the editor from various project resource dirs (fonts, icons, etc.)
+    copy {
+        from("$rootDir/kool-core/src/jvmMain/resources/")
+        into("${projectDir}/jsDist")
+    }
+    copy {
+        from("$rootDir/kool-editor/src/commonMain/resources/")
+        into("${projectDir}/jsDist")
+    }
+    copy {
+        from("$rootDir/kool-editor/src/jsMain/resources/")
+        into("${projectDir}/jsDist")
+    }
+}
+
 configurations.filter { "editor" in it.name }.forEach {
     // editor related configurations need some custom attribute to distinguish them from regular jvm configs
     it.attributes.attribute(Attribute.of("de.fabmax.kool-editor", String::class.java), "editor")
