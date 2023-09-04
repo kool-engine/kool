@@ -17,8 +17,16 @@ expect class AppLoadService(paths: ProjectPaths) {
     suspend fun loadApp(): LoadedApp
 }
 
-fun interface AppReloadListener {
-    fun onAppReloaded(loadedApp: LoadedApp)
+interface AppReloadListener {
+    suspend fun onAppReloaded(loadedApp: LoadedApp)
+}
+
+inline fun AppReloadListener(crossinline onAppReloaded: suspend (LoadedApp) -> Unit): AppReloadListener {
+    return object : AppReloadListener {
+        override suspend fun onAppReloaded(loadedApp: LoadedApp) {
+            onAppReloaded(loadedApp)
+        }
+    }
 }
 
 class LoadedApp(val app: EditorAwareApp, val behaviorClasses: Map<KClass<*>, AppBehavior>)

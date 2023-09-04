@@ -17,7 +17,8 @@ import kotlinx.serialization.json.Json
 
 object EditorState {
 
-    val projectModel: EditorProject = loadProjectModel()
+    val projectModel = PlatformFunctions.loadProjectModel(KoolEditor.instance.paths.projectFile) ?: newProject()
+
     val loadedApp = mutableStateOf<LoadedApp?>(null)
 
     val activeScene = mutableStateOf<SceneModel?>(null)
@@ -108,8 +109,6 @@ object EditorState {
             }
         }
     )
-
-    private fun loadProjectModel(): EditorProject = PlatformFunctions.loadProjectModel(KoolEditor.instance.paths.projectFile)
 
     fun saveProject() = PlatformFunctions.saveProjectModel(KoolEditor.instance.paths.projectFile)
 

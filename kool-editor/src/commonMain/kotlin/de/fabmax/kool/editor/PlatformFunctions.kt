@@ -10,7 +10,7 @@ expect object PlatformFunctions {
 
     fun editBehavior(behaviorSourcePath: String)
 
-    fun loadProjectModel(path: String): EditorProject
+    fun loadProjectModel(path: String): EditorProject?
 
     fun saveProjectModel(path: String)
 

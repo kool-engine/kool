@@ -56,14 +56,14 @@ actual object PlatformFunctions {
         return true
     }
 
-    actual fun loadProjectModel(path: String): EditorProject {
+    actual fun loadProjectModel(path: String): EditorProject? {
         val projFile = File(path)
         return try {
             val projData = Json.decodeFromString<ProjectData>(projFile.readText())
             EditorProject(projData)
         } catch (e: Exception) {
             logW { "Project not found at ${projFile.absolutePath}, creating new empty project" }
-            EditorState.newProject()
+            return null
         }
     }
 

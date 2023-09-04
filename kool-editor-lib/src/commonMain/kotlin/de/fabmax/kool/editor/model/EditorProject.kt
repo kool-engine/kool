@@ -120,9 +120,9 @@ class EditorProject(val projectData: ProjectData) {
     }
 
     companion object {
-        suspend fun loadFromAssets(): EditorProject? {
+        suspend fun loadFromAssets(path: String = "kool-project.json"): EditorProject? {
             return try {
-                val json = Assets.loadBlobAsset("kool-project.json").toArray().decodeToString()
+                val json = Assets.loadBlobAsset(path).toArray().decodeToString()
                 val projectData: ProjectData = Json.decodeFromString(json)
                 EditorProject(projectData)
             } catch (e: Exception) {
