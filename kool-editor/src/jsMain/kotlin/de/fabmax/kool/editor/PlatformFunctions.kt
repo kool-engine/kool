@@ -8,10 +8,12 @@ import de.fabmax.kool.util.logE
 actual object PlatformFunctions {
 
     private var projectModel: EditorProject? = null
+    var loadedApp: LoadedApp? = null
 
-    suspend fun initPlatform(projModelPath: String) {
+    suspend fun initPlatform(projModelPath: String, loadedApp: LoadedApp) {
         Assets.assetsBasePath = "."
         projectModel = EditorProject.loadFromAssets(projModelPath)
+        this.loadedApp = loadedApp
     }
 
     actual fun onEditorStarted(ctx: KoolContext) { }

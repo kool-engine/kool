@@ -1,6 +1,9 @@
 import de.fabmax.kool.app.SampleRotationAnimator
+import de.fabmax.kool.editor.AppBehavior
+import de.fabmax.kool.editor.BehaviorProperty
 import de.fabmax.kool.editor.api.BehaviorLoader
 import de.fabmax.kool.editor.api.KoolBehavior
+import kotlin.reflect.KClass
 
 // GENERATED FILE! Do not edit manually ////////////////////////////
 
@@ -41,4 +44,15 @@ object BehaviorBindings : BehaviorLoader.AppBehaviorLoader {
             else -> throw IllegalArgumentException("Unknown parameter $propertyName for behavior class ${behavior::class}")
         }
     }
+
+    val behaviorClasses = mapOf<KClass<*>, AppBehavior>(
+        SampleRotationAnimator::class to AppBehavior(
+            simpleName = "SampleRotationAnimator",
+            qualifiedName = "de.fabmax.kool.app.SampleRotationAnimator",
+            properties = listOf(
+                BehaviorProperty("rotationSpeed", de.fabmax.kool.math.Vec3f::class, "Rotation speed:", -360.0, 360.0),
+                BehaviorProperty("speedMulti", Float::class, "Speed multiplier:", -10.0, 10.0),
+            )
+        ),
+    )
 }

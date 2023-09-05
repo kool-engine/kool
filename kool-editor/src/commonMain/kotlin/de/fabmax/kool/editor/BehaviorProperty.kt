@@ -1,11 +1,11 @@
 package de.fabmax.kool.editor
 
 import de.fabmax.kool.editor.components.BehaviorComponent
-import kotlin.reflect.KType
+import kotlin.reflect.KClass
 
 class BehaviorProperty(
     val name: String,
-    val type: KType,
+    val type: KClass<*>,
     val label: String,
     val min: Double,
     val max: Double

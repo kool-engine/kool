@@ -52,7 +52,7 @@ class BehaviorEditor(component: BehaviorComponent) : ComponentEditor<BehaviorCom
             }
 
             behaviorProperties?.forEach { prop ->
-                when (prop.type.classifier) {
+                when (prop.type) {
                     Double::class -> doubleEditor(prop)
                     Vec2d::class -> vec2dEditor(prop)
                     Vec3d::class -> vec3dEditor(prop)

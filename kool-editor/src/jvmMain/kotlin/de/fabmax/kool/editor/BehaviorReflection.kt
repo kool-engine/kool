@@ -20,7 +20,7 @@ object BehaviorReflection {
                         && editableTypes.contains(it.setter.parameters[1].type.classifier)
             }
             .map {
-                val propertyType = (it as KMutableProperty<*>).setter.parameters[1].type
+                val propertyType = (it as KMutableProperty<*>).setter.parameters[1].type.classifier as KClass<*>
 
                 val info = it.annotations.filterIsInstance<EditorInfo>().firstOrNull()
                 val label = if (info != null && info.label.isNotBlank()) info.label else it.name

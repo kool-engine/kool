@@ -32,6 +32,7 @@ object JsAppBehaviorBindingsGenerator {
 
         source.appendPropertyGetters(appBehaviors)
         source.appendPropertySetters(appBehaviors)
+        source.appendBehaviorMap(appBehaviors)
         source.appendLine("}")
 
         val file = File(filePath)
@@ -65,35 +66,58 @@ object JsAppBehaviorBindingsGenerator {
 
     private fun StringBuilder.appendPropertyGetters(appBehaviors: List<AppBehavior>) {
         appBehaviors.forEach { behavior ->
-            val properties = behavior.properties
-                .joinToString("") { "\n                        \"${it.name}\" -> behavior.${it.name}" }
+            val properties = behavior.properties.joinToString("") {
+                "\n            \"${it.name}\" -> behavior.${it.name}"
+            }
             appendLine()
             appendLine("""
-                private fun get${behavior.simpleName}Property(behavior: ${behavior.simpleName}, propertyName: String): Any {
-                    return when (propertyName) {$properties
-                        else -> throw IllegalArgumentException("Unknown parameter ${"\$"}propertyName for behavior class ${"\$"}{behavior::class}")
-                    }
-                }
-            """.trimIndent().prependIndent("    "))
+                |    private fun get${behavior.simpleName}Property(behavior: ${behavior.simpleName}, propertyName: String): Any {
+                |        return when (propertyName) {$properties
+                |            else -> throw IllegalArgumentException("Unknown parameter ${"\$"}propertyName for behavior class ${"\$"}{behavior::class}")
+                |        }
+                |    }
+            """.trimMargin())
         }
     }
 
     private fun StringBuilder.appendPropertySetters(appBehaviors: List<AppBehavior>) {
         appBehaviors.forEach { behavior ->
-            val properties = behavior.properties
-                .joinToString("") { "\n                        \"${it.name}\" -> behavior.${it.name} = value as ${it.type.toString().removePrefix("kotlin.")}" }
+            val properties = behavior.properties.joinToString("") {
+                "\n            \"${it.name}\" -> behavior.${it.name} = value as ${it.type.qualifiedName!!.removePrefix("kotlin.")}"
+            }
             appendLine()
             appendLine("""
-                private fun set${behavior.simpleName}Property(behavior: ${behavior.simpleName}, propertyName: String, value: Any?) {
-                    when (propertyName) {$properties
-                        else -> throw IllegalArgumentException("Unknown parameter ${"\$"}propertyName for behavior class ${"\$"}{behavior::class}")
-                    }
-                }
-            """.trimIndent().prependIndent("    "))
+                |    private fun set${behavior.simpleName}Property(behavior: ${behavior.simpleName}, propertyName: String, value: Any?) {
+                |        when (propertyName) {$properties
+                |            else -> throw IllegalArgumentException("Unknown parameter ${"\$"}propertyName for behavior class ${"\$"}{behavior::class}")
+                |        }
+                |    }
+            """.trimMargin())
         }
     }
 
+    private fun StringBuilder.appendBehaviorMap(appBehaviors: List<AppBehavior>) {
+        appendLine("\n    val behaviorClasses = mapOf<KClass<*>, AppBehavior>(")
+        appBehaviors.forEach { behavior ->
+            val properties = behavior.properties.joinToString("") {
+                "\n                BehaviorProperty(\"${it.name}\", ${it.type.qualifiedName!!.removePrefix("kotlin.")}::class, \"${it.label}\", ${it.min}, ${it.max}),"
+            }
+            appendLine("""
+                |        ${behavior.simpleName}::class to AppBehavior(
+                |            simpleName = "${behavior.simpleName}",
+                |            qualifiedName = "${behavior.qualifiedName}",
+                |            properties = listOf($properties
+                |            )
+                |        ),
+            """.trimMargin())
+        }
+        appendLine("    )")
+    }
+
     private val defaultImports = listOf(
+        "kotlin.reflect.KClass",
+        "de.fabmax.kool.editor.AppBehavior",
+        "de.fabmax.kool.editor.BehaviorProperty",
         "de.fabmax.kool.editor.api.KoolBehavior",
         "de.fabmax.kool.editor.api.BehaviorLoader"
     )

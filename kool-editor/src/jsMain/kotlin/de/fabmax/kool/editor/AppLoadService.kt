@@ -1,6 +1,6 @@
 package de.fabmax.kool.editor
 
-actual class AppLoadService actual constructor(val paths: ProjectPaths) {
+actual class AppLoadService actual constructor(paths: ProjectPaths) {
     actual var hasAppChanged = false
         private set
 
@@ -9,10 +9,6 @@ actual class AppLoadService actual constructor(val paths: ProjectPaths) {
     actual suspend fun buildApp() { }
 
     actual suspend fun loadApp(): LoadedApp {
-        return LoadedAppProxy.loadedApp ?: throw IllegalStateException("LoadedAppProxy.loadedApp not initialized")
+        return PlatformFunctions.loadedApp ?: throw IllegalStateException("PlatformFunctions.initPlatform() not called")
     }
-}
-
-object LoadedAppProxy {
-    var loadedApp: LoadedApp? = null
 }

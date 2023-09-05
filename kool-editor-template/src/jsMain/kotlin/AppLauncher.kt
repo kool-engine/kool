@@ -2,7 +2,10 @@ import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolApplication
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.app.App
-import de.fabmax.kool.editor.*
+import de.fabmax.kool.editor.KoolEditor
+import de.fabmax.kool.editor.LoadedApp
+import de.fabmax.kool.editor.PlatformFunctions
+import de.fabmax.kool.editor.ProjectPaths
 import de.fabmax.kool.editor.api.BehaviorLoader
 
 fun main() = KoolApplication { ctx ->
@@ -17,10 +20,8 @@ private fun launchApp(ctx: KoolContext) {
 
 private fun launchEditor(ctx: KoolContext) {
     Assets.launch {
-        PlatformFunctions.initPlatform("kool-project.json")
-
+        PlatformFunctions.initPlatform("kool-project.json", LoadedApp(App(), BehaviorBindings.behaviorClasses))
         BehaviorLoader.appBehaviorLoader = BehaviorBindings
-        LoadedAppProxy.loadedApp = LoadedApp(App(), emptyMap())
 
         val paths = ProjectPaths(
             projectDir = ".",
