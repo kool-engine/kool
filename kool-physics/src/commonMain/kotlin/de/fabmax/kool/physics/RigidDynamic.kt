@@ -14,4 +14,7 @@ expect class RigidDynamic(mass: Float = 1f, pose: Mat4f = Mat4f(), isKinematic: 
 
     fun setKinematicTarget(position: Vec3f? = null, rotation: Vec4f? = null)
 
+    fun setLinearLockFlags(lockLinearX: Boolean, lockLinearY: Boolean, lockLinearZ: Boolean)
+    fun setAngularLockFlags(lockAngularX: Boolean, lockAngularY: Boolean, lockAngularZ: Boolean)
+
 }

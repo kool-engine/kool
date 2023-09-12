@@ -7,6 +7,7 @@ import org.lwjgl.system.MemoryStack
 import physx.physics.PxRigidActor
 import physx.physics.PxRigidBodyFlagEnum
 import physx.physics.PxRigidDynamic
+import physx.physics.PxRigidDynamicLockFlagEnum
 
 actual class RigidDynamic internal constructor(
     mass: Float,
@@ -60,5 +61,17 @@ actual class RigidDynamic internal constructor(
             pxPose.q = rotation?.toPxQuat(mem.createPxQuat()) ?: pxRigidActor.globalPose.q
             pxRigidDynamic.setKinematicTarget(pxPose)
         }
+    }
+
+    actual fun setLinearLockFlags(lockLinearX: Boolean, lockLinearY: Boolean, lockLinearZ: Boolean) {
+        pxRigidDynamic.setRigidDynamicLockFlag(PxRigidDynamicLockFlagEnum.eLOCK_LINEAR_X, lockLinearX)
+        pxRigidDynamic.setRigidDynamicLockFlag(PxRigidDynamicLockFlagEnum.eLOCK_LINEAR_Y, lockLinearY)
+        pxRigidDynamic.setRigidDynamicLockFlag(PxRigidDynamicLockFlagEnum.eLOCK_LINEAR_Z, lockLinearZ)
+    }
+
+    actual fun setAngularLockFlags(lockAngularX: Boolean, lockAngularY: Boolean, lockAngularZ: Boolean) {
+        pxRigidDynamic.setRigidDynamicLockFlag(PxRigidDynamicLockFlagEnum.eLOCK_ANGULAR_X, lockAngularX)
+        pxRigidDynamic.setRigidDynamicLockFlag(PxRigidDynamicLockFlagEnum.eLOCK_ANGULAR_Y, lockAngularY)
+        pxRigidDynamic.setRigidDynamicLockFlag(PxRigidDynamicLockFlagEnum.eLOCK_ANGULAR_Z, lockAngularZ)
     }
 }
