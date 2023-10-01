@@ -143,9 +143,9 @@ class MaterialAttributeSourcePopup(
         }
 
         val hsv = color.toHsv()
-        val hue = remember(hsv.x)
-        val sat = remember(hsv.y)
-        val bri = remember(hsv.z)
+        val hue = remember(hsv.h)
+        val sat = remember(hsv.s)
+        val bri = remember(hsv.v)
         val alpha = remember(color.a)
         val hexString = remember(color.toHexString())
 

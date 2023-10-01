@@ -4,6 +4,7 @@ import de.fabmax.kool.math.randomF
 import de.fabmax.kool.math.randomI
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.Color.Hsv
 import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
@@ -166,7 +167,7 @@ sealed class DragAndDropWindow(name: String, uiDemo: UiDemo) : DemoWindow(name, 
         companion object {
             fun random(): DndItem {
                 val label = "${('A'.code + randomI(0..25)).toChar()}${('a'.code + randomI(0..25)).toChar()}"
-                val color = Color.fromHsv(randomF(0f, 360f), randomF(0.5f, 1f), randomF(0.5f, 1f), 1f)
+                val color = Hsv(randomF(0f, 360f), randomF(0.5f, 1f), randomF(0.5f, 1f)).toSrgb()
                 return DndItem(label, color)
             }
         }

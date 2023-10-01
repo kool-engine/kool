@@ -3,6 +3,7 @@ package de.fabmax.kool.demo.uidemo
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.Color.Hsv
 import de.fabmax.kool.util.Font
 import de.fabmax.kool.util.MdColor
 import kotlin.math.roundToInt
@@ -232,7 +233,7 @@ class ThemeEditorWindow(uiDemo: UiDemo) : DemoWindow("Theme Editor", uiDemo) {
         onPrimary = colorEntries[6].color,
         onSecondary = colorEntries[7].color,
         onBackground = colorEntries[8].color,
-        isLight = colorEntries[4].color.toGray() > 0.5f
+        isLight = colorEntries[4].color.brightness > 0.5f
     )
 
     private inner class ColorEntry(val name: String, initColor: Color) {
@@ -242,7 +243,7 @@ class ThemeEditorWindow(uiDemo: UiDemo) : DemoWindow("Theme Editor", uiDemo) {
         val alpha = mutableStateOf(1f)
         val hexString = mutableStateOf("")
 
-        val color: Color get() = Color.fromHsv(hue.value, sat.value, value.value, alpha.value)
+        val color: Color get() = Hsv(hue.value, sat.value, value.value).toSrgb(a = alpha.value)
 
         init {
             setColor(initColor)
@@ -250,9 +251,9 @@ class ThemeEditorWindow(uiDemo: UiDemo) : DemoWindow("Theme Editor", uiDemo) {
 
         fun setColor(color: Color) {
             val hsv = color.toHsv()
-            hue.set(hsv.x)
-            sat.set(hsv.y)
-            value.set(hsv.z)
+            hue.set(hsv.h)
+            sat.set(hsv.s)
+            value.set(hsv.v)
             alpha.set(color.a)
         }
 
@@ -266,7 +267,7 @@ class ThemeEditorWindow(uiDemo: UiDemo) : DemoWindow("Theme Editor", uiDemo) {
                 modifier.backgroundColor(bg.withAlpha(0.05f))
             }
 
-            val color = Color.fromHsv(hue.use(), sat.use(), value.use(), alpha.use())
+            val color = Hsv(hue.use(), sat.use(), value.use()).toSrgb(a = alpha.use())
             Box(80.dp, 64.dp) {
                 modifier
                     .backgroundColor(color)

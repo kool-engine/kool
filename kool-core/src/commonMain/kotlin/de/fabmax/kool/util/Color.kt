@@ -1,12 +1,10 @@
 package de.fabmax.kool.util
 
-import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.math.clamp
-import kotlin.math.max
-import kotlin.math.min
-import kotlin.math.pow
-import kotlin.math.roundToInt
+import de.fabmax.kool.math.toDeg
+import de.fabmax.kool.math.toRad
+import kotlin.math.*
 
 /**
  * @author fabmax
@@ -53,44 +51,55 @@ open class Color(r: Float, g: Float, b: Float, a: Float = 1f) : Vec4f(r, g, b, a
         return result.set(r.pow(gamma), g.pow(gamma), b.pow(gamma), a)
     }
 
-    fun toGray(): Float {
-        return r * 0.299f + g * 0.587f + b * 0.114f
-    }
+    @Deprecated("Use brightness instead", replaceWith = ReplaceWith("brightness"))
+    fun toGray(): Float = brightness
 
     /**
-     * Returns this color is HSV color space:
-     * [result].x = hue [0..360]
-     * [result].y = saturation [0..1]
-     * [result].z = value [0..1]
+     * Translates this color from Srgb into HSV color space.
      */
-    fun toHsv(result: MutableVec3f = MutableVec3f()): MutableVec3f {
+    fun toHsv(): Hsv {
         val min = min(r, min(g, b)).clamp()
         val max = max(r, max(g, b)).clamp()
 
         // value
-        result.z = max
+        val v = max
 
         val delta = max - min
-        if (delta < 0.001f) {
+        return if (delta < 0.001f) {
             // saturation is 0, hue is undefined (we set it to 0)
-            result.set(0f, 0f, max)
+            Hsv(0f, 0f, v)
         } else {
             // saturation
-            result.y = delta / max
+            val s = delta / max
 
             // hue
-            result.x = 60f * if (r >= max) {
+            var h = 60f * if (r >= max) {
                 (g.clamp() - b.clamp()) / delta
             } else if (g >= max) {
                 2f + (b.clamp() - r.clamp()) / delta
             } else {
                 4f + (r.clamp() - g.clamp()) / delta
             }
-            if (result.x < 0f) {
-                result.x += 360f
+            if (h < 0f) {
+                h += 360f
             }
+            Hsv(h, s, v)
         }
-        return result
+    }
+
+    /**
+     * Translates this color from linear rgb into Oklab color space.
+     */
+    fun toOklab(): Oklab {
+        val l = (0.4122215f * r + 0.5363326f * g + 0.0514460f * b).pow(1/3f)
+        val m = (0.2119035f * r + 0.6806995f * g + 0.1073970f * b).pow(1/3f)
+        val s = (0.0883025f * r + 0.2817189f * g + 0.6299787f * b).pow(1/3f)
+
+        return Oklab(
+            l = 0.2104543f * l + 0.7936178f * m - 0.0040720f * s,
+            a = 1.9779985f * l - 2.4285922f * m + 0.4505937f * s,
+            b = 0.0259040f * l + 0.7827718f * m - 0.8086758f * s
+        )
     }
 
     fun toHexString(inclAlpha: Boolean = true): String {
@@ -102,11 +111,7 @@ open class Color(r: Float, g: Float, b: Float, a: Float = 1f) : Vec4f(r, g, b, a
         if (hg.length == 1) hg = "0$hg"
         if (hb.length == 1) hb = "0$hb"
         if (ha.length == 1) ha = "0$ha"
-        if (inclAlpha) {
-            return "$hr$hg$hb$ha"
-        } else {
-            return "$hr$hg$hb"
-        }
+        return if (inclAlpha) "$hr$hg$hb$ha" else "$hr$hg$hb"
     }
 
     companion object {
@@ -144,9 +149,8 @@ open class Color(r: Float, g: Float, b: Float, a: Float = 1f) : Vec4f(r, g, b, a
         val DARK_MAGENTA = Color(0.5f, 0.0f, 0.5f, 1.0f)
         val DARK_ORANGE = Color(0.5f, 0.25f, 0.0f, 1.0f)
 
-        fun fromHsv(h: Float, s: Float, v: Float, a: Float): Color {
-            return MutableColor().setHsv(h, s, v, a)
-        }
+        @Deprecated("Use Hsv.toSrgb() instead", ReplaceWith("Hsv(h, s, v).toSrgb(a = a)"))
+        fun fromHsv(h: Float, s: Float, v: Float, a: Float): Color = Hsv(h, s, v).toSrgb(a = a)
 
         fun fromHex(hex: String): Color {
             if (hex.isEmpty()) {
@@ -230,7 +234,128 @@ open class Color(r: Float, g: Float, b: Float, a: Float = 1f) : Vec4f(r, g, b, a
             }
         }
     }
+    /**
+     * Color in HSV (hue, saturation, value) color space. Hue is in degrees (range: 0..360), saturation and value
+     * are normalized (range: 0..1).
+     */
+    data class Hsv(val h: Float, val s: Float, val v: Float) {
+
+        /**
+         * Returns a new Hsv color with the hue shifted by the given amount.
+         * This is equivalent to Hsv(h + hueShift, s, v).
+         */
+        fun shiftHue(hueShift: Float): Hsv {
+            val shifted = (h + hueShift) % 360f
+            return Hsv(if (shifted < 0f) shifted + 360f else shifted, s, v)
+        }
+
+        /**
+         * Returns a new Hsv color with the saturation shifted by the given amount.
+         * This is equivalent to Hsv(h, s + satShift, v).
+         */
+        fun shiftSaturation(satShift: Float): Hsv {
+            return Hsv(h, (s + satShift).clamp(), v)
+        }
+
+        /**
+         * Returns a new Hsv color with the value shifted by the given amount.
+         * This is equivalent to Hsv(h, s, v + valShift).
+         */
+        fun shiftValue(valShift: Float): Hsv {
+            return Hsv(h, s, (v + valShift).clamp())
+        }
+
+        fun toSrgb(result: MutableColor = MutableColor(), a: Float = 1f): MutableColor {
+            var hue = h % 360f
+            if (hue < 0) {
+                hue += 360f
+            }
+            val hi = (hue / 60.0f).toInt()
+            val f = hue / 60.0f - hi
+            val p = v * (1 - s)
+            val q = v * (1 - s * f)
+            val t = v * (1 - s * (1 - f))
+
+            return when (hi) {
+                1 -> result.set(q, v, p, a)
+                2 -> result.set(p, v, t, a)
+                3 -> result.set(p, q, v, a)
+                4 -> result.set(t, p, v, a)
+                5 -> result.set(v, p, q, a)
+                else -> result.set(v, t, p, a)
+            }
+        }
+
+        fun toLinearRgb(result: MutableColor = MutableColor(), a: Float = 1f): MutableColor {
+            return toSrgb(a = a).toLinear(result)
+        }
+    }
+
+    /**
+     * Color in Oklab colorspace: https://bottosson.github.io/posts/oklab/
+     * - l: Lightness
+     * - a: green / red
+     * - b: blue / yellow
+     */
+    data class Oklab(val l: Float, val a: Float, val b: Float) {
+        val chroma: Float
+            get() = sqrt(a * a + b * b)
+        val hue: Float
+            get() = atan2(b, a).toDeg()
+
+        /**
+         * Returns a new Oklab color with the hue shifted by the given amount.
+         */
+        fun shiftHue(hueShift: Float): Oklab {
+            return fromHueChroma(l, hue + hueShift, chroma)
+        }
+
+        /**
+         * Returns a new Oklab color with the chroma shifted by the given amount.
+         */
+        fun shiftChroma(chromaShift: Float): Oklab {
+            return fromHueChroma(l, hue, chroma + chromaShift)
+        }
+
+        /**
+         * Returns a new Oklab color with the lightness shifted by the given amount.
+         */
+        fun shiftLightness(lightnessShift: Float): Oklab {
+            return Oklab(l + lightnessShift, a, b)
+        }
+
+        fun toLinearRgb(result: MutableColor = MutableColor(), a: Float = 1f): MutableColor {
+            val l = this.l + 0.39633778f * this.a + 0.2158038f * b
+            val m = this.l - 0.10556135f * this.a - 0.0638542f * b
+            val s = this.l - 0.08948418f * this.a - 1.2914855f * b
+
+            val lt = l * l * l
+            val mt = m * m * m
+            val st = s * s * s
+
+            return result.set(
+                r = (+4.076742f * lt - 3.3077116f * mt + 0.2309700f * st).clamp(),
+                g = (-1.268438f * lt + 2.6097574f * mt - 0.3413194f * st).clamp(),
+                b = (-0.004196f * lt - 0.7034186f * mt + 1.7076147f * st).clamp(),
+                a = a
+            )
+        }
+
+        fun toSrgb(result: MutableColor = MutableColor(), a: Float = 1f): MutableColor {
+            return toLinearRgb(a = a).toSrgb(result)
+        }
+
+        companion object {
+            fun fromHueChroma(l: Float, hue: Float, chroma: Float): Oklab {
+                val rad = hue.toRad()
+                val a = chroma * cos(rad)
+                val b = chroma * sin(rad)
+                return Oklab(l, a, b)
+            }
+        }
+    }
 }
+
 
 fun Color(hex: String): Color = Color.fromHex(hex)
 
@@ -317,25 +442,8 @@ open class MutableColor(r: Float, g: Float, b: Float, a: Float) : Color(r, g, b,
 
     open operator fun set(i: Int, v: Float) { fields[i] = v }
 
-    fun setHsv(h: Float, s: Float, v: Float, a: Float): MutableColor {
-        var hue = h % 360f
-        if (hue < 0) {
-            hue += 360f
-        }
-        val hi = (hue / 60.0f).toInt()
-        val f = hue / 60.0f - hi
-        val p = v * (1 - s)
-        val q = v * (1 - s * f)
-        val t = v * (1 - s * (1 - f))
-
-        when (hi) {
-            1 -> set(q, v, p, a)
-            2 -> set(p, v, t, a)
-            3 -> set(p, q, v, a)
-            4 -> set(t, p, v, a)
-            5 -> set(v, p, q, a)
-            else -> set(v, t, p, a)
-        }
-        return this
+    @Deprecated("Use Hsv.toSrgb() instead", ReplaceWith("Hsv(h, s, v).toSrgb(a = a)"))
+    fun setHsv(h: Float, s: Float, v: Float, a: Float = 1f): MutableColor {
+        return Hsv(h, s, v).toSrgb(this, a)
     }
 }

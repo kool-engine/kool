@@ -2,6 +2,7 @@ package de.fabmax.kool.modules.ui2
 
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.Color.Hsv
 import kotlin.math.roundToInt
 
 fun UiScope.ColorChooserH(
@@ -23,7 +24,7 @@ fun UiScope.ColorChooserH(
                     hue.set(h)
                     saturation.set(s)
                     value.set(v)
-                    onChange?.invoke(Color.fromHsv(h, s, v, alpha?.value ?: 1f))
+                    onChange?.invoke(Hsv(h, s, v).toSrgb(a = alpha?.value ?: 1f))
                 }
         }
         ColorSliderPanel(hue, saturation, value, alpha, hexString, onChange)
@@ -49,7 +50,7 @@ fun UiScope.ColorChooserV(
                     hue.set(h)
                     saturation.set(s)
                     value.set(v)
-                    onChange?.invoke(Color.fromHsv(h, s, v, alpha?.value ?: 1f))
+                    onChange?.invoke(Hsv(h, s, v).toSrgb(a = alpha?.value ?: 1f))
                 }
         }
         ColorSliderPanel(hue, saturation, value, alpha, hexString, onChange)
@@ -65,24 +66,24 @@ fun UiScope.ColorSliderPanel(
     onChange: ((Color) -> Unit)?
 ) {
     Column(Grow.Std, Grow.Std) {
-        val color = Color.fromHsv(hue.use(), saturation.use(), value.use(), alpha?.use() ?: 1f)
+        val color = Hsv(hue.use(), saturation.use(), value.use()).toSrgb(a = alpha?.use() ?: 1f)
         Box(Grow.Std, Grow(1f, min = 32.dp)) {
             modifier
                 .backgroundColor(color)
                 .margin(bottom = sizes.gap)
         }
         ColorSlider(hue, 0f, 360f, 1f, "H:") {
-            onChange?.invoke(Color.fromHsv(it, saturation.value, value.value, alpha?.value ?: 1f))
+            onChange?.invoke(Hsv(it, saturation.value, value.value).toSrgb(a = alpha?.value ?: 1f))
         }
         ColorSlider(saturation, 0f, 1f, 100f, "S:") {
-            onChange?.invoke(Color.fromHsv(hue.value, it, value.value, alpha?.value ?: 1f))
+            onChange?.invoke(Hsv(hue.value, it, value.value).toSrgb(a = alpha?.value ?: 1f))
         }
         ColorSlider(value, 0f, 1f, 100f, "V:") {
-            onChange?.invoke(Color.fromHsv(hue.value, saturation.value, it, alpha?.value ?: 1f))
+            onChange?.invoke(Hsv(hue.value, saturation.value, it).toSrgb(a = alpha?.value ?: 1f))
         }
         alpha?.let {
             ColorSlider(it, 0f, 1f, 100f, "A:") { a ->
-                onChange?.invoke(Color.fromHsv(hue.value, saturation.value, value.value, a))
+                onChange?.invoke(Hsv(hue.value, saturation.value, value.value).toSrgb(a = a))
             }
         }
         Row(width = Grow.Std) {
@@ -108,9 +109,9 @@ fun UiScope.ColorSliderPanel(
                         hexString?.set(txt)
                         Color.fromHexOrNull(txt)?.let {
                             val hsv = it.toHsv()
-                            hue.set(hsv.x)
-                            saturation.set(hsv.y)
-                            value.set(hsv.z)
+                            hue.set(hsv.h)
+                            saturation.set(hsv.s)
+                            value.set(hsv.v)
                             alpha?.set(it.a)
                             onChange?.invoke(it)
                         }
@@ -119,9 +120,9 @@ fun UiScope.ColorSliderPanel(
                         val parsedColor = Color.fromHexOrNull(txt)
                         parsedColor?.let {
                             val hsv = it.toHsv()
-                            hue.set(hsv.x)
-                            saturation.set(hsv.y)
-                            value.set(hsv.z)
+                            hue.set(hsv.h)
+                            saturation.set(hsv.s)
+                            value.set(hsv.v)
                             alpha?.set(it.a)
                             hexString?.set(it.toHexString())
                             onChange?.invoke(it)

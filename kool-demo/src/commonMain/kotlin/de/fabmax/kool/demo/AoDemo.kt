@@ -105,8 +105,8 @@ class AoDemo : DemoScene("Ambient Occlusion") {
                 for (x in -3..3) {
                     for (y in -3..3) {
                         val h = atan2(y.toFloat(), x.toFloat()).toDeg()
-                        val s = max(abs(x), abs(y)) / 5f
-                        color = Color.fromHsv(h, s, 0.75f, 1f).toLinear()
+                        val s = max(abs(x), abs(y)) / 17f
+                        color = Color.Oklab.fromHueChroma(0.75f, h, s).toLinearRgb()
 
                         withTransform {
                             translate(x.toFloat(), 0f, y.toFloat())

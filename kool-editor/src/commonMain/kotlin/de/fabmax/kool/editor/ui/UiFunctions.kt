@@ -549,9 +549,9 @@ fun UiScope.colorPicker(
                 .padding(sizes.smallGap)
 
             val hsv = currentColor.use().toHsv()
-            val hue = remember(hsv.x)
-            val sat = remember(hsv.y)
-            val bri = remember(hsv.z)
+            val hue = remember(hsv.h)
+            val sat = remember(hsv.s)
+            val bri = remember(hsv.v)
             val alpha = if (isWithAlpha) remember(currentColor.value.a) else null
             val hexString = remember(currentColor.value.toHexString(isWithAlpha))
 

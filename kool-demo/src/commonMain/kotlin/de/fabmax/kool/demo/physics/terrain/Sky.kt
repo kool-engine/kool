@@ -18,6 +18,7 @@ import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.pipeline.ibl.SkyCubeIblSystem
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.*
+import de.fabmax.kool.util.Color.Hsv
 import kotlin.collections.set
 import kotlin.math.abs
 import kotlin.math.acos
@@ -78,7 +79,7 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
             p.norm()
 
             val sz = r.randomF(1f, 3f)
-            addPoint(p, sz, Color.fromHsv(r.randomF(0f, 360f), r.randomF(0.2f, 0.5f), 1f, sz / 3f))
+            addPoint(p, sz, Hsv(r.randomF(0f, 360f), r.randomF(0.2f, 0.5f), 1f).toSrgb(a = sz / 3f))
         }
         shader = starShader
     }

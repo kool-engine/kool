@@ -3,6 +3,7 @@ package de.fabmax.kool.modules.ui2
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.*
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.Color.Hsv
 import de.fabmax.kool.util.ColorGradient
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -161,7 +162,7 @@ open class ColorWheelNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, 
         super.render(ctx)
 
         val svPt = getPointForSatValue()
-        val hsvColor = Color.fromHsv(modifier.hue, modifier.saturation, modifier.value, 1f)
+        val hsvColor = Hsv(modifier.hue, modifier.saturation, modifier.value).toSrgb()
         val draw = getUiPrimitives(UiSurface.LAYER_FLOATING)
         draw.localCircle(svPt.x, svPt.y, sizes.smallGap.px * 1.5f, hsvColor)
         draw.localCircleBorder(svPt.x, svPt.y, sizes.smallGap.px * 1.5f, 1.dp.px, Color.WHITE)
@@ -179,7 +180,7 @@ open class ColorWheelNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, 
             // inner triangle (saturation / value chooser)
             var i1 = vertex {
                 set(rt, 0f, 0f)
-                color.set(Color.fromHsv(modifier.hue, 1f, 1f, 1f))
+                color.set(Hsv(modifier.hue, 1f, 1f).toSrgb(a = 1f))
             }
             var i2 = vertex {
                 set(-0.5f * rt, 0.866f * rt, 0f)

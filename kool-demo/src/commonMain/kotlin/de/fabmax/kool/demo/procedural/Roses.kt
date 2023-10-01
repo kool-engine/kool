@@ -10,6 +10,7 @@ import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.simpleShape
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.Color.Hsv
 import de.fabmax.kool.util.ColorGradient
 import de.fabmax.kool.util.MdColor
 import kotlin.math.abs
@@ -100,7 +101,7 @@ class Roses : Node() {
                 }
             }
 
-            applyTint(Color.fromHsv(rand.randomF(0f, 360f), 0.12f, rand.randomF(0.7f, 1f), 1f).toLinear())
+            applyTint(Hsv(rand.randomF(0f, 360f), 0.12f, rand.randomF(0.7f, 1f)).toLinearRgb())
         }
 
         fun applyTint(tint: Color) {
