@@ -49,6 +49,7 @@ sealed class Light : Node() {
         transform.matrix.setCol(1, b, 0.0)
         transform.matrix.setCol(2, c, 0.0)
         transform.setPosition(pos)
+        updateModelMat()
     }
 
     class Directional : Light() {
