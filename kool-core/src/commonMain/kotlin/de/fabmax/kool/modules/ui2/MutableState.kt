@@ -188,6 +188,8 @@ class MutableStateList<T>(private val values: MutableList<T> = mutableListOf()) 
         return result
     }
 
+    override fun toString(): String = values.toString()
+
     fun atomic(block: MutableStateList<T>.() -> Unit) {
         suppressUpdate = true
         block()

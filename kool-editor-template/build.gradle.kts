@@ -90,6 +90,20 @@ tasks["jsBrowserDistribution"].doLast {
         from("$rootDir/kool-editor/src/jsMain/resources/")
         into("${projectDir}/jsDist")
     }
+
+    // create asset browser index json
+    val baseDir = File("$projectDir/src/commonMain/resources")
+    File("${projectDir}/jsDist/available-assets.json").writer().use { outWriter ->
+        val assetPaths = mutableListOf<String>()
+        fileTree(baseDir).visit {
+            if (path.startsWith("assets")) {
+                assetPaths.add(path)
+            }
+        }
+        outWriter.appendLine("[")
+        outWriter.append(assetPaths.joinToString(separator = ",\n") { "  \"${it.replace('\\', '/')}\"" })
+        outWriter.append("\n]")
+    }
 }
 
 configurations.filter { "editor" in it.name }.forEach {

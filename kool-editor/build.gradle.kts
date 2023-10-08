@@ -1,25 +1,10 @@
-import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalDistributionDsl
-import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
-
 kotlin {
     jvm {
         jvmToolchain(11)
     }
     js(IR) {
-        binaries.executable()
-        browser {
-            @OptIn(ExperimentalDistributionDsl::class)
-            distribution(Action {
-                outputDirectory.set(File("${rootDir}/dist/kool-editor"))
-            })
-            commonWebpackConfig(Action {
-                mode = if (KoolBuildSettings.isRelease) {
-                    KotlinWebpackConfig.Mode.PRODUCTION
-                } else {
-                    KotlinWebpackConfig.Mode.DEVELOPMENT
-                }
-            })
-        }
+        binaries.library()
+        browser()
     }
 
     sourceSets {

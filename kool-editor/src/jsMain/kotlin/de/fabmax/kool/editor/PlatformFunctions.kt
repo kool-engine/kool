@@ -21,7 +21,7 @@ actual object PlatformFunctions {
     actual fun onWindowCloseRequest(ctx: KoolContext): Boolean = true
 
     actual fun editBehavior(behaviorSourcePath: String) {
-        logE { "Source editing is not available on JS. Download project and us the JVM variant." }
+        logE { "Source editing is not available on JS. Download project and use the JVM variant." }
     }
 
     actual fun loadProjectModel(path: String): EditorProject? {
