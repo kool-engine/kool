@@ -2,6 +2,7 @@ package de.fabmax.kool.demo.physics.manybodies
 
 import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.demo.DemoLoader
 import de.fabmax.kool.demo.DemoScene
 import de.fabmax.kool.math.Mat3f
@@ -74,13 +75,15 @@ class ManyBodiesDemo : DemoScene("Many Bodies") {
     }
 
     private fun spawnPhysicsBoxes() {
-        for (y in 0..50) {
+        val ny = if (KoolSystem.isJavascript) 10 else 50
+
+        for (y in 0..ny) {
             for (x in -12..12) {
                 for (z in -12..12) {
                     val body = RigidDynamic(pose = Mat4f().translate(x * 2f, y * 2f + 10f, z * 2f))
                     body.attachShape(Shape(BoxGeometry(Vec3f(1f, 1f, 1f)), Physics.defaultMaterial))
                     physicsWorld.addActor(body)
-                    physBoxes += PhysBox(body, ColorGradient.JET_MD.getColor(y.toFloat(), 0f, 50f).toLinear())
+                    physBoxes += PhysBox(body, ColorGradient.JET_MD.getColor(y.toFloat(), 0f, ny.toFloat()).toLinear())
                 }
             }
         }
