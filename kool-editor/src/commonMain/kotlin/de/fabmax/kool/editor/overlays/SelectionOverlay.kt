@@ -92,7 +92,6 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
         renderPassConfig {
             name = "SelectionPass"
             setDynamicSize()
-            addColorTexture(TexFormat.R)
             addColorTexture {
                 colorFormat = TexFormat.R
                 magFilter = FilterMethod.NEAREST
@@ -220,7 +219,6 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
                 private const val rE = 1f
                 private const val rC = 1f
                 val samplePattern = listOf(
-                    //Vec2f(0f, 0f),
                     Vec2f(-rC, -rC),
                     Vec2f(rC, -rC),
                     Vec2f(-rC, rC),
