@@ -5,11 +5,15 @@
 A multi-platform OpenGL / Vulkan based game engine that works on Desktop Java and browsers with
 WebGL2.
 
-I started working on a graphical scene editor, which should make it much easier to create new projects with this engine.
-However, the editor is still in an early state and not very useful yet (In case you are curious you can start it by
-running the gradle task `:kool-editor-template:runEditor`). Apart from that, this is very much a code-only
-game engine. I recommend taking a look at the demos listed below in case you are curious (all demo source code is
-available in the `kool-demo` subproject). The library is also published on maven central, see [below](#usage).
+I started working on a graphical scene editor.
+The editor is still in an early state and not very useful yet, but you can try the [Web Demo](https://fabmax.github.io/kool/kool-editor/)
+in case you are curious. However, there are a few rather essential features, which are only supported by the JVM
+version of the editor (e.g. hot-reloading code and importing additional assets). You can launch the JVM editor by
+cloning this project and running the gradle task `:kool-editor-template:runEditor` from a command line or your IDE).
+
+Apart from that, this is very much a code-only game engine. I recommend taking a look at the demos listed below in case
+you are curious (all demo source code is available in the `kool-demo` subproject). The library is also published on
+maven central, see [below](#usage).
 
 I also made an actual game with this: [Blocks and Belts](https://fabmaxx.itch.io/blocks-and-belts).
 Give it a try (it's free)!
@@ -19,6 +23,8 @@ Give it a try (it's free)!
 Feel free to join the [Discord Server](https://discord.gg/GvsJj2Pk3K)!
 
 ## Demos
+- [Editor](https://fabmax.github.io/kool/kool-editor/): Work in progress graphical editor for this engine. Fully
+  implemented within the engine itself. 
 - [Island](https://fabmax.github.io/kool/kool-js/?demo=phys-terrain): Height-map based
   island incl. some wind-affected vegetation + a basic controllable character.
 - [Physics - Ragdoll](https://fabmax.github.io/kool/kool-js/?demo=phys-ragdoll): Ragdoll physics demo.
