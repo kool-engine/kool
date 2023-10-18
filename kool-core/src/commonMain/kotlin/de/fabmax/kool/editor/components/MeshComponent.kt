@@ -112,7 +112,7 @@ class MeshComponent(nodeModel: SceneNodeModel, override val componentData: MeshC
     override fun updateMaterial(material: MaterialData?) {
         val mesh = this.mesh ?: return
         val holder = nodeModel.getComponent<MaterialComponent>()
-        if (holder?.isHoldingMaterial(material) != false) {
+        if (holder?.isHoldingMaterial(material) == true) {
             launchOnMainThread {
                 if (material == null || !material.updateShader(mesh.shader, sceneModel.shaderData)) {
                     createMeshShader()
