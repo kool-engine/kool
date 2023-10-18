@@ -81,29 +81,29 @@ class MeshComponent(nodeModel: SceneNodeModel, override val componentData: MeshC
     private suspend fun createMeshShader() {
         val mesh = this.mesh ?: return
 
-        val ibl = sceneModel.shaderData.environmentMaps
-        val ssao = sceneModel.shaderData.ssaoMap
-
-        logD { "${nodeModel.name}: (re-)creating shader, ibl: ${ibl != null}, ssao: ${ssao != null}" }
+        val sceneShaderData = sceneModel.shaderData
 
         val materialData = nodeModel.getComponent<MaterialComponent>()?.materialData
         if (materialData != null) {
-            mesh.shader = materialData.createShader(ibl)
+            logD { "${nodeModel.name}: (re-)creating shader for material: ${materialData.name}" }
+
+            mesh.shader = materialData.createShader(sceneShaderData)
 
         } else {
+            logD { "${nodeModel.name}: (re-)creating shader for default material" }
             mesh.shader = KslPbrShader {
                 color { uniformColor(MdColor.GREY.toLinear()) }
-                shadow { addShadowMaps(sceneModel.shaderData.shadowMaps) }
-                maxNumberOfLights = sceneModel.maxNumLightsState.value
-                ibl?.let {
-                    enableImageBasedLighting(ibl)
+                shadow { addShadowMaps(sceneShaderData.shadowMaps) }
+                maxNumberOfLights = sceneShaderData.maxNumberOfLights
+                sceneShaderData.environmentMaps?.let {
+                    enableImageBasedLighting(it)
                 }
-                ssao?.let {
+                sceneShaderData.ssaoMap?.let {
                     ao { enableSsao(it) }
                 }
             }.apply {
-                if (ibl == null) {
-                    ambientFactor = sceneModel.shaderData.ambientColorLinear
+                if (sceneShaderData.environmentMaps == null) {
+                    ambientFactor = sceneShaderData.ambientColorLinear
                 }
             }
         }
@@ -114,8 +114,7 @@ class MeshComponent(nodeModel: SceneNodeModel, override val componentData: MeshC
         val holder = nodeModel.getComponent<MaterialComponent>()
         if (holder?.isHoldingMaterial(material) != false) {
             launchOnMainThread {
-                val ibl = sceneModel.shaderData.environmentMaps
-                if (material == null || !material.updateShader(mesh.shader, ibl)) {
+                if (material == null || !material.updateShader(mesh.shader, sceneModel.shaderData)) {
                     createMeshShader()
                 }
             }

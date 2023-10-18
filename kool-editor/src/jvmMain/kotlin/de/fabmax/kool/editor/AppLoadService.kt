@@ -126,6 +126,7 @@ actual class AppLoadService actual constructor(val paths: ProjectPaths) : Corout
         return LoadedApp(app as EditorAwareApp, behaviorClasses)
     }
 
+    @OptIn(ExperimentalPathApi::class)
     private fun examineClasses(loader: URLClassLoader, classpath: Path): Map<KClass<*>, AppBehavior> {
         val behaviorClasses = mutableMapOf<KClass<*>, AppBehavior>()
         classpath.walk(PathWalkOption.INCLUDE_DIRECTORIES).forEach {

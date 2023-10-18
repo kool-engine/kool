@@ -8,10 +8,7 @@ import kotlinx.coroutines.runBlocking
 import java.nio.file.*
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
-import kotlin.io.path.PathWalkOption
-import kotlin.io.path.isDirectory
-import kotlin.io.path.pathString
-import kotlin.io.path.walk
+import kotlin.io.path.*
 
 class DirectoryWatcher(val watchPaths: Set<String>, val eventTimeoutMs: Long = 100L) {
 
@@ -77,6 +74,7 @@ class DirectoryWatcher(val watchPaths: Set<String>, val eventTimeoutMs: Long = 1
         return ChangeEvent(chgPath, eventType)
     }
 
+    @OptIn(ExperimentalPathApi::class)
     private fun addWatchPathWithSubDirs(path: String) {
         Path.of(path).walk(PathWalkOption.INCLUDE_DIRECTORIES).forEach {
             try {

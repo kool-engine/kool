@@ -85,7 +85,7 @@ class ModelComponent(nodeModel: SceneNodeModel, override val componentData: Mode
                 } else {
                     // update model shaders and recreate model in case update fails
                     val updateFail = model.meshes.values.any {
-                        !material.updateShader(it.shader, sceneModel.shaderData.environmentMaps)
+                        !material.updateShader(it.shader, sceneModel.shaderData)
                     }
                     if (updateFail) {
                         recreateModel()
@@ -164,7 +164,7 @@ class ModelComponent(nodeModel: SceneNodeModel, override val componentData: Mode
         val model = gltfFile.makeModel(modelCfg, loadScene)
         if (material != null) {
             model.meshes.forEach { (name, mesh) ->
-                val shader = material.createShader(ibl)
+                val shader = material.createShader(sceneModel.shaderData)
                 if (mesh.geometry.hasAttributes(shader.requiredVertexAttributes)) {
                     mesh.shader = shader
                 } else {

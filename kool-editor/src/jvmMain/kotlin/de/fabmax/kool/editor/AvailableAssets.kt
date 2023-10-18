@@ -53,6 +53,7 @@ actual class AvailableAssets actual constructor(assetsBaseDir: String, val brows
         source.moveTo(dest, StandardCopyOption.ATOMIC_MOVE)
     }
 
+    @OptIn(ExperimentalPathApi::class)
     actual fun deleteAsset(deletePath: String) {
         val path = Path(assetsDir.pathString, deletePath.removePrefix(browserSubDir))
         logD { "Delete asset path: $path" }
@@ -79,6 +80,7 @@ actual class AvailableAssets actual constructor(assetsBaseDir: String, val brows
         }
     }
 
+    @OptIn(ExperimentalPathApi::class)
     private fun updateAssets() {
         val rootAssets = mutableListOf<AssetItem>()
         val assetPaths = mutableSetOf<String>()

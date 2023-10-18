@@ -1,6 +1,7 @@
 package de.fabmax.kool.editor.data
 
 import de.fabmax.kool.editor.api.AppAssets
+import de.fabmax.kool.editor.model.SceneModel
 import de.fabmax.kool.modules.ksl.*
 import de.fabmax.kool.modules.ksl.blocks.ColorBlockConfig
 import de.fabmax.kool.modules.ksl.blocks.PropertyBlockConfig
@@ -9,7 +10,6 @@ import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.CullMethod
 import de.fabmax.kool.pipeline.GlslType
 import de.fabmax.kool.pipeline.Shader
-import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 import kotlinx.serialization.Serializable
@@ -30,8 +30,13 @@ data class MaterialData(
     @Transient
     val shaderDataState = mutableStateOf(shaderData).onChange { shaderData = it }
 
-    suspend fun createShader(ibl: EnvironmentMaps?): KslShader = shaderData.createShader(ibl)
-    suspend fun updateShader(shader: Shader?, ibl: EnvironmentMaps?): Boolean = shaderData.updateShader(shader, ibl)
+    suspend fun createShader(sceneShaderData: SceneModel.SceneShaderData): KslShader {
+        return shaderData.createShader(sceneShaderData)
+    }
+
+    suspend fun updateShader(shader: Shader?, sceneShaderData: SceneModel.SceneShaderData): Boolean {
+        return shaderData.updateShader(shader, sceneShaderData)
+    }
 
     fun matchesShader(shader: Shader?): Boolean = shaderData.matchesShader(shader)
 
@@ -42,8 +47,8 @@ sealed interface MaterialShaderData {
     val genericSettings: GenericMaterialSettings
 
     fun matchesShader(shader: Shader?): Boolean
-    suspend fun createShader(ibl: EnvironmentMaps?): KslShader
-    suspend fun updateShader(shader: Shader?, ibl: EnvironmentMaps?): Boolean
+    suspend fun createShader(sceneShaderData: SceneModel.SceneShaderData): KslShader
+    suspend fun updateShader(shader: Shader?, sceneShaderData: SceneModel.SceneShaderData): Boolean
 
     fun copy(genericSettings: GenericMaterialSettings = this.genericSettings): MaterialShaderData {
         return when (this) {
@@ -80,7 +85,7 @@ data class PbrShaderData(
                 && genericSettings.matchesPipelineConfig(shader.pipelineCfg)
     }
 
-    override suspend fun createShader(ibl: EnvironmentMaps?): KslPbrShader {
+    override suspend fun createShader(sceneShaderData: SceneModel.SceneShaderData): KslPbrShader {
         val shader = KslPbrShader {
             pipeline {
                 if (genericSettings.isTwoSided) {
@@ -138,20 +143,27 @@ data class PbrShaderData(
                     setNormalMap()
                 }
             }
-            ibl?.let {
-                enableImageBasedLighting(ibl)
+
+            shadow { addShadowMaps(sceneShaderData.shadowMaps) }
+            maxNumberOfLights = sceneShaderData.maxNumberOfLights
+            sceneShaderData.environmentMaps?.let {
+                enableImageBasedLighting(it)
+            }
+            sceneShaderData.ssaoMap?.let {
+                ao { enableSsao(it) }
             }
         }
-        updateShader(shader, ibl)
+        updateShader(shader, sceneShaderData)
         return shader
     }
 
-    override suspend fun updateShader(shader: Shader?, ibl: EnvironmentMaps?): Boolean {
+    override suspend fun updateShader(shader: Shader?, sceneShaderData: SceneModel.SceneShaderData): Boolean {
         if (!matchesShader(shader)) {
             return false
         }
         val pbrShader = shader as? KslPbrShader ?: return false
 
+        val ibl = sceneShaderData.environmentMaps
         if (ibl != null && shader.ambientCfg is KslLitShader.AmbientColor.Uniform) {
             return false
         }
@@ -212,11 +224,11 @@ data class BlinnPhongShaderData(
         TODO("Not yet implemented")
     }
 
-    override suspend fun createShader(ibl: EnvironmentMaps?): KslShader {
+    override suspend fun createShader(sceneShaderData: SceneModel.SceneShaderData): KslShader {
         TODO("Not yet implemented")
     }
 
-    override suspend fun updateShader(shader: Shader?, ibl: EnvironmentMaps?): Boolean {
+    override suspend fun updateShader(shader: Shader?, sceneShaderData: SceneModel.SceneShaderData): Boolean {
         TODO("Not yet implemented")
     }
 }
@@ -231,11 +243,11 @@ data class UnlitShaderData(
         TODO("Not yet implemented")
     }
 
-    override suspend fun createShader(ibl: EnvironmentMaps?): KslShader {
+    override suspend fun createShader(sceneShaderData: SceneModel.SceneShaderData): KslShader {
         TODO("Not yet implemented")
     }
 
-    override suspend fun updateShader(shader: Shader?, ibl: EnvironmentMaps?): Boolean {
+    override suspend fun updateShader(shader: Shader?, sceneShaderData: SceneModel.SceneShaderData): Boolean {
         TODO("Not yet implemented")
     }
 }

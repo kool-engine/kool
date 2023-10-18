@@ -19,7 +19,10 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : NodeMod
 
     val sceneProperties = getOrPutComponent { ScenePropertiesComponent(this, ScenePropertiesComponentData()) }
 
+    val shaderData = SceneShaderData()
+
     val maxNumLightsState = mutableStateOf(sceneProperties.componentData.maxNumLights).onChange {
+        shaderData.maxNumberOfLights = it
         if (AppState.isEditMode) {
             sceneProperties.componentData.maxNumLights = it
         }
@@ -50,9 +53,8 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : NodeMod
     val sceneBackground = getOrPutComponent { SceneBackgroundComponent(this, MdColor.GREY toneLin 900) }
     private val backgroundUpdater = getOrPutComponent { BackgroundUpdater() }
 
-    val shaderData = SceneShaderData()
-
     init {
+        shaderData.maxNumberOfLights = maxNumLightsState.value
         project.entities += this
     }
 
@@ -184,6 +186,8 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : NodeMod
     }
 
     class SceneShaderData {
+        var maxNumberOfLights: Int = 4
+
         var environmentMaps: EnvironmentMaps? = null
         var ambientColorLinear: Color = Color.BLACK
 
