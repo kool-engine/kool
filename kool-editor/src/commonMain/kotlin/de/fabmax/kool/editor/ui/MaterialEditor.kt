@@ -14,6 +14,8 @@ import de.fabmax.kool.util.MdColor
 
 class MaterialEditor(component: MaterialComponent) : ComponentEditor<MaterialComponent>(component) {
 
+    private val material: MaterialData get() = component.materialState.value!!
+
     override fun UiScope.compose() = componentPanel(
         title = "Material",
         imageIcon = IconMap.small.PALETTE,
@@ -49,14 +51,14 @@ class MaterialEditor(component: MaterialComponent) : ComponentEditor<MaterialCom
                 }
 
                 menuDivider()
-                materialEditor(selectedMaterial)
+                materialEditor()
                 menuDivider()
-                genericSettings(selectedMaterial)
+                genericSettings()
             }
         }
     }
 
-    private fun UiScope.genericSettings(material: MaterialData) {
+    private fun UiScope.genericSettings() {
         var isTwoSided by remember(material.shaderData.genericSettings.isTwoSided)
         labeledCheckbox("Is two-sided:", isTwoSided) {
             isTwoSided = it
@@ -67,31 +69,31 @@ class MaterialEditor(component: MaterialComponent) : ComponentEditor<MaterialCom
         }
     }
 
-    private fun UiScope.materialEditor(material: MaterialData) {
+    private fun UiScope.materialEditor() {
         when (val shaderData = material.shaderDataState.use()) {
             is BlinnPhongShaderData -> TODO()
-            is PbrShaderData -> pbrMaterialEditor(material, shaderData)
+            is PbrShaderData -> pbrMaterialEditor(shaderData)
             is UnlitShaderData -> TODO()
         }
     }
 
-    private fun UiScope.pbrMaterialEditor(material: MaterialData, pbrData: PbrShaderData) {
+    private fun UiScope.pbrMaterialEditor(pbrData: PbrShaderData) {
         // shader setting callback functions need to use cast material.shaderData instead of pbrData because otherwise
         // pbrData is captured on first invocation and will never be updated
 
-        colorSetting("Base color:", pbrData.baseColor, MdColor.GREY.toLinear(), material) {
+        colorSetting("Base color:", pbrData.baseColor, MdColor.GREY.toLinear()) {
             (material.shaderData as PbrShaderData).copy(baseColor = it)
         }
-        floatSetting("Roughness:", pbrData.roughness, 0f, 1f, 0.5f, material) {
+        floatSetting("Roughness:", pbrData.roughness, 0f, 1f, 0.5f) {
             (material.shaderData as PbrShaderData).copy(roughness = it)
         }
-        floatSetting("Metallic:", pbrData.metallic, 0f, 1f, 0f, material) {
+        floatSetting("Metallic:", pbrData.metallic, 0f, 1f, 0f) {
             (material.shaderData as PbrShaderData).copy(metallic = it)
         }
-        colorSetting("Emission color:", pbrData.emission, Color.BLACK, material) {
+        colorSetting("Emission color:", pbrData.emission, Color.BLACK) {
             (material.shaderData as PbrShaderData).copy(emission = it)
         }
-        textureSetting("Normal map:", pbrData.normalMap, material) {
+        textureSetting("Normal map:", pbrData.normalMap) {
             (material.shaderData as PbrShaderData).copy(normalMap = it)
         }
     }
@@ -159,7 +161,6 @@ class MaterialEditor(component: MaterialComponent) : ComponentEditor<MaterialCom
         label: String,
         colorAttr: MaterialAttribute,
         default: Color,
-        material: MaterialData,
         shaderDataSetter: (MaterialAttribute) -> MaterialShaderData
     ) = menuRow {
 
@@ -211,7 +212,6 @@ class MaterialEditor(component: MaterialComponent) : ComponentEditor<MaterialCom
         min: Float,
         max: Float,
         default: Float,
-        material: MaterialData,
         shaderDataSetter: (MaterialAttribute) -> MaterialShaderData
     ) = menuRow {
 
@@ -303,7 +303,6 @@ class MaterialEditor(component: MaterialComponent) : ComponentEditor<MaterialCom
     private fun UiScope.textureSetting(
         label: String,
         texAttr: MapAttribute?,
-        material: MaterialData,
         shaderDataSetter: (MapAttribute?) -> MaterialShaderData
     ) = menuRow {
         var editStartTex by remember(texAttr)
