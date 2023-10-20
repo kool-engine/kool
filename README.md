@@ -66,6 +66,16 @@ Feel free to join the [Discord Server](https://discord.gg/GvsJj2Pk3K)!
 
 Code for all demos is available in kool-demo sub-project.
 
+## Usage
+
+If you are adventurous, you can use kool as a library in your own (multiplatform-) projects. The library is published
+on maven central, and there is a separate repo containing a minimal template project to get you started:
+
+[https://github.com/fabmax/kool-templates](https://github.com/fabmax/kool-templates)
+
+The demos mentioned above and examples shown below should give you a rough idea on how to do stuff (documentation is
+still a bit of a weak spot).
+
 ## Engine Features / Noticeable Stuff:
 - Physics simulation (based on Nvidia PhysX 5.1, using [physx-jni](https://github.com/fabmax/physx-jni) on Java and [physx-js-webidl](https://github.com/fabmax/physx-js-webidl) on javascript)
 - Kotlin DSL based shader language (translates into GLSL)
@@ -85,16 +95,6 @@ Code for all demos is available in kool-demo sub-project.
 - Shadow mapping for multiple light sources (only spot and directional lights for now)
 - Basic audio support
 
-## Usage
-
-If you are adventurous, you can use kool as a library in your own (multiplatform-) projects. The library is published
-on maven central, and there is a separate repo containing a minimal template project to get you started:
-
-[https://github.com/fabmax/kool-templates](https://github.com/fabmax/kool-templates)
-
-The demos mentioned above and examples shown below should give you a rough idea on how to do stuff (documentation is
-still a bit of a weak spot).
-
 ## A Hello World Example
 
 Getting a basic scene on the screen is quite simple:
@@ -103,9 +103,9 @@ fun main() = KoolApplication { ctx ->
     ctx.scenes += scene {
         defaultOrbitCamera()
 
-        colorMesh {
+        addColorMesh {
             generate {
-                cube(centered = true) {
+                cube {
                     colored()
                 }
             }
@@ -119,8 +119,8 @@ fun main() = KoolApplication { ctx ->
             }
         }
 
-        lighting.singleLight {
-            setDirectional(Vec3f(-1f, -1f, -1f))
+        lighting.singleDirectionalLight {
+            setup(Vec3f(-1f, -1f, -1f))
             setColor(Color.WHITE, 5f)
         }
     }
@@ -128,7 +128,7 @@ fun main() = KoolApplication { ctx ->
 ```
 The above example creates an application with a single scene and sets up a mouse-controlled camera
 (with `defaultOrbitCamera()`).
-As you might have guessed the `colorMesh { ... }` block creates a colored cube and adds it to the scene.
+As you might have guessed the `addColorMesh { ... }` block creates a colored cube and adds it to the scene.
 In order to draw the mesh on the screen it needs a shader, which is assigned with
 `shader = KslPbrShader { ... }`. This creates a simple PBR shader for a dielectric material
 with a rather smooth surface. Color information is taken from the corresponding vertex attribute.
@@ -147,15 +147,15 @@ fun main() = KoolApplication { ctx ->
         defaultOrbitCamera()
 
         // Light setup
-        lighting.singleLight {
-            setSpot(Vec3f(5f, 6.25f, 7.5f), Vec3f(-1f, -1.25f, -1.5f), 45f)
+        lighting.singleSpotLight {
+            setup(Vec3f(5f, 6.25f, 7.5f), Vec3f(-1f, -1.25f, -1.5f), 45f)
             setColor(Color.WHITE, 300f)
         }
-        val shadowMap = SimpleShadowMap(this, lightIndex = 0)
+        val shadowMap = SimpleShadowMap(this, lighting.lights[0])
         val aoPipeline = AoPipeline.createForward(this)
 
         // Add a ground plane
-        colorMesh {
+        addColorMesh {
             generate {
                 grid { }
             }
