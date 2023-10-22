@@ -8,7 +8,6 @@ import de.fabmax.kool.modules.ksl.lang.KslProgram
 import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.pipeline.Uniform4f
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
-import kotlin.math.min
 
 fun KslProgram.morphWeightData(): MorphWeightData {
     return (dataBlocks.find { it is MorphWeightData } as? MorphWeightData) ?: MorphWeightData(this)
@@ -34,14 +33,16 @@ class MorphWeightData(program: KslProgram) : KslDataBlock, KslShaderListener {
     override fun onUpdate(cmd: DrawCommand) {
         cmd.mesh.morphWeights?.let { w ->
             uMorphWeightsA?.let { wA ->
-                for (i in 0 until min(4, w.size)) {
-                    wA.value[i] = w[i]
-                }
+                if (w.size > 0) wA.value.x = w[0]
+                if (w.size > 1) wA.value.y = w[1]
+                if (w.size > 2) wA.value.z = w[2]
+                if (w.size > 3) wA.value.w = w[3]
             }
             uMorphWeightsB?.let { wB ->
-                for (i in 0 until min(4, w.size - 4)) {
-                    wB.value[i] = w[i + 4]
-                }
+                if (w.size > 4) wB.value.x = w[4]
+                if (w.size > 5) wB.value.y = w[5]
+                if (w.size > 6) wB.value.z = w[6]
+                if (w.size > 7) wB.value.w = w[7]
             }
         }
     }

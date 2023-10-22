@@ -40,10 +40,22 @@ open class Vec3f(open val x: Float, open val y: Float, open val z: Float) {
     operator fun plus(that: Vec3f) = Vec3f(x + that.x, y + that.y, z + that.z)
 
     /**
+     * Component-wise addition with the given scalar. Returns the result as a new [Vec3f]. Consider using [add] with
+     * a pre-allocated result vector in performance-critical situations, to avoid unnecessary object allocations.
+     */
+    operator fun plus(that: Float) = Vec3f(x + that, y + that, z + that)
+
+    /**
      * Component-wise subtraction with the given [Vec3f]. Returns the result as a new [Vec3f]. Consider using [subtract]
      * with a pre-allocated result vector in performance-critical situations, to avoid unnecessary object allocations.
      */
     operator fun minus(that: Vec3f) = Vec3f(x - that.x, y - that.y, z - that.z)
+
+    /**
+     * Component-wise subtraction with the given scalar. Returns the result as a new [Vec3f]. Consider using [subtract]
+     * with a pre-allocated result vector in performance-critical situations, to avoid unnecessary object allocations.
+     */
+    operator fun minus(that: Float) = Vec3f(x - that, y - that, z - that)
 
     /**
      * Component-wise multiplication with the given [Vec3f]. Returns the result as a new [Vec3f]. Consider using [mul]
@@ -52,30 +64,55 @@ open class Vec3f(open val x: Float, open val y: Float, open val z: Float) {
     operator fun times(that: Vec3f) = Vec3f(x * that.x, y * that.y, z * that.z)
 
     /**
+     * Component-wise multiplication with the given scalar. Returns the result as a new [Vec3f]. Consider using [mul]
+     * with a pre-allocated result vector in performance-critical situations, to avoid unnecessary object allocations.
+     */
+    operator fun times(that: Float) = Vec3f(x * that, y * that, z * that)
+
+    /**
      * Component-wise division with the given [Vec3f]. Returns the result as a new [Vec3f]. Consider using [mul]
      * with a pre-allocated result vector in performance-critical situations, to avoid unnecessary object allocations.
      */
     operator fun div(that: Vec3f) = Vec3f(x / that.x, y / that.y, z / that.z)
 
     /**
+     * Component-wise division with the given scalar. Returns the result as a new [Vec3f]. Consider using [mul]
+     * with a pre-allocated result vector in performance-critical situations, to avoid unnecessary object allocations.
+     */
+    operator fun div(that: Float) = Vec3f(x / that, y / that, z / that)
+
+    /**
      * Component-wise addition with the given [Vec3f]. Returns the result as an (optionally provided) [MutableVec3f].
      */
-    fun add(other: Vec3f, result: MutableVec3f = MutableVec3f()): MutableVec3f = result.set(this).add(other)
+    fun add(that: Vec3f, result: MutableVec3f = MutableVec3f()): MutableVec3f = result.set(this).add(that)
+
+    /**
+     * Component-wise addition with the given scalar. Returns the result as an (optionally provided) [MutableVec3f].
+     */
+    fun add(that: Float, result: MutableVec3f = MutableVec3f()): MutableVec3f = result.set(this).add(that)
 
     /**
      * Component-wise subtraction with the given [Vec3f]. Returns the result as an (optionally provided) [MutableVec3f].
      */
-    fun subtract(other: Vec3f, result: MutableVec3f = MutableVec3f()): MutableVec3f = result.set(this).subtract(other)
+    fun subtract(that: Vec3f, result: MutableVec3f = MutableVec3f()): MutableVec3f = result.set(this).subtract(that)
+
+    /**
+     * Component-wise subtraction with the given scalar. Returns the result as an (optionally provided) [MutableVec3f].
+     */
+    fun subtract(that: Float, result: MutableVec3f = MutableVec3f()): MutableVec3f = result.set(this).subtract(that)
 
     /**
      * Component-wise multiplication with the given [Vec3f]. Returns the result as an (optionally provided) [MutableVec3f].
      */
-    fun mul(other: Vec3f, result: MutableVec3f = MutableVec3f()): MutableVec3f = result.set(this).mul(other)
+    fun mul(that: Vec3f, result: MutableVec3f = MutableVec3f()): MutableVec3f = result.set(this).mul(that)
 
     /**
-     * Scales this vector by the factor and returns the result as an (optionally provided) [MutableVec3f].
+     * Component-wise multiplication with the given scalar (i.e. scaling). Returns the result as an (optionally provided) [MutableVec3f].
      */
-    fun scale(factor: Float, result: MutableVec3f = MutableVec3f()): MutableVec3f = result.set(this).scale(factor)
+    fun mul(that: Float, result: MutableVec3f = MutableVec3f()): MutableVec3f = result.set(this).mul(that)
+
+    @Deprecated("Replace with mul()", ReplaceWith("mul(factor, result)"))
+    fun scale(factor: Float, result: MutableVec3f = MutableVec3f()) = mul(factor, result)
 
     override fun toString(): String = "($x, $y, $z)"
 
@@ -111,7 +148,7 @@ open class Vec3f(open val x: Float, open val y: Float, open val z: Float) {
     }
 
     /**
-     * Appends the components of this [Vec2f] to the given [MixedBuffer].
+     * Appends the components of this [Vec3f] to the given [MixedBuffer].
      */
     fun putTo(target: MixedBuffer) {
         target.putFloat32(x)
@@ -166,7 +203,7 @@ open class Vec3f(open val x: Float, open val y: Float, open val z: Float) {
      * Linearly interpolates the values of this and another vector and returns the result as an (optionally provided)
      * [MutableVec3f]: result = that * weight + this * (1 - weight).
      */
-    fun mix(that: Vec3f, weight: Float, result: MutableVec3f): MutableVec3f {
+    fun mix(that: Vec3f, weight: Float, result: MutableVec3f = MutableVec3f()): MutableVec3f {
         result.x = that.x * weight + x * (1f - weight)
         result.y = that.y * weight + y * (1f - weight)
         result.z = that.z * weight + z * (1f - weight)
@@ -176,7 +213,7 @@ open class Vec3f(open val x: Float, open val y: Float, open val z: Float) {
     /**
      * Norms the length of this vector and returns the result as an (optionally provided) [MutableVec3f].
      */
-    fun norm(result: MutableVec3f): MutableVec3f = result.set(this).norm()
+    fun norm(result: MutableVec3f = MutableVec3f()): MutableVec3f = result.set(this).norm()
 
     /**
      * Returns a unit vector orthogonal to this vector.
@@ -202,8 +239,8 @@ open class Vec3f(open val x: Float, open val y: Float, open val z: Float) {
      * Checks vector components for equality using [de.fabmax.kool.math.isFuzzyEqual], that is all components must
      * have a difference less or equal [eps].
      */
-    fun isFuzzyEqual(other: Vec3f, eps: Float = FUZZY_EQ_F): Boolean {
-        return isFuzzyEqual(x, other.x, eps) && isFuzzyEqual(y, other.y, eps) && isFuzzyEqual(z, other.z, eps)
+    fun isFuzzyEqual(that: Vec3f, eps: Float = FUZZY_EQ_F): Boolean {
+        return isFuzzyEqual(x, that.x, eps) && isFuzzyEqual(y, that.y, eps) && isFuzzyEqual(z, that.z, eps)
     }
 
     // </noInt>
@@ -233,82 +270,129 @@ open class MutableVec3f(override var x: Float, override var y: Float, override v
         return this
     }
 
-    fun set(other: Vec3f): MutableVec3f {
-        x = other.x
-        y = other.y
-        z = other.z
+    fun set(that: Vec3f): MutableVec3f {
+        x = that.x
+        y = that.y
+        z = that.z
         return this
     }
 
     /**
      * Inplace operation: Adds the given [Vec3f] component-wise to this vector.
      */
-    operator fun plusAssign(other: Vec3f) { add(other) }
+    operator fun plusAssign(that: Vec3f) { add(that) }
+
+    /**
+     * Inplace operation: Adds the given scalar component-wise to this vector.
+     */
+    operator fun plusAssign(that: Float) { add(that) }
 
     /**
      * Inplace operation: Subtracts the given [Vec3f] component-wise from this vector.
      */
-    operator fun minusAssign(other: Vec3f) { subtract(other) }
+    operator fun minusAssign(that: Vec3f) { subtract(that) }
+
+    /**
+     * Inplace operation: Subtracts the given scalar component-wise from this vector.
+     */
+    operator fun minusAssign(that: Float) { subtract(that) }
 
     /**
      * Inplace operation: Multiplies the given [Vec3f] component-wise with this vector.
      */
-    operator fun timesAssign(factor: Float) { scale(factor) }
+    operator fun timesAssign(that: Vec3f) { mul(that) }
 
     /**
-     * Inplace operation: Divides the given [Vec3f] component-wise with this vector.
+     * Inplace operation: Multiplies the given scalar component-wise with this vector.
      */
-    operator fun divAssign(div: Float) { scale(1f / div) }
+    operator fun timesAssign(that: Float) { mul(that) }
+
+    /**
+     * Inplace operation: Divides this vector component-wise by the given [Vec3f].
+     */
+    operator fun divAssign(that: Vec3f) {
+        x /= that.x
+        y /= that.y
+        z /= that.z
+    }
+
+    /**
+     * Inplace operation: Divides this vector component-wise by the given scalar.
+     */
+    operator fun divAssign(div: Float) { mul(1f / div) }
 
     /**
      * Inplace operation: Adds the given [Vec3f] component-wise to this vector.
      */
-    fun add(other: Vec3f): MutableVec3f {
-        x += other.x
-        y += other.y
-        z += other.z
+    fun add(that: Vec3f): MutableVec3f {
+        x += that.x
+        y += that.y
+        z += that.z
+        return this
+    }
+
+    /**
+     * Inplace operation: Adds the given scalar component-wise to this vector.
+     */
+    fun add(that: Float): MutableVec3f {
+        x += that
+        y += that
+        z += that
         return this
     }
 
     /**
      * Inplace operation: Subtracts the given [Vec3f] component-wise from this vector.
      */
-    fun subtract(other: Vec3f): MutableVec3f {
-        x -= other.x
-        y -= other.y
-        z -= other.z
+    fun subtract(that: Vec3f): MutableVec3f {
+        x -= that.x
+        y -= that.y
+        z -= that.z
+        return this
+    }
+
+    /**
+     * Inplace operation: Subtracts the given scalar component-wise from this vector.
+     */
+    fun subtract(that: Float): MutableVec3f {
+        x -= that
+        y -= that
+        z -= that
         return this
     }
 
     /**
      * Inplace operation: Multiplies the given [Vec3f] component-wise with this vector.
      */
-    fun mul(other: Vec3f): MutableVec3f {
-        x *= other.x
-        y *= other.y
-        z *= other.z
+    fun mul(that: Vec3f): MutableVec3f {
+        x *= that.x
+        y *= that.y
+        z *= that.z
         return this
     }
 
     /**
      * Inplace operation: Scales this vector by the given factor.
      */
-    fun scale(factor: Float): MutableVec3f {
-        x *= factor
-        y *= factor
-        z *= factor
+    fun mul(that : Float): MutableVec3f {
+        x *= that
+        y *= that
+        z *= that
         return this
     }
+
+    @Deprecated("Replace with mul()", ReplaceWith("mul(factor)"))
+    fun scale(factor: Float) = mul(factor)
 
     // <noInt> The following section will not be included in the integer variant of this class
 
     /**
-     * Inplace operation: Scales this vector to unit length.
+     * Inplace operation: Scales this vector to unit length. Special case: A zero-vector remains zero-length.
      */
     fun norm(): MutableVec3f {
         val l = length()
         return if (l != 0f) {
-            scale(1f / l)
+            mul(1f / l)
         } else {
             set(ZERO)
         }
@@ -353,10 +437,22 @@ open class Vec3d(open val x: Double, open val y: Double, open val z: Double) {
     operator fun plus(that: Vec3d) = Vec3d(x + that.x, y + that.y, z + that.z)
 
     /**
+     * Component-wise addition with the given scalar. Returns the result as a new [Vec3d]. Consider using [add] with
+     * a pre-allocated result vector in performance-critical situations, to avoid unnecessary object allocations.
+     */
+    operator fun plus(that: Double) = Vec3d(x + that, y + that, z + that)
+
+    /**
      * Component-wise subtraction with the given [Vec3d]. Returns the result as a new [Vec3d]. Consider using [subtract]
      * with a pre-allocated result vector in performance-critical situations, to avoid unnecessary object allocations.
      */
     operator fun minus(that: Vec3d) = Vec3d(x - that.x, y - that.y, z - that.z)
+
+    /**
+     * Component-wise subtraction with the given scalar. Returns the result as a new [Vec3d]. Consider using [subtract]
+     * with a pre-allocated result vector in performance-critical situations, to avoid unnecessary object allocations.
+     */
+    operator fun minus(that: Double) = Vec3d(x - that, y - that, z - that)
 
     /**
      * Component-wise multiplication with the given [Vec3d]. Returns the result as a new [Vec3d]. Consider using [mul]
@@ -365,30 +461,55 @@ open class Vec3d(open val x: Double, open val y: Double, open val z: Double) {
     operator fun times(that: Vec3d) = Vec3d(x * that.x, y * that.y, z * that.z)
 
     /**
+     * Component-wise multiplication with the given scalar. Returns the result as a new [Vec3d]. Consider using [mul]
+     * with a pre-allocated result vector in performance-critical situations, to avoid unnecessary object allocations.
+     */
+    operator fun times(that: Double) = Vec3d(x * that, y * that, z * that)
+
+    /**
      * Component-wise division with the given [Vec3d]. Returns the result as a new [Vec3d]. Consider using [mul]
      * with a pre-allocated result vector in performance-critical situations, to avoid unnecessary object allocations.
      */
     operator fun div(that: Vec3d) = Vec3d(x / that.x, y / that.y, z / that.z)
 
     /**
+     * Component-wise division with the given scalar. Returns the result as a new [Vec3d]. Consider using [mul]
+     * with a pre-allocated result vector in performance-critical situations, to avoid unnecessary object allocations.
+     */
+    operator fun div(that: Double) = Vec3d(x / that, y / that, z / that)
+
+    /**
      * Component-wise addition with the given [Vec3d]. Returns the result as an (optionally provided) [MutableVec3d].
      */
-    fun add(other: Vec3d, result: MutableVec3d = MutableVec3d()): MutableVec3d = result.set(this).add(other)
+    fun add(that: Vec3d, result: MutableVec3d = MutableVec3d()): MutableVec3d = result.set(this).add(that)
+
+    /**
+     * Component-wise addition with the given scalar. Returns the result as an (optionally provided) [MutableVec3d].
+     */
+    fun add(that: Double, result: MutableVec3d = MutableVec3d()): MutableVec3d = result.set(this).add(that)
 
     /**
      * Component-wise subtraction with the given [Vec3d]. Returns the result as an (optionally provided) [MutableVec3d].
      */
-    fun subtract(other: Vec3d, result: MutableVec3d = MutableVec3d()): MutableVec3d = result.set(this).subtract(other)
+    fun subtract(that: Vec3d, result: MutableVec3d = MutableVec3d()): MutableVec3d = result.set(this).subtract(that)
+
+    /**
+     * Component-wise subtraction with the given scalar. Returns the result as an (optionally provided) [MutableVec3d].
+     */
+    fun subtract(that: Double, result: MutableVec3d = MutableVec3d()): MutableVec3d = result.set(this).subtract(that)
 
     /**
      * Component-wise multiplication with the given [Vec3d]. Returns the result as an (optionally provided) [MutableVec3d].
      */
-    fun mul(other: Vec3d, result: MutableVec3d = MutableVec3d()): MutableVec3d = result.set(this).mul(other)
+    fun mul(that: Vec3d, result: MutableVec3d = MutableVec3d()): MutableVec3d = result.set(this).mul(that)
 
     /**
-     * Scales this vector by the factor and returns the result as an (optionally provided) [MutableVec3d].
+     * Component-wise multiplication with the given scalar (i.e. scaling). Returns the result as an (optionally provided) [MutableVec3d].
      */
-    fun scale(factor: Double, result: MutableVec3d = MutableVec3d()): MutableVec3d = result.set(this).scale(factor)
+    fun mul(that: Double, result: MutableVec3d = MutableVec3d()): MutableVec3d = result.set(this).mul(that)
+
+    @Deprecated("Replace with mul()", ReplaceWith("mul(factor, result)"))
+    fun scale(factor: Double, result: MutableVec3d = MutableVec3d()) = mul(factor, result)
 
     override fun toString(): String = "($x, $y, $z)"
 
@@ -424,7 +545,7 @@ open class Vec3d(open val x: Double, open val y: Double, open val z: Double) {
     }
 
     /**
-     * Appends the components of this [Vec2d] to the given [MixedBuffer].
+     * Appends the components of this [Vec3d] to the given [MixedBuffer].
      */
     fun putTo(target: MixedBuffer) {
         target.putFloat32(x)
@@ -477,7 +598,7 @@ open class Vec3d(open val x: Double, open val y: Double, open val z: Double) {
      * Linearly interpolates the values of this and another vector and returns the result as an (optionally provided)
      * [MutableVec3d]: result = that * weight + this * (1 - weight).
      */
-    fun mix(that: Vec3d, weight: Double, result: MutableVec3d): MutableVec3d {
+    fun mix(that: Vec3d, weight: Double, result: MutableVec3d = MutableVec3d()): MutableVec3d {
         result.x = that.x * weight + x * (1.0 - weight)
         result.y = that.y * weight + y * (1.0 - weight)
         result.z = that.z * weight + z * (1.0 - weight)
@@ -487,7 +608,7 @@ open class Vec3d(open val x: Double, open val y: Double, open val z: Double) {
     /**
      * Norms the length of this vector and returns the result as an (optionally provided) [MutableVec3d].
      */
-    fun norm(result: MutableVec3d): MutableVec3d = result.set(this).norm()
+    fun norm(result: MutableVec3d = MutableVec3d()): MutableVec3d = result.set(this).norm()
 
     /**
      * Returns a unit vector orthogonal to this vector.
@@ -513,8 +634,8 @@ open class Vec3d(open val x: Double, open val y: Double, open val z: Double) {
      * Checks vector components for equality using [de.fabmax.kool.math.isFuzzyEqual], that is all components must
      * have a difference less or equal [eps].
      */
-    fun isFuzzyEqual(other: Vec3d, eps: Double = FUZZY_EQ_D): Boolean {
-        return isFuzzyEqual(x, other.x, eps) && isFuzzyEqual(y, other.y, eps) && isFuzzyEqual(z, other.z, eps)
+    fun isFuzzyEqual(that: Vec3d, eps: Double = FUZZY_EQ_D): Boolean {
+        return isFuzzyEqual(x, that.x, eps) && isFuzzyEqual(y, that.y, eps) && isFuzzyEqual(z, that.z, eps)
     }
 
     companion object {
@@ -542,80 +663,127 @@ open class MutableVec3d(override var x: Double, override var y: Double, override
         return this
     }
 
-    fun set(other: Vec3d): MutableVec3d {
-        x = other.x
-        y = other.y
-        z = other.z
+    fun set(that: Vec3d): MutableVec3d {
+        x = that.x
+        y = that.y
+        z = that.z
         return this
     }
 
     /**
      * Inplace operation: Adds the given [Vec3d] component-wise to this vector.
      */
-    operator fun plusAssign(other: Vec3d) { add(other) }
+    operator fun plusAssign(that: Vec3d) { add(that) }
+
+    /**
+     * Inplace operation: Adds the given scalar component-wise to this vector.
+     */
+    operator fun plusAssign(that: Double) { add(that) }
 
     /**
      * Inplace operation: Subtracts the given [Vec3d] component-wise from this vector.
      */
-    operator fun minusAssign(other: Vec3d) { subtract(other) }
+    operator fun minusAssign(that: Vec3d) { subtract(that) }
+
+    /**
+     * Inplace operation: Subtracts the given scalar component-wise from this vector.
+     */
+    operator fun minusAssign(that: Double) { subtract(that) }
 
     /**
      * Inplace operation: Multiplies the given [Vec3d] component-wise with this vector.
      */
-    operator fun timesAssign(factor: Double) { scale(factor) }
+    operator fun timesAssign(that: Vec3d) { mul(that) }
 
     /**
-     * Inplace operation: Divides the given [Vec3d] component-wise with this vector.
+     * Inplace operation: Multiplies the given scalar component-wise with this vector.
      */
-    operator fun divAssign(div: Double) { scale(1.0 / div) }
+    operator fun timesAssign(that: Double) { mul(that) }
+
+    /**
+     * Inplace operation: Divides this vector component-wise by the given [Vec3d].
+     */
+    operator fun divAssign(that: Vec3d) {
+        x /= that.x
+        y /= that.y
+        z /= that.z
+    }
+
+    /**
+     * Inplace operation: Divides this vector component-wise by the given scalar.
+     */
+    operator fun divAssign(div: Double) { mul(1.0 / div) }
 
     /**
      * Inplace operation: Adds the given [Vec3d] component-wise to this vector.
      */
-    fun add(other: Vec3d): MutableVec3d {
-        x += other.x
-        y += other.y
-        z += other.z
+    fun add(that: Vec3d): MutableVec3d {
+        x += that.x
+        y += that.y
+        z += that.z
+        return this
+    }
+
+    /**
+     * Inplace operation: Adds the given scalar component-wise to this vector.
+     */
+    fun add(that: Double): MutableVec3d {
+        x += that
+        y += that
+        z += that
         return this
     }
 
     /**
      * Inplace operation: Subtracts the given [Vec3d] component-wise from this vector.
      */
-    fun subtract(other: Vec3d): MutableVec3d {
-        x -= other.x
-        y -= other.y
-        z -= other.z
+    fun subtract(that: Vec3d): MutableVec3d {
+        x -= that.x
+        y -= that.y
+        z -= that.z
+        return this
+    }
+
+    /**
+     * Inplace operation: Subtracts the given scalar component-wise from this vector.
+     */
+    fun subtract(that: Double): MutableVec3d {
+        x -= that
+        y -= that
+        z -= that
         return this
     }
 
     /**
      * Inplace operation: Multiplies the given [Vec3d] component-wise with this vector.
      */
-    fun mul(other: Vec3d): MutableVec3d {
-        x *= other.x
-        y *= other.y
-        z *= other.z
+    fun mul(that: Vec3d): MutableVec3d {
+        x *= that.x
+        y *= that.y
+        z *= that.z
         return this
     }
 
     /**
      * Inplace operation: Scales this vector by the given factor.
      */
-    fun scale(factor: Double): MutableVec3d {
-        x *= factor
-        y *= factor
-        z *= factor
+    fun mul(that : Double): MutableVec3d {
+        x *= that
+        y *= that
+        z *= that
         return this
     }
 
+    @Deprecated("Replace with mul()", ReplaceWith("mul(factor)"))
+    fun scale(factor: Double) = mul(factor)
+
     /**
-     * Inplace operation: Scales this vector to unit length.
+     * Inplace operation: Scales this vector to unit length. Special case: A zero-vector remains zero-length.
      */
     fun norm(): MutableVec3d {
         val l = length()
         return if (l != 0.0) {
-            scale(1.0 / l)
+            mul(1.0 / l)
         } else {
             set(ZERO)
         }
@@ -657,10 +825,22 @@ open class Vec3i(open val x: Int, open val y: Int, open val z: Int) {
     operator fun plus(that: Vec3i) = Vec3i(x + that.x, y + that.y, z + that.z)
 
     /**
+     * Component-wise addition with the given scalar. Returns the result as a new [Vec3i]. Consider using [add] with
+     * a pre-allocated result vector in performance-critical situations, to avoid unnecessary object allocations.
+     */
+    operator fun plus(that: Int) = Vec3i(x + that, y + that, z + that)
+
+    /**
      * Component-wise subtraction with the given [Vec3i]. Returns the result as a new [Vec3i]. Consider using [subtract]
      * with a pre-allocated result vector in performance-critical situations, to avoid unnecessary object allocations.
      */
     operator fun minus(that: Vec3i) = Vec3i(x - that.x, y - that.y, z - that.z)
+
+    /**
+     * Component-wise subtraction with the given scalar. Returns the result as a new [Vec3i]. Consider using [subtract]
+     * with a pre-allocated result vector in performance-critical situations, to avoid unnecessary object allocations.
+     */
+    operator fun minus(that: Int) = Vec3i(x - that, y - that, z - that)
 
     /**
      * Component-wise multiplication with the given [Vec3i]. Returns the result as a new [Vec3i]. Consider using [mul]
@@ -669,30 +849,55 @@ open class Vec3i(open val x: Int, open val y: Int, open val z: Int) {
     operator fun times(that: Vec3i) = Vec3i(x * that.x, y * that.y, z * that.z)
 
     /**
+     * Component-wise multiplication with the given scalar. Returns the result as a new [Vec3i]. Consider using [mul]
+     * with a pre-allocated result vector in performance-critical situations, to avoid unnecessary object allocations.
+     */
+    operator fun times(that: Int) = Vec3i(x * that, y * that, z * that)
+
+    /**
      * Component-wise division with the given [Vec3i]. Returns the result as a new [Vec3i]. Consider using [mul]
      * with a pre-allocated result vector in performance-critical situations, to avoid unnecessary object allocations.
      */
     operator fun div(that: Vec3i) = Vec3i(x / that.x, y / that.y, z / that.z)
 
     /**
+     * Component-wise division with the given scalar. Returns the result as a new [Vec3i]. Consider using [mul]
+     * with a pre-allocated result vector in performance-critical situations, to avoid unnecessary object allocations.
+     */
+    operator fun div(that: Int) = Vec3i(x / that, y / that, z / that)
+
+    /**
      * Component-wise addition with the given [Vec3i]. Returns the result as an (optionally provided) [MutableVec3i].
      */
-    fun add(other: Vec3i, result: MutableVec3i = MutableVec3i()): MutableVec3i = result.set(this).add(other)
+    fun add(that: Vec3i, result: MutableVec3i = MutableVec3i()): MutableVec3i = result.set(this).add(that)
+
+    /**
+     * Component-wise addition with the given scalar. Returns the result as an (optionally provided) [MutableVec3i].
+     */
+    fun add(that: Int, result: MutableVec3i = MutableVec3i()): MutableVec3i = result.set(this).add(that)
 
     /**
      * Component-wise subtraction with the given [Vec3i]. Returns the result as an (optionally provided) [MutableVec3i].
      */
-    fun subtract(other: Vec3i, result: MutableVec3i = MutableVec3i()): MutableVec3i = result.set(this).subtract(other)
+    fun subtract(that: Vec3i, result: MutableVec3i = MutableVec3i()): MutableVec3i = result.set(this).subtract(that)
+
+    /**
+     * Component-wise subtraction with the given scalar. Returns the result as an (optionally provided) [MutableVec3i].
+     */
+    fun subtract(that: Int, result: MutableVec3i = MutableVec3i()): MutableVec3i = result.set(this).subtract(that)
 
     /**
      * Component-wise multiplication with the given [Vec3i]. Returns the result as an (optionally provided) [MutableVec3i].
      */
-    fun mul(other: Vec3i, result: MutableVec3i = MutableVec3i()): MutableVec3i = result.set(this).mul(other)
+    fun mul(that: Vec3i, result: MutableVec3i = MutableVec3i()): MutableVec3i = result.set(this).mul(that)
 
     /**
-     * Scales this vector by the factor and returns the result as an (optionally provided) [MutableVec3i].
+     * Component-wise multiplication with the given scalar (i.e. scaling). Returns the result as an (optionally provided) [MutableVec3i].
      */
-    fun scale(factor: Int, result: MutableVec3i = MutableVec3i()): MutableVec3i = result.set(this).scale(factor)
+    fun mul(that: Int, result: MutableVec3i = MutableVec3i()): MutableVec3i = result.set(this).mul(that)
+
+    @Deprecated("Replace with mul()", ReplaceWith("mul(factor, result)"))
+    fun scale(factor: Int, result: MutableVec3i = MutableVec3i()) = mul(factor, result)
 
     override fun toString(): String = "($x, $y, $z)"
 
@@ -728,7 +933,7 @@ open class Vec3i(open val x: Int, open val y: Int, open val z: Int) {
     }
 
     /**
-     * Appends the components of this [Vec2i] to the given [MixedBuffer].
+     * Appends the components of this [Vec3i] to the given [MixedBuffer].
      */
     fun putTo(target: MixedBuffer) {
         target.putUint32(x)
@@ -761,70 +966,117 @@ open class MutableVec3i(override var x: Int, override var y: Int, override var z
         return this
     }
 
-    fun set(other: Vec3i): MutableVec3i {
-        x = other.x
-        y = other.y
-        z = other.z
+    fun set(that: Vec3i): MutableVec3i {
+        x = that.x
+        y = that.y
+        z = that.z
         return this
     }
 
     /**
      * Inplace operation: Adds the given [Vec3i] component-wise to this vector.
      */
-    operator fun plusAssign(other: Vec3i) { add(other) }
+    operator fun plusAssign(that: Vec3i) { add(that) }
+
+    /**
+     * Inplace operation: Adds the given scalar component-wise to this vector.
+     */
+    operator fun plusAssign(that: Int) { add(that) }
 
     /**
      * Inplace operation: Subtracts the given [Vec3i] component-wise from this vector.
      */
-    operator fun minusAssign(other: Vec3i) { subtract(other) }
+    operator fun minusAssign(that: Vec3i) { subtract(that) }
+
+    /**
+     * Inplace operation: Subtracts the given scalar component-wise from this vector.
+     */
+    operator fun minusAssign(that: Int) { subtract(that) }
 
     /**
      * Inplace operation: Multiplies the given [Vec3i] component-wise with this vector.
      */
-    operator fun timesAssign(factor: Int) { scale(factor) }
+    operator fun timesAssign(that: Vec3i) { mul(that) }
 
     /**
-     * Inplace operation: Divides the given [Vec3i] component-wise with this vector.
+     * Inplace operation: Multiplies the given scalar component-wise with this vector.
      */
-    operator fun divAssign(div: Int) { scale(1 / div) }
+    operator fun timesAssign(that: Int) { mul(that) }
+
+    /**
+     * Inplace operation: Divides this vector component-wise by the given [Vec3i].
+     */
+    operator fun divAssign(that: Vec3i) {
+        x /= that.x
+        y /= that.y
+        z /= that.z
+    }
+
+    /**
+     * Inplace operation: Divides this vector component-wise by the given scalar.
+     */
+    operator fun divAssign(div: Int) { mul(1 / div) }
 
     /**
      * Inplace operation: Adds the given [Vec3i] component-wise to this vector.
      */
-    fun add(other: Vec3i): MutableVec3i {
-        x += other.x
-        y += other.y
-        z += other.z
+    fun add(that: Vec3i): MutableVec3i {
+        x += that.x
+        y += that.y
+        z += that.z
+        return this
+    }
+
+    /**
+     * Inplace operation: Adds the given scalar component-wise to this vector.
+     */
+    fun add(that: Int): MutableVec3i {
+        x += that
+        y += that
+        z += that
         return this
     }
 
     /**
      * Inplace operation: Subtracts the given [Vec3i] component-wise from this vector.
      */
-    fun subtract(other: Vec3i): MutableVec3i {
-        x -= other.x
-        y -= other.y
-        z -= other.z
+    fun subtract(that: Vec3i): MutableVec3i {
+        x -= that.x
+        y -= that.y
+        z -= that.z
+        return this
+    }
+
+    /**
+     * Inplace operation: Subtracts the given scalar component-wise from this vector.
+     */
+    fun subtract(that: Int): MutableVec3i {
+        x -= that
+        y -= that
+        z -= that
         return this
     }
 
     /**
      * Inplace operation: Multiplies the given [Vec3i] component-wise with this vector.
      */
-    fun mul(other: Vec3i): MutableVec3i {
-        x *= other.x
-        y *= other.y
-        z *= other.z
+    fun mul(that: Vec3i): MutableVec3i {
+        x *= that.x
+        y *= that.y
+        z *= that.z
         return this
     }
 
     /**
      * Inplace operation: Scales this vector by the given factor.
      */
-    fun scale(factor: Int): MutableVec3i {
-        x *= factor
-        y *= factor
-        z *= factor
+    fun mul(that : Int): MutableVec3i {
+        x *= that
+        y *= that
+        z *= that
         return this
     }
+
+    @Deprecated("Replace with mul()", ReplaceWith("mul(factor)"))
+    fun scale(factor: Int) = mul(factor)
 }

@@ -751,6 +751,15 @@ open class Mat4f {
         return result
     }
 
+    private operator fun MutableVec4f.set(i: Int, value: Float) {
+        when(i) {
+            0 -> x = value
+            1 -> y = value
+            2 -> z = value
+            else -> w = value
+        }
+    }
+
     fun getScale(result: MutableVec3f): MutableVec3f {
         val ax = this[0, 0]
         val ay = this[1, 0]

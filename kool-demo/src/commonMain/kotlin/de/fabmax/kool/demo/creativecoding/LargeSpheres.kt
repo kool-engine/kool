@@ -79,7 +79,7 @@ class LargeSpheres(val resources: CreativeCodingDemo.Resources) : CreativeConten
                     transform.push().scale(settings.sphereSize * sphereSize)
                     put(transform.array)
                     transform.pop()
-                    put(color.array)
+                    color.putTo(this)
                 }
 
                 // forward transform matrix to next sphere position

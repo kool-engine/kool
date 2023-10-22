@@ -207,7 +207,7 @@ class TransformEditor(component: TransformComponent) : ComponentEditor<Transform
                         fy > fx && fy > fz -> scaleValue.y / startTransformData.scale.y
                         else -> scaleValue.z / startTransformData.scale.z
                     }
-                    startTransformData.copy(scale = Vec3Data(startTransformData.scale.toVec3d().scale(s)))
+                    startTransformData.copy(scale = Vec3Data(startTransformData.scale.toVec3d().mul(s)))
                 } else {
                     return startTransformData.copy(scale = Vec3Data(scaleValue))
                 }

@@ -163,26 +163,21 @@ class UiPrimitiveMesh : Mesh(IndexedVertexList(ATTRIB_OUTER_WEIGHTS, ATTRIB_INNE
         clip: Vec4f,
         colorA: Color, colorB: Color, gradientX: Float, gradientY: Float
     ) {
-        val vec4 = MutableVec4f()
         primitives.addInstance {
-            put(vec4.set(
-                max(outerW - outerRx * 2f, 0f),
-                max(outerH - outerRy * 2f, 0f),
-                min(outerRx, outerW * 0.5f),
-                min(outerRy, outerH * 0.5f)
-            ).array)
+            put(max(outerW - outerRx * 2f, 0f))
+            put(max(outerH - outerRy * 2f, 0f))
+            put(min(outerRx, outerW * 0.5f))
+            put(min(outerRy, outerH * 0.5f))
 
-            put(vec4.set(
-                max(innerW - innerRx * 2f, 0f),
-                max(innerH - innerRy * 2f, 0f),
-                min(innerRx, innerW * 0.5f),
-                min(innerRy, innerH * 0.5f)
-            ).array)
+            put(max(innerW - innerRx * 2f, 0f))
+            put(max(innerH - innerRy * 2f, 0f))
+            put(min(innerRx, innerW * 0.5f))
+            put(min(innerRy, innerH * 0.5f))
 
-            put(vec4.set(clip).array)
+            clip.putTo(this)
 
-            put(vec4.set(colorA).array)
-            put(vec4.set(colorB).array)
+            colorA.putTo(this)
+            colorB.putTo(this)
             put(gradientX)
             put(gradientY)
 

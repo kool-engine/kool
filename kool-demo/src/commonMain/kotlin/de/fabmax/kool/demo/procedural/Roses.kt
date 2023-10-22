@@ -189,18 +189,18 @@ class Roses : Node() {
             withTransform {
                 val ax = MutableVec3f(rand.randomF(-1f, 1f), rand.randomF(-1f, 1f), 0f).norm()
                 rotate(90f, ax)
-                val shaftUp = MutableVec3f(0f, 0f, 1f).rotate((-90f).deg, ax).scale(0.1f)
+                val shaftUp = MutableVec3f(0f, 0f, 1f).rotate((-90f).deg, ax).mul(0.1f)
                 translate(0f, 0f, 0.1f)
 
                 profile {
                     circleShape(0.18f, steps = 8)
 
-                    for (i in 0 .. 4) {
+                    for (i in 0..4) {
                         val p = i / 4f
                         val s = (1 - p).pow(1.5f)
                         scale(s, s, 1f)
                         sample()
-                        scale(1/s, 1/s, 1f)
+                        scale(1 / s, 1 / s, 1f)
 
                         translate(0f, 0f, (1 - p) * 0.1f)
                         translate(shaftUp)

@@ -33,7 +33,7 @@ class VecTest {
 
     @Test
     fun vec3Scale() {
-        assertTrue(MutableVec3f(1f, 2f, 3f).scale(2f).isFuzzyEqual(Vec3f(2f, 4f, 6f)))
+        assertTrue(MutableVec3f(1f, 2f, 3f).mul(2f).isFuzzyEqual(Vec3f(2f, 4f, 6f)))
     }
 
     @Test

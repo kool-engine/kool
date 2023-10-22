@@ -152,7 +152,7 @@ class KslShaderTest : DemoScene("KslShader") {
                         mat.setIdentity().translate(x * 2.5f, y * 2.5f, 0f)
                         addInstance {
                             put(mat.array)
-                            put(mutColor.set(MdColor.PALETTE[i++ % MdColor.PALETTE.size]).toLinear().array)
+                            mutColor.set(MdColor.PALETTE[i++ % MdColor.PALETTE.size]).toLinear().putTo(this)
                         }
                     }
                 }

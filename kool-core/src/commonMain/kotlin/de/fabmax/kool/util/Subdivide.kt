@@ -12,7 +12,7 @@ object Subdivide {
      */
     fun subdivideTris(verts: MutableList<Vec3f>,
                       triIndices: MutableList<Int>,
-                      computeMid: (Vec3f, Vec3f) -> Vec3f = { a, b -> MutableVec3f(a).add(b).scale(0.5f) }) {
+                      computeMid: (Vec3f, Vec3f) -> Vec3f = { a, b -> MutableVec3f(a).add(b).mul(0.5f) }) {
 
         val newTris = IntArray(triIndices.size * 4)
         val midVerts = mutableMapOf<Double, Int>()

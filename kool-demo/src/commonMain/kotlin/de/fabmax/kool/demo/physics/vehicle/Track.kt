@@ -76,12 +76,16 @@ class Track(val world: VehicleWorld) : Node() {
         val prev = trackPointsMap[prevKey]!!
         val next = trackPointsMap[nextKey]!!
 
-        val wPrev = if (nextKey == prevKey) { 1f } else { (nextKey - pos) / (nextKey - prevKey) }
+        val wPrev = if (nextKey == prevKey) {
+            1f
+        } else {
+            (nextKey - pos) / (nextKey - prevKey)
+        }
         val wNext = 1f - wPrev
 
-        val vec = MutableVec3f(prev).scale(wPrev).add(MutableVec3f(next).scale(wNext))
-        val up = MutableVec3f(prev.up).scale(wPrev).add(MutableVec3f(next.up).scale(wNext))
-        val z = MutableVec3f(prev.dir).scale(wPrev).add(MutableVec3f(next.dir).scale(wNext))
+        val vec = MutableVec3f(prev).mul(wPrev).add(MutableVec3f(next).mul(wNext))
+        val up = MutableVec3f(prev.up).mul(wPrev).add(MutableVec3f(next.up).mul(wNext))
+        val z = MutableVec3f(prev.dir).mul(wPrev).add(MutableVec3f(next.dir).mul(wNext))
         val x = MutableVec3f(z).apply { y = 0f }
         x.rotate(90f.deg, up).norm()
         val y = z.cross(x, MutableVec3f()).norm()
@@ -127,7 +131,7 @@ class Track(val world: VehicleWorld) : Node() {
             vertexModFun = {
                 val texScale = 25f
                 texCoord.x = texU
-                texCoord.scale(1f / texScale)
+                texCoord.mul(1f / texScale)
             }
 
             color = MdColor.ORANGE toneLin 100

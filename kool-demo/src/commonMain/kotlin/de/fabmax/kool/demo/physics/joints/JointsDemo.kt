@@ -149,11 +149,11 @@ class JointsDemo : DemoScene("Physics - Joints") {
             val l1 = Vec3f(80f, 120f, 100f)
             val l2 = Vec3f(-30f, 100f, 100f)
             addSpotLight {
-                setup(l1, MutableVec3f(l1).scale(-1f).norm(), 45f)
+                setup(l1, MutableVec3f(l1).mul(-1f).norm(), 45f)
                 setColor(Color.WHITE.mix(MdColor.AMBER, 0.1f), 50000f)
             }
             addSpotLight {
-                setup(l2, MutableVec3f(l2).scale(-1f).norm(), 45f)
+                setup(l2, MutableVec3f(l2).mul(-1f).norm(), 45f)
                 setColor(Color.WHITE.mix(MdColor.LIGHT_BLUE, 0.1f), 25000f)
             }
         }
@@ -661,20 +661,20 @@ class JointsDemo : DemoScene("Physics - Joints") {
             val diff = tmpP1.distance(tmpP2) + abs(acos(tmpA1.dot(tmpA2)).toDeg()) / 20
             val color = gradient.getColor(diff, 0f, 0.5f)
 
-            tmpL1.set(tmpA1).scale(drawLen).add(tmpP1)
-            tmpL2.set(tmpA1).scale(-drawLen).add(tmpP1)
+            tmpL1.set(tmpA1).mul(drawLen).add(tmpP1)
+            tmpL2.set(tmpA1).mul(-drawLen).add(tmpP1)
             addLine(tmpL1, tmpL2, color)
 
-            tmpL1.set(tmpA2).scale(drawLen).add(tmpP2)
-            tmpL2.set(tmpA2).scale(-drawLen).add(tmpP2)
+            tmpL1.set(tmpA2).mul(drawLen).add(tmpP2)
+            tmpL2.set(tmpA2).mul(-drawLen).add(tmpP2)
             addLine(tmpL1, tmpL2, color)
 
-            tmpL1.set(tmpA1).scale(drawLen).add(tmpP1)
-            tmpL2.set(tmpA2).scale(drawLen).add(tmpP2)
+            tmpL1.set(tmpA1).mul(drawLen).add(tmpP1)
+            tmpL2.set(tmpA2).mul(drawLen).add(tmpP2)
             addLine(tmpL1, tmpL2, color)
 
-            tmpL1.set(tmpA1).scale(-drawLen).add(tmpP1)
-            tmpL2.set(tmpA2).scale(-drawLen).add(tmpP2)
+            tmpL1.set(tmpA1).mul(-drawLen).add(tmpP1)
+            tmpL2.set(tmpA2).mul(-drawLen).add(tmpP2)
             addLine(tmpL1, tmpL2, color)
         }
     }

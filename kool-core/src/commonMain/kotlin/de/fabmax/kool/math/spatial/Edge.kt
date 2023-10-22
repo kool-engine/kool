@@ -50,7 +50,7 @@ open class Edge<T: Vec3f>(val pt0: T, val pt1: T) {
         val a = tmpVec.dot(e)
         val b = tmpVec.dot(ray.direction)
         val l = (a - b * dot) / n
-        return if (l > 0) e.scale(min(l, length), result).add(pt0) else result.set(pt0)
+        return if (l > 0) e.mul(min(l, length), result).add(pt0) else result.set(pt0)
     }
 
     open fun nearestPointOnEdge(point: Vec3f, result: MutableVec3f): MutableVec3f {
@@ -59,7 +59,7 @@ open class Edge<T: Vec3f>(val pt0: T, val pt1: T) {
         when {
             l < 0f -> result.set(pt0)
             l > 1f -> result.set(pt1)
-            else -> result.scale(l).add(pt0)
+            else -> result.mul(l).add(pt0)
         }
         return result
     }

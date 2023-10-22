@@ -68,7 +68,7 @@ class ManyBodiesDemo : DemoScene("Many Bodies") {
                         for (d in box.actor.transform.matrix.array) {
                             buf.put(d.toFloat())
                         }
-                        buf.put(box.color.array)
+                        box.color.putTo(buf)
                     }
                 }
             }

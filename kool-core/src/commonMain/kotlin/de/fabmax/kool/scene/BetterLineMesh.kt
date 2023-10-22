@@ -87,12 +87,13 @@ class BetterLineMesh(geometry: IndexedVertexList, name: String? = null) : Mesh(g
 
     fun stroke(): BetterLineMesh {
         if (lineBuffer.size > 1) {
-            val startPos = MutableVec3f(lineBuffer.first().position).scale(2f).subtract(lineBuffer[1].position)
-            val endPos = MutableVec3f(lineBuffer.last().position).scale(2f).subtract(lineBuffer[lineBuffer.lastIndex-1].position)
+            val startPos = MutableVec3f(lineBuffer.first().position).mul(2f).subtract(lineBuffer[1].position)
+            val endPos = MutableVec3f(lineBuffer.last().position).mul(2f)
+                .subtract(lineBuffer[lineBuffer.lastIndex - 1].position)
             for (i in 0 until lineBuffer.size) {
                 val v = lineBuffer[i]
-                val p = if (i == 0) startPos else lineBuffer[i-1].position
-                val n = if (i == lineBuffer.lastIndex) endPos else lineBuffer[i+1].position
+                val p = if (i == 0) startPos else lineBuffer[i - 1].position
+                val n = if (i == lineBuffer.lastIndex) endPos else lineBuffer[i + 1].position
                 val ia = geometry.addLineVertex(v, -1f, p, n)
                 val ib = geometry.addLineVertex(v, 1f, p, n)
 

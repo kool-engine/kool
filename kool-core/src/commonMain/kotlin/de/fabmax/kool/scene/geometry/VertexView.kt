@@ -168,23 +168,46 @@ class VertexView(val data: IndexedVertexList, index: Int) : MutableVec3f() {
     }
 
     private inner class Vec4fView(val attribOffset: Int) : MutableVec4f() {
-        override operator fun get(i: Int): Float {
-            return if (attribOffset >= 0 && i in 0..3) {
+        override var x
+            get() = getComponent(0)
+            set(value) = setComponent(0, value)
+        override var y
+            get() = getComponent(1)
+            set(value) = setComponent(1, value)
+        override var z
+            get() = getComponent(2)
+            set(value) = setComponent(2, value)
+        override var w
+            get() = getComponent(3)
+            set(value) = setComponent(3, value)
+
+        private fun getComponent(i: Int): Float {
+            return if (attribOffset >= 0) {
                 data.dataF[offsetF + attribOffset + i]
             } else {
                 0f
             }
         }
-        override operator fun set(i: Int, v: Float) {
-            if (attribOffset >= 0 && i in 0..3) {
+        private fun setComponent(i: Int, v: Float) {
+            if (attribOffset >= 0) {
                 data.dataF[offsetF + attribOffset + i] = v
             }
         }
     }
 
     private inner class ColorWrapView(val vecView: Vec4fView) : MutableColor() {
-        override operator fun get(i: Int) = vecView[i]
-        override operator fun set(i: Int, v: Float) { vecView[i] = v }
+        override var r
+            get() = vecView.x
+            set(value) { vecView.x = value }
+        override var g
+            get() = vecView.y
+            set(value) { vecView.y = value }
+        override var b
+            get() = vecView.z
+            set(value) { vecView.z = value }
+        override var a
+            get() = vecView.w
+            set(value) { vecView.w = value }
     }
 
     inner class IntView(private val attribOffset: Int) {
@@ -243,15 +266,28 @@ class VertexView(val data: IndexedVertexList, index: Int) : MutableVec3f() {
     }
 
     inner class Vec4iView(private val attribOffset: Int) : MutableVec4i() {
-        override operator fun get(i: Int): Int {
-            return if (attribOffset >= 0 && i in 0..3) {
+        override var x
+            get() = getComponent(0)
+            set(value) = setComponent(0, value)
+        override var y
+            get() = getComponent(1)
+            set(value) = setComponent(1, value)
+        override var z
+            get() = getComponent(2)
+            set(value) = setComponent(2, value)
+        override var w
+            get() = getComponent(3)
+            set(value) = setComponent(3, value)
+
+        private fun getComponent(i: Int): Int {
+            return if (attribOffset >= 0) {
                 data.dataI[offsetI + attribOffset + i]
             } else {
                 0
             }
         }
-        override operator fun set(i: Int, v: Int) {
-            if (attribOffset >= 0 && i in 0..3) {
+        private fun setComponent(i: Int, v: Int) {
+            if (attribOffset >= 0) {
                 data.dataI[offsetI + attribOffset + i] = v
             }
         }

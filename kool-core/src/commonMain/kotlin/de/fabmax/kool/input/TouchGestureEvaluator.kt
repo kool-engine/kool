@@ -65,8 +65,8 @@ open class TouchGestureEvaluator {
             tmpVec1.set(pointers[0].x, pointers[0].y).subtract(startPositions[pointers[0].id]!!)
             tmpVec2.set(pointers[1].x, pointers[1].y).subtract(startPositions[pointers[1].id]!!)
 
-            tmpVec1.scale(96.0 / screenDpi)
-            tmpVec2.scale(96.0 / screenDpi)
+            tmpVec1.mul(96.0 / screenDpi)
+            tmpVec2.mul(96.0 / screenDpi)
 
             if (tmpVec1.length() > 5.0 && tmpVec2.length() > 5.0 && tmpVec1.dot(tmpVec2) < 0.0) {
                 tmpVec1.set(startPositions[pointers[0].id]!!)
@@ -86,8 +86,8 @@ open class TouchGestureEvaluator {
             tmpVec1.set(pointers[0].x, pointers[0].y).subtract(startPositions[pointers[0].id]!!)
             tmpVec2.set(pointers[1].x, pointers[1].y).subtract(startPositions[pointers[1].id]!!)
 
-            tmpVec1.scale(96.0 / screenDpi)
-            tmpVec2.scale(96.0 / screenDpi)
+            tmpVec1.mul(96.0 / screenDpi)
+            tmpVec2.mul(96.0 / screenDpi)
 
             if (tmpVec1.length() > 5.0 && tmpVec2.length() > 5.0 && tmpVec1.dot(tmpVec2) > 0.0) {
                 tmpVec1.set(startPositions[pointers[0].id]!!)
@@ -139,7 +139,7 @@ open class TouchGestureEvaluator {
 
         internal fun init(type: Int, ptr1: Vec2d, ptr2: Vec2d, dpi: Float) {
             this.type = type
-            centerStart.set(ptr1).add(ptr2).scale(0.5)
+            centerStart.set(ptr1).add(ptr2).mul(0.5)
             centerCurrent.set(centerStart)
             centerShift.set(Vec2d.ZERO)
             dCenter.set(Vec2d.ZERO)
@@ -152,8 +152,8 @@ open class TouchGestureEvaluator {
         }
 
         internal fun update(ptr1: Vec2d, ptr2: Vec2d, dpi: Float) {
-            dCenter.set(ptr1).add(ptr2).scale(0.5).subtract(centerCurrent)
-            centerCurrent.set(ptr1).add(ptr2).scale(0.5)
+            dCenter.set(ptr1).add(ptr2).mul(0.5).subtract(centerCurrent)
+            centerCurrent.set(ptr1).add(ptr2).mul(0.5)
 
             centerShift.set(centerCurrent).subtract(centerStart)
 

@@ -446,8 +446,8 @@ class IndexedVertexList(val vertexAttributes: List<Attribute>) {
 
         for (i in 0 until numIndices step 3) {
             v0.index = indices[i]
-            v1.index = indices[i+1]
-            v2.index = indices[i+2]
+            v1.index = indices[i + 1]
+            v2.index = indices[i + 2]
 
             if (v0.index > numVertices || v1.index > numVertices || v2.index > numVertices) {
                 logE { "index to large ${v0.index}, ${v1.index}, ${v2.index}, sz: $numVertices" }
@@ -457,7 +457,7 @@ class IndexedVertexList(val vertexAttributes: List<Attribute>) {
             v2.position.subtract(v0.position, e2).norm()
             val a = triArea(v0.position, v1.position, v2.position)
 
-            e1.cross(e2, nrm).norm().scale(a)
+            e1.cross(e2, nrm).norm().mul(a)
             if (nrm == Vec3f.ZERO || nrm.x.isNaN() || nrm.y.isNaN() || nrm.z.isNaN()) {
                 //logW { "generate normals: degenerated triangle, a = $a, e1 = $e1, e2 = $e2" }
             } else {

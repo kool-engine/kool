@@ -39,9 +39,9 @@ class ActorTrackingCamRig : Node() {
             it.transform.transform(trackDirDesired, 0f)
         }
 
-        trackDelta.set(trackPosDesired).subtract(trackPosCurrent).scale(positionStiffness * timeStep)
+        trackDelta.set(trackPosDesired).subtract(trackPosCurrent).mul(positionStiffness * timeStep)
         trackPosCurrent.add(trackDelta)
-        trackDelta.set(trackDirDesired).subtract(trackDirCurrent).scale(rotationStiffness * timeStep)
+        trackDelta.set(trackDirDesired).subtract(trackDirCurrent).mul(rotationStiffness * timeStep)
         trackDirCurrent.add(trackDelta)
 
         transform.setIdentity()

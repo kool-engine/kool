@@ -260,13 +260,13 @@ class HalfEdgeMesh(geometry: IndexedVertexList, val edgeHandler: EdgeHandler = L
     fun splitEdge(edge: HalfEdge, fraction: Float): HalfEdgeVertex {
         // spawn new vertex
         val idx = geometry.addVertex {
-            position.set(edge.to).subtract(edge.from).scale(fraction).add(edge.from)
+            position.set(edge.to).subtract(edge.from).mul(fraction).add(edge.from)
 
             // interpolate texture coordinates and normals
             edge.from.getMeshVertex(vertexIt1)
             edge.to.getMeshVertex(vertexIt2)
-            texCoord.set(vertexIt2.texCoord).subtract(vertexIt1.texCoord).scale(fraction).add(vertexIt1.texCoord)
-            normal.set(vertexIt2.normal).subtract(vertexIt1.normal).scale(fraction).add(vertexIt1.normal)
+            texCoord.set(vertexIt2.texCoord).subtract(vertexIt1.texCoord).mul(fraction).add(vertexIt1.texCoord)
+            normal.set(vertexIt2.normal).subtract(vertexIt1.normal).mul(fraction).add(vertexIt1.normal)
         }
         val insertV = HalfEdgeVertex(idx)
         verts += insertV

@@ -806,6 +806,15 @@ open class Mat4d {
         return result
     }
 
+    private operator fun MutableVec4d.set(i: Int, value: Double) {
+        when(i) {
+            0 -> x = value
+            1 -> y = value
+            2 -> z = value
+            else -> w = value
+        }
+    }
+
     fun getScale(result: MutableVec3d): MutableVec3d {
         val ax = this[0, 0]
         val ay = this[1, 0]

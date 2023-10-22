@@ -103,7 +103,7 @@ class SkyCubePass(opticalDepthLut: Texture2d, size: Int = 256) :
 
         onBeforeCollectDrawCommands += {
             updateSunLight()
-            skyShader.dirToSun = MutableVec3f(sunLight.direction).scale(-1f)
+            skyShader.dirToSun = MutableVec3f(sunLight.direction).mul(-1f)
             skyShader.sunColor = MutableColor(sunLight.color).apply { a /= 3f }
         }
 

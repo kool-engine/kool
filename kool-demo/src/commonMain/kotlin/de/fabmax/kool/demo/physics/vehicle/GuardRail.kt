@@ -172,7 +172,7 @@ class GuardRail {
         val hole = mutableListOf<MutableVec3f>()
         for (i in 0 until 10) {
             val a = i / 10f * 2f * PI.toFloat()
-            hole += MutableVec3f(sin(a), cos(a), 0f).scale(r)
+            hole += MutableVec3f(sin(a), cos(a), 0f).mul(r)
         }
         return PolyUtil.fillPolygon(pts, listOf(hole))
     }

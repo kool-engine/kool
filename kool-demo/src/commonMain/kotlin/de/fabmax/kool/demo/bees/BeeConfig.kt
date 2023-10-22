@@ -22,7 +22,7 @@ object BeeConfig {
     var hitDistance = 1f
 
     val worldSize: Vec3f = Vec3f(100f, 50f, 50f)
-    val worldExtent: Vec3f = worldSize.scale(0.5f, MutableVec3f())
+    val worldExtent: Vec3f = worldSize.mul(0.5f, MutableVec3f())
 
     val gravity = -20f
     val decayTime = 6f

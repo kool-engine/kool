@@ -174,14 +174,14 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                         if (lightPositionMesh.isVisible) {
                             lightPosInsts.addInstance {
                                 put(lightModelMat.array)
-                                put(light.color.array)
+                                light.color.putTo(this)
                             }
                         }
                         if (lightVolumeMesh.isVisible) {
                             lightModelMat.scale(light.radius, light.radius, light.radius)
                             lightVolInsts.addInstance {
                                 put(lightModelMat.array)
-                                put(light.color.array)
+                                light.color.putTo(this)
                             }
                         }
                     }
@@ -470,7 +470,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
 
     private inner class LightGroup(val startConst: Vec3f, val startIt: Vec3f, val travelDir: Vec3f, val rows: Int) {
         fun setupLight(light: AnimatedLight, x: Int, travelDist: Float, travelPos: Float) {
-            light.startPos.set(startIt).scale(x.toFloat()).add(startConst)
+            light.startPos.set(startIt).mul(x.toFloat()).add(startConst)
             light.dir.set(travelDir)
 
             light.travelDist = travelDist
@@ -495,7 +495,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
             if (travelPos > travelDist) {
                 travelPos -= travelDist
             }
-            light.position.set(dir).scale(travelPos).add(startPos)
+            light.position.set(dir).mul(travelPos).add(startPos)
 
             if (colorMix < 1f) {
                 colorMix += deltaT * 2f

@@ -136,7 +136,7 @@ class PlayerController(private val physicsObjects: PhysicsObjects, mainScene: Sc
     private fun applyBoxForce(actor: RigidDynamic, hitWorldPos: Vec3f, hitWorldNormal: Vec3f) {
         // apply some fixed force to the hit actor
         val force = if (axes.isRun) -4000f else -2000f
-        tmpForce.set(hitWorldNormal).scale(force * pushForceFac)
+        tmpForce.set(hitWorldNormal).mul(force * pushForceFac)
         actor.addForceAtPos(tmpForce, hitWorldPos, isLocalForce = false, isLocalPos = false)
     }
 

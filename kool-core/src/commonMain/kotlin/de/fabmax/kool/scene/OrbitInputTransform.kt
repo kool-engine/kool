@@ -168,13 +168,13 @@ open class OrbitInputTransform(name: String? = null) : Node(name), InputStack.Po
 
             } else {
                 val s = (1 - smoothness).clamp(0.1, 1.0).toFloat()
-                tmpVec1.set(pointerHitStart).subtract(pointerHit).scale(s)
+                tmpVec1.set(pointerHitStart).subtract(pointerHit).mul(s)
                 parent?.toLocalCoords(tmpVec1, 0f)
 
                 // limit panning speed
                 val tLen = tmpVec1.length()
                 if (tLen > renderPass.camera.globalRange * 0.5f) {
-                    tmpVec1.scale(renderPass.camera.globalRange * 0.5f / tLen)
+                    tmpVec1.mul(renderPass.camera.globalRange * 0.5f / tLen)
                 }
 
                 translation.add(tmpVec1)
@@ -219,10 +219,10 @@ open class OrbitInputTransform(name: String? = null) : Node(name), InputStack.Po
     protected open fun computeZoomTranslationPerspective(camera: Camera, oldZoom: Double, newZoom: Double) {
         // tmpVec1 = zoomed pos on pointer ray
         val s = (newZoom / oldZoom).toFloat()
-        camera.globalPos.subtract(pointerHit, tmpVec1).scale(s).add(pointerHit)
+        camera.globalPos.subtract(pointerHit, tmpVec1).mul(s).add(pointerHit)
         // tmpVec2 = zoomed pos on view center ray
-        camera.globalPos.subtract(camera.globalLookAt, tmpVec2).scale(s)
-                .add(camera.globalLookAt)
+        camera.globalPos.subtract(camera.globalLookAt, tmpVec2).mul(s)
+            .add(camera.globalLookAt)
         tmpVec1.subtract(tmpVec2)
         parent?.toLocalCoords(tmpVec1, 0f)
         translation.add(tmpVec1)

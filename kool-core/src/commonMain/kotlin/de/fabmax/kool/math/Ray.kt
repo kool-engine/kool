@@ -46,14 +46,14 @@ class Ray() {
         val numerator = -b - sqrt(discr)
         if (numerator > 0f) {
             val d = numerator / (2f * a)
-            result.set(direction).scale(d).add(origin)
+            result.set(direction).mul(d).add(origin)
             return true
         }
 
         val numerator2 = -b + sqrt(discr)
         if (numerator2 > 0f) {
             val d = numerator2 / (2f * a)
-            result.set(direction).scale(d).add(origin)
+            result.set(direction).mul(d).add(origin)
             return true
         }
 
@@ -98,7 +98,7 @@ class RayTest {
     }
 
     fun setHit(node: Node, distance: Float) {
-        intHitPosition.set(ray.direction).scale(distance).add(ray.origin)
+        intHitPosition.set(ray.direction).mul(distance).add(ray.origin)
         setHit(node, intHitPosition)
     }
 

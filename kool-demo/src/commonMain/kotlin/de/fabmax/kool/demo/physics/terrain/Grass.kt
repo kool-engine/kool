@@ -55,7 +55,7 @@ class Grass(val terrain: Terrain, val wind: Wind, val sky: Sky) {
                 pos.set(x, terrain.getTerrainHeightAt(x, z), z)
                 step.set(rand.randomF(-1f, 1f), 0f, rand.randomF(-1f, 1f)).norm().add(pos)
                 step.y = terrain.getTerrainHeightAt(step.x, step.z)
-                step.subtract(pos).scale(0.333f)
+                step.subtract(pos).mul(0.333f)
                 midOffset.set(step).rotate(90f.deg, Vec3f.Y_AXIS)
                 topOffset.set(
                     rand.randomF(-0.25f, 0.25f),

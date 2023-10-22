@@ -40,10 +40,22 @@ open class Vec2f(open val x: Float, open val y: Float) {
     operator fun plus(that: Vec2f) = Vec2f(x + that.x, y + that.y)
 
     /**
+     * Component-wise addition with the given scalar. Returns the result as a new [Vec2f]. Consider using [add] with
+     * a pre-allocated result vector in performance-critical situations, to avoid unnecessary object allocations.
+     */
+    operator fun plus(that: Float) = Vec2f(x + that, y + that)
+
+    /**
      * Component-wise subtraction with the given [Vec2f]. Returns the result as a new [Vec2f]. Consider using [subtract]
      * with a pre-allocated result vector in performance-critical situations, to avoid unnecessary object allocations.
      */
     operator fun minus(that: Vec2f) = Vec2f(x - that.x, y - that.y)
+
+    /**
+     * Component-wise subtraction with the given scalar. Returns the result as a new [Vec2f]. Consider using [subtract]
+     * with a pre-allocated result vector in performance-critical situations, to avoid unnecessary object allocations.
+     */
+    operator fun minus(that: Float) = Vec2f(x - that, y - that)
 
     /**
      * Component-wise multiplication with the given [Vec2f]. Returns the result as a new [Vec2f]. Consider using [mul]
@@ -52,30 +64,55 @@ open class Vec2f(open val x: Float, open val y: Float) {
     operator fun times(that: Vec2f) = Vec2f(x * that.x, y * that.y)
 
     /**
+     * Component-wise multiplication with the given scalar. Returns the result as a new [Vec2f]. Consider using [mul]
+     * with a pre-allocated result vector in performance-critical situations, to avoid unnecessary object allocations.
+     */
+    operator fun times(that: Float) = Vec2f(x * that, y * that)
+
+    /**
      * Component-wise division with the given [Vec2f]. Returns the result as a new [Vec2f]. Consider using [mul]
      * with a pre-allocated result vector in performance-critical situations, to avoid unnecessary object allocations.
      */
     operator fun div(that: Vec2f) = Vec2f(x / that.x, y / that.y)
 
     /**
+     * Component-wise division with the given scalar. Returns the result as a new [Vec2f]. Consider using [mul]
+     * with a pre-allocated result vector in performance-critical situations, to avoid unnecessary object allocations.
+     */
+    operator fun div(that: Float) = Vec2f(x / that, y / that)
+
+    /**
      * Component-wise addition with the given [Vec2f]. Returns the result as an (optionally provided) [MutableVec2f].
      */
-    fun add(that: Vec2f, result: MutableVec2f): MutableVec2f = result.set(this).add(that)
+    fun add(that: Vec2f, result: MutableVec2f = MutableVec2f()): MutableVec2f = result.set(this).add(that)
+
+    /**
+     * Component-wise addition with the given scalar. Returns the result as an (optionally provided) [MutableVec2f].
+     */
+    fun add(that: Float, result: MutableVec2f = MutableVec2f()): MutableVec2f = result.set(this).add(that)
 
     /**
      * Component-wise subtraction with the given [Vec2f]. Returns the result as an (optionally provided) [MutableVec2f].
      */
-    fun subtract(that: Vec2f, result: MutableVec2f): MutableVec2f = result.set(this).subtract(that)
+    fun subtract(that: Vec2f, result: MutableVec2f = MutableVec2f()): MutableVec2f = result.set(this).subtract(that)
+
+    /**
+     * Component-wise subtraction with the given scalar. Returns the result as an (optionally provided) [MutableVec2f].
+     */
+    fun subtract(that: Float, result: MutableVec2f = MutableVec2f()): MutableVec2f = result.set(this).subtract(that)
 
     /**
      * Component-wise multiplication with the given [Vec2f]. Returns the result as an (optionally provided) [MutableVec2f].
      */
-    fun mul(that: Vec2f, result: MutableVec2f): MutableVec2f = result.set(this).mul(that)
+    fun mul(that: Vec2f, result: MutableVec2f = MutableVec2f()): MutableVec2f = result.set(this).mul(that)
 
     /**
-     * Scales this vector by the factor and returns the result as an (optionally provided) [MutableVec2f].
+     * Component-wise multiplication with the given scalar. Returns the result as an (optionally provided) [MutableVec2f].
      */
-    fun scale(factor: Float, result: MutableVec2f): MutableVec2f = result.set(this).scale(factor)
+    fun mul(that: Float, result: MutableVec2f = MutableVec2f()): MutableVec2f = result.set(this).mul(that)
+
+    @Deprecated("Replace with mul()", ReplaceWith("mul(factor, result)"))
+    fun scale(factor: Float, result: MutableVec2f = MutableVec2f()) = mul(factor, result)
 
     override fun toString(): String = "($x, $y)"
 
@@ -160,14 +197,14 @@ open class Vec2f(open val x: Float, open val y: Float) {
     /**
      * Rotates this vector by the given [AngleF] and returns the result as an (optionally provided) [MutableVec2f].
      */
-    fun rotate(angle: AngleF, result: MutableVec2f): MutableVec2f = result.set(this).rotate(angle)
+    fun rotate(angle: AngleF, result: MutableVec2f = MutableVec2f()): MutableVec2f = result.set(this).rotate(angle)
 
     /**
      * Checks vector components for equality using [de.fabmax.kool.math.isFuzzyEqual], that is all components must
      * have a difference less or equal to [eps].
      */
-    fun isFuzzyEqual(other: Vec2f, eps: Float = FUZZY_EQ_F): Boolean {
-        return isFuzzyEqual(x, other.x, eps) && isFuzzyEqual(y, other.y, eps)
+    fun isFuzzyEqual(that: Vec2f, eps: Float = FUZZY_EQ_F): Boolean {
+        return isFuzzyEqual(x, that.x, eps) && isFuzzyEqual(y, that.y, eps)
     }
 
     // </noInt>
@@ -194,74 +231,125 @@ open class MutableVec2f(override var x: Float, override var y: Float) : Vec2f(x,
         return this
     }
 
-    fun set(other: Vec2f): MutableVec2f {
-        x = other.x
-        y = other.y
+    fun set(that: Vec2f): MutableVec2f {
+        x = that.x
+        y = that.y
         return this
     }
 
     /**
      * Inplace operation: Adds the given [Vec2f] component-wise to this vector.
      */
-    operator fun plusAssign(other: Vec2f) { add(other) }
+    operator fun plusAssign(that: Vec2f) { add(that) }
+
+    /**
+     * Inplace operation: Adds the given scalar component-wise to this vector.
+     */
+    operator fun plusAssign(that: Float) { add(that) }
 
     /**
      * Inplace operation: Subtracts the given [Vec2f] component-wise from this vector.
      */
-    operator fun minusAssign(other: Vec2f) { subtract(other) }
+    operator fun minusAssign(that: Vec2f) { subtract(that) }
+
+    /**
+     * Inplace operation: Subtracts the given scalar component-wise from this vector.
+     */
+    operator fun minusAssign(that: Float) { subtract(that) }
 
     /**
      * Inplace operation: Multiplies the given [Vec2f] component-wise with this vector.
      */
-    operator fun timesAssign(factor : Float) { scale(factor) }
+    operator fun timesAssign(that : Vec2f) { mul(that) }
 
     /**
-     * Inplace operation: Divides the given [Vec2f] component-wise with this vector.
+     * Inplace operation: Multiplies the given scalar component-wise with this vector.
      */
-    operator fun divAssign(div : Float) { scale(1f / div) }
+    operator fun timesAssign(that: Float) { mul(that) }
+
+    /**
+     * Inplace operation: Divides this vector component-wise by the given [Vec2f].
+     */
+    operator fun divAssign(that: Vec4f) {
+        x /= that.x
+        y /= that.y
+    }
+
+    /**
+     * Inplace operation: Divides this vector component-wise by the given scalar.
+     */
+    operator fun divAssign(div: Float) { mul(1f / div) }
 
     /**
      * Inplace operation: Adds the given [Vec2f] component-wise to this vector.
      */
-    fun add(other: Vec2f): MutableVec2f {
-        x += other.x
-        y += other.y
+    fun add(that: Vec2f): MutableVec2f {
+        x += that.x
+        y += that.y
+        return this
+    }
+
+    /**
+     * Inplace operation: Adds the given scalar component-wise to this vector.
+     */
+    fun add(that: Float): MutableVec2f {
+        x += that
+        y += that
         return this
     }
 
     /**
      * Inplace operation: Subtracts the given [Vec2f] component-wise from this vector.
      */
-    fun subtract(other: Vec2f): MutableVec2f {
-        x -= other.x
-        y -= other.y
+    fun subtract(that: Vec2f): MutableVec2f {
+        x -= that.x
+        y -= that.y
+        return this
+    }
+
+    /**
+     * Inplace operation: Subtracts the given scalar component-wise from this vector.
+     */
+    fun subtract(that: Float): MutableVec2f {
+        x -= that
+        y -= that
         return this
     }
 
     /**
      * Inplace operation: Multiplies the given [Vec2f] component-wise with this vector.
      */
-    fun mul(other: Vec2f): MutableVec2f {
-        x *= other.x
-        y *= other.y
+    fun mul(that: Vec2f): MutableVec2f {
+        x *= that.x
+        y *= that.y
         return this
     }
 
     /**
      * Inplace operation: Scales this vector by the given factor.
      */
-    fun scale(factor: Float): MutableVec2f {
-        x *= factor
-        y *= factor
+    fun mul(that : Float): MutableVec2f {
+        x *= that
+        y *= that
         return this
     }
+
+    @Deprecated("Replace with mul()", ReplaceWith("mul(factor)"))
+    fun scale(factor: Float) = mul(factor)
 
     // <noInt> The following section will not be included in the integer variant of this class
 
     /**
-     * Inplace operation: Scales this vector to unit length.
+     * Inplace operation: Scales this vector to unit length. Special case: A zero-vector remains zero-length.
      */
-    fun norm(): MutableVec2f = scale(1f / length())
+    fun norm(): MutableVec2f {
+        val l = length()
+        return if (l != 0f) {
+            mul(1f / l)
+        } else {
+            set(ZERO)
+        }
+    }
 
     /**
      * Inplace operation: Rotates this vector by the given [AngleF].
@@ -294,10 +382,22 @@ open class Vec2d(open val x: Double, open val y: Double) {
     operator fun plus(that: Vec2d) = Vec2d(x + that.x, y + that.y)
 
     /**
+     * Component-wise addition with the given scalar. Returns the result as a new [Vec2d]. Consider using [add] with
+     * a pre-allocated result vector in performance-critical situations, to avoid unnecessary object allocations.
+     */
+    operator fun plus(that: Double) = Vec2d(x + that, y + that)
+
+    /**
      * Component-wise subtraction with the given [Vec2d]. Returns the result as a new [Vec2d]. Consider using [subtract]
      * with a pre-allocated result vector in performance-critical situations, to avoid unnecessary object allocations.
      */
     operator fun minus(that: Vec2d) = Vec2d(x - that.x, y - that.y)
+
+    /**
+     * Component-wise subtraction with the given scalar. Returns the result as a new [Vec2d]. Consider using [subtract]
+     * with a pre-allocated result vector in performance-critical situations, to avoid unnecessary object allocations.
+     */
+    operator fun minus(that: Double) = Vec2d(x - that, y - that)
 
     /**
      * Component-wise multiplication with the given [Vec2d]. Returns the result as a new [Vec2d]. Consider using [mul]
@@ -306,30 +406,55 @@ open class Vec2d(open val x: Double, open val y: Double) {
     operator fun times(that: Vec2d) = Vec2d(x * that.x, y * that.y)
 
     /**
+     * Component-wise multiplication with the given scalar. Returns the result as a new [Vec2d]. Consider using [mul]
+     * with a pre-allocated result vector in performance-critical situations, to avoid unnecessary object allocations.
+     */
+    operator fun times(that: Double) = Vec2d(x * that, y * that)
+
+    /**
      * Component-wise division with the given [Vec2d]. Returns the result as a new [Vec2d]. Consider using [mul]
      * with a pre-allocated result vector in performance-critical situations, to avoid unnecessary object allocations.
      */
     operator fun div(that: Vec2d) = Vec2d(x / that.x, y / that.y)
 
     /**
+     * Component-wise division with the given scalar. Returns the result as a new [Vec2d]. Consider using [mul]
+     * with a pre-allocated result vector in performance-critical situations, to avoid unnecessary object allocations.
+     */
+    operator fun div(that: Double) = Vec2d(x / that, y / that)
+
+    /**
      * Component-wise addition with the given [Vec2d]. Returns the result as an (optionally provided) [MutableVec2d].
      */
-    fun add(that: Vec2d, result: MutableVec2d): MutableVec2d = result.set(this).add(that)
+    fun add(that: Vec2d, result: MutableVec2d = MutableVec2d()): MutableVec2d = result.set(this).add(that)
+
+    /**
+     * Component-wise addition with the given scalar. Returns the result as an (optionally provided) [MutableVec2d].
+     */
+    fun add(that: Double, result: MutableVec2d = MutableVec2d()): MutableVec2d = result.set(this).add(that)
 
     /**
      * Component-wise subtraction with the given [Vec2d]. Returns the result as an (optionally provided) [MutableVec2d].
      */
-    fun subtract(that: Vec2d, result: MutableVec2d): MutableVec2d = result.set(this).subtract(that)
+    fun subtract(that: Vec2d, result: MutableVec2d = MutableVec2d()): MutableVec2d = result.set(this).subtract(that)
+
+    /**
+     * Component-wise subtraction with the given scalar. Returns the result as an (optionally provided) [MutableVec2d].
+     */
+    fun subtract(that: Double, result: MutableVec2d = MutableVec2d()): MutableVec2d = result.set(this).subtract(that)
 
     /**
      * Component-wise multiplication with the given [Vec2d]. Returns the result as an (optionally provided) [MutableVec2d].
      */
-    fun mul(that: Vec2d, result: MutableVec2d): MutableVec2d = result.set(this).mul(that)
+    fun mul(that: Vec2d, result: MutableVec2d = MutableVec2d()): MutableVec2d = result.set(this).mul(that)
 
     /**
-     * Scales this vector by the factor and returns the result as an (optionally provided) [MutableVec2d].
+     * Component-wise multiplication with the given scalar. Returns the result as an (optionally provided) [MutableVec2d].
      */
-    fun scale(factor: Double, result: MutableVec2d): MutableVec2d = result.set(this).scale(factor)
+    fun mul(that: Double, result: MutableVec2d = MutableVec2d()): MutableVec2d = result.set(this).mul(that)
+
+    @Deprecated("Replace with mul()", ReplaceWith("mul(factor, result)"))
+    fun scale(factor: Double, result: MutableVec2d = MutableVec2d()) = mul(factor, result)
 
     override fun toString(): String = "($x, $y)"
 
@@ -412,14 +537,14 @@ open class Vec2d(open val x: Double, open val y: Double) {
     /**
      * Rotates this vector by the given [AngleD] and returns the result as an (optionally provided) [MutableVec2d].
      */
-    fun rotate(angle: AngleD, result: MutableVec2d): MutableVec2d = result.set(this).rotate(angle)
+    fun rotate(angle: AngleD, result: MutableVec2d = MutableVec2d()): MutableVec2d = result.set(this).rotate(angle)
 
     /**
      * Checks vector components for equality using [de.fabmax.kool.math.isFuzzyEqual], that is all components must
      * have a difference less or equal to [eps].
      */
-    fun isFuzzyEqual(other: Vec2d, eps: Double = FUZZY_EQ_D): Boolean {
-        return isFuzzyEqual(x, other.x, eps) && isFuzzyEqual(y, other.y, eps)
+    fun isFuzzyEqual(that: Vec2d, eps: Double = FUZZY_EQ_D): Boolean {
+        return isFuzzyEqual(x, that.x, eps) && isFuzzyEqual(y, that.y, eps)
     }
 
     companion object {
@@ -444,72 +569,123 @@ open class MutableVec2d(override var x: Double, override var y: Double) : Vec2d(
         return this
     }
 
-    fun set(other: Vec2d): MutableVec2d {
-        x = other.x
-        y = other.y
+    fun set(that: Vec2d): MutableVec2d {
+        x = that.x
+        y = that.y
         return this
     }
 
     /**
      * Inplace operation: Adds the given [Vec2d] component-wise to this vector.
      */
-    operator fun plusAssign(other: Vec2d) { add(other) }
+    operator fun plusAssign(that: Vec2d) { add(that) }
+
+    /**
+     * Inplace operation: Adds the given scalar component-wise to this vector.
+     */
+    operator fun plusAssign(that: Double) { add(that) }
 
     /**
      * Inplace operation: Subtracts the given [Vec2d] component-wise from this vector.
      */
-    operator fun minusAssign(other: Vec2d) { subtract(other) }
+    operator fun minusAssign(that: Vec2d) { subtract(that) }
+
+    /**
+     * Inplace operation: Subtracts the given scalar component-wise from this vector.
+     */
+    operator fun minusAssign(that: Double) { subtract(that) }
 
     /**
      * Inplace operation: Multiplies the given [Vec2d] component-wise with this vector.
      */
-    operator fun timesAssign(factor : Double) { scale(factor) }
+    operator fun timesAssign(that : Vec2d) { mul(that) }
 
     /**
-     * Inplace operation: Divides the given [Vec2d] component-wise with this vector.
+     * Inplace operation: Multiplies the given scalar component-wise with this vector.
      */
-    operator fun divAssign(div : Double) { scale(1.0 / div) }
+    operator fun timesAssign(that: Double) { mul(that) }
+
+    /**
+     * Inplace operation: Divides this vector component-wise by the given [Vec2d].
+     */
+    operator fun divAssign(that: Vec4d) {
+        x /= that.x
+        y /= that.y
+    }
+
+    /**
+     * Inplace operation: Divides this vector component-wise by the given scalar.
+     */
+    operator fun divAssign(div: Double) { mul(1.0 / div) }
 
     /**
      * Inplace operation: Adds the given [Vec2d] component-wise to this vector.
      */
-    fun add(other: Vec2d): MutableVec2d {
-        x += other.x
-        y += other.y
+    fun add(that: Vec2d): MutableVec2d {
+        x += that.x
+        y += that.y
+        return this
+    }
+
+    /**
+     * Inplace operation: Adds the given scalar component-wise to this vector.
+     */
+    fun add(that: Double): MutableVec2d {
+        x += that
+        y += that
         return this
     }
 
     /**
      * Inplace operation: Subtracts the given [Vec2d] component-wise from this vector.
      */
-    fun subtract(other: Vec2d): MutableVec2d {
-        x -= other.x
-        y -= other.y
+    fun subtract(that: Vec2d): MutableVec2d {
+        x -= that.x
+        y -= that.y
+        return this
+    }
+
+    /**
+     * Inplace operation: Subtracts the given scalar component-wise from this vector.
+     */
+    fun subtract(that: Double): MutableVec2d {
+        x -= that
+        y -= that
         return this
     }
 
     /**
      * Inplace operation: Multiplies the given [Vec2d] component-wise with this vector.
      */
-    fun mul(other: Vec2d): MutableVec2d {
-        x *= other.x
-        y *= other.y
+    fun mul(that: Vec2d): MutableVec2d {
+        x *= that.x
+        y *= that.y
         return this
     }
 
     /**
      * Inplace operation: Scales this vector by the given factor.
      */
-    fun scale(factor: Double): MutableVec2d {
-        x *= factor
-        y *= factor
+    fun mul(that : Double): MutableVec2d {
+        x *= that
+        y *= that
         return this
     }
 
+    @Deprecated("Replace with mul()", ReplaceWith("mul(factor)"))
+    fun scale(factor: Double) = mul(factor)
+
     /**
-     * Inplace operation: Scales this vector to unit length.
+     * Inplace operation: Scales this vector to unit length. Special case: A zero-vector remains zero-length.
      */
-    fun norm(): MutableVec2d = scale(1.0 / length())
+    fun norm(): MutableVec2d {
+        val l = length()
+        return if (l != 0.0) {
+            mul(1.0 / l)
+        } else {
+            set(ZERO)
+        }
+    }
 
     /**
      * Inplace operation: Rotates this vector by the given [AngleD].
@@ -539,10 +715,22 @@ open class Vec2i(open val x: Int, open val y: Int) {
     operator fun plus(that: Vec2i) = Vec2i(x + that.x, y + that.y)
 
     /**
+     * Component-wise addition with the given scalar. Returns the result as a new [Vec2i]. Consider using [add] with
+     * a pre-allocated result vector in performance-critical situations, to avoid unnecessary object allocations.
+     */
+    operator fun plus(that: Int) = Vec2i(x + that, y + that)
+
+    /**
      * Component-wise subtraction with the given [Vec2i]. Returns the result as a new [Vec2i]. Consider using [subtract]
      * with a pre-allocated result vector in performance-critical situations, to avoid unnecessary object allocations.
      */
     operator fun minus(that: Vec2i) = Vec2i(x - that.x, y - that.y)
+
+    /**
+     * Component-wise subtraction with the given scalar. Returns the result as a new [Vec2i]. Consider using [subtract]
+     * with a pre-allocated result vector in performance-critical situations, to avoid unnecessary object allocations.
+     */
+    operator fun minus(that: Int) = Vec2i(x - that, y - that)
 
     /**
      * Component-wise multiplication with the given [Vec2i]. Returns the result as a new [Vec2i]. Consider using [mul]
@@ -551,30 +739,55 @@ open class Vec2i(open val x: Int, open val y: Int) {
     operator fun times(that: Vec2i) = Vec2i(x * that.x, y * that.y)
 
     /**
+     * Component-wise multiplication with the given scalar. Returns the result as a new [Vec2i]. Consider using [mul]
+     * with a pre-allocated result vector in performance-critical situations, to avoid unnecessary object allocations.
+     */
+    operator fun times(that: Int) = Vec2i(x * that, y * that)
+
+    /**
      * Component-wise division with the given [Vec2i]. Returns the result as a new [Vec2i]. Consider using [mul]
      * with a pre-allocated result vector in performance-critical situations, to avoid unnecessary object allocations.
      */
     operator fun div(that: Vec2i) = Vec2i(x / that.x, y / that.y)
 
     /**
+     * Component-wise division with the given scalar. Returns the result as a new [Vec2i]. Consider using [mul]
+     * with a pre-allocated result vector in performance-critical situations, to avoid unnecessary object allocations.
+     */
+    operator fun div(that: Int) = Vec2i(x / that, y / that)
+
+    /**
      * Component-wise addition with the given [Vec2i]. Returns the result as an (optionally provided) [MutableVec2i].
      */
-    fun add(that: Vec2i, result: MutableVec2i): MutableVec2i = result.set(this).add(that)
+    fun add(that: Vec2i, result: MutableVec2i = MutableVec2i()): MutableVec2i = result.set(this).add(that)
+
+    /**
+     * Component-wise addition with the given scalar. Returns the result as an (optionally provided) [MutableVec2i].
+     */
+    fun add(that: Int, result: MutableVec2i = MutableVec2i()): MutableVec2i = result.set(this).add(that)
 
     /**
      * Component-wise subtraction with the given [Vec2i]. Returns the result as an (optionally provided) [MutableVec2i].
      */
-    fun subtract(that: Vec2i, result: MutableVec2i): MutableVec2i = result.set(this).subtract(that)
+    fun subtract(that: Vec2i, result: MutableVec2i = MutableVec2i()): MutableVec2i = result.set(this).subtract(that)
+
+    /**
+     * Component-wise subtraction with the given scalar. Returns the result as an (optionally provided) [MutableVec2i].
+     */
+    fun subtract(that: Int, result: MutableVec2i = MutableVec2i()): MutableVec2i = result.set(this).subtract(that)
 
     /**
      * Component-wise multiplication with the given [Vec2i]. Returns the result as an (optionally provided) [MutableVec2i].
      */
-    fun mul(that: Vec2i, result: MutableVec2i): MutableVec2i = result.set(this).mul(that)
+    fun mul(that: Vec2i, result: MutableVec2i = MutableVec2i()): MutableVec2i = result.set(this).mul(that)
 
     /**
-     * Scales this vector by the factor and returns the result as an (optionally provided) [MutableVec2i].
+     * Component-wise multiplication with the given scalar. Returns the result as an (optionally provided) [MutableVec2i].
      */
-    fun scale(factor: Int, result: MutableVec2i): MutableVec2i = result.set(this).scale(factor)
+    fun mul(that: Int, result: MutableVec2i = MutableVec2i()): MutableVec2i = result.set(this).mul(that)
+
+    @Deprecated("Replace with mul()", ReplaceWith("mul(factor, result)"))
+    fun scale(factor: Int, result: MutableVec2i = MutableVec2i()) = mul(factor, result)
 
     override fun toString(): String = "($x, $y)"
 
@@ -632,65 +845,109 @@ open class MutableVec2i(override var x: Int, override var y: Int) : Vec2i(x, y) 
         return this
     }
 
-    fun set(other: Vec2i): MutableVec2i {
-        x = other.x
-        y = other.y
+    fun set(that: Vec2i): MutableVec2i {
+        x = that.x
+        y = that.y
         return this
     }
 
     /**
      * Inplace operation: Adds the given [Vec2i] component-wise to this vector.
      */
-    operator fun plusAssign(other: Vec2i) { add(other) }
+    operator fun plusAssign(that: Vec2i) { add(that) }
+
+    /**
+     * Inplace operation: Adds the given scalar component-wise to this vector.
+     */
+    operator fun plusAssign(that: Int) { add(that) }
 
     /**
      * Inplace operation: Subtracts the given [Vec2i] component-wise from this vector.
      */
-    operator fun minusAssign(other: Vec2i) { subtract(other) }
+    operator fun minusAssign(that: Vec2i) { subtract(that) }
+
+    /**
+     * Inplace operation: Subtracts the given scalar component-wise from this vector.
+     */
+    operator fun minusAssign(that: Int) { subtract(that) }
 
     /**
      * Inplace operation: Multiplies the given [Vec2i] component-wise with this vector.
      */
-    operator fun timesAssign(factor : Int) { scale(factor) }
+    operator fun timesAssign(that : Vec2i) { mul(that) }
 
     /**
-     * Inplace operation: Divides the given [Vec2i] component-wise with this vector.
+     * Inplace operation: Multiplies the given scalar component-wise with this vector.
      */
-    operator fun divAssign(div : Int) { scale(1 / div) }
+    operator fun timesAssign(that: Int) { mul(that) }
+
+    /**
+     * Inplace operation: Divides this vector component-wise by the given [Vec2i].
+     */
+    operator fun divAssign(that: Vec4i) {
+        x /= that.x
+        y /= that.y
+    }
+
+    /**
+     * Inplace operation: Divides this vector component-wise by the given scalar.
+     */
+    operator fun divAssign(div: Int) { mul(1 / div) }
 
     /**
      * Inplace operation: Adds the given [Vec2i] component-wise to this vector.
      */
-    fun add(other: Vec2i): MutableVec2i {
-        x += other.x
-        y += other.y
+    fun add(that: Vec2i): MutableVec2i {
+        x += that.x
+        y += that.y
+        return this
+    }
+
+    /**
+     * Inplace operation: Adds the given scalar component-wise to this vector.
+     */
+    fun add(that: Int): MutableVec2i {
+        x += that
+        y += that
         return this
     }
 
     /**
      * Inplace operation: Subtracts the given [Vec2i] component-wise from this vector.
      */
-    fun subtract(other: Vec2i): MutableVec2i {
-        x -= other.x
-        y -= other.y
+    fun subtract(that: Vec2i): MutableVec2i {
+        x -= that.x
+        y -= that.y
+        return this
+    }
+
+    /**
+     * Inplace operation: Subtracts the given scalar component-wise from this vector.
+     */
+    fun subtract(that: Int): MutableVec2i {
+        x -= that
+        y -= that
         return this
     }
 
     /**
      * Inplace operation: Multiplies the given [Vec2i] component-wise with this vector.
      */
-    fun mul(other: Vec2i): MutableVec2i {
-        x *= other.x
-        y *= other.y
+    fun mul(that: Vec2i): MutableVec2i {
+        x *= that.x
+        y *= that.y
         return this
     }
 
     /**
      * Inplace operation: Scales this vector by the given factor.
      */
-    fun scale(factor: Int): MutableVec2i {
-        x *= factor
-        y *= factor
+    fun mul(that : Int): MutableVec2i {
+        x *= that
+        y *= that
         return this
     }
+
+    @Deprecated("Replace with mul()", ReplaceWith("mul(factor)"))
+    fun scale(factor: Int) = mul(factor)
 }

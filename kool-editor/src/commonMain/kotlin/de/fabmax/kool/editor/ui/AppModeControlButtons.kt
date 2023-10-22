@@ -204,8 +204,8 @@ private class PlayButtonBg(playStopAnimator: AnimatedFloatBidir) : ModeButtonBg(
             val pa = MutableVec3f()
             val pb = MutableVec3f()
             for (i in 0..3) {
-                pa.set(pPlay[i]).scale(1f - pAnim)
-                pb.set(pStop[i]).scale(pAnim)
+                pa.set(pPlay[i]).mul(1f - pAnim)
+                pb.set(pStop[i]).mul(pAnim)
                 pa.add(pb)
                 vi[i] = vertex { set(round(pa.x * r), round(pa.y * r), round(pa.z * r)) }
             }
@@ -244,8 +244,8 @@ private class PauseButtonBg(playStopAnimator: AnimatedFloatBidir, val playPauseA
             val pa = MutableVec3f()
             val pb = MutableVec3f()
             for (i in 0..3) {
-                pa.set(pPlay[i]).scale(pAnim)
-                pb.set(pPause[i]).scale(1f - pAnim)
+                pa.set(pPlay[i]).mul(pAnim)
+                pb.set(pPause[i]).mul(1f - pAnim)
                 pa.add(pb)
                 vi[i] = vertex { set(round(pa.x * r), round(pa.y * r), round(pa.z * r)) }
             }
@@ -253,8 +253,8 @@ private class PauseButtonBg(playStopAnimator: AnimatedFloatBidir, val playPauseA
             addTriIndices(vi[0], vi[2], vi[3])
 
             for (i in 0..3) {
-                pa.set(pPlay[i]).scale(pAnim)
-                pb.set(pPause[i]).scale(1f - pAnim)
+                pa.set(pPlay[i]).mul(pAnim)
+                pb.set(pPause[i]).mul(1f - pAnim)
                 pa.add(pb)
                 vi[i] = vertex { set(round(pa.x * r), round(pa.y * -r), round(pa.z * r)) }
             }

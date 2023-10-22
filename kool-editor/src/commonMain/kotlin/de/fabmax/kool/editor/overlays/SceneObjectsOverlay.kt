@@ -128,8 +128,8 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
                 val l0 = if (i % 2 == 0) 0f else 0.45f
                 val l1 = if (i % 2 == 0) 0.9f else 0.9f
 
-                line3d(MutableVec3f(pt).scale(l0), MutableVec3f(pt).scale(l1), n1, 0.03f)
-                line3d(MutableVec3f(pt).scale(l0), MutableVec3f(pt).scale(l1), n2, 0.03f)
+                line3d(MutableVec3f(pt).mul(l0), MutableVec3f(pt).mul(l1), n1, 0.03f)
+                line3d(MutableVec3f(pt).mul(l0), MutableVec3f(pt).mul(l1), n2, 0.03f)
             }
         }
 
@@ -236,7 +236,7 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
                 tmpMat.set(light.modelMat)
                 instances.addInstance {
                     put(tmpMat.array)
-                    put(light.color.array)
+                    light.color.putTo(this)
                 }
             }
     }

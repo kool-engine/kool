@@ -28,7 +28,7 @@ class Plane() {
         val denom = n.dot(ray.direction)
         if (!denom.isFuzzyZero()) {
             val t = p.subtract(ray.origin, result).dot(n) / denom
-            result.set(ray.direction).scale(t).add(ray.origin)
+            result.set(ray.direction).mul(t).add(ray.origin)
             return t >= 0
         }
         return false

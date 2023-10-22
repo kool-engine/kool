@@ -113,12 +113,12 @@ class CollisionDemo : DemoScene("Physics - Collision") {
 
                         if (drawBodyState.value) {
                             if (body.rigidActor.isActive) {
-                                buf.put(activeColor.array)
+                                activeColor.putTo(buf)
                             } else {
-                                buf.put(inactiveColor.array)
+                                inactiveColor.putTo(buf)
                             }
                         } else {
-                            buf.put(body.color.array)
+                            body.color.putTo(buf)
                         }
 
                         if (body.rigidActor.position.length() > 500f) {

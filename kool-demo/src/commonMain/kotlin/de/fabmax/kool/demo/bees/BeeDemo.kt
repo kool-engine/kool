@@ -61,10 +61,11 @@ class BeeDemo : DemoScene("Fighting Bees") {
         addNode(beeMeshB)
 
         addLineMesh {
-            addBoundingBox(BoundingBox(
-                BeeConfig.worldExtent.scale(-1f, MutableVec3f()),
-                BeeConfig.worldExtent.scale(1f, MutableVec3f())
-            ), Color.WHITE)
+            addBoundingBox(
+                BoundingBox(
+                    BeeConfig.worldExtent.mul(-1f, MutableVec3f()),
+                    BeeConfig.worldExtent.mul(1f, MutableVec3f())
+                ), Color.WHITE)
         }
 
         onUpdate {

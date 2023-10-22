@@ -330,6 +330,15 @@ class Mat3f {
         return result
     }
 
+    private operator fun MutableVec4f.set(i: Int, value: Float) {
+        when(i) {
+            0 -> x = value
+            1 -> y = value
+            2 -> z = value
+            else -> w = value
+        }
+    }
+
     fun getEulerAngles(result: MutableVec3f): MutableVec3f {
         val sy = sqrt(this[0, 0] * this[0, 0] + this[1, 0] * this[1, 0])
         val isSingular = sy.isFuzzyZero()

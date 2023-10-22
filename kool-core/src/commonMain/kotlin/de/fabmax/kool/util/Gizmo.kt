@@ -368,10 +368,10 @@ class Gizmo : Node(), InputStack.PointerListener {
     private fun BetterLineMesh.planeHandleBorder(axisX: Vec3f, axisY: Vec3f, signX: Float, signY: Float, color: Color) {
         this.color = color
         this.width = properties.lineWidth
-        val sX = MutableVec3f(axisX).scale(properties.planeHandleSize * signX)
-        val sY = MutableVec3f(axisY).scale(properties.planeHandleSize * signY)
-        val g = MutableVec3f(axisX).scale(properties.planeHandleGap * signX)
-            .add(MutableVec3f(axisY).scale(properties.planeHandleGap * signY))
+        val sX = MutableVec3f(axisX).mul(properties.planeHandleSize * signX)
+        val sY = MutableVec3f(axisY).mul(properties.planeHandleSize * signY)
+        val g = MutableVec3f(axisX).mul(properties.planeHandleGap * signX)
+            .add(MutableVec3f(axisY).mul(properties.planeHandleGap * signY))
         moveTo(g)
         lineTo(MutableVec3f(g).add(sX))
         lineTo(MutableVec3f(g).add(sX).add(sY))
@@ -538,7 +538,7 @@ class Gizmo : Node(), InputStack.PointerListener {
         normal: Vec3f,
         cam: Camera
     ): Float {
-        val d = pickRay.distanceToPoint(toGlobalCoords(pickPoint.set(handlePos).scale(scale))) / scale
+        val d = pickRay.distanceToPoint(toGlobalCoords(pickPoint.set(handlePos).mul(scale))) / scale
         val n = pickPoint.distance(cam.globalPos)
 
         if (isHandleActive && d < properties.axesHandleRadiusHovered && n < minDist) {

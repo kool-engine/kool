@@ -123,7 +123,7 @@ abstract class Camera(name: String = "camera") : Node(name) {
 
         globalLookDirMut.set(globalLookAtMut).subtract(globalPosMut)
         globalRange = globalLookDirMut.length()
-        globalLookDirMut.scale(1f / globalRange)
+        globalLookDirMut.mul(1f / globalRange)
 
         globalLookDirMut.cross(globalUpMut, globalRightMut).norm()
         globalRightMut.cross(globalLookDirMut, globalUpMut).norm()
@@ -177,7 +177,7 @@ abstract class Camera(name: String = "camera") : Node(name) {
             result.set(Vec3f.ZERO)
             return false
         }
-        result.set(tmpVec4.x, tmpVec4.y, tmpVec4.z).scale(1f / tmpVec4.w)
+        result.set(tmpVec4.x, tmpVec4.y, tmpVec4.z).mul(1f / tmpVec4.w)
         return result.x in -1f..1f && result.y in -1f..1f && result.z in -1f..1f
     }
 

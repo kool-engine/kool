@@ -15,10 +15,10 @@ open class Color(r: Float, g: Float, b: Float, a: Float = 1f) : Vec4f(r, g, b, a
 
     constructor(other: Color) : this(other.r, other.g, other.b, other.a)
 
-    open val r get() = this[0]
-    open val g get() = this[1]
-    open val b get() = this[2]
-    open val a get() = this[3]
+    open val r get() = x
+    open val g get() = y
+    open val b get() = z
+    open val a get() = w
 
     val brightness: Float
         get() = 0.299f * r + 0.587f * g + 0.114f * b
@@ -359,23 +359,20 @@ open class Color(r: Float, g: Float, b: Float, a: Float = 1f) : Vec4f(r, g, b, a
 
 fun Color(hex: String): Color = Color.fromHex(hex)
 
-open class MutableColor(r: Float, g: Float, b: Float, a: Float) : Color(r, g, b, a) {
+open class MutableColor(override var r: Float, override var g: Float, override var b: Float, override var a: Float) : Color(r, g, b, a) {
 
-    override var r
-        get() = this[0]
-        set(value) { this[0] = value }
-    override var g
-        get() = this[1]
-        set(value) { this[1] = value }
-    override var b
-        get() = this[2]
-        set(value) { this[2] = value }
-    override var a
-        get() = this[3]
-        set(value) { this[3] = value }
-
-    val array: FloatArray
-        get() = fields
+    override var x
+        get() = r
+        set(value) { r = value }
+    override var y
+        get() = g
+        set(value) { g = value }
+    override var z
+        get() = b
+        set(value) { b = value }
+    override var w
+        get() = a
+        set(value) { a = value }
 
     constructor() : this(0f, 0f, 0f, 1f)
     constructor(color: Color) : this(color.r, color.g, color.b, color.a)
@@ -438,12 +435,5 @@ open class MutableColor(r: Float, g: Float, b: Float, a: Float) : Color(r, g, b,
         b = other.z
         a = other.w
         return this
-    }
-
-    open operator fun set(i: Int, v: Float) { fields[i] = v }
-
-    @Deprecated("Use Hsv.toSrgb() instead", ReplaceWith("Hsv(h, s, v).toSrgb(a = a)"))
-    fun setHsv(h: Float, s: Float, v: Float, a: Float = 1f): MutableColor {
-        return Hsv(h, s, v).toSrgb(this, a)
     }
 }

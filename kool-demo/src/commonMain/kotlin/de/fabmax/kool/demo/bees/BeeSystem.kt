@@ -76,8 +76,8 @@ class BeeSystem(val team: Int) {
         beeInstances.clear()
         beeInstances.addInstances(aliveBees) { buf ->
             repeat(aliveBees) { i ->
-                buf.put(positions[i].array)
-                buf.put(rotations[i].array)
+                positions[i].putTo(buf)
+                rotations[i].putTo(buf)
             }
         }
     }
@@ -88,10 +88,10 @@ class BeeSystem(val team: Int) {
             val spawned = Bee(aliveBees++)
 
             spawned.rotation.setRotation(randomF(0f, 360f), random.randomInUnitSphere(tmpVec3a).norm())
-            spawned.position.set(random.randomInUnitSphere(tmpVec3a).scale(BeeConfig.worldSize.x * 0.05f))
+            spawned.position.set(random.randomInUnitSphere(tmpVec3a).mul(BeeConfig.worldSize.x * 0.05f))
             spawned.position.x += -BeeConfig.worldSize.x * 0.4f + BeeConfig.worldSize.x * 0.8f * team
             spawned.enemy = EnemyBee(BeeConfig.maxBeesPerTeam)
-            random.randomInUnitSphere(spawned.velocity).scale(BeeConfig.maxSpawnSpeed)
+            random.randomInUnitSphere(spawned.velocity).mul(BeeConfig.maxSpawnSpeed)
         }
     }
 
@@ -126,7 +126,9 @@ class BeeSystem(val team: Int) {
     val Bee.isDecayed: Boolean get() = position.w > BeeConfig.decayTime
     var Bee.enemy: EnemyBee
         get() = EnemyBee(enemies[index])
-        set(value) { enemies[index] = value.index }
+        set(value) {
+            enemies[index] = value.index
+        }
 
     val EnemyBee.position: MutableVec4f get() = enemyBees.positions[index]
     val EnemyBee.isAlive: Boolean get() = position.w == 0f
@@ -143,7 +145,7 @@ class BeeSystem(val team: Int) {
         val pos = position
         val vel = velocity
 
-        pos.add(tmpVec3a.set(vel).scale(dt))
+        pos.add(tmpVec3a.set(vel).mul(dt))
 
         // update rotation by current velocity direction
         val speed = vel.length()
@@ -190,21 +192,21 @@ class BeeSystem(val team: Int) {
         val vel = velocity
         val target = enemy
 
-        val v = random.randomInUnitCube(tmpVec3a).scale(BeeConfig.speedJitter * dt)
-        vel.add(v).scale(1f - BeeConfig.speedDamping * dt)
+        val v = random.randomInUnitCube(tmpVec3a).mul(BeeConfig.speedJitter * dt)
+        vel.add(v).mul(1f - BeeConfig.speedDamping * dt)
 
         // swarming
         val attractiveFriend = getRandomBee()
         var delta = attractiveFriend.position.subtract(pos, tmpVec4)
         var dist = delta.length()
         if (dist > 0f) {
-            vel.add(delta.scale(BeeConfig.teamAttraction * dt / dist))
+            vel.add(delta.mul(BeeConfig.teamAttraction * dt / dist))
         }
         val repellentFriend = getRandomBee()
         delta = repellentFriend.position.subtract(pos, tmpVec4)
         dist = delta.length()
         if (dist > 0f) {
-            vel.add(delta.scale(BeeConfig.teamRepulsion * dt / dist))
+            vel.add(delta.mul(BeeConfig.teamRepulsion * dt / dist))
         }
 
         // attack enemy bee
@@ -215,10 +217,10 @@ class BeeSystem(val team: Int) {
             dist = delta.length()
 
             if (dist > BeeConfig.attackDistance) {
-                vel.add(delta.scale(BeeConfig.chaseForce * dt / dist))
+                vel.add(delta.mul(BeeConfig.chaseForce * dt / dist))
 
             } else {
-                vel.add(delta.scale(BeeConfig.attackForce * dt / dist))
+                vel.add(delta.mul(BeeConfig.attackForce * dt / dist))
                 if (dist < BeeConfig.hitDistance) {
                     target.kill()
                 }
@@ -230,7 +232,7 @@ class BeeSystem(val team: Int) {
         val pos = position
         val vel = velocity
 
-        vel.scale(1f - 0.5f * dt)
+        vel.mul(1f - 0.5f * dt)
         vel.y += BeeConfig.gravity * dt
 
         pos.w += dt

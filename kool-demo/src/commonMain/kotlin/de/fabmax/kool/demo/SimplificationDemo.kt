@@ -123,7 +123,7 @@ class SimplificationDemo : DemoScene("Simplification") {
         val geometry = mesh.geometry
         for (i in 0 until geometry.numVertices) {
             geometry.vertexIt.index = i
-            geometry.vertexIt.position.scale(scale).add(offset)
+            geometry.vertexIt.position.mul(scale).add(offset)
         }
         logD { "loaded: $name, bounds: ${geometry.bounds}" }
         models += DemoModel(name, geometry)

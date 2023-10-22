@@ -220,7 +220,7 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
             val idx = vertex {
                 position.set(px, py, props.center.z)
                 normal.set(Vec3f.Z_AXIS)
-                texCoord.set(cos, -sin).scale(props.uvRadius).add(props.uvCenter)
+                texCoord.set(cos, -sin).mul(props.uvRadius).add(props.uvCenter)
             }
 
             if (i > 0) {
@@ -252,7 +252,7 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
 
             rowIndices[i] = vertex {
                 position.set(x, y, z).add(props.center)
-                normal.set(x, y, z).scale(1f / props.radius)
+                normal.set(x, y, z).mul(1f / props.radius)
                 texCoord.set(props.texCoordGenerator(theta.toFloat(), phi.toFloat()))
             }
 
@@ -281,7 +281,7 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
                 val z = sin(-phi).toFloat() * r
                 rowIndices[i] = vertex {
                     position.set(x, y, z).add(props.center)
-                    normal.set(x, y, z).scale(1f / props.radius)
+                    normal.set(x, y, z).mul(1f / props.radius)
                     texCoord.set(props.texCoordGenerator(theta.toFloat(), phi.toFloat()))
                 }
 
@@ -384,7 +384,7 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
         for (v in icoGenerator.uvVerts) {
             vertex {
                 normal.set(v.first).norm()
-                position.set(v.first).scale(props.radius).add(props.center)
+                position.set(v.first).mul(props.radius).add(props.center)
                 texCoord.set(props.texCoordGenerator(v.second.y * pif, v.second.x * 2 * pif))
             }
         }
@@ -587,7 +587,7 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
 
     fun line3d(p1: Vec3f, p2: Vec3f, normal: Vec3f, width: Float) {
         val d = p2.subtract(p1, MutableVec3f()).norm()
-        val o = d.cross(normal, MutableVec3f()).norm().scale(width * 0.5f)
+        val o = d.cross(normal, MutableVec3f()).norm().mul(width * 0.5f)
 
         val i0 = vertex { position.set(p1).add(o); this.normal.set(normal) }
         val i1 = vertex { position.set(p1).subtract(o); this.normal.set(normal) }

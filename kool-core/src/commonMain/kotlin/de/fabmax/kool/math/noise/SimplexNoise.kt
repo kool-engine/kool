@@ -204,7 +204,7 @@ class SimplexNoise3d(seed: Int) : Noise3d {
                 MutableVec3f( 3.0862664687972017f,  1.1721513422464978f,  0.0f),
                 MutableVec3f( 1.1721513422464978f,  3.0862664687972017f,  0.0f)
             )
-            grad3.forEach { it.scale(1f / N3) }
+            grad3.forEach { it.mul(1f / N3) }
 
             GRADIENTS_3D = Array(PSIZE) { grad3[it % grad3.size] }
 

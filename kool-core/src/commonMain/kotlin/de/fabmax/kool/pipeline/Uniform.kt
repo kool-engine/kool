@@ -90,7 +90,7 @@ class Uniform4f(name: String) : Uniform<MutableVec4f>(MutableVec4f(), name) {
 
     override fun putToBuffer(buffer: MixedBuffer, len: Int) {
         checkLen(16, len)
-        buffer.putFloat32(value.array)
+        value.putTo(buffer)
         putPadding(buffer, len - 16)
     }
 }
@@ -102,7 +102,7 @@ class UniformColor(name: String) : Uniform<MutableColor>(MutableColor(), name) {
 
     override fun putToBuffer(buffer: MixedBuffer, len: Int) {
         checkLen(16, len)
-        buffer.putFloat32(value.array)
+        value.putTo(buffer)
         putPadding(buffer, len - 16)
     }
 }
@@ -145,7 +145,7 @@ class Uniform4fv(name: String, length: Int) : Uniform<Array<MutableVec4f>>(Array
         checkLen(16 * size, len)
         // Uniform4f arrays never contain padding
         for (i in 0 until size) {
-            buffer.putFloat32(value[i].array)
+            value[i].putTo(buffer)
         }
     }
 }
@@ -233,7 +233,7 @@ class Uniform4i(name: String) : Uniform<MutableVec4i>(MutableVec4i(), name) {
 
     override fun putToBuffer(buffer: MixedBuffer, len: Int) {
         checkLen(16, len)
-        buffer.putInt32(value.array)
+        value.putTo(buffer)
         putPadding(buffer, len - 16)
     }
 }
@@ -275,7 +275,7 @@ class Uniform4iv(name: String, length: Int) : Uniform<Array<MutableVec4i>>(Array
     override fun putToBuffer(buffer: MixedBuffer, len: Int) {
         checkLen(16 * size, len)
         for (i in 0 until size) {
-            buffer.putInt32(value[i].array)
+            value[i].putTo(buffer)
         }
     }
 }

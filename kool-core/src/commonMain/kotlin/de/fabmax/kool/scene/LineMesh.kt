@@ -117,7 +117,7 @@ open class LineMesh(geometry: IndexedVertexList = IndexedVertexList(Attribute.PO
         geometry.batchUpdate {
             val tmpN = MutableVec3f()
             geometry.forEach {
-                tmpN.set(it.normal).scale(len).add(it.position)
+                tmpN.set(it.normal).mul(len).add(it.position)
                 val color = lineColor ?: it.color
                 addLine(it.position, color, tmpN, color)
             }

@@ -35,7 +35,7 @@ class TitleBgRenderer(
         }
 
         titleBgMesh.bgInstances.addInstance {
-            put(node.clipBoundsPx.array)
+            node.clipBoundsPx.putTo(this)
             put(node.leftPx)
             put(node.topPx)
             put(node.widthPx)

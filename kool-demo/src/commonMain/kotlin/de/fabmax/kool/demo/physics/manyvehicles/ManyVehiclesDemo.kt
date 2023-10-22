@@ -209,7 +209,7 @@ class ManyVehiclesDemo : DemoScene("Many Vehicles") {
                 for (d in vehicle.transform.matrix.array) {
                     put(d.toFloat())
                 }
-                put(color.array)
+                color.putTo(this)
             }
         }
 

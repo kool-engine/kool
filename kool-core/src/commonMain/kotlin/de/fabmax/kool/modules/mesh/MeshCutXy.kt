@@ -130,7 +130,7 @@ class MeshCutXy(val geometry: IndexedVertexList) {
     private fun deleteInside(cutPoly: List<Vec2f>) {
         var delCnt = 0
         ocTreeHandler.distinctTriangleEdges().filter {
-            isInPolygon(MutableVec3f(it.from).add(it.next.from).add(it.next.next.from).scale(1/3f), cutPoly)
+            isInPolygon(MutableVec3f(it.from).add(it.next.from).add(it.next.next.from).mul(1 / 3f), cutPoly)
         }.forEach {
             it.deleteTriangle()
             delCnt++
@@ -170,7 +170,7 @@ class MeshCutXy(val geometry: IndexedVertexList) {
         lateinit var edge: Edge<Vec3f>
 
         fun setup(edge: Edge<Vec3f>): ShortEdgeOnEdgeTraverser {
-            super.setup(MutableVec3f(edge.pt0).add(edge.pt1).scale(0.5f), edge.length / 2)
+            super.setup(MutableVec3f(edge.pt0).add(edge.pt1).mul(0.5f), edge.length / 2)
             this.edge = edge
 
             pointDistance = object : PointDistance<HalfEdgeMesh.HalfEdge> {
@@ -207,7 +207,7 @@ class MeshCutXy(val geometry: IndexedVertexList) {
         }
 
         fun setup(edge: Edge<Vec3f>): EdgeXyIntersectionTrav {
-            super.setup(MutableVec3f(edge.pt0).add(edge.pt1).scale(0.5f), edge.length / 2)
+            super.setup(MutableVec3f(edge.pt0).add(edge.pt1).mul(0.5f), edge.length / 2)
             this.edge = edge
 
             pointDistance = object : PointDistance<HalfEdgeMesh.HalfEdge> {
@@ -223,7 +223,7 @@ class MeshCutXy(val geometry: IndexedVertexList) {
                         if (isFuzzyEqual(d, 0f) || isFuzzyEqual(d, 1f)) {
                             Float.MAX_VALUE
                         } else {
-                            val v = MutableVec3f(item.to).subtract(item.from).scale(d).add(item.from)
+                            val v = MutableVec3f(item.to).subtract(item.from).mul(d).add(item.from)
                             //delCenters += v
                             splitEdges += item to v
                             0f

@@ -501,7 +501,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
         fun putInstanceData(buf: Float32Buffer) {
             bufTransform.set(trs.matrix).scale(size.x, size.y, size.z)
             buf.put(bufTransform.array)
-            buf.put(mutColor.array)
+            mutColor.putTo(buf)
         }
     }
 
@@ -541,7 +541,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
                 forceDragPos.set(hitResult.hitPosition)
                 actor.toLocal(forceAppPosLocal.set(hitResult.hitPosition))
                 dragPlane.p.set(hitResult.hitPosition)
-                dragPlane.n.set(mainScene.camera.globalLookDir).scale(-1f)
+                dragPlane.n.set(mainScene.camera.globalLookDir).mul(-1f)
             }
         }
 
@@ -549,7 +549,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
             hitActor?.let { actor ->
                 actor.toGlobal(forceAppPosGlobal.set(forceAppPosLocal))
                 dragPlane.intersectionPoint(pickRay, forceDragPos)
-                force.set(forceDragPos).subtract(forceAppPosGlobal).scale(500f)
+                force.set(forceDragPos).subtract(forceAppPosGlobal).mul(500f)
                 actor.addForceAtPos(force, forceAppPosGlobal)
                 isActive = true
             }

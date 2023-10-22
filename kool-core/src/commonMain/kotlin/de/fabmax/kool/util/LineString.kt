@@ -57,7 +57,7 @@ class LineString<T: Vec3f>(private val points: MutableList<T> = mutableListOf())
         for (i in 0 until lastIndex) {
             val l = get(i).distance(get(i+1))
             if (l > d) {
-                return result.set(get(i+1)).subtract(get(i)).scale(d / l).add(get(i))
+                return result.set(get(i + 1)).subtract(get(i)).mul(d / l).add(get(i))
             }
             d -= l
         }
@@ -79,7 +79,7 @@ class LineString<T: Vec3f>(private val points: MutableList<T> = mutableListOf())
         if (iLower >= 0) {
             val upper = pos + step
             val wUpper = (distance - pos) / (upper - pos)
-            result.set(get(iLower)).scale(1f - wUpper)
+            result.set(get(iLower)).mul(1f - wUpper)
             val upperPos = get(iLower + 1)
             result.x += upperPos.x * wUpper
             result.y += upperPos.x * wUpper

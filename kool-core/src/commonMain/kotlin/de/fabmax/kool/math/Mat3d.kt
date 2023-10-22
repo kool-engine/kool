@@ -333,6 +333,15 @@ class Mat3d {
         return result
     }
 
+    private operator fun MutableVec4d.set(i: Int, value: Double) {
+        when(i) {
+            0 -> x = value
+            1 -> y = value
+            2 -> z = value
+            else -> w = value
+        }
+    }
+
     fun getEulerAngles(result: MutableVec3d): MutableVec3d {
         val sy = sqrt(this[0, 0] * this[0, 0] + this[1, 0] * this[1, 0])
         val isSingular = sy.isFuzzyZero()

@@ -61,7 +61,9 @@ class Table : Mesh(IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS, Att
                     val s = (tableR + e) / tableR
                     val uvS = (tableR + r * p * PI.toFloat()) * 0.04f
 
-                    shape.texCoords.forEachIndexed { i, uv -> uv.set(shape.positions[i].x, shape.positions[i].y).norm().scale(uvS) }
+                    shape.texCoords.forEachIndexed { i, uv ->
+                        uv.set(shape.positions[i].x, shape.positions[i].y).norm().mul(uvS)
+                    }
                     translate(0f, 0f, h)
                     scale(s, s, 1f)
                     if (i == 0) {

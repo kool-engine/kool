@@ -80,7 +80,7 @@ class InstanceDemo : DemoScene("Instanced Drawing") {
             val mesh = model.makeModel(modelCfg, i).meshes.values.first()
             mesh.apply {
                 geometry.forEach { v ->
-                    v.position.scale(0.3f).add(Vec3f(0f, -1f, 0f))
+                    v.position.mul(0.3f).add(Vec3f(0f, -1f, 0f))
                 }
                 geometry.rebuildBounds()
 
@@ -154,9 +154,9 @@ class InstanceDemo : DemoScene("Instanced Drawing") {
         override fun addInstanceData(lod: Int, buffer: Float32Buffer, ctx: KoolContext) {
             buffer.put(instanceModelMat.array)
             if (isLodColors.value) {
-                buffer.put(lods[lod].color.array)
+                lods[lod].color.putTo(buffer)
             } else {
-                buffer.put(color.array)
+                color.putTo(buffer)
             }
         }
     }

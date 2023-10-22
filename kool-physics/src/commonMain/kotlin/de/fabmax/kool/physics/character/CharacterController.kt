@@ -49,7 +49,7 @@ abstract class CharacterController(private val manager: CharacterControllerManag
         if (!isDownCollision) {
             // character falls
             lastGroundTuch += timeStep
-            gravityVelocity.add(tmpVec.set(gravity).scale(timeStep))
+            gravityVelocity.add(tmpVec.set(gravity).mul(timeStep))
         } else {
             lastGroundTuch = 0f
             gravityVelocity.set(Vec3f.ZERO)
@@ -58,20 +58,20 @@ abstract class CharacterController(private val manager: CharacterControllerManag
         val fallSpeed = tmpVec.set(gravity).norm().dot(gravityVelocity)
         if (jump && lastGroundTuch < 0.25f && fallSpeed >= 0f) {
             // character touches ground (or did so recently) and jump is requested but not yet executed
-            gravityVelocity.add(tmpVec.set(gravity).norm().scale(-jumpSpeed))
+            gravityVelocity.add(tmpVec.set(gravity).norm().mul(-jumpSpeed))
         }
 
-        displacement.set(movement).scale(timeStep).add(tmpVec.set(gravityVelocity).scale(timeStep))
+        displacement.set(movement).mul(timeStep).add(tmpVec.set(gravityVelocity).mul(timeStep))
         move(displacement, timeStep)
     }
 
     open fun onPhysicsUpdate(timeStep: Float) {
         posBuffer.set(position)
         mutVelocity.set(
-            (posBuffer.x - prevPosition.x).toFloat(),
-            (posBuffer.y - prevPosition.y).toFloat(),
-            (posBuffer.z - prevPosition.z).toFloat()
-        ).scale(1f / timeStep)
+                (posBuffer.x - prevPosition.x).toFloat(),
+                (posBuffer.y - prevPosition.y).toFloat(),
+                (posBuffer.z - prevPosition.z).toFloat()
+            ).mul(1f / timeStep)
         prevPosition.set(posBuffer)
 
         // the controller's actor is not registered in PhysicsWorld, call its update routine from here

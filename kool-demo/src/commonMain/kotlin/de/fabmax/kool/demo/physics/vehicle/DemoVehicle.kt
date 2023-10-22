@@ -257,7 +257,7 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
             }
         }
 
-        vehicleModel.transform.translate(MutableVec3f(vehicleProps.chassisCMOffset).scale(-1f))
+        vehicleModel.transform.translate(MutableVec3f(vehicleProps.chassisCMOffset).mul(-1f))
 
         return vehicle
     }

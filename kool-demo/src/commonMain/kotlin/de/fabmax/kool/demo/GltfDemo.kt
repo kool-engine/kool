@@ -197,7 +197,7 @@ class GltfDemo : DemoScene("glTF Models") {
                 }
 
                 translationTarget?.let {
-                    val v = MutableVec3d(translation).scale(0.9).add(MutableVec3d(it).scale(0.1))
+                    val v = MutableVec3d(translation).mul(0.9).add(MutableVec3d(it).mul(0.1))
                     translation.set(v)
                     if (v.distance(it) < 0.01) {
                         camTranslationTarget = null
@@ -342,9 +342,9 @@ class GltfDemo : DemoScene("glTF Models") {
             val a = (PI / nCyl * i * 2).toFloat()
             cornerPts.forEachIndexed { ci, cpt ->
                 val uv = MutableVec2f(radius + ci.toFloat() / cornerPts.size * PI.toFloat() * cornerR, 0f)
-                uv.scale(uvScale)
-                uv.rotate(a.deg)
-                val pt = cpt.rotate(a.deg, Vec3f.Y_AXIS, MutableVec3f())
+                uv.mul(uvScale)
+                uv.rotate(a.rad)
+                val pt = cpt.rotate(a.rad, Vec3f.Y_AXIS, MutableVec3f())
                 val iv = vertex(pt, Vec3f.ZERO, uv)
                 if (i > 0 && ci > 0) {
                     geometry.addTriIndices(iv - 1, iv - cornerPts.size - 1, iv - cornerPts.size)
@@ -409,7 +409,7 @@ class GltfDemo : DemoScene("glTF Models") {
                 if (normalizeBoneWeights) {
                     meshes.values.forEach { mesh ->
                         mesh.geometry.forEach { v ->
-                            v.weights.scale(1f / (v.weights.x + v.weights.y + v.weights.z + v.weights.w))
+                            v.weights.mul(1f / (v.weights.x + v.weights.y + v.weights.z + v.weights.w))
                         }
                     }
                 }

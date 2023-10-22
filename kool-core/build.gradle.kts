@@ -83,7 +83,8 @@ tasks.register<GenerateVariantsFromFloatPrototype>("generateDoubleAndIntVariants
         ?.flatMap {
             listOf(
                 File(it, "de/fabmax/kool/math/Vec2.kt"),
-                File(it, "de/fabmax/kool/math/Vec3.kt")
+                File(it, "de/fabmax/kool/math/Vec3.kt"),
+                File(it, "de/fabmax/kool/math/Vec4.kt")
             )
         }
         ?.filter { it.exists() }

@@ -44,7 +44,7 @@ open class BoundingBox() {
             // size = max - min
             mutMax.subtract(mutMin, mutSize)
             // center = min + size * 0.5
-            size.scale(0.5f, mutCenter).add(min)
+            size.mul(0.5f, mutCenter).add(min)
         }
     }
 

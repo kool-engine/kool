@@ -306,7 +306,7 @@ open class TriangleHitTraverser<T: Triangle> : NearestToRayTraverser<T>() {
     override fun traverse(tree: SpatialTree<T>) {
         super.traverse(tree)
         if (isHit) {
-            hitPoint.set(ray.direction).scale(distance).add(ray.origin)
+            hitPoint.set(ray.direction).mul(distance).add(ray.origin)
         }
     }
 }

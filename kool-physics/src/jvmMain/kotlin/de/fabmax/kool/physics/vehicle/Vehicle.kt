@@ -136,7 +136,7 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, val wor
 
         pxVehicle.step(timeStep, vehicleSimulationContext)
 
-        tmpVec.set(vehicleProps.chassisCMOffset).scale(-2f)
+        tmpVec.set(vehicleProps.chassisCMOffset).mul(-2f)
         for (i in 0 until 4) {
             val wheelInfo = wheelInfos[i]
             pxVehicle.baseState.getWheelLocalPoses(i).localPose.toTrsTransform(wheelInfo.transform)
@@ -155,9 +155,11 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, val wor
 
         val engineSpdOmega = pxVehicle.engineDriveState.engineState.rotationSpeed
         engineSpd = max(750f, engineSpdOmega * OMEGA_TO_RPM)
-        engineTq = pxVehicle.engineDriveParams.engineParams.torqueCurve.interpolate(engineSpdOmega / pxVehicle.engineDriveParams.engineParams.maxOmega) * peakTorque * throttleInput
+        engineTq =
+            pxVehicle.engineDriveParams.engineParams.torqueCurve.interpolate(engineSpdOmega / pxVehicle.engineDriveParams.engineParams.maxOmega) * peakTorque * throttleInput
         engineP = engineTq * engineSpdOmega
-        curGear = pxVehicle.engineDriveState.gearboxState.currentGear - pxVehicle.engineDriveParams.gearBoxParams.neutralGear
+        curGear =
+            pxVehicle.engineDriveState.gearboxState.currentGear - pxVehicle.engineDriveParams.gearBoxParams.neutralGear
 
         val vehicleActor = pxVehicle.physXState.physxActor.rigidBody
         val linearVelocity = vehicleActor.linearVelocity
@@ -202,11 +204,17 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, val wor
 
 
         // Initialize vehicle stuff
-        vehicle.initialize(Physics.physics, Physics.cookingParams, Physics.defaultMaterial.pxMaterial, EngineDriveVehicleEnum.eDIFFTYPE_FOURWHEELDRIVE)
+        vehicle.initialize(
+            Physics.physics,
+            Physics.cookingParams,
+            Physics.defaultMaterial.pxMaterial,
+            EngineDriveVehicleEnum.eDIFFTYPE_FOURWHEELDRIVE
+        )
 
         MemoryStack.stackPush().use { stack ->
             // Apply a start pose to the physx actor and add it to the physx scene.
-            val vehiclePose = PxTransform.createAt(stack, MemoryStack::nmalloc,
+            val vehiclePose = PxTransform.createAt(
+                stack, MemoryStack::nmalloc,
                 PxVec3.createAt(stack, MemoryStack::nmalloc, 0f, 1f, 0f),
                 PxQuat.createAt(stack, MemoryStack::nmalloc, PxIDENTITYEnum.PxIdentity)
             )
@@ -224,7 +232,10 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, val wor
         return vehicle
     }
 
-    private fun EngineDriveVehicle.setupBaseParams(vehicleProps: VehicleProperties, wheelCenterActorOffsets: List<Vec3f>) {
+    private fun EngineDriveVehicle.setupBaseParams(
+        vehicleProps: VehicleProperties,
+        wheelCenterActorOffsets: List<Vec3f>
+    ) {
         MemoryStack.stackPush().use { mem ->
             val numWheels = vehicleProps.numWheels
             val wheelOffsets = wheelCenterActorOffsets.map { MutableVec3f(it).add(vehicleProps.chassisCMOffset) }
@@ -268,8 +279,14 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, val wor
             handBrake.maxResponse = vehicleProps.maxHandBrakeTorque
             for (i in 0..3) {
                 val isFront = i < 2
-                normalBrake.setWheelResponseMultipliers(i, if (isFront) vehicleProps.brakeTorqueFrontFactor else vehicleProps.brakeTorqueRearFactor)
-                handBrake.setWheelResponseMultipliers(i, if (isFront) vehicleProps.handBrakeTorqueFrontFactor else vehicleProps.handBrakeTorqueRearFactor)
+                normalBrake.setWheelResponseMultipliers(
+                    i,
+                    if (isFront) vehicleProps.brakeTorqueFrontFactor else vehicleProps.brakeTorqueRearFactor
+                )
+                handBrake.setWheelResponseMultipliers(
+                    i,
+                    if (isFront) vehicleProps.handBrakeTorqueFrontFactor else vehicleProps.handBrakeTorqueRearFactor
+                )
             }
 
             baseParams.steerResponseParams.apply {
@@ -321,13 +338,16 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, val wor
 
             // Set up the suspensions
             // Compute the mass supported by each suspension spring.
-            baseParams.suspensionStateCalculationParams.suspensionJounceCalculationType = PxVehicleSuspensionJounceCalculationTypeEnum.eSWEEP
+            baseParams.suspensionStateCalculationParams.suspensionJounceCalculationType =
+                PxVehicleSuspensionJounceCalculationTypeEnum.eSWEEP
             baseParams.suspensionStateCalculationParams.limitSuspensionExpansionVelocity = false
 
             val forceAppPoint = mem.createPxVec3(0f, 0f, -0.2f)
             val suspSprungMasses = Vector_PxReal(numWheels)
-            PxVehicleTopLevelFunctions.VehicleComputeSprungMasses(numWheels, pxWheelCenterActorOffsets,
-                vehicleProps.chassisMass, PxVehicleAxesEnum.eNegY, suspSprungMasses)
+            PxVehicleTopLevelFunctions.VehicleComputeSprungMasses(
+                numWheels, pxWheelCenterActorOffsets,
+                vehicleProps.chassisMass, PxVehicleAxesEnum.eNegY, suspSprungMasses
+            )
 
             for (i in 0 until numWheels) {
                 val susp = baseParams.getSuspensionParams(i)
@@ -375,14 +395,21 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, val wor
     private fun EngineDriveVehicle.setupPhysxParams(vehicleProps: VehicleProperties) {
         MemoryStack.stackPush().use { mem ->
             val roadFilterData = PxFilterData.createAt(mem, MemoryStack::nmalloc, 0, 0, 0, 0)
-            val roadQueryFlags = PxQueryFlags.createAt(mem, MemoryStack::nmalloc, (PxQueryFlagEnum.eSTATIC.value /*or PxQueryFlagEnum.eDYNAMIC.value*/).toShort())
-            val roadQueryFilterData = PxQueryFilterData.createAt(mem, MemoryStack::nmalloc, roadFilterData, roadQueryFlags)
+            val roadQueryFlags = PxQueryFlags.createAt(
+                mem,
+                MemoryStack::nmalloc,
+                (PxQueryFlagEnum.eSTATIC.value /*or PxQueryFlagEnum.eDYNAMIC.value*/).toShort()
+            )
+            val roadQueryFilterData =
+                PxQueryFilterData.createAt(mem, MemoryStack::nmalloc, roadFilterData, roadQueryFlags)
 
-            val actorCMassLocalPose = PxTransform.createAt(mem, MemoryStack::nmalloc,
-                MutableVec3f(vehicleProps.chassisCMOffset).scale(-1f).toPxVec3(mem.createPxVec3()),
+            val actorCMassLocalPose = PxTransform.createAt(
+                mem, MemoryStack::nmalloc,
+                MutableVec3f(vehicleProps.chassisCMOffset).mul(-1f).toPxVec3(mem.createPxVec3()),
                 PxQuat.createAt(mem, MemoryStack::nmalloc, PxIDENTITYEnum.PxIdentity)
             )
-            val actorShapeLocalPose = PxTransform.createAt(mem, MemoryStack::nmalloc,
+            val actorShapeLocalPose = PxTransform.createAt(
+                mem, MemoryStack::nmalloc,
                 // fixme: don't use hardcoded shape local pose
                 PxVec3.createAt(mem, MemoryStack::nmalloc, 0f, 0.83f, 0f),
                 PxQuat.createAt(mem, MemoryStack::nmalloc, PxIDENTITYEnum.PxIdentity)
@@ -392,8 +419,13 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, val wor
             physXParams.physxActorShapeFlags.raise(PxShapeFlagEnum.eSCENE_QUERY_SHAPE)
             physXParams.physxActorShapeFlags.raise(PxShapeFlagEnum.eSIMULATION_SHAPE)
 
-            val reportContactFlags = PxPairFlagEnum.eNOTIFY_TOUCH_FOUND.value or PxPairFlagEnum.eNOTIFY_TOUCH_LOST.value or PxPairFlagEnum.eNOTIFY_CONTACT_POINTS.value
-            FilterData(VehicleUtils.COLLISION_FLAG_CHASSIS, VehicleUtils.COLLISION_FLAG_CHASSIS_AGAINST, reportContactFlags)
+            val reportContactFlags =
+                PxPairFlagEnum.eNOTIFY_TOUCH_FOUND.value or PxPairFlagEnum.eNOTIFY_TOUCH_LOST.value or PxPairFlagEnum.eNOTIFY_CONTACT_POINTS.value
+            FilterData(
+                VehicleUtils.COLLISION_FLAG_CHASSIS,
+                VehicleUtils.COLLISION_FLAG_CHASSIS_AGAINST,
+                reportContactFlags
+            )
                 .toPxFilterData(physXParams.physxActorSimulationFilterData)
             FilterData { VehicleUtils.setupNonDrivableSurface(this) }
                 .toPxFilterData(physXParams.physxActorQueryFilterData)
@@ -407,7 +439,11 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, val wor
                 .toPxFilterData(physXParams.physxActorWheelQueryFilterData)
 
             val geometry = vehicleProps.chassisGeometry?.pxGeometry
-                ?: PxBoxGeometry(vehicleProps.chassisDims.x * 0.5f, vehicleProps.chassisDims.y * 0.5f, vehicleProps.chassisDims.z * 0.5f)
+                ?: PxBoxGeometry(
+                    vehicleProps.chassisDims.x * 0.5f,
+                    vehicleProps.chassisDims.y * 0.5f,
+                    vehicleProps.chassisDims.z * 0.5f
+                )
 
             val materialFriction = PxVehiclePhysXMaterialFriction()
             materialFriction.friction = 1.5f

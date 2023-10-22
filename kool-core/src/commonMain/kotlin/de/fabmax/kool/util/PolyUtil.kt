@@ -14,7 +14,7 @@ object PolyUtil {
         var xyPoints = projectXy(vertices, n)
         val area = xyArea(xyPoints)
         if (area < 0) {
-            n.scale(-1f)
+            n.mul(-1f)
             xyPoints = projectXy(vertices, n)
         }
         val projHoles = holes.map { projectXy(it, n) }

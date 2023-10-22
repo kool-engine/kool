@@ -39,7 +39,7 @@ class TransformGizmoOverlay(private val editor: KoolEditor) : Node("Transform gi
         override fun onDragAxis(axis: Vec3f, distance: Float, targetTransform: Transform, ctx: KoolContext) {
             if (transformMode == TransformMode.MOVE) {
                 targetTransform.translate(axis.x * distance, axis.y * distance, axis.z * distance)
-                val t = gizmoToGlobal.transform(MutableVec3d().set(axis).scale(distance.toDouble()), 0.0)
+                val t = gizmoToGlobal.transform(MutableVec3d().set(axis).mul(distance.toDouble()), 0.0)
                 translateSelection(t)
 
             } else if (transformMode == TransformMode.SCALE) {
@@ -47,7 +47,12 @@ class TransformGizmoOverlay(private val editor: KoolEditor) : Node("Transform gi
             }
         }
 
-        override fun onDragPlane(planeNormal: Vec3f, dragPosition: Vec3f, targetTransform: Transform, ctx: KoolContext) {
+        override fun onDragPlane(
+            planeNormal: Vec3f,
+            dragPosition: Vec3f,
+            targetTransform: Transform,
+            ctx: KoolContext
+        ) {
             targetTransform.translate(dragPosition)
             val t = gizmoToGlobal.transform(MutableVec3d().set(dragPosition), 0.0)
             translateSelection(t)
@@ -94,10 +99,12 @@ class TransformGizmoOverlay(private val editor: KoolEditor) : Node("Transform gi
                 gizmo.properties.axisLenX = 1f + distance / gizmoScale
                 gizmo.properties.axisLenNegX = 1f + distance / gizmoScale
             }
+
             isFuzzyEqual(1.0, axY) -> {
                 gizmo.properties.axisLenY = 1f + distance / gizmoScale
                 gizmo.properties.axisLenNegY = 1f + distance / gizmoScale
             }
+
             isFuzzyEqual(1.0, axZ) -> {
                 gizmo.properties.axisLenZ = 1f + distance / gizmoScale
                 gizmo.properties.axisLenNegZ = 1f + distance / gizmoScale
@@ -109,12 +116,12 @@ class TransformGizmoOverlay(private val editor: KoolEditor) : Node("Transform gi
         val base = gizmoToGlobal.transform(MutableVec3d().set(axis))
         val scaled = gizmoToGlobal.transform(
             MutableVec3d().set(axis)
-                .scale(distance / gizmoScale.toDouble())
+                .mul(distance / gizmoScale.toDouble())
                 .add(MutableVec3d().set(axis))
         )
         val f = ori.distance(scaled) / ori.distance(base)
         val s = MutableVec3d(axX, axY, axZ)
-            .scale(f)
+            .mul(f)
             .add(Vec3d(1.0 - axX, 1.0 - axY, 1.0 - axZ))
         scaleSelection(s, f)
     }
@@ -127,11 +134,13 @@ class TransformGizmoOverlay(private val editor: KoolEditor) : Node("Transform gi
                 gizmo.properties.setPlaneHandlesEnabled(true)
                 gizmo.properties.setRotationHandlesEnabled(false)
             }
+
             TransformMode.ROTATE -> {
                 gizmo.properties.setAxisHandlesEnabled(false)
                 gizmo.properties.setPlaneHandlesEnabled(false)
                 gizmo.properties.setRotationHandlesEnabled(true)
             }
+
             TransformMode.SCALE -> {
                 gizmo.properties.axesHandleShape = Gizmo.AxisHandleShape.SPHERE
                 gizmo.properties.setAxisHandlesEnabled(true)
@@ -155,8 +164,16 @@ class TransformGizmoOverlay(private val editor: KoolEditor) : Node("Transform gi
 
         selection.forEach {
             transformNodes += it.nodeModel
-            undoTransforms += TransformData(Vec3Data(it.startPosition), Vec4Data(it.startRotation), Vec3Data(it.startScale))
-            applyTransforms += TransformData(Vec3Data(it.dragPosition), Vec4Data(it.dragRotation), Vec3Data(it.dragScale))
+            undoTransforms += TransformData(
+                Vec3Data(it.startPosition),
+                Vec4Data(it.startRotation),
+                Vec3Data(it.startScale)
+            )
+            applyTransforms += TransformData(
+                Vec3Data(it.dragPosition),
+                Vec4Data(it.dragRotation),
+                Vec3Data(it.dragScale)
+            )
         }
         val action = SetTransformAction(transformNodes, undoTransforms, applyTransforms)
         if (withUndo) {
@@ -206,7 +223,7 @@ class TransformGizmoOverlay(private val editor: KoolEditor) : Node("Transform gi
 
         selection.forEach { node ->
             if (node.nodeModel.transform.isFixedScaleRatio.value) {
-                node.dragScale.set(node.startScale).scale(singleScale)
+                node.dragScale.set(node.startScale).mul(singleScale)
             } else {
                 node.dragScale.set(node.startScale).mul(scale)
             }
@@ -231,7 +248,7 @@ class TransformGizmoOverlay(private val editor: KoolEditor) : Node("Transform gi
     private fun showGizmo() {
         gizmo.isVisible = true
         if (gizmo !in KoolEditor.instance.editorInputContext.pointerListeners) {
-           editor.editorInputContext.pointerListeners += gizmo
+            editor.editorInputContext.pointerListeners += gizmo
         }
     }
 
@@ -262,7 +279,7 @@ class TransformGizmoOverlay(private val editor: KoolEditor) : Node("Transform gi
         // determine gizmo position and size
         globalGizmoPos.set(Vec3d.ZERO)
         selection.forEach { globalGizmoPos.add(it.nodeModel.drawNode.globalCenter.toVec3d()) }
-        globalGizmoPos.scale(1.0 / selection.size)
+        globalGizmoPos.mul(1.0 / selection.size)
 
         selection.forEach {
             val d = it.nodeModel.drawNode.globalCenter.toVec3d().distance(globalGizmoPos).toFloat()

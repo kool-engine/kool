@@ -93,7 +93,7 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
                 sinTheta * sin(phi),
                 cosTheta
             )
-            aoPassShader.uKernel[i] = k.norm().scale(scales[i])
+            aoPassShader.uKernel[i] = k.norm().mul(scales[i])
         }
         aoPassShader.uKernelSize = n
     }
