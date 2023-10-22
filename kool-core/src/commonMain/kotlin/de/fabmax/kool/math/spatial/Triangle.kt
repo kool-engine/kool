@@ -6,7 +6,6 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.PrimitiveType
 
-@Suppress("CanBeParameter")
 open class Triangle(val pt0: Vec3f, val pt1: Vec3f, val pt2: Vec3f) {
     val e1: Vec3f
     val e2: Vec3f
@@ -49,10 +48,10 @@ open class Triangle(val pt0: Vec3f, val pt1: Vec3f, val pt2: Vec3f) {
         ray.direction.cross(e2, tmpP)
         tmpS.cross(e1, tmpQ)
 
-        val f = 1f / (tmpP * e1)
-        val t = f * (tmpQ * e2)
-        val u = f * (tmpP * tmpS)
-        val v = f * (tmpQ * ray.direction)
+        val f = 1f / tmpP.dot(e1)
+        val t = f * tmpQ.dot(e2)
+        val u = f * tmpP.dot(tmpS)
+        val v = f * tmpQ.dot(ray.direction)
 
         return if (u >= 0f && v >= 0f && u + v <= 1f && t >= 0f) t else Float.MAX_VALUE
     }

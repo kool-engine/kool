@@ -108,7 +108,7 @@ class SimpleShadowMap(val scene: Scene, override var light: Light?, mapSize: Int
             cam.projCorrectionMode = Camera.ProjCorrectionMode.OFFSCREEN
             camera = cam
         }
-        val up = if (abs(light.direction * Vec3f.Y_AXIS) > 0.99f) Vec3f.NEG_Z_AXIS else Vec3f.Y_AXIS
+        val up = if (abs(light.direction.dot(Vec3f.Y_AXIS)) > 0.99f) Vec3f.NEG_Z_AXIS else Vec3f.Y_AXIS
         cam.setupCamera(position = light.position, up = up)
         cam.lookAt.set(light.position).add(light.direction)
 
@@ -124,7 +124,7 @@ class SimpleShadowMap(val scene: Scene, override var light: Light?, mapSize: Int
             cam.projCorrectionMode = Camera.ProjCorrectionMode.OFFSCREEN
             camera = cam
         }
-        val up = if (abs(light.direction * Vec3f.Y_AXIS) > 0.99f) Vec3f.NEG_Z_AXIS else Vec3f.Y_AXIS
+        val up = if (abs(light.direction.dot(Vec3f.Y_AXIS)) > 0.99f) Vec3f.NEG_Z_AXIS else Vec3f.Y_AXIS
         cam.setupCamera(position = Vec3f.ZERO, up = up, lookAt = light.direction)
 
         val bounds = shadowBounds

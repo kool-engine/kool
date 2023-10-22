@@ -44,12 +44,12 @@ class VecTest {
     @Test
     fun vec3Dot() {
         // dot prod
-        assertEquals(Vec3f.X_AXIS * Vec3f.X_AXIS, 1f, "x * x != 1")
-        assertEquals(Vec3f.Y_AXIS * Vec3f.Y_AXIS, 1f, "y * y != 1")
-        assertEquals(Vec3f.Z_AXIS * Vec3f.Z_AXIS, 1f, "z * z != 1")
-        assertEquals(Vec3f.X_AXIS * Vec3f.Y_AXIS, 0f, "x * y != 0")
-        assertEquals(Vec3f.X_AXIS * Vec3f.Z_AXIS, 0f, "x * z != 0")
-        assertEquals(Vec3f.Y_AXIS * Vec3f.Z_AXIS, 0f, "y * z != 0")
+        assertEquals(Vec3f.X_AXIS.dot(Vec3f.X_AXIS), 1f, "x * x != 1")
+        assertEquals(Vec3f.Y_AXIS.dot(Vec3f.Y_AXIS), 1f, "y * y != 1")
+        assertEquals(Vec3f.Z_AXIS.dot(Vec3f.Z_AXIS), 1f, "z * z != 1")
+        assertEquals(Vec3f.X_AXIS.dot(Vec3f.Y_AXIS), 0f, "x * y != 0")
+        assertEquals(Vec3f.X_AXIS.dot(Vec3f.Z_AXIS), 0f, "x * z != 0")
+        assertEquals(Vec3f.Y_AXIS.dot(Vec3f.Z_AXIS), 0f, "y * z != 0")
     }
 
     @Test
@@ -63,8 +63,8 @@ class VecTest {
     @Test
     fun vec3Rotate() {
         // dot prod
-        assertTrue(Vec3f.X_AXIS.rotate(90f, Vec3f.Z_AXIS, MutableVec3f()).isFuzzyEqual(Vec3f.Y_AXIS), "x.rot(90, z) != y")
-        assertTrue(Vec3f.Y_AXIS.rotate(90f, Vec3f.X_AXIS, MutableVec3f()).isFuzzyEqual(Vec3f.Z_AXIS), "y.rot(90, z) != z")
-        assertTrue(Vec3f.Z_AXIS.rotate(90f, Vec3f.Y_AXIS, MutableVec3f()).isFuzzyEqual(Vec3f.X_AXIS), "z.rot(90, y) != x")
+        assertTrue(Vec3f.X_AXIS.rotate(90f.deg, Vec3f.Z_AXIS, MutableVec3f()).isFuzzyEqual(Vec3f.Y_AXIS), "x.rot(90, z) != y")
+        assertTrue(Vec3f.Y_AXIS.rotate(90f.deg, Vec3f.X_AXIS, MutableVec3f()).isFuzzyEqual(Vec3f.Z_AXIS), "y.rot(90, z) != z")
+        assertTrue(Vec3f.Z_AXIS.rotate(90f.deg, Vec3f.Y_AXIS, MutableVec3f()).isFuzzyEqual(Vec3f.X_AXIS), "z.rot(90, y) != x")
     }
 }

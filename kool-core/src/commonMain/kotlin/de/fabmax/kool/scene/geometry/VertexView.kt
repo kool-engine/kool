@@ -62,6 +62,16 @@ class VertexView(val data: IndexedVertexList, index: Int) : MutableVec3f() {
         metallicRoughness = getVec2fAttribute(Attribute.METAL_ROUGH) ?: Vec2fView(-1)
     }
 
+    override var x: Float
+        get() = position.x
+        set(value) { position.x = value }
+    override var y: Float
+        get() = position.y
+        set(value) { position.y = value }
+    override var z: Float
+        get() = position.z
+        set(value) { position.z = value }
+
     fun setEmissiveColor(emissiveColor: Color) {
         this.emissiveColor.set(emissiveColor.r, emissiveColor.g, emissiveColor.b)
     }
@@ -73,10 +83,6 @@ class VertexView(val data: IndexedVertexList, index: Int) : MutableVec3f() {
     fun setRoughness(roughnessFactor: Float) {
         metallicRoughness.y = roughnessFactor
     }
-
-    override fun get(i: Int) = position[i]
-
-    override fun set(i: Int, v: Float) { position[i] = v }
 
     fun set(other: VertexView) {
         for (attrib in attributeViews.keys) {
@@ -123,29 +129,39 @@ class VertexView(val data: IndexedVertexList, index: Int) : MutableVec3f() {
             set(value) = setComponent(1, value)
 
         private fun getComponent(i: Int): Float {
-            return if (attribOffset >= 0 && i in 0..1) {
+            return if (attribOffset >= 0) {
                 data.dataF[offsetF + attribOffset + i]
             } else {
                 0f
             }
         }
         private fun setComponent(i: Int, v: Float) {
-            if (attribOffset >= 0 && i in 0..1) {
+            if (attribOffset >= 0) {
                 data.dataF[offsetF + attribOffset + i] = v
             }
         }
     }
 
     private inner class Vec3fView(val attribOffset: Int) : MutableVec3f() {
-        override operator fun get(i: Int): Float {
-            return if (attribOffset >= 0 && i in 0..2) {
+        override var x
+            get() = getComponent(0)
+            set(value) = setComponent(0, value)
+        override var y
+            get() = getComponent(1)
+            set(value) = setComponent(1, value)
+        override var z
+            get() = getComponent(2)
+            set(value) = setComponent(2, value)
+
+        private fun getComponent(i: Int): Float {
+            return if (attribOffset >= 0) {
                 data.dataF[offsetF + attribOffset + i]
             } else {
                 0f
             }
         }
-        override operator fun set(i: Int, v: Float) {
-            if (attribOffset >= 0 && i in 0..2) {
+        private fun setComponent(i: Int, v: Float) {
+            if (attribOffset >= 0) {
                 data.dataF[offsetF + attribOffset + i] = v
             }
         }
@@ -188,29 +204,39 @@ class VertexView(val data: IndexedVertexList, index: Int) : MutableVec3f() {
             set(value) = setComponent(1, value)
 
         private fun getComponent(i: Int): Int {
-            return if (attribOffset >= 0 && i in 0..1) {
+            return if (attribOffset >= 0) {
                 data.dataI[offsetI + attribOffset + i]
             } else {
                 0
             }
         }
         private fun setComponent(i: Int, v: Int) {
-            if (attribOffset >= 0 && i in 0..1) {
+            if (attribOffset >= 0) {
                 data.dataI[offsetI + attribOffset + i] = v
             }
         }
     }
 
     inner class Vec3iView(private val attribOffset: Int) : MutableVec3i() {
-        override operator fun get(i: Int): Int {
-            return if (attribOffset >= 0 && i in 0..2) {
+        override var x
+            get() = getComponent(0)
+            set(value) = setComponent(0, value)
+        override var y
+            get() = getComponent(1)
+            set(value) = setComponent(1, value)
+        override var z
+            get() = getComponent(2)
+            set(value) = setComponent(2, value)
+
+        private fun getComponent(i: Int): Int {
+            return if (attribOffset >= 0) {
                 data.dataI[offsetI + attribOffset + i]
             } else {
                 0
             }
         }
-        override operator fun set(i: Int, v: Int) {
-            if (attribOffset >= 0 && i in 0..2) {
+        private fun setComponent(i: Int, v: Int) {
+            if (attribOffset >= 0) {
                 data.dataI[offsetI + attribOffset + i] = v
             }
         }

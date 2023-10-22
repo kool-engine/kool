@@ -92,7 +92,7 @@ class PlayerController(private val physicsObjects: PhysicsObjects, mainScene: Sc
 
         // set controller.movement according to user input
         controller.movement.set(0f, 0f, -moveSpeed)
-        controller.movement.rotate(moveHeading, Vec3f.Y_AXIS)
+        controller.movement.rotate(moveHeading.deg, Vec3f.Y_AXIS)
         controller.jump = axes.isJump
 
         playerTransform

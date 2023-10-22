@@ -2,6 +2,7 @@ package de.fabmax.kool.demo.physics.terrain
 
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.deg
 import de.fabmax.kool.math.randomF
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.Texture2d
@@ -55,7 +56,7 @@ class Grass(val terrain: Terrain, val wind: Wind, val sky: Sky) {
                 step.set(rand.randomF(-1f, 1f), 0f, rand.randomF(-1f, 1f)).norm().add(pos)
                 step.y = terrain.getTerrainHeightAt(step.x, step.z)
                 step.subtract(pos).scale(0.333f)
-                midOffset.set(step).rotate(90f, Vec3f.Y_AXIS)
+                midOffset.set(step).rotate(90f.deg, Vec3f.Y_AXIS)
                 topOffset.set(
                     rand.randomF(-0.25f, 0.25f),
                     rand.randomF(0.75f, 1.25f) * weights.y,

@@ -40,7 +40,7 @@ class Plane() {
      * normal direction).
      */
     fun distance(point: Vec3f): Float {
-        return n * point - n * p
+        return n.dot(point) - n.dot(p)
     }
 
     fun toVec4() : MutableVec4f = toVec4(MutableVec4f())
@@ -49,7 +49,7 @@ class Plane() {
         result.x = n.x
         result.y = n.y
         result.z = n.z
-        result.w = n * p
+        result.w = n.dot(p)
         return result
     }
 }

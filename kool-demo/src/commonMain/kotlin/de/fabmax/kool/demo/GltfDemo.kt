@@ -344,7 +344,7 @@ class GltfDemo : DemoScene("glTF Models") {
                 val uv = MutableVec2f(radius + ci.toFloat() / cornerPts.size * PI.toFloat() * cornerR, 0f)
                 uv.scale(uvScale)
                 uv.rotate(a.deg)
-                val pt = cpt.rotate(a.toDeg(), Vec3f.Y_AXIS, MutableVec3f())
+                val pt = cpt.rotate(a.deg, Vec3f.Y_AXIS, MutableVec3f())
                 val iv = vertex(pt, Vec3f.ZERO, uv)
                 if (i > 0 && ci > 0) {
                     geometry.addTriIndices(iv - 1, iv - cornerPts.size - 1, iv - cornerPts.size)
@@ -458,7 +458,7 @@ class GltfDemo : DemoScene("glTF Models") {
 
             // move model according to animation speed
             model.transform.setIdentity()
-            position.set(radius, 0.0, 0.0).rotate(angle.toDeg(), Vec3d.Y_AXIS)
+            position.set(radius, 0.0, 0.0).rotate(angle.deg, Vec3d.Y_AXIS)
             model.transform.translate(position)
             model.transform.rotate(angle.toDeg() + 180, Vec3d.Y_AXIS)
             model.transform.scale(0.01)

@@ -34,9 +34,9 @@ class Ray() {
 
     fun sphereIntersection(center: Vec3f, radius: Float, result: MutableVec3f): Boolean {
         result.set(origin).subtract(center)
-        val a = direction * direction
-        val b = result * direction * 2f
-        val c = result * result - radius * radius
+        val a = direction.dot(direction)
+        val b = result.dot(direction) * 2f
+        val c = result.dot(result) - radius * radius
         val discr = b * b - 4 * a * c
 
         if (discr < 0f) {

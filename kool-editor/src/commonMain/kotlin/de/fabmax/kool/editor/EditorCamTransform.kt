@@ -8,6 +8,7 @@ import de.fabmax.kool.math.MutableVec3d
 import de.fabmax.kool.math.Vec3d
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.math.spatial.BoundingBox
+import de.fabmax.kool.math.toVec3d
 import de.fabmax.kool.scene.OrbitInputTransform
 import de.fabmax.kool.util.Time
 import kotlin.math.max

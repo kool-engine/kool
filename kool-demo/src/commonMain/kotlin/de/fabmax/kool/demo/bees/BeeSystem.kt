@@ -147,7 +147,7 @@ class BeeSystem(val team: Int) {
 
         // update rotation by current velocity direction
         val speed = vel.length()
-        if (speed > 1f && abs(vel * Vec3f.Y_AXIS / speed) < 0.99f) {
+        if (speed > 1f && abs(vel.dot(Vec3f.Y_AXIS) / speed) < 0.99f) {
             val right = Vec3f.Y_AXIS.cross(vel, tmpVec3a).norm()
             val up = vel.cross(right, tmpVec3b).norm()
             tmpMat3.setColVec(0, right)

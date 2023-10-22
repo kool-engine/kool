@@ -734,7 +734,7 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
             val px3 = props.topRadius * c
             val pz3 = props.topRadius * s
 
-            tmpNrm.set(c, 0f, s).rotate(nrmAng, s, 0f, c)
+            tmpNrm.set(c, 0f, s).rotate(nrmAng.deg, Vec3f(s, 0f, c))
             val i2 = vertex {
                 position.set(px2, yb, pz2)
                 normal.set(tmpNrm)

@@ -39,17 +39,17 @@ object PolyUtil {
         val e0 = MutableVec3f(noDuplicates[1]).subtract(noDuplicates[0]).norm()
         val e1 = MutableVec3f(noDuplicates[2]).subtract(noDuplicates[1]).norm()
         var i = 2
-        while (abs(e1 * e0) > 0.8 && i < noDuplicates.size) {
+        while (abs(e1.dot(e0)) > 0.8 && i < noDuplicates.size) {
             e1.set(noDuplicates[(i + 1) % noDuplicates.size]).subtract(noDuplicates[i++]).norm()
         }
         return e0.cross(e1, MutableVec3f()).norm()
     }
 
     fun projectXy(points: List<Vec3f>, n: Vec3f): List<Vec3f> {
-        val b1 = if (abs(n * Vec3f.X_AXIS) < 0.7) MutableVec3f(Vec3f.X_AXIS) else MutableVec3f(Vec3f.Z_AXIS)
+        val b1 = if (abs(n.dot(Vec3f.X_AXIS)) < 0.7) MutableVec3f(Vec3f.X_AXIS) else MutableVec3f(Vec3f.Z_AXIS)
         val b2 = n.cross(b1, MutableVec3f()).norm()
         b2.cross(n, b1).norm()
-        return points.map { p -> Vec3f(p * b1, p * b2, 0f) }
+        return points.map { p -> Vec3f(p.dot(b1), p.dot(b2), 0f) }
     }
 
     fun xyArea(xyPoints: List<Vec3f>): Float {

@@ -79,7 +79,7 @@ class Circles : CreativeContent("Circles") {
                 width = randomWidth
             )
 
-            up.rotate(circleStep * numberOfTwists * 0.5f, Vec3f.X_AXIS)
+            up.rotate((circleStep * numberOfTwists * 0.5f).deg, Vec3f.X_AXIS)
         }
     }
 

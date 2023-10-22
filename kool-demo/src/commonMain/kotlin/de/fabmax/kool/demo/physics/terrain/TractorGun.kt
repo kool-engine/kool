@@ -178,15 +178,15 @@ class TractorGun(val physics: PhysicsObjects, val mainScene: Scene) {
 
             val bestUp = box.transform.transform(MutableVec3f(Vec3f.X_AXIS), 0f)
             val testUp = MutableVec3f(Vec3f.Y_AXIS)
-            if (abs(box.transform.transform(testUp, 0f) * Vec3f.Y_AXIS) > abs(bestUp * Vec3f.Y_AXIS)) {
+            if (abs(box.transform.transform(testUp, 0f).dot(Vec3f.Y_AXIS)) > abs(bestUp.dot(Vec3f.Y_AXIS))) {
                 bestUp.set(testUp)
             }
             testUp.set(Vec3f.Z_AXIS)
-            if (abs(box.transform.transform(testUp, 0f) * Vec3f.Y_AXIS) > abs(bestUp * Vec3f.Y_AXIS)) {
+            if (abs(box.transform.transform(testUp, 0f).dot(Vec3f.Y_AXIS)) > abs(bestUp.dot(Vec3f.Y_AXIS))) {
                 bestUp.set(testUp)
             }
 
-            var dot = bestUp * Vec3f.Y_AXIS
+            var dot = bestUp.dot(Vec3f.Y_AXIS)
             if (dot < 0f) {
                 bestUp *= -1f
                 dot *= -1f

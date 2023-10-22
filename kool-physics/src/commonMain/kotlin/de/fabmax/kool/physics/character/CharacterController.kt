@@ -55,7 +55,7 @@ abstract class CharacterController(private val manager: CharacterControllerManag
             gravityVelocity.set(Vec3f.ZERO)
         }
 
-        val fallSpeed = tmpVec.set(gravity).norm() * gravityVelocity
+        val fallSpeed = tmpVec.set(gravity).norm().dot(gravityVelocity)
         if (jump && lastGroundTuch < 0.25f && fallSpeed >= 0f) {
             // character touches ground (or did so recently) and jump is requested but not yet executed
             gravityVelocity.add(tmpVec.set(gravity).norm().scale(-jumpSpeed))

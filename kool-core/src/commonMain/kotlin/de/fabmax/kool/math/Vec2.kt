@@ -359,6 +359,9 @@ open class Vec2d(x: Double, y: Double) {
         return result
     }
 
+    /**
+     * Appends the components of this [Vec2d] to the given [Float32Buffer].
+     */
     fun putTo(target: Float32Buffer) {
         target.put(fields)
     }
@@ -416,8 +419,9 @@ open class Vec2d(x: Double, y: Double) {
      * Checks vector components for equality using [de.fabmax.kool.math.isFuzzyEqual], that is all components must
      * have a difference less or equal to [eps].
      */
-    fun isFuzzyEqual(other: Vec2d, eps: Double = FUZZY_EQ_D): Boolean =
-        isFuzzyEqual(x, other.x, eps) && isFuzzyEqual(y, other.y, eps)
+    fun isFuzzyEqual(other: Vec2d, eps: Double = FUZZY_EQ_D): Boolean {
+        return isFuzzyEqual(x, other.x, eps) && isFuzzyEqual(y, other.y, eps)
+    }
 
     companion object {
         val ZERO = Vec2d(0.0, 0.0)
@@ -428,7 +432,6 @@ open class Vec2d(x: Double, y: Double) {
         val NEG_Y_AXIS = Vec2d(0.0, -1.0)
     }
 }
-
 
 open class MutableVec2d(x: Double, y: Double) : Vec2d(x, y) {
 
@@ -607,6 +610,9 @@ open class Vec2i(x: Int, y: Int) {
         return result
     }
 
+    /**
+     * Appends the components of this [Vec2i] to the given [Uint32Buffer].
+     */
     fun putTo(target: Uint32Buffer) {
         target.put(fields)
     }
@@ -620,7 +626,6 @@ open class Vec2i(x: Int, y: Int) {
         val NEG_Y_AXIS = Vec2i(0, -1)
     }
 }
-
 
 open class MutableVec2i(x: Int, y: Int) : Vec2i(x, y) {
 

@@ -39,7 +39,7 @@ open class Edge<T: Vec3f>(val pt0: T, val pt1: T) {
     }
 
     open fun nearestPointOnEdge(ray: Ray, result: MutableVec3f): MutableVec3f {
-        val dot = e * ray.direction
+        val dot = e.dot(ray.direction)
         val n = 1f - dot * dot
         if (n.isFuzzyZero()) {
             // edge and ray are parallel
@@ -47,15 +47,15 @@ open class Edge<T: Vec3f>(val pt0: T, val pt1: T) {
         }
 
         ray.origin.subtract(pt0, tmpVec)
-        val a = tmpVec * e
-        val b = tmpVec * ray.direction
+        val a = tmpVec.dot(e)
+        val b = tmpVec.dot(ray.direction)
         val l = (a - b * dot) / n
         return if (l > 0) e.scale(min(l, length), result).add(pt0) else result.set(pt0)
     }
 
     open fun nearestPointOnEdge(point: Vec3f, result: MutableVec3f): MutableVec3f {
         pt1.subtract(pt0, result)
-        val l = (point * result - pt0 * result) / (result * result)
+        val l = (point.dot(result) - pt0.dot(result)) / result.dot(result)
         when {
             l < 0f -> result.set(pt0)
             l > 1f -> result.set(pt1)

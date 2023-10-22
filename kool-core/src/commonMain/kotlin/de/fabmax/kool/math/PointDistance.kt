@@ -34,7 +34,7 @@ fun sqrDistancePointToLine(x: Float, y: Float, z: Float, lineA: Vec3f, lineB: Ve
 
 fun Vec3f.nearestPointOnLine(lineA: Vec3f, lineB: Vec3f, result: MutableVec3f): MutableVec3f {
     lineB.subtract(lineA, result)
-    val l = (dot(result) - lineA * result) / (result * result)
+    val l = (dot(result) - lineA.dot(result)) / result.dot(result)
     return result.scale(l).add(lineA)
 }
 
@@ -56,7 +56,7 @@ fun sqrDistancePointToRay(x: Float, y: Float, z: Float, origin: Vec3f, direction
     val ny: Float
     val nz: Float
     val dot = x * direction.x + y * direction.y + z * direction.z
-    val l = (dot - origin * direction) / (direction * direction)
+    val l = (dot - origin.dot(direction)) / direction.dot(direction)
     if (l <= 0) {
         nx = origin.x - x
         ny = origin.y - y
@@ -70,7 +70,7 @@ fun sqrDistancePointToRay(x: Float, y: Float, z: Float, origin: Vec3f, direction
 }
 
 fun Vec3f.nearestPointOnRay(origin: Vec3f, direction: Vec3f, result: MutableVec3f): MutableVec3f {
-    val l = (dot(direction) - origin * direction) / (direction * direction)
+    val l = (dot(direction) - origin.dot(direction)) / direction.dot(direction)
     return if (l <= 0) {
         result.set(origin)
     } else {
@@ -151,7 +151,7 @@ fun sqrDistancePointToEdge(x: Float, y: Float, z: Float, edgeA: Vec3f, edgeB: Ve
 
 fun Vec3f.nearestPointOnEdge(edgeA: Vec3f, edgeB: Vec3f, result: MutableVec3f): MutableVec3f {
     edgeB.subtract(edgeA, result)
-    val l = (dot(result) - edgeA * result) / (result * result)
+    val l = (dot(result) - edgeA.dot(result)) / result.dot(result)
     return when {
         l <= 0 -> result.set(edgeA)
         l >= 1 -> result.set(edgeB)

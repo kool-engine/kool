@@ -7,6 +7,7 @@ import de.fabmax.kool.editor.model.SceneModel
 import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.deg
 import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.pipeline.Attribute
@@ -50,7 +51,7 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
                 line3d(Vec3f(0f, y1, z1), Vec3f(0f, y2, z2), nrm, lineW)
                 line3d(Vec3f(0f, y1, z1), Vec3f(0f, y2, z2), Vec3f.X_AXIS, lineW)
 
-                val nrm2 = nrm.rotate(90f, Vec3f.X_AXIS, MutableVec3f())
+                val nrm2 = nrm.rotate(90f.deg, Vec3f.X_AXIS, MutableVec3f())
                 if (i % 8 == 0) {
                     line3d(Vec3f(0f, y1, z1), Vec3f(0.7f, y1, z1), nrm, lineW)
                     line3d(Vec3f(0f, y1, z1), Vec3f(0.7f, y1, z1), nrm2, lineW)
@@ -94,7 +95,7 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
 
                 if (i % 16 == 0){
                     line3d(Vec3f.ZERO, Vec3f(1f, y1, z1), nrm, lineW)
-                    val nrm2 = nrm.rotate(90f, Vec3f.X_AXIS, MutableVec3f())
+                    val nrm2 = nrm.rotate(90f.deg, Vec3f.X_AXIS, MutableVec3f())
                     line3d(Vec3f.ZERO, Vec3f(1f, y1, z1), nrm2, lineW)
                 }
             }
@@ -120,9 +121,9 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
             ico.subdivide(1)
 
             ico.verts.forEachIndexed { i, pt ->
-                val o = if (pt * Vec3f.Y_AXIS > 0.9f) Vec3f.X_AXIS else Vec3f.Y_AXIS
+                val o = if (pt.dot(Vec3f.Y_AXIS) > 0.9f) Vec3f.X_AXIS else Vec3f.Y_AXIS
                 val n1 = pt.cross(o, MutableVec3f())
-                val n2 = n1.rotate(90f, pt, MutableVec3f())
+                val n2 = n1.rotate(90f.deg, pt, MutableVec3f())
 
                 val l0 = if (i % 2 == 0) 0f else 0.45f
                 val l1 = if (i % 2 == 0) 0.9f else 0.9f

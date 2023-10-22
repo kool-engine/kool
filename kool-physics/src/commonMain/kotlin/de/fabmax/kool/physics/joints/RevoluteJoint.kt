@@ -25,7 +25,7 @@ object RevoluteJointHelper {
         val ax1 = MutableVec3f()
         val ax2 = MutableVec3f()
 
-        val dot = axis * Vec3f.X_AXIS
+        val dot = axis.dot(Vec3f.X_AXIS)
         when {
             dot >= 1.0f - FLT_EPSILON -> {
                 ax1.set(Vec3f.Z_AXIS)

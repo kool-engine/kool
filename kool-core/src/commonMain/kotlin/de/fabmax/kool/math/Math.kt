@@ -141,15 +141,15 @@ fun barycentricWeights(pt: Vec3f, va: Vec3f, vb: Vec3f, vc: Vec3f, result: Mutab
 
     e1.set(vc).subtract(vb)
     e2.set(pt).subtract(vb)
-    result.x = (n * e1.cross(e2, m)) / aa
+    result.x = n.dot(e1.cross(e2, m)) / aa
 
     e1.set(va).subtract(vc)
     e2.set(pt).subtract(vc)
-    result.y = (n * e1.cross(e2, m)) / aa
+    result.y = n.dot(e1.cross(e2, m)) / aa
 
     e1.set(vb).subtract(va)
     e2.set(pt).subtract(va)
-    result.z = (n * e1.cross(e2, m)) / aa
+    result.z = n.dot(e1.cross(e2, m)) / aa
 
     return result
 }

@@ -83,7 +83,7 @@ class Track(val world: VehicleWorld) : Node() {
         val up = MutableVec3f(prev.up).scale(wPrev).add(MutableVec3f(next.up).scale(wNext))
         val z = MutableVec3f(prev.dir).scale(wPrev).add(MutableVec3f(next.dir).scale(wNext))
         val x = MutableVec3f(z).apply { y = 0f }
-        x.rotate(90f, up).norm()
+        x.rotate(90f.deg, up).norm()
         val y = z.cross(x, MutableVec3f()).norm()
 
         result.setCol(0, x, 0f)
@@ -373,7 +373,7 @@ class Track(val world: VehicleWorld) : Node() {
         fun computeFrame(result: Mat4f) {
             val z = dir
             val x = MutableVec3f(z).apply { y = 0f }
-            x.rotate(90f, up).norm()
+            x.rotate(90f.deg, up).norm()
             val y = z.cross(x, MutableVec3f()).norm()
 
             result.setCol(0, x, 0f)

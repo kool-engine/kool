@@ -28,9 +28,14 @@ class CreativeCodingDemo : DemoScene("Creative Coding") {
     private lateinit var resources: Resources
 
     override suspend fun Assets.loadResources(ctx: KoolContext) {
+        val light = mainScene.lighting.singleDirectionalLight {
+            setup(Vec3f(-1f, -0.5f, -1f))
+            setColor(MdColor.AMBER tone 100, 3f)
+        }
+
         resources = Resources(
             EnvironmentHelper.hdriEnvironment(mainScene, "${DemoLoader.hdriPath}/syferfontein_0d_clear_1k.rgbe.png"),
-            listOf(CascadedShadowMap(mainScene, null, 2000f, nearOffset = -200f))
+            listOf(CascadedShadowMap(mainScene, light, 2000f, nearOffset = -200f))
         )
 
         contents += Circles()
@@ -43,12 +48,6 @@ class CreativeCodingDemo : DemoScene("Creative Coding") {
     override fun Scene.setupMainScene(ctx: KoolContext) {
         addNode(contentGroup)
         selectContent(contentIndex.value)
-
-        lighting.singleDirectionalLight {
-            setup(Vec3f(-1f, -0.5f, -1f))
-            setColor(MdColor.AMBER tone 100, 3f)
-        }
-        resources.shadowMaps[0].light = lighting.lights[0]
 
         setupCamera()
         skybox(resources.imageEnv, lod = 2f)

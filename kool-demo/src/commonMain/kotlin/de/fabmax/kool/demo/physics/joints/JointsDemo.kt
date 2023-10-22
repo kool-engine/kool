@@ -649,16 +649,16 @@ class JointsDemo : DemoScene("Physics - Joints") {
             rc.frameA.transform(tmpP1.set(Vec3f.ZERO), 1f)
             tA.transform(tmpA1.set(tmpAx), 0f)
             tA.transform(tmpP1)
-            val lenA = rc.bodyA.worldBounds.size * tmpAx * 0.5f + 1f
+            val lenA = rc.bodyA.worldBounds.size.dot(tmpAx) * 0.5f + 1f
 
             rc.frameB.transform(tmpAx.set(Vec3f.X_AXIS), 0f)
             rc.frameB.transform(tmpP2.set(Vec3f.ZERO), 1f)
             tB.transform(tmpA2.set(tmpAx), 0f)
             tB.transform(tmpP2)
-            val lenB = rc.bodyB.worldBounds.size * tmpAx * 0.5f + 1f
+            val lenB = rc.bodyB.worldBounds.size.dot(tmpAx) * 0.5f + 1f
 
             val drawLen = max(lenA, lenB)
-            val diff = tmpP1.distance(tmpP2) + abs(acos(tmpA1 * tmpA2).toDeg()) / 20
+            val diff = tmpP1.distance(tmpP2) + abs(acos(tmpA1.dot(tmpA2)).toDeg()) / 20
             val color = gradient.getColor(diff, 0f, 0.5f)
 
             tmpL1.set(tmpA1).scale(drawLen).add(tmpP1)

@@ -240,10 +240,10 @@ class PerlinNoise3d(seed: Int = 19937, private val tableSz: Int = 1024) : Noise3
         val p011 = Vec3f(x0, y1, z1)
         val p111 = Vec3f(x1, y1, z1)
 
-        val a = lerp(p000 * c000, p100 * c100, u)
-        val b = lerp(p010 * c010, p110 * c110, u)
-        val c = lerp(p001 * c001, p101 * c101, u)
-        val d = lerp(p011 * c011, p111 * c111, u)
+        val a = lerp(p000.dot(c000), p100.dot(c100), u)
+        val b = lerp(p010.dot(c010), p110.dot(c110), u)
+        val c = lerp(p001.dot(c001), p101.dot(c101), u)
+        val d = lerp(p011.dot(c011), p111.dot(c111), u)
 
         val e = lerp(a, b, v)
         val f = lerp(c, d, v)

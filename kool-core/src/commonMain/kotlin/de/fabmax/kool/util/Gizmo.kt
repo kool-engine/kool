@@ -464,7 +464,7 @@ class Gizmo : Node(), InputStack.PointerListener {
         toGlobalCoords(pickPlane.p.set(Vec3f.ZERO))
         toGlobalCoords(pickPlane.n.set(normal), 0f)
         if (pickPlane.intersectionPoint(pickRay, pickPoint)) {
-            val dragDist = toLocalCoords(pickPoint).subtract(dragStartPos) * axis
+            val dragDist = toLocalCoords(pickPoint).subtract(dragStartPos).dot(axis)
             dragGroup.transform.setIdentity()
             gizmoListener?.onDragAxis(axis, dragDist, dragGroup.transform, ctx)
             dragGroup.transform.markDirty()

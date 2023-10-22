@@ -343,7 +343,7 @@ class IndexedVertexList(val vertexAttributes: List<Attribute>) {
             v2.position.subtract(v0.position, e2).norm()
             val a = triArea(v0.position, v1.position, v2.position)
 
-            if (e1 != Vec3f.ZERO && e2 != Vec3f.ZERO && abs(e1 * e2) != 1f && !a.isNaN() && a > 0f) {
+            if (e1 != Vec3f.ZERO && e2 != Vec3f.ZERO && abs(e1.dot(e2)) != 1f && !a.isNaN() && a > 0f) {
                 fixedIndices[iFixed++] = indices[i]
                 fixedIndices[iFixed++] = indices[i + 1]
                 fixedIndices[iFixed++] = indices[i + 2]
