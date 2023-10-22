@@ -1,6 +1,7 @@
 package de.fabmax.kool.math
 
 import de.fabmax.kool.util.Float32Buffer
+import de.fabmax.kool.util.MixedBuffer
 import de.fabmax.kool.util.Uint32Buffer
 import kotlin.math.sqrt
 
@@ -27,12 +28,7 @@ fun MutableVec2i.set(that: Vec2d) = set(that.x.toInt(), that.y.toInt())
 
 // <template> Changes made within the template section will also affect the other type variants of this class
 
-open class Vec2f(x: Float, y: Float) {
-
-    protected val fields = floatArrayOf(x, y)
-
-    open val x get() = fields[0]
-    open val y get() = fields[1]
+open class Vec2f(open val x: Float, open val y: Float) {
 
     constructor(f: Float) : this(f, f)
     constructor(v: Vec2f) : this(v.x, v.y)
@@ -103,7 +99,16 @@ open class Vec2f(x: Float, y: Float) {
      * Appends the components of this [Vec2f] to the given [Float32Buffer].
      */
     fun putTo(target: Float32Buffer) {
-        target.put(fields)
+        target.put(x)
+        target.put(y)
+    }
+
+    /**
+     * Appends the components of this [Vec2f] to the given [MixedBuffer].
+     */
+    fun putTo(target: MixedBuffer) {
+        target.putFloat32(x)
+        target.putFloat32(y)
     }
 
     // <noInt> The following section will not be included in the integer variant of this class
@@ -177,17 +182,7 @@ open class Vec2f(x: Float, y: Float) {
     }
 }
 
-open class MutableVec2f(x: Float, y: Float) : Vec2f(x, y) {
-
-    override var x
-        get() = fields[0]
-        set(value) { fields[0] = value }
-    override var y
-        get() = fields[1]
-        set(value) { fields[1] = value }
-
-    val array: FloatArray
-        get() = fields
+open class MutableVec2f(override var x: Float, override var y: Float) : Vec2f(x, y) {
 
     constructor() : this(0f, 0f)
     constructor(f: Float) : this(f, f)
@@ -287,12 +282,7 @@ open class MutableVec2f(x: Float, y: Float) : Vec2f(x, y) {
 // </template> End of template section, DO NOT EDIT BELOW THIS!
 
 
-open class Vec2d(x: Double, y: Double) {
-
-    protected val fields = doubleArrayOf(x, y)
-
-    open val x get() = fields[0]
-    open val y get() = fields[1]
+open class Vec2d(open val x: Double, open val y: Double) {
 
     constructor(f: Double) : this(f, f)
     constructor(v: Vec2d) : this(v.x, v.y)
@@ -363,7 +353,16 @@ open class Vec2d(x: Double, y: Double) {
      * Appends the components of this [Vec2d] to the given [Float32Buffer].
      */
     fun putTo(target: Float32Buffer) {
-        target.put(fields)
+        target.put(x)
+        target.put(y)
+    }
+
+    /**
+     * Appends the components of this [Vec2d] to the given [MixedBuffer].
+     */
+    fun putTo(target: MixedBuffer) {
+        target.putFloat32(x)
+        target.putFloat32(y)
     }
 
     /**
@@ -433,17 +432,7 @@ open class Vec2d(x: Double, y: Double) {
     }
 }
 
-open class MutableVec2d(x: Double, y: Double) : Vec2d(x, y) {
-
-    override var x
-        get() = fields[0]
-        set(value) { fields[0] = value }
-    override var y
-        get() = fields[1]
-        set(value) { fields[1] = value }
-
-    val array: DoubleArray
-        get() = fields
+open class MutableVec2d(override var x: Double, override var y: Double) : Vec2d(x, y) {
 
     constructor() : this(0.0, 0.0)
     constructor(f: Double) : this(f, f)
@@ -538,12 +527,7 @@ open class MutableVec2d(x: Double, y: Double) : Vec2d(x, y) {
 }
 
 
-open class Vec2i(x: Int, y: Int) {
-
-    protected val fields = intArrayOf(x, y)
-
-    open val x get() = fields[0]
-    open val y get() = fields[1]
+open class Vec2i(open val x: Int, open val y: Int) {
 
     constructor(f: Int) : this(f, f)
     constructor(v: Vec2i) : this(v.x, v.y)
@@ -614,7 +598,16 @@ open class Vec2i(x: Int, y: Int) {
      * Appends the components of this [Vec2i] to the given [Uint32Buffer].
      */
     fun putTo(target: Uint32Buffer) {
-        target.put(fields)
+        target.put(x)
+        target.put(y)
+    }
+
+    /**
+     * Appends the components of this [Vec2i] to the given [MixedBuffer].
+     */
+    fun putTo(target: MixedBuffer) {
+        target.putUint32(x)
+        target.putUint32(y)
     }
 
     companion object {
@@ -627,17 +620,7 @@ open class Vec2i(x: Int, y: Int) {
     }
 }
 
-open class MutableVec2i(x: Int, y: Int) : Vec2i(x, y) {
-
-    override var x
-        get() = fields[0]
-        set(value) { fields[0] = value }
-    override var y
-        get() = fields[1]
-        set(value) { fields[1] = value }
-
-    val array: IntArray
-        get() = fields
+open class MutableVec2i(override var x: Int, override var y: Int) : Vec2i(x, y) {
 
     constructor() : this(0, 0)
     constructor(f: Int) : this(f, f)

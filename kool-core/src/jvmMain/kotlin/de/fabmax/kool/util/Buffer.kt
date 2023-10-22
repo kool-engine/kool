@@ -173,6 +173,11 @@ class Float32BufferImpl(buffer: FloatBuffer) : Float32Buffer, GenericBuffer<Floa
         return this
     }
 
+    override fun put(value: Double): Float32Buffer {
+        buffer.put(value.toFloat())
+        return this
+    }
+
     override fun put(data: Float32Buffer): Float32Buffer {
         if (data is Float32BufferImpl) {
             val dataPos = data.position
@@ -283,6 +288,11 @@ class MixedBufferImpl(buffer: ByteBuffer) : MixedBuffer, GenericBuffer<ByteBuffe
         return this
     }
 
+    override fun putFloat32(value: Double): MixedBuffer {
+        buffer.putFloat(value.toFloat())
+        return this
+    }
+
     override fun putFloat32(data: FloatArray, offset: Int, len: Int): MixedBuffer {
         if (len <= BUFFER_CONV_THRESH) {
             for (i in 0 until len) {
@@ -291,6 +301,13 @@ class MixedBufferImpl(buffer: ByteBuffer) : MixedBuffer, GenericBuffer<ByteBuffe
         } else {
             buffer.asFloatBuffer().put(data, offset, len)
             position += len * 4
+        }
+        return this
+    }
+
+    override fun putFloat32(data: DoubleArray, offset: Int, len: Int): MixedBuffer {
+        for (i in 0 until len) {
+            buffer.putFloat(data[offset + i].toFloat())
         }
         return this
     }

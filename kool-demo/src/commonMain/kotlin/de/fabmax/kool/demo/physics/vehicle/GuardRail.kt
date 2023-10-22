@@ -209,7 +209,7 @@ class GuardRail {
             for (d in actor.transform.matrix.array) {
                 buf.put(d.toFloat())
             }
-            buf.put(emission.array)
+            emission.putTo(buf)
         }
     }
 

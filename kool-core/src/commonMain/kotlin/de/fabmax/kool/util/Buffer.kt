@@ -117,6 +117,7 @@ interface Float32Buffer : Buffer {
     operator fun plusAssign(value: Float) { put(value) }
 
     fun put(value: Float): Float32Buffer
+    fun put(value: Double): Float32Buffer
     fun put(data: FloatArray): Float32Buffer = put(data, 0, data.size)
     fun put(data: FloatArray, offset: Int, len: Int): Float32Buffer
     fun put(data: Float32Buffer): Float32Buffer
@@ -172,9 +173,12 @@ interface MixedBuffer : Buffer {
     fun putUint32(data: Uint32Buffer): MixedBuffer
 
     fun putFloat32(value: Float): MixedBuffer
+    fun putFloat32(value: Double): MixedBuffer
     fun putFloat32(data: FloatArray): MixedBuffer = putFloat32(data, 0, data.size)
     fun putFloat32(data: FloatArray, offset: Int, len: Int): MixedBuffer
     fun putFloat32(data: Float32Buffer): MixedBuffer
+    fun putFloat32(data: DoubleArray): MixedBuffer = putFloat32(data, 0, data.size)
+    fun putFloat32(data: DoubleArray, offset: Int, len: Int): MixedBuffer
 
     fun padding(nBytes: Int): MixedBuffer
 

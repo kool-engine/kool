@@ -100,6 +100,7 @@ open class GenerateVariantsFromFloatPrototype : DefaultTask() {
             Regex("""\W(FloatArray)\W""") to PatternTransformer { it.groups[1]!!.range to "IntArray" },
             Regex("""\W(floatArrayOf)\W""") to PatternTransformer { it.groups[1]!!.range to "intArrayOf" },
             Regex("""\W(Float32Buffer)\W""") to PatternTransformer { it.groups[1]!!.range to "Uint32Buffer" },
+            Regex("""\W(putFloat32)\W""") to PatternTransformer { it.groups[1]!!.range to "putUint32" },
 
             // remove entire <noInt>..</noInt> blocks
             Regex("""\s*// <noInt>[\s\S]*?(?<=</noInt>)""") to PatternTransformer { it.range to "" },

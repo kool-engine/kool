@@ -66,7 +66,7 @@ class Uniform2f(name: String) : Uniform<MutableVec2f>(MutableVec2f(), name) {
 
     override fun putToBuffer(buffer: MixedBuffer, len: Int) {
         checkLen(8, len)
-        buffer.putFloat32(value.array)
+        value.putTo(buffer)
         putPadding(buffer, len - 8)
     }
 }
@@ -78,7 +78,7 @@ class Uniform3f(name: String) : Uniform<MutableVec3f>(MutableVec3f(), name) {
 
     override fun putToBuffer(buffer: MixedBuffer, len: Int) {
         checkLen(12, len)
-        buffer.putFloat32(value.array)
+        value.putTo(buffer)
         putPadding(buffer, len - 12)
     }
 }
@@ -123,7 +123,7 @@ class Uniform2fv(name: String, length: Int) : Uniform<Array<MutableVec2f>>(Array
         checkLen(8 * size, len)
         val padLen = (len - 8 * size) / size
         for (i in 0 until size) {
-            buffer.putFloat32(value[i].array)
+            value[i].putTo(buffer)
             putPadding(buffer, padLen)
         }
     }
@@ -134,7 +134,7 @@ class Uniform3fv(name: String, length: Int) : Uniform<Array<MutableVec3f>>(Array
         checkLen(12 * size, len)
         val padLen = (len - 12 * size) / size
         for (i in 0 until size) {
-            buffer.putFloat32(value[i].array)
+            value[i].putTo(buffer)
             putPadding(buffer, padLen)
         }
     }
@@ -209,7 +209,7 @@ class Uniform2i(name: String) : Uniform<MutableVec2i>(MutableVec2i(), name) {
 
     override fun putToBuffer(buffer: MixedBuffer, len: Int) {
         checkLen(8, len)
-        buffer.putInt32(value.array)
+        value.putTo(buffer)
         putPadding(buffer, len - 8)
     }
 }
@@ -221,7 +221,7 @@ class Uniform3i(name: String) : Uniform<MutableVec3i>(MutableVec3i(), name) {
 
     override fun putToBuffer(buffer: MixedBuffer, len: Int) {
         checkLen(12, len)
-        buffer.putInt32(value.array)
+        value.putTo(buffer)
         putPadding(buffer, len - 12)
     }
 }
@@ -254,7 +254,7 @@ class Uniform2iv(name: String, length: Int) : Uniform<Array<MutableVec2i>>(Array
         checkLen(8 * size, len)
         val padLen = (len - 8 * size) / size
         for (i in 0 until size) {
-            buffer.putInt32(value[i].array)
+            value[i].putTo(buffer)
             putPadding(buffer, padLen)
         }
     }
@@ -265,7 +265,7 @@ class Uniform3iv(name: String, length: Int) : Uniform<Array<MutableVec3i>>(Array
         checkLen(12 * size, len)
         val padLen = (len - 12 * size) / size
         for (i in 0 until size) {
-            buffer.putInt32(value[i].array)
+            value[i].putTo(buffer)
             putPadding(buffer, padLen)
         }
     }
