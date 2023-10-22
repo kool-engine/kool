@@ -120,6 +120,12 @@ interface Float32Buffer : Buffer {
     fun put(data: FloatArray): Float32Buffer = put(data, 0, data.size)
     fun put(data: FloatArray, offset: Int, len: Int): Float32Buffer
     fun put(data: Float32Buffer): Float32Buffer
+    fun put(data: DoubleArray) = put(data, 0, data.size)
+    fun put(data: DoubleArray, offset: Int, len: Int) {
+        for (i in offset ..< (offset + len)) {
+            put(data[i].toFloat())
+        }
+    }
 
     override fun removeAt(index: Int) {
         for (i in index until position) {

@@ -70,7 +70,7 @@ open class Node(name: String? = null) : Disposable {
         get() = modelMatInvLazy.get()
 
     /**
-     * Parent node is set when this node is added to a [Group]
+     * Parent node is set when this node is added to another [Node] as a child.
      */
     var parent: Node? = null
 

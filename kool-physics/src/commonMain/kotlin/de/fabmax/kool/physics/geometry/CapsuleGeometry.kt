@@ -2,6 +2,7 @@ package de.fabmax.kool.physics.geometry
 
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec2f
+import de.fabmax.kool.math.deg
 import de.fabmax.kool.math.spatial.BoundingBox
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.simpleShape
@@ -14,8 +15,8 @@ abstract class CommonCapsuleGeometry(val height: Float, val radius: Float) {
             profile {
                 val halfHeight = height / 2f
                 simpleShape(false) {
-                    xyArc(Vec2f(halfHeight + radius, 0f), Vec2f(halfHeight, 0f), 90f, 10, true)
-                    xyArc(Vec2f(-halfHeight, radius), Vec2f(-halfHeight, 0f), 90f, 10, true)
+                    xyArc(Vec2f(halfHeight + radius, 0f), Vec2f(halfHeight, 0f), 90f.deg, 10, true)
+                    xyArc(Vec2f(-halfHeight, radius), Vec2f(-halfHeight, 0f), 90f.deg, 10, true)
                 }
                 for (i in 0 .. 20) {
                     sample()

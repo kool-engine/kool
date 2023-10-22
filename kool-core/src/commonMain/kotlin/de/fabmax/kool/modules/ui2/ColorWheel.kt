@@ -97,7 +97,7 @@ open class ColorWheelNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, 
     }
 
     private fun satValDrag(dx: Float, dy: Float) {
-        val p = MutableVec2f(dx, dy).rotate(-modifier.hue)
+        val p = MutableVec2f(dx, dy).rotate(-modifier.hue.deg)
         val x = p.x
         val y = p.y
 
@@ -132,7 +132,7 @@ open class ColorWheelNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, 
         p.x += (xCol - xWht) * modifier.value * (modifier.saturation - 0.5f)
         p.y += (yCol - yWht) * modifier.value * (modifier.saturation - 0.5f)
 
-        p.rotate(modifier.hue)
+        p.rotate(modifier.hue.deg)
         p.x += centerX
         p.y += centerY
         return p

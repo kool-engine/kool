@@ -3,6 +3,7 @@ package de.fabmax.kool.demo.physics.joints
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.deg
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.GlslType
@@ -37,10 +38,10 @@ object GearChainMeshGen {
             // tooth
             profile {
                 simpleShape(true) {
-                    xzArc(0.7f, -0.2f, Vec2f(0.6f, -0.2f), -90f, 3)
-                    xzArc(-0.6f, -0.3f, Vec2f(-0.6f, -0.2f), -90f, 3)
-                    xzArc(-0.7f, 0.2f, Vec2f(-0.6f, 0.2f), -90f, 3)
-                    xzArc(0.6f, 0.3f, Vec2f(0.6f, 0.2f), -90f, 3)
+                    xzArc(0.7f, -0.2f, Vec2f(0.6f, -0.2f), (-90f).deg, 3)
+                    xzArc(-0.6f, -0.3f, Vec2f(-0.6f, -0.2f), (-90f).deg, 3)
+                    xzArc(-0.7f, 0.2f, Vec2f(-0.6f, 0.2f), (-90f).deg, 3)
+                    xzArc(0.6f, 0.3f, Vec2f(0.6f, 0.2f), (-90f).deg, 3)
                 }
                 withTransform {
                     for (i in 0..11) {
@@ -127,7 +128,7 @@ object GearChainMeshGen {
             color = MdColor.RED.toLinear()
             profile {
                 simpleShape(true) {
-                    xzArc(0.18f, 0f, Vec2f(0f, 0f), -315f, 8, true)
+                    xzArc(0.18f, 0f, Vec2f(0f, 0f), (-315f).deg, 8, true)
                 }
                 for (d in -1..1 step 2) {
                     for (i in 1..10) {
@@ -152,8 +153,8 @@ object GearChainMeshGen {
                 simpleShape(false) {
                     xz(0f, 0.85f)
                     normals += MutableVec3f(0.1f, 0f, 1f).norm()
-                    xzArc(0.8f, 0.5f, Vec2f(0.75f, 0.3f), -70f, 4, true)
-                    xzArc(1f, -0.3f, Vec2f(0.75f, -0.3f), -70f, 4, true)
+                    xzArc(0.8f, 0.5f, Vec2f(0.75f, 0.3f), (-70f).deg, 4, true)
+                    xzArc(1f, -0.3f, Vec2f(0.75f, -0.3f), (-70f).deg, 4, true)
                     xz(0f, -0.85f)
                     normals += MutableVec3f(0.1f, 0f, -1f).norm()
                 }
@@ -192,11 +193,11 @@ object GearChainMeshGen {
                 simpleShape(true) {
                     xy(-2f, 0f)
                     xy(-2f, 0f)
-                    xyArc(Vec2f(-2f, 0.3f), Vec2f(-1.8f, 0.3f), -90f, 6)
-                    xyArc(Vec2f(-1f, 0.5f), Vec2f(-1f, 0.7f), 90f, 6)
-                    xyArc(Vec2f(-0.8f, 1f), Vec2f(0f, 1f), -180f, 30)
-                    xyArc(Vec2f(0.8f, 0.7f), Vec2f(1f, 0.7f), 90f, 6)
-                    xyArc(Vec2f(1.8f, 0.5f), Vec2f(1.8f, 0.3f), -90f, 6)
+                    xyArc(Vec2f(-2f, 0.3f), Vec2f(-1.8f, 0.3f), (-90f).deg, 6)
+                    xyArc(Vec2f(-1f, 0.5f), Vec2f(-1f, 0.7f), 90f.deg, 6)
+                    xyArc(Vec2f(-0.8f, 1f), Vec2f(0f, 1f), (-180f).deg, 30)
+                    xyArc(Vec2f(0.8f, 0.7f), Vec2f(1f, 0.7f), 90f.deg, 6)
+                    xyArc(Vec2f(1.8f, 0.5f), Vec2f(1.8f, 0.3f), (-90f).deg, 6)
                     xy(2f, 0f)
                     xy(2f, 0f)
                 }
@@ -295,8 +296,8 @@ object GearChainMeshGen {
                 }
 
                 simpleShape(false) {
-                    xyArc(Vec2f(-0.45f, -0.5f), Vec2f(-0.45f, -0.35f), -90f, 4, true)
-                    xyArc(Vec2f(-0.6f, 0.35f), Vec2f(-0.45f, 0.35f), -90f, 4, true)
+                    xyArc(Vec2f(-0.45f, -0.5f), Vec2f(-0.45f, -0.35f), (-90f).deg, 4, true)
+                    xyArc(Vec2f(-0.6f, 0.35f), Vec2f(-0.45f, 0.35f), (-90f).deg, 4, true)
                 }
 
                 withTransform {
@@ -350,8 +351,8 @@ object GearChainMeshGen {
                 }
 
                 simpleShape(false) {
-                    xyArc(Vec2f(-0.35f, -0.1f), Vec2f(-0.35f, -0.05f), -90f, 4, true)
-                    xyArc(Vec2f(-0.4f, 0.05f), Vec2f(-0.35f, 0.05f), -90f, 4, true)
+                    xyArc(Vec2f(-0.35f, -0.1f), Vec2f(-0.35f, -0.05f), (-90f).deg, 4, true)
+                    xyArc(Vec2f(-0.4f, 0.05f), Vec2f(-0.35f, 0.05f), (-90f).deg, 4, true)
                 }
 
                 for (s in -1..1 step 2) {
@@ -412,9 +413,9 @@ object GearChainMeshGen {
     private fun SimpleShape.roundRectXz(centerX: Float, centerZ: Float, sizeX: Float, sizeZ: Float, r: Float, steps: Int) {
         val sx = sizeX / 2
         val sz = sizeZ / 2
-        xzArc(centerX + sx, centerZ - sz + r, Vec2f(centerX + sx - r, centerZ - sz + r), -90f, steps, generateNormals = true)
-        xzArc(centerX - sx + r, centerZ - sz, Vec2f(centerX - sx + r, centerZ - sz + r), -90f, steps, generateNormals = true)
-        xzArc(centerX - sx, centerZ + sz - r, Vec2f(centerX - sx + r, centerZ + sz - r), -90f, steps, generateNormals = true)
-        xzArc(centerX + sx - r, centerZ + sz, Vec2f(centerX + sx - r, centerZ + sz - r), -90f, steps, generateNormals = true)
+        xzArc(centerX + sx, centerZ - sz + r, Vec2f(centerX + sx - r, centerZ - sz + r), (-90f).deg, steps, generateNormals = true)
+        xzArc(centerX - sx + r, centerZ - sz, Vec2f(centerX - sx + r, centerZ - sz + r), (-90f).deg, steps, generateNormals = true)
+        xzArc(centerX - sx, centerZ + sz - r, Vec2f(centerX - sx + r, centerZ + sz - r), (-90f).deg, steps, generateNormals = true)
+        xzArc(centerX + sx - r, centerZ + sz, Vec2f(centerX + sx - r, centerZ + sz - r), (-90f).deg, steps, generateNormals = true)
     }
 }

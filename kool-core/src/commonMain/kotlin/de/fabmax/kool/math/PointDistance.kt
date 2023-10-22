@@ -111,7 +111,7 @@ fun sqrDistancePointToEdge(x: Float, y: Float, edgeA: Vec2f, edgeB: Vec2f): Floa
 
 fun Vec2f.nearestPointOnEdge(edgeA: Vec2f, edgeB: Vec2f, result: MutableVec2f): MutableVec2f {
     edgeB.subtract(edgeA, result)
-    val l = (dot(result) - edgeA * result) / (result * result)
+    val l = (dot(result) - edgeA.dot(result)) / dot(result * result)
     return when {
         l <= 0 -> result.set(edgeA)
         l >= 1 -> result.set(edgeB)

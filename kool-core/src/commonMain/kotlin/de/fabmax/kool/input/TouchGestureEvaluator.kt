@@ -68,7 +68,7 @@ open class TouchGestureEvaluator {
             tmpVec1.scale(96.0 / screenDpi)
             tmpVec2.scale(96.0 / screenDpi)
 
-            if (tmpVec1.length() > 5.0 && tmpVec2.length() > 5.0 && tmpVec1 * tmpVec2 < 0.0) {
+            if (tmpVec1.length() > 5.0 && tmpVec2.length() > 5.0 && tmpVec1.dot(tmpVec2) < 0.0) {
                 tmpVec1.set(startPositions[pointers[0].id]!!)
                 tmpVec2.set(startPositions[pointers[1].id]!!)
 
@@ -89,7 +89,7 @@ open class TouchGestureEvaluator {
             tmpVec1.scale(96.0 / screenDpi)
             tmpVec2.scale(96.0 / screenDpi)
 
-            if (tmpVec1.length() > 5.0 && tmpVec2.length() > 5.0 && tmpVec1 * tmpVec2 > 0.0) {
+            if (tmpVec1.length() > 5.0 && tmpVec2.length() > 5.0 && tmpVec1.dot(tmpVec2) > 0.0) {
                 tmpVec1.set(startPositions[pointers[0].id]!!)
                 tmpVec2.set(startPositions[pointers[1].id]!!)
 

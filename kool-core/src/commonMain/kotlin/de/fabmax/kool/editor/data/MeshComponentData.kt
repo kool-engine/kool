@@ -1,6 +1,7 @@
 package de.fabmax.kool.editor.data
 
 import de.fabmax.kool.math.Vec2f
+import de.fabmax.kool.math.deg
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.simpleShape
 import de.fabmax.kool.util.MdColor
@@ -155,8 +156,8 @@ sealed class MeshShapeData {
                     val h = length.toFloat()
                     val hh = h / 2f
                     simpleShape(false) {
-                        xyArc(Vec2f(hh + r, 0f), Vec2f(hh, 0f), 90f, steps / 2, true)
-                        xyArc(Vec2f(-hh, r), Vec2f(-hh, 0f), 90f, steps / 2, true)
+                        xyArc(Vec2f(hh + r, 0f), Vec2f(hh, 0f), 90f.deg, steps / 2, true)
+                        xyArc(Vec2f(-hh, r), Vec2f(-hh, 0f), 90f.deg, steps / 2, true)
                     }
                     for (i in 0 .. steps) {
                         sample()

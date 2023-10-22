@@ -4,6 +4,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.MutableVec4f
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.deg
 import de.fabmax.kool.scene.geometry.TextProps
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Font
@@ -194,9 +195,9 @@ open class TextNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surfac
             }
             else -> {
                 isOddRotation = true
-                val a = MutableVec2f(0f, inMetrics.height).rotate(rotation)
-                val b = MutableVec2f(inMetrics.width, 0f).rotate(rotation)
-                val c = MutableVec2f(inMetrics.width, inMetrics.height).rotate(rotation)
+                val a = MutableVec2f(0f, inMetrics.height).rotate(rotation.deg)
+                val b = MutableVec2f(inMetrics.width, 0f).rotate(rotation.deg)
+                val c = MutableVec2f(inMetrics.width, inMetrics.height).rotate(rotation.deg)
 
                 val lt = minOf(0f, a.x, b.x, c.x)
                 val rt = maxOf(0f, a.x, b.x, c.x)

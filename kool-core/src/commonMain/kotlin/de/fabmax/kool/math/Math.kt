@@ -10,6 +10,8 @@ const val RAD_2_DEG = 180.0 / PI
 const val FUZZY_EQ_F = 1e-5f
 const val FUZZY_EQ_D = 1e-10
 
+const val PI_F = PI.toFloat()
+
 /**
  * The difference between 1 and the smallest floating point number of type float that is greater than 1.
  */

@@ -1,9 +1,6 @@
 package de.fabmax.kool.demo.physics.vehicle
 
-import de.fabmax.kool.math.Mat4f
-import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.math.Vec2f
-import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.*
 import de.fabmax.kool.physics.RigidDynamic
 import de.fabmax.kool.physics.RigidStatic
 import de.fabmax.kool.physics.Shape
@@ -125,7 +122,7 @@ object Playground {
                         xy(20f, 10f)
                     }
                     simpleShape(false) {
-                        xyArc(Vec2f(20f, 10f), Vec2f(10f, 10f), -90f, 20)
+                        xyArc(Vec2f(20f, 10f), Vec2f(10f, 10f), (-90f).deg, 20)
                     }
                 }
 

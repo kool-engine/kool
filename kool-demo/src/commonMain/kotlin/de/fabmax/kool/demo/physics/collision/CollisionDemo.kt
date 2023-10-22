@@ -30,7 +30,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
     private lateinit var groundNormal: Texture2d
     private val shadows = mutableListOf<ShadowMap>()
 
-    private val shapeTypes = mutableListOf(*ShapeType.values())
+    private val shapeTypes = ShapeType.entries
     private val selectedShapeType = mutableStateOf(6)
     private val numSpawnBodies = mutableStateOf(450)
     private val friction = mutableStateOf(0.5f)
@@ -165,7 +165,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
         bodies.clear()
 
         val types = if (shapeTypes[selectedShapeType.value] == ShapeType.MIXED) {
-            ShapeType.values().toList().filter { it != ShapeType.MIXED }
+            ShapeType.entries.filter { it != ShapeType.MIXED }
         } else {
             listOf(shapeTypes[selectedShapeType.value])
         }
@@ -217,7 +217,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
                     break
                 }
             }
-            dir.rotate(90f)
+            dir.rotate(90f.deg)
             if (stepsSteps++ == 2) {
                 stepsSteps = 1
                 steps++

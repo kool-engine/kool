@@ -77,6 +77,29 @@ kotlin {
     }
 }
 
+tasks.register<GenerateVariantsFromFloatPrototype>("generateDoubleAndIntVariants") {
+    filesToUpdate = listOf(
+        kotlin.sourceSets.findByName("commonMain")?.kotlin
+            ?.sourceDirectories
+            ?.map { File(it, "de/fabmax/kool/math/Vec2.kt") }
+            ?.find { it.exists() }?.absolutePath ?: ""
+    )
+}
+
+tasks.register<GenerateVariantsFromFloatPrototype>("generateDoubleOnlyVariants") {
+    generateIntTypes = false
+    filesToUpdate = listOf(
+        kotlin.sourceSets.findByName("commonMain")?.kotlin
+            ?.sourceDirectories
+            ?.map { File(it, "de/fabmax/kool/math/Angle.kt") }
+            ?.find { it.exists() }?.absolutePath ?: ""
+    )
+}
+
+tasks.register("generateTypeVariants") {
+    dependsOn("generateDoubleAndIntVariants", "generateDoubleOnlyVariants")
+}
+
 tasks.register<VersionNameUpdate>("updateVersion") {
     versionName = "$version"
     filesToUpdate = listOf(
@@ -86,8 +109,9 @@ tasks.register<VersionNameUpdate>("updateVersion") {
             ?.find { it.exists() }?.absolutePath ?: ""
     )
 }
-tasks["compileKotlinJs"].dependsOn("updateVersion")
-tasks["compileKotlinJvm"].dependsOn("updateVersion")
+
+tasks["compileKotlinJs"].dependsOn("updateVersion", "generateTypeVariants")
+tasks["compileKotlinJvm"].dependsOn("updateVersion", "generateTypeVariants")
 
 publishing {
     publications {

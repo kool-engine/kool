@@ -1,9 +1,6 @@
 package de.fabmax.kool.scene.geometry
 
-import de.fabmax.kool.math.MutableVec2f
-import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.math.Vec2f
-import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.PolyUtil
 
@@ -98,7 +95,7 @@ class SimpleShape(val isClosed: Boolean) : Shape() {
         positions += MutableVec3f(x, y, 0f)
     }
 
-    fun xyArc(start: Vec2f, center: Vec2f, angle: Float, steps: Int, generateNormals: Boolean = false) {
+    fun xyArc(start: Vec2f, center: Vec2f, angle: AngleF, steps: Int, generateNormals: Boolean = false) {
         val angStep = angle / steps
         val v = MutableVec2f(start.x - center.x, start.y - center.y)
         for (i in 0 .. steps) {
@@ -114,7 +111,7 @@ class SimpleShape(val isClosed: Boolean) : Shape() {
         positions += MutableVec3f(x, 0f, z)
     }
 
-    fun xzArc(x: Float, z: Float, center: Vec2f, angle: Float, steps: Int, generateNormals: Boolean = false) {
+    fun xzArc(x: Float, z: Float, center: Vec2f, angle: AngleF, steps: Int, generateNormals: Boolean = false) {
         val angStep = angle / steps
         val v = MutableVec2f(x - center.x, z - center.y)
         for (i in 0 .. steps) {
@@ -130,7 +127,7 @@ class SimpleShape(val isClosed: Boolean) : Shape() {
         positions += MutableVec3f(0f, y, z)
     }
 
-    fun yzArc(y: Float, z: Float, center: Vec2f, angle: Float, steps: Int, generateNormals: Boolean = false) {
+    fun yzArc(y: Float, z: Float, center: Vec2f, angle: AngleF, steps: Int, generateNormals: Boolean = false) {
         val angStep = angle / steps
         val v = MutableVec2f(y - center.x, z - center.y)
         for (i in 0 .. steps) {

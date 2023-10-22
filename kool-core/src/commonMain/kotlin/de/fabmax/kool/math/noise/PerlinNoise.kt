@@ -136,8 +136,8 @@ class PerlinNoise2d(seed: Int = 19937, private val tableSz: Int = 256) : Noise2d
         val p01 = Vec2f(x0, y1)
         val p11 = Vec2f(x1, y1)
 
-        val a = lerp(p00 * c00, p10 * c10, u)
-        val b = lerp(p01 * c01, p11 * c11, u)
+        val a = lerp(p00.dot(c00), p10.dot(c10), u)
+        val b = lerp(p01.dot(c01), p11.dot(c11), u)
 
         return lerp(a, b, v)
     }

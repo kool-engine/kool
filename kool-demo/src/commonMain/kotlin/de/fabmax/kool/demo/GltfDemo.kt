@@ -343,7 +343,7 @@ class GltfDemo : DemoScene("glTF Models") {
             cornerPts.forEachIndexed { ci, cpt ->
                 val uv = MutableVec2f(radius + ci.toFloat() / cornerPts.size * PI.toFloat() * cornerR, 0f)
                 uv.scale(uvScale)
-                uv.rotate(a.toDeg())
+                uv.rotate(a.deg)
                 val pt = cpt.rotate(a.toDeg(), Vec3f.Y_AXIS, MutableVec3f())
                 val iv = vertex(pt, Vec3f.ZERO, uv)
                 if (i > 0 && ci > 0) {

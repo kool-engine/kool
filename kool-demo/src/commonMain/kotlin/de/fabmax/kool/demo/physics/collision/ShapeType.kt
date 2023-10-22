@@ -1,9 +1,6 @@
 package de.fabmax.kool.demo.physics.collision
 
-import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.math.Vec2f
-import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.math.randomF
+import de.fabmax.kool.math.*
 import de.fabmax.kool.physics.Material
 import de.fabmax.kool.physics.Shape
 import de.fabmax.kool.physics.geometry.*
@@ -211,8 +208,8 @@ enum class ShapeType {
     fun MeshBuilder.capsule(halfHeight: Float = 1.25f, radius: Float = 1f) {
         profile {
             simpleShape(false) {
-                xyArc(Vec2f(halfHeight + radius, 0f), Vec2f(halfHeight, 0f), 90f, 10, true)
-                xyArc(Vec2f(-halfHeight, radius), Vec2f(-halfHeight, 0f), 90f, 10, true)
+                xyArc(Vec2f(halfHeight + radius, 0f), Vec2f(halfHeight, 0f), 90f.deg, 10, true)
+                xyArc(Vec2f(-halfHeight, radius), Vec2f(-halfHeight, 0f), 90f.deg, 10, true)
             }
             for (i in 0 .. 20) {
                 sample()
