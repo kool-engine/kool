@@ -483,6 +483,18 @@ open class Mat4d {
         return this
     }
 
+    fun setRotate(mat3: Mat3d): Mat4d {
+        for (row in 0..2) {
+            for (col in 0..2) {
+                this[row, col] = mat3[row, col]
+            }
+        }
+        val l0 = this[0, 0] * this[0, 0] + this[1, 0] * this[1, 0] + this[2, 0] * this[2, 0] + this[3, 0] * this[3, 0]
+        val s = 1f / sqrt(l0)
+        scale(s, s, s)
+        return this
+    }
+
     fun setRotate(mat4: Mat4d): Mat4d {
         for (row in 0..2) {
             for (col in 0..2) {

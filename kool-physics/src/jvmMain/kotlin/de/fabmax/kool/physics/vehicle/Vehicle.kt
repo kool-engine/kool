@@ -140,9 +140,8 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, val wor
         tmpVec.set(vehicleProps.chassisCMOffset).scale(-2f)
         for (i in 0 until 4) {
             val wheelInfo = wheelInfos[i]
-            wheelInfo.transform.setIdentity().translate(tmpVec)
-            pxVehicle.baseState.getWheelLocalPoses(i).localPose.toMat4f(tmpMat)
-            wheelInfo.transform.mul(tmpMat)
+            pxVehicle.baseState.getWheelLocalPoses(i).localPose.toTrsTransform(wheelInfo.transform)
+            wheelInfo.transform.translate(tmpVec)
 
             val isHit = pxVehicle.baseState.getRoadGeomStates(i).hitState
             if (isHit) {

@@ -4,6 +4,7 @@ package de.fabmax.kool.physics
 
 import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.BoundingBox
+import de.fabmax.kool.scene.TrsTransform
 import physx.*
 import kotlin.contracts.contract
 
@@ -26,6 +27,12 @@ fun PxTransform.toMat4f(result: Mat4f): Mat4f {
     result[0, 3] = p.x
     result[1, 3] = p.y
     result[2, 3] = p.z
+    return result
+}
+fun PxTransform.toTrsTransform(result: TrsTransform): TrsTransform {
+    result.translation.set(p.x.toDouble(), p.y.toDouble(), p.z.toDouble())
+    result.setRotation(q.toVec4f())
+    result.scale.set(Vec3d.ONES)
     return result
 }
 fun PxTransform.set(mat: Mat4f): PxTransform {

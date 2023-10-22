@@ -2,6 +2,7 @@ package de.fabmax.kool.editor.data
 
 import de.fabmax.kool.math.*
 import de.fabmax.kool.scene.Transform
+import de.fabmax.kool.scene.TrsTransform
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MutableColor
 import kotlinx.serialization.Serializable
@@ -19,8 +20,15 @@ data class TransformData(
     )
 
     fun toTransform(result: Transform): Transform {
-        toMat4d(result.matrix)
-        result.markDirty()
+        if (result is TrsTransform) {
+            result
+                .setPosition(position.toVec3d())
+                .setRotation(rotation.toVec4d())
+                .setScale(scale.toVec3d())
+        } else {
+            toMat4d(result.matrix)
+            result.markDirty()
+        }
         return result
     }
 

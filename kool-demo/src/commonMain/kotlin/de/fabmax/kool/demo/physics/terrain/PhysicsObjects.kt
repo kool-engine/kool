@@ -74,7 +74,7 @@ class PhysicsObjects(mainScene: Scene, terrain: Terrain, trees: Trees, ctx: Kool
                 world.addActor(body)
                 boxes += body
 
-                boxInitPoses += Mat4f().set(body.transform)
+                boxInitPoses += Mat4f().set(body.transform.matrix)
             }
         }
     }

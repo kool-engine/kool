@@ -93,6 +93,7 @@ open class Vec2f(x: Float, y: Float) {
 
     companion object {
         val ZERO = Vec2f(0f)
+        val ONES = Vec2f(1f)
         val X_AXIS = Vec2f(1f, 0f)
         val Y_AXIS = Vec2f(0f, 1f)
         val NEG_X_AXIS = Vec2f(-1f, 0f)
@@ -271,6 +272,7 @@ open class Vec2d(x: Double, y: Double) {
 
     companion object {
         val ZERO = Vec2d(0.0)
+        val ONES = Vec2d(1.0)
         val X_AXIS = Vec2d(1.0, 0.0)
         val Y_AXIS = Vec2d(0.0, 1.0)
         val NEG_X_AXIS = Vec2d(-1.0, 0.0)

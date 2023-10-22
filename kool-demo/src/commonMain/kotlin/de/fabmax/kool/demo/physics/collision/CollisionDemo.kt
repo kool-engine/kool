@@ -107,7 +107,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
                 type.instances.addInstances(typeBodies.size) { buf ->
                     for (i in typeBodies.indices) {
                         val body = typeBodies[i]
-                        matBuf.set(body.rigidActor.transform).scale(body.scale)
+                        matBuf.set(body.rigidActor.transform.matrix).scale(body.scale)
 
                         buf.put(matBuf.array)
 

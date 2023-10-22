@@ -52,9 +52,12 @@ open class Node(name: String? = null) : Disposable {
     protected val globalExtentMut = MutableVec3f()
 
     /**
-     * This node's transform matrix. Can be used to manipulate this node's position, size, etc.
+     * This node's transform. Can be used to manipulate this node's position, size, etc. Notice that, by default, the
+     * transform is set to [TrsTransform], which treats position, rotation and scale as separate independent properties.
+     * As an alternative, you can also use [MatrixTransform], which applies all transform operations directly to a 4x4
+     * transform matrix.
      */
-    val transform = Transform()
+    var transform: Transform = TrsTransform()
 
     /**
      * This node's model matrix, updated on each frame based on this node's transform and the model matrix of the
@@ -126,14 +129,14 @@ open class Node(name: String? = null) : Disposable {
     private fun transformBoundsToParentFrame() {
         if (!bounds.isEmpty && !transform.isIdentity) {
             tmpBounds.clear()
-            tmpBounds.add(transform.matrix.transform(tmpTransformVec.set(bounds.min.x, bounds.min.y, bounds.min.z), 1f))
-            tmpBounds.add(transform.matrix.transform(tmpTransformVec.set(bounds.min.x, bounds.min.y, bounds.max.z), 1f))
-            tmpBounds.add(transform.matrix.transform(tmpTransformVec.set(bounds.min.x, bounds.max.y, bounds.min.z), 1f))
-            tmpBounds.add(transform.matrix.transform(tmpTransformVec.set(bounds.min.x, bounds.max.y, bounds.max.z), 1f))
-            tmpBounds.add(transform.matrix.transform(tmpTransformVec.set(bounds.max.x, bounds.min.y, bounds.min.z), 1f))
-            tmpBounds.add(transform.matrix.transform(tmpTransformVec.set(bounds.max.x, bounds.min.y, bounds.max.z), 1f))
-            tmpBounds.add(transform.matrix.transform(tmpTransformVec.set(bounds.max.x, bounds.max.y, bounds.min.z), 1f))
-            tmpBounds.add(transform.matrix.transform(tmpTransformVec.set(bounds.max.x, bounds.max.y, bounds.max.z), 1f))
+            tmpBounds.add(transform.transform(tmpTransformVec.set(bounds.min.x, bounds.min.y, bounds.min.z), 1f))
+            tmpBounds.add(transform.transform(tmpTransformVec.set(bounds.min.x, bounds.min.y, bounds.max.z), 1f))
+            tmpBounds.add(transform.transform(tmpTransformVec.set(bounds.min.x, bounds.max.y, bounds.min.z), 1f))
+            tmpBounds.add(transform.transform(tmpTransformVec.set(bounds.min.x, bounds.max.y, bounds.max.z), 1f))
+            tmpBounds.add(transform.transform(tmpTransformVec.set(bounds.max.x, bounds.min.y, bounds.min.z), 1f))
+            tmpBounds.add(transform.transform(tmpTransformVec.set(bounds.max.x, bounds.min.y, bounds.max.z), 1f))
+            tmpBounds.add(transform.transform(tmpTransformVec.set(bounds.max.x, bounds.max.y, bounds.min.z), 1f))
+            tmpBounds.add(transform.transform(tmpTransformVec.set(bounds.max.x, bounds.max.y, bounds.max.z), 1f))
             bounds.set(tmpBounds)
         }
     }
@@ -337,4 +340,11 @@ open class Node(name: String? = null) : Disposable {
     companion object {
         private val MODEL_MAT_IDENTITY = Mat4d()
     }
+}
+
+fun Node.addGroup(name: String? = null, block: Node.() -> Unit): Node {
+    val tg = Node(name)
+    tg.block()
+    addNode(tg)
+    return tg
 }

@@ -150,6 +150,13 @@ class Mat3f {
         return result
     }
 
+    fun set(other: Mat3d): Mat3f {
+        for (i in 0..8) {
+            this[i] = other[i].toFloat()
+        }
+        return this
+    }
+
     fun set(other: Mat3f): Mat3f {
         for (i in 0..8) {
             this[i] = other[i]
@@ -161,6 +168,32 @@ class Mat3f {
         for (i in 0..8) {
             this[i] = floats[i]
         }
+    }
+
+    fun setRow(row: Int, vec: Vec3f) {
+        this[row, 0] = vec.x
+        this[row, 1] = vec.y
+        this[row, 2] = vec.z
+    }
+
+    fun getRow(row: Int, result: MutableVec3f): MutableVec3f {
+        result.x = this[row, 0]
+        result.y = this[row, 1]
+        result.z = this[row, 2]
+        return result
+    }
+
+    fun setCol(col: Int, value: Vec3f) {
+        this[0, col] = value.x
+        this[1, col] = value.y
+        this[2, col] = value.z
+    }
+
+    fun getCol(col: Int, result: MutableVec3f): MutableVec3f {
+        result.x = this[0, col]
+        result.y = this[1, col]
+        result.z = this[2, col]
+        return result
     }
 
     fun setIdentity(): Mat3f {

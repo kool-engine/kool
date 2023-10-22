@@ -115,7 +115,7 @@ actual abstract class RigidActor : CommonRigidActor() {
 
     protected fun updateTransform() {
         if (isActive) {
-            pxRigidActor.globalPose.toMat4f(transform)
+            pxRigidActor.globalPose.toTrsTransform(transform)
         }
     }
 

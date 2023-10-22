@@ -1,8 +1,10 @@
 package de.fabmax.kool.scene.animation
 
 import de.fabmax.kool.math.*
+import de.fabmax.kool.scene.MatrixTransform
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
+import de.fabmax.kool.scene.TrsTransform
 import de.fabmax.kool.util.TreeMap
 import kotlin.math.min
 
@@ -121,8 +123,8 @@ class AnimatedTransformGroup(val target: Node): AnimationNode {
         initTranslation.set(vec4.x, vec4.y, vec4.z)
         target.transform.matrix.getRotation(initRotation)
         val sx = target.transform.matrix.getCol(0, vec4).length()
-        val sy = target.transform.matrix.getCol(0, vec4).length()
-        val sz = target.transform.matrix.getCol(0, vec4).length()
+        val sy = target.transform.matrix.getCol(1, vec4).length()
+        val sz = target.transform.matrix.getCol(2, vec4).length()
         initScale.set(sx, sy, sz)
     }
 
@@ -133,10 +135,17 @@ class AnimatedTransformGroup(val target: Node): AnimationNode {
     }
 
     override fun applyTransform() {
-        target.transform.setIdentity()
-        target.transform.translate(animTranslation)
-        target.transform.mul(quatRotMat.setRotate(animRotation))
-        target.transform.scale(animScale.x, animScale.y, animScale.z)
+        val t = target.transform
+        if (t is TrsTransform) {
+            t.setPosition(animTranslation)
+                .setRotation(animRotation)
+                .setScale(animScale)
+        } else {
+            target.transform.setIdentity()
+            target.transform.translate(animTranslation)
+            target.transform.matrix.mul(quatRotMat.setRotate(animRotation))
+            target.transform.scale(animScale.x, animScale.y, animScale.z)
+        }
     }
 
     override fun applyTransformWeighted(weight: Float, firstWeightedTransform: Boolean) {
@@ -145,13 +154,19 @@ class AnimatedTransformGroup(val target: Node): AnimationNode {
         weightedTransformMat.mul(quatRotMat.setRotate(animRotation))
         weightedTransformMat.scale(animScale.x, animScale.y, animScale.z)
 
+        var t = target.transform as? MatrixTransform
+        if (t == null) {
+            t = MatrixTransform()
+            target.transform = t
+        }
+
         if (firstWeightedTransform) {
             for (i in 0..15) {
-                target.transform.matrix.array[i] = weightedTransformMat.array[i] * weight
+                t.matrix.array[i] = weightedTransformMat.array[i] * weight
             }
         } else {
             for (i in 0..15) {
-                target.transform.matrix.array[i] += weightedTransformMat.array[i] * weight
+                t.matrix.array[i] += weightedTransformMat.array[i] * weight
             }
         }
         target.transform.markDirty()

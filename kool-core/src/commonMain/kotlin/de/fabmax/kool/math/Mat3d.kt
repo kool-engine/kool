@@ -160,10 +160,43 @@ class Mat3d {
         return this
     }
 
+    fun set(other: Mat3f): Mat3d {
+        for (i in 0..8) {
+            this[i] = other[i].toDouble()
+        }
+        return this
+    }
+
     fun set(Doubles: List<Double>) {
         for (i in 0..8) {
             this[i] = Doubles[i]
         }
+    }
+
+    fun setRow(row: Int, vec: Vec3d) {
+        this[row, 0] = vec.x
+        this[row, 1] = vec.y
+        this[row, 2] = vec.z
+    }
+
+    fun getRow(row: Int, result: MutableVec3d): MutableVec3d {
+        result.x = this[row, 0]
+        result.y = this[row, 1]
+        result.z = this[row, 2]
+        return result
+    }
+
+    fun setCol(col: Int, value: Vec3d) {
+        this[0, col] = value.x
+        this[1, col] = value.y
+        this[2, col] = value.z
+    }
+
+    fun getCol(col: Int, result: MutableVec3d): MutableVec3d {
+        result.x = this[0, col]
+        result.y = this[1, col]
+        result.z = this[2, col]
+        return result
     }
 
     fun setIdentity(): Mat3d {

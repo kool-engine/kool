@@ -86,6 +86,9 @@ open class OrbitInputTransform(name: String? = null) : Node(name), InputStack.Po
     private val mouseTransform = Mat4d()
     private val mouseTransformInv = Mat4d()
 
+    private val matrixTransform: MatrixTransform
+        get() = transform as MatrixTransform
+
     var smoothness: Double = 0.0
         set(value) {
             field = value
@@ -96,6 +99,7 @@ open class OrbitInputTransform(name: String? = null) : Node(name), InputStack.Po
         }
 
     init {
+        transform = MatrixTransform()
         smoothness = 0.5
         panPlane.p.set(Vec3f.ZERO)
         panPlane.n.set(Vec3f.Y_AXIS)
@@ -134,7 +138,7 @@ open class OrbitInputTransform(name: String? = null) : Node(name), InputStack.Po
 
         if (isKeepingStandardTransform) {
             mouseTransform.invert(mouseTransformInv)
-            transform.mul(mouseTransformInv)
+            matrixTransform.mul(mouseTransformInv)
         }
 
         val z = zoomAnimator.actual
@@ -147,9 +151,9 @@ open class OrbitInputTransform(name: String? = null) : Node(name), InputStack.Po
         mouseTransform.rotate(hr, horizontalAxis)
 
         if (isKeepingStandardTransform) {
-            transform.mul(mouseTransform)
+            matrixTransform.mul(mouseTransform)
         } else {
-            transform.set(mouseTransform)
+            matrixTransform.set(mouseTransform)
         }
     }
 

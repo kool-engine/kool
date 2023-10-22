@@ -36,10 +36,7 @@ class VehicleWorld(val scene: Scene, val physics: PhysicsWorld, val deferredPipe
                 roughness(rough)
                 metallic(metal)
             }
-            onUpdate += {
-                this@apply.transform.set(actor.transform)
-                this@apply.transform.markDirty()
-            }
+            transform = actor.transform
         }
     }
 

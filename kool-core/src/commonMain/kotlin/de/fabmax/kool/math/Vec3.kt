@@ -394,6 +394,7 @@ open class Vec3d(x: Double, y: Double, z: Double) {
 
     companion object {
         val ZERO = Vec3d(0.0)
+        val ONES = Vec3d(1.0)
         val X_AXIS = Vec3d(1.0, 0.0, 0.0)
         val Y_AXIS = Vec3d(0.0, 1.0, 0.0)
         val Z_AXIS = Vec3d(0.0, 0.0, 1.0)

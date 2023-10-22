@@ -7,6 +7,7 @@ import de.fabmax.kool.physics.RigidActor
 import de.fabmax.kool.physics.RigidDynamic
 import de.fabmax.kool.physics.character.*
 import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.scene.TrsTransform
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.max
@@ -24,7 +25,7 @@ class PlayerController(private val physicsObjects: PhysicsObjects, mainScene: Sc
     var moveSpeed = 0f
         private set
 
-    val playerTransform = Mat4d()
+    val playerTransform = TrsTransform()
 
     private val axes: WalkAxes
 

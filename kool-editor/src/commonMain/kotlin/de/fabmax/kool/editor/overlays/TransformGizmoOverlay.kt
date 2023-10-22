@@ -10,7 +10,9 @@ import de.fabmax.kool.editor.data.Vec4Data
 import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.input.KeyboardInput
 import de.fabmax.kool.math.*
+import de.fabmax.kool.scene.MatrixTransform
 import de.fabmax.kool.scene.Node
+import de.fabmax.kool.scene.Transform
 import de.fabmax.kool.util.Gizmo
 import kotlin.math.abs
 import kotlin.math.max
@@ -34,7 +36,7 @@ class TransformGizmoOverlay(private val editor: KoolEditor) : Node("Transform gi
     private val gizmoToGlobal = Mat4d()
 
     private val gizmoListener = object : Gizmo.GizmoListener {
-        override fun onDragAxis(axis: Vec3f, distance: Float, targetTransform: Mat4d, ctx: KoolContext) {
+        override fun onDragAxis(axis: Vec3f, distance: Float, targetTransform: Transform, ctx: KoolContext) {
             if (transformMode == TransformMode.MOVE) {
                 targetTransform.translate(axis.x * distance, axis.y * distance, axis.z * distance)
                 val t = gizmoToGlobal.transform(MutableVec3d().set(axis).scale(distance.toDouble()), 0.0)
@@ -45,13 +47,13 @@ class TransformGizmoOverlay(private val editor: KoolEditor) : Node("Transform gi
             }
         }
 
-        override fun onDragPlane(planeNormal: Vec3f, dragPosition: Vec3f, targetTransform: Mat4d, ctx: KoolContext) {
+        override fun onDragPlane(planeNormal: Vec3f, dragPosition: Vec3f, targetTransform: Transform, ctx: KoolContext) {
             targetTransform.translate(dragPosition)
             val t = gizmoToGlobal.transform(MutableVec3d().set(dragPosition), 0.0)
             translateSelection(t)
         }
 
-        override fun onDragRotate(rotationAxis: Vec3f, angle: Float, targetTransform: Mat4d, ctx: KoolContext) {
+        override fun onDragRotate(rotationAxis: Vec3f, angle: Float, targetTransform: Transform, ctx: KoolContext) {
             targetTransform.rotate(angle, rotationAxis)
             val ax = gizmoToGlobal.transform(MutableVec3d().set(rotationAxis), 0.0)
             rotateSelection(ax, angle.toDouble())
@@ -291,9 +293,11 @@ class TransformGizmoOverlay(private val editor: KoolEditor) : Node("Transform gi
 
         // apply gizmo transform
         gizmoScale = sqrt(radius) + 0.5f
-        gizmo.transform
-            .setRotate(globalGizmoOrientation)
-            .setPosition(globalGizmoPos)
+        (gizmo.transform as MatrixTransform).apply {
+            matrix.setRotate(globalGizmoOrientation)
+            setPosition(globalGizmoPos)
+            markDirty()
+        }
         gizmo.setFixedScale(gizmoScale)
         gizmoToGlobal.set(gizmo.transform.matrix)
     }

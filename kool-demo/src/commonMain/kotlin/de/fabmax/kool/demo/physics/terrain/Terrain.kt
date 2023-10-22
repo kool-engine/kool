@@ -37,7 +37,7 @@ class Terrain(val heightMap: HeightMap) {
         terrainBody.attachShape(Shape(hfGeom, Physics.defaultMaterial))
         terrainBody.position = Vec3f(hfBounds.size.x * -0.5f, 0f, hfBounds.size.z * -0.5f)
 
-        terrainTransform.set(terrainBody.transform).mul(terrainBody.shapes[0].localPose)
+        terrainTransform.set(terrainBody.transform.matrix).mul(terrainBody.shapes[0].localPose)
         terrainTransformInv.set(terrainTransform).invert()
     }
 

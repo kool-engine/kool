@@ -10,10 +10,7 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.ksl.KslBlinnPhongShader
 import de.fabmax.kool.modules.ui2.*
-import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.scene.addColorMesh
-import de.fabmax.kool.scene.addGroup
-import de.fabmax.kool.scene.defaultOrbitCamera
+import de.fabmax.kool.scene.*
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Gizmo
@@ -29,15 +26,15 @@ class GizmoTest : DemoScene("Gizmo Test") {
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
         gizmo1.gizmoListener = object : Gizmo.GizmoListener {
-            override fun onDragAxis(axis: Vec3f, distance: Float, targetTransform: Mat4d, ctx: KoolContext) {
+            override fun onDragAxis(axis: Vec3f, distance: Float, targetTransform: Transform, ctx: KoolContext) {
                 targetTransform.translate(axis.x * distance, axis.y * distance, axis.z * distance)
             }
 
-            override fun onDragPlane(planeNormal: Vec3f, dragPosition: Vec3f, targetTransform: Mat4d, ctx: KoolContext) {
+            override fun onDragPlane(planeNormal: Vec3f, dragPosition: Vec3f, targetTransform: Transform, ctx: KoolContext) {
                 targetTransform.translate(dragPosition)
             }
 
-            override fun onDragRotate(rotationAxis: Vec3f, angle: Float, targetTransform: Mat4d, ctx: KoolContext) {
+            override fun onDragRotate(rotationAxis: Vec3f, angle: Float, targetTransform: Transform, ctx: KoolContext) {
                 targetTransform.rotate(angle, rotationAxis)
             }
         }
@@ -92,7 +89,7 @@ class GizmoTest : DemoScene("Gizmo Test") {
                 axNegX = gizmo2.properties.axisLenNegX
             }
 
-            override fun onDragAxis(axis: Vec3f, distance: Float, targetTransform: Mat4d, ctx: KoolContext) {
+            override fun onDragAxis(axis: Vec3f, distance: Float, targetTransform: Transform, ctx: KoolContext) {
                 if (axis.z != 0f || KeyboardInput.isAltDown) {
                     targetTransform.translate(axis.x * distance, axis.y * distance, axis.z * distance)
                 } else if (axis.x > 0f) {
@@ -103,11 +100,11 @@ class GizmoTest : DemoScene("Gizmo Test") {
                 gizmo2.updateMesh()
             }
 
-            override fun onDragPlane(planeNormal: Vec3f, dragPosition: Vec3f, targetTransform: Mat4d, ctx: KoolContext) {
+            override fun onDragPlane(planeNormal: Vec3f, dragPosition: Vec3f, targetTransform: Transform, ctx: KoolContext) {
                 targetTransform.translate(dragPosition)
             }
 
-            override fun onDragRotate(rotationAxis: Vec3f, angle: Float, targetTransform: Mat4d, ctx: KoolContext) {
+            override fun onDragRotate(rotationAxis: Vec3f, angle: Float, targetTransform: Transform, ctx: KoolContext) {
                 targetTransform.rotate(angle, rotationAxis)
             }
         }

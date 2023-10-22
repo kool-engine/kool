@@ -102,7 +102,10 @@ class Gizmo : Node(), InputStack.PointerListener {
 
     var gizmoListener: GizmoListener? = null
 
+    private val matTransform = MatrixTransform()
+
     init {
+        transform = matTransform
         addNode(dragGroup)
         dragGroup += scaleGroup
         scaleGroup.apply {
@@ -164,7 +167,14 @@ class Gizmo : Node(), InputStack.PointerListener {
     }
 
     fun getGizmoTransform(target: Node) {
-        target.transform.set(transform.matrix).mul(dragGroup.transform.matrix)
+        val t = target.transform
+        if (t is TrsTransform) {
+            tmpMat4.set(transform.matrix).mul(dragGroup.transform.matrix)
+            t.set(tmpMat4)
+        } else {
+            target.transform.matrix.set(transform.matrix).mul(dragGroup.transform.matrix)
+            target.transform.markDirty()
+        }
     }
 
     fun getTranslation(result: MutableVec3f): MutableVec3f {
@@ -180,25 +190,22 @@ class Gizmo : Node(), InputStack.PointerListener {
     }
 
     fun setGizmoTransform(transformMatrix: Mat4d) {
-        transform.set(transformMatrix)
+        matTransform.set(transformMatrix)
     }
 
     fun setTranslation(translation: Vec3f) {
-        transform.matrix[0, 3] = translation.x.toDouble()
-        transform.matrix[1, 3] = translation.y.toDouble()
-        transform.matrix[2, 3] = translation.z.toDouble()
-        transform.markDirty()
+        matTransform.setPosition(translation.x.toDouble(), translation.y.toDouble(), translation.z.toDouble())
     }
 
     fun setEulerAngles(euler: Vec3f) {
         tmpMat3.setRotate(euler.x, euler.y, euler.z)
-        transform.setRotate(tmpMat3)
+        matTransform.matrix.setRotate(tmpMat3)
         transform.markDirty()
     }
 
     fun setQuatRotation(rotation: Vec4f) {
         tmpMat3.setRotate(rotation)
-        transform.setRotate(tmpMat3)
+        matTransform.matrix.setRotate(tmpMat3)
         transform.markDirty()
     }
 
@@ -394,7 +401,7 @@ class Gizmo : Node(), InputStack.PointerListener {
 
         if (isDrag && !ptr.isDrag) {
             // user stopped dragging, apply drag transform
-            transform.mul(dragGroup.transform.matrix)
+            matTransform.mul(dragGroup.transform.matrix)
             dragGroup.transform.setIdentity()
             gizmoListener?.onDragFinished(ctx)
             isDrag = false
@@ -459,7 +466,7 @@ class Gizmo : Node(), InputStack.PointerListener {
         if (pickPlane.intersectionPoint(pickRay, pickPoint)) {
             val dragDist = toLocalCoords(pickPoint).subtract(dragStartPos) * axis
             dragGroup.transform.setIdentity()
-            gizmoListener?.onDragAxis(axis, dragDist, dragGroup.transform.matrix, ctx)
+            gizmoListener?.onDragAxis(axis, dragDist, dragGroup.transform, ctx)
             dragGroup.transform.markDirty()
         }
     }
@@ -470,7 +477,7 @@ class Gizmo : Node(), InputStack.PointerListener {
         if (pickPlane.intersectionPoint(pickRay, pickPoint)) {
             val position = toLocalCoords(pickPoint).subtract(dragStartPos)
             dragGroup.transform.setIdentity()
-            gizmoListener?.onDragPlane(normal, position, dragGroup.transform.matrix, ctx)
+            gizmoListener?.onDragPlane(normal, position, dragGroup.transform, ctx)
             dragGroup.transform.markDirty()
         }
     }
@@ -499,7 +506,7 @@ class Gizmo : Node(), InputStack.PointerListener {
             }
 
             dragGroup.transform.setIdentity()
-            gizmoListener?.onDragRotate(axis, (aStart - aDrag).toDeg(), dragGroup.transform.matrix, ctx)
+            gizmoListener?.onDragRotate(axis, (aStart - aDrag).toDeg(), dragGroup.transform, ctx)
             dragGroup.transform.markDirty()
         }
     }
@@ -617,9 +624,9 @@ class Gizmo : Node(), InputStack.PointerListener {
     interface GizmoListener {
         fun onDragStart(ctx: KoolContext) { }
         fun onDragFinished(ctx: KoolContext) { }
-        fun onDragAxis(axis: Vec3f, distance: Float, targetTransform: Mat4d, ctx: KoolContext) { }
-        fun onDragPlane(planeNormal: Vec3f, dragPosition: Vec3f, targetTransform: Mat4d, ctx: KoolContext) { }
-        fun onDragRotate(rotationAxis: Vec3f, angle: Float, targetTransform: Mat4d, ctx: KoolContext) { }
+        fun onDragAxis(axis: Vec3f, distance: Float, targetTransform: Transform, ctx: KoolContext) { }
+        fun onDragPlane(planeNormal: Vec3f, dragPosition: Vec3f, targetTransform: Transform, ctx: KoolContext) { }
+        fun onDragRotate(rotationAxis: Vec3f, angle: Float, targetTransform: Transform, ctx: KoolContext) { }
     }
 
     data class GizmoProperties(

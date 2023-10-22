@@ -201,11 +201,14 @@ class ManyVehiclesDemo : DemoScene("Many Vehicles") {
 
     private inner class VehicleInstance(val vehicle: Vehicle, color: Color) {
         private val tmpMat = Mat4f()
+        private val tmpMat2 = Mat4f()
         private val color = MutableColor(color)
 
         fun addChassisInstance(instanceData: MeshInstanceList) {
             instanceData.addInstance {
-                put(vehicle.transform.array)
+                for (d in vehicle.transform.matrix.array) {
+                    put(d.toFloat())
+                }
                 put(color.array)
             }
         }
@@ -213,7 +216,7 @@ class ManyVehiclesDemo : DemoScene("Many Vehicles") {
         fun addWheelInstances(instanceData: MeshInstanceList) {
             for (i in 0..3) {
                 val wheelInfo = vehicle.wheelInfos[i]
-                tmpMat.set(vehicle.transform).translate(vehicleProps.chassisCMOffset).mul(wheelInfo.transform)
+                tmpMat.set(vehicle.transform.matrix).translate(vehicleProps.chassisCMOffset).mul(tmpMat2.set(wheelInfo.transform.matrix))
                 instanceData.addInstance {
                     put(tmpMat.array)
                 }

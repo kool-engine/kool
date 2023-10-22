@@ -65,7 +65,9 @@ class ManyBodiesDemo : DemoScene("Many Bodies") {
                 cubeInstances.clear()
                 cubeInstances.addInstances(physBoxes.size) { buf ->
                     physBoxes.forEach { box ->
-                        buf.put(box.actor.transform.array)
+                        for (d in box.actor.transform.matrix.array) {
+                            buf.put(d.toFloat())
+                        }
                         buf.put(box.color.array)
                     }
                 }

@@ -7,6 +7,8 @@ import de.fabmax.kool.physics.HitResult
 import de.fabmax.kool.physics.PhysicsWorld
 import de.fabmax.kool.physics.geometry.BoxGeometry
 import de.fabmax.kool.scene.Node
+import de.fabmax.kool.scene.Transform
+import de.fabmax.kool.scene.TrsTransform
 import de.fabmax.kool.util.Time
 import kotlin.math.*
 
@@ -30,7 +32,7 @@ class CharacterTrackingCamRig(enableCursorLock: Boolean = true) :
 
     private var actualZoom = zoom
 
-    var trackedPose = Mat4f()
+    var trackedPose: Transform = TrsTransform()
     val pivotPoint = MutableVec3f()
 
     val lookDirection = MutableVec3f(Vec3f.NEG_Z_AXIS)

@@ -1,6 +1,5 @@
 package de.fabmax.kool.modules.gltf
 
-import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.math.Mat4dStack
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec4d
@@ -11,9 +10,7 @@ import de.fabmax.kool.pipeline.deferred.DeferredKslPbrShader
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.pipeline.shading.AlphaMode
 import de.fabmax.kool.pipeline.shading.DepthShader
-import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.scene.Model
-import de.fabmax.kool.scene.Node
+import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.animation.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ShadowMap
@@ -510,17 +507,19 @@ data class GltfFile(
             model.nodes[modelNdName] = nodeGrp
 
             if (matrix != null) {
-                nodeGrp.transform.matrix.set(matrix.map { it.toDouble() })
+                val t = MatrixTransform()
+                t.matrix.set(matrix.map { it.toDouble() })
+                nodeGrp.transform = t
             } else {
+                val t = nodeGrp.transform as TrsTransform
                 if (translation != null) {
-                    nodeGrp.transform.translate(translation[0], translation[1], translation[2])
+                    t.translate(translation[0], translation[1], translation[2])
                 }
                 if (rotation != null) {
-                    val rotMat = Mat4d().setRotate(Vec4d(rotation[0].toDouble(), rotation[1].toDouble(), rotation[2].toDouble(), rotation[3].toDouble()))
-                    nodeGrp.transform.mul(rotMat)
+                    t.setRotation(Vec4d(rotation[0].toDouble(), rotation[1].toDouble(), rotation[2].toDouble(), rotation[3].toDouble()))
                 }
                 if (scale != null) {
-                    nodeGrp.transform.scale(scale[0], scale[1], scale[2])
+                    t.scale(scale[0], scale[1], scale[2])
                 }
             }
 

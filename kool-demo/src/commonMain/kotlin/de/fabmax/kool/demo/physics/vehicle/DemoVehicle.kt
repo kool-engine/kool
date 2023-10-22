@@ -16,6 +16,7 @@ import de.fabmax.kool.pipeline.deferred.DeferredSpotLights
 import de.fabmax.kool.pipeline.deferred.deferredKslPbrShader
 import de.fabmax.kool.scene.Model
 import de.fabmax.kool.scene.Node
+import de.fabmax.kool.scene.TrsTransform
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Time
 import kotlin.math.abs
@@ -171,8 +172,8 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
         rearLightRt.position.set(-0.4f, 0.6f, -2.5f)
         vehicle.transform.transform(rearLightRt.position)
 
-        vehicle.transform.getRotation(headLightLt.orientation).rotate(-85f, Vec3f.Y_AXIS).rotate(-7f, Vec3f.Z_AXIS)
-        vehicle.transform.getRotation(headLightRt.orientation).rotate(-95f, Vec3f.Y_AXIS).rotate(-7f, Vec3f.Z_AXIS)
+        headLightLt.orientation.set(vehicle.transform.rotation).rotate(-85f, Vec3f.Y_AXIS).rotate(-7f, Vec3f.Z_AXIS)
+        headLightRt.orientation.set(vehicle.transform.rotation).rotate(-95f, Vec3f.Y_AXIS).rotate(-7f, Vec3f.Z_AXIS)
         headLightLt.position.set(0.65f, 0.3f, 2.7f)
         vehicle.transform.transform(headLightLt.position)
         headLightRt.position.set(-0.65f, 0.3f, 2.7f)
@@ -245,12 +246,13 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
             }
 
             world.scene.onRenderScene += {
-                transform.set(vehicle.transform)
-                transform.translate(vehicleProps.chassisCMOffset)
-                transform.markDirty()
+                val trs = transform as TrsTransform
+                trs.set(vehicle.transform)
+                trs.translate(vehicleProps.chassisCMOffset)
                 for (i in 0..3) {
-                    wheelTransforms[i].transform.set(vehicle.wheelInfos[i].transform)
-                    wheelTransforms[i].transform.markDirty()
+                    val trsi = wheelTransforms[i].transform as TrsTransform
+                    trsi.set(vehicle.wheelInfos[i].transform)
+                    trsi.markDirty()
                 }
             }
         }

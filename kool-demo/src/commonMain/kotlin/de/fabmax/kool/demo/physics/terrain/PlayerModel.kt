@@ -18,6 +18,8 @@ class PlayerModel(val model: Model, val playerController: PlayerController) : No
         set(value) { controllerShapeOutline.isVisible = value }
 
     init {
+        transform  = playerController.playerTransform
+
         // set correct player model position (relative to player controller origin)
         model.transform.translate(0f, -0.9f, 0f)
         model.transform.rotate(180f, Vec3f.Y_AXIS)
@@ -70,9 +72,6 @@ class PlayerModel(val model: Model, val playerController: PlayerController) : No
     }
 
     private fun updateAnimation(timeStep: Float) {
-        // set transform group / model transform according to character position
-        transform.set(playerController.playerTransform)
-
         // determine which animation to use based on speed
         if (abs(playerController.moveSpeed) <= PlayerController.walkSpeed) {
             val w = (abs(playerController.moveSpeed) / PlayerController.walkSpeed).clamp(0f, 1f)

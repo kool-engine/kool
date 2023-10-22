@@ -6,8 +6,8 @@ import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.scene.ColorMesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Tags
+import de.fabmax.kool.scene.TrsTransform
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.LazyMat4f
 
 expect abstract class RigidActor : CommonRigidActor {
     val worldBounds: BoundingBox
@@ -23,10 +23,10 @@ abstract class CommonRigidActor : Releasable {
 
     abstract val isActive: Boolean
 
-    val transform = Mat4f()
-    protected val invTransformLazy = LazyMat4f { transform.invert(it) }
-    val invTransform: Mat4f
-        get() = invTransformLazy.get()
+    val transform = TrsTransform()
+//    protected val invTransformLazy = LazyMat4f { transform.invert(it) }
+//    val invTransform: Mat4f
+//        get() = invTransformLazy.get()
 
     val onPhysicsUpdate = mutableListOf<(Float) -> Unit>()
 
@@ -62,7 +62,6 @@ abstract class CommonRigidActor : Releasable {
     }
 
     internal open fun onPhysicsUpdate(timeStep: Float) {
-        invTransformLazy.isDirty = true
         for (i in onPhysicsUpdate.indices) {
             onPhysicsUpdate[i](timeStep)
         }
@@ -73,7 +72,7 @@ abstract class CommonRigidActor : Releasable {
     }
 
     fun toLocal(vec: MutableVec3f, w: Float = 1f): MutableVec3f {
-        return invTransform.transform(vec, w)
+        return transform.matrixInverse.transform(vec, w)
     }
 
     open fun toMesh(meshColor: Color, materialCfg: KslPbrShader.Config.() -> Unit = { }): Node = ColorMesh().apply {
@@ -90,9 +89,10 @@ abstract class CommonRigidActor : Releasable {
             color { vertexColor() }
             materialCfg()
         }
-        onUpdate += {
-            transform.set(this@CommonRigidActor.transform)
-            transform.markDirty()
-        }
+        transform = this@CommonRigidActor.transform
+//        onUpdate += {
+//            transform.set(this@CommonRigidActor.transform)
+//            transform.markDirty()
+//        }
     }
 }

@@ -137,6 +137,7 @@ open class Vec4f(x: Float, y: Float, z: Float, w: Float) {
 
     companion object {
         val ZERO = Vec4f(0f)
+        val ONES = Vec4f(1f)
         val X_AXIS = Vec4f(1f, 0f, 0f, 0f)
         val Y_AXIS = Vec4f(0f, 1f, 0f, 0f)
         val Z_AXIS = Vec4f(0f, 0f, 1f, 0f)
@@ -440,6 +441,7 @@ open class Vec4d(x: Double, y: Double, z: Double, w: Double) {
 
     companion object {
         val ZERO = Vec4d(0.0)
+        val ONES = Vec4d(1.0)
         val X_AXIS = Vec4d(1.0, 0.0, 0.0, 0.0)
         val Y_AXIS = Vec4d(0.0, 1.0, 0.0, 0.0)
         val Z_AXIS = Vec4d(0.0, 0.0, 1.0, 0.0)
