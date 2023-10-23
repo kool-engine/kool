@@ -482,7 +482,7 @@ data class GltfFile(
                     forEach { v ->
                         transform.transform(v.position, 1f)
                         transform.transform(v.normal, 0f)
-                        val tan3 = v.tangent.getXyz(MutableVec3f())
+                        val tan3 = MutableVec3f(v.tangent.xyz)
                         transform.transform(tan3, 0f)
                         v.tangent.set(tan3, v.tangent.w)
                     }

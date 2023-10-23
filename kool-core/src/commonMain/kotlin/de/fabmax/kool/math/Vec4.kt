@@ -30,6 +30,9 @@ fun MutableVec4i.set(that: Vec4d) = set(that.x.toInt(), that.y.toInt(), that.z.t
 
 open class Vec4f(open val x: Float, open val y: Float, open val z: Float, open val w: Float) {
 
+    val xyz: Vec3f
+        get() = Vec3f(x, y, z)
+
     constructor(f: Float) : this(f, f, f, f)
     constructor(xyz: Vec3f, w: Float) : this(xyz.x, xyz.y, xyz.z, w)
     constructor(v: Vec4f) : this(v.x, v.y, v.z, v.w)
@@ -153,16 +156,6 @@ open class Vec4f(open val x: Float, open val y: Float, open val z: Float, open v
         target.putFloat32(y)
         target.putFloat32(z)
         target.putFloat32(w)
-    }
-
-    /**
-     * Returns the xyz-components of this vector as an (optionally provided) [MutableVec3f].
-     */
-    fun getXyz(result: MutableVec3f = MutableVec3f()): MutableVec3f {
-        result.x = x
-        result.y = y
-        result.z = z
-        return result
     }
 
     // <noInt> The following section will not be included in the integer variant of this class
@@ -405,6 +398,9 @@ open class MutableVec4f(override var x: Float, override var y: Float, override v
 
 open class Vec4d(open val x: Double, open val y: Double, open val z: Double, open val w: Double) {
 
+    val xyz: Vec3d
+        get() = Vec3d(x, y, z)
+
     constructor(f: Double) : this(f, f, f, f)
     constructor(xyz: Vec3d, w: Double) : this(xyz.x, xyz.y, xyz.z, w)
     constructor(v: Vec4d) : this(v.x, v.y, v.z, v.w)
@@ -528,16 +524,6 @@ open class Vec4d(open val x: Double, open val y: Double, open val z: Double, ope
         target.putFloat32(y)
         target.putFloat32(z)
         target.putFloat32(w)
-    }
-
-    /**
-     * Returns the xyz-components of this vector as an (optionally provided) [MutableVec3d].
-     */
-    fun getXyz(result: MutableVec3d = MutableVec3d()): MutableVec3d {
-        result.x = x
-        result.y = y
-        result.z = z
-        return result
     }
 
     /**
@@ -771,6 +757,9 @@ open class MutableVec4d(override var x: Double, override var y: Double, override
 
 open class Vec4i(open val x: Int, open val y: Int, open val z: Int, open val w: Int) {
 
+    val xyz: Vec3i
+        get() = Vec3i(x, y, z)
+
     constructor(f: Int) : this(f, f, f, f)
     constructor(xyz: Vec3i, w: Int) : this(xyz.x, xyz.y, xyz.z, w)
     constructor(v: Vec4i) : this(v.x, v.y, v.z, v.w)
@@ -894,16 +883,6 @@ open class Vec4i(open val x: Int, open val y: Int, open val z: Int, open val w: 
         target.putUint32(y)
         target.putUint32(z)
         target.putUint32(w)
-    }
-
-    /**
-     * Returns the xyz-components of this vector as an (optionally provided) [MutableVec3i].
-     */
-    fun getXyz(result: MutableVec3i = MutableVec3i()): MutableVec3i {
-        result.x = x
-        result.y = y
-        result.z = z
-        return result
     }
 
     companion object {

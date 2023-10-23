@@ -21,7 +21,7 @@ class ErrorQuadric(val vertex: HalfEdgeMesh.HalfEdgeVertex) {
 
             if (ed.opp == null) {
                 // edge belongs to a border triangle, add a virtual orthogonal plane
-                val triNrm = tmpVec4.getXyz(MutableVec3f())
+                val triNrm = tmpVec4.xyz
                 val edDir = MutableVec3f(vertex).subtract(ed.to).norm()
                 val nrm = triNrm.cross(edDir, MutableVec3f())
 
@@ -34,7 +34,7 @@ class ErrorQuadric(val vertex: HalfEdgeMesh.HalfEdgeVertex) {
                 if (ed.opp == null) {
                     ed.computeTriPlane(tmpVec4)
                 }
-                val triNrm = tmpVec4.getXyz(MutableVec3f())
+                val triNrm = tmpVec4.xyz
                 val edDir = MutableVec3f(ed.next.next.from).subtract(vertex).norm()
                 val nrm = triNrm.cross(edDir, MutableVec3f())
                 tmpVec4.set(nrm, -nrm.dot(vertex))

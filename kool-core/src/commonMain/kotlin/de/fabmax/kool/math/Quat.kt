@@ -18,6 +18,8 @@ fun MutableQuatD.set(that: QuatF) = set(that.x.toDouble(), that.y.toDouble(), th
 
 open class QuatF(open val x: Float, open val y: Float, open val z: Float, open val w: Float) {
 
+    constructor(q: QuatF) : this(q.x, q.y, q.z, q.w)
+
     /**
      * Multiplies this quaternion with the given one. Consider using [mul] with a pre-allocated result quaternion
      * in performance-critical situations, to avoid unnecessary object allocations.
@@ -225,10 +227,14 @@ open class MutableQuatF(override var x: Float, override var y: Float, override v
     }
 }
 
+fun QuatF(angle: AngleF, axis: Vec3f): QuatF = MutableQuatF().set(angle, axis)
+
 // </template>
 
 
 open class QuatD(open val x: Double, open val y: Double, open val z: Double, open val w: Double) {
+
+    constructor(q: QuatD) : this(q.x, q.y, q.z, q.w)
 
     /**
      * Multiplies this quaternion with the given one. Consider using [mul] with a pre-allocated result quaternion
@@ -436,3 +442,5 @@ open class MutableQuatD(override var x: Double, override var y: Double, override
         return this
     }
 }
+
+fun QuatD(angle: AngleD, axis: Vec3d): QuatD = MutableQuatD().set(angle, axis)

@@ -9,36 +9,62 @@ import kotlin.math.*
 
 open class Color(open val r: Float, open val g: Float, open val b: Float, open val a: Float = 1f) {
 
-    constructor(other: Color) : this(other.r, other.g, other.b, other.a)
+    val rgb: Vec3f
+        get() = Vec3f(r, g, b)
 
+    /**
+     * This color's perceived brightness (r * 0.299f + g * 0.587f + b * 0.114f).
+     */
     val brightness: Float
-        get() = 0.299f * r + 0.587f * g + 0.114f * b
+        get() = r * 0.299f + g * 0.587f + b * 0.114f
 
-    fun mix(other: Color, weight: Float, result: MutableColor = MutableColor()): MutableColor {
-        result.r = other.r * weight + r * (1f - weight)
-        result.g = other.g * weight + g * (1f - weight)
-        result.b = other.b * weight + b * (1f - weight)
-        result.a = other.a * weight + a * (1f - weight)
+    constructor(other: Color) : this(other.r, other.g, other.b, other.a)
+    constructor(rgb: Vec3f, a: Float) : this(rgb.x, rgb.y, rgb.z, a)
+
+    /**
+     * Linearly interpolates this and another color and returns the result as an (optionally provided)
+     * [MutableColor]: result = that * weight + this * (1 - weight).
+     */
+    fun mix(that: Color, weight: Float, result: MutableColor = MutableColor()): MutableColor {
+        result.r = that.r * weight + r * (1f - weight)
+        result.g = that.g * weight + g * (1f - weight)
+        result.b = that.b * weight + b * (1f - weight)
+        result.a = that.a * weight + a * (1f - weight)
         return result
     }
 
+    /**
+     * Returns a new color with this color's rgb channels scaled by the given factor and an unchanged alpha value.
+     */
     fun mulRgb(factor: Float, result: MutableColor = MutableColor()): MutableColor {
         return result.set(this).mulRgb(factor)
     }
 
-    fun withAlpha(alpha: Float): MutableColor {
-        return MutableColor(r, g, b, alpha)
+    /**
+     * Returns a new color with this color's rgb channels and the given alpha value.
+     */
+    fun withAlpha(alpha: Float, result: MutableColor = MutableColor()): MutableColor {
+        return result.set(r, g, b, alpha)
     }
 
-    fun toLinear(): MutableColor = gamma(GAMMA_sRGB_TO_LINEAR)
+    /**
+     * Converts this color to linear space, assuming that it is in sRGB space. Same as calling [applyGamma] with
+     * [GAMMA_sRGB_TO_LINEAR].
+     */
+    fun toLinear(result: MutableColor = MutableColor()): MutableColor = applyGamma(GAMMA_sRGB_TO_LINEAR, result)
 
-    fun toLinear(result: MutableColor): MutableColor = gamma(GAMMA_sRGB_TO_LINEAR, result)
+    /**
+     * Converts this color to sRGB space, assuming that it is in linear space. Same as calling [applyGamma] with
+     * [GAMMA_LINEAR_TO_sRGB].
+     */
+    fun toSrgb(result: MutableColor = MutableColor()): MutableColor = applyGamma(GAMMA_LINEAR_TO_sRGB, result)
 
-    fun toSrgb(): MutableColor = gamma(GAMMA_LINEAR_TO_sRGB)
-
-    fun toSrgb(result: MutableColor): MutableColor = gamma(GAMMA_LINEAR_TO_sRGB, result)
-
-    fun gamma(gamma: Float, result: MutableColor = MutableColor()): MutableColor {
+    /**
+     * Applies the given gamma value to this color and returns the result as an (optionally provided) [MutableColor].
+     * @see toLinear
+     * @see toSrgb
+     */
+    fun applyGamma(gamma: Float, result: MutableColor = MutableColor()): MutableColor {
         return result.set(r.pow(gamma), g.pow(gamma), b.pow(gamma), a)
     }
 
@@ -90,6 +116,10 @@ open class Color(open val r: Float, open val g: Float, open val b: Float, open v
         )
     }
 
+    /**
+     * Returns this color encoded in a hex string of the format "rrggbbaa" (if inclAlpha is true - the default) or
+     * "rrggbb" (if inclAlpha is false).
+     */
     fun toHexString(inclAlpha: Boolean = true): String {
         var hr = (r * 255).roundToInt().clamp(0, 255).toString(16)
         var hg = (g * 255).roundToInt().clamp(0, 255).toString(16)
@@ -181,6 +211,10 @@ open class Color(open val r: Float, open val g: Float, open val b: Float, open v
         val DARK_MAGENTA = Color(0.5f, 0.0f, 0.5f, 1.0f)
         val DARK_ORANGE = Color(0.5f, 0.25f, 0.0f, 1.0f)
 
+        /**
+         * Parses the given hex string to a [Color]. Valid hex strings may have an optional leading '#' followed by up
+         * to 8 hex characters, containing the r, g, b, a values.
+         */
         fun fromHex(hex: String): Color {
             if (hex.isEmpty()) {
                 return BLACK
@@ -316,7 +350,7 @@ open class Color(open val r: Float, open val g: Float, open val b: Float, open v
         }
 
         fun toLinearRgb(result: MutableColor = MutableColor(), a: Float = 1f): MutableColor {
-            return toSrgb(a = a).toLinear(result)
+            return toSrgb(result, a).toLinear(result)
         }
     }
 
@@ -371,7 +405,7 @@ open class Color(open val r: Float, open val g: Float, open val b: Float, open v
         }
 
         fun toSrgb(result: MutableColor = MutableColor(), a: Float = 1f): MutableColor {
-            return toLinearRgb(a = a).toSrgb(result)
+            return toLinearRgb(result, a).toSrgb(result)
         }
 
         companion object {
@@ -385,13 +419,13 @@ open class Color(open val r: Float, open val g: Float, open val b: Float, open v
     }
 }
 
-
 fun Color(hex: String): Color = Color.fromHex(hex)
 
 open class MutableColor(override var r: Float, override var g: Float, override var b: Float, override var a: Float) : Color(r, g, b, a) {
 
     constructor() : this(0f, 0f, 0f, 1f)
     constructor(color: Color) : this(color.r, color.g, color.b, color.a)
+    constructor(rgb: Vec3f, a: Float) : this(rgb.x, rgb.y, rgb.z, a)
 
     fun set(r: Float, g: Float, b: Float, a: Float): MutableColor {
         this.r = r
@@ -409,6 +443,14 @@ open class MutableColor(override var r: Float, override var g: Float, override v
         return this
     }
 
+    fun set(rgb: Vec3f, a: Float): MutableColor {
+        r = rgb.x
+        g = rgb.y
+        b = rgb.z
+        this.a = a
+        return this
+    }
+
     fun set(that: Vec4f): MutableColor {
         r = that.x
         g = that.y
@@ -417,6 +459,9 @@ open class MutableColor(override var r: Float, override var g: Float, override v
         return this
     }
 
+    /**
+     * Inplace operation: Multiplies this color's rgb channels by the given factor leaving the alpha channel unchanged.
+     */
     fun mulRgb(factor: Float): MutableColor {
         r *= factor
         g *= factor
