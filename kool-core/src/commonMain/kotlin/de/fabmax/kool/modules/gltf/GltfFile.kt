@@ -2,7 +2,7 @@ package de.fabmax.kool.modules.gltf
 
 import de.fabmax.kool.math.Mat4dStack
 import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.math.Vec4d
+import de.fabmax.kool.math.QuatD
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.pipeline.BlendMode
 import de.fabmax.kool.pipeline.Texture2d
@@ -516,7 +516,7 @@ data class GltfFile(
                     t.translate(translation[0], translation[1], translation[2])
                 }
                 if (rotation != null) {
-                    t.setRotation(Vec4d(rotation[0].toDouble(), rotation[1].toDouble(), rotation[2].toDouble(), rotation[3].toDouble()))
+                    t.setRotation(QuatD(rotation[0].toDouble(), rotation[1].toDouble(), rotation[2].toDouble(), rotation[3].toDouble()))
                 }
                 if (scale != null) {
                     t.scale(scale[0], scale[1], scale[2])

@@ -1,9 +1,9 @@
 package de.fabmax.kool.physics
 
+import de.fabmax.kool.math.MutableQuatF
 import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.math.MutableVec4f
+import de.fabmax.kool.math.QuatF
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.math.spatial.BoundingBox
 import physx.*
 
@@ -29,7 +29,7 @@ actual abstract class RigidActor : CommonRigidActor() {
 
     private val bufBounds = BoundingBox()
     private val bufPosition = MutableVec3f()
-    private val bufRotation = MutableVec4f()
+    private val bufRotation = MutableQuatF()
 
     override var position: Vec3f
         get() = pxRigidActor.globalPose.p.toVec3f(bufPosition)
@@ -40,8 +40,8 @@ actual abstract class RigidActor : CommonRigidActor() {
             updateTransform()
         }
 
-    override var rotation: Vec4f
-        get() = pxRigidActor.globalPose.q.toVec4f(bufRotation)
+    override var rotation: QuatF
+        get() = pxRigidActor.globalPose.q.toQuatF(bufRotation)
         set(value) {
             val pose = pxRigidActor.globalPose
             value.toPxQuat(pose.q)

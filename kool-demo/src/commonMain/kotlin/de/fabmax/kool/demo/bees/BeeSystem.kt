@@ -16,7 +16,7 @@ class BeeSystem(val team: Int) {
     val beeInstances = MeshInstanceList(BeeConfig.maxBeesPerTeam, BeeDemo.ATTR_POSITION, BeeDemo.ATTR_ROTATION)
 
     val positions = Array(BeeConfig.maxBeesPerTeam + 1) { MutableVec4f(Vec4f.W_AXIS) }
-    val rotations = Array(BeeConfig.maxBeesPerTeam) { MutableVec4f(Vec4f.W_AXIS) }
+    val rotations = Array(BeeConfig.maxBeesPerTeam) { MutableQuatF(QuatF.IDENTITY) }
     val velocities = Array(BeeConfig.maxBeesPerTeam) { MutableVec3f() }
     val enemies = IntArray(BeeConfig.maxBeesPerTeam) { BeeConfig.maxBeesPerTeam }
 
@@ -30,6 +30,7 @@ class BeeSystem(val team: Int) {
     private val tmpVec3a = MutableVec3f()
     private val tmpVec3b = MutableVec3f()
     private val tmpMat3 = Mat3f()
+    private val tmpQuat = MutableQuatF()
 
     val beeUpdateTime = mutableStateOf(0.0)
     val instanceUpdateTime = mutableStateOf(0.0)
@@ -87,7 +88,7 @@ class BeeSystem(val team: Int) {
         while (aliveBees < n) {
             val spawned = Bee(aliveBees++)
 
-            spawned.rotation.setRotation(randomF(0f, 360f), random.randomInUnitSphere(tmpVec3a).norm())
+            spawned.rotation.set(randomF(0f, 360f).deg, random.randomInUnitSphere(tmpVec3a).norm())
             spawned.position.set(random.randomInUnitSphere(tmpVec3a).mul(BeeConfig.worldSize.x * 0.05f))
             spawned.position.x += -BeeConfig.worldSize.x * 0.4f + BeeConfig.worldSize.x * 0.8f * team
             spawned.enemy = EnemyBee(BeeConfig.maxBeesPerTeam)
@@ -120,7 +121,7 @@ class BeeSystem(val team: Int) {
     value class EnemyBee(val index: Int)
 
     val Bee.position: MutableVec4f get() = positions[index]
-    val Bee.rotation: MutableVec4f get() = rotations[index]
+    val Bee.rotation: MutableQuatF get() = rotations[index]
     val Bee.velocity: MutableVec3f get() = velocities[index]
     val Bee.isAlive: Boolean get() = position.w == 0f
     val Bee.isDecayed: Boolean get() = position.w > BeeConfig.decayTime
@@ -155,14 +156,14 @@ class BeeSystem(val team: Int) {
             tmpMat3.setColVec(0, right)
             tmpMat3.setColVec(1, up)
             tmpMat3.setColVec(2, tmpVec3a.set(vel).norm())
-            tmpMat3.getRotation(tmpVec4)
+            tmpMat3.getRotation(tmpQuat)
 
             val w0 = dt * 5f
             val w1 = 1f - w0
-            rot.x = rot.x * w1 + tmpVec4.x * w0
-            rot.y = rot.y * w1 + tmpVec4.y * w0
-            rot.z = rot.z * w1 + tmpVec4.z * w0
-            rot.w = rot.w * w1 + tmpVec4.w * w0
+            rot.x = rot.x * w1 + tmpQuat.x * w0
+            rot.y = rot.y * w1 + tmpQuat.y * w0
+            rot.z = rot.z * w1 + tmpQuat.z * w0
+            rot.w = rot.w * w1 + tmpQuat.w * w0
             rot.norm()
         }
 

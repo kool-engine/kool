@@ -288,7 +288,7 @@ class TransformEditor(component: TransformComponent) : ComponentEditor<Transform
             rEulerY.set(eulerRotation.y)
             rEulerZ.set(eulerRotation.z)
             val mat = Mat3d().setRotate(eulerRotation.x, eulerRotation.y, eulerRotation.z)
-            val q = mat.getRotation(MutableVec4d())
+            val q = mat.getRotation(MutableQuatD())
             rQuatX.set(q.x)
             rQuatY.set(q.y)
             rQuatZ.set(q.z)

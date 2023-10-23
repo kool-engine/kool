@@ -3,8 +3,6 @@ package de.fabmax.kool.math
 import de.fabmax.kool.util.Float32Buffer
 import de.fabmax.kool.util.MixedBuffer
 import de.fabmax.kool.util.Uint32Buffer
-import kotlin.math.cos
-import kotlin.math.sin
 import kotlin.math.sqrt
 
 fun Vec4f.toVec4d() = Vec4d(x.toDouble(), y.toDouble(), z.toDouble(), w.toDouble())
@@ -224,32 +222,6 @@ open class Vec4f(open val x: Float, open val y: Float, open val z: Float, open v
     fun isFuzzyEqual(that: Vec4f, eps: Float = FUZZY_EQ_F): Boolean =
             isFuzzyEqual(x, that.x, eps) && isFuzzyEqual(y, that.y, eps) && isFuzzyEqual(z, that.z, eps) && isFuzzyEqual(w, that.w, eps)
 
-    fun quatProduct(that: Vec4f, result: MutableVec4f): MutableVec4f {
-        result.x = w * that.x + x * that.w + y * that.z - z * that.y
-        result.y = w * that.y + y * that.w + z * that.x - x * that.z
-        result.z = w * that.z + z * that.w + x * that.y - y * that.x
-        result.w = w * that.w - x * that.x - y * that.y - z * that.z
-        return result
-    }
-
-    fun multiplyQuaternion(quat: Vec4f, result: MutableVec4f): MutableVec4f {
-        val ax = x
-        val ay = y
-        val az = z
-        val aw = w
-
-        val qx = quat.x
-        val qy = quat.y
-        val qz = quat.z
-        val qw = quat.w
-
-        result.x = aw * qx + ax * qw + ay * qz - az * qy
-        result.y = aw * qy - ax * qz + ay * qw + az * qx
-        result.z = aw * qz + ax * qy - ay * qx + az * qw
-        result.w = aw * qw - ax * qx - ay * qy - az * qz
-        return result
-    }
-
     // </noInt>
 
     companion object {
@@ -424,70 +396,6 @@ open class MutableVec4f(override var x: Float, override var y: Float, override v
             set(ZERO)
         }
     }
-
-    /**
-     * Sets this vector to the quaternion representation of the given rotation. The axis components must represent a
-     * unit vector (i.e. the length of the vector ([axX], [axY], [axZ]) must be 1.0).
-     *
-     * @param angleDeg rotation angle in degrees
-     * @param axX      rotation axis x-component
-     * @param axY      rotation axis y-component
-     * @param axZ      rotation axis z-component
-     */
-    fun setRotation(angleDeg: Float, axX: Float, axY: Float, axZ: Float): MutableVec4f {
-        val rad2 = angleDeg.toRad() * 0.5f
-        val factor = sin(rad2)
-        x = axX * factor
-        y = axY * factor
-        z = axZ * factor
-        w = cos(rad2)
-        return this
-    }
-
-    fun setRotation(angleDeg: Float, axis: Vec3f): MutableVec4f = setRotation(angleDeg, axis.x, axis.y, axis.z)
-
-    fun quatProduct(that: Vec4f): MutableVec4f {
-        val px = w * that.x + x * that.w + y * that.z - z * that.y
-        val py = w * that.y + y * that.w + z * that.x - x * that.z
-        val pz = w * that.z + z * that.w + x * that.y - y * that.x
-        val pw = w * that.w - x * that.x - y * that.y - z * that.z
-        set(px, py, pz, pw)
-        return this
-    }
-
-    /**
-     * Rotates this vector by the given angle aorund the given axis, assuming that this vector already represents a
-     * valid rotation quaternion. The axis components must represent a unit vector (i.e. the length of the vector
-     * ([axX], [axY], [axZ]) must be 1.0).
-     *
-     * @param angleDeg rotation angle in degrees
-     * @param axX      rotation axis x-component
-     * @param axY      rotation axis y-component
-     * @param axZ      rotation axis z-component
-     */
-    fun rotateQuaternion(angleDeg: Float, axX: Float, axY: Float, axZ: Float): MutableVec4f {
-        val ax = x
-        val ay = y
-        val az = z
-        val aw = w
-
-        val rad2 = angleDeg.toRad() * 0.5f
-        val factor = sin(rad2)
-        val qx = axX * factor
-        val qy = axY * factor
-        val qz = axZ * factor
-        val qw = cos(rad2)
-
-        x = aw * qx + ax * qw + ay * qz - az * qy
-        y = aw * qy - ax * qz + ay * qw + az * qx
-        z = aw * qz + ax * qy - ay * qx + az * qw
-        w = aw * qw - ax * qx - ay * qy - az * qz
-        return this
-    }
-
-    fun rotateQuaternion(angleDeg: Float, axis: Vec3f): MutableVec4f = rotateQuaternion(angleDeg, axis.x, axis.y, axis.z)
-
-    fun multiplyQuaternion(quat: Vec4f) = multiplyQuaternion(quat, this)
 
     // </noInt>
 }
@@ -687,32 +595,6 @@ open class Vec4d(open val x: Double, open val y: Double, open val z: Double, ope
     fun isFuzzyEqual(that: Vec4d, eps: Double = FUZZY_EQ_D): Boolean =
             isFuzzyEqual(x, that.x, eps) && isFuzzyEqual(y, that.y, eps) && isFuzzyEqual(z, that.z, eps) && isFuzzyEqual(w, that.w, eps)
 
-    fun quatProduct(that: Vec4d, result: MutableVec4d): MutableVec4d {
-        result.x = w * that.x + x * that.w + y * that.z - z * that.y
-        result.y = w * that.y + y * that.w + z * that.x - x * that.z
-        result.z = w * that.z + z * that.w + x * that.y - y * that.x
-        result.w = w * that.w - x * that.x - y * that.y - z * that.z
-        return result
-    }
-
-    fun multiplyQuaternion(quat: Vec4d, result: MutableVec4d): MutableVec4d {
-        val ax = x
-        val ay = y
-        val az = z
-        val aw = w
-
-        val qx = quat.x
-        val qy = quat.y
-        val qz = quat.z
-        val qw = quat.w
-
-        result.x = aw * qx + ax * qw + ay * qz - az * qy
-        result.y = aw * qy - ax * qz + ay * qw + az * qx
-        result.z = aw * qz + ax * qy - ay * qx + az * qw
-        result.w = aw * qw - ax * qx - ay * qy - az * qz
-        return result
-    }
-
     companion object {
         val ZERO = Vec4d(0.0)
         val ONES = Vec4d(1.0)
@@ -883,70 +765,6 @@ open class MutableVec4d(override var x: Double, override var y: Double, override
             set(ZERO)
         }
     }
-
-    /**
-     * Sets this vector to the quaternion representation of the given rotation. The axis components must represent a
-     * unit vector (i.e. the length of the vector ([axX], [axY], [axZ]) must be 1.0).
-     *
-     * @param angleDeg rotation angle in degrees
-     * @param axX      rotation axis x-component
-     * @param axY      rotation axis y-component
-     * @param axZ      rotation axis z-component
-     */
-    fun setRotation(angleDeg: Double, axX: Double, axY: Double, axZ: Double): MutableVec4d {
-        val rad2 = angleDeg.toRad() * 0.5
-        val factor = sin(rad2)
-        x = axX * factor
-        y = axY * factor
-        z = axZ * factor
-        w = cos(rad2)
-        return this
-    }
-
-    fun setRotation(angleDeg: Double, axis: Vec3d): MutableVec4d = setRotation(angleDeg, axis.x, axis.y, axis.z)
-
-    fun quatProduct(that: Vec4d): MutableVec4d {
-        val px = w * that.x + x * that.w + y * that.z - z * that.y
-        val py = w * that.y + y * that.w + z * that.x - x * that.z
-        val pz = w * that.z + z * that.w + x * that.y - y * that.x
-        val pw = w * that.w - x * that.x - y * that.y - z * that.z
-        set(px, py, pz, pw)
-        return this
-    }
-
-    /**
-     * Rotates this vector by the given angle aorund the given axis, assuming that this vector already represents a
-     * valid rotation quaternion. The axis components must represent a unit vector (i.e. the length of the vector
-     * ([axX], [axY], [axZ]) must be 1.0).
-     *
-     * @param angleDeg rotation angle in degrees
-     * @param axX      rotation axis x-component
-     * @param axY      rotation axis y-component
-     * @param axZ      rotation axis z-component
-     */
-    fun rotateQuaternion(angleDeg: Double, axX: Double, axY: Double, axZ: Double): MutableVec4d {
-        val ax = x
-        val ay = y
-        val az = z
-        val aw = w
-
-        val rad2 = angleDeg.toRad() * 0.5
-        val factor = sin(rad2)
-        val qx = axX * factor
-        val qy = axY * factor
-        val qz = axZ * factor
-        val qw = cos(rad2)
-
-        x = aw * qx + ax * qw + ay * qz - az * qy
-        y = aw * qy - ax * qz + ay * qw + az * qx
-        z = aw * qz + ax * qy - ay * qx + az * qw
-        w = aw * qw - ax * qx - ay * qy - az * qz
-        return this
-    }
-
-    fun rotateQuaternion(angleDeg: Double, axis: Vec3d): MutableVec4d = rotateQuaternion(angleDeg, axis.x, axis.y, axis.z)
-
-    fun multiplyQuaternion(quat: Vec4d) = multiplyQuaternion(quat, this)
 
 }
 

@@ -277,7 +277,9 @@ class Mat3d {
         return this
     }
 
-    fun setRotate(quaternion: Vec4d): Mat3d {
+    fun setRotate(quaternion: Vec4d): Mat3d = setRotate(QuatD(quaternion.x, quaternion.y, quaternion.z, quaternion.w))
+
+    fun setRotate(quaternion: QuatD): Mat3d {
         val r = quaternion.w
         val i = quaternion.x
         val j = quaternion.y
@@ -301,7 +303,7 @@ class Mat3d {
         return this
     }
 
-    fun getRotation(result: MutableVec4d): MutableVec4d {
+    fun getRotation(result: MutableQuatD): MutableQuatD {
         val trace = this[0, 0] + this[1, 1] + this[2, 2]
 
         if (trace > 0f) {
@@ -333,7 +335,7 @@ class Mat3d {
         return result
     }
 
-    private operator fun MutableVec4d.set(i: Int, value: Double) {
+    private operator fun MutableQuatD.set(i: Int, value: Double) {
         when(i) {
             0 -> x = value
             1 -> y = value

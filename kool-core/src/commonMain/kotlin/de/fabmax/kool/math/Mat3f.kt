@@ -274,7 +274,9 @@ class Mat3f {
         return this
     }
 
-    fun setRotate(quaternion: Vec4f): Mat3f {
+    fun setRotate(quaternion: Vec4f): Mat3f = setRotate(QuatF(quaternion.x, quaternion.y, quaternion.z, quaternion.w))
+
+    fun setRotate(quaternion: QuatF): Mat3f {
         val r = quaternion.w
         val i = quaternion.x
         val j = quaternion.y
@@ -298,7 +300,7 @@ class Mat3f {
         return this
     }
 
-    fun getRotation(result: MutableVec4f): MutableVec4f {
+    fun getRotation(result: MutableQuatF): MutableQuatF {
         val trace = this[0, 0] + this[1, 1] + this[2, 2]
 
         if (trace > 0f) {
@@ -330,7 +332,7 @@ class Mat3f {
         return result
     }
 
-    private operator fun MutableVec4f.set(i: Int, value: Float) {
+    private operator fun MutableQuatF.set(i: Int, value: Float) {
         when(i) {
             0 -> x = value
             1 -> y = value

@@ -107,11 +107,11 @@ class AnimatedTransformGroup(val target: Node): AnimationNode {
         get() = target.name
 
     private val initTranslation = MutableVec3d()
-    private val initRotation = MutableVec4d()
+    private val initRotation = MutableQuatD()
     private val initScale = MutableVec3d(1.0, 1.0, 1.0)
 
     private val animTranslation = MutableVec3d()
-    private val animRotation = MutableVec4d()
+    private val animRotation = MutableQuatD()
     private val animScale = MutableVec3d()
 
     private val quatRotMat = Mat4d()

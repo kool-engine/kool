@@ -31,7 +31,7 @@ class TransformGizmoOverlay(private val editor: KoolEditor) : Node("Transform gi
 
     private val gizmo = Gizmo()
     private val globalGizmoPos = MutableVec3d()
-    private val globalGizmoOrientation = MutableVec4d()
+    private val globalGizmoOrientation = MutableQuatD()
     private var gizmoScale = 1f
     private val gizmoToGlobal = Mat4d()
 
@@ -272,7 +272,7 @@ class TransformGizmoOverlay(private val editor: KoolEditor) : Node("Transform gi
     }
 
     private fun updateGizmoTransformFromSelection() {
-        var parentOrientation = Vec4d.W_AXIS
+        var parentOrientation = QuatD.IDENTITY
         var radius = 0f
         var isSameParent = true
 
@@ -287,16 +287,16 @@ class TransformGizmoOverlay(private val editor: KoolEditor) : Node("Transform gi
 
             isSameParent = isSameParent && it.nodeModel.drawNode.parent == selection[0].nodeModel.drawNode.parent
             if (isSameParent) {
-                parentOrientation = it.nodeModel.drawNode.parent?.modelMat?.getRotation(MutableVec4d()) ?: Vec4d.W_AXIS
+                parentOrientation = it.nodeModel.drawNode.parent?.modelMat?.getRotation(MutableQuatD()) ?: QuatD.IDENTITY
             }
         }
 
         // determine gizmo orientation
-        globalGizmoOrientation.set(Vec4d.W_AXIS)
+        globalGizmoOrientation.set(QuatD.IDENTITY)
         if (EditorState.transformMode.value == EditorState.TransformOrientation.LOCAL) {
             if (selection.size == 1) {
                 // use local orientation of single selected object
-                globalGizmoOrientation.set(selection[0].nodeModel.drawNode.modelMat.getRotation(MutableVec4d()))
+                globalGizmoOrientation.set(selection[0].nodeModel.drawNode.modelMat.getRotation(MutableQuatD()))
 
             } else if (isSameParent) {
                 // local orientation is undefined for multiple selected objects, use parent as fallback if all selected
@@ -329,7 +329,7 @@ class TransformGizmoOverlay(private val editor: KoolEditor) : Node("Transform gi
         val startScale = MutableVec3d()
 
         val dragPosition = MutableVec3d()
-        val dragRotation = MutableVec4d()
+        val dragRotation = MutableQuatD()
         val dragScale = MutableVec3d()
 
         init {

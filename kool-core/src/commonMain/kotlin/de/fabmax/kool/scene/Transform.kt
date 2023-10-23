@@ -127,7 +127,7 @@ class TrsTransform : Transform() {
         return result.set(rotation)
     }
 
-    fun getRotation(resultQuaternion: MutableVec4d): MutableVec4d {
+    fun getRotation(resultQuaternion: MutableQuatD): MutableQuatD {
         return rotation.getRotation(resultQuaternion)
     }
 
@@ -143,13 +143,13 @@ class TrsTransform : Transform() {
         return this
     }
 
-    fun setRotation(quaternion: Vec4f): TrsTransform {
-        this.rotation.setRotate(quaternion.toVec4d())
+    fun setRotation(quaternion: QuatF): TrsTransform {
+        this.rotation.setRotate(quaternion.toQuatD())
         markDirty()
         return this
     }
 
-    fun setRotation(quaternion: Vec4d): TrsTransform {
+    fun setRotation(quaternion: QuatD): TrsTransform {
         this.rotation.setRotate(quaternion)
         markDirty()
         return this
@@ -201,7 +201,7 @@ class TrsTransform : Transform() {
 
     fun set(mat: Mat4d): TrsTransform {
         translation.set(mat.getOrigin(MutableVec3d()))
-        rotation.setRotate(mat.getRotation(MutableVec4d()))
+        rotation.setRotate(mat.getRotation(MutableQuatD()))
         scale.set(mat.getScale(MutableVec3d()))
         markDirty()
         return this
@@ -209,7 +209,7 @@ class TrsTransform : Transform() {
 
     fun set(mat: Mat4f): TrsTransform {
         translation.set(mat.getOrigin(MutableVec3f()))
-        rotation.setRotate(mat.getRotation(MutableVec4f()).toVec4d())
+        rotation.setRotate(mat.getRotation(MutableQuatF()).toQuatD())
         scale.set(mat.getScale(MutableVec3f()))
         markDirty()
         return this

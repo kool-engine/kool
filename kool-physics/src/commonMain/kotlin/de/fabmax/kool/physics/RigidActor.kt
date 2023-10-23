@@ -17,7 +17,7 @@ expect abstract class RigidActor : CommonRigidActor {
 
 abstract class CommonRigidActor : Releasable {
     abstract var position: Vec3f
-    abstract var rotation: Vec4f
+    abstract var rotation: QuatF
 
     abstract var isTrigger: Boolean
 
@@ -41,12 +41,12 @@ abstract class CommonRigidActor : Releasable {
     }
 
     fun setRotation(rotation: Mat3f) {
-        this.rotation = rotation.getRotation(MutableVec4f())
+        this.rotation = rotation.getRotation(MutableQuatF())
     }
 
     fun setTransform(transform: Mat4f) {
         this.position = transform.transform(MutableVec3f())
-        this.rotation = transform.getRotation(MutableVec4f())
+        this.rotation = transform.getRotation(MutableQuatF())
     }
 
     open fun attachShape(shape: Shape) {

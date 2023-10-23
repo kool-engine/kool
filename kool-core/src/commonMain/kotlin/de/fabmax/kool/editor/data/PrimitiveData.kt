@@ -15,7 +15,7 @@ data class TransformData(
 ) {
     constructor(matrix: Mat4d): this(
         position = Vec3Data(matrix.getOrigin(MutableVec3d())),
-        rotation = Vec4Data(matrix.getRotation(MutableVec4d())),
+        rotation = Vec4Data(matrix.getRotation(MutableQuatD())),
         scale = Vec3Data(matrix.getScale(MutableVec3d()))
     )
 
@@ -23,7 +23,7 @@ data class TransformData(
         if (result is TrsTransform) {
             result
                 .setPosition(position.toVec3d())
-                .setRotation(rotation.toVec4d())
+                .setRotation(rotation.toQuatD())
                 .setScale(scale.toVec3d())
         } else {
             toMat4d(result.matrix)
@@ -98,12 +98,22 @@ data class Vec4Data(val x: Double, val y: Double, val z: Double, val w: Double) 
     constructor(vec: Vec4d): this(vec.x, vec.y, vec.z, vec.w)
     constructor(vec: Vec4f): this(vec.x.toDouble(), vec.y.toDouble(), vec.z.toDouble(), vec.w.toDouble())
     constructor(vec: Vec4i): this(vec.x.toDouble(), vec.y.toDouble(), vec.z.toDouble(), vec.w.toDouble())
+    constructor(quat: QuatF): this(quat.x.toDouble(), quat.y.toDouble(), quat.z.toDouble(), quat.w.toDouble())
+    constructor(quat: QuatD): this(quat.x, quat.y, quat.z, quat.w)
 
     fun toVec4f(result: MutableVec4f = MutableVec4f()): MutableVec4f {
         return result.set(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
     }
 
     fun toVec4d(result: MutableVec4d = MutableVec4d()): MutableVec4d {
+        return result.set(x, y, z, w)
+    }
+
+    fun toQuatF(result: MutableQuatF = MutableQuatF()): MutableQuatF {
+        return result.set(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
+    }
+
+    fun toQuatD(result: MutableQuatD = MutableQuatD()): MutableQuatD {
         return result.set(x, y, z, w)
     }
 

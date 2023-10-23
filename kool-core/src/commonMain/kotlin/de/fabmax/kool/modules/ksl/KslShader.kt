@@ -261,6 +261,8 @@ open class KslShader(val program: KslProgram, val pipelineConfig: PipelineConfig
         UniformInput4f(uniformName, defaultVal ?: Vec4f.ZERO).also { connectUniformListeners += it }
     protected fun uniformColor(uniformName: String?, defaultVal: Color? = null): UniformInputColor =
         UniformInputColor(uniformName, defaultVal ?: Color.BLACK).also { connectUniformListeners += it }
+    protected fun uniformQuat(uniformName: String?, defaultVal: QuatF? = null): UniformInputQuat =
+        UniformInputQuat(uniformName, defaultVal ?: QuatF.IDENTITY).also { connectUniformListeners += it }
 
     protected fun uniform1i(uniformName: String?, defaultVal: Int? = null): UniformInput1i =
         UniformInput1i(uniformName, defaultVal ?: 0).also { connectUniformListeners += it }
@@ -378,6 +380,25 @@ open class KslShader(val program: KslProgram, val pipelineConfig: PipelineConfig
             val u = uniform?.value
             if (u != null) {
                 u.set(value.r, value.g, value.b, value.a)
+            } else {
+                buffer.set(value)
+            }
+        }
+    }
+
+    inner class UniformInputQuat(val uniformName: String?, defaultVal: QuatF) : ConnectUniformListener {
+        var uniform: Uniform4f? = null
+        val buffer = MutableQuatF(defaultVal)
+        override val isConnected: Boolean = uniform != null
+        override fun connect() { uniform = (uniforms[uniformName] as? Uniform4f)?.apply { value.set(buffer.x, buffer.y, buffer.z, buffer.w) } }
+        operator fun getValue(thisRef: Any?, property: KProperty<*>): QuatF {
+            uniform?.value?.let { buffer.set(it.x, it.y, it.z, it.w) }
+            return buffer
+        }
+        operator fun setValue(thisRef: Any?, property: KProperty<*>, value: QuatF) {
+            val u = uniform?.value
+            if (u != null) {
+                u.set(value.x, value.y, value.z, value.w)
             } else {
                 buffer.set(value)
             }

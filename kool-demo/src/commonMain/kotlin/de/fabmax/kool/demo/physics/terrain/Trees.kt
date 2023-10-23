@@ -169,7 +169,7 @@ class Trees(val terrain: Terrain, nTrees: Int, val wind: Wind, val sky: Sky) {
         val physicsBody: RigidStatic = RigidStatic().apply {
             attachShape(Shape(physicsGeometry, Physics.defaultMaterial))
             position = pose.transform(MutableVec3f())
-            rotation = pose.getRotation(MutableVec4f())
+            rotation = pose.getRotation(MutableQuatF())
         }
     }
 }

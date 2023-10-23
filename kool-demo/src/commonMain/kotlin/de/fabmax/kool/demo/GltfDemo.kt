@@ -458,7 +458,7 @@ class GltfDemo : DemoScene("glTF Models") {
 
             // move model according to animation speed
             model.transform.setIdentity()
-            position.set(radius, 0.0, 0.0).rotate(angle.deg, Vec3d.Y_AXIS)
+            position.set(radius, 0.0, 0.0).rotate(angle.rad, Vec3d.Y_AXIS)
             model.transform.translate(position)
             model.transform.rotate(angle.toDeg() + 180, Vec3d.Y_AXIS)
             model.transform.scale(0.01)

@@ -94,12 +94,17 @@ tasks.register<GenerateVariantsFromFloatPrototype>("generateDoubleAndIntVariants
 
 tasks.register<GenerateVariantsFromFloatPrototype>("generateDoubleOnlyVariants") {
     generateIntTypes = false
-    filesToUpdate = listOf(
-        kotlin.sourceSets.findByName("commonMain")?.kotlin
-            ?.sourceDirectories
-            ?.map { File(it, "de/fabmax/kool/math/Angle.kt") }
-            ?.find { it.exists() }?.absolutePath ?: ""
-    )
+    filesToUpdate = kotlin.sourceSets.findByName("commonMain")?.kotlin
+        ?.sourceDirectories
+        ?.flatMap {
+            listOf(
+                File(it, "de/fabmax/kool/math/Angle.kt"),
+                File(it, "de/fabmax/kool/math/Quat.kt"),
+            )
+        }
+        ?.filter { it.exists() }
+        ?.map { it.absolutePath }
+        ?: emptyList()
 }
 
 tasks.register("generateTypeVariants") {

@@ -35,6 +35,7 @@ class Gizmo : Node(), InputStack.PointerListener {
     private val tmpMat4 = Mat4d()
     private val tmpMat3 = Mat3f()
     private val tmpVec4d = MutableVec4d()
+    private val tmpQuatD = MutableQuatD()
 
     private val dragGroup = Node()
     private val scaleGroup = Node()
@@ -185,8 +186,8 @@ class Gizmo : Node(), InputStack.PointerListener {
         return getGizmoTransform(tmpMat4).getRotation(tmpMat3).getEulerAngles(result)
     }
 
-    fun getQuatRotation(result: MutableVec4f): MutableVec4f {
-        return getGizmoTransform(tmpMat4).getRotation(tmpVec4d).toMutableVec4f(result)
+    fun getQuatRotation(result: MutableQuatF): MutableQuatF {
+        return getGizmoTransform(tmpMat4).getRotation(tmpQuatD).toMutableQuatF(result)
     }
 
     fun setGizmoTransform(transformMatrix: Mat4d) {
