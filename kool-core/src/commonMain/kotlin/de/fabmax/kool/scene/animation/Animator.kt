@@ -121,7 +121,7 @@ class InterpolatedColor(var from: MutableColor, var to: MutableColor) : Interpol
     }
 
     override fun updateValue(interpolationPos: Float) {
-        value.set(to).subtract(from).scale(interpolationPos).add(from)
+        from.mix(to, interpolationPos, value)
     }
 }
 

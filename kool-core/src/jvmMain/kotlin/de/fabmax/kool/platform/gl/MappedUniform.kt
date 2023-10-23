@@ -24,7 +24,6 @@ interface MappedUniform {
                 is Uniform2fv -> MappedUniform2fv(uniform, location)
                 is Uniform3fv -> MappedUniform3fv(uniform, location)
                 is Uniform4fv -> MappedUniform4fv(uniform, location)
-                is UniformColor -> MappedUniformColor(uniform, location)
                 is UniformMat3f -> MappedUniformMat3f(uniform, location)
                 is UniformMat3fv -> MappedUniformMat3fv(uniform, location)
                 is UniformMat4f -> MappedUniformMat4f(uniform, location)
@@ -137,13 +136,6 @@ class MappedUniform4fv(val uniform: Uniform4fv, val location: Int) : MappedUnifo
             buffer[j++] = uniform.value[i].w
         }
         glUniform4fv(location, buffer.buffer)
-        return true
-    }
-}
-
-class MappedUniformColor(val uniform: UniformColor, val location: Int) : MappedUniform {
-    override fun setUniform(ctx: Lwjgl3Context): Boolean {
-        glUniform4f(location, uniform.value.x, uniform.value.y, uniform.value.z, uniform.value.w)
         return true
     }
 }

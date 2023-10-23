@@ -1,19 +1,19 @@
 package de.fabmax.kool.modules.ksl
 
-import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.modules.ksl.blocks.*
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.BlendMode
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.shading.AlphaMode
+import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.copy
 
 open class KslUnlitShader(cfg: UnlitShaderConfig, model: KslProgram = Model(cfg)) : KslShader(model, cfg.pipelineCfg) {
 
     constructor(block: UnlitShaderConfig.() -> Unit) : this(UnlitShaderConfig().apply(block))
 
-    var color: Vec4f by colorUniform(cfg.colorCfg)
+    var color: Color by colorUniform(cfg.colorCfg)
     var colorMap: Texture2d? by colorTexture(cfg.colorCfg)
 
     val colorCfg = ColorBlockConfig(cfg.colorCfg.colorName, cfg.colorCfg.colorSources.copy().toMutableList())

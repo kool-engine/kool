@@ -1,6 +1,5 @@
 package de.fabmax.kool.modules.ksl
 
-import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.modules.ksl.blocks.*
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.Texture2d
@@ -16,7 +15,7 @@ open class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : Ks
     var specularStrength: Float by propertyUniform(cfg.shininessCfg)
     var specularStrengthMap: Texture2d? by propertyTexture(cfg.specularStrengthCfg)
 
-    var specularColor: Vec4f by uniform4f("uSpecularColor", cfg.specularColor)
+    var specularColor: Color by uniformColor("uSpecularColor", cfg.specularColor)
 
     val shininessCfg = PropertyBlockConfig(cfg.shininessCfg.propertyName, cfg.shininessCfg.propertySources.copy().toMutableList())
     val specularStrengthCfg = PropertyBlockConfig(cfg.specularStrengthCfg.propertyName, cfg.specularStrengthCfg.propertySources.copy().toMutableList())

@@ -51,7 +51,7 @@ class SkyCubePass(opticalDepthLut: Texture2d, size: Int = 256) :
     private val lightGradient = ColorGradient(
             -90f to Color.BLACK,
             -2f to Color.BLACK,
-            0f to MdColor.ORANGE.mix(Color.WHITE, 0.6f).toLinear().scale(0.7f),
+            0f to MdColor.ORANGE.mix(Color.WHITE, 0.6f).toLinear().mulRgb(0.7f),
             5f to MdColor.AMBER.mix(Color.WHITE, 0.6f).toLinear(),
             10f to Color.WHITE,
             90f to Color.WHITE,
@@ -132,7 +132,7 @@ class SkyCubePass(opticalDepthLut: Texture2d, size: Int = 256) :
     }
 
     companion object {
-        private val nightSkyColor = Color(0.02f, 0.07f, 0.15f).scaleRgb(1.5f, MutableColor()).toLinear()
+        private val nightSkyColor = Color(0.02f, 0.07f, 0.15f).mulRgb(1.5f, MutableColor()).toLinear()
     }
 
     private class SkyShader(opticalDepthLut: Texture2d)
@@ -141,7 +141,7 @@ class SkyCubePass(opticalDepthLut: Texture2d, size: Int = 256) :
         var opticalDepthLut by texture2d("tOpticalDepthLut", opticalDepthLut)
 
         var dirToSun by uniform3f("uDirToSun")
-        var sunColor by uniform4f("uSunColor")
+        var sunColor by uniformColor("uSunColor")
 
         var planetCenter by uniform3f("uPlanetCenter", Vec3f(0f, -60f, 0f))
         var surfaceRadius by uniform1f("uSurfaceRadius", 60f)

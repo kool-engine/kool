@@ -139,8 +139,8 @@ class GridOverlay : Node("Grid overlay") {
         var scale by uniform2f("uScale", Vec2f(1f, 1f))
         var posOffset by uniform3f("uPosOffset", Vec3f.ZERO)
 
-        var lineColor by uniform4f("uLineColor", Color.LIGHT_GRAY.withAlpha(0.4f))
-        var superTickColor by uniform4f("uSuperTickColor")
+        var lineColor by uniformColor("uLineColor", Color.LIGHT_GRAY.withAlpha(0.4f))
+        var superTickColor by uniformColor("uSuperTickColor")
         var majorWeight by uniform1f("uMajorWeight", 0.5f)
     }
 }

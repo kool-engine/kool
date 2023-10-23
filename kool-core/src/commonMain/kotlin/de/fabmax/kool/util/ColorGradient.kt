@@ -34,7 +34,7 @@ class ColorGradient(vararg colors: Pair<Float, Color>, n: Int = DEFAULT_N, toLin
                 p1 = colors[min(pi++, colors.size)]
             }
             val w0 = 1f - (p - p0.first) / (p1.first - p0.first)
-            gradient[i].set(p0.second).scale(w0).add(p1.second, 1f - w0)
+            p1.second.mix(p0.second, w0, gradient[i])
             if (toLinear) {
                 gradient[i] = gradient[i].toLinear()
             }
@@ -52,14 +52,7 @@ class ColorGradient(vararg colors: Pair<Float, Color>, n: Int = DEFAULT_N, toLin
         val iLower = fi.toInt().clamp(0, gradient.size - 1)
         val iUpper = (iLower + 1).clamp(0, gradient.size - 1)
         val wUpper = iUpper - fi
-        val wLower = 1f - wUpper
-        val cUpper = gradient[iUpper]
-        result.set(gradient[iLower]).scale(wLower)
-        result.r += cUpper.r * wUpper
-        result.g += cUpper.g * wUpper
-        result.b += cUpper.b * wUpper
-        result.a += cUpper.a * wUpper
-        return result
+        return gradient[iLower].mix(gradient[iUpper], wUpper, result)
     }
 
     fun inverted(): ColorGradient {

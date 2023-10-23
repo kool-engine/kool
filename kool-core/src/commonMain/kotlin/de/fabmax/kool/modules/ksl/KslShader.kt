@@ -7,6 +7,8 @@ import de.fabmax.kool.modules.ksl.blocks.PropertyBlockConfig
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.MutableColor
 import kotlin.reflect.KProperty
 
 open class KslShader(val program: KslProgram, val pipelineConfig: PipelineConfig) : Shader() {
@@ -257,6 +259,8 @@ open class KslShader(val program: KslProgram, val pipelineConfig: PipelineConfig
         UniformInput3f(uniformName, defaultVal ?: Vec3f.ZERO).also { connectUniformListeners += it }
     protected fun uniform4f(uniformName: String?, defaultVal: Vec4f? = null): UniformInput4f =
         UniformInput4f(uniformName, defaultVal ?: Vec4f.ZERO).also { connectUniformListeners += it }
+    protected fun uniformColor(uniformName: String?, defaultVal: Color? = null): UniformInputColor =
+        UniformInputColor(uniformName, defaultVal ?: Color.BLACK).also { connectUniformListeners += it }
 
     protected fun uniform1i(uniformName: String?, defaultVal: Int? = null): UniformInput1i =
         UniformInput1i(uniformName, defaultVal ?: 0).also { connectUniformListeners += it }
@@ -313,8 +317,8 @@ open class KslShader(val program: KslProgram, val pipelineConfig: PipelineConfig
     protected fun textureCubeArray(uniformName: String?, arraySize: Int): UniformInputTextureArrayCube =
         UniformInputTextureArrayCube(uniformName, arraySize).also { connectUniformListeners += it }
 
-    protected fun colorUniform(cfg: ColorBlockConfig): KslShader.UniformInput4f =
-        uniform4f(cfg.primaryUniform?.uniformName, cfg.primaryUniform?.defaultColor)
+    protected fun colorUniform(cfg: ColorBlockConfig): KslShader.UniformInputColor =
+        uniformColor(cfg.primaryUniform?.uniformName, cfg.primaryUniform?.defaultColor)
     protected fun colorTexture(cfg: ColorBlockConfig): KslShader.UniformInputTexture2d =
         texture2d(cfg.primaryTexture?.textureName, cfg.primaryTexture?.defaultTexture)
 
@@ -352,13 +356,32 @@ open class KslShader(val program: KslProgram, val pipelineConfig: PipelineConfig
         operator fun setValue(thisRef: Any?, property: KProperty<*>, value: Vec3f) = (uniform?.value ?: buffer).set(value)
     }
 
-    protected inner class UniformInput4f(val uniformName: String?, defaultVal: Vec4f) : ConnectUniformListener {
-        private var uniform: Uniform4f? = null
-        private val buffer = MutableVec4f(defaultVal)
+    inner class UniformInput4f(val uniformName: String?, defaultVal: Vec4f) : ConnectUniformListener {
+        var uniform: Uniform4f? = null
+        val buffer = MutableVec4f(defaultVal)
         override val isConnected: Boolean = uniform != null
         override fun connect() { uniform = (uniforms[uniformName] as? Uniform4f)?.apply { value.set(buffer) } }
         operator fun getValue(thisRef: Any?, property: KProperty<*>): Vec4f = uniform?.value ?: buffer
         operator fun setValue(thisRef: Any?, property: KProperty<*>, value: Vec4f) = (uniform?.value ?: buffer).set(value)
+    }
+
+    inner class UniformInputColor(val uniformName: String?, defaultVal: Color) : ConnectUniformListener {
+        var uniform: Uniform4f? = null
+        val buffer = MutableColor(defaultVal)
+        override val isConnected: Boolean = uniform != null
+        override fun connect() { uniform = (uniforms[uniformName] as? Uniform4f)?.apply { value.set(buffer.r, buffer.g, buffer.b, buffer.a) } }
+        operator fun getValue(thisRef: Any?, property: KProperty<*>): Color {
+            uniform?.value?.let { buffer.set(it.x, it.y, it.z, it.w) }
+            return buffer
+        }
+        operator fun setValue(thisRef: Any?, property: KProperty<*>, value: Color) {
+            val u = uniform?.value
+            if (u != null) {
+                u.set(value.r, value.g, value.b, value.a)
+            } else {
+                buffer.set(value)
+            }
+        }
     }
 
     protected inner class UniformInput1i(val uniformName: String?, defaultVal: Int) : ConnectUniformListener {

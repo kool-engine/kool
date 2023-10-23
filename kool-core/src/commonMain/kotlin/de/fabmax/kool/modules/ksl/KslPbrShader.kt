@@ -2,6 +2,7 @@ package de.fabmax.kool.modules.ksl
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec2f
+import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.modules.ksl.blocks.*
 import de.fabmax.kool.modules.ksl.lang.*
@@ -10,7 +11,6 @@ import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.TextureCube
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.copy
 
 open class KslPbrShader(cfg: Config, model: KslProgram = Model(cfg)) : KslLitShader(cfg, model) {
@@ -25,7 +25,7 @@ open class KslPbrShader(cfg: Config, model: KslProgram = Model(cfg)) : KslLitSha
 
     val reflectionMaps: Array<TextureCube?> by textureCubeArray("tReflectionMaps", 2)
     var reflectionMapWeights: Vec2f by uniform2f("uReflectionWeights")
-    var reflectionStrength: Vec4f by uniform4f("uReflectionStrength", cfg.reflectionStrength)
+    var reflectionStrength: Vec4f by uniform4f("uReflectionStrength", Vec4f(cfg.reflectionStrength, 0f))
 
     var brdfLut: Texture2d? by texture2d("tBrdfLut")
 
@@ -56,7 +56,7 @@ open class KslPbrShader(cfg: Config, model: KslProgram = Model(cfg)) : KslLitSha
         val roughnessCfg = PropertyBlockConfig("roughness").apply { constProperty(0.5f) }
 
         var isTextureReflection = false
-        var reflectionStrength = Color.WHITE
+        var reflectionStrength = Vec3f.ONES
         var reflectionMap: TextureCube? = null
             set(value) {
                 field = value

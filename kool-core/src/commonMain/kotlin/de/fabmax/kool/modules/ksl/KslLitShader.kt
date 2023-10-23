@@ -2,7 +2,6 @@ package de.fabmax.kool.modules.ksl
 
 import de.fabmax.kool.math.Mat3f
 import de.fabmax.kool.math.Vec2f
-import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.modules.ksl.blocks.*
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.Attribute
@@ -15,7 +14,7 @@ import de.fabmax.kool.util.copy
 
 abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader(model, cfg.pipelineCfg) {
 
-    var color: Vec4f by colorUniform(cfg.colorCfg)
+    var color: Color by colorUniform(cfg.colorCfg)
     var colorMap: Texture2d? by colorTexture(cfg.colorCfg)
 
     var normalMap: Texture2d? by texture2d(
@@ -24,7 +23,7 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
     )
     var normalMapStrength: Float by propertyUniform(cfg.normalMapCfg.strengthCfg)
 
-    var emission: Vec4f by colorUniform(cfg.emissionCfg)
+    var emission: Color by colorUniform(cfg.emissionCfg)
     var emissionMap: Texture2d? by colorTexture(cfg.emissionCfg)
 
     var ssaoMap: Texture2d? by texture2d("tSsaoMap", cfg.aoCfg.defaultSsaoMap)
@@ -34,7 +33,7 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
     var displacement: Float by propertyUniform(cfg.vertexCfg.displacementCfg)
     var displacementMap: Texture2d? by propertyTexture(cfg.vertexCfg.displacementCfg)
 
-    var ambientFactor: Vec4f by uniform4f("uAmbientColor")
+    var ambientFactor: Color by uniformColor("uAmbientColor")
     var ambientMapOrientation: Mat3f by uniformMat3f("uAmbientTextureOri", Mat3f().setIdentity())
     // if ambient color is image based
     var ambientMap: TextureCube? by textureCube("tAmbientTexture")

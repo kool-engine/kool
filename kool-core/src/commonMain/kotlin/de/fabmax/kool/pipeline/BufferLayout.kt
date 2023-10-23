@@ -67,7 +67,6 @@ class Std140BufferLayout(uniforms: List<Uniform<*>>) : BufferLayout(uniforms) {
                 is Uniform2f -> 8
                 is Uniform3f -> 12
                 is Uniform4f -> 16
-                is UniformColor -> 16
                 is Uniform1fv -> 16 * u.size
                 is Uniform3fv -> 16 * u.size
                 is Uniform2fv -> 16 * u.size

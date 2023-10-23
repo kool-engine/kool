@@ -7,7 +7,6 @@ import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.model.NodeModel
 import de.fabmax.kool.editor.model.SceneModel
 import de.fabmax.kool.math.Vec2f
-import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.modules.ksl.lang.*
@@ -163,13 +162,13 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
 
     companion object {
         private const val defaultMaxNumberOfJoints = 16
-        private val selectionColors = (1..255).map { Vec4f(it/255f, 0f, 0f, 1f) }
+        private val selectionColors = (1..255).map { Color(it/255f, 0f, 0f, 1f) }
     }
 
     private data class ShaderAndPipeline(val shader: KslUnlitShader, val pipeline: Pipeline)
 
     private class SelectionOutlineShader(selectionMask: Texture2d?) : KslShader(Model(), pipelineCfg) {
-        var outlineColor by uniform4f("uOutlineColor", Color.WHITE)
+        var outlineColor by uniformColor("uOutlineColor", Color.WHITE)
 
         init {
             texture2d("tSelectionMask", selectionMask)

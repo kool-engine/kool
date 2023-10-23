@@ -1,9 +1,7 @@
 package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.math.*
-import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MixedBuffer
-import de.fabmax.kool.util.MutableColor
 
 sealed class Uniform<T>(
     var value: T,
@@ -85,18 +83,6 @@ class Uniform3f(name: String) : Uniform<MutableVec3f>(MutableVec3f(), name) {
 
 class Uniform4f(name: String) : Uniform<MutableVec4f>(MutableVec4f(), name) {
     constructor(initValue: Vec4f, name: String) : this(name) {
-        value.set(initValue)
-    }
-
-    override fun putToBuffer(buffer: MixedBuffer, len: Int) {
-        checkLen(16, len)
-        value.putTo(buffer)
-        putPadding(buffer, len - 16)
-    }
-}
-
-class UniformColor(name: String) : Uniform<MutableColor>(MutableColor(), name) {
-    constructor(initValue: Color, name: String) : this(name) {
         value.set(initValue)
     }
 

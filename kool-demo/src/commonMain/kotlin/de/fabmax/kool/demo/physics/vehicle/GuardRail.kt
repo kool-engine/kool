@@ -220,7 +220,7 @@ class GuardRail {
                     vertices { isInstanced = true }
                     color { vertexColor() }
                     emission {
-                        constColor(VehicleDemo.color(500, false).scaleRgb(10f))
+                        constColor(VehicleDemo.color(500, false).mulRgb(10f))
                     }
 
                     modelCustomizer = {

@@ -363,7 +363,7 @@ open class BoundingBox() {
             tmin = tzmin
         }
 
-        if (tmin > 0) {
+        return if (tmin > 0) {
             // hit! calculate square distance between ray origin and hit point
             var comp = ray.direction.x * tmin
             var dist = comp * comp
@@ -371,10 +371,10 @@ open class BoundingBox() {
             dist += comp * comp
             comp = ray.direction.z * tmin
             dist += comp * comp
-            return dist / ray.direction.sqrLength()
+            dist / ray.direction.sqrLength()
         } else {
             // no intersection: box is behind ray
-            return Float.MAX_VALUE
+            Float.MAX_VALUE
         }
     }
 

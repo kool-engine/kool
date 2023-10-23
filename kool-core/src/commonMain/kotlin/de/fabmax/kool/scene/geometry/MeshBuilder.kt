@@ -911,25 +911,25 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
                     set(lt, yBot, 0f)
                     texCoord.set(g.atlasBounds.left * us, 1f - g.atlasBounds.bottom * vs)
                     msdfProps?.set(pxRange, font.weight, font.cutoff, 0f)
-                    font.glowColor?.let { glowColor?.set(it) }
+                    glowColor?.let { font.glowColor?.toMutableVec4f(it) }
                 }
                 val iBtRt = vertex {
                     set(lt + w, yBot, 0f)
                     texCoord.set(g.atlasBounds.right * us, 1f - g.atlasBounds.bottom * vs)
                     msdfProps?.set(pxRange, font.weight, font.cutoff, 0f)
-                    font.glowColor?.let { glowColor?.set(it) }
+                    glowColor?.let { font.glowColor?.toMutableVec4f(it) }
                 }
                 val iTpLt = vertex {
                     set(lt - h * font.italic, yBot + h, 0f)
                     texCoord.set(g.atlasBounds.left * us, 1f - g.atlasBounds.top * vs)
                     msdfProps?.set(pxRange, font.weight, font.cutoff, 0f)
-                    font.glowColor?.let { glowColor?.set(it) }
+                    glowColor?.let { font.glowColor?.toMutableVec4f(it) }
                 }
                 val iTpRt = vertex {
                     set(lt + w - h * font.italic, yBot + h, 0f)
                     texCoord.set(g.atlasBounds.right * us, 1f - g.atlasBounds.top * vs)
                     msdfProps?.set(pxRange, font.weight, font.cutoff, 0f)
-                    font.glowColor?.let { glowColor?.set(it) }
+                    glowColor?.let { font.glowColor?.toMutableVec4f(it) }
                 }
                 addTriIndices(iBtLt, iBtRt, iTpRt)
                 addTriIndices(iBtLt, iTpRt, iTpLt)

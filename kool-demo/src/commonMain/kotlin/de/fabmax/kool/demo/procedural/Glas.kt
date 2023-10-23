@@ -49,7 +49,7 @@ class Glas(val ibl: EnvironmentMaps, shadowMap: SimpleShadowMap) : Node(), Defer
             reflectionMap = ibl.reflectionMap
             roughness(0f)
             alphaMode = AlphaMode.Blend
-            reflectionStrength = Color(0.3f, 0.3f, 0.3f)
+            reflectionStrength = Vec3f(0.3f, 0.3f, 0.3f)
         }
     }
 

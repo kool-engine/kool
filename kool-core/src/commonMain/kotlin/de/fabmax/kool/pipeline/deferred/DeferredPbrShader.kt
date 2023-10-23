@@ -1,6 +1,5 @@
 package de.fabmax.kool.pipeline.deferred
 
-import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.blocks.*
@@ -9,6 +8,7 @@ import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.BlendMode
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.shading.AlphaMode
+import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.logE
 
 inline fun deferredKslPbrShader(block: DeferredKslPbrShader.Config.() -> Unit): DeferredKslPbrShader {
@@ -23,7 +23,7 @@ inline fun deferredKslPbrShader(block: DeferredKslPbrShader.Config.() -> Unit): 
  */
 open class DeferredKslPbrShader(cfg: Config) : KslShader(deferredPbrModel(cfg), cfg.pipelineCfg) {
 
-    var color: Vec4f by colorUniform(cfg.colorCfg)
+    var color: Color by colorUniform(cfg.colorCfg)
     var colorMap: Texture2d? by colorTexture(cfg.colorCfg)
 
     var normalMap: Texture2d? by texture2d(cfg.normalMapCfg.normalMapName, cfg.normalMapCfg.defaultNormalMap)
@@ -32,7 +32,7 @@ open class DeferredKslPbrShader(cfg: Config) : KslShader(deferredPbrModel(cfg), 
     var displacement: Float by propertyUniform(cfg.vertexCfg.displacementCfg)
     var displacementMap: Texture2d? by propertyTexture(cfg.vertexCfg.displacementCfg)
 
-    var emission: Vec4f by colorUniform(cfg.emissionCfg)
+    var emission: Color by colorUniform(cfg.emissionCfg)
     var emissionMap: Texture2d? by colorTexture(cfg.emissionCfg)
 
     var materialAo: Float by propertyUniform(cfg.aoCfg.materialAo)

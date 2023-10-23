@@ -3,6 +3,7 @@ package de.fabmax.kool.modules.ksl.lang
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ksl.model.KslOp
 import de.fabmax.kool.modules.ksl.model.KslScope
+import de.fabmax.kool.util.Color
 
 class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val parentStage: KslShaderStage) : KslScope(parentOp) {
 
@@ -89,6 +90,8 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
         get() = float3Value(x, y, z)
     val Vec4f.const: KslValueFloat4
         get() = float4Value(x, y, z, w)
+    val Color.const: KslValueFloat4
+        get() = float4Value(r, g, b, a)
 
     val Vec2i.const: KslValueInt2
         get() = int2Value(x, y)

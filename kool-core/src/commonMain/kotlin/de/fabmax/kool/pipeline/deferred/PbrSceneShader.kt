@@ -36,7 +36,7 @@ open class PbrSceneShader(cfg: DeferredPbrConfig, model: Model = Model(cfg)) :
     var colorMetallic by texture2d("colorMetallic")
     var emissiveAo by texture2d("emissiveAo")
 
-    var ambientFactor: Vec4f by uniform4f("uAmbientColor")
+    var ambientFactor: Color by uniformColor("uAmbientColor")
     var ambientMapOrientation: Mat3f by uniformMat3f("uAmbientTextureOri", Mat3f().setIdentity())
     // if ambient color is image based
     var ambientMap: TextureCube? by textureCube("tAmbientTexture")
@@ -50,7 +50,7 @@ open class PbrSceneShader(cfg: DeferredPbrConfig, model: Model = Model(cfg)) :
 
     val reflectionMaps: Array<TextureCube?> by textureCubeArray("tReflectionMaps", 2)
     var reflectionMapWeights: Vec2f by uniform2f("uReflectionWeights")
-    var reflectionStrength: Vec4f by uniform4f("uReflectionStrength", cfg.reflectionStrength)
+    var reflectionStrength: Vec4f by uniform4f("uReflectionStrength", Vec4f(cfg.reflectionStrength, 0f))
     var brdfLut: Texture2d? by texture2d("tBrdfLut")
 
     var reflectionMap: TextureCube?
@@ -239,7 +239,7 @@ open class PbrSceneShader(cfg: DeferredPbrConfig, model: Model = Model(cfg)) :
 
         var ambientColor: KslLitShader.AmbientColor = KslLitShader.AmbientColor.Uniform(Color(0.2f, 0.2f, 0.2f).toLinear())
         var isTextureReflection = false
-        var reflectionStrength = Color.WHITE
+        var reflectionStrength = Vec3f.ONES
         var reflectionMap: TextureCube? = null
             set(value) {
                 field = value

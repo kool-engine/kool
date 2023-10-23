@@ -1,24 +1,15 @@
 package de.fabmax.kool.util
 
-import de.fabmax.kool.math.Vec4f
-import de.fabmax.kool.math.clamp
-import de.fabmax.kool.math.toDeg
-import de.fabmax.kool.math.toRad
+import de.fabmax.kool.math.*
 import kotlin.math.*
 
 /**
  * @author fabmax
  */
 
-@Suppress("unused")
-open class Color(r: Float, g: Float, b: Float, a: Float = 1f) : Vec4f(r, g, b, a) {
+open class Color(open val r: Float, open val g: Float, open val b: Float, open val a: Float = 1f) {
 
     constructor(other: Color) : this(other.r, other.g, other.b, other.a)
-
-    open val r get() = x
-    open val g get() = y
-    open val b get() = z
-    open val a get() = w
 
     val brightness: Float
         get() = 0.299f * r + 0.587f * g + 0.114f * b
@@ -31,8 +22,8 @@ open class Color(r: Float, g: Float, b: Float, a: Float = 1f) : Vec4f(r, g, b, a
         return result
     }
 
-    fun scaleRgb(factor : Float, result: MutableColor = MutableColor()): MutableColor {
-        return result.set(this).scaleRgb(factor)
+    fun mulRgb(factor: Float, result: MutableColor = MutableColor()): MutableColor {
+        return result.set(this).mulRgb(factor)
     }
 
     fun withAlpha(alpha: Float): MutableColor {
@@ -50,9 +41,6 @@ open class Color(r: Float, g: Float, b: Float, a: Float = 1f) : Vec4f(r, g, b, a
     fun gamma(gamma: Float, result: MutableColor = MutableColor()): MutableColor {
         return result.set(r.pow(gamma), g.pow(gamma), b.pow(gamma), a)
     }
-
-    @Deprecated("Use brightness instead", replaceWith = ReplaceWith("brightness"))
-    fun toGray(): Float = brightness
 
     /**
      * Translates this color from Srgb into HSV color space.
@@ -114,15 +102,59 @@ open class Color(r: Float, g: Float, b: Float, a: Float = 1f) : Vec4f(r, g, b, a
         return if (inclAlpha) "$hr$hg$hb$ha" else "$hr$hg$hb"
     }
 
+    fun toVec4f(): Vec4f = Vec4f(r, g, b, a)
+
+    fun toMutableVec4f(result: MutableVec4f = MutableVec4f()): MutableVec4f = result.set(r, g, b, a)
+
+    override fun toString(): String = "($r, $g, $b, $a)"
+
+    /**
+     * Checks vector components for equality (using '==' operator). For better numeric stability consider using
+     * [isFuzzyEqual].
+     */
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Color) return false
+        return r == other.r && g == other.g && b == other.b && a == other.a
+    }
+
+    override fun hashCode(): Int {
+        var result = r.hashCode()
+        result = 31 * result + g.hashCode()
+        result = 31 * result + b.hashCode()
+        result = 31 * result + a.hashCode()
+        return result
+    }
+
+    /**
+     * Appends the components of this [Vec4f] to the given [Float32Buffer].
+     */
+    fun putTo(target: Float32Buffer) {
+        target.put(r)
+        target.put(g)
+        target.put(b)
+        target.put(a)
+    }
+
+    /**
+     * Appends the components of this [Vec4f] to the given [MixedBuffer].
+     */
+    fun putTo(target: MixedBuffer) {
+        target.putFloat32(r)
+        target.putFloat32(g)
+        target.putFloat32(b)
+        target.putFloat32(a)
+    }
+
     companion object {
         const val GAMMA_sRGB_TO_LINEAR = 2.2f
         const val GAMMA_LINEAR_TO_sRGB = 1f / 2.2f
 
-        val BLACK = Color(0.00f, 0.00f, 0.00f, 1.00f)
-        val DARK_GRAY = Color(0.25f, 0.25f, 0.25f, 1.00f)
-        val GRAY = Color(0.50f, 0.50f, 0.50f, 1.00f)
-        val LIGHT_GRAY = Color(0.75f, 0.75f, 0.75f, 1.00f)
-        val WHITE = Color(1.00f, 1.00f, 1.00f, 1.00f)
+        val BLACK = Color(0.0f, 0.0f, 0.0f, 1.0f)
+        val DARK_GRAY = Color(0.25f, 0.25f, 0.25f, 1.0f)
+        val GRAY = Color(0.5f, 0.5f, 0.5f, 1.0f)
+        val LIGHT_GRAY = Color(0.75f, 0.75f, 0.75f, 1.0f)
+        val WHITE = Color(1.0f, 1.0f, 1.0f, 1.0f)
 
         val RED = Color(1.0f, 0.0f, 0.0f, 1.0f)
         val GREEN = Color(0.0f, 1.0f, 0.0f, 1.0f)
@@ -148,9 +180,6 @@ open class Color(r: Float, g: Float, b: Float, a: Float = 1f) : Vec4f(r, g, b, a
         val DARK_CYAN = Color(0.0f, 0.5f, 0.5f, 1.0f)
         val DARK_MAGENTA = Color(0.5f, 0.0f, 0.5f, 1.0f)
         val DARK_ORANGE = Color(0.5f, 0.25f, 0.0f, 1.0f)
-
-        @Deprecated("Use Hsv.toSrgb() instead", ReplaceWith("Hsv(h, s, v).toSrgb(a = a)"))
-        fun fromHsv(h: Float, s: Float, v: Float, a: Float): Color = Hsv(h, s, v).toSrgb(a = a)
 
         fun fromHex(hex: String): Color {
             if (hex.isEmpty()) {
@@ -361,65 +390,8 @@ fun Color(hex: String): Color = Color.fromHex(hex)
 
 open class MutableColor(override var r: Float, override var g: Float, override var b: Float, override var a: Float) : Color(r, g, b, a) {
 
-    override var x
-        get() = r
-        set(value) { r = value }
-    override var y
-        get() = g
-        set(value) { g = value }
-    override var z
-        get() = b
-        set(value) { b = value }
-    override var w
-        get() = a
-        set(value) { a = value }
-
     constructor() : this(0f, 0f, 0f, 1f)
     constructor(color: Color) : this(color.r, color.g, color.b, color.a)
-
-    fun add(other: Vec4f): MutableColor {
-        r += other.x
-        g += other.y
-        b += other.z
-        a += other.w
-        return this
-    }
-
-    fun add(other: Vec4f, weight: Float): MutableColor {
-        r += other.x * weight
-        g += other.y * weight
-        b += other.z * weight
-        a += other.w * weight
-        return this
-    }
-
-    fun subtract(other: Vec4f): MutableColor {
-        r -= other.x
-        g -= other.y
-        b -= other.z
-        a -= other.w
-        return this
-    }
-
-    fun scale(factor : Float): MutableColor {
-        r *= factor
-        g *= factor
-        b *= factor
-        a *= factor
-        return this
-    }
-
-    fun scaleRgb(factor : Float): MutableColor {
-        r *= factor
-        g *= factor
-        b *= factor
-        return this
-    }
-
-    fun clear(): MutableColor {
-        set(0f, 0f, 0f, 0f)
-        return this
-    }
 
     fun set(r: Float, g: Float, b: Float, a: Float): MutableColor {
         this.r = r
@@ -429,11 +401,26 @@ open class MutableColor(override var r: Float, override var g: Float, override v
         return this
     }
 
-    fun set(other: Vec4f): MutableColor {
-        r = other.x
-        g = other.y
-        b = other.z
-        a = other.w
+    fun set(other: Color): MutableColor {
+        r = other.r
+        g = other.g
+        b = other.b
+        a = other.a
+        return this
+    }
+
+    fun set(that: Vec4f): MutableColor {
+        r = that.x
+        g = that.y
+        b = that.z
+        a = that.w
+        return this
+    }
+
+    fun mulRgb(factor: Float): MutableColor {
+        r *= factor
+        g *= factor
+        b *= factor
         return this
     }
 }
