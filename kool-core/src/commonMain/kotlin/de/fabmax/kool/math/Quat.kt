@@ -33,9 +33,9 @@ open class QuatF(open val x: Float, open val y: Float, open val z: Float, open v
     }
 
     /**
-     * Multiplies this quaternion with the given one and returns the result as an (optionally provided) [MutableQuatF].
+     * Multiplies this quaternion with the given one and returns the result in a provided [MutableQuatF].
      */
-    fun mul(that: QuatF, result: MutableQuatF = MutableQuatF()): MutableQuatF = result.set(this).mul(that)
+    fun mul(that: QuatF, result: MutableQuatF): MutableQuatF = result.set(this).mul(that)
 
     /**
      * Computes the length / magnitude of this quaternion. For valid rotation quaternions, the length should always be
@@ -62,9 +62,9 @@ open class QuatF(open val x: Float, open val y: Float, open val z: Float, open v
     }
 
     /**
-     * Norms the length of this vector and returns the result as an (optionally provided) [MutableVec4f].
+     * Norms the length of this vector and returns the result in a provided [MutableVec4f].
      */
-    fun norm(result: MutableQuatF = MutableQuatF()): MutableQuatF = result.set(this).norm()
+    fun norm(result: MutableQuatF): MutableQuatF = result.set(this).norm()
 
     /**
      * Checks vector components for equality using [de.fabmax.kool.math.isFuzzyEqual], that is all components must
@@ -249,9 +249,9 @@ open class QuatD(open val x: Double, open val y: Double, open val z: Double, ope
     }
 
     /**
-     * Multiplies this quaternion with the given one and returns the result as an (optionally provided) [MutableQuatD].
+     * Multiplies this quaternion with the given one and returns the result in a provided [MutableQuatD].
      */
-    fun mul(that: QuatD, result: MutableQuatD = MutableQuatD()): MutableQuatD = result.set(this).mul(that)
+    fun mul(that: QuatD, result: MutableQuatD): MutableQuatD = result.set(this).mul(that)
 
     /**
      * Computes the length / magnitude of this quaternion. For valid rotation quaternions, the length should always be
@@ -278,9 +278,9 @@ open class QuatD(open val x: Double, open val y: Double, open val z: Double, ope
     }
 
     /**
-     * Norms the length of this vector and returns the result as an (optionally provided) [MutableVec4d].
+     * Norms the length of this vector and returns the result in a provided [MutableVec4d].
      */
-    fun norm(result: MutableQuatD = MutableQuatD()): MutableQuatD = result.set(this).norm()
+    fun norm(result: MutableQuatD): MutableQuatD = result.set(this).norm()
 
     /**
      * Checks vector components for equality using [de.fabmax.kool.math.isFuzzyEqual], that is all components must

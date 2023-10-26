@@ -82,34 +82,34 @@ open class Vec3f(open val x: Float, open val y: Float, open val z: Float) {
     operator fun div(that: Float) = Vec3f(x / that, y / that, z / that)
 
     /**
-     * Component-wise addition with the given [Vec3f]. Returns the result as an (optionally provided) [MutableVec3f].
+     * Component-wise addition with the given [Vec3f]. Returns the result in a provided [MutableVec3f].
      */
-    fun add(that: Vec3f, result: MutableVec3f = MutableVec3f()): MutableVec3f = result.set(this).add(that)
+    fun add(that: Vec3f, result: MutableVec3f): MutableVec3f = result.set(this).add(that)
 
     /**
-     * Component-wise addition with the given scalar. Returns the result as an (optionally provided) [MutableVec3f].
+     * Component-wise addition with the given scalar. Returns the result in a optionally provided [MutableVec3f].
      */
-    fun add(that: Float, result: MutableVec3f = MutableVec3f()): MutableVec3f = result.set(this).add(that)
+    fun add(that: Float, result: MutableVec3f): MutableVec3f = result.set(this).add(that)
 
     /**
-     * Component-wise subtraction with the given [Vec3f]. Returns the result as an (optionally provided) [MutableVec3f].
+     * Component-wise subtraction with the given [Vec3f]. Returns the result in a provided [MutableVec3f].
      */
-    fun subtract(that: Vec3f, result: MutableVec3f = MutableVec3f()): MutableVec3f = result.set(this).subtract(that)
+    fun subtract(that: Vec3f, result: MutableVec3f): MutableVec3f = result.set(this).subtract(that)
 
     /**
-     * Component-wise subtraction with the given scalar. Returns the result as an (optionally provided) [MutableVec3f].
+     * Component-wise subtraction with the given scalar. Returns the result in a provided [MutableVec3f].
      */
-    fun subtract(that: Float, result: MutableVec3f = MutableVec3f()): MutableVec3f = result.set(this).subtract(that)
+    fun subtract(that: Float, result: MutableVec3f): MutableVec3f = result.set(this).subtract(that)
 
     /**
-     * Component-wise multiplication with the given [Vec3f]. Returns the result as an (optionally provided) [MutableVec3f].
+     * Component-wise multiplication with the given [Vec3f]. Returns the result in a provided [MutableVec3f].
      */
-    fun mul(that: Vec3f, result: MutableVec3f = MutableVec3f()): MutableVec3f = result.set(this).mul(that)
+    fun mul(that: Vec3f, result: MutableVec3f): MutableVec3f = result.set(this).mul(that)
 
     /**
-     * Component-wise multiplication with the given scalar (i.e. scaling). Returns the result as an (optionally provided) [MutableVec3f].
+     * Component-wise multiplication with the given scalar (i.e. scaling). Returns the result in a provided [MutableVec3f].
      */
-    fun mul(that: Float, result: MutableVec3f = MutableVec3f()): MutableVec3f = result.set(this).mul(that)
+    fun mul(that: Float, result: MutableVec3f): MutableVec3f = result.set(this).mul(that)
 
     @Deprecated("Replace with mul()", ReplaceWith("mul(factor, result)"))
     fun scale(factor: Float, result: MutableVec3f = MutableVec3f()) = mul(factor, result)
@@ -211,9 +211,9 @@ open class Vec3f(open val x: Float, open val y: Float, open val z: Float) {
     }
 
     /**
-     * Norms the length of this vector and returns the result as an (optionally provided) [MutableVec3f].
+     * Norms the length of this vector and returns the result in a provided [MutableVec3f].
      */
-    fun norm(result: MutableVec3f = MutableVec3f()): MutableVec3f = result.set(this).norm()
+    fun norm(result: MutableVec3f): MutableVec3f = result.set(this).norm()
 
     /**
      * Returns a unit vector orthogonal to this vector.
@@ -228,10 +228,10 @@ open class Vec3f(open val x: Float, open val y: Float, open val z: Float) {
     }
 
     /**
-     * Rotates this vector by the given [AngleF] around the given axis and returns the result as an (optionally
-     * provided) [MutableVec3f].
+     * Rotates this vector by the given [AngleF] around the given axis and returns the result in a
+     * provided [MutableVec3f].
      */
-    fun rotate(angle: AngleF, axis: Vec3f, result: MutableVec3f = MutableVec3f()): MutableVec3f {
+    fun rotate(angle: AngleF, axis: Vec3f, result: MutableVec3f): MutableVec3f {
         return result.set(this).rotate(angle, axis)
     }
 
@@ -479,34 +479,34 @@ open class Vec3d(open val x: Double, open val y: Double, open val z: Double) {
     operator fun div(that: Double) = Vec3d(x / that, y / that, z / that)
 
     /**
-     * Component-wise addition with the given [Vec3d]. Returns the result as an (optionally provided) [MutableVec3d].
+     * Component-wise addition with the given [Vec3d]. Returns the result in a provided [MutableVec3d].
      */
-    fun add(that: Vec3d, result: MutableVec3d = MutableVec3d()): MutableVec3d = result.set(this).add(that)
+    fun add(that: Vec3d, result: MutableVec3d): MutableVec3d = result.set(this).add(that)
 
     /**
-     * Component-wise addition with the given scalar. Returns the result as an (optionally provided) [MutableVec3d].
+     * Component-wise addition with the given scalar. Returns the result in a optionally provided [MutableVec3d].
      */
-    fun add(that: Double, result: MutableVec3d = MutableVec3d()): MutableVec3d = result.set(this).add(that)
+    fun add(that: Double, result: MutableVec3d): MutableVec3d = result.set(this).add(that)
 
     /**
-     * Component-wise subtraction with the given [Vec3d]. Returns the result as an (optionally provided) [MutableVec3d].
+     * Component-wise subtraction with the given [Vec3d]. Returns the result in a provided [MutableVec3d].
      */
-    fun subtract(that: Vec3d, result: MutableVec3d = MutableVec3d()): MutableVec3d = result.set(this).subtract(that)
+    fun subtract(that: Vec3d, result: MutableVec3d): MutableVec3d = result.set(this).subtract(that)
 
     /**
-     * Component-wise subtraction with the given scalar. Returns the result as an (optionally provided) [MutableVec3d].
+     * Component-wise subtraction with the given scalar. Returns the result in a provided [MutableVec3d].
      */
-    fun subtract(that: Double, result: MutableVec3d = MutableVec3d()): MutableVec3d = result.set(this).subtract(that)
+    fun subtract(that: Double, result: MutableVec3d): MutableVec3d = result.set(this).subtract(that)
 
     /**
-     * Component-wise multiplication with the given [Vec3d]. Returns the result as an (optionally provided) [MutableVec3d].
+     * Component-wise multiplication with the given [Vec3d]. Returns the result in a provided [MutableVec3d].
      */
-    fun mul(that: Vec3d, result: MutableVec3d = MutableVec3d()): MutableVec3d = result.set(this).mul(that)
+    fun mul(that: Vec3d, result: MutableVec3d): MutableVec3d = result.set(this).mul(that)
 
     /**
-     * Component-wise multiplication with the given scalar (i.e. scaling). Returns the result as an (optionally provided) [MutableVec3d].
+     * Component-wise multiplication with the given scalar (i.e. scaling). Returns the result in a provided [MutableVec3d].
      */
-    fun mul(that: Double, result: MutableVec3d = MutableVec3d()): MutableVec3d = result.set(this).mul(that)
+    fun mul(that: Double, result: MutableVec3d): MutableVec3d = result.set(this).mul(that)
 
     @Deprecated("Replace with mul()", ReplaceWith("mul(factor, result)"))
     fun scale(factor: Double, result: MutableVec3d = MutableVec3d()) = mul(factor, result)
@@ -606,9 +606,9 @@ open class Vec3d(open val x: Double, open val y: Double, open val z: Double) {
     }
 
     /**
-     * Norms the length of this vector and returns the result as an (optionally provided) [MutableVec3d].
+     * Norms the length of this vector and returns the result in a provided [MutableVec3d].
      */
-    fun norm(result: MutableVec3d = MutableVec3d()): MutableVec3d = result.set(this).norm()
+    fun norm(result: MutableVec3d): MutableVec3d = result.set(this).norm()
 
     /**
      * Returns a unit vector orthogonal to this vector.
@@ -623,10 +623,10 @@ open class Vec3d(open val x: Double, open val y: Double, open val z: Double) {
     }
 
     /**
-     * Rotates this vector by the given [AngleD] around the given axis and returns the result as an (optionally
-     * provided) [MutableVec3d].
+     * Rotates this vector by the given [AngleD] around the given axis and returns the result in a
+     * provided [MutableVec3d].
      */
-    fun rotate(angle: AngleD, axis: Vec3d, result: MutableVec3d = MutableVec3d()): MutableVec3d {
+    fun rotate(angle: AngleD, axis: Vec3d, result: MutableVec3d): MutableVec3d {
         return result.set(this).rotate(angle, axis)
     }
 
@@ -867,34 +867,34 @@ open class Vec3i(open val x: Int, open val y: Int, open val z: Int) {
     operator fun div(that: Int) = Vec3i(x / that, y / that, z / that)
 
     /**
-     * Component-wise addition with the given [Vec3i]. Returns the result as an (optionally provided) [MutableVec3i].
+     * Component-wise addition with the given [Vec3i]. Returns the result in a provided [MutableVec3i].
      */
-    fun add(that: Vec3i, result: MutableVec3i = MutableVec3i()): MutableVec3i = result.set(this).add(that)
+    fun add(that: Vec3i, result: MutableVec3i): MutableVec3i = result.set(this).add(that)
 
     /**
-     * Component-wise addition with the given scalar. Returns the result as an (optionally provided) [MutableVec3i].
+     * Component-wise addition with the given scalar. Returns the result in a optionally provided [MutableVec3i].
      */
-    fun add(that: Int, result: MutableVec3i = MutableVec3i()): MutableVec3i = result.set(this).add(that)
+    fun add(that: Int, result: MutableVec3i): MutableVec3i = result.set(this).add(that)
 
     /**
-     * Component-wise subtraction with the given [Vec3i]. Returns the result as an (optionally provided) [MutableVec3i].
+     * Component-wise subtraction with the given [Vec3i]. Returns the result in a provided [MutableVec3i].
      */
-    fun subtract(that: Vec3i, result: MutableVec3i = MutableVec3i()): MutableVec3i = result.set(this).subtract(that)
+    fun subtract(that: Vec3i, result: MutableVec3i): MutableVec3i = result.set(this).subtract(that)
 
     /**
-     * Component-wise subtraction with the given scalar. Returns the result as an (optionally provided) [MutableVec3i].
+     * Component-wise subtraction with the given scalar. Returns the result in a provided [MutableVec3i].
      */
-    fun subtract(that: Int, result: MutableVec3i = MutableVec3i()): MutableVec3i = result.set(this).subtract(that)
+    fun subtract(that: Int, result: MutableVec3i): MutableVec3i = result.set(this).subtract(that)
 
     /**
-     * Component-wise multiplication with the given [Vec3i]. Returns the result as an (optionally provided) [MutableVec3i].
+     * Component-wise multiplication with the given [Vec3i]. Returns the result in a provided [MutableVec3i].
      */
-    fun mul(that: Vec3i, result: MutableVec3i = MutableVec3i()): MutableVec3i = result.set(this).mul(that)
+    fun mul(that: Vec3i, result: MutableVec3i): MutableVec3i = result.set(this).mul(that)
 
     /**
-     * Component-wise multiplication with the given scalar (i.e. scaling). Returns the result as an (optionally provided) [MutableVec3i].
+     * Component-wise multiplication with the given scalar (i.e. scaling). Returns the result in a provided [MutableVec3i].
      */
-    fun mul(that: Int, result: MutableVec3i = MutableVec3i()): MutableVec3i = result.set(this).mul(that)
+    fun mul(that: Int, result: MutableVec3i): MutableVec3i = result.set(this).mul(that)
 
     @Deprecated("Replace with mul()", ReplaceWith("mul(factor, result)"))
     fun scale(factor: Int, result: MutableVec3i = MutableVec3i()) = mul(factor, result)

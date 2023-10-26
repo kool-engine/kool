@@ -86,37 +86,37 @@ open class Vec4f(open val x: Float, open val y: Float, open val z: Float, open v
     operator fun div(that: Float) = Vec4f(x / that, y / that, z / that, w / that)
 
     /**
-     * Component-wise addition with the given [Vec4f]. Returns the result as an (optionally provided) [MutableVec4f].
+     * Component-wise addition with the given [Vec4f]. Returns the result in a provided [MutableVec4f].
      */
-    fun add(that: Vec4f, result: MutableVec4f = MutableVec4f()): MutableVec4f = result.set(this).add(that)
+    fun add(that: Vec4f, result: MutableVec4f): MutableVec4f = result.set(this).add(that)
 
     /**
-     * Component-wise addition with the given scalar. Returns the result as an (optionally provided) [MutableVec4f].
+     * Component-wise addition with the given scalar. Returns the result in a provided [MutableVec4f].
      */
-    fun add(that: Float, result: MutableVec4f = MutableVec4f()): MutableVec4f = result.set(this).add(that)
+    fun add(that: Float, result: MutableVec4f): MutableVec4f = result.set(this).add(that)
 
     /**
-     * Component-wise subtraction with the given [Vec4f]. Returns the result as an (optionally provided) [MutableVec4f].
+     * Component-wise subtraction with the given [Vec4f]. Returns the result in a provided [MutableVec4f].
      */
-    fun subtract(that: Vec4f, result: MutableVec4f = MutableVec4f()): MutableVec4f = result.set(this).subtract(that)
+    fun subtract(that: Vec4f, result: MutableVec4f): MutableVec4f = result.set(this).subtract(that)
 
     /**
-     * Component-wise subtraction with the given scalar. Returns the result as an (optionally provided) [MutableVec4f].
+     * Component-wise subtraction with the given scalar. Returns the result in a provided [MutableVec4f].
      */
-    fun subtract(that: Float, result: MutableVec4f = MutableVec4f()): MutableVec4f = result.set(this).subtract(that)
+    fun subtract(that: Float, result: MutableVec4f): MutableVec4f = result.set(this).subtract(that)
 
     /**
-     * Component-wise multiplication with the given [Vec4f]. Returns the result as an (optionally provided) [MutableVec4f].
+     * Component-wise multiplication with the given [Vec4f]. Returns the result in a provided [MutableVec4f].
      */
-    fun mul(that: Vec4f, result: MutableVec4f = MutableVec4f()): MutableVec4f = result.set(this).mul(that)
+    fun mul(that: Vec4f, result: MutableVec4f): MutableVec4f = result.set(this).mul(that)
 
     /**
-     * Component-wise multiplication with the given scalar (i.e. scaling). Returns the result as an (optionally provided) [MutableVec4f].
+     * Component-wise multiplication with the given scalar (i.e. scaling). Returns the result in a provided [MutableVec4f].
      */
-    fun mul(that: Float, result: MutableVec4f = MutableVec4f()): MutableVec4f = result.set(this).mul(that)
+    fun mul(that: Float, result: MutableVec4f): MutableVec4f = result.set(this).mul(that)
 
     @Deprecated("Replace with mul()", ReplaceWith("mul(factor, result)"))
-    fun scale(factor: Float, result: MutableVec4f = MutableVec4f()) = mul(factor, result)
+    fun scale(factor: Float, result: MutableVec4f) = mul(factor, result)
 
     override fun toString(): String = "($x, $y, $z, $w)"
 
@@ -204,9 +204,9 @@ open class Vec4f(open val x: Float, open val y: Float, open val z: Float, open v
     }
 
     /**
-     * Norms the length of this vector and returns the result as an (optionally provided) [MutableVec4f].
+     * Norms the length of this vector and returns the result in a provided [MutableVec4f].
      */
-    fun norm(result: MutableVec4f = MutableVec4f()): MutableVec4f = result.set(this).norm()
+    fun norm(result: MutableVec4f): MutableVec4f = result.set(this).norm()
 
     /**
      * Checks vector components for equality using [de.fabmax.kool.math.isFuzzyEqual], that is all components must
@@ -454,37 +454,37 @@ open class Vec4d(open val x: Double, open val y: Double, open val z: Double, ope
     operator fun div(that: Double) = Vec4d(x / that, y / that, z / that, w / that)
 
     /**
-     * Component-wise addition with the given [Vec4d]. Returns the result as an (optionally provided) [MutableVec4d].
+     * Component-wise addition with the given [Vec4d]. Returns the result in a provided [MutableVec4d].
      */
-    fun add(that: Vec4d, result: MutableVec4d = MutableVec4d()): MutableVec4d = result.set(this).add(that)
+    fun add(that: Vec4d, result: MutableVec4d): MutableVec4d = result.set(this).add(that)
 
     /**
-     * Component-wise addition with the given scalar. Returns the result as an (optionally provided) [MutableVec4d].
+     * Component-wise addition with the given scalar. Returns the result in a provided [MutableVec4d].
      */
-    fun add(that: Double, result: MutableVec4d = MutableVec4d()): MutableVec4d = result.set(this).add(that)
+    fun add(that: Double, result: MutableVec4d): MutableVec4d = result.set(this).add(that)
 
     /**
-     * Component-wise subtraction with the given [Vec4d]. Returns the result as an (optionally provided) [MutableVec4d].
+     * Component-wise subtraction with the given [Vec4d]. Returns the result in a provided [MutableVec4d].
      */
-    fun subtract(that: Vec4d, result: MutableVec4d = MutableVec4d()): MutableVec4d = result.set(this).subtract(that)
+    fun subtract(that: Vec4d, result: MutableVec4d): MutableVec4d = result.set(this).subtract(that)
 
     /**
-     * Component-wise subtraction with the given scalar. Returns the result as an (optionally provided) [MutableVec4d].
+     * Component-wise subtraction with the given scalar. Returns the result in a provided [MutableVec4d].
      */
-    fun subtract(that: Double, result: MutableVec4d = MutableVec4d()): MutableVec4d = result.set(this).subtract(that)
+    fun subtract(that: Double, result: MutableVec4d): MutableVec4d = result.set(this).subtract(that)
 
     /**
-     * Component-wise multiplication with the given [Vec4d]. Returns the result as an (optionally provided) [MutableVec4d].
+     * Component-wise multiplication with the given [Vec4d]. Returns the result in a provided [MutableVec4d].
      */
-    fun mul(that: Vec4d, result: MutableVec4d = MutableVec4d()): MutableVec4d = result.set(this).mul(that)
+    fun mul(that: Vec4d, result: MutableVec4d): MutableVec4d = result.set(this).mul(that)
 
     /**
-     * Component-wise multiplication with the given scalar (i.e. scaling). Returns the result as an (optionally provided) [MutableVec4d].
+     * Component-wise multiplication with the given scalar (i.e. scaling). Returns the result in a provided [MutableVec4d].
      */
-    fun mul(that: Double, result: MutableVec4d = MutableVec4d()): MutableVec4d = result.set(this).mul(that)
+    fun mul(that: Double, result: MutableVec4d): MutableVec4d = result.set(this).mul(that)
 
     @Deprecated("Replace with mul()", ReplaceWith("mul(factor, result)"))
-    fun scale(factor: Double, result: MutableVec4d = MutableVec4d()) = mul(factor, result)
+    fun scale(factor: Double, result: MutableVec4d) = mul(factor, result)
 
     override fun toString(): String = "($x, $y, $z, $w)"
 
@@ -570,9 +570,9 @@ open class Vec4d(open val x: Double, open val y: Double, open val z: Double, ope
     }
 
     /**
-     * Norms the length of this vector and returns the result as an (optionally provided) [MutableVec4d].
+     * Norms the length of this vector and returns the result in a provided [MutableVec4d].
      */
-    fun norm(result: MutableVec4d = MutableVec4d()): MutableVec4d = result.set(this).norm()
+    fun norm(result: MutableVec4d): MutableVec4d = result.set(this).norm()
 
     /**
      * Checks vector components for equality using [de.fabmax.kool.math.isFuzzyEqual], that is all components must
@@ -813,37 +813,37 @@ open class Vec4i(open val x: Int, open val y: Int, open val z: Int, open val w: 
     operator fun div(that: Int) = Vec4i(x / that, y / that, z / that, w / that)
 
     /**
-     * Component-wise addition with the given [Vec4i]. Returns the result as an (optionally provided) [MutableVec4i].
+     * Component-wise addition with the given [Vec4i]. Returns the result in a provided [MutableVec4i].
      */
-    fun add(that: Vec4i, result: MutableVec4i = MutableVec4i()): MutableVec4i = result.set(this).add(that)
+    fun add(that: Vec4i, result: MutableVec4i): MutableVec4i = result.set(this).add(that)
 
     /**
-     * Component-wise addition with the given scalar. Returns the result as an (optionally provided) [MutableVec4i].
+     * Component-wise addition with the given scalar. Returns the result in a provided [MutableVec4i].
      */
-    fun add(that: Int, result: MutableVec4i = MutableVec4i()): MutableVec4i = result.set(this).add(that)
+    fun add(that: Int, result: MutableVec4i): MutableVec4i = result.set(this).add(that)
 
     /**
-     * Component-wise subtraction with the given [Vec4i]. Returns the result as an (optionally provided) [MutableVec4i].
+     * Component-wise subtraction with the given [Vec4i]. Returns the result in a provided [MutableVec4i].
      */
-    fun subtract(that: Vec4i, result: MutableVec4i = MutableVec4i()): MutableVec4i = result.set(this).subtract(that)
+    fun subtract(that: Vec4i, result: MutableVec4i): MutableVec4i = result.set(this).subtract(that)
 
     /**
-     * Component-wise subtraction with the given scalar. Returns the result as an (optionally provided) [MutableVec4i].
+     * Component-wise subtraction with the given scalar. Returns the result in a provided [MutableVec4i].
      */
-    fun subtract(that: Int, result: MutableVec4i = MutableVec4i()): MutableVec4i = result.set(this).subtract(that)
+    fun subtract(that: Int, result: MutableVec4i): MutableVec4i = result.set(this).subtract(that)
 
     /**
-     * Component-wise multiplication with the given [Vec4i]. Returns the result as an (optionally provided) [MutableVec4i].
+     * Component-wise multiplication with the given [Vec4i]. Returns the result in a provided [MutableVec4i].
      */
-    fun mul(that: Vec4i, result: MutableVec4i = MutableVec4i()): MutableVec4i = result.set(this).mul(that)
+    fun mul(that: Vec4i, result: MutableVec4i): MutableVec4i = result.set(this).mul(that)
 
     /**
-     * Component-wise multiplication with the given scalar (i.e. scaling). Returns the result as an (optionally provided) [MutableVec4i].
+     * Component-wise multiplication with the given scalar (i.e. scaling). Returns the result in a provided [MutableVec4i].
      */
-    fun mul(that: Int, result: MutableVec4i = MutableVec4i()): MutableVec4i = result.set(this).mul(that)
+    fun mul(that: Int, result: MutableVec4i): MutableVec4i = result.set(this).mul(that)
 
     @Deprecated("Replace with mul()", ReplaceWith("mul(factor, result)"))
-    fun scale(factor: Int, result: MutableVec4i = MutableVec4i()) = mul(factor, result)
+    fun scale(factor: Int, result: MutableVec4i) = mul(factor, result)
 
     override fun toString(): String = "($x, $y, $z, $w)"
 

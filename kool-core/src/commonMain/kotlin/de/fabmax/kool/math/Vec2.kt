@@ -82,37 +82,37 @@ open class Vec2f(open val x: Float, open val y: Float) {
     operator fun div(that: Float) = Vec2f(x / that, y / that)
 
     /**
-     * Component-wise addition with the given [Vec2f]. Returns the result as an (optionally provided) [MutableVec2f].
+     * Component-wise addition with the given [Vec2f]. Returns the result in a provided [MutableVec2f].
      */
-    fun add(that: Vec2f, result: MutableVec2f = MutableVec2f()): MutableVec2f = result.set(this).add(that)
+    fun add(that: Vec2f, result: MutableVec2f): MutableVec2f = result.set(this).add(that)
 
     /**
-     * Component-wise addition with the given scalar. Returns the result as an (optionally provided) [MutableVec2f].
+     * Component-wise addition with the given scalar. Returns the result in a provided [MutableVec2f].
      */
-    fun add(that: Float, result: MutableVec2f = MutableVec2f()): MutableVec2f = result.set(this).add(that)
+    fun add(that: Float, result: MutableVec2f): MutableVec2f = result.set(this).add(that)
 
     /**
-     * Component-wise subtraction with the given [Vec2f]. Returns the result as an (optionally provided) [MutableVec2f].
+     * Component-wise subtraction with the given [Vec2f]. Returns the result as a provided [MutableVec2f].
      */
-    fun subtract(that: Vec2f, result: MutableVec2f = MutableVec2f()): MutableVec2f = result.set(this).subtract(that)
+    fun subtract(that: Vec2f, result: MutableVec2f): MutableVec2f = result.set(this).subtract(that)
 
     /**
-     * Component-wise subtraction with the given scalar. Returns the result as an (optionally provided) [MutableVec2f].
+     * Component-wise subtraction with the given scalar. Returns the result in a provided [MutableVec2f].
      */
-    fun subtract(that: Float, result: MutableVec2f = MutableVec2f()): MutableVec2f = result.set(this).subtract(that)
+    fun subtract(that: Float, result: MutableVec2f): MutableVec2f = result.set(this).subtract(that)
 
     /**
-     * Component-wise multiplication with the given [Vec2f]. Returns the result as an (optionally provided) [MutableVec2f].
+     * Component-wise multiplication with the given [Vec2f]. Returns the result in a provided [MutableVec2f].
      */
-    fun mul(that: Vec2f, result: MutableVec2f = MutableVec2f()): MutableVec2f = result.set(this).mul(that)
+    fun mul(that: Vec2f, result: MutableVec2f): MutableVec2f = result.set(this).mul(that)
 
     /**
-     * Component-wise multiplication with the given scalar. Returns the result as an (optionally provided) [MutableVec2f].
+     * Component-wise multiplication with the given scalar. Returns the result in a provided [MutableVec2f].
      */
-    fun mul(that: Float, result: MutableVec2f = MutableVec2f()): MutableVec2f = result.set(this).mul(that)
+    fun mul(that: Float, result: MutableVec2f): MutableVec2f = result.set(this).mul(that)
 
     @Deprecated("Replace with mul()", ReplaceWith("mul(factor, result)"))
-    fun scale(factor: Float, result: MutableVec2f = MutableVec2f()) = mul(factor, result)
+    fun scale(factor: Float, result: MutableVec2f) = mul(factor, result)
 
     override fun toString(): String = "($x, $y)"
 
@@ -190,14 +190,14 @@ open class Vec2f(open val x: Float, open val y: Float) {
     }
 
     /**
-     * Norms the length of this vector and returns the result as an (optionally provided) [MutableVec2f].
+     * Norms the length of this vector and returns the result in a provided [MutableVec2f].
      */
-    fun norm(result: MutableVec2f = MutableVec2f()): MutableVec2f = result.set(this).norm()
+    fun norm(result: MutableVec2f): MutableVec2f = result.set(this).norm()
 
     /**
-     * Rotates this vector by the given [AngleF] and returns the result as an (optionally provided) [MutableVec2f].
+     * Rotates this vector by the given [AngleF] and returns the result in a provided [MutableVec2f].
      */
-    fun rotate(angle: AngleF, result: MutableVec2f = MutableVec2f()): MutableVec2f = result.set(this).rotate(angle)
+    fun rotate(angle: AngleF, result: MutableVec2f): MutableVec2f = result.set(this).rotate(angle)
 
     /**
      * Checks vector components for equality using [de.fabmax.kool.math.isFuzzyEqual], that is all components must
@@ -424,37 +424,37 @@ open class Vec2d(open val x: Double, open val y: Double) {
     operator fun div(that: Double) = Vec2d(x / that, y / that)
 
     /**
-     * Component-wise addition with the given [Vec2d]. Returns the result as an (optionally provided) [MutableVec2d].
+     * Component-wise addition with the given [Vec2d]. Returns the result in a provided [MutableVec2d].
      */
-    fun add(that: Vec2d, result: MutableVec2d = MutableVec2d()): MutableVec2d = result.set(this).add(that)
+    fun add(that: Vec2d, result: MutableVec2d): MutableVec2d = result.set(this).add(that)
 
     /**
-     * Component-wise addition with the given scalar. Returns the result as an (optionally provided) [MutableVec2d].
+     * Component-wise addition with the given scalar. Returns the result in a provided [MutableVec2d].
      */
-    fun add(that: Double, result: MutableVec2d = MutableVec2d()): MutableVec2d = result.set(this).add(that)
+    fun add(that: Double, result: MutableVec2d): MutableVec2d = result.set(this).add(that)
 
     /**
-     * Component-wise subtraction with the given [Vec2d]. Returns the result as an (optionally provided) [MutableVec2d].
+     * Component-wise subtraction with the given [Vec2d]. Returns the result as a provided [MutableVec2d].
      */
-    fun subtract(that: Vec2d, result: MutableVec2d = MutableVec2d()): MutableVec2d = result.set(this).subtract(that)
+    fun subtract(that: Vec2d, result: MutableVec2d): MutableVec2d = result.set(this).subtract(that)
 
     /**
-     * Component-wise subtraction with the given scalar. Returns the result as an (optionally provided) [MutableVec2d].
+     * Component-wise subtraction with the given scalar. Returns the result in a provided [MutableVec2d].
      */
-    fun subtract(that: Double, result: MutableVec2d = MutableVec2d()): MutableVec2d = result.set(this).subtract(that)
+    fun subtract(that: Double, result: MutableVec2d): MutableVec2d = result.set(this).subtract(that)
 
     /**
-     * Component-wise multiplication with the given [Vec2d]. Returns the result as an (optionally provided) [MutableVec2d].
+     * Component-wise multiplication with the given [Vec2d]. Returns the result in a provided [MutableVec2d].
      */
-    fun mul(that: Vec2d, result: MutableVec2d = MutableVec2d()): MutableVec2d = result.set(this).mul(that)
+    fun mul(that: Vec2d, result: MutableVec2d): MutableVec2d = result.set(this).mul(that)
 
     /**
-     * Component-wise multiplication with the given scalar. Returns the result as an (optionally provided) [MutableVec2d].
+     * Component-wise multiplication with the given scalar. Returns the result in a provided [MutableVec2d].
      */
-    fun mul(that: Double, result: MutableVec2d = MutableVec2d()): MutableVec2d = result.set(this).mul(that)
+    fun mul(that: Double, result: MutableVec2d): MutableVec2d = result.set(this).mul(that)
 
     @Deprecated("Replace with mul()", ReplaceWith("mul(factor, result)"))
-    fun scale(factor: Double, result: MutableVec2d = MutableVec2d()) = mul(factor, result)
+    fun scale(factor: Double, result: MutableVec2d) = mul(factor, result)
 
     override fun toString(): String = "($x, $y)"
 
@@ -530,14 +530,14 @@ open class Vec2d(open val x: Double, open val y: Double) {
     }
 
     /**
-     * Norms the length of this vector and returns the result as an (optionally provided) [MutableVec2d].
+     * Norms the length of this vector and returns the result in a provided [MutableVec2d].
      */
-    fun norm(result: MutableVec2d = MutableVec2d()): MutableVec2d = result.set(this).norm()
+    fun norm(result: MutableVec2d): MutableVec2d = result.set(this).norm()
 
     /**
-     * Rotates this vector by the given [AngleD] and returns the result as an (optionally provided) [MutableVec2d].
+     * Rotates this vector by the given [AngleD] and returns the result in a provided [MutableVec2d].
      */
-    fun rotate(angle: AngleD, result: MutableVec2d = MutableVec2d()): MutableVec2d = result.set(this).rotate(angle)
+    fun rotate(angle: AngleD, result: MutableVec2d): MutableVec2d = result.set(this).rotate(angle)
 
     /**
      * Checks vector components for equality using [de.fabmax.kool.math.isFuzzyEqual], that is all components must
@@ -757,37 +757,37 @@ open class Vec2i(open val x: Int, open val y: Int) {
     operator fun div(that: Int) = Vec2i(x / that, y / that)
 
     /**
-     * Component-wise addition with the given [Vec2i]. Returns the result as an (optionally provided) [MutableVec2i].
+     * Component-wise addition with the given [Vec2i]. Returns the result in a provided [MutableVec2i].
      */
-    fun add(that: Vec2i, result: MutableVec2i = MutableVec2i()): MutableVec2i = result.set(this).add(that)
+    fun add(that: Vec2i, result: MutableVec2i): MutableVec2i = result.set(this).add(that)
 
     /**
-     * Component-wise addition with the given scalar. Returns the result as an (optionally provided) [MutableVec2i].
+     * Component-wise addition with the given scalar. Returns the result in a provided [MutableVec2i].
      */
-    fun add(that: Int, result: MutableVec2i = MutableVec2i()): MutableVec2i = result.set(this).add(that)
+    fun add(that: Int, result: MutableVec2i): MutableVec2i = result.set(this).add(that)
 
     /**
-     * Component-wise subtraction with the given [Vec2i]. Returns the result as an (optionally provided) [MutableVec2i].
+     * Component-wise subtraction with the given [Vec2i]. Returns the result as a provided [MutableVec2i].
      */
-    fun subtract(that: Vec2i, result: MutableVec2i = MutableVec2i()): MutableVec2i = result.set(this).subtract(that)
+    fun subtract(that: Vec2i, result: MutableVec2i): MutableVec2i = result.set(this).subtract(that)
 
     /**
-     * Component-wise subtraction with the given scalar. Returns the result as an (optionally provided) [MutableVec2i].
+     * Component-wise subtraction with the given scalar. Returns the result in a provided [MutableVec2i].
      */
-    fun subtract(that: Int, result: MutableVec2i = MutableVec2i()): MutableVec2i = result.set(this).subtract(that)
+    fun subtract(that: Int, result: MutableVec2i): MutableVec2i = result.set(this).subtract(that)
 
     /**
-     * Component-wise multiplication with the given [Vec2i]. Returns the result as an (optionally provided) [MutableVec2i].
+     * Component-wise multiplication with the given [Vec2i]. Returns the result in a provided [MutableVec2i].
      */
-    fun mul(that: Vec2i, result: MutableVec2i = MutableVec2i()): MutableVec2i = result.set(this).mul(that)
+    fun mul(that: Vec2i, result: MutableVec2i): MutableVec2i = result.set(this).mul(that)
 
     /**
-     * Component-wise multiplication with the given scalar. Returns the result as an (optionally provided) [MutableVec2i].
+     * Component-wise multiplication with the given scalar. Returns the result in a provided [MutableVec2i].
      */
-    fun mul(that: Int, result: MutableVec2i = MutableVec2i()): MutableVec2i = result.set(this).mul(that)
+    fun mul(that: Int, result: MutableVec2i): MutableVec2i = result.set(this).mul(that)
 
     @Deprecated("Replace with mul()", ReplaceWith("mul(factor, result)"))
-    fun scale(factor: Int, result: MutableVec2i = MutableVec2i()) = mul(factor, result)
+    fun scale(factor: Int, result: MutableVec2i) = mul(factor, result)
 
     override fun toString(): String = "($x, $y)"
 

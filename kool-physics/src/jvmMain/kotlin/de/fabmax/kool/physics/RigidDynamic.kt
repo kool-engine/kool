@@ -1,8 +1,8 @@
 package de.fabmax.kool.physics
 
 import de.fabmax.kool.math.Mat4f
+import de.fabmax.kool.math.QuatF
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.math.Vec4f
 import org.lwjgl.system.MemoryStack
 import physx.physics.PxRigidActor
 import physx.physics.PxRigidBodyFlagEnum
@@ -54,7 +54,7 @@ actual class RigidDynamic internal constructor(
         }
     }
 
-    actual fun setKinematicTarget(position: Vec3f?, rotation: Vec4f?) {
+    actual fun setKinematicTarget(position: Vec3f?, rotation: QuatF?) {
         MemoryStack.stackPush().use { mem ->
             val pxPose = mem.createPxTransform()
             pxPose.p = position?.toPxVec3(mem.createPxVec3()) ?: pxRigidActor.globalPose.p

@@ -1,8 +1,8 @@
 package de.fabmax.kool.physics
 
 import de.fabmax.kool.math.Mat4f
+import de.fabmax.kool.math.QuatF
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.math.Vec4f
 
 expect class RigidDynamic(mass: Float = 1f, pose: Mat4f = Mat4f(), isKinematic: Boolean = false) : RigidBody {
 
@@ -12,7 +12,7 @@ expect class RigidDynamic(mass: Float = 1f, pose: Mat4f = Mat4f(), isKinematic: 
 
     fun setKinematicTarget(pose: Mat4f)
 
-    fun setKinematicTarget(position: Vec3f? = null, rotation: Vec4f? = null)
+    fun setKinematicTarget(position: Vec3f? = null, rotation: QuatF? = null)
 
     fun setLinearLockFlags(lockLinearX: Boolean, lockLinearY: Boolean, lockLinearZ: Boolean)
     fun setAngularLockFlags(lockAngularX: Boolean, lockAngularY: Boolean, lockAngularZ: Boolean)
