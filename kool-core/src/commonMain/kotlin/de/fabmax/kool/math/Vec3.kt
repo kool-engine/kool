@@ -30,8 +30,8 @@ fun MutableVec3i.set(that: Vec3d) = set(that.x.toInt(), that.y.toInt(), that.z.t
 
 open class Vec3f(open val x: Float, open val y: Float, open val z: Float) {
 
-    constructor(f: Float) : this(f, f, f)
-    constructor(v: Vec3f) : this(v.x, v.y, v.z)
+    constructor(f: Float): this(f, f, f)
+    constructor(v: Vec3f): this(v.x, v.y, v.z)
 
     /**
      * Component-wise addition with the given [Vec3f]. Returns the result as a new [Vec3f]. Consider using [add] with
@@ -259,9 +259,9 @@ open class Vec3f(open val x: Float, open val y: Float, open val z: Float) {
 
 open class MutableVec3f(override var x: Float, override var y: Float, override var z: Float) : Vec3f(x, y, z) {
 
-    constructor() : this(0f, 0f, 0f)
-    constructor(f: Float) : this(f, f, f)
-    constructor(v: Vec3f) : this(v.x, v.y, v.z)
+    constructor(): this(0f, 0f, 0f)
+    constructor(f: Float): this(f, f, f)
+    constructor(v: Vec3f): this(v.x, v.y, v.z)
 
     fun set(x: Float, y: Float, z: Float): MutableVec3f {
         this.x = x
@@ -427,8 +427,8 @@ open class MutableVec3f(override var x: Float, override var y: Float, override v
 
 open class Vec3d(open val x: Double, open val y: Double, open val z: Double) {
 
-    constructor(f: Double) : this(f, f, f)
-    constructor(v: Vec3d) : this(v.x, v.y, v.z)
+    constructor(f: Double): this(f, f, f)
+    constructor(v: Vec3d): this(v.x, v.y, v.z)
 
     /**
      * Component-wise addition with the given [Vec3d]. Returns the result as a new [Vec3d]. Consider using [add] with
@@ -652,9 +652,9 @@ open class Vec3d(open val x: Double, open val y: Double, open val z: Double) {
 
 open class MutableVec3d(override var x: Double, override var y: Double, override var z: Double) : Vec3d(x, y, z) {
 
-    constructor() : this(0.0, 0.0, 0.0)
-    constructor(f: Double) : this(f, f, f)
-    constructor(v: Vec3d) : this(v.x, v.y, v.z)
+    constructor(): this(0.0, 0.0, 0.0)
+    constructor(f: Double): this(f, f, f)
+    constructor(v: Vec3d): this(v.x, v.y, v.z)
 
     fun set(x: Double, y: Double, z: Double): MutableVec3d {
         this.x = x
@@ -815,8 +815,8 @@ open class MutableVec3d(override var x: Double, override var y: Double, override
 
 open class Vec3i(open val x: Int, open val y: Int, open val z: Int) {
 
-    constructor(f: Int) : this(f, f, f)
-    constructor(v: Vec3i) : this(v.x, v.y, v.z)
+    constructor(f: Int): this(f, f, f)
+    constructor(v: Vec3i): this(v.x, v.y, v.z)
 
     /**
      * Component-wise addition with the given [Vec3i]. Returns the result as a new [Vec3i]. Consider using [add] with
@@ -955,9 +955,9 @@ open class Vec3i(open val x: Int, open val y: Int, open val z: Int) {
 
 open class MutableVec3i(override var x: Int, override var y: Int, override var z: Int) : Vec3i(x, y, z) {
 
-    constructor() : this(0, 0, 0)
-    constructor(f: Int) : this(f, f, f)
-    constructor(v: Vec3i) : this(v.x, v.y, v.z)
+    constructor(): this(0, 0, 0)
+    constructor(f: Int): this(f, f, f)
+    constructor(v: Vec3i): this(v.x, v.y, v.z)
 
     fun set(x: Int, y: Int, z: Int): MutableVec3i {
         this.x = x

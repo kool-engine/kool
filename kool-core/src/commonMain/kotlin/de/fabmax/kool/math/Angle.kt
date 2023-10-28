@@ -8,9 +8,11 @@ import kotlin.math.tan
 
 val Float.deg: AngleF get() = AngleF(this / 180f * PI_F)
 val Float.rad: AngleF get() = AngleF(this)
+fun AngleF.toAngleD() = AngleD(rad.toDouble())
 
 val Double.deg: AngleD get() = AngleD(this / 180.0 * PI)
 val Double.rad: AngleD get() = AngleD(this)
+fun AngleD.toAngleF() = AngleF(rad.toFloat())
 
 // <template> Changes made within the template section will also affect the other type variants of this class
 

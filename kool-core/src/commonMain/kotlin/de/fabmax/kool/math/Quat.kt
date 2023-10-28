@@ -201,10 +201,11 @@ open class MutableQuatF(override var x: Float, override var y: Float, override v
         val qz = axis.z * factor * s
         val qw = cos(rad2)
 
-        x = w * qx + x * qw + y * qz - z * qy
-        y = w * qy - x * qz + y * qw + z * qx
-        z = w * qz + x * qy - y * qx + z * qw
-        w = w * qw - x * qx - y * qy - z * qz
+        val tx = w * qx + x * qw + y * qz - z * qy
+        val ty = w * qy - x * qz + y * qw + z * qx
+        val tz = w * qz + x * qy - y * qx + z * qw
+        val tw = w * qw - x * qx - y * qy - z * qz
+        set(tx, ty, tz, tw)
         return norm()
     }
 
@@ -229,7 +230,7 @@ open class MutableQuatF(override var x: Float, override var y: Float, override v
 
 fun QuatF(angle: AngleF, axis: Vec3f): QuatF = MutableQuatF().set(angle, axis)
 
-// </template>
+// </template> End of template section, DO NOT EDIT BELOW THIS!
 
 
 open class QuatD(open val x: Double, open val y: Double, open val z: Double, open val w: Double) {
@@ -417,10 +418,11 @@ open class MutableQuatD(override var x: Double, override var y: Double, override
         val qz = axis.z * factor * s
         val qw = cos(rad2)
 
-        x = w * qx + x * qw + y * qz - z * qy
-        y = w * qy - x * qz + y * qw + z * qx
-        z = w * qz + x * qy - y * qx + z * qw
-        w = w * qw - x * qx - y * qy - z * qz
+        val tx = w * qx + x * qw + y * qz - z * qy
+        val ty = w * qy - x * qz + y * qw + z * qx
+        val tz = w * qz + x * qy - y * qx + z * qw
+        val tw = w * qw - x * qx - y * qy - z * qz
+        set(tx, ty, tz, tw)
         return norm()
     }
 

@@ -30,8 +30,8 @@ fun MutableVec2i.set(that: Vec2d) = set(that.x.toInt(), that.y.toInt())
 
 open class Vec2f(open val x: Float, open val y: Float) {
 
-    constructor(f: Float) : this(f, f)
-    constructor(v: Vec2f) : this(v.x, v.y)
+    constructor(f: Float): this(f, f)
+    constructor(v: Vec2f): this(v.x, v.y)
 
     /**
      * Component-wise addition with the given [Vec2f]. Returns the result as a new [Vec2f]. Consider using [add] with
@@ -221,9 +221,9 @@ open class Vec2f(open val x: Float, open val y: Float) {
 
 open class MutableVec2f(override var x: Float, override var y: Float) : Vec2f(x, y) {
 
-    constructor() : this(0f, 0f)
-    constructor(f: Float) : this(f, f)
-    constructor(v: Vec2f) : this(v.x, v.y)
+    constructor(): this(0f, 0f)
+    constructor(f: Float): this(f, f)
+    constructor(v: Vec2f): this(v.x, v.y)
 
     fun set(x: Float, y: Float): MutableVec2f {
         this.x = x
@@ -372,8 +372,8 @@ open class MutableVec2f(override var x: Float, override var y: Float) : Vec2f(x,
 
 open class Vec2d(open val x: Double, open val y: Double) {
 
-    constructor(f: Double) : this(f, f)
-    constructor(v: Vec2d) : this(v.x, v.y)
+    constructor(f: Double): this(f, f)
+    constructor(v: Vec2d): this(v.x, v.y)
 
     /**
      * Component-wise addition with the given [Vec2d]. Returns the result as a new [Vec2d]. Consider using [add] with
@@ -559,9 +559,9 @@ open class Vec2d(open val x: Double, open val y: Double) {
 
 open class MutableVec2d(override var x: Double, override var y: Double) : Vec2d(x, y) {
 
-    constructor() : this(0.0, 0.0)
-    constructor(f: Double) : this(f, f)
-    constructor(v: Vec2d) : this(v.x, v.y)
+    constructor(): this(0.0, 0.0)
+    constructor(f: Double): this(f, f)
+    constructor(v: Vec2d): this(v.x, v.y)
 
     fun set(x: Double, y: Double): MutableVec2d {
         this.x = x
@@ -705,8 +705,8 @@ open class MutableVec2d(override var x: Double, override var y: Double) : Vec2d(
 
 open class Vec2i(open val x: Int, open val y: Int) {
 
-    constructor(f: Int) : this(f, f)
-    constructor(v: Vec2i) : this(v.x, v.y)
+    constructor(f: Int): this(f, f)
+    constructor(v: Vec2i): this(v.x, v.y)
 
     /**
      * Component-wise addition with the given [Vec2i]. Returns the result as a new [Vec2i]. Consider using [add] with
@@ -835,9 +835,9 @@ open class Vec2i(open val x: Int, open val y: Int) {
 
 open class MutableVec2i(override var x: Int, override var y: Int) : Vec2i(x, y) {
 
-    constructor() : this(0, 0)
-    constructor(f: Int) : this(f, f)
-    constructor(v: Vec2i) : this(v.x, v.y)
+    constructor(): this(0, 0)
+    constructor(f: Int): this(f, f)
+    constructor(v: Vec2i): this(v.x, v.y)
 
     fun set(x: Int, y: Int): MutableVec2i {
         this.x = x

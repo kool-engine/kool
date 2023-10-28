@@ -33,9 +33,9 @@ open class Vec4f(open val x: Float, open val y: Float, open val z: Float, open v
     val xyz: Vec3f
         get() = Vec3f(x, y, z)
 
-    constructor(f: Float) : this(f, f, f, f)
-    constructor(xyz: Vec3f, w: Float) : this(xyz.x, xyz.y, xyz.z, w)
-    constructor(v: Vec4f) : this(v.x, v.y, v.z, v.w)
+    constructor(f: Float): this(f, f, f, f)
+    constructor(xyz: Vec3f, w: Float): this(xyz.x, xyz.y, xyz.z, w)
+    constructor(v: Vec4f): this(v.x, v.y, v.z, v.w)
 
     /**
      * Component-wise addition with the given [Vec4f]. Returns the result as a new [Vec4f]. Consider using [add] with
@@ -233,10 +233,10 @@ open class Vec4f(open val x: Float, open val y: Float, open val z: Float, open v
 
 open class MutableVec4f(override var x: Float, override var y: Float, override var z: Float, override var w: Float) : Vec4f(x, y, z, w) {
 
-    constructor() : this(0f, 0f, 0f, 0f)
-    constructor(f: Float) : this(f, f, f, f)
-    constructor(xyz: Vec3f, w: Float) : this(xyz.x, xyz.y, xyz.z, w)
-    constructor(that: Vec4f) : this(that.x, that.y, that.z, that.w)
+    constructor(): this(0f, 0f, 0f, 0f)
+    constructor(f: Float): this(f, f, f, f)
+    constructor(xyz: Vec3f, w: Float): this(xyz.x, xyz.y, xyz.z, w)
+    constructor(that: Vec4f): this(that.x, that.y, that.z, that.w)
 
     fun set(x: Float, y: Float, z: Float, w: Float): MutableVec4f {
         this.x = x
@@ -401,9 +401,9 @@ open class Vec4d(open val x: Double, open val y: Double, open val z: Double, ope
     val xyz: Vec3d
         get() = Vec3d(x, y, z)
 
-    constructor(f: Double) : this(f, f, f, f)
-    constructor(xyz: Vec3d, w: Double) : this(xyz.x, xyz.y, xyz.z, w)
-    constructor(v: Vec4d) : this(v.x, v.y, v.z, v.w)
+    constructor(f: Double): this(f, f, f, f)
+    constructor(xyz: Vec3d, w: Double): this(xyz.x, xyz.y, xyz.z, w)
+    constructor(v: Vec4d): this(v.x, v.y, v.z, v.w)
 
     /**
      * Component-wise addition with the given [Vec4d]. Returns the result as a new [Vec4d]. Consider using [add] with
@@ -597,10 +597,10 @@ open class Vec4d(open val x: Double, open val y: Double, open val z: Double, ope
 
 open class MutableVec4d(override var x: Double, override var y: Double, override var z: Double, override var w: Double) : Vec4d(x, y, z, w) {
 
-    constructor() : this(0.0, 0.0, 0.0, 0.0)
-    constructor(f: Double) : this(f, f, f, f)
-    constructor(xyz: Vec3d, w: Double) : this(xyz.x, xyz.y, xyz.z, w)
-    constructor(that: Vec4d) : this(that.x, that.y, that.z, that.w)
+    constructor(): this(0.0, 0.0, 0.0, 0.0)
+    constructor(f: Double): this(f, f, f, f)
+    constructor(xyz: Vec3d, w: Double): this(xyz.x, xyz.y, xyz.z, w)
+    constructor(that: Vec4d): this(that.x, that.y, that.z, that.w)
 
     fun set(x: Double, y: Double, z: Double, w: Double): MutableVec4d {
         this.x = x
@@ -760,9 +760,9 @@ open class Vec4i(open val x: Int, open val y: Int, open val z: Int, open val w: 
     val xyz: Vec3i
         get() = Vec3i(x, y, z)
 
-    constructor(f: Int) : this(f, f, f, f)
-    constructor(xyz: Vec3i, w: Int) : this(xyz.x, xyz.y, xyz.z, w)
-    constructor(v: Vec4i) : this(v.x, v.y, v.z, v.w)
+    constructor(f: Int): this(f, f, f, f)
+    constructor(xyz: Vec3i, w: Int): this(xyz.x, xyz.y, xyz.z, w)
+    constructor(v: Vec4i): this(v.x, v.y, v.z, v.w)
 
     /**
      * Component-wise addition with the given [Vec4i]. Returns the result as a new [Vec4i]. Consider using [add] with
@@ -901,10 +901,10 @@ open class Vec4i(open val x: Int, open val y: Int, open val z: Int, open val w: 
 
 open class MutableVec4i(override var x: Int, override var y: Int, override var z: Int, override var w: Int) : Vec4i(x, y, z, w) {
 
-    constructor() : this(0, 0, 0, 0)
-    constructor(f: Int) : this(f, f, f, f)
-    constructor(xyz: Vec3i, w: Int) : this(xyz.x, xyz.y, xyz.z, w)
-    constructor(that: Vec4i) : this(that.x, that.y, that.z, that.w)
+    constructor(): this(0, 0, 0, 0)
+    constructor(f: Int): this(f, f, f, f)
+    constructor(xyz: Vec3i, w: Int): this(xyz.x, xyz.y, xyz.z, w)
+    constructor(that: Vec4i): this(that.x, that.y, that.z, that.w)
 
     fun set(x: Int, y: Int, z: Int, w: Int): MutableVec4i {
         this.x = x
