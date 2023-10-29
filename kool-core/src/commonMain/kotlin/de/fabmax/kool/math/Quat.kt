@@ -70,7 +70,7 @@ open class QuatF(open val x: Float, open val y: Float, open val z: Float, open v
      * Checks vector components for equality using [de.fabmax.kool.math.isFuzzyEqual], that is all components must
      * have a difference less or equal [eps].
      */
-    fun isFuzzyEqual(that: Vec4f, eps: Float = FUZZY_EQ_F): Boolean =
+    fun isFuzzyEqual(that: QuatF, eps: Float = FUZZY_EQ_F): Boolean =
         isFuzzyEqual(x, that.x, eps) && isFuzzyEqual(y, that.y, eps) && isFuzzyEqual(z, that.z, eps) && isFuzzyEqual(w, that.w, eps)
 
     fun toVec4f(): Vec4f = Vec4f(x, y, z, w)
@@ -119,6 +119,9 @@ open class QuatF(open val x: Float, open val y: Float, open val z: Float, open v
 
     companion object {
         val IDENTITY = QuatF(0f, 0f, 0f, 1f)
+
+        fun rotation(angle: AngleF, axis: Vec3f): QuatF = MutableQuatF().rotate(angle, axis)
+
     }
 }
 
@@ -287,7 +290,7 @@ open class QuatD(open val x: Double, open val y: Double, open val z: Double, ope
      * Checks vector components for equality using [de.fabmax.kool.math.isFuzzyEqual], that is all components must
      * have a difference less or equal [eps].
      */
-    fun isFuzzyEqual(that: Vec4d, eps: Double = FUZZY_EQ_D): Boolean =
+    fun isFuzzyEqual(that: QuatD, eps: Double = FUZZY_EQ_D): Boolean =
         isFuzzyEqual(x, that.x, eps) && isFuzzyEqual(y, that.y, eps) && isFuzzyEqual(z, that.z, eps) && isFuzzyEqual(w, that.w, eps)
 
     fun toVec4f(): Vec4d = Vec4d(x, y, z, w)
@@ -336,6 +339,9 @@ open class QuatD(open val x: Double, open val y: Double, open val z: Double, ope
 
     companion object {
         val IDENTITY = QuatD(0.0, 0.0, 0.0, 1.0)
+
+        fun rotation(angle: AngleD, axis: Vec3d): QuatD = MutableQuatD().rotate(angle, axis)
+
     }
 }
 

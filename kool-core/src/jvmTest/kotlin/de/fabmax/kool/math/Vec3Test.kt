@@ -5,10 +5,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-/**
- * Tests for Vec class
- */
-class VecTest {
+class Vec3Test {
     @Test
     fun vec3Consts() {
         assertTrue(Vec3f.X_AXIS.x == 1f && Vec3f.X_AXIS.y == 0f && Vec3f.X_AXIS.z == 0f, "x != (1, 0, 0)")
