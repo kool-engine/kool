@@ -1,9 +1,6 @@
 package de.fabmax.kool.physics.joints
 
-import de.fabmax.kool.math.FLT_EPSILON
-import de.fabmax.kool.math.Mat4f
-import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.*
 import de.fabmax.kool.physics.RigidActor
 
 expect class RevoluteJoint(bodyA: RigidActor, bodyB: RigidActor, frameA: Mat4f, frameB: Mat4f) : Joint {
@@ -41,11 +38,11 @@ object RevoluteJointHelper {
             }
         }
 
-        val frame = Mat4f()
+        val frame = MutableMat4f()
         frame.translate(pivot)
-        frame.setCol(0, axis, 0f)
-        frame.setCol(1, ax2.norm(), 0f)
-        frame.setCol(2, ax1.norm(), 0f)
+        frame.setColumn(0, axis, 0f)
+        frame.setColumn(1, ax2.norm(), 0f)
+        frame.setColumn(2, ax1.norm(), 0f)
         return frame
     }
 }

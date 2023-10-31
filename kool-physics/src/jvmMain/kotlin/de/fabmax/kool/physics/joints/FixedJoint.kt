@@ -8,13 +8,12 @@ import de.fabmax.kool.physics.toPxTransform
 import org.lwjgl.system.MemoryStack
 import physx.PxTopLevelFunctions
 import physx.extensions.PxFixedJoint
-import physx.physics.PxConstraintFlagEnum
 
 actual class FixedJoint actual constructor(actual val bodyA: RigidActor, actual val bodyB: RigidActor,
                                            frameA: Mat4f, frameB: Mat4f) : Joint() {
 
-    actual val frameA = Mat4f().set(frameA)
-    actual val frameB = Mat4f().set(frameB)
+    actual val frameA = Mat4f(frameA)
+    actual val frameB = Mat4f(frameB)
 
     override val pxJoint: PxFixedJoint
 

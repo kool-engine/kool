@@ -1,9 +1,6 @@
 package de.fabmax.kool.demo.physics.terrain
 
-import de.fabmax.kool.math.Mat4f
-import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.math.clamp
-import de.fabmax.kool.math.randomF
+import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.InRadiusTraverser
 import de.fabmax.kool.math.spatial.pointKdTree
 import de.fabmax.kool.scene.geometry.MeshBuilder
@@ -22,7 +19,7 @@ class LowPolyTree(seed: Int = 1337) {
         val root = Node(null, 0)
         root.setStrength(baseStrength, baseStrength)
         root.pose.set(pose)
-        root.pose.rotate(rand.randomF(-3f, 3f), 0f, rand.randomF(-3f, 3f))
+        root.pose.rotate(rand.randomF(-3f, 3f).deg, 0f.deg, rand.randomF(-3f, 3f).deg)
 
         var tips = listOf(root)
         while (tips.isNotEmpty()) {
@@ -115,7 +112,7 @@ class LowPolyTree(seed: Int = 1337) {
             withTransform {
                 transform.set(node.pose)
                 val rotAx = MutableVec3f(rand.randomF(-1f, 1f), rand.randomF(-1f, 1f), rand.randomF(-1f, 1f)).norm()
-                rotate(rand.randomF(0f, 360f), rotAx)
+                rotate(rand.randomF(0f, 360f).deg, rotAx)
                 scale(rand.randomF(0.6f, 1f), rand.randomF(0.6f, 1f), rand.randomF(0.6f, 1f))
 
                 icoSphere {
@@ -149,7 +146,7 @@ class LowPolyTree(seed: Int = 1337) {
     private fun grow(node: Node) {
         if (node.parent?.parent != null) {
             val maxTurn = 2f + (1f - node.relStrength).pow(2) * 10f
-            node.pose.rotate(rand.randomF(-maxTurn, maxTurn), 0f, rand.randomF(-maxTurn, maxTurn))
+            node.pose.rotate(rand.randomF(-maxTurn, maxTurn).deg, 0f.deg, rand.randomF(-maxTurn, maxTurn).deg)
         }
 
         val growLen = 1f + max(0f, node.strength / 200f)
@@ -175,11 +172,11 @@ class LowPolyTree(seed: Int = 1337) {
 
         val a = Node(node, node.depth + 1)
         a.setStrength(node.strength * splitW, baseStrength)
-        a.pose.rotate(forkAng * (1f - splitW), forkAx)
+        a.pose.rotate((forkAng * (1f - splitW)).deg, forkAx)
 
         val b = Node(node, node.depth + 1)
         b.setStrength(node.strength * (1f - splitW), baseStrength)
-        b.pose.rotate(-forkAng * splitW, forkAx)
+        b.pose.rotate((-forkAng * splitW).deg, forkAx)
 
         return listOf(a, b)
     }
@@ -201,7 +198,7 @@ class LowPolyTree(seed: Int = 1337) {
     }
 
     class Node(val parent: Node?, val depth: Int) : MutableVec3f() {
-        val pose = Mat4f()
+        val pose = MutableMat4f()
         val children = mutableListOf<Node>()
         var strength = 0f
         var relStrength = 0f

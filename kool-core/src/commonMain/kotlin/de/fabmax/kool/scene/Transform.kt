@@ -14,6 +14,9 @@ abstract class Transform {
 
     abstract fun setIdentity(): Transform
 
+    abstract fun setCompositionOf(translation: Vec3d, rotation: QuatD, scale: Vec3d): Transform
+    abstract fun setCompositionOf(translation: Vec3f, rotation: QuatF, scale: Vec3f): Transform
+
     abstract fun getPosition(result: MutableVec3d): MutableVec3d
 
     abstract fun setPosition(x: Double, y: Double, z: Double): Transform
@@ -25,18 +28,17 @@ abstract class Transform {
     abstract fun translate(t: Vec3d): Transform
     abstract fun translate(tx: Double, ty: Double, tz: Double): Transform
 
-    abstract fun rotate(angleDeg: Float, axis: Vec3f): Transform
-    abstract fun rotate(angleDeg: Float, axX: Float, axY: Float, axZ: Float): Transform
-    abstract fun rotate(angleDeg: Double, axis: Vec3d): Transform
-    abstract fun rotate(angleDeg: Double, axX: Double, axY: Double, axZ: Double): Transform
-
-    abstract fun rotate(eulerX: Float, eulerY: Float, eulerZ: Float): Transform
-    abstract fun rotate(eulerX: Double, eulerY: Double, eulerZ: Double): Transform
+    abstract fun rotate(angle: AngleF, axis: Vec3f): Transform
+    abstract fun rotate(angle: AngleD, axis: Vec3d): Transform
+    abstract fun rotate(quaternion: QuatF): Transform
+    abstract fun rotate(quaternion: QuatD): Transform
+    abstract fun rotate(eulerX: AngleF, eulerY: AngleF, eulerZ: AngleF): Transform
+    abstract fun rotate(eulerX: AngleD, eulerY: AngleD, eulerZ: AngleD): Transform
 
     abstract fun scale(s: Float): Transform
-    abstract fun scale(sx: Float, sy: Float, sz: Float): Transform
+    abstract fun scale(s: Vec3f): Transform
     abstract fun scale(s: Double): Transform
-    abstract fun scale(sx: Double, sy: Double, sz: Double): Transform
+    abstract fun scale(s: Vec3d): Transform
 
     open fun transform(vec: MutableVec3f, w: Float = 1f) = matrix.transform(vec, w)
     open fun transform(vec: Vec3f, w: Float, result: MutableVec3f) = matrix.transform(vec, w, result)
@@ -66,13 +68,13 @@ abstract class Transform {
 class TrsTransform : Transform() {
 
     val translation = MutableVec3d()
-    val rotation = Mat3d()
+    val rotation = MutableMat3d()
     val scale = MutableVec3d(Vec3d.ONES)
 
     private val lazyMatrix = LazyMat4d {
         it.setIdentity()
-            .setRotate(rotation)
-            .setOrigin(translation)
+            .translate(translation)
+            .mulUpperLeft(rotation)
             .scale(scale)
     }
     private val lazyInvMatrix = LazyMat4d { matrix.invert(it) }
@@ -91,13 +93,29 @@ class TrsTransform : Transform() {
         isIdentity = false
     }
 
-    override fun setIdentity(): Transform {
+    override fun setIdentity(): TrsTransform {
         lazyMatrix.setIdentity()
         lazyInvMatrix.setIdentity()
         translation.set(Vec3d.ZERO)
         rotation.setIdentity()
         scale.set(Vec3d.ONES)
         isIdentity = true
+        return this
+    }
+
+    override fun setCompositionOf(translation: Vec3d, rotation: QuatD, scale: Vec3d): TrsTransform {
+        this.translation.set(translation)
+        this.rotation.setIdentity().rotate(rotation)
+        this.scale.set(scale)
+        markDirty()
+        return this
+    }
+
+    override fun setCompositionOf(translation: Vec3f, rotation: QuatF, scale: Vec3f): TrsTransform {
+        this.translation.set(translation)
+        this.rotation.setIdentity().rotate(rotation.toQuatD())
+        this.scale.set(scale)
+        markDirty()
         return this
     }
 
@@ -123,12 +141,13 @@ class TrsTransform : Transform() {
         return this
     }
 
-    fun getRotation(result: Mat3d): Mat3d {
+    fun getRotation(result: MutableMat3d): Mat3d {
         return result.set(rotation)
     }
 
     fun getRotation(resultQuaternion: MutableQuatD): MutableQuatD {
-        return rotation.getRotation(resultQuaternion)
+        rotation.decompose(resultQuaternion, MutableVec3d())
+        return resultQuaternion
     }
 
     fun setRotation(rotation: Mat3f): TrsTransform {
@@ -144,28 +163,37 @@ class TrsTransform : Transform() {
     }
 
     fun setRotation(quaternion: QuatF): TrsTransform {
-        this.rotation.setRotate(quaternion.toQuatD())
+        this.rotation.setIdentity().rotate(quaternion.toQuatD())
         markDirty()
         return this
     }
 
     fun setRotation(quaternion: QuatD): TrsTransform {
-        this.rotation.setRotate(quaternion)
+        this.rotation.setIdentity().rotate(quaternion)
         markDirty()
         return this
     }
 
-    override fun rotate(angleDeg: Float, axis: Vec3f) = rotate(angleDeg, axis.x, axis.y, axis.z)
-    override fun rotate(angleDeg: Float, axX: Float, axY: Float, axZ: Float) = rotate(angleDeg.toDouble(), axX.toDouble(), axY.toDouble(), axZ.toDouble())
-    override fun rotate(angleDeg: Double, axis: Vec3d) = rotate(angleDeg, axis.x, axis.y, axis.z)
-    override fun rotate(angleDeg: Double, axX: Double, axY: Double, axZ: Double): TrsTransform {
-        rotation.rotate(angleDeg, axX, axY, axZ)
+    override fun rotate(angle: AngleF, axis: Vec3f) = rotate(angle.toAngleD(), axis.toVec3d())
+    override fun rotate(angle: AngleD, axis: Vec3d): TrsTransform {
+        rotation.rotate(angle, axis)
         markDirty()
         return this
     }
 
-    override fun rotate(eulerX: Float, eulerY: Float, eulerZ: Float) = rotate(eulerX.toDouble(), eulerY.toDouble(), eulerZ.toDouble())
-    override fun rotate(eulerX: Double, eulerY: Double, eulerZ: Double): TrsTransform {
+    override fun rotate(quaternion: QuatF): TrsTransform {
+        rotation.rotate(quaternion.toQuatD())
+        markDirty()
+        return this
+    }
+    override fun rotate(quaternion: QuatD): TrsTransform {
+        rotation.rotate(quaternion)
+        markDirty()
+        return this
+    }
+
+    override fun rotate(eulerX: AngleF, eulerY: AngleF, eulerZ: AngleF) = rotate(eulerX.toAngleD(), eulerY.toAngleD(), eulerZ.toAngleD())
+    override fun rotate(eulerX: AngleD, eulerY: AngleD, eulerZ: AngleD): TrsTransform {
         rotation.rotate(eulerX, eulerY, eulerZ)
         markDirty()
         return this
@@ -180,13 +208,13 @@ class TrsTransform : Transform() {
         return this
     }
 
-    override fun scale(s: Float) = scale(s.toDouble(), s.toDouble(), s.toDouble())
-    override fun scale(sx: Float, sy: Float, sz: Float) = scale(sx.toDouble(), sy.toDouble(), sz.toDouble())
-    override fun scale(s: Double) = scale(s, s, s)
-    override fun scale(sx: Double, sy: Double, sz: Double): TrsTransform {
-        scale.x *= sx
-        scale.y *= sy
-        scale.z *= sz
+    override fun scale(s: Float) = scale(Vec3d(s.toDouble()))
+    override fun scale(s: Vec3f) = scale(s.toVec3d())
+    override fun scale(s: Double) = scale(Vec3d(s))
+    override fun scale(s: Vec3d): TrsTransform {
+        scale.x *= s.x
+        scale.y *= s.y
+        scale.z *= s.z
         markDirty()
         return this
     }
@@ -200,17 +228,21 @@ class TrsTransform : Transform() {
     }
 
     fun set(mat: Mat4d): TrsTransform {
-        translation.set(mat.getOrigin(MutableVec3d()))
-        rotation.setRotate(mat.getRotation(MutableQuatD()))
-        scale.set(mat.getScale(MutableVec3d()))
+        val q = MutableQuatD()
+        mat.decompose(translation, q, scale)
+        rotation.setIdentity().rotate(q)
         markDirty()
         return this
     }
 
     fun set(mat: Mat4f): TrsTransform {
-        translation.set(mat.getOrigin(MutableVec3f()))
-        rotation.setRotate(mat.getRotation(MutableQuatF()).toQuatD())
-        scale.set(mat.getScale(MutableVec3f()))
+        val t = MutableVec3f()
+        val q = MutableQuatF()
+        val s = MutableVec3f()
+        mat.decompose(t, q, s)
+        translation.set(t)
+        rotation.setIdentity().rotate(q.toQuatD())
+        scale.set(s)
         markDirty()
         return this
     }
@@ -225,7 +257,7 @@ class MatrixTransform : Transform() {
 
     private val lazyInvMatrix = LazyMat4d { matrix.invert(it) }
 
-    override val matrix = Mat4d()
+    override val matrix = MutableMat4d()
     override val matrixInverse: Mat4d
         get() = lazyInvMatrix.get()
     override var isIdentity = true
@@ -243,12 +275,24 @@ class MatrixTransform : Transform() {
         return this
     }
 
+    override fun setCompositionOf(translation: Vec3d, rotation: QuatD, scale: Vec3d): MatrixTransform {
+        matrix.setIdentity().compose(translation, rotation, scale)
+        return this
+    }
+
+    override fun setCompositionOf(translation: Vec3f, rotation: QuatF, scale: Vec3f): MatrixTransform {
+        matrix.setIdentity().compose(translation.toVec3d(), rotation.toQuatD(), scale.toVec3d())
+        return this
+    }
+
     override fun getPosition(result: MutableVec3d): MutableVec3d {
-        return matrix.getOrigin(result)
+        return result.set(matrix.m03, matrix.m13, matrix.m23)
     }
     override fun setPosition(x: Double, y: Double, z: Double) = setPosition(Vec3d(x, y, z))
     override fun setPosition(position: Vec3d): MatrixTransform {
-        matrix.setOrigin(position)
+        matrix.m03 = position.x
+        matrix.m13 = position.y
+        matrix.m23 = position.z
         markDirty()
         return this
     }
@@ -262,27 +306,36 @@ class MatrixTransform : Transform() {
         return this
     }
 
-    override fun rotate(angleDeg: Float, axis: Vec3f) = rotate(angleDeg, axis.x, axis.y, axis.z)
-    override fun rotate(angleDeg: Float, axX: Float, axY: Float, axZ: Float) = rotate(angleDeg.toDouble(), axX.toDouble(), axY.toDouble(), axZ.toDouble())
-    override fun rotate(angleDeg: Double, axis: Vec3d) = rotate(angleDeg, axis.x, axis.y, axis.z)
-    override fun rotate(angleDeg: Double, axX: Double, axY: Double, axZ: Double): MatrixTransform {
-        matrix.rotate(angleDeg, axX, axY, axZ)
+    override fun rotate(angle: AngleF, axis: Vec3f) = rotate(angle.toAngleD(), axis.toVec3d())
+    override fun rotate(angle: AngleD, axis: Vec3d): MatrixTransform {
+        matrix.rotate(angle, axis)
         markDirty()
         return this
     }
 
-    override fun rotate(eulerX: Float, eulerY: Float, eulerZ: Float) = rotate(eulerX.toDouble(), eulerY.toDouble(), eulerZ.toDouble())
-    override fun rotate(eulerX: Double, eulerY: Double, eulerZ: Double): MatrixTransform {
+    override fun rotate(quaternion: QuatF): MatrixTransform {
+        matrix.rotate(quaternion.toQuatD())
+        markDirty()
+        return this
+    }
+    override fun rotate(quaternion: QuatD): MatrixTransform {
+        matrix.rotate(quaternion)
+        markDirty()
+        return this
+    }
+
+    override fun rotate(eulerX: AngleF, eulerY: AngleF, eulerZ: AngleF) = rotate(eulerX.toAngleD(), eulerY.toAngleD(), eulerZ.toAngleD())
+    override fun rotate(eulerX: AngleD, eulerY: AngleD, eulerZ: AngleD): MatrixTransform {
         matrix.rotate(eulerX, eulerY, eulerZ)
         markDirty()
         return this
     }
 
-    override fun scale(s: Float) = scale(s, s, s)
-    override fun scale(sx: Float, sy: Float, sz: Float) = scale(sx.toDouble(), sy.toDouble(), sz.toDouble())
-    override fun scale(s: Double) = scale(s, s, s)
-    override fun scale(sx: Double, sy: Double, sz: Double): MatrixTransform {
-        matrix.scale(sx, sy, sz)
+    override fun scale(s: Float) = scale(Vec3d(s.toDouble()))
+    override fun scale(s: Vec3f) = scale(s.toVec3d())
+    override fun scale(s: Double) = scale(Vec3d(s))
+    override fun scale(s: Vec3d): MatrixTransform {
+        matrix.scale(s)
         markDirty()
         return this
     }

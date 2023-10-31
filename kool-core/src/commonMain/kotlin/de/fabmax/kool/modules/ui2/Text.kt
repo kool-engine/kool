@@ -158,7 +158,7 @@ open class TextNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surfac
         } else {
             builder.configured(modifier.textColor) {
                 translate(widthPx * 0.5f, heightPx * 0.5f, 0f)
-                rotate(modifier.textRotation, Vec3f.Z_AXIS)
+                rotate(modifier.textRotation.deg, Vec3f.Z_AXIS)
                 translate(-textMetrics.width * 0.5f, textMetrics.yBaseline - textMetrics.height * 0.5f, 0f)
                 textProps.origin.set(Vec3f.ZERO)
                 text(textProps)

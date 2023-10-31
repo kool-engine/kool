@@ -4,6 +4,7 @@ import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.deg
 import de.fabmax.kool.modules.gltf.GltfFile
 import de.fabmax.kool.modules.gltf.loadGltfModel
 import de.fabmax.kool.modules.ksl.KslPbrShader
@@ -84,7 +85,7 @@ class SimplificationDemo : DemoScene("Simplification") {
 
             onUpdate += {
                 if (isAutoRotate.value) {
-                    transform.rotate(Time.deltaT * 3f, Vec3f.Y_AXIS)
+                    transform.rotate(3f.deg * Time.deltaT, Vec3f.Y_AXIS)
                 }
             }
         }

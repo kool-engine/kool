@@ -15,8 +15,8 @@ import physx.extensions.PxRevoluteJointFlagEnum
 actual class RevoluteJoint actual constructor(actual val bodyA: RigidActor, actual val bodyB: RigidActor,
                                               frameA: Mat4f, frameB: Mat4f) : Joint() {
 
-    actual val frameA = Mat4f().set(frameA)
-    actual val frameB = Mat4f().set(frameB)
+    actual val frameA = Mat4f(frameA)
+    actual val frameB = Mat4f(frameB)
 
     actual constructor(bodyA: RigidActor, bodyB: RigidActor,
                        pivotA: Vec3f, pivotB: Vec3f,

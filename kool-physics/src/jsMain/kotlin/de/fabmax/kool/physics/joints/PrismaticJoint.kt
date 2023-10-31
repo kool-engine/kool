@@ -14,8 +14,8 @@ actual class PrismaticJoint actual constructor(
     posB: Mat4f
 ) : Joint() {
 
-    actual val frameA = Mat4f().set(posA)
-    actual val frameB = Mat4f().set(posB)
+    actual val frameA = Mat4f(posA)
+    actual val frameB = Mat4f(posB)
     override val pxJoint: PxPrismaticJoint
     init {
         Physics.checkIsLoaded()

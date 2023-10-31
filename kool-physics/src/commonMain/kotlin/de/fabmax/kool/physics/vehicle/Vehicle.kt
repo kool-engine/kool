@@ -1,6 +1,7 @@
 package de.fabmax.kool.physics.vehicle
 
 import de.fabmax.kool.math.Mat4f
+import de.fabmax.kool.math.MutableMat4f
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.physics.PhysicsWorld
 import de.fabmax.kool.physics.RigidBody
@@ -10,7 +11,7 @@ import de.fabmax.kool.scene.addColorMesh
 import de.fabmax.kool.util.Color
 import kotlin.math.PI
 
-expect class Vehicle(vehicleProps: VehicleProperties, world: PhysicsWorld, pose: Mat4f = Mat4f()) : CommonVehicle {
+expect class Vehicle(vehicleProps: VehicleProperties, world: PhysicsWorld, pose: Mat4f = MutableMat4f()) : CommonVehicle {
     val forwardSpeed: Float
     val sidewaysSpeed: Float
     val longitudinalAcceleration: Float

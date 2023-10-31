@@ -161,7 +161,7 @@ sealed class MeshShapeData {
                     }
                     for (i in 0 .. steps) {
                         sample()
-                        rotate(360f / steps, 0f, 0f)
+                        rotate(360f.deg / steps, 0f.deg, 0f.deg)
                     }
                 }
             }

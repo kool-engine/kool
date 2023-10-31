@@ -98,7 +98,7 @@ class PlayerController(private val physicsObjects: PhysicsObjects, mainScene: Sc
         playerTransform
             .setIdentity()
             .translate(position)
-            .rotate(moveHeading.toDouble(), Vec3d.Y_AXIS)
+            .rotate(moveHeading.toDouble().deg, Vec3d.Y_AXIS)
     }
 
     override fun hitActorBehavior(actor: RigidActor): HitActorBehavior {

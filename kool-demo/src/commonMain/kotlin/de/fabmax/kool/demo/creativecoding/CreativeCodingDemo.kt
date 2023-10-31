@@ -8,6 +8,7 @@ import de.fabmax.kool.demo.LabeledSwitch
 import de.fabmax.kool.demo.MenuRow
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.deg
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
@@ -105,7 +106,7 @@ class CreativeCodingDemo : DemoScene("Creative Coding") {
             onUpdate += {
                 if (isAutoRotate.value) {
                     verticalRotation += Time.deltaT * -3f
-                    contentGroup.transform.rotate(Time.deltaT * 3f, Vec3f.Y_AXIS)
+                    contentGroup.transform.rotate((Time.deltaT * 3f).deg, Vec3f.Y_AXIS)
                 }
             }
         }

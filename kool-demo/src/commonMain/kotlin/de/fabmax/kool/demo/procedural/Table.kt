@@ -2,6 +2,7 @@ package de.fabmax.kool.demo.procedural
 
 import de.fabmax.kool.demo.DemoLoader
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.deg
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.deferred.deferredKslPbrShader
@@ -42,7 +43,7 @@ class Table : Mesh(IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS, Att
         val r = 1f
 
         translate(0f, -r, 0f)
-        rotate(90f, Vec3f.X_AXIS)
+        rotate(90f.deg, Vec3f.X_AXIS)
 
         profile {
             val shape = simpleShape(true) {

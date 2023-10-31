@@ -70,7 +70,7 @@ class Track(val world: VehicleWorld) : Node() {
         guardRail.cleanUp()
     }
 
-    private fun computeFrameAt(pos: Float, result: Mat4f) {
+    private fun computeFrameAt(pos: Float, result: MutableMat4f) {
         val prevKey = trackPointsMap.lowerKey(pos) ?: trackPointsMap.firstKey()
         val nextKey = trackPointsMap.higherKey(pos) ?: trackPointsMap.lastKey()
         val prev = trackPointsMap[prevKey]!!
@@ -90,10 +90,10 @@ class Track(val world: VehicleWorld) : Node() {
         x.rotate(90f.deg, up).norm()
         val y = z.cross(x, MutableVec3f()).norm()
 
-        result.setCol(0, x, 0f)
-        result.setCol(1, y, 0f)
-        result.setCol(2, z, 0f)
-        result.setCol(3, vec, 1f)
+        result.setColumn(0, x, 0f)
+        result.setColumn(1, y, 0f)
+        result.setColumn(2, z, 0f)
+        result.setColumn(3, vec, 1f)
     }
 
     private fun sampleTrack() {
@@ -223,13 +223,13 @@ class Track(val world: VehicleWorld) : Node() {
     private fun sampleGuardRailTrack(guardRailSec: GuardRailSection) {
         val steps = ((guardRailSec.to - guardRailSec.from) / 3f).roundToInt()
         val step = (guardRailSec.to - guardRailSec.from) / steps
-        val frame = Mat4f()
+        val frame = MutableMat4f()
         for (i in 0 .. steps) {
             computeFrameAt(guardRailSec.from + step * i, frame)
             val leftRightSign = if (guardRailSec.isLeft) { -1f } else { 1f }
             frame.translate(-7.65f * leftRightSign, 0f, 0f)
                 .translate(0f, 1.5f, 0f)
-                .rotate(90f * leftRightSign, Vec3f.Y_AXIS)
+                .rotate((90f * leftRightSign).deg, Vec3f.Y_AXIS)
 
             guardRail.signs += GuardRail.SignInstance(guardRail.signs.size, guardRailSec.isLeft, frame, this, world)
         }
@@ -285,7 +285,7 @@ class Track(val world: VehicleWorld) : Node() {
     private fun MeshBuilder.generateColumn(center: Vec3f, height: Float, dir: Float) {
         withTransform {
             translate(center)
-            rotate(dir, Vec3f.Y_AXIS)
+            rotate(dir.deg, Vec3f.Y_AXIS)
             profile {
                 multiShape {
                     simpleShape(true) {
@@ -374,16 +374,16 @@ class Track(val world: VehicleWorld) : Node() {
         val dir = MutableVec3f()
         val up = MutableVec3f(0f, 1f, 0f)
 
-        fun computeFrame(result: Mat4f) {
+        fun computeFrame(result: MutableMat4f) {
             val z = dir
             val x = MutableVec3f(z).apply { y = 0f }
             x.rotate(90f.deg, up).norm()
             val y = z.cross(x, MutableVec3f()).norm()
 
-            result.setCol(0, x, 0f)
-            result.setCol(1, y, 0f)
-            result.setCol(2, z, 0f)
-            result.setCol(3, this, 1f)
+            result.setColumn(0, x, 0f)
+            result.setColumn(1, y, 0f)
+            result.setColumn(2, z, 0f)
+            result.setColumn(3, this, 1f)
         }
     }
 

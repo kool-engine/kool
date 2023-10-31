@@ -5,7 +5,7 @@ import de.fabmax.kool.modules.mesh.HalfEdgeMesh
 
 class ErrorQuadric(val vertex: HalfEdgeMesh.HalfEdgeVertex) {
 
-    val errQuadric = Mat4d().setZero()
+    val errQuadric = MutableMat4d().set(Mat4d.ZERO)
     var isStickyVertex = false
     var isBorder = false
         private set

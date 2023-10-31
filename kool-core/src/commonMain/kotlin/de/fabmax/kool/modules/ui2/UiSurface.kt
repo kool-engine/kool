@@ -3,6 +3,7 @@ package de.fabmax.kool.modules.ui2
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.input.*
 import de.fabmax.kool.math.Vec2f
+import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.ui2.docking.Dock
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.pipeline.Shader
@@ -73,7 +74,7 @@ open class UiSurface(
 
     init {
         // mirror y-axis
-        transform.scale(1f, -1f, 1f)
+        transform.scale(mirrorTransformScale)
         onUpdate += {
             viewportWidth.set(it.renderPass.viewport.width.toFloat())
             viewportHeight.set(it.renderPass.viewport.height.toFloat())
@@ -692,6 +693,8 @@ open class UiSurface(
         const val LAYER_BACKGROUND = -100
         const val LAYER_FLOATING = 100
         const val LAYER_POPUP = 1000
+
+        private val mirrorTransformScale = Vec3f(1f, -1f, 1f)
 
         fun MeshBuilder.setupUiBuilder() {
             isInvertFaceOrientation = true

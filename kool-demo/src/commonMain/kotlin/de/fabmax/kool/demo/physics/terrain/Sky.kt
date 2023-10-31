@@ -152,7 +152,7 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
     }
 
     private suspend fun precomputeSky(timeOfDay: Float, parentScene: Scene, skyLut: Texture2d) {
-        val sunDir = computeLightDirection(SUN_TILT, sunProgress(timeOfDay), Mat3f())
+        val sunDir = computeLightDirection(SUN_TILT, sunProgress(timeOfDay), MutableMat3f())
         val sky = SkyCubeIblSystem(parentScene, skyLut)
         sky.skyPass.elevation = 90f - acos(-sunDir.y).toDeg()
         sky.skyPass.azimuth = atan2(sunDir.x, -sunDir.z).toDeg()
@@ -189,13 +189,13 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
     private fun computeLightDirection(
         tilt: Float,
         progress: Float,
-        orientation: Mat3f,
+        orientation: MutableMat3f,
         direction: MutableVec3f = MutableVec3f()
     ): Vec3f {
         orientation
             .setIdentity()
-            .rotate(tilt, Vec3f.Z_AXIS)
-            .rotate(progress * 180f, Vec3f.X_AXIS)
+            .rotate(tilt.deg, Vec3f.Z_AXIS)
+            .rotate((progress * 180f).deg, Vec3f.X_AXIS)
         return orientation.transform(direction.set(0f, 0f, 1f))
     }
 
@@ -211,7 +211,7 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
     private class SkyObjectShader(isPointShader: Boolean = false, colorBlock: ColorBlockConfig.() -> Unit) :
         KslUnlitShader(config(isPointShader, colorBlock)) {
 
-        val orientation: Mat3f by uniformMat3f("uOrientation", Mat3f().setIdentity())
+        val orientation: MutableMat3f by uniformMat3f("uOrientation", MutableMat3f())
         var alpha: Float by uniform1f("uAlpha", 1f)
 
         companion object {

@@ -4,10 +4,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.input.InputStack
 import de.fabmax.kool.input.KeyboardInput
-import de.fabmax.kool.math.Mat3f
-import de.fabmax.kool.math.Mat4d
-import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ksl.KslBlinnPhongShader
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.scene.*
@@ -35,7 +32,7 @@ class GizmoTest : DemoScene("Gizmo Test") {
             }
 
             override fun onDragRotate(rotationAxis: Vec3f, angle: Float, targetTransform: Transform, ctx: KoolContext) {
-                targetTransform.rotate(angle, rotationAxis)
+                targetTransform.rotate(angle.deg, rotationAxis)
             }
         }
 
@@ -61,7 +58,7 @@ class GizmoTest : DemoScene("Gizmo Test") {
         addNode(gizmo1)
 
         gizmo2.setFixedScale(1f)
-        gizmo2.setGizmoTransform(Mat4d().translate(0.0, 0.0, 3.0))
+        gizmo2.setGizmoTransform(MutableMat4d().translate(0.0, 0.0, 3.0))
         gizmo2.properties = Gizmo.GizmoProperties(
             axisLenX = 4f,
             axisColorX = Color.WHITE,
@@ -105,7 +102,7 @@ class GizmoTest : DemoScene("Gizmo Test") {
             }
 
             override fun onDragRotate(rotationAxis: Vec3f, angle: Float, targetTransform: Transform, ctx: KoolContext) {
-                targetTransform.rotate(angle, rotationAxis)
+                targetTransform.rotate(angle.deg, rotationAxis)
             }
         }
 
@@ -220,8 +217,8 @@ class GizmoTest : DemoScene("Gizmo Test") {
         val ry = mutableStateOf(0f).onChange { updateRotation(y = it) }
         val rz = mutableStateOf(0f).onChange { updateRotation(z = it) }
 
-        private val tmpMat4 = Mat4d()
-        private val tmpMat3 = Mat3f()
+        private val tmpMat4 = MutableMat4d()
+        private val tmpMat3 = MutableMat3d()
         private val tmpVec = MutableVec3f()
 
         fun update() {
@@ -233,7 +230,7 @@ class GizmoTest : DemoScene("Gizmo Test") {
             ty.set(tmpVec.y)
             tz.set(tmpVec.z)
 
-            tmpMat4.getRotation(tmpMat3).getEulerAngles(tmpVec)
+            tmpMat4.getUpperLeft(tmpMat3).getEulerAngles().toMutableVec3f(tmpVec)
             rx.set(tmpVec.x)
             ry.set(tmpVec.y)
             rz.set(tmpVec.z)

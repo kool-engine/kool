@@ -7,19 +7,19 @@ class Mat4Test {
 
     @Test
     fun mulTest() {
-        val t1 = Mat4fnew(
+        val t1 = Mat4f(
             1f, 2f, 3f, 4f,
             5f, 6f, 7f, 8f,
             9f, 10f, 11f, 12f,
             13f, 14f, 15f, 16f
         )
-        val t2 = Mat4fnew(
+        val t2 = Mat4f(
             1f, 5f, 9f, 13f,
             2f, 6f, 10f, 14f,
             3f, 7f, 11f, 15f,
             4f, 8f, 12f, 16f
         )
-        val expected = Mat4fnew(
+        val expected = Mat4f(
             30f, 70f, 110f, 150f,
             70f, 174f, 278f, 382f,
             110f, 278f, 446f, 614f,
@@ -39,23 +39,32 @@ class Mat4Test {
         val mat = MutableMat4f().translate(t)
         val r = mat * Vec4f(0f, 0f, 0f, 1f)
         assert(r.xyz.isFuzzyEqual(t)) { "Result: $r, expected: $t" }
+
+        val mt = Mat4f.translation(4f, 5f, 6f)
+        mat.rotate(30f.deg, 40f.deg, 50f.deg)
+
+        val m2 = MutableMat4f(mat)
+        mat.translate(4f, 5f, 6f)
+        m2.mul(mt)
+
+        assert(m2.isFuzzyEqual(mat))
     }
 
     @Test
     fun axisRotationTest() {
-        val rotAxX = Mat4fnew.rotation(90f.deg, Vec3f.X_AXIS)
+        val rotAxX = Mat4f.rotation(90f.deg, Vec3f.X_AXIS)
         val rX = rotAxX * Vec4f(Vec3f.Y_AXIS, 1f)
         assert(rX.xyz.isFuzzyEqual(Vec3f.Z_AXIS)) { "X-axis rotation: Result: ${rX.xyz}, expected: ${Vec3f.Z_AXIS}" }
 
-        val rotAxY = Mat4fnew.rotation(90f.deg, Vec3f.Y_AXIS)
+        val rotAxY = Mat4f.rotation(90f.deg, Vec3f.Y_AXIS)
         val rY = rotAxY * Vec4f(Vec3f.Z_AXIS, 1f)
         assert(rY.xyz.isFuzzyEqual(Vec3f.X_AXIS)) { "Y-axis rotation: Result: ${rY.xyz}, expected: ${Vec3f.X_AXIS}" }
 
-        val rotAxZ = Mat4fnew.rotation(90f.deg, Vec3f.Z_AXIS)
+        val rotAxZ = Mat4f.rotation(90f.deg, Vec3f.Z_AXIS)
         val rZ = rotAxZ * Vec4f(Vec3f.X_AXIS, 1f)
         assert(rZ.xyz.isFuzzyEqual(Vec3f.Y_AXIS)) { "Z-axis rotation: Result: ${rZ.xyz}, expected: ${Vec3f.Y_AXIS}" }
 
-        val rotGen = Mat4fnew.rotation(45f.deg, Vec3f.ONES)
+        val rotGen = Mat4f.rotation(45f.deg, Vec3f.ONES)
         val rGen = rotGen * Vec4f(Vec3f.X_AXIS, 1f)
         assert(rGen.xyz.isFuzzyEqual(Vec3f(0.80473787f, 0.50587934f, -0.3106172f))) {
             "General case rotation: Result: ${rGen.xyz}, expected: (0.80473787, 0.50587934, -0.3106172)"
@@ -64,19 +73,19 @@ class Mat4Test {
 
     @Test
     fun quaternionRotationTest() {
-        val rotX = Mat4fnew.rotation(QuatF.rotation(90f.deg, Vec3f.X_AXIS))
+        val rotX = Mat4f.rotation(QuatF.rotation(90f.deg, Vec3f.X_AXIS))
         val rX = rotX * Vec4f(Vec3f.Y_AXIS, 1f)
         assert(rX.xyz.isFuzzyEqual(Vec3f.Z_AXIS)) { "X-axis quaternion rotation: Result: ${rX.xyz}, expected: ${Vec3f.Z_AXIS}" }
 
-        val rotY = Mat4fnew.rotation(QuatF.rotation(90f.deg, Vec3f.Y_AXIS))
+        val rotY = Mat4f.rotation(QuatF.rotation(90f.deg, Vec3f.Y_AXIS))
         val rY = rotY * Vec4f(Vec3f.Z_AXIS, 1f)
         assert(rY.xyz.isFuzzyEqual(Vec3f.X_AXIS)) { "Y-axis quaternion rotation: Result: ${rY.xyz}, expected: ${Vec3f.X_AXIS}" }
 
-        val rotZ = Mat4fnew.rotation(QuatF.rotation(90f.deg, Vec3f.Z_AXIS))
+        val rotZ = Mat4f.rotation(QuatF.rotation(90f.deg, Vec3f.Z_AXIS))
         val rZ = rotZ * Vec4f(Vec3f.X_AXIS, 1f)
         assert(rZ.xyz.isFuzzyEqual(Vec3f.Y_AXIS)) { "Z-axis quaternion rotation: Result: ${rZ.xyz}, expected: ${Vec3f.Y_AXIS}" }
 
-        val rotGen = Mat4fnew.rotation(QuatF.rotation(45f.deg, Vec3f.ONES))
+        val rotGen = Mat4f.rotation(QuatF.rotation(45f.deg, Vec3f.ONES))
         val rGen = rotGen * Vec4f(Vec3f.X_AXIS, 1f)
         assert(rGen.xyz.isFuzzyEqual(Vec3f(0.80473787f, 0.50587934f, -0.3106172f))) {
             "General case quaternion rotation: Result: ${rGen.xyz}, expected: (0.80473787, 0.50587934, -0.3106172)"
@@ -85,15 +94,15 @@ class Mat4Test {
 
     @Test
     fun eulerRotationTest() {
-        val rotX = Mat4fnew.rotation(90f.deg, 0f.deg, 0f.deg)
+        val rotX = Mat4f.rotation(90f.deg, 0f.deg, 0f.deg)
         val rX = rotX * Vec4f(Vec3f.Y_AXIS, 1f)
         assert(rX.xyz.isFuzzyEqual(Vec3f.Z_AXIS)) { "X-axis euler rotation: Result: ${rX.xyz}, expected: ${Vec3f.Z_AXIS}" }
 
-        val rotY = Mat4fnew.rotation(0f.deg, 90f.deg, 0f.deg)
+        val rotY = Mat4f.rotation(0f.deg, 90f.deg, 0f.deg)
         val rY = rotY * Vec4f(Vec3f.Z_AXIS, 1f)
         assert(rY.xyz.isFuzzyEqual(Vec3f.X_AXIS)) { "Y-axis euler rotation: Result: ${rY.xyz}, expected: ${Vec3f.X_AXIS}" }
 
-        val rotZ = Mat4fnew.rotation(0f.deg, 0f.deg, 90f.deg)
+        val rotZ = Mat4f.rotation(0f.deg, 0f.deg, 90f.deg)
         val rZ = rotZ * Vec4f(Vec3f.X_AXIS, 1f)
         assert(rZ.xyz.isFuzzyEqual(Vec3f.Y_AXIS)) { "Z-axis euler rotation: Result: ${rZ.xyz}, expected: ${Vec3f.Y_AXIS}" }
     }
@@ -115,7 +124,7 @@ class Mat4Test {
         val s = Vec3f(1.5f, 2.5f, 3.5f)
         val r = QuatF.rotation(45f.deg, Vec3f.ONES)
 
-        val m = Mat4fnew.composition(t, r, s)
+        val m = Mat4f.composition(t, r, s)
         val mt = MutableMat4f()
             .translate(t)
             .rotate(r)
@@ -138,7 +147,7 @@ class Mat4Test {
         for (i in 1..100) {
             val ax = rand.randomInUnitSphere()
             val q = QuatF.rotation(rand.randomF(-180f, 180f).deg, ax)
-            val m = Mat4fnew.rotation(q)
+            val m = Mat4f.rotation(q)
 
             val rq = MutableQuatF()
             m.decompose(MutableVec3f(), rq, MutableVec3f())
@@ -156,12 +165,27 @@ class Mat4Test {
             val ex = rand.randomF(-90f, 90f).deg
             val ey = rand.randomF(-90f, 90f).deg
             val ez = rand.randomF(-90f, 90f).deg
-            val m = Mat4fnew.rotation(ex, ey, ez, o)
+            val m = Mat4f.rotation(ex, ey, ez, o)
 
             val r = m.getEulerAngles(MutableVec3f(), o)
             assert(isFuzzyEqual(ex.deg, r.x, eps)) { "${r.x} != ${ex.deg} (expected)" }
             assert(isFuzzyEqual(ey.deg, r.y, eps)) { "${r.y} != ${ey.deg} (expected)" }
             assert(isFuzzyEqual(ez.deg, r.z, eps)) { "${r.z} != ${ez.deg} (expected)" }
         }
+    }
+
+    @Test
+    fun stackTest() {
+        val stack = Mat4fStack()
+
+        val m = Mat4f.rotation(37f.deg, Vec3f.ONES)
+
+        assert(stack.isFuzzyEqual(Mat4f.IDENTITY))
+        stack.push()
+        assert(stack.isFuzzyEqual(Mat4f.IDENTITY))
+        stack.mul(m)
+        assert(stack.isFuzzyEqual(m))
+        stack.pop()
+        assert(stack.isFuzzyEqual(Mat4f.IDENTITY))
     }
 }

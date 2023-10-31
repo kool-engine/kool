@@ -95,15 +95,15 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
 
     fun translate(x: Float, y: Float, z: Float) = transform.translate(x, y, z)
 
-    fun rotate(angleDeg: Float, axis: Vec3f) = transform.rotate(angleDeg, axis)
+    fun rotate(angleDeg: AngleF, axis: Vec3f) = transform.rotate(angleDeg, axis)
 
-    fun rotate(angleDeg: Float, axX: Float, axY: Float, axZ: Float) = transform.rotate(angleDeg, axX, axY, axZ)
+    fun rotate(angleDeg: AngleF, axX: Float, axY: Float, axZ: Float) = transform.rotate(angleDeg, Vec3f(axX, axY, axZ))
 
-    fun rotate(eulerX: Float, eulerY: Float, eulerZ: Float) = transform.rotate(eulerX, eulerY, eulerZ)
+    fun rotate(eulerX: AngleF, eulerY: AngleF, eulerZ: AngleF) = transform.rotate(eulerX, eulerY, eulerZ, EulerOrder.ZYX)
 
-    fun scale(s: Float) = transform.scale(s, s, s)
+    fun scale(s: Float) = transform.scale(s)
 
-    fun scale(x: Float, y: Float, z: Float) = transform.scale(x, y, z)
+    fun scale(x: Float, y: Float, z: Float) = transform.scale(Vec3f(x, y, z))
 
     fun setCoordSystem(origin: Vec3f, right: Vec3f, up: Vec3f, top: Vec3f? = null) {
         var topV = top
@@ -702,7 +702,7 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
         if (props.bottomFill) {
             withTransform {
                 translate(0f, yb, 0f)
-                rotate(90f, Vec3f.X_AXIS)
+                rotate(90f.deg, Vec3f.X_AXIS)
                 circle {
                     steps = props.steps
                     radius = props.bottomRadius
@@ -713,7 +713,7 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
         if (props.topFill) {
             withTransform {
                 translate(0f, yt, 0f)
-                rotate(-90f, Vec3f.X_AXIS)
+                rotate((-90f).deg, Vec3f.X_AXIS)
                 circle {
                     steps = props.steps
                     radius = props.topRadius

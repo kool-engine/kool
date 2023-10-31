@@ -114,17 +114,17 @@ class AnimatedTransformGroup(val target: Node): AnimationNode {
     private val animRotation = MutableQuatD()
     private val animScale = MutableVec3d()
 
-    private val quatRotMat = Mat4d()
-    private val weightedTransformMat = Mat4d()
+    private val quatRotMat = MutableMat4d()
+    private val weightedTransformMat = MutableMat4d()
 
     init {
         val vec4 = MutableVec4d()
-        target.transform.matrix.getCol(3, vec4)
+        target.transform.matrix.getColumn(3, vec4)
         initTranslation.set(vec4.x, vec4.y, vec4.z)
         target.transform.matrix.getRotation(initRotation)
-        val sx = target.transform.matrix.getCol(0, vec4).length()
-        val sy = target.transform.matrix.getCol(1, vec4).length()
-        val sz = target.transform.matrix.getCol(2, vec4).length()
+        val sx = target.transform.matrix.getColumn(0, vec4).length()
+        val sy = target.transform.matrix.getColumn(1, vec4).length()
+        val sz = target.transform.matrix.getColumn(2, vec4).length()
         initScale.set(sx, sy, sz)
     }
 
@@ -143,16 +143,16 @@ class AnimatedTransformGroup(val target: Node): AnimationNode {
         } else {
             target.transform.setIdentity()
             target.transform.translate(animTranslation)
-            target.transform.matrix.mul(quatRotMat.setRotate(animRotation))
-            target.transform.scale(animScale.x, animScale.y, animScale.z)
+            target.transform.rotate(animRotation)
+            target.transform.scale(animScale)
         }
     }
 
     override fun applyTransformWeighted(weight: Float, firstWeightedTransform: Boolean) {
         weightedTransformMat.setIdentity()
         weightedTransformMat.translate(animTranslation)
-        weightedTransformMat.mul(quatRotMat.setRotate(animRotation))
-        weightedTransformMat.scale(animScale.x, animScale.y, animScale.z)
+        weightedTransformMat.rotate(animRotation)
+        weightedTransformMat.scale(animScale)
 
         var t = target.transform as? MatrixTransform
         if (t == null) {
@@ -160,15 +160,28 @@ class AnimatedTransformGroup(val target: Node): AnimationNode {
             target.transform = t
         }
 
-        if (firstWeightedTransform) {
-            for (i in 0..15) {
-                t.matrix.array[i] = weightedTransformMat.array[i] * weight
-            }
-        } else {
-            for (i in 0..15) {
-                t.matrix.array[i] += weightedTransformMat.array[i] * weight
-            }
-        }
+        val wm = if (firstWeightedTransform) 0f else 1f
+
+        t.matrix.m00 = t.matrix.m00 * wm + weightedTransformMat.m00 * weight
+        t.matrix.m01 = t.matrix.m01 * wm + weightedTransformMat.m01 * weight
+        t.matrix.m02 = t.matrix.m02 * wm + weightedTransformMat.m02 * weight
+        t.matrix.m03 = t.matrix.m03 * wm + weightedTransformMat.m03 * weight
+
+        t.matrix.m10 = t.matrix.m10 * wm + weightedTransformMat.m10 * weight
+        t.matrix.m11 = t.matrix.m11 * wm + weightedTransformMat.m11 * weight
+        t.matrix.m12 = t.matrix.m12 * wm + weightedTransformMat.m12 * weight
+        t.matrix.m13 = t.matrix.m13 * wm + weightedTransformMat.m13 * weight
+
+        t.matrix.m20 = t.matrix.m20 * wm + weightedTransformMat.m20 * weight
+        t.matrix.m21 = t.matrix.m21 * wm + weightedTransformMat.m21 * weight
+        t.matrix.m22 = t.matrix.m22 * wm + weightedTransformMat.m22 * weight
+        t.matrix.m23 = t.matrix.m23 * wm + weightedTransformMat.m23 * weight
+
+        t.matrix.m30 = t.matrix.m30 * wm + weightedTransformMat.m30 * weight
+        t.matrix.m31 = t.matrix.m31 * wm + weightedTransformMat.m31 * weight
+        t.matrix.m32 = t.matrix.m32 * wm + weightedTransformMat.m32 * weight
+        t.matrix.m33 = t.matrix.m33 * wm + weightedTransformMat.m33 * weight
+
         target.transform.markDirty()
     }
 

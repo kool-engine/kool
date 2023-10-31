@@ -47,13 +47,14 @@ sealed class Light : Node() {
         val c = dir.cross(b, MutableVec3d())
         val t = transform
         if (t is TrsTransform) {
-            t.rotation.setCol(0, dir)
-            t.rotation.setCol(1, b)
-            t.rotation.setCol(2, c)
+            t.rotation.setColumn(0, dir)
+            t.rotation.setColumn(1, b)
+            t.rotation.setColumn(2, c)
         } else {
-            transform.matrix.setCol(0, dir, 0.0)
-            transform.matrix.setCol(1, b, 0.0)
-            transform.matrix.setCol(2, c, 0.0)
+            val mt = t as MatrixTransform
+            mt.matrix.setColumn(0, dir, 0.0)
+            mt.matrix.setColumn(1, b, 0.0)
+            mt.matrix.setColumn(2, c, 0.0)
         }
         transform.setPosition(pos)
         updateModelMat()

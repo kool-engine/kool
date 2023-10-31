@@ -2,6 +2,7 @@ package de.fabmax.kool.modules.ui2
 
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.Vec4f
+import de.fabmax.kool.math.deg
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.TextProps
 import de.fabmax.kool.util.*
@@ -63,9 +64,9 @@ class CachedTextGeometry(node: UiNode) : CachedGeometry(node, IndexedVertexList(
         if (textRotation != 0f) {
             translate(textProps.origin)
             when (textRotation) {
-                90f -> rotate(90f, Vec3f.Z_AXIS)
-                180f -> rotate(180f, Vec3f.Z_AXIS)
-                270f -> rotate(270f, Vec3f.Z_AXIS)
+                90f -> rotate(90f.deg, Vec3f.Z_AXIS)
+                180f -> rotate(180f.deg, Vec3f.Z_AXIS)
+                270f -> rotate(270f.deg, Vec3f.Z_AXIS)
                 else -> logW { "CachedText supports only 90 degrees rotation steps" }
             }
             translate(-textProps.origin.x, -textProps.origin.y, -textProps.origin.z)

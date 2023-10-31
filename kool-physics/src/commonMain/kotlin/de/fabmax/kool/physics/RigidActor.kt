@@ -24,9 +24,6 @@ abstract class CommonRigidActor : Releasable {
     abstract val isActive: Boolean
 
     val transform = TrsTransform()
-//    protected val invTransformLazy = LazyMat4f { transform.invert(it) }
-//    val invTransform: Mat4f
-//        get() = invTransformLazy.get()
 
     val onPhysicsUpdate = mutableListOf<(Float) -> Unit>()
 
@@ -36,17 +33,21 @@ abstract class CommonRigidActor : Releasable {
 
     val tags = Tags()
 
-    fun setRotation(eulerX: Float, eulerY: Float, eulerZ: Float) {
-        setRotation(Mat3f().setRotate(eulerX, eulerY, eulerZ))
+    fun setRotation(eulerX: AngleF, eulerY: AngleF, eulerZ: AngleF) {
+        setRotation(MutableMat3f().rotate(eulerX, eulerY, eulerZ))
     }
 
     fun setRotation(rotation: Mat3f) {
-        this.rotation = rotation.getRotation(MutableQuatF())
+        val q = MutableQuatF()
+        rotation.decompose(q)
+        this.rotation = q
     }
 
     fun setTransform(transform: Mat4f) {
+        val q = MutableQuatF()
+        transform.decompose(rotation = q)
         this.position = transform.transform(MutableVec3f())
-        this.rotation = transform.getRotation(MutableQuatF())
+        this.rotation = q
     }
 
     open fun attachShape(shape: Shape) {
@@ -90,9 +91,5 @@ abstract class CommonRigidActor : Releasable {
             materialCfg()
         }
         transform = this@CommonRigidActor.transform
-//        onUpdate += {
-//            transform.set(this@CommonRigidActor.transform)
-//            transform.markDirty()
-//        }
     }
 }

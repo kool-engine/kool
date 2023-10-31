@@ -6,9 +6,10 @@ import de.fabmax.kool.demo.DemoLoader
 import de.fabmax.kool.demo.DemoScene
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.demo.physics.vehicle.ui.VehicleUi
-import de.fabmax.kool.math.Mat3f
+import de.fabmax.kool.math.MutableMat3f
 import de.fabmax.kool.math.SimpleSpline3f
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.deg
 import de.fabmax.kool.modules.gltf.GltfFile
 import de.fabmax.kool.modules.gltf.loadGltfModel
 import de.fabmax.kool.modules.ksl.blocks.ColorBlockConfig
@@ -263,11 +264,8 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
         }
 
         val ground = RigidStatic().apply {
-            //simulationFilterData = vehicleWorld.groundSimFilterData
-            //queryFilterData = vehicleWorld.groundQryFilterData
-            //attachShape(Shape(PlaneGeometry(), vehicleWorld.defaultMaterial))
             attachShape(Shape(PlaneGeometry(), Physics.defaultMaterial))
-            setRotation(Mat3f().rotate(90f, Vec3f.Z_AXIS))
+            setRotation(MutableMat3f().rotate(90f.deg, Vec3f.Z_AXIS))
         }
         vehicleWorld.physics.addActor(ground)
     }

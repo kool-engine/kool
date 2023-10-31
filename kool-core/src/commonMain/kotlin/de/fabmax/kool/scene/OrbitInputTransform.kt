@@ -83,8 +83,8 @@ open class OrbitInputTransform(name: String? = null) : Node(name), InputStack.Po
     private val tmpVec1 = MutableVec3f()
     private val tmpVec2 = MutableVec3f()
 
-    private val mouseTransform = Mat4d()
-    private val mouseTransformInv = Mat4d()
+    private val mouseTransform = MutableMat4d()
+    private val mouseTransformInv = MutableMat4d()
 
     private val matrixTransform: MatrixTransform
         get() = transform as MatrixTransform
@@ -146,9 +146,9 @@ open class OrbitInputTransform(name: String? = null) : Node(name), InputStack.Po
         val hr = horiRotAnimator.actual
         mouseTransform.setIdentity()
         mouseTransform.translate(translation.x, translation.y, translation.z)
-        mouseTransform.scale(z, z, z)
-        mouseTransform.rotate(vr, verticalAxis)
-        mouseTransform.rotate(hr, horizontalAxis)
+        mouseTransform.scale(z)
+        mouseTransform.rotate(vr.deg, verticalAxis)
+        mouseTransform.rotate(hr.deg, horizontalAxis)
 
         if (isKeepingStandardTransform) {
             matrixTransform.mul(mouseTransform)

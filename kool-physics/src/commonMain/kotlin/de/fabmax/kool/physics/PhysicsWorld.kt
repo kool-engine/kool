@@ -4,6 +4,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.Ray
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.deg
 import de.fabmax.kool.physics.articulations.Articulation
 import de.fabmax.kool.physics.geometry.CollisionGeometry
 import de.fabmax.kool.physics.geometry.PlaneGeometry
@@ -186,7 +187,7 @@ abstract class CommonPhysicsWorld : Releasable {
         val groundPlane = RigidStatic()
         val shape = Shape(PlaneGeometry(), Material(0.5f, 0.5f, 0.2f))
         groundPlane.attachShape(shape)
-        groundPlane.setRotation(0f, 0f, 90f)
+        groundPlane.setRotation(0f.deg, 0f.deg, 90f.deg)
         addActor(groundPlane)
         return groundPlane
     }

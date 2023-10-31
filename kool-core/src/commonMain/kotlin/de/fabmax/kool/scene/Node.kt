@@ -63,7 +63,7 @@ open class Node(name: String? = null) : Disposable {
      * This node's model matrix, updated on each frame based on this node's transform and the model matrix of the
      * parent node.
      */
-    val modelMat = Mat4d()
+    val modelMat = MutableMat4d()
 
     private val modelMatInvLazy = LazyMat4d { modelMat.invert(it) }
     val modelMatInverse: Mat4d
@@ -146,7 +146,7 @@ open class Node(name: String? = null) : Disposable {
     }
 
     open fun updateModelMat(recursive: Boolean = false) {
-        modelMat.set(parent?.modelMat ?: MODEL_MAT_IDENTITY)
+        modelMat.set(parent?.modelMat ?: Mat4d.IDENTITY)
         if (!transform.isIdentity) {
             modelMat.mul(transform.matrix)
         }
@@ -335,10 +335,6 @@ open class Node(name: String? = null) : Disposable {
 
     private fun getDefaultName(): String {
         return UniqueId.nextId(this::class.simpleName ?: "unknown")
-    }
-
-    companion object {
-        private val MODEL_MAT_IDENTITY = Mat4d()
     }
 }
 

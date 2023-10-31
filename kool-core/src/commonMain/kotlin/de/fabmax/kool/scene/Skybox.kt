@@ -1,6 +1,6 @@
 package de.fabmax.kool.scene
 
-import de.fabmax.kool.math.Mat3f
+import de.fabmax.kool.math.MutableMat3f
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
@@ -57,7 +57,7 @@ object Skybox {
         val skies: Array<TextureCube?> by textureCubeArray("tSkies", 2)
         var skyWeights: Vec2f by uniform2f("uSkyWeights", Vec2f.X_AXIS)
 
-        var skyOrientation: Mat3f by uniformMat3f("uSkyOrientation", Mat3f().setIdentity())
+        var skyOrientation: MutableMat3f by uniformMat3f("uSkyOrientation", MutableMat3f())
         var lod: Float by uniform1f("uLod")
 
         fun setSingleSky(skyTex: TextureCube?) = setBlendSkies(skyTex, 1f, skyTex, 0f)

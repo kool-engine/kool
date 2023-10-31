@@ -37,7 +37,6 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, val wor
     private val peakTorque = vehicleProps.peakEngineTorque
 
     private val tmpVec = MutableVec3f()
-    private val tmpMat = Mat4f()
     private val linearSpeed = MutableVec3f()
     private val prevLinearSpeed = MutableVec3f()
     private val linearAccel = MutableVec3f()

@@ -52,8 +52,8 @@ class Roses : Node() {
         val blossomMesh: Mesh
 
         val rand = Random(seed)
-        val shaftTopTransform = Mat4f()
-        val shaftLeafTransform = Mat4f()
+        val shaftTopTransform = MutableMat4f()
+        val shaftLeafTransform = MutableMat4f()
 
         init {
             shaftMesh = ColorMesh().apply {
@@ -122,7 +122,7 @@ class Roses : Node() {
 
         private fun MeshBuilder.makeShaftGeometry() {
             withTransform {
-                rotate(90f, Vec3f.NEG_X_AXIS)
+                rotate(90f.deg, Vec3f.NEG_X_AXIS)
 
                 // shaft
                 profile {
@@ -133,7 +133,7 @@ class Roses : Node() {
                     val steps = 6
                     for (i in 0 until steps) {
                         val ax = MutableVec3f(rand.randomF(-1f, 1f), rand.randomF(-1f, 1f), 0f).norm()
-                        rotate(rand.randomF(0f, 15f), ax)
+                        rotate(rand.randomF(0f, 15f).deg, ax)
                         val h = rand.randomF(2f, 4f)
 
                         val p = i.toFloat() / steps
@@ -188,7 +188,7 @@ class Roses : Node() {
         private fun MeshBuilder.makeThorn() {
             withTransform {
                 val ax = MutableVec3f(rand.randomF(-1f, 1f), rand.randomF(-1f, 1f), 0f).norm()
-                rotate(90f, ax)
+                rotate(90f.deg, ax)
                 val shaftUp = MutableVec3f(0f, 0f, 1f).rotate((-90f).deg, ax).mul(0.1f)
                 translate(0f, 0f, 0.1f)
 
@@ -211,13 +211,13 @@ class Roses : Node() {
 
         private fun MeshBuilder.makeShaftLeafGeometry() {
             transform.mul(shaftLeafTransform)
-            rotate(rand.randomF(0f, 360f), Vec3f.Z_AXIS)
+            rotate(rand.randomF(0f, 360f).deg, Vec3f.Z_AXIS)
 
             val grad = ColorGradient(shaftGrad.getColor(0.7f), MdColor.LIGHT_GREEN toneLin 900)
 
             for (i in 0..1) {
                 withTransform {
-                    rotate(rand.randomF(30f, 45f), Vec3f.X_AXIS)
+                    rotate(rand.randomF(30f, 45f).deg, Vec3f.X_AXIS)
                     color = grad.getColor(0f)
                     val leafBases = mutableListOf<Mat4f>()
 
@@ -230,21 +230,23 @@ class Roses : Node() {
 
                             sample()
                             translate(0f, 0f, 0.4f)
-                            rotate(rand.randomF(2f, 4f), Vec3f.X_AXIS)
+                            rotate(rand.randomF(2f, 4f).deg, Vec3f.X_AXIS)
                             withXyScale(0.6f) { sample() }
                             translate(0f, 0f, 0.4f)
-                            rotate(rand.randomF(2f, 4f), Vec3f.X_AXIS)
+                            rotate(rand.randomF(2f, 4f).deg, Vec3f.X_AXIS)
                             withXyScale(0.4f) { sample() }
 
                             for (j in 0..10) {
                                 color = grad.getColor(j / 10f)
                                 translate(0f, 0f, 0.4f)
-                                rotate(rand.randomF(2f, 4f), Vec3f.X_AXIS)
-                                rotate(rand.randomF(-5f, 5f) + rotYOffset, Vec3f.Y_AXIS)
-                                rotate(rand.randomF(-5f, 5f) + rotZOffset, Vec3f.Z_AXIS)
+                                rotate(rand.randomF(2f, 4f).deg, Vec3f.X_AXIS)
+                                rotate((rand.randomF(-5f, 5f) + rotYOffset).deg, Vec3f.Y_AXIS)
+                                rotate((rand.randomF(-5f, 5f) + rotZOffset).deg, Vec3f.Z_AXIS)
                                 withXyScale(0.4f * 0.89f.pow(i)) {
                                     sample()
-                                    leafBases += Mat4f().set(transform).resetScale()
+                                    val s = MutableVec3f()
+                                    transform.decompose(scale = s)
+                                    leafBases += MutableMat4f().set(transform).scale(Vec3f(1f / s.x, 1f / s.y, 1f / s.z))
                                 }
                             }
                             fillTop()
@@ -276,7 +278,7 @@ class Roses : Node() {
                             val zRot = rand.randomF(-60f, 60f)
                             leafBases.forEachIndexed { i, base ->
                                 transform.set(base)
-                                rotate(zRot, Vec3f.Z_AXIS)
+                                rotate(zRot.deg, Vec3f.Z_AXIS)
                                 val scale = scales[i]
                                 val nextScale = if (i < scales.lastIndex) scales[i+1] + 0.05f else 0f
                                 val invScale = 1f / scale
@@ -287,7 +289,7 @@ class Roses : Node() {
                                     s = scale * (1-p) + nextScale * p
 
                                     translate(0f, 0f, 0.06f)
-                                    rotate(rotZOffset / 5, Vec3f.Z_AXIS)
+                                    rotate(rotZOffset.deg / 5, Vec3f.Z_AXIS)
                                     withTransform {
                                         scale(s, s, s)
                                         sample()
@@ -310,7 +312,7 @@ class Roses : Node() {
                         }
                     }
                 }
-                rotate(rand.randomF(160f, 220f), Vec3f.Z_AXIS)
+                rotate(rand.randomF(160f, 220f).deg, Vec3f.Z_AXIS)
             }
         }
 
@@ -327,7 +329,7 @@ class Roses : Node() {
                 for (l in 0..5) {
                     withTransform {
                         scale(0.8f, 0.8f, 0.8f)
-                        rotate(60f * l, Vec3f.Z_AXIS)
+                        rotate(60f.deg * l, Vec3f.Z_AXIS)
                         profile {
                             val ref = mutableListOf<Vec2f>()
                             val jit = 0.03f
@@ -350,13 +352,13 @@ class Roses : Node() {
                                 ref.reversed().forEach { xy(it.x, it.y) }
                             }
 
-                            rotate(90f, Vec3f.Y_AXIS)
+                            rotate(90f.deg, Vec3f.Y_AXIS)
                             val scales = listOf(0.5f, 0.7f, 0.8f, 0.93f, 1f, 0.95f, 0.8f, 0.7f, 0.6f, 0.35f, 0.2f, 0.1f, 0f)
                             scales.forEachIndexed { i, s ->
                                 color = blossomLeafGrad.getColor(i.toFloat() / scales.lastIndex)
                                 translate(0f, 0f, 0.3f)
-                                rotate(100f / scales.size + rand.randomF(-8f, 8f), Vec3f.NEG_Y_AXIS)
-                                rotate(rand.randomF(-8f, 8f), Vec3f.X_AXIS)
+                                rotate(100f.deg / scales.size + rand.randomF(-8f, 8f).deg, Vec3f.NEG_Y_AXIS)
+                                rotate(rand.randomF(-8f, 8f).deg, Vec3f.X_AXIS)
                                 withTransform {
                                     scale(s, s, 1f)
                                     sample()
@@ -378,7 +380,7 @@ class Roses : Node() {
                         val ls = l.toFloat() / nLeafs * 0.8f + 0.2f
                         scale(ls, ls, 1.2f)
 
-                        rotate(97f * l, Vec3f.Z_AXIS)
+                        rotate(97f.deg * l, Vec3f.Z_AXIS)
                         profile {
                             val ref = mutableListOf<Vec2f>()
                             val jit = 0.03f
@@ -392,15 +394,15 @@ class Roses : Node() {
                                 ref.reversed().forEach { xy(it.x, it.y) }
                             }
 
-                            rotate(60f, Vec3f.Y_AXIS)
+                            rotate(60f.deg, Vec3f.Y_AXIS)
                             val scales = listOf(0.5f, 0.9f, 1f, 0.93f, 0.8f, 0.7f, 0.72f, 0.8f, 0.95f, 1.05f, 1f, 0.95f, 0.85f, 0.5f)
                             scales.forEachIndexed { i, s ->
                                 val js = s * rand.randomF(0.95f, 1.05f)
                                 color = Color(1f, 0.1f, 0.1f).toLinear()
                                 translate(0f, 0f, 0.2f)
                                 val r = (0.5f - (i.toFloat() / scales.size)) * 20f
-                                rotate(r + rand.randomF(-5f, 5f), Vec3f.NEG_Y_AXIS)
-                                rotate(rand.randomF(-5f, 5f), Vec3f.X_AXIS)
+                                rotate(r.deg + rand.randomF(-5f, 5f).deg, Vec3f.NEG_Y_AXIS)
+                                rotate(rand.randomF(-5f, 5f).deg, Vec3f.X_AXIS)
                                 withTransform {
                                     scale(js, js, 1f)
                                     translate((1f - js) * 0.7f, (1f - js) * 0.7f, 0f)

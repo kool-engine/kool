@@ -1,6 +1,7 @@
 package de.fabmax.kool.pipeline.deferred
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.math.set
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.KslShaderListener
 import de.fabmax.kool.modules.ksl.lang.*

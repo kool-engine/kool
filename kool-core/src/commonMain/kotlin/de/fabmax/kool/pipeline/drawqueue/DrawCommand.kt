@@ -1,8 +1,9 @@
 package de.fabmax.kool.pipeline.drawqueue
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.math.Mat4d
-import de.fabmax.kool.math.Mat4f
+import de.fabmax.kool.math.MutableMat4d
+import de.fabmax.kool.math.MutableMat4f
+import de.fabmax.kool.math.set
 import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.scene.Mesh
@@ -13,12 +14,12 @@ class DrawCommand(val renderPass: RenderPass, var mesh: Mesh) {
     var geometry: IndexedVertexList = mesh.geometry
     var pipeline: Pipeline? = null
 
-    val modelMat = Mat4f()
-    val viewMat = Mat4f()
-    val projMat = Mat4f()
-    val mvpMat = Mat4f()
+    val modelMat = MutableMat4f()
+    val viewMat = MutableMat4f()
+    val projMat = MutableMat4f()
+    val mvpMat = MutableMat4f()
 
-    private val mvpMatD = Mat4d()
+    private val mvpMatD = MutableMat4d()
 
     fun setup(mesh: Mesh, ctx: KoolContext) {
         this.mesh = mesh

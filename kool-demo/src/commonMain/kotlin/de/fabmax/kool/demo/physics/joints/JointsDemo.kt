@@ -111,7 +111,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
         addTextureMesh(isNormalMapped = true) {
             isCastingShadow = false
             generate {
-                rotate(-90f, Vec3f.X_AXIS)
+                rotate((-90f).deg, Vec3f.X_AXIS)
                 centeredRect {
                     size.set(250f, 250f)
                     origin.set(0f, 0f, -20f)
@@ -184,11 +184,11 @@ class JointsDemo : DemoScene("Physics - Joints") {
             groundPlane.simulationFilterData = staticSimFilterData
             groundPlane.attachShape(Shape(PlaneGeometry(), material))
             groundPlane.position = Vec3f(0f, -20f, 0f)
-            groundPlane.setRotation(Mat3f().rotate(90f, Vec3f.Z_AXIS))
+            groundPlane.setRotation(Mat3f.rotation(90f.deg, Vec3f.Z_AXIS))
             addActor(groundPlane)
         }
 
-        val frame = Mat4f().rotate(90f, Vec3f.Z_AXIS)
+        val frame = MutableMat4f().rotate(90f.deg, Vec3f.Z_AXIS)
         makeGearChain(numLinks.value, frame)
         updateMotor()
     }
@@ -333,8 +333,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
     }
 
     private fun makeChain(linkMass: Float, tension: Float, gearR: Float, axleDist: Float, frame: Mat4f, world: PhysicsWorld) {
-        val t = Mat4f().set(frame).translate(0f, axleDist / 2f + gearR + 0.6f, 0f)
-        val r = Mat3f()
+        val t = MutableMat4f().set(frame).translate(0f, axleDist / 2f + gearR + 0.6f, 0f)
 
         val nLinks = numLinks.value
         val rotLinks = mutableSetOf(1, 2, 3, nLinks - 2, nLinks - 1, nLinks)
@@ -343,16 +342,16 @@ class JointsDemo : DemoScene("Physics - Joints") {
         }
 
         val firstOuter = makeOuterChainLink(linkMass)
-        firstOuter.position = t.getOrigin(MutableVec3f())
-        firstOuter.setRotation(t.getRotation(r))
+        firstOuter.position = t.getTranslation()
+        firstOuter.rotation = t.getRotation()
         world.addActor(firstOuter)
 
         var prevInner = makeInnerChainLink(linkMass)
         t.translate(1.5f, 0f, 0f)
-        t.rotate(0f, 0f, -15f)
+        t.rotate(0f.deg, 0f.deg, (-15f).deg)
         t.translate(0.5f, 0f, 0f)
-        prevInner.position = t.getOrigin(MutableVec3f())
-        prevInner.setRotation(t.getRotation(r))
+        prevInner.position = t.getTranslation()
+        prevInner.rotation = t.getRotation()
         world.addActor(prevInner)
 
         connectLinksOuterInner(firstOuter, prevInner, tension)
@@ -365,13 +364,13 @@ class JointsDemo : DemoScene("Physics - Joints") {
         for (i in 1 until nLinks) {
             t.translate(0.5f, 0f, 0f)
             if (i in rotLinks) {
-                t.rotate(0f, 0f, -15f)
+                t.rotate(0f.deg, 0f.deg, (-15f).deg)
             }
             t.translate(1.5f, 0f, 0f)
 
             val outer = makeOuterChainLink(linkMass * 2)
-            outer.position = t.getOrigin(MutableVec3f())
-            outer.setRotation(t.getRotation(r))
+            outer.position = t.getTranslation()
+            outer.rotation = t.getRotation()
             world.addActor(outer)
 
             connectLinksInnerOuter(prevInner, outer, tension)
@@ -379,11 +378,11 @@ class JointsDemo : DemoScene("Physics - Joints") {
             prevInner = makeInnerChainLink(linkMass)
             t.translate(1.5f, 0f, 0f)
             if ((i + 1) in rotLinks) {
-                t.rotate(0f, 0f, -15f)
+                t.rotate(0f.deg, 0f.deg, (-15f).deg)
             }
             t.translate(0.5f, 0f, 0f)
-            prevInner.position = t.getOrigin(MutableVec3f())
-            prevInner.setRotation(t.getRotation(r))
+            prevInner.position = t.getTranslation()
+            prevInner.rotation = t.getRotation()
             world.addActor(prevInner)
 
             connectLinksOuterInner(outer, prevInner, tension)
@@ -418,7 +417,8 @@ class JointsDemo : DemoScene("Physics - Joints") {
         val axle = RigidStatic()
         axle.simulationFilterData = staticSimFilterData
         axle.attachShape(Shape(axleGeom, material))
-        axle.setRotation(frame.getRotation(Mat3f()).rotate(0f, -90f, 0f))
+
+        axle.setRotation(MutableMat3f().rotate(frame.getRotation()).rotate(0f.deg, (-90f).deg, 0f.deg))
         axle.position = frame.transform(MutableVec3f(origin))
         world.addActor(axle)
         physMeshes.axles += axle
@@ -426,7 +426,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
         axleGeom.release()
 
         val gear = makeGear(gearR, gearMass)
-        gear.setRotation(frame.getRotation(Mat3f()))
+        gear.rotation = frame.getRotation()
         gear.position = frame.transform(MutableVec3f(origin))
         world.addActor(gear)
         physMeshes.gears += gear
@@ -460,9 +460,9 @@ class JointsDemo : DemoScene("Physics - Joints") {
         val toothGeom = ConvexMeshGeometry(toothPts)
         val cylGeom = CylinderGeometry(2.5f, gearR)
 
-        gearShapes += Shape(cylGeom, material, Mat4f().rotate(0f, 90f, 0f))
+        gearShapes += Shape(cylGeom, material, Mat4f.rotation(0f.deg, 90f.deg, 0f.deg))
         for (i in 0..11) {
-            gearShapes += Shape(toothGeom, material, Mat4f().rotate(0f, 0f, 30f * i))
+            gearShapes += Shape(toothGeom, material, Mat4f.rotation(0f.deg, 0f.deg, (30f * i).deg))
         }
 
         val gearFilterData = FilterData {
@@ -484,8 +484,8 @@ class JointsDemo : DemoScene("Physics - Joints") {
         val boxB = BoxGeometry(Vec3f(3.4f, 0.8f, 0.3f))
 
         val shapes = mutableListOf<Shape>()
-        shapes += Shape(boxA, material, Mat4f().translate(0f, 0f, 0.75f))
-        shapes += Shape(boxB, material, Mat4f().translate(0f, 0f, -0.75f))
+        shapes += Shape(boxA, material, MutableMat4f().translate(0f, 0f, 0.75f))
+        shapes += Shape(boxB, material, MutableMat4f().translate(0f, 0f, -0.75f))
 
         val link = RigidDynamic(mass)
         shapes.forEach { shape ->
@@ -563,9 +563,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
                     clear()
                     addInstances(bodies.size) { buf ->
                         for (i in bodies.indices) {
-                            for (d in bodies[i].transform.matrix.array) {
-                                buf.put(d.toFloat())
-                            }
+                            bodies[i].transform.matrix.putTo(buf)
                         }
                     }
                 }

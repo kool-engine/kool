@@ -4,6 +4,7 @@ import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.deg
 import de.fabmax.kool.math.randomF
 import de.fabmax.kool.math.toRad
 import de.fabmax.kool.modules.gltf.GltfFile
@@ -68,7 +69,7 @@ class ReflectionDemo : DemoScene("Reflections") {
 
         addNode(lightGroup)
         lightGroup.onUpdate {
-            lightGroup.transform.rotate(Time.deltaT * -3f, Vec3f.Y_AXIS)
+            lightGroup.transform.rotate((-3f).deg * Time.deltaT, Vec3f.Y_AXIS)
         }
 
         lighting.clear()
@@ -109,7 +110,7 @@ class ReflectionDemo : DemoScene("Reflections") {
                 addTextureMesh(isNormalMapped = true) {
                     generate {
                         centeredRect {
-                            rotate(-90f, Vec3f.X_AXIS)
+                            rotate((-90f).deg, Vec3f.X_AXIS)
                             size.set(100f, 100f)
                             generateTexCoords(4f)
                         }
@@ -267,7 +268,7 @@ class ReflectionDemo : DemoScene("Reflections") {
                     uvSphere {
                         radius = 0.1f
                     }
-                    rotate(90f, Vec3f.Z_AXIS)
+                    rotate(90f.deg, Vec3f.Z_AXIS)
                     translate(0f, 0.45f, 0f)
                     cylinder {
                         bottomRadius = 0.015f
@@ -317,9 +318,9 @@ class ReflectionDemo : DemoScene("Reflections") {
             val r = cos(angPos / 15f + rotOff) * lightRandomness.value
 
             transform.setIdentity()
-            transform.rotate(angPos, Vec3f.Y_AXIS)
+            transform.rotate(angPos.deg, Vec3f.Y_AXIS)
             transform.translate(10f, 9f, 0f)
-            transform.rotate(30f + 20f * r, Vec3f.Z_AXIS)
+            transform.rotate((30f + 20f * r).deg, Vec3f.Z_AXIS)
 
             val color = Color.WHITE.mix(color, lightSaturation.value, MutableColor())
             light.setColor(color.toLinear(), lightPower.value)

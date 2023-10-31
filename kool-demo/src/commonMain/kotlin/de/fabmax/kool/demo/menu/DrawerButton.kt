@@ -2,6 +2,7 @@ package de.fabmax.kool.demo.menu
 
 import de.fabmax.kool.demo.UiSizes
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.deg
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.Color
 
@@ -47,11 +48,11 @@ class DrawerButton(val menu: DemoMenu) : Composable {
                 val w = hw - animationP * hw * 0.4f
 
                 translate(widthPx / 2f, heightPx / 2f, 0f)
-                rotate(180f - animationP * 180f, Vec3f.Z_AXIS)
+                rotate((180f - 180f * animationP).deg, Vec3f.Z_AXIS)
 
                 withTransform {
                     translate(tx, hh, 0f)
-                    rotate(animationP * 45f, Vec3f.Z_AXIS)
+                    rotate(45f.deg * animationP, Vec3f.Z_AXIS)
                     centeredRect {
                         isCenteredOrigin = false
                         origin.set(hx, -ph / 2f, 0f)
@@ -66,7 +67,7 @@ class DrawerButton(val menu: DemoMenu) : Composable {
                 }
                 withTransform {
                     translate(tx, -hh, 0f)
-                    rotate(animationP * -45f, Vec3f.Z_AXIS)
+                    rotate((-45f).deg * animationP, Vec3f.Z_AXIS)
                     centeredRect {
                         isCenteredOrigin = false
                         origin.set(hx, -ph / 2f, 0f)

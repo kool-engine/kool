@@ -1,8 +1,9 @@
 package de.fabmax.kool.demo.creativecoding
 
 import de.fabmax.kool.demo.MenuSlider2
-import de.fabmax.kool.math.Mat4f
+import de.fabmax.kool.math.MutableMat4f
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.deg
 import de.fabmax.kool.math.randomF
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ui2.UiScope
@@ -63,8 +64,8 @@ class SmallSpheres(val resources: CreativeCodingDemo.Resources) : CreativeConten
             // move transform matrix to start position
             val r = settings.innerRadius + orbitProgress * settings.orbitInc
             val h = cos(orbitProgress * 11.9f * PI.toFloat()) * orbitProgress / 20f
-            val transform = Mat4f()
-                .rotate(360f * orbitProgress, Vec3f.Z_AXIS)
+            val transform = MutableMat4f()
+                .rotate(360f.deg * orbitProgress, Vec3f.Z_AXIS)
                 .translate(r, 0f, h * settings.waviness)
                 .scale(settings.sphereSize + (1f + randomF(-1f, 1f)) * settings.randomness)
 
@@ -72,7 +73,7 @@ class SmallSpheres(val resources: CreativeCodingDemo.Resources) : CreativeConten
 
             // add sphere instance properties: transform matrix + sphere color
             instances.addInstance {
-                put(transform.array)
+                transform.putTo(this)
                 color.putTo(this)
                 // metallic
                 put(randomF(0f, 0.5f) * settings.randomness)

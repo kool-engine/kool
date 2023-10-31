@@ -53,8 +53,8 @@ abstract class Camera(name: String = "camera") : Node(name) {
     protected val globalRightMut = MutableVec3f()
     protected val globalLookDirMut = MutableVec3f()
 
-    val proj = Mat4d()
-    val view = Mat4d()
+    val proj = MutableMat4d()
+    val view = MutableMat4d()
 
     private val lazyInvProj = LazyMat4d { proj.invert(it) }
     val invProj: Mat4d get() = lazyInvProj.get()
@@ -70,7 +70,7 @@ abstract class Camera(name: String = "camera") : Node(name) {
 
     var projCorrectionMode = ProjCorrectionMode.ONSCREEN
 
-    private val projCorrected = Mat4d()
+    private val projCorrected = MutableMat4d()
 
     // we need a bunch of temporary vectors, keep them as members (#perfmatters)
     private val tmpVec3 = MutableVec3f()
@@ -128,7 +128,7 @@ abstract class Camera(name: String = "camera") : Node(name) {
         globalLookDirMut.cross(globalUpMut, globalRightMut).norm()
         globalRightMut.cross(globalLookDirMut, globalUpMut).norm()
 
-        view.setLookAt(globalPosMut, globalLookAtMut, globalUpMut)
+        view.setIdentity().lookAt(globalPosMut.toVec3d(), globalLookAtMut.toVec3d(), globalUpMut.toVec3d())
         lazyInvView.isDirty = true
     }
 
@@ -256,7 +256,7 @@ open class OrthographicCamera(name: String = "orthographicCam") : Camera(name) {
 
     override fun updateProjectionMatrix(renderPass: RenderPass, ctx: KoolContext) {
         if (left != right && bottom != top && clipNear != clipFar) {
-            proj.setOrthographic(left, right, bottom, top, clipNear, clipFar)
+            proj.setIdentity().orthographic(left.toDouble(), right.toDouble(), bottom.toDouble(), top.toDouble(), clipNear.toDouble(), clipFar.toDouble())
         }
     }
 
@@ -309,7 +309,7 @@ open class PerspectiveCamera(name: String = "perspectiveCam") : Camera(name) {
     private val tmpNodeCenter = MutableVec3f()
 
     override fun updateProjectionMatrix(renderPass: RenderPass, ctx: KoolContext) {
-        proj.setPerspective(fovY, aspectRatio, clipNear, clipFar)
+        proj.setIdentity().perspective(fovY.toDouble(), aspectRatio.toDouble(), clipNear.toDouble(), clipFar.toDouble())
 
         // compute intermediate values needed for view frustum culling
         val angY = fovY.toRad() / 2f

@@ -5,7 +5,7 @@ import de.fabmax.kool.demo.MenuRow
 import de.fabmax.kool.demo.MenuSlider
 import de.fabmax.kool.demo.UiSizes
 import de.fabmax.kool.demo.labelStyle
-import de.fabmax.kool.math.Mat4f
+import de.fabmax.kool.math.MutableMat4f
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ui2.Text
 import de.fabmax.kool.modules.ui2.UiScope
@@ -85,7 +85,7 @@ class ColorGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrConten
             shader = instancedPbrShader(withIbl, environmentMaps).also { shaders += it }
 
             instances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.COLORS), nRows * nCols) .apply {
-                val mat = Mat4f()
+                val mat = MutableMat4f()
                 for (y in 0 until nRows) {
                     for (x in 0 until nCols) {
                         mat.setIdentity()
@@ -93,7 +93,7 @@ class ColorGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrConten
                         mat.scale(1.5f)
 
                         addInstance {
-                            put(mat.array)
+                            mat.putTo(this)
                             colors[(y * nCols + x) % colors.size].toLinear().putTo(this)
                         }
                     }

@@ -175,7 +175,7 @@ open class ColorWheelNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, 
             geomCache.appendTo(geometry)
 
             translate(centerX, centerY, 0f)
-            rotate(modifier.hue, Vec3f.Z_AXIS)
+            rotate(modifier.hue.deg, Vec3f.Z_AXIS)
 
             // inner triangle (saturation / value chooser)
             var i1 = vertex {

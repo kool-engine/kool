@@ -1,10 +1,7 @@
 package de.fabmax.kool.pipeline.ao
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.math.MutableVec2f
-import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.math.Vec2f
-import de.fabmax.kool.math.Vec4f
+import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*

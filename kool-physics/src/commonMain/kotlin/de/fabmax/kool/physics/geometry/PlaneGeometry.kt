@@ -2,6 +2,7 @@ package de.fabmax.kool.physics.geometry
 
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.deg
 import de.fabmax.kool.math.spatial.BoundingBox
 import de.fabmax.kool.scene.geometry.MeshBuilder
 
@@ -15,7 +16,7 @@ abstract class CommonPlaneGeometry {
         // plane is infinitely large, generate a mesh with a reasonable size
         target.apply {
             withTransform {
-                rotate(90f, Vec3f.Y_AXIS)
+                rotate(90f.deg, Vec3f.Y_AXIS)
                 centeredRect {
                     size.set(1000f, 1000f)
                 }

@@ -3,6 +3,7 @@ package de.fabmax.kool.demo.helloworld
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.DemoScene
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.deg
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.addColorMesh
@@ -26,7 +27,7 @@ class HelloWorldDemo : DemoScene("Hello World") {
                 roughness(0.25f)
             }
             onUpdate {
-                transform.rotate(Time.deltaT * 45f, Vec3f.X_AXIS)
+                transform.rotate(45f.deg * Time.deltaT, Vec3f.X_AXIS)
             }
         }
 

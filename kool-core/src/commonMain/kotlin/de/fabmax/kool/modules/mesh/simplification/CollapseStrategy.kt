@@ -17,7 +17,7 @@ interface CollapseStrategy {
 }
 
 fun defaultCollapseStrategy() = object : CollapseStrategy {
-    val tmpQ = Mat4d()
+    val tmpQ = MutableMat4d()
     val tmpNrm0 = MutableVec3f()
     val tmpNrm1 = MutableVec3f()
     val tmpPos0 = MutableVec3f()

@@ -3,6 +3,7 @@ package de.fabmax.kool.demo.helloworld
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.DemoScene
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.deg
 import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.pipeline.CullMethod
 import de.fabmax.kool.pipeline.OffscreenRenderPass2d
@@ -24,7 +25,7 @@ class HelloRenderToTextureDemo : DemoScene("Hello RenderToTexture") {
                 }
                 shader = KslUnlitShader { color { vertexColor() } }
             }
-            onUpdate += { transform.rotate(Time.deltaT * 30f, Vec3f.Y_AXIS) }
+            onUpdate += { transform.rotate(30f.deg * Time.deltaT, Vec3f.Y_AXIS) }
         }
 
         // setup offscreen pass

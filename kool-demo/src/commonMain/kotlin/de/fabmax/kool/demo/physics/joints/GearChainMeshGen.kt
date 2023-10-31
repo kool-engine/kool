@@ -46,7 +46,7 @@ object GearChainMeshGen {
                 withTransform {
                     for (i in 0..11) {
                         withTransform {
-                            rotate(i * 30f, Vec3f.Z_AXIS)
+                            rotate((i * 30f).deg, Vec3f.Z_AXIS)
                             color = MdColor.BLUE_GREY toneLin 400
                             translate(0f, 8f, 0f)
                             scale(0.7f)
@@ -81,7 +81,7 @@ object GearChainMeshGen {
                     withTransform {
                         sample()
                         for (i in 0..35) {
-                            rotate(0f, 0f, 10f)
+                            rotate(0f.deg, 0f.deg, 10f.deg)
                             sample()
                         }
                     }
@@ -97,7 +97,7 @@ object GearChainMeshGen {
                 withTransform {
                     sample()
                     for (i in 0..71) {
-                        rotate(0f, 0f, 5f)
+                        rotate(0f.deg, 0f.deg, 5f.deg)
                         sample()
                     }
                 }
@@ -117,7 +117,7 @@ object GearChainMeshGen {
                     withTransform {
                         sample()
                         for (i in 0..35) {
-                            rotate(0f, 0f, 10f)
+                            rotate(0f.deg, 0f.deg, 10f.deg)
                             sample()
                         }
                     }
@@ -133,12 +133,12 @@ object GearChainMeshGen {
                 for (d in -1..1 step 2) {
                     for (i in 1..10) {
                         withTransform {
-                            rotate((360f / 10) * i, Vec3f.Z_AXIS)
+                            rotate((360f.deg / 10) * i, Vec3f.Z_AXIS)
                             translate(1.2f * d, 0f, 0f)
-                            rotate(-20f * d, 0f, -45f * d)
+                            rotate((-20f).deg * d, 0f.deg, (-45f).deg * d)
                             sample(connect = false)
                             for (j in 0..22) {
-                                rotate(1.25f * d, 0f, 4f * d)
+                                rotate(1.25f.deg * d, 0f.deg, 4f.deg * d)
                                 translate(0f, 0.285f, 0f)
                                 sample()
                             }
@@ -160,7 +160,7 @@ object GearChainMeshGen {
                 }
                 for (i in 0..72) {
                     withTransform {
-                        rotate(0f, 0f, i * 5f)
+                        rotate(0f.deg, 0f.deg, (i * 5f).deg)
                         translate(-6.7f, 0f, 0f)
                         sample(inverseOrientation = true)
                     }
@@ -185,8 +185,8 @@ object GearChainMeshGen {
             metal = 0f
             roughness = 0f
 
-            rotate(-90f, Vec3f.Z_AXIS)
-            rotate(90f, Vec3f.Y_AXIS)
+            rotate((-90f).deg, Vec3f.Z_AXIS)
+            rotate(90f.deg, Vec3f.Y_AXIS)
 
             color = MdColor.RED.toLinear()
             profile {
@@ -203,8 +203,8 @@ object GearChainMeshGen {
                 }
 
                 withTransform {
-                    rotate(-90f, Vec3f.X_AXIS)
-                    rotate(-90f, Vec3f.Z_AXIS)
+                    rotate((-90f).deg, Vec3f.X_AXIS)
+                    rotate((-90f).deg, Vec3f.Z_AXIS)
                     translate(0f, -1f, -2.2f)
 
                     scale(0.95f)
@@ -251,7 +251,7 @@ object GearChainMeshGen {
                 origin.set(-1.15f, -4f, 0f)
             }
             withTransform {
-                rotate(90f, Vec3f.Z_AXIS)
+                rotate(90f.deg, Vec3f.Z_AXIS)
                 val positions = listOf(Vec2f(-2.8f, 1.4f), Vec2f(-5f, 1.4f), Vec2f(-2.8f, -1.4f), Vec2f(-5f, -1.4f))
                 positions.forEach {
                     cylinder {
@@ -301,18 +301,18 @@ object GearChainMeshGen {
                 }
 
                 withTransform {
-                    rotate(90f, 0f, 90f)
+                    rotate(90f.deg, 0f.deg, 90f.deg)
                     sampleWithInds()
                     translate(0f, 0f, -0.5f)
                     sampleWithInds()
                     for (i in 1..10) {
-                        rotate(-18f, Vec3f.Y_AXIS)
+                        rotate((-18f).deg, Vec3f.Y_AXIS)
                         sampleWithInds()
                     }
                     translate(0f, 0f, -1f)
                     sampleWithInds()
                     for (i in 1..10) {
-                        rotate(-18f, Vec3f.Y_AXIS)
+                        rotate((-18f).deg, Vec3f.Y_AXIS)
                         sampleWithInds()
                     }
                     translate(0f, 0f, -0.5f)
@@ -360,18 +360,18 @@ object GearChainMeshGen {
                     lastInds.clear()
                     withTransform {
                         translate(0f, 0f, 0.7f * s)
-                        rotate(90f, 0f, 90f)
+                        rotate(90f.deg, 0f.deg, 90f.deg)
                         sampleWithInds(false)
                         translate(0f, 0f, -1.5f)
                         sampleWithInds()
                         for (i in 1..10) {
-                            rotate(-18f, Vec3f.Y_AXIS)
+                            rotate((-18f).deg, Vec3f.Y_AXIS)
                             sampleWithInds()
                         }
                         translate(0f, 0f, -3f)
                         sampleWithInds()
                         for (i in 1..10) {
-                            rotate(-18f, Vec3f.Y_AXIS)
+                            rotate((-18f).deg, Vec3f.Y_AXIS)
                             sampleWithInds()
                         }
                         translate(0f, 0f, -1.5f)
@@ -381,7 +381,7 @@ object GearChainMeshGen {
                     fillPolygon(lastInds)
                 }
             }
-            rotate(90f, Vec3f.X_AXIS)
+            rotate(90f.deg, Vec3f.X_AXIS)
 
             color = MdColor.BLUE_GREY toneLin 700
             roughness = 0.3f

@@ -1,6 +1,8 @@
 package de.fabmax.kool.scene.animation
 
 import de.fabmax.kool.math.Mat4f
+import de.fabmax.kool.math.MutableMat4f
+import de.fabmax.kool.math.set
 import de.fabmax.kool.scene.Node
 
 class Skin {
@@ -19,9 +21,9 @@ class Skin {
     }
 
     class SkinNode(val joint: Node, val inverseBindMatrix: Mat4f) {
-        val jointTransform = Mat4f()
+        val jointTransform = MutableMat4f()
 
-        private val tmpMat4f = Mat4f()
+        private val tmpMat4f = MutableMat4f()
         private var parent: SkinNode? = null
         private val children = mutableListOf<SkinNode>()
 

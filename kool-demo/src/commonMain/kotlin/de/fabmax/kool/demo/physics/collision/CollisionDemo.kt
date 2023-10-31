@@ -93,7 +93,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
             }
         }
 
-        val matBuf = Mat4f()
+        val matBuf = MutableMat4f()
         val removeBodies = mutableListOf<ColoredBody>()
         onUpdate += {
             for (i in shapeTypes.indices) {
@@ -108,8 +108,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
                     for (i in typeBodies.indices) {
                         val body = typeBodies[i]
                         matBuf.set(body.rigidActor.transform.matrix).scale(body.scale)
-
-                        buf.put(matBuf.array)
+                        matBuf.putTo(buf)
 
                         if (drawBodyState.value) {
                             if (body.rigidActor.isActive) {
@@ -197,7 +196,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
             }
             body.updateInertiaFromShapesAndMass()
             body.position = Vec3f(x, y, z)
-            body.setRotation(Mat3f().rotate(rand.randomF(-90f, 90f), rand.randomF(-90f, 90f), rand.randomF(-90f, 90f)))
+            body.setRotation(MutableMat3f().rotate(rand.randomF(-90f, 90f).deg, rand.randomF(-90f, 90f).deg, rand.randomF(-90f, 90f).deg))
             physicsWorld.addActor(body)
 
             val coloredBody = ColoredBody(body, color, shapes)

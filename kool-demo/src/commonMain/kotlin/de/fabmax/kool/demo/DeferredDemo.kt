@@ -161,7 +161,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
             lightPositionMesh.instances = lightPosInsts
             lightVolumeMesh.instances = lightVolInsts
 
-            val lightModelMat = Mat4f()
+            val lightModelMat = MutableMat4f()
             onUpdate += {
                 if (lightPositionMesh.isVisible || lightVolumeMesh.isVisible) {
                     lightPosInsts.clear()
@@ -173,14 +173,14 @@ class DeferredDemo : DemoScene("Deferred Shading") {
 
                         if (lightPositionMesh.isVisible) {
                             lightPosInsts.addInstance {
-                                put(lightModelMat.array)
+                                lightModelMat.putTo(this)
                                 light.color.putTo(this)
                             }
                         }
                         if (lightVolumeMesh.isVisible) {
-                            lightModelMat.scale(light.radius, light.radius, light.radius)
+                            lightModelMat.scale(light.radius)
                             lightVolInsts.addInstance {
-                                put(lightModelMat.array)
+                                lightModelMat.putTo(this)
                                 light.color.putTo(this)
                             }
                         }
@@ -256,7 +256,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
 
         addTextureMesh(isNormalMapped = true) {
             generate {
-                rotate(90f, Vec3f.NEG_X_AXIS)
+                rotate(90f.deg, Vec3f.NEG_X_AXIS)
                 color = Color.WHITE
                 centeredRect {
                     size.set(40f, 40f)

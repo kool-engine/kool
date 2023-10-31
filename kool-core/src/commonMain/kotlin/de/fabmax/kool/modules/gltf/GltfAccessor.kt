@@ -412,21 +412,25 @@ class Mat4fAccessor(accessor: GltfAccessor) : DataStreamAccessor(accessor) {
         }
     }
 
-    fun next(): Mat4f = next(Mat4f())
+    fun next(): Mat4f = next(MutableMat4f())
 
-    fun next(result: Mat4f): Mat4f {
-        for (i in 0..15) {
-            result.array[i] = nextFloat()
+    fun next(result: MutableMat4f): Mat4f {
+        for (col in 0..3) {
+            for (row in 0..3) {
+                result[row, col] = nextFloat()
+            }
         }
         advance()
         return result
     }
 
-    fun nextD(): Mat4d = nextD(Mat4d())
+    fun nextD(): Mat4d = nextD(MutableMat4d())
 
-    fun nextD(result: Mat4d): Mat4d {
-        for (i in 0..15) {
-            result.array[i] = nextDouble()
+    fun nextD(result: MutableMat4d): Mat4d {
+        for (col in 0..3) {
+            for (row in 0..3) {
+                result[row, col] = nextDouble()
+            }
         }
         advance()
         return result

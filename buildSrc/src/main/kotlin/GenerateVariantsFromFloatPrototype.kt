@@ -73,7 +73,8 @@ open class GenerateVariantsFromFloatPrototype : DefaultTask() {
     companion object {
         private val floatToDoubleTransforms = listOf(
             Regex("""\W(Vec(\d+)f)\W""") to PatternTransformer { it.groups[1]!!.range to "Vec${it.groupValues[2]}d" },
-            Regex("""\W(Mat(\d+)fnew)\W""") to PatternTransformer { it.groups[1]!!.range to "Mat${it.groupValues[2]}dnew" },
+            Regex("""\W(Mat(\d+)f)\W""") to PatternTransformer { it.groups[1]!!.range to "Mat${it.groupValues[2]}d" },
+            Regex("""\W(Mat(\d+)fStack)\W""") to PatternTransformer { it.groups[1]!!.range to "Mat${it.groupValues[2]}dStack" },
             Regex("""\W(QuatF)\W""") to PatternTransformer { it.groups[1]!!.range to "QuatD" },
             Regex("""\W(MutableVec(\d+)f)\W""") to PatternTransformer { it.groups[1]!!.range to "MutableVec${it.groupValues[2]}d" },
             Regex("""\W(MutableMat(\d+)f)\W""") to PatternTransformer { it.groups[1]!!.range to "MutableMat${it.groupValues[2]}d" },

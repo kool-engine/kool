@@ -136,42 +136,58 @@ class Uniform4fv(name: String, length: Int) : Uniform<Array<MutableVec4f>>(Array
     }
 }
 
-class UniformMat3f(name: String) : Uniform<Mat3f>(Mat3f(), name) {
+class UniformMat3f(name: String) : Uniform<MutableMat3f>(MutableMat3f(), name) {
     override fun putToBuffer(buffer: MixedBuffer, len: Int) {
         checkLen(3 * 12, len)
         val padLen = (len - 3 * 12) / 3
-        for (m in 0..2) {
-            buffer.putFloat32(value.matrix, m * 3, 3)
+        buffer.putFloat32(value.m00)
+        buffer.putFloat32(value.m10)
+        buffer.putFloat32(value.m20)
+        putPadding(buffer, padLen)
+        buffer.putFloat32(value.m01)
+        buffer.putFloat32(value.m11)
+        buffer.putFloat32(value.m21)
+        putPadding(buffer, padLen)
+        buffer.putFloat32(value.m02)
+        buffer.putFloat32(value.m12)
+        buffer.putFloat32(value.m22)
+        putPadding(buffer, padLen)
+    }
+}
+
+class UniformMat3fv(name: String, length: Int) : Uniform<Array<MutableMat3f>>(Array(length) { MutableMat3f() }, name, length) {
+    override fun putToBuffer(buffer: MixedBuffer, len: Int) {
+        checkLen(3 * 12 * size, len)
+        val padLen = (len - 3 * 12 * size) / (3 * size)
+        for (i in 0 until size) {
+            buffer.putFloat32(value[i].m00)
+            buffer.putFloat32(value[i].m10)
+            buffer.putFloat32(value[i].m20)
+            putPadding(buffer, padLen)
+            buffer.putFloat32(value[i].m01)
+            buffer.putFloat32(value[i].m11)
+            buffer.putFloat32(value[i].m21)
+            putPadding(buffer, padLen)
+            buffer.putFloat32(value[i].m02)
+            buffer.putFloat32(value[i].m12)
+            buffer.putFloat32(value[i].m22)
             putPadding(buffer, padLen)
         }
     }
 }
 
-class UniformMat3fv(name: String, length: Int) : Uniform<Array<Mat3f>>(Array(length) { Mat3f() }, name, length) {
-    override fun putToBuffer(buffer: MixedBuffer, len: Int) {
-        checkLen(3 * 12 * size, len)
-        val padLen = (len - 3 * 12 * size) / (3 * size)
-        for (i in 0 until size) {
-            for (m in 0..2) {
-                buffer.putFloat32(value[i].matrix, m * 3, 3)
-                putPadding(buffer, padLen)
-            }
-        }
-    }
-}
-
-class UniformMat4f(name: String) : Uniform<Mat4f>(Mat4f(), name) {
+class UniformMat4f(name: String) : Uniform<MutableMat4f>(MutableMat4f(), name) {
     override fun putToBuffer(buffer: MixedBuffer, len: Int) {
         checkLen(4 * 16, len)
-        buffer.putFloat32(value.array)
+        value.putTo(buffer)
     }
 }
 
-class UniformMat4fv(name: String, length: Int) : Uniform<Array<Mat4f>>(Array(length) { Mat4f() }, name, length) {
+class UniformMat4fv(name: String, length: Int) : Uniform<Array<MutableMat4f>>(Array(length) { MutableMat4f() }, name, length) {
     override fun putToBuffer(buffer: MixedBuffer, len: Int) {
         checkLen(4 * 16 * size, len)
         for (i in 0 until size) {
-            buffer.putFloat32(value[i].array)
+            value[i].putTo(buffer)
         }
     }
 }

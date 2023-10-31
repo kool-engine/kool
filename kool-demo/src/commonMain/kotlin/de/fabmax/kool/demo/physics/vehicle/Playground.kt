@@ -15,14 +15,14 @@ import de.fabmax.kool.scene.geometry.simpleShape
 object Playground {
 
     fun makePlayground(vehicleWorld: VehicleWorld) {
-        makeBoxes(Mat4f().translate(-20f, 0f, 30f), vehicleWorld)
+        makeBoxes(MutableMat4f().translate(-20f, 0f, 30f), vehicleWorld)
         //makeRocker(Mat4f().translate(0f, 0f, 30f), vehicleWorld)
 
         vehicleWorld.deferredPipeline.sceneContent += ColorMesh().apply {
             generate {
-                makeRamp(Mat4f().translate(-20f, 0f, 80f).rotate(180f, Vec3f.Y_AXIS))
-                makeBumps(Mat4f().translate(20f, 0f, 0f))
-                makeHalfPipe(Mat4f().translate(-40f, 0f, 30f).rotate(90f, 0f, -1f, 0f))
+                makeRamp(MutableMat4f().translate(-20f, 0f, 80f).rotate(180f.deg, Vec3f.Y_AXIS))
+                makeBumps(MutableMat4f().translate(20f, 0f, 0f))
+                makeHalfPipe(MutableMat4f().translate(-40f, 0f, 30f).rotate(90f.deg, Vec3f.NEG_Y_AXIS))
             }
             shader = deferredKslPbrShader {
                 color { vertexColor() }
@@ -75,14 +75,14 @@ object Playground {
         world.deferredPipeline.sceneContent += world.toPrettyMesh(anchor, VehicleDemo.color(400))
         world.deferredPipeline.sceneContent += world.toPrettyMesh(rocker, VehicleDemo.color(200))
 
-        RevoluteJoint(anchor, rocker, Mat4f().translate(0f, 0.85f, 0f), Mat4f().translate(0f, 0f, 0.2f))
+        RevoluteJoint(anchor, rocker, MutableMat4f().translate(0f, 0.85f, 0f), MutableMat4f().translate(0f, 0f, 0.2f))
     }
 
     private fun MeshBuilder.makeRamp(frame: Mat4f) {
         color = VehicleDemo.color(200)
         withTransform {
             transform.mul(frame)
-            rotate(-11f, 0f, 0f)
+            rotate((-11f).deg, 0f.deg, 0f.deg)
             cube {
                 size.set(10f, 2f, 10f)
             }
@@ -96,7 +96,7 @@ object Playground {
                 withTransform {
                     transform.mul(frame)
                     translate(2f * s, -0.375f, i * 3.1f + s * 0.4f)
-                    rotate(90f, Vec3f.Z_AXIS)
+                    rotate(90f.deg, Vec3f.Z_AXIS)
                     color = c
                     cylinder {
                         radius = 0.5f
@@ -140,7 +140,7 @@ object Playground {
                     sample()
                 }
                 for (i in 0 until 50) {
-                    rotate(180f / 50f, 0f, -1f, 0f)
+                    rotate(180f.deg / 50f, 0f, -1f, 0f)
                     sample()
                 }
                 for (i in 0 until 5) {

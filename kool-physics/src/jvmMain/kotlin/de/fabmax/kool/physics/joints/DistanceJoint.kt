@@ -9,8 +9,6 @@ import org.lwjgl.system.MemoryStack
 import physx.PxTopLevelFunctions
 import physx.extensions.PxDistanceJoint
 import physx.extensions.PxDistanceJointFlagEnum
-import physx.extensions.PxFixedJoint
-import physx.physics.PxConstraintFlagEnum
 
 actual class DistanceJoint actual constructor(
     actual val bodyA: RigidActor,
@@ -18,8 +16,8 @@ actual class DistanceJoint actual constructor(
     posA: Mat4f,
     posB: Mat4f
 ) : Joint() {
-    actual val frameA = Mat4f().set(posA)
-    actual val frameB = Mat4f().set(posB)
+    actual val frameA = Mat4f(posA)
+    actual val frameB = Mat4f(posB)
 
     override val pxJoint: PxDistanceJoint
 

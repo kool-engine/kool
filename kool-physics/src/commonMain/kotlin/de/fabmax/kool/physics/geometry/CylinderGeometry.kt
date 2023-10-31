@@ -2,6 +2,7 @@ package de.fabmax.kool.physics.geometry
 
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.deg
 import de.fabmax.kool.math.spatial.BoundingBox
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import kotlin.math.PI
@@ -15,7 +16,7 @@ abstract class CommonCylinderGeometry(val length: Float, val radius: Float) {
         target.apply {
             withTransform {
                 // physics cylinder extends along the x-axis, MeshBuilder's cylinder extends along y-axis
-                rotate(90f, Vec3f.Z_AXIS)
+                rotate(90f.deg, Vec3f.Z_AXIS)
                 cylinder {
                     height = this@CommonCylinderGeometry.length
                     radius = this@CommonCylinderGeometry.radius

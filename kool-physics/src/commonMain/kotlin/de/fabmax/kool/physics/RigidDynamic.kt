@@ -1,10 +1,11 @@
 package de.fabmax.kool.physics
 
 import de.fabmax.kool.math.Mat4f
+import de.fabmax.kool.math.MutableMat4f
 import de.fabmax.kool.math.QuatF
 import de.fabmax.kool.math.Vec3f
 
-expect class RigidDynamic(mass: Float = 1f, pose: Mat4f = Mat4f(), isKinematic: Boolean = false) : RigidBody {
+expect class RigidDynamic(mass: Float = 1f, pose: Mat4f = MutableMat4f(), isKinematic: Boolean = false) : RigidBody {
 
     fun wakeUp()
 

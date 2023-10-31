@@ -156,7 +156,7 @@ enum class ShapeType {
 
     fun MeshBuilder.bevelBox(rBevel: Float = 0.02f) {
         withTransform {
-            rotate(0f, 90f, 0f)
+            rotate(0f.deg, 90f.deg, 0f.deg)
             centeredRect {
                 isCenteredOrigin = false
                 size.set(1f - 2 * rBevel, 1f - 2 * rBevel)
@@ -164,7 +164,7 @@ enum class ShapeType {
             }
         }
         withTransform {
-            rotate(0f, -90f, 0f)
+            rotate(0f.deg, (-90f).deg, 0f.deg)
             centeredRect {
                 isCenteredOrigin = false
                 size.set(1f - 2 * rBevel, 1f - 2 * rBevel)
@@ -194,9 +194,9 @@ enum class ShapeType {
                 translate(0f, 0.5f - rBevel, -0.5f + rBevel)
                 sample()
                 for (i in 0..3) {
-                    rotate(-45f, 0f, 0f)
+                    rotate((-45f).deg, 0f.deg, 0f.deg)
                     sample()
-                    rotate(-45f, 0f, 0f)
+                    rotate((-45f).deg, 0f.deg, 0f.deg)
                     sample()
                     translate(0f, 0f, -1f + 2 * rBevel)
                     sample()
@@ -213,7 +213,7 @@ enum class ShapeType {
             }
             for (i in 0 .. 20) {
                 sample()
-                rotate(360f / 20, 0f, 0f)
+                rotate(360f.deg / 20, 0f.deg, 0f.deg)
             }
         }
     }
@@ -259,9 +259,9 @@ enum class ShapeType {
             val bottomVertInds = mutableListOf<Int>()
             val topVerts = mutableListOf<Vec3f>()
             val bottomVerts = mutableListOf<Vec3f>()
-            rotate(90f, Vec3f.Z_AXIS)
+            rotate(90f.deg, Vec3f.Z_AXIS)
             for (i in 0 .. 40) {
-                rotate(0f, -360f / 40, 0f)
+                rotate(0f.deg, (-360f / 40).deg, 0f.deg)
                 sample()
                 geometry.vertexIt.apply {
                     index = shapes[0].sampledVertIndices.first()

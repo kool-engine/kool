@@ -62,7 +62,7 @@ class CamLocalGrass(val camera: Camera, val terrain: Terrain, val wind: Wind, va
                 val p = rand.randomF(0.25f, 1f)
                 val s = rand.randomF(0.75f, 1.25f) * weights.y
                 grassPositions += GrassInstance(Vec3f(x, y, z), p, s).apply {
-                    transform.rotate(rand.randomF(0f, 360f), Vec3f.Y_AXIS).scale(s)
+                    transform.rotate(rand.randomF(0f, 360f).deg, Vec3f.Y_AXIS).scale(s)
                 }
             }
         }
@@ -111,7 +111,7 @@ class CamLocalGrass(val camera: Camera, val terrain: Terrain, val wind: Wind, va
                                 0f,
                                 1f
                             ) / (grass.p - 0.1f)).clamp(0f, 1f)
-                            buf.put(grass.transform.array)
+                            grass.transform.putTo(buf)
                             buf.put(distScale * grass.s)
                         }
                     }
@@ -121,7 +121,7 @@ class CamLocalGrass(val camera: Camera, val terrain: Terrain, val wind: Wind, va
     }
 
     class GrassInstance(pos: Vec3f, val p: Float, val s: Float) : Vec3f(pos) {
-        val transform = Mat4f().translate(pos)
+        val transform = MutableMat4f().translate(pos)
     }
 
     class GrassTraverser : InRadiusTraverser<GrassInstance>() {

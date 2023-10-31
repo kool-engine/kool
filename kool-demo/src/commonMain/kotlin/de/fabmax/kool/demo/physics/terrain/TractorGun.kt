@@ -104,7 +104,7 @@ class TractorGun(val physics: PhysicsObjects, val mainScene: Scene) {
     private inner class TractorBeam {
         val range = 40f
 
-        val lookTransform = Mat4f()
+        val lookTransform = MutableMat4f()
         val desiredPos = MutableVec3f()
 
         var prevPullError = 0f

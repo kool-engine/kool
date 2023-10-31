@@ -4,10 +4,7 @@ import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.DemoLoader
 import de.fabmax.kool.demo.DemoScene
-import de.fabmax.kool.math.Mat3f
-import de.fabmax.kool.math.Mat4f
-import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.math.toRad
+import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.physics.*
 import de.fabmax.kool.physics.geometry.PlaneGeometry
@@ -104,7 +101,7 @@ class ManyVehiclesDemo : DemoScene("Many Vehicles") {
             instances = wheelInstances
             generate {
                 color = Color.DARK_GRAY.toLinear()
-                rotate(90f, Vec3f.Z_AXIS)
+                rotate(90f.deg, Vec3f.Z_AXIS)
                 cylinder {
                     radius = vehicleProps.wheelRadiusFront
                     height = vehicleProps.wheelWidthFront
@@ -168,7 +165,7 @@ class ManyVehiclesDemo : DemoScene("Many Vehicles") {
             simulationFilterData = groundSimFilterData
             queryFilterData = groundQryFilterData
             attachShape(Shape(PlaneGeometry(), Physics.defaultMaterial))
-            setRotation(Mat3f().rotate(90f, Vec3f.Z_AXIS))
+            setRotation(Mat3f.rotation(90f.deg, Vec3f.Z_AXIS))
         }
         physicsWorld.addActor(ground)
     }
@@ -178,7 +175,7 @@ class ManyVehiclesDemo : DemoScene("Many Vehicles") {
         vehicle.position = pos
         vehicle.throttleInput = 0.75f
         vehicle.steerInput = 0f
-        vehicle.setRotation(0f, dir, 0f)
+        vehicle.setRotation(0f.deg, dir.deg, 0f.deg)
         physicsWorld.addActor(vehicle)
         vehicleInstances += VehicleInstance(vehicle, color)
     }
@@ -200,15 +197,13 @@ class ManyVehiclesDemo : DemoScene("Many Vehicles") {
     }
 
     private inner class VehicleInstance(val vehicle: Vehicle, color: Color) {
-        private val tmpMat = Mat4f()
-        private val tmpMat2 = Mat4f()
+        private val tmpMat = MutableMat4f()
+        private val tmpMat2 = MutableMat4f()
         private val color = MutableColor(color)
 
         fun addChassisInstance(instanceData: MeshInstanceList) {
             instanceData.addInstance {
-                for (d in vehicle.transform.matrix.array) {
-                    put(d.toFloat())
-                }
+                vehicle.transform.matrix.putTo(this)
                 color.putTo(this)
             }
         }
@@ -218,7 +213,7 @@ class ManyVehiclesDemo : DemoScene("Many Vehicles") {
                 val wheelInfo = vehicle.wheelInfos[i]
                 tmpMat.set(vehicle.transform.matrix).translate(vehicleProps.chassisCMOffset).mul(tmpMat2.set(wheelInfo.transform.matrix))
                 instanceData.addInstance {
-                    put(tmpMat.array)
+                    tmpMat.putTo(this)
                 }
             }
         }

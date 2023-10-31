@@ -45,7 +45,7 @@ class Trees(val terrain: Terrain, nTrees: Int, val wind: Wind, val sky: Sky) {
 
         // generate 20 different tree models
         for (i in 0 until 20) {
-            val root = treeGenerator.generateNodes(Mat4f())
+            val root = treeGenerator.generateNodes(MutableMat4f())
 
             val treeData = IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Wind.WIND_SENSITIVITY)
             val meshBuilder = MeshBuilder(treeData)
@@ -76,10 +76,10 @@ class Trees(val terrain: Terrain, nTrees: Int, val wind: Wind, val sky: Sky) {
                 val tree = trees[random.randomI(trees.indices)]
                 val mesh = tree.drawMesh
                 val size = 0.6f + likelihood.clamp(0f, 0.4f)
-                val pose = Mat4f().translate(pos).rotate(random.randomF(0f, 360f), Vec3f.Y_AXIS)
-                tree.instances += TreeInstance(Mat4f().set(pose), size, tree)
+                val pose = MutableMat4f().translate(pos).rotate(random.randomF(0f, 360f).deg, Vec3f.Y_AXIS)
+                tree.instances += TreeInstance(MutableMat4f().set(pose), size, tree)
                 mesh.instances!!.addInstance {
-                    put(pose.scale(size).array)
+                    pose.scale(size).putTo(this)
                 }
             }
         }
@@ -168,8 +168,8 @@ class Trees(val terrain: Terrain, nTrees: Int, val wind: Wind, val sky: Sky) {
         val physicsGeometry = TriangleMeshGeometry(tree.physicsMesh, Vec3f(scale))
         val physicsBody: RigidStatic = RigidStatic().apply {
             attachShape(Shape(physicsGeometry, Physics.defaultMaterial))
-            position = pose.transform(MutableVec3f())
-            rotation = pose.getRotation(MutableQuatF())
+            position = pose.getTranslation()
+            rotation = pose.getRotation()
         }
     }
 }

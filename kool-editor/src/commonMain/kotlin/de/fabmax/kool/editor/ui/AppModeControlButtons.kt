@@ -3,10 +3,7 @@ package de.fabmax.kool.editor.ui
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.api.AppMode
 import de.fabmax.kool.editor.api.AppState
-import de.fabmax.kool.math.Easing
-import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.math.toRad
+import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ColorGradient
@@ -195,9 +192,9 @@ private class PlayButtonBg(playStopAnimator: AnimatedFloatBidir) : ModeButtonBg(
         getPlainBuilder().configured(fgColor.getColor(pHover)) {
             translate(round(widthPx * 0.5f), round(heightPx * 0.5f), 0f)
             if (playStopAnimator.isForward) {
-                rotate(90f * pAnim, 0f, 0f, 1f)
+                rotate(90f.deg * pAnim, 0f, 0f, 1f)
             } else {
-                rotate(-90f * pAnim, 0f, 0f, 1f)
+                rotate((-90f).deg * pAnim, 0f, 0f, 1f)
             }
 
             val vi = IntArray(4)
@@ -238,7 +235,7 @@ private class PauseButtonBg(playStopAnimator: AnimatedFloatBidir, val playPauseA
 
         getPlainBuilder().configured(MutableColor(fg).apply { a *= Easing.quadRev(playStopAnimator.value) }) {
             translate(round(widthPx * 0.5f), round(heightPx * 0.5f), 0f)
-            rotate(90f * (1f - pAnim), 0f, 0f, 1f)
+            rotate(90f.deg * (1f - pAnim), 0f, 0f, 1f)
 
             val vi = IntArray(4)
             val pa = MutableVec3f()

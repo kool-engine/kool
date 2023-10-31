@@ -6,8 +6,9 @@ import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.demo.DemoLoader
 import de.fabmax.kool.demo.DemoScene
 import de.fabmax.kool.math.Mat3f
-import de.fabmax.kool.math.Mat4f
+import de.fabmax.kool.math.MutableMat4f
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.deg
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.physics.*
 import de.fabmax.kool.physics.geometry.BoxGeometry
@@ -65,9 +66,7 @@ class ManyBodiesDemo : DemoScene("Many Bodies") {
                 cubeInstances.clear()
                 cubeInstances.addInstances(physBoxes.size) { buf ->
                     physBoxes.forEach { box ->
-                        for (d in box.actor.transform.matrix.array) {
-                            buf.put(d.toFloat())
-                        }
+                        box.actor.transform.matrix.putTo(buf)
                         box.color.putTo(buf)
                     }
                 }
@@ -82,7 +81,7 @@ class ManyBodiesDemo : DemoScene("Many Bodies") {
         for (y in 0..ny) {
             for (x in -12..12) {
                 for (z in -12..12) {
-                    val body = RigidDynamic(pose = Mat4f().translate(x * 2f, y * 2f + 10f, z * 2f))
+                    val body = RigidDynamic(pose = MutableMat4f().translate(x * 2f, y * 2f + 10f, z * 2f))
                     body.attachShape(Shape(BoxGeometry(Vec3f(1f, 1f, 1f)), Physics.defaultMaterial))
                     physicsWorld.addActor(body)
                     physBoxes += PhysBox(body, ColorGradient.JET_MD.getColor(y.toFloat(), 0f, ny.toFloat()).toLinear())
@@ -115,7 +114,7 @@ class ManyBodiesDemo : DemoScene("Many Bodies") {
 
         val ground = RigidStatic().apply {
             attachShape(Shape(PlaneGeometry(), Physics.defaultMaterial))
-            setRotation(Mat3f().rotate(90f, Vec3f.Z_AXIS))
+            setRotation(Mat3f.rotation(90f.deg, Vec3f.Z_AXIS))
         }
         physicsWorld.addActor(ground)
     }

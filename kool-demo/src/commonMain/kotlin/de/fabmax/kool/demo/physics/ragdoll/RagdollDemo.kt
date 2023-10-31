@@ -88,7 +88,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
 
         val colBody = RigidStatic()
         for (i in 0 until 10) {
-            val pose = Mat4f().translate(0f, 0.25f + i * 0.4f, 0f).rotate(90f, Vec3f.Z_AXIS)
+            val pose = MutableMat4f().translate(0f, 0.25f + i * 0.4f, 0f).rotate(90f.deg, Vec3f.Z_AXIS)
             colBody.attachShape(Shape(CylinderGeometry(0.7f, (10 - i) * 0.7f), localPose = pose))
         }
         physicsWorld.addActor(colBody)
@@ -96,7 +96,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
 
         val ground = RigidStatic()
         ground.attachShape(Shape(PlaneGeometry()))
-        ground.setRotation(0f, 0f, 90f)
+        ground.setRotation(0f.deg, 0f.deg, 90f.deg)
         physicsWorld.addActor(ground)
 
         val groundAlbedo = loadTexture2d("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine.png")
@@ -106,7 +106,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
             addTextureMesh(isNormalMapped = true) {
                 isCastingShadow = false
                 generate {
-                    rotate(-90f, Vec3f.X_AXIS)
+                    rotate((-90f).deg, Vec3f.X_AXIS)
                     centeredRect {
                         size.set(100f, 100f)
                         generateTexCoords(20f)
@@ -226,9 +226,9 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
         // spawn new dolls
         for (i in 0 until numRagdolls.value) {
             val h = 7f + 2.5f * (i / 8)
-            val pose = Mat4f()
+            val pose = MutableMat4f()
                 .translate(rand.randomF(-4f, 4f), h, rand.randomF(-4f, 4f))
-                .rotate(rand.randomF(-180f, 180f), MutableVec3f(rand.randomF(), rand.randomF(), rand.randomF()).norm())
+                .rotate(rand.randomF(-180f, 180f).deg, MutableVec3f(rand.randomF(), rand.randomF(), rand.randomF()).norm())
 
             ragdolls += makeRagdollYUp(pose)
         }
@@ -257,87 +257,87 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
         torso.mass = 20f
         torso.updateInertiaFromShapesAndMass()
 
-        val headPose = Mat4f().translate(0f, 0.4f, 0f)
+        val headPose = MutableMat4f().translate(0f, 0.4f, 0f)
         val head = ragdoll.createLink(torso, headPose)
         head.attachShape(Shape(BoxGeometry(headSz)))
         head.mass = 5f
         head.updateInertiaFromShapesAndMass()
 
-        val hipPose = Mat4f().translate(0f, -0.3f, 0f)
+        val hipPose = MutableMat4f().translate(0f, -0.3f, 0f)
         val hip = ragdoll.createLink(torso, hipPose)
         hip.attachShape(Shape(BoxGeometry(hipSz)))
         hip.mass = 10f
         hip.updateInertiaFromShapesAndMass()
 
         // arms
-        val upperArmLtPose = Mat4f().translate(0.25f, 0.05f, 0f)
+        val upperArmLtPose = MutableMat4f().translate(0.25f, 0.05f, 0f)
         val upperArmLt = ragdoll.createLink(torso, upperArmLtPose)
         upperArmLt.attachShape(Shape(BoxGeometry(upperArmSz)))
         upperArmLt.mass = 5f
         upperArmLt.updateInertiaFromShapesAndMass()
 
-        val lowerArmLtPose = Mat4f().translate(0f, -0.3f, 0f)
+        val lowerArmLtPose = MutableMat4f().translate(0f, -0.3f, 0f)
         val lowerArmLt = ragdoll.createLink(upperArmLt, lowerArmLtPose)
         lowerArmLt.attachShape(Shape(BoxGeometry(lowerArmSz)))
         lowerArmLt.mass = 5f
         lowerArmLt.updateInertiaFromShapesAndMass()
 
-        val handLtPose = Mat4f().translate(0f, -0.235f, 0f)
+        val handLtPose = MutableMat4f().translate(0f, -0.235f, 0f)
         val handLt = ragdoll.createLink(lowerArmLt, handLtPose)
         handLt.attachShape(Shape(BoxGeometry(handSz)))
         handLt.mass = 1f
         handLt.updateInertiaFromShapesAndMass()
 
-        val upperArmRtPose = Mat4f().translate(-0.25f, 0.05f, 0f)
+        val upperArmRtPose = MutableMat4f().translate(-0.25f, 0.05f, 0f)
         val upperArmRt = ragdoll.createLink(torso, upperArmRtPose)
         upperArmRt.attachShape(Shape(BoxGeometry(upperArmSz)))
         upperArmRt.mass = 5f
         upperArmRt.updateInertiaFromShapesAndMass()
 
-        val lowerArmRtPose = Mat4f().translate(0f, -0.3f, 0f)
+        val lowerArmRtPose = MutableMat4f().translate(0f, -0.3f, 0f)
         val lowerArmRt = ragdoll.createLink(upperArmRt, lowerArmRtPose)
         lowerArmRt.attachShape(Shape(BoxGeometry(lowerArmSz)))
         lowerArmRt.mass = 5f
         lowerArmRt.updateInertiaFromShapesAndMass()
 
-        val handRtPose = Mat4f().translate(0f, -0.235f, 0f)
+        val handRtPose = MutableMat4f().translate(0f, -0.235f, 0f)
         val handRt = ragdoll.createLink(lowerArmRt, handRtPose)
         handRt.attachShape(Shape(BoxGeometry(handSz)))
         handRt.mass = 1f
         handRt.updateInertiaFromShapesAndMass()
 
         // legs
-        val upperLegLtPose = Mat4f().translate(0.1f, -0.275f, 0f)
+        val upperLegLtPose = MutableMat4f().translate(0.1f, -0.275f, 0f)
         val upperLegLt = ragdoll.createLink(hip, upperLegLtPose)
         upperLegLt.attachShape(Shape(BoxGeometry(upperLegSz)))
         upperLegLt.mass = 10f
         upperLegLt.updateInertiaFromShapesAndMass()
 
-        val lowerLegLtPose = Mat4f().translate(0f, -0.4f, 0f)
+        val lowerLegLtPose = MutableMat4f().translate(0f, -0.4f, 0f)
         val lowerLegLt = ragdoll.createLink(upperLegLt, lowerLegLtPose)
         lowerLegLt.attachShape(Shape(BoxGeometry(lowerLegSz)))
         lowerLegLt.mass = 5f
         lowerLegLt.updateInertiaFromShapesAndMass()
 
-        val footLtPos = Mat4f().translate(0f, -0.2375f, 0.05f)
+        val footLtPos = MutableMat4f().translate(0f, -0.2375f, 0.05f)
         val footLt = ragdoll.createLink(lowerLegLt, footLtPos)
         footLt.attachShape(Shape(BoxGeometry(footSz)))
         footLt.mass = 1f
         footLt.updateInertiaFromShapesAndMass()
 
-        val upperLegRtPose = Mat4f().translate(-0.1f, -0.275f, 0f)
+        val upperLegRtPose = MutableMat4f().translate(-0.1f, -0.275f, 0f)
         val upperLegRt = ragdoll.createLink(hip, upperLegRtPose)
         upperLegRt.attachShape(Shape(BoxGeometry(upperLegSz)))
         upperLegRt.mass = 10f
         upperLegRt.updateInertiaFromShapesAndMass()
 
-        val lowerLegRtPose = Mat4f().translate(0f, -0.4f, 0f)
+        val lowerLegRtPose = MutableMat4f().translate(0f, -0.4f, 0f)
         val lowerLegRt = ragdoll.createLink(upperLegRt, lowerLegRtPose)
         lowerLegRt.attachShape(Shape(BoxGeometry(lowerLegSz)))
         lowerLegRt.mass = 5f
         lowerLegRt.updateInertiaFromShapesAndMass()
 
-        val footRtPos = Mat4f().translate(0f, -0.2375f, 0.05f)
+        val footRtPos = MutableMat4f().translate(0f, -0.2375f, 0.05f)
         val footRt = ragdoll.createLink(lowerLegRt, footRtPos)
         footRt.attachShape(Shape(BoxGeometry(footSz)))
         footRt.mass = 1f
@@ -346,102 +346,102 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
         // configure joints
 
         // center body
-        val torsoHeadLinkParent = Mat4f().translate(0f, 0.25f, 0f).rotate(90f, Vec3f.Z_AXIS)
-        val torsoHeadLinkChild = Mat4f().translate(0f, -0.15f, 0f).rotate(90f, Vec3f.Z_AXIS)
+        val torsoHeadLinkParent = MutableMat4f().translate(0f, 0.25f, 0f).rotate(90f.deg, Vec3f.Z_AXIS)
+        val torsoHeadLinkChild = MutableMat4f().translate(0f, -0.15f, 0f).rotate(90f.deg, Vec3f.Z_AXIS)
         head.inboundJoint?.setup(torsoHeadLinkParent, torsoHeadLinkChild, 20f) {
             setupSphericalSymmetrical(90f, 45f)
         }
 
-        val torsoHipLinkParent = Mat4f().translate(0f, -0.2375f, 0f).rotate(90f, Vec3f.Z_AXIS).rotate(45f, Vec3f.Y_AXIS)
-        val torsoHipLinkChild = Mat4f().translate(0f, 0.0625f, 0f).rotate(90f, Vec3f.Z_AXIS)
+        val torsoHipLinkParent = MutableMat4f().translate(0f, -0.2375f, 0f).rotate(90f.deg, Vec3f.Z_AXIS).rotate(45f.deg, Vec3f.Y_AXIS)
+        val torsoHipLinkChild = MutableMat4f().translate(0f, 0.0625f, 0f).rotate(90f.deg, Vec3f.Z_AXIS)
         hip.inboundJoint?.setup(torsoHipLinkParent, torsoHipLinkChild, 20f) {
             setupSpherical(-60f, 0f, -50f, 50f, -25f, 25f)
             setDriveTarget(ArticulationJointAxis.ROT_TWIST, (-45f).toRad())
         }
 
         // arms
-        val torsoArmLtLinkParent = Mat4f().translate(0.25f, 0.2f, 0f).rotate(180f, Vec3f.Z_AXIS).rotate(45f, Vec3f.Y_AXIS)
-        val torsoArmLtLinkChild = Mat4f().translate(0f, 0.165f, 0f).rotate(90f, Vec3f.Z_AXIS).rotate(-45f, Vec3f.X_AXIS)
+        val torsoArmLtLinkParent = MutableMat4f().translate(0.25f, 0.2f, 0f).rotate(180f.deg, Vec3f.Z_AXIS).rotate(45f.deg, Vec3f.Y_AXIS)
+        val torsoArmLtLinkChild = MutableMat4f().translate(0f, 0.165f, 0f).rotate(90f.deg, Vec3f.Z_AXIS).rotate((-45f).deg, Vec3f.X_AXIS)
         upperArmLt.inboundJoint?.setup(torsoArmLtLinkParent, torsoArmLtLinkChild, 10f) {
             setupSpherical(-30f, 30f, -90f, 90f, -100f, 100f)
             setDriveTarget(ArticulationJointAxis.ROT_SWING1, (45f).toRad())
             setDriveTarget(ArticulationJointAxis.ROT_SWING2, (-45f).toRad())
         }
 
-        val upperLowerArmLtLinkParent = Mat4f().translate(0f, -0.145f, 0f).rotate(90f, Vec3f.Z_AXIS).rotate(70f, Vec3f.Y_AXIS)
-        val upperLowerArmLtLinkChild = Mat4f().translate(0f, 0.13f, 0f).rotate(90f, Vec3f.Z_AXIS)
+        val upperLowerArmLtLinkParent = MutableMat4f().translate(0f, -0.145f, 0f).rotate(90f.deg, Vec3f.Z_AXIS).rotate(70f.deg, Vec3f.Y_AXIS)
+        val upperLowerArmLtLinkChild = MutableMat4f().translate(0f, 0.13f, 0f).rotate(90f.deg, Vec3f.Z_AXIS)
         lowerArmLt.inboundJoint?.setup(upperLowerArmLtLinkParent, upperLowerArmLtLinkChild, 10f) {
             setupSpherical(-30f, 30f, -75f, 75f, -10f, 10f)
             setDriveTarget(ArticulationJointAxis.ROT_TWIST, (-70f).toRad())
         }
 
-        val armHandLtLinkParent = Mat4f().translate(0f, -0.13f, 0f).rotate(90f, Vec3f.Z_AXIS)
-        val armHandLtLinkChild = Mat4f().translate(0f, 0.0975f, 0f).rotate(90f, Vec3f.Z_AXIS)
+        val armHandLtLinkParent = MutableMat4f().translate(0f, -0.13f, 0f).rotate(90f.deg, Vec3f.Z_AXIS)
+        val armHandLtLinkChild = MutableMat4f().translate(0f, 0.0975f, 0f).rotate(90f.deg, Vec3f.Z_AXIS)
         handLt.inboundJoint?.setup(armHandLtLinkParent, armHandLtLinkChild, 10f) {
             setupSphericalSymmetrical(45f, 70f)
         }
 
-        val torsoArmRtLinkParent = Mat4f().translate(-0.25f, 0.2f, 0f).rotate(225f, Vec3f.Y_AXIS)
-        val torsoArmRtLinkChild = Mat4f().translate(0f, 0.165f, 0f).rotate(-90f, Vec3f.Z_AXIS).rotate(135f, Vec3f.X_AXIS)
+        val torsoArmRtLinkParent = MutableMat4f().translate(-0.25f, 0.2f, 0f).rotate(225f.deg, Vec3f.Y_AXIS)
+        val torsoArmRtLinkChild = MutableMat4f().translate(0f, 0.165f, 0f).rotate((-90f).deg, Vec3f.Z_AXIS).rotate(135f.deg, Vec3f.X_AXIS)
         upperArmRt.inboundJoint?.setup(torsoArmRtLinkParent, torsoArmRtLinkChild, 10f) {
             setupSpherical(-30f, 30f, -90f, 90f, -100f, 100f)
             setDriveTarget(ArticulationJointAxis.ROT_SWING1, (-45f).toRad())
             setDriveTarget(ArticulationJointAxis.ROT_SWING2, (45f).toRad())
         }
 
-        val upperLowerArmRtLinkParent = Mat4f().translate(0f, -0.13f, 0f).rotate(90f, Vec3f.Z_AXIS).rotate(70f, Vec3f.Y_AXIS)
-        val upperLowerArmRtLinkChild = Mat4f().translate(0f, 0.145f, 0f).rotate(90f, Vec3f.Z_AXIS)
+        val upperLowerArmRtLinkParent = MutableMat4f().translate(0f, -0.13f, 0f).rotate(90f.deg, Vec3f.Z_AXIS).rotate(70f.deg, Vec3f.Y_AXIS)
+        val upperLowerArmRtLinkChild = MutableMat4f().translate(0f, 0.145f, 0f).rotate(90f.deg, Vec3f.Z_AXIS)
         lowerArmRt.inboundJoint?.setup(upperLowerArmRtLinkParent, upperLowerArmRtLinkChild, 10f) {
             setupSpherical(-30f, 30f, -75f, 75f, -10f, 10f)
             setDriveTarget(ArticulationJointAxis.ROT_TWIST, (-70f).toRad())
         }
 
-        val armHandRtLinkParent = Mat4f().translate(0f, -0.13f, 0f).rotate(90f, Vec3f.Z_AXIS)
-        val armHandRtLinkChild = Mat4f().translate(0f, 0.0975f, 0f).rotate(90f, Vec3f.Z_AXIS)
+        val armHandRtLinkParent = MutableMat4f().translate(0f, -0.13f, 0f).rotate(90f.deg, Vec3f.Z_AXIS)
+        val armHandRtLinkChild = MutableMat4f().translate(0f, 0.0975f, 0f).rotate(90f.deg, Vec3f.Z_AXIS)
         handRt.inboundJoint?.setup(armHandRtLinkParent, armHandRtLinkChild, 10f) {
             setupSphericalSymmetrical(45f, 70f)
         }
 
         // legs
-        val hipUpperLegLtLinkParent = Mat4f().translate(0.1f, -0.0625f, 0f).rotate(90f, Vec3f.Z_AXIS).rotate(30f, Vec3f.Y_AXIS).rotate(30f, Vec3f.Z_AXIS)
-        val hipUpperLegLtLinkChild = Mat4f().translate(0f, 0.2125f, 0f).rotate(90f, Vec3f.Z_AXIS)
+        val hipUpperLegLtLinkParent = MutableMat4f().translate(0.1f, -0.0625f, 0f).rotate(90f.deg, Vec3f.Z_AXIS).rotate(30f.deg, Vec3f.Y_AXIS).rotate(30f.deg, Vec3f.Z_AXIS)
+        val hipUpperLegLtLinkChild = MutableMat4f().translate(0f, 0.2125f, 0f).rotate(90f.deg, Vec3f.Z_AXIS)
         upperLegLt.inboundJoint?.setup(hipUpperLegLtLinkParent, hipUpperLegLtLinkChild, 20f) {
             setupSphericalSymmetrical(10f, 45f)
             setDriveTarget(ArticulationJointAxis.ROT_TWIST, (-15f).toRad())
             setDriveTarget(ArticulationJointAxis.ROT_SWING2, (-20f).toRad())
         }
 
-        val upperLowerLegLtLinkParent = Mat4f().translate(0f, -0.2125f, 0f).rotate(90f, Vec3f.Z_AXIS).rotate(-70f, Vec3f.Y_AXIS)
-        val upperLowerLegLtLinkChild = Mat4f().translate(0f, 0.1875f, 0f).rotate(90f, Vec3f.Z_AXIS)
+        val upperLowerLegLtLinkParent = MutableMat4f().translate(0f, -0.2125f, 0f).rotate(90f.deg, Vec3f.Z_AXIS).rotate((-70f).deg, Vec3f.Y_AXIS)
+        val upperLowerLegLtLinkChild = MutableMat4f().translate(0f, 0.1875f, 0f).rotate(90f.deg, Vec3f.Z_AXIS)
         lowerLegLt.inboundJoint?.setup(upperLowerLegLtLinkParent, upperLowerLegLtLinkChild, 10f) {
             setupSpherical(-10f, 10f, -75f, 75f, -10f, 10f)
             setDriveTarget(ArticulationJointAxis.ROT_TWIST, (50f).toRad())
         }
 
-        val legFootLtLinkParent = Mat4f().translate(0f, -0.1875f, 0f).rotate(90f, Vec3f.Z_AXIS)
-        val legFootLtLinkChild = Mat4f().translate(0f, 0.05f, -0.05f).rotate(90f, Vec3f.Z_AXIS).rotate(30f, Vec3f.Y_AXIS)
+        val legFootLtLinkParent = MutableMat4f().translate(0f, -0.1875f, 0f).rotate(90f.deg, Vec3f.Z_AXIS)
+        val legFootLtLinkChild = MutableMat4f().translate(0f, 0.05f, -0.05f).rotate(90f.deg, Vec3f.Z_AXIS).rotate(30f.deg, Vec3f.Y_AXIS)
         footLt.inboundJoint?.setup(legFootLtLinkParent, legFootLtLinkChild, 10f) {
             setupSpherical(-10f, 10f, -45f, 45f, -10f, 10f)
             setDriveTarget(ArticulationJointAxis.ROT_SWING1, (-30f).toRad())
         }
 
-        val hipUpperLegRtLinkParent = Mat4f().translate(-0.1f, -0.0625f, 0f).rotate(90f, Vec3f.Z_AXIS).rotate(30f, Vec3f.Y_AXIS).rotate(-30f, Vec3f.Z_AXIS)
-        val hipUpperLegRtLinkChild = Mat4f().translate(0f, 0.2125f, 0f).rotate(90f, Vec3f.Z_AXIS)
+        val hipUpperLegRtLinkParent = MutableMat4f().translate(-0.1f, -0.0625f, 0f).rotate(90f.deg, Vec3f.Z_AXIS).rotate(30f.deg, Vec3f.Y_AXIS).rotate((-30f).deg, Vec3f.Z_AXIS)
+        val hipUpperLegRtLinkChild = MutableMat4f().translate(0f, 0.2125f, 0f).rotate(90f.deg, Vec3f.Z_AXIS)
         upperLegRt.inboundJoint?.setup(hipUpperLegRtLinkParent, hipUpperLegRtLinkChild, 20f) {
             setupSphericalSymmetrical(10f, 45f)
             setDriveTarget(ArticulationJointAxis.ROT_SWING1, (-15f).toRad())
             setDriveTarget(ArticulationJointAxis.ROT_SWING2, (20f).toRad())
         }
 
-        val upperLowerLegRtLinkParent = Mat4f().translate(0f, -0.2125f, 0f).rotate(90f, Vec3f.Z_AXIS).rotate(-70f, Vec3f.Y_AXIS)
-        val upperLowerLegRtLinkChild = Mat4f().translate(0f, 0.1875f, 0f).rotate(90f, Vec3f.Z_AXIS)
+        val upperLowerLegRtLinkParent = MutableMat4f().translate(0f, -0.2125f, 0f).rotate(90f.deg, Vec3f.Z_AXIS).rotate((-70f).deg, Vec3f.Y_AXIS)
+        val upperLowerLegRtLinkChild = MutableMat4f().translate(0f, 0.1875f, 0f).rotate(90f.deg, Vec3f.Z_AXIS)
         lowerLegRt.inboundJoint?.setup(upperLowerLegRtLinkParent, upperLowerLegRtLinkChild, 10f) {
             setupSpherical(-10f, 10f, -75f, 75f, -10f, 10f)
             setDriveTarget(ArticulationJointAxis.ROT_TWIST, (50f).toRad())
         }
 
-        val legFootRtLinkParent = Mat4f().translate(0f, -0.1875f, 0f).rotate(90f, Vec3f.Z_AXIS)
-        val legFootRtLinkChild = Mat4f().translate(0f, 0.05f, -0.05f).rotate(90f, Vec3f.Z_AXIS).rotate(30f, Vec3f.Y_AXIS)
+        val legFootRtLinkParent = MutableMat4f().translate(0f, -0.1875f, 0f).rotate(90f.deg, Vec3f.Z_AXIS)
+        val legFootRtLinkChild = MutableMat4f().translate(0f, 0.05f, -0.05f).rotate(90f.deg, Vec3f.Z_AXIS).rotate(30f.deg, Vec3f.Y_AXIS)
         footRt.inboundJoint?.setup(legFootRtLinkParent, legFootRtLinkChild, 10f) {
             setupSpherical(-10f, 10f, -45f, 45f, -10f, 10f)
             setDriveTarget(ArticulationJointAxis.ROT_SWING1, (-30f).toRad())
@@ -496,11 +496,11 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
 
     private class BodyInstance(val trs: TrsTransform, val size: Vec3f, color: Color) {
         private val mutColor = MutableColor(color)
-        private val bufTransform = Mat4f()
+        private val bufTransform = MutableMat4f()
 
         fun putInstanceData(buf: Float32Buffer) {
-            bufTransform.set(trs.matrix).scale(size.x, size.y, size.z)
-            buf.put(bufTransform.array)
+            bufTransform.set(trs.matrix).scale(size)
+            bufTransform.putTo(buf)
             mutColor.putTo(buf)
         }
     }

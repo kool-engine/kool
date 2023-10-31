@@ -2,7 +2,6 @@ package de.fabmax.kool.editor.data
 
 import de.fabmax.kool.math.*
 import de.fabmax.kool.scene.Transform
-import de.fabmax.kool.scene.TrsTransform
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MutableColor
 import kotlinx.serialization.Serializable
@@ -13,37 +12,16 @@ data class TransformData(
     val rotation: Vec4Data,
     val scale: Vec3Data
 ) {
-    constructor(matrix: Mat4d): this(
-        position = Vec3Data(matrix.getOrigin(MutableVec3d())),
-        rotation = Vec4Data(matrix.getRotation(MutableQuatD())),
-        scale = Vec3Data(matrix.getScale(MutableVec3d()))
-    )
-
     fun toTransform(result: Transform): Transform {
-        if (result is TrsTransform) {
-            result
-                .setPosition(position.toVec3d())
-                .setRotation(rotation.toQuatD())
-                .setScale(scale.toVec3d())
-        } else {
-            toMat4d(result.matrix)
-            result.markDirty()
-        }
-        return result
+        return result.setCompositionOf(position.toVec3d(), rotation.toQuatD(), scale.toVec3d())
     }
 
-    fun toMat4d(result: Mat4d = Mat4d()): Mat4d {
-        return result
-            .setRotate(rotation.toVec4d())
-            .scale(scale.toVec3d())
-            .setOrigin(position.toVec3d())
+    fun toMat4d(result: MutableMat4d = MutableMat4d()): Mat4d {
+        return result.setIdentity().compose(position.toVec3d(), rotation.toQuatD(), scale.toVec3d())
     }
 
-    fun toMat4f(result: Mat4f = Mat4f()): Mat4f {
-        return result
-            .setRotate(rotation.toVec4f())
-            .scale(scale.toVec3f())
-            .setOrigin(position.toVec3f())
+    fun toMat4f(result: MutableMat4f = MutableMat4f()): Mat4f {
+        return result.setIdentity().compose(position.toVec3f(), rotation.toQuatF(), scale.toVec3f())
     }
 
     companion object {
@@ -52,6 +30,14 @@ data class TransformData(
             rotation = Vec4Data(Vec4d.W_AXIS),
             scale = Vec3Data(Vec3d(1.0, 1.0, 1.0))
         )
+
+        fun fromMatrix(matrix: Mat4d): TransformData {
+            val translation = MutableVec3d()
+            val rotation = MutableQuatD()
+            val scale = MutableVec3d()
+            matrix.decompose(translation, rotation, scale)
+            return TransformData(Vec3Data(translation), Vec4Data(rotation), Vec3Data(scale))
+        }
     }
 }
 

@@ -10,7 +10,7 @@ import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.editor.model.NodeModel
 import de.fabmax.kool.editor.model.SceneModel
 import de.fabmax.kool.editor.model.SceneNodeModel
-import de.fabmax.kool.math.Mat4d
+import de.fabmax.kool.math.MutableMat4d
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.modules.ui2.ArrowScope.Companion.ROTATION_DOWN
 import de.fabmax.kool.modules.ui2.ArrowScope.Companion.ROTATION_RIGHT
@@ -63,11 +63,11 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         nodeData.components += DiscreteLightComponentData(lightType)
         val light = SceneNodeModel(nodeData, parent.nodeModel, parentScene)
 
-        val transform = Mat4d().translate(EditorDefaults.DEFAULT_LIGHT_POSITION)
+        val transform = MutableMat4d().translate(EditorDefaults.DEFAULT_LIGHT_POSITION)
         if (lightType !is LightTypeData.Point) {
-            transform.mul(Mat4d().setRotate(EditorDefaults.DEFAULT_LIGHT_ROTATION))
+            transform.mul(MutableMat4d().rotate(EditorDefaults.DEFAULT_LIGHT_ROTATION))
         }
-        light.transform.componentData.transform = TransformData(transform)
+        light.transform.componentData.transform = TransformData.fromMatrix(transform)
 
         AddNodeAction(light).apply()
     }

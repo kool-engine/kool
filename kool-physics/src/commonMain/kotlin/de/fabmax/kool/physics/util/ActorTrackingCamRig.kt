@@ -2,6 +2,7 @@ package de.fabmax.kool.physics.util
 
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.deg
 import de.fabmax.kool.math.toDeg
 import de.fabmax.kool.physics.RigidBody
 import de.fabmax.kool.scene.Node
@@ -47,6 +48,6 @@ class ActorTrackingCamRig : Node() {
         transform.setIdentity()
         transform.translate(trackPosCurrent)
         val ang = atan2(trackDirCurrent.x, trackDirCurrent.z).toDeg()
-        transform.rotate(ang, Vec3f.Y_AXIS)
+        transform.rotate(ang.deg, Vec3f.Y_AXIS)
     }
 }

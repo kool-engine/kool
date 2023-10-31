@@ -143,9 +143,8 @@ class MappedUniform4fv(val uniform: Uniform4fv, val location: Int) : MappedUnifo
 class MappedUniformMat3f(val uniform: UniformMat3f, val location: Int) : MappedUniform {
     private val buf = createFloat32Buffer(9) as Float32BufferImpl
     override fun setUniform(ctx: Lwjgl3Context): Boolean {
-        for (i in 0..8) {
-            buf[i] = uniform.value.matrix[i]
-        }
+        uniform.value.putTo(buf)
+        buf.flip()
         glUniformMatrix3fv(location, false, buf.buffer)
         return true
     }
@@ -154,12 +153,10 @@ class MappedUniformMat3f(val uniform: UniformMat3f, val location: Int) : MappedU
 class MappedUniformMat3fv(val uniform: UniformMat3fv, val location: Int) : MappedUniform {
     private val buf = createFloat32Buffer(9 * uniform.size) as Float32BufferImpl
     override fun setUniform(ctx: Lwjgl3Context): Boolean {
-        var bufI = 0
         for (i in 0 until uniform.size) {
-            for (j in 0 until 8) {
-                buf[bufI++] = uniform.value[i].matrix[j]
-            }
+            uniform.value[i].putTo(buf)
         }
+        buf.flip()
         glUniformMatrix3fv(location, false, buf.buffer)
         return true
     }
@@ -168,9 +165,8 @@ class MappedUniformMat3fv(val uniform: UniformMat3fv, val location: Int) : Mappe
 class MappedUniformMat4f(val uniform: UniformMat4f, val location: Int) : MappedUniform {
     private val buf = createFloat32Buffer(16) as Float32BufferImpl
     override fun setUniform(ctx: Lwjgl3Context): Boolean {
-        for (i in 0..15) {
-            buf[i] = uniform.value.array[i]
-        }
+        uniform.value.putTo(buf)
+        buf.flip()
         glUniformMatrix4fv(location, false, buf.buffer)
         return true
     }
@@ -179,12 +175,10 @@ class MappedUniformMat4f(val uniform: UniformMat4f, val location: Int) : MappedU
 class MappedUniformMat4fv(val uniform: UniformMat4fv, val location: Int) : MappedUniform {
     private val buf = createFloat32Buffer(16 * uniform.size) as Float32BufferImpl
     override fun setUniform(ctx: Lwjgl3Context): Boolean {
-        var bufI = 0
         for (i in 0 until uniform.size) {
-            for (j in 0 until 16) {
-                buf[bufI++] = uniform.value[i].array[j]
-            }
+            uniform.value[i].putTo(buf)
         }
+        buf.flip()
         glUniformMatrix4fv(location, false, buf.buffer)
         return true
     }

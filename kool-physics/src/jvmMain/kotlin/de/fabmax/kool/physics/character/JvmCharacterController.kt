@@ -1,6 +1,6 @@
 package de.fabmax.kool.physics.character
 
-import de.fabmax.kool.math.Mat4f
+import de.fabmax.kool.math.MutableMat4f
 import de.fabmax.kool.math.MutableVec3d
 import de.fabmax.kool.math.Vec3d
 import de.fabmax.kool.math.Vec3f
@@ -36,7 +36,7 @@ class JvmCharacterController(
             prevPosition.set(value)
         }
 
-    override val actor: RigidDynamic = RigidDynamic(1f, Mat4f(), false, pxController.actor)
+    override val actor: RigidDynamic = RigidDynamic(1f, MutableMat4f(), false, pxController.actor)
 
     override fun move(displacement: Vec3f, timeStep: Float) {
         val flags = pxController.move(displacement.toPxVec3(bufPxVec3), 0.001f, timeStep, pxControllerFilters)

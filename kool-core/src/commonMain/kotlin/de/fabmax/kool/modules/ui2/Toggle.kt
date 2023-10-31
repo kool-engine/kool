@@ -3,6 +3,7 @@ package de.fabmax.kool.modules.ui2
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.deg
 import de.fabmax.kool.util.Color
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -233,7 +234,7 @@ class CheckboxNode(parent: UiNode?, surface: UiSurface) : ToggleNode(parent, sur
             getPlainBuilder().configured(modifier.checkMarkColor) {
                 val sz = buttonWidth.px * 0.8f * p
                 translate(c.x, c.y - sz * 0.2f, 0f)
-                rotate(45f, Vec3f.Z_AXIS)
+                rotate(45f.deg, Vec3f.Z_AXIS)
                 centeredRect {
                     isCenteredOrigin = false
                     size.set(sz * 0.6f, sz * 0.2f)

@@ -4,6 +4,7 @@ import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.*
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.deg
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ksl.blocks.PropertyBlockConfig
 import de.fabmax.kool.modules.ui2.*
@@ -78,7 +79,7 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrCont
 
             onUpdate += {
                 if (autoRotate) {
-                    transform.rotate(-2f * Time.deltaT, Vec3f.Y_AXIS)
+                    transform.rotate((-2f * Time.deltaT).deg, Vec3f.Y_AXIS)
                 }
             }
         }

@@ -4,7 +4,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.MenuRow
 import de.fabmax.kool.demo.UiSizes
 import de.fabmax.kool.demo.labelStyle
-import de.fabmax.kool.math.Mat4f
+import de.fabmax.kool.math.MutableMat4f
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.Attribute
@@ -76,14 +76,14 @@ class RoughnesMetalGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.P
             shader = instancedPbrShader(withIbl, envMaps).also { shaders += it }
 
             instances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, ATTRIB_ROUGHNESS, ATTRIB_METAL), nRows * nCols) .apply {
-                val mat = Mat4f()
+                val mat = MutableMat4f()
                 for (y in 0 until nRows) {
                     for (x in 0 until nCols) {
                         mat.setIdentity()
                         mat.translate((-(nCols - 1) * 0.5f + x) * spacing, ((nRows - 1) * 0.5f - y) * spacing, 0f)
 
                         addInstance {
-                            put(mat.array)
+                            mat.putTo(this)
                             val roughness = max(x / (nCols - 1).toFloat(), 0.05f)
                             val metallic = y / (nRows - 1).toFloat()
                             put(roughness)

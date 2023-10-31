@@ -103,9 +103,9 @@ class TransformEditor(component: TransformComponent) : ComponentEditor<Transform
 
         val editHandlers = mutableListOf<ValueEditHandler<TransformData>>()
 
-        private var editTransformData = TransformData(Mat4d())
-        private var startTransformData = TransformData(Mat4d())
-        private var startTransformDataParentFrame = TransformData(Mat4d())
+        private var editTransformData = TransformData.IDENTITY
+        private var startTransformData = TransformData.IDENTITY
+        private var startTransformDataParentFrame = TransformData.IDENTITY
 
         private fun captureTransform() {
             startTransformData = TransformData(
@@ -221,7 +221,7 @@ class TransformEditor(component: TransformComponent) : ComponentEditor<Transform
             setPosition(translatedTd.position.toVec3d())
             setScale(translatedTd.scale.toVec3d())
 
-            val rotMat = Mat3d().setRotate(translatedTd.rotation.toVec4d())
+            val rotMat = Mat3d.rotation(translatedTd.rotation.toQuatD())
             setRotation(rotMat.getEulerAngles(MutableVec3d()))
         }
 
@@ -245,7 +245,7 @@ class TransformEditor(component: TransformComponent) : ComponentEditor<Transform
                 EditorState.TransformOrientation.GLOBAL -> {
                     val parent = component.nodeModel.parent
                     if (parent is SceneNodeModel) {
-                        TransformData(component.nodeModel.drawNode.modelMat)
+                        TransformData.fromMatrix(component.nodeModel.drawNode.modelMat)
                     } else {
                         // parent node is the scene -> parent reference frame == global reference frame
                         transformData
@@ -267,8 +267,8 @@ class TransformEditor(component: TransformComponent) : ComponentEditor<Transform
                     val parent = component.nodeModel.parent
                     if (parent is SceneNodeModel) {
                         val globalToParent = parent.drawNode.modelMatInverse
-                        val m = globalToParent.mul(transformData.toMat4d(Mat4d()), Mat4d())
-                        TransformData(m)
+                        val m = globalToParent.mul(transformData.toMat4d(MutableMat4d()), MutableMat4d())
+                        TransformData.fromMatrix(m)
                     } else {
                         // parent node is the scene -> parent reference frame == global reference frame
                         transformData
@@ -287,8 +287,9 @@ class TransformEditor(component: TransformComponent) : ComponentEditor<Transform
             rEulerX.set(eulerRotation.x)
             rEulerY.set(eulerRotation.y)
             rEulerZ.set(eulerRotation.z)
-            val mat = Mat3d().setRotate(eulerRotation.x, eulerRotation.y, eulerRotation.z)
-            val q = mat.getRotation(MutableQuatD())
+            val mat = Mat3d.rotation(eulerRotation.x.deg, eulerRotation.y.deg, eulerRotation.z.deg)
+            val q = MutableQuatD()
+            mat.decompose(q)
             rQuatX.set(q.x)
             rQuatY.set(q.y)
             rQuatZ.set(q.z)
@@ -300,7 +301,7 @@ class TransformEditor(component: TransformComponent) : ComponentEditor<Transform
             rQuatY.set(quaternionRotation.y)
             rQuatZ.set(quaternionRotation.z)
             rQuatW.set(quaternionRotation.w)
-            val mat = Mat3d().setRotate(Vec4d(quaternionRotation.x, quaternionRotation.y, quaternionRotation.z, quaternionRotation.w))
+            val mat = Mat3d.rotation(QuatD(quaternionRotation.x, quaternionRotation.y, quaternionRotation.z, quaternionRotation.w))
             val e = mat.getEulerAngles(MutableVec3d())
             rEulerX.set(e.x)
             rEulerY.set(e.y)

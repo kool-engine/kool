@@ -1,7 +1,6 @@
 package de.fabmax.kool.platform.vk
 
 import de.fabmax.kool.math.Mat4d
-import de.fabmax.kool.math.Vec4d
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
@@ -30,9 +29,25 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackend {
     override val glfwWindow: GlfwWindow
         get() = vkSystem.window
 
-    override val projCorrectionMatrixScreen = Mat4d()
-    override val projCorrectionMatrixOffscreen = Mat4d()
-    override val depthBiasMatrix = Mat4d()
+    // maps camera projection matrices to Vulkan screen coordinates
+    override val projCorrectionMatrixScreen = Mat4d(
+        1.0, 0.0, 0.0, 0.0,
+        0.0, 1.0, 0.0, 0.0,
+        0.0, 0.0, 0.5, 0.5,
+        0.0, 0.0, 0.0, 1.0
+    )
+    override val projCorrectionMatrixOffscreen = Mat4d(
+        1.0, 0.0, 0.0, 0.0,
+        0.0, 1.0, 0.0, 0.0,
+        0.0, 0.0, 0.5, 0.5,
+        0.0, 0.0, 0.0, 1.0
+    )
+    override val depthBiasMatrix = Mat4d(
+        0.5, 0.0, 0.0, 0.5,
+        0.0, 0.5, 0.0, 0.5,
+        0.0, 0.0, 1.0, 0.0,
+        0.0, 0.0, 0.0, 1.0
+    )
 
     private val shaderCodes = mutableMapOf<String, ShaderCode>()
 
@@ -51,28 +66,6 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackend {
         vkSystem.addDependingResource(semaPool)
         apiName = "Vulkan ${vkSystem.physicalDevice.apiVersion}"
         deviceName = vkSystem.physicalDevice.deviceName
-
-        // maps camera projection matrices to Vulkan screen coordinates
-        projCorrectionMatrixScreen.apply {
-            setRow(0, Vec4d(1.0, 0.0, 0.0, 0.0))
-            setRow(1, Vec4d(0.0, 1.0, 0.0, 0.0))
-            setRow(2, Vec4d(0.0, 0.0, 0.5, 0.5))
-            setRow(3, Vec4d(0.0, 0.0, 0.0, 1.0))
-        }
-
-        projCorrectionMatrixOffscreen.apply {
-            setRow(0, Vec4d(1.0, 0.0, 0.0, 0.0))
-            setRow(1, Vec4d(0.0, 1.0, 0.0, 0.0))
-            setRow(2, Vec4d(0.0, 0.0, 0.5, 0.5))
-            setRow(3, Vec4d(0.0, 0.0, 0.0, 1.0))
-        }
-
-        depthBiasMatrix.apply {
-            setRow(0, Vec4d(0.5, 0.0, 0.0, 0.5))
-            setRow(1, Vec4d(0.0, 0.5, 0.0, 0.5))
-            setRow(2, Vec4d(0.0, 0.0, 1.0, 0.0))
-            setRow(3, Vec4d(0.0, 0.0, 0.0, 1.0))
-        }
     }
 
     override fun getWindowViewport(result: Viewport) {
@@ -590,7 +583,7 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackend {
 
     companion object {
         private val cubeRenderPassViews = Array(6) {
-            i -> OffscreenRenderPassCube.ViewDirection.values()[i]
+            i -> OffscreenRenderPassCube.ViewDirection.entries[i]
         }
     }
 }

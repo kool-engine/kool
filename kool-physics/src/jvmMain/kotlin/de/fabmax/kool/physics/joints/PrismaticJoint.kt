@@ -7,7 +7,10 @@ import de.fabmax.kool.physics.createPxTransform
 import de.fabmax.kool.physics.toPxTransform
 import org.lwjgl.system.MemoryStack
 import physx.PxTopLevelFunctions
-import physx.extensions.*
+import physx.extensions.PxJointLinearLimitPair
+import physx.extensions.PxPrismaticJoint
+import physx.extensions.PxPrismaticJointFlagEnum
+import physx.extensions.PxSpring
 
 actual class PrismaticJoint actual constructor(
     val bodyA: RigidActor,
@@ -15,8 +18,8 @@ actual class PrismaticJoint actual constructor(
     posA: Mat4f,
     posB: Mat4f
 ) : Joint() {
-    actual val frameA = Mat4f().set(posA)
-    actual val frameB = Mat4f().set(posB)
+    actual val frameA = Mat4f(posA)
+    actual val frameB = Mat4f(posB)
     override val pxJoint: PxPrismaticJoint
 
     init {

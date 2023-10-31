@@ -4,6 +4,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolException
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.math.Mat4d
+import de.fabmax.kool.math.MutableMat4d
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.generator.GlslGenerator
 import de.fabmax.kool.pipeline.*
@@ -29,9 +30,9 @@ class GlRenderBackend(val ctx: Lwjgl3Context) : RenderBackend {
 
     override val glfwWindow: GlfwWindow
 
-    override val projCorrectionMatrixScreen = Mat4d()
-    override val projCorrectionMatrixOffscreen = Mat4d()
-    override val depthBiasMatrix = Mat4d().translate(0.5, 0.5, 0.5).scale(0.5, 0.5, 0.5)
+    override val projCorrectionMatrixScreen = Mat4d.IDENTITY
+    override val projCorrectionMatrixOffscreen = Mat4d.IDENTITY
+    override val depthBiasMatrix: Mat4d = MutableMat4d().translate(0.5, 0.5, 0.5).scale(0.5)
 
     val supportedExtensions = mutableSetOf<String>()
     val glCapabilities = GlCapabilities()

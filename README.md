@@ -115,7 +115,7 @@ fun main() = KoolApplication { ctx ->
                 roughness(0.25f)
             }
             onUpdate {
-                transform.rotate(Time.deltaT * 45f, Vec3f.X_AXIS)
+                transform.rotate(45f.deg * Time.deltaT, Vec3f.X_AXIS)
             }
         }
 

@@ -1,8 +1,6 @@
 package de.fabmax.kool.modules.gltf
 
-import de.fabmax.kool.math.Mat4dStack
-import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.math.QuatD
+import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.pipeline.BlendMode
 import de.fabmax.kool.pipeline.Texture2d
@@ -468,14 +466,14 @@ data class GltfFile(
         }
 
         private fun applyTransforms(model: Model) {
-            val transform = Mat4dStack()
+            val transform = Mat4fStack()
             transform.setIdentity()
             model.applyTransforms(transform, model)
         }
 
-        private fun Node.applyTransforms(transform: Mat4dStack, rootGroup: Node) {
+        private fun Node.applyTransforms(transform: Mat4fStack, rootGroup: Node) {
             transform.push()
-            transform.mul(this.transform.matrix)
+            transform.mul(this.transform.matrix.toMat4f())
 
             children.filterIsInstance<Mesh>().forEach {
                 it.geometry.batchUpdate(true) {
@@ -508,7 +506,7 @@ data class GltfFile(
 
             if (matrix != null) {
                 val t = MatrixTransform()
-                t.matrix.set(matrix.map { it.toDouble() })
+                t.matrix.set(matrix.map { it.toDouble() }.toDoubleArray())
                 nodeGrp.transform = t
             } else {
                 val t = nodeGrp.transform as TrsTransform
@@ -519,7 +517,7 @@ data class GltfFile(
                     t.setRotation(QuatD(rotation[0].toDouble(), rotation[1].toDouble(), rotation[2].toDouble(), rotation[3].toDouble()))
                 }
                 if (scale != null) {
-                    t.scale(scale[0], scale[1], scale[2])
+                    t.scale(Vec3f(scale[0], scale[1], scale[2]))
                 }
             }
 

@@ -224,11 +224,11 @@ class GltfDemo : DemoScene("glTF Models") {
     }
 
     private fun Node.setupContentGroup(isDeferredShading: Boolean) {
-        transform.rotate(-60.0, Vec3d.Y_AXIS)
+        transform.rotate((-60.0).deg, Vec3d.Y_AXIS)
         onUpdate += {
             if (isAutoRotate.value) {
                 transform.setIdentity()
-                transform.rotate(Time.gameTime * 3, Vec3d.Y_AXIS)
+                transform.rotate((Time.gameTime * 3).deg, Vec3d.Y_AXIS)
             }
         }
 
@@ -460,7 +460,7 @@ class GltfDemo : DemoScene("glTF Models") {
             model.transform.setIdentity()
             position.set(radius, 0.0, 0.0).rotate(angle.rad, Vec3d.Y_AXIS)
             model.transform.translate(position)
-            model.transform.rotate(angle.toDeg() + 180, Vec3d.Y_AXIS)
+            model.transform.rotate((angle.toDeg() + 180).deg, Vec3d.Y_AXIS)
             model.transform.scale(0.01)
         }
     }

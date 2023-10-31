@@ -3,6 +3,7 @@ package de.fabmax.kool.demo.creativecoding
 import de.fabmax.kool.demo.MenuSlider2
 import de.fabmax.kool.math.Mat4fStack
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.deg
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ui2.UiScope
 import de.fabmax.kool.modules.ui2.remember
@@ -61,7 +62,7 @@ class LargeSpheres(val resources: CreativeCodingDemo.Resources) : CreativeConten
             // move transform matrix to start position
             val transform = Mat4fStack()
             transform
-                .rotate(360f * orbitProgress, Vec3f.Z_AXIS)
+                .rotate(360f.deg * orbitProgress, Vec3f.Z_AXIS)
                 .translate(settings.innerRadius, 0f, 0f)
                 .scale(7f)
 
@@ -77,7 +78,7 @@ class LargeSpheres(val resources: CreativeCodingDemo.Resources) : CreativeConten
                 // add sphere instance properties: transform matrix + sphere color
                 instances.addInstance {
                     transform.push().scale(settings.sphereSize * sphereSize)
-                    put(transform.array)
+                    transform.putTo(this)
                     transform.pop()
                     color.putTo(this)
                 }
@@ -85,8 +86,8 @@ class LargeSpheres(val resources: CreativeCodingDemo.Resources) : CreativeConten
                 // forward transform matrix to next sphere position
                 transform
                     .translate(2.5f * sphereSize, 0f, 0f)
-                    .rotate(zCurvature, Vec3f.Z_AXIS)
-                    .rotate(yCurvature, Vec3f.Y_AXIS)
+                    .rotate(zCurvature.deg, Vec3f.Z_AXIS)
+                    .rotate(yCurvature.deg, Vec3f.Y_AXIS)
                 zCurvature += settings.curvatureInc
             }
         }

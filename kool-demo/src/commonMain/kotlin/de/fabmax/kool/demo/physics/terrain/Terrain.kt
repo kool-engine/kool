@@ -26,8 +26,8 @@ class Terrain(val heightMap: HeightMap) {
     val splatMap: Texture2d = Texture2d(loader = BufferedTextureLoader(splatMapData))
     val terrainBody: RigidStatic
 
-    val terrainTransform = Mat4f()
-    private val terrainTransformInv = Mat4f()
+    val terrainTransform = MutableMat4f()
+    private val terrainTransformInv = MutableMat4f()
 
     init {
         val heightField = HeightField(heightMap, 1f, 1f)

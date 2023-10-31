@@ -1,17 +1,19 @@
 package de.fabmax.kool.physics.character
 
-import de.fabmax.kool.math.Mat4f
+import de.fabmax.kool.math.MutableMat4f
 import de.fabmax.kool.math.MutableVec3d
 import de.fabmax.kool.math.Vec3d
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.*
 import physx.*
 
-class JsCharacterController(private val pxController: PxController,
-                            private val hitListener: ControllerHitListener,
-                            private val behaviorCallback: ControllerBahaviorCallback,
-                            manager: CharacterControllerManager,
-                            world: PhysicsWorld) : CharacterController(manager, world) {
+class JsCharacterController(
+    private val pxController: PxController,
+    hitListener: ControllerHitListener,
+    private val behaviorCallback: ControllerBahaviorCallback,
+    manager: CharacterControllerManager,
+    world: PhysicsWorld
+) : CharacterController(manager, world) {
 
     private val bufPosition = MutableVec3d()
     private val bufPxPosition = PxExtendedVec3()
@@ -30,7 +32,7 @@ class JsCharacterController(private val pxController: PxController,
             prevPosition.set(value)
         }
 
-    override val actor: RigidDynamic = RigidDynamic(1f, Mat4f(), false, pxController.actor)
+    override val actor: RigidDynamic = RigidDynamic(1f, MutableMat4f(), false, pxController.actor)
 
     override fun move(displacement: Vec3f, timeStep: Float) {
         val flags = pxController.move(displacement.toPxVec3(bufPxVec3), 0.001f, timeStep, pxControllerFilters)

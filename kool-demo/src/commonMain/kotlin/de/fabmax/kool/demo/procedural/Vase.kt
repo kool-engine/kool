@@ -1,7 +1,8 @@
 package de.fabmax.kool.demo.procedural
 
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.math.toDeg
+import de.fabmax.kool.math.deg
+import de.fabmax.kool.math.rad
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.deferred.deferredKslPbrShader
 import de.fabmax.kool.scene.Mesh
@@ -30,7 +31,7 @@ class Vase : Mesh(IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS, Attr
     }
 
     private fun MeshBuilder.makeGeometry() {
-        rotate(90f, Vec3f.NEG_X_AXIS)
+        rotate(90f.deg, Vec3f.NEG_X_AXIS)
         translate(-7.5f, -2.5f, 0f)
         scale(1.8f, 1.8f, 1.8f)
         translate(0f, 0f, 0.15f)
@@ -65,12 +66,12 @@ class Vase : Mesh(IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS, Attr
 
                         color = gridGrad.getColor(p).toLinear()
 
-                        rotate(rot, Vec3f.Z_AXIS)
+                        rotate(rot.deg, Vec3f.Z_AXIS)
                         val r = 1f + (p - 0.5f) * (p - 0.5f) * 4
                         translate(cos(rad) * r, sin(rad) * r, 0f)
 
                         translate(0f, 0f, p * 10f)
-                        rotate(rad.toDeg(), Vec3f.Z_AXIS)
+                        rotate(rad.rad, Vec3f.Z_AXIS)
                         scale(0.05f, 0.05f, 1f)
 
                         sample(i != 0)

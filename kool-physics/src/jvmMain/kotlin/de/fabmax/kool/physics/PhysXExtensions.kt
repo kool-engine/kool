@@ -30,8 +30,8 @@ fun BoundingBox.toPxBounds3(result: PxBounds3): PxBounds3 {
 }
 
 fun PxTransform() = PxTransform(PxIDENTITYEnum.PxIdentity)
-fun PxTransform.toMat4f(result: Mat4f): Mat4f {
-    result.setRotate(q.toQuatF())
+fun PxTransform.toMat4f(result: MutableMat4f): MutableMat4f {
+    result.setIdentity().rotate(q.toQuatF())
     result[0, 3] = p.x
     result[1, 3] = p.y
     result[2, 3] = p.z
@@ -44,7 +44,9 @@ fun PxTransform.toTrsTransform(result: TrsTransform): TrsTransform {
     return result
 }
 fun PxTransform.set(mat: Mat4f): PxTransform {
-    mat.getRotation(MutableQuatF()).toPxQuat(q)
+    val qq = MutableQuatF()
+    mat.decompose(rotation = qq)
+    qq.toPxQuat(q)
     p.x = mat[0, 3]
     p.y = mat[1, 3]
     p.z = mat[2, 3]
@@ -67,7 +69,7 @@ fun PxQuat.toVec4f(result: MutableVec4f = MutableVec4f()) = result.set(x, y, z, 
 @Deprecated("Use QuatF instead", ReplaceWith("set(MutableQuatF().set(v))"))
 fun PxQuat.set(v: Vec4f): PxQuat { x = v.x; y = v.y; z = v.z; w = v.w; return this }
 @Deprecated("Use QuatF instead", ReplaceWith("toPxQuat(result)"))
-fun Vec4f.toPxQuat(result: PxQuat) = result.set(this)
+fun Vec4f.toPxQuat(result: PxQuat) = result.set(QuatF(x, y, z, w))
 
 fun PxVec3.toVec3f(result: MutableVec3f = MutableVec3f()) = result.set(x, y, z)
 fun PxVec3.set(v: Vec3f): PxVec3 { x = v.x; y = v.y; z = v.z; return this }

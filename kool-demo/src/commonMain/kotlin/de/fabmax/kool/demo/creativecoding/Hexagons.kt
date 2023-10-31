@@ -1,10 +1,7 @@
 package de.fabmax.kool.demo.creativecoding
 
 import de.fabmax.kool.demo.MenuSlider2
-import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.math.clamp
-import de.fabmax.kool.math.randomF
-import de.fabmax.kool.math.toRad
+import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.modules.ui2.UiScope
@@ -62,9 +59,9 @@ class Hexagons(val resources: CreativeCodingDemo.Resources) : CreativeContent("H
                     centerY += (1f / settings.numHexagonsOrbit) * settings.slope * scale
                     translate(0f, centerY, 0f)
                     scale(scale)
-                    rotate(orbitAngle, Vec3f.Y_AXIS)
+                    rotate(orbitAngle.deg, Vec3f.Y_AXIS)
                     translate(0f, 0f, settings.orbitRadius)
-                    rotate(settings.twistAngle, Vec3f.Z_AXIS)
+                    rotate(settings.twistAngle.deg, Vec3f.Z_AXIS)
 
                     // belt / ring loop: adds a single hexagon per iteration
                     for (beltI in 0 until settings.numHexagonsBelt) {
@@ -84,7 +81,7 @@ class Hexagons(val resources: CreativeCodingDemo.Resources) : CreativeContent("H
                             color = ColorGradient.PLASMA.getColor(colorValue).toLinear()
 
                             // move cursor to the center of the current hexagon
-                            rotate(beltAngle, Vec3f.X_AXIS)
+                            rotate(beltAngle.deg, Vec3f.X_AXIS)
                             translate(0f, 0f, randomPos)
                             scale(1f + radiusScale, 1f, 1f)
 

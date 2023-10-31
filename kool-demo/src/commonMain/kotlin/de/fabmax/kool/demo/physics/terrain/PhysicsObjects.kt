@@ -1,10 +1,7 @@
 package de.fabmax.kool.demo.physics.terrain
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.math.Mat3f
-import de.fabmax.kool.math.Mat4f
-import de.fabmax.kool.math.Vec3d
-import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.*
 import de.fabmax.kool.physics.*
 import de.fabmax.kool.physics.geometry.BoxGeometry
 import de.fabmax.kool.physics.geometry.PlaneGeometry
@@ -41,7 +38,7 @@ class PhysicsObjects(mainScene: Scene, terrain: Terrain, trees: Trees, ctx: Kool
         ground = RigidStatic()
         ground.attachShape(Shape(PlaneGeometry(), Physics.defaultMaterial))
         ground.position = Vec3f(0f, -35f, 0f)
-        ground.setRotation(Mat3f().rotate(90f, Vec3f.Z_AXIS))
+        ground.setRotation(MutableMat3f().rotate(90f.deg, Vec3f.Z_AXIS))
         world.addActor(ground)
 
         // create a chain bridge, the player can walk across
@@ -74,7 +71,7 @@ class PhysicsObjects(mainScene: Scene, terrain: Terrain, trees: Trees, ctx: Kool
                 world.addActor(body)
                 boxes += body
 
-                boxInitPoses += Mat4f().set(body.transform.matrix)
+                boxInitPoses += MutableMat4f().set(body.transform.matrix)
             }
         }
     }

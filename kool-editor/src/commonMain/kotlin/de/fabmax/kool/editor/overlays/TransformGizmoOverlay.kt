@@ -33,7 +33,7 @@ class TransformGizmoOverlay(private val editor: KoolEditor) : Node("Transform gi
     private val globalGizmoPos = MutableVec3d()
     private val globalGizmoOrientation = MutableQuatD()
     private var gizmoScale = 1f
-    private val gizmoToGlobal = Mat4d()
+    private val gizmoToGlobal = MutableMat4d()
 
     private val gizmoListener = object : Gizmo.GizmoListener {
         override fun onDragAxis(axis: Vec3f, distance: Float, targetTransform: Transform, ctx: KoolContext) {
@@ -59,7 +59,7 @@ class TransformGizmoOverlay(private val editor: KoolEditor) : Node("Transform gi
         }
 
         override fun onDragRotate(rotationAxis: Vec3f, angle: Float, targetTransform: Transform, ctx: KoolContext) {
-            targetTransform.rotate(angle, rotationAxis)
+            targetTransform.rotate(angle.deg, rotationAxis)
             val ax = gizmoToGlobal.transform(MutableVec3d().set(rotationAxis), 0.0)
             rotateSelection(ax, angle.toDouble())
         }
@@ -193,19 +193,21 @@ class TransformGizmoOverlay(private val editor: KoolEditor) : Node("Transform gi
     }
 
     private fun rotateSelection(globalAxis: Vec3d, angle: Double) {
-        val m = Mat3d()
+        val m = MutableMat3d()
         val ax = MutableVec3d()
-        val globalRot = Mat4d().rotate(angle, globalAxis)
+        val globalRot = MutableMat4d().rotate(angle.deg, globalAxis)
         selection.forEach { node ->
             val axisInParentFrame = node.globalToNode.transform(ax.set(globalAxis), 0.0)
-            m.setRotate(node.startRotation)
-                .rotate(angle, axisInParentFrame)
-                .getRotation(node.dragRotation)
+            m.setIdentity().rotate(node.startRotation)
+                .rotate(angle.deg, axisInParentFrame)
+                .decompose(node.dragRotation)
 
             if (selection.size > 1) {
                 // in case of multi selection, gizmo position is not the same as the node position -> node needs
                 // to be translated as well
-                val globalPos = node.nodeToGlobal.getOrigin(MutableVec3d()).subtract(globalGizmoPos)
+                val globalPos = MutableVec3d()
+                node.nodeToGlobal.decompose(globalPos)
+                globalPos.subtract(globalGizmoPos)
                 globalRot.transform(globalPos)
                 globalPos.add(globalGizmoPos)
                 node.globalToParent.transform(globalPos, 1.0, node.dragPosition)
@@ -216,7 +218,7 @@ class TransformGizmoOverlay(private val editor: KoolEditor) : Node("Transform gi
     }
 
     private fun scaleSelection(scale: Vec3d, singleScale: Double) {
-        val globalScale = Mat4d()
+        val globalScale = MutableMat4d()
         if (!KeyboardInput.isAltDown) {
             globalScale.scale(singleScale)
         }
@@ -231,7 +233,9 @@ class TransformGizmoOverlay(private val editor: KoolEditor) : Node("Transform gi
             if (selection.size > 1) {
                 // in case of multi selection, gizmo position is not the same as the node position -> node needs
                 // to be translated as well
-                val globalPos = node.nodeToGlobal.getOrigin(MutableVec3d()).subtract(globalGizmoPos)
+                val globalPos = MutableVec3d()
+                node.nodeToGlobal.decompose(globalPos)
+                globalPos.subtract(globalGizmoPos)
                 globalScale.transform(globalPos)
                 globalPos.add(globalGizmoPos)
                 node.globalToParent.transform(globalPos, 1.0, node.dragPosition)
@@ -287,7 +291,9 @@ class TransformGizmoOverlay(private val editor: KoolEditor) : Node("Transform gi
 
             isSameParent = isSameParent && it.nodeModel.drawNode.parent == selection[0].nodeModel.drawNode.parent
             if (isSameParent) {
-                parentOrientation = it.nodeModel.drawNode.parent?.modelMat?.getRotation(MutableQuatD()) ?: QuatD.IDENTITY
+                val q = MutableQuatD()
+                it.nodeModel.drawNode.parent?.modelMat?.decompose(rotation = q)
+                parentOrientation = q
             }
         }
 
@@ -296,7 +302,7 @@ class TransformGizmoOverlay(private val editor: KoolEditor) : Node("Transform gi
         if (EditorState.transformMode.value == EditorState.TransformOrientation.LOCAL) {
             if (selection.size == 1) {
                 // use local orientation of single selected object
-                globalGizmoOrientation.set(selection[0].nodeModel.drawNode.modelMat.getRotation(MutableQuatD()))
+                selection[0].nodeModel.drawNode.modelMat.decompose(rotation = globalGizmoOrientation)
 
             } else if (isSameParent) {
                 // local orientation is undefined for multiple selected objects, use parent as fallback if all selected
@@ -311,7 +317,7 @@ class TransformGizmoOverlay(private val editor: KoolEditor) : Node("Transform gi
         // apply gizmo transform
         gizmoScale = sqrt(radius) + 0.5f
         (gizmo.transform as MatrixTransform).apply {
-            matrix.setRotate(globalGizmoOrientation)
+            matrix.setIdentity().rotate(globalGizmoOrientation)
             setPosition(globalGizmoPos)
             markDirty()
         }
@@ -320,12 +326,12 @@ class TransformGizmoOverlay(private val editor: KoolEditor) : Node("Transform gi
     }
 
     private class NodeTransformData(val nodeModel: SceneNodeModel) {
-        val nodeToGlobal = Mat4d()
-        val globalToParent = Mat4d()
-        val globalToNode = Mat4d()
+        val nodeToGlobal = MutableMat4d()
+        val globalToParent = MutableMat4d()
+        val globalToNode = MutableMat4d()
 
         val startPosition = MutableVec3d()
-        val startRotation = MutableVec4d()
+        val startRotation = MutableQuatD()
         val startScale = MutableVec3d()
 
         val dragPosition = MutableVec3d()
@@ -343,7 +349,7 @@ class TransformGizmoOverlay(private val editor: KoolEditor) : Node("Transform gi
             nodeModel.drawNode.parent?.modelMat?.invert(globalToParent)
 
             nodeModel.transform.transformState.value.position.toVec3d(startPosition)
-            nodeModel.transform.transformState.value.rotation.toVec4d(startRotation)
+            nodeModel.transform.transformState.value.rotation.toQuatD(startRotation)
             nodeModel.transform.transformState.value.scale.toVec3d(startScale)
 
             dragPosition.set(startPosition)

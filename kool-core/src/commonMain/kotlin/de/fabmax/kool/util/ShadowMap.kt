@@ -2,9 +2,7 @@ package de.fabmax.kool.util
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolException
-import de.fabmax.kool.math.Mat4d
-import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.BoundingBox
 import de.fabmax.kool.pipeline.DepthMapPass
 import de.fabmax.kool.pipeline.TextureSampler2d
@@ -34,7 +32,7 @@ class SimpleShadowMap(val scene: Scene, override var light: Light?, mapSize: Int
     ShadowMap
 {
 
-    val lightViewProjMat = Mat4d()
+    val lightViewProjMat = MutableMat4d()
 
     var shadowMapLevel = 0
     var sceneCam = scene.camera

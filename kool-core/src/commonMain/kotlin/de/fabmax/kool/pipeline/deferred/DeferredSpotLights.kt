@@ -22,7 +22,7 @@ class DeferredSpotLights(val maxSpotAngle: Float) {
         Attribute.COLORS
     ), 10000)
 
-    private val modelMat = Mat4f()
+    private val modelMat = MutableMat4f()
     private val encodedLightData = FloatArray(12)
     private val tmpLightDir = MutableVec3f()
 
@@ -49,7 +49,7 @@ class DeferredSpotLights(val maxSpotAngle: Float) {
         lightInstanceData.addInstances(lightInstances.size) { buf ->
             for (i in 0 until lightInstances.size) {
                 encodeLight(lightInstances[i])
-                buf.put(modelMat.array)
+                modelMat.putTo(buf)
                 buf.put(encodedLightData)
             }
         }
@@ -58,8 +58,8 @@ class DeferredSpotLights(val maxSpotAngle: Float) {
     private fun encodeLight(light: SpotLight) {
         modelMat.setIdentity()
         modelMat.translate(light.position)
-        modelMat.scale(light.radius, light.radius, light.radius)
-        modelMat.rotate(light.orientation)
+        modelMat.scale(light.radius)
+        modelMat.mulUpperLeft(light.orientation)
 
         tmpLightDir.set(Vec3f.X_AXIS)
         light.orientation.transform(tmpLightDir)
@@ -97,7 +97,7 @@ class DeferredSpotLights(val maxSpotAngle: Float) {
 
     class SpotLight {
         val position = MutableVec3f()
-        val orientation = Mat3f()
+        val orientation = MutableMat3f()
         var spotAngle = 60f
         var coreRatio = 0.5f
         val color = MutableColor(Color.WHITE)
@@ -113,9 +113,9 @@ class DeferredSpotLights(val maxSpotAngle: Float) {
 
             val b = direction.cross(v, MutableVec3f())
             val c = direction.cross(b, MutableVec3f())
-            orientation.setColVec(0, direction)
-            orientation.setColVec(1, b)
-            orientation.setColVec(2, c)
+            orientation.setColumn(0, direction)
+            orientation.setColumn(1, b)
+            orientation.setColumn(2, c)
         }
     }
 

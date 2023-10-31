@@ -1,7 +1,9 @@
 package de.fabmax.kool.demo.physics.terrain
 
 import de.fabmax.kool.math.Mat4f
+import de.fabmax.kool.math.MutableMat4f
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.deg
 import de.fabmax.kool.physics.*
 import de.fabmax.kool.physics.geometry.BoxGeometry
 import de.fabmax.kool.physics.joints.RevoluteJoint
@@ -12,7 +14,7 @@ class ChainBridge(val world: PhysicsWorld) {
     private val joints = mutableListOf<RevoluteJoint>()
 
     init {
-        val pose = Mat4f().translate(-107.2f, 11.1f, -33.7f).rotate(-34f, Vec3f.Y_AXIS).rotate(-0.95f, Vec3f.X_AXIS)
+        val pose = MutableMat4f().translate(-107.2f, 11.1f, -33.7f).rotate((-34f).deg, Vec3f.Y_AXIS).rotate((-0.95f).deg, Vec3f.X_AXIS)
         var prevSeg: RigidActor? = null
         val n = 37
         for (i in 0..n) {

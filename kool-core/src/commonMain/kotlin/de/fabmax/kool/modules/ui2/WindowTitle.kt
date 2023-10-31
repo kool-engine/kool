@@ -1,6 +1,7 @@
 package de.fabmax.kool.modules.ui2
 
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.deg
 import de.fabmax.kool.modules.ui2.docking.UiDockable
 import de.fabmax.kool.util.Color
 
@@ -209,7 +210,7 @@ class CloseButtonBackground(
         getUiPrimitives().localCircle(widthPx * 0.5f, heightPx * 0.5f, r, bgColor)
         getPlainBuilder().configured(fgColor) {
             translate(widthPx * 0.5f, heightPx * 0.5f, 0f)
-            rotate(45f, Vec3f.Z_AXIS)
+            rotate(45f.deg, Vec3f.Z_AXIS)
             centeredRect {
                 size.set(r * 1.3f, r * 0.2f)
             }

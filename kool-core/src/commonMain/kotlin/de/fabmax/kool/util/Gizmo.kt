@@ -32,9 +32,8 @@ class Gizmo : Node(), InputStack.PointerListener {
     private val pickPoint = MutableVec3f()
     private val pickPlane = Plane()
     private val dragStartPos = MutableVec3f()
-    private val tmpMat4 = Mat4d()
-    private val tmpMat3 = Mat3f()
-    private val tmpVec4d = MutableVec4d()
+    private val tmpMat4 = MutableMat4d()
+    private val tmpMat3 = MutableMat3d()
     private val tmpQuatD = MutableQuatD()
 
     private val dragGroup = Node()
@@ -163,7 +162,7 @@ class Gizmo : Node(), InputStack.PointerListener {
         return this
     }
 
-    fun getGizmoTransform(result: Mat4d): Mat4d {
+    fun getGizmoTransform(result: MutableMat4d): Mat4d {
         return result.set(transform.matrix).mul(dragGroup.transform.matrix)
     }
 
@@ -173,8 +172,9 @@ class Gizmo : Node(), InputStack.PointerListener {
             tmpMat4.set(transform.matrix).mul(dragGroup.transform.matrix)
             t.set(tmpMat4)
         } else {
-            target.transform.matrix.set(transform.matrix).mul(dragGroup.transform.matrix)
-            target.transform.markDirty()
+            t as MatrixTransform
+            t.matrix.set(transform.matrix).mul(dragGroup.transform.matrix)
+            t.markDirty()
         }
     }
 
@@ -183,11 +183,12 @@ class Gizmo : Node(), InputStack.PointerListener {
     }
 
     fun getEulerAngles(result: MutableVec3f): MutableVec3f {
-        return getGizmoTransform(tmpMat4).getRotation(tmpMat3).getEulerAngles(result)
+        return getGizmoTransform(tmpMat4).getUpperLeft(tmpMat3).getEulerAngles().toMutableVec3f(result)
     }
 
     fun getQuatRotation(result: MutableQuatF): MutableQuatF {
-        return getGizmoTransform(tmpMat4).getRotation(tmpQuatD).toMutableQuatF(result)
+        getGizmoTransform(tmpMat4).decompose(rotation = tmpQuatD)
+        return tmpQuatD.toMutableQuatF(result)
     }
 
     fun setGizmoTransform(transformMatrix: Mat4d) {
@@ -199,14 +200,14 @@ class Gizmo : Node(), InputStack.PointerListener {
     }
 
     fun setEulerAngles(euler: Vec3f) {
-        tmpMat3.setRotate(euler.x, euler.y, euler.z)
-        matTransform.matrix.setRotate(tmpMat3)
+        tmpMat3.setIdentity().rotate(euler.x.toDouble().deg, euler.y.toDouble().deg, euler.z.toDouble().deg)
+        matTransform.matrix.setUpperLeft(tmpMat3)
         transform.markDirty()
     }
 
-    fun setQuatRotation(rotation: Vec4f) {
-        tmpMat3.setRotate(rotation)
-        matTransform.matrix.setRotate(tmpMat3)
+    fun setQuatRotation(rotation: QuatF) {
+        tmpMat3.setIdentity().rotate(rotation.toQuatD())
+        matTransform.matrix.setUpperLeft(tmpMat3)
         transform.markDirty()
     }
 
@@ -256,7 +257,7 @@ class Gizmo : Node(), InputStack.PointerListener {
             // axis handles
             if (hasAxisX) {
                 withTransform {
-                    rotate(-90f, Vec3f.Z_AXIS)
+                    rotate((-90f).deg, Vec3f.Z_AXIS)
                     axisHandle(properties.axisHandleColorX, properties.axisLenX, hoverHandle == AXIS_X)
                 }
             }
@@ -265,25 +266,25 @@ class Gizmo : Node(), InputStack.PointerListener {
             }
             if (hasAxisZ) {
                 withTransform {
-                    rotate(90f, Vec3f.X_AXIS)
+                    rotate(90f.deg, Vec3f.X_AXIS)
                     axisHandle(properties.axisHandleColorZ, properties.axisLenZ, hoverHandle == AXIS_Z)
                 }
             }
             if (hasAxisNegX) {
                 withTransform {
-                    rotate(90f, Vec3f.Z_AXIS)
+                    rotate(90f.deg, Vec3f.Z_AXIS)
                     axisHandle(properties.axisHandleColorX, properties.axisLenNegX, hoverHandle == AXIS_NEG_X)
                 }
             }
             if (hasAxisNegY) {
                 withTransform {
-                    rotate(180f, Vec3f.Z_AXIS)
+                    rotate(180f.deg, Vec3f.Z_AXIS)
                     axisHandle(properties.axisHandleColorY, properties.axisLenNegY, hoverHandle == AXIS_NEG_Y)
                 }
             }
             if (hasAxisNegZ) {
                 withTransform {
-                    rotate(-90f, Vec3f.X_AXIS)
+                    rotate((-90f).deg, Vec3f.X_AXIS)
                     axisHandle(properties.axisHandleColorZ, properties.axisLenNegZ, hoverHandle == AXIS_NEG_Z)
                 }
             }
@@ -302,7 +303,7 @@ class Gizmo : Node(), InputStack.PointerListener {
             }
             if (properties.hasPlaneXZ && hoverPlane == PLANE_XZ) {
                 withTransform {
-                    rotate(90f, Vec3f.X_AXIS)
+                    rotate(90f.deg, Vec3f.X_AXIS)
                     color = properties.planeColorXZ
                     centeredRect {
                         origin.set(planeOriX * camSign.x, planeOriY * camSign.z, 0f)
@@ -312,7 +313,7 @@ class Gizmo : Node(), InputStack.PointerListener {
             }
             if (properties.hasPlaneYZ && hoverPlane == PLANE_YZ) {
                 withTransform {
-                    rotate(-90f, Vec3f.Y_AXIS)
+                    rotate((-90f).deg, Vec3f.Y_AXIS)
                     color = properties.planeColorYZ
                     centeredRect {
                         origin.set(planeOriX * camSign.z, planeOriY * camSign.y, 0f)

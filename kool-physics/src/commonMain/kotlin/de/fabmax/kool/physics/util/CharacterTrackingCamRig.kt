@@ -44,7 +44,7 @@ class CharacterTrackingCamRig(enableCursorLock: Boolean = true) :
     private var lookTheta = PI.toFloat() / 2f
 
     private val hitSweepGeometry by lazy { BoxGeometry(Vec3f(1f, 1f, 0.1f)) }
-    private val hitSweepGeometryPose = Mat4f()
+    private val hitSweepGeometryPose = MutableMat4f()
 
     init {
         isCursorLocked = enableCursorLock
@@ -101,9 +101,9 @@ class CharacterTrackingCamRig(enableCursorLock: Boolean = true) :
 
         transform.setIdentity()
         transform.translate(poseOrigin)
-        transform.rotate(lookPhi.toDeg() + 90f, Vec3f.Y_AXIS)
+        transform.rotate((lookPhi.toDeg() + 90f).deg, Vec3f.Y_AXIS)
         transform.translate(pivotPoint)
-        transform.rotate(lookTheta.toDeg() - 90f, Vec3f.X_AXIS)
+        transform.rotate((lookTheta.toDeg() - 90f).deg, Vec3f.X_AXIS)
 
         val modZoom = zoomModifier(zoom)
         val wMod = (15f * deltaT).clamp(0.05f, 0.95f)

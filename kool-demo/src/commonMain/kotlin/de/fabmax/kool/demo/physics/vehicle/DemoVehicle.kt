@@ -16,7 +16,6 @@ import de.fabmax.kool.pipeline.deferred.DeferredSpotLights
 import de.fabmax.kool.pipeline.deferred.deferredKslPbrShader
 import de.fabmax.kool.scene.Model
 import de.fabmax.kool.scene.Node
-import de.fabmax.kool.scene.TrsTransform
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Time
 import kotlin.math.abs
@@ -28,6 +27,8 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
 
     val vehicle: Vehicle
     val vehicleGroup = Node()
+    private val vehicleGroupInner = Node()
+
     val vehicleAudio = VehicleAudio(world.physics)
 
     private lateinit var recoverListener: InputStack.SimpleKeyListener
@@ -57,7 +58,9 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
     init {
         vehicleModel.meshes.values.forEach { it.disableShadowCastingAboveLevel(1) }
 
-        vehicleGroup += vehicleModel
+        vehicleGroup += vehicleGroupInner
+        vehicleGroupInner += vehicleModel
+
         vehicle = makeRaycastVehicle(world)
         registerKeyHandlers()
 
@@ -172,8 +175,8 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
         rearLightRt.position.set(-0.4f, 0.6f, -2.5f)
         vehicle.transform.transform(rearLightRt.position)
 
-        headLightLt.orientation.set(vehicle.transform.rotation).rotate(-85f, Vec3f.Y_AXIS).rotate(-7f, Vec3f.Z_AXIS)
-        headLightRt.orientation.set(vehicle.transform.rotation).rotate(-95f, Vec3f.Y_AXIS).rotate(-7f, Vec3f.Z_AXIS)
+        headLightLt.orientation.set(vehicle.transform.rotation).rotate((-85f).deg, Vec3f.Y_AXIS).rotate((-7f).deg, Vec3f.Z_AXIS)
+        headLightRt.orientation.set(vehicle.transform.rotation).rotate((-95f).deg, Vec3f.Y_AXIS).rotate((-7f).deg, Vec3f.Z_AXIS)
         headLightLt.position.set(0.65f, 0.3f, 2.7f)
         vehicle.transform.transform(headLightLt.position)
         headLightRt.position.set(-0.65f, 0.3f, 2.7f)
@@ -185,7 +188,7 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
 
     fun resetVehiclePos() {
         vehicle.position = START_POS
-        vehicle.setRotation(Mat3f().rotate(START_HEAD, Vec3f.Y_AXIS))
+        vehicle.setRotation(MutableMat3f().rotate(START_HEAD.deg, Vec3f.Y_AXIS))
     }
 
     private fun makeRaycastVehicle(world: VehicleWorld): Vehicle {
@@ -230,30 +233,24 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
             updateWheelMoiFromRadiusAndMass()
         }
 
+        vehicleGroupInner.transform.translate(vehicleProps.chassisCMOffset)
+
         val vehicle = Vehicle(vehicleProps, world.physics)
         world.physics.addActor(vehicle)
 
         vehicleGroup.apply {
+            transform = vehicle.transform
+
             val wheelTransforms = mutableListOf<Node>()
             wheelTransforms += vehicleModel.findNode("Wheel_fl")!!
             wheelTransforms += vehicleModel.findNode("Wheel_fr")!!
             wheelTransforms += vehicleModel.findNode("Wheel_rl")!!
             wheelTransforms += vehicleModel.findNode("Wheel_rr")!!
 
-            wheelTransforms.forEach {
+            wheelTransforms.forEachIndexed { i, it ->
                 vehicleModel -= it
-                vehicleGroup += it
-            }
-
-            world.scene.onRenderScene += {
-                val trs = transform as TrsTransform
-                trs.set(vehicle.transform)
-                trs.translate(vehicleProps.chassisCMOffset)
-                for (i in 0..3) {
-                    val trsi = wheelTransforms[i].transform as TrsTransform
-                    trsi.set(vehicle.wheelInfos[i].transform)
-                    trsi.markDirty()
-                }
+                vehicleGroupInner += it
+                it.transform = vehicle.wheelInfos[i].transform
             }
         }
 
@@ -281,7 +278,7 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
 
                 val head = vehicle.transform.transform(MutableVec3f(0f, 0f, 1f), 0f)
                 val headDeg = atan2(head.x, head.z).toDeg()
-                val ori = Mat3f().rotate(headDeg, Vec3f.Y_AXIS)
+                val ori = MutableMat3f().rotate(headDeg.deg, Vec3f.Y_AXIS)
                 vehicle.setRotation(ori)
             }
             vehicle.linearVelocity = Vec3f.ZERO

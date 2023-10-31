@@ -20,7 +20,7 @@ abstract class CommonCapsuleGeometry(val height: Float, val radius: Float) {
                 }
                 for (i in 0 .. 20) {
                     sample()
-                    rotate(360f / 20, 0f, 0f)
+                    rotate(360f.deg / 20, 0f.deg, 0f.deg)
                 }
             }
         }

@@ -3,10 +3,7 @@ package de.fabmax.kool.demo
 import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.menu.DemoMenu
-import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.math.randomF
-import de.fabmax.kool.math.randomI
+import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.gltf.GltfFile
 import de.fabmax.kool.modules.gltf.loadGltfFile
 import de.fabmax.kool.modules.ksl.KslPbrShader
@@ -147,12 +144,12 @@ class InstanceDemo : DemoScene("Instanced Drawing") {
             instanceModelMat
                     .setIdentity()
                     .translate(position)
-                    .rotate(Time.gameTime.toFloat() * rotSpeed, rotAxis)
+                    .rotate((Time.gameTime.toFloat() * rotSpeed).deg, rotAxis)
             super.update(lodCtrl, cam, ctx)
         }
 
         override fun addInstanceData(lod: Int, buffer: Float32Buffer, ctx: KoolContext) {
-            buffer.put(instanceModelMat.array)
+            instanceModelMat.putTo(buffer)
             if (isLodColors.value) {
                 lods[lod].color.putTo(buffer)
             } else {

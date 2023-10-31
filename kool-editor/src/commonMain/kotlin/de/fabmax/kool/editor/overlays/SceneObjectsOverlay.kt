@@ -4,7 +4,6 @@ import de.fabmax.kool.editor.EditorState
 import de.fabmax.kool.editor.components.CameraComponent
 import de.fabmax.kool.editor.components.ContentComponent
 import de.fabmax.kool.editor.model.SceneModel
-import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.deg
@@ -145,7 +144,7 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
         isCastingShadow = false
         instances = cameraInstances
         generate {
-            rotate(90f, Vec3f.Y_AXIS)
+            rotate(90f.deg, Vec3f.Y_AXIS)
             generateArrow()
 
             cube {
@@ -200,8 +199,6 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
         }
     }
 
-    private val tmpMat = Mat4f()
-
     init {
         addNode(spotMesh)
         addNode(pointMesh)
@@ -233,9 +230,8 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
                     is Light.Spot -> spotInstances
                 }
 
-                tmpMat.set(light.modelMat)
                 instances.addInstance {
-                    put(tmpMat.array)
+                    light.modelMat.putTo(this)
                     light.color.putTo(this)
                 }
             }
@@ -250,9 +246,8 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
             .forEach {
                 val isActive = it.sceneModel.cameraState.value == it
                 val color = if (isActive) MdColor.GREY tone 300 else MdColor.GREY tone 700
-                tmpMat.set(it.nodeModel.drawNode.modelMat)
                 cameraInstances.addInstance {
-                    put(tmpMat.array)
+                    it.nodeModel.drawNode.modelMat.putTo(this)
                     put(color.r)
                     put(color.g)
                     put(color.b)
@@ -268,9 +263,8 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
         sceneModel.nodeModels.values.filter { it.components.none { c -> c is ContentComponent } }
             .filter { it.isVisibleState.value }
             .forEach {
-                tmpMat.set(it.drawNode.modelMat)
                 groupInstances.addInstance {
-                    put(tmpMat.array)
+                    it.drawNode.modelMat.putTo(this)
                     put(1f)
                     put(1f)
                     put(1f)
@@ -283,7 +277,7 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
         line3d(Vec3f.ZERO, Vec3f(1.5f, 0f, 0f), Vec3f.Z_AXIS, lineW)
         line3d(Vec3f.ZERO, Vec3f(1.5f, 0f, 0f), Vec3f.Y_AXIS, lineW)
         withTransform {
-            rotate(-90f, Vec3f.Z_AXIS)
+            rotate((-90f).deg, Vec3f.Z_AXIS)
             translate(0f, 1.6f, 0f)
             cylinder {
                 bottomRadius = 0.15f

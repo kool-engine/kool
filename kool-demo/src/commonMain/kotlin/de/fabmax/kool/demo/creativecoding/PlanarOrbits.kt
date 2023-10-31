@@ -2,10 +2,7 @@ package de.fabmax.kool.demo.creativecoding
 
 import de.fabmax.kool.demo.LabeledSwitch
 import de.fabmax.kool.demo.MenuSlider2
-import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.math.randomF
-import de.fabmax.kool.math.randomI
-import de.fabmax.kool.math.smoothStep
+import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ui2.UiScope
 import de.fabmax.kool.modules.ui2.remember
@@ -40,9 +37,9 @@ class PlanarOrbits(resources: CreativeCodingDemo.Resources) : CreativeContent("P
 
         onUpdate += {
             if (settings.rotateOrbits) {
-                orbitGroupX.transform.rotate(Time.deltaT * 5f, Vec3f.X_AXIS)
-                orbitGroupY.transform.rotate(Time.deltaT * 5f, Vec3f.Y_AXIS)
-                orbitGroupZ.transform.rotate(Time.deltaT * 5f, Vec3f.Z_AXIS)
+                orbitGroupX.transform.rotate(5f.deg * Time.deltaT, Vec3f.X_AXIS)
+                orbitGroupY.transform.rotate(5f.deg * Time.deltaT, Vec3f.Y_AXIS)
+                orbitGroupZ.transform.rotate(5f.deg * Time.deltaT, Vec3f.Z_AXIS)
             }
         }
     }
@@ -78,7 +75,7 @@ class PlanarOrbits(resources: CreativeCodingDemo.Resources) : CreativeContent("P
 
     private fun rebuildOrbitX() {
         orbitMeshX.generate {
-            rotate(90f, Vec3f.Z_AXIS)
+            rotate(90f.deg, Vec3f.Z_AXIS)
             generateOrbit(settings.innerRadiusX, xGradient)
         }
     }
@@ -91,7 +88,7 @@ class PlanarOrbits(resources: CreativeCodingDemo.Resources) : CreativeContent("P
 
     private fun rebuildOrbitZ() {
         orbitMeshZ.generate {
-            rotate(90f, Vec3f.X_AXIS)
+            rotate(90f.deg, Vec3f.X_AXIS)
             generateOrbit(settings.innerRadiusZ, zGradient)
         }
     }
@@ -141,14 +138,14 @@ class PlanarOrbits(resources: CreativeCodingDemo.Resources) : CreativeContent("P
         numSteps: Int
     ) {
         transform.push()
-        rotate(startAngle, Vec3f.NEG_Y_AXIS)
+        rotate(startAngle.deg, Vec3f.NEG_Y_AXIS)
 
         val box = boxProfile(radius, width, height)
         box.sampleAndFillBottom()
 
         box.sample(connect = false)
         for (i in 0 until numSteps) {
-            rotate(arcStep, Vec3f.NEG_Y_AXIS)
+            rotate(arcStep.deg, Vec3f.NEG_Y_AXIS)
             box.sample()
         }
         box.sampleAndFillTop()

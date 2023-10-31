@@ -8,15 +8,69 @@ import kotlin.math.asin
 import kotlin.math.atan2
 import kotlin.math.sqrt
 
+fun Mat3f.toMat3d() = Mat3d(
+    m00.toDouble(), m01.toDouble(), m02.toDouble(),
+    m10.toDouble(), m11.toDouble(), m12.toDouble(),
+    m20.toDouble(), m21.toDouble(), m22.toDouble()
+)
+
+fun Mat3f.toMutableMat3d(result: MutableMat3d = MutableMat3d()): MutableMat3d = result.also {
+    it.m00 = m00.toDouble(); it.m01 = m01.toDouble(); it.m02 = m02.toDouble()
+    it.m10 = m10.toDouble(); it.m11 = m11.toDouble(); it.m12 = m12.toDouble()
+    it.m20 = m20.toDouble(); it.m21 = m21.toDouble(); it.m22 = m22.toDouble()
+}
+
+fun MutableMat3f.set(that: Mat3d): MutableMat3f {
+    m00 = that.m00.toFloat(); m01 = that.m01.toFloat(); m02 = that.m02.toFloat()
+    m10 = that.m10.toFloat(); m11 = that.m11.toFloat(); m12 = that.m12.toFloat()
+    m20 = that.m20.toFloat(); m21 = that.m21.toFloat(); m22 = that.m22.toFloat()
+    return this
+}
+
+fun Mat3d.toMat3f() = Mat3f(
+    m00.toFloat(), m01.toFloat(), m02.toFloat(),
+    m10.toFloat(), m11.toFloat(), m12.toFloat(),
+    m20.toFloat(), m21.toFloat(), m22.toFloat()
+)
+
+fun Mat3d.toMutableMat3f(result: MutableMat3f= MutableMat3f()): MutableMat3f = result.also {
+    it.m00 = m00.toFloat(); it.m01 = m01.toFloat(); it.m02 = m02.toFloat()
+    it.m10 = m10.toFloat(); it.m11 = m11.toFloat(); it.m12 = m12.toFloat()
+    it.m20 = m20.toFloat(); it.m21 = m21.toFloat(); it.m22 = m22.toFloat()
+}
+
+fun MutableMat3d.set(that: Mat3f): MutableMat3d {
+    m00 = that.m00.toDouble(); m01 = that.m01.toDouble(); m02 = that.m02.toDouble()
+    m10 = that.m10.toDouble(); m11 = that.m11.toDouble(); m12 = that.m12.toDouble()
+    m20 = that.m20.toDouble(); m21 = that.m21.toDouble(); m22 = that.m22.toDouble()
+    return this
+}
+
+/**
+ * Transforms (i.e. multiplies) the given [Vec3f] with this matrix and stores the resulting transformed vector
+ * in [result].
+ */
+fun Mat3d.transform(that: Vec3f, result: MutableVec3f): MutableVec3f {
+    val x = that.x * m00 + that.y * m01 + that.z * m02
+    val y = that.x * m10 + that.y * m11 + that.z * m12
+    val z = that.x * m20 + that.y * m21 + that.z * m22
+    return result.set(x.toFloat(), y.toFloat(), z.toFloat())
+}
+
+/**
+ * Transforms (i.e. multiplies) the given [Vec3f] in place with this matrix.
+ */
+fun Mat3d.transform(that: MutableVec3f): MutableVec3f = transform(that, that)
+
 // <template> Changes made within the template section will also affect the other type variants of this class
 
-open class Mat3fnew(
+open class Mat3f(
     open val m00: Float, open val m01: Float, open val m02: Float,
     open val m10: Float, open val m11: Float, open val m12: Float,
     open val m20: Float, open val m21: Float, open val m22: Float
 ) {
 
-    constructor(mat: Mat3fnew): this(
+    constructor(mat: Mat3f): this(
         mat.m00, mat.m01, mat.m02,
         mat.m10, mat.m11, mat.m12,
         mat.m20, mat.m21, mat.m22
@@ -28,28 +82,28 @@ open class Mat3fnew(
         col0.z, col1.z, col2.z
     )
 
-    operator fun times(that: Mat3fnew): MutableMat3f = mul(that, MutableMat3f())
+    operator fun times(that: Mat3f): MutableMat3f = mul(that, MutableMat3f())
 
-    operator fun plus(that: Mat3fnew): MutableMat3f = add(that, MutableMat3f())
+    operator fun plus(that: Mat3f): MutableMat3f = add(that, MutableMat3f())
 
-    operator fun minus(that: Mat3fnew): MutableMat3f = subtract(that, MutableMat3f())
+    operator fun minus(that: Mat3f): MutableMat3f = subtract(that, MutableMat3f())
 
     operator fun times(that: Vec3f): MutableVec3f = transform(that, MutableVec3f())
 
     /**
      * Adds the given matrix to this one and stores the result in [result].
      */
-    fun add(that: Mat3fnew, result: MutableMat3f): MutableMat3f = result.set(this).add(that)
+    fun add(that: Mat3f, result: MutableMat3f): MutableMat3f = result.set(this).add(that)
 
     /**
      * Subtracts the given matrix from this one and stores the result in [result].
      */
-    fun subtract(that: Mat3fnew, result: MutableMat3f): MutableMat3f = result.set(this).subtract(that)
+    fun subtract(that: Mat3f, result: MutableMat3f): MutableMat3f = result.set(this).subtract(that)
 
     /**
      * Multiplies this matrix with the given [that] one and stores the result in [result].
      */
-    fun mul(that: Mat3fnew, result: MutableMat3f): MutableMat3f = result.set(this).mul(that)
+    fun mul(that: Mat3f, result: MutableMat3f): MutableMat3f = result.set(this).mul(that)
 
     /**
      * Transforms (i.e. multiplies) the given [Vec4f] with this matrix and stores the resulting transformed vector in [result].
@@ -182,50 +236,70 @@ open class Mat3fnew(
      * Decomposes this transform matrix into its translation, rotation and scale components and returns them
      * int the provided [rotation] and [scale] vectors.
      */
-    fun decompose(rotation: MutableQuatF, scale: MutableVec3f) {
-        scale.set(
-            sqrt(m00*m00 + m10*m10 + m20*m20),
-            sqrt(m01*m01 + m11*m11 + m21*m21),
-            sqrt(m02*m02 + m12*m12 + m22*m22)
-        )
-
+    fun decompose(rotation: MutableQuatF? = null, scale: MutableVec3f? = null) {
+        var sx = sqrt(m00*m00 + m10*m10 + m20*m20)
+        val sy = sqrt(m01*m01 + m11*m11 + m21*m21)
+        val sz = sqrt(m02*m02 + m12*m12 + m22*m22)
         if (determinant() < 0f) {
-            scale.x *= -1f
+            sx *= -1f
         }
+        scale?.set(sx, sy, sz)
 
-        val r00 = m00 / scale.x; val r01 = m01 / scale.y; val r02 = m02 / scale.z
-        val r10 = m10 / scale.x; val r11 = m11 / scale.y; val r12 = m12 / scale.z
-        val r20 = m20 / scale.x; val r21 = m21 / scale.y; val r22 = m22 / scale.z
+        if (rotation != null) {
+            val r00 = m00 / sx; val r01 = m01 / sy; val r02 = m02 / sz
+            val r10 = m10 / sx; val r11 = m11 / sy; val r12 = m12 / sz
+            val r20 = m20 / sx; val r21 = m21 / sy; val r22 = m22 / sz
 
-        val trace = r00 + r11 + r22
-        if (trace > 0f) {
-            val s = 0.5f / sqrt(trace + 1f)
-            rotation.set((r21 - r12) * s, (r02 - r20) * s, (r10 - r01) * s, 0.25f / s)
-        } else {
-            if (r00 < r11) {
-                if (r11 < r22) {
-                    var s = 0.5f / sqrt(r22 - r00 - r11 + 1f)
-                    if (r10 < r01) s = -s   // ensure non-negative w
-                    rotation.set((r02 + r20) * s, (r12 + r21) * s, 0.25f / s, (r10 - r01) * s)
-
-                } else {
-                    var s = 0.5f / sqrt(r11 - r22 - r00 + 1f)
-                    if (r02 < r20) s = -s   // ensure non-negative w
-                    rotation.set((r01 + r10) * s, 0.25f / s, (r21 + r12) * s, (r02 - r20) * s)
-                }
+            val trace = r00 + r11 + r22
+            if (trace > 0f) {
+                val s = 0.5f / sqrt(trace + 1f)
+                rotation.set((r21 - r12) * s, (r02 - r20) * s, (r10 - r01) * s, 0.25f / s)
             } else {
-                if (r00 < r22) {
-                    var s = 0.5f / sqrt(r22 - r00 - r11 + 1f)
-                    if (r10 < r01) s = -s   // ensure non-negative w
-                    rotation.set((r02 + r20) * s, (r12 + r21) * s, 0.25f / s, (r10 - r01) * s)
+                if (r00 < r11) {
+                    if (r11 < r22) {
+                        var s = 0.5f / sqrt(r22 - r00 - r11 + 1f)
+                        if (r10 < r01) s = -s   // ensure non-negative w
+                        rotation.set((r02 + r20) * s, (r12 + r21) * s, 0.25f / s, (r10 - r01) * s)
+
+                    } else {
+                        var s = 0.5f / sqrt(r11 - r22 - r00 + 1f)
+                        if (r02 < r20) s = -s   // ensure non-negative w
+                        rotation.set((r01 + r10) * s, 0.25f / s, (r21 + r12) * s, (r02 - r20) * s)
+                    }
                 } else {
-                    var s = 0.5f / sqrt(r00 - r11 - r22 + 1f)
-                    if (r21 < r12) s = -s   // ensure non-negative w
-                    rotation.set(0.25f / s, (r10 + r01) * s, (r20 + r02) * s, (r21 - r12) * s)
+                    if (r00 < r22) {
+                        var s = 0.5f / sqrt(r22 - r00 - r11 + 1f)
+                        if (r10 < r01) s = -s   // ensure non-negative w
+                        rotation.set((r02 + r20) * s, (r12 + r21) * s, 0.25f / s, (r10 - r01) * s)
+                    } else {
+                        var s = 0.5f / sqrt(r00 - r11 - r22 + 1f)
+                        if (r21 < r12) s = -s   // ensure non-negative w
+                        rotation.set(0.25f / s, (r10 + r01) * s, (r20 + r02) * s, (r21 - r12) * s)
+                    }
                 }
             }
+            rotation.norm()
         }
-        rotation.norm()
+    }
+
+    /**
+     * Returns the decomposed rotation component of this transform matrix.
+     *
+     * @see decompose
+     */
+    fun getRotation(result: MutableQuatF = MutableQuatF()): MutableQuatF {
+        decompose(rotation = result)
+        return result
+    }
+
+    /**
+     * Returns the decomposed scale component of this transform matrix.
+     *
+     * @see decompose
+     */
+    fun getScale(result: MutableVec3f = MutableVec3f()): MutableVec3f {
+        decompose(scale = result)
+        return result
     }
 
     /**
@@ -347,7 +421,7 @@ open class Mat3fnew(
      * Checks matrix components for equality using [de.fabmax.kool.math.isFuzzyEqual], that is all components must
      * have a difference less or equal to [eps].
      */
-    fun isFuzzyEqual(that: Mat3fnew, eps: Float = FUZZY_EQ_F): Boolean {
+    fun isFuzzyEqual(that: Mat3f, eps: Float = FUZZY_EQ_F): Boolean {
         return isFuzzyEqual(m00, that.m00, eps) && isFuzzyEqual(m01, that.m01, eps) && isFuzzyEqual(m02, that.m02, eps) &&
                isFuzzyEqual(m10, that.m10, eps) && isFuzzyEqual(m11, that.m11, eps) && isFuzzyEqual(m12, that.m12, eps) &&
                isFuzzyEqual(m20, that.m20, eps) && isFuzzyEqual(m21, that.m21, eps) && isFuzzyEqual(m22, that.m22, eps)
@@ -359,7 +433,7 @@ open class Mat3fnew(
      */
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is Mat3fnew) return false
+        if (other !is Mat3f) return false
         return m00 == other.m00 && m01 == other.m01 && m02 == other.m02 &&
                m10 == other.m10 && m11 == other.m11 && m12 == other.m12 &&
                m20 == other.m20 && m21 == other.m21 && m22 == other.m22
@@ -382,32 +456,36 @@ open class Mat3fnew(
     }
 
     companion object {
-        val IDENTITY = Mat3fnew(
+        val IDENTITY = Mat3f(
             1f, 0f, 0f,
             0f, 1f, 0f,
             0f, 0f, 1f
         )
 
-        val ZERO = Mat3fnew(
+        val ZERO = Mat3f(
             0f, 0f, 0f,
             0f, 0f, 0f,
             0f, 0f, 0f
         )
 
-        fun rotation(angle: AngleF, axis: Vec3f): Mat3fnew = MutableMat3f().rotate(angle, axis)
+        fun fromArray(array: FloatArray, offset: Int = 0, order: MatrixArrayOrder = MatrixArrayOrder.COLUMN_MAJOR): Mat3f {
+            return MutableMat3f().set(array, offset, order)
+        }
 
-        fun rotation(quaternion: QuatF): Mat3fnew = MutableMat3f().rotate(quaternion)
+        fun rotation(angle: AngleF, axis: Vec3f): Mat3f = MutableMat3f().rotate(angle, axis)
 
-        fun rotation(eulerX: AngleF, eulerY: AngleF, eulerZ: AngleF, order: EulerOrder = EulerOrder.ZYX): Mat3fnew {
+        fun rotation(quaternion: QuatF): Mat3f = MutableMat3f().rotate(quaternion)
+
+        fun rotation(eulerX: AngleF, eulerY: AngleF, eulerZ: AngleF, order: EulerOrder = EulerOrder.ZYX): Mat3f {
             return MutableMat3f().rotate(eulerX, eulerY, eulerZ, order)
         }
 
-        fun scale(s: Float): Mat3fnew = MutableMat3f().scale(s)
+        fun scale(s: Float): Mat3f = MutableMat3f().scale(s)
 
-        fun scale(s: Vec3f): Mat3fnew = MutableMat3f().scale(s)
+        fun scale(s: Vec3f): Mat3f = MutableMat3f().scale(s)
 
-        fun composition(rotation: QuatF, scale: Vec3f): Mat3fnew {
-            return MutableMat3f().setComposition(rotation, scale)
+        fun composition(rotation: QuatF, scale: Vec3f): Mat3f {
+            return MutableMat3f().compose(rotation, scale)
         }
     }
 }
@@ -416,13 +494,13 @@ open class MutableMat3f(
     override var m00: Float, override var m01: Float, override var m02: Float,
     override var m10: Float, override var m11: Float, override var m12: Float,
     override var m20: Float, override var m21: Float, override var m22: Float
-) : Mat3fnew(
+) : Mat3f(
     m00, m01, m02,
     m10, m11, m12,
     m20, m21, m22
 ) {
 
-    constructor(mat: Mat3fnew): this(
+    constructor(mat: Mat3f): this(
         mat.m00, mat.m01, mat.m02,
         mat.m10, mat.m11, mat.m12,
         mat.m20, mat.m21, mat.m22
@@ -436,7 +514,7 @@ open class MutableMat3f(
 
     constructor(): this(IDENTITY)
 
-    fun set(that: Mat3fnew): MutableMat3f {
+    fun set(that: Mat3f): MutableMat3f {
         m00 = that.m00; m01 = that.m01; m02 = that.m02
         m10 = that.m10; m11 = that.m11; m12 = that.m12
         m20 = that.m20; m21 = that.m21; m22 = that.m22
@@ -450,40 +528,35 @@ open class MutableMat3f(
         return this
     }
 
-    fun setIdentity() = set(IDENTITY)
-
-    /**
-     * Sets this matrix to the composition of the given [rotation] and [scale] transforms.
-     */
-    fun setComposition(rotation: QuatF, scale: Vec3f): MutableMat3f {
-        val x = rotation.x; val y = rotation.y; val z = rotation.z; val w = rotation.w
-        val x2 = x + x;  val y2 = y + y;  val z2 = z + z
-        val xx = x * x2; val xy = x * y2; val xz = x * z2
-        val yy = y * y2; val yz = y * z2; val zz = z * z2
-        val wx = w * x2; val wy = w * y2; val wz = w * z2
-
-        val sx = scale.x; val sy = scale.y; val sz = scale.z
-
-        m00 = (1 - (yy + zz)) * sx
-        m10 = (xy + wz) * sx
-        m20 = (xz - wy) * sx
-
-        m01 = (xy - wz) * sy
-        m11 = (1 - (xx + zz)) * sy
-        m21 = (yz + wx) * sy
-
-        m02 = (xz + wy) * sz
-        m12 = (yz - wx) * sz
-        m22 = (1 - (xx + yy)) * sz
-
+    fun set(
+        t00: Float, t01: Float, t02: Float,
+        t10: Float, t11: Float, t12: Float,
+        t20: Float, t21: Float, t22: Float
+    ): MutableMat3f {
+        m00 = t00; m01 = t01; m02 = t02
+        m10 = t10; m11 = t11; m12 = t12
+        m20 = t20; m21 = t21; m22 = t22
         return this
     }
+
+    fun set(array: FloatArray, offset: Int = 0, order: MatrixArrayOrder = MatrixArrayOrder.COLUMN_MAJOR): MutableMat3f {
+        var i = offset
+        m00 = array[i++]; m01 = array[i++]; m02 = array[i++]
+        m10 = array[i++]; m11 = array[i++]; m12 = array[i++]
+        m20 = array[i++]; m21 = array[i++]; m22 = array[i]
+        if (order == MatrixArrayOrder.COLUMN_MAJOR) {
+            transpose()
+        }
+        return this
+    }
+
+    fun setIdentity() = set(IDENTITY)
 
     /**
      * Inplace operation: Adds the given matrix to this one changing the contents of this matrix to the
      * result.
      */
-    operator fun plusAssign(that: Mat3fnew) {
+    operator fun plusAssign(that: Mat3f) {
         add(that)
     }
 
@@ -491,7 +564,7 @@ open class MutableMat3f(
      * Inplace operation: Subtracts the given matrix from this one changing the contents of this matrix to the
      * result.
      */
-    operator fun minusAssign(that: Mat3fnew) {
+    operator fun minusAssign(that: Mat3f) {
         subtract(that)
     }
 
@@ -499,7 +572,7 @@ open class MutableMat3f(
      * Inplace operation: Multiplies this matrix with the given one and changes the contents of this matrix to the
      * result.
      */
-    operator fun timesAssign(that: Mat3fnew) {
+    operator fun timesAssign(that: Mat3f) {
         mul(that)
     }
 
@@ -507,7 +580,7 @@ open class MutableMat3f(
      * Inplace operation: Adds the given matrix to this one changing the contents of this matrix to the
      * result.
      */
-    fun add(that: Mat3fnew): MutableMat3f {
+    fun add(that: Mat3f): MutableMat3f {
         m00 += that.m00; m01 += that.m01; m02 += that.m02
         m10 += that.m10; m11 += that.m11; m12 += that.m12
         m20 += that.m20; m21 += that.m21; m22 += that.m22
@@ -518,7 +591,7 @@ open class MutableMat3f(
      * Inplace operation: Subtracts the given matrix to this one changing the contents of this matrix to the
      * result.
      */
-    fun subtract(that: Mat3fnew): MutableMat3f {
+    fun subtract(that: Mat3f): MutableMat3f {
         m00 -= that.m00; m01 -= that.m01; m02 -= that.m02
         m10 -= that.m10; m11 -= that.m11; m12 -= that.m12
         m20 -= that.m20; m21 -= that.m21; m22 -= that.m22
@@ -529,7 +602,7 @@ open class MutableMat3f(
      * Inplace operation: Multiplies this matrix with the given one and changes the contents of this matrix to the
      * result.
      */
-    fun mul(that: Mat3fnew): MutableMat3f = mul(
+    fun mul(that: Mat3f): MutableMat3f = mul(
         that.m00, that.m01, that.m02,
         that.m10, that.m11, that.m12,
         that.m20, that.m21, that.m22
@@ -556,6 +629,25 @@ open class MutableMat3f(
         m10 = r10; m11 = r11; m12 = r12
         m20 = r20; m21 = r21; m22 = r22
         return this
+    }
+
+    /**
+     * Applies the composition of the given [rotation] and [scale] to this transform matrix.
+     */
+    fun compose(rotation: QuatF, scale: Vec3f): MutableMat3f {
+        val x = rotation.x; val y = rotation.y; val z = rotation.z; val w = rotation.w
+        val x2 = x + x;  val y2 = y + y;  val z2 = z + z
+        val xx = x * x2; val xy = x * y2; val xz = x * z2
+        val yy = y * y2; val yz = y * z2; val zz = z * z2
+        val wx = w * x2; val wy = w * y2; val wz = w * z2
+
+        val sx = scale.x; val sy = scale.y; val sz = scale.z
+
+        return mul(
+            (1 - (yy + zz)) * sx,   (xy - wz) * sy,         (xz + wy) * sz,
+            (xy + wz) * sx,         (1 - (xx + zz)) * sy,   (yz - wx) * sz,
+            (xz - wy) * sx,         (yz + wx) * sy,         (1 - (xx + yy)) * sz
+        )
     }
 
     /**
@@ -755,9 +847,9 @@ open class MutableMat3f(
      *
      * @return true, if inversion succeeded, false otherwise (matrix remains unchanged)
      */
-    fun invert(): Boolean {
+    fun invert(eps: Float = 0f): Boolean {
         val det = determinant()
-        if (det == 0f) {
+        if (det.isFuzzyZero(eps)) {
             return false
         }
 
@@ -849,13 +941,13 @@ open class MutableMat3f(
 // </template> End of template section, DO NOT EDIT BELOW THIS!
 
 
-open class Mat3dnew(
+open class Mat3d(
     open val m00: Double, open val m01: Double, open val m02: Double,
     open val m10: Double, open val m11: Double, open val m12: Double,
     open val m20: Double, open val m21: Double, open val m22: Double
 ) {
 
-    constructor(mat: Mat3dnew): this(
+    constructor(mat: Mat3d): this(
         mat.m00, mat.m01, mat.m02,
         mat.m10, mat.m11, mat.m12,
         mat.m20, mat.m21, mat.m22
@@ -867,28 +959,28 @@ open class Mat3dnew(
         col0.z, col1.z, col2.z
     )
 
-    operator fun times(that: Mat3dnew): MutableMat3d = mul(that, MutableMat3d())
+    operator fun times(that: Mat3d): MutableMat3d = mul(that, MutableMat3d())
 
-    operator fun plus(that: Mat3dnew): MutableMat3d = add(that, MutableMat3d())
+    operator fun plus(that: Mat3d): MutableMat3d = add(that, MutableMat3d())
 
-    operator fun minus(that: Mat3dnew): MutableMat3d = subtract(that, MutableMat3d())
+    operator fun minus(that: Mat3d): MutableMat3d = subtract(that, MutableMat3d())
 
     operator fun times(that: Vec3d): MutableVec3d = transform(that, MutableVec3d())
 
     /**
      * Adds the given matrix to this one and stores the result in [result].
      */
-    fun add(that: Mat3dnew, result: MutableMat3d): MutableMat3d = result.set(this).add(that)
+    fun add(that: Mat3d, result: MutableMat3d): MutableMat3d = result.set(this).add(that)
 
     /**
      * Subtracts the given matrix from this one and stores the result in [result].
      */
-    fun subtract(that: Mat3dnew, result: MutableMat3d): MutableMat3d = result.set(this).subtract(that)
+    fun subtract(that: Mat3d, result: MutableMat3d): MutableMat3d = result.set(this).subtract(that)
 
     /**
      * Multiplies this matrix with the given [that] one and stores the result in [result].
      */
-    fun mul(that: Mat3dnew, result: MutableMat3d): MutableMat3d = result.set(this).mul(that)
+    fun mul(that: Mat3d, result: MutableMat3d): MutableMat3d = result.set(this).mul(that)
 
     /**
      * Transforms (i.e. multiplies) the given [Vec4d] with this matrix and stores the resulting transformed vector in [result].
@@ -1021,50 +1113,70 @@ open class Mat3dnew(
      * Decomposes this transform matrix into its translation, rotation and scale components and returns them
      * int the provided [rotation] and [scale] vectors.
      */
-    fun decompose(rotation: MutableQuatD, scale: MutableVec3d) {
-        scale.set(
-            sqrt(m00*m00 + m10*m10 + m20*m20),
-            sqrt(m01*m01 + m11*m11 + m21*m21),
-            sqrt(m02*m02 + m12*m12 + m22*m22)
-        )
-
+    fun decompose(rotation: MutableQuatD? = null, scale: MutableVec3d? = null) {
+        var sx = sqrt(m00*m00 + m10*m10 + m20*m20)
+        val sy = sqrt(m01*m01 + m11*m11 + m21*m21)
+        val sz = sqrt(m02*m02 + m12*m12 + m22*m22)
         if (determinant() < 0.0) {
-            scale.x *= -1.0
+            sx *= -1.0
         }
+        scale?.set(sx, sy, sz)
 
-        val r00 = m00 / scale.x; val r01 = m01 / scale.y; val r02 = m02 / scale.z
-        val r10 = m10 / scale.x; val r11 = m11 / scale.y; val r12 = m12 / scale.z
-        val r20 = m20 / scale.x; val r21 = m21 / scale.y; val r22 = m22 / scale.z
+        if (rotation != null) {
+            val r00 = m00 / sx; val r01 = m01 / sy; val r02 = m02 / sz
+            val r10 = m10 / sx; val r11 = m11 / sy; val r12 = m12 / sz
+            val r20 = m20 / sx; val r21 = m21 / sy; val r22 = m22 / sz
 
-        val trace = r00 + r11 + r22
-        if (trace > 0.0) {
-            val s = 0.5 / sqrt(trace + 1.0)
-            rotation.set((r21 - r12) * s, (r02 - r20) * s, (r10 - r01) * s, 0.25 / s)
-        } else {
-            if (r00 < r11) {
-                if (r11 < r22) {
-                    var s = 0.5 / sqrt(r22 - r00 - r11 + 1.0)
-                    if (r10 < r01) s = -s   // ensure non-negative w
-                    rotation.set((r02 + r20) * s, (r12 + r21) * s, 0.25 / s, (r10 - r01) * s)
-
-                } else {
-                    var s = 0.5 / sqrt(r11 - r22 - r00 + 1.0)
-                    if (r02 < r20) s = -s   // ensure non-negative w
-                    rotation.set((r01 + r10) * s, 0.25 / s, (r21 + r12) * s, (r02 - r20) * s)
-                }
+            val trace = r00 + r11 + r22
+            if (trace > 0.0) {
+                val s = 0.5 / sqrt(trace + 1.0)
+                rotation.set((r21 - r12) * s, (r02 - r20) * s, (r10 - r01) * s, 0.25 / s)
             } else {
-                if (r00 < r22) {
-                    var s = 0.5 / sqrt(r22 - r00 - r11 + 1.0)
-                    if (r10 < r01) s = -s   // ensure non-negative w
-                    rotation.set((r02 + r20) * s, (r12 + r21) * s, 0.25 / s, (r10 - r01) * s)
+                if (r00 < r11) {
+                    if (r11 < r22) {
+                        var s = 0.5 / sqrt(r22 - r00 - r11 + 1.0)
+                        if (r10 < r01) s = -s   // ensure non-negative w
+                        rotation.set((r02 + r20) * s, (r12 + r21) * s, 0.25 / s, (r10 - r01) * s)
+
+                    } else {
+                        var s = 0.5 / sqrt(r11 - r22 - r00 + 1.0)
+                        if (r02 < r20) s = -s   // ensure non-negative w
+                        rotation.set((r01 + r10) * s, 0.25 / s, (r21 + r12) * s, (r02 - r20) * s)
+                    }
                 } else {
-                    var s = 0.5 / sqrt(r00 - r11 - r22 + 1.0)
-                    if (r21 < r12) s = -s   // ensure non-negative w
-                    rotation.set(0.25 / s, (r10 + r01) * s, (r20 + r02) * s, (r21 - r12) * s)
+                    if (r00 < r22) {
+                        var s = 0.5 / sqrt(r22 - r00 - r11 + 1.0)
+                        if (r10 < r01) s = -s   // ensure non-negative w
+                        rotation.set((r02 + r20) * s, (r12 + r21) * s, 0.25 / s, (r10 - r01) * s)
+                    } else {
+                        var s = 0.5 / sqrt(r00 - r11 - r22 + 1.0)
+                        if (r21 < r12) s = -s   // ensure non-negative w
+                        rotation.set(0.25 / s, (r10 + r01) * s, (r20 + r02) * s, (r21 - r12) * s)
+                    }
                 }
             }
+            rotation.norm()
         }
-        rotation.norm()
+    }
+
+    /**
+     * Returns the decomposed rotation component of this transform matrix.
+     *
+     * @see decompose
+     */
+    fun getRotation(result: MutableQuatD = MutableQuatD()): MutableQuatD {
+        decompose(rotation = result)
+        return result
+    }
+
+    /**
+     * Returns the decomposed scale component of this transform matrix.
+     *
+     * @see decompose
+     */
+    fun getScale(result: MutableVec3d = MutableVec3d()): MutableVec3d {
+        decompose(scale = result)
+        return result
     }
 
     /**
@@ -1186,7 +1298,7 @@ open class Mat3dnew(
      * Checks matrix components for equality using [de.fabmax.kool.math.isFuzzyEqual], that is all components must
      * have a difference less or equal to [eps].
      */
-    fun isFuzzyEqual(that: Mat3dnew, eps: Double = FUZZY_EQ_D): Boolean {
+    fun isFuzzyEqual(that: Mat3d, eps: Double = FUZZY_EQ_D): Boolean {
         return isFuzzyEqual(m00, that.m00, eps) && isFuzzyEqual(m01, that.m01, eps) && isFuzzyEqual(m02, that.m02, eps) &&
                isFuzzyEqual(m10, that.m10, eps) && isFuzzyEqual(m11, that.m11, eps) && isFuzzyEqual(m12, that.m12, eps) &&
                isFuzzyEqual(m20, that.m20, eps) && isFuzzyEqual(m21, that.m21, eps) && isFuzzyEqual(m22, that.m22, eps)
@@ -1198,7 +1310,7 @@ open class Mat3dnew(
      */
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is Mat3dnew) return false
+        if (other !is Mat3d) return false
         return m00 == other.m00 && m01 == other.m01 && m02 == other.m02 &&
                m10 == other.m10 && m11 == other.m11 && m12 == other.m12 &&
                m20 == other.m20 && m21 == other.m21 && m22 == other.m22
@@ -1221,32 +1333,36 @@ open class Mat3dnew(
     }
 
     companion object {
-        val IDENTITY = Mat3dnew(
+        val IDENTITY = Mat3d(
             1.0, 0.0, 0.0,
             0.0, 1.0, 0.0,
             0.0, 0.0, 1.0
         )
 
-        val ZERO = Mat3dnew(
+        val ZERO = Mat3d(
             0.0, 0.0, 0.0,
             0.0, 0.0, 0.0,
             0.0, 0.0, 0.0
         )
 
-        fun rotation(angle: AngleD, axis: Vec3d): Mat3dnew = MutableMat3d().rotate(angle, axis)
+        fun fromArray(array: DoubleArray, offset: Int = 0, order: MatrixArrayOrder = MatrixArrayOrder.COLUMN_MAJOR): Mat3d {
+            return MutableMat3d().set(array, offset, order)
+        }
 
-        fun rotation(quaternion: QuatD): Mat3dnew = MutableMat3d().rotate(quaternion)
+        fun rotation(angle: AngleD, axis: Vec3d): Mat3d = MutableMat3d().rotate(angle, axis)
 
-        fun rotation(eulerX: AngleD, eulerY: AngleD, eulerZ: AngleD, order: EulerOrder = EulerOrder.ZYX): Mat3dnew {
+        fun rotation(quaternion: QuatD): Mat3d = MutableMat3d().rotate(quaternion)
+
+        fun rotation(eulerX: AngleD, eulerY: AngleD, eulerZ: AngleD, order: EulerOrder = EulerOrder.ZYX): Mat3d {
             return MutableMat3d().rotate(eulerX, eulerY, eulerZ, order)
         }
 
-        fun scale(s: Double): Mat3dnew = MutableMat3d().scale(s)
+        fun scale(s: Double): Mat3d = MutableMat3d().scale(s)
 
-        fun scale(s: Vec3d): Mat3dnew = MutableMat3d().scale(s)
+        fun scale(s: Vec3d): Mat3d = MutableMat3d().scale(s)
 
-        fun composition(rotation: QuatD, scale: Vec3d): Mat3dnew {
-            return MutableMat3d().setComposition(rotation, scale)
+        fun composition(rotation: QuatD, scale: Vec3d): Mat3d {
+            return MutableMat3d().compose(rotation, scale)
         }
     }
 }
@@ -1255,13 +1371,13 @@ open class MutableMat3d(
     override var m00: Double, override var m01: Double, override var m02: Double,
     override var m10: Double, override var m11: Double, override var m12: Double,
     override var m20: Double, override var m21: Double, override var m22: Double
-) : Mat3dnew(
+) : Mat3d(
     m00, m01, m02,
     m10, m11, m12,
     m20, m21, m22
 ) {
 
-    constructor(mat: Mat3dnew): this(
+    constructor(mat: Mat3d): this(
         mat.m00, mat.m01, mat.m02,
         mat.m10, mat.m11, mat.m12,
         mat.m20, mat.m21, mat.m22
@@ -1275,7 +1391,7 @@ open class MutableMat3d(
 
     constructor(): this(IDENTITY)
 
-    fun set(that: Mat3dnew): MutableMat3d {
+    fun set(that: Mat3d): MutableMat3d {
         m00 = that.m00; m01 = that.m01; m02 = that.m02
         m10 = that.m10; m11 = that.m11; m12 = that.m12
         m20 = that.m20; m21 = that.m21; m22 = that.m22
@@ -1289,40 +1405,35 @@ open class MutableMat3d(
         return this
     }
 
-    fun setIdentity() = set(IDENTITY)
-
-    /**
-     * Sets this matrix to the composition of the given [rotation] and [scale] transforms.
-     */
-    fun setComposition(rotation: QuatD, scale: Vec3d): MutableMat3d {
-        val x = rotation.x; val y = rotation.y; val z = rotation.z; val w = rotation.w
-        val x2 = x + x;  val y2 = y + y;  val z2 = z + z
-        val xx = x * x2; val xy = x * y2; val xz = x * z2
-        val yy = y * y2; val yz = y * z2; val zz = z * z2
-        val wx = w * x2; val wy = w * y2; val wz = w * z2
-
-        val sx = scale.x; val sy = scale.y; val sz = scale.z
-
-        m00 = (1 - (yy + zz)) * sx
-        m10 = (xy + wz) * sx
-        m20 = (xz - wy) * sx
-
-        m01 = (xy - wz) * sy
-        m11 = (1 - (xx + zz)) * sy
-        m21 = (yz + wx) * sy
-
-        m02 = (xz + wy) * sz
-        m12 = (yz - wx) * sz
-        m22 = (1 - (xx + yy)) * sz
-
+    fun set(
+        t00: Double, t01: Double, t02: Double,
+        t10: Double, t11: Double, t12: Double,
+        t20: Double, t21: Double, t22: Double
+    ): MutableMat3d {
+        m00 = t00; m01 = t01; m02 = t02
+        m10 = t10; m11 = t11; m12 = t12
+        m20 = t20; m21 = t21; m22 = t22
         return this
     }
+
+    fun set(array: DoubleArray, offset: Int = 0, order: MatrixArrayOrder = MatrixArrayOrder.COLUMN_MAJOR): MutableMat3d {
+        var i = offset
+        m00 = array[i++]; m01 = array[i++]; m02 = array[i++]
+        m10 = array[i++]; m11 = array[i++]; m12 = array[i++]
+        m20 = array[i++]; m21 = array[i++]; m22 = array[i]
+        if (order == MatrixArrayOrder.COLUMN_MAJOR) {
+            transpose()
+        }
+        return this
+    }
+
+    fun setIdentity() = set(IDENTITY)
 
     /**
      * Inplace operation: Adds the given matrix to this one changing the contents of this matrix to the
      * result.
      */
-    operator fun plusAssign(that: Mat3dnew) {
+    operator fun plusAssign(that: Mat3d) {
         add(that)
     }
 
@@ -1330,7 +1441,7 @@ open class MutableMat3d(
      * Inplace operation: Subtracts the given matrix from this one changing the contents of this matrix to the
      * result.
      */
-    operator fun minusAssign(that: Mat3dnew) {
+    operator fun minusAssign(that: Mat3d) {
         subtract(that)
     }
 
@@ -1338,7 +1449,7 @@ open class MutableMat3d(
      * Inplace operation: Multiplies this matrix with the given one and changes the contents of this matrix to the
      * result.
      */
-    operator fun timesAssign(that: Mat3dnew) {
+    operator fun timesAssign(that: Mat3d) {
         mul(that)
     }
 
@@ -1346,7 +1457,7 @@ open class MutableMat3d(
      * Inplace operation: Adds the given matrix to this one changing the contents of this matrix to the
      * result.
      */
-    fun add(that: Mat3dnew): MutableMat3d {
+    fun add(that: Mat3d): MutableMat3d {
         m00 += that.m00; m01 += that.m01; m02 += that.m02
         m10 += that.m10; m11 += that.m11; m12 += that.m12
         m20 += that.m20; m21 += that.m21; m22 += that.m22
@@ -1357,7 +1468,7 @@ open class MutableMat3d(
      * Inplace operation: Subtracts the given matrix to this one changing the contents of this matrix to the
      * result.
      */
-    fun subtract(that: Mat3dnew): MutableMat3d {
+    fun subtract(that: Mat3d): MutableMat3d {
         m00 -= that.m00; m01 -= that.m01; m02 -= that.m02
         m10 -= that.m10; m11 -= that.m11; m12 -= that.m12
         m20 -= that.m20; m21 -= that.m21; m22 -= that.m22
@@ -1368,7 +1479,7 @@ open class MutableMat3d(
      * Inplace operation: Multiplies this matrix with the given one and changes the contents of this matrix to the
      * result.
      */
-    fun mul(that: Mat3dnew): MutableMat3d = mul(
+    fun mul(that: Mat3d): MutableMat3d = mul(
         that.m00, that.m01, that.m02,
         that.m10, that.m11, that.m12,
         that.m20, that.m21, that.m22
@@ -1395,6 +1506,25 @@ open class MutableMat3d(
         m10 = r10; m11 = r11; m12 = r12
         m20 = r20; m21 = r21; m22 = r22
         return this
+    }
+
+    /**
+     * Applies the composition of the given [rotation] and [scale] to this transform matrix.
+     */
+    fun compose(rotation: QuatD, scale: Vec3d): MutableMat3d {
+        val x = rotation.x; val y = rotation.y; val z = rotation.z; val w = rotation.w
+        val x2 = x + x;  val y2 = y + y;  val z2 = z + z
+        val xx = x * x2; val xy = x * y2; val xz = x * z2
+        val yy = y * y2; val yz = y * z2; val zz = z * z2
+        val wx = w * x2; val wy = w * y2; val wz = w * z2
+
+        val sx = scale.x; val sy = scale.y; val sz = scale.z
+
+        return mul(
+            (1 - (yy + zz)) * sx,   (xy - wz) * sy,         (xz + wy) * sz,
+            (xy + wz) * sx,         (1 - (xx + zz)) * sy,   (yz - wx) * sz,
+            (xz - wy) * sx,         (yz + wx) * sy,         (1 - (xx + yy)) * sz
+        )
     }
 
     /**
@@ -1594,9 +1724,9 @@ open class MutableMat3d(
      *
      * @return true, if inversion succeeded, false otherwise (matrix remains unchanged)
      */
-    fun invert(): Boolean {
+    fun invert(eps: Double = 0.0): Boolean {
         val det = determinant()
-        if (det == 0.0) {
+        if (det.isFuzzyZero(eps)) {
             return false
         }
 

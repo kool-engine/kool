@@ -2,6 +2,7 @@ package de.fabmax.kool.demo.procedural
 
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.Vec4f
+import de.fabmax.kool.math.deg
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ksl.blocks.cameraData
 import de.fabmax.kool.modules.ksl.lang.*
@@ -83,7 +84,7 @@ class Glas(val ibl: EnvironmentMaps, shadowMap: SimpleShadowMap) : Node(), Defer
     }
 
     private fun MeshBuilder.makeBodyGeometry() {
-        rotate(90f, Vec3f.NEG_X_AXIS)
+        rotate(90f.deg, Vec3f.NEG_X_AXIS)
         color = Color.BLACK.withAlpha(0.1f).toLinear()
 
         profile {
@@ -122,7 +123,7 @@ class Glas(val ibl: EnvironmentMaps, shadowMap: SimpleShadowMap) : Node(), Defer
     }
 
     private fun MeshBuilder.makeShaftGeometry() {
-        rotate(90f, Vec3f.NEG_X_AXIS)
+        rotate(90f.deg, Vec3f.NEG_X_AXIS)
         color = Color.DARK_GRAY.withAlpha(0.1f).toLinear()
 
         profile {
@@ -165,7 +166,7 @@ class Glas(val ibl: EnvironmentMaps, shadowMap: SimpleShadowMap) : Node(), Defer
     }
 
     private fun MeshBuilder.makeWineGeometry() {
-        rotate(90f, Vec3f.NEG_X_AXIS)
+        rotate(90f.deg, Vec3f.NEG_X_AXIS)
 
         profile {
             circleShape()

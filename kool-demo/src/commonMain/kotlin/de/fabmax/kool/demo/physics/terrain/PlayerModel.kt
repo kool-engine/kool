@@ -2,6 +2,7 @@ package de.fabmax.kool.demo.physics.terrain
 
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.clamp
+import de.fabmax.kool.math.deg
 import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.scene.LineMesh
 import de.fabmax.kool.scene.Model
@@ -22,7 +23,7 @@ class PlayerModel(val model: Model, val playerController: PlayerController) : No
 
         // set correct player model position (relative to player controller origin)
         model.transform.translate(0f, -0.9f, 0f)
-        model.transform.rotate(180f, Vec3f.Y_AXIS)
+        model.transform.rotate(180f.deg, Vec3f.Y_AXIS)
         addNode(model)
 
         controllerShapeOutline = makeShapeOutline()

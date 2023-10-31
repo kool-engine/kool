@@ -2,6 +2,7 @@ package de.fabmax.kool.demo.menu
 
 import de.fabmax.kool.demo.UiSizes
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.deg
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.PolyUtil
@@ -74,7 +75,7 @@ class NavSettingsButton(val menu: DemoMenu) : Composable {
                 val r = innerWidthPx * 0.5f
 
                 translate(widthPx / 2f, heightPx / 2f, 0f)
-                rotate(animationP * 45f, Vec3f.Z_AXIS)
+                rotate(45f.deg * animationP, Vec3f.Z_AXIS)
 
                 val i0 = geometry.numVertices
                 for (v in gearPoly.vertices) {

@@ -1,9 +1,10 @@
 package de.fabmax.kool.util
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.math.Mat4f
+import de.fabmax.kool.math.MutableMat4f
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.transform
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Mesh
@@ -102,7 +103,7 @@ class InstancedLodController<T: InstancedLodController.Instance<T>>(name: String
     }
 
     open class Instance<T: Instance<T>> {
-        var instanceModelMat = Mat4f()
+        var instanceModelMat = MutableMat4f()
 
         val center = MutableVec3f()
         var radius = 1f
@@ -135,7 +136,7 @@ class InstancedLodController<T: InstancedLodController.Instance<T>>(name: String
         }
 
         open fun addInstanceData(lod: Int, buffer: Float32Buffer, ctx: KoolContext) {
-            buffer.put(instanceModelMat.array)
+            instanceModelMat.putTo(buffer)
         }
     }
 }

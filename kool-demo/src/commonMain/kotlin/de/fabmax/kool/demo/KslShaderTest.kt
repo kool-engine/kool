@@ -2,10 +2,7 @@ package de.fabmax.kool.demo
 
 import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.math.Mat4f
-import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.math.randomF
+import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ksl.KslBlinnPhongShader
 import de.fabmax.kool.modules.ksl.blocks.BlinnPhongMaterialBlock
 import de.fabmax.kool.modules.ksl.blocks.TexCoordAttributeBlock
@@ -60,9 +57,9 @@ class KslShaderTest : DemoScene("KslShader") {
             }
         }
 
-        val lightRotTransform = Mat4f()
+        val lightRotTransform = MutableMat4f()
         onUpdate += {
-            lightRotTransform.rotate(Time.deltaT * 5f, Vec3f.Z_AXIS)
+            lightRotTransform.rotate(5f.deg * Time.deltaT, Vec3f.Z_AXIS)
             lighting.lights.forEachIndexed { i, light ->
                 val pos = lightRotTransform.transform(MutableVec3f(lightPoses[i].first), 1f)
                 val dir = lightRotTransform.transform(MutableVec3f(lightPoses[i].second), 0f)
@@ -124,8 +121,8 @@ class KslShaderTest : DemoScene("KslShader") {
                 transform.setIdentity()
                 transform.scale(1.5f)
                 transform.translate(0.0, 0.0, 0.5)
-                transform.rotate(rotationX, Vec3f.X_AXIS)
-                transform.rotate(rotationY, Vec3f.Y_AXIS)
+                transform.rotate(rotationX.deg, Vec3f.X_AXIS)
+                transform.rotate(rotationY.deg, Vec3f.Y_AXIS)
 
                 rotationX += Time.deltaT * 10f
                 rotationY += Time.deltaT * 13.7f
@@ -144,14 +141,14 @@ class KslShaderTest : DemoScene("KslShader") {
             }
 
             instances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.INSTANCE_COLOR)).apply {
-                val mat = Mat4f()
+                val mat = MutableMat4f()
                 val mutColor = MutableColor()
                 var i = 0
                 for (y in -2 .. 2) {
                     for (x in -2 .. 2) {
                         mat.setIdentity().translate(x * 2.5f, y * 2.5f, 0f)
                         addInstance {
-                            put(mat.array)
+                            mat.putTo(this)
                             mutColor.set(MdColor.PALETTE[i++ % MdColor.PALETTE.size]).toLinear().putTo(this)
                         }
                     }

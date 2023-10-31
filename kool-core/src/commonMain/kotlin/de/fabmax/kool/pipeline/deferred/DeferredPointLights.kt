@@ -1,6 +1,6 @@
 package de.fabmax.kool.pipeline.deferred
 
-import de.fabmax.kool.math.Mat4f
+import de.fabmax.kool.math.MutableMat4f
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.Light
@@ -19,7 +19,7 @@ class DeferredPointLights(var isDynamic: Boolean) {
         Attribute.COLORS
     ), 10000)
 
-    private val modelMat = Mat4f()
+    private val modelMat = MutableMat4f()
     private val encodedLightData = FloatArray(8)
 
     val lightShader = DeferredLightShader(Light.Point.ENCODING)
@@ -49,7 +49,7 @@ class DeferredPointLights(var isDynamic: Boolean) {
         lightInstanceData.addInstances(lightInstances.size) { buf ->
             for (i in 0 until lightInstances.size) {
                 encodeLight(lightInstances[i])
-                buf.put(modelMat.array)
+                modelMat.putTo(buf)
                 buf.put(encodedLightData)
             }
         }
@@ -58,7 +58,7 @@ class DeferredPointLights(var isDynamic: Boolean) {
     private fun encodeLight(light: PointLight) {
         modelMat.setIdentity()
         modelMat.translate(light.position)
-        modelMat.scale(light.radius, light.radius, light.radius)
+        modelMat.scale(light.radius)
 
         encodedLightData[0] = light.position.x
         encodedLightData[1] = light.position.y

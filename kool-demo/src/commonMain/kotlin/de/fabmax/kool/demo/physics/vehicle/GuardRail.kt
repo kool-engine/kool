@@ -189,11 +189,11 @@ class GuardRail {
 
             actor = RigidDynamic(250f, initPose)
             actor.attachShape(Shape(signBox, world.defaultMaterial, simFilterData = world.obstacleSimFilterData, queryFilterData = world.obstacleQryFilterData))
-            actor.attachShape(Shape(poleBox, world.defaultMaterial, Mat4f().translate(0f, -1f, 0f), world.obstacleSimFilterData, world.obstacleQryFilterData))
+            actor.attachShape(Shape(poleBox, world.defaultMaterial, MutableMat4f().translate(0f, -1f, 0f), world.obstacleSimFilterData, world.obstacleQryFilterData))
             actor.updateInertiaFromShapesAndMass()
             world.physics.addActor(actor)
 
-            joint = FixedJoint(track.trackActor, actor, initPose, Mat4f())
+            joint = FixedJoint(track.trackActor, actor, initPose, MutableMat4f())
             joint.setBreakForce(2e5f, 2e5f)
 
             pointLight = world.deferredPipeline.dynamicPointLights.addPointLight {
@@ -206,9 +206,7 @@ class GuardRail {
             pointLight.radius = sqrt(pointLight.intensity)
             actor.transform.transform(pointLight.position.set(0f, 0.5f, 0.1f))
 
-            for (d in actor.transform.matrix.array) {
-                buf.put(d.toFloat())
-            }
+            actor.transform.matrix.putTo(buf)
             emission.putTo(buf)
         }
     }

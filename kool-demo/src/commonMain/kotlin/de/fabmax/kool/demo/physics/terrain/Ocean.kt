@@ -1,6 +1,6 @@
 package de.fabmax.kool.demo.physics.terrain
 
-import de.fabmax.kool.math.Mat4f
+import de.fabmax.kool.math.MutableMat4f
 import de.fabmax.kool.math.MutableVec4f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.spatial.InViewFrustumTraverser
@@ -62,7 +62,7 @@ class Ocean(terrainTiles: TerrainTiles, val camera: Camera, val wind: Wind, val 
                     oceanInstances.clear()
                     oceanInstances.addInstances(visibleTileTraverser.result.size) { buf ->
                         for (i in visibleTileTraverser.result.indices) {
-                            buf.put(visibleTileTraverser.result[i].transform.array)
+                            visibleTileTraverser.result[i].transform.putTo(buf)
                         }
                     }
                 }
@@ -93,7 +93,7 @@ class Ocean(terrainTiles: TerrainTiles, val camera: Camera, val wind: Wind, val 
     }
 
     private class OceanTilePose(center: Vec3f, val scale: Float): Vec3f(center) {
-        val transform = Mat4f().translate(center).scale(scale)
+        val transform = MutableMat4f().translate(center).scale(scale)
     }
 
     private object TileAdapter : ItemAdapter<OceanTilePose> {

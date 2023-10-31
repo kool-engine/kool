@@ -128,14 +128,14 @@ class Circles : CreativeContent("Circles") {
         val frontAxis = upAxis.ortho(MutableVec3f())
         val rightAxis = upAxis.cross(frontAxis, MutableVec3f())
 
-        val rotation = Mat3f()
-        rotation.setColVec(0, rightAxis)
-        rotation.setColVec(1, frontAxis)
-        rotation.setColVec(2, upAxis)
+        val rotation = MutableMat3f()
+        rotation.setColumn(0, rightAxis)
+        rotation.setColumn(1, frontAxis)
+        rotation.setColumn(2, upAxis)
 
-        val transform = Mat4f()
+        val transform = MutableMat4f()
         transform.translate(center)
-        transform.rotate(rotation)
+        transform.mulUpperLeft(rotation)
 
         for (i in 0 .. 360 step resolution) {
             val rad = i.toFloat().toRad()

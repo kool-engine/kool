@@ -6,8 +6,9 @@ import de.fabmax.kool.editor.model.NodeModel
 import de.fabmax.kool.editor.model.SceneModel
 import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.input.KeyboardInput
-import de.fabmax.kool.math.Mat4d
-import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.MutableMat4d
+import de.fabmax.kool.math.Vec3d
+import de.fabmax.kool.math.deg
 import de.fabmax.kool.modules.ui2.mutableStateListOf
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.util.MdColor
@@ -90,10 +91,10 @@ object EditorState {
             }
             sceneNodes += SceneNodeData("Camera", camId).apply {
                 components += CameraComponentData(CameraTypeData.Perspective())
-                components += TransformComponentData(TransformData(
-                    Mat4d()
-                        .translate(0f, 2.5f, 5f)
-                        .rotate(-30f, Vec3f.X_AXIS)
+                components += TransformComponentData(TransformData.fromMatrix(
+                    MutableMat4d()
+                        .translate(0.0, 2.5, 5.0)
+                        .rotate(-30.0.deg, Vec3d.X_AXIS)
                 ))
             }
             sceneNodes += SceneNodeData("Default Cube", boxId).apply {
@@ -101,10 +102,10 @@ object EditorState {
             }
             sceneNodes += SceneNodeData("Directional Light", lightId).apply {
                 components += DiscreteLightComponentData(LightTypeData.Directional())
-                components += TransformComponentData(TransformData(
-                    Mat4d()
-                        .translate(3f, 3f, 3f)
-                        .mul(Mat4d().setRotate(EditorDefaults.DEFAULT_LIGHT_ROTATION))
+                components += TransformComponentData(TransformData.fromMatrix(
+                    MutableMat4d()
+                        .translate(3.0, 3.0, 3.0)
+                        .rotate(EditorDefaults.DEFAULT_LIGHT_ROTATION)
                 ))
             }
         }

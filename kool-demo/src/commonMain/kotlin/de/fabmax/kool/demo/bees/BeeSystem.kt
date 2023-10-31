@@ -29,7 +29,7 @@ class BeeSystem(val team: Int) {
     private val tmpVec4 = MutableVec4f()
     private val tmpVec3a = MutableVec3f()
     private val tmpVec3b = MutableVec3f()
-    private val tmpMat3 = Mat3f()
+    private val tmpMat3 = MutableMat3f()
     private val tmpQuat = MutableQuatF()
 
     val beeUpdateTime = mutableStateOf(0.0)
@@ -153,9 +153,13 @@ class BeeSystem(val team: Int) {
         if (speed > 1f && abs(vel.dot(Vec3f.Y_AXIS) / speed) < 0.99f) {
             val right = Vec3f.Y_AXIS.cross(vel, tmpVec3a).norm()
             val up = vel.cross(right, tmpVec3b).norm()
-            tmpMat3.setColVec(0, right)
-            tmpMat3.setColVec(1, up)
-            tmpMat3.setColVec(2, tmpVec3a.set(vel).norm())
+            val front = tmpVec3a.set(vel).norm()
+
+            tmpMat3.set(
+                right.x, up.x, front.x,
+                right.y, up.y, front.y,
+                right.z, up.z, front.z
+            )
             tmpMat3.getRotation(tmpQuat)
 
             val w0 = dt * 5f
