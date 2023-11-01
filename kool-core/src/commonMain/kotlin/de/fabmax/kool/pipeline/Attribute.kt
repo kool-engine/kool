@@ -63,6 +63,76 @@ data class Attribute(val name: String, val type: GlslType) {
     }
 }
 
+fun KslVertexStage.vertexAttribFloat1(attrib: Attribute): KslExprFloat1 {
+    check(attrib.type == GlslType.FLOAT) { "Attribute $attrib is expected to have type FLOAT but has ${attrib.type}" }
+    return vertexAttribFloat1(attrib.name)
+}
+
+fun KslVertexStage.vertexAttribFloat2(attrib: Attribute): KslExprFloat2 {
+    check(attrib.type == GlslType.VEC_2F) { "Attribute $attrib is expected to have type VEC_2F but has ${attrib.type}" }
+    return vertexAttribFloat2(attrib.name)
+}
+
+fun KslVertexStage.vertexAttribFloat3(attrib: Attribute): KslExprFloat3 {
+    check(attrib.type == GlslType.VEC_3F) { "Attribute $attrib is expected to have type VEC_3F but has ${attrib.type}" }
+    return vertexAttribFloat3(attrib.name)
+}
+
+fun KslVertexStage.vertexAttribFloat4(attrib: Attribute): KslExprFloat4 {
+    check(attrib.type == GlslType.VEC_4F) { "Attribute $attrib is expected to have type VEC_4F but has ${attrib.type}" }
+    return vertexAttribFloat4(attrib.name)
+}
+
+fun KslVertexStage.vertexAttribInt1(attrib: Attribute): KslExprInt1 {
+    check(attrib.type == GlslType.INT) { "Attribute $attrib is expected to have type INT but has ${attrib.type}" }
+    return vertexAttribInt1(attrib.name)
+}
+
+fun KslVertexStage.vertexAttribInt2(attrib: Attribute): KslExprInt2 {
+    check(attrib.type == GlslType.VEC_2I) { "Attribute $attrib is expected to have type VEC_2I but has ${attrib.type}" }
+    return vertexAttribInt2(attrib.name)
+}
+
+fun KslVertexStage.vertexAttribInt3(attrib: Attribute): KslExprInt3 {
+    check(attrib.type == GlslType.VEC_3I) { "Attribute $attrib is expected to have type VEC_3I but has ${attrib.type}" }
+    return vertexAttribInt3(attrib.name)
+}
+
+fun KslVertexStage.vertexAttribInt4(attrib: Attribute): KslExprInt4 {
+    check(attrib.type == GlslType.VEC_4I) { "Attribute $attrib is expected to have type VEC_4I but has ${attrib.type}" }
+    return vertexAttribInt4(attrib.name)
+}
+
+fun KslVertexStage.instanceAttribFloat1(attrib: Attribute): KslExprFloat1 {
+    check(attrib.type == GlslType.FLOAT) { "Attribute $attrib is expected to have type FLOAT but has ${attrib.type}" }
+    return instanceAttribFloat1(attrib.name)
+}
+
+fun KslVertexStage.instanceAttribFloat2(attrib: Attribute): KslExprFloat2 {
+    check(attrib.type == GlslType.VEC_2F) { "Attribute $attrib is expected to have type VEC_2F but has ${attrib.type}" }
+    return instanceAttribFloat2(attrib.name)
+}
+
+fun KslVertexStage.instanceAttribFloat3(attrib: Attribute): KslExprFloat3 {
+    check(attrib.type == GlslType.VEC_3F) { "Attribute $attrib is expected to have type VEC_3F but has ${attrib.type}" }
+    return instanceAttribFloat3(attrib.name)
+}
+
+fun KslVertexStage.instanceAttribFloat4(attrib: Attribute): KslExprFloat4 {
+    check(attrib.type == GlslType.VEC_4F) { "Attribute $attrib is expected to have type VEC_4F but has ${attrib.type}" }
+    return instanceAttribFloat4(attrib.name)
+}
+
+fun KslVertexStage.instanceAttribMat3(attrib: Attribute): KslExprMat3 {
+    check(attrib.type == GlslType.MAT_3F) { "Attribute $attrib is expected to have type MAT_3F but has ${attrib.type}" }
+    return instanceAttribMat3(attrib.name)
+}
+
+fun KslVertexStage.instanceAttribMat4(attrib: Attribute): KslExprMat4 {
+    check(attrib.type == GlslType.MAT_4F) { "Attribute $attrib is expected to have type MAT_4F but has ${attrib.type}" }
+    return instanceAttribMat4(attrib.name)
+}
+
 expect class PlatformAttributeProps(attribute: Attribute) {
     val nSlots: Int
 }
