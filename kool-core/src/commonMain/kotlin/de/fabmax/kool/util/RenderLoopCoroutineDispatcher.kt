@@ -2,14 +2,40 @@ package de.fabmax.kool.util
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
+import kotlinx.atomicfu.locks.SynchronizedObject
+import kotlinx.atomicfu.locks.synchronized
 import kotlinx.coroutines.*
+import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
 
 @Suppress("UnusedReceiverParameter")
 val Dispatchers.RenderLoop: CoroutineDispatcher
     get() = RenderLoopCoroutineDispatcher
 
-expect object RenderLoopCoroutineDispatcher : CoroutineDispatcher
+object RenderLoopCoroutineDispatcher : CoroutineDispatcher() {
+
+    private val queueLock = SynchronizedObject()
+
+    private val dispatchedTasks = mutableListOf<Runnable>()
+    private val dispatchedTasksCopy = mutableListOf<Runnable>()
+
+    override fun dispatch(context: CoroutineContext, block: Runnable) {
+        synchronized(queueLock) {
+            dispatchedTasks += block
+        }
+    }
+
+    internal fun executeDispatchedTasks() {
+        if (dispatchedTasks.isNotEmpty()) {
+            synchronized(queueLock) {
+                dispatchedTasksCopy += dispatchedTasks
+                dispatchedTasks.clear()
+            }
+            dispatchedTasksCopy.forEach { it.run() }
+            dispatchedTasksCopy.clear()
+        }
+    }
+}
 
 suspend fun delayFrames(numFrames: Int) {
     if (numFrames <= 0) {

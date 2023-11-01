@@ -8,7 +8,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:0.21.0")
+        classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:0.22.0")
     }
 }
 

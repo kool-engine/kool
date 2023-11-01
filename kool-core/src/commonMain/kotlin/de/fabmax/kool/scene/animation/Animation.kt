@@ -218,7 +218,7 @@ class MorphAnimatedMesh(val target: Mesh): AnimationNode {
             if (firstWeightedTransform) {
                 targetW[i] = weights[i] * weight
             } else {
-                targetW[i] += weights[i] * weight
+                targetW[i] = targetW[i] + weights[i] * weight
             }
         }
     }

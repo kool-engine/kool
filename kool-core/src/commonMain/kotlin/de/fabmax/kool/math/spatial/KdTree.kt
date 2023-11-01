@@ -9,7 +9,6 @@ import de.fabmax.kool.math.partition
 
 open class KdTree<T: Any>(items: List<T>, itemAdapter: ItemAdapter<T>, bucketSz: Int = 10) : SpatialTree<T>(itemAdapter) {
 
-    override val root: KdNode
     override val size: Int
         get() = items.size
 
@@ -19,10 +18,7 @@ open class KdTree<T: Any>(items: List<T>, itemAdapter: ItemAdapter<T>, bucketSz:
     private val cmpY: (T, T) -> Int = { a, b -> itemAdapter.getMinY(a).compareTo(itemAdapter.getMinY(b)) }
     private val cmpZ: (T, T) -> Int = { a, b -> itemAdapter.getMinZ(a).compareTo(itemAdapter.getMinZ(b)) }
 
-    init {
-        @Suppress("LeakingThis")
-        root = KdNode(items.indices, bucketSz)
-    }
+    override val root: KdNode = KdNode(items.indices, bucketSz)
 
     override fun contains(element: T) = root.contains(element)
 

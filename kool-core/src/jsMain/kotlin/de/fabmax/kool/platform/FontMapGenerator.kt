@@ -107,10 +107,16 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int) {
         val padTop = 0
         val padBottom = ceil(size / 10f).toInt()
 
-        // firefox currently does not have font ascent / descent measures
-        val hasFontMetrics = fm.fontBoundingBoxAscent !== undefined && fm.fontBoundingBoxDescent !== undefined
-        val fontAscent = ceil(if (hasFontMetrics) size * 1.05 else fm.fontBoundingBoxAscent).toInt()
-        val fontDescent = ceil(if (hasFontMetrics) size * 0.35 else fm.fontBoundingBoxAscent).toInt()
+        var fontAscent = ceil(size * 1.05).toInt()
+        var fontDescent = ceil(size * 0.35).toInt()
+
+        try {
+            fontAscent = ceil(fm.fontBoundingBoxAscent).toInt()
+            fontDescent = ceil(fm.fontBoundingBoxAscent).toInt()
+        } catch (e: Exception) {
+            // silently ignored: firefox currently does not have font ascent / descent measures
+            // use defualts instead
+        }
 
         val ascent = if (font.ascentEm == 0f) fontAscent else ceil(font.ascentEm * size).toInt()
         val descent = if (font.descentEm == 0f) fontDescent else ceil(font.descentEm * size).toInt()
