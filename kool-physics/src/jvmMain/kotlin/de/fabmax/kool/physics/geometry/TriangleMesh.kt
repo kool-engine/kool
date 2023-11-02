@@ -55,7 +55,7 @@ actual class TriangleMesh actual constructor(actual val geometry: IndexedVertexL
     /**
      * Only use this if [releaseWithGeometry] is false. Releases the underlying PhysX mesh.
      */
-    override fun release() {
+    actual override fun release() {
         pxTriangleMesh.release()
     }
 }

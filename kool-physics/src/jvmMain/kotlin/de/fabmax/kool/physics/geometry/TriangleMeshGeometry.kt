@@ -38,4 +38,6 @@ actual class TriangleMeshGeometry actual constructor(triangleMesh: TriangleMesh,
             triangleMesh.pxTriangleMesh.release()
         }
     }
+
+    actual override fun release() = pxGeometry.destroy()
 }

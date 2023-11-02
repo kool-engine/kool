@@ -11,4 +11,6 @@ actual class SphereGeometry actual constructor(radius: Float) : CommonSphereGeom
         Physics.checkIsLoaded()
         pxGeometry = PxSphereGeometry(radius)
     }
+
+    actual override fun release() = pxGeometry.destroy()
 }

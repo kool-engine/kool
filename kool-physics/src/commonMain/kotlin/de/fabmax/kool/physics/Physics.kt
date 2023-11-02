@@ -1,6 +1,7 @@
 package de.fabmax.kool.physics
 
 import kotlinx.coroutines.CoroutineScope
+import kotlin.coroutines.CoroutineContext
 
 expect object Physics : CoroutineScope {
 
@@ -16,4 +17,5 @@ expect object Physics : CoroutineScope {
     val NOTIFY_TOUCH_LOST: Int
     val NOTIFY_CONTACT_POINTS: Int
 
+    override val coroutineContext: CoroutineContext
 }

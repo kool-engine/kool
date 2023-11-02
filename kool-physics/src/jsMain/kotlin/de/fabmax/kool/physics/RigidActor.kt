@@ -31,7 +31,7 @@ actual abstract class RigidActor : CommonRigidActor() {
     private val bufPosition = MutableVec3f()
     private val bufRotation = MutableQuatF()
 
-    override var position: Vec3f
+    actual override var position: Vec3f
         get() = pxRigidActor.globalPose.p.toVec3f(bufPosition)
         set(value) {
             val pose = pxRigidActor.globalPose
@@ -40,7 +40,7 @@ actual abstract class RigidActor : CommonRigidActor() {
             updateTransform()
         }
 
-    override var rotation: QuatF
+    actual override var rotation: QuatF
         get() = pxRigidActor.globalPose.q.toQuatF(bufRotation)
         set(value) {
             val pose = pxRigidActor.globalPose
@@ -49,7 +49,7 @@ actual abstract class RigidActor : CommonRigidActor() {
             updateTransform()
         }
 
-    override var isTrigger: Boolean = false
+    actual override var isTrigger: Boolean = false
         set(value) {
             field = value
             MemoryStack.stackPush().use { mem ->
@@ -59,7 +59,7 @@ actual abstract class RigidActor : CommonRigidActor() {
             }
         }
 
-    override var isActive = true
+    actual override var isActive = true
         internal set
 
     actual val worldBounds: BoundingBox

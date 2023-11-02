@@ -16,7 +16,7 @@ actual class CharacterControllerManager actual constructor(world: PhysicsWorld) 
         pxManager = PxTopLevelFunctions.CreateControllerManager(world.pxScene)
     }
 
-    override fun doCreateController(): JsCharacterController {
+    actual override fun doCreateController(): CharacterController {
         // create controller with default configuration
         val hitCallback = ControllerHitListener(world)
         val behaviorCallback = ControllerBahaviorCallback(world)

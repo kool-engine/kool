@@ -26,4 +26,5 @@ actual class HeightFieldGeometry actual constructor(heightField: HeightField) : 
         }
     }
 
+    actual override fun release() = pxGeometry.destroy()
 }

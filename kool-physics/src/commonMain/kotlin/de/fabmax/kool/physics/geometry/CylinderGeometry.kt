@@ -9,7 +9,9 @@ import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 
-expect class CylinderGeometry(length: Float, radius: Float) : CommonCylinderGeometry, CollisionGeometry
+expect class CylinderGeometry(length: Float, radius: Float) : CommonCylinderGeometry, CollisionGeometry {
+    override fun release()
+}
 
 abstract class CommonCylinderGeometry(val length: Float, val radius: Float) {
     open fun generateMesh(target: MeshBuilder) {

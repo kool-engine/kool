@@ -7,6 +7,7 @@ import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.physics.toPxVec3
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import physx.PxTriangleMeshGeometry
+import physx.destroy
 
 actual class TriangleMeshGeometry actual constructor(triangleMesh: TriangleMesh, scale: Vec3f) : CommonTriangleMeshGeometry(triangleMesh), CollisionGeometry {
 
@@ -39,4 +40,6 @@ actual class TriangleMeshGeometry actual constructor(triangleMesh: TriangleMesh,
             triangleMesh.pxTriangleMesh.release()
         }
     }
+
+    actual override fun release() = pxGeometry.destroy()
 }

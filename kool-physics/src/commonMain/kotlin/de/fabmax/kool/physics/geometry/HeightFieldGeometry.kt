@@ -4,7 +4,9 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.spatial.BoundingBox
 import de.fabmax.kool.scene.geometry.MeshBuilder
 
-expect class HeightFieldGeometry(heightField: HeightField) : CommonHeightFieldGeometry
+expect class HeightFieldGeometry(heightField: HeightField) : CommonHeightFieldGeometry {
+    override fun release()
+}
 
 abstract class CommonHeightFieldGeometry(val heightField: HeightField) : CollisionGeometry {
 

@@ -4,4 +4,6 @@ expect class Material(staticFriction: Float, dynamicFriction: Float = staticFric
     val staticFriction: Float
     val dynamicFriction: Float
     val restitution: Float
+
+    override fun release()
 }

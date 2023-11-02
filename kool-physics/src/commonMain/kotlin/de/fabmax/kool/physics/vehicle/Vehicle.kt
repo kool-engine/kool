@@ -23,6 +23,10 @@ expect class Vehicle(vehicleProps: VehicleProperties, world: PhysicsWorld, pose:
 
     var isReverse: Boolean
 
+    override var steerInput: Float
+    override var throttleInput: Float
+    override var brakeInput: Float
+
     fun setToRestState()
 }
 
@@ -35,6 +39,10 @@ abstract class CommonVehicle(val vehicleProps: VehicleProperties) : RigidBody() 
     abstract var steerInput: Float
     abstract var throttleInput: Float
     abstract var brakeInput: Float
+
+    init {
+        mass = vehicleProps.chassisMass
+    }
 
     override fun toMesh(meshColor: Color, materialCfg: KslPbrShader.Config.() -> Unit) = ColorMesh().apply {
         generate {

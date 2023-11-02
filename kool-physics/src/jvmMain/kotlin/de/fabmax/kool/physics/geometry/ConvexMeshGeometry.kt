@@ -38,4 +38,6 @@ actual class ConvexMeshGeometry actual constructor(convexMesh: ConvexMesh, scale
             convexMesh.pxConvexMesh.release()
         }
     }
+
+    actual override fun release() = pxGeometry.destroy()
 }

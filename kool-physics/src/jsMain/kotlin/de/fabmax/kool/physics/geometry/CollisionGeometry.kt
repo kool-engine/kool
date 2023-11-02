@@ -5,7 +5,6 @@ import de.fabmax.kool.math.spatial.BoundingBox
 import de.fabmax.kool.physics.Releasable
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import physx.PxGeometry
-import physx.destroy
 
 actual interface CollisionGeometry : Releasable {
     val pxGeometry: PxGeometry
@@ -16,7 +15,5 @@ actual interface CollisionGeometry : Releasable {
 
     actual fun estimateInertiaForMass(mass: Float, result: MutableVec3f): MutableVec3f
 
-    override fun release() {
-        pxGeometry.destroy()
-    }
+    actual override fun release()
 }

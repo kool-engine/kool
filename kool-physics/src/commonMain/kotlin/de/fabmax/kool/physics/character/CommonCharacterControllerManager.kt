@@ -49,4 +49,6 @@ abstract class CommonCharacterControllerManager(protected val world: PhysicsWorl
     }
 }
 
-expect class CharacterControllerManager(world: PhysicsWorld) : CommonCharacterControllerManager
+expect class CharacterControllerManager(world: PhysicsWorld) : CommonCharacterControllerManager {
+    override fun doCreateController(): CharacterController
+}

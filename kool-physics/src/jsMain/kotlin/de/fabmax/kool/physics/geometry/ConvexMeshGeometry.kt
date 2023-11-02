@@ -7,6 +7,7 @@ import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.physics.toPxVec3
 import physx.PxConvexMeshGeometry
 import physx.PxGeometry
+import physx.destroy
 
 actual class ConvexMeshGeometry actual constructor(convexMesh: ConvexMesh, scale: Vec3f) : CommonConvexMeshGeometry(convexMesh, scale), CollisionGeometry {
 
@@ -39,4 +40,6 @@ actual class ConvexMeshGeometry actual constructor(convexMesh: ConvexMesh, scale
             convexMesh.pxConvexMesh.release()
         }
     }
+
+    actual override fun release() = pxGeometry.destroy()
 }

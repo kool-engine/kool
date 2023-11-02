@@ -15,4 +15,6 @@ expect interface CollisionGeometry : Releasable {
     fun getBounds(result: BoundingBox): BoundingBox
 
     fun estimateInertiaForMass(mass: Float, result: MutableVec3f = MutableVec3f()): MutableVec3f
+
+    override fun release()
 }

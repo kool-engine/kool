@@ -19,7 +19,8 @@ actual abstract class Joint : Releasable {
         }
 
     actual fun setBreakForce(force: Float, torque: Float) = pxJoint.setBreakForce(force, torque)
-    override fun release() {
+
+    actual override fun release() {
         pxJoint.release()
     }
 }

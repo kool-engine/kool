@@ -15,4 +15,6 @@ actual class CylinderGeometry actual constructor(length: Float, radius: Float) :
         convexMesh = ConvexMesh(convexMeshPoints(length, radius))
         pxGeometry = PxConvexMeshGeometry(convexMesh.pxConvexMesh)
     }
+
+    actual override fun release() = pxGeometry.destroy()
 }

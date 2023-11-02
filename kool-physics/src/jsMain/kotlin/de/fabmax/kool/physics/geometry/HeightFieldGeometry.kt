@@ -3,6 +3,7 @@ package de.fabmax.kool.physics.geometry
 import de.fabmax.kool.physics.MemoryStack
 import de.fabmax.kool.physics.Physics
 import physx.PxHeightFieldGeometry
+import physx.destroy
 
 actual class HeightFieldGeometry actual constructor(heightField: HeightField) : CommonHeightFieldGeometry(heightField) {
 
@@ -25,4 +26,5 @@ actual class HeightFieldGeometry actual constructor(heightField: HeightField) : 
         }
     }
 
+    actual override fun release() = pxGeometry.destroy()
 }

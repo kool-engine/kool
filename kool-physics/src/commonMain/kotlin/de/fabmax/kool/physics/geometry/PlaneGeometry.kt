@@ -9,7 +9,9 @@ import de.fabmax.kool.scene.geometry.MeshBuilder
 /**
  * Plane collision shape. Plane normal is x-axis, origin is (0, 0, 0).
  */
-expect class PlaneGeometry() : CommonPlaneGeometry, CollisionGeometry
+expect class PlaneGeometry() : CommonPlaneGeometry, CollisionGeometry {
+    override fun release()
+}
 
 abstract class CommonPlaneGeometry {
     open fun generateMesh(target: MeshBuilder) {

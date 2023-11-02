@@ -13,6 +13,14 @@ expect abstract class RigidActor : CommonRigidActor {
     val worldBounds: BoundingBox
     var simulationFilterData: FilterData
     var queryFilterData: FilterData
+
+    override var position: Vec3f
+    override var rotation: QuatF
+
+    override var isTrigger: Boolean
+
+    override var isActive: Boolean
+        internal set
 }
 
 abstract class CommonRigidActor : Releasable {

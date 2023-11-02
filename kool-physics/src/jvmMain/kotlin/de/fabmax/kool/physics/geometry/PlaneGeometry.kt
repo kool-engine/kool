@@ -11,4 +11,6 @@ actual class PlaneGeometry : CommonPlaneGeometry(), CollisionGeometry {
         Physics.checkIsLoaded()
         pxGeometry = PxPlaneGeometry()
     }
+
+    actual override fun release() = pxGeometry.destroy()
 }

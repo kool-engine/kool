@@ -7,4 +7,6 @@ expect class TriangleMesh(geometry: IndexedVertexList) : Releasable {
     val geometry: IndexedVertexList
 
     var releaseWithGeometry: Boolean
+
+    override fun release()
 }

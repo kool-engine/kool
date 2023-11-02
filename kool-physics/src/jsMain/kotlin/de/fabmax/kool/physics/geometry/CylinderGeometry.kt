@@ -2,6 +2,7 @@ package de.fabmax.kool.physics.geometry
 
 import de.fabmax.kool.physics.Physics
 import physx.PxConvexMeshGeometry
+import physx.destroy
 
 actual class CylinderGeometry actual constructor(length: Float, radius: Float) : CommonCylinderGeometry(length, radius), CollisionGeometry {
 
@@ -15,4 +16,6 @@ actual class CylinderGeometry actual constructor(length: Float, radius: Float) :
         convexMesh = ConvexMesh(convexMeshPoints(length, radius))
         pxGeometry = PxConvexMeshGeometry(convexMesh.pxConvexMesh)
     }
+
+    actual override fun release() = pxGeometry.destroy()
 }

@@ -25,17 +25,17 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, val wor
 
     val vehicleSimulationContext: PxVehiclePhysXSimulationContext
 
-    override var steerInput = 0f
+    actual override var steerInput = 0f
         set(value) {
             field = value
             pxVehicle.commandState.steer = -value
         }
-    override var throttleInput = 0f
+    actual override var throttleInput = 0f
         set(value) {
             field = value
             pxVehicle.commandState.throttle = value
         }
-    override var brakeInput = 0f
+    actual override var brakeInput = 0f
         set(value) {
             field = value
             pxVehicle.commandState.setBrakes(0, value)
@@ -82,7 +82,6 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, val wor
         pxVehicle = createVehicle(vehicleProps)
 
         pxRigidActor = pxVehicle.physXState.physxActor.rigidBody
-        mass = vehicleProps.chassisMass
         transform.set(pose)
 
         vehicleSimulationContext = PxVehiclePhysXSimulationContext().apply {

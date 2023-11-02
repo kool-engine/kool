@@ -16,7 +16,7 @@ kotlin {
     }
 
     sourceSets {
-        val commonMain by getting {
+        commonMain {
             dependencies {
                 api(DepsCommon.kotlinCoroutines)
                 api(DepsCommon.kotlinSerialization)
@@ -27,19 +27,8 @@ kotlin {
                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
             }
         }
-        val commonTest by getting {
-            dependencies {
-                implementation(kotlin("test-common"))
-                implementation(kotlin("test-annotations-common"))
-            }
-        }
 
-
-        val jsMain by getting {
-
-        }
-
-        val jvmMain by getting {
+        jvmMain {
             dependencies {
                 runtimeOnly(DepsJvm.lwjglNatives())
                 runtimeOnly(DepsJvm.lwjglNatives("glfw"))
@@ -53,11 +42,11 @@ kotlin {
                 runtimeOnly(DepsJvm.physxJniRuntime)
             }
         }
+    }
 
-        sourceSets.all {
-            languageSettings.apply {
-                progressiveMode = true
-            }
+    sourceSets.all {
+        languageSettings {
+            version = 2.0
         }
     }
 }

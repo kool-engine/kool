@@ -7,7 +7,9 @@ import de.fabmax.kool.math.spatial.BoundingBox
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.simpleShape
 
-expect class CapsuleGeometry(height: Float, radius: Float) : CommonCapsuleGeometry, CollisionGeometry
+expect class CapsuleGeometry(height: Float, radius: Float) : CommonCapsuleGeometry, CollisionGeometry {
+    override fun release()
+}
 
 abstract class CommonCapsuleGeometry(val height: Float, val radius: Float) {
     open fun generateMesh(target: MeshBuilder) {

@@ -8,4 +8,6 @@ expect abstract class Joint : Releasable {
     var debugVisualize: Boolean
 
     fun setBreakForce(force: Float, torque: Float)
+
+    override fun release()
 }

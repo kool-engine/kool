@@ -9,21 +9,21 @@ kotlin {
         binaries.executable()
         browser {
             @OptIn(ExperimentalDistributionDsl::class)
-            distribution(Action {
+            distribution {
                 outputDirectory.set(File("${rootDir}/dist/kool-demo"))
-            })
-            commonWebpackConfig(Action {
+            }
+            commonWebpackConfig {
                 mode = if (KoolBuildSettings.isRelease) {
                     KotlinWebpackConfig.Mode.PRODUCTION
                 } else {
                     KotlinWebpackConfig.Mode.DEVELOPMENT
                 }
-            })
+            }
         }
     }
 
     sourceSets {
-        val commonMain by getting {
+        commonMain {
             dependencies {
                 implementation(DepsCommon.kotlinCoroutines)
                 implementation(DepsCommon.kotlinSerialization)
@@ -33,14 +33,8 @@ kotlin {
                 implementation(project(":kool-physics"))
             }
         }
-        val commonTest by getting {
-            dependencies {
-                implementation(kotlin("test-common"))
-                implementation(kotlin("test-annotations-common"))
-            }
-        }
 
-        val jvmMain by getting {
+        jvmMain {
             dependencies {
                 runtimeOnly(DepsJvm.lwjglNatives())
                 runtimeOnly(DepsJvm.lwjglNatives("glfw"))
@@ -57,18 +51,14 @@ kotlin {
                 //   requires CUDA enabled physx-jni library in directory kool-demo/libs
                 //   grab the library from GitHub releases: https://github.com/fabmax/physx-jni/releases
                 //   also make sure to use the same version as used by kool-physics
-                //runtimeOnly(files("${projectDir}/libs/physx-jni-natives-windows-cuda-2.2.1.jar"))
+                //runtimeOnly(files("${projectDir}/libs/physx-jni-natives-windows-cuda-2.3.1.jar"))
             }
         }
+    }
 
-        val jsMain by getting {
-            dependencies { }
-        }
-
-        sourceSets.all {
-            languageSettings.apply {
-                progressiveMode = true
-            }
+    sourceSets.all {
+        languageSettings {
+            version = 2.0
         }
     }
 }

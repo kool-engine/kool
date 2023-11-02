@@ -28,7 +28,7 @@ actual object Physics : CoroutineScope {
         get() = PxPairFlagEnum.eNOTIFY_CONTACT_POINTS
 
     private val job = Job()
-    override val coroutineContext: CoroutineContext
+    actual override val coroutineContext: CoroutineContext
         get() = job
 
     private val loadingDeferred = CompletableDeferred<Unit>(job)

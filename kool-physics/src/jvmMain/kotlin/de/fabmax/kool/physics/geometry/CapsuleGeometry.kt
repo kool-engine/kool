@@ -11,4 +11,6 @@ actual class CapsuleGeometry actual constructor(height: Float, radius: Float) : 
         Physics.checkIsLoaded()
         pxGeometry = PxCapsuleGeometry(radius, height / 2f)
     }
+
+    actual override fun release() = pxGeometry.destroy()
 }

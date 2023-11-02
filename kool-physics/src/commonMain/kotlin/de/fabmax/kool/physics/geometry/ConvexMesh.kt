@@ -9,4 +9,6 @@ expect class ConvexMesh(points: List<Vec3f>) : Releasable {
     val convexHull: IndexedVertexList
 
     var releaseWithGeometry: Boolean
+
+    override fun release()
 }

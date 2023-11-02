@@ -8,6 +8,8 @@ import de.fabmax.kool.scene.geometry.MeshBuilder
 
 expect class TriangleMeshGeometry(triangleMesh: TriangleMesh, scale: Vec3f = Vec3f.ONES) : CommonTriangleMeshGeometry, CollisionGeometry {
     constructor(geometry: IndexedVertexList)
+
+    override fun release()
 }
 
 abstract class CommonTriangleMeshGeometry(val triangleMesh: TriangleMesh) {

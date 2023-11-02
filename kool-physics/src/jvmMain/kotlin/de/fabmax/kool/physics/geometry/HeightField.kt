@@ -59,7 +59,7 @@ actual class HeightField actual constructor(actual val heightMap: HeightMap, act
     /**
      * Only use this if [releaseWithGeometry] is false. Releases the underlying PhysX mesh.
      */
-    override fun release() {
+    actual override fun release() {
         pxHeightField.release()
     }
 }

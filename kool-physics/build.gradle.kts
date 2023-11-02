@@ -15,31 +15,32 @@ kotlin {
     }
 
     sourceSets {
-        val commonMain by getting {
+        commonMain {
             dependencies {
                 implementation(DepsCommon.kotlinCoroutines)
                 api(project(":kool-core"))
             }
         }
 
-        val jvmMain by getting {
+        jvmMain {
             dependencies {
                 api(DepsJvm.physxJni)
             }
         }
 
-        val jsMain by getting {
+        jsMain {
             dependencies {
                 api(npm("physx-js-webidl", "2.3.0"))
                 //api(npm(File("$projectDir/npm/physx-js-webidl")))
             }
         }
+    }
 
-        sourceSets.all {
-            languageSettings.apply {
-                progressiveMode = true
-                optIn("kotlin.contracts.ExperimentalContracts")
-            }
+    sourceSets.all {
+        languageSettings {
+            version = 2.0
+
+            optIn("kotlin.contracts.ExperimentalContracts")
         }
     }
 }

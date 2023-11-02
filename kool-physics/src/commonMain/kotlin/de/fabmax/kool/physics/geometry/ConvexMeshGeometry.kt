@@ -7,6 +7,8 @@ import de.fabmax.kool.scene.geometry.MeshBuilder
 
 expect class ConvexMeshGeometry(convexMesh: ConvexMesh, scale: Vec3f = Vec3f.ONES) : CommonConvexMeshGeometry, CollisionGeometry {
     constructor(points: List<Vec3f>)
+
+    override fun release()
 }
 
 abstract class CommonConvexMeshGeometry(val convexMesh: ConvexMesh, val scale: Vec3f) {

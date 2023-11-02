@@ -4,7 +4,9 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.spatial.BoundingBox
 import de.fabmax.kool.scene.geometry.MeshBuilder
 
-expect class SphereGeometry(radius: Float) : CommonSphereGeometry, CollisionGeometry
+expect class SphereGeometry(radius: Float) : CommonSphereGeometry, CollisionGeometry {
+    override fun release()
+}
 
 abstract class CommonSphereGeometry(val radius: Float) {
     open fun generateMesh(target: MeshBuilder) {

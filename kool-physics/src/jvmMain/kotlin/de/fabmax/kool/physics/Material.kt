@@ -12,7 +12,7 @@ actual class Material actual constructor(
         Physics.physics.createMaterial(staticFriction, dynamicFriction, restitution)
     }
 
-    override fun release() {
+    actual override fun release() {
         pxMaterial.release()
     }
 }

@@ -9,12 +9,6 @@ actual abstract class Joint : Releasable {
 
     abstract val pxJoint: PxJoint
 
-    actual fun setBreakForce(force: Float, torque: Float) = pxJoint.setBreakForce(force, torque)
-
-    override fun release() {
-        pxJoint.release()
-    }
-
     actual val isBroken: Boolean
         get() = pxJoint.constraintFlags.isSet(PxConstraintFlagEnum.eBROKEN)
 
@@ -24,4 +18,10 @@ actual abstract class Joint : Releasable {
         } else {
             pxJoint.constraintFlags.clear(PxConstraintFlagEnum.eVISUALIZATION)
         }
+
+    actual fun setBreakForce(force: Float, torque: Float) = pxJoint.setBreakForce(force, torque)
+
+    actual override fun release() {
+        pxJoint.release()
+    }
 }

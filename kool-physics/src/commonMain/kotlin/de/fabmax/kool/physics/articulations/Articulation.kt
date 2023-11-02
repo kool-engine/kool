@@ -13,6 +13,8 @@ expect class Articulation(isFixedBase: Boolean) : CommonArticulation {
     fun wakeUp()
 
     fun putToSleep()
+
+    override fun release()
 }
 
 abstract class CommonArticulation(val isFixedBase: Boolean) : Releasable {

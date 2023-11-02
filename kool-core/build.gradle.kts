@@ -23,7 +23,7 @@ kotlin {
     }
 
     sourceSets {
-        val commonMain by getting {
+        commonMain {
             dependencies {
                 api(DepsCommon.kotlinCoroutines)
                 implementation(DepsCommon.kotlinSerialization)
@@ -31,14 +31,8 @@ kotlin {
                 implementation(DepsCommon.kotlinReflection)
             }
         }
-        val commonTest by getting {
-            dependencies {
-                implementation(kotlin("test-common"))
-                implementation(kotlin("test-annotations-common"))
-            }
-        }
 
-        val jvmMain by getting {
+        jvmMain {
             dependencies {
                 implementation("com.github.weisj:jsvg:1.0.0")
                 api(DepsJvm.lwjgl())
@@ -52,27 +46,28 @@ kotlin {
                 api(DepsJvm.lwjgl("stb"))
             }
         }
-        val jvmTest by getting {
+        jvmTest {
             dependencies {
                 implementation(kotlin("test"))
                 implementation(kotlin("test-junit"))
             }
         }
 
-        val jsMain by getting {
+        jsMain {
             dependencies {
                 implementation(npm("pako", "2.0.4"))
             }
         }
+    }
 
-        sourceSets.all {
-            languageSettings.apply {
-                progressiveMode = true
-                optIn("kotlinx.coroutines.ExperimentalCoroutinesApi")
-                optIn("kotlin.contracts.ExperimentalContracts")
-                optIn("kotlin.io.encoding.ExperimentalEncodingApi")
-                optIn("kotlin.ExperimentalStdlibApi")
-            }
+    sourceSets.all {
+        languageSettings {
+            version = 2.0
+
+            optIn("kotlinx.coroutines.ExperimentalCoroutinesApi")
+            optIn("kotlin.contracts.ExperimentalContracts")
+            optIn("kotlin.io.encoding.ExperimentalEncodingApi")
+            optIn("kotlin.ExperimentalStdlibApi")
         }
     }
 }

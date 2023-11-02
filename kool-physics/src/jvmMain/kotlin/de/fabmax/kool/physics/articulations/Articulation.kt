@@ -52,7 +52,7 @@ actual class Articulation actual constructor(isFixedBase: Boolean) : CommonArtic
         pxArticulation.putToSleep()
     }
 
-    override fun release() {
+    actual override fun release() {
         pxArticulation.release()
     }
 }

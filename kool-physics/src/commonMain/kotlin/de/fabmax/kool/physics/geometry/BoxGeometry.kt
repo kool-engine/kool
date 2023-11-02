@@ -5,7 +5,9 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.spatial.BoundingBox
 import de.fabmax.kool.scene.geometry.MeshBuilder
 
-expect class BoxGeometry(size: Vec3f) : CommonBoxGeometry, CollisionGeometry
+expect class BoxGeometry(size: Vec3f) : CommonBoxGeometry, CollisionGeometry {
+    override fun release()
+}
 
 abstract class CommonBoxGeometry(val size: Vec3f) {
     open fun generateMesh(target: MeshBuilder) {

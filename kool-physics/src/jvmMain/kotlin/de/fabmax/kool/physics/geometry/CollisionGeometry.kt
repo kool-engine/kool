@@ -15,7 +15,5 @@ actual interface CollisionGeometry : Releasable {
 
     actual fun estimateInertiaForMass(mass: Float, result: MutableVec3f): MutableVec3f
 
-    override fun release() {
-        pxGeometry.destroy()
-    }
+    actual override fun release()
 }

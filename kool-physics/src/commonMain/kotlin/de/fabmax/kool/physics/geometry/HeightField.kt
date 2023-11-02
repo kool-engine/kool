@@ -9,4 +9,6 @@ expect class HeightField(heightMap: HeightMap, rowScale: Float, columnScale: Flo
     val columnScale: Float
 
     var releaseWithGeometry: Boolean
+
+    override fun release()
 }
