@@ -608,7 +608,8 @@ open class MutableMat3f(
         that.m20, that.m21, that.m22
     )
 
-    private fun mul(
+    @Suppress("NOTHING_TO_INLINE")  // it does make a difference (~25% faster)
+    private inline fun mul(
         t00: Float, t01: Float, t02: Float,
         t10: Float, t11: Float, t12: Float,
         t20: Float, t21: Float, t22: Float
@@ -1485,7 +1486,8 @@ open class MutableMat3d(
         that.m20, that.m21, that.m22
     )
 
-    private fun mul(
+    @Suppress("NOTHING_TO_INLINE")  // it does make a difference (~25% faster)
+    private inline fun mul(
         t00: Double, t01: Double, t02: Double,
         t10: Double, t11: Double, t12: Double,
         t20: Double, t21: Double, t22: Double

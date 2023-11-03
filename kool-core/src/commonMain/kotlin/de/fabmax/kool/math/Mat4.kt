@@ -801,7 +801,8 @@ open class MutableMat4f(
         that.m20, that.m21, that.m22
     )
 
-    private fun mul(
+    @Suppress("NOTHING_TO_INLINE")  // it does make a difference (~25% faster)
+    private inline fun mul(
         t00: Float, t01: Float, t02: Float, t03: Float,
         t10: Float, t11: Float, t12: Float, t13: Float,
         t20: Float, t21: Float, t22: Float, t23: Float,
@@ -834,7 +835,8 @@ open class MutableMat4f(
         return this
     }
 
-    private fun mul33(
+    @Suppress("NOTHING_TO_INLINE")  // it does make a difference (~25% faster)
+    private inline fun mul33(
         t00: Float, t01: Float, t02: Float,
         t10: Float, t11: Float, t12: Float,
         t20: Float, t21: Float, t22: Float
@@ -2053,7 +2055,8 @@ open class MutableMat4d(
         that.m20, that.m21, that.m22
     )
 
-    private fun mul(
+    @Suppress("NOTHING_TO_INLINE")  // it does make a difference (~25% faster)
+    private inline fun mul(
         t00: Double, t01: Double, t02: Double, t03: Double,
         t10: Double, t11: Double, t12: Double, t13: Double,
         t20: Double, t21: Double, t22: Double, t23: Double,
@@ -2086,7 +2089,8 @@ open class MutableMat4d(
         return this
     }
 
-    private fun mul33(
+    @Suppress("NOTHING_TO_INLINE")  // it does make a difference (~25% faster)
+    private inline fun mul33(
         t00: Double, t01: Double, t02: Double,
         t10: Double, t11: Double, t12: Double,
         t20: Double, t21: Double, t22: Double

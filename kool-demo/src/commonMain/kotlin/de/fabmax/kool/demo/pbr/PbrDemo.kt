@@ -216,17 +216,18 @@ class PbrDemo : DemoScene("PBR Materials") {
     companion object {
         // HDRIs are encoded as RGBE images, use nearest sampling to not mess up the exponent
         private val hdriTexProps = TextureProps(
-                minFilter = FilterMethod.NEAREST,
-                magFilter = FilterMethod.NEAREST,
-                mipMapping = false,
-                maxAnisotropy = 1)
+            minFilter = FilterMethod.NEAREST,
+            magFilter = FilterMethod.NEAREST,
+            mipMapping = false,
+            maxAnisotropy = 1
+        )
 
         private val hdriTextures = listOf(
-                Hdri("${DemoLoader.hdriPath}/syferfontein_0d_clear_1k.rgbe.png", "South Africa"),
-                Hdri("${DemoLoader.hdriPath}/circus_arena_1k.rgbe.png", "Circus"),
-                Hdri("${DemoLoader.hdriPath}/newport_loft.rgbe.png", "Loft"),
-                Hdri("${DemoLoader.hdriPath}/shanghai_bund_1k.rgbe.png", "Shanghai"),
-                Hdri("${DemoLoader.hdriPath}/mossy_forest_1k.rgbe.png", "Mossy forest")
+            Hdri("${DemoLoader.hdriPath}/syferfontein_0d_clear_1k.rgbe.png", "South Africa"),
+            Hdri("${DemoLoader.hdriPath}/circus_arena_1k.rgbe.png", "Circus"),
+            Hdri("${DemoLoader.hdriPath}/newport_loft.rgbe.png", "Loft"),
+            Hdri("${DemoLoader.hdriPath}/shanghai_bund_1k.rgbe.png", "Shanghai"),
+            Hdri("${DemoLoader.hdriPath}/mossy_forest_1k.rgbe.png", "Mossy forest")
         )
 
         private const val lightStrength = 250f
