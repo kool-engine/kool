@@ -52,6 +52,7 @@ object Demos {
 
     val graphicsDemos = Category("Graphics", false, 0.25f, 0.45f).apply {
         entry("ao", "Ambient Occlusion") { AoDemo() }
+        entry("shell", "Shell Shading / Fur") { ShellShadingDemo() }
         entry("gltf", "glTF Models") { GltfDemo() }
         entry("ssr", "Reflections") { ReflectionDemo() }
         entry("deferred", "Deferred Shading") { DeferredDemo() }
