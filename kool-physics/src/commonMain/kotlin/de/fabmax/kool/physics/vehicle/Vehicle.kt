@@ -40,10 +40,6 @@ abstract class CommonVehicle(val vehicleProps: VehicleProperties) : RigidBody() 
     abstract var throttleInput: Float
     abstract var brakeInput: Float
 
-    init {
-        mass = vehicleProps.chassisMass
-    }
-
     override fun toMesh(meshColor: Color, materialCfg: KslPbrShader.Config.() -> Unit) = ColorMesh().apply {
         generate {
             // skip first 4 (wheel-)shapes and add the chassis shapes

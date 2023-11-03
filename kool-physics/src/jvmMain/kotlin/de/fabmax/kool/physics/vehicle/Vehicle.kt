@@ -228,6 +228,8 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, val wor
                 PxVehicleEngineDriveTransmissionCommandStateEnum.eAUTOMATIC_GEAR.value
         }
 
+        vehicle.physXState.physxActor.rigidBody.mass = vehicleProps.chassisMass
+
         return vehicle
     }
 
