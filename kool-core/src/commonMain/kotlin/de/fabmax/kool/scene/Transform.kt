@@ -14,7 +14,7 @@ interface Transform {
 
     val isDoublePrecision: Boolean
 
-    val isIdentity: Boolean
+    fun applyToModelMat(parentModelMats: Node.ModelMats?, modelMats: Node.ModelMats)
 
     fun markDirty()
 
@@ -96,6 +96,15 @@ abstract class TransformF : Transform {
     private val tmpVec3fb = MutableVec3f()
     private val tmpQuatF = MutableQuatF()
 
+    override fun applyToModelMat(parentModelMats: Node.ModelMats?, modelMats: Node.ModelMats) {
+        if (parentModelMats != null) {
+            parentModelMats.modelMatF.mul(matrixF, modelMats.mutModelMatF)
+        } else {
+            modelMats.mutModelMatF.set(matrixF)
+        }
+        modelMats.markUpdatedF()
+    }
+
     override fun markDirty() {
         lazyTransformMatD.isDirty = true
         lazyInvTransformMatF.isDirty = true
@@ -149,6 +158,15 @@ abstract class TransformD : Transform {
     private val tmpVec3da = MutableVec3d()
     private val tmpVec3db = MutableVec3d()
     private val tmpQuatD = MutableQuatD()
+
+    override fun applyToModelMat(parentModelMats: Node.ModelMats?, modelMats: Node.ModelMats) {
+        if (parentModelMats != null) {
+            parentModelMats.modelMatD.mul(matrixD, modelMats.mutModelMatD)
+        } else {
+            modelMats.mutModelMatD.set(matrixD)
+        }
+        modelMats.markUpdatedD()
+    }
 
     override fun markDirty() {
         lazyTransformMatF.isDirty = true

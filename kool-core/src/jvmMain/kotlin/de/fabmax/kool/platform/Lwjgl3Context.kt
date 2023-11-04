@@ -49,7 +49,7 @@ class Lwjgl3Context : KoolContext() {
 
         fun set(api: String, deviceName: String) {
             lines.clear()
-            lines.add(System.getProperty("java.vm.name") + " " + System.getProperty("java.version"))
+            lines.add(System.getProperty("java.version") + ": " + System.getProperty("java.vm.name"))
             lines.add(api)
             lines.add(deviceName)
             lines.add("")

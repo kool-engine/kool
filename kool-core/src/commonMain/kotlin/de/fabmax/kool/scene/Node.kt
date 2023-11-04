@@ -32,7 +32,6 @@ open class Node(name: String? = null) : Disposable {
      */
     val bounds = BoundingBox()
     private val tmpTransformVec = MutableVec3f()
-    private val tmpBounds = BoundingBox()
 
     /**
      * Center point of this node's bounds in global coordinates.
@@ -99,6 +98,12 @@ open class Node(name: String? = null) : Disposable {
     var isPickable = true
 
     /**
+     * Determines whether this node updates its scene bounds on update. Default is true, but disabling it can save
+     * some performance in scenes with many nodes. Notice that [isUpdateBounds] has to be true for ray picking to work.
+     */
+    var isUpdateBounds = true
+
+    /**
      * Determines whether this node is checked for visibility during rendering. If true the node is only rendered
      * if it is within the camera frustum.
      */
@@ -126,31 +131,43 @@ open class Node(name: String? = null) : Disposable {
         childrenBounds.clear()
         for (i in mutChildren.indices) {
             mutChildren[i].update(updateEvent)
-            childrenBounds.add(mutChildren[i].bounds)
+            if (isUpdateBounds) {
+                childrenBounds.add(mutChildren[i].bounds)
+            }
         }
-        computeLocalBounds(bounds)
+        if (isUpdateBounds) {
+            computeLocalBounds(bounds)
+        }
 
         // update global center and radius
         toGlobalCoords(globalCenterMut.set(bounds.center))
         toGlobalCoords(globalExtentMut.set(bounds.max))
         globalRadius = globalCenter.distance(globalExtentMut)
 
-        // transform group bounds
-        transformBoundsToParentFrame()
+        // transform node bounds from local to parent coordinates
+        if (isUpdateBounds) {
+            transformBoundsToParentFrame()
+        }
     }
 
     private fun transformBoundsToParentFrame() {
-        if (!bounds.isEmpty && !transform.isIdentity) {
-            tmpBounds.clear()
-            tmpBounds.add(transform.transform(tmpTransformVec.set(bounds.min.x, bounds.min.y, bounds.min.z), 1f))
-            tmpBounds.add(transform.transform(tmpTransformVec.set(bounds.min.x, bounds.min.y, bounds.max.z), 1f))
-            tmpBounds.add(transform.transform(tmpTransformVec.set(bounds.min.x, bounds.max.y, bounds.min.z), 1f))
-            tmpBounds.add(transform.transform(tmpTransformVec.set(bounds.min.x, bounds.max.y, bounds.max.z), 1f))
-            tmpBounds.add(transform.transform(tmpTransformVec.set(bounds.max.x, bounds.min.y, bounds.min.z), 1f))
-            tmpBounds.add(transform.transform(tmpTransformVec.set(bounds.max.x, bounds.min.y, bounds.max.z), 1f))
-            tmpBounds.add(transform.transform(tmpTransformVec.set(bounds.max.x, bounds.max.y, bounds.min.z), 1f))
-            tmpBounds.add(transform.transform(tmpTransformVec.set(bounds.max.x, bounds.max.y, bounds.max.z), 1f))
-            bounds.set(tmpBounds)
+        if (!bounds.isEmpty) {
+            val minX = bounds.min.x
+            val minY = bounds.min.y
+            val minZ = bounds.min.z
+            val maxX = bounds.max.x
+            val maxY = bounds.max.y
+            val maxZ = bounds.max.z
+
+            bounds.clear()
+            bounds.add(transform.transform(tmpTransformVec.set(minX, minY, minZ), 1f))
+            bounds.add(transform.transform(tmpTransformVec.set(minX, minY, maxZ), 1f))
+            bounds.add(transform.transform(tmpTransformVec.set(minX, maxY, minZ), 1f))
+            bounds.add(transform.transform(tmpTransformVec.set(minX, maxY, maxZ), 1f))
+            bounds.add(transform.transform(tmpTransformVec.set(maxX, minY, minZ), 1f))
+            bounds.add(transform.transform(tmpTransformVec.set(maxX, minY, maxZ), 1f))
+            bounds.add(transform.transform(tmpTransformVec.set(maxX, maxY, minZ), 1f))
+            bounds.add(transform.transform(tmpTransformVec.set(maxX, maxY, maxZ), 1f))
         }
     }
 
@@ -159,32 +176,7 @@ open class Node(name: String? = null) : Disposable {
     }
 
     fun updateModelMat() {
-        val p = parent
-
-        if (transform.isDoublePrecision) {
-            if (p != null) {
-                if (!transform.isIdentity) {
-                    p.modelMatD.mul(transform.matrixD, modelMats.mutModelMatD)
-                } else {
-                    modelMats.mutModelMatD.set(p.modelMatD)
-                }
-            } else {
-                modelMats.mutModelMatD.set(transform.matrixD)
-            }
-            modelMats.markUpdatedD()
-
-        } else {
-            if (p != null) {
-                if (!transform.isIdentity) {
-                    p.modelMatF.mul(transform.matrixF, modelMats.mutModelMatF)
-                } else {
-                    modelMats.mutModelMatF.set(p.modelMatF)
-                }
-            } else {
-                modelMats.mutModelMatF.set(transform.matrixF)
-            }
-            modelMats.markUpdatedF()
-        }
+        transform.applyToModelMat(parent?.modelMats, modelMats)
     }
 
     /**
@@ -244,13 +236,11 @@ open class Node(name: String? = null) : Disposable {
      */
     open fun rayTest(test: RayTest) {
         if (children.isNotEmpty()) {
-            if (!transform.isIdentity) {
-                // transform ray to local coordinates
-                if (transform.isDoublePrecision) {
-                    test.transformBy(transform.invMatrixD)
-                } else {
-                    test.transformBy(transform.invMatrixF)
-                }
+            // transform ray to local coordinates
+            if (transform.isDoublePrecision) {
+                test.transformBy(transform.invMatrixD)
+            } else {
+                test.transformBy(transform.invMatrixF)
             }
 
             for (i in mutChildren.indices) {
@@ -263,13 +253,11 @@ open class Node(name: String? = null) : Disposable {
                 }
             }
 
-            if (!transform.isIdentity) {
-                // transform ray back to previous coordinates
-                if (transform.isDoublePrecision) {
-                    test.transformBy(transform.matrixD)
-                } else {
-                    test.transformBy(transform.matrixF)
-                }
+            // transform ray back to previous coordinates
+            if (transform.isDoublePrecision) {
+                test.transformBy(transform.matrixD)
+            } else {
+                test.transformBy(transform.matrixF)
             }
         }
     }
@@ -373,7 +361,7 @@ open class Node(name: String? = null) : Disposable {
         return UniqueId.nextId(this::class.simpleName ?: "unknown")
     }
 
-    private class ModelMats {
+    class ModelMats {
         val modelMatF: Mat4f get() {
             if (updateIdF != updateId) {
                 mutModelMatF.set(mutModelMatD)
@@ -396,9 +384,9 @@ open class Node(name: String? = null) : Disposable {
         val mutModelMatF = MutableMat4f()
         val mutModelMatD = MutableMat4d()
 
-        var updateId = 0
-        var updateIdF = 0
-        var updateIdD = 0
+        private var updateId = 0
+        private var updateIdF = 0
+        private var updateIdD = 0
 
         fun markUpdatedF() {
             updateId++

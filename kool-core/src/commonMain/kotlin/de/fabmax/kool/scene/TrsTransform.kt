@@ -36,13 +36,9 @@ class TrsTransformF : TransformF() {
 
     private val tmpMat3 = MutableMat3f()
 
-    override var isIdentity = true
-        private set
-
     override fun markDirty() {
         super.markDirty()
         lazyTransformMat.isDirty = true
-        isIdentity = false
     }
 
     override fun setIdentity(): TrsTransformF {
@@ -53,7 +49,6 @@ class TrsTransformF : TransformF() {
         scale.set(Vec3f.ONES)
 
         lazyTransformMat.setIdentity()
-        isIdentity = true
         return this
     }
 
@@ -160,13 +155,9 @@ class TrsTransformD : TransformD() {
 
     private val tmpMat3 = MutableMat3d()
 
-    override var isIdentity = true
-        private set
-
     override fun markDirty() {
         super.markDirty()
         lazyTransformMat.isDirty = true
-        isIdentity = false
     }
 
     override fun setIdentity(): TrsTransformD {
@@ -177,7 +168,6 @@ class TrsTransformD : TransformD() {
         scale.set(Vec3d.ONES)
 
         lazyTransformMat.setIdentity()
-        isIdentity = true
         return this
     }
 

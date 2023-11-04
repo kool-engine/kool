@@ -13,19 +13,9 @@ class MatrixTransformF : TransformF() {
 
     override val matrixF = MutableMat4f()
 
-    override var isIdentity = true
-        private set
-
-    override fun markDirty() {
-        super.markDirty()
-        isIdentity = false
-    }
-
     override fun setIdentity(): MatrixTransformF {
         super.setIdentity()
-
         matrixF.setIdentity()
-        isIdentity = true
         return this
     }
 
@@ -105,19 +95,9 @@ class MatrixTransformD : TransformD() {
 
     override val matrixD = MutableMat4d()
 
-    override var isIdentity = true
-        private set
-
-    override fun markDirty() {
-        super.markDirty()
-        isIdentity = false
-    }
-
     override fun setIdentity(): MatrixTransformD {
         super.setIdentity()
-
         matrixD.setIdentity()
-        isIdentity = true
         return this
     }
 

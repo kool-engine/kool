@@ -189,22 +189,20 @@ open class Mesh(var geometry: IndexedVertexList, name: String? = null) : Node(na
     override fun rayTest(test: RayTest) {
         super.rayTest(test)
 
-        if (!transform.isIdentity) {
-            // transform ray to local coordinates
-            if (transform.isDoublePrecision) {
-                test.transformBy(transform.invMatrixD)
-            } else {
-                test.transformBy(transform.invMatrixF)
-            }
+        // transform ray to local coordinates
+        if (transform.isDoublePrecision) {
+            test.transformBy(transform.invMatrixD)
+        } else {
+            test.transformBy(transform.invMatrixF)
         }
+
         rayTest.rayTest(test)
-        if (!transform.isIdentity) {
-            // transform ray back to previous coordinates
-            if (transform.isDoublePrecision) {
-                test.transformBy(transform.matrixD)
-            } else {
-                test.transformBy(transform.matrixF)
-            }
+
+        // transform ray back to previous coordinates
+        if (transform.isDoublePrecision) {
+            test.transformBy(transform.matrixD)
+        } else {
+            test.transformBy(transform.matrixF)
         }
     }
 
