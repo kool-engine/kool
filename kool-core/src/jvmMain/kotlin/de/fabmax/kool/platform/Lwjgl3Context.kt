@@ -81,8 +81,7 @@ class Lwjgl3Context : KoolContext() {
             GlRenderBackend(this)
         }
 
-        projCorrectionMatrixScreen.set(renderBackend.projCorrectionMatrixScreen)
-        projCorrectionMatrixOffscreen.set(renderBackend.projCorrectionMatrixOffscreen)
+        projCorrectionMatrix.set(renderBackend.projCorrectionMatrix)
         depthBiasMatrix.set(renderBackend.depthBiasMatrix)
 
         SysInfo.set(renderBackend.apiName, renderBackend.deviceName)

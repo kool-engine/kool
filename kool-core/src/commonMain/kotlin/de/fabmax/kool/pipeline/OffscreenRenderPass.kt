@@ -23,7 +23,7 @@ abstract class OffscreenRenderPass(drawNode: Node, val config: Config) : RenderP
     var height = config.height
         protected set
 
-    override var camera: Camera = PerspectiveCamera().apply { projCorrectionMode = Camera.ProjCorrectionMode.OFFSCREEN }
+    override var camera: Camera = PerspectiveCamera()
 
     var onSetupMipLevel: ((Int, KoolContext) -> Unit)? = null
 

@@ -1,7 +1,6 @@
 package de.fabmax.kool.pipeline.deferred
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.math.set
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.KslShaderListener
 import de.fabmax.kool.modules.ksl.lang.*
@@ -50,11 +49,13 @@ class DeferredCamData(program: KslProgram) : KslDataBlock, KslShaderListener {
     }
 
     override fun onUpdate(cmd: DrawCommand) {
-        val cam = cmd.renderPass.camera
-        val vp = cmd.renderPass.viewport
-        uPosition?.value?.set(cam.globalPos)
-        uProjMat?.value?.set(cmd.projMat)
-        uInvViewMat?.value?.set(cam.invView)
+        val q = cmd.queue
+        val vp = q.renderPass.viewport
         uViewport?.value?.set(vp.x.toFloat(), vp.y.toFloat(), vp.width.toFloat(), vp.height.toFloat())
+
+        val cam = q.renderPass.camera
+        uPosition?.value?.set(cam.globalPos)
+        uProjMat?.value?.set(q.projMat)
+        uInvViewMat?.value?.set(q.invViewMatF)
     }
 }

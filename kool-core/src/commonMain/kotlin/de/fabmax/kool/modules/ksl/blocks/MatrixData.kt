@@ -1,6 +1,8 @@
 package de.fabmax.kool.modules.ksl.blocks
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.math.MutableMat4d
+import de.fabmax.kool.math.set
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.KslShaderListener
 import de.fabmax.kool.modules.ksl.lang.KslDataBlock
@@ -35,8 +37,15 @@ abstract class MatrixData(program: KslProgram, val uniformName: String) : KslDat
 class MvpMatrixData(program: KslProgram) : MatrixData(program, "uMvpMat") {
     override val name = NAME
 
+    private val tmpMat4d = MutableMat4d()
+
     override fun onUpdate(cmd: DrawCommand) {
-        uMatrix.value.set(cmd.mvpMat)
+        if (cmd.isDoublePrecision) {
+            cmd.queue.viewProjMatD.mul(cmd.modelMatD, tmpMat4d)
+            uMatrix.value.set(tmpMat4d)
+        } else {
+            cmd.queue.viewProjMatF.mul(cmd.modelMatF, uMatrix.value)
+        }
     }
 
     companion object {
@@ -48,7 +57,12 @@ class ModelMatrixData(program: KslProgram) : MatrixData(program, "uModelMat") {
     override val name = NAME
 
     override fun onUpdate(cmd: DrawCommand) {
-        uMatrix.value.set(cmd.modelMat)
+        if (cmd.isDoublePrecision) {
+            uMatrix.value.set(cmd.modelMatD)
+        } else {
+            uMatrix.value.set(cmd.modelMatF)
+        }
+
     }
 
     companion object {

@@ -1,6 +1,6 @@
 package de.fabmax.kool.platform.vk
 
-import de.fabmax.kool.math.Mat4d
+import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
@@ -30,23 +30,17 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackend {
         get() = vkSystem.window
 
     // maps camera projection matrices to Vulkan screen coordinates
-    override val projCorrectionMatrixScreen = Mat4d(
-        1.0, 0.0, 0.0, 0.0,
-        0.0, 1.0, 0.0, 0.0,
-        0.0, 0.0, 0.5, 0.5,
-        0.0, 0.0, 0.0, 1.0
+    override val projCorrectionMatrix = Mat4f(
+        1.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, 1.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 0.5f, 0.5f,
+        0.0f, 0.0f, 0.0f, 1.0f
     )
-    override val projCorrectionMatrixOffscreen = Mat4d(
-        1.0, 0.0, 0.0, 0.0,
-        0.0, 1.0, 0.0, 0.0,
-        0.0, 0.0, 0.5, 0.5,
-        0.0, 0.0, 0.0, 1.0
-    )
-    override val depthBiasMatrix = Mat4d(
-        0.5, 0.0, 0.0, 0.5,
-        0.0, 0.5, 0.0, 0.5,
-        0.0, 0.0, 1.0, 0.0,
-        0.0, 0.0, 0.0, 1.0
+    override val depthBiasMatrix = Mat4f(
+        0.5f, 0.0f, 0.0f, 0.5f,
+        0.0f, 0.5f, 0.0f, 0.5f,
+        0.0f, 0.0f, 1.0f, 0.0f,
+        0.0f, 0.0f, 0.0f, 1.0f
     )
 
     private val shaderCodes = mutableMapOf<String, ShaderCode>()
@@ -351,7 +345,7 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackend {
                     pipelineCfg.onUpdate.forEach { it(cmd) }
 
                     if (!sys.pipelineManager.hasPipeline(pipelineCfg, renderPass.vkRenderPass)) {
-                        sys.pipelineManager.addPipelineConfig(pipelineCfg, nImages, cmd.renderPass, renderPass, dynVp)
+                        sys.pipelineManager.addPipelineConfig(pipelineCfg, nImages, cmd.queue.renderPass, renderPass, dynVp)
                     }
                     val pipeline = sys.pipelineManager.getPipeline(pipelineCfg, renderPass.vkRenderPass)
                     if (pipelineCfg.pipelineHash != prevPipeline) {

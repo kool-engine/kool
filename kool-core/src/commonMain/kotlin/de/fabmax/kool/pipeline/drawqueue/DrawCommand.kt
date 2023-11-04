@@ -5,35 +5,40 @@ import de.fabmax.kool.math.MutableMat4d
 import de.fabmax.kool.math.MutableMat4f
 import de.fabmax.kool.math.set
 import de.fabmax.kool.pipeline.Pipeline
-import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 
-class DrawCommand(val renderPass: RenderPass, var mesh: Mesh) {
+class DrawCommand(val queue: DrawQueue, mesh: Mesh) {
+
+    var mesh: Mesh = mesh
+        private set
 
     var geometry: IndexedVertexList = mesh.geometry
     var pipeline: Pipeline? = null
 
-    val modelMat = MutableMat4f()
-    val viewMat = MutableMat4f()
-    val projMat = MutableMat4f()
-    val mvpMat = MutableMat4f()
+    val isDoublePrecision: Boolean get() = queue.isDoublePrecision
 
-    private val mvpMatD = MutableMat4d()
+    /**
+     * Single precision model matrix captured from this command's [mesh]; only valid if [isDoublePrecision] is false.
+     * @see [modelMatD]
+     */
+    val modelMatF = MutableMat4f()
+
+    /**
+     * Double precision model matrix captured from this command's [mesh]; only valid if [isDoublePrecision] is true.
+     * @see [modelMatF]
+     */
+    val modelMatD = MutableMat4d()
 
     fun setup(mesh: Mesh, ctx: KoolContext) {
         this.mesh = mesh
         geometry = mesh.geometry
         pipeline = mesh.getPipeline(ctx)
-        captureMatrices()
-    }
 
-    fun captureMatrices() {
-        modelMat.set(mesh.modelMat)
-        viewMat.set(renderPass.camera.view)
-        projMat.set(renderPass.camera.proj)
-
-        renderPass.camera.viewProj.mul(mesh.modelMat, mvpMatD)
-        mvpMat.set(mvpMatD)
+        if (isDoublePrecision) {
+            modelMatD.set(mesh.modelMat)
+        } else {
+            modelMatF.set(mesh.modelMat)
+        }
     }
 }

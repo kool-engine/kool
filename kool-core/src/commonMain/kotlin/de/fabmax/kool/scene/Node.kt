@@ -146,16 +146,15 @@ open class Node(name: String? = null) : Disposable {
     }
 
     open fun updateModelMat(recursive: Boolean = false) {
-        modelMat.set(parent?.modelMat ?: Mat4d.IDENTITY)
-        if (!transform.isIdentity) {
-            modelMat.mul(transform.matrix)
-        }
-        modelMatInvLazy.isDirty = true
-
-        if (recursive) {
-            for (i in children.indices) {
-                children[i].updateModelMat(true)
+        val p = parent
+        if (p != null) {
+            if (!transform.isIdentity) {
+                p.modelMat.mul(transform.matrix, modelMat)
+            } else {
+                modelMat.set(p.modelMat)
             }
+        } else {
+            modelMat.set(transform.matrix)
         }
     }
 

@@ -39,7 +39,7 @@ class SceneLightData(program: KslProgram, val maxLightCount: Int) : KslDataBlock
     }
 
     override fun onUpdate(cmd: DrawCommand) {
-        val lighting = cmd.renderPass.lighting
+        val lighting = cmd.queue.renderPass.lighting
         if (lighting != null) {
             val lightPos = uLightPositions ?: return
             val lightDir = uLightDirections ?: return

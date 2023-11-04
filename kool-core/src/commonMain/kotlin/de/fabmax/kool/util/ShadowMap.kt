@@ -32,7 +32,7 @@ class SimpleShadowMap(val scene: Scene, override var light: Light?, mapSize: Int
     ShadowMap
 {
 
-    val lightViewProjMat = MutableMat4d()
+    val lightViewProjMat = MutableMat4f()
 
     var shadowMapLevel = 0
     var sceneCam = scene.camera
@@ -103,7 +103,6 @@ class SimpleShadowMap(val scene: Scene, override var light: Light?, mapSize: Int
         var cam = camera
         if (cam !is PerspectiveCamera) {
             cam = PerspectiveCamera()
-            cam.projCorrectionMode = Camera.ProjCorrectionMode.OFFSCREEN
             camera = cam
         }
         val up = if (abs(light.direction.dot(Vec3f.Y_AXIS)) > 0.99f) Vec3f.NEG_Z_AXIS else Vec3f.Y_AXIS
@@ -119,7 +118,6 @@ class SimpleShadowMap(val scene: Scene, override var light: Light?, mapSize: Int
         var cam = camera
         if (cam !is OrthographicCamera) {
             cam = OrthographicCamera().apply { isKeepAspectRatio = false }
-            cam.projCorrectionMode = Camera.ProjCorrectionMode.OFFSCREEN
             camera = cam
         }
         val up = if (abs(light.direction.dot(Vec3f.Y_AXIS)) > 0.99f) Vec3f.NEG_Z_AXIS else Vec3f.Y_AXIS
@@ -156,7 +154,7 @@ class SimpleShadowMap(val scene: Scene, override var light: Light?, mapSize: Int
         cam.clipFar = -shadowCamBounds.min.z
     }
 
-    private fun Mat4d.transform(plane: FrustumPlane) {
+    private fun Mat4f.transform(plane: FrustumPlane) {
         transform(plane.upperLeft)
         transform(plane.upperRight)
         transform(plane.lowerLeft)

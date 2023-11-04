@@ -5,6 +5,7 @@ import de.fabmax.kool.input.Pointer
 import de.fabmax.kool.math.*
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.util.LazyMat4d
+import de.fabmax.kool.util.LazyMat4f
 import de.fabmax.kool.util.Viewport
 import kotlin.math.atan
 import kotlin.math.cos
@@ -36,41 +37,28 @@ abstract class Camera(name: String = "camera") : Node(name) {
     var aspectRatio = 1.0f
     var useViewportAspectRatio = true
 
-    val globalPos: Vec3f get() = globalPosMut
-    val globalLookAt: Vec3f get() = globalLookAtMut
-    val globalUp: Vec3f get() = globalUpMut
-    val globalRight: Vec3f get() = globalRightMut
-    val globalLookDir: Vec3f get() = globalLookDirMut
-    var globalRange = 0f
-        protected set
-
     var clipNear = 0.1f
     var clipFar = 100f
 
-    protected val globalPosMut = MutableVec3f()
-    protected val globalLookAtMut = MutableVec3f()
-    protected val globalUpMut = MutableVec3f()
-    protected val globalRightMut = MutableVec3f()
-    protected val globalLookDirMut = MutableVec3f()
+    val proj = MutableMat4f()
+    private val tmpProjCorrected = MutableMat4f()
+    private val lazyInvProj = LazyMat4f { proj.invert(it) }
+    val invProj: Mat4f get() = lazyInvProj.get()
 
-    val proj = MutableMat4d()
-    val view = MutableMat4d()
+    val dataF = DataF()
+    val dataD = DataD()
 
-    private val lazyInvProj = LazyMat4d { proj.invert(it) }
-    val invProj: Mat4d get() = lazyInvProj.get()
+    val globalPos: Vec3f get() = dataF.globalPos
+    val globalLookAt: Vec3f get() = dataF.globalLookAt
+    val globalUp: Vec3f get() = dataF.globalUp
+    val globalRight: Vec3f get() = dataF.globalRight
+    val globalLookDir: Vec3f get() = dataF.globalLookDir
+    val globalRange: Float get() = dataF.globalRange
 
-    private val lazyInvView = LazyMat4d { view.invert(it) }
-    val invView: Mat4d get() = lazyInvView.get()
-
-    private val lazyViewProj = LazyMat4d { proj.mul(view, it) }
-    val viewProj: Mat4d get() = lazyViewProj.get()
-
-    private val lazyInvViewProj = LazyMat4d { viewProj.invert(it) }
-    val invViewProj: Mat4d get() = lazyInvViewProj.get()
-
-    var projCorrectionMode = ProjCorrectionMode.ONSCREEN
-
-    private val projCorrected = MutableMat4d()
+    val view: Mat4f get() = dataF.view
+    val viewProj: Mat4f get() = dataF.viewProj
+    val invView: Mat4f get() = dataF.lazyInvView.get()
+    val invViewProj: Mat4f get() = dataF.lazyInvViewProj.get()
 
     // we need a bunch of temporary vectors, keep them as members (#perfmatters)
     private val tmpVec3 = MutableVec3f()
@@ -94,20 +82,12 @@ abstract class Camera(name: String = "camera") : Node(name) {
             aspectRatio = renderPass.viewport.aspectRatio
         }
 
-        updateViewMatrix(renderPass, ctx)
         updateProjectionMatrix(renderPass, ctx)
-
-        if (projCorrectionMode == ProjCorrectionMode.ONSCREEN) {
-            ctx.projCorrectionMatrixScreen.mul(proj, projCorrected)
-            proj.set(projCorrected)
-        } else if (projCorrectionMode == ProjCorrectionMode.OFFSCREEN) {
-            ctx.projCorrectionMatrixOffscreen.mul(proj, projCorrected)
-            proj.set(projCorrected)
-        }
-
+        ctx.projCorrectionMatrix.mul(proj, tmpProjCorrected)
+        proj.set(tmpProjCorrected)
         lazyInvProj.isDirty = true
-        lazyViewProj.isDirty = true
-        lazyInvViewProj.isDirty = true
+
+        updateViewMatrix(renderPass, ctx)
 
         if (onCameraUpdated.isNotEmpty()) {
             for (i in onCameraUpdated.indices) {
@@ -117,19 +97,13 @@ abstract class Camera(name: String = "camera") : Node(name) {
     }
 
     protected open fun updateViewMatrix(renderPass: RenderPass, ctx: KoolContext) {
-        toGlobalCoords(globalPosMut.set(position))
-        toGlobalCoords(globalLookAtMut.set(lookAt))
-        toGlobalCoords(globalUpMut.set(up), 0f).norm()
-
-        globalLookDirMut.set(globalLookAtMut).subtract(globalPosMut)
-        globalRange = globalLookDirMut.length()
-        globalLookDirMut.mul(1f / globalRange)
-
-        globalLookDirMut.cross(globalUpMut, globalRightMut).norm()
-        globalRightMut.cross(globalLookDirMut, globalUpMut).norm()
-
-        view.setIdentity().lookAt(globalPosMut.toVec3d(), globalLookAtMut.toVec3d(), globalUpMut.toVec3d())
-        lazyInvView.isDirty = true
+        if (renderPass.isDoublePrecision) {
+            dataD.updateView()
+            dataF.set(dataD)
+        } else {
+            dataF.updateView()
+            dataD.set(dataF)
+        }
     }
 
     protected abstract fun updateProjectionMatrix(renderPass: RenderPass, ctx: KoolContext)
@@ -210,10 +184,99 @@ abstract class Camera(name: String = "camera") : Node(name) {
         return true
     }
 
-    enum class ProjCorrectionMode {
-        NONE,
-        ONSCREEN,
-        OFFSCREEN
+    inner class DataF {
+        val globalPos = MutableVec3f()
+        val globalLookAt = MutableVec3f()
+        val globalUp = MutableVec3f()
+        val globalRight = MutableVec3f()
+        val globalLookDir = MutableVec3f()
+        var globalRange = 0f
+
+        val view = MutableMat4f()
+        val viewProj = MutableMat4f()
+
+        val lazyInvView = LazyMat4f { view.invert(it) }
+        val lazyInvViewProj = LazyMat4f { viewProj.invert(it) }
+
+        fun set(dataD: DataD) {
+            globalPos.set(dataD.globalPos)
+            globalLookAt.set(dataD.globalLookAt)
+            globalUp.set(dataD.globalUp)
+            globalRight.set(dataD.globalRight)
+            globalLookDir.set(dataD.globalLookDir)
+            view.set(dataD.view)
+            viewProj.set(dataD.viewProj)
+
+            lazyInvView.isDirty = true
+            lazyInvViewProj.isDirty = true
+        }
+
+        fun updateView() {
+            toGlobalCoords(globalPos.set(position))
+            toGlobalCoords(globalLookAt.set(lookAt))
+            toGlobalCoords(globalUp.set(up), 0f).norm()
+
+            globalLookDir.set(globalLookAt).subtract(globalPos)
+            globalRange = globalLookDir.length()
+            globalLookDir.mul(1f / globalRange)
+
+            globalLookDir.cross(globalUp, globalRight).norm()
+            globalRight.cross(globalLookDir, globalUp).norm()
+
+            view.setIdentity().lookAt(globalPos, globalLookAt, globalUp)
+            proj.mul(view, viewProj)
+
+            lazyInvView.isDirty = true
+            lazyInvViewProj.isDirty = true
+        }
+    }
+
+    inner class DataD {
+        val globalPos = MutableVec3d()
+        val globalLookAt = MutableVec3d()
+        val globalUp = MutableVec3d()
+        val globalRight = MutableVec3d()
+        val globalLookDir = MutableVec3d()
+        var globalRange = 0.0
+
+        val view = MutableMat4d()
+        val viewProj = MutableMat4d()
+
+        private val tmpProjD = MutableMat4d()
+        val lazyInvView = LazyMat4d { view.invert(it) }
+        val lazyInvViewProj = LazyMat4d { viewProj.invert(it) }
+
+        fun set(dataF: DataF) {
+            globalPos.set(dataF.globalPos)
+            globalLookAt.set(dataF.globalLookAt)
+            globalUp.set(dataF.globalUp)
+            globalRight.set(dataF.globalRight)
+            globalLookDir.set(dataF.globalLookDir)
+            view.set(dataF.view)
+            viewProj.set(dataF.viewProj)
+
+            lazyInvView.isDirty = true
+            lazyInvViewProj.isDirty = true
+        }
+
+        fun updateView() {
+            toGlobalCoords(globalPos.set(position))
+            toGlobalCoords(globalLookAt.set(lookAt))
+            toGlobalCoords(globalUp.set(up), 0.0).norm()
+
+            globalLookDir.set(globalLookAt).subtract(globalPos)
+            globalRange = globalLookDir.length()
+            globalLookDir.mul(1f / globalRange)
+
+            globalLookDir.cross(globalUp, globalRight).norm()
+            globalRight.cross(globalLookDir, globalUp).norm()
+
+            view.setIdentity().lookAt(globalPos, globalLookAt, globalUp)
+            tmpProjD.set(proj).mul(view, viewProj)
+
+            lazyInvView.isDirty = true
+            lazyInvViewProj.isDirty = true
+        }
     }
 }
 
@@ -256,7 +319,7 @@ open class OrthographicCamera(name: String = "orthographicCam") : Camera(name) {
 
     override fun updateProjectionMatrix(renderPass: RenderPass, ctx: KoolContext) {
         if (left != right && bottom != top && clipNear != clipFar) {
-            proj.setIdentity().orthographic(left.toDouble(), right.toDouble(), bottom.toDouble(), top.toDouble(), clipNear.toDouble(), clipFar.toDouble())
+            proj.setIdentity().orthographic(left, right, bottom, top, clipNear, clipFar)
         }
     }
 
@@ -309,7 +372,7 @@ open class PerspectiveCamera(name: String = "perspectiveCam") : Camera(name) {
     private val tmpNodeCenter = MutableVec3f()
 
     override fun updateProjectionMatrix(renderPass: RenderPass, ctx: KoolContext) {
-        proj.setIdentity().perspective(fovY.toDouble(), aspectRatio.toDouble(), clipNear.toDouble(), clipFar.toDouble())
+        proj.setIdentity().perspective(fovY, aspectRatio, clipNear, clipFar)
 
         // compute intermediate values needed for view frustum culling
         val angY = fovY.toRad() / 2f
@@ -369,7 +432,6 @@ open class PerspectiveCamera(name: String = "perspectiveCam") : Camera(name) {
 open class PerspectiveProxyCam(var sceneCam: PerspectiveCamera) : PerspectiveCamera() {
     init {
         useViewportAspectRatio = false
-        projCorrectionMode = ProjCorrectionMode.OFFSCREEN
     }
 
     open fun sync(renderPass: RenderPass, ctx: KoolContext) {

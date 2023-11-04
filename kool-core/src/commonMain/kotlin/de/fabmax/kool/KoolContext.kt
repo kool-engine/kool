@@ -2,7 +2,7 @@ package de.fabmax.kool
 
 import de.fabmax.kool.input.KeyboardInput
 import de.fabmax.kool.input.PointerInput
-import de.fabmax.kool.math.MutableMat4d
+import de.fabmax.kool.math.MutableMat4f
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ui2.UiScale
 import de.fabmax.kool.pipeline.OffscreenRenderPass
@@ -57,9 +57,8 @@ abstract class KoolContext {
 
     val engineStats = EngineStats()
 
-    val projCorrectionMatrixScreen = MutableMat4d()
-    val projCorrectionMatrixOffscreen = MutableMat4d()
-    val depthBiasMatrix = MutableMat4d().translate(0.5, 0.5, 0.5).scale(0.5)
+    val projCorrectionMatrix = MutableMat4f()
+    val depthBiasMatrix = MutableMat4f().translate(0.5f, 0.5f, 0.5f).scale(0.5f)
 
     var applicationCallbacks: ApplicationCallbacks = object : ApplicationCallbacks { }
     val onWindowScaleChanged = mutableListOf<(KoolContext) -> Unit>()

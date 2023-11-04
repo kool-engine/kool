@@ -6,7 +6,6 @@ import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
-import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.OrthographicCamera
 import de.fabmax.kool.scene.addMesh
@@ -29,7 +28,6 @@ class OpticalDepthLutPass :
         clearColor = null
 
         camera = OrthographicCamera().apply {
-            projCorrectionMode = Camera.ProjCorrectionMode.OFFSCREEN
             isKeepAspectRatio = false
             left = 0f
             right = 1f

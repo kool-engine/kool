@@ -33,6 +33,7 @@ abstract class RenderPass(var drawNode: Node) {
 
     var drawQueue = DrawQueue(this)
         protected set
+    var isDoublePrecision = false
 
     val onBeforeCollectDrawCommands = mutableListOf<((KoolContext) -> Unit)>()
     val onAfterCollectDrawCommands = mutableListOf<((KoolContext) -> Unit)>()
@@ -117,11 +118,12 @@ abstract class RenderPass(var drawNode: Node) {
     }
 
     protected open fun beforeCollectDrawCommands(ctx: KoolContext) {
-        drawQueue.clear()
+        drawQueue.reset(isDoublePrecision)
         for (i in onBeforeCollectDrawCommands.indices) {
             onBeforeCollectDrawCommands[i](ctx)
         }
         camera.updateCamera(this, ctx)
+        drawQueue.setupCamera(camera)
     }
 
     protected open fun afterCollectDrawCommands(ctx: KoolContext) {

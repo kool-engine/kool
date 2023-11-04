@@ -1,6 +1,6 @@
 package de.fabmax.kool.platform
 
-import de.fabmax.kool.math.Mat4d
+import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.Viewport
@@ -12,9 +12,8 @@ interface RenderBackend {
 
     val glfwWindow: GlfwWindow
 
-    val projCorrectionMatrixScreen: Mat4d
-    val projCorrectionMatrixOffscreen: Mat4d
-    val depthBiasMatrix: Mat4d
+    val projCorrectionMatrix: Mat4f
+    val depthBiasMatrix: Mat4f
 
     fun getWindowViewport(result: Viewport)
 

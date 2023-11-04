@@ -3,7 +3,6 @@ package de.fabmax.kool.pipeline
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.drawqueue.DrawQueue
-import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.util.launchDelayed
@@ -41,7 +40,7 @@ open class OffscreenRenderPassCube(drawNode: Node, config: Config) : OffscreenRe
     }
 
     override fun collectDrawCommands(ctx: KoolContext) {
-        for (v in ViewDirection.values()) {
+        for (v in ViewDirection.entries) {
             drawQueue = drawQueues[v.index]
             onSetupView.invoke(v, ctx)
             super.collectDrawCommands(ctx)
@@ -109,7 +108,6 @@ open class OffscreenRenderPassCube(drawNode: Node, config: Config) : OffscreenRe
             cam.fovY = 90f
             cam.clipNear = 0.01f
             cam.clipFar = 10f
-            cam.projCorrectionMode = Camera.ProjCorrectionMode.OFFSCREEN
         }
 
         onSetupView = { viewDir, _ ->
