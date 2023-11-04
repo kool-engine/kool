@@ -9,16 +9,30 @@ import kotlin.math.sqrt
 fun QuatF.toQuatD() = QuatD(x.toDouble(), y.toDouble(), z.toDouble(), w.toDouble())
 fun QuatF.toMutableQuatD(result: MutableQuatD = MutableQuatD()) = result.set(x.toDouble(), y.toDouble(), z.toDouble(), w.toDouble())
 fun MutableQuatF.set(that: QuatD) = set(that.x.toFloat(), that.y.toFloat(), that.z.toFloat(), that.w.toFloat())
+fun Vec4f.toQuatF() = QuatF(x, y, z, w)
 
 fun QuatD.toQuatF() = QuatF(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
 fun QuatD.toMutableQuatF(result: MutableQuatF = MutableQuatF()) = result.set(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
 fun MutableQuatD.set(that: QuatF) = set(that.x.toDouble(), that.y.toDouble(), that.z.toDouble(), that.w.toDouble())
+fun Vec4d.toQuatD() = QuatD(x, y, z, w)
 
 // <template> Changes made within the template section will also affect the other type variants of this class
 
 open class QuatF(open val x: Float, open val y: Float, open val z: Float, open val w: Float) {
 
     constructor(q: QuatF) : this(q.x, q.y, q.z, q.w)
+
+    /**
+     * Component-wise addition with the given [QuatF]. Returns the result as a new [QuatF]. Consider using [add] with
+     * a pre-allocated result vector in performance-critical situations, to avoid unnecessary object allocations.
+     */
+    operator fun plus(that: Vec4f) = QuatF(x + that.x, y + that.y, z + that.z, w + that.w)
+
+    /**
+     * Component-wise subtraction with the given [QuatF]. Returns the result as a new [QuatF]. Consider using [subtract]
+     * with a pre-allocated result vector in performance-critical situations, to avoid unnecessary object allocations.
+     */
+    operator fun minus(that: Vec4f) = QuatF(x - that.x, y - that.y, z - that.z, w - that.w)
 
     /**
      * Multiplies this quaternion with the given one. Consider using [mul] with a pre-allocated result quaternion
@@ -33,9 +47,35 @@ open class QuatF(open val x: Float, open val y: Float, open val z: Float, open v
     }
 
     /**
+     * Component-wise multiplication with the given scalar. Returns the result as a new [QuatF]. Consider using [mul]
+     * with a pre-allocated result vector in performance-critical situations, to avoid unnecessary object allocations.
+     */
+    operator fun times(that: Float) = QuatF(x * that, y * that, z * that, w * that)
+
+    /**
+     * Component-wise addition with the given [QuatF]. Returns the result in a provided [MutableQuatF].
+     */
+    fun add(that: QuatF, result: MutableQuatF): MutableQuatF = result.set(this).add(that)
+
+    /**
+     * Component-wise subtraction with the given [QuatF]. Returns the result in a provided [MutableQuatF].
+     */
+    fun subtract(that: QuatF, result: MutableQuatF): MutableQuatF = result.set(this).subtract(that)
+
+    /**
      * Multiplies this quaternion with the given one and returns the result in a provided [MutableQuatF].
      */
     fun mul(that: QuatF, result: MutableQuatF): MutableQuatF = result.set(this).mul(that)
+
+    /**
+     * Component-wise multiplication with the given scalar (i.e. scaling). Returns the result in a provided [MutableQuatF].
+     */
+    fun mul(that: Float, result: MutableQuatF): MutableQuatF = result.set(this).mul(that)
+
+    /**
+     * Computes the dot-product of this and the given quaternion.
+     */
+    fun dot(that: QuatF): Float = x * that.x + y * that.y + z * that.z + w * that.w
 
     /**
      * Computes the length / magnitude of this quaternion. For valid rotation quaternions, the length should always be
@@ -178,6 +218,28 @@ open class MutableQuatF(override var x: Float, override var y: Float, override v
     operator fun timesAssign(that: QuatF) { mul(that) }
 
     /**
+     * Inplace operation: Adds the given [QuatF] component-wise to this quaternion.
+     */
+    fun add(that: QuatF): MutableQuatF {
+        x += that.x
+        y += that.y
+        z += that.z
+        w += that.w
+        return this
+    }
+
+    /**
+     * Inplace operation: Subtracts the given [QuatF] component-wise from this quaternion.
+     */
+    fun subtract(that: QuatF): MutableQuatF {
+        x -= that.x
+        y -= that.y
+        z -= that.z
+        w -= that.w
+        return this
+    }
+
+    /**
      * Inplace operation: Multiplies this quaternion with the given one and stores the result in this [MutableQuatF].
      */
     fun mul(that: QuatF): MutableQuatF {
@@ -186,6 +248,17 @@ open class MutableQuatF(override var x: Float, override var y: Float, override v
         val rz = w * that.z + x * that.y - y * that.x + z * that.w
         val rw = w * that.w - x * that.x - y * that.y - z * that.z
         return set(rx, ry, rz, rw)
+    }
+
+    /**
+     * Inplace operation: Scales this vector by the given factor.
+     */
+    fun mul(that : Float): MutableQuatF {
+        x *= that
+        y *= that
+        z *= that
+        w *= that
+        return this
     }
 
     /**
@@ -241,6 +314,18 @@ open class QuatD(open val x: Double, open val y: Double, open val z: Double, ope
     constructor(q: QuatD) : this(q.x, q.y, q.z, q.w)
 
     /**
+     * Component-wise addition with the given [QuatD]. Returns the result as a new [QuatD]. Consider using [add] with
+     * a pre-allocated result vector in performance-critical situations, to avoid unnecessary object allocations.
+     */
+    operator fun plus(that: Vec4d) = QuatD(x + that.x, y + that.y, z + that.z, w + that.w)
+
+    /**
+     * Component-wise subtraction with the given [QuatD]. Returns the result as a new [QuatD]. Consider using [subtract]
+     * with a pre-allocated result vector in performance-critical situations, to avoid unnecessary object allocations.
+     */
+    operator fun minus(that: Vec4d) = QuatD(x - that.x, y - that.y, z - that.z, w - that.w)
+
+    /**
      * Multiplies this quaternion with the given one. Consider using [mul] with a pre-allocated result quaternion
      * in performance-critical situations, to avoid unnecessary object allocations.
      */
@@ -253,9 +338,35 @@ open class QuatD(open val x: Double, open val y: Double, open val z: Double, ope
     }
 
     /**
+     * Component-wise multiplication with the given scalar. Returns the result as a new [QuatD]. Consider using [mul]
+     * with a pre-allocated result vector in performance-critical situations, to avoid unnecessary object allocations.
+     */
+    operator fun times(that: Double) = QuatD(x * that, y * that, z * that, w * that)
+
+    /**
+     * Component-wise addition with the given [QuatD]. Returns the result in a provided [MutableQuatD].
+     */
+    fun add(that: QuatD, result: MutableQuatD): MutableQuatD = result.set(this).add(that)
+
+    /**
+     * Component-wise subtraction with the given [QuatD]. Returns the result in a provided [MutableQuatD].
+     */
+    fun subtract(that: QuatD, result: MutableQuatD): MutableQuatD = result.set(this).subtract(that)
+
+    /**
      * Multiplies this quaternion with the given one and returns the result in a provided [MutableQuatD].
      */
     fun mul(that: QuatD, result: MutableQuatD): MutableQuatD = result.set(this).mul(that)
+
+    /**
+     * Component-wise multiplication with the given scalar (i.e. scaling). Returns the result in a provided [MutableQuatD].
+     */
+    fun mul(that: Double, result: MutableQuatD): MutableQuatD = result.set(this).mul(that)
+
+    /**
+     * Computes the dot-product of this and the given quaternion.
+     */
+    fun dot(that: QuatD): Double = x * that.x + y * that.y + z * that.z + w * that.w
 
     /**
      * Computes the length / magnitude of this quaternion. For valid rotation quaternions, the length should always be
@@ -398,6 +509,28 @@ open class MutableQuatD(override var x: Double, override var y: Double, override
     operator fun timesAssign(that: QuatD) { mul(that) }
 
     /**
+     * Inplace operation: Adds the given [QuatD] component-wise to this quaternion.
+     */
+    fun add(that: QuatD): MutableQuatD {
+        x += that.x
+        y += that.y
+        z += that.z
+        w += that.w
+        return this
+    }
+
+    /**
+     * Inplace operation: Subtracts the given [QuatD] component-wise from this quaternion.
+     */
+    fun subtract(that: QuatD): MutableQuatD {
+        x -= that.x
+        y -= that.y
+        z -= that.z
+        w -= that.w
+        return this
+    }
+
+    /**
      * Inplace operation: Multiplies this quaternion with the given one and stores the result in this [MutableQuatD].
      */
     fun mul(that: QuatD): MutableQuatD {
@@ -406,6 +539,17 @@ open class MutableQuatD(override var x: Double, override var y: Double, override
         val rz = w * that.z + x * that.y - y * that.x + z * that.w
         val rw = w * that.w - x * that.x - y * that.y - z * that.z
         return set(rx, ry, rz, rw)
+    }
+
+    /**
+     * Inplace operation: Scales this vector by the given factor.
+     */
+    fun mul(that : Double): MutableQuatD {
+        x *= that
+        y *= that
+        z *= that
+        w *= that
+        return this
     }
 
     /**

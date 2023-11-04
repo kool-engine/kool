@@ -4,7 +4,6 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableMat4f
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.math.transform
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Mesh
@@ -26,12 +25,10 @@ class InstancedLodController<T: InstancedLodController.Instance<T>>(name: String
     fun addLod(lodMesh: Mesh, maxDistance: Float, maxInstances: Int = Int.MAX_VALUE) {
         lods += Lod(lodMesh, maxDistance, maxInstances)
         lods.sortBy { it.maxDistance }
-        lodMesh.parent = this
+        this += lodMesh
     }
 
     override fun update(updateEvent: RenderPass.UpdateEvent) {
-        super.update(updateEvent)
-
         // clear assigned lods
         for (i in lods.indices) {
             lods[i].instances.clear()
@@ -68,8 +65,9 @@ class InstancedLodController<T: InstancedLodController.Instance<T>>(name: String
             }
 
             lod.updateInstances(i, updateEvent.ctx)
-            lod.mesh.update(updateEvent)
         }
+
+        super.update(updateEvent)
     }
 
     override fun collectDrawCommands(updateEvent: RenderPass.UpdateEvent) {
@@ -127,8 +125,8 @@ class InstancedLodController<T: InstancedLodController.Instance<T>>(name: String
 
             instanceModelMat.transform(globalCenterMut)
             instanceModelMat.transform(globalExtentMut)
-            lodCtrl.modelMat.transform(globalCenterMut)
-            lodCtrl.modelMat.transform(globalExtentMut)
+            lodCtrl.modelMatF.transform(globalCenterMut)
+            lodCtrl.modelMatF.transform(globalExtentMut)
             globalRadius = globalCenterMut.distance(globalExtentMut)
 
             isInFrustum = cam.isInFrustum(globalCenterMut, globalRadius)

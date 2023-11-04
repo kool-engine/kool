@@ -1,10 +1,9 @@
 package de.fabmax.kool.scene.animation
 
 import de.fabmax.kool.math.*
-import de.fabmax.kool.scene.MatrixTransform
+import de.fabmax.kool.scene.MatrixTransformF
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
-import de.fabmax.kool.scene.TrsTransform
 import de.fabmax.kool.util.TreeMap
 import kotlin.math.min
 
@@ -95,9 +94,9 @@ interface AnimationNode {
     fun applyTransform()
     fun applyTransformWeighted(weight: Float, firstWeightedTransform: Boolean)
 
-    fun setTranslation(translation: Vec3d) { }
-    fun setRotation(rotation: Vec4d) { }
-    fun setScale(scale: Vec3d) { }
+    fun setTranslation(translation: Vec3f) { }
+    fun setRotation(rotation: QuatF) { }
+    fun setScale(scale: Vec3f) { }
 
     fun setWeights(weights: FloatArray) { }
 }
@@ -106,25 +105,25 @@ class AnimatedTransformGroup(val target: Node): AnimationNode {
     override val name: String
         get() = target.name
 
-    private val initTranslation = MutableVec3d()
-    private val initRotation = MutableQuatD()
-    private val initScale = MutableVec3d(1.0, 1.0, 1.0)
+    private val initTranslation = MutableVec3f()
+    private val initRotation = MutableQuatF()
+    private val initScale = MutableVec3f(Vec3f.ONES)
 
-    private val animTranslation = MutableVec3d()
-    private val animRotation = MutableQuatD()
-    private val animScale = MutableVec3d()
+    private val animTranslation = MutableVec3f()
+    private val animRotation = MutableQuatF()
+    private val animScale = MutableVec3f()
 
-    private val quatRotMat = MutableMat4d()
-    private val weightedTransformMat = MutableMat4d()
+    private val quatRotMat = MutableMat4f()
+    private val weightedTransformMat = MutableMat4f()
 
     init {
-        val vec4 = MutableVec4d()
-        target.transform.matrix.getColumn(3, vec4)
+        val vec4 = MutableVec4f()
+        target.transform.matrixF.getColumn(3, vec4)
         initTranslation.set(vec4.x, vec4.y, vec4.z)
-        target.transform.matrix.getRotation(initRotation)
-        val sx = target.transform.matrix.getColumn(0, vec4).length()
-        val sy = target.transform.matrix.getColumn(1, vec4).length()
-        val sz = target.transform.matrix.getColumn(2, vec4).length()
+        target.transform.matrixF.getRotation(initRotation)
+        val sx = target.transform.matrixF.getColumn(0, vec4).length()
+        val sy = target.transform.matrixF.getColumn(1, vec4).length()
+        val sz = target.transform.matrixF.getColumn(2, vec4).length()
         initScale.set(sx, sy, sz)
     }
 
@@ -135,17 +134,7 @@ class AnimatedTransformGroup(val target: Node): AnimationNode {
     }
 
     override fun applyTransform() {
-        val t = target.transform
-        if (t is TrsTransform) {
-            t.setPosition(animTranslation)
-                .setRotation(animRotation)
-                .setScale(animScale)
-        } else {
-            target.transform.setIdentity()
-            target.transform.translate(animTranslation)
-            target.transform.rotate(animRotation)
-            target.transform.scale(animScale)
-        }
+        target.transform.setCompositionOf(animTranslation, animRotation, animScale)
     }
 
     override fun applyTransformWeighted(weight: Float, firstWeightedTransform: Boolean) {
@@ -154,46 +143,46 @@ class AnimatedTransformGroup(val target: Node): AnimationNode {
         weightedTransformMat.rotate(animRotation)
         weightedTransformMat.scale(animScale)
 
-        var t = target.transform as? MatrixTransform
+        var t = target.transform as? MatrixTransformF
         if (t == null) {
-            t = MatrixTransform()
+            t = MatrixTransformF()
             target.transform = t
         }
 
         val wm = if (firstWeightedTransform) 0f else 1f
 
-        t.matrix.m00 = t.matrix.m00 * wm + weightedTransformMat.m00 * weight
-        t.matrix.m01 = t.matrix.m01 * wm + weightedTransformMat.m01 * weight
-        t.matrix.m02 = t.matrix.m02 * wm + weightedTransformMat.m02 * weight
-        t.matrix.m03 = t.matrix.m03 * wm + weightedTransformMat.m03 * weight
+        t.matrixF.m00 = t.matrixF.m00 * wm + weightedTransformMat.m00 * weight
+        t.matrixF.m01 = t.matrixF.m01 * wm + weightedTransformMat.m01 * weight
+        t.matrixF.m02 = t.matrixF.m02 * wm + weightedTransformMat.m02 * weight
+        t.matrixF.m03 = t.matrixF.m03 * wm + weightedTransformMat.m03 * weight
 
-        t.matrix.m10 = t.matrix.m10 * wm + weightedTransformMat.m10 * weight
-        t.matrix.m11 = t.matrix.m11 * wm + weightedTransformMat.m11 * weight
-        t.matrix.m12 = t.matrix.m12 * wm + weightedTransformMat.m12 * weight
-        t.matrix.m13 = t.matrix.m13 * wm + weightedTransformMat.m13 * weight
+        t.matrixF.m10 = t.matrixF.m10 * wm + weightedTransformMat.m10 * weight
+        t.matrixF.m11 = t.matrixF.m11 * wm + weightedTransformMat.m11 * weight
+        t.matrixF.m12 = t.matrixF.m12 * wm + weightedTransformMat.m12 * weight
+        t.matrixF.m13 = t.matrixF.m13 * wm + weightedTransformMat.m13 * weight
 
-        t.matrix.m20 = t.matrix.m20 * wm + weightedTransformMat.m20 * weight
-        t.matrix.m21 = t.matrix.m21 * wm + weightedTransformMat.m21 * weight
-        t.matrix.m22 = t.matrix.m22 * wm + weightedTransformMat.m22 * weight
-        t.matrix.m23 = t.matrix.m23 * wm + weightedTransformMat.m23 * weight
+        t.matrixF.m20 = t.matrixF.m20 * wm + weightedTransformMat.m20 * weight
+        t.matrixF.m21 = t.matrixF.m21 * wm + weightedTransformMat.m21 * weight
+        t.matrixF.m22 = t.matrixF.m22 * wm + weightedTransformMat.m22 * weight
+        t.matrixF.m23 = t.matrixF.m23 * wm + weightedTransformMat.m23 * weight
 
-        t.matrix.m30 = t.matrix.m30 * wm + weightedTransformMat.m30 * weight
-        t.matrix.m31 = t.matrix.m31 * wm + weightedTransformMat.m31 * weight
-        t.matrix.m32 = t.matrix.m32 * wm + weightedTransformMat.m32 * weight
-        t.matrix.m33 = t.matrix.m33 * wm + weightedTransformMat.m33 * weight
+        t.matrixF.m30 = t.matrixF.m30 * wm + weightedTransformMat.m30 * weight
+        t.matrixF.m31 = t.matrixF.m31 * wm + weightedTransformMat.m31 * weight
+        t.matrixF.m32 = t.matrixF.m32 * wm + weightedTransformMat.m32 * weight
+        t.matrixF.m33 = t.matrixF.m33 * wm + weightedTransformMat.m33 * weight
 
         target.transform.markDirty()
     }
 
-    override fun setTranslation(translation: Vec3d) {
+    override fun setTranslation(translation: Vec3f) {
         animTranslation.set(translation)
     }
 
-    override fun setRotation(rotation: Vec4d) {
+    override fun setRotation(rotation: QuatF) {
         animRotation.set(rotation)
     }
 
-    override fun setScale(scale: Vec3d) {
+    override fun setScale(scale: Vec3f) {
         animScale.set(scale)
     }
 }

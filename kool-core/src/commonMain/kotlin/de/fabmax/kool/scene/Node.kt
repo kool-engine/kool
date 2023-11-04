@@ -4,10 +4,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.BoundingBox
 import de.fabmax.kool.pipeline.RenderPass
-import de.fabmax.kool.util.Disposable
-import de.fabmax.kool.util.LazyMat4d
-import de.fabmax.kool.util.UniqueId
-import de.fabmax.kool.util.logW
+import de.fabmax.kool.util.*
 
 /**
  * A scene node. Scene nodes have a [transform], which controls the position, orientation and size of the node and all
@@ -27,8 +24,8 @@ open class Node(name: String? = null) : Disposable {
     val tags = Tags()
 
     protected val childrenBounds = BoundingBox()
-    protected val intChildren = mutableListOf<Node>()
-    val children: List<Node> get() = intChildren
+    protected val mutChildren = mutableListOf<Node>()
+    val children: List<Node> get() = mutChildren
 
     /**
      * Axis-aligned bounding box of this node in parent coordinate frame.
@@ -48,31 +45,47 @@ open class Node(name: String? = null) : Disposable {
     var globalRadius = 0f
         protected set
 
-    protected val globalCenterMut = MutableVec3f()
-    protected val globalExtentMut = MutableVec3f()
+    private val globalCenterMut = MutableVec3f()
+    private val globalExtentMut = MutableVec3f()
 
     /**
      * This node's transform. Can be used to manipulate this node's position, size, etc. Notice that, by default, the
-     * transform is set to [TrsTransform], which treats position, rotation and scale as separate independent properties.
-     * As an alternative, you can also use [MatrixTransform], which applies all transform operations directly to a 4x4
+     * transform is set to [TrsTransformF], which treats position, rotation and scale as separate independent properties.
+     * As an alternative, you can also use [MatrixTransformF], which applies all transform operations directly to a 4x4
      * transform matrix.
      */
-    var transform: Transform = TrsTransform()
+    var transform: Transform = TrsTransformF()
+
+    private val modelMats = ModelMats()
 
     /**
-     * This node's model matrix, updated on each frame based on this node's transform and the model matrix of the
-     * parent node.
+     * This node's single-precision model matrix. Updated on each frame based on this node's transform and the model
+     * matrix of the parent node.
      */
-    val modelMat = MutableMat4d()
+    val modelMatF: Mat4f by modelMats::modelMatF
 
-    private val modelMatInvLazy = LazyMat4d { modelMat.invert(it) }
-    val modelMatInverse: Mat4d
-        get() = modelMatInvLazy.get()
+    /**
+     * This node's double-precision model matrix. Actual double-precision is only achieved, if this node also uses a
+     * double precision [transform]. Updated on each frame based on this node's transform and the model
+     * matrix of the parent node.
+     */
+    val modelMatD: Mat4d by modelMats::modelMatD
+
+    /**
+     * Inverse of this node's model matrix (single-precision).
+     */
+    val invModelMatF: Mat4d get() = modelMats.lazyInvModelMatD.get()
+
+    /**
+     * Inverse of this node's model matrix (double-precision).
+     */
+    val invModelMatD: Mat4d get() = modelMats.lazyInvModelMatD.get()
 
     /**
      * Parent node is set when this node is added to another [Node] as a child.
      */
     var parent: Node? = null
+        private set
 
     /**
      * Determines the visibility of this node. If visible is false this node will be skipped on
@@ -111,9 +124,9 @@ open class Node(name: String? = null) : Disposable {
         updateModelMat()
 
         childrenBounds.clear()
-        for (i in intChildren.indices) {
-            intChildren[i].update(updateEvent)
-            childrenBounds.add(intChildren[i].bounds)
+        for (i in mutChildren.indices) {
+            mutChildren[i].update(updateEvent)
+            childrenBounds.add(mutChildren[i].bounds)
         }
         computeLocalBounds(bounds)
 
@@ -145,16 +158,32 @@ open class Node(name: String? = null) : Disposable {
         result.set(childrenBounds)
     }
 
-    open fun updateModelMat(recursive: Boolean = false) {
+    fun updateModelMat() {
         val p = parent
-        if (p != null) {
-            if (!transform.isIdentity) {
-                p.modelMat.mul(transform.matrix, modelMat)
+
+        if (transform.isDoublePrecision) {
+            if (p != null) {
+                if (!transform.isIdentity) {
+                    p.modelMatD.mul(transform.matrixD, modelMats.mutModelMatD)
+                } else {
+                    modelMats.mutModelMatD.set(p.modelMatD)
+                }
             } else {
-                modelMat.set(p.modelMat)
+                modelMats.mutModelMatD.set(transform.matrixD)
             }
+            modelMats.markUpdatedD()
+
         } else {
-            modelMat.set(transform.matrix)
+            if (p != null) {
+                if (!transform.isIdentity) {
+                    p.modelMatF.mul(transform.matrixF, modelMats.mutModelMatF)
+                } else {
+                    modelMats.mutModelMatF.set(p.modelMatF)
+                }
+            } else {
+                modelMats.mutModelMatF.set(transform.matrixF)
+            }
+            modelMats.markUpdatedF()
         }
     }
 
@@ -167,8 +196,8 @@ open class Node(name: String? = null) : Disposable {
     open fun collectDrawCommands(updateEvent: RenderPass.UpdateEvent) {
         isRendered = checkIsVisible(updateEvent.camera, updateEvent.ctx)
         if (isRendered) {
-            for (i in intChildren.indices) {
-                intChildren[i].collectDrawCommands(updateEvent)
+            for (i in mutChildren.indices) {
+                mutChildren[i].collectDrawCommands(updateEvent)
             }
         }
     }
@@ -186,26 +215,26 @@ open class Node(name: String? = null) : Disposable {
     /**
      * Transforms [vec] in-place from local to global coordinates.
      */
-    open fun toGlobalCoords(vec: MutableVec3f, w: Float = 1f): MutableVec3f {
-        modelMat.transform(vec, w)
+    fun toGlobalCoords(vec: MutableVec3f, w: Float = 1f): MutableVec3f {
+        modelMatF.transform(vec, w)
         return vec
     }
 
-    open fun toGlobalCoords(vec: MutableVec3d, w: Double = 1.0): MutableVec3d {
-        modelMat.transform(vec, w)
+    fun toGlobalCoords(vec: MutableVec3d, w: Double = 1.0): MutableVec3d {
+        modelMatD.transform(vec, w)
         return vec
     }
 
     /**
      * Transforms [vec] in-place from global to local coordinates.
      */
-    open fun toLocalCoords(vec: MutableVec3f, w: Float = 1f): MutableVec3f {
-        modelMatInverse.transform(vec, w)
+    fun toLocalCoords(vec: MutableVec3f, w: Float = 1f): MutableVec3f {
+        invModelMatF.transform(vec, w)
         return vec
     }
 
-    open fun toLocalCoords(vec: MutableVec3d, w: Double = 1.0): MutableVec3d {
-        modelMatInverse.transform(vec, w)
+    fun toLocalCoords(vec: MutableVec3d, w: Double = 1.0): MutableVec3d {
+        invModelMatD.transform(vec, w)
         return vec
     }
 
@@ -217,11 +246,15 @@ open class Node(name: String? = null) : Disposable {
         if (children.isNotEmpty()) {
             if (!transform.isIdentity) {
                 // transform ray to local coordinates
-                test.transformBy(transform.matrixInverse)
+                if (transform.isDoublePrecision) {
+                    test.transformBy(transform.invMatrixD)
+                } else {
+                    test.transformBy(transform.invMatrixF)
+                }
             }
 
-            for (i in intChildren.indices) {
-                val child = intChildren[i]
+            for (i in mutChildren.indices) {
+                val child = mutChildren[i]
                 if (child.isVisible && child.isPickable) {
                     val d = child.bounds.hitDistanceSqr(test.ray)
                     if (d < Float.MAX_VALUE && d <= test.hitDistanceSqr) {
@@ -232,7 +265,11 @@ open class Node(name: String? = null) : Disposable {
 
             if (!transform.isIdentity) {
                 // transform ray back to previous coordinates
-                test.transformBy(transform.matrix)
+                if (transform.isDoublePrecision) {
+                    test.transformBy(transform.matrixD)
+                } else {
+                    test.transformBy(transform.matrixF)
+                }
             }
         }
     }
@@ -256,23 +293,23 @@ open class Node(name: String? = null) : Disposable {
         }
 
         if (index >= 0) {
-            intChildren.add(index, node)
+            mutChildren.add(index, node)
         } else {
-            intChildren.add(node)
+            mutChildren.add(node)
         }
         node.parent = this
         bounds.add(node.bounds)
     }
 
     open fun removeNode(node: Node): Boolean {
-        if (intChildren.remove(node)) {
+        if (mutChildren.remove(node)) {
             node.parent = null
             return true
         }
         return false
     }
 
-    open operator fun contains(node: Node): Boolean = intChildren.contains(node)
+    open operator fun contains(node: Node): Boolean = mutChildren.contains(node)
 
     operator fun plusAssign(node: Node) {
         addNode(node)
@@ -283,12 +320,12 @@ open class Node(name: String? = null) : Disposable {
     }
 
     open fun <R: Comparable<R>> sortChildrenBy(selector: (Node) -> R) {
-        intChildren.sortBy(selector)
+        mutChildren.sortBy(selector)
     }
 
     open fun clearChildren() {
-        intChildren.forEach { it.parent = null }
-        intChildren.clear()
+        mutChildren.forEach { it.parent = null }
+        mutChildren.clear()
     }
 
     /**
@@ -334,6 +371,44 @@ open class Node(name: String? = null) : Disposable {
 
     private fun getDefaultName(): String {
         return UniqueId.nextId(this::class.simpleName ?: "unknown")
+    }
+
+    private class ModelMats {
+        val modelMatF: Mat4f get() {
+            if (updateIdF != updateId) {
+                mutModelMatF.set(mutModelMatD)
+                updateIdF = updateId
+            }
+            return mutModelMatF
+        }
+
+        val modelMatD: Mat4d get() {
+            if (updateIdD != updateId) {
+                mutModelMatD.set(mutModelMatF)
+                updateIdD = updateId
+            }
+            return mutModelMatD
+        }
+
+        val lazyInvModelMatF = LazyMat4f { modelMatF.invert(it) }
+        val lazyInvModelMatD = LazyMat4d { modelMatD.invert(it) }
+
+        val mutModelMatF = MutableMat4f()
+        val mutModelMatD = MutableMat4d()
+
+        var updateId = 0
+        var updateIdF = 0
+        var updateIdD = 0
+
+        fun markUpdatedF() {
+            updateId++
+            updateIdF = updateId
+        }
+
+        fun markUpdatedD() {
+            updateId++
+            updateIdD = updateId
+        }
     }
 }
 

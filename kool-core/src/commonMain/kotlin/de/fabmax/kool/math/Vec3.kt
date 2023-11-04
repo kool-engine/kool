@@ -111,9 +111,6 @@ open class Vec3f(open val x: Float, open val y: Float, open val z: Float) {
      */
     fun mul(that: Float, result: MutableVec3f): MutableVec3f = result.set(this).mul(that)
 
-    @Deprecated("Replace with mul()", ReplaceWith("mul(factor, result)"))
-    fun scale(factor: Float, result: MutableVec3f = MutableVec3f()) = mul(factor, result)
-
     override fun toString(): String = "($x, $y, $z)"
 
     /**
@@ -508,9 +505,6 @@ open class Vec3d(open val x: Double, open val y: Double, open val z: Double) {
      */
     fun mul(that: Double, result: MutableVec3d): MutableVec3d = result.set(this).mul(that)
 
-    @Deprecated("Replace with mul()", ReplaceWith("mul(factor, result)"))
-    fun scale(factor: Double, result: MutableVec3d = MutableVec3d()) = mul(factor, result)
-
     override fun toString(): String = "($x, $y, $z)"
 
     /**
@@ -895,9 +889,6 @@ open class Vec3i(open val x: Int, open val y: Int, open val z: Int) {
      * Component-wise multiplication with the given scalar (i.e. scaling). Returns the result in a provided [MutableVec3i].
      */
     fun mul(that: Int, result: MutableVec3i): MutableVec3i = result.set(this).mul(that)
-
-    @Deprecated("Replace with mul()", ReplaceWith("mul(factor, result)"))
-    fun scale(factor: Int, result: MutableVec3i = MutableVec3i()) = mul(factor, result)
 
     override fun toString(): String = "($x, $y, $z)"
 

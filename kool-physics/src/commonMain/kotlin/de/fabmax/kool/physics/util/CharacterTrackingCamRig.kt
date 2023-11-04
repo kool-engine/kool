@@ -8,7 +8,7 @@ import de.fabmax.kool.physics.PhysicsWorld
 import de.fabmax.kool.physics.geometry.BoxGeometry
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Transform
-import de.fabmax.kool.scene.TrsTransform
+import de.fabmax.kool.scene.TrsTransformF
 import de.fabmax.kool.util.Time
 import kotlin.math.*
 
@@ -32,7 +32,7 @@ class CharacterTrackingCamRig(enableCursorLock: Boolean = true) :
 
     private var actualZoom = zoom
 
-    var trackedPose: Transform = TrsTransform()
+    var trackedPose: Transform = TrsTransformF()
     val pivotPoint = MutableVec3f()
 
     val lookDirection = MutableVec3f(Vec3f.NEG_Z_AXIS)
@@ -64,7 +64,7 @@ class CharacterTrackingCamRig(enableCursorLock: Boolean = true) :
         zoomModifier = { desiredZoom ->
             var zoom = desiredZoom
             transform.transform(testDir.set(0f, 0f, 1f).norm(), 0f)
-            hitSweepGeometryPose.set(transform.matrix)
+            hitSweepGeometryPose.set(transform.matrixF)
             if (world.sweepTest(hitSweepGeometry, hitSweepGeometryPose, testDir, desiredZoom, hitResult)) {
                 zoom = max(minZoom, hitResult.hitDistance)
             }

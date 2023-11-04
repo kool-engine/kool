@@ -24,7 +24,7 @@ class GizmoTest : DemoScene("Gizmo Test") {
     override fun Scene.setupMainScene(ctx: KoolContext) {
         gizmo1.gizmoListener = object : Gizmo.GizmoListener {
             override fun onDragAxis(axis: Vec3f, distance: Float, targetTransform: Transform, ctx: KoolContext) {
-                targetTransform.translate(axis.x * distance, axis.y * distance, axis.z * distance)
+                targetTransform.translate(axis * distance)
             }
 
             override fun onDragPlane(planeNormal: Vec3f, dragPosition: Vec3f, targetTransform: Transform, ctx: KoolContext) {
@@ -88,7 +88,7 @@ class GizmoTest : DemoScene("Gizmo Test") {
 
             override fun onDragAxis(axis: Vec3f, distance: Float, targetTransform: Transform, ctx: KoolContext) {
                 if (axis.z != 0f || KeyboardInput.isAltDown) {
-                    targetTransform.translate(axis.x * distance, axis.y * distance, axis.z * distance)
+                    targetTransform.translate(axis * distance)
                 } else if (axis.x > 0f) {
                     gizmo2.properties.axisLenX = max(0.1f, axX + distance)
                 } else {
@@ -217,8 +217,8 @@ class GizmoTest : DemoScene("Gizmo Test") {
         val ry = mutableStateOf(0f).onChange { updateRotation(y = it) }
         val rz = mutableStateOf(0f).onChange { updateRotation(z = it) }
 
-        private val tmpMat4 = MutableMat4d()
-        private val tmpMat3 = MutableMat3d()
+        private val tmpMat4 = MutableMat4f()
+        private val tmpMat3 = MutableMat3f()
         private val tmpVec = MutableVec3f()
 
         fun update() {
@@ -230,7 +230,7 @@ class GizmoTest : DemoScene("Gizmo Test") {
             ty.set(tmpVec.y)
             tz.set(tmpVec.z)
 
-            tmpMat4.getUpperLeft(tmpMat3).getEulerAngles().toMutableVec3f(tmpVec)
+            tmpMat4.getUpperLeft(tmpMat3).getEulerAngles(tmpVec)
             rx.set(tmpVec.x)
             ry.set(tmpVec.y)
             rz.set(tmpVec.z)

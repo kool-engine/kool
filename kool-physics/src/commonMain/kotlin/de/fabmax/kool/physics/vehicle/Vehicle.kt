@@ -6,7 +6,7 @@ import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.physics.PhysicsWorld
 import de.fabmax.kool.physics.RigidBody
 import de.fabmax.kool.scene.ColorMesh
-import de.fabmax.kool.scene.TrsTransform
+import de.fabmax.kool.scene.TrsTransformF
 import de.fabmax.kool.scene.addColorMesh
 import de.fabmax.kool.util.Color
 import kotlin.math.PI
@@ -71,9 +71,9 @@ abstract class CommonVehicle(val vehicleProps: VehicleProperties) : RigidBody() 
         }
 
         onUpdate += {
-            (transform as TrsTransform).set(this@CommonVehicle.transform)
+            (transform as TrsTransformF).set(this@CommonVehicle.transform)
             for (i in 0..3) {
-                (wheelGroups[i].transform as TrsTransform).set(wheelInfos[i].transform)
+                (wheelGroups[i].transform as TrsTransformF).set(wheelInfos[i].transform)
             }
         }
     }

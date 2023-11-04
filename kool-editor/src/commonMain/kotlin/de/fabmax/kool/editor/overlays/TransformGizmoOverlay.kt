@@ -10,7 +10,7 @@ import de.fabmax.kool.editor.data.Vec4Data
 import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.input.KeyboardInput
 import de.fabmax.kool.math.*
-import de.fabmax.kool.scene.MatrixTransform
+import de.fabmax.kool.scene.MatrixTransformF
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Transform
 import de.fabmax.kool.util.Gizmo
@@ -31,7 +31,7 @@ class TransformGizmoOverlay(private val editor: KoolEditor) : Node("Transform gi
 
     private val gizmo = Gizmo()
     private val globalGizmoPos = MutableVec3d()
-    private val globalGizmoOrientation = MutableQuatD()
+    private val globalGizmoOrientation = MutableQuatF()
     private var gizmoScale = 1f
     private val gizmoToGlobal = MutableMat4d()
 
@@ -292,7 +292,7 @@ class TransformGizmoOverlay(private val editor: KoolEditor) : Node("Transform gi
             isSameParent = isSameParent && it.nodeModel.drawNode.parent == selection[0].nodeModel.drawNode.parent
             if (isSameParent) {
                 val q = MutableQuatD()
-                it.nodeModel.drawNode.parent?.modelMat?.decompose(rotation = q)
+                it.nodeModel.drawNode.parent?.modelMatD?.decompose(rotation = q)
                 parentOrientation = q
             }
         }
@@ -302,7 +302,7 @@ class TransformGizmoOverlay(private val editor: KoolEditor) : Node("Transform gi
         if (EditorState.transformMode.value == EditorState.TransformOrientation.LOCAL) {
             if (selection.size == 1) {
                 // use local orientation of single selected object
-                selection[0].nodeModel.drawNode.modelMat.decompose(rotation = globalGizmoOrientation)
+                selection[0].nodeModel.drawNode.modelMatF.decompose(rotation = globalGizmoOrientation)
 
             } else if (isSameParent) {
                 // local orientation is undefined for multiple selected objects, use parent as fallback if all selected
@@ -316,13 +316,17 @@ class TransformGizmoOverlay(private val editor: KoolEditor) : Node("Transform gi
 
         // apply gizmo transform
         gizmoScale = sqrt(radius) + 0.5f
-        (gizmo.transform as MatrixTransform).apply {
-            matrix.setIdentity().rotate(globalGizmoOrientation)
-            setPosition(globalGizmoPos)
+        (gizmo.transform as MatrixTransformF).apply {
+            matrixF.setIdentity().rotate(globalGizmoOrientation)
+            matrixF.apply {
+                m03 = globalGizmoPos.x.toFloat()
+                m13 = globalGizmoPos.y.toFloat()
+                m23 = globalGizmoPos.z.toFloat()
+            }
             markDirty()
         }
         gizmo.setFixedScale(gizmoScale)
-        gizmoToGlobal.set(gizmo.transform.matrix)
+        gizmoToGlobal.set(gizmo.transform.matrixF)
     }
 
     private class NodeTransformData(val nodeModel: SceneNodeModel) {
@@ -343,10 +347,10 @@ class TransformGizmoOverlay(private val editor: KoolEditor) : Node("Transform gi
         }
 
         fun updateTransform() {
-            nodeToGlobal.set(nodeModel.drawNode.modelMat)
+            nodeToGlobal.set(nodeModel.drawNode.modelMatD)
             nodeToGlobal.invert(globalToNode)
             globalToParent.setIdentity()
-            nodeModel.drawNode.parent?.modelMat?.invert(globalToParent)
+            nodeModel.drawNode.parent?.modelMatD?.invert(globalToParent)
 
             nodeModel.transform.transformState.value.position.toVec3d(startPosition)
             nodeModel.transform.transformState.value.rotation.toQuatD(startRotation)

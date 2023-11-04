@@ -669,7 +669,7 @@ open class UiSurface(
 
             if (imageMeshes.isNotEmpty()) {
                 imageMeshes.values.forEach {
-                    intChildren -= it.meshes.toSet()
+                    mutChildren -= it.meshes.toSet()
                     it.clear()
                 }
             }

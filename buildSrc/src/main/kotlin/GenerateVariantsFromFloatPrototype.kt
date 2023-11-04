@@ -75,16 +75,22 @@ open class GenerateVariantsFromFloatPrototype : DefaultTask() {
             Regex("""\W(Vec(\d+)f)\W""") to PatternTransformer { it.groups[1]!!.range to "Vec${it.groupValues[2]}d" },
             Regex("""\W(Mat(\d+)f)\W""") to PatternTransformer { it.groups[1]!!.range to "Mat${it.groupValues[2]}d" },
             Regex("""\W(Mat(\d+)fStack)\W""") to PatternTransformer { it.groups[1]!!.range to "Mat${it.groupValues[2]}dStack" },
+            Regex("""\W(LazyMat(\d+)f)\W""") to PatternTransformer { it.groups[1]!!.range to "LazyMat${it.groupValues[2]}d" },
             Regex("""\W(QuatF)\W""") to PatternTransformer { it.groups[1]!!.range to "QuatD" },
             Regex("""\W(MutableVec(\d+)f)\W""") to PatternTransformer { it.groups[1]!!.range to "MutableVec${it.groupValues[2]}d" },
             Regex("""\W(MutableMat(\d+)f)\W""") to PatternTransformer { it.groups[1]!!.range to "MutableMat${it.groupValues[2]}d" },
             Regex("""\W(MutableQuatF)\W""") to PatternTransformer { it.groups[1]!!.range to "MutableQuatD" },
             Regex("""\W(AngleF)\W""") to PatternTransformer { it.groups[1]!!.range to "AngleD" },
+            Regex("""\W(TransformF)\W""") to PatternTransformer { it.groups[1]!!.range to "TransformD" },
+            Regex("""\W(TrsTransformF)\W""") to PatternTransformer { it.groups[1]!!.range to "TrsTransformD" },
+            Regex("""\W(MatrixTransformF)\W""") to PatternTransformer { it.groups[1]!!.range to "MatrixTransformD" },
             Regex("""\W(Float)\W""") to PatternTransformer { it.groups[1]!!.range to "Double" },
             Regex("""\W(FloatArray)\W""") to PatternTransformer { it.groups[1]!!.range to "DoubleArray" },
             Regex("""\W(floatArrayOf)\W""") to PatternTransformer { it.groups[1]!!.range to "doubleArrayOf" },
             Regex("""\W(FUZZY_EQ_F)\W""") to PatternTransformer { it.groups[1]!!.range to "FUZZY_EQ_D" },
             Regex("""\W(PI_F)\W""") to PatternTransformer { it.groups[1]!!.range to "PI" },
+
+            Regex("""\W(matrixF)\W""") to PatternTransformer { it.groups[1]!!.range to "matrixD" },
 
             // remove noInt section markers
             Regex("""\h*// </?noInt>.*\v*""") to PatternTransformer { it.range to "" },

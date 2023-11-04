@@ -120,7 +120,7 @@ class KslShaderTest : DemoScene("KslShader") {
             onUpdate += {
                 transform.setIdentity()
                 transform.scale(1.5f)
-                transform.translate(0.0, 0.0, 0.5)
+                transform.translate(0f, 0f, 0.5f)
                 transform.rotate(rotationX.deg, Vec3f.X_AXIS)
                 transform.rotate(rotationY.deg, Vec3f.Y_AXIS)
 

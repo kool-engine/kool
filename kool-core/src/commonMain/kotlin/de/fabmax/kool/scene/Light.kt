@@ -35,28 +35,18 @@ sealed class Light : Node() {
         )
     }
 
-    protected fun setTransformByDirectionAndPos(direction: Vec3f = Vec3f.X_AXIS, pos: Vec3d = Vec3d.ZERO) {
-        val dir = direction.toMutableVec3d().norm()
-        val v = if (abs(dir.dot(Vec3d.Y_AXIS)) > 0.9f) {
-            Vec3d.X_AXIS
+    protected fun setTransformByDirectionAndPos(direction: Vec3f = Vec3f.X_AXIS, pos: Vec3f = Vec3f.ZERO) {
+        val dir = direction.norm(MutableVec3f())
+        val v = if (abs(dir.dot(Vec3f.Y_AXIS)) > 0.9f) {
+            Vec3f.X_AXIS
         } else {
-            Vec3d.Y_AXIS
+            Vec3f.Y_AXIS
         }
 
-        val b = dir.cross(v, MutableVec3d())
-        val c = dir.cross(b, MutableVec3d())
-        val t = transform
-        if (t is TrsTransform) {
-            t.rotation.setColumn(0, dir)
-            t.rotation.setColumn(1, b)
-            t.rotation.setColumn(2, c)
-        } else {
-            val mt = t as MatrixTransform
-            mt.matrix.setColumn(0, dir, 0.0)
-            mt.matrix.setColumn(1, b, 0.0)
-            mt.matrix.setColumn(2, c, 0.0)
-        }
-        transform.setPosition(pos)
+        val b = dir.cross(v, MutableVec3f())
+        val c = dir.cross(b, MutableVec3f())
+        val r = Mat3f(dir, b, c).getRotation()
+        transform.setCompositionOf(pos, r)
         updateModelMat()
     }
 
@@ -96,7 +86,7 @@ sealed class Light : Node() {
             get() = _position
 
         fun setup(pos: Vec3f): Point {
-            setTransformByDirectionAndPos(pos = pos.toVec3d())
+            setTransformByDirectionAndPos(pos = pos)
             updateEncodedValues()
             return this
         }
@@ -129,7 +119,7 @@ sealed class Light : Node() {
         var coreRatio = 0.5f
 
         fun setup(pos: Vec3f, dir: Vec3f, angle: Float = spotAngle, ratio: Float = coreRatio): Spot {
-            setTransformByDirectionAndPos(direction = dir, pos = pos.toVec3d())
+            setTransformByDirectionAndPos(direction = dir, pos = pos)
             spotAngle = angle
             coreRatio = ratio
             updateEncodedValues()

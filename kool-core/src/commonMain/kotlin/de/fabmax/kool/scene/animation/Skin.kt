@@ -2,7 +2,6 @@ package de.fabmax.kool.scene.animation
 
 import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.MutableMat4f
-import de.fabmax.kool.math.set
 import de.fabmax.kool.scene.Node
 
 class Skin {
@@ -36,7 +35,7 @@ class Skin {
         }
 
         fun updateJointTransform() {
-            jointTransform.set(joint.transform.matrix)
+            jointTransform.set(joint.transform.matrixF)
             for (i in children.indices) {
                 children[i].updateJointTransform(jointTransform)
             }
@@ -44,7 +43,7 @@ class Skin {
         }
 
         private fun updateJointTransform(parentTransform: Mat4f) {
-            tmpMat4f.set(joint.transform.matrix)
+            tmpMat4f.set(joint.transform.matrixF)
             jointTransform.set(parentTransform).mul(tmpMat4f)
             for (i in children.indices) {
                 children[i].updateJointTransform(jointTransform)

@@ -38,33 +38,33 @@ abstract class AnimationKey<T: AnimationKey<T>>(val time: Float) {
     }
 }
 
-open class RotationKey(time: Float, val rotation: Vec4d) : AnimationKey<RotationKey>(time) {
-    private val tmpRotation = MutableVec4d()
+open class RotationKey(time: Float, val rotation: QuatF) : AnimationKey<RotationKey>(time) {
+    private val tmpRotation = MutableQuatF()
 
-    private val qa = MutableVec4d()
-    private val qb = MutableVec4d()
-    private val qc = MutableVec4d()
+    private val qa = MutableQuatF()
+    private val qb = MutableQuatF()
+    private val qc = MutableQuatF()
 
     override fun apply(time: Float, next: RotationKey?, node: AnimationNode) {
         if (next == null) {
             tmpRotation.set(rotation)
         } else {
-            slerp(rotation, next.rotation, interpolationPos(time, next.time).toDouble(), tmpRotation)
+            slerp(rotation, next.rotation, interpolationPos(time, next.time), tmpRotation)
         }
         node.setRotation(tmpRotation)
     }
 
     override fun toString() = "${time.toString(2)} -> rotation: $rotation [$interpolation]"
 
-    private fun slerp(quatA: Vec4d, quatB: Vec4d, f: Double, result: MutableVec4d): MutableVec4d {
+    private fun slerp(quatA: QuatF, quatB: QuatF, f: Float, result: MutableQuatF): MutableQuatF {
         quatA.norm(qa)
         quatB.norm(qb)
 
-        val t = f.clamp(0.0, 1.0)
+        val t = f.clamp(0f, 1f)
 
-        var dot = qa.dot(qb).clamp(-1.0, 1.0)
+        var dot = qa.dot(qb).clamp(-1f, 1f)
         if (dot < 0) {
-            qa.mul(-1.0)
+            qa.mul(-1f)
             dot = -dot
         }
 
@@ -84,17 +84,17 @@ open class RotationKey(time: Float, val rotation: Vec4d) : AnimationKey<Rotation
     }
 }
 
-class CubicRotationKey(time: Float, rotation: Vec4d, val startTan: Vec4d, val endTan: Vec4d) : RotationKey(time, rotation) {
-    private val p0 = MutableVec4d()
-    private val p1 = MutableVec4d()
-    private val m0 = MutableVec4d()
-    private val m1 = MutableVec4d()
+class CubicRotationKey(time: Float, rotation: QuatF, val startTan: QuatF, val endTan: QuatF) : RotationKey(time, rotation) {
+    private val p0 = MutableQuatF()
+    private val p1 = MutableQuatF()
+    private val m0 = MutableQuatF()
+    private val m1 = MutableQuatF()
 
     override fun apply(time: Float, next: RotationKey?, node: AnimationNode) {
         if (next == null) {
             node.setRotation(rotation)
         } else {
-            val t = interpolationPos(time, next.time).toDouble()
+            val t = interpolationPos(time, next.time)
             val t2 = t * t
             val t3 = t * t * t
 
@@ -111,14 +111,14 @@ class CubicRotationKey(time: Float, rotation: Vec4d, val startTan: Vec4d, val en
     }
 }
 
-open class TranslationKey(time: Float, val translation: Vec3d) : AnimationKey<TranslationKey>(time) {
-    private val tmpTranslation = MutableVec3d()
+open class TranslationKey(time: Float, val translation: Vec3f) : AnimationKey<TranslationKey>(time) {
+    private val tmpTranslation = MutableVec3f()
 
     override fun apply(time: Float, next: TranslationKey?, node: AnimationNode) {
         if (next == null) {
             node.setTranslation(translation)
         } else {
-            next.translation.subtract(translation, tmpTranslation).mul(interpolationPos(time, next.time).toDouble())
+            next.translation.subtract(translation, tmpTranslation).mul(interpolationPos(time, next.time))
                 .add(translation)
             node.setTranslation(tmpTranslation)
         }
@@ -127,17 +127,17 @@ open class TranslationKey(time: Float, val translation: Vec3d) : AnimationKey<Tr
     override fun toString() = "${time.toString(2)} -> translation: $translation [$interpolation]"
 }
 
-class CubicTranslationKey(time: Float, translation: Vec3d, val startTan: Vec3d, val endTan: Vec3d) : TranslationKey(time, translation) {
-    private val p0 = MutableVec3d()
-    private val p1 = MutableVec3d()
-    private val m0 = MutableVec3d()
-    private val m1 = MutableVec3d()
+class CubicTranslationKey(time: Float, translation: Vec3f, val startTan: Vec3f, val endTan: Vec3f) : TranslationKey(time, translation) {
+    private val p0 = MutableVec3f()
+    private val p1 = MutableVec3f()
+    private val m0 = MutableVec3f()
+    private val m1 = MutableVec3f()
 
     override fun apply(time: Float, next: TranslationKey?, node: AnimationNode) {
         if (next == null) {
             node.setTranslation(translation)
         } else {
-            val t = interpolationPos(time, next.time).toDouble()
+            val t = interpolationPos(time, next.time)
             val t2 = t * t
             val t3 = t * t * t
 
@@ -154,14 +154,14 @@ class CubicTranslationKey(time: Float, translation: Vec3d, val startTan: Vec3d, 
     }
 }
 
-open class ScaleKey(time: Float, val scale: Vec3d) : AnimationKey<ScaleKey>(time) {
-    private val tmpScale = MutableVec3d()
+open class ScaleKey(time: Float, val scale: Vec3f) : AnimationKey<ScaleKey>(time) {
+    private val tmpScale = MutableVec3f()
 
     override fun apply(time: Float, next: ScaleKey?, node: AnimationNode) {
         if (next == null) {
             node.setScale(scale)
         } else {
-            next.scale.subtract(scale, tmpScale).mul(interpolationPos(time, next.time).toDouble()).add(scale)
+            next.scale.subtract(scale, tmpScale).mul(interpolationPos(time, next.time)).add(scale)
             node.setScale(tmpScale)
         }
     }
@@ -169,17 +169,17 @@ open class ScaleKey(time: Float, val scale: Vec3d) : AnimationKey<ScaleKey>(time
     override fun toString() = "${time.toString(2)} -> scale: $scale [$interpolation]"
 }
 
-class CubicScaleKey(time: Float, scale: Vec3d, val startTan: Vec3d, val endTan: Vec3d) : ScaleKey(time, scale) {
-    private val p0 = MutableVec3d()
-    private val p1 = MutableVec3d()
-    private val m0 = MutableVec3d()
-    private val m1 = MutableVec3d()
+class CubicScaleKey(time: Float, scale: Vec3f, val startTan: Vec3f, val endTan: Vec3f) : ScaleKey(time, scale) {
+    private val p0 = MutableVec3f()
+    private val p1 = MutableVec3f()
+    private val m0 = MutableVec3f()
+    private val m1 = MutableVec3f()
 
     override fun apply(time: Float, next: ScaleKey?, node: AnimationNode) {
         if (next == null) {
             node.setScale(scale)
         } else {
-            val t = interpolationPos(time, next.time).toDouble()
+            val t = interpolationPos(time, next.time)
             val t2 = t * t
             val t3 = t * t * t
 

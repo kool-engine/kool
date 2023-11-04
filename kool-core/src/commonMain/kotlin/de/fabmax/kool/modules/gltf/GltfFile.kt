@@ -8,7 +8,10 @@ import de.fabmax.kool.pipeline.deferred.DeferredKslPbrShader
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.pipeline.shading.AlphaMode
 import de.fabmax.kool.pipeline.shading.DepthShader
-import de.fabmax.kool.scene.*
+import de.fabmax.kool.scene.MatrixTransformF
+import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.scene.Model
+import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.animation.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ShadowMap
@@ -220,12 +223,12 @@ data class GltfFile(
             for (i in 0 until min(inputAcc.count, outputAcc.count)) {
                 val t = inTime.next()
                 val transKey = if (interpolation == AnimationKey.Interpolation.CUBICSPLINE) {
-                    val startTan = outTranslation.nextD()
-                    val point = outTranslation.nextD()
-                    val endTan = outTranslation.nextD()
+                    val startTan = outTranslation.next()
+                    val point = outTranslation.next()
+                    val endTan = outTranslation.next()
                     CubicTranslationKey(t, point, startTan, endTan)
                 } else {
-                    TranslationKey(t, outTranslation.nextD())
+                    TranslationKey(t, outTranslation.next())
                 }
                 transKey.interpolation = interpolation
                 transChannel.keys[t] = transKey
@@ -258,12 +261,12 @@ data class GltfFile(
             for (i in 0 until min(inputAcc.count, outputAcc.count)) {
                 val t = inTime.next()
                 val rotKey = if (interpolation == AnimationKey.Interpolation.CUBICSPLINE) {
-                    val startTan = outRotation.nextD()
-                    val point = outRotation.nextD()
-                    val endTan = outRotation.nextD()
+                    val startTan = outRotation.next().toQuatF()
+                    val point = outRotation.next().toQuatF()
+                    val endTan = outRotation.next().toQuatF()
                     CubicRotationKey(t, point, startTan, endTan)
                 } else {
-                    RotationKey(t, outRotation.nextD())
+                    RotationKey(t, outRotation.next().toQuatF())
                 }
                 rotKey.interpolation = interpolation
                 rotChannel.keys[t] = rotKey
@@ -296,12 +299,12 @@ data class GltfFile(
             for (i in 0 until min(inputAcc.count, outputAcc.count)) {
                 val t = inTime.next()
                 val scaleKey = if (interpolation == AnimationKey.Interpolation.CUBICSPLINE) {
-                    val startTan = outScale.nextD()
-                    val point = outScale.nextD()
-                    val endTan = outScale.nextD()
+                    val startTan = outScale.next()
+                    val point = outScale.next()
+                    val endTan = outScale.next()
                     CubicScaleKey(t, point, startTan, endTan)
                 } else {
-                    ScaleKey(t, outScale.nextD())
+                    ScaleKey(t, outScale.next())
                 }
                 scaleKey.interpolation = interpolation
                 scaleChannel.keys[t] = scaleKey
@@ -473,7 +476,7 @@ data class GltfFile(
 
         private fun Node.applyTransforms(transform: Mat4fStack, rootGroup: Node) {
             transform.push()
-            transform.mul(this.transform.matrix.toMat4f())
+            transform.mul(this.transform.matrixF)
 
             children.filterIsInstance<Mesh>().forEach {
                 it.geometry.batchUpdate(true) {
@@ -505,20 +508,14 @@ data class GltfFile(
             model.nodes[modelNdName] = nodeGrp
 
             if (matrix != null) {
-                val t = MatrixTransform()
-                t.matrix.set(matrix.map { it.toDouble() }.toDoubleArray())
+                val t = MatrixTransformF()
+                t.matrixF.set(matrix.toFloatArray())
                 nodeGrp.transform = t
             } else {
-                val t = nodeGrp.transform as TrsTransform
-                if (translation != null) {
-                    t.translate(translation[0], translation[1], translation[2])
-                }
-                if (rotation != null) {
-                    t.setRotation(QuatD(rotation[0].toDouble(), rotation[1].toDouble(), rotation[2].toDouble(), rotation[3].toDouble()))
-                }
-                if (scale != null) {
-                    t.scale(Vec3f(scale[0], scale[1], scale[2]))
-                }
+                val t = translation?.let { Vec3f(it[0], it[1], it[2]) } ?: Vec3f.ZERO
+                val r = rotation?.let { QuatF(it[0], it[1], it[2], it[3]) } ?: QuatF.IDENTITY
+                val s = scale?.let { Vec3f(it[0], it[1], it[2]) } ?: Vec3f.ONES
+                nodeGrp.transform.setCompositionOf(t, r, s)
             }
 
             childRefs.forEach {

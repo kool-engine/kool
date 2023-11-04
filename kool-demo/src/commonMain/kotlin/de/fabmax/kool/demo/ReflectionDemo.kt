@@ -258,7 +258,7 @@ class ReflectionDemo : DemoScene("Reflections") {
         private val rotOff = randomF(0f, 3f)
 
         init {
-            transform = MatrixTransform()
+            transform = MatrixTransformF()
             light.setup(Vec3f.ZERO, Vec3f.X_AXIS, 50f)
             addNode(light)
 

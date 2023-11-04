@@ -6,7 +6,7 @@ import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.scene.ColorMesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Tags
-import de.fabmax.kool.scene.TrsTransform
+import de.fabmax.kool.scene.TrsTransformF
 import de.fabmax.kool.util.Color
 
 expect abstract class RigidActor : CommonRigidActor {
@@ -31,7 +31,7 @@ abstract class CommonRigidActor : Releasable {
 
     abstract val isActive: Boolean
 
-    val transform = TrsTransform()
+    val transform = TrsTransformF()
 
     val onPhysicsUpdate = mutableListOf<(Float) -> Unit>()
 
@@ -81,7 +81,7 @@ abstract class CommonRigidActor : Releasable {
     }
 
     fun toLocal(vec: MutableVec3f, w: Float = 1f): MutableVec3f {
-        return transform.matrixInverse.transform(vec, w)
+        return transform.invMatrixF.transform(vec, w)
     }
 
     open fun toMesh(meshColor: Color, materialCfg: KslPbrShader.Config.() -> Unit = { }): Node = ColorMesh().apply {

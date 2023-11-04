@@ -203,7 +203,7 @@ class ManyVehiclesDemo : DemoScene("Many Vehicles") {
 
         fun addChassisInstance(instanceData: MeshInstanceList) {
             instanceData.addInstance {
-                vehicle.transform.matrix.putTo(this)
+                vehicle.transform.matrixF.putTo(this)
                 color.putTo(this)
             }
         }
@@ -211,7 +211,7 @@ class ManyVehiclesDemo : DemoScene("Many Vehicles") {
         fun addWheelInstances(instanceData: MeshInstanceList) {
             for (i in 0..3) {
                 val wheelInfo = vehicle.wheelInfos[i]
-                tmpMat.set(vehicle.transform.matrix).translate(vehicleProps.chassisCMOffset).mul(tmpMat2.set(wheelInfo.transform.matrix))
+                tmpMat.set(vehicle.transform.matrixF).translate(vehicleProps.chassisCMOffset).mul(tmpMat2.set(wheelInfo.transform.matrixF))
                 instanceData.addInstance {
                     tmpMat.putTo(this)
                 }

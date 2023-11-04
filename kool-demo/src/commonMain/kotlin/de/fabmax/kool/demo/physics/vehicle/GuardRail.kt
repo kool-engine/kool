@@ -206,7 +206,7 @@ class GuardRail {
             pointLight.radius = sqrt(pointLight.intensity)
             actor.transform.transform(pointLight.position.set(0f, 0.5f, 0.1f))
 
-            actor.transform.matrix.putTo(buf)
+            actor.transform.matrixF.putTo(buf)
             emission.putTo(buf)
         }
     }

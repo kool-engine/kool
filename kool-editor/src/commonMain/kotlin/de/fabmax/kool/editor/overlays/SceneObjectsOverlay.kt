@@ -231,7 +231,7 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
                 }
 
                 instances.addInstance {
-                    light.modelMat.putTo(this)
+                    light.modelMatF.putTo(this)
                     light.color.putTo(this)
                 }
             }
@@ -247,7 +247,7 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
                 val isActive = it.sceneModel.cameraState.value == it
                 val color = if (isActive) MdColor.GREY tone 300 else MdColor.GREY tone 700
                 cameraInstances.addInstance {
-                    it.nodeModel.drawNode.modelMat.putTo(this)
+                    it.nodeModel.drawNode.modelMatF.putTo(this)
                     put(color.r)
                     put(color.g)
                     put(color.b)
@@ -264,7 +264,7 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
             .filter { it.isVisibleState.value }
             .forEach {
                 groupInstances.addInstance {
-                    it.drawNode.modelMat.putTo(this)
+                    it.drawNode.modelMatF.putTo(this)
                     put(1f)
                     put(1f)
                     put(1f)

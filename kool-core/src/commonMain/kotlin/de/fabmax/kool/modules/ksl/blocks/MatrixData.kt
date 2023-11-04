@@ -40,7 +40,7 @@ class MvpMatrixData(program: KslProgram) : MatrixData(program, "uMvpMat") {
     private val tmpMat4d = MutableMat4d()
 
     override fun onUpdate(cmd: DrawCommand) {
-        if (cmd.isDoublePrecision) {
+        if (cmd.queue.isDoublePrecision) {
             cmd.queue.viewProjMatD.mul(cmd.modelMatD, tmpMat4d)
             uMatrix.value.set(tmpMat4d)
         } else {
@@ -57,7 +57,7 @@ class ModelMatrixData(program: KslProgram) : MatrixData(program, "uModelMat") {
     override val name = NAME
 
     override fun onUpdate(cmd: DrawCommand) {
-        if (cmd.isDoublePrecision) {
+        if (cmd.queue.isDoublePrecision) {
             uMatrix.value.set(cmd.modelMatD)
         } else {
             uMatrix.value.set(cmd.modelMatF)

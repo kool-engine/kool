@@ -82,7 +82,7 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, val wor
         pxVehicle = createVehicle(vehicleProps)
 
         pxRigidActor = pxVehicle.physXState.physxActor.rigidBody
-        transform.set(pose)
+        transform.setMatrix(pose)
 
         vehicleSimulationContext = PxVehiclePhysXSimulationContext().apply {
             setToDefault()

@@ -157,7 +157,9 @@ abstract class KoolContext {
             onRender[i](this)
         }
 
-        backgroundScene.renderScene(this)
+        if (!backgroundScene.isEmpty) {
+            backgroundScene.renderScene(this)
+        }
 
         // draw scene contents (back to front)
         for (i in scenes.indices) {

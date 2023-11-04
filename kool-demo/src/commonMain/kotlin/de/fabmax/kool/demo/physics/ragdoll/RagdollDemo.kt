@@ -494,12 +494,12 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
         reflectionMap = ibl.reflectionMap
     }
 
-    private class BodyInstance(val trs: TrsTransform, val size: Vec3f, color: Color) {
+    private class BodyInstance(val trs: TrsTransformF, val size: Vec3f, color: Color) {
         private val mutColor = MutableColor(color)
         private val bufTransform = MutableMat4f()
 
         fun putInstanceData(buf: Float32Buffer) {
-            bufTransform.set(trs.matrix).scale(size)
+            bufTransform.set(trs.matrixF).scale(size)
             bufTransform.putTo(buf)
             mutColor.putTo(buf)
         }

@@ -34,7 +34,7 @@ class EditorCamTransform(val editor: KoolEditor) : OrbitInputTransform("Editor c
     }
 
     private fun animatePan(target: Vec3d, speed: Double = 10.0) {
-        val pos = transform.getPosition(MutableVec3d())
+        val pos = transform.getTranslationD(MutableVec3d())
         val diff = MutableVec3d(target).subtract(pos)
         if (diff.length() < 0.001) {
             // target reached

@@ -1,10 +1,10 @@
 package de.fabmax.kool.physics.vehicle
 
-import de.fabmax.kool.scene.TrsTransform
+import de.fabmax.kool.scene.TrsTransformF
 
 class WheelInfo {
 
-    val transform = TrsTransform()
+    val transform = TrsTransformF()
 
     var lateralSlip = 0f
     var longitudinalSlip = 0f

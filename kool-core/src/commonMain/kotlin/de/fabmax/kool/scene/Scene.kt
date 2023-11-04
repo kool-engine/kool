@@ -37,6 +37,9 @@ open class Scene(name: String? = null) : Node(name) {
     var framebufferCaptureMode = FramebufferCaptureMode.Disabled
     val capturedFramebuffer = Texture2d()
 
+    val isEmpty: Boolean
+        get() = children.isEmpty() && mutOffscreenPasses.isEmpty() && addOffscreenPasses.isEmpty() && remOffscreenPasses.isEmpty()
+
     fun addOffscreenPass(pass: OffscreenRenderPass) {
         addOffscreenPasses += pass
     }

@@ -36,7 +36,7 @@ actual class RigidDynamic internal constructor(
         if (isKinematic) {
             pxRigidBody.setRigidBodyFlag(PxRigidBodyFlagEnum.eKINEMATIC, true)
         }
-        transform.set(pose)
+        transform.setMatrix(pose)
     }
 
     actual fun wakeUp() {

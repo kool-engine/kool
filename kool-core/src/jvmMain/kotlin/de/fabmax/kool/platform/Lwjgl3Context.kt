@@ -40,17 +40,19 @@ class Lwjgl3Context : KoolContext() {
 
     private var prevFrameTime = System.nanoTime()
 
-    private object SysInfo : ArrayList<String>() {
+    private object SysInfo {
+        val lines = ArrayList<String>()
+
         private var prevHeapSz = 1e9
         private var prevHeapSzTime = 0L
         private var avgHeapGrowth = 0.0
 
         fun set(api: String, deviceName: String) {
-            clear()
-            add(System.getProperty("java.vm.name") + " " + System.getProperty("java.version"))
-            add(api)
-            add(deviceName)
-            add("")
+            lines.clear()
+            lines.add(System.getProperty("java.vm.name") + " " + System.getProperty("java.version"))
+            lines.add(api)
+            lines.add(deviceName)
+            lines.add("")
             update()
         }
 
@@ -70,7 +72,7 @@ class Lwjgl3Context : KoolContext() {
                 }
             }
             prevHeapSz = heapSz
-            set(3, "Heap: %.1f MB (+%.1f MB/s)".format(Locale.ENGLISH, heapSz, avgHeapGrowth))
+            lines[3] = "Heap: %.1f MB (+%.1f MB/s)".format(Locale.ENGLISH, heapSz, avgHeapGrowth)
         }
     }
 
@@ -165,7 +167,7 @@ class Lwjgl3Context : KoolContext() {
 
     override fun generateKslShader(shader: KslShader, pipelineLayout: Pipeline.Layout) = renderBackend.generateKslShader(shader, pipelineLayout)
 
-    override fun getSysInfos(): List<String> = SysInfo
+    override fun getSysInfos(): List<String> = SysInfo.lines
 
     override fun getWindowViewport(result: Viewport) {
         renderBackend.getWindowViewport(result)

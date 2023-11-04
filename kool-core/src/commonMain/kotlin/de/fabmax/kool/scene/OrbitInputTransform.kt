@@ -86,8 +86,8 @@ open class OrbitInputTransform(name: String? = null) : Node(name), InputStack.Po
     private val mouseTransform = MutableMat4d()
     private val mouseTransformInv = MutableMat4d()
 
-    private val matrixTransform: MatrixTransform
-        get() = transform as MatrixTransform
+    private val matrixTransform: MatrixTransformD
+        get() = transform as MatrixTransformD
 
     var smoothness: Double = 0.0
         set(value) {
@@ -99,7 +99,7 @@ open class OrbitInputTransform(name: String? = null) : Node(name), InputStack.Po
         }
 
     init {
-        transform = MatrixTransform()
+        transform = MatrixTransformD()
         smoothness = 0.5
         panPlane.p.set(Vec3f.ZERO)
         panPlane.n.set(Vec3f.Y_AXIS)
@@ -153,7 +153,7 @@ open class OrbitInputTransform(name: String? = null) : Node(name), InputStack.Po
         if (isKeepingStandardTransform) {
             matrixTransform.mul(mouseTransform)
         } else {
-            matrixTransform.set(mouseTransform)
+            matrixTransform.setMatrix(mouseTransform)
         }
     }
 

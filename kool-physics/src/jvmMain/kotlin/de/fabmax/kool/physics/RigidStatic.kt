@@ -17,6 +17,6 @@ actual class RigidStatic actual constructor(pose: Mat4f) : RigidActor() {
             pxRigidStatic = Physics.physics.createRigidStatic(pxPose)
             pxRigidActor = pxRigidStatic
         }
-        transform.set(pose)
+        transform.setMatrix(pose)
     }
 }

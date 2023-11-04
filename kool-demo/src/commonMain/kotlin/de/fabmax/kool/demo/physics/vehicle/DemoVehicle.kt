@@ -175,8 +175,8 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
         rearLightRt.position.set(-0.4f, 0.6f, -2.5f)
         vehicle.transform.transform(rearLightRt.position)
 
-        headLightLt.orientation.set(vehicle.transform.rotation).rotate((-85f).deg, Vec3f.Y_AXIS).rotate((-7f).deg, Vec3f.Z_AXIS)
-        headLightRt.orientation.set(vehicle.transform.rotation).rotate((-95f).deg, Vec3f.Y_AXIS).rotate((-7f).deg, Vec3f.Z_AXIS)
+        headLightLt.rotation.set(QuatF.IDENTITY).mul(vehicle.transform.rotation).rotate((-85f).deg, Vec3f.Y_AXIS).rotate((-7f).deg, Vec3f.Z_AXIS)
+        headLightRt.rotation.set(QuatF.IDENTITY).mul(vehicle.transform.rotation).rotate((-95f).deg, Vec3f.Y_AXIS).rotate((-7f).deg, Vec3f.Z_AXIS)
         headLightLt.position.set(0.65f, 0.3f, 2.7f)
         vehicle.transform.transform(headLightLt.position)
         headLightRt.position.set(-0.65f, 0.3f, 2.7f)

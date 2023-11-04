@@ -32,9 +32,9 @@ class Gizmo : Node(), InputStack.PointerListener {
     private val pickPoint = MutableVec3f()
     private val pickPlane = Plane()
     private val dragStartPos = MutableVec3f()
-    private val tmpMat4 = MutableMat4d()
-    private val tmpMat3 = MutableMat3d()
-    private val tmpQuatD = MutableQuatD()
+    private val tmpMat4 = MutableMat4f()
+    private val tmpMat3 = MutableMat3f()
+    private val tmpQuat = MutableQuatF()
 
     private val dragGroup = Node()
     private val scaleGroup = Node()
@@ -102,7 +102,7 @@ class Gizmo : Node(), InputStack.PointerListener {
 
     var gizmoListener: GizmoListener? = null
 
-    private val matTransform = MatrixTransform()
+    private val matTransform = MatrixTransformF()
 
     init {
         transform = matTransform
@@ -162,20 +162,14 @@ class Gizmo : Node(), InputStack.PointerListener {
         return this
     }
 
-    fun getGizmoTransform(result: MutableMat4d): Mat4d {
-        return result.set(transform.matrix).mul(dragGroup.transform.matrix)
+    fun getGizmoTransform(result: MutableMat4f): Mat4f {
+        return result.set(transform.matrixF).mul(dragGroup.transform.matrixF)
     }
 
     fun getGizmoTransform(target: Node) {
         val t = target.transform
-        if (t is TrsTransform) {
-            tmpMat4.set(transform.matrix).mul(dragGroup.transform.matrix)
-            t.set(tmpMat4)
-        } else {
-            t as MatrixTransform
-            t.matrix.set(transform.matrix).mul(dragGroup.transform.matrix)
-            t.markDirty()
-        }
+        tmpMat4.set(transform.matrixF).mul(dragGroup.transform.matrixF)
+        t.setMatrix(tmpMat4)
     }
 
     fun getTranslation(result: MutableVec3f): MutableVec3f {
@@ -183,31 +177,36 @@ class Gizmo : Node(), InputStack.PointerListener {
     }
 
     fun getEulerAngles(result: MutableVec3f): MutableVec3f {
-        return getGizmoTransform(tmpMat4).getUpperLeft(tmpMat3).getEulerAngles().toMutableVec3f(result)
+        return getGizmoTransform(tmpMat4).getUpperLeft(tmpMat3).getEulerAngles(result)
     }
 
     fun getQuatRotation(result: MutableQuatF): MutableQuatF {
-        getGizmoTransform(tmpMat4).decompose(rotation = tmpQuatD)
-        return tmpQuatD.toMutableQuatF(result)
+        getGizmoTransform(tmpMat4).decompose(rotation = result)
+        return result
     }
 
     fun setGizmoTransform(transformMatrix: Mat4d) {
-        matTransform.set(transformMatrix)
+        matTransform.setMatrix(tmpMat4.set(transformMatrix))
     }
 
     fun setTranslation(translation: Vec3f) {
-        matTransform.setPosition(translation.x.toDouble(), translation.y.toDouble(), translation.z.toDouble())
+        matTransform.matrixF.apply {
+            m03 = translation.x
+            m13 = translation.y
+            m23 = translation.z
+        }
+        transform.markDirty()
     }
 
     fun setEulerAngles(euler: Vec3f) {
-        tmpMat3.setIdentity().rotate(euler.x.toDouble().deg, euler.y.toDouble().deg, euler.z.toDouble().deg)
-        matTransform.matrix.setUpperLeft(tmpMat3)
+        tmpMat3.setIdentity().rotate(euler.x.deg, euler.y.deg, euler.z.deg)
+        matTransform.matrixF.setUpperLeft(tmpMat3)
         transform.markDirty()
     }
 
     fun setQuatRotation(rotation: QuatF) {
-        tmpMat3.setIdentity().rotate(rotation.toQuatD())
-        matTransform.matrix.setUpperLeft(tmpMat3)
+        tmpMat3.setIdentity().rotate(rotation)
+        matTransform.matrixF.setUpperLeft(tmpMat3)
         transform.markDirty()
     }
 
@@ -403,7 +402,7 @@ class Gizmo : Node(), InputStack.PointerListener {
 
         if (isDrag && !ptr.isDrag) {
             // user stopped dragging, apply drag transform
-            matTransform.mul(dragGroup.transform.matrix)
+            matTransform.mul(dragGroup.transform.matrixF)
             dragGroup.transform.setIdentity()
             gizmoListener?.onDragFinished(ctx)
             isDrag = false

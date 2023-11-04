@@ -191,12 +191,20 @@ open class Mesh(var geometry: IndexedVertexList, name: String? = null) : Node(na
 
         if (!transform.isIdentity) {
             // transform ray to local coordinates
-            test.transformBy(transform.matrixInverse)
+            if (transform.isDoublePrecision) {
+                test.transformBy(transform.invMatrixD)
+            } else {
+                test.transformBy(transform.invMatrixF)
+            }
         }
         rayTest.rayTest(test)
         if (!transform.isIdentity) {
             // transform ray back to previous coordinates
-            test.transformBy(transform.matrix)
+            if (transform.isDoublePrecision) {
+                test.transformBy(transform.matrixD)
+            } else {
+                test.transformBy(transform.matrixF)
+            }
         }
     }
 

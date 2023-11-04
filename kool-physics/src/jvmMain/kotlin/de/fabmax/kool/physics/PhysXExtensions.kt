@@ -4,7 +4,7 @@ package de.fabmax.kool.physics
 
 import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.BoundingBox
-import de.fabmax.kool.scene.TrsTransform
+import de.fabmax.kool.scene.TrsTransformF
 import org.lwjgl.system.MemoryStack
 import physx.character.PxExtendedVec3
 import physx.common.*
@@ -37,10 +37,11 @@ fun PxTransform.toMat4f(result: MutableMat4f): MutableMat4f {
     result[2, 3] = p.z
     return result
 }
-fun PxTransform.toTrsTransform(result: TrsTransform): TrsTransform {
-    result.translation.set(p.x.toDouble(), p.y.toDouble(), p.z.toDouble())
-    result.setRotation(q.toQuatF())
+fun PxTransform.toTrsTransform(result: TrsTransformF): TrsTransformF {
+    result.translation.set(p.x, p.y, p.z)
+    result.rotation.set(q.toQuatF())
     result.scale.set(Vec3d.ONES)
+    result.markDirty()
     return result
 }
 fun PxTransform.set(mat: Mat4f): PxTransform {

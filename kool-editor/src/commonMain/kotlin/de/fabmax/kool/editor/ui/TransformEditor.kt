@@ -245,7 +245,7 @@ class TransformEditor(component: TransformComponent) : ComponentEditor<Transform
                 EditorState.TransformOrientation.GLOBAL -> {
                     val parent = component.nodeModel.parent
                     if (parent is SceneNodeModel) {
-                        TransformData.fromMatrix(component.nodeModel.drawNode.modelMat)
+                        TransformData.fromMatrix(component.nodeModel.drawNode.modelMatD)
                     } else {
                         // parent node is the scene -> parent reference frame == global reference frame
                         transformData
@@ -266,7 +266,7 @@ class TransformEditor(component: TransformComponent) : ComponentEditor<Transform
                 EditorState.TransformOrientation.GLOBAL -> {
                     val parent = component.nodeModel.parent
                     if (parent is SceneNodeModel) {
-                        val globalToParent = parent.drawNode.modelMatInverse
+                        val globalToParent = parent.drawNode.invModelMatD
                         val m = globalToParent.mul(transformData.toMat4d(MutableMat4d()), MutableMat4d())
                         TransformData.fromMatrix(m)
                     } else {
