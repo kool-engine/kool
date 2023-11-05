@@ -2,12 +2,10 @@
 
 package de.fabmax.kool.physics
 
+import de.fabmax.kool.physics.geometry.ConvexMeshImpl
+import de.fabmax.kool.physics.geometry.CylinderGeometry
 import de.fabmax.kool.util.logI
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
 import physx.*
-import kotlin.coroutines.CoroutineContext
 
 // static top-level PhysX functions
 val NativeArrayHelpers: NativeArrayHelpers get() = PhysXJsLoader.physXJs.NativeArrayHelpers.prototype as NativeArrayHelpers
@@ -18,29 +16,26 @@ val PxRigidActorExt: PxRigidActorExt get() = PhysXJsLoader.physXJs.PxRigidActorE
 val PxRigidBodyExt: PxRigidBodyExt get() = PhysXJsLoader.physXJs.PxRigidBodyExt.prototype as PxRigidBodyExt
 val PxVehicleTireForceParamsExt: PxVehicleTireForceParamsExt get() = PhysXJsLoader.physXJs.PxVehicleTireForceParamsExt.prototype as PxVehicleTireForceParamsExt
 
-actual object Physics : CoroutineScope {
+internal actual fun PhysicsSystem(): PhysicsSystem = PhysicsImpl
 
-    actual val NOTIFY_TOUCH_FOUND: Int
+object PhysicsImpl : PhysicsSystem {
+
+    override val NOTIFY_TOUCH_FOUND: Int
         get() = PxPairFlagEnum.eNOTIFY_TOUCH_FOUND
-    actual val NOTIFY_TOUCH_LOST: Int
+    override val NOTIFY_TOUCH_LOST: Int
         get() = PxPairFlagEnum.eNOTIFY_TOUCH_LOST
-    actual val NOTIFY_CONTACT_POINTS: Int
+    override val NOTIFY_CONTACT_POINTS: Int
         get() = PxPairFlagEnum.eNOTIFY_CONTACT_POINTS
 
-    private val job = Job()
-    actual override val coroutineContext: CoroutineContext
-        get() = job
-
-    private val loadingDeferred = CompletableDeferred<Unit>(job)
     private var isLoading = false
-    actual val isLoaded: Boolean
-        get() = loadingDeferred.isCompleted
+    override val isLoaded: Boolean
+        get() = PhysXJsLoader.physxDeferred.isCompleted
 
     lateinit var defaultCpuDispatcher: PxDefaultCpuDispatcher
 
-    actual val defaultMaterial = Material(0.5f)
+    override val defaultMaterial = Material(0.5f)
     internal lateinit var vehicleFrame: PxVehicleFrame
-    internal lateinit var unitCylinderSweepMesh: PxConvexMesh
+    internal lateinit var unitCylinder: PxConvexMesh
 
     // default PhysX facilities
     lateinit var foundation: PxFoundation
@@ -50,7 +45,7 @@ actual object Physics : CoroutineScope {
     lateinit var cookingParams: PxCookingParams
         private set
 
-    actual fun loadPhysics() {
+    override fun loadPhysics() {
         if (!isLoading) {
             isLoading = true
             PhysXJsLoader.addOnLoadListener {
@@ -69,6 +64,8 @@ actual object Physics : CoroutineScope {
                 cookingParams = PxCookingParams(scale)
                 cookingParams.suppressTriangleMeshRemapTable = true
 
+                unitCylinder = ConvexMeshImpl.makePxConvexMesh(CylinderGeometry.convexMeshPoints(1f, 1f))
+
                 // init vehicle simulation framework
                 PxVehicleTopLevelFunctions.InitVehicleExtension(foundation)
                 vehicleFrame = PxVehicleFrame().apply {
@@ -76,22 +73,20 @@ actual object Physics : CoroutineScope {
                     latAxis = PxVehicleAxesEnum.ePosX
                     vrtAxis = PxVehicleAxesEnum.ePosY
                 }
-                unitCylinderSweepMesh = PxVehicleTopLevelFunctions.VehicleUnitCylinderSweepMeshCreate(vehicleFrame, physics, cookingParams)
 
                 defaultCpuDispatcher = PxTopLevelFunctions.DefaultCpuDispatcherCreate(0)
 
                 logI { "PhysX loaded, version: ${pxVersionToString(PxTopLevelFunctions.PHYSICS_VERSION)}" }
-                loadingDeferred.complete(Unit)
             }
             PhysXJsLoader.loadModule()
         }
     }
 
-    actual suspend fun awaitLoaded() {
+    override suspend fun awaitLoaded() {
         if (!isLoading) {
             loadPhysics()
         }
-        loadingDeferred.await()
+        PhysXJsLoader.physxDeferred.await()
     }
 
     fun checkIsLoaded() {

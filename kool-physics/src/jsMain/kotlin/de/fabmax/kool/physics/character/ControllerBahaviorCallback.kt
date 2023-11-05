@@ -1,11 +1,11 @@
 package de.fabmax.kool.physics.character
 
-import de.fabmax.kool.physics.PhysicsWorld
+import de.fabmax.kool.physics.PhysicsWorldImpl
 import physx.PxActorFromPointer
 import physx.PxControllerBehaviorCallbackImpl
 import physx.PxControllerBehaviorFlagEnum
 
-class ControllerBahaviorCallback(private val world: PhysicsWorld) {
+class ControllerBahaviorCallback(private val world: PhysicsWorldImpl) {
 
     lateinit var controller: JsCharacterController
 

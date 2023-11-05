@@ -5,7 +5,12 @@
 
 package physx
 
-external interface PxBoxGeometry : PxGeometry
+external interface PxBoxGeometry : PxGeometry {
+    /**
+     * WebIDL type: [PxVec3] (Value)
+     */
+    var halfExtents: PxVec3
+}
 
 /**
  * @param hx WebIDL type: float
@@ -24,7 +29,16 @@ external interface PxBVH : PxBase
 
 fun PxBVHFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxBVH = js("_module.wrapPointer(ptr, _module.PxBVH)")
 
-external interface PxCapsuleGeometry : PxGeometry
+external interface PxCapsuleGeometry : PxGeometry {
+    /**
+     * WebIDL type: float
+     */
+    var radius: Float
+    /**
+     * WebIDL type: float
+     */
+    var halfHeight: Float
+}
 
 /**
  * @param radius     WebIDL type: float
@@ -208,7 +222,20 @@ val PxConvexMesh.nbPolygons
 val PxConvexMesh.localBounds
     get() = getLocalBounds()
 
-external interface PxConvexMeshGeometry : PxGeometry
+external interface PxConvexMeshGeometry : PxGeometry {
+    /**
+     * WebIDL type: [PxMeshScale] (Value)
+     */
+    var scale: PxMeshScale
+    /**
+     * WebIDL type: [PxConvexMesh]
+     */
+    var convexMesh: PxConvexMesh
+    /**
+     * WebIDL type: [PxConvexMeshGeometryFlags] (Value)
+     */
+    var meshFlags: PxConvexMeshGeometryFlags
+}
 
 /**
  * @param mesh WebIDL type: [PxConvexMesh]
@@ -911,7 +938,12 @@ fun PxSimpleTriangleMesh.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
-external interface PxSphereGeometry : PxGeometry
+external interface PxSphereGeometry : PxGeometry {
+    /**
+     * WebIDL type: float
+     */
+    var radius: Float
+}
 
 /**
  * @param ir WebIDL type: float
@@ -1078,6 +1110,19 @@ fun PxTriangleMeshFlags.destroy() {
 }
 
 external interface PxTriangleMeshGeometry : PxGeometry {
+    /**
+     * WebIDL type: [PxMeshScale] (Value)
+     */
+    var scale: PxMeshScale
+    /**
+     * WebIDL type: [PxMeshGeometryFlags] (Value)
+     */
+    var meshFlags: PxMeshGeometryFlags
+    /**
+     * WebIDL type: [PxTriangleMesh]
+     */
+    var triangleMesh: PxTriangleMesh
+
     /**
      * @return WebIDL type: boolean
      */

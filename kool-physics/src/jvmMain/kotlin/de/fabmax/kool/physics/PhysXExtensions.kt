@@ -107,6 +107,7 @@ fun MemoryStack.createPxFilterData(w0: Int, w1: Int, w2: Int, w3: Int) =
 fun MemoryStack.createPxHeightFieldSample() = PxHeightFieldSample.createAt(this, MemoryStack::nmalloc)
 fun MemoryStack.createPxHullPolygon() = PxHullPolygon.createAt(this, MemoryStack::nmalloc)
 fun MemoryStack.createPxMeshScale(s: PxVec3, r: PxQuat) = PxMeshScale.createAt(this, MemoryStack::nmalloc, s, r)
+fun MemoryStack.createPxMeshScale(s: Vec3f, r: QuatF = QuatF.IDENTITY) = PxMeshScale.createAt(this, MemoryStack::nmalloc, s.toPxVec3(createPxVec3()), r.toPxQuat(createPxQuat()))
 fun MemoryStack.createPxVec3() = PxVec3.createAt(this, MemoryStack::nmalloc)
 fun MemoryStack.createPxVec3(x: Float, y: Float, z: Float) = PxVec3.createAt(this, MemoryStack::nmalloc, x, y, z)
 

@@ -2,7 +2,7 @@ package de.fabmax.kool.physics.articulations
 
 import de.fabmax.kool.math.Mat4f
 
-expect enum class ArticulationJointType {
+enum class ArticulationJointType {
     /**
      * All joint axes, i.e. degrees of freedom (DOFs) locked
      */
@@ -24,7 +24,7 @@ expect enum class ArticulationJointType {
     SPHERICAL
 }
 
-expect enum class ArticulationJointAxis {
+enum class ArticulationJointAxis {
     /**
      * Rotational about eX
      */
@@ -43,13 +43,13 @@ expect enum class ArticulationJointAxis {
     LINEAR_Z
 }
 
-expect enum class ArticulationMotionMode {
+enum class ArticulationMotionMode {
     FREE,
     LIMITED,
     LOCKED
 }
 
-expect enum class ArticulationDriveType {
+enum class ArticulationDriveType {
     ACCELERATION,
     FORCE,
     NONE,
@@ -57,7 +57,7 @@ expect enum class ArticulationDriveType {
     VELOCITY
 }
 
-expect class ArticulationJoint {
+interface ArticulationJoint {
 
     var jointType: ArticulationJointType
 

@@ -38,7 +38,7 @@ object VehicleUtils {
     val defaultChassisMaterial = Material(0.5f, 0.5f, 0.5f)
     val defaultWheelMaterial = Material(0.5f, 0.5f, 0.5f)
     val defaultWheelMesh by lazy {
-        ConvexMesh(CommonCylinderGeometry.convexMeshPoints(1f, 1f)).apply {
+        ConvexMesh(CylinderGeometry.convexMeshPoints(1f, 1f)).apply {
             releaseWithGeometry = false
         }
     }

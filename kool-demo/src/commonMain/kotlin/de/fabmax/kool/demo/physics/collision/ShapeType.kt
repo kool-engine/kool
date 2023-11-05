@@ -100,14 +100,26 @@ enum class ShapeType {
 
         override fun generateShapes(genCtx: ShapeGeneratorContext): CollisionShapes {
             val s = genCtx.rand.randomF(1f, 2f)
-            val shape1 = Shape(BoxGeometry(MutableVec3f(0.5f, 0.5f, 2.0f).mul(s)), genCtx.material)
-            val shape2 = Shape(BoxGeometry(MutableVec3f(0.5f, 0.5f, 2.0f).mul(s)), genCtx.material)
-            val shape3 = Shape(BoxGeometry(MutableVec3f(2.5f, 0.5f, 0.5f).mul(s)), genCtx.material)
-            val shape4 = Shape(BoxGeometry(MutableVec3f(2.5f, 0.5f, 0.5f).mul(s)), genCtx.material)
-            shape1.localPose.translate(1f * s, 0f, 0f)
-            shape2.localPose.translate(-1f * s, 0f, 0f)
-            shape3.localPose.translate(0f, 0f, 1.25f * s)
-            shape4.localPose.translate(0f, 0f, -1.25f * s)
+            val shape1 = Shape(
+                BoxGeometry(MutableVec3f(0.5f, 0.5f, 2.0f).mul(s)),
+                genCtx.material,
+                Mat4f.translation(1f * s, 0f, 0f)
+            )
+            val shape2 = Shape(
+                BoxGeometry(MutableVec3f(0.5f, 0.5f, 2.0f).mul(s)),
+                genCtx.material,
+                Mat4f.translation(-1f * s, 0f, 0f)
+            )
+            val shape3 = Shape(
+                BoxGeometry(MutableVec3f(2.5f, 0.5f, 0.5f).mul(s)),
+                genCtx.material,
+                Mat4f.translation(0f, 0f, 1.25f * s)
+            )
+            val shape4 = Shape(
+                BoxGeometry(MutableVec3f(2.5f, 0.5f, 0.5f).mul(s)),
+                genCtx.material,
+                Mat4f.translation(0f, 0f, -1.25f * s)
+            )
 
             val mass = 8 * s.pow(3)
             return CollisionShapes(mass, shape1, shape2, shape3, shape4)

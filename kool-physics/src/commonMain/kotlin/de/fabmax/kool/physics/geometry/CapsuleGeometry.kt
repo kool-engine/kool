@@ -7,12 +7,13 @@ import de.fabmax.kool.math.spatial.BoundingBox
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.simpleShape
 
-expect class CapsuleGeometry(height: Float, radius: Float) : CommonCapsuleGeometry, CollisionGeometry {
-    override fun release()
-}
+expect fun CapsuleGeometry(height: Float, radius: Float): CapsuleGeometry
 
-abstract class CommonCapsuleGeometry(val height: Float, val radius: Float) {
-    open fun generateMesh(target: MeshBuilder) {
+interface CapsuleGeometry : CollisionGeometry {
+    val height: Float
+    val radius: Float
+
+    override fun generateMesh(target: MeshBuilder) {
         target.apply {
             profile {
                 val halfHeight = height / 2f
@@ -28,11 +29,11 @@ abstract class CommonCapsuleGeometry(val height: Float, val radius: Float) {
         }
     }
 
-    open fun getBounds(result: BoundingBox): BoundingBox {
+    override fun getBounds(result: BoundingBox): BoundingBox {
         return result.set(-radius - height / 2f, -radius, -radius, radius + height / 2f, radius, radius)
     }
 
-    open fun estimateInertiaForMass(mass: Float, result: MutableVec3f): MutableVec3f {
+    override fun estimateInertiaForMass(mass: Float, result: MutableVec3f): MutableVec3f {
         // rough approximation: use inertia of a slightly shorter cylinder
         val h = height - radius
         val iy = 0.5f * mass * radius * radius

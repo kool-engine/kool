@@ -5,26 +5,26 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.QuatF
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.spatial.BoundingBox
+import de.fabmax.kool.scene.Tags
+import de.fabmax.kool.scene.TrsTransformF
 import org.lwjgl.system.MemoryStack
 import physx.extensions.PxRigidActorExt
 import physx.physics.PxRigidActor
 import physx.physics.PxShapeFlagEnum
 
-actual abstract class RigidActor : CommonRigidActor() {
+@Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
+actual typealias RigidActorHolder = PxRigidActor
 
-    init {
-        Physics.checkIsLoaded()
-    }
+abstract class RigidActorImpl : RigidActor {
+    init { PhysicsImpl.checkIsLoaded() }
 
-    abstract val pxRigidActor: PxRigidActor
-
-    actual var simulationFilterData = FilterData { setCollisionGroup(0); setCollidesWithEverything() }
+    override var simulationFilterData = FilterData { setCollisionGroup(0); setCollidesWithEverything() }
         set(value) {
             field = value
             updateFilterData()
         }
 
-    actual var queryFilterData = FilterData()
+    override var queryFilterData = FilterData()
         set(value) {
             field = value
             updateFilterData()
@@ -34,46 +34,55 @@ actual abstract class RigidActor : CommonRigidActor() {
     private val bufPosition = MutableVec3f()
     private val bufRotation = MutableQuatF()
 
-    actual override var position: Vec3f
-        get() = pxRigidActor.globalPose.p.toVec3f(bufPosition)
+    override var position: Vec3f
+        get() = holder.globalPose.p.toVec3f(bufPosition)
         set(value) {
-            val pose = pxRigidActor.globalPose
+            val pose = holder.globalPose
             value.toPxVec3(pose.p)
-            pxRigidActor.globalPose = pose
-            updateTransform()
+            holder.globalPose = pose
+            updateTransform(true)
         }
 
-    actual override var rotation: QuatF
-        get() = pxRigidActor.globalPose.q.toQuatF(bufRotation)
+    override var rotation: QuatF
+        get() = holder.globalPose.q.toQuatF(bufRotation)
         set(value) {
-            val pose = pxRigidActor.globalPose
+            val pose = holder.globalPose
             value.toPxQuat(pose.q)
-            pxRigidActor.globalPose = pose
-            updateTransform()
+            holder.globalPose = pose
+            updateTransform(true)
         }
 
-    actual override var isTrigger: Boolean = false
+    override val worldBounds: BoundingBox
+        get() = holder.worldBounds.toBoundingBox(bufBounds)
+
+    override var isTrigger: Boolean = false
         set(value) {
             field = value
             MemoryStack.stackPush().use { mem ->
                 val flags = if (isTrigger) TRIGGER_SHAPE_FLAGS else SIM_SHAPE_FLAGS
                 val shapeFlags = mem.createPxShapeFlags(flags)
-                shapes.forEach { it.pxShape?.flags = shapeFlags }
+                shapes.forEach { it.holder?.flags = shapeFlags }
             }
         }
 
-    actual override var isActive = true
-        internal set
+    override var isActive = true
 
-    actual val worldBounds: BoundingBox
-        get() = pxRigidActor.worldBounds.toBoundingBox(bufBounds)
+    override val transform = TrsTransformF()
+
+    override val onPhysicsUpdate = mutableListOf<(Float) -> Unit>()
+
+    private val _shapes = mutableListOf<Shape>()
+    override val shapes: List<Shape>
+        get() = _shapes
+
+    override val tags: Tags = Tags()
 
     private fun updateFilterData() {
         MemoryStack.stackPush().use { mem ->
             val sfd = simulationFilterData.toPxFilterData(mem.createPxFilterData())
             val qfd = queryFilterData.toPxFilterData(mem.createPxFilterData())
             shapes.forEach { shape ->
-                shape.pxShape?.let {
+                shape.holder?.let {
                     it.simulationFilterData = sfd
                     it.queryFilterData = qfd
                 }
@@ -82,40 +91,40 @@ actual abstract class RigidActor : CommonRigidActor() {
     }
 
     override fun attachShape(shape: Shape) {
-        super.attachShape(shape)
+        _shapes += shape
         MemoryStack.stackPush().use { mem ->
             val flags = if (isTrigger) TRIGGER_SHAPE_FLAGS else SIM_SHAPE_FLAGS
             val shapeFlags = mem.createPxShapeFlags(flags)
 
-            val pxShape = PxRigidActorExt.createExclusiveShape(pxRigidActor, shape.geometry.pxGeometry, shape.material.pxMaterial, shapeFlags)
+            val pxShape = PxRigidActorExt.createExclusiveShape(holder, shape.geometry.holder, shape.material.pxMaterial, shapeFlags)
             pxShape.localPose = shape.localPose.toPxTransform(mem.createPxTransform())
 
-            val simFd = if (shape.simFilterData !== null) shape.simFilterData else simulationFilterData
+            val simFd = shape.simFilterData ?: simulationFilterData
             pxShape.simulationFilterData = simFd.toPxFilterData(mem.createPxFilterData())
-            val qryFd = if (shape.queryFilterData !== null) shape.queryFilterData else queryFilterData
+            val qryFd = shape.queryFilterData ?: queryFilterData
             pxShape.queryFilterData = qryFd.toPxFilterData(mem.createPxFilterData())
-            shape.pxShape = pxShape
+            shape.holder = pxShape
         }
     }
 
     override fun detachShape(shape: Shape) {
-        shape.pxShape?.release()
-        super.detachShape(shape)
+        _shapes -= shape
+        shape.holder?.release()
     }
 
     override fun release() {
-        pxRigidActor.release()
-        super.release()
+        holder.release()
+        _shapes.clear()
     }
 
     override fun onPhysicsUpdate(timeStep: Float) {
-        updateTransform()
+        updateTransform(false)
         super.onPhysicsUpdate(timeStep)
     }
 
-    protected fun updateTransform() {
-        if (isActive) {
-            pxRigidActor.globalPose.toTrsTransform(transform)
+    private fun updateTransform(force: Boolean) {
+        if (isActive || force) {
+            holder.globalPose.toTrsTransform(transform)
         }
     }
 

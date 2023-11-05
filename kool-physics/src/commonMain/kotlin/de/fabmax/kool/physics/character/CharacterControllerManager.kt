@@ -3,37 +3,33 @@ package de.fabmax.kool.physics.character
 import de.fabmax.kool.physics.PhysicsWorld
 import de.fabmax.kool.physics.Releasable
 
-abstract class CommonCharacterControllerManager(protected val world: PhysicsWorld) : Releasable {
+expect fun CharacterControllerManager(world: PhysicsWorld): CharacterControllerManager
 
-    protected val mutControllers = mutableListOf<CharacterController>()
+abstract class CharacterControllerManager : Releasable {
+    protected val _controllers = mutableListOf<CharacterController>()
     val controllers: List<CharacterController>
-        get() = mutControllers
+        get() = _controllers
 
-    private val onAdvanceListener: (Float) -> Unit = { timeStep ->
+    protected val onAdvanceListener: (Float) -> Unit = { timeStep ->
         for (i in controllers.indices) {
             controllers[i].onAdvancePhysics(timeStep)
         }
     }
 
-    private val onUpdateListener: (Float) -> Unit = { timeStep ->
+    protected val onUpdateListener: (Float) -> Unit = { timeStep ->
         for (i in controllers.indices) {
             controllers[i].onPhysicsUpdate(timeStep)
         }
     }
 
-    init {
-        world.onAdvancePhysics += onAdvanceListener
-        world.onPhysicsUpdate += onUpdateListener
-    }
-
     fun createController(): CharacterController {
         val ctrl = doCreateController()
-        mutControllers += ctrl
+        _controllers += ctrl
         return ctrl
     }
 
     open fun removeController(charController: CharacterController) {
-        mutControllers -= charController
+        _controllers -= charController
     }
 
     protected abstract fun doCreateController(): CharacterController
@@ -42,13 +38,6 @@ abstract class CommonCharacterControllerManager(protected val world: PhysicsWorl
         val copyControllers = mutableListOf<CharacterController>()
         copyControllers += controllers
         copyControllers.forEach { it.release() }
-        mutControllers.clear()
-
-        world.onAdvancePhysics -= onAdvanceListener
-        world.onPhysicsUpdate -= onUpdateListener
+        _controllers.clear()
     }
-}
-
-expect class CharacterControllerManager(world: PhysicsWorld) : CommonCharacterControllerManager {
-    override fun doCreateController(): CharacterController
 }

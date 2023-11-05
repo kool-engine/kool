@@ -5,6 +5,11 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.toRad
 import de.fabmax.kool.physics.*
+import de.fabmax.kool.physics.vehicle.Vehicle.Companion.FRONT_LEFT
+import de.fabmax.kool.physics.vehicle.Vehicle.Companion.FRONT_RIGHT
+import de.fabmax.kool.physics.vehicle.Vehicle.Companion.OMEGA_TO_RPM
+import de.fabmax.kool.physics.vehicle.Vehicle.Companion.REAR_LEFT
+import de.fabmax.kool.physics.vehicle.Vehicle.Companion.REAR_RIGHT
 import de.fabmax.kool.util.memStack
 import org.lwjgl.system.MemoryStack
 import physx.common.PxIDENTITYEnum
@@ -18,24 +23,26 @@ import physx.vehicle2.*
 import kotlin.math.abs
 import kotlin.math.max
 
-actual class Vehicle actual constructor(vehicleProps: VehicleProperties, val world: PhysicsWorld, pose: Mat4f)
-    : CommonVehicle(vehicleProps) {
+actual fun Vehicle(vehicleProps: VehicleProperties, world: PhysicsWorld, pose: Mat4f): Vehicle {
+    return VehicleImpl(vehicleProps, world, pose)
+}
 
-    val pxVehicle: EngineDriveVehicle
+class VehicleImpl(override val vehicleProps: VehicleProperties, val world: PhysicsWorld, pose: Mat4f) : RigidBodyImpl(), Vehicle {
 
     val vehicleSimulationContext: PxVehiclePhysXSimulationContext
+    val pxVehicle: EngineDriveVehicle
 
-    actual override var steerInput = 0f
+    override var steerInput = 0f
         set(value) {
             field = value
             pxVehicle.commandState.steer = -value
         }
-    actual override var throttleInput = 0f
+    override var throttleInput = 0f
         set(value) {
             field = value
             pxVehicle.commandState.throttle = value
         }
-    actual override var brakeInput = 0f
+    override var brakeInput = 0f
         set(value) {
             field = value
             pxVehicle.commandState.setBrakes(0, value)
@@ -53,37 +60,30 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, val wor
     private var engineP = 0f
     private var curGear = 0
 
-    actual val forwardSpeed: Float
+    override val wheelInfos: List<WheelInfo> = List(4) { WheelInfo() }
+
+    override val forwardSpeed: Float
         get() = linearSpeed.z
-    actual val sidewaysSpeed: Float
+    override val sidewaysSpeed: Float
         get() = linearSpeed.x
-    actual val longitudinalAcceleration: Float
+    override val longitudinalAcceleration: Float
         get() = linearAccel.z
-    actual val lateralAcceleration: Float
+    override val lateralAcceleration: Float
         get() = linearAccel.x
-    actual val engineSpeedRpm: Float
+    override val engineSpeedRpm: Float
         get() = engineSpd
-    actual val engineTorqueNm: Float
+    override val engineTorqueNm: Float
         get() = engineTq
-    actual val enginePowerW: Float
+    override val enginePowerW: Float
         get() = engineP
-    actual val currentGear: Int
+    override val currentGear: Int
         get() = curGear
 
-    actual var isReverse = false
+    override var isReverse = false
 
-    override val pxRigidActor: PxRigidActor
+    override val holder: PxRigidBody
 
     init {
-        for (i in 0..3) {
-            mutWheelInfos += WheelInfo()
-        }
-
-        pxVehicle = createVehicle(vehicleProps)
-
-        pxRigidActor = pxVehicle.physXState.physxActor.rigidBody
-        transform.setMatrix(pose)
-
         vehicleSimulationContext = PxVehiclePhysXSimulationContext().apply {
             setToDefault()
             frame.lngAxis = PxVehicleAxesEnum.ePosZ
@@ -91,13 +91,17 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, val wor
             frame.vrtAxis = PxVehicleAxesEnum.ePosY
             scale.scale = 1f
             world.gravity.toPxVec3(gravity)
-            physxScene = world.pxScene
+            physxScene = (world as PhysicsWorldImpl).pxScene
             physxActorUpdateMode = PxVehiclePhysXActorUpdateModeEnum.eAPPLY_VELOCITY
-            physxUnitCylinderSweepMesh = Physics.unitCylinderSweepMesh
+            physxUnitCylinderSweepMesh = PhysicsImpl.unitCylinder
         }
+        pxVehicle = createVehicle(vehicleProps)
+
+        holder = pxVehicle.physXState.physxActor.rigidBody
+        transform.setMatrix(pose)
     }
 
-    actual fun setToRestState() {
+    override fun setToRestState() {
         pxVehicle.commandState.setToDefault()
         pxVehicle.transmissionCommandState.setToDefault()
         pxVehicle.baseState.setToDefault()
@@ -113,7 +117,6 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, val wor
 
     override fun release() {
         pxVehicle.destroy()
-        super.release()
     }
 
     override fun onPhysicsUpdate(timeStep: Float) {
@@ -174,7 +177,7 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, val wor
         val nbSubsteps = if (linearSpeed.z < 5f) 3 else 1
         pxVehicle.componentSequence.setSubsteps(pxVehicle.componentSequenceSubstepGroupHandle, nbSubsteps.toByte())
 
-        super.onPhysicsUpdate(timeStep)
+        super<RigidBodyImpl>.onPhysicsUpdate(timeStep)
     }
 
     private fun computeWheelCenterActorOffsets(vehicleProps: VehicleProperties): List<MutableVec3f> {
@@ -204,8 +207,8 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, val wor
 
         // Initialize vehicle stuff
         vehicle.initialize(
-            Physics.physics,
-            Physics.cookingParams,
+            PhysicsImpl.physics,
+            PhysicsImpl.cookingParams,
             Physics.defaultMaterial.pxMaterial,
             EngineDriveVehicleEnum.eDIFFTYPE_FOURWHEELDRIVE
         )
@@ -439,7 +442,7 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, val wor
             FilterData { VehicleUtils.setupNonDrivableSurface(this) }
                 .toPxFilterData(physXParams.physxActorWheelQueryFilterData)
 
-            val geometry = vehicleProps.chassisGeometry?.pxGeometry
+            val geometry = vehicleProps.chassisGeometry?.holder
                 ?: PxBoxGeometry(
                     vehicleProps.chassisDims.x * 0.5f,
                     vehicleProps.chassisDims.y * 0.5f,

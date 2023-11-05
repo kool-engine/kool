@@ -1,20 +1,21 @@
 package de.fabmax.kool.physics
 
 import de.fabmax.kool.math.Mat4f
-import physx.PxRigidActor
 import physx.PxRigidStatic
 
-actual class RigidStatic actual constructor(pose: Mat4f) : RigidActor() {
+actual fun RigidStatic(pose: Mat4f): RigidStatic = RigidStaticImpl(pose)
+
+class RigidStaticImpl(pose: Mat4f) : RigidActorImpl(), RigidStatic {
 
     private val pxRigidStatic: PxRigidStatic
 
-    override val pxRigidActor: PxRigidActor
+    override val holder: RigidActorHolder
 
     init {
         MemoryStack.stackPush().use { mem ->
             val pxPose = pose.toPxTransform(mem.createPxTransform())
-            pxRigidStatic = Physics.physics.createRigidStatic(pxPose)
-            pxRigidActor = pxRigidStatic
+            pxRigidStatic = PhysicsImpl.physics.createRigidStatic(pxPose)
+            holder = RigidActorHolder(pxRigidStatic)
         }
         transform.setMatrix(pose)
     }

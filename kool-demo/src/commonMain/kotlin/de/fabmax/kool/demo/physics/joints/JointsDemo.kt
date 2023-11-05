@@ -78,7 +78,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
         ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${DemoLoader.hdriPath}/colorful_studio_1k.rgbe.png")
 
         Physics.awaitLoaded()
-        val world = PhysicsWorld()
+        val world = PhysicsWorld(mainScene)
         world.simStepper = physicsStepper
         physicsWorld = world
         resetPhysics = true
@@ -87,8 +87,6 @@ class JointsDemo : DemoScene("Physics - Joints") {
 
         groundAlbedo = loadTexture2d("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine.png")
         groundNormal = loadTexture2d("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine_normal.png")
-
-        world.registerHandlers(mainScene)
     }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {

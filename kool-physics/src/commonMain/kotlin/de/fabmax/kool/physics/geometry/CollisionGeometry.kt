@@ -5,7 +5,12 @@ import de.fabmax.kool.math.spatial.BoundingBox
 import de.fabmax.kool.physics.Releasable
 import de.fabmax.kool.scene.geometry.MeshBuilder
 
-expect interface CollisionGeometry : Releasable {
+@Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
+expect class GeometryHolder
+
+interface CollisionGeometry : Releasable {
+
+    val holder: GeometryHolder
 
     fun generateMesh(target: MeshBuilder)
 
@@ -15,6 +20,4 @@ expect interface CollisionGeometry : Releasable {
     fun getBounds(result: BoundingBox): BoundingBox
 
     fun estimateInertiaForMass(mass: Float, result: MutableVec3f = MutableVec3f()): MutableVec3f
-
-    override fun release()
 }

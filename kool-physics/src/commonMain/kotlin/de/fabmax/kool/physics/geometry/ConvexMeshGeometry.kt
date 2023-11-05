@@ -5,14 +5,15 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.spatial.BoundingBox
 import de.fabmax.kool.scene.geometry.MeshBuilder
 
-expect class ConvexMeshGeometry(convexMesh: ConvexMesh, scale: Vec3f = Vec3f.ONES) : CommonConvexMeshGeometry, CollisionGeometry {
-    constructor(points: List<Vec3f>)
+expect fun ConvexMeshGeometry(convexMesh: ConvexMesh, scale: Vec3f = Vec3f.ONES): ConvexMeshGeometry
+expect fun ConvexMeshGeometry(points: List<Vec3f>, scale: Vec3f = Vec3f.ONES): ConvexMeshGeometry
 
-    override fun release()
-}
+interface ConvexMeshGeometry : CollisionGeometry {
 
-abstract class CommonConvexMeshGeometry(val convexMesh: ConvexMesh, val scale: Vec3f) {
-    open fun generateMesh(target: MeshBuilder) {
+    val convexMesh: ConvexMesh
+    val scale: Vec3f
+
+    override fun generateMesh(target: MeshBuilder) {
         target.apply {
             withTransform {
                 scale(scale.x, scale.y, scale.z)
@@ -31,9 +32,9 @@ abstract class CommonConvexMeshGeometry(val convexMesh: ConvexMesh, val scale: V
         }
     }
 
-    open fun getBounds(result: BoundingBox) = result.set(convexMesh.convexHull.bounds)
+    override fun getBounds(result: BoundingBox) = result.set(convexMesh.convexHull.bounds)
 
-    open fun estimateInertiaForMass(mass: Float, result: MutableVec3f): MutableVec3f {
+    override fun estimateInertiaForMass(mass: Float, result: MutableVec3f): MutableVec3f {
         // rough approximation: use inertia of bounding box
         val bounds = convexMesh.convexHull.bounds
         result.x = (mass / 12f) * (bounds.size.y * bounds.size.y + bounds.size.z * bounds.size.z)

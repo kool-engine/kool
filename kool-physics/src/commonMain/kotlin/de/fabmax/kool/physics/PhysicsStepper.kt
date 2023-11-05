@@ -19,7 +19,7 @@ abstract class PhysicsStepper {
     var perfTimeFactor = 1f
         private set
 
-    fun stepSimulation(world: CommonPhysicsWorld, ctx: KoolContext): Float {
+    fun stepSimulation(world: PhysicsWorld, ctx: KoolContext): Float {
         perf.reset()
 
         if (simTimeFactor > 0f) {
@@ -37,7 +37,7 @@ abstract class PhysicsStepper {
         }
     }
 
-    protected abstract fun doSimSteps(world: CommonPhysicsWorld, ctx: KoolContext): Float
+    protected abstract fun doSimSteps(world: PhysicsWorld, ctx: KoolContext): Float
 }
 
 /**
@@ -49,7 +49,7 @@ abstract class PhysicsStepper {
 class SimplePhysicsStepper : PhysicsStepper() {
     var maxSingleStepTime: Float = 0.02f
 
-    override fun doSimSteps(world: CommonPhysicsWorld, ctx: KoolContext): Float {
+    override fun doSimSteps(world: PhysicsWorld, ctx: KoolContext): Float {
         var remainingStepTime = min(maxTimeStepPerFrame, Time.deltaT * simTimeFactor)
         var timeAdvance = 0f
         while (remainingStepTime > 0.001f) {
@@ -78,7 +78,7 @@ class ConstantPhysicsStepperAsync(val constantTimeStep: Float = 1f / 60f) : Phys
 
     private var subStepLimit = maxSubSteps
 
-    override fun doSimSteps(world: CommonPhysicsWorld, ctx: KoolContext): Float {
+    override fun doSimSteps(world: PhysicsWorld, ctx: KoolContext): Float {
         var timeAdvance = 0f
         desiredSimTime += min(maxTimeStepPerFrame, Time.deltaT * simTimeFactor)
 
@@ -132,7 +132,7 @@ class ConstantPhysicsStepperSync(val constantTimeStep: Float = 1f / 60f) : Physi
     private var internalSimTime = 0.0
     private var desiredSimTime = 0.0
 
-    override fun doSimSteps(world: CommonPhysicsWorld, ctx: KoolContext): Float {
+    override fun doSimSteps(world: PhysicsWorld, ctx: KoolContext): Float {
         var timeAdvance = 0f
         desiredSimTime += min(maxTimeStepPerFrame, Time.deltaT * simTimeFactor)
 

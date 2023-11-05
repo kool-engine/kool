@@ -9,12 +9,10 @@ import de.fabmax.kool.scene.geometry.MeshBuilder
 /**
  * Plane collision shape. Plane normal is x-axis, origin is (0, 0, 0).
  */
-expect class PlaneGeometry() : CommonPlaneGeometry, CollisionGeometry {
-    override fun release()
-}
+expect fun PlaneGeometry(): CommonPlaneGeometry
 
-abstract class CommonPlaneGeometry {
-    open fun generateMesh(target: MeshBuilder) {
+interface CommonPlaneGeometry : CollisionGeometry {
+    override fun generateMesh(target: MeshBuilder) {
         // plane is infinitely large, generate a mesh with a reasonable size
         target.apply {
             withTransform {
@@ -26,9 +24,9 @@ abstract class CommonPlaneGeometry {
         }
     }
 
-    open fun getBounds(result: BoundingBox) = result.set(0f, -1e10f, -1e10f, 0f, 1e10f, 1e10f)
+    override fun getBounds(result: BoundingBox) = result.set(0f, -1e10f, -1e10f, 0f, 1e10f, 1e10f)
 
-    open fun estimateInertiaForMass(mass: Float, result: MutableVec3f): MutableVec3f {
+    override fun estimateInertiaForMass(mass: Float, result: MutableVec3f): MutableVec3f {
         // plane does not have a meaningful inertia
         return result.set(1f, 1f, 1f)
     }

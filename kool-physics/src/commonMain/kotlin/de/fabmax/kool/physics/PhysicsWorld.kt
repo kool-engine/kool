@@ -11,15 +11,9 @@ import de.fabmax.kool.physics.geometry.PlaneGeometry
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.logW
 
-expect class PhysicsWorld(scene: Scene? = null, isContinuousCollisionDetection: Boolean = false) : CommonPhysicsWorld {
-    var gravity: Vec3f
-    val activeActors: Int
+expect fun PhysicsWorld(scene: Scene?, isContinuousCollisionDetection: Boolean = false) : PhysicsWorld
 
-    fun raycast(ray: Ray, maxDistance: Float, result: HitResult): Boolean
-    fun sweepTest(testGeometry: CollisionGeometry, geometryPose: Mat4f, testDirection: Vec3f, distance: Float, result: HitResult): Boolean
-}
-
-abstract class CommonPhysicsWorld : Releasable {
+abstract class PhysicsWorld : Releasable {
     var physicsTime = 0.0
 
     var simStepper: PhysicsStepper = ConstantPhysicsStepperSync()
@@ -43,6 +37,9 @@ abstract class CommonPhysicsWorld : Releasable {
     private val onRenderSceneHook: (KoolContext) -> Unit = { ctx ->
         physicsTime += simStepper.stepSimulation(this, ctx)
     }
+
+    abstract var gravity: Vec3f
+    abstract val activeActors: Int
 
     open fun registerHandlers(scene: Scene) {
         unregisterHandlers()
@@ -109,6 +106,9 @@ abstract class CommonPhysicsWorld : Releasable {
     open fun removeArticulation(articulation: Articulation) {
         mutArticulations -= articulation
     }
+
+    abstract fun raycast(ray: Ray, maxDistance: Float, result: HitResult): Boolean
+    abstract fun sweepTest(testGeometry: CollisionGeometry, geometryPose: Mat4f, testDirection: Vec3f, distance: Float, result: HitResult): Boolean
 
     fun wakeUpAll() {
         actors.forEach {

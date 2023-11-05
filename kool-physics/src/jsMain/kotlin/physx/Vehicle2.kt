@@ -479,8 +479,8 @@ external interface PxVehicleCommandNonLinearResponseParams {
     /**
      * WebIDL type: short
      */
-    fun get_nbSpeedRenponsesPerCommandValue(index: Int): Short
-    fun set_nbSpeedRenponsesPerCommandValue(index: Int, value: Short)
+    fun get_nbSpeedResponsesPerCommandValue(index: Int): Short
+    fun set_nbSpeedResponsesPerCommandValue(index: Int, value: Short)
     /**
      * WebIDL type: float
      */
@@ -2084,10 +2084,6 @@ external interface PxVehicleTankDriveDifferentialParams : PxVehicleMultiWheelDri
      */
     fun get_wheelIdsInTrackOrder(index: Int): Int
     fun set_wheelIdsInTrackOrder(index: Int, value: Int)
-    /**
-     * WebIDL type: unsigned long
-     */
-    var nbWheelsInTracks: Int
 
     override fun setToDefault()
 

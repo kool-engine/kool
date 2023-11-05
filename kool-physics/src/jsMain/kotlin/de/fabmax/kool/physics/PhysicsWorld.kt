@@ -5,46 +5,51 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Ray
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.articulations.Articulation
+import de.fabmax.kool.physics.articulations.ArticulationImpl
 import de.fabmax.kool.physics.geometry.CollisionGeometry
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logW
 import physx.*
 
-actual class PhysicsWorld actual constructor(scene: Scene?, val isContinuousCollisionDetection: Boolean) : CommonPhysicsWorld(), Releasable {
+actual fun PhysicsWorld(scene: Scene?, isContinuousCollisionDetection: Boolean) : PhysicsWorld {
+    return PhysicsWorldImpl(scene, isContinuousCollisionDetection)
+}
+
+class PhysicsWorldImpl(scene: Scene?, val isContinuousCollisionDetection: Boolean) : PhysicsWorld(), Releasable {
     val pxScene: PxScene
 
     private val raycastResult = PxRaycastResult()
     private val sweepResult = PxSweepResult()
     private val bufPxGravity = Vec3f(0f, -9.81f, 0f).toPxVec3(PxVec3())
     private val bufGravity = MutableVec3f()
-    actual var gravity: Vec3f
+    override var gravity: Vec3f
         get() = pxScene.gravity.toVec3f(bufGravity)
         set(value) {
             pxScene.gravity = value.toPxVec3(bufPxGravity)
         }
 
     private var mutActiveActors = 0
-    actual val activeActors: Int
+    override  val activeActors: Int
         get() = mutActiveActors
 
     private val pxActors = mutableMapOf<Int, RigidActor>()
 
     init {
-        Physics.checkIsLoaded()
+        PhysicsImpl.checkIsLoaded()
 
         MemoryStack.stackPush().use { mem ->
-            val sceneDesc = mem.createPxSceneDesc(Physics.physics.tolerancesScale)
+            val sceneDesc = mem.createPxSceneDesc(PhysicsImpl.physics.tolerancesScale)
             sceneDesc.gravity = bufPxGravity
             // ignore numWorkers parameter and set numThreads to 0, since multi-threading is disabled for wasm
-            sceneDesc.cpuDispatcher = Physics.defaultCpuDispatcher
+            sceneDesc.cpuDispatcher = PhysicsImpl.defaultCpuDispatcher
             sceneDesc.filterShader = PxTopLevelFunctions.DefaultFilterShader()
             sceneDesc.simulationEventCallback = simEventCallback()
             sceneDesc.flags.raise(PxSceneFlagEnum.eENABLE_ACTIVE_ACTORS)
             if (isContinuousCollisionDetection) {
                 sceneDesc.flags.raise(PxSceneFlagEnum.eENABLE_CCD)
             }
-            pxScene = Physics.physics.createScene(sceneDesc)
+            pxScene = PhysicsImpl.physics.createScene(sceneDesc)
         }
         scene?.let { registerHandlers(it) }
     }
@@ -75,11 +80,11 @@ actual class PhysicsWorld actual constructor(scene: Scene?, val isContinuousColl
 
     override fun addActor(actor: RigidActor) {
         super.addActor(actor)
-        pxScene.addActor(actor.pxRigidActor)
-        pxActors[actor.pxRigidActor.ptr] = actor
+        pxScene.addActor(actor.holder.px)
+        pxActors[actor.holder.px.ptr] = actor
 
         // set necessary ccd flags in case it is enabled for this scene
-        val pxActor = actor.pxRigidActor
+        val pxActor = actor.holder.px
         if (isContinuousCollisionDetection && actor is RigidBody) {
             // in javascript we cannot check for pxActor being an instance of PxRigidBody (because it's an external
             // interface), however if actor is RigidBody pxActor must be PxRigidBody...
@@ -93,20 +98,20 @@ actual class PhysicsWorld actual constructor(scene: Scene?, val isContinuousColl
 
     override fun removeActor(actor: RigidActor) {
         super.removeActor(actor)
-        pxScene.removeActor(actor.pxRigidActor)
-        pxActors -= actor.pxRigidActor.ptr
+        pxScene.removeActor(actor.holder.px)
+        pxActors -= actor.holder.px.ptr
     }
 
     override fun addArticulation(articulation: Articulation) {
         super.addArticulation(articulation)
-        articulation.links.forEach { pxActors[it.pxLink.ptr] = it }
-        pxScene.addArticulation(articulation.pxArticulation)
+        articulation.links.forEach { pxActors[it.holder.px.ptr] = it }
+        pxScene.addArticulation((articulation as ArticulationImpl).pxArticulation)
     }
 
     override fun removeArticulation(articulation: Articulation) {
         super.removeArticulation(articulation)
-        articulation.links.forEach { pxActors -= it.pxLink.ptr }
-        pxScene.removeArticulation(articulation.pxArticulation)
+        articulation.links.forEach { pxActors -= it.holder.px.ptr }
+        pxScene.removeArticulation((articulation as ArticulationImpl).pxArticulation)
     }
 
     override fun release() {
@@ -117,7 +122,7 @@ actual class PhysicsWorld actual constructor(scene: Scene?, val isContinuousColl
         sweepResult.destroy()
     }
 
-    actual fun raycast(ray: Ray, maxDistance: Float, result: HitResult): Boolean {
+    override fun raycast(ray: Ray, maxDistance: Float, result: HitResult): Boolean {
         result.clear()
         MemoryStack.stackPush().use { mem ->
             val ori = ray.origin.toPxVec3(mem.createPxVec3())
@@ -148,13 +153,14 @@ actual class PhysicsWorld actual constructor(scene: Scene?, val isContinuousColl
         return result.isHit
     }
 
-    actual fun sweepTest(testGeometry: CollisionGeometry, geometryPose: Mat4f, testDirection: Vec3f, distance: Float, result: HitResult): Boolean {
+    override fun sweepTest(testGeometry: CollisionGeometry, geometryPose: Mat4f, testDirection: Vec3f, distance: Float, result: HitResult): Boolean {
         result.clear()
         MemoryStack.stackPush().use { mem ->
             val sweepPose = geometryPose.toPxTransform(mem.createPxTransform())
             val sweepDir = testDirection.toPxVec3(mem.createPxVec3())
+            val geom = testGeometry.holder.px
 
-            if (pxScene.sweep(testGeometry.pxGeometry, sweepPose, sweepDir, distance, sweepResult)) {
+            if (pxScene.sweep(geom, sweepPose, sweepDir, distance, sweepResult)) {
                 var minDist = distance
                 var nearestHit: PxSweepHit? = null
                 var nearestActor: RigidActor? = null

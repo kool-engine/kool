@@ -1,8 +1,7 @@
 package de.fabmax.kool.physics.character
 
 import de.fabmax.kool.math.toRad
-import de.fabmax.kool.physics.Physics
-import de.fabmax.kool.physics.PhysicsWorld
+import de.fabmax.kool.physics.*
 import physx.PxTopLevelFunctions
 import physx.character.PxCapsuleClimbingModeEnum
 import physx.character.PxCapsuleControllerDesc
@@ -10,17 +9,26 @@ import physx.character.PxControllerManager
 import physx.character.PxControllerNonWalkableModeEnum
 import kotlin.math.cos
 
-actual class CharacterControllerManager actual constructor(world: PhysicsWorld) : CommonCharacterControllerManager(world) {
+actual fun CharacterControllerManager(world: PhysicsWorld): CharacterControllerManager {
+    return CharacterControllerManagerImpl(world)
+}
+
+class CharacterControllerManagerImpl(private val world: PhysicsWorld) : CharacterControllerManager() {
 
     private val pxManager: PxControllerManager
 
     init {
-        Physics.checkIsLoaded()
+        PhysicsImpl.checkIsLoaded()
+        world as PhysicsWorldImpl
         pxManager = PxTopLevelFunctions.CreateControllerManager(world.pxScene)
+
+        world.onAdvancePhysics += onAdvanceListener
+        world.onPhysicsUpdate += onUpdateListener
     }
 
-    actual override fun doCreateController(): CharacterController {
+    override fun doCreateController(): CharacterController {
         // create controller with default configuration
+        world as PhysicsWorldImpl
         val hitCallback = ControllerHitListener(world)
         val behaviorCallback = ControllerBahaviorCallback(world)
         val desc = PxCapsuleControllerDesc()
@@ -39,7 +47,9 @@ actual class CharacterControllerManager actual constructor(world: PhysicsWorld) 
     }
 
     override fun release() {
-        super.release()
+        world.onAdvancePhysics -= onAdvanceListener
+        world.onPhysicsUpdate -= onUpdateListener
         pxManager.release()
+        super.release()
     }
 }

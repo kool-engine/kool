@@ -1,8 +1,8 @@
 package de.fabmax.kool.physics
 
+import de.fabmax.kool.physics.geometry.ConvexMeshImpl
+import de.fabmax.kool.physics.geometry.CylinderGeometry
 import de.fabmax.kool.util.logI
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
 import org.lwjgl.system.MemoryStack
 import physx.PxTopLevelFunctions
 import physx.common.*
@@ -16,30 +16,24 @@ import physx.support.PxPvd
 import physx.vehicle2.PxVehicleAxesEnum
 import physx.vehicle2.PxVehicleFrame
 import physx.vehicle2.PxVehicleTopLevelFunctions
-import kotlin.coroutines.CoroutineContext
 import kotlin.math.max
 import kotlin.math.min
 
-actual object Physics : CoroutineScope {
+internal actual fun PhysicsSystem(): PhysicsSystem = PhysicsImpl
 
-    actual val NOTIFY_TOUCH_FOUND: Int
-        get() = PxPairFlagEnum.eNOTIFY_TOUCH_FOUND.value
-    actual val NOTIFY_TOUCH_LOST: Int
-        get() = PxPairFlagEnum.eNOTIFY_TOUCH_LOST.value
-    actual val NOTIFY_CONTACT_POINTS: Int
-        get() = PxPairFlagEnum.eNOTIFY_CONTACT_POINTS.value
+object PhysicsImpl : PhysicsSystem {
 
-    private val job = Job()
-    actual override val coroutineContext: CoroutineContext
-        get() = job
+    override val NOTIFY_TOUCH_FOUND = PxPairFlagEnum.eNOTIFY_TOUCH_FOUND.value
+    override val NOTIFY_TOUCH_LOST = PxPairFlagEnum.eNOTIFY_TOUCH_LOST.value
+    override val NOTIFY_CONTACT_POINTS = PxPairFlagEnum.eNOTIFY_CONTACT_POINTS.value
 
-    actual val isLoaded = true
+    override val isLoaded = true
 
     val defaultCpuDispatcher: PxDefaultCpuDispatcher
 
-    actual val defaultMaterial = Material(0.5f)
+    override val defaultMaterial = Material(0.5f)
     internal val vehicleFrame: PxVehicleFrame
-    internal val unitCylinderSweepMesh: PxConvexMesh
+    internal val unitCylinder: PxConvexMesh
 
     // default PhysX facilities
     val foundation: PxFoundation
@@ -80,6 +74,8 @@ actual object Physics : CoroutineScope {
         }
         cookingParams.suppressTriangleMeshRemapTable = true
 
+        unitCylinder = ConvexMeshImpl.makePxConvexMesh(CylinderGeometry.convexMeshPoints(1f, 1f))
+
         // init vehicle simulation framework
         PxVehicleTopLevelFunctions.InitVehicleExtension(foundation)
         vehicleFrame = PxVehicleFrame().apply {
@@ -87,7 +83,6 @@ actual object Physics : CoroutineScope {
             latAxis = PxVehicleAxesEnum.ePosX
             vrtAxis = PxVehicleAxesEnum.ePosY
         }
-        unitCylinderSweepMesh = PxVehicleTopLevelFunctions.VehicleUnitCylinderSweepMeshCreate(vehicleFrame, physics, cookingParams)
 
         // try to choose a sensible number of worker threads:
         val numWorkers = min(16, max(1, Runtime.getRuntime().availableProcessors() - 2))
@@ -96,9 +91,13 @@ actual object Physics : CoroutineScope {
         logI { "PhysX loaded, version: ${pxVersionToString(version)}, using $numWorkers worker threads" }
     }
 
-    actual fun loadPhysics() { }
+    override fun loadPhysics() {
+        // on JVM we don't need to do anything to load the PhysX library
+    }
 
-    actual suspend fun awaitLoaded() { }
+    override suspend fun awaitLoaded() {
+        // on JVM, there's nothing to wait for
+    }
 
     fun checkIsLoaded() {
         if (!isLoaded) {

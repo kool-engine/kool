@@ -72,9 +72,8 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
 
         Physics.awaitLoaded()
 
-        physicsWorld = PhysicsWorld()
+        physicsWorld = PhysicsWorld(mainScene)
         physicsWorld.simStepper = physicsStepper
-        physicsWorld.registerHandlers(mainScene)
 
         val gravKeyListener = KeyboardInput.addKeyListener(UniversalKeyCode(' '), "Change Gravity",  { true }) {
             if (it.isPressed) {

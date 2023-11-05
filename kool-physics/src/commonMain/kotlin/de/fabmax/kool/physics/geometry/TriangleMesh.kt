@@ -3,7 +3,9 @@ package de.fabmax.kool.physics.geometry
 import de.fabmax.kool.physics.Releasable
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 
-expect class TriangleMesh(geometry: IndexedVertexList) : Releasable {
+expect fun TriangleMesh(geometry: IndexedVertexList): TriangleMesh
+
+interface TriangleMesh : Releasable {
     val geometry: IndexedVertexList
 
     var releaseWithGeometry: Boolean

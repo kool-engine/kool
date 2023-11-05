@@ -124,6 +124,7 @@ class MemoryStack private constructor() {
     fun createPxHeightFieldSample() = autoDelete(PxHeightFieldSample())
     fun createPxHullPolygon() = autoDelete(PxHullPolygon())
     fun createPxMeshScale(s: PxVec3, r: PxQuat) = autoDelete(PxMeshScale(s, r))
+    fun createPxMeshScale(s: Vec3f, r: QuatF = QuatF.IDENTITY) = autoDelete(PxMeshScale(s.toPxVec3(createPxVec3()), r.toPxQuat(createPxQuat())))
     fun createPxVec3() = autoDelete(PxVec3())
     fun createPxVec3(x: Float, y: Float, z: Float) = autoDelete(PxVec3(x, y, z))
 

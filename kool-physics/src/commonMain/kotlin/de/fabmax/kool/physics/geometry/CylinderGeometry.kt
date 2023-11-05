@@ -9,31 +9,33 @@ import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 
-expect class CylinderGeometry(length: Float, radius: Float) : CommonCylinderGeometry, CollisionGeometry {
-    override fun release()
-}
+expect fun CylinderGeometry(length: Float, radius: Float): CylinderGeometry
 
-abstract class CommonCylinderGeometry(val length: Float, val radius: Float) {
-    open fun generateMesh(target: MeshBuilder) {
+interface CylinderGeometry : CollisionGeometry {
+
+    val length: Float
+    val radius: Float
+
+    override fun generateMesh(target: MeshBuilder) {
         target.apply {
             withTransform {
                 // physics cylinder extends along the x-axis, MeshBuilder's cylinder extends along y-axis
                 rotate(90f.deg, Vec3f.Z_AXIS)
                 cylinder {
-                    height = this@CommonCylinderGeometry.length
-                    radius = this@CommonCylinderGeometry.radius
+                    height = this@CylinderGeometry.length
+                    radius = this@CylinderGeometry.radius
                     steps = 32
                 }
             }
         }
     }
 
-    open fun getBounds(result: BoundingBox): BoundingBox {
+    override fun getBounds(result: BoundingBox): BoundingBox {
         result.set(-length * 0.5f, -radius, -radius, length * 0.5f, radius, radius)
         return result
     }
 
-    open fun estimateInertiaForMass(mass: Float, result: MutableVec3f): MutableVec3f {
+    override fun estimateInertiaForMass(mass: Float, result: MutableVec3f): MutableVec3f {
         val ix = 0.5f * mass * radius * radius
         val iyz = 1f / 12f * mass * (3 * radius * radius + length * length)
         return result.set(ix, iyz, iyz)

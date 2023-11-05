@@ -8,14 +8,9 @@ import de.fabmax.kool.physics.RigidActor
  * It doesn't allow linear movement along the joint, but allows the orientation to vary freely.
  * An adjustable mirror connected to a vehicle is a good example of a spherical joint.
  */
-expect class SphericalJoint(bodyA: RigidActor, bodyB: RigidActor, posA: Mat4f, posB: Mat4f): Joint {
-    val bodyA: RigidActor
-    val bodyB: RigidActor
+expect fun SphericalJoint(bodyA: RigidActor, bodyB: RigidActor, frameA: Mat4f, frameB: Mat4f): SphericalJoint
 
-    val frameA: Mat4f
-    val frameB: Mat4f
-//    fun setHardLimitCone(yLimitAngle: Float, zLimitAngle: Float, contactDist: Float = -1.0f)
-
+interface SphericalJoint : Joint {
     fun setSoftLimitCone(yLimitAngle: Float, zLimitAngle: Float, stiffness: Float, damping: Float)
     fun removeLimitCone()
 }

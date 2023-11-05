@@ -9,37 +9,30 @@ import de.fabmax.kool.scene.Tags
 import de.fabmax.kool.scene.TrsTransformF
 import de.fabmax.kool.util.Color
 
-expect abstract class RigidActor : CommonRigidActor {
-    val worldBounds: BoundingBox
+@Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
+expect class RigidActorHolder
+
+interface RigidActor : Releasable {
+    val holder: RigidActorHolder
+
     var simulationFilterData: FilterData
     var queryFilterData: FilterData
 
-    override var position: Vec3f
-    override var rotation: QuatF
+    var position: Vec3f
+    var rotation: QuatF
+    val worldBounds: BoundingBox
 
-    override var isTrigger: Boolean
+    var isTrigger: Boolean
 
-    override var isActive: Boolean
-        internal set
-}
+    var isActive: Boolean
 
-abstract class CommonRigidActor : Releasable {
-    abstract var position: Vec3f
-    abstract var rotation: QuatF
+    val transform: TrsTransformF
 
-    abstract var isTrigger: Boolean
+    val onPhysicsUpdate: MutableList<(Float) -> Unit>
 
-    abstract val isActive: Boolean
-
-    val transform = TrsTransformF()
-
-    val onPhysicsUpdate = mutableListOf<(Float) -> Unit>()
-
-    protected val mutShapes = mutableListOf<Shape>()
     val shapes: List<Shape>
-        get() = mutShapes
 
-    val tags = Tags()
+    val tags: Tags
 
     fun setRotation(eulerX: AngleF, eulerY: AngleF, eulerZ: AngleF) {
         setRotation(MutableMat3f().rotate(eulerX, eulerY, eulerZ))
@@ -58,19 +51,11 @@ abstract class CommonRigidActor : Releasable {
         this.rotation = q
     }
 
-    open fun attachShape(shape: Shape) {
-        mutShapes += shape
-    }
+    fun attachShape(shape: Shape)
 
-    open fun detachShape(shape: Shape) {
-        mutShapes -= shape
-    }
+    fun detachShape(shape: Shape)
 
-    override fun release() {
-        mutShapes.clear()
-    }
-
-    internal open fun onPhysicsUpdate(timeStep: Float) {
+    fun onPhysicsUpdate(timeStep: Float) {
         for (i in onPhysicsUpdate.indices) {
             onPhysicsUpdate[i](timeStep)
         }
@@ -84,10 +69,10 @@ abstract class CommonRigidActor : Releasable {
         return transform.invMatrixF.transform(vec, w)
     }
 
-    open fun toMesh(meshColor: Color, materialCfg: KslPbrShader.Config.() -> Unit = { }): Node = ColorMesh().apply {
+    fun toMesh(meshColor: Color, materialCfg: KslPbrShader.Config.() -> Unit = { }): Node = ColorMesh().apply {
         generate {
             color = meshColor
-            mutShapes.forEach { shape ->
+            shapes.forEach { shape ->
                 withTransform {
                     transform.mul(shape.localPose)
                     shape.geometry.generateMesh(this)
@@ -98,6 +83,6 @@ abstract class CommonRigidActor : Releasable {
             color { vertexColor() }
             materialCfg()
         }
-        transform = this@CommonRigidActor.transform
+        transform = this@RigidActor.transform
     }
 }

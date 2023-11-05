@@ -4,74 +4,74 @@ import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.QuatF
 import de.fabmax.kool.math.Vec3f
 import org.lwjgl.system.MemoryStack
-import physx.physics.PxRigidActor
 import physx.physics.PxRigidBodyFlagEnum
 import physx.physics.PxRigidDynamic
 import physx.physics.PxRigidDynamicLockFlagEnum
 
-actual class RigidDynamic internal constructor(
+actual fun RigidDynamic(mass: Float, pose: Mat4f, isKinematic: Boolean): RigidDynamic {
+    return RigidDynamicImpl(mass, pose, isKinematic)
+}
+
+class RigidDynamicImpl(
     mass: Float,
     pose: Mat4f,
     isKinematic: Boolean,
     pxActor: PxRigidDynamic?
-) : RigidBody() {
+) : RigidBodyImpl(), RigidDynamic {
 
-    actual constructor(mass: Float, pose: Mat4f, isKinematic: Boolean) : this(mass, pose, isKinematic, null)
+    constructor(mass: Float, pose: Mat4f, isKinematic: Boolean) : this(mass, pose, isKinematic, null)
 
-    private val pxRigidDynamic: PxRigidDynamic
-        get() = pxRigidActor as PxRigidDynamic
-
-    override val pxRigidActor: PxRigidActor
+    override val holder: PxRigidDynamic
 
     init {
         if (pxActor == null) {
             MemoryStack.stackPush().use { mem ->
                 val pxPose = pose.toPxTransform(mem.createPxTransform())
-                pxRigidActor = Physics.physics.createRigidDynamic(pxPose)
+                holder = PhysicsImpl.physics.createRigidDynamic(pxPose)
                 this.mass = mass
             }
         } else {
-            pxRigidActor = pxActor
+            holder = pxActor
         }
         if (isKinematic) {
-            pxRigidBody.setRigidBodyFlag(PxRigidBodyFlagEnum.eKINEMATIC, true)
+            holder.setRigidBodyFlag(PxRigidBodyFlagEnum.eKINEMATIC, true)
         }
         transform.setMatrix(pose)
     }
 
-    actual fun wakeUp() {
-        pxRigidDynamic.wakeUp()
+    override fun wakeUp() {
+        holder.wakeUp()
     }
 
-    actual fun putToSleep() {
-        pxRigidDynamic.putToSleep()
+    override fun putToSleep() {
+        holder.putToSleep()
     }
 
-    actual fun setKinematicTarget(pose: Mat4f) {
+    override fun setKinematicTarget(pose: Mat4f) {
         MemoryStack.stackPush().use { mem ->
             val pxPose = pose.toPxTransform(mem.createPxTransform())
-            pxRigidDynamic.setKinematicTarget(pxPose)
+            holder.setKinematicTarget(pxPose)
         }
     }
 
-    actual fun setKinematicTarget(position: Vec3f?, rotation: QuatF?) {
+    override fun setKinematicTarget(position: Vec3f?, rotation: QuatF?) {
         MemoryStack.stackPush().use { mem ->
             val pxPose = mem.createPxTransform()
-            pxPose.p = position?.toPxVec3(mem.createPxVec3()) ?: pxRigidActor.globalPose.p
-            pxPose.q = rotation?.toPxQuat(mem.createPxQuat()) ?: pxRigidActor.globalPose.q
-            pxRigidDynamic.setKinematicTarget(pxPose)
+            pxPose.p = position?.toPxVec3(mem.createPxVec3()) ?: holder.globalPose.p
+            pxPose.q = rotation?.toPxQuat(mem.createPxQuat()) ?: holder.globalPose.q
+            holder.setKinematicTarget(pxPose)
         }
     }
 
-    actual fun setLinearLockFlags(lockLinearX: Boolean, lockLinearY: Boolean, lockLinearZ: Boolean) {
-        pxRigidDynamic.setRigidDynamicLockFlag(PxRigidDynamicLockFlagEnum.eLOCK_LINEAR_X, lockLinearX)
-        pxRigidDynamic.setRigidDynamicLockFlag(PxRigidDynamicLockFlagEnum.eLOCK_LINEAR_Y, lockLinearY)
-        pxRigidDynamic.setRigidDynamicLockFlag(PxRigidDynamicLockFlagEnum.eLOCK_LINEAR_Z, lockLinearZ)
+    override fun setLinearLockFlags(lockLinearX: Boolean, lockLinearY: Boolean, lockLinearZ: Boolean) {
+        holder.setRigidDynamicLockFlag(PxRigidDynamicLockFlagEnum.eLOCK_LINEAR_X, lockLinearX)
+        holder.setRigidDynamicLockFlag(PxRigidDynamicLockFlagEnum.eLOCK_LINEAR_Y, lockLinearY)
+        holder.setRigidDynamicLockFlag(PxRigidDynamicLockFlagEnum.eLOCK_LINEAR_Z, lockLinearZ)
     }
 
-    actual fun setAngularLockFlags(lockAngularX: Boolean, lockAngularY: Boolean, lockAngularZ: Boolean) {
-        pxRigidDynamic.setRigidDynamicLockFlag(PxRigidDynamicLockFlagEnum.eLOCK_ANGULAR_X, lockAngularX)
-        pxRigidDynamic.setRigidDynamicLockFlag(PxRigidDynamicLockFlagEnum.eLOCK_ANGULAR_Y, lockAngularY)
-        pxRigidDynamic.setRigidDynamicLockFlag(PxRigidDynamicLockFlagEnum.eLOCK_ANGULAR_Z, lockAngularZ)
+    override fun setAngularLockFlags(lockAngularX: Boolean, lockAngularY: Boolean, lockAngularZ: Boolean) {
+        holder.setRigidDynamicLockFlag(PxRigidDynamicLockFlagEnum.eLOCK_ANGULAR_X, lockAngularX)
+        holder.setRigidDynamicLockFlag(PxRigidDynamicLockFlagEnum.eLOCK_ANGULAR_Y, lockAngularY)
+        holder.setRigidDynamicLockFlag(PxRigidDynamicLockFlagEnum.eLOCK_ANGULAR_Z, lockAngularZ)
     }
 }

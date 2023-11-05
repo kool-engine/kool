@@ -2,7 +2,7 @@ package de.fabmax.kool.physics
 
 import de.fabmax.kool.math.Vec3f
 
-expect abstract class RigidBody() : RigidActor {
+interface RigidBody : RigidActor {
 
     var mass: Float
     var inertia: Vec3f

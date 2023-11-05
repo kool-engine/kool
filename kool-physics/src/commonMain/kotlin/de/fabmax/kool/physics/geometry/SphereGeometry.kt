@@ -4,21 +4,21 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.spatial.BoundingBox
 import de.fabmax.kool.scene.geometry.MeshBuilder
 
-expect class SphereGeometry(radius: Float) : CommonSphereGeometry, CollisionGeometry {
-    override fun release()
-}
+expect fun SphereGeometry(radius: Float): SphereGeometry
 
-abstract class CommonSphereGeometry(val radius: Float) {
-    open fun generateMesh(target: MeshBuilder) {
+interface SphereGeometry : CollisionGeometry {
+    val radius: Float
+
+    override fun generateMesh(target: MeshBuilder) {
         target.icoSphere {
-            radius = this@CommonSphereGeometry.radius
+            radius = this@SphereGeometry.radius
             steps = 2
         }
     }
 
-    open fun getBounds(result: BoundingBox) = result.set(-radius, -radius, -radius, radius, radius, radius)
+    override fun getBounds(result: BoundingBox) = result.set(-radius, -radius, -radius, radius, radius, radius)
 
-    open fun estimateInertiaForMass(mass: Float, result: MutableVec3f): MutableVec3f {
+    override fun estimateInertiaForMass(mass: Float, result: MutableVec3f): MutableVec3f {
         val i = 2f / 5f * mass * radius * radius
         return result.set(i, i, i)
     }

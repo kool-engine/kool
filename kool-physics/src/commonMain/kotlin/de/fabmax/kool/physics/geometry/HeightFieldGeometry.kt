@@ -4,11 +4,10 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.spatial.BoundingBox
 import de.fabmax.kool.scene.geometry.MeshBuilder
 
-expect class HeightFieldGeometry(heightField: HeightField) : CommonHeightFieldGeometry {
-    override fun release()
-}
+expect fun HeightFieldGeometry(heightField: HeightField): HeightFieldGeometry
 
-abstract class CommonHeightFieldGeometry(val heightField: HeightField) : CollisionGeometry {
+interface HeightFieldGeometry : CollisionGeometry {
+    val heightField: HeightField
 
     fun generateTiledMesh(target: MeshBuilder, gridX: Int, gridY: Int, gridSizeX: Int, gridSizeY: Int) {
         target.apply {

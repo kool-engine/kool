@@ -2,10 +2,8 @@ package de.fabmax.kool.physics.articulations
 
 import de.fabmax.kool.physics.RigidBody
 
-expect class ArticulationLink : RigidBody {
-
+interface ArticulationLink : RigidBody {
     val children: List<ArticulationLink>
 
     val inboundJoint: ArticulationJoint?
-
 }

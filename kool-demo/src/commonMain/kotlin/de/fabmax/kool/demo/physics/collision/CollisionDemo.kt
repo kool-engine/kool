@@ -54,7 +54,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
         groundNormal = loadTexture2d("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine_normal.png")
 
         Physics.awaitLoaded()
-        this@CollisionDemo.physicsWorld = PhysicsWorld().apply {
+        this@CollisionDemo.physicsWorld = PhysicsWorld(mainScene).apply {
             simStepper = physicsStepper
         }
     }
@@ -142,7 +142,6 @@ class CollisionDemo : DemoScene("Physics - Collision") {
         }
 
         addNode(Skybox.cube(ibl.reflectionMap, 1f))
-        physicsWorld.registerHandlers(this)
     }
 
     override fun dispose(ctx: KoolContext) {

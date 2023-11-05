@@ -4,6 +4,7 @@
 
 package physx
 
+import kotlinx.coroutines.asDeferred             
 import kotlin.js.Promise
 
 object PhysXJsLoader {
@@ -11,10 +12,10 @@ object PhysXJsLoader {
     internal var physXJs: dynamic = null
     @Suppress("UnsafeCastFromDynamic")
     private val physXJsPromise: Promise<dynamic> = js("require('physx-js-webidl')")()
+    internal var physxDeferred = physXJsPromise.asDeferred()
 
+    val isLoaded: Boolean get() = physxDeferred.isCompleted
     private var isLoading = false
-    private var isLoaded = false
-
     private val onLoadListeners = mutableListOf<() -> Unit>()
 
     fun loadModule() {
@@ -22,7 +23,6 @@ object PhysXJsLoader {
             isLoading = true
             physXJsPromise.then { module: dynamic ->
                 physXJs = module
-                isLoaded = true
                 onLoadListeners.forEach { it() }
             }
         }

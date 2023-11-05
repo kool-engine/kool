@@ -1,26 +1,25 @@
 package de.fabmax.kool.physics.articulations
 
-import de.fabmax.kool.physics.RigidBody
+import de.fabmax.kool.physics.RigidBodyImpl
 import physx.physics.PxArticulationLink
-import physx.physics.PxRigidActor
 
-@Suppress("CanBeParameter")
-actual class ArticulationLink(val pxLink: PxArticulationLink, val parent: ArticulationLink?) : RigidBody() {
 
-    private val mutChildren = mutableListOf<ArticulationLink>()
-    actual val children: List<ArticulationLink>
-        get() = mutChildren
+class ArticulationLinkImpl(
+    override val holder: PxArticulationLink,
+    parent: ArticulationLinkImpl?
+) : RigidBodyImpl(), ArticulationLink {
 
-    actual val inboundJoint: ArticulationJoint? = if (parent != null) {
-        pxLink.inboundJoint?.let { ArticulationJoint(it) }
+    private val _children = mutableListOf<ArticulationLink>()
+    override val children: List<ArticulationLink>
+        get() = _children
+
+    override val inboundJoint: ArticulationJoint? = if (parent != null) {
+        holder.inboundJoint?.let { ArticulationJointImpl(it) }
     } else {
         null
     }
 
-    override val pxRigidActor: PxRigidActor = pxLink
-
     init {
-        parent?.mutChildren?.add(this)
+        parent?._children?.add(this)
     }
-
 }

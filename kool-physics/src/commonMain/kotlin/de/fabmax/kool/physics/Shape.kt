@@ -1,19 +1,18 @@
 package de.fabmax.kool.physics
 
 import de.fabmax.kool.math.Mat4f
-import de.fabmax.kool.math.MutableMat4f
 import de.fabmax.kool.physics.geometry.CollisionGeometry
 
-expect class Shape(
-    geometry: CollisionGeometry,
-    material: Material = Physics.defaultMaterial,
-    localPose: Mat4f = MutableMat4f(),
-    simFilterData: FilterData? = null,
-    queryFilterData: FilterData? = null
+@Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
+expect class ShapeHolder
+
+class Shape(
+    val geometry: CollisionGeometry,
+    val material: Material = Physics.defaultMaterial,
+    localPose: Mat4f = Mat4f.IDENTITY,
+    val simFilterData: FilterData? = null,
+    val queryFilterData: FilterData? = null
 ) {
-    val geometry: CollisionGeometry
-    val material: Material
-    val localPose: MutableMat4f
-    val simFilterData: FilterData?
-    val queryFilterData: FilterData?
+    val localPose: Mat4f = Mat4f(localPose)
+    internal var holder: ShapeHolder? = null
 }

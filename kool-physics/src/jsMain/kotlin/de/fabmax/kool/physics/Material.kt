@@ -2,17 +2,24 @@ package de.fabmax.kool.physics
 
 import physx.PxMaterial
 
-actual class Material actual constructor (
-    actual val staticFriction: Float,
-    actual val dynamicFriction: Float,
-    actual val restitution: Float) : Releasable {
+actual fun Material(staticFriction: Float, dynamicFriction: Float, restitution: Float): Material {
+    return MaterialImpl(staticFriction, dynamicFriction, restitution)
+}
+
+val Material.pxMaterial: PxMaterial get() = (this as MaterialImpl).pxMaterial
+
+class MaterialImpl(
+    override val staticFriction: Float,
+    override val dynamicFriction: Float,
+    override val restitution: Float
+) : Material {
 
     val pxMaterial: PxMaterial by lazy {
-        Physics.checkIsLoaded()
-        Physics.physics.createMaterial(staticFriction, dynamicFriction, restitution)
+        PhysicsImpl.checkIsLoaded()
+        PhysicsImpl.physics.createMaterial(staticFriction, dynamicFriction, restitution)
     }
 
-    actual override fun release() {
+    override fun release() {
         pxMaterial.release()
     }
 }

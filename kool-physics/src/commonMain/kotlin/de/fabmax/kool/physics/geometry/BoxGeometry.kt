@@ -5,24 +5,24 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.spatial.BoundingBox
 import de.fabmax.kool.scene.geometry.MeshBuilder
 
-expect class BoxGeometry(size: Vec3f) : CommonBoxGeometry, CollisionGeometry {
-    override fun release()
-}
+expect fun BoxGeometry(size: Vec3f) : BoxGeometry
 
-abstract class CommonBoxGeometry(val size: Vec3f) {
-    open fun generateMesh(target: MeshBuilder) {
+interface BoxGeometry : CollisionGeometry {
+    val size: Vec3f
+
+    override fun generateMesh(target: MeshBuilder) {
         target.cube {
-            size.set(this@CommonBoxGeometry.size)
+            size.set(this@BoxGeometry.size)
         }
     }
 
-    open fun getBounds(result: BoundingBox): BoundingBox {
+    override fun getBounds(result: BoundingBox): BoundingBox {
         result.set(-size.x * 0.5f, -size.y * 0.5f, -size.z * 0.5f,
             size.x * 0.5f, size.y * 0.5f, size.z * 0.5f)
         return result
     }
 
-    open fun estimateInertiaForMass(mass: Float, result: MutableVec3f): MutableVec3f {
+    override fun estimateInertiaForMass(mass: Float, result: MutableVec3f): MutableVec3f {
         result.x = (mass / 12f) * (size.y * size.y + size.z * size.z)
         result.y = (mass / 12f) * (size.x * size.x + size.z * size.z)
         result.z = (mass / 12f) * (size.x * size.x + size.y * size.y)

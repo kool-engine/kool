@@ -95,10 +95,9 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
         shadows.drawNode = deferredPipeline.sceneContent
 
         showLoadText("Creating Physics World")
-        val physics = PhysicsWorld()
+        val physics = PhysicsWorld(mainScene)
         //physics.simStepper = ConstantPhysicsStepper()
         vehicleWorld = VehicleWorld(mainScene, physics, deferredPipeline)
-        vehicleWorld.physics.registerHandlers(mainScene)
 
         vehicle = DemoVehicle(this@VehicleDemo, vehicleModel, ctx)
         showLoadText("Loading Vehicle Audio")

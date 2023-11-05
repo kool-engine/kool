@@ -1,7 +1,7 @@
 package de.fabmax.kool.physics.joints
 
 import de.fabmax.kool.math.Mat4f
-import de.fabmax.kool.physics.Physics
+import de.fabmax.kool.physics.PhysicsImpl
 import de.fabmax.kool.physics.RigidActor
 import de.fabmax.kool.physics.createPxTransform
 import de.fabmax.kool.physics.toPxTransform
@@ -9,20 +9,20 @@ import org.lwjgl.system.MemoryStack
 import physx.PxTopLevelFunctions
 import physx.extensions.PxFixedJoint
 
-actual class FixedJoint actual constructor(actual val bodyA: RigidActor, actual val bodyB: RigidActor,
-                                           frameA: Mat4f, frameB: Mat4f) : Joint() {
+class FixedJointImpl(
+    override val bodyA: RigidActor,
+    override val bodyB: RigidActor,
+    frameA: Mat4f,
+    frameB: Mat4f
+) : JointImpl(frameA, frameB), FixedJoint {
 
-    actual val frameA = Mat4f(frameA)
-    actual val frameB = Mat4f(frameB)
-
-    override val pxJoint: PxFixedJoint
+    override val joint: PxFixedJoint
 
     init {
-        Physics.checkIsLoaded()
         MemoryStack.stackPush().use { mem ->
             val frmA = frameA.toPxTransform(mem.createPxTransform())
             val frmB = frameB.toPxTransform(mem.createPxTransform())
-            pxJoint = PxTopLevelFunctions.FixedJointCreate(Physics.physics, bodyA.pxRigidActor, frmA, bodyB.pxRigidActor, frmB)
+            joint = PxTopLevelFunctions.FixedJointCreate(PhysicsImpl.physics, bodyA.holder, frmA, bodyB.holder, frmB)
         }
     }
 }

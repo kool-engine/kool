@@ -5641,8 +5641,7 @@ object PxSceneFlagEnum {
     val eENABLE_GPU_DYNAMICS: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxSceneFlagEnum_eENABLE_GPU_DYNAMICS()
     val eENABLE_ENHANCED_DETERMINISM: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxSceneFlagEnum_eENABLE_ENHANCED_DETERMINISM()
     val eENABLE_FRICTION_EVERY_ITERATION: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxSceneFlagEnum_eENABLE_FRICTION_EVERY_ITERATION()
-    val eSUPPRESS_READBACK: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxSceneFlagEnum_eSUPPRESS_READBACK()
-    val eFORCE_READBACK: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxSceneFlagEnum_eFORCE_READBACK()
+    val eENABLE_DIRECT_GPU_API: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxSceneFlagEnum_eENABLE_DIRECT_GPU_API()
     val eMUTABLE_FLAGS: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxSceneFlagEnum_eMUTABLE_FLAGS()
 }
 

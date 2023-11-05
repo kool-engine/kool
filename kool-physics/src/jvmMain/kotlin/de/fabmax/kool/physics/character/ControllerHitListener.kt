@@ -2,7 +2,7 @@ package de.fabmax.kool.physics.character
 
 import de.fabmax.kool.math.MutableVec3d
 import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.physics.PhysicsWorld
+import de.fabmax.kool.physics.PhysicsWorldImpl
 import de.fabmax.kool.physics.toVec3d
 import de.fabmax.kool.physics.toVec3f
 import physx.character.PxControllerObstacleHit
@@ -10,7 +10,7 @@ import physx.character.PxControllerShapeHit
 import physx.character.PxControllersHit
 import physx.character.PxUserControllerHitReportImpl
 
-class ControllerHitListener(private val world: PhysicsWorld) : PxUserControllerHitReportImpl() {
+class ControllerHitListener(private val world: PhysicsWorldImpl) : PxUserControllerHitReportImpl() {
 
     private val hitPosD = MutableVec3d()
     private val hitPos = MutableVec3f()

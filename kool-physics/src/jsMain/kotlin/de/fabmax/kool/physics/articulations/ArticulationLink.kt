@@ -1,26 +1,29 @@
 package de.fabmax.kool.physics.articulations
 
-import de.fabmax.kool.physics.RigidBody
+import de.fabmax.kool.physics.RigidActorHolder
+import de.fabmax.kool.physics.RigidBodyImpl
 import physx.PxArticulationLink
-import physx.PxRigidActor
 import physx.inboundJoint
 
-actual class ArticulationLink(val pxLink: PxArticulationLink, val parent: ArticulationLink?) : RigidBody() {
+class ArticulationLinkImpl(
+    link: PxArticulationLink,
+    parent: ArticulationLinkImpl?
+) : RigidBodyImpl(), ArticulationLink {
 
-    private val mutChildren = mutableListOf<ArticulationLink>()
-    actual val children: List<ArticulationLink>
-        get() = mutChildren
+    private val _children = mutableListOf<ArticulationLink>()
+    override val children: List<ArticulationLink>
+        get() = _children
 
-    actual val inboundJoint: ArticulationJoint? = if (parent != null) {
-        pxLink.inboundJoint?.let { ArticulationJoint(it) }
+    override val inboundJoint: ArticulationJoint? = if (parent != null) {
+        link.inboundJoint?.let { ArticulationJointImpl(it) }
     } else {
         null
     }
 
-    override val pxRigidActor: PxRigidActor = pxLink
+    override val holder = RigidActorHolder(link)
 
     init {
-        parent?.mutChildren?.add(this)
+        parent?._children?.add(this)
     }
 
 }

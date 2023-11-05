@@ -4,49 +4,48 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import physx.*
 
-actual abstract class RigidBody : RigidActor() {
-
+abstract class RigidBodyImpl : RigidActorImpl(), RigidBody {
     @Suppress("UNCHECKED_CAST_TO_EXTERNAL_INTERFACE")
-    internal val pxRigidBody: PxRigidBody
-        get() = pxRigidActor as PxRigidBody
+    private val pxRigidBody: PxRigidBody
+        get() = holder.px as PxRigidBody
 
-    actual var mass: Float
+    override var mass: Float
         get() = pxRigidBody.mass
         set(value) { pxRigidBody.mass = value }
 
     private var isInertiaSet = false
-    actual var inertia: Vec3f
+    override var inertia: Vec3f
         get() = pxRigidBody.massSpaceInertiaTensor.toVec3f(bufInertia)
         set(value) {
             pxRigidBody.massSpaceInertiaTensor = value.toPxVec3(pxTmpVec)
             isInertiaSet = true
         }
 
-    actual var linearVelocity: Vec3f
+    override var linearVelocity: Vec3f
         get() = pxRigidBody.linearVelocity.toVec3f(bufLinVelocity)
         set(value) {
             PxRigidDynamicFromPointer(pxRigidBody.ptr).setLinearVelocity(value.toPxVec3(pxTmpVec))
         }
 
-    actual var angularVelocity: Vec3f
+    override var angularVelocity: Vec3f
         get() = pxRigidBody.angularVelocity.toVec3f(bufAngVelocity)
         set(value) {
             PxRigidDynamicFromPointer(pxRigidBody.ptr).setAngularVelocity(value.toPxVec3(pxTmpVec))
         }
 
-    actual var maxLinearVelocity: Float
+    override var maxLinearVelocity: Float
         get() = pxRigidBody.maxLinearVelocity
         set(value) { pxRigidBody.maxLinearVelocity = value }
 
-    actual var maxAngularVelocity: Float
+    override var maxAngularVelocity: Float
         get() = pxRigidBody.maxAngularVelocity
         set(value) { pxRigidBody.maxAngularVelocity = value }
 
-    actual var linearDamping: Float
+    override var linearDamping: Float
         get() = pxRigidBody.linearDamping
         set(value) { pxRigidBody.linearDamping = value }
 
-    actual var angularDamping: Float
+    override var angularDamping: Float
         get() = pxRigidBody.angularDamping
         set(value) { pxRigidBody.angularDamping = value }
 
@@ -68,11 +67,11 @@ actual abstract class RigidBody : RigidActor() {
         pxTmpVec.destroy()
     }
 
-    actual fun updateInertiaFromShapesAndMass() {
+    override fun updateInertiaFromShapesAndMass() {
         PxRigidBodyExt.setMassAndUpdateInertia(pxRigidBody, mass)
     }
 
-    actual fun addForceAtPos(force: Vec3f, pos: Vec3f, isLocalForce: Boolean, isLocalPos: Boolean) {
+    override fun addForceAtPos(force: Vec3f, pos: Vec3f, isLocalForce: Boolean, isLocalPos: Boolean) {
         MemoryStack.stackPush().use { mem ->
             val pxForce = force.toPxVec3(mem.createPxVec3())
             val pxPos = pos.toPxVec3(mem.createPxVec3())
@@ -85,7 +84,7 @@ actual abstract class RigidBody : RigidActor() {
         }
     }
 
-    actual fun addImpulseAtPos(impulse: Vec3f, pos: Vec3f, isLocalImpulse: Boolean, isLocalPos: Boolean) {
+    override fun addImpulseAtPos(impulse: Vec3f, pos: Vec3f, isLocalImpulse: Boolean, isLocalPos: Boolean) {
         MemoryStack.stackPush().use { mem ->
             val pxImpulse = impulse.toPxVec3(mem.createPxVec3())
             val pxPos = pos.toPxVec3(mem.createPxVec3())
@@ -98,7 +97,7 @@ actual abstract class RigidBody : RigidActor() {
         }
     }
 
-    actual fun addTorque(torque: Vec3f, isLocalTorque: Boolean) {
+    override fun addTorque(torque: Vec3f, isLocalTorque: Boolean) {
         tmpVec.set(torque)
         if (isLocalTorque) {
             transform.transform(tmpVec, 0f)

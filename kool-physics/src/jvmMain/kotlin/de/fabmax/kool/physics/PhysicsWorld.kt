@@ -5,6 +5,7 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Ray
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.articulations.Articulation
+import de.fabmax.kool.physics.articulations.ArticulationImpl
 import de.fabmax.kool.physics.geometry.CollisionGeometry
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.logE
@@ -18,52 +19,56 @@ import physx.support.SupportFunctions
 import physx.support.Vector_PxContactPairPoint
 import kotlin.collections.set
 
-actual class PhysicsWorld(scene: Scene?, val isContinuousCollisionDetection: Boolean, val tryCuda: Boolean) : CommonPhysicsWorld(), Releasable {
+actual fun PhysicsWorld(scene: Scene?, isContinuousCollisionDetection: Boolean) : PhysicsWorld {
+    return PhysicsWorldImpl(scene, isContinuousCollisionDetection)
+}
+
+class PhysicsWorldImpl(scene: Scene?, val isContinuousCollisionDetection: Boolean, val tryCuda: Boolean) : PhysicsWorld(), Releasable {
+    constructor(scene: Scene?, isContinuousCollisionDetection: Boolean): this(scene, isContinuousCollisionDetection, PhysicsImpl.cudaManager != null)
+
     val pxScene: PxScene
 
     private val raycastResult = PxRaycastResult()
     private val sweepResult = PxSweepResult()
     private val bufPxGravity = Vec3f(0f, -9.81f, 0f).toPxVec3(PxVec3())
     private val bufGravity = MutableVec3f()
-    actual var gravity: Vec3f
+    override var gravity: Vec3f
         get() = pxScene.gravity.toVec3f(bufGravity)
         set(value) {
             pxScene.gravity = value.toPxVec3(bufPxGravity)
         }
 
     private var mutActiveActors = 0
-    actual val activeActors: Int
+    override val activeActors: Int
         get() = mutActiveActors
 
     private val pxActors = mutableMapOf<PxActor, RigidActor>()
 
-    actual constructor(scene: Scene?, isContinuousCollisionDetection: Boolean): this(scene, isContinuousCollisionDetection, Physics.cudaManager != null)
-
     init {
-        Physics.checkIsLoaded()
+        PhysicsImpl.checkIsLoaded()
 
         MemoryStack.stackPush().use { mem ->
-            if (tryCuda && Physics.cudaManager == null) {
+            if (tryCuda && PhysicsImpl.cudaManager == null) {
                 logW { "CUDA is not available (either CUDA runtime lib is missing or no CUDA capable device was found). Falling back to regular CPU physics." }
             }
 
-            val sceneDesc = PxSceneDesc.createAt(mem, MemoryStack::nmalloc, Physics.physics.tolerancesScale)
+            val sceneDesc = PxSceneDesc.createAt(mem, MemoryStack::nmalloc, PhysicsImpl.physics.tolerancesScale)
             sceneDesc.gravity = bufPxGravity
-            sceneDesc.cpuDispatcher = Physics.defaultCpuDispatcher
+            sceneDesc.cpuDispatcher = PhysicsImpl.defaultCpuDispatcher
             sceneDesc.filterShader = PxTopLevelFunctions.DefaultFilterShader()
             sceneDesc.simulationEventCallback = SimEventCallback()
             sceneDesc.flags.raise(PxSceneFlagEnum.eENABLE_ACTIVE_ACTORS)
             if (isContinuousCollisionDetection) {
                 sceneDesc.flags.raise(PxSceneFlagEnum.eENABLE_CCD)
             }
-            if (tryCuda && Physics.cudaManager != null) {
-                sceneDesc.cudaContextManager = Physics.cudaManager
+            if (tryCuda && PhysicsImpl.cudaManager != null) {
+                sceneDesc.cudaContextManager = PhysicsImpl.cudaManager
                 sceneDesc.flags.raise(PxSceneFlagEnum.eENABLE_GPU_DYNAMICS)
                 sceneDesc.broadPhaseType = PxBroadPhaseTypeEnum.eGPU
                 sceneDesc.gpuDynamicsConfig.maxRigidPatchCount *= 8
                 logI { "Using CUDA acceleration for PhysX scene" }
             }
-            pxScene = Physics.physics.createScene(sceneDesc)
+            pxScene = PhysicsImpl.physics.createScene(sceneDesc)
         }
         scene?.let { registerHandlers(it) }
     }
@@ -94,11 +99,11 @@ actual class PhysicsWorld(scene: Scene?, val isContinuousCollisionDetection: Boo
 
     override fun addActor(actor: RigidActor) {
         super.addActor(actor)
-        pxScene.addActor(actor.pxRigidActor)
-        pxActors[actor.pxRigidActor] = actor
+        pxScene.addActor(actor.holder)
+        pxActors[actor.holder] = actor
 
         // set necessary ccd flags in case it is enabled for this scene
-        val pxActor = actor.pxRigidActor
+        val pxActor = actor.holder
         if (isContinuousCollisionDetection && pxActor is PxRigidBody) {
             pxActor.setRigidBodyFlag(PxRigidBodyFlagEnum.eENABLE_CCD, true)
             actor.simulationFilterData = FilterData {
@@ -110,20 +115,20 @@ actual class PhysicsWorld(scene: Scene?, val isContinuousCollisionDetection: Boo
 
     override fun removeActor(actor: RigidActor) {
         super.removeActor(actor)
-        pxScene.removeActor(actor.pxRigidActor)
-        pxActors -= actor.pxRigidActor
+        pxScene.removeActor(actor.holder)
+        pxActors -= actor.holder
     }
 
     override fun addArticulation(articulation: Articulation) {
         super.addArticulation(articulation)
-        articulation.links.forEach { pxActors[it.pxLink] = it }
-        pxScene.addArticulation(articulation.pxArticulation)
+        articulation.links.forEach { pxActors[it.holder] = it }
+        pxScene.addArticulation((articulation as ArticulationImpl).pxArticulation)
     }
 
     override fun removeArticulation(articulation: Articulation) {
         super.removeArticulation(articulation)
-        articulation.links.forEach { pxActors -= it.pxLink }
-        pxScene.removeArticulation(articulation.pxArticulation)
+        articulation.links.forEach { pxActors -= it.holder }
+        pxScene.removeArticulation((articulation as ArticulationImpl).pxArticulation)
     }
 
     override fun release() {
@@ -134,7 +139,7 @@ actual class PhysicsWorld(scene: Scene?, val isContinuousCollisionDetection: Boo
         sweepResult.destroy()
     }
 
-    actual fun raycast(ray: Ray, maxDistance: Float, result: HitResult): Boolean {
+    override fun raycast(ray: Ray, maxDistance: Float, result: HitResult): Boolean {
         result.clear()
         MemoryStack.stackPush().use { mem ->
             synchronized(raycastResult) {
@@ -167,13 +172,13 @@ actual class PhysicsWorld(scene: Scene?, val isContinuousCollisionDetection: Boo
         return result.isHit
     }
 
-    actual fun sweepTest(testGeometry: CollisionGeometry, geometryPose: Mat4f, testDirection: Vec3f, distance: Float, result: HitResult): Boolean {
+    override fun sweepTest(testGeometry: CollisionGeometry, geometryPose: Mat4f, testDirection: Vec3f, distance: Float, result: HitResult): Boolean {
         result.clear()
         MemoryStack.stackPush().use { mem ->
             val sweepPose = geometryPose.toPxTransform(mem.createPxTransform())
             val sweepDir = testDirection.toPxVec3(mem.createPxVec3())
 
-            if (pxScene.sweep(testGeometry.pxGeometry, sweepPose, sweepDir, distance, sweepResult)) {
+            if (pxScene.sweep(testGeometry.holder, sweepPose, sweepDir, distance, sweepResult)) {
                 var minDist = distance
                 var nearestHit: PxSweepHit? = null
                 var nearestActor: RigidActor? = null

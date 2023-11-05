@@ -6,21 +6,21 @@ import de.fabmax.kool.math.spatial.BoundingBox
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
 
-expect class TriangleMeshGeometry(triangleMesh: TriangleMesh, scale: Vec3f = Vec3f.ONES) : CommonTriangleMeshGeometry, CollisionGeometry {
-    constructor(geometry: IndexedVertexList)
+expect fun TriangleMeshGeometry(triangleMesh: TriangleMesh, scale: Vec3f = Vec3f.ONES): TriangleMeshGeometry
 
-    override fun release()
-}
+expect fun TriangleMeshGeometry(geometry: IndexedVertexList, scale: Vec3f = Vec3f.ONES): TriangleMeshGeometry
 
-abstract class CommonTriangleMeshGeometry(val triangleMesh: TriangleMesh) {
+interface TriangleMeshGeometry : CollisionGeometry {
+    val triangleMesh: TriangleMesh
+    val scale: Vec3f
 
-    open fun generateMesh(target: MeshBuilder) {
+    override fun generateMesh(target: MeshBuilder) {
         target.geometry.addGeometry(triangleMesh.geometry)
     }
 
-    open fun getBounds(result: BoundingBox) = result.set(triangleMesh.geometry.bounds)
+    override fun getBounds(result: BoundingBox) = result.set(triangleMesh.geometry.bounds)
 
-    open fun estimateInertiaForMass(mass: Float, result: MutableVec3f): MutableVec3f {
+    override fun estimateInertiaForMass(mass: Float, result: MutableVec3f): MutableVec3f {
         // rough approximation: use inertia of bounding box
         val bounds = triangleMesh.geometry.bounds
         result.x = (mass / 12f) * (bounds.size.y * bounds.size.y + bounds.size.z * bounds.size.z)

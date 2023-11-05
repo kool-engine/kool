@@ -2,13 +2,13 @@ package de.fabmax.kool.physics.character
 
 import de.fabmax.kool.math.MutableVec3d
 import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.physics.PhysicsWorld
+import de.fabmax.kool.physics.PhysicsWorldImpl
 import de.fabmax.kool.physics.toVec3d
 import de.fabmax.kool.physics.toVec3f
 import physx.PxControllerShapeHitFromPointer
 import physx.PxUserControllerHitReportImpl
 
-class ControllerHitListener(val world: PhysicsWorld) {
+class ControllerHitListener(val world: PhysicsWorldImpl) {
 
     private val hitPosD = MutableVec3d()
     private val hitPos = MutableVec3f()

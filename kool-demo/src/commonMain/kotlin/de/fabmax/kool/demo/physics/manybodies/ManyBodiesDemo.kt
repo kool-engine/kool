@@ -35,8 +35,7 @@ class ManyBodiesDemo : DemoScene("Many Bodies") {
         ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${DemoLoader.hdriPath}/syferfontein_0d_clear_1k.rgbe.png")
         mainScene += Skybox.cube(ibl.reflectionMap, 2f)
 
-        physicsWorld = PhysicsWorld()
-        physicsWorld.registerHandlers(mainScene)
+        physicsWorld = PhysicsWorld(mainScene)
     }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {

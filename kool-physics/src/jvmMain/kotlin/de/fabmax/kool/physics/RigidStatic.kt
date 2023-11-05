@@ -5,17 +5,19 @@ import org.lwjgl.system.MemoryStack
 import physx.physics.PxRigidActor
 import physx.physics.PxRigidStatic
 
-actual class RigidStatic actual constructor(pose: Mat4f) : RigidActor() {
+actual fun RigidStatic(pose: Mat4f): RigidStatic = RigidStaticImpl(pose)
+
+class RigidStaticImpl(pose: Mat4f) : RigidActorImpl(), RigidStatic {
 
     private val pxRigidStatic: PxRigidStatic
 
-    override val pxRigidActor: PxRigidActor
+    override val holder: PxRigidActor
 
     init {
         MemoryStack.stackPush().use { mem ->
             val pxPose = pose.toPxTransform(mem.createPxTransform())
-            pxRigidStatic = Physics.physics.createRigidStatic(pxPose)
-            pxRigidActor = pxRigidStatic
+            pxRigidStatic = PhysicsImpl.physics.createRigidStatic(pxPose)
+            holder = pxRigidStatic
         }
         transform.setMatrix(pose)
     }

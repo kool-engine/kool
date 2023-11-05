@@ -1,7 +1,7 @@
 package de.fabmax.kool.physics.vehicle
 
 import de.fabmax.kool.math.Mat4f
-import de.fabmax.kool.math.MutableMat4f
+import de.fabmax.kool.math.PI_F
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.physics.PhysicsWorld
 import de.fabmax.kool.physics.RigidBody
@@ -9,9 +9,14 @@ import de.fabmax.kool.scene.ColorMesh
 import de.fabmax.kool.scene.TrsTransformF
 import de.fabmax.kool.scene.addColorMesh
 import de.fabmax.kool.util.Color
-import kotlin.math.PI
 
-expect class Vehicle(vehicleProps: VehicleProperties, world: PhysicsWorld, pose: Mat4f = MutableMat4f()) : CommonVehicle {
+expect fun Vehicle(vehicleProps: VehicleProperties, world: PhysicsWorld, pose: Mat4f = Mat4f.IDENTITY): Vehicle
+
+interface Vehicle : RigidBody {
+    val vehicleProps: VehicleProperties
+
+    val wheelInfos: List<WheelInfo>
+
     val forwardSpeed: Float
     val sidewaysSpeed: Float
     val longitudinalAcceleration: Float
@@ -23,22 +28,11 @@ expect class Vehicle(vehicleProps: VehicleProperties, world: PhysicsWorld, pose:
 
     var isReverse: Boolean
 
-    override var steerInput: Float
-    override var throttleInput: Float
-    override var brakeInput: Float
+    var steerInput: Float
+    var throttleInput: Float
+    var brakeInput: Float
 
     fun setToRestState()
-}
-
-abstract class CommonVehicle(val vehicleProps: VehicleProperties) : RigidBody() {
-
-    protected val mutWheelInfos = mutableListOf<WheelInfo>()
-    val wheelInfos: List<WheelInfo>
-        get() = mutWheelInfos
-
-    abstract var steerInput: Float
-    abstract var throttleInput: Float
-    abstract var brakeInput: Float
 
     override fun toMesh(meshColor: Color, materialCfg: KslPbrShader.Config.() -> Unit) = ColorMesh().apply {
         generate {
@@ -71,7 +65,7 @@ abstract class CommonVehicle(val vehicleProps: VehicleProperties) : RigidBody() 
         }
 
         onUpdate += {
-            (transform as TrsTransformF).set(this@CommonVehicle.transform)
+            (transform as TrsTransformF).set(this@Vehicle.transform)
             for (i in 0..3) {
                 (wheelGroups[i].transform as TrsTransformF).set(wheelInfos[i].transform)
             }
@@ -84,6 +78,6 @@ abstract class CommonVehicle(val vehicleProps: VehicleProperties) : RigidBody() 
         const val REAR_LEFT = 2
         const val REAR_RIGHT = 3
 
-        const val OMEGA_TO_RPM = 60f / (2f * PI.toFloat())
+        const val OMEGA_TO_RPM = 60f / (PI_F * 2f)
     }
 }

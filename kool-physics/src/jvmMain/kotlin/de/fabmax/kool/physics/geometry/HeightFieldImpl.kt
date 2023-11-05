@@ -1,25 +1,36 @@
 package de.fabmax.kool.physics.geometry
 
-import de.fabmax.kool.physics.Physics
-import de.fabmax.kool.physics.Releasable
+import de.fabmax.kool.physics.PhysicsImpl
 import de.fabmax.kool.physics.createPxHeightFieldDesc
 import de.fabmax.kool.physics.createPxHeightFieldSample
+import de.fabmax.kool.physics.createPxMeshGeometryFlags
 import de.fabmax.kool.util.HeightMap
 import org.lwjgl.system.MemoryStack
 import physx.PxTopLevelFunctions
 import physx.geometry.PxHeightField
 import physx.geometry.PxHeightFieldFormatEnum
+import physx.geometry.PxHeightFieldGeometry
 import physx.geometry.PxHeightFieldSample
 import physx.support.Vector_PxHeightFieldSample
 import kotlin.math.max
 import kotlin.math.roundToInt
 
-actual class HeightField actual constructor(actual val heightMap: HeightMap, actual val rowScale: Float, actual val columnScale: Float) : Releasable {
+actual fun HeightField(heightMap: HeightMap, rowScale: Float, columnScale: Float): HeightField {
+    return HeightFieldImpl(heightMap, rowScale, columnScale)
+}
+
+val HeightField.pxHeightField: PxHeightField get() = (this as HeightFieldImpl).pxHeightField
+
+class HeightFieldImpl(
+    override val heightMap: HeightMap,
+    override val rowScale: Float,
+    override val columnScale: Float
+) : HeightField {
 
     val pxHeightField: PxHeightField
-    val heightScale: Float
+    override val heightScale: Float
 
-    actual var releaseWithGeometry = true
+    override var releaseWithGeometry = true
     internal var refCnt = 0
 
     init {
@@ -27,7 +38,7 @@ actual class HeightField actual constructor(actual val heightMap: HeightMap, act
         heightScale = maxAbsHeight / 32767f
         val revHeightToI16 = if (heightScale > 0) 1f / heightScale else 0f
 
-        Physics.checkIsLoaded()
+        PhysicsImpl.checkIsLoaded()
         MemoryStack.stackPush().use { mem ->
             val rows = heightMap.width
             val cols = heightMap.height
@@ -59,7 +70,29 @@ actual class HeightField actual constructor(actual val heightMap: HeightMap, act
     /**
      * Only use this if [releaseWithGeometry] is false. Releases the underlying PhysX mesh.
      */
-    actual override fun release() {
+    override fun release() {
         pxHeightField.release()
+    }
+}
+
+class HeightFieldGeometryImpl(override val heightField: HeightField) : CollisionGeometryImpl(), HeightFieldGeometry {
+    override val holder: PxHeightFieldGeometry
+
+    init {
+        PhysicsImpl.checkIsLoaded()
+        MemoryStack.stackPush().use { mem ->
+            val flags = mem.createPxMeshGeometryFlags(0)
+            holder = PxHeightFieldGeometry(heightField.pxHeightField, flags, heightField.heightScale, heightField.rowScale, heightField.columnScale)
+        }
+
+        if (heightField.releaseWithGeometry) {
+            heightField as HeightFieldImpl
+            if (heightField.refCnt > 0) {
+                // PxHeightField starts with a ref count of 1, only increment it if this is not the first
+                // geometry which uses it
+                heightField.pxHeightField.acquireReference()
+            }
+            heightField.refCnt++
+        }
     }
 }

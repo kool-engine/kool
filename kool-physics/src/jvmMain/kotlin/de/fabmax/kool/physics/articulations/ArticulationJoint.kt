@@ -9,96 +9,40 @@ import de.fabmax.kool.physics.toPxTransform
 import org.lwjgl.system.MemoryStack
 import physx.physics.*
 
-actual enum class ArticulationJointType(val pxVal: PxArticulationJointTypeEnum) {
-    /**
-     * All joint axes, i.e. degrees of freedom (DOFs) locked
-     */
-    FIX(PxArticulationJointTypeEnum.eFIX),
+class ArticulationJointImpl(val pxJoint: PxArticulationJointReducedCoordinate) : ArticulationJoint {
 
-    /**
-     * Single linear DOF, e.g. cart on a rail
-     */
-    PRISMATIC(PxArticulationJointTypeEnum.ePRISMATIC),
-
-    /**
-     * Single rotational DOF, e.g. an elbow joint or a rotational motor, position wrapped at 2pi radians
-     */
-    REVOLUTE(PxArticulationJointTypeEnum.eREVOLUTE),
-
-    /**
-     * Ball and socket joint with two or three DOFs
-     */
-    SPHERICAL(PxArticulationJointTypeEnum.eSPHERICAL);
-
-    companion object {
-        fun fromPx(pxVal: PxArticulationJointTypeEnum) = when (pxVal) {
-            PxArticulationJointTypeEnum.eFIX -> FIX
-            PxArticulationJointTypeEnum.ePRISMATIC -> PRISMATIC
-            PxArticulationJointTypeEnum.eREVOLUTE -> REVOLUTE
-            PxArticulationJointTypeEnum.eSPHERICAL -> SPHERICAL
-            else -> throw IllegalStateException("Invalid joint type: $this")
-        }
-    }
-}
-
-actual enum class ArticulationJointAxis(val pxVal: PxArticulationAxisEnum) {
-    ROT_TWIST(PxArticulationAxisEnum.eTWIST),
-    ROT_SWING1(PxArticulationAxisEnum.eSWING1),
-    ROT_SWING2(PxArticulationAxisEnum.eSWING2),
-
-    LINEAR_X(PxArticulationAxisEnum.eX),
-    LINEAR_Y(PxArticulationAxisEnum.eY),
-    LINEAR_Z(PxArticulationAxisEnum.eZ)
-}
-
-actual enum class ArticulationMotionMode(val pxVal: PxArticulationMotionEnum) {
-    FREE(PxArticulationMotionEnum.eFREE),
-    LIMITED(PxArticulationMotionEnum.eLIMITED),
-    LOCKED(PxArticulationMotionEnum.eLOCKED)
-}
-
-actual enum class ArticulationDriveType(val pxVal: PxArticulationDriveTypeEnum) {
-    ACCELERATION(PxArticulationDriveTypeEnum.eACCELERATION),
-    FORCE(PxArticulationDriveTypeEnum.eFORCE),
-    NONE(PxArticulationDriveTypeEnum.eNONE),
-    TARGET(PxArticulationDriveTypeEnum.eTARGET),
-    VELOCITY(PxArticulationDriveTypeEnum.eVELOCITY)
-}
-
-actual class ArticulationJoint(val pxJoint: PxArticulationJointReducedCoordinate) {
-
-    actual var jointType: ArticulationJointType
-        get() = ArticulationJointType.fromPx(pxJoint.jointType)
+    override var jointType: ArticulationJointType
+        get() = pxJoint.jointType.toArticulationJointType()
         set(value) { pxJoint.jointType = value.pxVal }
 
     init {
         pxJoint.jointType = PxArticulationJointTypeEnum.eFIX
     }
 
-    actual fun setParentPose(pose: Mat4f) {
+    override fun setParentPose(pose: Mat4f) {
         MemoryStack.stackPush().use { mem ->
             pxJoint.parentPose = pose.toPxTransform(mem.createPxTransform())
         }
     }
 
-    actual fun setChildPose(pose: Mat4f) {
+    override fun setChildPose(pose: Mat4f) {
         MemoryStack.stackPush().use { mem ->
             pxJoint.childPose = pose.toPxTransform(mem.createPxTransform())
         }
     }
 
-    actual fun setAxisMotion(axis: ArticulationJointAxis, motionType: ArticulationMotionMode) {
+    override fun setAxisMotion(axis: ArticulationJointAxis, motionType: ArticulationMotionMode) {
         pxJoint.setMotion(axis.pxVal, motionType.pxVal)
     }
 
-    actual fun setAxisLimits(axis: ArticulationJointAxis, low: Float, high: Float) {
+    override fun setAxisLimits(axis: ArticulationJointAxis, low: Float, high: Float) {
         MemoryStack.stackPush().use { mem ->
             val limit = mem.createPxArticulationLimit(low, high)
             pxJoint.setLimitParams(axis.pxVal, limit)
         }
     }
 
-    actual fun setupSphericalSymmetrical(twistLimitDeg: Float, swingLimitDeg: Float) {
+    override fun setupSphericalSymmetrical(twistLimitDeg: Float, swingLimitDeg: Float) {
         jointType = ArticulationJointType.SPHERICAL
         if (twistLimitDeg > 0f) {
             if (twistLimitDeg < 360f) {
@@ -125,10 +69,10 @@ actual class ArticulationJoint(val pxJoint: PxArticulationJointReducedCoordinate
         }
     }
 
-    actual fun setupSpherical(twistMinDeg: Float, twistMaxDeg: Float, swingMinDeg: Float, swingMaxDeg: Float) =
+    override fun setupSpherical(twistMinDeg: Float, twistMaxDeg: Float, swingMinDeg: Float, swingMaxDeg: Float) =
         setupSpherical(twistMinDeg, twistMaxDeg, swingMinDeg, swingMaxDeg, swingMinDeg, swingMaxDeg)
 
-    actual fun setupSpherical(
+    override fun setupSpherical(
         twistMinDeg: Float, twistMaxDeg: Float,
         swing1MinDeg: Float, swing1MaxDeg: Float,
         swing2MinDeg: Float, swing2MaxDeg: Float
@@ -144,7 +88,7 @@ actual class ArticulationJoint(val pxJoint: PxArticulationJointReducedCoordinate
         setAxisLimits(ArticulationJointAxis.ROT_SWING2, swing2MinDeg.toRad(), swing2MaxDeg.toRad())
     }
 
-    actual fun setDriveParams(
+    override fun setDriveParams(
         axis: ArticulationJointAxis,
         driveType: ArticulationDriveType,
         damping: Float,
@@ -161,11 +105,49 @@ actual class ArticulationJoint(val pxJoint: PxArticulationJointReducedCoordinate
         }
     }
 
-    actual fun setDriveTarget(axis: ArticulationJointAxis, target: Float) {
+    override fun setDriveTarget(axis: ArticulationJointAxis, target: Float) {
         pxJoint.setDriveTarget(axis.pxVal, target)
     }
 
-    actual fun setJointPosition(axis: ArticulationJointAxis, jointPos: Float) {
+    override fun setJointPosition(axis: ArticulationJointAxis, jointPos: Float) {
         pxJoint.setJointPosition(axis.pxVal, jointPos)
+    }
+
+    companion object {
+        private fun PxArticulationJointTypeEnum.toArticulationJointType(): ArticulationJointType = when (this) {
+            PxArticulationJointTypeEnum.eFIX -> ArticulationJointType.FIX
+            PxArticulationJointTypeEnum.ePRISMATIC -> ArticulationJointType.PRISMATIC
+            PxArticulationJointTypeEnum.eREVOLUTE -> ArticulationJointType.REVOLUTE
+            PxArticulationJointTypeEnum.eSPHERICAL -> ArticulationJointType.SPHERICAL
+            PxArticulationJointTypeEnum.eUNDEFINED -> throw IllegalStateException("Invalid joint type: $this")
+        }
+
+        private val ArticulationJointType.pxVal: PxArticulationJointTypeEnum get() = when (this) {
+            ArticulationJointType.FIX -> PxArticulationJointTypeEnum.eFIX
+            ArticulationJointType.PRISMATIC -> PxArticulationJointTypeEnum.ePRISMATIC
+            ArticulationJointType.REVOLUTE -> PxArticulationJointTypeEnum.eREVOLUTE
+            ArticulationJointType.SPHERICAL -> PxArticulationJointTypeEnum.eSPHERICAL
+        }
+
+        private val ArticulationJointAxis.pxVal: PxArticulationAxisEnum get() = when (this) {
+            ArticulationJointAxis.ROT_TWIST -> PxArticulationAxisEnum.eTWIST
+            ArticulationJointAxis.ROT_SWING1 -> PxArticulationAxisEnum.eSWING1
+            ArticulationJointAxis.ROT_SWING2 -> PxArticulationAxisEnum.eSWING2
+            ArticulationJointAxis.LINEAR_X -> PxArticulationAxisEnum.eX
+            ArticulationJointAxis.LINEAR_Y -> PxArticulationAxisEnum.eY
+            ArticulationJointAxis.LINEAR_Z -> PxArticulationAxisEnum.eZ
+        }
+        private val ArticulationMotionMode.pxVal: PxArticulationMotionEnum get() = when (this) {
+            ArticulationMotionMode.FREE -> PxArticulationMotionEnum.eFREE
+            ArticulationMotionMode.LIMITED -> PxArticulationMotionEnum.eLIMITED
+            ArticulationMotionMode.LOCKED -> PxArticulationMotionEnum.eLOCKED
+        }
+        private val ArticulationDriveType.pxVal: PxArticulationDriveTypeEnum get() = when (this) {
+            ArticulationDriveType.ACCELERATION -> PxArticulationDriveTypeEnum.eACCELERATION
+            ArticulationDriveType.FORCE -> PxArticulationDriveTypeEnum.eFORCE
+            ArticulationDriveType.NONE -> PxArticulationDriveTypeEnum.eNONE
+            ArticulationDriveType.TARGET -> PxArticulationDriveTypeEnum.eTARGET
+            ArticulationDriveType.VELOCITY -> PxArticulationDriveTypeEnum.eVELOCITY
+        }
     }
 }
