@@ -14,37 +14,19 @@ abstract class RenderPass(var drawNode: Node) {
 
     val dependencies = mutableListOf<RenderPass>()
 
-    var clearColors = Array<Color?>(1) { Color(0.15f, 0.15f, 0.15f, 1f) }
-        protected set
-    var clearColor: Color?
-        get() = clearColors[0]
-        set(value) { clearColors[0] = value }
-    var clearDepth = true
-
-    val viewport = Viewport(0, 0, 0, 0)
-    abstract val camera: Camera
+    abstract val views: List<View>
 
     var lighting: Lighting? = null
 
-    var isUpdateDrawNode = true
-    var drawFilter: (Node) -> Boolean = { true }
     private var updateEvent: UpdateEvent? = null
 
-    var drawQueue = DrawQueue(this)
-        protected set
     var isDoublePrecision = false
 
-    val onBeforeCollectDrawCommands = mutableListOf<((KoolContext) -> Unit)>()
-    val onAfterCollectDrawCommands = mutableListOf<((KoolContext) -> Unit)>()
+    val onBeforeCollectDrawCommands = mutableListOf<((UpdateEvent) -> Unit)>()
+    val onAfterCollectDrawCommands = mutableListOf<((UpdateEvent) -> Unit)>()
     val onAfterDraw = mutableListOf<((KoolContext) -> Unit)>()
 
     var isProfileDetailed = false
-
-    private fun setupUpdateEvent(ctx: KoolContext): UpdateEvent {
-        val event = updateEvent ?: UpdateEvent(this, ctx).also { updateEvent = it }
-        event.drawFilter = drawFilter
-        return event
-    }
 
     fun profileTag(subTag: String): String {
         return if (isProfileDetailed) {
@@ -62,14 +44,20 @@ abstract class RenderPass(var drawNode: Node) {
         if (ctx.isProfileRenderPasses) {
             Profiling.enter(profileTag("update"))
         }
-        val updateEvent = setupUpdateEvent(ctx)
-        if (isUpdateDrawNode) {
-            drawNode.update(updateEvent)
+
+        for (i in views.indices) {
+            val view = views[i]
+            if (view.isUpdateDrawNode) {
+                val updateEvent = view.makeUpdateEvent(ctx)
+
+                drawNode.update(updateEvent)
+                if (view.camera.parent == null) {
+                    // camera is not attached to any node, make sure it gets updated anyway
+                    view.camera.update(updateEvent)
+                }
+            }
         }
-        if (camera.parent == null) {
-            // camera is not attached to any node, make sure it gets updated anyway
-            camera.update(updateEvent)
-        }
+
         if (ctx.isProfileRenderPasses) {
             Profiling.exit(profileTag("update"))
         }
@@ -79,30 +67,33 @@ abstract class RenderPass(var drawNode: Node) {
         if (ctx.isProfileRenderPasses) {
             Profiling.enter(profileTag("collect"))
         }
-        beforeCollectDrawCommands(ctx)
-        drawNode.collectDrawCommands(setupUpdateEvent(ctx))
-        afterCollectDrawCommands(ctx)
+
+        for (i in views.indices) {
+            val view = views[i]
+            val updateEvent = view.makeUpdateEvent(ctx)
+
+            beforeCollectDrawCommands(updateEvent)
+            drawNode.collectDrawCommands(updateEvent)
+            afterCollectDrawCommands(updateEvent)
+        }
+
         if (ctx.isProfileRenderPasses) {
             Profiling.exit(profileTag("collect"))
         }
     }
 
-    open fun appendMeshToDrawQueue(mesh: Mesh, ctx: KoolContext): DrawCommand? {
-        return drawQueue.addMesh(mesh, ctx)
-    }
-
-    protected open fun beforeCollectDrawCommands(ctx: KoolContext) {
-        drawQueue.reset(isDoublePrecision)
+    protected open fun beforeCollectDrawCommands(updateEvent: UpdateEvent) {
+        updateEvent.view.drawQueue.reset(isDoublePrecision)
         for (i in onBeforeCollectDrawCommands.indices) {
-            onBeforeCollectDrawCommands[i](ctx)
+            onBeforeCollectDrawCommands[i](updateEvent)
         }
-        camera.updateCamera(this, ctx)
-        drawQueue.setupCamera(camera)
+        updateEvent.view.camera.updateCamera(updateEvent)
+        updateEvent.view.drawQueue.setupCamera(updateEvent.view.camera)
     }
 
-    protected open fun afterCollectDrawCommands(ctx: KoolContext) {
+    protected open fun afterCollectDrawCommands(updateEvent: UpdateEvent) {
         for (i in onAfterCollectDrawCommands.indices) {
-            onAfterCollectDrawCommands[i](ctx)
+            onAfterCollectDrawCommands[i](updateEvent)
         }
     }
 
@@ -114,28 +105,64 @@ abstract class RenderPass(var drawNode: Node) {
 
     open fun dispose(ctx: KoolContext) { }
 
-    class UpdateEvent(val renderPass: RenderPass, val ctx: KoolContext) {
-        val camera: Camera
-            get() = renderPass.camera
-        val viewport: Viewport
-            get() = renderPass.viewport
+    class UpdateEvent(val view: View, val ctx: KoolContext) {
+        val renderPass: RenderPass get() = view.renderPass
 
+        val camera: Camera
+            get() = view.camera
+        val viewport: Viewport
+            get() = view.viewport
+
+        val drawFilter: (Node) -> Boolean get() = view.drawFilter
+
+        operator fun component1() = view
+        operator fun component2() = ctx
+    }
+
+    inner class View(var name: String, var camera: Camera, val clearColors: Array<Color?>) {
+        val renderPass: RenderPass get() = this@RenderPass
+
+        val viewport = Viewport(0, 0, 0, 0)
+        val drawQueue = DrawQueue(this@RenderPass, this)
         var drawFilter: (Node) -> Boolean = { true }
 
-        operator fun component1() = renderPass
-        operator fun component2() = ctx
+//        var clearColors = Array<Color?>(1) { Color(0.15f, 0.15f, 0.15f, 1f) }
+//            protected set
+
+        var clearDepth = true
+        var clearColor: Color?
+            get() = clearColors[0]
+            set(value) { clearColors[0] = value }
+
+        var isUpdateDrawNode = true
+
+        private var updateEvent: UpdateEvent? = null
+
+        internal fun makeUpdateEvent(ctx: KoolContext): UpdateEvent {
+            return updateEvent ?: UpdateEvent(this, ctx).also { updateEvent = it }
+        }
+
+        fun appendMeshToDrawQueue(mesh: Mesh, ctx: KoolContext): DrawCommand {
+            return drawQueue.addMesh(mesh, ctx)
+        }
     }
 }
 
 class ScreenRenderPass(val scene: Scene) : RenderPass(scene) {
-    override val camera
-        get() = scene.camera
+
+    val screenView = View("screen", PerspectiveCamera(), arrayOf(Color(0.15f, 0.15f, 0.15f, 1f)))
+    var camera: Camera by screenView::camera
+    val viewport: Viewport by screenView::viewport
+    var clearColor: Color? by screenView::clearColor
+    var clearDepth: Boolean by screenView::clearDepth
+
+    override val views: List<View> = listOf(screenView)
 
     var useWindowViewport = true
 
     init {
         name = "onscreen/${scene.name}"
-        lighting = scene.lighting
+        lighting = Lighting()
     }
 
     override fun update(ctx: KoolContext) {

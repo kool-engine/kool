@@ -7,6 +7,7 @@ import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
 import org.lwjgl.vulkan.VkFormatProperties
+import kotlin.math.max
 
 class Image(val sys: VkSystem, config: Config) : VkResource() {
     val width = config.width
@@ -24,13 +25,21 @@ class Image(val sys: VkSystem, config: Config) : VkResource() {
 
     init {
         memStack {
+            val w = max(1, config.width)
+            val h = max(1, config.height)
+            val d = max(1, config.depth)
+
+            if (w > config.width) logW { "Invalid image width requested: ${config.width}" }
+            if (h > config.height) logW { "Invalid image height requested: ${config.height}" }
+            if (d > config.depth) logW { "Invalid image depth requested: ${config.depth}" }
+
             val imageInfo = callocVkImageCreateInfo {
                 sType(VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO)
                 imageType(if (depth > 1) VK_IMAGE_TYPE_3D else VK_IMAGE_TYPE_2D)
                 extent {
-                    it.width(width)
-                    it.height(height)
-                    it.depth(depth)
+                    it.width(w)
+                    it.height(h)
+                    it.depth(d)
                 }
                 mipLevels(mipLevels)
                 format(format)

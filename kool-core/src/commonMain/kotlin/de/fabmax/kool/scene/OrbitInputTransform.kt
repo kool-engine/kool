@@ -104,8 +104,8 @@ open class OrbitInputTransform(name: String? = null) : Node(name), InputStack.Po
         panPlane.p.set(Vec3f.ZERO)
         panPlane.n.set(Vec3f.Y_AXIS)
 
-        onUpdate += { (rp, ctx) ->
-            doCamTransform(rp, ctx)
+        onUpdate += { (view, ctx) ->
+            doCamTransform(view, ctx)
         }
     }
 
@@ -157,8 +157,8 @@ open class OrbitInputTransform(name: String? = null) : Node(name), InputStack.Po
         }
     }
 
-    private fun doCamTransform(renderPass: RenderPass, ctx: KoolContext) {
-        if (dragMethod == DragMethod.PAN && panMethod.computePanPoint(pointerHit, renderPass, ptrPos, ctx)) {
+    private fun doCamTransform(view: RenderPass.View, ctx: KoolContext) {
+        if (dragMethod == DragMethod.PAN && panMethod.computePanPoint(pointerHit, view, ptrPos, ctx)) {
             if (dragStart) {
                 dragStart = false
                 pointerHitStart.set(pointerHit)
@@ -173,14 +173,14 @@ open class OrbitInputTransform(name: String? = null) : Node(name), InputStack.Po
 
                 // limit panning speed
                 val tLen = tmpVec1.length()
-                if (tLen > renderPass.camera.globalRange * 0.5f) {
-                    tmpVec1.mul(renderPass.camera.globalRange * 0.5f / tLen)
+                if (tLen > view.camera.globalRange * 0.5f) {
+                    tmpVec1.mul(view.camera.globalRange * 0.5f / tLen)
                 }
 
                 translation.add(tmpVec1)
             }
         } else {
-            pointerHit.set(renderPass.camera.globalLookAt)
+            pointerHit.set(view.camera.globalLookAt)
         }
 
         if (!deltaScroll.isFuzzyZero()) {
@@ -203,8 +203,8 @@ open class OrbitInputTransform(name: String? = null) : Node(name), InputStack.Po
         val z = zoomAnimator.animate(Time.deltaT)
         if (!isFuzzyEqual(oldZ, z)
                 && zoomMethod == ZoomMethod.ZOOM_TRANSLATE
-                && panMethod.computePanPoint(pointerHit, renderPass, ptrPos, ctx)) {
-            computeZoomTranslationPerspective(renderPass.camera, oldZ, z)
+                && panMethod.computePanPoint(pointerHit, view, ptrPos, ctx)) {
+            computeZoomTranslationPerspective(view.camera, oldZ, z)
         }
 
         vertRotAnimator.animate(Time.deltaT)
@@ -284,17 +284,17 @@ open class OrbitInputTransform(name: String? = null) : Node(name), InputStack.Po
 }
 
 abstract class PanBase {
-    abstract fun computePanPoint(result: MutableVec3f, renderPass: RenderPass, ptrPos: Vec2d, ctx: KoolContext): Boolean
+    abstract fun computePanPoint(result: MutableVec3f, view: RenderPass.View, ptrPos: Vec2d, ctx: KoolContext): Boolean
 }
 
 class CameraOrthogonalPan : PanBase() {
     val panPlane = Plane()
     private val pointerRay = Ray()
 
-    override fun computePanPoint(result: MutableVec3f, renderPass: RenderPass, ptrPos: Vec2d, ctx: KoolContext): Boolean {
-        panPlane.p.set(renderPass.camera.globalLookAt)
-        panPlane.n.set(renderPass.camera.globalLookDir)
-        return renderPass.camera.computePickRay(pointerRay, ptrPos.x.toFloat(), ptrPos.y.toFloat(), renderPass.viewport, ctx) &&
+    override fun computePanPoint(result: MutableVec3f, view: RenderPass.View, ptrPos: Vec2d, ctx: KoolContext): Boolean {
+        panPlane.p.set(view.camera.globalLookAt)
+        panPlane.n.set(view.camera.globalLookDir)
+        return view.camera.computePickRay(pointerRay, ptrPos.x.toFloat(), ptrPos.y.toFloat(), view.viewport, ctx) &&
                 panPlane.intersectionPoint(pointerRay, result)
     }
 }
@@ -307,9 +307,9 @@ class FixedPlanePan(planeNormal: Vec3f) : PanBase() {
         panPlane.n.set(planeNormal)
     }
 
-    override fun computePanPoint(result: MutableVec3f, renderPass: RenderPass, ptrPos: Vec2d, ctx: KoolContext): Boolean {
-        panPlane.p.set(renderPass.camera.globalLookAt)
-        return renderPass.camera.computePickRay(pointerRay, ptrPos.x.toFloat(), ptrPos.y.toFloat(), renderPass.viewport, ctx) &&
+    override fun computePanPoint(result: MutableVec3f, view: RenderPass.View, ptrPos: Vec2d, ctx: KoolContext): Boolean {
+        panPlane.p.set(view.camera.globalLookAt)
+        return view.camera.computePickRay(pointerRay, ptrPos.x.toFloat(), ptrPos.y.toFloat(), view.viewport, ctx) &&
                 panPlane.intersectionPoint(pointerRay, result)
     }
 }

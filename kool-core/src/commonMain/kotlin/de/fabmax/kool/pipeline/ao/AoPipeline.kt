@@ -11,6 +11,7 @@ import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.scene.PerspectiveProxyCam
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.launchOnMainThread
+import kotlin.math.max
 
 abstract class AoPipeline {
 
@@ -74,8 +75,8 @@ abstract class AoPipeline {
         override val aoPass: AmbientOcclusionPass
         override val denoisePass: AoDenoisePass
 
-        private var mapWidth = 0
-        private var mapHeight = 0
+        private var mapWidth = max(32, (scene.mainRenderPass.viewport.width * mapSize).toInt())
+        private var mapHeight = max(32, (scene.mainRenderPass.viewport.height * mapSize).toInt())
 
         private val onRenderSceneCallback: (KoolContext) -> Unit = { onRenderScene(it) }
 
@@ -85,8 +86,8 @@ abstract class AoPipeline {
             depthPass = NormalLinearDepthMapPass(scene, mapWidth, mapHeight)
             depthPass.camera = proxyCamera
             depthPass.isUpdateDrawNode = false
-            depthPass.onBeforeCollectDrawCommands += { ctx ->
-                proxyCamera.sync(scene.mainRenderPass, ctx)
+            depthPass.onBeforeCollectDrawCommands += { ev ->
+                proxyCamera.sync(ev)
             }
 
             aoPass = AmbientOcclusionPass(AoSetup.forward(depthPass), mapWidth, mapHeight)
@@ -138,8 +139,8 @@ abstract class AoPipeline {
         override val aoPass: AmbientOcclusionPass
         override val denoisePass: AoDenoisePass
 
-        private var mapWidth = 0
-        private var mapHeight = 0
+        private var mapWidth = max(32, (deferredPipeline.scene.mainRenderPass.viewport.width * mapSize).toInt())
+        private var mapHeight = max(32, (deferredPipeline.scene.mainRenderPass.viewport.height * mapSize).toInt())
 
         init {
             aoPass = AmbientOcclusionPass(AoSetup.deferred(), mapWidth, mapHeight)
@@ -153,7 +154,7 @@ abstract class AoPipeline {
         }
 
         override fun onSwap(previousPasses: DeferredPasses, currentPasses: DeferredPasses) {
-            aoPass.sceneCam = currentPasses.materialPass.camera
+            aoPass.sceneCam = currentPasses.materialPass.mainView.camera
             aoPass.deferredPosition = currentPasses.materialPass.positionFlags
             aoPass.deferredNormal = currentPasses.materialPass.normalRoughness
             denoisePass.depth = currentPasses.materialPass.positionFlags

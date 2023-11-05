@@ -4,11 +4,10 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec2i
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.math.getNumMipLevels
-import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Node
-import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.util.logT
 import de.fabmax.kool.util.logW
+import kotlin.math.max
 
 inline fun renderPassConfig(block: OffscreenRenderPass.Config.() -> Unit): OffscreenRenderPass.Config {
     val config = OffscreenRenderPass.Config()
@@ -43,8 +42,6 @@ abstract class OffscreenRenderPass(drawNode: Node, config: Config) : RenderPass(
 
     var isEnabled = true
 
-    override var camera: Camera = PerspectiveCamera()
-
     init {
         if (colorRenderTarget == RenderTarget.TEXTURE && colorAttachments.isEmpty()) {
             throw IllegalStateException("colorAttachments must be configured if colorRenderTarget is TEXTURE")
@@ -58,30 +55,30 @@ abstract class OffscreenRenderPass(drawNode: Node, config: Config) : RenderPass(
         }
 
         name = config.name
-        clearColors = Array(colorAttachments.size) { null }
-        applyMipViewport(0)
     }
 
     fun getColorTexProps(colorAttachment: Int = 0): TextureProps {
         return colorAttachments[colorAttachment].getTextureProps(mipLevels > 1)
     }
 
-    fun getMipWidth(mipLevel: Int): Int {
+    fun getMipWidth(mipLevel: Int, width: Int = this.width): Int {
         return if (mipLevel <= 0) width else width shr mipLevel
     }
 
-    fun getMipHeight(mipLevel: Int): Int {
+    fun getMipHeight(mipLevel: Int, height: Int = this.height): Int {
         return if (mipLevel <= 0) height else height shr mipLevel
     }
 
-    fun applyMipViewport(mipLevel: Int) {
+    protected fun View.setFullscreenViewport(mipLevel: Int = 0) {
         viewport.set(0, 0, getMipWidth(mipLevel), getMipHeight(mipLevel))
     }
 
     open fun resize(width: Int, height: Int, ctx: KoolContext) {
         logT { "OffscreenPass $name resized to $width x $height" }
         applySize(width, height, ctx)
-        applyMipViewport(0)
+        for (v in views) {
+            v.viewport.set(0, 0, width, height)
+        }
     }
 
     protected open fun applySize(width: Int, height: Int, ctx: KoolContext) {
@@ -102,7 +99,9 @@ abstract class OffscreenRenderPass(drawNode: Node, config: Config) : RenderPass(
         var depthAttachment: TextureAttachmentConfigBuilder? = null
 
         fun setSize(width: Int, height: Int) {
-            size.set(width, height)
+            size.set(max(1, width), max(1, height))
+            if (size.x > width) logW { "Invalid OffscreenRenderPass width: $width" }
+            if (size.y > height) logW { "Invalid OffscreenRenderPass height: $height" }
         }
 
         fun addMipLevels(mipLevels: Int = getNumMipLevels(size.x, size.y), drawMipLevels: Boolean = true) {

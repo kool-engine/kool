@@ -25,7 +25,7 @@ class IrradianceMapPass private constructor(parentScene: Scene, hdriMap: Texture
     var isAutoRemove = true
 
     init {
-        clearColor = null
+        views.forEach { it.clearColor = null }
         drawNode.apply {
             addMesh(Attribute.POSITIONS) {
                 generateFullscreenCube()

@@ -1,7 +1,6 @@
 package de.fabmax.kool.platform.webgl
 
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.pipeline.drawqueue.DrawQueue
 import de.fabmax.kool.platform.JsContext
 import de.fabmax.kool.platform.WebGL2RenderingContext
 import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.COLOR
@@ -37,17 +36,24 @@ class QueueRendererWebGl(val ctx: JsContext) {
         }
     }
 
-    fun renderQueue(queue: DrawQueue) {
+    fun renderViews(renderPass: RenderPass) {
+        for (i in renderPass.views.indices) {
+            renderView(renderPass.views[i])
+        }
+    }
+
+    fun renderView(view: RenderPass.View) {
         if (ctx.isProfileRenderPasses) {
-            Profiling.enter(queue.renderPass.profileTag("render"))
+            Profiling.enter(view.renderPass.profileTag("render"))
         }
 
-        queue.renderPass.apply {
+        view.apply {
             ctx.gl.viewport(viewport.x, viewport.y, viewport.width, viewport.height)
 
-            if (this is OffscreenRenderPass2d) {
-                for (i in colorAttachments.indices) {
-                    (clearColors[i] ?: clearColor)?.let {
+            val rp = renderPass
+            if (rp is OffscreenRenderPass2d) {
+                for (i in rp.colorAttachments.indices) {
+                    clearColors[i]?.let {
                         colorBuffer[0] = it.r
                         colorBuffer[1] = it.g
                         colorBuffer[2] = it.b
@@ -69,7 +75,7 @@ class QueueRendererWebGl(val ctx: JsContext) {
         }
 
         var numPrimitives = 0
-        for (cmd in queue.commands) {
+        for (cmd in view.drawQueue.commands) {
             cmd.pipeline?.let { pipeline ->
                 val t = Time.precisionTime
                 glAttribs.setupPipelineAttribs(pipeline)
@@ -95,7 +101,7 @@ class QueueRendererWebGl(val ctx: JsContext) {
         ctx.engineStats.addPrimitiveCount(numPrimitives)
 
         if (ctx.isProfileRenderPasses) {
-            Profiling.exit(queue.renderPass.profileTag("render"))
+            Profiling.exit(view.renderPass.profileTag("render"))
         }
     }
 
@@ -171,7 +177,7 @@ class QueueRendererWebGl(val ctx: JsContext) {
         }
     }
 
-    private fun RenderPass.clearMask(): Int {
+    private fun RenderPass.View.clearMask(): Int {
         var mask = 0
         if (clearDepth) {
             mask = DEPTH_BUFFER_BIT

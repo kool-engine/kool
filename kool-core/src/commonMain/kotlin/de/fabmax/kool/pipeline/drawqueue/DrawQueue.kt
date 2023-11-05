@@ -8,7 +8,7 @@ import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.LazyMat4d
 import de.fabmax.kool.util.LazyMat4f
 
-class DrawQueue(val renderPass: RenderPass) {
+class DrawQueue(val renderPass: RenderPass, val view: RenderPass.View) {
 
     var isDoublePrecision = false
         private set
@@ -54,16 +54,13 @@ class DrawQueue(val renderPass: RenderPass) {
 
     val invViewMatD: Mat4d get() = lazyInvViewD.get()
 
-    val commands: List<DrawCommand>
-        get() = mutCommands
-
-    private val mutCommands = mutableListOf<DrawCommand>()
+    val commands = mutableListOf<DrawCommand>()
     private val commandPool = mutableListOf<DrawCommand>()
 
     fun reset(isDoublePrecision: Boolean) {
         this.isDoublePrecision = isDoublePrecision
-        commandPool.addAll(mutCommands)
-        mutCommands.clear()
+        commandPool.addAll(commands)
+        commands.clear()
     }
 
     fun setupCamera(camera: Camera) {
@@ -92,7 +89,14 @@ class DrawQueue(val renderPass: RenderPass) {
             DrawCommand(this, mesh)
         }
         cmd.setup(mesh, ctx)
-        mutCommands.add(cmd)
+        commands.add(cmd)
         return cmd
+    }
+
+    fun recycleDrawCommand(cmd: DrawCommand) {
+        if (cmd.queue !== this) {
+            throw IllegalArgumentException("DrawCommand does not belong to this DrawQueue")
+        }
+        commandPool.add(cmd)
     }
 }

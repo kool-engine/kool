@@ -22,6 +22,8 @@ open class OffscreenRenderPass2dPingPong(config: Config) : OffscreenRenderPass(E
     var onDrawPing: ((Int) -> Unit)? = null
     var onDrawPong: ((Int) -> Unit)? = null
 
+    override val views: List<View> = emptyList()
+
     override fun resize(width: Int, height: Int, ctx: KoolContext) {
         super.resize(width, height, ctx)
         ping.resize(width, height, ctx)

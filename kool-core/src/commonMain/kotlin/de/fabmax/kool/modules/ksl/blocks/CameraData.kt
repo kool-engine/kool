@@ -68,10 +68,10 @@ class CameraData(program: KslProgram) : KslDataBlock, KslShaderListener {
 
     override fun onUpdate(cmd: DrawCommand) {
         val q = cmd.queue
-        val vp = q.renderPass.viewport
+        val vp = q.view.viewport
         uViewport?.value?.set(vp.x.toFloat(), vp.y.toFloat(), vp.width.toFloat(), vp.height.toFloat())
 
-        val cam = q.renderPass.camera
+        val cam = q.view.camera
         uPosition?.value?.set(cam.globalPos)
         uDirection?.value?.set(cam.globalLookDir)
         uClip?.value?.set(cam.clipNear, cam.clipFar)

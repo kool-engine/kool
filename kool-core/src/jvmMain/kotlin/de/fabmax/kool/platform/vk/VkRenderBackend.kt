@@ -271,12 +271,16 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackend {
 
         private fun MemoryStack.makeCommandBufferOnScreen(cmdBuffer: VkCommandBuffer, group: RenderPassGraph.RenderPassGroup, swapChain: SwapChain, imageIndex: Int) {
             val mergeQueue = mutableListOf<DrawCommand>()
-            val viewport = group.renderPasses[0].viewport
+
+            // fixme: this assumes all render passes / views use the same fullscreen viewport
+            val viewport = group.renderPasses[0].views[0].viewport
 
             // on screen render passes of all scenes are merged into a single command buffer
             for (i in group.renderPasses.indices) {
                 val onScreenPass = group.renderPasses[i]
-                mergeQueue += onScreenPass.drawQueue.commands
+                for (view in onScreenPass.views) {
+                    mergeQueue += view.drawQueue.commands
+                }
             }
 
             // fixme: optimize draw queue order (sort by distance, customizable draw order, etc.)
@@ -468,10 +472,14 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackend {
                 val mipLevels = offscreenPass.mipLevels
                 for (mipLevel in 0 until vkPass2d.renderMipLevels) {
                     offscreenPass.onSetupMipLevel?.invoke(mipLevel, ctx)
-                    offscreenPass.applyMipViewport(mipLevel)
                     vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE)
-                    setViewport(commandBuffer, offscreenPass.viewport)
-                    renderDrawQueue(commandBuffer, offscreenPass.drawQueue.commands, mipLevel, rp, mipLevels, true)
+
+                    for (view in offscreenPass.views) {
+                        view.viewport.set(0, 0, offscreenPass.getMipWidth(mipLevel), offscreenPass.getMipHeight(mipLevel))
+                        setViewport(commandBuffer, view.viewport)
+                        renderDrawQueue(commandBuffer, view.drawQueue.commands, mipLevel, rp, mipLevels, true)
+                    }
+
                     vkCmdEndRenderPass(commandBuffer)
                     vkPass2d.copyMipView(commandBuffer, mipLevel)
                 }
@@ -491,14 +499,17 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackend {
                 val mipLevels = offscreenPass.mipLevels
                 for (mipLevel in 0 until mipLevels) {
                     offscreenPass.onSetupMipLevel?.invoke(mipLevel, ctx)
-                    offscreenPass.applyMipViewport(mipLevel)
-                    for (view in cubeRenderPassViews) {
-                        val imageI = mipLevel * 6 + view.index
+                    //offscreenPass.applyMipViewport(mipLevel)
+                    for (cubeView in cubeRenderPassViews) {
+                        val imageI = mipLevel * 6 + cubeView.index
+                        val view = offscreenPass.views[cubeView.index]
+                        view.viewport.set(0, 0, offscreenPass.getMipWidth(mipLevel), offscreenPass.getMipHeight(mipLevel))
+
                         vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE)
-                        setViewport(commandBuffer, offscreenPass.viewport)
-                        renderDrawQueue(commandBuffer, offscreenPass.drawQueues[view.index].commands, imageI, rp, 6 * mipLevels, true)
+                        setViewport(commandBuffer, view.viewport)
+                        renderDrawQueue(commandBuffer, view.drawQueue.commands, imageI, rp, 6 * mipLevels, true)
                         vkCmdEndRenderPass(commandBuffer)
-                        vkPassCube.copyView(commandBuffer, view, mipLevel)
+                        vkPassCube.copyView(commandBuffer, cubeView, mipLevel)
                     }
                 }
                 vkPassCube.transitionTexLayout(commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
@@ -518,11 +529,12 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackend {
                 }
 
                 // fixme: make clear values optional (if clear color is null or clearDepth = false)
-                val colorAttachments = max(1, renderPass.clearColors.size)
+                val clearColors = renderPass.views.getOrNull(0)?.clearColors
+                val colorAttachments = max(1, clearColors?.size ?: 0)
                 pClearValues(callocVkClearValueN(colorAttachments + 1) {
                     for (i in 0 until colorAttachments) {
-                        val clearColor = if (i < renderPass.clearColors.size) {
-                            renderPass.clearColors[i] ?: Color.BLACK
+                        val clearColor = if (clearColors != null && i < clearColors.size) {
+                            clearColors[i] ?: Color.BLACK
                         } else {
                             Color.BLACK
                         }

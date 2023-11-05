@@ -30,15 +30,22 @@ actual class OffscreenPassCubeImpl actual constructor(val offscreenPass: Offscre
 
         for (mipLevel in 0 until offscreenPass.mipLevels) {
             offscreenPass.onSetupMipLevel?.invoke(mipLevel, ctx)
-            offscreenPass.applyMipViewport(mipLevel)
+            for (i in offscreenPass.views.indices) {
+                offscreenPass.views[i].viewport.set(
+                    0,
+                    0,
+                    offscreenPass.getMipWidth(mipLevel),
+                    offscreenPass.getMipHeight(mipLevel)
+                )
+            }
             ctx.gl.bindFramebuffer(FRAMEBUFFER, fbos[mipLevel])
 
-            for (face in 0 until 6) {
-                val view = VIEWS[face]
-                val queue = offscreenPass.drawQueues[view.index]
-                ctx.gl.framebufferTexture2D(FRAMEBUFFER, COLOR_ATTACHMENT0, TEXTURE_CUBE_MAP_POSITIVE_X + face, colorTex, mipLevel)
-                ctx.queueRenderer.renderQueue(queue)
-                copyToTextures(face, mipLevel, ctx)
+            for (i in CUBE_VIEWS.indices) {
+                val cubeView = CUBE_VIEWS[i]
+                val passView = offscreenPass.views[cubeView.index]
+                ctx.gl.framebufferTexture2D(FRAMEBUFFER, COLOR_ATTACHMENT0, TEXTURE_CUBE_MAP_POSITIVE_X + i, colorTex, mipLevel)
+                ctx.queueRenderer.renderView(passView)
+                copyToTextures(i, mipLevel, ctx)
             }
         }
         ctx.gl.bindFramebuffer(FRAMEBUFFER, null)
@@ -150,7 +157,7 @@ actual class OffscreenPassCubeImpl actual constructor(val offscreenPass: Offscre
     }
 
     companion object {
-        private val VIEWS = Array(6) { i ->
+        private val CUBE_VIEWS = Array(6) { i ->
             when (i) {
                 0 -> OffscreenRenderPassCube.ViewDirection.RIGHT
                 1 -> OffscreenRenderPassCube.ViewDirection.LEFT

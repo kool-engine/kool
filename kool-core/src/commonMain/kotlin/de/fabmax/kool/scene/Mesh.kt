@@ -225,7 +225,7 @@ open class Mesh(var geometry: IndexedVertexList, name: String? = null) : Node(na
             }
             rayTest.onMeshDataChanged(this)
         }
-        updateEvent.renderPass.appendMeshToDrawQueue(this, updateEvent.ctx)
+        updateEvent.view.appendMeshToDrawQueue(this, updateEvent.ctx)
     }
 
     companion object {

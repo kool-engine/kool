@@ -19,12 +19,13 @@ inline fun scene(name: String? = null, block: Scene.() -> Unit): Scene {
 
 open class Scene(name: String? = null) : Node(name) {
 
-    val lighting = Lighting()
-    var camera: Camera = PerspectiveCamera()
-
     val onRenderScene: MutableList<(KoolContext) -> Unit> = mutableListOf()
 
     val mainRenderPass = ScreenRenderPass(this)
+
+    var camera: Camera by mainRenderPass::camera
+    val lighting: Lighting
+        get() = mainRenderPass.lighting!!
 
     private val mutOffscreenPasses = mutableListOf<OffscreenRenderPass>()
     private val addOffscreenPasses = mutableListOf<OffscreenRenderPass>()

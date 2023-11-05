@@ -2,7 +2,6 @@ package de.fabmax.kool.pipeline.deferred
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.scene.PerspectiveProxyCam
@@ -46,9 +45,8 @@ class MaterialPass(pipeline: DeferredPipeline, suffix: String) :
         (pipeline.scene.camera as? PerspectiveCamera)?.let {
             proxyCamera = PerspectiveProxyCam(it)
         }
-        onBeforeCollectDrawCommands += { ctx ->
-            //proxyCamera?.sync(scene.mainRenderPass, ctx)
-            proxyCamera?.sync(this, ctx)
+        onBeforeCollectDrawCommands += { ev ->
+            proxyCamera?.sync(ev)
         }
 
         // do not update draw node from render pass onUpdate, it is updated from DeferredPipeline
@@ -56,10 +54,10 @@ class MaterialPass(pipeline: DeferredPipeline, suffix: String) :
 
         // encoded position is in view space -> z value of valid position is always negative, use a positive z value
         // in clear color to encode clear areas
-        clearColors[0] = Color(0f, 0f, 1f, 0f)
-        clearColors[1] = null
-        clearColors[2] = null
-        clearColors[3] = null
+        mainView.clearColors[0] = Color(0f, 0f, 1f, 0f)
+        mainView.clearColors[1] = null
+        mainView.clearColors[2] = null
+        mainView.clearColors[3] = null
     }
 
     override fun collectDrawCommands(ctx: KoolContext) {
@@ -67,13 +65,17 @@ class MaterialPass(pipeline: DeferredPipeline, suffix: String) :
         super.collectDrawCommands(ctx)
     }
 
-    override fun appendMeshToDrawQueue(mesh: Mesh, ctx: KoolContext): DrawCommand? {
-        return if (mesh.isOpaque) {
-            super.appendMeshToDrawQueue(mesh, ctx)
-        } else {
-            alphaMeshes += mesh
-            null
+    override fun afterCollectDrawCommands(updateEvent: UpdateEvent) {
+        val it = mainView.drawQueue.commands.iterator()
+        while (it.hasNext()) {
+            val cmd = it.next()
+            if (!cmd.mesh.isOpaque) {
+                alphaMeshes += cmd.mesh
+                it.remove()
+                mainView.drawQueue.recycleDrawCommand(cmd)
+            }
         }
+        super.afterCollectDrawCommands(updateEvent)
     }
 
     override fun dispose(ctx: KoolContext) {

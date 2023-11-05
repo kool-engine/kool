@@ -118,7 +118,7 @@ class GlRenderBackend(val ctx: Lwjgl3Context) : RenderBackend {
                     captureFramebuffer(scene)
                 }
                 doOffscreenPasses(scene, ctx)
-                queueRenderer.renderQueue(scene.mainRenderPass.drawQueue)
+                queueRenderer.renderViews(scene.mainRenderPass)
                 if (scene.framebufferCaptureMode == Scene.FramebufferCaptureMode.AfterRender) {
                     captureFramebuffer(scene)
                 }

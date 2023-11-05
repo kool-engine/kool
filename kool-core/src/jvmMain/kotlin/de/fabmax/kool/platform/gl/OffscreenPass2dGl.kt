@@ -24,11 +24,14 @@ class OffscreenPass2dGl(val parentPass: OffscreenPass2dImpl) : OffscreenPass2dIm
 
         if (isCreated) {
             val glBackend = ctx.renderBackend as GlRenderBackend
+            val pass = parentPass.offscreenPass
             for (mipLevel in 0 until renderMipLevels) {
-                parentPass.offscreenPass.onSetupMipLevel?.invoke(mipLevel, ctx)
-                parentPass.offscreenPass.applyMipViewport(mipLevel)
+                pass.onSetupMipLevel?.invoke(mipLevel, ctx)
+                for (i in pass.views.indices) {
+                    pass.views[i].viewport.set(0, 0, pass.getMipWidth(mipLevel), pass.getMipHeight(mipLevel))
+                }
                 glBindFramebuffer(GL_FRAMEBUFFER, fbos[mipLevel])
-                glBackend.queueRenderer.renderQueue(parentPass.offscreenPass.drawQueue)
+                glBackend.queueRenderer.renderViews(pass)
             }
             glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE)
 

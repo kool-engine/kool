@@ -3,7 +3,7 @@ package de.fabmax.kool.pipeline.deferred
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.pipeline.Texture2d
-import de.fabmax.kool.util.logD
+import de.fabmax.kool.util.logT
 import kotlin.math.roundToInt
 
 class Bloom(deferredPipeline: DeferredPipeline, cfg: DeferredPipelineConfig) : DeferredPassSwapListener {
@@ -55,7 +55,7 @@ class Bloom(deferredPipeline: DeferredPipeline, cfg: DeferredPipelineConfig) : D
             val bloomMapW = (viewportW / bestSamples.toFloat()).roundToInt()
             val bloomMapH = (viewportH / bestSamples.toFloat()).roundToInt()
             if (bloomMapW > 0 && bloomMapH > 0 && (bloomMapW != thresholdPass.width || bloomMapH != thresholdPass.height)) {
-                logD { "Bloom threshold down sampling: $bestSamples" }
+                logT { "Bloom threshold down sampling: $bestSamples" }
                 thresholdPass.resize(bloomMapW, bloomMapH, ctx)
                 blurPass.resize(bloomMapW, bloomMapH, ctx)
             }

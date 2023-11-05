@@ -64,7 +64,7 @@ abstract class Camera(name: String = "camera") : Node(name) {
     private val tmpVec3 = MutableVec3f()
     private val tmpVec4 = MutableVec4f()
 
-    val onCameraUpdated = mutableListOf<(KoolContext) -> Unit>()
+    val onCameraUpdated = mutableListOf<(RenderPass.UpdateEvent) -> Unit>()
 
     fun setupCamera(position: Vec3f? = null, up: Vec3f? = null, lookAt: Vec3f? = null) {
         position?.let { this.position.set(it) }
@@ -77,27 +77,27 @@ abstract class Camera(name: String = "camera") : Node(name) {
         clipFar = far
     }
 
-    open fun updateCamera(renderPass: RenderPass, ctx: KoolContext) {
+    open fun updateCamera(updateEvent: RenderPass.UpdateEvent) {
         if (useViewportAspectRatio) {
-            aspectRatio = renderPass.viewport.aspectRatio
+            aspectRatio = updateEvent.view.viewport.aspectRatio
         }
 
-        updateProjectionMatrix(renderPass, ctx)
-        ctx.projCorrectionMatrix.mul(proj, tmpProjCorrected)
+        updateProjectionMatrix(updateEvent)
+        updateEvent.ctx.projCorrectionMatrix.mul(proj, tmpProjCorrected)
         proj.set(tmpProjCorrected)
         lazyInvProj.isDirty = true
 
-        updateViewMatrix(renderPass, ctx)
+        updateViewMatrix(updateEvent)
 
         if (onCameraUpdated.isNotEmpty()) {
             for (i in onCameraUpdated.indices) {
-                onCameraUpdated[i](ctx)
+                onCameraUpdated[i](updateEvent)
             }
         }
     }
 
-    protected open fun updateViewMatrix(renderPass: RenderPass, ctx: KoolContext) {
-        if (renderPass.isDoublePrecision) {
+    protected open fun updateViewMatrix(updateEvent: RenderPass.UpdateEvent) {
+        if (updateEvent.renderPass.isDoublePrecision) {
             dataD.updateView()
             dataF.set(dataD)
         } else {
@@ -106,7 +106,7 @@ abstract class Camera(name: String = "camera") : Node(name) {
         }
     }
 
-    protected abstract fun updateProjectionMatrix(renderPass: RenderPass, ctx: KoolContext)
+    protected abstract fun updateProjectionMatrix(updateEvent: RenderPass.UpdateEvent)
 
     fun computePickRay(pickRay: Ray, ptr: Pointer, viewport: Viewport, ctx: KoolContext): Boolean {
         return ptr.isValid && computePickRay(pickRay, ptr.x.toFloat(), ptr.y.toFloat(), viewport, ctx)
@@ -300,24 +300,25 @@ open class OrthographicCamera(name: String = "orthographicCam") : Camera(name) {
         this.clipFar = far
     }
 
-    override fun updateCamera(renderPass: RenderPass, ctx: KoolContext) {
+    override fun updateCamera(updateEvent: RenderPass.UpdateEvent) {
+        val vp = updateEvent.view.viewport
         if (isClipToViewport) {
             left = 0f
-            right = renderPass.viewport.width.toFloat()
+            right = vp.width.toFloat()
             bottom = 0f
-            top = renderPass.viewport.height.toFloat()
+            top = vp.height.toFloat()
 
         } else if (isKeepAspectRatio) {
             val h = top - bottom
-            val w = renderPass.viewport.aspectRatio * h
+            val w = vp.aspectRatio * h
             val xCenter = left + (right - left) * 0.5f
             left = xCenter - w * 0.5f
             right = xCenter + w * 0.5f
         }
-        super.updateCamera(renderPass, ctx)
+        super.updateCamera(updateEvent)
     }
 
-    override fun updateProjectionMatrix(renderPass: RenderPass, ctx: KoolContext) {
+    override fun updateProjectionMatrix(updateEvent: RenderPass.UpdateEvent) {
         if (left != right && bottom != top && clipNear != clipFar) {
             proj.setIdentity().orthographic(left, right, bottom, top, clipNear, clipFar)
         }
@@ -371,7 +372,7 @@ open class PerspectiveCamera(name: String = "perspectiveCam") : Camera(name) {
 
     private val tmpNodeCenter = MutableVec3f()
 
-    override fun updateProjectionMatrix(renderPass: RenderPass, ctx: KoolContext) {
+    override fun updateProjectionMatrix(updateEvent: RenderPass.UpdateEvent) {
         proj.setIdentity().perspective(fovY, aspectRatio, clipNear, clipFar)
 
         // compute intermediate values needed for view frustum culling
@@ -434,8 +435,8 @@ open class PerspectiveProxyCam(var sceneCam: PerspectiveCamera) : PerspectiveCam
         useViewportAspectRatio = false
     }
 
-    open fun sync(renderPass: RenderPass, ctx: KoolContext) {
-        sceneCam.updateCamera(renderPass, ctx)
+    open fun sync(updateEvent: RenderPass.UpdateEvent) {
+        sceneCam.updateCamera(updateEvent)
 
         position.set(sceneCam.globalPos)
         lookAt.set(sceneCam.globalLookAt)

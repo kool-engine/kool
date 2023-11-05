@@ -43,8 +43,8 @@ class OceanFloorRenderPass(mainScene: Scene, val terrainTiles: TerrainTiles) :
         }
 
         val proxyCamera = PerspectiveProxyCam(mainScene.camera as PerspectiveCamera)
-        onBeforeCollectDrawCommands += {
-            proxyCamera.sync(mainScene.mainRenderPass, it)
+        onBeforeCollectDrawCommands += { ev ->
+            proxyCamera.sync(ev)
         }
         camera = proxyCamera
         lighting = mainScene.lighting

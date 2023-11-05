@@ -14,7 +14,6 @@ import kotlin.math.sqrt
 class BloomBlurPass(kernelSize: Int, thresholdPass: BloomThresholdPass) :
         OffscreenRenderPass2dPingPong(renderPassConfig {
             name = "BloomBlurPass"
-            setSize(0, 0)
             addColorTexture(TexFormat.RGBA_F16)
             clearDepthTexture()
         }) {

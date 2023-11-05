@@ -211,7 +211,7 @@ class AoDemo : DemoScene("Ambient Occlusion") {
             this.shader = shader
         }
 
-        this@setupMainScene += Skybox.cube(ibl.reflectionMap, 1f)
+        this@setupMainScene += Skybox.cube(ibl.reflectionMap, 1.5f)
     }
 
     private fun RectProps.setUvs(u: Float, v: Float, width: Float, height: Float) {

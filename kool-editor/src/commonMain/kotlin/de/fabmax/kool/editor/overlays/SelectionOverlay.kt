@@ -105,15 +105,16 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
             isUpdateDrawNode = false
             isEnabled = true
 
-            drawFilter = { it in meshSelection }
+            mainView.drawFilter = { it in meshSelection }
 
-            onAfterCollectDrawCommands += { ctx ->
+            onAfterCollectDrawCommands += { ev ->
                 // replace regular object shaders by selection shader
-                for (i in drawQueue.commands.indices) {
-                    setupDrawCommand(i, drawQueue.commands[i], ctx)
+                val q = ev.view.drawQueue
+                for (i in q.commands.indices) {
+                    setupDrawCommand(i, q.commands[i], ev.ctx)
                 }
-                if (drawQueue.commands.size != meshSelection.size) {
-                    logD { "Invalidating selection overlay: draw queue size (${drawQueue.commands.size}) != selection size (${meshSelection.size})" }
+                if (q.commands.size != meshSelection.size) {
+                    logD { "Invalidating selection overlay: draw queue size (${q.commands.size}) != selection size (${meshSelection.size})" }
                     invalidateSelection()
                 }
             }

@@ -16,7 +16,6 @@ import de.fabmax.kool.util.Color
 class BloomThresholdPass(deferredPipeline: DeferredPipeline, cfg: DeferredPipelineConfig) :
     OffscreenRenderPass2d(Node(), renderPassConfig {
         name = "BloomThresholdPass"
-        setSize(0, 0)
         addColorTexture(TexFormat.RGBA_F16)
         clearDepthTexture()
     }) {

@@ -226,7 +226,7 @@ class JsContext internal constructor() : KoolContext() {
                     captureFramebuffer(scene)
                 }
                 doOffscreenPasses(scene, this)
-                queueRenderer.renderQueue(scene.mainRenderPass.drawQueue)
+                queueRenderer.renderViews(scene.mainRenderPass)
                 if (scene.framebufferCaptureMode == Scene.FramebufferCaptureMode.AfterRender) {
                     captureFramebuffer(scene)
                 }

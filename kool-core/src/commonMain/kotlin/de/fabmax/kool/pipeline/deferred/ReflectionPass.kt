@@ -23,7 +23,6 @@ class ReflectionPass(val baseReflectionStep: Float) :
         Node(),
         renderPassConfig {
             name = "ReflectionPass"
-            setSize(0, 0)
             addColorTexture(TexFormat.RGBA)
             clearDepthTexture()
         }

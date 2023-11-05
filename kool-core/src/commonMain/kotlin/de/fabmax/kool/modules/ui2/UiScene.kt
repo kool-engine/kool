@@ -36,8 +36,8 @@ fun Scene.setupUiScene(clearScreen: Boolean = false) {
         (camera as? OrthographicCamera)?.let { cam ->
             cam.left = 0f
             cam.top = 0f
-            cam.right = ev.renderPass.viewport.width.toFloat()
-            cam.bottom = -ev.renderPass.viewport.height.toFloat()
+            cam.right = ev.viewport.width.toFloat()
+            cam.bottom = -ev.viewport.height.toFloat()
         }
     }
 }

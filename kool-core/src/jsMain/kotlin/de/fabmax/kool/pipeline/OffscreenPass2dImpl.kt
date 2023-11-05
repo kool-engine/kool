@@ -39,9 +39,16 @@ actual class OffscreenPass2dImpl actual constructor(val offscreenPass: Offscreen
         if (isCreated) {
             for (mipLevel in 0 until renderMipLevels) {
                 offscreenPass.onSetupMipLevel?.invoke(mipLevel, ctx)
-                offscreenPass.applyMipViewport(mipLevel)
+                for (i in offscreenPass.views.indices) {
+                    offscreenPass.views[i].viewport.set(
+                        0,
+                        0,
+                        offscreenPass.getMipWidth(mipLevel),
+                        offscreenPass.getMipHeight(mipLevel)
+                    )
+                }
                 ctx.gl.bindFramebuffer(FRAMEBUFFER, fbos[mipLevel])
-                ctx.queueRenderer.renderQueue(offscreenPass.drawQueue)
+                ctx.queueRenderer.renderViews(offscreenPass)
             }
             if (!drawMipLevels) {
                 for (i in colorTexs.indices) {

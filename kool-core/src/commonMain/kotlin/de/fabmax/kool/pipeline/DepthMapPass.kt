@@ -19,10 +19,11 @@ open class DepthMapPass(drawNode: Node, config: Config) : OffscreenRenderPass2d(
     var cullMethod: CullMethod? = null
 
     init {
-        onAfterCollectDrawCommands += { ctx ->
+        onAfterCollectDrawCommands += { ev ->
             // replace regular object shaders by cheaper shadow versions
-            for (i in drawQueue.commands.indices) {
-                setupDrawCommand(drawQueue.commands[i], ctx)
+            val q = ev.view.drawQueue
+            for (i in q.commands.indices) {
+                setupDrawCommand(q.commands[i], ev.ctx)
             }
         }
     }

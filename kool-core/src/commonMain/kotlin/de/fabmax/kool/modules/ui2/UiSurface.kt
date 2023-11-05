@@ -76,8 +76,8 @@ open class UiSurface(
         // mirror y-axis
         transform.scale(mirrorTransformScale)
         onUpdate += {
-            viewportWidth.set(it.renderPass.viewport.width.toFloat())
-            viewportHeight.set(it.renderPass.viewport.height.toFloat())
+            viewportWidth.set(it.viewport.width.toFloat())
+            viewportHeight.set(it.viewport.height.toFloat())
 
             for (i in onEachFrame.indices) {
                 onEachFrame[i](it.ctx)

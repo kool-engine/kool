@@ -2,14 +2,21 @@ package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.pipeline.drawqueue.DrawQueue
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.PerspectiveCamera
+import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.launchDelayed
 
 open class OffscreenRenderPassCube(drawNode: Node, config: Config) : OffscreenRenderPass(drawNode, config) {
 
-    internal val impl = OffscreenPassCubeImpl(this)
+    override val views: List<View> = ViewDirection.entries.map {
+        val cam = PerspectiveCamera()
+        cam.fovY = 90f
+        cam.clipNear = 0.01f
+        cam.clipFar = 10f
+        cam.setupCamera(position = Vec3f.ZERO, up = it.up, lookAt = it.lookAt)
+        View(it.toString(), cam, arrayOf(Color.BLACK)).apply { setFullscreenViewport() }
+    }
 
     val depthTexture = makeDepthAttachmentTex()
     val colorTextures = makeColorAttachmentTexs()
@@ -18,13 +25,9 @@ open class OffscreenRenderPassCube(drawNode: Node, config: Config) : OffscreenRe
 
     val copyTargetsColor = mutableListOf<TextureCube>()
 
-    lateinit var onSetupView: ((ViewDirection, KoolContext) -> Unit)
-
-    val drawQueues = Array(6) { DrawQueue(this) }
+    internal val impl = OffscreenPassCubeImpl(this)
 
     init {
-        defaultCubeMapCameraConfig()
-
         if (config.depthRenderTarget == RenderTarget.TEXTURE) {
             throw RuntimeException("CubeMapDepthTexture not yet implemented")
         }
@@ -37,14 +40,6 @@ open class OffscreenRenderPassCube(drawNode: Node, config: Config) : OffscreenRe
         val tex = TextureCube(getColorTexProps(), "$name-${copyTargetsColor.size}")
         copyTargetsColor += tex
         return tex
-    }
-
-    override fun collectDrawCommands(ctx: KoolContext) {
-        for (v in ViewDirection.entries) {
-            drawQueue = drawQueues[v.index]
-            onSetupView.invoke(v, ctx)
-            super.collectDrawCommands(ctx)
-        }
     }
 
     override fun dispose(ctx: KoolContext) {
@@ -92,39 +87,13 @@ open class OffscreenRenderPassCube(drawNode: Node, config: Config) : OffscreenRe
         }
     }
 
-    private fun defaultCubeMapCameraConfig() {
-        val camDirs = mutableMapOf(
-            ViewDirection.FRONT to ViewConfig(Vec3f( 0f,  0f,  1f), Vec3f.NEG_Y_AXIS),
-            ViewDirection.BACK  to ViewConfig(Vec3f( 0f,  0f, -1f), Vec3f.NEG_Y_AXIS),
-            ViewDirection.LEFT  to ViewConfig(Vec3f(-1f,  0f,  0f), Vec3f.NEG_Y_AXIS),
-            ViewDirection.RIGHT to ViewConfig(Vec3f( 1f,  0f,  0f), Vec3f.NEG_Y_AXIS),
-            ViewDirection.UP    to ViewConfig(Vec3f( 0f,  1f,  0f), Vec3f.Z_AXIS),
-            ViewDirection.DOWN  to ViewConfig(Vec3f( 0f, -1f,  0f), Vec3f.NEG_Z_AXIS)
-        )
-
-        val cam = camera
-        if (cam is PerspectiveCamera) {
-            cam.position.set(Vec3f.ZERO)
-            cam.fovY = 90f
-            cam.clipNear = 0.01f
-            cam.clipFar = 10f
-        }
-
-        onSetupView = { viewDir, _ ->
-            val viewCfg = camDirs[viewDir]!!
-            camera.setupCamera(position = Vec3f.ZERO, up = viewCfg.up, lookAt = viewCfg.lookAt)
-        }
-    }
-
-    private class ViewConfig(val lookAt: Vec3f, val up: Vec3f)
-
-    enum class ViewDirection(val index: Int) {
-        FRONT(0),
-        BACK(1),
-        LEFT(2),
-        RIGHT(3),
-        UP(4),
-        DOWN(5)
+    enum class ViewDirection(val index: Int, val lookAt: Vec3f, val up: Vec3f) {
+        FRONT(0, Vec3f( 0f,  0f,  1f), Vec3f.NEG_Y_AXIS),
+        BACK(1, Vec3f( 0f,  0f, -1f), Vec3f.NEG_Y_AXIS),
+        LEFT(2, Vec3f(-1f,  0f,  0f), Vec3f.NEG_Y_AXIS),
+        RIGHT(3, Vec3f( 1f,  0f,  0f), Vec3f.NEG_Y_AXIS),
+        UP(4, Vec3f( 0f,  1f,  0f), Vec3f.Z_AXIS),
+        DOWN(5, Vec3f( 0f, -1f,  0f), Vec3f.NEG_Z_AXIS),
     }
 }
 

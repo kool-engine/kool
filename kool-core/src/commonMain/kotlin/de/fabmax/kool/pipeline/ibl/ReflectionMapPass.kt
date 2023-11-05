@@ -24,7 +24,7 @@ class ReflectionMapPass private constructor(parentScene: Scene, hdriMap: Texture
     var isAutoRemove = true
 
     init {
-        clearColor = null
+        views.forEach { it.clearColor = null }
         isEnabled = true
 
         val reflectionMapShader = ReflectionMapShader(hdriMap, cubeMap)

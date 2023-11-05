@@ -1,7 +1,6 @@
 package de.fabmax.kool.platform.gl
 
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.pipeline.drawqueue.DrawQueue
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.util.Float32BufferImpl
 import de.fabmax.kool.util.Profiling
@@ -23,17 +22,24 @@ class QueueRendererGl(backend: GlRenderBackend, val ctx: Lwjgl3Context) {
         }
     }
 
-    fun renderQueue(queue: DrawQueue) {
+    fun renderViews(renderPass: RenderPass) {
+        for (i in renderPass.views.indices) {
+            renderView(renderPass.views[i])
+        }
+    }
+
+    fun renderView(view: RenderPass.View) {
         if (ctx.isProfileRenderPasses) {
-            Profiling.enter(queue.renderPass.profileTag("render"))
+            Profiling.enter(view.renderPass.profileTag("render"))
         }
 
-        queue.renderPass.apply {
+        view.apply {
             glViewport(viewport.x, viewport.y, viewport.width, viewport.height)
 
-            if (this is OffscreenRenderPass) {
-                for (i in colorAttachments.indices) {
-                    (clearColors[i] ?: clearColor)?.let {
+            val rp = renderPass
+            if (rp is OffscreenRenderPass) {
+                for (i in rp.colorAttachments.indices) {
+                    clearColors[i]?.let {
                         colorBufferClearVal[0] = it.r
                         colorBufferClearVal[1] = it.g
                         colorBufferClearVal[2] = it.b
@@ -55,7 +61,7 @@ class QueueRendererGl(backend: GlRenderBackend, val ctx: Lwjgl3Context) {
         }
 
         var numPrimitives = 0
-        for (cmd in queue.commands) {
+        for (cmd in view.drawQueue.commands) {
             cmd.pipeline?.let { pipeline ->
                 val t = System.nanoTime()
                 glAttribs.setupPipelineAttribs(pipeline)
@@ -80,7 +86,7 @@ class QueueRendererGl(backend: GlRenderBackend, val ctx: Lwjgl3Context) {
         ctx.engineStats.addPrimitiveCount(numPrimitives)
 
         if (ctx.isProfileRenderPasses) {
-            Profiling.exit(queue.renderPass.profileTag("render"))
+            Profiling.exit(view.renderPass.profileTag("render"))
         }
     }
 
@@ -156,7 +162,7 @@ class QueueRendererGl(backend: GlRenderBackend, val ctx: Lwjgl3Context) {
         }
     }
 
-    private fun RenderPass.clearMask(): Int {
+    private fun RenderPass.View.clearMask(): Int {
         var mask = 0
         if (clearDepth) {
             mask = GL_DEPTH_BUFFER_BIT

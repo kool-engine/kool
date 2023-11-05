@@ -59,14 +59,14 @@ class SimpleShadowMap(val scene: Scene, override var light: Light?, mapSize: Int
         isUpdateDrawNode = false
         scene.addOffscreenPass(this)
 
-        drawFilter = {
+        mainView.drawFilter = {
             it !is Mesh || it.isCastingShadow(shadowMapLevel)
         }
 
-        onBeforeCollectDrawCommands += { ctx ->
+        onBeforeCollectDrawCommands += { ev ->
             light?.let { setupCamera(it) }
-            camera.updateCamera(this, ctx)
-            ctx.depthBiasMatrix.mul(camera.viewProj, lightViewProjMat)
+            camera.updateCamera(ev)
+            ev.ctx.depthBiasMatrix.mul(camera.viewProj, lightViewProjMat)
         }
     }
 
