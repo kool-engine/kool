@@ -202,7 +202,7 @@ open class Mesh(var geometry: IndexedVertexList, name: String? = null) : Node(na
     override fun collectDrawCommands(updateEvent: RenderPass.UpdateEvent) {
         super.collectDrawCommands(updateEvent)
 
-        if (!updateEvent.meshFilter(this) || !isRendered) {
+        if (!updateEvent.drawFilter(this) || !isRendered) {
             // mesh is not visible (either hidden or outside frustum)
             return
         }

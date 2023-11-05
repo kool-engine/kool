@@ -11,7 +11,6 @@ import de.fabmax.kool.util.Color
 class MaterialPass(pipeline: DeferredPipeline, suffix: String) :
         OffscreenRenderPass2d(pipeline.sceneContent, renderPassConfig {
             name = "MaterialPass-$suffix"
-            setDynamicSize()
             setDepthTexture(false)
             val formats = FORMATS_DEFERRED_EMISSIVE
             formats.forEach { fmt ->

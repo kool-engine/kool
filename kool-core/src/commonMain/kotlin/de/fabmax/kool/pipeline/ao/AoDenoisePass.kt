@@ -16,7 +16,7 @@ import de.fabmax.kool.util.launchDelayed
 class AoDenoisePass(aoPass: OffscreenRenderPass2d, depthComponent: String) :
     OffscreenRenderPass2d(Node(), renderPassConfig {
         name = "AoDenoisePass"
-        setSize(aoPass.config.width, aoPass.config.height)
+        size.set(aoPass.size)
         clearDepthTexture()
         addColorTexture(TexFormat.R)
     }) {

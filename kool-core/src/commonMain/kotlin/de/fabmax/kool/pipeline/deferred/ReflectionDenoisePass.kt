@@ -17,7 +17,7 @@ class ReflectionDenoisePass(reflectionPass: OffscreenRenderPass2d) :
         Node(),
         renderPassConfig {
             name = "ReflectionDenoisePass"
-            setSize(reflectionPass.config.width, reflectionPass.config.height)
+            size.set(reflectionPass.size)
             addColorTexture(TexFormat.RGBA)
             clearDepthTexture()
         }

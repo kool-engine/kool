@@ -465,7 +465,7 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackend {
                 val renderPassInfo = renderPassBeginInfo(rp, rp.frameBuffer, offscreenPass)
 
                 vkPass2d.transitionTexLayout(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
-                val mipLevels = offscreenPass.config.mipLevels
+                val mipLevels = offscreenPass.mipLevels
                 for (mipLevel in 0 until vkPass2d.renderMipLevels) {
                     offscreenPass.onSetupMipLevel?.invoke(mipLevel, ctx)
                     offscreenPass.applyMipViewport(mipLevel)
@@ -488,7 +488,7 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackend {
                 val renderPassInfo = renderPassBeginInfo(rp, rp.frameBuffer, offscreenPass)
 
                 vkPassCube.transitionTexLayout(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
-                val mipLevels = offscreenPass.config.mipLevels
+                val mipLevels = offscreenPass.mipLevels
                 for (mipLevel in 0 until mipLevels) {
                     offscreenPass.onSetupMipLevel?.invoke(mipLevel, ctx)
                     offscreenPass.applyMipViewport(mipLevel)

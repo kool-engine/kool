@@ -23,8 +23,7 @@ open class OffscreenRenderPass2dPingPong(config: Config) : OffscreenRenderPass(E
     var onDrawPong: ((Int) -> Unit)? = null
 
     override fun resize(width: Int, height: Int, ctx: KoolContext) {
-        this.width = width
-        this.height = height
+        super.resize(width, height, ctx)
         ping.resize(width, height, ctx)
         pong.resize(width, height, ctx)
     }

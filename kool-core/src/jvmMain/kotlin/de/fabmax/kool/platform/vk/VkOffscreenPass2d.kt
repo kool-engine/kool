@@ -12,11 +12,11 @@ class VkOffscreenPass2d(val parentPass: OffscreenPass2dImpl) : OffscreenPass2dIm
     private var isCreated = false
     private var isCreationBlocked = false
 
-    val drawMipLevels = parentPass.offscreenPass.config.drawMipLevels
-    val renderMipLevels: Int = if (drawMipLevels) { parentPass.offscreenPass.config.mipLevels } else { 1 }
+    val drawMipLevels = parentPass.offscreenPass.drawMipLevels
+    val renderMipLevels: Int = if (drawMipLevels) { parentPass.offscreenPass.mipLevels } else { 1 }
 
     private val resultImages = Array<Image?>(parentPass.offscreenPass.colorTextures.size) { null }
-    private val isCopyResult = parentPass.offscreenPass.config.mipLevels > 1
+    private val isCopyResult = parentPass.offscreenPass.mipLevels > 1
 
     var renderPass: VkOffscreenRenderPass? = null
         private set
@@ -40,7 +40,7 @@ class VkOffscreenPass2d(val parentPass: OffscreenPass2dImpl) : OffscreenPass2dIm
     }
 
     fun generateMipLevels(commandBuffer: VkCommandBuffer) {
-        if (parentPass.offscreenPass.config.mipLevels == 1 || drawMipLevels) {
+        if (parentPass.offscreenPass.mipLevels == 1 || drawMipLevels) {
             return
         }
 
@@ -91,7 +91,7 @@ class VkOffscreenPass2d(val parentPass: OffscreenPass2dImpl) : OffscreenPass2dIm
         if (parentPass.offscreenPass.copyTargetsColor.isEmpty()) {
             return
         }
-        val mipLevels = parentPass.offscreenPass.config.mipLevels
+        val mipLevels = parentPass.offscreenPass.mipLevels
         val srcImage = resultImages[0] ?: return
 
         memStack {
@@ -147,11 +147,11 @@ class VkOffscreenPass2d(val parentPass: OffscreenPass2dImpl) : OffscreenPass2dIm
         renderPass = null
 
         parentPass.offscreenPass.colorTextures.forEachIndexed { i, tex ->
-            if (!parentPass.offscreenPass.config.colorAttachments[i].isProvided) {
+            if (!parentPass.offscreenPass.colorAttachments[i].isProvided) {
                 tex.clear()
             }
         }
-        if (parentPass.offscreenPass.config.depthAttachment?.isProvided == false) {
+        if (parentPass.offscreenPass.depthAttachment?.isProvided == false) {
             parentPass.offscreenPass.depthTexture?.clear()
         }
 
@@ -159,11 +159,11 @@ class VkOffscreenPass2d(val parentPass: OffscreenPass2dImpl) : OffscreenPass2dIm
             rp?.destroyNow()
 
             colorTexs.forEachIndexed { i, loadedTex ->
-                if (!parentPass.offscreenPass.config.colorAttachments[i].isProvided) {
+                if (!parentPass.offscreenPass.colorAttachments[i].isProvided) {
                     loadedTex?.dispose()
                 }
             }
-            if (parentPass.offscreenPass.config.depthAttachment?.isProvided == false) {
+            if (parentPass.offscreenPass.depthAttachment?.isProvided == false) {
                 depthTex?.dispose()
             }
         }
@@ -185,27 +185,27 @@ class VkOffscreenPass2d(val parentPass: OffscreenPass2dImpl) : OffscreenPass2dIm
 
     private fun create(ctx: Lwjgl3Context) {
         val sys = (ctx.renderBackend as VkRenderBackend).vkSystem
-        val cfg = parentPass.offscreenPass.config
+        val pass = parentPass.offscreenPass
         val width = parentPass.offscreenPass.width
         val height = parentPass.offscreenPass.height
 
         var isProvidedColor = false
         val formats = mutableListOf<TexFormat>()
-        if (cfg.colorRenderTarget == OffscreenRenderPass.RenderTarget.RENDER_BUFFER) {
+        if (pass.colorRenderTarget == OffscreenRenderPass.RenderTarget.RENDER_BUFFER) {
             formats += TexFormat.R
         } else {
-            isProvidedColor = cfg.colorAttachments[0].providedTexture != null
-            if (cfg.colorAttachments.any { (it.providedTexture != null) != isProvidedColor }) {
+            isProvidedColor = pass.colorAttachments[0].providedTexture != null
+            if (pass.colorAttachments.any { (it.providedTexture != null) != isProvidedColor }) {
                 throw IllegalStateException("Mixed provided / created color attachments are not yet supported [OffscreenRenderPass2d: ${parentPass.offscreenPass.name}]")
             }
-            cfg.colorAttachments.forEach { formats += it.colorFormat }
+            pass.colorAttachments.forEach { formats += it.colorFormat }
         }
 
         val colorAttachments = if (isProvidedColor) {
             val images = mutableListOf<Image>()
             val imageViews = mutableListOf<ImageView>()
             val samplers = mutableListOf<Long>()
-            cfg.colorAttachments.forEach {
+            pass.colorAttachments.forEach {
                 val vkTex = it.providedTexture!!.loadedTexture as LoadedTextureVk
                 images += vkTex.textureImage
                 imageViews += vkTex.textureImageView
@@ -216,15 +216,15 @@ class VkOffscreenPass2d(val parentPass: OffscreenPass2dImpl) : OffscreenPass2dIm
             VkOffscreenRenderPass.CreatedColorAttachments(sys, width, height, false, formats.map { it.vkFormat }, VK_FILTER_LINEAR)
         }
 
-        val isProvidedDepth = cfg.depthAttachment?.providedTexture != null
-        val depthAttachment = if (cfg.depthRenderTarget == OffscreenRenderPass.RenderTarget.RENDER_BUFFER) {
+        val isProvidedDepth = pass.depthAttachment?.providedTexture != null
+        val depthAttachment = if (pass.depthRenderTarget == OffscreenRenderPass.RenderTarget.RENDER_BUFFER) {
             VkOffscreenRenderPass.CreatedDepthAttachment(sys, width, height, false, VK_FILTER_NEAREST, VK_COMPARE_OP_NEVER)
         } else {
             if (isProvidedDepth) {
-                val vkTex = cfg.depthAttachment!!.providedTexture!!.loadedTexture as LoadedTextureVk
+                val vkTex = pass.depthAttachment!!.providedTexture!!.loadedTexture as LoadedTextureVk
                 VkOffscreenRenderPass.ProvidedDepthAttachment(false, vkTex.textureImage, vkTex.textureImageView, vkTex.sampler)
             } else {
-                val depth = cfg.depthAttachment!!
+                val depth = pass.depthAttachment!!
                 val filterMethod = if (depth.minFilter == FilterMethod.LINEAR) VK_FILTER_LINEAR else VK_FILTER_NEAREST
                 val depthCompareOp = if (depth.depthCompareOp != DepthCompareOp.DISABLED) VK_COMPARE_OP_LESS else VK_COMPARE_OP_NEVER
                 VkOffscreenRenderPass.CreatedDepthAttachment(sys, width, height, false, filterMethod, depthCompareOp)

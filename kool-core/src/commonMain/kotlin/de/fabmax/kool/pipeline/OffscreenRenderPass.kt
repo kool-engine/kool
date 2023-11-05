@@ -1,49 +1,69 @@
 package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.math.MutableVec2i
+import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.math.getNumMipLevels
 import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.PerspectiveCamera
-import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logT
 import de.fabmax.kool.util.logW
 
-inline fun renderPassConfig(block: OffscreenRenderPass.ConfigBuilder.() -> Unit): OffscreenRenderPass.Config {
-    val builder = OffscreenRenderPass.ConfigBuilder()
-    builder.block()
-    return OffscreenRenderPass.Config(builder)
+inline fun renderPassConfig(block: OffscreenRenderPass.Config.() -> Unit): OffscreenRenderPass.Config {
+    val config = OffscreenRenderPass.Config()
+    config.block()
+    return config
 }
 
-abstract class OffscreenRenderPass(drawNode: Node, val config: Config) : RenderPass(drawNode) {
-    var isEnabled = true
+abstract class OffscreenRenderPass(drawNode: Node, config: Config) : RenderPass(drawNode) {
 
-    var width = config.width
-        protected set
-    var height = config.height
-        protected set
+    private val _size = MutableVec2i(config.size)
+    val size: Vec2i get() = _size
+    val width: Int get() = _size.x
+    val height: Int get() = _size.y
+
+    val colorRenderTarget = config.colorRenderTarget
+    val colorAttachments = if (colorRenderTarget == RenderTarget.TEXTURE) {
+        config.colorAttachments.map { TextureAttachmentConfig(it) }
+    } else {
+        emptyList()
+    }
+
+    val depthRenderTarget = config.depthRenderTarget
+    val depthAttachment = if (depthRenderTarget == RenderTarget.TEXTURE) {
+        config.depthAttachment?.let { TextureAttachmentConfig(it) }
+    } else {
+        null
+    }
+
+    val mipLevels = config.mipLevels
+    val drawMipLevels = config.drawMipLevels
+    var onSetupMipLevel: ((Int, KoolContext) -> Unit)? = null
+
+    var isEnabled = true
 
     override var camera: Camera = PerspectiveCamera()
 
-    var onSetupMipLevel: ((Int, KoolContext) -> Unit)? = null
-
     init {
-        name = config.name
-        clearColors = Array(config.nColorAttachments) { null }
-        applyMipViewport(0)
+        if (colorRenderTarget == RenderTarget.TEXTURE && colorAttachments.isEmpty()) {
+            throw IllegalStateException("colorAttachments must be configured if colorRenderTarget is TEXTURE")
+        } else if (colorRenderTarget == RenderTarget.RENDER_BUFFER && config.colorAttachments.isNotEmpty()) {
+            logW { "colorAttachments are ignored if colorRenderTarget is RENDER_BUFFER" }
+        }
+        if (depthRenderTarget == RenderTarget.TEXTURE && depthAttachment == null) {
+            throw IllegalStateException("depthAttachment must be configured if depthRenderTarget is TEXTURE")
+        } else if (depthRenderTarget == RenderTarget.RENDER_BUFFER && config.depthAttachment != null) {
+            logW { "depthAttachment is ignored if depthRenderTarget is RENDER_BUFFER" }
+        }
 
-        if (width == 0) {
-            // config is set to dynamic width, start with some non-zero value
-            width = 16
-        }
-        if (height == 0) {
-            // config is set to dynamic height, start with some non-zero value
-            height = 16
-        }
+        name = config.name
+        clearColors = Array(colorAttachments.size) { null }
+        applyMipViewport(0)
     }
 
     fun getColorTexProps(colorAttachment: Int = 0): TextureProps {
-        return config.colorAttachments[colorAttachment].getTextureProps(config.mipLevels > 1)
+        return colorAttachments[colorAttachment].getTextureProps(mipLevels > 1)
     }
 
     fun getMipWidth(mipLevel: Int): Int {
@@ -60,61 +80,18 @@ abstract class OffscreenRenderPass(drawNode: Node, val config: Config) : RenderP
 
     open fun resize(width: Int, height: Int, ctx: KoolContext) {
         logT { "OffscreenPass $name resized to $width x $height" }
-        if (config.width == 0 && config.height == 0) {
-            applySize(width, height, ctx)
-            applyMipViewport(0)
-        } else {
-            logE { "OffscreenRenderPass $name cannot be resized: Size is fixed to ${config.width} x ${config.height}" }
-        }
+        applySize(width, height, ctx)
+        applyMipViewport(0)
     }
 
     protected open fun applySize(width: Int, height: Int, ctx: KoolContext) {
-        this.width = width
-        this.height = height
+        _size.set(width, height)
     }
 
-    open class Config(builder: ConfigBuilder) {
-        val name = builder.name
-
-        val width = builder.width
-        val height = builder.height
-        val mipLevels = builder.mipLevels
-        val drawMipLevels = builder.drawMipLevels
-
-        val depthRenderTarget = builder.depthRenderTarget
-        val colorRenderTarget = builder.colorRenderTarget
-
-        val depthAttachment = if (depthRenderTarget == RenderTarget.TEXTURE) {
-            builder.depthAttachment?.let { TextureAttachmentConfig(it) }
-        } else {
-            null
-        }
-        val colorAttachments = if (colorRenderTarget == RenderTarget.TEXTURE) {
-            builder.colorAttachments.map { TextureAttachmentConfig(it) }
-        } else {
-            emptyList()
-        }
-        val nColorAttachments = colorAttachments.size
-
-        init {
-            if (colorRenderTarget == RenderTarget.TEXTURE && colorAttachments.isEmpty()) {
-                throw IllegalStateException("colorAttachments must be configured if colorRenderTarget is TEXTURE")
-            } else if (colorRenderTarget == RenderTarget.RENDER_BUFFER && builder.colorAttachments.isNotEmpty()) {
-                logW { "colorAttachments are ignored if colorRenderTarget is RENDER_BUFFER" }
-            }
-            if (depthRenderTarget == RenderTarget.TEXTURE && depthAttachment == null) {
-                throw IllegalStateException("depthAttachment must be configured if depthRenderTarget is TEXTURE")
-            } else if (depthRenderTarget == RenderTarget.RENDER_BUFFER && builder.depthAttachment != null) {
-                logW { "depthAttachment is ignored if depthRenderTarget is RENDER_BUFFER" }
-            }
-        }
-    }
-
-    open class ConfigBuilder {
+    open class Config {
         var name = "OffscreenRenderPass"
 
-        var width = 0
-        var height = 0
+        val size = MutableVec2i(128, 128)
         var mipLevels = 1
         var drawMipLevels = true
 
@@ -124,18 +101,12 @@ abstract class OffscreenRenderPass(drawNode: Node, val config: Config) : RenderP
         val colorAttachments = mutableListOf<TextureAttachmentConfigBuilder>()
         var depthAttachment: TextureAttachmentConfigBuilder? = null
 
-        fun setDynamicSize() {
-            width = 0
-            height = 0
-        }
-
         fun setSize(width: Int, height: Int) {
-            this.width = width
-            this.height = height
+            size.set(width, height)
         }
 
-        fun addMipLevels(width: Int = this.width, height: Int = this.height, drawMipLevels: Boolean = true) {
-            mipLevels = getNumMipLevels(width, height)
+        fun addMipLevels(mipLevels: Int = getNumMipLevels(size.x, size.y), drawMipLevels: Boolean = true) {
+            this.mipLevels = mipLevels
             this.drawMipLevels = drawMipLevels
         }
 

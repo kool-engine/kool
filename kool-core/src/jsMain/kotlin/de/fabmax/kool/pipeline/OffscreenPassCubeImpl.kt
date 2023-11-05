@@ -28,7 +28,7 @@ actual class OffscreenPassCubeImpl actual constructor(val offscreenPass: Offscre
             create(ctx)
         }
 
-        for (mipLevel in 0 until offscreenPass.config.mipLevels) {
+        for (mipLevel in 0 until offscreenPass.mipLevels) {
             offscreenPass.onSetupMipLevel?.invoke(mipLevel, ctx)
             offscreenPass.applyMipViewport(mipLevel)
             ctx.gl.bindFramebuffer(FRAMEBUFFER, fbos[mipLevel])
@@ -97,7 +97,7 @@ actual class OffscreenPassCubeImpl actual constructor(val offscreenPass: Offscre
 
         createColorTex(ctx)
 
-        for (i in 0 until offscreenPass.config.mipLevels) {
+        for (i in 0 until offscreenPass.mipLevels) {
             val fbo = gl.createFramebuffer()
             val rbo = gl.createRenderbuffer()
 
@@ -117,11 +117,11 @@ actual class OffscreenPassCubeImpl actual constructor(val offscreenPass: Offscre
     }
 
     private fun createColorTex(ctx: JsContext) {
-        val format = offscreenPass.config.colorAttachments[0].colorFormat
+        val format = offscreenPass.colorAttachments[0].colorFormat
         val intFormat = format.glInternalFormat
         val width = offscreenPass.width
         val height = offscreenPass.height
-        val mipLevels = offscreenPass.config.mipLevels
+        val mipLevels = offscreenPass.mipLevels
 
         val estSize = Texture.estimatedTexSize(width, height, 6, mipLevels, format.pxSize)
         val tex = LoadedTextureWebGl(ctx, TEXTURE_CUBE_MAP, ctx.gl.createTexture(), estSize)
@@ -138,7 +138,7 @@ actual class OffscreenPassCubeImpl actual constructor(val offscreenPass: Offscre
         val intFormat = props.format.glInternalFormat
         val width = offscreenPass.width
         val height = offscreenPass.height
-        val mipLevels = offscreenPass.config.mipLevels
+        val mipLevels = offscreenPass.mipLevels
 
         val estSize = Texture.estimatedTexSize(width, height, 6, mipLevels, props.format.pxSize)
         val tex = LoadedTextureWebGl(ctx, TEXTURE_CUBE_MAP, ctx.gl.createTexture(), estSize)

@@ -25,7 +25,7 @@ class RgbeDecoder(parentScene: Scene, hdriTexture: Texture2d, brightness: Float 
         val sz = max(w, h)
 
         name = "RgbeDecoder"
-        setSize(sz, sz)
+        size.set(sz, sz)
         addColorTexture(TexFormat.RGBA_F16)
         clearDepthTexture()
         addMipLevels(drawMipLevels = false)

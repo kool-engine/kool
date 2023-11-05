@@ -21,7 +21,7 @@ class OffscreenPassCubeGl(val parentPass: OffscreenPassCubeImpl) : OffscreenPass
         }
 
         val glBackend = ctx.renderBackend as GlRenderBackend
-        for (mipLevel in 0 until parentPass.offscreenPass.config.mipLevels) {
+        for (mipLevel in 0 until parentPass.offscreenPass.mipLevels) {
             parentPass.offscreenPass.onSetupMipLevel?.invoke(mipLevel, ctx)
             parentPass.offscreenPass.applyMipViewport(mipLevel)
             glBindFramebuffer(GL_FRAMEBUFFER, fbos[mipLevel])
@@ -53,7 +53,7 @@ class OffscreenPassCubeGl(val parentPass: OffscreenPassCubeImpl) : OffscreenPass
             height = height shr mipLevel
             val target = copyTarget.loadedTexture as LoadedTextureGl
 
-            if (parentPass.offscreenPass.config.colorRenderTarget == OffscreenRenderPass.RenderTarget.TEXTURE) {
+            if (parentPass.offscreenPass.colorRenderTarget == OffscreenRenderPass.RenderTarget.TEXTURE) {
                 glCopyImageSubData(glColorTex, GL_TEXTURE_CUBE_MAP, mipLevel, 0, 0, 0,
                         target.texture, GL_TEXTURE_CUBE_MAP, mipLevel, 0, 0, 0, width, height, 6)
             } else {
@@ -91,7 +91,7 @@ class OffscreenPassCubeGl(val parentPass: OffscreenPassCubeImpl) : OffscreenPass
     private fun create(ctx: Lwjgl3Context) {
         createColorTex(ctx)
 
-        for (i in 0 until parentPass.offscreenPass.config.mipLevels) {
+        for (i in 0 until parentPass.offscreenPass.mipLevels) {
             val fbo = glGenFramebuffers()
             val rbo = glGenRenderbuffers()
 
@@ -110,11 +110,11 @@ class OffscreenPassCubeGl(val parentPass: OffscreenPassCubeImpl) : OffscreenPass
     }
 
     private fun createColorTex(ctx: Lwjgl3Context) {
-        val format = parentPass.offscreenPass.config.colorAttachments[0].colorFormat
+        val format = parentPass.offscreenPass.colorAttachments[0].colorFormat
         val intFormat = format.glInternalFormat
         val width = parentPass.offscreenPass.width
         val height = parentPass.offscreenPass.height
-        val mipLevels = parentPass.offscreenPass.config.mipLevels
+        val mipLevels = parentPass.offscreenPass.mipLevels
 
         val estSize = Texture.estimatedTexSize(width, height, 6, mipLevels, format.pxSize)
         val tex = LoadedTextureGl(ctx, GL_TEXTURE_CUBE_MAP, glGenTextures(), estSize)
@@ -131,7 +131,7 @@ class OffscreenPassCubeGl(val parentPass: OffscreenPassCubeImpl) : OffscreenPass
         val intFormat = props.format.glInternalFormat
         val width = parentPass.offscreenPass.width
         val height = parentPass.offscreenPass.height
-        val mipLevels = parentPass.offscreenPass.config.mipLevels
+        val mipLevels = parentPass.offscreenPass.mipLevels
 
         val estSize = Texture.estimatedTexSize(width, height, 6, mipLevels, props.format.pxSize)
         val tex = LoadedTextureGl(ctx, GL_TEXTURE_CUBE_MAP, glGenTextures(), estSize)

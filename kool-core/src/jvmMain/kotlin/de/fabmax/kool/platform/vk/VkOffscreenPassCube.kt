@@ -33,7 +33,7 @@ class VkOffscreenPassCube(val parentPass: OffscreenPassCubeImpl) : OffscreenPass
         if (parentPass.offscreenPass.copyTargetsColor.isEmpty()) {
             return
         }
-        val mipLevels = parentPass.offscreenPass.config.mipLevels
+        val mipLevels = parentPass.offscreenPass.mipLevels
 
         memStack {
             image.transitionLayout(this, commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
@@ -90,22 +90,22 @@ class VkOffscreenPassCube(val parentPass: OffscreenPassCubeImpl) : OffscreenPass
         renderPass = null
 
         parentPass.offscreenPass.colorTextures.forEachIndexed { i, tex ->
-            if (!parentPass.offscreenPass.config.colorAttachments[i].isProvided) {
+            if (!parentPass.offscreenPass.colorAttachments[i].isProvided) {
                 tex.clear()
             }
         }
-        if (parentPass.offscreenPass.config.depthAttachment?.isProvided == false) {
+        if (parentPass.offscreenPass.depthAttachment?.isProvided == false) {
             parentPass.offscreenPass.depthTexture?.clear()
         }
 
         launchDelayed(3) {
             rp?.destroyNow()
             colorTexs.forEachIndexed { i, loadedTex ->
-                if (!parentPass.offscreenPass.config.colorAttachments[i].isProvided) {
+                if (!parentPass.offscreenPass.colorAttachments[i].isProvided) {
                     loadedTex?.dispose()
                 }
             }
-            if (parentPass.offscreenPass.config.depthAttachment?.isProvided == false) {
+            if (parentPass.offscreenPass.depthAttachment?.isProvided == false) {
                 depthTex?.dispose()
             }
         }
@@ -132,7 +132,7 @@ class VkOffscreenPassCube(val parentPass: OffscreenPassCubeImpl) : OffscreenPass
     }
 
     fun generateMipmaps(commandBuffer: VkCommandBuffer, dstLayout: Int) {
-        if (parentPass.offscreenPass.config.mipLevels > 1) {
+        if (parentPass.offscreenPass.mipLevels > 1) {
             memStack {
                 image.generateMipmaps(this, commandBuffer, dstLayout)
             }
@@ -174,8 +174,8 @@ class VkOffscreenPassCube(val parentPass: OffscreenPassCubeImpl) : OffscreenPass
 
     private fun create(ctx: Lwjgl3Context) {
         val sys = (ctx.renderBackend as VkRenderBackend).vkSystem
-        val cfg = parentPass.offscreenPass.config
-        val rp = VkOffscreenRenderPass(sys, cfg.width, cfg.height, true, cfg.colorAttachments[0].colorFormat.vkFormat)
+        val pass = parentPass.offscreenPass
+        val rp = VkOffscreenRenderPass(sys, pass.size.x, pass.size.y, true, pass.colorAttachments[0].colorFormat.vkFormat)
         createTex(rp, sys)
         renderPass = rp
         isCreated = true
@@ -185,7 +185,7 @@ class VkOffscreenPassCube(val parentPass: OffscreenPassCubeImpl) : OffscreenPass
         val imgConfig = Image.Config()
         imgConfig.width = rp.maxWidth
         imgConfig.height = rp.maxHeight
-        imgConfig.mipLevels = parentPass.offscreenPass.config.mipLevels
+        imgConfig.mipLevels = parentPass.offscreenPass.mipLevels
         imgConfig.numSamples = VK_SAMPLE_COUNT_1_BIT
         imgConfig.format = rp.colorFormats[0]
         imgConfig.tiling = VK_IMAGE_TILING_OPTIMAL

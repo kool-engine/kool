@@ -9,7 +9,7 @@ import de.fabmax.kool.util.Color
 class PbrLightingPass(pipeline: DeferredPipeline, suffix: String, val materialPass: MaterialPass) :
         OffscreenRenderPass2d(pipeline.lightingPassContent, renderPassConfig {
             name = "PbrLightingPass-$suffix"
-            setSize(materialPass.config.width, materialPass.config.height)
+            size.set(materialPass.size)
             addColorTexture(TexFormat.RGBA_F16)
             clearDepthTexture()
         }) {

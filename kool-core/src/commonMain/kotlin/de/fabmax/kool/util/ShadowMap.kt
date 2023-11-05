@@ -59,8 +59,8 @@ class SimpleShadowMap(val scene: Scene, override var light: Light?, mapSize: Int
         isUpdateDrawNode = false
         scene.addOffscreenPass(this)
 
-        drawMeshFilter = {
-            it.isCastingShadow(shadowMapLevel)
+        drawFilter = {
+            it !is Mesh || it.isCastingShadow(shadowMapLevel)
         }
 
         onBeforeCollectDrawCommands += { ctx ->

@@ -26,11 +26,11 @@ open class OffscreenRenderPass2d(drawNode: Node, config: Config) : OffscreenRend
         impl.dispose(ctx)
 
         launchDelayed(3) {
-            if (config.depthAttachment?.providedTexture == null) {
+            if (depthAttachment?.providedTexture == null) {
                 depthTexture?.dispose()
             }
             colorTextures.forEachIndexed { i, tex ->
-                if (!config.colorAttachments[i].isProvided) {
+                if (!colorAttachments[i].isProvided) {
                     tex.dispose()
                 }
             }
@@ -43,24 +43,24 @@ open class OffscreenRenderPass2d(drawNode: Node, config: Config) : OffscreenRend
     }
 
     private fun makeColorAttachmentTexs(): List<Texture2d> {
-        return config.colorAttachments.mapIndexed { i, texCfg ->
+        return colorAttachments.mapIndexed { i, texCfg ->
             if (texCfg.isProvided) {
                 texCfg.providedTexture!! as Texture2d
             } else {
                 val name = "${name}_color[$i]"
-                val props = texCfg.getTextureProps(config.mipLevels > 1)
+                val props = texCfg.getTextureProps(mipLevels > 1)
                 Texture2d(props, name)
             }
         }
     }
 
     private fun makeDepthAttachmentTex(): Texture2d? {
-        return config.depthAttachment?.let { texCfg ->
+        return depthAttachment?.let { texCfg ->
             if (texCfg.isProvided) {
                 texCfg.providedTexture!! as Texture2d
             } else {
                 val name = "${name}_depth"
-                val props = texCfg.getTextureProps(config.mipLevels > 1)
+                val props = texCfg.getTextureProps(mipLevels > 1)
                 Texture2d(props, name)
             }
         }

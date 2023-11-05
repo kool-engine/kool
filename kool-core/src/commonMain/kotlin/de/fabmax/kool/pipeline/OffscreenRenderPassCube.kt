@@ -52,11 +52,11 @@ open class OffscreenRenderPassCube(drawNode: Node, config: Config) : OffscreenRe
         impl.dispose(ctx)
 
         launchDelayed(3) {
-            if (config.depthAttachment?.providedTexture == null) {
+            if (depthAttachment?.providedTexture == null) {
                 depthTexture?.dispose()
             }
             colorTextures.forEachIndexed { i, tex ->
-                if (config.colorAttachments[i].providedTexture == null) {
+                if (colorAttachments[i].providedTexture == null) {
                     tex.dispose()
                 }
             }
@@ -69,24 +69,24 @@ open class OffscreenRenderPassCube(drawNode: Node, config: Config) : OffscreenRe
     }
 
     private fun makeColorAttachmentTexs(): List<TextureCube> {
-        return config.colorAttachments.mapIndexed { i, texCfg ->
+        return colorAttachments.mapIndexed { i, texCfg ->
             if (texCfg.isProvided) {
                 texCfg.providedTexture as TextureCube
             } else {
                 val name = "${name}_color[$i]"
-                val props = texCfg.getTextureProps(config.mipLevels > 1)
+                val props = texCfg.getTextureProps(mipLevels > 1)
                 TextureCube(props, name)
             }
         }
     }
 
     private fun makeDepthAttachmentTex(): TextureCube? {
-        return config.depthAttachment?.let { texCfg ->
+        return depthAttachment?.let { texCfg ->
             if (texCfg.isProvided) {
                 texCfg.providedTexture as TextureCube
             } else {
                 val name = "${name}_depth"
-                val props = texCfg.getTextureProps(config.mipLevels > 1)
+                val props = texCfg.getTextureProps(mipLevels > 1)
                 TextureCube(props, name)
             }
         }

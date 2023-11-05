@@ -24,11 +24,11 @@ actual class OffscreenPass2dImpl actual constructor(val offscreenPass: Offscreen
     private val fbos = mutableListOf<WebGLFramebuffer?>()
     private val rbos = mutableListOf<WebGLRenderbuffer?>()
 
-    private val drawMipLevels = offscreenPass.config.drawMipLevels
-    private val renderMipLevels: Int = if (drawMipLevels) { offscreenPass.config.mipLevels } else { 1 }
+    private val drawMipLevels = offscreenPass.drawMipLevels
+    private val renderMipLevels: Int = if (drawMipLevels) { offscreenPass.mipLevels } else { 1 }
 
     private var isCreated = false
-    private var colorTexs = Array<WebGLTexture?>(offscreenPass.config.nColorAttachments) { null }
+    private var colorTexs = Array<WebGLTexture?>(offscreenPass.colorAttachments.size) { null }
     private var depthTex: WebGLTexture? = null
 
     fun draw(ctx: JsContext) {
@@ -116,20 +116,20 @@ actual class OffscreenPass2dImpl actual constructor(val offscreenPass: Offscreen
     private fun create(ctx: JsContext) {
         val gl = ctx.gl
 
-        if (offscreenPass.config.colorRenderTarget == OffscreenRenderPass.RenderTarget.TEXTURE) {
+        if (offscreenPass.colorRenderTarget == OffscreenRenderPass.RenderTarget.TEXTURE) {
             createColorTexs(ctx)
         }
-        if (offscreenPass.config.depthRenderTarget == OffscreenRenderPass.RenderTarget.TEXTURE) {
+        if (offscreenPass.depthRenderTarget == OffscreenRenderPass.RenderTarget.TEXTURE) {
             createDepthTex(ctx)
         }
 
-        for (i in 0 until offscreenPass.config.mipLevels) {
+        for (i in 0 until offscreenPass.mipLevels) {
             val mipWidth = offscreenPass.getMipWidth(i)
             val mipHeight = offscreenPass.getMipHeight(i)
             val fbo = gl.createFramebuffer()
             gl.bindFramebuffer(FRAMEBUFFER, fbo)
 
-            if (offscreenPass.config.colorRenderTarget == OffscreenRenderPass.RenderTarget.TEXTURE) {
+            if (offscreenPass.colorRenderTarget == OffscreenRenderPass.RenderTarget.TEXTURE) {
                 colorTexs.forEachIndexed { iAttachment, tex ->
                     gl.framebufferTexture2D(FRAMEBUFFER, COLOR_ATTACHMENT0 + iAttachment, TEXTURE_2D, tex, i)
                 }
@@ -143,7 +143,7 @@ actual class OffscreenPass2dImpl actual constructor(val offscreenPass: Offscreen
                 rbos += rbo
             }
 
-            if (offscreenPass.config.depthRenderTarget == OffscreenRenderPass.RenderTarget.TEXTURE) {
+            if (offscreenPass.depthRenderTarget == OffscreenRenderPass.RenderTarget.TEXTURE) {
                 gl.framebufferTexture2D(FRAMEBUFFER, DEPTH_ATTACHMENT, TEXTURE_2D, depthTex, i)
             } else {
                 val rbo = gl.createRenderbuffer()
@@ -159,7 +159,7 @@ actual class OffscreenPass2dImpl actual constructor(val offscreenPass: Offscreen
 
     private fun createColorTexs(ctx: JsContext) {
         for (i in offscreenPass.colorTextures.indices) {
-            val cfg = offscreenPass.config.colorAttachments[i]
+            val cfg = offscreenPass.colorAttachments[i]
 
             if (cfg.providedTexture != null) {
                 colorTexs[i] = (cfg.providedTexture.loadedTexture as LoadedTextureWebGl).texture
@@ -169,7 +169,7 @@ actual class OffscreenPass2dImpl actual constructor(val offscreenPass: Offscreen
                 val intFormat = format.glInternalFormat
                 val width = offscreenPass.width
                 val height = offscreenPass.height
-                val mipLevels = offscreenPass.config.mipLevels
+                val mipLevels = offscreenPass.mipLevels
 
                 val estSize = Texture.estimatedTexSize(width, height, 1, mipLevels, format.pxSize)
                 val tex = LoadedTextureWebGl(ctx, TEXTURE_2D, ctx.gl.createTexture(), estSize)
@@ -185,7 +185,7 @@ actual class OffscreenPass2dImpl actual constructor(val offscreenPass: Offscreen
     }
 
     private fun createDepthTex(ctx: JsContext) {
-        val cfg = offscreenPass.config.depthAttachment!!
+        val cfg = offscreenPass.depthAttachment!!
 
         if (cfg.providedTexture != null) {
             depthTex = (cfg.providedTexture.loadedTexture as LoadedTextureWebGl).texture
@@ -194,8 +194,8 @@ actual class OffscreenPass2dImpl actual constructor(val offscreenPass: Offscreen
             val intFormat = DEPTH_COMPONENT32F
             val width = offscreenPass.width
             val height = offscreenPass.height
-            val mipLevels = offscreenPass.config.mipLevels
-            val depthCfg = offscreenPass.config.depthAttachment
+            val mipLevels = offscreenPass.mipLevels
+            val depthCfg = offscreenPass.depthAttachment
 
             val estSize = Texture.estimatedTexSize(width, height, 1, mipLevels, 4)
             val tex = LoadedTextureWebGl(ctx, TEXTURE_2D, ctx.gl.createTexture(), estSize)
@@ -217,7 +217,7 @@ actual class OffscreenPass2dImpl actual constructor(val offscreenPass: Offscreen
         val intFormat = props.format.glInternalFormat
         val width = offscreenPass.width
         val height = offscreenPass.height
-        val mipLevels = offscreenPass.config.mipLevels
+        val mipLevels = offscreenPass.mipLevels
 
         val estSize = Texture.estimatedTexSize(width, height, 1, mipLevels, props.format.pxSize)
         val tex = LoadedTextureWebGl(ctx, TEXTURE_2D, ctx.gl.createTexture(), estSize)

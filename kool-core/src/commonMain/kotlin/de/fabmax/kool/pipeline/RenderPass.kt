@@ -6,7 +6,6 @@ import de.fabmax.kool.pipeline.drawqueue.DrawQueue
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Profiling
-import de.fabmax.kool.util.Time
 import de.fabmax.kool.util.Viewport
 
 abstract class RenderPass(var drawNode: Node) {
@@ -15,15 +14,6 @@ abstract class RenderPass(var drawNode: Node) {
 
     val dependencies = mutableListOf<RenderPass>()
 
-    val viewport = Viewport(0, 0, 0, 0)
-    abstract val camera: Camera
-
-    var lighting: Lighting? = null
-
-    var isUpdateDrawNode = true
-    var drawMeshFilter: (Mesh) -> Boolean = { true }
-    private var updateEvent: UpdateEvent? = null
-
     var clearColors = Array<Color?>(1) { Color(0.15f, 0.15f, 0.15f, 1f) }
         protected set
     var clearColor: Color?
@@ -31,21 +21,28 @@ abstract class RenderPass(var drawNode: Node) {
         set(value) { clearColors[0] = value }
     var clearDepth = true
 
+    val viewport = Viewport(0, 0, 0, 0)
+    abstract val camera: Camera
+
+    var lighting: Lighting? = null
+
+    var isUpdateDrawNode = true
+    var drawFilter: (Node) -> Boolean = { true }
+    private var updateEvent: UpdateEvent? = null
+
     var drawQueue = DrawQueue(this)
         protected set
     var isDoublePrecision = false
 
     val onBeforeCollectDrawCommands = mutableListOf<((KoolContext) -> Unit)>()
     val onAfterCollectDrawCommands = mutableListOf<((KoolContext) -> Unit)>()
-    val onBeforeRenderQueue: MutableList<(KoolContext) -> Unit> = mutableListOf()
-    val onAfterRenderQueue: MutableList<(KoolContext) -> Unit> = mutableListOf()
     val onAfterDraw = mutableListOf<((KoolContext) -> Unit)>()
 
     var isProfileDetailed = false
 
     private fun setupUpdateEvent(ctx: KoolContext): UpdateEvent {
         val event = updateEvent ?: UpdateEvent(this, ctx).also { updateEvent = it }
-        event.meshFilter = drawMeshFilter
+        event.drawFilter = drawFilter
         return event
     }
 
@@ -90,29 +87,6 @@ abstract class RenderPass(var drawNode: Node) {
         }
     }
 
-    /**
-     * Called on every frame after initial setup (viewport and clear) before any geometry is drawn. Does not work with
-     * Vulkan backend.
-     */
-    open fun onBeforeRenderQueue(ctx: KoolContext) {
-        if (onBeforeRenderQueue.isNotEmpty()) {
-            for (i in onBeforeRenderQueue.indices) {
-                onBeforeRenderQueue[i](ctx)
-            }
-        }
-    }
-
-    /**
-     * Called on every frame after all content of this render pass is drawn. Does not work with Vulkan backend.
-     */
-    open fun onAfterRenderQueue(ctx: KoolContext) {
-        if (onAfterRenderQueue.isNotEmpty()) {
-            for (i in onAfterRenderQueue.indices) {
-                onAfterRenderQueue[i](ctx)
-            }
-        }
-    }
-
     open fun appendMeshToDrawQueue(mesh: Mesh, ctx: KoolContext): DrawCommand? {
         return drawQueue.addMesh(mesh, ctx)
     }
@@ -141,22 +115,12 @@ abstract class RenderPass(var drawNode: Node) {
     open fun dispose(ctx: KoolContext) { }
 
     class UpdateEvent(val renderPass: RenderPass, val ctx: KoolContext) {
-        @Deprecated("Replaced by Time.gameTime", ReplaceWith("de.fabmax.kool.util.Time.gameTime"))
-        val time: Double
-            get() = Time.gameTime
-
-        @Deprecated("Replaced by Time.deltaT", ReplaceWith("de.fabmax.kool.util.Time.deltaT"))
-        val deltaT: Float
-            get() = Time.deltaT
-        val frameIndex: Int
-            get() = Time.frameCount
-
         val camera: Camera
             get() = renderPass.camera
         val viewport: Viewport
             get() = renderPass.viewport
 
-        var meshFilter: (Mesh) -> Boolean = { true }
+        var drawFilter: (Node) -> Boolean = { true }
 
         operator fun component1() = renderPass
         operator fun component2() = ctx

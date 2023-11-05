@@ -32,7 +32,7 @@ class QueueRendererGl(backend: GlRenderBackend, val ctx: Lwjgl3Context) {
             glViewport(viewport.x, viewport.y, viewport.width, viewport.height)
 
             if (this is OffscreenRenderPass) {
-                for (i in 0 until config.nColorAttachments) {
+                for (i in colorAttachments.indices) {
                     (clearColors[i] ?: clearColor)?.let {
                         colorBufferClearVal[0] = it.r
                         colorBufferClearVal[1] = it.g
@@ -52,7 +52,6 @@ class QueueRendererGl(backend: GlRenderBackend, val ctx: Lwjgl3Context) {
                     glClear(clearMask)
                 }
             }
-            onBeforeRenderQueue(ctx)
         }
 
         var numPrimitives = 0
@@ -79,7 +78,6 @@ class QueueRendererGl(backend: GlRenderBackend, val ctx: Lwjgl3Context) {
             }
         }
         ctx.engineStats.addPrimitiveCount(numPrimitives)
-        queue.renderPass.onAfterRenderQueue(ctx)
 
         if (ctx.isProfileRenderPasses) {
             Profiling.exit(queue.renderPass.profileTag("render"))

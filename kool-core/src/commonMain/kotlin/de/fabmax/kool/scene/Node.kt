@@ -149,11 +149,13 @@ open class Node(name: String? = null) : Disposable {
      * DrawQueue.
      */
     open fun collectDrawCommands(updateEvent: RenderPass.UpdateEvent) {
+        if (!updateEvent.drawFilter(this)) return
+
         isRendered = checkIsVisible(updateEvent.camera, updateEvent.ctx)
-        if (isRendered) {
-            for (i in mutChildren.indices) {
-                mutChildren[i].collectDrawCommands(updateEvent)
-            }
+        if (!isRendered) return
+
+        for (i in mutChildren.indices) {
+            mutChildren[i].collectDrawCommands(updateEvent)
         }
     }
 

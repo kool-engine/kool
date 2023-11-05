@@ -90,7 +90,6 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
         Node(),
         renderPassConfig {
             name = "SelectionPass"
-            setDynamicSize()
             addColorTexture {
                 colorFormat = TexFormat.R
                 magFilter = FilterMethod.NEAREST
@@ -106,7 +105,7 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
             isUpdateDrawNode = false
             isEnabled = true
 
-            drawMeshFilter = { it in meshSelection }
+            drawFilter = { it in meshSelection }
 
             onAfterCollectDrawCommands += { ctx ->
                 // replace regular object shaders by selection shader
