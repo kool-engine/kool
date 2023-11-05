@@ -90,8 +90,12 @@ open class OffscreenRenderPass2d(drawNode: Node, config: Config) : OffscreenRend
     }
 }
 
-expect class OffscreenPass2dImpl(offscreenPass: OffscreenRenderPass2d) {
+expect fun OffscreenPass2dImpl(offscreenPass: OffscreenRenderPass2d): OffscreenPass2dImpl
+
+interface OffscreenPass2dImpl {
     fun applySize(width: Int, height: Int, ctx: KoolContext)
 
     fun dispose(ctx: KoolContext)
+
+    fun draw(ctx: KoolContext)
 }

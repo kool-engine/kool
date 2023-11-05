@@ -23,8 +23,8 @@ interface RenderBackend {
 
     fun uploadTextureToGpu(tex: Texture, data: TextureData)
 
-    fun createOffscreenPass2d(parentPass: OffscreenPass2dImpl): OffscreenPass2dImpl.BackendImpl
-    fun createOffscreenPassCube(parentPass: OffscreenPassCubeImpl): OffscreenPassCubeImpl.BackendImpl
+    fun createOffscreenPass2d(parentPass: OffscreenRenderPass2d): OffscreenPass2dImpl
+    fun createOffscreenPassCube(parentPass: OffscreenRenderPassCube): OffscreenPassCubeImpl
 
     fun generateKslShader(shader: KslShader, pipelineLayout: Pipeline.Layout): ShaderCode
 }

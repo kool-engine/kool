@@ -16,14 +16,20 @@ import org.khronos.webgl.WebGLRenderingContext.Companion.TEXTURE_CUBE_MAP
 import org.khronos.webgl.WebGLRenderingContext.Companion.TEXTURE_CUBE_MAP_POSITIVE_X
 import org.khronos.webgl.WebGLTexture
 
-actual class OffscreenPassCubeImpl actual constructor(val offscreenPass: OffscreenRenderPassCube) {
+actual fun OffscreenPassCubeImpl(offscreenPass: OffscreenRenderPassCube): OffscreenPassCubeImpl {
+    return OffscreenPassCubeWebGl(offscreenPass)
+}
+
+class OffscreenPassCubeWebGl(val offscreenPass: OffscreenRenderPassCube): OffscreenPassCubeImpl {
     private val fbos = mutableListOf<WebGLFramebuffer?>()
     private val rbos = mutableListOf<WebGLRenderbuffer?>()
 
     private var isCreated = false
     private var colorTex: WebGLTexture? = null
 
-    fun draw(ctx: JsContext) {
+    override fun draw(ctx: KoolContext) {
+        ctx as JsContext
+
         if (!isCreated) {
             create(ctx)
         }
@@ -72,7 +78,7 @@ actual class OffscreenPassCubeImpl actual constructor(val offscreenPass: Offscre
         }
     }
 
-    actual fun dispose(ctx: KoolContext) {
+    override fun dispose(ctx: KoolContext) {
         ctx as JsContext
         fbos.forEach { ctx.gl.deleteFramebuffer(it) }
         rbos.forEach { ctx.gl.deleteRenderbuffer(it) }
@@ -94,7 +100,7 @@ actual class OffscreenPassCubeImpl actual constructor(val offscreenPass: Offscre
         isCreated = false
     }
 
-    actual fun applySize(width: Int, height: Int, ctx: KoolContext) {
+    override fun applySize(width: Int, height: Int, ctx: KoolContext) {
         dispose(ctx)
         create(ctx as JsContext)
     }

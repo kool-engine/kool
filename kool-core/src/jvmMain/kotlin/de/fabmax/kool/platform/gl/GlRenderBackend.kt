@@ -252,11 +252,11 @@ class GlRenderBackend(val ctx: Lwjgl3Context) : RenderBackend {
         tex.loadingState = Texture.LoadingState.LOADED
     }
 
-    override fun createOffscreenPass2d(parentPass: OffscreenPass2dImpl): OffscreenPass2dImpl.BackendImpl {
+    override fun createOffscreenPass2d(parentPass: OffscreenRenderPass2d): OffscreenPass2dImpl {
         return OffscreenPass2dGl(parentPass)
     }
 
-    override fun createOffscreenPassCube(parentPass: OffscreenPassCubeImpl): OffscreenPassCubeImpl.BackendImpl {
+    override fun createOffscreenPassCube(parentPass: OffscreenRenderPassCube): OffscreenPassCubeImpl {
         return OffscreenPassCubeGl(parentPass)
     }
 

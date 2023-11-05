@@ -1,5 +1,6 @@
 package de.fabmax.kool.platform.gl
 
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.util.logE
@@ -8,20 +9,21 @@ import org.lwjgl.opengl.GL30.*
 import org.lwjgl.opengl.GL42.glTexStorage2D
 import org.lwjgl.opengl.GL43.glCopyImageSubData
 
-class OffscreenPassCubeGl(val parentPass: OffscreenPassCubeImpl) : OffscreenPassCubeImpl.BackendImpl {
+class OffscreenPassCubeGl(val parentPass: OffscreenRenderPassCube) : OffscreenPassCubeImpl {
     private val fbos = mutableListOf<Int>()
     private val rbos = mutableListOf<Int>()
 
     private var isCreated = false
     private var glColorTex = 0
 
-    override fun draw(ctx: Lwjgl3Context) {
+    override fun draw(ctx: KoolContext) {
+        ctx as Lwjgl3Context
         if (!isCreated) {
             create(ctx)
         }
 
         val glBackend = ctx.renderBackend as GlRenderBackend
-        val pass = parentPass.offscreenPass
+        val pass = parentPass
         for (mipLevel in 0 until pass.mipLevels) {
             pass.onSetupMipLevel?.invoke(mipLevel, ctx)
             for (i in pass.views.indices) {
@@ -42,11 +44,11 @@ class OffscreenPassCubeGl(val parentPass: OffscreenPassCubeImpl) : OffscreenPass
     }
 
     private fun copyToTextures(mipLevel: Int, ctx: Lwjgl3Context) {
-        for (i in parentPass.offscreenPass.copyTargetsColor.indices) {
-            val copyTarget = parentPass.offscreenPass.copyTargetsColor[i]
+        for (i in parentPass.copyTargetsColor.indices) {
+            val copyTarget = parentPass.copyTargetsColor[i]
             var width = copyTarget.loadedTexture?.width ?: 0
             var height = copyTarget.loadedTexture?.height ?: 0
-            if (width != parentPass.offscreenPass.width || height != parentPass.offscreenPass.height) {
+            if (width != parentPass.width || height != parentPass.height) {
                 copyTarget.loadedTexture?.dispose()
                 copyTarget.createCopyTexColor(ctx)
                 width = copyTarget.loadedTexture!!.width
@@ -56,7 +58,7 @@ class OffscreenPassCubeGl(val parentPass: OffscreenPassCubeImpl) : OffscreenPass
             height = height shr mipLevel
             val target = copyTarget.loadedTexture as LoadedTextureGl
 
-            if (parentPass.offscreenPass.colorRenderTarget == OffscreenRenderPass.RenderTarget.TEXTURE) {
+            if (parentPass.colorRenderTarget == OffscreenRenderPass.RenderTarget.TEXTURE) {
                 glCopyImageSubData(glColorTex, GL_TEXTURE_CUBE_MAP, mipLevel, 0, 0, 0,
                         target.texture, GL_TEXTURE_CUBE_MAP, mipLevel, 0, 0, 0, width, height, 6)
             } else {
@@ -65,18 +67,18 @@ class OffscreenPassCubeGl(val parentPass: OffscreenPassCubeImpl) : OffscreenPass
         }
     }
 
-    override fun dispose(ctx: Lwjgl3Context) {
+    override fun dispose(ctx: KoolContext) {
         fbos.forEach { glDeleteFramebuffers(it) }
         rbos.forEach { glDeleteRenderbuffers(it) }
         fbos.clear()
         rbos.clear()
 
-        parentPass.offscreenPass.colorTextures.forEach { tex ->
+        parentPass.colorTextures.forEach { tex ->
             if (tex.loadingState == Texture.LoadingState.LOADED) {
                 tex.dispose()
             }
         }
-        parentPass.offscreenPass.depthTexture?.let { tex ->
+        parentPass.depthTexture?.let { tex ->
             if (tex.loadingState == Texture.LoadingState.LOADED) {
                 tex.dispose()
             }
@@ -86,20 +88,20 @@ class OffscreenPassCubeGl(val parentPass: OffscreenPassCubeImpl) : OffscreenPass
         isCreated = false
     }
 
-    override fun resize(width: Int, height: Int, ctx: Lwjgl3Context) {
+    override fun applySize(width: Int, height: Int, ctx: KoolContext) {
         dispose(ctx)
         create(ctx)
     }
 
-    private fun create(ctx: Lwjgl3Context) {
+    private fun create(ctx: KoolContext) {
         createColorTex(ctx)
 
-        for (i in 0 until parentPass.offscreenPass.mipLevels) {
+        for (i in 0 until parentPass.mipLevels) {
             val fbo = glGenFramebuffers()
             val rbo = glGenRenderbuffers()
 
-            val mipWidth = parentPass.offscreenPass.getMipWidth(i)
-            val mipHeight = parentPass.offscreenPass.getMipHeight(i)
+            val mipWidth = parentPass.getMipWidth(i)
+            val mipHeight = parentPass.getMipHeight(i)
 
             glBindFramebuffer(GL_FRAMEBUFFER, fbo)
             glBindRenderbuffer(GL_RENDERBUFFER, rbo)
@@ -112,29 +114,29 @@ class OffscreenPassCubeGl(val parentPass: OffscreenPassCubeImpl) : OffscreenPass
         isCreated = true
     }
 
-    private fun createColorTex(ctx: Lwjgl3Context) {
-        val format = parentPass.offscreenPass.colorAttachments[0].colorFormat
+    private fun createColorTex(ctx: KoolContext) {
+        val format = parentPass.colorAttachments[0].colorFormat
         val intFormat = format.glInternalFormat
-        val width = parentPass.offscreenPass.width
-        val height = parentPass.offscreenPass.height
-        val mipLevels = parentPass.offscreenPass.mipLevels
+        val width = parentPass.width
+        val height = parentPass.height
+        val mipLevels = parentPass.mipLevels
 
         val estSize = Texture.estimatedTexSize(width, height, 6, mipLevels, format.pxSize)
-        val tex = LoadedTextureGl(ctx, GL_TEXTURE_CUBE_MAP, glGenTextures(), estSize)
+        val tex = LoadedTextureGl(ctx as Lwjgl3Context, GL_TEXTURE_CUBE_MAP, glGenTextures(), estSize)
         tex.setSize(width, height, 1)
-        tex.applySamplerProps(parentPass.offscreenPass.colorTexture!!.props)
+        tex.applySamplerProps(parentPass.colorTexture!!.props)
         glTexStorage2D(GL_TEXTURE_CUBE_MAP, mipLevels, intFormat, width, height)
 
         glColorTex = tex.texture
-        parentPass.offscreenPass.colorTexture!!.loadedTexture = tex
-        parentPass.offscreenPass.colorTexture!!.loadingState = Texture.LoadingState.LOADED
+        parentPass.colorTexture!!.loadedTexture = tex
+        parentPass.colorTexture!!.loadingState = Texture.LoadingState.LOADED
     }
 
     private fun TextureCube.createCopyTexColor(ctx: Lwjgl3Context) {
         val intFormat = props.format.glInternalFormat
-        val width = parentPass.offscreenPass.width
-        val height = parentPass.offscreenPass.height
-        val mipLevels = parentPass.offscreenPass.mipLevels
+        val width = parentPass.width
+        val height = parentPass.height
+        val mipLevels = parentPass.mipLevels
 
         val estSize = Texture.estimatedTexSize(width, height, 6, mipLevels, props.format.pxSize)
         val tex = LoadedTextureGl(ctx, GL_TEXTURE_CUBE_MAP, glGenTextures(), estSize)

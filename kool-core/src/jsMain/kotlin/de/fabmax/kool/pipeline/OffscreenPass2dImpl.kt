@@ -20,7 +20,11 @@ import org.khronos.webgl.WebGLRenderingContext.Companion.RENDERBUFFER
 import org.khronos.webgl.WebGLRenderingContext.Companion.TEXTURE_2D
 import org.khronos.webgl.WebGLTexture
 
-actual class OffscreenPass2dImpl actual constructor(val offscreenPass: OffscreenRenderPass2d) {
+actual fun OffscreenPass2dImpl(offscreenPass: OffscreenRenderPass2d): OffscreenPass2dImpl {
+    return OffscreenPass2dWebGl(offscreenPass)
+}
+
+class OffscreenPass2dWebGl(val offscreenPass: OffscreenRenderPass2d): OffscreenPass2dImpl {
     private val fbos = mutableListOf<WebGLFramebuffer?>()
     private val rbos = mutableListOf<WebGLRenderbuffer?>()
 
@@ -31,7 +35,9 @@ actual class OffscreenPass2dImpl actual constructor(val offscreenPass: Offscreen
     private var colorTexs = Array<WebGLTexture?>(offscreenPass.colorAttachments.size) { null }
     private var depthTex: WebGLTexture? = null
 
-    fun draw(ctx: JsContext) {
+    override fun draw(ctx: KoolContext) {
+        ctx as JsContext
+
         if (!isCreated) {
             create(ctx)
         }
@@ -92,7 +98,7 @@ actual class OffscreenPass2dImpl actual constructor(val offscreenPass: Offscreen
         }
     }
 
-    actual fun dispose(ctx: KoolContext) {
+    override fun dispose(ctx: KoolContext) {
         ctx as JsContext
         fbos.forEach { ctx.gl.deleteFramebuffer(it) }
         rbos.forEach { ctx.gl.deleteRenderbuffer(it) }
@@ -115,7 +121,7 @@ actual class OffscreenPass2dImpl actual constructor(val offscreenPass: Offscreen
         isCreated = false
     }
 
-    actual fun applySize(width: Int, height: Int, ctx: KoolContext) {
+    override fun applySize(width: Int, height: Int, ctx: KoolContext) {
         dispose(ctx)
         create(ctx as JsContext)
     }

@@ -78,11 +78,11 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackend {
         vkSystem.device.addDependingResource(tex.loadedTexture as LoadedTextureVk)
     }
 
-    override fun createOffscreenPass2d(parentPass: OffscreenPass2dImpl): OffscreenPass2dImpl.BackendImpl {
+    override fun createOffscreenPass2d(parentPass: OffscreenRenderPass2d): OffscreenPass2dImpl {
         return VkOffscreenPass2d(parentPass)
     }
 
-    override fun createOffscreenPassCube(parentPass: OffscreenPassCubeImpl): OffscreenPassCubeImpl.BackendImpl {
+    override fun createOffscreenPassCube(parentPass: OffscreenRenderPassCube): OffscreenPassCubeImpl {
         return VkOffscreenPassCube(parentPass)
     }
 
@@ -464,7 +464,7 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackend {
 
         private fun MemoryStack.renderOffscreen2d(commandBuffer: VkCommandBuffer, offscreenPass: OffscreenRenderPass2d) {
             offscreenPass.impl.draw(ctx)
-            val vkPass2d = offscreenPass.impl.backendImpl as VkOffscreenPass2d
+            val vkPass2d = offscreenPass.impl as VkOffscreenPass2d
             vkPass2d.renderPass?.let { rp ->
                 val renderPassInfo = renderPassBeginInfo(rp, rp.frameBuffer, offscreenPass)
 
@@ -491,7 +491,7 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackend {
 
         private fun MemoryStack.renderOffscreenCube(commandBuffer: VkCommandBuffer, offscreenPass: OffscreenRenderPassCube) {
             offscreenPass.impl.draw(ctx)
-            val vkPassCube = offscreenPass.impl.backendImpl as VkOffscreenPassCube
+            val vkPassCube = offscreenPass.impl as VkOffscreenPassCube
             vkPassCube.renderPass?.let { rp ->
                 val renderPassInfo = renderPassBeginInfo(rp, rp.frameBuffer, offscreenPass)
 

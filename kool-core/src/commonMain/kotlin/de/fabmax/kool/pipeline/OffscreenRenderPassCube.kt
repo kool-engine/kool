@@ -97,8 +97,12 @@ open class OffscreenRenderPassCube(drawNode: Node, config: Config) : OffscreenRe
     }
 }
 
-expect class OffscreenPassCubeImpl(offscreenPass: OffscreenRenderPassCube) {
+expect fun OffscreenPassCubeImpl(offscreenPass: OffscreenRenderPassCube): OffscreenPassCubeImpl
+
+interface OffscreenPassCubeImpl {
     fun applySize(width: Int, height: Int, ctx: KoolContext)
 
     fun dispose(ctx: KoolContext)
+
+    fun draw(ctx: KoolContext)
 }
