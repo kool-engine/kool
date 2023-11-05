@@ -5,6 +5,7 @@ import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.BoundingBox
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.util.*
+import kotlin.math.sqrt
 
 /**
  * A scene node. Scene nodes have a [transform], which controls the position, orientation and size of the node and all
@@ -23,12 +24,11 @@ open class Node(name: String? = null) : Disposable {
 
     val tags = Tags()
 
-    protected val childrenBounds = BoundingBox()
     protected val mutChildren = mutableListOf<Node>()
     val children: List<Node> get() = mutChildren
 
     /**
-     * Axis-aligned bounding box of this node in parent coordinate frame.
+     * Axis-aligned bounding box of this node in local coordinate frame.
      */
     val bounds = BoundingBox()
     private val tmpTransformVec = MutableVec3f()
@@ -56,6 +56,7 @@ open class Node(name: String? = null) : Disposable {
     var transform: Transform = TrsTransformF()
 
     private val modelMats = ModelMats()
+    private val tmpVec = MutableVec3f()
 
     /**
      * This node's single-precision model matrix. Updated on each frame based on this node's transform and the model
@@ -98,12 +99,6 @@ open class Node(name: String? = null) : Disposable {
     var isPickable = true
 
     /**
-     * Determines whether this node updates its scene bounds on update. Default is true, but disabling it can save
-     * some performance in scenes with many nodes. Notice that [isUpdateBounds] has to be true for ray picking to work.
-     */
-    var isUpdateBounds = true
-
-    /**
      * Determines whether this node is checked for visibility during rendering. If true the node is only rendered
      * if it is within the camera frustum.
      */
@@ -128,52 +123,20 @@ open class Node(name: String? = null) : Disposable {
 
         updateModelMat()
 
-        childrenBounds.clear()
+        bounds.clear()
         for (i in mutChildren.indices) {
             mutChildren[i].update(updateEvent)
-            if (isUpdateBounds) {
-                childrenBounds.add(mutChildren[i].bounds)
-            }
+            bounds.add(mutChildren[i].bounds)
         }
-        if (isUpdateBounds) {
-            computeLocalBounds(bounds)
-        }
+        addContentToBoundingBox(bounds)
 
         // update global center and radius
         toGlobalCoords(globalCenterMut.set(bounds.center))
         toGlobalCoords(globalExtentMut.set(bounds.max))
         globalRadius = globalCenter.distance(globalExtentMut)
-
-        // transform node bounds from local to parent coordinates
-        if (isUpdateBounds) {
-            transformBoundsToParentFrame()
-        }
     }
 
-    private fun transformBoundsToParentFrame() {
-        if (!bounds.isEmpty) {
-            val minX = bounds.min.x
-            val minY = bounds.min.y
-            val minZ = bounds.min.z
-            val maxX = bounds.max.x
-            val maxY = bounds.max.y
-            val maxZ = bounds.max.z
-
-            bounds.clear()
-            bounds.add(transform.transform(tmpTransformVec.set(minX, minY, minZ), 1f))
-            bounds.add(transform.transform(tmpTransformVec.set(minX, minY, maxZ), 1f))
-            bounds.add(transform.transform(tmpTransformVec.set(minX, maxY, minZ), 1f))
-            bounds.add(transform.transform(tmpTransformVec.set(minX, maxY, maxZ), 1f))
-            bounds.add(transform.transform(tmpTransformVec.set(maxX, minY, minZ), 1f))
-            bounds.add(transform.transform(tmpTransformVec.set(maxX, minY, maxZ), 1f))
-            bounds.add(transform.transform(tmpTransformVec.set(maxX, maxY, minZ), 1f))
-            bounds.add(transform.transform(tmpTransformVec.set(maxX, maxY, maxZ), 1f))
-        }
-    }
-
-    protected open fun computeLocalBounds(result: BoundingBox) {
-        result.set(childrenBounds)
-    }
+    protected open fun addContentToBoundingBox(localBounds: BoundingBox) { }
 
     fun updateModelMat() {
         transform.applyToModelMat(parent?.modelMats, modelMats)
@@ -235,32 +198,34 @@ open class Node(name: String? = null) : Disposable {
      * if their contents are hit by the ray.
      */
     open fun rayTest(test: RayTest) {
-        if (children.isNotEmpty()) {
-            // transform ray to local coordinates
-            if (transform.isDoublePrecision) {
-                test.transformBy(transform.invMatrixD)
+        if (test.isIntersectingBoundingSphere(this)) {
+            // bounding sphere hit -> transform ray to local coordinates and do further testing
+            val localRay = if (transform.isDoublePrecision) {
+                test.getRayTransformed(transform.invMatrixD)
             } else {
-                test.transformBy(transform.invMatrixF)
+                test.getRayTransformed(transform.invMatrixF)
             }
 
-            for (i in mutChildren.indices) {
-                val child = mutChildren[i]
-                if (child.isVisible && child.isPickable) {
-                    val d = child.bounds.hitDistanceSqr(test.ray)
-                    if (d < Float.MAX_VALUE && d <= test.hitDistanceSqr) {
-                        child.rayTest(test)
+            val dLocal = bounds.hitDistanceSqr(localRay)
+            if (dLocal < Float.MAX_VALUE) {
+                val dGlobal = toGlobalCoords(tmpVec.set(localRay.direction).mul(sqrt(dLocal)), 0f).sqrLength()
+                if (dGlobal <= test.hitDistanceSqr) {
+                    // local bounding box hit, test node content
+                    rayTestLocal(test, localRay)
+
+                    // test child nodes
+                    for (i in mutChildren.indices) {
+                        val child = mutChildren[i]
+                        if (child.isVisible && child.isPickable) {
+                            child.rayTest(test)
+                        }
                     }
                 }
             }
-
-            // transform ray back to previous coordinates
-            if (transform.isDoublePrecision) {
-                test.transformBy(transform.matrixD)
-            } else {
-                test.transformBy(transform.matrixF)
-            }
         }
     }
+
+    protected open fun rayTestLocal(test: RayTest, localRay: Ray) { }
 
     /**
      * Called during [collectDrawCommands]: Checks if this node is currently visible. If not rendering is skipped. Default

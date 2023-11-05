@@ -1,5 +1,7 @@
 package de.fabmax.kool.scene
 
+import de.fabmax.kool.math.MutableVec3f
+import de.fabmax.kool.math.Ray
 import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.spatial.*
@@ -8,27 +10,35 @@ import kotlin.math.sqrt
 
 interface MeshRayTest {
 
-    fun rayTest(test: RayTest)
+    fun rayTest(test: RayTest, localRay: Ray): Boolean
     fun onMeshDataChanged(mesh: Mesh) { }
 
     companion object {
         fun nopTest(): MeshRayTest = object : MeshRayTest {
-            override fun rayTest(test: RayTest) { }
+            override fun rayTest(test: RayTest, localRay: Ray) = false
         }
 
         fun boundsTest(): MeshRayTest = object : MeshRayTest {
             var mesh: Mesh? = null
 
+            private val tmpVec = MutableVec3f()
+
             override fun onMeshDataChanged(mesh: Mesh) {
                 this.mesh = mesh
             }
 
-            override fun rayTest(test: RayTest) {
-                val mesh = this.mesh ?: return
-                val distSqr = mesh.geometry.bounds.hitDistanceSqr(test.ray)
-                if (distSqr < Float.MAX_VALUE && distSqr <= test.hitDistanceSqr) {
-                    test.setHit(mesh, sqrt(distSqr))
+            override fun rayTest(test: RayTest, localRay: Ray): Boolean {
+                val mesh = this.mesh ?: return false
+                val distSqr = mesh.geometry.bounds.hitDistanceSqr(localRay)
+                if (distSqr < Float.MAX_VALUE) {
+                    tmpVec.set(localRay.direction).mul(sqrt(distSqr))
+                    val globalDistSqr = mesh.toGlobalCoords(tmpVec, 0f).sqrLength()
+                    if (globalDistSqr <= test.hitDistanceSqr) {
+                        test.setHit(mesh, sqrt(globalDistSqr))
+                        return true
+                    }
                 }
+                return false
             }
         }
 
@@ -54,12 +64,21 @@ interface MeshRayTest {
             }
         }
 
-        override fun rayTest(test: RayTest) {
-            rayTraverser.setup(test.ray)
+        override fun rayTest(test: RayTest, localRay: Ray): Boolean {
+            rayTraverser.setup(localRay)
             triangleTree?.let { rayTraverser.traverse(it) }
-            if (rayTraverser.distanceSqr < test.hitDistanceSqr) {
-                test.setHit(mesh, rayTraverser.distance)
+
+            rayTraverser.nearest?.let { hitTri ->
+                // hit
+                val globalHit = mesh.toGlobalCoords(rayTraverser.hitPoint)
+                val globalDistSqr = globalHit.sqrDistance(test.ray.origin)
+                if (globalDistSqr < test.hitDistanceSqr) {
+                    test.setHit(mesh, globalHit)
+                    mesh.toGlobalCoords(hitTri.e1.cross(hitTri.e2, test.hitNormalGlobal), 0f)
+                    return true
+                }
             }
+            return false
         }
     }
 
@@ -67,6 +86,7 @@ interface MeshRayTest {
         var edgeTree: KdTree<Edge<Vec3f>>? = null
             private set
         private val rayTraverser = NearestEdgeToRayTraverser<Edge<Vec3f>>()
+        private val tmpVec = MutableVec3f()
 
         override fun onMeshDataChanged(mesh: Mesh) {
             edgeTree = if (mesh.geometry.primitiveType == PrimitiveType.LINES) {
@@ -76,12 +96,19 @@ interface MeshRayTest {
             }
         }
 
-        override fun rayTest(test: RayTest) {
-            rayTraverser.setup(test.ray)
+        override fun rayTest(test: RayTest, localRay: Ray): Boolean {
+            rayTraverser.setup(localRay)
             edgeTree?.let { rayTraverser.traverse(it) }
-            if (rayTraverser.distanceSqr < test.hitDistanceSqr) {
-                test.setHit(mesh, rayTraverser.distance)
+
+            if (rayTraverser.nearest != null) {
+                tmpVec.set(localRay.direction).mul(sqrt(rayTraverser.distanceSqr))
+                val globalDistSqr = mesh.toGlobalCoords(tmpVec, 0f).sqrLength()
+                if (globalDistSqr < test.hitDistanceSqr) {
+                    test.setHit(mesh, globalDistSqr)
+                    return true
+                }
             }
+            return false
         }
     }
 }

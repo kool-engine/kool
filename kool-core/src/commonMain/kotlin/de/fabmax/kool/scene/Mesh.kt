@@ -1,6 +1,7 @@
 package de.fabmax.kool.scene
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.math.Ray
 import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.math.spatial.BoundingBox
 import de.fabmax.kool.pipeline.Attribute
@@ -148,9 +149,8 @@ open class Mesh(var geometry: IndexedVertexList, name: String? = null) : Node(na
         isFrustumChecked = true
     }
 
-    override fun computeLocalBounds(result: BoundingBox) {
-        super.computeLocalBounds(result)
-        result.add(geometry.bounds)
+    override fun addContentToBoundingBox(localBounds: BoundingBox) {
+        localBounds.add(geometry.bounds)
     }
 
     open fun generate(generator: MeshBuilder.() -> Unit) {
@@ -186,24 +186,8 @@ open class Mesh(var geometry: IndexedVertexList, name: String? = null) : Node(na
         return (isCastingShadowLevelMask and (1 shl shadowMapLevel)) != 0
     }
 
-    override fun rayTest(test: RayTest) {
-        super.rayTest(test)
-
-        // transform ray to local coordinates
-        if (transform.isDoublePrecision) {
-            test.transformBy(transform.invMatrixD)
-        } else {
-            test.transformBy(transform.invMatrixF)
-        }
-
-        rayTest.rayTest(test)
-
-        // transform ray back to previous coordinates
-        if (transform.isDoublePrecision) {
-            test.transformBy(transform.matrixD)
-        } else {
-            test.transformBy(transform.matrixF)
-        }
+    override fun rayTestLocal(test: RayTest, localRay: Ray) {
+        rayTest.rayTest(test, localRay)
     }
 
     /**

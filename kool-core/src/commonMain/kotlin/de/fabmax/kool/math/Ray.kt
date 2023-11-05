@@ -60,14 +60,16 @@ class Ray() {
         return false
     }
 
-    fun transformBy(matrix: Mat4f) {
-        matrix.transform(origin)
-        matrix.transform(direction, 0f).norm()
+    fun transformBy(matrix: Mat4f, result: Ray = this): Ray {
+        matrix.transform(origin, 1f, result.origin)
+        matrix.transform(direction, 0f, result.direction).norm()
+        return result
     }
 
-    fun transformBy(matrix: Mat4d) {
-        matrix.transform(origin)
-        matrix.transform(direction, 0f).norm()
+    fun transformBy(matrix: Mat4d, result: Ray = this): Ray {
+        matrix.transform(origin, 1f, result.origin)
+        matrix.transform(direction, 0f, result.direction).norm()
+        return result
     }
 
     override fun toString(): String {
@@ -78,11 +80,12 @@ class Ray() {
 class RayTest {
     val ray = Ray()
 
-    private val intHitPosition = MutableVec3f()
-    private val intHitPositionLocal = MutableVec3f()
+    val hitPositionGlobal = MutableVec3f()
+    val hitNormalGlobal = MutableVec3f()
 
-    val hitPosition: Vec3f get() = intHitPosition
-    val hitPositionLocal : Vec3f get() = intHitPositionLocal
+    private val tmpRay = Ray()
+    private val tmpHitPoint = MutableVec3f()
+
     var hitNode: Node? = null
         private set
     var hitDistanceSqr = Float.MAX_VALUE
@@ -91,37 +94,43 @@ class RayTest {
         get() = hitDistanceSqr < Float.MAX_VALUE
 
     fun clear() {
-        intHitPosition.set(Vec3f.ZERO)
-        intHitPositionLocal.set(Vec3f.ZERO)
+        hitPositionGlobal.set(Vec3f.ZERO)
+        hitNormalGlobal.set(Vec3f.ZERO)
         hitNode = null
         hitDistanceSqr = Float.MAX_VALUE
     }
 
-    fun setHit(node: Node, distance: Float) {
-        intHitPosition.set(ray.direction).mul(distance).add(ray.origin)
-        setHit(node, intHitPosition)
+    fun setHit(node: Node, hitDistanceGlobal: Float, hitNormalGlobal: Vec3f? = null) {
+        hitPositionGlobal.set(ray.direction).mul(hitDistanceGlobal).add(ray.origin)
+        setHit(node, hitPositionGlobal, hitNormalGlobal)
     }
 
-    fun setHit(node: Node, position: Vec3f) {
-        intHitPosition.set(position)
-        intHitPositionLocal.set(position)
+    fun setHit(node: Node, hitPositionGlobal: Vec3f, hitNormalGlobal: Vec3f? = null) {
+        this.hitPositionGlobal.set(hitPositionGlobal)
+        this.hitNormalGlobal.set(hitNormalGlobal ?: Vec3f.ZERO)
         hitNode = node
-        hitDistanceSqr = hitPosition.sqrDistance(ray.origin)
+        hitDistanceSqr = this.hitPositionGlobal.sqrDistance(ray.origin)
     }
 
-    fun transformBy(matrix: Mat4f) {
-        ray.transformBy(matrix)
-        if (isHit) {
-            matrix.transform(intHitPosition)
-            hitDistanceSqr = hitPosition.sqrDistance(ray.origin)
-        }
+    /**
+     * Returns true if this [ray] hits the [node]'s bounding sphere AND the hit is closer than any previous hit.
+     */
+    fun isIntersectingBoundingSphere(node: Node) = isIntersectingBoundingSphere(node.globalCenter, node.globalRadius)
+
+    /**
+     * Returns true if this [ray] hits the specified bounding sphere (in global coordinates) AND the hit is closer than
+     * any previous hit.
+     */
+    fun isIntersectingBoundingSphere(globalCenter: Vec3f, globalRadius: Float): Boolean {
+        val isSphereHit = ray.sphereIntersection(globalCenter, globalRadius, tmpHitPoint)
+        return isSphereHit && tmpHitPoint.sqrDistance(ray.origin) <= hitDistanceSqr
     }
 
-    fun transformBy(matrix: Mat4d) {
-        ray.transformBy(matrix)
-        if (isHit) {
-            matrix.transform(intHitPosition)
-            hitDistanceSqr = hitPosition.sqrDistance(ray.origin)
-        }
+    fun getRayTransformed(matrix: Mat4f): Ray {
+        return ray.transformBy(matrix, tmpRay)
+    }
+
+    fun getRayTransformed(matrix: Mat4d): Ray {
+        return ray.transformBy(matrix, tmpRay)
     }
 }
