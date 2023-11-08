@@ -54,7 +54,7 @@ class MappedUbo(val uboDesc: UniformBuffer, val layout: BufferLayout) : MappedUn
         val gpuBuf = uboBuffer
         return if (gpuBuf != null) {
             layout.putToBuffer(uboDesc.uniforms, hostBuffer)
-            gpuBuf.setData(hostBuffer, DYNAMIC_DRAW, hostBuffer.capacity, ctx)
+            gpuBuf.setData(hostBuffer, DYNAMIC_DRAW, ctx)
             ctx.gl.bindBufferBase(UNIFORM_BUFFER, uboDesc.binding, gpuBuf.buffer)
             true
         } else {
@@ -301,13 +301,14 @@ abstract class MappedUniformTex(val texUnit: Int, val target: Int) : MappedUnifo
             gl.activeTexture(texUnit + arrayIdx)
             gl.bindTexture(target, tex.texture)
             return true
+        } else {
+            println("not yet loaded: ${texture.name}")
         }
 
         return false
     }
 
     companion object {
-        // todo: integrate texture manager
         private val loadedTextures = mutableMapOf<TextureData, LoadedTextureWebGl>()
 
         protected fun getLoadedTex(texData: TextureData, texture: Texture, ctx: JsContext): LoadedTexture {

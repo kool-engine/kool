@@ -390,24 +390,21 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
                     }
                 }
                 if (instanceList.hasChanged || isNewlyCreated) {
-                    val len = instanceList.numInstances * instanceList.instanceSizeF
-                    instBuf.setData(instanceList.dataF, instanceList.usage.glUsage(), len, ctx)
+                    instBuf.setData(instanceList.dataF, instanceList.usage.glUsage(), ctx)
                     ctx.afterRenderActions += { instanceList.hasChanged = false }
                 }
             }
 
             if (!md.isBatchUpdate && (md.hasChanged || !buffersSet)) {
                 val usage = md.usage.glUsage()
-                val fLen = md.vertexSizeF * md.numVertices
-                val iLen = md.vertexSizeI * md.numVertices
 
                 indexType = UNSIGNED_INT
-                indexBuffer?.setData(md.indices, usage, md.numIndices, ctx)
+                indexBuffer?.setData(md.indices, usage, ctx)
 
                 primitiveType = pipeline.layout.vertices.primitiveType.glElemType()
                 numIndices = md.numIndices
-                dataBufferF?.setData(md.dataF, usage, fLen, ctx)
-                dataBufferI?.setData(md.dataI, usage, iLen, ctx)
+                dataBufferF?.setData(md.dataF, usage, ctx)
+                dataBufferI?.setData(md.dataI, usage, ctx)
 
                 // fixme: data buffers should be bound to mesh, not to shader instance
                 // if mesh is rendered multiple times (e.g. by additional shadow passes), clearing

@@ -9,9 +9,9 @@ import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.platform.RenderBackend
 import de.fabmax.kool.platform.vk.util.bitValue
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.MixedBufferImpl
 import de.fabmax.kool.util.Viewport
 import de.fabmax.kool.util.memStack
+import de.fabmax.kool.util.useRaw
 import org.lwjgl.PointerBuffer
 import org.lwjgl.glfw.GLFW.glfwSetWindowShouldClose
 import org.lwjgl.system.MemoryStack
@@ -390,8 +390,9 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackend {
                         pipelineCfg.layout.pushConstantRanges.forEach {
                             it.onUpdate?.invoke(it, cmd)
                             val flags = it.stages.fold(0) { f, stage -> f or stage.bitValue() }
-                            val pushBuffer = (it.toBuffer() as MixedBufferImpl).buffer
-                            vkCmdPushConstants(commandBuffer, pipeline.pipelineLayout, flags, offset, pushBuffer)
+                            it.toBuffer().useRaw { buf ->
+                                vkCmdPushConstants(commandBuffer, pipeline.pipelineLayout, flags, offset, buf)
+                            }
                             offset += it.size
                         }
 

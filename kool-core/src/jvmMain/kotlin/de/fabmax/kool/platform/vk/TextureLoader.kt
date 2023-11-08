@@ -236,9 +236,6 @@ object TextureLoader {
     }
 
     private fun reshapeUint8(dstFormat: TexFormat, img: TextureData, imgData: Uint8BufferImpl): ByteBuffer {
-        // make sure buffer position is at 0
-        imgData.buffer.rewind()
-
         if (img.format != dstFormat) {
             if (img.format == TexFormat.RGB && dstFormat == TexFormat.RGBA) {
                 val reshaped = Uint8Buffer(img.width * img.height * img.depth * 4)
@@ -248,18 +245,15 @@ object TextureLoader {
                     reshaped[i*4+2] = imgData[i*3+2]
                     reshaped[i*4+3] = 255u
                 }
-                return (reshaped as Uint8BufferImpl).buffer
+                return (reshaped as Uint8BufferImpl).getRawBuffer()
             } else {
                 throw IllegalArgumentException("${img.format} -> $dstFormat not implemented")
             }
         }
-        return imgData.buffer
+        return imgData.getRawBuffer()
     }
 
     private fun reshapeFloat32(dstFormat: TexFormat, img: TextureData, imgData: Float32BufferImpl): ByteBuffer {
-        // make sure buffer position is at 0
-        imgData.buffer.rewind()
-
         if (img.format == dstFormat) {
             val reshaped = Uint8Buffer(img.width * img.height * img.depth * img.format.vkBytesPerPx)
             if (dstFormat.isF32) {
@@ -271,7 +265,7 @@ object TextureLoader {
                     reshaped.putF16(i, imgData[i])
                 }
             }
-            return (reshaped as Uint8BufferImpl).buffer
+            return (reshaped as Uint8BufferImpl).getRawBuffer()
 
         } else if (img.format == TexFormat.RGB_F16 && dstFormat == TexFormat.RGBA_F16) {
             val reshaped = Uint8Buffer(img.width * img.height * img.depth * 8)
@@ -281,7 +275,7 @@ object TextureLoader {
                 reshaped.putF16(i*4+2, imgData[i*3+2])
                 reshaped.putF16(i*4+3, 1f)
             }
-            return (reshaped as Uint8BufferImpl).buffer
+            return (reshaped as Uint8BufferImpl).getRawBuffer()
 
         } else if (img.format == TexFormat.RGB_F32 && dstFormat == TexFormat.RGBA_F32) {
             val reshaped = Uint8Buffer(img.width * img.height * img.depth * 16)
@@ -291,7 +285,7 @@ object TextureLoader {
                 reshaped.putF32(i*4+2, imgData[i*3+2])
                 reshaped.putF32(i*4+3, 1f)
             }
-            return (reshaped as Uint8BufferImpl).buffer
+            return (reshaped as Uint8BufferImpl).getRawBuffer()
         }
         throw IllegalArgumentException("${img.format} -> $dstFormat not implemented")
     }

@@ -58,7 +58,6 @@ class Wind {
                 }
             }
         }
-        buf.flip()
 
         for (z in 0 until sz) {
             for (y in 0 until sz) {

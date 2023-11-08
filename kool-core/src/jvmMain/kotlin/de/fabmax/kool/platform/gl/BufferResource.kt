@@ -19,63 +19,48 @@ class BufferResource(val target: Int) {
     }
 
     fun setData(data: Float32Buffer, usage: Int, ctx: Lwjgl3Context) {
-        val limit = data.limit
-        val pos = data.position
-        data.flip()
         bind()
         ctx.engineStats.bufferDeleted(bufferId)
-        glBufferData(target, (data as Float32BufferImpl).buffer, usage)
+        data.useRaw {
+            glBufferData(target, it, usage)
+        }
         ctx.engineStats.bufferAllocated(bufferId, data.capacity * 4)
-        data.limit = limit
-        data.position = pos
     }
 
     fun setData(data: Uint8Buffer, usage: Int, ctx: Lwjgl3Context) {
-        val limit = data.limit
-        val pos = data.position
-        data.flip()
         bind()
         ctx.engineStats.bufferDeleted(bufferId)
-        glBufferData(target, (data as Uint8BufferImpl).buffer, usage)
+        data.useRaw {
+            glBufferData(target, it, usage)
+        }
         ctx.engineStats.bufferAllocated(bufferId, data.capacity)
-        data.limit = limit
-        data.position = pos
     }
 
     fun setData(data: MixedBuffer, usage: Int, ctx: Lwjgl3Context) {
-        val limit = data.limit
-        val pos = data.position
-        data.flip()
         bind()
         ctx.engineStats.bufferDeleted(bufferId)
-        glBufferData(target, (data as MixedBufferImpl).buffer, usage)
+        data.useRaw {
+            glBufferData(target, it, usage)
+        }
         ctx.engineStats.bufferAllocated(bufferId, data.capacity)
-        data.limit = limit
-        data.position = pos
     }
 
     fun setData(data: Uint16Buffer, usage: Int, ctx: Lwjgl3Context) {
-        val limit = data.limit
-        val pos = data.position
-        data.flip()
         bind()
         ctx.engineStats.bufferDeleted(bufferId)
-        glBufferData(target, (data as Uint16BufferImpl).buffer, usage)
+        data.useRaw {
+            glBufferData(target, it, usage)
+        }
         ctx.engineStats.bufferAllocated(bufferId, data.capacity * 2)
-        data.limit = limit
-        data.position = pos
     }
 
     fun setData(data: Int32Buffer, usage: Int, ctx: Lwjgl3Context) {
-        val limit = data.limit
-        val pos = data.position
-        data.flip()
         bind()
         ctx.engineStats.bufferDeleted(bufferId)
-        glBufferData(target, (data as Int32BufferImpl).buffer, usage)
+        data.useRaw {
+            glBufferData(target, it, usage)
+        }
         ctx.engineStats.bufferAllocated(bufferId, data.capacity * 4)
-        data.limit = limit
-        data.position = pos
     }
 
     fun unbind() {

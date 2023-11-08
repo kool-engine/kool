@@ -2,7 +2,10 @@ package de.fabmax.kool.platform.gl
 
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.platform.Lwjgl3Context
-import de.fabmax.kool.util.*
+import de.fabmax.kool.util.Float32BufferImpl
+import de.fabmax.kool.util.Int32BufferImpl
+import de.fabmax.kool.util.MixedBuffer
+import de.fabmax.kool.util.RenderLoop
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -88,98 +91,91 @@ class MappedUniform4f(val uniform: Uniform4f, val location: Int) : MappedUniform
 }
 
 class MappedUniform1fv(val uniform: Uniform1fv, val location: Int) : MappedUniform {
-    private val buffer = Float32Buffer(uniform.size) as Float32BufferImpl
+    private val buffer = Float32BufferImpl(uniform.size)
     override fun setUniform(ctx: Lwjgl3Context): Boolean {
-        for (i in 0 until uniform.size) {
-            buffer[i] = uniform.value[i]
-        }
-        glUniform1fv(location, buffer.buffer)
+        buffer.clear()
+        buffer.put(uniform.value)
+        buffer.useRaw { glUniform1fv(location, it) }
         return true
     }
 }
 
 class MappedUniform2fv(val uniform: Uniform2fv, val location: Int) : MappedUniform {
-    private val buffer = Float32Buffer(2 * uniform.size) as Float32BufferImpl
+    private val buffer = Float32BufferImpl(2 * uniform.size)
     override fun setUniform(ctx: Lwjgl3Context): Boolean {
-        var j = 0
+        buffer.clear()
         for (i in 0 until uniform.size) {
-            buffer[j++] = uniform.value[i].x
-            buffer[j++] = uniform.value[i].y
+            uniform.value[i].putTo(buffer)
         }
-        glUniform2fv(location, buffer.buffer)
+        buffer.useRaw { glUniform2fv(location, it) }
         return true
     }
 }
 
 class MappedUniform3fv(val uniform: Uniform3fv, val location: Int) : MappedUniform {
-    private val buffer = Float32Buffer(3 * uniform.size) as Float32BufferImpl
+    private val buffer = Float32BufferImpl(3 * uniform.size)
     override fun setUniform(ctx: Lwjgl3Context): Boolean {
-        var j = 0
+        buffer.clear()
         for (i in 0 until uniform.size) {
-            buffer[j++] = uniform.value[i].x
-            buffer[j++] = uniform.value[i].y
-            buffer[j++] = uniform.value[i].z
+            uniform.value[i].putTo(buffer)
         }
-        glUniform3fv(location, buffer.buffer)
+        buffer.useRaw { glUniform3fv(location, it) }
         return true
     }
 }
 
 class MappedUniform4fv(val uniform: Uniform4fv, val location: Int) : MappedUniform {
-    private val buffer = Float32Buffer(4 * uniform.size) as Float32BufferImpl
+    private val buffer = Float32BufferImpl(4 * uniform.size)
     override fun setUniform(ctx: Lwjgl3Context): Boolean {
-        var j = 0
+        buffer.clear()
         for (i in 0 until uniform.size) {
-            buffer[j++] = uniform.value[i].x
-            buffer[j++] = uniform.value[i].y
-            buffer[j++] = uniform.value[i].z
-            buffer[j++] = uniform.value[i].w
+            uniform.value[i].putTo(buffer)
         }
-        glUniform4fv(location, buffer.buffer)
+        buffer.useRaw { glUniform4fv(location, it) }
         return true
     }
 }
 
 class MappedUniformMat3f(val uniform: UniformMat3f, val location: Int) : MappedUniform {
-    private val buf = Float32Buffer(9) as Float32BufferImpl
+    private val buffer = Float32BufferImpl(9)
     override fun setUniform(ctx: Lwjgl3Context): Boolean {
-        uniform.value.putTo(buf)
-        buf.flip()
-        glUniformMatrix3fv(location, false, buf.buffer)
+        buffer.clear()
+        uniform.value.putTo(buffer)
+        buffer.useRaw { glUniformMatrix3fv(location, false, it) }
         return true
     }
 }
 
 class MappedUniformMat3fv(val uniform: UniformMat3fv, val location: Int) : MappedUniform {
-    private val buf = Float32Buffer(9 * uniform.size) as Float32BufferImpl
+    private val buffer = Float32BufferImpl(9 * uniform.size)
     override fun setUniform(ctx: Lwjgl3Context): Boolean {
+        buffer.clear()
         for (i in 0 until uniform.size) {
-            uniform.value[i].putTo(buf)
+            uniform.value[i].putTo(buffer)
         }
-        buf.flip()
-        glUniformMatrix3fv(location, false, buf.buffer)
+        buffer.useRaw { glUniformMatrix3fv(location, false, it) }
         return true
     }
 }
 
 class MappedUniformMat4f(val uniform: UniformMat4f, val location: Int) : MappedUniform {
-    private val buf = Float32Buffer(16) as Float32BufferImpl
+    private val buffer = Float32BufferImpl(16)
     override fun setUniform(ctx: Lwjgl3Context): Boolean {
-        uniform.value.putTo(buf)
-        buf.flip()
-        glUniformMatrix4fv(location, false, buf.buffer)
+        buffer.clear()
+        uniform.value.putTo(buffer)
+        buffer.useRaw { glUniformMatrix4fv(location, false, it) }
         return true
     }
 }
 
 class MappedUniformMat4fv(val uniform: UniformMat4fv, val location: Int) : MappedUniform {
-    private val buf = Float32Buffer(16 * uniform.size) as Float32BufferImpl
+    private val buffer = Float32BufferImpl(16 * uniform.size)
     override fun setUniform(ctx: Lwjgl3Context): Boolean {
+        buffer.clear()
         for (i in 0 until uniform.size) {
-            uniform.value[i].putTo(buf)
+            uniform.value[i].putTo(buffer)
         }
-        buf.flip()
-        glUniformMatrix4fv(location, false, buf.buffer)
+        buffer.useRaw { glUniformMatrix4fv(location, false, it) }
         return true
     }
 }
@@ -213,54 +209,47 @@ class MappedUniform4i(val uniform: Uniform4i, val location: Int) : MappedUniform
 }
 
 class MappedUniform1iv(val uniform: Uniform1iv, val location: Int) : MappedUniform {
-    private val buffer = Int32Buffer(uniform.size) as Int32BufferImpl
+    private val buffer = Int32BufferImpl(uniform.size)
     override fun setUniform(ctx: Lwjgl3Context): Boolean {
-        for (i in 0 until uniform.size) {
-            buffer[i] = uniform.value[i]
-        }
-        glUniform1iv(location, buffer.buffer)
+        buffer.clear()
+        buffer.put(uniform.value)
+        buffer.useRaw { glUniform1iv(location, it) }
         return true
     }
 }
 
 class MappedUniform2iv(val uniform: Uniform2iv, val location: Int) : MappedUniform {
-    private val buffer = Int32Buffer(2 * uniform.size) as Int32BufferImpl
+    private val buffer = Int32BufferImpl(2 * uniform.size)
     override fun setUniform(ctx: Lwjgl3Context): Boolean {
-        var j = 0
+        buffer.clear()
         for (i in 0 until uniform.size) {
-            buffer[j++] = uniform.value[i].x
-            buffer[j++] = uniform.value[i].y
+            uniform.value[i].putTo(buffer)
         }
-        glUniform2iv(location, buffer.buffer)
+        buffer.useRaw { glUniform2iv(location, it) }
         return true
     }
 }
 
 class MappedUniform3iv(val uniform: Uniform3iv, val location: Int) : MappedUniform {
-    private val buffer = Int32Buffer(3 * uniform.size) as Int32BufferImpl
+    private val buffer = Int32BufferImpl(3 * uniform.size)
     override fun setUniform(ctx: Lwjgl3Context): Boolean {
-        var j = 0
+        buffer.clear()
         for (i in 0 until uniform.size) {
-            buffer[j++] = uniform.value[i].x
-            buffer[j++] = uniform.value[i].y
-            buffer[j++] = uniform.value[i].z
+            uniform.value[i].putTo(buffer)
         }
-        glUniform3iv(location, buffer.buffer)
+        buffer.useRaw { glUniform3iv(location, it) }
         return true
     }
 }
 
 class MappedUniform4iv(val uniform: Uniform4iv, val location: Int) : MappedUniform {
-    private val buffer = Int32Buffer(4 * uniform.size) as Int32BufferImpl
+    private val buffer = Int32BufferImpl(4 * uniform.size)
     override fun setUniform(ctx: Lwjgl3Context): Boolean {
-        var j = 0
+        buffer.clear()
         for (i in 0 until uniform.size) {
-            buffer[j++] = uniform.value[i].x
-            buffer[j++] = uniform.value[i].y
-            buffer[j++] = uniform.value[i].z
-            buffer[j++] = uniform.value[i].w
+            uniform.value[i].putTo(buffer)
         }
-        glUniform4iv(location, buffer.buffer)
+        buffer.useRaw { glUniform4iv(location, it) }
         return true
     }
 }

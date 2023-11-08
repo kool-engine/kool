@@ -11,7 +11,5 @@ expect object BufferUtil {
 }
 
 fun ByteArray.toBuffer(): Uint8Buffer {
-    val buf = Uint8Buffer(size).put(this)
-    buf.flip()
-    return buf
+    return Uint8Buffer(size).put(this)
 }

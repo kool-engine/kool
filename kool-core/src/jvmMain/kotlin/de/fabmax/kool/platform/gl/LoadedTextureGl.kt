@@ -54,10 +54,14 @@ class LoadedTextureGl(val ctx: Lwjgl3Context, val target: Int, val texture: Int,
         glBindTexture(target, texture)
         when (val buf = targetData.data) {
             is Uint8BufferImpl -> {
-                glGetTexImage(target, 0, targetData.format.glFormat, targetData.format.glType, buf.buffer)
+                buf.useRaw {
+                    glGetTexImage(target, 0, targetData.format.glFormat, targetData.format.glType, it)
+                }
             }
             is Float32BufferImpl -> {
-                glGetTexImage(target, 0, targetData.format.glFormat, targetData.format.glType, buf.buffer)
+                buf.useRaw {
+                    glGetTexImage(target, 0, targetData.format.glFormat, targetData.format.glType, it)
+                }
             }
         }
     }

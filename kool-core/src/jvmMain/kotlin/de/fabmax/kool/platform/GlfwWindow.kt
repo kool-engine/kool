@@ -202,14 +202,16 @@ open class GlfwWindow(val ctx: Lwjgl3Context) {
     }
 
     fun setWindowIcon(icon: List<BufferedImage>) {
-        MemoryStack.stackPush().use {
-            val images = GLFWImage.malloc(icon.size, it)
+        MemoryStack.stackPush().use { stack ->
+            val images = GLFWImage.malloc(icon.size, stack)
             icon.forEachIndexed { i, img ->
                 val buffer = ImageTextureData(img, TexFormat.RGBA).data as Uint8BufferImpl
                 images.get(i).apply {
                     width(img.width)
                     height(img.height)
-                    pixels(buffer.buffer)
+                    buffer.useRaw {
+                        pixels(it)
+                    }
                 }
             }
             glfwSetWindowIcon(windowPtr, images)

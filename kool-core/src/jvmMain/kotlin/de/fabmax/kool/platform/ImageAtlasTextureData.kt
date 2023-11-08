@@ -28,13 +28,14 @@ class ImageAtlasTextureData(image: ImageTextureData, tilesX: Int, tilesY: Int) :
                 val srcY = tileY * height
 
                 for (l in 0 until height) {
-                    imgData.position = ((srcY + l) * image.width + srcX) * format.channels
-                    imgData.buffer.get(lineBuf)
+                    imgData.useRaw {
+                        it.position(((srcY + l) * image.width + srcX) * format.channels)
+                        it.get(lineBuf)
+                    }
                     target.put(lineBuf)
                 }
             }
         }
-        data.flip()
         imgData.position = 0
     }
 

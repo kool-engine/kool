@@ -2,12 +2,12 @@ package de.fabmax.kool.util
 
 import de.fabmax.kool.KoolException
 
-expect fun Uint8Buffer(capacity: Int): Uint8Buffer
-expect fun Uint16Buffer(capacity: Int): Uint16Buffer
-expect fun Int32Buffer(capacity: Int): Int32Buffer
-expect fun Float32Buffer(capacity: Int): Float32Buffer
-expect fun MixedBuffer(capacity: Int): MixedBuffer
-fun Uint32Buffer(capacity: Int): Uint32Buffer = Int32Buffer(capacity)
+expect fun Uint8Buffer(capacity: Int, isAutoLimit: Boolean = false): Uint8Buffer
+expect fun Uint16Buffer(capacity: Int, isAutoLimit: Boolean = false): Uint16Buffer
+expect fun Int32Buffer(capacity: Int, isAutoLimit: Boolean = false): Int32Buffer
+expect fun Float32Buffer(capacity: Int, isAutoLimit: Boolean = false): Float32Buffer
+expect fun MixedBuffer(capacity: Int, isAutoLimit: Boolean = false): MixedBuffer
+fun Uint32Buffer(capacity: Int, isAutoLimit: Boolean = false): Uint32Buffer = Int32Buffer(capacity, isAutoLimit)
 
 /**
  * Super class for platform-dependent buffers. In the JVM these buffers directly map to the corresponding NIO buffers.
@@ -19,13 +19,13 @@ fun Uint32Buffer(capacity: Int): Uint32Buffer = Int32Buffer(capacity)
  */
 interface Buffer {
     val capacity: Int
-    var limit: Int
     var position: Int
+    var limit: Int
+    var isAutoLimit: Boolean
 
     val remaining: Int
         get() = capacity - position
 
-    fun flip()
     fun clear()
 
     fun checkCapacity(requiredSize: Int) = check(requiredSize <= remaining) {
@@ -40,9 +40,6 @@ interface Buffer {
         if (position > index) {
             position--
         }
-//        if (limit > index) {
-//            limit--
-//        }
     }
 }
 
@@ -168,7 +165,6 @@ interface Float32Buffer : Buffer {
     fun put(data: FloatArray, offset: Int, len: Int): Float32Buffer
     fun put(data: Float32Buffer): Float32Buffer
 
-    operator fun set(i: Int, value: Double) = set(i, value.toFloat())
     operator fun plusAssign(value: Float) { put(value) }
     operator fun plusAssign(value: Double) { put(value) }
 
@@ -181,6 +177,8 @@ interface Float32Buffer : Buffer {
         }
         return this
     }
+
+    fun toArray(): FloatArray = FloatArray(capacity) { get(it) }
 
     fun insertAt(index: Int, value: Double) = insertAt(index, value.toFloat())
     fun insertAt(index: Int, value: Float) {

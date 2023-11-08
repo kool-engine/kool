@@ -34,6 +34,8 @@ class MeshInstanceList(val instanceAttributes: List<Attribute>, initialSize: Int
     var numInstances = 0
 
     var dataF: Float32Buffer
+        private set
+
     private val strideFloats: Int
 
     internal var maxInstances = initialSize
@@ -59,17 +61,15 @@ class MeshInstanceList(val instanceAttributes: List<Attribute>, initialSize: Int
         attributeOffsets = offsets
         instanceSizeF = strideFloats / 4
         strideBytesF = strideFloats
-        dataF = Float32Buffer(strideFloats * maxInstances)
+        dataF = Float32Buffer(strideFloats * maxInstances, true)
     }
 
     fun checkBufferSize(reqSpace: Int = 1) {
         if (numInstances + reqSpace > maxInstances) {
             maxInstances = max(maxInstances * 2, numInstances + reqSpace)
-            val newBuf = Float32Buffer(strideFloats * maxInstances)
-            dataF.flip()
+            val newBuf = Float32Buffer(strideFloats * maxInstances, true)
             newBuf.put(dataF)
             dataF = newBuf
-
         }
     }
 
@@ -89,8 +89,7 @@ class MeshInstanceList(val instanceAttributes: List<Attribute>, initialSize: Int
 
     fun clear() {
         numInstances = 0
-        dataF.position = 0
-        dataF.limit = dataF.capacity
+        dataF.clear()
         hasChanged = true
     }
 }

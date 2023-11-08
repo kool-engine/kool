@@ -2,7 +2,6 @@ package de.fabmax.kool.platform.gl
 
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.platform.Lwjgl3Context
-import de.fabmax.kool.util.Float32Buffer
 import de.fabmax.kool.util.Float32BufferImpl
 import de.fabmax.kool.util.Profiling
 import org.lwjgl.opengl.GL11.*
@@ -14,7 +13,7 @@ class QueueRendererGl(backend: GlRenderBackend, val ctx: Lwjgl3Context) {
     private val glAttribs = GlAttribs()
     private val shaderMgr = ShaderManager(backend, ctx)
 
-    private val colorBufferClearVal = Float32Buffer(4) as Float32BufferImpl
+    private val colorBufferClearVal = Float32BufferImpl(4)
 
     fun disposePipelines(pipelines: List<Pipeline>) {
         pipelines.forEach {
@@ -39,12 +38,12 @@ class QueueRendererGl(backend: GlRenderBackend, val ctx: Lwjgl3Context) {
             val rp = renderPass
             if (rp is OffscreenRenderPass) {
                 for (i in rp.colorAttachments.indices) {
-                    clearColors[i]?.let {
-                        colorBufferClearVal[0] = it.r
-                        colorBufferClearVal[1] = it.g
-                        colorBufferClearVal[2] = it.b
-                        colorBufferClearVal[3] = it.a
-                        glClearBufferfv(GL_COLOR, i, colorBufferClearVal.buffer)
+                    clearColors[i]?.let { color ->
+                        colorBufferClearVal.clear()
+                        color.putTo(colorBufferClearVal)
+                        colorBufferClearVal.useRaw {
+                            glClearBufferfv(GL_COLOR, i, it)
+                        }
                     }
                 }
                 if (clearDepth) {

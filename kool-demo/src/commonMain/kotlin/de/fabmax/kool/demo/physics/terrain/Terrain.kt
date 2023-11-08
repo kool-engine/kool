@@ -106,7 +106,6 @@ class Terrain(val heightMap: HeightMap) {
                 data.put((a * wSum * 255f).toInt().toByte())
             }
         }
-        data.flip()
         return TextureData2d(data, width, height, TexFormat.RGBA)
     }
 

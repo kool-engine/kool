@@ -22,8 +22,8 @@ class PushConstantRange private constructor(builder: Builder, val longHash: ULon
     val onUpdate: ((PushConstantRange, DrawCommand) -> Unit)? = builder.onUpdate
 
     fun toBuffer(): MixedBuffer {
+        buffer.clear()
         layout.putToBuffer(pushConstants, buffer)
-        buffer.flip()
         return buffer
     }
 

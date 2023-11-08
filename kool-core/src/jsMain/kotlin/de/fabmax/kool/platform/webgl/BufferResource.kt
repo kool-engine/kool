@@ -17,39 +17,43 @@ class BufferResource(val target: Int, ctx: JsContext) {
         ctx.gl.bindBuffer(target, buffer)
     }
 
-    fun setData(data: Float32Buffer, usage: Int, length: Int, ctx: JsContext) {
-        // todo: take length from (used) buffer size?
+    fun setData(data: Float32Buffer, usage: Int, ctx: JsContext) {
+        data as Float32BufferImpl
         bind(ctx)
         ctx.engineStats.bufferDeleted(bufferId)
-        ctx.gl.bufferData(target, (data as Float32BufferImpl).buffer, usage, 0, length)
+        ctx.gl.bufferData(target, data.buffer, usage, 0, data.len)
         ctx.engineStats.bufferAllocated(bufferId, data.capacity * 4)
     }
 
-    fun setData(data: Uint8Buffer, usage: Int, length: Int, ctx: JsContext) {
+    fun setData(data: Uint8Buffer, usage: Int, ctx: JsContext) {
+        data as Uint8BufferImpl
         bind(ctx)
         ctx.engineStats.bufferDeleted(bufferId)
-        ctx.gl.bufferData(target, (data as Uint8BufferImpl).buffer, usage, 0, length)
+        ctx.gl.bufferData(target, data.buffer, usage, 0, data.len)
         ctx.engineStats.bufferAllocated(bufferId, data.capacity)
     }
 
-    fun setData(data: MixedBuffer, usage: Int, length: Int, ctx: JsContext) {
+    fun setData(data: MixedBuffer, usage: Int, ctx: JsContext) {
+        data as MixedBufferImpl
         bind(ctx)
         ctx.engineStats.bufferDeleted(bufferId)
-        ctx.gl.bufferData(target, (data as MixedBufferImpl).buffer, usage, 0, length)
+        ctx.gl.bufferData(target, data.buffer, usage, 0, data.len)
         ctx.engineStats.bufferAllocated(bufferId, data.capacity)
     }
 
-    fun setData(data: Uint16Buffer, usage: Int, length: Int, ctx: JsContext) {
+    fun setData(data: Uint16Buffer, usage: Int, ctx: JsContext) {
+        data as Uint16BufferImpl
         bind(ctx)
         ctx.engineStats.bufferDeleted(bufferId)
-        ctx.gl.bufferData(target, (data as Uint16BufferImpl).buffer, usage, 0, length)
+        ctx.gl.bufferData(target, data.buffer, usage, 0, data.len)
         ctx.engineStats.bufferAllocated(bufferId, data.capacity * 2)
     }
 
-    fun setData(data: Int32Buffer, usage: Int, length: Int, ctx: JsContext) {
+    fun setData(data: Int32Buffer, usage: Int, ctx: JsContext) {
+        data as Int32BufferImpl
         bind(ctx)
         ctx.engineStats.bufferDeleted(bufferId)
-        ctx.gl.bufferData(target, (data as Int32BufferImpl).buffer, usage, 0, length)
+        ctx.gl.bufferData(target, data.buffer, usage, 0, data.len)
         ctx.engineStats.bufferAllocated(bufferId, data.capacity * 4)
     }
 

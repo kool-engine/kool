@@ -70,8 +70,11 @@ class IndexedVertexList(val vertexAttributes: List<Attribute>) {
         get() = numVertices - 1
 
     var dataF: Float32Buffer
+        private set
     var dataI: Int32Buffer
-    var indices = Int32Buffer(INITIAL_SIZE)
+        private set
+    var indices = Uint32Buffer(INITIAL_SIZE, true)
+        private set
 
     val bounds = BoundingBox()
 
@@ -107,8 +110,8 @@ class IndexedVertexList(val vertexAttributes: List<Attribute>) {
         vertexSizeI = strideI / 4
         byteStrideI = strideI
 
-        dataF = Float32Buffer(strideF * INITIAL_SIZE)
-        dataI = Int32Buffer(strideI * INITIAL_SIZE)
+        dataF = Float32Buffer(strideF * INITIAL_SIZE, true)
+        dataI = Int32Buffer(strideI * INITIAL_SIZE, true)
         vertexIt = VertexView(this, 0)
     }
 
@@ -131,22 +134,19 @@ class IndexedVertexList(val vertexAttributes: List<Attribute>) {
     fun isEmpty(): Boolean = numVertices == 0 || numIndices == 0
 
     private fun increaseDataSizeF(newSize: Int) {
-        val newData = Float32Buffer(newSize)
-        dataF.flip()
+        val newData = Float32Buffer(newSize, true)
         newData.put(dataF)
         dataF = newData
     }
 
     private fun increaseDataSizeI(newSize: Int) {
-        val newData = Int32Buffer(newSize)
-        dataI.flip()
+        val newData = Int32Buffer(newSize, true)
         newData.put(dataI)
         dataI = newData
     }
 
     private fun increaseIndicesSize(newSize: Int) {
-        val newIdxs = Int32Buffer(newSize)
-        indices.flip()
+        val newIdxs = Uint32Buffer(newSize, true)
         newIdxs.put(indices)
         indices = newIdxs
     }
@@ -269,22 +269,16 @@ class IndexedVertexList(val vertexAttributes: List<Attribute>) {
     fun clear() {
         numVertices = 0
 
-        dataF.position = 0
-        dataF.limit = dataF.capacity
-
-        dataI.position = 0
-        dataI.limit = dataI.capacity
-
-        indices.position = 0
-        indices.limit = indices.capacity
+        dataF.clear()
+        dataI.clear()
+        indices.clear()
 
         bounds.clear()
         hasChanged = true
     }
 
     fun clearIndices() {
-        indices.position = 0
-        indices.limit = indices.capacity
+        indices.clear()
     }
 
     fun shrinkIndices(newSize: Int) {
@@ -293,7 +287,6 @@ class IndexedVertexList(val vertexAttributes: List<Attribute>) {
         }
 
         indices.position = newSize
-        indices.limit = indices.capacity
     }
 
     fun shrinkVertices(newSize: Int) {
@@ -302,12 +295,8 @@ class IndexedVertexList(val vertexAttributes: List<Attribute>) {
         }
 
         numVertices = newSize
-
         dataF.position = newSize * vertexSizeF
-        dataF.limit = dataF.capacity
-
         dataI.position = newSize * vertexSizeI
-        dataI.limit = dataI.capacity
     }
 
     operator fun get(i: Int): VertexView {
@@ -393,7 +382,7 @@ class IndexedVertexList(val vertexAttributes: List<Attribute>) {
         dataF = mergeDataF
         dataI = mergeDataI
 
-        val mergeIndices = Int32Buffer(indices.capacity)
+        val mergeIndices = Uint32Buffer(indices.capacity)
         for (i in 0 until numIndices) {
             val ind = indices[i]
             mergeIndices.put(indexMap[mergeMap[ind]!!]!!)

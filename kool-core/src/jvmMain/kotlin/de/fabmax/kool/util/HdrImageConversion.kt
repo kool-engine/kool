@@ -19,19 +19,19 @@ object HdrImageConversion {
 
     fun loadHdrImage(hdrImage: File): TextureData2d {
         val imageData = Uint8BufferImpl(hdrImage.readBytes())
-        imageData.flip()
         return loadHdrImage(imageData)
     }
 
     fun loadHdrImage(imageData: Uint8Buffer): TextureData2d {
         return MemoryStack.stackPush().use { stack ->
-            val imageBuffer = (imageData as Uint8BufferImpl).buffer
-
             val w: IntBuffer = stack.mallocInt(1)
             val h: IntBuffer = stack.mallocInt(1)
             val components: IntBuffer = stack.mallocInt(1)
-            val image: FloatBuffer = stbi_loadf_from_memory(imageBuffer, w, h, components, 0) ?:
-                throw RuntimeException("Failed to load image: " + stbi_failure_reason())
+
+            val image: FloatBuffer = imageData.useRaw { raw ->
+                stbi_loadf_from_memory(raw, w, h, components, 0) ?:
+                    throw RuntimeException("Failed to load image: " + stbi_failure_reason())
+            }
 
             val texFormat = when (components[0]) {
                 1 -> TexFormat.R_F16

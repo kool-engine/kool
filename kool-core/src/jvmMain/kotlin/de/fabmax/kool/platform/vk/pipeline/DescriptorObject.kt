@@ -57,8 +57,9 @@ class UboDescriptor(binding: Int, graphicsPipeline: GraphicsPipeline, private va
     override fun update(cmd: DrawCommand, sys: VkSystem) {
         ubo.onUpdate?.invoke(ubo, cmd)
         layout.putToBuffer(ubo.uniforms, hostBuffer)
-        hostBuffer.flip()
-        buffer.mapped { put(hostBuffer.buffer) }
+        hostBuffer.useRaw { host ->
+            buffer.mapped { put(host) }
+        }
     }
 
     override fun destroy(graphicsPipeline: GraphicsPipeline) {

@@ -50,7 +50,6 @@ open class CachedGeometry(
         node.apply {
             cacheBuilder.clear()
             cacheBuilder.configured(color, block = block)
-            cacheData.dataF.flip()
         }
         cachedPosition.set(posX, posY)
         cachedClip.set(node.clipBoundsPx)

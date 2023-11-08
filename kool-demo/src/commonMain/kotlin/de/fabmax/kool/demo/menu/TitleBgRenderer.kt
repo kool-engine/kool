@@ -96,7 +96,6 @@ class TitleBgRenderer(
                 }
             }
 
-            data.flip()
             val noiseProps = TextureProps(mipMapping = false, maxAnisotropy = 0)
             return Texture2d(noiseProps, loader = BufferedTextureLoader(TextureData2d(data, width, height, TexFormat.RGBA)))
         }

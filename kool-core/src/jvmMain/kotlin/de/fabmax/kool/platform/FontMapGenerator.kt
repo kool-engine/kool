@@ -116,7 +116,6 @@ internal class FontMapGenerator(val maxWidth: Int, val maxHeight: Int) {
         for (i in 0 until width * height) {
             buffer.put((pixels[i] shr 24).toByte())
         }
-        buffer.flip()
         return buffer
     }
 

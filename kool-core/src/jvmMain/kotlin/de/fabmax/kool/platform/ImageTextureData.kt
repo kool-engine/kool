@@ -55,8 +55,6 @@ class ImageTextureData(image: BufferedImage, dstFormat: TexFormat?) :
                 // fallback to slow copy
                 slowCopyImage(image, buffer, dstFormat)
             }
-
-            buffer.flip()
             return buffer
         }
 

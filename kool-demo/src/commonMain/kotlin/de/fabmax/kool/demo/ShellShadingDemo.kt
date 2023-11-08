@@ -365,7 +365,6 @@ class ShellShadingDemo : DemoScene("Shell Shading") {
                 }
             }
         }
-        buf.flip()
 
         // rotate noise for g and b channels
         for (z in 0 until sz) {

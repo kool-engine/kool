@@ -70,14 +70,6 @@ class InstancedLodController<T: InstancedLodController.Instance<T>>(name: String
         super.update(updateEvent)
     }
 
-    override fun collectDrawCommands(updateEvent: RenderPass.UpdateEvent) {
-        super.collectDrawCommands(updateEvent)
-
-        for (i in lods.indices) {
-            lods[i].mesh.collectDrawCommands(updateEvent)
-        }
-    }
-
     override fun dispose(ctx: KoolContext) {
         super.dispose(ctx)
         for (i in lods.indices) {

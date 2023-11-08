@@ -95,6 +95,14 @@ class KslShaderTest : DemoScene("KslShader") {
                     shadow {
                         addShadowMaps(shadowMaps)
                     }
+
+//                    modelCustomizer = {
+//                        fragmentStage {
+//                            main {
+//                                colorOutput(Vec4f(1f, 0f, 0f, 1f).const)
+//                            }
+//                        }
+//                    }
                 }
             }
 

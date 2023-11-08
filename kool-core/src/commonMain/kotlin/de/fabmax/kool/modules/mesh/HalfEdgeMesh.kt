@@ -164,7 +164,7 @@ class HalfEdgeMesh(geometry: IndexedVertexList, val edgeHandler: EdgeHandler = L
             val strideI = geometry.vertexSizeI
             val vertCnt = verts.size
             val newDataF = Float32Buffer(vertCnt * strideF)
-            val newDataI = if (strideI > 0) Int32Buffer(vertCnt * strideI) else geometry.dataI
+            val newDataI = if (strideI > 0) Int32Buffer(vertCnt * strideI) else null
 
             for (i in verts.indices) {
                 // copy data from previous location
@@ -174,9 +174,9 @@ class HalfEdgeMesh(geometry: IndexedVertexList, val edgeHandler: EdgeHandler = L
                 for (j in 0 until strideF) {
                     newDataF.put(geometry.dataF[oldIdx * strideF + j])
                 }
-                if (strideI > 0) {
+                newDataI?.let {
                     for (j in 0 until strideI) {
-                        newDataI.put(geometry.dataI[oldIdx * strideI + j])
+                        it.put(geometry.dataI[oldIdx * strideI + j])
                     }
                 }
             }
@@ -193,8 +193,13 @@ class HalfEdgeMesh(geometry: IndexedVertexList, val edgeHandler: EdgeHandler = L
                 logW { "Inconsistent triangle count! MeshData: ${geometry.numIndices / 3}, HalfEdgeMesh: $faceCount" }
             }
 
-            geometry.dataF = newDataF
-            geometry.dataI = newDataI
+            geometry.dataF.clear()
+            geometry.dataF.put(newDataF)
+            newDataI?.let {
+                geometry.dataI.clear()
+                geometry.dataI.put(it)
+            }
+
             geometry.numVertices = vertCnt
             if (generateNormals) {
                 geometry.generateNormals()
