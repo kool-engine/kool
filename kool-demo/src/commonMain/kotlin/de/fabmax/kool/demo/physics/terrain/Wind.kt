@@ -7,7 +7,7 @@ import de.fabmax.kool.math.noise.MultiPerlin3d
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.PerfTimer
-import de.fabmax.kool.util.createUint8Buffer
+import de.fabmax.kool.util.Uint8Buffer
 import de.fabmax.kool.util.logD
 import kotlin.math.max
 import kotlin.math.min
@@ -37,7 +37,7 @@ class Wind {
         val nMaxP = 0.7f
 
         val sz = 96
-        val buf = createUint8Buffer(sz*sz*sz*4)
+        val buf = Uint8Buffer(sz*sz*sz*4)
         for (z in 0 until sz) {
             for (y in 0 until sz) {
                 for (x in 0 until sz) {

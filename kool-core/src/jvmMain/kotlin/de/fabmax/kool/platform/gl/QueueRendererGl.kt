@@ -2,9 +2,9 @@ package de.fabmax.kool.platform.gl
 
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.platform.Lwjgl3Context
+import de.fabmax.kool.util.Float32Buffer
 import de.fabmax.kool.util.Float32BufferImpl
 import de.fabmax.kool.util.Profiling
-import de.fabmax.kool.util.createFloat32Buffer
 import org.lwjgl.opengl.GL11.*
 import org.lwjgl.opengl.GL31.glClearBufferfv
 import org.lwjgl.opengl.GL31.glDrawElementsInstanced
@@ -14,7 +14,7 @@ class QueueRendererGl(backend: GlRenderBackend, val ctx: Lwjgl3Context) {
     private val glAttribs = GlAttribs()
     private val shaderMgr = ShaderManager(backend, ctx)
 
-    private val colorBufferClearVal = createFloat32Buffer(4) as Float32BufferImpl
+    private val colorBufferClearVal = Float32Buffer(4) as Float32BufferImpl
 
     fun disposePipelines(pipelines: List<Pipeline>) {
         pipelines.forEach {

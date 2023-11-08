@@ -4,8 +4,8 @@ import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.TextureData2d
 import de.fabmax.kool.pipeline.TextureProps
 import de.fabmax.kool.util.Buffer
-import de.fabmax.kool.util.createFloat32Buffer
-import de.fabmax.kool.util.createUint8Buffer
+import de.fabmax.kool.util.Float32Buffer
+import de.fabmax.kool.util.Uint8Buffer
 import kotlinx.browser.document
 import org.khronos.webgl.get
 import org.w3c.dom.CanvasRenderingContext2D
@@ -40,7 +40,7 @@ class BufferedImageTextureData(image: HTMLImageElement, texProps: TextureProps?)
             val buffer: Buffer
 
             if (dstFormat.isFloat) {
-                buffer = createFloat32Buffer(w * h * c)
+                buffer = Float32Buffer(w * h * c)
                 for (i in 0 until w * h) {
                     buffer[i * c + 0] = (imageData.data[i * 4 + 0].toInt() and 0xff) / 255f
                     if (c > 1) buffer[i * c + 1] = (imageData.data[i * 4 + 1].toInt() and 0xff) / 255f
@@ -49,12 +49,12 @@ class BufferedImageTextureData(image: HTMLImageElement, texProps: TextureProps?)
                 }
 
             } else {
-                buffer = createUint8Buffer(w * h * c)
+                buffer = Uint8Buffer(w * h * c)
                 for (i in 0 until w * h) {
-                    buffer[i * c + 0] = imageData.data[i * 4 + 0]
-                    if (c > 1) buffer[i * c + 1] = imageData.data[i * 4 + 1]
-                    if (c > 2) buffer[i * c + 2] = imageData.data[i * 4 + 2]
-                    if (c > 3) buffer[i * c + 3] = imageData.data[i * 4 + 3]
+                    buffer[i * c + 0] = imageData.data[i * 4 + 0].toUByte()
+                    if (c > 1) buffer[i * c + 1] = imageData.data[i * 4 + 1].toUByte()
+                    if (c > 2) buffer[i * c + 2] = imageData.data[i * 4 + 2].toUByte()
+                    if (c > 3) buffer[i * c + 3] = imageData.data[i * 4 + 3].toUByte()
                 }
             }
             return buffer

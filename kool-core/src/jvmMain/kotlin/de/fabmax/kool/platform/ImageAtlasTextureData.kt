@@ -1,12 +1,12 @@
 package de.fabmax.kool.platform
 
 import de.fabmax.kool.pipeline.TextureData3d
+import de.fabmax.kool.util.Uint8Buffer
 import de.fabmax.kool.util.Uint8BufferImpl
-import de.fabmax.kool.util.createUint8Buffer
 
 class ImageAtlasTextureData(image: ImageTextureData, tilesX: Int, tilesY: Int) :
     TextureData3d(
-        createUint8Buffer(image.width * image.height * image.format.channels),
+        Uint8Buffer(image.width * image.height * image.format.channels),
         image.width / tilesX,
         image.height / tilesY,
         tilesX * tilesY, image.format

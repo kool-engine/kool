@@ -2,7 +2,9 @@ package de.fabmax.kool.platform
 
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.TextureData2d
-import de.fabmax.kool.util.*
+import de.fabmax.kool.util.Buffer
+import de.fabmax.kool.util.Float32Buffer
+import de.fabmax.kool.util.Uint8Buffer
 import java.awt.Transparency
 import java.awt.image.BufferedImage
 import java.awt.image.DataBufferByte
@@ -33,13 +35,13 @@ class ImageTextureData(image: BufferedImage, dstFormat: TexFormat?) :
         }
 
         private fun bufferedImageToFloat32Buffer(image: BufferedImage, dstFormat: TexFormat): Float32Buffer {
-            val buffer = createFloat32Buffer(image.width * image.height * dstFormat.channels)
+            val buffer = Float32Buffer(image.width * image.height * dstFormat.channels)
             slowCopyImage(image, buffer, dstFormat)
             return buffer
         }
 
         private fun bufferedImageToUint8Buffer(image: BufferedImage, dstFormat: TexFormat): Uint8Buffer {
-            val buffer = createUint8Buffer(image.width * image.height * dstFormat.channels)
+            val buffer = Uint8Buffer(image.width * image.height * dstFormat.channels)
             var copied = false
 
             if ((image.type == BufferedImage.TYPE_4BYTE_ABGR && dstFormat == TexFormat.RGBA)
@@ -133,7 +135,7 @@ class ImageTextureData(image: BufferedImage, dstFormat: TexFormat?) :
                         if (dstFormat.channels > 2) targetBufUint8.put((b * 255f).toInt().toByte())
                         if (dstFormat.channels > 3) targetBufUint8.put((a * 255f).toInt().toByte())
 
-                    } else if (isFloat) {
+                    } else {
                         targetBufFloat!!.put(r)
                         if (dstFormat.channels > 1) targetBufFloat.put(g)
                         if (dstFormat.channels > 2) targetBufFloat.put(b)

@@ -112,7 +112,7 @@ internal class FontMapGenerator(val maxWidth: Int, val maxHeight: Int) {
     private fun getCanvasAlphaData(width: Int, height: Int): Uint8Buffer {
         val imgBuf = canvas.data.dataBuffer as DataBufferInt
         val pixels = imgBuf.bankData[0]
-        val buffer = createUint8Buffer(width * height)
+        val buffer = Uint8Buffer(width * height)
         for (i in 0 until width * height) {
             buffer.put((pixels[i] shr 24).toByte())
         }

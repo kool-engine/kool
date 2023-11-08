@@ -36,7 +36,7 @@ sealed class Uniform<T>(
 
     protected fun putPadding(buffer: MixedBuffer, padLen: Int) {
         if (padLen > 0) {
-            buffer.padding(padLen)
+            buffer.putPadding(padLen)
         }
     }
 

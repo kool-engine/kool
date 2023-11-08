@@ -75,7 +75,7 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int) {
         }
 
         // alpha texture
-        val buffer = createUint8Buffer(maxWidth * texHeight)
+        val buffer = Uint8Buffer(maxWidth * texHeight)
         for (i in 0 until buffer.capacity) {
             val a = data.data[i*4].toInt() and 0xff
             buffer.put(alphaLut[a])

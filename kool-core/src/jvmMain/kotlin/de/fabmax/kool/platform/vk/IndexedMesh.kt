@@ -3,7 +3,7 @@ package de.fabmax.kool.platform.vk
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.util.Float32BufferImpl
-import de.fabmax.kool.util.Uint32BufferImpl
+import de.fabmax.kool.util.Int32BufferImpl
 import de.fabmax.kool.util.memStack
 import org.lwjgl.util.vma.Vma.*
 import org.lwjgl.vulkan.VK10.*
@@ -88,7 +88,7 @@ class IndexedMesh(val sys: VkSystem, val mesh: Mesh) : VkResource() {
                 val stagingBuffer = Buffer(sys, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, stagingAllocUsage)
                 stagingBuffer.mappedInts {
                     mesh.geometry.dataI.flip()
-                    put((mesh.geometry.dataI as Uint32BufferImpl).buffer)
+                    put((mesh.geometry.dataI as Int32BufferImpl).buffer)
                 }
 
                 val usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT or VK_BUFFER_USAGE_VERTEX_BUFFER_BIT
@@ -110,7 +110,7 @@ class IndexedMesh(val sys: VkSystem, val mesh: Mesh) : VkResource() {
             val stagingBuffer = Buffer(sys, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, stagingAllocUsage)
             stagingBuffer.mappedInts {
                 mesh.geometry.indices.flip()
-                put((mesh.geometry.indices as Uint32BufferImpl).buffer)
+                put((mesh.geometry.indices as Int32BufferImpl).buffer)
             }
 
             val usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT or VK_BUFFER_USAGE_INDEX_BUFFER_BIT

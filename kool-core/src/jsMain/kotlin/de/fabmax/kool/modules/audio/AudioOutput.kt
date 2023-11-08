@@ -1,13 +1,13 @@
 package de.fabmax.kool.modules.audio
 
+import de.fabmax.kool.util.Float32Buffer
 import de.fabmax.kool.util.Float32BufferImpl
-import de.fabmax.kool.util.createFloat32Buffer
 
 /**
  * @author fabmax
  */
 
-@Suppress("UnsafeCastFromDynamic", "CanBeParameter")
+@Suppress("UnsafeCastFromDynamic")
 actual class AudioOutput actual constructor(actual val bufSize: Int) {
     private val audioCtx = js("new AudioContext();")
 
@@ -32,7 +32,7 @@ actual class AudioOutput actual constructor(actual val bufSize: Int) {
     private val source: dynamic
     private val scriptNode: dynamic
     private var analyserNode: dynamic
-    private var powerSpectrum: Float32BufferImpl = createFloat32Buffer(1) as Float32BufferImpl
+    private var powerSpectrum: Float32BufferImpl = Float32Buffer(1) as Float32BufferImpl
     private val dt = 1f / sampleRate
 
     private var t = 0.0

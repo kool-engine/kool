@@ -49,7 +49,7 @@ class DataStream(val data: Uint8Buffer, val byteOffset: Int = 0) {
     }
 
     fun readData(len: Int): Uint8Buffer {
-        val buf = createUint8Buffer(len)
+        val buf = Uint8Buffer(len)
         for (i in 0 until len) {
             buf[i] = data[index++]
         }

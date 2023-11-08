@@ -345,7 +345,7 @@ class ShellShadingDemo : DemoScene("Shell Shading") {
         val nMaxP = 0.7f
 
         val sz = 96
-        val buf = createFloat32Buffer(sz*sz*sz*4)
+        val buf = Float32Buffer(sz*sz*sz*4)
         for (z in 0 until sz) {
             for (y in 0 until sz) {
                 for (x in 0 until sz) {

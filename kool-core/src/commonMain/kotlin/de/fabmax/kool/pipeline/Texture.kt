@@ -78,9 +78,9 @@ open class Texture2d(props: TextureProps = TextureProps(), name: String? = null,
         val tex = loadedTexture ?: return null
         val bufferSize = tex.width * tex.height * props.format.channels
         val buffer = if (props.format.isFloat) {
-            createFloat32Buffer(bufferSize)
+            Float32Buffer(bufferSize)
         } else {
-            createUint8Buffer(bufferSize)
+            Uint8Buffer(bufferSize)
         }
         val data = TextureData2d(buffer, tex.width, tex.height, props.format)
         tex.readTexturePixels(data)
@@ -207,20 +207,20 @@ class TextureData1d(override val data: Buffer, width: Int, format: TexFormat) : 
 
     companion object {
         fun gradient(gradient: ColorGradient, size: Int): TextureData1d {
-            val buf = createUint8Buffer(4 * size)
+            val buf = Uint8Buffer(4 * size)
             val color = MutableColor()
             for (i in 0 until size) {
                 gradient.getColorInterpolated(i / (size - 1f), color)
-                buf[i * 4 + 0] = (color.r * 255f).roundToInt().toByte()
-                buf[i * 4 + 1] = (color.g * 255f).roundToInt().toByte()
-                buf[i * 4 + 2] = (color.b * 255f).roundToInt().toByte()
-                buf[i * 4 + 3] = (color.a * 255f).roundToInt().toByte()
+                buf[i * 4 + 0] = (color.r * 255f).roundToInt().toUByte()
+                buf[i * 4 + 1] = (color.g * 255f).roundToInt().toUByte()
+                buf[i * 4 + 2] = (color.b * 255f).roundToInt().toUByte()
+                buf[i * 4 + 3] = (color.a * 255f).roundToInt().toUByte()
             }
             return TextureData1d(buf, size, TexFormat.RGBA)
         }
 
         fun gradientF16(gradient: ColorGradient, size: Int): TextureData1d {
-            val buf = createFloat32Buffer(4 * size)
+            val buf = Float32Buffer(4 * size)
             val color = MutableColor()
             for (i in 0 until size) {
                 gradient.getColorInterpolated(i / (size - 1f), color)
@@ -253,11 +253,11 @@ open class TextureData2d(override val data: Buffer, width: Int, height: Int, for
 
     companion object {
         fun singleColor(color: Color): TextureData2d {
-            val buf = createUint8Buffer(4)
-            buf[0] = (color.r * 255f).roundToInt().toByte()
-            buf[1] = (color.g * 255f).roundToInt().toByte()
-            buf[2] = (color.b * 255f).roundToInt().toByte()
-            buf[3] = (color.a * 255f).roundToInt().toByte()
+            val buf = Uint8Buffer(4)
+            buf[0] = (color.r * 255f).roundToInt().toUByte()
+            buf[1] = (color.g * 255f).roundToInt().toUByte()
+            buf[2] = (color.b * 255f).roundToInt().toUByte()
+            buf[3] = (color.a * 255f).roundToInt().toUByte()
             return TextureData2d(buf, 1, 1, TexFormat.RGBA)
         }
     }

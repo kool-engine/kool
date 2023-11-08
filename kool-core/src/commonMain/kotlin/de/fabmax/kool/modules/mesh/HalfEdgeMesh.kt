@@ -163,8 +163,8 @@ class HalfEdgeMesh(geometry: IndexedVertexList, val edgeHandler: EdgeHandler = L
             val strideF = geometry.vertexSizeF
             val strideI = geometry.vertexSizeI
             val vertCnt = verts.size
-            val newDataF = createFloat32Buffer(vertCnt * strideF)
-            val newDataI = if (strideI > 0) createUint32Buffer(vertCnt * strideI) else geometry.dataI
+            val newDataF = Float32Buffer(vertCnt * strideF)
+            val newDataI = if (strideI > 0) Int32Buffer(vertCnt * strideI) else geometry.dataI
 
             for (i in verts.indices) {
                 // copy data from previous location

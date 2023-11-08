@@ -3,7 +3,6 @@ package de.fabmax.kool.pipeline
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.util.MixedBuffer
 import de.fabmax.kool.util.copy
-import de.fabmax.kool.util.createMixedBuffer
 
 class PushConstantRange private constructor(builder: Builder, val longHash: ULong, val pushConstants: List<Uniform<*>>) {
 
@@ -18,7 +17,7 @@ class PushConstantRange private constructor(builder: Builder, val longHash: ULon
      */
     val size = layout.size
 
-    private val buffer = createMixedBuffer(size)
+    private val buffer = MixedBuffer(size)
 
     val onUpdate: ((PushConstantRange, DrawCommand) -> Unit)? = builder.onUpdate
 

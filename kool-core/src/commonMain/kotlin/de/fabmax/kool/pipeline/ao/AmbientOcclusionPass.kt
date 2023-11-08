@@ -1,7 +1,10 @@
 package de.fabmax.kool.pipeline.ao
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.math.*
+import de.fabmax.kool.math.MutableVec2f
+import de.fabmax.kool.math.MutableVec3f
+import de.fabmax.kool.math.Vec2f
+import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
@@ -11,7 +14,7 @@ import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
 import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.addMesh
-import de.fabmax.kool.util.createUint8Buffer
+import de.fabmax.kool.util.Uint8Buffer
 import kotlin.math.*
 import kotlin.random.Random
 
@@ -226,17 +229,17 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
 
         private fun generateNoiseTex(): Texture2d {
             val noiseLen = NOISE_TEX_SIZE * NOISE_TEX_SIZE
-            val buf = createUint8Buffer(4 * noiseLen)
+            val buf = Uint8Buffer(4 * noiseLen)
             val rotAngles = (0 until noiseLen).map { 2f * PI.toFloat() * it / noiseLen }.shuffled()
 
             for (i in 0 until (NOISE_TEX_SIZE * NOISE_TEX_SIZE)) {
                 val ang = rotAngles[i]
                 val x = cos(ang)
                 val y = sin(ang)
-                buf[i*4+0] = ((x * 0.5f + 0.5f) * 255).toInt().toByte()
-                buf[i*4+1] = ((y * 0.5f + 0.5f) * 255).toInt().toByte()
-                buf[i*4+2] = 0
-                buf[i*4+3] = 1
+                buf[i*4+0] = ((x * 0.5f + 0.5f) * 255).toInt().toUByte()
+                buf[i*4+1] = ((y * 0.5f + 0.5f) * 255).toInt().toUByte()
+                buf[i*4+2] = 0u
+                buf[i*4+3] = 1u
             }
 
             val data = TextureData2d(buf, NOISE_TEX_SIZE, NOISE_TEX_SIZE, TexFormat.RGBA)

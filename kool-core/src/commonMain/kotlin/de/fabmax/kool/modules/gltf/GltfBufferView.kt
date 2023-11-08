@@ -1,7 +1,6 @@
 package de.fabmax.kool.modules.gltf
 
 import de.fabmax.kool.util.Uint8Buffer
-import de.fabmax.kool.util.createUint8Buffer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 
@@ -28,7 +27,7 @@ data class GltfBufferView(
     lateinit var bufferRef: GltfBuffer
 
     fun getData(): Uint8Buffer {
-        val array = createUint8Buffer(byteLength)
+        val array = Uint8Buffer(byteLength)
         for (i in 0 until byteLength) {
             array[i] = bufferRef.data[byteOffset + i]
         }

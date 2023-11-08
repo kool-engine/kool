@@ -6,7 +6,7 @@ import de.fabmax.kool.platform.JsContext
 import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.TEXTURE_3D
 import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.UNIFORM_BUFFER
 import de.fabmax.kool.util.Float32BufferImpl
-import de.fabmax.kool.util.createMixedBuffer
+import de.fabmax.kool.util.MixedBuffer
 import de.fabmax.kool.util.logE
 import org.khronos.webgl.*
 import org.khronos.webgl.WebGLRenderingContext.Companion.DYNAMIC_DRAW
@@ -48,7 +48,7 @@ interface MappedUniform {
 
 class MappedUbo(val uboDesc: UniformBuffer, val layout: BufferLayout) : MappedUniform {
     var uboBuffer: BufferResource? = null
-    val hostBuffer = createMixedBuffer(layout.size)
+    val hostBuffer = MixedBuffer(layout.size)
 
     override fun setUniform(ctx: JsContext): Boolean {
         val gpuBuf = uboBuffer

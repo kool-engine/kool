@@ -66,13 +66,13 @@ class BufferResource(val target: Int) {
         data.position = pos
     }
 
-    fun setData(data: Uint32Buffer, usage: Int, ctx: Lwjgl3Context) {
+    fun setData(data: Int32Buffer, usage: Int, ctx: Lwjgl3Context) {
         val limit = data.limit
         val pos = data.position
         data.flip()
         bind()
         ctx.engineStats.bufferDeleted(bufferId)
-        glBufferData(target, (data as Uint32BufferImpl).buffer, usage)
+        glBufferData(target, (data as Int32BufferImpl).buffer, usage)
         ctx.engineStats.bufferAllocated(bufferId, data.capacity * 4)
         data.limit = limit
         data.position = pos

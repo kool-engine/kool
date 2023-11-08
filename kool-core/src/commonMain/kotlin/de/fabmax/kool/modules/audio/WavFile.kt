@@ -138,7 +138,7 @@ class WavFile(fileData: Uint8Buffer) {
         fun read(buf: ByteArray): Int {
             val len = buf.size.clamp(0, available())
             for (i in 0 until len) {
-                buf[i] = data[pos++]
+                buf[i] = data[pos++].toByte()
             }
             return len
         }

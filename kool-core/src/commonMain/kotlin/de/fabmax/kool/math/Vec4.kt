@@ -1,8 +1,8 @@
 package de.fabmax.kool.math
 
 import de.fabmax.kool.util.Float32Buffer
+import de.fabmax.kool.util.Int32Buffer
 import de.fabmax.kool.util.MixedBuffer
-import de.fabmax.kool.util.Uint32Buffer
 import kotlin.math.sqrt
 
 fun Vec4f.toVec4d() = Vec4d(x.toDouble(), y.toDouble(), z.toDouble(), w.toDouble())
@@ -866,9 +866,9 @@ open class Vec4i(open val x: Int, open val y: Int, open val z: Int, open val w: 
     }
 
     /**
-     * Appends the components of this [Vec4i] to the given [Uint32Buffer].
+     * Appends the components of this [Vec4i] to the given [Int32Buffer].
      */
-    fun putTo(target: Uint32Buffer) {
+    fun putTo(target: Int32Buffer) {
         target.put(x)
         target.put(y)
         target.put(z)
@@ -879,10 +879,10 @@ open class Vec4i(open val x: Int, open val y: Int, open val z: Int, open val w: 
      * Appends the components of this [Vec4i] to the given [MixedBuffer].
      */
     fun putTo(target: MixedBuffer) {
-        target.putUint32(x)
-        target.putUint32(y)
-        target.putUint32(z)
-        target.putUint32(w)
+        target.putInt32(x)
+        target.putInt32(y)
+        target.putInt32(z)
+        target.putInt32(w)
     }
 
     companion object {

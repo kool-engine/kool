@@ -3,7 +3,6 @@ package de.fabmax.kool.scene
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.geometry.Usage
 import de.fabmax.kool.util.Float32Buffer
-import de.fabmax.kool.util.createFloat32Buffer
 import kotlin.math.max
 
 class MeshInstanceList(val instanceAttributes: List<Attribute>, initialSize: Int = 100) {
@@ -60,13 +59,13 @@ class MeshInstanceList(val instanceAttributes: List<Attribute>, initialSize: Int
         attributeOffsets = offsets
         instanceSizeF = strideFloats / 4
         strideBytesF = strideFloats
-        dataF = createFloat32Buffer(strideFloats * maxInstances)
+        dataF = Float32Buffer(strideFloats * maxInstances)
     }
 
     fun checkBufferSize(reqSpace: Int = 1) {
         if (numInstances + reqSpace > maxInstances) {
             maxInstances = max(maxInstances * 2, numInstances + reqSpace)
-            val newBuf = createFloat32Buffer(strideFloats * maxInstances)
+            val newBuf = Float32Buffer(strideFloats * maxInstances)
             dataF.flip()
             newBuf.put(dataF)
             dataF = newBuf

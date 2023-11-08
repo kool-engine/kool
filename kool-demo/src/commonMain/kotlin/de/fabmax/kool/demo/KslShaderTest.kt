@@ -214,14 +214,14 @@ class KslShaderTest : DemoScene("KslShader") {
     private fun makeNoiseTex(): Texture2d {
         val w = 16
         val h = 16
-        val noiseTexData = createUint8Buffer(w * h * 4)
+        val noiseTexData = Uint8Buffer(w * h * 4)
         for (x in 0 until w) {
             for (y in 0 until w) {
-                val n = (randomF() * 255).toInt().toByte()
+                val n = (randomF() * 255).toInt().toUByte()
                 noiseTexData[(x + y * w) * 4 + 0] = n
                 noiseTexData[(x + y * w) * 4 + 1] = n
                 noiseTexData[(x + y * w) * 4 + 2] = n
-                noiseTexData[(x + y * w) * 4 + 3] = 255.toByte()
+                noiseTexData[(x + y * w) * 4 + 3] = 255u
             }
         }
         return Texture2d(

@@ -241,12 +241,12 @@ object TextureLoader {
 
         if (img.format != dstFormat) {
             if (img.format == TexFormat.RGB && dstFormat == TexFormat.RGBA) {
-                val reshaped = createUint8Buffer(img.width * img.height * img.depth * 4)
+                val reshaped = Uint8Buffer(img.width * img.height * img.depth * 4)
                 for (i in 0 until img.width * img.height * img.depth) {
                     reshaped[i*4+0] = imgData[i*3+0]
                     reshaped[i*4+1] = imgData[i*3+1]
                     reshaped[i*4+2] = imgData[i*3+2]
-                    reshaped[i*4+3] = 255.toByte()
+                    reshaped[i*4+3] = 255u
                 }
                 return (reshaped as Uint8BufferImpl).buffer
             } else {
@@ -261,7 +261,7 @@ object TextureLoader {
         imgData.buffer.rewind()
 
         if (img.format == dstFormat) {
-            val reshaped = createUint8Buffer(img.width * img.height * img.depth * img.format.vkBytesPerPx)
+            val reshaped = Uint8Buffer(img.width * img.height * img.depth * img.format.vkBytesPerPx)
             if (dstFormat.isF32) {
                 for (i in 0 until img.width * img.height * img.depth * img.format.channels) {
                     reshaped.putF32(i, imgData[i])
@@ -274,7 +274,7 @@ object TextureLoader {
             return (reshaped as Uint8BufferImpl).buffer
 
         } else if (img.format == TexFormat.RGB_F16 && dstFormat == TexFormat.RGBA_F16) {
-            val reshaped = createUint8Buffer(img.width * img.height * img.depth * 8)
+            val reshaped = Uint8Buffer(img.width * img.height * img.depth * 8)
             for (i in 0 until img.width * img.height * img.depth) {
                 reshaped.putF16(i*4+0, imgData[i*3+0])
                 reshaped.putF16(i*4+1, imgData[i*3+1])
@@ -284,7 +284,7 @@ object TextureLoader {
             return (reshaped as Uint8BufferImpl).buffer
 
         } else if (img.format == TexFormat.RGB_F32 && dstFormat == TexFormat.RGBA_F32) {
-            val reshaped = createUint8Buffer(img.width * img.height * img.depth * 16)
+            val reshaped = Uint8Buffer(img.width * img.height * img.depth * 16)
             for (i in 0 until img.width * img.height * img.depth) {
                 reshaped.putF32(i*4+0, imgData[i*3+0])
                 reshaped.putF32(i*4+1, imgData[i*3+1])
@@ -299,10 +299,10 @@ object TextureLoader {
     private fun Uint8Buffer.putF32(index: Int, f32: Float) {
         val f32bits = f32.toBits()
         val byteI = index * 2
-        this[byteI] = (f32bits and 0xff).toByte()
-        this[byteI+1] = ((f32bits shr 8) and 0xff).toByte()
-        this[byteI+2] = ((f32bits shr 16) and 0xff).toByte()
-        this[byteI+3] = ((f32bits shr 24) and 0xff).toByte()
+        this[byteI] = (f32bits and 0xff).toUByte()
+        this[byteI+1] = ((f32bits shr 8) and 0xff).toUByte()
+        this[byteI+2] = ((f32bits shr 16) and 0xff).toUByte()
+        this[byteI+3] = ((f32bits shr 24) and 0xff).toUByte()
     }
 
     private fun Uint8Buffer.putF16(index: Int, f32: Float) {
@@ -315,8 +315,8 @@ object TextureLoader {
         f16bits = f16bits or ((f32bits shr 13) and 0x3ff)
 
         val byteI = index * 2
-        this[byteI] = (f16bits and 0xff).toByte()
-        this[byteI+1] = (f16bits shr 8).toByte()
+        this[byteI] = (f16bits and 0xff).toUByte()
+        this[byteI+1] = (f16bits shr 8).toUByte()
     }
 
     private fun copyBufferToImage(sys: VkSystem, buffer: Buffer, image: Image, width: Int, height: Int, depth: Int) {

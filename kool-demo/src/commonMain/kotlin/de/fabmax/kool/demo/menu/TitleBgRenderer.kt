@@ -16,7 +16,7 @@ import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.util.Time
-import de.fabmax.kool.util.createUint8Buffer
+import de.fabmax.kool.util.Uint8Buffer
 import kotlin.random.Random
 
 class TitleBgRenderer(
@@ -84,7 +84,7 @@ class TitleBgRenderer(
         private fun generateNoiseTex(): Texture2d {
             val width = 32
             val height = 32
-            val data = createUint8Buffer(width * height * 4)
+            val data = Uint8Buffer(width * height * 4)
 
             val r = Random(13654164)
             for (y in 0 until height) {

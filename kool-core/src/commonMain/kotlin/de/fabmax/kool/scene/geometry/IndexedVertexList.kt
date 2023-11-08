@@ -70,8 +70,8 @@ class IndexedVertexList(val vertexAttributes: List<Attribute>) {
         get() = numVertices - 1
 
     var dataF: Float32Buffer
-    var dataI: Uint32Buffer
-    var indices = createUint32Buffer(INITIAL_SIZE)
+    var dataI: Int32Buffer
+    var indices = Int32Buffer(INITIAL_SIZE)
 
     val bounds = BoundingBox()
 
@@ -107,8 +107,8 @@ class IndexedVertexList(val vertexAttributes: List<Attribute>) {
         vertexSizeI = strideI / 4
         byteStrideI = strideI
 
-        dataF = createFloat32Buffer(strideF * INITIAL_SIZE)
-        dataI = createUint32Buffer(strideI * INITIAL_SIZE)
+        dataF = Float32Buffer(strideF * INITIAL_SIZE)
+        dataI = Int32Buffer(strideI * INITIAL_SIZE)
         vertexIt = VertexView(this, 0)
     }
 
@@ -131,21 +131,21 @@ class IndexedVertexList(val vertexAttributes: List<Attribute>) {
     fun isEmpty(): Boolean = numVertices == 0 || numIndices == 0
 
     private fun increaseDataSizeF(newSize: Int) {
-        val newData = createFloat32Buffer(newSize)
+        val newData = Float32Buffer(newSize)
         dataF.flip()
         newData.put(dataF)
         dataF = newData
     }
 
     private fun increaseDataSizeI(newSize: Int) {
-        val newData = createUint32Buffer(newSize)
+        val newData = Int32Buffer(newSize)
         dataI.flip()
         newData.put(dataI)
         dataI = newData
     }
 
     private fun increaseIndicesSize(newSize: Int) {
-        val newIdxs = createUint32Buffer(newSize)
+        val newIdxs = Int32Buffer(newSize)
         indices.flip()
         newIdxs.put(indices)
         indices = newIdxs
@@ -371,8 +371,8 @@ class IndexedVertexList(val vertexAttributes: List<Attribute>) {
             trav.result.forEach { mergeMap[it.index] = pt.index }
         }
 
-        val mergeDataF = createFloat32Buffer(dataF.capacity)
-        val mergeDataI = createUint32Buffer(dataI.capacity)
+        val mergeDataF = Float32Buffer(dataF.capacity)
+        val mergeDataI = Int32Buffer(dataI.capacity)
         val indexMap = mutableMapOf<Int, Int>()
         var j = 0
         for (i in 0 until numVertices) {
@@ -393,7 +393,7 @@ class IndexedVertexList(val vertexAttributes: List<Attribute>) {
         dataF = mergeDataF
         dataI = mergeDataI
 
-        val mergeIndices = createUint32Buffer(indices.capacity)
+        val mergeIndices = Int32Buffer(indices.capacity)
         for (i in 0 until numIndices) {
             val ind = indices[i]
             mergeIndices.put(indexMap[mergeMap[ind]!!]!!)
@@ -402,8 +402,8 @@ class IndexedVertexList(val vertexAttributes: List<Attribute>) {
     }
 
     fun splitVertices() {
-        val splitDataF = createFloat32Buffer(numIndices * vertexSizeF)
-        val splitDataI = createUint32Buffer(numIndices * vertexSizeI)
+        val splitDataF = Float32Buffer(numIndices * vertexSizeF)
+        val splitDataI = Int32Buffer(numIndices * vertexSizeI)
         for (i in 0 until numIndices) {
             val ind = indices[i]
             for (fi in 0 until vertexSizeF) {

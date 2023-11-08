@@ -15,7 +15,7 @@ import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.addMesh
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.createUint8Buffer
+import de.fabmax.kool.util.Uint8Buffer
 import kotlin.random.Random
 
 class ReflectionPass(val baseReflectionStep: Float) :
@@ -195,7 +195,7 @@ class ReflectionPass(val baseReflectionStep: Float) :
 
         private fun generateNoiseTex(): Texture2d {
             val sz = NOISE_SIZE
-            val buf = createUint8Buffer(sz * sz * 4)
+            val buf = Uint8Buffer(sz * sz * 4)
             val rand = Random(0x1deadb0b)
             val vec = MutableVec3f()
             for (i in 0 until (sz * sz)) {
@@ -203,10 +203,10 @@ class ReflectionPass(val baseReflectionStep: Float) :
                     vec.set(rand.randomF(-1f, 1f), rand.randomF(-1f, 1f), rand.randomF(-1f, 1f))
                 } while (vec.length() > 1f)
                 vec.norm().mul(0.25f)
-                buf[i * 4 + 0] = ((vec.x + 1f) * 127.5f).toInt().toByte()
-                buf[i * 4 + 1] = ((vec.y + 1f) * 127.5f).toInt().toByte()
-                buf[i * 4 + 2] = ((vec.z + 1f) * 127.5f).toInt().toByte()
-                buf[i * 4 + 3] = rand.randomI(0..255).toByte()
+                buf[i * 4 + 0] = ((vec.x + 1f) * 127.5f).toInt().toUByte()
+                buf[i * 4 + 1] = ((vec.y + 1f) * 127.5f).toInt().toUByte()
+                buf[i * 4 + 2] = ((vec.z + 1f) * 127.5f).toInt().toUByte()
+                buf[i * 4 + 3] = rand.randomI(0..255).toUByte()
             }
             val data = TextureData2d(buf, sz, sz, TexFormat.RGBA)
             val texProps = TextureProps(TexFormat.RGBA, AddressMode.REPEAT, AddressMode.REPEAT,

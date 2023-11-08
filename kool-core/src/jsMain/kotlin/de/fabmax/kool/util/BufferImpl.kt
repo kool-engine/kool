@@ -3,6 +3,13 @@ package de.fabmax.kool.util
 import de.fabmax.kool.KoolException
 import org.khronos.webgl.*
 
+
+actual fun Uint8Buffer(capacity: Int): Uint8Buffer = Uint8BufferImpl(capacity)
+actual fun Uint16Buffer(capacity: Int): Uint16Buffer = Uint16BufferImpl(capacity)
+actual fun Int32Buffer(capacity: Int): Int32Buffer = Int32BufferImpl(capacity)
+actual fun Float32Buffer(capacity: Int): Float32Buffer = Float32BufferImpl(capacity)
+actual fun MixedBuffer(capacity: Int): MixedBuffer = MixedBufferImpl(capacity)
+
 /**
  * @author fabmax
  */
@@ -22,8 +29,8 @@ abstract class GenericBuffer<out B: ArrayBufferView>(override val capacity: Int,
 
     override var position = 0
 
-    override val remaining: Int
-        get() = limit - position
+//    override val remaining: Int
+//        get() = limit - position
 
     override fun flip() {
         limit = position
@@ -43,23 +50,23 @@ class Uint8BufferImpl(array: Uint8Array) : Uint8Buffer, GenericBuffer<Uint8Array
 
     constructor(capacity: Int) : this(Uint8Array(capacity))
 
-    override fun get(i: Int): Byte {
-        return buffer[i]
+    override fun get(i: Int): UByte {
+        return buffer[i].toUByte()
     }
 
-    override fun set(i: Int, value: Byte) {
-        buffer[i] = value
+    override fun set(i: Int, value: UByte) {
+        buffer[i] = value.toByte()
     }
 
-    override fun put(data: ByteArray, offset: Int, len: Int): Uint8Buffer {
-        for (i in offset until offset + len) {
-            buffer[position++] = data[i]
-        }
+    override fun put(value: UByte): Uint8Buffer {
+        buffer[position++] = value.toByte()
         return this
     }
 
-    override fun put(value: Byte): Uint8Buffer {
-        buffer[position++] = value
+    override fun put(data: ByteArray, offset: Int, len: Int): Uint8Buffer {
+        for (i in offset ..< offset + len) {
+            buffer[position++] = data[i]
+        }
         return this
     }
 
@@ -77,23 +84,23 @@ class Uint8BufferImpl(array: Uint8Array) : Uint8Buffer, GenericBuffer<Uint8Array
 class Uint16BufferImpl(capacity: Int) : Uint16Buffer, GenericBuffer<Uint16Array>(capacity, {
     Uint16Array(capacity)
 }) {
-    override fun get(i: Int): Short {
-        return buffer[i]
+    override fun get(i: Int): UShort {
+        return buffer[i].toUShort()
     }
 
-    override fun set(i: Int, value: Short) {
-        buffer[i] = value
+    override fun set(i: Int, value: UShort) {
+        buffer[i] = value.toShort()
     }
 
-    override fun put(data: ShortArray, offset: Int, len: Int): Uint16Buffer {
-        for (i in offset..(offset + len - 1)) {
-            buffer[position++] = data[i]
-        }
+    override fun put(value: UShort): Uint16Buffer {
+        buffer[position++] = value.toShort()
         return this
     }
 
-    override fun put(value: Short): Uint16Buffer {
-        buffer[position++] = value
+    override fun put(data: ShortArray, offset: Int, len: Int): Uint16Buffer {
+        for (i in offset ..< offset + len) {
+            buffer[position++] = data[i]
+        }
         return this
     }
 
@@ -108,7 +115,7 @@ class Uint16BufferImpl(capacity: Int) : Uint16Buffer, GenericBuffer<Uint16Array>
 /**
  * IntBuffer buffer implementation
  */
-class Uint32BufferImpl(capacity: Int) : Uint32Buffer, GenericBuffer<Uint32Array>(capacity, {
+class Int32BufferImpl(capacity: Int) : Int32Buffer, GenericBuffer<Uint32Array>(capacity, {
     Uint32Array(capacity)
 }) {
     override fun get(i: Int): Int {
@@ -119,19 +126,19 @@ class Uint32BufferImpl(capacity: Int) : Uint32Buffer, GenericBuffer<Uint32Array>
         buffer[i] = value
     }
 
-    override fun put(data: IntArray, offset: Int, len: Int): Uint32Buffer {
+    override fun put(data: IntArray, offset: Int, len: Int): Int32Buffer {
         for (i in offset..(offset + len - 1)) {
             buffer[position++] = data[i]
         }
         return this
     }
 
-    override fun put(value: Int): Uint32Buffer {
+    override fun put(value: Int): Int32Buffer {
         buffer[position++] = value
         return this
     }
 
-    override fun put(data: Uint32Buffer): Uint32Buffer {
+    override fun put(data: Int32Buffer): Int32Buffer {
         for (i in data.position until data.limit) {
             put(data[i])
         }
@@ -181,8 +188,8 @@ class Float32BufferImpl(capacity: Int) : Float32Buffer, GenericBuffer<Float32Arr
 class MixedBufferImpl(capacity: Int) : MixedBuffer, GenericBuffer<DataView>(capacity, {
     DataView(ArrayBuffer(capacity))
 }) {
-    override fun putUint8(value: Byte): MixedBuffer {
-        buffer.setUint8(position++, value)
+    override fun putUint8(value: UByte): MixedBuffer {
+        buffer.setUint8(position++, value.toByte())
         return this
     }
 
@@ -195,13 +202,13 @@ class MixedBufferImpl(capacity: Int) : MixedBuffer, GenericBuffer<DataView>(capa
 
     override fun putUint8(data: Uint8Buffer): MixedBuffer {
         for (i in data.position until data.limit) {
-            buffer.setUint8(position++, data[i])
+            buffer.setUint8(position++, data[i].toByte())
         }
         return this
     }
 
-    override fun putUint16(value: Short): MixedBuffer {
-        buffer.setUint16(position, value, true)
+    override fun putUint16(value: UShort): MixedBuffer {
+        buffer.setUint16(position, value.toShort(), true)
         position += 2
         return this
     }
@@ -216,19 +223,19 @@ class MixedBufferImpl(capacity: Int) : MixedBuffer, GenericBuffer<DataView>(capa
 
     override fun putUint16(data: Uint16Buffer): MixedBuffer {
         for (i in data.position until data.limit) {
-            buffer.setUint16(position, data[i], true)
+            buffer.setUint16(position, data[i].toShort(), true)
             position += 2
         }
         return this
     }
 
-    override fun putUint32(value: Int): MixedBuffer {
+    override fun putInt32(value: Int): MixedBuffer {
         buffer.setUint32(position, value, true)
         position += 4
         return this
     }
 
-    override fun putUint32(data: IntArray, offset: Int, len: Int): MixedBuffer {
+    override fun putInt32(data: IntArray, offset: Int, len: Int): MixedBuffer {
         for (i in offset until offset + len) {
             buffer.setUint32(position, data[i], true)
             position += 4
@@ -236,7 +243,7 @@ class MixedBufferImpl(capacity: Int) : MixedBuffer, GenericBuffer<DataView>(capa
         return this
     }
 
-    override fun putUint32(data: Uint32Buffer): MixedBuffer {
+    override fun putInt32(data: Int32Buffer): MixedBuffer {
         for (i in data.position until data.limit) {
             buffer.setUint32(position, data[i], true)
             position += 4
@@ -250,23 +257,9 @@ class MixedBufferImpl(capacity: Int) : MixedBuffer, GenericBuffer<DataView>(capa
         return this
     }
 
-    override fun putFloat32(value: Double): MixedBuffer {
-        buffer.setFloat32(position, value.toFloat(), true)
-        position += 4
-        return this
-    }
-
     override fun putFloat32(data: FloatArray, offset: Int, len: Int): MixedBuffer {
         for (i in offset until offset + len) {
             buffer.setFloat32(position, data[i], true)
-            position += 4
-        }
-        return this
-    }
-
-    override fun putFloat32(data: DoubleArray, offset: Int, len: Int): MixedBuffer {
-        for (i in offset until offset + len) {
-            buffer.setFloat32(position, data[i].toFloat(), true)
             position += 4
         }
         return this
@@ -280,29 +273,8 @@ class MixedBufferImpl(capacity: Int) : MixedBuffer, GenericBuffer<DataView>(capa
         return this
     }
 
-    override fun padding(nBytes: Int): MixedBuffer {
+    override fun putPadding(nBytes: Int): MixedBuffer {
         position += nBytes
         return this
     }
 }
-
-actual fun createUint8Buffer(capacity: Int): Uint8Buffer {
-    return Uint8BufferImpl(capacity)
-}
-
-actual fun createUint16Buffer(capacity: Int): Uint16Buffer {
-    return Uint16BufferImpl(capacity)
-}
-
-actual fun createUint32Buffer(capacity: Int): Uint32Buffer {
-    return Uint32BufferImpl(capacity)
-}
-
-actual fun createFloat32Buffer(capacity: Int): Float32Buffer {
-    return Float32BufferImpl(capacity)
-}
-
-actual fun createMixedBuffer(capacity: Int): MixedBuffer {
-    return MixedBufferImpl(capacity)
-}
-

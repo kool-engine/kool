@@ -17,7 +17,10 @@ import de.fabmax.kool.physics.Shape
 import de.fabmax.kool.physics.geometry.HeightField
 import de.fabmax.kool.physics.geometry.HeightFieldGeometry
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.util.*
+import de.fabmax.kool.util.HeightMap
+import de.fabmax.kool.util.MdColor
+import de.fabmax.kool.util.ShadowMap
+import de.fabmax.kool.util.Uint8Buffer
 import kotlin.math.roundToInt
 
 class Terrain(val heightMap: HeightMap) {
@@ -62,7 +65,7 @@ class Terrain(val heightMap: HeightMap) {
     private fun generateSplatMap(sampleStep: Int): TextureData2d {
         val width = heightMap.width / sampleStep
         val height = heightMap.height / sampleStep
-        val data = createUint8Buffer(width * height * 4)
+        val data = Uint8Buffer(width * height * 4)
 
         // water floor weight - height based
         val wWater = SplatWeightFunc(-50f, -49f, 1.5f, 2.5f)

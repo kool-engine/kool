@@ -16,7 +16,7 @@ import de.fabmax.kool.scene.geometry.simpleShape
 import de.fabmax.kool.util.ColorGradient
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.TreeMap
-import de.fabmax.kool.util.createUint8Buffer
+import de.fabmax.kool.util.Uint8Buffer
 import kotlin.math.*
 import kotlin.random.Random
 
@@ -327,8 +327,8 @@ class Track(val world: VehicleWorld) : Node() {
         val rand = Random(1337)
         val gradient = ColorGradient(VehicleDemo.color(50, false), VehicleDemo.color(300, false))
         val sz = 128
-        val colorData = createUint8Buffer(sz * sz * 4)
-        val roughnessData = createUint8Buffer(sz * sz)
+        val colorData = Uint8Buffer(sz * sz * 4)
+        val roughnessData = Uint8Buffer(sz * sz)
 
         var c = gradient.getColor(rand.randomF())
         var len = rand.randomI(2, 5)
@@ -337,11 +337,11 @@ class Track(val world: VehicleWorld) : Node() {
                 c = gradient.getColor(rand.randomF())
                 len = rand.randomI(2, 5)
             }
-            colorData[i * 4 + 0] = (c.r * 255f).toInt().toByte()
-            colorData[i * 4 + 1] = (c.g * 255f).toInt().toByte()
-            colorData[i * 4 + 2] = (c.b * 255f).toInt().toByte()
-            colorData[i * 4 + 3] = (c.a * 255f).toInt().toByte()
-            roughnessData[i] = ((1f - c.brightness + 0.2f).clamp(0f, 1f) * 255f).toInt().toByte()
+            colorData[i * 4 + 0] = (c.r * 255f).toInt().toUByte()
+            colorData[i * 4 + 1] = (c.g * 255f).toInt().toUByte()
+            colorData[i * 4 + 2] = (c.b * 255f).toInt().toUByte()
+            colorData[i * 4 + 3] = (c.a * 255f).toInt().toUByte()
+            roughnessData[i] = ((1f - c.brightness + 0.2f).clamp(0f, 1f) * 255f).toInt().toUByte()
         }
 
         val albedoMap = Texture2d(texProps) {

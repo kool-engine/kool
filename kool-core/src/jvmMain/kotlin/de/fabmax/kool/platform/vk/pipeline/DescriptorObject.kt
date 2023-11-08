@@ -3,8 +3,8 @@ package de.fabmax.kool.platform.vk.pipeline
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.platform.vk.*
+import de.fabmax.kool.util.MixedBuffer
 import de.fabmax.kool.util.MixedBufferImpl
-import de.fabmax.kool.util.createMixedBuffer
 import de.fabmax.kool.util.logE
 import kotlinx.coroutines.Deferred
 import org.lwjgl.system.MemoryStack
@@ -26,7 +26,7 @@ abstract class DescriptorObject(val binding: Int, val descriptor: Descriptor) {
 class UboDescriptor(binding: Int, graphicsPipeline: GraphicsPipeline, private val ubo: UniformBuffer) : DescriptorObject(binding, ubo) {
     private val buffer: Buffer
     private val layout = Std140BufferLayout(ubo.uniforms)
-    private val hostBuffer = createMixedBuffer(layout.size) as MixedBufferImpl
+    private val hostBuffer = MixedBuffer(layout.size) as MixedBufferImpl
 
     init {
         val usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT
