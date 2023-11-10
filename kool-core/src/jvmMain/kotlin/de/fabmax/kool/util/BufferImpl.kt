@@ -1,6 +1,10 @@
 package de.fabmax.kool.util
 
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 import java.nio.*
+import java.util.zip.GZIPInputStream
+import java.util.zip.GZIPOutputStream
 
 private typealias NioBuffer = java.nio.Buffer
 
@@ -15,6 +19,16 @@ inline fun <R> Uint16Buffer.useRaw(block: (ShortBuffer) -> R): R = (this as Uint
 inline fun <R> Int32Buffer.useRaw(block: (IntBuffer) -> R): R = (this as Int32BufferImpl).useRaw(block)
 inline fun <R> Float32Buffer.useRaw(block: (FloatBuffer) -> R): R = (this as Float32BufferImpl).useRaw(block)
 inline fun <R> MixedBuffer.useRaw(block: (ByteBuffer) -> R): R = (this as MixedBufferImpl).useRaw(block)
+
+actual fun Uint8Buffer.deflate(): Uint8Buffer {
+    val bos = ByteArrayOutputStream()
+    GZIPOutputStream(bos).use { it.write(toArray()) }
+    return Uint8BufferImpl(bos.toByteArray())
+}
+
+actual fun Uint8Buffer.inflate(): Uint8Buffer {
+    return Uint8BufferImpl(GZIPInputStream(ByteArrayInputStream(toArray())).readBytes())
+}
 
 abstract class GenericBuffer<B: NioBuffer>(
     override val capacity: Int,

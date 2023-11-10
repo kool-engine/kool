@@ -1,7 +1,8 @@
 package de.fabmax.kool
 
-import de.fabmax.kool.util.BufferUtil
 import de.fabmax.kool.util.Uint8Buffer
+import de.fabmax.kool.util.decodeBase64
+import de.fabmax.kool.util.encodeBase64
 import de.fabmax.kool.util.logE
 import kotlinx.browser.localStorage
 import org.w3c.dom.get
@@ -18,7 +19,7 @@ actual object KeyValueStore {
 
     actual fun store(key: String, data: Uint8Buffer): Boolean {
         return try {
-            localStorage[key] = BufferUtil.encodeBase64(data)
+            localStorage[key] = data.encodeBase64()
             true
         } catch (e: Exception) {
             logE { "Failed storing data '$key' to localStorage: $e" }
@@ -37,7 +38,7 @@ actual object KeyValueStore {
     }
 
     actual fun load(key: String): Uint8Buffer? {
-        return localStorage[key]?.let { BufferUtil.decodeBase64(it) }
+        return localStorage[key]?.decodeBase64()
     }
 
     actual fun loadString(key: String): String? {

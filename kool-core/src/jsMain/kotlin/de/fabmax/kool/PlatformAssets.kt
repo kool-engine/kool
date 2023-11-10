@@ -159,7 +159,7 @@ actual object PlatformAssets {
     }
 
     private fun Uint8Buffer.toDataUrl(mimeType: String): String {
-        val base64 = BufferUtil.encodeBase64(this)
+        val base64 = encodeBase64()
         return "data:$mimeType;base64,$base64"
     }
 

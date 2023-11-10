@@ -3,8 +3,8 @@ package de.fabmax.kool.modules.gltf
 import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolException
 import de.fabmax.kool.scene.Model
-import de.fabmax.kool.util.BufferUtil
 import de.fabmax.kool.util.DataStream
+import de.fabmax.kool.util.inflate
 import de.fabmax.kool.util.logW
 
 suspend fun Assets.loadGltfFile(assetPath: String): GltfFile {
@@ -49,7 +49,7 @@ private fun isBinaryGltf(assetPath: String): Boolean {
 private suspend fun Assets.loadGltf(assetPath: String): GltfFile {
     var data = loadBlobAsset(assetPath)
     if (assetPath.endsWith(".gz", true)) {
-        data = BufferUtil.inflate(data)
+        data = data.inflate()
     }
     return GltfFile.fromJson(data.toArray().decodeToString())
 }
@@ -57,7 +57,7 @@ private suspend fun Assets.loadGltf(assetPath: String): GltfFile {
 private suspend fun Assets.loadGlb(assetPath: String): GltfFile {
     var data = loadBlobAsset(assetPath)
     if (assetPath.endsWith(".gz", true)) {
-        data = BufferUtil.inflate(data)
+        data = data.inflate()
     }
     val str = DataStream(data)
 

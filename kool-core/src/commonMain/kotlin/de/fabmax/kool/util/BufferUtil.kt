@@ -1,13 +1,20 @@
 package de.fabmax.kool.util
 
-expect object BufferUtil {
-    fun inflate(zipData: Uint8Buffer): Uint8Buffer
+import kotlin.io.encoding.Base64
 
-    fun deflate(data: Uint8Buffer): Uint8Buffer
+expect fun Uint8Buffer.deflate(): Uint8Buffer
+expect fun Uint8Buffer.inflate(): Uint8Buffer
 
-    fun encodeBase64(data: Uint8Buffer): String
+fun String.decodeBase64(): Uint8Buffer {
+    return Base64.decode(this).toBuffer()
+}
 
-    fun decodeBase64(base64: String): Uint8Buffer
+fun Uint8Buffer.encodeBase64(): String {
+    return Base64.encode(toArray())
+}
+
+fun Uint8Buffer.decodeToString(): String {
+    return toArray().decodeToString()
 }
 
 fun ByteArray.toBuffer(): Uint8Buffer {

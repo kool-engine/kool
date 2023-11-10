@@ -1,6 +1,7 @@
 package de.fabmax.kool.util
 
 import de.fabmax.kool.KoolException
+import de.fabmax.kool.platform.Pako
 import org.khronos.webgl.*
 
 actual fun Uint8Buffer(capacity: Int, isAutoLimit: Boolean): Uint8Buffer = Uint8BufferImpl(capacity, isAutoLimit)
@@ -14,6 +15,16 @@ val Uint16Buffer.len: Int get() = (this as Uint16BufferImpl).len
 val Int32Buffer.len: Int get() = (this as Int32BufferImpl).len
 val Float32Buffer.len: Int get() = (this as Float32BufferImpl).len
 val MixedBuffer.len: Int get() = (this as MixedBufferImpl).len
+
+actual fun Uint8Buffer.deflate(): Uint8Buffer {
+    val uint8Data = (this as Uint8BufferImpl).buffer
+    return Uint8BufferImpl(Pako.gzip(uint8Data))
+}
+
+actual fun Uint8Buffer.inflate(): Uint8Buffer {
+    val uint8Data = (this as Uint8BufferImpl).buffer
+    return Uint8BufferImpl(Pako.inflate(uint8Data))
+}
 
 abstract class GenericBuffer<B: ArrayBufferView>(
     final override val capacity: Int,
