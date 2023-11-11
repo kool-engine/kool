@@ -1,6 +1,7 @@
 package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.PerspectiveCamera
@@ -25,7 +26,7 @@ open class OffscreenRenderPassCube(drawNode: Node, config: Config) : OffscreenRe
 
     val copyTargetsColor = mutableListOf<TextureCube>()
 
-    internal val impl = OffscreenPassCubeImpl(this)
+    internal val impl = KoolSystem.requireContext().backend.createOffscreenPassCube(this)
 
     init {
         if (config.depthRenderTarget == RenderTarget.TEXTURE) {
@@ -96,8 +97,6 @@ open class OffscreenRenderPassCube(drawNode: Node, config: Config) : OffscreenRe
         DOWN(5, Vec3f( 0f, -1f,  0f), Vec3f.NEG_Z_AXIS),
     }
 }
-
-expect fun OffscreenPassCubeImpl(offscreenPass: OffscreenRenderPassCube): OffscreenPassCubeImpl
 
 interface OffscreenPassCubeImpl {
     fun applySize(width: Int, height: Int, ctx: KoolContext)

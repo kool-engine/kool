@@ -185,7 +185,7 @@ class VkOffscreenPass2d(val parentPass: OffscreenRenderPass2d) : OffscreenPass2d
     }
 
     private fun create(ctx: Lwjgl3Context) {
-        val sys = (ctx.renderBackend as VkRenderBackend).vkSystem
+        val sys = (ctx.backend as VkRenderBackend).vkSystem
         val pass = parentPass
         val width = parentPass.width
         val height = parentPass.height
@@ -279,7 +279,7 @@ class VkOffscreenPass2d(val parentPass: OffscreenRenderPass2d) : OffscreenPass2d
     }
 
     private fun Texture2d.createCopyTexColor(ctx: Lwjgl3Context) {
-        val vkBackend = ctx.renderBackend as VkRenderBackend
+        val vkBackend = ctx.backend as VkRenderBackend
         val prev = loadedTexture
         if (prev != null) {
             launchDelayed(3) {

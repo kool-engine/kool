@@ -22,7 +22,7 @@ class OffscreenPassCubeGl(val parentPass: OffscreenRenderPassCube) : OffscreenPa
             create(ctx)
         }
 
-        val glBackend = ctx.renderBackend as GlRenderBackend
+        val glBackend = ctx.backend as GlRenderBackend
         val pass = parentPass
         for (mipLevel in 0 until pass.mipLevels) {
             pass.onSetupMipLevel?.invoke(mipLevel, ctx)

@@ -39,7 +39,7 @@ class LoadedTextureGl(val ctx: Lwjgl3Context, val target: Int, val texture: Int,
             glTexParameteri(target, GL_TEXTURE_WRAP_R, props.addressModeW.glAddressMode())
         }
 
-        val backend = ctx.renderBackend as GlRenderBackend
+        val backend = ctx.backend as GlRenderBackend
         val anisotropy = min(props.maxAnisotropy, backend.glCapabilities.maxAnisotropy)
         if (anisotropy > 1) {
             glTexParameteri(target, backend.glCapabilities.glTextureMaxAnisotropyExt, anisotropy)

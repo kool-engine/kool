@@ -174,7 +174,7 @@ class VkOffscreenPassCube(val parentPass: OffscreenRenderPassCube) : OffscreenPa
     }
 
     private fun create(ctx: Lwjgl3Context) {
-        val sys = (ctx.renderBackend as VkRenderBackend).vkSystem
+        val sys = (ctx.backend as VkRenderBackend).vkSystem
         val pass = parentPass
         val rp = VkOffscreenRenderPass(sys, pass.size.x, pass.size.y, true, pass.colorAttachments[0].colorFormat.vkFormat)
         createTex(rp, sys)
@@ -212,7 +212,7 @@ class VkOffscreenPassCube(val parentPass: OffscreenRenderPassCube) : OffscreenPa
     }
 
     private fun TextureCube.createCopyTexColor(ctx: Lwjgl3Context) {
-        val vkBackend = ctx.renderBackend as VkRenderBackend
+        val vkBackend = ctx.backend as VkRenderBackend
         val prev = loadedTexture
         if (prev != null) {
             launchDelayed(3) {

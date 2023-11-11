@@ -5,13 +5,13 @@ import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logE
 import org.lwjgl.vulkan.VK10
 
-actual class ShaderCode private constructor(private val vkCode: VkCode?, private val glCode: GlCode?) {
+class ShaderCodeImpl private constructor(private val vkCode: VkCode?, private val glCode: GlCode?): ShaderCode {
 
     constructor(vararg stages: ShaderStage): this(VkCode(stages.asList()), null)
     constructor(vkCode: VkCode): this(vkCode, null)
     constructor(glCode: GlCode): this(null, glCode)
 
-    actual val longHash: ULong = vkCode?.longHash ?: glCode!!.longHash
+    override val longHash: Long = vkCode?.longHash?.toLong() ?: glCode!!.longHash.toLong()
 
     val vkStages: List<ShaderStage>
         get() = vkCode!!.stages
@@ -40,7 +40,7 @@ actual class ShaderCode private constructor(private val vkCode: VkCode?, private
                 val vertShaderCode = ShaderStage.fromSource("vertShader", vertShaderSrc, VK10.VK_SHADER_STAGE_VERTEX_BIT)
                 val fragShaderCode = ShaderStage.fromSource("fragShader", fragShaderSrc, VK10.VK_SHADER_STAGE_FRAGMENT_BIT)
                 logD("ShaderCode") { "Successfully compiled shader: vertShader: ${vertShaderCode.code.size} bytes, fragShader: ${fragShaderCode.code.size} bytes" }
-                return ShaderCode(vertShaderCode, fragShaderCode)
+                return ShaderCodeImpl(vertShaderCode, fragShaderCode)
             } catch (e: Exception) {
                 logE { "Compilation failed: $e" }
                 dumpCode(vertShaderSrc, fragShaderSrc)
@@ -49,7 +49,7 @@ actual class ShaderCode private constructor(private val vkCode: VkCode?, private
         }
 
         fun glCodeFromSource(vertexShaderSource: String, fraqmentShaderSource: String): ShaderCode {
-            return ShaderCode(GlCode(vertexShaderSource, fraqmentShaderSource))
+            return ShaderCodeImpl(GlCode(vertexShaderSource, fraqmentShaderSource))
         }
 
         fun dumpCode(vertShader: String, fragShader: String) {

@@ -1,12 +1,13 @@
 package de.fabmax.kool.platform.vk
 
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.platform.GlfwWindow
 import de.fabmax.kool.platform.Lwjgl3Context
-import de.fabmax.kool.platform.RenderBackend
+import de.fabmax.kool.platform.RenderBackendJvm
 import de.fabmax.kool.platform.vk.util.bitValue
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Viewport
@@ -22,7 +23,7 @@ import java.nio.LongBuffer
 import java.util.*
 import kotlin.math.max
 
-class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackend {
+class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
     override val apiName: String
     override val deviceName: String
 
@@ -93,19 +94,19 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackend {
         }
         val codeKey = src.vertexSrc + src.fragmentSrc
         return shaderCodes.getOrPut(codeKey) {
-            ShaderCode.vkCodeFromSource(src.vertexSrc, src.fragmentSrc)
+            ShaderCodeImpl.vkCodeFromSource(src.vertexSrc, src.fragmentSrc)
         }
     }
 
-    override fun drawFrame(ctx: Lwjgl3Context) {
+    override fun renderFrame(ctx: KoolContext) {
         vkSystem.renderLoop.drawFrame()
     }
 
-    override fun close(ctx: Lwjgl3Context) {
+    override fun close(ctx: KoolContext) {
         glfwSetWindowShouldClose(vkSystem.window.windowPtr, true)
     }
 
-    override fun cleanup(ctx: Lwjgl3Context) {
+    override fun cleanup(ctx: KoolContext) {
         vkDeviceWaitIdle(vkSystem.device.vkDevice)
         vkSystem.destroy()
     }
@@ -440,7 +441,7 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackend {
                             ctx.engineStats.addPrimitiveCount(cmd.mesh.geometry.numPrimitives * instanceCnt)
                         }
                     }
-                    cmd.mesh.drawTime = (System.nanoTime() - t) / 1e6
+                    cmd.mesh.drawTime = (System.nanoTime() - t) / 1e9
                 }
             }
         }

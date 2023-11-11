@@ -2,12 +2,13 @@ package de.fabmax.kool
 
 import de.fabmax.kool.input.KeyboardInput
 import de.fabmax.kool.input.PointerInput
-import de.fabmax.kool.math.MutableMat4f
+import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ui2.UiScale
 import de.fabmax.kool.pipeline.OffscreenRenderPass
 import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.pipeline.ShaderCode
+import de.fabmax.kool.pipeline.backend.RenderBackend
 import de.fabmax.kool.pipeline.ibl.BrdfLutPass
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Profiling
@@ -49,40 +50,17 @@ abstract class KoolContext {
             }
         }
 
-    @Deprecated("AssetManager is an object now", ReplaceWith("Assets"))
-    val assetMgr = Assets
-
-    @Deprecated("InputManager is an object now", ReplaceWith("PointerInput"))
-    val inputMgr = PointerInput
+    abstract val backend: RenderBackend
 
     val engineStats = EngineStats()
 
-    val projCorrectionMatrix = MutableMat4f()
-    val depthBiasMatrix = MutableMat4f().translate(0.5f, 0.5f, 0.5f).scale(0.5f)
+    val projCorrectionMatrix: Mat4f get() = backend.projCorrectionMatrix
+    val depthBiasMatrix: Mat4f get() = backend.depthBiasMatrix
 
     var applicationCallbacks: ApplicationCallbacks = object : ApplicationCallbacks { }
     val onWindowScaleChanged = mutableListOf<(KoolContext) -> Unit>()
     val onWindowFocusChanged = mutableListOf<(KoolContext) -> Unit>()
     val onRender = mutableListOf<(KoolContext) -> Unit>()
-
-    /**
-     * Run time of this render context in seconds. This is the wall clock time between now and the first time render()
-     * was called.
-     */
-    @Deprecated("Replaced by Time.gameTime", replaceWith = ReplaceWith("de.fabmax.kool.util.Time.gameTime"))
-    val time: Double get() = Time.gameTime
-
-    /**
-     * Time between current and last call of render() in seconds.
-     */
-    @Deprecated("Replaced by Time.deltaT", replaceWith = ReplaceWith("de.fabmax.kool.util.Time.deltaT"))
-    val deltaT: Float get() = Time.deltaT
-
-    /**
-     * Number of rendered frames.
-     */
-    @Deprecated("Replaced by Time.frameCount", replaceWith = ReplaceWith("de.fabmax.kool.util.Time.frameCount"))
-    val frameIdx: Int get() = Time.frameCount
 
     /**
      * Frames per second (averaged over last 25 frames)
@@ -112,13 +90,19 @@ abstract class KoolContext {
 
     abstract fun run()
 
-    abstract fun close()
+    open fun close() {
+        backend.close(this)
+    }
 
-    abstract fun generateKslShader(shader: KslShader, pipelineLayout: Pipeline.Layout): ShaderCode
+    fun generateKslShader(shader: KslShader, pipelineLayout: Pipeline.Layout): ShaderCode {
+        return backend.generateKslShader(shader, pipelineLayout)
+    }
 
     abstract fun getSysInfos(): List<String>
 
-    abstract fun getWindowViewport(result: Viewport)
+    fun getWindowViewport(result: Viewport) {
+        backend.getWindowViewport(result)
+    }
 
     fun disposePipeline(pipeline: Pipeline) {
         disposablePipelines += pipeline

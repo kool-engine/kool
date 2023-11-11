@@ -26,7 +26,7 @@ class OffscreenPass2dGl(val parentPass: OffscreenRenderPass2d) : OffscreenPass2d
         }
 
         if (isCreated) {
-            val glBackend = ctx.renderBackend as GlRenderBackend
+            val glBackend = ctx.backend as GlRenderBackend
             val pass = parentPass
             for (mipLevel in 0 until renderMipLevels) {
                 pass.onSetupMipLevel?.invoke(mipLevel, ctx)

@@ -140,7 +140,7 @@ open class Mesh(var geometry: IndexedVertexList, name: String? = null) : Node(na
     private var lastGeomUpdateFrame = -1
 
     /**
-     * Time the latest draw call took (in ms).
+     * Time the latest draw call took (in seconds).
      */
     var drawTime = 0.0
         internal set

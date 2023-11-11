@@ -16,7 +16,7 @@ internal actual object PlatformInput {
 
     actual fun setCursorMode(cursorMode: CursorMode) {
         val ctx = KoolSystem.getContextOrNull() as Lwjgl3Context? ?: return
-        val windowHandle = ctx.renderBackend.glfwWindow.windowPtr
+        val windowHandle = ctx.backend.glfwWindow.windowPtr
 
         if (cursorMode == CursorMode.NORMAL || ctx.isWindowFocused) {
             GLFW.glfwSetInputMode(windowHandle, GLFW.GLFW_CURSOR, cursorMode.glfwMode)
@@ -25,7 +25,7 @@ internal actual object PlatformInput {
 
     actual fun applyCursorShape(cursorShape: CursorShape) {
         val ctx = KoolSystem.requireContext() as Lwjgl3Context? ?: return
-        val windowHandle = ctx.renderBackend.glfwWindow.windowPtr
+        val windowHandle = ctx.backend.glfwWindow.windowPtr
 
         if (cursorShape != currentCursorShape) {
             GLFW.glfwSetCursor(windowHandle, cursorShapes[cursorShape] ?: 0L)
@@ -37,7 +37,7 @@ internal actual object PlatformInput {
         deriveLocalKeyCodes()
         createStandardCursors()
 
-        val windowHandle = ctx.renderBackend.glfwWindow.windowPtr
+        val windowHandle = ctx.backend.glfwWindow.windowPtr
         installInputHandlers(windowHandle)
 
         ctx.onWindowFocusChanged += {
@@ -68,8 +68,6 @@ internal actual object PlatformInput {
         printableKeys += GLFW.GLFW_KEY_LEFT_BRACKET
         printableKeys += GLFW.GLFW_KEY_RIGHT_BRACKET
         printableKeys += GLFW.GLFW_KEY_BACKSLASH
-        //printableKeys += GLFW.GLFW_KEY_WORLD_1
-        printableKeys += GLFW.GLFW_KEY_WORLD_2
         printableKeys += GLFW.GLFW_KEY_KP_DECIMAL
         printableKeys += GLFW.GLFW_KEY_KP_DIVIDE
         printableKeys += GLFW.GLFW_KEY_KP_MULTIPLY

@@ -4,12 +4,9 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.input.PlatformInput
 import de.fabmax.kool.math.clamp
-import de.fabmax.kool.modules.ksl.KslShader
-import de.fabmax.kool.pipeline.Pipeline
-import de.fabmax.kool.platform.gl.GlRenderBackend
+import de.fabmax.kool.pipeline.backend.gl.RenderBackendGlImpl
 import de.fabmax.kool.platform.vk.VkRenderBackend
 import de.fabmax.kool.util.RenderLoopCoroutineDispatcher
-import de.fabmax.kool.util.Viewport
 import org.lwjgl.glfw.GLFW.glfwPollEvents
 import org.lwjgl.glfw.GLFW.glfwWindowShouldClose
 import java.awt.Desktop
@@ -22,18 +19,18 @@ import kotlin.math.min
  * @author fabmax
  */
 class Lwjgl3Context : KoolContext() {
-    val renderBackend: RenderBackend
+    override val backend: RenderBackendJvm
 
     override val isJavascript = false
     override val isJvm = true
 
     override val windowWidth: Int
-        get() = renderBackend.glfwWindow.framebufferWidth
+        get() = backend.glfwWindow.framebufferWidth
     override val windowHeight: Int
-        get() = renderBackend.glfwWindow.framebufferHeight
+        get() = backend.glfwWindow.framebufferHeight
     override var isFullscreen: Boolean
-        get() = renderBackend.glfwWindow.isFullscreen
-        set(value) { renderBackend.glfwWindow.isFullscreen = value }
+        get() = backend.glfwWindow.isFullscreen
+        set(value) { backend.glfwWindow.isFullscreen = value }
 
     var maxFrameRate = KoolSystem.config.maxFrameRate
     var windowNotFocusedFrameRate = KoolSystem.config.windowNotFocusedFrameRate
@@ -77,34 +74,32 @@ class Lwjgl3Context : KoolContext() {
     }
 
     init {
-        renderBackend = if (KoolSystem.config.renderBackend == Backend.VULKAN) {
+        backend = if (KoolSystem.config.renderBackend == Backend.VULKAN) {
             VkRenderBackend(this)
         } else {
-            GlRenderBackend(this)
+            RenderBackendGlImpl(this)
+            //GlRenderBackend(this)
         }
 
-        projCorrectionMatrix.set(renderBackend.projCorrectionMatrix)
-        depthBiasMatrix.set(renderBackend.depthBiasMatrix)
-
-        SysInfo.set(renderBackend.apiName, renderBackend.deviceName)
+        SysInfo.set(backend.apiName, backend.deviceName)
 
         PlatformInput.onContextCreated(this)
         KoolSystem.onContextCreated(this)
     }
 
-    fun setWindowTitle(windowTitle: String) = renderBackend.glfwWindow.setWindowTitle(windowTitle)
+    fun setWindowTitle(windowTitle: String) = backend.glfwWindow.setWindowTitle(windowTitle)
 
-    fun setWindowIcon(icon: List<BufferedImage>) = renderBackend.glfwWindow.setWindowIcon(icon)
+    fun setWindowIcon(icon: List<BufferedImage>) = backend.glfwWindow.setWindowIcon(icon)
 
     override fun openUrl(url: String, sameWindow: Boolean)  = Desktop.getDesktop().browse(URI(url))
 
     override fun run() {
-        while (!glfwWindowShouldClose(renderBackend.glfwWindow.windowPtr)) {
+        while (!glfwWindowShouldClose(backend.glfwWindow.windowPtr)) {
             SysInfo.update()
-            renderBackend.glfwWindow.pollEvents()
+            backend.glfwWindow.pollEvents()
             renderFrame()
         }
-        renderBackend.cleanup(this)
+        backend.cleanup(this)
     }
 
     internal fun renderFrame() {
@@ -124,7 +119,8 @@ class Lwjgl3Context : KoolContext() {
 
         // execute draw queues
         engineStats.resetPerFrameCounts()
-        renderBackend.drawFrame(this)
+
+        backend.renderFrame(this)
     }
 
     private fun checkFrameRateLimits(prevTime: Long) {
@@ -141,7 +137,7 @@ class Lwjgl3Context : KoolContext() {
     }
 
     private fun delayFrameRender(untilFocused: Long, untilUnfocused: Long) {
-        while (!glfwWindowShouldClose(renderBackend.glfwWindow.windowPtr)) {
+        while (!glfwWindowShouldClose(backend.glfwWindow.windowPtr)) {
             val t = System.nanoTime()
             val isFocused = isWindowFocused || PlatformInput.isMouseOverWindow
             if ((isFocused && t >= untilFocused) || (!isFocused && t >= untilUnfocused)) {
@@ -161,17 +157,7 @@ class Lwjgl3Context : KoolContext() {
         }
     }
 
-    override fun close() {
-        renderBackend.close(this)
-    }
-
-    override fun generateKslShader(shader: KslShader, pipelineLayout: Pipeline.Layout) = renderBackend.generateKslShader(shader, pipelineLayout)
-
     override fun getSysInfos(): List<String> = SysInfo.lines
-
-    override fun getWindowViewport(result: Viewport) {
-        renderBackend.getWindowViewport(result)
-    }
 
     enum class Backend(val displayName: String) {
         VULKAN("Vulkan"),

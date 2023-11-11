@@ -1,21 +1,23 @@
-package de.fabmax.kool.platform.gl
+package de.fabmax.kool.pipeline.backend.gl
 
 import de.fabmax.kool.KoolException
 import de.fabmax.kool.pipeline.Pipeline
-import de.fabmax.kool.pipeline.ShaderCode
-import de.fabmax.kool.pipeline.ShaderCodeImpl
+import de.fabmax.kool.pipeline.ShaderCodeGl
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
-import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.util.logE
-import org.lwjgl.opengl.GL20.*
 
-class ShaderManager(val renderBackend: GlRenderBackend, val ctx: Lwjgl3Context) {
+class ShaderManager(val backend: RenderBackendGl) {
     val shaders = mutableMapOf<Pipeline, CompiledShader>()
     var currentShader: CompiledShader? = null
 
+    private val gl: GlApi = backend.gl
+
     fun setupShader(cmd: DrawCommand): CompiledShader.ShaderInstance? {
         val pipeline = cmd.pipeline!!
-        val shader = shaders.getOrPut(pipeline) { CompiledShader(compileShader(pipeline.shaderCode), pipeline, renderBackend, ctx) }
+        val shader = shaders.getOrPut(pipeline) {
+            val code = pipeline.shaderCode as ShaderCodeGl
+            CompiledShader(compileShader(code), pipeline, backend)
+        }
         if (shader !== currentShader) {
             currentShader?.unUse()
             currentShader = shader
@@ -39,42 +41,40 @@ class ShaderManager(val renderBackend: GlRenderBackend, val ctx: Lwjgl3Context) 
         }
     }
 
-    private fun compileShader(code: ShaderCode): Int {
-        code as ShaderCodeImpl
-
-        val vert = glCreateShader(GL_VERTEX_SHADER)
-        glShaderSource(vert, code.glVertexSrc)
-        glCompileShader(vert)
-        val vsStatus = glGetShaderi(vert, GL_COMPILE_STATUS)
-        if (vsStatus != GL_TRUE) {
-            val log = glGetShaderInfoLog(vert)
+    private fun compileShader(code: ShaderCodeGl): GlProgram {
+        val vert = gl.createShader(gl.VERTEX_SHADER)
+        gl.shaderSource(vert, code.vertexSrc)
+        gl.compileShader(vert)
+        val vsStatus = gl.getShaderParameter(vert, gl.COMPILE_STATUS)
+        if (vsStatus != gl.TRUE) {
+            val log = gl.getShaderInfoLog(vert)
             logE { "Vertex shader compilation failed:\n$log" }
-            logE { "Shader source: \n${formatShaderSrc(code.glVertexSrc)}" }
+            logE { "Vertex shader source: \n${formatShaderSrc(code.vertexSrc)}" }
             throw KoolException("Vertex shader compilation failed: $log")
         }
 
-        val frag = glCreateShader(GL_FRAGMENT_SHADER)
-        glShaderSource(frag, code.glFragmentSrc)
-        glCompileShader(frag)
-        val fsStatus = glGetShaderi(frag, GL_COMPILE_STATUS)
-        if (fsStatus != GL_TRUE) {
-            val log = glGetShaderInfoLog(frag)
+        val frag = gl.createShader(gl.FRAGMENT_SHADER)
+        gl.shaderSource(frag, code.fragmentSrc)
+        gl.compileShader(frag)
+        val fsStatus = gl.getShaderParameter(frag, gl.COMPILE_STATUS)
+        if (fsStatus != gl.TRUE) {
+            val log = gl.getShaderInfoLog(frag)
             logE { "Fragment shader compilation failed:\n$log" }
-            logE { "Shader source: \n${formatShaderSrc(code.glFragmentSrc)}" }
+            logE { "Fragment shader source: \n${formatShaderSrc(code.fragmentSrc)}" }
             throw KoolException("Fragment shader compilation failed: $log")
         }
 
-        val prog = glCreateProgram()
-        glAttachShader(prog, vert)
-        glAttachShader(prog, frag)
-        glLinkProgram(prog)
-        glDeleteShader(vert)
-        glDeleteShader(frag)
-        if (glGetProgrami(prog, GL_LINK_STATUS) != GL_TRUE) {
-            val log = glGetProgramInfoLog(prog)
+        val prog = gl.createProgram()
+        gl.attachShader(prog, vert)
+        gl.attachShader(prog, frag)
+        gl.linkProgram(prog)
+        gl.deleteShader(vert)
+        gl.deleteShader(frag)
+        if (gl.getProgramParameter(prog, gl.LINK_STATUS) != gl.TRUE) {
+            val log = gl.getProgramInfoLog(prog)
             logE { "Shader linkage failed:\n$log" }
-            logE { "Vertex shader source: \n${formatShaderSrc(code.glVertexSrc)}" }
-            logE { "Fragment shader source: \n${formatShaderSrc(code.glFragmentSrc)}" }
+            logE { "Vertex shader source: \n${formatShaderSrc(code.vertexSrc)}" }
+            logE { "Fragment shader source: \n${formatShaderSrc(code.fragmentSrc)}" }
             throw KoolException("Shader linkage failed: $log")
         }
         return prog

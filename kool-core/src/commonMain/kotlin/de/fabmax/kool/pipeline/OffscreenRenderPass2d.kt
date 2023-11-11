@@ -1,6 +1,7 @@
 package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.PerspectiveCamera
@@ -30,7 +31,7 @@ open class OffscreenRenderPass2d(drawNode: Node, config: Config) : OffscreenRend
     var clearDepth: Boolean by mainView::clearDepth
     var isUpdateDrawNode: Boolean by mainView::isUpdateDrawNode
 
-    internal val impl = OffscreenPass2dImpl(this)
+    internal val impl = KoolSystem.requireContext().backend.createOffscreenPass2d(this)
 
     fun addView(name: String, camera: Camera): View {
         val view = View(name, camera, Array(colorAttachments.size) { null })
@@ -89,8 +90,6 @@ open class OffscreenRenderPass2d(drawNode: Node, config: Config) : OffscreenRend
         }
     }
 }
-
-expect fun OffscreenPass2dImpl(offscreenPass: OffscreenRenderPass2d): OffscreenPass2dImpl
 
 interface OffscreenPass2dImpl {
     fun applySize(width: Int, height: Int, ctx: KoolContext)

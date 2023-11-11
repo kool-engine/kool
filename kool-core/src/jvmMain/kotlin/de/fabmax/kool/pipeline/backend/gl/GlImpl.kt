@@ -1,0 +1,271 @@
+package de.fabmax.kool.pipeline.backend.gl
+
+import de.fabmax.kool.pipeline.TextureData
+import de.fabmax.kool.pipeline.TextureData1d
+import de.fabmax.kool.pipeline.TextureData2d
+import de.fabmax.kool.platform.gl.glFormat
+import de.fabmax.kool.platform.gl.glInternalFormat
+import de.fabmax.kool.platform.gl.glType
+import de.fabmax.kool.util.*
+import org.lwjgl.opengl.GL30
+import org.lwjgl.opengl.GL31.*
+import org.lwjgl.opengl.GL33.glVertexAttribDivisor
+import org.lwjgl.opengl.GL42.glTexStorage2D
+import org.lwjgl.system.MemoryStack
+import java.nio.ByteBuffer
+
+object GlImpl : GlApi {
+    override val ARRAY_BUFFER = GL_ARRAY_BUFFER
+    override val BACK = GL_BACK
+    override val BLEND = GL_BLEND
+    override val CLAMP_TO_EDGE = GL_CLAMP_TO_EDGE
+    override val COLOR = GL_COLOR
+    override val COLOR_ATTACHMENT0 = GL_COLOR_ATTACHMENT0
+    override val COLOR_BUFFER_BIT = GL_COLOR_BUFFER_BIT
+    override val COMPARE_REF_TO_TEXTURE = GL_COMPARE_REF_TO_TEXTURE
+    override val COMPILE_STATUS = GL_COMPILE_STATUS
+    override val CULL_FACE = GL_CULL_FACE
+    override val DEPTH_ATTACHMENT = GL_DEPTH_ATTACHMENT
+    override val DEPTH_BUFFER_BIT = GL_DEPTH_BUFFER_BIT
+    override val DEPTH_COMPONENT24 = GL_DEPTH_COMPONENT24
+    override val DEPTH_COMPONENT32F = GL_DEPTH_COMPONENT32F
+    override val DEPTH_TEST = GL_DEPTH_TEST
+    override val DYNAMIC_DRAW = GL_DYNAMIC_DRAW
+    override val ELEMENT_ARRAY_BUFFER = GL_ELEMENT_ARRAY_BUFFER
+    override val FRAGMENT_SHADER = GL_FRAGMENT_SHADER
+    override val FRAMEBUFFER = GL_FRAMEBUFFER
+    override val FRONT = GL_FRONT
+    override val INVALID_INDEX = GL_INVALID_INDEX
+    override val LINEAR = GL_LINEAR
+    override val LINEAR_MIPMAP_LINEAR = GL_LINEAR_MIPMAP_LINEAR
+    override val LINES = GL_LINES
+    override val LINK_STATUS = GL_LINK_STATUS
+    override val MIRRORED_REPEAT = GL_MIRRORED_REPEAT
+    override val NEAREST = GL_NEAREST
+    override val NEAREST_MIPMAP_NEAREST = GL_NEAREST_MIPMAP_NEAREST
+    override val NONE = GL_NONE
+    override val ONE = GL_ONE
+    override val ONE_MINUS_SRC_ALPHA = GL_ONE_MINUS_SRC_ALPHA
+    override val POINTS = GL_POINTS
+    override val RENDERBUFFER = GL_RENDERBUFFER
+    override val REPEAT = GL_REPEAT
+    override val SRC_ALPHA = GL_SRC_ALPHA
+    override val STATIC_DRAW = GL_STATIC_DRAW
+    override val TEXTURE_2D = GL_TEXTURE_2D
+    override val TEXTURE_3D = GL_TEXTURE_3D
+    override val TEXTURE_COMPARE_MODE = GL_TEXTURE_COMPARE_MODE
+    override val TEXTURE_COMPARE_FUNC = GL_TEXTURE_COMPARE_FUNC
+    override val TEXTURE_CUBE_MAP = GL_TEXTURE_CUBE_MAP
+    override val TEXTURE_CUBE_MAP_POSITIVE_X = GL_TEXTURE_CUBE_MAP_POSITIVE_X
+    override val TEXTURE_CUBE_MAP_NEGATIVE_X = GL_TEXTURE_CUBE_MAP_NEGATIVE_X
+    override val TEXTURE_CUBE_MAP_POSITIVE_Y = GL_TEXTURE_CUBE_MAP_POSITIVE_Y
+    override val TEXTURE_CUBE_MAP_NEGATIVE_Y = GL_TEXTURE_CUBE_MAP_NEGATIVE_Y
+    override val TEXTURE_CUBE_MAP_POSITIVE_Z = GL_TEXTURE_CUBE_MAP_POSITIVE_Z
+    override val TEXTURE_CUBE_MAP_NEGATIVE_Z = GL_TEXTURE_CUBE_MAP_NEGATIVE_Z
+    override val TEXTURE_MAG_FILTER = GL_TEXTURE_MAG_FILTER
+    override val TEXTURE_MIN_FILTER = GL_TEXTURE_MIN_FILTER
+    override val TEXTURE_WRAP_R = GL_TEXTURE_WRAP_R
+    override val TEXTURE_WRAP_S = GL_TEXTURE_WRAP_S
+    override val TEXTURE_WRAP_T = GL_TEXTURE_WRAP_T
+    override val TEXTURE0 = GL_TEXTURE0
+    override val TRIANGLES = GL_TRIANGLES
+    override val TRUE = GL_TRUE
+    override val UNIFORM_BLOCK_DATA_SIZE = GL_UNIFORM_BLOCK_DATA_SIZE
+    override val UNIFORM_BUFFER = GL_UNIFORM_BUFFER
+    override val UNIFORM_OFFSET = GL_UNIFORM_OFFSET
+    override val VERTEX_SHADER = GL_VERTEX_SHADER
+
+    override val INT = GL_INT
+    override val FLOAT = GL_FLOAT
+    override val UNSIGNED_BYTE = GL_UNSIGNED_BYTE
+    override val UNSIGNED_INT = GL_UNSIGNED_INT
+
+    override val RED = GL_RED
+    override val RG = GL_RG
+    override val RGB = GL_RGB
+    override val RGBA = GL_RGBA
+
+    override val R8 = GL_R8
+    override val RG8 = GL_RG8
+    override val RGB8 = GL_RGB8
+    override val RGBA8 = GL_RGBA8
+    override val R16F = GL_R16F
+    override val RG16F = GL_RG16F
+    override val RGB16F = GL_RGB16F
+    override val RGBA16F = GL_RGBA16F
+    override val R32F = GL_R32F
+    override val RG32F = GL_RG32F
+    override val RGB32F = GL_RGB32F
+    override val RGBA32F = GL_RGBA32F
+
+    override val ALWAYS = GL_ALWAYS
+    override val NEVER = GL_NEVER
+    override val LESS = GL_LESS
+    override val LEQUAL = GL_LEQUAL
+    override val GREATER = GL_GREATER
+    override val GEQUAL = GL_GEQUAL
+    override val EQUAL = GL_EQUAL
+    override val NOTEQUAL = GL_NOTEQUAL
+
+    override val NULL_BUFFER: GlBuffer = GlBuffer(GL_NONE)
+    override val NULL_FRAMEBUFFER: GlFramebuffer = GlFramebuffer(GL_NONE)
+    override val NULL_TEXTURE: GlTexture = GlTexture(0)
+
+    override fun activeTexture(texture: Int) = glActiveTexture(texture)
+    override fun attachShader(program: GlProgram, shader: GlShader) = glAttachShader(program.handle, shader.handle)
+    override fun bindBuffer(target: Int, buffer: GlBuffer) = glBindBuffer(target, buffer.handle)
+    override fun bindBufferBase(target: Int, index: Int, buffer: GlBuffer) = glBindBufferBase(target, index, buffer.handle)
+    override fun bindFramebuffer(target: Int, framebuffer: GlFramebuffer) = glBindFramebuffer(target, framebuffer.handle)
+    override fun bindRenderbuffer(target: Int, renderbuffer: GlRenderbuffer) = glBindRenderbuffer(target, renderbuffer.handle)
+    override fun bindTexture(target: Int, texture: GlTexture) = glBindTexture(target, texture.handle)
+    override fun blendFunc(sFactor: Int, dFactor: Int) = glBlendFunc(sFactor, dFactor)
+    override fun bufferData(target: Int, buffer: Uint8Buffer, usage: Int) = buffer.useRaw { glBufferData(target, it, usage) }
+    override fun bufferData(target: Int, buffer: Uint16Buffer, usage: Int) = buffer.useRaw { glBufferData(target, it, usage) }
+    override fun bufferData(target: Int, buffer: Int32Buffer, usage: Int) = buffer.useRaw { glBufferData(target, it, usage) }
+    override fun bufferData(target: Int, buffer: Float32Buffer, usage: Int) = buffer.useRaw { glBufferData(target, it, usage) }
+    override fun bufferData(target: Int, buffer: MixedBuffer, usage: Int) = buffer.useRaw { glBufferData(target, it, usage) }
+    override fun clear(mask: Int) = glClear(mask)
+    override fun clearBufferfv(buffer: Int, drawBuffer: Int, values: Float32Buffer) = values.useRaw { glClearBufferfv(buffer, drawBuffer, it) }
+    override fun clearColor(r: Float, g: Float, b: Float, a: Float) = glClearColor(r, g, b, a)
+    override fun createBuffer(): GlBuffer = GlBuffer(glGenBuffers())
+    override fun createFramebuffer(): GlFramebuffer = GlFramebuffer(glGenFramebuffers())
+    override fun createProgram(): GlProgram = GlProgram(glCreateProgram())
+    override fun createRenderbuffer(): GlRenderbuffer = GlRenderbuffer(glGenRenderbuffers())
+    override fun createShader(type: Int): GlShader = GlShader(glCreateShader(type))
+    override fun createTexture(): GlTexture = GlTexture(glGenTextures())
+    override fun compileShader(shader: GlShader) = glCompileShader(shader.handle)
+    override fun copyTexSubImage2D(target: Int, level: Int, xoffset: Int, yoffset: Int, x: Int, y: Int, width: Int, height: Int) = glCopyTexSubImage2D(target, level, xoffset, yoffset, x, y, width, height)
+    override fun cullFace(mode: Int) = glCullFace(mode)
+    override fun deleteBuffer(buffer: GlBuffer) = glDeleteBuffers(buffer.handle)
+    override fun deleteFramebuffer(framebuffer: GlFramebuffer) = glDeleteFramebuffers(framebuffer.handle)
+    override fun deleteProgram(program: GlProgram) = glDeleteProgram(program.handle)
+    override fun deleteRenderbuffer(renderbuffer: GlRenderbuffer) = glDeleteRenderbuffers(renderbuffer.handle)
+    override fun deleteShader(shader: GlShader) = glDeleteShader(shader.handle)
+    override fun deleteTexture(texture: GlTexture) = glDeleteTextures(texture.handle)
+    override fun depthFunc(func: Int) = glDepthFunc(func)
+    override fun depthMask(flag: Boolean) = glDepthMask(flag)
+    override fun disable(cap: Int) = glDisable(cap)
+    override fun disableVertexAttribArray(index: Int) = glDisableVertexAttribArray(index)
+    override fun drawBuffers(buffers: IntArray) = glDrawBuffers(buffers)
+    override fun drawElements(mode: Int, count: Int, type: Int) = glDrawElements(mode, count, type, 0L)
+    override fun drawElementsInstanced(mode: Int, count: Int, type: Int, instanceCount: Int) = glDrawElementsInstanced(mode, count, type, 0L, instanceCount)
+    override fun enable(cap: Int) = glEnable(cap)
+    override fun enableVertexAttribArray(index: Int) = glEnableVertexAttribArray(index)
+    override fun framebufferRenderbuffer(target: Int, attachment: Int, renderbuffertarget: Int, renderbuffer: GlRenderbuffer) = glFramebufferRenderbuffer(target, attachment, renderbuffertarget, renderbuffer.handle)
+    override fun framebufferTexture2D(target: Int, attachment: Int, textarget: Int, texture: GlTexture, level: Int) = glFramebufferTexture2D(target, attachment, textarget, texture.handle, level)
+    override fun generateMipmap(target: Int) = glGenerateMipmap(target)
+    override fun getActiveUniformBlockParameter(program: GlProgram, uniformBlockIndex: Int, pName: Int): Int = glGetActiveUniformBlocki(program.handle, uniformBlockIndex, pName)
+    override fun getActiveUniforms(program: GlProgram, uniformIndices: IntArray, pName: Int): IntArray = getActiveUniformsImpl(program, uniformIndices, pName)
+    override fun getProgramParameter(program: GlProgram, param: Int): Int = glGetProgrami(program.handle, param)
+    override fun getProgramInfoLog(program: GlProgram): String = glGetProgramInfoLog(program.handle)
+    override fun getShaderInfoLog(shader: GlShader): String = glGetShaderInfoLog(shader.handle)
+    override fun getShaderParameter(shader: GlShader, param: Int): Int = glGetShaderi(shader.handle, param)
+    override fun getUniformBlockIndex(program: GlProgram, uniformBlockName: String): Int = glGetUniformBlockIndex(program.handle, uniformBlockName)
+    override fun getUniformIndices(program: GlProgram, names: Array<String>): IntArray = getUniformIndicesImpl(program, names)
+    override fun getUniformLocation(program: GlProgram, uniformName: String): Int = glGetUniformLocation(program.handle, uniformName)
+    override fun lineWidth(width: Float) = glLineWidth(width)
+    override fun linkProgram(program: GlProgram) = glLinkProgram(program.handle)
+    override fun readBuffer(src: Int) = glReadBuffer(src)
+    override fun renderbufferStorage(target: Int, internalformat: Int, width: Int, height: Int) = glRenderbufferStorage(target, internalformat, width, height)
+    override fun shaderSource(shader: GlShader, source: String) = glShaderSource(shader.handle, source)
+    override fun texImage2D(target: Int, level: Int, internalformat: Int, width: Int, height: Int, border: Int, format: Int, type: Int, pixels: Buffer?) = texImage2dImpl(target, level, internalformat, width, height, border, format, type, pixels)
+    override fun texImage2d(target: Int, data: TextureData) = texImage2dImpl(target, data)
+    override fun texImage3d(target: Int, data: TextureData) = textImage3dImpl(target, data)
+    override fun texParameteri(target: Int, pName: Int, param: Int) = glTexParameteri(target, pName, param)
+    override fun texStorage2D(target: Int, levels: Int, internalformat: Int, width: Int, height: Int) = glTexStorage2D(target, levels, internalformat, width, height)
+    override fun uniformBlockBinding(program: GlProgram, uniformBlockIndex: Int, uniformBlockBinding: Int) = glUniformBlockBinding(program.handle, uniformBlockIndex, uniformBlockBinding)
+    override fun useProgram(program: GlProgram) = glUseProgram(program.handle)
+    override fun uniform1f(location: Int, x: Float) = glUniform1f(location, x)
+    override fun uniform2f(location: Int, x: Float, y: Float) = glUniform2f(location, x, y)
+    override fun uniform3f(location: Int, x: Float, y: Float, z: Float) = glUniform3f(location, x, y, z)
+    override fun uniform4f(location: Int, x: Float, y: Float, z: Float, w: Float) = glUniform4f(location, x, y, z, w)
+    override fun uniform1fv(location: Int, values: Float32Buffer) = values.useRaw { glUniform1fv(location, it) }
+    override fun uniform2fv(location: Int, values: Float32Buffer) = values.useRaw { glUniform2fv(location, it) }
+    override fun uniform3fv(location: Int, values: Float32Buffer) = values.useRaw { glUniform3fv(location, it) }
+    override fun uniform4fv(location: Int, values: Float32Buffer) = values.useRaw { glUniform4fv(location, it) }
+    override fun uniform1i(location: Int, x: Int) = glUniform1i(location, x)
+    override fun uniform2i(location: Int, x: Int, y: Int) = glUniform2i(location, x, y)
+    override fun uniform3i(location: Int, x: Int, y: Int, z: Int) = glUniform3i(location, x, y, z)
+    override fun uniform4i(location: Int, x: Int, y: Int, z: Int, w: Int) = glUniform4i(location, x, y, z, w)
+    override fun uniform1iv(location: Int, values: Int32Buffer) = values.useRaw { glUniform1iv(location, it) }
+    override fun uniform2iv(location: Int, values: Int32Buffer) = values.useRaw { glUniform2iv(location, it) }
+    override fun uniform3iv(location: Int, values: Int32Buffer) = values.useRaw { glUniform3iv(location, it) }
+    override fun uniform4iv(location: Int, values: Int32Buffer) = values.useRaw { glUniform4iv(location, it) }
+    override fun uniformMatrix3fv(location: Int, values: Float32Buffer) = values.useRaw { glUniformMatrix3fv(location, false, it) }
+    override fun uniformMatrix4fv(location: Int, values: Float32Buffer) = values.useRaw { glUniformMatrix4fv(location, false, it) }
+    override fun vertexAttribDivisor(index: Int, divisor: Int) = glVertexAttribDivisor(index, divisor)
+    override fun vertexAttribIPointer(index: Int, size: Int, type: Int, stride: Int, offset: Int) = GL30.glVertexAttribIPointer(index, size, type, stride, offset.toLong())
+    override fun vertexAttribPointer(index: Int, size: Int, type: Int, normalized: Boolean, stride: Int, offset: Int) = glVertexAttribPointer(index, size, type, normalized, stride, offset.toLong())
+    override fun viewport(x: Int, y: Int, width: Int, height: Int) = glViewport(x, y, width, height)
+
+    private fun getActiveUniformsImpl(program: GlProgram, uniformIndices: IntArray, pName: Int): IntArray {
+        val offsets = IntArray(uniformIndices.size)
+        glGetActiveUniformsiv(program.handle, uniformIndices, pName, offsets)
+        return offsets
+    }
+
+    private fun getUniformIndicesImpl(program: GlProgram, names: Array<String>): IntArray {
+        return MemoryStack.stackPush().use { stack ->
+            val indices = IntArray(names.size)
+            val uniformNames = names.map { stack.ASCII(it) }.toTypedArray()
+            val namePointers = stack.pointers(*uniformNames)
+            glGetUniformIndices(program.handle, namePointers, indices)
+            indices
+        }
+    }
+
+    private fun texImage2dImpl(target: Int, level: Int, internalformat: Int, width: Int, height: Int, border: Int, format: Int, type: Int, pixels: Buffer?) {
+        when (pixels) {
+            is Uint8BufferImpl -> pixels.useRaw { glTexImage2D(target, level, internalformat, width, height, border, format, type, it) }
+            is Uint16BufferImpl -> pixels.useRaw { glTexImage2D(target, level, internalformat, width, height, border, format, type, it) }
+            is Int32BufferImpl -> pixels.useRaw { glTexImage2D(target, level, internalformat, width, height, border, format, type, it) }
+            is Float32BufferImpl -> pixels.useRaw { glTexImage2D(target, level, internalformat, width, height, border, format, type, it) }
+            else -> glTexImage2D(target, level, internalformat, width, height, border, format, type, null as ByteBuffer?)
+        }
+    }
+
+    private fun texImage2dImpl(target: Int, data: TextureData) {
+        when (data) {
+            is TextureData1d -> when (val buf = data.data) {
+                is Uint8BufferImpl -> buf.useRaw {
+                    glTexImage2D(target, 0, data.format.glInternalFormat, data.width, 1, 0, data.format.glFormat, data.format.glType, it)
+                }
+                is Uint16BufferImpl -> buf.useRaw {
+                    glTexImage2D(target, 0, data.format.glInternalFormat, data.width, 1, 0, data.format.glFormat, data.format.glType, it)
+                }
+                is Float32BufferImpl -> buf.useRaw {
+                    glTexImage2D(target, 0, data.format.glInternalFormat, data.width, 1, 0, data.format.glFormat, data.format.glType, it)
+                }
+                else -> throw IllegalStateException("TextureData buffer must be any of Uint8Buffer, Uin16Buffer, Float32Buffer")
+            }
+            is TextureData2d -> when (val buf = data.data) {
+                is Uint8BufferImpl -> buf.useRaw {
+                    glTexImage2D(target, 0, data.format.glInternalFormat, data.width, data.height, 0, data.format.glFormat, data.format.glType, it)
+                }
+                is Uint16BufferImpl -> buf.useRaw {
+                    glTexImage2D(target, 0, data.format.glInternalFormat, data.width, data.height, 0, data.format.glFormat, data.format.glType, it)
+                }
+                is Float32BufferImpl -> buf.useRaw {
+                    glTexImage2D(target, 0, data.format.glInternalFormat, data.width, data.height, 0, data.format.glFormat, data.format.glType, it)
+                }
+                else -> throw IllegalStateException("TextureData buffer must be any of Uint8Buffer, Uin16Buffer, Float32Buffer")
+            }
+            else -> throw IllegalArgumentException("Invalid TextureData type for texImage2d: $data")
+        }
+    }
+
+    private fun textImage3dImpl(target: Int, img: TextureData) {
+        when (val buf = img.data) {
+            is Uint8BufferImpl -> buf.useRaw {
+                glTexImage3D(target, 0, img.format.glInternalFormat, img.width, img.height, img.depth, 0, img.format.glFormat, img.format.glType, it)
+            }
+            is Uint16BufferImpl -> buf.useRaw {
+                glTexImage3D(target, 0, img.format.glInternalFormat, img.width, img.height, img.depth, 0, img.format.glFormat, img.format.glType, it)
+            }
+            is Float32BufferImpl -> buf.useRaw {
+                glTexImage3D(target, 0, img.format.glInternalFormat, img.width, img.height, img.depth, 0, img.format.glFormat, img.format.glType, it)
+            }
+            else -> throw IllegalStateException("TextureData buffer must be either any of Uint8Buffer, Uin16Buffer, Float32Buffer")
+        }
+    }
+}

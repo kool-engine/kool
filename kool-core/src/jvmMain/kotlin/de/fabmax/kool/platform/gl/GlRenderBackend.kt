@@ -10,7 +10,7 @@ import de.fabmax.kool.modules.ksl.generator.GlslGenerator
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.platform.GlfwWindow
 import de.fabmax.kool.platform.Lwjgl3Context
-import de.fabmax.kool.platform.RenderBackend
+import de.fabmax.kool.platform.RenderBackendJvm
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Viewport
 import de.fabmax.kool.util.logE
@@ -24,7 +24,7 @@ import org.lwjgl.opengl.GL20.GL_VERTEX_PROGRAM_POINT_SIZE
 import org.lwjgl.opengl.GL32.GL_TEXTURE_CUBE_MAP_SEAMLESS
 import java.nio.ByteBuffer
 
-class GlRenderBackend(val ctx: Lwjgl3Context) : RenderBackend {
+class GlRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
     override val apiName: String
     override val deviceName: String
 
@@ -99,7 +99,7 @@ class GlRenderBackend(val ctx: Lwjgl3Context) : RenderBackend {
         result.set(0, 0, glfwWindow.framebufferWidth, glfwWindow.framebufferHeight)
     }
 
-    override fun drawFrame(ctx: Lwjgl3Context) {
+    override fun renderFrame(ctx: KoolContext) {
         if (ctx.disposablePipelines.isNotEmpty()) {
             queueRenderer.disposePipelines(ctx.disposablePipelines)
             ctx.disposablePipelines.clear()
@@ -233,11 +233,11 @@ class GlRenderBackend(val ctx: Lwjgl3Context) : RenderBackend {
         }
     }
 
-    override fun close(ctx: Lwjgl3Context) {
+    override fun close(ctx: KoolContext) {
         glfwSetWindowShouldClose(glfwWindow.windowPtr, true)
     }
 
-    override fun cleanup(ctx: Lwjgl3Context) {
+    override fun cleanup(ctx: KoolContext) {
         // for now, we leave the cleanup to the system...
     }
 
@@ -265,7 +265,7 @@ class GlRenderBackend(val ctx: Lwjgl3Context) : RenderBackend {
         if (shader.program.dumpCode) {
             src.dump()
         }
-        return ShaderCode.glCodeFromSource(src.vertexSrc, src.fragmentSrc)
+        return ShaderCodeImpl.glCodeFromSource(src.vertexSrc, src.fragmentSrc)
     }
 
     class GlCapabilities {

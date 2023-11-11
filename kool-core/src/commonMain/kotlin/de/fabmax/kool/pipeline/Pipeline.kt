@@ -38,7 +38,7 @@ class Pipeline private constructor(builder: Builder) {
         hash = (hash * 71023UL) + isWriteDepth.hashCode().toULong()
         hash = (hash * 71023UL) + lineWidth.hashCode().toULong()
         hash = (hash * 71023UL) + vertexLayout.longHash
-        hash = (hash * 71023UL) + shaderCode.longHash
+        hash = (hash * 71023UL) + shaderCode.longHash.toULong()
         descriptorSetLayouts.forEach { hash = (hash * 71023UL) + it.longHash }
         pushConstantRanges.forEach { hash = (hash * 71023UL) + it.longHash }
         this.pipelineHash = hash

@@ -1,5 +1,6 @@
-package de.fabmax.kool.platform
+package de.fabmax.kool.pipeline.backend
 
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.pipeline.*
@@ -10,21 +11,19 @@ interface RenderBackend {
     val apiName: String
     val deviceName: String
 
-    val glfwWindow: GlfwWindow
-
     val projCorrectionMatrix: Mat4f
     val depthBiasMatrix: Mat4f
 
+    fun renderFrame(ctx: KoolContext)
+    fun close(ctx: KoolContext)
+    fun cleanup(ctx: KoolContext)
+
     fun getWindowViewport(result: Viewport)
 
-    fun drawFrame(ctx: Lwjgl3Context)
-    fun close(ctx: Lwjgl3Context)
-    fun cleanup(ctx: Lwjgl3Context)
-
-    fun uploadTextureToGpu(tex: Texture, data: TextureData)
+    fun generateKslShader(shader: KslShader, pipelineLayout: Pipeline.Layout): ShaderCode
 
     fun createOffscreenPass2d(parentPass: OffscreenRenderPass2d): OffscreenPass2dImpl
     fun createOffscreenPassCube(parentPass: OffscreenRenderPassCube): OffscreenPassCubeImpl
+    fun uploadTextureToGpu(tex: Texture, data: TextureData)
 
-    fun generateKslShader(shader: KslShader, pipelineLayout: Pipeline.Layout): ShaderCode
 }

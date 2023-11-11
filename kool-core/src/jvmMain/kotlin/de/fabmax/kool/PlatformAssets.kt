@@ -266,7 +266,7 @@ actual object PlatformAssets {
     internal actual suspend fun uploadTextureToGpu(texture: Texture, texData: TextureData) {
         withContext(Dispatchers.RenderLoop) {
             val ctx = KoolSystem.requireContext() as Lwjgl3Context
-            ctx.renderBackend.uploadTextureToGpu(texture, texData)
+            ctx.backend.uploadTextureToGpu(texture, texData)
         }
     }
 

@@ -32,7 +32,7 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
             descriptorSetLayout = createDescriptorSetLayout(pipeline.layout.descriptorSets[0])
             descriptorPool = createDescriptorPool(pipeline.layout.descriptorSets[0])
 
-            val shaderStages = pipeline.shaderCode.vkStages
+            val shaderStages = (pipeline.shaderCode as ShaderCodeImpl).vkStages
             val shaderStageModules = shaderStages.map { createShaderModule(it) }
             val shaderStageInfos = callocVkPipelineShaderStageCreateInfoN(shaderStages.size) {
                 for (i in shaderStages.indices) {
