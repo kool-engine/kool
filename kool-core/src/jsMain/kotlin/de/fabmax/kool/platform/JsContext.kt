@@ -10,7 +10,6 @@ import de.fabmax.kool.pipeline.backend.gl.GlImpl
 import de.fabmax.kool.pipeline.backend.gl.RenderBackendGlImpl
 import de.fabmax.kool.pipeline.backend.gl.WebGL2RenderingContext
 import de.fabmax.kool.util.RenderLoopCoroutineDispatcher
-import de.fabmax.kool.util.logI
 import kotlinx.browser.document
 import kotlinx.browser.window
 import org.w3c.dom.Element
@@ -138,8 +137,6 @@ class JsContext internal constructor() : KoolContext() {
         canvas.oncontextmenu = Event::preventDefault
 
         backend = RenderBackendGlImpl(this)
-//        backend = RenderBackendLegacyWebGl(this)
-        logI { "Using backend: ${backend.name}" }
 
         PlatformInput.onContextCreated(this)
         KoolSystem.onContextCreated(this)

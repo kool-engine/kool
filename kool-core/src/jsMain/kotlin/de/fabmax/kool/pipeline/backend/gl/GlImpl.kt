@@ -5,7 +5,6 @@ import de.fabmax.kool.pipeline.TextureData1d
 import de.fabmax.kool.pipeline.TextureData2d
 import de.fabmax.kool.pipeline.TextureData3d
 import de.fabmax.kool.platform.*
-import de.fabmax.kool.platform.webgl.TextureLoader.arrayBufferView
 import de.fabmax.kool.util.*
 import org.khronos.webgl.*
 
@@ -318,5 +317,12 @@ object GlImpl : GlApi {
                 throw IllegalStateException("TextureData buffer must be either TextureData3d or ImageAtlasTextureData")
             }
         }
+    }
+
+    val TextureData.arrayBufferView: ArrayBufferView get() = when (val bufData = data) {
+        is Uint8BufferImpl -> bufData.buffer
+        is Uint16BufferImpl -> bufData.buffer
+        is Float32BufferImpl -> bufData.buffer
+        else -> throw IllegalArgumentException("Unsupported buffer type")
     }
 }

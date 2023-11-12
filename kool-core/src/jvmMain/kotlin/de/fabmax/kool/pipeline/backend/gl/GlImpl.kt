@@ -3,9 +3,6 @@ package de.fabmax.kool.pipeline.backend.gl
 import de.fabmax.kool.pipeline.TextureData
 import de.fabmax.kool.pipeline.TextureData1d
 import de.fabmax.kool.pipeline.TextureData2d
-import de.fabmax.kool.platform.gl.glFormat
-import de.fabmax.kool.platform.gl.glInternalFormat
-import de.fabmax.kool.platform.gl.glType
 import de.fabmax.kool.util.*
 import org.lwjgl.opengl.GL31.*
 import org.lwjgl.opengl.GL33.glVertexAttribDivisor
@@ -229,25 +226,25 @@ object GlImpl : GlApi {
         when (data) {
             is TextureData1d -> when (val buf = data.data) {
                 is Uint8BufferImpl -> buf.useRaw {
-                    glTexImage2D(target, 0, data.format.glInternalFormat, data.width, 1, 0, data.format.glFormat, data.format.glType, it)
+                    glTexImage2D(target, 0, data.format.glInternalFormat(this), data.width, 1, 0, data.format.glFormat(this), data.format.glType(this), it)
                 }
                 is Uint16BufferImpl -> buf.useRaw {
-                    glTexImage2D(target, 0, data.format.glInternalFormat, data.width, 1, 0, data.format.glFormat, data.format.glType, it)
+                    glTexImage2D(target, 0, data.format.glInternalFormat(this), data.width, 1, 0, data.format.glFormat(this), data.format.glType(this), it)
                 }
                 is Float32BufferImpl -> buf.useRaw {
-                    glTexImage2D(target, 0, data.format.glInternalFormat, data.width, 1, 0, data.format.glFormat, data.format.glType, it)
+                    glTexImage2D(target, 0, data.format.glInternalFormat(this), data.width, 1, 0, data.format.glFormat(this), data.format.glType(this), it)
                 }
                 else -> throw IllegalStateException("TextureData buffer must be any of Uint8Buffer, Uin16Buffer, Float32Buffer")
             }
             is TextureData2d -> when (val buf = data.data) {
                 is Uint8BufferImpl -> buf.useRaw {
-                    glTexImage2D(target, 0, data.format.glInternalFormat, data.width, data.height, 0, data.format.glFormat, data.format.glType, it)
+                    glTexImage2D(target, 0, data.format.glInternalFormat(this), data.width, data.height, 0, data.format.glFormat(this), data.format.glType(this), it)
                 }
                 is Uint16BufferImpl -> buf.useRaw {
-                    glTexImage2D(target, 0, data.format.glInternalFormat, data.width, data.height, 0, data.format.glFormat, data.format.glType, it)
+                    glTexImage2D(target, 0, data.format.glInternalFormat(this), data.width, data.height, 0, data.format.glFormat(this), data.format.glType(this), it)
                 }
                 is Float32BufferImpl -> buf.useRaw {
-                    glTexImage2D(target, 0, data.format.glInternalFormat, data.width, data.height, 0, data.format.glFormat, data.format.glType, it)
+                    glTexImage2D(target, 0, data.format.glInternalFormat(this), data.width, data.height, 0, data.format.glFormat(this), data.format.glType(this), it)
                 }
                 else -> throw IllegalStateException("TextureData buffer must be any of Uint8Buffer, Uin16Buffer, Float32Buffer")
             }
@@ -258,13 +255,13 @@ object GlImpl : GlApi {
     private fun textImage3dImpl(target: Int, img: TextureData) {
         when (val buf = img.data) {
             is Uint8BufferImpl -> buf.useRaw {
-                glTexImage3D(target, 0, img.format.glInternalFormat, img.width, img.height, img.depth, 0, img.format.glFormat, img.format.glType, it)
+                glTexImage3D(target, 0, img.format.glInternalFormat(this), img.width, img.height, img.depth, 0, img.format.glFormat(this), img.format.glType(this), it)
             }
             is Uint16BufferImpl -> buf.useRaw {
-                glTexImage3D(target, 0, img.format.glInternalFormat, img.width, img.height, img.depth, 0, img.format.glFormat, img.format.glType, it)
+                glTexImage3D(target, 0, img.format.glInternalFormat(this), img.width, img.height, img.depth, 0, img.format.glFormat(this), img.format.glType(this), it)
             }
             is Float32BufferImpl -> buf.useRaw {
-                glTexImage3D(target, 0, img.format.glInternalFormat, img.width, img.height, img.depth, 0, img.format.glFormat, img.format.glType, it)
+                glTexImage3D(target, 0, img.format.glInternalFormat(this), img.width, img.height, img.depth, 0, img.format.glFormat(this), img.format.glType(this), it)
             }
             else -> throw IllegalStateException("TextureData buffer must be either any of Uint8Buffer, Uin16Buffer, Float32Buffer")
         }

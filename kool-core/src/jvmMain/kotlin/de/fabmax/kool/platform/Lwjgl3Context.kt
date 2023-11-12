@@ -78,7 +78,6 @@ class Lwjgl3Context : KoolContext() {
             VkRenderBackend(this)
         } else {
             RenderBackendGlImpl(this)
-            //GlRenderBackend(this)
         }
 
         SysInfo.set(backend.apiName, backend.deviceName)

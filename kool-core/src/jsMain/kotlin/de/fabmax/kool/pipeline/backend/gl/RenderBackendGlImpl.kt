@@ -2,7 +2,7 @@ package de.fabmax.kool.pipeline.backend.gl
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.platform.webgl.TextureLoader.arrayBufferView
+import de.fabmax.kool.pipeline.backend.gl.GlImpl.arrayBufferView
 import de.fabmax.kool.util.Viewport
 import de.fabmax.kool.util.logE
 import org.khronos.webgl.WebGLRenderingContext

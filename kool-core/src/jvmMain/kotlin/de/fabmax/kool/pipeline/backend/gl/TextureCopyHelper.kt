@@ -1,8 +1,6 @@
 package de.fabmax.kool.pipeline.backend.gl
 
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.platform.gl.glFormat
-import de.fabmax.kool.platform.gl.glType
 import de.fabmax.kool.util.Float32BufferImpl
 import de.fabmax.kool.util.Uint8BufferImpl
 import org.lwjgl.opengl.GL11.glBindTexture
@@ -15,10 +13,10 @@ internal object TextureCopyHelper {
         glBindTexture(src.target, src.texture.handle)
         when (val buf = dst.data) {
             is Uint8BufferImpl -> buf.useRaw {
-                glGetTexImage(src.target, 0, dst.format.glFormat, dst.format.glType, it)
+                glGetTexImage(src.target, 0, dst.format.glFormat(GlImpl), dst.format.glType(GlImpl), it)
             }
             is Float32BufferImpl -> buf.useRaw {
-                glGetTexImage(src.target, 0, dst.format.glFormat, dst.format.glType, it)
+                glGetTexImage(src.target, 0, dst.format.glFormat(GlImpl), dst.format.glType(GlImpl), it)
             }
             else -> throw IllegalArgumentException("Unsupported target buffer type")
         }
