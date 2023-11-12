@@ -1,5 +1,6 @@
 package de.fabmax.kool.pipeline.backend.gl
 
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.scene.MeshInstanceList
@@ -18,6 +19,7 @@ class CompiledShader(val program: GlProgram, val pipeline: Pipeline, val backend
     private val uboLayouts = mutableMapOf<String, ExternalBufferLayout>()
     private val instances = mutableMapOf<Long, ShaderInstance>()
 
+    private val ctx: KoolContext = backend.ctx
     private val gl: GlApi = backend.gl
 
     init {
@@ -86,15 +88,15 @@ class CompiledShader(val program: GlProgram, val pipeline: Pipeline, val backend
     }
 
     private fun getUniformLocations(name: String, arraySize: Int): IntArray {
-        val locations = mutableListOf<Int>()
+        val locations = IntArray(arraySize)
         if (arraySize > 1) {
             for (i in 0 until arraySize) {
-                locations += gl.getUniformLocation(program, "$name[$i]")
+                locations[i] = gl.getUniformLocation(program, "$name[$i]")
             }
         } else {
-            locations += gl.getUniformLocation(program, name)
+            locations[0] = gl.getUniformLocation(program, name)
         }
-        return locations.toIntArray()
+        return locations
     }
 
     fun use() {
@@ -139,14 +141,14 @@ class CompiledShader(val program: GlProgram, val pipeline: Pipeline, val backend
     fun destroyInstance(pipeline: Pipeline) {
         instances.remove(pipeline.pipelineInstanceId)?.let {
             it.destroyInstance()
-//            ctx.engineStats.pipelineInstanceDestroyed(pipelineId)
+            ctx.engineStats.pipelineInstanceDestroyed(pipelineId)
         }
     }
 
     fun isEmpty(): Boolean = instances.isEmpty()
 
     fun destroy() {
-//        ctx.engineStats.pipelineDestroyed(pipelineId)
+        ctx.engineStats.pipelineDestroyed(pipelineId)
         gl.deleteProgram(program)
     }
 
@@ -189,7 +191,7 @@ class CompiledShader(val program: GlProgram, val pipeline: Pipeline, val backend
             pipeline.layout.pushConstantRanges.forEach { pc ->
                 mapPushConstants(pc)
             }
-//            ctx.engineStats.pipelineInstanceCreated(pipelineId)
+            ctx.engineStats.pipelineInstanceCreated(pipelineId)
         }
 
         private fun mapPushConstants(pc: PushConstantRange) {

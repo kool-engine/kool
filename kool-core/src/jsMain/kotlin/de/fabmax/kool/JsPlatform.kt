@@ -1,7 +1,6 @@
 package de.fabmax.kool
 
 import de.fabmax.kool.platform.JsContext
-import de.fabmax.kool.platform.WebGL2RenderingContext
 import org.w3c.dom.HTMLCanvasElement
 
 /**
@@ -39,8 +38,6 @@ actual fun Double.toString(precision: Int): String {
 
 internal object JsImpl {
     private var ctx: JsContext? = null
-    val gl: WebGL2RenderingContext
-        get() = ctx?.gl ?: throw KoolException("Platform.createContext() not called")
     val canvas: HTMLCanvasElement
         get() = ctx?.canvas ?: throw KoolException("Platform.createContext() not called")
 

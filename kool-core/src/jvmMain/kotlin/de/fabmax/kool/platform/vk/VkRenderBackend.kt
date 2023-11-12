@@ -24,6 +24,7 @@ import java.util.*
 import kotlin.math.max
 
 class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
+    override val name = "Vulkan backend"
     override val apiName: String
     override val deviceName: String
 

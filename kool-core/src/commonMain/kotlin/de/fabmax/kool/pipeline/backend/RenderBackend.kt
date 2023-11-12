@@ -8,6 +8,7 @@ import de.fabmax.kool.util.Viewport
 
 interface RenderBackend {
 
+    val name: String
     val apiName: String
     val deviceName: String
 

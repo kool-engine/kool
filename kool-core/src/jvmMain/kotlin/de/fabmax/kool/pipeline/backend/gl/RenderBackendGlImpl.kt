@@ -17,9 +17,10 @@ import org.lwjgl.opengl.GL20.GL_MAX_TEXTURE_IMAGE_UNITS
 import org.lwjgl.opengl.GL20.GL_VERTEX_PROGRAM_POINT_SIZE
 import org.lwjgl.opengl.GL32.GL_TEXTURE_CUBE_MAP_SEAMLESS
 
-class RenderBackendGlImpl(val ctx: Lwjgl3Context) : RenderBackendGl(GlImpl), RenderBackendJvm {
+class RenderBackendGlImpl(ctx: KoolContext) : RenderBackendGl(GlImpl, ctx), RenderBackendJvm {
     override val glfwWindow: GlfwWindow
 
+    override val name = "Common GL backend"
     override val version: ApiVersion
     override val capabilities: GlCapabilities
 
@@ -84,7 +85,7 @@ class RenderBackendGlImpl(val ctx: Lwjgl3Context) : RenderBackendGl(GlImpl), Ren
         GLFW.glfwWindowHint(GLFW.GLFW_SAMPLES, KoolSystem.config.msaaSamples)
 
         // create window
-        val glfwWindow = GlfwWindow(ctx)
+        val glfwWindow = GlfwWindow(ctx as Lwjgl3Context)
         glfwWindow.isFullscreen = KoolSystem.config.isFullscreen
 
         // make the OpenGL context current
@@ -145,8 +146,6 @@ class RenderBackendGlImpl(val ctx: Lwjgl3Context) : RenderBackendGl(GlImpl), Ren
         val deviceName = glGetString(GL_RENDERER) ?: ""
         return ApiVersion(major, minor, GlFlavor.OpenGL, versionStr, deviceName)
     }
-
-
 
     override fun close(ctx: KoolContext) {
         glfwSetWindowShouldClose(glfwWindow.windowPtr, true)

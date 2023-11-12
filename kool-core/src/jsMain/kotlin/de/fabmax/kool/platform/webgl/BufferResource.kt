@@ -1,27 +1,28 @@
 package de.fabmax.kool.platform.webgl
 
+import de.fabmax.kool.pipeline.backend.gl.GlImpl
 import de.fabmax.kool.platform.JsContext
 import de.fabmax.kool.util.*
 
 class BufferResource(val target: Int, ctx: JsContext) {
 
     val bufferId = nextBufferId++
-    val buffer = ctx.gl.createBuffer()
+    val buffer = GlImpl.gl.createBuffer()
 
     fun delete(ctx: JsContext) {
         ctx.engineStats.bufferDeleted(bufferId)
-        ctx.gl.deleteBuffer(buffer)
+        GlImpl.gl.deleteBuffer(buffer)
     }
 
     fun bind(ctx: JsContext) {
-        ctx.gl.bindBuffer(target, buffer)
+        GlImpl.gl.bindBuffer(target, buffer)
     }
 
     fun setData(data: Float32Buffer, usage: Int, ctx: JsContext) {
         data as Float32BufferImpl
         bind(ctx)
         ctx.engineStats.bufferDeleted(bufferId)
-        ctx.gl.bufferData(target, data.buffer, usage, 0, data.len)
+        GlImpl.gl.bufferData(target, data.buffer, usage, 0, data.len)
         ctx.engineStats.bufferAllocated(bufferId, data.capacity * 4)
     }
 
@@ -29,7 +30,7 @@ class BufferResource(val target: Int, ctx: JsContext) {
         data as Uint8BufferImpl
         bind(ctx)
         ctx.engineStats.bufferDeleted(bufferId)
-        ctx.gl.bufferData(target, data.buffer, usage, 0, data.len)
+        GlImpl.gl.bufferData(target, data.buffer, usage, 0, data.len)
         ctx.engineStats.bufferAllocated(bufferId, data.capacity)
     }
 
@@ -37,7 +38,7 @@ class BufferResource(val target: Int, ctx: JsContext) {
         data as MixedBufferImpl
         bind(ctx)
         ctx.engineStats.bufferDeleted(bufferId)
-        ctx.gl.bufferData(target, data.buffer, usage, 0, data.len)
+        GlImpl.gl.bufferData(target, data.buffer, usage, 0, data.len)
         ctx.engineStats.bufferAllocated(bufferId, data.capacity)
     }
 
@@ -45,7 +46,7 @@ class BufferResource(val target: Int, ctx: JsContext) {
         data as Uint16BufferImpl
         bind(ctx)
         ctx.engineStats.bufferDeleted(bufferId)
-        ctx.gl.bufferData(target, data.buffer, usage, 0, data.len)
+        GlImpl.gl.bufferData(target, data.buffer, usage, 0, data.len)
         ctx.engineStats.bufferAllocated(bufferId, data.capacity * 2)
     }
 
@@ -53,12 +54,12 @@ class BufferResource(val target: Int, ctx: JsContext) {
         data as Int32BufferImpl
         bind(ctx)
         ctx.engineStats.bufferDeleted(bufferId)
-        ctx.gl.bufferData(target, data.buffer, usage, 0, data.len)
+        GlImpl.gl.bufferData(target, data.buffer, usage, 0, data.len)
         ctx.engineStats.bufferAllocated(bufferId, data.capacity * 4)
     }
 
     fun unbind(ctx: JsContext) {
-        ctx.gl.bindBuffer(target, null)
+        GlImpl.gl.bindBuffer(target, null)
     }
 
     companion object {

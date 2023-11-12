@@ -1,12 +1,13 @@
 package de.fabmax.kool.platform.webgl
 
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.backend.gl.GlImpl
+import de.fabmax.kool.pipeline.backend.gl.WebGL2RenderingContext.Companion.INVALID_INDEX
+import de.fabmax.kool.pipeline.backend.gl.WebGL2RenderingContext.Companion.UNIFORM_BLOCK_DATA_SIZE
+import de.fabmax.kool.pipeline.backend.gl.WebGL2RenderingContext.Companion.UNIFORM_BUFFER
+import de.fabmax.kool.pipeline.backend.gl.WebGL2RenderingContext.Companion.UNIFORM_OFFSET
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.platform.JsContext
-import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.INVALID_INDEX
-import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.UNIFORM_BLOCK_DATA_SIZE
-import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.UNIFORM_BUFFER
-import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.UNIFORM_OFFSET
 import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.PrimitiveType
@@ -49,10 +50,10 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
             set.descriptors.forEach { desc ->
                 when (desc) {
                     is UniformBuffer -> {
-                        val blockIndex = ctx.gl.getUniformBlockIndex(prog, desc.name)
+                        val blockIndex = GlImpl.gl.getUniformBlockIndex(prog, desc.name)
                         if (blockIndex == INVALID_INDEX) {
                             // descriptor does not describe an actual UBO but plain old uniforms...
-                            desc.uniforms.forEach { uniformLocations[it.name] = listOf(ctx.gl.getUniformLocation(prog, it.name)) }
+                            desc.uniforms.forEach { uniformLocations[it.name] = listOf(GlImpl.gl.getUniformLocation(prog, it.name)) }
                         } else {
                             setupUboLayout(desc, blockIndex)
                         }
@@ -75,19 +76,19 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
         pipeline.layout.pushConstantRanges.forEach { pcr ->
             pcr.pushConstants.forEach { pc ->
                 // in WebGL push constants are mapped to regular uniforms
-                uniformLocations[pc.name] = listOf(ctx.gl.getUniformLocation(prog, pc.name))
+                uniformLocations[pc.name] = listOf(GlImpl.gl.getUniformLocation(prog, pc.name))
             }
         }
     }
 
     private fun setupUboLayout(desc: UniformBuffer, blockIndex: Int) {
-        val bufferSize = ctx.gl.getActiveUniformBlockParameter(prog, blockIndex, UNIFORM_BLOCK_DATA_SIZE)
+        val bufferSize = GlImpl.gl.getActiveUniformBlockParameter(prog, blockIndex, UNIFORM_BLOCK_DATA_SIZE)
         val uniformNames = desc.uniforms.map {
             if (it.size > 1) "${it.name}[0]" else it.name
         }.toTypedArray()
 
-        val indices = ctx.gl.getUniformIndices(prog, uniformNames)
-        val offsets = ctx.gl.getActiveUniforms(prog, indices, UNIFORM_OFFSET)
+        val indices = GlImpl.gl.getUniformIndices(prog, uniformNames)
+        val offsets = GlImpl.gl.getActiveUniforms(prog, indices, UNIFORM_OFFSET)
 
         val sortedOffsets = offsets.sorted()
         val bufferPositions = Array(desc.uniforms.size) { i ->
@@ -97,7 +98,7 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
             BufferPosition(off, nextOff - off)
         }
 
-        ctx.gl.uniformBlockBinding(prog, blockIndex, desc.binding)
+        GlImpl.gl.uniformBlockBinding(prog, blockIndex, desc.binding)
         uboLayouts[desc.name] = ExternalBufferLayout(desc.uniforms, bufferPositions, bufferSize)
     }
 
@@ -105,28 +106,28 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
         val locations = mutableListOf<WebGLUniformLocation?>()
         if (arraySize > 1) {
             for (i in 0 until arraySize) {
-                locations += ctx.gl.getUniformLocation(prog, "$name[$i]")
+                locations += GlImpl.gl.getUniformLocation(prog, "$name[$i]")
             }
         } else {
-            locations += ctx.gl.getUniformLocation(prog, name)
+            locations += GlImpl.gl.getUniformLocation(prog, name)
         }
         return locations
     }
 
     fun use() {
-        ctx.gl.useProgram(prog)
+        GlImpl.gl.useProgram(prog)
         attributes.values.forEach { attr ->
             for (i in 0 until attr.attribute.props.nSlots) {
                 val location = attr.location + i
-                ctx.gl.enableVertexAttribArray(location)
-                ctx.gl.vertexAttribDivisor(location, 0)
+                GlImpl.gl.enableVertexAttribArray(location)
+                GlImpl.gl.vertexAttribDivisor(location, 0)
             }
         }
         instanceAttributes.values.forEach { attr ->
             for (i in 0 until attr.attribute.props.nSlots) {
                 val location = attr.location + i
-                ctx.gl.enableVertexAttribArray(location)
-                ctx.gl.vertexAttribDivisor(location, 1)
+                GlImpl.gl.enableVertexAttribArray(location)
+                GlImpl.gl.vertexAttribDivisor(location, 1)
             }
         }
     }
@@ -134,12 +135,12 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
     fun unUse() {
         attributes.values.forEach { attr ->
             for (i in 0 until attr.attribute.props.nSlots) {
-                ctx.gl.disableVertexAttribArray(attr.location + i)
+                GlImpl.gl.disableVertexAttribArray(attr.location + i)
             }
         }
         instanceAttributes.values.forEach { attr ->
             for (i in 0 until attr.attribute.props.nSlots) {
-                ctx.gl.disableVertexAttribArray(attr.location + i)
+                GlImpl.gl.disableVertexAttribArray(attr.location + i)
             }
         }
     }
@@ -163,7 +164,7 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
 
     fun destroy() {
         ctx.engineStats.pipelineDestroyed(pipelineId)
-        ctx.gl.deleteProgram(prog)
+        GlImpl.gl.deleteProgram(prog)
     }
 
     inner class ShaderInstance(var geometry: IndexedVertexList, val instances: MeshInstanceList?, val pipeline: Pipeline) {
@@ -391,7 +392,7 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
                 }
                 if (instanceList.hasChanged || isNewlyCreated) {
                     instBuf.setData(instanceList.dataF, instanceList.usage.glUsage(), ctx)
-                    ctx.afterRenderActions += { instanceList.hasChanged = false }
+                    (ctx.backend as RenderBackendLegacyWebGl).afterRenderActions += { instanceList.hasChanged = false }
                 }
             }
 
@@ -409,7 +410,7 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
                 // fixme: data buffers should be bound to mesh, not to shader instance
                 // if mesh is rendered multiple times (e.g. by additional shadow passes), clearing
                 // hasChanged flag early results in buffers not being updated
-                ctx.afterRenderActions += { md.hasChanged = false }
+                (ctx.backend as RenderBackendLegacyWebGl).afterRenderActions += { md.hasChanged = false }
                 buffersSet = true
             }
         }

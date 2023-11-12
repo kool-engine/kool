@@ -1,16 +1,17 @@
-package de.fabmax.kool.pipeline
+package de.fabmax.kool.platform.webgl
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.backend.gl.GlImpl
+import de.fabmax.kool.pipeline.backend.gl.WebGL2RenderingContext.Companion.COMPARE_REF_TO_TEXTURE
+import de.fabmax.kool.pipeline.backend.gl.WebGL2RenderingContext.Companion.DEPTH_COMPONENT24
+import de.fabmax.kool.pipeline.backend.gl.WebGL2RenderingContext.Companion.DEPTH_COMPONENT32F
+import de.fabmax.kool.pipeline.backend.gl.WebGL2RenderingContext.Companion.TEXTURE_COMPARE_FUNC
+import de.fabmax.kool.pipeline.backend.gl.WebGL2RenderingContext.Companion.TEXTURE_COMPARE_MODE
 import de.fabmax.kool.platform.JsContext
-import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.COMPARE_REF_TO_TEXTURE
-import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.DEPTH_COMPONENT24
-import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.DEPTH_COMPONENT32F
-import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.TEXTURE_COMPARE_FUNC
-import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.TEXTURE_COMPARE_MODE
 import de.fabmax.kool.platform.glInternalFormat
 import de.fabmax.kool.platform.glOp
 import de.fabmax.kool.platform.pxSize
-import de.fabmax.kool.platform.webgl.LoadedTextureWebGl
 import org.khronos.webgl.WebGLFramebuffer
 import org.khronos.webgl.WebGLRenderbuffer
 import org.khronos.webgl.WebGLRenderingContext.Companion.COLOR_ATTACHMENT0
@@ -19,10 +20,6 @@ import org.khronos.webgl.WebGLRenderingContext.Companion.FRAMEBUFFER
 import org.khronos.webgl.WebGLRenderingContext.Companion.RENDERBUFFER
 import org.khronos.webgl.WebGLRenderingContext.Companion.TEXTURE_2D
 import org.khronos.webgl.WebGLTexture
-
-actual fun OffscreenPass2dImpl(offscreenPass: OffscreenRenderPass2d): OffscreenPass2dImpl {
-    return OffscreenPass2dWebGl(offscreenPass)
-}
 
 class OffscreenPass2dWebGl(val offscreenPass: OffscreenRenderPass2d): OffscreenPass2dImpl {
     private val fbos = mutableListOf<WebGLFramebuffer?>()
@@ -53,24 +50,24 @@ class OffscreenPass2dWebGl(val offscreenPass: OffscreenRenderPass2d): OffscreenP
                         offscreenPass.getMipHeight(mipLevel)
                     )
                 }
-                ctx.gl.bindFramebuffer(FRAMEBUFFER, fbos[mipLevel])
-                ctx.queueRenderer.renderViews(offscreenPass)
+                GlImpl.gl.bindFramebuffer(FRAMEBUFFER, fbos[mipLevel])
+                (ctx.backend as RenderBackendLegacyWebGl).queueRenderer.renderViews(offscreenPass)
             }
             if (!drawMipLevels) {
                 for (i in colorTexs.indices) {
-                    ctx.gl.bindTexture(TEXTURE_2D, colorTexs[i])
-                    ctx.gl.generateMipmap(TEXTURE_2D)
+                    GlImpl.gl.bindTexture(TEXTURE_2D, colorTexs[i])
+                    GlImpl.gl.generateMipmap(TEXTURE_2D)
                 }
             }
             copyToTextures(ctx)
-            ctx.gl.bindFramebuffer(FRAMEBUFFER, null)
+            GlImpl.gl.bindFramebuffer(FRAMEBUFFER, null)
         }
     }
 
     private fun copyToTextures(ctx: JsContext) {
         for (mipLevel in 0 until renderMipLevels) {
-            ctx.gl.bindFramebuffer(FRAMEBUFFER, fbos[mipLevel])
-            ctx.gl.readBuffer(COLOR_ATTACHMENT0)
+            GlImpl.gl.bindFramebuffer(FRAMEBUFFER, fbos[mipLevel])
+            GlImpl.gl.readBuffer(COLOR_ATTACHMENT0)
             for (i in offscreenPass.copyTargetsColor.indices) {
                 val copyTarget = offscreenPass.copyTargetsColor[i]
                 var width = copyTarget.loadedTexture?.width ?: 0
@@ -84,24 +81,24 @@ class OffscreenPass2dWebGl(val offscreenPass: OffscreenRenderPass2d): OffscreenP
                 width = width shr mipLevel
                 height = height shr mipLevel
                 val target = copyTarget.loadedTexture as LoadedTextureWebGl
-                ctx.gl.bindTexture(TEXTURE_2D, target.texture)
-                ctx.gl.copyTexSubImage2D(TEXTURE_2D, mipLevel, 0, 0, 0, 0, width, height)
+                GlImpl.gl.bindTexture(TEXTURE_2D, target.texture)
+                GlImpl.gl.copyTexSubImage2D(TEXTURE_2D, mipLevel, 0, 0, 0, 0, width, height)
             }
         }
         if (!drawMipLevels) {
             for (i in offscreenPass.copyTargetsColor.indices) {
                 val copyTarget = offscreenPass.copyTargetsColor[i]
                 val target = copyTarget.loadedTexture as LoadedTextureWebGl
-                ctx.gl.bindTexture(TEXTURE_2D, target.texture)
-                ctx.gl.generateMipmap(TEXTURE_2D)
+                GlImpl.gl.bindTexture(TEXTURE_2D, target.texture)
+                GlImpl.gl.generateMipmap(TEXTURE_2D)
             }
         }
     }
 
     override fun dispose(ctx: KoolContext) {
         ctx as JsContext
-        fbos.forEach { ctx.gl.deleteFramebuffer(it) }
-        rbos.forEach { ctx.gl.deleteRenderbuffer(it) }
+        fbos.forEach { GlImpl.gl.deleteFramebuffer(it) }
+        rbos.forEach { GlImpl.gl.deleteRenderbuffer(it) }
         fbos.clear()
         rbos.clear()
 
@@ -127,7 +124,7 @@ class OffscreenPass2dWebGl(val offscreenPass: OffscreenRenderPass2d): OffscreenP
     }
 
     private fun create(ctx: JsContext) {
-        val gl = ctx.gl
+        val gl = GlImpl.gl
 
         if (offscreenPass.colorRenderTarget == OffscreenRenderPass.RenderTarget.TEXTURE) {
             createColorTexs(ctx)
@@ -185,10 +182,10 @@ class OffscreenPass2dWebGl(val offscreenPass: OffscreenRenderPass2d): OffscreenP
                 val mipLevels = offscreenPass.mipLevels
 
                 val estSize = Texture.estimatedTexSize(width, height, 1, mipLevels, format.pxSize)
-                val tex = LoadedTextureWebGl(ctx, TEXTURE_2D, ctx.gl.createTexture(), estSize)
+                val tex = LoadedTextureWebGl(ctx, TEXTURE_2D, GlImpl.gl.createTexture(), estSize)
                 tex.setSize(width, height, 1)
                 tex.applySamplerProps(offscreenPass.colorTextures[i].props)
-                ctx.gl.texStorage2D(TEXTURE_2D, mipLevels, intFormat, width, height)
+                GlImpl.gl.texStorage2D(TEXTURE_2D, mipLevels, intFormat, width, height)
 
                 colorTexs[i] = tex.texture
                 offscreenPass.colorTextures[i].loadedTexture = tex
@@ -211,14 +208,14 @@ class OffscreenPass2dWebGl(val offscreenPass: OffscreenRenderPass2d): OffscreenP
             val depthCfg = offscreenPass.depthAttachment
 
             val estSize = Texture.estimatedTexSize(width, height, 1, mipLevels, 4)
-            val tex = LoadedTextureWebGl(ctx, TEXTURE_2D, ctx.gl.createTexture(), estSize)
+            val tex = LoadedTextureWebGl(ctx, TEXTURE_2D, GlImpl.gl.createTexture(), estSize)
             tex.setSize(width, height, 1)
             tex.applySamplerProps(offscreenPass.depthTexture!!.props)
             if (depthCfg.depthCompareOp != DepthCompareOp.DISABLED) {
-                ctx.gl.texParameteri(TEXTURE_2D, TEXTURE_COMPARE_MODE, COMPARE_REF_TO_TEXTURE)
-                ctx.gl.texParameteri(TEXTURE_2D, TEXTURE_COMPARE_FUNC, depthCfg.depthCompareOp.glOp)
+                GlImpl.gl.texParameteri(TEXTURE_2D, TEXTURE_COMPARE_MODE, COMPARE_REF_TO_TEXTURE)
+                GlImpl.gl.texParameteri(TEXTURE_2D, TEXTURE_COMPARE_FUNC, depthCfg.depthCompareOp.glOp)
             }
-            ctx.gl.texStorage2D(TEXTURE_2D, mipLevels, intFormat, width, height)
+            GlImpl.gl.texStorage2D(TEXTURE_2D, mipLevels, intFormat, width, height)
 
             depthTex = tex.texture
             offscreenPass.depthTexture.loadedTexture = tex
@@ -233,10 +230,10 @@ class OffscreenPass2dWebGl(val offscreenPass: OffscreenRenderPass2d): OffscreenP
         val mipLevels = offscreenPass.mipLevels
 
         val estSize = Texture.estimatedTexSize(width, height, 1, mipLevels, props.format.pxSize)
-        val tex = LoadedTextureWebGl(ctx, TEXTURE_2D, ctx.gl.createTexture(), estSize)
+        val tex = LoadedTextureWebGl(ctx, TEXTURE_2D, GlImpl.gl.createTexture(), estSize)
         tex.setSize(width, height, 1)
         tex.applySamplerProps(props)
-        ctx.gl.texStorage2D(TEXTURE_2D, mipLevels, intFormat, width, height)
+        GlImpl.gl.texStorage2D(TEXTURE_2D, mipLevels, intFormat, width, height)
         loadedTexture = tex
         loadingState = Texture.LoadingState.LOADED
     }

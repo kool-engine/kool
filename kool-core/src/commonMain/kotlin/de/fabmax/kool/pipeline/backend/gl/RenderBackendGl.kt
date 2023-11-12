@@ -10,7 +10,7 @@ import de.fabmax.kool.pipeline.backend.RenderBackend
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.logE
 
-abstract class RenderBackendGl(internal val gl: GlApi) : RenderBackend {
+abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolContext) : RenderBackend {
 
     abstract val version: ApiVersion
     abstract val capabilities: GlCapabilities
@@ -29,6 +29,8 @@ abstract class RenderBackendGl(internal val gl: GlApi) : RenderBackend {
     private val doneRenderPasses = mutableSetOf<OffscreenRenderPass>()
 
     override fun renderFrame(ctx: KoolContext) {
+        ctx.engineStats.resetPerFrameCounts()
+
         if (ctx.disposablePipelines.isNotEmpty()) {
             queueRenderer.disposePipelines(ctx.disposablePipelines)
             ctx.disposablePipelines.clear()

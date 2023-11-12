@@ -1,15 +1,17 @@
 package de.fabmax.kool
 
 import de.fabmax.kool.modules.audio.AudioClip
-import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.platform.*
-import de.fabmax.kool.platform.webgl.TextureLoader
+import de.fabmax.kool.pipeline.TextureData
+import de.fabmax.kool.pipeline.TextureData2d
+import de.fabmax.kool.pipeline.TextureProps
+import de.fabmax.kool.platform.BufferedImageTextureData
+import de.fabmax.kool.platform.FontMapGenerator
+import de.fabmax.kool.platform.ImageAtlasTextureData
+import de.fabmax.kool.platform.ImageTextureData
 import de.fabmax.kool.util.*
 import kotlinx.browser.document
 import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.await
-import kotlinx.coroutines.withContext
 import org.khronos.webgl.ArrayBuffer
 import org.khronos.webgl.Uint8Array
 import org.w3c.dom.Image
@@ -170,20 +172,6 @@ actual object PlatformAssets {
 
     internal actual suspend fun loadTextureDataFromBuffer(texData: Uint8Buffer, mimeType: String, props: TextureProps?): TextureData {
         return ImageTextureData(loadImage(texData.toDataUrl(mimeType), true), null)
-    }
-
-    internal actual suspend fun uploadTextureToGpu(texture: Texture, texData: TextureData) {
-        withContext(Dispatchers.RenderLoop) {
-            val ctx = KoolSystem.requireContext() as JsContext
-            texture.loadedTexture = when (texture) {
-                is Texture1d -> TextureLoader.loadTexture1d(ctx, texture.props, texData)
-                is Texture2d -> TextureLoader.loadTexture2d(ctx, texture.props, texData)
-                is Texture3d -> TextureLoader.loadTexture3d(ctx, texture.props, texData)
-                is TextureCube -> TextureLoader.loadTextureCube(ctx, texture.props, texData)
-                else -> throw IllegalArgumentException("Unsupported texture type: $texture")
-            }
-            texture.loadingState = Texture.LoadingState.LOADED
-        }
     }
 
     internal actual suspend fun loadAudioClip(assetPath: String): AudioClip {

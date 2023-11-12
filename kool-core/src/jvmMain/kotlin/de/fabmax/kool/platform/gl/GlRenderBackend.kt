@@ -25,6 +25,7 @@ import org.lwjgl.opengl.GL32.GL_TEXTURE_CUBE_MAP_SEAMLESS
 import java.nio.ByteBuffer
 
 class GlRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
+    override val name = "Legacy GL backend"
     override val apiName: String
     override val deviceName: String
 

@@ -16,9 +16,9 @@ class LoadedTextureGl(val target: Int, val texture: GlTexture, estimatedSize: In
 
     private val gl = backend.gl
 
-//    init {
-//        ctx.engineStats.textureAllocated(texId, estimatedSize)
-//    }
+    init {
+        backend.ctx.engineStats.textureAllocated(texId, estimatedSize)
+    }
 
     fun setSize(width: Int, height: Int, depth: Int) {
         this.width = width
@@ -62,7 +62,7 @@ class LoadedTextureGl(val target: Int, val texture: GlTexture, estimatedSize: In
         if (!isDestroyed) {
             isDestroyed = true
             gl.deleteTexture(texture)
-//            ctx.engineStats.textureDeleted(texId)
+            backend.ctx.engineStats.textureDeleted(texId)
         }
     }
 

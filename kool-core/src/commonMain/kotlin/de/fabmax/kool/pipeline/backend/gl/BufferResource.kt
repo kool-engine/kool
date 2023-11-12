@@ -10,7 +10,7 @@ class BufferResource(val target: Int, val backend: RenderBackendGl) {
     val buffer = gl.createBuffer()
 
     fun delete() {
-//        ctx.engineStats.bufferDeleted(bufferId)
+        backend.ctx.engineStats.bufferDeleted(bufferId)
         gl.deleteBuffer(buffer)
     }
 
@@ -21,51 +21,31 @@ class BufferResource(val target: Int, val backend: RenderBackendGl) {
     fun setData(data: Uint8Buffer, usage: Int) {
         bind()
         gl.bufferData(target, data, usage)
-//        ctx.engineStats.bufferDeleted(bufferId)
-//        data.useRaw {
-//            glBufferData(target, it, usage)
-//        }
-//        ctx.engineStats.bufferAllocated(bufferId, data.capacity)
+        backend.ctx.engineStats.bufferAllocated(bufferId, data.capacity)
     }
 
     fun setData(data: Uint16Buffer, usage: Int) {
         bind()
         gl.bufferData(target, data, usage)
-//        ctx.engineStats.bufferDeleted(bufferId)
-//        data.useRaw {
-//            glBufferData(target, it, usage)
-//        }
-//        ctx.engineStats.bufferAllocated(bufferId, data.capacity * 2)
+        backend.ctx.engineStats.bufferAllocated(bufferId, data.capacity * 2)
     }
 
     fun setData(data: Int32Buffer, usage: Int) {
         bind()
         gl.bufferData(target, data, usage)
-//        ctx.engineStats.bufferDeleted(bufferId)
-//        data.useRaw {
-//            glBufferData(target, it, usage)
-//        }
-//        ctx.engineStats.bufferAllocated(bufferId, data.capacity * 4)
+        backend.ctx.engineStats.bufferAllocated(bufferId, data.capacity * 4)
     }
 
     fun setData(data: Float32Buffer, usage: Int) {
         bind()
         gl.bufferData(target, data, usage)
-//        ctx.engineStats.bufferDeleted(bufferId)
-//        data.useRaw {
-//            glBufferData(target, it, usage)
-//        }
-//        ctx.engineStats.bufferAllocated(bufferId, data.capacity * 4)
+        backend.ctx.engineStats.bufferAllocated(bufferId, data.capacity * 4)
     }
 
     fun setData(data: MixedBuffer, usage: Int) {
         bind()
         gl.bufferData(target, data, usage)
-//        ctx.engineStats.bufferDeleted(bufferId)
-//        data.useRaw {
-//            glBufferData(target, it, usage)
-//        }
-//        ctx.engineStats.bufferAllocated(bufferId, data.capacity)
+        backend.ctx.engineStats.bufferAllocated(bufferId, data.capacity)
     }
 
     fun unbind() {

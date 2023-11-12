@@ -3,11 +3,13 @@ package de.fabmax.kool
 import com.github.weisj.jsvg.parser.SVGLoader
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.modules.audio.AudioClip
-import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.pipeline.TextureData
 import de.fabmax.kool.pipeline.TextureData2d
 import de.fabmax.kool.pipeline.TextureProps
-import de.fabmax.kool.platform.*
+import de.fabmax.kool.platform.FontMapGenerator
+import de.fabmax.kool.platform.HttpCache
+import de.fabmax.kool.platform.ImageAtlasTextureData
+import de.fabmax.kool.platform.ImageTextureData
 import de.fabmax.kool.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -260,13 +262,6 @@ actual object PlatformAssets {
     internal actual suspend fun loadTextureDataFromBuffer(texData: Uint8Buffer, mimeType: String, props: TextureProps?): TextureData {
         return withContext(Dispatchers.IO) {
             readImageData(ByteArrayInputStream(texData.toArray()), mimeType, props)
-        }
-    }
-
-    internal actual suspend fun uploadTextureToGpu(texture: Texture, texData: TextureData) {
-        withContext(Dispatchers.RenderLoop) {
-            val ctx = KoolSystem.requireContext() as Lwjgl3Context
-            ctx.backend.uploadTextureToGpu(texture, texData)
         }
     }
 

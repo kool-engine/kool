@@ -95,8 +95,11 @@ class BeeDemo : DemoScene("Fighting Bees") {
             Text("${t.toString(2)} ms") { labelStyle() }
         }
         MenuRow {
-            val t = beeSystemA.instanceUpdateTime.use() + beeSystemB.instanceUpdateTime.use() +
-                    beeMeshA.drawTime * 1000.0 + beeMeshB.drawTime * 1000.0
+            val tInstsA = beeSystemA.instanceUpdateTime.use()
+            val tInstsB = beeSystemA.instanceUpdateTime.use()
+            val tDrawA = beeMeshA.drawTime * 1000.0
+            val tDrawB = beeMeshB.drawTime * 1000.0
+            val t = tInstsA + tInstsB + tDrawA + tDrawB
             Text("Bee drawing:") { labelStyle(Grow.Std) }
             Text("${t.toString(2)} ms") { labelStyle() }
         }

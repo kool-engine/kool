@@ -37,6 +37,7 @@ interface GlApi {
     val ELEMENT_ARRAY_BUFFER: Int
     val FRAGMENT_SHADER: Int
     val FRAMEBUFFER: Int
+    val FRAMEBUFFER_COMPLETE: Int
     val FRONT: Int
     val INVALID_INDEX: Int
     val LINEAR: Int
@@ -72,7 +73,7 @@ interface GlApi {
     val TEXTURE_WRAP_T: Int
     val TEXTURE0: Int
     val TRIANGLES: Int
-    val TRUE: Int
+    val TRUE: Any
     val UNIFORM_BLOCK_DATA_SIZE: Int
     val UNIFORM_BUFFER: Int
     val UNIFORM_OFFSET: Int
@@ -127,6 +128,7 @@ interface GlApi {
     fun bufferData(target: Int, buffer: Int32Buffer, usage: Int)
     fun bufferData(target: Int, buffer: Float32Buffer, usage: Int)
     fun bufferData(target: Int, buffer: MixedBuffer, usage: Int)
+    fun checkFramebufferStatus(target: Int): Int
     fun clear(mask: Int)
     fun clearBufferfv(buffer: Int, drawBuffer: Int, values: Float32Buffer)
     fun clearColor(r: Float, g: Float, b: Float, a: Float)
@@ -159,10 +161,10 @@ interface GlApi {
     fun generateMipmap(target: Int)
     fun getActiveUniformBlockParameter(program: GlProgram, uniformBlockIndex: Int, pName: Int): Int
     fun getActiveUniforms(program: GlProgram, uniformIndices: IntArray, pName: Int): IntArray
-    fun getProgramParameter(program: GlProgram, param: Int): Int
     fun getProgramInfoLog(program: GlProgram): String
+    fun getProgramParameter(program: GlProgram, param: Int): Any
     fun getShaderInfoLog(shader: GlShader): String
-    fun getShaderParameter(shader: GlShader, param: Int): Int
+    fun getShaderParameter(shader: GlShader, param: Int): Any
     fun getUniformBlockIndex(program: GlProgram, uniformBlockName: String): Int
     fun getUniformIndices(program: GlProgram, names: Array<String>): IntArray
     fun getUniformLocation(program: GlProgram, uniformName: String): Int

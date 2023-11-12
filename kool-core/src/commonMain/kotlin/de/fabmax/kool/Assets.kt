@@ -3,13 +3,10 @@ package de.fabmax.kool
 import de.fabmax.kool.modules.audio.AudioClip
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.*
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.SendChannel
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.select
 import kotlin.coroutines.CoroutineContext
 
@@ -265,13 +262,13 @@ object Assets : CoroutineScope {
 
     suspend fun loadTexture1d(texData: TextureData1d, props: TextureProps = TextureProps(), name: String? = null): Texture1d {
         val tex = Texture1d(props, name) { texData }
-        PlatformAssets.uploadTextureToGpu(tex, texData)
+        uploadTextureToGpu(tex, texData)
         return tex
     }
 
     suspend fun loadTexture2d(texData: TextureData, props: TextureProps = TextureProps(), name: String? = null): Texture2d {
         val tex = Texture2d(props, name) { texData }
-        PlatformAssets.uploadTextureToGpu(tex, texData)
+        uploadTextureToGpu(tex, texData)
         return tex
     }
 
@@ -281,7 +278,7 @@ object Assets : CoroutineScope {
 
     suspend fun loadTexture3d(texData: TextureData, props: TextureProps = TextureProps(), name: String? = null): Texture3d {
         val tex = Texture3d(props, name) { texData }
-        PlatformAssets.uploadTextureToGpu(tex, texData)
+        uploadTextureToGpu(tex, texData)
         return tex
     }
 
@@ -291,8 +288,14 @@ object Assets : CoroutineScope {
 
     suspend fun loadCubeMap(texData: TextureDataCube, props: TextureProps = TextureProps(), name: String? = null): TextureCube {
         val tex = TextureCube(props, name) { texData }
-        PlatformAssets.uploadTextureToGpu(tex, texData)
+        uploadTextureToGpu(tex, texData)
         return tex
+    }
+
+    private suspend fun uploadTextureToGpu(texture: Texture, texData: TextureData) {
+        withContext(Dispatchers.RenderLoop) {
+            KoolSystem.requireContext().backend.uploadTextureToGpu(texture, texData)
+        }
     }
 
     suspend fun loadCubeMap(
@@ -373,7 +376,6 @@ expect object PlatformAssets {
 
     internal suspend fun loadTextureData2d(imagePath: String, props: TextureProps?): TextureData2d
     internal suspend fun loadTextureDataFromBuffer(texData: Uint8Buffer, mimeType: String, props: TextureProps?): TextureData
-    internal suspend fun uploadTextureToGpu(texture: Texture, texData: TextureData)
 
     internal suspend fun loadAudioClip(assetPath: String): AudioClip
 }

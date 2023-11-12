@@ -1,9 +1,9 @@
 package de.fabmax.kool.platform.webgl
 
-import de.fabmax.kool.JsImpl.gl
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.backend.gl.GlImpl
+import de.fabmax.kool.pipeline.backend.gl.WebGL2RenderingContext.Companion.TEXTURE_3D
 import de.fabmax.kool.platform.*
-import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.TEXTURE_3D
 import de.fabmax.kool.util.Float32BufferImpl
 import de.fabmax.kool.util.Uint16BufferImpl
 import de.fabmax.kool.util.Uint8BufferImpl
@@ -28,19 +28,19 @@ import kotlin.math.max
 object TextureLoader {
     fun loadTexture1d(ctx: JsContext, props: TextureProps, img: TextureData) : LoadedTextureWebGl {
         // 1d texture internally uses a 2d texture
-        val tex = LoadedTextureWebGl(ctx, TEXTURE_2D, gl.createTexture(), img.estimateTexSize())
+        val tex = LoadedTextureWebGl(ctx, TEXTURE_2D, GlImpl.gl.createTexture(), img.estimateTexSize())
         tex.setSize(img.width, 1, 1)
         tex.applySamplerProps(props)
 
-        texImage2d(gl, TEXTURE_2D, img)
+        texImage2d(GlImpl.gl, TEXTURE_2D, img)
         if (props.mipMapping) {
-            gl.generateMipmap(TEXTURE_2D)
+            GlImpl.gl.generateMipmap(TEXTURE_2D)
         }
         return tex
     }
 
     fun loadTexture2d(ctx: JsContext, props: TextureProps, img: TextureData) : LoadedTextureWebGl {
-        val gl = ctx.gl
+        val gl = GlImpl.gl
         val tex = LoadedTextureWebGl(ctx, TEXTURE_2D, gl.createTexture(), img.estimateTexSize())
         tex.setSize(img.width, img.height, 1)
         tex.applySamplerProps(props)
@@ -53,18 +53,18 @@ object TextureLoader {
     }
 
     fun loadTexture3d(ctx: JsContext, props: TextureProps, img: TextureData) : LoadedTextureWebGl {
-        val tex = LoadedTextureWebGl(ctx, TEXTURE_3D, gl.createTexture(), img.estimateTexSize())
+        val tex = LoadedTextureWebGl(ctx, TEXTURE_3D, GlImpl.gl.createTexture(), img.estimateTexSize())
         tex.setSize(img.width, img.height, img.depth)
         tex.applySamplerProps(props)
 
         when (img) {
             is TextureData3d -> {
-                gl.texImage3D(TEXTURE_3D, 0, img.format.glInternalFormat, img.width, img.height, img.depth, 0, img.format.glFormat, img.format.glType, img.arrayBufferView)
+                GlImpl.gl.texImage3D(TEXTURE_3D, 0, img.format.glInternalFormat, img.width, img.height, img.depth, 0, img.format.glFormat, img.format.glType, img.arrayBufferView)
             }
             is ImageAtlasTextureData -> {
-                gl.texStorage3D(TEXTURE_3D, 1, img.format.glInternalFormat, img.width, img.height, img.depth)
+                GlImpl.gl.texStorage3D(TEXTURE_3D, 1, img.format.glInternalFormat, img.width, img.height, img.depth)
                 for (z in 0 until img.depth) {
-                    gl.texSubImage3D(TEXTURE_3D, 0, 0, 0, z, img.width, img.height, 1, img.format.glFormat, img.format.glType, img.data[z])
+                    GlImpl.gl.texSubImage3D(TEXTURE_3D, 0, 0, 0, z, img.width, img.height, 1, img.format.glFormat, img.format.glType, img.data[z])
                 }
             }
             else -> {
@@ -72,7 +72,7 @@ object TextureLoader {
             }
         }
         if (props.mipMapping) {
-            gl.generateMipmap(TEXTURE_3D)
+            GlImpl.gl.generateMipmap(TEXTURE_3D)
         }
         return tex
     }
@@ -82,7 +82,7 @@ object TextureLoader {
             throw IllegalArgumentException("Provided TextureData must be of type TextureDataCube")
         }
 
-        val gl = ctx.gl
+        val gl = GlImpl.gl
         val tex = LoadedTextureWebGl(ctx, TEXTURE_CUBE_MAP, gl.createTexture(), img.estimateTexSize())
         tex.setSize(img.width, img.height, 1)
         tex.applySamplerProps(props)

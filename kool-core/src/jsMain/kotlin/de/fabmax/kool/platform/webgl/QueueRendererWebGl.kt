@@ -1,9 +1,10 @@
 package de.fabmax.kool.platform.webgl
 
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.backend.gl.GlImpl
+import de.fabmax.kool.pipeline.backend.gl.WebGL2RenderingContext
+import de.fabmax.kool.pipeline.backend.gl.WebGL2RenderingContext.Companion.COLOR
 import de.fabmax.kool.platform.JsContext
-import de.fabmax.kool.platform.WebGL2RenderingContext
-import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.COLOR
 import de.fabmax.kool.platform.glOp
 import de.fabmax.kool.util.Profiling
 import de.fabmax.kool.util.Time
@@ -23,7 +24,7 @@ import org.khronos.webgl.set
 class QueueRendererWebGl(val ctx: JsContext) {
 
     private val gl: WebGL2RenderingContext
-        get() = ctx.gl
+        get() = GlImpl.gl
 
     private val glAttribs = GlAttribs()
     private val shaderMgr = ShaderManager(ctx)
@@ -48,7 +49,7 @@ class QueueRendererWebGl(val ctx: JsContext) {
         }
 
         view.apply {
-            ctx.gl.viewport(viewport.x, viewport.y, viewport.width, viewport.height)
+            GlImpl.gl.viewport(viewport.x, viewport.y, viewport.width, viewport.height)
 
             val rp = renderPass
             if (rp is OffscreenRenderPass2d) {
@@ -58,18 +59,18 @@ class QueueRendererWebGl(val ctx: JsContext) {
                         colorBuffer[1] = it.g
                         colorBuffer[2] = it.b
                         colorBuffer[3] = it.a
-                        ctx.gl.clearBufferfv(COLOR, i, colorBuffer)
+                        GlImpl.gl.clearBufferfv(COLOR, i, colorBuffer)
                     }
                 }
                 if (clearDepth) {
-                    ctx.gl.clear(DEPTH_BUFFER_BIT)
+                    GlImpl.gl.clear(DEPTH_BUFFER_BIT)
                 }
 
             } else {
-                clearColor?.let { ctx.gl.clearColor(it.r, it.g, it.b, it.a) }
+                clearColor?.let { GlImpl.gl.clearColor(it.r, it.g, it.b, it.a) }
                 val clearMask = clearMask()
                 if (clearMask != 0) {
-                    ctx.gl.clear(clearMask)
+                    GlImpl.gl.clear(clearMask)
                 }
             }
         }
@@ -95,7 +96,7 @@ class QueueRendererWebGl(val ctx: JsContext) {
                         }
                     }
                 }
-                cmd.mesh.drawTime = (Time.precisionTime - t) * 1e3
+                cmd.mesh.drawTime = (Time.precisionTime - t)
             }
         }
         ctx.engineStats.addPrimitiveCount(numPrimitives)

@@ -150,6 +150,10 @@ class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, val backend: Re
                 rbos += rbo
             }
             fbos += fbo
+
+            check(gl.checkFramebufferStatus(gl.FRAMEBUFFER) == gl.FRAMEBUFFER_COMPLETE) {
+                "OffscreenRenderPass2dGl: Framebuffer incomplete: ${parent.name}, level: $i"
+            }
         }
         isCreated = true
     }

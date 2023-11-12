@@ -1,11 +1,15 @@
-package de.fabmax.kool.pipeline
+package de.fabmax.kool.platform.webgl
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.pipeline.OffscreenPassCubeImpl
+import de.fabmax.kool.pipeline.OffscreenRenderPassCube
+import de.fabmax.kool.pipeline.Texture
+import de.fabmax.kool.pipeline.TextureCube
+import de.fabmax.kool.pipeline.backend.gl.GlImpl
+import de.fabmax.kool.pipeline.backend.gl.WebGL2RenderingContext.Companion.DEPTH_COMPONENT24
 import de.fabmax.kool.platform.JsContext
-import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.DEPTH_COMPONENT24
 import de.fabmax.kool.platform.glInternalFormat
 import de.fabmax.kool.platform.pxSize
-import de.fabmax.kool.platform.webgl.LoadedTextureWebGl
 import org.khronos.webgl.WebGLFramebuffer
 import org.khronos.webgl.WebGLRenderbuffer
 import org.khronos.webgl.WebGLRenderingContext.Companion.COLOR_ATTACHMENT0
@@ -15,10 +19,6 @@ import org.khronos.webgl.WebGLRenderingContext.Companion.RENDERBUFFER
 import org.khronos.webgl.WebGLRenderingContext.Companion.TEXTURE_CUBE_MAP
 import org.khronos.webgl.WebGLRenderingContext.Companion.TEXTURE_CUBE_MAP_POSITIVE_X
 import org.khronos.webgl.WebGLTexture
-
-actual fun OffscreenPassCubeImpl(offscreenPass: OffscreenRenderPassCube): OffscreenPassCubeImpl {
-    return OffscreenPassCubeWebGl(offscreenPass)
-}
 
 class OffscreenPassCubeWebGl(val offscreenPass: OffscreenRenderPassCube): OffscreenPassCubeImpl {
     private val fbos = mutableListOf<WebGLFramebuffer?>()
@@ -44,21 +44,21 @@ class OffscreenPassCubeWebGl(val offscreenPass: OffscreenRenderPassCube): Offscr
                     offscreenPass.getMipHeight(mipLevel)
                 )
             }
-            ctx.gl.bindFramebuffer(FRAMEBUFFER, fbos[mipLevel])
+            GlImpl.gl.bindFramebuffer(FRAMEBUFFER, fbos[mipLevel])
 
             for (i in CUBE_VIEWS.indices) {
                 val cubeView = CUBE_VIEWS[i]
                 val passView = offscreenPass.views[cubeView.index]
-                ctx.gl.framebufferTexture2D(FRAMEBUFFER, COLOR_ATTACHMENT0, TEXTURE_CUBE_MAP_POSITIVE_X + i, colorTex, mipLevel)
-                ctx.queueRenderer.renderView(passView)
+                GlImpl.gl.framebufferTexture2D(FRAMEBUFFER, COLOR_ATTACHMENT0, TEXTURE_CUBE_MAP_POSITIVE_X + i, colorTex, mipLevel)
+                (ctx.backend as RenderBackendLegacyWebGl).queueRenderer.renderView(passView)
                 copyToTextures(i, mipLevel, ctx)
             }
         }
-        ctx.gl.bindFramebuffer(FRAMEBUFFER, null)
+        GlImpl.gl.bindFramebuffer(FRAMEBUFFER, null)
     }
 
     private fun copyToTextures(face: Int, mipLevel: Int, ctx: JsContext) {
-        ctx.gl.readBuffer(COLOR_ATTACHMENT0)
+        GlImpl.gl.readBuffer(COLOR_ATTACHMENT0)
 
         for (i in offscreenPass.copyTargetsColor.indices) {
             val copyTarget = offscreenPass.copyTargetsColor[i]
@@ -73,15 +73,15 @@ class OffscreenPassCubeWebGl(val offscreenPass: OffscreenRenderPassCube): Offscr
             width = width shr mipLevel
             height = height shr mipLevel
             val target = copyTarget.loadedTexture as LoadedTextureWebGl
-            ctx.gl.bindTexture(TEXTURE_CUBE_MAP, target.texture)
-            ctx.gl.copyTexSubImage2D(TEXTURE_CUBE_MAP_POSITIVE_X + face, mipLevel, 0, 0, 0, 0, width, height)
+            GlImpl.gl.bindTexture(TEXTURE_CUBE_MAP, target.texture)
+            GlImpl.gl.copyTexSubImage2D(TEXTURE_CUBE_MAP_POSITIVE_X + face, mipLevel, 0, 0, 0, 0, width, height)
         }
     }
 
     override fun dispose(ctx: KoolContext) {
         ctx as JsContext
-        fbos.forEach { ctx.gl.deleteFramebuffer(it) }
-        rbos.forEach { ctx.gl.deleteRenderbuffer(it) }
+        fbos.forEach { GlImpl.gl.deleteFramebuffer(it) }
+        rbos.forEach { GlImpl.gl.deleteRenderbuffer(it) }
         fbos.clear()
         rbos.clear()
 
@@ -106,7 +106,7 @@ class OffscreenPassCubeWebGl(val offscreenPass: OffscreenRenderPassCube): Offscr
     }
 
     private fun create(ctx: JsContext) {
-        val gl = ctx.gl
+        val gl = GlImpl.gl
 
         createColorTex(ctx)
 
@@ -137,10 +137,10 @@ class OffscreenPassCubeWebGl(val offscreenPass: OffscreenRenderPassCube): Offscr
         val mipLevels = offscreenPass.mipLevels
 
         val estSize = Texture.estimatedTexSize(width, height, 6, mipLevels, format.pxSize)
-        val tex = LoadedTextureWebGl(ctx, TEXTURE_CUBE_MAP, ctx.gl.createTexture(), estSize)
+        val tex = LoadedTextureWebGl(ctx, TEXTURE_CUBE_MAP, GlImpl.gl.createTexture(), estSize)
         tex.setSize(width, height, 1)
         tex.applySamplerProps(offscreenPass.colorTexture!!.props)
-        ctx.gl.texStorage2D(TEXTURE_CUBE_MAP, mipLevels, intFormat, width, height)
+        GlImpl.gl.texStorage2D(TEXTURE_CUBE_MAP, mipLevels, intFormat, width, height)
 
         colorTex = tex.texture
         offscreenPass.colorTexture!!.loadedTexture = tex
@@ -154,10 +154,10 @@ class OffscreenPassCubeWebGl(val offscreenPass: OffscreenRenderPassCube): Offscr
         val mipLevels = offscreenPass.mipLevels
 
         val estSize = Texture.estimatedTexSize(width, height, 6, mipLevels, props.format.pxSize)
-        val tex = LoadedTextureWebGl(ctx, TEXTURE_CUBE_MAP, ctx.gl.createTexture(), estSize)
+        val tex = LoadedTextureWebGl(ctx, TEXTURE_CUBE_MAP, GlImpl.gl.createTexture(), estSize)
         tex.setSize(width, height, 1)
         tex.applySamplerProps(props)
-        ctx.gl.texStorage2D(TEXTURE_CUBE_MAP, mipLevels, intFormat, width, height)
+        GlImpl.gl.texStorage2D(TEXTURE_CUBE_MAP, mipLevels, intFormat, width, height)
         loadedTexture = tex
         loadingState = Texture.LoadingState.LOADED
     }

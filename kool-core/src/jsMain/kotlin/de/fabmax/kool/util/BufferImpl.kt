@@ -125,7 +125,7 @@ class Uint16BufferImpl(capacity: Int, isAutoLimit: Boolean = false) :
  * IntBuffer buffer implementation
  */
 class Int32BufferImpl(capacity: Int, isAutoLimit: Boolean = false) :
-    GenericBuffer<Uint32Array>(capacity, Uint32Array(capacity), isAutoLimit), Int32Buffer
+    GenericBuffer<Int32Array>(capacity, Int32Array(capacity), isAutoLimit), Int32Buffer
 {
     override fun get(i: Int): Int {
         return buffer[i]

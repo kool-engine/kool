@@ -114,6 +114,10 @@ class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, val backend
 
             fbos += fbo
             rbos += rbo
+
+            check(gl.checkFramebufferStatus(gl.FRAMEBUFFER) == gl.FRAMEBUFFER_COMPLETE) {
+                "OffscreenRenderPassCubeGl: Framebuffer incomplete: ${parent.name}, level: $i"
+            }
         }
         isCreated = true
     }

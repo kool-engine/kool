@@ -1,9 +1,10 @@
 package de.fabmax.kool.platform.webgl
 
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.backend.gl.GlImpl
+import de.fabmax.kool.pipeline.backend.gl.WebGL2RenderingContext.Companion.TEXTURE_3D
+import de.fabmax.kool.pipeline.backend.gl.WebGL2RenderingContext.Companion.TEXTURE_WRAP_R
 import de.fabmax.kool.platform.JsContext
-import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.TEXTURE_3D
-import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.TEXTURE_WRAP_R
 import de.fabmax.kool.platform.webgl.TextureLoader.arrayBufferView
 import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logW
@@ -48,7 +49,7 @@ class LoadedTextureWebGl(val ctx: JsContext, val target: Int, val texture: WebGL
     }
 
     fun applySamplerProps(props: TextureProps) {
-        val gl = ctx.gl
+        val gl = GlImpl.gl
         gl.bindTexture(target, texture)
 
         gl.texParameteri(target, TEXTURE_MIN_FILTER, props.minFilter.glMinFilterMethod(props.mipMapping))
@@ -59,9 +60,9 @@ class LoadedTextureWebGl(val ctx: JsContext, val target: Int, val texture: WebGL
             gl.texParameteri(target, TEXTURE_WRAP_R, props.addressModeW.glAddressMode())
         }
 
-        val anisotropy = min(props.maxAnisotropy, ctx.glCapabilities.maxAnisotropy)
+        val anisotropy = min(props.maxAnisotropy, (ctx.backend as RenderBackendLegacyWebGl).glCapabilities.maxAnisotropy)
         if (anisotropy > 1) {
-            gl.texParameteri(target, ctx.glCapabilities.glTextureMaxAnisotropyExt, anisotropy)
+            gl.texParameteri(target, (ctx.backend as RenderBackendLegacyWebGl).glCapabilities.glTextureMaxAnisotropyExt, anisotropy)
         }
 
         if (anisotropy > 1 && (props.minFilter == FilterMethod.NEAREST || props.magFilter == FilterMethod.NEAREST)) {
@@ -78,7 +79,7 @@ class LoadedTextureWebGl(val ctx: JsContext, val target: Int, val texture: WebGL
                     "(supplied: ${targetData.width} x ${targetData.height}, actual: $width x $height)")
         }
 
-        with(ctx.gl) {
+        with(GlImpl.gl) {
             val fb = createFramebuffer()
             bindFramebuffer(FRAMEBUFFER, fb)
             framebufferTexture2D(FRAMEBUFFER, COLOR_ATTACHMENT0, TEXTURE_2D, texture, 0)
@@ -98,7 +99,7 @@ class LoadedTextureWebGl(val ctx: JsContext, val target: Int, val texture: WebGL
     override fun dispose() {
         if (!isDestroyed) {
             isDestroyed = true
-            ctx.gl.deleteTexture(texture)
+            GlImpl.gl.deleteTexture(texture)
             ctx.engineStats.textureDeleted(texId)
         }
     }

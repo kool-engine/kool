@@ -1,5 +1,6 @@
 package de.fabmax.kool.platform.webgl
 
+import de.fabmax.kool.pipeline.backend.gl.GlImpl
 import de.fabmax.kool.platform.JsContext
 import org.khronos.webgl.WebGLRenderingContext.Companion.FLOAT
 import org.khronos.webgl.WebGLRenderingContext.Companion.INT
@@ -26,9 +27,9 @@ class VboBinder(
     fun bindAttribute(target: Int, ctx: JsContext) {
         vbo.bind(ctx)
         if (type == INT || type == UNSIGNED_INT) {
-            ctx.gl.vertexAttribIPointer(target, elemSize, type, strideBytes, offset * 4)
+            GlImpl.gl.vertexAttribIPointer(target, elemSize, type, strideBytes, offset * 4)
         } else {
-            ctx.gl.vertexAttribPointer(target, elemSize, type, false, strideBytes, offset * 4)
+            GlImpl.gl.vertexAttribPointer(target, elemSize, type, false, strideBytes, offset * 4)
         }
     }
 }

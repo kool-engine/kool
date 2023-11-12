@@ -2,6 +2,7 @@ package de.fabmax.kool.platform
 
 import de.fabmax.kool.pipeline.DepthCompareOp
 import de.fabmax.kool.pipeline.TexFormat
+import de.fabmax.kool.pipeline.backend.gl.WebGL2RenderingContext
 import org.khronos.webgl.WebGLRenderingContext
 import org.khronos.webgl.WebGLRenderingContext.Companion.ALWAYS
 import org.khronos.webgl.WebGLRenderingContext.Companion.EQUAL

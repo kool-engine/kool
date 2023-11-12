@@ -7,7 +7,6 @@ import de.fabmax.kool.platform.gl.glFormat
 import de.fabmax.kool.platform.gl.glInternalFormat
 import de.fabmax.kool.platform.gl.glType
 import de.fabmax.kool.util.*
-import org.lwjgl.opengl.GL30
 import org.lwjgl.opengl.GL31.*
 import org.lwjgl.opengl.GL33.glVertexAttribDivisor
 import org.lwjgl.opengl.GL42.glTexStorage2D
@@ -34,6 +33,7 @@ object GlImpl : GlApi {
     override val ELEMENT_ARRAY_BUFFER = GL_ELEMENT_ARRAY_BUFFER
     override val FRAGMENT_SHADER = GL_FRAGMENT_SHADER
     override val FRAMEBUFFER = GL_FRAMEBUFFER
+    override val FRAMEBUFFER_COMPLETE = GL_FRAMEBUFFER_COMPLETE
     override val FRONT = GL_FRONT
     override val INVALID_INDEX = GL_INVALID_INDEX
     override val LINEAR = GL_LINEAR
@@ -124,6 +124,7 @@ object GlImpl : GlApi {
     override fun bufferData(target: Int, buffer: Int32Buffer, usage: Int) = buffer.useRaw { glBufferData(target, it, usage) }
     override fun bufferData(target: Int, buffer: Float32Buffer, usage: Int) = buffer.useRaw { glBufferData(target, it, usage) }
     override fun bufferData(target: Int, buffer: MixedBuffer, usage: Int) = buffer.useRaw { glBufferData(target, it, usage) }
+    override fun checkFramebufferStatus(target: Int): Int = glCheckFramebufferStatus(target)
     override fun clear(mask: Int) = glClear(mask)
     override fun clearBufferfv(buffer: Int, drawBuffer: Int, values: Float32Buffer) = values.useRaw { glClearBufferfv(buffer, drawBuffer, it) }
     override fun clearColor(r: Float, g: Float, b: Float, a: Float) = glClearColor(r, g, b, a)
@@ -156,8 +157,8 @@ object GlImpl : GlApi {
     override fun generateMipmap(target: Int) = glGenerateMipmap(target)
     override fun getActiveUniformBlockParameter(program: GlProgram, uniformBlockIndex: Int, pName: Int): Int = glGetActiveUniformBlocki(program.handle, uniformBlockIndex, pName)
     override fun getActiveUniforms(program: GlProgram, uniformIndices: IntArray, pName: Int): IntArray = getActiveUniformsImpl(program, uniformIndices, pName)
-    override fun getProgramParameter(program: GlProgram, param: Int): Int = glGetProgrami(program.handle, param)
     override fun getProgramInfoLog(program: GlProgram): String = glGetProgramInfoLog(program.handle)
+    override fun getProgramParameter(program: GlProgram, param: Int): Int = glGetProgrami(program.handle, param)
     override fun getShaderInfoLog(shader: GlShader): String = glGetShaderInfoLog(shader.handle)
     override fun getShaderParameter(shader: GlShader, param: Int): Int = glGetShaderi(shader.handle, param)
     override fun getUniformBlockIndex(program: GlProgram, uniformBlockName: String): Int = glGetUniformBlockIndex(program.handle, uniformBlockName)
@@ -194,7 +195,7 @@ object GlImpl : GlApi {
     override fun uniformMatrix3fv(location: Int, values: Float32Buffer) = values.useRaw { glUniformMatrix3fv(location, false, it) }
     override fun uniformMatrix4fv(location: Int, values: Float32Buffer) = values.useRaw { glUniformMatrix4fv(location, false, it) }
     override fun vertexAttribDivisor(index: Int, divisor: Int) = glVertexAttribDivisor(index, divisor)
-    override fun vertexAttribIPointer(index: Int, size: Int, type: Int, stride: Int, offset: Int) = GL30.glVertexAttribIPointer(index, size, type, stride, offset.toLong())
+    override fun vertexAttribIPointer(index: Int, size: Int, type: Int, stride: Int, offset: Int) = glVertexAttribIPointer(index, size, type, stride, offset.toLong())
     override fun vertexAttribPointer(index: Int, size: Int, type: Int, normalized: Boolean, stride: Int, offset: Int) = glVertexAttribPointer(index, size, type, normalized, stride, offset.toLong())
     override fun viewport(x: Int, y: Int, width: Int, height: Int) = glViewport(x, y, width, height)
 

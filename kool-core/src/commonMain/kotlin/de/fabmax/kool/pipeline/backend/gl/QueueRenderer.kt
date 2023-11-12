@@ -1,7 +1,9 @@
 package de.fabmax.kool.pipeline.backend.gl
 
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.Float32Buffer
+import de.fabmax.kool.util.Profiling
 import de.fabmax.kool.util.Time
 
 class QueueRenderer(val backend: RenderBackendGl) {
@@ -11,6 +13,7 @@ class QueueRenderer(val backend: RenderBackendGl) {
 
     private val colorBufferClearVal = Float32Buffer(4)
 
+    private val ctx: KoolContext = backend.ctx
     private val gl: GlApi = backend.gl
 
     fun disposePipelines(pipelines: List<Pipeline>) {
@@ -26,9 +29,9 @@ class QueueRenderer(val backend: RenderBackendGl) {
     }
 
     fun renderView(view: RenderPass.View) {
-//        if (ctx.isProfileRenderPasses) {
-//            Profiling.enter(view.renderPass.profileTag("render"))
-//        }
+        if (ctx.isProfileRenderPasses) {
+            Profiling.enter(view.renderPass.profileTag("render"))
+        }
 
         view.apply {
             gl.viewport(viewport.x, viewport.y, viewport.width, viewport.height)
@@ -72,17 +75,17 @@ class QueueRenderer(val backend: RenderBackendGl) {
                             gl.drawElementsInstanced(shaderInst.primitiveType, shaderInst.numIndices, shaderInst.indexType, insts.numInstances)
                             numPrimitives += cmd.geometry.numPrimitives * insts.numInstances
                         }
-//                        ctx.engineStats.addDrawCommandCount(1)
+                        ctx.engineStats.addDrawCommandCount(1)
                     }
                 }
                 cmd.mesh.drawTime = Time.precisionTime - t
             }
         }
-//        ctx.engineStats.addPrimitiveCount(numPrimitives)
+        ctx.engineStats.addPrimitiveCount(numPrimitives)
 
-//        if (ctx.isProfileRenderPasses) {
-//            Profiling.exit(view.renderPass.profileTag("render"))
-//        }
+        if (ctx.isProfileRenderPasses) {
+            Profiling.exit(view.renderPass.profileTag("render"))
+        }
     }
 
     private inner class GlAttribs {

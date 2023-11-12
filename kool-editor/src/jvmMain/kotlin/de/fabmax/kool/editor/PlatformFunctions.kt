@@ -21,7 +21,7 @@ actual object PlatformFunctions {
 
     actual fun onEditorStarted(ctx: KoolContext) {
         ctx as Lwjgl3Context
-        val wnd = ctx.renderBackend.glfwWindow
+        val wnd = ctx.backend.glfwWindow
 
         val posX = KeyValueStore.getInt("editor.window.posX", -1)
         val posY = KeyValueStore.getInt("editor.window.posY", -1)
@@ -42,7 +42,7 @@ actual object PlatformFunctions {
 
     actual fun onWindowCloseRequest(ctx: KoolContext): Boolean {
         ctx as Lwjgl3Context
-        val wnd = ctx.renderBackend.glfwWindow
+        val wnd = ctx.backend.glfwWindow
 
         if (wnd.isMaximized) {
             KeyValueStore.setBoolean("editor.window.isMaximized", true)

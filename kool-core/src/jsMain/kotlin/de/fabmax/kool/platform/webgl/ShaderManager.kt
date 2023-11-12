@@ -2,7 +2,8 @@ package de.fabmax.kool.platform.webgl
 
 import de.fabmax.kool.KoolException
 import de.fabmax.kool.pipeline.Pipeline
-import de.fabmax.kool.pipeline.ShaderCode
+import de.fabmax.kool.pipeline.ShaderCodeImpl
+import de.fabmax.kool.pipeline.backend.gl.GlImpl
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.platform.JsContext
 import de.fabmax.kool.util.logE
@@ -15,14 +16,14 @@ import org.khronos.webgl.WebGLRenderingContext.Companion.VERTEX_SHADER
 
 class ShaderManager(val ctx: JsContext) {
     private val gl: WebGLRenderingContext
-        get() = ctx.gl
+        get() = GlImpl.gl
 
     val shaders = mutableMapOf<Pipeline, CompiledShader>()
     var currentShader: CompiledShader? = null
 
     fun setupShader(cmd: DrawCommand): CompiledShader.ShaderInstance? {
         val pipeline = cmd.pipeline!!
-        val shader = shaders.getOrPut(pipeline) { CompiledShader(compileShader(pipeline.shaderCode), pipeline, ctx) }
+        val shader = shaders.getOrPut(pipeline) { CompiledShader(compileShader(pipeline.shaderCode as ShaderCodeImpl), pipeline, ctx) }
         if (shader !== currentShader) {
             currentShader?.unUse()
             currentShader = shader
@@ -46,7 +47,7 @@ class ShaderManager(val ctx: JsContext) {
         }
     }
 
-    private fun compileShader(code: ShaderCode): WebGLProgram? {
+    private fun compileShader(code: ShaderCodeImpl): WebGLProgram? {
         val vert = gl.createShader(VERTEX_SHADER)
         gl.shaderSource(vert, code.vertexSrc)
         gl.compileShader(vert)
