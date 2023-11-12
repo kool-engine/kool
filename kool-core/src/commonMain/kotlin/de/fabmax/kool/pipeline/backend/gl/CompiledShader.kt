@@ -6,7 +6,6 @@ import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.PrimitiveType
-import de.fabmax.kool.scene.geometry.Usage
 import de.fabmax.kool.util.logE
 
 class CompiledShader(val program: GlProgram, val pipeline: Pipeline, val backend: RenderBackendGl) {
@@ -160,21 +159,17 @@ class CompiledShader(val program: GlProgram, val pipeline: Pipeline, val backend
         private val textures3d = mutableListOf<TextureSampler3d>()
         private val texturesCube = mutableListOf<TextureSamplerCube>()
         private val mappings = mutableListOf<MappedUniform>()
-        private val attributeBinders = mutableListOf<AttributeOnLocation>()
-        private val instanceAttribBinders = mutableListOf<AttributeOnLocation>()
+        private val attributeBinders = mutableListOf<GpuGeometryGl.AttributeBinder>()
+        private val instanceAttribBinders = mutableListOf<GpuGeometryGl.AttributeBinder>()
 
-        private var dataBufferF: BufferResource? = null
-        private var dataBufferI: BufferResource? = null
-        private var indexBuffer: BufferResource? = null
-        private var instanceBuffer: BufferResource? = null
+        private var gpuGeometry: GpuGeometryGl? = null
         private var uboBuffers = mutableListOf<BufferResource>()
-        private var buffersSet = false
 
         private var nextTexUnit = gl.TEXTURE0
 
-        var numIndices = 0
-        var indexType = 0
-        var primitiveType = 0
+        val primitiveType = pipeline.layout.vertices.primitiveType.glElemType
+        val indexType = gl.UNSIGNED_INT
+        val numIndices: Int get() = gpuGeometry?.numIndices ?: 0
 
         init {
             pipeline.layout.descriptorSets.forEach { set ->
@@ -191,7 +186,29 @@ class CompiledShader(val program: GlProgram, val pipeline: Pipeline, val backend
             pipeline.layout.pushConstantRanges.forEach { pc ->
                 mapPushConstants(pc)
             }
+            createBuffers()
             ctx.engineStats.pipelineInstanceCreated(pipelineId)
+        }
+
+        private fun createBuffers() {
+            var geom = geometry.gpuGeometry as? GpuGeometryGl
+            if (geom == null || geom.isDisposed) {
+                if (geom?.isDisposed == true) {
+                    logE { "disposed geometry: ${pipeline.name}" }
+                }
+                geom = GpuGeometryGl(geometry, instances, backend)
+                geometry.gpuGeometry = geom
+            }
+            gpuGeometry = geom
+
+            attributeBinders += geom.createShaderVertexAttributeBinders(attributes)
+            instanceAttribBinders += geom.createShaderInstanceAttributeBinders(instanceAttributes)
+
+            mappings.filterIsInstance<MappedUbo>().forEach { mappedUbo ->
+                val uboBuffer = BufferResource(gl.UNIFORM_BUFFER, backend)
+                uboBuffers += uboBuffer
+                mappedUbo.uboBuffer = uboBuffer
+            }
         }
 
         private fun mapPushConstants(pc: PushConstantRange) {
@@ -278,8 +295,8 @@ class CompiledShader(val program: GlProgram, val pipeline: Pipeline, val backend
                 texturesCube[i].onUpdate?.invoke(texturesCube[i], drawCmd)
             }
 
-            // update buffers (vertex data, instance data, UBOs)
-            checkBuffers()
+            // update geometry buffers (vertex + instance data)
+            gpuGeometry?.checkBuffers()
 
             // bind uniform values
             var uniformsValid = true
@@ -289,9 +306,9 @@ class CompiledShader(val program: GlProgram, val pipeline: Pipeline, val backend
 
             if (uniformsValid) {
                 // bind vertex data
-                indexBuffer?.bind()
-                attributeBinders.forEach { it.vbo.bindAttribute(it.loc) }
-                instanceAttribBinders.forEach { it.vbo.bindAttribute(it.loc) }
+                gpuGeometry?.indexBuffer?.bind()
+                attributeBinders.forEach { it.bindAttribute(it.loc) }
+                instanceAttribBinders.forEach { it.bindAttribute(it.loc) }
             }
             return uniformsValid
         }
@@ -299,16 +316,8 @@ class CompiledShader(val program: GlProgram, val pipeline: Pipeline, val backend
         private fun destroyBuffers() {
             attributeBinders.clear()
             instanceAttribBinders.clear()
-            dataBufferF?.delete()
-            dataBufferI?.delete()
-            indexBuffer?.delete()
-            instanceBuffer?.delete()
             uboBuffers.forEach { it.delete() }
-            dataBufferF = null
-            dataBufferI = null
-            indexBuffer = null
-            instanceBuffer = null
-            buffersSet = false
+            gpuGeometry = null
             uboBuffers.clear()
         }
 
@@ -323,95 +332,6 @@ class CompiledShader(val program: GlProgram, val pipeline: Pipeline, val backend
             texturesCube.clear()
             mappings.clear()
         }
-
-        private fun checkBuffers() {
-            val md = geometry
-            if (indexBuffer == null) {
-                indexBuffer = BufferResource(gl.ELEMENT_ARRAY_BUFFER, backend)
-
-                mappings.filterIsInstance<MappedUbo>().forEach { mappedUbo ->
-                    val uboBuffer = BufferResource(gl.UNIFORM_BUFFER, backend)
-                    uboBuffers += uboBuffer
-                    mappedUbo.uboBuffer = uboBuffer
-                }
-            }
-            var hasIntData = false
-            if (dataBufferF == null) {
-                dataBufferF = BufferResource(gl.ARRAY_BUFFER, backend)
-                for (vertexAttrib in md.vertexAttributes) {
-                    if (vertexAttrib.type.isInt) {
-                        hasIntData = true
-                    } else {
-                        val stride = md.byteStrideF
-                        val offset = md.attributeByteOffsets[vertexAttrib]!! / 4
-                        attributeBinders += attributes.makeAttribBinders(vertexAttrib, dataBufferF!!, stride, offset)
-                    }
-                }
-            }
-            if (hasIntData && dataBufferI == null) {
-                dataBufferI = BufferResource(gl.ARRAY_BUFFER, backend)
-                for (vertexAttrib in md.vertexAttributes) {
-                    if (vertexAttrib.type.isInt) {
-                        attributes[vertexAttrib.name]?.let { attr ->
-                            val vbo = VboBinder(dataBufferI!!, vertexAttrib.type.byteSize / 4,
-                                md.byteStrideI, md.attributeByteOffsets[vertexAttrib]!! / 4, gl.INT)
-                            attributeBinders += AttributeOnLocation(vbo, attr.location)
-                        }
-                    }
-                }
-            }
-
-            val instanceList = instances
-            if (instanceList != null) {
-                var instBuf = instanceBuffer
-                var isNewlyCreated = false
-                if (instBuf == null) {
-                    instBuf = BufferResource(gl.ARRAY_BUFFER, backend)
-                    instanceBuffer = instBuf
-                    isNewlyCreated = true
-                    for (instanceAttrib in instanceList.instanceAttributes) {
-                        val stride = instanceList.strideBytesF
-                        val offset = instanceList.attributeOffsets[instanceAttrib]!! / 4
-                        instanceAttribBinders += instanceAttributes.makeAttribBinders(instanceAttrib, instanceBuffer!!, stride, offset)
-                    }
-                }
-                if (instanceList.hasChanged || isNewlyCreated) {
-                    instBuf.setData(instanceList.dataF, instanceList.usage.glUsage)
-                    backend.afterRenderActions += { instanceList.hasChanged = false }
-                }
-            }
-
-            if (!md.isBatchUpdate && (md.hasChanged || !buffersSet)) {
-                val usage = md.usage.glUsage
-
-                indexType = gl.UNSIGNED_INT
-                indexBuffer?.setData(md.indices, usage)
-
-                primitiveType = pipeline.layout.vertices.primitiveType.glElemType
-                numIndices = md.numIndices
-                dataBufferF?.setData(md.dataF, usage)
-                dataBufferI?.setData(md.dataI, usage)
-
-                // fixme: data buffers should be bound to mesh, not to shader instance
-                // if mesh is rendered multiple times (e.g. by additional shadow passes), clearing
-                // hasChanged flag early results in buffers not being updated
-                backend.afterRenderActions += { md.hasChanged = false }
-                buffersSet = true
-            }
-        }
-    }
-
-    private fun Map<String, VertexLayout.VertexAttribute>.makeAttribBinders(attr: Attribute, buffer: BufferResource, stride: Int, offset: Int): List<AttributeOnLocation> {
-        val binders = mutableListOf<AttributeOnLocation>()
-        get(attr.name)?.let { vertAttr ->
-            val (slots, size) = attr.glAttribLayout
-            for (i in 0 until slots) {
-                val off = offset + size * i
-                val vbo = VboBinder(buffer, size, stride, off, gl.FLOAT)
-                binders += AttributeOnLocation(vbo, vertAttr.location + i)
-            }
-        }
-        return binders
     }
 
     private val PrimitiveType.glElemType: Int get() = when (this) {
@@ -419,27 +339,4 @@ class CompiledShader(val program: GlProgram, val pipeline: Pipeline, val backend
         PrimitiveType.POINTS -> gl.POINTS
         PrimitiveType.TRIANGLES -> gl.TRIANGLES
     }
-
-    private val Usage.glUsage: Int get() = when (this) {
-        Usage.DYNAMIC -> gl.DYNAMIC_DRAW
-        Usage.STATIC -> gl.STATIC_DRAW
-    }
-
-    private val Attribute.glAttribLayout: AttribLayout get() = when (type) {
-        GlslType.FLOAT -> AttribLayout(1, 1)
-        GlslType.VEC_2F -> AttribLayout(1, 2)
-        GlslType.VEC_3F -> AttribLayout(1, 3)
-        GlslType.VEC_4F -> AttribLayout(1, 4)
-        GlslType.INT -> AttribLayout(1, 1)
-        GlslType.VEC_2I -> AttribLayout(1, 2)
-        GlslType.VEC_3I -> AttribLayout(1, 3)
-        GlslType.VEC_4I -> AttribLayout(1, 4)
-        GlslType.MAT_2F -> AttribLayout(2, 2)
-        GlslType.MAT_3F -> AttribLayout(3, 3)
-        GlslType.MAT_4F -> AttribLayout(4, 4)
-    }
-
-    private data class AttribLayout(val slots: Int, val size: Int)
-
-    private data class AttributeOnLocation(val vbo: VboBinder, val loc: Int)
 }

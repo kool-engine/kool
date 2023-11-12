@@ -1,5 +1,6 @@
 package de.fabmax.kool.scene.geometry
 
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolException
 import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.BoundingBox
@@ -7,12 +8,13 @@ import de.fabmax.kool.math.spatial.InRadiusTraverser
 import de.fabmax.kool.math.spatial.pointKdTree
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.GlslType
+import de.fabmax.kool.pipeline.backend.GpuGeometry
 import de.fabmax.kool.util.*
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.round
 
-class IndexedVertexList(val vertexAttributes: List<Attribute>) {
+class IndexedVertexList(val vertexAttributes: List<Attribute>) : Disposable {
 
     /**
      * Hash of present vertexAttributes, can be used to check for same attributes (incl. order) of two IndexedVertexLists
@@ -83,6 +85,8 @@ class IndexedVertexList(val vertexAttributes: List<Attribute>) {
     var isRebuildBoundsOnSync = false
     var hasChanged = true
     var isBatchUpdate = false
+
+    internal var gpuGeometry: GpuGeometry? = null
 
     constructor(vararg vertexAttributes: Attribute) : this(vertexAttributes.toList())
 
@@ -522,6 +526,10 @@ class IndexedVertexList(val vertexAttributes: List<Attribute>) {
                 v0.tangent.set(Vec3f.X_AXIS)
             }
         }
+    }
+
+    override fun dispose(ctx: KoolContext) {
+        gpuGeometry?.dispose(ctx)
     }
 
     companion object {

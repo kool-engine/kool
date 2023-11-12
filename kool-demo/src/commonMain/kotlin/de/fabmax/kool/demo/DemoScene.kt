@@ -23,6 +23,8 @@ abstract class DemoScene(val name: String) {
     val isMenu = mutableStateOf(true)
     val isMenuMinimized = mutableStateOf(false)
 
+    private val titleBgMesh = TitleBgRenderer.BgMesh()
+
     private val menuDockable = UiDockable(
         name,
         floatingX = UiSizes.baseSize * 2f,
@@ -187,9 +189,5 @@ abstract class DemoScene(val name: String) {
         LOADING,
         SETUP,
         RUNNING
-    }
-
-    companion object {
-        private val titleBgMesh = TitleBgRenderer.BgMesh()
     }
 }
