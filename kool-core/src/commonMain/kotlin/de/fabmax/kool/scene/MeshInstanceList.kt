@@ -24,7 +24,7 @@ class MeshInstanceList(val instanceAttributes: List<Attribute>, initialSize: Int
 
     /**
      * Expected usage of data in this instance list: STATIC if attributes are expected to change very infrequently /
-     * never, DYNAMIC if they will be updated often.
+     * never, DYNAMIC (the default value) if they will be updated often.
      */
     var usage = Usage.DYNAMIC
 

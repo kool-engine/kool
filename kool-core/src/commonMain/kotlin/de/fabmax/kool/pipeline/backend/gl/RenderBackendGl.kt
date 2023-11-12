@@ -24,7 +24,6 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
     override val depthBiasMatrix: Mat4f = MutableMat4f().translate(0.5f, 0.5f, 0.5f).scale(0.5f)
 
     internal val queueRenderer = QueueRenderer(this)
-    internal val afterRenderActions = mutableListOf<() -> Unit>()
     private val openRenderPasses = mutableListOf<OffscreenRenderPass>()
     private val doneRenderPasses = mutableSetOf<OffscreenRenderPass>()
 
@@ -55,11 +54,6 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
                 }
                 scene.mainRenderPass.afterDraw(ctx)
             }
-        }
-
-        if (afterRenderActions.isNotEmpty()) {
-            afterRenderActions.forEach { it() }
-            afterRenderActions.clear()
         }
     }
 

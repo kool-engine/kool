@@ -196,6 +196,7 @@ open class Mesh(var geometry: IndexedVertexList, name: String? = null) : Node(na
     override fun dispose(ctx: KoolContext) {
         super.dispose(ctx)
         geometry.dispose(ctx)
+        shadowGeometry.forEach { it.dispose(ctx) }
         pipeline?.let { ctx.disposePipeline(it) }
         pipeline = null
     }
