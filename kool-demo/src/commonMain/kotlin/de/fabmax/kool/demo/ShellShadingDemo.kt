@@ -6,10 +6,7 @@ import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.*
 import de.fabmax.kool.math.noise.MultiPerlin3d
 import de.fabmax.kool.modules.ksl.KslShader
-import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
-import de.fabmax.kool.modules.ksl.blocks.cameraData
-import de.fabmax.kool.modules.ksl.blocks.convertColorSpace
-import de.fabmax.kool.modules.ksl.blocks.noise12
+import de.fabmax.kool.modules.ksl.blocks.*
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.*
@@ -28,12 +25,14 @@ class ShellShadingDemo : DemoScene("Shell Shading") {
     private val furShader = FurShader()
 
     private val shells = MeshInstanceList(128, Attribute.INSTANCE_MODEL_MAT, ATTRIB_SHELL)
-    private val numShells = mutableStateOf(32).onChange { makeShells() }
+    private val numShells = mutableStateOf(48).onChange { makeShells() }
 
     private val theme = mutableStateOf<ColorTheme?>(null).onChange { furShader.furGradient = it?.texture }
     private val density = mutableStateOf(furShader.density).onChange { furShader.density = it }
-    private val displacement = mutableStateOf(furShader.displacement).onChange { furShader.displacement = it }
-    private val curliness = mutableStateOf(2.5f).onChange { makeShells() }
+    private val hairLength = mutableStateOf(furShader.hairLength).onChange { furShader.hairLength = it }
+    private val hairThickness = mutableStateOf(furShader.hairThickness).onChange { furShader.hairThickness = it }
+    private val hairRandomness = mutableStateOf(furShader.hairRandomness).onChange { furShader.hairRandomness = it }
+    private val curliness = mutableStateOf(0f).onChange { makeShells() }
 
     private val dispScale = mutableStateOf(furShader.noiseDispScale).onChange { furShader.noiseDispScale = it }
     private val dispStrength = mutableStateOf(furShader.noiseDispStrength).onChange { furShader.noiseDispStrength = it }
@@ -46,7 +45,12 @@ class ShellShadingDemo : DemoScene("Shell Shading") {
     override fun Scene.setupMainScene(ctx: KoolContext) {
         mainRenderPass.clearColor = MdColor.GREY tone 600
 
-        defaultOrbitCamera().apply { zoom = 3.0 }
+        defaultOrbitCamera().apply {
+            zoom = 3.5
+            onUpdate {
+                verticalRotation += Time.deltaT * 5f
+            }
+        }
 
         addTextureMesh {
             generate {
@@ -58,7 +62,7 @@ class ShellShadingDemo : DemoScene("Shell Shading") {
                     val theta = PI_F / 4f
                     x = tan(x * theta) / tan(theta)
                     z = tan(z * theta) / tan(theta)
-                    texCoord.x += uvOffset
+                    texCoord.y += uvOffset
 
                     norm()
                     rot.transform(this)
@@ -105,7 +109,7 @@ class ShellShadingDemo : DemoScene("Shell Shading") {
             }
         }
 
-        addNode(Skybox.cube(envMap.reflectionMap, 2.5f))
+        addNode(Skybox.cube(envMap.reflectionMap, 2f))
 
         makeShells()
     }
@@ -126,10 +130,11 @@ class ShellShadingDemo : DemoScene("Shell Shading") {
                 mat.putTo(buf)
 
                 // outer shells first
-                buf.put((nShells - i - 1) / (nShells - 1f))
-
-                // inner shells first (slower but needed if alpha blending is used)
-                //buf.put(i / (nShells - 1f))
+                if (nShells > 1) {
+                    buf.put((nShells - i - 1) / (nShells - 1f))
+                } else {
+                    buf.put(0f)
+                }
             }
         }
     }
@@ -148,13 +153,21 @@ class ShellShadingDemo : DemoScene("Shell Shading") {
         }
         MenuRow {
             Text("Density") { labelStyle() }
-            MenuSlider(density.use(), 10f, 500f, txtFormat = { "${it.toInt()}" }) { value ->
+            MenuSlider(density.use(), 10f, 1000f, txtFormat = { "${it.toInt()}" }) { value ->
                 density.set(round(value))
             }
         }
         MenuRow {
-            Text("Displacement") { labelStyle() }
-            MenuSlider(displacement.use(), 0.01f, 1f) { value -> displacement.set(value) }
+            Text("Hair Length") { labelStyle() }
+            MenuSlider(hairLength.use(), 0.01f, 1f) { value -> hairLength.set(value) }
+        }
+        MenuRow {
+            Text("Hair Thickness") { labelStyle() }
+            MenuSlider(hairThickness.use(), 0.01f, 1f) { value -> hairThickness.set(value) }
+        }
+        MenuRow {
+            Text("Hair Randomness") { labelStyle() }
+            MenuSlider(hairRandomness.use(), 0.01f, 1f) { value -> hairRandomness.set(value) }
         }
         MenuRow {
             Text("Num Shells") { labelStyle() }
@@ -198,11 +211,13 @@ class ShellShadingDemo : DemoScene("Shell Shading") {
         var irradiance by textureCube("tIrradiance")
 
         var density by uniform1f("uDensity", 300f)
-        var displacement by uniform1f("uDisplacement", 0.25f)
+        var hairLength by uniform1f("uHairLength", 0.5f)
+        var hairThickness by uniform1f("uThickness", 1f)
+        var hairRandomness by uniform1f("uRandomness", 1f)
 
         var noiseDispScale by uniform1f("uNoiseDispScale", 0.4f)
         var noiseDispStrength by uniform1f("uNoiseDispStrength", 0.4f)
-        var noiseLenScale by uniform1f("uNoiseLenScale", 2f)
+        var noiseLenScale by uniform1f("uNoiseLenScale", 1f)
         var noiseLenStrength by uniform1f("uNoiseLenStrength", 0.5f)
 
         var windStrength by uniform1f("uWindStrength", 0.25f)
@@ -229,7 +244,7 @@ class ShellShadingDemo : DemoScene("Shell Shading") {
                         val pos = float3Var(vertexAttribFloat3(Attribute.POSITIONS))
                         basePos.input set pos
 
-                        // noise displacement
+                        // noise based displacement: static and dynamic (wind) part
                         val scale = uniformFloat1("uNoiseDispScale")
                         val strength = uniformFloat1("uNoiseDispStrength") * 0.2f.const
 
@@ -241,8 +256,8 @@ class ShellShadingDemo : DemoScene("Shell Shading") {
 
                         pos set normalize(pos)
 
-                        // shell displacement
-                        val disp = float1Var(pow(shell.input + 0.01f.const, 0.3f.const) * uniformFloat1("uDisplacement"))
+                        // scale position based on shell layer to increase sphere radius of outer shells
+                        val disp = float1Var(pow(shell.input + 0.01f.const, 0.3f.const) * uniformFloat1("uHairLength"))
                         pos set pos * (1f.const + disp)
 
                         localPos.input set pos
@@ -257,40 +272,53 @@ class ShellShadingDemo : DemoScene("Shell Shading") {
                 }
                 fragmentStage {
                     main {
-                        val scaledPos = float2Var(uv.output * uniformFloat1("uDensity"))
-                        val quantizedPos = float2Var(scaledPos.toInt2().toFloat2() + 0.5f.const)
+                        val fragPos = float2Var(uv.output * uniformFloat1("uDensity"))
+                        val cellCenter = float2Var(fragPos.toInt2().toFloat2() + 0.5f.const)
 
-                        val n = float1Var(noise12((quantizedPos + 100f.const) * 5f.const))
+                        val hairRandomness = uniformFloat1("uRandomness")
+                        val hairThickness = uniformFloat1("uThickness")
 
-                        val noiseLenFac = float1Var(sampleTexture(noise3d, basePos.output * uniformFloat1("uNoiseLenScale")).x)
-                        n *= mix(1f.const, noiseLenFac * 2f.const - 0.25f.const, uniformFloat1("uNoiseLenStrength"))
-
-                        val d = float1Var(length(scaledPos - quantizedPos) * 2f.const * 0.7f.const)
-                        d set 1f.const - clamp(1f.const - d, 0f.const, 1f.const)
-                        d set 1f.const - (d * d)
-
-                        val h = float1Var(n * d)
-
-                        `if`(shell.output gt h) {
-                            discard()
+                        // test own and neighboring cells and determine their randomly displaced center positions
+                        // and select the closest one.
+                        val nearestCell = float2Var(cellCenter)
+                        val distToNearestHair = float1Var(10f.const)
+                        for (x in -1..1) {
+                            for (y in -1..1) {
+                                val sampleCellCenter = float2Var(cellCenter + float2Value(x.toFloat(), y.toFloat()))
+                                val centerRandom = float2Var(noise22(sampleCellCenter) * 2f.const - 1f.const)
+                                val filaCenter = float2Var(sampleCellCenter + centerRandom * hairRandomness)
+                                val dist = float1Var(length(fragPos - filaCenter))
+                                `if`(dist lt distToNearestHair) {
+                                    distToNearestHair set dist
+                                    nearestCell.set(sampleCellCenter)
+                                }
+                            }
                         }
 
-                        //val a = float1Var(1f.const - shell.output)
-                        //a += clamp(smoothStep(0f.const, 0.2f.const, h - shell.output), 0f.const, 1f.const)
-                        //a *= smoothStep(shell.output * 0.25f.const, shell.output * 0.5f.const, camCos.output)
-                        val a = 1f.const
+                        // determine length of selected hair
+                        val randomHairLen = float1Var(noise12(nearestCell))
+                        val perlinNoiseLenFac = float1Var(sampleTexture(noise3d, basePos.output * uniformFloat1("uNoiseLenScale")).x)
+                        perlinNoiseLenFac += (sampleTexture(noise3d, basePos.output * uniformFloat1("uNoiseLenScale") * 5f.const).x - 0.5f.const) * 0.25f.const
+                        randomHairLen *= mix(1f.const, perlinNoiseLenFac * 2f.const - 0.25f.const, uniformFloat1("uNoiseLenStrength"))
 
-                        // simple lighting
-                        //val brightness = float1Var((dot(normalize(worldNormal.output), MutableVec3f(-1f, 0.5f, -1f).norm().const) + 1f.const) * 0.5f.const) + 0.05f.const
-                        //val lightColor = float3Var(float3Value(brightness, brightness, brightness))
+                        // relative position along hair: 1 -> bottom, 0 -> tip of the hair (or higher)
+                        val hairLenPos = float1Var(1f.const - clamp(shell.output / randomHairLen, 0f.const, 1f.const))
+                        // non-linear thickness falloff
+                        val hairThicknessFac = float1Var(1f.const - (1f.const - hairLenPos) * (1f.const - hairLenPos))
+                        val hairRadius = hairThickness * hairThicknessFac
 
-                        // image-based lighting
-                        val lightColor = sampleTexture(textureCube("tIrradiance"), worldNormal.output).rgb
+                        val isOutside = bool1Var((hairRadius - distToNearestHair lt 0f.const) or (shell.output gt randomHairLen))
+                        `if`(isOutside and (shell.output gt 0f.const)) {
+                            discard()
 
-                        val furColor = sampleTexture(texture1d("tFurColor"), mix(shell.output, h, 0.3f.const)).rgb
-                        val linColor = furColor * lightColor
+                        }.`else` {
+                            val lightColor = sampleTexture(textureCube("tIrradiance"), worldNormal.output).rgb
 
-                        colorOutput(convertColorSpace(linColor, ColorSpaceConversion.LINEAR_TO_sRGB_HDR), a)
+                            val furColor = sampleTexture(texture1d("tFurColor"), pow(shell.output, 1.5f.const)).rgb
+                            val linColor = furColor * lightColor
+
+                            colorOutput(convertColorSpace(linColor, ColorSpaceConversion.LINEAR_TO_sRGB_HDR), 1f.const)
+                        }
                     }
                 }
             }
@@ -321,13 +349,7 @@ class ShellShadingDemo : DemoScene("Shell Shading") {
 
         showLoadText("Loading IBL Maps")
 
-        //val iblMap = "shanghai_bund_1k.rgbe.png"
-        //val iblMap = "syferfontein_0d_clear_1k.rgbe.png"
-        //val iblMap = "circus_arena_1k.rgbe.png"
-        //val iblMap = "newport_loft.rgbe.png"
-        //val iblMap = "shanghai_bund_1k.rgbe.png"
         val iblMap = "mossy_forest_1k.rgbe.png"
-        //val iblMap = "colorful_studio_1k.rgbe.png"
         envMap = EnvironmentHelper.hdriEnvironment(mainScene, "${DemoLoader.hdriPath}/$iblMap")
         furShader.irradiance = envMap.irradianceMap
 
