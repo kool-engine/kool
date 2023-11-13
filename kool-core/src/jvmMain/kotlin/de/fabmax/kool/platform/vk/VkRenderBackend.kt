@@ -4,6 +4,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.platform.GlfwWindow
 import de.fabmax.kool.platform.Lwjgl3Context
@@ -438,8 +439,7 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
                             }
                             vkCmdDrawIndexed(commandBuffer, model.numIndices, instanceCnt, 0, 0, 0)
 
-                            ctx.engineStats.addDrawCommandCount(1)
-                            ctx.engineStats.addPrimitiveCount(cmd.mesh.geometry.numPrimitives * instanceCnt)
+                            BackendStats.addDrawCommands(1, cmd.mesh.geometry.numPrimitives * instanceCnt)
                         }
                     }
                     cmd.mesh.drawTime = (System.nanoTime() - t) / 1e9

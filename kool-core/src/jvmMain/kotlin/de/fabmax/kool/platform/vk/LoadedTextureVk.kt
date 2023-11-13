@@ -1,7 +1,6 @@
 package de.fabmax.kool.platform.vk
 
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.platform.vk.util.vkBytesPerPx
 import de.fabmax.kool.util.launchDelayed
 import de.fabmax.kool.util.logD
 import org.lwjgl.vulkan.VK10.vkDestroySampler
@@ -26,8 +25,7 @@ class LoadedTextureVk(val sys: VkSystem, val format: TexFormat, val textureImage
             addDependingResource(textureImage)
             addDependingResource(textureImageView)
 
-            sys.ctx.engineStats.textureAllocated(texId, Texture.estimatedTexSize(
-                    textureImage.width, textureImage.height, textureImage.arrayLayers, textureImage.mipLevels, format.vkBytesPerPx))
+            // todo: add TextureInfo() to BackendStats
         }
         logD { "Created texture: Image: ${textureImage.vkImage}, view: ${textureImageView.vkImageView}, sampler: $sampler" }
     }
@@ -41,7 +39,7 @@ class LoadedTextureVk(val sys: VkSystem, val format: TexFormat, val textureImage
     override fun freeResources() {
         if (!isSharedRes) {
             vkDestroySampler(sys.device.vkDevice, sampler, null)
-            sys.ctx.engineStats.textureDeleted(texId)
+            // todo: TextureInfo.deleted()
         }
         logD { "Destroyed texture" }
     }

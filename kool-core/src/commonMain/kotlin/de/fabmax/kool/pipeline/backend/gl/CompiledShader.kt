@@ -2,6 +2,7 @@ package de.fabmax.kool.pipeline.backend.gl
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.backend.stats.PipelineInfo
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.geometry.IndexedVertexList
@@ -20,6 +21,8 @@ class CompiledShader(val program: GlProgram, val pipeline: Pipeline, val backend
 
     private val ctx: KoolContext = backend.ctx
     private val gl: GlApi = backend.gl
+
+    private val pipelineInfo = PipelineInfo(pipeline)
 
     init {
         pipeline.layout.vertices.bindings.forEach { bnd ->
@@ -138,16 +141,13 @@ class CompiledShader(val program: GlProgram, val pipeline: Pipeline, val backend
     }
 
     fun destroyInstance(pipeline: Pipeline) {
-        instances.remove(pipeline.pipelineInstanceId)?.let {
-            it.destroyInstance()
-            ctx.engineStats.pipelineInstanceDestroyed(pipelineId)
-        }
+        instances.remove(pipeline.pipelineInstanceId)?.destroyInstance()
     }
 
     fun isEmpty(): Boolean = instances.isEmpty()
 
     fun destroy() {
-        ctx.engineStats.pipelineDestroyed(pipelineId)
+        pipelineInfo.deleted()
         gl.deleteProgram(program)
     }
 
@@ -190,7 +190,7 @@ class CompiledShader(val program: GlProgram, val pipeline: Pipeline, val backend
                 mapPushConstants(pc)
             }
             createBuffers(cmd)
-            ctx.engineStats.pipelineInstanceCreated(pipelineId)
+            pipelineInfo.numInstances++
         }
 
         private fun createBuffers(cmd: DrawCommand) {
@@ -337,6 +337,8 @@ class CompiledShader(val program: GlProgram, val pipeline: Pipeline, val backend
             textures3d.clear()
             texturesCube.clear()
             mappings.clear()
+
+            pipelineInfo.numInstances--
         }
     }
 

@@ -364,7 +364,7 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
                 }
                 DescriptorSet(this)
             }
-            sys.ctx.engineStats.pipelineInstanceCreated(vkGraphicsPipeline)
+            // todo BackendStats / PipelineInfo.numInstances++
             setInstance.createDescriptorObjects(pipeline)
             setInstance
         }
@@ -373,7 +373,7 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
     fun freeDescriptorSetInstance(pipeline: Pipeline): Boolean {
         val freeSet = descriptorSetInstances.remove(pipeline.pipelineInstanceId)
         if (freeSet != null) {
-            sys.ctx.engineStats.pipelineInstanceDestroyed(vkGraphicsPipeline)
+            // todo BackendStats / PipelineInfo.numInstances--
             freeSet.clearDescriptorObjects()
             reusableDescriptorSets += freeSet
         }
@@ -391,7 +391,7 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
         }
 
         descriptorSetInstances.clear()
-        sys.ctx.engineStats.pipelineDestroyed(vkGraphicsPipeline)
+        // todo BackendStats / PipelineInfo.deleted()
 
         logD { "Destroyed graphics pipeline" }
     }

@@ -54,7 +54,6 @@ class QueueRenderer(val backend: RenderBackendGl) {
             }
         }
 
-        var numPrimitives = 0
         for (cmd in view.drawQueue.commands) {
             cmd.pipeline?.let { pipeline ->
                 val t = Time.precisionTime
@@ -66,18 +65,16 @@ class QueueRenderer(val backend: RenderBackendGl) {
                         val insts = cmd.mesh.instances
                         if (insts == null) {
                             gl.drawElements(shaderInst.primitiveType, shaderInst.numIndices, shaderInst.indexType)
-                            numPrimitives += cmd.geometry.numPrimitives
+                            BackendStats.addDrawCommands(1, cmd.geometry.numPrimitives)
                         } else if (insts.numInstances > 0) {
                             gl.drawElementsInstanced(shaderInst.primitiveType, shaderInst.numIndices, shaderInst.indexType, insts.numInstances)
-                            numPrimitives += cmd.geometry.numPrimitives * insts.numInstances
+                            BackendStats.addDrawCommands(1, cmd.geometry.numPrimitives * insts.numInstances)
                         }
-                        BackendStats.addDrawCommandCount(1)
                     }
                 }
                 cmd.mesh.drawTime = Time.precisionTime - t
             }
         }
-        BackendStats.addPrimitiveCount(numPrimitives)
     }
 
     private inner class GlAttribs {

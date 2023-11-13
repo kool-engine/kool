@@ -2,6 +2,8 @@ package de.fabmax.kool.pipeline.backend.stats
 
 object BackendStats {
 
+    val pipelines = mutableMapOf<Long, PipelineInfo>()
+
     val offscreenPasses = mutableMapOf<Long, OffscreenPassInfo>()
 
     val allocatedBuffers = mutableMapOf<Long, BufferInfo>()
@@ -23,11 +25,8 @@ object BackendStats {
         numPrimitives = 0
     }
 
-    fun addDrawCommandCount(nCommands: Int) {
-        numDrawCommands += nCommands
-    }
-
-    fun addPrimitiveCount(nPrimitives: Int) {
+    fun addDrawCommands(nCommands: Int, nPrimitives: Int) {
         numPrimitives += nPrimitives
+        numDrawCommands += nCommands
     }
 }

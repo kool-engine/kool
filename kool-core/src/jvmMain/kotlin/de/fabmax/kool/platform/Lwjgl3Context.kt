@@ -117,8 +117,6 @@ class Lwjgl3Context : KoolContext() {
         render(dt)
 
         // execute draw queues
-        engineStats.resetPerFrameCounts()
-
         backend.renderFrame(this)
     }
 

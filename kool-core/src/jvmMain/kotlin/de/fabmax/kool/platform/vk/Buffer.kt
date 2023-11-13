@@ -1,5 +1,7 @@
 package de.fabmax.kool.platform.vk
 
+import de.fabmax.kool.pipeline.backend.stats.BufferInfo
+import de.fabmax.kool.util.UniqueId
 import de.fabmax.kool.util.memStack
 import org.lwjgl.system.MemoryUtil
 import org.lwjgl.vulkan.VK10.*
@@ -10,6 +12,8 @@ import java.nio.IntBuffer
 class Buffer(val sys: VkSystem, val bufferSize: Long, val usage: Int, val allocUsage: Int) : VkResource() {
     val vkBuffer: Long
     val allocation: Long
+
+    private val allocInfo = BufferInfo(UniqueId.nextId("VkBuffer"), "<unknown>", "<unknown>")
 
     init {
         memStack {
@@ -26,7 +30,7 @@ class Buffer(val sys: VkSystem, val bufferSize: Long, val usage: Int, val allocU
             vkBuffer = pBuffer[0]
             allocation = pAllocation[0]
 
-            sys.ctx.engineStats.bufferAllocated(vkBuffer, bufferSize.toInt())
+            allocInfo.allocated(bufferSize)
         }
     }
 
@@ -57,6 +61,6 @@ class Buffer(val sys: VkSystem, val bufferSize: Long, val usage: Int, val allocU
 
     override fun freeResources() {
         sys.memManager.freeBuffer(vkBuffer, allocation)
-        sys.ctx.engineStats.bufferDeleted(vkBuffer)
+        allocInfo.deleted()
     }
 }

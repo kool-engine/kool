@@ -118,26 +118,17 @@ class DebugOverlay(position: Position = Position.UPPER_RIGHT) {
         viewportText.set("Viewport: ${ev.viewport.width}x${ev.viewport.height} / ${(ev.ctx.windowScale * 100f).roundToInt()} %")
         updateUpText(Time.gameTime)
 
+        numCmdsText.set("${BackendStats.pipelines.size} Shaders / ${BackendStats.numDrawCommands} Cmds")
+        numFacesText.set("${BackendStats.numPrimitives} Faces")
+        numScenesRpsText.set("${ev.ctx.scenes.size} scenes, ${BackendStats.offscreenPasses.size} offscreen passes")
+
         val numTex = BackendStats.allocatedTextures.size
         val memTex = BackendStats.totalTextureSize.toDouble()
         numTexText.set("$numTex Textures: ${(memTex / (1024.0 * 1024.0)).toString(1)}M")
 
-        numScenesRpsText.set("${ev.ctx.scenes.size} scenes, ${BackendStats.offscreenPasses.size} offscreen passes")
-
-        var numBuf = BackendStats.allocatedBuffers.size
-        var memBuf = BackendStats.totalBufferSize
-        if (numBuf == 0) {
-            numBuf = ev.ctx.engineStats.bufferAllocations.size
-            memBuf = ev.ctx.engineStats.totalBufferSize
-        }
+        val numBuf = BackendStats.allocatedBuffers.size
+        val memBuf = BackendStats.totalBufferSize
         numBufText.set("$numBuf Buffers: ${(memBuf / (1024.0 * 1024.0)).toString(1)}M")
-
-        val numPipelines = ev.ctx.engineStats.pipelines.size
-        val numDrawCmds = ev.ctx.engineStats.numDrawCommands
-        numCmdsText.set("$numPipelines Shaders / $numDrawCmds Cmds")
-
-        val numPrimitives = ev.ctx.engineStats.numPrimitives
-        numFacesText.set("$numPrimitives Faces")
 
         ev.ctx.getSysInfos().forEachIndexed { i, txt ->
             val clampedTxt = if (txt.length > 32) txt.substring(0..31) else txt

@@ -52,8 +52,6 @@ abstract class KoolContext {
 
     abstract val backend: RenderBackend
 
-    val engineStats = EngineStats()
-
     val projCorrectionMatrix: Mat4f get() = backend.projCorrectionMatrix
     val depthBiasMatrix: Mat4f get() = backend.depthBiasMatrix
 
