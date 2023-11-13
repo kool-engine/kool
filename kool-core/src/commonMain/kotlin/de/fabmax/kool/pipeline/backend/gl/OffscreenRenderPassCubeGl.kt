@@ -5,6 +5,7 @@ import de.fabmax.kool.pipeline.OffscreenPassCubeImpl
 import de.fabmax.kool.pipeline.OffscreenRenderPassCube
 import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.pipeline.TextureCube
+import de.fabmax.kool.pipeline.backend.stats.OffscreenPassInfo
 
 class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, val backend: RenderBackendGl) : OffscreenPassCubeImpl {
     private val gl = backend.gl
@@ -16,9 +17,12 @@ class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, val backend
 
     private var isCreated = false
 
+    private val resInfo = OffscreenPassInfo(parent.name, parent)
+
     override fun draw(ctx: KoolContext) {
+        resInfo.sceneName = parent.parentScene?.name ?: "scene:<null>"
         if (!isCreated) {
-            create()
+            createBuffers()
         }
 
         val needsCopy = parent.copyTargetsColor.isNotEmpty()
@@ -71,7 +75,7 @@ class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, val backend
         }
     }
 
-    override fun dispose(ctx: KoolContext) {
+    private fun deleteBuffers() {
         fbos.forEach { gl.deleteFramebuffer(it) }
         rbos.forEach { gl.deleteRenderbuffer(it) }
         fbos.clear()
@@ -92,12 +96,17 @@ class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, val backend
         isCreated = false
     }
 
-    override fun applySize(width: Int, height: Int, ctx: KoolContext) {
-        dispose(ctx)
-        create()
+    override fun dispose(ctx: KoolContext) {
+        deleteBuffers()
+        resInfo.deleted()
     }
 
-    private fun create() {
+    override fun applySize(width: Int, height: Int, ctx: KoolContext) {
+        deleteBuffers()
+        createBuffers()
+    }
+
+    private fun createBuffers() {
         createColorTex()
 
         for (i in 0 until parent.mipLevels) {

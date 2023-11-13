@@ -14,7 +14,13 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.round
 
+fun IndexedVertexList(vararg vertexAttributes: Attribute): IndexedVertexList {
+    return IndexedVertexList(vertexAttributes.toList())
+}
+
 class IndexedVertexList(val vertexAttributes: List<Attribute>) : Disposable {
+
+    var name: String = "geometry"
 
     /**
      * Hash of present vertexAttributes, can be used to check for same attributes (incl. order) of two IndexedVertexLists
@@ -87,8 +93,6 @@ class IndexedVertexList(val vertexAttributes: List<Attribute>) : Disposable {
     var isBatchUpdate = false
 
     internal var gpuGeometry: GpuGeometry? = null
-
-    constructor(vararg vertexAttributes: Attribute) : this(vertexAttributes.toList())
 
     init {
         var strideF = 0

@@ -17,7 +17,7 @@ import kotlin.math.sqrt
  */
 open class Node(name: String? = null) : Disposable {
 
-    var name: String = name ?: getDefaultName()
+    var name: String = name ?: makeNodeName(this::class.simpleName ?: "Node")
 
     val onUpdate: MutableList<(RenderPass.UpdateEvent) -> Unit> = mutableListOf()
     val onDispose: MutableList<(KoolContext) -> Unit> = mutableListOf()
@@ -324,8 +324,12 @@ open class Node(name: String? = null) : Disposable {
         onDispose += block
     }
 
-    private fun getDefaultName(): String {
-        return UniqueId.nextId(this::class.simpleName ?: "unknown")
+    fun Node.makeChildName(suffix: String): String {
+        return "$name/${UniqueId.nextId(suffix)}"
+    }
+
+    companion object {
+        fun makeNodeName(type: String = "Node") = UniqueId.nextId(type)
     }
 
     class ModelMats {

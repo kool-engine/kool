@@ -2,6 +2,7 @@ package de.fabmax.kool.pipeline.backend.gl
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.backend.stats.OffscreenPassInfo
 
 class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, val backend: RenderBackendGl) : OffscreenPass2dImpl {
     private val gl = backend.gl
@@ -17,9 +18,12 @@ class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, val backend: Re
 
     private var isCreated = false
 
+    private val resInfo = OffscreenPassInfo(parent.name, parent)
+
     override fun draw(ctx: KoolContext) {
+        resInfo.sceneName = parent.parentScene?.name ?: "scene:<null>"
         if (!isCreated) {
-            create()
+            createBuffers()
         }
 
         val needsCopy = parent.copyTargetsColor.isNotEmpty()
@@ -85,7 +89,7 @@ class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, val backend: Re
         }
     }
 
-    override fun dispose(ctx: KoolContext) {
+    private fun deleteBuffers() {
         fbos.forEach { gl.deleteFramebuffer(it) }
         rbos.forEach { gl.deleteRenderbuffer(it) }
         fbos.clear()
@@ -107,12 +111,17 @@ class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, val backend: Re
         isCreated = false
     }
 
-    override fun applySize(width: Int, height: Int, ctx: KoolContext) {
-        dispose(ctx)
-        create()
+    override fun dispose(ctx: KoolContext) {
+        deleteBuffers()
+        resInfo.deleted()
     }
 
-    private fun create() {
+    override fun applySize(width: Int, height: Int, ctx: KoolContext) {
+        deleteBuffers()
+        createBuffers()
+    }
+
+    private fun createBuffers() {
         if (parent.colorRenderTarget == OffscreenRenderPass.RenderTarget.TEXTURE) {
             createColorTextures()
         }

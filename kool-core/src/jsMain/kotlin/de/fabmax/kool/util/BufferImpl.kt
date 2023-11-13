@@ -10,12 +10,6 @@ actual fun Int32Buffer(capacity: Int, isAutoLimit: Boolean): Int32Buffer = Int32
 actual fun Float32Buffer(capacity: Int, isAutoLimit: Boolean): Float32Buffer = Float32BufferImpl(capacity, isAutoLimit)
 actual fun MixedBuffer(capacity: Int, isAutoLimit: Boolean): MixedBuffer = MixedBufferImpl(capacity, isAutoLimit)
 
-val Uint8Buffer.len: Int get() = (this as Uint8BufferImpl).len
-val Uint16Buffer.len: Int get() = (this as Uint16BufferImpl).len
-val Int32Buffer.len: Int get() = (this as Int32BufferImpl).len
-val Float32Buffer.len: Int get() = (this as Float32BufferImpl).len
-val MixedBuffer.len: Int get() = (this as MixedBufferImpl).len
-
 actual fun Uint8Buffer.deflate(): Uint8Buffer {
     val uint8Data = (this as Uint8BufferImpl).buffer
     return Uint8BufferImpl(Pako.gzip(uint8Data))
@@ -33,6 +27,7 @@ abstract class GenericBuffer<B: ArrayBufferView>(
 ) : Buffer {
 
     override var limit = capacity
+        get() = if (isAutoLimit) position else field
         set(value) {
             if (value !in 0 .. capacity) {
                 throw KoolException("Limit is out of bounds: $value (capacity: $capacity)")
@@ -40,9 +35,6 @@ abstract class GenericBuffer<B: ArrayBufferView>(
             field = value
             isAutoLimit = false
         }
-
-    val len: Int
-        get() = if (isAutoLimit) position else limit
 
     override var position = 0
 
@@ -80,7 +72,7 @@ class Uint8BufferImpl(array: Uint8Array, isAutoLimit: Boolean = false) :
     }
 
     override fun put(data: Uint8Buffer): Uint8Buffer {
-        for (i in 0 ..< data.len) {
+        for (i in 0 ..< data.limit) {
             put(data[i])
         }
         return this
@@ -114,7 +106,7 @@ class Uint16BufferImpl(capacity: Int, isAutoLimit: Boolean = false) :
     }
 
     override fun put(data: Uint16Buffer): Uint16Buffer {
-        for (i in 0 ..< data.len) {
+        for (i in 0 ..< data.limit) {
             put(data[i])
         }
         return this
@@ -148,7 +140,7 @@ class Int32BufferImpl(capacity: Int, isAutoLimit: Boolean = false) :
     }
 
     override fun put(data: Int32Buffer): Int32Buffer {
-        for (i in 0 ..< data.len) {
+        for (i in 0 ..< data.limit) {
             put(data[i])
         }
         return this
@@ -187,7 +179,7 @@ class Float32BufferImpl(capacity: Int, isAutoLimit: Boolean = false) :
     }
 
     override fun put(data: Float32Buffer): Float32Buffer {
-        for (i in 0 ..< data.len) {
+        for (i in 0 ..< data.limit) {
             put(data[i])
         }
         return this

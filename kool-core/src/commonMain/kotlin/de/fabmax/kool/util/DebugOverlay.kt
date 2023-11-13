@@ -1,9 +1,12 @@
 package de.fabmax.kool.util
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.math.MutableVec4f
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.RenderPass
+import de.fabmax.kool.pipeline.backend.stats.BackendStats
+import de.fabmax.kool.pipeline.backend.stats.BufferInfo
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.geometry.IndexedVertexList
@@ -29,6 +32,7 @@ class DebugOverlay(position: Position = Position.UPPER_RIGHT) {
     private val sysInfos = mutableStateListOf<String>()
     private val viewportText = mutableStateOf("")
     private val uptimeText = mutableStateOf("")
+    private val numScenesRpsText = mutableStateOf("")
     private val numTexText = mutableStateOf("")
     private val numBufText = mutableStateOf("")
     private val numCmdsText = mutableStateOf("")
@@ -52,7 +56,7 @@ class DebugOverlay(position: Position = Position.UPPER_RIGHT) {
             }
 
             addPanelSurface(
-                name = "overview",
+                name = "statistics",
                 sizes = Sizes.small,
                 colors = Colors.darkColors(primary = Color("b2ff00"), background = Color("10101080"))
             ) {
@@ -91,8 +95,15 @@ class DebugOverlay(position: Position = Position.UPPER_RIGHT) {
                     sysInfos.use().forEach { txt -> Text(txt) { debugTextStyle() } }
                     Text(viewportText.use()) { debugTextStyle() }
                     Text(uptimeText.use()) { debugTextStyle() }
+                    Text(numScenesRpsText.use()) {
+                        debugTextStyle()
+                        modifier.onClick { printRenderPassStats() }
+                    }
                     Text(numTexText.use()) { debugTextStyle() }
-                    Text(numBufText.use()) { debugTextStyle() }
+                    Text(numBufText.use()) {
+                        debugTextStyle()
+                        modifier.onClick { printBufferStats() }
+                    }
                     Text(numCmdsText.use()) { debugTextStyle() }
                     Text(numFacesText.use()) { debugTextStyle() }
                 }
@@ -108,8 +119,14 @@ class DebugOverlay(position: Position = Position.UPPER_RIGHT) {
         val memTex = ev.ctx.engineStats.totalTextureSize.toDouble()
         numTexText.set("$numTex Textures: ${(memTex / (1024.0 * 1024.0)).toString(1)}M")
 
-        val numBuf = ev.ctx.engineStats.bufferAllocations.size
-        val memBuf = ev.ctx.engineStats.totalBufferSize.toDouble()
+        numScenesRpsText.set("${ev.ctx.scenes.size} scenes, ${BackendStats.offscreenPasses.size} offscreen passes")
+
+        var numBuf = BackendStats.allocatedBuffers.size
+        var memBuf = BackendStats.totalBufferSize
+        if (numBuf == 0) {
+            numBuf = ev.ctx.engineStats.bufferAllocations.size
+            memBuf = ev.ctx.engineStats.totalBufferSize
+        }
         numBufText.set("$numBuf Buffers: ${(memBuf / (1024.0 * 1024.0)).toString(1)}M")
 
         val numPipelines = ev.ctx.engineStats.pipelines.size
@@ -150,6 +167,61 @@ class DebugOverlay(position: Position = Position.UPPER_RIGHT) {
         }
     }
 
+    private fun printRenderPassStats() {
+        fun RenderPass.printTimes() {
+            println("  $name")
+            println("    update:  ${(tUpdate * 1000).toString(2)} ms, " +
+                    "collect: ${(tCollect * 1000).toString(2)} ms, " +
+                    "draw: ${(tDraw * 1000).toString(2)} ms")
+        }
+
+        val scenes = KoolSystem.requireContext().scenes
+        for (scene in scenes) {
+            println("Scene \"${scene.name}\":")
+            scene.mainRenderPass.printTimes()
+            BackendStats.offscreenPasses.values.filter { it.sceneName == scene.name }.forEach {
+                it.renderPass.printTimes()
+            }
+        }
+    }
+
+    private fun printBufferStats() {
+        var line = 1
+        val bufInfos = BackendStats.allocatedBuffers.values
+        bufInfos.map { it.sceneName }.distinct().sorted().forEach { scene ->
+            println("Scene \"$scene\":")
+            val sceneInfos = bufInfos.filter { it.sceneName == scene }
+
+            sceneInfos.map { it.renderPassName }.distinct().sorted().forEach { rp ->
+                println("  Render pass \"$rp\":")
+                val rpInfos = sceneInfos.filter { it.renderPassName == rp }
+
+                val groups = mutableMapOf<String, MutableList<BufferInfo>>()
+                rpInfos.forEach {
+                    val grp = it.name.substringBeforeLast('.')
+                    groups.getOrPut(grp) { mutableListOf() } += it
+                }
+
+                groups.values.sortedBy { grp -> grp.sumOf { -it.size } }.forEach { grp ->
+                    grp.sortBy { -it.size }
+                    println("    ${line++}  ${grp[0].name}  ${(grp[0].size / 1e3).toString(1)} kB")
+                    if (grp.size > 1) {
+                        var indentation = grp[0].name.substringBeforeLast('.').length - 3
+                        var indent = "    "
+                        while (indentation-- > 0) {
+                            indent = " $indent"
+                        }
+                        for (i in 1 until grp.size) {
+                            val item = grp[i]
+                            val suffix = "." + item.name.substringAfterLast('.')
+                            println("    ${line++} $indent$suffix  ${(item.size / 1e3).toString(1)} kB")
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     enum class Position {
         UPPER_LEFT,
         UPPER_RIGHT,
@@ -172,7 +244,7 @@ private class DeltaTGraph : UiRenderer<UiNode> {
     var height = 0
 
     init {
-        graphMesh = Mesh(graphGeom)
+        graphMesh = Mesh(graphGeom, "DebugOverlay/DeltaTGraph")
         graphMesh.geometry.usage = Usage.DYNAMIC
         graphMesh.shader = Ui2Shader()
         graphMesh.onUpdate += { updateGraph() }

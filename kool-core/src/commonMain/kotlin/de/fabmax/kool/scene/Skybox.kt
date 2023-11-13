@@ -12,6 +12,7 @@ import de.fabmax.kool.pipeline.CullMethod
 import de.fabmax.kool.pipeline.TextureCube
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.geometry.IndexedVertexList
+import de.fabmax.kool.util.UniqueId
 
 fun Scene.skybox(ibl: EnvironmentMaps, lod: Float = 1f) {
     this += Skybox.cube(ibl.reflectionMap, lod)
@@ -28,8 +29,11 @@ object Skybox {
         return Cube(environmentMap, texLod, colorSpaceConversion)
     }
 
-    class Cube(skyTex: TextureCube? = null, texLod: Float = 0f, colorSpaceConversion: ColorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR)
-        : Mesh(IndexedVertexList(Attribute.POSITIONS)) {
+    class Cube(
+        skyTex: TextureCube? = null,
+        texLod: Float = 0f,
+        colorSpaceConversion: ColorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
+    ) : Mesh(IndexedVertexList(Attribute.POSITIONS), UniqueId.nextId("Skybox.Cube")) {
 
         val skyboxShader: KslSkyCubeShader
 

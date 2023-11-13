@@ -13,62 +13,50 @@ import de.fabmax.kool.scene.animation.Skin
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.util.Time
-import de.fabmax.kool.util.UniqueId
 
-
-fun Node.addMesh(attributes: List<Attribute>, name: String? = null, block: Mesh.() -> Unit): Mesh {
+fun Node.addMesh(attributes: List<Attribute>, name: String = makeChildName("mesh"), block: Mesh.() -> Unit): Mesh {
     val mesh = Mesh(IndexedVertexList(attributes), name)
     mesh.block()
     addNode(mesh)
     return mesh
 }
 
-fun Node.addMesh(vararg attributes: Attribute, name: String? = null, block: Mesh.() -> Unit): Mesh {
+fun Node.addMesh(vararg attributes: Attribute, name: String = makeChildName("mesh"), block: Mesh.() -> Unit): Mesh {
     val mesh = Mesh(IndexedVertexList(*attributes), name)
     mesh.block()
     addNode(mesh)
     return mesh
 }
 
-fun Node.addColorMesh(name: String? = null, block: Mesh.() -> Unit): Mesh {
+fun Node.addColorMesh(name: String = makeChildName("colorMesh"), block: Mesh.() -> Unit): Mesh {
     return addMesh(
         Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS,
-        name = name ?: UniqueId.nextId("colorMesh"),
+        name = name,
         block = block
     )
 }
 
-fun Node.addTextureMesh(name: String? = null, isNormalMapped: Boolean = false, block: Mesh.() -> Unit): Mesh {
+fun Node.addTextureMesh(name: String = makeChildName("textureMesh"), isNormalMapped: Boolean = false, block: Mesh.() -> Unit): Mesh {
     val attributes = mutableListOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS)
     if (isNormalMapped) {
         attributes += Attribute.TANGENTS
     }
-    val mesh = addMesh(attributes, name ?: UniqueId.nextId("textureMesh"), block)
+    val mesh = addMesh(attributes, name, block)
     if (isNormalMapped) {
         mesh.geometry.generateTangents()
     }
     return mesh
 }
 
-@Deprecated("to be replaced by addMesh()", ReplaceWith("addMesh(attributes, name) { block() }"))
-fun Node.mesh(attributes: List<Attribute>, name: String? = null, block: Mesh.() -> Unit) = addMesh(attributes, name, block)
-
-@Deprecated("to be replaced by addMesh()", ReplaceWith("addMesh(attributes, name) { block() }"))
-fun Node.mesh(vararg attributes: Attribute, name: String? = null, block: Mesh.() -> Unit) = addMesh(*attributes, name = name, block = block)
-
-@Deprecated("to be replaced by addColorMesh()", ReplaceWith("addColorMesh(name) { block() }"))
-fun Node.colorMesh(name: String? = null, block: Mesh.() -> Unit) = addColorMesh(name, block)
-
-@Deprecated("to be replaced by addTextureMesh()", ReplaceWith("addTextureMesh(name, isNormalMapped) { block() }"))
-fun Node.textureMesh(name: String? = null, isNormalMapped: Boolean = false, block: Mesh.() -> Unit) = addTextureMesh(name, isNormalMapped, block)
-
 /**
  * Class for renderable geometry (triangles, lines, points).
  */
-open class Mesh(var geometry: IndexedVertexList, name: String? = null) : Node(name) {
+open class Mesh(var geometry: IndexedVertexList, name: String = geometry.name) : Node(name) {
 
-    constructor(attributes: List<Attribute>, name: String? = null) : this(IndexedVertexList(attributes), name)
-    constructor(vararg attributes: Attribute, name: String? = null) : this(IndexedVertexList(*attributes), name)
+    constructor(attributes: List<Attribute>, name: String = makeNodeName("Mesh")) :
+            this(IndexedVertexList(attributes), name)
+    constructor(vararg attributes: Attribute, name: String = makeNodeName("Mesh")) :
+            this(IndexedVertexList(*attributes), name)
 
     val id = instanceId++
 
@@ -239,14 +227,14 @@ open class Mesh(var geometry: IndexedVertexList, name: String? = null) : Node(na
  * Mesh with default attributes for vertex color based rendering:
  * [Attribute.POSITIONS], [Attribute.NORMALS], [Attribute.COLORS]
  */
-open class ColorMesh(name: String? = null) : Mesh(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, name = name)
+open class ColorMesh(name: String = makeNodeName("ColorMesh")) : Mesh(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, name = name)
 
 /**
  * Mesh with default attributes for texture color based rendering:
  * [Attribute.POSITIONS], [Attribute.NORMALS], [Attribute.TEXTURE_COORDS] and [Attribute.TANGENTS] if
  * isNormalMapped is true.
  */
-open class TextureMesh(isNormalMapped: Boolean = false, name: String? = null) : Mesh(
+open class TextureMesh(isNormalMapped: Boolean = false, name: String = makeNodeName("TextureMesh")) : Mesh(
     if (isNormalMapped) {
         listOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS, Attribute.TANGENTS)
     } else {

@@ -8,6 +8,7 @@ import de.fabmax.kool.modules.ksl.generator.GlslGenerator
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.RenderBackend
 import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.util.Time
 import de.fabmax.kool.util.logE
 
 abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolContext) : RenderBackend {
@@ -48,7 +49,11 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
                     captureFramebuffer(scene)
                 }
                 doOffscreenPasses(scene, ctx)
+
+                val t = if (scene.mainRenderPass.isProfileTimes) Time.precisionTime else 0.0
                 queueRenderer.renderViews(scene.mainRenderPass)
+                scene.mainRenderPass.tDraw = if (scene.mainRenderPass.isProfileTimes) Time.precisionTime - t else 0.0
+
                 if (scene.framebufferCaptureMode == Scene.FramebufferCaptureMode.AfterRender) {
                     captureFramebuffer(scene)
                 }
@@ -118,8 +123,12 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
                     anyDrawn = true
                     openRenderPasses -= pass
                     doneRenderPasses += pass
+
+                    val t = if (pass.isProfileTimes) Time.precisionTime else 0.0
                     drawOffscreen(pass)
                     pass.afterDraw(ctx)
+                    pass.tDraw = if (pass.isProfileTimes) Time.precisionTime - t else 0.0
+
                     break
                 }
             }

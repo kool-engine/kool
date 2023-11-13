@@ -13,7 +13,7 @@ import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.util.Color
 import kotlin.math.*
 
-class UiPrimitiveMesh : Mesh(IndexedVertexList(ATTRIB_OUTER_WEIGHTS, ATTRIB_INNER_WEIGHTS)) {
+class UiPrimitiveMesh(name: String) : Mesh(IndexedVertexList(ATTRIB_OUTER_WEIGHTS, ATTRIB_INNER_WEIGHTS), name) {
 
     private val primitives = MeshInstanceList(listOf(
         ATTRIB_OUTER_DIMENS,

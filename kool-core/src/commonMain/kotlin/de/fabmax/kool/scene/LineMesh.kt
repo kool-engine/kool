@@ -17,31 +17,26 @@ import kotlin.math.min
  * @author fabmax
  */
 
-fun Node.addLineMesh(name: String? = null, block: LineMesh.() -> Unit): LineMesh {
-    val lineMesh = LineMesh(name = name).apply(block)
+fun Node.addLineMesh(name: String = makeChildName("LineMesh"), block: LineMesh.() -> Unit): LineMesh {
+    val lineMesh = LineMesh(name).apply(block)
     addNode(lineMesh)
     return lineMesh
 }
 
-fun Node.addWireframeMesh(triMesh: IndexedVertexList, lineColor: Color? = null) = addLineMesh {
-    addWireframe(triMesh, lineColor)
-}
+fun Node.addWireframeMesh(triMesh: IndexedVertexList, lineColor: Color? = null) =
+    addLineMesh("${triMesh.name}-wireframe") {
+        addWireframe(triMesh, lineColor)
+    }
 
-fun Node.addNormalMesh(geometry: IndexedVertexList, lineColor: Color? = null, len: Float = 1f) = addLineMesh {
-    addNormals(geometry, lineColor, len)
-}
+fun Node.addNormalMesh(geometry: IndexedVertexList, lineColor: Color? = null, len: Float = 1f) =
+    addLineMesh("${geometry.name}-normals") {
+        addNormals(geometry, lineColor, len)
+    }
 
-@Deprecated("to be replaced by addLineMesh()", ReplaceWith("addLineMesh(name) { block() }"))
-fun Node.lineMesh(name: String? = null, block: LineMesh.() -> Unit) = addLineMesh(name, block)
-
-@Deprecated("to be replaced by addWireframeMesh()", ReplaceWith("addWireframeMesh(triMesh, lineColor)"))
-fun Node.wireframeMesh(triMesh: IndexedVertexList, lineColor: Color? = null) = addWireframeMesh(triMesh, lineColor)
-
-@Deprecated("to be replaced by addNormalMesh()", ReplaceWith("addNormalMesh(geometry, lineColor, len)"))
-fun Node.normalMesh(geometry: IndexedVertexList, lineColor: Color? = null, len: Float = 1f) = addNormalMesh(geometry, lineColor, len)
-
-open class LineMesh(geometry: IndexedVertexList = IndexedVertexList(Attribute.POSITIONS, Attribute.COLORS), name: String? = null) :
-        Mesh(geometry, name) {
+open class LineMesh(
+    name: String = makeNodeName("LineMesh"),
+    geometry: IndexedVertexList = IndexedVertexList(Attribute.POSITIONS, Attribute.COLORS)
+) : Mesh(geometry, name) {
     init {
         geometry.primitiveType = PrimitiveType.LINES
         rayTest = MeshRayTest.nopTest()

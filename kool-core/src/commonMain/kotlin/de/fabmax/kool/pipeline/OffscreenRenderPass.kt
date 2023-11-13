@@ -15,7 +15,7 @@ inline fun renderPassConfig(block: OffscreenRenderPass.Config.() -> Unit): Offsc
     return config
 }
 
-abstract class OffscreenRenderPass(drawNode: Node, config: Config) : RenderPass(drawNode) {
+abstract class OffscreenRenderPass(drawNode: Node, config: Config) : RenderPass(drawNode, config.name) {
 
     private val _size = MutableVec2i(config.size)
     val size: Vec2i get() = _size
@@ -53,8 +53,6 @@ abstract class OffscreenRenderPass(drawNode: Node, config: Config) : RenderPass(
         } else if (depthRenderTarget == RenderTarget.RENDER_BUFFER && config.depthAttachment != null) {
             logW { "depthAttachment is ignored if depthRenderTarget is RENDER_BUFFER" }
         }
-
-        name = config.name
     }
 
     fun getColorTexProps(colorAttachment: Int = 0): TextureProps {

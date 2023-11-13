@@ -13,14 +13,16 @@ import de.fabmax.kool.util.Color
  * @author fabmax
  */
 
-fun Node.addPointMesh(name: String? = null, block: PointMesh.() -> Unit): PointMesh {
-    val pointMesh = PointMesh(name = name).apply(block)
+fun Node.addPointMesh(name: String = Node.makeNodeName("LineMesh"), block: PointMesh.() -> Unit): PointMesh {
+    val pointMesh = PointMesh(name).apply(block)
     addNode(pointMesh)
     return pointMesh
 }
 
-open class PointMesh(geometry: IndexedVertexList = IndexedVertexList(Attribute.POSITIONS, ATTRIB_POINT_SIZE, Attribute.COLORS), name: String? = null) :
-        Mesh(geometry, name) {
+open class PointMesh(
+    name: String = makeNodeName("LineMesh"),
+    geometry: IndexedVertexList = IndexedVertexList(Attribute.POSITIONS, ATTRIB_POINT_SIZE, Attribute.COLORS)
+) : Mesh(geometry, name) {
     init {
         geometry.primitiveType = PrimitiveType.POINTS
         rayTest = MeshRayTest.nopTest()

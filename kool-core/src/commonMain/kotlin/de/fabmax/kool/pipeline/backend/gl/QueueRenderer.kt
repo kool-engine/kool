@@ -3,7 +3,6 @@ package de.fabmax.kool.pipeline.backend.gl
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.Float32Buffer
-import de.fabmax.kool.util.Profiling
 import de.fabmax.kool.util.Time
 
 class QueueRenderer(val backend: RenderBackendGl) {
@@ -29,10 +28,6 @@ class QueueRenderer(val backend: RenderBackendGl) {
     }
 
     fun renderView(view: RenderPass.View) {
-        if (ctx.isProfileRenderPasses) {
-            Profiling.enter(view.renderPass.profileTag("render"))
-        }
-
         view.apply {
             gl.viewport(viewport.x, viewport.y, viewport.width, viewport.height)
 
@@ -82,10 +77,6 @@ class QueueRenderer(val backend: RenderBackendGl) {
             }
         }
         ctx.engineStats.addPrimitiveCount(numPrimitives)
-
-        if (ctx.isProfileRenderPasses) {
-            Profiling.exit(view.renderPass.profileTag("render"))
-        }
     }
 
     private inner class GlAttribs {

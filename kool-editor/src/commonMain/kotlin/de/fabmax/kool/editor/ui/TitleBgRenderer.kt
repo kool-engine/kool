@@ -45,7 +45,7 @@ class TitleBgRenderer(
         }
     }
 
-    private class TitleBgMesh : Mesh(IndexedVertexList(Ui2Shader.UI_MESH_ATTRIBS)) {
+    private class TitleBgMesh : Mesh(IndexedVertexList(Ui2Shader.UI_MESH_ATTRIBS), "Ui/TitleBgMesh") {
         val bgInstances = MeshInstanceList(listOf(
             Ui2Shader.ATTRIB_CLIP,
             TitleBgShader.ATTRIB_DIMENS,
@@ -154,7 +154,6 @@ class TitleBgRenderer(
             val pipelineConfig = PipelineConfig().apply {
                 blendMode = BlendMode.DISABLED
                 cullMethod = CullMethod.NO_CULLING
-                //depthTest = DepthCompareOp.DISABLED
             }
         }
     }

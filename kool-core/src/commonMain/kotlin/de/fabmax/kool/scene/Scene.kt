@@ -81,6 +81,7 @@ open class Scene(name: String? = null) : Node(name) {
 
         for (i in offscreenPasses.indices) {
             val pass = offscreenPasses[i]
+            pass.parentScene = this
             if (pass.isEnabled) {
                 pass.update(ctx)
                 pass.collectDrawCommands(ctx)

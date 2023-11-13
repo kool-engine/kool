@@ -45,7 +45,7 @@ abstract class GenericBuffer<B: NioBuffer>(
         }
 
     override var limit: Int
-        get() = buffer.limit()
+        get() = if (isAutoLimit) pos else buffer.limit()
         set(value) {
             buffer.limit(value)
             isAutoLimit = false

@@ -5,12 +5,15 @@ import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.pipeline.drawqueue.DrawQueue
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.Profiling
+import de.fabmax.kool.util.Time
 import de.fabmax.kool.util.Viewport
 
-abstract class RenderPass(var drawNode: Node) {
+abstract class RenderPass(
+    var drawNode: Node,
+    var name: String
+) {
 
-    var name: String? = null
+    var parentScene: Scene? = null
 
     val dependencies = mutableListOf<RenderPass>()
 
@@ -26,24 +29,17 @@ abstract class RenderPass(var drawNode: Node) {
     val onAfterCollectDrawCommands = mutableListOf<((UpdateEvent) -> Unit)>()
     val onAfterDraw = mutableListOf<((KoolContext) -> Unit)>()
 
-    var isProfileDetailed = false
-
-    fun profileTag(subTag: String): String {
-        return if (isProfileDetailed) {
-            "RP:${name}-${subTag}"
-        } else {
-            "RP:${name}"
-        }
-    }
+    var isProfileTimes = true
+    var tUpdate = 0.0
+    var tCollect = 0.0
+    var tDraw = 0.0
 
     fun dependsOn(renderPass: RenderPass) {
         dependencies += renderPass
     }
 
     open fun update(ctx: KoolContext) {
-        if (ctx.isProfileRenderPasses) {
-            Profiling.enter(profileTag("update"))
-        }
+        val t = if (isProfileTimes) Time.precisionTime else 0.0
 
         for (i in views.indices) {
             val view = views[i]
@@ -58,15 +54,11 @@ abstract class RenderPass(var drawNode: Node) {
             }
         }
 
-        if (ctx.isProfileRenderPasses) {
-            Profiling.exit(profileTag("update"))
-        }
+        tUpdate = if (isProfileTimes) Time.precisionTime - t else 0.0
     }
 
     open fun collectDrawCommands(ctx: KoolContext) {
-        if (ctx.isProfileRenderPasses) {
-            Profiling.enter(profileTag("collect"))
-        }
+        val t = if (isProfileTimes) Time.precisionTime else 0.0
 
         for (i in views.indices) {
             val view = views[i]
@@ -77,9 +69,7 @@ abstract class RenderPass(var drawNode: Node) {
             afterCollectDrawCommands(updateEvent)
         }
 
-        if (ctx.isProfileRenderPasses) {
-            Profiling.exit(profileTag("collect"))
-        }
+        tCollect = if (isProfileTimes) Time.precisionTime - t else 0.0
     }
 
     protected open fun beforeCollectDrawCommands(updateEvent: UpdateEvent) {
@@ -148,7 +138,7 @@ abstract class RenderPass(var drawNode: Node) {
     }
 }
 
-class ScreenRenderPass(val scene: Scene) : RenderPass(scene) {
+class ScreenRenderPass(val scene: Scene) : RenderPass(scene, "${scene.name}:ScreenRenderPass") {
 
     val screenView = View("screen", PerspectiveCamera(), arrayOf(Color(0.15f, 0.15f, 0.15f, 1f)))
     var camera: Camera by screenView::camera
@@ -161,7 +151,7 @@ class ScreenRenderPass(val scene: Scene) : RenderPass(scene) {
     var useWindowViewport = true
 
     init {
-        name = "onscreen/${scene.name}"
+        parentScene = scene
         lighting = Lighting()
     }
 

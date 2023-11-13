@@ -132,7 +132,7 @@ class CompiledShader(val program: GlProgram, val pipeline: Pipeline, val backend
     fun bindInstance(cmd: DrawCommand): ShaderInstance? {
         val pipelineInst = cmd.pipeline!!
         val inst = instances.getOrPut(pipelineInst.pipelineInstanceId) {
-            ShaderInstance(cmd.geometry, cmd.mesh.instances, pipelineInst)
+            ShaderInstance(cmd, pipelineInst)
         }
         return if (inst.bindInstance(cmd)) { inst } else { null }
     }
@@ -151,7 +151,10 @@ class CompiledShader(val program: GlProgram, val pipeline: Pipeline, val backend
         gl.deleteProgram(program)
     }
 
-    inner class ShaderInstance(var geometry: IndexedVertexList, val instances: MeshInstanceList?, val pipeline: Pipeline) {
+    inner class ShaderInstance(cmd: DrawCommand, val pipeline: Pipeline) {
+        var geometry: IndexedVertexList = cmd.geometry
+        val instances: MeshInstanceList? = cmd.mesh.instances
+
         private val pushConstants = mutableListOf<PushConstantRange>()
         private val ubos = mutableListOf<UniformBuffer>()
         private val textures1d = mutableListOf<TextureSampler1d>()
@@ -186,17 +189,19 @@ class CompiledShader(val program: GlProgram, val pipeline: Pipeline, val backend
             pipeline.layout.pushConstantRanges.forEach { pc ->
                 mapPushConstants(pc)
             }
-            createBuffers()
+            createBuffers(cmd)
             ctx.engineStats.pipelineInstanceCreated(pipelineId)
         }
 
-        private fun createBuffers() {
+        private fun createBuffers(cmd: DrawCommand) {
+            val creationInfo = BufferCreationInfo(cmd)
+
             var geom = geometry.gpuGeometry as? GpuGeometryGl
             if (geom == null || geom.isDisposed) {
                 if (geom?.isDisposed == true) {
                     logE { "disposed geometry: ${pipeline.name}" }
                 }
-                geom = GpuGeometryGl(geometry, instances, backend)
+                geom = GpuGeometryGl(geometry, instances, backend, creationInfo)
                 geometry.gpuGeometry = geom
             }
             gpuGeometry = geom
@@ -204,8 +209,8 @@ class CompiledShader(val program: GlProgram, val pipeline: Pipeline, val backend
             attributeBinders += geom.createShaderVertexAttributeBinders(attributes)
             instanceAttribBinders += geom.createShaderInstanceAttributeBinders(instanceAttributes)
 
-            mappings.filterIsInstance<MappedUbo>().forEach { mappedUbo ->
-                val uboBuffer = BufferResource(gl.UNIFORM_BUFFER, backend)
+            mappings.filterIsInstance<MappedUbo>().forEachIndexed { i, mappedUbo ->
+                val uboBuffer = BufferResource(gl.UNIFORM_BUFFER, backend, creationInfo.copy(bufferName = "${pipeline.name}.ubo-$i"))
                 uboBuffers += uboBuffer
                 mappedUbo.uboBuffer = uboBuffer
             }
@@ -270,6 +275,7 @@ class CompiledShader(val program: GlProgram, val pipeline: Pipeline, val backend
             if (geometry !== drawCmd.geometry) {
                 geometry = drawCmd.geometry
                 destroyBuffers()
+                createBuffers(drawCmd)
             }
 
             // call onUpdate callbacks
@@ -317,8 +323,8 @@ class CompiledShader(val program: GlProgram, val pipeline: Pipeline, val backend
             attributeBinders.clear()
             instanceAttribBinders.clear()
             uboBuffers.forEach { it.delete() }
-            gpuGeometry = null
             uboBuffers.clear()
+            gpuGeometry = null
         }
 
         fun destroyInstance() {

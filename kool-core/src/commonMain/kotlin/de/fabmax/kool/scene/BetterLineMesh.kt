@@ -17,18 +17,18 @@ import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.VertexView
 import de.fabmax.kool.util.Color
 
-fun Node.addBetterLineMesh(name: String? = null, block: BetterLineMesh.() -> Unit): BetterLineMesh {
+fun Node.addBetterLineMesh(
+    name: String = makeChildName("BetterLineMesh"),
+    block: BetterLineMesh.() -> Unit
+): BetterLineMesh {
     val mesh = BetterLineMesh(name).apply(block)
     addNode(mesh)
     return mesh
 }
 
-@Deprecated("to be replaced by addBetterLineMesh()", ReplaceWith("addBetterLineMesh() { block() }"))
-fun Node.betterLineMesh(block: BetterLineMesh.() -> Unit) = addBetterLineMesh(null, block)
+class BetterLineMesh(geometry: IndexedVertexList, name: String = makeNodeName("BetterLineMesh")) : Mesh(geometry, name) {
 
-class BetterLineMesh(geometry: IndexedVertexList, name: String? = null) : Mesh(geometry, name) {
-
-    constructor(name: String? = null) : this(IndexedVertexList(lineMeshAttribs), name)
+    constructor(name: String = makeNodeName("BetterLineMesh")) : this(IndexedVertexList(lineMeshAttribs), name)
 
     private val lineBuffer = mutableListOf<LineVertex>()
 

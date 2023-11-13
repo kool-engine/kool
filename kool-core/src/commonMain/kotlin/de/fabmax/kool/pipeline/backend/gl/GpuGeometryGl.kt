@@ -12,7 +12,8 @@ import de.fabmax.kool.scene.geometry.Usage
 class GpuGeometryGl(
     val geometry: IndexedVertexList,
     val instances: MeshInstanceList?,
-    val backend: RenderBackendGl
+    val backend: RenderBackendGl,
+    creationInfo: BufferCreationInfo
 ) : GpuGeometry {
 
     internal val indexBuffer: BufferResource
@@ -28,24 +29,25 @@ class GpuGeometryGl(
     var isDisposed = false
 
     init {
-        indexBuffer = BufferResource(gl.ELEMENT_ARRAY_BUFFER, backend)
+        val namePrefix = creationInfo.bufferName
+        indexBuffer = BufferResource(gl.ELEMENT_ARRAY_BUFFER, backend, creationInfo.copy(bufferName = "$namePrefix.${geometry.name}.indices"))
 
         val hasFloatAttributes = geometry.vertexAttributes.any { !it.type.isInt }
         dataBufferF = if (hasFloatAttributes) {
-            BufferResource(gl.ARRAY_BUFFER, backend)
+            BufferResource(gl.ARRAY_BUFFER, backend, creationInfo.copy(bufferName = "$namePrefix.${geometry.name}.dataF"))
         } else {
             null
         }
 
         val hasIntAttributes = geometry.vertexAttributes.any { it.type.isInt }
         dataBufferI = if (hasIntAttributes) {
-            BufferResource(gl.ARRAY_BUFFER, backend)
+            BufferResource(gl.ARRAY_BUFFER, backend, creationInfo.copy(bufferName = "$namePrefix.${geometry.name}.dataI"))
         } else {
             null
         }
 
         instanceBuffer = if (instances != null) {
-            BufferResource(gl.ARRAY_BUFFER, backend)
+            BufferResource(gl.ARRAY_BUFFER, backend, creationInfo.copy(bufferName = "$namePrefix.${geometry.name}.instances"))
         } else {
             null
         }

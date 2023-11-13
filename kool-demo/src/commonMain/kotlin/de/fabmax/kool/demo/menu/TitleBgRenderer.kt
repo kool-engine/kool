@@ -47,7 +47,7 @@ class TitleBgRenderer(
         }
     }
 
-    class BgMesh : Mesh(IndexedVertexList(Ui2Shader.UI_MESH_ATTRIBS)) {
+    class BgMesh : Mesh(IndexedVertexList(Ui2Shader.UI_MESH_ATTRIBS), "DemoMenu/TitleBgMesh") {
         val bgInstances = MeshInstanceList(listOf(
             Ui2Shader.ATTRIB_CLIP,
             CategoryShader.ATTRIB_DIMENS,

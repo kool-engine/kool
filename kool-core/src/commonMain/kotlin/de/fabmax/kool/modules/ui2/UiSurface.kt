@@ -181,7 +181,7 @@ open class UiSurface(
     }
 
     fun getMeshLayer(layer: Int): MeshLayer {
-        val meshLayer = meshLayers[layer] ?: MeshLayer().also { meshLayers[layer] = it }
+        val meshLayer = meshLayers[layer] ?: MeshLayer("$name/MeshLayer[$layer]").also { meshLayers[layer] = it }
         meshLayer.isUsed = true
         return meshLayer
     }
@@ -581,13 +581,17 @@ open class UiSurface(
         }
     }
 
-    private class ImageMeshes {
+    private class ImageMeshes(val imageName: String) {
         val meshes = mutableListOf<ImageMesh>()
         var lastUsed = -1
 
         fun getUnusedMesh(): ImageMesh {
             lastUsed++
-            return if (lastUsed < meshes.size) meshes[lastUsed] else ImageMesh().also { meshes += it }
+            return if (lastUsed < meshes.size) {
+                meshes[lastUsed]
+            } else {
+                ImageMesh("UiImageMesh-${meshes.size+1}[$imageName]").also { meshes += it }
+            }
         }
 
         fun clear() {
@@ -603,14 +607,14 @@ open class UiSurface(
         }
     }
 
-    inner class MeshLayer : Node() {
+    inner class MeshLayer(name: String) : Node(name) {
         private val msdfMeshes = mutableMapOf<MsdfFontData, TextMesh>()
         private val textMeshes = mutableMapOf<Font, TextMesh>()
         private val imageMeshes = mutableMapOf<Texture2d, ImageMeshes>()
         private val customLayers = mutableMapOf<String, CustomLayer>()
         private val plainMesh = Mesh(Ui2Shader.UI_MESH_ATTRIBS).apply { shader = Ui2Shader() }
 
-        val uiPrimitives = UiPrimitiveMesh()
+        val uiPrimitives = UiPrimitiveMesh("$name/UiPrimitiveMesh")
         val plainBuilder = MeshBuilder(plainMesh.geometry).apply { isInvertFaceOrientation = true }
 
         var isUsed = false
@@ -656,7 +660,7 @@ open class UiSurface(
         }
 
         fun addImage(image: Texture2d, order: Int = -1): ImageMesh {
-            val imgMesh = imageMeshes.getOrPut(image) { ImageMeshes() }.getUnusedMesh()
+            val imgMesh = imageMeshes.getOrPut(image) { ImageMeshes(image.name ?: "unnamed") }.getUnusedMesh()
             addNode(imgMesh, order)
             return imgMesh
         }

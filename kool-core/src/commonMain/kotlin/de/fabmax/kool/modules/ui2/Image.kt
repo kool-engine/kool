@@ -193,7 +193,7 @@ class ImageNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface), 
     }
 }
 
-class ImageMesh : Mesh(IndexedVertexList(Ui2Shader.UI_MESH_ATTRIBS)) {
+class ImageMesh(name: String) : Mesh(IndexedVertexList(Ui2Shader.UI_MESH_ATTRIBS), name) {
     var defaultImageShader: ImageShader? = null
     val builder = MeshBuilder(geometry).apply { isInvertFaceOrientation = true }
 
