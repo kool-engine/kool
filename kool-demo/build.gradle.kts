@@ -58,7 +58,7 @@ kotlin {
 
     sourceSets.all {
         languageSettings {
-            version = 2.0
+            languageVersion = "2.0"
         }
     }
 }
