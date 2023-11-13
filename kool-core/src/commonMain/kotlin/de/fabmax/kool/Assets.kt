@@ -260,13 +260,21 @@ object Assets : CoroutineScope {
         return TextureDataCube(ftd, bkd, ltd, rtd, upd, dnd)
     }
 
-    suspend fun loadTexture1d(texData: TextureData1d, props: TextureProps = TextureProps(), name: String? = null): Texture1d {
+    suspend fun loadTexture1d(
+        texData: TextureData1d,
+        props: TextureProps = TextureProps(),
+        name: String = UniqueId.nextId("Texture1d")
+    ): Texture1d {
         val tex = Texture1d(props, name) { texData }
         uploadTextureToGpu(tex, texData)
         return tex
     }
 
-    suspend fun loadTexture2d(texData: TextureData, props: TextureProps = TextureProps(), name: String? = null): Texture2d {
+    suspend fun loadTexture2d(
+        texData: TextureData,
+        props: TextureProps = TextureProps(),
+        name: String = UniqueId.nextId("Texture2d")
+    ): Texture2d {
         val tex = Texture2d(props, name) { texData }
         uploadTextureToGpu(tex, texData)
         return tex
@@ -276,17 +284,30 @@ object Assets : CoroutineScope {
         return loadTexture2d(loadTextureData(assetPath), props, trimAssetPath(assetPath))
     }
 
-    suspend fun loadTexture3d(texData: TextureData, props: TextureProps = TextureProps(), name: String? = null): Texture3d {
+    suspend fun loadTexture3d(
+        texData: TextureData,
+        props: TextureProps = TextureProps(),
+        name: String = UniqueId.nextId("Texture3d")
+    ): Texture3d {
         val tex = Texture3d(props, name) { texData }
         uploadTextureToGpu(tex, texData)
         return tex
     }
 
-    suspend fun loadTexture3d(assetPath: String, tilesX: Int, tilesY: Int, props: TextureProps = TextureProps()): Texture3d {
+    suspend fun loadTexture3d(
+        assetPath: String,
+        tilesX: Int,
+        tilesY: Int,
+        props: TextureProps = TextureProps()
+    ): Texture3d {
         return loadTexture3d(loadTextureAtlasData(assetPath, tilesX, tilesY), props, trimAssetPath(assetPath))
     }
 
-    suspend fun loadCubeMap(texData: TextureDataCube, props: TextureProps = TextureProps(), name: String? = null): TextureCube {
+    suspend fun loadCubeMap(
+        texData: TextureDataCube,
+        props: TextureProps = TextureProps(),
+        name: String = UniqueId.nextId("TextureCube")
+    ): TextureCube {
         val tex = TextureCube(props, name) { texData }
         uploadTextureToGpu(tex, texData)
         return tex

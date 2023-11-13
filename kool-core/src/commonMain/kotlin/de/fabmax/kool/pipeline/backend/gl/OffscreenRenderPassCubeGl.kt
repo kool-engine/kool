@@ -17,7 +17,7 @@ class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, val backend
 
     private var isCreated = false
 
-    private val resInfo = OffscreenPassInfo(parent.name, parent)
+    private val resInfo = OffscreenPassInfo(parent)
 
     override fun draw(ctx: KoolContext) {
         resInfo.sceneName = parent.parentScene?.name ?: "scene:<null>"
@@ -70,7 +70,7 @@ class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, val backend
             width = width shr mipLevel
             height = height shr mipLevel
             val target = copyTarget.loadedTexture as LoadedTextureGl
-            gl.bindTexture(gl.TEXTURE_CUBE_MAP, target.texture)
+            gl.bindTexture(gl.TEXTURE_CUBE_MAP, target.glTexture)
             gl.copyTexSubImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + face, mipLevel, 0, 0, 0, 0, width, height)
         }
     }
@@ -132,21 +132,22 @@ class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, val backend
     }
 
     private fun createColorTex() {
+        val parentTex = parent.colorTexture!!
         val format = parent.colorAttachments[0].colorFormat
         val intFormat = format.glInternalFormat(gl)
         val width = parent.width
         val height = parent.height
         val mipLevels = parent.mipLevels
 
-        val estSize = Texture.estimatedTexSize(width, height, 6, mipLevels, format.pxSize)
-        val tex = LoadedTextureGl(gl.TEXTURE_CUBE_MAP, gl.createTexture(), estSize, backend)
+        val estSize = Texture.estimatedTexSize(width, height, 6, mipLevels, format.pxSize).toLong()
+        val tex = LoadedTextureGl(gl.TEXTURE_CUBE_MAP, gl.createTexture(), backend, parentTex, estSize)
         tex.setSize(width, height, 1)
-        tex.applySamplerProps(parent.colorTexture!!.props)
+        tex.applySamplerProps(parentTex.props)
         gl.texStorage2D(gl.TEXTURE_CUBE_MAP, mipLevels, intFormat, width, height)
 
-        glColorTex = tex.texture
-        parent.colorTexture!!.loadedTexture = tex
-        parent.colorTexture!!.loadingState = Texture.LoadingState.LOADED
+        glColorTex = tex.glTexture
+        parentTex.loadedTexture = tex
+        parentTex.loadingState = Texture.LoadingState.LOADED
     }
 
     private fun TextureCube.createCopyTexColor() {
@@ -155,8 +156,8 @@ class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, val backend
         val height = parent.height
         val mipLevels = parent.mipLevels
 
-        val estSize = Texture.estimatedTexSize(width, height, 6, mipLevels, props.format.pxSize)
-        val tex = LoadedTextureGl(gl.TEXTURE_CUBE_MAP, gl.createTexture(), estSize, backend)
+        val estSize = Texture.estimatedTexSize(width, height, 6, mipLevels, props.format.pxSize).toLong()
+        val tex = LoadedTextureGl(gl.TEXTURE_CUBE_MAP, gl.createTexture(), backend, this, estSize)
         tex.setSize(width, height, 1)
         tex.applySamplerProps(props)
         gl.texStorage2D(gl.TEXTURE_CUBE_MAP, mipLevels, intFormat, width, height)

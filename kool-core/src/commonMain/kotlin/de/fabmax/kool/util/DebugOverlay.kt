@@ -99,7 +99,10 @@ class DebugOverlay(position: Position = Position.UPPER_RIGHT) {
                         debugTextStyle()
                         modifier.onClick { printRenderPassStats() }
                     }
-                    Text(numTexText.use()) { debugTextStyle() }
+                    Text(numTexText.use()) {
+                        debugTextStyle()
+                        modifier.onClick { printTextureStats() }
+                    }
                     Text(numBufText.use()) {
                         debugTextStyle()
                         modifier.onClick { printBufferStats() }
@@ -115,8 +118,8 @@ class DebugOverlay(position: Position = Position.UPPER_RIGHT) {
         viewportText.set("Viewport: ${ev.viewport.width}x${ev.viewport.height} / ${(ev.ctx.windowScale * 100f).roundToInt()} %")
         updateUpText(Time.gameTime)
 
-        val numTex = ev.ctx.engineStats.textureAllocations.size
-        val memTex = ev.ctx.engineStats.totalTextureSize.toDouble()
+        val numTex = BackendStats.allocatedTextures.size
+        val memTex = BackendStats.totalTextureSize.toDouble()
         numTexText.set("$numTex Textures: ${(memTex / (1024.0 * 1024.0)).toString(1)}M")
 
         numScenesRpsText.set("${ev.ctx.scenes.size} scenes, ${BackendStats.offscreenPasses.size} offscreen passes")
@@ -219,6 +222,13 @@ class DebugOverlay(position: Position = Position.UPPER_RIGHT) {
                     }
                 }
             }
+        }
+    }
+
+    private fun printTextureStats() {
+        val texInfos = BackendStats.allocatedTextures.values
+        texInfos.sortedBy { -it.size }.forEachIndexed { i, tex ->
+            println("  $i  ${tex.name}  ${(tex.size / 1e3).toString(1)} kB")
         }
     }
 

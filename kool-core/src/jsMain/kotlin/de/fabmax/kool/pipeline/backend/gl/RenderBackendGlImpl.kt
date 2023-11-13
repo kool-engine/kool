@@ -35,7 +35,7 @@ class RenderBackendGlImpl(ctx: KoolContext) : RenderBackendGl(GlImpl, ctx) {
     override fun readTexturePixels(src: LoadedTextureGl, dst: TextureData) {
         val fb = gl.createFramebuffer()
         gl.bindFramebuffer(gl.FRAMEBUFFER, fb)
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, src.texture, 0)
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, src.glTexture, 0)
 
         if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) == gl.FRAMEBUFFER_COMPLETE) {
             val format = GlImpl.gl.getParameter(IMPLEMENTATION_COLOR_READ_FORMAT) as Int

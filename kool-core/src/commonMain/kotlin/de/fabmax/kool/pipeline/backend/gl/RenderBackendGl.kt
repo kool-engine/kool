@@ -7,6 +7,7 @@ import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.generator.GlslGenerator
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.RenderBackend
+import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Time
 import de.fabmax.kool.util.logE
@@ -29,7 +30,7 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
     private val doneRenderPasses = mutableSetOf<OffscreenRenderPass>()
 
     override fun renderFrame(ctx: KoolContext) {
-        ctx.engineStats.resetPerFrameCounts()
+        BackendStats.resetPerFrameCounts()
 
         if (ctx.disposablePipelines.isNotEmpty()) {
             queueRenderer.disposePipelines(ctx.disposablePipelines)
@@ -64,10 +65,10 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
 
     override fun uploadTextureToGpu(tex: Texture, data: TextureData) {
         tex.loadedTexture = when (tex) {
-            is Texture1d -> TextureLoaderGl.loadTexture1d(tex.props, data, this)
-            is Texture2d -> TextureLoaderGl.loadTexture2d(tex.props, data, this)
-            is Texture3d -> TextureLoaderGl.loadTexture3d(tex.props, data, this)
-            is TextureCube -> TextureLoaderGl.loadTextureCube(tex.props, data, this)
+            is Texture1d -> TextureLoaderGl.loadTexture1d(tex, data, this)
+            is Texture2d -> TextureLoaderGl.loadTexture2d(tex, data, this)
+            is Texture3d -> TextureLoaderGl.loadTexture3d(tex, data, this)
+            is TextureCube -> TextureLoaderGl.loadTextureCube(tex, data, this)
             else -> throw IllegalArgumentException("Unsupported texture type: $tex")
         }
         tex.loadingState = Texture.LoadingState.LOADED
@@ -148,7 +149,7 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
         val targetTex = scene.capturedFramebuffer
 
         if (targetTex.loadedTexture == null) {
-            targetTex.loadedTexture = LoadedTextureGl(gl.TEXTURE_2D, gl.createTexture(), 4096 * 2048 * 4, this)
+            targetTex.loadedTexture = LoadedTextureGl(gl.TEXTURE_2D, gl.createTexture(), this, targetTex, 4096 * 2048 * 4)
         }
         val tex = targetTex.loadedTexture as LoadedTextureGl
 
@@ -168,7 +169,7 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
         }
 
         val viewport = scene.mainRenderPass.viewport
-        gl.bindTexture(tex.target, tex.texture)
+        gl.bindTexture(tex.target, tex.glTexture)
         gl.readBuffer(gl.BACK)
         gl.copyTexSubImage2D(tex.target, 0, 0, 0, viewport.x, viewport.y, viewport.width, viewport.height)
     }

@@ -10,7 +10,7 @@ import org.lwjgl.opengl.GL43.glCopyImageSubData
 internal object TextureCopyHelper {
 
     fun readTexturePixels(src: LoadedTextureGl, dst: TextureData) {
-        glBindTexture(src.target, src.texture.handle)
+        glBindTexture(src.target, src.glTexture.handle)
         when (val buf = dst.data) {
             is Uint8BufferImpl -> buf.useRaw {
                 glGetTexImage(src.target, 0, dst.format.glFormat(GlImpl), dst.format.glType(GlImpl), it)
@@ -41,7 +41,7 @@ internal object TextureCopyHelper {
             for (mipLevel in 0 until pass.mipLevels) {
                 if (pass.colorRenderTarget == OffscreenRenderPass.RenderTarget.TEXTURE) {
                     glCopyImageSubData(renderPass.glColorTex.handle, gl.TEXTURE_CUBE_MAP, mipLevel, 0, 0, 0,
-                        target.texture.handle, gl.TEXTURE_CUBE_MAP, mipLevel, 0, 0, 0, width, height, 6)
+                        target.glTexture.handle, gl.TEXTURE_CUBE_MAP, mipLevel, 0, 0, 0, width, height, 6)
                 } else {
                     throw IllegalStateException("Cubemap color copy from renderbuffer is not supported")
                 }
@@ -72,10 +72,10 @@ internal object TextureCopyHelper {
             for (mipLevel in 0 until pass.mipLevels) {
                 if (pass.colorRenderTarget == OffscreenRenderPass.RenderTarget.TEXTURE) {
                     glCopyImageSubData(renderPass.colorTextures[0].handle, gl.TEXTURE_2D, mipLevel, 0, 0, 0,
-                            target.texture.handle, gl.TEXTURE_2D, mipLevel, 0, 0, 0, width, height, 1)
+                            target.glTexture.handle, gl.TEXTURE_2D, mipLevel, 0, 0, 0, width, height, 1)
                 } else {
                     glCopyImageSubData(renderPass.rbos[mipLevel].handle, gl.RENDERBUFFER, 0, 0, 0, 0,
-                            target.texture.handle, gl.TEXTURE_2D, mipLevel, 0, 0, 0, width, height, 1)
+                            target.glTexture.handle, gl.TEXTURE_2D, mipLevel, 0, 0, 0, width, height, 1)
                 }
                 width = width shr 1
                 height = height shr 1
@@ -90,8 +90,8 @@ internal object TextureCopyHelper {
         val height = pass.height
         val mipLevels = pass.mipLevels
 
-        val estSize = Texture.estimatedTexSize(width, height, 1, mipLevels, props.format.pxSize)
-        val tex = LoadedTextureGl(gl.TEXTURE_2D, gl.createTexture(), estSize, backend)
+        val estSize = Texture.estimatedTexSize(width, height, 1, mipLevels, props.format.pxSize).toLong()
+        val tex = LoadedTextureGl(gl.TEXTURE_2D, gl.createTexture(), backend, this, estSize)
         tex.setSize(width, height, 1)
         tex.applySamplerProps(props)
         gl.texStorage2D(gl.TEXTURE_2D, mipLevels, intFormat, width, height)
@@ -106,8 +106,8 @@ internal object TextureCopyHelper {
         val height = pass.height
         val mipLevels = pass.mipLevels
 
-        val estSize = Texture.estimatedTexSize(width, height, 6, mipLevels, props.format.pxSize)
-        val tex = LoadedTextureGl(gl.TEXTURE_CUBE_MAP, gl.createTexture(), estSize, backend)
+        val estSize = Texture.estimatedTexSize(width, height, 6, mipLevels, props.format.pxSize).toLong()
+        val tex = LoadedTextureGl(gl.TEXTURE_CUBE_MAP, gl.createTexture(), backend, this, estSize)
         tex.setSize(width, height, 1)
         tex.applySamplerProps(props)
         gl.texStorage2D(gl.TEXTURE_CUBE_MAP, mipLevels, intFormat, width, height)

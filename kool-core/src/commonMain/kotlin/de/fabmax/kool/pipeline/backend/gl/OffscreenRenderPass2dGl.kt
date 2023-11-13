@@ -18,7 +18,7 @@ class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, val backend: Re
 
     private var isCreated = false
 
-    private val resInfo = OffscreenPassInfo(parent.name, parent)
+    private val resInfo = OffscreenPassInfo(parent)
 
     override fun draw(ctx: KoolContext) {
         resInfo.sceneName = parent.parentScene?.name ?: "scene:<null>"
@@ -75,7 +75,7 @@ class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, val backend: Re
             width = width shr mipLevel
             height = height shr mipLevel
             val target = copyTarget.loadedTexture as LoadedTextureGl
-            gl.bindTexture(gl.TEXTURE_2D, target.texture)
+            gl.bindTexture(gl.TEXTURE_2D, target.glTexture)
             gl.copyTexSubImage2D(gl.TEXTURE_2D, mipLevel, 0, 0, 0, 0, width, height)
         }
 
@@ -83,7 +83,7 @@ class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, val backend: Re
             for (i in parent.copyTargetsColor.indices) {
                 val copyTarget = parent.copyTargetsColor[i]
                 val target = copyTarget.loadedTexture as LoadedTextureGl
-                gl.bindTexture(gl.TEXTURE_2D, target.texture)
+                gl.bindTexture(gl.TEXTURE_2D, target.glTexture)
                 gl.generateMipmap(gl.TEXTURE_2D)
             }
         }
@@ -172,24 +172,25 @@ class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, val backend: Re
             val cfg = parent.colorAttachments[i]
 
             if (cfg.providedTexture != null) {
-                colorTextures[i] = (cfg.providedTexture.loadedTexture as LoadedTextureGl).texture
+                colorTextures[i] = (cfg.providedTexture.loadedTexture as LoadedTextureGl).glTexture
 
             } else {
+                val parentTex = parent.colorTextures[i]
                 val format = cfg.colorFormat
                 val intFormat = format.glInternalFormat(gl)
                 val width = parent.width
                 val height = parent.height
                 val mipLevels = parent.mipLevels
 
-                val estSize = Texture.estimatedTexSize(width, height, 1, mipLevels, format.pxSize)
-                val tex = LoadedTextureGl(gl.TEXTURE_2D, gl.createTexture(), estSize, backend)
+                val estSize = Texture.estimatedTexSize(width, height, 1, mipLevels, format.pxSize).toLong()
+                val tex = LoadedTextureGl(gl.TEXTURE_2D, gl.createTexture(), backend, parentTex, estSize)
                 tex.setSize(width, height, 1)
-                tex.applySamplerProps(parent.colorTextures[i].props)
+                tex.applySamplerProps(parentTex.props)
                 gl.texStorage2D(gl.TEXTURE_2D, mipLevels, intFormat, width, height)
 
-                colorTextures[i] = tex.texture
-                parent.colorTextures[i].loadedTexture = tex
-                parent.colorTextures[i].loadingState = Texture.LoadingState.LOADED
+                colorTextures[i] = tex.glTexture
+                parentTex.loadedTexture = tex
+                parentTex.loadingState = Texture.LoadingState.LOADED
             }
         }
     }
@@ -198,28 +199,28 @@ class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, val backend: Re
         val cfg = parent.depthAttachment!!
 
         if (cfg.providedTexture != null) {
-            depthTexture = (cfg.providedTexture.loadedTexture as LoadedTextureGl).texture
+            depthTexture = (cfg.providedTexture.loadedTexture as LoadedTextureGl).glTexture
 
         } else {
+            val parentTex = parent.depthTexture!!
             val intFormat = gl.DEPTH_COMPONENT32F
             val width = parent.width
             val height = parent.height
             val mipLevels = parent.mipLevels
-            val depthCfg = parent.depthAttachment
 
-            val estSize = Texture.estimatedTexSize(width, height, 1, mipLevels, 4)
-            val tex = LoadedTextureGl(gl.TEXTURE_2D, gl.createTexture(), estSize, backend)
+            val estSize = Texture.estimatedTexSize(width, height, 1, mipLevels, 4).toLong()
+            val tex = LoadedTextureGl(gl.TEXTURE_2D, gl.createTexture(), backend, parentTex, estSize)
             tex.setSize(width, height, 1)
-            tex.applySamplerProps(parent.depthTexture!!.props)
-            if (depthCfg.depthCompareOp != DepthCompareOp.DISABLED) {
+            tex.applySamplerProps(parentTex.props)
+            if (cfg.depthCompareOp != DepthCompareOp.DISABLED) {
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_MODE, gl.COMPARE_REF_TO_TEXTURE)
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_FUNC, depthCfg.depthCompareOp.glOp(gl))
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_FUNC, cfg.depthCompareOp.glOp(gl))
             }
             gl.texStorage2D(gl.TEXTURE_2D, mipLevels, intFormat, width, height)
 
-            depthTexture = tex.texture
-            parent.depthTexture.loadedTexture = tex
-            parent.depthTexture.loadingState = Texture.LoadingState.LOADED
+            depthTexture = tex.glTexture
+            parentTex.loadedTexture = tex
+            parentTex.loadingState = Texture.LoadingState.LOADED
         }
     }
 
@@ -230,8 +231,8 @@ class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, val backend: Re
         val height = pass.height
         val mipLevels = pass.mipLevels
 
-        val estSize = Texture.estimatedTexSize(width, height, 1, mipLevels, props.format.pxSize)
-        val tex = LoadedTextureGl(gl.TEXTURE_2D, gl.createTexture(), estSize, backend)
+        val estSize = Texture.estimatedTexSize(width, height, 1, mipLevels, props.format.pxSize).toLong()
+        val tex = LoadedTextureGl(gl.TEXTURE_2D, gl.createTexture(), backend, this, estSize)
         tex.setSize(width, height, 1)
         tex.applySamplerProps(props)
         gl.texStorage2D(gl.TEXTURE_2D, mipLevels, intFormat, width, height)

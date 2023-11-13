@@ -9,7 +9,7 @@ import kotlin.math.roundToInt
 /**
  * Describes a texture by its properties and a loader function which is called once the texture is used.
  */
-abstract class Texture(val props: TextureProps, val name: String?, val loader: TextureLoader? = null) {
+abstract class Texture(val props: TextureProps, val name: String, val loader: TextureLoader? = null) {
 
     /**
      * Contains the platform specific handle to the loaded texture. It is available after the loader function was
@@ -19,8 +19,6 @@ abstract class Texture(val props: TextureProps, val name: String?, val loader: T
 
     var loadingState = LoadingState.NOT_LOADED
 
-    protected abstract val type: String
-
     open fun dispose() {
         loadedTexture?.dispose()
         loadedTexture = null
@@ -28,7 +26,7 @@ abstract class Texture(val props: TextureProps, val name: String?, val loader: T
     }
 
     override fun toString(): String {
-        return "Texture$type(name: $name)"
+        return "${this::class.simpleName}(name: $name)"
     }
 
     enum class LoadingState {
@@ -51,28 +49,42 @@ abstract class Texture(val props: TextureProps, val name: String?, val loader: T
     }
 }
 
-open class Texture1d(props: TextureProps = TextureProps(), name: String? = null, loader: TextureLoader?) :
-        Texture(props, name, loader) {
+open class Texture1d(
+    props: TextureProps = TextureProps(),
+    name: String = UniqueId.nextId("Texture1d"),
+    loader: TextureLoader?
+) : Texture(props, name, loader) {
 
-    constructor(props: TextureProps = TextureProps(), name: String? = null, loader: (suspend CoroutineScope.() -> TextureData1d)? = null) :
-            this(props, name, loader?.let { AsyncTextureLoader(it) })
-
-    override val type = "1D"
+    constructor(
+        props: TextureProps = TextureProps(),
+        name: String = UniqueId.nextId("Texture1d"),
+        loader: (suspend CoroutineScope.() -> TextureData1d)? = null
+    ) : this(props, name, loader?.let { AsyncTextureLoader(it) })
 }
 
-open class Texture2d(props: TextureProps = TextureProps(), name: String? = null, loader: TextureLoader?) :
-        Texture(props, name, loader) {
+open class Texture2d(
+    props: TextureProps = TextureProps(),
+    name: String = UniqueId.nextId("Texture2d"),
+    loader: TextureLoader?
+) : Texture(props, name, loader) {
 
-    constructor(props: TextureProps = TextureProps(), name: String? = null, loader: (suspend CoroutineScope.() -> TextureData)? = null) :
-            this(props, name, loader?.let { AsyncTextureLoader(it) })
+    constructor(
+        props: TextureProps = TextureProps(),
+        name: String = UniqueId.nextId("Texture2d"),
+        loader: (suspend CoroutineScope.() -> TextureData)? = null
+    ) : this(props, name, loader?.let { AsyncTextureLoader(it) })
 
-    constructor(props: TextureProps = TextureProps(), data: TextureData2d, name: String? = null) :
-            this(props, name, BufferedTextureLoader(data))
+    constructor(
+        props: TextureProps = TextureProps(),
+        data: TextureData2d,
+        name: String = UniqueId.nextId("Texture2d")
+    ) : this(props, name, BufferedTextureLoader(data))
 
-    constructor(assetPath: String, name: String? = null, props: TextureProps = TextureProps()) :
-            this(props, name, AsyncTextureLoader { Assets.loadTextureData(assetPath, props) })
-
-    override val type = "2D"
+    constructor(
+        assetPath: String,
+        name: String = UniqueId.nextId("Texture2d"),
+        props: TextureProps = TextureProps()
+    ) : this(props, name, AsyncTextureLoader { Assets.loadTextureData(assetPath, props) })
 
     fun readTexturePixels(): TextureData2d? {
         val tex = loadedTexture ?: return null
@@ -88,30 +100,45 @@ open class Texture2d(props: TextureProps = TextureProps(), name: String? = null,
     }
 }
 
-open class Texture3d(props: TextureProps = TextureProps(), name: String? = null, loader: TextureLoader?) :
-        Texture(props, name, loader) {
+open class Texture3d(
+    props: TextureProps = TextureProps(),
+    name: String = UniqueId.nextId("Texture3d"),
+    loader: TextureLoader?
+) : Texture(props, name, loader) {
 
-    constructor(props: TextureProps = TextureProps(), name: String? = null, loader: (suspend CoroutineScope.() -> TextureData)? = null) :
-            this(props, name, loader?.let { AsyncTextureLoader(it) })
+    constructor(
+        props: TextureProps = TextureProps(),
+        name: String = UniqueId.nextId("Texture3d"),
+        loader: (suspend CoroutineScope.() -> TextureData)? = null
+    ) : this(props, name, loader?.let { AsyncTextureLoader(it) })
 
-    constructor(props: TextureProps = TextureProps(), data: TextureData3d, name: String? = null) :
-            this(props, name, BufferedTextureLoader(data))
+    constructor(
+        props: TextureProps = TextureProps(),
+        data: TextureData3d,
+        name: String = UniqueId.nextId("Texture3d")
+    ) : this(props, name, BufferedTextureLoader(data))
 
-    override val type = "3D"
 }
 
-open class TextureCube(props: TextureProps = TextureProps(), name: String? = null, loader: TextureLoader?) :
-        Texture(props, name, loader) {
+open class TextureCube(
+    props: TextureProps = TextureProps(),
+    name: String = UniqueId.nextId("TextureCube"),
+    loader: TextureLoader?
+) : Texture(props, name, loader) {
 
-    constructor(props: TextureProps = TextureProps(), name: String? = null, loader: (suspend CoroutineScope.() -> TextureDataCube)? = null) :
-            this(props, name, loader?.let { AsyncTextureLoader(it) })
+    constructor(
+        props: TextureProps = TextureProps(),
+        name: String = UniqueId.nextId("TextureCube"),
+        loader: (suspend CoroutineScope.() -> TextureDataCube)? = null
+    ) : this(props, name, loader?.let { AsyncTextureLoader(it) })
 
-    override val type = "Cube"
 }
 
-class BufferedTexture2d(data: TextureData, props: TextureProps = TextureProps(), name: String? = null)
-    : Texture2d(props, name, BufferedTextureLoader(data)
-) {
+class BufferedTexture2d(
+    data: TextureData,
+    props: TextureProps = TextureProps(),
+    name: String = UniqueId.nextId("BufferedTexture2d")
+) : Texture2d(props, name, BufferedTextureLoader(data)) {
     fun updateTextureData(data: TextureData) {
         (loader as BufferedTextureLoader).data = data
         if (loadingState == LoadingState.LOADED) {
@@ -121,15 +148,15 @@ class BufferedTexture2d(data: TextureData, props: TextureProps = TextureProps(),
 }
 
 class SingleColorTexture(color: Color) : Texture2d(
-        TextureProps(
-                minFilter = FilterMethod.NEAREST,
-                magFilter = FilterMethod.NEAREST,
-                mipMapping = false,
-                maxAnisotropy = 1),
-        color.toString(),
-        loader = BufferedTextureLoader(getColorTextureData(color))) {
-
-    override val type = "SingleColor"
+    TextureProps(
+        minFilter = FilterMethod.NEAREST,
+        magFilter = FilterMethod.NEAREST,
+        mipMapping = false,
+        maxAnisotropy = 1
+    ),
+    name = "SingleColorText${color}",
+    loader = BufferedTextureLoader(getColorTextureData(color))
+) {
 
     companion object {
         private val colorData = mutableMapOf<Color, TextureData2d>()
@@ -141,20 +168,17 @@ class SingleColorTexture(color: Color) : Texture2d(
 }
 
 class GradientTexture(gradient: ColorGradient, size: Int = 256, isClamped: Boolean = true) : Texture1d(
-        TextureProps(
-            format = TexFormat.RGBA_F16,    // use f16 texture for better results together with linear color gradients
-            addressModeU = if (isClamped) AddressMode.CLAMP_TO_EDGE else AddressMode.REPEAT,
-            addressModeV = if (isClamped) AddressMode.CLAMP_TO_EDGE else AddressMode.REPEAT,
-            minFilter = FilterMethod.LINEAR,
-            magFilter = FilterMethod.LINEAR,
-            mipMapping = false,
-            maxAnisotropy = 1),
-        "gradientTex-$size",
-        loader = BufferedTextureLoader(TextureData1d.gradientF16(gradient, size))) {
-
-    override val type = "Gradient"
-
-}
+    TextureProps(
+        format = TexFormat.RGBA_F16,    // use f16 texture for better results together with linear color gradients
+        addressModeU = if (isClamped) AddressMode.CLAMP_TO_EDGE else AddressMode.REPEAT,
+        addressModeV = if (isClamped) AddressMode.CLAMP_TO_EDGE else AddressMode.REPEAT,
+        minFilter = FilterMethod.LINEAR,
+        magFilter = FilterMethod.LINEAR,
+        mipMapping = false,
+        maxAnisotropy = 1),
+    name = "gradientTex-$size",
+    loader = BufferedTextureLoader(TextureData1d.gradientF16(gradient, size))
+)
 
 data class TextureProps(
     val format: TexFormat = TexFormat.RGBA,

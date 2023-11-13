@@ -2,6 +2,7 @@ package de.fabmax.kool.pipeline.backend.gl
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.util.Float32Buffer
 import de.fabmax.kool.util.Time
 
@@ -70,13 +71,13 @@ class QueueRenderer(val backend: RenderBackendGl) {
                             gl.drawElementsInstanced(shaderInst.primitiveType, shaderInst.numIndices, shaderInst.indexType, insts.numInstances)
                             numPrimitives += cmd.geometry.numPrimitives * insts.numInstances
                         }
-                        ctx.engineStats.addDrawCommandCount(1)
+                        BackendStats.addDrawCommandCount(1)
                     }
                 }
                 cmd.mesh.drawTime = Time.precisionTime - t
             }
         }
-        ctx.engineStats.addPrimitiveCount(numPrimitives)
+        BackendStats.addPrimitiveCount(numPrimitives)
     }
 
     private inner class GlAttribs {

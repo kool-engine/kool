@@ -282,7 +282,7 @@ abstract class MappedUniformTex(val texUnit: Int, val target: Int, val backend: 
         if (texture.loadingState == Texture.LoadingState.LOADED) {
             val tex = texture.loadedTexture as LoadedTextureGl
             gl.activeTexture(texUnit + arrayIdx)
-            gl.bindTexture(target, tex.texture)
+            gl.bindTexture(target, tex.glTexture)
             return true
         }
 
@@ -296,10 +296,10 @@ abstract class MappedUniformTex(val texUnit: Int, val target: Int, val backend: 
             loadedTextures.values.removeAll { it.isDestroyed }
             return loadedTextures.getOrPut(texData) {
                 val loaded = when (texture) {
-                    is Texture1d -> TextureLoaderGl.loadTexture1d(texture.props, texData, backend)
-                    is Texture2d -> TextureLoaderGl.loadTexture2d(texture.props, texData, backend)
-                    is Texture3d -> TextureLoaderGl.loadTexture3d(texture.props, texData, backend)
-                    is TextureCube -> TextureLoaderGl.loadTextureCube(texture.props, texData as TextureDataCube, backend)
+                    is Texture1d -> TextureLoaderGl.loadTexture1d(texture, texData, backend)
+                    is Texture2d -> TextureLoaderGl.loadTexture2d(texture, texData, backend)
+                    is Texture3d -> TextureLoaderGl.loadTexture3d(texture, texData, backend)
+                    is TextureCube -> TextureLoaderGl.loadTextureCube(texture, texData as TextureDataCube, backend)
                     else -> throw IllegalArgumentException("Unsupported texture type")
                 }
                 loaded

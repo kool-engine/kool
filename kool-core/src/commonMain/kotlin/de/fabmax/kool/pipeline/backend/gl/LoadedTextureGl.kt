@@ -1,10 +1,17 @@
 package de.fabmax.kool.pipeline.backend.gl
 
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.backend.stats.TextureInfo
 import de.fabmax.kool.util.logW
 import kotlin.math.min
 
-class LoadedTextureGl(val target: Int, val texture: GlTexture, estimatedSize: Int, val backend: RenderBackendGl) : LoadedTexture {
+class LoadedTextureGl(
+    val target: Int,
+    val glTexture: GlTexture,
+    val backend: RenderBackendGl,
+    val texture: Texture,
+    estimatedSize: Long
+) : LoadedTexture {
 
     val texId = nextTexId++
     var isDestroyed = false
@@ -16,9 +23,7 @@ class LoadedTextureGl(val target: Int, val texture: GlTexture, estimatedSize: In
 
     private val gl = backend.gl
 
-    init {
-        backend.ctx.engineStats.textureAllocated(texId, estimatedSize)
-    }
+    private val allocationInfo = TextureInfo(texture, estimatedSize)
 
     fun setSize(width: Int, height: Int, depth: Int) {
         this.width = width
@@ -27,7 +32,7 @@ class LoadedTextureGl(val target: Int, val texture: GlTexture, estimatedSize: In
     }
 
     fun applySamplerProps(props: TextureProps) {
-        gl.bindTexture(target, texture)
+        gl.bindTexture(target, glTexture)
 
         gl.texParameteri(target, gl.TEXTURE_MIN_FILTER, props.minFilter.glMinFilterMethod(props.mipMapping))
         gl.texParameteri(target, gl.TEXTURE_MAG_FILTER, props.magFilter.glMagFilterMethod())
@@ -61,8 +66,8 @@ class LoadedTextureGl(val target: Int, val texture: GlTexture, estimatedSize: In
     override fun dispose() {
         if (!isDestroyed) {
             isDestroyed = true
-            gl.deleteTexture(texture)
-            backend.ctx.engineStats.textureDeleted(texId)
+            gl.deleteTexture(glTexture)
+            allocationInfo.deleted()
         }
     }
 

@@ -2,10 +2,7 @@ package de.fabmax.kool.pipeline.backend.stats
 
 import de.fabmax.kool.pipeline.RenderPass
 
-class OffscreenPassInfo(
-    name: String,
-    val renderPass: RenderPass
-) : ResourceInfo(name) {
+class OffscreenPassInfo(val renderPass: RenderPass) : ResourceInfo(renderPass.name) {
 
     var sceneName: String = "<unknown>"
 
