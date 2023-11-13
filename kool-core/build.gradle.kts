@@ -62,7 +62,9 @@ kotlin {
 
     sourceSets.all {
         languageSettings {
-            languageVersion = "2.0"
+            if (KoolBuildSettings.useK2) {
+                languageVersion = "2.0"
+            }
 
             optIn("kotlinx.coroutines.ExperimentalCoroutinesApi")
             optIn("kotlin.contracts.ExperimentalContracts")
