@@ -7,13 +7,14 @@ import de.fabmax.kool.pipeline.backend.GpuGeometry
 import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.Usage
+import de.fabmax.kool.util.BaseReleasable
 
 class GpuGeometryGl(
     val geometry: IndexedVertexList,
     val instances: MeshInstanceList?,
     val backend: RenderBackendGl,
     creationInfo: BufferCreationInfo
-) : GpuGeometry {
+) : BaseReleasable(), GpuGeometry {
 
     internal val indexBuffer: BufferResource
     private val dataBufferF: BufferResource?
@@ -24,8 +25,6 @@ class GpuGeometryGl(
 
     private var isNewlyCreated =  true
     var numIndices = 0
-
-    var isDisposed = false
 
     init {
         val namePrefix = creationInfo.bufferName
@@ -57,7 +56,7 @@ class GpuGeometryGl(
         dataBufferF?.delete()
         dataBufferI?.delete()
         instanceBuffer?.delete()
-        isDisposed = true
+        super.release()
     }
 
     fun createShaderVertexAttributeBinders(shaderAttributes: Map<String, VertexLayout.VertexAttribute>): List<AttributeBinder> {
@@ -92,9 +91,7 @@ class GpuGeometryGl(
     }
 
     fun checkBuffers() {
-        if (isDisposed) {
-            throw IllegalStateException("GpuGeometry already disposed")
-        }
+        checkIsNotReleased()
 
         if (instances != null && instanceBuffer != null && (instances.hasChanged || isNewlyCreated)) {
             instanceBuffer.setData(instances.dataF, instances.usage.glUsage)

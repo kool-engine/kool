@@ -146,7 +146,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
     override fun dispose(ctx: KoolContext) {
         colorMap.dispose()
         normalMap.dispose()
-        physicsObjects.release(ctx)
+        physicsObjects.release()
 
         KeyboardInput.removeKeyListener(escKeyListener)
         PointerInput.cursorMode = CursorMode.NORMAL

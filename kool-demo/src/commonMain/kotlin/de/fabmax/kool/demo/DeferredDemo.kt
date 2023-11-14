@@ -78,19 +78,11 @@ class DeferredDemo : DemoScene("Deferred Shading") {
     }
 
     override suspend fun Assets.loadResources(ctx: KoolContext) {
-        groundColor = loadTexture2d("${DemoLoader.materialPath}/futuristic-panels1/futuristic-panels1-albedo1.jpg")
-        groundNormals = loadTexture2d("${DemoLoader.materialPath}/futuristic-panels1/futuristic-panels1-normal.jpg")
-        groundRoughness = loadTexture2d("${DemoLoader.materialPath}/futuristic-panels1/futuristic-panels1-roughness.jpg")
-        groundMetallic = loadTexture2d("${DemoLoader.materialPath}/futuristic-panels1/futuristic-panels1-metallic.jpg")
-        groundAo = loadTexture2d("${DemoLoader.materialPath}/futuristic-panels1/futuristic-panels1-ao.jpg")
-
-        mainScene.onRelease += {
-            groundColor.dispose()
-            groundNormals.dispose()
-            groundRoughness.dispose()
-            groundMetallic.dispose()
-            groundAo.dispose()
-        }
+        groundColor = loadTexture2d("${DemoLoader.materialPath}/futuristic-panels1/futuristic-panels1-albedo1.jpg").also { it.releaseWith(mainScene) }
+        groundNormals = loadTexture2d("${DemoLoader.materialPath}/futuristic-panels1/futuristic-panels1-normal.jpg").also { it.releaseWith(mainScene) }
+        groundRoughness = loadTexture2d("${DemoLoader.materialPath}/futuristic-panels1/futuristic-panels1-roughness.jpg").also { it.releaseWith(mainScene) }
+        groundMetallic = loadTexture2d("${DemoLoader.materialPath}/futuristic-panels1/futuristic-panels1-metallic.jpg").also { it.releaseWith(mainScene) }
+        groundAo = loadTexture2d("${DemoLoader.materialPath}/futuristic-panels1/futuristic-panels1-ao.jpg").also { it.releaseWith(mainScene) }
     }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {

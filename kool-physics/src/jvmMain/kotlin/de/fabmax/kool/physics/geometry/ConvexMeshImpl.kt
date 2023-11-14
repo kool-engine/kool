@@ -17,7 +17,7 @@ actual fun ConvexMesh(points: List<Vec3f>): ConvexMesh = ConvexMeshImpl(points)
 
 val ConvexMesh.pxConvexMesh: PxConvexMesh get() = (this as ConvexMeshImpl).pxConvexMesh
 
-class ConvexMeshImpl(override val points: List<Vec3f>, override var releaseWithGeometry: Boolean = true) : ConvexMesh {
+class ConvexMeshImpl(override val points: List<Vec3f>, override var releaseWithGeometry: Boolean = true) : ConvexMesh() {
 
     override val convexHull: IndexedVertexList
 
@@ -63,6 +63,7 @@ class ConvexMeshImpl(override val points: List<Vec3f>, override var releaseWithG
      * Only use this if [releaseWithGeometry] is false. Releases the underlying PhysX mesh.
      */
     override fun release() {
+        super.release()
         pxConvexMesh.release()
     }
 

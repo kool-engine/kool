@@ -84,8 +84,8 @@ class PhysicsObjects(mainScene: Scene, terrain: Terrain, trees: Trees, ctx: Kool
         }
     }
 
-    fun release(ctx: KoolContext) {
+    fun release() {
         world.release()
-        playerController.release(ctx)
+        playerController.release()
     }
 }

@@ -4,6 +4,7 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.MemoryStack
 import de.fabmax.kool.physics.PhysicsImpl
 import de.fabmax.kool.scene.geometry.IndexedVertexList
+import de.fabmax.kool.util.BaseReleasable
 import physx.*
 
 @Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
@@ -20,14 +21,17 @@ actual fun SphereGeometry(radius: Float): SphereGeometry = SphereGeometryImpl(ra
 actual fun TriangleMeshGeometry(triangleMesh: TriangleMesh, scale: Vec3f): TriangleMeshGeometry = TriangleMeshGeometryImpl(triangleMesh, scale)
 actual fun TriangleMeshGeometry(geometry: IndexedVertexList, scale: Vec3f): TriangleMeshGeometry = TriangleMeshGeometryImpl(geometry, scale)
 
-abstract class CollisionGeometryImpl : CollisionGeometry {
+abstract class CollisionGeometryImpl : BaseReleasable(), CollisionGeometry {
     abstract val pxGeometry: PxGeometry
 
     override val holder: GeometryHolder by lazy { GeometryHolder(pxGeometry) }
 
     init { PhysicsImpl.checkIsLoaded() }
 
-    override fun release() = pxGeometry.destroy()
+    override fun release() {
+        super.release()
+        pxGeometry.destroy()
+    }
 }
 
 class BoxGeometryImpl(override val size: Vec3f) : CollisionGeometryImpl(), BoxGeometry {

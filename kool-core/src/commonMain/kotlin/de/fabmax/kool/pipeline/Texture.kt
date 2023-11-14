@@ -9,7 +9,7 @@ import kotlin.math.roundToInt
 /**
  * Describes a texture by its properties and a loader function which is called once the texture is used.
  */
-abstract class Texture(val props: TextureProps, val name: String, val loader: TextureLoader? = null) {
+abstract class Texture(val props: TextureProps, val name: String, val loader: TextureLoader? = null): BaseReleasable() {
 
     /**
      * Contains the platform specific handle to the loaded texture. It is available after the loader function was
@@ -19,14 +19,32 @@ abstract class Texture(val props: TextureProps, val name: String, val loader: Te
 
     var loadingState = LoadingState.NOT_LOADED
 
+    /**
+     * Disposes the underlying texture memory and resets the [loadingState] to [LoadingState.NOT_LOADED]. In contrast
+     * to [release], the texture can still be used after disposing it - the texture will be reloaded. Disposing
+     * textures is useful to update changed texture data.
+     *
+     * @see release
+     */
     open fun dispose() {
         loadedTexture?.release()
         loadedTexture = null
         loadingState = LoadingState.NOT_LOADED
     }
 
+    /**
+     * Releases this texture, making it unusable. Use [dispose] instead if you only want to free the underlying
+     * texture memory and reload new texture data.
+     *
+     * @see dispose
+     */
+    override fun release() {
+        super.release()
+        dispose()
+    }
+
     override fun toString(): String {
-        return "${this::class.simpleName}(name: $name)"
+        return "${this::class.simpleName}:$name"
     }
 
     enum class LoadingState {

@@ -10,11 +10,11 @@ import de.fabmax.kool.pipeline.deferred.DeferredPipeline
 import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.scene.PerspectiveProxyCam
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.util.Releasable
+import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.launchOnMainThread
 import kotlin.math.max
 
-abstract class AoPipeline : Releasable {
+abstract class AoPipeline : BaseReleasable() {
 
     abstract val aoPass: AmbientOcclusionPass
     abstract val denoisePass: AoDenoisePass
@@ -122,14 +122,13 @@ abstract class AoPipeline : Releasable {
         }
 
         override fun release() {
-            launchOnMainThread {
-                scene.removeOffscreenPass(depthPass)
-                scene.removeOffscreenPass(aoPass)
-                scene.removeOffscreenPass(denoisePass)
-                depthPass.release()
-                aoPass.release()
-                denoisePass.release()
-            }
+            scene.removeOffscreenPass(depthPass)
+            scene.removeOffscreenPass(aoPass)
+            scene.removeOffscreenPass(denoisePass)
+            depthPass.release()
+            aoPass.release()
+            denoisePass.release()
+            super.release()
         }
     }
 

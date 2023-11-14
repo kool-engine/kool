@@ -11,14 +11,8 @@ import physx.PxArticulationReducedCoordinate
 
 actual fun Articulation(isFixedBase: Boolean): Articulation = ArticulationImpl(isFixedBase)
 
-class ArticulationImpl(val isFixedBase: Boolean) : Articulation {
+class ArticulationImpl(val isFixedBase: Boolean) : Articulation() {
     val pxArticulation: PxArticulationReducedCoordinate
-
-    private val _links = mutableListOf<ArticulationLink>()
-    override val links: List<ArticulationLink>
-        get() = _links
-
-    override val onFixedUpdate = mutableListOf<(Float) -> Unit>()
 
     override var minPositionIterations: Int
         get() = SupportFunctions.PxArticulationReducedCoordinate_getMinSolverPositionIterations(pxArticulation)

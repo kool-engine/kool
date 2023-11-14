@@ -127,7 +127,7 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
             )
         }
 
-        mainScene.onRelease += {
+        mainScene.onRelease {
             skies.values.forEach { it.releaseOffscreenPasses() }
         }
     }

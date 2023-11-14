@@ -93,7 +93,7 @@ open class UiSurface(
                 InputStack.remove(inputHandler)
             }
         }
-        onRelease += {
+        onRelease {
             InputStack.remove(inputHandler)
         }
     }

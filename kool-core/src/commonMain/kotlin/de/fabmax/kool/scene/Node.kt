@@ -15,12 +15,11 @@ import kotlin.math.sqrt
  *
  * @author fabmax
  */
-open class Node(name: String? = null) : Releasable {
+open class Node(name: String? = null) : BaseReleasable() {
 
     var name: String = name ?: makeNodeName(this::class.simpleName ?: "Node")
 
     val onUpdate: MutableList<(RenderPass.UpdateEvent) -> Unit> = mutableListOf()
-    val onRelease: MutableList<() -> Unit> = mutableListOf()
 
     val tags = Tags()
 
@@ -117,6 +116,8 @@ open class Node(name: String? = null) : Releasable {
      * update their transform matrices, bounding boxes, animation states, etc.
      */
     open fun update(updateEvent: RenderPass.UpdateEvent) {
+        checkIsNotReleased()
+
         for (i in onUpdate.indices) {
             onUpdate[i](updateEvent)
         }
@@ -163,8 +164,8 @@ open class Node(name: String? = null) : Releasable {
      * Frees all resources occupied by this Node.
      */
     override fun release() {
-        onRelease.forEach { it() }
         children.forEach { it.release() }
+        super.release()
     }
 
     /**
@@ -316,10 +317,6 @@ open class Node(name: String? = null) : Releasable {
 
     fun onUpdate(block: (RenderPass.UpdateEvent) -> Unit) {
         onUpdate += block
-    }
-
-    fun onRelease(block: () -> Unit) {
-        onRelease += block
     }
 
     fun Node.makeChildName(suffix: String): String {

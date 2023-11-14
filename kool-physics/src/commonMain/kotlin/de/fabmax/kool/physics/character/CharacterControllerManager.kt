@@ -1,11 +1,11 @@
 package de.fabmax.kool.physics.character
 
 import de.fabmax.kool.physics.PhysicsWorld
-import de.fabmax.kool.util.Releasable
+import de.fabmax.kool.util.BaseReleasable
 
 expect fun CharacterControllerManager(world: PhysicsWorld): CharacterControllerManager
 
-abstract class CharacterControllerManager : Releasable {
+abstract class CharacterControllerManager : BaseReleasable() {
     protected val _controllers = mutableListOf<CharacterController>()
     val controllers: List<CharacterController>
         get() = _controllers
@@ -39,5 +39,6 @@ abstract class CharacterControllerManager : Releasable {
         copyControllers += controllers
         copyControllers.forEach { it.release() }
         _controllers.clear()
+        super.release()
     }
 }

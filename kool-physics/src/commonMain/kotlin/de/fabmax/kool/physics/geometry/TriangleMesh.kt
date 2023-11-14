@@ -1,12 +1,12 @@
 package de.fabmax.kool.physics.geometry
 
 import de.fabmax.kool.scene.geometry.IndexedVertexList
-import de.fabmax.kool.util.Releasable
+import de.fabmax.kool.util.BaseReleasable
 
 expect fun TriangleMesh(geometry: IndexedVertexList): TriangleMesh
 
-interface TriangleMesh : Releasable {
-    val geometry: IndexedVertexList
+abstract class TriangleMesh : BaseReleasable() {
+    abstract val geometry: IndexedVertexList
 
-    var releaseWithGeometry: Boolean
+    abstract var releaseWithGeometry: Boolean
 }

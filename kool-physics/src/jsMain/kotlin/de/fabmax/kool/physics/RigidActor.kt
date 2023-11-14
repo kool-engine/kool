@@ -7,12 +7,13 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.spatial.BoundingBox
 import de.fabmax.kool.scene.Tags
 import de.fabmax.kool.scene.TrsTransformF
+import de.fabmax.kool.util.BaseReleasable
 import physx.*
 
 @Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 actual class RigidActorHolder(val px: PxRigidActor)
 
-abstract class RigidActorImpl : RigidActor {
+abstract class RigidActorImpl : BaseReleasable(), RigidActor {
     init { PhysicsImpl.checkIsLoaded() }
 
     override var simulationFilterData = FilterData { setCollisionGroup(0); setCollidesWithEverything() }
@@ -111,11 +112,13 @@ abstract class RigidActorImpl : RigidActor {
     }
 
     override fun release() {
+        super.release()
         holder.px.release()
         _shapes.clear()
     }
 
     override fun onPhysicsUpdate(timeStep: Float) {
+        checkIsNotReleased()
         updateTransform()
         super.onPhysicsUpdate(timeStep)
     }

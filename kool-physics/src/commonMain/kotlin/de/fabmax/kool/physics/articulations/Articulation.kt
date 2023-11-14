@@ -1,23 +1,24 @@
 package de.fabmax.kool.physics.articulations
 
 import de.fabmax.kool.math.Mat4f
-import de.fabmax.kool.util.Releasable
+import de.fabmax.kool.util.BaseReleasable
 
 expect fun Articulation(isFixedBase: Boolean): Articulation
 
-interface Articulation : Releasable {
-    val links: List<ArticulationLink>
+abstract class Articulation : BaseReleasable() {
+    protected val _links = mutableListOf<ArticulationLink>()
+    val links: List<ArticulationLink> get() = _links
 
-    val onFixedUpdate: MutableList<(Float) -> Unit>
+    val onFixedUpdate = mutableListOf<(Float) -> Unit>()
 
-    var minPositionIterations: Int
-    var minVelocityIterations: Int
+    abstract var minPositionIterations: Int
+    abstract var minVelocityIterations: Int
 
-    fun createLink(parent: ArticulationLink?, pose: Mat4f): ArticulationLink
+    abstract fun createLink(parent: ArticulationLink?, pose: Mat4f): ArticulationLink
 
-    fun wakeUp()
+    abstract fun wakeUp()
 
-    fun putToSleep()
+    abstract fun putToSleep()
 
     fun onPhysicsUpdate(timeStep: Float) {
         for (i in links.indices) {

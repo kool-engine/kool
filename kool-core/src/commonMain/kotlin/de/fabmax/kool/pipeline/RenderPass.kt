@@ -4,6 +4,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.pipeline.drawqueue.DrawQueue
 import de.fabmax.kool.scene.*
+import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Time
 import de.fabmax.kool.util.Viewport
@@ -11,10 +12,9 @@ import de.fabmax.kool.util.Viewport
 abstract class RenderPass(
     var drawNode: Node,
     var name: String
-) {
+) : BaseReleasable() {
 
     var parentScene: Scene? = null
-
     val dependencies = mutableListOf<RenderPass>()
 
     abstract val views: List<View>
@@ -40,6 +40,8 @@ abstract class RenderPass(
 
     open fun update(ctx: KoolContext) {
         val t = if (isProfileTimes) Time.precisionTime else 0.0
+
+        checkIsNotReleased()
 
         for (i in views.indices) {
             val view = views[i]
@@ -93,7 +95,9 @@ abstract class RenderPass(
         }
     }
 
-    open fun release() { }
+    override fun toString(): String {
+        return "${this::class.simpleName}:$name"
+    }
 
     class UpdateEvent(val view: View, val ctx: KoolContext) {
         val renderPass: RenderPass get() = view.renderPass

@@ -7,6 +7,7 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.spatial.BoundingBox
 import de.fabmax.kool.scene.Tags
 import de.fabmax.kool.scene.TrsTransformF
+import de.fabmax.kool.util.BaseReleasable
 import org.lwjgl.system.MemoryStack
 import physx.extensions.PxRigidActorExt
 import physx.physics.PxRigidActor
@@ -15,7 +16,7 @@ import physx.physics.PxShapeFlagEnum
 @Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 actual typealias RigidActorHolder = PxRigidActor
 
-abstract class RigidActorImpl : RigidActor {
+abstract class RigidActorImpl : BaseReleasable(), RigidActor {
     init { PhysicsImpl.checkIsLoaded() }
 
     override var simulationFilterData = FilterData { setCollisionGroup(0); setCollidesWithEverything() }
@@ -113,11 +114,13 @@ abstract class RigidActorImpl : RigidActor {
     }
 
     override fun release() {
+        super.release()
         holder.release()
         _shapes.clear()
     }
 
     override fun onPhysicsUpdate(timeStep: Float) {
+        checkIsNotReleased()
         updateTransform(false)
         super.onPhysicsUpdate(timeStep)
     }

@@ -197,9 +197,9 @@ class CompiledShader(val program: GlProgram, val pipeline: Pipeline, val backend
             val creationInfo = BufferCreationInfo(cmd)
 
             var geom = geometry.gpuGeometry as? GpuGeometryGl
-            if (geom == null || geom.isDisposed) {
-                if (geom?.isDisposed == true) {
-                    logE { "disposed geometry: ${pipeline.name}" }
+            if (geom == null || geom.isReleased) {
+                if (geom?.isReleased == true) {
+                    logE { "Mesh geometry is already released: ${pipeline.name}" }
                 }
                 geom = GpuGeometryGl(geometry, instances, backend, creationInfo)
                 geometry.gpuGeometry = geom

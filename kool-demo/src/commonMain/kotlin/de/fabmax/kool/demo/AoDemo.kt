@@ -60,17 +60,10 @@ class AoDemo : DemoScene("Ambient Occlusion") {
         showLoadText("Loading Textures")
         ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${DemoLoader.hdriPath}/mossy_forest_1k.rgbe.png")
 
-        albedoMap = loadTexture2d("${DemoLoader.materialPath}/brown_planks_03/brown_planks_03_diff_2k.jpg")
-        ambientOcclusionMap = loadTexture2d("${DemoLoader.materialPath}/brown_planks_03/brown_planks_03_AO_2k.jpg")
-        normalMap = loadTexture2d("${DemoLoader.materialPath}/brown_planks_03/brown_planks_03_Nor_2k.jpg")
-        roughnessMap = loadTexture2d("${DemoLoader.materialPath}/brown_planks_03/brown_planks_03_rough_2k.jpg")
-
-        mainScene.onRelease += {
-            albedoMap.dispose()
-            ambientOcclusionMap.dispose()
-            normalMap.dispose()
-            roughnessMap.dispose()
-        }
+        albedoMap = loadTexture2d("${DemoLoader.materialPath}/brown_planks_03/brown_planks_03_diff_2k.jpg").also { it.releaseWith(mainScene) }
+        ambientOcclusionMap = loadTexture2d("${DemoLoader.materialPath}/brown_planks_03/brown_planks_03_AO_2k.jpg").also { it.releaseWith(mainScene) }
+        normalMap = loadTexture2d("${DemoLoader.materialPath}/brown_planks_03/brown_planks_03_Nor_2k.jpg").also { it.releaseWith(mainScene) }
+        roughnessMap = loadTexture2d("${DemoLoader.materialPath}/brown_planks_03/brown_planks_03_rough_2k.jpg").also { it.releaseWith(mainScene) }
 
         showLoadText("Loading Model")
         val modelCfg = GltfFile.ModelGenerateConfig(generateNormals = true, applyMaterials = false)

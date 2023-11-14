@@ -3,6 +3,7 @@ package de.fabmax.kool.physics.joints
 import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.RigidActor
+import de.fabmax.kool.util.BaseReleasable
 import physx.PxConstraintFlagEnum
 import physx.PxJoint
 import physx.constraintFlags
@@ -38,7 +39,7 @@ actual fun SphericalJoint(bodyA: RigidActor, bodyB: RigidActor, frameA: Mat4f, f
     return SphericalJointImpl(bodyA, bodyB, frameA, frameB)
 }
 
-abstract class JointImpl(frameA: Mat4f, frameB: Mat4f) : Joint {
+abstract class JointImpl(frameA: Mat4f, frameB: Mat4f) : BaseReleasable(), Joint {
     override val frameA = Mat4f(frameA)
     override val frameB = Mat4f(frameB)
 
@@ -58,5 +59,8 @@ abstract class JointImpl(frameA: Mat4f, frameB: Mat4f) : Joint {
 
     override fun setBreakForce(force: Float, torque: Float) = pxJoint.setBreakForce(force, torque)
 
-    override fun release() = pxJoint.release()
+    override fun release() {
+        super.release()
+        pxJoint.release()
+    }
 }

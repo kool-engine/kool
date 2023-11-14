@@ -145,7 +145,7 @@ class DeferredPipeline(val scene: Scene, val cfg: DeferredPipelineConfig) {
             lightingPassContent.update(ev)
         }
         scene.onRenderScene += this::onRenderScene
-        scene.onRelease += {
+        scene.onRelease {
             noSsrMap.dispose()
             noBloomMap.dispose()
 

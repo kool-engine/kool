@@ -25,7 +25,7 @@ class HeightFieldImpl(
     override val heightMap: HeightMap,
     override val rowScale: Float,
     override val columnScale: Float
-) : HeightField {
+) : HeightField() {
 
     val pxHeightField: PxHeightField
     override val heightScale: Float
@@ -71,6 +71,7 @@ class HeightFieldImpl(
      * Only use this if [releaseWithGeometry] is false. Releases the underlying PhysX mesh.
      */
     override fun release() {
+        super.release()
         pxHeightField.release()
     }
 }

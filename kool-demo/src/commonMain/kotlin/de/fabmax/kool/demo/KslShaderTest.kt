@@ -18,13 +18,8 @@ class KslShaderTest : DemoScene("KslShader") {
     private lateinit var normalMap: Texture2d
 
     override suspend fun Assets.loadResources(ctx: KoolContext) {
-        colorMap = loadTexture2d("${DemoLoader.materialPath}/castle_brick/castle_brick_02_red_diff_2k.jpg")
-        normalMap = loadTexture2d("${DemoLoader.materialPath}/castle_brick/castle_brick_02_red_nor_2k.jpg")
-
-        mainScene.onRelease += {
-            colorMap.dispose()
-            normalMap.dispose()
-        }
+        colorMap = loadTexture2d("${DemoLoader.materialPath}/castle_brick/castle_brick_02_red_diff_2k.jpg").also { it.releaseWith(mainScene) }
+        normalMap = loadTexture2d("${DemoLoader.materialPath}/castle_brick/castle_brick_02_red_nor_2k.jpg").also { it.releaseWith(mainScene) }
     }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {

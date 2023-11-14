@@ -118,7 +118,7 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrCont
 
         updatePbrMaterial()
 
-        scene.onRelease += {
+        scene.onRelease {
             materials.forEach { it.disposeMaps() }
         }
     }

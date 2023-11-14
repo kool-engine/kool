@@ -8,7 +8,6 @@ import de.fabmax.kool.physics.RigidDynamic
 import de.fabmax.kool.physics.character.*
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.TrsTransformF
-import de.fabmax.kool.util.Releasable
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.max
@@ -17,7 +16,7 @@ class PlayerController(
     private val physicsObjects: PhysicsObjects,
     mainScene: Scene,
     ctx: KoolContext
-) : OnHitActorListener, HitActorBehaviorCallback, Releasable {
+) : OnHitActorListener, HitActorBehaviorCallback {
 
     val controller: CharacterController
     private val charManager: CharacterControllerManager = CharacterControllerManager(physicsObjects.world)
@@ -54,7 +53,7 @@ class PlayerController(
         axes = WalkAxes(ctx)
     }
 
-    override fun release() {
+    fun release() {
         // apparently character controller is released automatically when the scene is destroyed
         //controller.release()
         //charManager.release()

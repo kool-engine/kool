@@ -237,16 +237,10 @@ class GltfDemo : DemoScene("glTF Models") {
                 roundCylinder(4.1f, 0.2f)
             }
 
-            val colorMap = Texture2d("${DemoLoader.materialPath}/Fabric030/Fabric030_1K_Color2.jpg")
-            val normalMap = Texture2d("${DemoLoader.materialPath}/Fabric030/Fabric030_1K_Normal.jpg")
-            val aoMap = Texture2d("${DemoLoader.materialPath}/Fabric030/Fabric030_1K_AmbientOcclusion.jpg")
-            val roughnessMap = Texture2d("${DemoLoader.materialPath}/Fabric030/Fabric030_1K_Roughness.jpg")
-            onRelease += {
-                colorMap.dispose()
-                normalMap.dispose()
-                roughnessMap.dispose()
-                aoMap.dispose()
-            }
+            val colorMap = Texture2d("${DemoLoader.materialPath}/Fabric030/Fabric030_1K_Color2.jpg").also { it.releaseWith(this) }
+            val normalMap = Texture2d("${DemoLoader.materialPath}/Fabric030/Fabric030_1K_Normal.jpg").also { it.releaseWith(this) }
+            val aoMap = Texture2d("${DemoLoader.materialPath}/Fabric030/Fabric030_1K_AmbientOcclusion.jpg").also { it.releaseWith(this) }
+            val roughnessMap = Texture2d("${DemoLoader.materialPath}/Fabric030/Fabric030_1K_Roughness.jpg").also { it.releaseWith(this) }
 
             fun KslPbrShader.Config.materialConfig() {
                 color { textureColor(colorMap) }

@@ -1,5 +1,6 @@
 package de.fabmax.kool.physics
 
+import de.fabmax.kool.util.BaseReleasable
 import physx.PxMaterial
 
 actual fun Material(staticFriction: Float, dynamicFriction: Float, restitution: Float): Material {
@@ -12,7 +13,7 @@ class MaterialImpl(
     override val staticFriction: Float,
     override val dynamicFriction: Float,
     override val restitution: Float
-) : Material {
+) : BaseReleasable(), Material {
 
     val pxMaterial: PxMaterial by lazy {
         PhysicsImpl.checkIsLoaded()
@@ -21,5 +22,6 @@ class MaterialImpl(
 
     override fun release() {
         pxMaterial.release()
+        super.release()
     }
 }

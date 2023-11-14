@@ -3,17 +3,18 @@ package de.fabmax.kool.input
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.math.clamp
-import de.fabmax.kool.util.Releasable
+import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.Time
 import de.fabmax.kool.util.launchDelayed
 import kotlin.math.abs
 import kotlin.math.max
 
-open class InputAxes(ctx: KoolContext) : Releasable {
+open class InputAxes(ctx: KoolContext) : BaseReleasable() {
     private val axesList = mutableListOf<Axis>()
     private val axes = mutableMapOf<String, Axis>()
 
     private val updateAxes: ((KoolContext) -> Unit) = {
+        checkIsNotReleased()
         for (i in axesList.indices) {
             axesList[i].updateAxisState(Time.deltaT)
         }
@@ -65,6 +66,7 @@ open class InputAxes(ctx: KoolContext) : Releasable {
         }
         axesList.clear()
         axes.clear()
+        super.release()
     }
 
     class Axis(val name: String) {

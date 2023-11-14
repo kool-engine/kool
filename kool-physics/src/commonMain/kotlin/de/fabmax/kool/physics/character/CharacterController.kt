@@ -7,9 +7,9 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.PhysicsWorld
 import de.fabmax.kool.physics.RigidActor
 import de.fabmax.kool.physics.RigidDynamic
-import de.fabmax.kool.util.Releasable
+import de.fabmax.kool.util.BaseReleasable
 
-abstract class CharacterController(private val manager: CharacterControllerManager, world: PhysicsWorld) : Releasable {
+abstract class CharacterController(private val manager: CharacterControllerManager, world: PhysicsWorld) : BaseReleasable() {
 
     abstract val actor: RigidDynamic
     abstract var position: Vec3d
@@ -92,5 +92,6 @@ abstract class CharacterController(private val manager: CharacterControllerManag
 
     override fun release() {
         manager.removeController(this)
+        super.release()
     }
 }

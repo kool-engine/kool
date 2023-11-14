@@ -54,9 +54,9 @@ class PbrDemo : DemoScene("PBR Materials") {
     }
 
     override fun lateInit(ctx: KoolContext) {
-        mainScene.onRelease += {
+        mainScene.onRelease {
             loadedHdris.forEach { it?.dispose() }
-            envMaps.dispose()
+            envMaps.release()
         }
     }
 
@@ -137,7 +137,7 @@ class PbrDemo : DemoScene("PBR Materials") {
 
     private fun updateHdri(idx: Int) {
         loadHdri(idx) { tex ->
-            envMaps.let { oldEnvMap -> launchDelayed(1) { oldEnvMap.dispose() } }
+            envMaps.let { oldEnvMap -> launchDelayed(1) { oldEnvMap.release() } }
             envMaps = EnvironmentHelper.hdriEnvironment(mainScene, tex, false)
             skybox.skyboxShader.setSingleSky(envMaps.reflectionMap)
             pbrContent.forEach { it.updateEnvironmentMap(envMaps) }

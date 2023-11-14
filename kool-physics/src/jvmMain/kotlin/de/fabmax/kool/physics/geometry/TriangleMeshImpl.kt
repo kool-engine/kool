@@ -15,7 +15,7 @@ actual fun TriangleMesh(geometry: IndexedVertexList): TriangleMesh = TriangleMes
 
 val TriangleMesh.pxTriangleMesh: PxTriangleMesh get() = (this as TriangleMeshImpl).pxTriangleMesh
 
-class TriangleMeshImpl(override val geometry: IndexedVertexList) : TriangleMesh {
+class TriangleMeshImpl(override val geometry: IndexedVertexList) : TriangleMesh() {
 
     val pxTriangleMesh: PxTriangleMesh
 
@@ -62,6 +62,7 @@ class TriangleMeshImpl(override val geometry: IndexedVertexList) : TriangleMesh 
      * Only use this if [releaseWithGeometry] is false. Releases the underlying PhysX mesh.
      */
     override fun release() {
+        super.release()
         pxTriangleMesh.release()
     }
 }

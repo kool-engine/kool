@@ -98,14 +98,9 @@ class ReflectionDemo : DemoScene("Reflections") {
 
         deferredPipeline.sceneContent.apply {
             Assets.launch {
-                val floorAlbedo = loadTexture2d("${DemoLoader.materialPath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_COL_2K.jpg")
-                val floorNormal = loadTexture2d("${DemoLoader.materialPath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_NRM_2K.jpg")
-                val floorRoughness = loadTexture2d("${DemoLoader.materialPath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_REFL_2K.jpg")
-                onRelease += {
-                    floorAlbedo.dispose()
-                    floorNormal.dispose()
-                    floorRoughness.dispose()
-                }
+                val floorAlbedo = loadTexture2d("${DemoLoader.materialPath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_COL_2K.jpg").also { it.releaseWith(mainScene) }
+                val floorNormal = loadTexture2d("${DemoLoader.materialPath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_NRM_2K.jpg").also { it.releaseWith(mainScene) }
+                val floorRoughness = loadTexture2d("${DemoLoader.materialPath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_REFL_2K.jpg").also { it.releaseWith(mainScene) }
 
                 addTextureMesh(isNormalMapped = true) {
                     generate {

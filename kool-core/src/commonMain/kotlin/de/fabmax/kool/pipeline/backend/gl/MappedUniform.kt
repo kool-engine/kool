@@ -254,6 +254,8 @@ abstract class MappedUniformTex(val texUnit: Int, val target: Int, val backend: 
     protected val gl = backend.gl
 
     protected fun checkLoadingState(texture: Texture, arrayIdx: Int): Boolean {
+        texture.checkIsNotReleased()
+
         if (texture.loadingState == Texture.LoadingState.NOT_LOADED) {
             when (texture.loader) {
                 is AsyncTextureLoader -> {

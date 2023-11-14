@@ -1,15 +1,15 @@
 package de.fabmax.kool.physics.geometry
 
+import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.HeightMap
-import de.fabmax.kool.util.Releasable
 
 expect fun HeightField(heightMap: HeightMap, rowScale: Float, columnScale: Float): HeightField
 
-interface HeightField : Releasable {
-    val heightMap: HeightMap
-    val rowScale: Float
-    val columnScale: Float
-    val heightScale: Float
+abstract class HeightField : BaseReleasable() {
+    abstract val heightMap: HeightMap
+    abstract val rowScale: Float
+    abstract val columnScale: Float
+    abstract val heightScale: Float
 
-    var releaseWithGeometry: Boolean
+    abstract var releaseWithGeometry: Boolean
 }

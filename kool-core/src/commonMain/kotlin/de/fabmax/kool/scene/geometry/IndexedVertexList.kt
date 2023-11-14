@@ -17,7 +17,7 @@ fun IndexedVertexList(vararg vertexAttributes: Attribute): IndexedVertexList {
     return IndexedVertexList(vertexAttributes.toList())
 }
 
-class IndexedVertexList(val vertexAttributes: List<Attribute>) : Releasable {
+class IndexedVertexList(val vertexAttributes: List<Attribute>) : BaseReleasable() {
 
     var name: String = "geometry"
 
@@ -533,6 +533,7 @@ class IndexedVertexList(val vertexAttributes: List<Attribute>) : Releasable {
 
     override fun release() {
         gpuGeometry?.release()
+        super.release()
     }
 
     companion object {

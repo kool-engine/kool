@@ -132,12 +132,8 @@ class ManyVehiclesDemo : DemoScene("Many Vehicles") {
     }
 
     private fun Scene.makeGround() {
-        val groundAlbedo = Texture2d("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine.png")
-        val groundNormal = Texture2d("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine_normal.png")
-        onRelease += {
-            groundAlbedo.dispose()
-            groundNormal.dispose()
-        }
+        val groundAlbedo = Texture2d("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine.png").also { releaseWith(this) }
+        val groundNormal = Texture2d("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine_normal.png").also { releaseWith(this) }
 
         addTextureMesh(isNormalMapped = true, name = "ground") {
             generate {

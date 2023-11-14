@@ -3,6 +3,7 @@ package de.fabmax.kool.pipeline.ibl
 import de.fabmax.kool.Assets
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ColorGradient
 import de.fabmax.kool.util.RenderLoop
@@ -24,8 +25,8 @@ object EnvironmentHelper {
 
         val maps = EnvironmentMaps(cubeTex, cubeTex)
         if (autoDispose) {
-            scene.onRelease += {
-                maps.dispose()
+            scene.onRelease {
+                maps.release()
             }
         }
         return maps
@@ -34,7 +35,7 @@ object EnvironmentHelper {
     fun gradientColorEnvironment(scene: Scene, gradient: ColorGradient, autoDispose: Boolean = true): EnvironmentMaps {
         val gradientTex = GradientTexture(gradient)
         val gradientPass = GradientCubeGenerator(scene, gradientTex)
-        scene.onRelease += {
+        scene.onRelease {
             gradientTex.dispose()
         }
         return renderPassEnvironment(scene, gradientPass, autoDispose)
@@ -51,7 +52,7 @@ object EnvironmentHelper {
     fun hdriEnvironment(scene: Scene, hdri: Texture2d, autoDispose: Boolean = true, brightness: Float = 1f): EnvironmentMaps {
         val rgbeDecoder = RgbeDecoder(scene, hdri, brightness)
         if (autoDispose) {
-            scene.onRelease += {
+            scene.onRelease {
                 hdri.dispose()
             }
         }
@@ -72,8 +73,8 @@ object EnvironmentHelper {
 
         val maps = EnvironmentMaps(irrMapPass.copyColor(), reflMapPass.copyColor())
         if (autoDispose) {
-            scene.onRelease += {
-                maps.dispose()
+            scene.onRelease {
+                maps.release()
             }
         }
 
@@ -84,9 +85,10 @@ object EnvironmentHelper {
     }
 }
 
-class EnvironmentMaps(val irradianceMap: TextureCube, val reflectionMap: TextureCube) {
-    fun dispose() {
+class EnvironmentMaps(val irradianceMap: TextureCube, val reflectionMap: TextureCube) : BaseReleasable() {
+    override fun release() {
         irradianceMap.dispose()
         reflectionMap.dispose()
+        super.release()
     }
 }
