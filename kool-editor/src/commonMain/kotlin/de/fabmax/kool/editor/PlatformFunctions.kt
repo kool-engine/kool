@@ -3,6 +3,7 @@ package de.fabmax.kool.editor
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.editor.model.EditorProject
 
+@Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 expect object PlatformFunctions {
     fun onEditorStarted(ctx: KoolContext)
 

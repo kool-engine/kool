@@ -3,6 +3,7 @@ package de.fabmax.kool.editor
 import de.fabmax.kool.LoadableFile
 import de.fabmax.kool.modules.ui2.MutableStateList
 
+@Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 expect class AvailableAssets(assetsBaseDir: String, browserSubDir: String) {
     val rootAssets: MutableStateList<AssetItem>
 

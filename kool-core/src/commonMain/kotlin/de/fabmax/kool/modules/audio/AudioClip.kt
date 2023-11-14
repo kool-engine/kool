@@ -1,6 +1,6 @@
 package de.fabmax.kool.modules.audio
 
-expect class AudioClip {
+interface AudioClip {
 
     var masterVolume: Float
 

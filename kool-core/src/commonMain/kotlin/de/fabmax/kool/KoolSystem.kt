@@ -39,6 +39,7 @@ object KoolSystem {
     }
 }
 
+@Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 expect class KoolConfig {
     /**
      * Base path used by [Assets] to look for assets to be loaded (textures, models, etc.).

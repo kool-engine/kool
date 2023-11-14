@@ -1,5 +1,7 @@
 package de.fabmax.kool.util
 
-internal actual object SystemClock {
-    actual fun now(): Double = js("performance.now()") as Double / 1e3
+internal actual fun SystemClock(): SystemClock = SystemClockImpl
+
+private object SystemClockImpl : SystemClock {
+    override fun now(): Double = js("performance.now()") as Double / 1e3
 }

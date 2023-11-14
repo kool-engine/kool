@@ -12,6 +12,7 @@ import java.io.FileOutputStream
 import java.io.IOException
 import kotlin.concurrent.thread
 
+@Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 actual object KeyValueStore {
 
     private const val KEY_VALUE_STORAGE_NAME = ".keyValueStorage.json"

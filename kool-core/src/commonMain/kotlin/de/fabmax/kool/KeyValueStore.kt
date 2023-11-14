@@ -6,6 +6,7 @@ import de.fabmax.kool.util.Uint8Buffer
  * Key-value store for storing primitive values (e.g. application settings) as well as arbitrary small to medium
  * byte data (e.g. save games).
  */
+@Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 expect object KeyValueStore {
 
     fun storageKeys(): Set<String>

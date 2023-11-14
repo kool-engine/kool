@@ -60,18 +60,19 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
             }
 
             val nAttributes = pipeline.layout.vertices.bindings.sumOf { binding ->
-                binding.vertexAttributes.sumOf { it.attribute.props.nSlots }
+                binding.vertexAttributes.sumOf { it.attribute.locationIncrement }
             }
             val attributeDescriptions = callocVkVertexInputAttributeDescriptionN(nAttributes) {
                 var iAttrib = 0
                 pipeline.layout.vertices.bindings.forEach { binding ->
                     binding.vertexAttributes.forEach { attrib ->
-                        for (i in 0 until attrib.attribute.props.nSlots) {
+                        for (i in 0 until attrib.attribute.locationIncrement) {
+                            val attrVkProps = attrib.attribute.vkProps()
                             this[iAttrib++].apply {
                                 binding(binding.binding)
                                 location(attrib.location + i)
-                                offset(attrib.offset + attrib.attribute.props.slotOffset * i)
-                                format(attrib.attribute.props.slotType)
+                                offset(attrib.offset + attrVkProps.slotOffset * i)
+                                format(attrVkProps.slotType)
                             }
                         }
                     }
@@ -395,4 +396,20 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
 
         logD { "Destroyed graphics pipeline" }
     }
+
+    private data class AttributeVkProps(val slotOffset: Int, val slotType: Int)
+
+    private fun Attribute.vkProps() = when (type) {
+            GlslType.FLOAT -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32_SFLOAT)
+            GlslType.VEC_2F -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32G32_SFLOAT)
+            GlslType.VEC_3F -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32G32B32_SFLOAT)
+            GlslType.VEC_4F -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32G32B32A32_SFLOAT)
+            GlslType.MAT_2F -> AttributeVkProps(slotOffset = GlslType.VEC_2F.byteSize, slotType = VK_FORMAT_R32G32_SFLOAT)
+            GlslType.MAT_3F -> AttributeVkProps(slotOffset = GlslType.VEC_3F.byteSize, slotType = VK_FORMAT_R32G32B32_SFLOAT)
+            GlslType.MAT_4F -> AttributeVkProps(slotOffset = GlslType.VEC_4F.byteSize, slotType = VK_FORMAT_R32G32B32A32_SFLOAT)
+            GlslType.INT -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32_SINT)
+            GlslType.VEC_2I -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32G32_SINT)
+            GlslType.VEC_3I -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32G32B32_SINT)
+            GlslType.VEC_4I -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32G32B32A32_SINT)
+        }
 }

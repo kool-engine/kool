@@ -6,17 +6,16 @@ import javax.sound.sampled.AudioFormat
 import javax.sound.sampled.AudioSystem
 import kotlin.concurrent.thread
 
-/**
- * @author fabmax
- */
 
-actual class AudioOutput actual constructor(actual val bufSize: Int) {
+actual fun AudioOutput(bufSize: Int): AudioOutput = AudioOutputImpl(bufSize)
+
+class AudioOutputImpl(override val bufSize: Int) : AudioOutput {
 
     private val pauseLock = Object()
     private var isStopRequested = false
 
-    actual val sampleRate = 48000f
-    actual var isPaused: Boolean = false
+    override val sampleRate = 48000f
+    override var isPaused: Boolean = false
         set(value) {
             if (field != value) {
                 field = value
@@ -26,9 +25,9 @@ actual class AudioOutput actual constructor(actual val bufSize: Int) {
             }
         }
 
-    actual val mixer = MixNode()
+    override val mixer = MixNode()
 
-    actual var onBufferUpdate: (Double) -> Unit = { }
+    override var onBufferUpdate: (Double) -> Unit = { }
 
     init {
         thread(start = true, isDaemon = true) {
@@ -75,7 +74,7 @@ actual class AudioOutput actual constructor(actual val bufSize: Int) {
         }
     }
 
-    actual fun close() {
+    override fun close() {
         isStopRequested = true
     }
 }

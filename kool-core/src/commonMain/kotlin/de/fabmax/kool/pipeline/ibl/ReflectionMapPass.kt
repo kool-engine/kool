@@ -41,7 +41,7 @@ class ReflectionMapPass private constructor(parentScene: Scene, hdriMap: Texture
         }
 
         // this pass only needs to be rendered once, remove it immediately after first render
-        onAfterDraw += { ctx ->
+        onAfterDraw += {
             if (hdriMap != null) {
                 logD { "Generated reflection map from HDRI: ${hdriMap.name}, size: $size x $size" }
             } else {

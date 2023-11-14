@@ -197,7 +197,7 @@ open class KslShader(val program: KslProgram, val pipelineConfig: PipelineConfig
                 vertLayoutAttribs += VertexLayout.VertexAttribute(attribLocation, off, attrib)
             }
             vertexAttrib.location = attribLocation
-            attribLocation += attrib.props.nSlots
+            attribLocation += attrib.locationIncrement
         }
 
         builder.vertexLayout.bindings += VertexLayout.Binding(
@@ -225,7 +225,7 @@ open class KslShader(val program: KslProgram, val pipelineConfig: PipelineConfig
                 val off = insts.attributeOffsets[attrib]!!
                 instLayoutAttribs += VertexLayout.VertexAttribute(attribLocation, off, attrib)
                 instanceAttrib.location = attribLocation
-                attribLocation += attrib.props.nSlots
+                attribLocation += attrib.locationIncrement
             }
             builder.vertexLayout.bindings += VertexLayout.Binding(
                 iBinding,

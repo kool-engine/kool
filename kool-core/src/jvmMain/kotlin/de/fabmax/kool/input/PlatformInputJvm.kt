@@ -5,7 +5,9 @@ import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.util.logD
 import org.lwjgl.glfw.GLFW
 
-internal actual object PlatformInput {
+internal actual fun PlatformInput(): PlatformInput = PlatformInputJvm
+
+object PlatformInputJvm : PlatformInput {
 
     var isMouseOverWindow = false
         private set
@@ -14,7 +16,7 @@ internal actual object PlatformInput {
     private val cursorShapes = mutableMapOf<CursorShape, Long>()
     private var currentCursorShape = CursorShape.DEFAULT
 
-    actual fun setCursorMode(cursorMode: CursorMode) {
+    override fun setCursorMode(cursorMode: CursorMode) {
         val ctx = KoolSystem.getContextOrNull() as Lwjgl3Context? ?: return
         val windowHandle = ctx.backend.glfwWindow.windowPtr
 
@@ -23,7 +25,7 @@ internal actual object PlatformInput {
         }
     }
 
-    actual fun applyCursorShape(cursorShape: CursorShape) {
+    override fun applyCursorShape(cursorShape: CursorShape) {
         val ctx = KoolSystem.requireContext() as Lwjgl3Context? ?: return
         val windowHandle = ctx.backend.glfwWindow.windowPtr
 
@@ -33,7 +35,7 @@ internal actual object PlatformInput {
         }
     }
 
-    fun onContextCreated(ctx: Lwjgl3Context) {
+    internal fun onContextCreated(ctx: Lwjgl3Context) {
         deriveLocalKeyCodes()
         createStandardCursors()
 
@@ -152,7 +154,7 @@ internal actual object PlatformInput {
         }
 
 
-    val KEY_CODE_MAP: Map<Int, KeyCode> = mutableMapOf(
+    private val KEY_CODE_MAP: Map<Int, KeyCode> = mutableMapOf(
         GLFW.GLFW_KEY_LEFT_CONTROL to KeyboardInput.KEY_CTRL_LEFT,
         GLFW.GLFW_KEY_RIGHT_CONTROL to KeyboardInput.KEY_CTRL_RIGHT,
         GLFW.GLFW_KEY_LEFT_SHIFT to KeyboardInput.KEY_SHIFT_LEFT,

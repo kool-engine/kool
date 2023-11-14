@@ -1,6 +1,7 @@
 package de.fabmax.kool.editor
 
 import de.fabmax.kool.LoadableFile
+import de.fabmax.kool.LoadableFileImpl
 import de.fabmax.kool.modules.ui2.mutableStateListOf
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logE
@@ -13,6 +14,7 @@ import java.nio.file.StandardCopyOption
 import kotlin.coroutines.CoroutineContext
 import kotlin.io.path.*
 
+@Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 actual class AvailableAssets actual constructor(assetsBaseDir: String, val browserSubDir: String) : CoroutineScope {
     override val coroutineContext: CoroutineContext = Job()
 
@@ -65,10 +67,10 @@ actual class AvailableAssets actual constructor(assetsBaseDir: String, val brows
     }
 
     actual fun importAssets(targetPath: String, assetFiles: List<LoadableFile>) {
-        assetFiles.forEach { importAsset(targetPath, it) }
+        assetFiles.forEach { importAsset(targetPath, it as LoadableFileImpl) }
     }
 
-    private fun importAsset(targetPath: String, assetFile: LoadableFile) {
+    private fun importAsset(targetPath: String, assetFile: LoadableFileImpl) {
         logD { "Importing asset file: ${assetFile.selectionPath}" }
 
         val dest = Path(assetsDir.pathString, targetPath.removePrefix(browserSubDir), assetFile.selectionPath)

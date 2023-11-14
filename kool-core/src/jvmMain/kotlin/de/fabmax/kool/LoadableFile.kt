@@ -6,18 +6,18 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
 
-actual class LoadableFile(val file: File, val selectionPath: String = file.name) {
+class LoadableFileImpl(val file: File, val selectionPath: String = file.name) : LoadableFile {
 
-    actual val name: String
+    override val name: String
         get() = file.name
 
-    actual val size: Long
+    override val size: Long
         get() = file.length()
 
-    actual val mimeType: String
+    override val mimeType: String
         get() = "application/octet-stream"
 
-    actual suspend fun read(): Uint8Buffer {
+    override suspend fun read(): Uint8Buffer {
         return withContext(Dispatchers.IO) {
             file.readBytes().toBuffer()
         }

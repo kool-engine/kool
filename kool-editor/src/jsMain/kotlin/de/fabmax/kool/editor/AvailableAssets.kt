@@ -5,6 +5,7 @@ import de.fabmax.kool.LoadableFile
 import de.fabmax.kool.modules.ui2.mutableStateListOf
 import de.fabmax.kool.util.logE
 
+@Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 actual class AvailableAssets actual constructor(assetsBaseDir: String, browserSubDir: String) {
     actual val rootAssets = mutableStateListOf<AssetItem>()
     actual val modelAssets = mutableStateListOf<AssetItem>()

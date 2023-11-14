@@ -20,11 +20,12 @@ object Assets : CoroutineScope {
             }
         }
 
-    internal val job = Job()
     private const val NUM_LOAD_WORKERS = 8
-
+    internal val job = Job()
     override val coroutineContext: CoroutineContext
         get() = job
+
+    private val platformAssets = PlatformAssets()
 
     private val awaitedAssetsChannel = Channel<AwaitedAsset>()
     private val assetRefChannel = Channel<AssetRef>(Channel.UNLIMITED)
@@ -69,9 +70,9 @@ object Assets : CoroutineScope {
 
     private suspend fun loadAsset(ref: AssetRef): LoadedAsset {
         return when(ref) {
-            is BlobAssetRef -> PlatformAssets.loadBlob(ref)
-            is TextureAssetRef -> PlatformAssets.loadTexture(ref)
-            is TextureAtlasAssetRef -> PlatformAssets.loadTextureAtlas(ref)
+            is BlobAssetRef -> platformAssets.loadBlob(ref)
+            is TextureAssetRef -> platformAssets.loadTexture(ref)
+            is TextureAtlasAssetRef -> platformAssets.loadTextureAtlas(ref)
         }
     }
 
@@ -80,7 +81,7 @@ object Assets : CoroutineScope {
      * which cannot be displayed before fonts are loaded.
      */
     suspend fun waitForFonts() {
-        PlatformAssets.waitForFonts()
+        platformAssets.waitForFonts()
     }
 
     /**
@@ -125,7 +126,7 @@ object Assets : CoroutineScope {
      * [outMetrics] map. This function is usually not called directly (but you can if you want to).
      */
     fun createAtlasFontMapData(font: AtlasFont, fontScale: Float, outMetrics: MutableMap<Char, CharMetrics>): TextureData2d {
-        return PlatformAssets.createFontMapData(font, fontScale, outMetrics)
+        return platformAssets.createFontMapData(font, fontScale, outMetrics)
     }
 
     /**
@@ -137,7 +138,7 @@ object Assets : CoroutineScope {
      * @return The list of [LoadableFile]s selected by the user (is empty if the operation was canceled).
      */
     suspend fun loadFileByUser(filterList: List<FileFilterItem> = emptyList(), multiSelect: Boolean = false): List<LoadableFile> {
-        return PlatformAssets.loadFileByUser(filterList, multiSelect)
+        return platformAssets.loadFileByUser(filterList, multiSelect)
     }
 
     /**
@@ -152,7 +153,7 @@ object Assets : CoroutineScope {
         filterList: List<FileFilterItem> = emptyList(),
         mimeType: String = "application/octet-stream"
     ): String? {
-        return PlatformAssets.saveFileByUser(data, defaultFileName, filterList, mimeType)
+        return platformAssets.saveFileByUser(data, defaultFileName, filterList, mimeType)
     }
 
     fun isHttpAsset(assetPath: String): Boolean =
@@ -207,7 +208,7 @@ object Assets : CoroutineScope {
      * image (e.g. 'image/png') and returns the image as [TextureData].
      */
     suspend fun loadTextureDataFromBuffer(texData: Uint8Buffer, mimeType: String, props: TextureProps? = null): TextureData {
-        return PlatformAssets.loadTextureDataFromBuffer(texData, mimeType, props)
+        return platformAssets.loadTextureDataFromBuffer(texData, mimeType, props)
     }
 
     /**
@@ -218,7 +219,7 @@ object Assets : CoroutineScope {
      * @throws KoolException if loading failed
      */
     suspend fun loadTextureData2d(imagePath: String, props: TextureProps? = null): TextureData2d {
-        return PlatformAssets.loadTextureData2d(imagePath, props)
+        return platformAssets.loadTextureData2d(imagePath, props)
     }
 
     /**
@@ -334,7 +335,7 @@ object Assets : CoroutineScope {
     }
 
     suspend fun loadAudioClip(assetPath: String): AudioClip {
-        return PlatformAssets.loadAudioClip(assetPath)
+        return platformAssets.loadAudioClip(assetPath)
     }
 
     fun trimAssetPath(assetPath: String): String {
@@ -379,26 +380,28 @@ class LoadedTextureAsset(ref: AssetRef, val data: TextureData?) : LoadedAsset(re
 
 data class FileFilterItem(val name: String, val fileExtensions: String)
 
-expect object PlatformAssets {
-    internal suspend fun loadBlob(blobRef: BlobAssetRef): LoadedBlobAsset
-    internal suspend fun loadTexture(textureRef: TextureAssetRef): LoadedTextureAsset
-    internal suspend fun loadTextureAtlas(textureRef: TextureAtlasAssetRef): LoadedTextureAsset
+internal expect fun PlatformAssets(): PlatformAssets
 
-    internal suspend fun waitForFonts()
-    internal fun createFontMapData(font: AtlasFont, fontScale: Float, outMetrics: MutableMap<Char, CharMetrics>): TextureData2d
+internal interface PlatformAssets {
+    suspend fun loadBlob(blobRef: BlobAssetRef): LoadedBlobAsset
+    suspend fun loadTexture(textureRef: TextureAssetRef): LoadedTextureAsset
+    suspend fun loadTextureAtlas(textureRef: TextureAtlasAssetRef): LoadedTextureAsset
 
-    internal suspend fun loadFileByUser(filterList: List<FileFilterItem>, multiSelect: Boolean): List<LoadableFile>
-    internal suspend fun saveFileByUser(
+    suspend fun waitForFonts()
+    fun createFontMapData(font: AtlasFont, fontScale: Float, outMetrics: MutableMap<Char, CharMetrics>): TextureData2d
+
+    suspend fun loadFileByUser(filterList: List<FileFilterItem>, multiSelect: Boolean): List<LoadableFile>
+    suspend fun saveFileByUser(
         data: Uint8Buffer,
         defaultFileName: String?,
         filterList: List<FileFilterItem>,
         mimeType: String = MimeType.BINARY_DATA
     ): String?
 
-    internal suspend fun loadTextureData2d(imagePath: String, props: TextureProps?): TextureData2d
-    internal suspend fun loadTextureDataFromBuffer(texData: Uint8Buffer, mimeType: String, props: TextureProps?): TextureData
+    suspend fun loadTextureData2d(imagePath: String, props: TextureProps?): TextureData2d
+    suspend fun loadTextureDataFromBuffer(texData: Uint8Buffer, mimeType: String, props: TextureProps?): TextureData
 
-    internal suspend fun loadAudioClip(assetPath: String): AudioClip
+    suspend fun loadAudioClip(assetPath: String): AudioClip
 }
 
 object MimeType {

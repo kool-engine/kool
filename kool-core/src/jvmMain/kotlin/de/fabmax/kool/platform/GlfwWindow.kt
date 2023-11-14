@@ -1,9 +1,6 @@
 package de.fabmax.kool.platform
 
-import de.fabmax.kool.DesktopImpl
-import de.fabmax.kool.KoolException
-import de.fabmax.kool.KoolSystem
-import de.fabmax.kool.LoadableFile
+import de.fabmax.kool.*
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.util.Uint8BufferImpl
 import de.fabmax.kool.util.logD
@@ -189,9 +186,9 @@ open class GlfwWindow(val ctx: Lwjgl3Context) {
                 val dirPath = file.toPath()
                 dirPath.walk(PathWalkOption.INCLUDE_DIRECTORIES)
                     .filter { it.isRegularFile(LinkOption.NOFOLLOW_LINKS) }
-                    .forEach { files += LoadableFile(it.toFile(), it.relativeTo(dirPath.parent).pathString) }
+                    .forEach { files += LoadableFileImpl(it.toFile(), it.relativeTo(dirPath.parent).pathString) }
             } else {
-                files += LoadableFile(file)
+                files += LoadableFileImpl(file)
             }
         }
         ctx.applicationCallbacks.onFileDrop(files)

@@ -1,6 +1,8 @@
 package de.fabmax.kool.modules.audio
 
-expect class AudioOutput(bufSize: Int = 1024) {
+expect fun AudioOutput(bufSize: Int = 1024): AudioOutput
+
+interface AudioOutput {
 
     val bufSize: Int
     val sampleRate: Float

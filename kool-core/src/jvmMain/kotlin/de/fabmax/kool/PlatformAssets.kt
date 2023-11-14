@@ -3,6 +3,7 @@ package de.fabmax.kool
 import com.github.weisj.jsvg.parser.SVGLoader
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.modules.audio.AudioClip
+import de.fabmax.kool.modules.audio.AudioClipImpl
 import de.fabmax.kool.pipeline.TextureData
 import de.fabmax.kool.pipeline.TextureData2d
 import de.fabmax.kool.pipeline.TextureProps
@@ -24,7 +25,9 @@ import java.util.*
 import javax.imageio.ImageIO
 import kotlin.math.roundToInt
 
-actual object PlatformAssets {
+internal actual fun PlatformAssets(): PlatformAssets = PlatformAssetsImpl
+
+private object PlatformAssetsImpl : PlatformAssets {
 
     private const val MAX_GENERATED_TEX_WIDTH = 2048
     private const val MAX_GENERATED_TEX_HEIGHT = 2048
@@ -39,7 +42,7 @@ actual object PlatformAssets {
         fontGenerator.loadCustomFonts(KoolSystem.config.customTtfFonts)
     }
 
-    internal actual suspend fun loadBlob(blobRef: BlobAssetRef): LoadedBlobAsset {
+    override suspend fun loadBlob(blobRef: BlobAssetRef): LoadedBlobAsset {
         return if (blobRef.isHttp) {
             loadHttpBlob(blobRef)
         } else {
@@ -93,7 +96,7 @@ actual object PlatformAssets {
         return inStream
     }
 
-    internal actual suspend fun loadTexture(textureRef: TextureAssetRef): LoadedTextureAsset {
+    override suspend fun loadTexture(textureRef: TextureAssetRef): LoadedTextureAsset {
         var data: ImageTextureData? = null
         withContext(Dispatchers.IO) {
             try {
@@ -109,7 +112,7 @@ actual object PlatformAssets {
         return LoadedTextureAsset(textureRef, data)
     }
 
-    internal actual suspend fun loadTextureAtlas(textureRef: TextureAtlasAssetRef): LoadedTextureAsset {
+    override suspend fun loadTextureAtlas(textureRef: TextureAtlasAssetRef): LoadedTextureAsset {
         var data: ImageTextureData? = null
         withContext(Dispatchers.IO) {
             try {
@@ -149,19 +152,19 @@ actual object PlatformAssets {
         }
     }
 
-    internal actual suspend fun waitForFonts() {
+    override suspend fun waitForFonts() {
         // on JVM all fonts should be immediately available -> nothing to wait for
     }
 
-    internal actual fun createFontMapData(font: AtlasFont, fontScale: Float, outMetrics: MutableMap<Char, CharMetrics>): TextureData2d {
+    override fun createFontMapData(font: AtlasFont, fontScale: Float, outMetrics: MutableMap<Char, CharMetrics>): TextureData2d {
         return fontGenerator.createFontMapData(font, fontScale, outMetrics)
     }
 
-    internal actual suspend fun loadFileByUser(filterList: List<FileFilterItem>, multiSelect: Boolean): List<LoadableFile> {
-        return openFileChooser(filterList, multiSelect).map { LoadableFile(it) }
+    override suspend fun loadFileByUser(filterList: List<FileFilterItem>, multiSelect: Boolean): List<LoadableFile> {
+        return openFileChooser(filterList, multiSelect).map { LoadableFileImpl(it) }
     }
 
-    internal actual suspend fun saveFileByUser(
+    override suspend fun saveFileByUser(
         data: Uint8Buffer,
         defaultFileName: String?,
         filterList: List<FileFilterItem>,
@@ -254,20 +257,20 @@ actual object PlatformAssets {
         }
     }
 
-    internal actual suspend fun loadTextureData2d(imagePath: String, props: TextureProps?): TextureData2d {
+    override suspend fun loadTextureData2d(imagePath: String, props: TextureProps?): TextureData2d {
         // JVM implementation always loads images as ImageTextureData, which is a subclass of TextureData2d
         return Assets.loadTextureData(imagePath, props) as ImageTextureData
     }
 
-    internal actual suspend fun loadTextureDataFromBuffer(texData: Uint8Buffer, mimeType: String, props: TextureProps?): TextureData {
+    override suspend fun loadTextureDataFromBuffer(texData: Uint8Buffer, mimeType: String, props: TextureProps?): TextureData {
         return withContext(Dispatchers.IO) {
             readImageData(ByteArrayInputStream(texData.toArray()), mimeType, props)
         }
     }
 
-    internal actual suspend fun loadAudioClip(assetPath: String): AudioClip {
+    override suspend fun loadAudioClip(assetPath: String): AudioClip {
         val asset = Assets.loadBlobAsset(assetPath)
-        return AudioClip(asset.toArray())
+        return AudioClipImpl(asset.toArray())
     }
 
     private fun renderSvg(inStream: InputStream, props: TextureProps?): ImageTextureData {

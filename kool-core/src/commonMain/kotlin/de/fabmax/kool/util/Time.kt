@@ -1,6 +1,7 @@
 package de.fabmax.kool.util
 
 object Time {
+    private val systemClock = SystemClock()
     /**
      * Time since previous frame in seconds.
      */
@@ -25,9 +26,11 @@ object Time {
      * be around 0.1 milliseconds.
      */
     val precisionTime: Double
-        get() = SystemClock.now()
+        get() = systemClock.now()
 }
 
-internal expect object SystemClock {
+internal expect fun SystemClock(): SystemClock
+
+internal interface SystemClock {
     fun now(): Double
 }

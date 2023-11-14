@@ -41,7 +41,14 @@ val KslType.glslType: GlslType
     }
 
 data class Attribute(val name: String, val type: GlslType) {
-    val props = PlatformAttributeProps(this)
+    //val props = PlatformAttributeProps(this)
+
+    val locationIncrement: Int = when(type) {
+        GlslType.MAT_2F -> 2
+        GlslType.MAT_3F -> 3
+        GlslType.MAT_4F -> 4
+        else -> 1
+    }
 
     override fun toString(): String {
         return name
@@ -133,6 +140,3 @@ fun KslVertexStage.instanceAttribMat4(attrib: Attribute): KslExprMat4 {
     return instanceAttribMat4(attrib.name)
 }
 
-expect class PlatformAttributeProps(attribute: Attribute) {
-    val nSlots: Int
-}

@@ -42,7 +42,7 @@ class RgbeDecoder(parentScene: Scene, hdriTexture: Texture2d, brightness: Float 
         }
 
         // this pass only needs to be rendered once, remove it immediately after first render
-        onAfterDraw += { ctx ->
+        onAfterDraw += {
             logD { "Converted RGBe to linear: ${hdriTexture.name}" }
             if (isAutoRemove) {
                 parentScene.removeOffscreenPass(this)

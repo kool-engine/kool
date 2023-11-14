@@ -2,7 +2,7 @@ package de.fabmax.kool
 
 import de.fabmax.kool.util.Uint8Buffer
 
-expect class LoadableFile {
+interface LoadableFile {
     val name: String
     val size: Long
     val mimeType: String

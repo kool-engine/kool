@@ -23,6 +23,7 @@ import kotlin.coroutines.suspendCoroutine
 import kotlin.io.path.*
 import kotlin.reflect.KClass
 
+@Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 actual class AppLoadService actual constructor(val paths: ProjectPaths) : CoroutineScope {
 
     override val coroutineContext: CoroutineContext = Job()

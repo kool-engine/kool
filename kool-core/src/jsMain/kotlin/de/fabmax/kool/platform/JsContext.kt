@@ -1,10 +1,7 @@
 package de.fabmax.kool.platform
 
-import de.fabmax.kool.KoolContext
-import de.fabmax.kool.KoolException
-import de.fabmax.kool.KoolSystem
-import de.fabmax.kool.LoadableFile
-import de.fabmax.kool.input.PlatformInput
+import de.fabmax.kool.*
+import de.fabmax.kool.input.PlatformInputJs
 import de.fabmax.kool.pipeline.backend.RenderBackend
 import de.fabmax.kool.pipeline.backend.gl.GlImpl
 import de.fabmax.kool.pipeline.backend.gl.RenderBackendGlImpl
@@ -120,7 +117,7 @@ class JsContext internal constructor() : KoolContext() {
             e.dataTransfer?.files?.let { fileList ->
                 val dropFiles = mutableListOf<LoadableFile>()
                 for (i in 0 until fileList.length) {
-                    fileList[i]?.let { dropFiles += LoadableFile(it) }
+                    fileList[i]?.let { dropFiles += LoadableFileImpl(it) }
                 }
                 if (dropFiles.isNotEmpty()) {
                     applicationCallbacks.onFileDrop(dropFiles)
@@ -138,7 +135,7 @@ class JsContext internal constructor() : KoolContext() {
 
         backend = RenderBackendGlImpl(this)
 
-        PlatformInput.onContextCreated(this)
+        PlatformInputJs.onContextCreated(this)
         KoolSystem.onContextCreated(this)
     }
 

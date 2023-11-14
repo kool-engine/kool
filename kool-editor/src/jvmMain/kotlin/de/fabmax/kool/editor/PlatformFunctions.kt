@@ -1,9 +1,6 @@
 package de.fabmax.kool.editor
 
-import de.fabmax.kool.Assets
-import de.fabmax.kool.KeyValueStore
-import de.fabmax.kool.KoolContext
-import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.*
 import de.fabmax.kool.editor.data.ProjectData
 import de.fabmax.kool.editor.model.EditorProject
 import de.fabmax.kool.editor.ui.OkCancelBrowsePathDialog
@@ -17,6 +14,7 @@ import kotlinx.serialization.json.Json
 import java.io.File
 import java.io.IOException
 
+@Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 actual object PlatformFunctions {
 
     actual fun onEditorStarted(ctx: KoolContext) {
@@ -99,6 +97,9 @@ actual object PlatformFunctions {
 
     actual suspend fun chooseFilePath(): String? {
         val result = Assets.loadFileByUser()
-        return result.getOrNull(0)?.file?.path
+        if (result.isNotEmpty()) {
+            return (result[0] as LoadableFileImpl).file.path
+        }
+        return null
     }
 }

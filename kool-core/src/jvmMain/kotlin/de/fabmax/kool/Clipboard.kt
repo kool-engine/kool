@@ -4,6 +4,7 @@ import java.awt.Toolkit
 import java.awt.datatransfer.DataFlavor
 import java.awt.datatransfer.StringSelection
 
+@Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 actual object Clipboard {
     actual fun copyToClipboard(string: String) {
         val selection = StringSelection(string)

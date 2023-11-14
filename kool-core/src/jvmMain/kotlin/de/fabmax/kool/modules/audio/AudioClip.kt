@@ -12,39 +12,39 @@ import kotlin.math.log10
 import kotlin.math.pow
 
 
-actual class AudioClip(private val audioData: ByteArray) {
+class AudioClipImpl(private val audioData: ByteArray) : AudioClip {
 
-    actual var masterVolume = 1f
+    override var masterVolume = 1f
         set(value) {
             field = value
             latestClip.volume = volume * value
         }
 
-    actual var volume = 1f
+    override var volume = 1f
         set(value) {
             field = value
             latestClip.volume = value * masterVolume
         }
 
-    actual var currentTime: Float
+    override var currentTime: Float
         get() = latestClip.currentTime
         set(value) {
             latestClip.currentTime = value
         }
 
-    actual val duration: Float
+    override val duration: Float
         get() = latestClip.duration
 
-    actual val isEnded: Boolean
+    override val isEnded: Boolean
         get() = latestClip.clipState == ClipState.STOPPED
 
-    actual var loop: Boolean
+    override var loop: Boolean
         get() = latestClip.loop
         set(value) {
             latestClip.loop = value
         }
 
-    actual var minIntervalMs: Float = MIN_PLAY_INTERVAL_MS
+    override var minIntervalMs: Float = MIN_PLAY_INTERVAL_MS
 
     private val clipPool = mutableListOf(ClipWrapper())
     private var latestClip = clipPool.first()
@@ -64,7 +64,7 @@ actual class AudioClip(private val audioData: ByteArray) {
         return clipPool.minByOrNull { it.startTime }!!
     }
 
-    actual fun play() {
+    override fun play() {
         val t = Time.precisionTime
         if (t - lastPlay > minIntervalMs / 1000.0) {
             lastPlay = t
@@ -72,7 +72,7 @@ actual class AudioClip(private val audioData: ByteArray) {
         }
     }
 
-    actual fun stop() {
+    override fun stop() {
         latestClip.stop()
     }
 
@@ -137,7 +137,7 @@ actual class AudioClip(private val audioData: ByteArray) {
                         clipState = ClipState.STOPPED
                     }
                 }
-                volume = this@AudioClip.volume * this@AudioClip.masterVolume
+                volume = this@AudioClipImpl.volume * this@AudioClipImpl.masterVolume
             } catch (e: Exception) {
                 logE { "Failed playing audio clip: $e" }
             }

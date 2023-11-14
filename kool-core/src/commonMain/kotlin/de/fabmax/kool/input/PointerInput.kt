@@ -10,6 +10,8 @@ object PointerInput {
     private var lastPtrInput = 0.0
     private val inputPointers = Array(MAX_POINTERS) { BufferedPointerInput() }
 
+    private val platformInput = PlatformInput()
+
     val pointerState = PointerState()
     val primaryPointer: Pointer get() = pointerState.primaryPointer
 
@@ -18,13 +20,13 @@ object PointerInput {
     var cursorMode: CursorMode = CursorMode.NORMAL
         set(value) {
             field = value
-            PlatformInput.setCursorMode(value)
+            platformInput.setCursorMode(value)
         }
     var cursorShape: CursorShape = CursorShape.DEFAULT
 
 
     internal fun onNewFrame(ctx: KoolContext) {
-        PlatformInput.applyCursorShape(cursorShape)
+        platformInput.applyCursorShape(cursorShape)
         cursorShape = CursorShape.DEFAULT
         pointerState.onNewFrame(inputPointers, lastPtrInput, ctx)
     }
@@ -124,6 +126,13 @@ object PointerInput {
     const val CONSUMED_SCROLL_Y = 64
     const val CONSUMED_X = 128
     const val CONSUMED_Y = 256
+}
+
+internal expect fun PlatformInput(): PlatformInput
+
+internal interface PlatformInput {
+    fun setCursorMode(cursorMode: CursorMode)
+    fun applyCursorShape(cursorShape: CursorShape)
 }
 
 enum class CursorMode {

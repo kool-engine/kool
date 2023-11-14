@@ -2,7 +2,7 @@ package de.fabmax.kool.platform
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
-import de.fabmax.kool.input.PlatformInput
+import de.fabmax.kool.input.PlatformInputJvm
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.pipeline.backend.gl.RenderBackendGlImpl
 import de.fabmax.kool.pipeline.backend.vk.VkRenderBackend
@@ -82,7 +82,7 @@ class Lwjgl3Context : KoolContext() {
 
         SysInfo.set(backend.apiName, backend.deviceName)
 
-        PlatformInput.onContextCreated(this)
+        PlatformInputJvm.onContextCreated(this)
         KoolSystem.onContextCreated(this)
     }
 
@@ -125,7 +125,7 @@ class Lwjgl3Context : KoolContext() {
         val dtFocused = if (maxFrameRate > 0) 1.0 / maxFrameRate else 0.0
         val dtUnfocused = if (windowNotFocusedFrameRate > 0) 1.0 / windowNotFocusedFrameRate else dtFocused
         val dtCurrent = (t - prevTime) / 1e9
-        val dtCmp = if (isWindowFocused || PlatformInput.isMouseOverWindow) dtFocused else dtUnfocused
+        val dtCmp = if (isWindowFocused || PlatformInputJvm.isMouseOverWindow) dtFocused else dtUnfocused
         if (dtCmp > dtCurrent) {
             val untilFocused = t + ((dtFocused - dtCurrent) * 1e9).toLong()
             val untilUnfocused = t + ((dtUnfocused - dtCurrent) * 1e9).toLong()
@@ -136,7 +136,7 @@ class Lwjgl3Context : KoolContext() {
     private fun delayFrameRender(untilFocused: Long, untilUnfocused: Long) {
         while (!glfwWindowShouldClose(backend.glfwWindow.windowPtr)) {
             val t = System.nanoTime()
-            val isFocused = isWindowFocused || PlatformInput.isMouseOverWindow
+            val isFocused = isWindowFocused || PlatformInputJvm.isMouseOverWindow
             if ((isFocused && t >= untilFocused) || (!isFocused && t >= untilUnfocused)) {
                 break
             }

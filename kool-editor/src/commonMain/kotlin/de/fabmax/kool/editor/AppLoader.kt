@@ -6,6 +6,7 @@ import de.fabmax.kool.util.launchOnMainThread
 import de.fabmax.kool.util.logE
 import kotlin.reflect.KClass
 
+@Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 expect class AppLoadService(paths: ProjectPaths) {
     var hasAppChanged: Boolean
         private set

@@ -3,17 +3,15 @@ package de.fabmax.kool.modules.audio
 import de.fabmax.kool.util.Float32Buffer
 import de.fabmax.kool.util.Float32BufferImpl
 
-/**
- * @author fabmax
- */
+actual fun AudioOutput(bufSize: Int): AudioOutput = AudioOutputImpl(bufSize)
 
 @Suppress("UnsafeCastFromDynamic")
-actual class AudioOutput actual constructor(actual val bufSize: Int) {
+class AudioOutputImpl(override val bufSize: Int) : AudioOutput {
     private val audioCtx = js("new AudioContext();")
 
-    actual val sampleRate: Float = audioCtx.sampleRate
+    override val sampleRate: Float = audioCtx.sampleRate
 
-    actual var isPaused: Boolean = false
+    override var isPaused: Boolean = false
         set(value) {
             if (field != value) {
                 field = value
@@ -25,9 +23,9 @@ actual class AudioOutput actual constructor(actual val bufSize: Int) {
             }
         }
 
-    actual val mixer = MixNode()
+    override val mixer = MixNode()
 
-    actual var onBufferUpdate: (Double) -> Unit = { }
+    override var onBufferUpdate: (Double) -> Unit = { }
 
     private val source: dynamic
     private val scriptNode: dynamic
@@ -64,7 +62,7 @@ actual class AudioOutput actual constructor(actual val bufSize: Int) {
         source.start()
     }
 
-    actual fun close() {
+    override fun close() {
         scriptNode.disconnect()
         source.loop = false
         source.disconnect()

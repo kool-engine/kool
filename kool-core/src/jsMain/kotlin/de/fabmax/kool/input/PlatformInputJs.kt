@@ -14,7 +14,9 @@ import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.events.KeyboardEvent
 import org.w3c.dom.events.MouseEvent
 
-internal actual object PlatformInput {
+internal actual fun PlatformInput(): PlatformInput = PlatformInputJs
+
+internal object PlatformInputJs : PlatformInput {
 
     val excludedKeyCodes = mutableSetOf("F5", "F11", "F12")
 
@@ -22,11 +24,11 @@ internal actual object PlatformInput {
     private var currentCursorShape = CursorShape.DEFAULT
     private var mouseButtonState = 0
 
-    actual fun setCursorMode(cursorMode: CursorMode) {
+    override fun setCursorMode(cursorMode: CursorMode) {
         PointerLockState.cursorMode = cursorMode
     }
 
-    actual fun applyCursorShape(cursorShape: CursorShape) {
+    override fun applyCursorShape(cursorShape: CursorShape) {
         if (cursorShape != currentCursorShape) {
             JsImpl.canvas.style.cursor = when (cursorShape) {
                 CursorShape.DEFAULT -> "default"

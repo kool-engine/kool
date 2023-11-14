@@ -4,39 +4,39 @@ import de.fabmax.kool.math.clamp
 import de.fabmax.kool.util.Time
 import org.w3c.dom.Audio
 
-actual class AudioClip(val assetPath: String) {
+class AudioClipImpl(val assetPath: String) : AudioClip {
 
-    actual var masterVolume = 1f
+    override var masterVolume = 1f
         set(value) {
             field = value
             latestClip.volume = volume * value
         }
 
-    actual var volume = 1f
+    override var volume = 1f
         set(value) {
             field = value
             latestClip.volume = value * masterVolume
         }
 
-    actual var currentTime: Float
+    override var currentTime: Float
         get() = latestClip.currentTime
         set(value) {
             latestClip.currentTime = value
         }
 
-    actual val duration: Float
+    override val duration: Float
         get() = latestClip.duration
 
-    actual val isEnded: Boolean
+    override val isEnded: Boolean
         get() = latestClip.clipState == ClipState.STOPPED
 
-    actual var loop: Boolean
+    override var loop: Boolean
         get() = latestClip.loop
         set(value) {
             latestClip.loop = value
         }
 
-    actual var minIntervalMs: Float = MIN_PLAY_INTERVAL_MS
+    override var minIntervalMs: Float = MIN_PLAY_INTERVAL_MS
 
     private val clipPool = mutableListOf(ClipWrapper())
     private var latestClip = clipPool.first()
@@ -56,7 +56,7 @@ actual class AudioClip(val assetPath: String) {
         return clipPool.minByOrNull { it.startTime }!!
     }
 
-    actual fun play() {
+    override fun play() {
         val t = Time.precisionTime * 1000.0
         if (t - lastPlay > minIntervalMs) {
             lastPlay = t
@@ -64,7 +64,7 @@ actual class AudioClip(val assetPath: String) {
         }
     }
 
-    actual fun stop() {
+    override fun stop() {
         latestClip.stop()
     }
 
@@ -109,7 +109,7 @@ actual class AudioClip(val assetPath: String) {
         var startTime = 0.0
 
         init {
-            volume = this@AudioClip.volume * this@AudioClip.masterVolume
+            volume = this@AudioClipImpl.volume * this@AudioClipImpl.masterVolume
             audioElement.onended = {
                 clipState = ClipState.STOPPED
                 true.asDynamic()

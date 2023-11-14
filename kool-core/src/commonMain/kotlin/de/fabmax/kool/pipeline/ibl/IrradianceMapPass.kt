@@ -33,7 +33,7 @@ class IrradianceMapPass private constructor(parentScene: Scene, hdriMap: Texture
         }
 
         // this pass only needs to be rendered once, remove it immediately after first render
-        onAfterDraw += { ctx ->
+        onAfterDraw += {
             if (hdriMap != null) {
                 logD { "Generated irradiance map from HDRI: ${hdriMap.name}" }
             } else {

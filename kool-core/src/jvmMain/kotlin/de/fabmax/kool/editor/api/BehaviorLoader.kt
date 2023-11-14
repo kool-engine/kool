@@ -3,6 +3,7 @@ package de.fabmax.kool.editor.api
 import kotlin.reflect.KMutableProperty
 import kotlin.reflect.full.declaredMemberProperties
 
+@Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 actual object BehaviorLoader {
 
     var appBehaviorLoader: AppBehaviorLoader = ReflectionAppBehaviorLoader(javaClass.classLoader)

@@ -5,6 +5,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.editor.model.EditorProject
 import de.fabmax.kool.util.logE
 
+@Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 actual object PlatformFunctions {
 
     private var projectModel: EditorProject? = null

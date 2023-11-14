@@ -104,14 +104,14 @@ class CompiledShader(val program: GlProgram, val pipeline: Pipeline, val backend
     fun use() {
         gl.useProgram(program)
         attributes.values.forEach { attr ->
-            for (i in 0 until attr.attribute.props.nSlots) {
+            for (i in 0 until attr.attribute.locationIncrement) {
                 val location = attr.location + i
                 gl.enableVertexAttribArray(location)
                 gl.vertexAttribDivisor(location, 0)
             }
         }
         instanceAttributes.values.forEach { attr ->
-            for (i in 0 until attr.attribute.props.nSlots) {
+            for (i in 0 until attr.attribute.locationIncrement) {
                 val location = attr.location + i
                 gl.enableVertexAttribArray(location)
                 gl.vertexAttribDivisor(location, 1)
@@ -121,12 +121,12 @@ class CompiledShader(val program: GlProgram, val pipeline: Pipeline, val backend
 
     fun unUse() {
         attributes.values.forEach { attr ->
-            for (i in 0 until attr.attribute.props.nSlots) {
+            for (i in 0 until attr.attribute.locationIncrement) {
                 gl.disableVertexAttribArray(attr.location + i)
             }
         }
         instanceAttributes.values.forEach { attr ->
-            for (i in 0 until attr.attribute.props.nSlots) {
+            for (i in 0 until attr.attribute.locationIncrement) {
                 gl.disableVertexAttribArray(attr.location + i)
             }
         }

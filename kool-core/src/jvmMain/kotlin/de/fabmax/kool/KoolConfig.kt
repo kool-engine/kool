@@ -5,6 +5,7 @@ import de.fabmax.kool.platform.Lwjgl3Context
 import java.awt.image.BufferedImage
 import javax.imageio.ImageIO
 
+@Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 actual data class KoolConfig(
     /**
      * Base path used by [Assets] to look for assets to be loaded (textures, models, etc.).

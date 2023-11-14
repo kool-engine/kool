@@ -8,6 +8,7 @@ import kotlinx.browser.localStorage
 import org.w3c.dom.get
 import org.w3c.dom.set
 
+@Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 actual object KeyValueStore {
     actual fun storageKeys(): Set<String> {
         val keys = mutableSetOf<String>()

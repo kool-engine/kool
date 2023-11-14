@@ -8,15 +8,15 @@ import org.khronos.webgl.Uint8Array
 import org.w3c.files.File
 import kotlin.js.Promise
 
-actual class LoadableFile(val file: File) {
-    actual val name: String
+class LoadableFileImpl(val file: File) : LoadableFile {
+    override val name: String
         get() = file.name
-    actual val size: Long
+    override val size: Long
         get() = file.size.toLong()
-    actual val mimeType: String
+    override val mimeType: String
         get() = file.type
 
-    actual suspend fun read(): Uint8Buffer {
+    override suspend fun read(): Uint8Buffer {
         val data = file.asDynamic().arrayBuffer() as Promise<ArrayBuffer>
         return Uint8BufferImpl(Uint8Array(data.await()))
     }
