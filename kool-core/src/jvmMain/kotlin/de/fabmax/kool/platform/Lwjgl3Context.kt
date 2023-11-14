@@ -5,7 +5,7 @@ import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.input.PlatformInput
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.pipeline.backend.gl.RenderBackendGlImpl
-import de.fabmax.kool.platform.vk.VkRenderBackend
+import de.fabmax.kool.pipeline.backend.vk.VkRenderBackend
 import de.fabmax.kool.util.RenderLoopCoroutineDispatcher
 import org.lwjgl.glfw.GLFW.glfwPollEvents
 import org.lwjgl.glfw.GLFW.glfwWindowShouldClose

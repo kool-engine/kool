@@ -605,13 +605,13 @@ data class GltfFile(
                     isDeferred = false
                 }
 
-                colorCfg.primaryTexture?.defaultTexture?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
-                emissionCfg.primaryTexture?.defaultTexture?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
-                normalMapCfg.defaultNormalMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
-                roughnessCfg.primaryTexture?.defaultTexture?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
-                metallicCfg.primaryTexture?.defaultTexture?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
-                aoCfg.materialAo.primaryTexture?.defaultTexture?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
-                vertexCfg.displacementCfg.primaryTexture?.defaultTexture?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
+                colorCfg.primaryTexture?.defaultTexture?.let { model.textures[it.name] = it }
+                emissionCfg.primaryTexture?.defaultTexture?.let { model.textures[it.name] = it }
+                normalMapCfg.defaultNormalMap?.let { model.textures[it.name] = it }
+                roughnessCfg.primaryTexture?.defaultTexture?.let { model.textures[it.name] = it }
+                metallicCfg.primaryTexture?.defaultTexture?.let { model.textures[it.name] = it }
+                aoCfg.materialAo.primaryTexture?.defaultTexture?.let { model.textures[it.name] = it }
+                vertexCfg.displacementCfg.primaryTexture?.defaultTexture?.let { model.textures[it.name] = it }
             }
 
             mesh.shader = if (isDeferred) {
