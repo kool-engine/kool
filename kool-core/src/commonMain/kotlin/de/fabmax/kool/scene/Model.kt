@@ -1,6 +1,5 @@
 package de.fabmax.kool.scene
 
-import de.fabmax.kool.KoolContext
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.scene.animation.Animation
 import de.fabmax.kool.scene.animation.Skin
@@ -58,8 +57,8 @@ class Model(name: String? = null) : Node(name) {
         }
     }
 
-    override fun dispose(ctx: KoolContext) {
+    override fun release() {
         textures.values.forEach { it.dispose() }
-        super.dispose(ctx)
+        super.release()
     }
 }

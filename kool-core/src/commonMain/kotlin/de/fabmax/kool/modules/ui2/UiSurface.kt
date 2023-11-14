@@ -93,7 +93,7 @@ open class UiSurface(
                 InputStack.remove(inputHandler)
             }
         }
-        onDispose += {
+        onRelease += {
             InputStack.remove(inputHandler)
         }
     }
@@ -660,7 +660,7 @@ open class UiSurface(
         }
 
         fun addImage(image: Texture2d, order: Int = -1): ImageMesh {
-            val imgMesh = imageMeshes.getOrPut(image) { ImageMeshes(image.name ?: "unnamed") }.getUnusedMesh()
+            val imgMesh = imageMeshes.getOrPut(image) { ImageMeshes(image.name) }.getUnusedMesh()
             addNode(imgMesh, order)
             return imgMesh
         }
@@ -686,9 +686,9 @@ open class UiSurface(
             }
         }
 
-        override fun dispose(ctx: KoolContext) {
-            super.dispose(ctx)
-            imageMeshes.values.forEach { it.meshes.forEach { img -> img.dispose(ctx) } }
+        override fun release() {
+            super.release()
+            imageMeshes.values.forEach { it.meshes.forEach { img -> img.release() } }
         }
     }
 

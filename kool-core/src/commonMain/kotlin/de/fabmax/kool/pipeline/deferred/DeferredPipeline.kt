@@ -145,14 +145,14 @@ class DeferredPipeline(val scene: Scene, val cfg: DeferredPipelineConfig) {
             lightingPassContent.update(ev)
         }
         scene.onRenderScene += this::onRenderScene
-        scene.onDispose += { ctx ->
+        scene.onRelease += {
             noSsrMap.dispose()
             noBloomMap.dispose()
 
             // dispose inactive deferred pass (active one is auto-disposed by scene)
             inactivePass.let {
-                it.materialPass.dispose(ctx)
-                it.lightingPass.dispose(ctx)
+                it.materialPass.release()
+                it.lightingPass.release()
             }
         }
     }

@@ -1,8 +1,8 @@
 package de.fabmax.kool.physics.joints
 
 import de.fabmax.kool.math.Mat4f
-import de.fabmax.kool.physics.Releasable
 import de.fabmax.kool.physics.RigidActor
+import de.fabmax.kool.util.Releasable
 
 @Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 expect class JointHolder
@@ -21,6 +21,4 @@ interface Joint : Releasable {
     var debugVisualize: Boolean
 
     fun setBreakForce(force: Float, torque: Float)
-
-    override fun release()
 }

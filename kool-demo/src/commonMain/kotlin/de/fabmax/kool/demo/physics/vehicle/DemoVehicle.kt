@@ -289,8 +289,8 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
         }
     }
 
-    fun cleanUp(ctx: KoolContext) {
-        inputAxes.dispose(ctx)
+    fun cleanUp() {
+        inputAxes.release()
         vehicleAudio.stop()
         KeyboardInput.removeKeyListener(recoverListener)
     }

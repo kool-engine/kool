@@ -1,6 +1,5 @@
 package de.fabmax.kool.pipeline.ibl
 
-import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.lang.*
@@ -42,16 +41,16 @@ class BrdfLutPass(parentScene: Scene) :
             logD { "Generated BRDF look-up table" }
             if (isAutoRemove) {
                 parentScene.removeOffscreenPass(this)
-                launchDelayed(1) { dispose(ctx) }
+                launchDelayed(1) { release() }
             } else {
                 isEnabled = false
             }
         }
     }
 
-    override fun dispose(ctx: KoolContext) {
-        drawNode.dispose(ctx)
-        super.dispose(ctx)
+    override fun release() {
+        drawNode.release()
+        super.release()
     }
 
     private fun brdfLutShader(): KslShader {

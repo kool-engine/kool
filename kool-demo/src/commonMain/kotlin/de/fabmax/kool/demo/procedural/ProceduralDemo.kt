@@ -106,7 +106,7 @@ class ProceduralDemo : DemoScene("Procedural Geometry") {
                     if (roses.children.isNotEmpty() && isReplaceRose.value) {
                         val remNd = roses.children.last()
                         roses.removeNode(remNd)
-                        remNd.dispose(ctx)
+                        remNd.release()
                     }
                     val seed = if (seedText.value.isNotEmpty()) seedText.value else randomSeedText.value
                     randomSeedText.set("${randomI()}")
@@ -119,7 +119,7 @@ class ProceduralDemo : DemoScene("Procedural Geometry") {
                 .width(Grow.Std)
                 .margin(horizontal = 16.dp, vertical = 24.dp)
                 .onClick {
-                    roses.children.forEach { it.dispose(ctx) }
+                    roses.children.forEach { it.release() }
                     roses.clearChildren()
                 }
         }

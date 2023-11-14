@@ -1,6 +1,5 @@
 package de.fabmax.kool.editor.model
 
-import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.editor.api.AppState
 import de.fabmax.kool.editor.components.*
 import de.fabmax.kool.editor.data.*
@@ -121,7 +120,7 @@ abstract class NodeModel(val nodeData: SceneNodeData) {
             check(!it.isCreated) { "Component not destroyed: $it" }
         }
         onNodeUpdate.clear()
-        drawNode.dispose(KoolSystem.requireContext())
+        drawNode.release()
         drawNode.parent?.removeNode(drawNode)
         isCreated = false
     }

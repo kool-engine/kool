@@ -21,7 +21,7 @@ class KslShaderTest : DemoScene("KslShader") {
         colorMap = loadTexture2d("${DemoLoader.materialPath}/castle_brick/castle_brick_02_red_diff_2k.jpg")
         normalMap = loadTexture2d("${DemoLoader.materialPath}/castle_brick/castle_brick_02_red_nor_2k.jpg")
 
-        mainScene.onDispose += {
+        mainScene.onRelease += {
             colorMap.dispose()
             normalMap.dispose()
         }

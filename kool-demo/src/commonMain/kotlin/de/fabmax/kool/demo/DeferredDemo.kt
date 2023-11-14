@@ -84,7 +84,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
         groundMetallic = loadTexture2d("${DemoLoader.materialPath}/futuristic-panels1/futuristic-panels1-metallic.jpg")
         groundAo = loadTexture2d("${DemoLoader.materialPath}/futuristic-panels1/futuristic-panels1-ao.jpg")
 
-        mainScene.onDispose += {
+        mainScene.onRelease += {
             groundColor.dispose()
             groundNormals.dispose()
             groundRoughness.dispose()

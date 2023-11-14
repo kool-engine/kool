@@ -1,6 +1,7 @@
 package de.fabmax.kool.scene
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.math.Ray
 import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.math.spatial.BoundingBox
@@ -181,11 +182,11 @@ open class Mesh(var geometry: IndexedVertexList, name: String = geometry.name) :
     /**
      * Deletes all buffers associated with this mesh.
      */
-    override fun dispose(ctx: KoolContext) {
-        super.dispose(ctx)
-        geometry.dispose(ctx)
-        shadowGeometry.forEach { it.dispose(ctx) }
-        pipeline?.let { ctx.disposePipeline(it) }
+    override fun release() {
+        super.release()
+        geometry.release()
+        shadowGeometry.forEach { it.release() }
+        pipeline?.let { KoolSystem.requireContext().disposePipeline(it) }
         pipeline = null
     }
 

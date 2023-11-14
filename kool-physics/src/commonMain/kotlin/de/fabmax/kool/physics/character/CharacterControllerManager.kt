@@ -1,7 +1,7 @@
 package de.fabmax.kool.physics.character
 
 import de.fabmax.kool.physics.PhysicsWorld
-import de.fabmax.kool.physics.Releasable
+import de.fabmax.kool.util.Releasable
 
 expect fun CharacterControllerManager(world: PhysicsWorld): CharacterControllerManager
 

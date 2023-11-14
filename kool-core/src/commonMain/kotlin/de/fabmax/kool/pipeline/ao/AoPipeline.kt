@@ -10,10 +10,11 @@ import de.fabmax.kool.pipeline.deferred.DeferredPipeline
 import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.scene.PerspectiveProxyCam
 import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.util.Releasable
 import de.fabmax.kool.util.launchOnMainThread
 import kotlin.math.max
 
-abstract class AoPipeline {
+abstract class AoPipeline : Releasable {
 
     abstract val aoPass: AmbientOcclusionPass
     abstract val denoisePass: AoDenoisePass
@@ -68,8 +69,6 @@ abstract class AoPipeline {
         }
     }
 
-    abstract fun removeAndDispose(ctx: KoolContext)
-
     class ForwardAoPipeline(val scene: Scene) : AoPipeline() {
         val depthPass: NormalLinearDepthMapPass
         override val aoPass: AmbientOcclusionPass
@@ -115,7 +114,6 @@ abstract class AoPipeline {
             if (isEnabled && mapW > 0 && mapH > 0 && (mapW != denoisePass.width || mapH != denoisePass.height)) {
                 denoisePass.resize(mapW, mapH, ctx)
             }
-
         }
 
         override fun updateEnabled() {
@@ -123,14 +121,14 @@ abstract class AoPipeline {
             depthPass.isEnabled = isEnabled
         }
 
-        override fun removeAndDispose(ctx: KoolContext) {
+        override fun release() {
             launchOnMainThread {
                 scene.removeOffscreenPass(depthPass)
                 scene.removeOffscreenPass(aoPass)
                 scene.removeOffscreenPass(denoisePass)
-                depthPass.dispose(ctx)
-                aoPass.dispose(ctx)
-                denoisePass.dispose(ctx)
+                depthPass.release()
+                aoPass.release()
+                denoisePass.release()
             }
         }
     }
@@ -172,12 +170,12 @@ abstract class AoPipeline {
             }
         }
 
-        override fun removeAndDispose(ctx: KoolContext) {
+        override fun release() {
             launchOnMainThread {
                 deferredPipeline.scene.removeOffscreenPass(aoPass)
                 deferredPipeline.scene.removeOffscreenPass(denoisePass)
-                aoPass.dispose(ctx)
-                denoisePass.dispose(ctx)
+                aoPass.release()
+                denoisePass.release()
             }
         }
     }

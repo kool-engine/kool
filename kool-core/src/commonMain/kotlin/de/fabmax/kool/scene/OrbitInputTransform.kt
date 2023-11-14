@@ -23,7 +23,7 @@ fun Scene.orbitCamera(name: String? = null, block: OrbitInputTransform.() -> Uni
     addNode(orbitCam)
 
     InputStack.defaultInputHandler.pointerListeners += orbitCam
-    onDispose += {
+    onRelease += {
         InputStack.defaultInputHandler.pointerListeners -= orbitCam
     }
     return orbitCam

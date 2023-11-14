@@ -43,9 +43,9 @@ open class OffscreenRenderPassCube(drawNode: Node, config: Config) : OffscreenRe
         return tex
     }
 
-    override fun dispose(ctx: KoolContext) {
-        super.dispose(ctx)
-        impl.dispose(ctx)
+    override fun release() {
+        super.release()
+        impl.release()
 
         launchDelayed(3) {
             if (depthAttachment?.providedTexture == null) {
@@ -101,7 +101,7 @@ open class OffscreenRenderPassCube(drawNode: Node, config: Config) : OffscreenRe
 interface OffscreenPassCubeImpl {
     fun applySize(width: Int, height: Int, ctx: KoolContext)
 
-    fun dispose(ctx: KoolContext)
+    fun release()
 
     fun draw(ctx: KoolContext)
 }

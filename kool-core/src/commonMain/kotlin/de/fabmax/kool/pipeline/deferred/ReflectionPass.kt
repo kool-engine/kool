@@ -1,6 +1,5 @@
 package de.fabmax.kool.pipeline.deferred
 
-import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.randomF
@@ -59,9 +58,9 @@ class ReflectionPass(val baseReflectionStep: Float) :
         ssrShader.lightingPass = lightingPass.colorTexture
     }
 
-    override fun dispose(ctx: KoolContext) {
-        drawNode.dispose(ctx)
-        super.dispose(ctx)
+    override fun release() {
+        drawNode.release()
+        super.release()
     }
 
     private class ReflectionShader : KslShader(Model(), FullscreenShaderUtil.fullscreenShaderPipelineCfg) {

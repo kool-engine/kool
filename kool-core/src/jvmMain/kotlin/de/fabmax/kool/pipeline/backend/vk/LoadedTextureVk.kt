@@ -44,7 +44,7 @@ class LoadedTextureVk(val sys: VkSystem, val format: TexFormat, val textureImage
         logD { "Destroyed texture" }
     }
 
-    override fun dispose() {
+    override fun release() {
         if (!isDestroyed) {
             // fixme: kinda hacky... also might be depending resource of something else than sys.device
             launchDelayed(sys.swapChain?.nImages ?: 3) {

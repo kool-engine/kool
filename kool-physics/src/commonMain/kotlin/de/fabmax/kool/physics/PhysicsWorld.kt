@@ -9,6 +9,7 @@ import de.fabmax.kool.physics.articulations.Articulation
 import de.fabmax.kool.physics.geometry.CollisionGeometry
 import de.fabmax.kool.physics.geometry.PlaneGeometry
 import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.util.Releasable
 import de.fabmax.kool.util.logW
 
 expect fun PhysicsWorld(scene: Scene?, isContinuousCollisionDetection: Boolean = false) : PhysicsWorld

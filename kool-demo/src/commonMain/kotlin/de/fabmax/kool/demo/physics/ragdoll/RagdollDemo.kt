@@ -122,7 +122,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
             }
         }
 
-        mainScene.onDispose += {
+        mainScene.onRelease += {
             groundAlbedo.dispose()
             groundNormal.dispose()
             physicsWorld.release()
@@ -139,7 +139,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
 
         val forceHelper = ForceHelper()
         InputStack.defaultInputHandler.pointerListeners += forceHelper
-        onDispose += {
+        onRelease += {
             InputStack.defaultInputHandler.pointerListeners -= forceHelper
         }
 

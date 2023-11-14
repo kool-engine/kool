@@ -15,12 +15,12 @@ import kotlin.math.sqrt
  *
  * @author fabmax
  */
-open class Node(name: String? = null) : Disposable {
+open class Node(name: String? = null) : Releasable {
 
     var name: String = name ?: makeNodeName(this::class.simpleName ?: "Node")
 
     val onUpdate: MutableList<(RenderPass.UpdateEvent) -> Unit> = mutableListOf()
-    val onDispose: MutableList<(KoolContext) -> Unit> = mutableListOf()
+    val onRelease: MutableList<() -> Unit> = mutableListOf()
 
     val tags = Tags()
 
@@ -161,12 +161,10 @@ open class Node(name: String? = null) : Disposable {
 
     /**
      * Frees all resources occupied by this Node.
-     *
-     * @param ctx    the graphics engine context
      */
-    override fun dispose(ctx: KoolContext) {
-        onDispose.forEach { it(ctx) }
-        children.forEach { it.dispose(ctx) }
+    override fun release() {
+        onRelease.forEach { it() }
+        children.forEach { it.release() }
     }
 
     /**
@@ -320,8 +318,8 @@ open class Node(name: String? = null) : Disposable {
         onUpdate += block
     }
 
-    fun onDispose(block: (KoolContext) -> Unit) {
-        onDispose += block
+    fun onRelease(block: () -> Unit) {
+        onRelease += block
     }
 
     fun Node.makeChildName(suffix: String): String {

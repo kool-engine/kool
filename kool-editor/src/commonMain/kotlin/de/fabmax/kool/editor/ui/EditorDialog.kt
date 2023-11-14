@@ -1,6 +1,5 @@
 package de.fabmax.kool.editor.ui
 
-import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.PlatformFunctions
 import de.fabmax.kool.input.KeyEvent
@@ -102,7 +101,7 @@ abstract class EditorDialog(name: String, val ui: EditorUi = KoolEditor.instance
         onClose.forEach { it() }
         ui.removeNode(dialog)
         dialog.isVisible = false
-        dialog.dispose(KoolSystem.requireContext())
+        dialog.release()
     }
 
     abstract fun UiScope.dialogContent(): Any

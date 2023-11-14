@@ -62,7 +62,7 @@ class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, val backend
             var width = copyTarget.loadedTexture?.width ?: 0
             var height = copyTarget.loadedTexture?.height ?: 0
             if (width != parent.width || height != parent.height) {
-                copyTarget.loadedTexture?.dispose()
+                copyTarget.loadedTexture?.release()
                 copyTarget.createCopyTexColor()
                 width = copyTarget.loadedTexture!!.width
                 height = copyTarget.loadedTexture!!.height
@@ -96,7 +96,7 @@ class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, val backend
         isCreated = false
     }
 
-    override fun dispose(ctx: KoolContext) {
+    override fun release() {
         deleteBuffers()
         resInfo.deleted()
     }

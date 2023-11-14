@@ -241,7 +241,7 @@ class GltfDemo : DemoScene("glTF Models") {
             val normalMap = Texture2d("${DemoLoader.materialPath}/Fabric030/Fabric030_1K_Normal.jpg")
             val aoMap = Texture2d("${DemoLoader.materialPath}/Fabric030/Fabric030_1K_AmbientOcclusion.jpg")
             val roughnessMap = Texture2d("${DemoLoader.materialPath}/Fabric030/Fabric030_1K_Roughness.jpg")
-            onDispose += {
+            onRelease += {
                 colorMap.dispose()
                 normalMap.dispose()
                 roughnessMap.dispose()
@@ -279,11 +279,11 @@ class GltfDemo : DemoScene("glTF Models") {
         }
     }
 
-    private fun cycleModel(prevModel: GltfModel, newModel: GltfModel, ctx: KoolContext) {
+    private fun cycleModel(prevModel: GltfModel, newModel: GltfModel) {
         prevModel.isVisible = false
         launchDelayed(1) {
-            prevModel.forwardModel?.dispose(ctx)
-            prevModel.deferredModel?.dispose(ctx)
+            prevModel.forwardModel?.release()
+            prevModel.deferredModel?.release()
         }
 
         newModel.isVisible = true
@@ -304,7 +304,7 @@ class GltfDemo : DemoScene("glTF Models") {
                     .onItemSelected {
                         val prevModel = currentModel
                         selectedModelIdx.set(it)
-                        cycleModel(prevModel, currentModel, ctx)
+                        cycleModel(prevModel, currentModel)
                     }
             }
         }

@@ -350,7 +350,7 @@ class Track(val world: VehicleWorld) : Node() {
         val roughnessMap = Texture2d(texProps) {
             TextureData2d(roughnessData, sz, sz, TexFormat.R)
         }
-        trackMesh.onDispose += {
+        trackMesh.onRelease += {
             albedoMap.dispose()
             roughnessMap.dispose()
         }

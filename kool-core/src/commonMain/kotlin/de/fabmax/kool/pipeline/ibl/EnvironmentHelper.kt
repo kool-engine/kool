@@ -24,7 +24,7 @@ object EnvironmentHelper {
 
         val maps = EnvironmentMaps(cubeTex, cubeTex)
         if (autoDispose) {
-            scene.onDispose += {
+            scene.onRelease += {
                 maps.dispose()
             }
         }
@@ -34,7 +34,7 @@ object EnvironmentHelper {
     fun gradientColorEnvironment(scene: Scene, gradient: ColorGradient, autoDispose: Boolean = true): EnvironmentMaps {
         val gradientTex = GradientTexture(gradient)
         val gradientPass = GradientCubeGenerator(scene, gradientTex)
-        scene.onDispose += {
+        scene.onRelease += {
             gradientTex.dispose()
         }
         return renderPassEnvironment(scene, gradientPass, autoDispose)
@@ -51,7 +51,7 @@ object EnvironmentHelper {
     fun hdriEnvironment(scene: Scene, hdri: Texture2d, autoDispose: Boolean = true, brightness: Float = 1f): EnvironmentMaps {
         val rgbeDecoder = RgbeDecoder(scene, hdri, brightness)
         if (autoDispose) {
-            scene.onDispose += {
+            scene.onRelease += {
                 hdri.dispose()
             }
         }
@@ -72,7 +72,7 @@ object EnvironmentHelper {
 
         val maps = EnvironmentMaps(irrMapPass.copyColor(), reflMapPass.copyColor())
         if (autoDispose) {
-            scene.onDispose += {
+            scene.onRelease += {
                 maps.dispose()
             }
         }

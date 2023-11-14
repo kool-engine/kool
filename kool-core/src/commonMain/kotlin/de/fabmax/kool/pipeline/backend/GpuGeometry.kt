@@ -1,5 +1,5 @@
 package de.fabmax.kool.pipeline.backend
 
-import de.fabmax.kool.util.Disposable
+import de.fabmax.kool.util.Releasable
 
-interface GpuGeometry : Disposable
+interface GpuGeometry : Releasable

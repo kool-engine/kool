@@ -1,6 +1,5 @@
 package de.fabmax.kool.pipeline.deferred
 
-import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.modules.ksl.KslShader
@@ -44,9 +43,9 @@ class ReflectionDenoisePass(reflectionPass: OffscreenRenderPass2d) :
         denoiseShader.depthTex = materialPass.positionFlags
     }
 
-    override fun dispose(ctx: KoolContext) {
-        drawNode.dispose(ctx)
-        super.dispose(ctx)
+    override fun release() {
+        drawNode.release()
+        super.release()
     }
 
     private fun denoiseProg() = KslProgram("Reflection Denoise Pass").apply {

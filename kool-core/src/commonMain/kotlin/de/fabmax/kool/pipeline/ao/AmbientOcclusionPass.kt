@@ -1,6 +1,5 @@
 package de.fabmax.kool.pipeline.ao
 
-import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec2f
@@ -116,9 +115,9 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
         return a + f * (b - a)
     }
 
-    override fun dispose(ctx: KoolContext) {
-        drawNode.dispose(ctx)
-        super.dispose(ctx)
+    override fun release() {
+        drawNode.release()
+        super.release()
     }
 
     private fun aoPassProg() = KslProgram("Ambient Occlusion Pass").apply {

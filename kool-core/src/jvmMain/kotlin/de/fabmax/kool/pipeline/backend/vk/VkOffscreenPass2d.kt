@@ -102,7 +102,7 @@ class VkOffscreenPass2d(val parentPass: OffscreenRenderPass2d) : OffscreenPass2d
                 val texWidth = copyTarget.loadedTexture?.width ?: 0
                 val texHeight = copyTarget.loadedTexture?.height ?: 0
                 if (texWidth != parentPass.width || texHeight != parentPass.height) {
-                    copyTarget.loadedTexture?.dispose()
+                    copyTarget.loadedTexture?.release()
                     copyTarget.createCopyTexColor(ctx)
                 }
                 val target = copyTarget.loadedTexture as LoadedTextureVk
@@ -139,7 +139,7 @@ class VkOffscreenPass2d(val parentPass: OffscreenRenderPass2d) : OffscreenPass2d
         }
     }
 
-    override fun dispose(ctx: KoolContext) {
+    private fun destroyBuffers() {
         val rp = renderPass
         val colorTexs = parentPass.colorTextures.map { it.loadedTexture }
         val depthTex = parentPass.depthTexture?.loadedTexture
@@ -161,13 +161,17 @@ class VkOffscreenPass2d(val parentPass: OffscreenRenderPass2d) : OffscreenPass2d
 
             colorTexs.forEachIndexed { i, loadedTex ->
                 if (!parentPass.colorAttachments[i].isProvided) {
-                    loadedTex?.dispose()
+                    loadedTex?.release()
                 }
             }
             if (parentPass.depthAttachment?.isProvided == false) {
-                depthTex?.dispose()
+                depthTex?.release()
             }
         }
+    }
+
+    override fun release() {
+        destroyBuffers()
     }
 
     private fun Texture2d.clear() {
@@ -176,7 +180,7 @@ class VkOffscreenPass2d(val parentPass: OffscreenRenderPass2d) : OffscreenPass2d
     }
 
     override fun applySize(width: Int, height: Int, ctx: KoolContext) {
-        dispose(ctx)
+        destroyBuffers()
 
         isCreationBlocked = true
         launchDelayed(3) {
@@ -283,7 +287,7 @@ class VkOffscreenPass2d(val parentPass: OffscreenRenderPass2d) : OffscreenPass2d
         val prev = loadedTexture
         if (prev != null) {
             launchDelayed(3) {
-                prev.dispose()
+                prev.release()
             }
         }
 

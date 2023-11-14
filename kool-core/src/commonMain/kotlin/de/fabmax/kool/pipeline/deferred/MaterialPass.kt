@@ -78,9 +78,9 @@ class MaterialPass(pipeline: DeferredPipeline, suffix: String) :
         super.afterCollectDrawCommands(updateEvent)
     }
 
-    override fun dispose(ctx: KoolContext) {
-        drawNode.dispose(ctx)
-        super.dispose(ctx)
+    override fun release() {
+        drawNode.release()
+        super.release()
     }
 
     companion object {

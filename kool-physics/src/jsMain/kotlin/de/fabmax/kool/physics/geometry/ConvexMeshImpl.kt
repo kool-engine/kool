@@ -1,6 +1,5 @@
 package de.fabmax.kool.physics.geometry
 
-import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.*
@@ -102,8 +101,8 @@ class ConvexMeshGeometryImpl(override val convexMesh: ConvexMesh, override val s
         }
     }
 
-    override fun dispose(ctx: KoolContext) {
-        super<CollisionGeometryImpl>.dispose(ctx)
+    override fun release() {
+        super.release()
         if (convexMesh.releaseWithGeometry) {
             convexMesh.pxConvexMesh.release()
         }

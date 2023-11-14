@@ -67,7 +67,7 @@ class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, val backend: Re
             var height = copyTarget.loadedTexture?.height ?: 0
             if (width != parent.width || height != parent.height) {
                 // recreate target texture if size has changed
-                copyTarget.loadedTexture?.dispose()
+                copyTarget.loadedTexture?.release()
                 copyTarget.createCopyTexColor(parent, backend)
                 width = copyTarget.loadedTexture!!.width
                 height = copyTarget.loadedTexture!!.height
@@ -111,7 +111,7 @@ class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, val backend: Re
         isCreated = false
     }
 
-    override fun dispose(ctx: KoolContext) {
+    override fun release() {
         deleteBuffers()
         resInfo.deleted()
     }

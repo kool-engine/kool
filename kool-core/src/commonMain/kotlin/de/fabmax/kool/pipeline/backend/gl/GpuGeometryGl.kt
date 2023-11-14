@@ -1,6 +1,5 @@
 package de.fabmax.kool.pipeline.backend.gl
 
-import de.fabmax.kool.KoolContext
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.GlslType
 import de.fabmax.kool.pipeline.VertexLayout
@@ -53,7 +52,7 @@ class GpuGeometryGl(
         }
     }
 
-    override fun dispose(ctx: KoolContext) {
+    override fun release() {
         indexBuffer.delete()
         dataBufferF?.delete()
         dataBufferI?.delete()

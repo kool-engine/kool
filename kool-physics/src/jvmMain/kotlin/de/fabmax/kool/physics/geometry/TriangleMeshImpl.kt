@@ -1,6 +1,5 @@
 package de.fabmax.kool.physics.geometry
 
-import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.*
 import de.fabmax.kool.scene.geometry.IndexedVertexList
@@ -92,8 +91,8 @@ class TriangleMeshGeometryImpl(override val triangleMesh: TriangleMesh, override
         }
     }
 
-    override fun dispose(ctx: KoolContext) {
-        super<CollisionGeometryImpl>.dispose(ctx)
+    override fun release() {
+        super.release()
         if (triangleMesh.releaseWithGeometry) {
             triangleMesh.pxTriangleMesh.release()
         }

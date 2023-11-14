@@ -101,7 +101,7 @@ class ReflectionDemo : DemoScene("Reflections") {
                 val floorAlbedo = loadTexture2d("${DemoLoader.materialPath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_COL_2K.jpg")
                 val floorNormal = loadTexture2d("${DemoLoader.materialPath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_NRM_2K.jpg")
                 val floorRoughness = loadTexture2d("${DemoLoader.materialPath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_REFL_2K.jpg")
-                onDispose += {
+                onRelease += {
                     floorAlbedo.dispose()
                     floorNormal.dispose()
                     floorRoughness.dispose()

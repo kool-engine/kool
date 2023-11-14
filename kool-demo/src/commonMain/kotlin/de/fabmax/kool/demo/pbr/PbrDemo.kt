@@ -54,7 +54,7 @@ class PbrDemo : DemoScene("PBR Materials") {
     }
 
     override fun lateInit(ctx: KoolContext) {
-        mainScene.onDispose += {
+        mainScene.onRelease += {
             loadedHdris.forEach { it?.dispose() }
             envMaps.dispose()
         }

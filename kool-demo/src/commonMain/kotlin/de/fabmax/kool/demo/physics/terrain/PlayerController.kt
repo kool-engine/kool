@@ -8,14 +8,19 @@ import de.fabmax.kool.physics.RigidDynamic
 import de.fabmax.kool.physics.character.*
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.TrsTransformF
+import de.fabmax.kool.util.Releasable
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.max
 
-class PlayerController(private val physicsObjects: PhysicsObjects, mainScene: Scene, ctx: KoolContext) : OnHitActorListener, HitActorBehaviorCallback {
+class PlayerController(
+    private val physicsObjects: PhysicsObjects,
+    mainScene: Scene,
+    ctx: KoolContext
+) : OnHitActorListener, HitActorBehaviorCallback, Releasable {
 
     val controller: CharacterController
-    private val charManager: CharacterControllerManager
+    private val charManager: CharacterControllerManager = CharacterControllerManager(physicsObjects.world)
 
     val position: Vec3d
         get() = controller.position
@@ -41,7 +46,6 @@ class PlayerController(private val physicsObjects: PhysicsObjects, mainScene: Sc
 
     init {
         // create character controller
-        charManager = CharacterControllerManager(physicsObjects.world)
         controller = charManager.createController()
         controller.onHitActorListeners += this
         controller.hitActorBehaviorCallback = this
@@ -50,11 +54,11 @@ class PlayerController(private val physicsObjects: PhysicsObjects, mainScene: Sc
         axes = WalkAxes(ctx)
     }
 
-    fun release(ctx: KoolContext) {
+    override fun release() {
         // apparently character controller is released automatically when the scene is destroyed
         //controller.release()
         //charManager.release()
-        axes.dispose(ctx)
+        axes.release()
     }
 
     fun onPhysicsUpdate(timeStep: Float) {

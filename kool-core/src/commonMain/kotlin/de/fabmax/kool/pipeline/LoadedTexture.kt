@@ -6,5 +6,5 @@ interface LoadedTexture {
     val depth: Int
 
     fun readTexturePixels(targetData: TextureData)
-    fun dispose()
+    fun release()
 }

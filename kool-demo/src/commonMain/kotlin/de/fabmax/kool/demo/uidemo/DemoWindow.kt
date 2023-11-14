@@ -30,7 +30,7 @@ abstract class DemoWindow(name: String, val uiDemo: UiDemo, isClosable: Boolean 
                 } else null,
                 onCloseAction = if (isClosable) {
                     {
-                        uiDemo.closeWindow(this@DemoWindow, it.ctx)
+                        uiDemo.closeWindow(this@DemoWindow)
                     }
                 } else null
             )

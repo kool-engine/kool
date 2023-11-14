@@ -1,6 +1,5 @@
 package de.fabmax.kool.editor.components
 
-import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.editor.api.AppState
 import de.fabmax.kool.editor.data.SsaoComponentData
 import de.fabmax.kool.editor.data.SsaoSettings
@@ -37,7 +36,7 @@ class SsaoComponent(override val nodeModel: SceneModel, override val componentDa
     }
 
     override fun destroyComponent() {
-        aoPipeline?.removeAndDispose(KoolSystem.requireContext())
+        aoPipeline?.release()
         nodeModel.shaderData.ssaoMap = null
         UpdateSsaoComponent.updateSceneSsao(nodeModel)
         super.destroyComponent()

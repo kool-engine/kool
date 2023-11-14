@@ -72,7 +72,7 @@ class BeeDemo : DemoScene("Fighting Bees") {
             beeSystemA.updateBees()
             beeSystemB.updateBees()
         }
-        onDispose {
+        onRelease {
             beeTex.dispose()
         }
     }

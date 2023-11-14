@@ -154,9 +154,9 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
             selectionPipelines.clear()
         }
 
-        override fun dispose(ctx: KoolContext) {
-            super.dispose(ctx)
-            disposePipelines(ctx)
+        override fun release() {
+            super.release()
+            disposePipelines(KoolSystem.requireContext())
         }
     }
 

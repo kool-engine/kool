@@ -70,10 +70,10 @@ class InstancedLodController<T: InstancedLodController.Instance<T>>(name: String
         super.update(updateEvent)
     }
 
-    override fun dispose(ctx: KoolContext) {
-        super.dispose(ctx)
+    override fun release() {
+        super.release()
         for (i in lods.indices) {
-            lods[i].mesh.dispose(ctx)
+            lods[i].mesh.release()
         }
     }
 

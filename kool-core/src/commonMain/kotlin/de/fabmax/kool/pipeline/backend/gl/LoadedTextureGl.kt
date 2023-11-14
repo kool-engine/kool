@@ -63,7 +63,7 @@ class LoadedTextureGl(
         backend.readTexturePixels(this, targetData)
     }
 
-    override fun dispose() {
+    override fun release() {
         if (!isDestroyed) {
             isDestroyed = true
             gl.deleteTexture(glTexture)

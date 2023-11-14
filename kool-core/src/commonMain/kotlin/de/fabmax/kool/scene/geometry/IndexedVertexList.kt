@@ -1,6 +1,5 @@
 package de.fabmax.kool.scene.geometry
 
-import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolException
 import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.BoundingBox
@@ -18,7 +17,7 @@ fun IndexedVertexList(vararg vertexAttributes: Attribute): IndexedVertexList {
     return IndexedVertexList(vertexAttributes.toList())
 }
 
-class IndexedVertexList(val vertexAttributes: List<Attribute>) : Disposable {
+class IndexedVertexList(val vertexAttributes: List<Attribute>) : Releasable {
 
     var name: String = "geometry"
 
@@ -532,8 +531,8 @@ class IndexedVertexList(val vertexAttributes: List<Attribute>) : Disposable {
         }
     }
 
-    override fun dispose(ctx: KoolContext) {
-        gpuGeometry?.dispose(ctx)
+    override fun release() {
+        gpuGeometry?.release()
     }
 
     companion object {

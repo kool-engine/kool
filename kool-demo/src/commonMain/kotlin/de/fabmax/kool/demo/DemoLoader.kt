@@ -68,11 +68,11 @@ class DemoLoader(ctx: KoolContext, startScene: String? = null) {
             currentDemo?.second?.let { demo ->
                 demo.scenes.forEach {
                     ctx.scenes -= it
-                    it.dispose(ctx)
+                    it.release()
                 }
                 demo.menuUi?.let {
                     menu.ui -= it
-                    it.dispose(ctx)
+                    it.release()
                 }
                 demo.dispose(ctx)
             }

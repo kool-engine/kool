@@ -112,7 +112,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         wind.offsetStrength.w = windStrength.value
         wind.scale = windScale.value
 
-        sky = Sky(mainScene, moonTex).apply { generateMaps(this@TerrainDemo, loadingScreen!!, ctx) }
+        sky = Sky(mainScene, moonTex).apply { generateMaps(this@TerrainDemo, loadingScreen!!) }
         showLoadText("Creating terrain...")
         Physics.awaitLoaded()
         terrain = Terrain(heightMap)

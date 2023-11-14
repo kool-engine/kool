@@ -47,10 +47,10 @@ open class OffscreenRenderPass2dPingPong(config: Config) : OffscreenRenderPass(E
         pong.afterDraw(ctx)
     }
 
-    override fun dispose(ctx: KoolContext) {
-        super.dispose(ctx)
-        ping.dispose(ctx)
-        pong.dispose(ctx)
+    override fun release() {
+        super.release()
+        ping.release()
+        pong.release()
     }
 
     private class Empty : Node()

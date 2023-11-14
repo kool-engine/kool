@@ -1,6 +1,5 @@
 package de.fabmax.kool.editor.model
 
-import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.editor.components.TransformComponent
 import de.fabmax.kool.editor.data.SceneNodeData
 import de.fabmax.kool.editor.data.TransformComponentData
@@ -37,7 +36,7 @@ class SceneNodeModel(nodeData: SceneNodeData, var parent: NodeModel, val sceneMo
             newDrawNode.addNode(it.drawNode)
         }
         oldDrawNode.onUpdate -= nodeUpdateCb
-        oldDrawNode.dispose(KoolSystem.requireContext())
+        oldDrawNode.release()
 
         transform.transformState.value.toTransform(newDrawNode.transform)
         newDrawNode.name = nodeData.name

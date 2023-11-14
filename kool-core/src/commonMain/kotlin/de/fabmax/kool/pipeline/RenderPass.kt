@@ -93,7 +93,7 @@ abstract class RenderPass(
         }
     }
 
-    open fun dispose(ctx: KoolContext) { }
+    open fun release() { }
 
     class UpdateEvent(val view: View, val ctx: KoolContext) {
         val renderPass: RenderPass get() = view.renderPass

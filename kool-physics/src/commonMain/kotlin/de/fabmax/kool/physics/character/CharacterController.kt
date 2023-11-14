@@ -5,9 +5,9 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3d
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.PhysicsWorld
-import de.fabmax.kool.physics.Releasable
 import de.fabmax.kool.physics.RigidActor
 import de.fabmax.kool.physics.RigidDynamic
+import de.fabmax.kool.util.Releasable
 
 abstract class CharacterController(private val manager: CharacterControllerManager, world: PhysicsWorld) : Releasable {
 

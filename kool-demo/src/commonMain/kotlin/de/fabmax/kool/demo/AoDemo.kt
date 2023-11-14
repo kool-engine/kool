@@ -65,7 +65,7 @@ class AoDemo : DemoScene("Ambient Occlusion") {
         normalMap = loadTexture2d("${DemoLoader.materialPath}/brown_planks_03/brown_planks_03_Nor_2k.jpg")
         roughnessMap = loadTexture2d("${DemoLoader.materialPath}/brown_planks_03/brown_planks_03_rough_2k.jpg")
 
-        mainScene.onDispose += {
+        mainScene.onRelease += {
             albedoMap.dispose()
             ambientOcclusionMap.dispose()
             normalMap.dispose()

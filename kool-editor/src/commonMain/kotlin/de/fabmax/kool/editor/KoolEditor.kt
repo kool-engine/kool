@@ -276,7 +276,7 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
             ctx.scenes -= oldScenes.toSet()
             oldScenes.forEach {
                 it.removeOffscreenPass(selectionOverlay.selectionPass)
-                it.dispose(ctx)
+                it.release()
             }
         }
         EditorState.loadedApp.value?.app?.onDispose(ctx)

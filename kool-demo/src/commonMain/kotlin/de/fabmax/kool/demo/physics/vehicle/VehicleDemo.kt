@@ -139,7 +139,7 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
     override fun dispose(ctx: KoolContext) {
         super.dispose(ctx)
         vehicleWorld.release()
-        vehicle.cleanUp(ctx)
+        vehicle.cleanUp()
         track?.cleanUp()
     }
 
@@ -233,7 +233,7 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
     private fun Node.makeGround() {
         val groundAlbedo = Texture2d("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine.png")
         val groundNormal = Texture2d("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine_normal.png")
-        onDispose += {
+        onRelease += {
             groundAlbedo.dispose()
             groundNormal.dispose()
         }

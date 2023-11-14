@@ -117,7 +117,7 @@ class GizmoTest : DemoScene("Gizmo Test") {
             transform2.update()
         }
 
-        onDispose += {
+        onRelease += {
             InputStack.defaultInputHandler.pointerListeners -= gizmo1
             InputStack.defaultInputHandler.pointerListeners -= gizmo2
         }

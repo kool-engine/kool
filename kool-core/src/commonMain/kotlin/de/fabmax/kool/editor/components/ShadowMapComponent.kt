@@ -1,6 +1,5 @@
 package de.fabmax.kool.editor.components
 
-import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.editor.api.AppState
 import de.fabmax.kool.editor.data.ShadowMapComponentData
 import de.fabmax.kool.editor.data.ShadowMapInfo
@@ -113,16 +112,15 @@ class ShadowMapComponent(nodeModel: SceneNodeModel, override val componentData: 
         val scene = sceneModel.drawNode
         shadowMap?.let {
             sceneModel.shaderData.shadowMaps -= it
-            val ctx = KoolSystem.requireContext()
             when (it) {
                 is SimpleShadowMap -> {
                     scene.removeOffscreenPass(it)
-                    it.dispose(ctx)
+                    it.release()
                 }
                 is CascadedShadowMap -> {
                     it.subMaps.forEach { pass ->
                         scene.removeOffscreenPass(pass)
-                        pass.dispose(ctx)
+                        pass.release()
                     }
                 }
             }

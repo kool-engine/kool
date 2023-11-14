@@ -1,6 +1,5 @@
 package de.fabmax.kool.pipeline.ibl
 
-import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.atmosphere.OpticalDepthLutPass
 import de.fabmax.kool.modules.atmosphere.atmosphereBlock
@@ -225,10 +224,10 @@ class SkyCubeIblSystem(val parentScene: Scene, opticalDepthLut: Texture2d) {
         parentScene.removeOffscreenPass(reflectionMapPass)
     }
 
-    fun disposeOffscreenPasses(ctx: KoolContext) {
-        skyPass.dispose(ctx)
-        irradianceMapPass.dispose(ctx)
-        reflectionMapPass.dispose(ctx)
+    fun releaseOffscreenPasses() {
+        skyPass.release()
+        irradianceMapPass.release()
+        reflectionMapPass.release()
     }
 
     companion object {

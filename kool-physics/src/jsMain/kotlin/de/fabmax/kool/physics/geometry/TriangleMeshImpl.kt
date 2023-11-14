@@ -1,6 +1,5 @@
 package de.fabmax.kool.physics.geometry
 
-import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.MemoryStack
 import de.fabmax.kool.physics.PhysicsImpl
@@ -89,8 +88,8 @@ class TriangleMeshGeometryImpl(override val triangleMesh: TriangleMesh, override
         }
     }
 
-    override fun dispose(ctx: KoolContext) {
-        super<CollisionGeometryImpl>.dispose(ctx)
+    override fun release() {
+        super.release()
         if (triangleMesh.releaseWithGeometry) {
             triangleMesh.pxTriangleMesh.release()
         }

@@ -82,9 +82,9 @@ class SimpleShadowMap(val scene: Scene, override var light: Light?, mapSize: Int
         shaderDepthOffset = szMultiplier * if (isDirectional) -0.001f else -0.005f
     }
 
-    override fun dispose(ctx: KoolContext) {
+    override fun release() {
         scene.removeOffscreenPass(this)
-        super.dispose(ctx)
+        super.release()
     }
 
     override fun setupSampler(sampler: TextureSampler2d?) {

@@ -128,10 +128,10 @@ class UiDemo : DemoScene("UI Demo") {
         }
     }
 
-    fun closeWindow(window: DemoWindow, ctx: KoolContext) {
+    fun closeWindow(window: DemoWindow) {
         dock.removeDockableSurface(window.windowSurface)
         demoWindows -= window
         window.onClose()
-        window.windowSurface.dispose(ctx)
+        window.windowSurface.release()
     }
 }

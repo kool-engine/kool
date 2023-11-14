@@ -1,6 +1,5 @@
 package de.fabmax.kool.demo.physics.terrain
 
-import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.atmosphere.OpticalDepthLutPass
 import de.fabmax.kool.modules.ksl.KslUnlitShader
@@ -128,12 +127,12 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
             )
         }
 
-        mainScene.onDispose += { ctx ->
-            skies.values.forEach { it.disposeOffscreenPasses(ctx) }
+        mainScene.onRelease += {
+            skies.values.forEach { it.releaseOffscreenPasses() }
         }
     }
 
-    suspend fun generateMaps(terrainDemo: TerrainDemo, parentScene: Scene, ctx: KoolContext) {
+    suspend fun generateMaps(terrainDemo: TerrainDemo, parentScene: Scene) {
         val hours = listOf(4f, 5f, 5.5f, 6f, 6.5f, 7f, 8f, 9f, 10f, 11f, 12f, 13f, 14f, 15f, 16f, 17f, 17.5f, 18f, 18.5f, 19f, 20f)
         val skyLut = OpticalDepthLutPass()
         parentScene.addOffscreenPass(skyLut)
@@ -147,7 +146,7 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
         launchDelayed(1) {
             parentScene.removeOffscreenPass(skyLut)
             skies.values.forEach { it.removeOffscreenPasses() }
-            skyLut.dispose(ctx)
+            skyLut.release()
         }
     }
 

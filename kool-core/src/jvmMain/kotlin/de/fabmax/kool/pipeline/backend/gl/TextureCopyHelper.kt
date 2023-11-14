@@ -31,7 +31,7 @@ internal object TextureCopyHelper {
             var width = copyTarget.loadedTexture?.width ?: 0
             var height = copyTarget.loadedTexture?.height ?: 0
             if (width != pass.width || height != pass.height) {
-                copyTarget.loadedTexture?.dispose()
+                copyTarget.loadedTexture?.release()
                 copyTarget.createCopyTexColor(pass, backend)
                 width = copyTarget.loadedTexture!!.width
                 height = copyTarget.loadedTexture!!.height
@@ -62,7 +62,7 @@ internal object TextureCopyHelper {
             var height = copyTarget.loadedTexture?.height ?: 0
             if (width != pass.width || height != pass.height) {
                 // recreate target texture if size has changed
-                copyTarget.loadedTexture?.dispose()
+                copyTarget.loadedTexture?.release()
                 copyTarget.createCopyTexColor(pass, backend)
                 width = copyTarget.loadedTexture!!.width
                 height = copyTarget.loadedTexture!!.height

@@ -2,8 +2,8 @@ package de.fabmax.kool.physics.geometry
 
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.spatial.BoundingBox
-import de.fabmax.kool.physics.Releasable
 import de.fabmax.kool.scene.geometry.MeshBuilder
+import de.fabmax.kool.util.Releasable
 
 @Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 expect class GeometryHolder

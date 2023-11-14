@@ -1,14 +1,15 @@
 package de.fabmax.kool.input
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.math.clamp
-import de.fabmax.kool.util.Disposable
+import de.fabmax.kool.util.Releasable
 import de.fabmax.kool.util.Time
 import de.fabmax.kool.util.launchDelayed
 import kotlin.math.abs
 import kotlin.math.max
 
-open class InputAxes(ctx: KoolContext) : Disposable {
+open class InputAxes(ctx: KoolContext) : Releasable {
     private val axesList = mutableListOf<Axis>()
     private val axes = mutableMapOf<String, Axis>()
 
@@ -57,8 +58,8 @@ open class InputAxes(ctx: KoolContext) : Disposable {
 
     fun digital(name: String): Boolean = axes[name]?.digital == true
 
-    override fun dispose(ctx: KoolContext) {
-        launchDelayed(1) { ctx.onRender -= updateAxes }
+    override fun release() {
+        launchDelayed(1) { KoolSystem.requireContext().onRender -= updateAxes }
         axesList.forEach { ax ->
             ax.keyListeners.forEach { InputStack.defaultInputHandler.removeKeyListener(it) }
         }

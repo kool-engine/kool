@@ -7,7 +7,7 @@ import de.fabmax.kool.pipeline.OffscreenRenderPass
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.pipeline.ScreenRenderPass
 import de.fabmax.kool.pipeline.Texture2d
-import de.fabmax.kool.util.Disposable
+import de.fabmax.kool.util.Releasable
 
 /**
  * @author fabmax
@@ -33,7 +33,7 @@ open class Scene(name: String? = null) : Node(name) {
     val offscreenPasses: List<OffscreenRenderPass>
         get() = mutOffscreenPasses
 
-    private val disposables = mutableListOf<Disposable>()
+    private val releasables = mutableListOf<Releasable>()
 
     var framebufferCaptureMode = FramebufferCaptureMode.Disabled
     val capturedFramebuffer = Texture2d()
@@ -91,10 +91,10 @@ open class Scene(name: String? = null) : Node(name) {
     }
 
     override fun update(updateEvent: RenderPass.UpdateEvent) {
-        for (i in disposables.indices) {
-            disposables[i].dispose(updateEvent.ctx)
+        for (i in releasables.indices) {
+            releasables[i].release()
         }
-        disposables.clear()
+        releasables.clear()
 
         // update lights not attached
         lighting.onUpdate(updateEvent)
@@ -102,8 +102,8 @@ open class Scene(name: String? = null) : Node(name) {
         super.update(updateEvent)
     }
 
-    fun dispose(disposable: Disposable) {
-        disposables += disposable
+    fun dispose(releasable: Releasable) {
+        releasables += releasable
     }
 
     override fun checkIsVisible(cam: Camera, ctx: KoolContext): Boolean {
@@ -111,21 +111,21 @@ open class Scene(name: String? = null) : Node(name) {
         return isVisible
     }
 
-    override fun dispose(ctx: KoolContext) {
-        disposables.forEach { it.dispose(ctx) }
-        disposables.clear()
+    override fun release() {
+        releasables.forEach { it.release() }
+        releasables.clear()
 
-        mainRenderPass.dispose(ctx)
+        mainRenderPass.release()
         mutOffscreenPasses.removeAll(remOffscreenPasses)
         remOffscreenPasses.clear()
         for (i in offscreenPasses.indices) {
-            offscreenPasses[i].dispose(ctx)
+            offscreenPasses[i].release()
         }
         remOffscreenPasses.clear()
         mutOffscreenPasses.clear()
         capturedFramebuffer.dispose()
 
-        super.dispose(ctx)
+        super.release()
     }
 
     fun computePickRay(pointer: Pointer, ctx: KoolContext, result: Ray): Boolean {

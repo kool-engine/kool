@@ -1,6 +1,5 @@
 package de.fabmax.kool.editor.model
 
-import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.editor.api.AppState
 import de.fabmax.kool.editor.components.*
 import de.fabmax.kool.editor.data.SceneBackgroundData
@@ -99,7 +98,7 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : NodeMod
         nodeModels.values.forEach { it.destroyComponents() }
         nodesToNodeModels.clear()
 
-        drawNode.dispose(KoolSystem.requireContext())
+        drawNode.release()
         backgroundUpdater.skybox = null
     }
 

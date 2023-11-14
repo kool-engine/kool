@@ -1,7 +1,7 @@
 package de.fabmax.kool.physics.articulations
 
 import de.fabmax.kool.math.Mat4f
-import de.fabmax.kool.physics.Releasable
+import de.fabmax.kool.util.Releasable
 
 expect fun Articulation(isFixedBase: Boolean): Articulation
 
