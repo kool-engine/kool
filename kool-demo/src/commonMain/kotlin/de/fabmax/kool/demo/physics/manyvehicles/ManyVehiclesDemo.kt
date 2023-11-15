@@ -1,6 +1,5 @@
 package de.fabmax.kool.demo.physics.manyvehicles
 
-import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.DemoLoader
 import de.fabmax.kool.demo.DemoScene
@@ -12,9 +11,6 @@ import de.fabmax.kool.physics.vehicle.Vehicle
 import de.fabmax.kool.physics.vehicle.VehicleProperties
 import de.fabmax.kool.physics.vehicle.VehicleUtils
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.Texture2d
-import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
-import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
@@ -24,10 +20,11 @@ import kotlin.math.sin
 
 class ManyVehiclesDemo : DemoScene("Many Vehicles") {
 
-    private lateinit var ibl: EnvironmentMaps
+    private val ibl by hdriImage("${DemoLoader.hdriPath}/syferfontein_0d_clear_1k.rgbe.png")
+    private val groundAlbedo by texture2d("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine.png")
+    private val groundNormal by texture2d("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine_normal.png")
 
-    private lateinit var physicsWorld: PhysicsWorld
-    //private lateinit var batchUpdater: BatchVehicleUpdater
+    private val physicsWorld = PhysicsWorld(mainScene)
 
     private val groundSimFilterData = FilterData(VehicleUtils.COLLISION_FLAG_GROUND, VehicleUtils.COLLISION_FLAG_GROUND_AGAINST)
     private val groundQryFilterData = FilterData { VehicleUtils.setupDrivableSurface(this) }
@@ -59,17 +56,6 @@ class ManyVehiclesDemo : DemoScene("Many Vehicles") {
 
         updateChassisMoiFromDimensionsAndMass()
         updateWheelMoiFromRadiusAndMass()
-    }
-
-    override suspend fun Assets.loadResources(ctx: KoolContext) {
-        showLoadText("Loading IBL maps")
-        ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${DemoLoader.hdriPath}/syferfontein_0d_clear_1k.rgbe.png")
-        mainScene += Skybox.cube(ibl.reflectionMap, 1f)
-        Physics.awaitLoaded()
-
-        physicsWorld = PhysicsWorld(mainScene)
-
-        //batchUpdater = BatchVehicleUpdater(numVehicles, physicsWorld)
     }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
@@ -108,6 +94,7 @@ class ManyVehiclesDemo : DemoScene("Many Vehicles") {
             }
             shader = wheelsShader()
         }
+        addNode(Skybox.cube(ibl.reflectionMap, 1f))
 
         onUpdate += {
             chassisInstances.clear()
@@ -132,9 +119,6 @@ class ManyVehiclesDemo : DemoScene("Many Vehicles") {
     }
 
     private fun Scene.makeGround() {
-        val groundAlbedo = Texture2d("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine.png").also { releaseWith(this) }
-        val groundNormal = Texture2d("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine_normal.png").also { releaseWith(this) }
-
         addTextureMesh(isNormalMapped = true, name = "ground") {
             generate {
                 isCastingShadow = false

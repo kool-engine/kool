@@ -75,7 +75,7 @@ class PbrDemo : DemoScene("PBR Materials") {
         }
 
         loadHdri(selectedHdriIdx.value) { hdri ->
-            envMaps = EnvironmentHelper.hdriEnvironment(this, hdri, false)
+            envMaps = EnvironmentHelper.hdriEnvironment(hdri)
             skybox = Skybox.cube(envMaps.reflectionMap, 1f)
             this += skybox
 
@@ -138,7 +138,7 @@ class PbrDemo : DemoScene("PBR Materials") {
     private fun updateHdri(idx: Int) {
         loadHdri(idx) { tex ->
             envMaps.let { oldEnvMap -> launchDelayed(1) { oldEnvMap.release() } }
-            envMaps = EnvironmentHelper.hdriEnvironment(mainScene, tex, false)
+            envMaps = EnvironmentHelper.hdriEnvironment(tex)
             skybox.skyboxShader.setSingleSky(envMaps.reflectionMap)
             pbrContent.forEach { it.updateEnvironmentMap(envMaps) }
         }

@@ -27,6 +27,7 @@ class HelloRenderToTextureDemo : DemoScene("Hello RenderToTexture") {
             }
             onUpdate += { transform.rotate(30f.deg * Time.deltaT, Vec3f.Y_AXIS) }
         }
+        backgroundGroup.releaseWith(this)
 
         // setup offscreen pass
         val off = OffscreenRenderPass2d(backgroundGroup, renderPassConfig {

@@ -63,128 +63,137 @@ class ReflectionPass(val baseReflectionStep: Float) :
         super.release()
     }
 
-    private class ReflectionShader : KslShader(Model(), FullscreenShaderUtil.fullscreenShaderPipelineCfg) {
+    private inner class ReflectionShader : KslShader(ssrShaderModel(), FullscreenShaderUtil.fullscreenShaderPipelineCfg) {
         var positionFlags by texture2d("positionFlags")
         var normalRoughness by texture2d("normalRoughness")
         var lightingPass by texture2d("lightingPass")
-        val ssrNoise by texture2d("ssrNoise", ssrNoiseTex)
+        val ssrNoise by texture2d("ssrNoise", generateNoiseTex().also { it.releaseWith(this@ReflectionPass) })
 
         var roughnessThresholdLow by uniform1f("uRoughThreshLow", 0.5f)
         var roughnessThresholdHigh by uniform1f("uRoughThreshHigh", 0.6f)
         var maxIterations by uniform1i("uMaxIterations", 24)
         var noiseScale by uniform2f("uNoiseScale")
+    }
 
-        class Model : KslProgram("Screen space reflection pass") {
-            init {
-                val texCoord = interStageFloat2("uv")
+    private fun ssrShaderModel() = KslProgram("Screen space reflection pass").apply {
+        val texCoord = interStageFloat2("uv")
 
-                fullscreenQuadVertexStage(texCoord)
+        fullscreenQuadVertexStage(texCoord)
 
-                fragmentStage {
-                    val positionFlags = texture2d("positionFlags")
-                    val normalRough = texture2d("normalRoughness")
-                    val lightingPass = texture2d("lightingPass")
-                    val ssrNoise = texture2d("ssrNoise")
+        fragmentStage {
+            val positionFlags = texture2d("positionFlags")
+            val normalRough = texture2d("normalRoughness")
+            val lightingPass = texture2d("lightingPass")
+            val ssrNoise = texture2d("ssrNoise")
 
-                    val uNoiseScale = uniformFloat2("uNoiseScale")
-                    val uRoughnessThreshLow = uniformFloat1("uRoughThreshLow")
-                    val uRoughnessThreshHigh = uniformFloat1("uRoughThreshHigh")
-                    val uMaxIterations = uniformInt1("uMaxIterations")
+            val uNoiseScale = uniformFloat2("uNoiseScale")
+            val uRoughnessThreshLow = uniformFloat1("uRoughThreshLow")
+            val uRoughnessThreshHigh = uniformFloat1("uRoughThreshHigh")
+            val uMaxIterations = uniformInt1("uMaxIterations")
 
-                    main {
-                        val uv = texCoord.output
-                        val posFlags = float4Var(sampleTexture(positionFlags, uv))
-                        val normalRoughness = float4Var(sampleTexture(normalRough, uv))
-                        val viewPos = posFlags.xyz
-                        val viewNormal = normalRoughness.xyz
-                        val roughness = normalRoughness.a
+            main {
+                val uv = texCoord.output
+                val posFlags = float4Var(sampleTexture(positionFlags, uv))
+                val normalRoughness = float4Var(sampleTexture(normalRough, uv))
+                val viewPos = posFlags.xyz
+                val viewNormal = normalRoughness.xyz
+                val roughness = normalRoughness.a
 
-                        `if`(roughness gt uRoughnessThreshHigh) {
-                            discard()
-                        }
-                        val roughnessWeight = float1Var(1f.const - smoothStep(uRoughnessThreshLow, uRoughnessThreshHigh, roughness))
-
-                        val camData = deferredCameraData()
-                        val noiseCoord = float2Var(uv * uNoiseScale)
-                        val noise = float4Var(sampleTexture(ssrNoise, noiseCoord))
-                        val viewDir = float3Var(normalize(viewPos))
-                        val reflectDir = float3Var(reflect(viewDir, normalize(viewNormal)))
-                        val rayDir = float3Var(normalize(reflectDir + ((noise.xyz - 0.5f.const) * 2f.const) * roughness))
-
-                        val baseStepFac = 0.02f.const
-                        val stepIncFac = 1.2f.const
-                        val maxRefinements = 5.const
-
-                        val rayPos = float3Var(viewPos)
-                        val rayStepPos = float3Var(rayPos)
-                        val rayStep = float1Var(-viewPos.z * baseStepFac)
-                        val rayOffset = float1Var(noise.a)
-
-                        val sampleDepth = float1Var(0f.const)
-                        val dDepth = float1Var(0f.const)
-                        val refineHit = bool1Var(false.const)
-                        val iSteps = int1Var(0.const)
-                        val iRefinementSteps = int1Var(0.const)
-
-                        `while`((iSteps lt uMaxIterations) and (iRefinementSteps lt maxRefinements)) {
-                            rayStepPos += rayDir * rayStep
-                            rayPos set rayStepPos + rayDir * rayStep * rayOffset * stepIncFac
-                            val projPos = float4Var(camData.projMat * float4Value(rayPos, 1f.const))
-                            val samplePos = float3Var((projPos.xyz / projPos.w) * 0.5f.const + 0.5f.const)
-
-                            `if`((samplePos.x lt 0f.const) or (samplePos.x gt 1f.const) or
-                                    (samplePos.y lt 0f.const) or (samplePos.y gt 1f.const) or
-                                    (samplePos.z gt 1f.const)) {
-                                // sample position has left screen bounds
-                                `break`()
-                            }
-
-                            sampleDepth set sampleTexture(positionFlags, samplePos.xy).z
-                            // set a large depth if sampleDepth is positive (clear value)
-                            sampleDepth -= 1e5f.const * step(0.1f.const, sampleDepth)
-
-                            // diff between ray position depth and scene depth
-                            //   negative -> ray pos is behind scene depth, i.e. covered by an object
-                            //   positive -> ray pos is in front of scene
-                            dDepth set rayPos.z - sampleDepth
-
-                            `if`(!refineHit) {
-                                // search for hit
-                                `if` ((dDepth lt 0f.const) and (dDepth gt -rayStep - 0.2f.const)) {
-                                    // hit -> roll back position to previous ray position and start refinement
-                                    rayStepPos set rayPos - rayDir * rayStep
-                                    rayOffset set 0f.const
-                                    rayStep *= 0.5f.const
-                                    refineHit set true.const
-                                }.`else` {
-                                    // no hit, increase step size
-                                    rayStep *= stepIncFac
-                                }
-                            }.`else` {
-                                // refine hit position
-                                rayStep set 0.5f.const * abs(rayStep) * sign(dDepth)
-                                iRefinementSteps += 1.const
-                            }
-                            iSteps += 1.const
-                        }
-
-                        rayPos set rayPos + rayDir * rayStep
-                        val projPos = float4Var(camData.projMat * float4Value(rayPos, 1f.const))
-                        val samplePos = float3Var((projPos.xyz / projPos.w) * 0.5f.const + 0.5f.const)
-
-                        val sampleWeight = float1Var(
-                            smoothStep(0f.const, 0.05f.const, samplePos.x) * (1f.const - smoothStep(0.95f.const, 1f.const, samplePos.x)) *
-                                    smoothStep(0f.const, 0.05f.const, samplePos.y) * (1f.const - smoothStep(0.95f.const, 1f.const, samplePos.y)) *
-                                    (1f.const - step(0.9999f.const, samplePos.z)) *
-                                    (1f.const - smoothStep(0f.const, -rayPos.z / 10f.const, abs(dDepth)))
-                        )
-
-                        val reflectionColor = float3Var(sampleTexture(lightingPass, samplePos.xy).rgb)
-                        val reflectionAlpha = sampleWeight * roughnessWeight
-                        val outColor = float3Var(convertColorSpace(reflectionColor, ColorSpaceConversion.LINEAR_TO_sRGB))
-                        colorOutput(outColor, reflectionAlpha)
-                    }
+                `if`(roughness gt uRoughnessThreshHigh) {
+                    discard()
                 }
+                val roughnessWeight =
+                    float1Var(1f.const - smoothStep(uRoughnessThreshLow, uRoughnessThreshHigh, roughness))
+
+                val camData = deferredCameraData()
+                val noiseCoord = float2Var(uv * uNoiseScale)
+                val noise = float4Var(sampleTexture(ssrNoise, noiseCoord))
+                val viewDir = float3Var(normalize(viewPos))
+                val reflectDir = float3Var(reflect(viewDir, normalize(viewNormal)))
+                val rayDir = float3Var(normalize(reflectDir + ((noise.xyz - 0.5f.const) * 2f.const) * roughness))
+
+                val baseStepFac = 0.02f.const
+                val stepIncFac = 1.2f.const
+                val maxRefinements = 5.const
+
+                val rayPos = float3Var(viewPos)
+                val rayStepPos = float3Var(rayPos)
+                val rayStep = float1Var(-viewPos.z * baseStepFac)
+                val rayOffset = float1Var(noise.a)
+
+                val sampleDepth = float1Var(0f.const)
+                val dDepth = float1Var(0f.const)
+                val refineHit = bool1Var(false.const)
+                val iSteps = int1Var(0.const)
+                val iRefinementSteps = int1Var(0.const)
+
+                `while`((iSteps lt uMaxIterations) and (iRefinementSteps lt maxRefinements)) {
+                    rayStepPos += rayDir * rayStep
+                    rayPos set rayStepPos + rayDir * rayStep * rayOffset * stepIncFac
+                    val projPos = float4Var(camData.projMat * float4Value(rayPos, 1f.const))
+                    val samplePos = float3Var((projPos.xyz / projPos.w) * 0.5f.const + 0.5f.const)
+
+                    `if`(
+                        (samplePos.x lt 0f.const) or (samplePos.x gt 1f.const) or
+                                (samplePos.y lt 0f.const) or (samplePos.y gt 1f.const) or
+                                (samplePos.z gt 1f.const)
+                    ) {
+                        // sample position has left screen bounds
+                        `break`()
+                    }
+
+                    sampleDepth set sampleTexture(positionFlags, samplePos.xy).z
+                    // set a large depth if sampleDepth is positive (clear value)
+                    sampleDepth -= 1e5f.const * step(0.1f.const, sampleDepth)
+
+                    // diff between ray position depth and scene depth
+                    //   negative -> ray pos is behind scene depth, i.e. covered by an object
+                    //   positive -> ray pos is in front of scene
+                    dDepth set rayPos.z - sampleDepth
+
+                    `if`(!refineHit) {
+                        // search for hit
+                        `if`((dDepth lt 0f.const) and (dDepth gt -rayStep - 0.2f.const)) {
+                            // hit -> roll back position to previous ray position and start refinement
+                            rayStepPos set rayPos - rayDir * rayStep
+                            rayOffset set 0f.const
+                            rayStep *= 0.5f.const
+                            refineHit set true.const
+                        }.`else` {
+                            // no hit, increase step size
+                            rayStep *= stepIncFac
+                        }
+                    }.`else` {
+                        // refine hit position
+                        rayStep set 0.5f.const * abs(rayStep) * sign(dDepth)
+                        iRefinementSteps += 1.const
+                    }
+                    iSteps += 1.const
+                }
+
+                rayPos set rayPos + rayDir * rayStep
+                val projPos = float4Var(camData.projMat * float4Value(rayPos, 1f.const))
+                val samplePos = float3Var((projPos.xyz / projPos.w) * 0.5f.const + 0.5f.const)
+
+                val sampleWeight = float1Var(
+                    smoothStep(0f.const, 0.05f.const, samplePos.x) * (1f.const - smoothStep(
+                        0.95f.const,
+                        1f.const,
+                        samplePos.x
+                    )) *
+                            smoothStep(0f.const, 0.05f.const, samplePos.y) * (1f.const - smoothStep(
+                        0.95f.const,
+                        1f.const,
+                        samplePos.y
+                    )) *
+                            (1f.const - step(0.9999f.const, samplePos.z)) *
+                            (1f.const - smoothStep(0f.const, -rayPos.z / 10f.const, abs(dDepth)))
+                )
+
+                val reflectionColor = float3Var(sampleTexture(lightingPass, samplePos.xy).rgb)
+                val reflectionAlpha = sampleWeight * roughnessWeight
+                val outColor = float3Var(convertColorSpace(reflectionColor, ColorSpaceConversion.LINEAR_TO_sRGB))
+                colorOutput(outColor, reflectionAlpha)
             }
         }
     }
@@ -213,7 +222,5 @@ class ReflectionPass(val baseReflectionStep: Float) :
                 mipMapping = false, maxAnisotropy = 1)
             return Texture2d(texProps, "ssr_noise_tex") { data }
         }
-
-        private val ssrNoiseTex: Texture2d by lazy { generateNoiseTex() }
     }
 }

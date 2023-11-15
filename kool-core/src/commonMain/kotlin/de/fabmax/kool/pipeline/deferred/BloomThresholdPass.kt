@@ -38,6 +38,7 @@ class BloomThresholdPass(deferredPipeline: DeferredPipeline, cfg: DeferredPipeli
                 shader = outputShader
             }
         }
+        drawNode.releaseWith(this)
 
         deferredPipeline.passes.forEach { dependsOn(it.lightingPass) }
     }

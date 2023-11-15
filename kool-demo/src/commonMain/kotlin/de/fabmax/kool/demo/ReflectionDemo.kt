@@ -7,12 +7,10 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.deg
 import de.fabmax.kool.math.randomF
 import de.fabmax.kool.math.toRad
-import de.fabmax.kool.modules.gltf.GltfFile
-import de.fabmax.kool.modules.gltf.loadGltfModel
+import de.fabmax.kool.modules.gltf.GltfLoadConfig
 import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.deferred.*
-import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
@@ -21,6 +19,13 @@ import kotlin.math.*
 class ReflectionDemo : DemoScene("Reflections") {
 
     private lateinit var deferredPipeline: DeferredPipeline
+
+    private val hdri by hdriGradient(ColorGradient(Color.DARK_GRAY.mix(Color.BLACK, 0.75f), Color.DARK_GRAY, toLinear = true))
+    private val floorAlbedo by texture2d("${DemoLoader.materialPath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_COL_2K.jpg")
+    private val floorNormal by texture2d("${DemoLoader.materialPath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_NRM_2K.jpg")
+    private val floorRoughness by texture2d("${DemoLoader.materialPath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_REFL_2K.jpg")
+
+    private val model by model("${DemoLoader.modelPath}/bunny.gltf.gz", GltfLoadConfig(generateNormals = true, applyMaterials = false))
 
     private val lights = listOf(
             LightMesh(MdColor.CYAN),
@@ -82,26 +87,20 @@ class ReflectionDemo : DemoScene("Reflections") {
     }
 
     private fun setupDeferred(scene: Scene) {
-        val envMaps = EnvironmentHelper.gradientColorEnvironment(
-            mainScene, ColorGradient(Color.DARK_GRAY.mix(Color.BLACK, 0.75f), Color.DARK_GRAY, toLinear = true))
         val defCfg = DeferredPipelineConfig().apply {
             isWithAmbientOcclusion = false
             isWithScreenSpaceReflections = true
-            useImageBasedLighting(envMaps)
+            useImageBasedLighting(hdri)
         }
         deferredPipeline = DeferredPipeline(scene, defCfg)
 
         scene += deferredPipeline.createDefaultOutputQuad().also {
             (it.shader as? DeferredOutputShader)?.setupVignette(0f)
         }
-        scene += Skybox.cube(envMaps.reflectionMap, 1f)
+        scene += Skybox.cube(hdri.reflectionMap, 1f)
 
         deferredPipeline.sceneContent.apply {
             Assets.launch {
-                val floorAlbedo = loadTexture2d("${DemoLoader.materialPath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_COL_2K.jpg").also { it.releaseWith(mainScene) }
-                val floorNormal = loadTexture2d("${DemoLoader.materialPath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_NRM_2K.jpg").also { it.releaseWith(mainScene) }
-                val floorRoughness = loadTexture2d("${DemoLoader.materialPath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_REFL_2K.jpg").also { it.releaseWith(mainScene) }
-
                 addTextureMesh(isNormalMapped = true) {
                     generate {
                         centeredRect {
@@ -122,8 +121,6 @@ class ReflectionDemo : DemoScene("Reflections") {
                     }
                 }
 
-                val modelCfg = GltfFile.ModelGenerateConfig(generateNormals = true, applyMaterials = false)
-                val model = loadGltfModel("${DemoLoader.modelPath}/bunny.gltf.gz", modelCfg)
                 bunnyMesh = model.meshes.values.first()
                 addNode(model)
 
@@ -227,7 +224,6 @@ class ReflectionDemo : DemoScene("Reflections") {
             surface.popup().apply {
                 modifier
                     .margin(sizes.gap)
-                    .zLayer(UiSurface.LAYER_BACKGROUND)
                     .align(AlignmentX.Start, AlignmentY.Bottom)
 
                 Image(deferredPipeline.reflections?.reflectionMap) {

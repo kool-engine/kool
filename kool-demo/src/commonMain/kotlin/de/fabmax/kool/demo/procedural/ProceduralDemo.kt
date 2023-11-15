@@ -1,6 +1,5 @@
 package de.fabmax.kool.demo.procedural
 
-import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.*
 import de.fabmax.kool.demo.menu.DemoMenu
@@ -11,8 +10,6 @@ import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.DepthCompareOp
 import de.fabmax.kool.pipeline.deferred.DeferredPipeline
 import de.fabmax.kool.pipeline.deferred.DeferredPipelineConfig
-import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
-import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.Skybox
 import de.fabmax.kool.scene.orbitCamera
@@ -22,17 +19,17 @@ import de.fabmax.kool.util.SimpleShadowMap
 import de.fabmax.kool.util.Time
 
 class ProceduralDemo : DemoScene("Procedural Geometry") {
-    val isAutoRotate = mutableStateOf(true)
-    val isReplaceRose = mutableStateOf(true)
-    val seedText = mutableStateOf("")
-    val randomSeedText = mutableStateOf("${randomI()}")
-    lateinit var roses: Roses
+    private val isAutoRotate = mutableStateOf(true)
+    private val isReplaceRose = mutableStateOf(true)
+    private val seedText = mutableStateOf("")
+    private val randomSeedText = mutableStateOf("${randomI()}")
+    private lateinit var roses: Roses
 
-    lateinit var ibl: EnvironmentMaps
+    private val ibl by hdriImage("${DemoLoader.hdriPath}/syferfontein_0d_clear_1k.rgbe.png")
 
-    override suspend fun Assets.loadResources(ctx: KoolContext) {
-        ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${DemoLoader.hdriPath}/syferfontein_0d_clear_1k.rgbe.png")
-    }
+    val tableColor by texture2d("${DemoLoader.materialPath}/granitesmooth1/granitesmooth1-albedo4.jpg")
+    val tableNormal by texture2d("${DemoLoader.materialPath}/granitesmooth1/granitesmooth1-normal2.jpg")
+    val tableRoughness by texture2d("${DemoLoader.materialPath}/granitesmooth1/granitesmooth1-roughness3.jpg")
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
         orbitCamera {
@@ -72,7 +69,7 @@ class ProceduralDemo : DemoScene("Procedural Geometry") {
             sceneContent.apply {
                 addNode(Glas(ibl, shadowMap).also { onSwap += it })
                 addNode(Vase())
-                addNode(Table())
+                addNode(Table(this@ProceduralDemo))
 
                 roses = Roses()
                 addNode(roses)

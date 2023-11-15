@@ -10,8 +10,6 @@ import de.fabmax.kool.modules.ksl.blocks.*
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
-import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
@@ -19,7 +17,7 @@ import kotlin.math.*
 
 class ShellShadingDemo : DemoScene("Shell Shading") {
 
-    private lateinit var envMap: EnvironmentMaps
+    private val envMap by hdriImage("${DemoLoader.hdriPath}/mossy_forest_1k.rgbe.png")
 
     private val themes = mutableListOf<ColorTheme>()
     private val furShader = FurShader()
@@ -102,10 +100,12 @@ class ShellShadingDemo : DemoScene("Shell Shading") {
             shader = furShader
             instances = shells
 
-            var windOffsetD = 0.0
+            val windOffsetD = MutableVec3d()
             onUpdate {
-                windOffsetD += Time.deltaT * windSpeed.value
-                furShader.windOffset = windOffsetD.toFloat()
+                windOffsetD.x += Time.deltaT * windSpeed.value * 0.7
+                windOffsetD.y += Time.deltaT * windSpeed.value * 0.9
+                windOffsetD.z += Time.deltaT * windSpeed.value * 1.1
+                furShader.windOffset = windOffsetD.toVec3f()
             }
         }
 
@@ -221,7 +221,7 @@ class ShellShadingDemo : DemoScene("Shell Shading") {
         var noiseLenStrength by uniform1f("uNoiseLenStrength", 0.5f)
 
         var windStrength by uniform1f("uWindStrength", 0.25f)
-        var windOffset by uniform1f("uWindOffset", 0f)
+        var windOffset by uniform3f("uWindOffset")
 
         companion object {
             private fun furProgram(): KslProgram = KslProgram("Fur program").apply {
@@ -248,7 +248,7 @@ class ShellShadingDemo : DemoScene("Shell Shading") {
                         val scale = uniformFloat1("uNoiseDispScale")
                         val strength = uniformFloat1("uNoiseDispStrength") * 0.2f.const
 
-                        val samplePos = float3Var(pos.float3("zyx") * scale + uniformFloat1("uWindOffset") * uniformFloat1("uWindStrength"))
+                        val samplePos = float3Var(pos.float3("zyx") * scale + uniformFloat3("uWindOffset") * uniformFloat1("uWindStrength"))
                         var d = sampleTexture(noise3d, samplePos).xyz * 2f.const - 1f.const
                         pos += d * shell.input * strength
                         d = sampleTexture(noise3d, pos.float3("zyx") * scale).xyz * 2f.const - 1f.const
@@ -296,9 +296,9 @@ class ShellShadingDemo : DemoScene("Shell Shading") {
                         }
 
                         // determine length of selected hair
-                        val randomHairLen = float1Var(noise12(nearestCell))
+                        val randomHairLen = float1Var(noise12(nearestCell) * 0.5f.const + 0.5f.const)
                         val perlinNoiseLenFac = float1Var(sampleTexture(noise3d, basePos.output * uniformFloat1("uNoiseLenScale")).x)
-                        perlinNoiseLenFac += (sampleTexture(noise3d, basePos.output * uniformFloat1("uNoiseLenScale") * 5f.const).x - 0.5f.const) * 0.25f.const
+                        //perlinNoiseLenFac += (sampleTexture(noise3d, basePos.output * uniformFloat1("uNoiseLenScale") * 5f.const).x - 0.5f.const) * 0.25f.const
                         randomHairLen *= mix(1f.const, perlinNoiseLenFac * 2f.const - 0.25f.const, uniformFloat1("uNoiseLenStrength"))
 
                         // relative position along hair: 1 -> bottom, 0 -> tip of the hair (or higher)
@@ -344,17 +344,15 @@ class ShellShadingDemo : DemoScene("Shell Shading") {
 
         themes += ColorTheme("Viridis", GradientTexture(ColorGradient.VIRIDIS.toLinear()))
         themes += ColorTheme("Plasma", GradientTexture(ColorGradient.PLASMA.toLinear()))
-
         theme.set(themes[0])
 
-        showLoadText("Loading IBL Maps")
-
-        val iblMap = "mossy_forest_1k.rgbe.png"
-        envMap = EnvironmentHelper.hdriEnvironment(mainScene, "${DemoLoader.hdriPath}/$iblMap")
+        showLoadText("Generating Noise")
+        furShader.noise3d = generate3dNoise().also { it.releaseWith(mainScene) }
         furShader.irradiance = envMap.irradianceMap
 
-        showLoadText("Generating Noise")
-        furShader.noise3d = generate3dNoise()
+        mainScene.onRelease {
+            themes.forEach { it.texture.release() }
+        }
     }
 
     private fun generate3dNoise(): Texture3d {

@@ -78,7 +78,7 @@ class Wind {
             maxAnisotropy = 1,
             mipMapping = false
         )
-        return Texture3d(props) { TextureData3d(buf, sz, sz, sz, TexFormat.RGBA) }
+        return Texture3d(props, "wind-density") { TextureData3d(buf, sz, sz, sz, TexFormat.RGBA) }
     }
 
     companion object {

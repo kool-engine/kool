@@ -4,17 +4,18 @@ import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.demo.menu.TitleBgRenderer
+import de.fabmax.kool.modules.gltf.GltfLoadConfig
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.modules.ui2.docking.UiDockable
+import de.fabmax.kool.pipeline.TextureProps
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.MdColor
-import de.fabmax.kool.util.MsdfFont
-import de.fabmax.kool.util.delayFrames
+import de.fabmax.kool.util.*
 
 abstract class DemoScene(val name: String) {
     var demoEntry: Demos.Entry? = null
     var demoState = State.NEW
+
+    private val resources = ResourceGroup()
 
     val mainScene = Scene(name)
     var menuUi: UiSurface? = null
@@ -22,7 +23,6 @@ abstract class DemoScene(val name: String) {
 
     val isMenu = mutableStateOf(true)
     val isMenuMinimized = mutableStateOf(false)
-
     private val titleBgMesh = TitleBgRenderer.BgMesh()
 
     private val menuDockable = UiDockable(
@@ -42,6 +42,13 @@ abstract class DemoScene(val name: String) {
             value?.loadingText2?.set("")
         }
 
+    init {
+        resources.releaseWith(mainScene)
+        resources.loadInfoCallback = {
+            loadingScreen?.loadingText2?.set("${it.name}...")
+        }
+    }
+
     suspend fun showLoadText(text: String, delayFrames: Int = 1) {
         loadingScreen?.let { ls ->
             ls.loadingText2.set(text)
@@ -54,6 +61,7 @@ abstract class DemoScene(val name: String) {
             // load resources (async from AssetManager CoroutineScope)
             demoState = State.LOADING
             Assets.launch {
+                resources.loadGroup()
                 loadResources(ctx)
                 demoState = State.SETUP
             }
@@ -83,7 +91,13 @@ abstract class DemoScene(val name: String) {
 
     open fun lateInit(ctx: KoolContext) { }
 
-    open fun dispose(ctx: KoolContext) { }
+    open fun onRelease(ctx: KoolContext) { }
+
+    protected fun hdriGradient(gradient: ColorGradient) = resources.hdriGradient(gradient)
+    protected fun hdriImage(path: String, brightness: Float = 1f) = resources.hdriImage(path, brightness)
+    protected fun hdriSingleColor(color: Color) = resources.hdriSingleColor(color)
+    protected fun model(path: String, config: GltfLoadConfig) = resources.model(path, config)
+    protected fun texture2d(path: String, props: TextureProps = TextureProps()) = resources.texture2d(path, props)
 
     protected fun menuSurface(title: String? = null, block: ColumnScope.() -> Unit): UiSurface {
         val accent = demoEntry?.color ?: MdColor.PINK

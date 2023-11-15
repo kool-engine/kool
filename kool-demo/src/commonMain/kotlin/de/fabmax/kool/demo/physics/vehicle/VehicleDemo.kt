@@ -10,8 +10,8 @@ import de.fabmax.kool.math.MutableMat3f
 import de.fabmax.kool.math.SimpleSpline3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.deg
-import de.fabmax.kool.modules.gltf.GltfFile
-import de.fabmax.kool.modules.gltf.loadGltfModel
+import de.fabmax.kool.modules.gltf.GltfLoadConfig
+import de.fabmax.kool.modules.gltf.GltfMaterialConfig
 import de.fabmax.kool.modules.ksl.blocks.ColorBlockConfig
 import de.fabmax.kool.modules.ui2.UiSurface
 import de.fabmax.kool.physics.Physics
@@ -21,11 +21,9 @@ import de.fabmax.kool.physics.Shape
 import de.fabmax.kool.physics.geometry.PlaneGeometry
 import de.fabmax.kool.physics.util.ActorTrackingCamRig
 import de.fabmax.kool.pipeline.DepthCompareOp
-import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.deferred.DeferredPipeline
 import de.fabmax.kool.pipeline.deferred.DeferredPipelineConfig
 import de.fabmax.kool.pipeline.deferred.deferredKslPbrShader
-import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.CascadedShadowMap
 import de.fabmax.kool.util.Color
@@ -33,8 +31,15 @@ import de.fabmax.kool.util.MdColor
 
 class VehicleDemo : DemoScene("Vehicle Demo") {
 
+    private val ibl by hdriImage("${DemoLoader.hdriPath}/syferfontein_0d_clear_1k.rgbe.png")
+    private val groundAlbedo by texture2d("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine.png")
+    private val groundNormal by texture2d("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine_normal.png")
+    private val vehicleModel by model(
+        "${DemoLoader.modelPath}/kool-car.glb",
+        GltfLoadConfig(materialConfig = GltfMaterialConfig(isDeferredShading = true))
+    )
+
     lateinit var vehicleWorld: VehicleWorld
-    private lateinit var vehicleModel: Model
     private lateinit var vehicle: DemoVehicle
 
     private var ui: VehicleUi? = null
@@ -44,8 +49,6 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
     private lateinit var deferredPipeline: DeferredPipeline
 
     override suspend fun Assets.loadResources(ctx: KoolContext) {
-        showLoadText("Loading IBL maps")
-        val ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${DemoLoader.hdriPath}/syferfontein_0d_clear_1k.rgbe.png")
         val shadows = CascadedShadowMap(mainScene, mainScene.lighting.lights[0], maxRange = 400f, mapSizes = listOf(4096, 2048, 2048)).apply {
             mapRanges[0].set(0f, 0.03f)
             mapRanges[1].set(0.03f, 0.17f)
@@ -55,11 +58,6 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
                 map.shaderDepthOffset = if (i == 0) -0.0004f else -0.002f
             }
         }
-
-        showLoadText("Loading Vehicle Model")
-        val modelCfg = GltfFile.ModelGenerateConfig(materialConfig = GltfFile.ModelMaterialConfig(isDeferredShading = true))
-        vehicleModel = loadGltfModel("${DemoLoader.modelPath}/kool-car.glb", modelCfg)
-
         showLoadText("Loading Physics")
         Physics.awaitLoaded()
 
@@ -96,7 +94,6 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
 
         showLoadText("Creating Physics World")
         val physics = PhysicsWorld(mainScene)
-        //physics.simStepper = ConstantPhysicsStepper()
         vehicleWorld = VehicleWorld(mainScene, physics, deferredPipeline)
 
         vehicle = DemoVehicle(this@VehicleDemo, vehicleModel, ctx)
@@ -136,8 +133,8 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
         }
     }
 
-    override fun dispose(ctx: KoolContext) {
-        super.dispose(ctx)
+    override fun onRelease(ctx: KoolContext) {
+        super.onRelease(ctx)
         vehicleWorld.release()
         vehicle.cleanUp()
         track?.cleanUp()
@@ -231,9 +228,6 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
     }
 
     private fun Node.makeGround() {
-        val groundAlbedo = Texture2d("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine.png").also { it.releaseWith(this) }
-        val groundNormal = Texture2d("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine_normal.png").also { it.releaseWith(this) }
-
         addTextureMesh(isNormalMapped = true, name = "ground") {
             generate {
                 isCastingShadow = false

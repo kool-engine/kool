@@ -123,7 +123,15 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrCont
         }
     }
 
-    data class MaterialMaps(val name: String, val albedo: Texture2d, val normal: Texture2d, val roughness: Texture2d, val metallic: Texture2d?, val ao: Texture2d?, val displacement: Texture2d?) {
+    data class MaterialMaps(
+        val name: String,
+        val albedo: Texture2d,
+        val normal: Texture2d,
+        val roughness: Texture2d,
+        val metallic: Texture2d?,
+        val ao: Texture2d?,
+        val displacement: Texture2d?
+    ) {
         fun disposeMaps() {
             albedo.dispose()
             normal.dispose()
@@ -137,7 +145,6 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrCont
     }
 
     companion object {
-
         private val defaultMetallicTex = SingleColorTexture(Color.BLACK)
         private val defaultAoTex = SingleColorTexture(Color.WHITE)
         private val defaultDispTex = SingleColorTexture(Color.BLACK)
@@ -145,85 +152,85 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrCont
         private val assetPath = DemoLoader.materialPath
         
         private val materials = mutableListOf(
-                MaterialMaps(
-                        "Bamboo",
-                        Texture2d { Assets.loadTextureData("$assetPath/bamboo-wood-semigloss/bamboo-wood-semigloss-albedo.jpg") },
-                        Texture2d { Assets.loadTextureData("$assetPath/bamboo-wood-semigloss/bamboo-wood-semigloss-normal.jpg") },
-                        Texture2d { Assets.loadTextureData("$assetPath/bamboo-wood-semigloss/bamboo-wood-semigloss-roughness.jpg") },
-                        null,
-                        Texture2d { Assets.loadTextureData("$assetPath/bamboo-wood-semigloss/bamboo-wood-semigloss-ao.jpg") },
-                        null
-                ),
+            MaterialMaps(
+                "Bamboo",
+                Texture2d(name = "Bamboo-color") { Assets.loadTextureData("$assetPath/bamboo-wood-semigloss/bamboo-wood-semigloss-albedo.jpg") },
+                Texture2d(name = "Bamboo-normal") { Assets.loadTextureData("$assetPath/bamboo-wood-semigloss/bamboo-wood-semigloss-normal.jpg") },
+                Texture2d(name = "Bamboo-rough") { Assets.loadTextureData("$assetPath/bamboo-wood-semigloss/bamboo-wood-semigloss-roughness.jpg") },
+                null,
+                Texture2d(name = "Bamboo-ao") { Assets.loadTextureData("$assetPath/bamboo-wood-semigloss/bamboo-wood-semigloss-ao.jpg") },
+                null
+            ),
 
-                MaterialMaps(
-                        "Castle Brick",
-                        Texture2d { Assets.loadTextureData("$assetPath/castle_brick/castle_brick_02_red_diff_2k.jpg") },
-                        Texture2d { Assets.loadTextureData("$assetPath/castle_brick/castle_brick_02_red_nor_2k.jpg") },
-                        Texture2d { Assets.loadTextureData("$assetPath/castle_brick/castle_brick_02_red_rough_2k.jpg") },
-                        null,
-                        Texture2d { Assets.loadTextureData("$assetPath/castle_brick/castle_brick_02_red_ao_2k.jpg") },
-                        Texture2d { Assets.loadTextureData("$assetPath/castle_brick/castle_brick_02_red_disp_2k.jpg") }
-                ),
+            MaterialMaps(
+                "Castle Brick",
+                Texture2d(name = "CastleBrick-color") { Assets.loadTextureData("$assetPath/castle_brick/castle_brick_02_red_diff_2k.jpg") },
+                Texture2d(name = "CastleBrick-normal") { Assets.loadTextureData("$assetPath/castle_brick/castle_brick_02_red_nor_2k.jpg") },
+                Texture2d(name = "CastleBrick-rough") { Assets.loadTextureData("$assetPath/castle_brick/castle_brick_02_red_rough_2k.jpg") },
+                null,
+                Texture2d(name = "CastleBrick-ao") { Assets.loadTextureData("$assetPath/castle_brick/castle_brick_02_red_ao_2k.jpg") },
+                Texture2d(name = "CastleBrick-disp") { Assets.loadTextureData("$assetPath/castle_brick/castle_brick_02_red_disp_2k.jpg") }
+            ),
 
-                MaterialMaps(
-                        "Granite",
-                        Texture2d { Assets.loadTextureData("$assetPath/granitesmooth1/granitesmooth1-albedo4.jpg") },
-                        Texture2d { Assets.loadTextureData("$assetPath/granitesmooth1/granitesmooth1-normal2.jpg") },
-                        Texture2d { Assets.loadTextureData("$assetPath/granitesmooth1/granitesmooth1-roughness3.jpg") },
-                        null,
-                        null,
-                        null
-                ),
+            MaterialMaps(
+                "Granite",
+                Texture2d(name = "Granite-color") { Assets.loadTextureData("$assetPath/granitesmooth1/granitesmooth1-albedo4.jpg") },
+                Texture2d(name = "Granite-normal") { Assets.loadTextureData("$assetPath/granitesmooth1/granitesmooth1-normal2.jpg") },
+                Texture2d(name = "Granite-rough") { Assets.loadTextureData("$assetPath/granitesmooth1/granitesmooth1-roughness3.jpg") },
+                null,
+                null,
+                null
+            ),
 
-                MaterialMaps(
-                        "Weave Steel",
-                        Texture2d { Assets.loadTextureData("$assetPath/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_COL_2K_METALNESS.jpg") },
-                        Texture2d { Assets.loadTextureData("$assetPath/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_NRM_2K_METALNESS.jpg") },
-                        Texture2d { Assets.loadTextureData("$assetPath/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_ROUGHNESS_2K_METALNESS.jpg") },
-                        Texture2d { Assets.loadTextureData("$assetPath/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_METALNESS_2K_METALNESS.jpg") },
-                        Texture2d { Assets.loadTextureData("$assetPath/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_AO_2K_METALNESS.jpg") },
-                        Texture2d { Assets.loadTextureData("$assetPath/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_DISP_2K_METALNESS.jpg") }
-                ),
+            MaterialMaps(
+                "Weave Steel",
+                Texture2d(name = "WeaveSteel-color") { Assets.loadTextureData("$assetPath/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_COL_2K_METALNESS.jpg") },
+                Texture2d(name = "WeaveSteel-normal") { Assets.loadTextureData("$assetPath/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_NRM_2K_METALNESS.jpg") },
+                Texture2d(name = "WeaveSteel-rough") { Assets.loadTextureData("$assetPath/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_ROUGHNESS_2K_METALNESS.jpg") },
+                Texture2d(name = "WeaveSteel-metal") { Assets.loadTextureData("$assetPath/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_METALNESS_2K_METALNESS.jpg") },
+                Texture2d(name = "WeaveSteel-ao") { Assets.loadTextureData("$assetPath/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_AO_2K_METALNESS.jpg") },
+                Texture2d(name = "WeaveSteel-disp") { Assets.loadTextureData("$assetPath/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_DISP_2K_METALNESS.jpg") }
+            ),
 
-                MaterialMaps(
-                        "Scuffed Plastic",
-                        Texture2d { Assets.loadTextureData("$assetPath/scuffed-plastic-1/scuffed-plastic4-alb.jpg") },
-                        Texture2d { Assets.loadTextureData("$assetPath/scuffed-plastic-1/scuffed-plastic-normal.jpg") },
-                        Texture2d { Assets.loadTextureData("$assetPath/scuffed-plastic-1/scuffed-plastic-rough.jpg") },
-                        null,
-                        Texture2d { Assets.loadTextureData("$assetPath/scuffed-plastic-1/scuffed-plastic-ao.jpg") },
-                        null
-                ),
+            MaterialMaps(
+                "Scuffed Plastic",
+                Texture2d(name = "ScuffedPlastic-color") { Assets.loadTextureData("$assetPath/scuffed-plastic-1/scuffed-plastic4-alb.jpg") },
+                Texture2d(name = "ScuffedPlastic-normal") { Assets.loadTextureData("$assetPath/scuffed-plastic-1/scuffed-plastic-normal.jpg") },
+                Texture2d(name = "ScuffedPlastic-rough") { Assets.loadTextureData("$assetPath/scuffed-plastic-1/scuffed-plastic-rough.jpg") },
+                null,
+                Texture2d(name = "ScuffedPlastic-ao") { Assets.loadTextureData("$assetPath/scuffed-plastic-1/scuffed-plastic-ao.jpg") },
+                null
+            ),
 
-                MaterialMaps(
-                        "Snow Covered Path",
-                        Texture2d { Assets.loadTextureData("$assetPath/snowcoveredpath/snowcoveredpath_albedo.jpg") },
-                        Texture2d { Assets.loadTextureData("$assetPath/snowcoveredpath/snowcoveredpath_normal-dx.jpg") },
-                        Texture2d { Assets.loadTextureData("$assetPath/snowcoveredpath/snowcoveredpath_roughness.jpg") },
-                        null,
-                        Texture2d { Assets.loadTextureData("$assetPath/snowcoveredpath/snowcoveredpath_ao.jpg") },
-                        Texture2d { Assets.loadTextureData("$assetPath/snowcoveredpath/snowcoveredpath_height.jpg") }
-                ),
+            MaterialMaps(
+                "Snow Covered Path",
+                Texture2d(name = "SnowPath-color") { Assets.loadTextureData("$assetPath/snowcoveredpath/snowcoveredpath_albedo.jpg") },
+                Texture2d(name = "SnowPath-normal") { Assets.loadTextureData("$assetPath/snowcoveredpath/snowcoveredpath_normal-dx.jpg") },
+                Texture2d(name = "SnowPath-rough") { Assets.loadTextureData("$assetPath/snowcoveredpath/snowcoveredpath_roughness.jpg") },
+                null,
+                Texture2d(name = "SnowPath-ao") { Assets.loadTextureData("$assetPath/snowcoveredpath/snowcoveredpath_ao.jpg") },
+                Texture2d(name = "SnowPath-disp") { Assets.loadTextureData("$assetPath/snowcoveredpath/snowcoveredpath_height.jpg") }
+            ),
 
-                MaterialMaps(
-                        "Marble",
-                        Texture2d { Assets.loadTextureData("$assetPath/streaked-marble/streaked-marble-albedo2.jpg") },
-                        Texture2d { Assets.loadTextureData("$assetPath/streaked-marble/streaked-marble-normal.jpg") },
-                        Texture2d { Assets.loadTextureData("$assetPath/streaked-marble/streaked-marble-roughness1.jpg") },
-                        null,
-                        null,
-                        null
-                ),
+            MaterialMaps(
+                "Marble",
+                Texture2d(name = "Marble-color") { Assets.loadTextureData("$assetPath/streaked-marble/streaked-marble-albedo2.jpg") },
+                Texture2d(name = "Marble-normal") { Assets.loadTextureData("$assetPath/streaked-marble/streaked-marble-normal.jpg") },
+                Texture2d(name = "Marble-rough") { Assets.loadTextureData("$assetPath/streaked-marble/streaked-marble-roughness1.jpg") },
+                null,
+                null,
+                null
+            ),
 
-                MaterialMaps(
-                        "Onyx Tiles",
-                        Texture2d { Assets.loadTextureData("$assetPath/TilesOnyxOpaloBlack001/TilesOnyxOpaloBlack001_COL_2K.jpg") },
-                        Texture2d { Assets.loadTextureData("$assetPath/TilesOnyxOpaloBlack001/TilesOnyxOpaloBlack001_NRM_2K.jpg") },
-                        Texture2d { Assets.loadTextureData("$assetPath/TilesOnyxOpaloBlack001/TilesOnyxOpaloBlack001_REFL_2K.jpg") },
-                        null,
-                        null,
-                        Texture2d { Assets.loadTextureData("$assetPath/TilesOnyxOpaloBlack001/TilesOnyxOpaloBlack001_DISP_2K.jpg") }
-                )
+            MaterialMaps(
+                "Onyx Tiles",
+                Texture2d(name = "OnyxTile-color") { Assets.loadTextureData("$assetPath/TilesOnyxOpaloBlack001/TilesOnyxOpaloBlack001_COL_2K.jpg") },
+                Texture2d(name = "OnyxTile-normal") { Assets.loadTextureData("$assetPath/TilesOnyxOpaloBlack001/TilesOnyxOpaloBlack001_NRM_2K.jpg") },
+                Texture2d(name = "OnyxTile-rough") { Assets.loadTextureData("$assetPath/TilesOnyxOpaloBlack001/TilesOnyxOpaloBlack001_REFL_2K.jpg") },
+                null,
+                null,
+                Texture2d(name = "OnyxTile-disp") { Assets.loadTextureData("$assetPath/TilesOnyxOpaloBlack001/TilesOnyxOpaloBlack001_DISP_2K.jpg") }
+            )
         )
     }
 }

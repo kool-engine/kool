@@ -1,14 +1,12 @@
 package de.fabmax.kool.demo
 
-import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.deg
 import de.fabmax.kool.math.toDeg
-import de.fabmax.kool.modules.gltf.GltfFile
-import de.fabmax.kool.modules.gltf.loadGltfModel
+import de.fabmax.kool.modules.gltf.GltfLoadConfig
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.modules.ksl.lang.b
@@ -17,10 +15,7 @@ import de.fabmax.kool.modules.ksl.lang.getFloat4Port
 import de.fabmax.kool.modules.ksl.lang.r
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.DepthCompareOp
-import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ao.AoPipeline
-import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
-import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.RectProps
 import de.fabmax.kool.toString
@@ -32,13 +27,18 @@ class AoDemo : DemoScene("Ambient Occlusion") {
     private lateinit var aoPipeline: AoPipeline
     private val shadows = mutableListOf<ShadowMap>()
 
-    private lateinit var ibl: EnvironmentMaps
-    private lateinit var teapotMesh: Mesh
+    private val ibl by hdriImage("${DemoLoader.hdriPath}/mossy_forest_1k.rgbe.png")
 
-    private lateinit var albedoMap: Texture2d
-    private lateinit var ambientOcclusionMap: Texture2d
-    private lateinit var normalMap: Texture2d
-    private lateinit var roughnessMap: Texture2d
+    private val albedoMap by texture2d("${DemoLoader.materialPath}/brown_planks_03/brown_planks_03_diff_2k.jpg")
+    private val ambientOcclusionMap by texture2d("${DemoLoader.materialPath}/brown_planks_03/brown_planks_03_AO_2k.jpg")
+    private val normalMap by texture2d("${DemoLoader.materialPath}/brown_planks_03/brown_planks_03_Nor_2k.jpg")
+    private val roughnessMap by texture2d("${DemoLoader.materialPath}/brown_planks_03/brown_planks_03_rough_2k.jpg")
+
+    private val teapot by model(
+        "${DemoLoader.modelPath}/teapot.gltf.gz",
+        GltfLoadConfig(generateNormals = true, applyMaterials = false)
+    )
+    private val teapotMesh: Mesh get() = teapot.meshes.values.first()
 
     private val isAoEnabled = mutableStateOf(true).onChange { aoPipeline.isEnabled = it }
     private val isAutoRotate = mutableStateOf(true)
@@ -54,21 +54,6 @@ class AoDemo : DemoScene("Ambient Occlusion") {
 
     override fun lateInit(ctx: KoolContext) {
         updateLighting(isSpotLight.value)
-    }
-
-    override suspend fun Assets.loadResources(ctx: KoolContext) {
-        showLoadText("Loading Textures")
-        ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${DemoLoader.hdriPath}/mossy_forest_1k.rgbe.png")
-
-        albedoMap = loadTexture2d("${DemoLoader.materialPath}/brown_planks_03/brown_planks_03_diff_2k.jpg").also { it.releaseWith(mainScene) }
-        ambientOcclusionMap = loadTexture2d("${DemoLoader.materialPath}/brown_planks_03/brown_planks_03_AO_2k.jpg").also { it.releaseWith(mainScene) }
-        normalMap = loadTexture2d("${DemoLoader.materialPath}/brown_planks_03/brown_planks_03_Nor_2k.jpg").also { it.releaseWith(mainScene) }
-        roughnessMap = loadTexture2d("${DemoLoader.materialPath}/brown_planks_03/brown_planks_03_rough_2k.jpg").also { it.releaseWith(mainScene) }
-
-        showLoadText("Loading Model")
-        val modelCfg = GltfFile.ModelGenerateConfig(generateNormals = true, applyMaterials = false)
-        val model = loadGltfModel("${DemoLoader.modelPath}/teapot.gltf.gz", modelCfg)
-        teapotMesh = model.meshes.values.first()
     }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {

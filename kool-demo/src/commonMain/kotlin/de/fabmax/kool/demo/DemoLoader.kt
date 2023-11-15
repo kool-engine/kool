@@ -6,6 +6,7 @@ import de.fabmax.kool.input.PointerInput
 import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.util.DebugOverlay
 import de.fabmax.kool.util.Time
+import de.fabmax.kool.util.logI
 
 /**
  * @author fabmax
@@ -62,6 +63,7 @@ class DemoLoader(ctx: KoolContext, startScene: String? = null) {
         applySettings(ctx)
 
         switchDemo?.let { newDemo ->
+            logI { "Loaded demo ${newDemo.title}" }
             Settings.selectedDemo.set(newDemo.id)
 
             // release old demo
@@ -74,7 +76,7 @@ class DemoLoader(ctx: KoolContext, startScene: String? = null) {
                     menu.ui -= it
                     it.release()
                 }
-                demo.dispose(ctx)
+                demo.onRelease(ctx)
             }
             ctx.scenes.add(0, loadingScreen)
 

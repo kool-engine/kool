@@ -12,11 +12,12 @@ import de.fabmax.kool.util.Color
 import kotlin.math.sqrt
 
 class BloomBlurPass(kernelSize: Int, thresholdPass: BloomThresholdPass) :
-        OffscreenRenderPass2dPingPong(renderPassConfig {
-            name = "BloomBlurPass"
-            addColorTexture(TexFormat.RGBA_F16)
-            clearDepthTexture()
-        }) {
+    OffscreenRenderPass2dPingPong(renderPassConfig {
+        name = "BloomBlurPass"
+        addColorTexture(TexFormat.RGBA_F16)
+        clearDepthTexture()
+    })
+{
 
     private val pingShader: BlurShader
     private val pongShader: BlurShader

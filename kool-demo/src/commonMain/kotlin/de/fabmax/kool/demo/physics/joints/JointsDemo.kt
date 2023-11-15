@@ -1,6 +1,5 @@
 package de.fabmax.kool.demo.physics.joints
 
-import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.*
 import de.fabmax.kool.demo.menu.DemoMenu
@@ -17,10 +16,7 @@ import de.fabmax.kool.physics.geometry.PlaneGeometry
 import de.fabmax.kool.physics.joints.RevoluteJoint
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.RenderPass
-import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ao.AoPipeline
-import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
-import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.Color
@@ -34,10 +30,12 @@ import kotlin.math.roundToInt
 
 class JointsDemo : DemoScene("Physics - Joints") {
 
-    private var physicsWorld: PhysicsWorld? = null
     private val physicsStepper = ConstantPhysicsStepperSync().apply {
         // make the chain spin faster by using double speed simulation
         simTimeFactor = 2f
+    }
+    private val physicsWorld: PhysicsWorld = PhysicsWorld(mainScene).apply {
+        simStepper = physicsStepper
     }
 
     private val motorStrength = mutableStateOf(50f)
@@ -58,14 +56,14 @@ class JointsDemo : DemoScene("Physics - Joints") {
     private val joints = mutableListOf<RevoluteJoint>()
     private val physMeshes = BodyMeshes(false).apply { isVisible = false }
     private val niceMeshes = BodyMeshes(true).apply { isVisible = true }
-    private lateinit var constraintInfo: ConstraintsInfoMesh
-    private var resetPhysics = false
+    private val constraintInfo = ConstraintsInfoMesh().apply { isVisible = false }
+    private var resetPhysics = true
 
     private val shadows = mutableListOf<SimpleShadowMap>()
     private lateinit var aoPipeline: AoPipeline
-    private lateinit var ibl: EnvironmentMaps
-    private lateinit var groundAlbedo: Texture2d
-    private lateinit var groundNormal: Texture2d
+    private val ibl by hdriImage("${DemoLoader.hdriPath}/colorful_studio_1k.rgbe.png")
+    private val groundAlbedo by texture2d("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine.png")
+    private val groundNormal by texture2d("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine_normal.png")
 
     private val staticCollGroup = 1
     private val staticSimFilterData = FilterData {
@@ -73,21 +71,6 @@ class JointsDemo : DemoScene("Physics - Joints") {
         clearCollidesWith(staticCollGroup)
     }
     private val material = Material(0.5f)
-
-    override suspend fun Assets.loadResources(ctx: KoolContext) {
-        ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${DemoLoader.hdriPath}/colorful_studio_1k.rgbe.png")
-
-        Physics.awaitLoaded()
-        val world = PhysicsWorld(mainScene)
-        world.simStepper = physicsStepper
-        physicsWorld = world
-        resetPhysics = true
-        constraintInfo = ConstraintsInfoMesh().apply { isVisible = false }
-        mainScene += constraintInfo
-
-        groundAlbedo = loadTexture2d("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine.png")
-        groundNormal = loadTexture2d("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine_normal.png")
-    }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
         defaultOrbitCamera(-20f, -20f).apply {
@@ -104,6 +87,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
         // group containing physics bodies
         addNode(physMeshes)
         addNode(niceMeshes)
+        addNode(constraintInfo)
 
         // ground plane
         addTextureMesh(isNormalMapped = true) {
@@ -135,7 +119,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
             }
             physicsTimeTxt.set("${physicsStepper.perfCpuTime.toString(2)} ms")
             timeFactorTxt.set("${physicsStepper.perfTimeFactor.toString(2)} x")
-            numBodiesTxt.set("${physicsWorld?.actors?.size ?: 0}")
+            numBodiesTxt.set("${physicsWorld.actors.size}")
             numJointsTxt.set("${joints.size}")
         }
     }
@@ -175,7 +159,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
         joints.forEach { it.release() }
         joints.clear()
 
-        physicsWorld?.apply {
+        physicsWorld.apply {
             clear()
 
             val groundPlane = RigidStatic()
@@ -191,16 +175,11 @@ class JointsDemo : DemoScene("Physics - Joints") {
         updateMotor()
     }
 
-    override fun dispose(ctx: KoolContext) {
-        super.dispose(ctx)
+    override fun onRelease(ctx: KoolContext) {
+        super.onRelease(ctx)
         joints.forEach { it.release() }
-        physicsWorld?.apply {
-            clear()
-            release()
-        }
+        physicsWorld.release()
         material.release()
-        groundAlbedo.dispose()
-        groundNormal.dispose()
     }
 
     private fun drawNiceMeshes() {
@@ -313,7 +292,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
     }
 
     private fun makeGearChain(numLinks: Int, frame: Mat4f) {
-        val world = physicsWorld ?: return
+        val world = physicsWorld
 
         val linkMass = 1f
         val gearMass = 10f
@@ -409,7 +388,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
     }
 
     private fun makeGearAndAxle(gearR: Float, origin: Vec3f, gearMass: Float, isDriven: Boolean, frame: Mat4f) {
-        val world = physicsWorld ?: return
+        val world = physicsWorld
 
         val axleGeom = CylinderGeometry(7f, 1f)
         val axle = RigidStatic()

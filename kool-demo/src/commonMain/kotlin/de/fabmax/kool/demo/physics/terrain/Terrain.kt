@@ -23,10 +23,10 @@ import de.fabmax.kool.util.ShadowMap
 import de.fabmax.kool.util.Uint8Buffer
 import kotlin.math.roundToInt
 
-class Terrain(val heightMap: HeightMap) {
+class Terrain(val demo: TerrainDemo, val heightMap: HeightMap) {
 
     val splatMapData: TextureData2d = generateSplatMap(2)
-    val splatMap: Texture2d = Texture2d(loader = BufferedTextureLoader(splatMapData))
+    val splatMap = Texture2d(name = "terrain-splat", loader = BufferedTextureLoader(splatMapData)).also { it.releaseWith(demo.mainScene) }
     val terrainBody: RigidStatic
 
     val terrainTransform = MutableMat4f()

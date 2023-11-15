@@ -172,7 +172,7 @@ class SingleColorTexture(color: Color) : Texture2d(
         mipMapping = false,
         maxAnisotropy = 1
     ),
-    name = "SingleColorText${color}",
+    name = "SingleColorTex:${color}",
     loader = BufferedTextureLoader(getColorTextureData(color))
 ) {
 
@@ -185,7 +185,12 @@ class SingleColorTexture(color: Color) : Texture2d(
     }
 }
 
-class GradientTexture(gradient: ColorGradient, size: Int = 256, isClamped: Boolean = true) : Texture1d(
+class GradientTexture(
+    gradient: ColorGradient,
+    size: Int = 256,
+    isClamped: Boolean = true,
+    name: String = "gradientTex-$size"
+) : Texture1d(
     TextureProps(
         format = TexFormat.RGBA_F16,    // use f16 texture for better results together with linear color gradients
         addressModeU = if (isClamped) AddressMode.CLAMP_TO_EDGE else AddressMode.REPEAT,
@@ -194,7 +199,7 @@ class GradientTexture(gradient: ColorGradient, size: Int = 256, isClamped: Boole
         magFilter = FilterMethod.LINEAR,
         mipMapping = false,
         maxAnisotropy = 1),
-    name = "gradientTex-$size",
+    name = name,
     loader = BufferedTextureLoader(TextureData1d.gradientF16(gradient, size))
 )
 

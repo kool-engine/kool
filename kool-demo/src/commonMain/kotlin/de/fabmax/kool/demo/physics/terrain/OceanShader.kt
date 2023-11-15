@@ -10,22 +10,18 @@ import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.GradientTexture
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.Texture3d
-import de.fabmax.kool.util.ColorGradient
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.ShadowMap
 
 object OceanShader {
 
-    val oceanGradientTex = GradientTexture(ColorGradient(
-        0.0f to MdColor.CYAN,
-        0.1f to MdColor.LIGHT_BLUE,
-        0.2f to MdColor.BLUE,
-        0.5f to MdColor.INDIGO.mix(MdColor.BLUE, 0.5f),
-        1.0f to (MdColor.INDIGO tone 800).mix(MdColor.BLUE tone 800, 0.5f),
-        toLinear = true))
-
-    class Pbr(oceanFloor: OceanFloorRenderPass, shadowMap: ShadowMap, windTex: Texture3d, oceanBump: Texture2d)
-        : KslPbrShader(pbrConfig(shadowMap)), WindAffectedShader {
+    class Pbr(
+        oceanFloor: OceanFloorRenderPass,
+        shadowMap: ShadowMap,
+        windTex: Texture3d,
+        oceanBump: Texture2d,
+        oceanColor: GradientTexture
+    ) : KslPbrShader(pbrConfig(shadowMap)), WindAffectedShader {
         override var windOffsetStrength by uniform4f("uWindOffsetStrength")
         override var windScale by uniform1f("uWindScale", 0.01f)
         override var windDensity by texture3d("tWindTex", windTex)
@@ -35,15 +31,20 @@ object OceanShader {
         var oceanBump by texture2d("tOceanBump", oceanBump)
         var oceanFloorColor by texture2d("tOceanFloorColor", oceanFloor.colorTexture)
         var oceanFloorDepth by texture2d("tOceanFloorDepth", oceanFloor.depthTexture)
-        var oceanGradient by texture1d("tOceanGradient", oceanGradientTex)
+        var oceanGradient by texture1d("tOceanGradient", oceanColor)
 
         override fun updateEnvMaps(envMaps: Sky.WeightedEnvMaps) {
             with(TerrainDemo) { updateSky(envMaps) }
         }
     }
 
-    class BlinnPhong(oceanFloor: OceanFloorRenderPass, shadowMap: ShadowMap, windTex: Texture3d, oceanBump: Texture2d)
-        : KslBlinnPhongShader(blinnPhongConfig(shadowMap)), WindAffectedShader {
+    class BlinnPhong(
+        oceanFloor: OceanFloorRenderPass,
+        shadowMap: ShadowMap,
+        windTex: Texture3d,
+        oceanBump: Texture2d,
+        oceanColor: GradientTexture
+    ) : KslBlinnPhongShader(blinnPhongConfig(shadowMap)), WindAffectedShader {
         override var windOffsetStrength by uniform4f("uWindOffsetStrength")
         override var windScale by uniform1f("uWindScale", 0.01f)
         override var windDensity by texture3d("tWindTex", windTex)
@@ -53,18 +54,25 @@ object OceanShader {
         var oceanBump by texture2d("tOceanBump", oceanBump)
         var oceanFloorColor by texture2d("tOceanFloorColor", oceanFloor.colorTexture)
         var oceanFloorDepth by texture2d("tOceanFloorDepth", oceanFloor.depthTexture)
-        var oceanGradient by texture1d("tOceanGradient", oceanGradientTex)
+        var oceanGradient by texture1d("tOceanGradient", oceanColor)
 
         override fun updateEnvMaps(envMaps: Sky.WeightedEnvMaps) {
             with(TerrainDemo) { updateSky(envMaps) }
         }
     }
 
-    fun makeOceanShader(oceanFloor: OceanFloorRenderPass, shadowMap: ShadowMap, windTex: Texture3d, oceanBump: Texture2d, isPbr: Boolean): WindAffectedShader {
+    fun makeOceanShader(
+        oceanFloor: OceanFloorRenderPass,
+        shadowMap: ShadowMap,
+        windTex: Texture3d,
+        oceanBump: Texture2d,
+        oceanColor: GradientTexture,
+        isPbr: Boolean
+    ): WindAffectedShader {
         return if (isPbr) {
-            Pbr(oceanFloor, shadowMap, windTex, oceanBump)
+            Pbr(oceanFloor, shadowMap, windTex, oceanBump, oceanColor)
         } else {
-            BlinnPhong(oceanFloor, shadowMap, windTex, oceanBump)
+            BlinnPhong(oceanFloor, shadowMap, windTex, oceanBump, oceanColor)
         }
     }
 

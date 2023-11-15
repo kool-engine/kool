@@ -183,11 +183,14 @@ open class Mesh(var geometry: IndexedVertexList, name: String = geometry.name) :
      * Deletes all buffers associated with this mesh.
      */
     override fun release() {
-        super.release()
-        geometry.release()
-        shadowGeometry.forEach { it.release() }
-        pipeline?.let { KoolSystem.requireContext().disposePipeline(it) }
-        pipeline = null
+        // fixme: same check as for Node
+        if (!isReleased) {
+            super.release()
+            geometry.release()
+            shadowGeometry.forEach { it.release() }
+            pipeline?.let { KoolSystem.requireContext().disposePipeline(it) }
+            pipeline = null
+        }
     }
 
     override fun collectDrawCommands(updateEvent: RenderPass.UpdateEvent) {

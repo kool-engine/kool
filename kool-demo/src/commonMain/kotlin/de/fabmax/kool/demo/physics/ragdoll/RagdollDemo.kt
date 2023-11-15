@@ -24,8 +24,6 @@ import de.fabmax.kool.physics.geometry.PlaneGeometry
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.GlslType
 import de.fabmax.kool.pipeline.ao.AoPipeline
-import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
-import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
@@ -38,7 +36,10 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
     private lateinit var physicsWorld: PhysicsWorld
     private val physicsStepper = ConstantPhysicsStepperSync()//.apply { simTimeFactor = 0.1f }
 
-    private lateinit var ibl: EnvironmentMaps
+    private val ibl by hdriImage("${DemoLoader.hdriPath}/colorful_studio_1k.rgbe.png")
+    private val groundAlbedo by texture2d("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine.png")
+    private val groundNormal by texture2d("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine_normal.png")
+
     private lateinit var ao: AoPipeline
     private val shadows = mutableListOf<ShadowMap>()
     private val bodyInstanceData = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, ATTRIB_COLOR), 1500)
@@ -67,7 +68,6 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
             setDefaultDepthOffset(true)
             shadowBounds = BoundingBox(Vec3f(-20f, 0f, -20f), Vec3f(20f, 10f, 20f))
         }
-        ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${DemoLoader.hdriPath}/colorful_studio_1k.rgbe.png")
         mainScene += Skybox.cube(ibl.reflectionMap, 1f)
 
         Physics.awaitLoaded()
@@ -98,9 +98,6 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
         ground.setRotation(0f.deg, 0f.deg, 90f.deg)
         physicsWorld.addActor(ground)
 
-        val groundAlbedo = loadTexture2d("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine.png")
-        val groundNormal = loadTexture2d("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine_normal.png")
-
         mainScene.apply {
             addTextureMesh(isNormalMapped = true) {
                 isCastingShadow = false
@@ -123,8 +120,6 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
         }
 
         mainScene.onRelease {
-            groundAlbedo.dispose()
-            groundNormal.dispose()
             physicsWorld.release()
             KeyboardInput.removeKeyListener(gravKeyListener)
         }

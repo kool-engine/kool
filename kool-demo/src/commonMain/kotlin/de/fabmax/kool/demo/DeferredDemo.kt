@@ -1,6 +1,5 @@
 package de.fabmax.kool.demo
 
-import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.*
@@ -11,9 +10,7 @@ import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.DepthCompareOp
-import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.deferred.*
-import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
@@ -51,11 +48,12 @@ class DeferredDemo : DemoScene("Deferred Shading") {
         deferredPipeline.bloom?.upperThreshold = it + 0.5f
     }
 
-    private lateinit var groundColor: Texture2d
-    private lateinit var groundNormals: Texture2d
-    private lateinit var groundRoughness: Texture2d
-    private lateinit var groundMetallic: Texture2d
-    private lateinit var groundAo: Texture2d
+    private val ibl by hdriSingleColor(Color(0.15f, 0.15f, 0.15f))
+    private val groundColor by texture2d("${DemoLoader.materialPath}/futuristic-panels1/futuristic-panels1-albedo1.jpg")
+    private val groundNormals by texture2d("${DemoLoader.materialPath}/futuristic-panels1/futuristic-panels1-normal.jpg")
+    private val groundRoughness by texture2d("${DemoLoader.materialPath}/futuristic-panels1/futuristic-panels1-roughness.jpg")
+    private val groundMetallic by texture2d("${DemoLoader.materialPath}/futuristic-panels1/futuristic-panels1-metallic.jpg")
+    private val groundAo by texture2d("${DemoLoader.materialPath}/futuristic-panels1/futuristic-panels1-ao.jpg")
 
     private val lights = mutableListOf<AnimatedLight>()
 
@@ -77,14 +75,6 @@ class DeferredDemo : DemoScene("Deferred Shading") {
         updateLights()
     }
 
-    override suspend fun Assets.loadResources(ctx: KoolContext) {
-        groundColor = loadTexture2d("${DemoLoader.materialPath}/futuristic-panels1/futuristic-panels1-albedo1.jpg").also { it.releaseWith(mainScene) }
-        groundNormals = loadTexture2d("${DemoLoader.materialPath}/futuristic-panels1/futuristic-panels1-normal.jpg").also { it.releaseWith(mainScene) }
-        groundRoughness = loadTexture2d("${DemoLoader.materialPath}/futuristic-panels1/futuristic-panels1-roughness.jpg").also { it.releaseWith(mainScene) }
-        groundMetallic = loadTexture2d("${DemoLoader.materialPath}/futuristic-panels1/futuristic-panels1-metallic.jpg").also { it.releaseWith(mainScene) }
-        groundAo = loadTexture2d("${DemoLoader.materialPath}/futuristic-panels1/futuristic-panels1-ao.jpg").also { it.releaseWith(mainScene) }
-    }
-
     override fun Scene.setupMainScene(ctx: KoolContext) {
         orbitCamera {
             // Set some initial rotation so that we look down on the scene
@@ -103,8 +93,6 @@ class DeferredDemo : DemoScene("Deferred Shading") {
         lighting.clear()
         // no need to clear the screen, as we draw a fullscreen quad containing the deferred render output every frame
         mainRenderPass.clearColor = null
-
-        val ibl = EnvironmentHelper.singleColorEnvironment(Color(0.15f, 0.15f, 0.15f))
 
         val defCfg = DeferredPipelineConfig().apply {
             maxGlobalLights = 1

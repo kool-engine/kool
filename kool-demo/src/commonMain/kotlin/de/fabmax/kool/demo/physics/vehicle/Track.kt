@@ -344,16 +344,14 @@ class Track(val world: VehicleWorld) : Node() {
             roughnessData[i] = ((1f - c.brightness + 0.2f).clamp(0f, 1f) * 255f).toInt().toUByte()
         }
 
-        val albedoMap = Texture2d(texProps) {
+        val albedoMap = Texture2d(texProps, "track-color") {
             TextureData2d(colorData, sz, sz, TexFormat.RGBA)
         }
-        val roughnessMap = Texture2d(texProps) {
+        val roughnessMap = Texture2d(texProps, "track-roughness") {
             TextureData2d(roughnessData, sz, sz, TexFormat.R)
         }
-        trackMesh.onRelease {
-            albedoMap.dispose()
-            roughnessMap.dispose()
-        }
+        albedoMap.releaseWith(trackMesh)
+        roughnessMap.releaseWith(trackMesh)
 
         trackMesh.shader = deferredKslPbrShader {
             color { textureColor(albedoMap) }

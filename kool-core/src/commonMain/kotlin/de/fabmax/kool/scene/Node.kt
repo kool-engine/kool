@@ -164,8 +164,8 @@ open class Node(name: String? = null) : BaseReleasable() {
      * Frees all resources occupied by this Node.
      */
     override fun release() {
-        // avoid double release. can happen for nodes that are loaded as resource (e.g. gltf models) or shared
-        // by multiple render passes
+        // fixme: Ideally, nodes should only be released once. However, currently, multi-release still happens
+        //  a lot, so check for it here
         if (!isReleased) {
             children.forEach { it.release() }
             super.release()

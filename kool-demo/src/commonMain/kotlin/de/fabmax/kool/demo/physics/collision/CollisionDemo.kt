@@ -1,6 +1,5 @@
 package de.fabmax.kool.demo.physics.collision
 
-import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.*
 import de.fabmax.kool.demo.menu.DemoMenu
@@ -11,9 +10,7 @@ import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.physics.*
 import de.fabmax.kool.physics.geometry.*
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ao.AoPipeline
-import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.toString
@@ -24,10 +21,11 @@ import kotlin.random.Random
 
 class CollisionDemo : DemoScene("Physics - Collision") {
 
+    private val ibl by hdriImage("${DemoLoader.hdriPath}/colorful_studio_1k.rgbe.png")
+    private val groundAlbedo by texture2d("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine.png")
+    private val groundNormal by texture2d("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine_normal.png")
+
     private lateinit var aoPipeline: AoPipeline
-    private lateinit var ibl: EnvironmentMaps
-    private lateinit var groundAlbedo: Texture2d
-    private lateinit var groundNormal: Texture2d
     private val shadows = mutableListOf<ShadowMap>()
 
     private val shapeTypes = ShapeType.entries
@@ -41,23 +39,13 @@ class CollisionDemo : DemoScene("Physics - Collision") {
     private val activeActorsTxt = mutableStateOf("0")
     private val timeFactorTxt = mutableStateOf("1.00 x")
 
-    private lateinit var physicsWorld: PhysicsWorld
     private val physicsStepper = ConstantPhysicsStepperSync()
+    private val physicsWorld: PhysicsWorld = PhysicsWorld(mainScene).apply {
+        simStepper = physicsStepper
+    }
     private val bodies = mutableMapOf<ShapeType, MutableList<ColoredBody>>()
 
     private val shapeGenCtx = ShapeType.ShapeGeneratorContext()
-
-    override suspend fun Assets.loadResources(ctx: KoolContext) {
-        ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${DemoLoader.hdriPath}/colorful_studio_1k.rgbe.png")
-
-        groundAlbedo = loadTexture2d("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine.png")
-        groundNormal = loadTexture2d("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine_normal.png")
-
-        Physics.awaitLoaded()
-        this@CollisionDemo.physicsWorld = PhysicsWorld(mainScene).apply {
-            simStepper = physicsStepper
-        }
-    }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
         defaultOrbitCamera().apply {
@@ -144,13 +132,9 @@ class CollisionDemo : DemoScene("Physics - Collision") {
         addNode(Skybox.cube(ibl.reflectionMap, 1f))
     }
 
-    override fun dispose(ctx: KoolContext) {
-        super.dispose(ctx)
-        physicsWorld.clear()
+    override fun onRelease(ctx: KoolContext) {
         physicsWorld.release()
         shapeGenCtx.material.release()
-        groundAlbedo.dispose()
-        groundNormal.dispose()
     }
 
     private fun resetPhysics() {

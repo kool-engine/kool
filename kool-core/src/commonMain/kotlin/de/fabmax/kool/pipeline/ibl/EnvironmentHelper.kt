@@ -1,8 +1,8 @@
 package de.fabmax.kool.pipeline.ibl
 
 import de.fabmax.kool.Assets
+import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ColorGradient
@@ -12,7 +12,7 @@ import kotlinx.coroutines.withContext
 
 object EnvironmentHelper {
 
-    fun singleColorEnvironment(scene: Scene, color: Color, autoDispose: Boolean = true): EnvironmentMaps {
+    fun singleColorEnvironment(color: Color): EnvironmentMaps {
         val bgColor = TextureData2d.singleColor(color.toLinear())
         val props = TextureProps(
                 addressModeU = AddressMode.CLAMP_TO_EDGE, addressModeV = AddressMode.CLAMP_TO_EDGE, addressModeW = AddressMode.CLAMP_TO_EDGE,
@@ -22,49 +22,45 @@ object EnvironmentHelper {
         val cubeTex = TextureCube(props, "singleColorEnv-$color") {
             TextureDataCube(bgColor, bgColor, bgColor, bgColor, bgColor, bgColor)
         }
-
-        val maps = EnvironmentMaps(cubeTex, cubeTex)
-        if (autoDispose) {
-            scene.onRelease {
-                maps.release()
-            }
-        }
-        return maps
+        return EnvironmentMaps(cubeTex, cubeTex)
     }
 
-    fun gradientColorEnvironment(scene: Scene, gradient: ColorGradient, autoDispose: Boolean = true): EnvironmentMaps {
+    fun gradientColorEnvironment(gradient: ColorGradient): EnvironmentMaps {
+        val scene = KoolSystem.requireContext().backgroundScene
         val gradientTex = GradientTexture(gradient)
         val gradientPass = GradientCubeGenerator(scene, gradientTex)
-        scene.onRelease {
-            gradientTex.dispose()
-        }
-        return renderPassEnvironment(scene, gradientPass, autoDispose)
+        gradientTex.releaseWith(gradientPass)
+        return renderPassEnvironment(gradientPass)
     }
 
-    suspend fun hdriEnvironment(scene: Scene, hdriPath: String, autoDispose: Boolean = true, brightness: Float = 1f): EnvironmentMaps {
+    suspend fun hdriEnvironment(hdriPath: String, brightness: Float = 1f): EnvironmentMaps {
         val hdriTexProps = TextureProps(minFilter = FilterMethod.NEAREST, magFilter = FilterMethod.NEAREST, mipMapping = false, maxAnisotropy = 1)
         val hdri = Assets.loadTexture2d(hdriPath, hdriTexProps)
         return withContext(Dispatchers.RenderLoop) {
-            hdriEnvironment(scene, hdri, autoDispose, brightness)
+            hdriEnvironment(hdri, brightness)
         }
     }
 
-    fun hdriEnvironment(scene: Scene, hdri: Texture2d, autoDispose: Boolean = true, brightness: Float = 1f): EnvironmentMaps {
+    fun hdriEnvironment(
+        hdri: Texture2d,
+        brightness: Float = 1f,
+        releaseHdriTexAfterConversion: Boolean = true
+    ): EnvironmentMaps {
+        val scene = KoolSystem.requireContext().backgroundScene
         val rgbeDecoder = RgbeDecoder(scene, hdri, brightness)
-        if (autoDispose) {
-            scene.onRelease {
-                hdri.dispose()
-            }
+        if (releaseHdriTexAfterConversion) {
+            hdri.releaseWith(rgbeDecoder)
         }
-        return renderPassEnvironment(scene, rgbeDecoder, autoDispose)
+        return renderPassEnvironment(rgbeDecoder)
     }
 
-    fun renderPassEnvironment(scene: Scene, renderPass: OffscreenRenderPass, autoDispose: Boolean = true): EnvironmentMaps {
+    private fun renderPassEnvironment(renderPass: OffscreenRenderPass): EnvironmentMaps {
         val tex = when (renderPass) {
             is OffscreenRenderPassCube -> renderPass.colorTexture!!
             is OffscreenRenderPass2d -> renderPass.colorTexture!!
             else -> throw IllegalArgumentException("Supplied OffscreenRenderPass must be OffscreenRenderPassCube or OffscreenRenderPass2d")
         }
+        val scene = KoolSystem.requireContext().backgroundScene
         val irrMapPass = IrradianceMapPass.irradianceMap(scene, tex)
         val reflMapPass = ReflectionMapPass.reflectionMap(scene, tex)
 
@@ -72,12 +68,6 @@ object EnvironmentHelper {
         reflMapPass.dependsOn(renderPass)
 
         val maps = EnvironmentMaps(irrMapPass.copyColor(), reflMapPass.copyColor())
-        if (autoDispose) {
-            scene.onRelease {
-                maps.release()
-            }
-        }
-
         scene.addOffscreenPass(renderPass)
         scene.addOffscreenPass(irrMapPass)
         scene.addOffscreenPass(reflMapPass)
@@ -87,8 +77,10 @@ object EnvironmentHelper {
 
 class EnvironmentMaps(val irradianceMap: TextureCube, val reflectionMap: TextureCube) : BaseReleasable() {
     override fun release() {
-        irradianceMap.dispose()
-        reflectionMap.dispose()
+        irradianceMap.release()
+        if (irradianceMap !== reflectionMap) {
+            reflectionMap.release()
+        }
         super.release()
     }
 }

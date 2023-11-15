@@ -1,6 +1,5 @@
 package de.fabmax.kool.demo.physics.manybodies
 
-import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.demo.DemoLoader
@@ -14,8 +13,6 @@ import de.fabmax.kool.physics.*
 import de.fabmax.kool.physics.geometry.BoxGeometry
 import de.fabmax.kool.physics.geometry.PlaneGeometry
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
-import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ColorGradient
@@ -24,19 +21,11 @@ import de.fabmax.kool.util.logI
 
 class ManyBodiesDemo : DemoScene("Many Bodies") {
 
-    private lateinit var ibl: EnvironmentMaps
-    private lateinit var physicsWorld: PhysicsWorld
+    private val ibl by hdriImage("${DemoLoader.hdriPath}/syferfontein_0d_clear_1k.rgbe.png")
+    private val physicsWorld = PhysicsWorld(mainScene)
 
     private val cubeInstances = MeshInstanceList(100000, Attribute.INSTANCE_MODEL_MAT, Attribute.COLORS)
     private val physBoxes = mutableListOf<PhysBox>()
-
-    override suspend fun Assets.loadResources(ctx: KoolContext) {
-        showLoadText("Loading IBL maps")
-        ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${DemoLoader.hdriPath}/syferfontein_0d_clear_1k.rgbe.png")
-        mainScene += Skybox.cube(ibl.reflectionMap, 2f)
-
-        physicsWorld = PhysicsWorld(mainScene)
-    }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
         (camera as PerspectiveCamera).apply {
@@ -71,6 +60,7 @@ class ManyBodiesDemo : DemoScene("Many Bodies") {
                 }
             }
         }
+        addNode(Skybox.cube(ibl.reflectionMap, 2f))
         spawnPhysicsBoxes()
     }
 
@@ -116,6 +106,11 @@ class ManyBodiesDemo : DemoScene("Many Bodies") {
             setRotation(Mat3f.rotation(90f.deg, Vec3f.Z_AXIS))
         }
         physicsWorld.addActor(ground)
+    }
+
+    override fun onRelease(ctx: KoolContext) {
+        super.onRelease(ctx)
+        physicsWorld.release()
     }
 
     private data class PhysBox(val actor: RigidDynamic, val color: MutableColor)

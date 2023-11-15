@@ -207,7 +207,7 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
     }
 
     private inner class AoPassShader : KslShader(aoPassProg(), fullscreenShaderPipelineCfg) {
-        var noiseTex by texture2d("noiseTex", aoNoiseTex)
+        var noiseTex by texture2d("noiseTex", generateNoiseTex().also { it.releaseWith(this@AmbientOcclusionPass) })
         var depthTex by texture2d("depthTex")
         var normalTex by texture2d("normalTex")
 
@@ -247,8 +247,6 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
                 mipMapping = false, maxAnisotropy = 1)
             return Texture2d(texProps, "ao_noise_tex") { data }
         }
-
-        private val aoNoiseTex: Texture2d by lazy { generateNoiseTex() }
     }
 }
 

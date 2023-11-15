@@ -12,11 +12,10 @@ import de.fabmax.kool.modules.gltf.loadGltfModel
 import de.fabmax.kool.modules.ksl.*
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.modules.ui2.*
-import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.physics.util.CharacterTrackingCamRig
 import de.fabmax.kool.pipeline.AddressMode
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.Texture2d
+import de.fabmax.kool.pipeline.GradientTexture
 import de.fabmax.kool.pipeline.TextureProps
 import de.fabmax.kool.pipeline.ao.AoPipeline
 import de.fabmax.kool.scene.*
@@ -25,10 +24,24 @@ import kotlin.math.atan2
 
 class TerrainDemo : DemoScene("Terrain Demo") {
 
-    private lateinit var colorMap: Texture2d
-    private lateinit var normalMap: Texture2d
-    private lateinit var grassColor: Texture2d
-    private lateinit var oceanBump: Texture2d
+    private val colorMap by texture2d("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine.png")
+    private val normalMap by texture2d("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine_normal.png")
+    private val oceanBump by texture2d("${DemoLoader.materialPath}/ocean-bump-1k.jpg")
+    private val moonTex by texture2d("${DemoLoader.materialPath}/moon-blueish.png")
+    private val grassColor by texture2d("${DemoLoader.materialPath}/grass_64.png", TextureProps(
+        addressModeU = AddressMode.CLAMP_TO_EDGE,
+        addressModeV = AddressMode.CLAMP_TO_EDGE
+    ))
+
+    val oceanColor = GradientTexture(ColorGradient(
+        0.0f to MdColor.CYAN,
+        0.1f to MdColor.LIGHT_BLUE,
+        0.2f to MdColor.BLUE,
+        0.5f to MdColor.INDIGO.mix(MdColor.BLUE, 0.5f),
+        1.0f to (MdColor.INDIGO tone 800).mix(MdColor.BLUE tone 800, 0.5f),
+        toLinear = true)
+    ).also { it.releaseWith(mainScene) }
+
     private lateinit var shadowMap: ShadowMap
     private lateinit var ssao: AoPipeline.ForwardAoPipeline
     private lateinit var oceanFloorPass: OceanFloorRenderPass
@@ -95,18 +108,6 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         // more or less the same, but falls back to 8-bit height-resolution in javascript
         //heightMap = HeightMap.fromTextureData2d(loadTextureData2d("${Demo.heightMapPath}/terrain.png", TexFormat.R_F16), 200f)
 
-        showLoadText("Loading textures...")
-        colorMap = loadTexture2d("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine.png")
-        normalMap = loadTexture2d("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine_normal.png")
-        oceanBump = loadTexture2d("${DemoLoader.materialPath}/ocean-bump-1k.jpg")
-        val moonTex = loadTexture2d("${DemoLoader.materialPath}/moon-blueish.png")
-
-        val grassProps = TextureProps(
-            addressModeU = AddressMode.CLAMP_TO_EDGE,
-            addressModeV = AddressMode.CLAMP_TO_EDGE
-        )
-        grassColor = loadTexture2d("${DemoLoader.materialPath}/grass_64.png", grassProps)
-
         showLoadText("Generating wind density texture...")
         wind = Wind()
         wind.offsetStrength.w = windStrength.value
@@ -114,8 +115,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
 
         sky = Sky(mainScene, moonTex).apply { generateMaps(this@TerrainDemo, loadingScreen!!) }
         showLoadText("Creating terrain...")
-        Physics.awaitLoaded()
-        terrain = Terrain(heightMap)
+        terrain = Terrain(this@TerrainDemo, heightMap)
         terrainTiles = TerrainTiles(terrain, sky)
         showLoadText("Creating ocean...")
         oceanFloorPass = OceanFloorRenderPass(mainScene, terrainTiles)
@@ -143,10 +143,10 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         InputStack.defaultInputHandler.pointerListeners += doubleClickListener
     }
 
-    override fun dispose(ctx: KoolContext) {
-        colorMap.dispose()
-        normalMap.dispose()
+    override fun onRelease(ctx: KoolContext) {
         physicsObjects.release()
+
+        wind.density.release()
 
         KeyboardInput.removeKeyListener(escKeyListener)
         PointerInput.cursorMode = CursorMode.NORMAL
@@ -337,7 +337,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
     }
 
     private fun updateOceanShader(isGroundPbr: Boolean) {
-        ocean.oceanShader = OceanShader.makeOceanShader(oceanFloorPass, shadowMap, wind.density, oceanBump, isGroundPbr)
+        ocean.oceanShader = OceanShader.makeOceanShader(oceanFloorPass, shadowMap, wind.density, oceanBump, oceanColor, isGroundPbr)
     }
 
     private fun updateTreeShader(isVegetationPbr: Boolean) {

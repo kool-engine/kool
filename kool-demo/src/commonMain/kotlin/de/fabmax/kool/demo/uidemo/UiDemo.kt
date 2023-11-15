@@ -1,6 +1,5 @@
 package de.fabmax.kool.demo.uidemo
 
-import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.DemoLoader
 import de.fabmax.kool.demo.DemoScene
@@ -10,7 +9,6 @@ import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.modules.ui2.docking.Dock
 import de.fabmax.kool.modules.ui2.docking.UiDockable
-import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MsdfFont
@@ -26,12 +24,8 @@ class UiDemo : DemoScene("UI Demo") {
 
     private val windowSpawnLocation = MutableVec2f(320f, 64f)
 
-    var exampleImage: Texture2d? = null
+    val exampleImage by texture2d("${DemoLoader.materialPath}/uv_checker_map.jpg")
     val dndContext = DragAndDropContext<DragAndDropWindow.DndItem>()
-
-    override suspend fun Assets.loadResources(ctx: KoolContext) {
-        exampleImage = loadTexture2d("${DemoLoader.materialPath}/uv_checker_map.jpg")
-    }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
         setupUiScene(true)

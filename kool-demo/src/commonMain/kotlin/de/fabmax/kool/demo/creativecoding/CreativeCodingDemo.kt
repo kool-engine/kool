@@ -1,6 +1,5 @@
 package de.fabmax.kool.demo.creativecoding
 
-import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.DemoLoader
 import de.fabmax.kool.demo.DemoScene
@@ -10,7 +9,6 @@ import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.deg
 import de.fabmax.kool.modules.ui2.*
-import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.*
@@ -26,32 +24,27 @@ class CreativeCodingDemo : DemoScene("Creative Coding") {
         get() = contents[contentIndex.value]
     private val contentGroup = Node()
 
-    private lateinit var resources: Resources
+    private val hdri by hdriImage("${DemoLoader.hdriPath}/syferfontein_0d_clear_1k.rgbe.png")
 
-    override suspend fun Assets.loadResources(ctx: KoolContext) {
+    override fun Scene.setupMainScene(ctx: KoolContext) {
         val light = mainScene.lighting.singleDirectionalLight {
             setup(Vec3f(-1f, -0.5f, -1f))
             setColor(MdColor.AMBER tone 100, 3f)
         }
 
-        resources = Resources(
-            EnvironmentHelper.hdriEnvironment(mainScene, "${DemoLoader.hdriPath}/syferfontein_0d_clear_1k.rgbe.png"),
-            listOf(CascadedShadowMap(mainScene, light, 2000f, nearOffset = -200f))
-        )
+        val resources = Resources(hdri, listOf(CascadedShadowMap(mainScene, light, 2000f, nearOffset = -200f)))
 
         contents += Circles()
         contents += Hexagons(resources)
         contents += LargeSpheres(resources)
         contents += SmallSpheres(resources)
         contents += PlanarOrbits(resources)
-    }
 
-    override fun Scene.setupMainScene(ctx: KoolContext) {
         addNode(contentGroup)
         selectContent(contentIndex.value)
 
         setupCamera()
-        skybox(resources.imageEnv, lod = 2f)
+        skybox(hdri, lod = 2f)
     }
 
     private fun selectContent(newContentIndex: Int) {

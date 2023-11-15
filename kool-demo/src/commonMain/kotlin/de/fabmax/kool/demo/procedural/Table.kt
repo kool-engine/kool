@@ -1,10 +1,8 @@
 package de.fabmax.kool.demo.procedural
 
-import de.fabmax.kool.demo.DemoLoader
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.deg
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.deferred.deferredKslPbrShader
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.geometry.IndexedVertexList
@@ -14,7 +12,7 @@ import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 
-class Table : Mesh(IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS, Attribute.TANGENTS)) {
+class Table(demo: ProceduralDemo) : Mesh(IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS, Attribute.TANGENTS)) {
 
     init {
         isCastingShadow = false
@@ -26,15 +24,9 @@ class Table : Mesh(IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS, Att
         }
 
         shader = deferredKslPbrShader {
-            color {
-                textureColor(Texture2d("${DemoLoader.materialPath}/granitesmooth1/granitesmooth1-albedo4.jpg"))
-            }
-            normalMapping {
-                setNormalMap(Texture2d("${DemoLoader.materialPath}/granitesmooth1/granitesmooth1-normal2.jpg"))
-            }
-            roughness {
-                textureProperty(Texture2d("${DemoLoader.materialPath}/granitesmooth1/granitesmooth1-roughness3.jpg"))
-            }
+            color { textureColor(demo.tableColor) }
+            normalMapping { setNormalMap(demo.tableNormal) }
+            roughness { textureProperty(demo.tableRoughness) }
         }
     }
 

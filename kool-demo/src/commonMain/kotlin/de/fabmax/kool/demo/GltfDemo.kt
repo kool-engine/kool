@@ -4,18 +4,16 @@ import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.*
-import de.fabmax.kool.modules.gltf.GltfFile
+import de.fabmax.kool.modules.gltf.GltfLoadConfig
+import de.fabmax.kool.modules.gltf.GltfMaterialConfig
 import de.fabmax.kool.modules.gltf.loadGltfModel
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ui2.*
-import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ao.AoPipeline
 import de.fabmax.kool.pipeline.deferred.DeferredOutputShader
 import de.fabmax.kool.pipeline.deferred.DeferredPipeline
 import de.fabmax.kool.pipeline.deferred.DeferredPipelineConfig
 import de.fabmax.kool.pipeline.deferred.deferredKslPbrShader
-import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
-import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.toString
@@ -65,11 +63,16 @@ class GltfDemo : DemoScene("glTF Models") {
     private val selectedModelIdx = mutableStateOf(0)
     private val currentModel: GltfModel get() = models[selectedModelIdx.value]
 
+    private val colorMap by texture2d("${DemoLoader.materialPath}/Fabric030/Fabric030_1K_Color2.jpg")
+    private val normalMap by texture2d("${DemoLoader.materialPath}/Fabric030/Fabric030_1K_Normal.jpg")
+    private val aoMap by texture2d("${DemoLoader.materialPath}/Fabric030/Fabric030_1K_AmbientOcclusion.jpg")
+    private val roughnessMap by texture2d("${DemoLoader.materialPath}/Fabric030/Fabric030_1K_Roughness.jpg")
+
+    private val envMaps by hdriImage("${DemoLoader.hdriPath}/shanghai_bund_1k.rgbe.png")
+
     private lateinit var orbitTransform: OrbitInputTransform
     private var camTranslationTarget: Vec3d? = null
     private var trackModel = false
-
-    private lateinit var envMaps: EnvironmentMaps
 
     private val shadowsForward = mutableListOf<ShadowMap>()
     private var aoPipelineForward: AoPipeline? = null
@@ -82,7 +85,7 @@ class GltfDemo : DemoScene("glTF Models") {
     private val animationSpeed = mutableStateOf(0.5f)
     private val isAutoRotate = mutableStateOf(true)
 
-    private val isDeferredShading: MutableStateValue<Boolean> = mutableStateOf(true).onChange { setupPipelines(it, isAo.value) }
+    private val isDeferredShading: MutableStateValue<Boolean> = mutableStateOf(false).onChange { setupPipelines(it, isAo.value) }
     private val isAo: MutableStateValue<Boolean> = mutableStateOf(true).onChange { setupPipelines(isDeferredShading.value, it) }
     private val isSsr: MutableStateValue<Boolean> = mutableStateOf(true).onChange {
         deferredPipeline.isSsrEnabled = it
@@ -96,9 +99,6 @@ class GltfDemo : DemoScene("glTF Models") {
     }
 
     override suspend fun Assets.loadResources(ctx: KoolContext) {
-        showLoadText("Loading IBL Maps")
-        envMaps = EnvironmentHelper.hdriEnvironment(mainScene, "${DemoLoader.hdriPath}/shanghai_bund_1k.rgbe.png")
-
         mainScene.setupLighting()
 
         // create deferred pipeline
@@ -142,7 +142,7 @@ class GltfDemo : DemoScene("glTF Models") {
         makeForwardContent()
         setupPipelines(isDeferredShading.value, isAo.value)
 
-        onUpdate += {
+        onUpdate {
             animationDeltaTime = Time.deltaT * animationSpeed.value
             foxAnimator.updatePosition()
         }
@@ -225,7 +225,7 @@ class GltfDemo : DemoScene("glTF Models") {
 
     private fun Node.setupContentGroup(isDeferredShading: Boolean) {
         transform.rotate((-60.0).deg, Vec3d.Y_AXIS)
-        onUpdate += {
+        onUpdate {
             if (isAutoRotate.value) {
                 transform.setIdentity()
                 transform.rotate((Time.gameTime * 3).deg, Vec3d.Y_AXIS)
@@ -236,11 +236,6 @@ class GltfDemo : DemoScene("glTF Models") {
             generate {
                 roundCylinder(4.1f, 0.2f)
             }
-
-            val colorMap = Texture2d("${DemoLoader.materialPath}/Fabric030/Fabric030_1K_Color2.jpg").also { it.releaseWith(this) }
-            val normalMap = Texture2d("${DemoLoader.materialPath}/Fabric030/Fabric030_1K_Normal.jpg").also { it.releaseWith(this) }
-            val aoMap = Texture2d("${DemoLoader.materialPath}/Fabric030/Fabric030_1K_AmbientOcclusion.jpg").also { it.releaseWith(this) }
-            val roughnessMap = Texture2d("${DemoLoader.materialPath}/Fabric030/Fabric030_1K_Roughness.jpg").also { it.releaseWith(this) }
 
             fun KslPbrShader.Config.materialConfig() {
                 color { textureColor(colorMap) }
@@ -274,11 +269,8 @@ class GltfDemo : DemoScene("glTF Models") {
     }
 
     private fun cycleModel(prevModel: GltfModel, newModel: GltfModel) {
+        // make model invisible, but do not release it, so that we can switch back to it
         prevModel.isVisible = false
-        launchDelayed(1) {
-            prevModel.forwardModel?.release()
-            prevModel.deferredModel?.release()
-        }
 
         newModel.isVisible = true
         orbitTransform.zoom = newModel.zoom
@@ -380,14 +372,14 @@ class GltfDemo : DemoScene("glTF Models") {
         override fun toString() = name
 
         suspend fun load(isDeferredShading: Boolean, ctx: KoolContext): Model {
-            val materialCfg = GltfFile.ModelMaterialConfig(
+            val materialCfg = GltfMaterialConfig(
                 shadowMaps = if (isDeferredShading) deferredPipeline.shadowMaps else shadowsForward,
                 scrSpcAmbientOcclusionMap = if (isDeferredShading) deferredPipeline.aoPipeline?.aoMap else aoPipelineForward?.aoMap,
                 environmentMaps = envMaps,
                 isDeferredShading = isDeferredShading,
                 maxNumberOfJoints = 64
             )
-            val modelCfg = GltfFile.ModelGenerateConfig(
+            val modelCfg = GltfLoadConfig(
                 generateNormals = generateNormals,
                 materialConfig = materialCfg,
                 loadAnimations = true,

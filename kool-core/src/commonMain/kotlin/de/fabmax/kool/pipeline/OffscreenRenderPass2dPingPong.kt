@@ -52,7 +52,7 @@ open class OffscreenRenderPass2dPingPong(config: Config) : OffscreenRenderPass(
         super.release()
         ping.release()
         pong.release()
+        pingContent.release()
+        pongContent.release()
     }
-
-    private class Empty : Node()
 }
