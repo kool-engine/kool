@@ -9,7 +9,6 @@ import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
-import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.logE
 
 object CachedAppAssets : AppAssetsLoader {
@@ -17,11 +16,11 @@ object CachedAppAssets : AppAssetsLoader {
     private val loadedModels = mutableMapOf<String, MutableStateValue<GltfFile?>>()
     private val loadedTextures2d = mutableMapOf<String, MutableStateValue<Texture2d?>>()
 
-    override suspend fun loadHdriEnvironment(scene: Scene, path: String): EnvironmentMaps? {
+    override suspend fun loadHdriEnvironment(path: String): EnvironmentMaps? {
         val hdriState = loadedHdris.getOrPut(path) { mutableStateOf(null) }
         return try {
             val hdriTex = Assets.loadTexture2d(path)
-            hdriState.value ?: EnvironmentHelper.hdriEnvironment(scene, hdriTex, autoDispose = false).also { hdriState.set(it) }
+            hdriState.value ?: EnvironmentHelper.hdriEnvironment(hdriTex).also { hdriState.set(it) }
         } catch (e: Exception) {
             logE { "Failed loading HDRI: $path" }
             null
