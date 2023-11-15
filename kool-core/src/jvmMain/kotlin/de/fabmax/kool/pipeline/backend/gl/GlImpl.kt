@@ -46,6 +46,7 @@ object GlImpl : GlApi {
     override val POINTS = GL_POINTS
     override val RENDERBUFFER = GL_RENDERBUFFER
     override val REPEAT = GL_REPEAT
+    override val SCISSOR_TEST = GL_SCISSOR_TEST
     override val SRC_ALPHA = GL_SRC_ALPHA
     override val STATIC_DRAW = GL_STATIC_DRAW
     override val TEXTURE_2D = GL_TEXTURE_2D
@@ -165,6 +166,7 @@ object GlImpl : GlApi {
     override fun linkProgram(program: GlProgram) = glLinkProgram(program.handle)
     override fun readBuffer(src: Int) = glReadBuffer(src)
     override fun renderbufferStorage(target: Int, internalformat: Int, width: Int, height: Int) = glRenderbufferStorage(target, internalformat, width, height)
+    override fun scissor(x: Int, y: Int, width: Int, height: Int) = glScissor(x, y, width, height)
     override fun shaderSource(shader: GlShader, source: String) = glShaderSource(shader.handle, source)
     override fun texImage2D(target: Int, level: Int, internalformat: Int, width: Int, height: Int, border: Int, format: Int, type: Int, pixels: Buffer?) = texImage2dImpl(target, level, internalformat, width, height, border, format, type, pixels)
     override fun texImage2d(target: Int, data: TextureData) = texImage2dImpl(target, data)

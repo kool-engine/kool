@@ -7,7 +7,7 @@ import de.fabmax.kool.pipeline.OffscreenRenderPass
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.pipeline.ScreenRenderPass
 import de.fabmax.kool.pipeline.Texture2d
-import de.fabmax.kool.util.Releasable
+import de.fabmax.kool.util.logD
 
 /**
  * @author fabmax
@@ -33,10 +33,10 @@ open class Scene(name: String? = null) : Node(name) {
     val offscreenPasses: List<OffscreenRenderPass>
         get() = mutOffscreenPasses
 
-    private val releasables = mutableListOf<Releasable>()
-
     var framebufferCaptureMode = FramebufferCaptureMode.Disabled
-    val capturedFramebuffer = Texture2d()
+    val capturedFramebuffer by lazy {
+        Texture2d(name = "$name.capturedFramebuffer")
+    }
 
     val isEmpty: Boolean
         get() = children.isEmpty() && mutOffscreenPasses.isEmpty() && addOffscreenPasses.isEmpty() && remOffscreenPasses.isEmpty()
@@ -91,19 +91,9 @@ open class Scene(name: String? = null) : Node(name) {
     }
 
     override fun update(updateEvent: RenderPass.UpdateEvent) {
-        for (i in releasables.indices) {
-            releasables[i].release()
-        }
-        releasables.clear()
-
         // update lights not attached
         lighting.onUpdate(updateEvent)
-
         super.update(updateEvent)
-    }
-
-    fun dispose(releasable: Releasable) {
-        releasables += releasable
     }
 
     override fun checkIsVisible(cam: Camera, ctx: KoolContext): Boolean {
@@ -112,9 +102,6 @@ open class Scene(name: String? = null) : Node(name) {
     }
 
     override fun release() {
-        releasables.forEach { it.release() }
-        releasables.clear()
-
         mainRenderPass.release()
         mutOffscreenPasses.removeAll(remOffscreenPasses)
         remOffscreenPasses.clear()
@@ -126,6 +113,8 @@ open class Scene(name: String? = null) : Node(name) {
         capturedFramebuffer.dispose()
 
         super.release()
+
+        logD { "Released scene \"$name\"" }
     }
 
     fun computePickRay(pointer: Pointer, ctx: KoolContext, result: Ray): Boolean {

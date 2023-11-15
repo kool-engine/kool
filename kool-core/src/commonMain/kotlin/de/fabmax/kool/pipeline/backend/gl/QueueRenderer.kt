@@ -31,6 +31,7 @@ class QueueRenderer(val backend: RenderBackendGl) {
     fun renderView(view: RenderPass.View) {
         view.apply {
             gl.viewport(viewport.x, viewport.y, viewport.width, viewport.height)
+            gl.scissor(viewport.x, viewport.y, viewport.width, viewport.height)
 
             val rp = renderPass
             if (rp is OffscreenRenderPass) {

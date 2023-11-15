@@ -26,6 +26,8 @@ class GpuGeometryGl(
     private var isNewlyCreated =  true
     var numIndices = 0
 
+    private val name = creationInfo.bufferName
+
     init {
         val namePrefix = creationInfo.bufferName
         indexBuffer = BufferResource(gl.ELEMENT_ARRAY_BUFFER, backend, creationInfo.copy(bufferName = "$namePrefix.${geometry.name}.indices"))
@@ -49,6 +51,10 @@ class GpuGeometryGl(
         } else {
             null
         }
+    }
+
+    override fun toString(): String {
+        return "GpuGeometryGl(name=$name, geometry.name=${geometry.name})"
     }
 
     override fun release() {

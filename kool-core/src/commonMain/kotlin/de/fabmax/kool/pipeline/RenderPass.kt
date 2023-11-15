@@ -9,10 +9,7 @@ import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Time
 import de.fabmax.kool.util.Viewport
 
-abstract class RenderPass(
-    var drawNode: Node,
-    var name: String
-) : BaseReleasable() {
+abstract class RenderPass(var name: String) : BaseReleasable() {
 
     var parentScene: Scene? = null
     val dependencies = mutableListOf<RenderPass>()
@@ -39,38 +36,19 @@ abstract class RenderPass(
     }
 
     open fun update(ctx: KoolContext) {
-        val t = if (isProfileTimes) Time.precisionTime else 0.0
-
         checkIsNotReleased()
-
+        val t = if (isProfileTimes) Time.precisionTime else 0.0
         for (i in views.indices) {
-            val view = views[i]
-            if (view.isUpdateDrawNode) {
-                val updateEvent = view.makeUpdateEvent(ctx)
-
-                drawNode.update(updateEvent)
-                if (view.camera.parent == null) {
-                    // camera is not attached to any node, make sure it gets updated anyway
-                    view.camera.update(updateEvent)
-                }
-            }
+            views[i].update(ctx)
         }
-
         tUpdate = if (isProfileTimes) Time.precisionTime - t else 0.0
     }
 
     open fun collectDrawCommands(ctx: KoolContext) {
         val t = if (isProfileTimes) Time.precisionTime else 0.0
-
         for (i in views.indices) {
-            val view = views[i]
-            val updateEvent = view.makeUpdateEvent(ctx)
-
-            beforeCollectDrawCommands(updateEvent)
-            drawNode.collectDrawCommands(updateEvent)
-            afterCollectDrawCommands(updateEvent)
+            views[i].collectDrawCommands(ctx)
         }
-
         tCollect = if (isProfileTimes) Time.precisionTime - t else 0.0
     }
 
@@ -113,15 +91,12 @@ abstract class RenderPass(
         operator fun component2() = ctx
     }
 
-    inner class View(var name: String, var camera: Camera, val clearColors: Array<Color?>) {
+    inner class View(var name: String, var drawNode: Node, var camera: Camera, val clearColors: Array<Color?>) {
         val renderPass: RenderPass get() = this@RenderPass
 
         val viewport = Viewport(0, 0, 0, 0)
         val drawQueue = DrawQueue(this@RenderPass, this)
         var drawFilter: (Node) -> Boolean = { true }
-
-//        var clearColors = Array<Color?>(1) { Color(0.15f, 0.15f, 0.15f, 1f) }
-//            protected set
 
         var clearDepth = true
         var clearColor: Color?
@@ -139,24 +114,54 @@ abstract class RenderPass(
         fun appendMeshToDrawQueue(mesh: Mesh, ctx: KoolContext): DrawCommand {
             return drawQueue.addMesh(mesh, ctx)
         }
+
+        internal fun update(ctx: KoolContext) {
+            val updateEvent = makeUpdateEvent(ctx)
+            if (isUpdateDrawNode) {
+                drawNode.update(updateEvent)
+            }
+            if (camera.parent == null) {
+                // camera is not attached to any node, make sure it gets updated anyway
+                camera.update(updateEvent)
+            }
+        }
+
+        internal fun collectDrawCommands(ctx: KoolContext) {
+            val updateEvent = makeUpdateEvent(ctx)
+            beforeCollectDrawCommands(updateEvent)
+            drawNode.collectDrawCommands(updateEvent)
+            afterCollectDrawCommands(updateEvent)
+        }
     }
 }
 
-class ScreenRenderPass(val scene: Scene) : RenderPass(scene, "${scene.name}:ScreenRenderPass") {
+class ScreenRenderPass(val scene: Scene) : RenderPass("${scene.name}:ScreenRenderPass") {
 
-    val screenView = View("screen", PerspectiveCamera(), arrayOf(Color(0.15f, 0.15f, 0.15f, 1f)))
+    val screenView = View("screen", scene, PerspectiveCamera(), arrayOf(Color(0.15f, 0.15f, 0.15f, 1f)))
     var camera: Camera by screenView::camera
     val viewport: Viewport by screenView::viewport
     var clearColor: Color? by screenView::clearColor
     var clearDepth: Boolean by screenView::clearDepth
 
-    override val views: List<View> = listOf(screenView)
+    private val _views = mutableListOf(screenView)
+    override val views: List<View>
+        get() = _views
 
     var useWindowViewport = true
 
     init {
         parentScene = scene
         lighting = Lighting()
+    }
+
+    fun createView(name: String): View {
+        val view = View(name, scene, PerspectiveCamera(), arrayOf(null))
+        _views += view
+        return view
+    }
+
+    fun removeView(view: View) {
+        _views -= view
     }
 
     override fun update(ctx: KoolContext) {

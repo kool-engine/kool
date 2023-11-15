@@ -8,7 +8,7 @@ import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.launchDelayed
 
-open class OffscreenRenderPassCube(drawNode: Node, config: Config) : OffscreenRenderPass(drawNode, config) {
+open class OffscreenRenderPassCube(drawNode: Node, config: Config) : OffscreenRenderPass(config) {
 
     override val views: List<View> = ViewDirection.entries.map {
         val cam = PerspectiveCamera()
@@ -16,8 +16,11 @@ open class OffscreenRenderPassCube(drawNode: Node, config: Config) : OffscreenRe
         cam.clipNear = 0.01f
         cam.clipFar = 10f
         cam.setupCamera(position = Vec3f.ZERO, up = it.up, lookAt = it.lookAt)
-        View(it.toString(), cam, arrayOf(Color.BLACK)).apply { setFullscreenViewport() }
+        View(it.toString(), drawNode, cam, arrayOf(Color.BLACK)).apply { setFullscreenViewport() }
     }
+
+    val mainView: View get() = views[0]
+    var drawNode: Node by mainView::drawNode
 
     val depthTexture = makeDepthAttachmentTex()
     val colorTextures = makeColorAttachmentTexs()

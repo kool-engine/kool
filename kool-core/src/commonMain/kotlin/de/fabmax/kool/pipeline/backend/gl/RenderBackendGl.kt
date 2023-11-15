@@ -29,6 +29,10 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
     private val openRenderPasses = mutableListOf<OffscreenRenderPass>()
     private val doneRenderPasses = mutableSetOf<OffscreenRenderPass>()
 
+    protected fun setupGl() {
+        gl.enable(gl.SCISSOR_TEST)
+    }
+
     override fun renderFrame(ctx: KoolContext) {
         BackendStats.resetPerFrameCounts()
 

@@ -9,13 +9,21 @@ import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Viewport
 import de.fabmax.kool.util.launchDelayed
 
-open class OffscreenRenderPass2d(drawNode: Node, config: Config) : OffscreenRenderPass(drawNode, config) {
+open class OffscreenRenderPass2d(drawNode: Node, config: Config) : OffscreenRenderPass(config) {
 
     override val views = mutableListOf(
-        View("default", PerspectiveCamera(), Array(colorAttachments.size) { null }).apply {
+        View("default", drawNode, PerspectiveCamera(), Array(colorAttachments.size) { null }).apply {
             setFullscreenViewport()
         }
     )
+
+    val mainView: View get() = views[0]
+    var drawNode: Node by mainView::drawNode
+    var camera: Camera by mainView::camera
+    val viewport: Viewport by mainView::viewport
+    var clearColor: Color? by mainView::clearColor
+    var clearDepth: Boolean by mainView::clearDepth
+    var isUpdateDrawNode: Boolean by mainView::isUpdateDrawNode
 
     val depthTexture = makeDepthAttachmentTex()
     val colorTextures = makeColorAttachmentTexs()
@@ -24,17 +32,10 @@ open class OffscreenRenderPass2d(drawNode: Node, config: Config) : OffscreenRend
 
     val copyTargetsColor = mutableListOf<Texture2d>()
 
-    val mainView: View get() = views[0]
-    var camera: Camera by mainView::camera
-    val viewport: Viewport by mainView::viewport
-    var clearColor: Color? by mainView::clearColor
-    var clearDepth: Boolean by mainView::clearDepth
-    var isUpdateDrawNode: Boolean by mainView::isUpdateDrawNode
-
     internal val impl = KoolSystem.requireContext().backend.createOffscreenPass2d(this)
 
     fun addView(name: String, camera: Camera): View {
-        val view = View(name, camera, Array(colorAttachments.size) { null })
+        val view = View(name, mainView.drawNode, camera, Array(colorAttachments.size) { null })
         views.add(view)
         return view
     }

@@ -18,6 +18,7 @@ class RenderBackendGlImpl(ctx: KoolContext) : RenderBackendGl(GlImpl, ctx) {
         check(GlImpl.gl.getExtension("EXT_color_buffer_float") != null) {
             "WebGL 2 implementation lacks support for float textures (EXT_color_buffer_float)"
         }
+        setupGl()
     }
 
     override fun getWindowViewport(result: Viewport) {

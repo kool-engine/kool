@@ -159,7 +159,10 @@ class MsdfFont(
             val robotoMeta = Json.Default.decodeFromString<MsdfMeta>(
                 RobotoRegularMeta.data.decodeBase64().inflate().toArray().decodeToString()
             )
-            DEFAULT_FONT_DATA = MsdfFontData(Texture2d("fonts/font-roboto-regular.png", props = MSDF_TEX_PROPS), robotoMeta)
+            DEFAULT_FONT_DATA = MsdfFontData(
+                Texture2d("fonts/font-roboto-regular.png", "MsdfFont:${robotoMeta.name}", MSDF_TEX_PROPS),
+                robotoMeta
+            )
             DEFAULT_FONT = MsdfFont(DEFAULT_FONT_DATA)
         }
     }

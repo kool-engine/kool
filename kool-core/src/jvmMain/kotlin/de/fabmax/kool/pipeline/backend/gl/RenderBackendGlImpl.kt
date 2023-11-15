@@ -37,6 +37,7 @@ class RenderBackendGlImpl(ctx: KoolContext) : RenderBackendGl(GlImpl, ctx), Rend
 
         glEnable(GL_VERTEX_PROGRAM_POINT_SIZE)
         glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS)
+        setupGl()
     }
 
     override fun getWindowViewport(result: Viewport) {

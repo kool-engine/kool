@@ -47,6 +47,7 @@ object GlImpl : GlApi {
     override val POINTS = WebGLRenderingContext.POINTS
     override val RENDERBUFFER = WebGLRenderingContext.RENDERBUFFER
     override val REPEAT = WebGLRenderingContext.REPEAT
+    override val SCISSOR_TEST = WebGLRenderingContext.SCISSOR_TEST
     override val SRC_ALPHA = WebGLRenderingContext.SRC_ALPHA
     override val STATIC_DRAW = WebGLRenderingContext.STATIC_DRAW
     override val TEXTURE_2D = WebGLRenderingContext.TEXTURE_2D
@@ -201,6 +202,7 @@ object GlImpl : GlApi {
     override fun linkProgram(program: GlProgram) = gl.linkProgram(program.webGl)
     override fun readBuffer(src: Int) = gl.readBuffer(src)
     override fun renderbufferStorage(target: Int, internalformat: Int, width: Int, height: Int) = gl.renderbufferStorage(target, internalformat, width, height)
+    override fun scissor(x: Int, y: Int, width: Int, height: Int) = gl.scissor(x, y, width, height)
     override fun shaderSource(shader: GlShader, source: String) = gl.shaderSource(shader.webGl, source)
     override fun texImage2D(target: Int, level: Int, internalformat: Int, width: Int, height: Int, border: Int, format: Int, type: Int, pixels: Buffer?) = texImage2dImpl(target, level, internalformat, width, height, border, format, type, pixels)
     override fun texImage2d(target: Int, data: TextureData) = texImage2dImpl(target, data)

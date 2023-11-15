@@ -53,6 +53,7 @@ interface GlApi {
     val POINTS: Int
     val RENDERBUFFER: Int
     val REPEAT: Int
+    val SCISSOR_TEST: Int
     val SRC_ALPHA: Int
     val STATIC_DRAW: Int
     val TEXTURE_2D: Int
@@ -172,6 +173,7 @@ interface GlApi {
     fun linkProgram(program: GlProgram)
     fun readBuffer(src: Int)
     fun renderbufferStorage(target: Int, internalformat: Int, width: Int, height: Int)
+    fun scissor(x: Int, y: Int, width: Int, height: Int)
     fun shaderSource(shader: GlShader, source: String)
     fun texImage2D(target: Int, level: Int, internalformat: Int, width: Int, height: Int, border: Int, format: Int, type: Int, pixels: Buffer?)
     fun texImage2d(target: Int, data: TextureData)

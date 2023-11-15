@@ -3,13 +3,14 @@ package de.fabmax.kool.pipeline
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.scene.Node
 
-open class OffscreenRenderPass2dPingPong(config: Config) : OffscreenRenderPass(Empty(),
+open class OffscreenRenderPass2dPingPong(config: Config) : OffscreenRenderPass(
     renderPassConfig {
         name = config.name
         setSize(1, 1)
         clearDepthTexture()
         clearColorTexture()
-    }) {
+    }
+) {
 
     var pingPongPasses = 1
 

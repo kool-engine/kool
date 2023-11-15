@@ -164,8 +164,12 @@ open class Node(name: String? = null) : BaseReleasable() {
      * Frees all resources occupied by this Node.
      */
     override fun release() {
-        children.forEach { it.release() }
-        super.release()
+        // avoid double release. can happen for nodes that are loaded as resource (e.g. gltf models) or shared
+        // by multiple render passes
+        if (!isReleased) {
+            children.forEach { it.release() }
+            super.release()
+        }
     }
 
     /**
@@ -321,6 +325,10 @@ open class Node(name: String? = null) : BaseReleasable() {
 
     fun Node.makeChildName(suffix: String): String {
         return "$name/${UniqueId.nextId(suffix)}"
+    }
+
+    override fun toString(): String {
+        return "${this::class.simpleName}(name=$name)"
     }
 
     companion object {

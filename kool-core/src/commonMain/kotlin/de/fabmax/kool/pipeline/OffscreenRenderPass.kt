@@ -4,7 +4,6 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec2i
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.math.getNumMipLevels
-import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.logT
 import de.fabmax.kool.util.logW
 import kotlin.math.max
@@ -15,7 +14,7 @@ inline fun renderPassConfig(block: OffscreenRenderPass.Config.() -> Unit): Offsc
     return config
 }
 
-abstract class OffscreenRenderPass(drawNode: Node, config: Config) : RenderPass(drawNode, config.name) {
+abstract class OffscreenRenderPass(config: Config) : RenderPass(config.name) {
 
     private val _size = MutableVec2i(config.size)
     val size: Vec2i get() = _size
