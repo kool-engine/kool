@@ -5,6 +5,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.gltf.GltfFile
+import de.fabmax.kool.modules.gltf.GltfLoadConfig
 import de.fabmax.kool.modules.gltf.loadGltfFile
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ui2.*
@@ -73,9 +74,8 @@ class InstanceDemo : DemoScene("Instanced Drawing") {
 
     private fun addLods(model: GltfFile) {
         for (i in model.scenes.indices) {
-            val modelCfg = GltfFile.ModelGenerateConfig(generateNormals = true, applyMaterials = false)
-            val mesh = model.makeModel(modelCfg, i).meshes.values.first()
-            mesh.apply {
+            val modelCfg = GltfLoadConfig(generateNormals = true, applyMaterials = false)
+            model.makeModel(modelCfg, i).meshes.values.first().apply {
                 geometry.forEach { v ->
                     v.position.mul(0.3f).add(Vec3f(0f, -1f, 0f))
                 }

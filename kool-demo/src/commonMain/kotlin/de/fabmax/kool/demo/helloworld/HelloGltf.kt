@@ -5,7 +5,8 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.DemoLoader
 import de.fabmax.kool.demo.DemoScene
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.modules.gltf.GltfFile
+import de.fabmax.kool.modules.gltf.GltfLoadConfig
+import de.fabmax.kool.modules.gltf.GltfMaterialConfig
 import de.fabmax.kool.modules.gltf.loadGltfModel
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.pipeline.ao.AoPipeline
@@ -45,11 +46,11 @@ class HelloGltfDemo : DemoScene("Hello glTF") {
 
         // Load a glTF 2.0 model
         Assets.launch {
-            val materialCfg = GltfFile.ModelMaterialConfig(
+            val materialCfg = GltfMaterialConfig(
                 shadowMaps = listOf(shadowMap),
                 scrSpcAmbientOcclusionMap = aoPipeline.aoMap
             )
-            val modelCfg = GltfFile.ModelGenerateConfig(materialConfig = materialCfg)
+            val modelCfg = GltfLoadConfig(materialConfig = materialCfg)
             val model = loadGltfModel("${DemoLoader.modelPath}/BoxAnimated.gltf", modelCfg)
 
             model.transform.translate(0f, 0.5f, 0f)

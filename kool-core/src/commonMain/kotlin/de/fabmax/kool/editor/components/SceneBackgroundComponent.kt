@@ -35,7 +35,7 @@ class SceneBackgroundComponent(override val nodeModel: SceneModel, override val 
 
         when (val bgState = backgroundState.value) {
             is SceneBackgroundData.Hdri -> {
-                nodeModel.shaderData.environmentMaps = AppAssets.loadHdriEnvironment(nodeModel.drawNode, bgState.hdriPath)
+                nodeModel.shaderData.environmentMaps = AppAssets.loadHdriEnvironment(bgState.hdriPath)
             }
             is SceneBackgroundData.SingleColor -> {
                 nodeModel.shaderData.ambientColorLinear = bgState.color.toColorLinear()
@@ -47,7 +47,7 @@ class SceneBackgroundComponent(override val nodeModel: SceneModel, override val 
         launchOnMainThread {
             when (bgData) {
                 is SceneBackgroundData.Hdri -> {
-                    nodeModel.shaderData.environmentMaps = AppAssets.loadHdriEnvironment(nodeModel.drawNode, bgData.hdriPath)
+                    nodeModel.shaderData.environmentMaps = AppAssets.loadHdriEnvironment(bgData.hdriPath)
                     UpdateSceneBackgroundComponent.updateSceneBackground(nodeModel)
                 }
                 is SceneBackgroundData.SingleColor -> {

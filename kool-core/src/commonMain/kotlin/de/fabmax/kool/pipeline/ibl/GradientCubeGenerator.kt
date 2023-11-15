@@ -35,7 +35,10 @@ class GradientCubeGenerator(scene: Scene, gradientTex: Texture1d, size: Int = 12
         onAfterDraw += {
             logD { "Generated gradient cube map" }
             scene.removeOffscreenPass(this)
-            launchDelayed(1) { release() }
+            launchDelayed(1) {
+                drawNode.release()
+                release()
+            }
         }
     }
 

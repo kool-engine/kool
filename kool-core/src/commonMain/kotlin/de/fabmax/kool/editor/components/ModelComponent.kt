@@ -8,6 +8,8 @@ import de.fabmax.kool.editor.data.SceneBackgroundData
 import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.editor.model.UpdateMaxNumLightsComponent
 import de.fabmax.kool.modules.gltf.GltfFile
+import de.fabmax.kool.modules.gltf.GltfLoadConfig
+import de.fabmax.kool.modules.gltf.GltfMaterialConfig
 import de.fabmax.kool.modules.ksl.KslLitShader
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ui2.mutableStateOf
@@ -146,8 +148,8 @@ class ModelComponent(nodeModel: SceneNodeModel, override val componentData: Mode
         val ibl = sceneModel.shaderData.environmentMaps
         val ssao = sceneModel.shaderData.ssaoMap
         val material = nodeModel.getComponent<MaterialComponent>()?.materialData
-        val modelCfg = GltfFile.ModelGenerateConfig(
-            materialConfig = GltfFile.ModelMaterialConfig(
+        val modelCfg = GltfLoadConfig(
+            materialConfig = GltfMaterialConfig(
                 environmentMaps = ibl,
                 shadowMaps = shaderShadowMaps,
                 scrSpcAmbientOcclusionMap = ssao,

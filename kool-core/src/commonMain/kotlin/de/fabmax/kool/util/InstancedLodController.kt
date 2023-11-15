@@ -70,13 +70,6 @@ class InstancedLodController<T: InstancedLodController.Instance<T>>(name: String
         super.update(updateEvent)
     }
 
-    override fun release() {
-        super.release()
-        for (i in lods.indices) {
-            lods[i].mesh.release()
-        }
-    }
-
     private inner class Lod(val mesh: Mesh, val maxDistance: Float, val maxInstances: Int) {
         val instances = mutableListOf<T>()
 

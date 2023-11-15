@@ -32,7 +32,7 @@ suspend fun Assets.loadGltfFile(assetPath: String): GltfFile {
 
 suspend fun Assets.loadGltfModel(
     assetPath: String,
-    modelCfg: GltfFile.ModelGenerateConfig = GltfFile.ModelGenerateConfig(),
+    modelCfg: GltfLoadConfig = GltfLoadConfig(),
     scene: Int = 0
 ): Model {
     return loadGltfFile(assetPath).makeModel(modelCfg, scene)

@@ -3,9 +3,7 @@ package de.fabmax.kool.modules.gltf
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.pipeline.BlendMode
-import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.deferred.DeferredKslPbrShader
-import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.pipeline.shading.AlphaMode
 import de.fabmax.kool.pipeline.shading.DepthShader
 import de.fabmax.kool.scene.MatrixTransformF
@@ -14,7 +12,6 @@ import de.fabmax.kool.scene.Model
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.animation.*
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.ShadowMap
 import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logW
 import kotlinx.serialization.Serializable
@@ -62,7 +59,7 @@ data class GltfFile(
     val textures: List<GltfTexture> = emptyList()
 ) {
 
-    fun makeModel(modelCfg: ModelGenerateConfig = ModelGenerateConfig(), scene: Int = this.scene): Model {
+    fun makeModel(modelCfg: GltfLoadConfig = GltfLoadConfig(), scene: Int = this.scene): Model {
         return ModelGenerator(modelCfg).makeModel(scenes[scene])
     }
 
@@ -116,31 +113,7 @@ data class GltfFile(
         textures.forEach { it.imageRef = images[it.source] }
     }
 
-    class ModelGenerateConfig(
-        val generateNormals: Boolean = false,
-        val applyMaterials: Boolean = true,
-        val materialConfig: ModelMaterialConfig = ModelMaterialConfig(),
-        val setVertexAttribsFromMaterial: Boolean = false,
-        val loadAnimations: Boolean = true,
-        val applySkins: Boolean = true,
-        val applyMorphTargets: Boolean = true,
-        val applyTransforms: Boolean = false,
-        val removeEmptyNodes: Boolean = true,
-        val mergeMeshesByMaterial: Boolean = false,
-        val sortNodesByAlpha: Boolean = true,
-        val pbrBlock: (KslPbrShader.Config.(GltfMesh.Primitive) -> Unit)? = null
-    )
-
-    class ModelMaterialConfig(
-        val shadowMaps: List<ShadowMap> = emptyList(),
-        val scrSpcAmbientOcclusionMap: Texture2d? = null,
-        val environmentMaps: EnvironmentMaps? = null,
-        val isDeferredShading: Boolean = false,
-        val maxNumberOfLights: Int = 4,
-        val maxNumberOfJoints: Int = 64
-    )
-
-    private inner class ModelGenerator(val cfg: ModelGenerateConfig) {
+    private inner class ModelGenerator(val cfg: GltfLoadConfig) {
         val modelAnimations = mutableListOf<Animation>()
         val modelNodes = mutableMapOf<GltfNode, Node>()
         val meshesByMaterial = mutableMapOf<Int, MutableSet<Mesh>>()
@@ -501,7 +474,7 @@ data class GltfFile(
             transform.pop()
         }
 
-        private fun GltfNode.makeNode(model: Model, cfg: ModelGenerateConfig): Node {
+        private fun GltfNode.makeNode(model: Model, cfg: GltfLoadConfig): Node {
             val modelNdName = name ?: "node_${model.nodes.size}"
             val nodeGrp = Node(modelNdName)
             modelNodes[this] = nodeGrp
@@ -525,7 +498,7 @@ data class GltfFile(
             return nodeGrp
         }
 
-        private fun GltfNode.createMeshes(model: Model, nodeGrp: Node, cfg: ModelGenerateConfig) {
+        private fun GltfNode.createMeshes(model: Model, nodeGrp: Node, cfg: GltfLoadConfig) {
             meshRef?.primitives?.forEachIndexed { index, prim ->
                 val name = "${meshRef?.name ?: "${nodeGrp.name}.mesh"}_$index"
                 val geometry = prim.toGeometry(cfg, accessors)
@@ -558,7 +531,7 @@ data class GltfFile(
             }
         }
 
-        private fun makeKslMaterial(prim: GltfMesh.Primitive, mesh: Mesh, cfg: ModelGenerateConfig, model: Model) {
+        private fun makeKslMaterial(prim: GltfMesh.Primitive, mesh: Mesh, cfg: GltfLoadConfig, model: Model) {
             var isDeferred = cfg.materialConfig.isDeferredShading
             val useVertexColor = prim.attributes.containsKey(GltfMesh.Primitive.ATTRIBUTE_COLOR_0)
 
@@ -649,4 +622,3 @@ data class GltfFile(
         }
     }
 }
-

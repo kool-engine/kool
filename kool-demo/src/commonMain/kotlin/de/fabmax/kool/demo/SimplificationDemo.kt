@@ -5,7 +5,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.deg
-import de.fabmax.kool.modules.gltf.GltfFile
+import de.fabmax.kool.modules.gltf.GltfLoadConfig
 import de.fabmax.kool.modules.gltf.loadGltfModel
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
@@ -118,7 +118,7 @@ class SimplificationDemo : DemoScene("Simplification") {
     }
 
     private suspend fun Assets.loadModel(name: String, path: String, scale: Float, offset: Vec3f) {
-        val modelCfg = GltfFile.ModelGenerateConfig(generateNormals = true, applyMaterials = false)
+        val modelCfg = GltfLoadConfig(generateNormals = true, applyMaterials = false)
         val model = loadGltfModel(path, modelCfg)
         val mesh = model.meshes.values.first()
         val geometry = mesh.geometry

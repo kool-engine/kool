@@ -102,6 +102,9 @@ open class Scene(name: String? = null) : Node(name) {
     }
 
     override fun release() {
+        // scenes shall not be released twice
+        checkIsNotReleased()
+
         mainRenderPass.release()
         mutOffscreenPasses.removeAll(remOffscreenPasses)
         remOffscreenPasses.clear()

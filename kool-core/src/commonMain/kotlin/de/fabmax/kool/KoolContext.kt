@@ -67,7 +67,7 @@ abstract class KoolContext {
         private set
 
     val scenes: MutableList<Scene> = mutableListOf()
-    private val backgroundScene = Scene("backgroundScene")
+    val backgroundScene = Scene("backgroundScene")
     val backgroundPasses: List<OffscreenRenderPass>
         get() = backgroundScene.offscreenPasses
 

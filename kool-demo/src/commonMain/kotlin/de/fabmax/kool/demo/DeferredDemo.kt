@@ -104,7 +104,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
         // no need to clear the screen, as we draw a fullscreen quad containing the deferred render output every frame
         mainRenderPass.clearColor = null
 
-        val ibl = EnvironmentHelper.singleColorEnvironment(this, Color(0.15f, 0.15f, 0.15f))
+        val ibl = EnvironmentHelper.singleColorEnvironment(Color(0.15f, 0.15f, 0.15f))
 
         val defCfg = DeferredPipelineConfig().apply {
             maxGlobalLights = 1

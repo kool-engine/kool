@@ -75,7 +75,7 @@ open class UiSurface(
     init {
         // mirror y-axis
         transform.scale(mirrorTransformScale)
-        onUpdate += {
+        onUpdate {
             viewportWidth.set(it.viewport.width.toFloat())
             viewportHeight.set(it.viewport.height.toFloat())
 
@@ -96,6 +96,12 @@ open class UiSurface(
         onRelease {
             InputStack.remove(inputHandler)
         }
+    }
+
+    override fun release() {
+        super.release()
+        // release unused mesh layers - they are detached from this node and not released by Node.release()
+        meshLayers.values.filter { it !in children }.forEach { it.release() }
     }
 
     fun onCompose(block: () -> Unit) {
@@ -143,7 +149,7 @@ open class UiSurface(
         meshLayers.values.forEach {
             if (it.isUsed) {
                 addNode(it)
-            } // todo: else we should dispose it probably?
+            }
         }
         perfRender = pt.takeMs().also { pt.reset() }
 
@@ -551,8 +557,8 @@ open class UiSurface(
         }
     }
 
-    private class TextMesh(shader: Shader) {
-        val mesh = Mesh(MsdfUiShader.MSDF_UI_MESH_ATTRIBS).apply {
+    private class TextMesh(shader: Shader, name: String) {
+        val mesh = Mesh(MsdfUiShader.MSDF_UI_MESH_ATTRIBS, name).apply {
             isCastingShadow = false
             geometry.usage = Usage.DYNAMIC
             this.shader = shader
@@ -570,13 +576,13 @@ open class UiSurface(
         }
 
         companion object {
-            fun msdfTextMesh(font: MsdfFont): TextMesh {
+            fun msdfTextMesh(font: MsdfFont, name: String): TextMesh {
                 val shader = MsdfUiShader().apply { fontMap = font.data.map }
-                return TextMesh(shader)
+                return TextMesh(shader, name)
             }
-            fun atlasTextMesh(font: AtlasFont): TextMesh {
+            fun atlasTextMesh(font: AtlasFont, name: String): TextMesh {
                 val shader = Ui2Shader().apply { setFont(font) }
-                return TextMesh(shader)
+                return TextMesh(shader, name)
             }
         }
     }
@@ -612,7 +618,7 @@ open class UiSurface(
         private val textMeshes = mutableMapOf<Font, TextMesh>()
         private val imageMeshes = mutableMapOf<Texture2d, ImageMeshes>()
         private val customLayers = mutableMapOf<String, CustomLayer>()
-        private val plainMesh = Mesh(Ui2Shader.UI_MESH_ATTRIBS).apply { shader = Ui2Shader() }
+        private val plainMesh = Mesh(Ui2Shader.UI_MESH_ATTRIBS, "$name.plainMesh").apply { shader = Ui2Shader() }
 
         val uiPrimitives = UiPrimitiveMesh("$name/UiPrimitiveMesh")
         val plainBuilder = MeshBuilder(plainMesh.geometry).apply { isInvertFaceOrientation = true }
@@ -634,7 +640,7 @@ open class UiSurface(
 
         private fun getMsdfTextBuilder(font: MsdfFont): MeshBuilder {
             val textMesh = msdfMeshes.getOrPut(font.data) {
-                TextMesh.msdfTextMesh(font).also { this += it.mesh }
+                TextMesh.msdfTextMesh(font, "$name.msdfTextMesh:${font.data.meta.name}").also { this += it.mesh }
             }
             textMeshes[font] = textMesh
             textMesh.isUsed = true
@@ -643,7 +649,7 @@ open class UiSurface(
 
         private fun getAtlasTextBuilder(font: AtlasFont): MeshBuilder {
             val textMesh = textMeshes.getOrPut(font) {
-                TextMesh.atlasTextMesh(font).also { this += it.mesh }
+                TextMesh.atlasTextMesh(font, "$name.atlasTextMesh:${font.family}").also { this += it.mesh }
             }
             textMesh.isUsed = true
             return textMesh.builder

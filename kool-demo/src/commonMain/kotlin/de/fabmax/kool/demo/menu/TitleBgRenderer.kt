@@ -77,28 +77,9 @@ class TitleBgRenderer(
     }
 
     private class CategoryShader : KslShader(Model(), pipelineConfig) {
-        val colorTex by texture1d("tGradient", GradientTexture(Demos.demoColors, size = 512))
-        val noiseTex by texture2d("tNoise", generateNoiseTex())
+        val colorTex by texture1d("tGradient", bgGradientTex)
+        val noiseTex by texture2d("tNoise", bgNoiseTex)
         var noiseOffset by uniform1f("uNoiseOffset")
-
-        private fun generateNoiseTex(): Texture2d {
-            val width = 32
-            val height = 32
-            val data = Uint8Buffer(width * height * 4)
-
-            val r = Random(13654164)
-            for (y in 0 until height) {
-                for (x in 0 until width) {
-                    data.put(r.randomI(0, 255).toByte())
-                    data.put(r.randomI(0, 255).toByte())
-                    data.put(r.randomI(0, 255).toByte())
-                    data.put(r.randomI(0, 255).toByte())
-                }
-            }
-
-            val noiseProps = TextureProps(mipMapping = false, maxAnisotropy = 0)
-            return Texture2d(noiseProps, loader = BufferedTextureLoader(TextureData2d(data, width, height, TexFormat.RGBA)))
-        }
 
         private class Model : KslProgram("Demo category shader") {
             init {
@@ -179,6 +160,33 @@ class TitleBgRenderer(
                 blendMode = BlendMode.BLEND_PREMULTIPLIED_ALPHA
                 cullMethod = CullMethod.NO_CULLING
                 depthTest = DepthCompareOp.DISABLED
+            }
+
+            val bgGradientTex: GradientTexture by lazy {
+                GradientTexture(Demos.demoColors, size = 512, name = "DemoMenu/TitleGradient")
+            }
+
+            val bgNoiseTex: Texture2d by lazy {
+                val width = 32
+                val height = 32
+                val data = Uint8Buffer(width * height * 4)
+
+                val r = Random(13654164)
+                for (y in 0 until height) {
+                    for (x in 0 until width) {
+                        data.put(r.randomI(0, 255).toByte())
+                        data.put(r.randomI(0, 255).toByte())
+                        data.put(r.randomI(0, 255).toByte())
+                        data.put(r.randomI(0, 255).toByte())
+                    }
+                }
+
+                val noiseProps = TextureProps(mipMapping = false, maxAnisotropy = 0)
+                Texture2d(
+                    noiseProps,
+                    loader = BufferedTextureLoader(TextureData2d(data, width, height, TexFormat.RGBA)),
+                    name = "DemoMenu/TitleNoise"
+                )
             }
         }
     }
