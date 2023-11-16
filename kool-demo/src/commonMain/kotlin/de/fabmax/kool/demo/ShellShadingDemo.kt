@@ -5,12 +5,15 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.*
 import de.fabmax.kool.math.noise.MultiPerlin3d
+import de.fabmax.kool.modules.gltf.GltfLoadConfig
+import de.fabmax.kool.modules.gltf.loadGltfFile
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.blocks.*
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.*
+import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
 import kotlin.math.*
@@ -18,128 +21,86 @@ import kotlin.math.*
 class ShellShadingDemo : DemoScene("Shell Shading") {
 
     private val envMap by hdriImage("${DemoLoader.hdriPath}/mossy_forest_1k.rgbe.png")
+    private lateinit var sphereMesh: Mesh
+    private lateinit var bunnyMesh: Mesh
 
     private val themes = mutableListOf<ColorTheme>()
-    private val furShader = FurShader()
 
-    private val shells = MeshInstanceList(128, Attribute.INSTANCE_MODEL_MAT, ATTRIB_SHELL)
-    private val numShells = mutableStateOf(48).onChange { makeShells() }
-
-    private val theme = mutableStateOf<ColorTheme?>(null).onChange { furShader.furGradient = it?.texture }
-    private val density = mutableStateOf(furShader.density).onChange { furShader.density = it }
-    private val hairLength = mutableStateOf(furShader.hairLength).onChange { furShader.hairLength = it }
-    private val hairThickness = mutableStateOf(furShader.hairThickness).onChange { furShader.hairThickness = it }
-    private val hairRandomness = mutableStateOf(furShader.hairRandomness).onChange { furShader.hairRandomness = it }
-    private val curliness = mutableStateOf(0f).onChange { makeShells() }
-
-    private val dispScale = mutableStateOf(furShader.noiseDispScale).onChange { furShader.noiseDispScale = it }
-    private val dispStrength = mutableStateOf(furShader.noiseDispStrength).onChange { furShader.noiseDispStrength = it }
-    private val lenScale = mutableStateOf(furShader.noiseLenScale).onChange { furShader.noiseLenScale = it }
-    private val lenStrength = mutableStateOf(furShader.noiseLenStrength).onChange { furShader.noiseLenStrength = it }
-
-    private val windSpeed = mutableStateOf(0.4f)
-    private val windStrength = mutableStateOf(furShader.windStrength).onChange { furShader.windStrength = it }
+    private val furShaderSphere = FurShaderSettings(uvBased = true)
+    private val furShaderBunny = FurShaderSettings(
+        uvBased = false,
+        initShells = 16,
+        dispScale = 0.15f,
+        dispStrength = 0.4f,
+        lengthScale = 0.84f,
+        hairLength = 0.2f,
+        hairThickness = 1.5f,
+        density = 500f
+    )
+    private var activeFurShader = furShaderBunny
+    private val selectedModel = mutableStateOf(1)
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
         mainRenderPass.clearColor = MdColor.GREY tone 600
 
         defaultOrbitCamera().apply {
             zoom = 3.5
-            onUpdate {
-                verticalRotation += Time.deltaT * 5f
-            }
         }
 
-        addTextureMesh {
+        val windOffsetD = MutableVec3d()
+        onUpdate {
+            windOffsetD.x += Time.deltaT * activeFurShader.windSpeed.value * 0.7
+            windOffsetD.y += Time.deltaT * activeFurShader.windSpeed.value * 0.9
+            windOffsetD.z += Time.deltaT * activeFurShader.windSpeed.value * 1.1
+            furShaderSphere.furShader.windOffset = windOffsetD.toVec3f()
+            furShaderBunny.furShader.windOffset = windOffsetD.toVec3f()
+        }
+
+        addNode(bunnyMesh)
+        bunnyMesh.apply {
+            geometry.forEach { it.mul(0.35f).subtract(Vec3f(0f, 1.25f, 0f))  }
+            shader = furShaderBunny.furShader
+            instances = furShaderBunny.shells
+        }
+
+        sphereMesh = addTextureMesh {
+            isVisible = false
             generate {
-                val rot = MutableMat3f()
-                var uvOffset = 0f
-
-                vertexModFun = {
-                    // tangent warp function
-                    val theta = PI_F / 4f
-                    x = tan(x * theta) / tan(theta)
-                    z = tan(z * theta) / tan(theta)
-                    texCoord.y += uvOffset
-
-                    norm()
-                    rot.transform(this)
-                }
-
-                val stps = 20
-                for (i in 0..3) {
-                    grid {
-                        center.set(0f, 1f, 0f)
-                        sizeX = 2f
-                        sizeY = 2f
-
-                        stepsX = stps
-                        stepsY = stps
-                    }
-                    rot.rotate(90f.deg, Vec3f.X_AXIS)
-                    uvOffset += 1f
-                }
-                rot.setIdentity().rotate(90f.deg, Vec3f.Z_AXIS)
-                for (i in 0..1) {
-                    grid {
-                        center.set(0f, 1f, 0f)
-                        sizeX = 2f
-                        sizeY = 2f
-
-                        stepsX = stps
-                        stepsY = stps
-                    }
-                    rot.rotate(180f.deg, Vec3f.Z_AXIS)
-                    uvOffset += 1f
-                }
-
-                geometry.forEach {
-                    it.normal.set(it.position).norm()
-                }
+                generateFurSphere()
             }
-            shader = furShader
-            instances = shells
-
-            val windOffsetD = MutableVec3d()
-            onUpdate {
-                windOffsetD.x += Time.deltaT * windSpeed.value * 0.7
-                windOffsetD.y += Time.deltaT * windSpeed.value * 0.9
-                windOffsetD.z += Time.deltaT * windSpeed.value * 1.1
-                furShader.windOffset = windOffsetD.toVec3f()
-            }
+            shader = furShaderSphere.furShader
+            instances = furShaderSphere.shells
         }
 
         addNode(Skybox.cube(envMap.reflectionMap, 2f))
-
-        makeShells()
-    }
-
-    private fun makeShells() {
-        shells.clear()
-
-        val nShells = numShells.value
-        val c = curliness.value / numShells.value
-        shells.addInstances(nShells) { buf ->
-            val mat = MutableMat4f()
-            for (i in 0 ..< nShells) {
-                val rx = sin(i * 50f / nShells) * c
-                val ry = cos(i * 50f / nShells) * c
-                val rz = sin(i * 50f / nShells) * cos(i * 10f / nShells) * c
-
-                mat.rotate(rx.deg, ry.deg, rz.deg)
-                mat.putTo(buf)
-
-                // outer shells first
-                if (nShells > 1) {
-                    buf.put((nShells - i - 1) / (nShells - 1f))
-                } else {
-                    buf.put(0f)
-                }
-            }
-        }
     }
 
     override fun createMenu(menu: DemoMenu, ctx: KoolContext) = menuSurface {
+        MenuRow {
+            Text("Model") { labelStyle() }
+            ComboBox {
+                modifier
+                    .width(Grow.Std)
+                    .margin(start = sizes.largeGap)
+                    .items(listOf("Sphere", "Bunny"))
+                    .selectedIndex(selectedModel.use())
+                    .onItemSelected {
+                        selectedModel.set(it)
+                        when (it) {
+                            0 -> {
+                                sphereMesh.isVisible = true
+                                bunnyMesh.isVisible = false
+                                activeFurShader = furShaderSphere
+                            }
+                            1 -> {
+                                sphereMesh.isVisible = false
+                                bunnyMesh.isVisible = true
+                                activeFurShader = furShaderBunny
+                            }
+                        }
+                    }
+            }
+        }
         MenuRow {
             Text("Color") { labelStyle() }
             ComboBox {
@@ -147,65 +108,65 @@ class ShellShadingDemo : DemoScene("Shell Shading") {
                     .width(Grow.Std)
                     .margin(start = sizes.largeGap)
                     .items(themes)
-                    .selectedIndex(themes.indexOf(theme.use()))
-                    .onItemSelected { theme.set(themes[it]) }
+                    .selectedIndex(themes.indexOf(activeFurShader.theme.use()))
+                    .onItemSelected { activeFurShader.theme.set(themes[it]) }
             }
         }
         MenuRow {
             Text("Density") { labelStyle() }
-            MenuSlider(density.use(), 10f, 1000f, txtFormat = { "${it.toInt()}" }) { value ->
-                density.set(round(value))
+            MenuSlider(activeFurShader.density.use(), 10f, 1000f, txtFormat = { "${it.toInt()}" }) { value ->
+                activeFurShader.density.set(round(value))
             }
         }
         MenuRow {
             Text("Hair Length") { labelStyle() }
-            MenuSlider(hairLength.use(), 0.01f, 1f) { value -> hairLength.set(value) }
+            MenuSlider(activeFurShader.hairLength.use(), 0.01f, 1f) { value -> activeFurShader.hairLength.set(value) }
         }
         MenuRow {
             Text("Hair Thickness") { labelStyle() }
-            MenuSlider(hairThickness.use(), 0.01f, 1f) { value -> hairThickness.set(value) }
+            MenuSlider(activeFurShader.hairThickness.use(), 0.01f, 2f) { value -> activeFurShader.hairThickness.set(value) }
         }
         MenuRow {
-            Text("Hair Randomness") { labelStyle() }
-            MenuSlider(hairRandomness.use(), 0.01f, 1f) { value -> hairRandomness.set(value) }
+            Text("Hair Random") { labelStyle() }
+            MenuSlider(activeFurShader.hairRandomness.use(), 0.01f, 1f) { value -> activeFurShader.hairRandomness.set(value) }
         }
         MenuRow {
             Text("Num Shells") { labelStyle() }
-            MenuSlider(numShells.use().toFloat(), 8f, 128f, txtFormat = { "${it.toInt()}" }) { value ->
-                numShells.set(value.toInt())
+            MenuSlider(activeFurShader.numShells.use().toFloat(), 8f, 128f, txtFormat = { "${it.toInt()}" }) { value ->
+                activeFurShader.numShells.set(value.toInt())
             }
         }
         MenuRow {
             Text("Curliness") { labelStyle() }
-            MenuSlider(curliness.use(), 0f, 25f, txtFormat = { it.toString(1) }) { value ->
-                curliness.set(value)
+            MenuSlider(activeFurShader.curliness.use(), 0f, 25f, txtFormat = { it.toString(1) }) { value ->
+                activeFurShader.curliness.set(value)
             }
         }
 
         Text("Noise") { sectionTitleStyle() }
         MenuRow {
-            Text("Disp Scale") { labelStyle() }
-            MenuSlider(dispScale.use(), 0f, 5f) { value -> dispScale.set(value) }
-        }
-        MenuRow {
-            Text("Disp Strength") { labelStyle() }
-            MenuSlider(dispStrength.use(), 0f, 1f) { value -> dispStrength.set(value) }
-        }
-        MenuRow {
             Text("Length Scale") { labelStyle() }
-            MenuSlider(lenScale.use(), 0f, 5f) { value -> lenScale.set(value) }
+            MenuSlider(activeFurShader.lenScale.use(), 0f, 5f) { value -> activeFurShader.lenScale.set(value) }
         }
         MenuRow {
             Text("Length Strength") { labelStyle() }
-            MenuSlider(lenStrength.use(), 0f, 1f) { value -> lenStrength.set(value) }
+            MenuSlider(activeFurShader.lenStrength.use(), 0f, 1f) { value -> activeFurShader.lenStrength.set(value) }
         }
         MenuRow {
-            Text("Wind") { labelStyle() }
-            MenuSlider(windSpeed.use(), 0f, 1f) { value -> windSpeed.set(value) }
+            Text("Wind Scale") { labelStyle() }
+            MenuSlider(activeFurShader.dispScale.use(), 0f, 3f) { value -> activeFurShader.dispScale.set(value) }
+        }
+        MenuRow {
+            Text("Wind Strength") { labelStyle() }
+            MenuSlider(activeFurShader.dispStrength.use(), 0f, 1f) { value -> activeFurShader.dispStrength.set(value) }
+        }
+        MenuRow {
+            Text("Wind Speed") { labelStyle() }
+            MenuSlider(activeFurShader.windSpeed.use(), 0f, 1f) { value -> activeFurShader.windSpeed.set(value) }
         }
     }
 
-    class FurShader : KslShader(furProgram(), PipelineConfig()) {
+    class FurShader(uvBased: Boolean) : KslShader(furProgram(uvBased), PipelineConfig()) {
         var furGradient by texture1d("tFurColor")
         var noise3d by texture3d("tNoise3d")
         var irradiance by textureCube("tIrradiance")
@@ -224,7 +185,7 @@ class ShellShadingDemo : DemoScene("Shell Shading") {
         var windOffset by uniform3f("uWindOffset")
 
         companion object {
-            private fun furProgram(): KslProgram = KslProgram("Fur program").apply {
+            private fun furProgram(uvBased: Boolean): KslProgram = KslProgram("Fur program").apply {
                 val noise3d = texture3d("tNoise3d")
 
                 val uv = interStageFloat2()
@@ -239,8 +200,11 @@ class ShellShadingDemo : DemoScene("Shell Shading") {
                         val modelMat = instanceAttribMat4(Attribute.INSTANCE_MODEL_MAT)
                         val camData = cameraData()
 
-                        uv.input.set(vertexAttribFloat2(Attribute.TEXTURE_COORDS))
+                        if (uvBased) {
+                            uv.input.set(vertexAttribFloat2(Attribute.TEXTURE_COORDS))
+                        }
                         shell.input set instanceAttribFloat1(ATTRIB_SHELL)
+                        val nrm = float3Var(vertexAttribFloat3(Attribute.NORMALS))
                         val pos = float3Var(vertexAttribFloat3(Attribute.POSITIONS))
                         basePos.input set pos
 
@@ -248,17 +212,18 @@ class ShellShadingDemo : DemoScene("Shell Shading") {
                         val scale = uniformFloat1("uNoiseDispScale")
                         val strength = uniformFloat1("uNoiseDispStrength") * 0.2f.const
 
-                        val samplePos = float3Var(pos.float3("zyx") * scale + uniformFloat3("uWindOffset") * uniformFloat1("uWindStrength"))
+                        val samplePos = float3Var(pos * scale + uniformFloat3("uWindOffset") * uniformFloat1("uWindStrength"))
                         var d = sampleTexture(noise3d, samplePos).xyz * 2f.const - 1f.const
-                        pos += d * shell.input * strength
+                        val windPos = float3Var(pos + d * shell.input * strength)
                         d = sampleTexture(noise3d, pos.float3("zyx") * scale).xyz * 2f.const - 1f.const
-                        pos += d * shell.input * strength
+                        windPos += d * shell.input * strength
 
-                        pos set normalize(pos)
+                        // reproject distorted (windy) position to shell surface
+                        windPos -= nrm * dot((windPos - pos), nrm)
 
                         // scale position based on shell layer to increase sphere radius of outer shells
                         val disp = float1Var(pow(shell.input + 0.01f.const, 0.3f.const) * uniformFloat1("uHairLength"))
-                        pos set pos * (1f.const + disp)
+                        pos set windPos + nrm * disp
 
                         localPos.input set pos
                         val worldPos4 = float4Var(modelMat * float4Value(pos, 1f))
@@ -272,33 +237,61 @@ class ShellShadingDemo : DemoScene("Shell Shading") {
                 }
                 fragmentStage {
                     main {
-                        val fragPos = float2Var(uv.output * uniformFloat1("uDensity"))
-                        val cellCenter = float2Var(fragPos.toInt2().toFloat2() + 0.5f.const)
-
                         val hairRandomness = uniformFloat1("uRandomness")
                         val hairThickness = uniformFloat1("uThickness")
+                        val randomHairLen = float1Var()
+                        val distToNearestHair = float1Var(10f.const)
 
                         // test own and neighboring cells and determine their randomly displaced center positions
                         // and select the closest one.
-                        val nearestCell = float2Var(cellCenter)
-                        val distToNearestHair = float1Var(10f.const)
-                        for (x in -1..1) {
-                            for (y in -1..1) {
-                                val sampleCellCenter = float2Var(cellCenter + float2Value(x.toFloat(), y.toFloat()))
-                                val centerRandom = float2Var(noise22(sampleCellCenter) * 2f.const - 1f.const)
-                                val filaCenter = float2Var(sampleCellCenter + centerRandom * hairRandomness)
-                                val dist = float1Var(length(fragPos - filaCenter))
-                                `if`(dist lt distToNearestHair) {
-                                    distToNearestHair set dist
-                                    nearestCell.set(sampleCellCenter)
+
+                        if (uvBased) {
+                            val fragPos = float2Var(uv.output * uniformFloat1("uDensity"))
+                            val cellCenter = float2Var(fragPos.toInt2().toFloat2() + 0.5f.const)
+                            val nearestCell = float2Var(cellCenter)
+                            for (x in -1..1) {
+                                for (y in -1..1) {
+                                    val sampleCellCenter = float2Var(cellCenter + float2Value(x.toFloat(), y.toFloat()))
+                                    val centerRandom = float2Var(noise22(sampleCellCenter) * 2f.const - 1f.const)
+                                    val filaCenter = float2Var(sampleCellCenter + centerRandom * hairRandomness)
+                                    val dist = float1Var(length(fragPos - filaCenter))
+                                    `if`(dist lt distToNearestHair) {
+                                        distToNearestHair set dist
+                                        nearestCell.set(sampleCellCenter)
+                                    }
                                 }
                             }
+                            randomHairLen set float1Var(noise12(nearestCell) * 0.5f.const + 0.5f.const)
+
+                        } else {
+                            val fragPos = float3Var((basePos.output + 5f.const) * uniformFloat1("uDensity"))
+                            val cellCenter = float3Var(fragPos.toInt3().toFloat3() + 0.5f.const)
+                            val nearestCell = float3Var(cellCenter)
+
+                            val sampleCellCenter = float3Var()
+                            val centerRandom = float3Var()
+                            val filaCenter = float3Var()
+                            val dist = float1Var()
+
+                            for (x in -1..1) {
+                                for (y in -1..1) {
+                                    for (z in -1..1) {
+                                        sampleCellCenter set float3Var(cellCenter + float3Value(x.toFloat(), y.toFloat(), z.toFloat()))
+                                        centerRandom set float3Var(noise33(sampleCellCenter) * 2f.const - 1f.const)
+                                        filaCenter set float3Var(sampleCellCenter + centerRandom * hairRandomness)
+                                        dist set float1Var(length(fragPos - filaCenter))
+                                        `if`(dist lt distToNearestHair) {
+                                            distToNearestHair set dist
+                                            nearestCell.set(sampleCellCenter)
+                                        }
+                                    }
+                                }
+                            }
+                            randomHairLen set noise13(nearestCell) * 0.5f.const + 0.5f.const
                         }
 
                         // determine length of selected hair
-                        val randomHairLen = float1Var(noise12(nearestCell) * 0.5f.const + 0.5f.const)
                         val perlinNoiseLenFac = float1Var(sampleTexture(noise3d, basePos.output * uniformFloat1("uNoiseLenScale")).x)
-                        //perlinNoiseLenFac += (sampleTexture(noise3d, basePos.output * uniformFloat1("uNoiseLenScale") * 5f.const).x - 0.5f.const) * 0.25f.const
                         randomHairLen *= mix(1f.const, perlinNoiseLenFac * 2f.const - 0.25f.const, uniformFloat1("uNoiseLenStrength"))
 
                         // relative position along hair: 1 -> bottom, 0 -> tip of the hair (or higher)
@@ -325,6 +318,53 @@ class ShellShadingDemo : DemoScene("Shell Shading") {
         }
     }
 
+    private fun MeshBuilder.generateFurSphere() {
+        val rot = MutableMat3f()
+        var uvOffset = 0f
+
+        vertexModFun = {
+            // tangent warp function
+            val theta = PI_F / 4f
+            x = tan(x * theta) / tan(theta)
+            z = tan(z * theta) / tan(theta)
+            texCoord.y += uvOffset
+
+            norm()
+            rot.transform(this)
+        }
+
+        val stps = 20
+        for (i in 0..3) {
+            grid {
+                center.set(0f, 1f, 0f)
+                sizeX = 2f
+                sizeY = 2f
+
+                stepsX = stps
+                stepsY = stps
+            }
+            rot.rotate(90f.deg, Vec3f.X_AXIS)
+            uvOffset += 1f
+        }
+        rot.setIdentity().rotate(90f.deg, Vec3f.Z_AXIS)
+        for (i in 0..1) {
+            grid {
+                center.set(0f, 1f, 0f)
+                sizeX = 2f
+                sizeY = 2f
+
+                stepsX = stps
+                stepsY = stps
+            }
+            rot.rotate(180f.deg, Vec3f.Z_AXIS)
+            uvOffset += 1f
+        }
+
+        geometry.forEach {
+            it.normal.set(it.position).norm()
+        }
+    }
+
     override suspend fun Assets.loadResources(ctx: KoolContext) {
         val colors = mapOf(
             "Blueish Gray" to MdColor.BLUE_GREY.toLinear().toOklab(),
@@ -344,15 +384,24 @@ class ShellShadingDemo : DemoScene("Shell Shading") {
 
         themes += ColorTheme("Viridis", GradientTexture(ColorGradient.VIRIDIS.toLinear()))
         themes += ColorTheme("Plasma", GradientTexture(ColorGradient.PLASMA.toLinear()))
-        theme.set(themes[0])
+        furShaderSphere.theme.set(themes[0])
+        furShaderBunny.theme.set(themes[1])
 
         showLoadText("Generating Noise")
-        furShader.noise3d = generate3dNoise().also { it.releaseWith(mainScene) }
-        furShader.irradiance = envMap.irradianceMap
+        val perlinNoise = generate3dNoise().also { it.releaseWith(mainScene) }
+        val irradiance = envMap.irradianceMap
+
+        furShaderSphere.furShader.noise3d = perlinNoise
+        furShaderSphere.furShader.irradiance = irradiance
+        furShaderBunny.furShader.noise3d = perlinNoise
+        furShaderBunny.furShader.irradiance = irradiance
 
         mainScene.onRelease {
             themes.forEach { it.texture.release() }
         }
+
+        val modelCfg = GltfLoadConfig(generateNormals = true, applyMaterials = false)
+        bunnyMesh = loadGltfFile("${DemoLoader.modelPath}/bunny.gltf.gz").makeModel(modelCfg, 1).meshes.values.first()
     }
 
     private fun generate3dNoise(): Texture3d {
@@ -417,6 +466,73 @@ class ShellShadingDemo : DemoScene("Shell Shading") {
 
     data class ColorTheme(val name: String, val texture: GradientTexture) {
         override fun toString(): String = name
+    }
+
+    private class FurShaderSettings(
+        val uvBased: Boolean,
+        initShells: Int = 48,
+        dispScale: Float = 0.4f,
+        dispStrength: Float = 0.4f,
+        lengthScale: Float = 1f,
+        lengthStrength: Float = 0.5f,
+        hairLength: Float = 0.5f,
+        hairThickness: Float = 1f,
+        density: Float = 300f
+    ) {
+        val furShader = FurShader(uvBased)
+
+        val shells = MeshInstanceList(128, Attribute.INSTANCE_MODEL_MAT, ATTRIB_SHELL)
+        val numShells = mutableStateOf(initShells).onChange { makeShells() }
+
+        val theme = mutableStateOf<ColorTheme?>(null).onChange { furShader.furGradient = it?.texture }
+        val density = mutableStateOf(density).onChange { furShader.density = it }
+        val hairLength = mutableStateOf(hairLength).onChange { furShader.hairLength = it }
+        val hairThickness = mutableStateOf(hairThickness).onChange { furShader.hairThickness = it }
+        val hairRandomness = mutableStateOf(furShader.hairRandomness).onChange { furShader.hairRandomness = it }
+        val curliness = mutableStateOf(0f).onChange { makeShells() }
+
+        val dispScale = mutableStateOf(dispScale).onChange { furShader.noiseDispScale = it }
+        val dispStrength = mutableStateOf(dispStrength).onChange { furShader.noiseDispStrength = it }
+        val lenScale = mutableStateOf(lengthScale).onChange { furShader.noiseLenScale = it }
+        val lenStrength = mutableStateOf(lengthStrength).onChange { furShader.noiseLenStrength = it }
+
+        val windSpeed = mutableStateOf(0.4f)
+
+        init {
+            makeShells()
+            furShader.density = density
+            furShader.noiseDispScale = dispScale
+            furShader.noiseDispStrength = dispStrength
+            furShader.noiseLenScale = lengthScale
+            furShader.noiseLenStrength = lengthStrength
+            furShader.hairLength = hairLength
+            furShader.hairThickness = hairThickness
+        }
+
+        fun makeShells() {
+            shells.clear()
+
+            val nShells = numShells.value
+            val c = curliness.value / numShells.value
+            shells.addInstances(nShells) { buf ->
+                val mat = MutableMat4f()
+                for (i in 0 ..< nShells) {
+                    val rx = sin(i * 50f / nShells) * c
+                    val ry = cos(i * 50f / nShells) * c
+                    val rz = sin(i * 50f / nShells) * cos(i * 10f / nShells) * c
+
+                    mat.rotate(rx.deg, ry.deg, rz.deg)
+                    mat.putTo(buf)
+
+                    // outer shells first
+                    if (nShells > 1) {
+                        buf.put((nShells - i - 1) / (nShells - 1f))
+                    } else {
+                        buf.put(0f)
+                    }
+                }
+            }
+        }
     }
 
     companion object {
