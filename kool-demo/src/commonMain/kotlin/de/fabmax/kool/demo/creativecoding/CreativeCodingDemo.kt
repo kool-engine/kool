@@ -45,6 +45,10 @@ class CreativeCodingDemo : DemoScene("Creative Coding") {
 
         setupCamera()
         skybox(hdri, lod = 2f)
+
+        onRelease {
+            contents.forEach { it.release() }
+        }
     }
 
     private fun selectContent(newContentIndex: Int) {

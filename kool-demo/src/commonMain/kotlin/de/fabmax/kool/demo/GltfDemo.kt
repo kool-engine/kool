@@ -85,7 +85,7 @@ class GltfDemo : DemoScene("glTF Models") {
     private val animationSpeed = mutableStateOf(0.5f)
     private val isAutoRotate = mutableStateOf(true)
 
-    private val isDeferredShading: MutableStateValue<Boolean> = mutableStateOf(false).onChange { setupPipelines(it, isAo.value) }
+    private val isDeferredShading: MutableStateValue<Boolean> = mutableStateOf(true).onChange { setupPipelines(it, isAo.value) }
     private val isAo: MutableStateValue<Boolean> = mutableStateOf(true).onChange { setupPipelines(isDeferredShading.value, it) }
     private val isSsr: MutableStateValue<Boolean> = mutableStateOf(true).onChange {
         deferredPipeline.isSsrEnabled = it
