@@ -1,11 +1,13 @@
 package de.fabmax.kool.platform
 
-import de.fabmax.kool.*
+import de.fabmax.kool.KoolContext
+import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.LoadableFile
+import de.fabmax.kool.LoadableFileImpl
 import de.fabmax.kool.input.PlatformInputJs
 import de.fabmax.kool.pipeline.backend.RenderBackend
 import de.fabmax.kool.pipeline.backend.gl.GlImpl
 import de.fabmax.kool.pipeline.backend.gl.RenderBackendGlImpl
-import de.fabmax.kool.pipeline.backend.gl.WebGL2RenderingContext
 import de.fabmax.kool.util.RenderLoopCoroutineDispatcher
 import kotlinx.browser.document
 import kotlinx.browser.window
@@ -43,7 +45,8 @@ class JsContext internal constructor() : KoolContext() {
         }
     private var isFullscreenEnabled = false
 
-    val canvas: HTMLCanvasElement
+    val canvas: HTMLCanvasElement = document.getElementById(KoolSystem.config.canvasName) as HTMLCanvasElement? ?:
+            throw IllegalStateException("canvas element not found! Add a canvas with id \"${KoolSystem.config.canvasName}\" to your html.")
     private val sysInfo = mutableListOf<String>()
 
     private var animationMillis = 0.0
@@ -52,8 +55,6 @@ class JsContext internal constructor() : KoolContext() {
     private var canvasFixedHeight = -1
 
     init {
-        canvas = document.getElementById(KoolSystem.config.canvasName) as? HTMLCanvasElement ?:
-                throw IllegalStateException("canvas element not found! Add a canvas with id \"${KoolSystem.config.canvasName}\" to your html.")
 
         // set canvas style to desired size so that render resolution can be set according to window scale
         if (KoolSystem.config.isJsCanvasToWindowFitting) {
@@ -70,19 +71,7 @@ class JsContext internal constructor() : KoolContext() {
             canvas.height = (canvasFixedHeight * window.devicePixelRatio).roundToInt()
         }
 
-        // try to get a WebGL2 context first and use WebGL version 1 as fallback
-        var webGlCtx = canvas.getContext("webgl2")
-        if (webGlCtx == null) {
-            webGlCtx = canvas.getContext("experimental-webgl2")
-        }
-
-        if (webGlCtx != null) {
-            GlImpl.gl = webGlCtx as WebGL2RenderingContext
-            sysInfo += "WebGL 2.0"
-        } else {
-            js("alert(\"Unable to initialize WebGL2 context. Your browser may not support it.\")")
-            throw KoolException("WebGL2 context required")
-        }
+        backend = RenderBackendGlImpl(this, canvas)
 
         document.onfullscreenchange = {
             isFullscreenEnabled = document.fullscreenElement != null
@@ -132,8 +121,6 @@ class JsContext internal constructor() : KoolContext() {
 
         // suppress context menu
         canvas.oncontextmenu = Event::preventDefault
-
-        backend = RenderBackendGlImpl(this)
 
         PlatformInputJs.onContextCreated(this)
         KoolSystem.onContextCreated(this)

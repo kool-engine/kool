@@ -4,6 +4,7 @@ import de.fabmax.kool.pipeline.TextureData
 import de.fabmax.kool.pipeline.TextureData1d
 import de.fabmax.kool.pipeline.TextureData2d
 import de.fabmax.kool.util.*
+import org.lwjgl.opengl.EXTTextureFilterAnisotropic
 import org.lwjgl.opengl.GL31.*
 import org.lwjgl.opengl.GL33.glVertexAttribDivisor
 import org.lwjgl.opengl.GL42.glTexStorage2D
@@ -109,6 +110,16 @@ object GlImpl : GlApi {
     override val NULL_FRAMEBUFFER: GlFramebuffer = GlFramebuffer(GL_NONE)
     override val NULL_TEXTURE: GlTexture = GlTexture(0)
 
+    override var TEXTURE_MAX_ANISOTROPY_EXT = 0
+        private set
+
+    override lateinit var version: GlApiVersion
+        private set
+    override lateinit var capabilities: GlCapabilities
+        private set
+
+    private lateinit var backend: RenderBackendGlImpl
+
     override fun activeTexture(texture: Int) = glActiveTexture(texture)
     override fun attachShader(program: GlProgram, shader: GlShader) = glAttachShader(program.handle, shader.handle)
     override fun bindBuffer(target: Int, buffer: GlBuffer) = glBindBuffer(target, buffer.handle)
@@ -197,6 +208,57 @@ object GlImpl : GlApi {
     override fun vertexAttribIPointer(index: Int, size: Int, type: Int, stride: Int, offset: Int) = glVertexAttribIPointer(index, size, type, stride, offset.toLong())
     override fun vertexAttribPointer(index: Int, size: Int, type: Int, normalized: Boolean, stride: Int, offset: Int) = glVertexAttribPointer(index, size, type, normalized, stride, offset.toLong())
     override fun viewport(x: Int, y: Int, width: Int, height: Int) = glViewport(x, y, width, height)
+
+    fun initOpenGl(backend: RenderBackendGlImpl) {
+        this.backend = backend
+        this.version = checkApiVersion()
+
+        // check for anisotropic texture filtering support
+        val extensions = glGetString(GL_EXTENSIONS)?.split(" ")?.toSet() ?: emptySet()
+
+        var maxAnisotropy = 1
+        if (extensions.contains("GL_EXT_texture_filter_anisotropic")) {
+            maxAnisotropy = glGetFloat(EXTTextureFilterAnisotropic.GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT).toInt()
+            TEXTURE_MAX_ANISOTROPY_EXT = EXTTextureFilterAnisotropic.GL_TEXTURE_MAX_ANISOTROPY_EXT
+        }
+        val maxTexUnits = glGetInteger(GL_MAX_TEXTURE_IMAGE_UNITS)
+        val canFastCopyTextures = version.isHigherOrEqualThan(4, 3)
+
+        capabilities = GlCapabilities(
+            maxTexUnits,
+            maxAnisotropy,
+            canFastCopyTextures
+        )
+    }
+
+    override fun copyTexturesFast(renderPass: OffscreenRenderPass2dGl) {
+        TextureCopyHelper.copyTexturesFast(renderPass, backend)
+    }
+
+    override fun copyTexturesFast(renderPass: OffscreenRenderPassCubeGl) {
+        TextureCopyHelper.copyTexturesFast(renderPass, backend)
+    }
+
+    override fun readTexturePixels(src: LoadedTextureGl, dst: TextureData) {
+        TextureCopyHelper.readTexturePixels(src, dst)
+    }
+
+    private fun checkApiVersion(): GlApiVersion {
+        val versionStr = glGetString(GL_VERSION) ?: ""
+        var major = 0
+        var minor = 0
+        if (versionStr.matches(Regex("^[0-9]\\.[0-9].*"))) {
+            val parts = versionStr.split(Regex("[^0-9]"), 3)
+            major = parts[0].toInt()
+            minor = parts[1].toInt()
+        }
+        if (major < 3 || (major == 3 && minor < 3)) {
+            throw RuntimeException("Minimum required OpenGL version is 3.3 but system version is $major.$minor")
+        }
+
+        val deviceName = glGetString(GL_RENDERER) ?: "<unknown>"
+        return GlApiVersion(major, minor, GlFlavor.OpenGL, versionStr, deviceName)
+    }
 
     private fun getActiveUniformsImpl(program: GlProgram, uniformIndices: IntArray, pName: Int): IntArray {
         val offsets = IntArray(uniformIndices.size)

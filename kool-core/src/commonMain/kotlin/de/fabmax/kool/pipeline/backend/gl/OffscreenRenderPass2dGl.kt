@@ -38,7 +38,7 @@ class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, val backend: Re
                 gl.bindFramebuffer(gl.FRAMEBUFFER, fbos[mipLevel])
                 backend.queueRenderer.renderViews(pass)
 
-                if (needsCopy && !backend.capabilities.canFastCopyTextures) {
+                if (needsCopy && !gl.capabilities.canFastCopyTextures) {
                     // use fallback / slightly slower texture copy method
                     copyToTexturesCompat(mipLevel, !parent.drawMipLevels)
                 }
@@ -52,9 +52,9 @@ class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, val backend: Re
                 }
             }
 
-            if (needsCopy && backend.capabilities.canFastCopyTextures) {
+            if (needsCopy && gl.capabilities.canFastCopyTextures) {
                 // use fast texture copy method, requires OpenGL 4.3 or higher
-                backend.copyTexturesFast(this)
+                gl.copyTexturesFast(this)
             }
         }
     }

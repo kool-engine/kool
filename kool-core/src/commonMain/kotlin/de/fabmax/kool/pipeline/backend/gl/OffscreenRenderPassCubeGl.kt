@@ -41,7 +41,7 @@ class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, val backend
                 gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, glColorTex, mipLevel)
                 backend.queueRenderer.renderView(passView)
 
-                if (needsCopy && !backend.capabilities.canFastCopyTextures) {
+                if (needsCopy && !gl.capabilities.canFastCopyTextures) {
                     // use fallback / slightly slower texture copy method
                     copyToTexturesCompat(i, mipLevel)
                 }
@@ -49,9 +49,9 @@ class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, val backend
         }
         gl.bindFramebuffer(gl.FRAMEBUFFER, gl.NULL_FRAMEBUFFER)
 
-        if (needsCopy && backend.capabilities.canFastCopyTextures) {
+        if (needsCopy && gl.capabilities.canFastCopyTextures) {
             // use fast texture copy method, requires OpenGL 4.3 or higher
-            backend.copyTexturesFast(this)
+            gl.copyTexturesFast(this)
         }
     }
 

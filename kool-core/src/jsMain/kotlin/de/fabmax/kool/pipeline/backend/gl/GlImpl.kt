@@ -9,8 +9,8 @@ import de.fabmax.kool.util.*
 import org.khronos.webgl.*
 
 object GlImpl : GlApi {
-    internal lateinit var gl: WebGL2RenderingContext
-        internal set
+    lateinit var gl: WebGL2RenderingContext
+        private set
 
     override val ARRAY_BUFFER = WebGLRenderingContext.ARRAY_BUFFER
     override val BACK = WebGLRenderingContext.BACK
@@ -109,6 +109,13 @@ object GlImpl : GlApi {
     override val NULL_BUFFER: GlBuffer = GlBuffer(-1)
     override val NULL_FRAMEBUFFER: GlFramebuffer = GlFramebuffer(-1)
     override val NULL_TEXTURE: GlTexture = GlTexture(-1)
+    override var TEXTURE_MAX_ANISOTROPY_EXT = 0
+        private set
+
+    override val version = GlApiVersion(2, 0, GlFlavor.WebGL, "2.0", "WebGL")
+
+    override lateinit var capabilities: GlCapabilities
+        private set
 
     private val buffers = WebGlObjList<WebGLBuffer, Unit>(
         factory = { gl.createBuffer() },
@@ -233,6 +240,64 @@ object GlImpl : GlApi {
     override fun vertexAttribIPointer(index: Int, size: Int, type: Int, stride: Int, offset: Int) = gl.vertexAttribIPointer(index, size, type, stride, offset)
     override fun vertexAttribPointer(index: Int, size: Int, type: Int, normalized: Boolean, stride: Int, offset: Int) = gl.vertexAttribPointer(index, size, type, normalized, stride, offset)
     override fun viewport(x: Int, y: Int, width: Int, height: Int) = gl.viewport(x, y, width, height)
+
+    @Suppress("UnsafeCastFromDynamic")
+    fun initWebGl(glCtx: WebGL2RenderingContext) {
+        gl = glCtx
+
+        // by getting the extension, it is automatically enabled, i.e. float formats become usable as texture formats
+        if (gl.getExtension("EXT_color_buffer_float") == null) {
+            js("alert(\"WebGL 2 implementation lacks support for float textures (EXT_color_buffer_float)\")")
+            logE { "WebGL 2 implementation lacks support for float textures (EXT_color_buffer_float)" }
+        }
+
+        if (gl.getExtension("EXT_clip_control") != null) {
+            // todo: EXT_clip_control is not yet available in browsers, but might be at some point in the future...
+            logI { "clipControl extension is available!" }
+        }
+
+        // check for anisotropic filtering support
+        var maxAnisotropy = 1
+        val extAnisotropic = gl.getExtension("EXT_texture_filter_anisotropic") ?:
+                             gl.getExtension("MOZ_EXT_texture_filter_anisotropic") ?:
+                             gl.getExtension("WEBKIT_EXT_texture_filter_anisotropic")
+        if (extAnisotropic != null) {
+            TEXTURE_MAX_ANISOTROPY_EXT = extAnisotropic.TEXTURE_MAX_ANISOTROPY_EXT
+            maxAnisotropy = gl.getParameter(extAnisotropic.MAX_TEXTURE_MAX_ANISOTROPY_EXT) as Int
+        }
+
+        val maxTexUnits = gl.getParameter(WebGLRenderingContext.MAX_TEXTURE_IMAGE_UNITS) as Int
+        val canFastCopyTextures = false
+
+        capabilities = GlCapabilities(
+            maxTexUnits,
+            maxAnisotropy,
+            canFastCopyTextures
+        )
+    }
+
+    override fun copyTexturesFast(renderPass: OffscreenRenderPass2dGl) {
+        throw IllegalStateException("WebGL implementation cannot copy fast")
+    }
+
+    override fun copyTexturesFast(renderPass: OffscreenRenderPassCubeGl) {
+        throw IllegalStateException("WebGL implementation cannot copy fast")
+    }
+
+    override fun readTexturePixels(src: LoadedTextureGl, dst: TextureData) {
+        val fb = createFramebuffer()
+        bindFramebuffer(FRAMEBUFFER, fb)
+        framebufferTexture2D(FRAMEBUFFER, COLOR_ATTACHMENT0, TEXTURE_2D, src.glTexture, 0)
+
+        if (checkFramebufferStatus(FRAMEBUFFER) == FRAMEBUFFER_COMPLETE) {
+            val format = gl.getParameter(WebGLRenderingContext.IMPLEMENTATION_COLOR_READ_FORMAT) as Int
+            val type = gl.getParameter(WebGLRenderingContext.IMPLEMENTATION_COLOR_READ_TYPE) as Int
+            gl.readPixels(0, 0, src.width, src.height, format, type, dst.arrayBufferView)
+        } else {
+            logE { "Failed reading pixels from framebuffer" }
+        }
+        deleteFramebuffer(fb)
+    }
 
     private class WebGlObjList<T, P>(
         val factory: (P) -> T?,

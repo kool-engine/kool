@@ -23,9 +23,7 @@ internal object TextureCopyHelper {
     }
 
     fun copyTexturesFast(renderPass: OffscreenRenderPassCubeGl, backend: RenderBackendGlImpl) {
-        val gl = backend.gl
         val pass = renderPass.parent
-
         for (i in pass.copyTargetsColor.indices) {
             val copyTarget = pass.copyTargetsColor[i]
             var width = copyTarget.loadedTexture?.width ?: 0
@@ -40,8 +38,8 @@ internal object TextureCopyHelper {
             val target = copyTarget.loadedTexture as LoadedTextureGl
             for (mipLevel in 0 until pass.mipLevels) {
                 if (pass.colorRenderTarget == OffscreenRenderPass.RenderTarget.TEXTURE) {
-                    glCopyImageSubData(renderPass.glColorTex.handle, gl.TEXTURE_CUBE_MAP, mipLevel, 0, 0, 0,
-                        target.glTexture.handle, gl.TEXTURE_CUBE_MAP, mipLevel, 0, 0, 0, width, height, 6)
+                    glCopyImageSubData(renderPass.glColorTex.handle, GlImpl.TEXTURE_CUBE_MAP, mipLevel, 0, 0, 0,
+                        target.glTexture.handle, GlImpl.TEXTURE_CUBE_MAP, mipLevel, 0, 0, 0, width, height, 6)
                 } else {
                     throw IllegalStateException("Cubemap color copy from renderbuffer is not supported")
                 }
@@ -53,9 +51,7 @@ internal object TextureCopyHelper {
     }
 
     fun copyTexturesFast(renderPass: OffscreenRenderPass2dGl, backend: RenderBackendGlImpl) {
-        val gl = backend.gl
         val pass = renderPass.parent
-
         for (i in pass.copyTargetsColor.indices) {
             val copyTarget = pass.copyTargetsColor[i]
             var width = copyTarget.loadedTexture?.width ?: 0
@@ -71,11 +67,11 @@ internal object TextureCopyHelper {
             val target = copyTarget.loadedTexture as LoadedTextureGl
             for (mipLevel in 0 until pass.mipLevels) {
                 if (pass.colorRenderTarget == OffscreenRenderPass.RenderTarget.TEXTURE) {
-                    glCopyImageSubData(renderPass.colorTextures[0].handle, gl.TEXTURE_2D, mipLevel, 0, 0, 0,
-                            target.glTexture.handle, gl.TEXTURE_2D, mipLevel, 0, 0, 0, width, height, 1)
+                    glCopyImageSubData(renderPass.colorTextures[0].handle, GlImpl.TEXTURE_2D, mipLevel, 0, 0, 0,
+                            target.glTexture.handle, GlImpl.TEXTURE_2D, mipLevel, 0, 0, 0, width, height, 1)
                 } else {
-                    glCopyImageSubData(renderPass.rbos[mipLevel].handle, gl.RENDERBUFFER, 0, 0, 0, 0,
-                            target.glTexture.handle, gl.TEXTURE_2D, mipLevel, 0, 0, 0, width, height, 1)
+                    glCopyImageSubData(renderPass.rbos[mipLevel].handle, GlImpl.RENDERBUFFER, 0, 0, 0, 0,
+                            target.glTexture.handle, GlImpl.TEXTURE_2D, mipLevel, 0, 0, 0, width, height, 1)
                 }
                 width = width shr 1
                 height = height shr 1

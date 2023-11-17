@@ -46,6 +46,7 @@ class DebugOverlay(position: Position = Position.UPPER_RIGHT) {
 
     init {
         val fpsFont = MsdfFont(sizePts = 20f)
+        val apiName = KoolSystem.requireContext().backend.apiName
 
         ui = UiScene("debug-overlay") {
             onUpdate += {
@@ -92,6 +93,7 @@ class DebugOverlay(position: Position = Position.UPPER_RIGHT) {
 
                 if (isExpanded.use()) {
                     Text("Kool v${KoolContext.KOOL_VERSION}") { debugTextStyle() }
+                    Text(apiName) { debugTextStyle() }
                     sysInfos.use().forEach { txt -> Text(txt) { debugTextStyle() } }
                     Text(viewportText.use()) { debugTextStyle() }
                     Text(uptimeText.use()) { debugTextStyle() }

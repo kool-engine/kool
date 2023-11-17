@@ -12,14 +12,11 @@ import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Time
 
 abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolContext) : RenderBackend {
-
-    abstract val version: ApiVersion
-    abstract val capabilities: GlCapabilities
-
+    override val name = "Common GL Backend"
     override val apiName: String
-        get() = version.versionName
+        get() = gl.version.versionName
     override val deviceName: String
-        get() = version.deviceInfo ?: "unknown"
+        get() = gl.version.deviceInfo
 
     override val projCorrectionMatrix: Mat4f = Mat4f.IDENTITY
     override val depthBiasMatrix: Mat4f = MutableMat4f().translate(0.5f, 0.5f, 0.5f).scale(0.5f)
@@ -87,12 +84,6 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
         return ShaderCodeGl(src.vertexSrc, src.fragmentSrc)
     }
 
-    internal abstract fun copyTexturesFast(renderPass: OffscreenRenderPass2dGl)
-
-    internal abstract fun copyTexturesFast(renderPass: OffscreenRenderPassCubeGl)
-
-    internal abstract fun readTexturePixels(src: LoadedTextureGl, dst: TextureData)
-
     protected abstract fun drawOffscreen(offscreenPass: OffscreenRenderPass)
 
     private fun doOffscreenPasses(scene: Scene, ctx: KoolContext) {
@@ -142,35 +133,5 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
             pow2 = pow2 shl 1
         }
         return pow2
-    }
-
-    data class ApiVersion(
-        val major: Int,
-        val minor: Int,
-        val flavor: GlFlavor,
-        val version: String,
-        val deviceInfo: String?
-    ) {
-        val versionName: String = "${flavor.flavorName} $version"
-
-        fun isHigherOrEqualThan(major: Int, minor: Int): Boolean {
-            if (this.major < major) {
-                return false
-            }
-            return this.major > major || this.minor >= minor
-        }
-    }
-
-    data class GlCapabilities(
-        val maxTexUnits: Int,
-        val maxAnisotropy: Int,
-        val glTextureMaxAnisotropyExt: Int,
-        val canFastCopyTextures: Boolean
-    )
-
-    enum class GlFlavor(val flavorName: String) {
-        OpenGL("OpenGL"),
-        OpenGLES("OpenGL ES"),
-        WebGL("WebGL")
     }
 }

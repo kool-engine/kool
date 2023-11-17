@@ -42,9 +42,9 @@ class LoadedTextureGl(
             gl.texParameteri(target, gl.TEXTURE_WRAP_R, props.addressModeW.glAddressMode())
         }
 
-        val anisotropy = min(props.maxAnisotropy, backend.capabilities.maxAnisotropy)
+        val anisotropy = min(props.maxAnisotropy, gl.capabilities.maxAnisotropy)
         if (anisotropy > 1) {
-            gl.texParameteri(target, backend.capabilities.glTextureMaxAnisotropyExt, anisotropy)
+            gl.texParameteri(target, gl.TEXTURE_MAX_ANISOTROPY_EXT, anisotropy)
         }
 
         if (anisotropy > 1 && (props.minFilter == FilterMethod.NEAREST || props.magFilter == FilterMethod.NEAREST)) {
@@ -60,7 +60,7 @@ class LoadedTextureGl(
             throw IllegalArgumentException("supplied targetData dimension does not match texture size " +
                     "(supplied: ${targetData.width} x ${targetData.height}, actual: $width x $height)")
         }
-        backend.readTexturePixels(this, targetData)
+        gl.readTexturePixels(this, targetData)
     }
 
     override fun release() {

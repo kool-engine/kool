@@ -116,6 +116,11 @@ interface GlApi {
     val NULL_FRAMEBUFFER: GlFramebuffer
     val NULL_TEXTURE: GlTexture
 
+    val TEXTURE_MAX_ANISOTROPY_EXT: Int
+
+    val version: GlApiVersion
+    val capabilities: GlCapabilities
+
     fun activeTexture(texture: Int)
     fun attachShader(program: GlProgram, shader: GlShader)
     fun bindBuffer(target: Int, buffer: GlBuffer)
@@ -205,5 +210,36 @@ interface GlApi {
     fun vertexAttribPointer(index: Int, size: Int, type: Int, normalized: Boolean, stride: Int, offset: Int)
     fun viewport(x: Int, y: Int, width: Int, height: Int)
 
-
+    fun copyTexturesFast(renderPass: OffscreenRenderPass2dGl)
+    fun copyTexturesFast(renderPass: OffscreenRenderPassCubeGl)
+    fun readTexturePixels(src: LoadedTextureGl, dst: TextureData)
 }
+
+data class GlApiVersion(
+    val major: Int,
+    val minor: Int,
+    val flavor: GlFlavor,
+    val version: String,
+    val deviceInfo: String
+) {
+    val versionName: String = "${flavor.flavorName} $version"
+
+    fun isHigherOrEqualThan(major: Int, minor: Int): Boolean {
+        if (this.major < major) {
+            return false
+        }
+        return this.major > major || this.minor >= minor
+    }
+}
+
+enum class GlFlavor(val flavorName: String) {
+    OpenGL("OpenGL"),
+    OpenGLES("OpenGL ES"),
+    WebGL("WebGL")
+}
+
+data class GlCapabilities(
+    val maxTexUnits: Int,
+    val maxAnisotropy: Int,
+    val canFastCopyTextures: Boolean
+)
