@@ -5,7 +5,6 @@ import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.Time
-import de.fabmax.kool.util.launchDelayed
 import kotlin.math.abs
 import kotlin.math.max
 
@@ -60,15 +59,13 @@ open class InputAxes(ctx: KoolContext) : BaseReleasable() {
     fun digital(name: String): Boolean = axes[name]?.digital == true
 
     override fun release() {
-        launchDelayed(1) {
-            KoolSystem.requireContext().onRender -= updateAxes
-            axesList.forEach { ax ->
-                ax.keyListeners.forEach { InputStack.defaultInputHandler.removeKeyListener(it) }
-            }
-            axesList.clear()
-            axes.clear()
-            super.release()
+        KoolSystem.requireContext().onRender -= updateAxes
+        axesList.forEach { ax ->
+            ax.keyListeners.forEach { InputStack.defaultInputHandler.removeKeyListener(it) }
         }
+        axesList.clear()
+        axes.clear()
+        super.release()
     }
 
     class Axis(val name: String) {

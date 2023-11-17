@@ -19,7 +19,7 @@ open class Node(name: String? = null) : BaseReleasable() {
 
     var name: String = name ?: makeNodeName(this::class.simpleName ?: "Node")
 
-    val onUpdate: MutableList<(RenderPass.UpdateEvent) -> Unit> = mutableListOf()
+    val onUpdate: BufferedList<(RenderPass.UpdateEvent) -> Unit> = BufferedList()
 
     val tags = Tags()
 
@@ -118,6 +118,7 @@ open class Node(name: String? = null) : BaseReleasable() {
     open fun update(updateEvent: RenderPass.UpdateEvent) {
         checkIsNotReleased()
 
+        onUpdate.update()
         for (i in onUpdate.indices) {
             onUpdate[i](updateEvent)
         }

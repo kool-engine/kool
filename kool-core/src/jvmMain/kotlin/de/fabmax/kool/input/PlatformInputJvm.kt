@@ -139,11 +139,32 @@ object PlatformInputJvm : PlatformInput {
                 if (mods and GLFW.GLFW_MOD_SUPER != 0) {
                     keyMod = keyMod or KeyboardInput.KEY_MOD_SUPER
                 }
+
+                // set keyMod explicitly if a mod key is pressed / released (apparently mods passed by GLFW lag behind)
+                when (key) {
+                    GLFW.GLFW_KEY_LEFT_SHIFT -> keyMod = updateDownMask(keyMod, KeyboardInput.KEY_MOD_SHIFT, event)
+                    GLFW.GLFW_KEY_RIGHT_SHIFT -> keyMod = updateDownMask(keyMod, KeyboardInput.KEY_MOD_SHIFT, event)
+                    GLFW.GLFW_KEY_LEFT_CONTROL -> keyMod = updateDownMask(keyMod, KeyboardInput.KEY_MOD_CTRL, event)
+                    GLFW.GLFW_KEY_RIGHT_CONTROL -> keyMod = updateDownMask(keyMod, KeyboardInput.KEY_MOD_CTRL, event)
+                    GLFW.GLFW_KEY_LEFT_ALT -> keyMod = updateDownMask(keyMod, KeyboardInput.KEY_MOD_ALT, event)
+                    GLFW.GLFW_KEY_RIGHT_ALT -> keyMod = updateDownMask(keyMod, KeyboardInput.KEY_MOD_ALT, event)
+                    GLFW.GLFW_KEY_LEFT_SUPER -> keyMod = updateDownMask(keyMod, KeyboardInput.KEY_MOD_SUPER, event)
+                    GLFW.GLFW_KEY_RIGHT_SUPER -> keyMod = updateDownMask(keyMod, KeyboardInput.KEY_MOD_SUPER, event)
+                }
+
                 KeyboardInput.handleKeyEvent(KeyEvent(keyCode, localKeyCode, event, keyMod))
             }
         }
         GLFW.glfwSetCharCallback(windowHandle) { _, codepoint ->
             KeyboardInput.handleCharTyped(codepoint.toChar())
+        }
+    }
+
+    private fun updateDownMask(mask: Int, bit: Int, event: Int): Int {
+        return if (event and KeyboardInput.KEY_EV_DOWN != 0) {
+            mask or bit
+        } else {
+            mask and bit.inv()
         }
     }
 

@@ -4,15 +4,11 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.pipeline.drawqueue.DrawQueue
 import de.fabmax.kool.scene.*
-import de.fabmax.kool.util.BaseReleasable
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.Time
-import de.fabmax.kool.util.Viewport
+import de.fabmax.kool.util.*
 
 abstract class RenderPass(var name: String) : BaseReleasable() {
 
     var parentScene: Scene? = null
-    val dependencies = mutableListOf<RenderPass>()
 
     abstract val views: List<View>
 
@@ -22,18 +18,14 @@ abstract class RenderPass(var name: String) : BaseReleasable() {
 
     var isDoublePrecision = false
 
-    val onBeforeCollectDrawCommands = mutableListOf<((UpdateEvent) -> Unit)>()
-    val onAfterCollectDrawCommands = mutableListOf<((UpdateEvent) -> Unit)>()
-    val onAfterDraw = mutableListOf<((KoolContext) -> Unit)>()
+    val onBeforeCollectDrawCommands = BufferedList<((UpdateEvent) -> Unit)>()
+    val onAfterCollectDrawCommands = BufferedList<((UpdateEvent) -> Unit)>()
+    val onAfterDraw = BufferedList<((KoolContext) -> Unit)>()
 
     var isProfileTimes = true
     var tUpdate = 0.0
     var tCollect = 0.0
     var tDraw = 0.0
-
-    fun dependsOn(renderPass: RenderPass) {
-        dependencies += renderPass
-    }
 
     open fun update(ctx: KoolContext) {
         checkIsNotReleased()
@@ -54,6 +46,7 @@ abstract class RenderPass(var name: String) : BaseReleasable() {
 
     protected open fun beforeCollectDrawCommands(updateEvent: UpdateEvent) {
         updateEvent.view.drawQueue.reset(isDoublePrecision)
+        onBeforeCollectDrawCommands.update()
         for (i in onBeforeCollectDrawCommands.indices) {
             onBeforeCollectDrawCommands[i](updateEvent)
         }
@@ -62,12 +55,14 @@ abstract class RenderPass(var name: String) : BaseReleasable() {
     }
 
     protected open fun afterCollectDrawCommands(updateEvent: UpdateEvent) {
+        onAfterCollectDrawCommands.update()
         for (i in onAfterCollectDrawCommands.indices) {
             onAfterCollectDrawCommands[i](updateEvent)
         }
     }
 
     open fun afterDraw(ctx: KoolContext) {
+        onAfterDraw.update()
         for (i in onAfterDraw.indices) {
             onAfterDraw[i](ctx)
         }

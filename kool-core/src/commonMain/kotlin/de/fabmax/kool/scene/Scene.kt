@@ -7,6 +7,7 @@ import de.fabmax.kool.pipeline.OffscreenRenderPass
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.pipeline.ScreenRenderPass
 import de.fabmax.kool.pipeline.Texture2d
+import de.fabmax.kool.util.BufferedList
 import de.fabmax.kool.util.logD
 
 /**
@@ -19,7 +20,7 @@ inline fun scene(name: String? = null, block: Scene.() -> Unit): Scene {
 
 open class Scene(name: String? = null) : Node(name) {
 
-    val onRenderScene: MutableList<(KoolContext) -> Unit> = mutableListOf()
+    val onRenderScene: BufferedList<(KoolContext) -> Unit> = BufferedList()
 
     val mainRenderPass = ScreenRenderPass(this)
 
@@ -27,11 +28,8 @@ open class Scene(name: String? = null) : Node(name) {
     val lighting: Lighting
         get() = mainRenderPass.lighting!!
 
-    private val mutOffscreenPasses = mutableListOf<OffscreenRenderPass>()
-    private val addOffscreenPasses = mutableListOf<OffscreenRenderPass>()
-    private val remOffscreenPasses = mutableListOf<OffscreenRenderPass>()
-    val offscreenPasses: List<OffscreenRenderPass>
-        get() = mutOffscreenPasses
+    val offscreenPasses: BufferedList<OffscreenRenderPass> = BufferedList()
+    internal val sortedOffscreenPasses = mutableListOf<OffscreenRenderPass>()
 
     var framebufferCaptureMode = FramebufferCaptureMode.Disabled
     val capturedFramebuffer by lazy {
@@ -39,45 +37,30 @@ open class Scene(name: String? = null) : Node(name) {
     }
 
     val isEmpty: Boolean
-        get() = children.isEmpty() && mutOffscreenPasses.isEmpty() && addOffscreenPasses.isEmpty() && remOffscreenPasses.isEmpty()
+        get() = children.isEmpty() && offscreenPasses.isEmpty()
 
     fun addOffscreenPass(pass: OffscreenRenderPass) {
-        addOffscreenPasses += pass
+        offscreenPasses += pass
     }
 
     fun removeOffscreenPass(pass: OffscreenRenderPass) {
-        addOffscreenPasses -= pass
-        remOffscreenPasses += pass
-    }
-
-    private fun addOffscreenPasses() {
-        if (addOffscreenPasses.isNotEmpty()) {
-            addOffscreenPasses.forEach {
-                if (it !in mutOffscreenPasses) {
-                    mutOffscreenPasses += it
-                }
-            }
-            addOffscreenPasses.clear()
-        }
-    }
-
-    private fun removeOffscreenPasses() {
-        if (remOffscreenPasses.isNotEmpty()) {
-            mutOffscreenPasses.removeAll(remOffscreenPasses)
-            remOffscreenPasses.clear()
-        }
+        offscreenPasses -= pass
     }
 
     fun renderScene(ctx: KoolContext) {
+        onRenderScene.update()
         for (i in onRenderScene.indices) {
             onRenderScene[i](ctx)
         }
 
-        // remove all offscreen passes that were scheduled for removal in last frame
-        removeOffscreenPasses()
-        addOffscreenPasses()
-
         mainRenderPass.update(ctx)
+
+        if (offscreenPasses.update()) {
+            // offscreen passes have changed, re-sort them to maintain correct dependency order
+            sortedOffscreenPasses.clear()
+            sortedOffscreenPasses.addAll(offscreenPasses)
+            OffscreenRenderPass.sortByDependencies(sortedOffscreenPasses)
+        }
 
         for (i in offscreenPasses.indices) {
             val pass = offscreenPasses[i]
@@ -106,13 +89,10 @@ open class Scene(name: String? = null) : Node(name) {
         checkIsNotReleased()
 
         mainRenderPass.release()
-        mutOffscreenPasses.removeAll(remOffscreenPasses)
-        remOffscreenPasses.clear()
         for (i in offscreenPasses.indices) {
             offscreenPasses[i].release()
         }
-        remOffscreenPasses.clear()
-        mutOffscreenPasses.clear()
+        offscreenPasses.clear()
         capturedFramebuffer.dispose()
 
         super.release()

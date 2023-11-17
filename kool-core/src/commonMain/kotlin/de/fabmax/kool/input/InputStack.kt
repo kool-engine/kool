@@ -1,6 +1,7 @@
 package de.fabmax.kool.input
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.util.BufferedList
 import de.fabmax.kool.util.logD
 
 object InputStack {
@@ -8,7 +9,6 @@ object InputStack {
     val defaultInputHandler = InputHandler("InputStack.defaultInputHandler")
 
     val handlerStack = mutableListOf(defaultInputHandler)
-
     val onInputStackChanged = mutableListOf<() -> Unit>()
 
     fun pushTop(inputHandler: InputHandler) {
@@ -81,8 +81,8 @@ object InputStack {
         var blockAllPointerInput = false
         var blockAllKeyboardInput = false
 
-        val pointerListeners = mutableListOf<PointerListener>()
-        val keyboardListeners = mutableListOf<KeyboardListener>()
+        val pointerListeners = BufferedList<PointerListener>()
+        val keyboardListeners = BufferedList<KeyboardListener>()
 
         val simpleKeyboardListener = SimpleKeyboardListener()
 
@@ -91,10 +91,12 @@ object InputStack {
         }
 
         open fun handlePointer(pointerState: PointerState, ctx: KoolContext) {
+            pointerListeners.update()
             pointerListeners.forEach { it.handlePointer(pointerState, ctx) }
         }
 
         open fun handleKeyEvents(keyEvents: MutableList<KeyEvent>, ctx: KoolContext) {
+            keyboardListeners.update()
             keyboardListeners.forEach { it.handleKeyboard(keyEvents, ctx) }
         }
 
@@ -119,7 +121,7 @@ object InputStack {
     }
 
     class SimpleKeyboardListener : KeyboardListener {
-        val keyListeners = mutableMapOf<KeyCode, MutableList<SimpleKeyListener>>()
+        val keyListeners = mutableMapOf<KeyCode, BufferedList<SimpleKeyListener>>()
 
         fun addKeyListener(
             keyCode: KeyCode,
@@ -131,7 +133,7 @@ object InputStack {
         }
 
         fun addKeyListener(listener: SimpleKeyListener): SimpleKeyListener {
-            val listeners = keyListeners.getOrPut(listener.keyCode) { mutableListOf() }
+            val listeners = keyListeners.getOrPut(listener.keyCode) { BufferedList() }
             listeners += listener
             logD { "Registered key handler: \"${listener.name}\" [keyCode=${listener.keyCode}]" }
             return listener
@@ -149,6 +151,7 @@ object InputStack {
                 var isHandled = false
 
                 keyListeners[ev.keyCode]?.let { listeners ->
+                    listeners.update()
                     for (j in listeners.indices) {
                         if (listeners[j].filter(ev)) {
                             listeners[j](ev)
@@ -158,6 +161,7 @@ object InputStack {
                 }
                 if (!isHandled) {
                     keyListeners[ev.localKeyCode]?.let { listeners ->
+                        listeners.update()
                         for (j in listeners.indices) {
                             if (listeners[j].filter(ev)) {
                                 listeners[j](ev)

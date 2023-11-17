@@ -15,9 +15,9 @@ class RenderPassGraph {
 
     private val groupPool = mutableListOf<RenderPassGroup>()
 
-    private val remainingPasses = mutableSetOf<RenderPass>()
-    private val processedPasses = mutableSetOf<RenderPass>()
-    private val addedPasses = mutableSetOf<RenderPass>()
+    private val remainingPasses = mutableSetOf<OffscreenRenderPass>()
+    private val processedPasses = mutableSetOf<OffscreenRenderPass>()
+    private val addedPasses = mutableSetOf<OffscreenRenderPass>()
 
     fun updateGraph(ctx: Lwjgl3Context) {
         val scenes = ctx.scenes
@@ -62,7 +62,7 @@ class RenderPassGraph {
         // the loop looks kinda scary, however number of render passes should typically very small (<10), so that
         // it *should* be fast enough...
         while (remainingPasses.isNotEmpty()) {
-            var added: RenderPass? = null
+            var added: OffscreenRenderPass? = null
             for (candidate in remainingPasses) {
                 if (processedPasses.containsAll(candidate.dependencies)) {
                     if (groups.isNotEmpty()) {
@@ -152,7 +152,9 @@ class RenderPassGraph {
 
         operator fun plusAssign(renderPass: RenderPass) {
             renderPasses.add(renderPass)
-            renderPassDependencies.addAll(renderPass.dependencies)
+            if (renderPass is OffscreenRenderPass) {
+                renderPassDependencies.addAll(renderPass.dependencies)
+            }
             numRequiredCmdBuffers += if (renderPass is OffscreenRenderPass2dPingPong) renderPass.pingPongPasses else 1
         }
 

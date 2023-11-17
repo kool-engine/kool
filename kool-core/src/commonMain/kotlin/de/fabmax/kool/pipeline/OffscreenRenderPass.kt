@@ -4,6 +4,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec2i
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.math.getNumMipLevels
+import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logT
 import de.fabmax.kool.util.logW
 import kotlin.math.max
@@ -39,6 +40,7 @@ abstract class OffscreenRenderPass(config: Config) : RenderPass(config.name) {
     val drawMipLevels = config.drawMipLevels
     var onSetupMipLevel: ((Int, KoolContext) -> Unit)? = null
 
+    val dependencies = mutableListOf<RenderPass>()
     var isEnabled = true
 
     init {
@@ -52,6 +54,10 @@ abstract class OffscreenRenderPass(config: Config) : RenderPass(config.name) {
         } else if (depthRenderTarget == RenderTarget.RENDER_BUFFER && config.depthAttachment != null) {
             logW { "depthAttachment is ignored if depthRenderTarget is RENDER_BUFFER" }
         }
+    }
+
+    fun dependsOn(renderPass: RenderPass) {
+        dependencies += renderPass
     }
 
     fun getColorTexProps(colorAttachment: Int = 0): TextureProps {
@@ -80,6 +86,48 @@ abstract class OffscreenRenderPass(config: Config) : RenderPass(config.name) {
 
     protected open fun applySize(width: Int, height: Int, ctx: KoolContext) {
         _size.set(width, height)
+    }
+
+    companion object {
+        fun sortByDependencies(renderPasses: MutableList<OffscreenRenderPass>) {
+            val open = mutableSetOf<OffscreenRenderPass>()
+            val closed = mutableSetOf<OffscreenRenderPass>()
+
+            renderPasses.forEach {
+                open += it
+            }
+            renderPasses.clear()
+
+            while (open.isNotEmpty()) {
+                var anyClosed = false
+                val openIt = open.iterator()
+                while (openIt.hasNext()) {
+                    val pass = openIt.next()
+                    var close = true
+                    for (j in pass.dependencies.indices) {
+                        val dep = pass.dependencies[j]
+                        if (dep !in closed) {
+                            close = false
+                            break
+                        }
+                    }
+                    if (close) {
+                        anyClosed = true
+                        openIt.remove()
+                        closed += pass
+                        renderPasses += pass
+                    }
+                }
+                if (!anyClosed) {
+                    logE { "Failed to sort offscreen passes, remaining:" }
+                    open.forEach { p ->
+                        val missingPasses = p.dependencies.filter { it !in closed }.map { it.name }
+                        logE { "  ${p.name}, missing dependencies: $missingPasses" }
+                    }
+                    break
+                }
+            }
+        }
     }
 
     open class Config {

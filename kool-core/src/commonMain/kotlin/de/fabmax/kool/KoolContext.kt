@@ -11,10 +11,7 @@ import de.fabmax.kool.pipeline.ShaderCode
 import de.fabmax.kool.pipeline.backend.RenderBackend
 import de.fabmax.kool.pipeline.ibl.BrdfLutPass
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.util.Profiling
-import de.fabmax.kool.util.Time
-import de.fabmax.kool.util.Viewport
-import de.fabmax.kool.util.logD
+import de.fabmax.kool.util.*
 import kotlin.math.roundToInt
 
 /**
@@ -58,7 +55,7 @@ abstract class KoolContext {
     var applicationCallbacks: ApplicationCallbacks = object : ApplicationCallbacks { }
     val onWindowScaleChanged = mutableListOf<(KoolContext) -> Unit>()
     val onWindowFocusChanged = mutableListOf<(KoolContext) -> Unit>()
-    val onRender = mutableListOf<(KoolContext) -> Unit>()
+    val onRender = BufferedList<(KoolContext) -> Unit>()
 
     /**
      * Frames per second (averaged over last 25 frames)
@@ -68,7 +65,7 @@ abstract class KoolContext {
 
     val scenes: MutableList<Scene> = mutableListOf()
     val backgroundScene = Scene("backgroundScene")
-    val backgroundPasses: List<OffscreenRenderPass>
+    val backgroundPasses: BufferedList<OffscreenRenderPass>
         get() = backgroundScene.offscreenPasses
 
     val defaultPbrBrdfLut by lazy { BrdfLutPass(backgroundScene).also { addBackgroundRenderPass(it) }.copyColor() }
@@ -135,6 +132,8 @@ abstract class KoolContext {
 
         KeyboardInput.onNewFrame(this)
         PointerInput.onNewFrame(this)
+
+        onRender.update()
         for (i in onRender.indices) {
             onRender[i](this)
         }

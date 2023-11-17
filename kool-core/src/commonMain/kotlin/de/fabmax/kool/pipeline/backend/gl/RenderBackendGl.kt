@@ -10,7 +10,6 @@ import de.fabmax.kool.pipeline.backend.RenderBackend
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Time
-import de.fabmax.kool.util.logE
 
 abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolContext) : RenderBackend {
 
@@ -26,8 +25,6 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
     override val depthBiasMatrix: Mat4f = MutableMat4f().translate(0.5f, 0.5f, 0.5f).scale(0.5f)
 
     internal val queueRenderer = QueueRenderer(this)
-    private val openRenderPasses = mutableListOf<OffscreenRenderPass>()
-    private val doneRenderPasses = mutableSetOf<OffscreenRenderPass>()
 
     protected fun setupGl() {
         gl.enable(gl.SCISSOR_TEST)
@@ -41,12 +38,8 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
             ctx.disposablePipelines.clear()
         }
 
-        for (j in ctx.backgroundPasses.indices) {
-            if (ctx.backgroundPasses[j].isEnabled) {
-                drawOffscreen(ctx.backgroundPasses[j])
-                ctx.backgroundPasses[j].afterDraw(ctx)
-            }
-        }
+        doOffscreenPasses(ctx.backgroundScene, ctx)
+
         for (i in ctx.scenes.indices) {
             val scene = ctx.scenes[i]
             if (scene.isVisible) {
@@ -103,48 +96,13 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
     protected abstract fun drawOffscreen(offscreenPass: OffscreenRenderPass)
 
     private fun doOffscreenPasses(scene: Scene, ctx: KoolContext) {
-        doneRenderPasses.clear()
-        for (i in scene.offscreenPasses.indices) {
-            val rp = scene.offscreenPasses[i]
-            if (rp.isEnabled) {
-                openRenderPasses += rp
-            } else {
-                doneRenderPasses += rp
-            }
-        }
-        while (openRenderPasses.isNotEmpty()) {
-            var anyDrawn = false
-            for (i in openRenderPasses.indices) {
-                val pass = openRenderPasses[i]
-                var skip = false
-                for (j in pass.dependencies.indices) {
-                    val dep = pass.dependencies[j]
-                    if (dep !in doneRenderPasses) {
-                        skip = true
-                        break
-                    }
-                }
-                if (!skip) {
-                    anyDrawn = true
-                    openRenderPasses -= pass
-                    doneRenderPasses += pass
-
-                    val t = if (pass.isProfileTimes) Time.precisionTime else 0.0
-                    drawOffscreen(pass)
-                    pass.afterDraw(ctx)
-                    pass.tDraw = if (pass.isProfileTimes) Time.precisionTime - t else 0.0
-
-                    break
-                }
-            }
-            if (!anyDrawn) {
-                logE { "Failed to render all offscreen passes, remaining:" }
-                openRenderPasses.forEach { p ->
-                    val missingPasses = p.dependencies.filter { it !in doneRenderPasses }.map { it.name }
-                    logE { "  ${p.name}, missing dependencies: $missingPasses" }
-                }
-                openRenderPasses.clear()
-                break
+        for (i in scene.sortedOffscreenPasses.indices) {
+            val pass = scene.sortedOffscreenPasses[i]
+            if (pass.isEnabled) {
+                val t = if (pass.isProfileTimes) Time.precisionTime else 0.0
+                drawOffscreen(pass)
+                pass.afterDraw(ctx)
+                pass.tDraw = if (pass.isProfileTimes) Time.precisionTime - t else 0.0
             }
         }
     }
