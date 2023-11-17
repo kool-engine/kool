@@ -32,7 +32,7 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
     val isDay: Boolean
         get() = timeOfDay > 0.25f && timeOfDay < 0.75f
 
-    val skies = TreeMap<Float, SkyCubeIblSystem>()
+    val skies = TreeMap<Float, EnvironmentMaps>()
 
     val sunDirection = MutableVec3f()
     val moonDirection = MutableVec3f()
@@ -111,8 +111,8 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
             if (fKey == null) fKey = cKey!!
             if (cKey == null) cKey = fKey
 
-            weightedEnvs.envA = skies[cKey]!!.envMaps
-            weightedEnvs.envB = skies[fKey]!!.envMaps
+            weightedEnvs.envA = skies[cKey]!!
+            weightedEnvs.envB = skies[fKey]!!
             if (fKey != cKey) {
                 weightedEnvs.weightA = (timeOfDay - fKey) / (cKey - fKey)
                 weightedEnvs.weightB = (1f - weightedEnvs.weightA)
@@ -128,36 +128,42 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
         }
 
         mainScene.onRelease {
-            skies.values.forEach { it.releaseOffscreenPasses() }
+            skies.values.forEach { it.release() }
         }
     }
 
-    suspend fun generateMaps(terrainDemo: TerrainDemo, parentScene: Scene) {
+    suspend fun generateSkyMaps(terrainDemo: TerrainDemo, parentScene: Scene) {
         val hours = listOf(4f, 5f, 5.5f, 6f, 6.5f, 7f, 8f, 9f, 10f, 11f, 12f, 13f, 14f, 15f, 16f, 17f, 17.5f, 18f, 18.5f, 19f, 20f)
         val skyLut = OpticalDepthLutPass()
         parentScene.addOffscreenPass(skyLut)
 
+        val sky = SkyCubeIblSystem(parentScene, skyLut.colorTexture!!)
+        sky.setupOffscreenPasses()
+
         hours.forEachIndexed { i, h ->
             terrainDemo.showLoadText("Creating sky (${i * 100f / hours.lastIndex}%)...", 0)
-            precomputeSky(h / 24f, parentScene, skyLut.colorTexture!!)
+
+            val timeOfDay = h / 24f
+            val sunDir = computeLightDirection(SUN_TILT, sunProgress(timeOfDay), MutableMat3f())
+            sky.skyPass.elevation = 90f - acos(-sunDir.y).toDeg()
+            sky.skyPass.azimuth = atan2(sunDir.x, -sunDir.z).toDeg()
+
+            sky.irradianceMapPass.copyTargetsColor.clear()
+            sky.reflectionMapPass.copyTargetsColor.clear()
+            val skyIrradiance = sky.irradianceMapPass.copyColor()
+            val skyReflection = sky.reflectionMapPass.copyColor()
+            skies[timeOfDay] = EnvironmentMaps(skyIrradiance, skyReflection)
+
+            delayFrames(1)
+
         }
-        weightedEnvs = WeightedEnvMaps(skies[0.5f]!!.envMaps, skies[0.5f]!!.envMaps)
+        weightedEnvs = WeightedEnvMaps(skies[0.5f]!!, skies[0.5f]!!)
 
         launchDelayed(1) {
             parentScene.removeOffscreenPass(skyLut)
-            skies.values.forEach { it.removeOffscreenPasses() }
+            sky.releaseOffscreenPasses()
             skyLut.release()
         }
-    }
-
-    private suspend fun precomputeSky(timeOfDay: Float, parentScene: Scene, skyLut: Texture2d) {
-        val sunDir = computeLightDirection(SUN_TILT, sunProgress(timeOfDay), MutableMat3f())
-        val sky = SkyCubeIblSystem(parentScene, skyLut)
-        sky.skyPass.elevation = 90f - acos(-sunDir.y).toDeg()
-        sky.skyPass.azimuth = atan2(sunDir.x, -sunDir.z).toDeg()
-        sky.setupOffscreenPasses()
-        skies[timeOfDay] = sky
-        delayFrames(1)
     }
 
     fun updateLight(sceneLight: Light.Directional) {

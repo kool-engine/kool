@@ -38,7 +38,7 @@ Feel free to join the [Discord Server](https://discord.gg/GvsJj2Pk3K)!
   the engine. Fast, highly customizable and easy-to-use.
 - [CPU Particles](https://fabmax.github.io/kool/kool-js/?demo=bees): Two teams of bees fighting against each other.
   Purely CPU based (single-threaded even) so not as fast as it could be(e). Also, JVM is a lot faster than JS.
-- [Furry Sphere](https://fabmax.github.io/kool/kool-js/?demo=shell): Shell-shading based rendering of animated fur
+- [Fluffy Bunny](https://fabmax.github.io/kool/kool-js/?demo=shell): Shell-shading based rendering of animated fur
   (based on this [video](https://www.youtube.com/watch?v=9dr-tRQzij4)).
 - [Creative Coding](https://fabmax.github.io/kool/kool-js/?demo=creative-coding): A few relatively simple demos
   showcasing different techniques of generating procedural geometry.

@@ -29,6 +29,7 @@ class CharacterTrackingCamRig(enableCursorLock: Boolean = true) :
     var zoom = 4f
     var minZoom = 0.5f
     var maxZoom = 25f
+    var isZoomEnabled = true
 
     private var actualZoom = zoom
 
@@ -49,7 +50,7 @@ class CharacterTrackingCamRig(enableCursorLock: Boolean = true) :
     init {
         isCursorLocked = enableCursorLock
 
-        onUpdate += {
+        onUpdate {
             if (isCursorLocked) {
                 handlePointerInput()
             }
@@ -90,7 +91,7 @@ class CharacterTrackingCamRig(enableCursorLock: Boolean = true) :
         lookDirection.z = sin(lookTheta) * sin(lookPhi)
         lookDirection.y = cos(lookTheta)
 
-        if (!ptr.isConsumed(PointerInput.CONSUMED_SCROLL_Y)) {
+        if (isZoomEnabled && !ptr.isConsumed(PointerInput.CONSUMED_SCROLL_Y)) {
             zoom *= 1f - PointerInput.primaryPointer.deltaScroll.toFloat() / 10f
             zoom = zoom.clamp(minZoom, maxZoom)
         }

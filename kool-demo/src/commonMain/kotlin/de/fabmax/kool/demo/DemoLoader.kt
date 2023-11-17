@@ -6,6 +6,7 @@ import de.fabmax.kool.input.PointerInput
 import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.util.DebugOverlay
 import de.fabmax.kool.util.Time
+import de.fabmax.kool.util.launchOnMainThread
 import de.fabmax.kool.util.logI
 
 /**
@@ -63,29 +64,7 @@ class DemoLoader(ctx: KoolContext, startScene: String? = null) {
         applySettings(ctx)
 
         switchDemo?.let { newDemo ->
-            logI { "Loaded demo ${newDemo.title}" }
-            Settings.selectedDemo.set(newDemo.id)
-
-            // release old demo
-            currentDemo?.second?.let { demo ->
-                demo.scenes.forEach {
-                    ctx.scenes -= it
-                    it.release()
-                }
-                demo.menuUi?.let {
-                    menu.ui -= it
-                    it.release()
-                }
-                demo.onRelease(ctx)
-            }
-            ctx.scenes.add(0, loadingScreen)
-
-            // set new demo
-            currentDemo = newDemo.id to newDemo.newInstance(ctx).also {
-                it.demoEntry = newDemo
-                it.demoLoader = this
-                it.loadingScreen = loadingScreen
-            }
+            switchContentScene(newDemo, ctx)
             switchDemo = null
         }
 
@@ -113,6 +92,35 @@ class DemoLoader(ctx: KoolContext, startScene: String? = null) {
                         }
                     }
                 }
+            }
+        }
+    }
+
+    private fun switchContentScene(newDemo: Demos.Entry, ctx: KoolContext) {
+        launchOnMainThread {
+
+            logI { "Loaded demo ${newDemo.title}" }
+            Settings.selectedDemo.set(newDemo.id)
+
+            // release old demo
+            currentDemo?.second?.let { demo ->
+                demo.scenes.forEach {
+                    ctx.scenes -= it
+                    it.release()
+                }
+                demo.menuUi?.let {
+                    menu.ui -= it
+                    it.release()
+                }
+                demo.onRelease(ctx)
+            }
+            ctx.scenes.add(0, loadingScreen)
+
+            // set new demo
+            currentDemo = newDemo.id to newDemo.newInstance(ctx).also {
+                it.demoEntry = newDemo
+                it.demoLoader = this
+                it.loadingScreen = loadingScreen
             }
         }
     }

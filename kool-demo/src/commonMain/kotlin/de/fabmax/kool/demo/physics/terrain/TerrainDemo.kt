@@ -113,7 +113,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         wind.offsetStrength.w = windStrength.value
         wind.scale = windScale.value
 
-        sky = Sky(mainScene, moonTex).apply { generateMaps(this@TerrainDemo, loadingScreen!!) }
+        sky = Sky(mainScene, moonTex).apply { generateSkyMaps(this@TerrainDemo, loadingScreen!!) }
         showLoadText("Creating terrain...")
         terrain = Terrain(this@TerrainDemo, heightMap)
         terrainTiles = TerrainTiles(terrain, sky)
@@ -308,9 +308,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
             lookDirection.set(-0.87f, 0.22f, 0.44f).norm()
             applyLookDirection()
 
-            // make sure onUpdate listener is called before internal one of CharacterTrackingCamRig, so we can
-            // consume the scroll event if the tractor gun is active
-            onUpdate.add(0) {
+            onUpdate {
                 // use camera look direction to control player move direction
                 physicsObjects.playerController.frontHeading = atan2(lookDirection.x, -lookDirection.z).toDeg()
 
@@ -324,6 +322,9 @@ class TerrainDemo : DemoScene("Terrain Demo") {
                         gun.rotationTorque += ptr.deltaScroll.toFloat()
                     }
                 }
+
+                // disable camera zoom, when tractor gun is active
+                camRig.isZoomEnabled = gun.tractorState != TractorGun.TractorState.TRACTOR
             }
         }
         // don't forget to add the cam rig to the scene
