@@ -12,6 +12,8 @@ object GlImpl : GlApi {
     lateinit var gl: WebGL2RenderingContext
         private set
 
+    private var clipControlExt: EXT_clip_control? = null
+
     override val ARRAY_BUFFER = WebGLRenderingContext.ARRAY_BUFFER
     override val BACK = WebGLRenderingContext.BACK
     override val BLEND = WebGLRenderingContext.BLEND
@@ -109,7 +111,17 @@ object GlImpl : GlApi {
     override val NULL_BUFFER: GlBuffer = GlBuffer(-1)
     override val NULL_FRAMEBUFFER: GlFramebuffer = GlFramebuffer(-1)
     override val NULL_TEXTURE: GlTexture = GlTexture(-1)
+
     override var TEXTURE_MAX_ANISOTROPY_EXT = 0
+        private set
+
+    override var LOWER_LEFT = 0
+        private set
+    override var NEGATIVE_ONE_TO_ONE = 0
+        private set
+    override var UPPER_LEFT = 0
+        private set
+    override var ZERO_TO_ONE = 0
         private set
 
     override val version = GlApiVersion(2, 0, GlFlavor.WebGL, "2.0", "WebGL")
@@ -241,6 +253,13 @@ object GlImpl : GlApi {
     override fun vertexAttribPointer(index: Int, size: Int, type: Int, normalized: Boolean, stride: Int, offset: Int) = gl.vertexAttribPointer(index, size, type, normalized, stride, offset)
     override fun viewport(x: Int, y: Int, width: Int, height: Int) = gl.viewport(x, y, width, height)
 
+    override fun clipControl(origin: Int, depth: Int) {
+        check(clipControlExt != null) {
+            "Missing required EXT_clip_control extension"
+        }
+        clipControlExt!!.clipControlEXT(origin, depth)
+    }
+
     @Suppress("UnsafeCastFromDynamic")
     fun initWebGl(glCtx: WebGL2RenderingContext) {
         gl = glCtx
@@ -249,11 +268,6 @@ object GlImpl : GlApi {
         if (gl.getExtension("EXT_color_buffer_float") == null) {
             js("alert(\"WebGL 2 implementation lacks support for float textures (EXT_color_buffer_float)\")")
             logE { "WebGL 2 implementation lacks support for float textures (EXT_color_buffer_float)" }
-        }
-
-        if (gl.getExtension("EXT_clip_control") != null) {
-            // todo: EXT_clip_control is not yet available in browsers, but might be at some point in the future...
-            logI { "clipControl extension is available!" }
         }
 
         // check for anisotropic filtering support
@@ -266,13 +280,26 @@ object GlImpl : GlApi {
             maxAnisotropy = gl.getParameter(extAnisotropic.MAX_TEXTURE_MAX_ANISOTROPY_EXT) as Int
         }
 
+        clipControlExt = gl.getExtension("EXT_clip_control")
+        if (clipControlExt != null) {
+            LOWER_LEFT = EXT_clip_control.LOWER_LEFT_EXT
+            UPPER_LEFT = EXT_clip_control.UPPER_LEFT_EXT
+            NEGATIVE_ONE_TO_ONE = EXT_clip_control.NEGATIVE_ONE_TO_ONE_EXT
+            ZERO_TO_ONE = EXT_clip_control.ZERO_TO_ONE_EXT
+            logD { "EXT_clip_control available" }
+        } else {
+            logD { "EXT_clip_control not available" }
+        }
+
         val maxTexUnits = gl.getParameter(WebGLRenderingContext.MAX_TEXTURE_IMAGE_UNITS) as Int
         val canFastCopyTextures = false
+        val hasClipControl = clipControlExt != null
 
         capabilities = GlCapabilities(
             maxTexUnits,
             maxAnisotropy,
-            canFastCopyTextures
+            canFastCopyTextures,
+            hasClipControl
         )
     }
 
@@ -386,7 +413,7 @@ object GlImpl : GlApi {
         }
     }
 
-    val TextureData.arrayBufferView: ArrayBufferView get() = when (val bufData = data) {
+    private val TextureData.arrayBufferView: ArrayBufferView get() = when (val bufData = data) {
         is Uint8BufferImpl -> bufData.buffer
         is Uint16BufferImpl -> bufData.buffer
         is Float32BufferImpl -> bufData.buffer

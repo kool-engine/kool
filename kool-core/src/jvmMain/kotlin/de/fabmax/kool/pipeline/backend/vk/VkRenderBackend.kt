@@ -66,7 +66,7 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
     }
 
     override fun getWindowViewport(result: Viewport) {
-        result.set(0, glfwWindow.framebufferHeight, glfwWindow.framebufferWidth, -glfwWindow.framebufferHeight)
+        result.set(0, 0, glfwWindow.framebufferWidth, glfwWindow.framebufferHeight)
     }
 
     override fun uploadTextureToGpu(tex: Texture, data: TextureData) {
@@ -293,7 +293,7 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
 
             val renderPassInfo = renderPassBeginInfo(swapChain.renderPass, swapChain.framebuffers[imageIndex], group.renderPasses[0])
             vkCmdBeginRenderPass(cmdBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE)
-            setViewport(cmdBuffer, viewport)
+            setViewport(cmdBuffer, viewport, true)
             renderDrawQueue(cmdBuffer, mergeQueue, imageIndex, swapChain.renderPass, swapChain.nImages, false)
             vkCmdEndRenderPass(cmdBuffer)
 
@@ -447,12 +447,19 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
             }
         }
 
-        private fun MemoryStack.setViewport(commandBuffer: VkCommandBuffer, viewport: Viewport) {
+        private fun MemoryStack.setViewport(commandBuffer: VkCommandBuffer, viewport: Viewport, isOnscreen: Boolean) {
             val vkViewport = callocVkViewportN(1) {
                 x(viewport.x.toFloat())
-                y(viewport.ySigned.toFloat())
                 width(viewport.width.toFloat())
-                height(viewport.heightSigned.toFloat())
+
+                if (isOnscreen) {
+                    y(viewport.height.toFloat() + viewport.y.toFloat())
+                    height(-viewport.height.toFloat())
+                } else {
+                    y(viewport.y.toFloat())
+                    height(viewport.height.toFloat())
+                }
+
                 minDepth(0f)
                 maxDepth(1f)
             }
@@ -479,7 +486,7 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
 
                     for (view in offscreenPass.views) {
                         view.viewport.set(0, 0, offscreenPass.getMipWidth(mipLevel), offscreenPass.getMipHeight(mipLevel))
-                        setViewport(commandBuffer, view.viewport)
+                        setViewport(commandBuffer, view.viewport, false)
                         renderDrawQueue(commandBuffer, view.drawQueue.commands, mipLevel, rp, mipLevels, true)
                     }
 
@@ -509,7 +516,7 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
                         view.viewport.set(0, 0, offscreenPass.getMipWidth(mipLevel), offscreenPass.getMipHeight(mipLevel))
 
                         vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE)
-                        setViewport(commandBuffer, view.viewport)
+                        setViewport(commandBuffer, view.viewport, false)
                         renderDrawQueue(commandBuffer, view.drawQueue.commands, imageI, rp, 6 * mipLevels, true)
                         vkCmdEndRenderPass(commandBuffer)
                         vkPassCube.copyView(commandBuffer, cubeView, mipLevel)

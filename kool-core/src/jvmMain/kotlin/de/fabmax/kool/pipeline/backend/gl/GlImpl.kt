@@ -5,9 +5,9 @@ import de.fabmax.kool.pipeline.TextureData1d
 import de.fabmax.kool.pipeline.TextureData2d
 import de.fabmax.kool.util.*
 import org.lwjgl.opengl.EXTTextureFilterAnisotropic
-import org.lwjgl.opengl.GL31.*
 import org.lwjgl.opengl.GL33.glVertexAttribDivisor
 import org.lwjgl.opengl.GL42.glTexStorage2D
+import org.lwjgl.opengl.GL45.*
 import org.lwjgl.system.MemoryStack
 import java.nio.ByteBuffer
 
@@ -38,9 +38,11 @@ object GlImpl : GlApi {
     override val LINEAR_MIPMAP_LINEAR = GL_LINEAR_MIPMAP_LINEAR
     override val LINES = GL_LINES
     override val LINK_STATUS = GL_LINK_STATUS
+    override val LOWER_LEFT = GL_LOWER_LEFT
     override val MIRRORED_REPEAT = GL_MIRRORED_REPEAT
     override val NEAREST = GL_NEAREST
     override val NEAREST_MIPMAP_NEAREST = GL_NEAREST_MIPMAP_NEAREST
+    override val NEGATIVE_ONE_TO_ONE = GL_NEGATIVE_ONE_TO_ONE
     override val NONE = GL_NONE
     override val ONE = GL_ONE
     override val ONE_MINUS_SRC_ALPHA = GL_ONE_MINUS_SRC_ALPHA
@@ -72,7 +74,9 @@ object GlImpl : GlApi {
     override val UNIFORM_BLOCK_DATA_SIZE = GL_UNIFORM_BLOCK_DATA_SIZE
     override val UNIFORM_BUFFER = GL_UNIFORM_BUFFER
     override val UNIFORM_OFFSET = GL_UNIFORM_OFFSET
+    override val UPPER_LEFT = GL_UPPER_LEFT
     override val VERTEX_SHADER = GL_VERTEX_SHADER
+    override val ZERO_TO_ONE = GL_ZERO_TO_ONE
 
     override val INT = GL_INT
     override val FLOAT = GL_FLOAT
@@ -137,6 +141,7 @@ object GlImpl : GlApi {
     override fun clear(mask: Int) = glClear(mask)
     override fun clearBufferfv(buffer: Int, drawBuffer: Int, values: Float32Buffer) = values.useRaw { glClearBufferfv(buffer, drawBuffer, it) }
     override fun clearColor(r: Float, g: Float, b: Float, a: Float) = glClearColor(r, g, b, a)
+    override fun clipControl(origin: Int, depth: Int) = glClipControl(origin, depth)
     override fun createBuffer(): GlBuffer = GlBuffer(glGenBuffers())
     override fun createFramebuffer(): GlFramebuffer = GlFramebuffer(glGenFramebuffers())
     override fun createProgram(): GlProgram = GlProgram(glCreateProgram())
@@ -217,17 +222,19 @@ object GlImpl : GlApi {
         val extensions = glGetString(GL_EXTENSIONS)?.split(" ")?.toSet() ?: emptySet()
 
         var maxAnisotropy = 1
-        if (extensions.contains("GL_EXT_texture_filter_anisotropic")) {
+        if ("GL_EXT_texture_filter_anisotropic" in extensions) {
             maxAnisotropy = glGetFloat(EXTTextureFilterAnisotropic.GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT).toInt()
             TEXTURE_MAX_ANISOTROPY_EXT = EXTTextureFilterAnisotropic.GL_TEXTURE_MAX_ANISOTROPY_EXT
         }
         val maxTexUnits = glGetInteger(GL_MAX_TEXTURE_IMAGE_UNITS)
         val canFastCopyTextures = version.isHigherOrEqualThan(4, 3)
+        val hasClipControl = version.isHigherOrEqualThan(4, 5)
 
         capabilities = GlCapabilities(
             maxTexUnits,
             maxAnisotropy,
-            canFastCopyTextures
+            canFastCopyTextures,
+            hasClipControl
         )
     }
 

@@ -39,7 +39,7 @@ class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, val backend
                 val cubeView = CUBE_VIEWS[i]
                 val passView = pass.views[cubeView.index]
                 gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, glColorTex, mipLevel)
-                backend.queueRenderer.renderView(passView)
+                backend.queueRenderer.renderView(passView, mipLevel)
 
                 if (needsCopy && !gl.capabilities.canFastCopyTextures) {
                     // use fallback / slightly slower texture copy method

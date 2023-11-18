@@ -19,8 +19,8 @@ abstract class OffscreenRenderPass(config: Config) : RenderPass(config.name) {
 
     private val _size = MutableVec2i(config.size)
     val size: Vec2i get() = _size
-    val width: Int get() = _size.x
-    val height: Int get() = _size.y
+    override val width: Int get() = _size.x
+    override val height: Int get() = _size.y
 
     val colorRenderTarget = config.colorRenderTarget
     val colorAttachments = if (colorRenderTarget == RenderTarget.TEXTURE) {

@@ -22,16 +22,18 @@ class QueueRenderer(val backend: RenderBackendGl) {
         }
     }
 
-    fun renderViews(renderPass: RenderPass) {
+    fun renderViews(renderPass: RenderPass, mipLevel: Int = 0) {
         for (i in renderPass.views.indices) {
-            renderView(renderPass.views[i])
+            renderView(renderPass.views[i], mipLevel)
         }
     }
 
-    fun renderView(view: RenderPass.View) {
+    fun renderView(view: RenderPass.View, mipLevel: Int = 0) {
         view.apply {
-            gl.viewport(viewport.x, viewport.y, viewport.width, viewport.height)
-            gl.scissor(viewport.x, viewport.y, viewport.width, viewport.height)
+            val rpHeight = view.renderPass.height shr mipLevel
+            val viewportY = rpHeight - viewport.y - viewport.height
+            gl.viewport(viewport.x, viewportY, viewport.width, viewport.height)
+            gl.scissor(viewport.x, viewportY, viewport.width, viewport.height)
 
             val rp = renderPass
             if (rp is OffscreenRenderPass) {

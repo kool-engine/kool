@@ -64,3 +64,18 @@ abstract external class WebGL2RenderingContext : WebGLRenderingContext {
         val RGBA32F: Int
     }
 }
+
+abstract external class EXT_clip_control {
+    fun clipControlEXT(origin: Int, depth: Int)
+
+    companion object {
+        val LOWER_LEFT_EXT: Int
+        val UPPER_LEFT_EXT: Int
+
+        val NEGATIVE_ONE_TO_ONE_EXT: Int
+        val ZERO_TO_ONE_EXT: Int
+
+        val CLIP_ORIGIN_EXT: Int
+        val CLIP_DEPTH_MODE_EXT: Int
+    }
+}

@@ -1,12 +1,25 @@
 package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.pipeline.drawqueue.DrawQueue
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.*
 
 abstract class RenderPass(var name: String) : BaseReleasable() {
+
+    /**
+     * Available width of the output (window / screen or framebuffer / texture). Notice, that the part
+     * of that output space actually used as output can be smaller and is set via [View.viewport].
+     */
+    abstract val width: Int
+
+    /**
+     * Available height of the output (window / screen or framebuffer / texture). Notice, that the part
+     * of that output space actually used as output can be smaller and is set via [View.viewport].
+     */
+    abstract val height: Int
 
     var parentScene: Scene? = null
 
@@ -143,6 +156,11 @@ class ScreenRenderPass(val scene: Scene) : RenderPass("${scene.name}:ScreenRende
         get() = _views
 
     var useWindowViewport = true
+
+    override val width: Int
+        get() = KoolSystem.requireContext().windowWidth
+    override val height: Int
+        get() = KoolSystem.requireContext().windowHeight
 
     init {
         parentScene = scene

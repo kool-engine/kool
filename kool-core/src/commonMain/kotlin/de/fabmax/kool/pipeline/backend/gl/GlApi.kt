@@ -44,9 +44,11 @@ interface GlApi {
     val LINEAR_MIPMAP_LINEAR: Int
     val LINES: Int
     val LINK_STATUS: Int
+    val LOWER_LEFT: Int
     val MIRRORED_REPEAT: Int
     val NEAREST: Int
     val NEAREST_MIPMAP_NEAREST: Int
+    val NEGATIVE_ONE_TO_ONE: Int
     val NONE: Int
     val ONE: Int
     val ONE_MINUS_SRC_ALPHA: Int
@@ -78,7 +80,9 @@ interface GlApi {
     val UNIFORM_BLOCK_DATA_SIZE: Int
     val UNIFORM_BUFFER: Int
     val UNIFORM_OFFSET: Int
+    val UPPER_LEFT: Int
     val VERTEX_SHADER: Int
+    val ZERO_TO_ONE: Int
 
     val INT: Int
     val FLOAT: Int
@@ -138,6 +142,7 @@ interface GlApi {
     fun clear(mask: Int)
     fun clearBufferfv(buffer: Int, drawBuffer: Int, values: Float32Buffer)
     fun clearColor(r: Float, g: Float, b: Float, a: Float)
+    fun clipControl(origin: Int, depth: Int)
     fun createBuffer(): GlBuffer
     fun createFramebuffer(): GlFramebuffer
     fun createProgram(): GlProgram
@@ -241,5 +246,6 @@ enum class GlFlavor(val flavorName: String) {
 data class GlCapabilities(
     val maxTexUnits: Int,
     val maxAnisotropy: Int,
-    val canFastCopyTextures: Boolean
+    val canFastCopyTextures: Boolean,
+    val hasClipControl: Boolean
 )

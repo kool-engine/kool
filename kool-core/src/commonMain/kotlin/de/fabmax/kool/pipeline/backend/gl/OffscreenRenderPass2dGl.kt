@@ -36,7 +36,7 @@ class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, val backend: Re
                     pass.views[i].viewport.set(0, 0, pass.getMipWidth(mipLevel), pass.getMipHeight(mipLevel))
                 }
                 gl.bindFramebuffer(gl.FRAMEBUFFER, fbos[mipLevel])
-                backend.queueRenderer.renderViews(pass)
+                backend.queueRenderer.renderViews(pass, mipLevel)
 
                 if (needsCopy && !gl.capabilities.canFastCopyTextures) {
                     // use fallback / slightly slower texture copy method
