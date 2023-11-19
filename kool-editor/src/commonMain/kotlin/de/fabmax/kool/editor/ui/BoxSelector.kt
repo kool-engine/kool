@@ -11,7 +11,6 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.spatial.SpatialTree
 import de.fabmax.kool.math.spatial.SpatialTreeTraverser
 import de.fabmax.kool.math.spatial.Triangle
-import de.fabmax.kool.math.toRad
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Viewport
@@ -240,7 +239,7 @@ class BoxSelector : Composable {
         private val tmpNodeCenter = MutableVec3f()
 
         init {
-            val angY = cam.fovY.toRad() / 2f
+            val angY = cam.fovY.rad / 2f
             sphereFacY = 1f / cos(angY)
             tangY = tan(angY)
 

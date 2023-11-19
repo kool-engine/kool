@@ -10,7 +10,7 @@ import de.fabmax.kool.util.Color
 class MaterialPass(pipeline: DeferredPipeline, suffix: String) :
         OffscreenRenderPass2d(pipeline.sceneContent, renderPassConfig {
             name = "MaterialPass-$suffix"
-            depthTargetTexture(usedAsShadowMap = false)
+            depthTargetTexture(isUsedAsShadowMap = false)
             colorTargetTexture(FORMATS_DEFERRED_EMISSIVE.size) { i ->
                 colorFormat = FORMATS_DEFERRED_EMISSIVE[i]
                 // don't do any interpolation on output maps, or bad things will happen (especially for positions)

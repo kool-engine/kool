@@ -28,39 +28,40 @@ class QueueRenderer(val backend: RenderBackendGl) {
         }
     }
 
-    fun renderView(view: RenderPass.View, mipLevel: Int = 0) {
-        view.apply {
-            val rpHeight = view.renderPass.height shr mipLevel
-            val viewportY = rpHeight - viewport.y - viewport.height
-            gl.viewport(viewport.x, viewportY, viewport.width, viewport.height)
-            gl.scissor(viewport.x, viewportY, viewport.width, viewport.height)
+    fun renderView(view: RenderPass.View, mipLevel: Int = 0) = view.apply {
+        val rpHeight = renderPass.height shr mipLevel
+        val viewportY = rpHeight - viewport.y - viewport.height
+        gl.viewport(viewport.x, viewportY, viewport.width, viewport.height)
+        gl.scissor(viewport.x, viewportY, viewport.width, viewport.height)
 
-            val rp = renderPass
-            if (rp is OffscreenRenderPass) {
-                for (i in rp.colorAttachments.indices) {
-                    clearColors[i]?.let { color ->
-                        colorBufferClearVal.clear()
-                        color.putTo(colorBufferClearVal)
-                        gl.clearBufferfv(gl.COLOR, i, colorBufferClearVal)
-                    }
-                }
-                if (clearDepth) {
-                    gl.clear(gl.DEPTH_BUFFER_BIT)
-                }
+        val isReversedDepth = renderPass.useReversedDepthIfAvailable && backend.isReversedDepthAvailable
+        gl.clearDepth(if (isReversedDepth) 0f  else 1f)
 
-            } else {
-                clearColor?.let { gl.clearColor(it.r, it.g, it.b, it.a) }
-                val clearMask = clearMask()
-                if (clearMask != 0) {
-                    gl.clear(clearMask)
+        val rp = renderPass
+        if (rp is OffscreenRenderPass) {
+            for (i in 0 until rp.numColorAttachments) {
+                clearColors[i]?.let { color ->
+                    colorBufferClearVal.clear()
+                    color.putTo(colorBufferClearVal)
+                    gl.clearBufferfv(gl.COLOR, i, colorBufferClearVal)
                 }
+            }
+            if (clearDepth) {
+                gl.clear(gl.DEPTH_BUFFER_BIT)
+            }
+
+        } else {
+            clearColor?.let { gl.clearColor(it.r, it.g, it.b, it.a) }
+            val clearMask = clearMask()
+            if (clearMask != 0) {
+                gl.clear(clearMask)
             }
         }
 
-        for (cmd in view.drawQueue.commands) {
+        for (cmd in drawQueue.commands) {
             cmd.pipeline?.let { pipeline ->
                 val t = Time.precisionTime
-                glAttribs.setupPipelineAttribs(pipeline)
+                glAttribs.setupPipelineAttribs(pipeline, isReversedDepth)
 
                 if (cmd.geometry.numIndices > 0) {
                     val shaderInst = shaderMgr.setupShader(cmd)
@@ -86,9 +87,9 @@ class QueueRenderer(val backend: RenderBackendGl) {
         var actCullMethod: CullMethod? = null
         var lineWidth = 0f
 
-        fun setupPipelineAttribs(pipeline: Pipeline) {
+        fun setupPipelineAttribs(pipeline: Pipeline, isReversedDepth: Boolean) {
             setBlendMode(pipeline.blendMode)
-            setDepthTest(pipeline.depthCompareOp)
+            setDepthTest(pipeline.depthCompareOp, isReversedDepth)
             setWriteDepth(pipeline.isWriteDepth)
             setCullMethod(pipeline.cullMethod)
             if (lineWidth != pipeline.lineWidth) {
@@ -121,14 +122,26 @@ class QueueRenderer(val backend: RenderBackendGl) {
             }
         }
 
-        private fun setDepthTest(depthCompareOp: DepthCompareOp) {
-            if (actDepthTest != depthCompareOp) {
-                actDepthTest = depthCompareOp
-                if (depthCompareOp == DepthCompareOp.DISABLED) {
+        private fun setDepthTest(depthCompareOp: DepthCompareOp, isReversedDepth: Boolean) {
+            val newDepthOp = if (!isReversedDepth) {
+                depthCompareOp
+            } else {
+                when (depthCompareOp) {
+                    DepthCompareOp.LESS -> DepthCompareOp.GREATER
+                    DepthCompareOp.LESS_EQUAL -> DepthCompareOp.GREATER_EQUAL
+                    DepthCompareOp.GREATER -> DepthCompareOp.LESS
+                    DepthCompareOp.GREATER_EQUAL -> DepthCompareOp.LESS_EQUAL
+                    else -> depthCompareOp
+                }
+            }
+
+            if (actDepthTest != newDepthOp) {
+                actDepthTest = newDepthOp
+                if (newDepthOp == DepthCompareOp.DISABLED) {
                     gl.disable(gl.DEPTH_TEST)
                 } else {
                     gl.enable(gl.DEPTH_TEST)
-                    gl.depthFunc(depthCompareOp.glOp)
+                    gl.depthFunc(newDepthOp.glOp)
                 }
             }
         }

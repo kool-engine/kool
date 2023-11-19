@@ -211,17 +211,33 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
                 sType(VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO)
                 depthTestEnable(pipeline.depthCompareOp != DepthCompareOp.DISABLED)
                 depthWriteEnable(pipeline.isWriteDepth)
-                depthCompareOp(when (pipeline.depthCompareOp) {
-                    DepthCompareOp.DISABLED -> 0
-                    DepthCompareOp.ALWAYS -> VK_COMPARE_OP_ALWAYS
-                    DepthCompareOp.NEVER -> VK_COMPARE_OP_NEVER
-                    DepthCompareOp.LESS -> VK_COMPARE_OP_LESS
-                    DepthCompareOp.LESS_EQUAL -> VK_COMPARE_OP_LESS_OR_EQUAL
-                    DepthCompareOp.GREATER -> VK_COMPARE_OP_GREATER
-                    DepthCompareOp.GREATER_EQUAL -> VK_COMPARE_OP_GREATER_OR_EQUAL
-                    DepthCompareOp.EQUAL -> VK_COMPARE_OP_EQUAL
-                    DepthCompareOp.NOT_EQUAL -> VK_COMPARE_OP_NOT_EQUAL
-                })
+
+                if (koolRenderPass.useReversedDepthIfAvailable) {
+                    depthCompareOp(when (pipeline.depthCompareOp) {
+                        DepthCompareOp.DISABLED -> 0
+                        DepthCompareOp.ALWAYS -> VK_COMPARE_OP_ALWAYS
+                        DepthCompareOp.NEVER -> VK_COMPARE_OP_NEVER
+                        DepthCompareOp.LESS -> VK_COMPARE_OP_GREATER
+                        DepthCompareOp.LESS_EQUAL -> VK_COMPARE_OP_GREATER_OR_EQUAL
+                        DepthCompareOp.GREATER -> VK_COMPARE_OP_LESS
+                        DepthCompareOp.GREATER_EQUAL -> VK_COMPARE_OP_LESS_OR_EQUAL
+                        DepthCompareOp.EQUAL -> VK_COMPARE_OP_EQUAL
+                        DepthCompareOp.NOT_EQUAL -> VK_COMPARE_OP_NOT_EQUAL
+                    })
+                } else {
+                    depthCompareOp(when (pipeline.depthCompareOp) {
+                        DepthCompareOp.DISABLED -> 0
+                        DepthCompareOp.ALWAYS -> VK_COMPARE_OP_ALWAYS
+                        DepthCompareOp.NEVER -> VK_COMPARE_OP_NEVER
+                        DepthCompareOp.LESS -> VK_COMPARE_OP_LESS
+                        DepthCompareOp.LESS_EQUAL -> VK_COMPARE_OP_LESS_OR_EQUAL
+                        DepthCompareOp.GREATER -> VK_COMPARE_OP_GREATER
+                        DepthCompareOp.GREATER_EQUAL -> VK_COMPARE_OP_GREATER_OR_EQUAL
+                        DepthCompareOp.EQUAL -> VK_COMPARE_OP_EQUAL
+                        DepthCompareOp.NOT_EQUAL -> VK_COMPARE_OP_NOT_EQUAL
+                    })
+                }
+
                 depthBoundsTestEnable(false)
                 stencilTestEnable(false)
             }

@@ -37,7 +37,7 @@ internal object TextureCopyHelper {
 
             val target = copyTarget.loadedTexture as LoadedTextureGl
             for (mipLevel in 0 until pass.mipLevels) {
-                if (pass.colorRenderTarget == OffscreenRenderPass.RenderTarget.TEXTURE) {
+                if (pass.colorAttachment is OffscreenRenderPass.TextureColorAttachment) {
                     glCopyImageSubData(renderPass.glColorTex.handle, GlImpl.TEXTURE_CUBE_MAP, mipLevel, 0, 0, 0,
                         target.glTexture.handle, GlImpl.TEXTURE_CUBE_MAP, mipLevel, 0, 0, 0, width, height, 6)
                 } else {
@@ -66,7 +66,7 @@ internal object TextureCopyHelper {
 
             val target = copyTarget.loadedTexture as LoadedTextureGl
             for (mipLevel in 0 until pass.mipLevels) {
-                if (pass.colorRenderTarget == OffscreenRenderPass.RenderTarget.TEXTURE) {
+                if (pass.colorAttachment is OffscreenRenderPass.TextureColorAttachment) {
                     glCopyImageSubData(renderPass.colorTextures[0].handle, GlImpl.TEXTURE_2D, mipLevel, 0, 0, 0,
                             target.glTexture.handle, GlImpl.TEXTURE_2D, mipLevel, 0, 0, 0, width, height, 1)
                 } else {

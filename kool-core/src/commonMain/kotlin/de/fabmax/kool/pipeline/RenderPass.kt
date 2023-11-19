@@ -30,6 +30,7 @@ abstract class RenderPass(var name: String) : BaseReleasable() {
     private var updateEvent: UpdateEvent? = null
 
     var isDoublePrecision = false
+    var useReversedDepthIfAvailable = false
 
     val onBeforeCollectDrawCommands = BufferedList<((UpdateEvent) -> Unit)>()
     val onAfterCollectDrawCommands = BufferedList<((UpdateEvent) -> Unit)>()
@@ -39,6 +40,8 @@ abstract class RenderPass(var name: String) : BaseReleasable() {
     var tUpdate = 0.0
     var tCollect = 0.0
     var tDraw = 0.0
+
+    protected var complainedAboutReversedDepth = false
 
     open fun update(ctx: KoolContext) {
         checkIsNotReleased()
@@ -55,6 +58,11 @@ abstract class RenderPass(var name: String) : BaseReleasable() {
             views[i].collectDrawCommands(ctx)
         }
         tCollect = if (isProfileTimes) Time.precisionTime - t else 0.0
+
+        if (useReversedDepthIfAvailable && !ctx.backend.isReversedDepthAvailable && !complainedAboutReversedDepth) {
+            complainedAboutReversedDepth = true
+            logW { "Reversed depth testing requested but not available" }
+        }
     }
 
     protected open fun beforeCollectDrawCommands(updateEvent: UpdateEvent) {
@@ -151,6 +159,14 @@ class ScreenRenderPass(val scene: Scene) : RenderPass("${scene.name}:ScreenRende
     var clearColor: Color? by screenView::clearColor
     var clearDepth: Boolean by screenView::clearDepth
 
+    var blitRenderPass: OffscreenRenderPass2d? = null
+        set(value) {
+            field = value
+            if (value != null) {
+                clearColor = null
+            }
+        }
+
     private val _views = mutableListOf(screenView)
     override val views: List<View>
         get() = _views
@@ -182,5 +198,13 @@ class ScreenRenderPass(val scene: Scene) : RenderPass("${scene.name}:ScreenRende
             ctx.getWindowViewport(viewport)
         }
         super.update(ctx)
+
+        if (useReversedDepthIfAvailable && !complainedAboutReversedDepth) {
+            complainedAboutReversedDepth = true
+            logW {
+                "ScreenRenderPass of scene ${scene.name} is set to use reversed depth. This won't have any benefit " +
+                "on a ScreenRenderPass. Use an OffscreenRenderPass instead to profit from increased depth precision."
+            }
+        }
     }
 }

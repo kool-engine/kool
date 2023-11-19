@@ -10,6 +10,7 @@ import de.fabmax.kool.pipeline.backend.RenderBackend
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Time
+import de.fabmax.kool.util.logE
 
 abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolContext) : RenderBackend {
     override val name = "Common GL Backend"
@@ -18,13 +19,32 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
     override val deviceName: String
         get() = gl.version.deviceInfo
 
-    override val projCorrectionMatrix: Mat4f = Mat4f.IDENTITY
+    var numSamples = 1
+        private set
+
+    private val _projCorrectionMatrix = MutableMat4f()
+    override val projCorrectionMatrix: Mat4f get() = _projCorrectionMatrix
     override val depthBiasMatrix: Mat4f = MutableMat4f().translate(0.5f, 0.5f, 0.5f).scale(0.5f)
+    final override var isReversedDepthAvailable = false
+        private set
 
     internal val queueRenderer = QueueRenderer(this)
 
     protected fun setupGl() {
+        numSamples = gl.getInteger(gl.SAMPLES)
         gl.enable(gl.SCISSOR_TEST)
+
+        if (gl.capabilities.hasClipControl) {
+            // use zero-to-one depth clip space if available
+            gl.clipControl(gl.LOWER_LEFT, gl.ZERO_TO_ONE)
+            isReversedDepthAvailable = true
+            _projCorrectionMatrix.set(
+                1.0f, 0.0f, 0.0f, 0.0f,
+                0.0f, 1.0f, 0.0f, 0.0f,
+                0.0f, 0.0f, 0.5f, 0.5f,
+                0.0f, 0.0f, 0.0f, 1.0f
+            )
+        }
     }
 
     override fun renderFrame(ctx: KoolContext) {
@@ -46,6 +66,7 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
                 doOffscreenPasses(scene, ctx)
 
                 val t = if (scene.mainRenderPass.isProfileTimes) Time.precisionTime else 0.0
+                scene.mainRenderPass.blitRenderPass?.let { blitFrameBuffers(it, scene.mainRenderPass, 0) }
                 queueRenderer.renderViews(scene.mainRenderPass)
                 scene.mainRenderPass.tDraw = if (scene.mainRenderPass.isProfileTimes) Time.precisionTime - t else 0.0
 
@@ -55,6 +76,36 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
                 scene.mainRenderPass.afterDraw(ctx)
             }
         }
+    }
+
+    internal open fun blitFrameBuffers(src: OffscreenRenderPass2d, dst: RenderPass, mipLevel: Int) {
+        val srcPassImpl = src.impl as OffscreenRenderPass2dGl
+        val dstBuffer = when (dst) {
+            is OffscreenRenderPass2d -> (dst.impl as OffscreenRenderPass2dGl).fbos[mipLevel]
+            is ScreenRenderPass -> gl.DEFAULT_FRAMEBUFFER
+            else -> throw IllegalArgumentException("dst RenderPass has to be an OffscreenRenderPass2d or ScreenRenderPass")
+        }
+
+        if (srcPassImpl.fbos.isEmpty()) {
+            logE { "blit source framebuffer is not available" }
+            return
+        }
+
+        gl.bindFramebuffer(gl.READ_FRAMEBUFFER, srcPassImpl.fbos[0])
+        gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, dstBuffer)
+
+        val filter = if (src.width == dst.width && src.height == dst.height) {
+            gl.NEAREST
+        } else {
+            gl.LINEAR
+        }
+        //println("${src.width} x ${src.height} -> ${dst.width} x ${dst.height} (linear: ${filter == gl.LINEAR})")
+        gl.blitFramebuffer(
+            0, 0, src.width, src.height,
+            0, 0, dst.width, dst.height,
+            gl.COLOR_BUFFER_BIT, filter
+        )
+        //println("blit buffers (src: ${src.name}/${srcPassImpl.fbos[0]}, dst: ${dst.name}/$dstBuffer), ${gl.getError()}")
     }
 
     override fun uploadTextureToGpu(tex: Texture, data: TextureData) {
@@ -84,8 +135,6 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
         return ShaderCodeGl(src.vertexSrc, src.fragmentSrc)
     }
 
-    protected abstract fun drawOffscreen(offscreenPass: OffscreenRenderPass)
-
     private fun doOffscreenPasses(scene: Scene, ctx: KoolContext) {
         for (i in scene.sortedOffscreenPasses.indices) {
             val pass = scene.sortedOffscreenPasses[i]
@@ -95,6 +144,24 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
                 pass.afterDraw(ctx)
                 pass.tDraw = if (pass.isProfileTimes) Time.precisionTime - t else 0.0
             }
+        }
+    }
+
+    private fun drawOffscreen(offscreenPass: OffscreenRenderPass) {
+        when (offscreenPass) {
+            is OffscreenRenderPass2d -> offscreenPass.impl.draw(ctx)
+            is OffscreenRenderPassCube -> offscreenPass.impl.draw(ctx)
+            is OffscreenRenderPass2dPingPong -> drawOffscreenPingPong(offscreenPass)
+            else -> throw IllegalArgumentException("Offscreen pass type not implemented: $offscreenPass")
+        }
+    }
+
+    private fun drawOffscreenPingPong(offscreenPass: OffscreenRenderPass2dPingPong) {
+        for (i in 0 until offscreenPass.pingPongPasses) {
+            offscreenPass.onDrawPing?.invoke(i)
+            offscreenPass.ping.impl.draw(ctx)
+            offscreenPass.onDrawPong?.invoke(i)
+            offscreenPass.pong.impl.draw(ctx)
         }
     }
 

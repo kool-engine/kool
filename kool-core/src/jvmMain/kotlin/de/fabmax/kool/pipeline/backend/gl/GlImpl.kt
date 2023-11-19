@@ -27,6 +27,7 @@ object GlImpl : GlApi {
     override val DEPTH_COMPONENT24 = GL_DEPTH_COMPONENT24
     override val DEPTH_COMPONENT32F = GL_DEPTH_COMPONENT32F
     override val DEPTH_TEST = GL_DEPTH_TEST
+    override val DRAW_FRAMEBUFFER = GL_DRAW_FRAMEBUFFER
     override val DYNAMIC_DRAW = GL_DYNAMIC_DRAW
     override val ELEMENT_ARRAY_BUFFER = GL_ELEMENT_ARRAY_BUFFER
     override val FRAGMENT_SHADER = GL_FRAGMENT_SHADER
@@ -47,8 +48,10 @@ object GlImpl : GlApi {
     override val ONE = GL_ONE
     override val ONE_MINUS_SRC_ALPHA = GL_ONE_MINUS_SRC_ALPHA
     override val POINTS = GL_POINTS
+    override val READ_FRAMEBUFFER = GL_READ_FRAMEBUFFER
     override val RENDERBUFFER = GL_RENDERBUFFER
     override val REPEAT = GL_REPEAT
+    override val SAMPLES = GL_SAMPLES
     override val SCISSOR_TEST = GL_SCISSOR_TEST
     override val SRC_ALPHA = GL_SRC_ALPHA
     override val STATIC_DRAW = GL_STATIC_DRAW
@@ -110,8 +113,8 @@ object GlImpl : GlApi {
     override val EQUAL = GL_EQUAL
     override val NOTEQUAL = GL_NOTEQUAL
 
+    override val DEFAULT_FRAMEBUFFER: GlFramebuffer = GlFramebuffer(GL_NONE)
     override val NULL_BUFFER: GlBuffer = GlBuffer(GL_NONE)
-    override val NULL_FRAMEBUFFER: GlFramebuffer = GlFramebuffer(GL_NONE)
     override val NULL_TEXTURE: GlTexture = GlTexture(0)
 
     override var TEXTURE_MAX_ANISOTROPY_EXT = 0
@@ -132,6 +135,7 @@ object GlImpl : GlApi {
     override fun bindRenderbuffer(target: Int, renderbuffer: GlRenderbuffer) = glBindRenderbuffer(target, renderbuffer.handle)
     override fun bindTexture(target: Int, texture: GlTexture) = glBindTexture(target, texture.handle)
     override fun blendFunc(sFactor: Int, dFactor: Int) = glBlendFunc(sFactor, dFactor)
+    override fun blitFramebuffer(srcX0: Int, srcY0: Int, srcX1: Int, srcY1: Int, dstX0: Int, dstY0: Int, dstX1: Int, dstY1: Int, mask: Int, filter: Int) = glBlitFramebuffer(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter)
     override fun bufferData(target: Int, buffer: Uint8Buffer, usage: Int) = buffer.useRaw { glBufferData(target, it, usage) }
     override fun bufferData(target: Int, buffer: Uint16Buffer, usage: Int) = buffer.useRaw { glBufferData(target, it, usage) }
     override fun bufferData(target: Int, buffer: Int32Buffer, usage: Int) = buffer.useRaw { glBufferData(target, it, usage) }
@@ -141,6 +145,7 @@ object GlImpl : GlApi {
     override fun clear(mask: Int) = glClear(mask)
     override fun clearBufferfv(buffer: Int, drawBuffer: Int, values: Float32Buffer) = values.useRaw { glClearBufferfv(buffer, drawBuffer, it) }
     override fun clearColor(r: Float, g: Float, b: Float, a: Float) = glClearColor(r, g, b, a)
+    override fun clearDepth(depth: Float) = glClearDepth(depth.toDouble())
     override fun clipControl(origin: Int, depth: Int) = glClipControl(origin, depth)
     override fun createBuffer(): GlBuffer = GlBuffer(glGenBuffers())
     override fun createFramebuffer(): GlFramebuffer = GlFramebuffer(glGenFramebuffers())
@@ -171,6 +176,8 @@ object GlImpl : GlApi {
     override fun generateMipmap(target: Int) = glGenerateMipmap(target)
     override fun getActiveUniformBlockParameter(program: GlProgram, uniformBlockIndex: Int, pName: Int): Int = glGetActiveUniformBlocki(program.handle, uniformBlockIndex, pName)
     override fun getActiveUniforms(program: GlProgram, uniformIndices: IntArray, pName: Int): IntArray = getActiveUniformsImpl(program, uniformIndices, pName)
+    override fun getError(): Int = glGetError()
+    override fun getInteger(pName: Int): Int = glGetInteger(pName)
     override fun getProgramInfoLog(program: GlProgram): String = glGetProgramInfoLog(program.handle)
     override fun getProgramParameter(program: GlProgram, param: Int): Int = glGetProgrami(program.handle, param)
     override fun getShaderInfoLog(shader: GlShader): String = glGetShaderInfoLog(shader.handle)
@@ -182,6 +189,7 @@ object GlImpl : GlApi {
     override fun linkProgram(program: GlProgram) = glLinkProgram(program.handle)
     override fun readBuffer(src: Int) = glReadBuffer(src)
     override fun renderbufferStorage(target: Int, internalformat: Int, width: Int, height: Int) = glRenderbufferStorage(target, internalformat, width, height)
+    override fun renderbufferStorageMultisample(target: Int, samples: Int, internalformat: Int, width: Int, height: Int) = glRenderbufferStorageMultisample(target, samples, internalformat, width, height)
     override fun scissor(x: Int, y: Int, width: Int, height: Int) = glScissor(x, y, width, height)
     override fun shaderSource(shader: GlShader, source: String) = glShaderSource(shader.handle, source)
     override fun texImage2D(target: Int, level: Int, internalformat: Int, width: Int, height: Int, border: Int, format: Int, type: Int, pixels: Buffer?) = texImage2dImpl(target, level, internalformat, width, height, border, format, type, pixels)

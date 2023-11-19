@@ -2,10 +2,6 @@ package de.fabmax.kool.pipeline.backend.gl
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
-import de.fabmax.kool.pipeline.OffscreenRenderPass
-import de.fabmax.kool.pipeline.OffscreenRenderPass2d
-import de.fabmax.kool.pipeline.OffscreenRenderPass2dPingPong
-import de.fabmax.kool.pipeline.OffscreenRenderPassCube
 import de.fabmax.kool.platform.GlfwWindow
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.platform.RenderBackendJvm
@@ -43,25 +39,6 @@ class RenderBackendGlImpl(ctx: KoolContext) : RenderBackendGl(GlImpl, ctx), Rend
     override fun renderFrame(ctx: KoolContext) {
         super.renderFrame(ctx)
         glfwSwapBuffers(glfwWindow.windowPtr)
-    }
-
-    override fun drawOffscreen(offscreenPass: OffscreenRenderPass) {
-        when (offscreenPass) {
-            is OffscreenRenderPass2d -> offscreenPass.impl.draw(ctx)
-            is OffscreenRenderPassCube -> offscreenPass.impl.draw(ctx)
-            is OffscreenRenderPass2dPingPong -> drawOffscreenPingPong(offscreenPass)
-            else -> throw IllegalArgumentException("Offscreen pass type not implemented: $offscreenPass")
-        }
-    }
-
-    private fun drawOffscreenPingPong(offscreenPass: OffscreenRenderPass2dPingPong) {
-        for (i in 0 until offscreenPass.pingPongPasses) {
-            offscreenPass.onDrawPing?.invoke(i)
-            offscreenPass.ping.impl.draw(ctx)
-
-            offscreenPass.onDrawPong?.invoke(i)
-            offscreenPass.pong.impl.draw(ctx)
-        }
     }
 
     private fun createWindow(): GlfwWindow {

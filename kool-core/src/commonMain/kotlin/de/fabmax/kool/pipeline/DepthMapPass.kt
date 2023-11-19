@@ -61,8 +61,8 @@ open class DepthMapPass(drawNode: Node, config: Config) : OffscreenRenderPass2d(
         fun defaultSetup(width: Int, height: Int) = renderPassConfig {
             name = "DepthMapPass"
             size(width, height)
-            colorTargetRenderBuffer()
-            depthTargetTexture(usedAsShadowMap = false)
+            colorTargetNone()
+            depthTargetTexture(isUsedAsShadowMap = false)
         }
     }
 }

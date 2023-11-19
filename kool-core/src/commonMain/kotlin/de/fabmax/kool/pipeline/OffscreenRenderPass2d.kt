@@ -12,7 +12,7 @@ import de.fabmax.kool.util.launchDelayed
 open class OffscreenRenderPass2d(drawNode: Node, config: Config) : OffscreenRenderPass(config) {
 
     override val views = mutableListOf(
-        View("default", drawNode, PerspectiveCamera(), Array(colorAttachments.size) { null }).apply {
+        View("default", drawNode, PerspectiveCamera(), Array(numColorAttachments) { null }).apply {
             setFullscreenViewport()
         }
     )
@@ -25,6 +25,8 @@ open class OffscreenRenderPass2d(drawNode: Node, config: Config) : OffscreenRend
     var clearDepth: Boolean by mainView::clearDepth
     var isUpdateDrawNode: Boolean by mainView::isUpdateDrawNode
 
+    var blitRenderPass: OffscreenRenderPass2d? = null
+
     val depthTexture = makeDepthAttachmentTex()
     val colorTextures = makeColorAttachmentTexs()
     val colorTexture: Texture2d?
@@ -35,7 +37,7 @@ open class OffscreenRenderPass2d(drawNode: Node, config: Config) : OffscreenRend
     internal val impl = KoolSystem.requireContext().backend.createOffscreenPass2d(this)
 
     fun addView(name: String, camera: Camera): View {
-        val view = View(name, mainView.drawNode, camera, Array(colorAttachments.size) { null })
+        val view = View(name, mainView.drawNode, camera, Array(numColorAttachments) { null })
         views.add(view)
         return view
     }
@@ -51,11 +53,11 @@ open class OffscreenRenderPass2d(drawNode: Node, config: Config) : OffscreenRend
         impl.release()
 
         launchDelayed(3) {
-            if (depthAttachment?.providedTexture == null) {
+            if (depthAttachment !is TextureDepthAttachment || depthAttachment.attachment.providedTexture == null) {
                 depthTexture?.dispose()
             }
             colorTextures.forEachIndexed { i, tex ->
-                if (!colorAttachments[i].isProvided) {
+                if (colorAttachment !is TextureColorAttachment || colorAttachment.attachments[i].providedTexture == null) {
                     tex.dispose()
                 }
             }
@@ -68,26 +70,33 @@ open class OffscreenRenderPass2d(drawNode: Node, config: Config) : OffscreenRend
     }
 
     private fun makeColorAttachmentTexs(): List<Texture2d> {
-        return colorAttachments.mapIndexed { i, texCfg ->
-            if (texCfg.isProvided) {
-                texCfg.providedTexture!! as Texture2d
-            } else {
-                val name = "${name}_color[$i]"
-                val props = texCfg.getTextureProps(mipLevels > 1)
-                Texture2d(props, name)
+        return if (colorAttachment is TextureColorAttachment) {
+            colorAttachment.attachments.mapIndexed { i, texCfg ->
+                if (texCfg.isProvided) {
+                    texCfg.providedTexture!! as Texture2d
+                } else {
+                    val name = "${name}_color[$i]"
+                    val props = texCfg.getTextureProps(mipLevels > 1)
+                    Texture2d(props, name)
+                }
             }
+        } else {
+            emptyList()
         }
     }
 
     private fun makeDepthAttachmentTex(): Texture2d? {
-        return depthAttachment?.let { texCfg ->
-            if (texCfg.isProvided) {
-                texCfg.providedTexture!! as Texture2d
+        return if (depthAttachment is TextureDepthAttachment) {
+            val cfg = depthAttachment.attachment
+            if (cfg.isProvided) {
+                cfg.providedTexture!! as Texture2d
             } else {
                 val name = "${name}_depth"
-                val props = texCfg.getTextureProps(mipLevels > 1)
+                val props = cfg.getTextureProps(mipLevels > 1)
                 Texture2d(props, name)
             }
+        } else {
+            null
         }
     }
 }

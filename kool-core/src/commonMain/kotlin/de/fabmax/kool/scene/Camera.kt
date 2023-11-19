@@ -83,8 +83,12 @@ abstract class Camera(name: String = "camera") : Node(name) {
         }
 
         updateProjectionMatrix(updateEvent)
-        updateEvent.ctx.projCorrectionMatrix.mul(proj, tmpProjCorrected)
-        proj.set(tmpProjCorrected)
+
+        if (!(updateEvent.renderPass.useReversedDepthIfAvailable && updateEvent.ctx.backend.isReversedDepthAvailable)) {
+            updateEvent.ctx.projCorrectionMatrix.mul(proj, tmpProjCorrected)
+            proj.set(tmpProjCorrected)
+        }
+
         lazyInvProj.isDirty = true
 
         updateViewMatrix(updateEvent)
@@ -373,7 +377,11 @@ open class PerspectiveCamera(name: String = "perspectiveCam") : Camera(name) {
     private val tmpNodeCenter = MutableVec3f()
 
     override fun updateProjectionMatrix(updateEvent: RenderPass.UpdateEvent) {
-        proj.setIdentity().perspective(fovY, aspectRatio, clipNear, clipFar)
+        if (updateEvent.renderPass.useReversedDepthIfAvailable && updateEvent.ctx.backend.isReversedDepthAvailable) {
+            proj.setIdentity().perspectiveReversedDepth(fovY, aspectRatio, clipNear)
+        } else {
+            proj.setIdentity().perspective(fovY, aspectRatio, clipNear, clipFar)
+        }
 
         // compute intermediate values needed for view frustum culling
         val angY = fovY.rad / 2f

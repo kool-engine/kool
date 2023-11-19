@@ -6,6 +6,7 @@ import org.w3c.dom.ImageData
 
 abstract external class WebGL2RenderingContext : WebGLRenderingContext {
     fun bindBufferBase(target: Int, index: Int, buffer: WebGLBuffer?)
+    fun blitFramebuffer(srcX0: Int, srcY0: Int, srcX1: Int, srcY1: Int, dstX0: Int, dstY0: Int, dstX1: Int, dstY1: Int, mask: Int, filter: Int)
     fun bufferData(target: Int, srcData: ArrayBufferView, usage: Int, srcOffset: Int, length: Int)
     fun clearBufferfv(buffer: Int, drawBuffer: Int, values: Float32Array)
     fun drawBuffers(buffers: IntArray)
@@ -30,6 +31,8 @@ abstract external class WebGL2RenderingContext : WebGLRenderingContext {
         val DEPTH: Int
         val STENCIL: Int
         val DEPTH_STENCIL: Int
+        val DRAW_FRAMEBUFFER: Int
+        val READ_FRAMEBUFFER: Int
 
         val DEPTH_COMPONENT24: Int
         val DEPTH_COMPONENT32F: Int

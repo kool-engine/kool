@@ -1,7 +1,9 @@
-package de.fabmax.kool.demo
+package de.fabmax.kool.demo.tests
 
 import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.demo.DemoLoader
+import de.fabmax.kool.demo.DemoScene
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ksl.KslBlinnPhongShader
 import de.fabmax.kool.modules.ksl.blocks.BlinnPhongMaterialBlock

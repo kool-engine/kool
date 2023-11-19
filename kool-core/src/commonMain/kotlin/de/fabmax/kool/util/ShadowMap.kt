@@ -26,8 +26,8 @@ class SimpleShadowMap(val scene: Scene, override var light: Light?, mapSize: Int
     DepthMapPass(drawNode, renderPassConfig {
         name = "SimpleShadowMap"
         size(mapSize, mapSize)
-        depthTargetTexture(usedAsShadowMap = true)
-        colorTargetRenderBuffer()
+        depthTargetTexture(isUsedAsShadowMap = true)
+        colorTargetNone()
     }),
     ShadowMap
 {

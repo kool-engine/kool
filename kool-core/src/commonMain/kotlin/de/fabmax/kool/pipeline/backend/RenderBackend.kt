@@ -14,6 +14,7 @@ interface RenderBackend {
 
     val projCorrectionMatrix: Mat4f
     val depthBiasMatrix: Mat4f
+    val isReversedDepthAvailable: Boolean
 
     fun renderFrame(ctx: KoolContext)
     fun close(ctx: KoolContext)

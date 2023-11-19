@@ -1,10 +1,7 @@
 package de.fabmax.kool.pipeline.backend.gl
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.pipeline.OffscreenPassCubeImpl
-import de.fabmax.kool.pipeline.OffscreenRenderPassCube
-import de.fabmax.kool.pipeline.Texture
-import de.fabmax.kool.pipeline.TextureCube
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.stats.OffscreenPassInfo
 
 class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, val backend: RenderBackendGl) : OffscreenPassCubeImpl {
@@ -47,7 +44,7 @@ class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, val backend
                 }
             }
         }
-        gl.bindFramebuffer(gl.FRAMEBUFFER, gl.NULL_FRAMEBUFFER)
+        gl.bindFramebuffer(gl.FRAMEBUFFER, gl.DEFAULT_FRAMEBUFFER)
 
         if (needsCopy && gl.capabilities.canFastCopyTextures) {
             // use fast texture copy method, requires OpenGL 4.3 or higher
@@ -107,7 +104,9 @@ class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, val backend
     }
 
     private fun createBuffers() {
-        createColorTex()
+        if (parent.colorAttachment is OffscreenRenderPass.TextureColorAttachment) {
+            createColorTex(parent.colorAttachment)
+        }
 
         for (i in 0 until parent.mipLevels) {
             val fbo = gl.createFramebuffer()
@@ -131,9 +130,9 @@ class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, val backend
         isCreated = true
     }
 
-    private fun createColorTex() {
+    private fun createColorTex(colorAttachment: OffscreenRenderPass.TextureColorAttachment) {
         val parentTex = parent.colorTexture!!
-        val format = parent.colorAttachments[0].colorFormat
+        val format = colorAttachment.attachments[0].colorFormat
         val intFormat = format.glInternalFormat(gl)
         val width = parent.width
         val height = parent.height

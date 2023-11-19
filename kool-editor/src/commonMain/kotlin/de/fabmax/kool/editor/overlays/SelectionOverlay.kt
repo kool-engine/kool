@@ -50,9 +50,7 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
                 val vp = editor.editorOverlay.mainRenderPass.viewport
                 val sceneWidth = (vp.width * 0.75f).roundToInt()
                 val sceneHeight = (vp.height * 0.75f).roundToInt()
-                if (sceneWidth != selectionPass.width || sceneHeight != selectionPass.height) {
-                    selectionPass.resize(sceneWidth, sceneHeight, evt.ctx)
-                }
+                selectionPass.setSize(sceneWidth, sceneHeight, evt.ctx)
             }
 
             if (updateSelection) {
@@ -90,7 +88,7 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
         Node(),
         renderPassConfig {
             name = "SelectionPass"
-            addColorTexture {
+            colorTargetTexture(1) {
                 colorFormat = TexFormat.R
                 magFilter = FilterMethod.NEAREST
                 minFilter = FilterMethod.NEAREST

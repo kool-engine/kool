@@ -1,10 +1,7 @@
 package de.fabmax.kool.pipeline.backend.vk
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.pipeline.OffscreenPassCubeImpl
-import de.fabmax.kool.pipeline.OffscreenRenderPassCube
-import de.fabmax.kool.pipeline.Texture
-import de.fabmax.kool.pipeline.TextureCube
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.vk.util.vkFormat
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.util.launchDelayed
@@ -91,22 +88,26 @@ class VkOffscreenPassCube(val parentPass: OffscreenRenderPassCube) : OffscreenPa
         renderPass = null
 
         parentPass.colorTextures.forEachIndexed { i, tex ->
-            if (!parentPass.colorAttachments[i].isProvided) {
+            if (parentPass.colorAttachment !is OffscreenRenderPass.TextureColorAttachment ||
+                parentPass.colorAttachment.attachments[i].isProvided) {
                 tex.clear()
             }
         }
-        if (parentPass.depthAttachment?.isProvided == false) {
+        if (parentPass.depthAttachment !is OffscreenRenderPass.TextureDepthAttachment ||
+            parentPass.depthAttachment.attachment.isProvided) {
             parentPass.depthTexture?.clear()
         }
 
         launchDelayed(3) {
             rp?.destroyNow()
             colorTexs.forEachIndexed { i, loadedTex ->
-                if (!parentPass.colorAttachments[i].isProvided) {
+                if (parentPass.colorAttachment !is OffscreenRenderPass.TextureColorAttachment ||
+                    parentPass.colorAttachment.attachments[i].isProvided) {
                     loadedTex?.release()
                 }
             }
-            if (parentPass.depthAttachment?.isProvided == false) {
+            if (parentPass.depthAttachment !is OffscreenRenderPass.TextureDepthAttachment ||
+                parentPass.depthAttachment.attachment.isProvided) {
                 depthTex?.release()
             }
         }
@@ -180,7 +181,8 @@ class VkOffscreenPassCube(val parentPass: OffscreenRenderPassCube) : OffscreenPa
     private fun create(ctx: Lwjgl3Context) {
         val sys = (ctx.backend as VkRenderBackend).vkSystem
         val pass = parentPass
-        val rp = VkOffscreenRenderPass(sys, pass.size.x, pass.size.y, true, pass.colorAttachments[0].colorFormat.vkFormat)
+        val cfg = (pass.colorAttachment as OffscreenRenderPass.TextureColorAttachment).attachments[0]
+        val rp = VkOffscreenRenderPass(sys, pass.size.x, pass.size.y, true, cfg.colorFormat.vkFormat)
         createTex(rp, sys)
         renderPass = rp
         isCreated = true

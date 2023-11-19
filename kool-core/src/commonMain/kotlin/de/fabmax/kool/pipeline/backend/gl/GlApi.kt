@@ -33,6 +33,7 @@ interface GlApi {
     val DEPTH_COMPONENT24: Int
     val DEPTH_COMPONENT32F: Int
     val DEPTH_TEST: Int
+    val DRAW_FRAMEBUFFER: Int
     val DYNAMIC_DRAW: Int
     val ELEMENT_ARRAY_BUFFER: Int
     val FRAGMENT_SHADER: Int
@@ -53,8 +54,10 @@ interface GlApi {
     val ONE: Int
     val ONE_MINUS_SRC_ALPHA: Int
     val POINTS: Int
+    val READ_FRAMEBUFFER: Int
     val RENDERBUFFER: Int
     val REPEAT: Int
+    val SAMPLES: Int
     val SCISSOR_TEST: Int
     val SRC_ALPHA: Int
     val STATIC_DRAW: Int
@@ -116,8 +119,8 @@ interface GlApi {
     val EQUAL: Int
     val NOTEQUAL: Int
 
+    val DEFAULT_FRAMEBUFFER: GlFramebuffer
     val NULL_BUFFER: GlBuffer
-    val NULL_FRAMEBUFFER: GlFramebuffer
     val NULL_TEXTURE: GlTexture
 
     val TEXTURE_MAX_ANISOTROPY_EXT: Int
@@ -133,6 +136,7 @@ interface GlApi {
     fun bindRenderbuffer(target: Int, renderbuffer: GlRenderbuffer)
     fun bindTexture(target: Int, texture: GlTexture)
     fun blendFunc(sFactor: Int, dFactor: Int)
+    fun blitFramebuffer(srcX0: Int, srcY0: Int, srcX1: Int, srcY1: Int, dstX0: Int, dstY0: Int, dstX1: Int, dstY1: Int, mask: Int, filter: Int)
     fun bufferData(target: Int, buffer: Uint8Buffer, usage: Int)
     fun bufferData(target: Int, buffer: Uint16Buffer, usage: Int)
     fun bufferData(target: Int, buffer: Int32Buffer, usage: Int)
@@ -142,6 +146,7 @@ interface GlApi {
     fun clear(mask: Int)
     fun clearBufferfv(buffer: Int, drawBuffer: Int, values: Float32Buffer)
     fun clearColor(r: Float, g: Float, b: Float, a: Float)
+    fun clearDepth(depth: Float)
     fun clipControl(origin: Int, depth: Int)
     fun createBuffer(): GlBuffer
     fun createFramebuffer(): GlFramebuffer
@@ -172,6 +177,8 @@ interface GlApi {
     fun generateMipmap(target: Int)
     fun getActiveUniformBlockParameter(program: GlProgram, uniformBlockIndex: Int, pName: Int): Int
     fun getActiveUniforms(program: GlProgram, uniformIndices: IntArray, pName: Int): IntArray
+    fun getError(): Int
+    fun getInteger(pName: Int): Int
     fun getProgramInfoLog(program: GlProgram): String
     fun getProgramParameter(program: GlProgram, param: Int): Any
     fun getShaderInfoLog(shader: GlShader): String
@@ -183,6 +190,7 @@ interface GlApi {
     fun linkProgram(program: GlProgram)
     fun readBuffer(src: Int)
     fun renderbufferStorage(target: Int, internalformat: Int, width: Int, height: Int)
+    fun renderbufferStorageMultisample(target: Int, samples: Int, internalformat: Int, width: Int, height: Int)
     fun scissor(x: Int, y: Int, width: Int, height: Int)
     fun shaderSource(shader: GlShader, source: String)
     fun texImage2D(target: Int, level: Int, internalformat: Int, width: Int, height: Int, border: Int, format: Int, type: Int, pixels: Buffer?)

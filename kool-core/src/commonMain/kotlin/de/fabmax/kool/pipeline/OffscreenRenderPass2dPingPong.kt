@@ -7,8 +7,6 @@ open class OffscreenRenderPass2dPingPong(config: Config) : OffscreenRenderPass(
     renderPassConfig {
         name = config.name
         size(1, 1)
-        depthTargetRenderBuffer()
-        colorTargetRenderBuffer()
     }
 ) {
 

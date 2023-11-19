@@ -46,6 +46,10 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
         0.0f, 0.0f, 0.0f, 1.0f
     )
 
+    // fixme: leave this false for now, as it makes problems when the same shader is used
+    //  in multiple render passes with and without reversed depth
+    override val isReversedDepthAvailable = false
+
     private val shaderCodes = mutableMapOf<String, ShaderCode>()
 
     val vkSystem: VkSystem
@@ -550,7 +554,14 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
                         }
                         this[i].setColor(clearColor)
                     }
-                    this[colorAttachments].depthStencil { it.depth(1f); it.stencil(0) }
+                    this[colorAttachments].depthStencil {
+                        if (renderPass.useReversedDepthIfAvailable) {
+                            it.depth(0f)
+                        } else {
+                            it.depth(1f)
+                        }
+                        it.stencil(0)
+                    }
                 })
             }
 

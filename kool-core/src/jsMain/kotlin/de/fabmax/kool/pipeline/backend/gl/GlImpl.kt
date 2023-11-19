@@ -29,6 +29,7 @@ object GlImpl : GlApi {
     override val DEPTH_COMPONENT24 = WebGL2RenderingContext.DEPTH_COMPONENT24
     override val DEPTH_COMPONENT32F = WebGL2RenderingContext.DEPTH_COMPONENT32F
     override val DEPTH_TEST = WebGLRenderingContext.DEPTH_TEST
+    override val DRAW_FRAMEBUFFER = WebGL2RenderingContext.DRAW_FRAMEBUFFER
     override val DYNAMIC_DRAW = WebGLRenderingContext.DYNAMIC_DRAW
     override val ELEMENT_ARRAY_BUFFER = WebGLRenderingContext.ELEMENT_ARRAY_BUFFER
     override val FRAGMENT_SHADER = WebGLRenderingContext.FRAGMENT_SHADER
@@ -47,8 +48,10 @@ object GlImpl : GlApi {
     override val ONE = WebGLRenderingContext.ONE
     override val ONE_MINUS_SRC_ALPHA = WebGLRenderingContext.ONE_MINUS_SRC_ALPHA
     override val POINTS = WebGLRenderingContext.POINTS
+    override val READ_FRAMEBUFFER = WebGL2RenderingContext.READ_FRAMEBUFFER
     override val RENDERBUFFER = WebGLRenderingContext.RENDERBUFFER
     override val REPEAT = WebGLRenderingContext.REPEAT
+    override val SAMPLES = WebGLRenderingContext.SAMPLES
     override val SCISSOR_TEST = WebGLRenderingContext.SCISSOR_TEST
     override val SRC_ALPHA = WebGLRenderingContext.SRC_ALPHA
     override val STATIC_DRAW = WebGLRenderingContext.STATIC_DRAW
@@ -108,8 +111,8 @@ object GlImpl : GlApi {
     override val EQUAL = WebGLRenderingContext.EQUAL
     override val NOTEQUAL = WebGLRenderingContext.NOTEQUAL
 
+    override val DEFAULT_FRAMEBUFFER: GlFramebuffer = GlFramebuffer(-1)
     override val NULL_BUFFER: GlBuffer = GlBuffer(-1)
-    override val NULL_FRAMEBUFFER: GlFramebuffer = GlFramebuffer(-1)
     override val NULL_TEXTURE: GlTexture = GlTexture(-1)
 
     override var TEXTURE_MAX_ANISOTROPY_EXT = 0
@@ -172,6 +175,7 @@ object GlImpl : GlApi {
     override fun bindRenderbuffer(target: Int, renderbuffer: GlRenderbuffer) = gl.bindRenderbuffer(target, renderbuffer.webGl)
     override fun bindTexture(target: Int, texture: GlTexture) = gl.bindTexture(target, texture.webGl)
     override fun blendFunc(sFactor: Int, dFactor: Int) = gl.blendFunc(sFactor, dFactor)
+    override fun blitFramebuffer(srcX0: Int, srcY0: Int, srcX1: Int, srcY1: Int, dstX0: Int, dstY0: Int, dstX1: Int, dstY1: Int, mask: Int, filter: Int) = gl.blitFramebuffer(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter)
     override fun bufferData(target: Int, buffer: Uint8Buffer, usage: Int) = gl.bufferData(target, (buffer as Uint8BufferImpl).buffer, usage, 0, buffer.limit)
     override fun bufferData(target: Int, buffer: Uint16Buffer, usage: Int) = gl.bufferData(target, (buffer as Uint16BufferImpl).buffer, usage, 0, buffer.limit)
     override fun bufferData(target: Int, buffer: Int32Buffer, usage: Int) = gl.bufferData(target, (buffer as Int32BufferImpl).buffer, usage, 0, buffer.limit)
@@ -181,6 +185,7 @@ object GlImpl : GlApi {
     override fun clear(mask: Int) = gl.clear(mask)
     override fun clearBufferfv(buffer: Int, drawBuffer: Int, values: Float32Buffer) = gl.clearBufferfv(buffer, drawBuffer, (values as Float32BufferImpl).buffer)
     override fun clearColor(r: Float, g: Float, b: Float, a: Float) = gl.clearColor(r, g, b, a)
+    override fun clearDepth(depth: Float) = gl.clearDepth(depth)
     override fun compileShader(shader: GlShader) = gl.compileShader(shader.webGl)
     override fun copyTexSubImage2D(target: Int, level: Int, xoffset: Int, yoffset: Int, x: Int, y: Int, width: Int, height: Int) = gl.copyTexSubImage2D(target, level, xoffset, yoffset, x, y, width, height)
     override fun createBuffer(): GlBuffer = GlBuffer(buffers.create(Unit))
@@ -210,6 +215,8 @@ object GlImpl : GlApi {
     override fun generateMipmap(target: Int) = gl.generateMipmap(target)
     override fun getActiveUniformBlockParameter(program: GlProgram, uniformBlockIndex: Int, pName: Int): Int = gl.getActiveUniformBlockParameter(program.webGl, uniformBlockIndex, pName)
     override fun getActiveUniforms(program: GlProgram, uniformIndices: IntArray, pName: Int): IntArray = gl.getActiveUniforms(program.webGl, uniformIndices, pName)
+    override fun getError(): Int = gl.getError()
+    override fun getInteger(pName: Int): Int = gl.getParameter(pName) as Int
     override fun getProgramInfoLog(program: GlProgram): String = gl.getProgramInfoLog(program.webGl) ?: ""
     override fun getProgramParameter(program: GlProgram, param: Int): Any = gl.getProgramParameter(program.webGl, param) ?: 0
     override fun getShaderInfoLog(shader: GlShader): String = gl.getShaderInfoLog(shader.webGl) ?: ""
@@ -221,6 +228,7 @@ object GlImpl : GlApi {
     override fun linkProgram(program: GlProgram) = gl.linkProgram(program.webGl)
     override fun readBuffer(src: Int) = gl.readBuffer(src)
     override fun renderbufferStorage(target: Int, internalformat: Int, width: Int, height: Int) = gl.renderbufferStorage(target, internalformat, width, height)
+    override fun renderbufferStorageMultisample(target: Int, samples: Int, internalformat: Int, width: Int, height: Int) = gl.renderbufferStorageMultisample(target, samples, internalformat, width, height)
     override fun scissor(x: Int, y: Int, width: Int, height: Int) = gl.scissor(x, y, width, height)
     override fun shaderSource(shader: GlShader, source: String) = gl.shaderSource(shader.webGl, source)
     override fun texImage2D(target: Int, level: Int, internalformat: Int, width: Int, height: Int, border: Int, format: Int, type: Int, pixels: Buffer?) = texImage2dImpl(target, level, internalformat, width, height, border, format, type, pixels)

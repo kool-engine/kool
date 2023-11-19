@@ -13,7 +13,7 @@ class OceanFloorRenderPass(mainScene: Scene, val terrainTiles: TerrainTiles) :
     OffscreenRenderPass2d(Node(), renderPassConfig {
         name = "OceanFloorPass"
         colorTargetTexture(TexFormat.RGBA)
-        depthTargetTexture(usedAsShadowMap = false)
+        depthTargetTexture(isUsedAsShadowMap = false)
     }) {
 
     val renderGroup: Node
