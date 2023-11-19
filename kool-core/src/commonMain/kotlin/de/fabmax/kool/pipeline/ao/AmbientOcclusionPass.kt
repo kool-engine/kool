@@ -114,11 +114,6 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
         return a + f * (b - a)
     }
 
-    override fun release() {
-        drawNode.release()
-        super.release()
-    }
-
     private fun aoPassProg() = KslProgram("Ambient Occlusion Pass").apply {
         val uv = interStageFloat2("uv")
 

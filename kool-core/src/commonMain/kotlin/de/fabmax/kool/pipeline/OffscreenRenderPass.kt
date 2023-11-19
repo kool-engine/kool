@@ -69,6 +69,16 @@ abstract class OffscreenRenderPass(config: Config) : RenderPass(config.name) {
         _size.set(width, height)
     }
 
+    override fun release() {
+        super.release()
+
+        views.forEach {
+            if (it.isReleaseDrawNode && !it.drawNode.isReleased) {
+                it.drawNode.release()
+            }
+        }
+    }
+
     companion object {
         fun sortByDependencies(renderPasses: MutableList<OffscreenRenderPass>) {
             val open = mutableSetOf<OffscreenRenderPass>()

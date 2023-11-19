@@ -76,9 +76,4 @@ class RgbeDecoder(parentScene: Scene, hdriTexture: Texture2d, brightness: Float 
         val uBrightness by uniform1f("uBrightness", brightness)
         val uMaxBrightness by uniform3f("uMaxBrightness", Vec3f(20f))
     }
-
-    override fun release() {
-        drawNode.release()
-        super.release()
-    }
 }

@@ -42,11 +42,6 @@ class ReflectionDenoisePass(reflectionPass: OffscreenRenderPass2d) :
         denoiseShader.depthTex = materialPass.positionFlags
     }
 
-    override fun release() {
-        drawNode.release()
-        super.release()
-    }
-
     private fun denoiseProg() = KslProgram("Reflection Denoise Pass").apply {
         val uv = interStageFloat2("uv")
 

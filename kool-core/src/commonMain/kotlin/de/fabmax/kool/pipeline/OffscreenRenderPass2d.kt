@@ -24,7 +24,9 @@ open class OffscreenRenderPass2d(drawNode: Node, config: Config) : OffscreenRend
     val viewport: Viewport by mainView::viewport
     var clearColor: Color? by mainView::clearColor
     var clearDepth: Boolean by mainView::clearDepth
+
     var isUpdateDrawNode: Boolean by mainView::isUpdateDrawNode
+    var isReleaseDrawNode: Boolean by mainView::isReleaseDrawNode
 
     var blitRenderPass: OffscreenRenderPass2d? = null
 

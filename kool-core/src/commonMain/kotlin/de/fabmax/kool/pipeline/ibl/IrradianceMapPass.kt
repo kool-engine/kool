@@ -47,11 +47,6 @@ class IrradianceMapPass private constructor(parentScene: Scene, hdriMap: Texture
         }
     }
 
-    override fun release() {
-        drawNode.release()
-        super.release()
-    }
-
     private class IrradianceMapPassShader(hdri2d: Texture2d?, hdriCube: TextureCube?) : KslShader(
         KslProgram("Irradiance Map Pass").apply {
             val localPos = interStageFloat3("localPos")

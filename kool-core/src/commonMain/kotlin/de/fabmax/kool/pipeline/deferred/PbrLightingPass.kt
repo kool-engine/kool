@@ -29,9 +29,4 @@ class PbrLightingPass(pipeline: DeferredPipeline, suffix: String, val materialPa
             }
         }
     }
-
-    override fun release() {
-        drawNode.release()
-        super.release()
-    }
 }

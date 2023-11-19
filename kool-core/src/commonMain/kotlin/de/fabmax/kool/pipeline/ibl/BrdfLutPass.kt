@@ -47,11 +47,6 @@ class BrdfLutPass(parentScene: Scene) :
         }
     }
 
-    override fun release() {
-        drawNode.release()
-        super.release()
-    }
-
     private fun brdfLutShader(): KslShader {
         val prog = KslProgram("BRDF LUT").apply {
             val uv = interStageFloat2("uv")

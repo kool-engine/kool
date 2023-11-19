@@ -75,11 +75,6 @@ class MaterialPass(pipeline: DeferredPipeline, suffix: String) :
         super.afterCollectDrawCommands(updateEvent)
     }
 
-    override fun release() {
-        drawNode.release()
-        super.release()
-    }
-
     companion object {
         val FMT_POSITION_FLAGS = TexFormat.RGBA_F16
         val FMT_NORMAL_ROUGH = TexFormat.RGBA_F16

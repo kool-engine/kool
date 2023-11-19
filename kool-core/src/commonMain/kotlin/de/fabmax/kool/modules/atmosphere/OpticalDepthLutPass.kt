@@ -55,11 +55,6 @@ class OpticalDepthLutPass :
         isEnabled = true
     }
 
-    override fun release() {
-        drawNode.release()
-        super.release()
-    }
-
     private fun opticalDepthLutProg() = KslProgram("Optical Dpeth LUT").apply {
         val uv = interStageFloat2("uv")
 

@@ -75,11 +75,6 @@ class AoDenoisePass(aoPass: OffscreenRenderPass2d, depthComponent: String) :
         super.update(ctx)
     }
 
-    override fun release() {
-        drawNode.release()
-        super.release()
-    }
-
     private fun denoiseProg(depthComponent: String) = KslProgram("Ambient Occlusion Denoise Pass").apply {
         val uv = interStageFloat2("uv")
 

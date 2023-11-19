@@ -125,6 +125,7 @@ abstract class RenderPass(var name: String) : BaseReleasable() {
             set(value) { clearColors[0] = value }
 
         var isUpdateDrawNode = true
+        var isReleaseDrawNode = true
 
         private var updateEvent: UpdateEvent? = null
 

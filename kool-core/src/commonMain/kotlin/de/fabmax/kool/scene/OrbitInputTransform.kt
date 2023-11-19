@@ -24,6 +24,7 @@ fun orbitCamera(view: RenderPass.View, name: String? = null, block: OrbitInputTr
 
     InputStack.defaultInputHandler.pointerListeners += orbitCam
     orbitCam.onRelease {
+        println("releasing $orbitCam")
         InputStack.defaultInputHandler.pointerListeners -= orbitCam
     }
     return orbitCam

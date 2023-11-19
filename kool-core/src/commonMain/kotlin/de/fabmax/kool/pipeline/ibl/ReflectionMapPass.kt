@@ -55,11 +55,6 @@ class ReflectionMapPass private constructor(parentScene: Scene, hdriMap: Texture
         }
     }
 
-    override fun release() {
-        drawNode.release()
-        super.release()
-    }
-
     private class ReflectionMapShader(hdri2d: Texture2d?, hdriCube: TextureCube?) : KslShader(
         KslProgram("Reflection Map Pass").apply {
             val localPos = interStageFloat3("localPos")

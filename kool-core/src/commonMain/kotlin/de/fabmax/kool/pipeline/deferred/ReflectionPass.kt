@@ -57,11 +57,6 @@ class ReflectionPass(val baseReflectionStep: Float) :
         ssrShader.lightingPass = lightingPass.colorTexture
     }
 
-    override fun release() {
-        drawNode.release()
-        super.release()
-    }
-
     private inner class ReflectionShader : KslShader(ssrShaderModel(), FullscreenShaderUtil.fullscreenShaderPipelineCfg) {
         var positionFlags by texture2d("positionFlags")
         var normalRoughness by texture2d("normalRoughness")

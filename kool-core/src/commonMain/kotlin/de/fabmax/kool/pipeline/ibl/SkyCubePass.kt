@@ -110,11 +110,6 @@ class SkyCubePass(opticalDepthLut: Texture2d, size: Int = 256) :
         }
     }
 
-    override fun release() {
-        drawNode.release()
-        super.release()
-    }
-
     private fun updateSunLight() {
         val phi = -azimuth.toRad()
         val theta = (PI.toFloat() / 2f) - elevation.toRad()
