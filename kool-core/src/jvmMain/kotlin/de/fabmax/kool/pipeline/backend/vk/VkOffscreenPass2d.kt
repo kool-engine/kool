@@ -1,10 +1,12 @@
 package de.fabmax.kool.pipeline.backend.vk
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.vk.util.vkFormat
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.util.launchDelayed
+import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.memStack
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
@@ -13,8 +15,7 @@ class VkOffscreenPass2d(val parentPass: OffscreenRenderPass2d) : OffscreenPass2d
     private var isCreated = false
     private var isCreationBlocked = false
 
-    // todo: implement...
-    override val isReverseDepth: Boolean = false
+    override val isReverseDepth: Boolean get() = parentPass.useReversedDepthIfAvailable
 
     val drawMipLevels = parentPass.drawMipLevels
     val renderMipLevels: Int = if (drawMipLevels) { parentPass.mipLevels } else { 1 }
@@ -51,6 +52,47 @@ class VkOffscreenPass2d(val parentPass: OffscreenRenderPass2d) : OffscreenPass2d
         memStack {
             for (i in resultImages.indices) {
                 resultImages[i]?.generateMipmaps(this, commandBuffer)
+            }
+        }
+    }
+
+    fun blitFrom(src: VkOffscreenPass2d, commandBuffer: VkCommandBuffer, mipLevel: Int) {
+        logE { "Blitting render passes is not yet implemented on Vulkan backend" }
+
+        val rp = src.renderPass ?: return
+        val srcWidth = src.parentPass.getMipWidth(mipLevel)
+        val srcHeight = src.parentPass.getMipHeight(mipLevel)
+        val width = parentPass.getMipWidth(mipLevel)
+        val height = parentPass.getMipHeight(mipLevel)
+
+        if (srcWidth != width || srcHeight != height) {
+            logE { "Render pass blitting requires source and destination pass to have the same size" }
+        }
+
+        // fixme: image copy into a swap chain image does not work
+        memStack {
+            for (i in rp.images.indices) {
+                val srcImage = rp.images[i]
+                srcImage.transitionLayout(this, commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
+                val imageCopy = callocVkImageCopyN(1) {
+                    srcSubresource {
+                        it.aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
+                        it.mipLevel(mipLevel)
+                        it.baseArrayLayer(0)
+                        it.layerCount(1)
+                    }
+                    srcOffset { it.set(0, 0, 0) }
+                    dstSubresource {
+                        it.aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
+                        it.mipLevel(mipLevel)
+                        it.baseArrayLayer(0)
+                        it.layerCount(1)
+                    }
+                    dstOffset { it.set(0, 0, 0) }
+                    extent { it.set(width, height, 1) }
+                }
+                vkCmdCopyImage(commandBuffer, srcImage.vkImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, resultImages[i]!!.vkImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, imageCopy)
+                srcImage.transitionLayout(this, commandBuffer, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
             }
         }
     }
@@ -195,14 +237,20 @@ class VkOffscreenPass2d(val parentPass: OffscreenRenderPass2d) : OffscreenPass2d
     }
 
     private fun create(ctx: Lwjgl3Context) {
+        if (isReverseDepth) {
+            parentPass.projCorrectionMatrix.set(Mat4f.IDENTITY)
+        }
+
         val sys = (ctx.backend as VkRenderBackend).vkSystem
         val pass = parentPass
         val width = parentPass.width
         val height = parentPass.height
 
+        var isMultiSampling = false
         var isProvidedColor = false
         val formats = mutableListOf<TexFormat>()
         if (pass.colorAttachment is OffscreenRenderPass.RenderBufferColorAttachment) {
+            isMultiSampling = pass.colorAttachment.isMultiSampled
             formats += pass.colorAttachment.colorFormat
         } else if (pass.colorAttachment is OffscreenRenderPass.TextureColorAttachment) {
             val cfgs = pass.colorAttachment.attachments
@@ -226,12 +274,12 @@ class VkOffscreenPass2d(val parentPass: OffscreenRenderPass2d) : OffscreenPass2d
             }
             VkOffscreenRenderPass.ProvidedColorAttachments(false, images, imageViews, samplers)
         } else {
-            VkOffscreenRenderPass.CreatedColorAttachments(sys, width, height, false, formats.map { it.vkFormat }, VK_FILTER_LINEAR)
+            VkOffscreenRenderPass.CreatedColorAttachments(sys, width, height, false, formats.map { it.vkFormat }, VK_FILTER_LINEAR, isMultiSampling)
         }
 
         var isProvidedDepth = false
         val depthAttachment = if (pass.depthAttachment is OffscreenRenderPass.RenderBufferDepthAttachment) {
-            VkOffscreenRenderPass.CreatedDepthAttachment(sys, width, height, false, VK_FILTER_NEAREST, VK_COMPARE_OP_NEVER)
+            VkOffscreenRenderPass.CreatedDepthAttachment(sys, width, height, false, VK_FILTER_NEAREST, VK_COMPARE_OP_NEVER, isMultiSampling)
         } else {
             val texDepth = pass.depthAttachment as OffscreenRenderPass.TextureDepthAttachment
             isProvidedDepth = texDepth.attachment.providedTexture != null
@@ -242,11 +290,11 @@ class VkOffscreenPass2d(val parentPass: OffscreenRenderPass2d) : OffscreenPass2d
                 val depth = texDepth.attachment
                 val filterMethod = if (depth.minFilter == FilterMethod.LINEAR) VK_FILTER_LINEAR else VK_FILTER_NEAREST
                 val depthCompareOp = if (depth.depthCompareOp != DepthCompareOp.DISABLED) VK_COMPARE_OP_LESS else VK_COMPARE_OP_NEVER
-                VkOffscreenRenderPass.CreatedDepthAttachment(sys, width, height, false, filterMethod, depthCompareOp)
+                VkOffscreenRenderPass.CreatedDepthAttachment(sys, width, height, false, filterMethod, depthCompareOp, isMultiSampling)
             }
         }
 
-        val rp = VkOffscreenRenderPass(sys, width, height, colorAttachments, isProvidedColor, depthAttachment, isProvidedDepth)
+        val rp = VkOffscreenRenderPass(sys, width, height, colorAttachments, isProvidedColor, depthAttachment, isProvidedDepth, isMultiSampling)
         if (!isProvidedColor) {
             for (i in parentPass.colorTextures.indices) {
                 createTex(parentPass.colorTextures[i], i, true, rp, sys)

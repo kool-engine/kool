@@ -39,9 +39,7 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
         0.0f, 0.0f, 0.0f, 1.0f
     )
 
-    // fixme: leave this false for now, as it makes problems when the same shader is used
-    //  in multiple render passes with and without reversed depth
-    override val isReversedDepthAvailable = false
+    override val isReversedDepthAvailable = true
 
     private val shaderCodes = mutableMapOf<String, ShaderCode>()
 
@@ -275,18 +273,20 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
             // fixme: this assumes all render passes / views use the same fullscreen viewport
             val viewport = group.renderPasses[0].views[0].viewport
 
+            val beginInfo = callocVkCommandBufferBeginInfo { sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO) }
+            check(vkBeginCommandBuffer(cmdBuffer, beginInfo) == VK_SUCCESS)
+
             // on screen render passes of all scenes are merged into a single command buffer
             for (i in group.renderPasses.indices) {
-                val onScreenPass = group.renderPasses[i]
+                val onScreenPass = group.renderPasses[i] as ScreenRenderPass
                 for (view in onScreenPass.views) {
                     mergeQueue += view.drawQueue.commands
                 }
+                onScreenPass.blitRenderPass?.let {
+                    // fixme: this currently does not work
+                    swapChain.renderPass.blitFrom(it.impl as VkOffscreenPass2d, cmdBuffer, 0)
+                }
             }
-
-            // fixme: optimize draw queue order (sort by distance, customizable draw order, etc.)
-
-            val beginInfo = callocVkCommandBufferBeginInfo { sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO) }
-            check(vkBeginCommandBuffer(cmdBuffer, beginInfo) == VK_SUCCESS)
 
             val renderPassInfo = renderPassBeginInfo(swapChain.renderPass, swapChain.framebuffers[imageIndex], group.renderPasses[0])
             vkCmdBeginRenderPass(cmdBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE)
@@ -326,14 +326,14 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
         private fun disposePipelines() {
             ctx.disposablePipelines.forEach { pipeline ->
                 val delMesh = meshMap.remove(pipeline.pipelineInstanceId)
-                val delPipeline = sys.pipelineManager.getPipeline(pipeline)
+                val delPipelines = sys.pipelineManager.getRenderpassPipelines(pipeline)
 
                 actionQueue += DelayAction {
                     delMesh?.let {
                         sys.device.removeDependingResource(it)
                         it.destroy()
                     }
-                    delPipeline?.freeDescriptorSetInstance(pipeline)
+                    delPipelines.forEach { it.freeDescriptorSetInstance(pipeline) }
                 }
             }
             ctx.disposablePipelines.clear()
@@ -470,8 +470,18 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
         }
 
         private fun MemoryStack.renderOffscreen2d(commandBuffer: VkCommandBuffer, offscreenPass: OffscreenRenderPass2d) {
-            offscreenPass.impl.draw(ctx)
             val vkPass2d = offscreenPass.impl as VkOffscreenPass2d
+
+            // fixme: this currently does not work
+            offscreenPass.blitRenderPass?.let {
+                TODO()
+//                for (mipLevel in 0 until vkPass2d.renderMipLevels) {
+//                    val srcPass2d = it.impl as VkOffscreenPass2d
+//                    vkPass2d.blitFrom(srcPass2d, commandBuffer, mipLevel)
+//                }
+            }
+
+            offscreenPass.impl.draw(ctx)
             vkPass2d.renderPass?.let { rp ->
                 val renderPassInfo = renderPassBeginInfo(rp, rp.frameBuffer, offscreenPass)
 

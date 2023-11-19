@@ -1,11 +1,13 @@
 package de.fabmax.kool.pipeline.backend.vk
 
 import de.fabmax.kool.util.logD
+import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.memStack
 import org.lwjgl.vulkan.KHRSwapchain.VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
 import org.lwjgl.vulkan.VK10.*
+import org.lwjgl.vulkan.VkCommandBuffer
 
-class OnScreenRenderPass(swapChain: SwapChain) :
+class OnScreenRenderPass(val swapChain: SwapChain) :
         VkRenderPass(swapChain.sys, swapChain.extent.width(), swapChain.extent.height(), listOf(swapChain.imageFormat)) {
 
     override val vkRenderPass: Long
@@ -84,6 +86,46 @@ class OnScreenRenderPass(swapChain: SwapChain) :
 
         swapChain.addDependingResource(this)
         logD { "Created render pass" }
+    }
+
+    fun blitFrom(src: VkOffscreenPass2d, commandBuffer: VkCommandBuffer, mipLevel: Int) {
+        logE { "Blitting render passes is not yet implemented on Vulkan backend" }
+
+        val rp = src.renderPass ?: return
+        val srcWidth = src.parentPass.getMipWidth(mipLevel)
+        val srcHeight = src.parentPass.getMipHeight(mipLevel)
+        val width = maxWidth
+        val height = maxHeight
+
+        if (srcWidth != width || srcHeight != height) {
+            logE { "Render pass blitting requires source and destination pass to have the same size" }
+        }
+
+        memStack {
+            val srcImage = rp.images[0]
+            swapChain.colorImage.transitionLayout(this, commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+            srcImage.transitionLayout(this, commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
+            val imageCopy = callocVkImageCopyN(1) {
+                srcSubresource {
+                    it.aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
+                    it.mipLevel(mipLevel)
+                    it.baseArrayLayer(0)
+                    it.layerCount(1)
+                }
+                srcOffset { it.set(0, 0, 0) }
+                dstSubresource {
+                    it.aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
+                    it.mipLevel(mipLevel)
+                    it.baseArrayLayer(0)
+                    it.layerCount(1)
+                }
+                dstOffset { it.set(0, 0, 0) }
+                extent { it.set(width, height, 1) }
+            }
+            vkCmdCopyImage(commandBuffer, srcImage.vkImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, swapChain.colorImage.vkImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, imageCopy)
+            srcImage.transitionLayout(this, commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+            swapChain.colorImage.transitionLayout(this, commandBuffer, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+        }
     }
 
     override fun freeResources() {

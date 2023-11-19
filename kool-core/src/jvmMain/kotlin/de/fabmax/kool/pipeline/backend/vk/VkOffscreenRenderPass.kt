@@ -5,10 +5,16 @@ import de.fabmax.kool.util.memStack
 import org.lwjgl.util.vma.Vma
 import org.lwjgl.vulkan.VK10.*
 
-class VkOffscreenRenderPass(sys: VkSystem, maxWidth: Int, maxHeight: Int,
-                            val colorAttachments: ColorAttachments, val isExtColorAttachments: Boolean,
-                            val depthAttachment: DepthAttachment, val isExtDepthAttachments: Boolean) :
-        VkRenderPass(sys, maxWidth, maxHeight, colorAttachments.colorFormats) {
+class VkOffscreenRenderPass(
+    sys: VkSystem,
+    maxWidth: Int,
+    maxHeight: Int,
+    val colorAttachments: ColorAttachments,
+    val isExtColorAttachments: Boolean,
+    val depthAttachment: DepthAttachment,
+    val isExtDepthAttachments: Boolean,
+    val isMultiSampled: Boolean
+) : VkRenderPass(sys, maxWidth, maxHeight, colorAttachments.colorFormats) {
 
     constructor(sys: VkSystem, maxWidth: Int, maxHeight: Int, isCopied: Boolean, texFormat: Int,
                 colorFilterMethod: Int = VK_FILTER_LINEAR, depthFilterMethod: Int = VK_FILTER_NEAREST, depthCopmpareOp: Int = VK_COMPARE_OP_NEVER) :
@@ -16,9 +22,16 @@ class VkOffscreenRenderPass(sys: VkSystem, maxWidth: Int, maxHeight: Int,
 
     constructor(sys: VkSystem, maxWidth: Int, maxHeight: Int, isCopied: Boolean, texFormats: List<Int>,
                 colorFilterMethod: Int = VK_FILTER_LINEAR, depthFilterMethod: Int = VK_FILTER_NEAREST, depthCopmpareOp: Int = VK_COMPARE_OP_NEVER) :
-            this(sys, maxWidth, maxHeight,
-                    CreatedColorAttachments(sys, maxWidth, maxHeight, isCopied, texFormats, colorFilterMethod), false,
-                    CreatedDepthAttachment(sys, maxWidth, maxHeight, isCopied, depthFilterMethod, depthCopmpareOp), false)
+            this(
+                sys,
+                maxWidth,
+                maxHeight,
+                CreatedColorAttachments(sys, maxWidth, maxHeight, isCopied, texFormats, colorFilterMethod, false),
+                isExtColorAttachments = false,
+                CreatedDepthAttachment(sys, maxWidth, maxHeight, isCopied, depthFilterMethod, depthCopmpareOp, false),
+                isExtDepthAttachments = false,
+                isMultiSampled = false
+            )
 
     override val vkRenderPass: Long
 
@@ -105,10 +118,12 @@ class VkOffscreenRenderPass(sys: VkSystem, maxWidth: Int, maxHeight: Int,
                     VK_ATTACHMENT_LOAD_OP_CLEAR
                 }
 
+                val samples = if (isMultiSampled) sys.physicalDevice.msaaSamples else VK_SAMPLE_COUNT_1_BIT
+
                 for (i in colorFormats.indices) {
                     this[i].apply {
                         format(colorFormats[i])
-                        samples(VK_SAMPLE_COUNT_1_BIT)
+                        samples(samples)
                         loadOp(colorLoadOp)
                         storeOp(VK_ATTACHMENT_STORE_OP_STORE)
                         stencilLoadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)
@@ -124,7 +139,7 @@ class VkOffscreenRenderPass(sys: VkSystem, maxWidth: Int, maxHeight: Int,
                 }
                 this[nColorAttachments].apply {
                     format(sys.physicalDevice.depthFormat)
-                    samples(VK_SAMPLE_COUNT_1_BIT)
+                    samples(samples)
                     loadOp(depthLoadOp)
                     storeOp(VK_ATTACHMENT_STORE_OP_STORE)
                     stencilLoadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)
@@ -209,7 +224,7 @@ class VkOffscreenRenderPass(sys: VkSystem, maxWidth: Int, maxHeight: Int,
     }
 
     class CreatedColorAttachments(val sys: VkSystem, maxWidth: Int, maxHeight: Int, isCopied: Boolean,
-                                  colorFormats: List<Int>, filterMethod: Int) :
+                                  colorFormats: List<Int>, filterMethod: Int, multiSampling: Boolean) :
             ColorAttachments(isCopied, colorFormats) {
         override val colorImages: List<Image>
         override val colorImageViews: List<ImageView>
@@ -227,6 +242,9 @@ class VkOffscreenRenderPass(sys: VkSystem, maxWidth: Int, maxHeight: Int,
                     tiling = VK_IMAGE_TILING_OPTIMAL
                     usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT or VK_IMAGE_USAGE_TRANSFER_SRC_BIT or if (!isCopied) VK_IMAGE_USAGE_SAMPLED_BIT else 0
                     allocUsage = Vma.VMA_MEMORY_USAGE_GPU_ONLY
+                    if (multiSampling) {
+                        numSamples = sys.physicalDevice.msaaSamples
+                    }
                 }
 
                 val img = Image(sys, fbImageCfg)
@@ -256,7 +274,7 @@ class VkOffscreenRenderPass(sys: VkSystem, maxWidth: Int, maxHeight: Int,
     }
 
     class CreatedDepthAttachment(val sys: VkSystem, maxWidth: Int, maxHeight: Int, isCopied: Boolean,
-                                 filterMethod: Int, depthCompareOp: Int) :
+                                 filterMethod: Int, depthCompareOp: Int, multiSampling: Boolean) :
             DepthAttachment(isCopied) {
         override val depthImage: Image
         override val depthImageView: ImageView
@@ -270,6 +288,9 @@ class VkOffscreenRenderPass(sys: VkSystem, maxWidth: Int, maxHeight: Int,
                 tiling = VK_IMAGE_TILING_OPTIMAL
                 usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT or if (isCopied) VK_IMAGE_USAGE_TRANSFER_SRC_BIT else VK_IMAGE_USAGE_SAMPLED_BIT
                 allocUsage = Vma.VMA_MEMORY_USAGE_GPU_ONLY
+                if (multiSampling) {
+                    numSamples = sys.physicalDevice.msaaSamples
+                }
             }
             depthImage = Image(sys, depthImageCfg)
             depthImageView = ImageView(sys, depthImage, VK_IMAGE_ASPECT_DEPTH_BIT)

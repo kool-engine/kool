@@ -1,5 +1,7 @@
 package de.fabmax.kool.pipeline.backend.vk.pipeline
 
+import de.fabmax.kool.pipeline.OffscreenRenderPass
+import de.fabmax.kool.pipeline.OffscreenRenderPass2d
 import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.pipeline.backend.vk.SwapChain
@@ -12,7 +14,9 @@ class PipelineManager(val sys: VkSystem) {
     private val onScreenPipelineConfigs = mutableSetOf<PipelineAndRenderPass>()
 
     private var swapChain: SwapChain? = null
-    private val createdPipelines = mutableMapOf<ULong, CreatedPipeline>()
+    private val createdPipelines = mutableMapOf<PipelineKey, CreatedPipeline>()
+
+    private data class PipelineKey(val pipelineHash: ULong, val renderPass: Long)
 
     fun onSwapchainDestroyed() {
         swapChain = null
@@ -25,7 +29,7 @@ class PipelineManager(val sys: VkSystem) {
     }
 
     fun hasPipeline(pipeline: Pipeline, renderPass: Long): Boolean =
-            createdPipelines[pipeline.pipelineHash]?.existsForRenderPass(renderPass) ?: false
+            createdPipelines[PipelineKey(pipeline.pipelineHash, renderPass)]?.existsForRenderPass(renderPass) ?: false
 
     fun addPipelineConfig(pipeline: Pipeline, nImages: Int, koolRenderPass: RenderPass, renderPass: VkRenderPass, dynVp: Boolean) {
         if (renderPass === swapChain?.renderPass) {
@@ -34,9 +38,18 @@ class PipelineManager(val sys: VkSystem) {
                 createOnScreenPipeline(pipeline, koolRenderPass, renderPass)
             }
         } else {
-            val gp = GraphicsPipeline(sys, koolRenderPass, renderPass, 1, dynVp, pipeline, nImages)
+            val numSamples = if (koolRenderPass is OffscreenRenderPass2d
+                && koolRenderPass.colorAttachment is OffscreenRenderPass.RenderBufferColorAttachment
+                && koolRenderPass.colorAttachment.isMultiSampled) {
+                sys.physicalDevice.msaaSamples
+            } else {
+                1
+            }
+
+            val gp = GraphicsPipeline(sys, koolRenderPass, renderPass, numSamples, dynVp, pipeline, nImages)
             sys.device.addDependingResource(gp)
-            val createdPipeline = createdPipelines.getOrPut(pipeline.pipelineHash) { CreatedPipeline(false) }
+            val key = PipelineKey(pipeline.pipelineHash, renderPass.vkRenderPass)
+            val createdPipeline = createdPipelines.getOrPut(key) { CreatedPipeline(false, key.renderPass) }
             createdPipeline.addRenderPassPipeline(renderPass, gp)
         }
     }
@@ -45,20 +58,21 @@ class PipelineManager(val sys: VkSystem) {
         val swapChain = this.swapChain ?: return
         val gp = GraphicsPipeline(sys, koolRenderPass, renderPass, sys.physicalDevice.msaaSamples, true, pipeline, swapChain.nImages)
         swapChain.addDependingResource(gp)
-        val createdPipeline = createdPipelines.getOrPut(pipeline.pipelineHash) { CreatedPipeline(true) }
+        val key = PipelineKey(pipeline.pipelineHash, renderPass.vkRenderPass)
+        val createdPipeline = createdPipelines.getOrPut(key) { CreatedPipeline(true, key.renderPass) }
         createdPipeline.addRenderPassPipeline(renderPass, gp)
     }
 
     fun getPipeline(pipeline: Pipeline, renderPass: Long): GraphicsPipeline {
-        return createdPipelines[pipeline.pipelineHash]?.graphicsPipelines?.get(renderPass)
+        return createdPipelines[PipelineKey(pipeline.pipelineHash, renderPass)]?.graphicsPipelines?.get(renderPass)
                 ?: throw NoSuchElementException("Unknown pipeline config: ${pipeline.pipelineHash}")
     }
 
-    fun getPipeline(pipeline: Pipeline): CreatedPipeline? {
-        return createdPipelines[pipeline.pipelineHash]
+    fun getRenderpassPipelines(pipeline: Pipeline): List<CreatedPipeline> {
+        return createdPipelines.keys.filter { it.pipelineHash == pipeline.pipelineHash }.map { createdPipelines[it]!! }
     }
 
-    inner class CreatedPipeline(private val isOnScreen: Boolean) {
+    inner class CreatedPipeline(private val isOnScreen: Boolean, private val renderPass: Long) {
         val graphicsPipelines = mutableMapOf<Long, GraphicsPipeline>()
 
         fun existsForRenderPass(renderPass: Long) = graphicsPipelines.containsKey(renderPass)
@@ -84,7 +98,7 @@ class PipelineManager(val sys: VkSystem) {
             }
             if (graphicsPipelines.isEmpty()) {
                 // all pipelines destroyed, remove CreatedPipeline instance
-                createdPipelines.remove(pipeline.pipelineHash) != null
+                createdPipelines.remove(PipelineKey(pipeline.pipelineHash, renderPass)) != null
                 onScreenPipelineConfigs.removeIf { it.pipeline == pipeline }
             }
         }

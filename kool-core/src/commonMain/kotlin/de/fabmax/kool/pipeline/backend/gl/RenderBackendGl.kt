@@ -1,6 +1,7 @@
 package de.fabmax.kool.pipeline.backend.gl
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.generator.GlslGenerator
 import de.fabmax.kool.pipeline.*
@@ -20,8 +21,8 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
     var numSamples = 1
         private set
 
-    final override var isReversedDepthAvailable = false
-        private set
+    override var isReversedDepthAvailable = false
+        protected set
 
     internal val queueRenderer = QueueRenderer(this)
 
@@ -197,5 +198,14 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
             pow2 = pow2 shl 1
         }
         return pow2
+    }
+
+    companion object {
+        val ZERO_TO_ONE_PROJ_CORRECTION = Mat4f(
+            1.0f, 0.0f, 0.0f, 0.0f,
+            0.0f, 1.0f, 0.0f, 0.0f,
+            0.0f, 0.0f, 0.5f, 0.5f,
+            0.0f, 0.0f, 0.0f, 1.0f
+        )
     }
 }

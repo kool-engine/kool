@@ -25,7 +25,7 @@ class SwapChain(val sys: VkSystem) : VkResource() {
     val nImages: Int
         get() = images.size
 
-    private val colorImage: Image
+    val colorImage: Image
     private val colorImageView: ImageView
 
     private val depthImage: Image
@@ -106,7 +106,7 @@ class SwapChain(val sys: VkSystem) : VkResource() {
         imgConfig.numSamples = sys.physicalDevice.msaaSamples
         imgConfig.format = imageFormat
         imgConfig.tiling = VK_IMAGE_TILING_OPTIMAL
-        imgConfig.usage = VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT or VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT
+        imgConfig.usage = VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT or VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT //or VK_IMAGE_USAGE_TRANSFER_DST_BIT // does not work because of VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT flag
         imgConfig.allocUsage = VMA_MEMORY_USAGE_GPU_ONLY
         val image = Image(sys, imgConfig)
 

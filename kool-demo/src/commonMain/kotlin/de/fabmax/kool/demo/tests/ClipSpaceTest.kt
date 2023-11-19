@@ -7,21 +7,31 @@ import de.fabmax.kool.math.deg
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.modules.ksl.lang.KslProgram
+import de.fabmax.kool.modules.ksl.lang.xy
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.scene.Camera
-import de.fabmax.kool.scene.Node
-import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.scene.addMesh
+import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 
 class ClipSpaceTest : DemoScene("Clip Space Test") {
 
+    private val useRenderBufferTarget = true
+
     val reversedDepthPass = OffscreenRenderPass2d(Node(), renderPassConfig {
         name = "Reversed depth"
-        colorTargetRenderBuffer(TexFormat.RGBA, false)
+        if (useRenderBufferTarget) {
+            // OpenGL mode: use render buffer target with multi-sampling
+            colorTargetRenderBuffer(TexFormat.RGBA, true)
+        } else {
+            // Vulkan compatibility mode: use texture target without multi-sampling
+            colorTargetTexture(TexFormat.RGBA)
+        }
     }).apply {
         clearColor = MdColor.GREY tone 900
+
+        // enable the magic:
+        //   if set to true, you should see seven large rectangles in the center of the screen (white to indigo)
+        //   if set to false, there should only be three (and depth precision will be very poor because of the large far cam distance)
         useReversedDepthIfAvailable = true
 
         camera.setup()
@@ -33,40 +43,28 @@ class ClipSpaceTest : DemoScene("Clip Space Test") {
     override fun Scene.setupMainScene(ctx: KoolContext) {
         addOffscreenPass(reversedDepthPass)
 
-        mainRenderPass.blitRenderPass = reversedDepthPass
+        if (useRenderBufferTarget) {
+            // blit (resolve + copy) render buffer mode, support multi-sampling but does not work on Vulkan yet
+            mainRenderPass.blitRenderPass = reversedDepthPass
+
+        } else {
+            // lame fullscreen quad method, requires a render pass with color texture target, no multi-sampling support
+            addTextureMesh {
+                generate {
+                    centeredRect {
+                        size.set(2f, 2f)
+                    }
+                }
+                shader = RenderPassOutputShader(reversedDepthPass)
+            }
+        }
+
         onUpdate {
             reversedDepthPass.setSize(mainRenderPass.width, mainRenderPass.height, ctx)
         }
     }
 
     private fun Node.makeTestContent() {
-        addMesh(Attribute.POSITIONS, Attribute.COLORS) {
-            val depthsToColors = mapOf(
-                1.01f to MdColor.RED,       // should never be visible
-                1.0f to MdColor.ORANGE,
-                0.5f to MdColor.GREEN,
-                0f to MdColor.CYAN,
-                -0.01f to MdColor.BLUE,     // negative depth should not be visible if clip space is zero to one (i.e. suited fro reversed depth)
-                -1f to MdColor.PINK,
-                -1.01f to MdColor.PURPLE,   // should never be visible
-            )
-
-            generate {
-                var y = -0.9f
-                depthsToColors.forEach { (z, color) ->
-                    this.color = color
-
-                    centeredRect {
-                        origin.set(0.9f, y, z)
-                        size.set(0.1f, 0.1f)
-                        y += 0.15f
-                    }
-                }
-            }
-
-            shader = clipTestShader()
-        }
-
         addMesh(Attribute.POSITIONS, Attribute.COLORS) {
             val depthsToColors = mapOf(
                 1e16f to MdColor.INDIGO,        // 10^16 m: ~1 light year away from camera
@@ -91,13 +89,42 @@ class ClipSpaceTest : DemoScene("Clip Space Test") {
                     fac -= 0.1f
                 }
             }
-            transform.rotate(45f.deg, Vec3f.Z_AXIS)
+
+            // tilt mesh a bit to see if antialiasing works
+            transform.rotate(5f.deg, Vec3f.Z_AXIS)
+
             shader = KslUnlitShader {
                 pipeline {
                     depthTest = DepthCompareOp.LESS
                 }
                 color { vertexColor() }
             }
+        }
+
+        addMesh(Attribute.POSITIONS, Attribute.COLORS) {
+            val depthsToColors = mapOf(
+                1.01f to MdColor.RED,       // should never be visible
+                1.0f to MdColor.ORANGE,
+                0.5f to MdColor.GREEN,
+                0f to MdColor.CYAN,
+                -0.01f to MdColor.BLUE,     // negative depth should not be visible if clip space is zero to one (i.e. suited fro reversed depth)
+                -1f to MdColor.PINK,
+                -1.01f to MdColor.PURPLE,   // should never be visible
+            )
+
+            generate {
+                var y = -0.9f
+                depthsToColors.forEach { (z, color) ->
+                    this.color = color
+
+                    centeredRect {
+                        origin.set(0.9f, y, z)
+                        size.set(0.1f, 0.1f)
+                        y += 0.15f
+                    }
+                }
+            }
+            shader = clipTestShader()
         }
     }
 
@@ -128,4 +155,15 @@ class ClipSpaceTest : DemoScene("Clip Space Test") {
         },
         KslShader.PipelineConfig()
     )
+
+    private fun RenderPassOutputShader(renderPass: OffscreenRenderPass2d) = KslUnlitShader {
+        color { textureColor(renderPass.colorTexture, gamma = 1f) }
+        modelCustomizer = {
+            vertexStage {
+                main {
+                    outPosition set float4Value(vertexAttribFloat3(Attribute.POSITIONS).xy, 0.5f, 1f)
+                }
+            }
+        }
+    }
 }
