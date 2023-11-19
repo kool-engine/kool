@@ -235,7 +235,7 @@ class AoDemo : DemoScene("Ambient Occlusion") {
         if (enabled) {
             lighting.singleSpotLight {
                 val p = Vec3f(6f, 10f, -6f)
-                setup(p, p.mul(-1f, MutableVec3f()).norm(), 40f)
+                setup(p, p.mul(-1f, MutableVec3f()).norm(), 40f.deg)
                 setColor(Color.WHITE.mix(MdColor.AMBER, 0.2f).toLinear(), 500f)
             }
         } else {

@@ -212,13 +212,13 @@ class GltfDemo : DemoScene("glTF Models") {
         lighting.addSpotLight {
             val pos = Vec3f(7f, 8f, 8f)
             val lookAt = Vec3f.ZERO
-            setup(pos, lookAt.subtract(pos, MutableVec3f()).norm(), 25f)
+            setup(pos, lookAt.subtract(pos, MutableVec3f()).norm(), 25f.deg)
             setColor(Color.WHITE.mix(MdColor.AMBER, 0.3f).toLinear(), 500f)
         }
         lighting.addSpotLight {
             val pos = Vec3f(-7f, 8f, 8f)
             val lookAt = Vec3f.ZERO
-            setup(pos, lookAt.subtract(pos, MutableVec3f()).norm(), 25f)
+            setup(pos, lookAt.subtract(pos, MutableVec3f()).norm(), 25f.deg)
             setColor(Color.WHITE.mix(MdColor.AMBER, 0.3f).toLinear(), 500f)
         }
     }

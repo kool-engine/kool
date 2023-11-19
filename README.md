@@ -79,7 +79,7 @@ The demos mentioned above and examples shown below should give you a rough idea 
 still a bit of a weak spot).
 
 ## Engine Features / Noticeable Stuff:
-- [Reversed-depth](https://developer.nvidia.com/content/depth-precision-visualized) rendering for vastly higher
+- [Reversed-depth](https://developer.nvidia.com/content/depth-precision-visualized) rendering for vastly improved
   depth precision and range (more or less infinite)
 - Physics simulation (based on Nvidia PhysX 5.1, using [physx-jni](https://github.com/fabmax/physx-jni) on Java and [physx-js-webidl](https://github.com/fabmax/physx-js-webidl) on javascript)
 - Kotlin DSL based shader language (translates into GLSL)
@@ -152,7 +152,7 @@ fun main() = KoolApplication { ctx ->
 
         // Light setup
         lighting.singleSpotLight {
-            setup(Vec3f(5f, 6.25f, 7.5f), Vec3f(-1f, -1.25f, -1.5f), 45f)
+            setup(Vec3f(5f, 6.25f, 7.5f), Vec3f(-1f, -1.25f, -1.5f), 45f.deg)
             setColor(Color.WHITE, 300f)
         }
         val shadowMap = SimpleShadowMap(this, lighting.lights[0])

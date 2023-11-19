@@ -115,10 +115,10 @@ sealed class Light : Node() {
         val direction: Vec3f
             get() = _direction
 
-        var spotAngle = 60f
+        var spotAngle = 60f.deg
         var coreRatio = 0.5f
 
-        fun setup(pos: Vec3f, dir: Vec3f, angle: Float = spotAngle, ratio: Float = coreRatio): Spot {
+        fun setup(pos: Vec3f, dir: Vec3f, angle: AngleF = spotAngle, ratio: Float = coreRatio): Spot {
             setTransformByDirectionAndPos(direction = dir, pos = pos)
             spotAngle = angle
             coreRatio = ratio
@@ -132,7 +132,7 @@ sealed class Light : Node() {
             toGlobalCoords(_direction.set(Vec3f.X_AXIS), 0f)
 
             encodedPosition.set(_position, ENCODING)
-            encodedDirection.set(direction, cos((spotAngle / 2).toRad()))
+            encodedDirection.set(direction, cos(spotAngle.rad / 2))
             encodedColor.w = coreRatio
         }
 

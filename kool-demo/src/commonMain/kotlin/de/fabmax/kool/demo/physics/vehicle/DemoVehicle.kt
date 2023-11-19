@@ -81,18 +81,18 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
         vehicleModel.meshes["mesh_reverse_lights_0"]?.shader = reverseLightShader
 
         headLightLt = DeferredSpotLights.SpotLight().apply {
-            spotAngle = 30f
+            spotAngle = 30f.deg
             coreRatio = 0.5f
             radius = 0f
             intensity = 500f
         }
         headLightRt = DeferredSpotLights.SpotLight().apply {
-            spotAngle = 30f
+            spotAngle = 30f.deg
             coreRatio = 0.5f
             radius = 0f
             intensity = 500f
         }
-        val headLights = world.deferredPipeline.createSpotLights(30f)
+        val headLights = world.deferredPipeline.createSpotLights(30f.deg)
         headLights.addSpotLight(headLightLt)
         headLights.addSpotLight(headLightRt)
 

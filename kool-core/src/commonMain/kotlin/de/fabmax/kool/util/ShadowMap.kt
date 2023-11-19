@@ -105,7 +105,7 @@ class SimpleShadowMap(val sceneCam: Camera, override var light: Light?, mapSize:
         cam.setupCamera(position = light.position, up = up)
         cam.lookAt.set(light.position).add(light.direction)
 
-        cam.fovY = light.spotAngle.deg
+        cam.fovY = light.spotAngle
         cam.clipNear = clipNear
         cam.clipFar = clipFar
     }

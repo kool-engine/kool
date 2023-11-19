@@ -1,5 +1,6 @@
 package de.fabmax.kool.editor.data
 
+import de.fabmax.kool.math.deg
 import de.fabmax.kool.scene.Light
 import de.fabmax.kool.util.Color
 import kotlinx.serialization.Serializable
@@ -66,7 +67,7 @@ sealed class LightTypeData {
 
         override fun updateOrCreateLight(existingLight: Light): Light.Spot {
             val spotLight = if (existingLight is Light.Spot) existingLight else createLight()
-            spotLight.spotAngle = spotAngle
+            spotLight.spotAngle = spotAngle.deg
             spotLight.coreRatio = coreRatio
             super.updateOrCreateLight(spotLight)
             return spotLight

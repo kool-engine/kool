@@ -5,6 +5,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.DemoLoader
 import de.fabmax.kool.demo.DemoScene
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.deg
 import de.fabmax.kool.modules.gltf.GltfLoadConfig
 import de.fabmax.kool.modules.gltf.GltfMaterialConfig
 import de.fabmax.kool.modules.gltf.loadGltfModel
@@ -26,7 +27,7 @@ class HelloGltfDemo : DemoScene("Hello glTF") {
 
         // Light setup
         lighting.singleSpotLight {
-            setup(Vec3f(5f, 6.25f, 7.5f), Vec3f(-1f, -1.25f, -1.5f), 45f)
+            setup(Vec3f(5f, 6.25f, 7.5f), Vec3f(-1f, -1.25f, -1.5f), 45f.deg)
             setColor(Color.WHITE, 300f)
         }
         val shadowMap = SimpleShadowMap(this, lighting.lights[0])

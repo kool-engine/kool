@@ -250,7 +250,7 @@ class ReflectionDemo : DemoScene("Reflections") {
 
         init {
             transform = MatrixTransformF()
-            light.setup(Vec3f.ZERO, Vec3f.X_AXIS, 50f)
+            light.setup(Vec3f.ZERO, Vec3f.X_AXIS, 50f.deg)
             addNode(light)
 
             addColorMesh {
@@ -282,12 +282,12 @@ class ReflectionDemo : DemoScene("Reflections") {
                 animPos += Time.deltaT
                 val r = cos(animPos / 15 + rotOff).toFloat() * lightRandomness.value
                 updateSpotAngleMesh()
-                light.setup(Vec3f.ZERO, Vec3f.NEG_X_AXIS, 60f - r * 20f)
+                light.setup(Vec3f.ZERO, Vec3f.NEG_X_AXIS, (60f - r * 20f).deg)
             }
         }
 
         private fun updateSpotAngleMesh() {
-            val r = 1f * tan(light.spotAngle.toRad() / 2)
+            val r = 1f * tan(light.spotAngle.rad / 2)
             val c = MutableColor().set(lightMeshShader.color)
             val n = 40
 

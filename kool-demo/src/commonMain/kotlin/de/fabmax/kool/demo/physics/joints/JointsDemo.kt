@@ -131,11 +131,11 @@ class JointsDemo : DemoScene("Physics - Joints") {
             val l1 = Vec3f(80f, 120f, 100f)
             val l2 = Vec3f(-30f, 100f, 100f)
             addSpotLight {
-                setup(l1, MutableVec3f(l1).mul(-1f).norm(), 45f)
+                setup(l1, MutableVec3f(l1).mul(-1f).norm(), 45f.deg)
                 setColor(Color.WHITE.mix(MdColor.AMBER, 0.1f), 50000f)
             }
             addSpotLight {
-                setup(l2, MutableVec3f(l2).mul(-1f).norm(), 45f)
+                setup(l2, MutableVec3f(l2).mul(-1f).norm(), 45f.deg)
                 setColor(Color.WHITE.mix(MdColor.LIGHT_BLUE, 0.1f), 25000f)
             }
         }

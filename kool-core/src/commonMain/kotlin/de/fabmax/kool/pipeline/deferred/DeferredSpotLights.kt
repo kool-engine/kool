@@ -11,7 +11,7 @@ import de.fabmax.kool.util.MutableColor
 import kotlin.math.*
 
 
-class DeferredSpotLights(val maxSpotAngle: Float) {
+class DeferredSpotLights(val maxSpotAngle: AngleF) {
     val lightInstances = mutableListOf<SpotLight>()
     var isDynamic = true
 
@@ -71,7 +71,7 @@ class DeferredSpotLights(val maxSpotAngle: Float) {
         encodedLightData[4] = tmpLightDir.x
         encodedLightData[5] = tmpLightDir.y
         encodedLightData[6] = tmpLightDir.z
-        encodedLightData[7] = cos((min(maxSpotAngle, light.spotAngle) / 2).toRad())
+        encodedLightData[7] = cos(min(maxSpotAngle.rad, light.spotAngle.rad) / 2f)
 
         encodedLightData[8] = light.color.r * light.intensity
         encodedLightData[9] = light.color.g * light.intensity
@@ -97,7 +97,7 @@ class DeferredSpotLights(val maxSpotAngle: Float) {
     class SpotLight {
         val position = MutableVec3f()
         val rotation = MutableQuatF()
-        var spotAngle = 60f
+        var spotAngle = 60f.deg
         var coreRatio = 0.5f
         val color = MutableColor(Color.WHITE)
         var radius = 1f
@@ -116,8 +116,8 @@ class DeferredSpotLights(val maxSpotAngle: Float) {
         }
     }
 
-    private fun MeshBuilder.makeHalfSphereCone(angle: Float, radius: Float) {
-        val cAng = angle.clamp(0f, 360f) / 2f
+    private fun MeshBuilder.makeHalfSphereCone(angle: AngleF, radius: Float) {
+        val cAng = angle.deg.clamp(0f, 360f) / 2f
         val steps = 8
         val belts = (steps / 2 * cAng / 180).toInt()
 

@@ -37,11 +37,11 @@ class KslShaderTest : DemoScene("KslShader") {
         lighting.apply {
             clear()
             addSpotLight {
-                setup(lightPoses[2].first, lightPoses[2].second, 60f)
+                setup(lightPoses[2].first, lightPoses[2].second, 60f.deg)
                 setColor(MdColor.LIGHT_GREEN.toLinear(), 30f)
             }
             addSpotLight {
-                setup(lightPoses[3].first, lightPoses[3].second, 60f)
+                setup(lightPoses[3].first, lightPoses[3].second, 60f.deg)
                 setColor(MdColor.ORANGE.toLinear(), 30f)
             }
         }
@@ -60,7 +60,7 @@ class KslShaderTest : DemoScene("KslShader") {
             lighting.lights.forEachIndexed { i, light ->
                 val pos = lightRotTransform.transform(MutableVec3f(lightPoses[i].first), 1f)
                 val dir = lightRotTransform.transform(MutableVec3f(lightPoses[i].second), 0f)
-                (light as Light.Spot).setup(pos, dir, 60f)
+                (light as Light.Spot).setup(pos, dir, 60f.deg)
             }
         }
 

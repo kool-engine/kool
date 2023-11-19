@@ -1,6 +1,7 @@
 package de.fabmax.kool.pipeline.deferred
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.math.AngleF
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.DepthCompareOp
@@ -246,7 +247,7 @@ class DeferredPipeline(val scene: Scene, val cfg: DeferredPipelineConfig) {
         bloom?.upperThreshold = upper
     }
 
-    fun createSpotLights(maxSpotAngle: Float): DeferredSpotLights {
+    fun createSpotLights(maxSpotAngle: AngleF): DeferredSpotLights {
         val lights = DeferredSpotLights(maxSpotAngle)
         lightingPassContent += lights.mesh
         mutSpotLights += lights
