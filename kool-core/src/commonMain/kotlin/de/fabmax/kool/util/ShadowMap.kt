@@ -22,7 +22,7 @@ sealed interface ShadowMap {
     fun setupSampler(sampler: TextureSampler2d?)
 }
 
-class SimpleShadowMap(val scene: Scene, override var light: Light?, mapSize: Int = 2048, drawNode: Node = scene) :
+class SimpleShadowMap(val sceneCam: Camera, override var light: Light?, mapSize: Int = 2048, drawNode: Node) :
     DepthMapPass(drawNode, renderPassConfig {
         name = "SimpleShadowMap"
         size(mapSize, mapSize)
@@ -31,11 +31,13 @@ class SimpleShadowMap(val scene: Scene, override var light: Light?, mapSize: Int
     }),
     ShadowMap
 {
+    constructor(scene: Scene, light: Light?, mapSize: Int = 2048, drawNode: Node = scene) : this(scene.camera, light, mapSize, drawNode) {
+        scene.addOffscreenPass(this)
+    }
 
     val lightViewProjMat = MutableMat4f()
 
     var shadowMapLevel = 0
-    var sceneCam = scene.camera
     var clipNear = 1f
     var clipFar = 100f
     var directionalCamNearOffset = -20f
@@ -57,7 +59,6 @@ class SimpleShadowMap(val scene: Scene, override var light: Light?, mapSize: Int
 
     init {
         isUpdateDrawNode = false
-        scene.addOffscreenPass(this)
 
         mainView.drawFilter = {
             it !is Mesh || it.isCastingShadow(shadowMapLevel)
@@ -66,7 +67,7 @@ class SimpleShadowMap(val scene: Scene, override var light: Light?, mapSize: Int
         onBeforeCollectDrawCommands += { ev ->
             light?.let { setupCamera(it) }
             camera.updateCamera(ev)
-            ev.ctx.depthBiasMatrix.mul(camera.viewProj, lightViewProjMat)
+            depthBiasMatrix.mul(camera.viewProj, lightViewProjMat)
         }
     }
 
@@ -80,11 +81,6 @@ class SimpleShadowMap(val scene: Scene, override var light: Light?, mapSize: Int
     fun setDefaultDepthOffset(isDirectional: Boolean) {
         val szMultiplier = 2048f / width
         shaderDepthOffset = szMultiplier * if (isDirectional) -0.001f else -0.005f
-    }
-
-    override fun release() {
-        scene.removeOffscreenPass(this)
-        super.release()
     }
 
     override fun setupSampler(sampler: TextureSampler2d?) {
@@ -172,17 +168,33 @@ class SimpleShadowMap(val scene: Scene, override var light: Light?, mapSize: Int
         add(far.lowerLeft)
         add(far.lowerRight)
     }
+
+    companion object {
+        val depthBiasMatrix: Mat4f = MutableMat4f().translate(0.5f, 0.5f, 0.5f).scale(0.5f)
+    }
 }
 
 class CascadedShadowMap(
-    scene: Scene,
+    sceneCam: Camera,
+    drawNode: Node,
     light: Light? = null,
     var maxRange: Float = 100f,
     val numCascades: Int = 3,
     nearOffset: Float = -20f,
-    mapSizes: List<Int>? = null,
-    drawNode: Node = scene
+    mapSizes: List<Int>? = null
 ) : ShadowMap {
+
+    constructor(
+        scene: Scene,
+        light: Light? = null,
+        maxRange: Float = 100f,
+        numCascades: Int = 3,
+        nearOffset: Float = -20f,
+        mapSizes: List<Int>? = null,
+        drawNode: Node = scene
+    ) : this(scene.camera, drawNode, light, maxRange, numCascades, nearOffset, mapSizes) {
+        subMaps.forEach { scene.addOffscreenPass(it) }
+    }
 
     override var light: Light? = light
         set(value) {
@@ -197,7 +209,7 @@ class CascadedShadowMap(
     }
 
     override val subMaps = List(numCascades) { level ->
-        SimpleShadowMap(scene, light, mapSizes?.get(level) ?: 2048, drawNode).apply {
+        SimpleShadowMap(sceneCam, light, mapSizes?.get(level) ?: 2048, drawNode).apply {
             name = "CascadedShadopwMap-level-$level"
             shadowMapLevel = level
             directionalCamNearOffset = nearOffset

@@ -12,8 +12,8 @@ interface RenderBackend {
     val apiName: String
     val deviceName: String
 
-    val projCorrectionMatrix: Mat4f
-    val depthBiasMatrix: Mat4f
+    val defaultProjCorrectionMatrix: Mat4f
+        get() = Mat4f.IDENTITY
     val isReversedDepthAvailable: Boolean
 
     fun renderFrame(ctx: KoolContext)

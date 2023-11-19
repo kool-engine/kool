@@ -79,6 +79,8 @@ The demos mentioned above and examples shown below should give you a rough idea 
 still a bit of a weak spot).
 
 ## Engine Features / Noticeable Stuff:
+- [Reversed-depth](https://developer.nvidia.com/content/depth-precision-visualized) rendering for vastly higher
+  depth precision and range (more or less infinite)
 - Physics simulation (based on Nvidia PhysX 5.1, using [physx-jni](https://github.com/fabmax/physx-jni) on Java and [physx-js-webidl](https://github.com/fabmax/physx-js-webidl) on javascript)
 - Kotlin DSL based shader language (translates into GLSL)
 - Neat little integrated GUI framework. The API is heavily inspired by [Jetpack Compose](https://github.com/JetBrains/compose-jb) but the implementation is different, as it needs to run within the OpenGL context.

@@ -32,17 +32,10 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
     override val glfwWindow: GlfwWindow
         get() = vkSystem.window
 
-    // maps camera projection matrices to Vulkan screen coordinates
-    override val projCorrectionMatrix = Mat4f(
+    override val defaultProjCorrectionMatrix = Mat4f(
         1.0f, 0.0f, 0.0f, 0.0f,
         0.0f, 1.0f, 0.0f, 0.0f,
         0.0f, 0.0f, 0.5f, 0.5f,
-        0.0f, 0.0f, 0.0f, 1.0f
-    )
-    override val depthBiasMatrix = Mat4f(
-        0.5f, 0.0f, 0.0f, 0.5f,
-        0.0f, 0.5f, 0.0f, 0.5f,
-        0.0f, 0.0f, 1.0f, 0.0f,
         0.0f, 0.0f, 0.0f, 1.0f
     )
 

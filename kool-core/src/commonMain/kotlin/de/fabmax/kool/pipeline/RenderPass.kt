@@ -2,6 +2,7 @@ package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.pipeline.drawqueue.DrawQueue
 import de.fabmax.kool.scene.*
@@ -31,6 +32,7 @@ abstract class RenderPass(var name: String) : BaseReleasable() {
 
     var isDoublePrecision = false
     var useReversedDepthIfAvailable = false
+    abstract val isReverseDepth: Boolean
 
     val onBeforeCollectDrawCommands = BufferedList<((UpdateEvent) -> Unit)>()
     val onAfterCollectDrawCommands = BufferedList<((UpdateEvent) -> Unit)>()
@@ -40,6 +42,9 @@ abstract class RenderPass(var name: String) : BaseReleasable() {
     var tUpdate = 0.0
     var tCollect = 0.0
     var tDraw = 0.0
+
+    open val projCorrectionMatrix: Mat4f
+        get() = KoolSystem.requireContext().backend.defaultProjCorrectionMatrix
 
     protected var complainedAboutReversedDepth = false
 
@@ -170,6 +175,8 @@ class ScreenRenderPass(val scene: Scene) : RenderPass("${scene.name}:ScreenRende
     private val _views = mutableListOf(screenView)
     override val views: List<View>
         get() = _views
+
+    override val isReverseDepth = false
 
     var useWindowViewport = true
 

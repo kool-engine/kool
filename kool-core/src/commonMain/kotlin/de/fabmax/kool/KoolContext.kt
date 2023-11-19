@@ -2,7 +2,6 @@ package de.fabmax.kool
 
 import de.fabmax.kool.input.KeyboardInput
 import de.fabmax.kool.input.PointerInput
-import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ui2.UiScale
 import de.fabmax.kool.pipeline.OffscreenRenderPass
@@ -48,9 +47,6 @@ abstract class KoolContext {
         }
 
     abstract val backend: RenderBackend
-
-    val projCorrectionMatrix: Mat4f get() = backend.projCorrectionMatrix
-    val depthBiasMatrix: Mat4f get() = backend.depthBiasMatrix
 
     var applicationCallbacks: ApplicationCallbacks = object : ApplicationCallbacks { }
     val onWindowScaleChanged = mutableListOf<(KoolContext) -> Unit>()
@@ -156,6 +152,6 @@ abstract class KoolContext {
 
     companion object {
         // automatically updated by gradle script on build
-        const val KOOL_VERSION = "0.13.0-231114.1906"
+        const val KOOL_VERSION = "0.13.0-SNAPSHOT"
     }
 }

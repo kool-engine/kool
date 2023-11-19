@@ -13,6 +13,9 @@ class VkOffscreenPass2d(val parentPass: OffscreenRenderPass2d) : OffscreenPass2d
     private var isCreated = false
     private var isCreationBlocked = false
 
+    // todo: implement...
+    override val isReverseDepth: Boolean = false
+
     val drawMipLevels = parentPass.drawMipLevels
     val renderMipLevels: Int = if (drawMipLevels) { parentPass.mipLevels } else { 1 }
 

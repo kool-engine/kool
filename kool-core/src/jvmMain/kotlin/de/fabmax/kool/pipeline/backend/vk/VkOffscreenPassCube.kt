@@ -14,6 +14,9 @@ class VkOffscreenPassCube(val parentPass: OffscreenRenderPassCube) : OffscreenPa
     private var isCreated = false
     private var isCreationBlocked = false
 
+    // todo: implement...
+    override val isReverseDepth: Boolean = false
+
     var renderPass: VkOffscreenRenderPass? = null
         private set
 

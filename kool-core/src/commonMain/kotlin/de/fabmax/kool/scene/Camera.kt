@@ -83,11 +83,8 @@ abstract class Camera(name: String = "camera") : Node(name) {
         }
 
         updateProjectionMatrix(updateEvent)
-
-        if (!(updateEvent.renderPass.useReversedDepthIfAvailable && updateEvent.ctx.backend.isReversedDepthAvailable)) {
-            updateEvent.ctx.projCorrectionMatrix.mul(proj, tmpProjCorrected)
-            proj.set(tmpProjCorrected)
-        }
+        updateEvent.renderPass.projCorrectionMatrix.mul(proj, tmpProjCorrected)
+        proj.set(tmpProjCorrected)
 
         lazyInvProj.isDirty = true
 
@@ -377,7 +374,7 @@ open class PerspectiveCamera(name: String = "perspectiveCam") : Camera(name) {
     private val tmpNodeCenter = MutableVec3f()
 
     override fun updateProjectionMatrix(updateEvent: RenderPass.UpdateEvent) {
-        if (updateEvent.renderPass.useReversedDepthIfAvailable && updateEvent.ctx.backend.isReversedDepthAvailable) {
+        if (updateEvent.renderPass.isReverseDepth) {
             proj.setIdentity().perspectiveReversedDepth(fovY, aspectRatio, clipNear)
         } else {
             proj.setIdentity().perspective(fovY, aspectRatio, clipNear, clipFar)

@@ -2,6 +2,7 @@ package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.math.MutableMat4f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.deg
 import de.fabmax.kool.scene.Node
@@ -29,6 +30,10 @@ open class OffscreenRenderPassCube(drawNode: Node, config: Config) : OffscreenRe
         get() = if (colorTextures.isNotEmpty()) colorTextures[0] else null
 
     val copyTargetsColor = mutableListOf<TextureCube>()
+
+    override val projCorrectionMatrix = MutableMat4f(KoolSystem.requireContext().backend.defaultProjCorrectionMatrix)
+    override val isReverseDepth: Boolean
+        get() = impl.isReverseDepth
 
     internal val impl = KoolSystem.requireContext().backend.createOffscreenPassCube(this)
 
@@ -110,6 +115,8 @@ open class OffscreenRenderPassCube(drawNode: Node, config: Config) : OffscreenRe
 }
 
 interface OffscreenPassCubeImpl {
+    val isReverseDepth: Boolean
+
     fun applySize(width: Int, height: Int, ctx: KoolContext)
 
     fun release()

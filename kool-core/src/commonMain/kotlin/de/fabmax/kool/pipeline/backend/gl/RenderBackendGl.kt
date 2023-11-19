@@ -1,8 +1,6 @@
 package de.fabmax.kool.pipeline.backend.gl
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.math.Mat4f
-import de.fabmax.kool.math.MutableMat4f
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.generator.GlslGenerator
 import de.fabmax.kool.pipeline.*
@@ -22,9 +20,6 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
     var numSamples = 1
         private set
 
-    private val _projCorrectionMatrix = MutableMat4f()
-    override val projCorrectionMatrix: Mat4f get() = _projCorrectionMatrix
-    override val depthBiasMatrix: Mat4f = MutableMat4f().translate(0.5f, 0.5f, 0.5f).scale(0.5f)
     final override var isReversedDepthAvailable = false
         private set
 
@@ -35,15 +30,7 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
         gl.enable(gl.SCISSOR_TEST)
 
         if (gl.capabilities.hasClipControl) {
-            // use zero-to-one depth clip space if available
-            gl.clipControl(gl.LOWER_LEFT, gl.ZERO_TO_ONE)
             isReversedDepthAvailable = true
-            _projCorrectionMatrix.set(
-                1.0f, 0.0f, 0.0f, 0.0f,
-                0.0f, 1.0f, 0.0f, 0.0f,
-                0.0f, 0.0f, 0.5f, 0.5f,
-                0.0f, 0.0f, 0.0f, 1.0f
-            )
         }
     }
 
@@ -99,13 +86,11 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
         } else {
             gl.LINEAR
         }
-        //println("${src.width} x ${src.height} -> ${dst.width} x ${dst.height} (linear: ${filter == gl.LINEAR})")
         gl.blitFramebuffer(
             0, 0, src.width, src.height,
             0, 0, dst.width, dst.height,
             gl.COLOR_BUFFER_BIT, filter
         )
-        //println("blit buffers (src: ${src.name}/${srcPassImpl.fbos[0]}, dst: ${dst.name}/$dstBuffer), ${gl.getError()}")
     }
 
     override fun uploadTextureToGpu(tex: Texture, data: TextureData) {
@@ -140,8 +125,20 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
             val pass = scene.sortedOffscreenPasses[i]
             if (pass.isEnabled) {
                 val t = if (pass.isProfileTimes) Time.precisionTime else 0.0
+
+                if (pass.isReverseDepth) {
+                    // todo: zero-to-one depth introduces issues with deferred screen-space reflections
+                    //  once these are fixed, it should be ok to enable zero-to-one depth globally if available
+                    gl.clipControl(gl.LOWER_LEFT, gl.ZERO_TO_ONE)
+                }
+
                 drawOffscreen(pass)
                 pass.afterDraw(ctx)
+
+                if (pass.isReverseDepth) {
+                    gl.clipControl(gl.LOWER_LEFT, gl.NEGATIVE_ONE_TO_ONE)
+                }
+
                 pass.tDraw = if (pass.isProfileTimes) Time.precisionTime - t else 0.0
             }
         }

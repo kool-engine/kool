@@ -16,17 +16,21 @@ import de.fabmax.kool.util.Time
  * @author fabmax
  */
 
-fun Scene.orbitCamera(name: String? = null, block: OrbitInputTransform.() -> Unit): OrbitInputTransform {
+fun orbitCamera(view: RenderPass.View, name: String? = null, block: OrbitInputTransform.() -> Unit): OrbitInputTransform {
     val orbitCam = OrbitInputTransform(name)
-    orbitCam.addNode(camera)
+    orbitCam.addNode(view.camera)
     orbitCam.block()
-    addNode(orbitCam)
+    view.drawNode.addNode(orbitCam)
 
     InputStack.defaultInputHandler.pointerListeners += orbitCam
-    onRelease {
+    orbitCam.onRelease {
         InputStack.defaultInputHandler.pointerListeners -= orbitCam
     }
     return orbitCam
+}
+
+fun Scene.orbitCamera(name: String? = null, block: OrbitInputTransform.() -> Unit): OrbitInputTransform {
+    return orbitCamera(mainRenderPass.screenView, name, block)
 }
 
 fun Scene.defaultOrbitCamera(yaw: Float = 20f, pitch: Float = -30f): OrbitInputTransform {

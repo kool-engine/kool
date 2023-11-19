@@ -7,6 +7,7 @@ import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.deferred.DeferredPassSwapListener
 import de.fabmax.kool.pipeline.deferred.DeferredPasses
 import de.fabmax.kool.pipeline.deferred.DeferredPipeline
+import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.scene.PerspectiveProxyCam
 import de.fabmax.kool.scene.Scene
@@ -69,7 +70,12 @@ abstract class AoPipeline : BaseReleasable() {
         }
     }
 
-    class ForwardAoPipeline(val scene: Scene) : AoPipeline() {
+    class ForwardAoPipeline(
+        val scene: Scene,
+        camera: PerspectiveCamera,
+        drawNode: Node
+    ) : AoPipeline() {
+
         val depthPass: NormalLinearDepthMapPass
         override val aoPass: AmbientOcclusionPass
         override val denoisePass: AoDenoisePass
@@ -79,10 +85,10 @@ abstract class AoPipeline : BaseReleasable() {
 
         private val onRenderSceneCallback: (KoolContext) -> Unit = { onRenderScene(it) }
 
-        val proxyCamera = PerspectiveProxyCam(scene.camera as PerspectiveCamera)
+        val proxyCamera = PerspectiveProxyCam(camera)
 
         init {
-            depthPass = NormalLinearDepthMapPass(scene, mapWidth, mapHeight)
+            depthPass = NormalLinearDepthMapPass(drawNode, mapWidth, mapHeight)
             depthPass.camera = proxyCamera
             depthPass.isUpdateDrawNode = false
             depthPass.onBeforeCollectDrawCommands += { ev ->
@@ -180,7 +186,12 @@ abstract class AoPipeline : BaseReleasable() {
     }
 
     companion object {
-        fun createForward(scene: Scene) = ForwardAoPipeline(scene)
+        fun createForward(
+            scene: Scene,
+            camera: PerspectiveCamera = (scene.camera as PerspectiveCamera),
+            drawNode: Node = scene
+        ) = ForwardAoPipeline(scene, camera, drawNode)
+
         fun createDeferred(deferredPipeline: DeferredPipeline) = DeferredAoPipeline(deferredPipeline)
     }
 }

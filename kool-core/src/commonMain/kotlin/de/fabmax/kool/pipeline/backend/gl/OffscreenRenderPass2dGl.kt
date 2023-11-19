@@ -17,9 +17,23 @@ class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, val backend: Re
     private val drawMipLevels = parent.drawMipLevels
     private val renderMipLevels: Int = if (drawMipLevels) { parent.mipLevels } else { 1 }
 
+    override val isReverseDepth: Boolean
+        get() = backend.isReversedDepthAvailable && parent.useReversedDepthIfAvailable
+
     private var isCreated = false
 
     private val resInfo = OffscreenPassInfo(parent)
+
+    init {
+        if (isReverseDepth) {
+            parent.projCorrectionMatrix.set(
+                1.0f, 0.0f, 0.0f, 0.0f,
+                0.0f, 1.0f, 0.0f, 0.0f,
+                0.0f, 0.0f, 0.5f, 0.5f,
+                0.0f, 0.0f, 0.0f, 1.0f
+            )
+        }
+    }
 
     override fun draw(ctx: KoolContext) {
         resInfo.sceneName = parent.parentScene?.name ?: "scene:<null>"

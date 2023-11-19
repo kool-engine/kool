@@ -12,9 +12,23 @@ class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, val backend
 
     internal var glColorTex = gl.NULL_TEXTURE
 
+    override val isReverseDepth: Boolean
+        get() = backend.isReversedDepthAvailable && parent.useReversedDepthIfAvailable
+
     private var isCreated = false
 
     private val resInfo = OffscreenPassInfo(parent)
+
+    init {
+        if (isReverseDepth) {
+            parent.projCorrectionMatrix.set(
+                1.0f, 0.0f, 0.0f, 0.0f,
+                0.0f, 1.0f, 0.0f, 0.0f,
+                0.0f, 0.0f, 0.5f, 0.5f,
+                0.0f, 0.0f, 0.0f, 1.0f
+            )
+        }
+    }
 
     override fun draw(ctx: KoolContext) {
         resInfo.sceneName = parent.parentScene?.name ?: "scene:<null>"

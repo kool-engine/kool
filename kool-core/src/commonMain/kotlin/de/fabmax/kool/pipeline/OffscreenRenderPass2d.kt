@@ -2,6 +2,7 @@ package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.math.MutableMat4f
 import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.PerspectiveCamera
@@ -33,6 +34,10 @@ open class OffscreenRenderPass2d(drawNode: Node, config: Config) : OffscreenRend
         get() = if (colorTextures.isNotEmpty()) colorTextures[0] else null
 
     val copyTargetsColor = mutableListOf<Texture2d>()
+
+    override val projCorrectionMatrix = MutableMat4f(KoolSystem.requireContext().backend.defaultProjCorrectionMatrix)
+    override val isReverseDepth: Boolean
+        get() = impl.isReverseDepth
 
     internal val impl = KoolSystem.requireContext().backend.createOffscreenPass2d(this)
 
@@ -102,6 +107,8 @@ open class OffscreenRenderPass2d(drawNode: Node, config: Config) : OffscreenRend
 }
 
 interface OffscreenPass2dImpl {
+    val isReverseDepth: Boolean
+
     fun applySize(width: Int, height: Int, ctx: KoolContext)
 
     fun release()

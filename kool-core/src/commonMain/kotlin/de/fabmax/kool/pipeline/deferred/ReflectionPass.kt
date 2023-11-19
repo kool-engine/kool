@@ -74,6 +74,7 @@ class ReflectionPass(val baseReflectionStep: Float) :
         var noiseScale by uniform2f("uNoiseScale")
     }
 
+    // fixme: screen-space-reflections break if OpenGL zero-to-one depth is used. Why?
     private fun ssrShaderModel() = KslProgram("Screen space reflection pass").apply {
         val texCoord = interStageFloat2("uv")
 
@@ -101,8 +102,7 @@ class ReflectionPass(val baseReflectionStep: Float) :
                 `if`(roughness gt uRoughnessThreshHigh) {
                     discard()
                 }
-                val roughnessWeight =
-                    float1Var(1f.const - smoothStep(uRoughnessThreshLow, uRoughnessThreshHigh, roughness))
+                val roughnessWeight = float1Var(1f.const - smoothStep(uRoughnessThreshLow, uRoughnessThreshHigh, roughness))
 
                 val camData = deferredCameraData()
                 val noiseCoord = float2Var(uv * uNoiseScale)
@@ -132,8 +132,7 @@ class ReflectionPass(val baseReflectionStep: Float) :
                     val projPos = float4Var(camData.projMat * float4Value(rayPos, 1f.const))
                     val samplePos = float3Var((projPos.xyz / projPos.w) * 0.5f.const + 0.5f.const)
 
-                    `if`(
-                        (samplePos.x lt 0f.const) or (samplePos.x gt 1f.const) or
+                    `if`((samplePos.x lt 0f.const) or (samplePos.x gt 1f.const) or
                                 (samplePos.y lt 0f.const) or (samplePos.y gt 1f.const) or
                                 (samplePos.z gt 1f.const)
                     ) {
@@ -175,18 +174,9 @@ class ReflectionPass(val baseReflectionStep: Float) :
                 val samplePos = float3Var((projPos.xyz / projPos.w) * 0.5f.const + 0.5f.const)
 
                 val sampleWeight = float1Var(
-                    smoothStep(0f.const, 0.05f.const, samplePos.x) * (1f.const - smoothStep(
-                        0.95f.const,
-                        1f.const,
-                        samplePos.x
-                    )) *
-                            smoothStep(0f.const, 0.05f.const, samplePos.y) * (1f.const - smoothStep(
-                        0.95f.const,
-                        1f.const,
-                        samplePos.y
-                    )) *
-                            (1f.const - step(0.9999f.const, samplePos.z)) *
-                            (1f.const - smoothStep(0f.const, -rayPos.z / 10f.const, abs(dDepth)))
+                    smoothStep(0f.const, 0.05f.const, samplePos.x) * (1f.const - smoothStep(0.95f.const, 1f.const, samplePos.x)) *
+                            smoothStep(0f.const, 0.05f.const, samplePos.y) * (1f.const - smoothStep(0.95f.const, 1f.const, samplePos.y)) *
+                            (1f.const - step(0.9999f.const, samplePos.z)) * (1f.const - smoothStep(0f.const, -rayPos.z / 10f.const, abs(dDepth)))
                 )
 
                 val reflectionColor = float3Var(sampleTexture(lightingPass, samplePos.xy).rgb)

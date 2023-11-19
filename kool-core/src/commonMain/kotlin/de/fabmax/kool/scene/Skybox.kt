@@ -20,19 +20,26 @@ fun Scene.skybox(ibl: EnvironmentMaps, lod: Float = 1f) {
 
 object Skybox {
 
-    fun cube(environmentMap: TextureCube, texLod: Float = 0f, hdriInput: Boolean = true, hdrOutput: Boolean = false): Cube {
+    fun cube(
+        environmentMap: TextureCube,
+        texLod: Float = 0f,
+        hdriInput: Boolean = true,
+        hdrOutput: Boolean = false,
+        reversedDepth: Boolean = false
+    ): Cube {
         val colorSpaceConversion = when {
             hdriInput == hdrOutput -> ColorSpaceConversion.AS_IS
             hdriInput -> ColorSpaceConversion.LINEAR_TO_sRGB_HDR
             else -> ColorSpaceConversion.sRGB_TO_LINEAR
         }
-        return Cube(environmentMap, texLod, colorSpaceConversion)
+        return Cube(environmentMap, texLod, colorSpaceConversion, reversedDepth)
     }
 
     class Cube(
         skyTex: TextureCube? = null,
         texLod: Float = 0f,
-        colorSpaceConversion: ColorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
+        colorSpaceConversion: ColorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR,
+        reversedDepth: Boolean = false
     ) : Mesh(IndexedVertexList(Attribute.POSITIONS), UniqueId.nextId("Skybox.Cube")) {
 
         val skyboxShader: KslSkyCubeShader
@@ -44,7 +51,7 @@ object Skybox {
             isFrustumChecked = false
             isCastingShadow = false
             rayTest = MeshRayTest.nopTest()
-            skyboxShader = KslSkyCubeShader(colorSpaceConversion).apply {
+            skyboxShader = KslSkyCubeShader(colorSpaceConversion, reversedDepth).apply {
                 setSingleSky(skyTex)
                 lod = texLod
             }
@@ -52,8 +59,8 @@ object Skybox {
         }
     }
 
-    class KslSkyCubeShader(colorSpaceConversion: ColorSpaceConversion)
-        : KslShader(Model(colorSpaceConversion), PipelineConfig().apply {
+    class KslSkyCubeShader(colorSpaceConversion: ColorSpaceConversion, reversedDepth: Boolean)
+        : KslShader(Model(colorSpaceConversion, reversedDepth), PipelineConfig().apply {
             cullMethod = CullMethod.CULL_FRONT_FACES
             isWriteDepth = false
         }) {
@@ -72,7 +79,7 @@ object Skybox {
             skyWeights = Vec2f(weightA, weightB)
         }
 
-        class Model(colorSpaceConversion: ColorSpaceConversion) : KslProgram("skycube-shader") {
+        class Model(colorSpaceConversion: ColorSpaceConversion, reversedDepth: Boolean) : KslProgram("skycube-shader") {
             init {
                 val orientedPos = interStageFloat3()
                 vertexStage {
@@ -81,7 +88,12 @@ object Skybox {
                         val skyOrientation = uniformMat3("uSkyOrientation")
                         val localPos = vertexAttribFloat3(Attribute.POSITIONS.name)
                         orientedPos.input set skyOrientation * localPos
-                        outPosition set (mvpMat * float4Value(localPos, 0f)).float4("xyww")
+
+                        if (reversedDepth) {
+                            outPosition set (mvpMat * float4Value(localPos * 1e16f.const, 0f))
+                        } else {
+                            outPosition set (mvpMat * float4Value(localPos, 0f)).float4("xyww")
+                        }
                     }
                 }
                 fragmentStage {

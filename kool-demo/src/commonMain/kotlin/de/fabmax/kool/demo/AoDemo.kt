@@ -14,7 +14,7 @@ import de.fabmax.kool.modules.ksl.lang.g
 import de.fabmax.kool.modules.ksl.lang.getFloat4Port
 import de.fabmax.kool.modules.ksl.lang.r
 import de.fabmax.kool.modules.ui2.*
-import de.fabmax.kool.pipeline.DepthCompareOp
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.ao.AoPipeline
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.RectProps
@@ -26,6 +26,7 @@ class AoDemo : DemoScene("Ambient Occlusion") {
 
     private lateinit var aoPipeline: AoPipeline
     private val shadows = mutableListOf<ShadowMap>()
+    private val lighting = mainScene.lighting
 
     private val ibl by hdriImage("${DemoLoader.hdriPath}/mossy_forest_1k.rgbe.png")
 
@@ -52,12 +53,41 @@ class AoDemo : DemoScene("Ambient Occlusion") {
     private val aoSamples = mutableStateOf(16).onChange { aoPipeline.kernelSz = it }
     private val aoMapSize = mutableStateOf(1f).onChange { aoPipeline.mapSize = it }
 
-    override fun lateInit(ctx: KoolContext) {
+    override fun Scene.setupMainScene(ctx: KoolContext) {
         updateLighting(isSpotLight.value)
+
+        if (ctx.backend.isReversedDepthAvailable) {
+            // using reversed depth isn't really needed for this scene - it's more for testing...
+            logI { "Using reversed depth rendering" }
+            setupReversedDepthRendering()
+
+        } else {
+            logI { "Using standard depth rendering" }
+            mainRenderPass.setupContent()
+        }
     }
 
-    override fun Scene.setupMainScene(ctx: KoolContext) {
-        orbitCamera {
+    private fun Scene.setupReversedDepthRendering() {
+        val contentPass = OffscreenRenderPass2d(Node(), renderPassConfig {
+            name = "content-renderer"
+            colorTargetRenderBuffer(TexFormat.RGBA, true)
+        })
+        contentPass.useReversedDepthIfAvailable = true
+        contentPass.lighting = lighting
+        contentPass.setupContent()
+        addOffscreenPass(contentPass)
+
+        mainRenderPass.blitRenderPass = contentPass
+        onUpdate {
+            contentPass.setSize(mainRenderPass.width, mainRenderPass.height, it.ctx)
+        }
+    }
+
+    private fun RenderPass.setupContent() {
+        val mainView = views[0]
+        val drawNode = mainView.drawNode
+
+        orbitCamera(mainView) {
             translation.set(0.0, -0.7, 0.0)
             // Set some initial rotation so that we look down on the scene
             setMouseRotation(0f, -30f)
@@ -70,8 +100,10 @@ class AoDemo : DemoScene("Ambient Occlusion") {
             }
         }
 
-        shadows.add(SimpleShadowMap(this, lighting.lights[0], 2048))
-        aoPipeline = AoPipeline.createForward(this)
+        val shadowMap = SimpleShadowMap(mainView.camera, this@AoDemo.lighting.lights[0], 2048, drawNode)
+        mainScene.addOffscreenPass(shadowMap)
+        shadows.add(shadowMap)
+        aoPipeline = AoPipeline.createForward(mainScene, mainView.camera as PerspectiveCamera, drawNode)
 
         aoRadius.set(aoPipeline.radius)
         aoPower.set(aoPipeline.power)
@@ -79,7 +111,7 @@ class AoDemo : DemoScene("Ambient Occlusion") {
         aoSamples.set(aoPipeline.kernelSz)
         aoMapSize.set(aoPipeline.mapSize)
 
-        addColorMesh("teapots") {
+        drawNode.addColorMesh("teapots") {
             generate {
                 for (x in -3..3) {
                     for (y in -3..3) {
@@ -107,7 +139,7 @@ class AoDemo : DemoScene("Ambient Occlusion") {
             this.shader = shader
         }
 
-        addTextureMesh("ground", isNormalMapped = true) {
+        drawNode.addTextureMesh("ground", isNormalMapped = true) {
             isCastingShadow = false
             generate {
                 // generate a cube (as set of rects for better control over tex coords)
@@ -189,7 +221,7 @@ class AoDemo : DemoScene("Ambient Occlusion") {
             this.shader = shader
         }
 
-        this@setupMainScene += Skybox.cube(ibl.reflectionMap, 1.5f)
+        drawNode.addNode(Skybox.cube(ibl.reflectionMap, 1.5f, reversedDepth = isReverseDepth))
     }
 
     private fun RectProps.setUvs(u: Float, v: Float, width: Float, height: Float) {
@@ -201,16 +233,16 @@ class AoDemo : DemoScene("Ambient Occlusion") {
 
     private fun updateLighting(enabled: Boolean) {
         if (enabled) {
-            mainScene.lighting.singleSpotLight {
+            lighting.singleSpotLight {
                 val p = Vec3f(6f, 10f, -6f)
                 setup(p, p.mul(-1f, MutableVec3f()).norm(), 40f)
                 setColor(Color.WHITE.mix(MdColor.AMBER, 0.2f).toLinear(), 500f)
             }
         } else {
-            mainScene.lighting.clear()
+            lighting.clear()
         }
         shadows.forEach {
-            it.light = mainScene.lighting.lights.getOrNull(0)
+            it.light = lighting.lights.getOrNull(0)
             it.isShadowMapEnabled = enabled
         }
     }
