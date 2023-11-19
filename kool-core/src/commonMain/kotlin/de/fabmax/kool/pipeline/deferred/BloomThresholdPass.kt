@@ -16,8 +16,7 @@ import de.fabmax.kool.util.Color
 class BloomThresholdPass(deferredPipeline: DeferredPipeline, cfg: DeferredPipelineConfig) :
     OffscreenRenderPass2d(Node(), renderPassConfig {
         name = "BloomThresholdPass"
-        addColorTexture(TexFormat.RGBA_F16)
-        clearDepthTexture()
+        colorTargetTexture(TexFormat.RGBA_F16)
     }) {
 
     private val doAvgDownsampling = cfg.bloomAvgDownSampling

@@ -19,15 +19,14 @@ import kotlin.math.max
 
 class RgbeDecoder(parentScene: Scene, hdriTexture: Texture2d, brightness: Float = 1f) :
     OffscreenRenderPass2d(Node(), renderPassConfig {
+        name = "RgbeDecoder"
+        colorTargetTexture(TexFormat.RGBA_F16)
+        enableMipLevels(drawMipLevels = false)
+
         val w = hdriTexture.loadedTexture?.width ?: 1024
         val h = hdriTexture.loadedTexture?.height ?: 512
         val sz = max(w, h)
-
-        name = "RgbeDecoder"
-        size.set(sz, sz)
-        addColorTexture(TexFormat.RGBA_F16)
-        clearDepthTexture()
-        addMipLevels(drawMipLevels = false)
+        size(sz, sz)
     }) {
 
     var isAutoRemove = true

@@ -20,9 +20,8 @@ import kotlin.random.Random
 class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
     OffscreenRenderPass2d(Node(), renderPassConfig {
         name = "AmbientOcclusionPass"
-        setSize(width, height)
-        clearDepthTexture()
-        addColorTexture(TexFormat.R)
+        size(width, height)
+        colorTargetTexture(TexFormat.R)
     }) {
 
     var sceneCam: Camera? = null

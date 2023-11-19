@@ -107,12 +107,12 @@ abstract class AoPipeline : BaseReleasable() {
             val mapW = (scene.mainRenderPass.viewport.width * mapSize).toInt()
             val mapH = (scene.mainRenderPass.viewport.height * mapSize).toInt()
 
-            if (isEnabled && mapW > 0 && mapH > 0 && (mapW != aoPass.width || mapH != aoPass.height)) {
-                depthPass.resize(mapW, mapH, ctx)
-                aoPass.resize(mapW, mapH, ctx)
+            if (isEnabled && mapW > 0 && mapH > 0) {
+                depthPass.setSize(mapW, mapH, ctx)
+                aoPass.setSize(mapW, mapH, ctx)
             }
-            if (isEnabled && mapW > 0 && mapH > 0 && (mapW != denoisePass.width || mapH != denoisePass.height)) {
-                denoisePass.resize(mapW, mapH, ctx)
+            if (isEnabled && mapW > 0 && mapH > 0) {
+                denoisePass.setSize(mapW, mapH, ctx)
             }
         }
 
@@ -162,10 +162,10 @@ abstract class AoPipeline : BaseReleasable() {
             val height = (viewportH * mapSize).toInt().clamp(1, 4096)
 
             if (aoPass.isEnabled && (width != aoPass.width || height != aoPass.height)) {
-                aoPass.resize(width, height, ctx)
+                aoPass.setSize(width, height, ctx)
             }
             if (denoisePass.isEnabled && (width != denoisePass.width || height != denoisePass.height)) {
-                denoisePass.resize(width, height, ctx)
+                denoisePass.setSize(width, height, ctx)
             }
         }
 

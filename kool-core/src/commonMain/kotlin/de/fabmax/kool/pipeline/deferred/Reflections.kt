@@ -26,9 +26,9 @@ class Reflections(cfg: DeferredPipelineConfig) : DeferredPassSwapListener {
         if (isEnabled) {
             val width = (viewportW * mapSize).toInt().clamp(1, 4096)
             val height = (viewportH * mapSize).toInt().clamp(1, 4096)
-            if (isEnabled && (width != reflectionPass.width || height != reflectionPass.height)) {
-                reflectionPass.resize(width, height, ctx)
-                denoisePass.resize(width, height, ctx)
+            if (isEnabled) {
+                reflectionPass.setSize(width, height, ctx)
+                denoisePass.setSize(width, height, ctx)
             }
         }
     }

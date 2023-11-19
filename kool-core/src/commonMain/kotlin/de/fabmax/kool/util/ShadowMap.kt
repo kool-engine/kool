@@ -25,9 +25,9 @@ sealed interface ShadowMap {
 class SimpleShadowMap(val scene: Scene, override var light: Light?, mapSize: Int = 2048, drawNode: Node = scene) :
     DepthMapPass(drawNode, renderPassConfig {
         name = "SimpleShadowMap"
-        setSize(mapSize, mapSize)
-        setDepthTexture(true)
-        clearColorTexture()
+        size(mapSize, mapSize)
+        depthTargetTexture(usedAsShadowMap = true)
+        colorTargetRenderBuffer()
     }),
     ShadowMap
 {
@@ -109,7 +109,7 @@ class SimpleShadowMap(val scene: Scene, override var light: Light?, mapSize: Int
         cam.setupCamera(position = light.position, up = up)
         cam.lookAt.set(light.position).add(light.direction)
 
-        cam.fovY = light.spotAngle
+        cam.fovY = light.spotAngle.deg
         cam.clipNear = clipNear
         cam.clipFar = clipFar
     }

@@ -28,9 +28,8 @@ import kotlin.math.sqrt
 class SkyCubePass(opticalDepthLut: Texture2d, size: Int = 256) :
     OffscreenRenderPassCube(Node(), renderPassConfig {
         name = "SkyCubePass"
-        setSize(size, size)
-        addColorTexture(TexFormat.RGBA_F16)
-        clearDepthTexture()
+        size(size, size)
+        colorTargetTexture(TexFormat.RGBA_F16)
     }) {
 
     val syncLights = mutableListOf<Light.Directional>()

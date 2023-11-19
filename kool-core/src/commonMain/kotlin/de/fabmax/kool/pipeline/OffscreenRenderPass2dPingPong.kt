@@ -6,9 +6,9 @@ import de.fabmax.kool.scene.Node
 open class OffscreenRenderPass2dPingPong(config: Config) : OffscreenRenderPass(
     renderPassConfig {
         name = config.name
-        setSize(1, 1)
-        clearDepthTexture()
-        clearColorTexture()
+        size(1, 1)
+        depthTargetRenderBuffer()
+        colorTargetRenderBuffer()
     }
 ) {
 
@@ -25,10 +25,10 @@ open class OffscreenRenderPass2dPingPong(config: Config) : OffscreenRenderPass(
 
     override val views: List<View> = emptyList()
 
-    override fun resize(width: Int, height: Int, ctx: KoolContext) {
-        super.resize(width, height, ctx)
-        ping.resize(width, height, ctx)
-        pong.resize(width, height, ctx)
+    override fun setSize(width: Int, height: Int, ctx: KoolContext) {
+        super.setSize(width, height, ctx)
+        ping.setSize(width, height, ctx)
+        pong.setSize(width, height, ctx)
     }
 
     override fun update(ctx: KoolContext) {

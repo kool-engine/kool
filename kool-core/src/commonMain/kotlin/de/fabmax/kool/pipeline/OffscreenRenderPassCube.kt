@@ -3,6 +3,7 @@ package de.fabmax.kool.pipeline
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.deg
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.util.Color
@@ -12,7 +13,7 @@ open class OffscreenRenderPassCube(drawNode: Node, config: Config) : OffscreenRe
 
     override val views: List<View> = ViewDirection.entries.map {
         val cam = PerspectiveCamera()
-        cam.fovY = 90f
+        cam.fovY = 90f.deg
         cam.clipNear = 0.01f
         cam.clipFar = 10f
         cam.setupCamera(position = Vec3f.ZERO, up = it.up, lookAt = it.lookAt)
@@ -35,7 +36,7 @@ open class OffscreenRenderPassCube(drawNode: Node, config: Config) : OffscreenRe
         if (config.depthRenderTarget == RenderTarget.TEXTURE) {
             throw RuntimeException("CubeMapDepthTexture not yet implemented")
         }
-        if (config.colorAttachments.size > 1) {
+        if (config.colorTextureAttachments.size > 1) {
             throw RuntimeException("CubeMap multiple render targets not yet implemented")
         }
     }

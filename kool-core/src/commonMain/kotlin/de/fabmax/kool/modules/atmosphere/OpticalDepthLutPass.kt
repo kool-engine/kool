@@ -13,9 +13,9 @@ import de.fabmax.kool.util.logI
 class OpticalDepthLutPass :
     OffscreenRenderPass2d(Node(), renderPassConfig {
         name = "OpticalDepthLutPass"
-        setSize(LUT_SIZE_X, LUT_SIZE_Y)
-        addColorTexture(TexFormat.RG_F16)
-        clearDepthTexture()
+        size(LUT_SIZE_X, LUT_SIZE_Y)
+        colorTargetTexture(TexFormat.RG_F16)
+        depthTargetRenderBuffer()
     }) {
 
     private val lutShader = OpticalDepthLutShader()

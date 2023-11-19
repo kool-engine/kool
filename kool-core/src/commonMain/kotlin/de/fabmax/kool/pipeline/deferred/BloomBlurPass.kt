@@ -14,8 +14,7 @@ import kotlin.math.sqrt
 class BloomBlurPass(kernelSize: Int, thresholdPass: BloomThresholdPass) :
     OffscreenRenderPass2dPingPong(renderPassConfig {
         name = "BloomBlurPass"
-        addColorTexture(TexFormat.RGBA_F16)
-        clearDepthTexture()
+        colorTargetTexture(TexFormat.RGBA_F16)
     })
 {
 
@@ -75,8 +74,8 @@ class BloomBlurPass(kernelSize: Int, thresholdPass: BloomThresholdPass) :
         }
     }
 
-    override fun resize(width: Int, height: Int, ctx: KoolContext) {
-        super.resize(width, height, ctx)
+    override fun setSize(width: Int, height: Int, ctx: KoolContext) {
+        super.setSize(width, height, ctx)
         blurDirDirty = true
     }
 

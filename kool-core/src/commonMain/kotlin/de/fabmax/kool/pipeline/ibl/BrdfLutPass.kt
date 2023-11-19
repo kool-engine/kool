@@ -20,9 +20,8 @@ import de.fabmax.kool.util.logD
 class BrdfLutPass(parentScene: Scene) :
     OffscreenRenderPass2d(Node(), renderPassConfig {
         name = "BrdfLutPass"
-        setSize(512, 512)
-        addColorTexture(TexFormat.RG_F16)
-        clearDepthTexture()
+        size(512, 512)
+        colorTargetTexture(TexFormat.RG_F16)
     }) {
 
     var isAutoRemove = true

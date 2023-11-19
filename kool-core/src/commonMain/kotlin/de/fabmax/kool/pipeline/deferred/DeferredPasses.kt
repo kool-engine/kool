@@ -33,9 +33,9 @@ class DeferredPasses(val materialPass: MaterialPass, val lightingPass: PbrLighti
         }
 
     fun checkSize(viewportW: Int, viewportH: Int, ctx: KoolContext) {
-        if (viewportW > 0 && viewportH > 0 && (viewportW != materialPass.width || viewportH != materialPass.height)) {
-            materialPass.resize(viewportW, viewportH, ctx)
-            lightingPass.resize(viewportW, viewportH, ctx)
+        if (viewportW > 0 && viewportH > 0) {
+            materialPass.setSize(viewportW, viewportH, ctx)
+            lightingPass.setSize(viewportW, viewportH, ctx)
         }
     }
 }

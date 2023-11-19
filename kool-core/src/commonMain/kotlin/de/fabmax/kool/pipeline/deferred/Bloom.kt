@@ -54,10 +54,10 @@ class Bloom(deferredPipeline: DeferredPipeline, cfg: DeferredPipelineConfig) : D
 
             val bloomMapW = (viewportW / bestSamples.toFloat()).roundToInt()
             val bloomMapH = (viewportH / bestSamples.toFloat()).roundToInt()
-            if (bloomMapW > 0 && bloomMapH > 0 && (bloomMapW != thresholdPass.width || bloomMapH != thresholdPass.height)) {
+            if (bloomMapW > 0 && bloomMapH > 0) {
                 logT { "Bloom threshold down sampling: $bestSamples" }
-                thresholdPass.resize(bloomMapW, bloomMapH, ctx)
-                blurPass.resize(bloomMapW, bloomMapH, ctx)
+                thresholdPass.setSize(bloomMapW, bloomMapH, ctx)
+                blurPass.setSize(bloomMapW, bloomMapH, ctx)
             }
         }
     }

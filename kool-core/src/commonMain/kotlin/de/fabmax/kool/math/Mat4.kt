@@ -655,8 +655,12 @@ open class Mat4f(
             return MutableMat4f().orthographic(left, right, bottom, top, near, far)
         }
 
-        fun perspective(fovy: Float, aspect: Float, near: Float, far: Float): Mat4f {
+        fun perspective(fovy: AngleF, aspect: Float, near: Float, far: Float): Mat4f {
             return MutableMat4f().perspective(fovy, aspect, near, far)
+        }
+
+        fun perspectiveReversedDepth(fovy: AngleF, aspect: Float, near: Float): Mat4f {
+            return MutableMat4f().perspectiveReversedDepth(fovy, aspect, near)
         }
     }
 }
@@ -1165,8 +1169,8 @@ open class MutableMat4f(
     /**
      * Inplace operation: Applies a perspective projection transform to this matrix.
      */
-    fun perspective(fovy: Float, aspect: Float, near: Float, far: Float): MutableMat4f {
-        val f = 1.0f / tan(fovy * (PI / 360.0)).toFloat()
+    fun perspective(fovy: AngleF, aspect: Float, near: Float, far: Float): MutableMat4f {
+        val f = 1.0f / tan(fovy.rad / 2.0f)
         val rangeRecip = 1.0f / (near - far)
 
         // -1..1 depth coordinate systems (OpenGl, etc.)
@@ -1181,6 +1185,20 @@ open class MutableMat4f(
             f / aspect, 0f, 0f, 0f,
             0f, f, 0f, 0f,
             0f, 0f, z, zt,
+            0f, 0f, -1f, 0f
+        )
+    }
+
+    /**
+     * Inplace operation: Applies a perspective projection transform for reversed depth with an infinite far plane
+     * to this matrix.
+     */
+    fun perspectiveReversedDepth(fovy: AngleF, aspect: Float, near: Float): MutableMat4f {
+        val f = 1.0f / tan(fovy.rad / 2.0f)
+        return mul(
+            f / aspect, 0f, 0f, 0f,
+            0f, f, 0f, 0f,
+            0f, 0f, 0f, near,
             0f, 0f, -1f, 0f
         )
     }
@@ -1909,8 +1927,12 @@ open class Mat4d(
             return MutableMat4d().orthographic(left, right, bottom, top, near, far)
         }
 
-        fun perspective(fovy: Double, aspect: Double, near: Double, far: Double): Mat4d {
+        fun perspective(fovy: AngleD, aspect: Double, near: Double, far: Double): Mat4d {
             return MutableMat4d().perspective(fovy, aspect, near, far)
+        }
+
+        fun perspectiveReversedDepth(fovy: AngleD, aspect: Double, near: Double): Mat4d {
+            return MutableMat4d().perspectiveReversedDepth(fovy, aspect, near)
         }
     }
 }
@@ -2419,8 +2441,8 @@ open class MutableMat4d(
     /**
      * Inplace operation: Applies a perspective projection transform to this matrix.
      */
-    fun perspective(fovy: Double, aspect: Double, near: Double, far: Double): MutableMat4d {
-        val f = 1.0 / tan(fovy * (PI / 360.0)).toFloat()
+    fun perspective(fovy: AngleD, aspect: Double, near: Double, far: Double): MutableMat4d {
+        val f = 1.0 / tan(fovy.rad / 2.0)
         val rangeRecip = 1.0 / (near - far)
 
         // -1..1 depth coordinate systems (OpenGl, etc.)
@@ -2435,6 +2457,20 @@ open class MutableMat4d(
             f / aspect, 0.0, 0.0, 0.0,
             0.0, f, 0.0, 0.0,
             0.0, 0.0, z, zt,
+            0.0, 0.0, -1.0, 0.0
+        )
+    }
+
+    /**
+     * Inplace operation: Applies a perspective projection transform for reversed depth with an infinite far plane
+     * to this matrix.
+     */
+    fun perspectiveReversedDepth(fovy: AngleD, aspect: Double, near: Double): MutableMat4d {
+        val f = 1.0 / tan(fovy.rad / 2.0)
+        return mul(
+            f / aspect, 0.0, 0.0, 0.0,
+            0.0, f, 0.0, 0.0,
+            0.0, 0.0, 0.0, near,
             0.0, 0.0, -1.0, 0.0
         )
     }

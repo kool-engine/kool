@@ -16,9 +16,8 @@ import kotlin.math.PI
 class GradientCubeGenerator(scene: Scene, gradientTex: Texture1d, size: Int = 128) :
     OffscreenRenderPassCube(Node(), renderPassConfig {
         name = "GradientEnvGenerator"
-        setSize(size, size)
-        addColorTexture(TexFormat.RGBA_F16)
-        clearDepthTexture()
+        size(size, size)
+        colorTargetTexture(TexFormat.RGBA_F16)
     }) {
 
     init {

@@ -60,9 +60,9 @@ open class DepthMapPass(drawNode: Node, config: Config) : OffscreenRenderPass2d(
 
         fun defaultSetup(width: Int, height: Int) = renderPassConfig {
             name = "DepthMapPass"
-            setSize(width, height)
-            clearColorTexture()
-            setDepthTexture(false)
+            size(width, height)
+            colorTargetRenderBuffer()
+            depthTargetTexture(usedAsShadowMap = false)
         }
     }
 }
@@ -97,9 +97,9 @@ class NormalLinearDepthMapPass(drawNode: Node, config: Config) : DepthMapPass(dr
     companion object {
         private fun normalLinearDepthSetup(width: Int, height: Int) = renderPassConfig {
             name = "NormalLinearDepthMapPass"
-            setSize(width, height)
-            clearDepthTexture()
-            addColorTexture(TexFormat.RGBA_F16)
+            size(width, height)
+            depthTargetRenderBuffer()
+            colorTargetTexture(TexFormat.RGBA_F16)
         }
     }
 }

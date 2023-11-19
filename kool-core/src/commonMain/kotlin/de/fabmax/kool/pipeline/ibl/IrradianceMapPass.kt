@@ -16,9 +16,8 @@ import kotlin.math.PI
 class IrradianceMapPass private constructor(parentScene: Scene, hdriMap: Texture2d?, cubeMap: TextureCube?, size: Int) :
     OffscreenRenderPassCube(Node(), renderPassConfig {
         name = "IrradianceMapPass"
-        setSize(size, size)
-        addColorTexture(TexFormat.RGBA_F16)
-        clearDepthTexture()
+        size(size, size)
+        colorTargetTexture(TexFormat.RGBA_F16)
     }) {
 
     var isAutoRemove = true

@@ -361,8 +361,8 @@ open class OrthographicCamera(name: String = "orthographicCam") : Camera(name) {
 }
 
 open class PerspectiveCamera(name: String = "perspectiveCam") : Camera(name) {
-    var fovY = 60.0f
-    var fovX = 0f
+    var fovY = 60.0f.deg
+    var fovX = 0f.deg
         private set
 
     private var sphereFacX = 1f
@@ -376,14 +376,14 @@ open class PerspectiveCamera(name: String = "perspectiveCam") : Camera(name) {
         proj.setIdentity().perspective(fovY, aspectRatio, clipNear, clipFar)
 
         // compute intermediate values needed for view frustum culling
-        val angY = fovY.toRad() / 2f
+        val angY = fovY.rad / 2f
         sphereFacY = 1f / cos(angY)
         tangY = tan(angY)
 
         val angX = atan(tangY * aspectRatio)
         sphereFacX = 1f / cos(angX)
         tangX = tan(angX)
-        fovX = (angX * 2).toDeg()
+        fovX = (angX * 2).rad
     }
 
     override fun computeFrustumPlane(z: Float, result: FrustumPlane) {

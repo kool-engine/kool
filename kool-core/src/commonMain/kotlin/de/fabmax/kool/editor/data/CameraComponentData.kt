@@ -1,5 +1,6 @@
 package de.fabmax.kool.editor.data
 
+import de.fabmax.kool.math.deg
 import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.OrthographicCamera
 import de.fabmax.kool.scene.PerspectiveCamera
@@ -25,7 +26,7 @@ sealed class CameraTypeData {
 
         private fun applyCamProperties(target: PerspectiveCamera) {
             target.setClipRange(clipNear, clipFar)
-            target.fovY = this@Perspective.fovY
+            target.fovY = this@Perspective.fovY.deg
             target.name = name
         }
 

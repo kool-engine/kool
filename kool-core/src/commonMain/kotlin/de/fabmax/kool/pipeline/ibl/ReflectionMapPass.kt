@@ -14,10 +14,9 @@ import de.fabmax.kool.util.logD
 class ReflectionMapPass private constructor(parentScene: Scene, hdriMap: Texture2d?, cubeMap: TextureCube?, size: Int) :
     OffscreenRenderPassCube(Node(), renderPassConfig {
         name = "ReflectionMapPass"
-        setSize(size, size)
+        size(size, size)
         mipLevels = REFLECTION_MIP_LEVELS
-        addColorTexture(TexFormat.RGBA_F16)
-        clearDepthTexture()
+        colorTargetTexture(TexFormat.RGBA_F16)
     }) {
 
     var isAutoRemove = true

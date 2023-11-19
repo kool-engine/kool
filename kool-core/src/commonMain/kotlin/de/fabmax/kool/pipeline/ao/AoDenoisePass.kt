@@ -17,8 +17,7 @@ class AoDenoisePass(aoPass: OffscreenRenderPass2d, depthComponent: String) :
     OffscreenRenderPass2d(Node(), renderPassConfig {
         name = "AoDenoisePass"
         size.set(aoPass.size)
-        clearDepthTexture()
-        addColorTexture(TexFormat.R)
+        colorTargetTexture(TexFormat.R)
     }) {
 
     private val denoiseShader = DenoiseShader(aoPass, depthComponent)
@@ -61,7 +60,7 @@ class AoDenoisePass(aoPass: OffscreenRenderPass2d, depthComponent: String) :
 
     override fun update(ctx: KoolContext) {
         if (clearAndDisable) {
-            resize(1, 1, ctx)
+            setSize(1, 1, ctx)
             clearAndDisable = false
             denoiseMesh.isVisible = false
             clearMesh.isVisible = true

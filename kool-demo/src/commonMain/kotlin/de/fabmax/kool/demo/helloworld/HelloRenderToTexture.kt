@@ -31,10 +31,8 @@ class HelloRenderToTextureDemo : DemoScene("Hello RenderToTexture") {
 
         // setup offscreen pass
         val off = OffscreenRenderPass2d(backgroundGroup, renderPassConfig {
-            setSize(512, 512)
-            addColorTexture {
-                colorFormat = TexFormat.RGBA
-            }
+            size(512, 512)
+            colorTargetTexture(TexFormat.RGBA)
         }).apply {
             clearColor = Color.BLACK
             camera.position.set(0f, 1f, 2f)
