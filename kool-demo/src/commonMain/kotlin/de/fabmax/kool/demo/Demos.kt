@@ -16,7 +16,7 @@ import de.fabmax.kool.demo.physics.ragdoll.RagdollDemo
 import de.fabmax.kool.demo.physics.terrain.TerrainDemo
 import de.fabmax.kool.demo.physics.vehicle.VehicleDemo
 import de.fabmax.kool.demo.procedural.ProceduralDemo
-import de.fabmax.kool.demo.tests.ClipSpaceTest
+import de.fabmax.kool.demo.tests.InifiniteDepthTest
 import de.fabmax.kool.demo.tests.KslShaderTest
 import de.fabmax.kool.demo.uidemo.UiDemo
 import de.fabmax.kool.util.Color
@@ -79,7 +79,7 @@ object Demos {
         entry("manyvehicles", "Many Vehicles") { ManyVehiclesDemo() }
         entry("ksl-test", "Ksl Shading Test") { KslShaderTest() }
         entry("gizmo-test", "Gizmo Test") { GizmoTest() }
-        entry("clip-test", "Clip Space Test") { ClipSpaceTest() }
+        entry("inf-depth-test", "Clip Space Test") { InifiniteDepthTest() }
     }
 
     val categories = mutableListOf(physicsDemos, graphicsDemos, techDemos, hiddenDemos)

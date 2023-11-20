@@ -5,7 +5,7 @@ package de.fabmax.kool.util
  * to regular UI coordinates (but different to traditional OpenGL), Viewport origin is in the upper left corner and
  * the y-axis points downwards.
  */
-class Viewport(var x: Int, var y: Int, var width: Int, var height: Int) {
+data class Viewport(var x: Int, var y: Int, var width: Int, var height: Int) {
 
     val aspectRatio get() = width.toFloat() / height.toFloat()
 

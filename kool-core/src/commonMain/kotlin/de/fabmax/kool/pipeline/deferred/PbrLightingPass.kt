@@ -21,7 +21,7 @@ class PbrLightingPass(pipeline: DeferredPipeline, suffix: String, val materialPa
 
         dependsOn(materialPass)
 
-        scene.mainRenderPass.onAfterCollectDrawCommands += { ev ->
+        scene.mainRenderPass.renderPass.onAfterCollectDrawCommands += { ev ->
             if (isEnabled) {
                 for (i in materialPass.alphaMeshes.indices) {
                     scene.mainRenderPass.screenView.drawQueue.addMesh(materialPass.alphaMeshes[i], ev.ctx)

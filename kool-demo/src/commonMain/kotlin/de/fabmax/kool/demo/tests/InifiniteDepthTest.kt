@@ -9,62 +9,18 @@ import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.modules.ksl.lang.KslProgram
 import de.fabmax.kool.modules.ksl.lang.xy
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.scene.*
+import de.fabmax.kool.scene.Camera
+import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.scene.addMesh
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 
-class ClipSpaceTest : DemoScene("Clip Space Test") {
-
-    private val useRenderBufferTarget = true
-
-    val reversedDepthPass = OffscreenRenderPass2d(Node(), renderPassConfig {
-        name = "Reversed depth"
-        if (useRenderBufferTarget) {
-            // OpenGL mode: use render buffer target with multi-sampling
-            colorTargetRenderBuffer(TexFormat.RGBA, true)
-        } else {
-            // Vulkan compatibility mode: use texture target without multi-sampling
-            colorTargetTexture(TexFormat.RGBA)
-        }
-    }).apply {
-        clearColor = MdColor.GREY tone 900
-
-        // enable the magic:
-        //   if set to true, you should see seven large rectangles in the center of the screen (white to indigo)
-        //   if set to false, there should only be three (and depth precision will be very poor because of the large far cam distance)
-        useReversedDepthIfAvailable = true
-
-        camera.setup()
-        drawNode.apply {
-            makeTestContent()
-        }
-    }
+class InifiniteDepthTest : DemoScene("Infinite Depth Test") {
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
-        addOffscreenPass(reversedDepthPass)
+        tryEnableInfiniteDepth()
+        camera.setup()
 
-        if (useRenderBufferTarget) {
-            // blit (resolve + copy) render buffer mode, support multi-sampling but does not work on Vulkan yet
-            mainRenderPass.blitRenderPass = reversedDepthPass
-
-        } else {
-            // lame fullscreen quad method, requires a render pass with color texture target, no multi-sampling support
-            addTextureMesh {
-                generate {
-                    centeredRect {
-                        size.set(2f, 2f)
-                    }
-                }
-                shader = RenderPassOutputShader(reversedDepthPass)
-            }
-        }
-
-        onUpdate {
-            reversedDepthPass.setSize(mainRenderPass.width, mainRenderPass.height, ctx)
-        }
-    }
-
-    private fun Node.makeTestContent() {
         addMesh(Attribute.POSITIONS, Attribute.COLORS) {
             val depthsToColors = mapOf(
                 1e16f to MdColor.INDIGO,        // 10^16 m: ~1 light year away from camera

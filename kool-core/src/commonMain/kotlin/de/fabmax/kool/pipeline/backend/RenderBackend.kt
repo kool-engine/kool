@@ -12,6 +12,8 @@ interface RenderBackend {
     val deviceName: String
 
     val depthRange: DepthRange
+    val canBlitRenderPasses: Boolean
+    val isOnscreenInfiniteDepthCapable: Boolean
 
     fun renderFrame(ctx: KoolContext)
     fun close(ctx: KoolContext)

@@ -43,21 +43,27 @@ class RenderBackendGlImpl(ctx: KoolContext, canvas: HTMLCanvasElement) : RenderB
         // for now, we leave the cleanup to the system...
     }
 
-    override fun blitFrameBuffers(src: OffscreenRenderPass2d, dst: RenderPass, mipLevel: Int) {
-        if (dst is ScreenRenderPass && numSamples > 1) {
+    override fun blitFrameBuffers(
+        src: OffscreenRenderPass2d,
+        dst: OffscreenRenderPass2dGl?,
+        srcViewport: Viewport,
+        dstViewport: Viewport,
+        mipLevel: Int
+    ) {
+        if (dst == null && numSamples > 1) {
             // on WebGL blitting frame-buffers does not work if target frame-buffer is multi-sampled
             //  -> use a non-multi-sampled texture frame-buffer as conversion helper and then render the texture
-            //     using a shader. This means a lot of overhead, but apparently is the only thing we can do.
+            //     using a shader. This means some overhead, but apparently it's the only thing we can do.
             val ctx = KoolSystem.requireContext()
             blitTempFrameBuffer.blitRenderPass = src
             blitTempFrameBuffer.setSize(src.width, src.height, ctx)
             blitTempFrameBuffer.impl.draw(ctx)
 
-            blitScene.mainRenderPass.update(ctx)
-            blitScene.mainRenderPass.collectDrawCommands(ctx)
+            blitScene.mainRenderPass.renderPass.update(ctx)
+            blitScene.mainRenderPass.renderPass.collectDrawCommands(ctx)
             queueRenderer.renderView(blitScene.mainRenderPass.screenView)
         } else {
-            super.blitFrameBuffers(src, dst, mipLevel)
+            super.blitFrameBuffers(src, dst, srcViewport, dstViewport, mipLevel)
         }
     }
 

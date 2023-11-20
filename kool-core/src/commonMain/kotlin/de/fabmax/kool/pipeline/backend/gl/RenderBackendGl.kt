@@ -10,6 +10,7 @@ import de.fabmax.kool.pipeline.backend.RenderBackend
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Time
+import de.fabmax.kool.util.Viewport
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logE
 
@@ -25,6 +26,8 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
 
     override var depthRange: DepthRange = DepthRange.NEGATIVE_ONE_TO_ONE
         protected set
+    override val canBlitRenderPasses = true
+    override val isOnscreenInfiniteDepthCapable = false
 
     internal val queueRenderer = QueueRenderer(this)
 
@@ -56,28 +59,20 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
                     captureFramebuffer(scene)
                 }
                 doOffscreenPasses(scene, ctx)
-
-                val t = if (scene.mainRenderPass.isProfileTimes) Time.precisionTime else 0.0
-                scene.mainRenderPass.blitRenderPass?.let { blitFrameBuffers(it, scene.mainRenderPass, 0) }
-                queueRenderer.renderViews(scene.mainRenderPass)
-                scene.mainRenderPass.tDraw = if (scene.mainRenderPass.isProfileTimes) Time.precisionTime - t else 0.0
-
-                if (scene.framebufferCaptureMode == Scene.FramebufferCaptureMode.AfterRender) {
-                    captureFramebuffer(scene)
-                }
-                scene.mainRenderPass.afterDraw(ctx)
+                doForegroundPass(scene, ctx)
             }
         }
     }
 
-    internal open fun blitFrameBuffers(src: OffscreenRenderPass2d, dst: RenderPass, mipLevel: Int) {
+    internal open fun blitFrameBuffers(
+        src: OffscreenRenderPass2d,
+        dst: OffscreenRenderPass2dGl?,
+        srcViewport: Viewport,
+        dstViewport: Viewport,
+        mipLevel: Int
+    ) {
+        val dstBuffer = dst?.fbos?.get(mipLevel) ?: gl.DEFAULT_FRAMEBUFFER
         val srcPassImpl = src.impl as OffscreenRenderPass2dGl
-        val dstBuffer = when (dst) {
-            is OffscreenRenderPass2d -> (dst.impl as OffscreenRenderPass2dGl).fbos[mipLevel]
-            is ScreenRenderPass -> gl.DEFAULT_FRAMEBUFFER
-            else -> throw IllegalArgumentException("dst RenderPass has to be an OffscreenRenderPass2d or ScreenRenderPass")
-        }
-
         if (srcPassImpl.fbos.isEmpty()) {
             logE { "blit source framebuffer is not available" }
             return
@@ -86,14 +81,14 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
         gl.bindFramebuffer(gl.READ_FRAMEBUFFER, srcPassImpl.fbos[0])
         gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, dstBuffer)
 
-        val filter = if (src.width == dst.width && src.height == dst.height) {
+        val filter = if (srcViewport.width == dstViewport.width && srcViewport.height == dstViewport.height) {
             gl.NEAREST
         } else {
             gl.LINEAR
         }
         gl.blitFramebuffer(
-            0, 0, src.width, src.height,
-            0, 0, dst.width, dst.height,
+            srcViewport.x, srcViewport.y, srcViewport.width, srcViewport.height,
+            dstViewport.x, dstViewport.y, dstViewport.width, dstViewport.height,
             gl.COLOR_BUFFER_BIT, filter
         )
     }
@@ -135,6 +130,38 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
                 pass.tDraw = if (pass.isProfileTimes) Time.precisionTime - t else 0.0
             }
         }
+    }
+
+    private fun doForegroundPass(scene: Scene, ctx: KoolContext) {
+        val scenePass = scene.mainRenderPass
+        val t = if (scenePass.renderPass.isProfileTimes) Time.precisionTime else 0.0
+
+        when (scenePass) {
+            is Scene.OffscreenSceneRenderPass -> {
+                scenePass.blitRenderPass?.let {
+                    val srcViewport = Viewport(0, 0, it.width, it.height)
+                    val dst = scenePass.impl as OffscreenRenderPass2dGl
+                    blitFrameBuffers(it, dst, srcViewport, scenePass.viewport, 0)
+                }
+                drawOffscreen(scenePass)
+                blitFrameBuffers(scenePass, null, scenePass.viewport, scenePass.viewport, 0)
+            }
+
+            is Scene.OnscreenSceneRenderPass -> {
+                scenePass.blitRenderPass?.let {
+                    val srcViewport = Viewport(0, 0, it.width, it.height)
+                    blitFrameBuffers(it, null, srcViewport, scenePass.viewport, 0)
+                }
+                queueRenderer.renderViews(scenePass.renderPass)
+            }
+        }
+
+        if (scene.framebufferCaptureMode == Scene.FramebufferCaptureMode.AfterRender) {
+            captureFramebuffer(scene)
+        }
+
+        scenePass.renderPass.tDraw = if (scenePass.renderPass.isProfileTimes) Time.precisionTime - t else 0.0
+        scenePass.renderPass.afterDraw(ctx)
     }
 
     private fun drawOffscreen(offscreenPass: OffscreenRenderPass) {

@@ -36,14 +36,14 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
 
     val sunDirection = MutableVec3f()
     val moonDirection = MutableVec3f()
-    private val skybox = Skybox.Cube(texLod = 1f)
-    private val sunShader = SkyObjectShader {
+    private val skybox = Skybox.Cube(texLod = 1f, isInfiniteDepth = mainScene.isInfiniteDepth)
+    private val sunShader = SkyObjectShader(mainScene.isInfiniteDepth) {
         uniformColor(Color.WHITE.mix(MdColor.YELLOW, 0.15f).toLinear())
     }
-    private val moonShader = SkyObjectShader {
+    private val moonShader = SkyObjectShader(mainScene.isInfiniteDepth) {
         textureColor(moonTex)
     }
-    private val starShader = SkyObjectShader(isPointShader = true) {
+    private val starShader = SkyObjectShader(mainScene.isInfiniteDepth, isPointShader = true) {
         vertexColor()
     }
 
@@ -213,14 +213,17 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
         return (nightTime - 0.26f) * 2.083f
     }
 
-    private class SkyObjectShader(isPointShader: Boolean = false, colorBlock: ColorBlockConfig.() -> Unit) :
-        KslUnlitShader(config(isPointShader, colorBlock)) {
+    private class SkyObjectShader(
+        isReverseDepth: Boolean,
+        isPointShader: Boolean = false,
+        colorBlock: ColorBlockConfig.() -> Unit
+    ) : KslUnlitShader(config(isReverseDepth, isPointShader, colorBlock)) {
 
         val orientation: MutableMat3f by uniformMat3f("uOrientation", MutableMat3f())
         var alpha: Float by uniform1f("uAlpha", 1f)
 
         companion object {
-            fun config(isPointShader: Boolean, colorBlock: ColorBlockConfig.() -> Unit) = UnlitShaderConfig().apply {
+            fun config(isReverseDepth: Boolean, isPointShader: Boolean, colorBlock: ColorBlockConfig.() -> Unit) = UnlitShaderConfig().apply {
                 color {
                     colorBlock()
                 }
@@ -235,7 +238,11 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
                             val mvpMat = mvpMatrix().matrix
                             val localPos = vertexAttribFloat3(Attribute.POSITIONS.name)
                             val orientation = uniformMat3("uOrientation")
-                            outPosition set (mvpMat * float4Value(orientation * localPos, 0f)).float4("xyww")
+                            if (isReverseDepth) {
+                                outPosition set (mvpMat * float4Value(orientation * localPos * 1e9f.const, 1f)).float4("xyzw")
+                            } else {
+                                outPosition set (mvpMat * float4Value(orientation * localPos, 0f)).float4("xyww")
+                            }
                             if (isPointShader) {
                                 outPointSize set vertexAttribFloat1(PointMesh.ATTRIB_POINT_SIZE.name)
                             }

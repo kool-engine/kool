@@ -103,6 +103,10 @@ class TerrainDemo : DemoScene("Terrain Demo") {
     }
 
     override suspend fun Assets.loadResources(ctx: KoolContext) {
+        // enable infinite depth early, skybox creation needs to know if it was successful
+        // infinite depth isn't really needed for this demo, but it's a nice test
+        mainScene.tryEnableInfiniteDepth()
+
         showLoadText("Loading height map...")
         val heightMap = HeightMap.fromRawData(loadBlobAsset("${DemoLoader.heightMapPath}/terrain_ocean.raw"), 200f, heightOffset = -50f)
         // more or less the same, but falls back to 8-bit height-resolution in javascript
@@ -295,7 +299,11 @@ class TerrainDemo : DemoScene("Terrain Demo") {
 
     private fun Scene.setupCamera() {
         camRig = CharacterTrackingCamRig(false).apply {
-            camera.setClipRange(0.5f, 5000f)
+            if (isInfiniteDepth) {
+                camera.setClipRange(0.1f, 1e5f)
+            } else {
+                camera.setClipRange(0.5f, 5000f)
+            }
             trackedPose = physicsObjects.playerController.controller.actor.transform
             minZoom = 0.75f
             maxZoom = 100f

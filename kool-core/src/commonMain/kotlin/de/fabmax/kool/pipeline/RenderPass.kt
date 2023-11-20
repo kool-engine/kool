@@ -1,7 +1,6 @@
 package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.pipeline.drawqueue.DrawQueue
 import de.fabmax.kool.scene.*
@@ -149,66 +148,6 @@ abstract class RenderPass(var name: String) : BaseReleasable() {
             beforeCollectDrawCommands(updateEvent)
             drawNode.collectDrawCommands(updateEvent)
             afterCollectDrawCommands(updateEvent)
-        }
-    }
-}
-
-class ScreenRenderPass(val scene: Scene) : RenderPass("${scene.name}:ScreenRenderPass") {
-
-    val screenView = View("screen", scene, PerspectiveCamera(), arrayOf(Color(0.15f, 0.15f, 0.15f, 1f)))
-    var camera: Camera by screenView::camera
-    val viewport: Viewport by screenView::viewport
-    var clearColor: Color? by screenView::clearColor
-    var clearDepth: Boolean by screenView::clearDepth
-
-    var blitRenderPass: OffscreenRenderPass2d? = null
-        set(value) {
-            field = value
-            if (value != null) {
-                clearColor = null
-            }
-        }
-
-    private val _views = mutableListOf(screenView)
-    override val views: List<View>
-        get() = _views
-
-    override val isReverseDepth = false
-
-    var useWindowViewport = true
-
-    override val width: Int
-        get() = KoolSystem.requireContext().windowWidth
-    override val height: Int
-        get() = KoolSystem.requireContext().windowHeight
-
-    init {
-        parentScene = scene
-        lighting = Lighting()
-    }
-
-    fun createView(name: String): View {
-        val view = View(name, scene, PerspectiveCamera(), arrayOf(null))
-        _views += view
-        return view
-    }
-
-    fun removeView(view: View) {
-        _views -= view
-    }
-
-    override fun update(ctx: KoolContext) {
-        if (useWindowViewport) {
-            ctx.getWindowViewport(viewport)
-        }
-        super.update(ctx)
-
-        if (useReversedDepthIfAvailable && !complainedAboutReversedDepth) {
-            complainedAboutReversedDepth = true
-            logW {
-                "ScreenRenderPass of scene ${scene.name} is set to use reversed depth. This won't have any benefit " +
-                "on a ScreenRenderPass. Use an OffscreenRenderPass instead to profit from increased depth precision."
-            }
         }
     }
 }

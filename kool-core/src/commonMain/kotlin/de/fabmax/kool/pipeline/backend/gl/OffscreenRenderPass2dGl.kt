@@ -4,6 +4,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.DepthRange
 import de.fabmax.kool.pipeline.backend.stats.OffscreenPassInfo
+import de.fabmax.kool.util.Viewport
 import de.fabmax.kool.util.logE
 
 class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, val backend: RenderBackendGl) : OffscreenPass2dImpl {
@@ -35,7 +36,11 @@ class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, val backend: Re
 
         if (isCreated) {
             for (mipLevel in 0 until renderMipLevels) {
-                parent.blitRenderPass?.let { backend.blitFrameBuffers(it, parent, mipLevel) }
+                parent.blitRenderPass?.let {
+                    val srcViewport = Viewport(0, 0, it.width, it.height)
+                    val dstViewport = Viewport(0, 0, parent.width, parent.height)
+                    backend.blitFrameBuffers(it, this, srcViewport, dstViewport, mipLevel)
+                }
 
                 parent.onSetupMipLevel?.invoke(mipLevel, ctx)
                 for (i in parent.views.indices) {
