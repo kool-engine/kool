@@ -1,7 +1,6 @@
 package de.fabmax.kool.pipeline.backend.vk
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.vk.util.vkFormat
 import de.fabmax.kool.platform.Lwjgl3Context
@@ -237,10 +236,6 @@ class VkOffscreenPass2d(val parentPass: OffscreenRenderPass2d) : OffscreenPass2d
     }
 
     private fun create(ctx: Lwjgl3Context) {
-        if (isReverseDepth) {
-            parentPass.projCorrectionMatrix.set(Mat4f.IDENTITY)
-        }
-
         val sys = (ctx.backend as VkRenderBackend).vkSystem
         val pass = parentPass
         val width = parentPass.width

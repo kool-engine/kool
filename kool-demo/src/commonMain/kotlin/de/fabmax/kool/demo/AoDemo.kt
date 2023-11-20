@@ -16,6 +16,7 @@ import de.fabmax.kool.modules.ksl.lang.r
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.ao.AoPipeline
+import de.fabmax.kool.pipeline.backend.DepthRange
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.RectProps
 import de.fabmax.kool.toString
@@ -56,7 +57,7 @@ class AoDemo : DemoScene("Ambient Occlusion") {
     override fun Scene.setupMainScene(ctx: KoolContext) {
         updateLighting(isSpotLight.value)
 
-        if (ctx.backend.isReversedDepthAvailable) {
+        if (ctx.backend.depthRange == DepthRange.ZERO_TO_ONE) {
             // using reversed depth isn't really needed for this scene - it's more for testing...
             logI { "Using reversed depth rendering" }
             setupReversedDepthRendering()

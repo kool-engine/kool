@@ -2,7 +2,6 @@ package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
-import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.pipeline.drawqueue.DrawQueue
 import de.fabmax.kool.scene.*
@@ -43,9 +42,6 @@ abstract class RenderPass(var name: String) : BaseReleasable() {
     var tCollect = 0.0
     var tDraw = 0.0
 
-    open val projCorrectionMatrix: Mat4f
-        get() = KoolSystem.requireContext().backend.defaultProjCorrectionMatrix
-
     protected var complainedAboutReversedDepth = false
 
     open fun update(ctx: KoolContext) {
@@ -64,7 +60,7 @@ abstract class RenderPass(var name: String) : BaseReleasable() {
         }
         tCollect = if (isProfileTimes) Time.precisionTime - t else 0.0
 
-        if (useReversedDepthIfAvailable && !ctx.backend.isReversedDepthAvailable && !complainedAboutReversedDepth) {
+        if (useReversedDepthIfAvailable && !isReverseDepth && !complainedAboutReversedDepth) {
             complainedAboutReversedDepth = true
             logW { "Reversed depth testing requested but not available" }
         }

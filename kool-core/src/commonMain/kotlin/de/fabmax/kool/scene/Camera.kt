@@ -4,6 +4,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.input.Pointer
 import de.fabmax.kool.math.*
 import de.fabmax.kool.pipeline.RenderPass
+import de.fabmax.kool.pipeline.backend.DepthRange
 import de.fabmax.kool.util.LazyMat4d
 import de.fabmax.kool.util.LazyMat4f
 import de.fabmax.kool.util.Viewport
@@ -41,7 +42,6 @@ abstract class Camera(name: String = "camera") : Node(name) {
     var clipFar = 100f
 
     val proj = MutableMat4f()
-    private val tmpProjCorrected = MutableMat4f()
     private val lazyInvProj = LazyMat4f { proj.invert(it) }
     val invProj: Mat4f get() = lazyInvProj.get()
 
@@ -83,11 +83,7 @@ abstract class Camera(name: String = "camera") : Node(name) {
         }
 
         updateProjectionMatrix(updateEvent)
-        updateEvent.renderPass.projCorrectionMatrix.mul(proj, tmpProjCorrected)
-        proj.set(tmpProjCorrected)
-
         lazyInvProj.isDirty = true
-
         updateViewMatrix(updateEvent)
 
         if (onCameraUpdated.isNotEmpty()) {
@@ -183,6 +179,15 @@ abstract class Camera(name: String = "camera") : Node(name) {
         val s = 1f / tmpVec4.w
         result.set(tmpVec4.x * s, tmpVec4.y * s, tmpVec4.z * s)
         return true
+    }
+
+    companion object {
+        val PROJ_CORRECTION_ZERO_TO_ONE = Mat4f(
+            1.0f, 0.0f, 0.0f, 0.0f,
+            0.0f, 1.0f, 0.0f, 0.0f,
+            0.0f, 0.0f, 0.5f, 0.5f,
+            0.0f, 0.0f, 0.0f, 1.0f
+        )
     }
 
     inner class DataF {
@@ -291,6 +296,7 @@ open class OrthographicCamera(name: String = "orthographicCam") : Camera(name) {
     var isKeepAspectRatio = true
 
     private val tmpNodeCenter = MutableVec3f()
+    private val tmpProjCorrection = MutableMat4f()
 
     fun setCentered(height: Float, near: Float, far: Float) {
         top = height * 0.5f
@@ -321,7 +327,7 @@ open class OrthographicCamera(name: String = "orthographicCam") : Camera(name) {
 
     override fun updateProjectionMatrix(updateEvent: RenderPass.UpdateEvent) {
         if (left != right && bottom != top && clipNear != clipFar) {
-            proj.setIdentity().orthographic(left, right, bottom, top, clipNear, clipFar)
+            proj.setIdentity().orthographic(left, right, bottom, top, clipNear, clipFar, updateEvent.ctx.backend.depthRange)
         }
     }
 
@@ -372,12 +378,15 @@ open class PerspectiveCamera(name: String = "perspectiveCam") : Camera(name) {
     private var tangY = 1f
 
     private val tmpNodeCenter = MutableVec3f()
+    private val tmpProjCorrection = MutableMat4f()
 
     override fun updateProjectionMatrix(updateEvent: RenderPass.UpdateEvent) {
         if (updateEvent.renderPass.isReverseDepth) {
+            check(updateEvent.ctx.backend.depthRange == DepthRange.ZERO_TO_ONE)
             proj.setIdentity().perspectiveReversedDepth(fovY, aspectRatio, clipNear)
+
         } else {
-            proj.setIdentity().perspective(fovY, aspectRatio, clipNear, clipFar)
+            proj.setIdentity().perspective(fovY, aspectRatio, clipNear, clipFar, updateEvent.ctx.backend.depthRange)
         }
 
         // compute intermediate values needed for view frustum culling

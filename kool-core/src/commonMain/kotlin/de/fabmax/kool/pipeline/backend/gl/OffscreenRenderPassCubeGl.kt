@@ -1,8 +1,8 @@
 package de.fabmax.kool.pipeline.backend.gl
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.backend.DepthRange
 import de.fabmax.kool.pipeline.backend.stats.OffscreenPassInfo
 
 class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, val backend: RenderBackendGl) : OffscreenPassCubeImpl {
@@ -14,7 +14,7 @@ class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, val backend
     internal var glColorTex = gl.NULL_TEXTURE
 
     override val isReverseDepth: Boolean
-        get() = backend.isReversedDepthAvailable && parent.useReversedDepthIfAvailable
+        get() = parent.useReversedDepthIfAvailable && backend.depthRange == DepthRange.ZERO_TO_ONE
 
     private var isCreated = false
 
@@ -108,7 +108,6 @@ class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, val backend
     }
 
     private fun createBuffers() {
-        setProjCorrection()
         if (parent.colorAttachment is OffscreenRenderPass.TextureColorAttachment) {
             createColorTex(parent.colorAttachment)
         }
@@ -133,10 +132,6 @@ class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, val backend
             }
         }
         isCreated = true
-    }
-
-    private fun setProjCorrection() {
-        parent.projCorrectionMatrix.set(Mat4f.IDENTITY)
     }
 
     private fun createColorTex(colorAttachment: OffscreenRenderPass.TextureColorAttachment) {

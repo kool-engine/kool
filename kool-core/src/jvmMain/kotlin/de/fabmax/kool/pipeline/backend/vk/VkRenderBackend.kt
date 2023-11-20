@@ -1,9 +1,9 @@
 package de.fabmax.kool.pipeline.backend.vk
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.backend.DepthRange
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.pipeline.backend.vk.util.bitValue
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
@@ -32,14 +32,7 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
     override val glfwWindow: GlfwWindow
         get() = vkSystem.window
 
-    override val defaultProjCorrectionMatrix = Mat4f(
-        1.0f, 0.0f, 0.0f, 0.0f,
-        0.0f, 1.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, 0.5f, 0.5f,
-        0.0f, 0.0f, 0.0f, 1.0f
-    )
-
-    override val isReversedDepthAvailable = true
+    override val depthRange = DepthRange.ZERO_TO_ONE
 
     private val shaderCodes = mutableMapOf<String, ShaderCode>()
 

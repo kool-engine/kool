@@ -34,8 +34,7 @@ class QueueRenderer(val backend: RenderBackendGl) {
         gl.viewport(viewport.x, viewportY, viewport.width, viewport.height)
         gl.scissor(viewport.x, viewportY, viewport.width, viewport.height)
 
-        val isReversedDepth = renderPass.useReversedDepthIfAvailable && backend.isReversedDepthAvailable
-        gl.clearDepth(if (isReversedDepth) 0f  else 1f)
+        gl.clearDepth(if (renderPass.isReverseDepth) 0f  else 1f)
 
         val rp = renderPass
         if (rp is OffscreenRenderPass) {
@@ -61,7 +60,7 @@ class QueueRenderer(val backend: RenderBackendGl) {
         for (cmd in drawQueue.commands) {
             cmd.pipeline?.let { pipeline ->
                 val t = Time.precisionTime
-                glAttribs.setupPipelineAttribs(pipeline, isReversedDepth)
+                glAttribs.setupPipelineAttribs(pipeline, renderPass.isReverseDepth)
 
                 if (cmd.geometry.numIndices > 0) {
                     val shaderInst = shaderMgr.setupShader(cmd)

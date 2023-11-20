@@ -5,10 +5,12 @@ import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.generator.GlslGenerator
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.backend.DepthRange
 import de.fabmax.kool.pipeline.backend.RenderBackend
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Time
+import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logE
 
 abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolContext) : RenderBackend {
@@ -21,7 +23,7 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
     var numSamples = 1
         private set
 
-    override var isReversedDepthAvailable = false
+    override var depthRange: DepthRange = DepthRange.NEGATIVE_ONE_TO_ONE
         protected set
 
     internal val queueRenderer = QueueRenderer(this)
@@ -31,7 +33,9 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
         gl.enable(gl.SCISSOR_TEST)
 
         if (gl.capabilities.hasClipControl) {
-            isReversedDepthAvailable = true
+            logD { "Setting depth range to zero-to-one" }
+            gl.clipControl(gl.LOWER_LEFT, gl.ZERO_TO_ONE)
+            depthRange = DepthRange.ZERO_TO_ONE
         }
     }
 
@@ -126,20 +130,8 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
             val pass = scene.sortedOffscreenPasses[i]
             if (pass.isEnabled) {
                 val t = if (pass.isProfileTimes) Time.precisionTime else 0.0
-
-                if (pass.isReverseDepth) {
-                    // todo: zero-to-one depth introduces issues with deferred screen-space reflections
-                    //  once these are fixed, it should be ok to enable zero-to-one depth globally if available
-                    gl.clipControl(gl.LOWER_LEFT, gl.ZERO_TO_ONE)
-                }
-
                 drawOffscreen(pass)
                 pass.afterDraw(ctx)
-
-                if (pass.isReverseDepth) {
-                    gl.clipControl(gl.LOWER_LEFT, gl.NEGATIVE_ONE_TO_ONE)
-                }
-
                 pass.tDraw = if (pass.isProfileTimes) Time.precisionTime - t else 0.0
             }
         }

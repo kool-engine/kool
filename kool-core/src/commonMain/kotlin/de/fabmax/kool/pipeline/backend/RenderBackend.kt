@@ -1,7 +1,6 @@
 package de.fabmax.kool.pipeline.backend
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.Viewport
@@ -12,9 +11,7 @@ interface RenderBackend {
     val apiName: String
     val deviceName: String
 
-    val defaultProjCorrectionMatrix: Mat4f
-        get() = Mat4f.IDENTITY
-    val isReversedDepthAvailable: Boolean
+    val depthRange: DepthRange
 
     fun renderFrame(ctx: KoolContext)
     fun close(ctx: KoolContext)
@@ -28,4 +25,9 @@ interface RenderBackend {
     fun createOffscreenPassCube(parentPass: OffscreenRenderPassCube): OffscreenPassCubeImpl
     fun uploadTextureToGpu(tex: Texture, data: TextureData)
 
+}
+
+enum class DepthRange {
+    NEGATIVE_ONE_TO_ONE,
+    ZERO_TO_ONE
 }

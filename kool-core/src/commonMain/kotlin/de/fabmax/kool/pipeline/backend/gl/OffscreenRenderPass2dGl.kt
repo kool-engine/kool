@@ -1,8 +1,8 @@
 package de.fabmax.kool.pipeline.backend.gl
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.backend.DepthRange
 import de.fabmax.kool.pipeline.backend.stats.OffscreenPassInfo
 import de.fabmax.kool.util.logE
 
@@ -19,7 +19,7 @@ class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, val backend: Re
     private val renderMipLevels: Int = if (drawMipLevels) { parent.mipLevels } else { 1 }
 
     override val isReverseDepth: Boolean
-        get() = backend.isReversedDepthAvailable && parent.useReversedDepthIfAvailable
+        get() = parent.useReversedDepthIfAvailable && backend.depthRange == DepthRange.ZERO_TO_ONE
 
     private var isCreated = false
 
@@ -128,7 +128,6 @@ class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, val backend: Re
     }
 
     private fun createBuffers() {
-        setProjCorrection()
         if (parent.colorAttachment is OffscreenRenderPass.TextureColorAttachment) {
             createColorTextures(parent.colorAttachment)
         }
@@ -164,10 +163,6 @@ class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, val backend: Re
             }
         }
         isCreated = true
-    }
-
-    private fun setProjCorrection() {
-        parent.projCorrectionMatrix.set(Mat4f.IDENTITY)
     }
 
     private fun attachColorTextures(mipLevel: Int, textures: Array<GlTexture>) {

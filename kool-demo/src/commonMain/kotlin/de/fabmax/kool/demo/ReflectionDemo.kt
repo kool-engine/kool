@@ -14,6 +14,7 @@ import de.fabmax.kool.pipeline.deferred.*
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
+import kotlinx.coroutines.withContext
 import kotlin.math.*
 
 class ReflectionDemo : DemoScene("Reflections") {
@@ -99,37 +100,39 @@ class ReflectionDemo : DemoScene("Reflections") {
         }
         scene += Skybox.cube(hdri.reflectionMap, 1f)
 
+        modelShader = deferredKslPbrShader {
+            color { uniformColor(matColors[selectedColorIdx.value].linColor) }
+            roughness { uniformProperty(this@ReflectionDemo.roughness.value) }
+            metallic { uniformProperty(this@ReflectionDemo.metallic.value) }
+        }
+
         deferredPipeline.sceneContent.apply {
+            addTextureMesh(isNormalMapped = true) {
+                generate {
+                    centeredRect {
+                        rotate((-90f).deg, Vec3f.X_AXIS)
+                        size.set(100f, 100f)
+                        generateTexCoords(4f)
+                    }
+                }
+
+                // ground doesn't need to cast shadows (there's nothing underneath it...)
+                isCastingShadow = false
+                groundMesh = this
+
+                shader = deferredKslPbrShader {
+                    color { textureColor(floorAlbedo) }
+                    normalMapping { setNormalMap(floorNormal) }
+                    roughness { textureProperty(floorRoughness) }
+                }
+            }
+
             Assets.launch {
-                addTextureMesh(isNormalMapped = true) {
-                    generate {
-                        centeredRect {
-                            rotate((-90f).deg, Vec3f.X_AXIS)
-                            size.set(100f, 100f)
-                            generateTexCoords(4f)
-                        }
-                    }
-
-                    // ground doesn't need to cast shadows (there's nothing underneath it...)
-                    isCastingShadow = false
-                    groundMesh = this
-
-                    shader = deferredKslPbrShader {
-                        color { textureColor(floorAlbedo) }
-                        normalMapping { setNormalMap(floorNormal) }
-                        roughness { textureProperty(floorRoughness) }
-                    }
+                withContext(RenderLoopCoroutineDispatcher) {
+                    bunnyMesh = model.meshes.values.first()
+                    addNode(model)
+                    bunnyMesh!!.shader = modelShader
                 }
-
-                bunnyMesh = model.meshes.values.first()
-                addNode(model)
-
-                modelShader = deferredKslPbrShader {
-                    color { uniformColor(matColors[selectedColorIdx.value].linColor) }
-                    roughness { uniformProperty(this@ReflectionDemo.roughness.value) }
-                    metallic { uniformProperty(this@ReflectionDemo.metallic.value) }
-                }
-                bunnyMesh!!.shader = modelShader
             }
         }
     }

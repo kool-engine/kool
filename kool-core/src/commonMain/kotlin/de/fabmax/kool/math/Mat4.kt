@@ -1,5 +1,6 @@
 package de.fabmax.kool.math
 
+import de.fabmax.kool.pipeline.backend.DepthRange
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.Float32Buffer
 import de.fabmax.kool.util.MixedBuffer
@@ -651,12 +652,12 @@ open class Mat4f(
             return MutableMat4f().lookAt(eyePosition, lookAt, up)
         }
 
-        fun orthographic(left: Float, right: Float, bottom: Float, top: Float, near: Float, far: Float): Mat4f {
-            return MutableMat4f().orthographic(left, right, bottom, top, near, far)
+        fun orthographic(left: Float, right: Float, bottom: Float, top: Float, near: Float, far: Float, depthRange: DepthRange): Mat4f {
+            return MutableMat4f().orthographic(left, right, bottom, top, near, far, depthRange)
         }
 
-        fun perspective(fovy: AngleF, aspect: Float, near: Float, far: Float): Mat4f {
-            return MutableMat4f().perspective(fovy, aspect, near, far)
+        fun perspective(fovy: AngleF, aspect: Float, near: Float, far: Float, depthRange: DepthRange): Mat4f {
+            return MutableMat4f().perspective(fovy, aspect, near, far, depthRange)
         }
 
         fun perspectiveReversedDepth(fovy: AngleF, aspect: Float, near: Float): Mat4f {
@@ -1132,7 +1133,7 @@ open class MutableMat4f(
     /**
      * Inplace operation: Applies an orthographic projection transform to this matrix.
      */
-    fun orthographic(left: Float, right: Float, bottom: Float, top: Float, near: Float, far: Float): MutableMat4f {
+    fun orthographic(left: Float, right: Float, bottom: Float, top: Float, near: Float, far: Float, depthRange: DepthRange): MutableMat4f {
         if (left == right) {
             throw IllegalArgumentException("left == right")
         }
@@ -1150,13 +1151,18 @@ open class MutableMat4f(
         val x = (right + left) * w
         val y = (top + bottom) * h
 
-        // -1..1 depth coordinate systems (OpenGl, etc.)
-        val z = (far + near) * d
-        val zd = -2 * d
-
-        // todo: 0..1 depth coordinate systems (Vulkan, WebGPU, without correction matrices):
-        //val z = near * d
-        //val zd = -1 * d
+        val z: Float
+        val zd: Float
+        when (depthRange) {
+            DepthRange.NEGATIVE_ONE_TO_ONE -> {
+                z = (far + near) * d
+                zd = -2 * d
+            }
+            DepthRange.ZERO_TO_ONE -> {
+                z = near * d
+                zd = -1 * d
+            }
+        }
 
         return mul(
             2 * w, 0f, 0f, -x,
@@ -1169,17 +1175,22 @@ open class MutableMat4f(
     /**
      * Inplace operation: Applies a perspective projection transform to this matrix.
      */
-    fun perspective(fovy: AngleF, aspect: Float, near: Float, far: Float): MutableMat4f {
+    fun perspective(fovy: AngleF, aspect: Float, near: Float, far: Float, depthRange: DepthRange): MutableMat4f {
         val f = 1.0f / tan(fovy.rad / 2.0f)
         val rangeRecip = 1.0f / (near - far)
 
-        // -1..1 depth coordinate systems (OpenGl, etc.)
-        val z = (far + near) * rangeRecip
-        val zt = 2.0f * far * near * rangeRecip
-
-        // todo: 0..1 depth coordinate systems (Vulkan, WebGPU, without correction matrices):
-        //val z = far * rangeRecip
-        //val zt = far * near * rangeRecip
+        val z: Float
+        val zt: Float
+        when (depthRange) {
+            DepthRange.NEGATIVE_ONE_TO_ONE -> {
+                z = (far + near) * rangeRecip
+                zt = 2.0f * far * near * rangeRecip
+            }
+            DepthRange.ZERO_TO_ONE -> {
+                z = far * rangeRecip
+                zt = far * near * rangeRecip
+            }
+        }
 
         return mul(
             f / aspect, 0f, 0f, 0f,
@@ -1923,12 +1934,12 @@ open class Mat4d(
             return MutableMat4d().lookAt(eyePosition, lookAt, up)
         }
 
-        fun orthographic(left: Double, right: Double, bottom: Double, top: Double, near: Double, far: Double): Mat4d {
-            return MutableMat4d().orthographic(left, right, bottom, top, near, far)
+        fun orthographic(left: Double, right: Double, bottom: Double, top: Double, near: Double, far: Double, depthRange: DepthRange): Mat4d {
+            return MutableMat4d().orthographic(left, right, bottom, top, near, far, depthRange)
         }
 
-        fun perspective(fovy: AngleD, aspect: Double, near: Double, far: Double): Mat4d {
-            return MutableMat4d().perspective(fovy, aspect, near, far)
+        fun perspective(fovy: AngleD, aspect: Double, near: Double, far: Double, depthRange: DepthRange): Mat4d {
+            return MutableMat4d().perspective(fovy, aspect, near, far, depthRange)
         }
 
         fun perspectiveReversedDepth(fovy: AngleD, aspect: Double, near: Double): Mat4d {
@@ -2404,7 +2415,7 @@ open class MutableMat4d(
     /**
      * Inplace operation: Applies an orthographic projection transform to this matrix.
      */
-    fun orthographic(left: Double, right: Double, bottom: Double, top: Double, near: Double, far: Double): MutableMat4d {
+    fun orthographic(left: Double, right: Double, bottom: Double, top: Double, near: Double, far: Double, depthRange: DepthRange): MutableMat4d {
         if (left == right) {
             throw IllegalArgumentException("left == right")
         }
@@ -2422,13 +2433,18 @@ open class MutableMat4d(
         val x = (right + left) * w
         val y = (top + bottom) * h
 
-        // -1..1 depth coordinate systems (OpenGl, etc.)
-        val z = (far + near) * d
-        val zd = -2 * d
-
-        // todo: 0..1 depth coordinate systems (Vulkan, WebGPU, without correction matrices):
-        //val z = near * d
-        //val zd = -1 * d
+        val z: Double
+        val zd: Double
+        when (depthRange) {
+            DepthRange.NEGATIVE_ONE_TO_ONE -> {
+                z = (far + near) * d
+                zd = -2 * d
+            }
+            DepthRange.ZERO_TO_ONE -> {
+                z = near * d
+                zd = -1 * d
+            }
+        }
 
         return mul(
             2 * w, 0.0, 0.0, -x,
@@ -2441,17 +2457,22 @@ open class MutableMat4d(
     /**
      * Inplace operation: Applies a perspective projection transform to this matrix.
      */
-    fun perspective(fovy: AngleD, aspect: Double, near: Double, far: Double): MutableMat4d {
+    fun perspective(fovy: AngleD, aspect: Double, near: Double, far: Double, depthRange: DepthRange): MutableMat4d {
         val f = 1.0 / tan(fovy.rad / 2.0)
         val rangeRecip = 1.0 / (near - far)
 
-        // -1..1 depth coordinate systems (OpenGl, etc.)
-        val z = (far + near) * rangeRecip
-        val zt = 2.0 * far * near * rangeRecip
-
-        // todo: 0..1 depth coordinate systems (Vulkan, WebGPU, without correction matrices):
-        //val z = far * rangeRecip
-        //val zt = far * near * rangeRecip
+        val z: Double
+        val zt: Double
+        when (depthRange) {
+            DepthRange.NEGATIVE_ONE_TO_ONE -> {
+                z = (far + near) * rangeRecip
+                zt = 2.0 * far * near * rangeRecip
+            }
+            DepthRange.ZERO_TO_ONE -> {
+                z = far * rangeRecip
+                zt = far * near * rangeRecip
+            }
+        }
 
         return mul(
             f / aspect, 0.0, 0.0, 0.0,

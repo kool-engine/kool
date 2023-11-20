@@ -6,6 +6,7 @@ import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.BoundingBox
 import de.fabmax.kool.pipeline.DepthMapPass
 import de.fabmax.kool.pipeline.TextureSampler2d
+import de.fabmax.kool.pipeline.backend.DepthRange
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.pipeline.renderPassConfig
 import de.fabmax.kool.scene.*
@@ -59,6 +60,7 @@ class SimpleShadowMap(val sceneCam: Camera, override var light: Light?, mapSize:
 
     init {
         isUpdateDrawNode = false
+        isReleaseDrawNode = false
 
         mainView.drawFilter = {
             it !is Mesh || it.isCastingShadow(shadowMapLevel)
@@ -67,7 +69,13 @@ class SimpleShadowMap(val sceneCam: Camera, override var light: Light?, mapSize:
         onBeforeCollectDrawCommands += { ev ->
             light?.let { setupCamera(it) }
             camera.updateCamera(ev)
-            depthBiasMatrix.mul(camera.viewProj, lightViewProjMat)
+
+            val bias = if (ev.ctx.backend.depthRange == DepthRange.ZERO_TO_ONE) {
+                depthBiasMatrixZeroToOne
+            } else {
+                depthBiasMatrixNegOneToOne
+            }
+            bias.mul(camera.viewProj, lightViewProjMat)
         }
     }
 
@@ -170,7 +178,14 @@ class SimpleShadowMap(val sceneCam: Camera, override var light: Light?, mapSize:
     }
 
     companion object {
-        val depthBiasMatrix: Mat4f = MutableMat4f().translate(0.5f, 0.5f, 0.5f).scale(0.5f)
+        val depthBiasMatrixNegOneToOne: Mat4f = MutableMat4f().translate(0.5f, 0.5f, 0.5f).scale(0.5f)
+
+        val depthBiasMatrixZeroToOne = Mat4f(
+            0.5f, 0.0f, 0.0f, 0.5f,
+            0.0f, 0.5f, 0.0f, 0.5f,
+            0.0f, 0.0f, 1.0f, 0.0f,
+            0.0f, 0.0f, 0.0f, 1.0f
+        )
     }
 }
 

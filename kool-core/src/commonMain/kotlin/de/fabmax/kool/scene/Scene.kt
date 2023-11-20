@@ -87,6 +87,7 @@ open class Scene(name: String? = null) : Node(name) {
     override fun release() {
         // scenes shall not be released twice
         checkIsNotReleased()
+        super.release()
 
         mainRenderPass.release()
         for (i in offscreenPasses.indices) {
@@ -94,8 +95,6 @@ open class Scene(name: String? = null) : Node(name) {
         }
         offscreenPasses.clear()
         capturedFramebuffer.dispose()
-
-        super.release()
 
         logD { "Released scene \"$name\"" }
     }
