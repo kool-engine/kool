@@ -3,10 +3,7 @@ package de.fabmax.kool.demo
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.bees.BeeDemo
 import de.fabmax.kool.demo.creativecoding.CreativeCodingDemo
-import de.fabmax.kool.demo.helloworld.HelloGltfDemo
-import de.fabmax.kool.demo.helloworld.HelloRenderToTextureDemo
-import de.fabmax.kool.demo.helloworld.HelloUiDemo
-import de.fabmax.kool.demo.helloworld.HelloWorldDemo
+import de.fabmax.kool.demo.helloworld.*
 import de.fabmax.kool.demo.pbr.PbrDemo
 import de.fabmax.kool.demo.physics.collision.CollisionDemo
 import de.fabmax.kool.demo.physics.joints.JointsDemo
@@ -72,6 +69,7 @@ object Demos {
 
     val hiddenDemos = Category("Hidden", true, 0.75f, 0.95f).apply {
         entry("helloworld", "Hello World") { HelloWorldDemo() }
+        entry("helloksl", "Hello KSL Shaders") { HelloKslDemo() }
         entry("hellogltf", "Hello glTF") { HelloGltfDemo() }
         entry("hellobuffers", "Hello RenderToTexture") { HelloRenderToTextureDemo() }
         entry("hello-ui", "Hello UI") { HelloUiDemo() }
