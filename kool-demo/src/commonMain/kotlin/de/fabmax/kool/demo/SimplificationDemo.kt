@@ -29,8 +29,8 @@ class SimplificationDemo : DemoScene("Simplification") {
     private val activeModel: MutableStateValue<DemoModel>
     private var heMesh: HalfEdgeMesh
     private val dispModel = Mesh(IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS))
-    private val modelWireframe = BetterLineMesh().apply {
-        shader = BetterLineMesh.LineShader {
+    private val modelWireframe = TriangulatedLineMesh().apply {
+        shader = TriangulatedLineMesh.Shader {
             color { vertexColor() }
             colorSpaceConversion = ColorSpaceConversion.AS_IS
             depthFactor = 0.9999f

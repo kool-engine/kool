@@ -82,7 +82,7 @@ data class PbrShaderData(
                 && aoMap?.matchesCfg(shader.materialAoCfg) != false
                 && displacementMap?.matchesCfg(shader.displacementCfg) != false
                 && shader.isNormalMapped == (normalMap != null)
-                && genericSettings.matchesPipelineConfig(shader.pipelineCfg)
+                && genericSettings.matchesPipelineConfig(shader.pipelineConfig)
     }
 
     override suspend fun createShader(sceneShaderData: SceneModel.SceneShaderData): KslPbrShader {

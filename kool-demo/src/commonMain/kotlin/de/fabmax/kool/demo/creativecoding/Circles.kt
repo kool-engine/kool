@@ -4,7 +4,7 @@ import de.fabmax.kool.demo.MenuSlider2
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ui2.UiScope
 import de.fabmax.kool.modules.ui2.remember
-import de.fabmax.kool.scene.BetterLineMesh
+import de.fabmax.kool.scene.TriangulatedLineMesh
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ColorGradient
 import de.fabmax.kool.util.MdColor
@@ -15,7 +15,7 @@ import kotlin.math.sin
 class Circles : CreativeContent("Circles") {
 
     private var settings = Settings()
-    private val lineMesh = BetterLineMesh()
+    private val lineMesh = TriangulatedLineMesh()
 
     init {
         addNode(lineMesh)
@@ -49,7 +49,7 @@ class Circles : CreativeContent("Circles") {
         }
     }
 
-    private fun BetterLineMesh.drawOrbit(
+    private fun TriangulatedLineMesh.drawOrbit(
         numberOfCircles: Int,
         randomness: Float,
         circleRadius: Float,
@@ -117,7 +117,7 @@ class Circles : CreativeContent("Circles") {
         }
     }
 
-    private fun BetterLineMesh.addCircle(
+    private fun TriangulatedLineMesh.addCircle(
         center: Vec3f,
         radius: Float,
         upAxis: Vec3f,

@@ -55,6 +55,7 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
     val shadowMaps = cfg.shadowCfg.shadowMaps.map { it.shadowMap }
 
     init {
+        pipelineConfig.set(cfg.pipelineCfg)
         when (ambientCfg) {
             is AmbientColor.Uniform -> ambientFactor = ambientCfg.color
             is AmbientColor.ImageBased -> {

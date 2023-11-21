@@ -39,7 +39,7 @@ class Gizmo : Node(), InputStack.PointerListener {
     private val dragGroup = Node()
     private val scaleGroup = Node()
 
-    private val lineMesh = BetterLineMesh()
+    private val lineMesh = TriangulatedLineMesh()
     private val solidMesh = addColorMesh {
         isCastingShadow = false
         shader = KslUnlitShader {
@@ -47,8 +47,8 @@ class Gizmo : Node(), InputStack.PointerListener {
             pipeline { cullMethod = CullMethod.NO_CULLING }
         }
     }
-    private val lineMeshHidden = BetterLineMesh().apply {
-        shader = BetterLineMesh.LineShader {
+    private val lineMeshHidden = TriangulatedLineMesh().apply {
+        shader = TriangulatedLineMesh.Shader {
             color {
                 vertexColor()
                 constColor(Color.WHITE.withAlpha(0.4f), ColorBlockConfig.BlendMode.Multiply)
@@ -348,7 +348,7 @@ class Gizmo : Node(), InputStack.PointerListener {
         }
     }
 
-    private fun BetterLineMesh.rotationHandle(axis: Vec3f, color: Color, isHovered: Boolean) {
+    private fun TriangulatedLineMesh.rotationHandle(axis: Vec3f, color: Color, isHovered: Boolean) {
         val p = MutableVec3f()
         val width = if (isHovered) properties.lineWidthHovered else properties.lineWidth
 
@@ -366,7 +366,7 @@ class Gizmo : Node(), InputStack.PointerListener {
         stroke()
     }
 
-    private fun BetterLineMesh.planeHandleBorder(axisX: Vec3f, axisY: Vec3f, signX: Float, signY: Float, color: Color) {
+    private fun TriangulatedLineMesh.planeHandleBorder(axisX: Vec3f, axisY: Vec3f, signX: Float, signY: Float, color: Color) {
         this.color = color
         this.width = properties.lineWidth
         val sX = MutableVec3f(axisX).mul(properties.planeHandleSize * signX)

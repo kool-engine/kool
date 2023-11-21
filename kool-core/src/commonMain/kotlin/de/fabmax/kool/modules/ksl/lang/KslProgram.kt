@@ -1,5 +1,6 @@
 package de.fabmax.kool.modules.ksl.lang
 
+import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.KslShaderListener
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -185,4 +186,40 @@ open class KslProgram(val name: String) {
             uniformSamplers.values.retainAll { u -> vertexStage.dependsOn(u) || fragmentStage.dependsOn(u) }
         }
     }
+
+    val KslShader.UniformInput1f.ksl: KslUniformScalar<KslTypeFloat1> get() = uniformFloat1(uniformName)
+    val KslShader.UniformInput2f.ksl: KslUniformVector<KslTypeFloat2, KslTypeFloat1> get() = uniformFloat2(uniformName)
+    val KslShader.UniformInput3f.ksl: KslUniformVector<KslTypeFloat3, KslTypeFloat1> get() = uniformFloat3(uniformName)
+    val KslShader.UniformInput4f.ksl: KslUniformVector<KslTypeFloat4, KslTypeFloat1> get() = uniformFloat4(uniformName)
+    val KslShader.UniformInput1fv.ksl: KslUniformScalarArray<KslTypeFloat1> get() = uniformFloat1Array(uniformName, arraySize)
+    val KslShader.UniformInput2fv.ksl: KslUniformVectorArray<KslTypeFloat2, KslTypeFloat1> get() = uniformFloat2Array(uniformName, arraySize)
+    val KslShader.UniformInput3fv.ksl: KslUniformVectorArray<KslTypeFloat3, KslTypeFloat1> get() = uniformFloat3Array(uniformName, arraySize)
+    val KslShader.UniformInput4fv.ksl: KslUniformVectorArray<KslTypeFloat4, KslTypeFloat1> get() = uniformFloat4Array(uniformName, arraySize)
+
+    val KslShader.UniformInputColor.ksl: KslUniformVector<KslTypeFloat4, KslTypeFloat1> get() = uniformFloat4(uniformName)
+    val KslShader.UniformInputQuat.ksl: KslUniformVector<KslTypeFloat4, KslTypeFloat1> get() = uniformFloat4(uniformName)
+
+    val KslShader.UniformInput1i.ksl: KslUniformScalar<KslTypeInt1> get() = uniformInt1(uniformName)
+    val KslShader.UniformInput2i.ksl: KslUniformVector<KslTypeInt2, KslTypeInt1> get() = uniformInt2(uniformName)
+    val KslShader.UniformInput3i.ksl: KslUniformVector<KslTypeInt3, KslTypeInt1> get() = uniformInt3(uniformName)
+    val KslShader.UniformInput4i.ksl: KslUniformVector<KslTypeInt4, KslTypeInt1> get() = uniformInt4(uniformName)
+    val KslShader.UniformInput1iv.ksl: KslUniformScalarArray<KslTypeInt1> get() = uniformInt1Array(uniformName, arraySize)
+    val KslShader.UniformInput2iv.ksl: KslUniformVectorArray<KslTypeInt2, KslTypeInt1> get() = uniformInt2Array(uniformName, arraySize)
+    val KslShader.UniformInput3iv.ksl: KslUniformVectorArray<KslTypeInt3, KslTypeInt1> get() = uniformInt3Array(uniformName, arraySize)
+    val KslShader.UniformInput4iv.ksl: KslUniformVectorArray<KslTypeInt4, KslTypeInt1> get() = uniformInt4Array(uniformName, arraySize)
+
+    val KslShader.UniformInputMat3f.ksl: KslUniformMatrix<KslTypeMat3, KslTypeFloat3> get() = uniformMat3(uniformName)
+    val KslShader.UniformInputMat4f.ksl: KslUniformMatrix<KslTypeMat4, KslTypeFloat4> get() = uniformMat4(uniformName)
+    val KslShader.UniformInputMat3fv.ksl: KslUniformMatrixArray<KslTypeMat3, KslTypeFloat3> get() = uniformMat3Array(uniformName, arraySize)
+    val KslShader.UniformInputMat4fv.ksl: KslUniformMatrixArray<KslTypeMat4, KslTypeFloat4> get() = uniformMat4Array(uniformName, arraySize)
+
+    val KslShader.UniformInputTexture1d.ksl: KslUniform<KslTypeColorSampler1d> get() = texture1d(uniformName)
+    val KslShader.UniformInputTexture2d.ksl: KslUniform<KslTypeColorSampler2d> get() = texture2d(uniformName)
+    val KslShader.UniformInputTexture3d.ksl: KslUniform<KslTypeColorSampler3d> get() = texture3d(uniformName)
+    val KslShader.UniformInputTextureCube.ksl: KslUniform<KslTypeColorSamplerCube> get() = textureCube(uniformName)
+
+    val KslShader.UniformInputTextureArray1d.ksl: KslUniformArray<KslTypeColorSampler1d> get() = textureArray1d(uniformName, arrSize)
+    val KslShader.UniformInputTextureArray2d.ksl: KslUniformArray<KslTypeColorSampler2d> get() = textureArray2d(uniformName, arrSize)
+    val KslShader.UniformInputTextureArray3d.ksl: KslUniformArray<KslTypeColorSampler3d> get() = textureArray3d(uniformName, arrSize)
+    val KslShader.UniformInputTextureArrayCube.ksl: KslUniformArray<KslTypeColorSamplerCube> get() = textureArrayCube(uniformName, arrSize)
 }

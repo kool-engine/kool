@@ -9,7 +9,7 @@ import de.fabmax.kool.pipeline.shading.AlphaMode
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.copy
 
-open class KslUnlitShader(cfg: UnlitShaderConfig, model: KslProgram = Model(cfg)) : KslShader(model, cfg.pipelineCfg) {
+open class KslUnlitShader(cfg: UnlitShaderConfig) : KslShader("Unlit Shader") {
 
     constructor(block: UnlitShaderConfig.() -> Unit) : this(UnlitShaderConfig().apply(block))
 
@@ -17,6 +17,51 @@ open class KslUnlitShader(cfg: UnlitShaderConfig, model: KslProgram = Model(cfg)
     var colorMap: Texture2d? by colorTexture(cfg.colorCfg)
 
     val colorCfg = ColorBlockConfig(cfg.colorCfg.colorName, cfg.colorCfg.colorSources.copy().toMutableList())
+
+    init {
+        pipelineConfig.set(cfg.pipelineCfg)
+        program.unlitProgram(cfg)
+        cfg.modelCustomizer?.invoke(program)
+    }
+
+    private fun KslProgram.unlitProgram(cfg: UnlitShaderConfig) {
+        vertexStage {
+            main {
+                val viewProj = mat4Var(cameraData().viewProjMat)
+                val vertexBlock = vertexTransformBlock(cfg.vertexCfg) {
+                    inModelMat(modelMatrix().matrix)
+                    inLocalPos(vertexAttribFloat3(Attribute.POSITIONS.name))
+                }
+
+                val worldPos = float3Port("worldPos", vertexBlock.outWorldPos)
+                outPosition set viewProj * float4Value(worldPos, 1f)
+            }
+        }
+        fragmentStage {
+            main {
+                val colorBlock = fragmentColorBlock(cfg.colorCfg)
+                val baseColorPort = float4Port("baseColor", colorBlock.outColor)
+
+                val baseColor = float4Var(baseColorPort)
+                when (val alphaMode = cfg.alphaMode) {
+                    is AlphaMode.Blend -> { }
+                    is AlphaMode.Opaque -> baseColor.a set 1f.const
+                    is AlphaMode.Mask -> {
+                        `if`(baseColorPort.a lt alphaMode.cutOff.const) {
+                            discard()
+                        }
+                    }
+                }
+
+                val outRgb = float3Var(baseColor.rgb)
+                if (cfg.pipelineCfg.blendMode == BlendMode.BLEND_PREMULTIPLIED_ALPHA) {
+                    outRgb set outRgb * baseColor.a
+                }
+                outRgb set convertColorSpace(outRgb, cfg.colorSpaceConversion)
+                colorOutput(outRgb, baseColor.a)
+            }
+        }
+    }
 
     open class UnlitShaderConfig {
         val vertexCfg = BasicVertexConfig()
@@ -38,48 +83,6 @@ open class KslUnlitShader(cfg: UnlitShaderConfig, model: KslProgram = Model(cfg)
 
         fun pipeline(block: PipelineConfig.() -> Unit) {
             pipelineCfg.apply(block)
-        }
-    }
-
-    class Model(cfg: UnlitShaderConfig) : KslProgram("Unlit Shader") {
-        init {
-            vertexStage {
-                main {
-                    val viewProj = mat4Var(cameraData().viewProjMat)
-                    val vertexBlock = vertexTransformBlock(cfg.vertexCfg) {
-                        inModelMat(modelMatrix().matrix)
-                        inLocalPos(vertexAttribFloat3(Attribute.POSITIONS.name))
-                    }
-
-                    val worldPos = float3Port("worldPos", vertexBlock.outWorldPos)
-                    outPosition set viewProj * float4Value(worldPos, 1f)
-                }
-            }
-            fragmentStage {
-                main {
-                    val colorBlock = fragmentColorBlock(cfg.colorCfg)
-                    val baseColorPort = float4Port("baseColor", colorBlock.outColor)
-
-                    val baseColor = float4Var(baseColorPort)
-                    when (val alphaMode = cfg.alphaMode) {
-                        is AlphaMode.Blend -> { }
-                        is AlphaMode.Opaque -> baseColor.a set 1f.const
-                        is AlphaMode.Mask -> {
-                            `if`(baseColorPort.a lt alphaMode.cutOff.const) {
-                                discard()
-                            }
-                        }
-                    }
-
-                    val outRgb = float3Var(baseColor.rgb)
-                    if (cfg.pipelineCfg.blendMode == BlendMode.BLEND_PREMULTIPLIED_ALPHA) {
-                        outRgb set outRgb * baseColor.a
-                    }
-                    outRgb set convertColorSpace(outRgb, cfg.colorSpaceConversion)
-                    colorOutput(outRgb, baseColor.a)
-                }
-            }
-            cfg.modelCustomizer?.invoke(this)
         }
     }
 }

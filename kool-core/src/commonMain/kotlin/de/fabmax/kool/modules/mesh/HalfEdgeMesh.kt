@@ -3,9 +3,9 @@ package de.fabmax.kool.modules.mesh
 import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.OcTree
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.scene.BetterLineMesh
 import de.fabmax.kool.scene.LineMesh
 import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.scene.TriangulatedLineMesh
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.VertexView
 import de.fabmax.kool.util.*
@@ -90,7 +90,7 @@ class HalfEdgeMesh(geometry: IndexedVertexList, val edgeHandler: EdgeHandler = L
         }
     }
 
-    fun generateWireframe(lineMesh: BetterLineMesh, lineColor: Color = MdColor.PINK, lineWidth: Float = 2f) {
+    fun generateWireframe(lineMesh: TriangulatedLineMesh, lineColor: Color = MdColor.PINK, lineWidth: Float = 2f) {
         val v0 = MutableVec3f()
         val v1 = MutableVec3f()
         edgeHandler.filter { it.opp == null || it.from.index < it.to.index }.forEach { edge ->

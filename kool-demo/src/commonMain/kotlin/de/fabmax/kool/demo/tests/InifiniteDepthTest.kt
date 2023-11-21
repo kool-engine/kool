@@ -6,9 +6,9 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.deg
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.KslUnlitShader
-import de.fabmax.kool.modules.ksl.lang.KslProgram
-import de.fabmax.kool.modules.ksl.lang.xy
-import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.pipeline.vertexAttribFloat3
+import de.fabmax.kool.pipeline.vertexAttribFloat4
 import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.addMesh
@@ -50,9 +50,6 @@ class InifiniteDepthTest : DemoScene("Infinite Depth Test") {
             transform.rotate(5f.deg, Vec3f.Z_AXIS)
 
             shader = KslUnlitShader {
-                pipeline {
-                    depthTest = DepthCompareOp.LESS
-                }
                 color { vertexColor() }
             }
         }
@@ -63,7 +60,7 @@ class InifiniteDepthTest : DemoScene("Infinite Depth Test") {
                 1.0f to MdColor.ORANGE,
                 0.5f to MdColor.GREEN,
                 0f to MdColor.CYAN,
-                -0.01f to MdColor.BLUE,     // negative depth should not be visible if clip space is zero to one (i.e. suited fro reversed depth)
+                -0.01f to MdColor.BLUE,     // negative depth should not be visible if clip space is zero to one (i.e. suited for reversed depth)
                 -1f to MdColor.PINK,
                 -1.01f to MdColor.PURPLE,   // should never be visible
             )
@@ -80,7 +77,20 @@ class InifiniteDepthTest : DemoScene("Infinite Depth Test") {
                     }
                 }
             }
-            shader = clipTestShader()
+            shader = KslShader("Clip Test") {
+                val vColor = interStageFloat4()
+                vertexStage {
+                    main {
+                        vColor.input set vertexAttribFloat4(Attribute.COLORS)
+                        outPosition set float4Value(vertexAttribFloat3(Attribute.POSITIONS), 1f.const)
+                    }
+                }
+                fragmentStage {
+                    main {
+                        colorOutput(vColor.output)
+                    }
+                }
+            }
         }
     }
 
@@ -91,35 +101,5 @@ class InifiniteDepthTest : DemoScene("Infinite Depth Test") {
         setClipRange(0.1f, far)
         position.set(0f, 0f, 0f)
         lookAt.set(0f, 0f, -1f)
-    }
-
-    private fun clipTestShader() = KslShader(
-        KslProgram("clip test").apply {
-            val vColor = interStageFloat4()
-
-            vertexStage {
-                main {
-                    vColor.input set vertexAttribFloat4(Attribute.COLORS)
-                    outPosition set float4Value(vertexAttribFloat3(Attribute.POSITIONS), 1f.const)
-                }
-            }
-            fragmentStage {
-                main {
-                    colorOutput(vColor.output)
-                }
-            }
-        },
-        KslShader.PipelineConfig()
-    )
-
-    private fun RenderPassOutputShader(renderPass: OffscreenRenderPass2d) = KslUnlitShader {
-        color { textureColor(renderPass.colorTexture, gamma = 1f) }
-        modelCustomizer = {
-            vertexStage {
-                main {
-                    outPosition set float4Value(vertexAttribFloat3(Attribute.POSITIONS).xy, 0.5f, 1f)
-                }
-            }
-        }
     }
 }

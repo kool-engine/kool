@@ -166,158 +166,6 @@ class ShellShadingDemo : DemoScene("Shell Shading") {
         }
     }
 
-    class FurShader(uvBased: Boolean) : KslShader(furProgram(uvBased), PipelineConfig()) {
-        var furGradient by texture1d("tFurColor")
-        var noise3d by texture3d("tNoise3d")
-        var irradiance by textureCube("tIrradiance")
-
-        var density by uniform1f("uDensity", 300f)
-        var hairLength by uniform1f("uHairLength", 0.5f)
-        var hairThickness by uniform1f("uThickness", 1f)
-        var hairRandomness by uniform1f("uRandomness", 1f)
-
-        var noiseDispScale by uniform1f("uNoiseDispScale", 0.4f)
-        var noiseDispStrength by uniform1f("uNoiseDispStrength", 0.4f)
-        var noiseLenScale by uniform1f("uNoiseLenScale", 1f)
-        var noiseLenStrength by uniform1f("uNoiseLenStrength", 0.5f)
-
-        var windStrength by uniform1f("uWindStrength", 0.25f)
-        var windOffset by uniform3f("uWindOffset")
-
-        companion object {
-            private fun furProgram(uvBased: Boolean): KslProgram = KslProgram("Fur program").apply {
-                val noise3d = texture3d("tNoise3d")
-
-                val uv = interStageFloat2()
-                val shell = interStageFloat1()
-                val basePos = interStageFloat3()
-                val localPos = interStageFloat3()
-                val worldNormal = interStageFloat3()
-                val camCos = interStageFloat1()
-
-                vertexStage {
-                    main {
-                        val modelMat = instanceAttribMat4(Attribute.INSTANCE_MODEL_MAT)
-                        val camData = cameraData()
-
-                        if (uvBased) {
-                            uv.input.set(vertexAttribFloat2(Attribute.TEXTURE_COORDS))
-                        }
-                        shell.input set instanceAttribFloat1(ATTRIB_SHELL)
-                        val nrm = float3Var(vertexAttribFloat3(Attribute.NORMALS))
-                        val pos = float3Var(vertexAttribFloat3(Attribute.POSITIONS))
-                        basePos.input set pos
-
-                        // noise based displacement: static and dynamic (wind) part
-                        val scale = uniformFloat1("uNoiseDispScale")
-                        val strength = uniformFloat1("uNoiseDispStrength") * 0.2f.const
-
-                        val samplePos = float3Var(pos * scale + uniformFloat3("uWindOffset") * uniformFloat1("uWindStrength"))
-                        var d = sampleTexture(noise3d, samplePos).xyz * 2f.const - 1f.const
-                        val windPos = float3Var(pos + d * shell.input * strength)
-                        d = sampleTexture(noise3d, pos.float3("zyx") * scale).xyz * 2f.const - 1f.const
-                        windPos += d * shell.input * strength
-
-                        // reproject distorted (windy) position to shell surface
-                        windPos -= nrm * dot((windPos - pos), nrm)
-
-                        // scale position based on shell layer to increase sphere radius of outer shells
-                        val disp = float1Var(pow(shell.input + 0.01f.const, 0.3f.const) * uniformFloat1("uHairLength"))
-                        pos set windPos + nrm * disp
-
-                        localPos.input set pos
-                        val worldPos4 = float4Var(modelMat * float4Value(pos, 1f))
-
-                        worldNormal.input set (modelMat * float4Value(vertexAttribFloat3(Attribute.NORMALS), 0f)).xyz
-                        val camDir = float3Var(worldPos4.xyz - camData.position)
-                        camCos.input set abs(dot(normalize(worldNormal.input), normalize(camDir)))
-
-                        outPosition set (camData.projMat * camData.viewMat) * worldPos4
-                    }
-                }
-                fragmentStage {
-                    main {
-                        val hairRandomness = uniformFloat1("uRandomness")
-                        val hairThickness = uniformFloat1("uThickness")
-                        val randomHairLen = float1Var()
-                        val distToNearestHair = float1Var(10f.const)
-
-                        // test own and neighboring cells and determine their randomly displaced center positions
-                        // and select the closest one.
-
-                        if (uvBased) {
-                            val fragPos = float2Var(uv.output * uniformFloat1("uDensity"))
-                            val cellCenter = float2Var(fragPos.toInt2().toFloat2() + 0.5f.const)
-                            val nearestCell = float2Var(cellCenter)
-                            for (x in -1..1) {
-                                for (y in -1..1) {
-                                    val sampleCellCenter = float2Var(cellCenter + float2Value(x.toFloat(), y.toFloat()))
-                                    val centerRandom = float2Var(noise22(sampleCellCenter) * 2f.const - 1f.const)
-                                    val filaCenter = float2Var(sampleCellCenter + centerRandom * hairRandomness)
-                                    val dist = float1Var(length(fragPos - filaCenter))
-                                    `if`(dist lt distToNearestHair) {
-                                        distToNearestHair set dist
-                                        nearestCell.set(sampleCellCenter)
-                                    }
-                                }
-                            }
-                            randomHairLen set float1Var(noise12(nearestCell) * 0.5f.const + 0.5f.const)
-
-                        } else {
-                            val fragPos = float3Var((basePos.output + 5f.const) * uniformFloat1("uDensity"))
-                            val cellCenter = float3Var(fragPos.toInt3().toFloat3() + 0.5f.const)
-                            val nearestCell = float3Var(cellCenter)
-
-                            val sampleCellCenter = float3Var()
-                            val centerRandom = float3Var()
-                            val filaCenter = float3Var()
-                            val dist = float1Var()
-
-                            for (x in -1..1) {
-                                for (y in -1..1) {
-                                    for (z in -1..1) {
-                                        sampleCellCenter set float3Var(cellCenter + float3Value(x.toFloat(), y.toFloat(), z.toFloat()))
-                                        centerRandom set float3Var(noise33(sampleCellCenter) * 2f.const - 1f.const)
-                                        filaCenter set float3Var(sampleCellCenter + centerRandom * hairRandomness)
-                                        dist set float1Var(length(fragPos - filaCenter))
-                                        `if`(dist lt distToNearestHair) {
-                                            distToNearestHair set dist
-                                            nearestCell.set(sampleCellCenter)
-                                        }
-                                    }
-                                }
-                            }
-                            randomHairLen set noise13(nearestCell) * 0.5f.const + 0.5f.const
-                        }
-
-                        // determine length of selected hair
-                        val perlinNoiseLenFac = float1Var(sampleTexture(noise3d, basePos.output * uniformFloat1("uNoiseLenScale")).x)
-                        randomHairLen *= mix(1f.const, perlinNoiseLenFac * 2f.const - 0.25f.const, uniformFloat1("uNoiseLenStrength"))
-
-                        // relative position along hair: 1 -> bottom, 0 -> tip of the hair (or higher)
-                        val hairLenPos = float1Var(1f.const - clamp(shell.output / randomHairLen, 0f.const, 1f.const))
-                        // non-linear thickness falloff
-                        val hairThicknessFac = float1Var(1f.const - (1f.const - hairLenPos) * (1f.const - hairLenPos))
-                        val hairRadius = hairThickness * hairThicknessFac
-
-                        val isOutside = bool1Var((hairRadius - distToNearestHair lt 0f.const) or (shell.output gt randomHairLen))
-                        `if`(isOutside and (shell.output gt 0f.const)) {
-                            discard()
-
-                        }.`else` {
-                            val lightColor = sampleTexture(textureCube("tIrradiance"), worldNormal.output).rgb
-
-                            val furColor = sampleTexture(texture1d("tFurColor"), pow(shell.output, 1.5f.const)).rgb
-                            val linColor = furColor * lightColor
-
-                            colorOutput(convertColorSpace(linColor, ColorSpaceConversion.LINEAR_TO_sRGB_HDR), 1f.const)
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     private fun MeshBuilder.generateFurSphere() {
         val rot = MutableMat3f()
         var uvOffset = 0f
@@ -537,5 +385,159 @@ class ShellShadingDemo : DemoScene("Shell Shading") {
 
     companion object {
         val ATTRIB_SHELL = Attribute("aLayer", GlslType.FLOAT)
+    }
+}
+
+class FurShader(uvBased: Boolean) : KslShader("Fur shader") {
+    var furGradient by texture1d("tFurColor")
+    var noise3d by texture3d("tNoise3d")
+    var irradiance by textureCube("tIrradiance")
+
+    var density by uniform1f("uDensity", 300f)
+    var hairLength by uniform1f("uHairLength", 0.5f)
+    var hairThickness by uniform1f("uThickness", 1f)
+    var hairRandomness by uniform1f("uRandomness", 1f)
+
+    var noiseDispScale by uniform1f("uNoiseDispScale", 0.4f)
+    var noiseDispStrength by uniform1f("uNoiseDispStrength", 0.4f)
+    var noiseLenScale by uniform1f("uNoiseLenScale", 1f)
+    var noiseLenStrength by uniform1f("uNoiseLenStrength", 0.5f)
+
+    var windStrength by uniform1f("uWindStrength", 0.25f)
+    var windOffset by uniform3f("uWindOffset")
+
+    init {
+        program.furProgram(uvBased)
+    }
+
+    private fun KslProgram.furProgram(uvBased: Boolean) {
+        val noise3d = texture3d("tNoise3d")
+
+        val uv = interStageFloat2()
+        val shell = interStageFloat1()
+        val basePos = interStageFloat3()
+        val localPos = interStageFloat3()
+        val worldNormal = interStageFloat3()
+        val camCos = interStageFloat1()
+
+        vertexStage {
+            main {
+                val modelMat = instanceAttribMat4(Attribute.INSTANCE_MODEL_MAT)
+                val camData = cameraData()
+
+                if (uvBased) {
+                    uv.input.set(vertexAttribFloat2(Attribute.TEXTURE_COORDS))
+                }
+                shell.input set instanceAttribFloat1(ShellShadingDemo.ATTRIB_SHELL)
+                val nrm = float3Var(vertexAttribFloat3(Attribute.NORMALS))
+                val pos = float3Var(vertexAttribFloat3(Attribute.POSITIONS))
+                basePos.input set pos
+
+                // noise based displacement: static and dynamic (wind) part
+                val scale = uniformFloat1("uNoiseDispScale")
+                val strength = uniformFloat1("uNoiseDispStrength") * 0.2f.const
+
+                val samplePos = float3Var(pos * scale + uniformFloat3("uWindOffset") * uniformFloat1("uWindStrength"))
+                var d = sampleTexture(noise3d, samplePos).xyz * 2f.const - 1f.const
+                val windPos = float3Var(pos + d * shell.input * strength)
+                d = sampleTexture(noise3d, pos.float3("zyx") * scale).xyz * 2f.const - 1f.const
+                windPos += d * shell.input * strength
+
+                // reproject distorted (windy) position to shell surface
+                windPos -= nrm * dot((windPos - pos), nrm)
+
+                // scale position based on shell layer to increase sphere radius of outer shells
+                val disp = float1Var(pow(shell.input + 0.01f.const, 0.3f.const) * uniformFloat1("uHairLength"))
+                pos set windPos + nrm * disp
+
+                localPos.input set pos
+                val worldPos4 = float4Var(modelMat * float4Value(pos, 1f))
+
+                worldNormal.input set (modelMat * float4Value(vertexAttribFloat3(Attribute.NORMALS), 0f)).xyz
+                val camDir = float3Var(worldPos4.xyz - camData.position)
+                camCos.input set abs(dot(normalize(worldNormal.input), normalize(camDir)))
+
+                outPosition set (camData.projMat * camData.viewMat) * worldPos4
+            }
+        }
+        fragmentStage {
+            main {
+                val hairRandomness = uniformFloat1("uRandomness")
+                val hairThickness = uniformFloat1("uThickness")
+                val randomHairLen = float1Var()
+                val distToNearestHair = float1Var(10f.const)
+
+                // test own and neighboring cells and determine their randomly displaced center positions
+                // and select the closest one.
+
+                if (uvBased) {
+                    val fragPos = float2Var(uv.output * uniformFloat1("uDensity"))
+                    val cellCenter = float2Var(fragPos.toInt2().toFloat2() + 0.5f.const)
+                    val nearestCell = float2Var(cellCenter)
+                    for (x in -1..1) {
+                        for (y in -1..1) {
+                            val sampleCellCenter = float2Var(cellCenter + float2Value(x.toFloat(), y.toFloat()))
+                            val centerRandom = float2Var(noise22(sampleCellCenter) * 2f.const - 1f.const)
+                            val filaCenter = float2Var(sampleCellCenter + centerRandom * hairRandomness)
+                            val dist = float1Var(length(fragPos - filaCenter))
+                            `if`(dist lt distToNearestHair) {
+                                distToNearestHair set dist
+                                nearestCell.set(sampleCellCenter)
+                            }
+                        }
+                    }
+                    randomHairLen set float1Var(noise12(nearestCell) * 0.5f.const + 0.5f.const)
+
+                } else {
+                    val fragPos = float3Var((basePos.output + 5f.const) * uniformFloat1("uDensity"))
+                    val cellCenter = float3Var(fragPos.toInt3().toFloat3() + 0.5f.const)
+                    val nearestCell = float3Var(cellCenter)
+
+                    val sampleCellCenter = float3Var()
+                    val centerRandom = float3Var()
+                    val filaCenter = float3Var()
+                    val dist = float1Var()
+
+                    for (x in -1..1) {
+                        for (y in -1..1) {
+                            for (z in -1..1) {
+                                sampleCellCenter set float3Var(cellCenter + float3Value(x.toFloat(), y.toFloat(), z.toFloat()))
+                                centerRandom set float3Var(noise33(sampleCellCenter) * 2f.const - 1f.const)
+                                filaCenter set float3Var(sampleCellCenter + centerRandom * hairRandomness)
+                                dist set float1Var(length(fragPos - filaCenter))
+                                `if`(dist lt distToNearestHair) {
+                                    distToNearestHair set dist
+                                    nearestCell.set(sampleCellCenter)
+                                }
+                            }
+                        }
+                    }
+                    randomHairLen set noise13(nearestCell) * 0.5f.const + 0.5f.const
+                }
+
+                // determine length of selected hair
+                val perlinNoiseLenFac = float1Var(sampleTexture(noise3d, basePos.output * uniformFloat1("uNoiseLenScale")).x)
+                randomHairLen *= mix(1f.const, perlinNoiseLenFac * 2f.const - 0.25f.const, uniformFloat1("uNoiseLenStrength"))
+
+                // relative position along hair: 1 -> bottom, 0 -> tip of the hair (or higher)
+                val hairLenPos = float1Var(1f.const - clamp(shell.output / randomHairLen, 0f.const, 1f.const))
+                // non-linear thickness falloff
+                val hairThicknessFac = float1Var(1f.const - (1f.const - hairLenPos) * (1f.const - hairLenPos))
+                val hairRadius = hairThickness * hairThicknessFac
+
+                val isOutside = bool1Var((hairRadius - distToNearestHair lt 0f.const) or (shell.output gt randomHairLen))
+                `if`(isOutside and (shell.output gt 0f.const)) {
+                    discard()
+
+                }.`else` {
+                    val lightColor = sampleTexture(textureCube("tIrradiance"), worldNormal.output).rgb
+
+                    val furColor = sampleTexture(texture1d("tFurColor"), pow(shell.output, 1.5f.const)).rgb
+                    val linColor = furColor * lightColor
+
+                    colorOutput(convertColorSpace(linColor, ColorSpaceConversion.LINEAR_TO_sRGB_HDR), 1f.const)
+                }
+            }
+        }
     }
 }
