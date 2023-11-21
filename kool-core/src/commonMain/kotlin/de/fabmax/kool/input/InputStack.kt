@@ -92,12 +92,18 @@ object InputStack {
 
         open fun handlePointer(pointerState: PointerState, ctx: KoolContext) {
             pointerListeners.update()
-            pointerListeners.forEach { it.handlePointer(pointerState, ctx) }
+            // call listeners in reversed order -> most recently added listener first
+            for (i in pointerListeners.lastIndex downTo 0) {
+                pointerListeners[i].handlePointer(pointerState, ctx)
+            }
         }
 
         open fun handleKeyEvents(keyEvents: MutableList<KeyEvent>, ctx: KoolContext) {
             keyboardListeners.update()
-            keyboardListeners.forEach { it.handleKeyboard(keyEvents, ctx) }
+            // call listeners in reversed order -> most recently added listener first
+            for (i in keyboardListeners.lastIndex downTo 0) {
+                keyboardListeners[i].handleKeyboard(keyEvents, ctx)
+            }
         }
 
         fun addKeyListener(

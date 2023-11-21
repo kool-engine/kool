@@ -300,7 +300,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
     private fun Scene.setupCamera() {
         camRig = CharacterTrackingCamRig(false).apply {
             if (isInfiniteDepth) {
-                camera.setClipRange(0.1f, 1e5f)
+                camera.setClipRange(0.1f, 1e9f)
             } else {
                 camera.setClipRange(0.5f, 5000f)
             }

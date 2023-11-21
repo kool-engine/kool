@@ -10,6 +10,7 @@ import de.fabmax.kool.util.LazyMat4f
 import de.fabmax.kool.util.Viewport
 import kotlin.math.atan
 import kotlin.math.cos
+import kotlin.math.min
 import kotlin.math.tan
 
 /**
@@ -93,7 +94,7 @@ abstract class Camera(name: String = "camera") : Node(name) {
         }
     }
 
-    protected open fun updateViewMatrix(updateEvent: RenderPass.UpdateEvent) {
+    open fun updateViewMatrix(updateEvent: RenderPass.UpdateEvent) {
         if (updateEvent.renderPass.isDoublePrecision) {
             dataD.updateView()
             dataF.set(dataD)
@@ -103,7 +104,7 @@ abstract class Camera(name: String = "camera") : Node(name) {
         }
     }
 
-    protected abstract fun updateProjectionMatrix(updateEvent: RenderPass.UpdateEvent)
+    abstract fun updateProjectionMatrix(updateEvent: RenderPass.UpdateEvent)
 
     fun computePickRay(pickRay: Ray, ptr: Pointer, viewport: Viewport, ctx: KoolContext): Boolean {
         return ptr.isValid && computePickRay(pickRay, ptr.x.toFloat(), ptr.y.toFloat(), viewport, ctx)
@@ -372,6 +373,9 @@ open class PerspectiveCamera(name: String = "perspectiveCam") : Camera(name) {
     var fovX = 0f.deg
         private set
 
+    var isReverseDepthProjection = false
+        private set
+
     private var sphereFacX = 1f
     private var sphereFacY = 1f
     private var tangX = 1f
@@ -381,7 +385,8 @@ open class PerspectiveCamera(name: String = "perspectiveCam") : Camera(name) {
     private val tmpProjCorrection = MutableMat4f()
 
     override fun updateProjectionMatrix(updateEvent: RenderPass.UpdateEvent) {
-        if (updateEvent.renderPass.isReverseDepth) {
+        isReverseDepthProjection = updateEvent.renderPass.isReverseDepth
+        if (isReverseDepthProjection) {
             check(updateEvent.ctx.backend.depthRange == DepthRange.ZERO_TO_ONE)
             proj.setIdentity().perspectiveReversedDepth(fovY, aspectRatio, clipNear)
 
@@ -444,22 +449,29 @@ open class PerspectiveCamera(name: String = "perspectiveCam") : Camera(name) {
     }
 }
 
-open class PerspectiveProxyCam(var sceneCam: PerspectiveCamera) : PerspectiveCamera() {
+open class PerspectiveProxyCam(var trackedCam: PerspectiveCamera) : PerspectiveCamera() {
     init {
         useViewportAspectRatio = false
     }
 
     open fun sync(updateEvent: RenderPass.UpdateEvent) {
-        sceneCam.updateCamera(updateEvent)
+        // updateViewMatrix also updates the global pos and orientation parameters of tracked cam. Call it here
+        // to avoid 1 frame latency in tracked camera position
+        trackedCam.updateViewMatrix(updateEvent)
 
-        position.set(sceneCam.globalPos)
-        lookAt.set(sceneCam.globalLookAt)
-        up.set(sceneCam.globalUp)
+        position.set(trackedCam.globalPos)
+        lookAt.set(trackedCam.globalLookAt)
+        up.set(trackedCam.globalUp)
 
-        aspectRatio = sceneCam.aspectRatio
-        fovY = sceneCam.fovY
-        clipNear = sceneCam.clipNear
-        clipFar = sceneCam.clipFar
+        aspectRatio = trackedCam.aspectRatio
+        fovY = trackedCam.fovY
+        clipNear = trackedCam.clipNear
+        clipFar = trackedCam.clipFar
+
+        if (!updateEvent.renderPass.isReverseDepth && trackedCam.isReverseDepthProjection) {
+            // limit far plane distance if this render pass is not reversed depth but the tracked camera is
+            clipFar = min(clipFar, clipNear * 10_000f)
+        }
     }
 }
 

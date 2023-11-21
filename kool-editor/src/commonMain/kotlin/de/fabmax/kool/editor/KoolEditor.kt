@@ -305,7 +305,7 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
                 ui.sceneView.applyViewportTo(scene)
 
                 val aoPipeline = sceneModel.getComponent<SsaoComponent>()?.aoPipeline as? AoPipeline.ForwardAoPipeline
-                aoPipeline?.proxyCamera?.sceneCam = editorCam
+                aoPipeline?.proxyCamera?.trackedCam = editorCam
             }
         }
 

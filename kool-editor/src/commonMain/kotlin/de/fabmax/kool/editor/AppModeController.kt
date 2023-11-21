@@ -23,7 +23,7 @@ class AppModeController(val editor: KoolEditor) {
 
             (cam as? PerspectiveCamera)?.let {
                 val aoPipeline = sceneModel.getComponent<SsaoComponent>()?.aoPipeline as? AoPipeline.ForwardAoPipeline
-                aoPipeline?.proxyCamera?.sceneCam = it
+                aoPipeline?.proxyCamera?.trackedCam = it
             }
         }
 

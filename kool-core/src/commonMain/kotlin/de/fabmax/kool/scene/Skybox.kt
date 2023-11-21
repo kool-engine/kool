@@ -90,8 +90,12 @@ object Skybox {
                         orientedPos.input set skyOrientation * localPos
 
                         if (isInfiniteDepth) {
+                            // infinite depth comes with reversed depth, so we need clip z to be 0. i.e. the xyww
+                            // trick does not work here. On the upside we have practically infinite range so simple
+                            // scale the position to some *large* value.
                             outPosition set (mvpMat * float4Value(localPos * 1e16f.const, 1f))
                         } else {
+                            // by using xyww as output position clip depth is guaranteed to be w/w = 1 -> maximum depth
                             outPosition set (mvpMat * float4Value(localPos, 0f)).float4("xyww")
                         }
                     }
