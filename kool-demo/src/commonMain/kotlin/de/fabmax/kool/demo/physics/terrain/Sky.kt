@@ -18,10 +18,15 @@ import de.fabmax.kool.pipeline.ibl.SkyCubeIblSystem
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.*
 import de.fabmax.kool.util.Color.Hsv
+import kotlin.collections.forEach
+import kotlin.collections.forEachIndexed
+import kotlin.collections.lastIndex
+import kotlin.collections.listOf
 import kotlin.collections.set
 import kotlin.math.abs
 import kotlin.math.acos
 import kotlin.math.atan2
+import kotlin.math.roundToInt
 import kotlin.random.Random
 
 class Sky(mainScene: Scene, moonTex: Texture2d) {
@@ -133,7 +138,7 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
     }
 
     suspend fun generateSkyMaps(terrainDemo: TerrainDemo, parentScene: Scene) {
-        val hours = listOf(4f, 5f, 5.5f, 6f, 6.5f, 7f, 8f, 9f, 10f, 11f, 12f, 13f, 14f, 15f, 16f, 17f, 17.5f, 18f, 18.5f, 19f, 20f)
+        val hours = listOf(4f, 5f, 5.5f, 6f, 6.5f, 7f, 8f, 9f, 10f, 11f, 12f, 13f, 14f, 15f, 16f, 17f, 17.5f, 18f, 18.5f, 19f, 20f, 21f)
         val skyLut = OpticalDepthLutPass()
         parentScene.addOffscreenPass(skyLut)
 
@@ -141,7 +146,7 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
         sky.setupOffscreenPasses()
 
         hours.forEachIndexed { i, h ->
-            terrainDemo.showLoadText("Creating sky (${i * 100f / hours.lastIndex}%)...", 0)
+            terrainDemo.showLoadText("Creating sky (${(i * 100f / hours.lastIndex).roundToInt()}%)...", 0)
 
             val timeOfDay = h / 24f
             val sunDir = computeLightDirection(SUN_TILT, sunProgress(timeOfDay), MutableMat3f())

@@ -21,6 +21,8 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
     override val deviceName: String
         get() = gl.version.deviceInfo
 
+    abstract val glslVersion: String
+
     var numSamples = 1
         private set
 
@@ -113,7 +115,7 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
     }
 
     override fun generateKslShader(shader: KslShader, pipelineLayout: Pipeline.Layout): ShaderCodeGl {
-        val src = GlslGenerator().generateProgram(shader.program)
+        val src = GlslGenerator(glslVersion).generateProgram(shader.program)
         if (shader.program.dumpCode) {
             src.dump()
         }

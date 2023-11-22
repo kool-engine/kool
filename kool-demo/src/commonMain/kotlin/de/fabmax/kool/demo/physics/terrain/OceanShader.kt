@@ -171,7 +171,8 @@ object OceanShader {
                 // 1st depth sample - water depth without refraction
                 val oceanFloorUv = posScreenSpace.output.xy / posScreenSpace.output.w * 0.5f.const + 0.5f.const
                 val oceanDepth1 = float1Var(sampleTexture(texture2d("tOceanFloorDepth"), oceanFloorUv).x)
-                oceanDepth1 set getLinearDepth(oceanDepth1, camData.clipNear, camData.clipFar) - fragDepth
+                //oceanDepth1 set getLinearDepth(oceanDepth1, camData.clipNear, camData.clipFar) - fragDepth
+                oceanDepth1 set getLinearDepth(oceanDepth1, OceanFloorRenderPass.DEPTH_CAM_NEAR.const, OceanFloorRenderPass.DEPTH_CAM_FAR.const) - fragDepth
 
                 // compute water refraction based on initial depth estimate and water surface normal
                 //val refractPos = float3Var(worldPos + refract(normalize(camToFrag), bumpNormal, 1.33f.const) * oceanDepth)

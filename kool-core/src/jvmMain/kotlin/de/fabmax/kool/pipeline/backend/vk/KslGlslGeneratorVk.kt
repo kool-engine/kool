@@ -7,11 +7,7 @@ import de.fabmax.kool.modules.ksl.lang.KslShaderStage
 import de.fabmax.kool.modules.ksl.lang.KslVertexStage
 import de.fabmax.kool.pipeline.Pipeline
 
-class KslGlslGeneratorVk(private val pipelineLayout: Pipeline.Layout) : GlslGenerator() {
-
-    init {
-        glslVersionStr = "#version 450"
-    }
+class KslGlslGeneratorVk(private val pipelineLayout: Pipeline.Layout) : GlslGenerator("#version 450") {
 
     override fun StringBuilder.generateUniformSamplers(stage: KslShaderStage) {
         val samplers = stage.getUsedSamplers()

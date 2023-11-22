@@ -4,11 +4,9 @@ import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.modules.ksl.model.KslState
 
 /**
- * Default GLSL shader code generator, generates glsl in version 300 es, which works for WebGL and OpenGL 3.3+
+ * Default GLSL shader code generator.
  */
-open class GlslGenerator : KslGenerator() {
-
-    protected var glslVersionStr = "#version 300 es"
+open class GlslGenerator(val glslVersionStr: String) : KslGenerator() {
 
     var blockIndent = "  "
 

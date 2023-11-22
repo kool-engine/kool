@@ -14,6 +14,8 @@ import org.w3c.dom.HTMLCanvasElement
 class RenderBackendGlImpl(ctx: KoolContext, canvas: HTMLCanvasElement) : RenderBackendGl(GlImpl, ctx) {
     override val deviceName = "WebGL"
 
+    override val glslVersion: String = "#version 300 es"
+
     init {
         val options = js("""
             {

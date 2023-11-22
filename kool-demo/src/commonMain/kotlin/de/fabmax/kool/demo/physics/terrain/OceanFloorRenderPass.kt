@@ -43,6 +43,8 @@ class OceanFloorRenderPass(mainScene: Scene, val terrainTiles: TerrainTiles) :
         }
 
         val proxyCamera = PerspectiveProxyCam(mainScene.camera as PerspectiveCamera)
+        proxyCamera.overrideNear = DEPTH_CAM_NEAR
+        proxyCamera.overrideFar = DEPTH_CAM_FAR
         onBeforeCollectDrawCommands += { ev ->
             proxyCamera.sync(ev)
         }
@@ -52,5 +54,8 @@ class OceanFloorRenderPass(mainScene: Scene, val terrainTiles: TerrainTiles) :
 
     companion object {
         const val RENDER_SIZE_FACTOR = 0.5f
+
+        const val DEPTH_CAM_NEAR = 0.1f
+        const val DEPTH_CAM_FAR = 1000f
     }
 }
