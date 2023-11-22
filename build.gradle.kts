@@ -1,6 +1,6 @@
 plugins {
-    kotlin("multiplatform") version Versions.kotlinVersion apply false
-    id("org.jetbrains.dokka") version Versions.dokkaVersion apply false
+    kotlin("multiplatform") version Versions.kotlin apply false
+    id("org.jetbrains.dokka") version Versions.dokka apply false
 }
 
 buildscript {
@@ -8,7 +8,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:0.22.0")
+        classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:${Versions.atomicfu}")
     }
 }
 

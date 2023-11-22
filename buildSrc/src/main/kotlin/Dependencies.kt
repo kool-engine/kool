@@ -1,17 +1,18 @@
 import org.gradle.internal.os.OperatingSystem
 
 object Versions {
-    val kotlinVersion = "1.9.20"
-    val kotlinCoroutinesVersion = "1.7.1"
-    val kotlinSerializationVersion = "1.5.0"
-    val dokkaVersion = "1.8.10"
+    val kotlin = "1.9.20"
+    val kotlinCoroutines = "1.7.3"
+    val kotlinSerialization = "1.6.1"
+    val dokka = "1.9.10"
+    val atomicfu = "0.23.0"
 }
 
 object DepsCommon {
-    val kotlinCoroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.kotlinCoroutinesVersion}"
-    val kotlinSerialization = "org.jetbrains.kotlinx:kotlinx-serialization-core:${Versions.kotlinSerializationVersion}"
-    val kotlinSerializationJson = "org.jetbrains.kotlinx:kotlinx-serialization-json:${Versions.kotlinSerializationVersion}"
-    val kotlinReflection = "org.jetbrains.kotlin:kotlin-reflect:${Versions.kotlinVersion}"
+    val kotlinCoroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.kotlinCoroutines}"
+    val kotlinSerialization = "org.jetbrains.kotlinx:kotlinx-serialization-core:${Versions.kotlinSerialization}"
+    val kotlinSerializationJson = "org.jetbrains.kotlinx:kotlinx-serialization-json:${Versions.kotlinSerialization}"
+    val kotlinReflection = "org.jetbrains.kotlin:kotlin-reflect:${Versions.kotlin}"
 }
 
 object DepsJvm {

@@ -21,8 +21,7 @@ import kotlin.math.sin
 class HelloKslDemo : DemoScene("Hello KSL Shaders") {
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
-        defaultOrbitCamera()
-
+        // create the shader
         val helloKslShader = KslShader("Example KSL shader") {
             // uniforms are used to pass data from the host (CPU) into the shader (GPU)
             val uScale = uniformFloat1("uScale")
@@ -72,5 +71,7 @@ class HelloKslDemo : DemoScene("Hello KSL Shaders") {
                 cube { size.set(3f, 3f, 3f) }
             }
         }
+
+        defaultOrbitCamera()
     }
 }

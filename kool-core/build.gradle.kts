@@ -2,7 +2,7 @@ import java.io.FileInputStream
 import java.util.*
 
 plugins {
-    kotlin("plugin.serialization") version Versions.kotlinVersion
+    kotlin("plugin.serialization") version Versions.kotlin
     `maven-publish`
     signing
 }
@@ -14,6 +14,7 @@ kotlin {
     js(IR) {
         browser { }
     }
+
     targets.all {
         compilations.all {
             kotlinOptions {
