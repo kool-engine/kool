@@ -224,12 +224,12 @@ class Gizmo : Node(), InputStack.PointerListener {
 
         lineMesh.clear()
 
-        if (hasAxisX) lineMesh.line(Vec3f.ZERO, axisHandleX.set(properties.axisLenX, 0f, 0f), properties.axisColorX, 5f)
-        if (hasAxisY) lineMesh.line(Vec3f.ZERO, axisHandleY.set(0f, properties.axisLenY, 0f), properties.axisColorY, 5f)
-        if (hasAxisZ) lineMesh.line(Vec3f.ZERO, axisHandleZ.set(0f, 0f, properties.axisLenZ), properties.axisColorZ, 5f)
-        if (hasAxisNegX) lineMesh.line(Vec3f.ZERO, axisHandleNegX.set(-properties.axisLenNegX, 0f, 0f), properties.axisColorNegX, 5f)
-        if (hasAxisNegY) lineMesh.line(Vec3f.ZERO, axisHandleNegY.set(0f, -properties.axisLenNegY, 0f), properties.axisColorNegY, 5f)
-        if (hasAxisNegZ) lineMesh.line(Vec3f.ZERO, axisHandleNegZ.set(0f, 0f, -properties.axisLenNegZ), properties.axisColorNegZ, 5f)
+        if (hasAxisX) lineMesh.addLine(Vec3f.ZERO, axisHandleX.set(properties.axisLenX, 0f, 0f), properties.axisColorX, 5f)
+        if (hasAxisY) lineMesh.addLine(Vec3f.ZERO, axisHandleY.set(0f, properties.axisLenY, 0f), properties.axisColorY, 5f)
+        if (hasAxisZ) lineMesh.addLine(Vec3f.ZERO, axisHandleZ.set(0f, 0f, properties.axisLenZ), properties.axisColorZ, 5f)
+        if (hasAxisNegX) lineMesh.addLine(Vec3f.ZERO, axisHandleNegX.set(-properties.axisLenNegX, 0f, 0f), properties.axisColorNegX, 5f)
+        if (hasAxisNegY) lineMesh.addLine(Vec3f.ZERO, axisHandleNegY.set(0f, -properties.axisLenNegY, 0f), properties.axisColorNegY, 5f)
+        if (hasAxisNegZ) lineMesh.addLine(Vec3f.ZERO, axisHandleNegZ.set(0f, 0f, -properties.axisLenNegZ), properties.axisColorNegZ, 5f)
 
         if (properties.hasRotationX) lineMesh.rotationHandle(Vec3f.X_AXIS, properties.rotationAxisColorX, hoverRot == AXIS_X)
         if (properties.hasRotationY) lineMesh.rotationHandle(Vec3f.Y_AXIS, properties.rotationAxisColorY, hoverRot == AXIS_Y)

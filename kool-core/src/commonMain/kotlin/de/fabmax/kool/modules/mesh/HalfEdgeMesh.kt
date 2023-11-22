@@ -96,7 +96,7 @@ class HalfEdgeMesh(geometry: IndexedVertexList, val edgeHandler: EdgeHandler = L
         edgeHandler.filter { it.opp == null || it.from.index < it.to.index }.forEach { edge ->
             v0.set(edge.from)
             v1.set(edge.to)
-            lineMesh.line(v0, v1, lineColor, lineWidth)
+            lineMesh.addLine(v0, v1, lineColor, lineWidth)
         }
     }
 

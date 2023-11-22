@@ -4,6 +4,7 @@ import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.spatial.BoundingBox
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.modules.ksl.blocks.cameraData
@@ -17,8 +18,12 @@ import de.fabmax.kool.pipeline.CullMethod
 import de.fabmax.kool.pipeline.GlslType
 import de.fabmax.kool.pipeline.backend.DepthRange
 import de.fabmax.kool.scene.geometry.IndexedVertexList
+import de.fabmax.kool.scene.geometry.PrimitiveType
 import de.fabmax.kool.scene.geometry.VertexView
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.LineString
+import kotlin.math.max
+import kotlin.math.min
 
 fun Node.addTriangulatedLineMesh(
     name: String = makeChildName("TriangulatedLineMesh"),
@@ -55,6 +60,46 @@ class TriangulatedLineMesh(geometry: IndexedVertexList, name: String = makeNodeN
         shader = Shader()
     }
 
+    fun clear() {
+        lineBuffer.clear()
+        geometry.clear()
+    }
+
+    fun addLine(from: Vec3f, to: Vec3f, color: Color = this.color, width: Float = this.width): TriangulatedLineMesh {
+        return addLine(from, color, width, to, color, width)
+    }
+
+    fun addLine(
+        from: Vec3f,
+        fromColor: Color,
+        fromWidth: Float,
+        to: Vec3f,
+        toColor: Color,
+        toWidth: Float
+    ): TriangulatedLineMesh {
+        moveTo(from, fromColor, fromWidth)
+        lineTo(to, toColor, toWidth)
+        return stroke()
+    }
+
+    fun addLine(vararg points: Vec3f): TriangulatedLineMesh {
+        return addLine(color, width, *points)
+    }
+
+    fun addLine(color: Color, width: Float, vararg points: Vec3f): TriangulatedLineMesh {
+        for (i in 0 until points.lastIndex) {
+            addLine(points[i], color, width, points[i+1], color, width)
+        }
+        return this
+    }
+
+    fun addLineString(lineString: LineString<*>, color: Color = this.color, width: Float = this.width): TriangulatedLineMesh {
+        for (i in 0 until lineString.lastIndex) {
+            addLine(lineString[i], color, width, lineString[i+1], color, width)
+        }
+        return this
+    }
+
     fun moveTo(x: Float, y: Float, z: Float) = moveTo(Vec3f(x, y, z))
 
     fun moveTo(
@@ -66,7 +111,7 @@ class TriangulatedLineMesh(geometry: IndexedVertexList, name: String = makeNodeN
         if (lineBuffer.isNotEmpty()) {
             stroke()
         }
-        lineBuffer.add(LineVertex(Vec3f(position), color, width, vertexMod))
+        lineBuffer.add(LineVertex(position, color, width, vertexMod))
         return this
     }
 
@@ -78,25 +123,19 @@ class TriangulatedLineMesh(geometry: IndexedVertexList, name: String = makeNodeN
         width: Float = this.width,
         vertexMod: (VertexView.() -> Unit)? = null
     ): TriangulatedLineMesh {
-        lineBuffer.add(LineVertex(Vec3f(position), color, width, vertexMod))
+        lineBuffer.add(LineVertex(position, color, width, vertexMod))
         return this
-    }
-
-    fun line(from: Vec3f, to: Vec3f, color: Color = this.color, width: Float = this.width): TriangulatedLineMesh {
-        moveTo(from, color, width)
-        lineTo(to, color, width)
-        return stroke()
     }
 
     fun stroke(): TriangulatedLineMesh {
         if (lineBuffer.size > 1) {
-            val startPos = MutableVec3f(lineBuffer.first().position).mul(2f).subtract(lineBuffer[1].position)
-            val endPos = MutableVec3f(lineBuffer.last().position).mul(2f)
-                .subtract(lineBuffer[lineBuffer.lastIndex - 1].position)
+            val startPos = MutableVec3f(lineBuffer.first()).mul(2f).subtract(lineBuffer[1])
+            val endPos = MutableVec3f(lineBuffer.last()).mul(2f)
+                .subtract(lineBuffer[lineBuffer.lastIndex - 1])
             for (i in 0 until lineBuffer.size) {
                 val v = lineBuffer[i]
-                val p = if (i == 0) startPos else lineBuffer[i - 1].position
-                val n = if (i == lineBuffer.lastIndex) endPos else lineBuffer[i + 1].position
+                val p = if (i == 0) startPos else lineBuffer[i - 1]
+                val n = if (i == lineBuffer.lastIndex) endPos else lineBuffer[i + 1]
                 val ia = geometry.addLineVertex(v, -1f, p, n)
                 val ib = geometry.addLineVertex(v, 1f, p, n)
 
@@ -112,7 +151,7 @@ class TriangulatedLineMesh(geometry: IndexedVertexList, name: String = makeNodeN
 
     private fun IndexedVertexList.addLineVertex(vertex: LineVertex, u: Float, prevDir: Vec3f, nextDir: Vec3f): Int {
         return addVertex {
-            set(vertex.position)
+            set(vertex)
             color.set(vertex.color)
             lineAttribAccessor.set(u, vertex.width)
             prevDirAccessor.set(prevDir)
@@ -121,12 +160,76 @@ class TriangulatedLineMesh(geometry: IndexedVertexList, name: String = makeNodeN
         }
     }
 
-    fun clear() {
-        lineBuffer.clear()
-        geometry.clear()
+    fun addWireframe(triMesh: IndexedVertexList, lineColor: Color? = null, width: Float = this.width) {
+        if (triMesh.primitiveType != PrimitiveType.TRIANGLES) {
+            throw IllegalArgumentException("Supplied mesh is not a triangle mesh: ${triMesh.primitiveType}")
+        }
+
+        val addedEdges = mutableSetOf<Long>()
+        for (i in 0 until triMesh.numIndices step 3) {
+            val i1 = triMesh.indices[i]
+            val i2 = triMesh.indices[i + 1]
+            val i3 = triMesh.indices[i + 2]
+
+            val e1 = min(i1, i2).toLong() shl 32 or max(i1, i2).toLong()
+            val e2 = min(i2, i3).toLong() shl 32 or max(i2, i3).toLong()
+            val e3 = min(i3, i1).toLong() shl 32 or max(i3, i1).toLong()
+
+            val v1 = triMesh[i1]
+            val v2 = triMesh[i2]
+            val v3 = triMesh[i3]
+
+            if (e1 !in addedEdges) {
+                addLine(v1, lineColor ?: v1.color, width, v2, lineColor ?: v2.color, width)
+                addedEdges += e1
+            }
+            if (e2 !in addedEdges) {
+                addLine(v2, lineColor ?: v2.color, width, v3, lineColor ?: v3.color, width)
+                addedEdges += e2
+            }
+            if (e3 !in addedEdges) {
+                addLine(v3, lineColor ?: v3.color, width, v1, lineColor ?: v1.color, width)
+                addedEdges += e3
+            }
+        }
     }
 
-    class LineVertex(val position: Vec3f, val color: Color, val width: Float, val vertexMod: (VertexView.() -> Unit)?)
+    fun addNormals(geometry: IndexedVertexList, lineColor: Color? = null, len: Float = 1f, width: Float = this.width) {
+        val tmpN = MutableVec3f()
+        geometry.forEach {
+            tmpN.set(it.normal).norm().mul(len).add(it.position)
+            val color = lineColor ?: it.color
+            addLine(it.position, color,width, tmpN, color, width)
+        }
+    }
+
+    fun addBoundingBox(aabb: BoundingBox, color: Color = this.color, width: Float = this.width) {
+        val p0 = Vec3f(aabb.min.x, aabb.min.y, aabb.min.z)
+        val p1 = Vec3f(aabb.min.x, aabb.min.y, aabb.max.z)
+        val p2 = Vec3f(aabb.min.x, aabb.max.y, aabb.max.z)
+        val p3 = Vec3f(aabb.min.x, aabb.max.y, aabb.min.z)
+        val p4 = Vec3f(aabb.max.x, aabb.min.y, aabb.min.z)
+        val p5 = Vec3f(aabb.max.x, aabb.min.y, aabb.max.z)
+        val p6 = Vec3f(aabb.max.x, aabb.max.y, aabb.max.z)
+        val p7 = Vec3f(aabb.max.x, aabb.max.y, aabb.min.z)
+
+        addLine(p0, p1, color, width)
+        addLine(p1, p2, color, width)
+        addLine(p2, p3, color, width)
+        addLine(p3, p0, color, width)
+
+        addLine(p4, p5, color, width)
+        addLine(p5, p6, color, width)
+        addLine(p6, p7, color, width)
+        addLine(p7, p4, color, width)
+
+        addLine(p0, p4, color, width)
+        addLine(p1, p5, color, width)
+        addLine(p2, p6, color, width)
+        addLine(p3, p7, color, width)
+    }
+
+    class LineVertex(position: Vec3f, val color: Color, val width: Float, val vertexMod: (VertexView.() -> Unit)?): Vec3f(position)
 
     open class Shader(cfg: Config = defaultCfg) : KslShader("Triangulated Line Shader") {
 

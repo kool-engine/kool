@@ -450,6 +450,10 @@ open class PerspectiveCamera(name: String = "perspectiveCam") : Camera(name) {
 }
 
 open class PerspectiveProxyCam(var trackedCam: PerspectiveCamera) : PerspectiveCamera() {
+
+    var overrideNear = 0f
+    var overrideFar = 0f
+
     init {
         useViewportAspectRatio = false
     }
@@ -471,6 +475,13 @@ open class PerspectiveProxyCam(var trackedCam: PerspectiveCamera) : PerspectiveC
         if (!updateEvent.renderPass.isReverseDepth && trackedCam.isReverseDepthProjection) {
             // limit far plane distance if this render pass is not reversed depth but the tracked camera is
             clipFar = min(clipFar, clipNear * 10_000f)
+        }
+
+        if (overrideNear != 0f) {
+            clipNear = overrideNear
+        }
+        if (overrideFar != 0f) {
+            clipFar = overrideFar
         }
     }
 }

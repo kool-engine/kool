@@ -1,6 +1,5 @@
 package de.fabmax.kool.scene
 
-import de.fabmax.kool.KoolException
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.spatial.BoundingBox
@@ -37,6 +36,10 @@ open class LineMesh(
     name: String = makeNodeName("LineMesh"),
     geometry: IndexedVertexList = IndexedVertexList(Attribute.POSITIONS, Attribute.COLORS)
 ) : Mesh(geometry, name) {
+
+    private val lineBuffer = mutableListOf<LineVertex>()
+    var color = Color.RED
+
     init {
         geometry.primitiveType = PrimitiveType.LINES
         rayTest = MeshRayTest.nopTest()
@@ -45,28 +48,74 @@ open class LineMesh(
         }
     }
 
-    fun addLine(point0: Vec3f, point1: Vec3f, color: Color) = addLine(point0, color, point1, color)
+    fun clear() {
+        geometry.clear()
+        bounds.clear()
+    }
 
-    fun addLine(point0: Vec3f, color0: Color, point1: Vec3f, color1: Color): Int {
+    fun addLine(from: Vec3f, to: Vec3f, color: Color = this.color) = addLine(from, color, to, color)
+
+    fun addLine(from: Vec3f, fromColor: Color, to: Vec3f, toColor: Color): Int {
         var idx0 = 0
         geometry.batchUpdate {
-            idx0 = addVertex(point0, null, color0, null)
-            addVertex(point1, null, color1, null)
+            idx0 = addVertex(from, null, fromColor, null)
+            addVertex(to, null, toColor, null)
             addIndex(idx0)
             addIndex(idx0 + 1)
         }
         return idx0
     }
 
-    fun addLineString(lineString: LineString<*>, color: Color) {
+    fun addLine(vararg points: Vec3f) {
+        addLine(color, *points)
+    }
+
+    fun addLine(color: Color, vararg points: Vec3f) {
+        for (i in 0 until points.lastIndex) {
+            addLine(points[i], color, points[i+1], color)
+        }
+    }
+
+    fun addLineString(lineString: LineString<*>, color: Color = this.color) {
         for (i in 0 until lineString.lastIndex) {
             addLine(lineString[i], color, lineString[i+1], color)
         }
     }
 
+    fun moveTo(x: Float, y: Float, z: Float) = moveTo(Vec3f(x, y, z))
+
+    fun moveTo(
+        position: Vec3f,
+        color: Color = this.color
+    ): LineMesh {
+        if (lineBuffer.isNotEmpty()) {
+            stroke()
+        }
+        lineBuffer.add(LineVertex(position, color))
+        return this
+    }
+
+    fun lineTo(x: Float, y: Float, z: Float) = lineTo(Vec3f(x, y, z))
+
+    fun lineTo(
+        position: Vec3f,
+        color: Color = this.color,
+    ): LineMesh {
+        lineBuffer.add(LineVertex(position, color))
+        return this
+    }
+
+    fun stroke(): LineMesh {
+        for (i in 1 until lineBuffer.size) {
+            addLine(lineBuffer[i-1], lineBuffer[i-1].color, lineBuffer[i], lineBuffer[i].color)
+        }
+        lineBuffer.clear()
+        return this
+    }
+
     fun addWireframe(triMesh: IndexedVertexList, lineColor: Color? = null) {
         if (triMesh.primitiveType != PrimitiveType.TRIANGLES) {
-            throw KoolException("Supplied mesh is not a triangle mesh: ${triMesh.primitiveType}")
+            throw IllegalArgumentException("Supplied mesh is not a triangle mesh: ${triMesh.primitiveType}")
         }
 
         val addedEdges = mutableSetOf<Long>()
@@ -109,22 +158,15 @@ open class LineMesh(
     }
 
     fun addNormals(geometry: IndexedVertexList, lineColor: Color? = null, len: Float = 1f) {
-        geometry.batchUpdate {
-            val tmpN = MutableVec3f()
-            geometry.forEach {
-                tmpN.set(it.normal).mul(len).add(it.position)
-                val color = lineColor ?: it.color
-                addLine(it.position, color, tmpN, color)
-            }
+        val tmpN = MutableVec3f()
+        geometry.forEach {
+            tmpN.set(it.normal).norm().mul(len).add(it.position)
+            val color = lineColor ?: it.color
+            addLine(it.position, color, tmpN, color)
         }
     }
 
-    fun clear() {
-        geometry.clear()
-        bounds.clear()
-    }
-
-    fun addBoundingBox(aabb: BoundingBox, color: Color) {
+    fun addBoundingBox(aabb: BoundingBox, color: Color = this.color) {
         geometry.batchUpdate {
             val i0 = addVertex {
                 this.position.set(aabb.min.x, aabb.min.y, aabb.min.z)
@@ -163,4 +205,6 @@ open class LineMesh(
                     i0, i4, i1, i5, i2, i6, i3, i7)
         }
     }
+
+    class LineVertex(position: Vec3f, val color: Color) : Vec3f(position)
 }
