@@ -11,7 +11,20 @@ open class GlslGenerator(val glslVersionStr: String) : KslGenerator() {
     var blockIndent = "  "
 
     override fun generateProgram(program: KslProgram): GlslGeneratorOutput {
-        return GlslGeneratorOutput(generateVertexSrc(program.vertexStage), generateFragmentSrc(program.fragmentStage))
+        val vertexStage = checkNotNull(program.vertexStage) {
+            "KslProgram vertexStage is missing (a valid KslShader needs at least a vertexStage and fragmentStage)"
+        }
+        val fragmentStage = checkNotNull(program.fragmentStage) {
+            "KslProgram fragmentStage is missing (a valid KslShader needs at least a vertexStage and fragmentStage)"
+        }
+        return GlslGeneratorOutput.shaderOutput(generateVertexSrc(vertexStage), generateFragmentSrc(fragmentStage))
+    }
+
+    override fun generateComputeProgram(program: KslProgram): GlslGeneratorOutput {
+        val computeStage = checkNotNull(program.computeStage) {
+            "KslProgram computeStage is missing"
+        }
+        return GlslGeneratorOutput.computeOutput(generateComputeSrc(computeStage))
     }
 
     override fun constFloatVecExpression(vararg values: KslExpression<KslTypeFloat1>): String {
@@ -107,9 +120,9 @@ open class GlslGenerator(val glslVersionStr: String) : KslGenerator() {
             $glslVersionStr
             precision highp sampler3D;
             
-            /* 
+            /*
              * ${vertexStage.program.name} - generated vertex shader
-             */ 
+             */
         """.trimIndent())
         src.appendLine()
 
@@ -134,7 +147,7 @@ open class GlslGenerator(val glslVersionStr: String) : KslGenerator() {
             precision highp sampler2DShadow;
             precision highp sampler3D;
             
-            /* 
+            /*
              * ${fragmentStage.program.name} - generated fragment shader
              */
         """.trimIndent())
@@ -148,6 +161,30 @@ open class GlslGenerator(val glslVersionStr: String) : KslGenerator() {
 
         src.appendLine("void main() {")
         src.appendLine(generateScope(fragmentStage.main, blockIndent))
+        src.appendLine("}")
+        return src.toString()
+    }
+
+    private fun generateComputeSrc(computeStage: KslComputeStage): String {
+        val src = StringBuilder()
+        src.appendLine("""
+            $glslVersionStr
+            
+            /*
+             * ${computeStage.program.name} - generated compute shader
+             */
+             
+            layout(local_size_x = ${computeStage.workGroupSize.x}, local_size_y = ${computeStage.workGroupSize.y}, local_size_z = ${computeStage.workGroupSize.z}) in;
+        """.trimIndent())
+        src.appendLine()
+
+        src.generateUbos(computeStage)
+        // todo: generate storage (image) uniforms
+        src.generateUniformSamplers(computeStage)
+        src.generateFunctions(computeStage)
+
+        src.appendLine("void main() {")
+        src.appendLine(generateScope(computeStage.main, blockIndent))
         src.appendLine("}")
         return src.toString()
     }
@@ -459,7 +496,21 @@ open class GlslGenerator(val glslVersionStr: String) : KslGenerator() {
         }
     }
 
-    class GlslGeneratorOutput(val vertexSrc: String, val fragmentSrc: String) : GeneratorOutput {
+    class GlslGeneratorOutput : GeneratorOutput {
+        val stages = mutableMapOf<KslShaderStageType, String>()
+
+        val vertexSrc: String get() = checkNotNull(stages[KslShaderStageType.VertexShader]) {
+            "Vertex shader source not defined"
+        }
+
+        val fragmentSrc: String get() = checkNotNull(stages[KslShaderStageType.FragmentShader]) {
+            "Fragment shader source not defined"
+        }
+
+        val computeSrc: String get() = checkNotNull(stages[KslShaderStageType.ComputeShader]) {
+            "Compute shader source not defined"
+        }
+
         private fun linePrefix(line: Int): String {
             var num = "$line"
             while (num.length < 3) {
@@ -469,10 +520,21 @@ open class GlslGenerator(val glslVersionStr: String) : KslGenerator() {
         }
 
         fun dump() {
-            println("###  vertex shader:")
-            vertexSrc.lineSequence().forEachIndexed { i, line -> println("${linePrefix(i)}${line}") }
-            println("###  fragment shader:")
-            fragmentSrc.lineSequence().forEachIndexed { i, line -> println("${linePrefix(i)}${line}") }
+            stages.forEach { (type, src) ->
+                println("### $type source:")
+                src.lines().forEachIndexed { i, line -> println("${linePrefix(i)}${line}") }
+            }
+        }
+
+        companion object {
+            fun shaderOutput(vertexSrc: String, fragmentSrc: String) = GlslGeneratorOutput().apply {
+                stages[KslShaderStageType.VertexShader] = vertexSrc
+                stages[KslShaderStageType.FragmentShader] = fragmentSrc
+            }
+
+            fun computeOutput(computeSrc: String) = GlslGeneratorOutput().apply {
+                stages[KslShaderStageType.ComputeShader] = computeSrc
+            }
         }
     }
 }

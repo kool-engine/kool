@@ -23,6 +23,7 @@ object GlImpl : GlApi {
     override val COLOR_BUFFER_BIT = WebGLRenderingContext.COLOR_BUFFER_BIT
     override val COMPARE_REF_TO_TEXTURE = WebGL2RenderingContext.COMPARE_REF_TO_TEXTURE
     override val COMPILE_STATUS = WebGLRenderingContext.COMPILE_STATUS
+    override val COMPUTE_SHADER = 0
     override val CULL_FACE = WebGLRenderingContext.CULL_FACE
     override val DEPTH_ATTACHMENT = WebGLRenderingContext.DEPTH_ATTACHMENT
     override val DEPTH_BUFFER_BIT = WebGLRenderingContext.DEPTH_BUFFER_BIT
@@ -110,6 +111,22 @@ object GlImpl : GlApi {
     override val GEQUAL = WebGLRenderingContext.GEQUAL
     override val EQUAL = WebGLRenderingContext.EQUAL
     override val NOTEQUAL = WebGLRenderingContext.NOTEQUAL
+
+    override val VERTEX_ATTRIB_ARRAY_BARRIER_BIT = 0
+    override val ELEMENT_ARRAY_BARRIER_BIT = 0
+    override val UNIFORM_BARRIER_BIT = 0
+    override val TEXTURE_FETCH_BARRIER_BIT = 0
+    override val SHADER_IMAGE_ACCESS_BARRIER_BIT = 0
+    override val COMMAND_BARRIER_BIT = 0
+    override val PIXEL_BUFFER_BARRIER_BIT = 0
+    override val TEXTURE_UPDATE_BARRIER_BIT = 0
+    override val BUFFER_UPDATE_BARRIER_BIT = 0
+    override val CLIENT_MAPPED_BUFFER_BARRIER_BIT = 0
+    override val FRAMEBUFFER_BARRIER_BIT = 0
+    override val TRANSFORM_FEEDBACK_BARRIER_BIT = 0
+    override val ATOMIC_COUNTER_BARRIER_BIT = 0
+    override val SHADER_STORAGE_BARRIER_BIT = 0
+    override val QUERY_BUFFER_BARRIER_BIT = 0
 
     override val DEFAULT_FRAMEBUFFER: GlFramebuffer = GlFramebuffer(-1)
     override val NULL_BUFFER: GlBuffer = GlBuffer(-1)
@@ -205,6 +222,7 @@ object GlImpl : GlApi {
     override fun depthMask(flag: Boolean) = gl.depthMask(flag)
     override fun disable(cap: Int) = gl.disable(cap)
     override fun disableVertexAttribArray(index: Int) = gl.disableVertexAttribArray(index)
+    override fun dispatchCompute(numGroupsX: Int, numGroupsY: Int, numGroupsZ: Int) = notSupported("dispatchCompute")
     override fun drawBuffers(buffers: IntArray) = gl.drawBuffers(buffers)
     override fun drawElements(mode: Int, count: Int, type: Int) = gl.drawElements(mode, count, type, 0)
     override fun drawElementsInstanced(mode: Int, count: Int, type: Int, instanceCount: Int) = gl.drawElementsInstanced(mode, count, type, 0, instanceCount)
@@ -226,6 +244,7 @@ object GlImpl : GlApi {
     override fun getUniformLocation(program: GlProgram, uniformName: String): Int = programs[program.handle]?.getUniformLocation(uniformName) ?: -1
     override fun lineWidth(width: Float) = gl.lineWidth(width)
     override fun linkProgram(program: GlProgram) = gl.linkProgram(program.webGl)
+    override fun memoryBarrier(barriers: Int) = notSupported("memoryBarrier")
     override fun readBuffer(src: Int) = gl.readBuffer(src)
     override fun renderbufferStorage(target: Int, internalformat: Int, width: Int, height: Int) = gl.renderbufferStorage(target, internalformat, width, height)
     override fun renderbufferStorageMultisample(target: Int, samples: Int, internalformat: Int, width: Int, height: Int) = gl.renderbufferStorageMultisample(target, samples, internalformat, width, height)
@@ -419,6 +438,10 @@ object GlImpl : GlApi {
                 throw IllegalStateException("TextureData buffer must be either TextureData3d or ImageAtlasTextureData")
             }
         }
+    }
+
+    private fun notSupported(funcName: String): Nothing {
+        throw IllegalStateException("$funcName is not supported in WebGL")
     }
 
     private val TextureData.arrayBufferView: ArrayBufferView get() = when (val bufData = data) {

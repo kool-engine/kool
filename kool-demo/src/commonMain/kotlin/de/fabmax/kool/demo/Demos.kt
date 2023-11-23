@@ -13,6 +13,7 @@ import de.fabmax.kool.demo.physics.ragdoll.RagdollDemo
 import de.fabmax.kool.demo.physics.terrain.TerrainDemo
 import de.fabmax.kool.demo.physics.vehicle.VehicleDemo
 import de.fabmax.kool.demo.procedural.ProceduralDemo
+import de.fabmax.kool.demo.tests.GizmoTest
 import de.fabmax.kool.demo.tests.InifiniteDepthTest
 import de.fabmax.kool.demo.tests.KslShaderTest
 import de.fabmax.kool.demo.uidemo.UiDemo

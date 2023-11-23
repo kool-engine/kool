@@ -159,7 +159,7 @@ class Terrain(val demo: TerrainDemo, val heightMap: HeightMap) {
 
                     fragmentStage {
                         main {
-                            val texCoordBlock = vertexStage.findBlock<TexCoordAttributeBlock>()!!
+                            val texCoordBlock = vertexStage?.findBlock<TexCoordAttributeBlock>()!!
                             val splatCoords = texCoordBlock.getAttributeCoords(Attribute.TEXTURE_COORDS)
 
                             val material = findBlock<PbrMaterialBlock>() ?: findBlock<BlinnPhongMaterialBlock>()!!

@@ -1,5 +1,6 @@
 package de.fabmax.kool.modules.ksl.lang
 
+import de.fabmax.kool.math.Vec3i
 import de.fabmax.kool.modules.ksl.model.KslHierarchy
 import de.fabmax.kool.modules.ksl.model.KslOp
 import de.fabmax.kool.modules.ksl.model.KslProcessor
@@ -67,7 +68,8 @@ abstract class KslShaderStage(val program: KslProgram, val type: KslShaderStageT
 
 enum class KslShaderStageType {
     VertexShader,
-    FragmentShader
+    FragmentShader,
+    ComputeShader
 }
 
 class KslVertexStage(program: KslProgram) : KslShaderStage(program, KslShaderStageType.VertexShader) {
@@ -174,4 +176,8 @@ class KslFragmentStage(program: KslProgram) : KslShaderStage(program, KslShaderS
         const val NAME_OUT_DEPTH = "outDepth"
         const val NAME_OUT_COLOR_PREFIX = "outColor_"
     }
+}
+
+class KslComputeStage(program: KslProgram, val workGroupSize: Vec3i) : KslShaderStage(program, KslShaderStageType.ComputeShader) {
+
 }

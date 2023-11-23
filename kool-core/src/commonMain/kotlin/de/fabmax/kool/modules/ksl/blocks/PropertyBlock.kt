@@ -119,14 +119,23 @@ class PropertyBlockFragmentStage(
     }
 
     private fun texCoordBlock(parentStage: KslShaderStage): TexCoordAttributeBlock {
-        return parentStage.program.vertexStage.findBlock()
-            ?: parentStage.program.vertexStage.main.run { texCoordAttributeBlock() }
+        var block: TexCoordAttributeBlock? = parentStage.program.vertexStage?.findBlock()
+        if (block == null) {
+            parentStage.program.vertexStage {
+                main { block = texCoordAttributeBlock() }
+            }
+        }
+        return block!!
     }
 
     private fun vertexBlock(parentStage: KslShaderStage): PropertyBlockVertexStage {
-        return vertexPropertyBlock
-            ?: parentStage.program.vertexStage.findBlock(cfg.propertyName)
-            ?: parentStage.program.vertexStage.main.run { vertexPropertyBlock(cfg) }
+        var block: PropertyBlockVertexStage? = vertexPropertyBlock ?: parentStage.program.vertexStage?.findBlock(cfg.propertyName)
+        if (block == null) {
+            parentStage.program.vertexStage {
+                main { block = vertexPropertyBlock(cfg) }
+            }
+        }
+        return block!!
     }
 
     private fun findExistingSampleValue(texName: String, attrib: Attribute, parentStage: KslFragmentStage): KslExprFloat4? {

@@ -72,6 +72,7 @@ abstract class KslGenerator {
         "${swizzleAssignable.vector.generateExpression(this)}.${swizzleAssignable.components}"
 
     abstract fun generateProgram(program: KslProgram): GeneratorOutput
+    abstract fun generateComputeProgram(program: KslProgram): GeneratorOutput
 
     open fun generateScope(scope: KslScope, indent: String): String {
         return scope.ops.asSequence().map { generateOp(it).prependIndent(indent) }.joinToString("\n")

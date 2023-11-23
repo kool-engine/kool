@@ -1,7 +1,11 @@
-package de.fabmax.kool.demo
+package de.fabmax.kool.demo.tests
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.demo.DemoScene
+import de.fabmax.kool.demo.LabeledSwitch
+import de.fabmax.kool.demo.MenuRow
 import de.fabmax.kool.demo.menu.DemoMenu
+import de.fabmax.kool.demo.sectionTitleStyle
 import de.fabmax.kool.input.InputStack
 import de.fabmax.kool.input.KeyboardInput
 import de.fabmax.kool.math.*

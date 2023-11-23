@@ -33,10 +33,6 @@ open class KslShader private constructor(val program: KslProgram) : Shader() {
 
     val pipelineConfig = PipelineConfig()
 
-    val requiredVertexAttributes: Set<Attribute> = program.vertexStage.attributes.values.map {
-        Attribute(it.name, it.expressionType.glslType)
-    }.toSet()
-
     private val connectUniformListeners = mutableMapOf<String, ConnectUniformListener>()
 
     constructor(name: String): this(KslProgram(name))
@@ -45,13 +41,28 @@ open class KslShader private constructor(val program: KslProgram) : Shader() {
         this.pipelineConfig.set(pipelineConfig)
     }
 
+    /**
+     * Retrieves the set of vertex attributes required by this shader. The [program] needs
+     * to be complete for this.
+     */
+    fun findRequiredVertexAttributes(): Set<Attribute> {
+        val vertexStage = program.vertexStage ?: return emptySet()
+        return vertexStage.attributes.values.map {
+            Attribute(it.name, it.expressionType.glslType)
+        }.toSet()
+    }
+
     override fun onPipelineSetup(builder: Pipeline.Builder, mesh: Mesh, ctx: KoolContext) {
+        checkNotNull(program.vertexStage) {
+            "KslProgram vertexStage is missing (a valid KslShader needs at least a vertexStage and fragmentStage)"
+        }
+        checkNotNull(program.fragmentStage) {
+            "KslProgram fragmentStage is missing (a valid KslShader needs at least a vertexStage and fragmentStage)"
+        }
+
         // prepare shader model for generating source code, also updates program dependencies (e.g. which
         // uniform is used by which shader stage)
         program.prepareGenerate()
-        if (program.dumpCode) {
-            program.vertexStage.hierarchy.printHierarchy()
-        }
 
         setupAttributes(mesh, builder)
         setupUniforms(builder)
@@ -101,15 +112,18 @@ open class KslShader private constructor(val program: KslProgram) : Shader() {
         val descBuilder = DescriptorSetLayout.Builder()
         builder.descriptorSetLayouts += descBuilder
 
+        val vertexStage = checkNotNull(program.vertexStage) { "vertexStage not defined" }
+        val fragmentStage = checkNotNull(program.fragmentStage) { "fragmentStage not defined" }
+
         program.uniformBuffers.filter { it.uniforms.isNotEmpty() }.forEach { kslUbo ->
             val ubo = UniformBuffer.Builder()
             descBuilder.descriptors += ubo
 
             ubo.name = kslUbo.name
-            if (kslUbo.uniforms.values.any { u -> program.vertexStage.dependsOn(u) }) {
+            if (kslUbo.uniforms.values.any { u -> vertexStage.dependsOn(u) }) {
                 ubo.stages += ShaderStage.VERTEX_SHADER
             }
-            if (kslUbo.uniforms.values.any { u -> program.fragmentStage.dependsOn(u) }) {
+            if (kslUbo.uniforms.values.any { u -> fragmentStage.dependsOn(u) }) {
                 ubo.stages += ShaderStage.FRAGMENT_SHADER
             }
 
@@ -185,10 +199,10 @@ open class KslShader private constructor(val program: KslProgram) : Shader() {
                     else -> throw IllegalStateException("Unsupported sampler uniform type: ${type.typeName}")
                 }
                 desc.name = sampler.name
-                if (program.vertexStage.dependsOn(sampler)) {
+                if (vertexStage.dependsOn(sampler)) {
                     desc.stages += ShaderStage.VERTEX_SHADER
                 }
-                if (program.fragmentStage.dependsOn(sampler)) {
+                if (fragmentStage.dependsOn(sampler)) {
                     desc.stages += ShaderStage.FRAGMENT_SHADER
                 }
                 descBuilder.descriptors += desc
@@ -205,7 +219,9 @@ open class KslShader private constructor(val program: KslProgram) : Shader() {
         val vertLayoutAttribsI = mutableListOf<VertexLayout.VertexAttribute>()
         var iBinding = 0
 
-        program.vertexStage.attributes.values.asSequence().filter { it.inputRate == KslInputRate.Vertex }.forEach { vertexAttrib ->
+        val vertexStage = checkNotNull(program.vertexStage) { "vertexStage not defined" }
+
+        vertexStage.attributes.values.asSequence().filter { it.inputRate == KslInputRate.Vertex }.forEach { vertexAttrib ->
             val attrib = verts.attributeByteOffsets.keys.find { it.name == vertexAttrib.name }
                 ?: throw NoSuchElementException("Mesh does not include required vertex attribute: ${vertexAttrib.name} (for shader: ${program.name})")
             val off = verts.attributeByteOffsets[attrib]!!
@@ -233,7 +249,7 @@ open class KslShader private constructor(val program: KslProgram) : Shader() {
             )
         }
 
-        val instanceAttribs = program.vertexStage.attributes.values.filter { it.inputRate == KslInputRate.Instance }
+        val instanceAttribs = vertexStage.attributes.values.filter { it.inputRate == KslInputRate.Instance }
         val insts = mesh.instances
         if (insts != null) {
             val instLayoutAttribs = mutableListOf<VertexLayout.VertexAttribute>()

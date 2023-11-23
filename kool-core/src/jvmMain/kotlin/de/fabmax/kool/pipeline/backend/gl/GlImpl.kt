@@ -1,5 +1,6 @@
 package de.fabmax.kool.pipeline.backend.gl
 
+import de.fabmax.kool.math.MutableVec3i
 import de.fabmax.kool.pipeline.TextureData
 import de.fabmax.kool.pipeline.TextureData1d
 import de.fabmax.kool.pipeline.TextureData2d
@@ -21,6 +22,7 @@ object GlImpl : GlApi {
     override val COLOR_BUFFER_BIT = GL_COLOR_BUFFER_BIT
     override val COMPARE_REF_TO_TEXTURE = GL_COMPARE_REF_TO_TEXTURE
     override val COMPILE_STATUS = GL_COMPILE_STATUS
+    override val COMPUTE_SHADER = GL_COMPUTE_SHADER
     override val CULL_FACE = GL_CULL_FACE
     override val DEPTH_ATTACHMENT = GL_DEPTH_ATTACHMENT
     override val DEPTH_BUFFER_BIT = GL_DEPTH_BUFFER_BIT
@@ -113,6 +115,22 @@ object GlImpl : GlApi {
     override val EQUAL = GL_EQUAL
     override val NOTEQUAL = GL_NOTEQUAL
 
+    override val VERTEX_ATTRIB_ARRAY_BARRIER_BIT = GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT
+    override val ELEMENT_ARRAY_BARRIER_BIT = GL_ELEMENT_ARRAY_BARRIER_BIT
+    override val UNIFORM_BARRIER_BIT = GL_UNIFORM_BARRIER_BIT
+    override val TEXTURE_FETCH_BARRIER_BIT = GL_TEXTURE_FETCH_BARRIER_BIT
+    override val SHADER_IMAGE_ACCESS_BARRIER_BIT = GL_SHADER_IMAGE_ACCESS_BARRIER_BIT
+    override val COMMAND_BARRIER_BIT = GL_COMMAND_BARRIER_BIT
+    override val PIXEL_BUFFER_BARRIER_BIT = GL_PIXEL_BUFFER_BARRIER_BIT
+    override val TEXTURE_UPDATE_BARRIER_BIT = GL_TEXTURE_UPDATE_BARRIER_BIT
+    override val BUFFER_UPDATE_BARRIER_BIT = GL_BUFFER_UPDATE_BARRIER_BIT
+    override val CLIENT_MAPPED_BUFFER_BARRIER_BIT = GL_CLIENT_MAPPED_BUFFER_BARRIER_BIT
+    override val FRAMEBUFFER_BARRIER_BIT = GL_FRAMEBUFFER_BARRIER_BIT
+    override val TRANSFORM_FEEDBACK_BARRIER_BIT = GL_TRANSFORM_FEEDBACK_BARRIER_BIT
+    override val ATOMIC_COUNTER_BARRIER_BIT = GL_ATOMIC_COUNTER_BARRIER_BIT
+    override val SHADER_STORAGE_BARRIER_BIT = GL_SHADER_STORAGE_BARRIER_BIT
+    override val QUERY_BUFFER_BARRIER_BIT = GL_QUERY_BUFFER_BARRIER_BIT
+
     override val DEFAULT_FRAMEBUFFER: GlFramebuffer = GlFramebuffer(GL_NONE)
     override val NULL_BUFFER: GlBuffer = GlBuffer(GL_NONE)
     override val NULL_TEXTURE: GlTexture = GlTexture(0)
@@ -166,6 +184,7 @@ object GlImpl : GlApi {
     override fun depthMask(flag: Boolean) = glDepthMask(flag)
     override fun disable(cap: Int) = glDisable(cap)
     override fun disableVertexAttribArray(index: Int) = glDisableVertexAttribArray(index)
+    override fun dispatchCompute(numGroupsX: Int, numGroupsY: Int, numGroupsZ: Int) = glDispatchCompute(numGroupsX, numGroupsY, numGroupsZ)
     override fun drawBuffers(buffers: IntArray) = glDrawBuffers(buffers)
     override fun drawElements(mode: Int, count: Int, type: Int) = glDrawElements(mode, count, type, 0L)
     override fun drawElementsInstanced(mode: Int, count: Int, type: Int, instanceCount: Int) = glDrawElementsInstanced(mode, count, type, 0L, instanceCount)
@@ -187,6 +206,7 @@ object GlImpl : GlApi {
     override fun getUniformLocation(program: GlProgram, uniformName: String): Int = glGetUniformLocation(program.handle, uniformName)
     override fun lineWidth(width: Float) = glLineWidth(width)
     override fun linkProgram(program: GlProgram) = glLinkProgram(program.handle)
+    override fun memoryBarrier(barriers: Int) = glMemoryBarrier(barriers)
     override fun readBuffer(src: Int) = glReadBuffer(src)
     override fun renderbufferStorage(target: Int, internalformat: Int, width: Int, height: Int) = glRenderbufferStorage(target, internalformat, width, height)
     override fun renderbufferStorageMultisample(target: Int, samples: Int, internalformat: Int, width: Int, height: Int) = glRenderbufferStorageMultisample(target, samples, internalformat, width, height)
@@ -238,11 +258,35 @@ object GlImpl : GlApi {
         val canFastCopyTextures = version.isHigherOrEqualThan(4, 3)
         val hasClipControl = version.isHigherOrEqualThan(4, 5)
 
+        val hasComputeShaders = version.isHigherOrEqualThan(4, 3)
+        val workGroupCount = MutableVec3i()
+        val workGroupSize = MutableVec3i()
+        var maxInvocations = 0
+        if (hasComputeShaders) {
+            MemoryStack.stackPush().use { stack ->
+                val r = stack.callocInt(1)
+                glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0, r).also { workGroupCount.x = r[0] }
+                glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 1, r).also { workGroupCount.y = r[0] }
+                glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 2, r).also { workGroupCount.z = r[0] }
+
+                glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 0, r).also { workGroupSize.x = r[0] }
+                glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 1, r).also { workGroupSize.y = r[0] }
+                glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 2, r).also { workGroupSize.z = r[0] }
+                maxInvocations = glGetInteger(GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS)
+
+                logD { "Compute shader support available. Max workgroups: $workGroupCount, max workgroup size: $workGroupSize, max invocations per workgroup: $maxInvocations" }
+            }
+        }
+
         capabilities = GlCapabilities(
             maxTexUnits,
             maxAnisotropy,
             canFastCopyTextures,
-            hasClipControl
+            hasClipControl,
+            hasComputeShaders,
+            workGroupCount,
+            workGroupSize,
+            maxInvocations
         )
     }
 

@@ -167,12 +167,13 @@ class ModelComponent(nodeModel: SceneNodeModel, override val componentData: Mode
         if (material != null) {
             model.meshes.forEach { (name, mesh) ->
                 val shader = material.createShader(sceneModel.shaderData)
-                if (mesh.geometry.hasAttributes(shader.requiredVertexAttributes)) {
+                val requiredAttribs = shader.findRequiredVertexAttributes()
+                if (mesh.geometry.hasAttributes(requiredAttribs)) {
                     mesh.shader = shader
                 } else {
                     logE {
                         "Model ${componentData.modelPath}: sub-mesh $name misses required vertex attributes to apply " +
-                                "material: ${(shader.requiredVertexAttributes - mesh.geometry.vertexAttributes.toSet())}"
+                                "material: ${(requiredAttribs - mesh.geometry.vertexAttributes.toSet())}"
                     }
                 }
             }

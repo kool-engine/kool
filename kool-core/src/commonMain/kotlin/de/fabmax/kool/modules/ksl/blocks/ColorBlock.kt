@@ -81,14 +81,23 @@ class ColorBlockFragmentStage(
     }
 
     private fun texCoordBlock(parentStage: KslShaderStage): TexCoordAttributeBlock {
-        return parentStage.program.vertexStage.findBlock()
-            ?: parentStage.program.vertexStage.main.run { texCoordAttributeBlock() }
+        var block: TexCoordAttributeBlock? = parentStage.program.vertexStage?.findBlock()
+        if (block == null) {
+            parentStage.program.vertexStage {
+                main { block = texCoordAttributeBlock() }
+            }
+        }
+        return block!!
     }
 
     private fun vertexBlock(parentStage: KslShaderStage): ColorBlockVertexStage {
-        return vertexColorBlock
-            ?: parentStage.program.vertexStage.findBlock(cfg.colorName)
-            ?: parentStage.program.vertexStage.main.run { vertexColorBlock(cfg) }
+        var block: ColorBlockVertexStage? = vertexColorBlock ?: parentStage.program.vertexStage?.findBlock(cfg.colorName)
+        if (block == null) {
+            parentStage.program.vertexStage {
+                main { block = vertexColorBlock(cfg) }
+            }
+        }
+        return block!!
     }
 
     private fun KslScopeBuilder.blendColor(blendMode: ColorBlockConfig.BlendMode, value: KslExprFloat4) {

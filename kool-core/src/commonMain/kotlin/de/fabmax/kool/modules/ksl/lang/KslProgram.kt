@@ -1,5 +1,6 @@
 package de.fabmax.kool.modules.ksl.lang
 
+import de.fabmax.kool.math.Vec3i
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.KslShaderListener
 import kotlin.contracts.InvocationKind
@@ -21,11 +22,16 @@ open class KslProgram(val name: String) {
     val commonUniformBuffer = KslUniformBuffer("CommonUniforms", this)
     val uniformBuffers = mutableListOf(commonUniformBuffer)
     val uniformSamplers = mutableMapOf<String, KslUniform<*>>()
-
     val dataBlocks = mutableListOf<KslDataBlock>()
-    val vertexStage = KslVertexStage(this)
-    val fragmentStage = KslFragmentStage(this)
-    val stages = listOf(vertexStage, fragmentStage)
+
+    var vertexStage: KslVertexStage? = null
+        private set
+    var fragmentStage: KslFragmentStage? = null
+        private set
+    var computeStage: KslComputeStage? = null
+        private set
+    private val _stages = mutableListOf<KslShaderStage>()
+    val stages: List<KslShaderStage> get() = _stages
 
     val shaderListeners = mutableListOf<KslShaderListener>()
 
@@ -33,14 +39,44 @@ open class KslProgram(val name: String) {
         contract {
             callsInPlace(block, InvocationKind.EXACTLY_ONCE)
         }
-        vertexStage.apply(block)
+        val stage = vertexStage ?: KslVertexStage(this).also {
+            initGlobalScope(it)
+            vertexStage = it
+            _stages += it
+        }
+        stage.apply(block)
     }
 
     fun fragmentStage(block: KslFragmentStage.() -> Unit) {
         contract {
             callsInPlace(block, InvocationKind.EXACTLY_ONCE)
         }
-        fragmentStage.apply(block)
+        val stage = fragmentStage ?: KslFragmentStage(this).also {
+            initGlobalScope(it)
+            fragmentStage = it
+            _stages += it
+        }
+        stage.apply(block)
+    }
+
+    fun computeStage(workGroupSizeX: Int = 1, workGroupSizeY: Int = 1, workGroupSizeZ: Int = 1, block: KslComputeStage.() -> Unit) {
+        contract {
+            callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+        }
+        val stage = computeStage
+            ?: KslComputeStage(this, Vec3i(workGroupSizeX, workGroupSizeY, workGroupSizeZ)).also {
+                initGlobalScope(it)
+                computeStage = it
+                _stages += it
+            }
+        stage.apply(block)
+    }
+
+    private fun initGlobalScope(stage: KslShaderStage) {
+        uniformBuffers.forEach { ubo ->
+            ubo.uniforms.values.forEach { stage.globalScope.definedStates += it.value }
+        }
+        uniformSamplers.values.forEach { stage.globalScope.definedStates += it.value }
     }
 
     private fun registerSampler(uniform: KslUniform<*>) {
@@ -105,9 +141,18 @@ open class KslProgram(val name: String) {
     fun depthTextureArrayCube(name: String, arraySize: Int) = getOrCreateSampler(name) { KslUniformArray(KslArrayGeneric(name, KslTypeDepthSamplerCube, arraySize, false)) }
 
     private fun registerInterStageVar(interStageVar: KslInterStageVar<*>) {
-        stages.forEach { it.interStageVars += interStageVar }
-        vertexStage.globalScope.definedStates += interStageVar.input
-        fragmentStage.globalScope.definedStates += interStageVar.output
+        // make sure vertex and fragment stage are created
+        vertexStage {  }
+        fragmentStage {  }
+
+        stages.forEach {
+            it.interStageVars += interStageVar
+            if (it.type == KslShaderStageType.VertexShader) {
+                it.globalScope.definedStates += interStageVar.input
+            } else if (it.type == KslShaderStageType.FragmentShader) {
+                it.globalScope.definedStates += interStageVar.output
+            }
+        }
     }
 
     private fun <S> interStageScalar(type: S, interpolation: KslInterStageInterpolation, name: String):
@@ -178,12 +223,12 @@ open class KslProgram(val name: String) {
 
             // remove unused uniforms
             uniformBuffers.filter { !it.isShared }.forEach {
-                it.uniforms.values.retainAll { u -> vertexStage.dependsOn(u) || fragmentStage.dependsOn(u) }
+                it.uniforms.values.retainAll { u -> stages.any { stage -> stage.dependsOn(u) } }
             }
             uniformBuffers.removeAll { it.uniforms.isEmpty() }
 
             // remove unused texture samplers
-            uniformSamplers.values.retainAll { u -> vertexStage.dependsOn(u) || fragmentStage.dependsOn(u) }
+            uniformSamplers.values.retainAll { u -> stages.any { stage -> stage.dependsOn(u) } }
         }
     }
 

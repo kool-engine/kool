@@ -1,5 +1,6 @@
 package de.fabmax.kool.pipeline.backend.gl
 
+import de.fabmax.kool.math.Vec3i
 import de.fabmax.kool.pipeline.TextureData
 import de.fabmax.kool.util.*
 import kotlin.jvm.JvmInline
@@ -27,6 +28,7 @@ interface GlApi {
     val COLOR_BUFFER_BIT: Int
     val COMPARE_REF_TO_TEXTURE: Int
     val COMPILE_STATUS: Int
+    val COMPUTE_SHADER: Int
     val CULL_FACE: Int
     val DEPTH_ATTACHMENT: Int
     val DEPTH_BUFFER_BIT: Int
@@ -119,6 +121,22 @@ interface GlApi {
     val EQUAL: Int
     val NOTEQUAL: Int
 
+    val VERTEX_ATTRIB_ARRAY_BARRIER_BIT: Int
+    val ELEMENT_ARRAY_BARRIER_BIT: Int
+    val UNIFORM_BARRIER_BIT: Int
+    val TEXTURE_FETCH_BARRIER_BIT: Int
+    val SHADER_IMAGE_ACCESS_BARRIER_BIT: Int
+    val COMMAND_BARRIER_BIT: Int
+    val PIXEL_BUFFER_BARRIER_BIT: Int
+    val TEXTURE_UPDATE_BARRIER_BIT: Int
+    val BUFFER_UPDATE_BARRIER_BIT: Int
+    val CLIENT_MAPPED_BUFFER_BARRIER_BIT: Int
+    val FRAMEBUFFER_BARRIER_BIT: Int
+    val TRANSFORM_FEEDBACK_BARRIER_BIT: Int
+    val ATOMIC_COUNTER_BARRIER_BIT: Int
+    val SHADER_STORAGE_BARRIER_BIT: Int
+    val QUERY_BUFFER_BARRIER_BIT: Int
+
     val DEFAULT_FRAMEBUFFER: GlFramebuffer
     val NULL_BUFFER: GlBuffer
     val NULL_TEXTURE: GlTexture
@@ -167,6 +185,7 @@ interface GlApi {
     fun depthMask(flag: Boolean)
     fun disable(cap: Int)
     fun disableVertexAttribArray(index: Int)
+    fun dispatchCompute(numGroupsX: Int, numGroupsY: Int, numGroupsZ: Int)
     fun drawBuffers(buffers: IntArray)
     fun drawElements(mode: Int, count: Int, type: Int)
     fun drawElementsInstanced(mode: Int, count: Int, type: Int, instanceCount: Int)
@@ -188,6 +207,7 @@ interface GlApi {
     fun getUniformLocation(program: GlProgram, uniformName: String): Int
     fun lineWidth(width: Float)
     fun linkProgram(program: GlProgram)
+    fun memoryBarrier(barriers: Int)
     fun readBuffer(src: Int)
     fun renderbufferStorage(target: Int, internalformat: Int, width: Int, height: Int)
     fun renderbufferStorageMultisample(target: Int, samples: Int, internalformat: Int, width: Int, height: Int)
@@ -255,5 +275,10 @@ data class GlCapabilities(
     val maxTexUnits: Int,
     val maxAnisotropy: Int,
     val canFastCopyTextures: Boolean,
-    val hasClipControl: Boolean
+    val hasClipControl: Boolean,
+
+    val hasComputeShaders: Boolean = false,
+    val maxWorkGroupCount: Vec3i = Vec3i.ZERO,
+    val maxWorkGroupSize: Vec3i = Vec3i.ZERO,
+    val maxWorkGroupInvocations: Int = 0
 )

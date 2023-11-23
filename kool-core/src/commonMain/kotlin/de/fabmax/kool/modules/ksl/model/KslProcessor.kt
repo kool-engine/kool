@@ -47,12 +47,13 @@ class KslProcessor {
 
     private fun failScope(scope: KslScope, remainingOps: Set<KslOp>): Nothing {
         logE { "Unable to process scope, ${remainingOps.size} ops remain:" }
-        remainingOps.forEach {
+        remainingOps.forEach { op ->
+            val states = processorState.statesInScope.values.toSet()
             logE {
-                "${it.opName} \n" +
-                        "        depends on: ${it.dependencies.values.joinToString { it.toString() }}\n" +
-                        "        mutates:    ${it.mutations.values.joinToString { it.toString() }}\n" +
-                        "        prevents:   ${findPreventingOp(it, remainingOps) ?: "none"}"
+                "${op.opName} \n" +
+                        "        depends on: ${op.dependencies.values.joinToString { it.toString() + if (it !in states) " [missing]" else "" }}\n" +
+                        "        mutates:    ${op.mutations.values.joinToString { it.toString() }}\n" +
+                        "        prevents:   ${findPreventingOp(op, remainingOps) ?: "none"}"
             }
         }
         logE { "Processor state:" }

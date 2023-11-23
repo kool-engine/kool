@@ -5,7 +5,7 @@ import de.fabmax.kool.util.logE
 class KslProcessorState {
     private val stack = mutableListOf<ScopeState>()
 
-    private val statesInScope: Map<KslState, KslMutatedState>
+    val statesInScope: Map<KslState, KslMutatedState>
         get() = if (stack.isEmpty()) emptyMap() else stack.last()
 
     val stackTrace: String
