@@ -30,7 +30,7 @@ class KslIf(val condition: KslExpression<KslBool1>, parentScope: KslScopeBuilder
     }
 
     override fun toPseudoCode(): String {
-        val str = StringBuilder("if (${condition.toPseudoCode()}) // ${dependenciesAndMutationsToString()}\n")
+        val str = StringBuilder(annotatePseudoCode("if (${condition.toPseudoCode()})") + "\n")
         str.append(body.toPseudoCode())
         elseIfs.forEach {
             str.append(" else if (${it.first.toPseudoCode()}) ${it.second.toPseudoCode()}")

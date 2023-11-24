@@ -11,7 +11,7 @@ sealed class KslFloatType(typeName: String) : KslNumericType(typeName)
 sealed class KslIntType(typeName: String) : KslNumericType(typeName)
 sealed class KslBoolType(typeName: String) : KslType(typeName)
 sealed class KslSamplerType<R: KslNumericType>(typeName: String) : KslType(typeName)
-sealed class KslStorageType<R: KslNumericType>(typeName: String) : KslType(typeName)
+sealed class KslStorageType<R: KslNumericType, C: KslIntType>(typeName: String, val elemType: R, val coordType: C) : KslType(typeName)
 
 interface KslScalar
 
@@ -119,11 +119,21 @@ object KslDepthSampler2DArray : KslDepthSampler<KslFloat4>("depthSampler2dArray"
 object KslDepthSamplerCubeArray : KslDepthSampler<KslFloat4>("depthSamplerCubeArray"), KslSamplerCubeArrayType
 
 
-sealed class KslStorage1d<R: KslNumericType>(typeName: String, val elemType: R) : KslStorageType<R>(typeName)
-sealed class KslStorage2d<R: KslNumericType>(typeName: String, val elemType: R) : KslStorageType<R>(typeName)
-sealed class KslStorage3d<R: KslNumericType>(typeName: String, val elemType: R) : KslStorageType<R>(typeName)
+sealed class KslStorage1dType<R: KslNumericType>(typeName: String, elemType: R) : KslStorageType<R, KslInt1>(typeName, elemType, KslInt1)
+sealed class KslStorage2dType<R: KslNumericType>(typeName: String, elemType: R) : KslStorageType<R, KslInt2>(typeName, elemType, KslInt2)
+sealed class KslStorage3dType<R: KslNumericType>(typeName: String, elemType: R) : KslStorageType<R, KslInt3>(typeName, elemType, KslInt3)
 
-object KslStorage1dFloat1 : KslStorage1d<KslFloat1>("float1", KslFloat1)
-object KslStorage1dFloat2 : KslStorage1d<KslFloat2>("float2", KslFloat2)
-object KslStorage1dFloat3 : KslStorage1d<KslFloat3>("float3", KslFloat3)
-object KslStorage1dFloat4 : KslStorage1d<KslFloat4>("float4", KslFloat4)
+object KslStorage1dFloat1 : KslStorage1dType<KslFloat1>("float1", KslFloat1)
+object KslStorage1dFloat2 : KslStorage1dType<KslFloat2>("float2", KslFloat2)
+object KslStorage1dFloat3 : KslStorage1dType<KslFloat3>("float3", KslFloat3)
+object KslStorage1dFloat4 : KslStorage1dType<KslFloat4>("float4", KslFloat4)
+
+object KslStorage1dInt1 : KslStorage1dType<KslInt1>("int1", KslInt1)
+object KslStorage1dInt2 : KslStorage1dType<KslInt2>("int2", KslInt2)
+object KslStorage1dInt3 : KslStorage1dType<KslInt3>("int3", KslInt3)
+object KslStorage1dInt4 : KslStorage1dType<KslInt4>("int4", KslInt4)
+
+object KslStorage1dUint1 : KslStorage1dType<KslUint1>("uint1", KslUint1)
+object KslStorage1dUint2 : KslStorage1dType<KslUint2>("uint2", KslUint2)
+object KslStorage1dUint3 : KslStorage1dType<KslUint3>("uint3", KslUint3)
+object KslStorage1dUint4 : KslStorage1dType<KslUint4>("uint4", KslUint4)

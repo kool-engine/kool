@@ -15,7 +15,7 @@ class KslLoopDoWhile(val whileExpression: KslScalarExpression<KslBool1>, parentS
     override fun toPseudoCode(): String {
         val str = StringBuilder("do\n")
         str.appendLine(body.toPseudoCode())
-        str.append("do-while (${whileExpression.toPseudoCode()}) // ${dependenciesAndMutationsToString()}")
+        str.append(annotatePseudoCode("do-while (${whileExpression.toPseudoCode()})"))
         return str.toString()
     }
 }

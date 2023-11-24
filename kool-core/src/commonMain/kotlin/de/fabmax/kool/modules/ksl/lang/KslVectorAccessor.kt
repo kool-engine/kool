@@ -4,8 +4,12 @@ import de.fabmax.kool.modules.ksl.generator.KslGenerator
 import de.fabmax.kool.modules.ksl.model.KslMutatedState
 import kotlin.math.max
 
-abstract class KslVectorAccessor<T: KslType>(val vector: KslExpression<*>, val components: String, val type: T, expectedLength: Int)
-    : KslExpression<T>, KslAssignable<T> {
+abstract class KslVectorAccessor<T: KslType>(
+    val vector: KslExpression<*>,
+    val components: String,
+    val type: T,
+    expectedLength: Int
+) : KslExpression<T>, KslAssignable<T> {
 
     override val expressionType = type
     override val assignType = type

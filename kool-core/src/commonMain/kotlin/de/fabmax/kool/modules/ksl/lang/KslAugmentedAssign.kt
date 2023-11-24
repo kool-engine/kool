@@ -11,6 +11,6 @@ class KslAugmentedAssign<T: KslType>(val assignTarget: KslAssignable<T>, val aug
     }
 
     override fun toPseudoCode(): String {
-        return "${assignTarget.toPseudoCode()} ${augmentationMode.opChar}= ${assignExpression.toPseudoCode()} // ${dependenciesAndMutationsToString()}"
+        return annotatePseudoCode("${assignTarget.toPseudoCode()} ${augmentationMode.opChar}= ${assignExpression.toPseudoCode()}")
     }
 }

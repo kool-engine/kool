@@ -14,7 +14,7 @@ class KslDeclareVar(val declareVar: KslVar<*>, initExpression: KslExpression<*>?
     }
 
     override fun toPseudoCode(): String {
-        return "declare(${declareVar.stateName}) = ${initExpression?.toPseudoCode()} // ${dependenciesAndMutationsToString()}"
+        return annotatePseudoCode("declare(${declareVar.stateName}) = ${initExpression?.toPseudoCode()}")
     }
 
     fun changeInitExpression(newInitExpression: KslExpression<*>?) {

@@ -7,6 +7,6 @@ class KslReturn(parentScope: KslScopeBuilder, val returnValue: KslExpression<*>)
     }
 
     override fun toPseudoCode(): String {
-        return "return ${returnValue.toPseudoCode()} // ${dependenciesAndMutationsToString()}"
+        return annotatePseudoCode("return ${returnValue.toPseudoCode()}")
     }
 }

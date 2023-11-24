@@ -1,7 +1,7 @@
 package de.fabmax.kool.modules.ksl.lang
 
-class KslAssign<T: KslType>(val assignTarget: KslAssignable<T>, val assignExpression: KslExpression<T>, scopeBuilder: KslScopeBuilder)
-    : KslStatement("assign", scopeBuilder)
+class KslAssign<T: KslType>(val assignTarget: KslAssignable<T>, val assignExpression: KslExpression<T>, scopeBuilder: KslScopeBuilder) :
+    KslStatement("assign", scopeBuilder)
 {
     init {
         assignTarget.checkIsAssignable(scopeBuilder)
@@ -11,6 +11,6 @@ class KslAssign<T: KslType>(val assignTarget: KslAssignable<T>, val assignExpres
     }
 
     override fun toPseudoCode(): String {
-        return "${assignTarget.toPseudoCode()} = ${assignExpression.toPseudoCode()} // ${dependenciesAndMutationsToString()}"
+        return annotatePseudoCode("${assignTarget.toPseudoCode()} = ${assignExpression.toPseudoCode()}")
     }
 }

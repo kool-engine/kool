@@ -17,7 +17,7 @@ class KslLoopFor<S>(
     }
 
     override fun toPseudoCode(): String {
-        val str = StringBuilder("for (${loopVar.toPseudoCode()}; ${whileExpression.toPseudoCode()}; ${loopVar.stateName} += ${incExpr.toPseudoCode()}) // ${dependenciesAndMutationsToString()}\n")
+        val str = StringBuilder(annotatePseudoCode("for (${loopVar.toPseudoCode()}; ${whileExpression.toPseudoCode()}; ${loopVar.stateName} += ${incExpr.toPseudoCode()})") + "\n")
         str.append(body.toPseudoCode())
         return str.toString()
     }

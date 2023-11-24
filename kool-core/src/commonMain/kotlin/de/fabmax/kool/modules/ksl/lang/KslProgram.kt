@@ -22,7 +22,7 @@ open class KslProgram(val name: String) {
     val commonUniformBuffer = KslUniformBuffer("CommonUniforms", this)
     val uniformBuffers = mutableListOf(commonUniformBuffer)
     val uniformSamplers = mutableMapOf<String, KslUniform<*>>()
-    val uniformStorage = mutableMapOf<String, KslUniform<*>>()
+    val uniformStorage = mutableMapOf<String, KslStorage<*,*>>()
     val dataBlocks = mutableListOf<KslDataBlock>()
 
     var vertexStage: KslVertexStage? = null
@@ -87,10 +87,10 @@ open class KslProgram(val name: String) {
         }
     }
 
-    @PublishedApi internal fun registerStorage(uniform: KslUniform<*>) {
-        uniformStorage[uniform.name] = uniform
+    @PublishedApi internal fun registerStorage(storage: KslStorage<*,*>) {
+        uniformStorage[storage.name] = storage
         stages.forEach {
-            it.globalScope.definedStates += uniform.value
+            it.globalScope.definedStates += storage
         }
     }
 
@@ -148,22 +148,32 @@ open class KslProgram(val name: String) {
     fun depthTextureArray2d(name: String, arraySize: Int) = getOrCreateSampler(name) { KslUniformArray(KslArrayGeneric(name, KslDepthSampler2D, arraySize, false)) }
     fun depthTextureArrayCube(name: String, arraySize: Int) = getOrCreateSampler(name) { KslUniformArray(KslArrayGeneric(name, KslDepthSamplerCube, arraySize, false)) }
 
-    inline fun <reified T: KslNumericType> storage1d(name: String): KslUniform<KslStorage1d<T>> {
-        val uniform: KslUniform<*> = uniformStorage[name] ?: (
-                if (KslFloat1 is T) KslUniform(KslVar(name, KslStorage1dFloat1, false))
-           else if (KslFloat2 is T) KslUniform(KslVar(name, KslStorage1dFloat2, false))
-           else if (KslFloat3 is T) KslUniform(KslVar(name, KslStorage1dFloat3, false))
-           else if (KslFloat4 is T) KslUniform(KslVar(name, KslStorage1dFloat4, false))
+    inline fun <reified T: KslNumericType> storage1d(name: String): KslStorage1d<KslStorage1dType<T>> {
+        val storage: KslStorage<*,*> = uniformStorage[name] ?: (
+                if (KslFloat1 is T) KslStorage1d(name, KslStorage1dFloat1)
+           else if (KslFloat2 is T) KslStorage1d(name, KslStorage1dFloat2)
+           else if (KslFloat3 is T) KslStorage1d(name, KslStorage1dFloat3)
+           else if (KslFloat4 is T) KslStorage1d(name, KslStorage1dFloat4)
+
+           else if (KslInt1 is T)   KslStorage1d(name, KslStorage1dInt1)
+           else if (KslInt2 is T)   KslStorage1d(name, KslStorage1dInt2)
+           else if (KslInt3 is T)   KslStorage1d(name, KslStorage1dInt3)
+           else if (KslInt4 is T)   KslStorage1d(name, KslStorage1dInt4)
+
+           else if (KslUint1 is T)  KslStorage1d(name, KslStorage1dUint1)
+           else if (KslUint2 is T)  KslStorage1d(name, KslStorage1dUint2)
+           else if (KslUint3 is T)  KslStorage1d(name, KslStorage1dUint3)
+           else if (KslUint4 is T)  KslStorage1d(name, KslStorage1dUint4)
+
            else throw IllegalArgumentException("Unsupported storage type")
         ).also { registerStorage(it) }
 
-        uniform.value.expressionType.let {
-            check(it is KslStorage1d<*> && it.elemType is T) {
-                "Existing uniform with name \"$name\" has not the expected type"
-            }
+        check(storage is KslStorage1d<*> && storage.storage.elemType is T) {
+            "Existing uniform with name \"$name\" has not the expected type"
         }
+
         @Suppress("UNCHECKED_CAST")
-        return uniform as KslUniform<KslStorage1d<T>>
+        return storage as KslStorage1d<KslStorage1dType<T>>
     }
 
     private fun registerInterStageVar(interStageVar: KslInterStageVar<*>) {

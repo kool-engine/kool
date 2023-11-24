@@ -24,7 +24,7 @@ open class KslOp(val opName: String, val parentScope: KslScope) {
     }
 
     open fun toPseudoCode(): String {
-        val str = StringBuilder("$opName // ${dependenciesAndMutationsToString()}")
+        val str = StringBuilder(annotatePseudoCode(opName))
         childScopes.forEach {
             str.append("\n${it.toPseudoCode()}")
         }
@@ -34,6 +34,15 @@ open class KslOp(val opName: String, val parentScope: KslScope) {
     protected fun dependenciesAndMutationsToString(): String {
         return "depends on: [${if (dependencies.isNotEmpty()) dependencies.values.joinToString { it.toString() } else "none"}]; " +
                 "mutates: [${if (mutations.isNotEmpty()) mutations.values.joinToString { it.toString() } else "none"}]; "
+    }
+
+    protected fun annotatePseudoCode(pseudoCode: String): String {
+        val annotated = StringBuilder(pseudoCode)
+        while (annotated.length < 80) {
+            annotated.append(" ")
+        }
+        annotated.append("# " + dependenciesAndMutationsToString())
+        return annotated.toString()
     }
 
     open fun validate() {

@@ -28,6 +28,6 @@ class KslDeclareArray(val declareVar: KslArray<*>, val elements: List<KslExpress
     }
 
     override fun toPseudoCode(): String {
-        return "declareArray(${declareVar.stateName}) = (${elements.joinToString { it.toPseudoCode() }}) // ${dependenciesAndMutationsToString()}"
+        return annotatePseudoCode("declareArray(${declareVar.stateName}) = (${elements.joinToString { it.toPseudoCode() }})")
     }
 }

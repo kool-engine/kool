@@ -497,6 +497,16 @@ open class GlslGenerator(val glslVersionStr: String) : KslGenerator() {
             KslStorage1dFloat3 -> TODO()
             KslStorage1dFloat4 -> TODO()
 
+            KslStorage1dInt1 -> TODO()
+            KslStorage1dInt2 -> TODO()
+            KslStorage1dInt3 -> TODO()
+            KslStorage1dInt4 -> TODO()
+
+            KslStorage1dUint1 -> TODO()
+            KslStorage1dUint2 -> TODO()
+            KslStorage1dUint3 -> TODO()
+            KslStorage1dUint4 -> TODO()
+
             is KslArrayType<*> -> "${glslTypeName(type.elemType)}[${type.arraySize}]"
         }
     }
