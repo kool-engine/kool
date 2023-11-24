@@ -56,7 +56,7 @@ open class DeferredKslPbrShader(cfg: Config) : KslShader(deferredPbrModel(cfg), 
             val camData = cameraData()
             val positionViewSpace = interStageFloat3("positionWorldSpace")
             val normalViewSpace = interStageFloat3("normalWorldSpace")
-            var tangentViewSpace: KslInterStageVector<KslTypeFloat4, KslTypeFloat1>? = null
+            var tangentViewSpace: KslInterStageVector<KslFloat4, KslFloat1>? = null
 
             val texCoordBlock: TexCoordAttributeBlock
 

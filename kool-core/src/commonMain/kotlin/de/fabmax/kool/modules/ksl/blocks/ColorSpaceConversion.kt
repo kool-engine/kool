@@ -15,7 +15,7 @@ enum class ColorSpaceConversion {
  * Uncharted 2 tone mapping operator from: http://filmicworlds.com/blog/filmic-tonemapping-operators/
  */
 class ToneMapLinearColorUncharted2(parentScope: KslScopeBuilder) :
-    KslFunction<KslTypeFloat3>(FUNC_NAME, KslTypeFloat3, parentScope.parentStage) {
+    KslFunction<KslFloat3>(FUNC_NAME, KslFloat3, parentScope.parentStage) {
 
     init {
         val linearColor = paramFloat3("linearColor")
@@ -56,7 +56,7 @@ class ToneMapLinearColorUncharted2(parentScope: KslScopeBuilder) :
 }
 
 fun KslScopeBuilder.convertColorSpace(inputColor: KslExprFloat3, conversion: ColorSpaceConversion):
-        KslVectorExpression<KslTypeFloat3, KslTypeFloat1> {
+        KslVectorExpression<KslFloat3, KslFloat1> {
     return when(conversion) {
         ColorSpaceConversion.AS_IS -> inputColor
         ColorSpaceConversion.sRGB_TO_LINEAR -> pow(inputColor, Vec3f(Color.GAMMA_sRGB_TO_LINEAR).const)

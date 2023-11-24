@@ -126,18 +126,18 @@ operator fun <V, S> KslScalarExpression<S>.times(right: KslVectorExpression<V, S
 }
 
 // matrix * vector
-operator fun <M, V> KslMatrixExpression<M, V>.times(right: KslVectorExpression<V, KslTypeFloat1>): KslExpressionMathVector<V, KslTypeFloat1>
-        where M: KslFloatType, M: KslMatrix<V>, V: KslFloatType, V: KslVector<KslTypeFloat1> {
+operator fun <M, V> KslMatrixExpression<M, V>.times(right: KslVectorExpression<V, KslFloat1>): KslExpressionMathVector<V, KslFloat1>
+        where M: KslFloatType, M: KslMatrix<V>, V: KslFloatType, V: KslVector<KslFloat1> {
     return KslExpressionMathVector(this, right, KslMathOperator.Times, right.expressionType)
 }
 // vector * matrix
-operator fun <M, V> KslVectorExpression<V, KslTypeFloat1>.times(right: KslMatrixExpression<M, V>): KslExpressionMathVector<V, KslTypeFloat1>
-        where M: KslFloatType, M: KslMatrix<V>, V: KslFloatType, V: KslVector<KslTypeFloat1> {
+operator fun <M, V> KslVectorExpression<V, KslFloat1>.times(right: KslMatrixExpression<M, V>): KslExpressionMathVector<V, KslFloat1>
+        where M: KslFloatType, M: KslMatrix<V>, V: KslFloatType, V: KslVector<KslFloat1> {
     return KslExpressionMathVector(this, right, KslMathOperator.Times, expressionType)
 }
 // matrix * scalar
-operator fun <M, V> KslMatrixExpression<M, V>.times(right: KslScalarExpression<KslTypeFloat1>): KslExpressionMathMatrix<M, V>
-        where M: KslFloatType, M: KslMatrix<V>, V: KslFloatType, V: KslVector<KslTypeFloat1> {
+operator fun <M, V> KslMatrixExpression<M, V>.times(right: KslScalarExpression<KslFloat1>): KslExpressionMathMatrix<M, V>
+        where M: KslFloatType, M: KslMatrix<V>, V: KslFloatType, V: KslVector<KslFloat1> {
     return KslExpressionMathMatrix(this, right, KslMathOperator.Times, expressionType)
 }
 // matrix * matrix

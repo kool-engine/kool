@@ -5,7 +5,7 @@ import de.fabmax.kool.modules.ksl.lang.*
 import kotlin.math.PI
 
 class Hammersley(parentScope: KslScopeBuilder) :
-    KslFunction<KslTypeFloat2>("Hammersley", KslTypeFloat2, parentScope.parentStage) {
+    KslFunction<KslFloat2>("Hammersley", KslFloat2, parentScope.parentStage) {
 
     init {
         val i = paramInt1("i")
@@ -33,7 +33,7 @@ fun KslScopeBuilder.hammersley(
 }
 
 class ImportanceSampleGgx(parentScope: KslScopeBuilder) :
-    KslFunction<KslTypeFloat3>("ImportanceSampleGgx", KslTypeFloat3, parentScope.parentStage) {
+    KslFunction<KslFloat3>("ImportanceSampleGgx", KslFloat3, parentScope.parentStage) {
 
     init {
         val xi = paramFloat2("xi")
@@ -78,7 +78,7 @@ fun KslScopeBuilder.importanceSampleGgx(
     return func(xi, n, roughness)
 }
 
-fun KslShaderStage.environmentMapSampler2d(program: KslProgram, texName: String): KslFunction<KslTypeFloat3> {
+fun KslShaderStage.environmentMapSampler2d(program: KslProgram, texName: String): KslFunction<KslFloat3> {
     val tex = program.texture2d(texName)
     return functionFloat3("sampleEnv2d") {
         val coord = paramFloat3("coord")
@@ -93,7 +93,7 @@ fun KslShaderStage.environmentMapSampler2d(program: KslProgram, texName: String)
     }
 }
 
-fun KslShaderStage.environmentMapSamplerCube(program: KslProgram, texName: String): KslFunction<KslTypeFloat3> {
+fun KslShaderStage.environmentMapSamplerCube(program: KslProgram, texName: String): KslFunction<KslFloat3> {
     val tex = program.textureCube(texName)
     return functionFloat3("sampleEnvCube") {
         val coord = paramFloat3("coord")

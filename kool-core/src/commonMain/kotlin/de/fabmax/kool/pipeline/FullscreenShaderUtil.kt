@@ -25,7 +25,7 @@ object FullscreenShaderUtil {
     /**
      * Generates the vertex stage for a simple fullscreen generator shader.
      */
-    fun KslProgram.fullscreenQuadVertexStage(uv: KslInterStageVector<KslTypeFloat2, KslTypeFloat1>?) {
+    fun KslProgram.fullscreenQuadVertexStage(uv: KslInterStageVector<KslFloat2, KslFloat1>?) {
         vertexStage {
             main {
                 uv?.let { it.input set vertexAttribFloat2(Attribute.TEXTURE_COORDS.name) }
@@ -41,7 +41,7 @@ object FullscreenShaderUtil {
         }
     }
 
-    fun KslProgram.fullscreenCubeVertexStage(localPos: KslInterStageVector<KslTypeFloat3, KslTypeFloat1>?) {
+    fun KslProgram.fullscreenCubeVertexStage(localPos: KslInterStageVector<KslFloat3, KslFloat1>?) {
         vertexStage {
             main {
                 val vertexPos = float3Var(vertexAttribFloat3(Attribute.POSITIONS.name))

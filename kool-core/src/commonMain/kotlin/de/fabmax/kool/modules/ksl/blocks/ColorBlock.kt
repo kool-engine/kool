@@ -20,8 +20,8 @@ fun KslScopeBuilder.fragmentColorBlock(cfg: ColorBlockConfig, vertexStage: Color
 }
 
 class ColorBlockVertexStage(cfg: ColorBlockConfig, parentScope: KslScopeBuilder) : KslBlock(cfg.colorName, parentScope) {
-    val vertexColors = mutableMapOf<ColorBlockConfig.VertexColor, KslInterStageVector<KslTypeFloat4, KslTypeFloat1>>()
-    val instanceColors = mutableMapOf<ColorBlockConfig.InstanceColor, KslInterStageVector<KslTypeFloat4, KslTypeFloat1>>()
+    val vertexColors = mutableMapOf<ColorBlockConfig.VertexColor, KslInterStageVector<KslFloat4, KslFloat1>>()
+    val instanceColors = mutableMapOf<ColorBlockConfig.InstanceColor, KslInterStageVector<KslFloat4, KslFloat1>>()
 
     init {
         body.apply {
@@ -49,7 +49,7 @@ class ColorBlockFragmentStage(
 
     val outColor = outFloat4(parentScope.nextName("${opName}_outColor"))
 
-    val textures = mutableMapOf<ColorBlockConfig.TextureColor, KslUniform<KslTypeColorSampler2d>>()
+    val textures = mutableMapOf<ColorBlockConfig.TextureColor, KslUniform<KslColorSampler2d>>()
 
     init {
         body.apply {
@@ -60,7 +60,7 @@ class ColorBlockFragmentStage(
             }
 
             cfg.colorSources.forEach { source ->
-                val colorValue: KslVectorExpression<KslTypeFloat4, KslTypeFloat1> = when (source) {
+                val colorValue: KslVectorExpression<KslFloat4, KslFloat1> = when (source) {
                     is ColorBlockConfig.ConstColor -> source.constColor.const
                     is ColorBlockConfig.UniformColor -> parentStage.program.uniformFloat4(source.uniformName)
                     is ColorBlockConfig.VertexColor -> vertexBlock(parentStage).vertexColors[source]?.output ?: Vec4f.ZERO.const

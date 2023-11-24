@@ -3,10 +3,11 @@ package de.fabmax.kool.modules.ksl.lang
 import de.fabmax.kool.modules.ksl.generator.KslGenerator
 import de.fabmax.kool.modules.ksl.model.KslMutatedState
 
-class KslBoolVectorExpr<T>(val boolVec: KslVectorExpression<T, KslTypeBool1>, val op: KslBoolVecOperator)
-    : KslScalarExpression<KslTypeBool1> where T: KslBoolType, T: KslVector<KslTypeBool1> {
+class KslBoolVectorExpr<T>(val boolVec: KslVectorExpression<T, KslBool1>, val op: KslBoolVecOperator) :
+    KslScalarExpression<KslBool1> where T: KslBoolType, T: KslVector<KslBool1>
+{
 
-    override val expressionType = KslTypeBool1
+    override val expressionType = KslBool1
     override fun collectStateDependencies(): Set<KslMutatedState> = boolVec.collectStateDependencies()
     override fun generateExpression(generator: KslGenerator): String = generator.boolVecExpression(this)
     override fun toPseudoCode(): String = "${op.opString}(${boolVec.toPseudoCode()})"
@@ -17,10 +18,11 @@ enum class KslBoolVecOperator(val opString: String) {
     All("all")
 }
 
-class KslBoolScalarExpr(val left: KslScalarExpression<KslTypeBool1>, val right: KslScalarExpression<KslTypeBool1>, val op: KslBoolScalarOperator)
-    : KslScalarExpression<KslTypeBool1> {
+class KslBoolScalarExpr(val left: KslScalarExpression<KslBool1>, val right: KslScalarExpression<KslBool1>, val op: KslBoolScalarOperator) :
+    KslScalarExpression<KslBool1>
+{
 
-    override val expressionType = KslTypeBool1
+    override val expressionType = KslBool1
     override fun collectStateDependencies(): Set<KslMutatedState> =
         left.collectStateDependencies() + right.collectStateDependencies()
 
@@ -33,19 +35,19 @@ enum class KslBoolScalarOperator(val opString: String) {
     Or("||")
 }
 
-infix fun KslScalarExpression<KslTypeBool1>.and(right: KslScalarExpression<KslTypeBool1>): KslBoolScalarExpr =
+infix fun KslScalarExpression<KslBool1>.and(right: KslScalarExpression<KslBool1>): KslBoolScalarExpr =
     KslBoolScalarExpr(this, right, KslBoolScalarOperator.And)
 
-infix fun KslScalarExpression<KslTypeBool1>.or(right: KslScalarExpression<KslTypeBool1>): KslBoolScalarExpr =
+infix fun KslScalarExpression<KslBool1>.or(right: KslScalarExpression<KslBool1>): KslBoolScalarExpr =
     KslBoolScalarExpr(this, right, KslBoolScalarOperator.Or)
 
 
-class KslBoolNotExpr(val expr: KslScalarExpression<KslTypeBool1>) : KslScalarExpression<KslTypeBool1> {
-    override val expressionType = KslTypeBool1
+class KslBoolNotExpr(val expr: KslScalarExpression<KslBool1>) : KslScalarExpression<KslBool1> {
+    override val expressionType = KslBool1
     override fun collectStateDependencies(): Set<KslMutatedState> = expr.collectStateDependencies()
 
     override fun generateExpression(generator: KslGenerator): String = generator.boolNotExpression(this)
     override fun toPseudoCode(): String = "!(${expr.toPseudoCode()})"
 }
 
-operator fun KslScalarExpression<KslTypeBool1>.not() = KslBoolNotExpr(this)
+operator fun KslScalarExpression<KslBool1>.not() = KslBoolNotExpr(this)

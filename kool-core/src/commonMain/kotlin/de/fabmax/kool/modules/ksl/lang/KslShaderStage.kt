@@ -76,10 +76,10 @@ class KslVertexStage(program: KslProgram) : KslShaderStage(program, KslShaderSta
 
     val attributes = mutableMapOf<String, KslVertexAttribute<*>>()
 
-    val inVertexIndex = KslStageInputScalar(KslVarScalar(NAME_IN_VERTEX_INDEX, KslTypeInt1, false))
-    val inInstanceIndex = KslStageInputScalar(KslVarScalar(NAME_IN_INSTANCE_INDEX, KslTypeInt1, false))
-    val outPosition = KslStageOutputVector(KslVarVector(NAME_OUT_POSITION, KslTypeFloat4, true))
-    val outPointSize = KslStageOutputScalar(KslVarScalar(NAME_OUT_POINT_SIZE, KslTypeFloat1, true))
+    val inVertexIndex = KslStageInputScalar(KslVarScalar(NAME_IN_VERTEX_INDEX, KslInt1, false))
+    val inInstanceIndex = KslStageInputScalar(KslVarScalar(NAME_IN_INSTANCE_INDEX, KslInt1, false))
+    val outPosition = KslStageOutputVector(KslVarVector(NAME_OUT_POSITION, KslFloat4, true))
+    val outPointSize = KslStageOutputScalar(KslVarScalar(NAME_OUT_POINT_SIZE, KslFloat1, true))
 
     init {
         globalScope.definedStates += inVertexIndex.value
@@ -108,23 +108,23 @@ class KslVertexStage(program: KslProgram) : KslShaderStage(program, KslShaderSta
     private fun <M, V> attribMatrix(name: String, type: M, rate: KslInputRate) where M: KslType, M: KslMatrix<V>, V: KslVector<*> =
         getOrCreateAttribute(name) { KslVertexAttributeMatrix(KslVarMatrix(name, type, false), rate) }
 
-    fun vertexAttribFloat1(name: String) = attribScalar(name, KslTypeFloat1, KslInputRate.Vertex)
-    fun vertexAttribFloat2(name: String) = attribVector(name, KslTypeFloat2, KslInputRate.Vertex)
-    fun vertexAttribFloat3(name: String) = attribVector(name, KslTypeFloat3, KslInputRate.Vertex)
-    fun vertexAttribFloat4(name: String) = attribVector(name, KslTypeFloat4, KslInputRate.Vertex)
+    fun vertexAttribFloat1(name: String) = attribScalar(name, KslFloat1, KslInputRate.Vertex)
+    fun vertexAttribFloat2(name: String) = attribVector(name, KslFloat2, KslInputRate.Vertex)
+    fun vertexAttribFloat3(name: String) = attribVector(name, KslFloat3, KslInputRate.Vertex)
+    fun vertexAttribFloat4(name: String) = attribVector(name, KslFloat4, KslInputRate.Vertex)
 
-    fun vertexAttribInt1(name: String) = attribScalar(name, KslTypeInt1, KslInputRate.Vertex)
-    fun vertexAttribInt2(name: String) = attribVector(name, KslTypeInt2, KslInputRate.Vertex)
-    fun vertexAttribInt3(name: String) = attribVector(name, KslTypeInt3, KslInputRate.Vertex)
-    fun vertexAttribInt4(name: String) = attribVector(name, KslTypeInt4, KslInputRate.Vertex)
+    fun vertexAttribInt1(name: String) = attribScalar(name, KslInt1, KslInputRate.Vertex)
+    fun vertexAttribInt2(name: String) = attribVector(name, KslInt2, KslInputRate.Vertex)
+    fun vertexAttribInt3(name: String) = attribVector(name, KslInt3, KslInputRate.Vertex)
+    fun vertexAttribInt4(name: String) = attribVector(name, KslInt4, KslInputRate.Vertex)
 
-    fun instanceAttribFloat1(name: String) = attribScalar(name, KslTypeFloat1, KslInputRate.Instance)
-    fun instanceAttribFloat2(name: String) = attribVector(name, KslTypeFloat2, KslInputRate.Instance)
-    fun instanceAttribFloat3(name: String) = attribVector(name, KslTypeFloat3, KslInputRate.Instance)
-    fun instanceAttribFloat4(name: String) = attribVector(name, KslTypeFloat4, KslInputRate.Instance)
+    fun instanceAttribFloat1(name: String) = attribScalar(name, KslFloat1, KslInputRate.Instance)
+    fun instanceAttribFloat2(name: String) = attribVector(name, KslFloat2, KslInputRate.Instance)
+    fun instanceAttribFloat3(name: String) = attribVector(name, KslFloat3, KslInputRate.Instance)
+    fun instanceAttribFloat4(name: String) = attribVector(name, KslFloat4, KslInputRate.Instance)
 
-    fun instanceAttribMat3(name: String) = attribMatrix(name, KslTypeMat3, KslInputRate.Instance)
-    fun instanceAttribMat4(name: String) = attribMatrix(name, KslTypeMat4, KslInputRate.Instance)
+    fun instanceAttribMat3(name: String) = attribMatrix(name, KslMat3, KslInputRate.Instance)
+    fun instanceAttribMat4(name: String) = attribMatrix(name, KslMat4, KslInputRate.Instance)
 
     companion object {
         const val NAME_IN_VERTEX_INDEX = "inVertexIndex"
@@ -137,10 +137,10 @@ class KslVertexStage(program: KslProgram) : KslShaderStage(program, KslShaderSta
 class KslFragmentStage(program: KslProgram) : KslShaderStage(program, KslShaderStageType.FragmentShader) {
 
     // fixme: in OpenGL frag position is in pixels, other shading languages use normalized coordinates
-    val inFragPosition = KslStageInputVector(KslVarVector(NAME_IN_FRAG_POSITION, KslTypeFloat4, false))
-    val inIsFrontFacing = KslStageInputScalar(KslVarScalar(NAME_IN_IS_FRONT_FACING, KslTypeBool1, false))
-    val outDepth = KslStageOutputScalar(KslVarScalar(NAME_OUT_DEPTH, KslTypeFloat1, true))
-    val outColors = mutableListOf<KslStageOutputVector<KslTypeFloat4, KslTypeFloat1>>()
+    val inFragPosition = KslStageInputVector(KslVarVector(NAME_IN_FRAG_POSITION, KslFloat4, false))
+    val inIsFrontFacing = KslStageInputScalar(KslVarScalar(NAME_IN_IS_FRONT_FACING, KslBool1, false))
+    val outDepth = KslStageOutputScalar(KslVarScalar(NAME_OUT_DEPTH, KslFloat1, true))
+    val outColors = mutableListOf<KslStageOutputVector<KslFloat4, KslFloat1>>()
 
     init {
         globalScope.definedStates += inFragPosition.value
@@ -148,24 +148,24 @@ class KslFragmentStage(program: KslProgram) : KslShaderStage(program, KslShaderS
         globalScope.definedStates += outDepth.value
     }
 
-    fun colorOutput(location: Int = 0): KslStageOutputVector<KslTypeFloat4, KslTypeFloat1> {
+    fun colorOutput(location: Int = 0): KslStageOutputVector<KslFloat4, KslFloat1> {
         val name = "${NAME_OUT_COLOR_PREFIX}${location}"
         return outColors.find { it.value.stateName == name }
-            ?: KslStageOutputVector(KslVarVector(name, KslTypeFloat4, true)).also {
+            ?: KslStageOutputVector(KslVarVector(name, KslFloat4, true)).also {
                 it.location = location
                 globalScope.definedStates += it.value
                 outColors += it
             }
     }
 
-    fun KslScopeBuilder.colorOutput(rgb: KslVectorExpression<KslTypeFloat3, KslTypeFloat1>, a: KslScalarExpression<KslTypeFloat1> = 1f.const, location: Int = 0) {
+    fun KslScopeBuilder.colorOutput(rgb: KslVectorExpression<KslFloat3, KslFloat1>, a: KslScalarExpression<KslFloat1> = 1f.const, location: Int = 0) {
         check (parentStage is KslFragmentStage) { "colorOutput is only available in fragment stage" }
         val outColor = parentStage.colorOutput(location)
         outColor.value.rgb set rgb
         outColor.value.a set a
     }
 
-    fun KslScopeBuilder.colorOutput(value: KslVectorExpression<KslTypeFloat4, KslTypeFloat1>, location: Int = 0) {
+    fun KslScopeBuilder.colorOutput(value: KslVectorExpression<KslFloat4, KslFloat1>, location: Int = 0) {
         check (parentStage is KslFragmentStage) { "colorOutput is only available in fragment stage" }
         parentStage.colorOutput(location) set value
     }

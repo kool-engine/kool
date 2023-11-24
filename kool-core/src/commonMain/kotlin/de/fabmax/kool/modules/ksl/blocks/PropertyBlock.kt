@@ -17,8 +17,8 @@ fun KslScopeBuilder.fragmentPropertyBlock(cfg: PropertyBlockConfig, vertexStage:
 }
 
 class PropertyBlockVertexStage(cfg: PropertyBlockConfig, parentScope: KslScopeBuilder) : KslBlock(cfg.propertyName, parentScope) {
-    val vertexProperties = mutableMapOf<PropertyBlockConfig.VertexProperty, KslInterStageScalar<KslTypeFloat1>>()
-    val instanceProperties = mutableMapOf<PropertyBlockConfig.InstanceProperty, KslInterStageScalar<KslTypeFloat1>>()
+    val vertexProperties = mutableMapOf<PropertyBlockConfig.VertexProperty, KslInterStageScalar<KslFloat1>>()
+    val instanceProperties = mutableMapOf<PropertyBlockConfig.InstanceProperty, KslInterStageScalar<KslFloat1>>()
 
     init {
         body.apply {
@@ -75,9 +75,9 @@ class PropertyBlockFragmentStage(
 ) : KslBlock(cfg.propertyName, parentScope) {
 
     val outProperty = outFloat1(parentScope.nextName("${opName}_outProperty"))
-    val outSamplerValues = mutableMapOf<Pair<String, Attribute>, KslVectorExpression<KslTypeFloat4, KslTypeFloat1>>()
+    val outSamplerValues = mutableMapOf<Pair<String, Attribute>, KslVectorExpression<KslFloat4, KslFloat1>>()
 
-    val textures = mutableMapOf<PropertyBlockConfig.TextureProperty, KslUniform<KslTypeColorSampler2d>>()
+    val textures = mutableMapOf<PropertyBlockConfig.TextureProperty, KslUniform<KslColorSampler2d>>()
 
     init {
         body.apply {
@@ -88,7 +88,7 @@ class PropertyBlockFragmentStage(
             }
 
             cfg.propertySources.forEach { source ->
-                val propertyValue: KslScalarExpression<KslTypeFloat1> = when (source) {
+                val propertyValue: KslScalarExpression<KslFloat1> = when (source) {
                     is PropertyBlockConfig.ConstProperty -> source.value.const
                     is PropertyBlockConfig.UniformProperty -> parentStage.program.uniformFloat1(source.uniformName)
                     is PropertyBlockConfig.VertexProperty -> vertexBlock(parentStage).vertexProperties[source]?.output ?: 0f.const

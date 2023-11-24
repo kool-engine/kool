@@ -27,12 +27,9 @@ abstract class KslMatrixAccessor<T>(
     override fun toPseudoCode() = "${matrix.toPseudoCode()}[${colIndex.toPseudoCode()}]"
 }
 
-class KslMatrix2Accessor(matrix: KslExprMat2, colIndex: KslExprInt1) :
-    KslMatrixAccessor<KslTypeFloat2>(matrix, colIndex, KslTypeFloat2)
-class KslMatrix3Accessor(matrix: KslExprMat3, colIndex: KslExprInt1) :
-    KslMatrixAccessor<KslTypeFloat3>(matrix, colIndex, KslTypeFloat3)
-class KslMatrix4Accessor(matrix: KslExprMat4, colIndex: KslExprInt1) :
-    KslMatrixAccessor<KslTypeFloat4>(matrix, colIndex, KslTypeFloat4)
+class KslMatrix2Accessor(matrix: KslExprMat2, colIndex: KslExprInt1) : KslMatrixAccessor<KslFloat2>(matrix, colIndex, KslFloat2)
+class KslMatrix3Accessor(matrix: KslExprMat3, colIndex: KslExprInt1) : KslMatrixAccessor<KslFloat3>(matrix, colIndex, KslFloat3)
+class KslMatrix4Accessor(matrix: KslExprMat4, colIndex: KslExprInt1) : KslMatrixAccessor<KslFloat4>(matrix, colIndex, KslFloat4)
 
 operator fun KslExprMat2.get(colIndex: Int) = KslMatrix2Accessor(this, KslValueInt1(colIndex))
 operator fun KslExprMat2.get(colIndex: KslExprInt1) = KslMatrix2Accessor(this, colIndex)

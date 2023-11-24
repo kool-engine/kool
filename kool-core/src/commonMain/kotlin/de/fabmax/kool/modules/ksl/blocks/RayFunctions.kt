@@ -4,7 +4,7 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.ksl.lang.*
 
 class RaySphereIntersection(parentScope: KslScopeBuilder) :
-    KslFunction<KslTypeFloat3>(FUNC_NAME, KslTypeFloat3, parentScope.parentStage) {
+    KslFunction<KslFloat3>(FUNC_NAME, KslFloat3, parentScope.parentStage) {
 
     init {
         val rayOrigin = paramFloat3("rayOrigin")
@@ -54,7 +54,7 @@ fun KslScopeBuilder.raySphereIntersection(
 }
 
 class RayPointDistance(parentScope: KslScopeBuilder) :
-    KslFunction<KslTypeFloat4>(FUNC_NAME, KslTypeFloat4, parentScope.parentStage) {
+    KslFunction<KslFloat4>(FUNC_NAME, KslFloat4, parentScope.parentStage) {
 
     init {
         val rayOrigin = paramFloat3("rayOrigin")

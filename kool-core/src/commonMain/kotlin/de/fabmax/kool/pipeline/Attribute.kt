@@ -24,19 +24,19 @@ enum class GlslType(val channels: Int, val byteSize: Int, val isInt: Boolean, va
 
 val KslType.glslType: GlslType
     get() = when (this) {
-        KslTypeFloat1 -> GlslType.FLOAT
-        KslTypeFloat2 -> GlslType.VEC_2F
-        KslTypeFloat3 -> GlslType.VEC_3F
-        KslTypeFloat4 -> GlslType.VEC_4F
+        KslFloat1 -> GlslType.FLOAT
+        KslFloat2 -> GlslType.VEC_2F
+        KslFloat3 -> GlslType.VEC_3F
+        KslFloat4 -> GlslType.VEC_4F
 
-        KslTypeInt1 -> GlslType.INT
-        KslTypeInt2 -> GlslType.VEC_2I
-        KslTypeInt3 -> GlslType.VEC_3I
-        KslTypeInt4 -> GlslType.VEC_4I
+        KslInt1 -> GlslType.INT
+        KslInt2 -> GlslType.VEC_2I
+        KslInt3 -> GlslType.VEC_3I
+        KslInt4 -> GlslType.VEC_4I
 
-        KslTypeMat2 -> GlslType.MAT_2F
-        KslTypeMat3 -> GlslType.MAT_3F
-        KslTypeMat4 -> GlslType.MAT_4F
+        KslMat2 -> GlslType.MAT_2F
+        KslMat3 -> GlslType.MAT_3F
+        KslMat4 -> GlslType.MAT_4F
         else -> throw IllegalArgumentException("KslType has no corresponding glsl type: $this")
     }
 

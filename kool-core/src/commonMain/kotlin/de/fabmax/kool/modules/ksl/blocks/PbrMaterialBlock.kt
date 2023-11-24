@@ -7,8 +7,8 @@ import kotlin.math.PI
 
 fun KslScopeBuilder.pbrMaterialBlock(
     maxNumberOfLights: Int,
-    reflectionMaps: KslArrayExpression<KslTypeColorSamplerCube>?,
-    brdfLut: KslExpression<KslTypeColorSampler2d>,
+    reflectionMaps: KslArrayExpression<KslColorSamplerCube>?,
+    brdfLut: KslExpression<KslColorSampler2d>,
     block: PbrMaterialBlock.() -> Unit
 ): PbrMaterialBlock {
     val pbrMaterialBlock = PbrMaterialBlock(
@@ -25,8 +25,8 @@ fun KslScopeBuilder.pbrMaterialBlock(
 class PbrMaterialBlock(
     maxNumberOfLights: Int,
     name: String,
-    reflectionMaps: KslArrayExpression<KslTypeColorSamplerCube>?,
-    brdfLut: KslExpression<KslTypeColorSampler2d>,
+    reflectionMaps: KslArrayExpression<KslColorSamplerCube>?,
+    brdfLut: KslExpression<KslColorSampler2d>,
     parentScope: KslScopeBuilder
 ) : LitMaterialBlock(maxNumberOfLights, name, parentScope) {
 

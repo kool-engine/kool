@@ -2,7 +2,6 @@ package de.fabmax.kool.modules.ksl.blocks
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec2f
-import de.fabmax.kool.math.set
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.KslShaderListener
 import de.fabmax.kool.modules.ksl.lang.*
@@ -23,8 +22,8 @@ class ShadowData(val shadowCfg: ShadowConfig, program: KslProgram) : KslDataBloc
     val subMaps: List<SimpleShadowMap>
     val numSubMaps: Int get() = subMaps.size
 
-    val shadowMapViewProjMats: KslUniformMatrixArray<KslTypeMat4, KslTypeFloat4>
-    val depthMaps: KslUniformArray<KslTypeDepthSampler2d>
+    val shadowMapViewProjMats: KslUniformMatrixArray<KslMat4, KslFloat4>
+    val depthMaps: KslUniformArray<KslDepthSampler2D>
 
     private var uShadowMapViewProjMats: UniformMat4fv? = null
 

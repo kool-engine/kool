@@ -32,7 +32,7 @@ open class KslDepthShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShad
 
     class Model(cfg: Config) : KslProgram("Depth Shader") {
         init {
-            var normalLinearDepth: KslInterStageVector<KslTypeFloat4, KslTypeFloat1>? = null
+            var normalLinearDepth: KslInterStageVector<KslFloat4, KslFloat1>? = null
 
             vertexStage {
                 main {

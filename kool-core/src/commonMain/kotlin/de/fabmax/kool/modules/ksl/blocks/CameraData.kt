@@ -15,14 +15,14 @@ class CameraData(program: KslProgram) : KslDataBlock, KslShaderListener {
 
     override val name = NAME
 
-    val position: KslUniformVector<KslTypeFloat3, KslTypeFloat1>
-    val direction: KslUniformVector<KslTypeFloat3, KslTypeFloat1>
-    val clip: KslUniformVector<KslTypeFloat2, KslTypeFloat1>
+    val position: KslUniformVector<KslFloat3, KslFloat1>
+    val direction: KslUniformVector<KslFloat3, KslFloat1>
+    val clip: KslUniformVector<KslFloat2, KslFloat1>
 
-    val viewMat: KslUniformMatrix<KslTypeMat4, KslTypeFloat4>
-    val projMat: KslUniformMatrix<KslTypeMat4, KslTypeFloat4>
-    val viewProjMat: KslUniformMatrix<KslTypeMat4, KslTypeFloat4>
-    val viewport: KslUniformVector<KslTypeFloat4, KslTypeFloat1>
+    val viewMat: KslUniformMatrix<KslMat4, KslFloat4>
+    val projMat: KslUniformMatrix<KslMat4, KslFloat4>
+    val viewProjMat: KslUniformMatrix<KslMat4, KslFloat4>
+    val viewport: KslUniformVector<KslFloat4, KslFloat1>
 
     val clipNear: KslExprFloat1
         get() = clip.x

@@ -10,7 +10,7 @@ fun KslScopeBuilder.texCoordAttributeBlock(): TexCoordAttributeBlock {
 }
 
 class TexCoordAttributeBlock(name: String, parentScope: KslScopeBuilder) : KslBlock(name, parentScope) {
-    val texCoords = mutableMapOf<String, KslInterStageVector<KslTypeFloat2, KslTypeFloat1>>()
+    val texCoords = mutableMapOf<String, KslInterStageVector<KslFloat2, KslFloat1>>()
 
     init {
         check(parentScope.parentStage is KslVertexStage) { "TexCoordAttributeBlock must be added to KslVertexStage" }

@@ -22,6 +22,7 @@ open class KslProgram(val name: String) {
     val commonUniformBuffer = KslUniformBuffer("CommonUniforms", this)
     val uniformBuffers = mutableListOf(commonUniformBuffer)
     val uniformSamplers = mutableMapOf<String, KslUniform<*>>()
+    val uniformStorage = mutableMapOf<String, KslUniform<*>>()
     val dataBlocks = mutableListOf<KslDataBlock>()
 
     var vertexStage: KslVertexStage? = null
@@ -86,10 +87,17 @@ open class KslProgram(val name: String) {
         }
     }
 
+    @PublishedApi internal fun registerStorage(uniform: KslUniform<*>) {
+        uniformStorage[uniform.name] = uniform
+        stages.forEach {
+            it.globalScope.definedStates += uniform.value
+        }
+    }
+
     private inline fun <reified T: KslUniform<*>> getOrCreateSampler(name: String, create: () -> T): T {
         val uniform = uniformSamplers[name] ?: create().also { registerSampler(it) }
-        if (uniform !is T) {
-            throw IllegalStateException("Existing uniform with name \"$name\" has not the expected type")
+        check(uniform is T) {
+            "Existing uniform with name \"$name\" has not the expected type"
         }
         return uniform
     }
@@ -122,23 +130,41 @@ open class KslProgram(val name: String) {
     fun uniformMat3Array(name: String, arraySize: Int) = commonUniformBuffer.uniformMat3Array(name, arraySize)
     fun uniformMat4Array(name: String, arraySize: Int) = commonUniformBuffer.uniformMat4Array(name, arraySize)
 
-    fun texture1d(name: String) = getOrCreateSampler(name) { KslUniform(KslVar(name, KslTypeColorSampler1d, false)) }
-    fun texture2d(name: String) = getOrCreateSampler(name) { KslUniform(KslVar(name, KslTypeColorSampler2d, false)) }
-    fun texture3d(name: String) = getOrCreateSampler(name) { KslUniform(KslVar(name, KslTypeColorSampler3d, false)) }
-    fun textureCube(name: String) = getOrCreateSampler(name) { KslUniform(KslVar(name, KslTypeColorSamplerCube, false)) }
+    fun texture1d(name: String) = getOrCreateSampler(name) { KslUniform(KslVar(name, KslColorSampler1d, false)) }
+    fun texture2d(name: String) = getOrCreateSampler(name) { KslUniform(KslVar(name, KslColorSampler2d, false)) }
+    fun texture3d(name: String) = getOrCreateSampler(name) { KslUniform(KslVar(name, KslColorSampler3d, false)) }
+    fun textureCube(name: String) = getOrCreateSampler(name) { KslUniform(KslVar(name, KslColorSamplerCube, false)) }
 
-    fun depthTexture2d(name: String) = getOrCreateSampler(name) { KslUniform(KslVar(name, KslTypeDepthSampler2d, false)) }
-    fun depthTextureCube(name: String) = getOrCreateSampler(name) { KslUniform(KslVar(name, KslTypeDepthSamplerCube, false)) }
+    fun depthTexture2d(name: String) = getOrCreateSampler(name) { KslUniform(KslVar(name, KslDepthSampler2D, false)) }
+    fun depthTextureCube(name: String) = getOrCreateSampler(name) { KslUniform(KslVar(name, KslDepthSamplerCube, false)) }
 
     // arrays of textures (this is different to array textures, like, e.g., KslTypeColorSampler2dArray)
-    fun textureArray1d(name: String, arraySize: Int) = getOrCreateSampler(name) { KslUniformArray(KslArrayGeneric(name, KslTypeColorSampler1d, arraySize, false)) }
-    fun textureArray2d(name: String, arraySize: Int) = getOrCreateSampler(name) { KslUniformArray(KslArrayGeneric(name, KslTypeColorSampler2d, arraySize, false)) }
-    fun textureArray3d(name: String, arraySize: Int) = getOrCreateSampler(name) { KslUniformArray(KslArrayGeneric(name, KslTypeColorSampler3d, arraySize, false)) }
-    fun textureArrayCube(name: String, arraySize: Int) = getOrCreateSampler(name) { KslUniformArray(KslArrayGeneric(name, KslTypeColorSamplerCube, arraySize, false)) }
+    fun textureArray1d(name: String, arraySize: Int) = getOrCreateSampler(name) { KslUniformArray(KslArrayGeneric(name, KslColorSampler1d, arraySize, false)) }
+    fun textureArray2d(name: String, arraySize: Int) = getOrCreateSampler(name) { KslUniformArray(KslArrayGeneric(name, KslColorSampler2d, arraySize, false)) }
+    fun textureArray3d(name: String, arraySize: Int) = getOrCreateSampler(name) { KslUniformArray(KslArrayGeneric(name, KslColorSampler3d, arraySize, false)) }
+    fun textureArrayCube(name: String, arraySize: Int) = getOrCreateSampler(name) { KslUniformArray(KslArrayGeneric(name, KslColorSamplerCube, arraySize, false)) }
 
     // arrays of depth textures (this is different to array textures, like, e.g., KslTypeDepthSampler2dArray)
-    fun depthTextureArray2d(name: String, arraySize: Int) = getOrCreateSampler(name) { KslUniformArray(KslArrayGeneric(name, KslTypeDepthSampler2d, arraySize, false)) }
-    fun depthTextureArrayCube(name: String, arraySize: Int) = getOrCreateSampler(name) { KslUniformArray(KslArrayGeneric(name, KslTypeDepthSamplerCube, arraySize, false)) }
+    fun depthTextureArray2d(name: String, arraySize: Int) = getOrCreateSampler(name) { KslUniformArray(KslArrayGeneric(name, KslDepthSampler2D, arraySize, false)) }
+    fun depthTextureArrayCube(name: String, arraySize: Int) = getOrCreateSampler(name) { KslUniformArray(KslArrayGeneric(name, KslDepthSamplerCube, arraySize, false)) }
+
+    inline fun <reified T: KslNumericType> storage1d(name: String): KslUniform<KslStorage1d<T>> {
+        val uniform: KslUniform<*> = uniformStorage[name] ?: (
+                if (KslFloat1 is T) KslUniform(KslVar(name, KslStorage1dFloat1, false))
+           else if (KslFloat2 is T) KslUniform(KslVar(name, KslStorage1dFloat2, false))
+           else if (KslFloat3 is T) KslUniform(KslVar(name, KslStorage1dFloat3, false))
+           else if (KslFloat4 is T) KslUniform(KslVar(name, KslStorage1dFloat4, false))
+           else throw IllegalArgumentException("Unsupported storage type")
+        ).also { registerStorage(it) }
+
+        uniform.value.expressionType.let {
+            check(it is KslStorage1d<*> && it.elemType is T) {
+                "Existing uniform with name \"$name\" has not the expected type"
+            }
+        }
+        @Suppress("UNCHECKED_CAST")
+        return uniform as KslUniform<KslStorage1d<T>>
+    }
 
     private fun registerInterStageVar(interStageVar: KslInterStageVar<*>) {
         // make sure vertex and fragment stage are created
@@ -170,18 +196,18 @@ open class KslProgram(val name: String) {
     }
 
     fun interStageFloat1(name: String? = null, interpolation: KslInterStageInterpolation = KslInterStageInterpolation.Smooth) =
-        interStageScalar(KslTypeFloat1, interpolation, name ?: nextName("interStageF1"))
+        interStageScalar(KslFloat1, interpolation, name ?: nextName("interStageF1"))
     fun interStageFloat2(name: String? = null, interpolation: KslInterStageInterpolation = KslInterStageInterpolation.Smooth) =
-        interStageVector(KslTypeFloat2, interpolation, name ?: nextName("interStageF2"))
+        interStageVector(KslFloat2, interpolation, name ?: nextName("interStageF2"))
     fun interStageFloat3(name: String? = null, interpolation: KslInterStageInterpolation = KslInterStageInterpolation.Smooth) =
-        interStageVector(KslTypeFloat3, interpolation, name ?: nextName("interStageF3"))
+        interStageVector(KslFloat3, interpolation, name ?: nextName("interStageF3"))
     fun interStageFloat4(name: String? = null, interpolation: KslInterStageInterpolation = KslInterStageInterpolation.Smooth) =
-        interStageVector(KslTypeFloat4, interpolation, name ?: nextName("interStageF4"))
+        interStageVector(KslFloat4, interpolation, name ?: nextName("interStageF4"))
 
-    fun interStageInt1(name: String? = null) = interStageScalar(KslTypeInt1, KslInterStageInterpolation.Flat, name ?: nextName("interStageI1"))
-    fun interStageInt2(name: String? = null) = interStageVector(KslTypeInt2, KslInterStageInterpolation.Flat, name ?: nextName("interStageI2"))
-    fun interStageInt3(name: String? = null) = interStageVector(KslTypeInt3, KslInterStageInterpolation.Flat, name ?: nextName("interStageI3"))
-    fun interStageInt4(name: String? = null) = interStageVector(KslTypeInt4, KslInterStageInterpolation.Flat, name ?: nextName("interStageI4"))
+    fun interStageInt1(name: String? = null) = interStageScalar(KslInt1, KslInterStageInterpolation.Flat, name ?: nextName("interStageI1"))
+    fun interStageInt2(name: String? = null) = interStageVector(KslInt2, KslInterStageInterpolation.Flat, name ?: nextName("interStageI2"))
+    fun interStageInt3(name: String? = null) = interStageVector(KslInt3, KslInterStageInterpolation.Flat, name ?: nextName("interStageI3"))
+    fun interStageInt4(name: String? = null) = interStageVector(KslInt4, KslInterStageInterpolation.Flat, name ?: nextName("interStageI4"))
 
     private fun <S> interStageScalarArray(type: S, arraySize: Int, interpolation: KslInterStageInterpolation, name: String):
             KslInterStageScalarArray<S> where S: KslType, S: KslScalar {
@@ -198,22 +224,22 @@ open class KslProgram(val name: String) {
     }
 
     fun interStageFloat1Array(arraySize: Int, name: String? = null, interpolation: KslInterStageInterpolation = KslInterStageInterpolation.Smooth) =
-        interStageScalarArray(KslTypeFloat1, arraySize, interpolation, name ?: nextName("interStageF1Array"))
+        interStageScalarArray(KslFloat1, arraySize, interpolation, name ?: nextName("interStageF1Array"))
     fun interStageFloat2Array(arraySize: Int, name: String? = null, interpolation: KslInterStageInterpolation = KslInterStageInterpolation.Smooth) =
-        interStageVectorArray(KslTypeFloat2, arraySize, interpolation, name ?: nextName("interStageF2Array"))
+        interStageVectorArray(KslFloat2, arraySize, interpolation, name ?: nextName("interStageF2Array"))
     fun interStageFloat3Array(arraySize: Int, name: String? = null, interpolation: KslInterStageInterpolation = KslInterStageInterpolation.Smooth) =
-        interStageVectorArray(KslTypeFloat3, arraySize, interpolation, name ?: nextName("interStageF3Array"))
+        interStageVectorArray(KslFloat3, arraySize, interpolation, name ?: nextName("interStageF3Array"))
     fun interStageFloat4Array(arraySize: Int, name: String? = null, interpolation: KslInterStageInterpolation = KslInterStageInterpolation.Smooth) =
-        interStageVectorArray(KslTypeFloat4, arraySize, interpolation, name ?: nextName("interStageF4Array"))
+        interStageVectorArray(KslFloat4, arraySize, interpolation, name ?: nextName("interStageF4Array"))
 
     fun interStageInt1Array(arraySize: Int, name: String? = null) =
-        interStageScalarArray(KslTypeInt1, arraySize, KslInterStageInterpolation.Flat, name ?: nextName("interStageI1Array"))
+        interStageScalarArray(KslInt1, arraySize, KslInterStageInterpolation.Flat, name ?: nextName("interStageI1Array"))
     fun interStageInt2Array(arraySize: Int, name: String? = null) =
-        interStageVectorArray(KslTypeInt2, arraySize, KslInterStageInterpolation.Flat, name ?: nextName("interStageI2Array"))
+        interStageVectorArray(KslInt2, arraySize, KslInterStageInterpolation.Flat, name ?: nextName("interStageI2Array"))
     fun interStageInt3Array(arraySize: Int, name: String? = null) =
-        interStageVectorArray(KslTypeInt3, arraySize, KslInterStageInterpolation.Flat, name ?: nextName("interStageI3Array"))
+        interStageVectorArray(KslInt3, arraySize, KslInterStageInterpolation.Flat, name ?: nextName("interStageI3Array"))
     fun interStageInt4Array(arraySize: Int, name: String? = null) =
-        interStageVectorArray(KslTypeInt4, arraySize, KslInterStageInterpolation.Flat, name ?: nextName("interStageI4Array"))
+        interStageVectorArray(KslInt4, arraySize, KslInterStageInterpolation.Flat, name ?: nextName("interStageI4Array"))
 
     fun prepareGenerate() {
         if (!isPrepared) {
@@ -232,39 +258,39 @@ open class KslProgram(val name: String) {
         }
     }
 
-    val KslShader.UniformInput1f.ksl: KslUniformScalar<KslTypeFloat1> get() = uniformFloat1(uniformName)
-    val KslShader.UniformInput2f.ksl: KslUniformVector<KslTypeFloat2, KslTypeFloat1> get() = uniformFloat2(uniformName)
-    val KslShader.UniformInput3f.ksl: KslUniformVector<KslTypeFloat3, KslTypeFloat1> get() = uniformFloat3(uniformName)
-    val KslShader.UniformInput4f.ksl: KslUniformVector<KslTypeFloat4, KslTypeFloat1> get() = uniformFloat4(uniformName)
-    val KslShader.UniformInput1fv.ksl: KslUniformScalarArray<KslTypeFloat1> get() = uniformFloat1Array(uniformName, arraySize)
-    val KslShader.UniformInput2fv.ksl: KslUniformVectorArray<KslTypeFloat2, KslTypeFloat1> get() = uniformFloat2Array(uniformName, arraySize)
-    val KslShader.UniformInput3fv.ksl: KslUniformVectorArray<KslTypeFloat3, KslTypeFloat1> get() = uniformFloat3Array(uniformName, arraySize)
-    val KslShader.UniformInput4fv.ksl: KslUniformVectorArray<KslTypeFloat4, KslTypeFloat1> get() = uniformFloat4Array(uniformName, arraySize)
+    val KslShader.UniformInput1f.ksl: KslUniformScalar<KslFloat1> get() = uniformFloat1(uniformName)
+    val KslShader.UniformInput2f.ksl: KslUniformVector<KslFloat2, KslFloat1> get() = uniformFloat2(uniformName)
+    val KslShader.UniformInput3f.ksl: KslUniformVector<KslFloat3, KslFloat1> get() = uniformFloat3(uniformName)
+    val KslShader.UniformInput4f.ksl: KslUniformVector<KslFloat4, KslFloat1> get() = uniformFloat4(uniformName)
+    val KslShader.UniformInput1fv.ksl: KslUniformScalarArray<KslFloat1> get() = uniformFloat1Array(uniformName, arraySize)
+    val KslShader.UniformInput2fv.ksl: KslUniformVectorArray<KslFloat2, KslFloat1> get() = uniformFloat2Array(uniformName, arraySize)
+    val KslShader.UniformInput3fv.ksl: KslUniformVectorArray<KslFloat3, KslFloat1> get() = uniformFloat3Array(uniformName, arraySize)
+    val KslShader.UniformInput4fv.ksl: KslUniformVectorArray<KslFloat4, KslFloat1> get() = uniformFloat4Array(uniformName, arraySize)
 
-    val KslShader.UniformInputColor.ksl: KslUniformVector<KslTypeFloat4, KslTypeFloat1> get() = uniformFloat4(uniformName)
-    val KslShader.UniformInputQuat.ksl: KslUniformVector<KslTypeFloat4, KslTypeFloat1> get() = uniformFloat4(uniformName)
+    val KslShader.UniformInputColor.ksl: KslUniformVector<KslFloat4, KslFloat1> get() = uniformFloat4(uniformName)
+    val KslShader.UniformInputQuat.ksl: KslUniformVector<KslFloat4, KslFloat1> get() = uniformFloat4(uniformName)
 
-    val KslShader.UniformInput1i.ksl: KslUniformScalar<KslTypeInt1> get() = uniformInt1(uniformName)
-    val KslShader.UniformInput2i.ksl: KslUniformVector<KslTypeInt2, KslTypeInt1> get() = uniformInt2(uniformName)
-    val KslShader.UniformInput3i.ksl: KslUniformVector<KslTypeInt3, KslTypeInt1> get() = uniformInt3(uniformName)
-    val KslShader.UniformInput4i.ksl: KslUniformVector<KslTypeInt4, KslTypeInt1> get() = uniformInt4(uniformName)
-    val KslShader.UniformInput1iv.ksl: KslUniformScalarArray<KslTypeInt1> get() = uniformInt1Array(uniformName, arraySize)
-    val KslShader.UniformInput2iv.ksl: KslUniformVectorArray<KslTypeInt2, KslTypeInt1> get() = uniformInt2Array(uniformName, arraySize)
-    val KslShader.UniformInput3iv.ksl: KslUniformVectorArray<KslTypeInt3, KslTypeInt1> get() = uniformInt3Array(uniformName, arraySize)
-    val KslShader.UniformInput4iv.ksl: KslUniformVectorArray<KslTypeInt4, KslTypeInt1> get() = uniformInt4Array(uniformName, arraySize)
+    val KslShader.UniformInput1i.ksl: KslUniformScalar<KslInt1> get() = uniformInt1(uniformName)
+    val KslShader.UniformInput2i.ksl: KslUniformVector<KslInt2, KslInt1> get() = uniformInt2(uniformName)
+    val KslShader.UniformInput3i.ksl: KslUniformVector<KslInt3, KslInt1> get() = uniformInt3(uniformName)
+    val KslShader.UniformInput4i.ksl: KslUniformVector<KslInt4, KslInt1> get() = uniformInt4(uniformName)
+    val KslShader.UniformInput1iv.ksl: KslUniformScalarArray<KslInt1> get() = uniformInt1Array(uniformName, arraySize)
+    val KslShader.UniformInput2iv.ksl: KslUniformVectorArray<KslInt2, KslInt1> get() = uniformInt2Array(uniformName, arraySize)
+    val KslShader.UniformInput3iv.ksl: KslUniformVectorArray<KslInt3, KslInt1> get() = uniformInt3Array(uniformName, arraySize)
+    val KslShader.UniformInput4iv.ksl: KslUniformVectorArray<KslInt4, KslInt1> get() = uniformInt4Array(uniformName, arraySize)
 
-    val KslShader.UniformInputMat3f.ksl: KslUniformMatrix<KslTypeMat3, KslTypeFloat3> get() = uniformMat3(uniformName)
-    val KslShader.UniformInputMat4f.ksl: KslUniformMatrix<KslTypeMat4, KslTypeFloat4> get() = uniformMat4(uniformName)
-    val KslShader.UniformInputMat3fv.ksl: KslUniformMatrixArray<KslTypeMat3, KslTypeFloat3> get() = uniformMat3Array(uniformName, arraySize)
-    val KslShader.UniformInputMat4fv.ksl: KslUniformMatrixArray<KslTypeMat4, KslTypeFloat4> get() = uniformMat4Array(uniformName, arraySize)
+    val KslShader.UniformInputMat3f.ksl: KslUniformMatrix<KslMat3, KslFloat3> get() = uniformMat3(uniformName)
+    val KslShader.UniformInputMat4f.ksl: KslUniformMatrix<KslMat4, KslFloat4> get() = uniformMat4(uniformName)
+    val KslShader.UniformInputMat3fv.ksl: KslUniformMatrixArray<KslMat3, KslFloat3> get() = uniformMat3Array(uniformName, arraySize)
+    val KslShader.UniformInputMat4fv.ksl: KslUniformMatrixArray<KslMat4, KslFloat4> get() = uniformMat4Array(uniformName, arraySize)
 
-    val KslShader.UniformInputTexture1d.ksl: KslUniform<KslTypeColorSampler1d> get() = texture1d(uniformName)
-    val KslShader.UniformInputTexture2d.ksl: KslUniform<KslTypeColorSampler2d> get() = texture2d(uniformName)
-    val KslShader.UniformInputTexture3d.ksl: KslUniform<KslTypeColorSampler3d> get() = texture3d(uniformName)
-    val KslShader.UniformInputTextureCube.ksl: KslUniform<KslTypeColorSamplerCube> get() = textureCube(uniformName)
+    val KslShader.UniformInputTexture1d.ksl: KslUniform<KslColorSampler1d> get() = texture1d(uniformName)
+    val KslShader.UniformInputTexture2d.ksl: KslUniform<KslColorSampler2d> get() = texture2d(uniformName)
+    val KslShader.UniformInputTexture3d.ksl: KslUniform<KslColorSampler3d> get() = texture3d(uniformName)
+    val KslShader.UniformInputTextureCube.ksl: KslUniform<KslColorSamplerCube> get() = textureCube(uniformName)
 
-    val KslShader.UniformInputTextureArray1d.ksl: KslUniformArray<KslTypeColorSampler1d> get() = textureArray1d(uniformName, arrSize)
-    val KslShader.UniformInputTextureArray2d.ksl: KslUniformArray<KslTypeColorSampler2d> get() = textureArray2d(uniformName, arrSize)
-    val KslShader.UniformInputTextureArray3d.ksl: KslUniformArray<KslTypeColorSampler3d> get() = textureArray3d(uniformName, arrSize)
-    val KslShader.UniformInputTextureArrayCube.ksl: KslUniformArray<KslTypeColorSamplerCube> get() = textureArrayCube(uniformName, arrSize)
+    val KslShader.UniformInputTextureArray1d.ksl: KslUniformArray<KslColorSampler1d> get() = textureArray1d(uniformName, arrSize)
+    val KslShader.UniformInputTextureArray2d.ksl: KslUniformArray<KslColorSampler2d> get() = textureArray2d(uniformName, arrSize)
+    val KslShader.UniformInputTextureArray3d.ksl: KslUniformArray<KslColorSampler3d> get() = textureArray3d(uniformName, arrSize)
+    val KslShader.UniformInputTextureArrayCube.ksl: KslUniformArray<KslColorSamplerCube> get() = textureArrayCube(uniformName, arrSize)
 }

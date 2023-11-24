@@ -18,8 +18,8 @@ class DepthShader(val cfg: Config) : KslShader(depthShaderProg(cfg), cfg.pipelin
 
     companion object {
         private fun depthShaderProg(cfg: Config) = KslProgram("Depth shader").apply {
-            var alphaMaskUv: KslInterStageVector<KslTypeFloat2, KslTypeFloat1>? = null
-            var viewNormal: KslInterStageVector<KslTypeFloat3, KslTypeFloat1>? = null
+            var alphaMaskUv: KslInterStageVector<KslFloat2, KslFloat1>? = null
+            var viewNormal: KslInterStageVector<KslFloat3, KslFloat1>? = null
 
             vertexStage {
                 main {

@@ -27,35 +27,35 @@ open class GlslGenerator(val glslVersionStr: String) : KslGenerator() {
         return GlslGeneratorOutput.computeOutput(generateComputeSrc(computeStage))
     }
 
-    override fun constFloatVecExpression(vararg values: KslExpression<KslTypeFloat1>): String {
+    override fun constFloatVecExpression(vararg values: KslExpression<KslFloat1>): String {
         if (values.size !in 2..4) {
             throw IllegalArgumentException("invalid number of values: ${values.size} (must be between 2 and 4)")
         }
         return "vec${values.size}(${values.joinToString { it.generateExpression(this) }})"
     }
 
-    override fun constIntVecExpression(vararg values: KslExpression<KslTypeInt1>): String {
+    override fun constIntVecExpression(vararg values: KslExpression<KslInt1>): String {
         if (values.size !in 2..4) {
             throw IllegalArgumentException("invalid number of values: ${values.size} (must be between 2 and 4)")
         }
         return "ivec${values.size}(${values.joinToString { it.generateExpression(this) }})"
     }
 
-    override fun constUintVecExpression(vararg values: KslExpression<KslTypeUint1>): String {
+    override fun constUintVecExpression(vararg values: KslExpression<KslUint1>): String {
         if (values.size !in 2..4) {
             throw IllegalArgumentException("invalid number of values: ${values.size} (must be between 2 and 4)")
         }
         return "uvec${values.size}(${values.joinToString { it.generateExpression(this) }})"
     }
 
-    override fun constBoolVecExpression(vararg values: KslExpression<KslTypeBool1>): String {
+    override fun constBoolVecExpression(vararg values: KslExpression<KslBool1>): String {
         if (values.size !in 2..4) {
             throw IllegalArgumentException("invalid number of values: ${values.size} (must be between 2 and 4)")
         }
         return "bvec${values.size}(${values.joinToString { it.generateExpression(this) }})"
     }
 
-    override fun constMatExpression(vararg columns: KslVectorExpression<*, KslTypeFloat1>): String {
+    override fun constMatExpression(vararg columns: KslVectorExpression<*, KslFloat1>): String {
         if (columns.size !in 2..4) {
             throw IllegalArgumentException("invalid number of columns: ${columns.size} (must be between 2 and 4)")
         }
@@ -85,7 +85,7 @@ open class GlslGenerator(val glslVersionStr: String) : KslGenerator() {
 
     override fun sampleColorTexture(sampleTexture: KslSampleColorTexture<*>): String {
         val sampler = sampleTexture.sampler.generateExpression(this)
-        val coord = if (sampleTexture.sampler.expressionType is KslTypeSampler1d && sampleTexture.coord.expressionType is KslTypeFloat1) {
+        val coord = if (sampleTexture.sampler.expressionType is KslSampler1dType && sampleTexture.coord.expressionType is KslFloat1) {
             // for better OpenGL ES compatibility 1d textures actually are 2d textures...
             "vec2(${sampleTexture.coord.generateExpression(this)}, 0.5)"
         } else {
@@ -460,39 +460,44 @@ open class GlslGenerator(val glslVersionStr: String) : KslGenerator() {
     protected fun glslTypeName(type: KslType): String {
         return when (type) {
             KslTypeVoid -> "void"
-            KslTypeBool1 -> "bool"
-            KslTypeBool2 -> "bvec2"
-            KslTypeBool3 -> "bvec3"
-            KslTypeBool4 -> "bvec4"
-            KslTypeFloat1 -> "float"
-            KslTypeFloat2 -> "vec2"
-            KslTypeFloat3 -> "vec3"
-            KslTypeFloat4 -> "vec4"
-            KslTypeInt1 -> "int"
-            KslTypeInt2 -> "ivec2"
-            KslTypeInt3 -> "ivec3"
-            KslTypeInt4 -> "ivec4"
-            KslTypeUint1 -> "uint"
-            KslTypeUint2 -> "uvec2"
-            KslTypeUint3 -> "uvec3"
-            KslTypeUint4 -> "uvec4"
-            KslTypeMat2 -> "mat2"
-            KslTypeMat3 -> "mat3"
-            KslTypeMat4 -> "mat4"
+            KslBool1 -> "bool"
+            KslBool2 -> "bvec2"
+            KslBool3 -> "bvec3"
+            KslBool4 -> "bvec4"
+            KslFloat1 -> "float"
+            KslFloat2 -> "vec2"
+            KslFloat3 -> "vec3"
+            KslFloat4 -> "vec4"
+            KslInt1 -> "int"
+            KslInt2 -> "ivec2"
+            KslInt3 -> "ivec3"
+            KslInt4 -> "ivec4"
+            KslUint1 -> "uint"
+            KslUint2 -> "uvec2"
+            KslUint3 -> "uvec3"
+            KslUint4 -> "uvec4"
+            KslMat2 -> "mat2"
+            KslMat3 -> "mat3"
+            KslMat4 -> "mat4"
 
-            KslTypeColorSampler1d -> "sampler2D"    // in WebGL2, 1d textures are not supported, simply use 2d instead (with height = 1px)
-            KslTypeColorSampler2d -> "sampler2D"
-            KslTypeColorSampler3d -> "sampler3D"
-            KslTypeColorSamplerCube -> "samplerCube"
-            KslTypeColorSampler2dArray -> "sampler2DArray"
-            KslTypeColorSamplerCubeArray -> "samplerCubeArray"
+            KslColorSampler1d -> "sampler2D"    // in WebGL2, 1d textures are not supported, simply use 2d instead (with height = 1px)
+            KslColorSampler2d -> "sampler2D"
+            KslColorSampler3d -> "sampler3D"
+            KslColorSamplerCube -> "samplerCube"
+            KslColorSampler2dArray -> "sampler2DArray"
+            KslColorSamplerCubeArray -> "samplerCubeArray"
 
-            KslTypeDepthSampler2d -> "sampler2DShadow"
-            KslTypeDepthSamplerCube -> "samplerCubeShadow"
-            KslTypeDepthSampler2dArray -> "sampler2DArrayShadow"
-            KslTypeDepthSamplerCubeArray -> "samplerCubeArrayShadow"
+            KslDepthSampler2D -> "sampler2DShadow"
+            KslDepthSamplerCube -> "samplerCubeShadow"
+            KslDepthSampler2DArray -> "sampler2DArrayShadow"
+            KslDepthSamplerCubeArray -> "samplerCubeArrayShadow"
 
-            is KslTypeArray<*> -> "${glslTypeName(type.elemType)}[${type.arraySize}]"
+            KslStorage1dFloat1 -> TODO()
+            KslStorage1dFloat2 -> TODO()
+            KslStorage1dFloat3 -> TODO()
+            KslStorage1dFloat4 -> TODO()
+
+            is KslArrayType<*> -> "${glslTypeName(type.elemType)}[${type.arraySize}]"
         }
     }
 

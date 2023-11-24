@@ -179,7 +179,7 @@ object GrassShader {
             }
             fragmentStage {
                 @Suppress("UNCHECKED_CAST")
-                val worldPos = interStageVars.first { it.output.stateName == "positionWorldSpace" } as KslInterStageVector<KslTypeFloat3, KslTypeFloat1>
+                val worldPos = interStageVars.first { it.output.stateName == "positionWorldSpace" } as KslInterStageVector<KslFloat3, KslFloat1>
                 val camData = dataBlocks.first { it is CameraData } as CameraData
 
                 main {

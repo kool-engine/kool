@@ -3,7 +3,7 @@ package de.fabmax.kool.modules.ksl.blocks
 import de.fabmax.kool.modules.ksl.lang.*
 
 class CalcBumpedNormal(parentScope: KslScopeBuilder) :
-    KslFunction<KslTypeFloat3>(FUNC_NAME, KslTypeFloat3, parentScope.parentStage) {
+    KslFunction<KslFloat3>(FUNC_NAME, KslFloat3, parentScope.parentStage) {
 
     init {
         val normal = paramFloat3("normal")

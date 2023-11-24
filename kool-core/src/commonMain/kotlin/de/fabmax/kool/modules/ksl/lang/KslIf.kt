@@ -1,8 +1,8 @@
 package de.fabmax.kool.modules.ksl.lang
 
-class KslIf(val condition: KslExpression<KslTypeBool1>, parentScope: KslScopeBuilder) : KslStatement("if", parentScope) {
+class KslIf(val condition: KslExpression<KslBool1>, parentScope: KslScopeBuilder) : KslStatement("if", parentScope) {
     val body = KslScopeBuilder(this, parentScope, parentScope.parentStage)
-    val elseIfs = mutableListOf<Pair<KslExpression<KslTypeBool1>, KslScopeBuilder>>()
+    val elseIfs = mutableListOf<Pair<KslExpression<KslBool1>, KslScopeBuilder>>()
     val elseBody = KslScopeBuilder(this, parentScope, parentScope.parentStage).apply { scopeName = "else" }
 
     private val parentBuilder = parentScope
@@ -13,7 +13,7 @@ class KslIf(val condition: KslExpression<KslTypeBool1>, parentScope: KslScopeBui
         childScopes += elseBody
     }
 
-    fun elseIf(condition: KslExpression<KslTypeBool1>, block: KslScopeBuilder.() -> Unit): KslIf {
+    fun elseIf(condition: KslExpression<KslBool1>, block: KslScopeBuilder.() -> Unit): KslIf {
         addExpressionDependencies(condition)
         val body = KslScopeBuilder(this, parentBuilder, parentBuilder.parentStage).apply {
             scopeName = "elseif"

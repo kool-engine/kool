@@ -141,7 +141,7 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
             val positionWorldSpace = interStageFloat3("positionWorldSpace")
             val normalWorldSpace = interStageFloat3("normalWorldSpace")
             val projPosition = interStageFloat4("projPosition")
-            var tangentWorldSpace: KslInterStageVector<KslTypeFloat4, KslTypeFloat1>? = null
+            var tangentWorldSpace: KslInterStageVector<KslFloat4, KslFloat1>? = null
 
             val texCoordBlock: TexCoordAttributeBlock
             val shadowMapVertexStage: ShadowBlockVertexStage

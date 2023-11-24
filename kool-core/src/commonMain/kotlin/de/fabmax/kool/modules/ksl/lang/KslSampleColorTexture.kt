@@ -3,13 +3,13 @@ package de.fabmax.kool.modules.ksl.lang
 import de.fabmax.kool.modules.ksl.generator.KslGenerator
 import de.fabmax.kool.modules.ksl.model.KslMutatedState
 
-class KslSampleColorTexture<T: KslTypeSampler<KslTypeFloat4>>(
+class KslSampleColorTexture<T: KslSamplerType<KslFloat4>>(
     val sampler: KslExpression<T>,
     val coord: KslExpression<*>,
-    val lod: KslScalarExpression<KslTypeFloat1>?)
-    : KslVectorExpression<KslTypeFloat4, KslTypeFloat1> {
+    val lod: KslScalarExpression<KslFloat1>?
+) : KslVectorExpression<KslFloat4, KslFloat1> {
 
-    override val expressionType = KslTypeFloat4
+    override val expressionType = KslFloat4
 
     override fun collectStateDependencies(): Set<KslMutatedState> {
         val deps = sampler.collectStateDependencies() + coord.collectStateDependencies()

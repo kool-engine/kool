@@ -143,7 +143,7 @@ fun KslScopeBuilder.noise44(p: KslExprFloat4): KslExprFloat4 {
 }
 
 class Noise11(parentScope: KslScopeBuilder) :
-    KslFunction<KslTypeFloat1>(FUNC_NAME, KslTypeFloat1, parentScope.parentStage) {
+    KslFunction<KslFloat1>(FUNC_NAME, KslFloat1, parentScope.parentStage) {
     init {
         val p = paramFloat1("p")
         body {
@@ -166,7 +166,7 @@ class Noise11(parentScope: KslScopeBuilder) :
 }
 
 class Noise12(parentScope: KslScopeBuilder) :
-    KslFunction<KslTypeFloat1>(FUNC_NAME, KslTypeFloat1, parentScope.parentStage) {
+    KslFunction<KslFloat1>(FUNC_NAME, KslFloat1, parentScope.parentStage) {
     init {
         val p = paramFloat2("p")
         body {
@@ -187,7 +187,7 @@ class Noise12(parentScope: KslScopeBuilder) :
 }
 
 class Noise13(parentScope: KslScopeBuilder) :
-    KslFunction<KslTypeFloat1>(FUNC_NAME, KslTypeFloat1, parentScope.parentStage) {
+    KslFunction<KslFloat1>(FUNC_NAME, KslFloat1, parentScope.parentStage) {
     init {
         val p = paramFloat3("p")
         body {
@@ -208,7 +208,7 @@ class Noise13(parentScope: KslScopeBuilder) :
 }
 
 class Noise14(parentScope: KslScopeBuilder) :
-    KslFunction<KslTypeFloat1>(FUNC_NAME, KslTypeFloat1, parentScope.parentStage) {
+    KslFunction<KslFloat1>(FUNC_NAME, KslFloat1, parentScope.parentStage) {
     init {
         val p = paramFloat4("p")
         body {
@@ -229,7 +229,7 @@ class Noise14(parentScope: KslScopeBuilder) :
 }
 
 class Noise21(parentScope: KslScopeBuilder) :
-    KslFunction<KslTypeFloat2>(FUNC_NAME, KslTypeFloat2, parentScope.parentStage) {
+    KslFunction<KslFloat2>(FUNC_NAME, KslFloat2, parentScope.parentStage) {
     init {
         val p = paramFloat1("p")
         body {
@@ -250,7 +250,7 @@ class Noise21(parentScope: KslScopeBuilder) :
 }
 
 class Noise22(parentScope: KslScopeBuilder) :
-    KslFunction<KslTypeFloat2>(FUNC_NAME, KslTypeFloat2, parentScope.parentStage) {
+    KslFunction<KslFloat2>(FUNC_NAME, KslFloat2, parentScope.parentStage) {
     init {
         val p = paramFloat2("p")
         body {
@@ -271,7 +271,7 @@ class Noise22(parentScope: KslScopeBuilder) :
 }
 
 class Noise23(parentScope: KslScopeBuilder) :
-    KslFunction<KslTypeFloat2>(FUNC_NAME, KslTypeFloat2, parentScope.parentStage) {
+    KslFunction<KslFloat2>(FUNC_NAME, KslFloat2, parentScope.parentStage) {
     init {
         val p = paramFloat3("p")
         body {
@@ -292,7 +292,7 @@ class Noise23(parentScope: KslScopeBuilder) :
 }
 
 class Noise31(parentScope: KslScopeBuilder) :
-    KslFunction<KslTypeFloat3>(FUNC_NAME, KslTypeFloat3, parentScope.parentStage) {
+    KslFunction<KslFloat3>(FUNC_NAME, KslFloat3, parentScope.parentStage) {
     init {
         val p = paramFloat1("p")
         body {
@@ -313,7 +313,7 @@ class Noise31(parentScope: KslScopeBuilder) :
 }
 
 class Noise32(parentScope: KslScopeBuilder) :
-    KslFunction<KslTypeFloat3>(FUNC_NAME, KslTypeFloat3, parentScope.parentStage) {
+    KslFunction<KslFloat3>(FUNC_NAME, KslFloat3, parentScope.parentStage) {
     init {
         val p = paramFloat2("p")
         body {
@@ -334,7 +334,7 @@ class Noise32(parentScope: KslScopeBuilder) :
 }
 
 class Noise33(parentScope: KslScopeBuilder) :
-    KslFunction<KslTypeFloat3>(FUNC_NAME, KslTypeFloat3, parentScope.parentStage) {
+    KslFunction<KslFloat3>(FUNC_NAME, KslFloat3, parentScope.parentStage) {
     init {
         val p = paramFloat3("p")
         body {
@@ -355,7 +355,7 @@ class Noise33(parentScope: KslScopeBuilder) :
 }
 
 class Noise41(parentScope: KslScopeBuilder) :
-    KslFunction<KslTypeFloat4>(FUNC_NAME, KslTypeFloat4, parentScope.parentStage) {
+    KslFunction<KslFloat4>(FUNC_NAME, KslFloat4, parentScope.parentStage) {
     init {
         val p = paramFloat1("p")
         body {
@@ -376,7 +376,7 @@ class Noise41(parentScope: KslScopeBuilder) :
 }
 
 class Noise42(parentScope: KslScopeBuilder) :
-    KslFunction<KslTypeFloat4>(FUNC_NAME, KslTypeFloat4, parentScope.parentStage) {
+    KslFunction<KslFloat4>(FUNC_NAME, KslFloat4, parentScope.parentStage) {
     init {
         val p = paramFloat2("p")
         body {
@@ -397,7 +397,7 @@ class Noise42(parentScope: KslScopeBuilder) :
 }
 
 class Noise43(parentScope: KslScopeBuilder) :
-    KslFunction<KslTypeFloat4>(FUNC_NAME, KslTypeFloat4, parentScope.parentStage) {
+    KslFunction<KslFloat4>(FUNC_NAME, KslFloat4, parentScope.parentStage) {
     init {
         val p = paramFloat3("p")
         body {
@@ -418,7 +418,7 @@ class Noise43(parentScope: KslScopeBuilder) :
 }
 
 class Noise44(parentScope: KslScopeBuilder) :
-    KslFunction<KslTypeFloat4>(FUNC_NAME, KslTypeFloat4, parentScope.parentStage) {
+    KslFunction<KslFloat4>(FUNC_NAME, KslFloat4, parentScope.parentStage) {
     init {
         val p = paramFloat4("p")
         body {

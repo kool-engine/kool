@@ -5,7 +5,7 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.ksl.lang.*
 
 class GetShadowMapFactor(name: String, parentScope: KslScopeBuilder, samplePattern: List<Vec2f>) :
-    KslFunction<KslTypeFloat1>(name, KslTypeFloat1, parentScope.parentStage) {
+    KslFunction<KslFloat1>(name, KslFloat1, parentScope.parentStage) {
 
     init {
         val depthMap = paramDepthTex2d("depthMap")
@@ -42,7 +42,7 @@ class GetShadowMapFactor(name: String, parentScope: KslScopeBuilder, samplePatte
 }
 
 fun KslScopeBuilder.getShadowMapFactor(
-    depthMap: KslExpression<KslTypeDepthSampler2d>,
+    depthMap: KslExpression<KslDepthSampler2D>,
     positionLightSpace: KslExprFloat4,
     samplePattern: List<Vec2f>
 ): KslExprFloat1 {

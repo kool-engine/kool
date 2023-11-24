@@ -131,34 +131,34 @@ open class KslShader private constructor(val program: KslProgram) : Shader() {
                 // make sure to reuse the existing Uniform<*> object in case multiple pipeline instances are
                 // created from this KslShader instance
                 val createdUniform: Uniform<*> = uniforms[uniform.name] ?: when(val type = uniform.value.expressionType)  {
-                    is KslTypeFloat1 -> { Uniform1f(uniform.name) }
-                    is KslTypeFloat2 -> { Uniform2f(uniform.name) }
-                    is KslTypeFloat3 -> { Uniform3f(uniform.name) }
-                    is KslTypeFloat4 -> { Uniform4f(uniform.name) }
+                    is KslFloat1 -> { Uniform1f(uniform.name) }
+                    is KslFloat2 -> { Uniform2f(uniform.name) }
+                    is KslFloat3 -> { Uniform3f(uniform.name) }
+                    is KslFloat4 -> { Uniform4f(uniform.name) }
 
-                    is KslTypeInt1 -> { Uniform1i(uniform.name) }
-                    is KslTypeInt2 -> { Uniform2i(uniform.name) }
-                    is KslTypeInt3 -> { Uniform3i(uniform.name) }
-                    is KslTypeInt4 -> { Uniform4i(uniform.name) }
+                    is KslInt1 -> { Uniform1i(uniform.name) }
+                    is KslInt2 -> { Uniform2i(uniform.name) }
+                    is KslInt3 -> { Uniform3i(uniform.name) }
+                    is KslInt4 -> { Uniform4i(uniform.name) }
 
                     //is KslTypeMat2 -> { UniformMat2f(uniform.name) }
-                    is KslTypeMat3 -> { UniformMat3f(uniform.name) }
-                    is KslTypeMat4 -> { UniformMat4f(uniform.name) }
+                    is KslMat3 -> { UniformMat3f(uniform.name) }
+                    is KslMat4 -> { UniformMat4f(uniform.name) }
 
-                    is KslTypeArray<*> -> {
+                    is KslArrayType<*> -> {
                         when (type.elemType) {
-                            is KslTypeFloat1 -> { Uniform1fv(uniform.name, uniform.arraySize) }
-                            is KslTypeFloat2 -> { Uniform2fv(uniform.name, uniform.arraySize) }
-                            is KslTypeFloat3 -> { Uniform3fv(uniform.name, uniform.arraySize) }
-                            is KslTypeFloat4 -> { Uniform4fv(uniform.name, uniform.arraySize) }
+                            is KslFloat1 -> { Uniform1fv(uniform.name, uniform.arraySize) }
+                            is KslFloat2 -> { Uniform2fv(uniform.name, uniform.arraySize) }
+                            is KslFloat3 -> { Uniform3fv(uniform.name, uniform.arraySize) }
+                            is KslFloat4 -> { Uniform4fv(uniform.name, uniform.arraySize) }
 
-                            is KslTypeInt1 -> { Uniform1iv(uniform.name, uniform.arraySize) }
-                            is KslTypeInt2 -> { Uniform2iv(uniform.name, uniform.arraySize) }
-                            is KslTypeInt3 -> { Uniform3iv(uniform.name, uniform.arraySize) }
-                            is KslTypeInt4 -> { Uniform4iv(uniform.name, uniform.arraySize) }
+                            is KslInt1 -> { Uniform1iv(uniform.name, uniform.arraySize) }
+                            is KslInt2 -> { Uniform2iv(uniform.name, uniform.arraySize) }
+                            is KslInt3 -> { Uniform3iv(uniform.name, uniform.arraySize) }
+                            is KslInt4 -> { Uniform4iv(uniform.name, uniform.arraySize) }
 
-                            is KslTypeMat3 -> { UniformMat3fv(uniform.name, uniform.arraySize) }
-                            is KslTypeMat4 -> { UniformMat4fv(uniform.name, uniform.arraySize) }
+                            is KslMat3 -> { UniformMat3fv(uniform.name, uniform.arraySize) }
+                            is KslMat4 -> { UniformMat4fv(uniform.name, uniform.arraySize) }
 
                             else -> throw IllegalStateException("Unsupported uniform array type: ${type.elemType.typeName}")
                         }
@@ -172,27 +172,27 @@ open class KslShader private constructor(val program: KslProgram) : Shader() {
         if (program.uniformSamplers.isNotEmpty()) {
             program.uniformSamplers.values.forEach { sampler ->
                 val desc = when(val type = sampler.value.expressionType)  {
-                    is KslTypeDepthSampler2d -> TextureSampler2d.Builder().apply { isDepthSampler = true }
-                    is KslTypeDepthSamplerCube -> TextureSamplerCube.Builder().apply { isDepthSampler = true }
-                    is KslTypeColorSampler1d -> TextureSampler1d.Builder()
-                    is KslTypeColorSampler2d -> TextureSampler2d.Builder()
-                    is KslTypeColorSampler3d -> TextureSampler3d.Builder()
-                    is KslTypeColorSamplerCube -> TextureSamplerCube.Builder()
+                    is KslDepthSampler2D -> TextureSampler2d.Builder().apply { isDepthSampler = true }
+                    is KslDepthSamplerCube -> TextureSamplerCube.Builder().apply { isDepthSampler = true }
+                    is KslColorSampler1d -> TextureSampler1d.Builder()
+                    is KslColorSampler2d -> TextureSampler2d.Builder()
+                    is KslColorSampler3d -> TextureSampler3d.Builder()
+                    is KslColorSamplerCube -> TextureSamplerCube.Builder()
 
-                    is KslTypeArray<*> -> {
+                    is KslArrayType<*> -> {
                         when (type.elemType) {
-                            is KslTypeDepthSampler2d -> TextureSampler2d.Builder().apply {
+                            is KslDepthSampler2D -> TextureSampler2d.Builder().apply {
                                 isDepthSampler = true
                                 arraySize = sampler.arraySize
                             }
-                            is KslTypeDepthSamplerCube -> TextureSamplerCube.Builder().apply {
+                            is KslDepthSamplerCube -> TextureSamplerCube.Builder().apply {
                                 isDepthSampler = true
                                 arraySize = sampler.arraySize
                             }
-                            is KslTypeColorSampler1d -> TextureSampler1d.Builder().apply { arraySize = sampler.arraySize }
-                            is KslTypeColorSampler2d -> TextureSampler2d.Builder().apply { arraySize = sampler.arraySize }
-                            is KslTypeColorSampler3d -> TextureSampler3d.Builder().apply { arraySize = sampler.arraySize }
-                            is KslTypeColorSamplerCube -> TextureSamplerCube.Builder().apply { arraySize = sampler.arraySize }
+                            is KslColorSampler1d -> TextureSampler1d.Builder().apply { arraySize = sampler.arraySize }
+                            is KslColorSampler2d -> TextureSampler2d.Builder().apply { arraySize = sampler.arraySize }
+                            is KslColorSampler3d -> TextureSampler3d.Builder().apply { arraySize = sampler.arraySize }
+                            is KslColorSamplerCube -> TextureSamplerCube.Builder().apply { arraySize = sampler.arraySize }
                             else -> throw IllegalStateException("Unsupported sampler array type: ${type.elemType.typeName}")
                         }
                     }

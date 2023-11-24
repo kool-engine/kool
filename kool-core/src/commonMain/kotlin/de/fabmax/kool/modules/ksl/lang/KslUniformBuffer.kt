@@ -19,42 +19,42 @@ class KslUniformBuffer(val name: String, val program: KslProgram, val isShared: 
         return uniform
     }
 
-    fun uniformFloat1(name: String) = getOrCreateUniform(name) { KslUniformScalar(KslVarScalar(name, KslTypeFloat1, false)) }
-    fun uniformFloat2(name: String) = getOrCreateUniform(name) { KslUniformVector(KslVarVector(name, KslTypeFloat2, false)) }
-    fun uniformFloat3(name: String) = getOrCreateUniform(name) { KslUniformVector(KslVarVector(name, KslTypeFloat3, false)) }
-    fun uniformFloat4(name: String) = getOrCreateUniform(name) { KslUniformVector(KslVarVector(name, KslTypeFloat4, false)) }
+    fun uniformFloat1(name: String) = getOrCreateUniform(name) { KslUniformScalar(KslVarScalar(name, KslFloat1, false)) }
+    fun uniformFloat2(name: String) = getOrCreateUniform(name) { KslUniformVector(KslVarVector(name, KslFloat2, false)) }
+    fun uniformFloat3(name: String) = getOrCreateUniform(name) { KslUniformVector(KslVarVector(name, KslFloat3, false)) }
+    fun uniformFloat4(name: String) = getOrCreateUniform(name) { KslUniformVector(KslVarVector(name, KslFloat4, false)) }
 
     fun uniformFloat1Array(name: String, arraySize: Int) =
-        getOrCreateUniform(name) { KslUniformScalarArray(KslArrayScalar(name, KslTypeFloat1, arraySize, false)) }
+        getOrCreateUniform(name) { KslUniformScalarArray(KslArrayScalar(name, KslFloat1, arraySize, false)) }
     fun uniformFloat2Array(name: String, arraySize: Int) =
-        getOrCreateUniform(name) { KslUniformVectorArray(KslArrayVector(name, KslTypeFloat2, arraySize, false)) }
+        getOrCreateUniform(name) { KslUniformVectorArray(KslArrayVector(name, KslFloat2, arraySize, false)) }
     fun uniformFloat3Array(name: String, arraySize: Int) =
-        getOrCreateUniform(name) { KslUniformVectorArray(KslArrayVector(name, KslTypeFloat3, arraySize, false)) }
+        getOrCreateUniform(name) { KslUniformVectorArray(KslArrayVector(name, KslFloat3, arraySize, false)) }
     fun uniformFloat4Array(name: String, arraySize: Int) =
-        getOrCreateUniform(name) { KslUniformVectorArray(KslArrayVector(name, KslTypeFloat4, arraySize, false)) }
+        getOrCreateUniform(name) { KslUniformVectorArray(KslArrayVector(name, KslFloat4, arraySize, false)) }
 
-    fun uniformInt1(name: String) = getOrCreateUniform(name) { KslUniformScalar(KslVarScalar(name, KslTypeInt1, false)) }
-    fun uniformInt2(name: String) = getOrCreateUniform(name) { KslUniformVector(KslVarVector(name, KslTypeInt2, false)) }
-    fun uniformInt3(name: String) = getOrCreateUniform(name) { KslUniformVector(KslVarVector(name, KslTypeInt3, false)) }
-    fun uniformInt4(name: String) = getOrCreateUniform(name) { KslUniformVector(KslVarVector(name, KslTypeInt4, false)) }
+    fun uniformInt1(name: String) = getOrCreateUniform(name) { KslUniformScalar(KslVarScalar(name, KslInt1, false)) }
+    fun uniformInt2(name: String) = getOrCreateUniform(name) { KslUniformVector(KslVarVector(name, KslInt2, false)) }
+    fun uniformInt3(name: String) = getOrCreateUniform(name) { KslUniformVector(KslVarVector(name, KslInt3, false)) }
+    fun uniformInt4(name: String) = getOrCreateUniform(name) { KslUniformVector(KslVarVector(name, KslInt4, false)) }
 
     fun uniformInt1Array(name: String, arraySize: Int) =
-        getOrCreateUniform(name) { KslUniformScalarArray(KslArrayScalar(name, KslTypeInt1, arraySize, false)) }
+        getOrCreateUniform(name) { KslUniformScalarArray(KslArrayScalar(name, KslInt1, arraySize, false)) }
     fun uniformInt2Array(name: String, arraySize: Int) =
-        getOrCreateUniform(name) { KslUniformVectorArray(KslArrayVector(name, KslTypeInt2, arraySize, false)) }
+        getOrCreateUniform(name) { KslUniformVectorArray(KslArrayVector(name, KslInt2, arraySize, false)) }
     fun uniformInt3Array(name: String, arraySize: Int) =
-        getOrCreateUniform(name) { KslUniformVectorArray(KslArrayVector(name, KslTypeInt3, arraySize, false)) }
+        getOrCreateUniform(name) { KslUniformVectorArray(KslArrayVector(name, KslInt3, arraySize, false)) }
     fun uniformInt4Array(name: String, arraySize: Int) =
-        getOrCreateUniform(name) { KslUniformVectorArray(KslArrayVector(name, KslTypeInt4, arraySize, false)) }
+        getOrCreateUniform(name) { KslUniformVectorArray(KslArrayVector(name, KslInt4, arraySize, false)) }
 
-    fun uniformMat2(name: String) = getOrCreateUniform(name) { KslUniformMatrix(KslVarMatrix(name, KslTypeMat2, false)) }
-    fun uniformMat3(name: String) = getOrCreateUniform(name) { KslUniformMatrix(KslVarMatrix(name, KslTypeMat3, false)) }
-    fun uniformMat4(name: String) = getOrCreateUniform(name) { KslUniformMatrix(KslVarMatrix(name, KslTypeMat4, false)) }
+    fun uniformMat2(name: String) = getOrCreateUniform(name) { KslUniformMatrix(KslVarMatrix(name, KslMat2, false)) }
+    fun uniformMat3(name: String) = getOrCreateUniform(name) { KslUniformMatrix(KslVarMatrix(name, KslMat3, false)) }
+    fun uniformMat4(name: String) = getOrCreateUniform(name) { KslUniformMatrix(KslVarMatrix(name, KslMat4, false)) }
 
     fun uniformMat2Array(name: String, arraySize: Int) =
-        getOrCreateUniform(name) { KslUniformMatrixArray(KslArrayMatrix(name, KslTypeMat2, arraySize, false)) }
+        getOrCreateUniform(name) { KslUniformMatrixArray(KslArrayMatrix(name, KslMat2, arraySize, false)) }
     fun uniformMat3Array(name: String, arraySize: Int) =
-        getOrCreateUniform(name) { KslUniformMatrixArray(KslArrayMatrix(name, KslTypeMat3, arraySize, false)) }
+        getOrCreateUniform(name) { KslUniformMatrixArray(KslArrayMatrix(name, KslMat3, arraySize, false)) }
     fun uniformMat4Array(name: String, arraySize: Int) =
-        getOrCreateUniform(name) { KslUniformMatrixArray(KslArrayMatrix(name, KslTypeMat4, arraySize, false)) }
+        getOrCreateUniform(name) { KslUniformMatrixArray(KslArrayMatrix(name, KslMat4, arraySize, false)) }
 }

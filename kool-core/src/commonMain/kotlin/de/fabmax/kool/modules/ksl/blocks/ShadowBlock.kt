@@ -14,7 +14,7 @@ fun KslScopeBuilder.vertexShadowBlock(cfg: ShadowConfig, block: ShadowBlockVerte
     return shadowBlock
 }
 
-fun KslScopeBuilder.fragmentShadowBlock(vertexStage: ShadowBlockVertexStage, shadowFactors: KslArrayScalar<KslTypeFloat1>): ShadowBlockFragmentStage {
+fun KslScopeBuilder.fragmentShadowBlock(vertexStage: ShadowBlockVertexStage, shadowFactors: KslArrayScalar<KslFloat1>): ShadowBlockFragmentStage {
     val shadowBlock = ShadowBlockFragmentStage(
         lightSpacePositions = vertexStage.positionsLightSpace?.output,
         lightSpaceNormalZs = vertexStage.normalZsLightSpace?.output,
@@ -28,10 +28,10 @@ fun KslScopeBuilder.fragmentShadowBlock(vertexStage: ShadowBlockVertexStage, sha
 }
 
 fun KslScopeBuilder.fragmentShadowBlock(
-    lightSpacePositions: KslArrayVector<KslTypeFloat4, KslTypeFloat1>,
-    lightSpaceNormalZs: KslArrayScalar<KslTypeFloat1>,
+    lightSpacePositions: KslArrayVector<KslFloat4, KslFloat1>,
+    lightSpaceNormalZs: KslArrayScalar<KslFloat1>,
     shadowData: ShadowData,
-    shadowFactors: KslArrayScalar<KslTypeFloat1>
+    shadowFactors: KslArrayScalar<KslFloat1>
 ): ShadowBlockFragmentStage {
     val shadowBlock = ShadowBlockFragmentStage(
         lightSpacePositions = lightSpacePositions,
@@ -50,9 +50,9 @@ class ShadowBlockVertexStage(cfg: ShadowConfig, name: String, parentScope: KslSc
     var inNormalWorldSpace = inFloat3("inNormalWorldSpace")
 
     val shadowData: ShadowData
-    var positionsLightSpace: KslInterStageVectorArray<KslTypeFloat4, KslTypeFloat1>? = null
+    var positionsLightSpace: KslInterStageVectorArray<KslFloat4, KslFloat1>? = null
         private set
-    var normalZsLightSpace: KslInterStageScalarArray<KslTypeFloat1>? = null
+    var normalZsLightSpace: KslInterStageScalarArray<KslFloat1>? = null
         private set
 
     init {
@@ -82,10 +82,10 @@ class ShadowBlockVertexStage(cfg: ShadowConfig, name: String, parentScope: KslSc
 }
 
 class ShadowBlockFragmentStage(
-    lightSpacePositions: KslArrayVector<KslTypeFloat4, KslTypeFloat1>?,
-    lightSpaceNormalZs: KslArrayScalar<KslTypeFloat1>?,
+    lightSpacePositions: KslArrayVector<KslFloat4, KslFloat1>?,
+    lightSpaceNormalZs: KslArrayScalar<KslFloat1>?,
     val shadowData: ShadowData,
-    val shadowFactors: KslArrayScalar<KslTypeFloat1>,
+    val shadowFactors: KslArrayScalar<KslFloat1>,
     name: String,
     parentScope: KslScopeBuilder
 ) : KslBlock(name, parentScope) {
@@ -114,8 +114,8 @@ class ShadowBlockFragmentStage(
     }
 
     private fun KslScopeBuilder.sampleSimpleShadowMap(
-        lightSpacePositions: KslArrayVector<KslTypeFloat4, KslTypeFloat1>,
-        lightSpaceNormalZs: KslArrayScalar<KslTypeFloat1>,
+        lightSpacePositions: KslArrayVector<KslFloat4, KslFloat1>,
+        lightSpaceNormalZs: KslArrayScalar<KslFloat1>,
         mapInfo: ShadowData.ShadowMapInfo
     ) {
         val light = requireNotNull(mapInfo.shadowMap.light) { "ShadowMap light must be set before creating a shader with it" }
@@ -132,8 +132,8 @@ class ShadowBlockFragmentStage(
     }
 
     private fun KslScopeBuilder.sampleCascadedShadowMap(
-        lightSpacePositions: KslArrayVector<KslTypeFloat4, KslTypeFloat1>,
-        lightSpaceNormalZs: KslArrayScalar<KslTypeFloat1>,
+        lightSpacePositions: KslArrayVector<KslFloat4, KslFloat1>,
+        lightSpaceNormalZs: KslArrayScalar<KslFloat1>,
         mapInfo: ShadowData.ShadowMapInfo
     ) {
         val lightIdx = mapInfo.shadowMap.light?.lightIndex ?: 0

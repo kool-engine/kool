@@ -54,64 +54,54 @@ class KslVectorAccessorVector<V, S>(vector: KslExpression<*>, components: String
     : KslVectorAccessor<V>(vector, components, type, type.dimens), KslVectorExpression<V, S> where V: KslType, V: KslVector<S>, S: KslScalar
 
 
-@Suppress("UNCHECKED_CAST")
-private fun <S> scalarTypeOf(expr: KslVectorExpression<*, S>): S where S: KslType, S: KslScalar {
-    return when (expr.expressionType) {
-        is KslFloatType -> KslTypeFloat1 as S
-        is KslIntType -> KslTypeInt1 as S
-        is KslBoolType -> KslTypeBool1 as S
-        else -> throw IllegalStateException("invalid vector expression type: ${expr.expressionType}")
-    }
+fun <V> KslExpression<V>.float1(component: String): KslVectorAccessorScalar<KslFloat1> where V: KslType, V: KslVector<KslFloat1> {
+    return KslVectorAccessorScalar(this, component, KslFloat1)
+}
+fun <V> KslExpression<V>.float2(components: String): KslVectorAccessorVector<KslFloat2, KslFloat1> where V: KslType, V: KslVector<KslFloat1> {
+    return KslVectorAccessorVector(this, components, KslFloat2)
+}
+fun <V> KslExpression<V>.float3(components: String): KslVectorAccessorVector<KslFloat3, KslFloat1> where V: KslType, V: KslVector<KslFloat1> {
+    return KslVectorAccessorVector(this, components, KslFloat3)
+}
+fun <V> KslExpression<V>.float4(components: String): KslVectorAccessorVector<KslFloat4, KslFloat1> where V: KslType, V: KslVector<KslFloat1> {
+    return KslVectorAccessorVector(this, components, KslFloat4)
 }
 
-fun <V> KslExpression<V>.float1(component: String): KslVectorAccessorScalar<KslTypeFloat1> where V: KslType, V: KslVector<KslTypeFloat1> {
-    return KslVectorAccessorScalar(this, component, KslTypeFloat1)
+fun <V> KslExpression<V>.int1(component: String): KslVectorAccessorScalar<KslInt1> where V: KslType, V: KslVector<KslInt1> {
+    return KslVectorAccessorScalar(this, component, KslInt1)
 }
-fun <V> KslExpression<V>.float2(components: String): KslVectorAccessorVector<KslTypeFloat2, KslTypeFloat1> where V: KslType, V: KslVector<KslTypeFloat1> {
-    return KslVectorAccessorVector(this, components, KslTypeFloat2)
+fun <V> KslExpression<V>.int2(components: String): KslVectorAccessorVector<KslInt2, KslInt1> where V: KslIntType, V: KslVector<KslInt1> {
+    return KslVectorAccessorVector(this, components, KslInt2)
 }
-fun <V> KslExpression<V>.float3(components: String): KslVectorAccessorVector<KslTypeFloat3, KslTypeFloat1> where V: KslType, V: KslVector<KslTypeFloat1> {
-    return KslVectorAccessorVector(this, components, KslTypeFloat3)
+fun <V> KslExpression<V>.int3(components: String): KslVectorAccessorVector<KslInt3, KslInt1> where V: KslIntType, V: KslVector<KslInt1> {
+    return KslVectorAccessorVector(this, components, KslInt3)
 }
-fun <V> KslExpression<V>.float4(components: String): KslVectorAccessorVector<KslTypeFloat4, KslTypeFloat1> where V: KslType, V: KslVector<KslTypeFloat1> {
-    return KslVectorAccessorVector(this, components, KslTypeFloat4)
-}
-
-fun <V> KslExpression<V>.int1(component: String): KslVectorAccessorScalar<KslTypeInt1> where V: KslType, V: KslVector<KslTypeInt1> {
-    return KslVectorAccessorScalar(this, component, KslTypeInt1)
-}
-fun <V> KslExpression<V>.int2(components: String): KslVectorAccessorVector<KslTypeInt2, KslTypeInt1> where V: KslIntType, V: KslVector<KslTypeInt1> {
-    return KslVectorAccessorVector(this, components, KslTypeInt2)
-}
-fun <V> KslExpression<V>.int3(components: String): KslVectorAccessorVector<KslTypeInt3, KslTypeInt1> where V: KslIntType, V: KslVector<KslTypeInt1> {
-    return KslVectorAccessorVector(this, components, KslTypeInt3)
-}
-fun <V> KslExpression<V>.int4(components: String): KslVectorAccessorVector<KslTypeInt4, KslTypeInt1> where V: KslIntType, V: KslVector<KslTypeInt1> {
-    return KslVectorAccessorVector(this, components, KslTypeInt4)
+fun <V> KslExpression<V>.int4(components: String): KslVectorAccessorVector<KslInt4, KslInt1> where V: KslIntType, V: KslVector<KslInt1> {
+    return KslVectorAccessorVector(this, components, KslInt4)
 }
 
-fun <V> KslExpression<V>.uint1(component: String): KslVectorAccessorScalar<KslTypeUint1> where V: KslIntType, V: KslVector<KslTypeUint1> {
-    return KslVectorAccessorScalar(this, component, KslTypeUint1)
+fun <V> KslExpression<V>.uint1(component: String): KslVectorAccessorScalar<KslUint1> where V: KslIntType, V: KslVector<KslUint1> {
+    return KslVectorAccessorScalar(this, component, KslUint1)
 }
-fun <V> KslExpression<V>.uint2(components: String): KslVectorAccessorVector<KslTypeUint2, KslTypeUint1> where V: KslIntType, V: KslVector<KslTypeUint1> {
-    return KslVectorAccessorVector(this, components, KslTypeUint2)
+fun <V> KslExpression<V>.uint2(components: String): KslVectorAccessorVector<KslUint2, KslUint1> where V: KslIntType, V: KslVector<KslUint1> {
+    return KslVectorAccessorVector(this, components, KslUint2)
 }
-fun <V> KslExpression<V>.uint3(components: String): KslVectorAccessorVector<KslTypeUint3, KslTypeUint1> where V: KslIntType, V: KslVector<KslTypeUint1> {
-    return KslVectorAccessorVector(this, components, KslTypeUint3)
+fun <V> KslExpression<V>.uint3(components: String): KslVectorAccessorVector<KslUint3, KslUint1> where V: KslIntType, V: KslVector<KslUint1> {
+    return KslVectorAccessorVector(this, components, KslUint3)
 }
-fun <V> KslExpression<V>.uint4(components: String): KslVectorAccessorVector<KslTypeUint4, KslTypeUint1> where V: KslIntType, V: KslVector<KslTypeUint1> {
-    return KslVectorAccessorVector(this, components, KslTypeUint4)
+fun <V> KslExpression<V>.uint4(components: String): KslVectorAccessorVector<KslUint4, KslUint1> where V: KslIntType, V: KslVector<KslUint1> {
+    return KslVectorAccessorVector(this, components, KslUint4)
 }
 
-fun <V> KslExpression<V>.bool1(component: String): KslVectorAccessorScalar<KslTypeBool1> where V: KslBoolType, V: KslVector<KslTypeBool1> {
-    return KslVectorAccessorScalar(this, component, KslTypeBool1)
+fun <V> KslExpression<V>.bool1(component: String): KslVectorAccessorScalar<KslBool1> where V: KslBoolType, V: KslVector<KslBool1> {
+    return KslVectorAccessorScalar(this, component, KslBool1)
 }
-fun <V> KslExpression<V>.bool2(components: String): KslVectorAccessorVector<KslTypeBool2, KslTypeBool1> where V: KslBoolType, V: KslVector<KslTypeBool1> {
-    return KslVectorAccessorVector(this, components, KslTypeBool2)
+fun <V> KslExpression<V>.bool2(components: String): KslVectorAccessorVector<KslBool2, KslBool1> where V: KslBoolType, V: KslVector<KslBool1> {
+    return KslVectorAccessorVector(this, components, KslBool2)
 }
-fun <V> KslExpression<V>.bool3(components: String): KslVectorAccessorVector<KslTypeBool3, KslTypeBool1> where V: KslBoolType, V: KslVector<KslTypeBool1> {
-    return KslVectorAccessorVector(this, components, KslTypeBool3)
+fun <V> KslExpression<V>.bool3(components: String): KslVectorAccessorVector<KslBool3, KslBool1> where V: KslBoolType, V: KslVector<KslBool1> {
+    return KslVectorAccessorVector(this, components, KslBool3)
 }
-fun <V> KslExpression<V>.bool4(components: String): KslVectorAccessorVector<KslTypeBool4, KslTypeBool1> where V: KslBoolType, V: KslVector<KslTypeBool1> {
-    return KslVectorAccessorVector(this, components, KslTypeBool4)
+fun <V> KslExpression<V>.bool4(components: String): KslVectorAccessorVector<KslBool4, KslBool1> where V: KslBoolType, V: KslVector<KslBool1> {
+    return KslVectorAccessorVector(this, components, KslBool4)
 }

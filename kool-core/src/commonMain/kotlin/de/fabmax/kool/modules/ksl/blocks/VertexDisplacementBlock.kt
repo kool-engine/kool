@@ -15,9 +15,9 @@ class VertexDisplacementBlock(
 ) : KslBlock(cfg.propertyName, parentScope) {
 
     val outProperty = outFloat1(parentScope.nextName("${opName}_outProperty"))
-    val outSamplerValues = mutableMapOf<Pair<String, Attribute>, KslVectorExpression<KslTypeFloat4, KslTypeFloat1>>()
+    val outSamplerValues = mutableMapOf<Pair<String, Attribute>, KslVectorExpression<KslFloat4, KslFloat1>>()
 
-    val textures = mutableMapOf<PropertyBlockConfig.TextureProperty, KslUniform<KslTypeColorSampler2d>>()
+    val textures = mutableMapOf<PropertyBlockConfig.TextureProperty, KslUniform<KslColorSampler2d>>()
 
     init {
         body.apply {
@@ -28,7 +28,7 @@ class VertexDisplacementBlock(
             }
 
             cfg.propertySources.forEach { source ->
-                val propertyValue: KslScalarExpression<KslTypeFloat1> = when (source) {
+                val propertyValue: KslScalarExpression<KslFloat1> = when (source) {
                     is PropertyBlockConfig.ConstProperty -> source.value.const
                     is PropertyBlockConfig.UniformProperty -> parentStage.program.uniformFloat1(source.uniformName)
                     is PropertyBlockConfig.VertexProperty -> parentStage.vertexAttribFloat1(source.propertyAttrib.name)

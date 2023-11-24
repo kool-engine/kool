@@ -4,7 +4,8 @@ abstract class KslInterStageVar<T: KslType>(
     open val input: KslValue<T>,
     open val output: KslValue<T>,
     val outputStage: KslShaderStageType,
-    val interpolation: KslInterStageInterpolation)
+    val interpolation: KslInterStageInterpolation
+)
 
 enum class KslInterStageInterpolation {
     Smooth,
@@ -12,8 +13,9 @@ enum class KslInterStageInterpolation {
     NoPerspective
 }
 
-class KslInterStageScalar<S>(input: KslVarScalar<S>, output: KslVarScalar<S>, outputStage: KslShaderStageType, interpolation: KslInterStageInterpolation)
-    : KslInterStageVar<S>(input, output, outputStage, interpolation) where S: KslType, S: KslScalar {
+class KslInterStageScalar<S>(input: KslVarScalar<S>, output: KslVarScalar<S>, outputStage: KslShaderStageType, interpolation: KslInterStageInterpolation) :
+    KslInterStageVar<S>(input, output, outputStage, interpolation) where S: KslType, S: KslScalar
+{
 
     override val input: KslVarScalar<S>
         get() = super.input as KslVarScalar<S>
@@ -34,8 +36,9 @@ class KslInterStageVector<V, S>(input: KslVarVector<V, S>, output: KslVarVector<
         get() = super.output as KslVarVector<V, S>
 }
 
-class KslInterStageScalarArray<S>(input: KslArrayScalar<S>, output: KslArrayScalar<S>, outputStage: KslShaderStageType, interpolation: KslInterStageInterpolation)
-    : KslInterStageVar<KslTypeArray<S>>(input, output, outputStage, interpolation) where S: KslType, S: KslScalar {
+class KslInterStageScalarArray<S>(input: KslArrayScalar<S>, output: KslArrayScalar<S>, outputStage: KslShaderStageType, interpolation: KslInterStageInterpolation) :
+    KslInterStageVar<KslArrayType<S>>(input, output, outputStage, interpolation) where S: KslType, S: KslScalar
+{
 
     override val input: KslArrayScalar<S>
         get() = super.input as KslArrayScalar<S>
@@ -44,8 +47,9 @@ class KslInterStageScalarArray<S>(input: KslArrayScalar<S>, output: KslArrayScal
         get() = super.output as KslArrayScalar<S>
 }
 
-class KslInterStageVectorArray<V, S>(input: KslArrayVector<V, S>, output: KslArrayVector<V, S>, outputStage: KslShaderStageType, interpolation: KslInterStageInterpolation)
-    : KslInterStageVar<KslTypeArray<V>>(input, output, outputStage, interpolation) where V: KslType, V: KslVector<S>, S: KslType, S: KslScalar {
+class KslInterStageVectorArray<V, S>(input: KslArrayVector<V, S>, output: KslArrayVector<V, S>, outputStage: KslShaderStageType, interpolation: KslInterStageInterpolation) :
+    KslInterStageVar<KslArrayType<V>>(input, output, outputStage, interpolation) where V: KslType, V: KslVector<S>, S: KslType, S: KslScalar
+{
 
     @Suppress("UNCHECKED_CAST")
     override val input: KslArrayVector<V, S>

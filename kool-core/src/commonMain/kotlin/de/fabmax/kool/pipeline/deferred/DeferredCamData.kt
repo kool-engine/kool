@@ -18,10 +18,10 @@ class DeferredCamData(program: KslProgram) : KslDataBlock, KslShaderListener {
 
     override val name = "DeferredCamData"
 
-    val position: KslUniformVector<KslTypeFloat3, KslTypeFloat1>
-    val projMat: KslUniformMatrix<KslTypeMat4, KslTypeFloat4>
-    val invViewMat: KslUniformMatrix<KslTypeMat4, KslTypeFloat4>
-    val viewport: KslUniformVector<KslTypeFloat4, KslTypeFloat1>
+    val position: KslUniformVector<KslFloat3, KslFloat1>
+    val projMat: KslUniformMatrix<KslMat4, KslFloat4>
+    val invViewMat: KslUniformMatrix<KslMat4, KslFloat4>
+    val viewport: KslUniformVector<KslFloat4, KslFloat1>
 
     val camUbo = KslUniformBuffer("CameraUniforms", program, false).apply {
         projMat = uniformMat4("uProjMat")

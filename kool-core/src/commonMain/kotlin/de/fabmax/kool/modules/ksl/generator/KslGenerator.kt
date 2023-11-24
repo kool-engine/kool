@@ -21,11 +21,11 @@ abstract class KslGenerator {
         return str
     }
 
-    abstract fun constFloatVecExpression(vararg values: KslExpression<KslTypeFloat1>): String
-    abstract fun constIntVecExpression(vararg values: KslExpression<KslTypeInt1>): String
-    abstract fun constUintVecExpression(vararg values: KslExpression<KslTypeUint1>): String
-    abstract fun constBoolVecExpression(vararg values: KslExpression<KslTypeBool1>): String
-    abstract fun constMatExpression(vararg columns: KslVectorExpression<*, KslTypeFloat1>): String
+    abstract fun constFloatVecExpression(vararg values: KslExpression<KslFloat1>): String
+    abstract fun constIntVecExpression(vararg values: KslExpression<KslInt1>): String
+    abstract fun constUintVecExpression(vararg values: KslExpression<KslUint1>): String
+    abstract fun constBoolVecExpression(vararg values: KslExpression<KslBool1>): String
+    abstract fun constMatExpression(vararg columns: KslVectorExpression<*, KslFloat1>): String
 
     open fun valueExpression(value: KslValue<*>): String = value.name()
     open fun arrayValueExpression(arrayAccessor: KslArrayAccessor<*>): String =

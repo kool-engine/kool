@@ -4,7 +4,7 @@ import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.scene.Light
 
 class GetLightRadiance(parentScope: KslScopeBuilder, isFiniteSoi: Boolean) :
-    KslFunction<KslTypeFloat3>(FUNC_NAME, KslTypeFloat3, parentScope.parentStage) {
+    KslFunction<KslFloat3>(FUNC_NAME, KslFloat3, parentScope.parentStage) {
 
     init {
         val fragPos = paramFloat3("fragPos")

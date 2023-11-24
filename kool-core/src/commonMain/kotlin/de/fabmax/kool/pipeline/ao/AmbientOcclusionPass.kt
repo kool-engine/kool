@@ -134,8 +134,8 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
             val uBias = uniformFloat1("uBias")
 
             main {
-                val normal: KslVectorExpression<KslTypeFloat3, KslTypeFloat1>
-                val origin: KslVectorExpression<KslTypeFloat3, KslTypeFloat1>
+                val normal: KslVectorExpression<KslFloat3, KslFloat1>
+                val origin: KslVectorExpression<KslFloat3, KslFloat1>
                 val depthComponent: String
 
                 if (aoSetup.isDeferred) {

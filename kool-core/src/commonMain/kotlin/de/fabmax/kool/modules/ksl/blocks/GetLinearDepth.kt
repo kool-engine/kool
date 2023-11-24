@@ -3,7 +3,7 @@ package de.fabmax.kool.modules.ksl.blocks
 import de.fabmax.kool.modules.ksl.lang.*
 
 class GetLinearDepth(parentScope: KslScopeBuilder) :
-    KslFunction<KslTypeFloat1>(FUNC_NAME, KslTypeFloat1, parentScope.parentStage) {
+    KslFunction<KslFloat1>(FUNC_NAME, KslFloat1, parentScope.parentStage) {
 
     init {
         val depth = paramFloat1("depth")

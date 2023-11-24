@@ -147,254 +147,254 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
 
 
     fun float1Var(initValue: KslExprFloat1? = null, name: String? = null) =
-        KslVarScalar(name ?: nextName("f1"), KslTypeFloat1, true).also {
+        KslVarScalar(name ?: nextName("f1"), KslFloat1, true).also {
             ops += KslDeclareVar(it, initValue, this)
         }
     fun float2Var(initValue: KslExprFloat2? = null, name: String? = null) =
-        KslVarVector(name ?: nextName("f2"), KslTypeFloat2, true).also {
+        KslVarVector(name ?: nextName("f2"), KslFloat2, true).also {
             ops += KslDeclareVar(it, initValue, this)
         }
     fun float3Var(initValue: KslExprFloat3? = null, name: String? = null) =
-        KslVarVector(name ?: nextName("f3"), KslTypeFloat3, true).also {
+        KslVarVector(name ?: nextName("f3"), KslFloat3, true).also {
             ops += KslDeclareVar(it, initValue, this)
         }
     fun float4Var(initValue: KslExprFloat4? = null, name: String? = null) =
-        KslVarVector(name ?: nextName("f4"), KslTypeFloat4, true).also {
+        KslVarVector(name ?: nextName("f4"), KslFloat4, true).also {
             ops += KslDeclareVar(it, initValue, this)
         }
 
 
     fun int1Var(initValue: KslExprInt1? = null, name: String? = null) =
-        KslVarScalar(name ?: nextName("i1"), KslTypeInt1, true).also {
+        KslVarScalar(name ?: nextName("i1"), KslInt1, true).also {
             ops += KslDeclareVar(it, initValue, this)
         }
     fun int2Var(initValue: KslExprInt2? = null, name: String? = null) =
-        KslVarVector(name ?: nextName("i2"), KslTypeInt2, true).also {
+        KslVarVector(name ?: nextName("i2"), KslInt2, true).also {
             ops += KslDeclareVar(it, initValue, this)
         }
     fun int3Var(initValue: KslExprInt3? = null, name: String? = null) =
-        KslVarVector(name ?: nextName("i3"), KslTypeInt3, true).also {
+        KslVarVector(name ?: nextName("i3"), KslInt3, true).also {
             ops += KslDeclareVar(it, initValue, this)
         }
     fun int4Var(initValue: KslExprInt4? = null, name: String? = null) =
-        KslVarVector(name ?: nextName("i4"), KslTypeInt4, true).also {
+        KslVarVector(name ?: nextName("i4"), KslInt4, true).also {
             ops += KslDeclareVar(it, initValue, this)
         }
 
 
     fun uint1Var(initValue: KslExprUint1? = null, name: String? = null) =
-        KslVarScalar(name ?: nextName("u1"), KslTypeUint1, true).also {
+        KslVarScalar(name ?: nextName("u1"), KslUint1, true).also {
             ops += KslDeclareVar(it, initValue, this)
         }
     fun uint2Var(initValue: KslExprUint2? = null, name: String? = null) =
-        KslVarVector(name ?: nextName("u2"), KslTypeUint2, true).also {
+        KslVarVector(name ?: nextName("u2"), KslUint2, true).also {
             ops += KslDeclareVar(it, initValue, this)
         }
     fun uint3Var(initValue: KslExprUint3? = null, name: String? = null) =
-        KslVarVector(name ?: nextName("u3"), KslTypeUint3, true).also {
+        KslVarVector(name ?: nextName("u3"), KslUint3, true).also {
             ops += KslDeclareVar(it, initValue, this)
         }
     fun uint4Var(initValue: KslExprUint4? = null, name: String? = null) =
-        KslVarVector(name ?: nextName("u4"), KslTypeUint4, true).also {
+        KslVarVector(name ?: nextName("u4"), KslUint4, true).also {
             ops += KslDeclareVar(it, initValue, this)
         }
 
 
     fun bool1Var(initValue: KslExprBool1? = null, name: String? = null) =
-        KslVarScalar(name ?: nextName("b1"), KslTypeBool1, true).also {
+        KslVarScalar(name ?: nextName("b1"), KslBool1, true).also {
             ops += KslDeclareVar(it, initValue, this)
         }
     fun bool2Var(initValue: KslExprBool2? = null, name: String? = null) =
-        KslVarVector(name ?: nextName("b2"), KslTypeInt2, true).also {
+        KslVarVector(name ?: nextName("b2"), KslInt2, true).also {
             ops += KslDeclareVar(it, initValue, this)
         }
     fun bool3Var(initValue: KslExprBool3? = null, name: String? = null) =
-        KslVarVector(name ?: nextName("b3"), KslTypeInt3, true).also {
+        KslVarVector(name ?: nextName("b3"), KslInt3, true).also {
             ops += KslDeclareVar(it, initValue, this)
         }
     fun bool4Var(initValue: KslExprBool4? = null, name: String? = null) =
-        KslVarVector(name ?: nextName("b4"), KslTypeInt4, true).also {
+        KslVarVector(name ?: nextName("b4"), KslInt4, true).also {
             ops += KslDeclareVar(it, initValue, this)
         }
 
 
     fun mat2Var(initValue: KslExprMat2? = null, name: String? = null) =
-        KslVarMatrix(name ?: nextName("m2"), KslTypeMat2, true).also {
+        KslVarMatrix(name ?: nextName("m2"), KslMat2, true).also {
             ops += KslDeclareVar(it, initValue, this)
         }
     fun mat3Var(initValue: KslExprMat3? = null, name: String? = null) =
-        KslVarMatrix(name ?: nextName("m3"), KslTypeMat3, true).also {
+        KslVarMatrix(name ?: nextName("m3"), KslMat3, true).also {
             ops += KslDeclareVar(it, initValue, this)
         }
     fun mat4Var(initValue: KslExprMat4? = null, name: String? = null) =
-        KslVarMatrix(name ?: nextName("m4"), KslTypeMat4, true).also {
+        KslVarMatrix(name ?: nextName("m4"), KslMat4, true).also {
             ops += KslDeclareVar(it, initValue, this)
         }
 
 
     fun float1Array(arraySize: Int, initExpr: KslExprFloat1, name: String? = null) =
-        KslArrayScalar(name ?: nextName("f1Array"), KslTypeFloat1, arraySize, true).also { definedStates += it }.also {
+        KslArrayScalar(name ?: nextName("f1Array"), KslFloat1, arraySize, true).also { definedStates += it }.also {
             ops += KslDeclareArray(it, initExpr, this)
         }
     fun float2Array(arraySize: Int, initExpr: KslExprFloat2, name: String? = null) =
-        KslArrayVector(name ?: nextName("f2Array"), KslTypeFloat2, arraySize, true).also { definedStates += it }.also {
+        KslArrayVector(name ?: nextName("f2Array"), KslFloat2, arraySize, true).also { definedStates += it }.also {
             ops += KslDeclareArray(it, initExpr, this)
         }
     fun float3Array(arraySize: Int, initExpr: KslExprFloat3, name: String? = null) =
-        KslArrayVector(name ?: nextName("f3Array"), KslTypeFloat3, arraySize, true).also { definedStates += it }.also {
+        KslArrayVector(name ?: nextName("f3Array"), KslFloat3, arraySize, true).also { definedStates += it }.also {
             ops += KslDeclareArray(it, initExpr, this)
         }
     fun float4Array(arraySize: Int, initExpr: KslExprFloat4, name: String? = null) =
-        KslArrayVector(name ?: nextName("f4Array"), KslTypeFloat4, arraySize, true).also { definedStates += it }.also {
+        KslArrayVector(name ?: nextName("f4Array"), KslFloat4, arraySize, true).also { definedStates += it }.also {
             ops += KslDeclareArray(it, initExpr, this)
         }
 
     fun float1Array(initExpr: KslExprFloat1Array, name: String? = null) =
-        KslArrayScalar(name ?: nextName("f1Array"), KslTypeFloat1, initExpr.expressionType.arraySize, true).also { definedStates += it }.also {
+        KslArrayScalar(name ?: nextName("f1Array"), KslFloat1, initExpr.expressionType.arraySize, true).also { definedStates += it }.also {
             ops += KslDeclareArray(it, initExpr, this)
         }
     fun float2Array(initExpr: KslExprFloat2Array, name: String? = null) =
-        KslArrayVector(name ?: nextName("f2Array"), KslTypeFloat2, initExpr.expressionType.arraySize, true).also { definedStates += it }.also {
+        KslArrayVector(name ?: nextName("f2Array"), KslFloat2, initExpr.expressionType.arraySize, true).also { definedStates += it }.also {
             ops += KslDeclareArray(it, initExpr, this)
         }
     fun float3Array(initExpr: KslExprFloat3Array, name: String? = null) =
-        KslArrayVector(name ?: nextName("f3Array"), KslTypeFloat3, initExpr.expressionType.arraySize, true).also { definedStates += it }.also {
+        KslArrayVector(name ?: nextName("f3Array"), KslFloat3, initExpr.expressionType.arraySize, true).also { definedStates += it }.also {
             ops += KslDeclareArray(it, initExpr, this)
         }
     fun float4Array(initExpr: KslExprFloat4Array, name: String? = null) =
-        KslArrayVector(name ?: nextName("f4Array"), KslTypeFloat4, initExpr.expressionType.arraySize, true).also { definedStates += it }.also {
+        KslArrayVector(name ?: nextName("f4Array"), KslFloat4, initExpr.expressionType.arraySize, true).also { definedStates += it }.also {
             ops += KslDeclareArray(it, initExpr, this)
         }
 
 
     fun int1Array(arraySize: Int, initExpr: KslExprInt1, name: String? = null) =
-        KslArrayScalar(name ?: nextName("i1Array"), KslTypeInt1, arraySize, true).also { definedStates += it }.also {
+        KslArrayScalar(name ?: nextName("i1Array"), KslInt1, arraySize, true).also { definedStates += it }.also {
             ops += KslDeclareArray(it, initExpr, this)
         }
     fun int2Array(arraySize: Int, initExpr: KslExprInt2, name: String? = null) =
-        KslArrayVector(name ?: nextName("i2Array"), KslTypeInt2, arraySize, true).also { definedStates += it }.also {
+        KslArrayVector(name ?: nextName("i2Array"), KslInt2, arraySize, true).also { definedStates += it }.also {
             ops += KslDeclareArray(it, initExpr, this)
         }
     fun int3Array(arraySize: Int, initExpr: KslExprInt3, name: String? = null) =
-        KslArrayVector(name ?: nextName("i3Array"), KslTypeInt3, arraySize, true).also { definedStates += it }.also {
+        KslArrayVector(name ?: nextName("i3Array"), KslInt3, arraySize, true).also { definedStates += it }.also {
             ops += KslDeclareArray(it, initExpr, this)
         }
     fun int4Array(arraySize: Int, initExpr: KslExprInt4, name: String? = null) =
-        KslArrayVector(name ?: nextName("i4Array"), KslTypeInt4, arraySize, true).also { definedStates += it }.also {
+        KslArrayVector(name ?: nextName("i4Array"), KslInt4, arraySize, true).also { definedStates += it }.also {
             ops += KslDeclareArray(it, initExpr, this)
         }
 
     fun int1Array(initExpr: KslExprInt1Array, name: String? = null) =
-        KslArrayScalar(name ?: nextName("i1Array"), KslTypeInt1, initExpr.expressionType.arraySize, true).also { definedStates += it }.also {
+        KslArrayScalar(name ?: nextName("i1Array"), KslInt1, initExpr.expressionType.arraySize, true).also { definedStates += it }.also {
             ops += KslDeclareArray(it, initExpr, this)
         }
     fun int2Array(initExpr: KslExprInt2Array, name: String? = null) =
-        KslArrayVector(name ?: nextName("i2Array"), KslTypeInt2, initExpr.expressionType.arraySize, true).also { definedStates += it }.also {
+        KslArrayVector(name ?: nextName("i2Array"), KslInt2, initExpr.expressionType.arraySize, true).also { definedStates += it }.also {
             ops += KslDeclareArray(it, initExpr, this)
         }
     fun int3Array(initExpr: KslExprInt3Array, name: String? = null) =
-        KslArrayVector(name ?: nextName("i3Array"), KslTypeInt3, initExpr.expressionType.arraySize, true).also { definedStates += it }.also {
+        KslArrayVector(name ?: nextName("i3Array"), KslInt3, initExpr.expressionType.arraySize, true).also { definedStates += it }.also {
             ops += KslDeclareArray(it, initExpr, this)
         }
     fun int4Array(initExpr: KslExprInt4Array, name: String? = null) =
-        KslArrayVector(name ?: nextName("i4Array"), KslTypeInt4, initExpr.expressionType.arraySize, true).also { definedStates += it }.also {
+        KslArrayVector(name ?: nextName("i4Array"), KslInt4, initExpr.expressionType.arraySize, true).also { definedStates += it }.also {
             ops += KslDeclareArray(it, initExpr, this)
         }
 
 
     fun uint1Array(arraySize: Int, initExpr: KslExprUint1, name: String? = null) =
-        KslArrayScalar(name ?: nextName("u1Array"), KslTypeInt1, arraySize, true).also { definedStates += it }.also {
+        KslArrayScalar(name ?: nextName("u1Array"), KslInt1, arraySize, true).also { definedStates += it }.also {
             ops += KslDeclareArray(it, initExpr, this)
         }
     fun uint2Array(arraySize: Int, initExpr: KslExprUint2, name: String? = null) =
-        KslArrayVector(name ?: nextName("u2Array"), KslTypeInt2, arraySize, true).also { definedStates += it }.also {
+        KslArrayVector(name ?: nextName("u2Array"), KslInt2, arraySize, true).also { definedStates += it }.also {
             ops += KslDeclareArray(it, initExpr, this)
         }
     fun uint3Array(arraySize: Int, initExpr: KslExprUint3, name: String? = null) =
-        KslArrayVector(name ?: nextName("u3Array"), KslTypeInt3, arraySize, true).also { definedStates += it }.also {
+        KslArrayVector(name ?: nextName("u3Array"), KslInt3, arraySize, true).also { definedStates += it }.also {
             ops += KslDeclareArray(it, initExpr, this)
         }
     fun uint4Array(arraySize: Int, initExpr: KslExprUint4, name: String? = null) =
-        KslArrayVector(name ?: nextName("u4Array"), KslTypeInt4, arraySize, true).also { definedStates += it }.also {
+        KslArrayVector(name ?: nextName("u4Array"), KslInt4, arraySize, true).also { definedStates += it }.also {
             ops += KslDeclareArray(it, initExpr, this)
         }
 
     fun uint1Array(initExpr: KslExprUint1Array, name: String? = null) =
-        KslArrayScalar(name ?: nextName("u1Array"), KslTypeInt1, initExpr.expressionType.arraySize, true).also { definedStates += it }.also {
+        KslArrayScalar(name ?: nextName("u1Array"), KslInt1, initExpr.expressionType.arraySize, true).also { definedStates += it }.also {
             ops += KslDeclareArray(it, initExpr, this)
         }
     fun uint2Array(initExpr: KslExprUint2Array, name: String? = null) =
-        KslArrayVector(name ?: nextName("u2Array"), KslTypeInt2, initExpr.expressionType.arraySize, true).also { definedStates += it }.also {
+        KslArrayVector(name ?: nextName("u2Array"), KslInt2, initExpr.expressionType.arraySize, true).also { definedStates += it }.also {
             ops += KslDeclareArray(it, initExpr, this)
         }
     fun uint3Array(initExpr: KslExprUint3Array, name: String? = null) =
-        KslArrayVector(name ?: nextName("u3Array"), KslTypeInt3, initExpr.expressionType.arraySize, true).also { definedStates += it }.also {
+        KslArrayVector(name ?: nextName("u3Array"), KslInt3, initExpr.expressionType.arraySize, true).also { definedStates += it }.also {
             ops += KslDeclareArray(it, initExpr, this)
         }
     fun uint4Array(initExpr: KslExprUint4Array, name: String? = null) =
-        KslArrayVector(name ?: nextName("u4Array"), KslTypeInt4, initExpr.expressionType.arraySize, true).also { definedStates += it }.also {
+        KslArrayVector(name ?: nextName("u4Array"), KslInt4, initExpr.expressionType.arraySize, true).also { definedStates += it }.also {
             ops += KslDeclareArray(it, initExpr, this)
         }
 
 
     fun bool1Array(arraySize: Int, initExpr: KslExprBool1, name: String? = null) =
-        KslArrayScalar(name ?: nextName("b1Array"), KslTypeBool1, arraySize, true).also { definedStates += it }.also {
+        KslArrayScalar(name ?: nextName("b1Array"), KslBool1, arraySize, true).also { definedStates += it }.also {
             ops += KslDeclareArray(it, initExpr, this)
         }
     fun bool2Array(arraySize: Int, initExpr: KslExprBool2, name: String? = null) =
-        KslArrayVector(name ?: nextName("b2Array"), KslTypeBool2, arraySize, true).also { definedStates += it }.also {
+        KslArrayVector(name ?: nextName("b2Array"), KslBool2, arraySize, true).also { definedStates += it }.also {
             ops += KslDeclareArray(it, initExpr, this)
         }
     fun bool3Array(arraySize: Int, initExpr: KslExprBool3, name: String? = null) =
-        KslArrayVector(name ?: nextName("b3Array"), KslTypeBool3, arraySize, true).also { definedStates += it }.also {
+        KslArrayVector(name ?: nextName("b3Array"), KslBool3, arraySize, true).also { definedStates += it }.also {
             ops += KslDeclareArray(it, initExpr, this)
         }
     fun bool4Array(arraySize: Int, initExpr: KslExprBool4, name: String? = null) =
-        KslArrayVector(name ?: nextName("b4Array"), KslTypeBool4, arraySize, true).also { definedStates += it }.also {
+        KslArrayVector(name ?: nextName("b4Array"), KslBool4, arraySize, true).also { definedStates += it }.also {
             ops += KslDeclareArray(it, initExpr, this)
         }
 
     fun bool1Array(initExpr: KslExprBool1Array, name: String? = null) =
-        KslArrayScalar(name ?: nextName("b1Array"), KslTypeBool1, initExpr.expressionType.arraySize, true).also { definedStates += it }.also {
+        KslArrayScalar(name ?: nextName("b1Array"), KslBool1, initExpr.expressionType.arraySize, true).also { definedStates += it }.also {
             ops += KslDeclareArray(it, initExpr, this)
         }
     fun bool2Array(initExpr: KslExprBool2Array, name: String? = null) =
-        KslArrayVector(name ?: nextName("b2Array"), KslTypeBool2, initExpr.expressionType.arraySize, true).also { definedStates += it }.also {
+        KslArrayVector(name ?: nextName("b2Array"), KslBool2, initExpr.expressionType.arraySize, true).also { definedStates += it }.also {
             ops += KslDeclareArray(it, initExpr, this)
         }
     fun bool3Array(initExpr: KslExprBool3Array, name: String? = null) =
-        KslArrayVector(name ?: nextName("b3Array"), KslTypeBool3, initExpr.expressionType.arraySize, true).also { definedStates += it }.also {
+        KslArrayVector(name ?: nextName("b3Array"), KslBool3, initExpr.expressionType.arraySize, true).also { definedStates += it }.also {
             ops += KslDeclareArray(it, initExpr, this)
         }
     fun bool4Array(initExpr: KslExprBool4Array, name: String? = null) =
-        KslArrayVector(name ?: nextName("b4Array"), KslTypeBool4, initExpr.expressionType.arraySize, true).also { definedStates += it }.also {
+        KslArrayVector(name ?: nextName("b4Array"), KslBool4, initExpr.expressionType.arraySize, true).also { definedStates += it }.also {
             ops += KslDeclareArray(it, initExpr, this)
         }
 
 
     fun mat2Array(arraySize: Int, initExpr: KslExprMat2, name: String? = null) =
-        KslArrayMatrix(name ?: nextName("i2Array"), KslTypeMat2, arraySize, true).also { definedStates += it }.also {
+        KslArrayMatrix(name ?: nextName("i2Array"), KslMat2, arraySize, true).also { definedStates += it }.also {
             ops += KslDeclareArray(it, initExpr, this)
         }
     fun mat3Array(arraySize: Int, initExpr: KslExprMat3, name: String? = null) =
-        KslArrayMatrix(name ?: nextName("i3Array"), KslTypeMat3, arraySize, true).also { definedStates += it }.also {
+        KslArrayMatrix(name ?: nextName("i3Array"), KslMat3, arraySize, true).also { definedStates += it }.also {
             ops += KslDeclareArray(it, initExpr, this)
         }
     fun mat4Array(arraySize: Int, initExpr: KslExprMat4, name: String? = null) =
-        KslArrayMatrix(name ?: nextName("i4Array"), KslTypeMat4, arraySize, true).also { definedStates += it }.also {
+        KslArrayMatrix(name ?: nextName("i4Array"), KslMat4, arraySize, true).also { definedStates += it }.also {
             ops += KslDeclareArray(it, initExpr, this)
         }
 
     fun mat2Array(initExpr: KslExprMat2Array, name: String? = null) =
-        KslArrayMatrix(name ?: nextName("i2Array"), KslTypeMat2, initExpr.expressionType.arraySize, true).also { definedStates += it }.also {
+        KslArrayMatrix(name ?: nextName("i2Array"), KslMat2, initExpr.expressionType.arraySize, true).also { definedStates += it }.also {
             ops += KslDeclareArray(it, initExpr, this)
         }
     fun mat3Array(initExpr: KslExprMat3Array, name: String? = null) =
-        KslArrayMatrix(name ?: nextName("i3Array"), KslTypeMat3, initExpr.expressionType.arraySize, true).also { definedStates += it }.also {
+        KslArrayMatrix(name ?: nextName("i3Array"), KslMat3, initExpr.expressionType.arraySize, true).also { definedStates += it }.also {
             ops += KslDeclareArray(it, initExpr, this)
         }
     fun mat4Array(initExpr: KslExprMat4Array, name: String? = null) =
-        KslArrayMatrix(name ?: nextName("i4Array"), KslTypeMat4, initExpr.expressionType.arraySize, true).also { definedStates += it }.also {
+        KslArrayMatrix(name ?: nextName("i4Array"), KslMat4, initExpr.expressionType.arraySize, true).also { definedStates += it }.also {
             ops += KslDeclareArray(it, initExpr, this)
         }
 
@@ -403,31 +403,31 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
         ops += KslAssign(this, expression, this@KslScopeBuilder)
     }
 
-    fun `if`(condition: KslExpression<KslTypeBool1>, block: KslScopeBuilder.() -> Unit): KslIf {
+    fun `if`(condition: KslExpression<KslBool1>, block: KslScopeBuilder.() -> Unit): KslIf {
         val stmt = KslIf(condition, this).apply { body.block() }
         ops += stmt
         return stmt
     }
 
-    fun fori(fromInclusive: KslScalarExpression<KslTypeInt1>, toExclusive: KslScalarExpression<KslTypeInt1>,
-             block: KslScopeBuilder.(KslScalarExpression<KslTypeInt1>) -> Unit) {
+    fun fori(fromInclusive: KslScalarExpression<KslInt1>, toExclusive: KslScalarExpression<KslInt1>,
+             block: KslScopeBuilder.(KslScalarExpression<KslInt1>) -> Unit) {
         val i = int1Var(fromInclusive)
         `for`(i, i lt toExclusive, 1.const, block)
     }
 
-    fun <T> `for`(loopVar: KslVarScalar<T>, whileExpr: KslScalarExpression<KslTypeBool1>,
+    fun <T> `for`(loopVar: KslVarScalar<T>, whileExpr: KslScalarExpression<KslBool1>,
                   incExpr: KslScalarExpression<T>, block: KslScopeBuilder.(KslScalarExpression<T>) -> Unit)
             where T: KslNumericType, T: KslScalar {
         val loop = KslLoopFor(loopVar, whileExpr, incExpr, this).apply { body.block(loopVar) }
         ops += loop
     }
 
-    fun repeat(times: KslScalarExpression<KslTypeInt1>, block: KslScopeBuilder.(KslScalarExpression<KslTypeInt1>) -> Unit) {
+    fun repeat(times: KslScalarExpression<KslInt1>, block: KslScopeBuilder.(KslScalarExpression<KslInt1>) -> Unit) {
         val i = int1Var(0.const)
         `for`(i, i lt times, 1.const, block)
     }
 
-    fun `while`(whileExpr: KslScalarExpression<KslTypeBool1>, block: KslScopeBuilder.() -> Unit) {
+    fun `while`(whileExpr: KslScalarExpression<KslBool1>, block: KslScopeBuilder.() -> Unit) {
         val loop = KslLoopWhile(whileExpr, this).apply { body.block() }
         ops += loop
     }
@@ -444,9 +444,9 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
         ops += KslDiscard(this)
     }
 
-    fun <T> any(boolVec: KslVectorExpression<T, KslTypeBool1>) where T: KslBoolType, T: KslVector<KslTypeBool1> =
+    fun <T> any(boolVec: KslVectorExpression<T, KslBool1>) where T: KslBoolType, T: KslVector<KslBool1> =
         KslBoolVectorExpr(boolVec, KslBoolVecOperator.Any)
-    fun <T> all(boolVec: KslVectorExpression<T, KslTypeBool1>) where T: KslBoolType, T: KslVector<KslTypeBool1> =
+    fun <T> all(boolVec: KslVectorExpression<T, KslBool1>) where T: KslBoolType, T: KslVector<KslBool1> =
         KslBoolVectorExpr(boolVec, KslBoolVecOperator.All)
 
     operator fun <T: KslType> KslAssignable<T>.plusAssign(expr: KslExpression<T>) {
@@ -485,13 +485,13 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
     operator fun <M, V> KslFunction<M>.invoke(vararg args: KslExpression<*>): KslMatrixExpression<M, V> where M: KslType, M: KslMatrix<V>, V: KslType, V: KslVector<*> {
         return KslInvokeFunctionMatrix(this, this@KslScopeBuilder, returnType, *args)
     }
-    operator fun <S> KslFunction<KslTypeArray<S>>.invoke(vararg args: KslExpression<*>): KslScalarArrayExpression<S> where S: KslType, S: KslScalar {
+    operator fun <S> KslFunction<KslArrayType<S>>.invoke(vararg args: KslExpression<*>): KslScalarArrayExpression<S> where S: KslType, S: KslScalar {
         return KslInvokeFunctionScalarArray(this, this@KslScopeBuilder, returnType, *args)
     }
-    operator fun <V, S> KslFunction<KslTypeArray<V>>.invoke(vararg args: KslExpression<*>): KslVectorArrayExpression<V, S> where V: KslType, V: KslVector<S>, S: KslType, S: KslScalar {
+    operator fun <V, S> KslFunction<KslArrayType<V>>.invoke(vararg args: KslExpression<*>): KslVectorArrayExpression<V, S> where V: KslType, V: KslVector<S>, S: KslType, S: KslScalar {
         return KslInvokeFunctionVectorArray(this, this@KslScopeBuilder, returnType, *args)
     }
-    operator fun <M, V> KslFunction<KslTypeArray<M>>.invoke(vararg args: KslExpression<*>): KslMatrixArrayExpression<M, V> where M: KslType, M: KslMatrix<V>, V: KslType, V: KslVector<*> {
+    operator fun <M, V> KslFunction<KslArrayType<M>>.invoke(vararg args: KslExpression<*>): KslMatrixArrayExpression<M, V> where M: KslType, M: KslMatrix<V>, V: KslType, V: KslVector<*> {
         return KslInvokeFunctionMatrixArray(this, this@KslScopeBuilder, returnType, *args)
     }
 
@@ -500,66 +500,66 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
     fun <V, S> abs(vec: KslVectorExpression<V, S>)
             where V: KslNumericType, V: KslVector<S>, S: KslNumericType, S: KslScalar = KslBuiltinAbsVector(vec)
 
-    fun atan2(y: KslScalarExpression<KslTypeFloat1>, x: KslScalarExpression<KslTypeFloat1>) = KslBuiltinAtan2Scalar(y, x)
-    fun <V> atan2(y: KslVectorExpression<V, KslTypeFloat1>, x: KslVectorExpression<V, KslTypeFloat1>)
-            where V: KslFloatType, V: KslVector<KslTypeFloat1> = KslBuiltinAtan2Vector(y, x)
+    fun atan2(y: KslScalarExpression<KslFloat1>, x: KslScalarExpression<KslFloat1>) = KslBuiltinAtan2Scalar(y, x)
+    fun <V> atan2(y: KslVectorExpression<V, KslFloat1>, x: KslVectorExpression<V, KslFloat1>)
+            where V: KslFloatType, V: KslVector<KslFloat1> = KslBuiltinAtan2Vector(y, x)
 
-    fun ceil(value: KslScalarExpression<KslTypeFloat1>) = KslBuiltinCeilScalar(value)
-    fun <V> ceil(vec: KslVectorExpression<V, KslTypeFloat1>) where V: KslFloatType, V: KslVector<KslTypeFloat1> = KslBuiltinCeilVector(vec)
+    fun ceil(value: KslScalarExpression<KslFloat1>) = KslBuiltinCeilScalar(value)
+    fun <V> ceil(vec: KslVectorExpression<V, KslFloat1>) where V: KslFloatType, V: KslVector<KslFloat1> = KslBuiltinCeilVector(vec)
 
     fun <S> clamp(value: KslScalarExpression<S>, min: KslScalarExpression<S>, max: KslScalarExpression<S>)
         where S: KslNumericType, S: KslScalar = KslBuiltinClampScalar(value, min, max)
     fun <V, S> clamp(vec: KslVectorExpression<V, S>, min: KslVectorExpression<V, S>, max: KslVectorExpression<V, S>)
         where V: KslNumericType, V: KslVector<S>, S: KslNumericType, S: KslScalar = KslBuiltinClampVector(vec, min, max)
 
-    fun cross(a: KslVectorExpression<KslTypeFloat3, KslTypeFloat1>, b: KslVectorExpression<KslTypeFloat3, KslTypeFloat1>) = KslBuiltinCross(a, b)
+    fun cross(a: KslVectorExpression<KslFloat3, KslFloat1>, b: KslVectorExpression<KslFloat3, KslFloat1>) = KslBuiltinCross(a, b)
 
-    fun degrees(value: KslScalarExpression<KslTypeFloat1>) = KslBuiltinDegreesScalar(value)
-    fun <V> degrees(vec: KslVectorExpression<V, KslTypeFloat1>) where V: KslFloatType, V: KslVector<KslTypeFloat1> = KslBuiltinDegreesVector(vec)
+    fun degrees(value: KslScalarExpression<KslFloat1>) = KslBuiltinDegreesScalar(value)
+    fun <V> degrees(vec: KslVectorExpression<V, KslFloat1>) where V: KslFloatType, V: KslVector<KslFloat1> = KslBuiltinDegreesVector(vec)
 
     fun <T: KslFloatType> distance(a: KslExpression<T>, b: KslExpression<T>) = KslBuiltinDistanceScalar(a, b)
 
-    fun <V> dot(a: KslVectorExpression<V, KslTypeFloat1>, b: KslVectorExpression<V, KslTypeFloat1>)
-        where V: KslFloatType, V: KslVector<KslTypeFloat1> = KslBuiltinDot(a, b)
+    fun <V> dot(a: KslVectorExpression<V, KslFloat1>, b: KslVectorExpression<V, KslFloat1>)
+        where V: KslFloatType, V: KslVector<KslFloat1> = KslBuiltinDot(a, b)
 
-    fun exp(value: KslScalarExpression<KslTypeFloat1>) = KslBuiltinExpScalar(value)
-    fun <V> exp(vec: KslVectorExpression<V, KslTypeFloat1>) where V: KslFloatType, V: KslVector<KslTypeFloat1> = KslBuiltinExpVector(vec)
-    fun exp2(value: KslScalarExpression<KslTypeFloat1>) = KslBuiltinExpScalar(value)
-    fun <V> exp2(vec: KslVectorExpression<V, KslTypeFloat1>) where V: KslFloatType, V: KslVector<KslTypeFloat1> = KslBuiltinExpVector(vec)
+    fun exp(value: KslScalarExpression<KslFloat1>) = KslBuiltinExpScalar(value)
+    fun <V> exp(vec: KslVectorExpression<V, KslFloat1>) where V: KslFloatType, V: KslVector<KslFloat1> = KslBuiltinExpVector(vec)
+    fun exp2(value: KslScalarExpression<KslFloat1>) = KslBuiltinExpScalar(value)
+    fun <V> exp2(vec: KslVectorExpression<V, KslFloat1>) where V: KslFloatType, V: KslVector<KslFloat1> = KslBuiltinExpVector(vec)
 
-    fun <V> faceForward(a: KslVectorExpression<V, KslTypeFloat1>, b: KslVectorExpression<V, KslTypeFloat1>, c: KslVectorExpression<V, KslTypeFloat1>)
-            where V: KslFloatType, V: KslVector<KslTypeFloat1> = KslBuiltinFaceForward(a, b, c)
+    fun <V> faceForward(a: KslVectorExpression<V, KslFloat1>, b: KslVectorExpression<V, KslFloat1>, c: KslVectorExpression<V, KslFloat1>)
+            where V: KslFloatType, V: KslVector<KslFloat1> = KslBuiltinFaceForward(a, b, c)
 
-    fun floor(value: KslScalarExpression<KslTypeFloat1>) = KslBuiltinFloorScalar(value)
-    fun <V> floor(vec: KslVectorExpression<V, KslTypeFloat1>) where V: KslFloatType, V: KslVector<KslTypeFloat1> = KslBuiltinFloorVector(vec)
+    fun floor(value: KslScalarExpression<KslFloat1>) = KslBuiltinFloorScalar(value)
+    fun <V> floor(vec: KslVectorExpression<V, KslFloat1>) where V: KslFloatType, V: KslVector<KslFloat1> = KslBuiltinFloorVector(vec)
 
-    fun fma(a: KslScalarExpression<KslTypeFloat1>, b: KslScalarExpression<KslTypeFloat1>, c: KslScalarExpression<KslTypeFloat1>) =
+    fun fma(a: KslScalarExpression<KslFloat1>, b: KslScalarExpression<KslFloat1>, c: KslScalarExpression<KslFloat1>) =
         KslBuiltinFmaScalar(a, b, c)
-    fun <V> fma(a: KslVectorExpression<V, KslTypeFloat1>, b: KslVectorExpression<V, KslTypeFloat1>, c: KslVectorExpression<V, KslTypeFloat1>)
-        where V: KslFloatType, V: KslVector<KslTypeFloat1> = KslBuiltinFmaVector(a, b, c)
+    fun <V> fma(a: KslVectorExpression<V, KslFloat1>, b: KslVectorExpression<V, KslFloat1>, c: KslVectorExpression<V, KslFloat1>)
+        where V: KslFloatType, V: KslVector<KslFloat1> = KslBuiltinFmaVector(a, b, c)
 
-    fun fract(value: KslScalarExpression<KslTypeFloat1>) = KslBuiltinFractScalar(value)
-    fun <V> fract(vec: KslVectorExpression<V, KslTypeFloat1>) where V: KslFloatType, V: KslVector<KslTypeFloat1> = KslBuiltinFractVector(vec)
+    fun fract(value: KslScalarExpression<KslFloat1>) = KslBuiltinFractScalar(value)
+    fun <V> fract(vec: KslVectorExpression<V, KslFloat1>) where V: KslFloatType, V: KslVector<KslFloat1> = KslBuiltinFractVector(vec)
 
-    fun inverseSqrt(value: KslScalarExpression<KslTypeFloat1>) = KslBuiltinInverseSqrtScalar(value)
-    fun <V> inverseSqrt(vec: KslVectorExpression<V, KslTypeFloat1>) where V: KslFloatType, V: KslVector<KslTypeFloat1> = KslBuiltinInverseSqrtVector(vec)
+    fun inverseSqrt(value: KslScalarExpression<KslFloat1>) = KslBuiltinInverseSqrtScalar(value)
+    fun <V> inverseSqrt(vec: KslVectorExpression<V, KslFloat1>) where V: KslFloatType, V: KslVector<KslFloat1> = KslBuiltinInverseSqrtVector(vec)
 
-    fun isNan(value: KslScalarExpression<KslTypeFloat1>) = KslBuiltinIsNanScalar(value)
-    fun isNan(vec: KslVectorExpression<KslTypeFloat2, KslTypeFloat1>) = KslBuiltinIsNanVector2(vec)
-    fun isNan(vec: KslVectorExpression<KslTypeFloat3, KslTypeFloat1>) = KslBuiltinIsNanVector3(vec)
-    fun isNan(vec: KslVectorExpression<KslTypeFloat4, KslTypeFloat1>) = KslBuiltinIsNanVector4(vec)
+    fun isNan(value: KslScalarExpression<KslFloat1>) = KslBuiltinIsNanScalar(value)
+    fun isNan(vec: KslVectorExpression<KslFloat2, KslFloat1>) = KslBuiltinIsNanVector2(vec)
+    fun isNan(vec: KslVectorExpression<KslFloat3, KslFloat1>) = KslBuiltinIsNanVector3(vec)
+    fun isNan(vec: KslVectorExpression<KslFloat4, KslFloat1>) = KslBuiltinIsNanVector4(vec)
 
-    fun isInf(value: KslScalarExpression<KslTypeFloat1>) = KslBuiltinIsNanScalar(value)
-    fun isInf(vec: KslVectorExpression<KslTypeFloat2, KslTypeFloat1>) = KslBuiltinIsInfVector2(vec)
-    fun isInf(vec: KslVectorExpression<KslTypeFloat3, KslTypeFloat1>) = KslBuiltinIsInfVector3(vec)
-    fun isInf(vec: KslVectorExpression<KslTypeFloat4, KslTypeFloat1>) = KslBuiltinIsInfVector4(vec)
+    fun isInf(value: KslScalarExpression<KslFloat1>) = KslBuiltinIsNanScalar(value)
+    fun isInf(vec: KslVectorExpression<KslFloat2, KslFloat1>) = KslBuiltinIsInfVector2(vec)
+    fun isInf(vec: KslVectorExpression<KslFloat3, KslFloat1>) = KslBuiltinIsInfVector3(vec)
+    fun isInf(vec: KslVectorExpression<KslFloat4, KslFloat1>) = KslBuiltinIsInfVector4(vec)
 
-    fun <V> length(arg: KslVectorExpression<V, KslTypeFloat1>) where V: KslFloatType, V: KslVector<KslTypeFloat1> = KslBuiltinLength(arg)
+    fun <V> length(arg: KslVectorExpression<V, KslFloat1>) where V: KslFloatType, V: KslVector<KslFloat1> = KslBuiltinLength(arg)
 
-    fun log(value: KslScalarExpression<KslTypeFloat1>) = KslBuiltinLogScalar(value)
-    fun <V> log(vec: KslVectorExpression<V, KslTypeFloat1>) where V: KslFloatType, V: KslVector<KslTypeFloat1> = KslBuiltinLogVector(vec)
-    fun log2(value: KslScalarExpression<KslTypeFloat1>) = KslBuiltinLog2Scalar(value)
-    fun <V> log2(vec: KslVectorExpression<V, KslTypeFloat1>) where V: KslFloatType, V: KslVector<KslTypeFloat1> = KslBuiltinLog2Vector(vec)
+    fun log(value: KslScalarExpression<KslFloat1>) = KslBuiltinLogScalar(value)
+    fun <V> log(vec: KslVectorExpression<V, KslFloat1>) where V: KslFloatType, V: KslVector<KslFloat1> = KslBuiltinLogVector(vec)
+    fun log2(value: KslScalarExpression<KslFloat1>) = KslBuiltinLog2Scalar(value)
+    fun <V> log2(vec: KslVectorExpression<V, KslFloat1>) where V: KslFloatType, V: KslVector<KslFloat1> = KslBuiltinLog2Vector(vec)
 
     fun <S> max(a: KslScalarExpression<S>, b: KslScalarExpression<S>) where S: KslNumericType, S: KslScalar = KslBuiltinMaxScalar(a, b)
     fun <V, S> max(a: KslVectorExpression<V, S>, b: KslVectorExpression<V, S>)
@@ -569,76 +569,76 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
     fun <V, S> min(a: KslVectorExpression<V, S>, b: KslVectorExpression<V, S>)
         where V: KslNumericType, V: KslVector<S>, S: KslNumericType, S: KslScalar = KslBuiltinMinVector(a, b)
 
-    fun mix(x: KslScalarExpression<KslTypeFloat1>, y: KslScalarExpression<KslTypeFloat1>, a: KslScalarExpression<KslTypeFloat1>) =
+    fun mix(x: KslScalarExpression<KslFloat1>, y: KslScalarExpression<KslFloat1>, a: KslScalarExpression<KslFloat1>) =
         KslBuiltinMixScalar(x, y, a)
-    fun <V> mix(x: KslVectorExpression<V, KslTypeFloat1>, y: KslVectorExpression<V, KslTypeFloat1>, a: KslVectorExpression<V, KslTypeFloat1>)
-        where V: KslFloatType, V: KslVector<KslTypeFloat1> = KslBuiltinMixVector(x, y, a)
-    fun <V> mix(x: KslVectorExpression<V, KslTypeFloat1>, y: KslVectorExpression<V, KslTypeFloat1>, a: KslScalarExpression<KslTypeFloat1>)
-        where V: KslFloatType, V: KslVector<KslTypeFloat1> = KslBuiltinMixVector(x, y, a)
+    fun <V> mix(x: KslVectorExpression<V, KslFloat1>, y: KslVectorExpression<V, KslFloat1>, a: KslVectorExpression<V, KslFloat1>)
+        where V: KslFloatType, V: KslVector<KslFloat1> = KslBuiltinMixVector(x, y, a)
+    fun <V> mix(x: KslVectorExpression<V, KslFloat1>, y: KslVectorExpression<V, KslFloat1>, a: KslScalarExpression<KslFloat1>)
+        where V: KslFloatType, V: KslVector<KslFloat1> = KslBuiltinMixVector(x, y, a)
 
-    fun <V> normalize(arg: KslVectorExpression<V, KslTypeFloat1>) where V: KslFloatType, V: KslVector<KslTypeFloat1> = KslBuiltinNormalize(arg)
+    fun <V> normalize(arg: KslVectorExpression<V, KslFloat1>) where V: KslFloatType, V: KslVector<KslFloat1> = KslBuiltinNormalize(arg)
 
-    fun pow(value: KslScalarExpression<KslTypeFloat1>, power: KslScalarExpression<KslTypeFloat1>) = KslBuiltinPowScalar(value, power)
-    fun <V> pow(vec: KslVectorExpression<V, KslTypeFloat1>, power: KslVectorExpression<V, KslTypeFloat1>)
-        where V: KslFloatType, V: KslVector<KslTypeFloat1> = KslBuiltinPowVector(vec, power)
+    fun pow(value: KslScalarExpression<KslFloat1>, power: KslScalarExpression<KslFloat1>) = KslBuiltinPowScalar(value, power)
+    fun <V> pow(vec: KslVectorExpression<V, KslFloat1>, power: KslVectorExpression<V, KslFloat1>)
+        where V: KslFloatType, V: KslVector<KslFloat1> = KslBuiltinPowVector(vec, power)
 
-    fun radians(value: KslScalarExpression<KslTypeFloat1>) = KslBuiltinRadiansScalar(value)
-    fun <V> radians(vec: KslVectorExpression<V, KslTypeFloat1>) where V: KslFloatType, V: KslVector<KslTypeFloat1> = KslBuiltinRadiansVector(vec)
+    fun radians(value: KslScalarExpression<KslFloat1>) = KslBuiltinRadiansScalar(value)
+    fun <V> radians(vec: KslVectorExpression<V, KslFloat1>) where V: KslFloatType, V: KslVector<KslFloat1> = KslBuiltinRadiansVector(vec)
 
-    fun <V> reflect(a: KslVectorExpression<V, KslTypeFloat1>, b: KslVectorExpression<V, KslTypeFloat1>)
-            where V: KslFloatType, V: KslVector<KslTypeFloat1> = KslBuiltinReflect(a, b)
-    fun <V> refract(a: KslVectorExpression<V, KslTypeFloat1>, b: KslVectorExpression<V, KslTypeFloat1>, i: KslScalarExpression<KslTypeFloat1>)
-            where V: KslFloatType, V: KslVector<KslTypeFloat1> = KslBuiltinRefract(a, b, i)
+    fun <V> reflect(a: KslVectorExpression<V, KslFloat1>, b: KslVectorExpression<V, KslFloat1>)
+            where V: KslFloatType, V: KslVector<KslFloat1> = KslBuiltinReflect(a, b)
+    fun <V> refract(a: KslVectorExpression<V, KslFloat1>, b: KslVectorExpression<V, KslFloat1>, i: KslScalarExpression<KslFloat1>)
+            where V: KslFloatType, V: KslVector<KslFloat1> = KslBuiltinRefract(a, b, i)
 
-    fun round(value: KslScalarExpression<KslTypeFloat1>) = KslBuiltinRoundScalar(value)
-    fun <V> round(vec: KslVectorExpression<V, KslTypeFloat1>) where V: KslFloatType, V: KslVector<KslTypeFloat1> = KslBuiltinRoundVector(vec)
+    fun round(value: KslScalarExpression<KslFloat1>) = KslBuiltinRoundScalar(value)
+    fun <V> round(vec: KslVectorExpression<V, KslFloat1>) where V: KslFloatType, V: KslVector<KslFloat1> = KslBuiltinRoundVector(vec)
 
     fun <S> sign(value: KslScalarExpression<S>) where S: KslNumericType, S: KslScalar = KslBuiltinSignScalar(value)
     fun <V, S> sign(vec: KslVectorExpression<V, S>)
             where V: KslNumericType, V: KslVector<S>, S: KslNumericType, S: KslScalar = KslBuiltinSignVector(vec)
 
-    fun smoothStep(low: KslScalarExpression<KslTypeFloat1>, high: KslScalarExpression<KslTypeFloat1>, x: KslScalarExpression<KslTypeFloat1>) =
+    fun smoothStep(low: KslScalarExpression<KslFloat1>, high: KslScalarExpression<KslFloat1>, x: KslScalarExpression<KslFloat1>) =
         KslBuiltinSmoothStepScalar(low, high, x)
-    fun <V> smoothStep(low: KslVectorExpression<V, KslTypeFloat1>, high: KslVectorExpression<V, KslTypeFloat1>, x: KslVectorExpression<V, KslTypeFloat1>)
-            where V: KslFloatType, V: KslVector<KslTypeFloat1> = KslBuiltinSmoothStepVector(low, high, x)
+    fun <V> smoothStep(low: KslVectorExpression<V, KslFloat1>, high: KslVectorExpression<V, KslFloat1>, x: KslVectorExpression<V, KslFloat1>)
+            where V: KslFloatType, V: KslVector<KslFloat1> = KslBuiltinSmoothStepVector(low, high, x)
 
-    fun sqrt(value: KslScalarExpression<KslTypeFloat1>) = KslBuiltinSqrtScalar(value)
-    fun <V> sqrt(vec: KslVectorExpression<V, KslTypeFloat1>) where V: KslFloatType, V: KslVector<KslTypeFloat1> = KslBuiltinSqrtVector(vec)
+    fun sqrt(value: KslScalarExpression<KslFloat1>) = KslBuiltinSqrtScalar(value)
+    fun <V> sqrt(vec: KslVectorExpression<V, KslFloat1>) where V: KslFloatType, V: KslVector<KslFloat1> = KslBuiltinSqrtVector(vec)
 
-    fun step(edge: KslScalarExpression<KslTypeFloat1>, x: KslScalarExpression<KslTypeFloat1>) = KslBuiltinStepScalar(edge, x)
-    fun <V> step(edge: KslVectorExpression<V, KslTypeFloat1>, x: KslVectorExpression<V, KslTypeFloat1>) where V: KslFloatType, V: KslVector<KslTypeFloat1> = KslBuiltinStepVector(edge, x)
+    fun step(edge: KslScalarExpression<KslFloat1>, x: KslScalarExpression<KslFloat1>) = KslBuiltinStepScalar(edge, x)
+    fun <V> step(edge: KslVectorExpression<V, KslFloat1>, x: KslVectorExpression<V, KslFloat1>) where V: KslFloatType, V: KslVector<KslFloat1> = KslBuiltinStepVector(edge, x)
 
-    fun trunc(value: KslScalarExpression<KslTypeFloat1>) = KslBuiltinTruncScalar(value)
-    fun <V> trunc(vec: KslVectorExpression<V, KslTypeFloat1>) where V: KslFloatType, V: KslVector<KslTypeFloat1> = KslBuiltinTruncVector(vec)
+    fun trunc(value: KslScalarExpression<KslFloat1>) = KslBuiltinTruncScalar(value)
+    fun <V> trunc(vec: KslVectorExpression<V, KslFloat1>) where V: KslFloatType, V: KslVector<KslFloat1> = KslBuiltinTruncVector(vec)
 
     // builtin trigonometry functions
-    fun cos(value: KslScalarExpression<KslTypeFloat1>) = KslBuiltinTrigonometryScalar(value, "cos")
-    fun sin(value: KslScalarExpression<KslTypeFloat1>) = KslBuiltinTrigonometryScalar(value, "sin")
-    fun tan(value: KslScalarExpression<KslTypeFloat1>) = KslBuiltinTrigonometryScalar(value, "tan")
-    fun cosh(value: KslScalarExpression<KslTypeFloat1>) = KslBuiltinTrigonometryScalar(value, "cosh")
-    fun sinh(value: KslScalarExpression<KslTypeFloat1>) = KslBuiltinTrigonometryScalar(value, "sinh")
-    fun tanh(value: KslScalarExpression<KslTypeFloat1>) = KslBuiltinTrigonometryScalar(value, "tanh")
+    fun cos(value: KslScalarExpression<KslFloat1>) = KslBuiltinTrigonometryScalar(value, "cos")
+    fun sin(value: KslScalarExpression<KslFloat1>) = KslBuiltinTrigonometryScalar(value, "sin")
+    fun tan(value: KslScalarExpression<KslFloat1>) = KslBuiltinTrigonometryScalar(value, "tan")
+    fun cosh(value: KslScalarExpression<KslFloat1>) = KslBuiltinTrigonometryScalar(value, "cosh")
+    fun sinh(value: KslScalarExpression<KslFloat1>) = KslBuiltinTrigonometryScalar(value, "sinh")
+    fun tanh(value: KslScalarExpression<KslFloat1>) = KslBuiltinTrigonometryScalar(value, "tanh")
 
-    fun <V> cos(vec: KslVectorExpression<V, KslTypeFloat1>) where V: KslFloatType, V: KslVector<KslTypeFloat1> = KslBuiltinTrigonometryVector(vec, "cos")
-    fun <V> sin(vec: KslVectorExpression<V, KslTypeFloat1>) where V: KslFloatType, V: KslVector<KslTypeFloat1> = KslBuiltinTrigonometryVector(vec, "sin")
-    fun <V> tan(vec: KslVectorExpression<V, KslTypeFloat1>) where V: KslFloatType, V: KslVector<KslTypeFloat1> = KslBuiltinTrigonometryVector(vec, "tan")
-    fun <V> cosh(vec: KslVectorExpression<V, KslTypeFloat1>) where V: KslFloatType, V: KslVector<KslTypeFloat1> = KslBuiltinTrigonometryVector(vec, "cosh")
-    fun <V> sinh(vec: KslVectorExpression<V, KslTypeFloat1>) where V: KslFloatType, V: KslVector<KslTypeFloat1> = KslBuiltinTrigonometryVector(vec, "sinh")
-    fun <V> tanh(vec: KslVectorExpression<V, KslTypeFloat1>) where V: KslFloatType, V: KslVector<KslTypeFloat1> = KslBuiltinTrigonometryVector(vec, "tanh")
+    fun <V> cos(vec: KslVectorExpression<V, KslFloat1>) where V: KslFloatType, V: KslVector<KslFloat1> = KslBuiltinTrigonometryVector(vec, "cos")
+    fun <V> sin(vec: KslVectorExpression<V, KslFloat1>) where V: KslFloatType, V: KslVector<KslFloat1> = KslBuiltinTrigonometryVector(vec, "sin")
+    fun <V> tan(vec: KslVectorExpression<V, KslFloat1>) where V: KslFloatType, V: KslVector<KslFloat1> = KslBuiltinTrigonometryVector(vec, "tan")
+    fun <V> cosh(vec: KslVectorExpression<V, KslFloat1>) where V: KslFloatType, V: KslVector<KslFloat1> = KslBuiltinTrigonometryVector(vec, "cosh")
+    fun <V> sinh(vec: KslVectorExpression<V, KslFloat1>) where V: KslFloatType, V: KslVector<KslFloat1> = KslBuiltinTrigonometryVector(vec, "sinh")
+    fun <V> tanh(vec: KslVectorExpression<V, KslFloat1>) where V: KslFloatType, V: KslVector<KslFloat1> = KslBuiltinTrigonometryVector(vec, "tanh")
 
-    fun acos(value: KslScalarExpression<KslTypeFloat1>) = KslBuiltinTrigonometryScalar(value, "acos")
-    fun asin(value: KslScalarExpression<KslTypeFloat1>) = KslBuiltinTrigonometryScalar(value, "asin")
-    fun atan(value: KslScalarExpression<KslTypeFloat1>) = KslBuiltinTrigonometryScalar(value, "atan")
-    fun acosh(value: KslScalarExpression<KslTypeFloat1>) = KslBuiltinTrigonometryScalar(value, "acosh")
-    fun asinh(value: KslScalarExpression<KslTypeFloat1>) = KslBuiltinTrigonometryScalar(value, "asinh")
-    fun atanh(value: KslScalarExpression<KslTypeFloat1>) = KslBuiltinTrigonometryScalar(value, "atanh")
+    fun acos(value: KslScalarExpression<KslFloat1>) = KslBuiltinTrigonometryScalar(value, "acos")
+    fun asin(value: KslScalarExpression<KslFloat1>) = KslBuiltinTrigonometryScalar(value, "asin")
+    fun atan(value: KslScalarExpression<KslFloat1>) = KslBuiltinTrigonometryScalar(value, "atan")
+    fun acosh(value: KslScalarExpression<KslFloat1>) = KslBuiltinTrigonometryScalar(value, "acosh")
+    fun asinh(value: KslScalarExpression<KslFloat1>) = KslBuiltinTrigonometryScalar(value, "asinh")
+    fun atanh(value: KslScalarExpression<KslFloat1>) = KslBuiltinTrigonometryScalar(value, "atanh")
 
-    fun <V> acos(vec: KslVectorExpression<V, KslTypeFloat1>) where V: KslFloatType, V: KslVector<KslTypeFloat1> = KslBuiltinTrigonometryVector(vec, "acos")
-    fun <V> asin(vec: KslVectorExpression<V, KslTypeFloat1>) where V: KslFloatType, V: KslVector<KslTypeFloat1> = KslBuiltinTrigonometryVector(vec, "asin")
-    fun <V> atan(vec: KslVectorExpression<V, KslTypeFloat1>) where V: KslFloatType, V: KslVector<KslTypeFloat1> = KslBuiltinTrigonometryVector(vec, "atan")
-    fun <V> acosh(vec: KslVectorExpression<V, KslTypeFloat1>) where V: KslFloatType, V: KslVector<KslTypeFloat1> = KslBuiltinTrigonometryVector(vec, "acosh")
-    fun <V> asinh(vec: KslVectorExpression<V, KslTypeFloat1>) where V: KslFloatType, V: KslVector<KslTypeFloat1> = KslBuiltinTrigonometryVector(vec, "asinh")
-    fun <V> atanh(vec: KslVectorExpression<V, KslTypeFloat1>) where V: KslFloatType, V: KslVector<KslTypeFloat1> = KslBuiltinTrigonometryVector(vec, "atanh")
+    fun <V> acos(vec: KslVectorExpression<V, KslFloat1>) where V: KslFloatType, V: KslVector<KslFloat1> = KslBuiltinTrigonometryVector(vec, "acos")
+    fun <V> asin(vec: KslVectorExpression<V, KslFloat1>) where V: KslFloatType, V: KslVector<KslFloat1> = KslBuiltinTrigonometryVector(vec, "asin")
+    fun <V> atan(vec: KslVectorExpression<V, KslFloat1>) where V: KslFloatType, V: KslVector<KslFloat1> = KslBuiltinTrigonometryVector(vec, "atan")
+    fun <V> acosh(vec: KslVectorExpression<V, KslFloat1>) where V: KslFloatType, V: KslVector<KslFloat1> = KslBuiltinTrigonometryVector(vec, "acosh")
+    fun <V> asinh(vec: KslVectorExpression<V, KslFloat1>) where V: KslFloatType, V: KslVector<KslFloat1> = KslBuiltinTrigonometryVector(vec, "asinh")
+    fun <V> atanh(vec: KslVectorExpression<V, KslFloat1>) where V: KslFloatType, V: KslVector<KslFloat1> = KslBuiltinTrigonometryVector(vec, "atanh")
 
     // builtin matrix functions
     fun <M, V> determinant(matrix: KslMatrixExpression<M, V>) where M: KslFloatType, M: KslMatrix<V>, V: KslFloatType, V: KslVector<*> =
@@ -647,13 +647,13 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
         KslBuiltinTranspose(matrix)
 
     // builtin texture functions
-    fun <T: KslTypeColorSampler<C>, C: KslFloatType> sampleTexture(
+    fun <T: KslColorSampler<C>, C: KslFloatType> sampleTexture(
         sampler: KslExpression<T>,
         coord: KslExpression<C>,
-        lod: KslScalarExpression<KslTypeFloat1>? = null
+        lod: KslScalarExpression<KslFloat1>? = null
     ) = KslSampleColorTexture(sampler, coord, lod)
 
-    fun <T: KslTypeDepthSampler<C>, C: KslFloatType> sampleDepthTexture(sampler: KslExpression<T>, coord: KslExpression<C>) =
+    fun <T: KslDepthSampler<C>, C: KslFloatType> sampleDepthTexture(sampler: KslExpression<T>, coord: KslExpression<C>) =
         KslSampleDepthTexture(sampler, coord)
 
     /**
@@ -662,22 +662,31 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
      * @param coord Specifies the texture coordinates at which texture will be sampled.
      * @param lod If present, specifies the level-of-detail within the texture from which the texel will be fetched.
      */
-    fun <T: KslTypeColorSampler<R>, R : KslFloatType> texelFetch(
+    fun <T: KslColorSampler<R>, R : KslFloatType> texelFetch(
         sampler: KslExpression<T>,
         coord: KslExpression<*>,
-        lod: KslScalarExpression<KslTypeInt1>? = null
+        lod: KslScalarExpression<KslInt1>? = null
     ) = KslTexelFetch(sampler, coord, lod)
 
-    fun <T> textureSize1d(sampler: KslExpression<T>, lod: KslScalarExpression<KslTypeInt1> = 0.const)
-        where T: KslTypeSampler<*>, T: KslTypeSampler1d = KslTextureSize1d(sampler, lod)
-    fun <T> textureSize2d(sampler: KslExpression<T>, lod: KslScalarExpression<KslTypeInt1> = 0.const)
-            where T: KslTypeSampler<*>, T: KslTypeSampler2d = KslTextureSize2d(sampler, lod)
-    fun <T> textureSize3d(sampler: KslExpression<T>, lod: KslScalarExpression<KslTypeInt1> = 0.const)
-            where T: KslTypeSampler<*>, T: KslTypeSampler3d = KslTextureSize3d(sampler, lod)
-    fun <T> textureSizeCube(sampler: KslExpression<T>, lod: KslScalarExpression<KslTypeInt1> = 0.const)
-            where T: KslTypeSampler<*>, T: KslTypeSamplerCube = KslTextureSizeCube(sampler, lod)
-    fun <T> textureSize2dArray(sampler: KslExpression<T>, lod: KslScalarExpression<KslTypeInt1> = 0.const)
-            where T: KslTypeSampler<*>, T: KslTypeSampler2dArray = KslTextureSize2dArray(sampler, lod)
-    fun <T> textureSizeCubeArray(sampler: KslExpression<T>, lod: KslScalarExpression<KslTypeInt1> = 0.const)
-            where T: KslTypeSampler<*>, T: KslTypeSamplerCubeArray = KslTextureSizeCubeArray(sampler, lod)
+    fun <T> textureSize1d(sampler: KslExpression<T>, lod: KslScalarExpression<KslInt1> = 0.const)
+        where T: KslSamplerType<*>, T: KslSampler1dType = KslTextureSize1d(sampler, lod)
+    fun <T> textureSize2d(sampler: KslExpression<T>, lod: KslScalarExpression<KslInt1> = 0.const)
+            where T: KslSamplerType<*>, T: KslSampler2dType = KslTextureSize2d(sampler, lod)
+    fun <T> textureSize3d(sampler: KslExpression<T>, lod: KslScalarExpression<KslInt1> = 0.const)
+            where T: KslSamplerType<*>, T: KslSampler3dType = KslTextureSize3d(sampler, lod)
+    fun <T> textureSizeCube(sampler: KslExpression<T>, lod: KslScalarExpression<KslInt1> = 0.const)
+            where T: KslSamplerType<*>, T: KslSamplerCubeType = KslTextureSizeCube(sampler, lod)
+    fun <T> textureSize2dArray(sampler: KslExpression<T>, lod: KslScalarExpression<KslInt1> = 0.const)
+            where T: KslSamplerType<*>, T: KslSampler2dArrayType = KslTextureSize2dArray(sampler, lod)
+    fun <T> textureSizeCubeArray(sampler: KslExpression<T>, lod: KslScalarExpression<KslInt1> = 0.const)
+            where T: KslSamplerType<*>, T: KslSamplerCubeArrayType = KslTextureSizeCubeArray(sampler, lod)
+
+    // builtin storage functions - mostly for compute shaders
+    fun <T> storageSize1d(storage: KslExpression<T>) where T: KslStorage1d<*> = KslStorageSize1d(storage)
+    fun <T> storageSize2d(storage: KslExpression<T>) where T: KslStorage2d<*> = KslStorageSize2d(storage)
+    fun <T> storageSize3d(storage: KslExpression<T>) where T: KslStorage3d<*> = KslStorageSize3d(storage)
+
+    fun <T, R> storageRead1d(storage: KslExpression<T>, coord: KslExprInt1) where T: KslStorage1d<R>, R: KslNumericType = KslStorageRead1d(storage, coord)
+    fun <T> storageRead2d(storage: KslExpression<T>) where T: KslStorage2d<*> = KslStorageSize2d(storage)
+    fun <T> storageRead3d(storage: KslExpression<T>) where T: KslStorage3d<*> = KslStorageSize3d(storage)
 }

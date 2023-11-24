@@ -1,9 +1,10 @@
 package de.fabmax.kool.modules.ksl.lang
 
-abstract class KslArray<T: KslType>(name: String, type: T, val arraySize: Int, isMutable: Boolean)
-    : KslValue<KslTypeArray<T>>(name, isMutable) {
+abstract class KslArray<T: KslType>(name: String, type: T, val arraySize: Int, isMutable: Boolean) :
+    KslValue<KslArrayType<T>>(name, isMutable)
+{
 
-    override val expressionType = KslTypeArray(type, arraySize)
+    override val expressionType = KslArrayType(type, arraySize)
 
     override fun toPseudoCode(): String {
         return "${stateName}(size=${arraySize})"

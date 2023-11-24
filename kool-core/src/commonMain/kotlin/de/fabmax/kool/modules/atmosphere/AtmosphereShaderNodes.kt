@@ -30,10 +30,10 @@ class AtmosphereData(program: KslProgram) : KslDataBlock {
 
 fun KslScopeBuilder.atmosphereBlock(
     atmosphereData: AtmosphereData,
-    opticalDepthLut: KslExpression<KslTypeColorSampler2d>,
+    opticalDepthLut: KslExpression<KslColorSampler2d>,
     numScatterSamples: Int = 16,
     randomizeStartOffsets: Boolean = true,
-    sunShadowTex: KslExpression<KslTypeDepthSampler2d>? = null,
+    sunShadowTex: KslExpression<KslDepthSampler2D>? = null,
     sunShadowProj: KslExprMat4? = null
 ): AtmosphereBlock {
     val atmosphereBlock = AtmosphereBlock(
@@ -52,10 +52,10 @@ fun KslScopeBuilder.atmosphereBlock(
 class AtmosphereBlock(
     parentScope: KslScopeBuilder,
     atmosphereData: AtmosphereData,
-    opticalDepthLut: KslExpression<KslTypeColorSampler2d>,
+    opticalDepthLut: KslExpression<KslColorSampler2d>,
     private val numScatterSamples: Int,
     private val randomizeStartOffsets: Boolean,
-    private val sunShadowTex: KslExpression<KslTypeDepthSampler2d>?,
+    private val sunShadowTex: KslExpression<KslDepthSampler2D>?,
     private val sunShadowProj: KslExprMat4?
 ) : KslBlock("atmosphereBlock", parentScope) {
 

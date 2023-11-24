@@ -5,7 +5,7 @@ import kotlin.math.PI
 
 
 class DistributionGgx(parentScope: KslScopeBuilder) :
-    KslFunction<KslTypeFloat1>(FUNC_NAME, KslTypeFloat1, parentScope.parentStage) {
+    KslFunction<KslFloat1>(FUNC_NAME, KslFloat1, parentScope.parentStage) {
 
     init {
         val n = paramFloat3("n")
@@ -31,7 +31,7 @@ class DistributionGgx(parentScope: KslScopeBuilder) :
 }
 
 class FresnelSchlick(parentScope: KslScopeBuilder) :
-    KslFunction<KslTypeFloat3>(FUNC_NAME, KslTypeFloat3, parentScope.parentStage) {
+    KslFunction<KslFloat3>(FUNC_NAME, KslFloat3, parentScope.parentStage) {
 
     init {
         val cosTheta = paramFloat1("cosTheta")
@@ -48,7 +48,7 @@ class FresnelSchlick(parentScope: KslScopeBuilder) :
 }
 
 class FresnelSchlickRoughness(parentScope: KslScopeBuilder) :
-    KslFunction<KslTypeFloat3>(FUNC_NAME, KslTypeFloat3, parentScope.parentStage) {
+    KslFunction<KslFloat3>(FUNC_NAME, KslFloat3, parentScope.parentStage) {
 
     init {
         val cosTheta = paramFloat1("cosTheta")
@@ -67,7 +67,7 @@ class FresnelSchlickRoughness(parentScope: KslScopeBuilder) :
 }
 
 class GeometrySmith(parentScope: KslScopeBuilder) :
-    KslFunction<KslTypeFloat1>(FUNC_NAME, KslTypeFloat1, parentScope.parentStage) {
+    KslFunction<KslFloat1>(FUNC_NAME, KslFloat1, parentScope.parentStage) {
 
     init {
         val n = paramFloat3("n")
@@ -90,7 +90,7 @@ class GeometrySmith(parentScope: KslScopeBuilder) :
 }
 
 class GeometrySchlickGgx(parentScope: KslScopeBuilder) :
-    KslFunction<KslTypeFloat1>(FUNC_NAME, KslTypeFloat1, parentScope.parentStage) {
+    KslFunction<KslFloat1>(FUNC_NAME, KslFloat1, parentScope.parentStage) {
 
     init {
         val nDotX = paramFloat1("nDotX")

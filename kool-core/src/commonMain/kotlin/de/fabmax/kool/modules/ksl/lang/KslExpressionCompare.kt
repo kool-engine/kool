@@ -29,25 +29,25 @@ enum class KslCompareOperator(val opString: String) {
 class KslExpressionCompareScalar(
     left: KslExpression<*>,
     right: KslExpression<*>,
-    operator: KslCompareOperator)
-    : KslExpressionCompare<KslTypeBool1>(left, right, operator, KslTypeBool1), KslScalarExpression<KslTypeBool1>
+    operator: KslCompareOperator
+) : KslExpressionCompare<KslBool1>(left, right, operator, KslBool1), KslScalarExpression<KslBool1>
 
 class KslExpressionCompareVector<B>(
     left: KslExpression<*>,
     right: KslExpression<*>,
     operator: KslCompareOperator,
-    expressionType: B)
-    : KslExpressionCompare<B>(left, right, operator, expressionType), KslVectorExpression<B, KslTypeBool1>
-        where B: KslBoolType, B: KslVector<KslTypeBool1>
+    expressionType: B
+) : KslExpressionCompare<B>(left, right, operator, expressionType), KslVectorExpression<B, KslBool1>
+        where B: KslBoolType, B: KslVector<KslBool1>
 
 
 private fun <T> compareExpression(left: KslExpression<*>, right: KslExpression<*>, op: KslCompareOperator, expressionType: T):
         KslExpressionCompareVector<*> where T: KslNumericType, T: KslVector<*> {
     return when (expressionType) {
-        is KslVector2<*> -> KslExpressionCompareVector(left, right, op, KslTypeBool2)
-        is KslVector3<*> -> KslExpressionCompareVector(left, right, op, KslTypeBool3)
-        is KslVector4<*> -> KslExpressionCompareVector(left, right, op, KslTypeBool4)
-        else -> TODO()
+        is KslVector2<*> -> KslExpressionCompareVector(left, right, op, KslBool2)
+        is KslVector3<*> -> KslExpressionCompareVector(left, right, op, KslBool3)
+        is KslVector4<*> -> KslExpressionCompareVector(left, right, op, KslBool4)
+        else -> throw IllegalArgumentException("Unexpected expression type: $expressionType")
     }
 }
 
