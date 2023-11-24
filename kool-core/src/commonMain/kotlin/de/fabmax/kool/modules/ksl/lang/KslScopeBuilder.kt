@@ -113,7 +113,7 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
     fun float4Value(x: KslExprFloat1, y: KslExprFloat1, z: KslExprFloat1, w: KslExprFloat1) = KslValueFloat4(x, y, z, w)
     fun float4Value(xy: KslExprFloat2, z: Float, w: Float) = float4Value(xy, z.const, w.const)
     fun float4Value(xy: KslExprFloat2, z: KslExprFloat1, w: KslExprFloat1) = KslValueFloat4(xy.x, xy.y, z, w)
-    fun float4Value(xy: KslExprFloat2, zw: KslExprFloat2) = KslValueFloat4(xy.x, xy.y, zw.z, zw.w)
+    fun float4Value(xy: KslExprFloat2, zw: KslExprFloat2) = KslValueFloat4(xy.x, xy.y, zw.x, zw.y)
     fun float4Value(xyz: KslExprFloat3, w: Float) = float4Value(xyz, w.const)
     fun float4Value(xyz: KslExprFloat3, w: KslExprFloat1) = KslValueFloat4(xyz.x, xyz.y, xyz.z, w)
 
@@ -128,7 +128,7 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
     fun int4Value(x: KslExprInt1, y: KslExprInt1, z: KslExprInt1, w: KslExprInt1) = KslValueInt4(x, y, z, w)
     fun int4Value(xy: KslExprInt2, z: Int, w: Int) = int4Value(xy, z.const, w.const)
     fun int4Value(xy: KslExprInt2, z: KslExprInt1, w: KslExprInt1) = KslValueInt4(xy.x, xy.y, z, w)
-    fun int4Value(xy: KslExprInt2, zw: KslExprInt2) = KslValueInt4(xy.x, xy.y, zw.z, zw.w)
+    fun int4Value(xy: KslExprInt2, zw: KslExprInt2) = KslValueInt4(xy.x, xy.y, zw.x, zw.y)
     fun int4Value(xyz: KslExprInt3, w: Int) = int4Value(xyz, w.const)
     fun int4Value(xyz: KslExprInt3, w: KslExprInt1) = KslValueInt4(xyz.x, xyz.y, xyz.z, w)
 
@@ -647,9 +647,11 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
         KslBuiltinTranspose(matrix)
 
     // builtin texture functions
-    fun <T: KslTypeColorSampler<C>, C: KslFloatType> sampleTexture(sampler: KslExpression<T>, coord: KslExpression<C>,
-                                                                   lod: KslScalarExpression<KslTypeFloat1>? = null) =
-        KslSampleColorTexture(sampler, coord, lod)
+    fun <T: KslTypeColorSampler<C>, C: KslFloatType> sampleTexture(
+        sampler: KslExpression<T>,
+        coord: KslExpression<C>,
+        lod: KslScalarExpression<KslTypeFloat1>? = null
+    ) = KslSampleColorTexture(sampler, coord, lod)
 
     fun <T: KslTypeDepthSampler<C>, C: KslFloatType> sampleDepthTexture(sampler: KslExpression<T>, coord: KslExpression<C>) =
         KslSampleDepthTexture(sampler, coord)
@@ -660,9 +662,11 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
      * @param coord Specifies the texture coordinates at which texture will be sampled.
      * @param lod If present, specifies the level-of-detail within the texture from which the texel will be fetched.
      */
-    fun <T: KslTypeColorSampler<R>, R : KslFloatType> texelFetch(sampler: KslExpression<T>, coord: KslExpression<*>,
-                                                  lod: KslScalarExpression<KslTypeInt1>? = null) =
-        KslTexelFetch(sampler, coord, lod)
+    fun <T: KslTypeColorSampler<R>, R : KslFloatType> texelFetch(
+        sampler: KslExpression<T>,
+        coord: KslExpression<*>,
+        lod: KslScalarExpression<KslTypeInt1>? = null
+    ) = KslTexelFetch(sampler, coord, lod)
 
     fun <T> textureSize1d(sampler: KslExpression<T>, lod: KslScalarExpression<KslTypeInt1> = 0.const)
         where T: KslTypeSampler<*>, T: KslTypeSampler1d = KslTextureSize1d(sampler, lod)

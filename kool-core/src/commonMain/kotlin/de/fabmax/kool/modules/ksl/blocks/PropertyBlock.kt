@@ -35,10 +35,10 @@ class PropertyBlockVertexStage(cfg: PropertyBlockConfig, parentScope: KslScopeBu
                             else -> parentStage.vertexAttribFloat4(source.propertyAttrib.name)
                         }
                         when (source.channel) {
-                            0 -> attrib.x
-                            1 -> attrib.y
-                            2 -> attrib.z
-                            else -> attrib.w
+                            0 -> attrib.float1("x")
+                            1 -> attrib.float1("y")
+                            2 -> attrib.float1("z")
+                            else -> attrib.float1("w")
                         }
                     }
                     input set prop
@@ -55,10 +55,10 @@ class PropertyBlockVertexStage(cfg: PropertyBlockConfig, parentScope: KslScopeBu
                             else -> parentStage.instanceAttribFloat4(source.propertyAttrib.name)
                         }
                         when (source.channel) {
-                            0 -> attrib.x
-                            1 -> attrib.y
-                            2 -> attrib.z
-                            else -> attrib.w
+                            0 -> attrib.float1("x")
+                            1 -> attrib.float1("y")
+                            2 -> attrib.float1("z")
+                            else -> attrib.float1("w")
                         }
                     }
                     input set prop
