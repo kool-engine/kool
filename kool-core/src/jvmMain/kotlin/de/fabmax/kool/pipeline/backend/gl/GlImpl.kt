@@ -150,6 +150,7 @@ object GlImpl : GlApi {
     override fun bindBuffer(target: Int, buffer: GlBuffer) = glBindBuffer(target, buffer.handle)
     override fun bindBufferBase(target: Int, index: Int, buffer: GlBuffer) = glBindBufferBase(target, index, buffer.handle)
     override fun bindFramebuffer(target: Int, framebuffer: GlFramebuffer) = glBindFramebuffer(target, framebuffer.handle)
+    override fun bindImageTexture(unit: Int, texture: GlTexture, level: Int, layered: Boolean, layer: Int, access: Int, format: Int) = glBindImageTexture(unit, texture.handle, level, layered, layer, access, format)
     override fun bindRenderbuffer(target: Int, renderbuffer: GlRenderbuffer) = glBindRenderbuffer(target, renderbuffer.handle)
     override fun bindTexture(target: Int, texture: GlTexture) = glBindTexture(target, texture.handle)
     override fun blendFunc(sFactor: Int, dFactor: Int) = glBlendFunc(sFactor, dFactor)

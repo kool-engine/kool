@@ -3,24 +3,24 @@ package de.fabmax.kool.modules.ksl.lang
 import de.fabmax.kool.modules.ksl.generator.KslGenerator
 import de.fabmax.kool.modules.ksl.model.KslMutatedState
 
-sealed class KslStorage<T: KslStorageType<*, C>, C: KslIntType>(name: String, val storage: T) : KslValue<T>(name, true) {
+sealed class KslStorage<T: KslStorageType<*, C>, C: KslIntType>(name: String, val storageType: T) : KslValue<T>(name, true) {
     val name: String
         get() = stateName
 }
 
 class KslStorage1d<T: KslStorage1dType<*>>(name: String, storage: T) : KslStorage<T, KslInt1>(name, storage) {
     override val expressionType: T
-        get() = storage
+        get() = storageType
 }
 
 class KslStorage2d<T: KslStorage2dType<*>>(name: String, storage: T) : KslStorage<T, KslInt2>(name, storage) {
     override val expressionType: T
-        get() = storage
+        get() = storageType
 }
 
 class KslStorage3d<T: KslStorage3dType<*>>(name: String, storage: T) : KslStorage<T, KslInt3>(name, storage) {
     override val expressionType: T
-        get() = storage
+        get() = storageType
 }
 
 
@@ -29,7 +29,7 @@ class KslStorageSize<T: KslStorageType<*, C>, C: KslIntType>(
     override val expressionType: C
 ) : KslExpression<C> {
     override fun collectStateDependencies(): Set<KslMutatedState> = storage.collectStateDependencies()
-    override fun generateExpression(generator: KslGenerator): String = TODO() //generator.textureSize(this)
+    override fun generateExpression(generator: KslGenerator): String = generator.storageSize(this)
     override fun toPseudoCode(): String = "storageSize(${storage.toPseudoCode()})"
 }
 
@@ -39,7 +39,7 @@ class KslStorageRead<T: KslStorageType<R, C>, R: KslNumericType, C: KslIntType>(
     override val expressionType: R
 ) : KslExpression<R> {
     override fun collectStateDependencies(): Set<KslMutatedState> = storage.collectStateDependencies()
-    override fun generateExpression(generator: KslGenerator): String = TODO() //generator.textureSize(this)
+    override fun generateExpression(generator: KslGenerator): String = generator.storageRead(this)
     override fun toPseudoCode(): String = "storageRead(${storage.toPseudoCode()}, ${coord.toPseudoCode()})"
 }
 

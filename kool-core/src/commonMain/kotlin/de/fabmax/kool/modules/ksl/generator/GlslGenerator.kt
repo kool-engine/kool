@@ -114,6 +114,18 @@ open class GlslGenerator(val glslVersionStr: String) : KslGenerator() {
         return "texelFetch($sampler, $coords, ${lod ?: 0})"
     }
 
+    override fun storageSize(storageSize: KslStorageSize<*, *>): String {
+        return "imageSize(${storageSize.storage.generateExpression(this)})"
+    }
+
+    override fun storageRead(storageRead: KslStorageRead<*, *, *>): String {
+        return "imageLoad(${storageRead.storage.generateExpression(this)}, ${storageRead.coord.generateExpression(this)})"
+    }
+
+    override fun opStorageWrite(op: KslStorageWrite<*, *, *>): String {
+        return "imageStore(${op.storage.generateExpression(this)}, ${op.coord.generateExpression(this)}, ${op.data.generateExpression(this)});"
+    }
+
     private fun generateVertexSrc(vertexStage: KslVertexStage): String {
         val src = StringBuilder()
         src.appendLine("""
@@ -128,6 +140,7 @@ open class GlslGenerator(val glslVersionStr: String) : KslGenerator() {
 
         src.generateUbos(vertexStage)
         src.generateUniformSamplers(vertexStage)
+        src.generateUniformStorage(vertexStage)
         src.generateAttributes(vertexStage.attributes.values.filter { it.inputRate == KslInputRate.Instance }, "instance attributes")
         src.generateAttributes(vertexStage.attributes.values.filter { it.inputRate == KslInputRate.Vertex }, "vertex attributes")
         src.generateInterStageOutputs(vertexStage)
@@ -155,6 +168,7 @@ open class GlslGenerator(val glslVersionStr: String) : KslGenerator() {
 
         src.generateUbos(fragmentStage)
         src.generateUniformSamplers(fragmentStage)
+        src.generateUniformStorage(fragmentStage)
         src.generateInterStageInputs(fragmentStage)
         src.generateOutputs(fragmentStage.outColors)
         src.generateFunctions(fragmentStage)
@@ -179,8 +193,8 @@ open class GlslGenerator(val glslVersionStr: String) : KslGenerator() {
         src.appendLine()
 
         src.generateUbos(computeStage)
-        // todo: generate storage (image) uniforms
         src.generateUniformSamplers(computeStage)
+        src.generateUniformStorage(computeStage)
         src.generateFunctions(computeStage)
 
         src.appendLine("void main() {")
@@ -195,6 +209,17 @@ open class GlslGenerator(val glslVersionStr: String) : KslGenerator() {
             appendLine("// texture samplers")
             for (u in samplers) {
                 appendLine("uniform ${glslTypeName(u.expressionType)} ${u.value.name()};")
+            }
+            appendLine()
+        }
+    }
+
+    protected open fun StringBuilder.generateUniformStorage(stage: KslShaderStage) {
+        val storage = stage.getUsedStorage()
+        if (storage.isNotEmpty()) {
+            appendLine("// image storage")
+            storage.forEachIndexed { i, u ->
+                appendLine("layout(${u.storageType.formatQualifier}, binding=$i) uniform ${glslTypeName(u.expressionType)} ${u.name};")
             }
             appendLine()
         }
@@ -453,6 +478,12 @@ open class GlslGenerator(val glslVersionStr: String) : KslGenerator() {
             KslFragmentStage.NAME_IN_IS_FRONT_FACING -> "gl_FrontFacing"
             KslFragmentStage.NAME_OUT_DEPTH -> "gl_FragDepth"
 
+            KslComputeStage.NAME_IN_GLOBAL_INVOCATION_ID -> "gl_GlobalInvocationID"
+            KslComputeStage.NAME_IN_LOCAL_INVOCATION_ID -> "gl_LocalInvocationID"
+            KslComputeStage.NAME_IN_WORK_GROUP_ID -> "gl_WorkGroupID"
+            KslComputeStage.NAME_IN_NUM_WORK_GROUPS -> "gl_NumWorkGroups"
+            KslComputeStage.NAME_IN_WORK_GROUP_SIZE -> "gl_WorkGroupSize"
+
             else -> stateName
         }
     }
@@ -492,24 +523,43 @@ open class GlslGenerator(val glslVersionStr: String) : KslGenerator() {
             KslDepthSampler2DArray -> "sampler2DArrayShadow"
             KslDepthSamplerCubeArray -> "samplerCubeArrayShadow"
 
-            KslStorage1dFloat1 -> TODO()
-            KslStorage1dFloat2 -> TODO()
-            KslStorage1dFloat3 -> TODO()
-            KslStorage1dFloat4 -> TODO()
-
-            KslStorage1dInt1 -> TODO()
-            KslStorage1dInt2 -> TODO()
-            KslStorage1dInt3 -> TODO()
-            KslStorage1dInt4 -> TODO()
-
-            KslStorage1dUint1 -> TODO()
-            KslStorage1dUint2 -> TODO()
-            KslStorage1dUint3 -> TODO()
-            KslStorage1dUint4 -> TODO()
-
             is KslArrayType<*> -> "${glslTypeName(type.elemType)}[${type.arraySize}]"
+
+            is KslStorage1dType<*> -> "${type.typePrefix}image1D"
+            is KslStorage2dType<*> -> "${type.typePrefix}image2D"
+            is KslStorage3dType<*> -> "${type.typePrefix}image3D"
         }
     }
+
+    private val KslStorageType<*, *>.typePrefix: String
+        get() = when (elemType) {
+            is KslFloatType -> ""
+            is KslInt1 -> "i"
+            is KslInt2 -> "i"
+            is KslInt3 -> "i"
+            is KslInt4 -> "i"
+            is KslUint1 -> "u"
+            is KslUint2 -> "u"
+            is KslUint3 -> "u"
+            is KslUint4 -> "u"
+        }
+
+    private val KslStorageType<*, *>.formatQualifier: String
+        get() = when (elemType) {
+            is KslFloat1 -> "r32f"
+            is KslFloat2 -> "rg32f"
+            is KslFloat3 -> "rgb32f"
+            is KslFloat4 -> "rgba32f"
+            is KslInt1 -> "r32i"
+            is KslInt2 -> "rg32i"
+            is KslInt3 -> "rgb32i"
+            is KslInt4 -> "rgba32i"
+            is KslUint1 -> "r32ui"
+            is KslUint2 -> "rg32ui"
+            is KslUint3 -> "rgb32ui"
+            is KslUint4 -> "rgba32ui"
+            else -> throw IllegalStateException("Invalid storage element type $elemType")
+        }
 
     class GlslGeneratorOutput : GeneratorOutput {
         val stages = mutableMapOf<KslShaderStageType, String>()

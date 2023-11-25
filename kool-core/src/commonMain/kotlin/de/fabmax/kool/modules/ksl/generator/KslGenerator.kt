@@ -63,6 +63,9 @@ abstract class KslGenerator {
     abstract fun textureSize(textureSize: KslTextureSize<*, *>): String
     abstract fun texelFetch(expression: KslTexelFetch<*>): String
 
+    abstract fun storageSize(storageSize: KslStorageSize<*, *>): String
+    abstract fun storageRead(storageRead: KslStorageRead<*, *, *>): String
+
     open fun varAssignable(assignable: KslVar<*>): String = assignable.name()
     open fun arrayValueAssignable(arrayAccessor: KslArrayAccessor<*>): String =
         "${arrayAccessor.array.generateExpression(this)}[${arrayAccessor.index.generateExpression(this)}]"
@@ -94,6 +97,7 @@ abstract class KslGenerator {
             is KslReturn -> opReturn(op)
             is KslBlock -> opBlock(op)
             is KslInlineCode -> opInlineCode(op)
+            is KslStorageWrite<*, *, *> -> opStorageWrite(op)
             else -> throw IllegalArgumentException("Unsupported op: ${op.toPseudoCode()}")
         }
     }
@@ -112,6 +116,7 @@ abstract class KslGenerator {
     abstract fun opReturn(op: KslReturn): String
     abstract fun opBlock(op: KslBlock): String
     abstract fun opInlineCode(op: KslInlineCode): String
+    abstract fun opStorageWrite(op: KslStorageWrite<*, *, *>): String
 
     abstract fun invokeFunction(func: KslInvokeFunction<*>): String
 

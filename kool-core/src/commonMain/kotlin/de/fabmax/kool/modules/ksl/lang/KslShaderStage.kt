@@ -50,8 +50,16 @@ abstract class KslShaderStage(val program: KslProgram, val type: KslShaderStageT
         return uniform.value in main.dependencies || functions.values.any { f -> uniform.value in f.body.dependencies }
     }
 
+    fun dependsOn(storage: KslStorage<*, *>): Boolean {
+        return storage in main.dependencies || functions.values.any { f -> storage in f.body.dependencies }
+    }
+
     fun getUsedSamplers(): List<KslUniform<*>> {
         return program.uniformSamplers.values.filter { dependsOn(it) }
+    }
+
+    fun getUsedStorage(): List<KslStorage<*, *>> {
+        return program.uniformStorage.values.filter { dependsOn(it) }
     }
 
     fun getUsedUbos(): List<KslUniformBuffer> {
@@ -180,4 +188,25 @@ class KslFragmentStage(program: KslProgram) : KslShaderStage(program, KslShaderS
 
 class KslComputeStage(program: KslProgram, val workGroupSize: Vec3i) : KslShaderStage(program, KslShaderStageType.ComputeShader) {
 
+    val inGlobalInvocationId = KslStageInputVector(KslVarVector(NAME_IN_GLOBAL_INVOCATION_ID, KslUint3, false))
+    val inLocalInvocationId = KslStageInputVector(KslVarVector(NAME_IN_LOCAL_INVOCATION_ID, KslUint3, false))
+    val inWorkGroupId = KslStageInputVector(KslVarVector(NAME_IN_WORK_GROUP_ID, KslUint3, false))
+    val inNumWorkGroups = KslStageInputVector(KslVarVector(NAME_IN_NUM_WORK_GROUPS, KslUint3, false))
+    val inWorkGroupSize = KslStageInputVector(KslVarVector(NAME_IN_WORK_GROUP_SIZE, KslUint3, false))
+
+    init {
+        globalScope.definedStates += inGlobalInvocationId.value
+        globalScope.definedStates += inLocalInvocationId.value
+        globalScope.definedStates += inWorkGroupId.value
+        globalScope.definedStates += inNumWorkGroups.value
+        globalScope.definedStates += inWorkGroupSize.value
+    }
+
+    companion object {
+        const val NAME_IN_GLOBAL_INVOCATION_ID = "inGlobalInvocationId"
+        const val NAME_IN_LOCAL_INVOCATION_ID = "inLocalInvocationId"
+        const val NAME_IN_WORK_GROUP_ID = "inWorkGroupId"
+        const val NAME_IN_NUM_WORK_GROUPS = "inNumWorkGroups"
+        const val NAME_IN_WORK_GROUP_SIZE = "inWorkGroupSize"
+    }
 }

@@ -119,21 +119,6 @@ object KslDepthSampler2DArray : KslDepthSampler<KslFloat4>("depthSampler2dArray"
 object KslDepthSamplerCubeArray : KslDepthSampler<KslFloat4>("depthSamplerCubeArray"), KslSamplerCubeArrayType
 
 
-sealed class KslStorage1dType<R: KslNumericType>(typeName: String, elemType: R) : KslStorageType<R, KslInt1>(typeName, elemType, KslInt1)
-sealed class KslStorage2dType<R: KslNumericType>(typeName: String, elemType: R) : KslStorageType<R, KslInt2>(typeName, elemType, KslInt2)
-sealed class KslStorage3dType<R: KslNumericType>(typeName: String, elemType: R) : KslStorageType<R, KslInt3>(typeName, elemType, KslInt3)
-
-object KslStorage1dFloat1 : KslStorage1dType<KslFloat1>("float1", KslFloat1)
-object KslStorage1dFloat2 : KslStorage1dType<KslFloat2>("float2", KslFloat2)
-object KslStorage1dFloat3 : KslStorage1dType<KslFloat3>("float3", KslFloat3)
-object KslStorage1dFloat4 : KslStorage1dType<KslFloat4>("float4", KslFloat4)
-
-object KslStorage1dInt1 : KslStorage1dType<KslInt1>("int1", KslInt1)
-object KslStorage1dInt2 : KslStorage1dType<KslInt2>("int2", KslInt2)
-object KslStorage1dInt3 : KslStorage1dType<KslInt3>("int3", KslInt3)
-object KslStorage1dInt4 : KslStorage1dType<KslInt4>("int4", KslInt4)
-
-object KslStorage1dUint1 : KslStorage1dType<KslUint1>("uint1", KslUint1)
-object KslStorage1dUint2 : KslStorage1dType<KslUint2>("uint2", KslUint2)
-object KslStorage1dUint3 : KslStorage1dType<KslUint3>("uint3", KslUint3)
-object KslStorage1dUint4 : KslStorage1dType<KslUint4>("uint4", KslUint4)
+class KslStorage1dType<R: KslNumericType>(elemType: R) : KslStorageType<R, KslInt1>("KslStorage1dType<${elemType.typeName}>", elemType, KslInt1)
+class KslStorage2dType<R: KslNumericType>(elemType: R) : KslStorageType<R, KslInt2>("KslStorage2dType<${elemType.typeName}>", elemType, KslInt2)
+class KslStorage3dType<R: KslNumericType>(elemType: R) : KslStorageType<R, KslInt3>("KslStorage3dType<${elemType.typeName}>", elemType, KslInt3)

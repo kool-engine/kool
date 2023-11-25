@@ -182,51 +182,51 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
         }
 
 
-    fun uint1Var(initValue: KslExprUint1? = null, name: String? = null) =
+    fun uint1Var(initValue: KslExpression<KslUint1>? = null, name: String? = null) =
         KslVarScalar(name ?: nextName("u1"), KslUint1, true).also {
             ops += KslDeclareVar(it, initValue, this)
         }
-    fun uint2Var(initValue: KslExprUint2? = null, name: String? = null) =
+    fun uint2Var(initValue: KslExpression<KslUint2>? = null, name: String? = null) =
         KslVarVector(name ?: nextName("u2"), KslUint2, true).also {
             ops += KslDeclareVar(it, initValue, this)
         }
-    fun uint3Var(initValue: KslExprUint3? = null, name: String? = null) =
+    fun uint3Var(initValue: KslExpression<KslUint3>? = null, name: String? = null) =
         KslVarVector(name ?: nextName("u3"), KslUint3, true).also {
             ops += KslDeclareVar(it, initValue, this)
         }
-    fun uint4Var(initValue: KslExprUint4? = null, name: String? = null) =
+    fun uint4Var(initValue: KslExpression<KslUint4>? = null, name: String? = null) =
         KslVarVector(name ?: nextName("u4"), KslUint4, true).also {
             ops += KslDeclareVar(it, initValue, this)
         }
 
 
-    fun bool1Var(initValue: KslExprBool1? = null, name: String? = null) =
+    fun bool1Var(initValue: KslExpression<KslBool1>? = null, name: String? = null) =
         KslVarScalar(name ?: nextName("b1"), KslBool1, true).also {
             ops += KslDeclareVar(it, initValue, this)
         }
-    fun bool2Var(initValue: KslExprBool2? = null, name: String? = null) =
+    fun bool2Var(initValue: KslExpression<KslBool2>? = null, name: String? = null) =
         KslVarVector(name ?: nextName("b2"), KslInt2, true).also {
             ops += KslDeclareVar(it, initValue, this)
         }
-    fun bool3Var(initValue: KslExprBool3? = null, name: String? = null) =
+    fun bool3Var(initValue: KslExpression<KslBool3>? = null, name: String? = null) =
         KslVarVector(name ?: nextName("b3"), KslInt3, true).also {
             ops += KslDeclareVar(it, initValue, this)
         }
-    fun bool4Var(initValue: KslExprBool4? = null, name: String? = null) =
+    fun bool4Var(initValue: KslExpression<KslBool4>? = null, name: String? = null) =
         KslVarVector(name ?: nextName("b4"), KslInt4, true).also {
             ops += KslDeclareVar(it, initValue, this)
         }
 
 
-    fun mat2Var(initValue: KslExprMat2? = null, name: String? = null) =
+    fun mat2Var(initValue: KslExpression<KslMat2>? = null, name: String? = null) =
         KslVarMatrix(name ?: nextName("m2"), KslMat2, true).also {
             ops += KslDeclareVar(it, initValue, this)
         }
-    fun mat3Var(initValue: KslExprMat3? = null, name: String? = null) =
+    fun mat3Var(initValue: KslExpression<KslMat3>? = null, name: String? = null) =
         KslVarMatrix(name ?: nextName("m3"), KslMat3, true).also {
             ops += KslDeclareVar(it, initValue, this)
         }
-    fun mat4Var(initValue: KslExprMat4? = null, name: String? = null) =
+    fun mat4Var(initValue: KslExpression<KslMat4>? = null, name: String? = null) =
         KslVarMatrix(name ?: nextName("m4"), KslMat4, true).also {
             ops += KslDeclareVar(it, initValue, this)
         }
@@ -686,7 +686,7 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
         KslStorageSize(storage, storage.expressionType.coordType)
 
     fun <T, R, C> storageRead(storage: KslStorage<T, C>, coord: KslExpression<C>): KslExpression<R>
-        where T: KslStorageType<R, C>, R: KslNumericType, C: KslIntType = KslStorageRead(storage, coord, storage.storage.elemType)
+        where T: KslStorageType<R, C>, R: KslNumericType, C: KslIntType = KslStorageRead(storage, coord, storage.storageType.elemType)
 
     fun <T, R, C> storageWrite(storage: KslStorage<T, C>, coord: KslExpression<C>, data: KslExpression<R>)
         where T: KslStorageType<R, C>, R: KslNumericType, C: KslIntType

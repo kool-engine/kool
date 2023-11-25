@@ -189,6 +189,7 @@ object GlImpl : GlApi {
     override fun bindBuffer(target: Int, buffer: GlBuffer) = gl.bindBuffer(target, buffer.webGl)
     override fun bindBufferBase(target: Int, index: Int, buffer: GlBuffer) = gl.bindBufferBase(target, index, buffer.webGl)
     override fun bindFramebuffer(target: Int, framebuffer: GlFramebuffer) = gl.bindFramebuffer(target, framebuffer.webGl)
+    override fun bindImageTexture(unit: Int, texture: GlTexture, level: Int, layered: Boolean, layer: Int, access: Int, format: Int) = notSupported("bindImageTexture")
     override fun bindRenderbuffer(target: Int, renderbuffer: GlRenderbuffer) = gl.bindRenderbuffer(target, renderbuffer.webGl)
     override fun bindTexture(target: Int, texture: GlTexture) = gl.bindTexture(target, texture.webGl)
     override fun blendFunc(sFactor: Int, dFactor: Int) = gl.blendFunc(sFactor, dFactor)

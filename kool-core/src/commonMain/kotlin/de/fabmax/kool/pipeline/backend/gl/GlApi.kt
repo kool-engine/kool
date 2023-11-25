@@ -151,6 +151,7 @@ interface GlApi {
     fun bindBuffer(target: Int, buffer: GlBuffer)
     fun bindBufferBase(target: Int, index: Int, buffer: GlBuffer)
     fun bindFramebuffer(target: Int, framebuffer: GlFramebuffer)
+    fun bindImageTexture(unit: Int, texture: GlTexture, level: Int, layered: Boolean, layer: Int, access: Int, format: Int)
     fun bindRenderbuffer(target: Int, renderbuffer: GlRenderbuffer)
     fun bindTexture(target: Int, texture: GlTexture)
     fun blendFunc(sFactor: Int, dFactor: Int)
