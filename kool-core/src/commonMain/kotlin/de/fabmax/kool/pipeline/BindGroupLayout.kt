@@ -1,29 +1,28 @@
 package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
+import de.fabmax.kool.util.LongHash
 import de.fabmax.kool.util.copy
 
-class DescriptorSetLayout private constructor(val set: Int, val descriptors: List<Descriptor>) {
+class BindGroupLayout private constructor(val set: Int, val items: List<Binding>) {
 
-    val longHash: ULong
+    val hash = LongHash()
 
     init {
-        var hash = 0UL
-        descriptors.forEach {
-            hash = (hash * 71023UL) + it.longHash
+        items.forEach {
+            hash += it.hash
         }
-        longHash = hash
     }
 
-    fun findDescriptorByName(name: String): Descriptor? {
-        return descriptors.find { it.name == name }
+    fun findItemsByName(name: String): Binding? {
+        return items.find { it.name == name }
     }
 
     class Builder {
-        val descriptors = mutableListOf<Descriptor.Builder<*>>()
+        val item = mutableListOf<Binding.Builder<*>>()
 
-        operator fun <T: Descriptor> Descriptor.Builder<T>.unaryPlus() {
-            descriptors += this
+        operator fun <T: Binding> Binding.Builder<T>.unaryPlus() {
+            item += this
         }
 
         fun uniformBuffer(name: String, vararg stages: ShaderStage, block: UniformBuffer.Builder.() -> Unit) {
@@ -66,30 +65,29 @@ class DescriptorSetLayout private constructor(val set: Int, val descriptors: Lis
             +sampler
         }
 
-        fun create(set: Int): DescriptorSetLayout {
-            return DescriptorSetLayout(set, List(descriptors.size) { i -> descriptors[i].create(i) })
+        fun create(set: Int): BindGroupLayout {
+            return BindGroupLayout(set, List(item.size) { i -> item[i].create(i) })
         }
 
         fun clear() {
-            descriptors.clear()
+            item.clear()
         }
     }
 }
 
-sealed class Descriptor(builder: Builder<*>, val binding: Int, val type: DescriptorType, hash: ULong) {
+sealed class Binding(builder: Builder<*>, val binding: Int, val type: BindingType) {
     val name: String = builder.name
     val stages: Set<ShaderStage> = builder.stages.copy()
 
-    val longHash: ULong
+    val hash = LongHash()
 
     init {
-        var h = hash
-        h = (h * 71023UL) + builder.name.hashCode().toULong()
-        h = (h * 71023UL) + type.hashCode().toULong()
-        longHash = h
+        hash += builder.name
+        hash += binding
+        hash += type
     }
 
-    abstract class Builder<T : Descriptor> {
+    abstract class Builder<T : Binding> {
         var name = ""
         val stages = mutableSetOf<ShaderStage>()
 
@@ -97,8 +95,9 @@ sealed class Descriptor(builder: Builder<*>, val binding: Int, val type: Descrip
     }
 }
 
-class TextureSampler1d private constructor(builder: Builder, binding: Int, hash: ULong) :
-        Descriptor(builder, binding, DescriptorType.SAMPLER_1D, hash) {
+class TextureSampler1d private constructor(builder: Builder, binding: Int) :
+    Binding(builder, binding, BindingType.SAMPLER_1D)
+{
 
     val arraySize = builder.arraySize
 
@@ -108,7 +107,11 @@ class TextureSampler1d private constructor(builder: Builder, binding: Int, hash:
         get() = textures[0]
         set(value) { textures[0] = value }
 
-    class Builder : Descriptor.Builder<TextureSampler1d>() {
+    init {
+        hash += BindingType.SAMPLER_1D
+    }
+
+    class Builder : Binding.Builder<TextureSampler1d>() {
         var arraySize = 1
         var isDepthSampler = false
         var onUpdate: ((TextureSampler1d, DrawCommand) -> Unit)? = null
@@ -119,15 +122,16 @@ class TextureSampler1d private constructor(builder: Builder, binding: Int, hash:
         }
 
         override fun create(binding: Int): TextureSampler1d {
-            val sampler = TextureSampler1d(this, binding, DescriptorType.SAMPLER_1D.hashCode().toULong() * 71023UL)
+            val sampler = TextureSampler1d(this, binding)
             onCreate?.invoke(sampler)
             return sampler
         }
     }
 }
 
-class TextureSampler2d private constructor(builder: Builder, binding: Int, hash: ULong) :
-        Descriptor(builder, binding, DescriptorType.SAMPLER_2D, hash) {
+class TextureSampler2d private constructor(builder: Builder, binding: Int) :
+    Binding(builder, binding, BindingType.SAMPLER_2D)
+{
 
     val arraySize = builder.arraySize
     val isDepthSampler = builder.isDepthSampler
@@ -138,7 +142,11 @@ class TextureSampler2d private constructor(builder: Builder, binding: Int, hash:
         get() = textures[0]
         set(value) { textures[0] = value }
 
-    class Builder : Descriptor.Builder<TextureSampler2d>() {
+    init {
+        hash += BindingType.SAMPLER_2D
+    }
+
+    class Builder : Binding.Builder<TextureSampler2d>() {
         var arraySize = 1
         var isDepthSampler = false
         var onUpdate: ((TextureSampler2d, DrawCommand) -> Unit)? = null
@@ -149,15 +157,16 @@ class TextureSampler2d private constructor(builder: Builder, binding: Int, hash:
         }
 
         override fun create(binding: Int): TextureSampler2d {
-            val sampler = TextureSampler2d(this, binding, DescriptorType.SAMPLER_2D.hashCode().toULong() * 71023UL)
+            val sampler = TextureSampler2d(this, binding)
             onCreate?.invoke(sampler)
             return sampler
         }
     }
 }
 
-class TextureSampler3d private constructor(builder: Builder, binding: Int, hash: ULong) :
-        Descriptor(builder, binding, DescriptorType.SAMPLER_3D, hash) {
+class TextureSampler3d private constructor(builder: Builder, binding: Int) :
+    Binding(builder, binding, BindingType.SAMPLER_3D)
+{
 
     val arraySize = builder.arraySize
 
@@ -167,7 +176,11 @@ class TextureSampler3d private constructor(builder: Builder, binding: Int, hash:
         get() = textures[0]
         set(value) { textures[0] = value }
 
-    class Builder : Descriptor.Builder<TextureSampler3d>() {
+    init {
+        hash += BindingType.SAMPLER_3D
+    }
+
+    class Builder : Binding.Builder<TextureSampler3d>() {
         var arraySize = 1
         var onUpdate: ((TextureSampler3d, DrawCommand) -> Unit) ? = null
         var onCreate: ((TextureSampler3d) -> Unit) ? = null
@@ -177,15 +190,16 @@ class TextureSampler3d private constructor(builder: Builder, binding: Int, hash:
         }
 
         override fun create(binding: Int): TextureSampler3d {
-            val sampler = TextureSampler3d(this, binding, DescriptorType.SAMPLER_3D.hashCode().toULong() * 71023UL)
+            val sampler = TextureSampler3d(this, binding)
             onCreate?.invoke(sampler)
             return sampler
         }
     }
 }
 
-class TextureSamplerCube private constructor(builder: Builder, binding: Int, hash: ULong) :
-        Descriptor(builder, binding, DescriptorType.SAMPLER_CUBE, hash) {
+class TextureSamplerCube private constructor(builder: Builder, binding: Int) :
+    Binding(builder, binding, BindingType.SAMPLER_CUBE)
+{
 
     val arraySize = builder.arraySize
     val isDepthSampler = builder.isDepthSampler
@@ -196,7 +210,11 @@ class TextureSamplerCube private constructor(builder: Builder, binding: Int, has
         get() = textures[0]
         set(value) { textures[0] = value }
 
-    class Builder : Descriptor.Builder<TextureSamplerCube>() {
+    init {
+        hash += BindingType.SAMPLER_CUBE
+    }
+
+    class Builder : Binding.Builder<TextureSamplerCube>() {
         var arraySize = 1
         var isDepthSampler = false
         var onUpdate: ((TextureSamplerCube, DrawCommand) -> Unit) ? = null
@@ -207,23 +225,32 @@ class TextureSamplerCube private constructor(builder: Builder, binding: Int, has
         }
 
         override fun create(binding: Int): TextureSamplerCube {
-            val sampler = TextureSamplerCube(this, binding, DescriptorType.SAMPLER_CUBE.hashCode().toULong() * 71023UL)
+            val sampler = TextureSamplerCube(this, binding)
             onCreate?.invoke(sampler)
             return sampler
         }
     }
 }
 
-class UniformBuffer private constructor(builder: Builder, binding: Int, val uniforms: List<Uniform<*>>, hash: ULong) :
-        Descriptor(builder, binding, DescriptorType.UNIFORM_BUFFER, hash) {
+class UniformBuffer private constructor(builder: Builder, binding: Int, val uniforms: List<Uniform<*>>) :
+    Binding(builder, binding, BindingType.UNIFORM_BUFFER)
+{
 
     val instanceName = builder.instanceName
     val onUpdate: ((UniformBuffer, DrawCommand) -> Unit)? = builder.onUpdate
 
+    init {
+        hash += BindingType.UNIFORM_BUFFER
+        uniforms.forEach {
+            hash += it.name
+            hash += it::class.hashCode()
+        }
+    }
+
     @Suppress("UNCHECKED_CAST")
     fun <T> uniform(index: Int): T = uniforms[index] as T
 
-    class Builder : Descriptor.Builder<UniformBuffer>() {
+    class Builder : Binding.Builder<UniformBuffer>() {
         var instanceName: String? = null
 
         val uniforms = mutableListOf<() -> Uniform<*>>()
@@ -240,12 +267,7 @@ class UniformBuffer private constructor(builder: Builder, binding: Int, val unif
 
         override fun create(binding: Int): UniformBuffer {
             val uniforms = List(uniforms.size) { uniforms[it]() }
-            var hash = DescriptorType.UNIFORM_BUFFER.hashCode().toULong() * 71023UL
-            uniforms.forEach {
-                hash = (hash * 71023UL) + it::class.hashCode().toULong()
-                hash = (hash * 71023UL) + it.name.hashCode().toULong()
-            }
-            val ubo = UniformBuffer(this, binding, uniforms, hash)
+            val ubo = UniformBuffer(this, binding, uniforms)
             onCreate?.invoke(ubo)
             return ubo
         }
@@ -253,7 +275,7 @@ class UniformBuffer private constructor(builder: Builder, binding: Int, val unif
 }
 
 
-enum class DescriptorType {
+enum class BindingType {
     SAMPLER_1D,
     SAMPLER_2D,
     SAMPLER_3D,

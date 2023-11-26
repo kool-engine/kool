@@ -1,10 +1,7 @@
 package de.fabmax.kool.pipeline
 
-import de.fabmax.kool.KoolContext
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.scene.Mesh
-import kotlin.collections.forEach
-import kotlin.collections.mutableListOf
 import kotlin.collections.set
 
 /**
@@ -16,37 +13,46 @@ import kotlin.collections.set
 abstract class Shader : ShaderBase() {
     val pipelineConfig = PipelineConfig()
 
-    val onPipelineCreated = mutableListOf<(Pipeline, Mesh, KoolContext) -> Unit>()
+    val onPipelineCreated = mutableListOf<PipelineCreatedListener>()
 
-    fun createPipeline(mesh: Mesh, ctx: KoolContext): Pipeline {
-        val pipelineBuilder = Pipeline.Builder()
-        pipelineBuilder.vertexLayout.primitiveType = mesh.geometry.primitiveType
-        onPipelineSetup(pipelineBuilder, mesh, ctx)
-        val pipeline = pipelineBuilder.create()
-        onPipelineCreated(pipeline, mesh, ctx)
+    private var createdPipeline: Pipeline? = null
+
+    fun getOrCreatePipeline(mesh: Mesh, updateEvent: RenderPass.UpdateEvent): Pipeline {
+        // todo: recreating the pipeline might be necessary if the same shader instance is used on multiple objects
+        //  however, that isn't really supported anyway...
+
+        var pipeline = createdPipeline
+        if (pipeline == null) {
+            val pipelineBuilder = Pipeline.Builder()
+            pipelineBuilder.vertexLayout.primitiveType = mesh.geometry.primitiveType
+            onPipelineSetup(pipelineBuilder, mesh, updateEvent)
+            pipeline = pipelineBuilder.create()
+            onPipelineCreated(pipeline, mesh, updateEvent)
+        }
         return pipeline
     }
 
-    open fun onPipelineSetup(builder: Pipeline.Builder, mesh: Mesh, ctx: KoolContext) {
+    open fun onPipelineSetup(builder: Pipeline.Builder, mesh: Mesh, updateEvent: RenderPass.UpdateEvent) {
         builder.pipelineConfig.set(pipelineConfig)
     }
 
-    open fun onPipelineCreated(pipeline: Pipeline, mesh: Mesh, ctx: KoolContext) {
-        // todo: it can happen that onPipelineCreated is called repeatedly
-        //  check if that is still the case and if there are negative effects (at least performance is not optimal...)
-
-        pipeline.layout.descriptorSets.forEach { descSet ->
-            descSet.descriptors.forEach { desc ->
-                when (desc) {
-                    is UniformBuffer -> desc.uniforms.forEach { uniforms[it.name] = it }
-                    is TextureSampler1d -> texSamplers1d[desc.name] = desc
-                    is TextureSampler2d -> texSamplers2d[desc.name] = desc
-                    is TextureSampler3d -> texSamplers3d[desc.name] = desc
-                    is TextureSamplerCube -> texSamplersCube[desc.name] = desc
+    open fun onPipelineCreated(pipeline: Pipeline, mesh: Mesh, updateEvent: RenderPass.UpdateEvent) {
+        pipeline.bindGroupLayouts.forEach { group ->
+            group.items.forEach { binding ->
+                when (binding) {
+                    is UniformBuffer -> binding.uniforms.forEach { uniforms[it.name] = it }
+                    is TextureSampler1d -> texSamplers1d[binding.name] = binding
+                    is TextureSampler2d -> texSamplers2d[binding.name] = binding
+                    is TextureSampler3d -> texSamplers3d[binding.name] = binding
+                    is TextureSamplerCube -> texSamplersCube[binding.name] = binding
                 }
             }
         }
         shaderCreated()
-        onPipelineCreated.forEach { it(pipeline, mesh, ctx) }
+        onPipelineCreated.forEach { it.onPipelineCreated(pipeline, mesh, updateEvent) }
+    }
+
+    fun interface PipelineCreatedListener {
+        fun onPipelineCreated(pipeline: Pipeline, mesh: Mesh, updateEvent: RenderPass.UpdateEvent)
     }
 }

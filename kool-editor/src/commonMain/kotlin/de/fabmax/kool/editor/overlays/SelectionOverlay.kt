@@ -109,7 +109,7 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
                 // replace regular object shaders by selection shader
                 val q = ev.view.drawQueue
                 for (i in q.commands.indices) {
-                    setupDrawCommand(i, q.commands[i], ev.ctx)
+                    setupDrawCommand(i, q.commands[i], ev)
                 }
                 if (q.commands.size != meshSelection.size) {
                     logD { "Invalidating selection overlay: draw queue size (${q.commands.size}) != selection size (${meshSelection.size})" }
@@ -118,15 +118,15 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
             }
         }
 
-        private fun setupDrawCommand(i: Int, cmd: DrawCommand, ctx: KoolContext) {
+        private fun setupDrawCommand(i: Int, cmd: DrawCommand, updateEvent: UpdateEvent) {
             cmd.pipeline = null
-            getPipeline(cmd.mesh, ctx)?.let { (shader, pipeline) ->
+            getPipeline(cmd.mesh, updateEvent)?.let { (shader, pipeline) ->
                 shader.color = selectionColors[i % selectionColors.size]
                 cmd.pipeline = pipeline
             }
         }
 
-        private fun getPipeline(mesh: Mesh, ctx: KoolContext): ShaderAndPipeline? {
+        private fun getPipeline(mesh: Mesh, updateEvent: UpdateEvent): ShaderAndPipeline? {
             if (!mesh.geometry.hasAttribute(Attribute.POSITIONS)) {
                 return null
             }
@@ -143,7 +143,7 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
                     }
                     color { uniformColor(Color.WHITE) }
                 }
-                ShaderAndPipeline(shader, shader.createPipeline(mesh, ctx))
+                ShaderAndPipeline(shader, shader.getOrCreatePipeline(mesh, updateEvent))
             }
         }
 

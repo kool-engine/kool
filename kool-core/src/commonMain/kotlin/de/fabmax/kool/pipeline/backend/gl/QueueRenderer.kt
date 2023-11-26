@@ -88,7 +88,7 @@ class QueueRenderer(val backend: RenderBackendGl) {
 
         fun setupPipelineAttribs(pipeline: Pipeline, isReversedDepth: Boolean) {
             setBlendMode(pipeline.blendMode)
-            setDepthTest(pipeline.depthCompareOp, isReversedDepth)
+            setDepthTest(pipeline.depthCompareOp, isReversedDepth && pipeline.autoReverseDepthFunc)
             setWriteDepth(pipeline.isWriteDepth)
             setCullMethod(pipeline.cullMethod)
             if (lineWidth != pipeline.lineWidth) {

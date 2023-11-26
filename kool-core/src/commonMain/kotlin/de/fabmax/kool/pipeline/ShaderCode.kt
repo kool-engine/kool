@@ -1,7 +1,9 @@
 package de.fabmax.kool.pipeline
 
+import de.fabmax.kool.util.LongHash
+
 interface ShaderCode {
-    val longHash: Long
+    val hash: LongHash
 }
 
 data class ShaderCodeGl(
@@ -9,5 +11,8 @@ data class ShaderCodeGl(
     val fragmentSrc: String
 ) : ShaderCode {
 
-    override val longHash: Long = (vertexSrc.hashCode().toLong() shl 32) + fragmentSrc.hashCode()
+    override val hash = LongHash().apply {
+        this += vertexSrc
+        this += fragmentSrc
+    }
 }

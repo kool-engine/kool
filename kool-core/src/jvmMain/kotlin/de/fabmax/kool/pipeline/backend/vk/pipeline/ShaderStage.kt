@@ -2,21 +2,21 @@ package de.fabmax.kool.pipeline.backend.vk.pipeline
 
 import de.fabmax.kool.KoolException
 import de.fabmax.kool.pipeline.backend.vk.util.Shaderc
+import de.fabmax.kool.util.LongHash
 import org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_FRAGMENT_BIT
 import org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_VERTEX_BIT
 import java.io.InputStream
 
 class ShaderStage(val name: String, val code: ByteArray, val stage: Int, val entryPoint: String = "main") {
 
-    val longHash: ULong
+    val hash = LongHash()
 
     init {
-        var hash = stage.toULong()
-        hash = (hash * 31UL) xor entryPoint.hashCode().toULong()
+        hash += stage
+        hash += entryPoint
         for (b in code) {
-            hash = (hash * 31UL) xor b.toULong()
+            hash += b.toInt()
         }
-        longHash = hash
     }
 
     companion object {

@@ -2,6 +2,7 @@ package de.fabmax.kool.pipeline.backend.vk
 
 import de.fabmax.kool.pipeline.ShaderCode
 import de.fabmax.kool.pipeline.backend.vk.pipeline.ShaderStage
+import de.fabmax.kool.util.LongHash
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logE
 import org.lwjgl.vulkan.VK10
@@ -10,17 +11,17 @@ class ShaderCodeImplVk(val vkCode: VkCode): ShaderCode {
 
     constructor(vararg stages: ShaderStage): this(VkCode(stages.asList()))
 
-    override val longHash: Long = vkCode.longHash.toLong()
+    override val hash: LongHash = LongHash().apply { this += vkCode.hash }
 
     val vkStages: List<ShaderStage>
         get() = vkCode.stages
 
     class VkCode(val stages: List<ShaderStage>) {
-        val longHash : ULong
+        val hash = LongHash()
         init {
-            var hash = 0UL
-            stages.forEach { hash = (hash * 71023UL) xor it.longHash }
-            longHash = hash
+            stages.forEach {
+                hash += it.hash
+            }
         }
     }
 

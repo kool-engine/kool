@@ -1,6 +1,5 @@
 package de.fabmax.kool.modules.ksl
 
-import de.fabmax.kool.KoolContext
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.Mesh
@@ -35,7 +34,7 @@ open class KslShader private constructor(val program: KslProgram) : Shader() {
         }.toSet()
     }
 
-    override fun onPipelineSetup(builder: Pipeline.Builder, mesh: Mesh, ctx: KoolContext) {
+    override fun onPipelineSetup(builder: Pipeline.Builder, mesh: Mesh, updateEvent: RenderPass.UpdateEvent) {
         checkNotNull(program.vertexStage) {
             "KslProgram vertexStage is missing (a valid KslShader needs at least a vertexStage and fragmentStage)"
         }
@@ -55,32 +54,32 @@ open class KslShader private constructor(val program: KslProgram) : Shader() {
         setupUniforms(builder)
 
         builder.name = program.name
-        builder.shaderCodeGenerator = { ctx.generateKslShader(this, it) }
+        builder.shaderCodeGenerator = { updateEvent.ctx.generateKslShader(this, it) }
 
-        super.onPipelineSetup(builder, mesh, ctx)
+        super.onPipelineSetup(builder, mesh, updateEvent)
     }
 
-    override fun onPipelineCreated(pipeline: Pipeline, mesh: Mesh, ctx: KoolContext) {
-        super.onPipelineCreated(pipeline, mesh, ctx)
+    override fun onPipelineCreated(pipeline: Pipeline, mesh: Mesh, updateEvent: RenderPass.UpdateEvent) {
+        super.onPipelineCreated(pipeline, mesh, updateEvent)
 
         pipeline.onUpdate += { cmd ->
             for (i in program.shaderListeners.indices) {
                 program.shaderListeners[i].onUpdate(cmd)
             }
         }
-        program.shaderListeners.forEach { it.onShaderCreated(this, pipeline, ctx) }
+        program.shaderListeners.forEach { it.onShaderCreated(this, pipeline, updateEvent) }
     }
 
     private fun setupUniforms(builder: Pipeline.Builder) {
-        val descBuilder = DescriptorSetLayout.Builder()
-        builder.descriptorSetLayouts += descBuilder
+        val bindGrpBuilder = BindGroupLayout.Builder()
+        builder.bindGroupLayouts += bindGrpBuilder
 
         val vertexStage = checkNotNull(program.vertexStage) { "vertexStage not defined" }
         val fragmentStage = checkNotNull(program.fragmentStage) { "fragmentStage not defined" }
 
         program.uniformBuffers.filter { it.uniforms.isNotEmpty() }.forEach { kslUbo ->
             val ubo = UniformBuffer.Builder()
-            descBuilder.descriptors += ubo
+            bindGrpBuilder.item += ubo
 
             ubo.name = kslUbo.name
             if (kslUbo.uniforms.values.any { u -> vertexStage.dependsOn(u) }) {
@@ -134,7 +133,7 @@ open class KslShader private constructor(val program: KslProgram) : Shader() {
 
         if (program.uniformSamplers.isNotEmpty()) {
             program.uniformSamplers.values.forEach { sampler ->
-                val desc = when(val type = sampler.value.expressionType)  {
+                val binding = when(val type = sampler.value.expressionType)  {
                     is KslDepthSampler2D -> TextureSampler2d.Builder().apply { isDepthSampler = true }
                     is KslDepthSamplerCube -> TextureSamplerCube.Builder().apply { isDepthSampler = true }
                     is KslColorSampler1d -> TextureSampler1d.Builder()
@@ -161,14 +160,14 @@ open class KslShader private constructor(val program: KslProgram) : Shader() {
                     }
                     else -> throw IllegalStateException("Unsupported sampler uniform type: ${type.typeName}")
                 }
-                desc.name = sampler.name
+                binding.name = sampler.name
                 if (vertexStage.dependsOn(sampler)) {
-                    desc.stages += ShaderStage.VERTEX_SHADER
+                    binding.stages += ShaderStage.VERTEX_SHADER
                 }
                 if (fragmentStage.dependsOn(sampler)) {
-                    desc.stages += ShaderStage.FRAGMENT_SHADER
+                    binding.stages += ShaderStage.FRAGMENT_SHADER
                 }
-                descBuilder.descriptors += desc
+                bindGrpBuilder.item += binding
             }
         }
     }

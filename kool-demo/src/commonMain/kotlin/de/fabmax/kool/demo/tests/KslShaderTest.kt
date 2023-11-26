@@ -181,7 +181,7 @@ class KslShaderTest : DemoScene("KslShader") {
             }
 
             var uSparkle: Uniform1f? = null
-            phongShader.onPipelineCreated += { _, _, _ ->
+            phongShader.onPipelineCreated += Shader.PipelineCreatedListener { _, _, _ ->
                 phongShader.texSamplers2d["tShininess"]?.texture = makeNoiseTex()
                 uSparkle = phongShader.uniforms["uSparkle"] as? Uniform1f
             }

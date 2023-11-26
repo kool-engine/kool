@@ -113,7 +113,7 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
         return OffscreenRenderPassCubeGl(parentPass, this)
     }
 
-    override fun generateKslShader(shader: KslShader, pipelineLayout: Pipeline.Layout): ShaderCodeGl {
+    override fun generateKslShader(shader: KslShader, pipeline: PipelineBase): ShaderCodeGl {
         val src = GlslGenerator(glslVersion).generateProgram(shader.program)
         if (shader.program.dumpCode) {
             src.dump()

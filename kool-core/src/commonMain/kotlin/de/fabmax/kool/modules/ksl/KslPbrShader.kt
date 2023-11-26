@@ -1,12 +1,12 @@
 package de.fabmax.kool.modules.ksl
 
-import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.modules.ksl.blocks.*
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.Pipeline
+import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.TextureCube
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
@@ -44,10 +44,10 @@ open class KslPbrShader(cfg: Config, model: KslProgram = Model(cfg)) : KslLitSha
         reflectionMap = cfg.reflectionMap
     }
 
-    override fun onPipelineSetup(builder: Pipeline.Builder, mesh: Mesh, ctx: KoolContext) {
-        super.onPipelineSetup(builder, mesh, ctx)
+    override fun onPipelineSetup(builder: Pipeline.Builder, mesh: Mesh, updateEvent: RenderPass.UpdateEvent) {
+        super.onPipelineSetup(builder, mesh, updateEvent)
         if (brdfLut == null) {
-            brdfLut = ctx.defaultPbrBrdfLut
+            brdfLut = updateEvent.ctx.defaultPbrBrdfLut
         }
     }
 

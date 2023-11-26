@@ -21,7 +21,7 @@ interface RenderBackend {
 
     fun getWindowViewport(result: Viewport)
 
-    fun generateKslShader(shader: KslShader, pipelineLayout: Pipeline.Layout): ShaderCode
+    fun generateKslShader(shader: KslShader, pipeline: PipelineBase): ShaderCode
 
     fun createOffscreenPass2d(parentPass: OffscreenRenderPass2d): OffscreenPass2dImpl
     fun createOffscreenPassCube(parentPass: OffscreenRenderPassCube): OffscreenPassCubeImpl

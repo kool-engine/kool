@@ -59,17 +59,17 @@ class DescriptorSet(val graphicsPipeline: GraphicsPipeline) {
     }
 
     fun createDescriptorObjects(pipeline: Pipeline) {
-        if (pipeline.layout.descriptorSets.size != 1) {
+        if (pipeline.bindGroupLayouts.size != 1) {
             TODO()
         }
-        pipeline.layout.descriptorSets[0].descriptors.forEachIndexed { idx, desc ->
+        pipeline.bindGroupLayouts[0].items.forEachIndexed { idx, desc ->
             addDescriptor {
                 when (desc.type) {
-                    DescriptorType.UNIFORM_BUFFER -> UboDescriptor(idx, graphicsPipeline, desc as UniformBuffer)
-                    DescriptorType.SAMPLER_1D -> SamplerDescriptor(idx, desc as TextureSampler1d)
-                    DescriptorType.SAMPLER_2D -> SamplerDescriptor(idx, desc as TextureSampler2d)
-                    DescriptorType.SAMPLER_3D -> SamplerDescriptor(idx, desc as TextureSampler3d)
-                    DescriptorType.SAMPLER_CUBE -> SamplerDescriptor(idx, desc as TextureSamplerCube)
+                    BindingType.UNIFORM_BUFFER -> UboDescriptor(idx, graphicsPipeline, desc as UniformBuffer)
+                    BindingType.SAMPLER_1D -> SamplerDescriptor(idx, desc as TextureSampler1d)
+                    BindingType.SAMPLER_2D -> SamplerDescriptor(idx, desc as TextureSampler2d)
+                    BindingType.SAMPLER_3D -> SamplerDescriptor(idx, desc as TextureSampler3d)
+                    BindingType.SAMPLER_CUBE -> SamplerDescriptor(idx, desc as TextureSamplerCube)
                 }
             }
         }
@@ -86,11 +86,11 @@ class DescriptorSet(val graphicsPipeline: GraphicsPipeline) {
         if (isDescriptorSetUpdateRequired[imageIdx]) {
             clearUpdateRequired(imageIdx)
 
-            if (graphicsPipeline.pipeline.layout.descriptorSets.size != 1) {
+            if (graphicsPipeline.pipeline.bindGroupLayouts.size != 1) {
                 TODO()
             }
 
-            val descriptors = graphicsPipeline.pipeline.layout.descriptorSets[0].descriptors
+            val descriptors = graphicsPipeline.pipeline.bindGroupLayouts[0].items
             memStack {
                 val descriptorWrite = callocVkWriteDescriptorSetN(descriptors.size) {
                     for (descIdx in descriptors.indices) {

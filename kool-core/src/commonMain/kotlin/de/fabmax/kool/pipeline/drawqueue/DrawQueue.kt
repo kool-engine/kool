@@ -1,6 +1,5 @@
 package de.fabmax.kool.pipeline.drawqueue
 
-import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.*
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.scene.Camera
@@ -82,13 +81,13 @@ class DrawQueue(val renderPass: RenderPass, val view: RenderPass.View) {
         lazyInvViewD.isDirty = true
     }
 
-    fun addMesh(mesh: Mesh, ctx: KoolContext): DrawCommand {
+    fun addMesh(mesh: Mesh, updateEvent: RenderPass.UpdateEvent): DrawCommand {
         val cmd = if (commandPool.isNotEmpty()) {
             commandPool.removeAt(commandPool.lastIndex)
         } else {
             DrawCommand(this, mesh)
         }
-        cmd.setup(mesh, ctx)
+        cmd.setup(mesh, updateEvent)
         commands.add(cmd)
         return cmd
     }

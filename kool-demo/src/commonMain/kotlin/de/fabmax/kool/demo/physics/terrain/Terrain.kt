@@ -226,7 +226,7 @@ class Terrain(val demo: TerrainDemo, val heightMap: HeightMap) {
             }
             shader.apply {
                 // do not forget to assign the splat map to the corresponding sampler after the shader is created
-                onPipelineCreated += { _, _, _ ->
+                onPipelineCreated += Shader.PipelineCreatedListener { _, _, _ ->
                     texSamplers2d["tSplatMap"]?.texture = splatMap
                     (uniforms[TERRAIN_SHADER_DISCARD_HEIGHT] as? Uniform1f)?.value = 1000f
                 }

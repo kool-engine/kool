@@ -5,7 +5,6 @@ import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.DepthRange
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
-import de.fabmax.kool.pipeline.backend.vk.util.bitValue
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.platform.GlfwWindow
 import de.fabmax.kool.platform.Lwjgl3Context
@@ -14,7 +13,6 @@ import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Viewport
 import de.fabmax.kool.util.memStack
-import de.fabmax.kool.util.useRaw
 import org.lwjgl.PointerBuffer
 import org.lwjgl.glfw.GLFW.glfwSetWindowShouldClose
 import org.lwjgl.system.MemoryStack
@@ -80,8 +78,8 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
         return VkOffscreenPassCube(parentPass)
     }
 
-    override fun generateKslShader(shader: KslShader, pipelineLayout: Pipeline.Layout): ShaderCode {
-        val src = KslGlslGeneratorVk(pipelineLayout).generateProgram(shader.program)
+    override fun generateKslShader(shader: KslShader, pipeline: PipelineBase): ShaderCode {
+        val src = KslGlslGeneratorVk(pipeline).generateProgram(shader.program)
         if (shader.program.dumpCode) {
             src.dump()
         }
@@ -326,14 +324,14 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
         private fun disposePipelines() {
             ctx.disposablePipelines.forEach { pipeline ->
                 val delMesh = meshMap.remove(pipeline.pipelineInstanceId)
-                val delPipelines = sys.pipelineManager.getRenderpassPipelines(pipeline)
+                val delPipeline = sys.pipelineManager.getPipeline(pipeline)
 
                 actionQueue += DelayAction {
                     delMesh?.let {
                         sys.device.removeDependingResource(it)
                         it.destroy()
                     }
-                    delPipelines.forEach { it.freeDescriptorSetInstance(pipeline) }
+                    delPipeline?.freeDescriptorSetInstance(pipeline)
                 }
             }
             ctx.disposablePipelines.clear()
@@ -341,7 +339,7 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
 
         private fun MemoryStack.renderDrawQueue(commandBuffer: VkCommandBuffer, drawQueue: List<DrawCommand>, imageIndex: Int,
                                                 renderPass: VkRenderPass, nImages: Int, dynVp: Boolean) {
-            var prevPipeline = 0UL
+            var prevPipeline = 0L
             drawQueue.forEach { cmd ->
                 val pipelineCfg = cmd.pipeline
                 if (!cmd.mesh.geometry.isEmpty() && pipelineCfg != null) {
@@ -386,15 +384,15 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
                             actionQueue += DelayAction(0) { cmd.mesh.instances?.hasChanged = false }
                         }
 
-                        var offset = 0
-                        pipelineCfg.layout.pushConstantRanges.forEach {
-                            it.onUpdate?.invoke(it, cmd)
-                            val flags = it.stages.fold(0) { f, stage -> f or stage.bitValue() }
-                            it.toBuffer().useRaw { buf ->
-                                vkCmdPushConstants(commandBuffer, pipeline.pipelineLayout, flags, offset, buf)
-                            }
-                            offset += it.size
-                        }
+//                        var offset = 0
+//                        pipelineCfg.layout.pushConstantRanges.forEach {
+//                            it.onUpdate?.invoke(it, cmd)
+//                            val flags = it.stages.fold(0) { f, stage -> f or stage.bitValue() }
+//                            it.toBuffer().useRaw { buf ->
+//                                vkCmdPushConstants(commandBuffer, pipeline.pipelineLayout, flags, offset, buf)
+//                            }
+//                            offset += it.size
+//                        }
 
                         val instanceCnt: Int
                         val insts = cmd.mesh.instances

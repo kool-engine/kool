@@ -6,6 +6,7 @@ import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ui2.UiScale
 import de.fabmax.kool.pipeline.OffscreenRenderPass
 import de.fabmax.kool.pipeline.Pipeline
+import de.fabmax.kool.pipeline.PipelineBase
 import de.fabmax.kool.pipeline.ShaderCode
 import de.fabmax.kool.pipeline.backend.RenderBackend
 import de.fabmax.kool.pipeline.ibl.BrdfLutPass
@@ -85,8 +86,8 @@ abstract class KoolContext {
         backend.close(this)
     }
 
-    fun generateKslShader(shader: KslShader, pipelineLayout: Pipeline.Layout): ShaderCode {
-        return backend.generateKslShader(shader, pipelineLayout)
+    fun generateKslShader(shader: KslShader, pipeline: PipelineBase): ShaderCode {
+        return backend.generateKslShader(shader, pipeline)
     }
 
     abstract fun getSysInfos(): List<String>

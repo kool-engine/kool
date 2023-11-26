@@ -11,7 +11,7 @@ import de.fabmax.kool.util.logE
 
 class CompiledShader(val program: GlProgram, val pipeline: Pipeline, val backend: RenderBackendGl) {
 
-    private val pipelineId = pipeline.pipelineHash.toLong()
+    private val pipelineId = pipeline.pipelineHash
 
     private val attributes = mutableMapOf<String, VertexLayout.VertexAttribute>()
     private val instanceAttributes = mutableMapOf<String, VertexLayout.VertexAttribute>()
@@ -25,7 +25,7 @@ class CompiledShader(val program: GlProgram, val pipeline: Pipeline, val backend
     private val pipelineInfo = PipelineInfo(pipeline)
 
     init {
-        pipeline.layout.vertices.bindings.forEach { bnd ->
+        pipeline.vertexLayout.bindings.forEach { bnd ->
             bnd.vertexAttributes.forEach { attr ->
                 when (bnd.inputRate) {
                     InputRate.VERTEX -> attributes[attr.attribute.name] = attr
@@ -33,37 +33,31 @@ class CompiledShader(val program: GlProgram, val pipeline: Pipeline, val backend
                 }
             }
         }
-        pipeline.layout.descriptorSets.forEach { set ->
-            set.descriptors.forEach { desc ->
-                when (desc) {
+        pipeline.bindGroupLayouts.forEach { group ->
+            group.items.forEach { binding ->
+                when (binding) {
                     is UniformBuffer -> {
-                        val blockIndex = gl.getUniformBlockIndex(program, desc.name)
+                        val blockIndex = gl.getUniformBlockIndex(program, binding.name)
                         if (blockIndex == gl.INVALID_INDEX) {
                             // descriptor does not describe an actual UBO but plain old uniforms...
-                            desc.uniforms.forEach { uniformLocations[it.name] = intArrayOf(gl.getUniformLocation(program, it.name)) }
+                            binding.uniforms.forEach { uniformLocations[it.name] = intArrayOf(gl.getUniformLocation(program, it.name)) }
                         } else {
-                            setupUboLayout(desc, blockIndex)
+                            setupUboLayout(binding, blockIndex)
                         }
                     }
                     is TextureSampler1d -> {
-                        uniformLocations[desc.name] = getUniformLocations(desc.name, desc.arraySize)
+                        uniformLocations[binding.name] = getUniformLocations(binding.name, binding.arraySize)
                     }
                     is TextureSampler2d -> {
-                        uniformLocations[desc.name] = getUniformLocations(desc.name, desc.arraySize)
+                        uniformLocations[binding.name] = getUniformLocations(binding.name, binding.arraySize)
                     }
                     is TextureSampler3d -> {
-                        uniformLocations[desc.name] = getUniformLocations(desc.name, desc.arraySize)
+                        uniformLocations[binding.name] = getUniformLocations(binding.name, binding.arraySize)
                     }
                     is TextureSamplerCube -> {
-                        uniformLocations[desc.name] = getUniformLocations(desc.name, desc.arraySize)
+                        uniformLocations[binding.name] = getUniformLocations(binding.name, binding.arraySize)
                     }
                 }
-            }
-        }
-        pipeline.layout.pushConstantRanges.forEach { pcr ->
-            pcr.pushConstants.forEach { pc ->
-                // in OpenGL push constants are mapped to regular uniforms
-                uniformLocations[pc.name] = intArrayOf(gl.getUniformLocation(program, pc.name))
             }
         }
     }
@@ -155,7 +149,6 @@ class CompiledShader(val program: GlProgram, val pipeline: Pipeline, val backend
         var geometry: IndexedVertexList = cmd.geometry
         val instances: MeshInstanceList? = cmd.mesh.instances
 
-        private val pushConstants = mutableListOf<PushConstantRange>()
         private val ubos = mutableListOf<UniformBuffer>()
         private val textures1d = mutableListOf<TextureSampler1d>()
         private val textures2d = mutableListOf<TextureSampler2d>()
@@ -170,24 +163,21 @@ class CompiledShader(val program: GlProgram, val pipeline: Pipeline, val backend
 
         private var nextTexUnit = gl.TEXTURE0
 
-        val primitiveType = pipeline.layout.vertices.primitiveType.glElemType
+        val primitiveType = pipeline.vertexLayout.primitiveType.glElemType
         val indexType = gl.UNSIGNED_INT
         val numIndices: Int get() = gpuGeometry?.numIndices ?: 0
 
         init {
-            pipeline.layout.descriptorSets.forEach { set ->
-                set.descriptors.forEach { desc ->
-                    when (desc) {
-                        is UniformBuffer -> mapUbo(desc)
-                        is TextureSampler1d -> mapTexture1d(desc)
-                        is TextureSampler2d -> mapTexture2d(desc)
-                        is TextureSampler3d -> mapTexture3d(desc)
-                        is TextureSamplerCube -> mapTextureCube(desc)
+            pipeline.bindGroupLayouts.forEach { group ->
+                group.items.forEach { binding ->
+                    when (binding) {
+                        is UniformBuffer -> mapUbo(binding)
+                        is TextureSampler1d -> mapTexture1d(binding)
+                        is TextureSampler2d -> mapTexture2d(binding)
+                        is TextureSampler3d -> mapTexture3d(binding)
+                        is TextureSamplerCube -> mapTextureCube(binding)
                     }
                 }
-            }
-            pipeline.layout.pushConstantRanges.forEach { pc ->
-                mapPushConstants(pc)
             }
             createBuffers(cmd)
             pipelineInfo.numInstances++
@@ -214,11 +204,6 @@ class CompiledShader(val program: GlProgram, val pipeline: Pipeline, val backend
                 uboBuffers += uboBuffer
                 mappedUbo.uboBuffer = uboBuffer
             }
-        }
-
-        private fun mapPushConstants(pc: PushConstantRange) {
-            pushConstants.add(pc)
-            pc.pushConstants.forEach { mappings += MappedUniform.mappedUniform(it, uniformLocations[it.name]!![0], gl) }
         }
 
         private fun mapUbo(ubo: UniformBuffer) {
@@ -282,9 +267,6 @@ class CompiledShader(val program: GlProgram, val pipeline: Pipeline, val backend
             for (i in pipeline.onUpdate.indices) {
                 pipeline.onUpdate[i].invoke(drawCmd)
             }
-            for (i in pushConstants.indices) {
-                pushConstants[i].onUpdate?.invoke(pushConstants[i], drawCmd)
-            }
             for (i in ubos.indices) {
                 ubos[i].onUpdate?.invoke(ubos[i], drawCmd)
             }
@@ -330,7 +312,6 @@ class CompiledShader(val program: GlProgram, val pipeline: Pipeline, val backend
         fun destroyInstance() {
             destroyBuffers()
 
-            pushConstants.clear()
             ubos.clear()
             textures1d.clear()
             textures2d.clear()

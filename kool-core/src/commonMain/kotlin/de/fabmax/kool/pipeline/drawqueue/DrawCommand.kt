@@ -1,9 +1,9 @@
 package de.fabmax.kool.pipeline.drawqueue
 
-import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.pipeline.Pipeline
+import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 
@@ -25,9 +25,9 @@ class DrawCommand(val queue: DrawQueue, mesh: Mesh) {
      */
     val modelMatD: Mat4d get() = mesh.modelMatD
 
-    fun setup(mesh: Mesh, ctx: KoolContext) {
+    fun setup(mesh: Mesh, updateEvent: RenderPass.UpdateEvent) {
         this.mesh = mesh
         geometry = mesh.geometry
-        pipeline = mesh.getPipeline(ctx)
+        pipeline = mesh.getOrCreatePipeline(updateEvent)
     }
 }

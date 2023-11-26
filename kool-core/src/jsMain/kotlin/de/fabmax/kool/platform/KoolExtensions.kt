@@ -1,17 +1,8 @@
 package de.fabmax.kool.platform
 
-import de.fabmax.kool.pipeline.DepthCompareOp
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.backend.gl.WebGL2RenderingContext
 import org.khronos.webgl.WebGLRenderingContext
-import org.khronos.webgl.WebGLRenderingContext.Companion.ALWAYS
-import org.khronos.webgl.WebGLRenderingContext.Companion.EQUAL
-import org.khronos.webgl.WebGLRenderingContext.Companion.GEQUAL
-import org.khronos.webgl.WebGLRenderingContext.Companion.GREATER
-import org.khronos.webgl.WebGLRenderingContext.Companion.LEQUAL
-import org.khronos.webgl.WebGLRenderingContext.Companion.LESS
-import org.khronos.webgl.WebGLRenderingContext.Companion.NEVER
-import org.khronos.webgl.WebGLRenderingContext.Companion.NOTEQUAL
 
 
 val TexFormat.glInternalFormat: Int
@@ -66,35 +57,4 @@ val TexFormat.glFormat: Int
         TexFormat.RG_F32 -> WebGL2RenderingContext.RG
         TexFormat.RGB_F32 -> WebGLRenderingContext.RGB
         TexFormat.RGBA_F32 -> WebGLRenderingContext.RGBA
-    }
-
-val TexFormat.pxSize: Int
-    get() = when(this) {
-        TexFormat.R -> 1
-        TexFormat.RG -> 2
-        TexFormat.RGB -> 3
-        TexFormat.RGBA -> 4
-
-        TexFormat.R_F16 -> 2
-        TexFormat.RG_F16 -> 4
-        TexFormat.RGB_F16 -> 6
-        TexFormat.RGBA_F16 -> 8
-
-        TexFormat.R_F32 -> 4
-        TexFormat.RG_F32 -> 8
-        TexFormat.RGB_F32 -> 12
-        TexFormat.RGBA_F32 -> 16
-    }
-
-val DepthCompareOp.glOp: Int
-    get() = when(this) {
-        DepthCompareOp.DISABLED -> 0
-        DepthCompareOp.ALWAYS -> ALWAYS
-        DepthCompareOp.NEVER -> NEVER
-        DepthCompareOp.LESS -> LESS
-        DepthCompareOp.LESS_EQUAL -> LEQUAL
-        DepthCompareOp.GREATER -> GREATER
-        DepthCompareOp.GREATER_EQUAL -> GEQUAL
-        DepthCompareOp.EQUAL -> EQUAL
-        DepthCompareOp.NOT_EQUAL -> NOTEQUAL
     }

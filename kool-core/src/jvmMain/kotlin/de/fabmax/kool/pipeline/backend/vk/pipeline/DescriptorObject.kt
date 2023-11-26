@@ -15,7 +15,7 @@ import org.lwjgl.util.vma.Vma
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkWriteDescriptorSet
 
-abstract class DescriptorObject(val binding: Int, val descriptor: Descriptor) {
+abstract class DescriptorObject(val binding: Int, val descriptor: Binding) {
     var isValid = true
     var isDescriptorSetUpdateRequired = true
 
@@ -76,7 +76,7 @@ class UboDescriptor(binding: Int, graphicsPipeline: GraphicsPipeline, private va
     }
 }
 
-class SamplerDescriptor private constructor(binding: Int, private val sampler: TexSamplerWrapper, desc: Descriptor) : DescriptorObject(binding, desc) {
+class SamplerDescriptor private constructor(binding: Int, private val sampler: TexSamplerWrapper, desc: Binding) : DescriptorObject(binding, desc) {
     private var boundTex = mutableListOf<LoadedTextureVk>()
 
     constructor(binding: Int, sampler1d: TextureSampler1d) : this(binding, TexSamplerWrapper(sampler1d), sampler1d)

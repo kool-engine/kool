@@ -1,6 +1,5 @@
 package de.fabmax.kool.pipeline.deferred
 
-import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableMat3f
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec3f
@@ -75,10 +74,10 @@ open class PbrSceneShader(cfg: DeferredPbrConfig, model: Model = Model(cfg)) :
         }
     }
 
-    override fun onPipelineSetup(builder: Pipeline.Builder, mesh: Mesh, ctx: KoolContext) {
-        super.onPipelineSetup(builder, mesh, ctx)
+    override fun onPipelineSetup(builder: Pipeline.Builder, mesh: Mesh, updateEvent: RenderPass.UpdateEvent) {
+        super.onPipelineSetup(builder, mesh, updateEvent)
         if (brdfLut == null) {
-            brdfLut = ctx.defaultPbrBrdfLut
+            brdfLut = updateEvent.ctx.defaultPbrBrdfLut
         }
     }
 

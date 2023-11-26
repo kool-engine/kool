@@ -1,6 +1,5 @@
 package de.fabmax.kool.scene
 
-import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.math.Ray
 import de.fabmax.kool.math.RayTest
@@ -149,13 +148,13 @@ open class Mesh(var geometry: IndexedVertexList, name: String = geometry.name) :
         }
     }
 
-    open fun getPipeline(ctx: KoolContext): Pipeline? {
+    open fun getOrCreatePipeline(updateEvent: RenderPass.UpdateEvent): Pipeline? {
         if (discardedPipelines.isNotEmpty()) {
-            discardedPipelines.forEach { ctx.disposePipeline(it) }
+            discardedPipelines.forEach { updateEvent.ctx.disposePipeline(it) }
             discardedPipelines.clear()
         }
         return pipeline ?: shader?.let { s ->
-            s.createPipeline(this, ctx).also { pipeline = it }
+            s.getOrCreatePipeline(this, updateEvent).also { pipeline = it }
         }
     }
 
@@ -219,7 +218,7 @@ open class Mesh(var geometry: IndexedVertexList, name: String = geometry.name) :
             }
             rayTest.onMeshDataChanged(this)
         }
-        updateEvent.view.appendMeshToDrawQueue(this, updateEvent.ctx)
+        updateEvent.view.appendMeshToDrawQueue(this, updateEvent)
     }
 
     companion object {

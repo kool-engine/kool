@@ -2,46 +2,36 @@ package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 
-class Pipeline private constructor(builder: Builder) {
-
-    val name = builder.name
-
-    /**
-     * pipelineHash is used to determine pipeline equality. In contrast to standard java hashCode() a 64-bit hash is
-     * used to make collisions less likely. For fast equality checks the equals() method only uses this value to
-     * determine equality.
-     */
-    val pipelineHash: ULong
-    val pipelineInstanceId = instanceId++
+/**
+ * Graphics pipeline class. Also includes rasterizing options like [cullMethod], [blendMode], etc. In contrast
+ * to traditional OpenGL, these options cannot be changed after the pipeline is created (this is in line with
+ * how modern graphics APIs, like Vulkan, work).
+ */
+class Pipeline private constructor(builder: Builder) : PipelineBase(builder) {
 
     val cullMethod: CullMethod = builder.pipelineConfig.cullMethod
     val blendMode: BlendMode = builder.pipelineConfig.blendMode
     val depthCompareOp: DepthCompareOp = builder.pipelineConfig.depthTest
+    val autoReverseDepthFunc: Boolean = builder.pipelineConfig.autoReverseDepthFunc
     val isWriteDepth: Boolean = builder.pipelineConfig.isWriteDepth
     val lineWidth: Float = builder.pipelineConfig.lineWidth
 
-    val layout: Layout
-    val shaderCode: ShaderCode
+    val vertexLayout: VertexLayout
 
+    override val shaderCode: ShaderCode
     val onUpdate = mutableListOf<(DrawCommand) -> Unit>()
 
     init {
-        val vertexLayout = builder.vertexLayout.create()
-        val descriptorSetLayouts = builder.descriptorSetLayouts.mapIndexed { i, b -> b.create(i) }
-        val pushConstantRanges = builder.pushConstantRanges.map { it.create() }
-        layout = Layout(vertexLayout, descriptorSetLayouts, pushConstantRanges)
-        shaderCode = builder.shaderCodeGenerator(layout)
+        hash += cullMethod
+        hash += depthCompareOp
+        hash += isWriteDepth
+        hash += lineWidth
 
-        // compute pipelineHash
-        var hash = cullMethod.hashCode().toULong()
-        hash = (hash * 71023UL) + depthCompareOp.hashCode().toULong()
-        hash = (hash * 71023UL) + isWriteDepth.hashCode().toULong()
-        hash = (hash * 71023UL) + lineWidth.hashCode().toULong()
-        hash = (hash * 71023UL) + vertexLayout.longHash
-        hash = (hash * 71023UL) + shaderCode.longHash.toULong()
-        descriptorSetLayouts.forEach { hash = (hash * 71023UL) + it.longHash }
-        pushConstantRanges.forEach { hash = (hash * 71023UL) + it.longHash }
-        this.pipelineHash = hash
+        vertexLayout = builder.vertexLayout.create()
+        hash += vertexLayout.hash
+
+        shaderCode = builder.shaderCodeGenerator(this)
+        hash += shaderCode.hash
     }
 
     override fun equals(other: Any?): Boolean {
@@ -54,33 +44,13 @@ class Pipeline private constructor(builder: Builder) {
         return pipelineHash.hashCode()
     }
 
-    class Layout(
-        val vertices: VertexLayout,
-        val descriptorSets: List<DescriptorSetLayout>,
-        val pushConstantRanges: List<PushConstantRange>
-    ) {
-        fun findDescriptorByName(name: String): Pair<DescriptorSetLayout, Descriptor>? {
-            for (set in descriptorSets) {
-                val desc = set.findDescriptorByName(name)
-                if (desc != null) {
-                    return set to desc
-                }
-            }
-            return null
-        }
-    }
-
-    class Builder {
-        var name = "pipeline"
+    class Builder : PipelineBase.Builder() {
         val pipelineConfig = PipelineConfig()
-
-        lateinit var shaderCodeGenerator: (Layout) -> ShaderCode
-
         val vertexLayout = VertexLayout.Builder()
-        val descriptorSetLayouts = mutableListOf<DescriptorSetLayout.Builder>()
-        val pushConstantRanges = mutableListOf<PushConstantRange.Builder>()
 
-        fun create(): Pipeline {
+        lateinit var shaderCodeGenerator: (Pipeline) -> ShaderCode
+
+        override fun create(): Pipeline {
             return Pipeline(this)
         }
     }

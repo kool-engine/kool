@@ -1,6 +1,5 @@
 package de.fabmax.kool.util
 
-import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolException
 import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.BoundingBox
@@ -79,8 +78,8 @@ class SimpleShadowMap(val sceneCam: Camera, override var light: Light?, mapSize:
         }
     }
 
-    override fun setupDrawCommand(cmd: DrawCommand, ctx: KoolContext) {
-        super.setupDrawCommand(cmd, ctx)
+    override fun setupDrawCommand(cmd: DrawCommand, updateEvent: UpdateEvent) {
+        super.setupDrawCommand(cmd, updateEvent)
         if (cmd.geometry === cmd.mesh.geometry && cmd.mesh.shadowGeometry.isNotEmpty()) {
             cmd.geometry = cmd.mesh.shadowGeometry[min(cmd.mesh.shadowGeometry.lastIndex, shadowMapLevel)]
         }

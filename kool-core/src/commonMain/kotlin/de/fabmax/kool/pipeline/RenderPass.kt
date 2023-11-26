@@ -128,8 +128,8 @@ abstract class RenderPass(var name: String) : BaseReleasable() {
             return updateEvent ?: UpdateEvent(this, ctx).also { updateEvent = it }
         }
 
-        fun appendMeshToDrawQueue(mesh: Mesh, ctx: KoolContext): DrawCommand {
-            return drawQueue.addMesh(mesh, ctx)
+        fun appendMeshToDrawQueue(mesh: Mesh, updateEvent: UpdateEvent): DrawCommand {
+            return drawQueue.addMesh(mesh, updateEvent)
         }
 
         internal fun update(ctx: KoolContext) {

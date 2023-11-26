@@ -26,11 +26,11 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
 
     init {
         memStack {
-            if (pipeline.layout.descriptorSets.size != 1) {
-                TODO("For now only one descriptor set layout is supported (there are ${pipeline.layout.descriptorSets.size}), render pass: ${koolRenderPass.name}")
+            if (pipeline.bindGroupLayouts.size != 1) {
+                TODO("For now only one descriptor set layout is supported (there are ${pipeline.bindGroupLayouts.size}), render pass: ${koolRenderPass.name}")
             }
-            descriptorSetLayout = createDescriptorSetLayout(pipeline.layout.descriptorSets[0])
-            descriptorPool = createDescriptorPool(pipeline.layout.descriptorSets[0])
+            descriptorSetLayout = createDescriptorSetLayout(pipeline.bindGroupLayouts[0])
+            descriptorPool = createDescriptorPool(pipeline.bindGroupLayouts[0])
 
             val shaderStages = (pipeline.shaderCode as ShaderCodeImplVk).vkStages
             val shaderStageModules = shaderStages.map { createShaderModule(it) }
@@ -44,10 +44,10 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
                 }
             }
 
-            val nBindings = pipeline.layout.vertices.bindings.size
+            val nBindings = pipeline.vertexLayout.bindings.size
             val bindingDescription = callocVkVertexInputBindingDescriptionN(nBindings) {
                 var iBinding = 0
-                pipeline.layout.vertices.bindings.forEach { binding ->
+                pipeline.vertexLayout.bindings.forEach { binding ->
                     this[iBinding++].apply {
                         binding(binding.binding)
                         stride(binding.strideBytes)
@@ -59,12 +59,12 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
                 }
             }
 
-            val nAttributes = pipeline.layout.vertices.bindings.sumOf { binding ->
+            val nAttributes = pipeline.vertexLayout.bindings.sumOf { binding ->
                 binding.vertexAttributes.sumOf { it.attribute.locationIncrement }
             }
             val attributeDescriptions = callocVkVertexInputAttributeDescriptionN(nAttributes) {
                 var iAttrib = 0
-                pipeline.layout.vertices.bindings.forEach { binding ->
+                pipeline.vertexLayout.bindings.forEach { binding ->
                     binding.vertexAttributes.forEach { attrib ->
                         for (i in 0 until attrib.attribute.locationIncrement) {
                             val attrVkProps = attrib.attribute.vkProps()
@@ -86,7 +86,7 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
 
             val inputAssembly = callocVkPipelineInputAssemblyStateCreateInfo {
                 sType(VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO)
-                when (pipeline.layout.vertices.primitiveType) {
+                when (pipeline.vertexLayout.primitiveType) {
                     PrimitiveType.LINES -> topology(VK_PRIMITIVE_TOPOLOGY_LINE_LIST)
                     PrimitiveType.POINTS -> topology(VK_PRIMITIVE_TOPOLOGY_POINT_LIST)
                     PrimitiveType.TRIANGLES -> topology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST)
@@ -212,7 +212,7 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
                 depthTestEnable(pipeline.depthCompareOp != DepthCompareOp.DISABLED)
                 depthWriteEnable(pipeline.isWriteDepth)
 
-                if (koolRenderPass.useReversedDepthIfAvailable) {
+                if (koolRenderPass.useReversedDepthIfAvailable && pipeline.autoReverseDepthFunc) {
                     depthCompareOp(when (pipeline.depthCompareOp) {
                         DepthCompareOp.DISABLED -> 0
                         DepthCompareOp.ALWAYS -> VK_COMPARE_OP_ALWAYS
@@ -242,17 +242,18 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
                 stencilTestEnable(false)
             }
 
-            val pushConstantRanges: VkPushConstantRange.Buffer? = if (pipeline.layout.pushConstantRanges.isEmpty()) { null } else {
-                callocVkPushConstantRangeN(pipeline.layout.pushConstantRanges.size) {
-                    var offset = 0
-                    pipeline.layout.pushConstantRanges.forEachIndexed { i, pushConstantRange ->
-                        this[i].stageFlags(pushConstantRange.stages.fold(0) { f, stage -> f or stage.bitValue() })
-                                .offset(offset)
-                                .size(pushConstantRange.size)
-                        offset += pushConstantRange.size
-                    }
-                }
-            }
+            val pushConstantRanges: VkPushConstantRange.Buffer? = null
+//                if (pipeline.layout.pushConstantRanges.isEmpty()) { null } else {
+//                    callocVkPushConstantRangeN(pipeline.layout.pushConstantRanges.size) {
+//                        var offset = 0
+//                        pipeline.layout.pushConstantRanges.forEachIndexed { i, pushConstantRange ->
+//                            this[i].stageFlags(pushConstantRange.stages.fold(0) { f, stage -> f or stage.bitValue() })
+//                                    .offset(offset)
+//                                    .size(pushConstantRange.size)
+//                            offset += pushConstantRange.size
+//                        }
+//                    }
+//                }
 
             val pipelineLayoutInfo = callocVkPipelineLayoutCreateInfo {
                 sType(VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO)
@@ -310,17 +311,17 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
         }
     }
 
-    private fun DescriptorType.intType() = when (this) {
-        DescriptorType.SAMPLER_1D -> VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
-        DescriptorType.SAMPLER_2D -> VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
-        DescriptorType.SAMPLER_3D -> VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
-        DescriptorType.SAMPLER_CUBE -> VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
-        DescriptorType.UNIFORM_BUFFER -> VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
+    private fun BindingType.intType() = when (this) {
+        BindingType.SAMPLER_1D -> VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+        BindingType.SAMPLER_2D -> VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+        BindingType.SAMPLER_3D -> VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+        BindingType.SAMPLER_CUBE -> VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+        BindingType.UNIFORM_BUFFER -> VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
     }
 
-    private fun MemoryStack.createDescriptorSetLayout(descriptorSetLayout: DescriptorSetLayout): Long {
-        val bindings = callocVkDescriptorSetLayoutBindingN(descriptorSetLayout.descriptors.size) {
-            descriptorSetLayout.descriptors.forEachIndexed { i, b ->
+    private fun MemoryStack.createDescriptorSetLayout(bindGroupLayout: BindGroupLayout): Long {
+        val bindings = callocVkDescriptorSetLayoutBindingN(bindGroupLayout.items.size) {
+            bindGroupLayout.items.forEachIndexed { i, b ->
                 this[i].apply {
                     binding(b.binding)
                     descriptorType(b.type.intType())
@@ -345,11 +346,11 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
         return checkCreatePointer { vkCreateDescriptorSetLayout(sys.device.vkDevice, layoutInfo, null, it) }
     }
 
-    private fun createDescriptorPool(descriptorSetLayout: DescriptorSetLayout): Long {
-        if (descriptorSetLayout.descriptors.isNotEmpty()) {
+    private fun createDescriptorPool(bindGroupLayout: BindGroupLayout): Long {
+        if (bindGroupLayout.items.isNotEmpty()) {
             memStack {
-                val poolSize = callocVkDescriptorPoolSizeN(descriptorSetLayout.descriptors.size) {
-                    descriptorSetLayout.descriptors.forEachIndexed { i, b ->
+                val poolSize = callocVkDescriptorPoolSizeN(bindGroupLayout.items.size) {
+                    bindGroupLayout.items.forEachIndexed { i, b ->
                         this[i].apply {
                             type(b.type.intType())
                             descriptorCount(nImages * descriptorSetPoolSize)

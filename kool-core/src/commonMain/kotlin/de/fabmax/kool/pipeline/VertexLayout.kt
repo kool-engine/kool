@@ -1,36 +1,35 @@
 package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.scene.geometry.PrimitiveType
+import de.fabmax.kool.util.LongHash
 import de.fabmax.kool.util.copy
 
 class VertexLayout(val bindings: List<Binding>, val primitiveType: PrimitiveType) {
 
-    val longHash: ULong
+    val hash = LongHash()
 
     init {
-        var hash = 71023UL * primitiveType.hashCode().toULong()
+        hash += primitiveType
         bindings.forEach {
-            hash = (hash * 71023UL) + it.longHash
+            hash += it.hash
         }
-        longHash = hash
     }
 
     data class Binding(
-            val binding: Int,
-            val inputRate: InputRate,
-            val vertexAttributes: List<VertexAttribute>,
-            val strideBytes: Int = vertexAttributes.sumOf { it.attribute.type.byteSize })
-    {
-        val longHash: ULong
+        val binding: Int,
+        val inputRate: InputRate,
+        val vertexAttributes: List<VertexAttribute>,
+        val strideBytes: Int = vertexAttributes.sumOf { it.attribute.type.byteSize }
+    ) {
+        val hash = LongHash()
 
         init {
-            var hash = binding.toULong()
-            hash = (hash * 71023UL) + inputRate.hashCode().toULong()
-            hash = (hash * 71023UL) + strideBytes.toULong()
+            hash += binding
+            hash += inputRate
+            hash += strideBytes
             vertexAttributes.forEach { attr ->
-                hash = (hash * 71023UL) + attr.hashCode().toULong()
+                hash += attr.hashCode()
             }
-            longHash = hash
         }
     }
 

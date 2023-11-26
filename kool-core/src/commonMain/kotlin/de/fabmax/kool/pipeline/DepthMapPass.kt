@@ -1,6 +1,5 @@
 package de.fabmax.kool.pipeline
 
-import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.pipeline.shading.DepthShader
@@ -24,30 +23,30 @@ open class DepthMapPass(drawNode: Node, config: Config) : OffscreenRenderPass2d(
             // replace regular object shaders by cheaper shadow versions
             val q = ev.view.drawQueue
             for (i in q.commands.indices) {
-                setupDrawCommand(q.commands[i], ev.ctx)
+                setupDrawCommand(q.commands[i], ev)
             }
         }
     }
 
-    protected open fun setupDrawCommand(cmd: DrawCommand, ctx: KoolContext) {
-        cmd.pipeline = getDepthPipeline(cmd.mesh, ctx)
+    protected open fun setupDrawCommand(cmd: DrawCommand, updateEvent: UpdateEvent) {
+        cmd.pipeline = getDepthPipeline(cmd.mesh, updateEvent)
     }
 
-    protected open fun getDepthPipeline(mesh: Mesh, ctx: KoolContext): Pipeline? {
+    protected open fun getDepthPipeline(mesh: Mesh, updateEvent: UpdateEvent): Pipeline? {
         if (!mesh.geometry.hasAttribute(Attribute.POSITIONS)) {
             return null
         }
         return shadowPipelines.getOrPut(mesh.id) {
             val depthShader = mesh.depthShader
                 ?: mesh.depthShaderConfig?.let { cfg -> DepthShader(cfg.copy(outputLinearDepth = false, outputNormals = false)) }
-                ?: DepthShader(DepthShader.Config.forMesh(mesh, getMeshCullMethod(mesh, ctx)))
+                ?: DepthShader(DepthShader.Config.forMesh(mesh, getMeshCullMethod(mesh, updateEvent)))
 
-            depthShader.createPipeline(mesh, ctx)
+            depthShader.getOrCreatePipeline(mesh, updateEvent)
         }
     }
 
-    protected fun getMeshCullMethod(mesh: Mesh, ctx: KoolContext): CullMethod {
-        return this.cullMethod ?: mesh.getPipeline(ctx)?.cullMethod ?: CullMethod.CULL_BACK_FACES
+    protected fun getMeshCullMethod(mesh: Mesh, updateEvent: UpdateEvent): CullMethod {
+        return this.cullMethod ?: mesh.getOrCreatePipeline(updateEvent)?.cullMethod ?: CullMethod.CULL_BACK_FACES
     }
 
     override fun release() {
@@ -78,19 +77,19 @@ class NormalLinearDepthMapPass(drawNode: Node, config: Config) : DepthMapPass(dr
         }
     }
 
-    override fun getDepthPipeline(mesh: Mesh, ctx: KoolContext): Pipeline? {
+    override fun getDepthPipeline(mesh: Mesh, updateEvent: UpdateEvent): Pipeline? {
         if (!mesh.geometry.hasAttribute(Attribute.POSITIONS) || !mesh.geometry.hasAttribute(Attribute.NORMALS)) {
             return null
         }
         return shadowPipelines.getOrPut(mesh.id) {
             val depthShader = mesh.normalLinearDepthShader
                 ?: mesh.depthShaderConfig?.let { cfg -> DepthShader(cfg.copy(outputLinearDepth = true, outputNormals = true)) }
-                ?: DepthShader(DepthShader.Config.forMesh(mesh, getMeshCullMethod(mesh, ctx)).apply {
+                ?: DepthShader(DepthShader.Config.forMesh(mesh, getMeshCullMethod(mesh, updateEvent)).apply {
                     outputLinearDepth = true
                     outputNormals = true
                 })
 
-            depthShader.createPipeline(mesh, ctx)
+            depthShader.getOrCreatePipeline(mesh, updateEvent)
         }
     }
 
