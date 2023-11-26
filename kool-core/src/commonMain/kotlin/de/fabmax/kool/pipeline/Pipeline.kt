@@ -14,11 +14,11 @@ class Pipeline private constructor(builder: Builder) {
     val pipelineHash: ULong
     val pipelineInstanceId = instanceId++
 
-    val cullMethod: CullMethod = builder.cullMethod
-    val blendMode: BlendMode = builder.blendMode
-    val depthCompareOp: DepthCompareOp = builder.depthTest
-    val isWriteDepth: Boolean = builder.isWriteDepth
-    val lineWidth: Float = builder.lineWidth
+    val cullMethod: CullMethod = builder.pipelineConfig.cullMethod
+    val blendMode: BlendMode = builder.pipelineConfig.blendMode
+    val depthCompareOp: DepthCompareOp = builder.pipelineConfig.depthTest
+    val isWriteDepth: Boolean = builder.pipelineConfig.isWriteDepth
+    val lineWidth: Float = builder.pipelineConfig.lineWidth
 
     val layout: Layout
     val shaderCode: ShaderCode
@@ -72,11 +72,7 @@ class Pipeline private constructor(builder: Builder) {
 
     class Builder {
         var name = "pipeline"
-        var cullMethod = CullMethod.CULL_BACK_FACES
-        var blendMode = BlendMode.DISABLED
-        var depthTest = DepthCompareOp.LESS
-        var isWriteDepth = true
-        var lineWidth = 1f
+        val pipelineConfig = PipelineConfig()
 
         lateinit var shaderCodeGenerator: (Layout) -> ShaderCode
 

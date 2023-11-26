@@ -1,11 +1,11 @@
 package de.fabmax.kool.pipeline.backend.vk
 
-import de.fabmax.kool.modules.ksl.generator.GlslGenerator
 import de.fabmax.kool.modules.ksl.lang.KslArray
 import de.fabmax.kool.modules.ksl.lang.KslFragmentStage
 import de.fabmax.kool.modules.ksl.lang.KslShaderStage
 import de.fabmax.kool.modules.ksl.lang.KslVertexStage
 import de.fabmax.kool.pipeline.Pipeline
+import de.fabmax.kool.pipeline.backend.gl.GlslGenerator
 
 class KslGlslGeneratorVk(private val pipelineLayout: Pipeline.Layout) : GlslGenerator("#version 450") {
 

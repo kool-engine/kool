@@ -50,6 +50,8 @@ object GlImpl : GlApi {
     override val ONE_MINUS_SRC_ALPHA = WebGLRenderingContext.ONE_MINUS_SRC_ALPHA
     override val POINTS = WebGLRenderingContext.POINTS
     override val READ_FRAMEBUFFER = WebGL2RenderingContext.READ_FRAMEBUFFER
+    override val READ_ONLY = 0
+    override val READ_WRITE = 0
     override val RENDERBUFFER = WebGLRenderingContext.RENDERBUFFER
     override val REPEAT = WebGLRenderingContext.REPEAT
     override val SAMPLES = WebGLRenderingContext.SAMPLES
@@ -79,6 +81,7 @@ object GlImpl : GlApi {
     override val UNIFORM_BUFFER = WebGL2RenderingContext.UNIFORM_BUFFER
     override val UNIFORM_OFFSET = WebGL2RenderingContext.UNIFORM_OFFSET
     override val VERTEX_SHADER = WebGLRenderingContext.VERTEX_SHADER
+    override val WRITE_ONLY = 0
 
     override val INT = WebGLRenderingContext.INT
     override val FLOAT = WebGLRenderingContext.FLOAT

@@ -8,6 +8,7 @@ import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.BlendMode
 import de.fabmax.kool.pipeline.CullMethod
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
+import de.fabmax.kool.pipeline.PipelineConfig
 import de.fabmax.kool.pipeline.Texture2d
 
 class DeferredOutputShader(cfg: DeferredPipelineConfig, bloom: Texture2d?) :

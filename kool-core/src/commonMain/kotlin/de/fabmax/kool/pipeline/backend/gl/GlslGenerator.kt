@@ -1,5 +1,6 @@
-package de.fabmax.kool.modules.ksl.generator
+package de.fabmax.kool.pipeline.backend.gl
 
+import de.fabmax.kool.modules.ksl.generator.KslGenerator
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.modules.ksl.model.KslState
 

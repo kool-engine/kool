@@ -1,6 +1,5 @@
 package de.fabmax.kool.pipeline
 
-import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.blocks.mvpMatrix
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.scene.Mesh
@@ -51,7 +50,7 @@ object FullscreenShaderUtil {
         }
     }
 
-    val fullscreenShaderPipelineCfg = KslShader.PipelineConfig().apply {
+    val fullscreenShaderPipelineCfg = PipelineConfig().apply {
         blendMode = BlendMode.DISABLED
         cullMethod = CullMethod.NO_CULLING
         depthTest = DepthCompareOp.DISABLED

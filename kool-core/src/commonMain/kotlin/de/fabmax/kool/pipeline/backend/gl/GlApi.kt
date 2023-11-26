@@ -57,6 +57,8 @@ interface GlApi {
     val ONE_MINUS_SRC_ALPHA: Int
     val POINTS: Int
     val READ_FRAMEBUFFER: Int
+    val READ_ONLY: Int
+    val READ_WRITE: Int
     val RENDERBUFFER: Int
     val REPEAT: Int
     val SAMPLES: Int
@@ -87,6 +89,7 @@ interface GlApi {
     val UNIFORM_OFFSET: Int
     val UPPER_LEFT: Int
     val VERTEX_SHADER: Int
+    val WRITE_ONLY: Int
     val ZERO_TO_ONE: Int
 
     val INT: Int

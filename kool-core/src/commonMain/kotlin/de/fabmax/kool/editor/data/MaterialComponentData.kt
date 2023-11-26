@@ -6,10 +6,7 @@ import de.fabmax.kool.modules.ksl.*
 import de.fabmax.kool.modules.ksl.blocks.ColorBlockConfig
 import de.fabmax.kool.modules.ksl.blocks.PropertyBlockConfig
 import de.fabmax.kool.modules.ui2.mutableStateOf
-import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.CullMethod
-import de.fabmax.kool.pipeline.GlslType
-import de.fabmax.kool.pipeline.Shader
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 import kotlinx.serialization.Serializable
@@ -311,7 +308,7 @@ class MapAttribute(val mapPath: String, val channels: String? = null) : Material
 @Serializable
 data class GenericMaterialSettings(val isTwoSided: Boolean = false) {
 
-    fun matchesPipelineConfig(cfg: KslShader.PipelineConfig): Boolean {
+    fun matchesPipelineConfig(cfg: PipelineConfig): Boolean {
         return isTwoSided == (cfg.cullMethod == CullMethod.NO_CULLING)
     }
 

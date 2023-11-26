@@ -6,6 +6,7 @@ import de.fabmax.kool.modules.ksl.blocks.modelMatrix
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.BlendMode
+import de.fabmax.kool.pipeline.PipelineConfig
 
 fun depthShader(cfgBlock: KslDepthShader.Config.() -> Unit): KslDepthShader {
     val cfg = KslDepthShader.Config().apply(cfgBlock)

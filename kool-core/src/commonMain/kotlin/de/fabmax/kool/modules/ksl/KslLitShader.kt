@@ -4,10 +4,7 @@ import de.fabmax.kool.math.MutableMat3f
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.modules.ksl.blocks.*
 import de.fabmax.kool.modules.ksl.lang.*
-import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.BlendMode
-import de.fabmax.kool.pipeline.Texture2d
-import de.fabmax.kool.pipeline.TextureCube
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shading.AlphaMode
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.copy

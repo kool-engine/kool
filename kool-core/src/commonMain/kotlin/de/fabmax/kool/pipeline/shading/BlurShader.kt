@@ -9,6 +9,7 @@ import de.fabmax.kool.pipeline.BlendMode
 import de.fabmax.kool.pipeline.CullMethod
 import de.fabmax.kool.pipeline.DepthCompareOp
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
+import de.fabmax.kool.pipeline.PipelineConfig
 import kotlin.math.exp
 
 class BlurShader(cfg: BlurShaderConfig, model: Model = Model(cfg)) : KslShader(model, cfg.pipelineCfg) {
@@ -70,7 +71,7 @@ class BlurShader(cfg: BlurShaderConfig, model: Model = Model(cfg)) : KslShader(m
 }
 
 class BlurShaderConfig {
-    val pipelineCfg = KslShader.PipelineConfig(
+    val pipelineCfg = PipelineConfig(
         blendMode = BlendMode.DISABLED,
         cullMethod = CullMethod.NO_CULLING,
         depthTest = DepthCompareOp.DISABLED,

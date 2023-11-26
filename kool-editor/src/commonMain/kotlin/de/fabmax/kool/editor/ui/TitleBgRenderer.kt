@@ -8,10 +8,7 @@ import de.fabmax.kool.modules.ui2.Ui2Shader
 import de.fabmax.kool.modules.ui2.UiNode
 import de.fabmax.kool.modules.ui2.UiRenderer
 import de.fabmax.kool.modules.ui2.UiSurface
-import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.BlendMode
-import de.fabmax.kool.pipeline.CullMethod
-import de.fabmax.kool.pipeline.GlslType
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.geometry.IndexedVertexList

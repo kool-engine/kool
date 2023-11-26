@@ -51,6 +51,8 @@ object GlImpl : GlApi {
     override val ONE_MINUS_SRC_ALPHA = GL_ONE_MINUS_SRC_ALPHA
     override val POINTS = GL_POINTS
     override val READ_FRAMEBUFFER = GL_READ_FRAMEBUFFER
+    override val READ_ONLY = GL_READ_ONLY
+    override val READ_WRITE = GL_READ_WRITE
     override val RENDERBUFFER = GL_RENDERBUFFER
     override val REPEAT = GL_REPEAT
     override val SAMPLES = GL_SAMPLES
@@ -81,6 +83,7 @@ object GlImpl : GlApi {
     override val UNIFORM_OFFSET = GL_UNIFORM_OFFSET
     override val UPPER_LEFT = GL_UPPER_LEFT
     override val VERTEX_SHADER = GL_VERTEX_SHADER
+    override val WRITE_ONLY = GL_WRITE_ONLY
     override val ZERO_TO_ONE = GL_ZERO_TO_ONE
 
     override val INT = GL_INT
