@@ -48,10 +48,8 @@ object PhysicsImpl : PhysicsSystem {
 
         MemoryStack.stackPush().use { mem ->
             val desc = PxCudaContextManagerDesc.createAt(mem, MemoryStack::nmalloc)
+            // cudaManager will be null CreateCudaContextManager() fails
             cudaManager = PxCudaTopLevelFunctions.CreateCudaContextManager(foundation, desc)
-            if (cudaManager == null) {
-                logI { "CUDA acceleration for PhysX not available (any internal error message complaining about PhysX GPU library is fine)" }
-            }
         }
 
         val pvd: PxPvd? = null

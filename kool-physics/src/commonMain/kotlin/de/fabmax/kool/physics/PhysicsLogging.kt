@@ -1,5 +1,6 @@
 package de.fabmax.kool.physics
 
+import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logI
 import de.fabmax.kool.util.logW
@@ -22,13 +23,17 @@ object PhysicsLogging {
 
     internal fun logPhysics(code: Int, message: String, file: String, line: Int) {
         if (code and logMask != 0) {
-            val logMsg = "[${codeToString(code)}] $message [$file:$line]"
-            if (code == DEBUG_INFO) {
-                logI("PhysX") { logMsg }
-            } else if (code == DEBUG_WARNING || code == PERF_WARNING) {
-                logW("PhysX") { logMsg }
-            } else {
-                logE("PhysX") { logMsg }
+            if (code == INTERNAL_ERROR && "PxPhysXGpuModuleLoader" in file) {
+                // this is actually fine...
+                logD("PhysX") { "${message.trim()} - CUDA acceleration not available" }
+                return
+            }
+
+            val logMsg = "[${codeToString(code)}] ${message.trim()} [$file:$line]"
+            when (code) {
+                DEBUG_INFO -> logI("PhysX") { logMsg }
+                DEBUG_WARNING, PERF_WARNING -> logW("PhysX") { logMsg }
+                else -> logE("PhysX") { logMsg }
             }
         }
     }
