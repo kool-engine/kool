@@ -1,6 +1,8 @@
 package de.fabmax.kool.pipeline.backend.gl
 
+import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.DepthCompareOp
+import de.fabmax.kool.pipeline.StorageAccessType
 import de.fabmax.kool.pipeline.TexFormat
 
 
@@ -82,4 +84,26 @@ fun DepthCompareOp.glOp(gl: GlApi): Int = when(this) {
     DepthCompareOp.GREATER_EQUAL -> gl.GEQUAL
     DepthCompareOp.EQUAL -> gl.EQUAL
     DepthCompareOp.NOT_EQUAL -> gl.NOTEQUAL
+}
+
+fun StorageAccessType.glAccessType(gl: GlApi): Int = when(this) {
+    StorageAccessType.READ_ONLY -> gl.READ_ONLY
+    StorageAccessType.WRITE_ONLY -> gl.WRITE_ONLY
+    StorageAccessType.READ_WRITE -> gl.READ_WRITE
+}
+
+fun KslNumericType.glFormat(gl: GlApi): Int = when(this) {
+    is KslFloat1 -> gl.R32F
+    is KslFloat2 -> gl.RG32F
+    is KslFloat3 -> gl.RGB32F
+    is KslFloat4 -> gl.RGBA32F
+    is KslInt1 -> gl.R32I
+    is KslInt2 -> gl.RG32I
+    is KslInt3 -> gl.RGB32I
+    is KslInt4 -> gl.RGBA32I
+    is KslUint1 -> gl.R32UI
+    is KslUint2 -> gl.RG32UI
+    is KslUint3 -> gl.RGB32UI
+    is KslUint4 -> gl.RGBA32UI
+    else -> throw IllegalStateException("Invalid format type $this")
 }

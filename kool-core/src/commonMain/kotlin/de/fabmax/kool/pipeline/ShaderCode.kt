@@ -6,13 +6,6 @@ interface ShaderCode {
     val hash: LongHash
 }
 
-data class ShaderCodeGl(
-    val vertexSrc: String,
-    val fragmentSrc: String
-) : ShaderCode {
-
-    override val hash = LongHash().apply {
-        this += vertexSrc
-        this += fragmentSrc
-    }
+interface ComputeShaderCode {
+    val hash: LongHash
 }

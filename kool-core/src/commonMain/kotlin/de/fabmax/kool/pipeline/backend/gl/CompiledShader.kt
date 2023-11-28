@@ -9,7 +9,7 @@ import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.PrimitiveType
 import de.fabmax.kool.util.logE
 
-class CompiledShader(val program: GlProgram, val pipeline: Pipeline, val backend: RenderBackendGl) {
+class CompiledShader(val program: GlProgram, val pipeline: PipelineBase, val backend: RenderBackendGl) {
 
     private val pipelineId = pipeline.pipelineHash
 
@@ -25,21 +25,24 @@ class CompiledShader(val program: GlProgram, val pipeline: Pipeline, val backend
     private val pipelineInfo = PipelineInfo(pipeline)
 
     init {
-        pipeline.vertexLayout.bindings.forEach { bnd ->
-            bnd.vertexAttributes.forEach { attr ->
-                when (bnd.inputRate) {
-                    InputRate.VERTEX -> attributes[attr.attribute.name] = attr
-                    InputRate.INSTANCE -> instanceAttributes[attr.attribute.name] = attr
+        (pipeline as? Pipeline)?.apply {
+            vertexLayout.bindings.forEach { bnd ->
+                bnd.vertexAttributes.forEach { attr ->
+                    when (bnd.inputRate) {
+                        InputRate.VERTEX -> attributes[attr.attribute.name] = attr
+                        InputRate.INSTANCE -> instanceAttributes[attr.attribute.name] = attr
+                    }
                 }
             }
         }
+
         pipeline.bindGroupLayouts.forEach { group ->
             group.items.forEach { binding ->
                 when (binding) {
                     is UniformBuffer -> {
                         val blockIndex = gl.getUniformBlockIndex(program, binding.name)
                         if (blockIndex == gl.INVALID_INDEX) {
-                            // descriptor does not describe an actual UBO but plain old uniforms...
+                            // binding does not describe an actual UBO but plain old uniforms...
                             binding.uniforms.forEach { uniformLocations[it.name] = intArrayOf(gl.getUniformLocation(program, it.name)) }
                         } else {
                             setupUboLayout(binding, blockIndex)
@@ -56,6 +59,15 @@ class CompiledShader(val program: GlProgram, val pipeline: Pipeline, val backend
                     }
                     is TextureSamplerCube -> {
                         uniformLocations[binding.name] = getUniformLocations(binding.name, binding.arraySize)
+                    }
+                    is Storage1d ->  {
+                        uniformLocations[binding.name] = intArrayOf(binding.binding)
+                    }
+                    is Storage2d ->  {
+                        uniformLocations[binding.name] = intArrayOf(binding.binding)
+                    }
+                    is Storage3d ->  {
+                        uniformLocations[binding.name] = intArrayOf(binding.binding)
                     }
                 }
             }
@@ -154,6 +166,9 @@ class CompiledShader(val program: GlProgram, val pipeline: Pipeline, val backend
         private val textures2d = mutableListOf<TextureSampler2d>()
         private val textures3d = mutableListOf<TextureSampler3d>()
         private val texturesCube = mutableListOf<TextureSamplerCube>()
+        private val storage1d = mutableListOf<Storage1d>()
+        private val storage2d = mutableListOf<Storage2d>()
+        private val storage3d = mutableListOf<Storage3d>()
         private val mappings = mutableListOf<MappedUniform>()
         private val attributeBinders = mutableListOf<GpuGeometryGl.AttributeBinder>()
         private val instanceAttribBinders = mutableListOf<GpuGeometryGl.AttributeBinder>()
@@ -176,6 +191,9 @@ class CompiledShader(val program: GlProgram, val pipeline: Pipeline, val backend
                         is TextureSampler2d -> mapTexture2d(binding)
                         is TextureSampler3d -> mapTexture3d(binding)
                         is TextureSamplerCube -> mapTextureCube(binding)
+                        is Storage1d -> mapStorage1d(binding)
+                        is Storage2d -> mapStorage2d(binding)
+                        is Storage3d -> mapStorage3d(binding)
                     }
                 }
             }
@@ -253,6 +271,27 @@ class CompiledShader(val program: GlProgram, val pipeline: Pipeline, val backend
             uniformLocations[cubeMap.name]?.let { locs ->
                 mappings += MappedUniformTexCube(cubeMap, nextTexUnit, locs, backend)
                 nextTexUnit += locs.size
+            }
+        }
+
+        private fun mapStorage1d(storage: Storage1d) {
+            storage1d.add(storage)
+            uniformLocations[storage.name]?.let { binding ->
+                mappings += MappedUniformStorage1d(storage, binding[0], backend)
+            }
+        }
+
+        private fun mapStorage2d(storage: Storage2d) {
+            storage2d.add(storage)
+            uniformLocations[storage.name]?.let { binding ->
+                mappings += MappedUniformStorage2d(storage, binding[0], backend)
+            }
+        }
+
+        private fun mapStorage3d(storage: Storage3d) {
+            storage3d.add(storage)
+            uniformLocations[storage.name]?.let { binding ->
+                mappings += MappedUniformStorage3d(storage, binding[0], backend)
             }
         }
 

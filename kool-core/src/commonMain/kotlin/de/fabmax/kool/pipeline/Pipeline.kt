@@ -18,7 +18,7 @@ class Pipeline private constructor(builder: Builder) : PipelineBase(builder) {
 
     val vertexLayout: VertexLayout
 
-    override val shaderCode: ShaderCode
+    val shaderCode: ShaderCode
     val onUpdate = mutableListOf<(DrawCommand) -> Unit>()
 
     init {
@@ -53,10 +53,6 @@ class Pipeline private constructor(builder: Builder) : PipelineBase(builder) {
         override fun create(): Pipeline {
             return Pipeline(this)
         }
-    }
-
-    companion object {
-        private var instanceId = 1L
     }
 }
 

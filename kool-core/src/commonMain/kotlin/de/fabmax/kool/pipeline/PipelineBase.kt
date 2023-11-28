@@ -22,8 +22,6 @@ abstract class PipelineBase(builder: Builder) {
 
     val bindGroupLayouts: List<BindGroupLayout>
 
-    abstract val shaderCode: ShaderCode
-
     init {
         bindGroupLayouts = builder.bindGroupLayouts.mapIndexed { i, b -> b.create(i) }
         bindGroupLayouts.forEach { hash += it.hash }

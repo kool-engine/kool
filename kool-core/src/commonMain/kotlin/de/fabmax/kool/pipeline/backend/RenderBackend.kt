@@ -1,6 +1,7 @@
 package de.fabmax.kool.pipeline.backend
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.modules.ksl.KslComputeShader
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.Viewport
@@ -21,7 +22,8 @@ interface RenderBackend {
 
     fun getWindowViewport(result: Viewport)
 
-    fun generateKslShader(shader: KslShader, pipeline: PipelineBase): ShaderCode
+    fun generateKslShader(shader: KslShader, pipeline: Pipeline): ShaderCode
+    fun generateKslComputeShader(shader: KslComputeShader, pipeline: ComputePipeline): ComputeShaderCode
 
     fun createOffscreenPass2d(parentPass: OffscreenRenderPass2d): OffscreenPass2dImpl
     fun createOffscreenPassCube(parentPass: OffscreenRenderPassCube): OffscreenPassCubeImpl

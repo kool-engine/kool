@@ -387,3 +387,69 @@ class MappedUniformTexCube(private val samplerCube: TextureSamplerCube, texUnit:
         return isValid
     }
 }
+
+class MappedUniformStorage1d(
+    private val storage: Storage1d,
+    private val binding: Int,
+    private val backend: RenderBackendGl
+) : MappedUniform {
+    override fun setUniform(): Boolean {
+        val gl = backend.gl
+        // todo: loadedTex
+        val loadedTex = storage.storage!!.loadedTexture as LoadedTextureGl
+        gl.bindImageTexture(
+            unit = binding,
+            texture = loadedTex.glTexture,
+            level = 0,
+            layered = false,
+            layer = 0,
+            access = storage.accessType.glAccessType(gl),
+            format = storage.format.glFormat(gl)
+        )
+        return true
+    }
+}
+
+class MappedUniformStorage2d(
+    private val storage: Storage2d,
+    private val binding: Int,
+    private val backend: RenderBackendGl
+) : MappedUniform {
+    override fun setUniform(): Boolean {
+        val gl = backend.gl
+        // todo: loadedTex
+        val loadedTex = storage.storage!!.loadedTexture as LoadedTextureGl
+        gl.bindImageTexture(
+            unit = binding,
+            texture = loadedTex.glTexture,
+            level = 0,
+            layered = false,
+            layer = 0,
+            access = storage.accessType.glAccessType(gl),
+            format = storage.format.glFormat(gl)
+        )
+        return true
+    }
+}
+
+class MappedUniformStorage3d(
+    private val storage: Storage3d,
+    private val binding: Int,
+    private val backend: RenderBackendGl
+) : MappedUniform {
+    override fun setUniform(): Boolean {
+        val gl = backend.gl
+        // todo: loadedTex
+        val loadedTex = storage.storage!!.loadedTexture as LoadedTextureGl
+        gl.bindImageTexture(
+            unit = binding,
+            texture = loadedTex.glTexture,
+            level = 0,
+            layered = false,
+            layer = 0,
+            access = storage.accessType.glAccessType(gl),
+            format = storage.format.glFormat(gl)
+        )
+        return true
+    }
+}

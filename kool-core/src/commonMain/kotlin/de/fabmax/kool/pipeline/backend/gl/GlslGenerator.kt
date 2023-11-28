@@ -3,6 +3,9 @@ package de.fabmax.kool.pipeline.backend.gl
 import de.fabmax.kool.modules.ksl.generator.KslGenerator
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.modules.ksl.model.KslState
+import de.fabmax.kool.pipeline.ComputePipeline
+import de.fabmax.kool.pipeline.Pipeline
+import de.fabmax.kool.pipeline.PipelineBase
 
 /**
  * Default GLSL shader code generator.
@@ -11,21 +14,24 @@ open class GlslGenerator(val glslVersionStr: String) : KslGenerator() {
 
     var blockIndent = "  "
 
-    override fun generateProgram(program: KslProgram): GlslGeneratorOutput {
+    override fun generateProgram(program: KslProgram, pipeline: Pipeline): GlslGeneratorOutput {
         val vertexStage = checkNotNull(program.vertexStage) {
             "KslProgram vertexStage is missing (a valid KslShader needs at least a vertexStage and fragmentStage)"
         }
         val fragmentStage = checkNotNull(program.fragmentStage) {
             "KslProgram fragmentStage is missing (a valid KslShader needs at least a vertexStage and fragmentStage)"
         }
-        return GlslGeneratorOutput.shaderOutput(generateVertexSrc(vertexStage), generateFragmentSrc(fragmentStage))
+        return GlslGeneratorOutput.shaderOutput(
+            generateVertexSrc(vertexStage, pipeline),
+            generateFragmentSrc(fragmentStage, pipeline)
+        )
     }
 
-    override fun generateComputeProgram(program: KslProgram): GlslGeneratorOutput {
+    override fun generateComputeProgram(program: KslProgram, pipeline: ComputePipeline): GlslGeneratorOutput {
         val computeStage = checkNotNull(program.computeStage) {
             "KslProgram computeStage is missing"
         }
-        return GlslGeneratorOutput.computeOutput(generateComputeSrc(computeStage))
+        return GlslGeneratorOutput.computeOutput(generateComputeSrc(computeStage, pipeline))
     }
 
     override fun constFloatVecExpression(vararg values: KslExpression<KslFloat1>): String {
@@ -127,7 +133,7 @@ open class GlslGenerator(val glslVersionStr: String) : KslGenerator() {
         return "imageStore(${op.storage.generateExpression(this)}, ${op.coord.generateExpression(this)}, ${op.data.generateExpression(this)});"
     }
 
-    private fun generateVertexSrc(vertexStage: KslVertexStage): String {
+    private fun generateVertexSrc(vertexStage: KslVertexStage, pipeline: PipelineBase): String {
         val src = StringBuilder()
         src.appendLine("""
             $glslVersionStr
@@ -139,9 +145,9 @@ open class GlslGenerator(val glslVersionStr: String) : KslGenerator() {
         """.trimIndent())
         src.appendLine()
 
-        src.generateUbos(vertexStage)
-        src.generateUniformSamplers(vertexStage)
-        src.generateUniformStorage(vertexStage)
+        src.generateUbos(vertexStage, pipeline)
+        src.generateUniformSamplers(vertexStage, pipeline)
+        src.generateUniformStorage(vertexStage, pipeline)
         src.generateAttributes(vertexStage.attributes.values.filter { it.inputRate == KslInputRate.Instance }, "instance attributes")
         src.generateAttributes(vertexStage.attributes.values.filter { it.inputRate == KslInputRate.Vertex }, "vertex attributes")
         src.generateInterStageOutputs(vertexStage)
@@ -153,7 +159,7 @@ open class GlslGenerator(val glslVersionStr: String) : KslGenerator() {
         return src.toString()
     }
 
-    private fun generateFragmentSrc(fragmentStage: KslFragmentStage): String {
+    private fun generateFragmentSrc(fragmentStage: KslFragmentStage, pipeline: PipelineBase): String {
         val src = StringBuilder()
         src.appendLine("""
             $glslVersionStr
@@ -167,9 +173,9 @@ open class GlslGenerator(val glslVersionStr: String) : KslGenerator() {
         """.trimIndent())
         src.appendLine()
 
-        src.generateUbos(fragmentStage)
-        src.generateUniformSamplers(fragmentStage)
-        src.generateUniformStorage(fragmentStage)
+        src.generateUbos(fragmentStage, pipeline)
+        src.generateUniformSamplers(fragmentStage, pipeline)
+        src.generateUniformStorage(fragmentStage, pipeline)
         src.generateInterStageInputs(fragmentStage)
         src.generateOutputs(fragmentStage.outColors)
         src.generateFunctions(fragmentStage)
@@ -180,7 +186,7 @@ open class GlslGenerator(val glslVersionStr: String) : KslGenerator() {
         return src.toString()
     }
 
-    private fun generateComputeSrc(computeStage: KslComputeStage): String {
+    private fun generateComputeSrc(computeStage: KslComputeStage, pipeline: PipelineBase): String {
         val src = StringBuilder()
         src.appendLine("""
             $glslVersionStr
@@ -193,9 +199,9 @@ open class GlslGenerator(val glslVersionStr: String) : KslGenerator() {
         """.trimIndent())
         src.appendLine()
 
-        src.generateUbos(computeStage)
-        src.generateUniformSamplers(computeStage)
-        src.generateUniformStorage(computeStage)
+        src.generateUbos(computeStage, pipeline)
+        src.generateUniformSamplers(computeStage, pipeline)
+        src.generateUniformStorage(computeStage, pipeline)
         src.generateFunctions(computeStage)
 
         src.appendLine("void main() {")
@@ -204,7 +210,7 @@ open class GlslGenerator(val glslVersionStr: String) : KslGenerator() {
         return src.toString()
     }
 
-    protected open fun StringBuilder.generateUniformSamplers(stage: KslShaderStage) {
+    protected open fun StringBuilder.generateUniformSamplers(stage: KslShaderStage, pipeline: PipelineBase) {
         val samplers = stage.getUsedSamplers()
         if (samplers.isNotEmpty()) {
             appendLine("// texture samplers")
@@ -215,18 +221,18 @@ open class GlslGenerator(val glslVersionStr: String) : KslGenerator() {
         }
     }
 
-    protected open fun StringBuilder.generateUniformStorage(stage: KslShaderStage) {
+    protected open fun StringBuilder.generateUniformStorage(stage: KslShaderStage, pipeline: PipelineBase) {
         val storage = stage.getUsedStorage()
         if (storage.isNotEmpty()) {
             appendLine("// image storage")
-            storage.forEachIndexed { i, u ->
-                appendLine("layout(${u.storageType.formatQualifier}, binding=$i) uniform ${glslTypeName(u.expressionType)} ${u.name};")
+            storage.forEachIndexed { i, it ->
+                appendLine("layout(${it.storageType.formatQualifier}, binding=$i) uniform ${glslTypeName(it.expressionType)} ${it.name};")
             }
             appendLine()
         }
     }
 
-    protected open fun StringBuilder.generateUbos(stage: KslShaderStage) {
+    protected open fun StringBuilder.generateUbos(stage: KslShaderStage, pipeline: PipelineBase) {
         val ubos = stage.getUsedUbos()
         if (ubos.isNotEmpty()) {
             appendLine("// uniform buffer objects")

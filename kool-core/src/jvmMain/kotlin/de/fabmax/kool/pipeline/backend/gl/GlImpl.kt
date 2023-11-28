@@ -108,6 +108,14 @@ object GlImpl : GlApi {
     override val RG32F = GL_RG32F
     override val RGB32F = GL_RGB32F
     override val RGBA32F = GL_RGBA32F
+    override val R32I = GL_R32I
+    override val RG32I = GL_RG32I
+    override val RGB32I = GL_RGB32I
+    override val RGBA32I = GL_RGBA32I
+    override val R32UI = GL_R32UI
+    override val RG32UI = GL_RG32UI
+    override val RGB32UI = GL_RGB32UI
+    override val RGBA32UI = GL_RGBA32UI
 
     override val ALWAYS = GL_ALWAYS
     override val NEVER = GL_NEVER

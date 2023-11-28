@@ -2,7 +2,6 @@ package de.fabmax.kool.pipeline.backend.gl
 
 import de.fabmax.kool.KoolException
 import de.fabmax.kool.pipeline.Pipeline
-import de.fabmax.kool.pipeline.ShaderCodeGl
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.util.logE
 

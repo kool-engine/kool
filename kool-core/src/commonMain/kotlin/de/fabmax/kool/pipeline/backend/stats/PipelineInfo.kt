@@ -1,9 +1,9 @@
 package de.fabmax.kool.pipeline.backend.stats
 
-import de.fabmax.kool.pipeline.Pipeline
+import de.fabmax.kool.pipeline.PipelineBase
 
 class PipelineInfo(
-    val pipeline: Pipeline
+    val pipeline: PipelineBase
 ) : ResourceInfo(pipeline.name) {
 
     var numInstances = 0

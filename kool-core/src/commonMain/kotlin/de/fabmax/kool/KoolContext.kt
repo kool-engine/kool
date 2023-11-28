@@ -2,12 +2,9 @@ package de.fabmax.kool
 
 import de.fabmax.kool.input.KeyboardInput
 import de.fabmax.kool.input.PointerInput
-import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ui2.UiScale
 import de.fabmax.kool.pipeline.OffscreenRenderPass
 import de.fabmax.kool.pipeline.Pipeline
-import de.fabmax.kool.pipeline.PipelineBase
-import de.fabmax.kool.pipeline.ShaderCode
 import de.fabmax.kool.pipeline.backend.RenderBackend
 import de.fabmax.kool.pipeline.ibl.BrdfLutPass
 import de.fabmax.kool.scene.Scene
@@ -84,10 +81,6 @@ abstract class KoolContext {
 
     open fun close() {
         backend.close(this)
-    }
-
-    fun generateKslShader(shader: KslShader, pipeline: PipelineBase): ShaderCode {
-        return backend.generateKslShader(shader, pipeline)
     }
 
     abstract fun getSysInfos(): List<String>

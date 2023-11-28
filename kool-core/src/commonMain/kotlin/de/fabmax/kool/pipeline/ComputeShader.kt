@@ -1,18 +1,19 @@
 package de.fabmax.kool.pipeline
 
-import de.fabmax.kool.KoolContext
-import de.fabmax.kool.scene.Mesh
-
 /**
  * Base class for compute shaders.
  */
 abstract class ComputeShader : ShaderBase() {
+    val onPipelineCreated = mutableListOf<ComputePipelineCreatedListener>()
 
-    open fun onComputePipelineSetup(builder: Pipeline.Builder, mesh: Mesh, ctx: KoolContext) {
-        TODO()
+    abstract fun onPipelineSetup(builder: ComputePipeline.Builder, updateEvent: RenderPass.UpdateEvent)
+
+    open fun onComputePipelineCreated(pipeline: ComputePipeline, updateEvent: RenderPass.UpdateEvent) {
+        pipelineCreated(pipeline)
+        onPipelineCreated.forEach { it.onPipelineCreated(pipeline, updateEvent) }
     }
 
-    open fun onComputePipelineCreated(pipeline: Pipeline, mesh: Mesh, ctx: KoolContext) {
-        TODO()
+    fun interface ComputePipelineCreatedListener {
+        fun onPipelineCreated(pipeline: ComputePipeline, updateEvent: RenderPass.UpdateEvent)
     }
 }

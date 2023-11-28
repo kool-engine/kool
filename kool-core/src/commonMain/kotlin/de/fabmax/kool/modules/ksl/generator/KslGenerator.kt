@@ -4,6 +4,8 @@ import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.modules.ksl.model.KslOp
 import de.fabmax.kool.modules.ksl.model.KslScope
 import de.fabmax.kool.modules.ksl.model.KslState
+import de.fabmax.kool.pipeline.ComputePipeline
+import de.fabmax.kool.pipeline.Pipeline
 
 abstract class KslGenerator {
 
@@ -74,8 +76,8 @@ abstract class KslGenerator {
     open fun vectorSwizzleAssignable(swizzleAssignable: KslVectorAccessor<*>): String =
         "${swizzleAssignable.vector.generateExpression(this)}.${swizzleAssignable.components}"
 
-    abstract fun generateProgram(program: KslProgram): GeneratorOutput
-    abstract fun generateComputeProgram(program: KslProgram): GeneratorOutput
+    abstract fun generateProgram(program: KslProgram, pipeline: Pipeline): GeneratorOutput
+    abstract fun generateComputeProgram(program: KslProgram, pipeline: ComputePipeline): GeneratorOutput
 
     open fun generateScope(scope: KslScope, indent: String): String {
         return scope.ops.asSequence().map { generateOp(it).prependIndent(indent) }.joinToString("\n")

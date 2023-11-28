@@ -50,11 +50,10 @@ open class KslShader private constructor(val program: KslProgram) : Shader() {
         // uniform is used by which shader stage)
         program.prepareGenerate()
 
-        setupAttributes(mesh, builder)
-        setupUniforms(builder)
-
         builder.name = program.name
-        builder.shaderCodeGenerator = { updateEvent.ctx.generateKslShader(this, it) }
+        builder.vertexLayout.setupVertexLayout(mesh)
+        builder.bindGroupLayouts += program.setupBindGroupLayout(this)
+        builder.shaderCodeGenerator = { updateEvent.ctx.backend.generateKslShader(this, it) }
 
         super.onPipelineSetup(builder, mesh, updateEvent)
     }
@@ -70,109 +69,7 @@ open class KslShader private constructor(val program: KslProgram) : Shader() {
         program.shaderListeners.forEach { it.onShaderCreated(this, pipeline, updateEvent) }
     }
 
-    private fun setupUniforms(builder: Pipeline.Builder) {
-        val bindGrpBuilder = BindGroupLayout.Builder()
-        builder.bindGroupLayouts += bindGrpBuilder
-
-        val vertexStage = checkNotNull(program.vertexStage) { "vertexStage not defined" }
-        val fragmentStage = checkNotNull(program.fragmentStage) { "fragmentStage not defined" }
-
-        program.uniformBuffers.filter { it.uniforms.isNotEmpty() }.forEach { kslUbo ->
-            val ubo = UniformBuffer.Builder()
-            bindGrpBuilder.item += ubo
-
-            ubo.name = kslUbo.name
-            if (kslUbo.uniforms.values.any { u -> vertexStage.dependsOn(u) }) {
-                ubo.stages += ShaderStage.VERTEX_SHADER
-            }
-            if (kslUbo.uniforms.values.any { u -> fragmentStage.dependsOn(u) }) {
-                ubo.stages += ShaderStage.FRAGMENT_SHADER
-            }
-
-            kslUbo.uniforms.values.forEach { uniform ->
-                // make sure to reuse the existing Uniform<*> object in case multiple pipeline instances are
-                // created from this KslShader instance
-                val createdUniform: Uniform<*> = uniforms[uniform.name] ?: when(val type = uniform.value.expressionType)  {
-                    is KslFloat1 -> { Uniform1f(uniform.name) }
-                    is KslFloat2 -> { Uniform2f(uniform.name) }
-                    is KslFloat3 -> { Uniform3f(uniform.name) }
-                    is KslFloat4 -> { Uniform4f(uniform.name) }
-
-                    is KslInt1 -> { Uniform1i(uniform.name) }
-                    is KslInt2 -> { Uniform2i(uniform.name) }
-                    is KslInt3 -> { Uniform3i(uniform.name) }
-                    is KslInt4 -> { Uniform4i(uniform.name) }
-
-                    //is KslTypeMat2 -> { UniformMat2f(uniform.name) }
-                    is KslMat3 -> { UniformMat3f(uniform.name) }
-                    is KslMat4 -> { UniformMat4f(uniform.name) }
-
-                    is KslArrayType<*> -> {
-                        when (type.elemType) {
-                            is KslFloat1 -> { Uniform1fv(uniform.name, uniform.arraySize) }
-                            is KslFloat2 -> { Uniform2fv(uniform.name, uniform.arraySize) }
-                            is KslFloat3 -> { Uniform3fv(uniform.name, uniform.arraySize) }
-                            is KslFloat4 -> { Uniform4fv(uniform.name, uniform.arraySize) }
-
-                            is KslInt1 -> { Uniform1iv(uniform.name, uniform.arraySize) }
-                            is KslInt2 -> { Uniform2iv(uniform.name, uniform.arraySize) }
-                            is KslInt3 -> { Uniform3iv(uniform.name, uniform.arraySize) }
-                            is KslInt4 -> { Uniform4iv(uniform.name, uniform.arraySize) }
-
-                            is KslMat3 -> { UniformMat3fv(uniform.name, uniform.arraySize) }
-                            is KslMat4 -> { UniformMat4fv(uniform.name, uniform.arraySize) }
-
-                            else -> throw IllegalStateException("Unsupported uniform array type: ${type.elemType.typeName}")
-                        }
-                    }
-                    else -> throw IllegalStateException("Unsupported uniform type: ${type.typeName}")
-                }
-                ubo.uniforms += { createdUniform }
-            }
-        }
-
-        if (program.uniformSamplers.isNotEmpty()) {
-            program.uniformSamplers.values.forEach { sampler ->
-                val binding = when(val type = sampler.value.expressionType)  {
-                    is KslDepthSampler2D -> TextureSampler2d.Builder().apply { isDepthSampler = true }
-                    is KslDepthSamplerCube -> TextureSamplerCube.Builder().apply { isDepthSampler = true }
-                    is KslColorSampler1d -> TextureSampler1d.Builder()
-                    is KslColorSampler2d -> TextureSampler2d.Builder()
-                    is KslColorSampler3d -> TextureSampler3d.Builder()
-                    is KslColorSamplerCube -> TextureSamplerCube.Builder()
-
-                    is KslArrayType<*> -> {
-                        when (type.elemType) {
-                            is KslDepthSampler2D -> TextureSampler2d.Builder().apply {
-                                isDepthSampler = true
-                                arraySize = sampler.arraySize
-                            }
-                            is KslDepthSamplerCube -> TextureSamplerCube.Builder().apply {
-                                isDepthSampler = true
-                                arraySize = sampler.arraySize
-                            }
-                            is KslColorSampler1d -> TextureSampler1d.Builder().apply { arraySize = sampler.arraySize }
-                            is KslColorSampler2d -> TextureSampler2d.Builder().apply { arraySize = sampler.arraySize }
-                            is KslColorSampler3d -> TextureSampler3d.Builder().apply { arraySize = sampler.arraySize }
-                            is KslColorSamplerCube -> TextureSamplerCube.Builder().apply { arraySize = sampler.arraySize }
-                            else -> throw IllegalStateException("Unsupported sampler array type: ${type.elemType.typeName}")
-                        }
-                    }
-                    else -> throw IllegalStateException("Unsupported sampler uniform type: ${type.typeName}")
-                }
-                binding.name = sampler.name
-                if (vertexStage.dependsOn(sampler)) {
-                    binding.stages += ShaderStage.VERTEX_SHADER
-                }
-                if (fragmentStage.dependsOn(sampler)) {
-                    binding.stages += ShaderStage.FRAGMENT_SHADER
-                }
-                bindGrpBuilder.item += binding
-            }
-        }
-    }
-
-    private fun setupAttributes(mesh: Mesh, builder: Pipeline.Builder) {
+    private fun VertexLayout.Builder.setupVertexLayout(mesh: Mesh)  {
         var attribLocation = 0
         val verts = mesh.geometry
         val vertLayoutAttribs = mutableListOf<VertexLayout.VertexAttribute>()
@@ -181,7 +78,7 @@ open class KslShader private constructor(val program: KslProgram) : Shader() {
 
         val vertexStage = checkNotNull(program.vertexStage) { "vertexStage not defined" }
 
-        vertexStage.attributes.values.asSequence().filter { it.inputRate == KslInputRate.Vertex }.forEach { vertexAttrib ->
+        vertexStage.attributes.values.filter { it.inputRate == KslInputRate.Vertex }.forEach { vertexAttrib ->
             val attrib = verts.attributeByteOffsets.keys.find { it.name == vertexAttrib.name }
                 ?: throw NoSuchElementException("Mesh does not include required vertex attribute: ${vertexAttrib.name} (for shader: ${program.name})")
             val off = verts.attributeByteOffsets[attrib]!!
@@ -194,14 +91,14 @@ open class KslShader private constructor(val program: KslProgram) : Shader() {
             attribLocation += attrib.locationIncrement
         }
 
-        builder.vertexLayout.bindings += VertexLayout.Binding(
+        bindings += VertexLayout.Binding(
             iBinding++,
             InputRate.VERTEX,
             vertLayoutAttribs,
             verts.byteStrideF
         )
         if (vertLayoutAttribsI.isNotEmpty()) {
-            builder.vertexLayout.bindings += VertexLayout.Binding(
+            bindings += VertexLayout.Binding(
                 iBinding++,
                 InputRate.VERTEX,
                 vertLayoutAttribsI,
@@ -221,7 +118,7 @@ open class KslShader private constructor(val program: KslProgram) : Shader() {
                 instanceAttrib.location = attribLocation
                 attribLocation += attrib.locationIncrement
             }
-            builder.vertexLayout.bindings += VertexLayout.Binding(
+            bindings += VertexLayout.Binding(
                 iBinding,
                 InputRate.INSTANCE,
                 instLayoutAttribs,
@@ -230,5 +127,129 @@ open class KslShader private constructor(val program: KslProgram) : Shader() {
         } else if (instanceAttribs.isNotEmpty()) {
             throw IllegalStateException("Shader model requires instance attributes, but mesh doesn't provide any")
         }
+    }
+}
+
+fun KslProgram.setupBindGroupLayout(shader: ShaderBase?): BindGroupLayout.Builder {
+    val bindGrpBuilder = BindGroupLayout.Builder()
+    setupBindGroupLayoutUbos(shader, bindGrpBuilder)
+    setupBindGroupLayoutSamplers(bindGrpBuilder)
+    setupBindGroupLayoutStorage(bindGrpBuilder)
+    return bindGrpBuilder
+}
+
+private fun KslProgram.setupBindGroupLayoutUbos(shader: ShaderBase?, bindGrpBuilder: BindGroupLayout.Builder) {
+    uniformBuffers.filter { it.uniforms.isNotEmpty() }.forEach { kslUbo ->
+        val ubo = UniformBuffer.Builder()
+        bindGrpBuilder.ubos += ubo
+
+        ubo.name = kslUbo.name
+        stages.forEach {
+            if (kslUbo.uniforms.values.any { u -> it.dependsOn(u) }) {
+                ubo.stages += it.type.pipelineStageType
+            }
+        }
+
+        kslUbo.uniforms.values.forEach { uniform ->
+            // make sure to reuse the existing Uniform<*> object in case multiple pipeline instances are
+            // created from this KslShader instance
+            val createdUniform: Uniform<*> = shader?.uniforms?.get(uniform.name) ?: when(val type = uniform.value.expressionType)  {
+                is KslFloat1 -> { Uniform1f(uniform.name) }
+                is KslFloat2 -> { Uniform2f(uniform.name) }
+                is KslFloat3 -> { Uniform3f(uniform.name) }
+                is KslFloat4 -> { Uniform4f(uniform.name) }
+
+                is KslInt1 -> { Uniform1i(uniform.name) }
+                is KslInt2 -> { Uniform2i(uniform.name) }
+                is KslInt3 -> { Uniform3i(uniform.name) }
+                is KslInt4 -> { Uniform4i(uniform.name) }
+
+                //is KslTypeMat2 -> { UniformMat2f(uniform.name) }
+                is KslMat3 -> { UniformMat3f(uniform.name) }
+                is KslMat4 -> { UniformMat4f(uniform.name) }
+
+                is KslArrayType<*> -> {
+                    when (type.elemType) {
+                        is KslFloat1 -> { Uniform1fv(uniform.name, uniform.arraySize) }
+                        is KslFloat2 -> { Uniform2fv(uniform.name, uniform.arraySize) }
+                        is KslFloat3 -> { Uniform3fv(uniform.name, uniform.arraySize) }
+                        is KslFloat4 -> { Uniform4fv(uniform.name, uniform.arraySize) }
+
+                        is KslInt1 -> { Uniform1iv(uniform.name, uniform.arraySize) }
+                        is KslInt2 -> { Uniform2iv(uniform.name, uniform.arraySize) }
+                        is KslInt3 -> { Uniform3iv(uniform.name, uniform.arraySize) }
+                        is KslInt4 -> { Uniform4iv(uniform.name, uniform.arraySize) }
+
+                        is KslMat3 -> { UniformMat3fv(uniform.name, uniform.arraySize) }
+                        is KslMat4 -> { UniformMat4fv(uniform.name, uniform.arraySize) }
+
+                        else -> throw IllegalStateException("Unsupported uniform array type: ${type.elemType.typeName}")
+                    }
+                }
+                else -> throw IllegalStateException("Unsupported uniform type: ${type.typeName}")
+            }
+            ubo.uniforms += { createdUniform }
+        }
+    }
+}
+
+private fun KslProgram.setupBindGroupLayoutSamplers(bindGrpBuilder: BindGroupLayout.Builder) {
+    uniformSamplers.values.forEach { sampler ->
+        val binding = when(val type = sampler.value.expressionType)  {
+            is KslDepthSampler2D -> TextureSampler2d.Builder().apply { isDepthSampler = true }
+            is KslDepthSamplerCube -> TextureSamplerCube.Builder().apply { isDepthSampler = true }
+            is KslColorSampler1d -> TextureSampler1d.Builder()
+            is KslColorSampler2d -> TextureSampler2d.Builder()
+            is KslColorSampler3d -> TextureSampler3d.Builder()
+            is KslColorSamplerCube -> TextureSamplerCube.Builder()
+
+            is KslArrayType<*> -> {
+                when (type.elemType) {
+                    is KslDepthSampler2D -> TextureSampler2d.Builder().apply {
+                        isDepthSampler = true
+                        arraySize = sampler.arraySize
+                    }
+                    is KslDepthSamplerCube -> TextureSamplerCube.Builder().apply {
+                        isDepthSampler = true
+                        arraySize = sampler.arraySize
+                    }
+                    is KslColorSampler1d -> TextureSampler1d.Builder().apply { arraySize = sampler.arraySize }
+                    is KslColorSampler2d -> TextureSampler2d.Builder().apply { arraySize = sampler.arraySize }
+                    is KslColorSampler3d -> TextureSampler3d.Builder().apply { arraySize = sampler.arraySize }
+                    is KslColorSamplerCube -> TextureSamplerCube.Builder().apply { arraySize = sampler.arraySize }
+                    else -> throw IllegalStateException("Unsupported sampler array type: ${type.elemType.typeName}")
+                }
+            }
+            else -> throw IllegalStateException("Unsupported sampler uniform type: ${type.typeName}")
+        }
+        bindGrpBuilder.samplers += binding
+
+        binding.name = sampler.name
+        stages.forEach {
+            if (it.dependsOn(sampler)) {
+                binding.stages += it.type.pipelineStageType
+            }
+        }
+    }
+}
+
+private fun KslProgram.setupBindGroupLayoutStorage(bindGrpBuilder: BindGroupLayout.Builder) {
+    uniformStorage.values.forEach { storage ->
+        val binding = when(storage.storageType)  {
+            is KslStorage1dType<*> -> Storage1d.Builder()
+            is KslStorage2dType<*> -> Storage2d.Builder()
+            is KslStorage3dType<*> -> Storage3d.Builder()
+        }
+        bindGrpBuilder.storage += binding
+
+        binding.name = storage.name
+        stages.forEach {
+            if (it.dependsOn(storage)) {
+                binding.stages += it.type.pipelineStageType
+            }
+        }
+        binding.format = storage.storageType.elemType
+        // todo: restrict this to read / write only if possible
+        binding.accessType = StorageAccessType.READ_WRITE
     }
 }

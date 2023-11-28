@@ -70,6 +70,9 @@ class DescriptorSet(val graphicsPipeline: GraphicsPipeline) {
                     BindingType.SAMPLER_2D -> SamplerDescriptor(idx, desc as TextureSampler2d)
                     BindingType.SAMPLER_3D -> SamplerDescriptor(idx, desc as TextureSampler3d)
                     BindingType.SAMPLER_CUBE -> SamplerDescriptor(idx, desc as TextureSamplerCube)
+                    BindingType.STORAGE_1D -> TODO()
+                    BindingType.STORAGE_2D -> TODO()
+                    BindingType.STORAGE_3D -> TODO()
                 }
             }
         }

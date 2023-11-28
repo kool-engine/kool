@@ -14,14 +14,33 @@ import kotlin.reflect.KProperty
 abstract class ShaderBase {
 
     val uniforms = mutableMapOf<String, Uniform<*>>()
+
     val texSamplers1d = mutableMapOf<String, TextureSampler1d>()
     val texSamplers2d = mutableMapOf<String, TextureSampler2d>()
     val texSamplers3d = mutableMapOf<String, TextureSampler3d>()
     val texSamplersCube = mutableMapOf<String, TextureSamplerCube>()
 
+    val storage1d = mutableMapOf<String, Storage1d>()
+    val storage2d = mutableMapOf<String, Storage2d>()
+    val storage3d = mutableMapOf<String, Storage3d>()
+
     private val connectUniformListeners = mutableMapOf<String, ConnectUniformListener>()
 
-    protected fun shaderCreated() {
+    protected fun pipelineCreated(pipeline: PipelineBase) {
+        pipeline.bindGroupLayouts.forEach { group ->
+            group.items.forEach { binding ->
+                when (binding) {
+                    is UniformBuffer -> binding.uniforms.forEach { uniforms[it.name] = it }
+                    is TextureSampler1d -> texSamplers1d[binding.name] = binding
+                    is TextureSampler2d -> texSamplers2d[binding.name] = binding
+                    is TextureSampler3d -> texSamplers3d[binding.name] = binding
+                    is TextureSamplerCube -> texSamplersCube[binding.name] = binding
+                    is Storage1d -> storage1d[binding.name] = binding
+                    is Storage2d -> storage2d[binding.name] = binding
+                    is Storage3d -> storage3d[binding.name] = binding
+                }
+            }
+        }
         connectUniformListeners.values.forEach { it.connect() }
     }
 

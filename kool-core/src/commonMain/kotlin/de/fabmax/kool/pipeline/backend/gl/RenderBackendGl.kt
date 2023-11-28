@@ -2,6 +2,7 @@ package de.fabmax.kool.pipeline.backend.gl
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Mat4f
+import de.fabmax.kool.modules.ksl.KslComputeShader
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.DepthRange
@@ -113,12 +114,20 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
         return OffscreenRenderPassCubeGl(parentPass, this)
     }
 
-    override fun generateKslShader(shader: KslShader, pipeline: PipelineBase): ShaderCodeGl {
-        val src = GlslGenerator(glslVersion).generateProgram(shader.program)
+    override fun generateKslShader(shader: KslShader, pipeline: Pipeline): ShaderCodeGl {
+        val src = GlslGenerator(glslVersion).generateProgram(shader.program, pipeline)
         if (shader.program.dumpCode) {
             src.dump()
         }
         return ShaderCodeGl(src.vertexSrc, src.fragmentSrc)
+    }
+
+    override fun generateKslComputeShader(shader: KslComputeShader, pipeline: ComputePipeline): ComputeShaderCodeGl {
+        val src = GlslGenerator(glslVersion).generateComputeProgram(shader.program, pipeline)
+        if (shader.program.dumpCode) {
+            src.dump()
+        }
+        return ComputeShaderCodeGl(src.computeSrc)
     }
 
     private fun doOffscreenPasses(scene: Scene, ctx: KoolContext) {

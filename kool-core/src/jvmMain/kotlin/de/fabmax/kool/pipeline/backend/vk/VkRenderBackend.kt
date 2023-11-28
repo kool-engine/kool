@@ -1,6 +1,7 @@
 package de.fabmax.kool.pipeline.backend.vk
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.modules.ksl.KslComputeShader
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.DepthRange
@@ -35,7 +36,7 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
     override val canBlitRenderPasses = false
     override val isOnscreenInfiniteDepthCapable = true
 
-    private val shaderCodes = mutableMapOf<String, ShaderCode>()
+    private val shaderCodes = mutableMapOf<String, ShaderCodeImplVk>()
 
     val vkSystem: VkSystem
     private val vkScene = KoolVkScene()
@@ -78,14 +79,25 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
         return VkOffscreenPassCube(parentPass)
     }
 
-    override fun generateKslShader(shader: KslShader, pipeline: PipelineBase): ShaderCode {
-        val src = KslGlslGeneratorVk(pipeline).generateProgram(shader.program)
+    override fun generateKslShader(shader: KslShader, pipeline: Pipeline): ShaderCode {
+        val src = KslGlslGeneratorVk().generateProgram(shader.program, pipeline)
         if (shader.program.dumpCode) {
             src.dump()
         }
         val codeKey = src.vertexSrc + src.fragmentSrc
         return shaderCodes.getOrPut(codeKey) {
             ShaderCodeImplVk.vkCodeFromSource(src.vertexSrc, src.fragmentSrc)
+        }
+    }
+
+    override fun generateKslComputeShader(shader: KslComputeShader, pipeline: ComputePipeline): ComputeShaderCode {
+        val src = KslGlslGeneratorVk().generateComputeProgram(shader.program, pipeline)
+        if (shader.program.dumpCode) {
+            src.dump()
+        }
+        val codeKey = src.computeSrc
+        return shaderCodes.getOrPut(codeKey) {
+            ShaderCodeImplVk.vkComputeCodeFromSource(src.computeSrc)
         }
     }
 

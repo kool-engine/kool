@@ -2,7 +2,6 @@ package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.scene.Mesh
-import kotlin.collections.set
 
 /**
  * Base class for regular shaders / materials, which can be attached to [Mesh]es in order to render them. Usually,
@@ -37,18 +36,7 @@ abstract class Shader : ShaderBase() {
     }
 
     open fun onPipelineCreated(pipeline: Pipeline, mesh: Mesh, updateEvent: RenderPass.UpdateEvent) {
-        pipeline.bindGroupLayouts.forEach { group ->
-            group.items.forEach { binding ->
-                when (binding) {
-                    is UniformBuffer -> binding.uniforms.forEach { uniforms[it.name] = it }
-                    is TextureSampler1d -> texSamplers1d[binding.name] = binding
-                    is TextureSampler2d -> texSamplers2d[binding.name] = binding
-                    is TextureSampler3d -> texSamplers3d[binding.name] = binding
-                    is TextureSamplerCube -> texSamplersCube[binding.name] = binding
-                }
-            }
-        }
-        shaderCreated()
+        pipelineCreated(pipeline)
         onPipelineCreated.forEach { it.onPipelineCreated(pipeline, mesh, updateEvent) }
     }
 

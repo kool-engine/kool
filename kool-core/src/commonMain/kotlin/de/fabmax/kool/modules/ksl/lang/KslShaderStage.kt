@@ -4,6 +4,7 @@ import de.fabmax.kool.math.Vec3i
 import de.fabmax.kool.modules.ksl.model.KslHierarchy
 import de.fabmax.kool.modules.ksl.model.KslOp
 import de.fabmax.kool.modules.ksl.model.KslProcessor
+import de.fabmax.kool.pipeline.ShaderStage
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
@@ -74,10 +75,10 @@ abstract class KslShaderStage(val program: KslProgram, val type: KslShaderStageT
     }
 }
 
-enum class KslShaderStageType {
-    VertexShader,
-    FragmentShader,
-    ComputeShader
+enum class KslShaderStageType(val pipelineStageType: ShaderStage) {
+    VertexShader(ShaderStage.VERTEX_SHADER),
+    FragmentShader(ShaderStage.FRAGMENT_SHADER),
+    ComputeShader(ShaderStage.COMPUTE_SHADER)
 }
 
 class KslVertexStage(program: KslProgram) : KslShaderStage(program, KslShaderStageType.VertexShader) {
