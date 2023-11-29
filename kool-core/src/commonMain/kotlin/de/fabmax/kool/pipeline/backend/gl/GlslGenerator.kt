@@ -133,6 +133,29 @@ open class GlslGenerator(val glslVersionStr: String) : KslGenerator() {
         return "imageStore(${op.storage.generateExpression(this)}, ${op.coord.generateExpression(this)}, ${op.data.generateExpression(this)});"
     }
 
+    override fun storageAtomicOp(atomicOp: KslStorageAtomicOp<*, *, *>): String {
+        val func = when(atomicOp.op) {
+            KslStorageAtomicOp.Op.Swap -> "imageAtomicExchange"
+            KslStorageAtomicOp.Op.Add -> "imageAtomicAdd"
+            KslStorageAtomicOp.Op.And -> "imageAtomicAnd"
+            KslStorageAtomicOp.Op.Or -> "imageAtomicOr"
+            KslStorageAtomicOp.Op.Xor -> "imageAtomicXor"
+            KslStorageAtomicOp.Op.Min -> "imageAtomicMin"
+            KslStorageAtomicOp.Op.Max -> "imageAtomicMax"
+        }
+
+        return "$func(${atomicOp.storage.generateExpression(this)}, " +
+                "${atomicOp.coord.generateExpression(this)}, " +
+                "${atomicOp.data.generateExpression(this)})"
+    }
+
+    override fun storageAtomicCompareSwap(atomicCompSwap: KslStorageAtomicCompareSwap<*, *, *>): String {
+        return "imageAtomicCompSwap(${atomicCompSwap.storage.generateExpression(this)}, " +
+                "${atomicCompSwap.coord.generateExpression(this)}, " +
+                "${atomicCompSwap.compare.generateExpression(this)}, " +
+                "${atomicCompSwap.data.generateExpression(this)})"
+    }
+
     private fun generateVertexSrc(vertexStage: KslVertexStage, pipeline: PipelineBase): String {
         val src = StringBuilder()
         src.appendLine("""

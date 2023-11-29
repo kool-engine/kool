@@ -26,10 +26,10 @@ import kotlin.math.max
 
 object Demos {
 
-    val AllPlatforms = PlatformFilter { true }
-    val NonJavascript = PlatformFilter { !KoolSystem.isJavascript }
-    val NonVulkan = PlatformFilter { "Vulkan" !in KoolSystem.requireContext().backend.name }
-    val DesktopOpenGl = PlatformFilter { NonJavascript.applies() && NonVulkan.applies() }
+    private val AllPlatforms = PlatformFilter { true }
+    private val NonJavascript = PlatformFilter { !KoolSystem.isJavascript }
+    private val NonVulkan = PlatformFilter { "Vulkan" !in KoolSystem.requireContext().backend.name }
+    private val DesktopOpenGl = PlatformFilter { NonJavascript.applies() && NonVulkan.applies() }
 
     val demoColors = ColorGradient(
         0f to MdColor.AMBER,

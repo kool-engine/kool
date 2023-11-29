@@ -67,6 +67,8 @@ abstract class KslGenerator {
 
     abstract fun storageSize(storageSize: KslStorageSize<*, *>): String
     abstract fun storageRead(storageRead: KslStorageRead<*, *, *>): String
+    abstract fun storageAtomicOp(atomicOp: KslStorageAtomicOp<*, *, *>): String
+    abstract fun storageAtomicCompareSwap(atomicCompSwap: KslStorageAtomicCompareSwap<*, *, *>): String
 
     open fun varAssignable(assignable: KslVar<*>): String = assignable.name()
     open fun arrayValueAssignable(arrayAccessor: KslArrayAccessor<*>): String =

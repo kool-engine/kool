@@ -682,15 +682,68 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
         where T: KslSamplerType<*>, T: KslSamplerCubeArrayType = KslTextureSizeCubeArray(sampler, lod)
 
     // builtin storage functions - mostly for compute shaders
-    fun <T, C> storageSize(storage: KslExpression<T>): KslExpression<C> where T: KslStorageType<*, C>, C: KslIntType =
+    fun <T: KslStorageType<*, C>, C: KslIntType> storageSize(storage: KslExpression<T>): KslExpression<C> =
         KslStorageSize(storage, storage.expressionType.coordType)
 
-    fun <T, R, C> storageRead(storage: KslStorage<T, C>, coord: KslExpression<C>): KslExpression<R>
-        where T: KslStorageType<R, C>, R: KslNumericType, C: KslIntType = KslStorageRead(storage, coord, storage.storageType.elemType)
+    fun <T: KslStorageType<R, C>, R: KslNumericType, C: KslIntType> storageRead(
+        storage: KslStorage<T, C>,
+        coord: KslExpression<C>
+    ): KslExpression<R> = KslStorageRead(storage, coord, storage.storageType.elemType)
 
-    fun <T, R, C> storageWrite(storage: KslStorage<T, C>, coord: KslExpression<C>, data: KslExpression<R>)
-        where T: KslStorageType<R, C>, R: KslNumericType, C: KslIntType
-    {
+    fun <T: KslStorageType<R, C>, R: KslNumericType, C: KslIntType> storageWrite(
+        storage: KslStorage<T, C>,
+        coord: KslExpression<C>,
+        data: KslExpression<R>
+    ) {
         ops += KslStorageWrite(storage, coord, data, this)
     }
+
+    fun <T: KslStorageType<R, C>, R: KslIntType, C: KslIntType> storageAtomicSwap(
+        storage: KslStorage<T, C>,
+        coord: KslExpression<C>,
+        data: KslExpression<R>
+    ): KslExpression<R> = KslStorageAtomicOp(storage, coord, data, KslStorageAtomicOp.Op.Swap, storage.storageType.elemType)
+
+    fun <T: KslStorageType<R, C>, R: KslIntType, C: KslIntType> storageAtomicAdd(
+        storage: KslStorage<T, C>,
+        coord: KslExpression<C>,
+        data: KslExpression<R>
+    ): KslExpression<R> = KslStorageAtomicOp(storage, coord, data, KslStorageAtomicOp.Op.Add, storage.storageType.elemType)
+
+    fun <T: KslStorageType<R, C>, R: KslIntType, C: KslIntType> storageAtomicAnd(
+        storage: KslStorage<T, C>,
+        coord: KslExpression<C>,
+        data: KslExpression<R>
+    ): KslExpression<R> = KslStorageAtomicOp(storage, coord, data, KslStorageAtomicOp.Op.And, storage.storageType.elemType)
+
+    fun <T: KslStorageType<R, C>, R: KslIntType, C: KslIntType> storageAtomicOr(
+        storage: KslStorage<T, C>,
+        coord: KslExpression<C>,
+        data: KslExpression<R>
+    ): KslExpression<R> = KslStorageAtomicOp(storage, coord, data, KslStorageAtomicOp.Op.Or, storage.storageType.elemType)
+
+    fun <T: KslStorageType<R, C>, R: KslIntType, C: KslIntType> storageAtomicXor(
+        storage: KslStorage<T, C>,
+        coord: KslExpression<C>,
+        data: KslExpression<R>
+    ): KslExpression<R> = KslStorageAtomicOp(storage, coord, data, KslStorageAtomicOp.Op.Xor, storage.storageType.elemType)
+
+    fun <T: KslStorageType<R, C>, R: KslIntType, C: KslIntType> storageAtomicMin(
+        storage: KslStorage<T, C>,
+        coord: KslExpression<C>,
+        data: KslExpression<R>
+    ): KslExpression<R> = KslStorageAtomicOp(storage, coord, data, KslStorageAtomicOp.Op.Min, storage.storageType.elemType)
+
+    fun <T: KslStorageType<R, C>, R: KslIntType, C: KslIntType> storageAtomicMax(
+        storage: KslStorage<T, C>,
+        coord: KslExpression<C>,
+        data: KslExpression<R>
+    ): KslExpression<R> = KslStorageAtomicOp(storage, coord, data, KslStorageAtomicOp.Op.Max, storage.storageType.elemType)
+
+    fun <T: KslStorageType<R, C>, R: KslIntType, C: KslIntType> storageAtomicCompareSwap(
+        storage: KslStorage<T, C>,
+        coord: KslExpression<C>,
+        compare: KslExpression<R>,
+        data: KslExpression<R>
+    ): KslExpression<R> = KslStorageAtomicCompareSwap(storage, coord, data, compare, storage.storageType.elemType)
 }
