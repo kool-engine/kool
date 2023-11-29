@@ -2,12 +2,11 @@ package de.fabmax.kool.modules.ksl.blocks
 
 import de.fabmax.kool.math.MutableMat4d
 import de.fabmax.kool.math.set
-import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.KslShaderListener
 import de.fabmax.kool.modules.ksl.lang.KslDataBlock
 import de.fabmax.kool.modules.ksl.lang.KslProgram
-import de.fabmax.kool.pipeline.Pipeline
-import de.fabmax.kool.pipeline.RenderPass
+import de.fabmax.kool.pipeline.PipelineBase
+import de.fabmax.kool.pipeline.ShaderBase
 import de.fabmax.kool.pipeline.UniformMat4f
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 
@@ -29,7 +28,7 @@ abstract class MatrixData(program: KslProgram, val uniformName: String) : KslDat
         program.dataBlocks += this
     }
 
-    override fun onShaderCreated(shader: KslShader, pipeline: Pipeline, updateEvent: RenderPass.UpdateEvent) {
+    override fun onShaderCreated(shader: ShaderBase, pipeline: PipelineBase) {
         uMatrix = shader.uniforms[uniformName] as UniformMat4f
     }
 }

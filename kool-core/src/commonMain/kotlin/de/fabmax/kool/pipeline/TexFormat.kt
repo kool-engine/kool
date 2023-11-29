@@ -14,7 +14,17 @@ enum class TexFormat(val channels: Int, val hasAlpha: Boolean, val isFloat: Bool
     R_F32(1, false, true),
     RG_F32(2, false, true),
     RGB_F32(3, false, true),
-    RGBA_F32(4, true, true)
+    RGBA_F32(4, true, true),
+
+    R_I32(1, false, false),
+    RG_I32(2, false, false),
+    RGB_I32(3, false, false),
+    RGBA_I32(4, true, false),
+
+    R_U32(1, false, false),
+    RG_U32(2, false, false),
+    RGB_U32(3, false, false),
+    RGBA_U32(4, true, false)
 }
 
 val TexFormat.isF16: Boolean get() {
@@ -23,4 +33,12 @@ val TexFormat.isF16: Boolean get() {
 
 val TexFormat.isF32: Boolean get() {
     return this == TexFormat.R_F32 || this == TexFormat.RG_F32 || this == TexFormat.RGB_F32 || this == TexFormat.RGBA_F32
+}
+
+val TexFormat.isI32: Boolean get() {
+    return this == TexFormat.R_I32 || this == TexFormat.RG_I32 || this == TexFormat.RGB_I32 || this == TexFormat.RGBA_I32
+}
+
+val TexFormat.isU32: Boolean get() {
+    return this == TexFormat.R_U32 || this == TexFormat.RG_U32 || this == TexFormat.RGB_U32 || this == TexFormat.RGBA_U32
 }

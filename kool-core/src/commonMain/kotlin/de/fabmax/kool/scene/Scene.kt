@@ -181,6 +181,7 @@ open class Scene(name: String? = null) : Node(name) {
             get() = KoolSystem.requireContext().windowWidth
         override val height: Int
             get() = KoolSystem.requireContext().windowHeight
+        override val depth: Int = 1
 
         init {
             parentScene = this@Scene
@@ -246,7 +247,7 @@ open class Scene(name: String? = null) : Node(name) {
         override fun update(ctx: KoolContext) {
             if (useWindowViewport) {
                 ctx.getWindowViewport(viewport)
-                setSize(viewport.width, viewport.height, ctx)
+                setSize(viewport.width, viewport.height)
             }
             super.update(ctx)
         }

@@ -58,7 +58,7 @@ class RenderBackendGlImpl(ctx: KoolContext, canvas: HTMLCanvasElement) : RenderB
             //     using a shader. This means some overhead, but apparently it's the only thing we can do.
             val ctx = KoolSystem.requireContext()
             blitTempFrameBuffer.blitRenderPass = src
-            blitTempFrameBuffer.setSize(src.width, src.height, ctx)
+            blitTempFrameBuffer.setSize(src.width, src.height)
             blitTempFrameBuffer.impl.draw(ctx)
 
             blitScene.mainRenderPass.renderPass.update(ctx)

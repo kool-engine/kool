@@ -18,6 +18,7 @@ class CompiledShader(val program: GlProgram, val pipeline: PipelineBase, val bac
     private val uniformLocations = mutableMapOf<String, IntArray>()
     private val uboLayouts = mutableMapOf<String, ExternalBufferLayout>()
     private val instances = mutableMapOf<Long, ShaderInstance>()
+    private val computeInstances = mutableMapOf<Long, ComputeShaderInstance>()
 
     private val ctx: KoolContext = backend.ctx
     private val gl: GlApi = backend.gl
@@ -60,17 +61,26 @@ class CompiledShader(val program: GlProgram, val pipeline: PipelineBase, val bac
                     is TextureSamplerCube -> {
                         uniformLocations[binding.name] = getUniformLocations(binding.name, binding.arraySize)
                     }
-                    is Storage1d ->  {
+                    is Storage1d -> {
+                        checkStorageTexSupport()
                         uniformLocations[binding.name] = intArrayOf(binding.binding)
                     }
-                    is Storage2d ->  {
+                    is Storage2d -> {
+                        checkStorageTexSupport()
                         uniformLocations[binding.name] = intArrayOf(binding.binding)
                     }
-                    is Storage3d ->  {
+                    is Storage3d -> {
+                        checkStorageTexSupport()
                         uniformLocations[binding.name] = intArrayOf(binding.binding)
                     }
                 }
             }
+        }
+    }
+
+    private fun checkStorageTexSupport() {
+        check(backend.gl.version.isHigherOrEqualThan(4, 2)) {
+            "Storage textures require OpenGL 4.2 or higher"
         }
     }
 
@@ -146,6 +156,13 @@ class CompiledShader(val program: GlProgram, val pipeline: PipelineBase, val bac
         return if (inst.bindInstance(cmd)) { inst } else { null }
     }
 
+    fun bindComputeInstance(pipelineInstance: ComputePipeline, computePass: ComputeRenderPass): ComputeShaderInstance? {
+        val inst = computeInstances.getOrPut(pipelineInstance.pipelineInstanceId) {
+            ComputeShaderInstance(pipelineInstance, computePass)
+        }
+        return if (inst.bindInstance(computePass)) { inst } else { null }
+    }
+
     fun destroyInstance(pipeline: Pipeline) {
         instances.remove(pipeline.pipelineInstanceId)?.destroyInstance()
     }
@@ -157,33 +174,23 @@ class CompiledShader(val program: GlProgram, val pipeline: PipelineBase, val bac
         gl.deleteProgram(program)
     }
 
-    inner class ShaderInstance(cmd: DrawCommand, val pipeline: Pipeline) {
-        var geometry: IndexedVertexList = cmd.geometry
-        val instances: MeshInstanceList? = cmd.mesh.instances
+    abstract inner class ShaderInstanceBase(private val pipelineInstance: PipelineBase) {
 
-        private val ubos = mutableListOf<UniformBuffer>()
-        private val textures1d = mutableListOf<TextureSampler1d>()
-        private val textures2d = mutableListOf<TextureSampler2d>()
-        private val textures3d = mutableListOf<TextureSampler3d>()
-        private val texturesCube = mutableListOf<TextureSamplerCube>()
-        private val storage1d = mutableListOf<Storage1d>()
-        private val storage2d = mutableListOf<Storage2d>()
-        private val storage3d = mutableListOf<Storage3d>()
-        private val mappings = mutableListOf<MappedUniform>()
-        private val attributeBinders = mutableListOf<GpuGeometryGl.AttributeBinder>()
-        private val instanceAttribBinders = mutableListOf<GpuGeometryGl.AttributeBinder>()
+        protected val ubos = mutableListOf<UniformBuffer>()
+        protected val textures1d = mutableListOf<TextureSampler1d>()
+        protected val textures2d = mutableListOf<TextureSampler2d>()
+        protected val textures3d = mutableListOf<TextureSampler3d>()
+        protected val texturesCube = mutableListOf<TextureSamplerCube>()
+        protected val storage1d = mutableListOf<Storage1d>()
+        protected val storage2d = mutableListOf<Storage2d>()
+        protected val storage3d = mutableListOf<Storage3d>()
 
-        private var gpuGeometry: GpuGeometryGl? = null
-        private var uboBuffers = mutableListOf<BufferResource>()
-
-        private var nextTexUnit = gl.TEXTURE0
-
-        val primitiveType = pipeline.vertexLayout.primitiveType.glElemType
-        val indexType = gl.UNSIGNED_INT
-        val numIndices: Int get() = gpuGeometry?.numIndices ?: 0
+        protected val mappings = mutableListOf<MappedUniform>()
+        protected var uboBuffers = mutableListOf<BufferResource>()
+        protected var nextTexUnit = gl.TEXTURE0
 
         init {
-            pipeline.bindGroupLayouts.forEach { group ->
+            pipelineInstance.bindGroupLayouts.forEach { group ->
                 group.items.forEach { binding ->
                     when (binding) {
                         is UniformBuffer -> mapUbo(binding)
@@ -197,31 +204,54 @@ class CompiledShader(val program: GlProgram, val pipeline: PipelineBase, val bac
                     }
                 }
             }
-            createBuffers(cmd)
             pipelineInfo.numInstances++
         }
 
-        private fun createBuffers(cmd: DrawCommand) {
-            val creationInfo = BufferCreationInfo(cmd)
-
-            var geom = geometry.gpuGeometry as? GpuGeometryGl
-            if (geom == null || geom.isReleased) {
-                if (geom?.isReleased == true) {
-                    logE { "Mesh geometry is already released: ${pipeline.name}" }
-                }
-                geom = GpuGeometryGl(geometry, instances, backend, creationInfo)
-                geometry.gpuGeometry = geom
-            }
-            gpuGeometry = geom
-
-            attributeBinders += geom.createShaderVertexAttributeBinders(attributes)
-            instanceAttribBinders += geom.createShaderInstanceAttributeBinders(instanceAttributes)
-
+        protected fun createUboBuffers(renderPass: RenderPass) {
             mappings.filterIsInstance<MappedUbo>().forEachIndexed { i, mappedUbo ->
-                val uboBuffer = BufferResource(gl.UNIFORM_BUFFER, backend, creationInfo.copy(bufferName = "${pipeline.name}.ubo-$i"))
+                val creationInfo = BufferCreationInfo(
+                    bufferName = "${pipelineInstance.name}.ubo-$i",
+                    renderPassName = renderPass.name,
+                    sceneName = renderPass.parentScene?.name ?: "scene:<null>"
+                )
+
+                val uboBuffer = BufferResource(
+                    gl.UNIFORM_BUFFER,
+                    backend,
+                    creationInfo
+                )
                 uboBuffers += uboBuffer
                 mappedUbo.uboBuffer = uboBuffer
             }
+        }
+
+        protected fun bindUniforms(): Boolean {
+            var uniformsValid = true
+            for (i in mappings.indices) {
+                uniformsValid = uniformsValid && mappings[i].setUniform()
+            }
+            return uniformsValid
+        }
+
+        protected open fun destroyBuffers() {
+            uboBuffers.forEach { it.delete() }
+            uboBuffers.clear()
+        }
+
+        open fun destroyInstance() {
+            destroyBuffers()
+
+            ubos.clear()
+            textures1d.clear()
+            textures2d.clear()
+            textures3d.clear()
+            texturesCube.clear()
+            storage1d.clear()
+            storage2d.clear()
+            storage3d.clear()
+            mappings.clear()
+
+            pipelineInfo.numInstances--
         }
 
         private fun mapUbo(ubo: UniformBuffer) {
@@ -294,6 +324,42 @@ class CompiledShader(val program: GlProgram, val pipeline: PipelineBase, val bac
                 mappings += MappedUniformStorage3d(storage, binding[0], backend)
             }
         }
+    }
+
+    inner class ShaderInstance(cmd: DrawCommand, val pipelineInstance: Pipeline) : ShaderInstanceBase(pipelineInstance) {
+        var geometry: IndexedVertexList = cmd.geometry
+        val instances: MeshInstanceList? = cmd.mesh.instances
+
+        private val attributeBinders = mutableListOf<GpuGeometryGl.AttributeBinder>()
+        private val instanceAttribBinders = mutableListOf<GpuGeometryGl.AttributeBinder>()
+        private var gpuGeometry: GpuGeometryGl? = null
+
+        val primitiveType = pipelineInstance.vertexLayout.primitiveType.glElemType
+        val indexType = gl.UNSIGNED_INT
+        val numIndices: Int get() = gpuGeometry?.numIndices ?: 0
+
+        init {
+            createBuffers(cmd)
+        }
+
+        private fun createBuffers(cmd: DrawCommand) {
+            val creationInfo = BufferCreationInfo(cmd)
+
+            var geom = geometry.gpuGeometry as? GpuGeometryGl
+            if (geom == null || geom.isReleased) {
+                if (geom?.isReleased == true) {
+                    logE { "Mesh geometry is already released: ${pipelineInstance.name}" }
+                }
+                geom = GpuGeometryGl(geometry, instances, backend, creationInfo)
+                geometry.gpuGeometry = geom
+            }
+            gpuGeometry = geom
+
+            attributeBinders += geom.createShaderVertexAttributeBinders(attributes)
+            instanceAttribBinders += geom.createShaderInstanceAttributeBinders(instanceAttributes)
+
+            createUboBuffers(cmd.queue.renderPass)
+        }
 
         fun bindInstance(drawCmd: DrawCommand): Boolean {
             if (geometry !== drawCmd.geometry) {
@@ -303,34 +369,14 @@ class CompiledShader(val program: GlProgram, val pipeline: PipelineBase, val bac
             }
 
             // call onUpdate callbacks
-            for (i in pipeline.onUpdate.indices) {
-                pipeline.onUpdate[i].invoke(drawCmd)
-            }
-            for (i in ubos.indices) {
-                ubos[i].onUpdate?.invoke(ubos[i], drawCmd)
-            }
-            for (i in textures1d.indices) {
-                textures1d[i].onUpdate?.invoke(textures1d[i], drawCmd)
-            }
-            for (i in textures2d.indices) {
-                textures2d[i].onUpdate?.invoke(textures2d[i], drawCmd)
-            }
-            for (i in textures3d.indices) {
-                textures3d[i].onUpdate?.invoke(textures3d[i], drawCmd)
-            }
-            for (i in texturesCube.indices) {
-                texturesCube[i].onUpdate?.invoke(texturesCube[i], drawCmd)
+            for (i in pipelineInstance.onUpdate.indices) {
+                pipelineInstance.onUpdate[i].invoke(drawCmd)
             }
 
             // update geometry buffers (vertex + instance data)
             gpuGeometry?.checkBuffers()
 
-            // bind uniform values
-            var uniformsValid = true
-            for (i in mappings.indices) {
-                uniformsValid = uniformsValid && mappings[i].setUniform()
-            }
-
+            val uniformsValid = bindUniforms()
             if (uniformsValid) {
                 // bind vertex data
                 gpuGeometry?.indexBuffer?.bind()
@@ -340,25 +386,27 @@ class CompiledShader(val program: GlProgram, val pipeline: PipelineBase, val bac
             return uniformsValid
         }
 
-        private fun destroyBuffers() {
+        override fun destroyBuffers() {
+            super.destroyBuffers()
             attributeBinders.clear()
             instanceAttribBinders.clear()
-            uboBuffers.forEach { it.delete() }
-            uboBuffers.clear()
             gpuGeometry = null
         }
+    }
 
-        fun destroyInstance() {
-            destroyBuffers()
+    inner class ComputeShaderInstance(val pipelineInstance: ComputePipeline, computePass: ComputeRenderPass) :
+        ShaderInstanceBase(pipelineInstance)
+    {
+        init {
+            createUboBuffers(computePass)
+        }
 
-            ubos.clear()
-            textures1d.clear()
-            textures2d.clear()
-            textures3d.clear()
-            texturesCube.clear()
-            mappings.clear()
-
-            pipelineInfo.numInstances--
+        fun bindInstance(computePass: ComputeRenderPass): Boolean {
+            // call onUpdate callbacks
+            for (i in pipelineInstance.onUpdate.indices) {
+                pipelineInstance.onUpdate[i].invoke(computePass)
+            }
+            return bindUniforms()
         }
     }
 

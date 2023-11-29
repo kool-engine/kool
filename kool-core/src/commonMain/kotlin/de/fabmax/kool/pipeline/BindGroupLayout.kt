@@ -2,7 +2,6 @@ package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.modules.ksl.lang.KslFloat1
 import de.fabmax.kool.modules.ksl.lang.KslNumericType
-import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.util.LongHash
 import de.fabmax.kool.util.copy
 
@@ -128,10 +127,8 @@ sealed class Binding(builder: Builder<*>, val binding: Int, val type: BindingTyp
 class TextureSampler1d private constructor(builder: Builder, binding: Int) :
     Binding(builder, binding, BindingType.SAMPLER_1D)
 {
-
     val arraySize = builder.arraySize
 
-    val onUpdate: ((TextureSampler1d, DrawCommand) -> Unit) ? = builder.onUpdate
     val textures = Array<Texture1d?>(arraySize) { null }
     var texture: Texture1d?
         get() = textures[0]
@@ -139,17 +136,13 @@ class TextureSampler1d private constructor(builder: Builder, binding: Int) :
 
     class Builder : Binding.Builder<TextureSampler1d>() {
         var arraySize = 1
-        var onUpdate: ((TextureSampler1d, DrawCommand) -> Unit)? = null
-        var onCreate: ((TextureSampler1d) -> Unit)? = null
 
         init {
             name = "texture"
         }
 
         override fun create(binding: Int): TextureSampler1d {
-            val sampler = TextureSampler1d(this, binding)
-            onCreate?.invoke(sampler)
-            return sampler
+            return TextureSampler1d(this, binding)
         }
     }
 }
@@ -157,11 +150,9 @@ class TextureSampler1d private constructor(builder: Builder, binding: Int) :
 class TextureSampler2d private constructor(builder: Builder, binding: Int) :
     Binding(builder, binding, BindingType.SAMPLER_2D)
 {
-
     val arraySize = builder.arraySize
     val isDepthSampler = builder.isDepthSampler
 
-    val onUpdate: ((TextureSampler2d, DrawCommand) -> Unit)? = builder.onUpdate
     val textures = Array<Texture2d?>(arraySize) { null }
     var texture: Texture2d?
         get() = textures[0]
@@ -170,17 +161,13 @@ class TextureSampler2d private constructor(builder: Builder, binding: Int) :
     class Builder : Binding.Builder<TextureSampler2d>() {
         var arraySize = 1
         var isDepthSampler = false
-        var onUpdate: ((TextureSampler2d, DrawCommand) -> Unit)? = null
-        var onCreate: ((TextureSampler2d) -> Unit)? = null
 
         init {
             name = "texture"
         }
 
         override fun create(binding: Int): TextureSampler2d {
-            val sampler = TextureSampler2d(this, binding)
-            onCreate?.invoke(sampler)
-            return sampler
+            return TextureSampler2d(this, binding)
         }
     }
 }
@@ -188,10 +175,7 @@ class TextureSampler2d private constructor(builder: Builder, binding: Int) :
 class TextureSampler3d private constructor(builder: Builder, binding: Int) :
     Binding(builder, binding, BindingType.SAMPLER_3D)
 {
-
     val arraySize = builder.arraySize
-
-    val onUpdate: ((TextureSampler3d, DrawCommand) -> Unit)? = builder.onUpdate
     val textures = Array<Texture3d?>(arraySize) { null }
     var texture: Texture3d?
         get() = textures[0]
@@ -199,17 +183,13 @@ class TextureSampler3d private constructor(builder: Builder, binding: Int) :
 
     class Builder : Binding.Builder<TextureSampler3d>() {
         var arraySize = 1
-        var onUpdate: ((TextureSampler3d, DrawCommand) -> Unit)? = null
-        var onCreate: ((TextureSampler3d) -> Unit)? = null
 
         init {
             name = "texture"
         }
 
         override fun create(binding: Int): TextureSampler3d {
-            val sampler = TextureSampler3d(this, binding)
-            onCreate?.invoke(sampler)
-            return sampler
+            return TextureSampler3d(this, binding)
         }
     }
 }
@@ -217,11 +197,9 @@ class TextureSampler3d private constructor(builder: Builder, binding: Int) :
 class TextureSamplerCube private constructor(builder: Builder, binding: Int) :
     Binding(builder, binding, BindingType.SAMPLER_CUBE)
 {
-
     val arraySize = builder.arraySize
     val isDepthSampler = builder.isDepthSampler
 
-    val onUpdate: ((TextureSamplerCube, DrawCommand) -> Unit)? = builder.onUpdate
     val textures = Array<TextureCube?>(arraySize) { null }
     var texture: TextureCube?
         get() = textures[0]
@@ -230,17 +208,13 @@ class TextureSamplerCube private constructor(builder: Builder, binding: Int) :
     class Builder : Binding.Builder<TextureSamplerCube>() {
         var arraySize = 1
         var isDepthSampler = false
-        var onUpdate: ((TextureSamplerCube, DrawCommand) -> Unit)? = null
-        var onCreate: ((TextureSamplerCube) -> Unit)? = null
 
         init {
             name = "cubeTexture"
         }
 
         override fun create(binding: Int): TextureSamplerCube {
-            val sampler = TextureSamplerCube(this, binding)
-            onCreate?.invoke(sampler)
-            return sampler
+            return TextureSamplerCube(this, binding)
         }
     }
 }
@@ -248,10 +222,6 @@ class TextureSamplerCube private constructor(builder: Builder, binding: Int) :
 class UniformBuffer private constructor(builder: Builder, binding: Int, val uniforms: List<Uniform<*>>) :
     Binding(builder, binding, BindingType.UNIFORM_BUFFER)
 {
-
-    val instanceName = builder.instanceName
-    val onUpdate: ((UniformBuffer, DrawCommand) -> Unit)? = builder.onUpdate
-
     init {
         uniforms.forEach {
             hash += it.name
@@ -263,11 +233,7 @@ class UniformBuffer private constructor(builder: Builder, binding: Int, val unif
     fun <T> uniform(index: Int): T = uniforms[index] as T
 
     class Builder : Binding.Builder<UniformBuffer>() {
-        var instanceName: String? = null
-
         val uniforms = mutableListOf<() -> Uniform<*>>()
-        var onUpdate: ((UniformBuffer, DrawCommand) -> Unit)? = null
-        var onCreate: ((UniformBuffer) -> Unit)? = null
 
         init {
             name = "Ubo"
@@ -279,9 +245,7 @@ class UniformBuffer private constructor(builder: Builder, binding: Int, val unif
 
         override fun create(binding: Int): UniformBuffer {
             val uniforms = List(uniforms.size) { uniforms[it]() }
-            val ubo = UniformBuffer(this, binding, uniforms)
-            onCreate?.invoke(ubo)
-            return ubo
+            return UniformBuffer(this, binding, uniforms)
         }
     }
 }
@@ -291,20 +255,18 @@ sealed class StorageBinding<T: StorageBinding<T>>(builder: Builder<T>, binding: 
 {
     val accessType = builder.accessType
     val format = builder.format
-    val onUpdate: ((T) -> Unit) ? = builder.onUpdate
+    var level = 0
 
     abstract class Builder<T: StorageBinding<T>> : Binding.Builder<T>() {
         var accessType = StorageAccessType.READ_WRITE
         var format: KslNumericType = KslFloat1
-        var onUpdate: ((T) -> Unit)? = null
-        var onCreate: ((T) -> Unit)? = null
     }
 }
 
 class Storage1d private constructor(builder: Builder, binding: Int) :
     StorageBinding<Storage1d>(builder, binding, BindingType.STORAGE_1D)
 {
-    var storage: Texture1d? = null
+    var storageTex: StorageTexture1d? = null
 
     class Builder : StorageBinding.Builder<Storage1d>() {
         init {
@@ -312,9 +274,7 @@ class Storage1d private constructor(builder: Builder, binding: Int) :
         }
 
         override fun create(binding: Int): Storage1d {
-            val storage = Storage1d(this, binding)
-            onCreate?.invoke(storage)
-            return storage
+            return Storage1d(this, binding)
         }
     }
 }
@@ -322,7 +282,7 @@ class Storage1d private constructor(builder: Builder, binding: Int) :
 class Storage2d private constructor(builder: Builder, binding: Int) :
     StorageBinding<Storage2d>(builder, binding, BindingType.STORAGE_2D)
 {
-    var storage: Texture2d? = null
+    var storageTex: StorageTexture2d? = null
 
     class Builder : StorageBinding.Builder<Storage2d>() {
         init {
@@ -330,9 +290,7 @@ class Storage2d private constructor(builder: Builder, binding: Int) :
         }
 
         override fun create(binding: Int): Storage2d {
-            val storage = Storage2d(this, binding)
-            onCreate?.invoke(storage)
-            return storage
+            return Storage2d(this, binding)
         }
     }
 }
@@ -340,7 +298,7 @@ class Storage2d private constructor(builder: Builder, binding: Int) :
 class Storage3d private constructor(builder: Builder, binding: Int) :
     StorageBinding<Storage3d>(builder, binding, BindingType.STORAGE_3D)
 {
-    var storage: Texture3d? = null
+    var storageTex: StorageTexture3d? = null
 
     class Builder : StorageBinding.Builder<Storage3d>() {
         init {
@@ -348,9 +306,7 @@ class Storage3d private constructor(builder: Builder, binding: Int) :
         }
 
         override fun create(binding: Int): Storage3d {
-            val storage = Storage3d(this, binding)
-            onCreate?.invoke(storage)
-            return storage
+            return Storage3d(this, binding)
         }
     }
 }

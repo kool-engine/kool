@@ -20,6 +20,12 @@ abstract class RenderPass(var name: String) : BaseReleasable() {
      */
     abstract val height: Int
 
+    /**
+     * Available depth of the output (window / screen or framebuffer / texture). This should be one for all
+     * non 3d render passes.
+     */
+    abstract val depth: Int
+
     var parentScene: Scene? = null
 
     abstract val views: List<View>

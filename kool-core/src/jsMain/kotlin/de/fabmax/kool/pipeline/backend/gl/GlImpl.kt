@@ -4,7 +4,8 @@ import de.fabmax.kool.pipeline.TextureData
 import de.fabmax.kool.pipeline.TextureData1d
 import de.fabmax.kool.pipeline.TextureData2d
 import de.fabmax.kool.pipeline.TextureData3d
-import de.fabmax.kool.platform.*
+import de.fabmax.kool.platform.ImageAtlasTextureData
+import de.fabmax.kool.platform.ImageTextureData
 import de.fabmax.kool.util.*
 import org.khronos.webgl.*
 
@@ -58,6 +59,7 @@ object GlImpl : GlApi {
     override val SCISSOR_TEST = WebGLRenderingContext.SCISSOR_TEST
     override val SRC_ALPHA = WebGLRenderingContext.SRC_ALPHA
     override val STATIC_DRAW = WebGLRenderingContext.STATIC_DRAW
+    override val TEXTURE_1D = 0
     override val TEXTURE_2D = WebGLRenderingContext.TEXTURE_2D
     override val TEXTURE_3D = WebGL2RenderingContext.TEXTURE_3D
     override val TEXTURE_COMPARE_MODE = WebGL2RenderingContext.TEXTURE_COMPARE_MODE
@@ -262,6 +264,7 @@ object GlImpl : GlApi {
     override fun renderbufferStorageMultisample(target: Int, samples: Int, internalformat: Int, width: Int, height: Int) = gl.renderbufferStorageMultisample(target, samples, internalformat, width, height)
     override fun scissor(x: Int, y: Int, width: Int, height: Int) = gl.scissor(x, y, width, height)
     override fun shaderSource(shader: GlShader, source: String) = gl.shaderSource(shader.webGl, source)
+    override fun texImage1d(target: Int, data: TextureData) = notSupported("texImage1d")
     override fun texImage2D(target: Int, level: Int, internalformat: Int, width: Int, height: Int, border: Int, format: Int, type: Int, pixels: Buffer?) = texImage2dImpl(target, level, internalformat, width, height, border, format, type, pixels)
     override fun texImage2d(target: Int, data: TextureData) = texImage2dImpl(target, data)
     override fun texImage3d(target: Int, data: TextureData) = textImage3dImpl(target, data)
@@ -423,10 +426,10 @@ object GlImpl : GlApi {
         gl.pixelStorei(WebGLRenderingContext.UNPACK_COLORSPACE_CONVERSION_WEBGL, WebGLRenderingContext.NONE)
         when (data) {
             is TextureData1d -> {
-                gl.texImage2D(target, 0, data.format.glInternalFormat, data.width, 1, 0, data.format.glFormat, data.format.glType, data.arrayBufferView)
+                gl.texImage2D(target, 0, data.format.glInternalFormat(this), data.width, 1, 0, data.format.glFormat(this), data.format.glType(this), data.arrayBufferView)
             }
             is TextureData2d -> {
-                gl.texImage2D(target, 0, data.format.glInternalFormat, data.width, data.height, 0, data.format.glFormat, data.format.glType, data.arrayBufferView)
+                gl.texImage2D(target, 0, data.format.glInternalFormat(this), data.width, data.height, 0, data.format.glFormat(this), data.format.glType(this), data.arrayBufferView)
             }
             is ImageTextureData -> {
                 gl.texImage2D(target, 0, WebGLRenderingContext.RGBA, WebGLRenderingContext.RGBA, WebGLRenderingContext.UNSIGNED_BYTE, data.data)
@@ -438,12 +441,12 @@ object GlImpl : GlApi {
     private fun textImage3dImpl(target: Int, img: TextureData) {
         when (img) {
             is TextureData3d -> {
-                gl.texImage3D(target, 0, img.format.glInternalFormat, img.width, img.height, img.depth, 0, img.format.glFormat, img.format.glType, img.arrayBufferView)
+                gl.texImage3D(target, 0, img.format.glInternalFormat(this), img.width, img.height, img.depth, 0, img.format.glFormat(this), img.format.glType(this), img.arrayBufferView)
             }
             is ImageAtlasTextureData -> {
-                gl.texStorage3D(target, 1, img.format.glInternalFormat, img.width, img.height, img.depth)
+                gl.texStorage3D(target, 1, img.format.glInternalFormat(this), img.width, img.height, img.depth)
                 for (z in 0 until img.depth) {
-                    gl.texSubImage3D(target, 0, 0, 0, z, img.width, img.height, 1, img.format.glFormat, img.format.glType, img.data[z])
+                    gl.texSubImage3D(target, 0, 0, 0, z, img.width, img.height, 1, img.format.glFormat(this), img.format.glType(this), img.data[z])
                 }
             }
             else -> {

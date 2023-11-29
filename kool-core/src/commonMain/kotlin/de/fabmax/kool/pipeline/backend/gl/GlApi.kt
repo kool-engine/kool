@@ -65,6 +65,7 @@ interface GlApi {
     val SCISSOR_TEST: Int
     val SRC_ALPHA: Int
     val STATIC_DRAW: Int
+    val TEXTURE_1D: Int
     val TEXTURE_2D: Int
     val TEXTURE_3D: Int
     val TEXTURE_COMPARE_MODE: Int
@@ -225,6 +226,7 @@ interface GlApi {
     fun renderbufferStorageMultisample(target: Int, samples: Int, internalformat: Int, width: Int, height: Int)
     fun scissor(x: Int, y: Int, width: Int, height: Int)
     fun shaderSource(shader: GlShader, source: String)
+    fun texImage1d(target: Int, data: TextureData)
     fun texImage2D(target: Int, level: Int, internalformat: Int, width: Int, height: Int, border: Int, format: Int, type: Int, pixels: Buffer?)
     fun texImage2d(target: Int, data: TextureData)
     fun texImage3d(target: Int, data: TextureData)

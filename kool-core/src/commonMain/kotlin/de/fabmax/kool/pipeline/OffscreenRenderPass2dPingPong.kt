@@ -26,10 +26,10 @@ open class OffscreenRenderPass2dPingPong(config: Config) : OffscreenRenderPass(
 
     override val views: List<View> = emptyList()
 
-    override fun setSize(width: Int, height: Int, ctx: KoolContext) {
-        super.setSize(width, height, ctx)
-        ping.setSize(width, height, ctx)
-        pong.setSize(width, height, ctx)
+    override fun setSize(width: Int, height: Int, depth: Int) {
+        super.setSize(width, height, depth)
+        ping.setSize(width, height, depth)
+        pong.setSize(width, height, depth)
     }
 
     override fun update(ctx: KoolContext) {

@@ -21,6 +21,16 @@ fun TexFormat.glInternalFormat(gl: GlApi): Int = when(this) {
     TexFormat.RG_F32 -> gl.RG32F
     TexFormat.RGB_F32 -> gl.RGB32F
     TexFormat.RGBA_F32 -> gl.RGBA32F
+
+    TexFormat.R_I32 -> gl.R32I
+    TexFormat.RG_I32 -> gl.RG32I
+    TexFormat.RGB_I32 -> gl.RGB32I
+    TexFormat.RGBA_I32 -> gl.RGBA32I
+
+    TexFormat.R_U32 -> gl.R32UI
+    TexFormat.RG_U32 -> gl.RG32UI
+    TexFormat.RGB_U32 -> gl.RGB32UI
+    TexFormat.RGBA_U32 -> gl.RGBA32UI
 }
 
 fun TexFormat.glType(gl: GlApi): Int = when(this) {
@@ -38,6 +48,16 @@ fun TexFormat.glType(gl: GlApi): Int = when(this) {
     TexFormat.RG_F32 -> gl.FLOAT
     TexFormat.RGB_F32 -> gl.FLOAT
     TexFormat.RGBA_F32 -> gl.FLOAT
+
+    TexFormat.R_I32 -> gl.INT
+    TexFormat.RG_I32 -> gl.INT
+    TexFormat.RGB_I32 -> gl.INT
+    TexFormat.RGBA_I32 -> gl.INT
+
+    TexFormat.R_U32 -> gl.UNSIGNED_INT
+    TexFormat.RG_U32 -> gl.UNSIGNED_INT
+    TexFormat.RGB_U32 -> gl.UNSIGNED_INT
+    TexFormat.RGBA_U32 -> gl.UNSIGNED_INT
 }
 
 fun TexFormat.glFormat(gl: GlApi): Int = when(this) {
@@ -55,6 +75,16 @@ fun TexFormat.glFormat(gl: GlApi): Int = when(this) {
     TexFormat.RG_F32 -> gl.RG
     TexFormat.RGB_F32 -> gl.RGB
     TexFormat.RGBA_F32 -> gl.RGBA
+
+    TexFormat.R_I32 -> gl.RED
+    TexFormat.RG_I32 -> gl.RG
+    TexFormat.RGB_I32 -> gl.RGB
+    TexFormat.RGBA_I32 -> gl.RGBA
+
+    TexFormat.R_U32 -> gl.RED
+    TexFormat.RG_U32 -> gl.RG
+    TexFormat.RGB_U32 -> gl.RGB
+    TexFormat.RGBA_U32 -> gl.RGBA
 }
 
 val TexFormat.pxSize: Int get() = when(this) {
@@ -72,6 +102,16 @@ val TexFormat.pxSize: Int get() = when(this) {
     TexFormat.RG_F32 -> 8
     TexFormat.RGB_F32 -> 12
     TexFormat.RGBA_F32 -> 16
+
+    TexFormat.R_I32 -> 4
+    TexFormat.RG_I32 -> 8
+    TexFormat.RGB_I32 -> 12
+    TexFormat.RGBA_I32 -> 16
+
+    TexFormat.R_U32 -> 4
+    TexFormat.RG_U32 -> 8
+    TexFormat.RGB_U32 -> 12
+    TexFormat.RGBA_U32 -> 16
 }
 
 fun DepthCompareOp.glOp(gl: GlApi): Int = when(this) {

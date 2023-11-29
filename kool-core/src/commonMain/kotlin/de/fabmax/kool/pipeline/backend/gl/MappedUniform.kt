@@ -250,7 +250,7 @@ class MappedUniform4iv(val uniform: Uniform4iv, val location: Int, val gl: GlApi
     }
 }
 
-abstract class MappedUniformTex(val texUnit: Int, val target: Int, val backend: RenderBackendGl) : MappedUniform {
+sealed class MappedUniformTex(val texUnit: Int, val target: Int, val backend: RenderBackendGl) : MappedUniform {
     protected val gl = backend.gl
 
     protected fun checkLoadingState(texture: Texture, arrayIdx: Int): Boolean {
@@ -294,11 +294,12 @@ abstract class MappedUniformTex(val texUnit: Int, val target: Int, val backend: 
     companion object {
         private val loadedTextures = mutableMapOf<TextureData, LoadedTextureGl>()
 
-        protected fun getLoadedTex(texData: TextureData, texture: Texture, backend: RenderBackendGl): LoadedTextureGl {
-            loadedTextures.values.removeAll { it.isDestroyed }
+        internal fun getLoadedTex(texData: TextureData, texture: Texture, backend: RenderBackendGl): LoadedTextureGl {
+            loadedTextures.values.removeAll { it.isReleased }
             return loadedTextures.getOrPut(texData) {
                 val loaded = when (texture) {
-                    is Texture1d -> TextureLoaderGl.loadTexture1d(texture, texData, backend)
+                    is StorageTexture1d -> TextureLoaderGl.loadTexture1d(texture, texData, backend)
+                    is Texture1d -> TextureLoaderGl.loadTexture1dCompat(texture, texData, backend)
                     is Texture2d -> TextureLoaderGl.loadTexture2d(texture, texData, backend)
                     is Texture3d -> TextureLoaderGl.loadTexture3d(texture, texData, backend)
                     is TextureCube -> TextureLoaderGl.loadTextureCube(texture, texData as TextureDataCube, backend)
@@ -388,68 +389,70 @@ class MappedUniformTexCube(private val samplerCube: TextureSamplerCube, texUnit:
     }
 }
 
-class MappedUniformStorage1d(
-    private val storage: Storage1d,
+sealed class MappedUniformStorage(
+    private val storage: StorageBinding<*>,
     private val binding: Int,
     private val backend: RenderBackendGl
 ) : MappedUniform {
-    override fun setUniform(): Boolean {
-        val gl = backend.gl
-        // todo: loadedTex
-        val loadedTex = storage.storage!!.loadedTexture as LoadedTextureGl
+    protected val gl = backend.gl
+
+    protected fun bindStorageTex(storageTex: Texture): Boolean {
+        val loadedTex = checkLoadingState(storageTex)
+
         gl.bindImageTexture(
             unit = binding,
             texture = loadedTex.glTexture,
-            level = 0,
+            level = storage.level,
             layered = false,
             layer = 0,
             access = storage.accessType.glAccessType(gl),
             format = storage.format.glFormat(gl)
         )
+        return true
+    }
+
+    private fun checkLoadingState(storageTex: Texture): LoadedTextureGl {
+        if (storageTex.loadingState == Texture.LoadingState.NOT_LOADED) {
+            val loader = storageTex.loader as BufferedTextureLoader
+            storageTex.loadedTexture = MappedUniformTex.getLoadedTex(loader.data, storageTex, backend)
+            storageTex.loadingState = Texture.LoadingState.LOADED
+        }
+        return storageTex.loadedTexture as LoadedTextureGl
+    }
+}
+
+class MappedUniformStorage1d(
+    private val storage: Storage1d,
+    binding: Int,
+    backend: RenderBackendGl
+) : MappedUniformStorage(storage, binding, backend) {
+    override fun setUniform(): Boolean {
+        val storageTex = storage.storageTex ?: return false
+        bindStorageTex(storageTex)
         return true
     }
 }
 
 class MappedUniformStorage2d(
     private val storage: Storage2d,
-    private val binding: Int,
-    private val backend: RenderBackendGl
-) : MappedUniform {
+    binding: Int,
+    backend: RenderBackendGl
+) : MappedUniformStorage(storage, binding, backend) {
     override fun setUniform(): Boolean {
-        val gl = backend.gl
-        // todo: loadedTex
-        val loadedTex = storage.storage!!.loadedTexture as LoadedTextureGl
-        gl.bindImageTexture(
-            unit = binding,
-            texture = loadedTex.glTexture,
-            level = 0,
-            layered = false,
-            layer = 0,
-            access = storage.accessType.glAccessType(gl),
-            format = storage.format.glFormat(gl)
-        )
+        val storageTex = storage.storageTex ?: return false
+        bindStorageTex(storageTex)
         return true
     }
 }
 
 class MappedUniformStorage3d(
     private val storage: Storage3d,
-    private val binding: Int,
-    private val backend: RenderBackendGl
-) : MappedUniform {
+    binding: Int,
+    backend: RenderBackendGl
+) : MappedUniformStorage(storage, binding, backend) {
     override fun setUniform(): Boolean {
-        val gl = backend.gl
-        // todo: loadedTex
-        val loadedTex = storage.storage!!.loadedTexture as LoadedTextureGl
-        gl.bindImageTexture(
-            unit = binding,
-            texture = loadedTex.glTexture,
-            level = 0,
-            layered = false,
-            layer = 0,
-            access = storage.accessType.glAccessType(gl),
-            format = storage.format.glFormat(gl)
-        )
+        val storageTex = storage.storageTex ?: return false
+        bindStorageTex(storageTex)
         return true
     }
 }

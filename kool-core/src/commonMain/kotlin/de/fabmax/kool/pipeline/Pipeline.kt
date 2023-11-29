@@ -34,16 +34,6 @@ class Pipeline private constructor(builder: Builder) : PipelineBase(builder) {
         hash += shaderCode.hash
     }
 
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is Pipeline) return false
-        return pipelineHash == other.pipelineHash
-    }
-
-    override fun hashCode(): Int {
-        return pipelineHash.hashCode()
-    }
-
     class Builder : PipelineBase.Builder() {
         val pipelineConfig = PipelineConfig()
         val vertexLayout = VertexLayout.Builder()

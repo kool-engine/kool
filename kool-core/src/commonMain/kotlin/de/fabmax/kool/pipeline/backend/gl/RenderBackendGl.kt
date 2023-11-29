@@ -13,6 +13,7 @@ import de.fabmax.kool.util.Time
 import de.fabmax.kool.util.Viewport
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logE
+import kotlin.math.ceil
 
 abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolContext) : RenderBackend {
     override val name = "Common GL Backend"
@@ -31,6 +32,7 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
     override val canBlitRenderPasses = true
     override val isOnscreenInfiniteDepthCapable = false
 
+    internal val shaderMgr = ShaderManager(this)
     internal val queueRenderer = QueueRenderer(this)
 
     protected fun setupGl() {
@@ -48,7 +50,9 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
         BackendStats.resetPerFrameCounts()
 
         if (ctx.disposablePipelines.isNotEmpty()) {
-            queueRenderer.disposePipelines(ctx.disposablePipelines)
+            ctx.disposablePipelines.forEach {
+                shaderMgr.deleteShader(it)
+            }
             ctx.disposablePipelines.clear()
         }
 
@@ -97,7 +101,7 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
 
     override fun uploadTextureToGpu(tex: Texture, data: TextureData) {
         tex.loadedTexture = when (tex) {
-            is Texture1d -> TextureLoaderGl.loadTexture1d(tex, data, this)
+            is Texture1d -> TextureLoaderGl.loadTexture1dCompat(tex, data, this)
             is Texture2d -> TextureLoaderGl.loadTexture2d(tex, data, this)
             is Texture3d -> TextureLoaderGl.loadTexture3d(tex, data, this)
             is TextureCube -> TextureLoaderGl.loadTextureCube(tex, data, this)
@@ -123,6 +127,9 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
     }
 
     override fun generateKslComputeShader(shader: KslComputeShader, pipeline: ComputePipeline): ComputeShaderCodeGl {
+        check(gl.capabilities.hasComputeShaders) {
+            "Compute shaders require OpenGL 4.3 or higher"
+        }
         val src = GlslGenerator(glslVersion).generateComputeProgram(shader.program, pipeline)
         if (shader.program.dumpCode) {
             src.dump()
@@ -179,6 +186,7 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
             is OffscreenRenderPass2d -> offscreenPass.impl.draw(ctx)
             is OffscreenRenderPassCube -> offscreenPass.impl.draw(ctx)
             is OffscreenRenderPass2dPingPong -> drawOffscreenPingPong(offscreenPass)
+            is ComputeRenderPass -> dispatchCompute(offscreenPass)
             else -> throw IllegalArgumentException("Offscreen pass type not implemented: $offscreenPass")
         }
     }
@@ -189,6 +197,21 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
             offscreenPass.ping.impl.draw(ctx)
             offscreenPass.onDrawPong?.invoke(i)
             offscreenPass.pong.impl.draw(ctx)
+        }
+    }
+
+    private fun dispatchCompute(computePass: ComputeRenderPass) {
+        val pipeline = computePass.getOrCreatePipeline()
+        val numGroupsX = ceil(computePass.width.toFloat() / pipeline.workGroupSize.x).toInt()
+        val numGroupsY = ceil(computePass.height.toFloat() / pipeline.workGroupSize.y).toInt()
+        val numGroupsZ = ceil(computePass.depth.toFloat() / pipeline.workGroupSize.z).toInt()
+
+        if (shaderMgr.setupComputeShader(pipeline, computePass)) {
+            val maxCnt = gl.capabilities.maxWorkGroupCount
+            if (numGroupsX > maxCnt.x || numGroupsY > maxCnt.y || numGroupsZ > maxCnt.z) {
+                logE { "Maximum compute shader workgroup count exceeded: max count = $maxCnt, requested count: ($numGroupsX, $numGroupsY, $numGroupsZ)" }
+            }
+            gl.dispatchCompute(numGroupsX, numGroupsY, numGroupsZ)
         }
     }
 

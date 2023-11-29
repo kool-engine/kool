@@ -16,7 +16,7 @@ import org.lwjgl.opengl.GL32.GL_TEXTURE_CUBE_MAP_SEAMLESS
 
 class RenderBackendGlImpl(ctx: KoolContext) : RenderBackendGl(GlImpl, ctx), RenderBackendJvm {
     override val glfwWindow: GlfwWindow
-    override val glslVersion: String = "#version 330"
+    override val glslVersion: String
 
     init {
         glfwWindow = createWindow()
@@ -27,6 +27,7 @@ class RenderBackendGlImpl(ctx: KoolContext) : RenderBackendGl(GlImpl, ctx), Rend
         GL.createCapabilities()
 
         GlImpl.initOpenGl(this)
+        glslVersion = "#version ${GlImpl.version.major}${GlImpl.version.minor}0 core"
 
         glEnable(GL_VERTEX_PROGRAM_POINT_SIZE)
         glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS)

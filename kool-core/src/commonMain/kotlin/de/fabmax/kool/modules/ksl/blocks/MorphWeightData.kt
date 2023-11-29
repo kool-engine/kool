@@ -1,11 +1,10 @@
 package de.fabmax.kool.modules.ksl.blocks
 
-import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.KslShaderListener
 import de.fabmax.kool.modules.ksl.lang.KslDataBlock
 import de.fabmax.kool.modules.ksl.lang.KslProgram
-import de.fabmax.kool.pipeline.Pipeline
-import de.fabmax.kool.pipeline.RenderPass
+import de.fabmax.kool.pipeline.PipelineBase
+import de.fabmax.kool.pipeline.ShaderBase
 import de.fabmax.kool.pipeline.Uniform4f
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 
@@ -25,7 +24,7 @@ class MorphWeightData(program: KslProgram) : KslDataBlock, KslShaderListener {
         program.shaderListeners += this
     }
 
-    override fun onShaderCreated(shader: KslShader, pipeline: Pipeline, updateEvent: RenderPass.UpdateEvent) {
+    override fun onShaderCreated(shader: ShaderBase, pipeline: PipelineBase) {
         uMorphWeightsA = shader.uniforms["uMorphWeightsA"] as? Uniform4f
         uMorphWeightsB = shader.uniforms["uMorphWeightsB"] as? Uniform4f
     }

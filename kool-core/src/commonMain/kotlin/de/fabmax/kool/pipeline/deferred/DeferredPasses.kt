@@ -1,6 +1,5 @@
 package de.fabmax.kool.pipeline.deferred
 
-import de.fabmax.kool.KoolContext
 import de.fabmax.kool.pipeline.OffscreenRenderPass
 
 class DeferredPasses(val materialPass: MaterialPass, val lightingPass: PbrLightingPass) {
@@ -32,10 +31,10 @@ class DeferredPasses(val materialPass: MaterialPass, val lightingPass: PbrLighti
             }
         }
 
-    fun checkSize(viewportW: Int, viewportH: Int, ctx: KoolContext) {
+    fun checkSize(viewportW: Int, viewportH: Int) {
         if (viewportW > 0 && viewportH > 0) {
-            materialPass.setSize(viewportW, viewportH, ctx)
-            lightingPass.setSize(viewportW, viewportH, ctx)
+            materialPass.setSize(viewportW, viewportH)
+            lightingPass.setSize(viewportW, viewportH)
         }
     }
 }

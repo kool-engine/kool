@@ -1,6 +1,5 @@
 package de.fabmax.kool.pipeline.deferred
 
-import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.util.logT
@@ -47,7 +46,7 @@ class Bloom(deferredPipeline: DeferredPipeline, cfg: DeferredPipelineConfig) : D
         thresholdPass.setLightingInput(currentPasses.lightingPass)
     }
 
-    fun checkSize(viewportW: Int, viewportH: Int, ctx: KoolContext) {
+    fun checkSize(viewportW: Int, viewportH: Int) {
         if (isEnabled) {
             val bestSamples = (viewportH / desiredMapHeight.toFloat()).roundToInt().clamp(1, 8)
             thresholdPass.setupDownSampling(bestSamples)
@@ -56,8 +55,8 @@ class Bloom(deferredPipeline: DeferredPipeline, cfg: DeferredPipelineConfig) : D
             val bloomMapH = (viewportH / bestSamples.toFloat()).roundToInt()
             if (bloomMapW > 0 && bloomMapH > 0) {
                 logT { "Bloom threshold down sampling: $bestSamples" }
-                thresholdPass.setSize(bloomMapW, bloomMapH, ctx)
-                blurPass.setSize(bloomMapW, bloomMapH, ctx)
+                thresholdPass.setSize(bloomMapW, bloomMapH)
+                blurPass.setSize(bloomMapW, bloomMapH)
             }
         }
     }

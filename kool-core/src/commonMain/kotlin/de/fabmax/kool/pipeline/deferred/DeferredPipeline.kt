@@ -1,6 +1,5 @@
 package de.fabmax.kool.pipeline.deferred
 
-import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.AngleF
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.pipeline.Attribute
@@ -145,7 +144,7 @@ class DeferredPipeline(val scene: Scene, val cfg: DeferredPipelineConfig) {
             sceneContent.update(ev)
             lightingPassContent.update(ev)
         }
-        scene.onRenderScene += this::onRenderScene
+        scene.onRenderScene += { onRenderScene() }
         scene.onRelease {
             noSsrMap.release()
             noBloomMap.release()
@@ -208,17 +207,17 @@ class DeferredPipeline(val scene: Scene, val cfg: DeferredPipelineConfig) {
         }
     }
 
-    private fun onRenderScene(ctx: KoolContext) {
+    private fun onRenderScene() {
         if (isEnabled) {
             swapPasses()
 
             val vpW = (scene.mainRenderPass.viewport.width * renderResolution).roundToInt()
             val vpH = (scene.mainRenderPass.viewport.height * renderResolution).roundToInt()
 
-            activePass.checkSize(vpW, vpH, ctx)
-            reflections?.checkSize(vpW, vpH, ctx)
-            aoPipeline?.checkSize(vpW, vpH, ctx)
-            bloom?.checkSize(vpW, vpH, ctx)
+            activePass.checkSize(vpW, vpH)
+            reflections?.checkSize(vpW, vpH)
+            aoPipeline?.checkSize(vpW, vpH)
+            bloom?.checkSize(vpW, vpH)
         }
     }
 

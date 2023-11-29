@@ -69,9 +69,10 @@ open class OffscreenRenderPass2d(drawNode: Node, config: Config) : OffscreenRend
         }
     }
 
-    override fun applySize(width: Int, height: Int, ctx: KoolContext) {
-        super.applySize(width, height, ctx)
-        impl.applySize(width, height, ctx)
+    override fun applySize(width: Int, height: Int, depth: Int) {
+        check(depth == 1) { "OffscreenRenderPass2d depth must be == 1" }
+        super.applySize(width, height, depth)
+        impl.applySize(width, height)
     }
 
     private fun makeColorAttachmentTexs(): List<Texture2d> {
@@ -109,7 +110,7 @@ open class OffscreenRenderPass2d(drawNode: Node, config: Config) : OffscreenRend
 interface OffscreenPass2dImpl {
     val isReverseDepth: Boolean
 
-    fun applySize(width: Int, height: Int, ctx: KoolContext)
+    fun applySize(width: Int, height: Int)
 
     fun release()
 

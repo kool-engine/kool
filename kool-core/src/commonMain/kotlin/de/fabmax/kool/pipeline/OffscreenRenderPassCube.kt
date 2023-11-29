@@ -66,9 +66,10 @@ open class OffscreenRenderPassCube(drawNode: Node, config: Config) : OffscreenRe
         }
     }
 
-    override fun applySize(width: Int, height: Int, ctx: KoolContext) {
-        super.applySize(width, height, ctx)
-        impl.applySize(width, height, ctx)
+    override fun applySize(width: Int, height: Int, depth: Int) {
+        check(depth == 1) { "OffscreenRenderPassCube depth must be == 1" }
+        super.applySize(width, height, depth)
+        impl.applySize(width, height)
     }
 
     private fun makeColorAttachmentTexs(): List<TextureCube> {
@@ -115,7 +116,7 @@ open class OffscreenRenderPassCube(drawNode: Node, config: Config) : OffscreenRe
 interface OffscreenPassCubeImpl {
     val isReverseDepth: Boolean
 
-    fun applySize(width: Int, height: Int, ctx: KoolContext)
+    fun applySize(width: Int, height: Int)
 
     fun release()
 

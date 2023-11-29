@@ -226,7 +226,7 @@ class VkOffscreenPass2d(val parentPass: OffscreenRenderPass2d) : OffscreenPass2d
         loadingState = Texture.LoadingState.NOT_LOADED
     }
 
-    override fun applySize(width: Int, height: Int, ctx: KoolContext) {
+    override fun applySize(width: Int, height: Int) {
         destroyBuffers()
 
         isCreationBlocked = true

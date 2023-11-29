@@ -1,8 +1,9 @@
 package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.math.MutableVec2i
+import de.fabmax.kool.math.MutableVec3i
 import de.fabmax.kool.math.Vec2i
+import de.fabmax.kool.math.Vec3i
 import de.fabmax.kool.math.getNumMipLevels
 import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logT
@@ -17,10 +18,11 @@ inline fun renderPassConfig(block: OffscreenRenderPass.Config.() -> Unit): Offsc
 
 abstract class OffscreenRenderPass(config: Config) : RenderPass(config.name) {
 
-    private val _size = MutableVec2i(config.size)
-    val size: Vec2i get() = _size
+    private val _size = MutableVec3i(config.size)
+    val size: Vec3i get() = _size
     override val width: Int get() = _size.x
     override val height: Int get() = _size.y
+    override val depth: Int get() = _size.z
 
     val colorAttachment = config.colorAttachment
     val depthAttachment = config.depthAttachment
@@ -55,18 +57,18 @@ abstract class OffscreenRenderPass(config: Config) : RenderPass(config.name) {
         viewport.set(0, 0, getMipWidth(mipLevel), getMipHeight(mipLevel))
     }
 
-    open fun setSize(width: Int, height: Int, ctx: KoolContext) {
-        if (width != this.width || height != this.height) {
-            logT { "OffscreenPass $name resized to $width x $height" }
-            applySize(width, height, ctx)
+    open fun setSize(width: Int, height: Int, depth: Int = 1) {
+        if (width != this.width || height != this.height || depth != this.depth) {
+            logT { "OffscreenPass $name resized to $width x $height x $depth" }
+            applySize(width, height, depth)
             for (v in views) {
                 v.viewport.set(0, 0, width, height)
             }
         }
     }
 
-    protected open fun applySize(width: Int, height: Int, ctx: KoolContext) {
-        _size.set(width, height)
+    protected open fun applySize(width: Int, height: Int, depth: Int) {
+        _size.set(width, height, depth)
     }
 
     override fun release() {
@@ -124,7 +126,7 @@ abstract class OffscreenRenderPass(config: Config) : RenderPass(config.name) {
     open class Config {
         var name = "OffscreenRenderPass"
 
-        val size = MutableVec2i(128, 128)
+        val size = MutableVec3i(128, 128, 1)
         var mipLevels = 1
         var drawMipLevels = true
 
@@ -132,11 +134,13 @@ abstract class OffscreenRenderPass(config: Config) : RenderPass(config.name) {
         var depthAttachment: DepthAttachment = RenderBufferDepthAttachment()
 
         fun size(size: Vec2i) = size(size.x, size.y)
+        fun size(size: Vec3i) = size(size.x, size.y, size.z)
 
-        fun size(width: Int, height: Int) {
-            size.set(max(1, width), max(1, height))
+        fun size(width: Int, height: Int, depth: Int = 1) {
+            size.set(max(1, width), max(1, height), max(1, depth))
             if (size.x > width) logW { "Invalid OffscreenRenderPass width: $width" }
             if (size.y > height) logW { "Invalid OffscreenRenderPass height: $height" }
+            if (size.z > depth) logW { "Invalid OffscreenRenderPass depth: $depth" }
         }
 
         fun enableMipLevels(mipLevels: Int = getNumMipLevels(size.x, size.y), drawMipLevels: Boolean = true) {

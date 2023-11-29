@@ -127,7 +127,7 @@ class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, val backend: Re
         resInfo.deleted()
     }
 
-    override fun applySize(width: Int, height: Int, ctx: KoolContext) {
+    override fun applySize(width: Int, height: Int) {
         deleteBuffers()
         createBuffers()
     }

@@ -124,7 +124,7 @@ class VkOffscreenPassCube(val parentPass: OffscreenRenderPassCube) : OffscreenPa
         loadingState = Texture.LoadingState.NOT_LOADED
     }
 
-    override fun applySize(width: Int, height: Int, ctx: KoolContext) {
+    override fun applySize(width: Int, height: Int) {
         destroyBuffers()
 
         isCreationBlocked = true

@@ -83,7 +83,7 @@ abstract class AoPipeline : BaseReleasable() {
         private var mapWidth = max(32, (scene.mainRenderPass.viewport.width * mapSize).toInt())
         private var mapHeight = max(32, (scene.mainRenderPass.viewport.height * mapSize).toInt())
 
-        private val onRenderSceneCallback: (KoolContext) -> Unit = { onRenderScene(it) }
+        private val onRenderSceneCallback: (KoolContext) -> Unit = { onRenderScene() }
 
         val proxyCamera = PerspectiveProxyCam(camera)
 
@@ -99,7 +99,7 @@ abstract class AoPipeline : BaseReleasable() {
             aoPass.sceneCam = proxyCamera
             aoPass.dependsOn(depthPass)
             denoisePass = AoDenoisePass(aoPass, "a")
-            denoisePass.depth = depthPass.colorTexture
+            denoisePass.linearDepth = depthPass.colorTexture
             denoisePass.dependsOn(aoPass)
 
             scene.addOffscreenPass(depthPass)
@@ -109,16 +109,16 @@ abstract class AoPipeline : BaseReleasable() {
             scene.onRenderScene += onRenderSceneCallback
         }
 
-        private fun onRenderScene(ctx: KoolContext) {
+        private fun onRenderScene() {
             val mapW = (scene.mainRenderPass.viewport.width * mapSize).toInt()
             val mapH = (scene.mainRenderPass.viewport.height * mapSize).toInt()
 
             if (isEnabled && mapW > 0 && mapH > 0) {
-                depthPass.setSize(mapW, mapH, ctx)
-                aoPass.setSize(mapW, mapH, ctx)
+                depthPass.setSize(mapW, mapH)
+                aoPass.setSize(mapW, mapH)
             }
             if (isEnabled && mapW > 0 && mapH > 0) {
-                denoisePass.setSize(mapW, mapH, ctx)
+                denoisePass.setSize(mapW, mapH)
             }
         }
 
@@ -160,18 +160,18 @@ abstract class AoPipeline : BaseReleasable() {
             aoPass.sceneCam = currentPasses.materialPass.mainView.camera
             aoPass.deferredPosition = currentPasses.materialPass.positionFlags
             aoPass.deferredNormal = currentPasses.materialPass.normalRoughness
-            denoisePass.depth = currentPasses.materialPass.positionFlags
+            denoisePass.linearDepth = currentPasses.materialPass.positionFlags
         }
 
-        fun checkSize(viewportW: Int, viewportH: Int, ctx: KoolContext) {
+        fun checkSize(viewportW: Int, viewportH: Int) {
             val width = (viewportW * mapSize).toInt().clamp(1, 4096)
             val height = (viewportH * mapSize).toInt().clamp(1, 4096)
 
             if (aoPass.isEnabled && (width != aoPass.width || height != aoPass.height)) {
-                aoPass.setSize(width, height, ctx)
+                aoPass.setSize(width, height)
             }
             if (denoisePass.isEnabled && (width != denoisePass.width || height != denoisePass.height)) {
-                denoisePass.setSize(width, height, ctx)
+                denoisePass.setSize(width, height)
             }
         }
 

@@ -3,17 +3,30 @@ package de.fabmax.kool.pipeline
 /**
  * Base class for compute shaders.
  */
-abstract class ComputeShader : ShaderBase() {
+abstract class ComputeShader(name: String) : ShaderBase(name) {
     val onPipelineCreated = mutableListOf<ComputePipelineCreatedListener>()
 
-    abstract fun onPipelineSetup(builder: ComputePipeline.Builder, updateEvent: RenderPass.UpdateEvent)
+    private var createdPipeline: ComputePipeline? = null
 
-    open fun onComputePipelineCreated(pipeline: ComputePipeline, updateEvent: RenderPass.UpdateEvent) {
+    fun getOrCreatePipeline(computePass: ComputeRenderPass): ComputePipeline {
+        var pipeline = createdPipeline
+        if (pipeline == null) {
+            val pipelineBuilder = ComputePipeline.Builder()
+            onPipelineSetup(pipelineBuilder, computePass)
+            pipeline = pipelineBuilder.create()
+            onComputePipelineCreated(pipeline, computePass)
+        }
+        return pipeline
+    }
+
+    abstract fun onPipelineSetup(builder: ComputePipeline.Builder, computePass: ComputeRenderPass)
+
+    open fun onComputePipelineCreated(pipeline: ComputePipeline, computePass: ComputeRenderPass) {
         pipelineCreated(pipeline)
-        onPipelineCreated.forEach { it.onPipelineCreated(pipeline, updateEvent) }
+        onPipelineCreated.forEach { it.onPipelineCreated(pipeline, computePass) }
     }
 
     fun interface ComputePipelineCreatedListener {
-        fun onPipelineCreated(pipeline: ComputePipeline, updateEvent: RenderPass.UpdateEvent)
+        fun onPipelineCreated(pipeline: ComputePipeline, computePass: ComputeRenderPass)
     }
 }

@@ -74,8 +74,8 @@ class BloomBlurPass(kernelSize: Int, thresholdPass: BloomThresholdPass) :
         }
     }
 
-    override fun setSize(width: Int, height: Int, ctx: KoolContext) {
-        super.setSize(width, height, ctx)
+    override fun setSize(width: Int, height: Int, depth: Int) {
+        super.setSize(width, height, depth)
         blurDirDirty = true
     }
 

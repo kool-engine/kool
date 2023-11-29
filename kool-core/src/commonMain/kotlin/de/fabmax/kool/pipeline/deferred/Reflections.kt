@@ -1,6 +1,5 @@
 package de.fabmax.kool.pipeline.deferred
 
-import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.pipeline.Texture2d
 
@@ -22,13 +21,13 @@ class Reflections(cfg: DeferredPipelineConfig) : DeferredPassSwapListener {
             denoisePass.isEnabled = value
         }
 
-    fun checkSize(viewportW: Int, viewportH: Int, ctx: KoolContext) {
+    fun checkSize(viewportW: Int, viewportH: Int) {
         if (isEnabled) {
             val width = (viewportW * mapSize).toInt().clamp(1, 4096)
             val height = (viewportH * mapSize).toInt().clamp(1, 4096)
             if (isEnabled) {
-                reflectionPass.setSize(width, height, ctx)
-                denoisePass.setSize(width, height, ctx)
+                reflectionPass.setSize(width, height)
+                denoisePass.setSize(width, height)
             }
         }
     }

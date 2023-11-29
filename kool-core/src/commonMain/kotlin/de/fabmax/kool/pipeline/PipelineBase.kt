@@ -37,6 +37,16 @@ abstract class PipelineBase(builder: Builder) {
         return null
     }
 
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is PipelineBase) return false
+        return pipelineHash == other.pipelineHash
+    }
+
+    override fun hashCode(): Int {
+        return pipelineHash.hashCode()
+    }
+
     abstract class Builder {
         var name = "pipeline"
         val bindGroupLayouts = mutableListOf<BindGroupLayout.Builder>()

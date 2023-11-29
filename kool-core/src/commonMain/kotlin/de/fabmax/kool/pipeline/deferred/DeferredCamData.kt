@@ -1,6 +1,5 @@
 package de.fabmax.kool.pipeline.deferred
 
-import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.KslShaderListener
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
@@ -37,7 +36,7 @@ class DeferredCamData(program: KslProgram) : KslDataBlock, KslShaderListener {
         program.uniformBuffers += camUbo
     }
 
-    override fun onShaderCreated(shader: KslShader, pipeline: Pipeline, updateEvent: RenderPass.UpdateEvent) {
+    override fun onShaderCreated(shader: ShaderBase, pipeline: PipelineBase) {
         uPosition = shader.uniforms["uCamPos"] as Uniform3f?
         uProjMat = shader.uniforms["uProjMat"] as UniformMat4f?
         uInvViewMat = shader.uniforms["uInvViewMat"] as UniformMat4f?

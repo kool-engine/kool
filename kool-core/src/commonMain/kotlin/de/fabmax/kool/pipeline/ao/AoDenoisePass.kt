@@ -18,13 +18,14 @@ class AoDenoisePass(aoPass: OffscreenRenderPass2d, depthComponent: String) :
         name = "AoDenoisePass"
         size.set(aoPass.size)
         colorTargetTexture(TexFormat.R)
-    }) {
+    })
+{
 
     private val denoiseShader = DenoiseShader(aoPass, depthComponent)
 
     var radius: Float by denoiseShader::uRadius
     var noisyAo: Texture2d? by denoiseShader::noisyAoTex
-    var depth: Texture2d? by denoiseShader::depthTex
+    var linearDepth: Texture2d? by denoiseShader::depthTex
 
     var clearAndDisable = false
 
@@ -60,7 +61,7 @@ class AoDenoisePass(aoPass: OffscreenRenderPass2d, depthComponent: String) :
 
     override fun update(ctx: KoolContext) {
         if (clearAndDisable) {
-            setSize(1, 1, ctx)
+            setSize(1, 1)
             clearAndDisable = false
             denoiseMesh.isVisible = false
             clearMesh.isVisible = true
@@ -75,44 +76,50 @@ class AoDenoisePass(aoPass: OffscreenRenderPass2d, depthComponent: String) :
         super.update(ctx)
     }
 
-    private fun denoiseProg(depthComponent: String) = KslProgram("Ambient Occlusion Denoise Pass").apply {
-        val uv = interStageFloat2("uv")
-
-        fullscreenQuadVertexStage(uv)
-
-        fragmentStage {
-            val noisyAoTex = texture2d("noisyAoTex")
-            val depthTex = texture2d("depthTex")
-
-            val uRadius = uniformFloat1("uRadius")
-
-            main {
-                val texelSize = float2Var(1f.const / textureSize2d(noisyAoTex).toFloat2())
-                val baseDepth = float1Var(sampleTexture(depthTex, uv.output).float1(depthComponent))
-                val depthThresh = float1Var(uRadius * 0.1f.const)
-
-                val result = float1Var(0f.const)
-                val weight = float1Var(0f.const)
-                val hlim = float2Var(Vec2f(-AmbientOcclusionPass.NOISE_TEX_SIZE.toFloat()).const * 0.5f.const + 0.5f.const)
-                fori(0.const, AmbientOcclusionPass.NOISE_TEX_SIZE.const) { y ->
-                    fori(0.const, AmbientOcclusionPass.NOISE_TEX_SIZE.const) { x ->
-                        val sampleUv = float2Var(uv.output + (hlim + float2Value(x.toFloat1(), y.toFloat1())) * texelSize)
-                        val sampleDepth = abs(sampleTexture(depthTex, sampleUv).float1(depthComponent) - baseDepth)
-                        val w = 1f.const - step(depthThresh, sampleDepth) * 0.99f.const
-                        result += sampleTexture(noisyAoTex, sampleUv).r * w
-                        weight += w
-                    }
-                }
-                result /= weight
-                colorOutput(float4Value(result, result, result, 1f.const))
-            }
-        }
-    }
-
-    private inner class DenoiseShader(aoPass: OffscreenRenderPass2d, depthComponent: String)
-        : KslShader(denoiseProg(depthComponent), fullscreenShaderPipelineCfg) {
+    private inner class DenoiseShader(aoPass: OffscreenRenderPass2d, depthComponent: String) :
+        KslShader("Ambient Occlusion Denoise Pass")
+    {
         var noisyAoTex by texture2d("noisyAoTex", aoPass.colorTexture)
         var depthTex by texture2d("depthTex")
         var uRadius by uniform1f("uRadius", 1f)
+
+        init {
+            pipelineConfig.set(fullscreenShaderPipelineCfg)
+            program.denoiseProg(depthComponent)
+        }
+
+        private fun KslProgram.denoiseProg(depthComponent: String) {
+            val uv = interStageFloat2("uv")
+
+            fullscreenQuadVertexStage(uv)
+
+            fragmentStage {
+                val noisyAoTex = texture2d("noisyAoTex")
+                val depthTex = texture2d("depthTex")
+
+                val uRadius = uniformFloat1("uRadius")
+
+                main {
+                    val texelSize = float2Var(1f.const / textureSize2d(noisyAoTex).toFloat2())
+                    val baseDepth = float1Var(sampleTexture(depthTex, uv.output).float1(depthComponent))
+                    val depthThresh = float1Var(uRadius * 0.1f.const)
+
+                    val result = float1Var(0f.const)
+                    val weight = float1Var(0f.const)
+                    val hlim = float2Var(Vec2f(-AmbientOcclusionPass.NOISE_TEX_SIZE.toFloat()).const * 0.5f.const + 0.5f.const)
+                    fori(0.const, AmbientOcclusionPass.NOISE_TEX_SIZE.const) { y ->
+                        fori(0.const, AmbientOcclusionPass.NOISE_TEX_SIZE.const) { x ->
+                            val sampleUv = float2Var(uv.output + (hlim + float2Value(x.toFloat1(), y.toFloat1())) * texelSize)
+                            val sampleDepth = abs(sampleTexture(depthTex, sampleUv).float1(depthComponent) - baseDepth)
+                            val w = 1f.const - step(depthThresh, sampleDepth) * 0.99f.const
+                            result += sampleTexture(noisyAoTex, sampleUv).r * w
+                            weight += w
+                        }
+                    }
+                    result /= weight
+                    colorOutput(float4Value(result, result, result, 1f.const))
+                }
+            }
+        }
     }
 }

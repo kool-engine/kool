@@ -9,18 +9,11 @@ import de.fabmax.kool.util.Time
 class QueueRenderer(val backend: RenderBackendGl) {
 
     private val glAttribs = GlAttribs()
-    private val shaderMgr = ShaderManager(backend)
 
     private val colorBufferClearVal = Float32Buffer(4)
 
     private val ctx: KoolContext = backend.ctx
     private val gl: GlApi = backend.gl
-
-    fun disposePipelines(pipelines: List<Pipeline>) {
-        pipelines.forEach {
-            shaderMgr.deleteShader(it)
-        }
-    }
 
     fun renderViews(renderPass: RenderPass, mipLevel: Int = 0) {
         for (i in renderPass.views.indices) {
@@ -63,7 +56,7 @@ class QueueRenderer(val backend: RenderBackendGl) {
                 glAttribs.setupPipelineAttribs(pipeline, renderPass.isReverseDepth)
 
                 if (cmd.geometry.numIndices > 0) {
-                    val shaderInst = shaderMgr.setupShader(cmd)
+                    val shaderInst = backend.shaderMgr.setupShader(cmd)
                     if (shaderInst != null && shaderInst.indexType != 0) {
                         val insts = cmd.mesh.instances
                         if (insts == null) {

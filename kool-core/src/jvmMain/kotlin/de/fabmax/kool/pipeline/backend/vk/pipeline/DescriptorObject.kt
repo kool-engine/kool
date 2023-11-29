@@ -63,7 +63,6 @@ class UboDescriptor(binding: Int, graphicsPipeline: GraphicsPipeline, private va
     }
 
     override fun update(cmd: DrawCommand, sys: VkSystem) {
-        ubo.onUpdate?.invoke(ubo, cmd)
         layout.putToBuffer(ubo.uniforms, hostBuffer)
         hostBuffer.useRaw { host ->
             buffer.mapped { put(host) }
@@ -172,7 +171,6 @@ class SamplerDescriptor private constructor(binding: Int, private val sampler: T
                 allValid = allValid && tex.loadingState == Texture.LoadingState.LOADED
             }
         }
-        sampler.onUpdate(cmd)
 
         isValid = allValid
     }
@@ -237,16 +235,6 @@ class SamplerDescriptor private constructor(binding: Int, private val sampler: T
                 MODE_CUBE -> samplerCube!!.textures
                 else -> throw IllegalStateException("Invalid mode: $mode")
             }
-
-        fun onUpdate(cmd: DrawCommand) {
-            when (mode) {
-                MODE_1D -> sampler1d!!.onUpdate?.invoke(sampler1d, cmd)
-                MODE_2D -> sampler2d!!.onUpdate?.invoke(sampler2d, cmd)
-                MODE_3D -> sampler3d!!.onUpdate?.invoke(sampler3d, cmd)
-                MODE_CUBE -> samplerCube!!.onUpdate?.invoke(samplerCube, cmd)
-                else -> throw IllegalStateException("Invalid mode: $mode")
-            }
-        }
 
         companion object {
             const val MODE_1D = 1

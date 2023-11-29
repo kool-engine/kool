@@ -1,11 +1,10 @@
 package de.fabmax.kool.modules.ksl.blocks
 
-import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.KslShaderListener
 import de.fabmax.kool.modules.ksl.lang.KslDataBlock
 import de.fabmax.kool.modules.ksl.lang.KslProgram
-import de.fabmax.kool.pipeline.Pipeline
-import de.fabmax.kool.pipeline.RenderPass
+import de.fabmax.kool.pipeline.PipelineBase
+import de.fabmax.kool.pipeline.ShaderBase
 import de.fabmax.kool.pipeline.UniformMat4fv
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import kotlin.math.min
@@ -22,7 +21,7 @@ class ArmatureData(maxBones: Int, program: KslProgram) : KslDataBlock, KslShader
         }
     }
 
-    override fun onShaderCreated(shader: KslShader, pipeline: Pipeline, updateEvent: RenderPass.UpdateEvent) {
+    override fun onShaderCreated(shader: ShaderBase, pipeline: PipelineBase) {
         uBoneTransforms = shader.uniforms["uJointTransform"] as? UniformMat4fv
     }
 

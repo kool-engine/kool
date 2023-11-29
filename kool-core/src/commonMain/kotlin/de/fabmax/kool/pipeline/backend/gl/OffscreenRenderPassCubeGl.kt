@@ -102,7 +102,7 @@ class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, val backend
         resInfo.deleted()
     }
 
-    override fun applySize(width: Int, height: Int, ctx: KoolContext) {
+    override fun applySize(width: Int, height: Int) {
         deleteBuffers()
         createBuffers()
     }

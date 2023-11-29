@@ -14,7 +14,7 @@ class LoadedTextureGl(
 ) : LoadedTexture {
 
     val texId = nextTexId++
-    var isDestroyed = false
+    override var isReleased = false
         private set
 
     override var width = 0
@@ -64,8 +64,8 @@ class LoadedTextureGl(
     }
 
     override fun release() {
-        if (!isDestroyed) {
-            isDestroyed = true
+        if (!isReleased) {
+            isReleased = true
             gl.deleteTexture(glTexture)
             allocationInfo.deleted()
         }

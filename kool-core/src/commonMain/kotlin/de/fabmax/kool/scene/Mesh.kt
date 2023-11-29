@@ -148,7 +148,7 @@ open class Mesh(var geometry: IndexedVertexList, name: String = geometry.name) :
         }
     }
 
-    open fun getOrCreatePipeline(updateEvent: RenderPass.UpdateEvent): Pipeline? {
+    fun getOrCreatePipeline(updateEvent: RenderPass.UpdateEvent): Pipeline? {
         if (discardedPipelines.isNotEmpty()) {
             discardedPipelines.forEach { updateEvent.ctx.disposePipeline(it) }
             discardedPipelines.clear()

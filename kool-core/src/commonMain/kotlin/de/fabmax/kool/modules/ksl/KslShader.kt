@@ -16,7 +16,7 @@ fun KslShader(
     return shader
 }
 
-open class KslShader private constructor(val program: KslProgram) : Shader() {
+open class KslShader private constructor(val program: KslProgram) : Shader(program.name) {
     constructor(name: String): this(KslProgram(name))
 
     constructor(program: KslProgram, pipelineConfig: PipelineConfig): this(program) {
@@ -66,7 +66,7 @@ open class KslShader private constructor(val program: KslProgram) : Shader() {
                 program.shaderListeners[i].onUpdate(cmd)
             }
         }
-        program.shaderListeners.forEach { it.onShaderCreated(this, pipeline, updateEvent) }
+        program.shaderListeners.forEach { it.onShaderCreated(this, pipeline) }
     }
 
     private fun VertexLayout.Builder.setupVertexLayout(mesh: Mesh)  {

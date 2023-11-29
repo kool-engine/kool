@@ -43,14 +43,14 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
 
         EditorState.onSelectionChanged += { updateSelection = true }
 
-        onUpdate { evt ->
+        onUpdate {
             selectionColor = editor.ui.uiColors.value.primary
 
             if (selectionPass.isEnabled) {
                 val vp = editor.editorOverlay.mainRenderPass.viewport
                 val sceneWidth = (vp.width * 0.75f).roundToInt()
                 val sceneHeight = (vp.height * 0.75f).roundToInt()
-                selectionPass.setSize(sceneWidth, sceneHeight, evt.ctx)
+                selectionPass.setSize(sceneWidth, sceneHeight)
             }
 
             if (updateSelection) {

@@ -11,7 +11,7 @@ import kotlin.reflect.KProperty
 /**
  * Base class for all regular and compute shaders. Provides methods to easily connect to shader uniforms.
  */
-abstract class ShaderBase {
+abstract class ShaderBase(val name: String) {
 
     val uniforms = mutableMapOf<String, Uniform<*>>()
 
@@ -116,6 +116,13 @@ abstract class ShaderBase {
         connectUniformListeners.getOrPut(uniformName) { UniformInputTextureArray3d(uniformName, arraySize) } as UniformInputTextureArray3d
     fun textureCubeArray(uniformName: String, arraySize: Int): UniformInputTextureArrayCube =
         connectUniformListeners.getOrPut(uniformName) { UniformInputTextureArrayCube(uniformName, arraySize) } as UniformInputTextureArrayCube
+
+    fun storage1d(uniformName: String, defaultVal: StorageTexture1d? = null): UniformInputStorage1d =
+        connectUniformListeners.getOrPut(uniformName) { UniformInputStorage1d(uniformName, defaultVal) } as UniformInputStorage1d
+    fun storage2d(uniformName: String, defaultVal: StorageTexture2d? = null): UniformInputStorage2d =
+        connectUniformListeners.getOrPut(uniformName) { UniformInputStorage2d(uniformName, defaultVal) } as UniformInputStorage2d
+    fun storage3d(uniformName: String, defaultVal: StorageTexture3d? = null): UniformInputStorage3d =
+        connectUniformListeners.getOrPut(uniformName) { UniformInputStorage3d(uniformName, defaultVal) } as UniformInputStorage3d
 
     fun colorUniform(cfg: ColorBlockConfig): UniformInputColor =
         uniformColor(cfg.primaryUniform?.uniformName ?: UniqueId.nextId("_"), cfg.primaryUniform?.defaultColor)
@@ -483,5 +490,38 @@ abstract class ShaderBase {
             }
         }
         operator fun getValue(thisRef: Any?, property: KProperty<*>): Array<TextureCube?> = uniform?.textures ?: buffer
+    }
+
+    inner class UniformInputStorage1d(val uniformName: String, defaultVal: StorageTexture1d?) : ConnectUniformListener {
+        var uniform: Storage1d? = null
+        private var buffer: StorageTexture1d? = defaultVal
+        override val isConnected: Boolean = uniform != null
+        override fun connect() { uniform = storage1d[uniformName]?.apply { storageTex = buffer } }
+        operator fun getValue(thisRef: Any?, property: KProperty<*>): StorageTexture1d? = uniform?.storageTex ?: buffer
+        operator fun setValue(thisRef: Any?, property: KProperty<*>, value: StorageTexture1d?) {
+            uniform?.let { it.storageTex = value } ?: run { buffer = value }
+        }
+    }
+
+    inner class UniformInputStorage2d(val uniformName: String, defaultVal: StorageTexture2d?) : ConnectUniformListener {
+        var uniform: Storage2d? = null
+        private var buffer: StorageTexture2d? = defaultVal
+        override val isConnected: Boolean = uniform != null
+        override fun connect() { uniform = storage2d[uniformName]?.apply { storageTex = buffer } }
+        operator fun getValue(thisRef: Any?, property: KProperty<*>): StorageTexture2d? = uniform?.storageTex ?: buffer
+        operator fun setValue(thisRef: Any?, property: KProperty<*>, value: StorageTexture2d?) {
+            uniform?.let { it.storageTex = value } ?: run { buffer = value }
+        }
+    }
+
+    inner class UniformInputStorage3d(val uniformName: String, defaultVal: StorageTexture3d?) : ConnectUniformListener {
+        var uniform: Storage3d? = null
+        private var buffer: StorageTexture3d? = defaultVal
+        override val isConnected: Boolean = uniform != null
+        override fun connect() { uniform = storage3d[uniformName]?.apply { storageTex = buffer } }
+        operator fun getValue(thisRef: Any?, property: KProperty<*>): StorageTexture3d? = uniform?.storageTex ?: buffer
+        operator fun setValue(thisRef: Any?, property: KProperty<*>, value: StorageTexture3d?) {
+            uniform?.let { it.storageTex = value } ?: run { buffer = value }
+        }
     }
 }

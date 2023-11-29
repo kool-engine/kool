@@ -1,28 +1,57 @@
 package de.fabmax.kool.pipeline.backend.gl
 
 import de.fabmax.kool.KoolException
+import de.fabmax.kool.pipeline.ComputePipeline
+import de.fabmax.kool.pipeline.ComputeRenderPass
 import de.fabmax.kool.pipeline.Pipeline
+import de.fabmax.kool.pipeline.PipelineBase
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.util.logE
 
 class ShaderManager(val backend: RenderBackendGl) {
-    val shaders = mutableMapOf<Pipeline, CompiledShader>()
+    val shaders = mutableMapOf<PipelineBase, CompiledShader>()
     var currentShader: CompiledShader? = null
 
     private val gl: GlApi = backend.gl
 
     fun setupShader(cmd: DrawCommand): CompiledShader.ShaderInstance? {
-        val pipeline = cmd.pipeline!!
+        val shader = setupShader(cmd.pipeline!!)
+        return shader.bindInstance(cmd)
+    }
+
+    fun setupComputeShader(computePipeline: ComputePipeline, computePass: ComputeRenderPass): Boolean {
+        val sz = computePipeline.workGroupSize
+        val maxSz = backend.gl.capabilities.maxWorkGroupSize
+        if (sz.x > maxSz.x || sz.y > maxSz.y || sz.z > maxSz.z) {
+            logE { "Maximum compute shader workgroup size exceeded: max size = $maxSz, requested size: $sz" }
+            return false
+        }
+
+        val shader = setupShader(computePipeline)
+        return shader.bindComputeInstance(computePipeline, computePass) != null
+    }
+
+    private fun setupShader(pipeline: PipelineBase): CompiledShader {
         val shader = shaders.getOrPut(pipeline) {
-            val code = pipeline.shaderCode as ShaderCodeGl
-            CompiledShader(compileShader(code), pipeline, backend)
+            val glProgram = when (pipeline) {
+                is Pipeline -> {
+                    val code = pipeline.shaderCode as ShaderCodeGl
+                    compileShader(code)
+                }
+                is ComputePipeline -> {
+                    val code = pipeline.shaderCode as ComputeShaderCodeGl
+                    compileComputeShader(code)
+                }
+                else -> throw IllegalStateException()
+            }
+            CompiledShader(glProgram, pipeline, backend)
         }
         if (shader !== currentShader) {
             currentShader?.unUse()
             currentShader = shader
             shader.use()
         }
-        return shader.bindInstance(cmd)
+        return shader
     }
 
     fun deleteShader(pipeline: Pipeline) {
@@ -75,6 +104,31 @@ class ShaderManager(val backend: RenderBackendGl) {
             logE { "Vertex shader source: \n${formatShaderSrc(code.vertexSrc)}" }
             logE { "Fragment shader source: \n${formatShaderSrc(code.fragmentSrc)}" }
             throw KoolException("Shader linkage failed: $log")
+        }
+        return prog
+    }
+
+    private fun compileComputeShader(code: ComputeShaderCodeGl): GlProgram {
+        val comp = gl.createShader(gl.COMPUTE_SHADER)
+        gl.shaderSource(comp, code.computeSrc)
+        gl.compileShader(comp)
+        val status = gl.getShaderParameter(comp, gl.COMPILE_STATUS)
+        if (status != gl.TRUE) {
+            val log = gl.getShaderInfoLog(comp)
+            logE { "Compute shader compilation failed:\n$log" }
+            logE { "Compute shader source: \n${formatShaderSrc(code.computeSrc)}" }
+            throw KoolException("Compute shader compilation failed: $log")
+        }
+
+        val prog = gl.createProgram()
+        gl.attachShader(prog, comp)
+        gl.linkProgram(prog)
+        gl.deleteShader(comp)
+        if (gl.getProgramParameter(prog, gl.LINK_STATUS) != gl.TRUE) {
+            val log = gl.getProgramInfoLog(prog)
+            logE { "Compute shader linkage failed:\n$log" }
+            logE { "Compute shader source: \n${formatShaderSrc(code.computeSrc)}" }
+            throw KoolException("Compute shader linkage failed: $log")
         }
         return prog
     }

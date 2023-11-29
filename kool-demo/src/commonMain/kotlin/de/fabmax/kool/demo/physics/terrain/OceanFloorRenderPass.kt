@@ -33,12 +33,12 @@ class OceanFloorRenderPass(mainScene: Scene, val terrainTiles: TerrainTiles) :
         }
 
         mainScene.addOffscreenPass(this)
-        mainScene.onRenderScene += { ctx ->
+        mainScene.onRenderScene += {
             val mapW = (mainScene.mainRenderPass.viewport.width * RENDER_SIZE_FACTOR).toInt()
             val mapH = (mainScene.mainRenderPass.viewport.height * RENDER_SIZE_FACTOR).toInt()
 
-            if (isEnabled && mapW > 0 && mapH > 0 && (mapW != width || mapH != height)) {
-                setSize(mapW, mapH, ctx)
+            if (isEnabled && mapW > 0 && mapH > 0) {
+                setSize(mapW, mapH)
             }
         }
 

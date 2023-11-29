@@ -7,6 +7,19 @@ import kotlin.math.max
 
 object TextureLoaderGl {
     fun loadTexture1d(tex: Texture1d, img: TextureData, backend: RenderBackendGl): LoadedTextureGl {
+        val gl = backend.gl
+        val loadedTex = LoadedTextureGl(gl.TEXTURE_1D, gl.createTexture(), backend, tex, img.estimateTexSize())
+        loadedTex.setSize(img.width, 1, 1)
+        loadedTex.applySamplerProps(tex.props)
+
+        gl.texImage1d(gl.TEXTURE_1D, img)
+        if (tex.props.mipMapping) {
+            gl.generateMipmap(gl.TEXTURE_2D)
+        }
+        return loadedTex
+    }
+
+    fun loadTexture1dCompat(tex: Texture1d, img: TextureData, backend: RenderBackendGl): LoadedTextureGl {
         // 1d texture internally uses a 2d texture
         val gl = backend.gl
         val loadedTex = LoadedTextureGl(gl.TEXTURE_2D, gl.createTexture(), backend, tex, img.estimateTexSize())

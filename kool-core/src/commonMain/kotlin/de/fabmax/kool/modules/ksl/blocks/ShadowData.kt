@@ -1,11 +1,10 @@
 package de.fabmax.kool.modules.ksl.blocks
 
 import de.fabmax.kool.math.Vec2f
-import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.KslShaderListener
 import de.fabmax.kool.modules.ksl.lang.*
-import de.fabmax.kool.pipeline.Pipeline
-import de.fabmax.kool.pipeline.RenderPass
+import de.fabmax.kool.pipeline.PipelineBase
+import de.fabmax.kool.pipeline.ShaderBase
 import de.fabmax.kool.pipeline.UniformMat4fv
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.util.ShadowMap
@@ -51,7 +50,7 @@ class ShadowData(val shadowCfg: ShadowConfig, program: KslProgram) : KslDataBloc
         }
     }
 
-    override fun onShaderCreated(shader: KslShader, pipeline: Pipeline, updateEvent: RenderPass.UpdateEvent) {
+    override fun onShaderCreated(shader: ShaderBase, pipeline: PipelineBase) {
         uShadowMapViewProjMats = shader.uniforms[UNIFORM_NAME_SHADOW_VP_MATS] as? UniformMat4fv
         shader.texSamplers2d[SAMPLER_NAME_SHADOW_MAPS]?.let {
             subMaps.forEachIndexed { i, shadowMap ->
