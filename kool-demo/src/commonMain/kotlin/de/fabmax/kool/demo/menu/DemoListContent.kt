@@ -1,5 +1,6 @@
 package de.fabmax.kool.demo.menu
 
+import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.demo.Demos
 import de.fabmax.kool.demo.Settings
 import de.fabmax.kool.demo.UiSizes
@@ -45,7 +46,10 @@ class DemoListContent(val menu: DemoMenu) : Composable {
             vScrollbarModifier = { it.colors(color = colors.onBackgroundAlpha(0.2f), hoverColor = colors.onBackgroundAlpha(0.4f)) }
         ) {
             var hoveredIndex by remember(-1)
-            val demoItems = if (Settings.showHiddenDemos.use()) allDemoItems else nonHiddenDemoItems
+            val demoItems = (if (Settings.showHiddenDemos.use()) allDemoItems else nonHiddenDemoItems).toMutableList()
+            if (KoolSystem.isJavascript) {
+                demoItems.removeAll { it.demo?.platformFilter?.applies() == false }
+            }
             itemsIndexed(demoItems) { i, item ->
                 Text(item.text) {
                     modifier

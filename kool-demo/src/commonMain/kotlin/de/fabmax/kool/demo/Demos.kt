@@ -1,6 +1,8 @@
 package de.fabmax.kool.demo
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.demo.Demos.PlatformFilter
 import de.fabmax.kool.demo.bees.BeeDemo
 import de.fabmax.kool.demo.creativecoding.CreativeCodingDemo
 import de.fabmax.kool.demo.helloworld.*
@@ -23,6 +25,11 @@ import de.fabmax.kool.util.MdColor
 import kotlin.math.max
 
 object Demos {
+
+    val AllPlatforms = PlatformFilter { true }
+    val NonJavascript = PlatformFilter { !KoolSystem.isJavascript }
+    val NonVulkan = PlatformFilter { "Vulkan" !in KoolSystem.requireContext().backend.name }
+    val DesktopOpenGl = PlatformFilter { NonJavascript.applies() && NonVulkan.applies() }
 
     val demoColors = ColorGradient(
         0f to MdColor.AMBER,
@@ -73,6 +80,7 @@ object Demos {
         entry("helloksl", "Hello KSL Shaders") { HelloKslDemo() }
         entry("hellogltf", "Hello glTF") { HelloGltfDemo() }
         entry("hellobuffers", "Hello RenderToTexture") { HelloRenderToTextureDemo() }
+        entry("hellocompute", "Hello Compute", DesktopOpenGl) { HelloCompute() }
         entry("hello-ui", "Hello UI") { HelloUiDemo() }
         entry("manybodies", "Many Bodies") { ManyBodiesDemo() }
         entry("manyvehicles", "Many Vehicles") { ManyVehiclesDemo() }
@@ -93,17 +101,27 @@ object Demos {
             return demoColors.getColor(fromColor + f * (toColor - fromColor))
         }
 
-        fun entry(id: String, title: String, factory: (KoolContext) -> DemoScene) {
-            entries += Entry(this, id, title, factory)
+        fun entry(id: String, title: String, platformFilter: PlatformFilter = AllPlatforms, factory: (KoolContext) -> DemoScene) {
+            entries += Entry(this, id, title, platformFilter, factory)
         }
     }
 
-    class Entry(val category: Category, val id: String, val title: String, val newInstance: (KoolContext) -> DemoScene) {
+    class Entry(
+        val category: Category,
+        val id: String,
+        val title: String,
+        val platformFilter: PlatformFilter,
+        val newInstance: (KoolContext) -> DemoScene
+    ) {
         val color: Color
             get() {
                 val catIdx = max(0, category.entries.indexOf(this)).toFloat()
                 val gradientF = catIdx / category.entries.lastIndex
                 return category.getCategoryColor(gradientF)
             }
+    }
+
+    fun interface PlatformFilter {
+        fun applies(): Boolean
     }
 }

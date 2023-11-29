@@ -79,6 +79,7 @@ The demos mentioned above and examples shown below should give you a rough idea 
 still a bit of a weak spot).
 
 ## Engine Features / Noticeable Stuff:
+- Basic [compute shader](kool-demo/src/commonMain/kotlin/de/fabmax/kool/demo/helloworld/HelloCompute.kt) support (OpenGL only for now)
 - [Reversed-depth](https://developer.nvidia.com/content/depth-precision-visualized) rendering for vastly improved
   depth precision and range (more or less infinite)
 - Physics simulation (based on Nvidia PhysX 5.1, using [physx-jni](https://github.com/fabmax/physx-jni) on Java and [physx-js-webidl](https://github.com/fabmax/physx-js-webidl) on javascript)
