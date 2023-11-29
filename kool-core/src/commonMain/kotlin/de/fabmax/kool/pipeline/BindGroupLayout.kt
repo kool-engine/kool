@@ -90,13 +90,17 @@ class BindGroupLayout private constructor(val group: Int, val items: List<Bindin
 
         fun create(group: Int): BindGroupLayout {
             val groupItems = mutableListOf<Binding>()
-            ubos.forEach { builder ->
+            // fixme: binding number should be generated differently for OpenGL and Vulkan:
+            //  - for Vulkan binding number has to be unique for each binding in the group
+            //  - for OpenGL binding number is currently only relevant for storage bindings and should start at 0 for those
+            //  we achieve this somewhat hacky by adding storage bindings first
+            storage.forEach { builder ->
                 groupItems += builder.create(groupItems.size)
             }
             samplers.forEach { builder ->
                 groupItems += builder.create(groupItems.size)
             }
-            storage.forEach { builder ->
+            ubos.forEach { builder ->
                 groupItems += builder.create(groupItems.size)
             }
             return BindGroupLayout(group, groupItems)

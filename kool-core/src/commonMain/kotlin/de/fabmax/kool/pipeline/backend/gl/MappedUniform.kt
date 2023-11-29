@@ -41,16 +41,16 @@ interface MappedUniform {
     }
 }
 
-class MappedUbo(val uboDesc: UniformBuffer, val layout: ExternalBufferLayout, val gl: GlApi) : MappedUniform {
+class MappedUbo(val ubo: UniformBuffer, val layout: ExternalBufferLayout, val gl: GlApi) : MappedUniform {
     var uboBuffer: BufferResource? = null
     val hostBuffer = MixedBuffer(layout.size)
 
     override fun setUniform(): Boolean {
         val gpuBuf = uboBuffer
         return if (gpuBuf != null) {
-            layout.putToBuffer(uboDesc.uniforms, hostBuffer)
+            layout.putToBuffer(ubo.uniforms, hostBuffer)
             gpuBuf.setData(hostBuffer, gl.DYNAMIC_DRAW)
-            gl.bindBufferBase(gl.UNIFORM_BUFFER, uboDesc.binding, gpuBuf.buffer)
+            gl.bindBufferBase(gl.UNIFORM_BUFFER, ubo.binding, gpuBuf.buffer)
             true
         } else {
             false
