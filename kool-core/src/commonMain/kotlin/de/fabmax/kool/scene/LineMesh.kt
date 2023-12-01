@@ -2,7 +2,7 @@ package de.fabmax.kool.scene
 
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.math.spatial.BoundingBox
+import de.fabmax.kool.math.spatial.BoundingBoxF
 import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.geometry.IndexedVertexList
@@ -166,7 +166,7 @@ open class LineMesh(
         }
     }
 
-    fun addBoundingBox(aabb: BoundingBox, color: Color = this.color) {
+    fun addBoundingBox(aabb: BoundingBoxF, color: Color = this.color) {
         geometry.batchUpdate {
             val i0 = addVertex {
                 this.position.set(aabb.min.x, aabb.min.y, aabb.min.z)

@@ -212,6 +212,7 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
                 logE { "Maximum compute shader workgroup count exceeded: max count = $maxCnt, requested count: ($numGroupsX, $numGroupsY, $numGroupsZ)" }
             }
             gl.dispatchCompute(numGroupsX, numGroupsY, numGroupsZ)
+            gl.memoryBarrier(gl.SHADER_IMAGE_ACCESS_BARRIER_BIT)
         }
     }
 

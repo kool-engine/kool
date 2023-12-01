@@ -3,7 +3,7 @@
 package de.fabmax.kool.physics
 
 import de.fabmax.kool.math.*
-import de.fabmax.kool.math.spatial.BoundingBox
+import de.fabmax.kool.math.spatial.BoundingBoxF
 import de.fabmax.kool.scene.TrsTransformF
 import org.lwjgl.system.MemoryStack
 import physx.character.PxExtendedVec3
@@ -16,12 +16,12 @@ import physx.geometry.*
 import physx.physics.*
 import physx.support.Vector_PxVec3
 
-fun PxBounds3.toBoundingBox(result: BoundingBox): BoundingBox {
+fun PxBounds3.toBoundingBox(result: BoundingBoxF): BoundingBoxF {
     val min = minimum
     val max = maximum
     return result.set(min.x, min.y, min.z, max.x, max.y, max.z)
 }
-fun BoundingBox.toPxBounds3(result: PxBounds3): PxBounds3 {
+fun BoundingBoxF.toPxBounds3(result: PxBounds3): PxBounds3 {
     val v = PxVec3()
     result.minimum = min.toPxVec3(v)
     result.maximum = max.toPxVec3(v)

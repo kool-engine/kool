@@ -1,7 +1,7 @@
 package de.fabmax.kool.physics.geometry
 
 import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.math.spatial.BoundingBox
+import de.fabmax.kool.math.spatial.BoundingBoxF
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.util.Releasable
 
@@ -17,7 +17,7 @@ interface CollisionGeometry : Releasable {
     /**
      * Returns the axis-aligned bounding box of this shape in local coordinates.
      */
-    fun getBounds(result: BoundingBox): BoundingBox
+    fun getBounds(result: BoundingBoxF): BoundingBoxF
 
     fun estimateInertiaForMass(mass: Float, result: MutableVec3f = MutableVec3f()): MutableVec3f
 }

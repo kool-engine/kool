@@ -4,7 +4,7 @@ import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.math.spatial.BoundingBox
+import de.fabmax.kool.math.spatial.BoundingBoxF
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.modules.ksl.blocks.cameraData
@@ -203,7 +203,7 @@ class TriangulatedLineMesh(geometry: IndexedVertexList, name: String = makeNodeN
         }
     }
 
-    fun addBoundingBox(aabb: BoundingBox, color: Color = this.color, width: Float = this.width) {
+    fun addBoundingBox(aabb: BoundingBoxF, color: Color = this.color, width: Float = this.width) {
         val p0 = Vec3f(aabb.min.x, aabb.min.y, aabb.min.z)
         val p1 = Vec3f(aabb.min.x, aabb.min.y, aabb.max.z)
         val p2 = Vec3f(aabb.min.x, aabb.max.y, aabb.max.z)

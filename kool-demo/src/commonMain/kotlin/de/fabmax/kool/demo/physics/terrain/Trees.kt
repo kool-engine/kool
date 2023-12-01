@@ -1,7 +1,7 @@
 package de.fabmax.kool.demo.physics.terrain
 
 import de.fabmax.kool.math.*
-import de.fabmax.kool.math.spatial.BoundingBox
+import de.fabmax.kool.math.spatial.BoundingBoxD
 import de.fabmax.kool.math.spatial.NearestTraverser
 import de.fabmax.kool.math.spatial.OcTree
 import de.fabmax.kool.math.spatial.Vec3fAdapter
@@ -36,7 +36,7 @@ class Trees(val terrain: Terrain, nTrees: Int, val wind: Wind, val sky: Sky) {
     )
 
     private val random = Random(17)
-    private val treeTree = OcTree(Vec3fAdapter(), bounds = BoundingBox(Vec3f(-200f), Vec3f(200f)))
+    private val treeTree = OcTree(Vec3fAdapter(), bounds = BoundingBoxD(Vec3d(-200.0), Vec3d(200.0)))
 
     val trees = mutableListOf<Tree>()
 
@@ -114,14 +114,14 @@ class Trees(val terrain: Terrain, nTrees: Int, val wind: Wind, val sky: Sky) {
             }
 
             position.y = terrain.getTerrainHeightAt(position.x, position.z) - 0.25f
-            trav.setup(position, 10f).traverse(treeTree)
-            val nearestTreeDistance = sqrt(trav.sqrDist).clamp(0f, 7f)
+            trav.setup(position, 10.0).traverse(treeTree)
+            val nearestTreeDistance = sqrt(trav.sqrDist).clamp(0.0, 7.0)
             if (nearestTreeDistance < 2f) {
                 // too close to next tree
                 continue
             }
 
-            val growLikelihood = nearestTreeDistance / 7f * (1f - areaDistance)
+            val growLikelihood = nearestTreeDistance.toFloat() / 7f * (1f - areaDistance)
             if (random.randomF() < growLikelihood) {
                 return position to growLikelihood
             }

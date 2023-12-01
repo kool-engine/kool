@@ -6,7 +6,7 @@ import de.fabmax.kool.demo.*
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec2f
-import de.fabmax.kool.math.spatial.BoundingBox
+import de.fabmax.kool.math.spatial.BoundingBoxF
 import de.fabmax.kool.modules.ui2.Grow
 import de.fabmax.kool.modules.ui2.Text
 import de.fabmax.kool.pipeline.*
@@ -62,7 +62,7 @@ class BeeDemo : DemoScene("Fighting Bees") {
 
         addLineMesh {
             addBoundingBox(
-                BoundingBox(
+                BoundingBoxF(
                     BeeConfig.worldExtent.mul(-1f, MutableVec3f()),
                     BeeConfig.worldExtent.mul(1f, MutableVec3f())
                 ), Color.WHITE)

@@ -3,7 +3,7 @@ package de.fabmax.kool.physics.geometry
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.deg
-import de.fabmax.kool.math.spatial.BoundingBox
+import de.fabmax.kool.math.spatial.BoundingBoxF
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import kotlin.math.PI
 import kotlin.math.cos
@@ -30,7 +30,7 @@ interface CylinderGeometry : CollisionGeometry {
         }
     }
 
-    override fun getBounds(result: BoundingBox): BoundingBox {
+    override fun getBounds(result: BoundingBoxF): BoundingBoxF {
         result.set(-length * 0.5f, -radius, -radius, length * 0.5f, radius, radius)
         return result
     }

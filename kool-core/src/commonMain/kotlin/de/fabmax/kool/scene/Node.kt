@@ -2,7 +2,7 @@ package de.fabmax.kool.scene
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.*
-import de.fabmax.kool.math.spatial.BoundingBox
+import de.fabmax.kool.math.spatial.BoundingBoxF
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.util.*
 import kotlin.math.sqrt
@@ -29,7 +29,7 @@ open class Node(name: String? = null) : BaseReleasable() {
     /**
      * Axis-aligned bounding box of this node in local coordinate frame.
      */
-    val bounds = BoundingBox()
+    val bounds = BoundingBoxF()
     private val tmpTransformVec = MutableVec3f()
 
     /**
@@ -138,7 +138,7 @@ open class Node(name: String? = null) : BaseReleasable() {
         globalRadius = globalCenter.distance(globalExtentMut)
     }
 
-    protected open fun addContentToBoundingBox(localBounds: BoundingBox) { }
+    protected open fun addContentToBoundingBox(localBounds: BoundingBoxF) { }
 
     fun updateModelMat() {
         transform.applyToModelMat(parent?.modelMats, modelMats)
@@ -231,7 +231,7 @@ open class Node(name: String? = null) : BaseReleasable() {
         }
     }
 
-    protected open fun rayTestLocal(test: RayTest, localRay: Ray) { }
+    protected open fun rayTestLocal(test: RayTest, localRay: RayF) { }
 
     /**
      * Called during [collectDrawCommands]: Checks if this node is currently visible. If not rendering is skipped. Default

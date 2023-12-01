@@ -4,7 +4,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.*
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.*
-import de.fabmax.kool.math.spatial.BoundingBox
+import de.fabmax.kool.math.spatial.BoundingBoxD
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.physics.*
@@ -51,7 +51,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
         defaultOrbitCamera().apply {
             zoomMethod = OrbitInputTransform.ZoomMethod.ZOOM_TRANSLATE
             panMethod = yPlanePan()
-            translationBounds = BoundingBox(Vec3f(-50f), Vec3f(50f))
+            translationBounds = BoundingBoxD(Vec3d(-50.0), Vec3d(50.0))
             minHorizontalRot = -90.0
             maxHorizontalRot = -20.0
             setZoom(75.0, min = 10.0)

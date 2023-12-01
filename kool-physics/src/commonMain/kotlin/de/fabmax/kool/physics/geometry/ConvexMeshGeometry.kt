@@ -2,7 +2,7 @@ package de.fabmax.kool.physics.geometry
 
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.math.spatial.BoundingBox
+import de.fabmax.kool.math.spatial.BoundingBoxF
 import de.fabmax.kool.scene.geometry.MeshBuilder
 
 expect fun ConvexMeshGeometry(convexMesh: ConvexMesh, scale: Vec3f = Vec3f.ONES): ConvexMeshGeometry
@@ -32,7 +32,7 @@ interface ConvexMeshGeometry : CollisionGeometry {
         }
     }
 
-    override fun getBounds(result: BoundingBox) = result.set(convexMesh.convexHull.bounds)
+    override fun getBounds(result: BoundingBoxF) = result.set(convexMesh.convexHull.bounds)
 
     override fun estimateInertiaForMass(mass: Float, result: MutableVec3f): MutableVec3f {
         // rough approximation: use inertia of bounding box

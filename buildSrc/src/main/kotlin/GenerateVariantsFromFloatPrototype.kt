@@ -77,6 +77,8 @@ open class GenerateVariantsFromFloatPrototype : DefaultTask() {
             Regex("""\W(Mat(\d+)fStack)\W""") to PatternTransformer { it.groups[1]!!.range to "Mat${it.groupValues[2]}dStack" },
             Regex("""\W(LazyMat(\d+)f)\W""") to PatternTransformer { it.groups[1]!!.range to "LazyMat${it.groupValues[2]}d" },
             Regex("""\W(QuatF)\W""") to PatternTransformer { it.groups[1]!!.range to "QuatD" },
+            Regex("""\W(RayF)\W""") to PatternTransformer { it.groups[1]!!.range to "RayD" },
+            Regex("""\W(BoundingBoxF)\W""") to PatternTransformer { it.groups[1]!!.range to "BoundingBoxD" },
             Regex("""\W(MutableVec(\d+)f)\W""") to PatternTransformer { it.groups[1]!!.range to "MutableVec${it.groupValues[2]}d" },
             Regex("""\W(MutableMat(\d+)f)\W""") to PatternTransformer { it.groups[1]!!.range to "MutableMat${it.groupValues[2]}d" },
             Regex("""\W(MutableQuatF)\W""") to PatternTransformer { it.groups[1]!!.range to "MutableQuatD" },

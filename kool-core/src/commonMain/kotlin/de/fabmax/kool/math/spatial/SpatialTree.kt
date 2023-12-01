@@ -5,15 +5,15 @@ import de.fabmax.kool.scene.LineMesh
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.util.ColorGradient
 
-fun <T: Vec3f> pointKdTree(points: List<T>, bucketSz: Int = 20): KdTree<T> {
+fun <T: Vec3f> pointKdTree(points: List<T>, bucketSz: Int = 16): KdTree<T> {
     return KdTree(points, Vec3fAdapter(), bucketSz)
 }
 
-fun <T: Vec3f> pointOcTree(points: List<T> = emptyList(), bounds: BoundingBox = BoundingBox(), bucketSz: Int = 20): OcTree<T> {
+fun <T: Vec3f> pointOcTree(points: List<T> = emptyList(), bounds: BoundingBoxD = BoundingBoxD(), bucketSz: Int = 16): OcTree<T> {
     return OcTree(Vec3fAdapter(), points, bounds, bucketSz = bucketSz)
 }
 
-fun triangleKdTree(mesh: IndexedVertexList, bucketSz: Int = 10): KdTree<Triangle> {
+fun triangleKdTree(mesh: IndexedVertexList, bucketSz: Int = 16): KdTree<Triangle> {
     val triangles = mutableListOf<Triangle>()
     val v = mesh[0]
     for (i in 0 until mesh.numIndices step 3) {
@@ -25,15 +25,15 @@ fun triangleKdTree(mesh: IndexedVertexList, bucketSz: Int = 10): KdTree<Triangle
     return triangleKdTree(triangles, bucketSz)
 }
 
-fun <T: Triangle> triangleKdTree(triangles: List<T>, bucketSz: Int = 10): KdTree<T> {
+fun <T: Triangle> triangleKdTree(triangles: List<T>, bucketSz: Int = 16): KdTree<T> {
     return KdTree(triangles, TriangleAdapter(), bucketSz)
 }
 
-fun <T: Triangle> triangleOcTree(triangles: List<T> = emptyList(), bounds: BoundingBox = BoundingBox(), bucketSz: Int = 10): OcTree<T> {
+fun <T: Triangle> triangleOcTree(triangles: List<T> = emptyList(), bounds: BoundingBoxD = BoundingBoxD(), bucketSz: Int = 16): OcTree<T> {
     return OcTree(TriangleAdapter(), triangles, bounds, bucketSz = bucketSz)
 }
 
-fun triangleOcTree(mesh: IndexedVertexList, bucketSz: Int = 10): OcTree<Triangle> {
+fun triangleOcTree(mesh: IndexedVertexList, bucketSz: Int = 16): OcTree<Triangle> {
     val triangles = mutableListOf<Triangle>()
     val v = mesh[0]
     for (i in 0 until mesh.numIndices step 3) {
@@ -42,14 +42,14 @@ fun triangleOcTree(mesh: IndexedVertexList, bucketSz: Int = 10): OcTree<Triangle
         val p2 = Vec3f(v.apply { index = mesh.indices[i+2] })
         triangles += Triangle(p0, p1, p2)
     }
-    return triangleOcTree(triangles, mesh.bounds, bucketSz)
+    return triangleOcTree(triangles, mesh.bounds.toBoundingBoxD(), bucketSz)
 }
 
-fun <T: Edge<*>> edgeKdTree(edges: List<T>, bucketSz: Int = 10): KdTree<T> {
+fun <T: Edge<*>> edgeKdTree(edges: List<T>, bucketSz: Int = 16): KdTree<T> {
     return KdTree(edges, EdgeAdapter(), bucketSz)
 }
 
-fun <T: Edge<*>> edgeOcTree(triangles: List<T> = emptyList(), bounds: BoundingBox = BoundingBox(), bucketSz: Int = 10): OcTree<T> {
+fun <T: Edge<*>> edgeOcTree(triangles: List<T> = emptyList(), bounds: BoundingBoxD = BoundingBoxD(), bucketSz: Int = 16): OcTree<T> {
     return OcTree(EdgeAdapter(), triangles, bounds, bucketSz = bucketSz)
 }
 
@@ -60,7 +60,7 @@ abstract class SpatialTree<T: Any>(val itemAdapter: ItemAdapter<T>) : Collection
     open fun drawNodeBounds(lineMesh: LineMesh) {
         fun Node.drawBounds(lineMesh: LineMesh, depth: Int) {
             val color = ColorGradient.JET_MD.getColor((depth % 6.7f) / 6.7f)
-            lineMesh.addBoundingBox(bounds, color)
+            lineMesh.addBoundingBox(bounds.toBoundingBoxF(), color)
             for (i in children.indices) {
                 children[i].drawBounds(lineMesh, depth + 1)
             }
@@ -71,7 +71,7 @@ abstract class SpatialTree<T: Any>(val itemAdapter: ItemAdapter<T>) : Collection
     abstract inner class Node {
         abstract val size: Int
         abstract val children: List<Node>
-        val bounds = BoundingBox()
+        val bounds = BoundingBoxD()
         val isLeaf
             get() = children.isEmpty()
         val isEmpty

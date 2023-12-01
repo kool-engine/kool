@@ -1,13 +1,28 @@
 package de.fabmax.kool.math
 
-import de.fabmax.kool.scene.Node
 import kotlin.math.sqrt
 
-/**
- * @author fabmax
- */
+fun RayF.toRayD(result: RayD = RayD()): RayD {
+    origin.toMutableVec3d(result.origin)
+    direction.toMutableVec3d(result.direction)
+    return result
+}
 
-class Ray() {
+fun RayD.toRayF(result: RayF = RayF()): RayF {
+    origin.toMutableVec3f(result.origin)
+    direction.toMutableVec3f(result.direction)
+    return result
+}
+
+fun RayF.transformBy(matrix: Mat4d, result: RayF = this): RayF {
+    matrix.transform(origin, 1f, result.origin)
+    matrix.transform(direction, 0f, result.direction).norm()
+    return result
+}
+
+// <template> Changes made within the template section will also affect the other type variants of this class
+
+class RayF() {
     val origin = MutableVec3f()
     val direction = MutableVec3f()
 
@@ -16,7 +31,7 @@ class Ray() {
         this.direction.set(direction)
     }
 
-    fun set(other: Ray) {
+    fun set(other: RayF) {
         origin.set(other.origin)
         direction.set(other.direction)
     }
@@ -60,13 +75,7 @@ class Ray() {
         return false
     }
 
-    fun transformBy(matrix: Mat4f, result: Ray = this): Ray {
-        matrix.transform(origin, 1f, result.origin)
-        matrix.transform(direction, 0f, result.direction).norm()
-        return result
-    }
-
-    fun transformBy(matrix: Mat4d, result: Ray = this): Ray {
+    fun transformBy(matrix: Mat4f, result: RayF = this): RayF {
         matrix.transform(origin, 1f, result.origin)
         matrix.transform(direction, 0f, result.direction).norm()
         return result
@@ -77,60 +86,69 @@ class Ray() {
     }
 }
 
-class RayTest {
-    val ray = Ray()
+// </template> End of template section, DO NOT EDIT BELOW THIS!
 
-    val hitPositionGlobal = MutableVec3f()
-    val hitNormalGlobal = MutableVec3f()
 
-    private val tmpRay = Ray()
-    private val tmpHitPoint = MutableVec3f()
+class RayD() {
+    val origin = MutableVec3d()
+    val direction = MutableVec3d()
 
-    var hitNode: Node? = null
-        private set
-    var hitDistanceSqr = Float.MAX_VALUE
-        private set
-    val isHit: Boolean
-        get() = hitDistanceSqr < Float.MAX_VALUE
-
-    fun clear() {
-        hitPositionGlobal.set(Vec3f.ZERO)
-        hitNormalGlobal.set(Vec3f.ZERO)
-        hitNode = null
-        hitDistanceSqr = Float.MAX_VALUE
+    constructor(origin: Vec3d, direction: Vec3d) : this() {
+        this.origin.set(origin)
+        this.direction.set(direction)
     }
 
-    fun setHit(node: Node, hitDistanceGlobal: Float, hitNormalGlobal: Vec3f? = null) {
-        hitPositionGlobal.set(ray.direction).mul(hitDistanceGlobal).add(ray.origin)
-        setHit(node, hitPositionGlobal, hitNormalGlobal)
+    fun set(other: RayD) {
+        origin.set(other.origin)
+        direction.set(other.direction)
     }
 
-    fun setHit(node: Node, hitPositionGlobal: Vec3f, hitNormalGlobal: Vec3f? = null) {
-        this.hitPositionGlobal.set(hitPositionGlobal)
-        this.hitNormalGlobal.set(hitNormalGlobal ?: Vec3f.ZERO)
-        hitNode = node
-        hitDistanceSqr = this.hitPositionGlobal.sqrDistance(ray.origin)
+    fun setFromLookAt(origin: Vec3d, lookAt: Vec3d) {
+        this.origin.set(origin)
+        direction.set(lookAt).subtract(origin).norm()
     }
 
-    /**
-     * Returns true if this [ray] hits the [node]'s bounding sphere AND the hit is closer than any previous hit.
-     */
-    fun isIntersectingBoundingSphere(node: Node) = isIntersectingBoundingSphere(node.globalCenter, node.globalRadius)
+    fun distanceToPoint(point: Vec3d): Double = point.distanceToRay(origin, direction)
 
-    /**
-     * Returns true if this [ray] hits the specified bounding sphere (in global coordinates) AND the hit is closer than
-     * any previous hit.
-     */
-    fun isIntersectingBoundingSphere(globalCenter: Vec3f, globalRadius: Float): Boolean {
-        val isSphereHit = ray.sphereIntersection(globalCenter, globalRadius, tmpHitPoint)
-        return isSphereHit && tmpHitPoint.sqrDistance(ray.origin) <= hitDistanceSqr
+    fun sqrDistanceToPoint(point: Vec3d): Double = point.sqrDistanceToRay(origin, direction)
+
+    fun sqrDistanceToPoint(x: Double, y: Double, z: Double) = sqrDistancePointToRay(x, y, z, origin, direction)
+
+    fun sphereIntersection(center: Vec3d, radius: Double, result: MutableVec3d): Boolean {
+        result.set(origin).subtract(center)
+        val a = direction.dot(direction)
+        val b = result.dot(direction) * 2.0
+        val c = result.dot(result) - radius * radius
+        val discr = b * b - 4 * a * c
+
+        if (discr < 0.0) {
+            return false
+        }
+
+        val numerator = -b - sqrt(discr)
+        if (numerator > 0.0) {
+            val d = numerator / (2.0 * a)
+            result.set(direction).mul(d).add(origin)
+            return true
+        }
+
+        val numerator2 = -b + sqrt(discr)
+        if (numerator2 > 0.0) {
+            val d = numerator2 / (2.0 * a)
+            result.set(direction).mul(d).add(origin)
+            return true
+        }
+
+        return false
     }
 
-    fun getRayTransformed(matrix: Mat4f): Ray {
-        return ray.transformBy(matrix, tmpRay)
+    fun transformBy(matrix: Mat4d, result: RayD = this): RayD {
+        matrix.transform(origin, 1.0, result.origin)
+        matrix.transform(direction, 0.0, result.direction).norm()
+        return result
     }
 
-    fun getRayTransformed(matrix: Mat4d): Ray {
-        return ray.transformBy(matrix, tmpRay)
+    override fun toString(): String {
+        return "{origin=$origin, direction=$direction}"
     }
 }

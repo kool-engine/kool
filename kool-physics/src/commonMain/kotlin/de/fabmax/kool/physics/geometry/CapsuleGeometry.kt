@@ -3,7 +3,7 @@ package de.fabmax.kool.physics.geometry
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.deg
-import de.fabmax.kool.math.spatial.BoundingBox
+import de.fabmax.kool.math.spatial.BoundingBoxF
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.simpleShape
 
@@ -29,7 +29,7 @@ interface CapsuleGeometry : CollisionGeometry {
         }
     }
 
-    override fun getBounds(result: BoundingBox): BoundingBox {
+    override fun getBounds(result: BoundingBoxF): BoundingBoxF {
         return result.set(-radius - height / 2f, -radius, -radius, radius + height / 2f, radius, radius)
     }
 

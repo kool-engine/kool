@@ -72,7 +72,7 @@ class TractorGun(val physics: PhysicsObjects, val mainScene: Scene) {
     }
 
     private fun pickUp(): Boolean {
-        val ray = Ray(mainScene.camera.globalPos, mainScene.camera.globalLookDir)
+        val ray = RayF(mainScene.camera.globalPos, mainScene.camera.globalLookDir)
         val hitResult = HitResult()
         if (physics.world.raycast(ray, tractorBeam.range, hitResult) && hitResult.nearestActor?.tags?.hasTag("isBox") == true) {
             tractorBox = hitResult.nearestActor as? RigidDynamic

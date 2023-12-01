@@ -106,11 +106,11 @@ abstract class Camera(name: String = "camera") : Node(name) {
 
     abstract fun updateProjectionMatrix(updateEvent: RenderPass.UpdateEvent)
 
-    fun computePickRay(pickRay: Ray, ptr: Pointer, viewport: Viewport, ctx: KoolContext): Boolean {
+    fun computePickRay(pickRay: RayF, ptr: Pointer, viewport: Viewport, ctx: KoolContext): Boolean {
         return ptr.isValid && computePickRay(pickRay, ptr.x.toFloat(), ptr.y.toFloat(), viewport, ctx)
     }
 
-    fun computePickRay(pickRay: Ray, screenX: Float, screenY: Float, viewport: Viewport, ctx: KoolContext): Boolean {
+    fun computePickRay(pickRay: RayF, screenX: Float, screenY: Float, viewport: Viewport, ctx: KoolContext): Boolean {
         var valid = unProjectScreen(tmpVec3.set(screenX, screenY, 0f), viewport, ctx, pickRay.origin)
         valid = valid && unProjectScreen(tmpVec3.set(screenX, screenY, 1f), viewport, ctx, pickRay.direction)
 

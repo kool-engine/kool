@@ -2,7 +2,7 @@ package de.fabmax.kool.physics
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Mat4f
-import de.fabmax.kool.math.Ray
+import de.fabmax.kool.math.RayF
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.deg
 import de.fabmax.kool.physics.articulations.Articulation
@@ -109,7 +109,7 @@ abstract class PhysicsWorld : BaseReleasable() {
         mutArticulations -= articulation
     }
 
-    abstract fun raycast(ray: Ray, maxDistance: Float, result: HitResult): Boolean
+    abstract fun raycast(ray: RayF, maxDistance: Float, result: HitResult): Boolean
     abstract fun sweepTest(testGeometry: CollisionGeometry, geometryPose: Mat4f, testDirection: Vec3f, distance: Float, result: HitResult): Boolean
 
     fun wakeUpAll() {

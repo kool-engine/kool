@@ -7,7 +7,7 @@ import de.fabmax.kool.input.PointerState
 import de.fabmax.kool.math.MutableVec3d
 import de.fabmax.kool.math.Vec3d
 import de.fabmax.kool.math.clamp
-import de.fabmax.kool.math.spatial.BoundingBox
+import de.fabmax.kool.math.spatial.BoundingBoxF
 import de.fabmax.kool.math.toVec3d
 import de.fabmax.kool.scene.OrbitInputTransform
 import de.fabmax.kool.util.Time
@@ -55,7 +55,7 @@ class EditorCamTransform(val editor: KoolEditor) : OrbitInputTransform("Editor c
     fun focusObject(objectModel: SceneNodeModel) = focusObjects(listOf(objectModel))
 
     fun focusObjects(objects: List<SceneNodeModel>) {
-        val bounds = BoundingBox()
+        val bounds = BoundingBoxF()
         objects.forEach { nodeModel ->
             val c = nodeModel.drawNode.globalCenter
             val r = max(1f, nodeModel.drawNode.globalRadius)

@@ -5,7 +5,7 @@ import de.fabmax.kool.demo.*
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.randomI
-import de.fabmax.kool.math.spatial.BoundingBox
+import de.fabmax.kool.math.spatial.BoundingBoxF
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.DepthCompareOp
 import de.fabmax.kool.pipeline.deferred.DeferredPipeline
@@ -51,7 +51,7 @@ class ProceduralDemo : DemoScene("Procedural Geometry") {
 
         val shadowMap = SimpleShadowMap(this@setupMainScene, lighting.lights[0]).apply {
             setDefaultDepthOffset(true)
-            shadowBounds = BoundingBox(Vec3f(-30f, 0f, -30f), Vec3f(30f, 60f, 30f))
+            shadowBounds = BoundingBoxF(Vec3f(-30f, 0f, -30f), Vec3f(30f, 60f, 30f))
         }
         val deferredCfg = DeferredPipelineConfig().apply {
             isWithScreenSpaceReflections = true

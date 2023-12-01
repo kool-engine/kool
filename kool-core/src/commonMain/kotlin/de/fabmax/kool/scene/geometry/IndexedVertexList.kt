@@ -2,7 +2,7 @@ package de.fabmax.kool.scene.geometry
 
 import de.fabmax.kool.KoolException
 import de.fabmax.kool.math.*
-import de.fabmax.kool.math.spatial.BoundingBox
+import de.fabmax.kool.math.spatial.BoundingBoxF
 import de.fabmax.kool.math.spatial.InRadiusTraverser
 import de.fabmax.kool.math.spatial.pointKdTree
 import de.fabmax.kool.pipeline.Attribute
@@ -83,7 +83,7 @@ class IndexedVertexList(val vertexAttributes: List<Attribute>) : BaseReleasable(
     var indices = Uint32Buffer(INITIAL_SIZE, true)
         private set
 
-    val bounds = BoundingBox()
+    val bounds = BoundingBoxF()
 
     val vertexIt: VertexView
 

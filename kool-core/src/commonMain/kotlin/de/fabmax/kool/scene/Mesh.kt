@@ -1,9 +1,9 @@
 package de.fabmax.kool.scene
 
 import de.fabmax.kool.KoolSystem
-import de.fabmax.kool.math.Ray
+import de.fabmax.kool.math.RayF
 import de.fabmax.kool.math.RayTest
-import de.fabmax.kool.math.spatial.BoundingBox
+import de.fabmax.kool.math.spatial.BoundingBoxF
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.pipeline.RenderPass
@@ -137,7 +137,7 @@ open class Mesh(var geometry: IndexedVertexList, name: String = geometry.name) :
         isFrustumChecked = true
     }
 
-    override fun addContentToBoundingBox(localBounds: BoundingBox) {
+    override fun addContentToBoundingBox(localBounds: BoundingBoxF) {
         localBounds.add(geometry.bounds)
     }
 
@@ -174,7 +174,7 @@ open class Mesh(var geometry: IndexedVertexList, name: String = geometry.name) :
         return (isCastingShadowLevelMask and (1 shl shadowMapLevel)) != 0
     }
 
-    override fun rayTestLocal(test: RayTest, localRay: Ray) {
+    override fun rayTestLocal(test: RayTest, localRay: RayF) {
         rayTest.rayTest(test, localRay)
     }
 

@@ -28,7 +28,7 @@ class Gizmo : Node(), InputStack.PointerListener {
     private var isDrag: Boolean = false
     private var wasPtrDrag: Boolean = false
 
-    private val pickRay = Ray()
+    private val pickRay = RayF()
     private val pickPoint = MutableVec3f()
     private val pickPlane = Plane()
     private val dragStartPos = MutableVec3f()
@@ -434,7 +434,7 @@ class Gizmo : Node(), InputStack.PointerListener {
         }
     }
 
-    private fun doDrag(pickRay: Ray, pointer: Pointer, ctx: KoolContext) {
+    private fun doDrag(pickRay: RayF, pointer: Pointer, ctx: KoolContext) {
         val localPickDir = lineMesh.toLocalCoords(MutableVec3f(pickRay.direction), 0f)
         val dotX = abs(localPickDir.dot(Vec3f.X_AXIS))
         val dotY = abs(localPickDir.dot(Vec3f.Y_AXIS))
@@ -461,7 +461,7 @@ class Gizmo : Node(), InputStack.PointerListener {
         pointer.consume()
     }
 
-    private fun dragAxis(pickRay: Ray, normal: Vec3f, axis: Vec3f, ctx: KoolContext) {
+    private fun dragAxis(pickRay: RayF, normal: Vec3f, axis: Vec3f, ctx: KoolContext) {
         toGlobalCoords(pickPlane.p.set(Vec3f.ZERO))
         toGlobalCoords(pickPlane.n.set(normal), 0f)
         if (pickPlane.intersectionPoint(pickRay, pickPoint)) {
@@ -472,7 +472,7 @@ class Gizmo : Node(), InputStack.PointerListener {
         }
     }
 
-    private fun dragPlane(pickRay: Ray, normal: Vec3f, ctx: KoolContext) {
+    private fun dragPlane(pickRay: RayF, normal: Vec3f, ctx: KoolContext) {
         toGlobalCoords(pickPlane.p.set(Vec3f.ZERO))
         toGlobalCoords(pickPlane.n.set(normal), 0f)
         if (pickPlane.intersectionPoint(pickRay, pickPoint)) {
@@ -483,7 +483,7 @@ class Gizmo : Node(), InputStack.PointerListener {
         }
     }
 
-    private fun dragRotate(pickRay: Ray, axis: Vec3f, ctx: KoolContext) {
+    private fun dragRotate(pickRay: RayF, axis: Vec3f, ctx: KoolContext) {
         toGlobalCoords(pickPlane.p.set(Vec3f.ZERO))
         toGlobalCoords(pickPlane.n.set(axis), 0f)
 

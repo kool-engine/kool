@@ -4,7 +4,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.input.InputStack
 import de.fabmax.kool.input.PointerState
 import de.fabmax.kool.math.*
-import de.fabmax.kool.math.spatial.BoundingBox
+import de.fabmax.kool.math.spatial.BoundingBoxD
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.scene.animation.SpringDamperDouble
 import de.fabmax.kool.util.Time
@@ -66,7 +66,7 @@ open class OrbitInputTransform(name: String? = null) : Node(name), InputStack.Po
 
     var minZoom = 1.0
     var maxZoom = 100.0
-    var translationBounds: BoundingBox? = null
+    var translationBounds: BoundingBoxD? = null
 
     var panMethod: PanBase = CameraOrthogonalPan()
 
@@ -293,7 +293,7 @@ abstract class PanBase {
 
 class CameraOrthogonalPan : PanBase() {
     val panPlane = Plane()
-    private val pointerRay = Ray()
+    private val pointerRay = RayF()
 
     override fun computePanPoint(result: MutableVec3f, view: RenderPass.View, ptrPos: Vec2d, ctx: KoolContext): Boolean {
         panPlane.p.set(view.camera.globalLookAt)
@@ -305,7 +305,7 @@ class CameraOrthogonalPan : PanBase() {
 
 class FixedPlanePan(planeNormal: Vec3f) : PanBase() {
     val panPlane = Plane()
-    private val pointerRay = Ray()
+    private val pointerRay = RayF()
 
     init {
         panPlane.n.set(planeNormal)

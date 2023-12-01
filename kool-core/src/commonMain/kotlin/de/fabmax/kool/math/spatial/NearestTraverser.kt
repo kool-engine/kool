@@ -1,8 +1,6 @@
 package de.fabmax.kool.math.spatial
 
-import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.math.Ray
-import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.*
 import de.fabmax.kool.util.ObjectPool
 import de.fabmax.kool.util.PriorityQueue
 import kotlin.math.max
@@ -12,7 +10,7 @@ open class NearestTraverser<T: Any> : CenterPointTraverser<T>() {
     var sqrDist = MAX_RADIUS * MAX_RADIUS
     var nearest: T? = null
 
-    open fun setup(center: Vec3f, maxRadius: Float = MAX_RADIUS): NearestTraverser<T> {
+    open fun setup(center: Vec3f, maxRadius: Double = MAX_RADIUS): NearestTraverser<T> {
         super.setup(center)
         sqrDist = maxRadius * maxRadius
         nearest = null
@@ -22,34 +20,24 @@ open class NearestTraverser<T: Any> : CenterPointTraverser<T>() {
     override fun traverseChildren(tree: SpatialTree<T>, node: SpatialTree<T>.Node) {
         if (node.children.size == 2) {
             // kd-tree optimized traversal
-            val dLt = pointDistance.nodeSqrDistanceToPoint(node.children[0], center)
-            val dRt = pointDistance.nodeSqrDistanceToPoint(node.children[1], center)
-
-            val d1st: Float
-            val d2nd: Float
-            val nd1st: SpatialTree<T>.Node
-            val nd2nd: SpatialTree<T>.Node
-
-            if (dLt < dRt) {
-                d1st = dLt
-                d2nd = dRt
-                nd1st = node.children[0]
-                nd2nd = node.children[1]
-            } else {
-                d1st = dRt
-                d2nd = dLt
-                nd1st = node.children[1]
-                nd2nd = node.children[0]
+            var dA = pointDistance.nodeSqrDistanceToPoint(node.children[0], center)
+            var dB = pointDistance.nodeSqrDistanceToPoint(node.children[1], center)
+            var ndA = node.children[0]
+            var ndB = node.children[1]
+            if (dB < dA) {
+                dA = dB.also { dB = dA }
+                ndA = ndB.also { ndB = ndA }
             }
 
-            if (d1st < sqrDist) {
-                traverseNode(tree, nd1st)
-                if (d2nd < sqrDist) {
-                    traverseNode(tree, nd2nd)
+            if (dA < sqrDist) {
+                traverseNode(tree, ndA)
+                if (dB < sqrDist) {
+                    traverseNode(tree, ndB)
                 }
             }
 
         } else {
+            // general version for arbitrary number of child nodes
             for (i in node.children.indices) {
                 val child = node.children[i]
                 if (!child.isEmpty) {
@@ -76,7 +64,7 @@ open class NearestTraverser<T: Any> : CenterPointTraverser<T>() {
     }
 
     companion object {
-        const val MAX_RADIUS = 1.8446743E19f     // sqrt(Float.MAX_VALUE)
+        val MAX_RADIUS = sqrt(Double.MAX_VALUE)
     }
 }
 
@@ -87,16 +75,16 @@ open class KNearestTraverser<T: Any> : CenterPointTraverser<T>() {
         protected set
 
     val result = mutableListOf<T>()
-    var maxDistance = 0f
+    var maxDistance = 0.0
         protected set
 
     // store items in a priority queue, farthest distance first
-    private val items = PriorityQueue<Item<T>>(compareBy { it.dSqr })
+    private val items = PriorityQueue<Item<T>>(compareBy { -it.dSqr })
     private val itemRecycler = ObjectPool { Item<T>() }
 
-    private val childLists = ChildNodesWithDistance<T> { pointDistance.nodeSqrDistanceToPoint(it, center) }
+    private val childLists = ChildNodesWithDistance { pointDistance.nodeSqrDistanceToPoint(it, center) }
 
-    open fun setup(center: Vec3f, k: Int, maxRadius: Float = MAX_RADIUS): KNearestTraverser<T> {
+    open fun setup(center: Vec3f, k: Int, maxRadius: Double = MAX_RADIUS): KNearestTraverser<T> {
         super.setup(center)
         this.k = k
         this.radiusSqr = maxRadius * maxRadius
@@ -107,7 +95,7 @@ open class KNearestTraverser<T: Any> : CenterPointTraverser<T>() {
         super.traverse(tree)
 
         result.clear()
-        maxDistance = 0f
+        maxDistance = 0.0
         if (!items.isEmpty()) {
             maxDistance = sqrt(items.peek().dSqr)
             while (!items.isEmpty()) {
@@ -118,20 +106,41 @@ open class KNearestTraverser<T: Any> : CenterPointTraverser<T>() {
     }
 
     override fun traverseChildren(tree: SpatialTree<T>, node: SpatialTree<T>.Node) {
-        childLists.use(node.children.size) { childList ->
-            for (i in node.children.indices) {
-                childList[i].setChildNode(node.children[i])
+        if (node.children.size == 2) {
+            // kd-tree optimized traversal
+            var dA = pointDistance.nodeSqrDistanceToPoint(node.children[0], center)
+            var dB = pointDistance.nodeSqrDistanceToPoint(node.children[1], center)
+            var ndA = node.children[0]
+            var ndB = node.children[1]
+            if (dB < dA) {
+                dA = dB.also { dB = dA }
+                ndA = ndB.also { ndB = ndA }
             }
-            childLists.sortByDistance(childList)
 
-            for (i in node.children.indices) {
-                val child = childList[i]
-                if (!child.node!!.isEmpty) {
-                    val maxDist = if (items.size < k) { radiusSqr } else { items.peek().dSqr }
-                    if (child.dist < maxDist) {
-                        traverseNode(tree, child.node!!)
-                    } else {
-                        break
+            if (dA < radiusSqr && (items.size < k || dA < items.peek().dSqr)) {
+                traverseNode(tree, ndA)
+                if (dB < radiusSqr && (items.size < k || dB < items.peek().dSqr)) {
+                    traverseNode(tree, ndB)
+                }
+            }
+
+        } else {
+            // general version for arbitrary number of child nodes
+            childLists.use(node.children.size) { childList ->
+                for (i in node.children.indices) {
+                    childList[i].setChildNode(node.children[i])
+                }
+                childLists.sortByDistance(childList)
+
+                for (i in node.children.indices) {
+                    val child = childList[i]
+                    if (child.node!!.isNotEmpty) {
+                        val maxDist = if (items.size < k) { radiusSqr } else { items.peek().dSqr }
+                        if (child.dist < maxDist) {
+                            traverseNode(tree, child.node!!)
+                        } else {
+                            break
+                        }
                     }
                 }
             }
@@ -150,7 +159,7 @@ open class KNearestTraverser<T: Any> : CenterPointTraverser<T>() {
         }
     }
 
-    private fun insert(value: T, dSqr: Float) {
+    private fun insert(value: T, dSqr: Double) {
         val insItem = if (items.size == k) {
             items.poll()
         } else {
@@ -161,9 +170,9 @@ open class KNearestTraverser<T: Any> : CenterPointTraverser<T>() {
 
     private class Item<T : Any> {
         lateinit var item: T
-        var dSqr: Float = 0f
+        var dSqr: Double = 0.0
 
-        fun set(item: T, dSqr: Float): Item<T> {
+        fun set(item: T, dSqr: Double): Item<T> {
             this.item = item
             this.dSqr = dSqr
             return this
@@ -171,33 +180,33 @@ open class KNearestTraverser<T: Any> : CenterPointTraverser<T>() {
     }
 
     companion object {
-        const val MAX_RADIUS = 1.8446743E19f     // sqrt(Float.MAX_VALUE)
+        val MAX_RADIUS = sqrt(Double.MAX_VALUE)
     }
 }
 
 open class NearestToRayTraverser<T: Any> : SpatialTreeTraverser<T>() {
-    val ray = Ray()
+    val ray = RayD()
     var nearest: T? = null
         protected set
-    var distance = 0f
+    var distance = 0.0
         protected set
-    var distanceSqr = Float.MAX_VALUE
+    var distanceSqr = Double.MAX_VALUE
         protected set
 
     var rayDistance = object : RayDistance<T> { }
 
-    private val childLists = ChildNodesWithDistance<T> { rayDistance.nodeSqrDistanceToRay(it, ray) }
+    private val childLists = ChildNodesWithDistance { rayDistance.nodeSqrDistanceToRay(it, ray) }
 
-    open fun setup(ray: Ray): NearestToRayTraverser<T> {
+    open fun setup(ray: RayD): NearestToRayTraverser<T> {
         this.ray.set(ray)
         nearest = null
-        distanceSqr = Float.MAX_VALUE
+        distanceSqr = Double.MAX_VALUE
         return this
     }
 
     override fun traverse(tree: SpatialTree<T>) {
         super.traverse(tree)
-        distance = if (distanceSqr != Float.MAX_VALUE) sqrt(distanceSqr) else Float.MAX_VALUE
+        distance = if (distanceSqr != Double.MAX_VALUE) sqrt(distanceSqr) else Double.MAX_VALUE
     }
 
     override fun traverseChildren(tree: SpatialTree<T>, node: SpatialTree<T>.Node) {
@@ -237,14 +246,14 @@ open class NearestToRayTraverser<T: Any> : SpatialTreeTraverser<T>() {
 open class NearestEdgeToRayTraverser<T: Edge<*>> : NearestToRayTraverser<T>() {
     init {
         rayDistance = object : RayDistance<T> {
-            override fun itemSqrDistanceToRay(tree: SpatialTree<T>, item: T, ray: Ray): Float {
-                return item.rayDistanceSqr(ray)
+            override fun itemSqrDistanceToRay(tree: SpatialTree<T>, item: T, ray: RayD): Double {
+                return item.rayDistanceSqr(ray.toRayF()).toDouble()
             }
         }
     }
 }
 
-class ChildNodesWithDistance<T: Any>(val childDist: (SpatialTree<T>.Node) -> Float) {
+class ChildNodesWithDistance<T: Any>(val childDist: (SpatialTree<T>.Node) -> Double) {
     val childListRecycler = ObjectPool { mutableListOf<Child>() }
     val childComparator = compareBy<Child> { it.dist }
 
@@ -253,7 +262,7 @@ class ChildNodesWithDistance<T: Any>(val childDist: (SpatialTree<T>.Node) -> Flo
             if (childList.size != n) {
                 if (childList.size < n) {
                     for (i in 1..(n - childList.size)) {
-                        childList += Child(0f, null)
+                        childList += Child(0.0, null)
                     }
                 } else {
                     while (childList.size > n) {
@@ -270,7 +279,7 @@ class ChildNodesWithDistance<T: Any>(val childDist: (SpatialTree<T>.Node) -> Flo
         childList.sortWith(childComparator)
     }
 
-    inner class Child(var dist: Float, var node: SpatialTree<T>.Node?) {
+    inner class Child(var dist: Double, var node: SpatialTree<T>.Node?) {
         fun setChildNode(node: SpatialTree<T>.Node) {
             this.node = node
             dist = childDist(node)
@@ -282,23 +291,23 @@ open class TriangleHitTraverser<T: Triangle> : NearestToRayTraverser<T>() {
     val isHit: Boolean
         get() = nearest != null
 
-    val hitPoint = MutableVec3f()
+    val hitPoint = MutableVec3d()
 
     init {
         rayDistance = object : RayDistance<T> {
-            override fun itemSqrDistanceToRay(tree: SpatialTree<T>, item: T, ray: Ray): Float {
-                val dist = item.hitDistance(ray)
+            override fun itemSqrDistanceToRay(tree: SpatialTree<T>, item: T, ray: RayD): Double {
+                val dist = item.hitDistance(ray.toRayF())
                 return if (dist < Float.MAX_VALUE) {
-                    dist * dist
+                    (dist * dist).toDouble()
                 } else {
-                    return Float.MAX_VALUE
+                    return Double.MAX_VALUE
                 }
             }
         }
     }
 
-    override fun setup(ray: Ray): TriangleHitTraverser<T> {
-        hitPoint.set(Vec3f.ZERO)
+    override fun setup(ray: RayD): TriangleHitTraverser<T> {
+        hitPoint.set(Vec3d.ZERO)
         super.setup(ray)
         return this
     }
@@ -312,17 +321,17 @@ open class TriangleHitTraverser<T: Triangle> : NearestToRayTraverser<T>() {
 }
 
 interface RayDistance<T: Any> {
-    fun nodeSqrDistanceToRay(node: SpatialTree<T>.Node, ray: Ray): Float {
+    fun nodeSqrDistanceToRay(node: SpatialTree<T>.Node, ray: RayD): Double {
         return if (node.isEmpty) {
-            Float.MAX_VALUE
+            Double.MAX_VALUE
         } else {
             node.bounds.center
-            val d = max(0f, ray.distanceToPoint(node.bounds.center) - node.bounds.size.length() * 0.5f)
+            val d = max(0.0, ray.distanceToPoint(node.bounds.center) - node.bounds.size.length() * 0.5)
             d * d
         }
     }
 
-    fun itemSqrDistanceToRay(tree: SpatialTree<T>, item: T, ray: Ray): Float {
+    fun itemSqrDistanceToRay(tree: SpatialTree<T>, item: T, ray: RayD): Double {
         return ray.sqrDistanceToPoint(tree.itemAdapter.getCenterX(item), tree.itemAdapter.getCenterY(item), tree.itemAdapter.getCenterZ(item))
     }
 }

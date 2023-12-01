@@ -3,7 +3,7 @@ package de.fabmax.kool.physics.geometry
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.deg
-import de.fabmax.kool.math.spatial.BoundingBox
+import de.fabmax.kool.math.spatial.BoundingBoxF
 import de.fabmax.kool.scene.geometry.MeshBuilder
 
 /**
@@ -24,7 +24,7 @@ interface CommonPlaneGeometry : CollisionGeometry {
         }
     }
 
-    override fun getBounds(result: BoundingBox) = result.set(0f, -1e10f, -1e10f, 0f, 1e10f, 1e10f)
+    override fun getBounds(result: BoundingBoxF) = result.set(0f, -1e10f, -1e10f, 0f, 1e10f, 1e10f)
 
     override fun estimateInertiaForMass(mass: Float, result: MutableVec3f): MutableVec3f {
         // plane does not have a meaningful inertia

@@ -127,27 +127,29 @@ class CamLocalGrass(val camera: Camera, val terrain: Terrain, val wind: Wind, va
     class GrassTraverser : InRadiusTraverser<GrassInstance>() {
         lateinit var camera: Camera
 
+        private val tmpVec = MutableVec3f()
+
         init {
             pointDistance = object : PointDistance<GrassInstance> {
-                override fun nodeSqrDistanceToPoint(node: SpatialTree<GrassInstance>.Node, point: Vec3f): Float {
+                override fun nodeSqrDistanceToPoint(node: SpatialTree<GrassInstance>.Node, point: Vec3d): Double {
                     val dSqr = super.nodeSqrDistanceToPoint(node, point)
                     if (dSqr < radiusSqr) {
                         val radius = node.bounds.size.length() * 0.5f
-                        if (!camera.isInFrustum(node.bounds.center, radius)) {
-                            return Float.MAX_VALUE
+                        if (!camera.isInFrustum(node.bounds.center.toMutableVec3f(tmpVec), radius.toFloat())) {
+                            return Double.MAX_VALUE
                         }
                     }
                     return dSqr
                 }
 
-                override fun itemSqrDistanceToPoint(tree: SpatialTree<GrassInstance>, item: GrassInstance, point: Vec3f): Float {
+                override fun itemSqrDistanceToPoint(tree: SpatialTree<GrassInstance>, item: GrassInstance, point: Vec3d): Double {
                     val dSqr = super.itemSqrDistanceToPoint(tree, item, point)
                     if (dSqr < radiusSqr && !camera.isInFrustum(item, 2f)) {
-                        return Float.MAX_VALUE
+                        return Double.MAX_VALUE
                     }
                     val relDist = sqrt(dSqr) / radius
                     if (item.p < relDist) {
-                        return Float.MAX_VALUE
+                        return Double.MAX_VALUE
                     }
                     return dSqr
                 }

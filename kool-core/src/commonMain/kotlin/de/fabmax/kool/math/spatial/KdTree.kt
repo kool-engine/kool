@@ -1,13 +1,13 @@
 package de.fabmax.kool.math.spatial
 
-import de.fabmax.kool.math.MutableVec3f
+import de.fabmax.kool.math.MutableVec3d
 import de.fabmax.kool.math.partition
 
 /**
  * @author fabmax
  */
 
-open class KdTree<T: Any>(items: List<T>, itemAdapter: ItemAdapter<T>, bucketSz: Int = 10) : SpatialTree<T>(itemAdapter) {
+open class KdTree<T: Any>(items: List<T>, itemAdapter: ItemAdapter<T>, bucketSz: Int = 16) : SpatialTree<T>(itemAdapter) {
 
     override val size: Int
         get() = items.size
@@ -42,7 +42,7 @@ open class KdTree<T: Any>(items: List<T>, itemAdapter: ItemAdapter<T>, bucketSz:
             get() = this@KdTree.items
 
         init {
-            val tmpVec = MutableVec3f()
+            val tmpVec = MutableVec3d()
             size = nodeRange.last - nodeRange.first + 1
             bounds.batchUpdate {
                 for (i in nodeRange) {

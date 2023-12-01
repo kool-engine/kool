@@ -1,7 +1,7 @@
 package de.fabmax.kool.math.spatial
 
 import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.math.Ray
+import de.fabmax.kool.math.RayF
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.PrimitiveType
@@ -43,7 +43,7 @@ open class Triangle(val pt0: Vec3f, val pt1: Vec3f, val pt2: Vec3f) {
         maxZ = maxOf(pt0.z, pt1.z, pt2.z)
     }
 
-    open fun hitDistance(ray: Ray): Float {
+    open fun hitDistance(ray: RayF): Float {
         ray.origin.subtract(pt0, tmpS)
         ray.direction.cross(e2, tmpP)
         tmpS.cross(e1, tmpQ)

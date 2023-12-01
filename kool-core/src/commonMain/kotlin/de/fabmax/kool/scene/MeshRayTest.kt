@@ -1,21 +1,18 @@
 package de.fabmax.kool.scene
 
-import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.math.Ray
-import de.fabmax.kool.math.RayTest
-import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.*
 import de.fabmax.kool.scene.geometry.PrimitiveType
 import kotlin.math.sqrt
 
 interface MeshRayTest {
 
-    fun rayTest(test: RayTest, localRay: Ray): Boolean
+    fun rayTest(test: RayTest, localRay: RayF): Boolean
     fun onMeshDataChanged(mesh: Mesh) { }
 
     companion object {
         fun nopTest(): MeshRayTest = object : MeshRayTest {
-            override fun rayTest(test: RayTest, localRay: Ray) = false
+            override fun rayTest(test: RayTest, localRay: RayF) = false
         }
 
         fun boundsTest(): MeshRayTest = object : MeshRayTest {
@@ -27,7 +24,7 @@ interface MeshRayTest {
                 this.mesh = mesh
             }
 
-            override fun rayTest(test: RayTest, localRay: Ray): Boolean {
+            override fun rayTest(test: RayTest, localRay: RayF): Boolean {
                 val mesh = this.mesh ?: return false
                 val distSqr = mesh.geometry.bounds.hitDistanceSqr(localRay)
                 if (distSqr < Float.MAX_VALUE) {
@@ -54,6 +51,9 @@ interface MeshRayTest {
     class TriangleGeometry(val mesh: Mesh) : MeshRayTest {
         var triangleTree: KdTree<Triangle>? = null
             private set
+        private val rayD = RayD()
+        private val posD = MutableVec3d()
+        private val posF = MutableVec3f()
         private val rayTraverser = TriangleHitTraverser<Triangle>()
 
         override fun onMeshDataChanged(mesh: Mesh) {
@@ -64,16 +64,16 @@ interface MeshRayTest {
             }
         }
 
-        override fun rayTest(test: RayTest, localRay: Ray): Boolean {
-            rayTraverser.setup(localRay)
+        override fun rayTest(test: RayTest, localRay: RayF): Boolean {
+            rayTraverser.setup(localRay.toRayD(rayD))
             triangleTree?.let { rayTraverser.traverse(it) }
 
             rayTraverser.nearest?.let { hitTri ->
                 // hit
                 val globalHit = mesh.toGlobalCoords(rayTraverser.hitPoint)
-                val globalDistSqr = globalHit.sqrDistance(test.ray.origin)
+                val globalDistSqr = globalHit.sqrDistance(test.ray.origin.toMutableVec3d(posD))
                 if (globalDistSqr < test.hitDistanceSqr) {
-                    test.setHit(mesh, globalHit)
+                    test.setHit(mesh, globalHit.toMutableVec3f(posF))
                     mesh.toGlobalCoords(hitTri.e1.cross(hitTri.e2, test.hitNormalGlobal), 0f)
                     return true
                 }
@@ -87,6 +87,7 @@ interface MeshRayTest {
             private set
         private val rayTraverser = NearestEdgeToRayTraverser<Edge<Vec3f>>()
         private val tmpVec = MutableVec3f()
+        private val rayD = RayD()
 
         override fun onMeshDataChanged(mesh: Mesh) {
             edgeTree = if (mesh.geometry.primitiveType == PrimitiveType.LINES) {
@@ -96,12 +97,12 @@ interface MeshRayTest {
             }
         }
 
-        override fun rayTest(test: RayTest, localRay: Ray): Boolean {
-            rayTraverser.setup(localRay)
+        override fun rayTest(test: RayTest, localRay: RayF): Boolean {
+            rayTraverser.setup(localRay.toRayD(rayD))
             edgeTree?.let { rayTraverser.traverse(it) }
 
             if (rayTraverser.nearest != null) {
-                tmpVec.set(localRay.direction).mul(sqrt(rayTraverser.distanceSqr))
+                tmpVec.set(localRay.direction).mul(sqrt(rayTraverser.distanceSqr).toFloat())
                 val globalDistSqr = mesh.toGlobalCoords(tmpVec, 0f).sqrLength()
                 if (globalDistSqr < test.hitDistanceSqr) {
                     test.setHit(mesh, globalDistSqr)

@@ -11,6 +11,7 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.spatial.SpatialTree
 import de.fabmax.kool.math.spatial.SpatialTreeTraverser
 import de.fabmax.kool.math.spatial.Triangle
+import de.fabmax.kool.math.toMutableVec3f
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Viewport
@@ -181,8 +182,8 @@ class BoxSelector : Composable {
 
             override fun traverseChildren(tree: SpatialTree<Triangle>, node: SpatialTree<Triangle>.Node) {
                 for (child in node.children) {
-                    mesh.toGlobalCoords(tmpA.set(child.bounds.center))
-                    mesh.toGlobalCoords(tmpB.set(child.bounds.max))
+                    mesh.toGlobalCoords(child.bounds.center.toMutableVec3f(tmpA))
+                    mesh.toGlobalCoords(child.bounds.max.toMutableVec3f(tmpB))
                     val r = tmpA.distance(tmpB)
                     if (testBoundingSphere(tmpA, r)) {
                         traverseNode(tree, child)

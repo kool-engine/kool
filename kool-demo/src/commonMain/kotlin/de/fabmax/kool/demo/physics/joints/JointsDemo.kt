@@ -4,7 +4,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.*
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.*
-import de.fabmax.kool.math.spatial.BoundingBox
+import de.fabmax.kool.math.spatial.BoundingBoxF
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.modules.ui2.*
@@ -143,13 +143,13 @@ class JointsDemo : DemoScene("Physics - Joints") {
             clipNear = 100f
             clipFar = 500f
             shaderDepthOffset = -0.2f
-            shadowBounds = BoundingBox(Vec3f(-75f, -20f, -75f), Vec3f(75f, 20f, 75f))
+            shadowBounds = BoundingBoxF(Vec3f(-75f, -20f, -75f), Vec3f(75f, 20f, 75f))
         })
         shadows.add(SimpleShadowMap(this, lighting.lights[1]).apply {
             clipNear = 100f
             clipFar = 500f
             shaderDepthOffset = -0.2f
-            shadowBounds = BoundingBox(Vec3f(-75f, -20f, -75f), Vec3f(75f, 20f, 75f))
+            shadowBounds = BoundingBoxF(Vec3f(-75f, -20f, -75f), Vec3f(75f, 20f, 75f))
         })
     }
 

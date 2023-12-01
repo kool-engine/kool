@@ -2,7 +2,7 @@ package de.fabmax.kool.physics.geometry
 
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.math.spatial.BoundingBox
+import de.fabmax.kool.math.spatial.BoundingBoxF
 import de.fabmax.kool.scene.geometry.MeshBuilder
 
 expect fun BoxGeometry(size: Vec3f) : BoxGeometry
@@ -16,7 +16,7 @@ interface BoxGeometry : CollisionGeometry {
         }
     }
 
-    override fun getBounds(result: BoundingBox): BoundingBox {
+    override fun getBounds(result: BoundingBoxF): BoundingBoxF {
         result.set(-size.x * 0.5f, -size.y * 0.5f, -size.z * 0.5f,
             size.x * 0.5f, size.y * 0.5f, size.z * 0.5f)
         return result

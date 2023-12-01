@@ -1,7 +1,7 @@
 package de.fabmax.kool.physics
 
 import de.fabmax.kool.math.*
-import de.fabmax.kool.math.spatial.BoundingBox
+import de.fabmax.kool.math.spatial.BoundingBoxF
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.scene.ColorMesh
 import de.fabmax.kool.scene.Node
@@ -21,7 +21,7 @@ interface RigidActor : Releasable {
 
     var position: Vec3f
     var rotation: QuatF
-    val worldBounds: BoundingBox
+    val worldBounds: BoundingBoxF
 
     var isTrigger: Boolean
 

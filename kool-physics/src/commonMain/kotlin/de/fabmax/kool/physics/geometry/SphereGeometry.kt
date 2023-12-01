@@ -1,7 +1,7 @@
 package de.fabmax.kool.physics.geometry
 
 import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.math.spatial.BoundingBox
+import de.fabmax.kool.math.spatial.BoundingBoxF
 import de.fabmax.kool.scene.geometry.MeshBuilder
 
 expect fun SphereGeometry(radius: Float): SphereGeometry
@@ -16,7 +16,7 @@ interface SphereGeometry : CollisionGeometry {
         }
     }
 
-    override fun getBounds(result: BoundingBox) = result.set(-radius, -radius, -radius, radius, radius, radius)
+    override fun getBounds(result: BoundingBoxF) = result.set(-radius, -radius, -radius, radius, radius, radius)
 
     override fun estimateInertiaForMass(mass: Float, result: MutableVec3f): MutableVec3f {
         val i = 2f / 5f * mass * radius * radius

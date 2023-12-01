@@ -1,7 +1,7 @@
 package de.fabmax.kool.demo.physics.terrain
 
 import de.fabmax.kool.math.*
-import de.fabmax.kool.math.spatial.BoundingBox
+import de.fabmax.kool.math.spatial.BoundingBoxF
 import de.fabmax.kool.modules.ksl.KslBlinnPhongShader
 import de.fabmax.kool.modules.ksl.KslLitShader
 import de.fabmax.kool.modules.ksl.KslPbrShader
@@ -35,7 +35,7 @@ class Terrain(val demo: TerrainDemo, val heightMap: HeightMap) {
     init {
         val heightField = HeightField(heightMap, 1f, 1f)
         val hfGeom = HeightFieldGeometry(heightField)
-        val hfBounds = hfGeom.getBounds(BoundingBox())
+        val hfBounds = hfGeom.getBounds(BoundingBoxF())
         terrainBody = RigidStatic()
         terrainBody.attachShape(Shape(hfGeom, Physics.defaultMaterial))
         terrainBody.position = Vec3f(hfBounds.size.x * -0.5f, 0f, hfBounds.size.z * -0.5f)

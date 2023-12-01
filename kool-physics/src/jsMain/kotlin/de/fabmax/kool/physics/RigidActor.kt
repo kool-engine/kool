@@ -4,7 +4,7 @@ import de.fabmax.kool.math.MutableQuatF
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.QuatF
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.math.spatial.BoundingBox
+import de.fabmax.kool.math.spatial.BoundingBoxF
 import de.fabmax.kool.scene.Tags
 import de.fabmax.kool.scene.TrsTransformF
 import de.fabmax.kool.util.BaseReleasable
@@ -28,7 +28,7 @@ abstract class RigidActorImpl : BaseReleasable(), RigidActor {
             updateFilterData()
         }
 
-    private val bufBounds = BoundingBox()
+    private val bufBounds = BoundingBoxF()
     private val bufPosition = MutableVec3f()
     private val bufRotation = MutableQuatF()
 
@@ -50,7 +50,7 @@ abstract class RigidActorImpl : BaseReleasable(), RigidActor {
             updateTransform()
         }
 
-    override val worldBounds: BoundingBox
+    override val worldBounds: BoundingBoxF
         get() = holder.px.worldBounds.toBoundingBox(bufBounds)
 
     override var isTrigger: Boolean = false

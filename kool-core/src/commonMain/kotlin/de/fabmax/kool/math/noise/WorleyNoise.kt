@@ -103,11 +103,12 @@ class GridWorleyNoise3d(val gridSizeX: Int, val gridSizeY: Int, val gridSizeZ: I
     }
 }
 
-class FreeWorleyNoise2d(val nPoints: Int, seed: Int = 19937) : Noise2d {
+class FreeWorleyNoise2d(nPoints: Int, seed: Int = 19937) : Noise2d {
 
     private val pointTree: KdTree<Vec3f>
     private val trav = NearestTraverser<Vec3f>()
 
+    private val tmpVec = MutableVec3f()
     private val scale = nPoints.toFloat().pow(1f / 2f) / MAX_D
 
     init {
@@ -127,12 +128,12 @@ class FreeWorleyNoise2d(val nPoints: Int, seed: Int = 19937) : Noise2d {
 
     override fun eval(x: Float, y: Float): Float {
         trav.setup(Vec3f.ZERO)
-        trav.center.set(x, y, 0f)
+        trav.center.set(x.toDouble(), y.toDouble(), 0.0)
         trav.traverse(pointTree)
 
         val n = trav.nearest
         return if (n != null) {
-            n.distance(trav.center) * scale
+            n.distance(trav.center.toMutableVec3f(tmpVec)) * scale
         } else {
             1f
         }
@@ -143,11 +144,12 @@ class FreeWorleyNoise2d(val nPoints: Int, seed: Int = 19937) : Noise2d {
     }
 }
 
-class FreeWorleyNoise3d(val nPoints: Int, seed: Int = 19937) : Noise3d {
+class FreeWorleyNoise3d(nPoints: Int, seed: Int = 19937) : Noise3d {
 
     private val pointTree: KdTree<Vec3f>
     private val trav = NearestTraverser<Vec3f>()
 
+    private val tmpVec = MutableVec3f()
     private val scale = nPoints.toFloat().pow(1f / 3f) / MAX_D
 
     init {
@@ -169,12 +171,12 @@ class FreeWorleyNoise3d(val nPoints: Int, seed: Int = 19937) : Noise3d {
 
     override fun eval(x: Float, y: Float, z: Float): Float {
         trav.setup(Vec3f.ZERO)
-        trav.center.set(x, y, z)
+        trav.center.set(x.toDouble(), y.toDouble(), z.toDouble())
         trav.traverse(pointTree)
 
         val n = trav.nearest
         return if (n != null) {
-            n.distance(trav.center) * scale
+            n.distance(trav.center.toMutableVec3f(tmpVec)) * scale
         } else {
             1f
         }

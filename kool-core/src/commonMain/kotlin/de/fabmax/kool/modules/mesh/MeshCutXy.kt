@@ -140,29 +140,32 @@ class MeshCutXy(val geometry: IndexedVertexList) {
 
     private inner class CoveringTriXyTrav : KNearestTraverser<HalfEdgeMesh.HalfEdge>() {
         val triPts = MutableList(3) { MutableVec2f() }
+        private val tmpVec = MutableVec3f()
 
         init {
             pointDistance = object : PointDistance<HalfEdgeMesh.HalfEdge> {
-                override fun nodeSqrDistanceToPoint(node: SpatialTree<HalfEdgeMesh.HalfEdge>.Node, point: Vec3f): Float {
-                    val pt = Vec3f(point.x, point.y, node.bounds.center.z)
+                override fun nodeSqrDistanceToPoint(node: SpatialTree<HalfEdgeMesh.HalfEdge>.Node, point: Vec3d): Double {
+                    val pt = Vec3d(point.x, point.y, node.bounds.center.z)
                     return node.bounds.pointDistanceSqr(pt)
                 }
 
-                override fun itemSqrDistanceToPoint(tree: SpatialTree<HalfEdgeMesh.HalfEdge>, item: HalfEdgeMesh.HalfEdge, point: Vec3f): Float {
+                override fun itemSqrDistanceToPoint(tree: SpatialTree<HalfEdgeMesh.HalfEdge>, item: HalfEdgeMesh.HalfEdge, point: Vec3d): Double {
                     triPts[0].set(item.from.x, item.from.y)
                     triPts[1].set(item.next.from.x, item.next.from.y)
                     triPts[2].set(item.next.next.from.x, item.next.next.from.y)
-                    return if (isInPolygon(center, triPts)) {
-                        return point.distanceToEdge(Vec3f(item.from.x, item.from.y, 0f), Vec3f(item.to.x, item.to.y, 0f))
+                    return if (isInPolygon(center.toMutableVec3f(tmpVec), triPts)) {
+                        return point.distanceToEdge(
+                            Vec3d(item.from.x.toDouble(), item.from.y.toDouble(), 0.0),
+                            Vec3d(item.to.x.toDouble(), item.to.y.toDouble(), 0.0))
                     } else {
-                        Float.MAX_VALUE
+                        Double.MAX_VALUE
                     }
                 }
             }
         }
 
         fun setup(pt: Vec2f) {
-            super.setup(Vec3f(pt.x, pt.y, 0f), 1, 1e6f)
+            super.setup(Vec3f(pt.x, pt.y, 0f), 1, 1e6)
         }
     }
 
@@ -174,20 +177,20 @@ class MeshCutXy(val geometry: IndexedVertexList) {
             this.edge = edge
 
             pointDistance = object : PointDistance<HalfEdgeMesh.HalfEdge> {
-                override fun nodeSqrDistanceToPoint(node: SpatialTree<HalfEdgeMesh.HalfEdge>.Node, point: Vec3f): Float {
-                    val pt = Vec3f(point.x, point.y, node.bounds.center.z)
+                override fun nodeSqrDistanceToPoint(node: SpatialTree<HalfEdgeMesh.HalfEdge>.Node, point: Vec3d): Double {
+                    val pt = Vec3d(point.x, point.y, node.bounds.center.z)
                     return super.nodeSqrDistanceToPoint(node, pt)
                 }
 
-                override fun itemSqrDistanceToPoint(tree: SpatialTree<HalfEdgeMesh.HalfEdge>, item: HalfEdgeMesh.HalfEdge, point: Vec3f): Float {
+                override fun itemSqrDistanceToPoint(tree: SpatialTree<HalfEdgeMesh.HalfEdge>, item: HalfEdgeMesh.HalfEdge, point: Vec3d): Double {
                     if (/*item.opp == null &&*/ item.computeLength() < shortEdgeThresh) {
                         val d0 = Vec3f(item.from.x, item.from.y, 0f).distanceToEdge(edge.pt0, edge.pt1)
                         val d1 = Vec3f(item.to.x, item.to.y, 0f).distanceToEdge(edge.pt0, edge.pt1)
                         if (d0.isFuzzyZero(eps) && d1.isFuzzyZero(eps) && !isFuzzyEqual(item.computeLength(), edge.length, eps)) {
-                            return 0f
+                            return 0.0
                         }
                     }
-                    return Float.MAX_VALUE
+                    return Double.MAX_VALUE
                 }
             }
             return this
@@ -211,25 +214,25 @@ class MeshCutXy(val geometry: IndexedVertexList) {
             this.edge = edge
 
             pointDistance = object : PointDistance<HalfEdgeMesh.HalfEdge> {
-                override fun nodeSqrDistanceToPoint(node: SpatialTree<HalfEdgeMesh.HalfEdge>.Node, point: Vec3f): Float {
-                    val pt = Vec3f(point.x, point.y, node.bounds.center.z)
+                override fun nodeSqrDistanceToPoint(node: SpatialTree<HalfEdgeMesh.HalfEdge>.Node, point: Vec3d): Double {
+                    val pt = Vec3d(point.x, point.y, node.bounds.center.z)
                     return super.nodeSqrDistanceToPoint(node, pt)
                 }
 
-                override fun itemSqrDistanceToPoint(tree: SpatialTree<HalfEdgeMesh.HalfEdge>, item: HalfEdgeMesh.HalfEdge, point: Vec3f): Float {
+                override fun itemSqrDistanceToPoint(tree: SpatialTree<HalfEdgeMesh.HalfEdge>, item: HalfEdgeMesh.HalfEdge, point: Vec3d): Double {
                     return if (computeXyEdgeIntersectionPoint(edge.pt0, edge.pt1, item.from, item.to, intersectionPt)) {
                         val d = intersectionPt.distXy(item.from) / item.to.distXy(item.from)
 
                         if (isFuzzyEqual(d, 0f) || isFuzzyEqual(d, 1f)) {
-                            Float.MAX_VALUE
+                            Double.MAX_VALUE
                         } else {
                             val v = MutableVec3f(item.to).subtract(item.from).mul(d).add(item.from)
                             //delCenters += v
                             splitEdges += item to v
-                            0f
+                            0.0
                         }
                     } else {
-                        Float.MAX_VALUE
+                        Double.MAX_VALUE
                     }
                 }
             }

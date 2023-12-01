@@ -63,7 +63,7 @@ class Track(val world: VehicleWorld) : Node() {
     fun distanceToTrack(point: Vec3f): Float {
         val tree = trackPointTree ?: return -1f
         nearestTrav.setup(point).traverse(tree)
-        return sqrt(nearestTrav.sqrDist)
+        return sqrt(nearestTrav.sqrDist).toFloat()
     }
 
     fun cleanUp() {

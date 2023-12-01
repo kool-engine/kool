@@ -9,7 +9,7 @@ import de.fabmax.kool.input.KeyboardInput
 import de.fabmax.kool.input.PointerState
 import de.fabmax.kool.input.UniversalKeyCode
 import de.fabmax.kool.math.*
-import de.fabmax.kool.math.spatial.BoundingBox
+import de.fabmax.kool.math.spatial.BoundingBoxF
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.modules.ui2.*
@@ -66,7 +66,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
         }
         shadows += SimpleShadowMap(mainScene, mainScene.lighting.lights[0], 4096).apply {
             setDefaultDepthOffset(true)
-            shadowBounds = BoundingBox(Vec3f(-20f, 0f, -20f), Vec3f(20f, 10f, 20f))
+            shadowBounds = BoundingBoxF(Vec3f(-20f, 0f, -20f), Vec3f(20f, 10f, 20f))
         }
         mainScene += Skybox.cube(ibl.reflectionMap, 1f)
 
@@ -500,7 +500,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
     }
 
     private inner class ForceHelper : InputStack.PointerListener {
-        val pickRay = Ray()
+        val pickRay = RayF()
         val hitResult = HitResult()
         var hitActor: RigidBody? = null
 

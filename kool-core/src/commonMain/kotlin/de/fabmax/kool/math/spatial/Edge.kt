@@ -1,7 +1,7 @@
 package de.fabmax.kool.math.spatial
 
 import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.math.Ray
+import de.fabmax.kool.math.RayF
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.isFuzzyZero
 import de.fabmax.kool.scene.geometry.IndexedVertexList
@@ -34,11 +34,11 @@ open class Edge<T: Vec3f>(val pt0: T, val pt1: T) {
         maxZ = maxOf(pt0.z, pt1.z)
     }
 
-    open fun rayDistanceSqr(ray: Ray): Float {
+    open fun rayDistanceSqr(ray: RayF): Float {
         return ray.sqrDistanceToPoint(nearestPointOnEdge(ray, tmpResult))
     }
 
-    open fun nearestPointOnEdge(ray: Ray, result: MutableVec3f): MutableVec3f {
+    open fun nearestPointOnEdge(ray: RayF, result: MutableVec3f): MutableVec3f {
         val dot = e.dot(ray.direction)
         val n = 1f - dot * dot
         if (n.isFuzzyZero()) {

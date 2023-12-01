@@ -2,7 +2,7 @@ package de.fabmax.kool.physics.geometry
 
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.math.spatial.BoundingBox
+import de.fabmax.kool.math.spatial.BoundingBoxF
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
 
@@ -18,7 +18,7 @@ interface TriangleMeshGeometry : CollisionGeometry {
         target.geometry.addGeometry(triangleMesh.geometry)
     }
 
-    override fun getBounds(result: BoundingBox) = result.set(triangleMesh.geometry.bounds)
+    override fun getBounds(result: BoundingBoxF) = result.set(triangleMesh.geometry.bounds)
 
     override fun estimateInertiaForMass(mass: Float, result: MutableVec3f): MutableVec3f {
         // rough approximation: use inertia of bounding box

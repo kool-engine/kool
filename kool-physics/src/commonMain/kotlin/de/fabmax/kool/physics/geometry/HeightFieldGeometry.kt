@@ -1,7 +1,7 @@
 package de.fabmax.kool.physics.geometry
 
 import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.math.spatial.BoundingBox
+import de.fabmax.kool.math.spatial.BoundingBoxF
 import de.fabmax.kool.scene.geometry.MeshBuilder
 
 expect fun HeightFieldGeometry(heightField: HeightField): HeightFieldGeometry
@@ -53,7 +53,7 @@ interface HeightFieldGeometry : CollisionGeometry {
         }
     }
 
-    override fun getBounds(result: BoundingBox): BoundingBox {
+    override fun getBounds(result: BoundingBoxF): BoundingBoxF {
         val rowScale = heightField.rowScale
         val columnScale = heightField.columnScale
         val map = heightField.heightMap

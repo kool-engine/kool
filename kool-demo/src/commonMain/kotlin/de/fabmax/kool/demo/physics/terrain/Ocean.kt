@@ -97,21 +97,21 @@ class Ocean(terrainTiles: TerrainTiles, val camera: Camera, val wind: Wind, val 
     }
 
     private object TileAdapter : ItemAdapter<OceanTilePose> {
-        override fun getMinX(item: OceanTilePose): Float = item.x - item.scale * TILE_SIZE * 0.5f
-        override fun getMinY(item: OceanTilePose): Float = item.y - item.scale * TILE_SIZE * 0.5f
-        override fun getMinZ(item: OceanTilePose): Float = item.z - item.scale * TILE_SIZE * 0.5f
+        override fun getMinX(item: OceanTilePose): Double = item.x - item.scale * TILE_SIZE * 0.5
+        override fun getMinY(item: OceanTilePose): Double = item.y - item.scale * TILE_SIZE * 0.5
+        override fun getMinZ(item: OceanTilePose): Double = item.z - item.scale * TILE_SIZE * 0.5
 
-        override fun getMaxX(item: OceanTilePose): Float = item.x + item.scale * TILE_SIZE * 0.5f
-        override fun getMaxY(item: OceanTilePose): Float = item.y + item.scale * TILE_SIZE * 0.5f
-        override fun getMaxZ(item: OceanTilePose): Float = item.z + item.scale * TILE_SIZE * 0.5f
+        override fun getMaxX(item: OceanTilePose): Double = item.x + item.scale * TILE_SIZE * 0.5
+        override fun getMaxY(item: OceanTilePose): Double = item.y + item.scale * TILE_SIZE * 0.5
+        override fun getMaxZ(item: OceanTilePose): Double = item.z + item.scale * TILE_SIZE * 0.5
 
-        override fun getCenterX(item: OceanTilePose): Float = item.x
-        override fun getCenterY(item: OceanTilePose): Float = item.y
-        override fun getCenterZ(item: OceanTilePose): Float = item.z
+        override fun getCenterX(item: OceanTilePose): Double = item.x.toDouble()
+        override fun getCenterY(item: OceanTilePose): Double = item.y.toDouble()
+        override fun getCenterZ(item: OceanTilePose): Double = item.z.toDouble()
 
-        override fun getSzX(item: OceanTilePose): Float = item.scale * TILE_SIZE
-        override fun getSzY(item: OceanTilePose): Float = item.scale * TILE_SIZE
-        override fun getSzZ(item: OceanTilePose): Float = item.scale * TILE_SIZE
+        override fun getSzX(item: OceanTilePose): Double = item.scale * TILE_SIZE.toDouble()
+        override fun getSzY(item: OceanTilePose): Double = item.scale * TILE_SIZE.toDouble()
+        override fun getSzZ(item: OceanTilePose): Double = item.scale * TILE_SIZE.toDouble()
     }
 
     companion object {

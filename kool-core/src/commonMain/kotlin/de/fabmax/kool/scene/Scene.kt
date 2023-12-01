@@ -3,7 +3,7 @@ package de.fabmax.kool.scene
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.input.Pointer
-import de.fabmax.kool.math.Ray
+import de.fabmax.kool.math.RayF
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.DepthRange
 import de.fabmax.kool.util.*
@@ -124,7 +124,7 @@ open class Scene(name: String? = null) : Node(name) {
         logD { "Released scene \"$name\"" }
     }
 
-    fun computePickRay(pointer: Pointer, ctx: KoolContext, result: Ray): Boolean {
+    fun computePickRay(pointer: Pointer, ctx: KoolContext, result: RayF): Boolean {
         return camera.computePickRay(result, pointer, mainRenderPass.viewport, ctx)
     }
 

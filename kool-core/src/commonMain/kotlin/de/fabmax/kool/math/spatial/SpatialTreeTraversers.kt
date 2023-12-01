@@ -1,14 +1,13 @@
 package de.fabmax.kool.math.spatial
 
-import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.*
 import de.fabmax.kool.scene.Camera
 import kotlin.math.sqrt
 
 interface PointDistance<T: Any> {
-    fun nodeSqrDistanceToPoint(node: SpatialTree<T>.Node, point: Vec3f): Float = node.bounds.pointDistanceSqr(point)
+    fun nodeSqrDistanceToPoint(node: SpatialTree<T>.Node, point: Vec3d): Double = node.bounds.pointDistanceSqr(point)
 
-    fun itemSqrDistanceToPoint(tree: SpatialTree<T>, item: T, point: Vec3f): Float {
+    fun itemSqrDistanceToPoint(tree: SpatialTree<T>, item: T, point: Vec3d): Double {
         val dx = tree.itemAdapter.getCenterX(item) - point.x
         val dy = tree.itemAdapter.getCenterY(item) - point.y
         val dz = tree.itemAdapter.getCenterZ(item) - point.z
@@ -38,7 +37,7 @@ abstract class SpatialTreeTraverser<T: Any> {
 }
 
 abstract class CenterPointTraverser<T: Any> : SpatialTreeTraverser<T>() {
-    val center = MutableVec3f()
+    val center = MutableVec3d()
 
     var pointDistance = object : PointDistance<T> { }
 
@@ -50,12 +49,13 @@ abstract class CenterPointTraverser<T: Any> : SpatialTreeTraverser<T>() {
 
 class InViewFrustumTraverser<T: Any> : SpatialTreeTraverser<T>() {
     private var cam: Camera? = null
-    private var fixedRadius = 0f
+    private var fixedRadius = 0.0
     private val centerVec = MutableVec3f()
+    private val centerVecD = MutableVec3d()
 
     val result = mutableListOf<T>()
 
-    fun setup(cam: Camera, fixedRadius: Float = 0f): InViewFrustumTraverser<T> {
+    fun setup(cam: Camera, fixedRadius: Double = 0.0): InViewFrustumTraverser<T> {
         this.cam = cam
         this.fixedRadius = fixedRadius
         return this
@@ -70,8 +70,8 @@ class InViewFrustumTraverser<T: Any> : SpatialTreeTraverser<T>() {
         val cam = this.cam ?: return
         for (i in node.children.indices) {
             val child = node.children[i]
-            val childRadius = child.bounds.size.length() / 2f + fixedRadius
-            if (cam.isInFrustum(child.bounds.center, childRadius)) {
+            val childRadius = child.bounds.size.length() * 0.5 + fixedRadius
+            if (cam.isInFrustum(child.bounds.center.toMutableVec3f(centerVec), childRadius.toFloat())) {
                 traverseNode(tree, child)
             }
         }
@@ -82,7 +82,7 @@ class InViewFrustumTraverser<T: Any> : SpatialTreeTraverser<T>() {
         for (i in leaf.nodeRange) {
             val item = leaf.itemsUnbounded[i]
             if (filter(item)) {
-                val elemR = if (fixedRadius > 0f) {
+                val elemR = if (fixedRadius > 0.0) {
                     fixedRadius
                 } else {
                     val sx = tree.itemAdapter.getSzX(item)
@@ -90,7 +90,7 @@ class InViewFrustumTraverser<T: Any> : SpatialTreeTraverser<T>() {
                     val sz = tree.itemAdapter.getSzX(item)
                     sqrt(sx * sx + sy * sy + sz * sz) / 2f
                 }
-                if (cam.isInFrustum(tree.itemAdapter.getCenter(item, centerVec), elemR)) {
+                if (cam.isInFrustum(tree.itemAdapter.getCenter(item, centerVecD).toMutableVec3f(centerVec), elemR.toFloat())) {
                     result += item
                 }
             }

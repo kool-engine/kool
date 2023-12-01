@@ -2,7 +2,7 @@ package de.fabmax.kool.util
 
 import de.fabmax.kool.KoolException
 import de.fabmax.kool.math.*
-import de.fabmax.kool.math.spatial.BoundingBox
+import de.fabmax.kool.math.spatial.BoundingBoxF
 import de.fabmax.kool.pipeline.DepthMapPass
 import de.fabmax.kool.pipeline.TextureSampler2d
 import de.fabmax.kool.pipeline.backend.DepthRange
@@ -42,14 +42,14 @@ class SimpleShadowMap(val sceneCam: Camera, override var light: Light?, mapSize:
     var clipFar = 100f
     var directionalCamNearOffset = -20f
     var shaderDepthOffset = -0.005f
-    var shadowBounds: BoundingBox? = null
+    var shadowBounds: BoundingBoxF? = null
 
     private val nearSceneCamPlane = FrustumPlane()
     private val farSceneCamPlane = FrustumPlane()
-    private val shadowCamBounds = BoundingBox()
+    private val shadowCamBounds = BoundingBoxF()
     private val tmpVec = MutableVec3f()
 
-    var shadowBoundsMod: ((BoundingBox) -> Unit)? = null
+    var shadowBoundsMod: ((BoundingBoxF) -> Unit)? = null
 
     override var isShadowMapEnabled: Boolean
         get() = isEnabled
@@ -164,7 +164,7 @@ class SimpleShadowMap(val sceneCam: Camera, override var light: Light?, mapSize:
         transform(plane.lowerRight)
     }
 
-    private fun BoundingBox.setPlanes(near: FrustumPlane, far: FrustumPlane) = batchUpdate {
+    private fun BoundingBoxF.setPlanes(near: FrustumPlane, far: FrustumPlane) = batchUpdate {
         clear()
         add(near.upperLeft)
         add(near.upperRight)
