@@ -102,6 +102,10 @@ interface GlApi {
     val RG: Int
     val RGB: Int
     val RGBA: Int
+    val RED_INTEGER: Int
+    val RG_INTEGER: Int
+    val RGB_INTEGER: Int
+    val RGBA_INTEGER: Int
 
     val R8: Int
     val RG8: Int

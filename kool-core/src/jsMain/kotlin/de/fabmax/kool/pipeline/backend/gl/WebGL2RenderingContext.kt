@@ -50,6 +50,10 @@ abstract external class WebGL2RenderingContext : WebGLRenderingContext {
 
         val RED: Int
         val RG: Int
+        val RED_INTEGER: Int
+        val RG_INTEGER: Int
+        val RGB_INTEGER: Int
+        val RGBA_INTEGER: Int
 
         val R8: Int
         val RG8: Int

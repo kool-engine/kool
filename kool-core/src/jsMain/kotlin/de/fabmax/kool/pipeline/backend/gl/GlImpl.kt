@@ -94,6 +94,10 @@ object GlImpl : GlApi {
     override val RG = WebGL2RenderingContext.RG
     override val RGB = WebGLRenderingContext.RGB
     override val RGBA = WebGLRenderingContext.RGBA
+    override val RED_INTEGER = WebGL2RenderingContext.RED_INTEGER
+    override val RG_INTEGER = WebGL2RenderingContext.RG_INTEGER
+    override val RGB_INTEGER = WebGL2RenderingContext.RGB_INTEGER
+    override val RGBA_INTEGER = WebGL2RenderingContext.RGBA_INTEGER
 
     override val R8 = WebGL2RenderingContext.R8
     override val RG8 = WebGL2RenderingContext.RG8

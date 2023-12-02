@@ -96,6 +96,10 @@ object GlImpl : GlApi {
     override val RG = GL_RG
     override val RGB = GL_RGB
     override val RGBA = GL_RGBA
+    override val RED_INTEGER = GL_RED_INTEGER
+    override val RG_INTEGER = GL_RG_INTEGER
+    override val RGB_INTEGER = GL_RGB_INTEGER
+    override val RGBA_INTEGER = GL_RGBA_INTEGER
 
     override val R8 = GL_R8
     override val RG8 = GL_RG8

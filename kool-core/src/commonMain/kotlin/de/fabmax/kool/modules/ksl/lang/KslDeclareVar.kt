@@ -2,7 +2,9 @@ package de.fabmax.kool.modules.ksl.lang
 
 import de.fabmax.kool.modules.ksl.model.KslMutatedState
 
-class KslDeclareVar(val declareVar: KslVar<*>, initExpression: KslExpression<*>?, parentScope: KslScopeBuilder) : KslStatement("declareVar", parentScope) {
+class KslDeclareVar(val declareVar: KslVar<*>, initExpression: KslExpression<*>?, parentScope: KslScopeBuilder) :
+    KslStatement("declareVar", parentScope)
+{
 
     var initExpression = initExpression
         private set

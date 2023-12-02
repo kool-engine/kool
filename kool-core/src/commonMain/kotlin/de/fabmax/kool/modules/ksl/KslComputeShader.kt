@@ -18,7 +18,7 @@ fun KslComputeShader(
     return shader
 }
 
-class KslComputeShader(name: String) : ComputeShader(name) {
+open class KslComputeShader(name: String) : ComputeShader(name) {
 
     val program = KslProgram(name)
 

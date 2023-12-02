@@ -698,52 +698,60 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
         ops += KslStorageWrite(storage, coord, data, this)
     }
 
-    fun <T: KslStorageType<R, C>, R: KslIntType, C: KslIntType> storageAtomicSwap(
+    fun <T: KslStorageType<R, C>, R, C: KslIntType> storageAtomicSwap(
         storage: KslStorage<T, C>,
         coord: KslExpression<C>,
         data: KslExpression<R>
-    ): KslExpression<R> = KslStorageAtomicOp(storage, coord, data, KslStorageAtomicOp.Op.Swap, storage.storageType.elemType)
+    ): KslScalarExpression<R> where R: KslIntType, R: KslScalar =
+        KslStorageAtomicOp(storage, coord, data, KslStorageAtomicOp.Op.Swap, storage.storageType.elemType)
 
-    fun <T: KslStorageType<R, C>, R: KslIntType, C: KslIntType> storageAtomicAdd(
+    fun <T: KslStorageType<R, C>, R, C: KslIntType> storageAtomicAdd(
         storage: KslStorage<T, C>,
         coord: KslExpression<C>,
         data: KslExpression<R>
-    ): KslExpression<R> = KslStorageAtomicOp(storage, coord, data, KslStorageAtomicOp.Op.Add, storage.storageType.elemType)
+    ): KslScalarExpression<R> where R: KslIntType, R: KslScalar =
+        KslStorageAtomicOp(storage, coord, data, KslStorageAtomicOp.Op.Add, storage.storageType.elemType)
 
-    fun <T: KslStorageType<R, C>, R: KslIntType, C: KslIntType> storageAtomicAnd(
+    fun <T: KslStorageType<R, C>, R, C: KslIntType> storageAtomicAnd(
         storage: KslStorage<T, C>,
         coord: KslExpression<C>,
         data: KslExpression<R>
-    ): KslExpression<R> = KslStorageAtomicOp(storage, coord, data, KslStorageAtomicOp.Op.And, storage.storageType.elemType)
+    ): KslScalarExpression<R> where R: KslIntType, R: KslScalar =
+        KslStorageAtomicOp(storage, coord, data, KslStorageAtomicOp.Op.And, storage.storageType.elemType)
 
-    fun <T: KslStorageType<R, C>, R: KslIntType, C: KslIntType> storageAtomicOr(
+    fun <T: KslStorageType<R, C>, R, C: KslIntType> storageAtomicOr(
         storage: KslStorage<T, C>,
         coord: KslExpression<C>,
         data: KslExpression<R>
-    ): KslExpression<R> = KslStorageAtomicOp(storage, coord, data, KslStorageAtomicOp.Op.Or, storage.storageType.elemType)
+    ): KslScalarExpression<R> where R: KslIntType, R: KslScalar =
+        KslStorageAtomicOp(storage, coord, data, KslStorageAtomicOp.Op.Or, storage.storageType.elemType)
 
-    fun <T: KslStorageType<R, C>, R: KslIntType, C: KslIntType> storageAtomicXor(
+    fun <T: KslStorageType<R, C>, R, C: KslIntType> storageAtomicXor(
         storage: KslStorage<T, C>,
         coord: KslExpression<C>,
         data: KslExpression<R>
-    ): KslExpression<R> = KslStorageAtomicOp(storage, coord, data, KslStorageAtomicOp.Op.Xor, storage.storageType.elemType)
+    ): KslScalarExpression<R> where R: KslIntType, R: KslScalar =
+        KslStorageAtomicOp(storage, coord, data, KslStorageAtomicOp.Op.Xor, storage.storageType.elemType)
 
-    fun <T: KslStorageType<R, C>, R: KslIntType, C: KslIntType> storageAtomicMin(
+    fun <T: KslStorageType<R, C>, R, C: KslIntType> storageAtomicMin(
         storage: KslStorage<T, C>,
         coord: KslExpression<C>,
         data: KslExpression<R>
-    ): KslExpression<R> = KslStorageAtomicOp(storage, coord, data, KslStorageAtomicOp.Op.Min, storage.storageType.elemType)
+    ): KslScalarExpression<R> where R: KslIntType, R: KslScalar =
+        KslStorageAtomicOp(storage, coord, data, KslStorageAtomicOp.Op.Min, storage.storageType.elemType)
 
-    fun <T: KslStorageType<R, C>, R: KslIntType, C: KslIntType> storageAtomicMax(
+    fun <T: KslStorageType<R, C>, R, C: KslIntType> storageAtomicMax(
         storage: KslStorage<T, C>,
         coord: KslExpression<C>,
         data: KslExpression<R>
-    ): KslExpression<R> = KslStorageAtomicOp(storage, coord, data, KslStorageAtomicOp.Op.Max, storage.storageType.elemType)
+    ): KslScalarExpression<R> where R: KslIntType, R: KslScalar =
+        KslStorageAtomicOp(storage, coord, data, KslStorageAtomicOp.Op.Max, storage.storageType.elemType)
 
-    fun <T: KslStorageType<R, C>, R: KslIntType, C: KslIntType> storageAtomicCompareSwap(
+    fun <T: KslStorageType<R, C>, R, C: KslIntType> storageAtomicCompareSwap(
         storage: KslStorage<T, C>,
         coord: KslExpression<C>,
         compare: KslExpression<R>,
         data: KslExpression<R>
-    ): KslExpression<R> = KslStorageAtomicCompareSwap(storage, coord, data, compare, storage.storageType.elemType)
+    ): KslScalarExpression<R> where R: KslIntType, R: KslScalar =
+        KslStorageAtomicCompareSwap(storage, coord, data, compare, storage.storageType.elemType)
 }

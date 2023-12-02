@@ -76,15 +76,15 @@ fun TexFormat.glFormat(gl: GlApi): Int = when(this) {
     TexFormat.RGB_F32 -> gl.RGB
     TexFormat.RGBA_F32 -> gl.RGBA
 
-    TexFormat.R_I32 -> gl.RED
-    TexFormat.RG_I32 -> gl.RG
-    TexFormat.RGB_I32 -> gl.RGB
-    TexFormat.RGBA_I32 -> gl.RGBA
+    TexFormat.R_I32 -> gl.RED_INTEGER
+    TexFormat.RG_I32 -> gl.RG_INTEGER
+    TexFormat.RGB_I32 -> gl.RGB_INTEGER
+    TexFormat.RGBA_I32 -> gl.RGBA_INTEGER
 
-    TexFormat.R_U32 -> gl.RED
-    TexFormat.RG_U32 -> gl.RG
-    TexFormat.RGB_U32 -> gl.RGB
-    TexFormat.RGBA_U32 -> gl.RGBA
+    TexFormat.R_U32 -> gl.RED_INTEGER
+    TexFormat.RG_U32 -> gl.RG_INTEGER
+    TexFormat.RGB_U32 -> gl.RGB_INTEGER
+    TexFormat.RGBA_U32 -> gl.RGBA_INTEGER
 }
 
 val TexFormat.pxSize: Int get() = when(this) {

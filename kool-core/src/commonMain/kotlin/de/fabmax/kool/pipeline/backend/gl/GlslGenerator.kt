@@ -126,11 +126,33 @@ open class GlslGenerator(val glslVersionStr: String) : KslGenerator() {
     }
 
     override fun storageRead(storageRead: KslStorageRead<*, *, *>): String {
-        return "imageLoad(${storageRead.storage.generateExpression(this)}, ${storageRead.coord.generateExpression(this)})"
+        val elemType = storageRead.storage.expressionType.elemType
+        val channels = if (elemType is KslVector<*>) elemType.dimens else 1
+        val suffix = when (channels) {
+            1 -> ".x"
+            2 -> ".xy"
+            3 -> ".xyz"
+            else -> ""
+        }
+        return "imageLoad(${storageRead.storage.generateExpression(this)}, ${storageRead.coord.generateExpression(this)})$suffix"
     }
 
     override fun opStorageWrite(op: KslStorageWrite<*, *, *>): String {
-        return "imageStore(${op.storage.generateExpression(this)}, ${op.coord.generateExpression(this)}, ${op.data.generateExpression(this)});"
+        val expr = op.data.generateExpression(this)
+        val elemType = op.storage.expressionType.elemType
+        val vec4 = when (elemType) {
+            is KslFloat1 -> "vec4($expr, 0.0, 0.0, 0.0)"
+            is KslFloat2 -> "vec4($expr, 0.0, 0.0)"
+            is KslFloat3 -> "vec4($expr, 0.0)"
+            is KslInt1 -> "ivec4($expr, 0, 0, 0)"
+            is KslInt2 -> "ivec4($expr, 0, 0)"
+            is KslInt3 -> "ivec4($expr, 0)"
+            is KslUint1 -> "uvec4($expr, 0, 0, 0)"
+            is KslUint2 -> "uvec4($expr, 0, 0)"
+            is KslUint3 -> "uvec4($expr, 0)"
+            else -> expr
+        }
+        return "imageStore(${op.storage.generateExpression(this)}, ${op.coord.generateExpression(this)}, $vec4);"
     }
 
     override fun storageAtomicOp(atomicOp: KslStorageAtomicOp<*, *, *>): String {
