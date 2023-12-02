@@ -13,7 +13,7 @@ import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Time
 
-class HelloRenderToTextureDemo : DemoScene("Hello RenderToTexture") {
+class HelloRenderToTexture : DemoScene("Hello RenderToTexture") {
     override fun Scene.setupMainScene(ctx: KoolContext) {
         // create offscreen content
         val backgroundGroup = Node().apply {

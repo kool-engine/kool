@@ -18,7 +18,7 @@ import de.fabmax.kool.scene.defaultOrbitCamera
 import de.fabmax.kool.util.Time
 import kotlin.math.sin
 
-class HelloKslDemo : DemoScene("Hello KSL Shaders") {
+class HelloKsl : DemoScene("Hello KSL Shaders") {
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
         // create the shader

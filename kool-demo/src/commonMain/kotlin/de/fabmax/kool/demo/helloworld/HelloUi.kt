@@ -6,7 +6,7 @@ import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.MdColor
 
-class HelloUiDemo : DemoScene("Hello UI") {
+class HelloUi : DemoScene("Hello UI") {
     override fun Scene.setupMainScene(ctx: KoolContext) {
         setupUiScene(clearScreen = true)
 

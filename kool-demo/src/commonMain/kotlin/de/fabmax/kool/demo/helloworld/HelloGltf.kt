@@ -21,7 +21,7 @@ import de.fabmax.kool.util.Time
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-class HelloGltfDemo : DemoScene("Hello glTF") {
+class HelloGltf : DemoScene("Hello glTF") {
     override fun Scene.setupMainScene(ctx: KoolContext) {
         defaultOrbitCamera()
 

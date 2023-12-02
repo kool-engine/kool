@@ -76,12 +76,12 @@ object Demos {
     }
 
     val hiddenDemos = Category("Hidden", true, 0.75f, 0.95f).apply {
-        entry("helloworld", "Hello World") { HelloWorldDemo() }
-        entry("helloksl", "Hello KSL Shaders") { HelloKslDemo() }
-        entry("hellogltf", "Hello glTF") { HelloGltfDemo() }
-        entry("hellobuffers", "Hello RenderToTexture") { HelloRenderToTextureDemo() }
+        entry("helloworld", "Hello World") { HelloWorld() }
+        entry("helloksl", "Hello KSL Shaders") { HelloKsl() }
+        entry("hellogltf", "Hello glTF") { HelloGltf() }
+        entry("hellobuffers", "Hello RenderToTexture") { HelloRenderToTexture() }
         entry("hellocompute", "Hello Compute", DesktopOpenGl) { HelloCompute() }
-        entry("hello-ui", "Hello UI") { HelloUiDemo() }
+        entry("hello-ui", "Hello UI") { HelloUi() }
         entry("manybodies", "Many Bodies") { ManyBodiesDemo() }
         entry("manyvehicles", "Many Vehicles") { ManyVehiclesDemo() }
         entry("ksl-test", "Ksl Shading Test") { KslShaderTest() }

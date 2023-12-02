@@ -11,7 +11,7 @@ import de.fabmax.kool.scene.defaultOrbitCamera
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Time
 
-class HelloWorldDemo : DemoScene("Hello World") {
+class HelloWorld : DemoScene("Hello World") {
     override fun Scene.setupMainScene(ctx: KoolContext) {
         defaultOrbitCamera()
 
