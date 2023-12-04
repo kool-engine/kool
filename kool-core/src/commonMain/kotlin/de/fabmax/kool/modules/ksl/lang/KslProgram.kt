@@ -17,6 +17,7 @@ open class KslProgram(val name: String) {
         private set
 
     private var nextNameIdx = 1
+    @PublishedApi
     internal fun nextName(prefix: String): String = "${prefix}_${nextNameIdx++}"
 
     val commonUniformBuffer = KslUniformBuffer("CommonUniforms", this)
@@ -149,85 +150,34 @@ open class KslProgram(val name: String) {
     fun depthTextureArrayCube(name: String, arraySize: Int) = getOrCreateSampler(name) { KslUniformArray(KslArrayGeneric(name, KslDepthSamplerCube, arraySize, false)) }
 
     inline fun <reified T: KslNumericType> storage1d(name: String): KslStorage1d<KslStorage1dType<T>> {
-        val storage: KslStorage<*,*> = uniformStorage[name] ?: (
-                if (KslFloat1 is T) KslStorage1d(name, KslStorage1dType<KslFloat1>(KslFloat1))
-                else if (KslFloat2 is T) KslStorage1d(name, KslStorage1dType<KslFloat2>(KslFloat2))
-                else if (KslFloat3 is T) KslStorage1d(name, KslStorage1dType<KslFloat3>(KslFloat3))
-                else if (KslFloat4 is T) KslStorage1d(name, KslStorage1dType<KslFloat4>(KslFloat4))
-
-                else if (KslInt1 is T)   KslStorage1d(name, KslStorage1dType<KslInt1>(KslInt1))
-                else if (KslInt2 is T)   KslStorage1d(name, KslStorage1dType<KslInt2>(KslInt2))
-                else if (KslInt3 is T)   KslStorage1d(name, KslStorage1dType<KslInt3>(KslInt3))
-                else if (KslInt4 is T)   KslStorage1d(name, KslStorage1dType<KslInt4>(KslInt4))
-
-                else if (KslUint1 is T)  KslStorage1d(name, KslStorage1dType<KslUint1>(KslUint1))
-                else if (KslUint2 is T)  KslStorage1d(name, KslStorage1dType<KslUint2>(KslUint2))
-                else if (KslUint3 is T)  KslStorage1d(name, KslStorage1dType<KslUint3>(KslUint3))
-                else if (KslUint4 is T)  KslStorage1d(name, KslStorage1dType<KslUint4>(KslUint4))
-
-                else throw IllegalArgumentException("Unsupported storage type")
-                ).also { registerStorage(it) }
+        val storage: KslStorage<*,*> = uniformStorage[name]
+            ?: KslStorage1d(name, KslStorage1dType(numericTypeForT<T>())).also { registerStorage(it) }
 
         check(storage is KslStorage1d<*> && storage.storageType.elemType is T) {
             "Existing uniform with name \"$name\" has not the expected type"
         }
-
         @Suppress("UNCHECKED_CAST")
         return storage as KslStorage1d<KslStorage1dType<T>>
     }
 
     inline fun <reified T: KslNumericType> storage2d(name: String): KslStorage2d<KslStorage2dType<T>> {
-        val storage: KslStorage<*,*> = uniformStorage[name] ?: (
-                if (KslFloat1 is T) KslStorage2d(name, KslStorage2dType<KslFloat1>(KslFloat1))
-                else if (KslFloat2 is T) KslStorage2d(name, KslStorage2dType<KslFloat2>(KslFloat2))
-                else if (KslFloat3 is T) KslStorage2d(name, KslStorage2dType<KslFloat3>(KslFloat3))
-                else if (KslFloat4 is T) KslStorage2d(name, KslStorage2dType<KslFloat4>(KslFloat4))
-
-                else if (KslInt1 is T)   KslStorage2d(name, KslStorage2dType<KslInt1>(KslInt1))
-                else if (KslInt2 is T)   KslStorage2d(name, KslStorage2dType<KslInt2>(KslInt2))
-                else if (KslInt3 is T)   KslStorage2d(name, KslStorage2dType<KslInt3>(KslInt3))
-                else if (KslInt4 is T)   KslStorage2d(name, KslStorage2dType<KslInt4>(KslInt4))
-
-                else if (KslUint1 is T)  KslStorage2d(name, KslStorage2dType<KslUint1>(KslUint1))
-                else if (KslUint2 is T)  KslStorage2d(name, KslStorage2dType<KslUint2>(KslUint2))
-                else if (KslUint3 is T)  KslStorage2d(name, KslStorage2dType<KslUint3>(KslUint3))
-                else if (KslUint4 is T)  KslStorage2d(name, KslStorage2dType<KslUint4>(KslUint4))
-
-                else throw IllegalArgumentException("Unsupported storage type")
-                ).also { registerStorage(it) }
+        val storage: KslStorage<*,*> = uniformStorage[name]
+            ?: KslStorage2d(name, KslStorage2dType(numericTypeForT<T>())).also { registerStorage(it) }
 
         check(storage is KslStorage2d<*> && storage.storageType.elemType is T) {
             "Existing uniform with name \"$name\" has not the expected type"
         }
-
         @Suppress("UNCHECKED_CAST")
         return storage as KslStorage2d<KslStorage2dType<T>>
     }
 
     inline fun <reified T: KslNumericType> storage3d(name: String): KslStorage3d<KslStorage3dType<T>> {
-        val storage: KslStorage<*,*> = uniformStorage[name] ?: (
-                if (KslFloat1 is T) KslStorage3d(name, KslStorage3dType<KslFloat1>(KslFloat1))
-                else if (KslFloat2 is T) KslStorage3d(name, KslStorage3dType<KslFloat2>(KslFloat2))
-                else if (KslFloat3 is T) KslStorage3d(name, KslStorage3dType<KslFloat3>(KslFloat3))
-                else if (KslFloat4 is T) KslStorage3d(name, KslStorage3dType<KslFloat4>(KslFloat4))
-
-                else if (KslInt1 is T)   KslStorage3d(name, KslStorage3dType<KslInt1>(KslInt1))
-                else if (KslInt2 is T)   KslStorage3d(name, KslStorage3dType<KslInt2>(KslInt2))
-                else if (KslInt3 is T)   KslStorage3d(name, KslStorage3dType<KslInt3>(KslInt3))
-                else if (KslInt4 is T)   KslStorage3d(name, KslStorage3dType<KslInt4>(KslInt4))
-
-                else if (KslUint1 is T)  KslStorage3d(name, KslStorage3dType<KslUint1>(KslUint1))
-                else if (KslUint2 is T)  KslStorage3d(name, KslStorage3dType<KslUint2>(KslUint2))
-                else if (KslUint3 is T)  KslStorage3d(name, KslStorage3dType<KslUint3>(KslUint3))
-                else if (KslUint4 is T)  KslStorage3d(name, KslStorage3dType<KslUint4>(KslUint4))
-
-                else throw IllegalArgumentException("Unsupported storage type")
-                ).also { registerStorage(it) }
+        val storage: KslStorage<*,*> = uniformStorage[name]
+            ?: KslStorage3d(name, KslStorage3dType(numericTypeForT<T>())).also { registerStorage(it) }
 
         check(storage is KslStorage3d<*> && storage.storageType.elemType is T) {
             "Existing uniform with name \"$name\" has not the expected type"
         }
-
         @Suppress("UNCHECKED_CAST")
         return storage as KslStorage3d<KslStorage3dType<T>>
     }

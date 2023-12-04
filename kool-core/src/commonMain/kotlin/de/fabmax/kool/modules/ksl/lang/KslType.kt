@@ -119,6 +119,49 @@ object KslDepthSampler2DArray : KslDepthSampler<KslFloat4>("depthSampler2dArray"
 object KslDepthSamplerCubeArray : KslDepthSampler<KslFloat4>("depthSamplerCubeArray"), KslSamplerCubeArrayType
 
 
-class KslStorage1dType<R: KslNumericType>(elemType: R) : KslStorageType<R, KslInt1>("KslStorage1dType<${elemType.typeName}>", elemType, KslInt1)
-class KslStorage2dType<R: KslNumericType>(elemType: R) : KslStorageType<R, KslInt2>("KslStorage2dType<${elemType.typeName}>", elemType, KslInt2)
-class KslStorage3dType<R: KslNumericType>(elemType: R) : KslStorageType<R, KslInt3>("KslStorage3dType<${elemType.typeName}>", elemType, KslInt3)
+class KslStorage1dType<R: KslNumericType>(elemType: R) : KslStorageType<R, KslInt1>("KslStorage1dType<${elemType.typeName}>", elemType, KslInt1) {
+    override fun hashCode(): Int = this::class.hashCode() * 31 + elemType.hashCode()
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || other !is KslStorage1dType<*>) return false
+        return elemType == other.elemType
+    }
+}
+
+class KslStorage2dType<R: KslNumericType>(elemType: R) : KslStorageType<R, KslInt2>("KslStorage2dType<${elemType.typeName}>", elemType, KslInt2) {
+    override fun hashCode(): Int = this::class.hashCode() * 31 + elemType.hashCode()
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || other !is KslStorage2dType<*>) return false
+        return elemType == other.elemType
+    }
+}
+
+class KslStorage3dType<R: KslNumericType>(elemType: R) : KslStorageType<R, KslInt3>("KslStorage3dType<${elemType.typeName}>", elemType, KslInt3) {
+    override fun hashCode(): Int = this::class.hashCode() * 31 + elemType.hashCode()
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || other !is KslStorage3dType<*>) return false
+        return elemType == other.elemType
+    }
+}
+
+inline fun <reified T: KslNumericType> numericTypeForT(): T {
+    return when {
+        KslFloat1 is T -> KslFloat1
+        KslFloat2 is T -> KslFloat2
+        KslFloat3 is T -> KslFloat3
+        KslFloat4 is T -> KslFloat4
+
+        KslInt1 is T   -> KslInt1
+        KslInt2 is T   -> KslInt2
+        KslInt3 is T   -> KslInt3
+        KslInt4 is T   -> KslInt4
+
+        KslUint1 is T  -> KslUint1
+        KslUint2 is T  -> KslUint2
+        KslUint3 is T  -> KslUint3
+        KslUint4 is T  -> KslUint4
+        else -> error("Unsupported storage type")
+    }
+}

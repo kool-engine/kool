@@ -38,7 +38,9 @@ class KslStorageRead<T: KslStorageType<R, C>, R: KslNumericType, C: KslIntType>(
     val coord: KslExpression<C>,
     override val expressionType: R
 ) : KslExpression<R> {
-    override fun collectStateDependencies(): Set<KslMutatedState> = storage.collectStateDependencies()
+    override fun collectStateDependencies(): Set<KslMutatedState> {
+        return storage.collectStateDependencies() + coord.collectStateDependencies()
+    }
     override fun generateExpression(generator: KslGenerator): String = generator.storageRead(this)
     override fun toPseudoCode(): String = "storageRead(${storage.toPseudoCode()}, ${coord.toPseudoCode()})"
 }
@@ -51,6 +53,8 @@ open class KslStorageWrite<T: KslStorageType<R, C>, R: KslNumericType, C: KslInt
 ) : KslStatement("store", scopeBuilder) {
 
     init {
+        addExpressionDependencies(storage)
+        addExpressionDependencies(coord)
         addExpressionDependencies(data)
         addMutation(storage.mutate())
     }

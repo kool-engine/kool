@@ -686,9 +686,9 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
         KslStorageSize(storage, storage.expressionType.coordType)
 
     fun <T: KslStorageType<R, C>, R: KslNumericType, C: KslIntType> storageRead(
-        storage: KslStorage<T, C>,
+        storage: KslExpression<T>,
         coord: KslExpression<C>
-    ): KslExpression<R> = KslStorageRead(storage, coord, storage.storageType.elemType)
+    ): KslExpression<R> = KslStorageRead(storage, coord, storage.expressionType.elemType)
 
     fun <T: KslStorageType<R, C>, R: KslNumericType, C: KslIntType> storageWrite(
         storage: KslStorage<T, C>,

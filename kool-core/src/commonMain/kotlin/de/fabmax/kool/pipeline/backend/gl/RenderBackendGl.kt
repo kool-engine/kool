@@ -201,18 +201,22 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
     }
 
     private fun dispatchCompute(computePass: ComputeRenderPass) {
-        val pipeline = computePass.getOrCreatePipeline()
-        val numGroupsX = ceil(computePass.width.toFloat() / pipeline.workGroupSize.x).toInt()
-        val numGroupsY = ceil(computePass.height.toFloat() / pipeline.workGroupSize.y).toInt()
-        val numGroupsZ = ceil(computePass.depth.toFloat() / pipeline.workGroupSize.z).toInt()
+        val tasks = computePass.getTasks()
 
-        if (shaderMgr.setupComputeShader(pipeline, computePass)) {
-            val maxCnt = gl.capabilities.maxWorkGroupCount
-            if (numGroupsX > maxCnt.x || numGroupsY > maxCnt.y || numGroupsZ > maxCnt.z) {
-                logE { "Maximum compute shader workgroup count exceeded: max count = $maxCnt, requested count: ($numGroupsX, $numGroupsY, $numGroupsZ)" }
+        for (i in tasks.indices) {
+            val pipeline = tasks[i].pipeline
+            val numGroupsX = ceil(computePass.width.toFloat() / pipeline.workGroupSize.x).toInt()
+            val numGroupsY = ceil(computePass.height.toFloat() / pipeline.workGroupSize.y).toInt()
+            val numGroupsZ = ceil(computePass.depth.toFloat() / pipeline.workGroupSize.z).toInt()
+
+            if (shaderMgr.setupComputeShader(pipeline, computePass)) {
+                val maxCnt = gl.capabilities.maxWorkGroupCount
+                if (numGroupsX > maxCnt.x || numGroupsY > maxCnt.y || numGroupsZ > maxCnt.z) {
+                    logE { "Maximum compute shader workgroup count exceeded: max count = $maxCnt, requested count: ($numGroupsX, $numGroupsY, $numGroupsZ)" }
+                }
+                gl.dispatchCompute(numGroupsX, numGroupsY, numGroupsZ)
+                gl.memoryBarrier(gl.SHADER_IMAGE_ACCESS_BARRIER_BIT)
             }
-            gl.dispatchCompute(numGroupsX, numGroupsY, numGroupsZ)
-            gl.memoryBarrier(gl.SHADER_IMAGE_ACCESS_BARRIER_BIT)
         }
     }
 
