@@ -4,34 +4,39 @@ import de.fabmax.kool.KoolException
 import de.fabmax.kool.math.clamp
 import kotlin.math.min
 
-/**
- * @author fabmax
- */
+fun ColorGradient(vararg colors: Pair<Float, Color>, n: Int = ColorGradient.DEFAULT_N, toLinear: Boolean = false): ColorGradient {
+    return ColorGradient(colors.toList(), n, toLinear)
+}
 
-class ColorGradient(vararg colors: Pair<Float, Color>, n: Int = DEFAULT_N, toLinear: Boolean = false) {
+fun ColorGradient(vararg colors: Color, n: Int =  ColorGradient.DEFAULT_N, toLinear: Boolean = false): ColorGradient {
+    return ColorGradient(
+        colors.mapIndexed { i, color -> i.toFloat() to color },
+        n,
+        toLinear
+    )
+}
+
+class ColorGradient(colors: List<Pair<Float, Color>>, n: Int = DEFAULT_N, toLinear: Boolean = false) {
 
     private val gradient = Array(n) { MutableColor() }
-
-    constructor(vararg colors: Color, n: Int = DEFAULT_N, toLinear: Boolean = false) :
-            this(*Array(colors.size) { i -> i.toFloat() to colors[i] }, n = n, toLinear = toLinear)
 
     init {
         if (colors.size < 2) {
             throw KoolException("ColorGradient requires at least two colors")
         }
 
-        colors.sortBy { it.first }
-        val mi = colors.first().first
-        val mx = colors.last().first
+        val sortedColors = colors.sortedBy { it.first }
+        val mi = sortedColors.first().first
+        val mx = sortedColors.last().first
 
         var pi = 0
-        var p0 = colors[pi++]
-        var p1 = colors[pi++]
+        var p0 = sortedColors[pi++]
+        var p1 = sortedColors[pi++]
         for (i in 0 until n) {
             val p = i / (n-1f) * (mx - mi) + mi
             while (p > p1.first) {
                 p0 = p1
-                p1 = colors[min(pi++, colors.size)]
+                p1 = sortedColors[min(pi++, sortedColors.size)]
             }
             val w0 = 1f - (p - p0.first) / (p1.first - p0.first)
             p1.second.mix(p0.second, w0, gradient[i])

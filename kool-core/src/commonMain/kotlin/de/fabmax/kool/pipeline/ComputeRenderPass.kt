@@ -19,26 +19,29 @@ class ComputeRenderPass(name: String, width: Int, height: Int = 1, depth: Int = 
     override val views: List<View> = emptyList()
     override val isReverseDepth: Boolean = false
 
-    private val tasks = mutableListOf<Task>()
     private var isTasksDirty = false
-
-    fun getTasks(): List<Task> {
+    private val _tasks = mutableListOf<Task>()
+    val tasks: List<Task> get() {
         if (isTasksDirty) {
-            tasks
+            _tasks
                 .filter { it.isCreated == false }
                 .forEach { it.create(it.shader.getOrCreatePipeline(this)) }
             isTasksDirty = false
         }
-        return tasks
+        return _tasks
     }
 
-    fun addTask(computeShader: ComputeShader) {
-        tasks += Task(computeShader)
+    fun addTask(computeShader: ComputeShader): Task {
+        val task = Task(computeShader)
+        _tasks += task
         isTasksDirty = true
+        return task
     }
 
     class Task(val shader: ComputeShader) {
+        var isEnabled = true
         var isCreated = false
+            internal set
         lateinit var pipeline: ComputePipeline
             private set
 
