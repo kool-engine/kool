@@ -2,6 +2,7 @@ package de.fabmax.kool.input
 
 import de.fabmax.kool.JsImpl
 import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.configJs
 import de.fabmax.kool.math.MutableVec2d
 import de.fabmax.kool.platform.JsContext
 import de.fabmax.kool.platform.TouchEvent
@@ -136,7 +137,7 @@ internal object PlatformInputJs : PlatformInput {
             }
         }, false)
 
-        if (KoolSystem.config.isGlobalKeyEventGrabbing) {
+        if (KoolSystem.configJs.isGlobalKeyEventGrabbing) {
             document.onkeydown = { ev -> handleKeyDown(ev) }
             document.onkeyup = { ev -> handleKeyUp(ev) }
         } else {

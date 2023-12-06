@@ -2,6 +2,7 @@ package de.fabmax.kool.pipeline.backend.gl
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.configJvm
 import de.fabmax.kool.platform.GlfwWindow
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.platform.RenderBackendJvm
@@ -46,24 +47,24 @@ class RenderBackendGlImpl(ctx: KoolContext) : RenderBackendGl(GlImpl, ctx), Rend
     private fun createWindow(): GlfwWindow {
         // do basic GLFW configuration before we create the window
         GLFW.glfwDefaultWindowHints()
-        GLFW.glfwWindowHint(GLFW.GLFW_SAMPLES, KoolSystem.config.msaaSamples)
+        GLFW.glfwWindowHint(GLFW.GLFW_SAMPLES, KoolSystem.configJvm.msaaSamples)
 
         // create window
         val glfwWindow = GlfwWindow(ctx as Lwjgl3Context)
-        glfwWindow.isFullscreen = KoolSystem.config.isFullscreen
+        glfwWindow.isFullscreen = KoolSystem.configJvm.isFullscreen
 
         // make the OpenGL context current
         GLFW.glfwMakeContextCurrent(glfwWindow.windowPtr)
 
         // enable V-sync if configured
-        if (KoolSystem.config.isVsync) {
+        if (KoolSystem.configJvm.isVsync) {
             GLFW.glfwSwapInterval(1)
         } else {
             GLFW.glfwSwapInterval(0)
         }
 
         // make the window visible
-        if (KoolSystem.config.showWindowOnStart) {
+        if (KoolSystem.configJvm.showWindowOnStart) {
             glfwWindow.isVisible = true
         }
         return glfwWindow

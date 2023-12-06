@@ -21,7 +21,7 @@ sealed class Font(val sizePts: Float) {
     abstract fun derive(sizePts: Float): Font
 
     companion object {
-        val DEFAULT_FONT: Font get() = MsdfFont.DEFAULT_FONT
+        val DEFAULT_FONT: Font by lazy { MsdfFont.DEFAULT_FONT }
     }
 }
 

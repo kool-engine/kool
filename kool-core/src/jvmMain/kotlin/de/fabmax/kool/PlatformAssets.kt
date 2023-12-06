@@ -38,8 +38,8 @@ private object PlatformAssetsImpl : PlatformAssets {
     private var loadFileChooserPath = System.getProperty("user.home")
 
     init {
-        HttpCache.initCache(File(KoolSystem.config.httpCacheDir))
-        fontGenerator.loadCustomFonts(KoolSystem.config.customTtfFonts)
+        HttpCache.initCache(File(KoolSystem.configJvm.httpCacheDir))
+        fontGenerator.loadCustomFonts(KoolSystem.configJvm.customTtfFonts)
     }
 
     override suspend fun loadBlob(blobRef: BlobAssetRef): LoadedBlobAsset {
@@ -86,7 +86,7 @@ private object PlatformAssetsImpl : PlatformAssets {
     }
 
     fun openLocalStream(assetPath: String): InputStream {
-        val resPath = (KoolSystem.config.classloaderAssetPath + "/" + assetPath.replace('\\', '/'))
+        val resPath = (KoolSystem.configJvm.classloaderAssetPath + "/" + assetPath.replace('\\', '/'))
             .removePrefix("/")
         var inStream = this::class.java.classLoader.getResourceAsStream(resPath)
         if (inStream == null) {

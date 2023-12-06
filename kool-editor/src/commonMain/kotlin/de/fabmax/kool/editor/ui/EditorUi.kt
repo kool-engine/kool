@@ -50,7 +50,7 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
     init {
         launchOnMainThread {
             val uiTex = Assets.loadTexture2d("assets/fonts/gidole/font-gidole-regular.png", MsdfFont.MSDF_TEX_PROPS)
-            val uiMeta = Assets.loadBlobAsset("assets/fonts/gidole/font-gidole-meta.json")
+            val uiMeta = Assets.loadBlobAsset("assets/fonts/gidole/font-gidole-regular.json")
             val uiFont = MsdfFont(MsdfFontData(uiTex, Json.decodeFromString(uiMeta.toArray().decodeToString())))
             this@EditorUi.uiFont.set(uiFont)
 
@@ -61,7 +61,7 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
             ))
 
             val consoleTex = Assets.loadTexture2d("assets/fonts/hack/font-hack-regular.png", MsdfFont.MSDF_TEX_PROPS)
-            val consoleMeta = Assets.loadBlobAsset("assets/fonts/hack/font-hack-meta.json")
+            val consoleMeta = Assets.loadBlobAsset("assets/fonts/hack/font-hack-regular.json")
             val consoleFont = MsdfFont(MsdfFontData(consoleTex, Json.decodeFromString(consoleMeta.toArray().decodeToString())))
             this@EditorUi.consoleFont.set(consoleFont)
         }

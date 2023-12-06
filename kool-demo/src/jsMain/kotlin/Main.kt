@@ -1,5 +1,5 @@
 import de.fabmax.kool.KoolApplication
-import de.fabmax.kool.KoolConfig
+import de.fabmax.kool.KoolConfigJs
 import de.fabmax.kool.demo.demo
 import kotlinx.browser.window
 import kotlin.collections.set
@@ -8,7 +8,7 @@ import kotlin.collections.set
  * @author fabmax
  */
 fun main() = KoolApplication(
-    KoolConfig(isGlobalKeyEventGrabbing = true)
+    KoolConfigJs(isGlobalKeyEventGrabbing = true)
 ) {
     // uncomment to load assets locally instead of from remote
     //Demo.setProperty("assets.base", ".")

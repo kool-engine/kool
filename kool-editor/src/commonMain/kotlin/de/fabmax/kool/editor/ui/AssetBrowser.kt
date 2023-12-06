@@ -6,6 +6,7 @@ import de.fabmax.kool.editor.AppAssetType
 import de.fabmax.kool.editor.AssetItem
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.modules.ui2.*
+import de.fabmax.kool.util.launchOnMainThread
 
 class AssetBrowser(ui: EditorUi) : BrowserPanel("Asset Browser", IconMap.medium.PICTURE, ui) {
 
@@ -170,8 +171,8 @@ class AssetBrowser(ui: EditorUi) : BrowserPanel("Asset Browser", IconMap.medium.
     }
 
     private fun SubMenuItem<BrowserItem>.importAssetsItem(label: String, filterList: List<FileFilterItem>) = item(label) { item ->
-        Assets.launch {
-            val importFiles = loadFileByUser(filterList, true)
+        launchOnMainThread {
+            val importFiles = Assets.loadFileByUser(filterList, true)
             editor.availableAssets.importAssets(item.path, importFiles)
         }
     }

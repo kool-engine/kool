@@ -1,5 +1,7 @@
 package de.fabmax.kool
 
+import de.fabmax.kool.util.MsdfFontInfo
+
 object KoolSystem {
     private var initConfig: KoolConfig? = null
     private var defaultContext: KoolContext? = null
@@ -39,10 +41,11 @@ object KoolSystem {
     }
 }
 
-@Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
-expect class KoolConfig {
+interface KoolConfig {
     /**
      * Base path used by [Assets] to look for assets to be loaded (textures, models, etc.).
      */
     val assetPath: String
+
+    val defaultFont: MsdfFontInfo
 }

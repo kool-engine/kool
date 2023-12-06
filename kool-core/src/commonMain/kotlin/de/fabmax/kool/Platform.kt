@@ -17,4 +17,3 @@ expect fun defaultKoolConfig(): KoolConfig
 expect fun createContext(): KoolContext
 
 expect fun KoolApplication(config: KoolConfig = defaultKoolConfig(), appBlock: (KoolContext) -> Unit)
-

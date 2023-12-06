@@ -1,9 +1,6 @@
 package de.fabmax.kool.platform
 
-import de.fabmax.kool.KoolContext
-import de.fabmax.kool.KoolSystem
-import de.fabmax.kool.LoadableFile
-import de.fabmax.kool.LoadableFileImpl
+import de.fabmax.kool.*
 import de.fabmax.kool.input.PlatformInputJs
 import de.fabmax.kool.pipeline.backend.RenderBackend
 import de.fabmax.kool.pipeline.backend.gl.GlImpl
@@ -45,8 +42,8 @@ class JsContext internal constructor() : KoolContext() {
         }
     private var isFullscreenEnabled = false
 
-    val canvas: HTMLCanvasElement = document.getElementById(KoolSystem.config.canvasName) as HTMLCanvasElement? ?:
-            throw IllegalStateException("canvas element not found! Add a canvas with id \"${KoolSystem.config.canvasName}\" to your html.")
+    val canvas: HTMLCanvasElement = document.getElementById(KoolSystem.configJs.canvasName) as HTMLCanvasElement? ?:
+            throw IllegalStateException("canvas element not found! Add a canvas with id \"${KoolSystem.configJs.canvasName}\" to your html.")
     private val sysInfo = mutableListOf<String>()
 
     private var animationMillis = 0.0
@@ -57,7 +54,7 @@ class JsContext internal constructor() : KoolContext() {
     init {
 
         // set canvas style to desired size so that render resolution can be set according to window scale
-        if (KoolSystem.config.isJsCanvasToWindowFitting) {
+        if (KoolSystem.configJs.isJsCanvasToWindowFitting) {
             canvas.style.width = "100%"
             canvas.style.height = "100%"
             canvas.width = (window.innerWidth * window.devicePixelRatio).toInt()
@@ -135,7 +132,7 @@ class JsContext internal constructor() : KoolContext() {
 
         // update viewport size according to window scale
         windowScale = window.devicePixelRatio.toFloat()
-        if (KoolSystem.config.isJsCanvasToWindowFitting) {
+        if (KoolSystem.configJs.isJsCanvasToWindowFitting) {
             windowWidth = (window.innerWidth * window.devicePixelRatio).toInt()
             windowHeight = (window.innerHeight * window.devicePixelRatio).toInt()
         } else {

@@ -2,15 +2,22 @@ package de.fabmax.kool
 
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.platform.Lwjgl3Context
+import de.fabmax.kool.util.MsdfFontInfo
+import de.fabmax.kool.util.MsdfMeta
+import kotlinx.serialization.json.Json
 import java.awt.image.BufferedImage
 import javax.imageio.ImageIO
 
-@Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
-actual data class KoolConfig(
+data class KoolConfigJvm(
     /**
      * Base path used by [Assets] to look for assets to be loaded (textures, models, etc.).
      */
-    actual val assetPath: String = "./assets",
+    override val assetPath: String = "./assets",
+
+    /**
+     * Default font used by UI elements.
+     */
+    override val defaultFont: MsdfFontInfo = DEFAULT_MSDF_FONT_INFO,
 
     /**
      * Alternative base path used by [Assets] to look for assets using the classloader. This can be used to place
@@ -36,16 +43,22 @@ actual data class KoolConfig(
     val windowNotFocusedFrameRate: Int = 0,
     val msaaSamples: Int = 8,
     val customTtfFonts: Map<String, String> = emptyMap(),
-) {
-    companion object {
-        val DEFAULT_ICON: BufferedImage?
 
-        init {
-            DEFAULT_ICON = try {
-                ImageIO.read(KoolConfig::class.java.classLoader.getResourceAsStream("icon.png"))
-            } catch (e: Exception) {
-                null
+) : KoolConfig {
+    companion object {
+        val DEFAULT_ICON: BufferedImage? = try {
+            KoolConfigJvm::class.java.classLoader.getResourceAsStream("icon.png").use {
+                ImageIO.read(it)
             }
+        } catch (e: Exception) { null }
+
+        val DEFAULT_MSDF_FONT_INFO: MsdfFontInfo by lazy {
+            KoolConfigJvm::class.java.classLoader
+                .getResourceAsStream("fonts/font-roboto-regular.json").use {
+                    checkNotNull(it) { "Failed to load \"fonts/font-roboto-regular.json\" from resources" }
+                    val meta = Json.Default.decodeFromString<MsdfMeta>(it.readAllBytes().decodeToString())
+                    MsdfFontInfo(meta, "fonts/font-roboto-regular.png")
+                }
         }
     }
 }

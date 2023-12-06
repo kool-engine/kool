@@ -2,6 +2,7 @@ package de.fabmax.kool.platform
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.configJvm
 import de.fabmax.kool.input.PlatformInputJvm
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.pipeline.backend.gl.RenderBackendGlImpl
@@ -32,8 +33,8 @@ class Lwjgl3Context : KoolContext() {
         get() = backend.glfwWindow.isFullscreen
         set(value) { backend.glfwWindow.isFullscreen = value }
 
-    var maxFrameRate = KoolSystem.config.maxFrameRate
-    var windowNotFocusedFrameRate = KoolSystem.config.windowNotFocusedFrameRate
+    var maxFrameRate = KoolSystem.configJvm.maxFrameRate
+    var windowNotFocusedFrameRate = KoolSystem.configJvm.windowNotFocusedFrameRate
 
     private var prevFrameTime = System.nanoTime()
 
@@ -74,7 +75,7 @@ class Lwjgl3Context : KoolContext() {
     }
 
     init {
-        backend = if (KoolSystem.config.renderBackend == Backend.VULKAN) {
+        backend = if (KoolSystem.configJvm.renderBackend == Backend.VULKAN) {
             VkRenderBackend(this)
         } else {
             RenderBackendGlImpl(this)

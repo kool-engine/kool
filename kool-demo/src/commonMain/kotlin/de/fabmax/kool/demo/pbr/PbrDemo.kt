@@ -16,11 +16,9 @@ import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.RenderLoop
 import de.fabmax.kool.util.Time
 import de.fabmax.kool.util.launchDelayed
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import de.fabmax.kool.util.launchOnMainThread
 
 /**
  * @author fabmax
@@ -147,12 +145,10 @@ class PbrDemo : DemoScene("PBR Materials") {
     private fun loadHdri(idx: Int, recv: (Texture2d) -> Unit) {
         val tex = loadedHdris[idx]
         if (tex == null) {
-            Assets.launch {
-                val loadedTex = loadTexture2d(hdriTextures[idx].hdriPath, hdriTexProps)
-                withContext(Dispatchers.RenderLoop) {
-                    loadedHdris[idx] = loadedTex
-                    recv(loadedTex)
-                }
+            launchOnMainThread {
+                val loadedTex = Assets.loadTexture2d(hdriTextures[idx].hdriPath, hdriTexProps)
+                loadedHdris[idx] = loadedTex
+                recv(loadedTex)
             }
         } else {
             recv(tex)

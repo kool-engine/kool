@@ -4,7 +4,6 @@ import de.fabmax.kool.util.Uint8Buffer
 import de.fabmax.kool.util.Uint8BufferImpl
 import de.fabmax.kool.util.logE
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.File
@@ -17,7 +16,7 @@ actual object KeyValueStore {
 
     private const val KEY_VALUE_STORAGE_NAME = ".keyValueStorage.json"
 
-    private val storageDir: File = File(KoolSystem.config.storageDir)
+    private val storageDir: File = File(KoolSystem.configJvm.storageDir)
     private val keyValueStore = mutableMapOf<String, String>()
 
     init {

@@ -1,7 +1,7 @@
 package de.fabmax.kool.demo
 
 import de.fabmax.kool.KoolApplication
-import de.fabmax.kool.KoolConfig
+import de.fabmax.kool.KoolConfigJvm
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.platform.Lwjgl3Context
 
@@ -9,7 +9,7 @@ import de.fabmax.kool.platform.Lwjgl3Context
  * @author fabmax
  */
 fun main() = KoolApplication(
-    config = KoolConfig(
+    config = KoolConfigJvm(
         renderBackend = Lwjgl3Context.Backend.OPEN_GL,
         windowTitle = "Kool Demo",
         windowSize = Vec2i(1600, 900)
