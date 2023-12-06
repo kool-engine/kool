@@ -62,8 +62,8 @@ class CopyStateShader(
                 `if`(ij.x eq 1.const) {
                     u set uniformFloat1("flowSpeed").toFixed()
 
-                    val center = size.y / 2.const
-                    val smokeExt = 5.const
+                    val center = size.y / 2.const + 1.const
+                    val smokeExt = size.y / 50.const
                     `if`((ij.y le center + smokeExt) and (ij.y ge center - smokeExt)) {
                         d set 1f.const.toFixed()
                     }.`else` {

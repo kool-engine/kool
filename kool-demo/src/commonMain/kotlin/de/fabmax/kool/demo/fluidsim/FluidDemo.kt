@@ -9,7 +9,10 @@ import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.scene.*
+import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.scene.TrsTransformF
+import de.fabmax.kool.scene.addTextureMesh
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.ColorGradient
 import de.fabmax.kool.util.MdColor
@@ -70,6 +73,7 @@ class FluidDemo : DemoScene("Fluid Simulation") {
     }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
+        copyShader.obstaclePos = Vec2f(simHeight / 4f, simHeight / 2f)
         initializeSolverTasks()
 
         // compute shaders are executed by ComputeRenderPasses, which are added as a scene offscreen pass
@@ -77,8 +81,10 @@ class FluidDemo : DemoScene("Fluid Simulation") {
         addOffscreenPass(solverPass)
         addOffscreenPass(advectionPass)
 
+
+        camera.position.set(0f, 0f, 10f)
+
         // draw storage texture on a simple quad mesh
-        defaultOrbitCamera(0f, 0f)
         addTextureMesh {
             generate {
                 centeredRect {
