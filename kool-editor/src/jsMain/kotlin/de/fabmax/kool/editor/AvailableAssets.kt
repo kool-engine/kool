@@ -3,6 +3,7 @@ package de.fabmax.kool.editor
 import de.fabmax.kool.Assets
 import de.fabmax.kool.LoadableFile
 import de.fabmax.kool.modules.ui2.mutableStateListOf
+import de.fabmax.kool.util.launchOnMainThread
 import de.fabmax.kool.util.logE
 
 @Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
@@ -13,9 +14,9 @@ actual class AvailableAssets actual constructor(assetsBaseDir: String, browserSu
     actual val hdriTextureAssets = mutableStateListOf<AssetItem>()
 
     init {
-        Assets.launch {
+        launchOnMainThread {
             try {
-                val assetJson = loadBlobAsset("available-assets.json").toArray().decodeToString()
+                val assetJson = Assets.loadBlobAsset("available-assets.json").toArray().decodeToString()
                 val assets = JSON.parse<Array<String>>(assetJson).toList()
                 addAvailableAssets(assets)
             } catch (e: Exception) {

@@ -2,6 +2,7 @@ package de.fabmax.kool
 
 import de.fabmax.kool.modules.audio.AudioClip
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
@@ -35,7 +36,7 @@ object Assets : CoroutineScope {
 
     private val workers = List(NUM_LOAD_WORKERS) { loadWorker(assetRefChannel, loadedAssetChannel) }
 
-    private val loader = launch {
+    private val loader = (this as CoroutineScope).launch {
         val requested = mutableMapOf<AssetRef, MutableList<AwaitedAsset>>()
         while (true) {
             select<Unit> {
@@ -58,7 +59,10 @@ object Assets : CoroutineScope {
         }
     }
 
-    private fun loadWorker(assetRefs: ReceiveChannel<AssetRef>, loadedAssets: SendChannel<LoadedAsset>) = launch {
+    private fun loadWorker(
+        assetRefs: ReceiveChannel<AssetRef>,
+        loadedAssets: SendChannel<LoadedAsset>
+    ) = (this as CoroutineScope).launch {
         for (ref in assetRefs) {
             loadedAssets.send(loadAsset(ref))
         }
@@ -164,7 +168,13 @@ object Assets : CoroutineScope {
     /**
      * Launches a coroutine in the Assets CoroutineScope and executes the given block from within the [Assets] scope
      * for convenience.
+     *
+     * This function is deprecated as it easily leads to non-deterministic bugs when a loaded asset is inserted into
+     * a [Scene] from within the coroutine. This is because, on JVM, the coroutine is executed by a different thread
+     * than the main thread and modifying scene content from a different thread leads to a race condition. You should
+     * use [launchOnMainThread] instead.
      */
+    @Deprecated("use launchOnMainThread { } instead", ReplaceWith("launchOnMainThread"))
     fun launch(block: suspend Assets.() -> Unit) {
         (this as CoroutineScope).launch {
             block.invoke(this@Assets)

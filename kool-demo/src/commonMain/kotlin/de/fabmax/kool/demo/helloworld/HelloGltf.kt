@@ -15,11 +15,9 @@ import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.addColorMesh
 import de.fabmax.kool.scene.defaultOrbitCamera
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.RenderLoop
 import de.fabmax.kool.util.SimpleShadowMap
 import de.fabmax.kool.util.Time
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import de.fabmax.kool.util.launchOnMainThread
 
 class HelloGltf : DemoScene("Hello glTF") {
     override fun Scene.setupMainScene(ctx: KoolContext) {
@@ -46,13 +44,13 @@ class HelloGltf : DemoScene("Hello glTF") {
         }
 
         // Load a glTF 2.0 model
-        Assets.launch {
+        launchOnMainThread {
             val materialCfg = GltfMaterialConfig(
                 shadowMaps = listOf(shadowMap),
                 scrSpcAmbientOcclusionMap = aoPipeline.aoMap
             )
             val modelCfg = GltfLoadConfig(materialConfig = materialCfg)
-            val model = loadGltfModel("${DemoLoader.modelPath}/BoxAnimated.gltf", modelCfg)
+            val model = Assets.loadGltfModel("${DemoLoader.modelPath}/BoxAnimated.gltf", modelCfg)
 
             model.transform.translate(0f, 0.5f, 0f)
             if (model.animations.isNotEmpty()) {
@@ -62,9 +60,7 @@ class HelloGltf : DemoScene("Hello glTF") {
                 }
             }
 
-            withContext(Dispatchers.RenderLoop) {
-                addNode(model)
-            }
+            addNode(model)
         }
     }
 }

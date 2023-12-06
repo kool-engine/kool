@@ -1,6 +1,5 @@
 package de.fabmax.kool.demo
 
-import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.Vec3f
@@ -14,7 +13,6 @@ import de.fabmax.kool.pipeline.deferred.*
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
-import kotlinx.coroutines.withContext
 import kotlin.math.*
 
 class ReflectionDemo : DemoScene("Reflections") {
@@ -127,13 +125,9 @@ class ReflectionDemo : DemoScene("Reflections") {
                 }
             }
 
-            Assets.launch {
-                withContext(RenderLoopCoroutineDispatcher) {
-                    bunnyMesh = model.meshes.values.first()
-                    addNode(model)
-                    bunnyMesh!!.shader = modelShader
-                }
-            }
+            bunnyMesh = model.meshes.values.first()
+            addNode(model)
+            bunnyMesh!!.shader = modelShader
         }
     }
 

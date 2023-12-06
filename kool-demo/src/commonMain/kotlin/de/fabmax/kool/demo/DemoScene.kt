@@ -60,9 +60,9 @@ abstract class DemoScene(val name: String) {
         if (demoState == State.NEW) {
             // load resources (async from AssetManager CoroutineScope)
             demoState = State.LOADING
-            Assets.launch {
+            launchOnMainThread {
                 resources.loadGroup()
-                loadResources(ctx)
+                Assets.loadResources(ctx)
                 demoState = State.SETUP
             }
         }
