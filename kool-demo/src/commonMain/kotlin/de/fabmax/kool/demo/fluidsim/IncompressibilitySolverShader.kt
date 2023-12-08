@@ -30,7 +30,8 @@ class IncompressibilitySolverShader(
     }
 
     private fun KslProgram.solverProg() {
-        computeStage(1, 1) {
+        // larger work group sizes are faster but result in less stable simulation
+        computeStage(2, 2) {
             val uVals = storage2d<KslInt1>("uVals")
             val vVals = storage2d<KslInt1>("vVals")
             val indices = storage2d<KslInt1>("indices")
@@ -43,7 +44,7 @@ class IncompressibilitySolverShader(
                 val bounds = int2Var(size - Vec2i.ONES.const)
                 val offsetCoord = int2Var((inGlobalInvocationId.xy.toInt2() + idxOffset) % size)
 
-                // randomize access pattern to improve simulation stability
+                // Randomize access pattern to improve simulation stability.
                 val randomIndex = uint1Var(storageRead(indices, offsetCoord).toUint1())
                 val randomX = int1Var((randomIndex shr 16u.const).toInt1())
                 val randomY = int1Var((randomIndex and 0xffffu.const).toInt1())
@@ -68,11 +69,20 @@ class IncompressibilitySolverShader(
                         di += storageRead(vVals, int2Value(x, y+c))
                         di -= storageRead(vVals, int2Value(x, y))
 
-                        val div = float1Var(di.toFloating())
+                        // div is clamped as a safety measure: keeps simulation instabilities locally
+                        // otherwise it explodes as soon as instabilities occur
+                        val div = float1Var(clamp(di.toFloating(), (-1f).const, 1f.const))
                         val p = float1Var(-div / s * overRelaxation)
 
-                        // we need to assign storageAtomicAdd() to a variable to make sure it is executed (because it
-                        // is an expression and not a statement)
+                        // Write back modified field velocities.
+                        // Notice that velocities are written to the same storage they were read from. This makes
+                        // the algorithm inherently unstable in multi-threaded environments (and a compute shader
+                        // is very heavily multi-threaded). Unfortunately this is required to make the algorithm work
+                        // at all. Instabilities are mitigated by the random access pattern and value sanitizing
+                        // techniques used above.
+                        //
+                        // Also notice that storageAtomicAdd() is assigned to a variable to make sure it is
+                        // executed (because it is an expression and not a statement)
                         int1Var(storageAtomicAdd(uVals, int2Value(x, y), -(sx0 * p).toFixed()))
                         int1Var(storageAtomicAdd(uVals, int2Value(x+c, y), (sx1 * p).toFixed()))
                         int1Var(storageAtomicAdd(vVals, int2Value(x, y), -(sy0 * p).toFixed()))

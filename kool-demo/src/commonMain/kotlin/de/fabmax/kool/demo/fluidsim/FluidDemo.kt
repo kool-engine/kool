@@ -9,20 +9,24 @@ import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.scene.TrsTransformF
-import de.fabmax.kool.scene.addTextureMesh
+import de.fabmax.kool.scene.*
 import de.fabmax.kool.toString
+import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ColorGradient
 import de.fabmax.kool.util.MdColor
 import kotlin.math.roundToInt
 import kotlin.math.sin
 
+/**
+ * 2d eulerian fluid simulation executed on a compute shader.
+ *
+ * Based on this video:
+ *   https://youtu.be/iKAVRgIrUOU
+ */
 class FluidDemo : DemoScene("Fluid Simulation") {
 
     private val simHeight = 256
-    private val simWidth = 454
+    private val simWidth = 456
 
     private val uStateA = StorageTexture2d(simWidth, simHeight, TexFormat.R_I32, texProps)
     private val vStateA = StorageTexture2d(simWidth, simHeight, TexFormat.R_I32, texProps)
@@ -48,13 +52,14 @@ class FluidDemo : DemoScene("Fluid Simulation") {
 
     private val outputShader = OutputShader()
     private val obstacleMesh = Mesh(Attribute.POSITIONS)
+    private val streamLineMesh = LineMesh()
 
     private val isPaused = mutableStateOf(false)
     private var clearCount = 2
     private val isSingleStep = mutableStateOf(false)
     private val movingObstacle = mutableStateOf(false)
 
-    private val numIterations = mutableStateOf(60).onChange {
+    private val numIterations = mutableStateOf(80).onChange {
         solverPass.tasks.forEachIndexed { i, task ->
             task.isEnabled = i < it
         }
@@ -68,7 +73,7 @@ class FluidDemo : DemoScene("Fluid Simulation") {
         advectionShader.advectionStep = it
     }
 
-    private val overRelaxation = mutableStateOf(1.9f).onChange { value ->
+    private val overRelaxation = mutableStateOf(1.85f).onChange { value ->
         solvers.forEach { it.overRelaxation = value }
     }
 
@@ -94,7 +99,7 @@ class FluidDemo : DemoScene("Fluid Simulation") {
             shader = outputShader
         }
 
-        addNode(obstacleMesh.apply {
+        obstacleMesh.apply {
             generate {
                 rotate(90f.deg, Vec3f.X_AXIS)
                 cylinder {
@@ -110,7 +115,26 @@ class FluidDemo : DemoScene("Fluid Simulation") {
             shader = KslUnlitShader {
                 color { constColor(MdColor.GREY) }
             }
-        })
+        }.also { addNode(it) }
+
+        streamLineMesh.apply {
+            val gridY = 18
+            val gridX = 32
+            for (y in 0 until gridY) {
+                for (x in 0 until gridX) {
+                    val vx = x / gridX.toFloat() + 0.5f / gridX
+                    val vy = y / gridY.toFloat() + 0.5f / gridY
+
+                    moveTo(vx, vy, 0f)
+                    for (z in 1..20) {
+                        lineTo(vx, vy, z.toFloat() * 0.5f)
+                    }
+                    stroke()
+                }
+            }
+            shader = StreamLineShader()
+            isVisible = false
+        }.also { addNode(it) }
 
         var obstacleAng = 0f
 
@@ -175,6 +199,7 @@ class FluidDemo : DemoScene("Fluid Simulation") {
         var drawMode by remember(outputShader.mode) {
             outputShader.mode = it
         }
+        val isDrawStreamLines = remember(streamLineMesh.isVisible)
 
         MenuSlider2("Flow Speed:", flowSpeed, 0f, 5f) {
             flowSpeed = it
@@ -200,6 +225,9 @@ class FluidDemo : DemoScene("Fluid Simulation") {
                     .onItemSelected { drawMode = it }
             }
         }
+        LabeledSwitch("Stream lines", isDrawStreamLines) {
+            streamLineMesh.isVisible = it
+        }
         MenuSlider2("Solver Iterations:", numIterations.use().toFloat(), 0f, 200f, { it.toString(0) }) {
             numIterations.set(it.roundToInt())
         }
@@ -219,6 +247,42 @@ class FluidDemo : DemoScene("Fluid Simulation") {
                 .onClick {
                     clearCount = 2
                 }
+        }
+    }
+
+    private inner class StreamLineShader : KslShader("Stream line shader") {
+        var hue by uniform1f("uHue", 0.45f)
+        var flowSpeed by uniform1f("flowSpeed", copyShader.flowSpeed)
+
+        init {
+            texture2d("drawState", draw)
+            pipelineConfig.apply {
+                depthTest = DepthCompareOp.DISABLED
+                lineWidth = 2f
+            }
+            program.code()
+        }
+
+        fun KslProgram.code() {
+            vertexStage {
+                main {
+                    val inPos = vertexAttribFloat3(Attribute.POSITIONS)
+                    val iterations = int1Var(inPos.z.toInt1())
+                    val linePos = float2Var(inPos.xy)
+                    val drawState = texture2d("drawState")
+
+                    repeat(iterations) { iter ->
+                        linePos += sampleTexture(drawState, linePos).xy * 0.01f.const
+                    }
+
+                    outPosition set float4Value(linePos * 2f.const - 1f.const, 0f.const, 1f.const)
+                }
+            }
+            fragmentStage {
+                main {
+                    colorOutput(Color.RED.const)
+                }
+            }
         }
     }
 
