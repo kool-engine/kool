@@ -271,7 +271,7 @@ class FluidDemo : DemoScene("Fluid Simulation") {
                     val linePos = float2Var(inPos.xy)
                     val drawState = texture2d("drawState")
 
-                    repeat(iterations) { iter ->
+                    repeat(iterations) {
                         linePos += sampleTexture(drawState, linePos).xy * 0.01f.const
                     }
 

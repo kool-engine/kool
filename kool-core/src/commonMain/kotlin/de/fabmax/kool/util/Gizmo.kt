@@ -389,7 +389,7 @@ class Gizmo : Node(), InputStack.PointerListener {
         val ptr = pointerState.primaryPointer
         val scene = findParentOfType<Scene>() ?: return
         val cam = scene.camera
-        if (!scene.computePickRay(ptr, ctx, pickRay)) {
+        if (!scene.computePickRay(ptr, pickRay)) {
             return
         }
 

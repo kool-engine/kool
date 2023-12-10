@@ -519,7 +519,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
             if (!dragPtr.isValid) { return }
             if (!(dragPtr.isMiddleButtonEvent || dragPtr.isMiddleButtonDown)) { return }
 
-            mainScene.camera.computePickRay(pickRay, dragPtr, mainScene.mainRenderPass.viewport, ctx)
+            mainScene.camera.computePickRay(pickRay, dragPtr, mainScene.mainRenderPass.viewport)
             when {
                 dragPtr.isMiddleButtonPressed -> initDrag()
                 dragPtr.isMiddleButtonDown -> applyForce()

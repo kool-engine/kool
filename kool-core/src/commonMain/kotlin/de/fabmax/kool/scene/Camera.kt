@@ -1,6 +1,5 @@
 package de.fabmax.kool.scene
 
-import de.fabmax.kool.KoolContext
 import de.fabmax.kool.input.Pointer
 import de.fabmax.kool.math.*
 import de.fabmax.kool.pipeline.RenderPass
@@ -106,13 +105,13 @@ abstract class Camera(name: String = "camera") : Node(name) {
 
     abstract fun updateProjectionMatrix(updateEvent: RenderPass.UpdateEvent)
 
-    fun computePickRay(pickRay: RayF, ptr: Pointer, viewport: Viewport, ctx: KoolContext): Boolean {
-        return ptr.isValid && computePickRay(pickRay, ptr.x.toFloat(), ptr.y.toFloat(), viewport, ctx)
+    fun computePickRay(pickRay: RayF, ptr: Pointer, viewport: Viewport): Boolean {
+        return ptr.isValid && computePickRay(pickRay, ptr.x.toFloat(), ptr.y.toFloat(), viewport)
     }
 
-    fun computePickRay(pickRay: RayF, screenX: Float, screenY: Float, viewport: Viewport, ctx: KoolContext): Boolean {
-        var valid = unProjectScreen(tmpVec3.set(screenX, screenY, 0f), viewport, ctx, pickRay.origin)
-        valid = valid && unProjectScreen(tmpVec3.set(screenX, screenY, 1f), viewport, ctx, pickRay.direction)
+    fun computePickRay(pickRay: RayF, screenX: Float, screenY: Float, viewport: Viewport): Boolean {
+        var valid = unProjectScreen(tmpVec3.set(screenX, screenY, 0f), viewport, pickRay.origin)
+        valid = valid && unProjectScreen(tmpVec3.set(screenX, screenY, 1f), viewport, pickRay.direction)
 
         if (valid) {
             pickRay.direction.subtract(pickRay.origin)
@@ -122,13 +121,13 @@ abstract class Camera(name: String = "camera") : Node(name) {
         return valid
     }
 
-    fun initRayTes(rayTest: RayTest, ptr: Pointer, viewport: Viewport, ctx: KoolContext): Boolean {
-        return ptr.isValid && initRayTes(rayTest, ptr.x.toFloat(), ptr.y.toFloat(), viewport, ctx)
+    fun initRayTes(rayTest: RayTest, ptr: Pointer, viewport: Viewport): Boolean {
+        return ptr.isValid && initRayTes(rayTest, ptr.x.toFloat(), ptr.y.toFloat(), viewport)
     }
 
-    fun initRayTes(rayTest: RayTest, screenX: Float, screenY: Float, viewport: Viewport, ctx: KoolContext): Boolean {
+    fun initRayTes(rayTest: RayTest, screenX: Float, screenY: Float, viewport: Viewport): Boolean {
         rayTest.clear()
-        return computePickRay(rayTest.ray, screenX, screenY, viewport, ctx)
+        return computePickRay(rayTest.ray, screenX, screenY, viewport)
     }
 
     abstract fun computeFrustumPlane(z: Float, result: FrustumPlane)
@@ -164,16 +163,16 @@ abstract class Camera(name: String = "camera") : Node(name) {
         return projectOk
     }
 
-    fun projectScreen(world: Vec3f, viewport: Viewport, ctx: KoolContext, result: MutableVec3f): Boolean {
+    fun projectScreen(world: Vec3f, viewport: Viewport, result: MutableVec3f): Boolean {
         val projectOk = projectViewport(world, viewport, result)
         result.x += viewport.x
-        result.y += ctx.windowHeight - viewport.y - viewport.height
+        result.y += viewport.y
         return projectOk
     }
 
-    fun unProjectScreen(screen: Vec3f, viewport: Viewport, ctx: KoolContext, result: MutableVec3f): Boolean {
+    fun unProjectScreen(screen: Vec3f, viewport: Viewport, result: MutableVec3f): Boolean {
         val x = screen.x - viewport.x
-        val y = (ctx.windowHeight - screen.y) - viewport.y
+        val y = viewport.y + viewport.height - screen.y
 
         tmpVec4.set(2f * x / viewport.width - 1f, 2f * y / viewport.height - 1f, 2f * screen.z - 1f, 1f)
         invViewProj.transform(tmpVec4)

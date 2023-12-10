@@ -298,7 +298,7 @@ class CameraOrthogonalPan : PanBase() {
     override fun computePanPoint(result: MutableVec3f, view: RenderPass.View, ptrPos: Vec2d, ctx: KoolContext): Boolean {
         panPlane.p.set(view.camera.globalLookAt)
         panPlane.n.set(view.camera.globalLookDir)
-        return view.camera.computePickRay(pointerRay, ptrPos.x.toFloat(), ptrPos.y.toFloat(), view.viewport, ctx) &&
+        return view.camera.computePickRay(pointerRay, ptrPos.x.toFloat(), ptrPos.y.toFloat(), view.viewport) &&
                 panPlane.intersectionPoint(pointerRay, result)
     }
 }
@@ -313,7 +313,7 @@ class FixedPlanePan(planeNormal: Vec3f) : PanBase() {
 
     override fun computePanPoint(result: MutableVec3f, view: RenderPass.View, ptrPos: Vec2d, ctx: KoolContext): Boolean {
         panPlane.p.set(view.camera.globalLookAt)
-        return view.camera.computePickRay(pointerRay, ptrPos.x.toFloat(), ptrPos.y.toFloat(), view.viewport, ctx) &&
+        return view.camera.computePickRay(pointerRay, ptrPos.x.toFloat(), ptrPos.y.toFloat(), view.viewport) &&
                 panPlane.intersectionPoint(pointerRay, result)
     }
 }

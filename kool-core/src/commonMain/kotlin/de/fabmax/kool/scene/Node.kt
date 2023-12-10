@@ -73,7 +73,7 @@ open class Node(name: String? = null) : BaseReleasable() {
     /**
      * Inverse of this node's model matrix (single-precision).
      */
-    val invModelMatF: Mat4d get() = modelMats.lazyInvModelMatD.get()
+    val invModelMatF: Mat4f get() = modelMats.lazyInvModelMatF.get()
 
     /**
      * Inverse of this node's model matrix (double-precision).
@@ -127,8 +127,9 @@ open class Node(name: String? = null) : BaseReleasable() {
 
         bounds.clear()
         for (i in mutChildren.indices) {
-            mutChildren[i].update(updateEvent)
-            bounds.add(mutChildren[i].bounds)
+            val child = mutChildren[i]
+            child.update(updateEvent)
+            child.addBoundsToParentBounds(bounds)
         }
         addContentToBoundingBox(bounds)
 
@@ -136,6 +137,26 @@ open class Node(name: String? = null) : BaseReleasable() {
         toGlobalCoords(globalCenterMut.set(bounds.center))
         toGlobalCoords(globalExtentMut.set(bounds.max))
         globalRadius = globalCenter.distance(globalExtentMut)
+    }
+
+    private fun addBoundsToParentBounds(parentBounds: BoundingBoxF) {
+        if (!bounds.isEmpty) {
+            val minX = bounds.min.x
+            val minY = bounds.min.y
+            val minZ = bounds.min.z
+            val maxX = bounds.max.x
+            val maxY = bounds.max.y
+            val maxZ = bounds.max.z
+
+            parentBounds.add(transform.transform(tmpTransformVec.set(minX, minY, minZ), 1f))
+            parentBounds.add(transform.transform(tmpTransformVec.set(minX, minY, maxZ), 1f))
+            parentBounds.add(transform.transform(tmpTransformVec.set(minX, maxY, minZ), 1f))
+            parentBounds.add(transform.transform(tmpTransformVec.set(minX, maxY, maxZ), 1f))
+            parentBounds.add(transform.transform(tmpTransformVec.set(maxX, minY, minZ), 1f))
+            parentBounds.add(transform.transform(tmpTransformVec.set(maxX, minY, maxZ), 1f))
+            parentBounds.add(transform.transform(tmpTransformVec.set(maxX, maxY, minZ), 1f))
+            parentBounds.add(transform.transform(tmpTransformVec.set(maxX, maxY, maxZ), 1f))
+        }
     }
 
     protected open fun addContentToBoundingBox(localBounds: BoundingBoxF) { }
@@ -207,9 +228,9 @@ open class Node(name: String? = null) : BaseReleasable() {
         if (test.isIntersectingBoundingSphere(this)) {
             // bounding sphere hit -> transform ray to local coordinates and do further testing
             val localRay = if (transform.isDoublePrecision) {
-                test.getRayTransformed(transform.invMatrixD)
+                test.getRayTransformed(invModelMatD)
             } else {
-                test.getRayTransformed(transform.invMatrixF)
+                test.getRayTransformed(invModelMatF)
             }
 
             val dLocal = bounds.hitDistanceSqr(localRay)

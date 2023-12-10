@@ -245,7 +245,7 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
                 val appScene = sceneModel.drawNode
                 val ptr = pointerState.primaryPointer
                 if (ptr.isLeftButtonClicked && !ptr.isConsumed()) {
-                    if (appScene.computePickRay(ptr, ctx, rayTest.ray)) {
+                    if (appScene.computePickRay(ptr, rayTest.ray)) {
                         rayTest.clear()
                         appScene.rayTest(rayTest)
 

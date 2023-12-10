@@ -124,8 +124,8 @@ open class Scene(name: String? = null) : Node(name) {
         logD { "Released scene \"$name\"" }
     }
 
-    fun computePickRay(pointer: Pointer, ctx: KoolContext, result: RayF): Boolean {
-        return camera.computePickRay(result, pointer, mainRenderPass.viewport, ctx)
+    fun computePickRay(pointer: Pointer, result: RayF): Boolean {
+        return camera.computePickRay(result, pointer, mainRenderPass.viewport)
     }
 
     companion object {

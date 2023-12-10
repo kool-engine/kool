@@ -90,12 +90,12 @@ class SceneView(ui: EditorUi) : EditorPanel("Scene View", IconMap.medium.CAMERA,
 
     fun applyViewportTo(targetScene: Scene) {
         targetScene.mainRenderPass.useWindowViewport = false
-        targetScene.onRenderScene += { ctx ->
+        targetScene.onRenderScene += {
             viewBox?.let { box ->
                 val x = box.leftPx.roundToInt()
                 val w = box.rightPx.roundToInt() - x
-                val h = box.bottomPx.roundToInt() - box.topPx.roundToInt()
-                val y = ctx.windowHeight - box.bottomPx.roundToInt()
+                val y = box.topPx.roundToInt()
+                val h = box.bottomPx.roundToInt() - y
                 targetScene.mainRenderPass.viewport.set(x, y, w, h)
             }
         }
