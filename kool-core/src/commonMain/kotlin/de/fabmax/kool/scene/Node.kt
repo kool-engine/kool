@@ -324,6 +324,13 @@ open class Node(name: String? = null) : BaseReleasable() {
         return null
     }
 
+    fun traverse(block: (Node) -> Unit) {
+        block(this)
+        children.forEach {
+            it.traverse(block)
+        }
+    }
+
     open fun collectTag(result: MutableList<Node>, tag: String, value: String? = null) {
         if (tags.hasTag(tag, value)) {
             result += this

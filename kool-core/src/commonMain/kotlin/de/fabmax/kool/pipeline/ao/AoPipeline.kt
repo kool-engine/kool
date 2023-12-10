@@ -91,6 +91,7 @@ abstract class AoPipeline : BaseReleasable() {
             depthPass = NormalLinearDepthMapPass(drawNode, mapWidth, mapHeight)
             depthPass.camera = proxyCamera
             depthPass.isUpdateDrawNode = false
+            depthPass.isReleaseDrawNode = false
             depthPass.onBeforeCollectDrawCommands += { ev ->
                 proxyCamera.sync(ev)
             }

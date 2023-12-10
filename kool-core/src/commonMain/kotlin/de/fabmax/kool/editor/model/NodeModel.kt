@@ -119,6 +119,7 @@ abstract class NodeModel(val nodeData: SceneNodeData) {
             it.destroyComponent()
             check(!it.isCreated) { "Component not destroyed: $it" }
         }
+        components.clear()
         onNodeUpdate.clear()
         drawNode.release()
         drawNode.parent?.removeNode(drawNode)

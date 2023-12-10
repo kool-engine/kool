@@ -272,12 +272,9 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
         editorCameraTransform.addNode(editorOverlay.camera)
 
         // dispose old scene + objects
-        EditorState.projectModel.getCreatedScenes().map { it.drawNode }.let { oldScenes ->
-            ctx.scenes -= oldScenes.toSet()
-            oldScenes.forEach {
-                it.removeOffscreenPass(selectionOverlay.selectionPass)
-                it.release()
-            }
+        EditorState.projectModel.getCreatedScenes().forEach { sceneModel ->
+            ctx.scenes -= sceneModel.drawNode
+            sceneModel.drawNode.removeOffscreenPass(selectionOverlay.selectionPass)
         }
         EditorState.loadedApp.value?.app?.onDispose(ctx)
         selectionOverlay.selectionPass.disposePipelines(ctx)
@@ -288,7 +285,7 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
         // add scene objects from new app
         EditorState.projectModel.getCreatedScenes().let { newScenes ->
             if (newScenes.size != 1) {
-                logW { "Unusual number of scene, currently only single scene setups are supported" }
+                logW { "Unsupported number of scene, currently only single scene setups are supported" }
             }
             newScenes.firstOrNull()?.let { sceneModel ->
                 val scene = sceneModel.drawNode

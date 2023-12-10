@@ -95,7 +95,11 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : NodeMod
     }
 
     private fun disposeCreatedScene() {
-        nodeModels.values.forEach { it.destroyComponents() }
+        nodeModels.values.forEach {
+            it.destroyComponents()
+            project.entities -= it
+        }
+        nodeModels.clear()
         nodesToNodeModels.clear()
 
         drawNode.release()

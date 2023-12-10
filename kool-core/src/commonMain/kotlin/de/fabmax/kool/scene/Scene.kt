@@ -115,6 +115,7 @@ open class Scene(name: String? = null) : Node(name) {
         super.release()
 
         mainRenderPass.renderPass.release()
+        offscreenPasses.update()
         for (i in offscreenPasses.indices) {
             offscreenPasses[i].release()
         }
