@@ -18,7 +18,6 @@ import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.launchDelayed
-import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logT
 import kotlin.math.max
 import kotlin.math.roundToInt
@@ -85,6 +84,7 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
     }
 
     inner class SelectionPass(editor: KoolEditor) : OffscreenRenderPass2d(
+        // drawNode will be replaced by content scene, once it is loaded
         Node(),
         renderPassConfig {
             name = "SelectionPass"
@@ -103,26 +103,22 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
             isUpdateDrawNode = false
             isEnabled = true
 
-            mainView.drawFilter = { it in meshSelection }
-
             onAfterCollectDrawCommands += { ev ->
                 // replace regular object shaders by selection shader
                 val q = ev.view.drawQueue
                 for (i in q.commands.indices) {
                     setupDrawCommand(i, q.commands[i], ev)
                 }
-                if (q.commands.size != meshSelection.size) {
-                    logD { "Invalidating selection overlay: draw queue size (${q.commands.size}) != selection size (${meshSelection.size})" }
-                    invalidateSelection()
-                }
             }
         }
 
         private fun setupDrawCommand(i: Int, cmd: DrawCommand, updateEvent: UpdateEvent) {
             cmd.pipeline = null
-            getPipeline(cmd.mesh, updateEvent)?.let { (shader, pipeline) ->
-                shader.color = selectionColors[i % selectionColors.size]
-                cmd.pipeline = pipeline
+            if (cmd.mesh in meshSelection) {
+                getPipeline(cmd.mesh, updateEvent)?.let { (shader, pipeline) ->
+                    shader.color = selectionColors[i % selectionColors.size]
+                    cmd.pipeline = pipeline
+                }
             }
         }
 
