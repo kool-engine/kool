@@ -2,6 +2,7 @@ package de.fabmax.kool.modules.ui2
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec2f
+import de.fabmax.kool.math.Vec2d
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.logE
@@ -75,6 +76,7 @@ fun UiScope.LazyList(
     scrollPaneModifier: ((ScrollPaneModifier) -> Unit)? = null,
     vScrollbarModifier: ((ScrollbarModifier) -> Unit)? = null,
     hScrollbarModifier: ((ScrollbarModifier) -> Unit)? = null,
+    isScrollByDrag: Boolean = true,
     state: LazyListState = rememberListState(),
     scopeName: String? = null,
     block: LazyListScope.() -> Unit
@@ -98,6 +100,26 @@ fun UiScope.LazyList(
                     state.scrollDpY(it.pointer.deltaScrollY.toFloat() * -50f)
                 }
             }
+
+        if (isScrollByDrag) {
+            var lastTouchDrag by remember(Vec2d.ZERO)
+            modifier
+                .onDragStart {
+                    lastTouchDrag = Vec2d(it.pointer.dragDeltaX,it.pointer.dragDeltaY)
+                }
+                .onDrag {
+                    val drag = Vec2d(it.pointer.dragDeltaX, it.pointer.dragDeltaY)
+                    val delta = lastTouchDrag - drag
+                    lastTouchDrag = drag
+
+                    if (isScrollableHorizontal && delta.x != 0.0) {
+                        state.scrollDpX(Dp.fromPx(delta.x.toFloat()).value)
+                    }
+                    if (isScrollableVertical && delta.y != 0.0) {
+                        state.scrollDpY(Dp.fromPx(delta.y.toFloat()).value)
+                    }
+                }
+        }
 
         containerModifier?.invoke(modifier)
 
