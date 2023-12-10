@@ -8,7 +8,6 @@ import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logW
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.File
@@ -27,8 +26,8 @@ actual object PlatformFunctions {
             wnd.setWindowPos(posX, posY)
         }
 
-        val width = KeyValueStore.getInt("editor.window.width", KoolSystem.config.windowSize.x)
-        val height = KeyValueStore.getInt("editor.window.height", KoolSystem.config.windowSize.y)
+        val width = KeyValueStore.getInt("editor.window.width", KoolSystem.configJvm.windowSize.x)
+        val height = KeyValueStore.getInt("editor.window.height", KoolSystem.configJvm.windowSize.y)
         wnd.setWindowSize(width, height)
 
         val isMaximized = KeyValueStore.getBoolean("editor.window.isMaximized", false)
