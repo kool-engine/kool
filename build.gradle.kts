@@ -14,7 +14,7 @@ buildscript {
 
 allprojects {
     group = "de.fabmax.kool"
-    version = "0.13.0-SNAPSHOT"
+    version = "0.13.0"
 
     repositories {
         mavenLocal()

@@ -11,8 +11,7 @@ class GetLinearDepth(parentScope: KslScopeBuilder) :
         val camFar = paramFloat1("camFar")
 
         body {
-            val depthN = float1Var(2f.const * depth - 1f.const)
-            return@body 2f.const * camNear * camFar / (camFar + camNear - depthN * (camFar - camNear))
+            return@body camNear * camFar / (camFar - depth * (camFar - camNear))
         }
     }
 

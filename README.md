@@ -43,8 +43,9 @@ Feel free to join the [Discord Server](https://discord.gg/GvsJj2Pk3K)!
 - [Creative Coding](https://fabmax.github.io/kool/kool-js/?demo=creative-coding): A few relatively simple demos
   showcasing different techniques of generating procedural geometry.
 - [Procedural Geometry](https://fabmax.github.io/kool/kool-js/?demo=procedural): Small test-case for
-  procedural geometry; all geometry is generated in code (even the roses! Textures are regular images though). Also, some glass
-  shading (shaft of the wine glass, the wine itself looks quite odd when shaded with refractions and is therefore opaque).
+  procedural geometry; all geometry is generated in code (even the roses! Textures are regular images though). Also,
+  some glass shading (shaft of the wine glass, the wine itself looks quite odd when shaded with refractions and is
+  therefore opaque).
 - [glTF Models](https://fabmax.github.io/kool/kool-js/?demo=gltf): Various demo models loaded from glTF / glb format
   - Flight Helmet from [glTF sample models](https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0/FlightHelmet)
   - Polly from [Blender](https://github.com/KhronosGroup/glTF-Blender-Exporter/tree/master/polly)
@@ -172,13 +173,13 @@ fun main() = KoolApplication { ctx ->
         }
 
         // Load a glTF 2.0 model
-        Assets.launch {
+        launchOnMainThread {
             val materialCfg = GltfFile.ModelMaterialConfig(
                 shadowMaps = listOf(shadowMap),
                 scrSpcAmbientOcclusionMap = aoPipeline.aoMap
             )
             val modelCfg = GltfFile.ModelGenerateConfig(materialConfig = materialCfg)
-            val model = loadGltfModel("path/to/model.glb", modelCfg)
+            val model = Assets.loadGltfModel("path/to/model.glb", modelCfg)
 
             model.transform.translate(0f, 0.5f, 0f)
             if (model.animations.isNotEmpty()) {
@@ -188,10 +189,8 @@ fun main() = KoolApplication { ctx ->
                 }
             }
             
-            // Add model to scene, use RenderLoop coroutine context to make sure insertion happens at a safe time
-            withContext(Dispatchers.RenderLoop) {
-                addNode(model)
-            }
+            // Add loaded model to scene
+            addNode(model)
         }
     }
 }
@@ -212,17 +211,18 @@ use the ambient occlusion and shadow maps we created before. Moreover, the shade
 attribute, but a simple pre-defined color (white in this case).
 
 Finally, we want to load a glTF 2.0 model. Resources are loaded via the `Assets` object. Since resource loading is a
-potentially long-running operation we do that from within a coroutine launched with the asset manager:
-`Assets.launch { ... }`. By default, the built-in glTF parser creates shaders for all models it loads. The
+potentially long-running operation we do that from within a coroutine launched with `launchOnMainThread { ... }`. 
+By default, the built-in glTF parser creates shaders for all models it loads. The
 created shaders can be customized via a provided material configuration, which we use to pass the shadow and
 ambient occlusion maps we created during light setup. After we created the custom model / material configuration
-we can load the model with `loadGltfModel("path/to/model.glb", modelCfg)`. This (suspending) function returns the
+we can load the model with `Assets.loadGltfModel("path/to/model.glb", modelCfg)`. This suspending function returns the
 loaded model, which can then be customized and inserted into the scene. Here we move the model 0.5 units along the
 y-axis (up). If the model contains any animations, these can be easily activated. This example checks whether there
 are any animations and if so activates the first one. The `model.onUpdate { }` block is executed on every frame and
-updates the enabled animation. The model is inserted into the scene with `addNode(model)`, however we do that from
-the `Dispatchers.RenderLoop` context to avoid threading issues (on JVM the asset loader coroutines run on a different
-thread than the render-loop).
+updates the enabled animation. The model is inserted into the scene with `addNode(model)`. Calling `addNode(model)`
+from within the coroutine is fine, since the coroutine is launched via `launchOnMainThread { ... }` and therefor
+is executed by the main render thread. If a different coroutine context / thread were used, we had to be careful to
+not modify the scene content while it is rendered.
 
 The resulting scene looks like [this](https://fabmax.github.io/kool/kool-js/?demo=helloGltf). Here, the
 [Animated Box](https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0/BoxAnimated) from the glTF sample
@@ -264,8 +264,6 @@ controlled by their `modifier`s.
 
 Whenever the button is clicked we increment a `clickCount` which is then displayed by the text field. This works
 because the `Panel`-block is executed each time any `remember`ed state (or `mutableStateOf()`) within the block changes.
-The mechanics behind that are somewhat similar to how Jetpack-Compose works, although my implementation is much less
-sophisticated. On the plus-side we don't need a dedicated compiler-plugin and there is a bit less magic involved.
 
 The resulting scene looks like [this](https://fabmax.github.io/kool/kool-js/?demo=hello-ui).
 
@@ -274,15 +272,57 @@ More complex layouts can be created by nesting `Row { }` and `Column { }` object
 
 ## Kool Shader Language
 
-I'm currently working on my own shader language (called ksl), which is implemented as a
+Kool comes with its own shader language (called ksl), which is implemented as a
 [Kotlin Type-safe builder / DSL](https://kotlinlang.org/docs/type-safe-builders.html). The ksl shader code you write is
 used to generate the actual GLSL shader code. The benefit with this approach is that there is no hard-coded GLSL
 code in common code, and it should be relatively easy to add different generators which generate shader code for
 different backends in the future (e.g. WGSL, or metal). 
 
-This is still work in progress. However, in case you are curious, you can take a look at
-[KslLitShader](kool-core/src/commonMain/kotlin/de/fabmax/kool/modules/ksl/KslLitShader.kt), which 
-uses the new ksl approach (the interesting stuff happens in the `LitShaderModel` inner class).
+Writing shaders in ksl is very similar to GLSL, here's how a hello-world style shader looks like:
+
+```kotlin
+fun main() = KoolApplication { ctx ->
+    ctx.scenes += scene {
+        defaultOrbitCamera()
+
+        addColorMesh {
+            generate {
+                cube {
+                    colored()
+                }
+            }
+            shader = KslShader("Hello world shader") {
+                val interStageColor = interStageFloat4()
+                vertexStage {
+                    main {
+                        val mvp = mvpMatrix()
+                        val localPosition = float3Var(vertexAttribFloat3(Attribute.POSITIONS))
+                        outPosition set mvp.matrix * float4Value(localPosition, 1f.const)
+                        interStageColor.input set vertexAttribFloat4(Attribute.COLORS)
+                    }
+                }
+                fragmentStage {
+                    main {
+                        colorOutput(interStageColor.output)
+                    }
+                }
+            }
+        }
+    }
+}
+```
+The interesting part starts at `shader = KslShader() = { ... }`. Here a new shader is created and assigned to the mesh
+created before. If you ever wrote a shader before the structure should be familiar: The shader consists of a vertex
+stage (responsible for projecting the individual mesh vertices onto the screen) and a fragment stage (responsible
+for computing the output-color for each pixel covered by the mesh). This example shader is almost as simple as a valid
+shader can be: It uses a pre-multiplied MVP matrix to project the vertex position attribute to the screen. Moreover,
+the color attribute is taken from the vertex input and forwarded to the fragment shader via `interStageColor`. The
+fragment stage then simply takes the color from `interStageColor` and writes it to the screen.
+
+A little more complex example is available in [HelloKsl](kool-demo/src/commonMain/kotlin/de/fabmax/kool/demo/helloworld/HelloKsl.kt),
+which looks like [this](https://fabmax.github.io/kool/kool-js/?demo=helloksl).
+Of course, shaders can get more complex than that, you can dig further into the code. All shaders currently used in kool
+are written in ksl.
 
 ## Physics Simulation
 

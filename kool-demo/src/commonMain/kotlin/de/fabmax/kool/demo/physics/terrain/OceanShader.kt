@@ -182,7 +182,7 @@ object OceanShader {
 
                 // 2nd depth sample - water depth at refracted position
                 val oceanDepth2 = float1Var(sampleTexture(texture2d("tOceanFloorDepth"), refractUv).x)
-                oceanDepth2 set getLinearDepth(oceanDepth2, camData.clipNear, camData.clipFar) - fragDepth
+                oceanDepth2 set getLinearDepth(oceanDepth2, OceanFloorRenderPass.DEPTH_CAM_NEAR.const, OceanFloorRenderPass.DEPTH_CAM_FAR.const) - fragDepth
 
                 `if`(oceanDepth2 lt 0f.const) {
                     // we hit something which above water surface, use original uv as fallback

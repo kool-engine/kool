@@ -60,6 +60,7 @@ class HelloGltf : DemoScene("Hello glTF") {
                 }
             }
 
+            // Add loaded model to scene
             addNode(model)
         }
     }
