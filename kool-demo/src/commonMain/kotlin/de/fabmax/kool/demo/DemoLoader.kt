@@ -50,8 +50,12 @@ class DemoLoader(ctx: KoolContext, startScene: String? = null) {
         ctx.onRender += this::onRender
 
         val loadScene = startScene ?: Settings.selectedDemo.value
-        val loadDemo = Demos.demos[loadScene] ?: Demos.demos[Demos.defaultDemo]!!
-        switchDemo = loadDemo
+
+        launchOnMainThread {
+            Physics.awaitLoaded()
+            val loadDemo = Demos.demos[loadScene] ?: Demos.demos[Demos.defaultDemo]!!
+            switchDemo = loadDemo
+        }
     }
 
     fun loadDemo(demo: Demos.Entry) {
