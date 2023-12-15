@@ -144,6 +144,7 @@ private fun KslProgram.setupBindGroupLayoutUbos(shader: ShaderBase?, bindGrpBuil
         bindGrpBuilder.ubos += ubo
 
         ubo.name = kslUbo.name
+        ubo.isShared = kslUbo.isShared
         stages.forEach {
             if (kslUbo.uniforms.values.any { u -> it.dependsOn(u) }) {
                 ubo.stages += it.type.pipelineStageType

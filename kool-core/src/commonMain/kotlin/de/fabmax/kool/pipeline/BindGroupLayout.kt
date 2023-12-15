@@ -226,7 +226,10 @@ class TextureSamplerCube private constructor(builder: Builder, binding: Int) :
 class UniformBuffer private constructor(builder: Builder, binding: Int, val uniforms: List<Uniform<*>>) :
     Binding(builder, binding, BindingType.UNIFORM_BUFFER)
 {
+    val isShared = builder.isShared
+
     init {
+        hash += builder.isShared
         uniforms.forEach {
             hash += it.name
             hash += it::class.hashCode()
@@ -238,6 +241,7 @@ class UniformBuffer private constructor(builder: Builder, binding: Int, val unif
 
     class Builder : Binding.Builder<UniformBuffer>() {
         val uniforms = mutableListOf<() -> Uniform<*>>()
+        var isShared = true
 
         init {
             name = "Ubo"

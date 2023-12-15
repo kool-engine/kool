@@ -14,7 +14,13 @@ import org.w3c.dom.HTMLCanvasElement
 class RenderBackendGlImpl(ctx: KoolContext, canvas: HTMLCanvasElement) : RenderBackendGl(GlImpl, ctx) {
     override val deviceName = "WebGL"
 
-    override val glslVersion: String = "#version 300 es"
+    override val glslGeneratorHints: GlslGenerator.Hints = GlslGenerator.Hints(
+        glslVersionStr = "#version 300 es",
+
+        // fixme: this is currently needed to work around a bug in non-windows versions of Chrome (120):
+        //  https://bugs.chromium.org/p/chromium/issues/detail?id=1511506&q=component%3ABlink%3EWebGL&can=2
+        replaceUbosByPlainUniforms = true
+    )
 
     init {
         val options = js("""

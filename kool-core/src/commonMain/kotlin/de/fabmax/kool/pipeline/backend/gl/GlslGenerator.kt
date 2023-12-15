@@ -10,7 +10,7 @@ import de.fabmax.kool.pipeline.PipelineBase
 /**
  * Default GLSL shader code generator.
  */
-open class GlslGenerator(val glslVersionStr: String) : KslGenerator() {
+open class GlslGenerator(val hints: Hints) : KslGenerator() {
 
     var blockIndent = "  "
 
@@ -181,7 +181,7 @@ open class GlslGenerator(val glslVersionStr: String) : KslGenerator() {
     private fun generateVertexSrc(vertexStage: KslVertexStage, pipeline: PipelineBase): String {
         val src = StringBuilder()
         src.appendLine("""
-            $glslVersionStr
+            ${hints.glslVersionStr}
             precision highp sampler3D;
             
             /*
@@ -207,7 +207,7 @@ open class GlslGenerator(val glslVersionStr: String) : KslGenerator() {
     private fun generateFragmentSrc(fragmentStage: KslFragmentStage, pipeline: PipelineBase): String {
         val src = StringBuilder()
         src.appendLine("""
-            $glslVersionStr
+            ${hints.glslVersionStr}
             precision highp float;
             precision highp sampler2DShadow;
             precision highp sampler3D;
@@ -234,7 +234,7 @@ open class GlslGenerator(val glslVersionStr: String) : KslGenerator() {
     private fun generateComputeSrc(computeStage: KslComputeStage, pipeline: PipelineBase): String {
         val src = StringBuilder()
         src.appendLine("""
-            $glslVersionStr
+            ${hints.glslVersionStr}
             
             /*
              * ${computeStage.program.name} - generated compute shader
@@ -282,15 +282,26 @@ open class GlslGenerator(val glslVersionStr: String) : KslGenerator() {
         if (ubos.isNotEmpty()) {
             appendLine("// uniform buffer objects")
             for (ubo in ubos) {
-                // if isShared is true, the underlying buffer is externally provided without the buffer layout
-                // being queried via OpenGL API -> use standardized std140 layout
-                val layoutPrefix = if (ubo.isShared) { "layout(std140) " } else { "" }
+                if (hints.replaceUbosByPlainUniforms) {
+                    // compatibility fallback required in some scenarios
+                    ubo.uniforms.values
+                        .filter { it.expressionType !is KslArrayType<*> || it.arraySize > 0 }
+                        .forEach {
+                            appendLine("    uniform highp ${glslTypeName(it.expressionType)} ${it.value.name()};")
+                        }
 
-                appendLine("${layoutPrefix}uniform ${ubo.name} {")
-                for (u in ubo.uniforms.values) {
-                    appendLine("    highp ${glslTypeName(u.expressionType)} ${u.value.name()};")
+                } else {
+                    // if isShared is true, the underlying buffer is externally provided without the buffer layout
+                    // being queried via OpenGL API -> use standardized std140 layout
+                    val layoutPrefix = if (hints.alwaysGenerateStd140Layout || ubo.isShared) "layout(std140) " else ""
+                    appendLine("${layoutPrefix}uniform ${ubo.name} {")
+                    ubo.uniforms.values
+                        .filter { it.expressionType !is KslArrayType<*> || it.arraySize > 0 }
+                        .forEach {
+                            appendLine("    highp ${glslTypeName(it.expressionType)} ${it.value.name()};")
+                        }
+                    appendLine("};")
                 }
-                appendLine("};")
             }
             appendLine()
         }
@@ -612,6 +623,12 @@ open class GlslGenerator(val glslVersionStr: String) : KslGenerator() {
             is KslUint4 -> "rgba32ui"
             else -> throw IllegalStateException("Invalid storage element type $elemType")
         }
+
+    data class Hints(
+        val glslVersionStr: String,
+        val alwaysGenerateStd140Layout: Boolean = true,
+        val replaceUbosByPlainUniforms: Boolean = false
+    )
 
     class GlslGeneratorOutput : GeneratorOutput {
         val stages = mutableMapOf<KslShaderStageType, String>()

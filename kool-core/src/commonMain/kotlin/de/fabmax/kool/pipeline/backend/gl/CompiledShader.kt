@@ -16,7 +16,7 @@ class CompiledShader(val program: GlProgram, val pipeline: PipelineBase, val bac
     private val attributes = mutableMapOf<String, VertexLayout.VertexAttribute>()
     private val instanceAttributes = mutableMapOf<String, VertexLayout.VertexAttribute>()
     private val uniformLocations = mutableMapOf<String, IntArray>()
-    private val uboLayouts = mutableMapOf<String, ExternalBufferLayout>()
+    private val uboLayouts = mutableMapOf<String, BufferLayout>()
     private val instances = mutableMapOf<Long, ShaderInstance>()
     private val computeInstances = mutableMapOf<Long, ComputeShaderInstance>()
 
@@ -84,9 +84,22 @@ class CompiledShader(val program: GlProgram, val pipeline: PipelineBase, val bac
         }
     }
 
-    private fun setupUboLayout(desc: UniformBuffer, blockIndex: Int) {
+    private fun setupUboLayout(binding: UniformBuffer, blockIndex: Int) {
+        gl.uniformBlockBinding(program, blockIndex, binding.binding)
+        if (binding.isShared) {
+            setupUboLayoutStd140(binding)
+        } else {
+            setupUboLayoutGlApi(binding, blockIndex)
+        }
+    }
+
+    private fun setupUboLayoutStd140(binding: UniformBuffer) {
+        uboLayouts[binding.name] = Std140BufferLayout(binding.uniforms)
+    }
+
+    private fun setupUboLayoutGlApi(binding: UniformBuffer, blockIndex: Int) {
         val bufferSize = gl.getActiveUniformBlockParameter(program, blockIndex, gl.UNIFORM_BLOCK_DATA_SIZE)
-        val uniformNames = desc.uniforms.map {
+        val uniformNames = binding.uniforms.map {
             if (it.size > 1) "${it.name}[0]" else it.name
         }.toTypedArray()
 
@@ -94,15 +107,13 @@ class CompiledShader(val program: GlProgram, val pipeline: PipelineBase, val bac
         val offsets = gl.getActiveUniforms(program, indices, gl.UNIFORM_OFFSET)
 
         val sortedOffsets = offsets.sorted()
-        val bufferPositions = Array(desc.uniforms.size) { i ->
+        val bufferPositions = Array(binding.uniforms.size) { i ->
             val off = offsets[i]
             val nextOffI = sortedOffsets.indexOf(off) + 1
             val nextOff = if (nextOffI < sortedOffsets.size) sortedOffsets[nextOffI] else bufferSize
             BufferPosition(off, nextOff - off)
         }
-
-        gl.uniformBlockBinding(program, blockIndex, desc.binding)
-        uboLayouts[desc.name] = ExternalBufferLayout(desc.uniforms, bufferPositions, bufferSize)
+        uboLayouts[binding.name] = ExternalBufferLayout(binding.uniforms, bufferPositions, bufferSize)
     }
 
     private fun getUniformLocations(name: String, arraySize: Int): IntArray {

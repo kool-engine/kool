@@ -41,7 +41,7 @@ interface MappedUniform {
     }
 }
 
-class MappedUbo(val ubo: UniformBuffer, val layout: ExternalBufferLayout, val gl: GlApi) : MappedUniform {
+class MappedUbo(val ubo: UniformBuffer, val layout: BufferLayout, val gl: GlApi) : MappedUniform {
     var uboBuffer: BufferResource? = null
     val hostBuffer = MixedBuffer(layout.size)
 

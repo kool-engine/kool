@@ -22,7 +22,7 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
     override val deviceName: String
         get() = gl.version.deviceInfo
 
-    abstract val glslVersion: String
+    abstract val glslGeneratorHints: GlslGenerator.Hints
 
     var numSamples = 1
         private set
@@ -119,7 +119,7 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
     }
 
     override fun generateKslShader(shader: KslShader, pipeline: Pipeline): ShaderCodeGl {
-        val src = GlslGenerator(glslVersion).generateProgram(shader.program, pipeline)
+        val src = GlslGenerator(glslGeneratorHints).generateProgram(shader.program, pipeline)
         if (shader.program.dumpCode) {
             src.dump()
         }
@@ -130,7 +130,7 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
         check(gl.capabilities.hasComputeShaders) {
             "Compute shaders require OpenGL 4.3 or higher"
         }
-        val src = GlslGenerator(glslVersion).generateComputeProgram(shader.program, pipeline)
+        val src = GlslGenerator(glslGeneratorHints).generateComputeProgram(shader.program, pipeline)
         if (shader.program.dumpCode) {
             src.dump()
         }

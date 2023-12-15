@@ -38,57 +38,51 @@ class Std140BufferLayout(uniforms: List<Uniform<*>>) : BufferLayout(uniforms) {
     init {
         var pos = 0
         uniformPositions = Array(uniforms.size) { i ->
-            val u = uniforms[i]
-
-            // determine alignment of current uniform in basic machine units (i.e. bytes)
-            val alignment = when (u) {
-                is Uniform1f -> 4
-                is Uniform1i -> 4
-                is Uniform2f -> 8
-                is Uniform2i -> 8
-                // everything else, including all array and matrix types, has vec4 alignment / 16 bytes
-                else -> 16
-            }
-            val bufPos = ((pos + alignment - 1) / alignment) * alignment
-            pos = bufPos + getSize(u)
-
+            val bufPos = alignPosition(pos, uniforms[i].alignment)
+            pos = bufPos + uniforms[i].sizeBytes
             BufferPosition(bufPos, pos - bufPos)
         }
-        size = pos
+        size = alignPosition(pos, 16)
     }
 
-    companion object {
-        /**
-         * Returns the number of bytes used by the given uniform in a buffer with Std140 layout.
-         */
-        fun getSize(u: Uniform<*>): Int {
-            return when (u) {
-                is Uniform1f -> 4
-                is Uniform2f -> 8
-                is Uniform3f -> 12
-                is Uniform4f -> 16
-                is Uniform1fv -> 16 * u.size
-                is Uniform3fv -> 16 * u.size
-                is Uniform2fv -> 16 * u.size
-                is Uniform4fv -> 16 * u.size
-
-                is Uniform1i -> 4
-                is Uniform2i -> 8
-                is Uniform3i -> 12
-                is Uniform4i -> 16
-                is Uniform1iv -> 16 * u.size
-                is Uniform2iv -> 16 * u.size
-                is Uniform3iv -> 16 * u.size
-                is Uniform4iv -> 16 * u.size
-
-                is UniformMat3f -> 3 * 16
-                is UniformMat4f -> 4 * 16
-                is UniformMat3fv -> 3 * 16 * u.size
-                is UniformMat4fv -> 4 * 16 * u.size
-            }
-        }
+    private fun alignPosition(pos: Int, alignment: Int): Int {
+        val padding = (alignment - (pos % alignment)) % alignment
+        return pos + padding
     }
 
+    private val Uniform<*>.alignment: Int get() = when (this) {
+        is Uniform1f -> 4
+        is Uniform1i -> 4
+        is Uniform2f -> 8
+        is Uniform2i -> 8
+        // everything else, including all array and matrix types, has vec4 alignment / 16 bytes
+        else -> 16
+    }
+
+    private val Uniform<*>.sizeBytes: Int get() = when (this) {
+        is Uniform1f -> 4
+        is Uniform2f -> 8
+        is Uniform3f -> 12
+        is Uniform4f -> 16
+        is Uniform1fv -> 16 * size
+        is Uniform3fv -> 16 * size
+        is Uniform2fv -> 16 * size
+        is Uniform4fv -> 16 * size
+
+        is Uniform1i -> 4
+        is Uniform2i -> 8
+        is Uniform3i -> 12
+        is Uniform4i -> 16
+        is Uniform1iv -> 16 * size
+        is Uniform2iv -> 16 * size
+        is Uniform3iv -> 16 * size
+        is Uniform4iv -> 16 * size
+
+        is UniformMat3f -> 3 * 16
+        is UniformMat4f -> 4 * 16
+        is UniformMat3fv -> 3 * 16 * size
+        is UniformMat4fv -> 4 * 16 * size
+    }
 }
 
 data class BufferPosition(val position: Int, val len: Int)

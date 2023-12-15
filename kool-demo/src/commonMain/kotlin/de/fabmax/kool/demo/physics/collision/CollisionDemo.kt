@@ -11,7 +11,6 @@ import de.fabmax.kool.physics.*
 import de.fabmax.kool.physics.geometry.*
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.ao.AoPipeline
-import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
@@ -70,13 +69,13 @@ class CollisionDemo : DemoScene("Physics - Collision") {
         shadows.add(shadowMap)
         aoPipeline = AoPipeline.createForward(this)
 
-        makeGround(ibl, physicsWorld)
+        makeGround(physicsWorld)
         shapeGenCtx.material = Material(friction.value, friction.value, restitution.value)
         resetPhysics()
 
         shapeTypes.forEach {
             if (it != ShapeType.MIXED) {
-                it.mesh.shader = instancedBodyShader(ibl)
+                it.mesh.shader = instancedBodyShader()
                 addNode(it.mesh)
             }
         }
@@ -209,7 +208,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
         return centers
     }
 
-    private fun Scene.makeGround(ibl: EnvironmentMaps, physicsWorld: PhysicsWorld) {
+    private fun Scene.makeGround(physicsWorld: PhysicsWorld) {
         val frame = mutableListOf<RigidStatic>()
         val frameSimFilter = FilterData {
             setCollisionGroup(1)
@@ -269,7 +268,6 @@ class CollisionDemo : DemoScene("Physics - Collision") {
                 }
                 cube {
                     size.set(groundShape.size)
-                    //origin.set(size).scale(-0.5f).add(ground.position)
                     origin.set(ground.position)
                 }
             }
@@ -291,7 +289,6 @@ class CollisionDemo : DemoScene("Physics - Collision") {
                     val shape = it.shapes[0].geometry as BoxGeometry
                     cube {
                         size.set(shape.size)
-                        //origin.set(size).scale(-0.5f).add(it.position)
                         origin.set(it.position)
                     }
                 }
@@ -307,7 +304,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
         }
     }
 
-    private fun instancedBodyShader(ibl: EnvironmentMaps) = KslPbrShader {
+    private fun instancedBodyShader() = KslPbrShader {
         vertices { isInstanced = true }
         color { instanceColor(Attribute.COLORS) }
         roughness(1f)
