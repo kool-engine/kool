@@ -153,6 +153,11 @@ open class Vec3f(open val x: Float, open val y: Float, open val z: Float) {
         target.putFloat32(z)
     }
 
+    /**
+     * Computes the dot-product of this and the given vector.
+     */
+    infix fun dot(that: Vec3f): Float = x * that.x + y * that.y + z * that.z
+
     // <noInt> The following section will not be included in the integer variant of this class
 
     /**
@@ -180,11 +185,6 @@ open class Vec3f(open val x: Float, open val y: Float, open val z: Float) {
         val dz = z - that.z
         return dx*dx + dy*dy + dz*dz
     }
-
-    /**
-     * Computes the dot-product of this and the given vector.
-     */
-    fun dot(that: Vec3f): Float = x * that.x + y * that.y + z * that.z
 
     /**
      * Computes the length / magnitude of this vector.
@@ -548,6 +548,11 @@ open class Vec3d(open val x: Double, open val y: Double, open val z: Double) {
     }
 
     /**
+     * Computes the dot-product of this and the given vector.
+     */
+    infix fun dot(that: Vec3d): Double = x * that.x + y * that.y + z * that.z
+
+    /**
      * Computes the cross-product of this and the given vector and returns the result as an (optionally provided)
      * [MutableVec3d].
      */
@@ -572,11 +577,6 @@ open class Vec3d(open val x: Double, open val y: Double, open val z: Double) {
         val dz = z - that.z
         return dx*dx + dy*dy + dz*dz
     }
-
-    /**
-     * Computes the dot-product of this and the given vector.
-     */
-    fun dot(that: Vec3d): Double = x * that.x + y * that.y + z * that.z
 
     /**
      * Computes the length / magnitude of this vector.
@@ -931,6 +931,11 @@ open class Vec3i(open val x: Int, open val y: Int, open val z: Int) {
         target.putInt32(y)
         target.putInt32(z)
     }
+
+    /**
+     * Computes the dot-product of this and the given vector.
+     */
+    infix fun dot(that: Vec3i): Int = x * that.x + y * that.y + z * that.z
 
     companion object {
         val ZERO = Vec3i(0)

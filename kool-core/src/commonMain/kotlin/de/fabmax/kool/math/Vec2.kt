@@ -111,9 +111,6 @@ open class Vec2f(open val x: Float, open val y: Float) {
      */
     fun mul(that: Float, result: MutableVec2f): MutableVec2f = result.set(this).mul(that)
 
-    @Deprecated("Replace with mul()", ReplaceWith("mul(factor, result)"))
-    fun scale(factor: Float, result: MutableVec2f) = mul(factor, result)
-
     override fun toString(): String = "($x, $y)"
 
     /**
@@ -148,6 +145,11 @@ open class Vec2f(open val x: Float, open val y: Float) {
         target.putFloat32(y)
     }
 
+    /**
+     * Computes the dot-product of this and the given vector.
+     */
+    infix fun dot(that: Vec2f): Float = x * that.x + y * that.y
+
     // <noInt> The following section will not be included in the integer variant of this class
 
     /**
@@ -163,11 +165,6 @@ open class Vec2f(open val x: Float, open val y: Float) {
         val dy = y - that.y
         return dx*dx + dy*dy
     }
-
-    /**
-     * Computes the dot-product of this and the given vector.
-     */
-    fun dot(that: Vec2f): Float = x * that.x + y * that.y
 
     /**
      * Computes the length / magnitude of this vector.
@@ -453,9 +450,6 @@ open class Vec2d(open val x: Double, open val y: Double) {
      */
     fun mul(that: Double, result: MutableVec2d): MutableVec2d = result.set(this).mul(that)
 
-    @Deprecated("Replace with mul()", ReplaceWith("mul(factor, result)"))
-    fun scale(factor: Double, result: MutableVec2d) = mul(factor, result)
-
     override fun toString(): String = "($x, $y)"
 
     /**
@@ -491,6 +485,11 @@ open class Vec2d(open val x: Double, open val y: Double) {
     }
 
     /**
+     * Computes the dot-product of this and the given vector.
+     */
+    infix fun dot(that: Vec2d): Double = x * that.x + y * that.y
+
+    /**
      * Computes the Euclidean distance between this and the given vector.
      */
     fun distance(that: Vec2d): Double = sqrt(sqrDistance(that))
@@ -503,11 +502,6 @@ open class Vec2d(open val x: Double, open val y: Double) {
         val dy = y - that.y
         return dx*dx + dy*dy
     }
-
-    /**
-     * Computes the dot-product of this and the given vector.
-     */
-    fun dot(that: Vec2d): Double = x * that.x + y * that.y
 
     /**
      * Computes the length / magnitude of this vector.
@@ -786,9 +780,6 @@ open class Vec2i(open val x: Int, open val y: Int) {
      */
     fun mul(that: Int, result: MutableVec2i): MutableVec2i = result.set(this).mul(that)
 
-    @Deprecated("Replace with mul()", ReplaceWith("mul(factor, result)"))
-    fun scale(factor: Int, result: MutableVec2i) = mul(factor, result)
-
     override fun toString(): String = "($x, $y)"
 
     /**
@@ -822,6 +813,11 @@ open class Vec2i(open val x: Int, open val y: Int) {
         target.putInt32(x)
         target.putInt32(y)
     }
+
+    /**
+     * Computes the dot-product of this and the given vector.
+     */
+    infix fun dot(that: Vec2i): Int = x * that.x + y * that.y
 
     companion object {
         val ZERO = Vec2i(0, 0)

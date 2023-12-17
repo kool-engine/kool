@@ -158,6 +158,11 @@ open class Vec4f(open val x: Float, open val y: Float, open val z: Float, open v
         target.putFloat32(w)
     }
 
+    /**
+     * Computes the dot-product of this and the given vector.
+     */
+    infix fun dot(that: Vec4f): Float = x * that.x + y * that.y + z * that.z + w * that.w
+
     // <noInt> The following section will not be included in the integer variant of this class
 
     /**
@@ -175,11 +180,6 @@ open class Vec4f(open val x: Float, open val y: Float, open val z: Float, open v
         val dw = z - that.w
         return dx*dx + dy*dy + dz*dz + dw*dw
     }
-
-    /**
-     * Computes the dot-product of this and the given vector.
-     */
-    fun dot(that: Vec4f): Float = x * that.x + y * that.y + z * that.z + w * that.w
 
     /**
      * Computes the length / magnitude of this vector.
@@ -527,6 +527,11 @@ open class Vec4d(open val x: Double, open val y: Double, open val z: Double, ope
     }
 
     /**
+     * Computes the dot-product of this and the given vector.
+     */
+    infix fun dot(that: Vec4d): Double = x * that.x + y * that.y + z * that.z + w * that.w
+
+    /**
      * Computes the Euclidean distance between this and the given vector.
      */
     fun distance(that: Vec4d): Double = sqrt(sqrDistance(that))
@@ -541,11 +546,6 @@ open class Vec4d(open val x: Double, open val y: Double, open val z: Double, ope
         val dw = z - that.w
         return dx*dx + dy*dy + dz*dz + dw*dw
     }
-
-    /**
-     * Computes the dot-product of this and the given vector.
-     */
-    fun dot(that: Vec4d): Double = x * that.x + y * that.y + z * that.z + w * that.w
 
     /**
      * Computes the length / magnitude of this vector.
@@ -884,6 +884,11 @@ open class Vec4i(open val x: Int, open val y: Int, open val z: Int, open val w: 
         target.putInt32(z)
         target.putInt32(w)
     }
+
+    /**
+     * Computes the dot-product of this and the given vector.
+     */
+    infix fun dot(that: Vec4i): Int = x * that.x + y * that.y + z * that.z + w * that.w
 
     companion object {
         val ZERO = Vec4i(0)
