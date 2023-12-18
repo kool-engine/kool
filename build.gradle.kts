@@ -17,11 +17,6 @@ allprojects {
     group = "de.fabmax.kool"
     version = "0.14.0-SNAPSHOT"
 
-    repositories {
-        mavenLocal()
-        mavenCentral()
-    }
-
     subprojects {
         apply(plugin = "kotlinx-atomicfu")
     }

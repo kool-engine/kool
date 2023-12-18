@@ -10,7 +10,7 @@ plugins {
 }
 
 kotlin {
-    jvm {
+    jvm("desktop") {
         jvmToolchain(11)
     }
     js(IR) {
@@ -18,27 +18,22 @@ kotlin {
     }
 
     sourceSets {
-        commonMain {
-            dependencies {
-                implementation(commonLibs.kotlin.coroutines)
-                api(project(":kool-core"))
+        val desktopMain by getting
+        commonMain.dependencies {
+            implementation(commonLibs.kotlin.coroutines)
+            api(project(":kool-core"))
+        }
+
+        desktopMain.dependencies {
+            api(jvmLibs.physxjni)
+            listOf("natives-linux", "natives-windows", "natives-macos", "natives-macos-arm64").forEach { platform ->
+                runtimeOnly("${jvmLibs.physxjni.get()}:$platform")
             }
         }
 
-        jvmMain {
-            dependencies {
-                api(jvmLibs.physxjni)
-                listOf("natives-linux", "natives-windows", "natives-macos", "natives-macos-arm64").forEach { platform ->
-                    runtimeOnly("${jvmLibs.physxjni.get()}:$platform")
-                }
-            }
-        }
-
-        jsMain {
-            dependencies {
-                api(npm("physx-js-webidl", "2.3.0"))
-                //api(npm(File("$projectDir/npm/physx-js-webidl")))
-            }
+        jsMain.dependencies {
+            api(npm("physx-js-webidl", "2.3.0"))
+            //api(npm(File("$projectDir/npm/physx-js-webidl")))
         }
     }
 

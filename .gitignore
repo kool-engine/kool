@@ -10,3 +10,5 @@ kotlin-js-store
 *.meta.js
 /local.properties
 /publishingCredentials.properties
+kool-demo/runtimeLibs
+assets

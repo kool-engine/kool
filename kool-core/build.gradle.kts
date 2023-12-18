@@ -11,7 +11,7 @@ plugins {
 }
 
 kotlin {
-    jvm {
+    jvm("desktop") {
         jvmToolchain(11)
     }
     js(IR) {
@@ -27,55 +27,49 @@ kotlin {
     }
 
     sourceSets {
-        commonMain {
-            dependencies {
-                api(commonLibs.kotlin.coroutines)
-                implementation(commonLibs.kotlin.serialization.core)
-                implementation(commonLibs.kotlin.serialization.json)
-                implementation(commonLibs.kotlin.reflect)
-            }
-        }
-        commonTest {
-            dependencies {
-                implementation(commonLibs.kotlin.test)
-            }
+        val desktopMain by getting
+        val desktopTest by getting
+
+        commonMain.dependencies {
+            api(commonLibs.kotlin.coroutines)
+            implementation(commonLibs.kotlin.serialization.core)
+            implementation(commonLibs.kotlin.serialization.json)
+            implementation(commonLibs.kotlin.reflect)
         }
 
-        jvmMain {
-            dependencies {
-                implementation(jvmLibs.jsvg)
-                api(jvmLibs.lwjgl.core)
-                api(jvmLibs.lwjgl.glfw)
-                api(jvmLibs.lwjgl.jemalloc)
-                api(jvmLibs.lwjgl.nfd)
-                api(jvmLibs.lwjgl.opengl)
-                api(jvmLibs.lwjgl.shaderc)
-                api(jvmLibs.lwjgl.stb)
-                api(jvmLibs.lwjgl.vma)
-                api(jvmLibs.lwjgl.vulkan)
-
-                listOf("natives-linux", "natives-windows", "natives-macos", "natives-macos-arm64").forEach { platform ->
-                    runtimeOnly("${jvmLibs.lwjgl.core.get()}:$platform")
-                    runtimeOnly("${jvmLibs.lwjgl.glfw.get()}:$platform")
-                    runtimeOnly("${jvmLibs.lwjgl.jemalloc.get()}:$platform")
-                    runtimeOnly("${jvmLibs.lwjgl.nfd.get()}:$platform")
-                    runtimeOnly("${jvmLibs.lwjgl.opengl.get()}:$platform")
-                    runtimeOnly("${jvmLibs.lwjgl.shaderc.get()}:$platform")
-                    runtimeOnly("${jvmLibs.lwjgl.stb.get()}:$platform")
-                    runtimeOnly("${jvmLibs.lwjgl.vma.get()}:$platform")
-                }
-            }
-        }
-        jvmTest {
-            dependencies {
-                implementation(commonLibs.kotlin.test.junit)
-            }
+        commonTest.dependencies {
+            implementation(commonLibs.kotlin.test)
         }
 
-        jsMain {
-            dependencies {
-                implementation(npm("pako", "2.0.4"))
+        desktopMain.dependencies {
+            implementation(jvmLibs.jsvg)
+            api(jvmLibs.lwjgl.core)
+            api(jvmLibs.lwjgl.glfw)
+            api(jvmLibs.lwjgl.jemalloc)
+            api(jvmLibs.lwjgl.nfd)
+            api(jvmLibs.lwjgl.opengl)
+            api(jvmLibs.lwjgl.shaderc)
+            api(jvmLibs.lwjgl.stb)
+            api(jvmLibs.lwjgl.vma)
+            api(jvmLibs.lwjgl.vulkan)
+
+            listOf("natives-linux", "natives-windows", "natives-macos", "natives-macos-arm64").forEach { platform ->
+                runtimeOnly("${jvmLibs.lwjgl.core.get()}:$platform")
+                runtimeOnly("${jvmLibs.lwjgl.glfw.get()}:$platform")
+                runtimeOnly("${jvmLibs.lwjgl.jemalloc.get()}:$platform")
+                runtimeOnly("${jvmLibs.lwjgl.nfd.get()}:$platform")
+                runtimeOnly("${jvmLibs.lwjgl.opengl.get()}:$platform")
+                runtimeOnly("${jvmLibs.lwjgl.shaderc.get()}:$platform")
+                runtimeOnly("${jvmLibs.lwjgl.stb.get()}:$platform")
+                runtimeOnly("${jvmLibs.lwjgl.vma.get()}:$platform")
             }
+        }
+        desktopTest.dependencies {
+            implementation(commonLibs.kotlin.test.junit)
+        }
+
+        jsMain.dependencies {
+            implementation(npm("pako", "2.0.4"))
         }
     }
 
@@ -146,7 +140,7 @@ tasks.register<VersionNameUpdate>("updateVersion") {
 }
 
 tasks["compileKotlinJs"].dependsOn("updateVersion", "generateTypeVariants")
-tasks["compileKotlinJvm"].dependsOn("updateVersion", "generateTypeVariants")
+tasks["compileKotlinDesktop"].dependsOn("updateVersion", "generateTypeVariants")
 
 publishing {
     publications {

@@ -8,7 +8,7 @@ plugins {
 }
 
 kotlin {
-    jvm {
+    jvm("desktop") {
         jvmToolchain(11)
     }
     js(IR) {
@@ -17,16 +17,14 @@ kotlin {
     }
 
     sourceSets {
-        commonMain {
-            dependencies {
-                api(commonLibs.kotlin.coroutines)
-                api(commonLibs.kotlin.serialization.core)
-                api(commonLibs.kotlin.serialization.json)
-                api(commonLibs.kotlin.reflect)
-                api(project(":kool-core"))
-                api(project(":kool-physics"))
-                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
-            }
+        commonMain.dependencies {
+            api(commonLibs.kotlin.coroutines)
+            api(commonLibs.kotlin.serialization.core)
+            api(commonLibs.kotlin.serialization.json)
+            api(commonLibs.kotlin.reflect)
+            api(project(":kool-core"))
+            api(project(":kool-physics"))
+            implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
         }
     }
 

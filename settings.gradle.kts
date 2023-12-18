@@ -2,14 +2,25 @@ rootProject.name = "kool"
 
 pluginManagement {
     repositories {
+        google()
         mavenCentral()
         gradlePluginPortal()
     }
 }
 
 dependencyResolutionManagement {
+    @Suppress("UnstableApiUsage")
+    repositories {
+        google()
+        mavenLocal()
+        mavenCentral()
+    }
+
     versionCatalogs {
         create("commonLibs") {
+            version("agp", "8.1.4")
+            version("android-compileSdk", "33")
+            version("android-minSdk", "24")
             version("kotlin", "1.9.21")
             version("kotlin-coroutines", "1.7.3")
             version("kotlin-serialization", "1.6.1")
@@ -23,6 +34,8 @@ dependencyResolutionManagement {
             library("kotlin-test", "org.jetbrains.kotlin", "kotlin-test").versionRef("kotlin")
             library("kotlin-test-junit", "org.jetbrains.kotlin", "kotlin-test-junit").versionRef("kotlin")
 
+            plugin("androidApplication", "com.android.application").versionRef("agp")
+            plugin("androidLibrary", "com.android.library").versionRef("agp")
             plugin("kotlinSerialization", "org.jetbrains.kotlin.plugin.serialization").versionRef("kotlin")
             plugin("kotlinMultiplatform", "org.jetbrains.kotlin.multiplatform").versionRef("kotlin")
             plugin("kotlinDokka", "org.jetbrains.dokka").versionRef("kotlin-dokka")

@@ -13,10 +13,10 @@ fun Texture2d.toBufferedImage(flipY: Boolean = true): BufferedImage? {
             for (i in 0 until data.width * data.height) {
                 // swap byte order (rgba -> abgr)
                 val bi = i * 4
-                val r = buf[bi].toUByte().toInt()
-                val g = buf[bi + 1].toUByte().toInt()
-                val b = buf[bi + 2].toUByte().toInt()
-                val a = buf[bi + 3].toUByte().toInt()
+                val r = buf[bi].toInt()
+                val g = buf[bi + 1].toInt()
+                val b = buf[bi + 2].toInt()
+                val a = buf[bi + 3].toInt()
                 val rgba = (a shl 24) or (r shl 16) or (g shl 8) or b
                 val y = if (flipY) data.height - 1 - i / data.width else i / data.width
                 img.setRGB(i % data.width, y, rgba)
