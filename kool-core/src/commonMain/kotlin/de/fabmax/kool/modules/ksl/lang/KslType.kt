@@ -147,6 +147,8 @@ class KslStorage3dType<R: KslNumericType>(elemType: R) : KslStorageType<R, KslIn
 }
 
 inline fun <reified T: KslNumericType> numericTypeForT(): T {
+    // cast is needed if K2 compiler is used
+    @Suppress("USELESS_CAST")
     return when {
         KslFloat1 is T -> KslFloat1
         KslFloat2 is T -> KslFloat2
@@ -163,5 +165,5 @@ inline fun <reified T: KslNumericType> numericTypeForT(): T {
         KslUint3 is T  -> KslUint3
         KslUint4 is T  -> KslUint4
         else -> error("Unsupported storage type")
-    }
+    } as T
 }

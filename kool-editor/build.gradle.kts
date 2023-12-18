@@ -2,6 +2,7 @@ import java.io.FileInputStream
 import java.util.*
 
 plugins {
+    alias(commonLibs.plugins.kotlinMultiplatform)
     `maven-publish`
     signing
 }
@@ -18,28 +19,13 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                api(DepsCommon.kotlinCoroutines)
-                api(DepsCommon.kotlinSerialization)
-                api(DepsCommon.kotlinSerializationJson)
-                api(DepsCommon.kotlinReflection)
+                api(commonLibs.kotlin.coroutines)
+                api(commonLibs.kotlin.serialization.core)
+                api(commonLibs.kotlin.serialization.json)
+                api(commonLibs.kotlin.reflect)
                 api(project(":kool-core"))
                 api(project(":kool-physics"))
                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
-            }
-        }
-
-        jvmMain {
-            dependencies {
-                runtimeOnly(DepsJvm.lwjglNatives())
-                runtimeOnly(DepsJvm.lwjglNatives("glfw"))
-                runtimeOnly(DepsJvm.lwjglNatives("jemalloc"))
-                runtimeOnly(DepsJvm.lwjglNatives("opengl"))
-                runtimeOnly(DepsJvm.lwjglNatives("vma"))
-                runtimeOnly(DepsJvm.lwjglNatives("shaderc"))
-                runtimeOnly(DepsJvm.lwjglNatives("nfd"))
-                runtimeOnly(DepsJvm.lwjglNatives("stb"))
-
-                runtimeOnly(DepsJvm.physxJniRuntime)
             }
         }
     }

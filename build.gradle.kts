@@ -1,6 +1,7 @@
 plugins {
-    kotlin("multiplatform") version Versions.kotlin apply false
-    id("org.jetbrains.dokka") version Versions.dokka apply false
+    alias(commonLibs.plugins.kotlinMultiplatform) apply false
+    alias(commonLibs.plugins.kotlinSerialization) apply false
+    alias(commonLibs.plugins.kotlinDokka) apply false
 }
 
 buildscript {
@@ -8,7 +9,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:${Versions.atomicfu}")
+        classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:${commonLibs.versions.kotlin.atomicfu.get()}")
     }
 }
 
@@ -22,8 +23,6 @@ allprojects {
     }
 
     subprojects {
-        apply(plugin = "kotlin-multiplatform")
-        apply(plugin = "org.jetbrains.dokka")
         apply(plugin = "kotlinx-atomicfu")
     }
 }

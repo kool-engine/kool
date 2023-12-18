@@ -2,6 +2,9 @@ import java.io.FileInputStream
 import java.util.*
 
 plugins {
+    alias(commonLibs.plugins.kotlinMultiplatform)
+    alias(commonLibs.plugins.kotlinDokka)
+
     `maven-publish`
     signing
 }
@@ -17,14 +20,17 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                implementation(DepsCommon.kotlinCoroutines)
+                implementation(commonLibs.kotlin.coroutines)
                 api(project(":kool-core"))
             }
         }
 
         jvmMain {
             dependencies {
-                api(DepsJvm.physxJni)
+                api(jvmLibs.physxjni)
+                listOf("natives-linux", "natives-windows", "natives-macos", "natives-macos-arm64").forEach { platform ->
+                    runtimeOnly("${jvmLibs.physxjni.get()}:$platform")
+                }
             }
         }
 

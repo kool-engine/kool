@@ -2,7 +2,10 @@ import java.io.FileInputStream
 import java.util.*
 
 plugins {
-    kotlin("plugin.serialization") version Versions.kotlin
+    alias(commonLibs.plugins.kotlinMultiplatform)
+    alias(commonLibs.plugins.kotlinSerialization)
+    alias(commonLibs.plugins.kotlinDokka)
+
     `maven-publish`
     signing
 }
@@ -26,31 +29,46 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                api(DepsCommon.kotlinCoroutines)
-                implementation(DepsCommon.kotlinSerialization)
-                implementation(DepsCommon.kotlinSerializationJson)
-                implementation(DepsCommon.kotlinReflection)
+                api(commonLibs.kotlin.coroutines)
+                implementation(commonLibs.kotlin.serialization.core)
+                implementation(commonLibs.kotlin.serialization.json)
+                implementation(commonLibs.kotlin.reflect)
+            }
+        }
+        commonTest {
+            dependencies {
+                implementation(commonLibs.kotlin.test)
             }
         }
 
         jvmMain {
             dependencies {
-                implementation("com.github.weisj:jsvg:1.3.0")
-                api(DepsJvm.lwjgl())
-                api(DepsJvm.lwjgl("glfw"))
-                api(DepsJvm.lwjgl("jemalloc"))
-                api(DepsJvm.lwjgl("opengl"))
-                api(DepsJvm.lwjgl("vulkan"))
-                api(DepsJvm.lwjgl("vma"))
-                api(DepsJvm.lwjgl("shaderc"))
-                api(DepsJvm.lwjgl("nfd"))
-                api(DepsJvm.lwjgl("stb"))
+                implementation(jvmLibs.jsvg)
+                api(jvmLibs.lwjgl.core)
+                api(jvmLibs.lwjgl.glfw)
+                api(jvmLibs.lwjgl.jemalloc)
+                api(jvmLibs.lwjgl.nfd)
+                api(jvmLibs.lwjgl.opengl)
+                api(jvmLibs.lwjgl.shaderc)
+                api(jvmLibs.lwjgl.stb)
+                api(jvmLibs.lwjgl.vma)
+                api(jvmLibs.lwjgl.vulkan)
+
+                listOf("natives-linux", "natives-windows", "natives-macos", "natives-macos-arm64").forEach { platform ->
+                    runtimeOnly("${jvmLibs.lwjgl.core.get()}:$platform")
+                    runtimeOnly("${jvmLibs.lwjgl.glfw.get()}:$platform")
+                    runtimeOnly("${jvmLibs.lwjgl.jemalloc.get()}:$platform")
+                    runtimeOnly("${jvmLibs.lwjgl.nfd.get()}:$platform")
+                    runtimeOnly("${jvmLibs.lwjgl.opengl.get()}:$platform")
+                    runtimeOnly("${jvmLibs.lwjgl.shaderc.get()}:$platform")
+                    runtimeOnly("${jvmLibs.lwjgl.stb.get()}:$platform")
+                    runtimeOnly("${jvmLibs.lwjgl.vma.get()}:$platform")
+                }
             }
         }
         jvmTest {
             dependencies {
-                implementation(kotlin("test"))
-                implementation(kotlin("test-junit"))
+                implementation(commonLibs.kotlin.test.junit)
             }
         }
 
