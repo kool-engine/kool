@@ -109,11 +109,11 @@ tasks.register<JavaExec>("run") {
     mainClass.set("de.fabmax.kool.demo.MainKt")
 
     kotlin {
-        val main = targets["jvm"].compilations["main"]
+        val main = targets["desktop"].compilations["main"]
         dependsOn(main.compileAllTaskName)
         classpath(
             { main.output.allOutputs.files },
-            { configurations["jvmRuntimeClasspath"] }
+            { configurations["desktopRuntimeClasspath"] }
         )
     }
 }

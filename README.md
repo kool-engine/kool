@@ -79,6 +79,18 @@ on maven central, and there is a separate repo containing a minimal template pro
 The demos mentioned above and examples shown below should give you a rough idea on how to do stuff (documentation is
 still a bit of a weak spot).
 
+### Running the Demos on JVM
+
+You can launch the desktop demo app directly from a terminal via gradle with `./gradlew :kool-demo:run`. 
+
+Running the [main()](kool-demo/src/desktopMain/kotlin/de/fabmax/kool/demo/Main.kt) method from within IntelliJ
+requires that the native libraries are located in a local folder and added as file dependencies (seems to be some kind
+of dependency resolution bug in IntelliJ when importing multiplatform projects with JVM runtimeOnly libraries).
+
+The required libs are copied automatically on build. So, in order to launch the demos from within IntelliJ you need
+to build the project first (or manually run the `cacheRuntimeLibs` task) and then re-sync the gradle project, so that
+the libs are resolved and added to the IntelliJ module classpath.
+
 ## Engine Features / Noticeable Stuff:
 - Basic [Compute shader](kool-demo/src/commonMain/kotlin/de/fabmax/kool/demo/helloworld/HelloCompute.kt) support (OpenGL only for now, only storage textures)
 - [Reversed-depth](https://developer.nvidia.com/content/depth-precision-visualized) rendering for vastly improved
