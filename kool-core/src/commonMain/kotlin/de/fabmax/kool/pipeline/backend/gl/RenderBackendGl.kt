@@ -211,6 +211,8 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
                 val numGroupsY = ceil(computePass.height.toFloat() / pipeline.workGroupSize.y).toInt()
                 val numGroupsZ = ceil(computePass.depth.toFloat() / pipeline.workGroupSize.z).toInt()
 
+                task.beforeDispatch()
+
                 if (shaderMgr.setupComputeShader(pipeline, computePass)) {
                     val maxCnt = gl.capabilities.maxWorkGroupCount
                     if (numGroupsX > maxCnt.x || numGroupsY > maxCnt.y || numGroupsZ > maxCnt.z) {
@@ -218,6 +220,8 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
                     }
                     gl.dispatchCompute(numGroupsX, numGroupsY, numGroupsZ)
                     gl.memoryBarrier(gl.SHADER_IMAGE_ACCESS_BARRIER_BIT)
+
+                    task.afterDispatch()
                 }
             }
         }
