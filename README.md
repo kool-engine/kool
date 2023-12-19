@@ -1,6 +1,7 @@
 # kool - An OpenGL / Vulkan graphics engine written in Kotlin
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/fabmax/kool/blob/master/LICENSE)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/de.fabmax.kool/kool-core/badge.svg)](https://central.sonatype.com/artifact/de.fabmax.kool/kool-core)
+![Build](https://github.com/fabmax/kool/workflows/Build/badge.svg)
 
 A multi-platform OpenGL / Vulkan based game engine that works on Desktop Java and browsers with
 WebGL2.

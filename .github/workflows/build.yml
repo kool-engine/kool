@@ -1,0 +1,22 @@
+name: Build
+
+on:
+    push
+
+jobs:
+  build:
+    name: Build kool
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Build everything
+        run: ./gradlew build

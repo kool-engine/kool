@@ -1,4 +1,6 @@
 plugins {
+    alias(commonLibs.plugins.androidApplication) apply false
+    alias(commonLibs.plugins.androidLibrary) apply false
     alias(commonLibs.plugins.kotlinMultiplatform) apply false
     alias(commonLibs.plugins.kotlinSerialization) apply false
     alias(commonLibs.plugins.kotlinDokka) apply false
