@@ -24,7 +24,7 @@ class ComputeRenderPass(name: String, width: Int, height: Int = 1, depth: Int = 
     val tasks: List<Task> get() {
         if (isTasksDirty) {
             _tasks
-                .filter { it.isCreated == false }
+                .filter { !it.isCreated }
                 .forEach { it.create(it.shader.getOrCreatePipeline(this)) }
             isTasksDirty = false
         }
@@ -45,8 +45,31 @@ class ComputeRenderPass(name: String, width: Int, height: Int = 1, depth: Int = 
         lateinit var pipeline: ComputePipeline
             private set
 
+        private val beforeDispatch = mutableListOf<() -> Unit>()
+        private val afterDispatch = mutableListOf<() -> Unit>()
+
         fun create(pipeline: ComputePipeline) {
             this.pipeline = pipeline
+        }
+
+        fun onBeforeDispatch(block: () -> Unit) {
+            beforeDispatch += block
+        }
+
+        fun onAfterDispatch(block: () -> Unit) {
+            afterDispatch += block
+        }
+
+        internal fun beforeDispatch() {
+            for (i in beforeDispatch.indices) {
+                beforeDispatch[i]()
+            }
+        }
+
+        internal fun afterDispatch() {
+            for (i in afterDispatch.indices) {
+                afterDispatch[i]()
+            }
         }
     }
 }
