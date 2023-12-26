@@ -28,14 +28,26 @@ fun MutableVec4i.set(that: Vec4d) = set(that.x.toInt(), that.y.toInt(), that.z.t
 
 // <template> Changes made within the template section will also affect the other type variants of this class
 
+fun Vec4f(xyz: Vec3f, w: Float): Vec4f = Vec4f(xyz.x, xyz.y, xyz.z, w)
+fun Vec4f(x: Float, yzw: Vec3f): Vec4f = Vec4f(x, yzw.x, yzw.y, yzw.z)
+fun Vec4f(xy: Vec2f, zw: Vec2f): Vec4f = Vec4f(xy.x, xy.y, zw.x, zw.y)
+fun Vec4f(x: Float, yz: Vec2f, w: Float): Vec4f = Vec4f(x, yz.x, yz.y, w)
+
 open class Vec4f(open val x: Float, open val y: Float, open val z: Float, open val w: Float) {
 
-    val xyz: Vec3f
-        get() = Vec3f(x, y, z)
-
     constructor(f: Float): this(f, f, f, f)
-    constructor(xyz: Vec3f, w: Float): this(xyz.x, xyz.y, xyz.z, w)
     constructor(v: Vec4f): this(v.x, v.y, v.z, v.w)
+
+    val xyz: Vec3f get() = Vec3f(x, y, z)
+    val yzw: Vec3f get() = Vec3f(y, z, w)
+    val xy: Vec2f get() = Vec2f(x, y)
+    val yz: Vec2f get() = Vec2f(y, z)
+    val zw: Vec2f get() = Vec2f(z, w)
+
+    operator fun component1(): Float = x
+    operator fun component2(): Float = y
+    operator fun component3(): Float = z
+    operator fun component4(): Float = w
 
     /**
      * Component-wise addition with the given [Vec4f]. Returns the result as a new [Vec4f]. Consider using [add] with
@@ -396,14 +408,26 @@ open class MutableVec4f(override var x: Float, override var y: Float, override v
 // </template> End of template section, DO NOT EDIT BELOW THIS!
 
 
+fun Vec4d(xyz: Vec3d, w: Double): Vec4d = Vec4d(xyz.x, xyz.y, xyz.z, w)
+fun Vec4d(x: Double, yzw: Vec3d): Vec4d = Vec4d(x, yzw.x, yzw.y, yzw.z)
+fun Vec4d(xy: Vec2d, zw: Vec2d): Vec4d = Vec4d(xy.x, xy.y, zw.x, zw.y)
+fun Vec4d(x: Double, yz: Vec2d, w: Double): Vec4d = Vec4d(x, yz.x, yz.y, w)
+
 open class Vec4d(open val x: Double, open val y: Double, open val z: Double, open val w: Double) {
 
-    val xyz: Vec3d
-        get() = Vec3d(x, y, z)
-
     constructor(f: Double): this(f, f, f, f)
-    constructor(xyz: Vec3d, w: Double): this(xyz.x, xyz.y, xyz.z, w)
     constructor(v: Vec4d): this(v.x, v.y, v.z, v.w)
+
+    val xyz: Vec3d get() = Vec3d(x, y, z)
+    val yzw: Vec3d get() = Vec3d(y, z, w)
+    val xy: Vec2d get() = Vec2d(x, y)
+    val yz: Vec2d get() = Vec2d(y, z)
+    val zw: Vec2d get() = Vec2d(z, w)
+
+    operator fun component1(): Double = x
+    operator fun component2(): Double = y
+    operator fun component3(): Double = z
+    operator fun component4(): Double = w
 
     /**
      * Component-wise addition with the given [Vec4d]. Returns the result as a new [Vec4d]. Consider using [add] with
@@ -755,14 +779,26 @@ open class MutableVec4d(override var x: Double, override var y: Double, override
 }
 
 
+fun Vec4i(xyz: Vec3i, w: Int): Vec4i = Vec4i(xyz.x, xyz.y, xyz.z, w)
+fun Vec4i(x: Int, yzw: Vec3i): Vec4i = Vec4i(x, yzw.x, yzw.y, yzw.z)
+fun Vec4i(xy: Vec2i, zw: Vec2i): Vec4i = Vec4i(xy.x, xy.y, zw.x, zw.y)
+fun Vec4i(x: Int, yz: Vec2i, w: Int): Vec4i = Vec4i(x, yz.x, yz.y, w)
+
 open class Vec4i(open val x: Int, open val y: Int, open val z: Int, open val w: Int) {
 
-    val xyz: Vec3i
-        get() = Vec3i(x, y, z)
-
     constructor(f: Int): this(f, f, f, f)
-    constructor(xyz: Vec3i, w: Int): this(xyz.x, xyz.y, xyz.z, w)
     constructor(v: Vec4i): this(v.x, v.y, v.z, v.w)
+
+    val xyz: Vec3i get() = Vec3i(x, y, z)
+    val yzw: Vec3i get() = Vec3i(y, z, w)
+    val xy: Vec2i get() = Vec2i(x, y)
+    val yz: Vec2i get() = Vec2i(y, z)
+    val zw: Vec2i get() = Vec2i(z, w)
+
+    operator fun component1(): Int = x
+    operator fun component2(): Int = y
+    operator fun component3(): Int = z
+    operator fun component4(): Int = w
 
     /**
      * Component-wise addition with the given [Vec4i]. Returns the result as a new [Vec4i]. Consider using [add] with

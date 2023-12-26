@@ -33,6 +33,9 @@ open class Vec2f(open val x: Float, open val y: Float) {
     constructor(f: Float): this(f, f)
     constructor(v: Vec2f): this(v.x, v.y)
 
+    operator fun component1(): Float = x
+    operator fun component2(): Float = y
+
     /**
      * Component-wise addition with the given [Vec2f]. Returns the result as a new [Vec2f]. Consider using [add] with
      * a pre-allocated result vector in performance-critical situations, to avoid unnecessary object allocations.
@@ -372,6 +375,9 @@ open class Vec2d(open val x: Double, open val y: Double) {
     constructor(f: Double): this(f, f)
     constructor(v: Vec2d): this(v.x, v.y)
 
+    operator fun component1(): Double = x
+    operator fun component2(): Double = y
+
     /**
      * Component-wise addition with the given [Vec2d]. Returns the result as a new [Vec2d]. Consider using [add] with
      * a pre-allocated result vector in performance-critical situations, to avoid unnecessary object allocations.
@@ -701,6 +707,9 @@ open class Vec2i(open val x: Int, open val y: Int) {
 
     constructor(f: Int): this(f, f)
     constructor(v: Vec2i): this(v.x, v.y)
+
+    operator fun component1(): Int = x
+    operator fun component2(): Int = y
 
     /**
      * Component-wise addition with the given [Vec2i]. Returns the result as a new [Vec2i]. Consider using [add] with

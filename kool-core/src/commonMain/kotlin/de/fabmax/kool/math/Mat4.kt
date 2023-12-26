@@ -120,6 +120,11 @@ open class Mat4f(
         col0.w, col1.w, col2.w, col3.w
     )
 
+    operator fun component1(): Vec4f = Vec4f(m00, m10, m20, m30)
+    operator fun component2(): Vec4f = Vec4f(m01, m11, m21, m31)
+    operator fun component3(): Vec4f = Vec4f(m02, m12, m22, m32)
+    operator fun component4(): Vec4f = Vec4f(m03, m13, m23, m33)
+
     operator fun times(that: Mat4f): MutableMat4f = mul(that, MutableMat4f())
 
     operator fun plus(that: Mat4f): MutableMat4f = add(that, MutableMat4f())
@@ -1401,6 +1406,11 @@ open class Mat4d(
         col0.z, col1.z, col2.z, col3.z,
         col0.w, col1.w, col2.w, col3.w
     )
+
+    operator fun component1(): Vec4d = Vec4d(m00, m10, m20, m30)
+    operator fun component2(): Vec4d = Vec4d(m01, m11, m21, m31)
+    operator fun component3(): Vec4d = Vec4d(m02, m12, m22, m32)
+    operator fun component4(): Vec4d = Vec4d(m03, m13, m23, m33)
 
     operator fun times(that: Mat4d): MutableMat4d = mul(that, MutableMat4d())
 

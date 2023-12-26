@@ -82,6 +82,10 @@ open class Mat3f(
         col0.z, col1.z, col2.z
     )
 
+    operator fun component1(): Vec3f = Vec3f(m00, m10, m20)
+    operator fun component2(): Vec3f = Vec3f(m01, m11, m21)
+    operator fun component3(): Vec3f = Vec3f(m02, m12, m22)
+
     operator fun times(that: Mat3f): MutableMat3f = mul(that, MutableMat3f())
 
     operator fun plus(that: Mat3f): MutableMat3f = add(that, MutableMat3f())
@@ -959,6 +963,10 @@ open class Mat3d(
         col0.y, col1.y, col2.y,
         col0.z, col1.z, col2.z
     )
+
+    operator fun component1(): Vec3d = Vec3d(m00, m10, m20)
+    operator fun component2(): Vec3d = Vec3d(m01, m11, m21)
+    operator fun component3(): Vec3d = Vec3d(m02, m12, m22)
 
     operator fun times(that: Mat3d): MutableMat3d = mul(that, MutableMat3d())
 

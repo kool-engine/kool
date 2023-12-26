@@ -28,10 +28,20 @@ fun MutableVec3i.set(that: Vec3d) = set(that.x.toInt(), that.y.toInt(), that.z.t
 
 // <template> Changes made within the template section will also affect the other type variants of this class
 
+fun Vec3f(xy: Vec2f, z: Float): Vec3f = Vec3f(xy.x, xy.y, z)
+fun Vec3f(x: Float, yz: Vec2f): Vec3f = Vec3f(x, yz.x, yz.y)
+
 open class Vec3f(open val x: Float, open val y: Float, open val z: Float) {
 
     constructor(f: Float): this(f, f, f)
     constructor(v: Vec3f): this(v.x, v.y, v.z)
+
+    val xy: Vec2f get() = Vec2f(x, y)
+    val yz: Vec2f get() = Vec2f(y, z)
+
+    operator fun component1(): Float = x
+    operator fun component2(): Float = y
+    operator fun component3(): Float = z
 
     /**
      * Component-wise addition with the given [Vec3f]. Returns the result as a new [Vec3f]. Consider using [add] with
@@ -422,10 +432,20 @@ open class MutableVec3f(override var x: Float, override var y: Float, override v
 // </template> End of template section, DO NOT EDIT BELOW THIS!
 
 
+fun Vec3d(xy: Vec2d, z: Double): Vec3d = Vec3d(xy.x, xy.y, z)
+fun Vec3d(x: Double, yz: Vec2d): Vec3d = Vec3d(x, yz.x, yz.y)
+
 open class Vec3d(open val x: Double, open val y: Double, open val z: Double) {
 
     constructor(f: Double): this(f, f, f)
     constructor(v: Vec3d): this(v.x, v.y, v.z)
+
+    val xy: Vec2d get() = Vec2d(x, y)
+    val yz: Vec2d get() = Vec2d(y, z)
+
+    operator fun component1(): Double = x
+    operator fun component2(): Double = y
+    operator fun component3(): Double = z
 
     /**
      * Component-wise addition with the given [Vec3d]. Returns the result as a new [Vec3d]. Consider using [add] with
@@ -807,10 +827,20 @@ open class MutableVec3d(override var x: Double, override var y: Double, override
 }
 
 
+fun Vec3i(xy: Vec2i, z: Int): Vec3i = Vec3i(xy.x, xy.y, z)
+fun Vec3i(x: Int, yz: Vec2i): Vec3i = Vec3i(x, yz.x, yz.y)
+
 open class Vec3i(open val x: Int, open val y: Int, open val z: Int) {
 
     constructor(f: Int): this(f, f, f)
     constructor(v: Vec3i): this(v.x, v.y, v.z)
+
+    val xy: Vec2i get() = Vec2i(x, y)
+    val yz: Vec2i get() = Vec2i(y, z)
+
+    operator fun component1(): Int = x
+    operator fun component2(): Int = y
+    operator fun component3(): Int = z
 
     /**
      * Component-wise addition with the given [Vec3i]. Returns the result as a new [Vec3i]. Consider using [add] with

@@ -22,6 +22,11 @@ open class QuatF(open val x: Float, open val y: Float, open val z: Float, open v
 
     constructor(q: QuatF) : this(q.x, q.y, q.z, q.w)
 
+    operator fun component1(): Float = x
+    operator fun component2(): Float = y
+    operator fun component3(): Float = z
+    operator fun component4(): Float = w
+
     /**
      * Component-wise addition with the given [QuatF]. Returns the result as a new [QuatF]. Consider using [add] with
      * a pre-allocated result vector in performance-critical situations, to avoid unnecessary object allocations.
@@ -312,6 +317,11 @@ fun QuatF(angle: AngleF, axis: Vec3f): QuatF = MutableQuatF().set(angle, axis)
 open class QuatD(open val x: Double, open val y: Double, open val z: Double, open val w: Double) {
 
     constructor(q: QuatD) : this(q.x, q.y, q.z, q.w)
+
+    operator fun component1(): Double = x
+    operator fun component2(): Double = y
+    operator fun component3(): Double = z
+    operator fun component4(): Double = w
 
     /**
      * Component-wise addition with the given [QuatD]. Returns the result as a new [QuatD]. Consider using [add] with
