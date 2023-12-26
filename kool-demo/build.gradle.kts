@@ -89,7 +89,6 @@ task("cacheRuntimeLibs") {
             .filter { it.name.endsWith("$platformName.jar") && !it.path.startsWith(projectDir.path) }
             .forEach {
                 if (!File("${projectDir}/runtimeLibs/${it.name}").exists()) {
-                    println("copy: $it")
                     copy {
                         from(it)
                         into("${projectDir}/runtimeLibs")
