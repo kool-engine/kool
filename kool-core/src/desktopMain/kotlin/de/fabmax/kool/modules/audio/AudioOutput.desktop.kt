@@ -6,7 +6,6 @@ import javax.sound.sampled.AudioFormat
 import javax.sound.sampled.AudioSystem
 import kotlin.concurrent.thread
 
-
 actual fun AudioOutput(bufSize: Int): AudioOutput = AudioOutputImpl(bufSize)
 
 class AudioOutputImpl(override val bufSize: Int) : AudioOutput {
