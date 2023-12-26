@@ -61,26 +61,8 @@ interface ArticulationJoint {
 
     var jointType: ArticulationJointType
 
-//    var damping: Float
-//    var stiffness: Float
-//
-//    var tangentialDamping: Float
-//    var tangentialStiffness: Float
-//
-//    var isSwingLimitEnabled: Boolean
-//    var isTwistLimitEnabled: Boolean
-//
-//    var targetOrientation: Vec4f
-
     fun setParentPose(pose: Mat4f)
     fun setChildPose(pose: Mat4f)
-
-//    fun setSwingLimit(zLimit: Float, yLimit: Float)
-//
-//    fun setTwistLimit(lower: Float, upper: Float)
-//
-//    fun setTargetOrientation(eulerX: Float, eulerY: Float, eulerZ: Float)
-//    fun setTargetOrientation(rot: Mat3f)
 
     fun setAxisMotion(axis: ArticulationJointAxis, motionType: ArticulationMotionMode)
     fun setAxisLimits(axis: ArticulationJointAxis, low: Float, high: Float)

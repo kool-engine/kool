@@ -12,6 +12,10 @@ import physx.extensions.PxSphericalJoint
 import physx.extensions.PxSphericalJointFlagEnum
 import physx.extensions.PxSpring
 
+actual fun SphericalJoint(bodyA: RigidActor, bodyB: RigidActor, frameA: Mat4f, frameB: Mat4f): SphericalJoint {
+    return SphericalJointImpl(bodyA, bodyB, frameA, frameB)
+}
+
 class SphericalJointImpl(
     override val bodyA: RigidActor,
     override val bodyB: RigidActor,

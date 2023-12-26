@@ -10,6 +10,10 @@ import physx.PxTopLevelFunctions
 import physx.extensions.PxDistanceJoint
 import physx.extensions.PxDistanceJointFlagEnum
 
+actual fun DistanceJoint(bodyA: RigidActor, bodyB: RigidActor, frameA: Mat4f, frameB: Mat4f): DistanceJoint {
+    return DistanceJointImpl(bodyA, bodyB, frameA, frameB)
+}
+
 class DistanceJointImpl(
     override val bodyA: RigidActor,
     override val bodyB: RigidActor,

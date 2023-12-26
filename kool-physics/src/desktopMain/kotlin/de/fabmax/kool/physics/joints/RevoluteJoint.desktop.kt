@@ -12,6 +12,14 @@ import physx.PxTopLevelFunctions
 import physx.extensions.PxRevoluteJoint
 import physx.extensions.PxRevoluteJointFlagEnum
 
+actual fun RevoluteJoint(bodyA: RigidActor, bodyB: RigidActor, frameA: Mat4f, frameB: Mat4f): RevoluteJoint {
+    return RevoluteJointImpl(bodyA, bodyB, frameA, frameB)
+}
+
+actual fun RevoluteJoint(bodyA: RigidActor, bodyB: RigidActor, pivotA: Vec3f, pivotB: Vec3f, axisA: Vec3f, axisB: Vec3f): RevoluteJoint {
+    return RevoluteJointImpl(bodyA, bodyB, pivotA, pivotB, axisA, axisB)
+}
+
 class RevoluteJointImpl(
     override val bodyA: RigidActor,
     override val bodyB: RigidActor,

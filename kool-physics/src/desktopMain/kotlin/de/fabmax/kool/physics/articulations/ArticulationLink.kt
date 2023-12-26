@@ -3,7 +3,6 @@ package de.fabmax.kool.physics.articulations
 import de.fabmax.kool.physics.RigidBodyImpl
 import physx.physics.PxArticulationLink
 
-
 class ArticulationLinkImpl(
     override val holder: PxArticulationLink,
     parent: ArticulationLinkImpl?

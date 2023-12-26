@@ -7,6 +7,10 @@ import physx.PxPrismaticJoint
 import physx.PxPrismaticJointFlagEnum
 import physx.PxSpring
 
+actual fun PrismaticJoint(bodyA: RigidActor, bodyB: RigidActor, frameA: Mat4f, frameB: Mat4f): PrismaticJoint {
+    return PrismaticJointImpl(bodyA, bodyB, frameA, frameB)
+}
+
 class PrismaticJointImpl(
     override val bodyA: RigidActor,
     override val bodyB: RigidActor,
