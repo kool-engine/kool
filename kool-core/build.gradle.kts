@@ -2,6 +2,7 @@ import java.io.FileInputStream
 import java.util.*
 
 plugins {
+    //alias(commonLibs.plugins.androidLibrary)
     alias(commonLibs.plugins.kotlinMultiplatform)
     alias(commonLibs.plugins.kotlinSerialization)
     alias(commonLibs.plugins.kotlinDokka)
@@ -17,6 +18,14 @@ kotlin {
     js(IR) {
         browser { }
     }
+
+    //androidTarget {
+    //    compilations.all {
+    //        kotlinOptions {
+    //            jvmTarget = "1.8"
+    //        }
+    //    }
+    //}
 
     targets.all {
         compilations.all {
@@ -71,6 +80,8 @@ kotlin {
         jsMain.dependencies {
             implementation(npm("pako", "2.0.4"))
         }
+
+        //androidMain.dependencies { }
     }
 
     sourceSets.all {
@@ -86,6 +97,19 @@ kotlin {
         }
     }
 }
+
+//android {
+//    namespace = "de.fabmax.kool"
+//    compileSdk = commonLibs.versions.android.compileSdk.get().toInt()
+//
+//    defaultConfig {
+//        minSdk = commonLibs.versions.android.minSdk.get().toInt()
+//    }
+//    compileOptions {
+//        sourceCompatibility = JavaVersion.VERSION_1_8
+//        targetCompatibility = JavaVersion.VERSION_1_8
+//    }
+//}
 
 tasks.register<GenerateVariantsFromFloatPrototype>("generateDoubleAndIntVariants") {
     filesToUpdate = kotlin.sourceSets.findByName("commonMain")?.kotlin
