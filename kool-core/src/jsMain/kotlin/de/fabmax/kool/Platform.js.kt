@@ -17,13 +17,9 @@ val KoolSystem.configJs: KoolConfigJs get() = config as KoolConfigJs
  * Creates a new [KoolContext] based on the [KoolConfig] provided by [KoolSystem]. [KoolSystem.initialize] has to be
  * called before invoking this function.
  */
-actual fun createContext() = JsImpl.createContext()
-
-actual fun KoolApplication(config: KoolConfig, appBlock: (KoolContext) -> Unit) {
+actual fun createContext(config: KoolConfig): KoolContext {
     KoolSystem.initialize(config)
-    val ctx = createContext()
-    appBlock(ctx)
-    ctx.run()
+    return JsImpl.createContext()
 }
 
 actual fun Double.toString(precision: Int): String {

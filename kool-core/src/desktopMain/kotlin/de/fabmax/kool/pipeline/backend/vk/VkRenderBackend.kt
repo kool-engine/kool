@@ -15,7 +15,6 @@ import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Viewport
 import de.fabmax.kool.util.memStack
 import org.lwjgl.PointerBuffer
-import org.lwjgl.glfw.GLFW.glfwSetWindowShouldClose
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkClearValue
@@ -53,10 +52,6 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
         vkSystem.addDependingResource(semaPool)
         apiName = "Vulkan ${vkSystem.physicalDevice.apiVersion}"
         deviceName = vkSystem.physicalDevice.deviceName
-    }
-
-    override fun getWindowViewport(result: Viewport) {
-        result.set(0, 0, glfwWindow.framebufferWidth, glfwWindow.framebufferHeight)
     }
 
     override fun uploadTextureToGpu(tex: Texture, data: TextureData) {
@@ -103,10 +98,6 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
 
     override fun renderFrame(ctx: KoolContext) {
         vkSystem.renderLoop.drawFrame()
-    }
-
-    override fun close(ctx: KoolContext) {
-        glfwSetWindowShouldClose(vkSystem.window.windowPtr, true)
     }
 
     override fun cleanup(ctx: KoolContext) {

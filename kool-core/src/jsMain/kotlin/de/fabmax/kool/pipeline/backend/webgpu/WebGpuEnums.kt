@@ -1,4 +1,4 @@
-package de.fabmax.kool.platform.webgpu
+package de.fabmax.kool.pipeline.backend.webgpu
 
 enum class GPUAutoLayoutMode {
     auto

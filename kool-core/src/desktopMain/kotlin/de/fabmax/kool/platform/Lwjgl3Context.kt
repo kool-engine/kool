@@ -8,8 +8,7 @@ import de.fabmax.kool.math.clamp
 import de.fabmax.kool.pipeline.backend.gl.RenderBackendGlImpl
 import de.fabmax.kool.pipeline.backend.vk.VkRenderBackend
 import de.fabmax.kool.util.RenderLoopCoroutineDispatcher
-import org.lwjgl.glfw.GLFW.glfwPollEvents
-import org.lwjgl.glfw.GLFW.glfwWindowShouldClose
+import org.lwjgl.glfw.GLFW.*
 import java.awt.Desktop
 import java.awt.image.BufferedImage
 import java.net.URI
@@ -92,6 +91,10 @@ class Lwjgl3Context : KoolContext() {
     fun setWindowIcon(icon: List<BufferedImage>) = backend.glfwWindow.setWindowIcon(icon)
 
     override fun openUrl(url: String, sameWindow: Boolean)  = Desktop.getDesktop().browse(URI(url))
+
+    fun close() {
+        glfwSetWindowShouldClose(backend.glfwWindow.windowPtr, true)
+    }
 
     override fun run() {
         while (!glfwWindowShouldClose(backend.glfwWindow.windowPtr)) {

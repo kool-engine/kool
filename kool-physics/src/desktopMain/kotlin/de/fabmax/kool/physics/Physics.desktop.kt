@@ -89,18 +89,8 @@ object PhysicsImpl : PhysicsSystem {
         logI { "PhysX loaded, version: ${pxVersionToString(version)}, using $numWorkers worker threads" }
     }
 
-    override fun loadPhysics() {
-        // on JVM we don't need to do anything to load the PhysX library
-    }
-
-    override suspend fun awaitLoaded() {
-        // on JVM, there's nothing to wait for
-    }
-
-    fun checkIsLoaded() {
-        if (!isLoaded) {
-            throw IllegalStateException("Physics subsystem is not loaded. Call loadPhysics() first and wait for loading to be finished.")
-        }
+    override suspend fun loadAndAwaitPhysics() {
+        // on JVM, there's nothing to do here
     }
 
     private fun pxVersionToString(pxVersion: Int): String {

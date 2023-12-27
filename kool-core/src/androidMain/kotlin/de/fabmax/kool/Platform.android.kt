@@ -9,10 +9,6 @@ actual fun defaultKoolConfig(): KoolConfig {
     TODO()
 }
 
-actual fun createContext(): KoolContext {
-    TODO()
-}
-
-actual fun KoolApplication(config: KoolConfig, appBlock: (KoolContext) -> Unit) {
+actual fun createContext(config: KoolConfig): KoolContext {
     TODO()
 }

@@ -70,8 +70,6 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
         }
         mainScene += Skybox.cube(ibl.reflectionMap, 1f)
 
-        Physics.awaitLoaded()
-
         physicsWorld = PhysicsWorld(mainScene)
         physicsWorld.simStepper = physicsStepper
 

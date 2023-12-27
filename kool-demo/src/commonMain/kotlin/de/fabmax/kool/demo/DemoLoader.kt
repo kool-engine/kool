@@ -3,7 +3,6 @@ package de.fabmax.kool.demo
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.input.PointerInput
-import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.util.DebugOverlay
 import de.fabmax.kool.util.Time
 import de.fabmax.kool.util.launchOnMainThread
@@ -41,8 +40,6 @@ class DemoLoader(ctx: KoolContext, startScene: String? = null) {
         get() = currentDemo?.second
 
     init {
-        // load physics module early - in js, for some reason wasm file cannot be loaded if this happens later on
-        Physics.loadPhysics()
         Settings.loadSettings()
 
         ctx.scenes += dbgOverlay.ui
@@ -52,7 +49,6 @@ class DemoLoader(ctx: KoolContext, startScene: String? = null) {
         val loadScene = startScene ?: Settings.selectedDemo.value
 
         launchOnMainThread {
-            Physics.awaitLoaded()
             val loadDemo = Demos.demos[loadScene] ?: Demos.demos[Demos.defaultDemo]!!
             switchDemo = loadDemo
         }

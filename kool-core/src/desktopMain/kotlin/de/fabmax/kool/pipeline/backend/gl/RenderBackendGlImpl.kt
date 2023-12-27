@@ -6,9 +6,7 @@ import de.fabmax.kool.configJvm
 import de.fabmax.kool.platform.GlfwWindow
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.platform.RenderBackendJvm
-import de.fabmax.kool.util.Viewport
 import org.lwjgl.glfw.GLFW
-import org.lwjgl.glfw.GLFW.glfwSetWindowShouldClose
 import org.lwjgl.glfw.GLFW.glfwSwapBuffers
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL11.glEnable
@@ -35,10 +33,6 @@ class RenderBackendGlImpl(ctx: KoolContext) : RenderBackendGl(GlImpl, ctx), Rend
         glEnable(GL_VERTEX_PROGRAM_POINT_SIZE)
         glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS)
         setupGl()
-    }
-
-    override fun getWindowViewport(result: Viewport) {
-        result.set(0, 0, glfwWindow.framebufferWidth, glfwWindow.framebufferHeight)
     }
 
     override fun renderFrame(ctx: KoolContext) {
@@ -70,10 +64,6 @@ class RenderBackendGlImpl(ctx: KoolContext) : RenderBackendGl(GlImpl, ctx), Rend
             glfwWindow.isVisible = true
         }
         return glfwWindow
-    }
-
-    override fun close(ctx: KoolContext) {
-        glfwSetWindowShouldClose(glfwWindow.windowPtr, true)
     }
 
     override fun cleanup(ctx: KoolContext) {

@@ -2,17 +2,21 @@ package de.fabmax.kool.platform
 
 import de.fabmax.kool.*
 import de.fabmax.kool.input.PlatformInputJs
+import de.fabmax.kool.pipeline.backend.JsRenderBackend
 import de.fabmax.kool.pipeline.backend.RenderBackend
-import de.fabmax.kool.pipeline.backend.gl.GlImpl
 import de.fabmax.kool.pipeline.backend.gl.RenderBackendGlImpl
 import de.fabmax.kool.util.RenderLoopCoroutineDispatcher
 import kotlinx.browser.document
 import kotlinx.browser.window
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import org.w3c.dom.Element
 import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.events.Event
 import org.w3c.dom.events.UIEvent
 import org.w3c.files.get
+import kotlin.coroutines.CoroutineContext
 import kotlin.math.roundToInt
 
 /**
@@ -52,7 +56,6 @@ class JsContext internal constructor() : KoolContext() {
     private var canvasFixedHeight = -1
 
     init {
-
         // set canvas style to desired size so that render resolution can be set according to window scale
         if (KoolSystem.configJs.isJsCanvasToWindowFitting) {
             canvas.style.width = "100%"
@@ -69,6 +72,7 @@ class JsContext internal constructor() : KoolContext() {
         }
 
         backend = RenderBackendGlImpl(this, canvas)
+        //backend = RenderBackendWebGpu(this, canvas)
 
         document.onfullscreenchange = {
             isFullscreenEnabled = document.fullscreenElement != null
@@ -123,7 +127,7 @@ class JsContext internal constructor() : KoolContext() {
         KoolSystem.onContextCreated(this)
     }
 
-    private fun renderFrame(time: Double) {
+    internal fun renderFrame(time: Double) {
         RenderLoopCoroutineDispatcher.executeDispatchedTasks()
 
         // determine delta time
@@ -149,7 +153,6 @@ class JsContext internal constructor() : KoolContext() {
         // render frame
         render(dt)
         backend.renderFrame(this)
-        GlImpl.gl.finish()
 
         // request next frame
         window.requestAnimationFrame { t -> renderFrame(t) }
@@ -164,7 +167,10 @@ class JsContext internal constructor() : KoolContext() {
     }
 
     override fun run() {
-        window.requestAnimationFrame { t -> renderFrame(t) }
+        Loader.launch {
+            KoolSystem.configJs.loaderTasks.forEach { it() }
+            (backend as JsRenderBackend).startRenderLoop()
+        }
     }
 
     override fun getSysInfos(): List<String> {
@@ -178,6 +184,10 @@ class JsContext internal constructor() : KoolContext() {
         var localAssetPath = "./assets"
         val customFonts = mutableMapOf<String, String>()
     }
+}
+
+private object Loader : CoroutineScope {
+    override val coroutineContext: CoroutineContext = Job()
 }
 
 external class TouchEvent: UIEvent {

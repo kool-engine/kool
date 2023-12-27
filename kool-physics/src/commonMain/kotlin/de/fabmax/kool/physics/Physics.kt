@@ -8,9 +8,8 @@ object Physics {
 
     val defaultMaterial: Material get() = system.defaultMaterial
 
-    fun loadPhysics() = system.loadPhysics()
-
-    suspend fun awaitLoaded() = system.awaitLoaded()
+    suspend fun loadAndAwaitPhysics() = system.loadAndAwaitPhysics()
+    fun checkIsLoaded() = system.checkIsLoaded()
 
     val NOTIFY_TOUCH_FOUND: Int get() = system.NOTIFY_TOUCH_FOUND
     val NOTIFY_TOUCH_LOST: Int get() = system.NOTIFY_TOUCH_LOST
@@ -24,9 +23,13 @@ internal interface PhysicsSystem {
 
     val defaultMaterial: Material
 
-    fun loadPhysics()
+    suspend fun loadAndAwaitPhysics()
 
-    suspend fun awaitLoaded()
+    fun checkIsLoaded() {
+        if (!isLoaded) {
+            throw IllegalStateException("Physics subsystem is not loaded. Call loadAndAwaitPhysics() before using any physics functions.")
+        }
+    }
 
     val NOTIFY_TOUCH_FOUND: Int
     val NOTIFY_TOUCH_LOST: Int

@@ -5,13 +5,16 @@ import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.modules.ksl.lang.xy
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.backend.JsRenderBackend
+import de.fabmax.kool.platform.JsContext
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.addTextureMesh
 import de.fabmax.kool.util.Viewport
+import kotlinx.browser.window
 import org.w3c.dom.HTMLCanvasElement
 
-class RenderBackendGlImpl(ctx: KoolContext, canvas: HTMLCanvasElement) : RenderBackendGl(GlImpl, ctx) {
+class RenderBackendGlImpl(ctx: KoolContext, canvas: HTMLCanvasElement) : RenderBackendGl(GlImpl, ctx), JsRenderBackend {
     override val deviceName = "WebGL"
 
     override val glslGeneratorHints: GlslGenerator.Hints = GlslGenerator.Hints(
@@ -39,16 +42,17 @@ class RenderBackendGlImpl(ctx: KoolContext, canvas: HTMLCanvasElement) : RenderB
         setupGl()
     }
 
-    override fun getWindowViewport(result: Viewport) {
-        result.set(0, 0, ctx.windowWidth, ctx.windowHeight)
-    }
-
-    override fun close(ctx: KoolContext) {
-        // nothing to do here
+    override suspend fun startRenderLoop() {
+        window.requestAnimationFrame { t -> (ctx as JsContext).renderFrame(t) }
     }
 
     override fun cleanup(ctx: KoolContext) {
         // for now, we leave the cleanup to the system...
+    }
+
+    override fun renderFrame(ctx: KoolContext) {
+        super.renderFrame(ctx)
+        GlImpl.gl.finish()
     }
 
     override fun blitFrameBuffers(

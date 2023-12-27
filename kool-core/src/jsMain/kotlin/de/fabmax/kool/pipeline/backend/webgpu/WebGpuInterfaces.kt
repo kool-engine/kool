@@ -1,4 +1,4 @@
-package de.fabmax.kool.platform.webgpu
+package de.fabmax.kool.pipeline.backend.webgpu
 
 import org.khronos.webgl.ArrayBuffer
 import org.w3c.dom.RenderingContext
@@ -13,7 +13,7 @@ external class Navigator {
 
 external class GPU {
     fun getPreferredCanvasFormat(): GPUTextureFormat
-    fun requestAdapter(): Promise<GPUAdapter>
+    fun requestAdapter(): Promise<GPUAdapter?>
 }
 
 external class GPUAdapter {

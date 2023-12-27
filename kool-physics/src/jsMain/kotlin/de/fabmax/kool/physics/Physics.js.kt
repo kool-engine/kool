@@ -45,7 +45,7 @@ object PhysicsImpl : PhysicsSystem {
     lateinit var cookingParams: PxCookingParams
         private set
 
-    override fun loadPhysics() {
+    override suspend fun loadAndAwaitPhysics() {
         if (!isLoading) {
             isLoading = true
             PhysXJsLoader.addOnLoadListener {
@@ -80,19 +80,8 @@ object PhysicsImpl : PhysicsSystem {
             }
             PhysXJsLoader.loadModule()
         }
-    }
 
-    override suspend fun awaitLoaded() {
-        if (!isLoading) {
-            loadPhysics()
-        }
         PhysXJsLoader.physxDeferred.await()
-    }
-
-    fun checkIsLoaded() {
-        if (!isLoaded) {
-            throw IllegalStateException("Physics subsystem is not loaded. Call loadPhysics() first and wait for loading to be finished.")
-        }
     }
 
     private fun pxVersionToString(pxVersion: Int): String {

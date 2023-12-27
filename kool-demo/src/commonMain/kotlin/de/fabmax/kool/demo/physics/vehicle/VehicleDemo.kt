@@ -59,7 +59,6 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
             }
         }
         showLoadText("Loading Physics")
-        Physics.awaitLoaded()
 
         showLoadText("Creating Deferred Render Pipeline")
         val defCfg = DeferredPipelineConfig().apply {

@@ -1,6 +1,7 @@
 import de.fabmax.kool.KoolApplication
 import de.fabmax.kool.KoolConfigJs
 import de.fabmax.kool.demo.demo
+import de.fabmax.kool.physics.Physics
 import kotlinx.browser.window
 import kotlin.collections.set
 
@@ -8,7 +9,10 @@ import kotlin.collections.set
  * @author fabmax
  */
 fun main() = KoolApplication(
-    KoolConfigJs(isGlobalKeyEventGrabbing = true)
+    KoolConfigJs(
+        isGlobalKeyEventGrabbing = true,
+        loaderTasks = listOf { Physics.loadAndAwaitPhysics() }
+    )
 ) {
     // uncomment to load assets locally instead of from remote
     //Demo.setProperty("assets.base", ".")

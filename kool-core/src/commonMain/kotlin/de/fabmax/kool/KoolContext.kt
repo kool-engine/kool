@@ -79,10 +79,6 @@ abstract class KoolContext {
 
     abstract fun run()
 
-    open fun close() {
-        backend.close(this)
-    }
-
     abstract fun getSysInfos(): List<String>
 
     fun getWindowViewport(result: Viewport) {

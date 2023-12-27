@@ -1,4 +1,4 @@
-package de.fabmax.kool.platform.webgpu
+package de.fabmax.kool.pipeline.backend.webgpu
 
 class GPUBindGroupLayoutDescriptor(
     @JsName("entries")
@@ -127,8 +127,8 @@ class GPUPrimitiveState(topology: GPUPrimitiveTopology) {
 class GPURenderPassColorAttachment(
     @JsName("view")
     val view: GPUTextureView,
-    @JsName("resolveTarget")
-    val resolveTarget: GPUTextureView,
+//    @JsName("resolveTarget")
+//    val resolveTarget: GPUTextureView,
     @JsName("clearValue")
     val clearValue: GPUColorDict,
     @JsName("loadOp")

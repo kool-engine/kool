@@ -1,6 +1,7 @@
 package de.fabmax.kool.pipeline.backend
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.modules.ksl.KslComputeShader
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.pipeline.*
@@ -17,10 +18,12 @@ interface RenderBackend {
     val isOnscreenInfiniteDepthCapable: Boolean
 
     fun renderFrame(ctx: KoolContext)
-    fun close(ctx: KoolContext)
     fun cleanup(ctx: KoolContext)
 
-    fun getWindowViewport(result: Viewport)
+    fun getWindowViewport(result: Viewport) {
+        val ctx = KoolSystem.requireContext()
+        result.set(0, 0, ctx.windowWidth, ctx.windowHeight)
+    }
 
     fun generateKslShader(shader: KslShader, pipeline: Pipeline): ShaderCode
     fun generateKslComputeShader(shader: KslComputeShader, pipeline: ComputePipeline): ComputeShaderCode

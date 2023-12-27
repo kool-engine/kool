@@ -15,6 +15,10 @@ import de.fabmax.kool.util.logW
 expect fun PhysicsWorld(scene: Scene?, isContinuousCollisionDetection: Boolean = false) : PhysicsWorld
 
 abstract class PhysicsWorld : BaseReleasable() {
+    init {
+        Physics.checkIsLoaded()
+    }
+
     var physicsTime = 0.0
 
     var simStepper: PhysicsStepper = ConstantPhysicsStepperSync()

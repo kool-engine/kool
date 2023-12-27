@@ -1,4 +1,4 @@
-import de.fabmax.kool.platform.webgpu.*
+import de.fabmax.kool.pipeline.backend.webgpu.*
 import kotlinx.browser.document
 import kotlinx.browser.window
 import kotlinx.coroutines.await
@@ -78,7 +78,7 @@ fun webGpuTest() {
     launch {
         canvas = document.getElementById("glCanvas") as HTMLCanvasElement
         val adapter = navigator.gpu.requestAdapter().await()
-        device = adapter.requestDevice().await()
+        device = adapter!!.requestDevice().await()
 
         val ctx = canvas.getContext("webgpu") as? GPUCanvasContext
         if (ctx == null) {
@@ -202,7 +202,7 @@ fun frame() {
         GPURenderPassDescriptor(arrayOf(
             GPURenderPassColorAttachment(
                 view = view,
-                resolveTarget = context.getCurrentTexture().createView(),
+                //resolveTarget = context.getCurrentTexture().createView(),
                 clearValue = GPUColorDict(0.0, 0.0, 0.0, 1.0),
                 loadOp = GPULoadOp.clear,
                 storeOp = GPUStoreOp.store
