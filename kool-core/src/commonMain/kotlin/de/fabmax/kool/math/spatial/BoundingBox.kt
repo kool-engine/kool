@@ -62,6 +62,9 @@ open class BoundingBoxF() {
         set(min, max)
     }
 
+    operator fun component1(): Vec3f = min
+    operator fun component2(): Vec3f = max
+
     private fun updateSizeAndCenter() {
         if (!isBatchUpdate) {
             // size = max - min
@@ -470,6 +473,9 @@ open class BoundingBoxD() {
     constructor(min: Vec3d, max: Vec3d): this() {
         set(min, max)
     }
+
+    operator fun component1(): Vec3d = min
+    operator fun component2(): Vec3d = max
 
     private fun updateSizeAndCenter() {
         if (!isBatchUpdate) {

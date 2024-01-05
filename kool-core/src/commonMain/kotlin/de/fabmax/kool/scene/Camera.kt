@@ -39,7 +39,7 @@ abstract class Camera(name: String = "camera") : Node(name) {
     var useViewportAspectRatio = true
 
     var clipNear = 0.1f
-    var clipFar = 100f
+    var clipFar = 1000f
 
     val proj = MutableMat4f()
     private val lazyInvProj = LazyMat4f { proj.invert(it) }
