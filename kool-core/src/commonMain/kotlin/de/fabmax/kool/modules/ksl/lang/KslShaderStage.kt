@@ -85,10 +85,15 @@ class KslVertexStage(program: KslProgram) : KslShaderStage(program, KslShaderSta
 
     val attributes = mutableMapOf<String, KslVertexAttribute<*>>()
 
-    val inVertexIndex = KslStageInputScalar(KslVarScalar(NAME_IN_VERTEX_INDEX, KslInt1, false))
-    val inInstanceIndex = KslStageInputScalar(KslVarScalar(NAME_IN_INSTANCE_INDEX, KslInt1, false))
+    val inVertexIndex = KslStageInputScalar(KslVarScalar(NAME_IN_VERTEX_INDEX, KslUint1, false))
+    val inInstanceIndex = KslStageInputScalar(KslVarScalar(NAME_IN_INSTANCE_INDEX, KslUint1, false))
     val outPosition = KslStageOutputVector(KslVarVector(NAME_OUT_POSITION, KslFloat4, true))
     val outPointSize = KslStageOutputScalar(KslVarScalar(NAME_OUT_POINT_SIZE, KslFloat1, true))
+
+    val isUsingVertexIndex: Boolean get() = inVertexIndex.value in main.dependencies
+    val isUsingInstanceIndex: Boolean get() = inInstanceIndex.value in main.dependencies
+    val isSettingPosition: Boolean get() = outPosition.value in main.dependencies
+    val isSettingPointSize: Boolean get() = outPointSize.value in main.dependencies
 
     init {
         globalScope.definedStates += inVertexIndex.value
@@ -150,6 +155,10 @@ class KslFragmentStage(program: KslProgram) : KslShaderStage(program, KslShaderS
     val inIsFrontFacing = KslStageInputScalar(KslVarScalar(NAME_IN_IS_FRONT_FACING, KslBool1, false))
     val outDepth = KslStageOutputScalar(KslVarScalar(NAME_OUT_DEPTH, KslFloat1, true))
     val outColors = mutableListOf<KslStageOutputVector<KslFloat4, KslFloat1>>()
+
+    val isUsingFragPosition: Boolean get() = inFragPosition.value in main.dependencies
+    val isUsingIsFrontFacing: Boolean get() = inIsFrontFacing.value in main.dependencies
+    val isSettingFragDepth: Boolean get() = outDepth.value in main.dependencies
 
     init {
         globalScope.definedStates += inFragPosition.value

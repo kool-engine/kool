@@ -5,6 +5,7 @@ import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.configJvm
 import de.fabmax.kool.input.PlatformInputJvm
 import de.fabmax.kool.math.clamp
+import de.fabmax.kool.pipeline.backend.RenderBackendJvm
 import de.fabmax.kool.pipeline.backend.gl.RenderBackendGlImpl
 import de.fabmax.kool.pipeline.backend.vk.VkRenderBackend
 import de.fabmax.kool.util.RenderLoopCoroutineDispatcher

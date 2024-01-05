@@ -206,4 +206,42 @@ abstract class KslGenerator {
     }
 
     interface GeneratorOutput
+
+    abstract class GeneratedSourceOutput : GeneratorOutput {
+        val stages = mutableMapOf<KslShaderStageType, String>()
+
+        val hasVertexSource: Boolean
+            get() = KslShaderStageType.VertexShader in stages
+        val hasFragmentSource: Boolean
+            get() = KslShaderStageType.FragmentShader in stages
+        val hasComputeSource: Boolean
+            get() = KslShaderStageType.ComputeShader in stages
+
+        val vertexSrc: String get() = checkNotNull(stages[KslShaderStageType.VertexShader]) {
+            "Vertex shader source not defined"
+        }
+
+        val fragmentSrc: String get() = checkNotNull(stages[KslShaderStageType.FragmentShader]) {
+            "Fragment shader source not defined"
+        }
+
+        val computeSrc: String get() = checkNotNull(stages[KslShaderStageType.ComputeShader]) {
+            "Compute shader source not defined"
+        }
+
+        private fun linePrefix(line: Int): String {
+            var num = "$line"
+            while (num.length < 3) {
+                num = " $num"
+            }
+            return "$num  "
+        }
+
+        fun dump() {
+            stages.forEach { (type, src) ->
+                println("### $type source:")
+                src.lines().forEachIndexed { i, line -> println("${linePrefix(i)}${line}") }
+            }
+        }
+    }
 }

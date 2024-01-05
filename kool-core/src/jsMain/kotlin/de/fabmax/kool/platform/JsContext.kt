@@ -2,8 +2,8 @@ package de.fabmax.kool.platform
 
 import de.fabmax.kool.*
 import de.fabmax.kool.input.PlatformInputJs
-import de.fabmax.kool.pipeline.backend.JsRenderBackend
 import de.fabmax.kool.pipeline.backend.RenderBackend
+import de.fabmax.kool.pipeline.backend.RenderBackendJs
 import de.fabmax.kool.pipeline.backend.gl.RenderBackendGlImpl
 import de.fabmax.kool.util.RenderLoopCoroutineDispatcher
 import kotlinx.browser.document
@@ -169,7 +169,7 @@ class JsContext internal constructor() : KoolContext() {
     override fun run() {
         Loader.launch {
             KoolSystem.configJs.loaderTasks.forEach { it() }
-            (backend as JsRenderBackend).startRenderLoop()
+            (backend as RenderBackendJs).startRenderLoop()
         }
     }
 

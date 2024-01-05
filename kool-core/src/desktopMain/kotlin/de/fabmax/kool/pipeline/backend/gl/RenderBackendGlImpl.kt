@@ -3,9 +3,9 @@ package de.fabmax.kool.pipeline.backend.gl
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.configJvm
+import de.fabmax.kool.pipeline.backend.RenderBackendJvm
 import de.fabmax.kool.platform.GlfwWindow
 import de.fabmax.kool.platform.Lwjgl3Context
-import de.fabmax.kool.platform.RenderBackendJvm
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFW.glfwSwapBuffers
 import org.lwjgl.opengl.GL

@@ -5,8 +5,8 @@ import de.fabmax.kool.modules.ksl.KslComputeShader
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.DepthRange
-import de.fabmax.kool.pipeline.backend.JsRenderBackend
 import de.fabmax.kool.pipeline.backend.RenderBackend
+import de.fabmax.kool.pipeline.backend.RenderBackendJs
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.platform.JsContext
 import de.fabmax.kool.scene.Scene
@@ -18,7 +18,7 @@ import kotlinx.browser.window
 import kotlinx.coroutines.await
 import org.w3c.dom.HTMLCanvasElement
 
-class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) : RenderBackend, JsRenderBackend {
+class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) : RenderBackend, RenderBackendJs {
     override val name: String = "WebGPU Backend"
     override val apiName: String = "WebGPU"
     override val deviceName: String = "WebGPU"

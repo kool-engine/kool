@@ -1,5 +1,5 @@
 package de.fabmax.kool.pipeline.backend
 
-interface JsRenderBackend {
+interface RenderBackendJs {
     suspend fun startRenderLoop()
 }

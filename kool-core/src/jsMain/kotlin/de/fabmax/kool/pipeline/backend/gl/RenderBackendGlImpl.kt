@@ -5,7 +5,7 @@ import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.modules.ksl.lang.xy
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.pipeline.backend.JsRenderBackend
+import de.fabmax.kool.pipeline.backend.RenderBackendJs
 import de.fabmax.kool.platform.JsContext
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
@@ -14,7 +14,7 @@ import de.fabmax.kool.util.Viewport
 import kotlinx.browser.window
 import org.w3c.dom.HTMLCanvasElement
 
-class RenderBackendGlImpl(ctx: KoolContext, canvas: HTMLCanvasElement) : RenderBackendGl(GlImpl, ctx), JsRenderBackend {
+class RenderBackendGlImpl(ctx: KoolContext, canvas: HTMLCanvasElement) : RenderBackendGl(GlImpl, ctx), RenderBackendJs {
     override val deviceName = "WebGL"
 
     override val glslGeneratorHints: GlslGenerator.Hints = GlslGenerator.Hints(
