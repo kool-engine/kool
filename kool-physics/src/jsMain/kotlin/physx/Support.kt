@@ -20,9 +20,9 @@ external interface SupportFunctions {
 
     /**
      * @param scene WebIDL type: [PxScene]
-     * @return WebIDL type: [Vector_PxActorPtr] (Ref)
+     * @return WebIDL type: [PxArray_PxActorPtr] (Ref)
      */
-    fun PxScene_getActiveActors(scene: PxScene): Vector_PxActorPtr
+    fun PxScene_getActiveActors(scene: PxScene): PxArray_PxActorPtr
 
     /**
      * @param articulation WebIDL type: [PxArticulationReducedCoordinate]
@@ -92,11 +92,35 @@ fun PxU32ConstPtr.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
-external interface PxRealPtr
+external interface PxI32Ptr : PxI32ConstPtr
+
+fun PxI32PtrFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxI32Ptr = js("_module.wrapPointer(ptr, _module.PxI32Ptr)")
+
+fun PxI32Ptr.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface PxI32ConstPtr
+
+fun PxI32ConstPtrFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxI32ConstPtr = js("_module.wrapPointer(ptr, _module.PxI32ConstPtr)")
+
+fun PxI32ConstPtr.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface PxRealPtr : PxRealConstPtr
 
 fun PxRealPtrFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxRealPtr = js("_module.wrapPointer(ptr, _module.PxRealPtr)")
 
 fun PxRealPtr.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface PxRealConstPtr
+
+fun PxRealConstPtrFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxRealConstPtr = js("_module.wrapPointer(ptr, _module.PxRealConstPtr)")
+
+fun PxRealConstPtr.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
@@ -214,6 +238,12 @@ external interface NativeArrayHelpers {
 
     /**
      * @param voidPtr WebIDL type: VoidPtr
+     * @return WebIDL type: [PxI32Ptr] (Value)
+     */
+    fun voidToI32Ptr(voidPtr: Any): PxI32Ptr
+
+    /**
+     * @param voidPtr WebIDL type: VoidPtr
      * @return WebIDL type: [PxRealPtr] (Value)
      */
     fun voidToRealPtr(voidPtr: Any): PxRealPtr
@@ -328,6 +358,606 @@ external interface NativeArrayHelpers {
 fun NativeArrayHelpersFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): NativeArrayHelpers = js("_module.wrapPointer(ptr, _module.NativeArrayHelpers)")
 
 fun NativeArrayHelpers.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface PxArray_PxMaterialConst {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * @param index WebIDL type: unsigned long
+     * @return WebIDL type: [PxMaterial] (Const)
+     */
+    fun get(index: Int): PxMaterial
+
+    /**
+     * @param index WebIDL type: unsigned long
+     * @param value WebIDL type: [PxMaterialConstPtr] (Const, Ref)
+     */
+    fun set(index: Int, value: PxMaterialConstPtr)
+
+    /**
+     * @return WebIDL type: [PxMaterialConstPtr]
+     */
+    fun begin(): PxMaterialConstPtr
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun size(): Int
+
+    /**
+     * @param value WebIDL type: [PxMaterial] (Const)
+     */
+    fun pushBack(value: PxMaterial)
+
+    fun clear()
+
+}
+
+fun PxArray_PxMaterialConst(_module: dynamic = PhysXJsLoader.physXJs): PxArray_PxMaterialConst = js("new _module.PxArray_PxMaterialConst()")
+
+/**
+ * @param size WebIDL type: unsigned long
+ */
+fun PxArray_PxMaterialConst(size: Int, _module: dynamic = PhysXJsLoader.physXJs): PxArray_PxMaterialConst = js("new _module.PxArray_PxMaterialConst(size)")
+
+fun PxArray_PxMaterialConstFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxArray_PxMaterialConst = js("_module.wrapPointer(ptr, _module.PxArray_PxMaterialConst)")
+
+fun PxArray_PxMaterialConst.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface PxArray_PxHeightFieldSample {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * @param index WebIDL type: unsigned long
+     * @return WebIDL type: [PxHeightFieldSample] (Ref)
+     */
+    fun get(index: Int): PxHeightFieldSample
+
+    /**
+     * @param index WebIDL type: unsigned long
+     * @param value WebIDL type: [PxHeightFieldSample] (Const, Ref)
+     */
+    fun set(index: Int, value: PxHeightFieldSample)
+
+    /**
+     * @return WebIDL type: [PxHeightFieldSample]
+     */
+    fun begin(): PxHeightFieldSample
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun size(): Int
+
+    /**
+     * @param value WebIDL type: [PxHeightFieldSample] (Ref)
+     */
+    fun pushBack(value: PxHeightFieldSample)
+
+    fun clear()
+
+}
+
+fun PxArray_PxHeightFieldSample(_module: dynamic = PhysXJsLoader.physXJs): PxArray_PxHeightFieldSample = js("new _module.PxArray_PxHeightFieldSample()")
+
+/**
+ * @param size WebIDL type: unsigned long
+ */
+fun PxArray_PxHeightFieldSample(size: Int, _module: dynamic = PhysXJsLoader.physXJs): PxArray_PxHeightFieldSample = js("new _module.PxArray_PxHeightFieldSample(size)")
+
+fun PxArray_PxHeightFieldSampleFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxArray_PxHeightFieldSample = js("_module.wrapPointer(ptr, _module.PxArray_PxHeightFieldSample)")
+
+fun PxArray_PxHeightFieldSample.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface PxArray_PxReal {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * @param index WebIDL type: unsigned long
+     * @return WebIDL type: float
+     */
+    fun get(index: Int): Float
+
+    /**
+     * @param index WebIDL type: unsigned long
+     * @param value WebIDL type: float
+     */
+    fun set(index: Int, value: Float)
+
+    /**
+     * @return WebIDL type: VoidPtr
+     */
+    fun begin(): Any
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun size(): Int
+
+    /**
+     * @param value WebIDL type: float
+     */
+    fun pushBack(value: Float)
+
+    fun clear()
+
+}
+
+fun PxArray_PxReal(_module: dynamic = PhysXJsLoader.physXJs): PxArray_PxReal = js("new _module.PxArray_PxReal()")
+
+/**
+ * @param size WebIDL type: unsigned long
+ */
+fun PxArray_PxReal(size: Int, _module: dynamic = PhysXJsLoader.physXJs): PxArray_PxReal = js("new _module.PxArray_PxReal(size)")
+
+fun PxArray_PxRealFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxArray_PxReal = js("_module.wrapPointer(ptr, _module.PxArray_PxReal)")
+
+fun PxArray_PxReal.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface PxArray_PxU8 {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * @param index WebIDL type: unsigned long
+     * @return WebIDL type: octet
+     */
+    fun get(index: Int): Byte
+
+    /**
+     * @param index WebIDL type: unsigned long
+     * @param value WebIDL type: octet
+     */
+    fun set(index: Int, value: Byte)
+
+    /**
+     * @return WebIDL type: VoidPtr
+     */
+    fun begin(): Any
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun size(): Int
+
+    /**
+     * @param value WebIDL type: octet
+     */
+    fun pushBack(value: Byte)
+
+    fun clear()
+
+}
+
+fun PxArray_PxU8(_module: dynamic = PhysXJsLoader.physXJs): PxArray_PxU8 = js("new _module.PxArray_PxU8()")
+
+/**
+ * @param size WebIDL type: unsigned long
+ */
+fun PxArray_PxU8(size: Int, _module: dynamic = PhysXJsLoader.physXJs): PxArray_PxU8 = js("new _module.PxArray_PxU8(size)")
+
+fun PxArray_PxU8FromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxArray_PxU8 = js("_module.wrapPointer(ptr, _module.PxArray_PxU8)")
+
+fun PxArray_PxU8.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface PxArray_PxU16 {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * @param index WebIDL type: unsigned long
+     * @return WebIDL type: unsigned short
+     */
+    fun get(index: Int): Short
+
+    /**
+     * @param index WebIDL type: unsigned long
+     * @param value WebIDL type: unsigned short
+     */
+    fun set(index: Int, value: Short)
+
+    /**
+     * @return WebIDL type: VoidPtr
+     */
+    fun begin(): Any
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun size(): Int
+
+    /**
+     * @param value WebIDL type: unsigned short
+     */
+    fun pushBack(value: Short)
+
+    fun clear()
+
+}
+
+fun PxArray_PxU16(_module: dynamic = PhysXJsLoader.physXJs): PxArray_PxU16 = js("new _module.PxArray_PxU16()")
+
+/**
+ * @param size WebIDL type: unsigned long
+ */
+fun PxArray_PxU16(size: Int, _module: dynamic = PhysXJsLoader.physXJs): PxArray_PxU16 = js("new _module.PxArray_PxU16(size)")
+
+fun PxArray_PxU16FromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxArray_PxU16 = js("_module.wrapPointer(ptr, _module.PxArray_PxU16)")
+
+fun PxArray_PxU16.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface PxArray_PxU32 {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * @param index WebIDL type: unsigned long
+     * @return WebIDL type: unsigned long
+     */
+    fun get(index: Int): Int
+
+    /**
+     * @param index WebIDL type: unsigned long
+     * @param value WebIDL type: unsigned long
+     */
+    fun set(index: Int, value: Int)
+
+    /**
+     * @return WebIDL type: VoidPtr
+     */
+    fun begin(): Any
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun size(): Int
+
+    /**
+     * @param value WebIDL type: unsigned long
+     */
+    fun pushBack(value: Int)
+
+    fun clear()
+
+}
+
+fun PxArray_PxU32(_module: dynamic = PhysXJsLoader.physXJs): PxArray_PxU32 = js("new _module.PxArray_PxU32()")
+
+/**
+ * @param size WebIDL type: unsigned long
+ */
+fun PxArray_PxU32(size: Int, _module: dynamic = PhysXJsLoader.physXJs): PxArray_PxU32 = js("new _module.PxArray_PxU32(size)")
+
+fun PxArray_PxU32FromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxArray_PxU32 = js("_module.wrapPointer(ptr, _module.PxArray_PxU32)")
+
+fun PxArray_PxU32.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface PxArray_PxVec3 {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * @param index WebIDL type: unsigned long
+     * @return WebIDL type: [PxVec3] (Ref)
+     */
+    fun get(index: Int): PxVec3
+
+    /**
+     * @param index WebIDL type: unsigned long
+     * @param value WebIDL type: [PxVec3] (Const, Ref)
+     */
+    fun set(index: Int, value: PxVec3)
+
+    /**
+     * @return WebIDL type: [PxVec3]
+     */
+    fun begin(): PxVec3
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun size(): Int
+
+    /**
+     * @param value WebIDL type: [PxVec3] (Ref)
+     */
+    fun pushBack(value: PxVec3)
+
+    fun clear()
+
+}
+
+fun PxArray_PxVec3(_module: dynamic = PhysXJsLoader.physXJs): PxArray_PxVec3 = js("new _module.PxArray_PxVec3()")
+
+/**
+ * @param size WebIDL type: unsigned long
+ */
+fun PxArray_PxVec3(size: Int, _module: dynamic = PhysXJsLoader.physXJs): PxArray_PxVec3 = js("new _module.PxArray_PxVec3(size)")
+
+fun PxArray_PxVec3FromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxArray_PxVec3 = js("_module.wrapPointer(ptr, _module.PxArray_PxVec3)")
+
+fun PxArray_PxVec3.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface PxArray_PxVec4 {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * @param index WebIDL type: unsigned long
+     * @return WebIDL type: [PxVec4] (Ref)
+     */
+    fun get(index: Int): PxVec4
+
+    /**
+     * @param index WebIDL type: unsigned long
+     * @param value WebIDL type: [PxVec4] (Const, Ref)
+     */
+    fun set(index: Int, value: PxVec4)
+
+    /**
+     * @return WebIDL type: [PxVec4]
+     */
+    fun begin(): PxVec4
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun size(): Int
+
+    /**
+     * @param value WebIDL type: [PxVec4] (Ref)
+     */
+    fun pushBack(value: PxVec4)
+
+    fun clear()
+
+}
+
+fun PxArray_PxVec4(_module: dynamic = PhysXJsLoader.physXJs): PxArray_PxVec4 = js("new _module.PxArray_PxVec4()")
+
+/**
+ * @param size WebIDL type: unsigned long
+ */
+fun PxArray_PxVec4(size: Int, _module: dynamic = PhysXJsLoader.physXJs): PxArray_PxVec4 = js("new _module.PxArray_PxVec4(size)")
+
+fun PxArray_PxVec4FromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxArray_PxVec4 = js("_module.wrapPointer(ptr, _module.PxArray_PxVec4)")
+
+fun PxArray_PxVec4.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface PxArray_PxActorPtr {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * @param index WebIDL type: unsigned long
+     * @return WebIDL type: [PxActor]
+     */
+    fun get(index: Int): PxActor
+
+    /**
+     * @param index WebIDL type: unsigned long
+     * @param value WebIDL type: [PxActorPtr] (Const, Ref)
+     */
+    fun set(index: Int, value: PxActorPtr)
+
+    /**
+     * @return WebIDL type: [PxActorPtr]
+     */
+    fun begin(): PxActorPtr
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun size(): Int
+
+    /**
+     * @param value WebIDL type: [PxActor]
+     */
+    fun pushBack(value: PxActor)
+
+    fun clear()
+
+}
+
+fun PxArray_PxActorPtr(_module: dynamic = PhysXJsLoader.physXJs): PxArray_PxActorPtr = js("new _module.PxArray_PxActorPtr()")
+
+/**
+ * @param size WebIDL type: unsigned long
+ */
+fun PxArray_PxActorPtr(size: Int, _module: dynamic = PhysXJsLoader.physXJs): PxArray_PxActorPtr = js("new _module.PxArray_PxActorPtr(size)")
+
+fun PxArray_PxActorPtrFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxArray_PxActorPtr = js("_module.wrapPointer(ptr, _module.PxArray_PxActorPtr)")
+
+fun PxArray_PxActorPtr.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface PxArray_PxContactPairPoint {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * @param index WebIDL type: unsigned long
+     * @return WebIDL type: [PxContactPairPoint] (Ref)
+     */
+    fun get(index: Int): PxContactPairPoint
+
+    /**
+     * @param index WebIDL type: unsigned long
+     * @param value WebIDL type: [PxContactPairPoint] (Const, Ref)
+     */
+    fun set(index: Int, value: PxContactPairPoint)
+
+    /**
+     * @return WebIDL type: [PxContactPairPoint]
+     */
+    fun begin(): PxContactPairPoint
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun size(): Int
+
+    /**
+     * @param value WebIDL type: [PxContactPairPoint] (Ref)
+     */
+    fun pushBack(value: PxContactPairPoint)
+
+    fun clear()
+
+}
+
+fun PxArray_PxContactPairPoint(_module: dynamic = PhysXJsLoader.physXJs): PxArray_PxContactPairPoint = js("new _module.PxArray_PxContactPairPoint()")
+
+/**
+ * @param size WebIDL type: unsigned long
+ */
+fun PxArray_PxContactPairPoint(size: Int, _module: dynamic = PhysXJsLoader.physXJs): PxArray_PxContactPairPoint = js("new _module.PxArray_PxContactPairPoint(size)")
+
+fun PxArray_PxContactPairPointFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxArray_PxContactPairPoint = js("_module.wrapPointer(ptr, _module.PxArray_PxContactPairPoint)")
+
+fun PxArray_PxContactPairPoint.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface PxArray_PxRaycastHit {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * @param index WebIDL type: unsigned long
+     * @return WebIDL type: [PxRaycastHit] (Ref)
+     */
+    fun get(index: Int): PxRaycastHit
+
+    /**
+     * @param index WebIDL type: unsigned long
+     * @param value WebIDL type: [PxRaycastHit] (Const, Ref)
+     */
+    fun set(index: Int, value: PxRaycastHit)
+
+    /**
+     * @return WebIDL type: [PxRaycastHit]
+     */
+    fun begin(): PxRaycastHit
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun size(): Int
+
+    /**
+     * @param value WebIDL type: [PxRaycastHit] (Ref)
+     */
+    fun pushBack(value: PxRaycastHit)
+
+    fun clear()
+
+}
+
+fun PxArray_PxRaycastHit(_module: dynamic = PhysXJsLoader.physXJs): PxArray_PxRaycastHit = js("new _module.PxArray_PxRaycastHit()")
+
+/**
+ * @param size WebIDL type: unsigned long
+ */
+fun PxArray_PxRaycastHit(size: Int, _module: dynamic = PhysXJsLoader.physXJs): PxArray_PxRaycastHit = js("new _module.PxArray_PxRaycastHit(size)")
+
+fun PxArray_PxRaycastHitFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxArray_PxRaycastHit = js("_module.wrapPointer(ptr, _module.PxArray_PxRaycastHit)")
+
+fun PxArray_PxRaycastHit.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface PxArray_PxSweepHit {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * @param index WebIDL type: unsigned long
+     * @return WebIDL type: [PxSweepHit] (Ref)
+     */
+    fun get(index: Int): PxSweepHit
+
+    /**
+     * @param index WebIDL type: unsigned long
+     * @param value WebIDL type: [PxSweepHit] (Const, Ref)
+     */
+    fun set(index: Int, value: PxSweepHit)
+
+    /**
+     * @return WebIDL type: [PxSweepHit]
+     */
+    fun begin(): PxSweepHit
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun size(): Int
+
+    /**
+     * @param value WebIDL type: [PxSweepHit] (Ref)
+     */
+    fun pushBack(value: PxSweepHit)
+
+    fun clear()
+
+}
+
+fun PxArray_PxSweepHit(_module: dynamic = PhysXJsLoader.physXJs): PxArray_PxSweepHit = js("new _module.PxArray_PxSweepHit()")
+
+/**
+ * @param size WebIDL type: unsigned long
+ */
+fun PxArray_PxSweepHit(size: Int, _module: dynamic = PhysXJsLoader.physXJs): PxArray_PxSweepHit = js("new _module.PxArray_PxSweepHit(size)")
+
+fun PxArray_PxSweepHitFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxArray_PxSweepHit = js("_module.wrapPointer(ptr, _module.PxArray_PxSweepHit)")
+
+fun PxArray_PxSweepHit.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
@@ -856,6 +1486,28 @@ fun Vector_PxSweepHit(size: Int, _module: dynamic = PhysXJsLoader.physXJs): Vect
 fun Vector_PxSweepHitFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): Vector_PxSweepHit = js("_module.wrapPointer(ptr, _module.Vector_PxSweepHit)")
 
 fun Vector_PxSweepHit.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface PxTypedStridedData_PxU16 {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * WebIDL type: unsigned long
+     */
+    var stride: Int
+    /**
+     * WebIDL type: [PxU16ConstPtr] (Value)
+     */
+    var data: PxU16ConstPtr
+}
+
+fun PxTypedStridedData_PxU16FromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxTypedStridedData_PxU16 = js("_module.wrapPointer(ptr, _module.PxTypedStridedData_PxU16)")
+
+fun PxTypedStridedData_PxU16.destroy() {
     PhysXJsLoader.destroy(this)
 }
 

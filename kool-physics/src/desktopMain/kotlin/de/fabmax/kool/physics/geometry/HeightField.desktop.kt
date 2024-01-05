@@ -11,7 +11,7 @@ import physx.geometry.PxHeightField
 import physx.geometry.PxHeightFieldFormatEnum
 import physx.geometry.PxHeightFieldGeometry
 import physx.geometry.PxHeightFieldSample
-import physx.support.Vector_PxHeightFieldSample
+import physx.support.PxArray_PxHeightFieldSample
 import kotlin.math.max
 import kotlin.math.roundToInt
 
@@ -43,7 +43,7 @@ class HeightFieldImpl(
             val rows = heightMap.width
             val cols = heightMap.height
             val sample = mem.createPxHeightFieldSample()
-            val samples = Vector_PxHeightFieldSample()
+            val samples = PxArray_PxHeightFieldSample()
             for (row in 0..rows) {
                 for (col in (cols-1) downTo 0) {
                     sample.height = (heightMap.getHeight(row, col) * revHeightToI16).roundToInt().toShort()
@@ -52,7 +52,7 @@ class HeightFieldImpl(
                     } else {
                         sample.setTessFlag()
                     }
-                    samples.push_back(sample)
+                    samples.pushBack(sample)
                 }
             }
 
@@ -60,7 +60,7 @@ class HeightFieldImpl(
             desc.format = PxHeightFieldFormatEnum.eS16_TM
             desc.nbRows = rows
             desc.nbColumns = cols
-            desc.samples.data = samples.data()
+            desc.samples.data = samples.begin()
             desc.samples.stride = PxHeightFieldSample.SIZEOF
 
             pxHeightField = PxTopLevelFunctions.CreateHeightField(desc)

@@ -4,10 +4,10 @@ import de.fabmax.kool.physics.MemoryStack
 import de.fabmax.kool.physics.PhysicsImpl
 import de.fabmax.kool.physics.PxTopLevelFunctions
 import de.fabmax.kool.util.HeightMap
+import physx.PxArray_PxHeightFieldSample
 import physx.PxHeightField
 import physx.PxHeightFieldFormatEnum
 import physx.PxHeightFieldGeometry
-import physx.Vector_PxHeightFieldSample
 import kotlin.math.max
 import kotlin.math.roundToInt
 
@@ -39,7 +39,7 @@ class HeightFieldImpl(
             val rows = heightMap.width
             val cols = heightMap.height
             val sample = mem.createPxHeightFieldSample()
-            val samples = Vector_PxHeightFieldSample()
+            val samples = PxArray_PxHeightFieldSample()
             for (row in 0..rows) {
                 for (col in (cols-1) downTo 0) {
                     sample.height = (heightMap.getHeight(row, col) * revHeightToI16).roundToInt().toShort()
@@ -48,7 +48,7 @@ class HeightFieldImpl(
                     } else {
                         sample.setTessFlag()
                     }
-                    samples.push_back(sample)
+                    samples.pushBack(sample)
                 }
             }
 
@@ -56,7 +56,7 @@ class HeightFieldImpl(
             desc.format = PxHeightFieldFormatEnum.eS16_TM
             desc.nbRows = rows
             desc.nbColumns = cols
-            desc.samples.data = samples.data()
+            desc.samples.data = samples.begin()
             desc.samples.stride = 4 //PxHeightFieldSample.SIZEOF
 
             pxHeightField = PxTopLevelFunctions.CreateHeightField(desc)
@@ -73,7 +73,6 @@ class HeightFieldImpl(
 }
 
 class HeightFieldGeometryImpl(override val heightField: HeightField) : CollisionGeometryImpl(), HeightFieldGeometry {
-
     override val pxGeometry: PxHeightFieldGeometry
 
     init {

@@ -73,9 +73,9 @@ fun PxExtendedVec3.set(v: Vec3d): PxExtendedVec3 { x = v.x; y = v.y; z = v.z; re
 fun Vec3d.toPxExtendedVec3(result: PxExtendedVec3) = result.set(this)
 
 @Suppress("FunctionName")
-fun List<Vec3f>.toVector_PxVec3(): Vector_PxVec3 {
-    val vector = Vector_PxVec3(size)
-    forEachIndexed { i, v -> v.toPxVec3(vector.at(i)) }
+fun List<Vec3f>.toPxArray_PxVec3(): PxArray_PxVec3 {
+    val vector = PxArray_PxVec3(size)
+    forEachIndexed { i, v -> v.toPxVec3(vector.get(i)) }
     return vector
 }
 

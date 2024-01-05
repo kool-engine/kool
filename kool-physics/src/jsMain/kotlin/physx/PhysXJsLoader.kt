@@ -4,7 +4,7 @@
 
 package physx
 
-import kotlinx.coroutines.asDeferred             
+import kotlinx.coroutines.asDeferred
 import kotlin.js.Promise
 
 object PhysXJsLoader {

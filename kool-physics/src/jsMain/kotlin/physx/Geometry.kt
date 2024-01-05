@@ -956,6 +956,489 @@ fun PxSphereGeometry.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
+external interface PxTetMaker {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * @param triangleMesh    WebIDL type: [PxSimpleTriangleMesh] (Const, Ref)
+     * @param outVertices     WebIDL type: [PxArray_PxVec3] (Ref)
+     * @param outTetIndices   WebIDL type: [PxArray_PxU32] (Ref)
+     * @param validate        WebIDL type: boolean
+     * @param volumeThreshold WebIDL type: float
+     * @return WebIDL type: boolean
+     */
+    fun createConformingTetrahedronMesh(triangleMesh: PxSimpleTriangleMesh, outVertices: PxArray_PxVec3, outTetIndices: PxArray_PxU32, validate: Boolean, volumeThreshold: Float): Boolean
+
+    /**
+     * @param tetMesh                              WebIDL type: [PxTetrahedronMeshDesc] (Const, Ref)
+     * @param numVoxelsAlongLongestBoundingBoxAxis WebIDL type: unsigned long
+     * @param outVertices                          WebIDL type: [PxArray_PxVec3] (Ref)
+     * @param outTetIndices                        WebIDL type: [PxArray_PxU32] (Ref)
+     * @return WebIDL type: boolean
+     */
+    fun createVoxelTetrahedronMesh(tetMesh: PxTetrahedronMeshDesc, numVoxelsAlongLongestBoundingBoxAxis: Int, outVertices: PxArray_PxVec3, outTetIndices: PxArray_PxU32): Boolean
+
+    /**
+     * @param tetMesh         WebIDL type: [PxTetrahedronMeshDesc] (Const, Ref)
+     * @param voxelEdgeLength WebIDL type: float
+     * @param outVertices     WebIDL type: [PxArray_PxVec3] (Ref)
+     * @param outTetIndices   WebIDL type: [PxArray_PxU32] (Ref)
+     * @return WebIDL type: boolean
+     */
+    fun createVoxelTetrahedronMeshFromEdgeLength(tetMesh: PxTetrahedronMeshDesc, voxelEdgeLength: Float, outVertices: PxArray_PxVec3, outTetIndices: PxArray_PxU32): Boolean
+
+    /**
+     * @param triangleMesh            WebIDL type: [PxSimpleTriangleMesh] (Const, Ref)
+     * @param minVolumeThreshold      WebIDL type: float
+     * @param minTriangleAngleRadians WebIDL type: float
+     * @return WebIDL type: [PxTriangleMeshAnalysisResults] (Value)
+     */
+    fun validateTriangleMesh(triangleMesh: PxSimpleTriangleMesh, minVolumeThreshold: Float, minTriangleAngleRadians: Float): PxTriangleMeshAnalysisResults
+
+    /**
+     * @param points                WebIDL type: [PxBoundedData] (Const, Ref)
+     * @param tetrahedra            WebIDL type: [PxBoundedData] (Const, Ref)
+     * @param minTetVolumeThreshold WebIDL type: float
+     * @return WebIDL type: [PxTetrahedronMeshAnalysisResults] (Value)
+     */
+    fun validateTetrahedronMesh(points: PxBoundedData, tetrahedra: PxBoundedData, minTetVolumeThreshold: Float): PxTetrahedronMeshAnalysisResults
+
+    /**
+     * @param inputVertices       WebIDL type: [PxArray_PxVec3] (Const, Ref)
+     * @param inputIndices        WebIDL type: [PxArray_PxU32] (Const, Ref)
+     * @param targetTriangleCount WebIDL type: long
+     * @param maximalEdgeLength   WebIDL type: float
+     * @param outputVertices      WebIDL type: [PxArray_PxVec3] (Ref)
+     * @param outputIndices       WebIDL type: [PxArray_PxU32] (Ref)
+     */
+    fun simplifyTriangleMesh(inputVertices: PxArray_PxVec3, inputIndices: PxArray_PxU32, targetTriangleCount: Int, maximalEdgeLength: Float, outputVertices: PxArray_PxVec3, outputIndices: PxArray_PxU32)
+
+    /**
+     * @param inputVertices       WebIDL type: [PxArray_PxVec3] (Const, Ref)
+     * @param inputIndices        WebIDL type: [PxArray_PxU32] (Const, Ref)
+     * @param targetTriangleCount WebIDL type: long
+     * @param maximalEdgeLength   WebIDL type: float
+     * @param outputVertices      WebIDL type: [PxArray_PxVec3] (Ref)
+     * @param outputIndices       WebIDL type: [PxArray_PxU32] (Ref)
+     * @param vertexMap           WebIDL type: [PxArray_PxU32]
+     */
+    fun simplifyTriangleMesh(inputVertices: PxArray_PxVec3, inputIndices: PxArray_PxU32, targetTriangleCount: Int, maximalEdgeLength: Float, outputVertices: PxArray_PxVec3, outputIndices: PxArray_PxU32, vertexMap: PxArray_PxU32)
+
+    /**
+     * @param inputVertices        WebIDL type: [PxArray_PxVec3] (Const, Ref)
+     * @param inputIndices         WebIDL type: [PxArray_PxU32] (Const, Ref)
+     * @param targetTriangleCount  WebIDL type: long
+     * @param maximalEdgeLength    WebIDL type: float
+     * @param outputVertices       WebIDL type: [PxArray_PxVec3] (Ref)
+     * @param outputIndices        WebIDL type: [PxArray_PxU32] (Ref)
+     * @param vertexMap            WebIDL type: [PxArray_PxU32]
+     * @param edgeLengthCostWeight WebIDL type: float
+     */
+    fun simplifyTriangleMesh(inputVertices: PxArray_PxVec3, inputIndices: PxArray_PxU32, targetTriangleCount: Int, maximalEdgeLength: Float, outputVertices: PxArray_PxVec3, outputIndices: PxArray_PxU32, vertexMap: PxArray_PxU32, edgeLengthCostWeight: Float)
+
+    /**
+     * @param inputVertices              WebIDL type: [PxArray_PxVec3] (Const, Ref)
+     * @param inputIndices               WebIDL type: [PxArray_PxU32] (Const, Ref)
+     * @param targetTriangleCount        WebIDL type: long
+     * @param maximalEdgeLength          WebIDL type: float
+     * @param outputVertices             WebIDL type: [PxArray_PxVec3] (Ref)
+     * @param outputIndices              WebIDL type: [PxArray_PxU32] (Ref)
+     * @param vertexMap                  WebIDL type: [PxArray_PxU32]
+     * @param edgeLengthCostWeight       WebIDL type: float
+     * @param flatnessDetectionThreshold WebIDL type: float
+     */
+    fun simplifyTriangleMesh(inputVertices: PxArray_PxVec3, inputIndices: PxArray_PxU32, targetTriangleCount: Int, maximalEdgeLength: Float, outputVertices: PxArray_PxVec3, outputIndices: PxArray_PxU32, vertexMap: PxArray_PxU32, edgeLengthCostWeight: Float, flatnessDetectionThreshold: Float)
+
+    /**
+     * @param inputVertices                             WebIDL type: [PxArray_PxVec3] (Const, Ref)
+     * @param inputIndices                              WebIDL type: [PxArray_PxU32] (Const, Ref)
+     * @param targetTriangleCount                       WebIDL type: long
+     * @param maximalEdgeLength                         WebIDL type: float
+     * @param outputVertices                            WebIDL type: [PxArray_PxVec3] (Ref)
+     * @param outputIndices                             WebIDL type: [PxArray_PxU32] (Ref)
+     * @param vertexMap                                 WebIDL type: [PxArray_PxU32]
+     * @param edgeLengthCostWeight                      WebIDL type: float
+     * @param flatnessDetectionThreshold                WebIDL type: float
+     * @param projectSimplifiedPointsOnInputMeshSurface WebIDL type: boolean
+     */
+    fun simplifyTriangleMesh(inputVertices: PxArray_PxVec3, inputIndices: PxArray_PxU32, targetTriangleCount: Int, maximalEdgeLength: Float, outputVertices: PxArray_PxVec3, outputIndices: PxArray_PxU32, vertexMap: PxArray_PxU32, edgeLengthCostWeight: Float, flatnessDetectionThreshold: Float, projectSimplifiedPointsOnInputMeshSurface: Boolean)
+
+    /**
+     * @param inputVertices                             WebIDL type: [PxArray_PxVec3] (Const, Ref)
+     * @param inputIndices                              WebIDL type: [PxArray_PxU32] (Const, Ref)
+     * @param targetTriangleCount                       WebIDL type: long
+     * @param maximalEdgeLength                         WebIDL type: float
+     * @param outputVertices                            WebIDL type: [PxArray_PxVec3] (Ref)
+     * @param outputIndices                             WebIDL type: [PxArray_PxU32] (Ref)
+     * @param vertexMap                                 WebIDL type: [PxArray_PxU32]
+     * @param edgeLengthCostWeight                      WebIDL type: float
+     * @param flatnessDetectionThreshold                WebIDL type: float
+     * @param projectSimplifiedPointsOnInputMeshSurface WebIDL type: boolean
+     * @param outputVertexToInputTriangle               WebIDL type: [PxArray_PxU32]
+     */
+    fun simplifyTriangleMesh(inputVertices: PxArray_PxVec3, inputIndices: PxArray_PxU32, targetTriangleCount: Int, maximalEdgeLength: Float, outputVertices: PxArray_PxVec3, outputIndices: PxArray_PxU32, vertexMap: PxArray_PxU32, edgeLengthCostWeight: Float, flatnessDetectionThreshold: Float, projectSimplifiedPointsOnInputMeshSurface: Boolean, outputVertexToInputTriangle: PxArray_PxU32)
+
+    /**
+     * @param inputVertices                             WebIDL type: [PxArray_PxVec3] (Const, Ref)
+     * @param inputIndices                              WebIDL type: [PxArray_PxU32] (Const, Ref)
+     * @param targetTriangleCount                       WebIDL type: long
+     * @param maximalEdgeLength                         WebIDL type: float
+     * @param outputVertices                            WebIDL type: [PxArray_PxVec3] (Ref)
+     * @param outputIndices                             WebIDL type: [PxArray_PxU32] (Ref)
+     * @param vertexMap                                 WebIDL type: [PxArray_PxU32]
+     * @param edgeLengthCostWeight                      WebIDL type: float
+     * @param flatnessDetectionThreshold                WebIDL type: float
+     * @param projectSimplifiedPointsOnInputMeshSurface WebIDL type: boolean
+     * @param outputVertexToInputTriangle               WebIDL type: [PxArray_PxU32]
+     * @param removeDisconnectedPatches                 WebIDL type: boolean
+     */
+    fun simplifyTriangleMesh(inputVertices: PxArray_PxVec3, inputIndices: PxArray_PxU32, targetTriangleCount: Int, maximalEdgeLength: Float, outputVertices: PxArray_PxVec3, outputIndices: PxArray_PxU32, vertexMap: PxArray_PxU32, edgeLengthCostWeight: Float, flatnessDetectionThreshold: Float, projectSimplifiedPointsOnInputMeshSurface: Boolean, outputVertexToInputTriangle: PxArray_PxU32, removeDisconnectedPatches: Boolean)
+
+    /**
+     * @param inputVertices  WebIDL type: [PxArray_PxVec3] (Const, Ref)
+     * @param inputIndices   WebIDL type: [PxArray_PxU32] (Const, Ref)
+     * @param gridResolution WebIDL type: unsigned long
+     * @param outputVertices WebIDL type: [PxArray_PxVec3] (Ref)
+     * @param outputIndices  WebIDL type: [PxArray_PxU32] (Ref)
+     */
+    fun remeshTriangleMesh(inputVertices: PxArray_PxVec3, inputIndices: PxArray_PxU32, gridResolution: Int, outputVertices: PxArray_PxVec3, outputIndices: PxArray_PxU32)
+
+    /**
+     * @param inputVertices  WebIDL type: [PxArray_PxVec3] (Const, Ref)
+     * @param inputIndices   WebIDL type: [PxArray_PxU32] (Const, Ref)
+     * @param gridResolution WebIDL type: unsigned long
+     * @param outputVertices WebIDL type: [PxArray_PxVec3] (Ref)
+     * @param outputIndices  WebIDL type: [PxArray_PxU32] (Ref)
+     * @param vertexMap      WebIDL type: [PxArray_PxU32]
+     */
+    fun remeshTriangleMesh(inputVertices: PxArray_PxVec3, inputIndices: PxArray_PxU32, gridResolution: Int, outputVertices: PxArray_PxVec3, outputIndices: PxArray_PxU32, vertexMap: PxArray_PxU32)
+
+    /**
+     * @param inputVertices   WebIDL type: [PxArray_PxVec3] (Const, Ref)
+     * @param inputIndices    WebIDL type: [PxArray_PxU32] (Const, Ref)
+     * @param useTreeNodes    WebIDL type: boolean
+     * @param outputVertices  WebIDL type: [PxArray_PxVec3] (Ref)
+     * @param outputIndices   WebIDL type: [PxArray_PxU32] (Ref)
+     * @param volumeThreshold WebIDL type: float
+     */
+    fun createTreeBasedTetrahedralMesh(inputVertices: PxArray_PxVec3, inputIndices: PxArray_PxU32, useTreeNodes: Boolean, outputVertices: PxArray_PxVec3, outputIndices: PxArray_PxU32, volumeThreshold: Float)
+
+    /**
+     * @param inputVertices  WebIDL type: [PxArray_PxVec3] (Const, Ref)
+     * @param inputIndices   WebIDL type: [PxArray_PxU32] (Const, Ref)
+     * @param outputVertices WebIDL type: [PxArray_PxVec3] (Ref)
+     * @param outputIndices  WebIDL type: [PxArray_PxU32] (Ref)
+     * @param resolution     WebIDL type: long
+     */
+    fun createRelaxedVoxelTetrahedralMesh(inputVertices: PxArray_PxVec3, inputIndices: PxArray_PxU32, outputVertices: PxArray_PxVec3, outputIndices: PxArray_PxU32, resolution: Int)
+
+    /**
+     * @param inputVertices           WebIDL type: [PxArray_PxVec3] (Const, Ref)
+     * @param inputIndices            WebIDL type: [PxArray_PxU32] (Const, Ref)
+     * @param outputVertices          WebIDL type: [PxArray_PxVec3] (Ref)
+     * @param outputIndices           WebIDL type: [PxArray_PxU32] (Ref)
+     * @param resolution              WebIDL type: long
+     * @param numRelaxationIterations WebIDL type: long
+     */
+    fun createRelaxedVoxelTetrahedralMesh(inputVertices: PxArray_PxVec3, inputIndices: PxArray_PxU32, outputVertices: PxArray_PxVec3, outputIndices: PxArray_PxU32, resolution: Int, numRelaxationIterations: Int)
+
+    /**
+     * @param inputVertices           WebIDL type: [PxArray_PxVec3] (Const, Ref)
+     * @param inputIndices            WebIDL type: [PxArray_PxU32] (Const, Ref)
+     * @param outputVertices          WebIDL type: [PxArray_PxVec3] (Ref)
+     * @param outputIndices           WebIDL type: [PxArray_PxU32] (Ref)
+     * @param resolution              WebIDL type: long
+     * @param numRelaxationIterations WebIDL type: long
+     * @param relMinTetVolume         WebIDL type: float
+     */
+    fun createRelaxedVoxelTetrahedralMesh(inputVertices: PxArray_PxVec3, inputIndices: PxArray_PxU32, outputVertices: PxArray_PxVec3, outputIndices: PxArray_PxU32, resolution: Int, numRelaxationIterations: Int, relMinTetVolume: Float)
+
+    /**
+     * @param triangles              WebIDL type: [PxI32ConstPtr] (Ref)
+     * @param numTriangles           WebIDL type: unsigned long
+     * @param islandIndexPerTriangle WebIDL type: [PxArray_PxU32] (Ref)
+     */
+    fun detectTriangleIslands(triangles: PxI32ConstPtr, numTriangles: Int, islandIndexPerTriangle: PxArray_PxU32)
+
+    /**
+     * @param islandIndexPerTriangle WebIDL type: [PxU32ConstPtr] (Ref)
+     * @param numTriangles           WebIDL type: unsigned long
+     * @return WebIDL type: unsigned long
+     */
+    fun findLargestIslandId(islandIndexPerTriangle: PxU32ConstPtr, numTriangles: Int): Int
+
+}
+
+fun PxTetMakerFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxTetMaker = js("_module.wrapPointer(ptr, _module.PxTetMaker)")
+
+external interface PxTetrahedronMeshAnalysisResults {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * @param flag WebIDL type: [PxTetrahedronMeshAnalysisResultEnum] (enum)
+     * @return WebIDL type: boolean
+     */
+    fun isSet(flag: Int): Boolean
+
+    /**
+     * @param flag WebIDL type: [PxTetrahedronMeshAnalysisResultEnum] (enum)
+     */
+    fun raise(flag: Int)
+
+    /**
+     * @param flag WebIDL type: [PxTetrahedronMeshAnalysisResultEnum] (enum)
+     */
+    fun clear(flag: Int)
+
+}
+
+/**
+ * @param flags WebIDL type: unsigned long
+ */
+fun PxTetrahedronMeshAnalysisResults(flags: Int, _module: dynamic = PhysXJsLoader.physXJs): PxTetrahedronMeshAnalysisResults = js("new _module.PxTetrahedronMeshAnalysisResults(flags)")
+
+fun PxTetrahedronMeshAnalysisResultsFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxTetrahedronMeshAnalysisResults = js("_module.wrapPointer(ptr, _module.PxTetrahedronMeshAnalysisResults)")
+
+fun PxTetrahedronMeshAnalysisResults.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface PxTetrahedronMeshDesc {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * WebIDL type: [PxTypedStridedData_PxU16] (Value)
+     */
+    var materialIndices: PxTypedStridedData_PxU16
+    /**
+     * WebIDL type: [PxBoundedData] (Value)
+     */
+    var points: PxBoundedData
+    /**
+     * WebIDL type: [PxBoundedData] (Value)
+     */
+    var tetrahedrons: PxBoundedData
+    /**
+     * WebIDL type: [PxMeshFlags] (Value)
+     */
+    var flags: PxMeshFlags
+    /**
+     * WebIDL type: short
+     */
+    var tetsPerElement: Short
+
+    /**
+     * @return WebIDL type: boolean
+     */
+    fun isValid(): Boolean
+
+}
+
+fun PxTetrahedronMeshDesc(_module: dynamic = PhysXJsLoader.physXJs): PxTetrahedronMeshDesc = js("new _module.PxTetrahedronMeshDesc()")
+
+/**
+ * @param meshVertices   WebIDL type: [PxArray_PxVec3] (Ref)
+ * @param meshTetIndices WebIDL type: [PxArray_PxU32] (Ref)
+ */
+fun PxTetrahedronMeshDesc(meshVertices: PxArray_PxVec3, meshTetIndices: PxArray_PxU32, _module: dynamic = PhysXJsLoader.physXJs): PxTetrahedronMeshDesc = js("new _module.PxTetrahedronMeshDesc(meshVertices, meshTetIndices)")
+
+/**
+ * @param meshVertices   WebIDL type: [PxArray_PxVec3] (Ref)
+ * @param meshTetIndices WebIDL type: [PxArray_PxU32] (Ref)
+ * @param meshFormat     WebIDL type: [PxTetrahedronMeshFormatEnum] (enum)
+ */
+fun PxTetrahedronMeshDesc(meshVertices: PxArray_PxVec3, meshTetIndices: PxArray_PxU32, meshFormat: Int, _module: dynamic = PhysXJsLoader.physXJs): PxTetrahedronMeshDesc = js("new _module.PxTetrahedronMeshDesc(meshVertices, meshTetIndices, meshFormat)")
+
+/**
+ * @param meshVertices              WebIDL type: [PxArray_PxVec3] (Ref)
+ * @param meshTetIndices            WebIDL type: [PxArray_PxU32] (Ref)
+ * @param meshFormat                WebIDL type: [PxTetrahedronMeshFormatEnum] (enum)
+ * @param numberOfTetsPerHexElement WebIDL type: unsigned short
+ */
+fun PxTetrahedronMeshDesc(meshVertices: PxArray_PxVec3, meshTetIndices: PxArray_PxU32, meshFormat: Int, numberOfTetsPerHexElement: Short, _module: dynamic = PhysXJsLoader.physXJs): PxTetrahedronMeshDesc = js("new _module.PxTetrahedronMeshDesc(meshVertices, meshTetIndices, meshFormat, numberOfTetsPerHexElement)")
+
+fun PxTetrahedronMeshDescFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxTetrahedronMeshDesc = js("_module.wrapPointer(ptr, _module.PxTetrahedronMeshDesc)")
+
+fun PxTetrahedronMeshDesc.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface PxTetrahedronMesh : PxRefCounted {
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun getNbVertices(): Int
+
+    /**
+     * @return WebIDL type: [PxVec3] (Const)
+     */
+    fun getVertices(): PxVec3
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun getNbTetrahedrons(): Int
+
+    /**
+     * @return WebIDL type: VoidPtr (Const)
+     */
+    fun getTetrahedrons(): Any
+
+    /**
+     * @return WebIDL type: [PxTetrahedronMeshFlags] (Value)
+     */
+    fun getTetrahedronMeshFlags(): PxTetrahedronMeshFlags
+
+    /**
+     * @return WebIDL type: [PxU32ConstPtr] (Value)
+     */
+    fun getTetrahedraRemap(): PxU32ConstPtr
+
+    /**
+     * @return WebIDL type: [PxBounds3] (Value)
+     */
+    fun getLocalBounds(): PxBounds3
+
+}
+
+fun PxTetrahedronMeshFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxTetrahedronMesh = js("_module.wrapPointer(ptr, _module.PxTetrahedronMesh)")
+
+val PxTetrahedronMesh.nbVertices
+    get() = getNbVertices()
+val PxTetrahedronMesh.vertices
+    get() = getVertices()
+val PxTetrahedronMesh.nbTetrahedrons
+    get() = getNbTetrahedrons()
+val PxTetrahedronMesh.tetrahedrons
+    get() = getTetrahedrons()
+val PxTetrahedronMesh.tetrahedronMeshFlags
+    get() = getTetrahedronMeshFlags()
+val PxTetrahedronMesh.tetrahedraRemap
+    get() = getTetrahedraRemap()
+val PxTetrahedronMesh.localBounds
+    get() = getLocalBounds()
+
+external interface PxTetrahedronMeshExt {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * @param mesh      WebIDL type: [PxTetrahedronMesh] (Const)
+     * @param point     WebIDL type: [PxVec3] (Const, Ref)
+     * @param bary      WebIDL type: [PxVec4] (Ref)
+     * @param tolerance WebIDL type: float
+     * @return WebIDL type: long
+     */
+    fun findTetrahedronContainingPoint(mesh: PxTetrahedronMesh, point: PxVec3, bary: PxVec4, tolerance: Float): Int
+
+    /**
+     * @param mesh  WebIDL type: [PxTetrahedronMesh] (Const)
+     * @param point WebIDL type: [PxVec3] (Const, Ref)
+     * @param bary  WebIDL type: [PxVec4] (Ref)
+     * @return WebIDL type: long
+     */
+    fun findTetrahedronClosestToPoint(mesh: PxTetrahedronMesh, point: PxVec3, bary: PxVec4): Int
+
+    /**
+     * @param tetMeshVertices        WebIDL type: [PxArray_PxVec3] (Const, Ref)
+     * @param tetMeshIndices         WebIDL type: [PxArray_PxU32] (Const, Ref)
+     * @param pointsToEmbed          WebIDL type: [PxArray_PxVec3] (Const, Ref)
+     * @param barycentricCoordinates WebIDL type: [PxArray_PxVec4] (Ref)
+     * @param tetLinks               WebIDL type: [PxArray_PxU32] (Ref)
+     */
+    fun createPointsToTetrahedronMap(tetMeshVertices: PxArray_PxVec3, tetMeshIndices: PxArray_PxU32, pointsToEmbed: PxArray_PxVec3, barycentricCoordinates: PxArray_PxVec4, tetLinks: PxArray_PxU32)
+
+    /**
+     * @param mesh             WebIDL type: [PxTetrahedronMesh] (Const)
+     * @param surfaceTriangles WebIDL type: [PxArray_PxU32] (Ref)
+     */
+    fun extractTetMeshSurface(mesh: PxTetrahedronMesh, surfaceTriangles: PxArray_PxU32)
+
+    /**
+     * @param mesh                 WebIDL type: [PxTetrahedronMesh] (Const)
+     * @param surfaceTriangles     WebIDL type: [PxArray_PxU32] (Ref)
+     * @param surfaceTriangleToTet WebIDL type: [PxArray_PxU32]
+     */
+    fun extractTetMeshSurface(mesh: PxTetrahedronMesh, surfaceTriangles: PxArray_PxU32, surfaceTriangleToTet: PxArray_PxU32)
+
+    /**
+     * @param mesh                    WebIDL type: [PxTetrahedronMesh] (Const)
+     * @param surfaceTriangles        WebIDL type: [PxArray_PxU32] (Ref)
+     * @param surfaceTriangleToTet    WebIDL type: [PxArray_PxU32]
+     * @param flipTriangleOrientation WebIDL type: boolean
+     */
+    fun extractTetMeshSurface(mesh: PxTetrahedronMesh, surfaceTriangles: PxArray_PxU32, surfaceTriangleToTet: PxArray_PxU32, flipTriangleOrientation: Boolean)
+
+}
+
+fun PxTetrahedronMeshExtFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxTetrahedronMeshExt = js("_module.wrapPointer(ptr, _module.PxTetrahedronMeshExt)")
+
+external interface PxTetrahedronMeshFlags {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * @param flag WebIDL type: [PxTetrahedronMeshFlagEnum] (enum)
+     * @return WebIDL type: boolean
+     */
+    fun isSet(flag: Int): Boolean
+
+    /**
+     * @param flag WebIDL type: [PxTetrahedronMeshFlagEnum] (enum)
+     */
+    fun raise(flag: Int)
+
+    /**
+     * @param flag WebIDL type: [PxTetrahedronMeshFlagEnum] (enum)
+     */
+    fun clear(flag: Int)
+
+}
+
+/**
+ * @param flags WebIDL type: octet
+ */
+fun PxTetrahedronMeshFlags(flags: Byte, _module: dynamic = PhysXJsLoader.physXJs): PxTetrahedronMeshFlags = js("new _module.PxTetrahedronMeshFlags(flags)")
+
+fun PxTetrahedronMeshFlagsFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxTetrahedronMeshFlags = js("_module.wrapPointer(ptr, _module.PxTetrahedronMeshFlags)")
+
+fun PxTetrahedronMeshFlags.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface PxTetrahedronMeshGeometry : PxGeometry {
+    /**
+     * WebIDL type: [PxTetrahedronMesh]
+     */
+    var tetrahedronMesh: PxTetrahedronMesh
+
+    /**
+     * @return WebIDL type: boolean
+     */
+    fun isValid(): Boolean
+
+}
+
+/**
+ * @param mesh WebIDL type: [PxTetrahedronMesh]
+ */
+fun PxTetrahedronMeshGeometry(mesh: PxTetrahedronMesh, _module: dynamic = PhysXJsLoader.physXJs): PxTetrahedronMeshGeometry = js("new _module.PxTetrahedronMeshGeometry(mesh)")
+
+fun PxTetrahedronMeshGeometryFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxTetrahedronMeshGeometry = js("_module.wrapPointer(ptr, _module.PxTetrahedronMeshGeometry)")
+
 external interface PxTriangle {
     /**
      * Native object address.
@@ -1074,6 +1557,41 @@ val PxTriangleMesh.trianglesRemap
 val PxTriangleMesh.localBounds
     get() = getLocalBounds()
 
+external interface PxTriangleMeshAnalysisResults {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * @param flag WebIDL type: [PxTriangleMeshAnalysisResultEnum] (enum)
+     * @return WebIDL type: boolean
+     */
+    fun isSet(flag: Int): Boolean
+
+    /**
+     * @param flag WebIDL type: [PxTriangleMeshAnalysisResultEnum] (enum)
+     */
+    fun raise(flag: Int)
+
+    /**
+     * @param flag WebIDL type: [PxTriangleMeshAnalysisResultEnum] (enum)
+     */
+    fun clear(flag: Int)
+
+}
+
+/**
+ * @param flags WebIDL type: unsigned long
+ */
+fun PxTriangleMeshAnalysisResults(flags: Int, _module: dynamic = PhysXJsLoader.physXJs): PxTriangleMeshAnalysisResults = js("new _module.PxTriangleMeshAnalysisResults(flags)")
+
+fun PxTriangleMeshAnalysisResultsFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxTriangleMeshAnalysisResults = js("_module.wrapPointer(ptr, _module.PxTriangleMeshAnalysisResults)")
+
+fun PxTriangleMeshAnalysisResults.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface PxTriangleMeshFlags {
     /**
      * Native object address.
@@ -1184,6 +1702,38 @@ object PxMeshFlagEnum {
 
 object PxMeshGeometryFlagEnum {
     val eDOUBLE_SIDED: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxMeshGeometryFlagEnum_eDOUBLE_SIDED()
+}
+
+object PxTetrahedronMeshAnalysisResultEnum {
+    val eVALID: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxTetrahedronMeshAnalysisResultEnum_eVALID()
+    val eDEGENERATE_TETRAHEDRON: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxTetrahedronMeshAnalysisResultEnum_eDEGENERATE_TETRAHEDRON()
+    val eMESH_IS_PROBLEMATIC: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxTetrahedronMeshAnalysisResultEnum_eMESH_IS_PROBLEMATIC()
+    val eMESH_IS_INVALID: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxTetrahedronMeshAnalysisResultEnum_eMESH_IS_INVALID()
+}
+
+object PxTetrahedronMeshFlagEnum {
+    val e16_BIT_INDICES: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxTetrahedronMeshFlagEnum_e16_BIT_INDICES()
+}
+
+object PxTetrahedronMeshFormatEnum {
+    val eTET_MESH: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxTetrahedronMeshFormatEnum_eTET_MESH()
+    val eHEX_MESH: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxTetrahedronMeshFormatEnum_eHEX_MESH()
+}
+
+object PxTriangleMeshAnalysisResultEnum {
+    val eVALID: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxTriangleMeshAnalysisResultEnum_eVALID()
+    val eZERO_VOLUME: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxTriangleMeshAnalysisResultEnum_eZERO_VOLUME()
+    val eOPEN_BOUNDARIES: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxTriangleMeshAnalysisResultEnum_eOPEN_BOUNDARIES()
+    val eSELF_INTERSECTIONS: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxTriangleMeshAnalysisResultEnum_eSELF_INTERSECTIONS()
+    val eINCONSISTENT_TRIANGLE_ORIENTATION: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxTriangleMeshAnalysisResultEnum_eINCONSISTENT_TRIANGLE_ORIENTATION()
+    val eCONTAINS_ACUTE_ANGLED_TRIANGLES: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxTriangleMeshAnalysisResultEnum_eCONTAINS_ACUTE_ANGLED_TRIANGLES()
+    val eEDGE_SHARED_BY_MORE_THAN_TWO_TRIANGLES: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxTriangleMeshAnalysisResultEnum_eEDGE_SHARED_BY_MORE_THAN_TWO_TRIANGLES()
+    val eCONTAINS_DUPLICATE_POINTS: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxTriangleMeshAnalysisResultEnum_eCONTAINS_DUPLICATE_POINTS()
+    val eCONTAINS_INVALID_POINTS: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxTriangleMeshAnalysisResultEnum_eCONTAINS_INVALID_POINTS()
+    val eREQUIRES_32BIT_INDEX_BUFFER: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxTriangleMeshAnalysisResultEnum_eREQUIRES_32BIT_INDEX_BUFFER()
+    val eTRIANGLE_INDEX_OUT_OF_RANGE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxTriangleMeshAnalysisResultEnum_eTRIANGLE_INDEX_OUT_OF_RANGE()
+    val eMESH_IS_PROBLEMATIC: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxTriangleMeshAnalysisResultEnum_eMESH_IS_PROBLEMATIC()
+    val eMESH_IS_INVALID: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxTriangleMeshAnalysisResultEnum_eMESH_IS_INVALID()
 }
 
 object PxTriangleMeshFlagEnum {

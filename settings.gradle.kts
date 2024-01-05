@@ -54,7 +54,7 @@ dependencyResolutionManagement {
             library("lwjgl-shaderc", "org.lwjgl", "lwjgl-shaderc").versionRef("lwjgl")
             library("lwjgl-nfd", "org.lwjgl", "lwjgl-nfd").versionRef("lwjgl")
             library("lwjgl-stb", "org.lwjgl", "lwjgl-stb").versionRef("lwjgl")
-            library("physxjni", "de.fabmax:physx-jni:2.3.1")
+            library("physxjni", "de.fabmax:physx-jni:2.3.2")
         }
     }
 }

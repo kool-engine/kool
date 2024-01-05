@@ -23,7 +23,6 @@ class VehicleImpl(override val vehicleProps: VehicleProperties, val world: Physi
     val vehicleSimulationContext: PxVehiclePhysXSimulationContext
     val pxVehicle: EngineDriveVehicle
 
-
     override var steerInput = 0f
         set(value) {
             field = value
@@ -91,7 +90,6 @@ class VehicleImpl(override val vehicleProps: VehicleProperties, val world: Physi
 
         holder = RigidActorHolder(pxVehicle.physXState.physxActor.rigidBody)
         transform.setMatrix(pose)
-
     }
 
     override fun setToRestState() {
@@ -236,7 +234,7 @@ class VehicleImpl(override val vehicleProps: VehicleProperties, val world: Physi
         MemoryStack.stackPush().use { mem ->
             val numWheels = vehicleProps.numWheels
             val wheelOffsets = wheelCenterActorOffsets.map { MutableVec3f(it).add(vehicleProps.chassisCMOffset) }
-            val pxWheelCenterActorOffsets = wheelOffsets.toVector_PxVec3()
+            val pxWheelCenterActorOffsets = wheelOffsets.toPxArray_PxVec3()
 
             if (numWheels != 4) {
                 TODO("For now only 4 wheeled vehicles are suppoted")
@@ -340,7 +338,7 @@ class VehicleImpl(override val vehicleProps: VehicleProperties, val world: Physi
             baseParams.suspensionStateCalculationParams.limitSuspensionExpansionVelocity = false
 
             val forceAppPoint = mem.createPxVec3(0f, 0f, -0.2f)
-            val suspSprungMasses = Vector_PxReal(numWheels)
+            val suspSprungMasses = PxArray_PxReal(numWheels)
             PxVehicleTopLevelFunctions.VehicleComputeSprungMasses(
                 numWheels, pxWheelCenterActorOffsets,
                 vehicleProps.chassisMass, PxVehicleAxesEnum.eNegY, suspSprungMasses
@@ -360,7 +358,7 @@ class VehicleImpl(override val vehicleProps: VehicleProperties, val world: Physi
 
                 suspForce.damping = vehicleProps.springDamperRate
                 suspForce.stiffness = vehicleProps.springStrength
-                suspForce.sprungMass = suspSprungMasses.at(i)
+                suspForce.sprungMass = suspSprungMasses.get(i)
 
                 suspComp.wheelToeAngle.addPair(0f, 0f)
                 suspComp.wheelCamberAngle.addPair(0f, 0f)
@@ -392,8 +390,7 @@ class VehicleImpl(override val vehicleProps: VehicleProperties, val world: Physi
     private fun EngineDriveVehicle.setupPhysxParams(vehicleProps: VehicleProperties) {
         MemoryStack.stackPush().use { mem ->
             val roadFilterData = mem.createPxFilterData(0, 0, 0, 0)
-            val roadQueryFlags =
-                mem.createPxQueryFlags((PxQueryFlagEnum.eSTATIC /*or PxQueryFlagEnum.eDYNAMIC.value*/).toShort())
+            val roadQueryFlags = mem.createPxQueryFlags((PxQueryFlagEnum.eSTATIC).toShort())
             val roadQueryFilterData = mem.createPxQueryFilterData(roadFilterData, roadQueryFlags)
 
             val actorCMassLocalPose = mem.createPxTransform(

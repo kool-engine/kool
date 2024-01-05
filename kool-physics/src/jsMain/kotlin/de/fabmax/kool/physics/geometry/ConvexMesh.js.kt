@@ -11,13 +11,12 @@ actual fun ConvexMesh(points: List<Vec3f>): ConvexMesh = ConvexMeshImpl(points)
 
 val ConvexMesh.pxConvexMesh: PxConvexMesh get() = (this as ConvexMeshImpl).pxConvexMesh
 
-class ConvexMeshImpl(override val points: List<Vec3f>) : ConvexMesh() {
+class ConvexMeshImpl(override val points: List<Vec3f>, override var releaseWithGeometry: Boolean = true) : ConvexMesh() {
 
     override val convexHull: IndexedVertexList
 
     val pxConvexMesh: PxConvexMesh
 
-    override var releaseWithGeometry = true
     internal var refCnt = 0
 
     init {
@@ -64,12 +63,12 @@ class ConvexMeshImpl(override val points: List<Vec3f>) : ConvexMesh() {
 
     companion object {
         internal fun makePxConvexMesh(points: List<Vec3f>): PxConvexMesh = MemoryStack.stackPush().use { mem ->
-            val vec3Vector = points.toVector_PxVec3()
+            val vec3Vector = points.toPxArray_PxVec3()
             val desc = mem.createPxConvexMeshDesc()
             desc.flags = mem.createPxConvexFlags(PxConvexFlagEnum.eCOMPUTE_CONVEX)
             desc.points.count = points.size
             desc.points.stride = 12
-            desc.points.data = vec3Vector.data()
+            desc.points.data = vec3Vector.begin()
             val pxConvexMesh = PxTopLevelFunctions.CreateConvexMesh(PhysicsImpl.cookingParams, desc)
             vec3Vector.destroy()
             pxConvexMesh

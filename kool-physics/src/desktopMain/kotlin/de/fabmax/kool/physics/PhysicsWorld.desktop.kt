@@ -16,8 +16,8 @@ import org.lwjgl.system.MemoryStack
 import physx.PxTopLevelFunctions
 import physx.common.PxVec3
 import physx.physics.*
+import physx.support.PxArray_PxContactPairPoint
 import physx.support.SupportFunctions
-import physx.support.Vector_PxContactPairPoint
 import kotlin.collections.set
 
 actual fun PhysicsWorld(scene: Scene?, isContinuousCollisionDetection: Boolean) : PhysicsWorld {
@@ -88,7 +88,7 @@ class PhysicsWorldImpl(scene: Scene?, val isContinuousCollisionDetection: Boolea
         val activeActors = SupportFunctions.PxScene_getActiveActors(pxScene)
         mutActiveActors = activeActors.size()
         for (i in 0 until mutActiveActors) {
-            pxActors[activeActors.at(i)]?.isActive = true
+            pxActors[activeActors.get(i)]?.isActive = true
         }
 
         super.fetchAsyncStepResults()
@@ -206,7 +206,7 @@ class PhysicsWorldImpl(scene: Scene?, val isContinuousCollisionDetection: Boolea
     }
 
     private inner class SimEventCallback : PxSimulationEventCallbackImpl() {
-        val contacts = Vector_PxContactPairPoint(64)
+        val contacts = PxArray_PxContactPairPoint(64)
 
         override fun onTrigger(pairs: PxTriggerPair, count: Int) {
             for (i in 0 until count) {
@@ -252,11 +252,11 @@ class PhysicsWorldImpl(scene: Scene?, val isContinuousCollisionDetection: Boolea
 
                 if (evts.isSet(PxPairFlagEnum.eNOTIFY_TOUCH_FOUND)) {
                     val contactPoints: MutableList<ContactPoint>?
-                    val pxContactPoints = pair.extractContacts(contacts.data(), 64)
+                    val pxContactPoints = pair.extractContacts(contacts.begin(), 64)
                     if (pxContactPoints > 0) {
                         contactPoints = mutableListOf()
                         for (iPt in 0 until pxContactPoints) {
-                            val contact = contacts.at(iPt)
+                            val contact = contacts.get(iPt)
                             contactPoints += ContactPoint(contact.position.toVec3f(), contact.normal.toVec3f(), contact.impulse.toVec3f(), contact.separation)
                         }
                     } else {

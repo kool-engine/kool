@@ -31,7 +31,7 @@ class PhysicsWorldImpl(scene: Scene?, val isContinuousCollisionDetection: Boolea
         }
 
     private var mutActiveActors = 0
-    override  val activeActors: Int
+    override val activeActors: Int
         get() = mutActiveActors
 
     private val pxActors = mutableMapOf<Int, RigidActor>()
@@ -69,7 +69,7 @@ class PhysicsWorldImpl(scene: Scene?, val isContinuousCollisionDetection: Boolea
         val activeActors = SupportFunctions.PxScene_getActiveActors(pxScene)
         mutActiveActors = activeActors.size()
         for (i in 0 until mutActiveActors) {
-            pxActors[activeActors.at(i).ptr]?.isActive = true
+            pxActors[activeActors.get(i).ptr]?.isActive = true
         }
 
         super.fetchAsyncStepResults()
@@ -188,7 +188,7 @@ class PhysicsWorldImpl(scene: Scene?, val isContinuousCollisionDetection: Boolea
     }
 
     private fun simEventCallback() = PxSimulationEventCallbackImpl().apply {
-        val contacts = Vector_PxContactPairPoint(64)
+        val contacts = PxArray_PxContactPairPoint(64)
 
         onConstraintBreak = { _, _ -> }
         onWake = { _, _ -> }
@@ -239,11 +239,11 @@ class PhysicsWorldImpl(scene: Scene?, val isContinuousCollisionDetection: Boolea
 
                     if (evts.isSet(PxPairFlagEnum.eNOTIFY_TOUCH_FOUND)) {
                         val contactPoints: MutableList<ContactPoint>?
-                        val pxContactPoints = pair.extractContacts(contacts.data(), 64)
+                        val pxContactPoints = pair.extractContacts(contacts.begin(), 64)
                         if (pxContactPoints > 0) {
                             contactPoints = mutableListOf()
                             for (iPt in 0 until pxContactPoints) {
-                                val contact = contacts.at(iPt)
+                                val contact = contacts.get(iPt)
                                 contactPoints += ContactPoint(contact.position.toVec3f(), contact.normal.toVec3f(), contact.impulse.toVec3f(), contact.separation)
                             }
                         } else {

@@ -14,7 +14,8 @@ import physx.cooking.PxTriangleMeshDesc
 import physx.extensions.PxRevoluteJointFlags
 import physx.geometry.*
 import physx.physics.*
-import physx.support.Vector_PxVec3
+import physx.support.PxArray_PxU32
+import physx.support.PxArray_PxVec3
 
 fun PxBounds3.toBoundingBox(result: BoundingBoxF): BoundingBoxF {
     val min = minimum
@@ -81,9 +82,9 @@ fun PxExtendedVec3.set(v: Vec3d): PxExtendedVec3 { x = v.x; y = v.y; z = v.z; re
 fun Vec3d.toPxExtendedVec3(result: PxExtendedVec3) = result.set(this)
 
 @Suppress("FunctionName")
-fun List<Vec3f>.toVector_PxVec3(): Vector_PxVec3 {
-    val vector = Vector_PxVec3(size)
-    forEachIndexed { i, v -> v.toPxVec3(vector.at(i)) }
+fun List<Vec3f>.toPxArray_PxVec3(): PxArray_PxVec3 {
+    val vector = PxArray_PxVec3(size)
+    forEachIndexed { i, v -> v.toPxVec3(vector.get(i)) }
     return vector
 }
 
@@ -98,6 +99,10 @@ fun FilterData.toPxFilterData(target: PxFilterData): PxFilterData {
     return target
 }
 
+fun MemoryStack.createPxArray_PxU32() = PxArray_PxU32.createAt(this, MemoryStack::nmalloc)
+fun MemoryStack.createPxArray_PxU32(size: Int) = PxArray_PxU32.createAt(this, MemoryStack::nmalloc, size)
+fun MemoryStack.createPxArray_PxVec3() = PxArray_PxVec3.createAt(this, MemoryStack::nmalloc)
+fun MemoryStack.createPxArray_PxVec3(size: Int) = PxArray_PxVec3.createAt(this, MemoryStack::nmalloc, size)
 fun MemoryStack.createPxArticulationDrive() = PxArticulationDrive.createAt(this, MemoryStack::nmalloc)
 fun MemoryStack.createPxArticulationLimit(low: Float, high: Float) = PxArticulationLimit.createAt(this, MemoryStack::nmalloc, low, high)
 fun MemoryStack.createPxBoundedData() = PxBoundedData.createAt(this, MemoryStack::nmalloc)

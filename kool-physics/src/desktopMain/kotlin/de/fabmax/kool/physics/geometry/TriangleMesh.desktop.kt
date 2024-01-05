@@ -8,8 +8,8 @@ import physx.PxTopLevelFunctions
 import physx.common.PxVec3
 import physx.geometry.PxTriangleMesh
 import physx.geometry.PxTriangleMeshGeometry
-import physx.support.Vector_PxU32
-import physx.support.Vector_PxVec3
+import physx.support.PxArray_PxU32
+import physx.support.PxArray_PxVec3
 
 actual fun TriangleMesh(geometry: IndexedVertexList): TriangleMesh = TriangleMeshImpl(geometry)
 
@@ -25,26 +25,26 @@ class TriangleMeshImpl(override val geometry: IndexedVertexList) : TriangleMesh(
     init {
         PhysicsImpl.checkIsLoaded()
         MemoryStack.stackPush().use { mem ->
-            val pointVector = Vector_PxVec3()
-            val indexVector = Vector_PxU32()
+            val pointVector = PxArray_PxVec3()
+            val indexVector = PxArray_PxU32()
             val pxVec3 = mem.createPxVec3()
             geometry.forEach {
-                pointVector.push_back(it.toPxVec3(pxVec3))
+                pointVector.pushBack(it.toPxVec3(pxVec3))
             }
             for (i in 0 until geometry.numIndices) {
-                indexVector.push_back(geometry.indices[i])
+                indexVector.pushBack(geometry.indices[i])
             }
 
             // create mesh descriptor
             val points = mem.createPxBoundedData()
             points.count = pointVector.size()
             points.stride = PxVec3.SIZEOF
-            points.data = pointVector.data()
+            points.data = pointVector.begin()
 
             val triangles = mem.createPxBoundedData()
             triangles.count = indexVector.size() / 3
             triangles.stride = 12
-            triangles.data = indexVector.data()
+            triangles.data = indexVector.begin()
 
             val desc = mem.createPxTriangleMeshDesc()
             desc.points = points
