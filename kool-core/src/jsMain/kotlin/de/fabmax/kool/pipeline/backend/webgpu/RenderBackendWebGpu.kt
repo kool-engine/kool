@@ -9,7 +9,6 @@ import de.fabmax.kool.pipeline.backend.RenderBackend
 import de.fabmax.kool.pipeline.backend.RenderBackendJs
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.platform.JsContext
-import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.LongHash
 import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logI
@@ -26,9 +25,17 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
     override val canBlitRenderPasses: Boolean = false
     override val isOnscreenInfiniteDepthCapable: Boolean = false // actually it can...
 
-    private lateinit var adapter: GPUAdapter
-    private lateinit var device: GPUDevice
-    private lateinit var gpuContext: GPUCanvasContext
+    lateinit var adapter: GPUAdapter
+        private set
+    lateinit var device: GPUDevice
+        private set
+    lateinit var gpuContext: GPUCanvasContext
+        private set
+    private var _canvasFormat: GPUTextureFormat? = null
+    val canvasFormat: GPUTextureFormat
+        get() = _canvasFormat!!
+
+    private val sceneRenderer = WgpuRenderPass(this)
 
     init {
         check(!js("!navigator.gpu") as Boolean) {
@@ -48,7 +55,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         device = adapter.requestDevice().await()
 
         gpuContext = canvas.getContext("webgpu") as GPUCanvasContext
-        val canvasFormat = navigator.gpu.getPreferredCanvasFormat()
+        _canvasFormat = navigator.gpu.getPreferredCanvasFormat()
         gpuContext.configure(GPUCanvasConfiguration(device, canvasFormat))
         logI { "WebGPU context created" }
 
@@ -74,26 +81,9 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
 //                    captureFramebuffer(scene)
 //                }
 //                doOffscreenPasses(scene, ctx)
-                doForegroundPass(scene)
+                sceneRenderer.doForegroundPass(scene)
             }
         }
-    }
-
-    fun doForegroundPass(scene: Scene) {
-        val clearColor = scene.mainRenderPass.clearColor ?: return
-
-        val encoder = device.createCommandEncoder()
-        val pass = encoder.beginRenderPass(GPURenderPassDescriptor(arrayOf(
-            GPURenderPassColorAttachment(
-                view = gpuContext.getCurrentTexture().createView(),
-                clearValue = GPUColorDict(clearColor.r.toDouble(), clearColor.g.toDouble(), clearColor.b.toDouble(), clearColor.a.toDouble()),
-                loadOp = GPULoadOp.clear,
-                storeOp = GPUStoreOp.store
-            )
-        )))
-
-        pass.end()
-        device.queue.submit(arrayOf(encoder.finish()))
     }
 
     override fun cleanup(ctx: KoolContext) {
@@ -101,13 +91,27 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
     }
 
     override fun generateKslShader(shader: KslShader, pipeline: Pipeline): ShaderCode {
-        logE { "Not yet implemented: WebGpuShaderCode()" }
-        return WebGpuShaderCode()
+        val output = WgslGenerator().generateProgram(shader.program, pipeline)
+        if (shader.program.dumpCode) {
+            output.dump()
+        }
+        return WebGpuShaderCode(
+            vertexSrc = output.vertexSrc,
+            vertexEntryPoint = output.vertexEntryPoint,
+            fragmentSrc = output.fragmentSrc,
+            fragmentEntryPoint = output.fragmentEntryPoint
+        )
     }
 
     override fun generateKslComputeShader(shader: KslComputeShader, pipeline: ComputePipeline): ComputeShaderCode {
-        logE { "Not yet implemented: WebGpuComputeShaderCode()" }
-        return WebGpuComputeShaderCode()
+        val output = WgslGenerator().generateComputeProgram(shader.program, pipeline)
+        if (shader.program.dumpCode) {
+            output.dump()
+        }
+        return WebGpuComputeShaderCode(
+            computeSrc = output.computeSrc,
+            computeEntryPoint = output.computeEntryPoint
+        )
     }
 
     override fun createOffscreenPass2d(parentPass: OffscreenRenderPass2d): OffscreenPass2dImpl {
@@ -146,11 +150,20 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         }
     }
 
-    class WebGpuShaderCode: ShaderCode {
-        override val hash: LongHash = LongHash()
+    data class WebGpuShaderCode(
+        val vertexSrc: String,
+        val vertexEntryPoint: String,
+        val fragmentSrc: String,
+        val fragmentEntryPoint: String
+    ): ShaderCode {
+        override val hash = LongHash().apply {
+            this += vertexSrc.hashCode().toLong() shl 32 or fragmentSrc.hashCode().toLong()
+        }
     }
 
-    class WebGpuComputeShaderCode: ComputeShaderCode {
-        override val hash: LongHash = LongHash()
+    data class WebGpuComputeShaderCode(val computeSrc: String, val computeEntryPoint: String): ComputeShaderCode {
+        override val hash = LongHash().apply {
+            this += computeSrc
+        }
     }
 }

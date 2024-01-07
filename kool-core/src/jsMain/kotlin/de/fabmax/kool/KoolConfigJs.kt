@@ -16,6 +16,7 @@ data class KoolConfigJs(
     override val defaultFont: MsdfFontInfo = DEFAULT_MSDF_FONT_INFO,
 
     val canvasName: String = "glCanvas",
+    val renderBackend: Backend = Backend.WEB_GL2,
     val isGlobalKeyEventGrabbing: Boolean = true,
     val isJsCanvasToWindowFitting: Boolean = true,
     val loaderTasks: List<suspend () -> Unit> = emptyList(),
@@ -31,5 +32,10 @@ data class KoolConfigJs(
             val meta = Json.Default.decodeFromString<MsdfMeta>(DEFAULT_META_JSON)
             MsdfFontInfo(meta, "fonts/font-roboto-regular.png")
         }
+    }
+
+    enum class Backend(val displayName: String) {
+        WEB_GL2("WebGL2"),
+        WEB_GPU("WebGPU")
     }
 }

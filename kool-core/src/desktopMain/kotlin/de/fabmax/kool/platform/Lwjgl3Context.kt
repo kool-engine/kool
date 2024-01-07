@@ -1,5 +1,6 @@
 package de.fabmax.kool.platform
 
+import de.fabmax.kool.KoolConfigJvm
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.configJvm
@@ -75,7 +76,7 @@ class Lwjgl3Context : KoolContext() {
     }
 
     init {
-        backend = if (KoolSystem.configJvm.renderBackend == Backend.VULKAN) {
+        backend = if (KoolSystem.configJvm.renderBackend == KoolConfigJvm.Backend.VULKAN) {
             VkRenderBackend(this)
         } else {
             RenderBackendGlImpl(this)
@@ -160,10 +161,5 @@ class Lwjgl3Context : KoolContext() {
     }
 
     override fun getSysInfos(): List<String> = SysInfo.lines
-
-    enum class Backend(val displayName: String) {
-        VULKAN("Vulkan"),
-        OPEN_GL("OpenGL")
-    }
 }
 

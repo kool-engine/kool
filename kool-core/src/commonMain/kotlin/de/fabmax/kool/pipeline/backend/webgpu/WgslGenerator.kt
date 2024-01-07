@@ -90,7 +90,7 @@ class WgslGenerator : KslGenerator() {
 //        src.generateFunctions(fragmentStage)
 
         src.appendLine("@fragment")
-        src.appendLine("fn fragmentMain(input: FragmentInput) -> FragmentOutput {")
+        src.appendLine("fn fragmentMain(fragmentInput: FragmentInput) -> FragmentOutput {")
 
         src.appendLine("  var fragmentOutput: FragmentOutput;")
         fragmentOutput.generateExplodedMembers(src)
@@ -563,12 +563,12 @@ class WgslGenerator : KslGenerator() {
         return when (stateName) {
             KslVertexStage.NAME_IN_VERTEX_INDEX -> "vertexInput.vertexIndex"            // vertex_index
             KslVertexStage.NAME_IN_INSTANCE_INDEX -> "vertexInput.instanceIndex"        // instance_index
-            KslVertexStage.NAME_OUT_POSITION -> "vertexOutput.position"                 // position
-            KslVertexStage.NAME_OUT_POINT_SIZE -> "vertexOutput.pointSize"              // <unsupported>
+            KslVertexStage.NAME_OUT_POSITION -> "position"                              // position
+            KslVertexStage.NAME_OUT_POINT_SIZE -> "pointSize"                           // <unsupported>
 
             KslFragmentStage.NAME_IN_FRAG_POSITION -> "fragmentInput.position"          // position
             KslFragmentStage.NAME_IN_IS_FRONT_FACING -> "fragmentInput.isFrontFacing"   // front_facing
-            KslFragmentStage.NAME_OUT_DEPTH -> "fragmentOutput.fragDepth"                // frag_depth
+            KslFragmentStage.NAME_OUT_DEPTH -> "fragDepth"                              // frag_depth
                                                                                         // not-implemented: sample_index
                                                                                         // not-implemented: sample_mask
 
@@ -627,7 +627,11 @@ class WgslGenerator : KslGenerator() {
         }
     }
 
-    class WgslGeneratorOutput : GeneratedSourceOutput() {
+    class WgslGeneratorOutput(
+        val vertexEntryPoint: String = "vertexMain",
+        val fragmentEntryPoint: String = "fragmentMain",
+        val computeEntryPoint: String = "computeMain"
+    ) : GeneratedSourceOutput() {
         companion object {
             fun shaderOutput(vertexSrc: String, fragmentSrc: String) = WgslGeneratorOutput().apply {
                 stages[KslShaderStageType.VertexShader] = vertexSrc

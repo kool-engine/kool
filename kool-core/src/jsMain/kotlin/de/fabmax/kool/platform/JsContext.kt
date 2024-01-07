@@ -5,6 +5,7 @@ import de.fabmax.kool.input.PlatformInputJs
 import de.fabmax.kool.pipeline.backend.RenderBackend
 import de.fabmax.kool.pipeline.backend.RenderBackendJs
 import de.fabmax.kool.pipeline.backend.gl.RenderBackendGlImpl
+import de.fabmax.kool.pipeline.backend.webgpu.RenderBackendWebGpu
 import de.fabmax.kool.util.RenderLoopCoroutineDispatcher
 import kotlinx.browser.document
 import kotlinx.browser.window
@@ -71,8 +72,11 @@ class JsContext internal constructor() : KoolContext() {
             canvas.height = (canvasFixedHeight * window.devicePixelRatio).roundToInt()
         }
 
-        backend = RenderBackendGlImpl(this, canvas)
-        //backend = RenderBackendWebGpu(this, canvas)
+        backend = if (KoolSystem.configJs.renderBackend == KoolConfigJs.Backend.WEB_GL2) {
+            RenderBackendGlImpl(this, canvas)
+        } else {
+            RenderBackendWebGpu(this, canvas)
+        }
 
         document.onfullscreenchange = {
             isFullscreenEnabled = document.fullscreenElement != null

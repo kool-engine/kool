@@ -4,6 +4,7 @@ import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
 
 plugins {
     alias(commonLibs.plugins.kotlinMultiplatform)
+    alias(commonLibs.plugins.kotlinSerialization)
 }
 
 kotlin {
@@ -83,10 +84,11 @@ task("cacheRuntimeLibs") {
             else -> ""
         }
 
-        configurations
+        val runtimeLibs = configurations
             .filter { it.name == "desktopRuntimeClasspath" }
             .flatMap { it.copyRecursive().fileCollection { true } }
             .filter { it.name.endsWith("$platformName.jar") && !it.path.startsWith(projectDir.path) }
+        runtimeLibs
             .forEach {
                 if (!File("${projectDir}/runtimeLibs/${it.name}").exists()) {
                     copy {
@@ -95,6 +97,9 @@ task("cacheRuntimeLibs") {
                     }
                 }
             }
+        File("${projectDir}/runtimeLibs/").listFiles()
+            ?.filter { exiting -> runtimeLibs.none { exiting.name == it.name } }
+            ?.forEach { it.delete() }
     }
 }
 

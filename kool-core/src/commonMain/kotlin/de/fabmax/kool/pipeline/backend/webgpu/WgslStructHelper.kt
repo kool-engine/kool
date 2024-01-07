@@ -35,7 +35,7 @@ interface WgslStructHelper {
 
 data class WgslStructMember(val structName: String, val name: String, val type: String, val annotation: String = "") {
     fun generateStructMember(builder: StringBuilder) {
-        builder.appendLine("  ${annotation}${name}: ${type};")
+        builder.appendLine("  ${annotation}${name}: ${type},")
     }
 
     fun createExplodedMember(builder: StringBuilder) {

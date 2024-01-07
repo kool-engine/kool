@@ -1,15 +1,21 @@
 import de.fabmax.kool.KoolApplication
 import de.fabmax.kool.KoolConfigJs
 import de.fabmax.kool.demo.demo
+import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.physics.Physics
+import de.fabmax.kool.scene.addColorMesh
+import de.fabmax.kool.scene.defaultOrbitCamera
+import de.fabmax.kool.scene.scene
 import kotlinx.browser.window
 import kotlin.collections.set
 
-/**
- * @author fabmax
- */
+val params = getParams()
+val isWebGpu: Boolean
+    get() = params["backend"] == "webgpu"
+
 fun main() = KoolApplication(
     KoolConfigJs(
+        renderBackend = if (isWebGpu) KoolConfigJs.Backend.WEB_GPU else KoolConfigJs.Backend.WEB_GL2,
         isGlobalKeyEventGrabbing = true,
         loaderTasks = listOf { Physics.loadAndAwaitPhysics() }
     )
@@ -22,8 +28,13 @@ fun main() = KoolApplication(
     //Demo.setProperty("assets.materials", "materials")
     //Demo.setProperty("assets.models", "models")
 
-    // launch demo
-    demo(getParams()["demo"], it)
+    if (isWebGpu) {
+        // web-gpu backend does not yet support everything needed to run the full demo set
+        it.scenes += helloWebGpu()
+    } else {
+        // launch demo
+        demo(params["demo"], it)
+    }
 }
 
 @Suppress("UNUSED_VARIABLE")
@@ -45,4 +56,12 @@ fun getParams(): Map<String, String> {
         }
     }
     return params
+}
+
+fun helloWebGpu() = scene {
+    defaultOrbitCamera()
+    addColorMesh {
+        generate { cube { colored(false) } }
+        shader = KslUnlitShader { color { vertexColor() } }
+    }
 }

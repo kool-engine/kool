@@ -1,7 +1,6 @@
 package de.fabmax.kool
 
 import de.fabmax.kool.math.Vec2i
-import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.util.MsdfFontInfo
 import de.fabmax.kool.util.MsdfMeta
 import kotlinx.serialization.json.Json
@@ -30,7 +29,7 @@ data class KoolConfigJvm(
     val storageDir: String = "./.storage",
     val httpCacheDir: String = "./.httpCache",
 
-    val renderBackend: Lwjgl3Context.Backend = Lwjgl3Context.Backend.OPEN_GL,
+    val renderBackend: Backend = Backend.OPEN_GL,
     val windowTitle: String = "Kool App",
     val windowSize: Vec2i = Vec2i(1600, 900),
     val isFullscreen: Boolean = false,
@@ -60,5 +59,10 @@ data class KoolConfigJvm(
                     MsdfFontInfo(meta, "fonts/font-roboto-regular.png")
                 }
         }
+    }
+
+    enum class Backend(val displayName: String) {
+        VULKAN("Vulkan"),
+        OPEN_GL("OpenGL")
     }
 }

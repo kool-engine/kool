@@ -179,8 +179,7 @@ class KslFragmentStage(program: KslProgram) : KslShaderStage(program, KslShaderS
     fun KslScopeBuilder.colorOutput(rgb: KslVectorExpression<KslFloat3, KslFloat1>, a: KslScalarExpression<KslFloat1> = 1f.const, location: Int = 0) {
         check (parentStage is KslFragmentStage) { "colorOutput is only available in fragment stage" }
         val outColor = parentStage.colorOutput(location)
-        outColor.value.rgb set rgb
-        outColor.value.a set a
+        outColor.value set float4Value(rgb, a)
     }
 
     fun KslScopeBuilder.colorOutput(value: KslVectorExpression<KslFloat4, KslFloat1>, location: Int = 0) {

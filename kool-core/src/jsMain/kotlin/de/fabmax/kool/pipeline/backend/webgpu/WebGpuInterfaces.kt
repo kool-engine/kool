@@ -1,6 +1,9 @@
+@file:Suppress("INLINE_CLASS_IN_EXTERNAL_DECLARATION_WARNING")
+
 package de.fabmax.kool.pipeline.backend.webgpu
 
 import org.khronos.webgl.ArrayBuffer
+import org.khronos.webgl.ArrayBufferView
 import org.w3c.dom.RenderingContext
 import kotlin.js.Promise
 
@@ -71,6 +74,7 @@ external class GPUPipelineLayout
 
 external class GPUQueue {
     fun submit(commandBuffers: Array<GPUCommandBuffer>)
+    fun writeBuffer(buffer: GPUBuffer, bufferOffset: Long, data: ArrayBufferView, dataOffset: Long = definedExternally, size: Long = definedExternally)
 }
 
 external class GPURenderPassEncoder {
@@ -91,6 +95,7 @@ external class GPUSampler : GPUBindingResource
 external class GPUShaderModule
 
 external object GPUShaderStage {
+    val COMPUTE: Int
     val FRAGMENT: Int
     val VERTEX: Int
 }
