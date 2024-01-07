@@ -1,6 +1,7 @@
 package de.fabmax.kool.pipeline.backend.webgpu
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.modules.ksl.KslComputeShader
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.pipeline.*
@@ -37,6 +38,8 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
 
     private val sceneRenderer = WgpuRenderPass(this)
 
+    private var renderSize = Vec2i(canvas.width, canvas.height)
+
     init {
         check(!js("!navigator.gpu") as Boolean) {
             val txt = "WebGPU not supported on this browser."
@@ -64,6 +67,11 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
 
     override fun renderFrame(ctx: KoolContext) {
         BackendStats.resetPerFrameCounts()
+
+        if (canvas.width != renderSize.x || canvas.height != renderSize.y) {
+            renderSize = Vec2i(canvas.width, canvas.height)
+            sceneRenderer.createRenderAttachments()
+        }
 
 //        if (ctx.disposablePipelines.isNotEmpty()) {
 //            ctx.disposablePipelines.forEach {

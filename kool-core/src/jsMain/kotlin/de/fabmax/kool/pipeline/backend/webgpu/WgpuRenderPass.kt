@@ -14,53 +14,44 @@ class WgpuRenderPass(val backend: RenderBackendWebGpu, val multiSamples: Int = 4
     private val gpuContext: GPUCanvasContext
         get() = backend.gpuContext
 
-    private var colorTexture: GPUTexture? = null
-    private var colorView: GPUTextureView? = null
+    private var colorAttachment: GPUTexture? = null
+    private var colorAttachmentView: GPUTextureView? = null
 
     private val depthFormat = GPUTextureFormat.depth32float
-    private var depthTexture: GPUTexture? = null
-    private var depthView: GPUTextureView? = null
+    private var depthAttachment: GPUTexture? = null
+    private var depthAttachmentView: GPUTextureView? = null
 
-    fun createColorTexture(
+    fun createRenderAttachments(
         width: Int = backend.canvas.width,
-        height: Int = backend.canvas.height
+        height: Int = backend.canvas.height,
     ) {
-        colorTexture?.destroy()
+        colorAttachment?.destroy()
+        depthAttachment?.destroy()
 
-        val descriptor = GPUTextureDescriptor(
-            size = intArrayOf(width, height),
-            format = backend.canvasFormat,
-            usage = GPUTextureUsage.RENDER_ATTACHMENT,
-            sampleCount = multiSamples
-        )
-        colorTexture = device.createTexture(descriptor).also {
-            colorView = it.createView()
-        }
-    }
-
-    fun createDepthTexture(
-        width: Int = backend.canvas.width,
-        height: Int = backend.canvas.height
-    ) {
-        depthTexture?.destroy()
-
-        val descriptor = GPUTextureDescriptor(
+        val depthDescriptor = GPUTextureDescriptor(
             size = intArrayOf(width, height),
             format = depthFormat,
             usage = GPUTextureUsage.RENDER_ATTACHMENT,
             sampleCount = multiSamples
         )
-        depthTexture = device.createTexture(descriptor).also {
-            depthView = it.createView()
+        depthAttachment = device.createTexture(depthDescriptor).also {
+            depthAttachmentView = it.createView()
+        }
+
+        val colorDescriptor = GPUTextureDescriptor(
+            size = intArrayOf(width, height),
+            format = backend.canvasFormat,
+            usage = GPUTextureUsage.RENDER_ATTACHMENT,
+            sampleCount = multiSamples
+        )
+        colorAttachment = device.createTexture(colorDescriptor).also {
+            colorAttachmentView = it.createView()
         }
     }
 
     fun doForegroundPass(scene: Scene) {
-        if (depthTexture == null) {
-            createDepthTexture()
-        }
-        if (colorTexture == null) {
-            createColorTexture()
+        if (depthAttachment == null || colorAttachment == null) {
+            createRenderAttachments()
         }
 
         val scenePass = when (val pass = scene.mainRenderPass) {
@@ -77,12 +68,12 @@ class WgpuRenderPass(val backend: RenderBackendWebGpu, val multiSamples: Int = 4
         val colorAttachments = clearColors.map { clearColor ->
             val resolveTarget = gpuContext.getCurrentTexture().createView()
             clearColor?.let {
-                GPURenderPassColorAttachmentClear(colorView!!, resolveTarget, GPUColorDict(it))
-            } ?: GPURenderPassColorAttachmentLoad(colorView!!, resolveTarget)
+                GPURenderPassColorAttachmentClear(colorAttachmentView!!, resolveTarget, GPUColorDict(it))
+            } ?: GPURenderPassColorAttachmentLoad(colorAttachmentView!!, resolveTarget)
         }.toTypedArray()
 
         val depthAttachment = GPURenderPassDepthStencilAttachment(
-            view = depthView!!,
+            view = depthAttachmentView!!,
             depthLoadOp = GPULoadOp.clear,
             depthStoreOp = GPUStoreOp.store,
             depthClearValue = 1f
