@@ -26,11 +26,8 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
 
     init {
         memStack {
-            if (pipeline.bindGroupLayouts.size != 1) {
-                TODO("For now only one descriptor set layout is supported (there are ${pipeline.bindGroupLayouts.size}), render pass: ${koolRenderPass.name}")
-            }
-            descriptorSetLayout = createDescriptorSetLayout(pipeline.bindGroupLayouts[0])
-            descriptorPool = createDescriptorPool(pipeline.bindGroupLayouts[0])
+            descriptorSetLayout = createDescriptorSetLayout(pipeline.bindGroupLayout)
+            descriptorPool = createDescriptorPool(pipeline.bindGroupLayout)
 
             val shaderStages = (pipeline.shaderCode as ShaderCodeImplVk).vkStages
             val shaderStageModules = shaderStages.map { createShaderModule(it) }

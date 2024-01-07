@@ -14,7 +14,8 @@ class KslGlslGeneratorVk : GlslGenerator(Hints("#version 450")) {
         if (samplers.isNotEmpty()) {
             appendLine("// texture samplers")
             for (u in samplers) {
-                val (set, desc) = pipeline.findBindGroupItemByName(u.name)!!
+                val set = pipeline.bindGroupLayout
+                val desc = pipeline.findBindGroupItemByName(u.name)!!
                 appendLine("layout(set=${set.group}, binding=${desc.binding}) uniform ${glslTypeName(u.expressionType)} ${u.value.name()};")
             }
             appendLine()
@@ -26,7 +27,8 @@ class KslGlslGeneratorVk : GlslGenerator(Hints("#version 450")) {
         if (ubos.isNotEmpty()) {
             appendLine("// uniform buffer objects")
             for (ubo in ubos) {
-                val (set, desc) = pipeline.findBindGroupItemByName(ubo.name)!!
+                val set = pipeline.bindGroupLayout
+                val desc = pipeline.findBindGroupItemByName(ubo.name)!!
                 appendLine("layout(std140, set=${set.group}, binding=${desc.binding}) uniform ${ubo.name} {")
                 for (u in ubo.uniforms.values) {
                     appendLine("    highp ${glslTypeName(u.expressionType)} ${u.value.name()};")

@@ -37,42 +37,40 @@ class CompiledShader(val program: GlProgram, val pipeline: PipelineBase, val bac
             }
         }
 
-        pipeline.bindGroupLayouts.forEach { group ->
-            group.items.forEach { binding ->
-                when (binding) {
-                    is UniformBuffer -> {
-                        val blockIndex = gl.getUniformBlockIndex(program, binding.name)
-                        if (blockIndex == gl.INVALID_INDEX) {
-                            // binding does not describe an actual UBO but plain old uniforms...
-                            binding.uniforms.forEach { uniformLocations[it.name] = intArrayOf(gl.getUniformLocation(program, it.name)) }
-                        } else {
-                            setupUboLayout(binding, blockIndex)
-                        }
+        pipeline.bindGroupLayout.items.forEach { binding ->
+            when (binding) {
+                is UniformBuffer -> {
+                    val blockIndex = gl.getUniformBlockIndex(program, binding.name)
+                    if (blockIndex == gl.INVALID_INDEX) {
+                        // binding does not describe an actual UBO but plain old uniforms...
+                        binding.uniforms.forEach { uniformLocations[it.name] = intArrayOf(gl.getUniformLocation(program, it.name)) }
+                    } else {
+                        setupUboLayout(binding, blockIndex)
                     }
-                    is TextureSampler1d -> {
-                        uniformLocations[binding.name] = getUniformLocations(binding.name, binding.arraySize)
-                    }
-                    is TextureSampler2d -> {
-                        uniformLocations[binding.name] = getUniformLocations(binding.name, binding.arraySize)
-                    }
-                    is TextureSampler3d -> {
-                        uniformLocations[binding.name] = getUniformLocations(binding.name, binding.arraySize)
-                    }
-                    is TextureSamplerCube -> {
-                        uniformLocations[binding.name] = getUniformLocations(binding.name, binding.arraySize)
-                    }
-                    is Storage1d -> {
-                        checkStorageTexSupport()
-                        uniformLocations[binding.name] = intArrayOf(binding.binding)
-                    }
-                    is Storage2d -> {
-                        checkStorageTexSupport()
-                        uniformLocations[binding.name] = intArrayOf(binding.binding)
-                    }
-                    is Storage3d -> {
-                        checkStorageTexSupport()
-                        uniformLocations[binding.name] = intArrayOf(binding.binding)
-                    }
+                }
+                is TextureSampler1d -> {
+                    uniformLocations[binding.name] = getUniformLocations(binding.name, binding.arraySize)
+                }
+                is TextureSampler2d -> {
+                    uniformLocations[binding.name] = getUniformLocations(binding.name, binding.arraySize)
+                }
+                is TextureSampler3d -> {
+                    uniformLocations[binding.name] = getUniformLocations(binding.name, binding.arraySize)
+                }
+                is TextureSamplerCube -> {
+                    uniformLocations[binding.name] = getUniformLocations(binding.name, binding.arraySize)
+                }
+                is Storage1d -> {
+                    checkStorageTexSupport()
+                    uniformLocations[binding.name] = intArrayOf(binding.binding)
+                }
+                is Storage2d -> {
+                    checkStorageTexSupport()
+                    uniformLocations[binding.name] = intArrayOf(binding.binding)
+                }
+                is Storage3d -> {
+                    checkStorageTexSupport()
+                    uniformLocations[binding.name] = intArrayOf(binding.binding)
                 }
             }
         }
@@ -201,18 +199,16 @@ class CompiledShader(val program: GlProgram, val pipeline: PipelineBase, val bac
         protected var nextTexUnit = gl.TEXTURE0
 
         init {
-            pipelineInstance.bindGroupLayouts.forEach { group ->
-                group.items.forEach { binding ->
-                    when (binding) {
-                        is UniformBuffer -> mapUbo(binding)
-                        is TextureSampler1d -> mapTexture1d(binding)
-                        is TextureSampler2d -> mapTexture2d(binding)
-                        is TextureSampler3d -> mapTexture3d(binding)
-                        is TextureSamplerCube -> mapTextureCube(binding)
-                        is Storage1d -> mapStorage1d(binding)
-                        is Storage2d -> mapStorage2d(binding)
-                        is Storage3d -> mapStorage3d(binding)
-                    }
+            pipelineInstance.bindGroupLayout.items.forEach { binding ->
+                when (binding) {
+                    is UniformBuffer -> mapUbo(binding)
+                    is TextureSampler1d -> mapTexture1d(binding)
+                    is TextureSampler2d -> mapTexture2d(binding)
+                    is TextureSampler3d -> mapTexture3d(binding)
+                    is TextureSamplerCube -> mapTextureCube(binding)
+                    is Storage1d -> mapStorage1d(binding)
+                    is Storage2d -> mapStorage2d(binding)
+                    is Storage3d -> mapStorage3d(binding)
                 }
             }
             pipelineInfo.numInstances++

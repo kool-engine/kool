@@ -52,7 +52,7 @@ open class KslShader private constructor(val program: KslProgram) : Shader(progr
 
         builder.name = program.name
         builder.vertexLayout.setupVertexLayout(mesh)
-        builder.bindGroupLayouts += program.setupBindGroupLayout(this)
+        builder.bindGroupLayout = program.setupBindGroupLayout(this)
         builder.shaderCodeGenerator = { updateEvent.ctx.backend.generateKslShader(this, it) }
 
         super.onPipelineSetup(builder, mesh, updateEvent)

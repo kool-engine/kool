@@ -15,7 +15,7 @@ class BindGroupLayout private constructor(val group: Int, val items: List<Bindin
         }
     }
 
-    fun findItemsByName(name: String): Binding? {
+    fun findBindingByName(name: String): Binding? {
         return items.find { it.name == name }
     }
 

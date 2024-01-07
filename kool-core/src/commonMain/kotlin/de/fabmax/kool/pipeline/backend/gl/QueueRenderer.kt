@@ -51,25 +51,24 @@ class QueueRenderer(val backend: RenderBackendGl) {
         }
 
         for (cmd in drawQueue.commands) {
-            cmd.pipeline?.let { pipeline ->
-                val t = Time.precisionTime
-                glAttribs.setupPipelineAttribs(pipeline, renderPass.isReverseDepth)
+            val t = Time.precisionTime
 
-                if (cmd.geometry.numIndices > 0) {
-                    val shaderInst = backend.shaderMgr.setupShader(cmd)
-                    if (shaderInst != null && shaderInst.indexType != 0) {
-                        val insts = cmd.mesh.instances
-                        if (insts == null) {
-                            gl.drawElements(shaderInst.primitiveType, shaderInst.numIndices, shaderInst.indexType)
-                            BackendStats.addDrawCommands(1, cmd.geometry.numPrimitives)
-                        } else if (insts.numInstances > 0) {
-                            gl.drawElementsInstanced(shaderInst.primitiveType, shaderInst.numIndices, shaderInst.indexType, insts.numInstances)
-                            BackendStats.addDrawCommands(1, cmd.geometry.numPrimitives * insts.numInstances)
-                        }
-                    }
-                }
-                cmd.mesh.drawTime = Time.precisionTime - t
+            if (cmd.geometry.numIndices == 0) continue
+            val pipeline = cmd.pipeline ?: continue
+            val shaderInst = backend.shaderMgr.setupShader(cmd) ?: continue
+
+            glAttribs.setupPipelineAttribs(pipeline, renderPass.isReverseDepth)
+
+            val insts = cmd.mesh.instances
+            if (insts == null) {
+                gl.drawElements(shaderInst.primitiveType, shaderInst.numIndices, shaderInst.indexType)
+                BackendStats.addDrawCommands(1, cmd.geometry.numPrimitives)
+            } else if (insts.numInstances > 0) {
+                gl.drawElementsInstanced(shaderInst.primitiveType, shaderInst.numIndices, shaderInst.indexType, insts.numInstances)
+                BackendStats.addDrawCommands(1, cmd.geometry.numPrimitives * insts.numInstances)
             }
+
+            cmd.mesh.drawTime = Time.precisionTime - t
         }
     }
 

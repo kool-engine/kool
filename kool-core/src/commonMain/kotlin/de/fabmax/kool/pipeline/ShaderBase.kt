@@ -27,18 +27,16 @@ abstract class ShaderBase(val name: String) {
     private val connectUniformListeners = mutableMapOf<String, ConnectUniformListener>()
 
     protected fun pipelineCreated(pipeline: PipelineBase) {
-        pipeline.bindGroupLayouts.forEach { group ->
-            group.items.forEach { binding ->
-                when (binding) {
-                    is UniformBuffer -> binding.uniforms.forEach { uniforms[it.name] = it }
-                    is TextureSampler1d -> texSamplers1d[binding.name] = binding
-                    is TextureSampler2d -> texSamplers2d[binding.name] = binding
-                    is TextureSampler3d -> texSamplers3d[binding.name] = binding
-                    is TextureSamplerCube -> texSamplersCube[binding.name] = binding
-                    is Storage1d -> storage1d[binding.name] = binding
-                    is Storage2d -> storage2d[binding.name] = binding
-                    is Storage3d -> storage3d[binding.name] = binding
-                }
+        pipeline.bindGroupLayout.items.forEach { binding ->
+            when (binding) {
+                is UniformBuffer -> binding.uniforms.forEach { uniforms[it.name] = it }
+                is TextureSampler1d -> texSamplers1d[binding.name] = binding
+                is TextureSampler2d -> texSamplers2d[binding.name] = binding
+                is TextureSampler3d -> texSamplers3d[binding.name] = binding
+                is TextureSamplerCube -> texSamplersCube[binding.name] = binding
+                is Storage1d -> storage1d[binding.name] = binding
+                is Storage2d -> storage2d[binding.name] = binding
+                is Storage3d -> storage3d[binding.name] = binding
             }
         }
         connectUniformListeners.values.forEach { it.connect() }

@@ -14,8 +14,6 @@ class WgslGenerator : KslGenerator() {
     var blockIndent = "  "
 
     override fun generateProgram(program: KslProgram, pipeline: Pipeline): WgslGeneratorOutput {
-        check(pipeline.bindGroupLayouts.size == 1) { "Currently, number of bind groups must be exactly one (is ${pipeline.bindGroupLayouts.size})" }
-
         val vertexStage = checkNotNull(program.vertexStage) {
             "KslProgram vertexStage is missing (a valid KslShader needs at least a vertexStage and fragmentStage)"
         }
@@ -135,8 +133,7 @@ class WgslGenerator : KslGenerator() {
         val structs: List<UboStruct>
 
         init {
-            val bindGroup = pipeline.bindGroupLayouts[0]
-            structs = bindGroup.items
+            structs = pipeline.bindGroupLayout.items
                 .filterIsInstance<UniformBuffer>().filter { layoutUbo ->
                     stage.getUsedUbos().any { usedUbo -> usedUbo.name == layoutUbo.name }
                 }
@@ -149,7 +146,7 @@ class WgslGenerator : KslGenerator() {
                         .map {
                             WgslStructMember(uboVarName, it.value.name(), it.expressionType.wgslTypeName)
                         }
-                    UboStruct(uboVarName, uboTypeName, members, bindGroup.group, ubo.binding)
+                    UboStruct(uboVarName, uboTypeName, members, pipeline.bindGroupLayout.group, ubo.binding)
                 }
         }
 
