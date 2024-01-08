@@ -90,8 +90,7 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
             name = "SelectionPass"
             colorTargetTexture(1) {
                 colorFormat = TexFormat.R
-                magFilter = FilterMethod.NEAREST
-                minFilter = FilterMethod.NEAREST
+                defaultSamplerSettings = defaultSamplerSettings.nearest()
             }
         }
     ) {

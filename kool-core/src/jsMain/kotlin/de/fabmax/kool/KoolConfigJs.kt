@@ -1,5 +1,6 @@
 package de.fabmax.kool
 
+import de.fabmax.kool.pipeline.backend.webgpu.GPUPowerPreference
 import de.fabmax.kool.util.MsdfFontInfo
 import de.fabmax.kool.util.MsdfMeta
 import kotlinx.serialization.json.Json
@@ -19,6 +20,7 @@ data class KoolConfigJs(
     val renderBackend: Backend = Backend.WEB_GL2,
     val isGlobalKeyEventGrabbing: Boolean = true,
     val isJsCanvasToWindowFitting: Boolean = true,
+    val powerPreference: GPUPowerPreference = GPUPowerPreference.highPerformance,
     val loaderTasks: List<suspend () -> Unit> = emptyList(),
 
     val customTtfFonts: Map<String, String> = emptyMap(),

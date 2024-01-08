@@ -16,7 +16,7 @@ external class Navigator {
 
 external class GPU {
     fun getPreferredCanvasFormat(): GPUTextureFormat
-    fun requestAdapter(): Promise<GPUAdapter?>
+    fun requestAdapter(options: GPURequestAdapterOptions = definedExternally): Promise<GPUAdapter?>
 }
 
 external class GPUAdapter {

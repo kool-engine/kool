@@ -58,6 +58,13 @@ value class GPUPrimitiveTopology(val enumValue: String) {
     }
 }
 
+value class GPUPowerPreference(val enumValue: String) {
+    companion object {
+        val lowPower = GPUPowerPreference("low-power")
+        val highPerformance = GPUPowerPreference("high-performance")
+    }
+}
+
 value class GPUStoreOp(val enumValue: String) {
     companion object {
         val store = GPUStoreOp("store")

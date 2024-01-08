@@ -296,3 +296,10 @@ class GPUVertexState(
     @JsName("buffers")
     val buffers: Array<GPUVertexBufferLayout> = emptyArray(),
 )
+
+data class GPURequestAdapterOptions(
+    @JsName("powerPreference")
+    val powerPreference: GPUPowerPreference,
+    @JsName("forceFallbackAdapter")
+    val forceFallbackAdapter: Boolean = false
+)

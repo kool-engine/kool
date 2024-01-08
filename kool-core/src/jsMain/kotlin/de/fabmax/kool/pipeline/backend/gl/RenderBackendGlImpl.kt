@@ -2,10 +2,12 @@ package de.fabmax.kool.pipeline.backend.gl
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.configJs
 import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.modules.ksl.lang.xy
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.RenderBackendJs
+import de.fabmax.kool.pipeline.backend.webgpu.GPUPowerPreference
 import de.fabmax.kool.platform.JsContext
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
@@ -26,12 +28,12 @@ class RenderBackendGlImpl(ctx: KoolContext, canvas: HTMLCanvasElement) : RenderB
     )
 
     init {
-        val options = js("""
-            {
-              antialias: true,
-              stencil: false,
-            }
-        """)
+        val options = if (KoolSystem.configJs.powerPreference == GPUPowerPreference.highPerformance) {
+            js(" { antialias: true, stencil: false, powerPreference: 'high-performance' } ")
+        } else {
+            js(" { antialias: true, stencil: false, powerPreference: 'low-power' } ")
+        }
+
         val webGlCtx = (canvas.getContext("webgl2", options) ?: canvas.getContext("experimental-webgl2", options)) as WebGL2RenderingContext?
         check(webGlCtx != null) {
             val txt = "Unable to initialize WebGL2 context. Your browser may not support it."

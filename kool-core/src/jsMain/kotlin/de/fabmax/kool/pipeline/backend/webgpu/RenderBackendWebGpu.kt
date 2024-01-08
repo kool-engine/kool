@@ -49,7 +49,9 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
     }
 
     override suspend fun startRenderLoop() {
-        adapter = checkNotNull(navigator.gpu.requestAdapter().await()) {
+        adapter = checkNotNull(navigator.gpu.requestAdapter(
+            GPURequestAdapterOptions(GPUPowerPreference.highPerformance)
+        ).await()) {
             val txt = "No appropriate GPUAdapter found."
             js("alert(txt)")
             txt
