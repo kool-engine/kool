@@ -291,7 +291,10 @@ object Assets : CoroutineScope {
         return tex
     }
 
-    suspend fun loadTexture2d(assetPath: String, props: TextureProps = TextureProps()): Texture2d {
+    suspend fun loadTexture2d(
+        assetPath: String,
+        props: TextureProps = TextureProps()
+    ): Texture2d {
         return loadTexture2d(loadTextureData(assetPath), props, trimAssetPath(assetPath))
     }
 
@@ -314,7 +317,7 @@ object Assets : CoroutineScope {
         return loadTexture3d(loadTextureAtlasData(assetPath, tilesX, tilesY), props, trimAssetPath(assetPath))
     }
 
-    suspend fun loadCubeMap(
+    suspend fun loadTextureCube(
         texData: TextureDataCube,
         props: TextureProps = TextureProps(),
         name: String = UniqueId.nextId("TextureCube")
@@ -330,7 +333,7 @@ object Assets : CoroutineScope {
         }
     }
 
-    suspend fun loadCubeMap(
+    suspend fun loadTextureCube(
         pathFront: String,
         pathBack: String,
         pathLeft: String,
@@ -341,7 +344,7 @@ object Assets : CoroutineScope {
     ): TextureCube {
         val name = trimCubeMapAssetPath(pathFront, pathBack, pathLeft, pathRight, pathUp, pathDown)
         val texData = loadCubeMapTextureData(pathFront, pathBack, pathLeft, pathRight, pathUp, pathDown)
-        return loadCubeMap(texData, props, name)
+        return loadTextureCube(texData, props, name)
     }
 
     suspend fun loadAudioClip(assetPath: String): AudioClip {

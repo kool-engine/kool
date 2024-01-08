@@ -323,7 +323,10 @@ class Track(val world: VehicleWorld) : Node() {
     }
 
     private fun makeTrackShader() {
-        val texProps = TextureProps(minFilter = FilterMethod.NEAREST, magFilter = FilterMethod.NEAREST, maxAnisotropy = 1)
+        val texProps = TextureProps(
+            generateMipMaps = false,
+            defaultSamplerSettings = SamplerSettings().nearest()
+        )
         val rand = Random(1337)
         val gradient = ColorGradient(VehicleDemo.color(50, false), VehicleDemo.color(300, false))
         val sz = 128

@@ -284,7 +284,8 @@ sealed class MappedUniformTex(val texUnit: Int, val target: Int, val backend: Re
         if (texture.loadingState == Texture.LoadingState.LOADED) {
             val tex = texture.loadedTexture as LoadedTextureGl
             gl.activeTexture(texUnit + arrayIdx)
-            gl.bindTexture(target, tex.glTexture)
+            tex.bind()
+            tex.applySamplerSettings(null)
             return true
         }
 
@@ -398,7 +399,6 @@ sealed class MappedUniformStorage(
 
     protected fun bindStorageTex(storageTex: Texture): Boolean {
         val loadedTex = checkLoadingState(storageTex)
-
         gl.bindImageTexture(
             unit = binding,
             texture = loadedTex.glTexture,
@@ -414,7 +414,10 @@ sealed class MappedUniformStorage(
     private fun checkLoadingState(storageTex: Texture): LoadedTextureGl {
         if (storageTex.loadingState == Texture.LoadingState.NOT_LOADED) {
             val loader = storageTex.loader as BufferedTextureLoader
-            storageTex.loadedTexture = MappedUniformTex.getLoadedTex(loader.data, storageTex, backend)
+            storageTex.loadedTexture = MappedUniformTex.getLoadedTex(loader.data, storageTex, backend).also {
+                it.bind()
+                it.applySamplerSettings(storageTex.props.defaultSamplerSettings)
+            }
             storageTex.loadingState = Texture.LoadingState.LOADED
         }
         return storageTex.loadedTexture as LoadedTextureGl

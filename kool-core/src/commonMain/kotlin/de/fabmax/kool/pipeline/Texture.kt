@@ -9,7 +9,11 @@ import kotlin.math.roundToInt
 /**
  * Describes a texture by its properties and a loader function which is called once the texture is used.
  */
-abstract class Texture(val props: TextureProps, val name: String, val loader: TextureLoader? = null): BaseReleasable() {
+abstract class Texture(
+    val props: TextureProps,
+    val name: String,
+    val loader: TextureLoader? = null
+): BaseReleasable() {
 
     /**
      * Contains the platform specific handle to the loaded texture. It is available after the loader function was
@@ -166,17 +170,17 @@ class BufferedTexture2d(
 }
 
 class SingleColorTexture(color: Color) : Texture2d(
-    TextureProps(
-        minFilter = FilterMethod.NEAREST,
-        magFilter = FilterMethod.NEAREST,
-        mipMapping = false,
-        maxAnisotropy = 1
-    ),
+    TextureProps(generateMipMaps = false, defaultSamplerSettings = DEFAULT_SAMPLER_SETTINGS),
     name = "SingleColorTex:${color}",
     loader = BufferedTextureLoader(getColorTextureData(color))
 ) {
-
     companion object {
+        val DEFAULT_SAMPLER_SETTINGS = SamplerSettings(
+            minFilter = FilterMethod.NEAREST,
+            magFilter = FilterMethod.NEAREST,
+            maxAnisotropy = 1,
+        )
+
         private val colorData = mutableMapOf<Color, TextureData2d>()
 
         private fun getColorTextureData(color: Color): TextureData2d {
@@ -192,33 +196,122 @@ class GradientTexture(
     name: String = "gradientTex-$size"
 ) : Texture1d(
     TextureProps(
-        format = TexFormat.RGBA_F16,    // use f16 texture for better results together with linear color gradients
-        addressModeU = if (isClamped) AddressMode.CLAMP_TO_EDGE else AddressMode.REPEAT,
-        addressModeV = if (isClamped) AddressMode.CLAMP_TO_EDGE else AddressMode.REPEAT,
-        minFilter = FilterMethod.LINEAR,
-        magFilter = FilterMethod.LINEAR,
-        mipMapping = false,
-        maxAnisotropy = 1),
+        format = TexFormat.RGBA_F16,    // f16 format yields much better results with gradients in linear color space
+        generateMipMaps = false,
+        defaultSamplerSettings = if (isClamped) DEFAULT_SAMPLER_SETTINGS_CLAMPED else DEFAULT_SAMPLER_SETTINGS_REPEATING
+    ),
     name = name,
     loader = BufferedTextureLoader(TextureData1d.gradientF16(gradient, size))
-)
+) {
+    companion object {
+        val DEFAULT_SAMPLER_SETTINGS_CLAMPED = SamplerSettings(
+            addressModeU = AddressMode.CLAMP_TO_EDGE,
+            maxAnisotropy = 1,
+        )
+        val DEFAULT_SAMPLER_SETTINGS_REPEATING = DEFAULT_SAMPLER_SETTINGS_CLAMPED.copy(addressModeU = AddressMode.REPEAT)
+    }
+}
 
 data class TextureProps(
     val format: TexFormat = TexFormat.RGBA,
-    val addressModeU: AddressMode = AddressMode.REPEAT,
-    val addressModeV: AddressMode = AddressMode.REPEAT,
-    val addressModeW: AddressMode = AddressMode.REPEAT,
-    val minFilter: FilterMethod = FilterMethod.LINEAR,
-    val magFilter: FilterMethod = FilterMethod.LINEAR,
-    val mipMapping: Boolean = true,
-    val maxAnisotropy: Int = 4,
+
+    /**
+     * If true, mip-levels are generated for the given texture on load.
+     */
+    val generateMipMaps: Boolean = true,
 
     /**
      * If non-null, the loader implementation will try to scale the loaded texture image to the given size in pixels.
      * This is particular useful to scale vector (SVG) images to a desired resolution on load.
      */
-    val preferredSize: Vec2i? = null
+    val resolveSize: Vec2i? = null,
+
+    /**
+     * Preferred / default sampler settings to be used with this texture.
+     * TODO: Notice that sampler settings can be overridden individually for each shader using the texture.
+     */
+    val defaultSamplerSettings: SamplerSettings = SamplerSettings()
 )
+
+data class SamplerSettings(
+    /**
+     * Clamp or (mirror-) repeat the texture in U (i.e. X) direction.
+     */
+    val addressModeU: AddressMode = AddressMode.REPEAT,
+
+    /**
+     * Clamp or (mirror-) repeat the texture in V (i.e. Y) direction.
+     */
+    val addressModeV: AddressMode = AddressMode.REPEAT,
+
+    /**
+     * Clamp or (mirror-) repeat the texture in W (i.e. Z) direction (relevant for 3d textures only).
+     */
+    val addressModeW: AddressMode = AddressMode.REPEAT,
+
+    /**
+     * Minification filter method to use (when texture is viewed from far distance).
+     * Either [FilterMethod.LINEAR] or [FilterMethod.NEAREST] Default is LINEAR. If LINEAR is chosen and the texture
+     * has mip levels, tri-linear filtering is used, bi-linear otherwise.
+     */
+    val minFilter: FilterMethod = FilterMethod.LINEAR,
+
+    /**
+     * Magnification filter method to use (when texture is viewed from close distance).
+     * Either [FilterMethod.LINEAR] or [FilterMethod.NEAREST]. Default is LINEAR.
+     */
+    val magFilter: FilterMethod = FilterMethod.LINEAR,
+
+    /**
+     * Maximum level of anisotropic filtering to apply:
+     *  - 1: no anisotropic filtering
+     *  - 4: default value
+     * Anisotropic filtering requires a texture with mip-levels. For textures without mip-levels, this value is
+     * ignored. The value might be clamped by the implementation if given level is higher than what the hardware
+     * supports.
+     */
+    val maxAnisotropy: Int = 4,
+) {
+    /**
+     * Returns a copy of this [SamplerSettings] with [minFilter] and [magFilter] set to [FilterMethod.NEAREST].
+     */
+    fun nearest(): SamplerSettings = copy(minFilter = FilterMethod.NEAREST, magFilter = FilterMethod.NEAREST)
+
+    /**
+     * Returns a copy of this [SamplerSettings] with [minFilter] and [magFilter] set to [FilterMethod.LINEAR].
+     */
+    fun linear(): SamplerSettings = copy(minFilter = FilterMethod.LINEAR, magFilter = FilterMethod.LINEAR)
+
+    /**
+     * Returns a copy of this [SamplerSettings] with u, v and w address modes set to [AddressMode.CLAMP_TO_EDGE].
+     */
+    fun clamped(): SamplerSettings = copy(
+        addressModeU = AddressMode.CLAMP_TO_EDGE,
+        addressModeV = AddressMode.CLAMP_TO_EDGE,
+        addressModeW = AddressMode.CLAMP_TO_EDGE
+    )
+
+    /**
+     * Returns a copy of this [SamplerSettings] with u, v and w address modes set to [AddressMode.REPEAT].
+     */
+    fun repeating(): SamplerSettings = copy(
+        addressModeU = AddressMode.REPEAT,
+        addressModeV = AddressMode.REPEAT,
+        addressModeW = AddressMode.REPEAT
+    )
+
+    /**
+     * Returns a copy of this [SamplerSettings] with u, v and w address modes set to [AddressMode.MIRRORED_REPEAT].
+     */
+    fun mirroredRepeating(): SamplerSettings = copy(
+        addressModeU = AddressMode.MIRRORED_REPEAT,
+        addressModeV = AddressMode.MIRRORED_REPEAT,
+        addressModeW = AddressMode.MIRRORED_REPEAT
+    )
+
+    fun noAnisotropy(): SamplerSettings = copy(maxAnisotropy = 1)
+    fun withAnisotropy(maxAnisotropy: Int): SamplerSettings = copy(maxAnisotropy = maxAnisotropy)
+}
 
 enum class FilterMethod {
     NEAREST,

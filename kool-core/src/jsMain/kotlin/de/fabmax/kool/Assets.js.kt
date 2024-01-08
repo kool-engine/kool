@@ -37,7 +37,7 @@ private object PlatformAssetsImpl : PlatformAssets {
 
     override suspend fun loadTexture(textureRef: TextureAssetRef): LoadedTextureAsset {
         val img = loadImage(textureRef.path, textureRef.isHttp)
-        val texData = if (textureRef.props?.preferredSize != null) {
+        val texData = if (textureRef.props?.resolveSize != null) {
             BufferedImageTextureData(img, textureRef.props)
         } else {
             ImageTextureData(img, textureRef.props?.format)

@@ -1,7 +1,10 @@
 package de.fabmax.kool.pipeline.deferred
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.OffscreenRenderPass2d
+import de.fabmax.kool.pipeline.TexFormat
+import de.fabmax.kool.pipeline.Texture2d
+import de.fabmax.kool.pipeline.renderPassConfig
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.scene.PerspectiveProxyCam
@@ -14,8 +17,7 @@ class MaterialPass(pipeline: DeferredPipeline, suffix: String) :
             colorTargetTexture(FORMATS_DEFERRED_EMISSIVE.size) { i ->
                 colorFormat = FORMATS_DEFERRED_EMISSIVE[i]
                 // don't do any interpolation on output maps, or bad things will happen (especially for positions)
-                minFilter = FilterMethod.NEAREST
-                magFilter = FilterMethod.NEAREST
+                defaultSamplerSettings = defaultSamplerSettings.nearest()
             }
         }) {
 

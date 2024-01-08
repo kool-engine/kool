@@ -11,7 +11,7 @@ import java.nio.ByteBuffer
 
 object TextureLoader {
     fun createCubeTexture(sys: VkSystem, props: TextureProps, width: Int, height: Int, format: TexFormat = props.format) : LoadedTextureVk {
-        val mipLevels = if (props.mipMapping) { getNumMipLevels(width, height) } else { 1 }
+        val mipLevels = if (props.generateMipMaps) { getNumMipLevels(width, height) } else { 1 }
 
         val imgConfig = Image.Config()
         imgConfig.width = width
@@ -45,7 +45,7 @@ object TextureLoader {
         val height = cubeImg.height
         val dstFmt = checkFormat(cubeImg.format)
         val imageSize = width * height * dstFmt.vkBytesPerPx.toLong() * 6
-        val mipLevels = if (props.mipMapping) { getNumMipLevels(width, height) } else { 1 }
+        val mipLevels = if (props.generateMipMaps) { getNumMipLevels(width, height) } else { 1 }
 
         val stagingAllocUsage = Vma.VMA_MEMORY_USAGE_CPU_ONLY
         val stagingBuffer = Buffer(sys, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, stagingAllocUsage)
@@ -59,7 +59,7 @@ object TextureLoader {
             put(reshape(dstFmt, cubeImg.front))
         }
 
-        if (props.mipMapping) {
+        if (props.generateMipMaps) {
             logW { "Mip-map generation for cube maps not yet implemented" }
         }
 
@@ -78,7 +78,7 @@ object TextureLoader {
     }
 
     fun createTexture(sys: VkSystem, props: TextureProps, width: Int, height: Int, depth: Int, format: TexFormat = props.format) : LoadedTextureVk {
-        val mipLevels = if (props.mipMapping) { getNumMipLevels(width, height) } else { 1 }
+        val mipLevels = if (props.generateMipMaps) { getNumMipLevels(width, height) } else { 1 }
 
         val imgConfig = Image.Config()
         imgConfig.width = width
@@ -115,7 +115,7 @@ object TextureLoader {
         val buf = reshape(dstFmt, img)
 
         val imageSize = width * height * dstFmt.vkBytesPerPx.toLong()
-        val mipLevels = if (props.mipMapping) { getNumMipLevels(width, height) } else { 1 }
+        val mipLevels = if (props.generateMipMaps) { getNumMipLevels(width, height) } else { 1 }
 
         val stagingAllocUsage = Vma.VMA_MEMORY_USAGE_CPU_ONLY
         val stagingBuffer = Buffer(sys, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, stagingAllocUsage)
@@ -141,8 +141,8 @@ object TextureLoader {
             throw IllegalArgumentException("Provided TextureData must be of type TextureData3d")
         }
 
-        val noMipMappingProps = props.copy(mipMapping = false)
-        if (props.mipMapping) {
+        val noMipMappingProps = props.copy(generateMipMaps = false)
+        if (props.generateMipMaps) {
             logW { "Mip-mapping is not supported for 3D textures" }
         }
 
@@ -153,7 +153,7 @@ object TextureLoader {
         val buf = reshape(dstFmt, img)
 
         val imageSize = width * height * depth * dstFmt.vkBytesPerPx.toLong()
-        val mipLevels = if (noMipMappingProps.mipMapping) { getNumMipLevels(width, height) } else { 1 }
+        val mipLevels = if (noMipMappingProps.generateMipMaps) { getNumMipLevels(width, height) } else { 1 }
 
         val stagingAllocUsage = Vma.VMA_MEMORY_USAGE_CPU_ONLY
         val stagingBuffer = Buffer(sys, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, stagingAllocUsage)
@@ -191,20 +191,25 @@ object TextureLoader {
 
     private fun createSampler(sys: VkSystem, props: TextureProps, texImage: Image): Long {
         memStack {
+            val samplerSettings = props.defaultSamplerSettings
+            val isAnisotropy = props.generateMipMaps &&
+                samplerSettings.minFilter == FilterMethod.LINEAR &&
+                samplerSettings.magFilter == FilterMethod.LINEAR
+
             val samplerInfo = callocVkSamplerCreateInfo {
                 sType(VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO)
-                magFilter(props.magFilter.vkFilterMethod())
-                minFilter(props.minFilter.vkFilterMethod())
-                addressModeU(props.addressModeU.vkAddressMode())
-                addressModeV(props.addressModeV.vkAddressMode())
-                addressModeW(props.addressModeW.vkAddressMode())
-                anisotropyEnable(props.maxAnisotropy > 1)
-                maxAnisotropy(props.maxAnisotropy.toFloat())
+                magFilter(samplerSettings.magFilter.vkFilterMethod())
+                minFilter(samplerSettings.minFilter.vkFilterMethod())
+                addressModeU(samplerSettings.addressModeU.vkAddressMode())
+                addressModeV(samplerSettings.addressModeV.vkAddressMode())
+                addressModeW(samplerSettings.addressModeW.vkAddressMode())
+                anisotropyEnable(isAnisotropy)
+                maxAnisotropy(if (isAnisotropy) samplerSettings.maxAnisotropy.toFloat() else 1f)
                 borderColor(VK_BORDER_COLOR_INT_OPAQUE_BLACK)
                 unnormalizedCoordinates(false)
                 compareEnable(false)
                 compareOp(VK_COMPARE_OP_ALWAYS)
-                when (props.minFilter) {
+                when (samplerSettings.minFilter) {
                     FilterMethod.NEAREST -> mipmapMode(VK_SAMPLER_MIPMAP_MODE_NEAREST)
                     FilterMethod.LINEAR -> mipmapMode(VK_SAMPLER_MIPMAP_MODE_LINEAR)
                 }

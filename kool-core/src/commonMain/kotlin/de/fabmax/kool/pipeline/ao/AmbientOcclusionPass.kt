@@ -236,9 +236,11 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
             }
 
             val data = TextureData2d(buf, NOISE_TEX_SIZE, NOISE_TEX_SIZE, TexFormat.RGBA)
-            val texProps = TextureProps(TexFormat.RGBA, AddressMode.REPEAT, AddressMode.REPEAT,
-                minFilter = FilterMethod.NEAREST, magFilter = FilterMethod.NEAREST,
-                mipMapping = false, maxAnisotropy = 1)
+            val texProps = TextureProps(
+                format = TexFormat.RGBA,
+                generateMipMaps = false,
+                defaultSamplerSettings = SamplerSettings().nearest()
+            )
             return Texture2d(texProps, "ao_noise_tex") { data }
         }
     }

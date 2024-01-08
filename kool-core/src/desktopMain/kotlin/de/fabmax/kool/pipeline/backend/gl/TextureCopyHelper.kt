@@ -93,7 +93,8 @@ internal object TextureCopyHelper {
         val estSize = Texture.estimatedTexSize(width, height, 1, mipLevels, props.format.pxSize).toLong()
         val tex = LoadedTextureGl(gl.TEXTURE_2D, gl.createTexture(), backend, this, estSize)
         tex.setSize(width, height, 1)
-        tex.applySamplerProps(props)
+        tex.bind()
+        tex.applySamplerSettings(props.defaultSamplerSettings)
         gl.texStorage2D(gl.TEXTURE_2D, mipLevels, intFormat, width, height)
         loadedTexture = tex
         loadingState = Texture.LoadingState.LOADED
@@ -109,7 +110,8 @@ internal object TextureCopyHelper {
         val estSize = Texture.estimatedTexSize(width, height, 6, mipLevels, props.format.pxSize).toLong()
         val tex = LoadedTextureGl(gl.TEXTURE_CUBE_MAP, gl.createTexture(), backend, this, estSize)
         tex.setSize(width, height, 1)
-        tex.applySamplerProps(props)
+        tex.bind()
+        tex.applySamplerSettings(props.defaultSamplerSettings)
         gl.texStorage2D(gl.TEXTURE_CUBE_MAP, mipLevels, intFormat, width, height)
         loadedTexture = tex
         loadingState = Texture.LoadingState.LOADED

@@ -245,7 +245,8 @@ class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, val backend: Re
                 val estSize = Texture.estimatedTexSize(width, height, 1, mipLevels, format.pxSize).toLong()
                 val tex = LoadedTextureGl(gl.TEXTURE_2D, gl.createTexture(), backend, parentTex, estSize)
                 tex.setSize(width, height, 1)
-                tex.applySamplerProps(parentTex.props)
+                tex.bind()
+                tex.applySamplerSettings(parentTex.props.defaultSamplerSettings)
                 gl.texStorage2D(gl.TEXTURE_2D, mipLevels, intFormat, width, height)
 
                 colorTextures[i] = tex.glTexture
@@ -271,7 +272,8 @@ class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, val backend: Re
             val estSize = Texture.estimatedTexSize(width, height, 1, mipLevels, 4).toLong()
             val tex = LoadedTextureGl(gl.TEXTURE_2D, gl.createTexture(), backend, parentTex, estSize)
             tex.setSize(width, height, 1)
-            tex.applySamplerProps(parentTex.props)
+            tex.bind()
+            tex.applySamplerSettings(parentTex.props.defaultSamplerSettings)
             if (cfg.depthCompareOp != DepthCompareOp.DISABLED) {
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_MODE, gl.COMPARE_REF_TO_TEXTURE)
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_FUNC, cfg.depthCompareOp.glOp(gl))
@@ -294,7 +296,8 @@ class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, val backend: Re
         val estSize = Texture.estimatedTexSize(width, height, 1, mipLevels, props.format.pxSize).toLong()
         val tex = LoadedTextureGl(gl.TEXTURE_2D, gl.createTexture(), backend, this, estSize)
         tex.setSize(width, height, 1)
-        tex.applySamplerProps(props)
+        tex.bind()
+        tex.applySamplerSettings(props.defaultSamplerSettings)
         gl.texStorage2D(gl.TEXTURE_2D, mipLevels, intFormat, width, height)
         loadedTexture = tex
         loadingState = Texture.LoadingState.LOADED

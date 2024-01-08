@@ -15,15 +15,15 @@ import org.w3c.dom.HTMLImageElement
 class BufferedImageTextureData(image: HTMLImageElement, texProps: TextureProps?) :
     TextureData2d(
         image.toBuffer(texProps),
-        texProps?.preferredSize?.x ?: image.width,
-        texProps?.preferredSize?.y ?: image.height,
+        texProps?.resolveSize?.x ?: image.width,
+        texProps?.resolveSize?.y ?: image.height,
         texProps?.format ?: TexFormat.RGBA
     )
 {
     companion object {
         private fun HTMLImageElement.toBuffer(texProps: TextureProps?): Buffer {
             val fmt = texProps?.format
-            val prefSize = texProps?.preferredSize
+            val prefSize = texProps?.resolveSize
             val w = prefSize?.x ?: width
             val h = prefSize?.y ?: height
 

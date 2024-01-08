@@ -231,12 +231,14 @@ class KslShaderTest : DemoScene("KslShader") {
         }
         return Texture2d(
             TextureProps(
-                minFilter = FilterMethod.LINEAR,
-                magFilter = FilterMethod.NEAREST,
-                addressModeU = AddressMode.CLAMP_TO_EDGE,
-                addressModeV = AddressMode.CLAMP_TO_EDGE,
-                mipMapping = false,
-                maxAnisotropy = 1),
+                generateMipMaps = false,
+                defaultSamplerSettings = SamplerSettings(
+                    minFilter = FilterMethod.LINEAR,
+                    magFilter = FilterMethod.NEAREST,
+                    addressModeU = AddressMode.CLAMP_TO_EDGE,
+                    addressModeV = AddressMode.CLAMP_TO_EDGE
+                )
+            ),
             loader = BufferedTextureLoader(TextureData2d(noiseTexData, w, h, TexFormat.RGBA))
         )
     }

@@ -10,10 +10,9 @@ object TextureLoaderGl {
         val gl = backend.gl
         val loadedTex = LoadedTextureGl(gl.TEXTURE_1D, gl.createTexture(), backend, tex, img.estimateTexSize())
         loadedTex.setSize(img.width, 1, 1)
-        loadedTex.applySamplerProps(tex.props)
-
+        loadedTex.bind()
         gl.texImage1d(gl.TEXTURE_1D, img)
-        if (tex.props.mipMapping) {
+        if (tex.props.generateMipMaps) {
             gl.generateMipmap(gl.TEXTURE_2D)
         }
         return loadedTex
@@ -24,10 +23,9 @@ object TextureLoaderGl {
         val gl = backend.gl
         val loadedTex = LoadedTextureGl(gl.TEXTURE_2D, gl.createTexture(), backend, tex, img.estimateTexSize())
         loadedTex.setSize(img.width, 1, 1)
-        loadedTex.applySamplerProps(tex.props)
-
+        loadedTex.bind()
         gl.texImage2d(gl.TEXTURE_2D, img)
-        if (tex.props.mipMapping) {
+        if (tex.props.generateMipMaps) {
             gl.generateMipmap(gl.TEXTURE_2D)
         }
         return loadedTex
@@ -37,10 +35,9 @@ object TextureLoaderGl {
         val gl = backend.gl
         val loadedTex = LoadedTextureGl(gl.TEXTURE_2D, gl.createTexture(), backend, tex, img.estimateTexSize())
         loadedTex.setSize(img.width, img.height, 1)
-        loadedTex.applySamplerProps(tex.props)
-
+        loadedTex.bind()
         gl.texImage2d(gl.TEXTURE_2D, img)
-        if (tex.props.mipMapping) {
+        if (tex.props.generateMipMaps) {
             gl.generateMipmap(gl.TEXTURE_2D)
         }
         return loadedTex
@@ -50,10 +47,9 @@ object TextureLoaderGl {
         val gl = backend.gl
         val loadedTex = LoadedTextureGl(gl.TEXTURE_3D, gl.createTexture(), backend, tex, img.estimateTexSize())
         loadedTex.setSize(img.width, img.height, img.depth)
-        loadedTex.applySamplerProps(tex.props)
-
+        loadedTex.bind()
         gl.texImage3d(gl.TEXTURE_3D, img)
-        if (tex.props.mipMapping) {
+        if (tex.props.generateMipMaps) {
             gl.generateMipmap(gl.TEXTURE_3D)
         }
         return loadedTex
@@ -67,15 +63,14 @@ object TextureLoaderGl {
         val gl = backend.gl
         val loadedTex = LoadedTextureGl(gl.TEXTURE_CUBE_MAP, gl.createTexture(), backend, tex, img.estimateTexSize())
         loadedTex.setSize(img.width, img.height, 1)
-        loadedTex.applySamplerProps(tex.props)
-
+        loadedTex.bind()
         gl.texImage2d(gl.TEXTURE_CUBE_MAP_POSITIVE_X, img.right)
         gl.texImage2d(gl.TEXTURE_CUBE_MAP_NEGATIVE_X, img.left)
         gl.texImage2d(gl.TEXTURE_CUBE_MAP_POSITIVE_Y, img.up)
         gl.texImage2d(gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, img.down)
         gl.texImage2d(gl.TEXTURE_CUBE_MAP_POSITIVE_Z, img.back)
         gl.texImage2d(gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, img.front)
-        if (tex.props.mipMapping) {
+        if (tex.props.generateMipMaps) {
             gl.generateMipmap(gl.TEXTURE_CUBE_MAP)
         }
         return loadedTex

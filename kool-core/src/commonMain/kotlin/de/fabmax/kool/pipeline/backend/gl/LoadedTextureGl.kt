@@ -2,7 +2,6 @@ package de.fabmax.kool.pipeline.backend.gl
 
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.stats.TextureInfo
-import de.fabmax.kool.util.logW
 import kotlin.math.min
 
 class LoadedTextureGl(
@@ -25,30 +24,41 @@ class LoadedTextureGl(
 
     private val allocationInfo = TextureInfo(texture, estimatedSize)
 
+    private var currentSamplerSettings: SamplerSettings? = null
+
     fun setSize(width: Int, height: Int, depth: Int) {
         this.width = width
         this.height = height
         this.depth = depth
     }
 
-    fun applySamplerProps(props: TextureProps) {
+    fun bind() {
         gl.bindTexture(target, glTexture)
+    }
 
-        gl.texParameteri(target, gl.TEXTURE_MIN_FILTER, props.minFilter.glMinFilterMethod(props.mipMapping))
-        gl.texParameteri(target, gl.TEXTURE_MAG_FILTER, props.magFilter.glMagFilterMethod())
-        gl.texParameteri(target, gl.TEXTURE_WRAP_S, props.addressModeU.glAddressMode())
-        gl.texParameteri(target, gl.TEXTURE_WRAP_T, props.addressModeV.glAddressMode())
+    fun applySamplerSettings(samplerSettings: SamplerSettings?) {
+        val settings = samplerSettings ?: texture.props.defaultSamplerSettings
+        if (settings == currentSamplerSettings) {
+            return
+        }
+
+        val isMipMapped = texture.props.generateMipMaps
+        currentSamplerSettings = settings
+
+        gl.texParameteri(target, gl.TEXTURE_MIN_FILTER, settings.minFilter.glMinFilterMethod(isMipMapped))
+        gl.texParameteri(target, gl.TEXTURE_MAG_FILTER, settings.magFilter.glMagFilterMethod())
+        gl.texParameteri(target, gl.TEXTURE_WRAP_S, settings.addressModeU.glAddressMode())
+        gl.texParameteri(target, gl.TEXTURE_WRAP_T, settings.addressModeV.glAddressMode())
         if (target == gl.TEXTURE_3D) {
-            gl.texParameteri(target, gl.TEXTURE_WRAP_R, props.addressModeW.glAddressMode())
+            gl.texParameteri(target, gl.TEXTURE_WRAP_R, settings.addressModeW.glAddressMode())
         }
 
-        val anisotropy = min(props.maxAnisotropy, gl.capabilities.maxAnisotropy)
-        if (anisotropy > 1) {
+        val anisotropy = min(settings.maxAnisotropy, gl.capabilities.maxAnisotropy)
+        if (anisotropy > 1 && isMipMapped &&
+            settings.minFilter == FilterMethod.LINEAR &&
+            settings.magFilter == FilterMethod.LINEAR
+        ) {
             gl.texParameteri(target, gl.TEXTURE_MAX_ANISOTROPY_EXT, anisotropy)
-        }
-
-        if (anisotropy > 1 && (props.minFilter == FilterMethod.NEAREST || props.magFilter == FilterMethod.NEAREST)) {
-            logW { "Texture filtering is NEAREST but anisotropy is $anisotropy (> 1)" }
         }
     }
 

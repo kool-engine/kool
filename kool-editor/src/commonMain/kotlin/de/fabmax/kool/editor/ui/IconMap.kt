@@ -15,10 +15,8 @@ object IconMap {
     private val iconMapSize = Vec2i(480, 480)
     private val iconTexProps = TextureProps(
         format = TexFormat.RGBA,
-        minFilter = FilterMethod.NEAREST,
-        magFilter = FilterMethod.NEAREST,
-        mipMapping = false,
-        maxAnisotropy = 1
+        generateMipMaps = false,
+        defaultSamplerSettings = SamplerSettings().nearest()
     )
 
     val small = EditorIconMap(Dp(18f))
@@ -39,7 +37,7 @@ object IconMap {
             val s = iconSize.value / 24f * windowScale
             val width = (iconMapSize.x * s).roundToInt()
             val height = (iconMapSize.y * s).roundToInt()
-            val loadProps = iconTexProps.copy(preferredSize = Vec2i(width, height))
+            val loadProps = iconTexProps.copy(resolveSize = Vec2i(width, height))
             logD { "Render icon map: $width x $height" }
             Assets.loadTextureData("assets/icons/icons-24px.svg", loadProps)
         }

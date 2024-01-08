@@ -15,9 +15,8 @@ object EnvironmentHelper {
     fun singleColorEnvironment(color: Color): EnvironmentMaps {
         val bgColor = TextureData2d.singleColor(color.toLinear())
         val props = TextureProps(
-                addressModeU = AddressMode.CLAMP_TO_EDGE, addressModeV = AddressMode.CLAMP_TO_EDGE, addressModeW = AddressMode.CLAMP_TO_EDGE,
-                minFilter = FilterMethod.NEAREST, magFilter = FilterMethod.NEAREST,
-                mipMapping = false, maxAnisotropy = 1
+            generateMipMaps = false,
+            defaultSamplerSettings = SamplerSettings().nearest()
         )
         val cubeTex = TextureCube(props, "singleColorEnv-$color") {
             TextureDataCube(bgColor, bgColor, bgColor, bgColor, bgColor, bgColor)
@@ -34,7 +33,8 @@ object EnvironmentHelper {
     }
 
     suspend fun hdriEnvironment(hdriPath: String, brightness: Float = 1f): EnvironmentMaps {
-        val hdriTexProps = TextureProps(minFilter = FilterMethod.NEAREST, magFilter = FilterMethod.NEAREST, mipMapping = false, maxAnisotropy = 1)
+        val samplerSettings = SamplerSettings().nearest()
+        val hdriTexProps = TextureProps(generateMipMaps = false, defaultSamplerSettings = samplerSettings)
         val hdri = Assets.loadTexture2d(hdriPath, hdriTexProps)
         return withContext(Dispatchers.RenderLoop) {
             hdriEnvironment(hdri, brightness)

@@ -7,7 +7,7 @@ import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.FilterMethod
+import de.fabmax.kool.pipeline.SamplerSettings
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.TextureProps
 import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
@@ -212,10 +212,8 @@ class PbrDemo : DemoScene("PBR Materials") {
     companion object {
         // HDRIs are encoded as RGBE images, use nearest sampling to not mess up the exponent
         private val hdriTexProps = TextureProps(
-            minFilter = FilterMethod.NEAREST,
-            magFilter = FilterMethod.NEAREST,
-            mipMapping = false,
-            maxAnisotropy = 1
+            generateMipMaps = false,
+            defaultSamplerSettings = SamplerSettings().nearest()
         )
 
         private val hdriTextures = listOf(

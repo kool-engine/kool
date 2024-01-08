@@ -143,8 +143,8 @@ private object PlatformAssetsImpl : PlatformAssets {
                 MimeType.IMAGE_SVG -> renderSvg(inStream, props)
                 else -> {
                     var img = synchronized(imageIoLock) { ImageIO.read(it) }
-                    if (props?.preferredSize != null && props.preferredSize != Vec2i(img.width, img.height)) {
-                        img = resizeImage(img, props.preferredSize)
+                    if (props?.resolveSize != null && props.resolveSize != Vec2i(img.width, img.height)) {
+                        img = resizeImage(img, props.resolveSize)
                     }
                     ImageTextureData(img, props?.format)
                 }
@@ -276,8 +276,8 @@ private object PlatformAssetsImpl : PlatformAssets {
     private fun renderSvg(inStream: InputStream, props: TextureProps?): ImageTextureData {
         val svgDoc = SVGLoader().load(inStream) ?: throw IllegalStateException("Failed loading SVG image")
         val size = svgDoc.size()
-        val scaleX = if (props?.preferredSize != null) props.preferredSize.x / size.width else 1f
-        val scaleY = if (props?.preferredSize != null) props.preferredSize.y / size.height else 1f
+        val scaleX = if (props?.resolveSize != null) props.resolveSize.x / size.width else 1f
+        val scaleY = if (props?.resolveSize != null) props.resolveSize.y / size.height else 1f
 
         val img = BufferedImage((size.width * scaleX).roundToInt(), (size.height * scaleY).roundToInt(), BufferedImage.TYPE_4BYTE_ABGR)
         val g = img.createGraphics()

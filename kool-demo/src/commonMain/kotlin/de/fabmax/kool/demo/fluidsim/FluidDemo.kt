@@ -28,14 +28,22 @@ class FluidDemo : DemoScene("Fluid Simulation") {
     private val simHeight = 256
     private val simWidth = 456
 
-    private val uStateA = StorageTexture2d(simWidth, simHeight, TexFormat.R_I32, texProps)
-    private val vStateA = StorageTexture2d(simWidth, simHeight, TexFormat.R_I32, texProps)
-    private val uStateB = StorageTexture2d(simWidth, simHeight, TexFormat.R_I32, texProps)
-    private val vStateB = StorageTexture2d(simWidth, simHeight, TexFormat.R_I32, texProps)
-    private val smokeDensityA = StorageTexture2d(simWidth, simHeight, TexFormat.R_I32, texProps)
-    private val smokeDensityB = StorageTexture2d(simWidth, simHeight, TexFormat.R_I32, texProps)
-    private val borderState = StorageTexture2d(simWidth, simHeight, TexFormat.R_I32, texProps)
-    private val draw = StorageTexture2d(simWidth, simHeight, TexFormat.RGBA_F32, texPropsDraw)
+    private val uStateA = StorageTexture2d(simWidth, simHeight, TexFormat.R_I32)
+    private val vStateA = StorageTexture2d(simWidth, simHeight, TexFormat.R_I32)
+    private val uStateB = StorageTexture2d(simWidth, simHeight, TexFormat.R_I32)
+    private val vStateB = StorageTexture2d(simWidth, simHeight, TexFormat.R_I32)
+    private val smokeDensityA = StorageTexture2d(simWidth, simHeight, TexFormat.R_I32)
+    private val smokeDensityB = StorageTexture2d(simWidth, simHeight, TexFormat.R_I32)
+    private val borderState = StorageTexture2d(simWidth, simHeight, TexFormat.R_I32)
+
+    private val draw = StorageTexture2d(
+        simWidth, simHeight,
+        TextureProps(
+            format = TexFormat.RGBA_F32,
+            generateMipMaps = false,
+            defaultSamplerSettings = SamplerSettings().clamped().linear()
+        )
+    )
 
     private val solvers = mutableListOf<IncompressibilitySolverShader>()
     private val advectionShader = AdvectionShader(uStateA, vStateA, smokeDensityA, uStateB, vStateB, smokeDensityB, borderState)
@@ -351,26 +359,5 @@ class FluidDemo : DemoScene("Fluid Simulation") {
         override fun toString(): String {
             return label
         }
-    }
-
-    companion object {
-        private val texProps = TextureProps(
-            addressModeU = AddressMode.CLAMP_TO_EDGE,
-            addressModeV = AddressMode.CLAMP_TO_EDGE,
-            mipMapping = false,
-            maxAnisotropy = 1,
-            format = TexFormat.R_I32,
-            minFilter = FilterMethod.NEAREST,
-            magFilter = FilterMethod.NEAREST
-        )
-        private val texPropsDraw = TextureProps(
-            addressModeU = AddressMode.CLAMP_TO_EDGE,
-            addressModeV = AddressMode.CLAMP_TO_EDGE,
-            mipMapping = false,
-            maxAnisotropy = 1,
-            format = TexFormat.R_F32,
-            minFilter = FilterMethod.LINEAR,
-            magFilter = FilterMethod.LINEAR
-        )
     }
 }

@@ -34,12 +34,8 @@ class BeeDemo : DemoScene("Fighting Bees") {
 
     override suspend fun Assets.loadResources(ctx: KoolContext) {
         val texProps = TextureProps(
-            addressModeU = AddressMode.CLAMP_TO_EDGE,
-            addressModeV = AddressMode.CLAMP_TO_EDGE,
-            minFilter = FilterMethod.NEAREST,
-            magFilter = FilterMethod.NEAREST,
-            mipMapping = false,
-            maxAnisotropy = 1
+            generateMipMaps = false,
+            defaultSamplerSettings = SamplerSettings().clamped().nearest()
         )
         beeTex = loadTexture2d("${DemoLoader.materialPath}/bee.png", texProps)
     }

@@ -201,9 +201,11 @@ class ReflectionPass(val baseReflectionStep: Float) :
                 buf[i * 4 + 3] = rand.randomI(0..255).toUByte()
             }
             val data = TextureData2d(buf, sz, sz, TexFormat.RGBA)
-            val texProps = TextureProps(TexFormat.RGBA, AddressMode.REPEAT, AddressMode.REPEAT,
-                minFilter = FilterMethod.NEAREST, magFilter = FilterMethod.NEAREST,
-                mipMapping = false, maxAnisotropy = 1)
+            val texProps = TextureProps(
+                format = TexFormat.RGBA,
+                generateMipMaps = false,
+                defaultSamplerSettings = SamplerSettings().nearest()
+            )
             return Texture2d(texProps, "ssr_noise_tex") { data }
         }
     }

@@ -202,12 +202,10 @@ abstract class OffscreenRenderPass(config: Config) : RenderPass(config.name) {
     class TextureDepthAttachment(val isUsedAsShadowMap: Boolean) : DepthAttachment {
         val attachment = TextureAttachmentConfigBuilder().apply {
             if (isUsedAsShadowMap) {
-                minFilter = FilterMethod.LINEAR
-                magFilter = FilterMethod.LINEAR
+                defaultSamplerSettings = defaultSamplerSettings.linear()
                 depthCompareOp = DepthCompareOp.LESS
             } else {
-                minFilter = FilterMethod.NEAREST
-                magFilter = FilterMethod.NEAREST
+                defaultSamplerSettings = defaultSamplerSettings.nearest()
                 depthCompareOp = DepthCompareOp.DISABLED
             }
         }.build()
@@ -215,35 +213,23 @@ abstract class OffscreenRenderPass(config: Config) : RenderPass(config.name) {
 
     class TextureAttachmentConfig(builder: TextureAttachmentConfigBuilder) {
         val colorFormat = builder.colorFormat
-        val minFilter = builder.minFilter
-        val magFilter = builder.magFilter
-        val addressModeU = builder.addressModeU
-        val addressModeV = builder.addressModeV
+        val defaultSamplerSettings = builder.defaultSamplerSettings
         val depthCompareOp = builder.depthCompareOp
-        val maxAnisotropy = 1
 
         val providedTexture: Texture? = builder.providedTexture
         val isProvided: Boolean
             get() = providedTexture != null
 
         fun getTextureProps(mipMapping: Boolean) = TextureProps(
-                format = colorFormat,
-                addressModeU = addressModeU,
-                addressModeV = addressModeV,
-                addressModeW = AddressMode.CLAMP_TO_EDGE,
-                minFilter = minFilter,
-                magFilter = magFilter,
-                mipMapping = mipMapping,
-                maxAnisotropy = maxAnisotropy
+            format = colorFormat,
+            generateMipMaps = mipMapping,
+            defaultSamplerSettings = defaultSamplerSettings
         )
     }
 
     class TextureAttachmentConfigBuilder {
         var colorFormat = TexFormat.RGBA
-        var minFilter = FilterMethod.LINEAR
-        var magFilter = FilterMethod.LINEAR
-        var addressModeU = AddressMode.CLAMP_TO_EDGE
-        var addressModeV = AddressMode.CLAMP_TO_EDGE
+        var defaultSamplerSettings = SamplerSettings().clamped()
         var depthCompareOp = DepthCompareOp.DISABLED
 
         var providedTexture: Texture? = null
