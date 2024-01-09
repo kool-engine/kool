@@ -309,28 +309,28 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
     }
 
     private fun BindingType.intType() = when (this) {
-        BindingType.SAMPLER_1D -> VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
-        BindingType.SAMPLER_2D -> VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
-        BindingType.SAMPLER_3D -> VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
-        BindingType.SAMPLER_CUBE -> VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+        BindingType.TEXTURE_1D -> VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+        BindingType.TEXTURE_2D -> VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+        BindingType.TEXTURE_3D -> VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+        BindingType.TEXTURE_CUBE -> VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
         BindingType.UNIFORM_BUFFER -> VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
-        BindingType.STORAGE_1D -> TODO()
-        BindingType.STORAGE_2D -> TODO()
-        BindingType.STORAGE_3D -> TODO()
+        BindingType.STORAGE_TEXTURE_1D -> TODO()
+        BindingType.STORAGE_TEXTURE_2D -> TODO()
+        BindingType.STORAGE_TEXTURE_3D -> TODO()
     }
 
     private fun MemoryStack.createDescriptorSetLayout(bindGroupLayout: BindGroupLayout): Long {
-        val bindings = callocVkDescriptorSetLayoutBindingN(bindGroupLayout.items.size) {
-            bindGroupLayout.items.forEachIndexed { i, b ->
+        val bindings = callocVkDescriptorSetLayoutBindingN(bindGroupLayout.bindings.size) {
+            bindGroupLayout.bindings.forEachIndexed { i, b ->
                 this[i].apply {
                     binding(b.binding)
                     descriptorType(b.type.intType())
                     stageFlags(b.stages.fold(0) { flags, stage -> flags or stage.bitValue() })
 
                     val arraySize = when (b) {
-                        is TextureSampler2d -> b.arraySize
-                        is TextureSampler3d -> b.arraySize
-                        is TextureSamplerCube -> b.arraySize
+                        is Texture2dBinding -> b.arraySize
+                        is Texture3dBinding -> b.arraySize
+                        is TextureCubeBinding -> b.arraySize
                         else -> 1
                     }
                     descriptorCount(arraySize)
@@ -347,10 +347,10 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
     }
 
     private fun createDescriptorPool(bindGroupLayout: BindGroupLayout): Long {
-        if (bindGroupLayout.items.isNotEmpty()) {
+        if (bindGroupLayout.bindings.isNotEmpty()) {
             memStack {
-                val poolSize = callocVkDescriptorPoolSizeN(bindGroupLayout.items.size) {
-                    bindGroupLayout.items.forEachIndexed { i, b ->
+                val poolSize = callocVkDescriptorPoolSizeN(bindGroupLayout.bindings.size) {
+                    bindGroupLayout.bindings.forEachIndexed { i, b ->
                         this[i].apply {
                             type(b.type.intType())
                             descriptorCount(nImages * descriptorSetPoolSize)

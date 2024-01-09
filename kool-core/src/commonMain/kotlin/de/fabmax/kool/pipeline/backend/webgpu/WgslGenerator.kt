@@ -6,7 +6,7 @@ import de.fabmax.kool.modules.ksl.model.KslState
 import de.fabmax.kool.pipeline.ComputePipeline
 import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.pipeline.PipelineBase
-import de.fabmax.kool.pipeline.UniformBuffer
+import de.fabmax.kool.pipeline.UniformBufferBinding
 import de.fabmax.kool.util.logW
 
 class WgslGenerator : KslGenerator() {
@@ -133,8 +133,8 @@ class WgslGenerator : KslGenerator() {
         val structs: List<UboStruct>
 
         init {
-            structs = pipeline.bindGroupLayout.items
-                .filterIsInstance<UniformBuffer>().filter { layoutUbo ->
+            structs = pipeline.bindGroupLayout.bindings
+                .filterIsInstance<UniformBufferBinding>().filter { layoutUbo ->
                     stage.getUsedUbos().any { usedUbo -> usedUbo.name == layoutUbo.name }
                 }
                 .map { ubo ->
@@ -304,7 +304,11 @@ class WgslGenerator : KslGenerator() {
     }
 
     override fun sampleColorTexture(sampleTexture: KslSampleColorTexture<*>): String {
-        TODO()
+        // fixme: in contrast to GLSL, WGSL distinguishes between sampler and texture (which makes sense)
+        //  for now we generate the texture from the sampler expression by simply appending _tex, this is
+        //  only a hack!
+        val samplerName = sampleTexture.sampler.generateExpression(this)
+        return "textureSample(${samplerName}_tex, $samplerName, ${sampleTexture.coord.generateExpression(this)})"
     }
 
     override fun sampleDepthTexture(sampleTexture: KslSampleDepthTexture<*>): String {

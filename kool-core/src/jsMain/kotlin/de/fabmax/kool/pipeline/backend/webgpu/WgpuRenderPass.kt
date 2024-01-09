@@ -134,7 +134,7 @@ class WgpuRenderPass(val backend: RenderBackendWebGpu, val multiSamples: Int = 4
         val pipeline: GPURenderPipeline = device.createRenderPipeline(renderPipelineDescriptor(pipeline))
 
         fun bindGroupLayoutDescriptor(pipeline: Pipeline): GPUBindGroupLayoutDescriptor {
-            val layoutEntries = pipeline.bindGroupLayout.items.map { binding ->
+            val layoutEntries = pipeline.bindGroupLayout.bindings.map { binding ->
                 val visibility = binding.stages.fold(0) { acc, stage ->
                     acc or when (stage) {
                         ShaderStage.VERTEX_SHADER -> GPUShaderStage.VERTEX
@@ -145,14 +145,14 @@ class WgpuRenderPass(val backend: RenderBackendWebGpu, val multiSamples: Int = 4
                 }
 
                 when (binding) {
-                    is Storage1d -> TODO()
-                    is Storage2d -> TODO()
-                    is Storage3d -> TODO()
-                    is TextureSampler1d -> TODO()
-                    is TextureSampler2d -> TODO()
-                    is TextureSampler3d -> TODO()
-                    is TextureSamplerCube -> TODO()
-                    is UniformBuffer -> GPUBindGroupLayoutEntryBuffer(binding.binding, visibility, GPUBufferBindingLayout())
+                    is UniformBufferBinding -> GPUBindGroupLayoutEntryBuffer(binding.binding, visibility, GPUBufferBindingLayout())
+                    is Texture1dBinding -> TODO()
+                    is Texture2dBinding -> TODO()
+                    is Texture3dBinding -> TODO()
+                    is TextureCubeBinding -> TODO()
+                    is StorageTexture1dBinding -> TODO()
+                    is StorageTexture2dBinding -> TODO()
+                    is StorageTexture3dBinding -> TODO()
                 }
             }
 
@@ -252,8 +252,8 @@ class WgpuRenderPass(val backend: RenderBackendWebGpu, val multiSamples: Int = 4
         fun bindBindGroups(pass: GPURenderPassEncoder, pipeline: Pipeline) {
             if (bindGroup == null) {
                 val bindGroupEntries = mutableListOf<GPUBindGroupEntry>()
-                pipeline.bindGroupLayout.items
-                    .filterIsInstance<UniformBuffer>()
+                pipeline.bindGroupLayout.bindings
+                    .filterIsInstance<UniformBufferBinding>()
                     .forEach { ubo ->
                         val layout = Std140BufferLayout(ubo.uniforms)
                         val gpuBuffer = device.createBuffer(GPUBufferDescriptor(
@@ -286,7 +286,7 @@ class WgpuRenderPass(val backend: RenderBackendWebGpu, val multiSamples: Int = 4
     }
 
     data class UboBinding(
-        val binding: UniformBuffer,
+        val binding: UniformBufferBinding,
         val layout: Std140BufferLayout,
         val hostBuffer: MixedBuffer,
         val gpuBuffer: GPUBuffer

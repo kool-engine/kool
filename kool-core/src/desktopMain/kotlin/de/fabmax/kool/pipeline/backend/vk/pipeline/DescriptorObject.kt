@@ -26,7 +26,7 @@ abstract class DescriptorObject(val binding: Int, val descriptor: Binding) {
     open fun destroy(graphicsPipeline: GraphicsPipeline) { }
 }
 
-class UboDescriptor(binding: Int, graphicsPipeline: GraphicsPipeline, private val ubo: UniformBuffer) : DescriptorObject(binding, ubo) {
+class UboDescriptor(binding: Int, graphicsPipeline: GraphicsPipeline, private val ubo: UniformBufferBinding) : DescriptorObject(binding, ubo) {
     private val buffer: de.fabmax.kool.pipeline.backend.vk.Buffer
     private val layout = Std140BufferLayout(ubo.uniforms)
     private val hostBuffer = MixedBuffer(layout.size) as MixedBufferImpl
@@ -78,10 +78,10 @@ class UboDescriptor(binding: Int, graphicsPipeline: GraphicsPipeline, private va
 class SamplerDescriptor private constructor(binding: Int, private val sampler: TexSamplerWrapper, desc: Binding) : DescriptorObject(binding, desc) {
     private var boundTex = mutableListOf<LoadedTextureVk>()
 
-    constructor(binding: Int, sampler1d: TextureSampler1d) : this(binding, TexSamplerWrapper(sampler1d), sampler1d)
-    constructor(binding: Int, sampler2d: TextureSampler2d) : this(binding, TexSamplerWrapper(sampler2d), sampler2d)
-    constructor(binding: Int, sampler3d: TextureSampler3d) : this(binding, TexSamplerWrapper(sampler3d), sampler3d)
-    constructor(binding: Int, samplerCube: TextureSamplerCube) : this(binding, TexSamplerWrapper(samplerCube), samplerCube)
+    constructor(binding: Int, sampler1d: Texture1dBinding) : this(binding, TexSamplerWrapper(sampler1d), sampler1d)
+    constructor(binding: Int, sampler2d: Texture2dBinding) : this(binding, TexSamplerWrapper(sampler2d), sampler2d)
+    constructor(binding: Int, sampler3d: Texture3dBinding) : this(binding, TexSamplerWrapper(sampler3d), sampler3d)
+    constructor(binding: Int, samplerCube: TextureCubeBinding) : this(binding, TexSamplerWrapper(samplerCube), samplerCube)
 
     init {
         isValid = false
@@ -215,17 +215,17 @@ class SamplerDescriptor private constructor(binding: Int, private val sampler: T
     }
 
     private class TexSamplerWrapper private constructor(
-            val mode: Int,
-            val sampler1d: TextureSampler1d? = null,
-            val sampler2d: TextureSampler2d? = null,
-            val sampler3d: TextureSampler3d? = null,
-            val samplerCube: TextureSamplerCube? = null,
-            val arraySize: Int) {
+        val mode: Int,
+        val sampler1d: Texture1dBinding? = null,
+        val sampler2d: Texture2dBinding? = null,
+        val sampler3d: Texture3dBinding? = null,
+        val samplerCube: TextureCubeBinding? = null,
+        val arraySize: Int) {
 
-        constructor(sampler1d: TextureSampler1d) : this(MODE_1D, sampler1d = sampler1d, arraySize = sampler1d.arraySize)
-        constructor(sampler2d: TextureSampler2d) : this(MODE_2D, sampler2d = sampler2d, arraySize = sampler2d.arraySize)
-        constructor(sampler3d: TextureSampler3d) : this(MODE_3D, sampler3d = sampler3d, arraySize = sampler3d.arraySize)
-        constructor(samplerCube: TextureSamplerCube) : this(MODE_CUBE, samplerCube = samplerCube, arraySize = samplerCube.arraySize)
+        constructor(sampler1d: Texture1dBinding) : this(MODE_1D, sampler1d = sampler1d, arraySize = sampler1d.arraySize)
+        constructor(sampler2d: Texture2dBinding) : this(MODE_2D, sampler2d = sampler2d, arraySize = sampler2d.arraySize)
+        constructor(sampler3d: Texture3dBinding) : this(MODE_3D, sampler3d = sampler3d, arraySize = sampler3d.arraySize)
+        constructor(samplerCube: TextureCubeBinding) : this(MODE_CUBE, samplerCube = samplerCube, arraySize = samplerCube.arraySize)
 
         val textures: Array<out Texture?>
             get() = when (mode) {

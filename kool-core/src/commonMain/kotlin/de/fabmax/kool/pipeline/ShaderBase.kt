@@ -15,28 +15,28 @@ abstract class ShaderBase(val name: String) {
 
     val uniforms = mutableMapOf<String, Uniform<*>>()
 
-    val texSamplers1d = mutableMapOf<String, TextureSampler1d>()
-    val texSamplers2d = mutableMapOf<String, TextureSampler2d>()
-    val texSamplers3d = mutableMapOf<String, TextureSampler3d>()
-    val texSamplersCube = mutableMapOf<String, TextureSamplerCube>()
+    val texSamplers1d = mutableMapOf<String, Texture1dBinding>()
+    val texSamplers2d = mutableMapOf<String, Texture2dBinding>()
+    val texSamplers3d = mutableMapOf<String, Texture3dBinding>()
+    val texSamplersCube = mutableMapOf<String, TextureCubeBinding>()
 
-    val storage1d = mutableMapOf<String, Storage1d>()
-    val storage2d = mutableMapOf<String, Storage2d>()
-    val storage3d = mutableMapOf<String, Storage3d>()
+    val storage1d = mutableMapOf<String, StorageTexture1dBinding>()
+    val storage2d = mutableMapOf<String, StorageTexture2dBinding>()
+    val storage3d = mutableMapOf<String, StorageTexture3dBinding>()
 
     private val connectUniformListeners = mutableMapOf<String, ConnectUniformListener>()
 
     protected fun pipelineCreated(pipeline: PipelineBase) {
-        pipeline.bindGroupLayout.items.forEach { binding ->
+        pipeline.bindGroupLayout.bindings.forEach { binding ->
             when (binding) {
-                is UniformBuffer -> binding.uniforms.forEach { uniforms[it.name] = it }
-                is TextureSampler1d -> texSamplers1d[binding.name] = binding
-                is TextureSampler2d -> texSamplers2d[binding.name] = binding
-                is TextureSampler3d -> texSamplers3d[binding.name] = binding
-                is TextureSamplerCube -> texSamplersCube[binding.name] = binding
-                is Storage1d -> storage1d[binding.name] = binding
-                is Storage2d -> storage2d[binding.name] = binding
-                is Storage3d -> storage3d[binding.name] = binding
+                is UniformBufferBinding -> binding.uniforms.forEach { uniforms[it.name] = it }
+                is Texture1dBinding -> texSamplers1d[binding.name] = binding
+                is Texture2dBinding -> texSamplers2d[binding.name] = binding
+                is Texture3dBinding -> texSamplers3d[binding.name] = binding
+                is TextureCubeBinding -> texSamplersCube[binding.name] = binding
+                is StorageTexture1dBinding -> storage1d[binding.name] = binding
+                is StorageTexture2dBinding -> storage2d[binding.name] = binding
+                is StorageTexture3dBinding -> storage3d[binding.name] = binding
             }
         }
         connectUniformListeners.values.forEach { it.connect() }
@@ -395,7 +395,7 @@ abstract class ShaderBase(val name: String) {
     }
 
     inner class UniformInputTexture1d(val uniformName: String, defaultVal: Texture1d?) : ConnectUniformListener {
-        var uniform: TextureSampler1d? = null
+        var uniform: Texture1dBinding? = null
         private var buffer: Texture1d? = defaultVal
         override val isConnected: Boolean = uniform != null
         override fun connect() { uniform = texSamplers1d[uniformName]?.apply { texture = buffer } }
@@ -406,7 +406,7 @@ abstract class ShaderBase(val name: String) {
     }
 
     inner class UniformInputTexture2d(val uniformName: String, defaultVal: Texture2d?) : ConnectUniformListener {
-        var uniform: TextureSampler2d? = null
+        var uniform: Texture2dBinding? = null
         private var buffer: Texture2d? = defaultVal
         override val isConnected: Boolean = uniform != null
         override fun connect() { uniform = texSamplers2d[uniformName]?.apply { texture = buffer } }
@@ -417,7 +417,7 @@ abstract class ShaderBase(val name: String) {
     }
 
     inner class UniformInputTexture3d(val uniformName: String, defaultVal: Texture3d?) : ConnectUniformListener {
-        var uniform: TextureSampler3d? = null
+        var uniform: Texture3dBinding? = null
         private var buffer: Texture3d? = defaultVal
         override val isConnected: Boolean = uniform != null
         override fun connect() { uniform = texSamplers3d[uniformName]?.apply { texture = buffer } }
@@ -428,7 +428,7 @@ abstract class ShaderBase(val name: String) {
     }
 
     inner class UniformInputTextureCube(val uniformName: String, defaultVal: TextureCube?) : ConnectUniformListener {
-        var uniform: TextureSamplerCube? = null
+        var uniform: TextureCubeBinding? = null
         private var buffer: TextureCube? = defaultVal
         override val isConnected: Boolean = uniform != null
         override fun connect() { uniform = texSamplersCube[uniformName]?.apply { texture = buffer } }
@@ -439,7 +439,7 @@ abstract class ShaderBase(val name: String) {
     }
 
     inner class UniformInputTextureArray1d(val uniformName: String, val arrSize: Int) : ConnectUniformListener {
-        var uniform: TextureSampler1d? = null
+        var uniform: Texture1dBinding? = null
         private val buffer = Array<Texture1d?>(arrSize) { null }
         override val isConnected: Boolean = uniform != null
         override fun connect() {
@@ -452,7 +452,7 @@ abstract class ShaderBase(val name: String) {
     }
 
     inner class UniformInputTextureArray2d(val uniformName: String, val arrSize: Int) : ConnectUniformListener {
-        var uniform: TextureSampler2d? = null
+        var uniform: Texture2dBinding? = null
         private val buffer = Array<Texture2d?>(arrSize) { null }
         override val isConnected: Boolean = uniform != null
         override fun connect() {
@@ -465,7 +465,7 @@ abstract class ShaderBase(val name: String) {
     }
 
     inner class UniformInputTextureArray3d(val uniformName: String, val arrSize: Int) : ConnectUniformListener {
-        var uniform: TextureSampler3d? = null
+        var uniform: Texture3dBinding? = null
         private val buffer = Array<Texture3d?>(arrSize) { null }
         override val isConnected: Boolean = uniform != null
         override fun connect() {
@@ -478,7 +478,7 @@ abstract class ShaderBase(val name: String) {
     }
 
     inner class UniformInputTextureArrayCube(val uniformName: String, val arrSize: Int) : ConnectUniformListener {
-        var uniform: TextureSamplerCube? = null
+        var uniform: TextureCubeBinding? = null
         private val buffer = Array<TextureCube?>(arrSize) { null }
         override val isConnected: Boolean = uniform != null
         override fun connect() {
@@ -491,7 +491,7 @@ abstract class ShaderBase(val name: String) {
     }
 
     inner class UniformInputStorage1d(val uniformName: String, defaultVal: StorageTexture1d?) : ConnectUniformListener {
-        var uniform: Storage1d? = null
+        var uniform: StorageTexture1dBinding? = null
         private var buffer: StorageTexture1d? = defaultVal
         override val isConnected: Boolean = uniform != null
         override fun connect() { uniform = storage1d[uniformName]?.apply { storageTex = buffer } }
@@ -502,7 +502,7 @@ abstract class ShaderBase(val name: String) {
     }
 
     inner class UniformInputStorage2d(val uniformName: String, defaultVal: StorageTexture2d?) : ConnectUniformListener {
-        var uniform: Storage2d? = null
+        var uniform: StorageTexture2dBinding? = null
         private var buffer: StorageTexture2d? = defaultVal
         override val isConnected: Boolean = uniform != null
         override fun connect() { uniform = storage2d[uniformName]?.apply { storageTex = buffer } }
@@ -513,7 +513,7 @@ abstract class ShaderBase(val name: String) {
     }
 
     inner class UniformInputStorage3d(val uniformName: String, defaultVal: StorageTexture3d?) : ConnectUniformListener {
-        var uniform: Storage3d? = null
+        var uniform: StorageTexture3dBinding? = null
         private var buffer: StorageTexture3d? = defaultVal
         override val isConnected: Boolean = uniform != null
         override fun connect() { uniform = storage3d[uniformName]?.apply { storageTex = buffer } }

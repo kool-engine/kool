@@ -41,7 +41,7 @@ interface MappedUniform {
     }
 }
 
-class MappedUbo(val ubo: UniformBuffer, val layout: BufferLayout, val gl: GlApi) : MappedUniform {
+class MappedUbo(val ubo: UniformBufferBinding, val layout: BufferLayout, val gl: GlApi) : MappedUniform {
     var uboBuffer: BufferResource? = null
     val hostBuffer = MixedBuffer(layout.size)
 
@@ -312,7 +312,7 @@ sealed class MappedUniformTex(val texUnit: Int, val target: Int, val backend: Re
     }
 }
 
-class MappedUniformTex1d(private val sampler1d: TextureSampler1d, texUnit: Int, val locations: IntArray, backend: RenderBackendGl) :
+class MappedUniformTex1d(private val sampler1d: Texture1dBinding, texUnit: Int, val locations: IntArray, backend: RenderBackendGl) :
     MappedUniformTex(texUnit, backend.gl.TEXTURE_2D, backend)
 {
     // 1d texture internally uses a 2d texture to be compatible with glsl version 300 es
@@ -333,7 +333,7 @@ class MappedUniformTex1d(private val sampler1d: TextureSampler1d, texUnit: Int, 
     }
 }
 
-class MappedUniformTex2d(private val sampler2d: TextureSampler2d, texUnit: Int, val locations: IntArray, backend: RenderBackendGl) :
+class MappedUniformTex2d(private val sampler2d: Texture2dBinding, texUnit: Int, val locations: IntArray, backend: RenderBackendGl) :
     MappedUniformTex(texUnit, backend.gl.TEXTURE_2D, backend)
 {
     override fun setUniform(): Boolean {
@@ -352,7 +352,7 @@ class MappedUniformTex2d(private val sampler2d: TextureSampler2d, texUnit: Int, 
     }
 }
 
-class MappedUniformTex3d(private val sampler3d: TextureSampler3d, texUnit: Int, val locations: IntArray, backend: RenderBackendGl) :
+class MappedUniformTex3d(private val sampler3d: Texture3dBinding, texUnit: Int, val locations: IntArray, backend: RenderBackendGl) :
     MappedUniformTex(texUnit, backend.gl.TEXTURE_3D, backend)
 {
     override fun setUniform(): Boolean {
@@ -371,7 +371,7 @@ class MappedUniformTex3d(private val sampler3d: TextureSampler3d, texUnit: Int, 
     }
 }
 
-class MappedUniformTexCube(private val samplerCube: TextureSamplerCube, texUnit: Int, val locations: IntArray, backend: RenderBackendGl) :
+class MappedUniformTexCube(private val samplerCube: TextureCubeBinding, texUnit: Int, val locations: IntArray, backend: RenderBackendGl) :
     MappedUniformTex(texUnit, backend.gl.TEXTURE_CUBE_MAP, backend)
 {
     override fun setUniform(): Boolean {
@@ -391,7 +391,7 @@ class MappedUniformTexCube(private val samplerCube: TextureSamplerCube, texUnit:
 }
 
 sealed class MappedUniformStorage(
-    private val storage: StorageBinding<*>,
+    private val storage: StorageTextureBinding<*>,
     private val binding: Int,
     private val backend: RenderBackendGl
 ) : MappedUniform {
@@ -425,7 +425,7 @@ sealed class MappedUniformStorage(
 }
 
 class MappedUniformStorage1d(
-    private val storage: Storage1d,
+    private val storage: StorageTexture1dBinding,
     binding: Int,
     backend: RenderBackendGl
 ) : MappedUniformStorage(storage, binding, backend) {
@@ -437,7 +437,7 @@ class MappedUniformStorage1d(
 }
 
 class MappedUniformStorage2d(
-    private val storage: Storage2d,
+    private val storage: StorageTexture2dBinding,
     binding: Int,
     backend: RenderBackendGl
 ) : MappedUniformStorage(storage, binding, backend) {
@@ -449,7 +449,7 @@ class MappedUniformStorage2d(
 }
 
 class MappedUniformStorage3d(
-    private val storage: Storage3d,
+    private val storage: StorageTexture3dBinding,
     binding: Int,
     backend: RenderBackendGl
 ) : MappedUniformStorage(storage, binding, backend) {

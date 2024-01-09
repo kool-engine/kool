@@ -140,7 +140,7 @@ fun KslProgram.setupBindGroupLayout(shader: ShaderBase?): BindGroupLayout.Builde
 
 private fun KslProgram.setupBindGroupLayoutUbos(shader: ShaderBase?, bindGrpBuilder: BindGroupLayout.Builder) {
     uniformBuffers.filter { it.uniforms.isNotEmpty() }.forEach { kslUbo ->
-        val ubo = UniformBuffer.Builder()
+        val ubo = UniformBufferBinding.Builder()
         bindGrpBuilder.ubos += ubo
 
         ubo.name = kslUbo.name
@@ -197,27 +197,27 @@ private fun KslProgram.setupBindGroupLayoutUbos(shader: ShaderBase?, bindGrpBuil
 private fun KslProgram.setupBindGroupLayoutSamplers(bindGrpBuilder: BindGroupLayout.Builder) {
     uniformSamplers.values.forEach { sampler ->
         val binding = when(val type = sampler.value.expressionType)  {
-            is KslDepthSampler2D -> TextureSampler2d.Builder().apply { isDepthSampler = true }
-            is KslDepthSamplerCube -> TextureSamplerCube.Builder().apply { isDepthSampler = true }
-            is KslColorSampler1d -> TextureSampler1d.Builder()
-            is KslColorSampler2d -> TextureSampler2d.Builder()
-            is KslColorSampler3d -> TextureSampler3d.Builder()
-            is KslColorSamplerCube -> TextureSamplerCube.Builder()
+            is KslDepthSampler2D -> Texture2dBinding.Builder().apply { isDepthSampler = true }
+            is KslDepthSamplerCube -> TextureCubeBinding.Builder().apply { isDepthSampler = true }
+            is KslColorSampler1d -> Texture1dBinding.Builder()
+            is KslColorSampler2d -> Texture2dBinding.Builder()
+            is KslColorSampler3d -> Texture3dBinding.Builder()
+            is KslColorSamplerCube -> TextureCubeBinding.Builder()
 
             is KslArrayType<*> -> {
                 when (type.elemType) {
-                    is KslDepthSampler2D -> TextureSampler2d.Builder().apply {
+                    is KslDepthSampler2D -> Texture2dBinding.Builder().apply {
                         isDepthSampler = true
                         arraySize = sampler.arraySize
                     }
-                    is KslDepthSamplerCube -> TextureSamplerCube.Builder().apply {
+                    is KslDepthSamplerCube -> TextureCubeBinding.Builder().apply {
                         isDepthSampler = true
                         arraySize = sampler.arraySize
                     }
-                    is KslColorSampler1d -> TextureSampler1d.Builder().apply { arraySize = sampler.arraySize }
-                    is KslColorSampler2d -> TextureSampler2d.Builder().apply { arraySize = sampler.arraySize }
-                    is KslColorSampler3d -> TextureSampler3d.Builder().apply { arraySize = sampler.arraySize }
-                    is KslColorSamplerCube -> TextureSamplerCube.Builder().apply { arraySize = sampler.arraySize }
+                    is KslColorSampler1d -> Texture1dBinding.Builder().apply { arraySize = sampler.arraySize }
+                    is KslColorSampler2d -> Texture2dBinding.Builder().apply { arraySize = sampler.arraySize }
+                    is KslColorSampler3d -> Texture3dBinding.Builder().apply { arraySize = sampler.arraySize }
+                    is KslColorSamplerCube -> TextureCubeBinding.Builder().apply { arraySize = sampler.arraySize }
                     else -> throw IllegalStateException("Unsupported sampler array type: ${type.elemType.typeName}")
                 }
             }
@@ -237,9 +237,9 @@ private fun KslProgram.setupBindGroupLayoutSamplers(bindGrpBuilder: BindGroupLay
 private fun KslProgram.setupBindGroupLayoutStorage(bindGrpBuilder: BindGroupLayout.Builder) {
     uniformStorage.values.forEach { storage ->
         val binding = when(storage.storageType)  {
-            is KslStorage1dType<*> -> Storage1d.Builder()
-            is KslStorage2dType<*> -> Storage2d.Builder()
-            is KslStorage3dType<*> -> Storage3d.Builder()
+            is KslStorage1dType<*> -> StorageTexture1dBinding.Builder()
+            is KslStorage2dType<*> -> StorageTexture2dBinding.Builder()
+            is KslStorage3dType<*> -> StorageTexture3dBinding.Builder()
         }
         bindGrpBuilder.storage += binding
 
