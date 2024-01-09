@@ -1,7 +1,5 @@
 package de.fabmax.kool.util
 
-import de.fabmax.kool.KoolException
-
 expect fun Uint8Buffer(capacity: Int, isAutoLimit: Boolean = false): Uint8Buffer
 expect fun Uint16Buffer(capacity: Int, isAutoLimit: Boolean = false): Uint16Buffer
 expect fun Int32Buffer(capacity: Int, isAutoLimit: Boolean = false): Int32Buffer
@@ -31,16 +29,6 @@ interface Buffer {
     fun checkCapacity(requiredSize: Int) = check(requiredSize <= remaining) {
         RuntimeException("Insufficient remaining size. Requested: $requiredSize, remaining: $remaining")
     }
-
-    fun removeAt(index: Int) {
-        if (index < 0 || index >= position) {
-            throw IndexOutOfBoundsException("$index not in Buffer bounds 0..${position-1}")
-        }
-
-        if (position > index) {
-            position--
-        }
-    }
 }
 
 /**
@@ -61,22 +49,6 @@ interface Uint8Buffer : Buffer {
     fun put(data: ByteArray): Uint8Buffer = put(data, 0, data.size)
 
     fun toArray(): ByteArray = ByteArray(capacity) { get(it).toByte() }
-
-    fun insertAt(index: Int, value: Byte) = insertAt(index, value.toUByte())
-    fun insertAt(index: Int, value: UByte) {
-        checkCapacity(1)
-        for (i in position downTo (index + 1)) {
-            this[i] = this[i-1]
-        }
-        this[index] = value
-    }
-
-    override fun removeAt(index: Int) {
-        super.removeAt(index)
-        for (i in index until position) {
-            this[i] = this[i+1]
-        }
-    }
 }
 
 /**
@@ -97,22 +69,6 @@ interface Uint16Buffer : Buffer {
     fun put(data: ShortArray): Uint16Buffer = put(data, 0, data.size)
 
     fun toArray(): ShortArray = ShortArray(capacity) { get(it).toShort() }
-
-    fun insertAt(index: Int, value: Short) = insertAt(index, value.toUShort())
-    fun insertAt(index: Int, value: UShort) {
-        checkCapacity(1)
-        for (i in position downTo (index + 1)) {
-            this[i] = this[i - 1]
-        }
-        this[index] = value
-    }
-
-    override fun removeAt(index: Int) {
-        super.removeAt(index)
-        for (i in index until position) {
-            this[i] = this[i+1]
-        }
-    }
 }
 
 /**
@@ -133,22 +89,6 @@ interface Int32Buffer : Buffer {
     fun put(data: IntArray): Int32Buffer = put(data, 0, data.size)
 
     fun toArray(): IntArray = IntArray(capacity) { get(it) }
-
-    fun insertAt(index: Int, value: UInt) = insertAt(index, value.toInt())
-    fun insertAt(index: Int, value: Int) {
-        checkCapacity(1)
-        for (i in position downTo (index + 1)) {
-            this[i] = this[i-1]
-        }
-        this[index] = value
-    }
-
-    override fun removeAt(index: Int) {
-        super.removeAt(index)
-        for (i in index until position) {
-            this[i] = this[i+1]
-        }
-    }
 }
 
 typealias Uint32Buffer = Int32Buffer
@@ -179,22 +119,6 @@ interface Float32Buffer : Buffer {
     }
 
     fun toArray(): FloatArray = FloatArray(capacity) { get(it) }
-
-    fun insertAt(index: Int, value: Double) = insertAt(index, value.toFloat())
-    fun insertAt(index: Int, value: Float) {
-        checkCapacity(1)
-        for (i in position downTo (index + 1)) {
-            this[i] = this[i-1]
-        }
-        this[index] = value
-    }
-
-    override fun removeAt(index: Int) {
-        super.removeAt(index)
-        for (i in index until position) {
-            this[i] = this[i+1]
-        }
-    }
 }
 
 /**
@@ -247,8 +171,4 @@ interface MixedBuffer : Buffer {
     }
 
     fun putPadding(nBytes: Int): MixedBuffer
-
-    override fun removeAt(index: Int) {
-        throw KoolException("MixedBuffer does not support element removal")
-    }
 }
