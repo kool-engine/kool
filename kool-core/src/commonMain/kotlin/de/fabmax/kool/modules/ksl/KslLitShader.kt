@@ -1,6 +1,6 @@
 package de.fabmax.kool.modules.ksl
 
-import de.fabmax.kool.math.MutableMat3f
+import de.fabmax.kool.math.Mat3f
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.modules.ksl.blocks.*
 import de.fabmax.kool.modules.ksl.lang.*
@@ -31,7 +31,7 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
     var displacementMap: Texture2d? by propertyTexture(cfg.vertexCfg.displacementCfg)
 
     var ambientFactor: Color by uniformColor("uAmbientColor")
-    var ambientMapOrientation: MutableMat3f by uniformMat3f("uAmbientTextureOri", MutableMat3f())
+    var ambientMapOrientation: Mat3f by uniformMat3f("uAmbientTextureOri")
     // if ambient color is image based
     var ambientMap: TextureCube? by textureCube("tAmbientTexture")
     // if ambient color is dual image based

@@ -45,7 +45,7 @@ class Std140BufferLayout(uniforms: List<Uniform<*>>) : BufferLayout(uniforms) {
         uniformPositions = uniforms.associate { uniform ->
             val bufPos = alignPosition(pos, uniform.alignment)
             pos = bufPos + uniform.sizeBytes
-            uniform.name to BufferPosition(uniform.name, bufPos, pos - bufPos)
+            uniform.name to BufferPosition(uniform.name, bufPos, pos - bufPos, uniform.arrayStrideBytes)
         }
         size = alignPosition(pos, 16)
     }
@@ -88,6 +88,17 @@ class Std140BufferLayout(uniforms: List<Uniform<*>>) : BufferLayout(uniforms) {
         is UniformMat3fv -> 3 * 16 * size
         is UniformMat4fv -> 4 * 16 * size
     }
+
+    private val Uniform<*>.arrayStrideBytes: Int get() = when (this) {
+        is UniformMat3fv -> 3 * 16
+        is UniformMat4fv -> 4 * 16
+        else -> 16
+    }
 }
 
-data class BufferPosition(val uniformName: String, val byteIndex: Int, val byteLen: Int)
+data class BufferPosition(
+    val uniformName: String,
+    val byteIndex: Int,
+    val byteLen: Int,
+    val arrayStrideBytes: Int
+)

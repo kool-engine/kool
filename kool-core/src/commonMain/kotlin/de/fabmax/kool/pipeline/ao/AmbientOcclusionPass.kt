@@ -58,8 +58,8 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
                 val tmpVec2f = MutableVec2f()
                 onUpdate += {
                     sceneCam?.let {
-                        aoPassShader.uProj.set(it.proj)
-                        aoPassShader.uInvProj.set(it.invProj)
+                        aoPassShader.uProj = it.proj
+                        aoPassShader.uInvProj = it.invProj
                     }
                     aoPassShader.uNoiseScale = tmpVec2f.set(
                         this@AmbientOcclusionPass.width / NOISE_TEX_SIZE.toFloat(),
@@ -86,12 +86,8 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
             val cosTheta = sqrt((1f - xi.y))
             val sinTheta = sqrt(1f - cosTheta * cosTheta)
 
-            val k = MutableVec3f(
-                sinTheta * cos(phi),
-                sinTheta * sin(phi),
-                cosTheta
-            )
-            aoPassShader.uKernel[i] = k.norm().mul(scales[i])
+            val k = MutableVec3f(sinTheta * cos(phi), sinTheta * sin(phi), cosTheta)
+            aoPassShader.uKernel.set(i, k.norm().mul(scales[i]))
         }
         aoPassShader.uKernelSize = n
     }
@@ -205,9 +201,9 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
         var depthTex by texture2d("depthTex")
         var normalTex by texture2d("normalTex")
 
-        val uProj by uniformMat4f("uProj")
-        val uInvProj by uniformMat4f("uInvProj")
-        val uKernel by uniform3fv("uKernel", MAX_KERNEL_SIZE)
+        val uKernel = uniform3fv("uKernel", MAX_KERNEL_SIZE)
+        var uProj by uniformMat4f("uProj")
+        var uInvProj by uniformMat4f("uInvProj")
         var uNoiseScale by uniform2f("uNoiseScale")
         var uKernelSize by uniform1i("uKernelRange", 16)
         var uRadius by uniform1f("uRadius", 1f)

@@ -250,6 +250,10 @@ class MixedBufferImpl(buffer: ByteBuffer, isAutoLimit: Boolean = false) :
         return this
     }
 
+    override fun getUint8(byteIndex: Int): UByte {
+        return buffer.get(byteIndex).toUByte()
+    }
+
     override fun setUint8(byteIndex: Int, value: UByte): MixedBuffer {
         buffer.put(byteIndex, value.toByte())
         return this
@@ -285,6 +289,10 @@ class MixedBufferImpl(buffer: ByteBuffer, isAutoLimit: Boolean = false) :
         }
         pos += SIZEOF_SHORT * data.limit
         return this
+    }
+
+    override fun getUint16(byteIndex: Int): UShort {
+        return buffer.getShort(byteIndex).toUShort()
     }
 
     override fun setUint16(byteIndex: Int, value: UShort): MixedBuffer {
@@ -324,6 +332,10 @@ class MixedBufferImpl(buffer: ByteBuffer, isAutoLimit: Boolean = false) :
         return this
     }
 
+    override fun getInt32(byteIndex: Int): Int {
+        return buffer.getInt(byteIndex)
+    }
+
     override fun setInt32(byteIndex: Int, value: Int): MixedBuffer {
         buffer.putInt(byteIndex, value)
         return this
@@ -359,6 +371,10 @@ class MixedBufferImpl(buffer: ByteBuffer, isAutoLimit: Boolean = false) :
         }
         pos += SIZEOF_FLOAT * data.limit
         return this
+    }
+
+    override fun getFloat32(byteIndex: Int): Float {
+        return buffer.getFloat(byteIndex)
     }
 
     override fun setFloat32(byteIndex: Int, value: Float): MixedBuffer {

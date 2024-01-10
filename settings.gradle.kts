@@ -21,7 +21,7 @@ dependencyResolutionManagement {
             version("agp", "8.1.4")
             version("android-compileSdk", "33")
             version("android-minSdk", "24")
-            version("kotlin", "1.9.21")
+            version("kotlin", "1.9.22")
             version("kotlin-coroutines", "1.7.3")
             version("kotlin-serialization", "1.6.1")
             version("kotlin-atomicfu", "0.23.1")

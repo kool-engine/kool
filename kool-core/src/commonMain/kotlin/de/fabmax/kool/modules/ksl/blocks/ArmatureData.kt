@@ -3,9 +3,8 @@ package de.fabmax.kool.modules.ksl.blocks
 import de.fabmax.kool.modules.ksl.KslShaderListener
 import de.fabmax.kool.modules.ksl.lang.KslDataBlock
 import de.fabmax.kool.modules.ksl.lang.KslProgram
-import de.fabmax.kool.pipeline.PipelineBase
 import de.fabmax.kool.pipeline.ShaderBase
-import de.fabmax.kool.pipeline.UniformMat4fv
+import de.fabmax.kool.pipeline.UniformBindingMat4fv
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import kotlin.math.min
 
@@ -13,7 +12,7 @@ class ArmatureData(maxBones: Int, program: KslProgram) : KslDataBlock, KslShader
     override val name = NAME
 
     val boneTransforms = program.uniformMat4Array("uJointTransform", maxBones)
-    private var uBoneTransforms: UniformMat4fv? = null
+    private var uBoneTransforms: UniformBindingMat4fv? = null
 
     init {
         if (maxBones > 0) {
@@ -21,16 +20,16 @@ class ArmatureData(maxBones: Int, program: KslProgram) : KslDataBlock, KslShader
         }
     }
 
-    override fun onShaderCreated(shader: ShaderBase<*>, pipeline: PipelineBase) {
-        uBoneTransforms = shader.uniforms["uJointTransform"] as? UniformMat4fv
+    override fun onShaderCreated(shader: ShaderBase<*>) {
+        uBoneTransforms = shader.uniformMat4fv("uJointTransform")
     }
 
     override fun onUpdate(cmd: DrawCommand) {
         uBoneTransforms?.let { mats ->
             cmd.mesh.skin?.let {
-                for (i in 0 until min(it.nodes.size, mats.size)) {
+                for (i in 0 until min(it.nodes.size, mats.arraySize)) {
                     val nd = it.nodes[i]
-                    mats.value[i].set(nd.jointTransform)
+                    mats[i] = nd.jointTransform
                 }
             }
         }

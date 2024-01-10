@@ -120,6 +120,7 @@ open class Mesh(var geometry: IndexedVertexList, name: String = geometry.name) :
             isCastingShadowLevelMask = if (value) -1 else 0
         }
 
+    // todo: replace pipeline with pipelineInstance
     private var pipeline: Pipeline? = null
     private val discardedPipelines = mutableListOf<Pipeline>()
 

@@ -391,21 +391,31 @@ open class Mat3f(
     /**
      * Appends the components of this matrix to the given [Float32Buffer]. The matrix is stored in column-major
      * order, as expected by all supported graphics APIs.
+     * If [withPadding] is true (the default value), the matrix is not densely stored into the buffer but with
+     * additional 4 bytes of padding after each column as expected by the common buffer layouts.
      */
-    fun putTo(target: Float32Buffer) {
+    fun putTo(target: Float32Buffer, withPadding: Boolean = true) {
         target.put(m00); target.put(m10); target.put(m20)
+        if (withPadding) target.put(0f)
         target.put(m01); target.put(m11); target.put(m21)
+        if (withPadding) target.put(0f)
         target.put(m02); target.put(m12); target.put(m22)
+        if (withPadding) target.put(0f)
     }
 
     /**
      * Appends the components of this matrix to the given [MixedBuffer]. The matrix is stored in column-major
      * order, as expected by all supported graphics APIs.
+     * If [withPadding] is true (the default value), the matrix is not densely stored into the buffer but with
+     * additional 4 bytes of padding after each column as expected by the common buffer layouts.
      */
-    fun putTo(target: MixedBuffer) {
+    fun putTo(target: MixedBuffer, withPadding: Boolean = true) {
         target.putFloat32(m00); target.putFloat32(m10); target.putFloat32(m20)
+        if (withPadding) target.putFloat32(0f)
         target.putFloat32(m01); target.putFloat32(m11); target.putFloat32(m21)
+        if (withPadding) target.putFloat32(0f)
         target.putFloat32(m02); target.putFloat32(m12); target.putFloat32(m22)
+        if (withPadding) target.putFloat32(0f)
     }
 
     /**
@@ -1273,21 +1283,31 @@ open class Mat3d(
     /**
      * Appends the components of this matrix to the given [Float32Buffer]. The matrix is stored in column-major
      * order, as expected by all supported graphics APIs.
+     * If [withPadding] is true (the default value), the matrix is not densely stored into the buffer but with
+     * additional 4 bytes of padding after each column as expected by the common buffer layouts.
      */
-    fun putTo(target: Float32Buffer) {
+    fun putTo(target: Float32Buffer, withPadding: Boolean = true) {
         target.put(m00); target.put(m10); target.put(m20)
+        if (withPadding) target.put(0.0)
         target.put(m01); target.put(m11); target.put(m21)
+        if (withPadding) target.put(0.0)
         target.put(m02); target.put(m12); target.put(m22)
+        if (withPadding) target.put(0.0)
     }
 
     /**
      * Appends the components of this matrix to the given [MixedBuffer]. The matrix is stored in column-major
      * order, as expected by all supported graphics APIs.
+     * If [withPadding] is true (the default value), the matrix is not densely stored into the buffer but with
+     * additional 4 bytes of padding after each column as expected by the common buffer layouts.
      */
-    fun putTo(target: MixedBuffer) {
+    fun putTo(target: MixedBuffer, withPadding: Boolean = true) {
         target.putFloat32(m00); target.putFloat32(m10); target.putFloat32(m20)
+        if (withPadding) target.putFloat32(0.0)
         target.putFloat32(m01); target.putFloat32(m11); target.putFloat32(m21)
+        if (withPadding) target.putFloat32(0.0)
         target.putFloat32(m02); target.putFloat32(m12); target.putFloat32(m22)
+        if (withPadding) target.putFloat32(0.0)
     }
 
     /**

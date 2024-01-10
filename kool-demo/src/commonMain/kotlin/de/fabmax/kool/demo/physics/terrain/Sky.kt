@@ -18,10 +18,6 @@ import de.fabmax.kool.pipeline.ibl.SkyCubeIblSystem
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.*
 import de.fabmax.kool.util.Color.Hsv
-import kotlin.collections.forEach
-import kotlin.collections.forEachIndexed
-import kotlin.collections.lastIndex
-import kotlin.collections.listOf
 import kotlin.collections.set
 import kotlin.math.abs
 import kotlin.math.acos
@@ -41,6 +37,9 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
 
     val sunDirection = MutableVec3f()
     val moonDirection = MutableVec3f()
+    private val sunOrientation = MutableMat3f()
+    private val nightOrientation = MutableMat3f()
+
     private val skybox = Skybox.Cube(texLod = 1f, isInfiniteDepth = mainScene.isInfiniteDepth)
     private val sunShader = SkyObjectShader(mainScene.isInfiniteDepth) {
         uniformColor(Color.WHITE.mix(MdColor.YELLOW, 0.15f).toLinear())
@@ -172,10 +171,12 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
     }
 
     fun updateLight(sceneLight: Light.Directional) {
-        computeLightDirection(SUN_TILT, sunProgress(timeOfDay), sunShader.orientation, sunDirection)
-        computeLightDirection(MOON_TILT, moonProgress(timeOfDay), moonShader.orientation, moonDirection)
+        computeLightDirection(SUN_TILT, sunProgress(timeOfDay), sunOrientation, sunDirection)
+        computeLightDirection(MOON_TILT, moonProgress(timeOfDay), nightOrientation, moonDirection)
 
-        starShader.orientation.set(moonShader.orientation)
+        sunShader.orientation = sunOrientation
+        moonShader.orientation = nightOrientation
+        starShader.orientation = nightOrientation
         starShader.alpha = 1f - smoothStep(0.23f, 0.28f, timeOfDay) + smoothStep(0.72f, 0.77f, timeOfDay)
 
         if (isDay) {
@@ -224,7 +225,7 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
         colorBlock: ColorBlockConfig.() -> Unit
     ) : KslUnlitShader(config(isReverseDepth, isPointShader, colorBlock)) {
 
-        val orientation: MutableMat3f by uniformMat3f("uOrientation", MutableMat3f())
+        var orientation: Mat3f by uniformMat3f("uOrientation")
         var alpha: Float by uniform1f("uAlpha", 1f)
 
         companion object {

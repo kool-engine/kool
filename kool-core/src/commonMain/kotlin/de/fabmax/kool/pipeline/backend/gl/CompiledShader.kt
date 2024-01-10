@@ -37,7 +37,7 @@ class CompiledShader(val program: GlProgram, val pipeline: PipelineBase, val bac
             }
         }
 
-        pipeline.bindGroupLayout.bindings.forEach { binding ->
+        pipeline.bindGroupLayouts.flatMap { it.bindings }.forEach { binding ->
             when (binding) {
                 is UniformBufferBinding -> {
                     val blockIndex = gl.getUniformBlockIndex(program, binding.name)
@@ -84,34 +84,7 @@ class CompiledShader(val program: GlProgram, val pipeline: PipelineBase, val bac
 
     private fun setupUboLayout(binding: UniformBufferBinding, blockIndex: Int) {
         gl.uniformBlockBinding(program, blockIndex, binding.binding)
-        if (binding.isShared) {
-            setupUboLayoutStd140(binding)
-        } else {
-            setupUboLayoutGlApi(binding, blockIndex)
-        }
-    }
-
-    private fun setupUboLayoutStd140(binding: UniformBufferBinding) {
         uboLayouts[binding.name] = Std140BufferLayout(binding.uniforms)
-    }
-
-    private fun setupUboLayoutGlApi(binding: UniformBufferBinding, blockIndex: Int) {
-        val bufferSize = gl.getActiveUniformBlockParameter(program, blockIndex, gl.UNIFORM_BLOCK_DATA_SIZE)
-        val uniformNames = binding.uniforms.map {
-            if (it.size > 1) "${it.name}[0]" else it.name
-        }.toTypedArray()
-
-        val indices = gl.getUniformIndices(program, uniformNames)
-        val offsets = gl.getActiveUniforms(program, indices, gl.UNIFORM_OFFSET)
-
-        val sortedOffsets = offsets.sorted()
-        val bufferPositions = binding.uniforms.associate { uniform ->
-            val off = offsets[binding.uniforms.indexOf(uniform)]
-            val nextOffI = sortedOffsets.indexOf(off) + 1
-            val nextOff = if (nextOffI < sortedOffsets.size) sortedOffsets[nextOffI] else bufferSize
-            uniform.name to BufferPosition(uniform.name, off, nextOff - off)
-        }
-        uboLayouts[binding.name] = ExternalBufferLayout(binding.uniforms, bufferPositions, bufferSize)
     }
 
     private fun getUniformLocations(name: String, arraySize: Int): IntArray {
@@ -194,28 +167,30 @@ class CompiledShader(val program: GlProgram, val pipeline: PipelineBase, val bac
         protected val storage2d = mutableListOf<StorageTexture2dBinding>()
         protected val storage3d = mutableListOf<StorageTexture3dBinding>()
 
-        protected val mappings = mutableListOf<MappedUniform>()
+        protected val mappings = mutableListOf<Pair<Int, MappedUniform>>()
         protected var uboBuffers = mutableListOf<BufferResource>()
         protected var nextTexUnit = gl.TEXTURE0
 
         init {
-            pipelineInstance.bindGroupLayout.bindings.forEach { binding ->
-                when (binding) {
-                    is UniformBufferBinding -> mapUbo(binding)
-                    is Texture1dBinding -> mapTexture1d(binding)
-                    is Texture2dBinding -> mapTexture2d(binding)
-                    is Texture3dBinding -> mapTexture3d(binding)
-                    is TextureCubeBinding -> mapTextureCube(binding)
-                    is StorageTexture1dBinding -> mapStorage1d(binding)
-                    is StorageTexture2dBinding -> mapStorage2d(binding)
-                    is StorageTexture3dBinding -> mapStorage3d(binding)
+            pipelineInstance.bindGroupLayouts.forEachIndexed { group, bindGroupLayout ->
+                bindGroupLayout.bindings.forEach { binding ->
+                    when (binding) {
+                        is UniformBufferBinding -> mapUbo(group, binding)
+                        is Texture1dBinding -> mapTexture1d(group, binding)
+                        is Texture2dBinding -> mapTexture2d(group, binding)
+                        is Texture3dBinding -> mapTexture3d(group, binding)
+                        is TextureCubeBinding -> mapTextureCube(group, binding)
+                        is StorageTexture1dBinding -> mapStorage1d(group, binding)
+                        is StorageTexture2dBinding -> mapStorage2d(group, binding)
+                        is StorageTexture3dBinding -> mapStorage3d(group, binding)
+                    }
                 }
             }
             pipelineInfo.numInstances++
         }
 
         protected fun createUboBuffers(renderPass: RenderPass) {
-            mappings.filterIsInstance<MappedUbo>().forEachIndexed { i, mappedUbo ->
+            mappings.filter { (_, mapping) -> mapping is MappedUbo }.forEachIndexed { i, (_, mappedUbo) ->
                 val creationInfo = BufferCreationInfo(
                     bufferName = "${pipelineInstance.name}.ubo-$i",
                     renderPassName = renderPass.name,
@@ -228,14 +203,15 @@ class CompiledShader(val program: GlProgram, val pipeline: PipelineBase, val bac
                     creationInfo
                 )
                 uboBuffers += uboBuffer
-                mappedUbo.uboBuffer = uboBuffer
+                (mappedUbo as MappedUbo).uboBuffer = uboBuffer
             }
         }
 
-        protected fun bindUniforms(): Boolean {
+        protected fun bindUniforms(bindGroupData: List<BindGroupData>): Boolean {
             var uniformsValid = true
             for (i in mappings.indices) {
-                uniformsValid = uniformsValid && mappings[i].setUniform()
+                val (group, mapping) = mappings[i]
+                uniformsValid = uniformsValid && mapping.setUniform(bindGroupData[group])
             }
             return uniformsValid
         }
@@ -261,17 +237,17 @@ class CompiledShader(val program: GlProgram, val pipeline: PipelineBase, val bac
             pipelineInfo.numInstances--
         }
 
-        private fun mapUbo(ubo: UniformBufferBinding) {
+        private fun mapUbo(group: Int, ubo: UniformBufferBinding) {
             ubos.add(ubo)
             val uboLayout = uboLayouts[ubo.name]
             if (uboLayout != null) {
-                mappings += MappedUbo(ubo, uboLayout, gl)
+                mappings += group to MappedUbo(ubo, uboLayout, gl)
 
             } else {
                 ubo.uniforms.forEach {
                     val location = uniformLocations[it.name]
                     if (location != null) {
-                        mappings += MappedUniform.mappedUniform(it, location[0], gl)
+                        mappings += group to MappedUniform.mappedUniform(it, location[0], gl)
                     } else {
                         logE { "Uniform location not present for uniform ${ubo.name}.${it.name}" }
                     }
@@ -279,56 +255,56 @@ class CompiledShader(val program: GlProgram, val pipeline: PipelineBase, val bac
             }
         }
 
-        private fun mapTexture1d(tex: Texture1dBinding) {
+        private fun mapTexture1d(group: Int, tex: Texture1dBinding) {
             textures1d.add(tex)
             uniformLocations[tex.name]?.let { locs ->
-                mappings += MappedUniformTex1d(tex, nextTexUnit, locs, backend)
+                mappings += group to MappedUniformTex1d(tex, nextTexUnit, locs, backend)
                 nextTexUnit += locs.size
             }
         }
 
-        private fun mapTexture2d(tex: Texture2dBinding) {
+        private fun mapTexture2d(group: Int, tex: Texture2dBinding) {
             textures2d.add(tex)
             uniformLocations[tex.name]?.let { locs ->
-                mappings += MappedUniformTex2d(tex, nextTexUnit, locs, backend)
+                mappings += group to MappedUniformTex2d(tex, nextTexUnit, locs, backend)
                 nextTexUnit += locs.size
             }
         }
 
-        private fun mapTexture3d(tex: Texture3dBinding) {
+        private fun mapTexture3d(group: Int, tex: Texture3dBinding) {
             textures3d.add(tex)
             uniformLocations[tex.name]?.let { locs ->
-                mappings += MappedUniformTex3d(tex, nextTexUnit, locs, backend)
+                mappings += group to MappedUniformTex3d(tex, nextTexUnit, locs, backend)
                 nextTexUnit += locs.size
             }
         }
 
-        private fun mapTextureCube(cubeMap: TextureCubeBinding) {
+        private fun mapTextureCube(group: Int, cubeMap: TextureCubeBinding) {
             texturesCube.add(cubeMap)
             uniformLocations[cubeMap.name]?.let { locs ->
-                mappings += MappedUniformTexCube(cubeMap, nextTexUnit, locs, backend)
+                mappings += group to MappedUniformTexCube(cubeMap, nextTexUnit, locs, backend)
                 nextTexUnit += locs.size
             }
         }
 
-        private fun mapStorage1d(storage: StorageTexture1dBinding) {
+        private fun mapStorage1d(group: Int, storage: StorageTexture1dBinding) {
             storage1d.add(storage)
             uniformLocations[storage.name]?.let { binding ->
-                mappings += MappedUniformStorage1d(storage, binding[0], backend)
+                mappings += group to MappedUniformStorage1d(storage, binding[0], backend)
             }
         }
 
-        private fun mapStorage2d(storage: StorageTexture2dBinding) {
+        private fun mapStorage2d(group: Int, storage: StorageTexture2dBinding) {
             storage2d.add(storage)
             uniformLocations[storage.name]?.let { binding ->
-                mappings += MappedUniformStorage2d(storage, binding[0], backend)
+                mappings += group to MappedUniformStorage2d(storage, binding[0], backend)
             }
         }
 
-        private fun mapStorage3d(storage: StorageTexture3dBinding) {
+        private fun mapStorage3d(group: Int, storage: StorageTexture3dBinding) {
             storage3d.add(storage)
             uniformLocations[storage.name]?.let { binding ->
-                mappings += MappedUniformStorage3d(storage, binding[0], backend)
+                mappings += group to MappedUniformStorage3d(storage, binding[0], backend)
             }
         }
     }
@@ -383,7 +359,7 @@ class CompiledShader(val program: GlProgram, val pipeline: PipelineBase, val bac
             // update geometry buffers (vertex + instance data)
             gpuGeometry?.checkBuffers()
 
-            val uniformsValid = bindUniforms()
+            val uniformsValid = bindUniforms(pipelineInstance.bindGroupData)
             if (uniformsValid) {
                 // bind vertex data
                 gpuGeometry?.indexBuffer?.bind()
@@ -413,7 +389,7 @@ class CompiledShader(val program: GlProgram, val pipeline: PipelineBase, val bac
             for (i in pipelineInstance.onUpdate.indices) {
                 pipelineInstance.onUpdate[i].invoke(computePass)
             }
-            return bindUniforms()
+            return bindUniforms(pipelineInstance.bindGroupData)
         }
     }
 

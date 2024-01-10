@@ -3,9 +3,8 @@ package de.fabmax.kool.modules.ksl.blocks
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.modules.ksl.KslShaderListener
 import de.fabmax.kool.modules.ksl.lang.*
-import de.fabmax.kool.pipeline.PipelineBase
 import de.fabmax.kool.pipeline.ShaderBase
-import de.fabmax.kool.pipeline.UniformMat4fv
+import de.fabmax.kool.pipeline.UniformBindingMat4fv
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.util.ShadowMap
 import de.fabmax.kool.util.SimpleShadowMap
@@ -24,7 +23,7 @@ class ShadowData(val shadowCfg: ShadowConfig, program: KslProgram) : KslDataBloc
     val shadowMapViewProjMats: KslUniformMatrixArray<KslMat4, KslFloat4>
     val depthMaps: KslUniformArray<KslDepthSampler2D>
 
-    private var uShadowMapViewProjMats: UniformMat4fv? = null
+    private var uShadowMapViewProjMats: UniformBindingMat4fv? = null
 
     init {
         var i = 0
@@ -50,8 +49,8 @@ class ShadowData(val shadowCfg: ShadowConfig, program: KslProgram) : KslDataBloc
         }
     }
 
-    override fun onShaderCreated(shader: ShaderBase<*>, pipeline: PipelineBase) {
-        uShadowMapViewProjMats = shader.uniforms[UNIFORM_NAME_SHADOW_VP_MATS] as? UniformMat4fv
+    override fun onShaderCreated(shader: ShaderBase<*>) {
+        uShadowMapViewProjMats = shader.uniformMat4fv(UNIFORM_NAME_SHADOW_VP_MATS)
         shader.texSamplers2d[SAMPLER_NAME_SHADOW_MAPS]?.let {
             subMaps.forEachIndexed { i, shadowMap ->
                 it.textures[i] = shadowMap.depthTexture
@@ -62,7 +61,7 @@ class ShadowData(val shadowCfg: ShadowConfig, program: KslProgram) : KslDataBloc
     override fun onUpdate(cmd: DrawCommand) {
         uShadowMapViewProjMats?.let { mats ->
             subMaps.forEachIndexed { i, shadowMap ->
-                mats.value[i].set(shadowMap.lightViewProjMat)
+                mats.set(i, shadowMap.lightViewProjMat)
             }
         }
     }

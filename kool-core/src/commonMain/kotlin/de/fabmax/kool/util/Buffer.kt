@@ -131,42 +131,56 @@ interface MixedBuffer : Buffer {
     fun putInt8(data: ByteArray): MixedBuffer = putUint8(data)
     fun putInt8(data: ByteArray, offset: Int, len: Int): MixedBuffer = putUint8(data, offset, len)
     fun putInt8(data: Uint8Buffer): MixedBuffer = putUint8(data)
+
+    fun getInt8(byteIndex: Int): Byte = getUint8(byteIndex).toByte()
     fun setInt8(byteIndex: Int, value: Byte): MixedBuffer = setUint8(byteIndex, value.toUByte())
 
     fun putInt16(value: Short): MixedBuffer = putUint16(value.toUShort())
     fun putInt16(data: ShortArray): MixedBuffer = putUint16(data)
     fun putInt16(data: ShortArray, offset: Int, len: Int): MixedBuffer = putUint16(data, offset, len)
     fun putInt16(data: Uint16Buffer): MixedBuffer = putUint16(data)
+
+    fun getInt16(byteIndex: Int): Short = getUint16(byteIndex).toShort()
     fun setInt16(byteIndex: Int, value: Short): MixedBuffer = setUint16(byteIndex, value.toUShort())
 
     fun putInt32(value: Int): MixedBuffer
     fun putInt32(data: IntArray) : MixedBuffer= putInt32(data, 0, data.size)
     fun putInt32(data: IntArray, offset: Int, len: Int): MixedBuffer
     fun putInt32(data: Int32Buffer): MixedBuffer
+
+    fun getInt32(byteIndex: Int): Int
     fun setInt32(byteIndex: Int, value: Int): MixedBuffer
 
     fun putUint8(value: UByte): MixedBuffer
     fun putUint8(data: ByteArray): MixedBuffer = putUint8(data, 0, data.size)
     fun putUint8(data: ByteArray, offset: Int, len: Int): MixedBuffer
     fun putUint8(data: Uint8Buffer): MixedBuffer
+
+    fun getUint8(byteIndex: Int): UByte
     fun setUint8(byteIndex: Int, value: UByte): MixedBuffer
 
     fun putUint16(value: UShort): MixedBuffer
     fun putUint16(data: ShortArray): MixedBuffer = putUint16(data, 0, data.size)
     fun putUint16(data: ShortArray, offset: Int, len: Int): MixedBuffer
     fun putUint16(data: Uint16Buffer): MixedBuffer
+
+    fun getUint16(byteIndex: Int): UShort
     fun setUint16(byteIndex: Int, value: UShort): MixedBuffer
 
     fun putUint32(value: Int): MixedBuffer = putInt32(value)
     fun putUint32(data: IntArray): MixedBuffer = putInt32(data, 0, data.size)
     fun putUint32(data: IntArray, offset: Int, len: Int): MixedBuffer = putInt32(data, 0, data.size)
     fun putUint32(data: Uint32Buffer): MixedBuffer = putInt32(data)
+
+    fun getUint32(byteIndex: Int): Int = getInt32(byteIndex)
     fun setUint32(byteIndex: Int, value: Int): MixedBuffer = setInt32(byteIndex, value)
 
     fun putFloat32(value: Float): MixedBuffer
     fun putFloat32(data: FloatArray): MixedBuffer = putFloat32(data, 0, data.size)
     fun putFloat32(data: FloatArray, offset: Int, len: Int): MixedBuffer
     fun putFloat32(data: Float32Buffer): MixedBuffer
+
+    fun getFloat32(byteIndex: Int): Float
     fun setFloat32(byteIndex: Int, value: Float): MixedBuffer
 
     fun putFloat32(value: Double): MixedBuffer = putFloat32(value.toFloat())

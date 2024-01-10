@@ -37,7 +37,7 @@ open class KslComputeShader(name: String) : ComputeShader(name) {
 
         builder.name = program.name
         builder.workGroupSize.set(computeStage.workGroupSize)
-        builder.bindGroupLayout = program.setupBindGroupLayout(this)
+        builder.bindGroupLayout = program.setupBindGroupLayout()
         builder.shaderCodeGenerator = { KoolSystem.requireContext().backend.generateKslComputeShader(this, it) }
     }
 
@@ -49,7 +49,7 @@ open class KslComputeShader(name: String) : ComputeShader(name) {
                 program.shaderListeners[i].onComputeUpdate(it)
             }
         }
-        program.shaderListeners.forEach { it.onShaderCreated(this, pipeline) }
+        program.shaderListeners.forEach { it.onShaderCreated(this) }
     }
 
 }

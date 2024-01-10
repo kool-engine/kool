@@ -1,5 +1,7 @@
 package de.fabmax.kool.modules.ksl.blocks
 
+import de.fabmax.kool.math.Vec2f
+import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.modules.ksl.KslShaderListener
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
@@ -27,7 +29,6 @@ class CameraData(program: KslProgram) : KslDataBlock, KslShaderListener {
     val clipFar: KslExprFloat1
         get() = clip.y
 
-    // todo: implement shared ubos
     val camUbo = KslUniformBuffer("CameraUniforms", program, false).apply {
         viewMat = uniformMat4(UNIFORM_NAME_VIEW_MAT)
         projMat = uniformMat4(UNIFORM_NAME_PROJ_MAT)
@@ -39,14 +40,14 @@ class CameraData(program: KslProgram) : KslDataBlock, KslShaderListener {
         clip = uniformFloat2(UNIFORM_NAME_CAM_CLIP)
     }
 
-    private var uPosition: Uniform3f? = null
-    private var uDirection: Uniform3f? = null
-    private var uClip: Uniform2f? = null
+    private var uPosition: UniformBinding3f? = null
+    private var uDirection: UniformBinding3f? = null
+    private var uClip: UniformBinding2f? = null
 
-    private var uViewMat: UniformMat4f? = null
-    private var uProjMat: UniformMat4f? = null
-    private var uViewProjMat: UniformMat4f? = null
-    private var uViewport: Uniform4f? = null
+    private var uViewMat: UniformBindingMat4f? = null
+    private var uProjMat: UniformBindingMat4f? = null
+    private var uViewProjMat: UniformBindingMat4f? = null
+    private var uViewport: UniformBinding4f? = null
 
     init {
         program.shaderListeners += this
@@ -54,29 +55,29 @@ class CameraData(program: KslProgram) : KslDataBlock, KslShaderListener {
         program.uniformBuffers += camUbo
     }
 
-    override fun onShaderCreated(shader: ShaderBase<*>, pipeline: PipelineBase) {
-        uPosition = shader.uniforms[UNIFORM_NAME_CAM_POSITION] as Uniform3f?
-        uDirection = shader.uniforms[UNIFORM_NAME_CAM_DIRECTION] as Uniform3f?
-        uClip = shader.uniforms[UNIFORM_NAME_CAM_CLIP] as Uniform2f?
-        uViewMat = shader.uniforms[UNIFORM_NAME_VIEW_MAT] as UniformMat4f?
-        uProjMat = shader.uniforms[UNIFORM_NAME_PROJ_MAT] as UniformMat4f?
-        uViewProjMat = shader.uniforms[UNIFORM_NAME_VIEW_PROJ_MAT] as UniformMat4f?
-        uViewport = shader.uniforms[UNIFORM_NAME_VIEWPORT] as Uniform4f?
+    override fun onShaderCreated(shader: ShaderBase<*>) {
+        uPosition = shader.uniform3f(UNIFORM_NAME_CAM_POSITION)
+        uDirection = shader.uniform3f(UNIFORM_NAME_CAM_DIRECTION)
+        uClip = shader.uniform2f(UNIFORM_NAME_CAM_CLIP)
+        uViewMat = shader.uniformMat4f(UNIFORM_NAME_VIEW_MAT)
+        uProjMat = shader.uniformMat4f(UNIFORM_NAME_PROJ_MAT)
+        uViewProjMat = shader.uniformMat4f(UNIFORM_NAME_VIEW_PROJ_MAT)
+        uViewport = shader.uniform4f(UNIFORM_NAME_VIEWPORT)
     }
 
     override fun onUpdate(cmd: DrawCommand) {
         val q = cmd.queue
         val vp = q.view.viewport
-        uViewport?.value?.set(vp.x.toFloat(), vp.y.toFloat(), vp.width.toFloat(), vp.height.toFloat())
+        uViewport?.set(Vec4f(vp.x.toFloat(), vp.y.toFloat(), vp.width.toFloat(), vp.height.toFloat()))
 
         val cam = q.view.camera
-        uPosition?.value?.set(cam.globalPos)
-        uDirection?.value?.set(cam.globalLookDir)
-        uClip?.value?.set(cam.clipNear, cam.clipFar)
+        uPosition?.set(cam.globalPos)
+        uDirection?.set(cam.globalLookDir)
+        uClip?.set(Vec2f(cam.clipNear, cam.clipFar))
 
-        uProjMat?.value?.set(q.projMat)
-        uViewMat?.value?.set(q.viewMatF)
-        uViewProjMat?.value?.set(q.viewProjMatF)
+        uProjMat?.set(q.projMat)
+        uViewMat?.set(q.viewMatF)
+        uViewProjMat?.set(q.viewProjMatF)
     }
 
     companion object {

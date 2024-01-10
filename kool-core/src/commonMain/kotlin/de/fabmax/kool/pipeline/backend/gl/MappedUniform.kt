@@ -3,14 +3,13 @@ package de.fabmax.kool.pipeline.backend.gl
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.Float32Buffer
 import de.fabmax.kool.util.Int32Buffer
-import de.fabmax.kool.util.MixedBuffer
 import de.fabmax.kool.util.RenderLoop
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 interface MappedUniform {
-    fun setUniform(): Boolean
+    fun setUniform(bindGroupData: BindGroupData): Boolean
 
     companion object {
         fun mappedUniform(uniform: Uniform<*>, location: Int, gl: GlApi): MappedUniform {
@@ -43,13 +42,14 @@ interface MappedUniform {
 
 class MappedUbo(val ubo: UniformBufferBinding, val layout: BufferLayout, val gl: GlApi) : MappedUniform {
     var uboBuffer: BufferResource? = null
-    val hostBuffer = MixedBuffer(layout.size)
 
-    override fun setUniform(): Boolean {
+    override fun setUniform(bindGroupData: BindGroupData): Boolean {
         val gpuBuf = uboBuffer
         return if (gpuBuf != null) {
-            layout.putToBuffer(ubo.uniforms, hostBuffer)
-            gpuBuf.setData(hostBuffer, gl.DYNAMIC_DRAW)
+            val uboData = bindGroupData.uniformBufferData(ubo.binding)
+            if (uboData.getAndClearDirtyFlag()) {
+                gpuBuf.setData(uboData.buffer, gl.DYNAMIC_DRAW)
+            }
             gl.bindBufferBase(gl.UNIFORM_BUFFER, ubo.binding, gpuBuf.buffer)
             true
         } else {
@@ -59,28 +59,28 @@ class MappedUbo(val ubo: UniformBufferBinding, val layout: BufferLayout, val gl:
 }
 
 class MappedUniform1f(val uniform: Uniform1f, val location: Int, val gl: GlApi) : MappedUniform {
-    override fun setUniform(): Boolean {
+    override fun setUniform(bindGroupData: BindGroupData): Boolean {
         gl.uniform1f(location, uniform.value)
         return true
     }
 }
 
 class MappedUniform2f(val uniform: Uniform2f, val location: Int, val gl: GlApi) : MappedUniform {
-    override fun setUniform(): Boolean {
+    override fun setUniform(bindGroupData: BindGroupData): Boolean {
         gl.uniform2f(location, uniform.value.x, uniform.value.y)
         return true
     }
 }
 
 class MappedUniform3f(val uniform: Uniform3f, val location: Int, val gl: GlApi) : MappedUniform {
-    override fun setUniform(): Boolean {
+    override fun setUniform(bindGroupData: BindGroupData): Boolean {
         gl.uniform3f(location, uniform.value.x, uniform.value.y, uniform.value.z)
         return true
     }
 }
 
 class MappedUniform4f(val uniform: Uniform4f, val location: Int, val gl: GlApi) : MappedUniform {
-    override fun setUniform(): Boolean {
+    override fun setUniform(bindGroupData: BindGroupData): Boolean {
         gl.uniform4f(location, uniform.value.x, uniform.value.y, uniform.value.z, uniform.value.w)
         return true
     }
@@ -88,7 +88,7 @@ class MappedUniform4f(val uniform: Uniform4f, val location: Int, val gl: GlApi) 
 
 class MappedUniform1fv(val uniform: Uniform1fv, val location: Int, val gl: GlApi) : MappedUniform {
     private val buffer = Float32Buffer(uniform.size)
-    override fun setUniform(): Boolean {
+    override fun setUniform(bindGroupData: BindGroupData): Boolean {
         buffer.clear()
         buffer.put(uniform.value)
         gl.uniform1fv(location, buffer)
@@ -98,7 +98,7 @@ class MappedUniform1fv(val uniform: Uniform1fv, val location: Int, val gl: GlApi
 
 class MappedUniform2fv(val uniform: Uniform2fv, val location: Int, val gl: GlApi) : MappedUniform {
     private val buffer = Float32Buffer(2 * uniform.size)
-    override fun setUniform(): Boolean {
+    override fun setUniform(bindGroupData: BindGroupData): Boolean {
         buffer.clear()
         for (i in 0 until uniform.size) {
             uniform.value[i].putTo(buffer)
@@ -110,7 +110,7 @@ class MappedUniform2fv(val uniform: Uniform2fv, val location: Int, val gl: GlApi
 
 class MappedUniform3fv(val uniform: Uniform3fv, val location: Int, val gl: GlApi) : MappedUniform {
     private val buffer = Float32Buffer(3 * uniform.size)
-    override fun setUniform(): Boolean {
+    override fun setUniform(bindGroupData: BindGroupData): Boolean {
         buffer.clear()
         for (i in 0 until uniform.size) {
             uniform.value[i].putTo(buffer)
@@ -122,7 +122,7 @@ class MappedUniform3fv(val uniform: Uniform3fv, val location: Int, val gl: GlApi
 
 class MappedUniform4fv(val uniform: Uniform4fv, val location: Int, val gl: GlApi) : MappedUniform {
     private val buffer = Float32Buffer(4 * uniform.size)
-    override fun setUniform(): Boolean {
+    override fun setUniform(bindGroupData: BindGroupData): Boolean {
         buffer.clear()
         for (i in 0 until uniform.size) {
             uniform.value[i].putTo(buffer)
@@ -134,7 +134,7 @@ class MappedUniform4fv(val uniform: Uniform4fv, val location: Int, val gl: GlApi
 
 class MappedUniformMat3f(val uniform: UniformMat3f, val location: Int, val gl: GlApi) : MappedUniform {
     private val buffer = Float32Buffer(9)
-    override fun setUniform(): Boolean {
+    override fun setUniform(bindGroupData: BindGroupData): Boolean {
         buffer.clear()
         uniform.value.putTo(buffer)
         gl.uniformMatrix3fv(location, buffer)
@@ -144,7 +144,7 @@ class MappedUniformMat3f(val uniform: UniformMat3f, val location: Int, val gl: G
 
 class MappedUniformMat3fv(val uniform: UniformMat3fv, val location: Int, val gl: GlApi) : MappedUniform {
     private val buffer = Float32Buffer(9 * uniform.size)
-    override fun setUniform(): Boolean {
+    override fun setUniform(bindGroupData: BindGroupData): Boolean {
         buffer.clear()
         for (i in 0 until uniform.size) {
             uniform.value[i].putTo(buffer)
@@ -156,7 +156,7 @@ class MappedUniformMat3fv(val uniform: UniformMat3fv, val location: Int, val gl:
 
 class MappedUniformMat4f(val uniform: UniformMat4f, val location: Int, val gl: GlApi) : MappedUniform {
     private val buffer = Float32Buffer(16)
-    override fun setUniform(): Boolean {
+    override fun setUniform(bindGroupData: BindGroupData): Boolean {
         buffer.clear()
         uniform.value.putTo(buffer)
         gl.uniformMatrix4fv(location, buffer)
@@ -166,7 +166,7 @@ class MappedUniformMat4f(val uniform: UniformMat4f, val location: Int, val gl: G
 
 class MappedUniformMat4fv(val uniform: UniformMat4fv, val location: Int, val gl: GlApi) : MappedUniform {
     private val buffer = Float32Buffer(16 * uniform.size)
-    override fun setUniform(): Boolean {
+    override fun setUniform(bindGroupData: BindGroupData): Boolean {
         buffer.clear()
         for (i in 0 until uniform.size) {
             uniform.value[i].putTo(buffer)
@@ -177,28 +177,28 @@ class MappedUniformMat4fv(val uniform: UniformMat4fv, val location: Int, val gl:
 }
 
 class MappedUniform1i(val uniform: Uniform1i, val location: Int, val gl: GlApi) : MappedUniform {
-    override fun setUniform(): Boolean {
+    override fun setUniform(bindGroupData: BindGroupData): Boolean {
         gl.uniform1i(location, uniform.value)
         return true
     }
 }
 
 class MappedUniform2i(val uniform: Uniform2i, val location: Int, val gl: GlApi) : MappedUniform {
-    override fun setUniform(): Boolean {
+    override fun setUniform(bindGroupData: BindGroupData): Boolean {
         gl.uniform2i(location, uniform.value.x, uniform.value.y)
         return true
     }
 }
 
 class MappedUniform3i(val uniform: Uniform3i, val location: Int, val gl: GlApi) : MappedUniform {
-    override fun setUniform(): Boolean {
+    override fun setUniform(bindGroupData: BindGroupData): Boolean {
         gl.uniform3i(location, uniform.value.x, uniform.value.y, uniform.value.z)
         return true
     }
 }
 
 class MappedUniform4i(val uniform: Uniform4i, val location: Int, val gl: GlApi) : MappedUniform {
-    override fun setUniform(): Boolean {
+    override fun setUniform(bindGroupData: BindGroupData): Boolean {
         gl.uniform4i(location, uniform.value.x, uniform.value.y, uniform.value.z, uniform.value.w)
         return true
     }
@@ -206,7 +206,7 @@ class MappedUniform4i(val uniform: Uniform4i, val location: Int, val gl: GlApi) 
 
 class MappedUniform1iv(val uniform: Uniform1iv, val location: Int, val gl: GlApi) : MappedUniform {
     private val buffer = Int32Buffer(uniform.size)
-    override fun setUniform(): Boolean {
+    override fun setUniform(bindGroupData: BindGroupData): Boolean {
         buffer.clear()
         buffer.put(uniform.value)
         gl.uniform1iv(location, buffer)
@@ -216,7 +216,7 @@ class MappedUniform1iv(val uniform: Uniform1iv, val location: Int, val gl: GlApi
 
 class MappedUniform2iv(val uniform: Uniform2iv, val location: Int, val gl: GlApi) : MappedUniform {
     private val buffer = Int32Buffer(2 * uniform.size)
-    override fun setUniform(): Boolean {
+    override fun setUniform(bindGroupData: BindGroupData): Boolean {
         buffer.clear()
         for (i in 0 until uniform.size) {
             uniform.value[i].putTo(buffer)
@@ -228,7 +228,7 @@ class MappedUniform2iv(val uniform: Uniform2iv, val location: Int, val gl: GlApi
 
 class MappedUniform3iv(val uniform: Uniform3iv, val location: Int, val gl: GlApi) : MappedUniform {
     private val buffer = Int32Buffer(3 * uniform.size)
-    override fun setUniform(): Boolean {
+    override fun setUniform(bindGroupData: BindGroupData): Boolean {
         buffer.clear()
         for (i in 0 until uniform.size) {
             uniform.value[i].putTo(buffer)
@@ -240,7 +240,7 @@ class MappedUniform3iv(val uniform: Uniform3iv, val location: Int, val gl: GlApi
 
 class MappedUniform4iv(val uniform: Uniform4iv, val location: Int, val gl: GlApi) : MappedUniform {
     private val buffer = Int32Buffer(4 * uniform.size)
-    override fun setUniform(): Boolean {
+    override fun setUniform(bindGroupData: BindGroupData): Boolean {
         buffer.clear()
         for (i in 0 until uniform.size) {
             uniform.value[i].putTo(buffer)
@@ -317,7 +317,7 @@ class MappedUniformTex1d(private val sampler1d: Texture1dBinding, texUnit: Int, 
 {
     // 1d texture internally uses a 2d texture to be compatible with glsl version 300 es
 
-    override fun setUniform(): Boolean {
+    override fun setUniform(bindGroupData: BindGroupData): Boolean {
         var texUnit = texUnit
         var isValid = true
         for (i in 0 until sampler1d.arraySize) {
@@ -336,7 +336,7 @@ class MappedUniformTex1d(private val sampler1d: Texture1dBinding, texUnit: Int, 
 class MappedUniformTex2d(private val sampler2d: Texture2dBinding, texUnit: Int, val locations: IntArray, backend: RenderBackendGl) :
     MappedUniformTex(texUnit, backend.gl.TEXTURE_2D, backend)
 {
-    override fun setUniform(): Boolean {
+    override fun setUniform(bindGroupData: BindGroupData): Boolean {
         var texUnit = texUnit
         var isValid = true
         for (i in 0 until sampler2d.arraySize) {
@@ -355,7 +355,7 @@ class MappedUniformTex2d(private val sampler2d: Texture2dBinding, texUnit: Int, 
 class MappedUniformTex3d(private val sampler3d: Texture3dBinding, texUnit: Int, val locations: IntArray, backend: RenderBackendGl) :
     MappedUniformTex(texUnit, backend.gl.TEXTURE_3D, backend)
 {
-    override fun setUniform(): Boolean {
+    override fun setUniform(bindGroupData: BindGroupData): Boolean {
         var texUnit = texUnit
         var isValid = true
         for (i in 0 until sampler3d.arraySize) {
@@ -374,7 +374,7 @@ class MappedUniformTex3d(private val sampler3d: Texture3dBinding, texUnit: Int, 
 class MappedUniformTexCube(private val samplerCube: TextureCubeBinding, texUnit: Int, val locations: IntArray, backend: RenderBackendGl) :
     MappedUniformTex(texUnit, backend.gl.TEXTURE_CUBE_MAP, backend)
 {
-    override fun setUniform(): Boolean {
+    override fun setUniform(bindGroupData: BindGroupData): Boolean {
         var texUnit = texUnit
         var isValid = true
         for (i in 0 until samplerCube.arraySize) {
@@ -429,7 +429,7 @@ class MappedUniformStorage1d(
     binding: Int,
     backend: RenderBackendGl
 ) : MappedUniformStorage(storage, binding, backend) {
-    override fun setUniform(): Boolean {
+    override fun setUniform(bindGroupData: BindGroupData): Boolean {
         val storageTex = storage.storageTex ?: return false
         bindStorageTex(storageTex)
         return true
@@ -441,7 +441,7 @@ class MappedUniformStorage2d(
     binding: Int,
     backend: RenderBackendGl
 ) : MappedUniformStorage(storage, binding, backend) {
-    override fun setUniform(): Boolean {
+    override fun setUniform(bindGroupData: BindGroupData): Boolean {
         val storageTex = storage.storageTex ?: return false
         bindStorageTex(storageTex)
         return true
@@ -453,7 +453,7 @@ class MappedUniformStorage3d(
     binding: Int,
     backend: RenderBackendGl
 ) : MappedUniformStorage(storage, binding, backend) {
-    override fun setUniform(): Boolean {
+    override fun setUniform(bindGroupData: BindGroupData): Boolean {
         val storageTex = storage.storageTex ?: return false
         bindStorageTex(storageTex)
         return true

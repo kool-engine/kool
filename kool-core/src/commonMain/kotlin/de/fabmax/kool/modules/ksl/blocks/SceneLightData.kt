@@ -3,10 +3,9 @@ package de.fabmax.kool.modules.ksl.blocks
 import de.fabmax.kool.modules.ksl.KslShaderListener
 import de.fabmax.kool.modules.ksl.lang.KslDataBlock
 import de.fabmax.kool.modules.ksl.lang.KslProgram
-import de.fabmax.kool.pipeline.PipelineBase
 import de.fabmax.kool.pipeline.ShaderBase
-import de.fabmax.kool.pipeline.Uniform1i
-import de.fabmax.kool.pipeline.Uniform4fv
+import de.fabmax.kool.pipeline.UniformBinding1i
+import de.fabmax.kool.pipeline.UniformBinding4fv
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import kotlin.math.min
 
@@ -20,21 +19,21 @@ class SceneLightData(program: KslProgram, val maxLightCount: Int) : KslDataBlock
     val encodedColors = program.uniformFloat4Array(UNIFORM_NAME_LIGHT_COLORS, maxLightCount)
     val lightCount = program.uniformInt1(UNIFORM_NAME_LIGHT_COUNT)
 
-    private var uLightPositions: Uniform4fv? = null
-    private var uLightDirections: Uniform4fv? = null
-    private var uLightColors: Uniform4fv? = null
-    private var uLightCount: Uniform1i? = null
+    private var uLightPositions: UniformBinding4fv? = null
+    private var uLightDirections: UniformBinding4fv? = null
+    private var uLightColors: UniformBinding4fv? = null
+    private var uLightCount: UniformBinding1i? = null
 
     init {
         program.dataBlocks += this
         program.shaderListeners += this
     }
 
-    override fun onShaderCreated(shader: ShaderBase<*>, pipeline: PipelineBase) {
-        uLightPositions = shader.uniforms[UNIFORM_NAME_LIGHT_POSITIONS] as? Uniform4fv
-        uLightDirections = shader.uniforms[UNIFORM_NAME_LIGHT_DIRECTIONS] as? Uniform4fv
-        uLightColors = shader.uniforms[UNIFORM_NAME_LIGHT_COLORS] as? Uniform4fv
-        uLightCount = shader.uniforms[UNIFORM_NAME_LIGHT_COUNT] as? Uniform1i
+    override fun onShaderCreated(shader: ShaderBase<*>) {
+        uLightPositions = shader.uniform4fv(UNIFORM_NAME_LIGHT_POSITIONS)
+        uLightDirections = shader.uniform4fv(UNIFORM_NAME_LIGHT_DIRECTIONS)
+        uLightColors = shader.uniform4fv(UNIFORM_NAME_LIGHT_COLORS)
+        uLightCount = shader.uniform1i(UNIFORM_NAME_LIGHT_COUNT)
     }
 
     override fun onUpdate(cmd: DrawCommand) {
@@ -45,16 +44,17 @@ class SceneLightData(program: KslProgram, val maxLightCount: Int) : KslDataBlock
             val lightCol = uLightColors ?: return
             val lightCnt = uLightCount ?: return
 
-            lightCnt.value = min(lighting.lights.size, maxLightCount)
-            for (i in 0 until lightCnt.value) {
+            val setLightCount = min(lighting.lights.size, maxLightCount)
+            lightCnt.set(setLightCount)
+            for (i in 0 until setLightCount) {
                 val light = lighting.lights[i]
                 light.updateEncodedValues()
-                lightPos.value[i].set(light.encodedPosition)
-                lightDir.value[i].set(light.encodedDirection)
-                lightCol.value[i].set(light.encodedColor)
+                lightPos.set(i, light.encodedPosition)
+                lightDir.set(i, light.encodedDirection)
+                lightCol.set(i, light.encodedColor)
             }
         } else {
-            uLightCount?.value = 0
+            uLightCount?.set(0)
         }
     }
 

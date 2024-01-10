@@ -52,7 +52,7 @@ open class KslShader private constructor(val program: KslProgram) : Shader(progr
 
         builder.name = program.name
         builder.vertexLayout.setupVertexLayout(mesh)
-        builder.bindGroupLayout = program.setupBindGroupLayout(this)
+        builder.bindGroupLayout = program.setupBindGroupLayout()
         builder.shaderCodeGenerator = { updateEvent.ctx.backend.generateKslShader(this, it) }
 
         super.onPipelineSetup(builder, mesh, updateEvent)
@@ -66,7 +66,7 @@ open class KslShader private constructor(val program: KslProgram) : Shader(progr
                 program.shaderListeners[i].onUpdate(cmd)
             }
         }
-        program.shaderListeners.forEach { it.onShaderCreated(this, pipeline) }
+        program.shaderListeners.forEach { it.onShaderCreated(this) }
     }
 
     private fun VertexLayout.Builder.setupVertexLayout(mesh: Mesh)  {
@@ -130,15 +130,15 @@ open class KslShader private constructor(val program: KslProgram) : Shader(progr
     }
 }
 
-fun KslProgram.setupBindGroupLayout(shader: ShaderBase<*>?): BindGroupLayout.Builder {
+fun KslProgram.setupBindGroupLayout(): BindGroupLayout.Builder {
     val bindGrpBuilder = BindGroupLayout.Builder()
-    setupBindGroupLayoutUbos(shader, bindGrpBuilder)
+    setupBindGroupLayoutUbos(bindGrpBuilder)
     setupBindGroupLayoutSamplers(bindGrpBuilder)
     setupBindGroupLayoutStorage(bindGrpBuilder)
     return bindGrpBuilder
 }
 
-private fun KslProgram.setupBindGroupLayoutUbos(shader: ShaderBase<*>?, bindGrpBuilder: BindGroupLayout.Builder) {
+private fun KslProgram.setupBindGroupLayoutUbos(bindGrpBuilder: BindGroupLayout.Builder) {
     uniformBuffers.filter { it.uniforms.isNotEmpty() }.forEach { kslUbo ->
         val ubo = UniformBufferBinding.Builder()
         bindGrpBuilder.ubos += ubo
@@ -152,9 +152,9 @@ private fun KslProgram.setupBindGroupLayoutUbos(shader: ShaderBase<*>?, bindGrpB
         }
 
         kslUbo.uniforms.values.forEach { uniform ->
-            // make sure to reuse the existing Uniform<*> object in case multiple pipeline instances are
-            // created from this KslShader instance
-            val createdUniform: Uniform<*> = shader?.uniforms?.get(uniform.name) ?: when(val type = uniform.value.expressionType)  {
+            // fixme: make sure to reuse the existing Uniform<*> object in case multiple pipeline instances are
+            //  created from this KslShader instance - this was a hack and should not be needed anymore
+            val createdUniform: Uniform<*> = /*shader?.uniforms?.get(uniform.name) ?:*/ when(val type = uniform.value.expressionType)  {
                 is KslFloat1 -> { Uniform1f(uniform.name) }
                 is KslFloat2 -> { Uniform2f(uniform.name) }
                 is KslFloat3 -> { Uniform3f(uniform.name) }

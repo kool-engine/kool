@@ -3,6 +3,7 @@ package de.fabmax.kool.pipeline
 import de.fabmax.kool.util.MixedBuffer
 
 class BindGroupData(val layout: BindGroupLayout) {
+
     val bindings: List<BindingData> = layout.bindings.map {
         when (it) {
             is UniformBufferBinding -> UniformBufferData(it)
@@ -17,11 +18,19 @@ class BindGroupData(val layout: BindGroupLayout) {
     }
     var isDirty = true
 
+    fun uniformBufferData(binding: Int) = bindings[binding] as UniformBufferData
+
     sealed interface BindingData
 
     inner class UniformBufferData(val binding: UniformBufferBinding) : BindingData {
         val buffer: MixedBuffer = MixedBuffer(binding.layout.size)
         var isBufferDirty = true
+
+        fun getAndClearDirtyFlag(): Boolean {
+            val isDirty = isBufferDirty
+            isBufferDirty = false
+            return isDirty
+        }
     }
 
     abstract inner class TextureData<T: Texture, B: TextureBinding>(val binding: B) {

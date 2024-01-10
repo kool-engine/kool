@@ -1,6 +1,6 @@
 package de.fabmax.kool.pipeline.deferred
 
-import de.fabmax.kool.math.MutableMat3f
+import de.fabmax.kool.math.Mat3f
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.Vec4f
@@ -36,7 +36,7 @@ open class PbrSceneShader(cfg: DeferredPbrConfig, model: Model = Model(cfg)) :
     var emissiveAo by texture2d("emissiveAo")
 
     var ambientFactor: Color by uniformColor("uAmbientColor")
-    var ambientMapOrientation: MutableMat3f by uniformMat3f("uAmbientTextureOri", MutableMat3f())
+    var ambientMapOrientation: Mat3f by uniformMat3f("uAmbientTextureOri")
     // if ambient color is image based
     var ambientMap: TextureCube? by textureCube("tAmbientTexture")
     // if ambient color is dual image based

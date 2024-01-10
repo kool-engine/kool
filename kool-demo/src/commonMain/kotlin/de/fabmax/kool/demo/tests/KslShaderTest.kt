@@ -180,15 +180,12 @@ class KslShaderTest : DemoScene("KslShader") {
                 }
             }
 
-            var uSparkle: Uniform1f? = null
-            phongShader.onPipelineCreated += Shader.PipelineCreatedListener { _, _, _ ->
-                phongShader.texSamplers2d["tShininess"]?.texture = makeNoiseTex()
-                uSparkle = phongShader.uniforms["uSparkle"] as? Uniform1f
-            }
+            var uSparkle by phongShader.uniform1f("uSparkle")
+            phongShader.texture2d("tShininess", makeNoiseTex())
 
             shader = phongShader
             onUpdate += {
-                uSparkle?.value = (Time.gameTime % 1.0).toFloat()
+                uSparkle = (Time.gameTime % 1.0).toFloat()
             }
         }
     }
