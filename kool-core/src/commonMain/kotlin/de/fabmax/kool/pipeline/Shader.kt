@@ -9,12 +9,10 @@ import de.fabmax.kool.scene.Mesh
  * directly and supply arbitrary shader source code to the [Pipeline.Builder] in [onPipelineSetup]. In that case the
  * supplied shader source code has to match the rendering backend (e.g. GLSL in case an OpenGL backend is used).
  */
-abstract class Shader(name: String) : ShaderBase(name) {
+abstract class Shader(name: String) : ShaderBase<Pipeline>(name) {
     val pipelineConfig = PipelineConfig()
 
     val onPipelineCreated = mutableListOf<PipelineCreatedListener>()
-
-    private var createdPipeline: Pipeline? = null
 
     fun getOrCreatePipeline(mesh: Mesh, updateEvent: RenderPass.UpdateEvent): Pipeline {
         // todo: recreating the pipeline might be necessary if the same shader instance is used on multiple objects

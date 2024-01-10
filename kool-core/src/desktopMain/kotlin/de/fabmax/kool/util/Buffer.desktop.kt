@@ -1,5 +1,8 @@
 package de.fabmax.kool.util
 
+import de.fabmax.kool.util.MixedBuffer.Companion.SIZEOF_FLOAT
+import de.fabmax.kool.util.MixedBuffer.Companion.SIZEOF_INT
+import de.fabmax.kool.util.MixedBuffer.Companion.SIZEOF_SHORT
 import java.nio.*
 
 private typealias NioBuffer = java.nio.Buffer
@@ -247,6 +250,11 @@ class MixedBufferImpl(buffer: ByteBuffer, isAutoLimit: Boolean = false) :
         return this
     }
 
+    override fun setUint8(byteIndex: Int, value: UByte): MixedBuffer {
+        buffer.put(byteIndex, value.toByte())
+        return this
+    }
+
     override fun putUint16(value: UShort): MixedBuffer {
         buffer.putShort(value.toShort())
         pos += SIZEOF_SHORT
@@ -276,6 +284,11 @@ class MixedBufferImpl(buffer: ByteBuffer, isAutoLimit: Boolean = false) :
             }
         }
         pos += SIZEOF_SHORT * data.limit
+        return this
+    }
+
+    override fun setUint16(byteIndex: Int, value: UShort): MixedBuffer {
+        buffer.putShort(byteIndex, value.toShort())
         return this
     }
 
@@ -311,6 +324,11 @@ class MixedBufferImpl(buffer: ByteBuffer, isAutoLimit: Boolean = false) :
         return this
     }
 
+    override fun setInt32(byteIndex: Int, value: Int): MixedBuffer {
+        buffer.putInt(byteIndex, value)
+        return this
+    }
+
     override fun putFloat32(value: Float): MixedBuffer {
         buffer.putFloat(value)
         pos += SIZEOF_FLOAT
@@ -343,6 +361,11 @@ class MixedBufferImpl(buffer: ByteBuffer, isAutoLimit: Boolean = false) :
         return this
     }
 
+    override fun setFloat32(byteIndex: Int, value: Float): MixedBuffer {
+        buffer.putFloat(byteIndex, value)
+        return this
+    }
+
     override fun putPadding(nBytes: Int): MixedBuffer {
         pos += nBytes
         buffer.position(pos)
@@ -351,9 +374,5 @@ class MixedBufferImpl(buffer: ByteBuffer, isAutoLimit: Boolean = false) :
 
     companion object {
         private const val BUFFER_CONV_THRESH = 16
-
-        private const val SIZEOF_SHORT = 2
-        private const val SIZEOF_INT = 4
-        private const val SIZEOF_FLOAT = 4
     }
 }

@@ -21,7 +21,7 @@ class ArmatureData(maxBones: Int, program: KslProgram) : KslDataBlock, KslShader
         }
     }
 
-    override fun onShaderCreated(shader: ShaderBase, pipeline: PipelineBase) {
+    override fun onShaderCreated(shader: ShaderBase<*>, pipeline: PipelineBase) {
         uBoneTransforms = shader.uniforms["uJointTransform"] as? UniformMat4fv
     }
 

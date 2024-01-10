@@ -3,10 +3,8 @@ package de.fabmax.kool.pipeline
 /**
  * Base class for compute shaders.
  */
-abstract class ComputeShader(name: String) : ShaderBase(name) {
+abstract class ComputeShader(name: String) : ShaderBase<ComputePipeline>(name) {
     val onPipelineCreated = mutableListOf<ComputePipelineCreatedListener>()
-
-    private var createdPipeline: ComputePipeline? = null
 
     fun getOrCreatePipeline(computePass: ComputeRenderPass): ComputePipeline {
         var pipeline = createdPipeline

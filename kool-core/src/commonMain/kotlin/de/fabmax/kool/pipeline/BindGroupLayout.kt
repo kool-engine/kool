@@ -9,6 +9,8 @@ class BindGroupLayout private constructor(val group: Int, val bindings: List<Bin
 
     val hash = LongHash()
 
+    // todo: bind group scope? (mesh / material / scene)
+
     init {
         bindings.forEach {
             hash += it.hash
@@ -232,6 +234,7 @@ class TextureCubeBinding private constructor(builder: Builder, binding: Int) :
 class UniformBufferBinding private constructor(builder: Builder, binding: Int, val uniforms: List<Uniform<*>>) :
     Binding(builder, binding, BindingType.UNIFORM_BUFFER)
 {
+    val layout: Std140BufferLayout = Std140BufferLayout(uniforms)
     val isShared = builder.isShared
 
     init {

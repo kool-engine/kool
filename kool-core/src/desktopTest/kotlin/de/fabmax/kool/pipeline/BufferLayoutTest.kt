@@ -15,10 +15,10 @@ class BufferLayoutTest {
         )
 
         val std140Layout = Std140BufferLayout(uniforms)
-        assertEquals(0, std140Layout.uniformPositions[0].position)
-        assertEquals(16, std140Layout.uniformPositions[1].position)
-        assertEquals(32, std140Layout.uniformPositions[2].position)
-        assertEquals(96, std140Layout.uniformPositions[3].position)
-        assertEquals(144, std140Layout.uniformPositions[4].position)
+        assertEquals(0, std140Layout.uniformPositions["floatVal"]!!.byteIndex)
+        assertEquals(16, std140Layout.uniformPositions["vec3Val"]!!.byteIndex)
+        assertEquals(32, std140Layout.uniformPositions["mat4Val"]!!.byteIndex)
+        assertEquals(96, std140Layout.uniformPositions["floatArrayVal"]!!.byteIndex)
+        assertEquals(144, std140Layout.uniformPositions["intVal"]!!.byteIndex)
     }
 }

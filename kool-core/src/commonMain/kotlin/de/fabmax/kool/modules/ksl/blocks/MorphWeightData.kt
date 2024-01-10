@@ -24,7 +24,7 @@ class MorphWeightData(program: KslProgram) : KslDataBlock, KslShaderListener {
         program.shaderListeners += this
     }
 
-    override fun onShaderCreated(shader: ShaderBase, pipeline: PipelineBase) {
+    override fun onShaderCreated(shader: ShaderBase<*>, pipeline: PipelineBase) {
         uMorphWeightsA = shader.uniforms["uMorphWeightsA"] as? Uniform4f
         uMorphWeightsB = shader.uniforms["uMorphWeightsB"] as? Uniform4f
     }

@@ -54,7 +54,7 @@ class CameraData(program: KslProgram) : KslDataBlock, KslShaderListener {
         program.uniformBuffers += camUbo
     }
 
-    override fun onShaderCreated(shader: ShaderBase, pipeline: PipelineBase) {
+    override fun onShaderCreated(shader: ShaderBase<*>, pipeline: PipelineBase) {
         uPosition = shader.uniforms[UNIFORM_NAME_CAM_POSITION] as Uniform3f?
         uDirection = shader.uniforms[UNIFORM_NAME_CAM_DIRECTION] as Uniform3f?
         uClip = shader.uniforms[UNIFORM_NAME_CAM_CLIP] as Uniform2f?

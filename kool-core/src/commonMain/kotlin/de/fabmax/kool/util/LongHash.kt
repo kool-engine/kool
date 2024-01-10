@@ -31,4 +31,15 @@ class LongHash {
     operator fun plusAssign(string: String) {
         hash = hash * 31L + string.hashCode()
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || this::class != other::class) return false
+        other as LongHash
+        return hash == other.hash
+    }
+
+    override fun hashCode(): Int = hash.hashCode()
+
+    override fun toString(): String = "$hash"
 }

@@ -105,11 +105,11 @@ class CompiledShader(val program: GlProgram, val pipeline: PipelineBase, val bac
         val offsets = gl.getActiveUniforms(program, indices, gl.UNIFORM_OFFSET)
 
         val sortedOffsets = offsets.sorted()
-        val bufferPositions = Array(binding.uniforms.size) { i ->
-            val off = offsets[i]
+        val bufferPositions = binding.uniforms.associate { uniform ->
+            val off = offsets[binding.uniforms.indexOf(uniform)]
             val nextOffI = sortedOffsets.indexOf(off) + 1
             val nextOff = if (nextOffI < sortedOffsets.size) sortedOffsets[nextOffI] else bufferSize
-            BufferPosition(off, nextOff - off)
+            uniform.name to BufferPosition(uniform.name, off, nextOff - off)
         }
         uboLayouts[binding.name] = ExternalBufferLayout(binding.uniforms, bufferPositions, bufferSize)
     }

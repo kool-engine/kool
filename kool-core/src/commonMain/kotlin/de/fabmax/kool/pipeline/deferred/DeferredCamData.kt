@@ -36,7 +36,7 @@ class DeferredCamData(program: KslProgram) : KslDataBlock, KslShaderListener {
         program.uniformBuffers += camUbo
     }
 
-    override fun onShaderCreated(shader: ShaderBase, pipeline: PipelineBase) {
+    override fun onShaderCreated(shader: ShaderBase<*>, pipeline: PipelineBase) {
         uPosition = shader.uniforms["uCamPos"] as Uniform3f?
         uProjMat = shader.uniforms["uProjMat"] as UniformMat4f?
         uInvViewMat = shader.uniforms["uInvViewMat"] as UniformMat4f?

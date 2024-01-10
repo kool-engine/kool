@@ -4,6 +4,7 @@ import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ksl.blocks.ColorBlockConfig
 import de.fabmax.kool.modules.ksl.blocks.PropertyBlockConfig
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.MixedBuffer
 import de.fabmax.kool.util.MutableColor
 import de.fabmax.kool.util.UniqueId
 import kotlin.reflect.KProperty
@@ -11,7 +12,7 @@ import kotlin.reflect.KProperty
 /**
  * Base class for all regular and compute shaders. Provides methods to easily connect to shader uniforms.
  */
-abstract class ShaderBase(val name: String) {
+abstract class ShaderBase<T: PipelineBase>(val name: String) {
 
     val uniforms = mutableMapOf<String, Uniform<*>>()
 
@@ -25,9 +26,15 @@ abstract class ShaderBase(val name: String) {
     val storage3d = mutableMapOf<String, StorageTexture3dBinding>()
 
     private val connectUniformListeners = mutableMapOf<String, ConnectUniformListener>()
+    private val pipelineBindings = mutableMapOf<String, PipelineBinding>()
 
-    protected fun pipelineCreated(pipeline: PipelineBase) {
-        pipeline.bindGroupLayout.bindings.forEach { binding ->
+    var createdPipeline: T? = null
+        private set
+
+    protected fun pipelineCreated(pipeline: T) {
+        createdPipeline = pipeline
+
+        pipeline.bindGroupLayouts.flatMap { it.bindings }.forEach { binding ->
             when (binding) {
                 is UniformBufferBinding -> binding.uniforms.forEach { uniforms[it.name] = it }
                 is Texture1dBinding -> texSamplers1d[binding.name] = binding
@@ -40,97 +47,146 @@ abstract class ShaderBase(val name: String) {
             }
         }
         connectUniformListeners.values.forEach { it.connect() }
+        pipelineBindings.values.forEach { it.setup(pipeline) }
+    }
+
+    protected interface PipelineBinding {
+        val isBound: Boolean
+        fun setup(pipeline: PipelineBase)
     }
 
     protected interface ConnectUniformListener {
-        val isConnected: Boolean?
+        val isConnected: Boolean
         fun connect()
     }
 
-    fun uniform1f(uniformName: String, defaultVal: Float? = null): UniformInput1f =
-        connectUniformListeners.getOrPut(uniformName) { UniformInput1f(uniformName, defaultVal ?: 0f) } as UniformInput1f
-    fun uniform2f(uniformName: String, defaultVal: Vec2f? = null): UniformInput2f =
-        connectUniformListeners.getOrPut(uniformName) { UniformInput2f(uniformName, defaultVal ?: Vec2f.ZERO) } as UniformInput2f
-    fun uniform3f(uniformName: String, defaultVal: Vec3f? = null): UniformInput3f =
-        connectUniformListeners.getOrPut(uniformName) { UniformInput3f(uniformName, defaultVal ?: Vec3f.ZERO) } as UniformInput3f
-    fun uniform4f(uniformName: String, defaultVal: Vec4f? = null): UniformInput4f =
-        connectUniformListeners.getOrPut(uniformName) { UniformInput4f(uniformName, defaultVal ?: Vec4f.ZERO) } as UniformInput4f
-    fun uniformColor(uniformName: String, defaultVal: Color? = null): UniformInputColor =
-        connectUniformListeners.getOrPut(uniformName) { UniformInputColor(uniformName, defaultVal ?: Color.BLACK) } as UniformInputColor
-    fun uniformQuat(uniformName: String, defaultVal: QuatF? = null): UniformInputQuat =
-        connectUniformListeners.getOrPut(uniformName) { UniformInputQuat(uniformName, defaultVal ?: QuatF.IDENTITY) } as UniformInputQuat
+    fun uniform1f(uniformName: String, defaultVal: Float? = null): ShaderBase<*>.UniformInput1f =
+        connectUniformListeners.getOrPut(uniformName) { UniformInput1f(uniformName, defaultVal ?: 0f) } as ShaderBase<*>.UniformInput1f
+    fun uniform2f(uniformName: String, defaultVal: Vec2f? = null): ShaderBase<*>.UniformInput2f =
+        connectUniformListeners.getOrPut(uniformName) { UniformInput2f(uniformName, defaultVal ?: Vec2f.ZERO) } as ShaderBase<*>.UniformInput2f
+    fun uniform3f(uniformName: String, defaultVal: Vec3f? = null): ShaderBase<*>.UniformInput3f =
+        connectUniformListeners.getOrPut(uniformName) { UniformInput3f(uniformName, defaultVal ?: Vec3f.ZERO) } as ShaderBase<*>.UniformInput3f
+    fun uniform4f(uniformName: String, defaultVal: Vec4f? = null): ShaderBase<*>.UniformInput4f =
+        connectUniformListeners.getOrPut(uniformName) { UniformInput4f(uniformName, defaultVal ?: Vec4f.ZERO) } as ShaderBase<*>.UniformInput4f
+    fun uniformColor(uniformName: String, defaultVal: Color? = null): ShaderBase<*>.UniformInputColor =
+        connectUniformListeners.getOrPut(uniformName) { UniformInputColor(uniformName, defaultVal ?: Color.BLACK) } as ShaderBase<*>.UniformInputColor
+    fun uniformQuat(uniformName: String, defaultVal: QuatF? = null): ShaderBase<*>.UniformInputQuat =
+        connectUniformListeners.getOrPut(uniformName) { UniformInputQuat(uniformName, defaultVal ?: QuatF.IDENTITY) } as ShaderBase<*>.UniformInputQuat
 
-    fun uniform1i(uniformName: String, defaultVal: Int? = null): UniformInput1i =
-        connectUniformListeners.getOrPut(uniformName) { UniformInput1i(uniformName, defaultVal ?: 0) } as UniformInput1i
-    fun uniform2i(uniformName: String, defaultVal: Vec2i? = null): UniformInput2i =
-        connectUniformListeners.getOrPut(uniformName) { UniformInput2i(uniformName, defaultVal ?: Vec2i.ZERO) } as UniformInput2i
-    fun uniform3i(uniformName: String, defaultVal: Vec3i? = null): UniformInput3i =
-        connectUniformListeners.getOrPut(uniformName) { UniformInput3i(uniformName, defaultVal ?: Vec3i.ZERO) } as UniformInput3i
-    fun uniform4i(uniformName: String, defaultVal: Vec4i? = null): UniformInput4i =
-        connectUniformListeners.getOrPut(uniformName) { UniformInput4i(uniformName, defaultVal ?: Vec4i.ZERO) } as UniformInput4i
+    fun uniform1i(uniformName: String, defaultVal: Int? = null): ShaderBase<*>.UniformInput1i =
+        connectUniformListeners.getOrPut(uniformName) { UniformInput1i(uniformName, defaultVal ?: 0) } as ShaderBase<*>.UniformInput1i
+    fun uniform2i(uniformName: String, defaultVal: Vec2i? = null): ShaderBase<*>.UniformInput2i =
+        connectUniformListeners.getOrPut(uniformName) { UniformInput2i(uniformName, defaultVal ?: Vec2i.ZERO) } as ShaderBase<*>.UniformInput2i
+    fun uniform3i(uniformName: String, defaultVal: Vec3i? = null): ShaderBase<*>.UniformInput3i =
+        connectUniformListeners.getOrPut(uniformName) { UniformInput3i(uniformName, defaultVal ?: Vec3i.ZERO) } as ShaderBase<*>.UniformInput3i
+    fun uniform4i(uniformName: String, defaultVal: Vec4i? = null): ShaderBase<*>.UniformInput4i =
+        connectUniformListeners.getOrPut(uniformName) { UniformInput4i(uniformName, defaultVal ?: Vec4i.ZERO) } as ShaderBase<*>.UniformInput4i
 
-    fun uniformMat3f(uniformName: String, defaultVal: Mat3f? = null): UniformInputMat3f =
-        connectUniformListeners.getOrPut(uniformName) { UniformInputMat3f(uniformName, defaultVal) } as UniformInputMat3f
-    fun uniformMat4f(uniformName: String, defaultVal: Mat4f? = null): UniformInputMat4f =
-        connectUniformListeners.getOrPut(uniformName) { UniformInputMat4f(uniformName, defaultVal) } as UniformInputMat4f
+    fun uniformMat3f(uniformName: String, defaultVal: Mat3f? = null): ShaderBase<*>.UniformInputMat3f =
+        connectUniformListeners.getOrPut(uniformName) { UniformInputMat3f(uniformName, defaultVal) } as ShaderBase<*>.UniformInputMat3f
+    fun uniformMat4f(uniformName: String, defaultVal: Mat4f? = null): ShaderBase<*>.UniformInputMat4f =
+        connectUniformListeners.getOrPut(uniformName) { UniformInputMat4f(uniformName, defaultVal) } as ShaderBase<*>.UniformInputMat4f
 
-    fun uniform1fv(uniformName: String, arraySize: Int): UniformInput1fv =
-        connectUniformListeners.getOrPut(uniformName) { UniformInput1fv(uniformName, arraySize) } as UniformInput1fv
-    fun uniform2fv(uniformName: String, arraySize: Int): UniformInput2fv =
-        connectUniformListeners.getOrPut(uniformName) { UniformInput2fv(uniformName, arraySize) } as UniformInput2fv
-    fun uniform3fv(uniformName: String, arraySize: Int): UniformInput3fv =
-        connectUniformListeners.getOrPut(uniformName) { UniformInput3fv(uniformName, arraySize) } as UniformInput3fv
-    fun uniform4fv(uniformName: String, arraySize: Int): UniformInput4fv =
-        connectUniformListeners.getOrPut(uniformName) { UniformInput4fv(uniformName, arraySize) } as UniformInput4fv
+    fun uniform1fv(uniformName: String, arraySize: Int): ShaderBase<*>.UniformInput1fv =
+        connectUniformListeners.getOrPut(uniformName) { UniformInput1fv(uniformName, arraySize) } as ShaderBase<*>.UniformInput1fv
+    fun uniform2fv(uniformName: String, arraySize: Int): ShaderBase<*>.UniformInput2fv =
+        connectUniformListeners.getOrPut(uniformName) { UniformInput2fv(uniformName, arraySize) } as ShaderBase<*>.UniformInput2fv
+    fun uniform3fv(uniformName: String, arraySize: Int): ShaderBase<*>.UniformInput3fv =
+        connectUniformListeners.getOrPut(uniformName) { UniformInput3fv(uniformName, arraySize) } as ShaderBase<*>.UniformInput3fv
+    fun uniform4fv(uniformName: String, arraySize: Int): ShaderBase<*>.UniformInput4fv =
+        connectUniformListeners.getOrPut(uniformName) { UniformInput4fv(uniformName, arraySize) } as ShaderBase<*>.UniformInput4fv
 
-    fun uniform1iv(uniformName: String, arraySize: Int): UniformInput1iv =
-        connectUniformListeners.getOrPut(uniformName) { UniformInput1iv(uniformName, arraySize) } as UniformInput1iv
-    fun uniform2iv(uniformName: String, arraySize: Int): UniformInput2iv =
-        connectUniformListeners.getOrPut(uniformName) { UniformInput2iv(uniformName, arraySize) } as UniformInput2iv
-    fun uniform3iv(uniformName: String, arraySize: Int): UniformInput3iv =
-        connectUniformListeners.getOrPut(uniformName) { UniformInput3iv(uniformName, arraySize) } as UniformInput3iv
-    fun uniform4iv(uniformName: String, arraySize: Int): UniformInput4iv =
-        connectUniformListeners.getOrPut(uniformName) { UniformInput4iv(uniformName, arraySize) } as UniformInput4iv
+    fun uniform1iv(uniformName: String, arraySize: Int): ShaderBase<*>.UniformInput1iv =
+        connectUniformListeners.getOrPut(uniformName) { UniformInput1iv(uniformName, arraySize) } as ShaderBase<*>.UniformInput1iv
+    fun uniform2iv(uniformName: String, arraySize: Int): ShaderBase<*>.UniformInput2iv =
+        connectUniformListeners.getOrPut(uniformName) { UniformInput2iv(uniformName, arraySize) } as ShaderBase<*>.UniformInput2iv
+    fun uniform3iv(uniformName: String, arraySize: Int): ShaderBase<*>.UniformInput3iv =
+        connectUniformListeners.getOrPut(uniformName) { UniformInput3iv(uniformName, arraySize) } as ShaderBase<*>.UniformInput3iv
+    fun uniform4iv(uniformName: String, arraySize: Int): ShaderBase<*>.UniformInput4iv =
+        connectUniformListeners.getOrPut(uniformName) { UniformInput4iv(uniformName, arraySize) } as ShaderBase<*>.UniformInput4iv
 
-    fun uniformMat3fv(uniformName: String, arraySize: Int): UniformInputMat3fv =
-        connectUniformListeners.getOrPut(uniformName) { UniformInputMat3fv(uniformName, arraySize) } as UniformInputMat3fv
-    fun uniformMat4fv(uniformName: String, arraySize: Int): UniformInputMat4fv =
-        connectUniformListeners.getOrPut(uniformName) { UniformInputMat4fv(uniformName, arraySize) } as UniformInputMat4fv
+    fun uniformMat3fv(uniformName: String, arraySize: Int): ShaderBase<*>.UniformInputMat3fv =
+        connectUniformListeners.getOrPut(uniformName) { UniformInputMat3fv(uniformName, arraySize) } as ShaderBase<*>.UniformInputMat3fv
+    fun uniformMat4fv(uniformName: String, arraySize: Int): ShaderBase<*>.UniformInputMat4fv =
+        connectUniformListeners.getOrPut(uniformName) { UniformInputMat4fv(uniformName, arraySize) } as ShaderBase<*>.UniformInputMat4fv
 
-    fun texture1d(uniformName: String, defaultVal: Texture1d? = null): UniformInputTexture1d =
-        connectUniformListeners.getOrPut(uniformName) { UniformInputTexture1d(uniformName, defaultVal) } as UniformInputTexture1d
-    fun texture2d(uniformName: String, defaultVal: Texture2d? = null): UniformInputTexture2d =
-        connectUniformListeners.getOrPut(uniformName) { UniformInputTexture2d(uniformName, defaultVal) } as UniformInputTexture2d
-    fun texture3d(uniformName: String, defaultVal: Texture3d? = null): UniformInputTexture3d =
-        connectUniformListeners.getOrPut(uniformName) { UniformInputTexture3d(uniformName, defaultVal) } as UniformInputTexture3d
-    fun textureCube(uniformName: String, defaultVal: TextureCube? = null): UniformInputTextureCube =
-        connectUniformListeners.getOrPut(uniformName) { UniformInputTextureCube(uniformName, defaultVal) } as UniformInputTextureCube
+    fun texture1d(uniformName: String, defaultVal: Texture1d? = null): ShaderBase<*>.UniformInputTexture1d =
+        connectUniformListeners.getOrPut(uniformName) { UniformInputTexture1d(uniformName, defaultVal) } as ShaderBase<*>.UniformInputTexture1d
+    fun texture2d(uniformName: String, defaultVal: Texture2d? = null): ShaderBase<*>.UniformInputTexture2d =
+        connectUniformListeners.getOrPut(uniformName) { UniformInputTexture2d(uniformName, defaultVal) } as ShaderBase<*>.UniformInputTexture2d
+    fun texture3d(uniformName: String, defaultVal: Texture3d? = null): ShaderBase<*>.UniformInputTexture3d =
+        connectUniformListeners.getOrPut(uniformName) { UniformInputTexture3d(uniformName, defaultVal) } as ShaderBase<*>.UniformInputTexture3d
+    fun textureCube(uniformName: String, defaultVal: TextureCube? = null): ShaderBase<*>.UniformInputTextureCube =
+        connectUniformListeners.getOrPut(uniformName) { UniformInputTextureCube(uniformName, defaultVal) } as ShaderBase<*>.UniformInputTextureCube
 
-    fun texture1dArray(uniformName: String, arraySize: Int): UniformInputTextureArray1d =
-        connectUniformListeners.getOrPut(uniformName) { UniformInputTextureArray1d(uniformName, arraySize) } as UniformInputTextureArray1d
-    fun texture2dArray(uniformName: String, arraySize: Int): UniformInputTextureArray2d =
-        connectUniformListeners.getOrPut(uniformName) { UniformInputTextureArray2d(uniformName, arraySize) } as UniformInputTextureArray2d
-    fun texture3dArray(uniformName: String, arraySize: Int): UniformInputTextureArray3d =
-        connectUniformListeners.getOrPut(uniformName) { UniformInputTextureArray3d(uniformName, arraySize) } as UniformInputTextureArray3d
-    fun textureCubeArray(uniformName: String, arraySize: Int): UniformInputTextureArrayCube =
-        connectUniformListeners.getOrPut(uniformName) { UniformInputTextureArrayCube(uniformName, arraySize) } as UniformInputTextureArrayCube
+    fun texture1dArray(uniformName: String, arraySize: Int): ShaderBase<*>.UniformInputTextureArray1d =
+        connectUniformListeners.getOrPut(uniformName) { UniformInputTextureArray1d(uniformName, arraySize) } as ShaderBase<*>.UniformInputTextureArray1d
+    fun texture2dArray(uniformName: String, arraySize: Int): ShaderBase<*>.UniformInputTextureArray2d =
+        connectUniformListeners.getOrPut(uniformName) { UniformInputTextureArray2d(uniformName, arraySize) } as ShaderBase<*>.UniformInputTextureArray2d
+    fun texture3dArray(uniformName: String, arraySize: Int): ShaderBase<*>.UniformInputTextureArray3d =
+        connectUniformListeners.getOrPut(uniformName) { UniformInputTextureArray3d(uniformName, arraySize) } as ShaderBase<*>.UniformInputTextureArray3d
+    fun textureCubeArray(uniformName: String, arraySize: Int): ShaderBase<*>.UniformInputTextureArrayCube =
+        connectUniformListeners.getOrPut(uniformName) { UniformInputTextureArrayCube(uniformName, arraySize) } as ShaderBase<*>.UniformInputTextureArrayCube
 
-    fun storage1d(uniformName: String, defaultVal: StorageTexture1d? = null): UniformInputStorage1d =
-        connectUniformListeners.getOrPut(uniformName) { UniformInputStorage1d(uniformName, defaultVal) } as UniformInputStorage1d
-    fun storage2d(uniformName: String, defaultVal: StorageTexture2d? = null): UniformInputStorage2d =
-        connectUniformListeners.getOrPut(uniformName) { UniformInputStorage2d(uniformName, defaultVal) } as UniformInputStorage2d
-    fun storage3d(uniformName: String, defaultVal: StorageTexture3d? = null): UniformInputStorage3d =
-        connectUniformListeners.getOrPut(uniformName) { UniformInputStorage3d(uniformName, defaultVal) } as UniformInputStorage3d
+    fun storage1d(uniformName: String, defaultVal: StorageTexture1d? = null): ShaderBase<*>.UniformInputStorage1d =
+        connectUniformListeners.getOrPut(uniformName) { UniformInputStorage1d(uniformName, defaultVal) } as ShaderBase<*>.UniformInputStorage1d
+    fun storage2d(uniformName: String, defaultVal: StorageTexture2d? = null): ShaderBase<*>.UniformInputStorage2d =
+        connectUniformListeners.getOrPut(uniformName) { UniformInputStorage2d(uniformName, defaultVal) } as ShaderBase<*>.UniformInputStorage2d
+    fun storage3d(uniformName: String, defaultVal: StorageTexture3d? = null): ShaderBase<*>.UniformInputStorage3d =
+        connectUniformListeners.getOrPut(uniformName) { UniformInputStorage3d(uniformName, defaultVal) } as ShaderBase<*>.UniformInputStorage3d
 
-    fun colorUniform(cfg: ColorBlockConfig): UniformInputColor =
+    fun colorUniform(cfg: ColorBlockConfig): ShaderBase<*>.UniformInputColor =
         uniformColor(cfg.primaryUniform?.uniformName ?: UniqueId.nextId("_"), cfg.primaryUniform?.defaultColor)
-    fun colorTexture(cfg: ColorBlockConfig): UniformInputTexture2d =
+    fun colorTexture(cfg: ColorBlockConfig): ShaderBase<*>.UniformInputTexture2d =
         texture2d(cfg.primaryTexture?.textureName ?: UniqueId.nextId("_"), cfg.primaryTexture?.defaultTexture)
 
-    fun propertyUniform(cfg: PropertyBlockConfig): UniformInput1f =
+    fun propertyUniform(cfg: PropertyBlockConfig): ShaderBase<*>.UniformInput1f =
         uniform1f(cfg.primaryUniform?.uniformName ?: UniqueId.nextId("_"), cfg.primaryUniform?.defaultValue)
-    fun propertyTexture(cfg: PropertyBlockConfig): UniformInputTexture2d =
+    fun propertyTexture(cfg: PropertyBlockConfig): ShaderBase<*>.UniformInputTexture2d =
         texture2d(cfg.primaryTexture?.textureName ?: UniqueId.nextId("_"), cfg.primaryTexture?.defaultTexture)
+
+    abstract inner class UniformInput<T>(val uniformName: String, defaultVal: T) : PipelineBinding {
+
+        private var bindGroup = -1
+        private var binding = -1
+        private var bufferPos: BufferPosition? = null
+
+        override val isBound: Boolean get() = bufferPos != null
+
+        var cachedValue: T = defaultVal
+            set(value) {
+                field = value
+                createdPipeline?.updateBuffer()
+            }
+
+        operator fun getValue(thisRef: Any?, property: KProperty<*>): T = cachedValue
+        operator fun setValue(thisRef: Any?, property: KProperty<*>, value: T) { cachedValue = value }
+
+        override fun setup(pipeline: PipelineBase) {
+            bindGroup = -1
+            binding = -1
+            bufferPos = null
+
+            pipeline.bindGroupLayouts.find { group ->
+                group.bindings.any { b -> b is UniformBufferBinding && b.uniforms.any { it.name == uniformName } }
+            }?.let { group ->
+                val uniform = group.bindings.first { it.name == uniformName } as UniformBufferBinding
+                bindGroup = group.group
+                binding = uniform.binding
+                bufferPos = uniform.layout.uniformPositions[uniformName]
+            }
+            pipeline.updateBuffer()
+        }
+
+        private fun PipelineBase.updateBuffer() {
+            val pos = bufferPos ?: return
+            val data = bindGroupData[bindGroup].bindings[binding] as BindGroupData.UniformBufferData
+            putInto(data.buffer, pos)
+            data.isBufferDirty = true
+        }
+
+        protected abstract fun putInto(buffer: MixedBuffer, bufferPos: BufferPosition)
+    }
 
     inner class UniformInput1f(val uniformName: String, defaultVal: Float) : ConnectUniformListener {
         private var uniform: Uniform1f? = null

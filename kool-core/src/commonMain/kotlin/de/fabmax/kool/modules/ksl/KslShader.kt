@@ -130,7 +130,7 @@ open class KslShader private constructor(val program: KslProgram) : Shader(progr
     }
 }
 
-fun KslProgram.setupBindGroupLayout(shader: ShaderBase?): BindGroupLayout.Builder {
+fun KslProgram.setupBindGroupLayout(shader: ShaderBase<*>?): BindGroupLayout.Builder {
     val bindGrpBuilder = BindGroupLayout.Builder()
     setupBindGroupLayoutUbos(shader, bindGrpBuilder)
     setupBindGroupLayoutSamplers(bindGrpBuilder)
@@ -138,7 +138,7 @@ fun KslProgram.setupBindGroupLayout(shader: ShaderBase?): BindGroupLayout.Builde
     return bindGrpBuilder
 }
 
-private fun KslProgram.setupBindGroupLayoutUbos(shader: ShaderBase?, bindGrpBuilder: BindGroupLayout.Builder) {
+private fun KslProgram.setupBindGroupLayoutUbos(shader: ShaderBase<*>?, bindGrpBuilder: BindGroupLayout.Builder) {
     uniformBuffers.filter { it.uniforms.isNotEmpty() }.forEach { kslUbo ->
         val ubo = UniformBufferBinding.Builder()
         bindGrpBuilder.ubos += ubo

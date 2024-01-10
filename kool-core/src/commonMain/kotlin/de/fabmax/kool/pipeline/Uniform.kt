@@ -13,9 +13,6 @@ sealed class Uniform<T>(
     val size: Int = 1
 ) {
 
-    @Deprecated("", replaceWith = ReplaceWith("size"))
-    val length: Int get() = size
-
     val isArray: Boolean
         get() = size > 1
 

@@ -1,6 +1,9 @@
 package de.fabmax.kool.util
 
 import de.fabmax.kool.KoolException
+import de.fabmax.kool.util.MixedBuffer.Companion.SIZEOF_FLOAT
+import de.fabmax.kool.util.MixedBuffer.Companion.SIZEOF_INT
+import de.fabmax.kool.util.MixedBuffer.Companion.SIZEOF_SHORT
 import org.khronos.webgl.*
 
 actual fun Uint8Buffer(capacity: Int, isAutoLimit: Boolean): Uint8Buffer = Uint8BufferImpl(capacity, isAutoLimit)
@@ -197,6 +200,11 @@ class MixedBufferImpl(capacity: Int, isAutoLimit: Boolean = false) :
         return this
     }
 
+    override fun setUint8(byteIndex: Int, value: UByte): MixedBuffer {
+        buffer.setUint8(byteIndex, value.toByte())
+        return this
+    }
+
     override fun putUint16(value: UShort): MixedBuffer {
         buffer.setUint16(position, value.toShort(), true)
         position += SIZEOF_SHORT
@@ -216,6 +224,11 @@ class MixedBufferImpl(capacity: Int, isAutoLimit: Boolean = false) :
             buffer.setUint16(position, data[i].toShort(), true)
             position += SIZEOF_SHORT
         }
+        return this
+    }
+
+    override fun setUint16(byteIndex: Int, value: UShort): MixedBuffer {
+        buffer.setUint16(byteIndex, value.toShort())
         return this
     }
 
@@ -241,6 +254,11 @@ class MixedBufferImpl(capacity: Int, isAutoLimit: Boolean = false) :
         return this
     }
 
+    override fun setInt32(byteIndex: Int, value: Int): MixedBuffer {
+        buffer.setInt32(byteIndex, value)
+        return this
+    }
+
     override fun putFloat32(value: Float): MixedBuffer {
         buffer.setFloat32(position, value, true)
         position += SIZEOF_FLOAT
@@ -263,14 +281,13 @@ class MixedBufferImpl(capacity: Int, isAutoLimit: Boolean = false) :
         return this
     }
 
-    override fun putPadding(nBytes: Int): MixedBuffer {
-        position += nBytes
+    override fun setFloat32(byteIndex: Int, value: Float): MixedBuffer {
+        buffer.setFloat32(byteIndex, value)
         return this
     }
 
-    companion object {
-        private const val SIZEOF_SHORT = 2
-        private const val SIZEOF_INT = 4
-        private const val SIZEOF_FLOAT = 4
+    override fun putPadding(nBytes: Int): MixedBuffer {
+        position += nBytes
+        return this
     }
 }

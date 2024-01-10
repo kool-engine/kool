@@ -30,7 +30,7 @@ class SceneLightData(program: KslProgram, val maxLightCount: Int) : KslDataBlock
         program.shaderListeners += this
     }
 
-    override fun onShaderCreated(shader: ShaderBase, pipeline: PipelineBase) {
+    override fun onShaderCreated(shader: ShaderBase<*>, pipeline: PipelineBase) {
         uLightPositions = shader.uniforms[UNIFORM_NAME_LIGHT_POSITIONS] as? Uniform4fv
         uLightDirections = shader.uniforms[UNIFORM_NAME_LIGHT_DIRECTIONS] as? Uniform4fv
         uLightColors = shader.uniforms[UNIFORM_NAME_LIGHT_COLORS] as? Uniform4fv

@@ -50,7 +50,7 @@ class ShadowData(val shadowCfg: ShadowConfig, program: KslProgram) : KslDataBloc
         }
     }
 
-    override fun onShaderCreated(shader: ShaderBase, pipeline: PipelineBase) {
+    override fun onShaderCreated(shader: ShaderBase<*>, pipeline: PipelineBase) {
         uShadowMapViewProjMats = shader.uniforms[UNIFORM_NAME_SHADOW_VP_MATS] as? UniformMat4fv
         shader.texSamplers2d[SAMPLER_NAME_SHADOW_MAPS]?.let {
             subMaps.forEachIndexed { i, shadowMap ->

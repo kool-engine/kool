@@ -3,7 +3,7 @@ package de.fabmax.kool.pipeline
 import de.fabmax.kool.util.MixedBuffer
 
 abstract class BufferLayout(val uniforms: List<Uniform<*>>) {
-    abstract val uniformPositions: Array<BufferPosition>
+    abstract val uniformPositions: Map<String, BufferPosition>
     abstract val size: Int
 
     /**
@@ -18,29 +18,34 @@ abstract class BufferLayout(val uniforms: List<Uniform<*>>) {
         // and order of this.uniforms
 
         for (i in uniforms.indices) {
-            target.position = uniformPositions[i].position
-            uniforms[i].putToBuffer(target, uniformPositions[i].len)
+            val uniform = uniforms[i]
+            val bufPos = uniformPositions[uniform.name]!!
+            target.position = bufPos.byteIndex
+            uniform.putToBuffer(target, bufPos.byteLen)
         }
     }
 }
 
-class ExternalBufferLayout(uniforms: List<Uniform<*>>, override val uniformPositions: Array<BufferPosition>, override val size: Int)
-    : BufferLayout(uniforms) {
+class ExternalBufferLayout(
+    uniforms: List<Uniform<*>>,
+    override val uniformPositions: Map<String, BufferPosition>,
+    override val size: Int
+) : BufferLayout(uniforms) {
     init {
         check(uniformPositions.size == uniforms.size) { "Given lists of uniforms and offsets mismatch in length" }
     }
 }
 
 class Std140BufferLayout(uniforms: List<Uniform<*>>) : BufferLayout(uniforms) {
-    override val uniformPositions: Array<BufferPosition>
+    override val uniformPositions: Map<String, BufferPosition>
     override val size: Int
 
     init {
         var pos = 0
-        uniformPositions = Array(uniforms.size) { i ->
-            val bufPos = alignPosition(pos, uniforms[i].alignment)
-            pos = bufPos + uniforms[i].sizeBytes
-            BufferPosition(bufPos, pos - bufPos)
+        uniformPositions = uniforms.associate { uniform ->
+            val bufPos = alignPosition(pos, uniform.alignment)
+            pos = bufPos + uniform.sizeBytes
+            uniform.name to BufferPosition(uniform.name, bufPos, pos - bufPos)
         }
         size = alignPosition(pos, 16)
     }
@@ -85,4 +90,4 @@ class Std140BufferLayout(uniforms: List<Uniform<*>>) : BufferLayout(uniforms) {
     }
 }
 
-data class BufferPosition(val position: Int, val len: Int)
+data class BufferPosition(val uniformName: String, val byteIndex: Int, val byteLen: Int)

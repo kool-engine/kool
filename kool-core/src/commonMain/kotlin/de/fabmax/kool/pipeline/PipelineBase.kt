@@ -20,16 +20,31 @@ abstract class PipelineBase(builder: Builder) {
         get() = hash.hash
     val pipelineInstanceId = instanceId++
 
-    val bindGroupLayout: BindGroupLayout
+    val bindGroupLayouts: List<BindGroupLayout>
+    @Deprecated("Use bindGroupLayouts instead", ReplaceWith("bindGroupLayouts[0]"))
+    val bindGroupLayout: BindGroupLayout get() = bindGroupLayouts[0]
+
+    private val _bindGroupData = mutableListOf<BindGroupData>()
+    val bindGroupData: List<BindGroupData> get() = _bindGroupData
 
     init {
         val layout = requireNotNull(builder.bindGroupLayout) { "Builder.bindGroupLayout must be set" }
-        bindGroupLayout = layout.create(0)
-        hash += bindGroupLayout.hash
+        bindGroupLayouts = listOf(layout.create(0))
+        bindGroupLayouts.forEach {
+            hash += it.hash
+            _bindGroupData += it.createData()
+        }
+    }
+
+    fun setBindGroupData(index: Int, data: BindGroupData) {
+        check(data.layout.hash == bindGroupLayouts[index].hash) {
+            "Given BindGroupData does not match the corresponding layout"
+        }
+        _bindGroupData[index] = data
     }
 
     fun findBindGroupItemByName(name: String): Binding? {
-        return bindGroupLayout.findBindingByName(name)
+        return bindGroupLayouts.firstNotNullOfOrNull { it.findBindingByName(name) }
     }
 
     override fun equals(other: Any?): Boolean {

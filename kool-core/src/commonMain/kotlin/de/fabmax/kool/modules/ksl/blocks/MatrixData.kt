@@ -28,7 +28,7 @@ abstract class MatrixData(program: KslProgram, val uniformName: String) : KslDat
         program.dataBlocks += this
     }
 
-    override fun onShaderCreated(shader: ShaderBase, pipeline: PipelineBase) {
+    override fun onShaderCreated(shader: ShaderBase<*>, pipeline: PipelineBase) {
         uMatrix = shader.uniforms[uniformName] as UniformMat4f
     }
 }

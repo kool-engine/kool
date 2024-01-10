@@ -6,7 +6,7 @@ import de.fabmax.kool.pipeline.ShaderBase
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 
 interface KslShaderListener {
-    fun onShaderCreated(shader: ShaderBase, pipeline: PipelineBase) { }
+    fun onShaderCreated(shader: ShaderBase<*>, pipeline: PipelineBase) { }
     fun onUpdate(cmd: DrawCommand) { }
     fun onComputeUpdate(computePass: ComputeRenderPass) { }
 }
