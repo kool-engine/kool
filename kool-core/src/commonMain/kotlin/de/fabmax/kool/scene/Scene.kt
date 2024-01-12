@@ -39,7 +39,7 @@ open class Scene(name: String? = null) : Node(name) {
     }
 
     val isEmpty: Boolean
-        get() = children.isEmpty() && offscreenPasses.isEmpty()
+        get() = children.isEmpty() && (offscreenPasses.isEmpty() && !offscreenPasses.hasStagedItems)
 
     fun tryEnableInfiniteDepth(): Boolean {
         if (isInfiniteDepth) {

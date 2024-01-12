@@ -212,6 +212,7 @@ abstract class Camera(name: String = "camera") : Node(name) {
             globalLookDir.set(dataD.globalLookDir)
             view.set(dataD.view)
             viewProj.set(dataD.viewProj)
+            globalRange = dataD.globalRange.toFloat()
 
             lazyInvView.isDirty = true
             lazyInvViewProj.isDirty = true
@@ -260,6 +261,7 @@ abstract class Camera(name: String = "camera") : Node(name) {
             globalLookDir.set(dataF.globalLookDir)
             view.set(dataF.view)
             viewProj.set(dataF.viewProj)
+            globalRange = dataF.globalRange.toDouble()
 
             lazyInvView.isDirty = true
             lazyInvViewProj.isDirty = true

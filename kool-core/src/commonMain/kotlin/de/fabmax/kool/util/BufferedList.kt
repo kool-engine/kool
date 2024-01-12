@@ -10,9 +10,12 @@ class BufferedList<T> private constructor(private val backingList: MutableList<T
     private val staged = mutableSetOf<T>()
     private val stagedRemove = mutableSetOf<T>()
 
-    override fun isEmpty(): Boolean {
-        return backingList.isEmpty() && staged.isEmpty()
-    }
+    val hasItemsStagedForAdd: Boolean
+        get() = staged.isNotEmpty()
+    val hasItemsStagedForRemoval: Boolean
+        get() = stagedRemove.isNotEmpty()
+    val hasStagedItems: Boolean
+        get() = hasItemsStagedForAdd || hasItemsStagedForRemoval
 
     fun clear() {
         backingList.clear()
