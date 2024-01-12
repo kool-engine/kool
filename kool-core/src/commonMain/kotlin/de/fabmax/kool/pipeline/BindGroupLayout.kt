@@ -231,7 +231,7 @@ class TextureCubeBinding private constructor(builder: Builder, binding: Int) :
     }
 }
 
-class UniformBufferBinding private constructor(builder: Builder, binding: Int, val uniforms: List<Uniform<*>>) :
+class UniformBufferBinding private constructor(builder: Builder, binding: Int, val uniforms: List<Uniform>) :
     Binding(builder, binding, BindingType.UNIFORM_BUFFER)
 {
     val layout: Std140BufferLayout = Std140BufferLayout(uniforms)
@@ -241,28 +241,25 @@ class UniformBufferBinding private constructor(builder: Builder, binding: Int, v
         hash += builder.isShared
         uniforms.forEach {
             hash += it.name
-            hash += it::class.hashCode()
+            hash += it.type
+            hash += it.arraySize
         }
     }
 
-    @Suppress("UNCHECKED_CAST")
-    fun <T> uniform(index: Int): T = uniforms[index] as T
-
     class Builder : Binding.Builder<UniformBufferBinding>() {
-        val uniforms = mutableListOf<() -> Uniform<*>>()
+        val uniforms = mutableListOf<Uniform>()
         var isShared = true
 
         init {
             name = "Ubo"
         }
 
-        operator fun (() -> Uniform<*>).unaryPlus() {
+        operator fun (Uniform).unaryPlus() {
             uniforms.add(this)
         }
 
         override fun create(binding: Int): UniformBufferBinding {
-            val uniforms = List(uniforms.size) { uniforms[it]() }
-            return UniformBufferBinding(this, binding, uniforms)
+            return UniformBufferBinding(this, binding, uniforms.toList())
         }
     }
 }

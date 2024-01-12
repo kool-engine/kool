@@ -22,7 +22,7 @@ import de.fabmax.kool.physics.geometry.BoxGeometry
 import de.fabmax.kool.physics.geometry.CylinderGeometry
 import de.fabmax.kool.physics.geometry.PlaneGeometry
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.GlslType
+import de.fabmax.kool.pipeline.GpuType
 import de.fabmax.kool.pipeline.ao.AoPipeline
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.toString
@@ -549,6 +549,6 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
     }
 
     companion object {
-        private val ATTRIB_COLOR = Attribute("aInstColor", GlslType.VEC_4F)
+        private val ATTRIB_COLOR = Attribute("aInstColor", GpuType.FLOAT4)
     }
 }

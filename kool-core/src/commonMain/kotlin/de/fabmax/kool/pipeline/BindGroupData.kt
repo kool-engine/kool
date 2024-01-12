@@ -7,10 +7,10 @@ class BindGroupData(val layout: BindGroupLayout) {
     val bindings: List<BindingData> = layout.bindings.map {
         when (it) {
             is UniformBufferBinding -> UniformBufferData(it)
-            is Texture1dBinding -> Texture1dData(it)
-            is Texture2dBinding -> Texture2dData(it)
-            is Texture3dBinding -> Texture3dData(it)
-            is TextureCubeBinding -> TextureCubeData(it)
+            is Texture1dBinding -> TextureBinding1dData(it)
+            is Texture2dBinding -> TextureBinding2dData(it)
+            is Texture3dBinding -> TextureBinding3dData(it)
+            is TextureCubeBinding -> TextureBindingCubeData(it)
             is StorageTexture1dBinding -> StorageTexture1dData(it)
             is StorageTexture2dBinding -> StorageTexture2dData(it)
             is StorageTexture3dBinding -> StorageTexture3dData(it)
@@ -33,7 +33,7 @@ class BindGroupData(val layout: BindGroupLayout) {
         }
     }
 
-    abstract inner class TextureData<T: Texture, B: TextureBinding>(val binding: B) {
+    abstract inner class TextureBindingData<T: Texture, B: TextureBinding>(val binding: B) {
         private val _textures = MutableList<T?>(binding.arraySize) { null }
         val textures: List<T?> get() = _textures
 
@@ -56,10 +56,10 @@ class BindGroupData(val layout: BindGroupLayout) {
         }
     }
 
-    inner class Texture1dData(binding: Texture1dBinding) : TextureData<Texture1d, Texture1dBinding>(binding), BindingData
-    inner class Texture2dData(binding: Texture2dBinding) : TextureData<Texture2d, Texture2dBinding>(binding), BindingData
-    inner class Texture3dData(binding: Texture3dBinding) : TextureData<Texture3d, Texture3dBinding>(binding), BindingData
-    inner class TextureCubeData(binding: TextureCubeBinding) : TextureData<TextureCube, TextureCubeBinding>(binding), BindingData
+    inner class TextureBinding1dData(binding: Texture1dBinding) : TextureBindingData<Texture1d, Texture1dBinding>(binding), BindingData
+    inner class TextureBinding2dData(binding: Texture2dBinding) : TextureBindingData<Texture2d, Texture2dBinding>(binding), BindingData
+    inner class TextureBinding3dData(binding: Texture3dBinding) : TextureBindingData<Texture3d, Texture3dBinding>(binding), BindingData
+    inner class TextureBindingCubeData(binding: TextureCubeBinding) : TextureBindingData<TextureCube, TextureCubeBinding>(binding), BindingData
 
     inner class StorageTexture1dData(val binding: StorageTexture1dBinding) : BindingData {
         var storageTexture: StorageTexture1d? = null

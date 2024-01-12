@@ -145,8 +145,8 @@ class TitleBgRenderer(
         }
 
         companion object {
-            val ATTRIB_DIMENS = Attribute("aDimens", GlslType.VEC_4F)
-            val ATTRIB_CLIP_CORNERS = Attribute("aClipCorners", GlslType.VEC_2F)
+            val ATTRIB_DIMENS = Attribute("aDimens", GpuType.FLOAT4)
+            val ATTRIB_CLIP_CORNERS = Attribute("aClipCorners", GpuType.FLOAT2)
 
             val pipelineConfig = PipelineConfig().apply {
                 blendMode = BlendMode.DISABLED

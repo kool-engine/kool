@@ -1,7 +1,7 @@
 package de.fabmax.kool.pipeline.backend.gl
 
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.GlslType
+import de.fabmax.kool.pipeline.GpuType
 import de.fabmax.kool.pipeline.VertexLayout
 import de.fabmax.kool.pipeline.backend.GpuGeometry
 import de.fabmax.kool.scene.MeshInstanceList
@@ -143,17 +143,17 @@ class GpuGeometryGl(
 
     private val Attribute.glAttribLayout: AttribLayout
         get() = when (type) {
-        GlslType.FLOAT -> AttribLayout(1, 1)
-        GlslType.VEC_2F -> AttribLayout(1, 2)
-        GlslType.VEC_3F -> AttribLayout(1, 3)
-        GlslType.VEC_4F -> AttribLayout(1, 4)
-        GlslType.INT -> AttribLayout(1, 1)
-        GlslType.VEC_2I -> AttribLayout(1, 2)
-        GlslType.VEC_3I -> AttribLayout(1, 3)
-        GlslType.VEC_4I -> AttribLayout(1, 4)
-        GlslType.MAT_2F -> AttribLayout(2, 2)
-        GlslType.MAT_3F -> AttribLayout(3, 3)
-        GlslType.MAT_4F -> AttribLayout(4, 4)
+        GpuType.FLOAT1 -> AttribLayout(1, 1)
+        GpuType.FLOAT2 -> AttribLayout(1, 2)
+        GpuType.FLOAT3 -> AttribLayout(1, 3)
+        GpuType.FLOAT4 -> AttribLayout(1, 4)
+        GpuType.INT1 -> AttribLayout(1, 1)
+        GpuType.INT2 -> AttribLayout(1, 2)
+        GpuType.INT3 -> AttribLayout(1, 3)
+        GpuType.INT4 -> AttribLayout(1, 4)
+        GpuType.MAT2 -> AttribLayout(2, 2)
+        GpuType.MAT3 -> AttribLayout(3, 3)
+        GpuType.MAT4 -> AttribLayout(4, 4)
     }
 
     private data class AttribLayout(val slots: Int, val size: Int)

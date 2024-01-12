@@ -200,14 +200,14 @@ class WgpuRenderPass(val backend: RenderBackendWebGpu, val multiSamples: Int = 4
             return pipeline.vertexLayout.bindings.map { vertexBinding ->
                 val attributes = vertexBinding.vertexAttributes.map { attr ->
                     val format = when (attr.type) {
-                        GlslType.FLOAT -> GPUVertexFormat.float32
-                        GlslType.VEC_2F -> GPUVertexFormat.float32x2
-                        GlslType.VEC_3F -> GPUVertexFormat.float32x3
-                        GlslType.VEC_4F -> GPUVertexFormat.float32x4
-                        GlslType.INT -> GPUVertexFormat.sint32
-                        GlslType.VEC_2I -> GPUVertexFormat.sint32x2
-                        GlslType.VEC_3I -> GPUVertexFormat.sint32x3
-                        GlslType.VEC_4I -> GPUVertexFormat.sint32x4
+                        GpuType.FLOAT1 -> GPUVertexFormat.float32
+                        GpuType.FLOAT2 -> GPUVertexFormat.float32x2
+                        GpuType.FLOAT3 -> GPUVertexFormat.float32x3
+                        GpuType.FLOAT4 -> GPUVertexFormat.float32x4
+                        GpuType.INT1 -> GPUVertexFormat.sint32
+                        GpuType.INT2 -> GPUVertexFormat.sint32x2
+                        GpuType.INT3 -> GPUVertexFormat.sint32x3
+                        GpuType.INT4 -> GPUVertexFormat.sint32x4
                         else -> error("Invalid vertex attribute type: ${attr.type}")
                     }
                     GPUVertexAttribute(
@@ -250,21 +250,23 @@ class WgpuRenderPass(val backend: RenderBackendWebGpu, val multiSamples: Int = 4
         val ubos = mutableListOf<UboBinding>()
 
         fun bindBindGroups(pass: GPURenderPassEncoder, pipeline: Pipeline) {
+            // fixme: support multiple bind groups
             if (bindGroup == null) {
                 val bindGroupEntries = mutableListOf<GPUBindGroupEntry>()
-                pipeline.bindGroupLayout.bindings
-                    .filterIsInstance<UniformBufferBinding>()
-                    .forEach { ubo ->
-                        val layout = Std140BufferLayout(ubo.uniforms)
-                        val gpuBuffer = device.createBuffer(GPUBufferDescriptor(
-                            label = "${pipeline.name} uniforms",
-                            size = layout.size.toLong(),
-                            usage = GPUBufferUsage.UNIFORM or GPUBufferUsage.COPY_DST
-                        ))
-                        val hostBuffer = MixedBuffer(layout.size)
-                        ubos += UboBinding(ubo, layout, hostBuffer, gpuBuffer)
-                        bindGroupEntries += GPUBindGroupEntry(ubo.binding, GPUBufferBinding(gpuBuffer))
-                    }
+                pipeline.bindGroupLayouts.indices.forEach { group ->
+                    pipeline.bindGroupLayouts[group].bindings
+                        .filterIsInstance<UniformBufferBinding>()
+                        .forEach { ubo ->
+                            val layout = Std140BufferLayout(ubo.uniforms)
+                            val gpuBuffer = device.createBuffer(GPUBufferDescriptor(
+                                label = "${pipeline.name} uniforms",
+                                size = layout.size.toLong(),
+                                usage = GPUBufferUsage.UNIFORM or GPUBufferUsage.COPY_DST
+                            ))
+                            ubos += UboBinding(group, ubo, layout, gpuBuffer)
+                            bindGroupEntries += GPUBindGroupEntry(ubo.binding, GPUBufferBinding(gpuBuffer))
+                        }
+                }
 
                 bindGroup = device.createBindGroup(GPUBindGroupDescriptor(
                     label = "${pipeline.name} bind group",
@@ -274,21 +276,23 @@ class WgpuRenderPass(val backend: RenderBackendWebGpu, val multiSamples: Int = 4
             }
 
             ubos.forEach { ubo ->
-                ubo.layout.putToBuffer(ubo.binding.uniforms, ubo.hostBuffer)
-                device.queue.writeBuffer(
-                    buffer = ubo.gpuBuffer,
-                    bufferOffset = 0L,
-                    data = (ubo.hostBuffer as MixedBufferImpl).buffer
-                )
+                val data = pipeline.bindGroupData[ubo.group].uniformBufferData(ubo.binding.binding)
+                if (data.getAndClearDirtyFlag()) {
+                    device.queue.writeBuffer(
+                        buffer = ubo.gpuBuffer,
+                        bufferOffset = 0L,
+                        data = (data.buffer as MixedBufferImpl).buffer
+                    )
+                }
             }
             pass.setBindGroup(0, bindGroup!!)
         }
     }
 
     data class UboBinding(
+        val group: Int,
         val binding: UniformBufferBinding,
         val layout: Std140BufferLayout,
-        val hostBuffer: MixedBuffer,
         val gpuBuffer: GPUBuffer
     )
 

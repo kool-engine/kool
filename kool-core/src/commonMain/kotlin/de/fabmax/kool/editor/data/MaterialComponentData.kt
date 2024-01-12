@@ -94,7 +94,7 @@ data class PbrShaderData(
                     is ConstColorAttribute -> uniformColor()
                     is ConstValueAttribute -> uniformColor()
                     is MapAttribute -> textureColor()
-                    is VertexAttribute -> vertexColor(Attribute(color.attribName, GlslType.VEC_4F))
+                    is VertexAttribute -> vertexColor(Attribute(color.attribName, GpuType.FLOAT4))
                 }
             }
             emission {
@@ -102,7 +102,7 @@ data class PbrShaderData(
                     is ConstColorAttribute -> uniformColor()
                     is ConstValueAttribute -> uniformColor()
                     is MapAttribute -> textureColor()
-                    is VertexAttribute -> vertexColor(Attribute(color.attribName, GlslType.VEC_4F))
+                    is VertexAttribute -> vertexColor(Attribute(color.attribName, GpuType.FLOAT4))
                 }
             }
             roughness {
@@ -110,7 +110,7 @@ data class PbrShaderData(
                     is ConstColorAttribute -> uniformProperty()
                     is ConstValueAttribute -> uniformProperty()
                     is MapAttribute -> textureProperty()
-                    is VertexAttribute -> vertexProperty(Attribute(rough.attribName, GlslType.FLOAT))
+                    is VertexAttribute -> vertexProperty(Attribute(rough.attribName, GpuType.FLOAT1))
                 }
             }
             metallic {
@@ -118,7 +118,7 @@ data class PbrShaderData(
                     is ConstColorAttribute -> uniformProperty()
                     is ConstValueAttribute -> uniformProperty()
                     is MapAttribute -> textureProperty()
-                    is VertexAttribute -> vertexProperty(Attribute(metal.attribName, GlslType.FLOAT))
+                    is VertexAttribute -> vertexProperty(Attribute(metal.attribName, GpuType.FLOAT1))
                 }
             }
             this@PbrShaderData.aoMap?.let {

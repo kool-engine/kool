@@ -3,6 +3,7 @@ package de.fabmax.kool.pipeline.backend.gl
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.Float32Buffer
 import de.fabmax.kool.util.Int32Buffer
+import de.fabmax.kool.util.MixedBuffer
 import de.fabmax.kool.util.RenderLoop
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -10,243 +11,125 @@ import kotlinx.coroutines.launch
 
 interface MappedUniform {
     fun setUniform(bindGroupData: BindGroupData): Boolean
-
-    companion object {
-        fun mappedUniform(uniform: Uniform<*>, location: Int, gl: GlApi): MappedUniform {
-            return when (uniform) {
-                is Uniform1f -> MappedUniform1f(uniform, location, gl)
-                is Uniform2f -> MappedUniform2f(uniform, location, gl)
-                is Uniform3f -> MappedUniform3f(uniform, location, gl)
-                is Uniform4f -> MappedUniform4f(uniform, location, gl)
-                is Uniform1fv -> MappedUniform1fv(uniform, location, gl)
-                is Uniform2fv -> MappedUniform2fv(uniform, location, gl)
-                is Uniform3fv -> MappedUniform3fv(uniform, location, gl)
-                is Uniform4fv -> MappedUniform4fv(uniform, location, gl)
-                is UniformMat3f -> MappedUniformMat3f(uniform, location, gl)
-                is UniformMat3fv -> MappedUniformMat3fv(uniform, location, gl)
-                is UniformMat4f -> MappedUniformMat4f(uniform, location, gl)
-                is UniformMat4fv -> MappedUniformMat4fv(uniform, location, gl)
-
-                is Uniform1i -> MappedUniform1i(uniform, location, gl)
-                is Uniform2i -> MappedUniform2i(uniform, location, gl)
-                is Uniform3i -> MappedUniform3i(uniform, location, gl)
-                is Uniform4i -> MappedUniform4i(uniform, location, gl)
-                is Uniform1iv -> MappedUniform1iv(uniform, location, gl)
-                is Uniform2iv -> MappedUniform2iv(uniform, location, gl)
-                is Uniform3iv -> MappedUniform3iv(uniform, location, gl)
-                is Uniform4iv -> MappedUniform4iv(uniform, location, gl)
-            }
-        }
-    }
 }
 
-class MappedUbo(val ubo: UniformBufferBinding, val layout: BufferLayout, val gl: GlApi) : MappedUniform {
+class MappedUbo(val ubo: UniformBufferBinding, val gl: GlApi) : MappedUniform {
     var uboBuffer: BufferResource? = null
 
     override fun setUniform(bindGroupData: BindGroupData): Boolean {
-        val gpuBuf = uboBuffer
-        return if (gpuBuf != null) {
+        return uboBuffer?.let { buffer ->
             val uboData = bindGroupData.uniformBufferData(ubo.binding)
             if (uboData.getAndClearDirtyFlag()) {
-                gpuBuf.setData(uboData.buffer, gl.DYNAMIC_DRAW)
+                buffer.setData(uboData.buffer, gl.DYNAMIC_DRAW)
             }
-            gl.bindBufferBase(gl.UNIFORM_BUFFER, ubo.binding, gpuBuf.buffer)
+            gl.bindBufferBase(gl.UNIFORM_BUFFER, ubo.binding, buffer.buffer)
             true
-        } else {
-            false
+        } ?: false
+    }
+}
+
+class MappedUboCompat(val ubo: UniformBufferBinding, val locations: IntArray, val gl: GlApi) : MappedUniform {
+    private val floatBuffers = buildList {
+        ubo.uniforms.forEach {
+            val bufferSize = if (it.isArray) {
+                when (it.type) {
+                    GpuType.FLOAT1 ->  1 * it.arraySize
+                    GpuType.FLOAT2 ->  2 * it.arraySize
+                    GpuType.FLOAT3 ->  3 * it.arraySize
+                    GpuType.FLOAT4 ->  4 * it.arraySize
+                    GpuType.MAT3   ->  9 * it.arraySize
+                    GpuType.MAT4   -> 16 * it.arraySize
+                    else           ->  1
+                }
+            } else {
+                when (it.type) {
+                    GpuType.MAT3 ->  9
+                    GpuType.MAT4 -> 16
+                    else         ->  1
+                }
+            }
+            add(Float32Buffer(bufferSize))
         }
     }
-}
 
-class MappedUniform1f(val uniform: Uniform1f, val location: Int, val gl: GlApi) : MappedUniform {
-    override fun setUniform(bindGroupData: BindGroupData): Boolean {
-        gl.uniform1f(location, uniform.value)
-        return true
-    }
-}
-
-class MappedUniform2f(val uniform: Uniform2f, val location: Int, val gl: GlApi) : MappedUniform {
-    override fun setUniform(bindGroupData: BindGroupData): Boolean {
-        gl.uniform2f(location, uniform.value.x, uniform.value.y)
-        return true
-    }
-}
-
-class MappedUniform3f(val uniform: Uniform3f, val location: Int, val gl: GlApi) : MappedUniform {
-    override fun setUniform(bindGroupData: BindGroupData): Boolean {
-        gl.uniform3f(location, uniform.value.x, uniform.value.y, uniform.value.z)
-        return true
-    }
-}
-
-class MappedUniform4f(val uniform: Uniform4f, val location: Int, val gl: GlApi) : MappedUniform {
-    override fun setUniform(bindGroupData: BindGroupData): Boolean {
-        gl.uniform4f(location, uniform.value.x, uniform.value.y, uniform.value.z, uniform.value.w)
-        return true
-    }
-}
-
-class MappedUniform1fv(val uniform: Uniform1fv, val location: Int, val gl: GlApi) : MappedUniform {
-    private val buffer = Float32Buffer(uniform.size)
-    override fun setUniform(bindGroupData: BindGroupData): Boolean {
-        buffer.clear()
-        buffer.put(uniform.value)
-        gl.uniform1fv(location, buffer)
-        return true
-    }
-}
-
-class MappedUniform2fv(val uniform: Uniform2fv, val location: Int, val gl: GlApi) : MappedUniform {
-    private val buffer = Float32Buffer(2 * uniform.size)
-    override fun setUniform(bindGroupData: BindGroupData): Boolean {
-        buffer.clear()
-        for (i in 0 until uniform.size) {
-            uniform.value[i].putTo(buffer)
+    private val intBuffers = buildList {
+        ubo.uniforms.forEach {
+            val bufferSize = if (it.isArray) {
+                when (it.type) {
+                    GpuType.INT1 -> 1 * it.arraySize
+                    GpuType.INT2 -> 2 * it.arraySize
+                    GpuType.INT3 -> 3 * it.arraySize
+                    GpuType.INT4 -> 4 * it.arraySize
+                    else         -> 1
+                }
+            } else { 1 }
+            add(Int32Buffer(bufferSize))
         }
-        gl.uniform2fv(location, buffer)
-        return true
     }
-}
 
-class MappedUniform3fv(val uniform: Uniform3fv, val location: Int, val gl: GlApi) : MappedUniform {
-    private val buffer = Float32Buffer(3 * uniform.size)
     override fun setUniform(bindGroupData: BindGroupData): Boolean {
-        buffer.clear()
-        for (i in 0 until uniform.size) {
-            uniform.value[i].putTo(buffer)
+        ubo.uniforms.forEachIndexed { i, uniform ->
+            val loc = locations[i]
+            val buf = bindGroupData.uniformBufferData(ubo.binding).buffer
+            val pos = ubo.layout.uniformPositions[uniform.name]!!.byteIndex
+
+            if (uniform.isArray) {
+                when (uniform.type) {
+                    GpuType.FLOAT1 -> gl.uniform1fv(loc, floatBuffers[i].copyPadded(buf, pos, 1, uniform.arraySize))
+                    GpuType.FLOAT2 -> gl.uniform2fv(loc, floatBuffers[i].copyPadded(buf, pos, 2, uniform.arraySize))
+                    GpuType.FLOAT3 -> gl.uniform3fv(loc, floatBuffers[i].copyPadded(buf, pos, 3, uniform.arraySize))
+                    GpuType.FLOAT4 -> gl.uniform4fv(loc, floatBuffers[i].copyPadded(buf, pos, 4, uniform.arraySize))
+                    GpuType.INT1 -> gl.uniform1iv(loc, intBuffers[i].copyPadded(buf, pos, 1, uniform.arraySize))
+                    GpuType.INT2 -> gl.uniform2iv(loc, intBuffers[i].copyPadded(buf, pos, 2, uniform.arraySize))
+                    GpuType.INT3 -> gl.uniform3iv(loc, intBuffers[i].copyPadded(buf, pos, 3, uniform.arraySize))
+                    GpuType.INT4 -> gl.uniform4iv(loc, intBuffers[i].copyPadded(buf, pos, 4, uniform.arraySize))
+                    GpuType.MAT2 -> gl.uniformMatrix2fv(loc, floatBuffers[i].copyPadded(buf, pos, 2, 2 * uniform.arraySize))
+                    GpuType.MAT3 -> gl.uniformMatrix3fv(loc, floatBuffers[i].copyPadded(buf, pos, 3, 3 * uniform.arraySize))
+                    GpuType.MAT4 -> gl.uniformMatrix4fv(loc, floatBuffers[i].copyPadded(buf, pos, 4, 4 * uniform.arraySize))
+                }
+            } else {
+                when (uniform.type) {
+                    GpuType.FLOAT1 -> gl.uniform1f(loc, buf.getFloat32(pos))
+                    GpuType.FLOAT2 -> gl.uniform2f(loc, buf.getFloat32(pos), buf.getFloat32(pos + 4))
+                    GpuType.FLOAT3 -> gl.uniform3f(loc, buf.getFloat32(pos), buf.getFloat32(pos + 4), buf.getFloat32(pos + 8))
+                    GpuType.FLOAT4 -> gl.uniform4f(loc, buf.getFloat32(pos), buf.getFloat32(pos + 4), buf.getFloat32(pos + 8), buf.getFloat32(pos + 12))
+                    GpuType.INT1 -> gl.uniform1i(loc, buf.getInt32(pos))
+                    GpuType.INT2 -> gl.uniform2i(loc, buf.getInt32(pos), buf.getInt32(pos + 4))
+                    GpuType.INT3 -> gl.uniform3i(loc, buf.getInt32(pos), buf.getInt32(pos + 4), buf.getInt32(pos + 8))
+                    GpuType.INT4 -> gl.uniform4i(loc, buf.getInt32(pos), buf.getInt32(pos + 4), buf.getInt32(pos + 8), buf.getInt32(pos + 12))
+                    GpuType.MAT2 -> gl.uniformMatrix2fv(loc, floatBuffers[i].copyPadded(buf, pos, 2, 2))
+                    GpuType.MAT3 -> gl.uniformMatrix3fv(loc, floatBuffers[i].copyPadded(buf, pos, 3, 3))
+                    GpuType.MAT4 -> gl.uniformMatrix4fv(loc, floatBuffers[i].copyPadded(buf, pos, 4, 4))
+                }
+            }
         }
-        gl.uniform3fv(location, buffer)
         return true
     }
-}
 
-class MappedUniform4fv(val uniform: Uniform4fv, val location: Int, val gl: GlApi) : MappedUniform {
-    private val buffer = Float32Buffer(4 * uniform.size)
-    override fun setUniform(bindGroupData: BindGroupData): Boolean {
-        buffer.clear()
-        for (i in 0 until uniform.size) {
-            uniform.value[i].putTo(buffer)
+    private fun Float32Buffer.copyPadded(src: MixedBuffer, start: Int, values: Int, count: Int = 1): Float32Buffer {
+        var pSrc = start
+        var pDst = 0
+        for (i in 0 until count) {
+            for (iVal in 0 until values) {
+                set(pDst++, src.getFloat32(pSrc))
+                pSrc += 4
+            }
+            pSrc += 4 * (4 - values)
         }
-        gl.uniform4fv(location, buffer)
-        return true
+        return this
     }
-}
 
-class MappedUniformMat3f(val uniform: UniformMat3f, val location: Int, val gl: GlApi) : MappedUniform {
-    private val buffer = Float32Buffer(9)
-    override fun setUniform(bindGroupData: BindGroupData): Boolean {
-        buffer.clear()
-        uniform.value.putTo(buffer)
-        gl.uniformMatrix3fv(location, buffer)
-        return true
-    }
-}
-
-class MappedUniformMat3fv(val uniform: UniformMat3fv, val location: Int, val gl: GlApi) : MappedUniform {
-    private val buffer = Float32Buffer(9 * uniform.size)
-    override fun setUniform(bindGroupData: BindGroupData): Boolean {
-        buffer.clear()
-        for (i in 0 until uniform.size) {
-            uniform.value[i].putTo(buffer)
+    private fun Int32Buffer.copyPadded(src: MixedBuffer, start: Int, values: Int, count: Int = 1): Int32Buffer {
+        var pSrc = start
+        var pDst = 0
+        for (i in 0 until count) {
+            for (iVal in 0 until values) {
+                set(pDst++, src.getInt32(pSrc))
+                pSrc += 4
+            }
+            pSrc += 4 * (4 - values)
         }
-        gl.uniformMatrix3fv(location, buffer)
-        return true
-    }
-}
-
-class MappedUniformMat4f(val uniform: UniformMat4f, val location: Int, val gl: GlApi) : MappedUniform {
-    private val buffer = Float32Buffer(16)
-    override fun setUniform(bindGroupData: BindGroupData): Boolean {
-        buffer.clear()
-        uniform.value.putTo(buffer)
-        gl.uniformMatrix4fv(location, buffer)
-        return true
-    }
-}
-
-class MappedUniformMat4fv(val uniform: UniformMat4fv, val location: Int, val gl: GlApi) : MappedUniform {
-    private val buffer = Float32Buffer(16 * uniform.size)
-    override fun setUniform(bindGroupData: BindGroupData): Boolean {
-        buffer.clear()
-        for (i in 0 until uniform.size) {
-            uniform.value[i].putTo(buffer)
-        }
-        gl.uniformMatrix4fv(location, buffer)
-        return true
-    }
-}
-
-class MappedUniform1i(val uniform: Uniform1i, val location: Int, val gl: GlApi) : MappedUniform {
-    override fun setUniform(bindGroupData: BindGroupData): Boolean {
-        gl.uniform1i(location, uniform.value)
-        return true
-    }
-}
-
-class MappedUniform2i(val uniform: Uniform2i, val location: Int, val gl: GlApi) : MappedUniform {
-    override fun setUniform(bindGroupData: BindGroupData): Boolean {
-        gl.uniform2i(location, uniform.value.x, uniform.value.y)
-        return true
-    }
-}
-
-class MappedUniform3i(val uniform: Uniform3i, val location: Int, val gl: GlApi) : MappedUniform {
-    override fun setUniform(bindGroupData: BindGroupData): Boolean {
-        gl.uniform3i(location, uniform.value.x, uniform.value.y, uniform.value.z)
-        return true
-    }
-}
-
-class MappedUniform4i(val uniform: Uniform4i, val location: Int, val gl: GlApi) : MappedUniform {
-    override fun setUniform(bindGroupData: BindGroupData): Boolean {
-        gl.uniform4i(location, uniform.value.x, uniform.value.y, uniform.value.z, uniform.value.w)
-        return true
-    }
-}
-
-class MappedUniform1iv(val uniform: Uniform1iv, val location: Int, val gl: GlApi) : MappedUniform {
-    private val buffer = Int32Buffer(uniform.size)
-    override fun setUniform(bindGroupData: BindGroupData): Boolean {
-        buffer.clear()
-        buffer.put(uniform.value)
-        gl.uniform1iv(location, buffer)
-        return true
-    }
-}
-
-class MappedUniform2iv(val uniform: Uniform2iv, val location: Int, val gl: GlApi) : MappedUniform {
-    private val buffer = Int32Buffer(2 * uniform.size)
-    override fun setUniform(bindGroupData: BindGroupData): Boolean {
-        buffer.clear()
-        for (i in 0 until uniform.size) {
-            uniform.value[i].putTo(buffer)
-        }
-        gl.uniform2iv(location, buffer)
-        return true
-    }
-}
-
-class MappedUniform3iv(val uniform: Uniform3iv, val location: Int, val gl: GlApi) : MappedUniform {
-    private val buffer = Int32Buffer(3 * uniform.size)
-    override fun setUniform(bindGroupData: BindGroupData): Boolean {
-        buffer.clear()
-        for (i in 0 until uniform.size) {
-            uniform.value[i].putTo(buffer)
-        }
-        gl.uniform3iv(location, buffer)
-        return true
-    }
-}
-
-class MappedUniform4iv(val uniform: Uniform4iv, val location: Int, val gl: GlApi) : MappedUniform {
-    private val buffer = Int32Buffer(4 * uniform.size)
-    override fun setUniform(bindGroupData: BindGroupData): Boolean {
-        buffer.clear()
-        for (i in 0 until uniform.size) {
-            uniform.value[i].putTo(buffer)
-        }
-        gl.uniform4iv(location, buffer)
-        return true
+        return this
     }
 }
 

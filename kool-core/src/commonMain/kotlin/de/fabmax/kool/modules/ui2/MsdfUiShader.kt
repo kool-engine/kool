@@ -102,8 +102,8 @@ class MsdfUiShader(
     }
 
     companion object {
-        val ATTRIB_MSDF_PROPS = Attribute("aMsdfProps", GlslType.VEC_4F)
-        val ATTRIB_GLOW_COLOR = Attribute("aGlowColor", GlslType.VEC_4F)
+        val ATTRIB_MSDF_PROPS = Attribute("aMsdfProps", GpuType.FLOAT4)
+        val ATTRIB_GLOW_COLOR = Attribute("aGlowColor", GpuType.FLOAT4)
 
         val MSDF_UI_MESH_ATTRIBS = listOf(
             ATTRIB_MSDF_PROPS,

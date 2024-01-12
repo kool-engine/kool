@@ -10,7 +10,7 @@ import de.fabmax.kool.physics.Shape
 import de.fabmax.kool.physics.geometry.BoxGeometry
 import de.fabmax.kool.physics.joints.FixedJoint
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.GlslType
+import de.fabmax.kool.pipeline.GpuType
 import de.fabmax.kool.pipeline.deferred.DeferredKslPbrShader
 import de.fabmax.kool.pipeline.deferred.DeferredPointLights
 import de.fabmax.kool.scene.Mesh
@@ -248,6 +248,6 @@ class GuardRail {
     }
 
     companion object {
-        private val INSTANCE_EMISSION = Attribute("instEmission", GlslType.VEC_2F)
+        private val INSTANCE_EMISSION = Attribute("instEmission", GpuType.FLOAT2)
     }
 }

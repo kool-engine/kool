@@ -3,7 +3,7 @@ package de.fabmax.kool.scene
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.GlslType
+import de.fabmax.kool.pipeline.GpuType
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.PrimitiveType
 import de.fabmax.kool.scene.geometry.VertexView
@@ -61,6 +61,6 @@ open class PointMesh(
     }
 
     companion object {
-        val ATTRIB_POINT_SIZE = Attribute("aPointSize", GlslType.FLOAT)
+        val ATTRIB_POINT_SIZE = Attribute("aPointSize", GpuType.FLOAT1)
     }
 }

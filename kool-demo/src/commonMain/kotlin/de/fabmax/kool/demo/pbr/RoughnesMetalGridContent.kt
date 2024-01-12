@@ -8,7 +8,7 @@ import de.fabmax.kool.math.MutableMat4f
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.GlslType
+import de.fabmax.kool.pipeline.GpuType
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
@@ -111,8 +111,8 @@ class RoughnesMetalGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.P
     }
 
     companion object {
-        private val ATTRIB_ROUGHNESS = Attribute("aRoughness", GlslType.FLOAT)
-        private val ATTRIB_METAL = Attribute("aMetal", GlslType.FLOAT)
+        private val ATTRIB_ROUGHNESS = Attribute("aRoughness", GpuType.FLOAT1)
+        private val ATTRIB_METAL = Attribute("aMetal", GpuType.FLOAT1)
 
         private val matColors = listOf(
             MatColor("Red", MdColor.RED.toLinear()),

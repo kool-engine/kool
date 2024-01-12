@@ -16,7 +16,6 @@ class CompiledShader(val program: GlProgram, val pipeline: PipelineBase, val bac
     private val attributes = mutableMapOf<String, VertexLayout.VertexAttribute>()
     private val instanceAttributes = mutableMapOf<String, VertexLayout.VertexAttribute>()
     private val uniformLocations = mutableMapOf<String, IntArray>()
-    private val uboLayouts = mutableMapOf<String, BufferLayout>()
     private val instances = mutableMapOf<Long, ShaderInstance>()
     private val computeInstances = mutableMapOf<Long, ComputeShaderInstance>()
 
@@ -42,10 +41,12 @@ class CompiledShader(val program: GlProgram, val pipeline: PipelineBase, val bac
                 is UniformBufferBinding -> {
                     val blockIndex = gl.getUniformBlockIndex(program, binding.name)
                     if (blockIndex == gl.INVALID_INDEX) {
-                        // binding does not describe an actual UBO but plain old uniforms...
-                        binding.uniforms.forEach { uniformLocations[it.name] = intArrayOf(gl.getUniformLocation(program, it.name)) }
+                        // binding does not describe an actual UBO but plain old uniforms
+                        val locations = binding.uniforms.map { gl.getUniformLocation(program, it.name) }.toIntArray()
+                        uniformLocations[binding.name] = locations
+
                     } else {
-                        setupUboLayout(binding, blockIndex)
+                        gl.uniformBlockBinding(program, blockIndex, binding.binding)
                     }
                 }
                 is Texture1dBinding -> {
@@ -80,11 +81,6 @@ class CompiledShader(val program: GlProgram, val pipeline: PipelineBase, val bac
         check(backend.gl.version.isHigherOrEqualThan(4, 2)) {
             "Storage textures require OpenGL 4.2 or higher"
         }
-    }
-
-    private fun setupUboLayout(binding: UniformBufferBinding, blockIndex: Int) {
-        gl.uniformBlockBinding(program, blockIndex, binding.binding)
-        uboLayouts[binding.name] = Std140BufferLayout(binding.uniforms)
     }
 
     private fun getUniformLocations(name: String, arraySize: Int): IntArray {
@@ -239,19 +235,11 @@ class CompiledShader(val program: GlProgram, val pipeline: PipelineBase, val bac
 
         private fun mapUbo(group: Int, ubo: UniformBufferBinding) {
             ubos.add(ubo)
-            val uboLayout = uboLayouts[ubo.name]
-            if (uboLayout != null) {
-                mappings += group to MappedUbo(ubo, uboLayout, gl)
-
+            val uniformLocations = uniformLocations[ubo.name]
+            mappings += if (uniformLocations != null) {
+                group to MappedUboCompat(ubo, uniformLocations, gl)
             } else {
-                ubo.uniforms.forEach {
-                    val location = uniformLocations[it.name]
-                    if (location != null) {
-                        mappings += group to MappedUniform.mappedUniform(it, location[0], gl)
-                    } else {
-                        logE { "Uniform location not present for uniform ${ubo.name}.${it.name}" }
-                    }
-                }
+                group to MappedUbo(ubo, gl)
             }
         }
 

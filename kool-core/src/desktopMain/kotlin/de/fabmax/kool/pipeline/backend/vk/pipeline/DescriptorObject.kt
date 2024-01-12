@@ -6,7 +6,6 @@ import de.fabmax.kool.pipeline.backend.vk.VkSystem
 import de.fabmax.kool.pipeline.backend.vk.callocVkDescriptorBufferInfoN
 import de.fabmax.kool.pipeline.backend.vk.callocVkDescriptorImageInfoN
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
-import de.fabmax.kool.util.MixedBuffer
 import de.fabmax.kool.util.MixedBufferImpl
 import de.fabmax.kool.util.logE
 import kotlinx.coroutines.Deferred
@@ -28,15 +27,13 @@ abstract class DescriptorObject(val binding: Int, val descriptor: Binding) {
 
 class UboDescriptor(binding: Int, graphicsPipeline: GraphicsPipeline, private val ubo: UniformBufferBinding) : DescriptorObject(binding, ubo) {
     private val buffer: de.fabmax.kool.pipeline.backend.vk.Buffer
-    private val layout = Std140BufferLayout(ubo.uniforms)
-    private val hostBuffer = MixedBuffer(layout.size) as MixedBufferImpl
 
     init {
         val usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT
         val allocUsage = Vma.VMA_MEMORY_USAGE_CPU_TO_GPU
         buffer = de.fabmax.kool.pipeline.backend.vk.Buffer(
             graphicsPipeline.sys,
-            layout.size.toLong(),
+            ubo.layout.size.toLong(),
             usage,
             allocUsage
         ).also {
@@ -49,7 +46,7 @@ class UboDescriptor(binding: Int, graphicsPipeline: GraphicsPipeline, private va
             val buffereInfo = callocVkDescriptorBufferInfoN(1) {
                 buffer(buffer.vkBuffer)
                 offset(0L)
-                range(layout.size.toLong())
+                range(ubo.layout.size.toLong())
             }
             vkWriteDescriptorSet
                     .sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET)
@@ -63,7 +60,7 @@ class UboDescriptor(binding: Int, graphicsPipeline: GraphicsPipeline, private va
     }
 
     override fun update(cmd: DrawCommand, sys: VkSystem) {
-        layout.putToBuffer(ubo.uniforms, hostBuffer)
+        val hostBuffer = cmd.pipeline!!.bindGroupData[0].uniformBufferData(binding).buffer as MixedBufferImpl
         hostBuffer.useRaw { host ->
             buffer.mapped { put(host) }
         }

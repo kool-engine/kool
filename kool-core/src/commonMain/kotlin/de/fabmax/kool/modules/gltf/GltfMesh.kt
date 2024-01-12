@@ -1,7 +1,7 @@
 package de.fabmax.kool.modules.gltf
 
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.GlslType
+import de.fabmax.kool.pipeline.GpuType
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.util.logW
 import kotlinx.serialization.Serializable
@@ -155,15 +155,15 @@ data class GltfMesh(
             targets.forEachIndexed { index, morphTarget ->
                 val postfix = "_${index + 1}"
                 morphTarget[ATTRIBUTE_NORMAL]?.let { iAccessor ->
-                    val attrib = Attribute("${Attribute.NORMALS.name}$postfix", GlslType.VEC_3F)
+                    val attrib = Attribute("${Attribute.NORMALS.name}$postfix", GpuType.FLOAT3)
                     accessors[attrib] = Vec3fAccessor(gltfAccessors[iAccessor])
                 }
                 morphTarget[ATTRIBUTE_POSITION]?.let { iAccessor ->
-                    val attrib = Attribute("${Attribute.POSITIONS.name}$postfix", GlslType.VEC_3F)
+                    val attrib = Attribute("${Attribute.POSITIONS.name}$postfix", GpuType.FLOAT3)
                     accessors[attrib] = Vec3fAccessor(gltfAccessors[iAccessor])
                 }
                 morphTarget[ATTRIBUTE_TANGENT]?.let { iAccessor ->
-                    val attrib = Attribute("${Attribute.TANGENTS.name}$postfix", GlslType.VEC_3F)
+                    val attrib = Attribute("${Attribute.TANGENTS.name}$postfix", GpuType.FLOAT3)
                     accessors[attrib] = Vec3fAccessor(gltfAccessors[iAccessor])
                 }
             }

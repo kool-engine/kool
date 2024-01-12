@@ -2,7 +2,7 @@ package de.fabmax.kool.scene.geometry
 
 import de.fabmax.kool.math.*
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.GlslType
+import de.fabmax.kool.pipeline.GpuType
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MutableColor
 
@@ -39,14 +39,14 @@ class VertexView(val data: IndexedVertexList, index: Int) : MutableVec3f() {
 
         for (offset in data.attributeByteOffsets) {
             when (offset.key.type) {
-                GlslType.FLOAT -> attribViews[offset.key] = FloatView(offset.value / 4)
-                GlslType.VEC_2F -> attribViews[offset.key] = Vec2fView(offset.value / 4)
-                GlslType.VEC_3F -> attribViews[offset.key] = Vec3fView(offset.value / 4)
-                GlslType.VEC_4F -> attribViews[offset.key] = Vec4fView(offset.value / 4)
-                GlslType.INT -> attribViews[offset.key] = IntView(offset.value / 4)
-                GlslType.VEC_2I -> attribViews[offset.key] = Vec2iView(offset.value / 4)
-                GlslType.VEC_3I -> attribViews[offset.key] = Vec3iView(offset.value / 4)
-                GlslType.VEC_4I -> attribViews[offset.key] = Vec4iView(offset.value / 4)
+                GpuType.FLOAT1 -> attribViews[offset.key] = FloatView(offset.value / 4)
+                GpuType.FLOAT2 -> attribViews[offset.key] = Vec2fView(offset.value / 4)
+                GpuType.FLOAT3 -> attribViews[offset.key] = Vec3fView(offset.value / 4)
+                GpuType.FLOAT4 -> attribViews[offset.key] = Vec4fView(offset.value / 4)
+                GpuType.INT1 -> attribViews[offset.key] = IntView(offset.value / 4)
+                GpuType.INT2 -> attribViews[offset.key] = Vec2iView(offset.value / 4)
+                GpuType.INT3 -> attribViews[offset.key] = Vec3iView(offset.value / 4)
+                GpuType.INT4 -> attribViews[offset.key] = Vec4iView(offset.value / 4)
                 else -> throw IllegalArgumentException("${offset.key.type} is not a valid vertex attribute")
             }
         }

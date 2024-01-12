@@ -123,7 +123,7 @@ class Terrain(val demo: TerrainDemo, val heightMap: HeightMap) {
 
     companion object {
         const val TERRAIN_SHADER_DISCARD_HEIGHT = "uDiscardHeight"
-        val TERRAIN_GRID_COORDS = Attribute("aGridCoords", GlslType.VEC_2F)
+        val TERRAIN_GRID_COORDS = Attribute("aGridCoords", GpuType.FLOAT2)
 
         fun makeTerrainShader(
             colorMap: Texture2d,

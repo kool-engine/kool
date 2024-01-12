@@ -1,280 +1,42 @@
 package de.fabmax.kool.pipeline
 
-import de.fabmax.kool.math.*
-import de.fabmax.kool.util.MixedBuffer
-
-sealed class Uniform<T>(
-    var value: T,
+data class Uniform(
     val name: String,
-
-    /**
-     * Number of elements in case this is an array type (1 otherwise)
-     */
-    val size: Int = 1
+    val type: GpuType,
+    val arraySize: Int = 1
 ) {
-
     val isArray: Boolean
-        get() = size > 1
-
-    /**
-     * Appends this uniform's data to the supplied buffer at its current position. Does not check for alignment, i.e.
-     * the buffer position needs to be correctly set before calling this method. Trailing padding bytes are appended
-     * until the specified number of bytes [len] are appended.
-     *
-     * For array types, [len] is also used to decide whether to add intermediate padding (Std140 layout) or not.
-     */
-    abstract fun putToBuffer(buffer: MixedBuffer, len: Int)
-
-    protected fun checkLen(minRequired: Int, available: Int) {
-        if (available < minRequired) {
-            error("Insufficient buffer space: $minRequired > $available")
-        }
-    }
-
-    protected fun putPadding(buffer: MixedBuffer, padLen: Int) {
-        if (padLen > 0) {
-            buffer.putPadding(padLen)
-        }
-    }
+        get() = arraySize > 1
 
     override fun toString(): String {
-        return name
+        return name + if (isArray) "[$arraySize]" else ""
     }
 }
 
-class Uniform1f(name: String) : Uniform<Float>(0f, name) {
-    constructor(initValue: Float, name: String) : this(name) {
-        value = initValue
-    }
+fun uniform1f(name: String) = Uniform(name, GpuType.FLOAT1)
+fun uniform2f(name: String) = Uniform(name, GpuType.FLOAT2)
+fun uniform3f(name: String) = Uniform(name, GpuType.FLOAT3)
+fun uniform4f(name: String) = Uniform(name, GpuType.FLOAT4)
 
-    override fun putToBuffer(buffer: MixedBuffer, len: Int) {
-        checkLen(4, len)
-        buffer.putFloat32(value)
-        putPadding(buffer, len - 4)
-    }
-}
+fun uniform1i(name: String) = Uniform(name, GpuType.INT1)
+fun uniform2i(name: String) = Uniform(name, GpuType.INT2)
+fun uniform3i(name: String) = Uniform(name, GpuType.INT3)
+fun uniform4i(name: String) = Uniform(name, GpuType.INT4)
 
-class Uniform2f(name: String) : Uniform<MutableVec2f>(MutableVec2f(), name) {
-    constructor(initValue: Vec2f, name: String) : this(name) {
-        value.set(initValue)
-    }
+fun uniformMat2(name: String) = Uniform(name, GpuType.MAT2)
+fun uniformMat3(name: String) = Uniform(name, GpuType.MAT3)
+fun uniformMat4(name: String) = Uniform(name, GpuType.MAT4)
 
-    override fun putToBuffer(buffer: MixedBuffer, len: Int) {
-        checkLen(8, len)
-        value.putTo(buffer)
-        putPadding(buffer, len - 8)
-    }
-}
+fun uniform1fv(name: String, arraySize: Int) = Uniform(name, GpuType.FLOAT1, arraySize)
+fun uniform2fv(name: String, arraySize: Int) = Uniform(name, GpuType.FLOAT2, arraySize)
+fun uniform3fv(name: String, arraySize: Int) = Uniform(name, GpuType.FLOAT3, arraySize)
+fun uniform4fv(name: String, arraySize: Int) = Uniform(name, GpuType.FLOAT4, arraySize)
 
-class Uniform3f(name: String) : Uniform<MutableVec3f>(MutableVec3f(), name) {
-    constructor(initValue: Vec3f, name: String) : this(name) {
-        value.set(initValue)
-    }
+fun uniform1iv(name: String, arraySize: Int) = Uniform(name, GpuType.INT1, arraySize)
+fun uniform2iv(name: String, arraySize: Int) = Uniform(name, GpuType.INT2, arraySize)
+fun uniform3iv(name: String, arraySize: Int) = Uniform(name, GpuType.INT3, arraySize)
+fun uniform4iv(name: String, arraySize: Int) = Uniform(name, GpuType.INT4, arraySize)
 
-    override fun putToBuffer(buffer: MixedBuffer, len: Int) {
-        checkLen(12, len)
-        value.putTo(buffer)
-        putPadding(buffer, len - 12)
-    }
-}
-
-class Uniform4f(name: String) : Uniform<MutableVec4f>(MutableVec4f(), name) {
-    constructor(initValue: Vec4f, name: String) : this(name) {
-        value.set(initValue)
-    }
-
-    override fun putToBuffer(buffer: MixedBuffer, len: Int) {
-        checkLen(16, len)
-        value.putTo(buffer)
-        putPadding(buffer, len - 16)
-    }
-}
-
-class Uniform1fv(name: String, length: Int) : Uniform<FloatArray>(FloatArray(length), name, length) {
-    override fun putToBuffer(buffer: MixedBuffer, len: Int) {
-        checkLen(4 * size, len)
-        val padLen = (len - 4 * size) / size
-        for (i in 0 until size) {
-            buffer.putFloat32(value[i])
-            putPadding(buffer, padLen)
-        }
-    }
-}
-
-class Uniform2fv(name: String, length: Int) : Uniform<Array<MutableVec2f>>(Array(length) { MutableVec2f() }, name, length) {
-    override fun putToBuffer(buffer: MixedBuffer, len: Int) {
-        checkLen(8 * size, len)
-        val padLen = (len - 8 * size) / size
-        for (i in 0 until size) {
-            value[i].putTo(buffer)
-            putPadding(buffer, padLen)
-        }
-    }
-}
-
-class Uniform3fv(name: String, length: Int) : Uniform<Array<MutableVec3f>>(Array(length) { MutableVec3f() }, name, length) {
-    override fun putToBuffer(buffer: MixedBuffer, len: Int) {
-        checkLen(12 * size, len)
-        val padLen = (len - 12 * size) / size
-        for (i in 0 until size) {
-            value[i].putTo(buffer)
-            putPadding(buffer, padLen)
-        }
-    }
-}
-
-class Uniform4fv(name: String, length: Int) : Uniform<Array<MutableVec4f>>(Array(length) { MutableVec4f() }, name, length) {
-    override fun putToBuffer(buffer: MixedBuffer, len: Int) {
-        checkLen(16 * size, len)
-        // Uniform4f arrays never contain padding
-        for (i in 0 until size) {
-            value[i].putTo(buffer)
-        }
-    }
-}
-
-class UniformMat3f(name: String) : Uniform<MutableMat3f>(MutableMat3f(), name) {
-    override fun putToBuffer(buffer: MixedBuffer, len: Int) {
-        checkLen(3 * 12, len)
-        val padLen = (len - 3 * 12) / 3
-        buffer.putFloat32(value.m00)
-        buffer.putFloat32(value.m10)
-        buffer.putFloat32(value.m20)
-        putPadding(buffer, padLen)
-        buffer.putFloat32(value.m01)
-        buffer.putFloat32(value.m11)
-        buffer.putFloat32(value.m21)
-        putPadding(buffer, padLen)
-        buffer.putFloat32(value.m02)
-        buffer.putFloat32(value.m12)
-        buffer.putFloat32(value.m22)
-        putPadding(buffer, padLen)
-    }
-}
-
-class UniformMat3fv(name: String, length: Int) : Uniform<Array<MutableMat3f>>(Array(length) { MutableMat3f() }, name, length) {
-    override fun putToBuffer(buffer: MixedBuffer, len: Int) {
-        checkLen(3 * 12 * size, len)
-        val padLen = (len - 3 * 12 * size) / (3 * size)
-        for (i in 0 until size) {
-            buffer.putFloat32(value[i].m00)
-            buffer.putFloat32(value[i].m10)
-            buffer.putFloat32(value[i].m20)
-            putPadding(buffer, padLen)
-            buffer.putFloat32(value[i].m01)
-            buffer.putFloat32(value[i].m11)
-            buffer.putFloat32(value[i].m21)
-            putPadding(buffer, padLen)
-            buffer.putFloat32(value[i].m02)
-            buffer.putFloat32(value[i].m12)
-            buffer.putFloat32(value[i].m22)
-            putPadding(buffer, padLen)
-        }
-    }
-}
-
-class UniformMat4f(name: String) : Uniform<MutableMat4f>(MutableMat4f(), name) {
-    override fun putToBuffer(buffer: MixedBuffer, len: Int) {
-        checkLen(4 * 16, len)
-        value.putTo(buffer)
-    }
-}
-
-class UniformMat4fv(name: String, length: Int) : Uniform<Array<MutableMat4f>>(Array(length) { MutableMat4f() }, name, length) {
-    override fun putToBuffer(buffer: MixedBuffer, len: Int) {
-        checkLen(4 * 16 * size, len)
-        for (i in 0 until size) {
-            value[i].putTo(buffer)
-        }
-    }
-}
-
-class Uniform1i(name: String) : Uniform<Int>(0, name) {
-    constructor(initValue: Int, name: String) : this(name) {
-        value = initValue
-    }
-
-    override fun putToBuffer(buffer: MixedBuffer, len: Int) {
-        checkLen(4, len)
-        buffer.putInt32(value)
-        putPadding(buffer, len - 4)
-    }
-}
-
-class Uniform2i(name: String) : Uniform<MutableVec2i>(MutableVec2i(), name) {
-    constructor(initValue: Vec2i, name: String) : this(name) {
-        value.set(initValue)
-    }
-
-    override fun putToBuffer(buffer: MixedBuffer, len: Int) {
-        checkLen(8, len)
-        value.putTo(buffer)
-        putPadding(buffer, len - 8)
-    }
-}
-
-class Uniform3i(name: String) : Uniform<MutableVec3i>(MutableVec3i(), name) {
-    constructor(initValue: Vec3i, name: String) : this(name) {
-        value.set(initValue)
-    }
-
-    override fun putToBuffer(buffer: MixedBuffer, len: Int) {
-        checkLen(12, len)
-        value.putTo(buffer)
-        putPadding(buffer, len - 12)
-    }
-}
-
-class Uniform4i(name: String) : Uniform<MutableVec4i>(MutableVec4i(), name) {
-    constructor(initValue: Vec4i, name: String) : this(name) {
-        value.set(initValue)
-    }
-
-    override fun putToBuffer(buffer: MixedBuffer, len: Int) {
-        checkLen(16, len)
-        value.putTo(buffer)
-        putPadding(buffer, len - 16)
-    }
-}
-
-class Uniform1iv(name: String, length: Int) : Uniform<IntArray>(IntArray(length), name, length) {
-    override fun putToBuffer(buffer: MixedBuffer, len: Int) {
-        checkLen(4 * size, len)
-        val padLen = (len - 4 * size) / size
-        for (i in 0 until size) {
-            buffer.putInt32(value[i])
-            putPadding(buffer, padLen)
-        }
-    }
-}
-
-class Uniform2iv(name: String, length: Int) : Uniform<Array<MutableVec2i>>(Array(length) { MutableVec2i() }, name, length) {
-    override fun putToBuffer(buffer: MixedBuffer, len: Int) {
-        checkLen(8 * size, len)
-        val padLen = (len - 8 * size) / size
-        for (i in 0 until size) {
-            value[i].putTo(buffer)
-            putPadding(buffer, padLen)
-        }
-    }
-}
-
-class Uniform3iv(name: String, length: Int) : Uniform<Array<MutableVec3i>>(Array(length) { MutableVec3i() }, name, length) {
-    override fun putToBuffer(buffer: MixedBuffer, len: Int) {
-        checkLen(12 * size, len)
-        val padLen = (len - 12 * size) / size
-        for (i in 0 until size) {
-            value[i].putTo(buffer)
-            putPadding(buffer, padLen)
-        }
-    }
-}
-
-class Uniform4iv(name: String, length: Int) : Uniform<Array<MutableVec4i>>(Array(length) { MutableVec4i() }, name, length) {
-    override fun putToBuffer(buffer: MixedBuffer, len: Int) {
-        checkLen(16 * size, len)
-        for (i in 0 until size) {
-            value[i].putTo(buffer)
-        }
-    }
-}
+fun uniformMat2v(name: String, arraySize: Int) = Uniform(name, GpuType.MAT2, arraySize)
+fun uniformMat3v(name: String, arraySize: Int) = Uniform(name, GpuType.MAT3, arraySize)
+fun uniformMat4v(name: String, arraySize: Int) = Uniform(name, GpuType.MAT4, arraySize)

@@ -114,7 +114,7 @@ abstract class UniformArrayBinding<T, C: T>(
         }?.let { group ->
             val ubo = group.bindings.first { b -> b is UniformBufferBinding && b.uniforms.any { it.name == uniformName } } as UniformBufferBinding
             val uniform = ubo.uniforms.first { it.name == uniformName }
-            resizeCache(uniform.size)
+            resizeCache(uniform.arraySize)
             bindGroup = group.group
             binding = ubo.binding
             bufferPos = ubo.layout.uniformPositions[uniformName]

@@ -7,7 +7,7 @@ import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ksl.blocks.cameraData
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.GlslType
+import de.fabmax.kool.pipeline.GpuType
 import de.fabmax.kool.pipeline.deferred.DeferredPassSwapListener
 import de.fabmax.kool.pipeline.deferred.DeferredPasses
 import de.fabmax.kool.pipeline.deferred.deferredKslPbrShader
@@ -263,6 +263,6 @@ class Glas(val ibl: EnvironmentMaps, shadowMap: SimpleShadowMap) : Node(), Defer
     private class ExtrudeProps(val r: Float, val h: Float, val t: Float)
 
     companion object {
-        private val THICKNESS = Attribute("aMatThickness", GlslType.FLOAT)
+        private val THICKNESS = Attribute("aMatThickness", GpuType.FLOAT1)
     }
 }

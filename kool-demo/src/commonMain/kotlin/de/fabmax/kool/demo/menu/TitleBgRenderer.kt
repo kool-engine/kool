@@ -153,8 +153,8 @@ class TitleBgRenderer(
         }
 
         companion object {
-            val ATTRIB_DIMENS = Attribute("aDimens", GlslType.VEC_4F)
-            val ATTRIB_GRADIENT_RANGE = Attribute("aGradientRange", GlslType.VEC_4F)
+            val ATTRIB_DIMENS = Attribute("aDimens", GpuType.FLOAT4)
+            val ATTRIB_GRADIENT_RANGE = Attribute("aGradientRange", GpuType.FLOAT4)
 
             val pipelineConfig = PipelineConfig().apply {
                 blendMode = BlendMode.BLEND_PREMULTIPLIED_ALPHA

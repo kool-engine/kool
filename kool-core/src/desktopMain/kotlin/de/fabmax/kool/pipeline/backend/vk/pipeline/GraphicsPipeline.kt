@@ -417,16 +417,16 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
     private data class AttributeVkProps(val slotOffset: Int, val slotType: Int)
 
     private fun Attribute.vkProps() = when (type) {
-            GlslType.FLOAT -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32_SFLOAT)
-            GlslType.VEC_2F -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32G32_SFLOAT)
-            GlslType.VEC_3F -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32G32B32_SFLOAT)
-            GlslType.VEC_4F -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32G32B32A32_SFLOAT)
-            GlslType.MAT_2F -> AttributeVkProps(slotOffset = GlslType.VEC_2F.byteSize, slotType = VK_FORMAT_R32G32_SFLOAT)
-            GlslType.MAT_3F -> AttributeVkProps(slotOffset = GlslType.VEC_3F.byteSize, slotType = VK_FORMAT_R32G32B32_SFLOAT)
-            GlslType.MAT_4F -> AttributeVkProps(slotOffset = GlslType.VEC_4F.byteSize, slotType = VK_FORMAT_R32G32B32A32_SFLOAT)
-            GlslType.INT -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32_SINT)
-            GlslType.VEC_2I -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32G32_SINT)
-            GlslType.VEC_3I -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32G32B32_SINT)
-            GlslType.VEC_4I -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32G32B32A32_SINT)
+            GpuType.FLOAT1 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32_SFLOAT)
+            GpuType.FLOAT2 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32G32_SFLOAT)
+            GpuType.FLOAT3 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32G32B32_SFLOAT)
+            GpuType.FLOAT4 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32G32B32A32_SFLOAT)
+            GpuType.MAT2 -> AttributeVkProps(slotOffset = GpuType.FLOAT2.byteSize, slotType = VK_FORMAT_R32G32_SFLOAT)
+            GpuType.MAT3 -> AttributeVkProps(slotOffset = GpuType.FLOAT3.byteSize, slotType = VK_FORMAT_R32G32B32_SFLOAT)
+            GpuType.MAT4 -> AttributeVkProps(slotOffset = GpuType.FLOAT4.byteSize, slotType = VK_FORMAT_R32G32B32A32_SFLOAT)
+            GpuType.INT1 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32_SINT)
+            GpuType.INT2 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32G32_SINT)
+            GpuType.INT3 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32G32B32_SINT)
+            GpuType.INT4 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32G32B32A32_SINT)
         }
 }

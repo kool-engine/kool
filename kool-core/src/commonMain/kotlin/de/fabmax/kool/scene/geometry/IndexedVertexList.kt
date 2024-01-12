@@ -6,7 +6,7 @@ import de.fabmax.kool.math.spatial.BoundingBoxF
 import de.fabmax.kool.math.spatial.InRadiusTraverser
 import de.fabmax.kool.math.spatial.pointKdTree
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.GlslType
+import de.fabmax.kool.pipeline.GpuType
 import de.fabmax.kool.pipeline.backend.GpuGeometry
 import de.fabmax.kool.util.*
 import kotlin.math.abs
@@ -99,7 +99,7 @@ class IndexedVertexList(val vertexAttributes: List<Attribute>) : BaseReleasable(
 
         val byteOffsets = mutableMapOf<Attribute, Int>()
         for (attrib in vertexAttributes) {
-            if (attrib.type == GlslType.MAT_2F || attrib.type == GlslType.MAT_3F || attrib.type == GlslType.MAT_4F) {
+            if (attrib.type == GpuType.MAT2 || attrib.type == GpuType.MAT3 || attrib.type == GpuType.MAT4) {
                 throw IllegalArgumentException("Matrix types are not supported as vertex attributes")
             }
             if (attrib.type.isInt) {

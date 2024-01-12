@@ -7,11 +7,11 @@ class BufferLayoutTest {
     @Test
     fun testStd140Layout() {
         val uniforms = listOf(
-            Uniform1f("floatVal"),
-            Uniform3f("vec3Val"),
-            UniformMat4f("mat4Val"),
-            Uniform1fv("floatArrayVal", 3),
-            Uniform1i("intVal")
+            uniform1f("floatVal"),
+            uniform3f("vec3Val"),
+            uniformMat4("mat4Val"),
+            uniform1fv("floatArrayVal", 3),
+            uniform1i("intVal")
         )
 
         val std140Layout = Std140BufferLayout(uniforms)

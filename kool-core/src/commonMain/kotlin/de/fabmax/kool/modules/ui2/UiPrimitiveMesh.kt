@@ -188,14 +188,14 @@ class UiPrimitiveMesh(name: String) : Mesh(IndexedVertexList(ATTRIB_OUTER_WEIGHT
     }
 
     companion object {
-        val ATTRIB_CENTER = Attribute("aCenter", GlslType.VEC_2F)
-        val ATTRIB_OUTER_DIMENS = Attribute("aOuterDimens", GlslType.VEC_4F)
-        val ATTRIB_INNER_DIMENS = Attribute("aInnerDimens", GlslType.VEC_4F)
-        val ATTRIB_OUTER_WEIGHTS = Attribute("aOuterW", GlslType.VEC_4F)
-        val ATTRIB_INNER_WEIGHTS = Attribute("aInnerW", GlslType.VEC_4F)
-        val ATTRIB_COLOR_A = Attribute("aColorA", GlslType.VEC_4F)
-        val ATTRIB_COLOR_B = Attribute("aColorB", GlslType.VEC_4F)
-        val ATTRIB_GRADIENT_DIR = Attribute("aGradientDir", GlslType.VEC_2F)
+        val ATTRIB_CENTER = Attribute("aCenter", GpuType.FLOAT2)
+        val ATTRIB_OUTER_DIMENS = Attribute("aOuterDimens", GpuType.FLOAT4)
+        val ATTRIB_INNER_DIMENS = Attribute("aInnerDimens", GpuType.FLOAT4)
+        val ATTRIB_OUTER_WEIGHTS = Attribute("aOuterW", GpuType.FLOAT4)
+        val ATTRIB_INNER_WEIGHTS = Attribute("aInnerW", GpuType.FLOAT4)
+        val ATTRIB_COLOR_A = Attribute("aColorA", GpuType.FLOAT4)
+        val ATTRIB_COLOR_B = Attribute("aColorB", GpuType.FLOAT4)
+        val ATTRIB_GRADIENT_DIR = Attribute("aGradientDir", GpuType.FLOAT2)
     }
 
     private class PrimitiveShader : KslShader(Model(), pipelineConfig) {

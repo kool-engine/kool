@@ -6,7 +6,7 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.deg
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.GlslType
+import de.fabmax.kool.pipeline.GpuType
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.Mesh
@@ -20,8 +20,8 @@ import de.fabmax.kool.util.ShadowMap
 
 object GearChainMeshGen {
 
-    private val attribRoughness = Attribute("aRoughness", GlslType.FLOAT)
-    private val attribMetallic = Attribute("aMetallic", GlslType.FLOAT)
+    private val attribRoughness = Attribute("aRoughness", GpuType.FLOAT1)
+    private val attribMetallic = Attribute("aMetallic", GpuType.FLOAT1)
     private val meshAttribs = listOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, attribRoughness, attribMetallic)
 
     fun makeNiceGearMesh(ibl: EnvironmentMaps, aoMap: Texture2d, shadows: List<ShadowMap>) = Mesh(meshAttribs).apply {
