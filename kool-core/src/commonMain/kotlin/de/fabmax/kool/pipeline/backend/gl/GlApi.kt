@@ -254,6 +254,7 @@ interface GlApi {
     fun uniform2iv(location: Int, values: Int32Buffer)
     fun uniform3iv(location: Int, values: Int32Buffer)
     fun uniform4iv(location: Int, values: Int32Buffer)
+    fun uniformMatrix2fv(location: Int, values: Float32Buffer)
     fun uniformMatrix3fv(location: Int, values: Float32Buffer)
     fun uniformMatrix4fv(location: Int, values: Float32Buffer)
     fun vertexAttribDivisor(index: Int, divisor: Int)

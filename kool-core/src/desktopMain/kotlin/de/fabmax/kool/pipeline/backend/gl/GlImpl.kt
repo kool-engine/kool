@@ -253,6 +253,7 @@ object GlImpl : GlApi {
     override fun uniform2iv(location: Int, values: Int32Buffer) = values.useRaw { glUniform2iv(location, it) }
     override fun uniform3iv(location: Int, values: Int32Buffer) = values.useRaw { glUniform3iv(location, it) }
     override fun uniform4iv(location: Int, values: Int32Buffer) = values.useRaw { glUniform4iv(location, it) }
+    override fun uniformMatrix2fv(location: Int, values: Float32Buffer) = values.useRaw { glUniformMatrix2fv(location, false, it) }
     override fun uniformMatrix3fv(location: Int, values: Float32Buffer) = values.useRaw { glUniformMatrix3fv(location, false, it) }
     override fun uniformMatrix4fv(location: Int, values: Float32Buffer) = values.useRaw { glUniformMatrix4fv(location, false, it) }
     override fun vertexAttribDivisor(index: Int, divisor: Int) = glVertexAttribDivisor(index, divisor)
