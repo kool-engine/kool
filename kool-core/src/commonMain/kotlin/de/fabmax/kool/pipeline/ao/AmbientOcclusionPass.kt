@@ -87,7 +87,7 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
             val sinTheta = sqrt(1f - cosTheta * cosTheta)
 
             val k = MutableVec3f(sinTheta * cos(phi), sinTheta * sin(phi), cosTheta)
-            aoPassShader.uKernel.set(i, k.norm().mul(scales[i]))
+            aoPassShader.uKernel[i] = k.norm().mul(scales[i])
         }
         aoPassShader.uKernelSize = n
     }

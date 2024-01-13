@@ -64,13 +64,13 @@ sealed class UniformBinding<T, C: T>(
 sealed class UniformArrayBinding<T, C: T>(
     uniformName: String,
     arraySize: Int,
-    private val initVal: C,
-    val shader: ShaderBase<*>
+    val shader: ShaderBase<*>,
+    private val initVal: () -> C,
 ) : PipelineBinding(uniformName) {
 
     private var bufferPos: BufferPosition? = null
 
-    protected val cache = MutableList(arraySize) { initVal }
+    protected val cache = MutableList(arraySize) { initVal() }
     val arraySize: Int get() = cache.size
 
     operator fun get(index: Int): T {
@@ -90,7 +90,7 @@ sealed class UniformArrayBinding<T, C: T>(
             cache.removeAt(cache.lastIndex)
         }
         while (newSize > cache.size) {
-            cache.add(initVal)
+            cache.add(initVal())
         }
     }
 
@@ -230,7 +230,9 @@ class UniformBindingMat4f(uniformName: String, defaultVal: Mat4f, shader: Shader
     }
 }
 
-class UniformBinding1fv(uniformName: String, arraySize: Int, shader: ShaderBase<*>) : UniformArrayBinding<Float, Float>(uniformName, arraySize, 0f, shader) {
+class UniformBinding1fv(uniformName: String, arraySize: Int, shader: ShaderBase<*>) :
+    UniformArrayBinding<Float, Float>(uniformName, arraySize, shader, { 0f })
+{
     override fun setCacheTo(index: Int, value: Float) { cache[index] = value }
     override fun MixedBuffer.updateBuffer(index: Int) { putFloat32(cache[index]) }
     override fun MixedBuffer.updateCache(index: Int, bufferPos: BufferPosition) {
@@ -238,7 +240,9 @@ class UniformBinding1fv(uniformName: String, arraySize: Int, shader: ShaderBase<
     }
 }
 
-class UniformBinding2fv(uniformName: String, arraySize: Int, shader: ShaderBase<*>) : UniformArrayBinding<Vec2f, MutableVec2f>(uniformName, arraySize, MutableVec2f(), shader) {
+class UniformBinding2fv(uniformName: String, arraySize: Int, shader: ShaderBase<*>) :
+    UniformArrayBinding<Vec2f, MutableVec2f>(uniformName, arraySize, shader, { MutableVec2f() })
+{
     override fun setCacheTo(index: Int, value: Vec2f) { cache[index].set(value) }
     override fun MixedBuffer.updateBuffer(index: Int) { cache[index].putTo(this) }
     override fun MixedBuffer.updateCache(index: Int, bufferPos: BufferPosition) {
@@ -247,7 +251,9 @@ class UniformBinding2fv(uniformName: String, arraySize: Int, shader: ShaderBase<
     }
 }
 
-class UniformBinding3fv(uniformName: String, arraySize: Int, shader: ShaderBase<*>) : UniformArrayBinding<Vec3f, MutableVec3f>(uniformName, arraySize, MutableVec3f(), shader) {
+class UniformBinding3fv(uniformName: String, arraySize: Int, shader: ShaderBase<*>) :
+    UniformArrayBinding<Vec3f, MutableVec3f>(uniformName, arraySize, shader, { MutableVec3f() })
+{
     override fun setCacheTo(index: Int, value: Vec3f) { cache[index].set(value) }
     override fun MixedBuffer.updateBuffer(index: Int) { cache[index].putTo(this) }
     override fun MixedBuffer.updateCache(index: Int, bufferPos: BufferPosition) {
@@ -256,7 +262,9 @@ class UniformBinding3fv(uniformName: String, arraySize: Int, shader: ShaderBase<
     }
 }
 
-class UniformBinding4fv(uniformName: String, arraySize: Int, shader: ShaderBase<*>) : UniformArrayBinding<Vec4f, MutableVec4f>(uniformName, arraySize, MutableVec4f(), shader) {
+class UniformBinding4fv(uniformName: String, arraySize: Int, shader: ShaderBase<*>) :
+    UniformArrayBinding<Vec4f, MutableVec4f>(uniformName, arraySize, shader, { MutableVec4f() })
+{
     override fun setCacheTo(index: Int, value: Vec4f) { cache[index].set(value) }
     override fun MixedBuffer.updateBuffer(index: Int) { cache[index].putTo(this) }
     override fun MixedBuffer.updateCache(index: Int, bufferPos: BufferPosition) {
@@ -265,7 +273,9 @@ class UniformBinding4fv(uniformName: String, arraySize: Int, shader: ShaderBase<
     }
 }
 
-class UniformBinding1iv(uniformName: String, arraySize: Int, shader: ShaderBase<*>) : UniformArrayBinding<Int, Int>(uniformName, arraySize, 0, shader) {
+class UniformBinding1iv(uniformName: String, arraySize: Int, shader: ShaderBase<*>) :
+    UniformArrayBinding<Int, Int>(uniformName, arraySize, shader, { 0 })
+{
     override fun setCacheTo(index: Int, value: Int) { cache[index] = value }
     override fun MixedBuffer.updateBuffer(index: Int) { putInt32(cache[index]) }
     override fun MixedBuffer.updateCache(index: Int, bufferPos: BufferPosition) {
@@ -273,7 +283,9 @@ class UniformBinding1iv(uniformName: String, arraySize: Int, shader: ShaderBase<
     }
 }
 
-class UniformBinding2iv(uniformName: String, arraySize: Int, shader: ShaderBase<*>) : UniformArrayBinding<Vec2i, MutableVec2i>(uniformName, arraySize, MutableVec2i(), shader) {
+class UniformBinding2iv(uniformName: String, arraySize: Int, shader: ShaderBase<*>) :
+    UniformArrayBinding<Vec2i, MutableVec2i>(uniformName, arraySize, shader, { MutableVec2i() })
+{
     override fun setCacheTo(index: Int, value: Vec2i) { cache[index].set(value) }
     override fun MixedBuffer.updateBuffer(index: Int) { cache[index].putTo(this) }
     override fun MixedBuffer.updateCache(index: Int, bufferPos: BufferPosition) {
@@ -282,7 +294,9 @@ class UniformBinding2iv(uniformName: String, arraySize: Int, shader: ShaderBase<
     }
 }
 
-class UniformBinding3iv(uniformName: String, arraySize: Int, shader: ShaderBase<*>) : UniformArrayBinding<Vec3i, MutableVec3i>(uniformName, arraySize, MutableVec3i(), shader) {
+class UniformBinding3iv(uniformName: String, arraySize: Int, shader: ShaderBase<*>) :
+    UniformArrayBinding<Vec3i, MutableVec3i>(uniformName, arraySize, shader, { MutableVec3i() })
+{
     override fun setCacheTo(index: Int, value: Vec3i) { cache[index].set(value) }
     override fun MixedBuffer.updateBuffer(index: Int) { cache[index].putTo(this) }
     override fun MixedBuffer.updateCache(index: Int, bufferPos: BufferPosition) {
@@ -291,7 +305,9 @@ class UniformBinding3iv(uniformName: String, arraySize: Int, shader: ShaderBase<
     }
 }
 
-class UniformBinding4iv(uniformName: String, arraySize: Int, shader: ShaderBase<*>) : UniformArrayBinding<Vec4i, MutableVec4i>(uniformName, arraySize, MutableVec4i(), shader) {
+class UniformBinding4iv(uniformName: String, arraySize: Int, shader: ShaderBase<*>) :
+    UniformArrayBinding<Vec4i, MutableVec4i>(uniformName, arraySize, shader, { MutableVec4i() })
+{
     override fun setCacheTo(index: Int, value: Vec4i) { cache[index].set(value) }
     override fun MixedBuffer.updateBuffer(index: Int) { cache[index].putTo(this) }
     override fun MixedBuffer.updateCache(index: Int, bufferPos: BufferPosition) {
@@ -300,7 +316,9 @@ class UniformBinding4iv(uniformName: String, arraySize: Int, shader: ShaderBase<
     }
 }
 
-class UniformBindingMat3fv(uniformName: String, arraySize: Int, shader: ShaderBase<*>) : UniformArrayBinding<Mat3f, MutableMat3f>(uniformName, arraySize, MutableMat3f(), shader) {
+class UniformBindingMat3fv(uniformName: String, arraySize: Int, shader: ShaderBase<*>) :
+    UniformArrayBinding<Mat3f, MutableMat3f>(uniformName, arraySize, shader, { MutableMat3f() })
+{
     override fun setCacheTo(index: Int, value: Mat3f) { cache[index].set(value) }
     override fun MixedBuffer.updateBuffer(index: Int) { cache[index].putTo(this) }
     override fun MixedBuffer.updateCache(index: Int, bufferPos: BufferPosition) {
@@ -313,7 +331,9 @@ class UniformBindingMat3fv(uniformName: String, arraySize: Int, shader: ShaderBa
     }
 }
 
-class UniformBindingMat4fv(uniformName: String, arraySize: Int, shader: ShaderBase<*>) : UniformArrayBinding<Mat4f, MutableMat4f>(uniformName, arraySize, MutableMat4f(), shader) {
+class UniformBindingMat4fv(uniformName: String, arraySize: Int, shader: ShaderBase<*>) :
+    UniformArrayBinding<Mat4f, MutableMat4f>(uniformName, arraySize, shader, { MutableMat4f() })
+{
     override fun setCacheTo(index: Int, value: Mat4f) { cache[index].set(value) }
     override fun MixedBuffer.updateBuffer(index: Int) { cache[index].putTo(this) }
     override fun MixedBuffer.updateCache(index: Int, bufferPos: BufferPosition) {
