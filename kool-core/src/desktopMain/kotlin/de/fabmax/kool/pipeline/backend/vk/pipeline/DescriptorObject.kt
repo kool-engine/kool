@@ -14,18 +14,18 @@ import org.lwjgl.util.vma.Vma
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkWriteDescriptorSet
 
-abstract class DescriptorObject(val binding: Int, val descriptor: Binding) {
+abstract class DescriptorObject(val binding: Int, val descriptor: BindingLayout) {
     var isValid = true
     var isDescriptorSetUpdateRequired = true
 
-    abstract fun setDescriptorSet(stack: MemoryStack, vkWriteDescriptorSet: VkWriteDescriptorSet, dstSet: Long)
+    abstract fun setDescriptorSet(stack: MemoryStack, vkWriteDescriptorSet: VkWriteDescriptorSet, dstSet: Long, cmd: DrawCommand)
 
     abstract fun update(cmd: DrawCommand, sys: VkSystem)
 
     open fun destroy(graphicsPipeline: GraphicsPipeline) { }
 }
 
-class UboDescriptor(binding: Int, graphicsPipeline: GraphicsPipeline, private val ubo: UniformBufferBinding) : DescriptorObject(binding, ubo) {
+class UboDescriptor(binding: Int, graphicsPipeline: GraphicsPipeline, private val ubo: UniformBufferLayout) : DescriptorObject(binding, ubo) {
     private val buffer: de.fabmax.kool.pipeline.backend.vk.Buffer
 
     init {
@@ -41,7 +41,7 @@ class UboDescriptor(binding: Int, graphicsPipeline: GraphicsPipeline, private va
         }
     }
 
-    override fun setDescriptorSet(stack: MemoryStack, vkWriteDescriptorSet: VkWriteDescriptorSet, dstSet: Long) {
+    override fun setDescriptorSet(stack: MemoryStack, vkWriteDescriptorSet: VkWriteDescriptorSet, dstSet: Long, cmd: DrawCommand) {
         stack.apply {
             val buffereInfo = callocVkDescriptorBufferInfoN(1) {
                 buffer(buffer.vkBuffer)
@@ -60,7 +60,7 @@ class UboDescriptor(binding: Int, graphicsPipeline: GraphicsPipeline, private va
     }
 
     override fun update(cmd: DrawCommand, sys: VkSystem) {
-        val hostBuffer = cmd.pipeline!!.bindGroupData[0].uniformBufferData(binding).buffer as MixedBufferImpl
+        val hostBuffer = cmd.pipeline!!.bindGroupData[0].uniformBufferBindingData(binding).buffer as MixedBufferImpl
         hostBuffer.useRaw { host ->
             buffer.mapped { put(host) }
         }
@@ -72,25 +72,25 @@ class UboDescriptor(binding: Int, graphicsPipeline: GraphicsPipeline, private va
     }
 }
 
-class SamplerDescriptor private constructor(binding: Int, private val sampler: TexSamplerWrapper, desc: Binding) : DescriptorObject(binding, desc) {
+class SamplerDescriptor private constructor(binding: Int, private val sampler: TexSamplerWrapper, desc: BindingLayout) : DescriptorObject(binding, desc) {
     private var boundTex = mutableListOf<LoadedTextureVk>()
 
-    constructor(binding: Int, sampler1d: Texture1dBinding) : this(binding, TexSamplerWrapper(sampler1d), sampler1d)
-    constructor(binding: Int, sampler2d: Texture2dBinding) : this(binding, TexSamplerWrapper(sampler2d), sampler2d)
-    constructor(binding: Int, sampler3d: Texture3dBinding) : this(binding, TexSamplerWrapper(sampler3d), sampler3d)
-    constructor(binding: Int, samplerCube: TextureCubeBinding) : this(binding, TexSamplerWrapper(samplerCube), samplerCube)
+    constructor(binding: Int, sampler1d: Texture1dLayout) : this(binding, TexSamplerWrapper(binding, sampler1d), sampler1d)
+    constructor(binding: Int, sampler2d: Texture2dLayout) : this(binding, TexSamplerWrapper(binding, sampler2d), sampler2d)
+    constructor(binding: Int, sampler3d: Texture3dLayout) : this(binding, TexSamplerWrapper(binding, sampler3d), sampler3d)
+    constructor(binding: Int, samplerCube: TextureCubeLayout) : this(binding, TexSamplerWrapper(binding, samplerCube), samplerCube)
 
     init {
         isValid = false
     }
 
-    override fun setDescriptorSet(stack: MemoryStack, vkWriteDescriptorSet: VkWriteDescriptorSet, dstSet: Long) {
+    override fun setDescriptorSet(stack: MemoryStack, vkWriteDescriptorSet: VkWriteDescriptorSet, dstSet: Long, cmd: DrawCommand) {
         stack.apply {
-
+            val textures = sampler.getTextures(cmd.pipeline!!.bindGroupData[0])
             val imageInfo = callocVkDescriptorImageInfoN(sampler.arraySize) {
                 for (i in 0 until sampler.arraySize) {
                     this[i].apply {
-                        val vkTex = sampler.textures[i]?.loadedTexture as LoadedTextureVk?
+                        val vkTex = textures[i]?.loadedTexture as LoadedTextureVk?
                         imageLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
                         imageView(vkTex?.textureImageView?.vkImageView ?: 0L)
                         sampler(vkTex?.sampler ?: 0L)
@@ -119,12 +119,14 @@ class SamplerDescriptor private constructor(binding: Int, private val sampler: T
             }
         }
 
+        val textures = sampler.getTextures(cmd.pipeline!!.bindGroupData[0])
+
         var allValid = true
         if (boundTex.size != sampler.arraySize) {
             boundTex.clear()
         }
         for (i in 0 until sampler.arraySize) {
-            val tex = sampler.textures[i]
+            val tex = textures[i]
             if (tex == null) {
                 allValid = false
             } else {
@@ -212,26 +214,31 @@ class SamplerDescriptor private constructor(binding: Int, private val sampler: T
     }
 
     private class TexSamplerWrapper private constructor(
+        val bindingIndex: Int,
         val mode: Int,
-        val sampler1d: Texture1dBinding? = null,
-        val sampler2d: Texture2dBinding? = null,
-        val sampler3d: Texture3dBinding? = null,
-        val samplerCube: TextureCubeBinding? = null,
+        val sampler1d: Texture1dLayout? = null,
+        val sampler2d: Texture2dLayout? = null,
+        val sampler3d: Texture3dLayout? = null,
+        val samplerCube: TextureCubeLayout? = null,
         val arraySize: Int) {
 
-        constructor(sampler1d: Texture1dBinding) : this(MODE_1D, sampler1d = sampler1d, arraySize = sampler1d.arraySize)
-        constructor(sampler2d: Texture2dBinding) : this(MODE_2D, sampler2d = sampler2d, arraySize = sampler2d.arraySize)
-        constructor(sampler3d: Texture3dBinding) : this(MODE_3D, sampler3d = sampler3d, arraySize = sampler3d.arraySize)
-        constructor(samplerCube: TextureCubeBinding) : this(MODE_CUBE, samplerCube = samplerCube, arraySize = samplerCube.arraySize)
+        constructor(bindingIndex: Int, sampler1d: Texture1dLayout) : this(bindingIndex, MODE_1D, sampler1d = sampler1d, arraySize = sampler1d.arraySize)
+        constructor(bindingIndex: Int, sampler2d: Texture2dLayout) : this(bindingIndex, MODE_2D, sampler2d = sampler2d, arraySize = sampler2d.arraySize)
+        constructor(bindingIndex: Int, sampler3d: Texture3dLayout) : this(bindingIndex, MODE_3D, sampler3d = sampler3d, arraySize = sampler3d.arraySize)
+        constructor(bindingIndex: Int, samplerCube: TextureCubeLayout) : this(bindingIndex, MODE_CUBE, samplerCube = samplerCube, arraySize = samplerCube.arraySize)
 
-        val textures: Array<out Texture?>
-            get() = when (mode) {
-                MODE_1D -> sampler1d!!.textures
-                MODE_2D -> sampler2d!!.textures
-                MODE_3D -> sampler3d!!.textures
-                MODE_CUBE -> samplerCube!!.textures
-                else -> throw IllegalStateException("Invalid mode: $mode")
-            }
+//        val textures: Array<out Texture?>
+//            get() = when (mode) {
+//                MODE_1D -> sampler1d!!.textures
+//                MODE_2D -> sampler2d!!.textures
+//                MODE_3D -> sampler3d!!.textures
+//                MODE_CUBE -> samplerCube!!.textures
+//                else -> throw IllegalStateException("Invalid mode: $mode")
+//            }
+
+        fun getTextures(data: BindGroupData): List<Texture?> {
+            return (data.bindings[bindingIndex] as BindGroupData.TextureBindingData<*,*>).textures
+        }
 
         companion object {
             const val MODE_1D = 1

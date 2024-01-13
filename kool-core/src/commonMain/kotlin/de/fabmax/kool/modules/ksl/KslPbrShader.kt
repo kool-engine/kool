@@ -23,7 +23,7 @@ open class KslPbrShader(cfg: Config, model: KslProgram = Model(cfg)) : KslLitSha
     var metallic: Float by propertyUniform(cfg.metallicCfg)
     var metallicMap: Texture2d? by propertyTexture(cfg.metallicCfg)
 
-    val reflectionMaps: Array<TextureCube?> by textureCubeArray("tReflectionMaps", 2)
+    val reflectionMaps = textureCubeArray("tReflectionMaps", 2)
     var reflectionMapWeights: Vec2f by uniform2f("uReflectionWeights")
     var reflectionStrength: Vec4f by uniform4f("uReflectionStrength", Vec4f(cfg.reflectionStrength, 0f))
 

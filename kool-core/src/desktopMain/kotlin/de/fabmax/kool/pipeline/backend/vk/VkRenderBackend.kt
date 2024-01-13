@@ -360,7 +360,7 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
                     val descriptorSet = pipeline.getDescriptorSetInstance(pipelineCfg)
 
                     if (descriptorSet.updateDescriptors(cmd, imageIndex, sys)) {
-                        descriptorSet.updateDescriptorSets(imageIndex)
+                        descriptorSet.updateDescriptorSets(imageIndex, cmd)
 
                         var model = meshMap[pipelineCfg.pipelineInstanceId]
                         if ((cmd.mesh.geometry.hasChanged && !cmd.mesh.geometry.isBatchUpdate) || model == null) {

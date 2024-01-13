@@ -62,11 +62,11 @@ class DescriptorSet(val graphicsPipeline: GraphicsPipeline) {
         pipeline.bindGroupLayout.bindings.forEachIndexed { idx, desc ->
             addDescriptor {
                 when (desc.type) {
-                    BindingType.UNIFORM_BUFFER -> UboDescriptor(idx, graphicsPipeline, desc as UniformBufferBinding)
-                    BindingType.TEXTURE_1D -> SamplerDescriptor(idx, desc as Texture1dBinding)
-                    BindingType.TEXTURE_2D -> SamplerDescriptor(idx, desc as Texture2dBinding)
-                    BindingType.TEXTURE_3D -> SamplerDescriptor(idx, desc as Texture3dBinding)
-                    BindingType.TEXTURE_CUBE -> SamplerDescriptor(idx, desc as TextureCubeBinding)
+                    BindingType.UNIFORM_BUFFER -> UboDescriptor(idx, graphicsPipeline, desc as UniformBufferLayout)
+                    BindingType.TEXTURE_1D -> SamplerDescriptor(idx, desc as Texture1dLayout)
+                    BindingType.TEXTURE_2D -> SamplerDescriptor(idx, desc as Texture2dLayout)
+                    BindingType.TEXTURE_3D -> SamplerDescriptor(idx, desc as Texture3dLayout)
+                    BindingType.TEXTURE_CUBE -> SamplerDescriptor(idx, desc as TextureCubeLayout)
                     BindingType.STORAGE_TEXTURE_1D -> TODO()
                     BindingType.STORAGE_TEXTURE_2D -> TODO()
                     BindingType.STORAGE_TEXTURE_3D -> TODO()
@@ -82,7 +82,7 @@ class DescriptorSet(val graphicsPipeline: GraphicsPipeline) {
         return objects[0].size - 1
     }
 
-    fun updateDescriptorSets(imageIdx: Int) {
+    fun updateDescriptorSets(imageIdx: Int, cmd: DrawCommand) {
         if (isDescriptorSetUpdateRequired[imageIdx]) {
             clearUpdateRequired(imageIdx)
 
@@ -91,7 +91,7 @@ class DescriptorSet(val graphicsPipeline: GraphicsPipeline) {
                 val descriptorWrite = callocVkWriteDescriptorSetN(descriptors.size) {
                     for (descIdx in descriptors.indices) {
                         val descObj = objects[imageIdx][descIdx]
-                        descObj.setDescriptorSet(this@memStack, this[descIdx], descriptorSets[imageIdx])
+                        descObj.setDescriptorSet(this@memStack, this[descIdx], descriptorSets[imageIdx], cmd)
                     }
                 }
                 vkUpdateDescriptorSets(graphicsPipeline.sys.device.vkDevice, descriptorWrite, null)

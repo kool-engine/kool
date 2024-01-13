@@ -5,23 +5,12 @@ import de.fabmax.kool.modules.ksl.blocks.ColorBlockConfig
 import de.fabmax.kool.modules.ksl.blocks.PropertyBlockConfig
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.UniqueId
-import kotlin.reflect.KProperty
 
 /**
  * Base class for all regular and compute shaders. Provides methods to easily connect to shader uniforms.
  */
 abstract class ShaderBase<T: PipelineBase>(val name: String) {
 
-    val texSamplers1d = mutableMapOf<String, Texture1dBinding>()
-    val texSamplers2d = mutableMapOf<String, Texture2dBinding>()
-    val texSamplers3d = mutableMapOf<String, Texture3dBinding>()
-    val texSamplersCube = mutableMapOf<String, TextureCubeBinding>()
-
-    val storage1d = mutableMapOf<String, StorageTexture1dBinding>()
-    val storage2d = mutableMapOf<String, StorageTexture2dBinding>()
-    val storage3d = mutableMapOf<String, StorageTexture3dBinding>()
-
-    private val connectUniformListeners = mutableMapOf<String, ConnectUniformListener>()
     private val pipelineBindings = mutableMapOf<String, PipelineBinding>()
 
     var createdPipeline: T? = null
@@ -29,20 +18,6 @@ abstract class ShaderBase<T: PipelineBase>(val name: String) {
 
     protected fun pipelineCreated(pipeline: T) {
         createdPipeline = pipeline
-
-        pipeline.bindGroupLayouts.flatMap { it.bindings }.forEach { binding ->
-            when (binding) {
-                is UniformBufferBinding -> { } //binding.uniforms.forEach { uniforms[it.name] = it }
-                is Texture1dBinding -> texSamplers1d[binding.name] = binding
-                is Texture2dBinding -> texSamplers2d[binding.name] = binding
-                is Texture3dBinding -> texSamplers3d[binding.name] = binding
-                is TextureCubeBinding -> texSamplersCube[binding.name] = binding
-                is StorageTexture1dBinding -> storage1d[binding.name] = binding
-                is StorageTexture2dBinding -> storage2d[binding.name] = binding
-                is StorageTexture3dBinding -> storage3d[binding.name] = binding
-            }
-        }
-        connectUniformListeners.values.forEach { it.connect() }
         pipelineBindings.values.forEach { it.setup(pipeline) }
     }
 
@@ -102,172 +77,41 @@ abstract class ShaderBase<T: PipelineBase>(val name: String) {
     fun uniformMat4fv(uniformName: String, arraySize: Int = 0): UniformBindingMat4fv =
         getOrCreateBinding(uniformName) { UniformBindingMat4fv(uniformName, arraySize, this) } as UniformBindingMat4fv
 
-    fun texture1d(uniformName: String, defaultVal: Texture1d? = null): ShaderBase<*>.UniformInputTexture1d =
-        connectUniformListeners.getOrPut(uniformName) { UniformInputTexture1d(uniformName, defaultVal) } as ShaderBase<*>.UniformInputTexture1d
-    fun texture2d(uniformName: String, defaultVal: Texture2d? = null): ShaderBase<*>.UniformInputTexture2d =
-        connectUniformListeners.getOrPut(uniformName) { UniformInputTexture2d(uniformName, defaultVal) } as ShaderBase<*>.UniformInputTexture2d
-    fun texture3d(uniformName: String, defaultVal: Texture3d? = null): ShaderBase<*>.UniformInputTexture3d =
-        connectUniformListeners.getOrPut(uniformName) { UniformInputTexture3d(uniformName, defaultVal) } as ShaderBase<*>.UniformInputTexture3d
-    fun textureCube(uniformName: String, defaultVal: TextureCube? = null): ShaderBase<*>.UniformInputTextureCube =
-        connectUniformListeners.getOrPut(uniformName) { UniformInputTextureCube(uniformName, defaultVal) } as ShaderBase<*>.UniformInputTextureCube
+    fun texture1d(textureName: String, defaultVal: Texture1d? = null, defaultSampler: SamplerSettings? = null): Texture1dBinding =
+        getOrCreateBinding(textureName) { Texture1dBinding(textureName, defaultVal, defaultSampler, this) } as Texture1dBinding
+    fun texture2d(textureName: String, defaultVal: Texture2d? = null, defaultSampler: SamplerSettings? = null): Texture2dBinding =
+        getOrCreateBinding(textureName) { Texture2dBinding(textureName, defaultVal, defaultSampler, this) } as Texture2dBinding
+    fun texture3d(textureName: String, defaultVal: Texture3d? = null, defaultSampler: SamplerSettings? = null): Texture3dBinding =
+        getOrCreateBinding(textureName) { Texture3dBinding(textureName, defaultVal, defaultSampler, this) } as Texture3dBinding
+    fun textureCube(textureName: String, defaultVal: TextureCube? = null, defaultSampler: SamplerSettings? = null): TextureCubeBinding =
+        getOrCreateBinding(textureName) { TextureCubeBinding(textureName, defaultVal, defaultSampler, this) } as TextureCubeBinding
 
-    fun texture1dArray(uniformName: String, arraySize: Int): ShaderBase<*>.UniformInputTextureArray1d =
-        connectUniformListeners.getOrPut(uniformName) { UniformInputTextureArray1d(uniformName, arraySize) } as ShaderBase<*>.UniformInputTextureArray1d
-    fun texture2dArray(uniformName: String, arraySize: Int): ShaderBase<*>.UniformInputTextureArray2d =
-        connectUniformListeners.getOrPut(uniformName) { UniformInputTextureArray2d(uniformName, arraySize) } as ShaderBase<*>.UniformInputTextureArray2d
-    fun texture3dArray(uniformName: String, arraySize: Int): ShaderBase<*>.UniformInputTextureArray3d =
-        connectUniformListeners.getOrPut(uniformName) { UniformInputTextureArray3d(uniformName, arraySize) } as ShaderBase<*>.UniformInputTextureArray3d
-    fun textureCubeArray(uniformName: String, arraySize: Int): ShaderBase<*>.UniformInputTextureArrayCube =
-        connectUniformListeners.getOrPut(uniformName) { UniformInputTextureArrayCube(uniformName, arraySize) } as ShaderBase<*>.UniformInputTextureArrayCube
+    fun texture1dArray(textureName: String, arraySize: Int, defaultSampler: SamplerSettings? = null): Texture1dArrayBinding =
+        getOrCreateBinding(textureName) { Texture1dArrayBinding(textureName, arraySize, defaultSampler, this) } as Texture1dArrayBinding
+    fun texture2dArray(textureName: String, arraySize: Int, defaultSampler: SamplerSettings? = null): Texture2dArrayBinding =
+        getOrCreateBinding(textureName) { Texture2dArrayBinding(textureName, arraySize, defaultSampler, this) } as Texture2dArrayBinding
+    fun textureCubeArray(textureName: String, arraySize: Int, defaultSampler: SamplerSettings? = null): TextureCubeArrayBinding =
+        getOrCreateBinding(textureName) { TextureCubeArrayBinding(textureName, arraySize, defaultSampler, this) } as TextureCubeArrayBinding
 
-    fun storage1d(uniformName: String, defaultVal: StorageTexture1d? = null): ShaderBase<*>.UniformInputStorage1d =
-        connectUniformListeners.getOrPut(uniformName) { UniformInputStorage1d(uniformName, defaultVal) } as ShaderBase<*>.UniformInputStorage1d
-    fun storage2d(uniformName: String, defaultVal: StorageTexture2d? = null): ShaderBase<*>.UniformInputStorage2d =
-        connectUniformListeners.getOrPut(uniformName) { UniformInputStorage2d(uniformName, defaultVal) } as ShaderBase<*>.UniformInputStorage2d
-    fun storage3d(uniformName: String, defaultVal: StorageTexture3d? = null): ShaderBase<*>.UniformInputStorage3d =
-        connectUniformListeners.getOrPut(uniformName) { UniformInputStorage3d(uniformName, defaultVal) } as ShaderBase<*>.UniformInputStorage3d
+    fun storage1d(textureName: String, defaultVal: StorageTexture1d? = null): StorageTexture1dBinding =
+        getOrCreateBinding(textureName) { StorageTexture1dBinding(textureName, defaultVal, this) } as StorageTexture1dBinding
+    fun storage2d(textureName: String, defaultVal: StorageTexture2d? = null): StorageTexture2dBinding =
+        getOrCreateBinding(textureName) { StorageTexture2dBinding(textureName, defaultVal, this) } as StorageTexture2dBinding
+    fun storage3d(textureName: String, defaultVal: StorageTexture3d? = null): StorageTexture3dBinding =
+        getOrCreateBinding(textureName) { StorageTexture3dBinding(textureName, defaultVal, this) } as StorageTexture3dBinding
 
     fun colorUniform(cfg: ColorBlockConfig): UniformBindingColor =
         uniformColor(cfg.primaryUniform?.uniformName ?: UniqueId.nextId("_"), cfg.primaryUniform?.defaultColor ?: Color.BLACK)
-    fun colorTexture(cfg: ColorBlockConfig): ShaderBase<*>.UniformInputTexture2d =
+    fun colorTexture(cfg: ColorBlockConfig): Texture2dBinding =
         texture2d(cfg.primaryTexture?.textureName ?: UniqueId.nextId("_"), cfg.primaryTexture?.defaultTexture)
 
     fun propertyUniform(cfg: PropertyBlockConfig): UniformBinding1f =
         uniform1f(cfg.primaryUniform?.uniformName ?: UniqueId.nextId("_"), cfg.primaryUniform?.defaultValue ?: 0f)
-    fun propertyTexture(cfg: PropertyBlockConfig): ShaderBase<*>.UniformInputTexture2d =
+    fun propertyTexture(cfg: PropertyBlockConfig): Texture2dBinding =
         texture2d(cfg.primaryTexture?.textureName ?: UniqueId.nextId("_"), cfg.primaryTexture?.defaultTexture)
 
     protected interface ConnectUniformListener {
         val isConnected: Boolean
         fun connect()
-    }
-
-    inner class UniformInputTexture1d(val uniformName: String, defaultVal: Texture1d?) : ConnectUniformListener {
-        var uniform: Texture1dBinding? = null
-        private var buffer: Texture1d? = defaultVal
-        override val isConnected: Boolean = uniform != null
-        override fun connect() { uniform = texSamplers1d[uniformName]?.apply { texture = buffer } }
-        operator fun getValue(thisRef: Any?, property: KProperty<*>): Texture1d? = uniform?.texture ?: buffer
-        operator fun setValue(thisRef: Any?, property: KProperty<*>, value: Texture1d?) {
-            uniform?.let { it.texture = value } ?: run { buffer = value }
-        }
-    }
-
-    inner class UniformInputTexture2d(val uniformName: String, defaultVal: Texture2d?) : ConnectUniformListener {
-        var uniform: Texture2dBinding? = null
-        private var buffer: Texture2d? = defaultVal
-        override val isConnected: Boolean = uniform != null
-        override fun connect() { uniform = texSamplers2d[uniformName]?.apply { texture = buffer } }
-        operator fun getValue(thisRef: Any?, property: KProperty<*>): Texture2d? = uniform?.texture ?: buffer
-        operator fun setValue(thisRef: Any?, property: KProperty<*>, value: Texture2d?) {
-            uniform?.let { it.texture = value } ?: run { buffer = value }
-        }
-    }
-
-    inner class UniformInputTexture3d(val uniformName: String, defaultVal: Texture3d?) : ConnectUniformListener {
-        var uniform: Texture3dBinding? = null
-        private var buffer: Texture3d? = defaultVal
-        override val isConnected: Boolean = uniform != null
-        override fun connect() { uniform = texSamplers3d[uniformName]?.apply { texture = buffer } }
-        operator fun getValue(thisRef: Any?, property: KProperty<*>): Texture3d? = uniform?.texture ?: buffer
-        operator fun setValue(thisRef: Any?, property: KProperty<*>, value: Texture3d?) {
-            uniform?.let { it.texture = value } ?: run { buffer = value }
-        }
-    }
-
-    inner class UniformInputTextureCube(val uniformName: String, defaultVal: TextureCube?) : ConnectUniformListener {
-        var uniform: TextureCubeBinding? = null
-        private var buffer: TextureCube? = defaultVal
-        override val isConnected: Boolean = uniform != null
-        override fun connect() { uniform = texSamplersCube[uniformName]?.apply { texture = buffer } }
-        operator fun getValue(thisRef: Any?, property: KProperty<*>): TextureCube? = uniform?.texture ?: buffer
-        operator fun setValue(thisRef: Any?, property: KProperty<*>, value: TextureCube?) {
-            uniform?.let { it.texture = value } ?: run { buffer = value }
-        }
-    }
-
-    inner class UniformInputTextureArray1d(val uniformName: String, val arrSize: Int) : ConnectUniformListener {
-        var uniform: Texture1dBinding? = null
-        private val buffer = Array<Texture1d?>(arrSize) { null }
-        override val isConnected: Boolean = uniform != null
-        override fun connect() {
-            uniform = texSamplers1d[uniformName]?.apply {
-                check(arraySize == arrSize) { "Mismatching texture array size: $arraySize != $arrSize" }
-                for (i in textures.indices) { textures[i] = buffer[i] }
-            }
-        }
-        operator fun getValue(thisRef: Any?, property: KProperty<*>): Array<Texture1d?> = uniform?.textures ?: buffer
-    }
-
-    inner class UniformInputTextureArray2d(val uniformName: String, val arrSize: Int) : ConnectUniformListener {
-        var uniform: Texture2dBinding? = null
-        private val buffer = Array<Texture2d?>(arrSize) { null }
-        override val isConnected: Boolean = uniform != null
-        override fun connect() {
-            uniform = texSamplers2d[uniformName]?.apply {
-                check(arraySize == arrSize) { "Mismatching texture array size: $arraySize != $arrSize" }
-                for (i in textures.indices) { textures[i] = buffer[i] }
-            }
-        }
-        operator fun getValue(thisRef: Any?, property: KProperty<*>): Array<Texture2d?> = uniform?.textures ?: buffer
-    }
-
-    inner class UniformInputTextureArray3d(val uniformName: String, val arrSize: Int) : ConnectUniformListener {
-        var uniform: Texture3dBinding? = null
-        private val buffer = Array<Texture3d?>(arrSize) { null }
-        override val isConnected: Boolean = uniform != null
-        override fun connect() {
-            uniform = texSamplers3d[uniformName]?.apply {
-                check(arraySize == arrSize) { "Mismatching texture array size: $arraySize != $arrSize" }
-                for (i in textures.indices) { textures[i] = buffer[i] }
-            }
-        }
-        operator fun getValue(thisRef: Any?, property: KProperty<*>): Array<Texture3d?> = uniform?.textures ?: buffer
-    }
-
-    inner class UniformInputTextureArrayCube(val uniformName: String, val arrSize: Int) : ConnectUniformListener {
-        var uniform: TextureCubeBinding? = null
-        private val buffer = Array<TextureCube?>(arrSize) { null }
-        override val isConnected: Boolean = uniform != null
-        override fun connect() {
-            uniform = texSamplersCube[uniformName]?.apply {
-                check(arraySize == arrSize) { "Mismatching texture array size: $arraySize != $arrSize" }
-                for (i in textures.indices) { textures[i] = buffer[i] }
-            }
-        }
-        operator fun getValue(thisRef: Any?, property: KProperty<*>): Array<TextureCube?> = uniform?.textures ?: buffer
-    }
-
-    inner class UniformInputStorage1d(val uniformName: String, defaultVal: StorageTexture1d?) : ConnectUniformListener {
-        var uniform: StorageTexture1dBinding? = null
-        private var buffer: StorageTexture1d? = defaultVal
-        override val isConnected: Boolean = uniform != null
-        override fun connect() { uniform = storage1d[uniformName]?.apply { storageTex = buffer } }
-        operator fun getValue(thisRef: Any?, property: KProperty<*>): StorageTexture1d? = uniform?.storageTex ?: buffer
-        operator fun setValue(thisRef: Any?, property: KProperty<*>, value: StorageTexture1d?) {
-            uniform?.let { it.storageTex = value } ?: run { buffer = value }
-        }
-    }
-
-    inner class UniformInputStorage2d(val uniformName: String, defaultVal: StorageTexture2d?) : ConnectUniformListener {
-        var uniform: StorageTexture2dBinding? = null
-        private var buffer: StorageTexture2d? = defaultVal
-        override val isConnected: Boolean = uniform != null
-        override fun connect() { uniform = storage2d[uniformName]?.apply { storageTex = buffer } }
-        operator fun getValue(thisRef: Any?, property: KProperty<*>): StorageTexture2d? = uniform?.storageTex ?: buffer
-        operator fun setValue(thisRef: Any?, property: KProperty<*>, value: StorageTexture2d?) {
-            uniform?.let { it.storageTex = value } ?: run { buffer = value }
-        }
-    }
-
-    inner class UniformInputStorage3d(val uniformName: String, defaultVal: StorageTexture3d?) : ConnectUniformListener {
-        var uniform: StorageTexture3dBinding? = null
-        private var buffer: StorageTexture3d? = defaultVal
-        override val isConnected: Boolean = uniform != null
-        override fun connect() { uniform = storage3d[uniformName]?.apply { storageTex = buffer } }
-        operator fun getValue(thisRef: Any?, property: KProperty<*>): StorageTexture3d? = uniform?.storageTex ?: buffer
-        operator fun setValue(thisRef: Any?, property: KProperty<*>, value: StorageTexture3d?) {
-            uniform?.let { it.storageTex = value } ?: run { buffer = value }
-        }
     }
 }

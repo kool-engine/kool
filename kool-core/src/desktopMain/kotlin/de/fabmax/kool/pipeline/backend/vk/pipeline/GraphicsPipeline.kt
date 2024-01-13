@@ -323,14 +323,14 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
         val bindings = callocVkDescriptorSetLayoutBindingN(bindGroupLayout.bindings.size) {
             bindGroupLayout.bindings.forEachIndexed { i, b ->
                 this[i].apply {
-                    binding(b.binding)
+                    binding(b.bindingIndex)
                     descriptorType(b.type.intType())
                     stageFlags(b.stages.fold(0) { flags, stage -> flags or stage.bitValue() })
 
                     val arraySize = when (b) {
-                        is Texture2dBinding -> b.arraySize
-                        is Texture3dBinding -> b.arraySize
-                        is TextureCubeBinding -> b.arraySize
+                        is Texture2dLayout -> b.arraySize
+                        is Texture3dLayout -> b.arraySize
+                        is TextureCubeLayout -> b.arraySize
                         else -> 1
                     }
                     descriptorCount(arraySize)

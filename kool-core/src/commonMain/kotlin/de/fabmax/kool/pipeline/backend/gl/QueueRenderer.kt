@@ -27,7 +27,8 @@ class QueueRenderer(val backend: RenderBackendGl) {
         gl.viewport(viewport.x, viewportY, viewport.width, viewport.height)
         gl.scissor(viewport.x, viewportY, viewport.width, viewport.height)
 
-        gl.clearDepth(if (renderPass.isReverseDepth) 0f  else 1f)
+        gl.depthMask(true)
+        gl.clearDepth(if (renderPass.isReverseDepth) 0f else 1f)
 
         val rp = renderPass
         if (rp is OffscreenRenderPass) {

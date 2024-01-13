@@ -16,7 +16,7 @@ class KslGlslGeneratorVk : GlslGenerator(Hints("#version 450")) {
             for (u in samplers) {
                 val set = pipeline.bindGroupLayout
                 val desc = pipeline.findBindGroupItemByName(u.name)!!
-                appendLine("layout(set=${set.group}, binding=${desc.binding}) uniform ${glslTypeName(u.expressionType)} ${u.value.name()};")
+                appendLine("layout(set=${set.group}, binding=${desc.bindingIndex}) uniform ${glslTypeName(u.expressionType)} ${u.value.name()};")
             }
             appendLine()
         }
@@ -29,7 +29,7 @@ class KslGlslGeneratorVk : GlslGenerator(Hints("#version 450")) {
             for (ubo in ubos) {
                 val set = pipeline.bindGroupLayout
                 val desc = pipeline.findBindGroupItemByName(ubo.name)!!
-                appendLine("layout(std140, set=${set.group}, binding=${desc.binding}) uniform ${ubo.name} {")
+                appendLine("layout(std140, set=${set.group}, binding=${desc.bindingIndex}) uniform ${ubo.name} {")
                 for (u in ubo.uniforms.values) {
                     appendLine("    highp ${glslTypeName(u.expressionType)} ${u.value.name()};")
                 }

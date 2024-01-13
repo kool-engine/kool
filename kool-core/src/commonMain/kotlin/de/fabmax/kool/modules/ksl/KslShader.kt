@@ -132,56 +132,45 @@ open class KslShader private constructor(val program: KslProgram) : Shader(progr
 
 fun KslProgram.setupBindGroupLayout(): BindGroupLayout.Builder {
     val bindGrpBuilder = BindGroupLayout.Builder()
-    setupBindGroupLayoutUbos(bindGrpBuilder, this)
-    setupBindGroupLayoutSamplers(bindGrpBuilder)
+    setupBindGroupLayoutUbos(bindGrpBuilder)
+    setupBindGroupLayoutTextures(bindGrpBuilder)
     setupBindGroupLayoutStorage(bindGrpBuilder)
     return bindGrpBuilder
 }
 
-private fun setupBindGroupLayoutUbos(bindGrpBuilder: BindGroupLayout.Builder, prog: KslProgram) {
-    prog.uniformBuffers.filter { it.uniforms.isNotEmpty() }.forEach { kslUbo ->
-        val ubo = UniformBufferBinding.Builder()
-        bindGrpBuilder.ubos += ubo
-
-        prog.stages.forEach {
-            if (kslUbo.uniforms.values.any { u -> it.dependsOn(u) }) {
-                ubo.stages += it.type.pipelineStageType
-            }
-        }
-
-        ubo.name = kslUbo.name
-        ubo.isShared = kslUbo.isShared
-        ubo.uniforms += kslUbo.uniforms.values.map { uniform ->
+private fun KslProgram.setupBindGroupLayoutUbos(bindGrpBuilder: BindGroupLayout.Builder) {
+    uniformBuffers.filter { it.uniforms.isNotEmpty() }.forEach { kslUbo ->
+        val uniforms = kslUbo.uniforms.values.map { uniform ->
             when(val type = uniform.value.expressionType)  {
-                is KslFloat1 -> uniform1f(uniform.name)
-                is KslFloat2 -> uniform2f(uniform.name)
-                is KslFloat3 -> uniform3f(uniform.name)
-                is KslFloat4 -> uniform4f(uniform.name)
+                is KslFloat1 -> Uniform.float1(uniform.name)
+                is KslFloat2 -> Uniform.float2(uniform.name)
+                is KslFloat3 -> Uniform.float3(uniform.name)
+                is KslFloat4 -> Uniform.float4(uniform.name)
 
-                is KslInt1 -> uniform1i(uniform.name)
-                is KslInt2 -> uniform2i(uniform.name)
-                is KslInt3 -> uniform3i(uniform.name)
-                is KslInt4 -> uniform4i(uniform.name)
+                is KslInt1 -> Uniform.int1(uniform.name)
+                is KslInt2 -> Uniform.int2(uniform.name)
+                is KslInt3 -> Uniform.int3(uniform.name)
+                is KslInt4 -> Uniform.int4(uniform.name)
 
-                is KslMat2 -> uniformMat2(uniform.name)
-                is KslMat3 -> uniformMat3(uniform.name)
-                is KslMat4 -> uniformMat4(uniform.name)
+                is KslMat2 -> Uniform.mat2(uniform.name)
+                is KslMat3 -> Uniform.mat3(uniform.name)
+                is KslMat4 -> Uniform.mat4(uniform.name)
 
                 is KslArrayType<*> -> {
                     when (type.elemType) {
-                        is KslFloat1 -> uniform1fv(uniform.name, uniform.arraySize)
-                        is KslFloat2 -> uniform2fv(uniform.name, uniform.arraySize)
-                        is KslFloat3 -> uniform3fv(uniform.name, uniform.arraySize)
-                        is KslFloat4 -> uniform4fv(uniform.name, uniform.arraySize)
+                        is KslFloat1 -> Uniform.float1Array(uniform.name, uniform.arraySize)
+                        is KslFloat2 -> Uniform.float2Array(uniform.name, uniform.arraySize)
+                        is KslFloat3 -> Uniform.float3Array(uniform.name, uniform.arraySize)
+                        is KslFloat4 -> Uniform.float4Array(uniform.name, uniform.arraySize)
 
-                        is KslInt1 -> uniform1iv(uniform.name, uniform.arraySize)
-                        is KslInt2 -> uniform2iv(uniform.name, uniform.arraySize)
-                        is KslInt3 -> uniform3iv(uniform.name, uniform.arraySize)
-                        is KslInt4 -> uniform4iv(uniform.name, uniform.arraySize)
+                        is KslInt1 -> Uniform.int1Array(uniform.name, uniform.arraySize)
+                        is KslInt2 -> Uniform.int2Array(uniform.name, uniform.arraySize)
+                        is KslInt3 -> Uniform.int3Array(uniform.name, uniform.arraySize)
+                        is KslInt4 -> Uniform.int4Array(uniform.name, uniform.arraySize)
 
-                        is KslMat2 -> uniformMat2v(uniform.name, uniform.arraySize)
-                        is KslMat3 -> uniformMat3v(uniform.name, uniform.arraySize)
-                        is KslMat4 -> uniformMat4v(uniform.name, uniform.arraySize)
+                        is KslMat2 -> Uniform.mat2Array(uniform.name, uniform.arraySize)
+                        is KslMat3 -> Uniform.mat3Array(uniform.name, uniform.arraySize)
+                        is KslMat4 -> Uniform.mat4Array(uniform.name, uniform.arraySize)
 
                         else -> throw IllegalStateException("Unsupported uniform array type: ${type.elemType.typeName}")
                     }
@@ -189,66 +178,63 @@ private fun setupBindGroupLayoutUbos(bindGrpBuilder: BindGroupLayout.Builder, pr
                 else -> throw IllegalStateException("Unsupported uniform type: ${type.typeName}")
             }
         }
+
+        val uboStages = stages
+            .filter { kslUbo.uniforms.values.any { u -> it.dependsOn(u) } }
+            .map { it.type.pipelineStageType }
+            .toSet()
+
+        bindGrpBuilder.ubos += UniformBufferLayout(kslUbo.name, uniforms, uboStages)
     }
 }
 
-private fun KslProgram.setupBindGroupLayoutSamplers(bindGrpBuilder: BindGroupLayout.Builder) {
+private fun KslProgram.setupBindGroupLayoutTextures(bindGrpBuilder: BindGroupLayout.Builder) {
     uniformSamplers.values.forEach { sampler ->
-        val binding = when(val type = sampler.value.expressionType)  {
-            is KslDepthSampler2D -> Texture2dBinding.Builder().apply { isDepthSampler = true }
-            is KslDepthSamplerCube -> TextureCubeBinding.Builder().apply { isDepthSampler = true }
-            is KslColorSampler1d -> Texture1dBinding.Builder()
-            is KslColorSampler2d -> Texture2dBinding.Builder()
-            is KslColorSampler3d -> Texture3dBinding.Builder()
-            is KslColorSamplerCube -> TextureCubeBinding.Builder()
+        val texStages = stages
+            .filter { it.dependsOn(sampler) }
+            .map { it.type.pipelineStageType }
+            .toSet()
+
+        val name = sampler.name
+
+        bindGrpBuilder.textures += when(val type = sampler.value.expressionType)  {
+            is KslDepthSampler2d -> Texture2dLayout(name, texStages, isDepthTexture = true)
+            is KslDepthSamplerCube -> TextureCubeLayout(name, texStages, isDepthTexture = true)
+            is KslColorSampler1d -> Texture1dLayout(name, texStages)
+            is KslColorSampler2d -> Texture2dLayout(name, texStages)
+            is KslColorSampler3d -> Texture3dLayout(name, texStages)
+            is KslColorSamplerCube -> TextureCubeLayout(name, texStages)
 
             is KslArrayType<*> -> {
                 when (type.elemType) {
-                    is KslDepthSampler2D -> Texture2dBinding.Builder().apply {
-                        isDepthSampler = true
-                        arraySize = sampler.arraySize
-                    }
-                    is KslDepthSamplerCube -> TextureCubeBinding.Builder().apply {
-                        isDepthSampler = true
-                        arraySize = sampler.arraySize
-                    }
-                    is KslColorSampler1d -> Texture1dBinding.Builder().apply { arraySize = sampler.arraySize }
-                    is KslColorSampler2d -> Texture2dBinding.Builder().apply { arraySize = sampler.arraySize }
-                    is KslColorSampler3d -> Texture3dBinding.Builder().apply { arraySize = sampler.arraySize }
-                    is KslColorSamplerCube -> TextureCubeBinding.Builder().apply { arraySize = sampler.arraySize }
+                    is KslDepthSampler2d -> Texture2dLayout(name, texStages, sampler.arraySize, isDepthTexture = true)
+                    is KslDepthSamplerCube -> TextureCubeLayout(name, texStages, sampler.arraySize, isDepthTexture = true)
+                    is KslColorSampler1d -> Texture1dLayout(name, texStages, sampler.arraySize)
+                    is KslColorSampler2d -> Texture2dLayout(name, texStages, sampler.arraySize)
+                    is KslColorSamplerCube -> TextureCubeLayout(name, texStages, sampler.arraySize)
                     else -> throw IllegalStateException("Unsupported sampler array type: ${type.elemType.typeName}")
                 }
             }
             else -> throw IllegalStateException("Unsupported sampler uniform type: ${type.typeName}")
-        }
-        bindGrpBuilder.samplers += binding
-
-        binding.name = sampler.name
-        stages.forEach {
-            if (it.dependsOn(sampler)) {
-                binding.stages += it.type.pipelineStageType
-            }
         }
     }
 }
 
 private fun KslProgram.setupBindGroupLayoutStorage(bindGrpBuilder: BindGroupLayout.Builder) {
     uniformStorage.values.forEach { storage ->
-        val binding = when(storage.storageType)  {
-            is KslStorage1dType<*> -> StorageTexture1dBinding.Builder()
-            is KslStorage2dType<*> -> StorageTexture2dBinding.Builder()
-            is KslStorage3dType<*> -> StorageTexture3dBinding.Builder()
-        }
-        bindGrpBuilder.storage += binding
+        val storageStages = stages
+            .filter { it.dependsOn(storage) }
+            .map { it.type.pipelineStageType }
+            .toSet()
 
-        binding.name = storage.name
-        stages.forEach {
-            if (it.dependsOn(storage)) {
-                binding.stages += it.type.pipelineStageType
-            }
+        val name = storage.name
+        val format = storage.storageType.elemType
+        // todo: restrict this to read- / write-only if possible
+        val accessType = StorageAccessType.READ_WRITE
+        bindGrpBuilder.storage += when(storage.storageType)  {
+            is KslStorage1dType<*> -> StorageTexture1dLayout(name, format, accessType, storageStages)
+            is KslStorage2dType<*> -> StorageTexture2dLayout(name, format, accessType, storageStages)
+            is KslStorage3dType<*> -> StorageTexture3dLayout(name, format, accessType, storageStages)
         }
-        binding.format = storage.storageType.elemType
-        // todo: restrict this to read / write only if possible
-        binding.accessType = StorageAccessType.READ_WRITE
     }
 }

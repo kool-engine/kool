@@ -66,7 +66,7 @@ object Skybox {
             isWriteDepth = false
         }) {
 
-        val skies: Array<TextureCube?> by textureCubeArray("tSkies", 2)
+        val skies = textureCubeArray("tSkies", 2)
         var skyWeights: Vec2f by uniform2f("uSkyWeights", Vec2f.X_AXIS)
 
         var skyOrientation: Mat3f by uniformMat3f("uSkyOrientation")

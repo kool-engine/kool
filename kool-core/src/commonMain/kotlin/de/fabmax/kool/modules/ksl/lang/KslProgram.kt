@@ -136,7 +136,7 @@ open class KslProgram(val name: String) {
     fun texture3d(name: String) = getOrCreateSampler(name) { KslUniform(KslVar(name, KslColorSampler3d, false)) }
     fun textureCube(name: String) = getOrCreateSampler(name) { KslUniform(KslVar(name, KslColorSamplerCube, false)) }
 
-    fun depthTexture2d(name: String) = getOrCreateSampler(name) { KslUniform(KslVar(name, KslDepthSampler2D, false)) }
+    fun depthTexture2d(name: String) = getOrCreateSampler(name) { KslUniform(KslVar(name, KslDepthSampler2d, false)) }
     fun depthTextureCube(name: String) = getOrCreateSampler(name) { KslUniform(KslVar(name, KslDepthSamplerCube, false)) }
 
     // arrays of textures (this is different to array textures, like, e.g., KslTypeColorSampler2dArray)
@@ -146,7 +146,7 @@ open class KslProgram(val name: String) {
     fun textureArrayCube(name: String, arraySize: Int) = getOrCreateSampler(name) { KslUniformArray(KslArrayGeneric(name, KslColorSamplerCube, arraySize, false)) }
 
     // arrays of depth textures (this is different to array textures, like, e.g., KslTypeDepthSampler2dArray)
-    fun depthTextureArray2d(name: String, arraySize: Int) = getOrCreateSampler(name) { KslUniformArray(KslArrayGeneric(name, KslDepthSampler2D, arraySize, false)) }
+    fun depthTextureArray2d(name: String, arraySize: Int) = getOrCreateSampler(name) { KslUniformArray(KslArrayGeneric(name, KslDepthSampler2d, arraySize, false)) }
     fun depthTextureArrayCube(name: String, arraySize: Int) = getOrCreateSampler(name) { KslUniformArray(KslArrayGeneric(name, KslDepthSamplerCube, arraySize, false)) }
 
     inline fun <reified T: KslNumericType> storage1d(name: String): KslStorage1d<KslStorage1dType<T>> {
@@ -277,39 +277,38 @@ open class KslProgram(val name: String) {
         }
     }
 
-    val UniformBinding1f.ksl: KslUniformScalar<KslFloat1> get() = uniformFloat1(uniformName)
-    val UniformBinding2f.ksl: KslUniformVector<KslFloat2, KslFloat1> get() = uniformFloat2(uniformName)
-    val UniformBinding3f.ksl: KslUniformVector<KslFloat3, KslFloat1> get() = uniformFloat3(uniformName)
-    val UniformBinding4f.ksl: KslUniformVector<KslFloat4, KslFloat1> get() = uniformFloat4(uniformName)
-    val UniformBinding1fv.ksl: KslUniformScalarArray<KslFloat1> get() = uniformFloat1Array(uniformName, arraySize)
-    val UniformBinding2fv.ksl: KslUniformVectorArray<KslFloat2, KslFloat1> get() = uniformFloat2Array(uniformName, arraySize)
-    val UniformBinding3fv.ksl: KslUniformVectorArray<KslFloat3, KslFloat1> get() = uniformFloat3Array(uniformName, arraySize)
-    val UniformBinding4fv.ksl: KslUniformVectorArray<KslFloat4, KslFloat1> get() = uniformFloat4Array(uniformName, arraySize)
+    val UniformBinding1f.ksl: KslUniformScalar<KslFloat1> get() = uniformFloat1(bindingName)
+    val UniformBinding2f.ksl: KslUniformVector<KslFloat2, KslFloat1> get() = uniformFloat2(bindingName)
+    val UniformBinding3f.ksl: KslUniformVector<KslFloat3, KslFloat1> get() = uniformFloat3(bindingName)
+    val UniformBinding4f.ksl: KslUniformVector<KslFloat4, KslFloat1> get() = uniformFloat4(bindingName)
+    val UniformBinding1fv.ksl: KslUniformScalarArray<KslFloat1> get() = uniformFloat1Array(bindingName, arraySize)
+    val UniformBinding2fv.ksl: KslUniformVectorArray<KslFloat2, KslFloat1> get() = uniformFloat2Array(bindingName, arraySize)
+    val UniformBinding3fv.ksl: KslUniformVectorArray<KslFloat3, KslFloat1> get() = uniformFloat3Array(bindingName, arraySize)
+    val UniformBinding4fv.ksl: KslUniformVectorArray<KslFloat4, KslFloat1> get() = uniformFloat4Array(bindingName, arraySize)
 
-    val UniformBindingColor.ksl: KslUniformVector<KslFloat4, KslFloat1> get() = uniformFloat4(uniformName)
-    val UniformBindingQuat.ksl: KslUniformVector<KslFloat4, KslFloat1> get() = uniformFloat4(uniformName)
+    val UniformBindingColor.ksl: KslUniformVector<KslFloat4, KslFloat1> get() = uniformFloat4(bindingName)
+    val UniformBindingQuat.ksl: KslUniformVector<KslFloat4, KslFloat1> get() = uniformFloat4(bindingName)
 
-    val UniformBinding1i.ksl: KslUniformScalar<KslInt1> get() = uniformInt1(uniformName)
-    val UniformBinding2i.ksl: KslUniformVector<KslInt2, KslInt1> get() = uniformInt2(uniformName)
-    val UniformBinding3i.ksl: KslUniformVector<KslInt3, KslInt1> get() = uniformInt3(uniformName)
-    val UniformBinding4i.ksl: KslUniformVector<KslInt4, KslInt1> get() = uniformInt4(uniformName)
-    val UniformBinding1iv.ksl: KslUniformScalarArray<KslInt1> get() = uniformInt1Array(uniformName, arraySize)
-    val UniformBinding2iv.ksl: KslUniformVectorArray<KslInt2, KslInt1> get() = uniformInt2Array(uniformName, arraySize)
-    val UniformBinding3iv.ksl: KslUniformVectorArray<KslInt3, KslInt1> get() = uniformInt3Array(uniformName, arraySize)
-    val UniformBinding4iv.ksl: KslUniformVectorArray<KslInt4, KslInt1> get() = uniformInt4Array(uniformName, arraySize)
+    val UniformBinding1i.ksl: KslUniformScalar<KslInt1> get() = uniformInt1(bindingName)
+    val UniformBinding2i.ksl: KslUniformVector<KslInt2, KslInt1> get() = uniformInt2(bindingName)
+    val UniformBinding3i.ksl: KslUniformVector<KslInt3, KslInt1> get() = uniformInt3(bindingName)
+    val UniformBinding4i.ksl: KslUniformVector<KslInt4, KslInt1> get() = uniformInt4(bindingName)
+    val UniformBinding1iv.ksl: KslUniformScalarArray<KslInt1> get() = uniformInt1Array(bindingName, arraySize)
+    val UniformBinding2iv.ksl: KslUniformVectorArray<KslInt2, KslInt1> get() = uniformInt2Array(bindingName, arraySize)
+    val UniformBinding3iv.ksl: KslUniformVectorArray<KslInt3, KslInt1> get() = uniformInt3Array(bindingName, arraySize)
+    val UniformBinding4iv.ksl: KslUniformVectorArray<KslInt4, KslInt1> get() = uniformInt4Array(bindingName, arraySize)
 
-    val UniformBindingMat3f.ksl: KslUniformMatrix<KslMat3, KslFloat3> get() = uniformMat3(uniformName)
-    val UniformBindingMat4f.ksl: KslUniformMatrix<KslMat4, KslFloat4> get() = uniformMat4(uniformName)
-    val UniformBindingMat3fv.ksl: KslUniformMatrixArray<KslMat3, KslFloat3> get() = uniformMat3Array(uniformName, arraySize)
-    val UniformBindingMat4fv.ksl: KslUniformMatrixArray<KslMat4, KslFloat4> get() = uniformMat4Array(uniformName, arraySize)
+    val UniformBindingMat3f.ksl: KslUniformMatrix<KslMat3, KslFloat3> get() = uniformMat3(bindingName)
+    val UniformBindingMat4f.ksl: KslUniformMatrix<KslMat4, KslFloat4> get() = uniformMat4(bindingName)
+    val UniformBindingMat3fv.ksl: KslUniformMatrixArray<KslMat3, KslFloat3> get() = uniformMat3Array(bindingName, arraySize)
+    val UniformBindingMat4fv.ksl: KslUniformMatrixArray<KslMat4, KslFloat4> get() = uniformMat4Array(bindingName, arraySize)
 
-    val ShaderBase<*>.UniformInputTexture1d.ksl: KslUniform<KslColorSampler1d> get() = texture1d(uniformName)
-    val ShaderBase<*>.UniformInputTexture2d.ksl: KslUniform<KslColorSampler2d> get() = texture2d(uniformName)
-    val ShaderBase<*>.UniformInputTexture3d.ksl: KslUniform<KslColorSampler3d> get() = texture3d(uniformName)
-    val ShaderBase<*>.UniformInputTextureCube.ksl: KslUniform<KslColorSamplerCube> get() = textureCube(uniformName)
+    val Texture1dBinding.ksl: KslUniform<KslColorSampler1d> get() = texture1d(bindingName)
+    val Texture2dBinding.ksl: KslUniform<KslColorSampler2d> get() = texture2d(bindingName)
+    val Texture3dBinding.ksl: KslUniform<KslColorSampler3d> get() = texture3d(bindingName)
+    val TextureCubeBinding.ksl: KslUniform<KslColorSamplerCube> get() = textureCube(bindingName)
 
-    val ShaderBase<*>.UniformInputTextureArray1d.ksl: KslUniformArray<KslColorSampler1d> get() = textureArray1d(uniformName, arrSize)
-    val ShaderBase<*>.UniformInputTextureArray2d.ksl: KslUniformArray<KslColorSampler2d> get() = textureArray2d(uniformName, arrSize)
-    val ShaderBase<*>.UniformInputTextureArray3d.ksl: KslUniformArray<KslColorSampler3d> get() = textureArray3d(uniformName, arrSize)
-    val ShaderBase<*>.UniformInputTextureArrayCube.ksl: KslUniformArray<KslColorSamplerCube> get() = textureArrayCube(uniformName, arrSize)
+    val Texture1dArrayBinding.ksl: KslUniformArray<KslColorSampler1d> get() = textureArray1d(bindingName, arraySize)
+    val Texture2dArrayBinding.ksl: KslUniformArray<KslColorSampler2d> get() = textureArray2d(bindingName, arraySize)
+    val TextureCubeArrayBinding.ksl: KslUniformArray<KslColorSamplerCube> get() = textureArrayCube(bindingName, arraySize)
 }

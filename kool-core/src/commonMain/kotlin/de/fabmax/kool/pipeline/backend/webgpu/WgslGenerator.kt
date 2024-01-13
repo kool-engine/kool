@@ -6,7 +6,7 @@ import de.fabmax.kool.modules.ksl.model.KslState
 import de.fabmax.kool.pipeline.ComputePipeline
 import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.pipeline.PipelineBase
-import de.fabmax.kool.pipeline.UniformBufferBinding
+import de.fabmax.kool.pipeline.UniformBufferLayout
 import de.fabmax.kool.util.logW
 
 class WgslGenerator : KslGenerator() {
@@ -134,7 +134,7 @@ class WgslGenerator : KslGenerator() {
 
         init {
             structs = pipeline.bindGroupLayout.bindings
-                .filterIsInstance<UniformBufferBinding>().filter { layoutUbo ->
+                .filterIsInstance<UniformBufferLayout>().filter { layoutUbo ->
                     stage.getUsedUbos().any { usedUbo -> usedUbo.name == layoutUbo.name }
                 }
                 .map { ubo ->
@@ -146,7 +146,7 @@ class WgslGenerator : KslGenerator() {
                         .map {
                             WgslStructMember(uboVarName, it.value.name(), it.expressionType.wgslTypeName)
                         }
-                    UboStruct(uboVarName, uboTypeName, members, pipeline.bindGroupLayout.group, ubo.binding)
+                    UboStruct(uboVarName, uboTypeName, members, pipeline.bindGroupLayout.group, ubo.bindingIndex)
                 }
         }
 
@@ -617,9 +617,9 @@ class WgslGenerator : KslGenerator() {
                 KslColorSampler2dArray -> TODO()
                 KslColorSamplerCubeArray -> TODO()
 
-                KslDepthSampler2D -> TODO()
+                KslDepthSampler2d -> TODO()
                 KslDepthSamplerCube -> TODO()
-                KslDepthSampler2DArray -> TODO()
+                KslDepthSampler2dArray -> TODO()
                 KslDepthSamplerCubeArray -> TODO()
 
                 is KslArrayType<*> -> TODO()

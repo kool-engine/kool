@@ -4,7 +4,6 @@ import de.fabmax.kool.KoolException
 import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.BoundingBoxF
 import de.fabmax.kool.pipeline.DepthMapPass
-import de.fabmax.kool.pipeline.Texture2dBinding
 import de.fabmax.kool.pipeline.backend.DepthRange
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.pipeline.renderPassConfig
@@ -18,8 +17,6 @@ sealed interface ShadowMap {
     var light: Light?
     var isShadowMapEnabled: Boolean
     val subMaps: List<SimpleShadowMap>
-
-    fun setupSampler(sampler: Texture2dBinding?)
 }
 
 class SimpleShadowMap(val sceneCam: Camera, override var light: Light?, mapSize: Int = 2048, drawNode: Node) :
@@ -88,10 +85,6 @@ class SimpleShadowMap(val sceneCam: Camera, override var light: Light?, mapSize:
     fun setDefaultDepthOffset(isDirectional: Boolean) {
         val szMultiplier = 2048f / width
         shaderDepthOffset = szMultiplier * if (isDirectional) -0.001f else -0.005f
-    }
-
-    override fun setupSampler(sampler: Texture2dBinding?) {
-        sampler?.texture = depthTexture
     }
 
     private fun setupCamera(light: Light) {
@@ -263,14 +256,6 @@ class CascadedShadowMap(
             mapRanges[i].near = near
             mapRanges[i].far = farRanges[i]
             near = farRanges[i]
-        }
-    }
-
-    override fun setupSampler(sampler: Texture2dBinding?) {
-        if (sampler != null) {
-            subMaps.forEachIndexed { i, cascade ->
-                sampler.textures[i] = cascade.depthTexture
-            }
         }
     }
 

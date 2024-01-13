@@ -145,14 +145,14 @@ class WgpuRenderPass(val backend: RenderBackendWebGpu, val multiSamples: Int = 4
                 }
 
                 when (binding) {
-                    is UniformBufferBinding -> GPUBindGroupLayoutEntryBuffer(binding.binding, visibility, GPUBufferBindingLayout())
-                    is Texture1dBinding -> TODO()
-                    is Texture2dBinding -> TODO()
-                    is Texture3dBinding -> TODO()
-                    is TextureCubeBinding -> TODO()
-                    is StorageTexture1dBinding -> TODO()
-                    is StorageTexture2dBinding -> TODO()
-                    is StorageTexture3dBinding -> TODO()
+                    is UniformBufferLayout -> GPUBindGroupLayoutEntryBuffer(binding.bindingIndex, visibility, GPUBufferBindingLayout())
+                    is Texture1dLayout -> TODO()
+                    is Texture2dLayout -> TODO()
+                    is Texture3dLayout -> TODO()
+                    is TextureCubeLayout -> TODO()
+                    is StorageTexture1dLayout -> TODO()
+                    is StorageTexture2dLayout -> TODO()
+                    is StorageTexture3dLayout -> TODO()
                 }
             }
 
@@ -255,7 +255,7 @@ class WgpuRenderPass(val backend: RenderBackendWebGpu, val multiSamples: Int = 4
                 val bindGroupEntries = mutableListOf<GPUBindGroupEntry>()
                 pipeline.bindGroupLayouts.indices.forEach { group ->
                     pipeline.bindGroupLayouts[group].bindings
-                        .filterIsInstance<UniformBufferBinding>()
+                        .filterIsInstance<UniformBufferLayout>()
                         .forEach { ubo ->
                             val layout = Std140BufferLayout(ubo.uniforms)
                             val gpuBuffer = device.createBuffer(GPUBufferDescriptor(
@@ -264,7 +264,7 @@ class WgpuRenderPass(val backend: RenderBackendWebGpu, val multiSamples: Int = 4
                                 usage = GPUBufferUsage.UNIFORM or GPUBufferUsage.COPY_DST
                             ))
                             ubos += UboBinding(group, ubo, layout, gpuBuffer)
-                            bindGroupEntries += GPUBindGroupEntry(ubo.binding, GPUBufferBinding(gpuBuffer))
+                            bindGroupEntries += GPUBindGroupEntry(ubo.bindingIndex, GPUBufferBinding(gpuBuffer))
                         }
                 }
 
@@ -276,7 +276,7 @@ class WgpuRenderPass(val backend: RenderBackendWebGpu, val multiSamples: Int = 4
             }
 
             ubos.forEach { ubo ->
-                val data = pipeline.bindGroupData[ubo.group].uniformBufferData(ubo.binding.binding)
+                val data = pipeline.bindGroupData[ubo.group].uniformBufferBindingData(ubo.binding.bindingIndex)
                 if (data.getAndClearDirtyFlag()) {
                     device.queue.writeBuffer(
                         buffer = ubo.gpuBuffer,
@@ -291,7 +291,7 @@ class WgpuRenderPass(val backend: RenderBackendWebGpu, val multiSamples: Int = 4
 
     data class UboBinding(
         val group: Int,
-        val binding: UniformBufferBinding,
+        val binding: UniformBufferLayout,
         val layout: Std140BufferLayout,
         val gpuBuffer: GPUBuffer
     )

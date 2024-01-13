@@ -40,14 +40,14 @@ open class PbrSceneShader(cfg: DeferredPbrConfig, model: Model = Model(cfg)) :
     // if ambient color is image based
     var ambientMap: TextureCube? by textureCube("tAmbientTexture")
     // if ambient color is dual image based
-    val ambientMaps: Array<TextureCube?> by textureCubeArray("tAmbientTextures", 2)
+    val ambientMaps = textureCubeArray("tAmbientTextures", 2)
     var ambientMapWeights by uniform2f("tAmbientWeights", Vec2f.X_AXIS)
     var ambientShadowFactor by uniform1f("uAmbientShadowFactor", cfg.ambientShadowFactor)
 
     var scrSpcAmbientOcclusionMap: Texture2d? by texture2d("tSsaoMap")
     var scrSpcReflectionMap: Texture2d? by texture2d("tSsrMap")
 
-    val reflectionMaps: Array<TextureCube?> by textureCubeArray("tReflectionMaps", 2)
+    val reflectionMaps = textureCubeArray("tReflectionMaps", 2)
     var reflectionMapWeights: Vec2f by uniform2f("uReflectionWeights")
     var reflectionStrength: Vec4f by uniform4f("uReflectionStrength", Vec4f(cfg.reflectionStrength, 0f))
     var brdfLut: Texture2d? by texture2d("tBrdfLut")

@@ -35,7 +35,7 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
     // if ambient color is image based
     var ambientMap: TextureCube? by textureCube("tAmbientTexture")
     // if ambient color is dual image based
-    val ambientMaps: Array<TextureCube?> by textureCubeArray("tAmbientTextures", 2)
+    val ambientMaps = textureCubeArray("tAmbientTextures", 2)
     var ambientMapWeights by uniform2f("tAmbientWeights", Vec2f.X_AXIS)
 
     val ambientCfg = cfg.ambientColor

@@ -581,9 +581,9 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
             KslColorSampler2dArray -> "sampler2DArray"
             KslColorSamplerCubeArray -> "samplerCubeArray"
 
-            KslDepthSampler2D -> "sampler2DShadow"
+            KslDepthSampler2d -> "sampler2DShadow"
             KslDepthSamplerCube -> "samplerCubeShadow"
-            KslDepthSampler2DArray -> "sampler2DArrayShadow"
+            KslDepthSampler2dArray -> "sampler2DArrayShadow"
             KslDepthSamplerCubeArray -> "samplerCubeArrayShadow"
 
             is KslArrayType<*> -> "${glslTypeName(type.elemType)}[${type.arraySize}]"

@@ -42,7 +42,7 @@ class GetShadowMapFactor(name: String, parentScope: KslScopeBuilder, samplePatte
 }
 
 fun KslScopeBuilder.getShadowMapFactor(
-    depthMap: KslExpression<KslDepthSampler2D>,
+    depthMap: KslExpression<KslDepthSampler2d>,
     positionLightSpace: KslExprFloat4,
     samplePattern: List<Vec2f>
 ): KslExprFloat1 {

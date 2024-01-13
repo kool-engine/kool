@@ -21,7 +21,7 @@ class ShadowData(val shadowCfg: ShadowConfig, program: KslProgram) : KslDataBloc
     val numSubMaps: Int get() = subMaps.size
 
     val shadowMapViewProjMats: KslUniformMatrixArray<KslMat4, KslFloat4>
-    val depthMaps: KslUniformArray<KslDepthSampler2D>
+    val depthMaps: KslUniformArray<KslDepthSampler2d>
 
     private var uShadowMapViewProjMats: UniformBindingMat4fv? = null
 
@@ -51,17 +51,16 @@ class ShadowData(val shadowCfg: ShadowConfig, program: KslProgram) : KslDataBloc
 
     override fun onShaderCreated(shader: ShaderBase<*>) {
         uShadowMapViewProjMats = shader.uniformMat4fv(UNIFORM_NAME_SHADOW_VP_MATS)
-        shader.texSamplers2d[SAMPLER_NAME_SHADOW_MAPS]?.let {
-            subMaps.forEachIndexed { i, shadowMap ->
-                it.textures[i] = shadowMap.depthTexture
-            }
+        val maps = shader.texture2dArray(SAMPLER_NAME_SHADOW_MAPS, subMaps.size)
+        subMaps.forEachIndexed { i, shadowMap ->
+            maps[i] = shadowMap.depthTexture
         }
     }
 
     override fun onUpdate(cmd: DrawCommand) {
         uShadowMapViewProjMats?.let { mats ->
             subMaps.forEachIndexed { i, shadowMap ->
-                mats.set(i, shadowMap.lightViewProjMat)
+                mats[i] = shadowMap.lightViewProjMat
             }
         }
     }

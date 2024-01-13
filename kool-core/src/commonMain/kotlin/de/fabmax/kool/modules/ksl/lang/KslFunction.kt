@@ -101,9 +101,9 @@ open class KslFunction<T: KslType>(val name: String, val returnType: T, val pare
     fun paramColorTex2dArray(name: String? = null) = paramVar(name ?: parentStage.program.nextName("paramColor2dArray"), KslColorSampler2dArray)
     fun paramColorTexCubeArray(name: String? = null) = paramVar(name ?: parentStage.program.nextName("paramColorCubeArray"), KslColorSamplerCubeArray)
 
-    fun paramDepthTex2d(name: String? = null) = paramVar(name ?: parentStage.program.nextName("paramDepth2d"), KslDepthSampler2D)
+    fun paramDepthTex2d(name: String? = null) = paramVar(name ?: parentStage.program.nextName("paramDepth2d"), KslDepthSampler2d)
     fun paramDepthTexCube(name: String? = null) = paramVar(name ?: parentStage.program.nextName("paramDepthCube"), KslDepthSamplerCube)
-    fun paramDepthTex2dArray(name: String? = null) = paramVar(name ?: parentStage.program.nextName("paramDepth2dArray"), KslDepthSampler2DArray)
+    fun paramDepthTex2dArray(name: String? = null) = paramVar(name ?: parentStage.program.nextName("paramDepth2dArray"), KslDepthSampler2dArray)
     fun paramDepthTexCubeArray(name: String? = null) = paramVar(name ?: parentStage.program.nextName("paramDepthCubeArray"), KslDepthSamplerCubeArray)
 
     fun paramFloat1Array(arraySize: Int, name: String? = null) = paramScalarArray(name ?: parentStage.program.nextName("paramF1"), KslFloat1, arraySize)

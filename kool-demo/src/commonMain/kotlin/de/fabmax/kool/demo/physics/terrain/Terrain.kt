@@ -224,14 +224,9 @@ class Terrain(val demo: TerrainDemo, val heightMap: HeightMap) {
             } else {
                 KslBlinnPhongShader { terrainConfig() }
             }
-            shader.apply {
-                // do not forget to assign the splat map to the corresponding sampler after the shader is created
-                onPipelineCreated += Shader.PipelineCreatedListener { _, _, _ ->
-                    texSamplers2d["tSplatMap"]?.texture = splatMap
-                    uniform1f(TERRAIN_SHADER_DISCARD_HEIGHT).set(1000f)
-                }
-            }
-
+            // do not forget to assign the splat map to the corresponding sampler
+            shader.texture2d("tSplatMap", splatMap)
+            shader.uniform1f(TERRAIN_SHADER_DISCARD_HEIGHT).set(1000f)
             return shader
         }
     }

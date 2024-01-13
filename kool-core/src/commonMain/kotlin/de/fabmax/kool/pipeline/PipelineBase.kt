@@ -43,8 +43,8 @@ abstract class PipelineBase(builder: Builder) {
         _bindGroupData[index] = data
     }
 
-    fun findBindGroupItemByName(name: String): Binding? {
-        return bindGroupLayouts.firstNotNullOfOrNull { it.findBindingByName(name) }
+    fun findBindGroupItemByName(name: String): BindingLayout? {
+        return bindGroupLayouts.firstNotNullOfOrNull { grp -> grp.bindings.find { it.name == name } }
     }
 
     override fun equals(other: Any?): Boolean {
