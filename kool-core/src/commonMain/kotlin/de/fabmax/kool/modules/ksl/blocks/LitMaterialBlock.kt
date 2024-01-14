@@ -2,7 +2,7 @@ package de.fabmax.kool.modules.ksl.blocks
 
 import de.fabmax.kool.modules.ksl.lang.*
 
-abstract class LitMaterialBlock(maxNumberOfLights: Int, name: String, parentScope: KslScopeBuilder) : KslBlock(name, parentScope) {
+abstract class LitMaterialBlock(val maxNumberOfLights: Int, name: String, parentScope: KslScopeBuilder) : KslBlock(name, parentScope) {
     val inCamPos = inFloat3("inCamPos")
     val inNormal = inFloat3("inNormal")
     val inFragmentPos = inFloat3("inFragmentPos")
@@ -24,7 +24,7 @@ abstract class LitMaterialBlock(maxNumberOfLights: Int, name: String, parentScop
         lightStrength: KslExprFloat1 = KslValueFloat1(1f)
     ) {
         inShadowFactors(shadowFactors)
-        inLightCount(lightData.lightCount)
+        inLightCount(KslBuiltinMinScalar(lightData.lightCount, KslValueInt1(maxNumberOfLights)))
         inEncodedLightPositions(lightData.encodedPositions)
         inEncodedLightDirections(lightData.encodedDirections)
         inEncodedLightColors(lightData.encodedColors)

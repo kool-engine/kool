@@ -1,6 +1,8 @@
 package de.fabmax.kool.modules.ksl.lang
 
-class KslUniformBuffer(val name: String, val program: KslProgram, val isShared: Boolean = false) {
+import de.fabmax.kool.pipeline.BindGroupScope
+
+class KslUniformBuffer(val name: String, val program: KslProgram, val scope: BindGroupScope) {
 
     val uniforms = mutableMapOf<String, KslUniform<*>>()
 

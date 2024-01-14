@@ -13,7 +13,7 @@ interface MappedUniform {
     fun setUniform(bindGroupData: BindGroupData): Boolean
 }
 
-class MappedUbo(val ubo: UniformBufferLayout, val gl: GlApi) : MappedUniform {
+class MappedUbo(val ubo: UniformBufferLayout, val uboIndex: Int, val gl: GlApi) : MappedUniform {
     var uboBuffer: BufferResource? = null
 
     override fun setUniform(bindGroupData: BindGroupData): Boolean {
@@ -22,7 +22,7 @@ class MappedUbo(val ubo: UniformBufferLayout, val gl: GlApi) : MappedUniform {
             if (uboData.getAndClearDirtyFlag()) {
                 buffer.setData(uboData.buffer, gl.DYNAMIC_DRAW)
             }
-            gl.bindBufferBase(gl.UNIFORM_BUFFER, ubo.bindingIndex, buffer.buffer)
+            gl.bindBufferBase(gl.UNIFORM_BUFFER, uboIndex, buffer.buffer)
             true
         } ?: false
     }
@@ -43,9 +43,9 @@ class MappedUboCompat(val ubo: UniformBufferLayout, val locations: IntArray, val
                 }
             } else {
                 when (it.type) {
-                    GpuType.MAT3 ->  9
-                    GpuType.MAT4 -> 16
-                    else         ->  1
+                    GpuType.MAT3   ->  9
+                    GpuType.MAT4   -> 16
+                    else           ->  1
                 }
             }
             add(Float32Buffer(bufferSize))

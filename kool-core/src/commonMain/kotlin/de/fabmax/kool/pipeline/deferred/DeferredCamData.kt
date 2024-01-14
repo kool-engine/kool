@@ -3,10 +3,7 @@ package de.fabmax.kool.pipeline.deferred
 import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.modules.ksl.KslShaderListener
 import de.fabmax.kool.modules.ksl.lang.*
-import de.fabmax.kool.pipeline.ShaderBase
-import de.fabmax.kool.pipeline.UniformBinding3f
-import de.fabmax.kool.pipeline.UniformBinding4f
-import de.fabmax.kool.pipeline.UniformBindingMat4f
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 
 fun KslProgram.deferredCameraData(): DeferredCamData {
@@ -22,7 +19,7 @@ class DeferredCamData(program: KslProgram) : KslDataBlock, KslShaderListener {
     val invViewMat: KslUniformMatrix<KslMat4, KslFloat4>
     val viewport: KslUniformVector<KslFloat4, KslFloat1>
 
-    val camUbo = KslUniformBuffer("CameraUniforms", program, false).apply {
+    val camUbo = KslUniformBuffer("CameraUniforms", program, BindGroupScope.SCENE).apply {
         projMat = uniformMat4("uProjMat")
         invViewMat = uniformMat4("uInvViewMat")
         viewport = uniformFloat4("uViewport")

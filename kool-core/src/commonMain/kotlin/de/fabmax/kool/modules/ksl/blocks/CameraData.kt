@@ -29,7 +29,7 @@ class CameraData(program: KslProgram) : KslDataBlock, KslShaderListener {
     val clipFar: KslExprFloat1
         get() = clip.y
 
-    val camUbo = KslUniformBuffer("CameraUniforms", program, false).apply {
+    val camUbo = KslUniformBuffer("CameraUniforms", program, BindGroupScope.SCENE).apply {
         viewMat = uniformMat4(UNIFORM_NAME_VIEW_MAT)
         projMat = uniformMat4(UNIFORM_NAME_PROJ_MAT)
         viewProjMat = uniformMat4(UNIFORM_NAME_VIEW_PROJ_MAT)

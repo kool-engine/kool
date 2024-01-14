@@ -8,6 +8,12 @@ data class Uniform(
     val isArray: Boolean
         get() = arraySize > 1
 
+    init {
+        check(arraySize >= 1) {
+            "Uniform $name ($type) has invalid arraySize: $arraySize. Uniform arraySize has to be >= 1 (non-array-types should have arraySize = 1)"
+        }
+    }
+
     override fun toString(): String {
         return name + if (isArray) "[$arraySize]" else ""
     }

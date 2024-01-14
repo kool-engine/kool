@@ -278,7 +278,7 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
     }
 
     protected open fun StringBuilder.generateUbos(stage: KslShaderStage, pipeline: PipelineBase) {
-        val ubos = stage.getUsedUbos()
+        val ubos = stage.getUsedUbos().sortedBy { it.scope.group }
         if (ubos.isNotEmpty()) {
             appendLine("// uniform buffer objects")
             for (ubo in ubos) {
@@ -291,10 +291,7 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
                         }
 
                 } else {
-                    // if isShared is true, the underlying buffer is externally provided without the buffer layout
-                    // being queried via OpenGL API -> use standardized std140 layout
-                    val layoutPrefix = if (hints.alwaysGenerateStd140Layout || ubo.isShared) "layout(std140) " else ""
-                    appendLine("${layoutPrefix}uniform ${ubo.name} {")
+                    appendLine("layout(std140) uniform ${ubo.name} {")
                     ubo.uniforms.values
                         .filter { it.expressionType !is KslArrayType<*> || it.arraySize > 0 }
                         .forEach {
@@ -626,7 +623,6 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
 
     data class Hints(
         val glslVersionStr: String,
-        val alwaysGenerateStd140Layout: Boolean = true,
         val replaceUbosByPlainUniforms: Boolean = false
     )
 

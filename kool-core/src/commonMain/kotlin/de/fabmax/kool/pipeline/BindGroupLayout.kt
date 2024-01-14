@@ -3,38 +3,35 @@ package de.fabmax.kool.pipeline
 import de.fabmax.kool.modules.ksl.lang.KslNumericType
 import de.fabmax.kool.util.LongHash
 
-class BindGroupLayout private constructor(val group: Int, val bindings: List<BindingLayout>) {
+class BindGroupLayout(val scope: BindGroupScope, val bindings: List<BindingLayout>) {
+    val group: Int get() = scope.group
 
-    val hash = LongHash()
-
-    // todo: bind group scope? (mesh / material / scene)
-
-    init {
+    val hash: Long = LongHash().let {
+        it += scope
         bindings.forEachIndexed { i, binding ->
             binding.bindingIndex = i
-            hash += binding.hash
+            it += binding.hash
         }
+        it.hash
     }
 
     fun createData(): BindGroupData = BindGroupData(this)
 
-    class Builder {
+    class Builder(val scope: BindGroupScope) {
         val ubos = mutableListOf<UniformBufferLayout>()
         val textures = mutableListOf<TextureLayout>()
         val storage = mutableListOf<StorageTextureLayout>()
 
-        fun create(group: Int): BindGroupLayout {
-            val groupItems = mutableListOf<BindingLayout>()
-            // fixme: binding number should be generated differently for OpenGL and Vulkan:
-            //  - for Vulkan binding number has to be unique for each binding in the group
-            //  - for OpenGL binding number is currently only relevant for storage bindings and should start at 0 for those
-            //  we achieve this somewhat hacky by adding storage bindings first
-            groupItems += storage
-            groupItems += textures
-            groupItems += ubos
-            return BindGroupLayout(group, groupItems)
+        fun create(): BindGroupLayout {
+            return BindGroupLayout(scope, ubos + textures + storage)
         }
     }
+}
+
+enum class BindGroupScope(val group: Int) {
+    SCENE(0),
+    MATERIAL(1),
+    MESH(2)
 }
 
 sealed class BindingLayout(

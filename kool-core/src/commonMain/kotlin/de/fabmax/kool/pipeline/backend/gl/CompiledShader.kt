@@ -1,6 +1,5 @@
 package de.fabmax.kool.pipeline.backend.gl
 
-import de.fabmax.kool.KoolContext
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.stats.PipelineInfo
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
@@ -11,7 +10,9 @@ import de.fabmax.kool.util.logE
 
 class CompiledShader(val program: GlProgram, val pipeline: PipelineBase, val backend: RenderBackendGl) {
 
-    private val pipelineId = pipeline.pipelineHash
+    private val gl: GlApi = backend.gl
+
+    private val pipelineInfo = PipelineInfo(pipeline)
 
     private val attributes = mutableMapOf<String, VertexLayout.VertexAttribute>()
     private val instanceAttributes = mutableMapOf<String, VertexLayout.VertexAttribute>()
@@ -19,10 +20,7 @@ class CompiledShader(val program: GlProgram, val pipeline: PipelineBase, val bac
     private val instances = mutableMapOf<Long, ShaderInstance>()
     private val computeInstances = mutableMapOf<Long, ComputeShaderInstance>()
 
-    private val ctx: KoolContext = backend.ctx
-    private val gl: GlApi = backend.gl
-
-    private val pipelineInfo = PipelineInfo(pipeline)
+    private val compatUbos = mutableSetOf<String>()
 
     init {
         (pipeline as? Pipeline)?.apply {
@@ -36,17 +34,21 @@ class CompiledShader(val program: GlProgram, val pipeline: PipelineBase, val bac
             }
         }
 
+        var uboIndex = 0
+        var storageIndex = 0
         pipeline.bindGroupLayouts.flatMap { it.bindings }.forEach { binding ->
             when (binding) {
                 is UniformBufferLayout -> {
                     val blockIndex = gl.getUniformBlockIndex(program, binding.name)
-                    if (blockIndex == gl.INVALID_INDEX) {
+                    if (blockIndex != gl.INVALID_INDEX) {
+                        val uboBinding = uboIndex++
+                        uniformLocations[binding.name] = intArrayOf(uboBinding)
+                        gl.uniformBlockBinding(program, blockIndex, uboBinding)
+                    } else {
                         // binding does not describe an actual UBO but plain old uniforms
                         val locations = binding.uniforms.map { gl.getUniformLocation(program, it.name) }.toIntArray()
                         uniformLocations[binding.name] = locations
-
-                    } else {
-                        gl.uniformBlockBinding(program, blockIndex, binding.bindingIndex)
+                        compatUbos += binding.name
                     }
                 }
                 is Texture1dLayout -> {
@@ -63,15 +65,15 @@ class CompiledShader(val program: GlProgram, val pipeline: PipelineBase, val bac
                 }
                 is StorageTexture1dLayout -> {
                     checkStorageTexSupport()
-                    uniformLocations[binding.name] = intArrayOf(binding.bindingIndex)
+                    uniformLocations[binding.name] = intArrayOf(storageIndex++)
                 }
                 is StorageTexture2dLayout -> {
                     checkStorageTexSupport()
-                    uniformLocations[binding.name] = intArrayOf(binding.bindingIndex)
+                    uniformLocations[binding.name] = intArrayOf(storageIndex++)
                 }
                 is StorageTexture3dLayout -> {
                     checkStorageTexSupport()
-                    uniformLocations[binding.name] = intArrayOf(binding.bindingIndex)
+                    uniformLocations[binding.name] = intArrayOf(storageIndex++)
                 }
             }
         }
@@ -154,18 +156,18 @@ class CompiledShader(val program: GlProgram, val pipeline: PipelineBase, val bac
 
     abstract inner class ShaderInstanceBase(private val pipelineInstance: PipelineBase) {
 
-        protected val ubos = mutableListOf<UniformBufferLayout>()
-        protected val textures1d = mutableListOf<Texture1dLayout>()
-        protected val textures2d = mutableListOf<Texture2dLayout>()
-        protected val textures3d = mutableListOf<Texture3dLayout>()
-        protected val texturesCube = mutableListOf<TextureCubeLayout>()
-        protected val storage1d = mutableListOf<StorageTexture1dLayout>()
-        protected val storage2d = mutableListOf<StorageTexture2dLayout>()
-        protected val storage3d = mutableListOf<StorageTexture3dLayout>()
+        private val ubos = mutableListOf<UniformBufferLayout>()
+        private val textures1d = mutableListOf<Texture1dLayout>()
+        private val textures2d = mutableListOf<Texture2dLayout>()
+        private val textures3d = mutableListOf<Texture3dLayout>()
+        private val texturesCube = mutableListOf<TextureCubeLayout>()
+        private val storage1d = mutableListOf<StorageTexture1dLayout>()
+        private val storage2d = mutableListOf<StorageTexture2dLayout>()
+        private val storage3d = mutableListOf<StorageTexture3dLayout>()
 
-        protected val mappings = mutableListOf<Pair<Int, MappedUniform>>()
-        protected var uboBuffers = mutableListOf<BufferResource>()
-        protected var nextTexUnit = gl.TEXTURE0
+        private val mappings = mutableListOf<Pair<Int, MappedUniform>>()
+        private var uboBuffers = mutableListOf<BufferResource>()
+        private var nextTexUnit = gl.TEXTURE0
 
         init {
             pipelineInstance.bindGroupLayouts.forEachIndexed { group, bindGroupLayout ->
@@ -235,11 +237,11 @@ class CompiledShader(val program: GlProgram, val pipeline: PipelineBase, val bac
 
         private fun mapUbo(group: Int, ubo: UniformBufferLayout) {
             ubos.add(ubo)
-            val uniformLocations = uniformLocations[ubo.name]
-            mappings += if (uniformLocations != null) {
-                group to MappedUboCompat(ubo, uniformLocations, gl)
+            val uniformLocations = uniformLocations[ubo.name]!!
+            mappings += if (ubo.name !in compatUbos) {
+                group to MappedUbo(ubo, uniformLocations[0], gl)
             } else {
-                group to MappedUbo(ubo, gl)
+                group to MappedUboCompat(ubo, uniformLocations, gl)
             }
         }
 

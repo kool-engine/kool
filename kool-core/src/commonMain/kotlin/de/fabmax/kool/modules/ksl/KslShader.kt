@@ -145,15 +145,17 @@ open class KslShader private constructor(val program: KslProgram) : Shader(progr
 }
 
 fun KslProgram.makeBindGroupLayout(): List<BindGroupLayout> {
-    val bindGrpBuilder = BindGroupLayout.Builder()
-    setupBindGroupLayoutUbos(bindGrpBuilder)
-    setupBindGroupLayoutTextures(bindGrpBuilder)
-    setupBindGroupLayoutStorage(bindGrpBuilder)
-    return listOf(bindGrpBuilder.create(0))
+    return BindGroupScope.entries.map {
+        val bindGrpBuilder = BindGroupLayout.Builder(it)
+        setupBindGroupLayoutUbos(bindGrpBuilder)
+        setupBindGroupLayoutTextures(bindGrpBuilder)
+        setupBindGroupLayoutStorage(bindGrpBuilder)
+        bindGrpBuilder.create()
+    }
 }
 
 private fun KslProgram.setupBindGroupLayoutUbos(bindGrpBuilder: BindGroupLayout.Builder) {
-    uniformBuffers.filter { it.uniforms.isNotEmpty() }.forEach { kslUbo ->
+    uniformBuffers.filter { it.uniforms.isNotEmpty() && it.scope == bindGrpBuilder.scope }.forEach { kslUbo ->
         val uniforms = kslUbo.uniforms.values.map { uniform ->
             when(val type = uniform.value.expressionType)  {
                 is KslFloat1 -> Uniform.float1(uniform.name)
@@ -203,6 +205,11 @@ private fun KslProgram.setupBindGroupLayoutUbos(bindGrpBuilder: BindGroupLayout.
 }
 
 private fun KslProgram.setupBindGroupLayoutTextures(bindGrpBuilder: BindGroupLayout.Builder) {
+    if (bindGrpBuilder.scope != BindGroupScope.MATERIAL) {
+        // todo: add bind group scope to ksl textures -> for now we use material scope for all of them
+        return
+    }
+
     uniformSamplers.values.forEach { sampler ->
         val texStages = stages
             .filter { it.dependsOn(sampler) }
@@ -235,6 +242,11 @@ private fun KslProgram.setupBindGroupLayoutTextures(bindGrpBuilder: BindGroupLay
 }
 
 private fun KslProgram.setupBindGroupLayoutStorage(bindGrpBuilder: BindGroupLayout.Builder) {
+    if (bindGrpBuilder.scope != BindGroupScope.MATERIAL) {
+        // todo: add bind group scope to ksl storage -> for now we use material scope for all of them
+        return
+    }
+
     uniformStorage.values.forEach { storage ->
         val storageStages = stages
             .filter { it.dependsOn(storage) }
