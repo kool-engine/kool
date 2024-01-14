@@ -236,7 +236,7 @@ class TriangulatedLineMesh(geometry: IndexedVertexList, name: String = makeNodeN
         constructor(block: Config.() -> Unit) : this(Config().apply(block))
 
         init {
-            pipelineConfig.set(cfg.pipelineCfg)
+            pipelineConfig = cfg.pipelineCfg.build()
             program.makeProgram(cfg)
             cfg.modelCustomizer?.invoke(program)
         }

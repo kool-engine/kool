@@ -10,7 +10,7 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.Mesh
 import kotlin.math.max
 
-class DepthShader(val cfg: Config) : KslShader(depthShaderProg(cfg), cfg.pipelineCfg) {
+class DepthShader(val cfg: Config) : KslShader(depthShaderProg(cfg), cfg.pipelineCfg.build()) {
 
     var alphaMask by texture2d("tAlphaMask", cfg.alphaMask)
 
@@ -79,7 +79,7 @@ class DepthShader(val cfg: Config) : KslShader(depthShaderProg(cfg), cfg.pipelin
     }
 
     data class Config(
-        val pipelineCfg: PipelineConfig = PipelineConfig(),
+        val pipelineCfg: PipelineConfigBuilder = PipelineConfigBuilder(),
         val vertexCfg: BasicVertexConfig = BasicVertexConfig(),
         var alphaMode: AlphaMode = AlphaMode.Opaque,
         var alphaMask: Texture2d? = null,
@@ -98,7 +98,7 @@ class DepthShader(val cfg: Config) : KslShader(depthShaderProg(cfg), cfg.pipelin
             alphaMode = AlphaMode.Mask(alphaCutOff)
         }
 
-        inline fun pipeline(block: PipelineConfig.() -> Unit) {
+        inline fun pipeline(block: PipelineConfigBuilder.() -> Unit) {
             pipelineCfg.block()
         }
 

@@ -264,10 +264,10 @@ class FluidDemo : DemoScene("Fluid Simulation") {
 
         init {
             texture2d("drawState", draw)
-            pipelineConfig.apply {
-                depthTest = DepthCompareOp.DISABLED
+            pipelineConfig = PipelineConfig(
+                depthTest = DepthCompareOp.DISABLED,
                 lineWidth = 2f
-            }
+            )
             program.code()
         }
 
@@ -312,7 +312,7 @@ class FluidDemo : DemoScene("Fluid Simulation") {
             gradientTex.releaseWith(this@FluidDemo.mainScene)
             texture1d("colorScheme", gradientTex)
 
-            pipelineConfig.isWriteDepth = false
+            pipelineConfig = PipelineConfig(isWriteDepth = false)
             program.code()
         }
 

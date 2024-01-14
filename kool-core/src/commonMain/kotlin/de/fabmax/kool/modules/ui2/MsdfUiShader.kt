@@ -7,10 +7,10 @@ import de.fabmax.kool.pipeline.*
 
 class MsdfUiShader(
     model: Model = Model(),
-    pipelineCfg: PipelineConfig = PipelineConfig().apply {
-        cullMethod = CullMethod.NO_CULLING
+    pipelineCfg: PipelineConfig = PipelineConfig(
+        cullMethod = CullMethod.NO_CULLING,
         blendMode = BlendMode.BLEND_PREMULTIPLIED_ALPHA
-    }
+    )
 ) : KslShader(model, pipelineCfg) {
     var fontMap by texture2d("tFontMap")
     var pxRangeScale by uniform1f("uPxRange", 1f)

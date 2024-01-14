@@ -14,11 +14,11 @@ import de.fabmax.kool.pipeline.Texture2d
 class DeferredOutputShader(cfg: DeferredPipelineConfig, bloom: Texture2d?) :
     KslShader(
         Model(cfg),
-        PipelineConfig().apply {
-            blendMode = BlendMode.DISABLED
-            cullMethod = CullMethod.NO_CULLING
+        PipelineConfig(
+            blendMode = BlendMode.DISABLED,
+            cullMethod = CullMethod.NO_CULLING,
             depthTest = cfg.outputDepthTest
-        },
+        )
     ) {
 
     var bloomMap by texture2d("bloom", bloom)

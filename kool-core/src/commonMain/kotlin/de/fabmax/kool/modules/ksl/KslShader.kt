@@ -3,6 +3,7 @@ package de.fabmax.kool.modules.ksl
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logW
 
 fun KslShader(
@@ -11,7 +12,7 @@ fun KslShader(
     block: KslProgram.() -> Unit
 ): KslShader {
     val shader = KslShader(name)
-    shader.pipelineConfig.set(pipelineConfig)
+    shader.pipelineConfig = pipelineConfig
     shader.program.apply(block)
     return shader
 }
@@ -20,8 +21,17 @@ open class KslShader private constructor(val program: KslProgram) : Shader(progr
     constructor(name: String): this(KslProgram(name))
 
     constructor(program: KslProgram, pipelineConfig: PipelineConfig): this(program) {
-        this.pipelineConfig.set(pipelineConfig)
+        this.pipelineConfig = pipelineConfig
     }
+
+    var pipelineConfig: PipelineConfig = PipelineConfig()
+        set(value) {
+            if (createdPipeline == null) {
+                field = value
+            } else {
+                logE { "pipelineConfig cannot be changed after the pipeline is created" }
+            }
+        }
 
     /**
      * Retrieves the set of vertex attributes required by this shader. The [program] needs
@@ -34,7 +44,7 @@ open class KslShader private constructor(val program: KslProgram) : Shader(progr
         }.toSet()
     }
 
-    override fun onPipelineSetup(builder: Pipeline.Builder, mesh: Mesh, updateEvent: RenderPass.UpdateEvent) {
+    override fun createPipeline(mesh: Mesh, updateEvent: RenderPass.UpdateEvent): Pipeline {
         checkNotNull(program.vertexStage) {
             "KslProgram vertexStage is missing (a valid KslShader needs at least a vertexStage and fragmentStage)"
         }
@@ -50,16 +60,13 @@ open class KslShader private constructor(val program: KslProgram) : Shader(progr
         // uniform is used by which shader stage)
         program.prepareGenerate()
 
-        builder.name = program.name
-        builder.vertexLayout.setupVertexLayout(mesh)
-        builder.bindGroupLayout = program.setupBindGroupLayout()
-        builder.shaderCodeGenerator = { updateEvent.ctx.backend.generateKslShader(this, it) }
-
-        super.onPipelineSetup(builder, mesh, updateEvent)
-    }
-
-    override fun onPipelineCreated(pipeline: Pipeline, mesh: Mesh, updateEvent: RenderPass.UpdateEvent) {
-        super.onPipelineCreated(pipeline, mesh, updateEvent)
+        val pipeline = Pipeline(
+            name = program.name,
+            pipelineConfig = pipelineConfig,
+            vertexLayout = makeVertexLayout(mesh),
+            bindGroupLayouts = program.makeBindGroupLayout(),
+            shaderCodeGenerator = { updateEvent.ctx.backend.generateKslShader(this, it) }
+        )
 
         pipeline.onUpdate += { cmd ->
             for (i in program.shaderListeners.indices) {
@@ -67,17 +74,20 @@ open class KslShader private constructor(val program: KslProgram) : Shader(progr
             }
         }
         program.shaderListeners.forEach { it.onShaderCreated(this) }
+
+        return pipeline
     }
 
-    private fun VertexLayout.Builder.setupVertexLayout(mesh: Mesh)  {
-        var attribLocation = 0
-        val verts = mesh.geometry
-        val vertLayoutAttribs = mutableListOf<VertexLayout.VertexAttribute>()
-        val vertLayoutAttribsI = mutableListOf<VertexLayout.VertexAttribute>()
-        var iBinding = 0
-
+    private fun makeVertexLayout(mesh: Mesh): VertexLayout {
         val vertexStage = checkNotNull(program.vertexStage) { "vertexStage not defined" }
 
+        val verts = mesh.geometry
+        val insts = mesh.instances
+        val vertLayoutAttribsF = mutableListOf<VertexLayout.VertexAttribute>()
+        val vertLayoutAttribsI = mutableListOf<VertexLayout.VertexAttribute>()
+        val instLayoutAttribs = mutableListOf<VertexLayout.VertexAttribute>()
+
+        var attribLocation = 0
         vertexStage.attributes.values.filter { it.inputRate == KslInputRate.Vertex }.forEach { vertexAttrib ->
             val attrib = verts.attributeByteOffsets.keys.find { it.name == vertexAttrib.name }
                 ?: throw NoSuchElementException("Mesh does not include required vertex attribute: ${vertexAttrib.name} (for shader: ${program.name})")
@@ -85,31 +95,14 @@ open class KslShader private constructor(val program: KslProgram) : Shader(progr
             if (attrib.type.isInt) {
                 vertLayoutAttribsI += VertexLayout.VertexAttribute(attribLocation, off, attrib)
             } else {
-                vertLayoutAttribs += VertexLayout.VertexAttribute(attribLocation, off, attrib)
+                vertLayoutAttribsF += VertexLayout.VertexAttribute(attribLocation, off, attrib)
             }
             vertexAttrib.location = attribLocation
             attribLocation += attrib.locationIncrement
         }
 
-        bindings += VertexLayout.Binding(
-            iBinding++,
-            InputRate.VERTEX,
-            vertLayoutAttribs,
-            verts.byteStrideF
-        )
-        if (vertLayoutAttribsI.isNotEmpty()) {
-            bindings += VertexLayout.Binding(
-                iBinding++,
-                InputRate.VERTEX,
-                vertLayoutAttribsI,
-                verts.byteStrideI
-            )
-        }
-
         val instanceAttribs = vertexStage.attributes.values.filter { it.inputRate == KslInputRate.Instance }
-        val insts = mesh.instances
         if (insts != null) {
-            val instLayoutAttribs = mutableListOf<VertexLayout.VertexAttribute>()
             instanceAttribs.forEach { instanceAttrib ->
                 val attrib = insts.attributeOffsets.keys.find { it.name == instanceAttrib.name }
                     ?: throw NoSuchElementException("Mesh does not include required instance attribute: ${instanceAttrib.name}")
@@ -118,24 +111,45 @@ open class KslShader private constructor(val program: KslProgram) : Shader(progr
                 instanceAttrib.location = attribLocation
                 attribLocation += attrib.locationIncrement
             }
-            bindings += VertexLayout.Binding(
-                iBinding,
-                InputRate.INSTANCE,
-                instLayoutAttribs,
-                insts.strideBytesF
-            )
         } else if (instanceAttribs.isNotEmpty()) {
             throw IllegalStateException("Shader model requires instance attributes, but mesh doesn't provide any")
         }
+
+        var iBinding = 0
+        val bindings = buildList {
+            this += VertexLayout.Binding(
+                iBinding++,
+                InputRate.VERTEX,
+                vertLayoutAttribsF,
+                verts.byteStrideF
+            )
+            if (vertLayoutAttribsI.isNotEmpty()) {
+                this += VertexLayout.Binding(
+                    iBinding++,
+                    InputRate.VERTEX,
+                    vertLayoutAttribsI,
+                    verts.byteStrideI
+                )
+            }
+            if (insts != null) {
+                this += VertexLayout.Binding(
+                    iBinding,
+                    InputRate.INSTANCE,
+                    instLayoutAttribs,
+                    insts.strideBytesF
+                )
+            }
+        }
+        return VertexLayout(bindings, mesh.geometry.primitiveType)
     }
 }
 
-fun KslProgram.setupBindGroupLayout(): BindGroupLayout.Builder {
+fun KslProgram.makeBindGroupLayout(): List<BindGroupLayout> {
     val bindGrpBuilder = BindGroupLayout.Builder()
     setupBindGroupLayoutUbos(bindGrpBuilder)
     setupBindGroupLayoutTextures(bindGrpBuilder)
     setupBindGroupLayoutStorage(bindGrpBuilder)
-    return bindGrpBuilder
+    return listOf(bindGrpBuilder.create(0))
 }
 
 private fun KslProgram.setupBindGroupLayoutUbos(bindGrpBuilder: BindGroupLayout.Builder) {

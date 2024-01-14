@@ -50,9 +50,9 @@ object FullscreenShaderUtil {
         }
     }
 
-    val fullscreenShaderPipelineCfg = PipelineConfig().apply {
-        blendMode = BlendMode.DISABLED
-        cullMethod = CullMethod.NO_CULLING
+    val fullscreenShaderPipelineCfg = PipelineConfig(
+        blendMode = BlendMode.DISABLED,
+        cullMethod = CullMethod.NO_CULLING,
         depthTest = DepthCompareOp.DISABLED
-    }
+    )
 }

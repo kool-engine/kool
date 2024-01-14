@@ -4,7 +4,7 @@ import de.fabmax.kool.modules.ksl.blocks.*
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.BlendMode
-import de.fabmax.kool.pipeline.PipelineConfig
+import de.fabmax.kool.pipeline.PipelineConfigBuilder
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.shading.AlphaMode
 import de.fabmax.kool.util.Color
@@ -20,7 +20,7 @@ open class KslUnlitShader(cfg: UnlitShaderConfig) : KslShader("Unlit Shader") {
     val colorCfg = ColorBlockConfig(cfg.colorCfg.colorName, cfg.colorCfg.colorSources.copy().toMutableList())
 
     init {
-        pipelineConfig.set(cfg.pipelineCfg)
+        pipelineConfig = cfg.pipelineCfg.build()
         program.unlitProgram(cfg)
         cfg.modelCustomizer?.invoke(program)
     }
@@ -67,7 +67,7 @@ open class KslUnlitShader(cfg: UnlitShaderConfig) : KslShader("Unlit Shader") {
     open class UnlitShaderConfig {
         val vertexCfg = BasicVertexConfig()
         val colorCfg = ColorBlockConfig("baseColor")
-        val pipelineCfg = PipelineConfig()
+        val pipelineCfg = PipelineConfigBuilder()
 
         var colorSpaceConversion = ColorSpaceConversion.AS_IS
         var alphaMode: AlphaMode = AlphaMode.Blend
@@ -82,7 +82,7 @@ open class KslUnlitShader(cfg: UnlitShaderConfig) : KslShader("Unlit Shader") {
             colorCfg.apply(block)
         }
 
-        fun pipeline(block: PipelineConfig.() -> Unit) {
+        fun pipeline(block: PipelineConfigBuilder.() -> Unit) {
             pipelineCfg.apply(block)
         }
     }

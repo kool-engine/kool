@@ -7,18 +7,24 @@ import de.fabmax.kool.pipeline.drawqueue.DrawCommand
  * to traditional OpenGL, these options cannot be changed after the pipeline is created (this is in line with
  * how modern graphics APIs, like Vulkan, work).
  */
-class Pipeline private constructor(builder: Builder) : PipelineBase(builder) {
+class Pipeline(
+    name: String,
+    val pipelineConfig: PipelineConfig,
+    val vertexLayout: VertexLayout,
+    bindGroupLayouts: List<BindGroupLayout>,
+    shaderCodeGenerator: (Pipeline) -> ShaderCode
+) :
+    PipelineBase(name, bindGroupLayouts)
+{
 
-    val cullMethod: CullMethod = builder.pipelineConfig.cullMethod
-    val blendMode: BlendMode = builder.pipelineConfig.blendMode
-    val depthCompareOp: DepthCompareOp = builder.pipelineConfig.depthTest
-    val autoReverseDepthFunc: Boolean = builder.pipelineConfig.autoReverseDepthFunc
-    val isWriteDepth: Boolean = builder.pipelineConfig.isWriteDepth
-    val lineWidth: Float = builder.pipelineConfig.lineWidth
+    val cullMethod: CullMethod get() = pipelineConfig.cullMethod
+    val blendMode: BlendMode get() = pipelineConfig.blendMode
+    val depthCompareOp: DepthCompareOp get() = pipelineConfig.depthTest
+    val autoReverseDepthFunc: Boolean get() = pipelineConfig.autoReverseDepthFunc
+    val isWriteDepth: Boolean get() = pipelineConfig.isWriteDepth
+    val lineWidth: Float get() = pipelineConfig.lineWidth
 
-    val vertexLayout: VertexLayout
-
-    val shaderCode: ShaderCode
+    val shaderCode: ShaderCode = shaderCodeGenerator(this)
     val onUpdate = mutableListOf<(DrawCommand) -> Unit>()
 
     init {
@@ -27,22 +33,8 @@ class Pipeline private constructor(builder: Builder) : PipelineBase(builder) {
         hash += isWriteDepth
         hash += lineWidth
 
-        vertexLayout = builder.vertexLayout.create()
         hash += vertexLayout.hash
-
-        shaderCode = builder.shaderCodeGenerator(this)
         hash += shaderCode.hash
-    }
-
-    class Builder : PipelineBase.Builder() {
-        val pipelineConfig = PipelineConfig()
-        val vertexLayout = VertexLayout.Builder()
-
-        lateinit var shaderCodeGenerator: (Pipeline) -> ShaderCode
-
-        override fun create(): Pipeline {
-            return Pipeline(this)
-        }
     }
 }
 

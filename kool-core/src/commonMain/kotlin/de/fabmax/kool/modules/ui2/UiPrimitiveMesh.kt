@@ -249,11 +249,11 @@ class UiPrimitiveMesh(name: String) : Mesh(IndexedVertexList(ATTRIB_OUTER_WEIGHT
         }
 
         companion object {
-            val pipelineConfig = PipelineConfig().apply {
-                blendMode = BlendMode.BLEND_PREMULTIPLIED_ALPHA
-                cullMethod = CullMethod.NO_CULLING
+            val pipelineConfig = PipelineConfig(
+                blendMode = BlendMode.BLEND_PREMULTIPLIED_ALPHA,
+                cullMethod = CullMethod.NO_CULLING,
                 depthTest = DepthCompareOp.DISABLED
-            }
+            )
         }
     }
 }

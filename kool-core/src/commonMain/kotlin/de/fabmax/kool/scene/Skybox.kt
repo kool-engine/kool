@@ -60,12 +60,12 @@ object Skybox {
         }
     }
 
-    class KslSkyCubeShader(colorSpaceConversion: ColorSpaceConversion, isInfiniteDepth: Boolean)
-        : KslShader(Model(colorSpaceConversion, isInfiniteDepth), PipelineConfig().apply {
-            cullMethod = CullMethod.CULL_FRONT_FACES
-            isWriteDepth = false
-        }) {
-
+    class KslSkyCubeShader(colorSpaceConversion: ColorSpaceConversion, isInfiniteDepth: Boolean) :
+        KslShader(
+            Model(colorSpaceConversion, isInfiniteDepth),
+            PipelineConfig(cullMethod = CullMethod.CULL_FRONT_FACES, isWriteDepth = false)
+        )
+    {
         val skies = textureCubeArray("tSkies", 2)
         var skyWeights: Vec2f by uniform2f("uSkyWeights", Vec2f.X_AXIS)
 

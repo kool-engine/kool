@@ -84,7 +84,7 @@ class AoDenoisePass(aoPass: OffscreenRenderPass2d, depthComponent: String) :
         var uRadius by uniform1f("uRadius", 1f)
 
         init {
-            pipelineConfig.set(fullscreenShaderPipelineCfg)
+            pipelineConfig = fullscreenShaderPipelineCfg
             program.denoiseProg(depthComponent)
         }
 

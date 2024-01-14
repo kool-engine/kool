@@ -148,10 +148,7 @@ class TitleBgRenderer(
             val ATTRIB_DIMENS = Attribute("aDimens", GpuType.FLOAT4)
             val ATTRIB_CLIP_CORNERS = Attribute("aClipCorners", GpuType.FLOAT2)
 
-            val pipelineConfig = PipelineConfig().apply {
-                blendMode = BlendMode.DISABLED
-                cullMethod = CullMethod.NO_CULLING
-            }
+            val pipelineConfig = PipelineConfig(blendMode = BlendMode.DISABLED, cullMethod = CullMethod.NO_CULLING)
         }
     }
 }

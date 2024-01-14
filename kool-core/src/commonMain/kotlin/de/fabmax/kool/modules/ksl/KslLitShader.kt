@@ -9,7 +9,7 @@ import de.fabmax.kool.pipeline.shading.AlphaMode
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.copy
 
-abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader(model, cfg.pipelineCfg) {
+abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader(model, cfg.pipelineCfg.build()) {
 
     var color: Color by colorUniform(cfg.colorCfg)
     var colorMap: Texture2d? by colorTexture(cfg.colorCfg)
@@ -52,7 +52,6 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
     val shadowMaps = cfg.shadowCfg.shadowMaps.map { it.shadowMap }
 
     init {
-        pipelineConfig.set(cfg.pipelineCfg)
         when (ambientCfg) {
             is AmbientColor.Uniform -> ambientFactor = ambientCfg.color
             is AmbientColor.ImageBased -> {
@@ -76,7 +75,7 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
         val colorCfg = ColorBlockConfig("baseColor")
         val normalMapCfg = NormalMapConfig()
         val aoCfg = AmbientOcclusionConfig()
-        val pipelineCfg = PipelineConfig()
+        val pipelineCfg = PipelineConfigBuilder()
         val shadowCfg = ShadowConfig()
         val emissionCfg = ColorBlockConfig("emissionColor").apply { constColor(Color(0f, 0f, 0f, 0f)) }
 
@@ -118,7 +117,7 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
             normalMapCfg.block()
         }
 
-        inline fun pipeline(block: PipelineConfig.() -> Unit) {
+        inline fun pipeline(block: PipelineConfigBuilder.() -> Unit) {
             pipelineCfg.block()
         }
 

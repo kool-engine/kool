@@ -52,10 +52,10 @@ class Ui2Shader : KslShader(Model(), pipelineConfig) {
         val UI_MESH_ATTRIBS = listOf(Attribute.POSITIONS, Attribute.COLORS, ATTRIB_CLIP, Attribute.TEXTURE_COORDS)
 
         private val noFontTex = SingleColorTexture(Color.WHITE)
-        private val pipelineConfig = PipelineConfig().apply {
-            blendMode = BlendMode.BLEND_PREMULTIPLIED_ALPHA
-            cullMethod = CullMethod.NO_CULLING
+        private val pipelineConfig = PipelineConfig(
+            blendMode = BlendMode.BLEND_PREMULTIPLIED_ALPHA,
+            cullMethod = CullMethod.NO_CULLING,
             depthTest = DepthCompareOp.DISABLED
-        }
+        )
     }
 }

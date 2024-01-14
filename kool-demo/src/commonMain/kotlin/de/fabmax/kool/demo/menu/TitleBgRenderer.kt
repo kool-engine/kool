@@ -156,11 +156,11 @@ class TitleBgRenderer(
             val ATTRIB_DIMENS = Attribute("aDimens", GpuType.FLOAT4)
             val ATTRIB_GRADIENT_RANGE = Attribute("aGradientRange", GpuType.FLOAT4)
 
-            val pipelineConfig = PipelineConfig().apply {
-                blendMode = BlendMode.BLEND_PREMULTIPLIED_ALPHA
-                cullMethod = CullMethod.NO_CULLING
+            val pipelineConfig = PipelineConfig(
+                blendMode = BlendMode.BLEND_PREMULTIPLIED_ALPHA,
+                cullMethod = CullMethod.NO_CULLING,
                 depthTest = DepthCompareOp.DISABLED
-            }
+            )
 
             val bgGradientTex: GradientTexture by lazy {
                 GradientTexture(Demos.demoColors, size = 512, name = "DemoMenu/TitleGradient")

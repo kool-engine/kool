@@ -250,10 +250,10 @@ class ImageShader : KslShader(Model(), pipelineConfig) {
     }
 
     companion object {
-        private val pipelineConfig = PipelineConfig().apply {
-            blendMode = BlendMode.BLEND_PREMULTIPLIED_ALPHA
-            cullMethod = CullMethod.NO_CULLING
+        private val pipelineConfig = PipelineConfig(
+            blendMode = BlendMode.BLEND_PREMULTIPLIED_ALPHA,
+            cullMethod = CullMethod.NO_CULLING,
             depthTest = DepthCompareOp.DISABLED
-        }
+        )
     }
 }

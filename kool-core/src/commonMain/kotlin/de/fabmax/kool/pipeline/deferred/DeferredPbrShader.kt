@@ -21,7 +21,7 @@ inline fun deferredKslPbrShader(block: DeferredKslPbrShader.Config.() -> Unit): 
  * 1st pass shader for deferred pbr shading: Renders view space position, normals, albedo, roughness, metallic and
  * texture-based AO into three separate texture outputs.
  */
-open class DeferredKslPbrShader(cfg: Config) : KslShader(deferredPbrModel(cfg), cfg.pipelineCfg) {
+open class DeferredKslPbrShader(cfg: Config) : KslShader(deferredPbrModel(cfg), cfg.pipelineCfg.build()) {
 
     var color: Color by colorUniform(cfg.colorCfg)
     var colorMap: Texture2d? by colorTexture(cfg.colorCfg)

@@ -224,10 +224,7 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
         }
 
         companion object {
-            val pipelineCfg = PipelineConfig().apply {
-                cullMethod = CullMethod.NO_CULLING
-                depthTest = DepthCompareOp.DISABLED
-            }
+            val pipelineCfg = PipelineConfig(cullMethod = CullMethod.NO_CULLING, depthTest = DepthCompareOp.DISABLED)
         }
     }
 

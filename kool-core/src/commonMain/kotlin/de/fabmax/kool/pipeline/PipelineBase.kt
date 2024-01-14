@@ -6,9 +6,7 @@ import de.fabmax.kool.util.LongHash
  * Base class for regular (graphics) and compute pipelines. A pipeline includes the shader and additional attributes
  * like the corresponding data layout, etc.
  */
-abstract class PipelineBase(builder: Builder) {
-
-    val name = builder.name
+abstract class PipelineBase(val name: String, val bindGroupLayouts: List<BindGroupLayout>) {
 
     /**
      * pipelineHash is used to determine pipeline equality. In contrast to standard java hashCode() a 64-bit hash is
@@ -20,7 +18,6 @@ abstract class PipelineBase(builder: Builder) {
         get() = hash.hash
     val pipelineInstanceId = instanceId++
 
-    val bindGroupLayouts: List<BindGroupLayout>
     @Deprecated("Use bindGroupLayouts instead", ReplaceWith("bindGroupLayouts[0]"))
     val bindGroupLayout: BindGroupLayout get() = bindGroupLayouts[0]
 
@@ -28,8 +25,6 @@ abstract class PipelineBase(builder: Builder) {
     val bindGroupData: List<BindGroupData> get() = _bindGroupData
 
     init {
-        val layout = requireNotNull(builder.bindGroupLayout) { "Builder.bindGroupLayout must be set" }
-        bindGroupLayouts = listOf(layout.create(0))
         bindGroupLayouts.forEach {
             hash += it.hash
             _bindGroupData += it.createData()
@@ -55,13 +50,6 @@ abstract class PipelineBase(builder: Builder) {
 
     override fun hashCode(): Int {
         return pipelineHash.hashCode()
-    }
-
-    abstract class Builder {
-        var name = "pipeline"
-        var bindGroupLayout: BindGroupLayout.Builder? = null
-
-        abstract fun create(): PipelineBase
     }
 
     companion object {

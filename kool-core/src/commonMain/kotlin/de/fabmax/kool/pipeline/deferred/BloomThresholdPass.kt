@@ -66,9 +66,7 @@ class BloomThresholdPass(deferredPipeline: DeferredPipeline, cfg: DeferredPipeli
         var upperThreshold by uniform1f("uThresholdUpper", 1f)
 
         companion object {
-            private val pipelineCfg = PipelineConfig().apply {
-                depthTest = DepthCompareOp.DISABLED
-            }
+            private val pipelineCfg = PipelineConfig(depthTest = DepthCompareOp.DISABLED)
 
             private fun program(samples: Int, avgDownSampling: Boolean) = KslProgram("Bloom threshold pass").apply {
                 val screenUv = interStageFloat2("uv")

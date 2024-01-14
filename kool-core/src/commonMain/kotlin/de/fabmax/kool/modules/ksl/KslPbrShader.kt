@@ -44,10 +44,11 @@ open class KslPbrShader(cfg: Config, model: KslProgram = Model(cfg)) : KslLitSha
         reflectionMap = cfg.reflectionMap
     }
 
-    override fun onPipelineSetup(builder: Pipeline.Builder, mesh: Mesh, updateEvent: RenderPass.UpdateEvent) {
-        super.onPipelineSetup(builder, mesh, updateEvent)
-        if (brdfLut == null) {
-            brdfLut = updateEvent.ctx.defaultPbrBrdfLut
+    override fun createPipeline(mesh: Mesh, updateEvent: RenderPass.UpdateEvent): Pipeline {
+        return super.createPipeline(mesh, updateEvent).also {
+            if (brdfLut == null) {
+                brdfLut = updateEvent.ctx.defaultPbrBrdfLut
+            }
         }
     }
 

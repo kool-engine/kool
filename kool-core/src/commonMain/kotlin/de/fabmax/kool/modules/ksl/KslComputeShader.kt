@@ -22,7 +22,7 @@ open class KslComputeShader(name: String) : ComputeShader(name) {
 
     val program = KslProgram(name)
 
-    override fun onPipelineSetup(builder: ComputePipeline.Builder, computePass: ComputeRenderPass) {
+    override fun createPipeline(computePass: ComputeRenderPass): ComputePipeline {
         val computeStage = program.computeStage
         checkNotNull(computeStage) {
             "KslProgram computeStage is missing (a valid KslComputeShader needs a computeStage)"
@@ -35,14 +35,12 @@ open class KslComputeShader(name: String) : ComputeShader(name) {
         // uniform is used by which shader stage)
         program.prepareGenerate()
 
-        builder.name = program.name
-        builder.workGroupSize.set(computeStage.workGroupSize)
-        builder.bindGroupLayout = program.setupBindGroupLayout()
-        builder.shaderCodeGenerator = { KoolSystem.requireContext().backend.generateKslComputeShader(this, it) }
-    }
-
-    override fun onComputePipelineCreated(pipeline: ComputePipeline, computePass: ComputeRenderPass) {
-        super.onComputePipelineCreated(pipeline, computePass)
+        val pipeline = ComputePipeline(
+            name = name,
+            bindGroupLayouts = program.makeBindGroupLayout(),
+            workGroupSize = computeStage.workGroupSize,
+            shaderCodeGenerator = { KoolSystem.requireContext().backend.generateKslComputeShader(this, it) }
+        )
 
         pipeline.onUpdate += {
             for (i in program.shaderListeners.indices) {
@@ -50,6 +48,7 @@ open class KslComputeShader(name: String) : ComputeShader(name) {
             }
         }
         program.shaderListeners.forEach { it.onShaderCreated(this) }
-    }
 
+        return pipeline
+    }
 }
