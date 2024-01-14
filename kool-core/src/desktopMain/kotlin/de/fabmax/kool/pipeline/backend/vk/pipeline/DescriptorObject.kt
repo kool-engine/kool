@@ -60,7 +60,7 @@ class UboDescriptor(binding: Int, graphicsPipeline: GraphicsPipeline, private va
     }
 
     override fun update(cmd: DrawCommand, sys: VkSystem) {
-        val hostBuffer = cmd.pipeline!!.bindGroupData[0].uniformBufferBindingData(binding).buffer as MixedBufferImpl
+        val hostBuffer = cmd.pipeline!!.pipelineData.uniformBufferBindingData(binding).buffer as MixedBufferImpl
         hostBuffer.useRaw { host ->
             buffer.mapped { put(host) }
         }
@@ -86,7 +86,7 @@ class SamplerDescriptor private constructor(binding: Int, private val sampler: T
 
     override fun setDescriptorSet(stack: MemoryStack, vkWriteDescriptorSet: VkWriteDescriptorSet, dstSet: Long, cmd: DrawCommand) {
         stack.apply {
-            val textures = sampler.getTextures(cmd.pipeline!!.bindGroupData[0])
+            val textures = sampler.getTextures(cmd.pipeline!!.pipelineData)
             val imageInfo = callocVkDescriptorImageInfoN(sampler.arraySize) {
                 for (i in 0 until sampler.arraySize) {
                     this[i].apply {
@@ -119,7 +119,7 @@ class SamplerDescriptor private constructor(binding: Int, private val sampler: T
             }
         }
 
-        val textures = sampler.getTextures(cmd.pipeline!!.bindGroupData[0])
+        val textures = sampler.getTextures(cmd.pipeline!!.pipelineData)
 
         var allValid = true
         if (boundTex.size != sampler.arraySize) {

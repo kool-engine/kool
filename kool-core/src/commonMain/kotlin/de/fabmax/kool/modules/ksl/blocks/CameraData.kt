@@ -1,11 +1,13 @@
 package de.fabmax.kool.modules.ksl.blocks
 
-import de.fabmax.kool.math.Vec2f
-import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.modules.ksl.KslShaderListener
 import de.fabmax.kool.modules.ksl.lang.*
-import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.BindGroupScope
+import de.fabmax.kool.pipeline.BufferPosition
+import de.fabmax.kool.pipeline.ShaderBase
+import de.fabmax.kool.pipeline.UniformBufferLayout
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
+import de.fabmax.kool.util.positioned
 
 fun KslProgram.cameraData(): CameraData {
     return (dataBlocks.find { it is CameraData } as? CameraData) ?: CameraData(this)
@@ -29,7 +31,7 @@ class CameraData(program: KslProgram) : KslDataBlock, KslShaderListener {
     val clipFar: KslExprFloat1
         get() = clip.y
 
-    val camUbo = KslUniformBuffer("CameraUniforms", program, BindGroupScope.SCENE).apply {
+    private val camUbo = KslUniformBuffer("CameraUniforms", program, BindGroupScope.VIEW).apply {
         viewMat = uniformMat4(UNIFORM_NAME_VIEW_MAT)
         projMat = uniformMat4(UNIFORM_NAME_PROJ_MAT)
         viewProjMat = uniformMat4(UNIFORM_NAME_VIEW_PROJ_MAT)
@@ -40,14 +42,14 @@ class CameraData(program: KslProgram) : KslDataBlock, KslShaderListener {
         clip = uniformFloat2(UNIFORM_NAME_CAM_CLIP)
     }
 
-    private var uPosition: UniformBinding3f? = null
-    private var uDirection: UniformBinding3f? = null
-    private var uClip: UniformBinding2f? = null
-
-    private var uViewMat: UniformBindingMat4f? = null
-    private var uProjMat: UniformBindingMat4f? = null
-    private var uViewProjMat: UniformBindingMat4f? = null
-    private var uViewport: UniformBinding4f? = null
+    private var uboLayout: UniformBufferLayout? = null
+    private var bufferPosPosition: BufferPosition? = null
+    private var bufferPosDirection: BufferPosition? = null
+    private var bufferPosClip: BufferPosition? = null
+    private var bufferPosViewMat: BufferPosition? = null
+    private var bufferPosProjMat: BufferPosition? = null
+    private var bufferPosViewProjMat: BufferPosition? = null
+    private var bufferPosViewport: BufferPosition? = null
 
     init {
         program.shaderListeners += this
@@ -56,28 +58,47 @@ class CameraData(program: KslProgram) : KslDataBlock, KslShaderListener {
     }
 
     override fun onShaderCreated(shader: ShaderBase<*>) {
-        uPosition = shader.uniform3f(UNIFORM_NAME_CAM_POSITION)
-        uDirection = shader.uniform3f(UNIFORM_NAME_CAM_DIRECTION)
-        uClip = shader.uniform2f(UNIFORM_NAME_CAM_CLIP)
-        uViewMat = shader.uniformMat4f(UNIFORM_NAME_VIEW_MAT)
-        uProjMat = shader.uniformMat4f(UNIFORM_NAME_PROJ_MAT)
-        uViewProjMat = shader.uniformMat4f(UNIFORM_NAME_VIEW_PROJ_MAT)
-        uViewport = shader.uniform4f(UNIFORM_NAME_VIEWPORT)
+        val binding = shader.createdPipeline!!.findBindingLayout<UniformBufferLayout> { it.name == "CameraUniforms" }
+        uboLayout = binding?.second
+        uboLayout?.let {
+            bufferPosPosition = it.layout.uniformPositions[UNIFORM_NAME_CAM_POSITION]
+            bufferPosDirection = it.layout.uniformPositions[UNIFORM_NAME_CAM_DIRECTION]
+            bufferPosClip = it.layout.uniformPositions[UNIFORM_NAME_CAM_CLIP]
+            bufferPosViewMat = it.layout.uniformPositions[UNIFORM_NAME_VIEW_MAT]
+            bufferPosProjMat = it.layout.uniformPositions[UNIFORM_NAME_PROJ_MAT]
+            bufferPosViewProjMat = it.layout.uniformPositions[UNIFORM_NAME_VIEW_PROJ_MAT]
+            bufferPosViewport = it.layout.uniformPositions[UNIFORM_NAME_VIEWPORT]
+        }
     }
 
     override fun onUpdate(cmd: DrawCommand) {
         val q = cmd.queue
         val vp = q.view.viewport
-        uViewport?.set(Vec4f(vp.x.toFloat(), vp.y.toFloat(), vp.width.toFloat(), vp.height.toFloat()))
-
         val cam = q.view.camera
-        uPosition?.set(cam.globalPos)
-        uDirection?.set(cam.globalLookDir)
-        uClip?.set(Vec2f(cam.clipNear, cam.clipFar))
+        val pipeline = cmd.pipeline
+        val bindingLayout = uboLayout
 
-        uProjMat?.set(q.projMat)
-        uViewMat?.set(q.viewMatF)
-        uViewProjMat?.set(q.viewProjMatF)
+        if (pipeline != null && bindingLayout != null) {
+            val uboData = cmd.queue.view.viewPipelineData
+                .getPipelineData(pipeline)
+                .uniformBufferBindingData(bindingLayout.bindingIndex)
+
+            uboData.isBufferDirty = true
+            val buffer = uboData.buffer
+
+            buffer.positioned(bufferPosPosition!!.byteIndex) { cam.globalPos.putTo(it) }
+            buffer.positioned(bufferPosDirection!!.byteIndex) { cam.globalLookDir.putTo(it) }
+            buffer.positioned(bufferPosClip!!.byteIndex) { it.putFloat32(cam.clipNear); it.putFloat32(cam.clipFar) }
+            buffer.positioned(bufferPosViewMat!!.byteIndex) { q.viewMatF.putTo(it) }
+            buffer.positioned(bufferPosProjMat!!.byteIndex) { q.projMat.putTo(it) }
+            buffer.positioned(bufferPosViewProjMat!!.byteIndex) { q.viewProjMatF.putTo(it) }
+            buffer.positioned(bufferPosViewport!!.byteIndex) {
+                it.putFloat32(vp.x.toFloat())
+                it.putFloat32(vp.y.toFloat())
+                it.putFloat32(vp.width.toFloat())
+                it.putFloat32(vp.height.toFloat())
+            }
+        }
     }
 
     companion object {

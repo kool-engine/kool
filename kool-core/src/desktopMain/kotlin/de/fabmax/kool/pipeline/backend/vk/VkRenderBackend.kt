@@ -10,6 +10,7 @@ import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.platform.GlfwWindow
 import de.fabmax.kool.platform.Lwjgl3Context
+import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Viewport
@@ -326,18 +327,23 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
 
         private fun disposePipelines() {
             ctx.disposablePipelines.forEach { pipeline ->
-                val delMesh = meshMap.remove(pipeline.pipelineInstanceId)
-                val delPipeline = sys.pipelineManager.getPipeline(pipeline)
-
-                actionQueue += DelayAction {
-                    delMesh?.let {
-                        sys.device.removeDependingResource(it)
-                        it.destroy()
-                    }
-                    delPipeline?.freeDescriptorSetInstance(pipeline)
-                }
+                TODO()
+//                val delMesh = meshMap.remove(pipeline.pipelineInstanceId)
+//                val delPipeline = sys.pipelineManager.getPipeline(pipeline)
+//
+//                actionQueue += DelayAction {
+//                    delMesh?.let {
+//                        sys.device.removeDependingResource(it)
+//                        it.destroy()
+//                    }
+//                    delPipeline?.freeDescriptorSetInstance(pipeline)
+//                }
             }
             ctx.disposablePipelines.clear()
+        }
+
+        private fun PipelineBase.instanceId(mesh: Mesh): Long {
+            return pipelineHash * mesh.id
         }
 
         private fun MemoryStack.renderDrawQueue(commandBuffer: VkCommandBuffer, drawQueue: List<DrawCommand>, imageIndex: Int,
@@ -362,7 +368,7 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
                     if (descriptorSet.updateDescriptors(cmd, imageIndex, sys)) {
                         descriptorSet.updateDescriptorSets(imageIndex, cmd)
 
-                        var model = meshMap[pipelineCfg.pipelineInstanceId]
+                        var model = meshMap[pipelineCfg.instanceId(cmd.mesh)]
                         if ((cmd.mesh.geometry.hasChanged && !cmd.mesh.geometry.isBatchUpdate) || model == null) {
                             // fixme: currently there is one IndexedMesh per pipeline, not per mesh
                             // if mesh is rendered multiple times (e.g. by additional shadow passes), clearing
@@ -371,14 +377,14 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
 
                             // (re-)build buffer
                             // fixme: don't do this here, should have happened before (async?)
-                            meshMap.remove(pipelineCfg.pipelineInstanceId)?.let {
+                            meshMap.remove(pipelineCfg.instanceId(cmd.mesh))?.let {
                                 actionQueue += DelayAction {
                                     sys.device.removeDependingResource(it)
                                     it.destroy()
                                 }
                             }
                             model = IndexedMesh(sys, cmd.mesh)
-                            meshMap[pipelineCfg.pipelineInstanceId] = model
+                            meshMap[pipelineCfg.instanceId(cmd.mesh)] = model
                             sys.device.addDependingResource(model)
                         }
 

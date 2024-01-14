@@ -6,16 +6,16 @@ sealed class TextureBinding<T: Texture?>(
     textureName: String,
     defaultTexture: T,
     defaultSampler: SamplerSettings?,
-    val shader: ShaderBase<*>
-) : PipelineBinding(textureName) {
+    shader: ShaderBase<*>
+) : PipelineBinding(textureName, shader) {
 
     private var cache: T = defaultTexture
     private var samplerCache: SamplerSettings? = defaultSampler
 
     fun get(): T {
         if (isValid) {
-            shader.createdPipeline?.let {
-                cache = it.bindGroupData[bindGroup].getFromData()
+            bindGroupData?.let {
+                cache = it.getFromData()
             }
         }
         return cache
@@ -24,9 +24,7 @@ sealed class TextureBinding<T: Texture?>(
     fun set(value: T) {
         cache = value
         if (isValid) {
-            shader.createdPipeline?.let {
-                it.bindGroupData[bindGroup].setInData(value, samplerCache)
-            }
+            bindGroupData?.setInData(value, samplerCache)
         }
     }
 
@@ -36,13 +34,13 @@ sealed class TextureBinding<T: Texture?>(
     override fun setup(pipeline: PipelineBase) {
         super.setup(pipeline)
 
-        pipeline.bindGroupLayouts.find { group ->
-            group.bindings.any { b -> b is TextureLayout && b.name == bindingName }
-        }?.let { group ->
-            val tex = group.bindings.first { b -> b.name == bindingName } as TextureLayout
+        pipeline.findBindingLayout<TextureLayout> { it.name == bindingName }?.let { (group, tex) ->
+            check(group.scope == BindGroupScope.PIPELINE) {
+                "TextureBinding only supports binding to BindGroupData of scope ${BindGroupScope.PIPELINE}, but texture $bindingName has scope ${group.scope}."
+            }
             bindGroup = group.group
             bindingIndex = tex.bindingIndex
-            pipeline.bindGroupData[bindGroup].setInData(cache, samplerCache)
+            pipeline.pipelineData.setInData(cache, samplerCache)
         }
     }
 
@@ -55,8 +53,8 @@ sealed class TextureArrayBinding<T: Texture?>(
     arraySize: Int,
     defaultSampler: SamplerSettings?,
     private val cacheInitVal: T,
-    val shader: ShaderBase<*>
-) : PipelineBinding(uniformName) {
+    shader: ShaderBase<*>
+) : PipelineBinding(uniformName, shader) {
 
     private val cache = MutableList(arraySize) { cacheInitVal }
     private var samplerCache: SamplerSettings? = defaultSampler
@@ -65,8 +63,8 @@ sealed class TextureArrayBinding<T: Texture?>(
 
     operator fun get(index: Int): T {
         if (isValid) {
-            shader.createdPipeline?.let {
-                cache[index] = it.bindGroupData[bindGroup].getFromData(index)
+            bindGroupData?.let {
+                cache[index] = it.getFromData(index)
             }
         }
         return cache[index]
@@ -75,9 +73,7 @@ sealed class TextureArrayBinding<T: Texture?>(
     operator fun set(index: Int, value: T) {
         cache[index] = value
         if (isValid) {
-            shader.createdPipeline?.let {
-                it.bindGroupData[bindGroup].setInData(index, value, samplerCache)
-            }
+            bindGroupData?.setInData(index, value, samplerCache)
         }
     }
 
@@ -93,15 +89,15 @@ sealed class TextureArrayBinding<T: Texture?>(
     override fun setup(pipeline: PipelineBase) {
         super.setup(pipeline)
 
-        pipeline.bindGroupLayouts.find { group ->
-            group.bindings.any { b -> b is TextureLayout && b.name == bindingName }
-        }?.let { group ->
-            val tex = group.bindings.first { b -> b.name == bindingName } as TextureLayout
+        pipeline.findBindingLayout<TextureLayout> { it.name == bindingName }?.let { (group, tex) ->
+            check(group.scope == BindGroupScope.PIPELINE) {
+                "TextureBinding only supports binding to BindGroupData of scope ${BindGroupScope.PIPELINE}, but texture $bindingName has scope ${group.scope}."
+            }
             resizeCache(tex.arraySize)
             bindGroup = group.group
             bindingIndex = tex.bindingIndex
             cache.forEachIndexed { i, cacheTex ->
-                pipeline.bindGroupData[bindGroup].setInData(i, cacheTex, samplerCache)
+                pipeline.pipelineData.setInData(i, cacheTex, samplerCache)
             }
         }
     }

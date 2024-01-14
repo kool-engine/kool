@@ -20,7 +20,7 @@ open class KslProgram(val name: String) {
     @PublishedApi
     internal fun nextName(prefix: String): String = "${prefix}_${nextNameIdx++}"
 
-    val commonUniformBuffer = KslUniformBuffer("CommonUniforms", this, BindGroupScope.MATERIAL)
+    val commonUniformBuffer = KslUniformBuffer("CommonUniforms", this, BindGroupScope.PIPELINE)
     val uniformBuffers = mutableListOf(commonUniformBuffer)
     val uniformSamplers = mutableMapOf<String, KslUniform<*>>()
     val uniformStorage = mutableMapOf<String, KslStorage<*,*>>()
@@ -265,7 +265,7 @@ open class KslProgram(val name: String) {
 
             // filter uniforms:
             // - remove unused uniforms from non-shared buffers
-            uniformBuffers.filter { ubo -> ubo.scope != BindGroupScope.SCENE }.forEach {
+            uniformBuffers.filter { ubo -> ubo.scope != BindGroupScope.VIEW }.forEach {
                 it.uniforms.values.retainAll { u -> stages.any { stage -> stage.dependsOn(u) } }
             }
             // - remove empty and completely unused uniform buffers

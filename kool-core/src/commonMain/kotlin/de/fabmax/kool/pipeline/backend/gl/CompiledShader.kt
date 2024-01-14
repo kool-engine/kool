@@ -8,7 +8,7 @@ import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.PrimitiveType
 import de.fabmax.kool.util.logE
 
-class CompiledShader(val program: GlProgram, val pipeline: PipelineBase, val backend: RenderBackendGl) {
+class CompiledShader(val program: GlProgram, pipeline: PipelineBase, val backend: RenderBackendGl) {
 
     private val gl: GlApi = backend.gl
 
@@ -130,21 +130,24 @@ class CompiledShader(val program: GlProgram, val pipeline: PipelineBase, val bac
 
     fun bindInstance(cmd: DrawCommand): ShaderInstance? {
         val pipelineInst = cmd.pipeline!!
-        val inst = instances.getOrPut(pipelineInst.pipelineInstanceId) {
+        val inst = instances.getOrPut(cmd.mesh.id) {
             ShaderInstance(cmd, pipelineInst)
         }
         return if (inst.bindInstance(cmd)) { inst } else { null }
     }
 
     fun bindComputeInstance(pipelineInstance: ComputePipeline, computePass: ComputeRenderPass): ComputeShaderInstance? {
-        val inst = computeInstances.getOrPut(pipelineInstance.pipelineInstanceId) {
+        // fixme: it might be more reasonably to use some (not yet existing) compute pass id as instance id?
+        val inst = computeInstances.getOrPut(0) {
             ComputeShaderInstance(pipelineInstance, computePass)
         }
         return if (inst.bindInstance(computePass)) { inst } else { null }
     }
 
     fun destroyInstance(pipeline: Pipeline) {
-        instances.remove(pipeline.pipelineInstanceId)?.destroyInstance()
+        // fixme: this currently does not work because we now need the mesh id as instance id, which is not available
+        //  here...
+        //instances.remove(pipeline.pipelineInstanceId)?.destroyInstance()
     }
 
     fun isEmpty(): Boolean = instances.isEmpty()
@@ -155,16 +158,6 @@ class CompiledShader(val program: GlProgram, val pipeline: PipelineBase, val bac
     }
 
     abstract inner class ShaderInstanceBase(private val pipelineInstance: PipelineBase) {
-
-        private val ubos = mutableListOf<UniformBufferLayout>()
-        private val textures1d = mutableListOf<Texture1dLayout>()
-        private val textures2d = mutableListOf<Texture2dLayout>()
-        private val textures3d = mutableListOf<Texture3dLayout>()
-        private val texturesCube = mutableListOf<TextureCubeLayout>()
-        private val storage1d = mutableListOf<StorageTexture1dLayout>()
-        private val storage2d = mutableListOf<StorageTexture2dLayout>()
-        private val storage3d = mutableListOf<StorageTexture3dLayout>()
-
         private val mappings = mutableListOf<Pair<Int, MappedUniform>>()
         private var uboBuffers = mutableListOf<BufferResource>()
         private var nextTexUnit = gl.TEXTURE0
@@ -188,21 +181,23 @@ class CompiledShader(val program: GlProgram, val pipeline: PipelineBase, val bac
         }
 
         protected fun createUboBuffers(renderPass: RenderPass) {
-            mappings.filter { (_, mapping) -> mapping is MappedUbo }.forEachIndexed { i, (_, mappedUbo) ->
-                val creationInfo = BufferCreationInfo(
-                    bufferName = "${pipelineInstance.name}.ubo-$i",
-                    renderPassName = renderPass.name,
-                    sceneName = renderPass.parentScene?.name ?: "scene:<null>"
-                )
+            mappings
+                .filter { (_, mapping) -> mapping is MappedUbo }
+                .forEachIndexed { i, (_, mappedUbo) ->
+                    val creationInfo = BufferCreationInfo(
+                        bufferName = "${pipelineInstance.name}.ubo-$i",
+                        renderPassName = renderPass.name,
+                        sceneName = renderPass.parentScene?.name ?: "scene:<null>"
+                    )
 
-                val uboBuffer = BufferResource(
-                    gl.UNIFORM_BUFFER,
-                    backend,
-                    creationInfo
-                )
-                uboBuffers += uboBuffer
-                (mappedUbo as MappedUbo).uboBuffer = uboBuffer
-            }
+                    val uboBuffer = BufferResource(
+                        gl.UNIFORM_BUFFER,
+                        backend,
+                        creationInfo
+                    )
+                    uboBuffers += uboBuffer
+                    (mappedUbo as MappedUbo).uboBuffer = uboBuffer
+                }
         }
 
         protected fun bindUniforms(bindGroupData: List<BindGroupData>): Boolean {
@@ -222,21 +217,12 @@ class CompiledShader(val program: GlProgram, val pipeline: PipelineBase, val bac
         open fun destroyInstance() {
             destroyBuffers()
 
-            ubos.clear()
-            textures1d.clear()
-            textures2d.clear()
-            textures3d.clear()
-            texturesCube.clear()
-            storage1d.clear()
-            storage2d.clear()
-            storage3d.clear()
             mappings.clear()
 
             pipelineInfo.numInstances--
         }
 
         private fun mapUbo(group: Int, ubo: UniformBufferLayout) {
-            ubos.add(ubo)
             val uniformLocations = uniformLocations[ubo.name]!!
             mappings += if (ubo.name !in compatUbos) {
                 group to MappedUbo(ubo, uniformLocations[0], gl)
@@ -246,7 +232,6 @@ class CompiledShader(val program: GlProgram, val pipeline: PipelineBase, val bac
         }
 
         private fun mapTexture1d(group: Int, tex: Texture1dLayout) {
-            textures1d.add(tex)
             uniformLocations[tex.name]?.let { locs ->
                 mappings += group to MappedUniformTex1d(tex, nextTexUnit, locs, backend)
                 nextTexUnit += locs.size
@@ -254,7 +239,6 @@ class CompiledShader(val program: GlProgram, val pipeline: PipelineBase, val bac
         }
 
         private fun mapTexture2d(group: Int, tex: Texture2dLayout) {
-            textures2d.add(tex)
             uniformLocations[tex.name]?.let { locs ->
                 mappings += group to MappedUniformTex2d(tex, nextTexUnit, locs, backend)
                 nextTexUnit += locs.size
@@ -262,7 +246,6 @@ class CompiledShader(val program: GlProgram, val pipeline: PipelineBase, val bac
         }
 
         private fun mapTexture3d(group: Int, tex: Texture3dLayout) {
-            textures3d.add(tex)
             uniformLocations[tex.name]?.let { locs ->
                 mappings += group to MappedUniformTex3d(tex, nextTexUnit, locs, backend)
                 nextTexUnit += locs.size
@@ -270,7 +253,6 @@ class CompiledShader(val program: GlProgram, val pipeline: PipelineBase, val bac
         }
 
         private fun mapTextureCube(group: Int, cubeMap: TextureCubeLayout) {
-            texturesCube.add(cubeMap)
             uniformLocations[cubeMap.name]?.let { locs ->
                 mappings += group to MappedUniformTexCube(cubeMap, nextTexUnit, locs, backend)
                 nextTexUnit += locs.size
@@ -278,21 +260,18 @@ class CompiledShader(val program: GlProgram, val pipeline: PipelineBase, val bac
         }
 
         private fun mapStorage1d(group: Int, storage: StorageTexture1dLayout) {
-            storage1d.add(storage)
             uniformLocations[storage.name]?.let { binding ->
                 mappings += group to MappedUniformStorage1d(storage, binding[0], backend)
             }
         }
 
         private fun mapStorage2d(group: Int, storage: StorageTexture2dLayout) {
-            storage2d.add(storage)
             uniformLocations[storage.name]?.let { binding ->
                 mappings += group to MappedUniformStorage2d(storage, binding[0], backend)
             }
         }
 
         private fun mapStorage3d(group: Int, storage: StorageTexture3dLayout) {
-            storage3d.add(storage)
             uniformLocations[storage.name]?.let { binding ->
                 mappings += group to MappedUniformStorage3d(storage, binding[0], backend)
             }
@@ -310,6 +289,8 @@ class CompiledShader(val program: GlProgram, val pipeline: PipelineBase, val bac
         val primitiveType = pipelineInstance.vertexLayout.primitiveType.glElemType
         val indexType = gl.UNSIGNED_INT
         val numIndices: Int get() = gpuGeometry?.numIndices ?: 0
+
+        private val bindGroupDataCache = mutableListOf<BindGroupData>()
 
         init {
             createBuffers(cmd)
@@ -349,7 +330,7 @@ class CompiledShader(val program: GlProgram, val pipeline: PipelineBase, val bac
             // update geometry buffers (vertex + instance data)
             gpuGeometry?.checkBuffers()
 
-            val uniformsValid = bindUniforms(pipelineInstance.bindGroupData)
+            val uniformsValid = bindUniforms(bindGroupDataCache.refreshBindGroupData(drawCmd))
             if (uniformsValid) {
                 // bind vertex data
                 gpuGeometry?.indexBuffer?.bind()
@@ -357,6 +338,15 @@ class CompiledShader(val program: GlProgram, val pipeline: PipelineBase, val bac
                 instanceAttribBinders.forEach { it.bindAttribute(it.loc) }
             }
             return uniformsValid
+        }
+
+        private fun MutableList<BindGroupData>.refreshBindGroupData(drawCmd: DrawCommand): List<BindGroupData> {
+            val pipeline = drawCmd.pipeline!!
+            clear()
+            add(drawCmd.queue.view.viewPipelineData.getPipelineData(pipeline))
+            add(pipeline.pipelineData)
+            add(drawCmd.mesh.meshPipelineData.getPipelineData(pipeline))
+            return this
         }
 
         override fun destroyBuffers() {
@@ -379,7 +369,8 @@ class CompiledShader(val program: GlProgram, val pipeline: PipelineBase, val bac
             for (i in pipelineInstance.onUpdate.indices) {
                 pipelineInstance.onUpdate[i].invoke(computePass)
             }
-            return bindUniforms(pipelineInstance.bindGroupData)
+            // todo: get the indices right
+            return bindUniforms(listOf(pipelineInstance.pipelineData, pipelineInstance.pipelineData))
         }
     }
 

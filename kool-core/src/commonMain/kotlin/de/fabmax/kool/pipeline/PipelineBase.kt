@@ -1,6 +1,7 @@
 package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.util.LongHash
+import de.fabmax.kool.util.logE
 
 /**
  * Base class for regular (graphics) and compute pipelines. A pipeline includes the shader and additional attributes
@@ -16,26 +17,35 @@ abstract class PipelineBase(val name: String, val bindGroupLayouts: List<BindGro
     protected val hash = LongHash()
     val pipelineHash: Long
         get() = hash.hash
-    val pipelineInstanceId = instanceId++
 
     @Deprecated("Use bindGroupLayouts instead", ReplaceWith("bindGroupLayouts[0]"))
-    val bindGroupLayout: BindGroupLayout get() = bindGroupLayouts[0]
-
-    private val _bindGroupData = mutableListOf<BindGroupData>()
-    val bindGroupData: List<BindGroupData> get() = _bindGroupData
-
-    init {
-        bindGroupLayouts.forEach {
-            hash += it.hash
-            _bindGroupData += it.createData()
+    val bindGroupLayout: BindGroupLayout get() {
+        if (bindGroupLayouts.size > 1) {
+            logE { "Pipeline has multiple bind groups, access via deprecated bindGroupLayout will likely not work" }
         }
+        return bindGroupLayouts[0]
     }
 
-    fun setBindGroupData(index: Int, data: BindGroupData) {
-        check(data.layout.hash == bindGroupLayouts[index].hash) {
-            "Given BindGroupData does not match the corresponding layout"
+    val pipelineDataLayout = bindGroupLayouts.find { it.scope == BindGroupScope.PIPELINE } ?: emptyPipelineLayout
+    var pipelineData = pipelineDataLayout.createData()
+        set(value) {
+            check(value.layout == pipelineDataLayout) {
+                "Given BindGroupData does not match this pipeline's data bind group layout"
+            }
+            field = value
         }
-        _bindGroupData[index] = data
+
+    init {
+        bindGroupLayouts.forEach { hash += it.hash }
+    }
+
+    inline fun <reified T: BindingLayout> findBindingLayout(predicate: (T) -> Boolean): Pair<BindGroupLayout, T>? {
+        for (group in bindGroupLayouts) {
+            group.bindings.filterIsInstance<T>().find(predicate)?.let {
+                return group to it
+            }
+        }
+        return null
     }
 
     fun findBindGroupItemByName(name: String): BindingLayout? {
@@ -53,6 +63,28 @@ abstract class PipelineBase(val name: String, val bindGroupLayouts: List<BindGro
     }
 
     companion object {
-        private var instanceId = 1L
+        private val emptyPipelineLayout = BindGroupLayout(BindGroupScope.PIPELINE, emptyList())
+    }
+}
+
+class PipelineData(val scope: BindGroupScope) {
+    private val bindGroupData = mutableMapOf<Long, BindGroupData>()
+
+    fun getPipelineData(pipeline: PipelineBase): BindGroupData {
+        val layout = pipeline.bindGroupLayouts[scope.group]
+        return bindGroupData.getOrPut(layout.hash) { layout.createData() }
+    }
+
+    fun setPipelineData(data: BindGroupData, pipeline: PipelineBase) {
+        val layout = pipeline.bindGroupLayouts[scope.group]
+        check(layout == data.layout) {
+            "Given BindGroupData does not match this pipeline's $scope data bind group layout"
+        }
+        bindGroupData[layout.hash] = data
+    }
+
+    fun discardPipelineData(pipeline: PipelineBase) {
+        val layout = pipeline.bindGroupLayouts[scope.group]
+        bindGroupData.remove(layout.hash)
     }
 }

@@ -128,6 +128,8 @@ abstract class RenderPass(var name: String) : BaseReleasable() {
         var isUpdateDrawNode = true
         var isReleaseDrawNode = true
 
+        val viewPipelineData = PipelineData(BindGroupScope.VIEW)
+
         private var updateEvent: UpdateEvent? = null
 
         internal fun makeUpdateEvent(ctx: KoolContext): UpdateEvent {

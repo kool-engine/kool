@@ -17,6 +17,15 @@ class BindGroupLayout(val scope: BindGroupScope, val bindings: List<BindingLayou
 
     fun createData(): BindGroupData = BindGroupData(this)
 
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || this::class != other::class) return false
+        other as BindGroupLayout
+        return hash == other.hash
+    }
+
+    override fun hashCode(): Int = hash.hashCode()
+
     class Builder(val scope: BindGroupScope) {
         val ubos = mutableListOf<UniformBufferLayout>()
         val textures = mutableListOf<TextureLayout>()
@@ -29,8 +38,8 @@ class BindGroupLayout(val scope: BindGroupScope, val bindings: List<BindingLayou
 }
 
 enum class BindGroupScope(val group: Int) {
-    SCENE(0),
-    MATERIAL(1),
+    VIEW(0),
+    PIPELINE(1),
     MESH(2)
 }
 
@@ -46,6 +55,15 @@ sealed class BindingLayout(
      */
     var bindingIndex: Int = -1
         internal set
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || this::class != other::class) return false
+        other as BindGroupLayout
+        return hash == other.hash
+    }
+
+    override fun hashCode(): Int = hash.hashCode()
 }
 
 class UniformBufferLayout(
@@ -67,6 +85,8 @@ class UniformBufferLayout(
         }
         it.hash
     }
+
+    fun hasUniform(name: String) = uniforms.any { it.name == name }
 }
 
 sealed class TextureLayout(

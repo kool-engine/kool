@@ -19,9 +19,11 @@ class MappedUbo(val ubo: UniformBufferLayout, val uboIndex: Int, val gl: GlApi) 
     override fun setUniform(bindGroupData: BindGroupData): Boolean {
         return uboBuffer?.let { buffer ->
             val uboData = bindGroupData.uniformBufferBindingData(ubo.bindingIndex)
-            if (uboData.getAndClearDirtyFlag()) {
+            // fixme: currently, buffer always needs to be refreshed because BufferResource is mesh-private even
+            //  for pipeline / view scope ubos
+            //if (uboData.getAndClearDirtyFlag()) {
                 buffer.setData(uboData.buffer, gl.DYNAMIC_DRAW)
-            }
+            //}
             gl.bindBufferBase(gl.UNIFORM_BUFFER, uboIndex, buffer.buffer)
             true
         } ?: false

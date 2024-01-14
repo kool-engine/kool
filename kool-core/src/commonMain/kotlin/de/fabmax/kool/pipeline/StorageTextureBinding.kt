@@ -5,15 +5,15 @@ import kotlin.reflect.KProperty
 sealed class StorageTextureBinding<T: Texture?>(
     textureName: String,
     defaultTexture: T,
-    val shader: ShaderBase<*>
-) : PipelineBinding(textureName) {
+    shader: ShaderBase<*>
+) : PipelineBinding(textureName, shader) {
 
     private var cache: T = defaultTexture
 
     fun get(): T {
         if (isValid) {
-            shader.createdPipeline?.let {
-                cache = it.bindGroupData[bindGroup].getFromData()
+            bindGroupData?.let {
+                cache = it.getFromData()
             }
         }
         return cache
@@ -22,9 +22,7 @@ sealed class StorageTextureBinding<T: Texture?>(
     fun set(value: T) {
         cache = value
         if (isValid) {
-            shader.createdPipeline?.let {
-                it.bindGroupData[bindGroup].setInData(value)
-            }
+            bindGroupData?.setInData(value)
         }
     }
 
@@ -34,13 +32,13 @@ sealed class StorageTextureBinding<T: Texture?>(
     override fun setup(pipeline: PipelineBase) {
         super.setup(pipeline)
 
-        pipeline.bindGroupLayouts.find { group ->
-            group.bindings.any { b -> b is StorageTextureLayout && b.name == bindingName }
-        }?.let { group ->
-            val storageTex = group.bindings.first { b -> b.name == bindingName } as StorageTextureLayout
+        pipeline.findBindingLayout<StorageTextureLayout> { it.name == bindingName }?.let { (group, tex) ->
+            check(group.scope == BindGroupScope.PIPELINE) {
+                "StorageTextureBinding only supports binding to BindGroupData of scope ${BindGroupScope.PIPELINE}, but texture $bindingName has scope ${group.scope}."
+            }
             bindGroup = group.group
-            bindingIndex = storageTex.bindingIndex
-            pipeline.bindGroupData[bindGroup].setInData(cache)
+            bindingIndex = tex.bindingIndex
+            pipeline.pipelineData.setInData(cache)
         }
     }
 

@@ -16,7 +16,7 @@ abstract class ShaderBase<T: PipelineBase>(val name: String) {
     var createdPipeline: T? = null
         private set
 
-    protected fun pipelineCreated(pipeline: T) {
+    protected open fun pipelineCreated(pipeline: T) {
         createdPipeline = pipeline
         pipelineBindings.values.forEach { it.setup(pipeline) }
     }

@@ -4,10 +4,7 @@ import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.math.RayF
 import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.math.spatial.BoundingBoxF
-import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.Pipeline
-import de.fabmax.kool.pipeline.RenderPass
-import de.fabmax.kool.pipeline.Shader
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shading.DepthShader
 import de.fabmax.kool.scene.animation.Skin
 import de.fabmax.kool.scene.geometry.IndexedVertexList
@@ -71,6 +68,8 @@ open class Mesh(var geometry: IndexedVertexList, name: String = geometry.name) :
     var morphWeights: FloatArray? = null
     var skin: Skin? = null
     var isOpaque = true
+
+    val meshPipelineData = PipelineData(BindGroupScope.MESH)
 
     var shader: Shader? = null
         set(value) {

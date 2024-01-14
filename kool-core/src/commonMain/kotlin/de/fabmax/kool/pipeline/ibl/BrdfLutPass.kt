@@ -29,7 +29,7 @@ class BrdfLutPass(parentScene: Scene) :
     init {
         clearColor = null
         drawNode.apply {
-            addMesh(Attribute.POSITIONS, Attribute.TEXTURE_COORDS) {
+            addMesh(Attribute.POSITIONS, Attribute.TEXTURE_COORDS, name = "brdf-lut-mesh") {
                 generateFullscreenQuad()
                 shader = brdfLutShader()
             }

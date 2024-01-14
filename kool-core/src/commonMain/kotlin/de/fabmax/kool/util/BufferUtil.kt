@@ -20,3 +20,8 @@ fun Uint8Buffer.decodeToString(): String {
 fun ByteArray.toBuffer(): Uint8Buffer {
     return Uint8Buffer(size).put(this)
 }
+
+inline fun MixedBuffer.positioned(pos: Int, block: (MixedBuffer) -> Unit) {
+    position = pos
+    block(this)
+}

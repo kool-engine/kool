@@ -60,22 +60,23 @@ open class KslShader private constructor(val program: KslProgram) : Shader(progr
         // uniform is used by which shader stage)
         program.prepareGenerate()
 
-        val pipeline = Pipeline(
+        return Pipeline(
             name = program.name,
             pipelineConfig = pipelineConfig,
             vertexLayout = makeVertexLayout(mesh),
             bindGroupLayouts = program.makeBindGroupLayout(),
             shaderCodeGenerator = { updateEvent.ctx.backend.generateKslShader(this, it) }
         )
+    }
 
+    override fun pipelineCreated(pipeline: Pipeline) {
+        super.pipelineCreated(pipeline)
         pipeline.onUpdate += { cmd ->
             for (i in program.shaderListeners.indices) {
                 program.shaderListeners[i].onUpdate(cmd)
             }
         }
         program.shaderListeners.forEach { it.onShaderCreated(this) }
-
-        return pipeline
     }
 
     private fun makeVertexLayout(mesh: Mesh): VertexLayout {
@@ -205,7 +206,7 @@ private fun KslProgram.setupBindGroupLayoutUbos(bindGrpBuilder: BindGroupLayout.
 }
 
 private fun KslProgram.setupBindGroupLayoutTextures(bindGrpBuilder: BindGroupLayout.Builder) {
-    if (bindGrpBuilder.scope != BindGroupScope.MATERIAL) {
+    if (bindGrpBuilder.scope != BindGroupScope.PIPELINE) {
         // todo: add bind group scope to ksl textures -> for now we use material scope for all of them
         return
     }
@@ -242,7 +243,7 @@ private fun KslProgram.setupBindGroupLayoutTextures(bindGrpBuilder: BindGroupLay
 }
 
 private fun KslProgram.setupBindGroupLayoutStorage(bindGrpBuilder: BindGroupLayout.Builder) {
-    if (bindGrpBuilder.scope != BindGroupScope.MATERIAL) {
+    if (bindGrpBuilder.scope != BindGroupScope.PIPELINE) {
         // todo: add bind group scope to ksl storage -> for now we use material scope for all of them
         return
     }

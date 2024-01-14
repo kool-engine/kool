@@ -9,8 +9,8 @@ import kotlin.reflect.KProperty
 sealed class UniformBinding<T, C: T>(
     uniformName: String,
     initVal: C,
-    val shader: ShaderBase<*>
-) : PipelineBinding(uniformName) {
+    shader: ShaderBase<*>
+) : PipelineBinding(uniformName, shader) {
 
     private var bufferPos: BufferPosition? = null
     protected var cache: C = initVal
@@ -34,26 +34,26 @@ sealed class UniformBinding<T, C: T>(
         super.setup(pipeline)
         bufferPos = null
 
-        pipeline.bindGroupLayouts.find { group ->
-            group.bindings.any { b -> b is UniformBufferLayout && b.uniforms.any { it.name == bindingName } }
-        }?.let { group ->
-            val ubo = group.bindings.first { b -> b is UniformBufferLayout && b.uniforms.any { it.name == bindingName } } as UniformBufferLayout
+        pipeline.findBindingLayout<UniformBufferLayout> { it.hasUniform(bindingName) }?.let { (group, ubo) ->
+            check(group.scope == BindGroupScope.PIPELINE) {
+                "UniformBinding only supports binding to BindGroupData of scope ${BindGroupScope.PIPELINE}, but uniform $bindingName has scope ${group.scope}."
+            }
             bindGroup = group.group
             bindingIndex = ubo.bindingIndex
             bufferPos = ubo.layout.uniformPositions[bindingName]
+            getPositionedBuffer(true)?.updateBuffer()
         }
-        getPositionedBuffer(true)?.updateBuffer()
     }
 
     private fun getPositionedBuffer(setDirty: Boolean): MixedBuffer? {
-        val pipeline = shader.createdPipeline ?: return null
         val pos = bufferPos ?: return null
-        val data = pipeline.bindGroupData[bindGroup].bindings[bindingIndex] as BindGroupData.UniformBufferBindingData
-        data.buffer.position = pos.byteIndex
+        val groupData = bindGroupData ?: return null
+        val uboData = groupData.bindings[bindingIndex] as BindGroupData.UniformBufferBindingData
+        uboData.buffer.position = pos.byteIndex
         if (setDirty) {
-            data.isBufferDirty = true
+            uboData.isBufferDirty = true
         }
-        return data.buffer
+        return uboData.buffer
     }
 
     protected abstract fun setCacheTo(value: T)
@@ -64,9 +64,9 @@ sealed class UniformBinding<T, C: T>(
 sealed class UniformArrayBinding<T, C: T>(
     uniformName: String,
     arraySize: Int,
-    val shader: ShaderBase<*>,
+    shader: ShaderBase<*>,
     private val initVal: () -> C,
-) : PipelineBinding(uniformName) {
+) : PipelineBinding(uniformName, shader) {
 
     private var bufferPos: BufferPosition? = null
 
@@ -98,30 +98,30 @@ sealed class UniformArrayBinding<T, C: T>(
         super.setup(pipeline)
         bufferPos = null
 
-        pipeline.bindGroupLayouts.find { group ->
-            group.bindings.any { b -> b is UniformBufferLayout && b.uniforms.any { it.name == bindingName } }
-        }?.let { group ->
-            val ubo = group.bindings.first { b -> b is UniformBufferLayout && b.uniforms.any { it.name == bindingName } } as UniformBufferLayout
+        pipeline.findBindingLayout<UniformBufferLayout> { it.hasUniform(bindingName) }?.let { (group, ubo) ->
+            check(group.scope == BindGroupScope.PIPELINE) {
+                "UniformArrayBinding only supports binding to BindGroupData of scope ${BindGroupScope.PIPELINE}, but uniform $bindingName has scope ${group.scope}."
+            }
             val uniform = ubo.uniforms.first { it.name == bindingName }
             resizeCache(uniform.arraySize)
             bindGroup = group.group
             bindingIndex = ubo.bindingIndex
             bufferPos = ubo.layout.uniformPositions[bindingName]
-        }
-        for (i in 0 until arraySize) {
-            getPositionedBuffer(i, true)?.updateBuffer(i)
+            for (i in 0 until arraySize) {
+                getPositionedBuffer(i, true)?.updateBuffer(i)
+            }
         }
     }
 
     private fun getPositionedBuffer(index: Int, setDirty: Boolean): MixedBuffer? {
-        val pipeline = shader.createdPipeline ?: return null
         val pos = bufferPos ?: return null
-        val data = pipeline.bindGroupData[bindGroup].bindings[bindingIndex] as BindGroupData.UniformBufferBindingData
-        data.buffer.position = pos.byteIndex + pos.arrayStrideBytes * index
+        val groupData = bindGroupData ?: return null
+        val uboData = groupData.bindings[bindingIndex] as BindGroupData.UniformBufferBindingData
+        uboData.buffer.position = pos.byteIndex + pos.arrayStrideBytes * index
         if (setDirty) {
-            data.isBufferDirty = true
+            uboData.isBufferDirty = true
         }
-        return data.buffer
+        return uboData.buffer
     }
 
     protected abstract fun setCacheTo(index: Int, value: T)
@@ -129,13 +129,17 @@ sealed class UniformArrayBinding<T, C: T>(
     protected abstract fun MixedBuffer.updateCache(index: Int, bufferPos: BufferPosition)
 }
 
-class UniformBinding1f(uniformName: String, defaultVal: Float, shader: ShaderBase<*>) : UniformBinding<Float, Float>(uniformName, defaultVal, shader) {
+class UniformBinding1f(uniformName: String, defaultVal: Float, shader: ShaderBase<*>) :
+    UniformBinding<Float, Float>(uniformName, defaultVal, shader)
+{
     override fun setCacheTo(value: Float) { cache = value }
     override fun MixedBuffer.updateBuffer() { putFloat32(cache) }
     override fun MixedBuffer.updateCache(bufferPos: BufferPosition) { cache = getFloat32(bufferPos.byteIndex) }
 }
 
-class UniformBinding2f(uniformName: String, defaultVal: Vec2f, shader: ShaderBase<*>) : UniformBinding<Vec2f, MutableVec2f>(uniformName, MutableVec2f(defaultVal), shader) {
+class UniformBinding2f(uniformName: String, defaultVal: Vec2f, shader: ShaderBase<*>) :
+    UniformBinding<Vec2f, MutableVec2f>(uniformName, MutableVec2f(defaultVal), shader)
+{
     override fun setCacheTo(value: Vec2f) { cache.set(value) }
     override fun MixedBuffer.updateBuffer() { cache.putTo(this) }
     override fun MixedBuffer.updateCache(bufferPos: BufferPosition) {
@@ -143,7 +147,9 @@ class UniformBinding2f(uniformName: String, defaultVal: Vec2f, shader: ShaderBas
     }
 }
 
-class UniformBinding3f(uniformName: String, defaultVal: Vec3f, shader: ShaderBase<*>) : UniformBinding<Vec3f, MutableVec3f>(uniformName, MutableVec3f(defaultVal), shader) {
+class UniformBinding3f(uniformName: String, defaultVal: Vec3f, shader: ShaderBase<*>) :
+    UniformBinding<Vec3f, MutableVec3f>(uniformName, MutableVec3f(defaultVal), shader)
+{
     override fun setCacheTo(value: Vec3f) { cache.set(value) }
     override fun MixedBuffer.updateBuffer() { cache.putTo(this) }
     override fun MixedBuffer.updateCache(bufferPos: BufferPosition) {
@@ -151,7 +157,9 @@ class UniformBinding3f(uniformName: String, defaultVal: Vec3f, shader: ShaderBas
     }
 }
 
-class UniformBinding4f(uniformName: String, defaultVal: Vec4f, shader: ShaderBase<*>) : UniformBinding<Vec4f, MutableVec4f>(uniformName, MutableVec4f(defaultVal), shader) {
+class UniformBinding4f(uniformName: String, defaultVal: Vec4f, shader: ShaderBase<*>) :
+    UniformBinding<Vec4f, MutableVec4f>(uniformName, MutableVec4f(defaultVal), shader)
+{
     override fun setCacheTo(value: Vec4f) { cache.set(value) }
     override fun MixedBuffer.updateBuffer() { cache.putTo(this) }
     override fun MixedBuffer.updateCache(bufferPos: BufferPosition) {
@@ -159,7 +167,9 @@ class UniformBinding4f(uniformName: String, defaultVal: Vec4f, shader: ShaderBas
     }
 }
 
-class UniformBindingColor(uniformName: String, defaultVal: Color, shader: ShaderBase<*>) : UniformBinding<Color, MutableColor>(uniformName, MutableColor(defaultVal), shader) {
+class UniformBindingColor(uniformName: String, defaultVal: Color, shader: ShaderBase<*>) :
+    UniformBinding<Color, MutableColor>(uniformName, MutableColor(defaultVal), shader)
+{
     override fun setCacheTo(value: Color) { cache.set(value) }
     override fun MixedBuffer.updateBuffer() { cache.putTo(this) }
     override fun MixedBuffer.updateCache(bufferPos: BufferPosition) {
@@ -167,7 +177,9 @@ class UniformBindingColor(uniformName: String, defaultVal: Color, shader: Shader
     }
 }
 
-class UniformBindingQuat(uniformName: String, defaultVal: QuatF, shader: ShaderBase<*>) : UniformBinding<QuatF, MutableQuatF>(uniformName, MutableQuatF(defaultVal), shader) {
+class UniformBindingQuat(uniformName: String, defaultVal: QuatF, shader: ShaderBase<*>) :
+    UniformBinding<QuatF, MutableQuatF>(uniformName, MutableQuatF(defaultVal), shader)
+{
     override fun setCacheTo(value: QuatF) { cache.set(value) }
     override fun MixedBuffer.updateBuffer() { cache.putTo(this) }
     override fun MixedBuffer.updateCache(bufferPos: BufferPosition) {
@@ -175,13 +187,17 @@ class UniformBindingQuat(uniformName: String, defaultVal: QuatF, shader: ShaderB
     }
 }
 
-class UniformBinding1i(uniformName: String, defaultVal: Int, shader: ShaderBase<*>) : UniformBinding<Int, Int>(uniformName, defaultVal, shader) {
+class UniformBinding1i(uniformName: String, defaultVal: Int, shader: ShaderBase<*>) :
+    UniformBinding<Int, Int>(uniformName, defaultVal, shader)
+{
     override fun setCacheTo(value: Int) { cache = value }
     override fun MixedBuffer.updateBuffer() { putInt32(cache) }
     override fun MixedBuffer.updateCache(bufferPos: BufferPosition) { cache = getInt32(bufferPos.byteIndex) }
 }
 
-class UniformBinding2i(uniformName: String, defaultVal: Vec2i, shader: ShaderBase<*>) : UniformBinding<Vec2i, MutableVec2i>(uniformName, MutableVec2i(defaultVal), shader) {
+class UniformBinding2i(uniformName: String, defaultVal: Vec2i, shader: ShaderBase<*>) :
+    UniformBinding<Vec2i, MutableVec2i>(uniformName, MutableVec2i(defaultVal), shader)
+{
     override fun setCacheTo(value: Vec2i) { cache.set(value) }
     override fun MixedBuffer.updateBuffer() { cache.putTo(this) }
     override fun MixedBuffer.updateCache(bufferPos: BufferPosition) {
@@ -189,7 +205,9 @@ class UniformBinding2i(uniformName: String, defaultVal: Vec2i, shader: ShaderBas
     }
 }
 
-class UniformBinding3i(uniformName: String, defaultVal: Vec3i, shader: ShaderBase<*>) : UniformBinding<Vec3i, MutableVec3i>(uniformName, MutableVec3i(defaultVal), shader) {
+class UniformBinding3i(uniformName: String, defaultVal: Vec3i, shader: ShaderBase<*>) :
+    UniformBinding<Vec3i, MutableVec3i>(uniformName, MutableVec3i(defaultVal), shader)
+{
     override fun setCacheTo(value: Vec3i) { cache.set(value) }
     override fun MixedBuffer.updateBuffer() { cache.putTo(this) }
     override fun MixedBuffer.updateCache(bufferPos: BufferPosition) {
@@ -197,7 +215,9 @@ class UniformBinding3i(uniformName: String, defaultVal: Vec3i, shader: ShaderBas
     }
 }
 
-class UniformBinding4i(uniformName: String, defaultVal: Vec4i, shader: ShaderBase<*>) : UniformBinding<Vec4i, MutableVec4i>(uniformName, MutableVec4i(defaultVal), shader) {
+class UniformBinding4i(uniformName: String, defaultVal: Vec4i, shader: ShaderBase<*>) :
+    UniformBinding<Vec4i, MutableVec4i>(uniformName, MutableVec4i(defaultVal), shader)
+{
     override fun setCacheTo(value: Vec4i) { cache.set(value) }
     override fun MixedBuffer.updateBuffer() { cache.putTo(this) }
     override fun MixedBuffer.updateCache(bufferPos: BufferPosition) {
@@ -205,7 +225,9 @@ class UniformBinding4i(uniformName: String, defaultVal: Vec4i, shader: ShaderBas
     }
 }
 
-class UniformBindingMat3f(uniformName: String, defaultVal: Mat3f, shader: ShaderBase<*>) : UniformBinding<Mat3f, MutableMat3f>(uniformName, MutableMat3f(defaultVal), shader) {
+class UniformBindingMat3f(uniformName: String, defaultVal: Mat3f, shader: ShaderBase<*>) :
+    UniformBinding<Mat3f, MutableMat3f>(uniformName, MutableMat3f(defaultVal), shader)
+{
     override fun setCacheTo(value: Mat3f) { cache.set(value) }
     override fun MixedBuffer.updateBuffer() { cache.putTo(this) }
     override fun MixedBuffer.updateCache(bufferPos: BufferPosition) {
@@ -217,7 +239,9 @@ class UniformBindingMat3f(uniformName: String, defaultVal: Mat3f, shader: Shader
     }
 }
 
-class UniformBindingMat4f(uniformName: String, defaultVal: Mat4f, shader: ShaderBase<*>) : UniformBinding<Mat4f, MutableMat4f>(uniformName, MutableMat4f(defaultVal), shader) {
+class UniformBindingMat4f(uniformName: String, defaultVal: Mat4f, shader: ShaderBase<*>) :
+    UniformBinding<Mat4f, MutableMat4f>(uniformName, MutableMat4f(defaultVal), shader)
+{
     override fun setCacheTo(value: Mat4f) { cache.set(value) }
     override fun MixedBuffer.updateBuffer() { cache.putTo(this) }
     override fun MixedBuffer.updateCache(bufferPos: BufferPosition) {

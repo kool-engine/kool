@@ -371,31 +371,33 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
     }
 
     fun getDescriptorSetInstance(pipeline: Pipeline): DescriptorSet {
-        return descriptorSetInstances.getOrPut(pipeline.pipelineInstanceId) {
-            val setInstance = if (reusableDescriptorSets.isNotEmpty()) {
-                logD { "Reusing recycled descriptor set instance, pipeline: ${pipeline.name} [${pipeline.pipelineHash}]" }
-                reusableDescriptorSets.removeAt(reusableDescriptorSets.lastIndex)
-            } else {
-                logD { "Creating new descriptor set instance ${descriptorSetInstances.size + 1} / $descriptorSetPoolSize, pipeline: ${pipeline.name} [${pipeline.pipelineHash}]" }
-                if (descriptorSetInstances.size == descriptorSetPoolSize) {
-                    throw IllegalStateException("Descriptor set pool exhausted. Use larger descriptorSetPoolSize")
-                }
-                DescriptorSet(this)
-            }
-            // todo BackendStats / PipelineInfo.numInstances++
-            setInstance.createDescriptorObjects(pipeline)
-            setInstance
-        }
+        TODO()
+//        return descriptorSetInstances.getOrPut(pipeline.pipelineInstanceId) {
+//            val setInstance = if (reusableDescriptorSets.isNotEmpty()) {
+//                logD { "Reusing recycled descriptor set instance, pipeline: ${pipeline.name} [${pipeline.pipelineHash}]" }
+//                reusableDescriptorSets.removeAt(reusableDescriptorSets.lastIndex)
+//            } else {
+//                logD { "Creating new descriptor set instance ${descriptorSetInstances.size + 1} / $descriptorSetPoolSize, pipeline: ${pipeline.name} [${pipeline.pipelineHash}]" }
+//                if (descriptorSetInstances.size == descriptorSetPoolSize) {
+//                    throw IllegalStateException("Descriptor set pool exhausted. Use larger descriptorSetPoolSize")
+//                }
+//                DescriptorSet(this)
+//            }
+//            // todo BackendStats / PipelineInfo.numInstances++
+//            setInstance.createDescriptorObjects(pipeline)
+//            setInstance
+//        }
     }
 
     fun freeDescriptorSetInstance(pipeline: Pipeline): Boolean {
-        val freeSet = descriptorSetInstances.remove(pipeline.pipelineInstanceId)
-        if (freeSet != null) {
-            // todo BackendStats / PipelineInfo.numInstances--
-            freeSet.clearDescriptorObjects()
-            reusableDescriptorSets += freeSet
-        }
-        return freeSet != null
+        TODO()
+//        val freeSet = descriptorSetInstances.remove(pipeline.pipelineInstanceId)
+//        if (freeSet != null) {
+//            // todo BackendStats / PipelineInfo.numInstances--
+//            freeSet.clearDescriptorObjects()
+//            reusableDescriptorSets += freeSet
+//        }
+//        return freeSet != null
     }
 
     fun isEmpty(): Boolean = descriptorSetInstances.isEmpty()

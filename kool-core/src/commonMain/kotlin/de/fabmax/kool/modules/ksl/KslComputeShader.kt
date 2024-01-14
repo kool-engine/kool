@@ -35,20 +35,20 @@ open class KslComputeShader(name: String) : ComputeShader(name) {
         // uniform is used by which shader stage)
         program.prepareGenerate()
 
-        val pipeline = ComputePipeline(
+        return ComputePipeline(
             name = name,
             bindGroupLayouts = program.makeBindGroupLayout(),
             workGroupSize = computeStage.workGroupSize,
             shaderCodeGenerator = { KoolSystem.requireContext().backend.generateKslComputeShader(this, it) }
         )
+    }
 
+    override fun pipelineCreated(pipeline: ComputePipeline) {
         pipeline.onUpdate += {
             for (i in program.shaderListeners.indices) {
                 program.shaderListeners[i].onComputeUpdate(it)
             }
         }
         program.shaderListeners.forEach { it.onShaderCreated(this) }
-
-        return pipeline
     }
 }
