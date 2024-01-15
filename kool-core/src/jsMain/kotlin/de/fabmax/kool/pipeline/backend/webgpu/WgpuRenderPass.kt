@@ -276,7 +276,7 @@ class WgpuRenderPass(val backend: RenderBackendWebGpu, val multiSamples: Int = 4
             }
 
             ubos.forEach { ubo ->
-                val data = pipeline.bindGroupData[ubo.group].uniformBufferBindingData(ubo.binding.bindingIndex)
+                val data = pipeline.pipelineData.uniformBufferBindingData(ubo.binding.bindingIndex)
                 if (data.getAndClearDirtyFlag()) {
                     device.queue.writeBuffer(
                         buffer = ubo.gpuBuffer,

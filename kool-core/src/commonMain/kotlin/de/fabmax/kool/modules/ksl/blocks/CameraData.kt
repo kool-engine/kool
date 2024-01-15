@@ -72,32 +72,27 @@ class CameraData(program: KslProgram) : KslDataBlock, KslShaderListener {
     }
 
     override fun onUpdate(cmd: DrawCommand) {
+        val pipeline = cmd.pipeline ?: return
+        val bindingLayout = uboLayout ?: return
+        val viewData = cmd.queue.view.viewPipelineData.getPipelineDataUpdating(pipeline, bindingLayout.bindingIndex) ?: return
+
         val q = cmd.queue
         val vp = q.view.viewport
         val cam = q.view.camera
-        val pipeline = cmd.pipeline
-        val bindingLayout = uboLayout
-
-        if (pipeline != null && bindingLayout != null) {
-            val uboData = cmd.queue.view.viewPipelineData
-                .getPipelineData(pipeline)
-                .uniformBufferBindingData(bindingLayout.bindingIndex)
-
-            uboData.isBufferDirty = true
-            val buffer = uboData.buffer
-
-            buffer.positioned(bufferPosPosition!!.byteIndex) { cam.globalPos.putTo(it) }
-            buffer.positioned(bufferPosDirection!!.byteIndex) { cam.globalLookDir.putTo(it) }
-            buffer.positioned(bufferPosClip!!.byteIndex) { it.putFloat32(cam.clipNear); it.putFloat32(cam.clipFar) }
-            buffer.positioned(bufferPosViewMat!!.byteIndex) { q.viewMatF.putTo(it) }
-            buffer.positioned(bufferPosProjMat!!.byteIndex) { q.projMat.putTo(it) }
-            buffer.positioned(bufferPosViewProjMat!!.byteIndex) { q.viewProjMatF.putTo(it) }
-            buffer.positioned(bufferPosViewport!!.byteIndex) {
-                it.putFloat32(vp.x.toFloat())
-                it.putFloat32(vp.y.toFloat())
-                it.putFloat32(vp.width.toFloat())
-                it.putFloat32(vp.height.toFloat())
-            }
+        val ubo = viewData.uniformBufferBindingData(bindingLayout.bindingIndex)
+        
+        ubo.isBufferDirty = true
+        ubo.buffer.positioned(bufferPosPosition!!.byteIndex) { cam.globalPos.putTo(it) }
+        ubo.buffer.positioned(bufferPosDirection!!.byteIndex) { cam.globalLookDir.putTo(it) }
+        ubo.buffer.positioned(bufferPosClip!!.byteIndex) { it.putFloat32(cam.clipNear); it.putFloat32(cam.clipFar) }
+        ubo.buffer.positioned(bufferPosViewMat!!.byteIndex) { q.viewMatF.putTo(it) }
+        ubo.buffer.positioned(bufferPosProjMat!!.byteIndex) { q.projMat.putTo(it) }
+        ubo.buffer.positioned(bufferPosViewProjMat!!.byteIndex) { q.viewProjMatF.putTo(it) }
+        ubo.buffer.positioned(bufferPosViewport!!.byteIndex) {
+            it.putFloat32(vp.x.toFloat())
+            it.putFloat32(vp.y.toFloat())
+            it.putFloat32(vp.width.toFloat())
+            it.putFloat32(vp.height.toFloat())
         }
     }
 

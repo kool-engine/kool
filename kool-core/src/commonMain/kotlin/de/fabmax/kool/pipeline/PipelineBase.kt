@@ -1,6 +1,7 @@
 package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.util.LongHash
+import de.fabmax.kool.util.Time
 import de.fabmax.kool.util.logE
 
 /**
@@ -68,11 +69,18 @@ abstract class PipelineBase(val name: String, val bindGroupLayouts: List<BindGro
 }
 
 class PipelineData(val scope: BindGroupScope) {
-    private val bindGroupData = mutableMapOf<Long, BindGroupData>()
+    private val bindGroupData = mutableMapOf<Long, UpdateAwareBindGroupData>()
 
     fun getPipelineData(pipeline: PipelineBase): BindGroupData {
         val layout = pipeline.bindGroupLayouts[scope.group]
-        return bindGroupData.getOrPut(layout.hash) { layout.createData() }
+        val data = bindGroupData.getOrPut(layout.hash) { UpdateAwareBindGroupData(layout.createData()) }
+        return data.data
+    }
+
+    fun getPipelineDataUpdating(pipeline: PipelineBase, binding: Int): BindGroupData? {
+        val layout = pipeline.bindGroupLayouts[scope.group]
+        val data = bindGroupData.getOrPut(layout.hash) { UpdateAwareBindGroupData(layout.createData()) }
+        return if (data.markBindingUpdate(binding)) data.data else null
     }
 
     fun setPipelineData(data: BindGroupData, pipeline: PipelineBase) {
@@ -80,11 +88,22 @@ class PipelineData(val scope: BindGroupScope) {
         check(layout == data.layout) {
             "Given BindGroupData does not match this pipeline's $scope data bind group layout"
         }
-        bindGroupData[layout.hash] = data
+        bindGroupData[layout.hash] = UpdateAwareBindGroupData(layout.createData())
     }
 
     fun discardPipelineData(pipeline: PipelineBase) {
         val layout = pipeline.bindGroupLayouts[scope.group]
         bindGroupData.remove(layout.hash)
+    }
+
+    private class UpdateAwareBindGroupData(val data: BindGroupData) {
+        val updateFrames = IntArray(data.bindings.size)
+
+        fun markBindingUpdate(binding: Int): Boolean {
+            val frame = Time.frameCount
+            val lastUpdate = updateFrames[binding]
+            updateFrames[binding] = frame
+            return lastUpdate != frame
+        }
     }
 }

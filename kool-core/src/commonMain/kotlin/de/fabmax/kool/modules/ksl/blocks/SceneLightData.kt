@@ -1,12 +1,13 @@
 package de.fabmax.kool.modules.ksl.blocks
 
 import de.fabmax.kool.modules.ksl.KslShaderListener
-import de.fabmax.kool.modules.ksl.lang.KslDataBlock
-import de.fabmax.kool.modules.ksl.lang.KslProgram
+import de.fabmax.kool.modules.ksl.lang.*
+import de.fabmax.kool.pipeline.BindGroupScope
+import de.fabmax.kool.pipeline.BufferPosition
 import de.fabmax.kool.pipeline.ShaderBase
-import de.fabmax.kool.pipeline.UniformBinding1i
-import de.fabmax.kool.pipeline.UniformBinding4fv
+import de.fabmax.kool.pipeline.UniformBufferLayout
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
+import de.fabmax.kool.util.positioned
 import kotlin.math.min
 
 fun KslProgram.sceneLightData(maxLights: Int) = SceneLightData(this, maxLights)
@@ -14,48 +15,62 @@ fun KslProgram.sceneLightData(maxLights: Int) = SceneLightData(this, maxLights)
 class SceneLightData(program: KslProgram, val maxLightCount: Int) : KslDataBlock, KslShaderListener {
     override val name = NAME
 
-    val encodedPositions = program.uniformFloat4Array(UNIFORM_NAME_LIGHT_POSITIONS, maxLightCount)
-    val encodedDirections = program.uniformFloat4Array(UNIFORM_NAME_LIGHT_DIRECTIONS, maxLightCount)
-    val encodedColors = program.uniformFloat4Array(UNIFORM_NAME_LIGHT_COLORS, maxLightCount)
-    val lightCount = program.uniformInt1(UNIFORM_NAME_LIGHT_COUNT)
+    val encodedPositions: KslUniformVectorArray<KslFloat4, KslFloat1>
+    val encodedDirections: KslUniformVectorArray<KslFloat4, KslFloat1>
+    val encodedColors: KslUniformVectorArray<KslFloat4, KslFloat1>
+    val lightCount: KslUniformScalar<KslInt1>
 
-    private var uLightPositions: UniformBinding4fv? = null
-    private var uLightDirections: UniformBinding4fv? = null
-    private var uLightColors: UniformBinding4fv? = null
-    private var uLightCount: UniformBinding1i? = null
+    private val lightUbo = KslUniformBuffer("LightUniforms", program, BindGroupScope.VIEW).apply {
+        encodedPositions = uniformFloat4Array(UNIFORM_NAME_LIGHT_POSITIONS, maxLightCount)
+        encodedDirections = uniformFloat4Array(UNIFORM_NAME_LIGHT_DIRECTIONS, maxLightCount)
+        encodedColors = uniformFloat4Array(UNIFORM_NAME_LIGHT_COLORS, maxLightCount)
+        lightCount = uniformInt1(UNIFORM_NAME_LIGHT_COUNT)
+    }
+
+    private var uboLayout: UniformBufferLayout? = null
+    private var bufferPosPositions: BufferPosition? = null
+    private var bufferPosDirections: BufferPosition? = null
+    private var bufferPosColors: BufferPosition? = null
+    private var bufferPosLightCnt: BufferPosition? = null
 
     init {
         program.dataBlocks += this
         program.shaderListeners += this
+        program.uniformBuffers += lightUbo
     }
 
     override fun onShaderCreated(shader: ShaderBase<*>) {
-        uLightPositions = shader.uniform4fv(UNIFORM_NAME_LIGHT_POSITIONS)
-        uLightDirections = shader.uniform4fv(UNIFORM_NAME_LIGHT_DIRECTIONS)
-        uLightColors = shader.uniform4fv(UNIFORM_NAME_LIGHT_COLORS)
-        uLightCount = shader.uniform1i(UNIFORM_NAME_LIGHT_COUNT)
+        val binding = shader.createdPipeline!!.findBindingLayout<UniformBufferLayout> { it.name == "LightUniforms" }
+        uboLayout = binding?.second
+        uboLayout?.let {
+            bufferPosPositions = it.layout.uniformPositions[UNIFORM_NAME_LIGHT_POSITIONS]
+            bufferPosDirections = it.layout.uniformPositions[UNIFORM_NAME_LIGHT_DIRECTIONS]
+            bufferPosColors = it.layout.uniformPositions[UNIFORM_NAME_LIGHT_COLORS]
+            bufferPosLightCnt = it.layout.uniformPositions[UNIFORM_NAME_LIGHT_COUNT]
+        }
     }
 
     override fun onUpdate(cmd: DrawCommand) {
+        val pipeline = cmd.pipeline ?: return
+        val bindingLayout = uboLayout ?: return
+        val viewData = cmd.queue.view.viewPipelineData.getPipelineDataUpdating(pipeline, bindingLayout.bindingIndex) ?: return
+        val ubo = viewData.uniformBufferBindingData(bindingLayout.bindingIndex)
         val lighting = cmd.queue.renderPass.lighting
-        if (lighting != null) {
-            val lightPos = uLightPositions ?: return
-            val lightDir = uLightDirections ?: return
-            val lightCol = uLightColors ?: return
-            val lightCnt = uLightCount ?: return
 
-            val setLightCount = min(lighting.lights.size, maxLightCount)
-            lightCnt.set(setLightCount)
-            for (i in 0 until setLightCount) {
+        if (lighting == null) {
+            ubo.buffer.setInt32(bufferPosLightCnt!!.byteIndex, 0)
+        } else {
+            val lightCount = min(lighting.lights.size, maxLightCount)
+            ubo.buffer.setInt32(bufferPosLightCnt!!.byteIndex, lightCount)
+            for (i in 0 until lightCount) {
                 val light = lighting.lights[i]
                 light.updateEncodedValues()
-                lightPos.set(i, light.encodedPosition)
-                lightDir.set(i, light.encodedDirection)
-                lightCol.set(i, light.encodedColor)
+                ubo.buffer.positioned(bufferPosPositions!!.byteIndex + 16 * i) { light.encodedPosition.putTo(it) }
+                ubo.buffer.positioned(bufferPosDirections!!.byteIndex + 16 * i) { light.encodedDirection.putTo(it) }
+                ubo.buffer.positioned(bufferPosColors!!.byteIndex + 16 * i) { light.encodedColor.putTo(it) }
             }
-        } else {
-            uLightCount?.set(0)
         }
+        ubo.isBufferDirty = true
     }
 
     companion object {

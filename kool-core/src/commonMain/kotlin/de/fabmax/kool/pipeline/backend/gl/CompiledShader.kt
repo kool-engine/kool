@@ -309,6 +309,17 @@ class CompiledShader(val program: GlProgram, pipeline: PipelineBase, val backend
             }
             gpuGeometry = geom
 
+            val checkVertexAttributes = attributes.keys - geometry.vertexAttributes.map { it.name }.toSet()
+            check(checkVertexAttributes.isEmpty()) {
+                "Mesh ${cmd.mesh.name} misses vertex attributes $checkVertexAttributes required for pipeline ${pipelineInstance.name}"
+            }
+            cmd.mesh.instances?.let { insts ->
+                val checkInstanceAttributes = instanceAttributes.keys - insts.instanceAttributes.map { it.name }.toSet()
+                check(checkInstanceAttributes.isEmpty()) {
+                    "Mesh ${cmd.mesh.name} misses instance attributes $checkInstanceAttributes required for pipeline ${pipelineInstance.name}"
+                }
+            }
+
             attributeBinders += geom.createShaderVertexAttributeBinders(attributes)
             instanceAttribBinders += geom.createShaderInstanceAttributeBinders(instanceAttributes)
 

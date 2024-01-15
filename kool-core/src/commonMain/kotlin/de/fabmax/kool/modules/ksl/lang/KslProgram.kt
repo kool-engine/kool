@@ -265,7 +265,7 @@ open class KslProgram(val name: String) {
 
             // filter uniforms:
             // - remove unused uniforms from non-shared buffers
-            uniformBuffers.filter { ubo -> ubo.scope != BindGroupScope.VIEW }.forEach {
+            uniformBuffers.filter { ubo -> ubo.scope == BindGroupScope.PIPELINE }.forEach {
                 it.uniforms.values.retainAll { u -> stages.any { stage -> stage.dependsOn(u) } }
             }
             // - remove empty and completely unused uniform buffers
