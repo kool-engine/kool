@@ -56,7 +56,7 @@ class QueueRenderer(val backend: RenderBackendGl) {
 
             if (cmd.geometry.numIndices == 0) continue
             val pipeline = cmd.pipeline ?: continue
-            val shaderInst = backend.shaderMgr.setupShader(cmd) ?: continue
+            val shaderInst = backend.shaderMgr.bindShader(cmd) ?: continue
 
             glAttribs.setupPipelineAttribs(pipeline, renderPass.isReverseDepth)
 

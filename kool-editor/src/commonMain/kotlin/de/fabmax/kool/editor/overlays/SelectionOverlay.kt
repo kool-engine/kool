@@ -94,7 +94,7 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
             }
         }
     ) {
-        private val selectionPipelines = mutableMapOf<Long, ShaderAndPipeline?>()
+        private val selectionPipelines = mutableMapOf<Int, ShaderAndPipeline?>()
 
         init {
             camera = editor.editorOverlay.camera

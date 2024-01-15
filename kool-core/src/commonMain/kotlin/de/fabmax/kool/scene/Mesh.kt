@@ -222,7 +222,7 @@ open class Mesh(var geometry: IndexedVertexList, name: String = geometry.name) :
     }
 
     companion object {
-        private var instanceId = 1L
+        private var instanceId = 1
     }
 }
 

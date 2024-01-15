@@ -24,7 +24,8 @@ class Pipeline(
     val isWriteDepth: Boolean get() = pipelineConfig.isWriteDepth
     val lineWidth: Float get() = pipelineConfig.lineWidth
 
-    val shaderCode: ShaderCode = shaderCodeGenerator(this)
+    override val shaderCode: ShaderCode = shaderCodeGenerator(this)
+
     val onUpdate = mutableListOf<(DrawCommand) -> Unit>()
 
     init {

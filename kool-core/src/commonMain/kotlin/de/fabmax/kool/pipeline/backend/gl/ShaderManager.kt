@@ -1,22 +1,22 @@
 package de.fabmax.kool.pipeline.backend.gl
 
 import de.fabmax.kool.KoolException
-import de.fabmax.kool.pipeline.ComputePipeline
-import de.fabmax.kool.pipeline.ComputeRenderPass
-import de.fabmax.kool.pipeline.Pipeline
-import de.fabmax.kool.pipeline.PipelineBase
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.util.logE
 
 class ShaderManager(val backend: RenderBackendGl) {
-    val shaders = mutableMapOf<PipelineBase, CompiledShader>()
-    var currentShader: CompiledShader? = null
-
     private val gl: GlApi = backend.gl
 
-    fun setupShader(cmd: DrawCommand): CompiledShader.ShaderInstance? {
-        val shader = setupShader(cmd.pipeline!!)
-        return shader.bindInstance(cmd)
+    private val shaders = mutableMapOf<PipelineBase, CompiledShader>()
+    private var boundShader: CompiledShader? = null
+
+    private val glShaderPrograms = mutableMapOf<ShaderCodeGl, UsedGlProgram>()
+    private val glComputePrograms = mutableMapOf<ComputeShaderCodeGl, UsedGlProgram>()
+
+    fun bindShader(cmd: DrawCommand): CompiledDrawShader.ShaderMeshInstance? {
+        val shader = bindShader(cmd.pipeline!!)
+        return shader.bindMesh(cmd)
     }
 
     fun setupComputeShader(computePipeline: ComputePipeline, computePass: ComputeRenderPass): Boolean {
@@ -27,46 +27,60 @@ class ShaderManager(val backend: RenderBackendGl) {
             return false
         }
 
-        val shader = setupShader(computePipeline)
-        return shader.bindComputeInstance(computePipeline, computePass) != null
+        return false
+//        fixme: val shader = bindShader(computePipeline)
+//        return shader.bindComputeInstance(computePipeline, computePass) != null
     }
 
-    private fun setupShader(pipeline: PipelineBase): CompiledShader {
+    private fun bindShader(pipeline: Pipeline): CompiledDrawShader {
         val shader = shaders.getOrPut(pipeline) {
-            val glProgram = when (pipeline) {
-                is Pipeline -> {
-                    val code = pipeline.shaderCode as ShaderCodeGl
-                    compileShader(code)
-                }
-                is ComputePipeline -> {
-                    val code = pipeline.shaderCode as ComputeShaderCodeGl
-                    compileComputeShader(code)
-                }
-                else -> throw IllegalStateException()
-            }
-            CompiledShader(glProgram, pipeline, backend)
+            val usedProgram = getCompiledGlProgram(pipeline.shaderCode)
+            usedProgram.users += pipeline
+            CompiledDrawShader(pipeline, usedProgram.glProgram, backend)
+        } as CompiledDrawShader
+
+        val current = boundShader as? CompiledDrawShader
+
+        if (shader.program != current?.program) {
+            current?.disableVertexLayout()
+            gl.useProgram(shader.program)
+            shader.enableVertexLayout()
+
+        } else if (!shader.isSameVertexLayout(current)) {
+            current.disableVertexLayout()
+            shader.enableVertexLayout()
         }
-        if (shader !== currentShader) {
-            currentShader?.unUse()
-            currentShader = shader
-            shader.use()
-        }
+
+        boundShader = shader
         return shader
     }
 
-    fun deleteShader(pipeline: Pipeline) {
-        val shader = shaders[pipeline]
-        if (shader != null) {
-            shader.destroyInstance(pipeline)
-            if (shader.isEmpty()) {
-                if (shader == currentShader) {
-                    shader.unUse()
-                    currentShader = null
-                }
-                shader.destroy()
-                shaders.remove(pipeline)
-            }
+    private fun CompiledDrawShader.isSameVertexLayout(other: CompiledDrawShader): Boolean {
+        return pipeline.vertexLayout.hash == other.pipeline.vertexLayout.hash
+    }
+
+    private fun getCompiledGlProgram(code: ShaderCode): UsedGlProgram {
+        return when (code) {
+            is ShaderCodeGl -> glShaderPrograms.getOrPut(code) { UsedGlProgram(compileShader(code)) }
+            is ComputeShaderCodeGl -> glComputePrograms.getOrPut(code) { UsedGlProgram(compileComputeShader(code)) }
+            else -> error("Invalid ShaderCode: $code (must be either ShaderCodeGl or ComputeShaderCodeGl)")
         }
+    }
+
+    fun deleteShader(pipeline: Pipeline) {
+        // todo
+//        val shader = shaders[pipeline]
+//        if (shader != null) {
+//            shader.destroyInstance(pipeline)
+//            if (shader.isEmpty()) {
+//                if (shader == boundShader) {
+//                    shader.unbindVertexLayout()
+//                    boundShader = null
+//                }
+//                shader.release()
+//                shaders.remove(pipeline)
+//            }
+//        }
     }
 
     private fun compileShader(code: ShaderCodeGl): GlProgram {
@@ -137,5 +151,9 @@ class ShaderManager(val backend: RenderBackendGl) {
         val srcBuilder = StringBuilder()
         src.lines().forEachIndexed { ln, line -> srcBuilder.append("${ln+1} $line\n") }
         return srcBuilder.toString()
+    }
+
+    private class UsedGlProgram(val glProgram: GlProgram) {
+        val users = mutableSetOf<PipelineBase>()
     }
 }

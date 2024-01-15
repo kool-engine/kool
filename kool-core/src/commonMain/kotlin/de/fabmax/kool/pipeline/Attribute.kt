@@ -41,7 +41,7 @@ val KslType.gpuType: GpuType
     }
 
 data class Attribute(val name: String, val type: GpuType) {
-    // fixme: this is platform-specific and should not be here...
+    @Deprecated("locationIncrement is platform specific")
     val locationIncrement: Int = when(type) {
         GpuType.MAT2 -> 2
         GpuType.MAT3 -> 3

@@ -12,7 +12,7 @@ class ComputePipeline(
     shaderCodeGenerator: (ComputePipeline) -> ComputeShaderCode
 ) : PipelineBase(name, bindGroupLayouts) {
 
-    val shaderCode: ComputeShaderCode = shaderCodeGenerator(this)
+    override val shaderCode: ComputeShaderCode = shaderCodeGenerator(this)
     val onUpdate = mutableListOf<(ComputeRenderPass) -> Unit>()
 
     init {

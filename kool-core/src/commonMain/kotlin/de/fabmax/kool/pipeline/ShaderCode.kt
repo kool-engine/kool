@@ -6,6 +6,4 @@ interface ShaderCode {
     val hash: LongHash
 }
 
-interface ComputeShaderCode {
-    val hash: LongHash
-}
+interface ComputeShaderCode : ShaderCode

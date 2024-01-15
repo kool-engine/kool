@@ -9,7 +9,7 @@ import de.fabmax.kool.util.Color
 
 
 open class DepthMapPass(drawNode: Node, config: Config) : OffscreenRenderPass2d(drawNode, config) {
-    protected val shadowPipelines = mutableMapOf<Long, Pipeline?>()
+    protected val shadowPipelines = mutableMapOf<Int, Pipeline?>()
 
     constructor(drawNode: Node, width: Int, height: Int = width) : this(drawNode, defaultSetup(width, height))
 

@@ -5,6 +5,7 @@ import de.fabmax.kool.input.PointerInput
 import de.fabmax.kool.modules.ui2.UiScale
 import de.fabmax.kool.pipeline.OffscreenRenderPass
 import de.fabmax.kool.pipeline.Pipeline
+import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.backend.RenderBackend
 import de.fabmax.kool.pipeline.ibl.BrdfLutPass
 import de.fabmax.kool.scene.Scene
@@ -62,7 +63,9 @@ abstract class KoolContext {
     val backgroundPasses: BufferedList<OffscreenRenderPass>
         get() = backgroundScene.offscreenPasses
 
-    val defaultPbrBrdfLut by lazy { BrdfLutPass(backgroundScene).also { addBackgroundRenderPass(it) }.copyColor() }
+    val defaultPbrBrdfLut: Texture2d by lazy {
+        BrdfLutPass(backgroundScene).also { addBackgroundRenderPass(it) }.copyColor()
+    }
 
     internal val disposablePipelines = mutableListOf<Pipeline>()
 
@@ -100,11 +103,6 @@ abstract class KoolContext {
     protected fun render(dt: Double) {
         if (isProfileRenderPasses) {
             Profiling.enter("!main-render-loop")
-        }
-
-        if (Time.frameCount == 0) {
-            // force generation of BFDR LUT texture in very first frame
-            defaultPbrBrdfLut
         }
 
         Time.deltaT = dt.toFloat()

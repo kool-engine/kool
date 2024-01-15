@@ -19,6 +19,8 @@ abstract class PipelineBase(val name: String, val bindGroupLayouts: List<BindGro
     val pipelineHash: Long
         get() = hash.hash
 
+    abstract val shaderCode: ShaderCode
+
     @Deprecated("Use bindGroupLayouts instead", ReplaceWith("bindGroupLayouts[0]"))
     val bindGroupLayout: BindGroupLayout get() {
         if (bindGroupLayouts.size > 1) {
@@ -51,16 +53,6 @@ abstract class PipelineBase(val name: String, val bindGroupLayouts: List<BindGro
 
     fun findBindGroupItemByName(name: String): BindingLayout? {
         return bindGroupLayouts.firstNotNullOfOrNull { grp -> grp.bindings.find { it.name == name } }
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is PipelineBase) return false
-        return pipelineHash == other.pipelineHash
-    }
-
-    override fun hashCode(): Int {
-        return pipelineHash.hashCode()
     }
 
     companion object {
