@@ -3,6 +3,7 @@ import java.util.*
 
 plugins {
     alias(commonLibs.plugins.kotlinMultiplatform)
+    alias(commonLibs.plugins.kotlinAtomicFu)
     `maven-publish`
     signing
 }
@@ -22,6 +23,7 @@ kotlin {
             api(commonLibs.kotlin.serialization.core)
             api(commonLibs.kotlin.serialization.json)
             api(commonLibs.kotlin.reflect)
+            api(commonLibs.kotlin.atomicfu)
             api(project(":kool-core"))
             api(project(":kool-physics"))
             implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")

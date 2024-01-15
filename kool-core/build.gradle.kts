@@ -5,6 +5,7 @@ plugins {
     //alias(commonLibs.plugins.androidLibrary)
     alias(commonLibs.plugins.kotlinMultiplatform)
     alias(commonLibs.plugins.kotlinSerialization)
+    alias(commonLibs.plugins.kotlinAtomicFu)
     alias(commonLibs.plugins.kotlinDokka)
 
     `maven-publish`
@@ -44,6 +45,7 @@ kotlin {
             implementation(commonLibs.kotlin.serialization.core)
             implementation(commonLibs.kotlin.serialization.json)
             implementation(commonLibs.kotlin.reflect)
+            implementation(commonLibs.kotlin.atomicfu)
         }
 
         commonTest.dependencies {

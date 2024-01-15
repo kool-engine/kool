@@ -31,6 +31,7 @@ dependencyResolutionManagement {
             library("kotlin-reflect", "org.jetbrains.kotlin", "kotlin-reflect").versionRef("kotlin")
             library("kotlin-serialization-core", "org.jetbrains.kotlinx", "kotlinx-serialization-core").versionRef("kotlin-serialization")
             library("kotlin-serialization-json", "org.jetbrains.kotlinx", "kotlinx-serialization-json").versionRef("kotlin-serialization")
+            library("kotlin-atomicfu", "org.jetbrains.kotlinx", "atomicfu").versionRef("kotlin-atomicfu")
             library("kotlin-test", "org.jetbrains.kotlin", "kotlin-test").versionRef("kotlin")
             library("kotlin-test-junit", "org.jetbrains.kotlin", "kotlin-test-junit").versionRef("kotlin")
 
@@ -38,6 +39,7 @@ dependencyResolutionManagement {
             plugin("androidLibrary", "com.android.library").versionRef("agp")
             plugin("kotlinSerialization", "org.jetbrains.kotlin.plugin.serialization").versionRef("kotlin")
             plugin("kotlinMultiplatform", "org.jetbrains.kotlin.multiplatform").versionRef("kotlin")
+            plugin("kotlinAtomicFu", "org.jetbrains.kotlin.plugin.atomicfu").versionRef("kotlin")
             plugin("kotlinDokka", "org.jetbrains.dokka").versionRef("kotlin-dokka")
         }
 
