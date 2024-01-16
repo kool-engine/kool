@@ -69,9 +69,8 @@ class ManyVehiclesDemo : DemoScene("Many Vehicles") {
         }
         makeGround()
 
-        addMesh(Attribute.POSITIONS, Attribute.NORMALS) {
+        addMesh(Attribute.POSITIONS, Attribute.NORMALS, instances = chassisInstances) {
             isFrustumChecked = false
-            instances = chassisInstances
             generate {
                 cube {
                     size.set(vehicleProps.chassisDims)
@@ -81,9 +80,8 @@ class ManyVehiclesDemo : DemoScene("Many Vehicles") {
             shader = chassisShader()
         }
 
-        addColorMesh {
+        addColorMesh(instances = wheelInstances) {
             isFrustumChecked = false
-            instances = wheelInstances
             generate {
                 color = Color.DARK_GRAY.toLinear()
                 rotate(90f.deg, Vec3f.Z_AXIS)

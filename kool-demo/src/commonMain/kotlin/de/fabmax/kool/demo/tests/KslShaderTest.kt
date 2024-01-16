@@ -134,7 +134,25 @@ class KslShaderTest : DemoScene("KslShader") {
             }
         }
 
-        addMesh(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS, Attribute.COLORS, Attribute.TANGENTS) {
+        val instances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.INSTANCE_COLOR)).apply {
+            val mat = MutableMat4f()
+            val mutColor = MutableColor()
+            var i = 0
+            for (y in -2 .. 2) {
+                for (x in -2 .. 2) {
+                    mat.setIdentity().translate(x * 2.5f, y * 2.5f, 0f)
+                    addInstance {
+                        mat.putTo(this)
+                        mutColor.set(MdColor.PALETTE[i++ % MdColor.PALETTE.size]).toLinear().putTo(this)
+                    }
+                }
+            }
+        }
+
+        addMesh(
+            Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS, Attribute.COLORS, Attribute.TANGENTS,
+            instances = instances
+        ) {
             generate {
                 color = MdColor.LIGHT_GREEN
                 centeredRect {
@@ -143,21 +161,6 @@ class KslShaderTest : DemoScene("KslShader") {
                     size.set(2.4f, 2.4f)
                 }
                 geometry.generateTangents()
-            }
-
-            instances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.INSTANCE_COLOR)).apply {
-                val mat = MutableMat4f()
-                val mutColor = MutableColor()
-                var i = 0
-                for (y in -2 .. 2) {
-                    for (x in -2 .. 2) {
-                        mat.setIdentity().translate(x * 2.5f, y * 2.5f, 0f)
-                        addInstance {
-                            mat.putTo(this)
-                            mutColor.set(MdColor.PALETTE[i++ % MdColor.PALETTE.size]).toLinear().putTo(this)
-                        }
-                    }
-                }
             }
 
             val phongShader = KslBlinnPhongShader {

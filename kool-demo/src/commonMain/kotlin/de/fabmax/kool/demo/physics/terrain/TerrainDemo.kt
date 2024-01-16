@@ -425,12 +425,11 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         }
     }
 
-    private fun makeBoxMesh() = ColorMesh().apply {
+    private fun makeBoxMesh() = ColorMesh(MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT))).apply {
         generate {
             color = MdColor.PURPLE.toLinear()
             physicsObjects.boxes[0].shapes[0].geometry.generateMesh(this)
         }
-        instances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT))
         onUpdate += {
             instances!!.apply {
                 clear()
@@ -443,14 +442,13 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         }
     }
 
-    private fun makeBridgeMesh() = ColorMesh().apply {
+    private fun makeBridgeMesh() = ColorMesh(MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT))).apply {
         generate {
             color = MdColor.BROWN toneLin 700
             cube {
                 size.set(2f, 0.2f, 1.1f)
             }
         }
-        instances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT))
         onUpdate += {
             instances?.let { insts ->
                 insts.clear()

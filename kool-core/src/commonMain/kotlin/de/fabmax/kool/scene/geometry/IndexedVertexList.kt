@@ -13,18 +13,16 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.round
 
-fun IndexedVertexList(vararg vertexAttributes: Attribute): IndexedVertexList {
-    return IndexedVertexList(vertexAttributes.toList())
+fun IndexedVertexList(vararg vertexAttributes: Attribute, primitiveType: PrimitiveType = PrimitiveType.TRIANGLES): IndexedVertexList {
+    return IndexedVertexList(vertexAttributes.toList(), primitiveType)
 }
 
-class IndexedVertexList(val vertexAttributes: List<Attribute>) : BaseReleasable() {
+class IndexedVertexList(
+    val vertexAttributes: List<Attribute>,
+    val primitiveType: PrimitiveType = PrimitiveType.TRIANGLES
+) : BaseReleasable() {
 
     var name: String = "geometry"
-
-    /**
-     * Hash of present vertexAttributes, can be used to check for same attributes (incl. order) of two IndexedVertexLists
-     */
-    val attributeHash: Long = vertexAttributes.fold(0L) { h, a -> h * 31 + a.hashCode() }
 
     /**
      * Number of floats per vertex. E.g. a vertex containing only a position consists of 3 floats.
@@ -50,11 +48,6 @@ class IndexedVertexList(val vertexAttributes: List<Attribute>) : BaseReleasable(
      * Vertex attribute offsets in bytes.
      */
     val attributeByteOffsets: Map<Attribute, Int>
-
-    /**
-     * Primitive type of geometry in this vertex list
-     */
-    var primitiveType = PrimitiveType.TRIANGLES
 
     /**
      * Expected usage of geometry in this vertex list: STATIC if geometry is expected to change very infrequently /

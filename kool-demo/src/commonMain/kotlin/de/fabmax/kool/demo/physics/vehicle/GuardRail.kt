@@ -40,9 +40,11 @@ class GuardRail {
         signs.forEach { it.joint.release() }
     }
 
-    private fun makeMesh() = Mesh(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS).apply {
-        isFrustumChecked = false
+    private fun makeMesh() = Mesh(
+        Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS,
         instances = signInstances
+    ).apply {
+        isFrustumChecked = false
 
         generate {
             val caseColor = VehicleDemo.color(250)

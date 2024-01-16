@@ -101,8 +101,7 @@ class BeeDemo : DemoScene("Fighting Bees") {
         }
     }
 
-    private fun beeMesh(instances: MeshInstanceList) = Mesh(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS).apply {
-        this.instances = instances
+    private fun beeMesh(instances: MeshInstanceList) = Mesh(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS, instances = instances).apply {
         generate {
             //scale(10f)
             cube {

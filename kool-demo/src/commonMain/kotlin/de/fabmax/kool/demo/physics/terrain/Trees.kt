@@ -59,9 +59,8 @@ class Trees(val terrain: Terrain, nTrees: Int, val wind: Wind, val sky: Sky) {
             treeData.splitVertices()
             treeData.generateNormals()
             trees += Tree(
-                Mesh(treeData).apply {
+                Mesh(treeData, instances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT))).apply {
                     isFrustumChecked = false
-                    instances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT))
                 },
                 collisionData
             )

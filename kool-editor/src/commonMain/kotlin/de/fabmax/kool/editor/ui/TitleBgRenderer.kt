@@ -42,18 +42,22 @@ class TitleBgRenderer(
         }
     }
 
-    private class TitleBgMesh : Mesh(IndexedVertexList(Ui2Shader.UI_MESH_ATTRIBS), "Ui/TitleBgMesh") {
-        val bgInstances = MeshInstanceList(listOf(
-            Ui2Shader.ATTRIB_CLIP,
-            TitleBgShader.ATTRIB_DIMENS,
-            TitleBgShader.ATTRIB_CLIP_CORNERS
-        ))
-
+    private class TitleBgMesh : Mesh(
+        IndexedVertexList(Ui2Shader.UI_MESH_ATTRIBS),
+        instances = MeshInstanceList(
+            listOf(
+                Ui2Shader.ATTRIB_CLIP,
+                TitleBgShader.ATTRIB_DIMENS,
+                TitleBgShader.ATTRIB_CLIP_CORNERS
+            )
+        ),
+        name = "Ui/TitleBgMesh"
+    ) {
+        val bgInstances: MeshInstanceList get() = instances!!
         val bgShader = TitleBgShader()
 
         init {
             shader = bgShader
-            instances = bgInstances
             generate {
                 centeredRect {
                     origin.set(0.5f, 0.5f, 0f)

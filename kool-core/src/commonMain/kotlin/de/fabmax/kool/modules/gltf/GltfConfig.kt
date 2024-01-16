@@ -1,6 +1,7 @@
 package de.fabmax.kool.modules.gltf
 
 import de.fabmax.kool.modules.ksl.KslPbrShader
+import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.util.ShadowMap
@@ -17,6 +18,7 @@ class GltfLoadConfig(
     val removeEmptyNodes: Boolean = true,
     val mergeMeshesByMaterial: Boolean = false,
     val sortNodesByAlpha: Boolean = true,
+    val addInstanceAttributes: List<Attribute> = emptyList(),
     val pbrBlock: (KslPbrShader.Config.(GltfMesh.Primitive) -> Unit)? = null
 )
 

@@ -41,7 +41,7 @@ object Skybox {
         texLod: Float = 0f,
         colorSpaceConversion: ColorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR,
         isInfiniteDepth: Boolean = false
-    ) : Mesh(IndexedVertexList(Attribute.POSITIONS), UniqueId.nextId("Skybox.Cube")) {
+    ) : Mesh(IndexedVertexList(Attribute.POSITIONS), name = UniqueId.nextId("Skybox.Cube")) {
 
         val skyboxShader: KslSkyCubeShader
 

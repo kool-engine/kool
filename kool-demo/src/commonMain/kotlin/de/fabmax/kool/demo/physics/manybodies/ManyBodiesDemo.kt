@@ -38,8 +38,7 @@ class ManyBodiesDemo : DemoScene("Many Bodies") {
         }
         makeGround()
 
-        addColorMesh {
-            instances = cubeInstances
+        addColorMesh(instances = cubeInstances) {
             generate {
                 cube {  }
             }

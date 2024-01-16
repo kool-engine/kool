@@ -136,9 +136,8 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
             InputStack.defaultInputHandler.pointerListeners -= forceHelper
         }
 
-        addColorMesh {
+        addColorMesh(instances = bodyInstanceData) {
             isFrustumChecked = false
-            instances = bodyInstanceData
             generate {
                 cube { }
             }

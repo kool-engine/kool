@@ -151,9 +151,8 @@ enum class ShapeType {
 
     abstract val label: String
     val instances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.COLORS), 2000)
-    val mesh = Mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS)).apply {
+    val mesh = Mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS), instances).apply {
         isFrustumChecked = false
-        instances = this@ShapeType.instances
         generate {
             generateMesh()
         }

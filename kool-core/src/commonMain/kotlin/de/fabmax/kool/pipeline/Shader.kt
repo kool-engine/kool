@@ -10,12 +10,30 @@ import de.fabmax.kool.scene.Mesh
  * supplied shader source code has to match the rendering backend (e.g. GLSL in case an OpenGL backend is used).
  */
 abstract class Shader(name: String) : ShaderBase<Pipeline>(name) {
+
+    private var meshVertexLayout: List<Attribute>? = null
+    private var meshInstanceLayout: List<Attribute>? = null
+
     fun getOrCreatePipeline(mesh: Mesh, updateEvent: RenderPass.UpdateEvent): Pipeline {
-        val pipeline = createdPipeline ?: createPipeline(mesh, updateEvent).also { pipelineCreated(it) }
-        check(pipeline.vertexLayout.primitiveType == mesh.geometry.primitiveType) {
-            "Shader pipeline was created for mesh primitive type ${pipeline.vertexLayout.primitiveType} but provided mesh has primitive type ${mesh.geometry.primitiveType}"
+        val created = createdPipeline
+        if (created == null) {
+            meshVertexLayout = mesh.geometry.vertexAttributes
+            meshInstanceLayout = mesh.instances?.instanceAttributes
+
+        } else {
+            // if shader is used for multiple meshes, these must have identical buffer layouts
+            check(meshVertexLayout == mesh.geometry.vertexAttributes) {
+                "Shader pipeline was created for mesh vertex layout $meshVertexLayout but provided mesh has vertex layout ${mesh.geometry.vertexAttributes}"
+            }
+            check(meshInstanceLayout == null || meshInstanceLayout == mesh.instances?.instanceAttributes) {
+                "Shader pipeline was created for mesh instance layout $meshInstanceLayout but provided mesh has instance layout ${mesh.instances?.instanceAttributes}"
+            }
+            check(created.vertexLayout.primitiveType == mesh.geometry.primitiveType) {
+                "Shader pipeline was created for mesh primitive type ${created.vertexLayout.primitiveType} but provided mesh has primitive type ${mesh.geometry.primitiveType}"
+            }
         }
-        return pipeline
+
+        return created ?: createPipeline(mesh, updateEvent).also { pipelineCreated(it) }
     }
 
     protected abstract fun createPipeline(mesh: Mesh, updateEvent: RenderPass.UpdateEvent): Pipeline

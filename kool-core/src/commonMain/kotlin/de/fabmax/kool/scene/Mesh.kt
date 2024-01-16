@@ -8,36 +8,62 @@ import de.fabmax.kool.pipeline.shading.DepthShader
 import de.fabmax.kool.scene.animation.Skin
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
+import de.fabmax.kool.scene.geometry.PrimitiveType
 import de.fabmax.kool.util.Time
 
-fun Node.addMesh(attributes: List<Attribute>, name: String = makeChildName("mesh"), block: Mesh.() -> Unit): Mesh {
-    val mesh = Mesh(IndexedVertexList(attributes), name)
+fun Node.addMesh(
+    attributes: List<Attribute>,
+    instances: MeshInstanceList? = null,
+    name: String = makeChildName("mesh"),
+    primitiveType: PrimitiveType = PrimitiveType.TRIANGLES,
+    block: Mesh.() -> Unit
+): Mesh {
+    val mesh = Mesh(IndexedVertexList(attributes, primitiveType), instances, name = name)
     mesh.block()
     addNode(mesh)
     return mesh
 }
 
-fun Node.addMesh(vararg attributes: Attribute, name: String = makeChildName("mesh"), block: Mesh.() -> Unit): Mesh {
-    val mesh = Mesh(IndexedVertexList(*attributes), name)
+fun Node.addMesh(
+    vararg attributes: Attribute,
+    instances: MeshInstanceList? = null,
+    name: String = makeChildName("mesh"),
+    primitiveType: PrimitiveType = PrimitiveType.TRIANGLES,
+    block: Mesh.() -> Unit
+): Mesh {
+    val mesh = Mesh(IndexedVertexList(attributes.toList(), primitiveType), instances, name = name)
     mesh.block()
     addNode(mesh)
     return mesh
 }
 
-fun Node.addColorMesh(name: String = makeChildName("colorMesh"), block: Mesh.() -> Unit): Mesh {
+fun Node.addColorMesh(
+    name: String = makeChildName("colorMesh"),
+    primitiveType: PrimitiveType = PrimitiveType.TRIANGLES,
+    instances: MeshInstanceList? = null,
+    block: Mesh.() -> Unit
+): Mesh {
     return addMesh(
         Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS,
+        instances = instances,
         name = name,
+        primitiveType = primitiveType,
         block = block
     )
 }
 
-fun Node.addTextureMesh(name: String = makeChildName("textureMesh"), isNormalMapped: Boolean = false, block: Mesh.() -> Unit): Mesh {
+fun Node.addTextureMesh(
+    name: String = makeChildName("textureMesh"),
+    isNormalMapped: Boolean = false,
+    instances: MeshInstanceList? = null,
+    primitiveType: PrimitiveType = PrimitiveType.TRIANGLES,
+    block: Mesh.() -> Unit
+): Mesh {
     val attributes = mutableListOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS)
     if (isNormalMapped) {
         attributes += Attribute.TANGENTS
     }
-    val mesh = addMesh(attributes, name, block)
+    val mesh = addMesh(attributes, instances, name, primitiveType, block)
     if (isNormalMapped) {
         mesh.geometry.generateTangents()
     }
@@ -47,25 +73,21 @@ fun Node.addTextureMesh(name: String = makeChildName("textureMesh"), isNormalMap
 /**
  * Class for renderable geometry (triangles, lines, points).
  */
-open class Mesh(var geometry: IndexedVertexList, name: String = geometry.name) : Node(name) {
+open class Mesh(
+    val geometry: IndexedVertexList,
+    val instances: MeshInstanceList? = null,
+    val morphWeights: FloatArray? = null,
+    val skin: Skin? = null,
+    name: String = geometry.name
+) : Node(name) {
 
-    constructor(attributes: List<Attribute>, name: String = makeNodeName("Mesh")) :
-            this(IndexedVertexList(attributes), name)
-    constructor(vararg attributes: Attribute, name: String = makeNodeName("Mesh")) :
-            this(IndexedVertexList(*attributes), name)
+    constructor(attributes: List<Attribute>, instances: MeshInstanceList? = null, name: String = makeNodeName("Mesh")) :
+            this(IndexedVertexList(attributes), instances = instances, name = name)
+    constructor(vararg attributes: Attribute, instances: MeshInstanceList? = null, name: String = makeNodeName("Mesh")) :
+            this(IndexedVertexList(*attributes), instances = instances, name = name)
 
     val id = instanceId++
 
-    var instances: MeshInstanceList? = null
-        set(value) {
-            field = value
-            if (value != null) {
-                // frustum checking does not play well with instancing -> disable it if instancing is used
-                isFrustumChecked = false
-            }
-        }
-    var morphWeights: FloatArray? = null
-    var skin: Skin? = null
     var isOpaque = true
 
     val meshPipelineData = PipelineData(BindGroupScope.MESH)
@@ -130,7 +152,8 @@ open class Mesh(var geometry: IndexedVertexList, name: String = geometry.name) :
         internal set
 
     init {
-        isFrustumChecked = true
+        // frustum check is disabled by default for instanced meshes
+        isFrustumChecked = instances == null
     }
 
     override fun addContentToBoundingBox(localBounds: BoundingBoxF) {
@@ -222,18 +245,26 @@ open class Mesh(var geometry: IndexedVertexList, name: String = geometry.name) :
  * Mesh with default attributes for vertex color based rendering:
  * [Attribute.POSITIONS], [Attribute.NORMALS], [Attribute.COLORS]
  */
-open class ColorMesh(name: String = makeNodeName("ColorMesh")) : Mesh(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, name = name)
+open class ColorMesh(
+    instances: MeshInstanceList? = null,
+    name: String = makeNodeName("ColorMesh"),
+) : Mesh(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, instances = instances, name = name)
 
 /**
  * Mesh with default attributes for texture color based rendering:
  * [Attribute.POSITIONS], [Attribute.NORMALS], [Attribute.TEXTURE_COORDS] and [Attribute.TANGENTS] if
  * isNormalMapped is true.
  */
-open class TextureMesh(isNormalMapped: Boolean = false, name: String = makeNodeName("TextureMesh")) : Mesh(
+open class TextureMesh(
+    isNormalMapped: Boolean = false,
+    instances: MeshInstanceList? = null,
+    name: String = makeNodeName("TextureMesh")
+) : Mesh(
     if (isNormalMapped) {
         listOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS, Attribute.TANGENTS)
     } else {
         listOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS)
     },
+    instances = instances,
     name = name
 )

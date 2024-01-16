@@ -79,26 +79,26 @@ class ColorGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrConten
         colors += MdColor.BLUE_GREY
         colors += Color(0.1f, 0.1f, 0.1f)
 
-        return addMesh(Attribute.POSITIONS, Attribute.NORMALS) {
-            isFrustumChecked = false
-            geometry.addGeometry(sphereProto.simpleSphere)
-            shader = instancedPbrShader(withIbl, environmentMaps).also { shaders += it }
+        val instances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.COLORS), nRows * nCols) .apply {
+            val mat = MutableMat4f()
+            for (y in 0 until nRows) {
+                for (x in 0 until nCols) {
+                    mat.setIdentity()
+                    mat.translate((-(nCols - 1) * 0.5f + x) * spacing, ((nRows - 1) * 0.5f - y) * spacing, 0f)
+                    mat.scale(1.5f)
 
-            instances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.COLORS), nRows * nCols) .apply {
-                val mat = MutableMat4f()
-                for (y in 0 until nRows) {
-                    for (x in 0 until nCols) {
-                        mat.setIdentity()
-                        mat.translate((-(nCols - 1) * 0.5f + x) * spacing, ((nRows - 1) * 0.5f - y) * spacing, 0f)
-                        mat.scale(1.5f)
-
-                        addInstance {
-                            mat.putTo(this)
-                            colors[(y * nCols + x) % colors.size].toLinear().putTo(this)
-                        }
+                    addInstance {
+                        mat.putTo(this)
+                        colors[(y * nCols + x) % colors.size].toLinear().putTo(this)
                     }
                 }
             }
+        }
+
+        return addMesh(Attribute.POSITIONS, Attribute.NORMALS, instances = instances) {
+            isFrustumChecked = false
+            geometry.addGeometry(sphereProto.simpleSphere)
+            shader = instancedPbrShader(withIbl, environmentMaps).also { shaders += it }
         }
     }
 

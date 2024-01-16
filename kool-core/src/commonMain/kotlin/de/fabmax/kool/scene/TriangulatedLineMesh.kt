@@ -34,7 +34,9 @@ fun Node.addTriangulatedLineMesh(
     return mesh
 }
 
-class TriangulatedLineMesh(geometry: IndexedVertexList, name: String = makeNodeName("TriangulatedLineMesh")) : Mesh(geometry, name) {
+class TriangulatedLineMesh(geometry: IndexedVertexList, name: String = makeNodeName("TriangulatedLineMesh")) :
+    Mesh(geometry, name = name)
+{
 
     constructor(name: String = makeNodeName("TriangulatedLineMesh")) : this(IndexedVertexList(lineMeshAttribs), name)
 

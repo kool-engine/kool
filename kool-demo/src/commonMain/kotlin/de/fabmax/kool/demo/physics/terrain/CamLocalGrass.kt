@@ -34,7 +34,10 @@ class CamLocalGrass(val camera: Camera, val terrain: Terrain, val wind: Wind, va
         }
 
     init {
-        grassQuads = Mesh(IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS, Wind.WIND_SENSITIVITY)).apply {
+        grassQuads = Mesh(
+            IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS, Wind.WIND_SENSITIVITY),
+            instances = grassInstances
+        ).apply {
             generate {
                 with(Grass) {
                     val pos = Vec3f(-0.5f, 0f, 0f)
@@ -46,7 +49,6 @@ class CamLocalGrass(val camera: Camera, val terrain: Terrain, val wind: Wind, va
                 geometry.generateNormals()
             }
             isFrustumChecked = false
-            instances = grassInstances
         }
         setIsCastingShadow(true)
 

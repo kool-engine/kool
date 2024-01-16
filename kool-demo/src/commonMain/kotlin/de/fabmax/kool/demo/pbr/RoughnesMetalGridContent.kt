@@ -70,28 +70,28 @@ class RoughnesMetalGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.P
         val nCols = 7
         val spacing = 2.5f
 
-        return addMesh(Attribute.POSITIONS, Attribute.NORMALS) {
-            isFrustumChecked = false
-            geometry.addGeometry(sphereProto.simpleSphere)
-            shader = instancedPbrShader(withIbl, envMaps).also { shaders += it }
+        val instances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, ATTRIB_ROUGHNESS, ATTRIB_METAL), nRows * nCols) .apply {
+            val mat = MutableMat4f()
+            for (y in 0 until nRows) {
+                for (x in 0 until nCols) {
+                    mat.setIdentity()
+                    mat.translate((-(nCols - 1) * 0.5f + x) * spacing, ((nRows - 1) * 0.5f - y) * spacing, 0f)
 
-            instances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, ATTRIB_ROUGHNESS, ATTRIB_METAL), nRows * nCols) .apply {
-                val mat = MutableMat4f()
-                for (y in 0 until nRows) {
-                    for (x in 0 until nCols) {
-                        mat.setIdentity()
-                        mat.translate((-(nCols - 1) * 0.5f + x) * spacing, ((nRows - 1) * 0.5f - y) * spacing, 0f)
-
-                        addInstance {
-                            mat.putTo(this)
-                            val roughness = max(x / (nCols - 1).toFloat(), 0.05f)
-                            val metallic = y / (nRows - 1).toFloat()
-                            put(roughness)
-                            put(metallic)
-                        }
+                    addInstance {
+                        mat.putTo(this)
+                        val roughness = max(x / (nCols - 1).toFloat(), 0.05f)
+                        val metallic = y / (nRows - 1).toFloat()
+                        put(roughness)
+                        put(metallic)
                     }
                 }
             }
+        }
+
+        return addMesh(Attribute.POSITIONS, Attribute.NORMALS, instances = instances) {
+            isFrustumChecked = false
+            geometry.addGeometry(sphereProto.simpleSphere)
+            shader = instancedPbrShader(withIbl, envMaps).also { shaders += it }
         }
     }
 

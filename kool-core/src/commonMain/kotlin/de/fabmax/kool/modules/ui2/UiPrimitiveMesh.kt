@@ -13,20 +13,26 @@ import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.util.Color
 import kotlin.math.*
 
-class UiPrimitiveMesh(name: String) : Mesh(IndexedVertexList(ATTRIB_OUTER_WEIGHTS, ATTRIB_INNER_WEIGHTS), name) {
-
-    private val primitives = MeshInstanceList(listOf(
-        ATTRIB_OUTER_DIMENS,
-        ATTRIB_INNER_DIMENS,
-        Ui2Shader.ATTRIB_CLIP,
-        ATTRIB_COLOR_A,
-        ATTRIB_COLOR_B,
-        ATTRIB_GRADIENT_DIR,
-        ATTRIB_CENTER)
+class UiPrimitiveMesh(name: String) :
+    Mesh(
+        geometry = IndexedVertexList(ATTRIB_OUTER_WEIGHTS, ATTRIB_INNER_WEIGHTS),
+        instances = MeshInstanceList(
+            listOf(
+                ATTRIB_OUTER_DIMENS,
+                ATTRIB_INNER_DIMENS,
+                Ui2Shader.ATTRIB_CLIP,
+                ATTRIB_COLOR_A,
+                ATTRIB_COLOR_B,
+                ATTRIB_GRADIENT_DIR,
+                ATTRIB_CENTER
+            )
+        ),
+        name = name
     )
+{
+    private val primitives: MeshInstanceList get() = instances!!
 
     init {
-        instances = primitives
         isFrustumChecked = false
         isCastingShadow = false
 

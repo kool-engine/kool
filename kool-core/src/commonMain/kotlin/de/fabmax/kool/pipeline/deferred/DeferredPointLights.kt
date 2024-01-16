@@ -24,9 +24,12 @@ class DeferredPointLights(var isDynamic: Boolean) {
 
     val lightShader = DeferredLightShader(Light.Point.ENCODING)
 
-    val mesh = Mesh(listOf(Attribute.POSITIONS)).apply {
+    val mesh = Mesh(
+        listOf(Attribute.POSITIONS),
+        instances = lightInstanceData,
+        name = "DeferredPointLights"
+    ).apply {
         isFrustumChecked = false
-        instances = lightInstanceData
 
         generate {
             icoSphere {

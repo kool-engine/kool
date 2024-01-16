@@ -27,10 +27,9 @@ class Ocean(terrainTiles: TerrainTiles, val camera: Camera, val wind: Wind, val 
             oceanMesh.shader = value?.shader
         }
 
-    val oceanMesh = Mesh(IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS)).apply {
+    val oceanMesh = Mesh(IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS), instances = oceanInstances).apply {
         isFrustumChecked = false
         isCastingShadow = false
-        instances = oceanInstances
         generate {
             grid {
                 sizeX = TILE_SIZE

@@ -29,6 +29,8 @@ class DeferredDemo : DemoScene("Deferred Shading") {
 
     private lateinit var lightPositionMesh: Mesh
     private lateinit var lightVolumeMesh: LineMesh
+    private val lightPosInsts = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.COLORS), MAX_LIGHTS)
+    private val lightVolInsts = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.COLORS), MAX_LIGHTS)
 
     private val rand = Random(1337)
 
@@ -125,7 +127,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
 
     private fun Scene.makeLightOverlays() {
         apply {
-            lightVolumeMesh = addWireframeMesh(deferredPipeline.dynamicPointLights.mesh.geometry).apply {
+            lightVolumeMesh = addWireframeMesh(deferredPipeline.dynamicPointLights.mesh.geometry, instances = lightVolInsts).apply {
                 isFrustumChecked = false
                 isVisible = false
                 isCastingShadow = false
@@ -135,11 +137,6 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                     colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB
                 }
             }
-
-            val lightPosInsts = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.COLORS), MAX_LIGHTS)
-            val lightVolInsts = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.COLORS), MAX_LIGHTS)
-            lightPositionMesh.instances = lightPosInsts
-            lightVolumeMesh.instances = lightVolInsts
 
             val lightModelMat = MutableMat4f()
             onUpdate += {
@@ -214,7 +211,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
             shader = objectShader
         }
 
-        lightPositionMesh = addMesh(Attribute.POSITIONS, Attribute.NORMALS) {
+        lightPositionMesh = addMesh(Attribute.POSITIONS, Attribute.NORMALS, instances = lightPosInsts) {
             isFrustumChecked = false
             isVisible = true
             isCastingShadow = false

@@ -16,32 +16,43 @@ import kotlin.math.min
  * @author fabmax
  */
 
-fun Node.addLineMesh(name: String = makeChildName("LineMesh"), block: LineMesh.() -> Unit): LineMesh {
-    val lineMesh = LineMesh(name).apply(block)
+fun Node.addLineMesh(
+    name: String = makeChildName("LineMesh"),
+    instances: MeshInstanceList? = null,
+    block: LineMesh.() -> Unit
+): LineMesh {
+    val lineMesh = LineMesh(name, instances = instances).apply(block)
     addNode(lineMesh)
     return lineMesh
 }
 
-fun Node.addWireframeMesh(triMesh: IndexedVertexList, lineColor: Color? = null) =
-    addLineMesh("${triMesh.name}-wireframe") {
-        addWireframe(triMesh, lineColor)
-    }
+fun Node.addWireframeMesh(
+    triMesh: IndexedVertexList,
+    lineColor: Color? = null,
+    instances: MeshInstanceList? = null
+) = addLineMesh("${triMesh.name}-wireframe", instances = instances) {
+    addWireframe(triMesh, lineColor)
+}
 
-fun Node.addNormalMesh(geometry: IndexedVertexList, lineColor: Color? = null, len: Float = 1f) =
-    addLineMesh("${geometry.name}-normals") {
-        addNormals(geometry, lineColor, len)
-    }
+fun Node.addNormalMesh(
+    geometry: IndexedVertexList,
+    lineColor: Color? = null,
+    len: Float = 1f,
+    instances: MeshInstanceList? = null
+) = addLineMesh("${geometry.name}-normals", instances = instances) {
+    addNormals(geometry, lineColor, len)
+}
 
 open class LineMesh(
     name: String = makeNodeName("LineMesh"),
-    geometry: IndexedVertexList = IndexedVertexList(Attribute.POSITIONS, Attribute.COLORS)
-) : Mesh(geometry, name) {
+    geometry: IndexedVertexList = IndexedVertexList(Attribute.POSITIONS, Attribute.COLORS, primitiveType = PrimitiveType.LINES),
+    instances: MeshInstanceList? = null,
+) : Mesh(geometry, instances = instances, name = name) {
 
     private val lineBuffer = mutableListOf<LineVertex>()
     var color = Color.RED
 
     init {
-        geometry.primitiveType = PrimitiveType.LINES
         rayTest = MeshRayTest.nopTest()
         shader = KslUnlitShader {
             color { vertexColor() }

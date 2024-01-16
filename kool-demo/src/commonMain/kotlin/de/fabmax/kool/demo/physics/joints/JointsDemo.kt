@@ -502,9 +502,11 @@ class JointsDemo : DemoScene("Physics - Joints") {
         var mesh: Mesh? = null
 
         var factory: (RigidActor) -> Mesh = { proto ->
-            Mesh(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS).apply {
-                isFrustumChecked = false
+            Mesh(
+                Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS,
                 instances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT))
+            ).apply {
+                isFrustumChecked = false
                 generate {
                     color = this@BodyMesh.color
                     proto.shapes.forEach { shape ->

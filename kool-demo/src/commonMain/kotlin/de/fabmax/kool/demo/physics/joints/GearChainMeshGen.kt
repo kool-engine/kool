@@ -24,9 +24,11 @@ object GearChainMeshGen {
     private val attribMetallic = Attribute("aMetallic", GpuType.FLOAT1)
     private val meshAttribs = listOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, attribRoughness, attribMetallic)
 
-    fun makeNiceGearMesh(ibl: EnvironmentMaps, aoMap: Texture2d, shadows: List<ShadowMap>) = Mesh(meshAttribs).apply {
+    fun makeNiceGearMesh(ibl: EnvironmentMaps, aoMap: Texture2d, shadows: List<ShadowMap>) = Mesh(
+        meshAttribs,
+        MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT))
+    ).apply {
         isFrustumChecked = false
-        instances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT))
         generate {
             var roughness = 0.3f
             var metal = 1f
@@ -170,9 +172,11 @@ object GearChainMeshGen {
         shader = makeMeshShader(ibl, aoMap, shadows)
     }
 
-    fun makeNiceAxleMesh(ibl: EnvironmentMaps, aoMap: Texture2d, shadows: List<ShadowMap>) = Mesh(meshAttribs).apply {
+    fun makeNiceAxleMesh(ibl: EnvironmentMaps, aoMap: Texture2d, shadows: List<ShadowMap>) = Mesh(
+        meshAttribs,
+        MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT))
+    ).apply {
         isFrustumChecked = false
-        instances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT))
         generate {
             var roughness = 0.3f
             var metal = 1f
@@ -271,9 +275,11 @@ object GearChainMeshGen {
         shader = makeMeshShader(ibl, aoMap, shadows)
     }
 
-    fun makeNiceInnerLinkMesh(ibl: EnvironmentMaps, aoMap: Texture2d, shadows: List<ShadowMap>) = Mesh(meshAttribs).apply {
+    fun makeNiceInnerLinkMesh(ibl: EnvironmentMaps, aoMap: Texture2d, shadows: List<ShadowMap>) = Mesh(
+        meshAttribs,
+        MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT))
+    ).apply {
         isFrustumChecked = false
-        instances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT))
         generate {
             var roughness = 0.3f
             var metal = 1f
@@ -326,9 +332,11 @@ object GearChainMeshGen {
         shader = makeMeshShader(ibl, aoMap, shadows)
     }
 
-    fun makeNiceOuterLinkMesh(ibl: EnvironmentMaps, aoMap: Texture2d, shadows: List<ShadowMap>) = Mesh(meshAttribs).apply {
+    fun makeNiceOuterLinkMesh(ibl: EnvironmentMaps, aoMap: Texture2d, shadows: List<ShadowMap>) = Mesh(
+        meshAttribs,
+        MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT))
+    ).apply {
         isFrustumChecked = false
-        instances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT))
         generate {
             var roughness = 0.3f
             var metal = 1f

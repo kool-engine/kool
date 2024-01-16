@@ -28,9 +28,12 @@ class DeferredSpotLights(val maxSpotAngle: AngleF) {
 
     val lightShader = DeferredLightShader(Light.Spot.ENCODING)
 
-    val mesh = Mesh(Attribute.POSITIONS, name = "DeferredSpotLights").apply {
+    val mesh = Mesh(
+        Attribute.POSITIONS,
+        instances = lightInstanceData,
+        name = "DeferredSpotLights"
+    ).apply {
         isFrustumChecked = false
-        instances = lightInstanceData
 
         generate {
             makeHalfSphereCone(maxSpotAngle, 1.17f)

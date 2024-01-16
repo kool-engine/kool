@@ -277,7 +277,7 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
             sceneModel.drawNode.removeOffscreenPass(selectionOverlay.selectionPass)
         }
         EditorState.loadedApp.value?.app?.onDispose(ctx)
-        selectionOverlay.selectionPass.disposePipelines(ctx)
+        selectionOverlay.selectionPass.disposePipelines()
 
         // initialize newly loaded app
         loadedApp.app.loadApp(EditorState.projectModel, ctx)

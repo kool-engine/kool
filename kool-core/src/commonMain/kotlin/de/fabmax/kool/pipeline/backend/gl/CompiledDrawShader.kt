@@ -89,7 +89,7 @@ class CompiledDrawShader(val pipeline: Pipeline, program: GlProgram, backend: Re
 
     inner class ShaderMeshInstance(cmd: DrawCommand) : BaseReleasable() {
         private val mesh: Mesh = cmd.mesh
-        private var geometry: IndexedVertexList = mesh.geometry
+        private var geometry: IndexedVertexList = cmd.geometry
         private val instances: MeshInstanceList? get() = mesh.instances
 
         private val attributeBinders = mutableListOf<GpuGeometryGl.AttributeBinder>()

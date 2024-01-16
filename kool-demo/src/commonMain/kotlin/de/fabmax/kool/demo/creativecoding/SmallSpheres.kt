@@ -25,8 +25,7 @@ class SmallSpheres(val resources: CreativeCodingDemo.Resources) : CreativeConten
         Attribute.METAL_ROUGH
     ))
 
-    private val mesh = Mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS)).apply {
-        instances = this@SmallSpheres.instances
+    private val mesh = Mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS), instances = instances).apply {
         shader = KslPbrShader {
             vertices { isInstanced = true }
             color { instanceColor() }

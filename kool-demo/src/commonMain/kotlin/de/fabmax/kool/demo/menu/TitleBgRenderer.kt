@@ -47,18 +47,23 @@ class TitleBgRenderer(
         }
     }
 
-    class BgMesh : Mesh(IndexedVertexList(Ui2Shader.UI_MESH_ATTRIBS), "DemoMenu/TitleBgMesh") {
-        val bgInstances = MeshInstanceList(listOf(
-            Ui2Shader.ATTRIB_CLIP,
-            CategoryShader.ATTRIB_DIMENS,
-            CategoryShader.ATTRIB_GRADIENT_RANGE
-        ))
+    class BgMesh : Mesh(
+        IndexedVertexList(Ui2Shader.UI_MESH_ATTRIBS),
+        instances = MeshInstanceList(
+            listOf(
+                Ui2Shader.ATTRIB_CLIP,
+                CategoryShader.ATTRIB_DIMENS,
+                CategoryShader.ATTRIB_GRADIENT_RANGE
+            )
+        ),
+        name = "DemoMenu/TitleBgMesh"
+    ) {
+        val bgInstances: MeshInstanceList get() = instances!!
 
         private val catShader = CategoryShader()
 
         init {
             shader = catShader
-            instances = bgInstances
             generate {
                 grid {
                     yDir.set(Vec3f.Y_AXIS)

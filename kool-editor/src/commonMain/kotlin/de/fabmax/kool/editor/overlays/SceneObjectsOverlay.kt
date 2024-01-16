@@ -29,9 +29,12 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
     private val cameraInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.COLORS))
     private val groupInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.COLORS))
 
-    private val directionalMesh = Mesh(Attribute.POSITIONS, Attribute.NORMALS, name = "Directional lights").apply {
+    private val directionalMesh = Mesh(
+        Attribute.POSITIONS, Attribute.NORMALS,
+        instances = directionInstances,
+        name = "Directional lights"
+    ).apply {
         isCastingShadow = false
-        instances = directionInstances
         generate {
             uvSphere {
                 radius = 0.15f
@@ -71,9 +74,12 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
         }
     }
 
-    private val spotMesh = Mesh(Attribute.POSITIONS, Attribute.NORMALS, name = "Spot lights").apply {
+    private val spotMesh = Mesh(
+        Attribute.POSITIONS, Attribute.NORMALS,
+        instances = spotInstances,
+        name = "Spot lights"
+    ).apply {
         isCastingShadow = false
-        instances = spotInstances
         generate {
             uvSphere {
                 radius = 0.15f
@@ -108,9 +114,12 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
         }
     }
 
-    private val pointMesh = Mesh(Attribute.POSITIONS, Attribute.NORMALS, name = "Point lights").apply {
+    private val pointMesh = Mesh(
+        Attribute.POSITIONS, Attribute.NORMALS,
+        instances = pointInstances,
+        name = "Point lights"
+    ).apply {
         isCastingShadow = false
-        instances = pointInstances
         generate {
             uvSphere {
                 radius = 0.15f
@@ -140,9 +149,12 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
         }
     }
 
-    private val cameraMesh = Mesh(Attribute.POSITIONS, Attribute.NORMALS, name = "Cameras").apply {
+    private val cameraMesh = Mesh(
+        Attribute.POSITIONS, Attribute.NORMALS,
+        instances = cameraInstances,
+        name = "Cameras"
+    ).apply {
         isCastingShadow = false
-        instances = cameraInstances
         generate {
             rotate(90f.deg, Vec3f.Y_AXIS)
             generateArrow()
@@ -175,9 +187,12 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
         }
     }
 
-    private val groupMesh = Mesh(Attribute.POSITIONS, Attribute.COLORS, Attribute.NORMALS, name = "Groups").apply {
+    private val groupMesh = Mesh(
+        Attribute.POSITIONS, Attribute.COLORS, Attribute.NORMALS,
+        instances = groupInstances,
+        name = "Groups"
+    ).apply {
         isCastingShadow = false
-        instances = groupInstances
         generate {
             color = MdColor.RED
             line3d(Vec3f.ZERO, Vec3f.X_AXIS, Vec3f.Y_AXIS, lineW)

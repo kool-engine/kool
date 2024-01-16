@@ -73,8 +73,9 @@ class InstanceDemo : DemoScene("Instanced Drawing") {
     }
 
     private fun addLods(model: GltfFile) {
+        val instanceAttribs = listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.COLORS)
         for (i in model.scenes.indices) {
-            val modelCfg = GltfLoadConfig(generateNormals = true, applyMaterials = false)
+            val modelCfg = GltfLoadConfig(generateNormals = true, applyMaterials = false, addInstanceAttributes = instanceAttribs)
             model.makeModel(modelCfg, i).meshes.values.first().apply {
                 geometry.forEach { v ->
                     v.position.mul(0.3f).add(Vec3f(0f, -1f, 0f))
@@ -90,7 +91,6 @@ class InstanceDemo : DemoScene("Instanced Drawing") {
 
                 isFrustumChecked = false
                 lods[i].mesh = this
-                instances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.COLORS), lods[i].maxInsts)
                 lodController.addLod(this, lods[i].maxDist, lods[i].maxInsts)
             }
         }

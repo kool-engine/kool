@@ -60,16 +60,14 @@ class ShellShadingDemo : DemoScene("Shell Shading") {
         bunnyMesh.apply {
             geometry.forEach { it.mul(0.35f).subtract(Vec3f(0f, 1.25f, 0f))  }
             shader = furShaderBunny.furShader
-            instances = furShaderBunny.shells
         }
 
-        sphereMesh = addTextureMesh {
+        sphereMesh = addTextureMesh(instances = furShaderSphere.shells) {
             isVisible = false
             generate {
                 generateFurSphere()
             }
             shader = furShaderSphere.furShader
-            instances = furShaderSphere.shells
         }
 
         addNode(Skybox.cube(envMap.reflectionMap, 2f))
@@ -249,7 +247,12 @@ class ShellShadingDemo : DemoScene("Shell Shading") {
         }
 
         val modelCfg = GltfLoadConfig(generateNormals = true, applyMaterials = false)
-        bunnyMesh = loadGltfFile("${DemoLoader.modelPath}/bunny.gltf.gz").makeModel(modelCfg, 1).meshes.values.first()
+        val model = loadGltfFile("${DemoLoader.modelPath}/bunny.gltf.gz").makeModel(modelCfg, 1).meshes.values.first()
+        bunnyMesh = Mesh(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS, instances = furShaderBunny.shells).apply {
+            generate {
+                geometry.addGeometry(model.geometry)
+            }
+        }
     }
 
     private fun generate3dNoise(): Texture3d {

@@ -247,7 +247,7 @@ private class DeltaTGraph : UiRenderer<UiNode> {
     var height = 0
 
     init {
-        graphMesh = Mesh(graphGeom, "DebugOverlay/DeltaTGraph")
+        graphMesh = Mesh(graphGeom, name = "DebugOverlay/DeltaTGraph")
         graphMesh.geometry.usage = Usage.DYNAMIC
         graphMesh.shader = Ui2Shader()
         graphMesh.onUpdate += { updateGraph() }

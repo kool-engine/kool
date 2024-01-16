@@ -6,16 +6,12 @@ import de.fabmax.kool.pipeline.BlendMode
 import de.fabmax.kool.pipeline.deferred.DeferredKslPbrShader
 import de.fabmax.kool.pipeline.shading.AlphaMode
 import de.fabmax.kool.pipeline.shading.DepthShader
-import de.fabmax.kool.scene.MatrixTransformF
-import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.scene.Model
-import de.fabmax.kool.scene.Node
+import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.animation.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logW
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlin.math.min
 
@@ -432,7 +428,7 @@ data class GltfFile(
                     val r = mergeMeshes[0]
                     for (i in 1 until mergeMeshes.size) {
                         val m = mergeMeshes[i]
-                        if (m.geometry.attributeHash == r.geometry.attributeHash) {
+                        if (m.geometry.vertexAttributes == r.geometry.vertexAttributes) {
                             r.geometry.addGeometry(m.geometry)
                             removeNode(m)
                         }
@@ -503,25 +499,39 @@ data class GltfFile(
                 val name = "${meshRef?.name ?: "${nodeGrp.name}.mesh"}_$index"
                 val geometry = prim.toGeometry(cfg, accessors)
                 if (!geometry.isEmpty()) {
-                    val mesh = Mesh(geometry, name)
-                    nodeGrp += mesh
-
-                    meshesByMaterial.getOrPut(prim.material) { mutableSetOf() } += mesh
-                    meshMaterials[mesh] = prim.materialRef
+                    var isFrustumChecked = true
+                    var meshSkin: Skin? = null
+                    var morphWeights: FloatArray? = null
 
                     if (cfg.loadAnimations && cfg.applySkins && skin >= 0) {
-                        mesh.skin = model.skins[skin]
+                        meshSkin = model.skins[skin]
+                        isFrustumChecked = false
+                    }
+                    if (cfg.loadAnimations && cfg.applyMorphTargets && prim.targets.isNotEmpty()) {
+                        morphWeights = FloatArray(prim.targets.sumOf { it.size })
+                        isFrustumChecked = false
+                    }
+
+                    val instances = if (cfg.addInstanceAttributes.isNotEmpty()) {
+                        MeshInstanceList(cfg.addInstanceAttributes)
+                    } else {
+                        null
+                    }
+
+                    val mesh = Mesh(geometry, instances = instances, morphWeights = morphWeights, skin = meshSkin, name = name)
+                    mesh.isFrustumChecked = isFrustumChecked
+
+                    nodeGrp += mesh
+                    if (meshSkin != null) {
                         val skeletonRoot = skins[skin].skeleton
                         if (skeletonRoot >= 0) {
                             nodeGrp -= mesh
                             modelNodes[nodes[skeletonRoot]]!! += mesh
                         }
-                        mesh.isFrustumChecked = false
                     }
-                    if (cfg.loadAnimations && cfg.applyMorphTargets && prim.targets.isNotEmpty()) {
-                        mesh.morphWeights = FloatArray(prim.targets.sumOf { it.size })
-                        mesh.isFrustumChecked = false
-                    }
+
+                    meshesByMaterial.getOrPut(prim.material) { mutableSetOf() } += mesh
+                    meshMaterials[mesh] = prim.materialRef
 
                     if (cfg.applyMaterials) {
                         makeKslMaterial(prim, mesh, cfg, model)
@@ -547,9 +557,9 @@ data class GltfFile(
 
                 vertices {
                     if (mesh.skin != null) {
-                        enableArmature(min(cfg.materialConfig.maxNumberOfJoints, mesh.skin!!.nodes.size))
-                        if (cfg.materialConfig.maxNumberOfJoints < mesh.skin!!.nodes.size) {
-                            logE("GltfFile") { "\"${model.name}\": Maximum number of joints exceeded (mesh has ${mesh.skin!!.nodes.size}, materialConfig.maxNumberOfJoints is ${cfg.materialConfig.maxNumberOfJoints})" }
+                        enableArmature(min(cfg.materialConfig.maxNumberOfJoints, mesh.skin.nodes.size))
+                        if (cfg.materialConfig.maxNumberOfJoints < mesh.skin.nodes.size) {
+                            logE("GltfFile") { "\"${model.name}\": Maximum number of joints exceeded (mesh has ${mesh.skin.nodes.size}, materialConfig.maxNumberOfJoints is ${cfg.materialConfig.maxNumberOfJoints})" }
                         }
                     }
                     if (mesh.morphWeights != null) {

@@ -22,8 +22,7 @@ class LargeSpheres(val resources: CreativeCodingDemo.Resources) : CreativeConten
         Attribute.INSTANCE_COLOR
     ))
 
-    private val mesh = Mesh(Attribute.POSITIONS, Attribute.NORMALS).apply {
-        instances = this@LargeSpheres.instances
+    private val mesh = Mesh(Attribute.POSITIONS, Attribute.NORMALS, instances = instances).apply {
         shader = KslPbrShader {
             vertices { isInstanced = true }
             color { instanceColor() }

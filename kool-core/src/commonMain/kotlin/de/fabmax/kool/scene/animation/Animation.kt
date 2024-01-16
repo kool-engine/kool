@@ -5,6 +5,7 @@ import de.fabmax.kool.scene.MatrixTransformF
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.TreeMap
+import de.fabmax.kool.util.logE
 import kotlin.math.min
 
 class Animation(val name: String?) {
@@ -193,21 +194,41 @@ class MorphAnimatedMesh(val target: Mesh): AnimationNode {
 
     private var weights = FloatArray(1)
 
+    init {
+        if (target.morphWeights == null) {
+            logE { "Morph animation target mesh has no morph weight attribute" }
+        }
+    }
+
     override fun applyTransform() {
-        target.morphWeights = weights
+        target.morphWeights?.let { w ->
+            if (w.size < weights.size) {
+                logE { "Morph animation target mesh has too small weight array size (${w.size} != ${weights.size})" }
+            }
+
+            for (i in 0 until min(w.size, weights.size)) {
+                w[i] = weights[i]
+            }
+        }
     }
 
     override fun applyTransformWeighted(weight: Float, firstWeightedTransform: Boolean) {
-        var targetW = target.morphWeights
-        if (targetW == null || targetW.size != weights.size) {
-            targetW = FloatArray(weights.size)
-            target.morphWeights = targetW
-        }
-        for (i in weights.indices) {
-            if (firstWeightedTransform) {
-                targetW[i] = weights[i] * weight
-            } else {
-                targetW[i] = targetW[i] + weights[i] * weight
+        target.morphWeights?.let { w ->
+            if (w.size < weights.size) {
+                logE { "Morph animation target mesh has too small weight array size (${w.size} != ${weights.size})" }
+            }
+            val n = min(w.size, weights.size)
+
+            for (i in weights.indices) {
+                if (firstWeightedTransform) {
+                    for (j in 0 until n) {
+                        w[j] = weights[j] * weight
+                    }
+                } else {
+                    for (j in 0 until n) {
+                        w[j] += weights[j] * weight
+                    }
+                }
             }
         }
     }
