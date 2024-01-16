@@ -1,5 +1,6 @@
 package de.fabmax.kool.pipeline
 
+import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.LongHash
 import de.fabmax.kool.util.Time
 import de.fabmax.kool.util.logE
@@ -8,7 +9,7 @@ import de.fabmax.kool.util.logE
  * Base class for regular (graphics) and compute pipelines. A pipeline includes the shader and additional attributes
  * like the corresponding data layout, etc.
  */
-abstract class PipelineBase(val name: String, val bindGroupLayouts: List<BindGroupLayout>) {
+abstract class PipelineBase(val name: String, val bindGroupLayouts: List<BindGroupLayout>) : BaseReleasable() {
 
     /**
      * pipelineHash is used to determine pipeline equality. In contrast to standard java hashCode() a 64-bit hash is

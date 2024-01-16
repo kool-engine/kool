@@ -139,10 +139,10 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
         override fun onDestroy(sys: VkSystem) { }
 
         override fun onDrawFrame(swapChain: SwapChain, imageIndex: Int, fence: LongBuffer, waitSema: LongBuffer, signalSema: LongBuffer) {
-            // delete discarded pipelines, if there are any
-            if (ctx.disposablePipelines.isNotEmpty()) {
-                disposePipelines()
-            }
+            // todo: delete discarded pipelines, if there are any
+            //if (ctx.disposablePipelines.isNotEmpty()) {
+            //    disposePipelines()
+            //}
 
             renderAll(swapChain, imageIndex, fence, waitSema[0], signalSema[0])
 
@@ -326,8 +326,8 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
         }
 
         private fun disposePipelines() {
-            ctx.disposablePipelines.forEach { pipeline ->
-                TODO()
+            TODO()
+//            ctx.disposablePipelines.forEach { pipeline ->
 //                val delMesh = meshMap.remove(pipeline.pipelineInstanceId)
 //                val delPipeline = sys.pipelineManager.getPipeline(pipeline)
 //
@@ -338,8 +338,8 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
 //                    }
 //                    delPipeline?.freeDescriptorSetInstance(pipeline)
 //                }
-            }
-            ctx.disposablePipelines.clear()
+//            }
+//            ctx.disposablePipelines.clear()
         }
 
         private fun PipelineBase.instanceId(mesh: Mesh): Long {

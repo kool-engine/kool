@@ -67,20 +67,19 @@ class ShaderManager(val backend: RenderBackendGl) {
         }
     }
 
-    fun deleteShader(pipeline: Pipeline) {
-        // todo
-//        val shader = shaders[pipeline]
-//        if (shader != null) {
-//            shader.destroyInstance(pipeline)
-//            if (shader.isEmpty()) {
-//                if (shader == boundShader) {
-//                    shader.unbindVertexLayout()
-//                    boundShader = null
-//                }
-//                shader.release()
-//                shaders.remove(pipeline)
-//            }
-//        }
+    internal fun removeDrawShader(shader: CompiledDrawShader) {
+        shaders.remove(shader.pipeline)
+        glShaderPrograms[shader.pipeline.shaderCode]?.let { usedProgram ->
+            usedProgram.users -= shader.pipeline
+            if (usedProgram.users.isEmpty()) {
+                gl.deleteProgram(usedProgram.glProgram)
+                glShaderPrograms.remove(shader.pipeline.shaderCode)
+            }
+        }
+        if (shader == boundShader) {
+            shader.disableVertexLayout()
+            boundShader = null
+        }
     }
 
     private fun compileShader(code: ShaderCodeGl): GlProgram {

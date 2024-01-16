@@ -46,7 +46,6 @@ sealed class CompiledShader(private val pipeline: PipelineBase, val program: GlP
         pipelineInfo.deleted()
         mappedViewGroup?.releaseBuffers()
         mappedPipelineGroup?.releaseBuffers()
-        gl.deleteProgram(program)
     }
 
     inner class MappedBindGroup(val scope: BindGroupScope, val layout: BindGroupLayout) {

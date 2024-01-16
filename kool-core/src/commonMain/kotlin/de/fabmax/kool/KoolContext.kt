@@ -4,7 +4,6 @@ import de.fabmax.kool.input.KeyboardInput
 import de.fabmax.kool.input.PointerInput
 import de.fabmax.kool.modules.ui2.UiScale
 import de.fabmax.kool.pipeline.OffscreenRenderPass
-import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.backend.RenderBackend
 import de.fabmax.kool.pipeline.ibl.BrdfLutPass
@@ -67,8 +66,6 @@ abstract class KoolContext {
         BrdfLutPass(backgroundScene).also { addBackgroundRenderPass(it) }.copyColor()
     }
 
-    internal val disposablePipelines = mutableListOf<Pipeline>()
-
     private val frameTimes = DoubleArray(25) { 0.017 }
 
     abstract val isJavascript: Boolean
@@ -86,10 +83,6 @@ abstract class KoolContext {
 
     fun getWindowViewport(result: Viewport) {
         backend.getWindowViewport(result)
-    }
-
-    fun disposePipeline(pipeline: Pipeline) {
-        disposablePipelines += pipeline
     }
 
     fun addBackgroundRenderPass(renderPass: OffscreenRenderPass) {

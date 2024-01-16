@@ -49,13 +49,6 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
     override fun renderFrame(ctx: KoolContext) {
         BackendStats.resetPerFrameCounts()
 
-        if (ctx.disposablePipelines.isNotEmpty()) {
-            ctx.disposablePipelines.forEach {
-                shaderMgr.deleteShader(it)
-            }
-            ctx.disposablePipelines.clear()
-        }
-
         doOffscreenPasses(ctx.backgroundScene, ctx)
 
         for (i in ctx.scenes.indices) {

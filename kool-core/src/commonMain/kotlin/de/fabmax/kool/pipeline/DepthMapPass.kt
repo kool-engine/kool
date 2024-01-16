@@ -1,6 +1,5 @@
 package de.fabmax.kool.pipeline
 
-import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.pipeline.shading.DepthShader
 import de.fabmax.kool.scene.Mesh
@@ -51,7 +50,7 @@ open class DepthMapPass(drawNode: Node, config: Config) : OffscreenRenderPass2d(
 
     override fun release() {
         super.release()
-        shadowPipelines.values.filterNotNull().forEach { KoolSystem.requireContext().disposePipeline(it) }
+        shadowPipelines.values.filterNotNull().forEach { it.release() }
     }
 
     companion object {

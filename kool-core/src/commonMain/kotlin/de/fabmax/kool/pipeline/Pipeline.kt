@@ -1,6 +1,8 @@
 package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
+import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.util.Releasable
 
 /**
  * Graphics pipeline class. Also includes rasterizing options like [cullMethod], [blendMode], etc. In contrast
@@ -28,6 +30,8 @@ class Pipeline(
 
     val onUpdate = mutableListOf<(DrawCommand) -> Unit>()
 
+    internal var pipelineBackend: PipelineBackend? = null
+
     init {
         hash += cullMethod
         hash += depthCompareOp
@@ -37,6 +41,19 @@ class Pipeline(
         hash += vertexLayout.hash
         hash += shaderCode.hash
     }
+
+    override fun release() {
+        super.release()
+        pipelineBackend?.release()
+    }
+
+    fun releaseMeshInstance(mesh: Mesh) {
+        pipelineBackend?.releaseMeshInstance(mesh)
+    }
+}
+
+interface PipelineBackend : Releasable {
+    fun releaseMeshInstance(mesh: Mesh)
 }
 
 enum class BlendMode {

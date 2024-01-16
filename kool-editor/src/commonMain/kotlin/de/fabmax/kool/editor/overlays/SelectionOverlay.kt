@@ -1,7 +1,5 @@
 package de.fabmax.kool.editor.overlays
 
-import de.fabmax.kool.KoolContext
-import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.editor.EditorState
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.model.NodeModel
@@ -73,7 +71,7 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
     fun invalidateSelection() {
         prevSelection.clear()
         meshSelection.clear()
-        selectionPass.disposePipelines(KoolSystem.requireContext())
+        selectionPass.disposePipelines()
     }
 
     private fun Node.selectChildMeshes() {
@@ -142,14 +140,14 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
             }
         }
 
-        fun disposePipelines(ctx: KoolContext) {
-            selectionPipelines.values.forEach { it?.let { ctx.disposePipeline(it.pipeline) } }
+        fun disposePipelines() {
+            selectionPipelines.values.forEach { it?.pipeline?.release() }
             selectionPipelines.clear()
         }
 
         override fun release() {
             super.release()
-            disposePipelines(KoolSystem.requireContext())
+            disposePipelines()
         }
     }
 

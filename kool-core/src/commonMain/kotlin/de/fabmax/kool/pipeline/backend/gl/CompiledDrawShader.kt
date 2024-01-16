@@ -10,7 +10,8 @@ import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.logE
 
 class CompiledDrawShader(val pipeline: Pipeline, program: GlProgram, backend: RenderBackendGl) :
-    CompiledShader(pipeline, program, backend)
+    CompiledShader(pipeline, program, backend),
+    PipelineBackend
 {
     private val attributes: Map<String, VertexLayout.VertexAttribute> = pipeline.vertexLayout.bindings
         .filter { it.inputRate == InputRate.VERTEX }
@@ -29,6 +30,10 @@ class CompiledDrawShader(val pipeline: Pipeline, program: GlProgram, backend: Re
         .toIntArray()
 
     private val meshInstances = mutableMapOf<Int, ShaderMeshInstance>()
+
+    init {
+        pipeline.pipelineBackend = this
+    }
 
     fun enableVertexLayout() {
         for (i in attributeLocations.indices) {
@@ -57,19 +62,20 @@ class CompiledDrawShader(val pipeline: Pipeline, program: GlProgram, backend: Re
         return if (inst.bindInstance(cmd)) { inst } else { null }
     }
 
-//    fun bindComputeInstance(pipelineInstance: ComputePipeline, computePass: ComputeRenderPass): ComputeShaderInstance? {
-//        // fixme: it might be more reasonably to use some (not yet existing) compute pass id as instance id?
-//        val inst = computeInstances.getOrPut(0) {
-//            ComputeShaderInstance(pipelineInstance, computePass)
-//        }
-//        return if (inst.bindInstance(computePass)) { inst } else { null }
-//    }
+    override fun release() {
+        if (!isReleased) {
+            meshInstances.values.forEach { it.release() }
+            meshInstances.clear()
+            backend.shaderMgr.removeDrawShader(this)
+            super.release()
+        }
+    }
 
-    fun releaseMeshInstance(mesh: Mesh) {
-        // fixme: this currently does not work because we now need the mesh id as instance id, which is not available
-        //  here...
-        //instances.remove(pipeline.pipelineInstanceId)?.destroyInstance()
-        meshInstances.remove(mesh.id)
+    override fun releaseMeshInstance(mesh: Mesh) {
+        meshInstances.remove(mesh.id)?.release()
+        if (meshInstances.isEmpty()) {
+            release()
+        }
     }
 
     fun isEmpty(): Boolean = meshInstances.isEmpty()
@@ -79,16 +85,6 @@ class CompiledDrawShader(val pipeline: Pipeline, program: GlProgram, backend: Re
         GpuType.MAT3 -> 3
         GpuType.MAT4 -> 4
         else -> 1
-    }
-
-    private class AttributeLocation(attribute: VertexLayout.VertexAttribute) {
-        val location = attribute.location
-        val size = when(attribute.attribute.type) {
-            GpuType.MAT2 -> 2
-            GpuType.MAT3 -> 3
-            GpuType.MAT4 -> 4
-            else -> 1
-        }
     }
 
     inner class ShaderMeshInstance(cmd: DrawCommand) : BaseReleasable() {
@@ -108,7 +104,6 @@ class CompiledDrawShader(val pipeline: Pipeline, program: GlProgram, backend: Re
 
         init {
             pipelineInfo.numInstances++
-            releaseWith(this@CompiledDrawShader)
             createBuffers(cmd)
         }
 
@@ -196,32 +191,6 @@ class CompiledDrawShader(val pipeline: Pipeline, program: GlProgram, backend: Re
             pipelineInfo.numInstances--
         }
     }
-
-//    inner class ShaderInstance(cmd: DrawCommand, val pipelineInstance: Pipeline) : ShaderInstanceBase(pipelineInstance) {
-//        var geometry: IndexedVertexList = cmd.geometry
-//        val instances: MeshInstanceList? = cmd.mesh.instances
-//
-//        private val attributeBinders = mutableListOf<GpuGeometryGl.AttributeBinder>()
-//        private val instanceAttribBinders = mutableListOf<GpuGeometryGl.AttributeBinder>()
-//        private var gpuGeometry: GpuGeometryGl? = null
-//
-//        val primitiveType = pipelineInstance.vertexLayout.primitiveType.glElemType
-//        val indexType = gl.UNSIGNED_INT
-//        val numIndices: Int get() = gpuGeometry?.numIndices ?: 0
-//
-//        private val bindGroupDataCache = mutableListOf<BindGroupData>()
-//
-//        init {
-//            createBuffers(cmd)
-//        }
-//
-//        override fun destroyBuffers() {
-//            super.destroyBuffers()
-//            attributeBinders.clear()
-//            instanceAttribBinders.clear()
-//            gpuGeometry = null
-//        }
-//    }
 
 //    inner class ComputeShaderInstance(val pipelineInstance: ComputePipeline, computePass: ComputeRenderPass) :
 //        ShaderInstanceBase(pipelineInstance)

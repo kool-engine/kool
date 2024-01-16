@@ -265,6 +265,8 @@ interface GlApi {
     fun copyTexturesFast(renderPass: OffscreenRenderPass2dGl)
     fun copyTexturesFast(renderPass: OffscreenRenderPassCubeGl)
     fun readTexturePixels(src: LoadedTextureGl, dst: TextureData)
+
+    fun checkNoError() = check(getError() == 0)
 }
 
 data class GlApiVersion(

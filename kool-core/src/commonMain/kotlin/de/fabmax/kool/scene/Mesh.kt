@@ -1,6 +1,5 @@
 package de.fabmax.kool.scene
 
-import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.math.RayF
 import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.math.spatial.BoundingBoxF
@@ -71,12 +70,13 @@ open class Mesh(var geometry: IndexedVertexList, name: String = geometry.name) :
 
     val meshPipelineData = PipelineData(BindGroupScope.MESH)
 
+    private var pipeline: Pipeline? = null
+
     var shader: Shader? = null
         set(value) {
             if (field !== value) {
                 field = value
-                // fixme: this is not optimal in cases where the old shader is still used in other places
-                pipeline?.let { discardedPipelines += it }
+                pipeline?.releaseMeshInstance(this)
                 pipeline = null
             }
         }
@@ -119,10 +119,6 @@ open class Mesh(var geometry: IndexedVertexList, name: String = geometry.name) :
             isCastingShadowLevelMask = if (value) -1 else 0
         }
 
-    // todo: replace pipeline with pipelineInstance
-    private var pipeline: Pipeline? = null
-    private val discardedPipelines = mutableListOf<Pipeline>()
-
     var rayTest = MeshRayTest.boundsTest()
 
     private var lastGeomUpdateFrame = -1
@@ -149,10 +145,6 @@ open class Mesh(var geometry: IndexedVertexList, name: String = geometry.name) :
     }
 
     fun getOrCreatePipeline(updateEvent: RenderPass.UpdateEvent): Pipeline? {
-        if (discardedPipelines.isNotEmpty()) {
-            discardedPipelines.forEach { updateEvent.ctx.disposePipeline(it) }
-            discardedPipelines.clear()
-        }
         return pipeline ?: shader?.let { s ->
             s.getOrCreatePipeline(this, updateEvent).also { pipeline = it }
         }
@@ -187,7 +179,7 @@ open class Mesh(var geometry: IndexedVertexList, name: String = geometry.name) :
             super.release()
             geometry.release()
             shadowGeometry.forEach { it.release() }
-            pipeline?.let { KoolSystem.requireContext().disposePipeline(it) }
+            pipeline?.releaseMeshInstance(this)
             pipeline = null
         }
     }
