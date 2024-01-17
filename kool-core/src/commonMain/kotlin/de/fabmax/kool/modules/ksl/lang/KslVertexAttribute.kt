@@ -1,8 +1,6 @@
 package de.fabmax.kool.modules.ksl.lang
 
 open class KslVertexAttribute<T: KslType>(val value: KslValue<T>, val inputRate: KslInputRate) : KslExpression<T> by value {
-    var location = -1
-
     val name: String
         get() = value.stateName
 }

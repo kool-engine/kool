@@ -178,7 +178,7 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
                 "${atomicCompSwap.data.generateExpression(this)})"
     }
 
-    private fun generateVertexSrc(vertexStage: KslVertexStage, pipeline: PipelineBase): String {
+    private fun generateVertexSrc(vertexStage: KslVertexStage, pipeline: DrawPipeline): String {
         val src = StringBuilder()
         src.appendLine("""
             ${hints.glslVersionStr}
@@ -193,8 +193,8 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
         src.generateUbos(vertexStage, pipeline)
         src.generateUniformSamplers(vertexStage, pipeline)
         src.generateUniformStorage(vertexStage, pipeline)
-        src.generateAttributes(vertexStage.attributes.values.filter { it.inputRate == KslInputRate.Instance }, "instance attributes")
-        src.generateAttributes(vertexStage.attributes.values.filter { it.inputRate == KslInputRate.Vertex }, "vertex attributes")
+        src.generateAttributes(vertexStage.attributes.values.filter { it.inputRate == KslInputRate.Instance }, pipeline, "instance attributes")
+        src.generateAttributes(vertexStage.attributes.values.filter { it.inputRate == KslInputRate.Vertex }, pipeline, "vertex attributes")
         src.generateInterStageOutputs(vertexStage)
         src.generateFunctions(vertexStage)
 
@@ -304,11 +304,13 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
         }
     }
 
-    protected open fun StringBuilder.generateAttributes(attribs: List<KslVertexAttribute<*>>, info: String) {
+    protected open fun StringBuilder.generateAttributes(attribs: List<KslVertexAttribute<*>>, pipeline: DrawPipeline, info: String) {
         if (attribs.isNotEmpty()) {
+            val mappedLocs = pipeline.vertexLayout.getAttribLocations()
             appendLine("// $info")
             attribs.forEach { a ->
-                appendLine("layout(location=${a.location}) in ${glslTypeName(a.expressionType)} ${a.value.name()};")
+                val attr = pipeline.vertexLayout.bindings.flatMap { it.vertexAttributes }.first { it.name == a.name }
+                appendLine("layout(location=${mappedLocs[attr]!!}) in ${glslTypeName(a.expressionType)} ${a.value.name()};")
             }
             appendLine()
         }

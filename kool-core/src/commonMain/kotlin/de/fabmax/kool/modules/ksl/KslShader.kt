@@ -90,27 +90,26 @@ open class KslShader private constructor(val program: KslProgram) : DrawShader(p
 
         var attribLocation = 0
         vertexStage.attributes.values.filter { it.inputRate == KslInputRate.Vertex }.forEach { vertexAttrib ->
-            val attrib = verts.attributeByteOffsets.keys.find { it.name == vertexAttrib.name }
-                ?: throw NoSuchElementException("Mesh does not include required vertex attribute: ${vertexAttrib.name} (for shader: ${program.name})")
+            val attrib = checkNotNull(verts.attributeByteOffsets.keys.find { it.name == vertexAttrib.name }) {
+                "Mesh does not include required vertex attribute: ${vertexAttrib.name} (for shader: ${program.name})"
+            }
             val off = verts.attributeByteOffsets[attrib]!!
             if (attrib.type.isInt) {
                 vertLayoutAttribsI += VertexLayout.VertexAttribute(attribLocation, off, attrib)
             } else {
                 vertLayoutAttribsF += VertexLayout.VertexAttribute(attribLocation, off, attrib)
             }
-            vertexAttrib.location = attribLocation
-            attribLocation += attrib.locationIncrement
+            attribLocation++
         }
 
         val instanceAttribs = vertexStage.attributes.values.filter { it.inputRate == KslInputRate.Instance }
         if (insts != null) {
             instanceAttribs.forEach { instanceAttrib ->
-                val attrib = insts.attributeOffsets.keys.find { it.name == instanceAttrib.name }
-                    ?: throw NoSuchElementException("Mesh does not include required instance attribute: ${instanceAttrib.name}")
+                val attrib = checkNotNull(insts.attributeOffsets.keys.find { it.name == instanceAttrib.name }) {
+                    "Mesh does not include required instance attribute: ${instanceAttrib.name}"
+                }
                 val off = insts.attributeOffsets[attrib]!!
-                instLayoutAttribs += VertexLayout.VertexAttribute(attribLocation, off, attrib)
-                instanceAttrib.location = attribLocation
-                attribLocation += attrib.locationIncrement
+                instLayoutAttribs += VertexLayout.VertexAttribute(attribLocation++, off, attrib)
             }
         } else if (instanceAttribs.isNotEmpty()) {
             throw IllegalStateException("Shader model requires instance attributes, but mesh doesn't provide any")

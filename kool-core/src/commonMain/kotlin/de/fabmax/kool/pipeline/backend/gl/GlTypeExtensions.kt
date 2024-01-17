@@ -1,9 +1,7 @@
 package de.fabmax.kool.pipeline.backend.gl
 
 import de.fabmax.kool.modules.ksl.lang.*
-import de.fabmax.kool.pipeline.DepthCompareOp
-import de.fabmax.kool.pipeline.StorageAccessType
-import de.fabmax.kool.pipeline.TexFormat
+import de.fabmax.kool.pipeline.*
 
 
 fun TexFormat.glInternalFormat(gl: GlApi): Int = when(this) {
@@ -146,4 +144,21 @@ fun KslNumericType.glFormat(gl: GlApi): Int = when(this) {
     is KslUint3 -> gl.RGB32UI
     is KslUint4 -> gl.RGBA32UI
     else -> throw IllegalStateException("Invalid format type $this")
+}
+
+val VertexLayout.VertexAttribute.locationSize: Int get() = when(attribute.type) {
+    GpuType.MAT2 -> 2
+    GpuType.MAT3 -> 3
+    GpuType.MAT4 -> 4
+    else -> 1
+}
+
+fun VertexLayout.getAttribLocations() = buildMap {
+    bindings
+        .flatMap { it.vertexAttributes }
+        .sortedBy { it.index }
+        .fold(0) { pos, attr ->
+            put(attr, pos)
+            pos + attr.locationSize
+        }
 }

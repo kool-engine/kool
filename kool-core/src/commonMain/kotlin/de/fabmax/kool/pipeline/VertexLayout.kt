@@ -30,7 +30,7 @@ class VertexLayout(val bindings: List<Binding>, val primitiveType: PrimitiveType
         }
     }
 
-    data class VertexAttribute(val location: Int, val offset: Int, val attribute: Attribute) {
+    data class VertexAttribute(val index: Int, val bufferOffset: Int, val attribute: Attribute) {
         val name: String
             get() = attribute.name
         val type: GpuType

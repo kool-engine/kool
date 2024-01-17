@@ -22,11 +22,12 @@ class CompiledDrawShader(val pipeline: DrawPipeline, program: GlProgram, backend
         .flatMap { it.vertexAttributes }
         .associateBy { it.attribute.name }
 
+    val mappedAttribLocations = pipeline.vertexLayout.getAttribLocations()
     private val attributeLocations: IntArray = attributes.values
-        .flatMap { it.location until it.location + it.size }
+        .flatMap { attr -> mappedAttribLocations[attr]!!.let { loc -> loc until loc + attr.locationSize } }
         .toIntArray()
     private val instanceAttributeLocations: IntArray = instanceAttributes.values
-        .flatMap { it.location until it.location + it.size }
+        .flatMap { attr -> mappedAttribLocations[attr]!!.let { loc -> loc until loc + attr.locationSize } }
         .toIntArray()
 
     private val meshInstances = mutableMapOf<Int, ShaderMeshInstance>()
@@ -80,13 +81,6 @@ class CompiledDrawShader(val pipeline: DrawPipeline, program: GlProgram, backend
 
     fun isEmpty(): Boolean = meshInstances.isEmpty()
 
-    private val VertexLayout.VertexAttribute.size: Int get() = when(attribute.type) {
-        GpuType.MAT2 -> 2
-        GpuType.MAT3 -> 3
-        GpuType.MAT4 -> 4
-        else -> 1
-    }
-
     inner class ShaderMeshInstance(cmd: DrawCommand) : BaseReleasable() {
         private val mesh: Mesh = cmd.mesh
         private var geometry: IndexedVertexList = cmd.geometry
@@ -121,8 +115,8 @@ class CompiledDrawShader(val pipeline: DrawPipeline, program: GlProgram, backend
             gpuGeometry = geom
 
             checkMeshAttributes()
-            attributeBinders += geom.createShaderVertexAttributeBinders(attributes)
-            instanceAttribBinders += geom.createShaderInstanceAttributeBinders(instanceAttributes)
+            attributeBinders += geom.createShaderVertexAttributeBinders(attributes, mappedAttribLocations)
+            instanceAttribBinders += geom.createShaderInstanceAttributeBinders(instanceAttributes, mappedAttribLocations)
 
             mappedMeshGroup?.createBuffers(cmd.queue.renderPass)
             createBindGroups(cmd.queue.renderPass)

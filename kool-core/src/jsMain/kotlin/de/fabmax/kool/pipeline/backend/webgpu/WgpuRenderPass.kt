@@ -212,8 +212,8 @@ class WgpuRenderPass(val backend: RenderBackendWebGpu, val multiSamples: Int = 4
                     }
                     GPUVertexAttribute(
                         format = format,
-                        offset = attr.offset.toLong(),
-                        shaderLocation = attr.location
+                        offset = attr.bufferOffset.toLong(),
+                        shaderLocation = attr.index
                     )
                 }.toTypedArray()
 

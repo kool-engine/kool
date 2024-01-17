@@ -1,7 +1,6 @@
 package de.fabmax.kool.pipeline.backend.gl
 
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.GpuType
 import de.fabmax.kool.pipeline.VertexLayout
 import de.fabmax.kool.pipeline.backend.GpuGeometry
 import de.fabmax.kool.scene.MeshInstanceList
@@ -65,33 +64,39 @@ class GpuGeometryGl(
         super.release()
     }
 
-    fun createShaderVertexAttributeBinders(shaderAttributes: Map<String, VertexLayout.VertexAttribute>): List<AttributeBinder> {
+    fun createShaderVertexAttributeBinders(
+        shaderAttributes: Map<String, VertexLayout.VertexAttribute>,
+        attribLocations: Map<VertexLayout.VertexAttribute, Int>
+    ): List<AttributeBinder> {
         val binders = mutableListOf<AttributeBinder>()
         geometry.vertexAttributes
             .filter { !it.type.isInt }
             .forEach { geomAttr ->
                 val stride = geometry.byteStrideF
                 val offset = geometry.attributeByteOffsets[geomAttr]!! / 4
-                binders += makeAttribBinders(shaderAttributes, geomAttr, dataBufferF!!, stride, offset, gl.FLOAT)
+                binders += makeAttribBinders(shaderAttributes, attribLocations, geomAttr, dataBufferF!!, stride, offset, gl.FLOAT)
             }
         geometry.vertexAttributes
             .filter { it.type.isInt }
             .forEach { geomAttr ->
                 val stride = geometry.byteStrideI
                 val offset = geometry.attributeByteOffsets[geomAttr]!! / 4
-                binders += makeAttribBinders(shaderAttributes, geomAttr, dataBufferI!!, stride, offset, gl.INT)
+                binders += makeAttribBinders(shaderAttributes, attribLocations, geomAttr, dataBufferI!!, stride, offset, gl.INT)
             }
         return binders
     }
 
-    fun createShaderInstanceAttributeBinders(shaderAttributes: Map<String, VertexLayout.VertexAttribute>): List<AttributeBinder> {
+    fun createShaderInstanceAttributeBinders(
+        shaderAttributes: Map<String, VertexLayout.VertexAttribute>,
+        attribLocations: Map<VertexLayout.VertexAttribute, Int>
+    ): List<AttributeBinder> {
         instances ?: return emptyList()
 
         val binders = mutableListOf<AttributeBinder>()
         for (instanceAttrib in instances.instanceAttributes) {
             val stride = instances.strideBytesF
             val offset = instances.attributeOffsets[instanceAttrib]!! / 4
-            binders += makeAttribBinders(shaderAttributes, instanceAttrib, instanceBuffer!!, stride, offset, gl.FLOAT)
+            binders += makeAttribBinders(shaderAttributes, attribLocations, instanceAttrib, instanceBuffer!!, stride, offset, gl.FLOAT)
         }
         return binders
     }
@@ -119,6 +124,7 @@ class GpuGeometryGl(
 
     private fun makeAttribBinders(
         shaderAttrs: Map<String, VertexLayout.VertexAttribute>,
+        attribLocations: Map<VertexLayout.VertexAttribute, Int>,
         geomAttr: Attribute,
         buffer: BufferResource,
         stride: Int,
@@ -127,10 +133,13 @@ class GpuGeometryGl(
     ): List<AttributeBinder> {
         val binders = mutableListOf<AttributeBinder>()
         shaderAttrs[geomAttr.name]?.let { shaderAttr ->
-            val (slots, size) = geomAttr.glAttribLayout
-            for (i in 0 until slots) {
-                val off = offset + size * i
-                binders += AttributeBinder(buffer, size, stride, off, type, shaderAttr.location + i)
+            attribLocations[shaderAttr]!!.let { location ->
+                val slots = shaderAttr.locationSize
+                val elemSize = shaderAttr.type.channels
+                for (i in 0 until slots) {
+                    val off = offset + elemSize * i
+                    binders += AttributeBinder(buffer, elemSize, stride, off, type, location + i)
+                }
             }
         }
         return binders
@@ -140,23 +149,6 @@ class GpuGeometryGl(
         Usage.DYNAMIC -> gl.DYNAMIC_DRAW
         Usage.STATIC -> gl.STATIC_DRAW
     }
-
-    private val Attribute.glAttribLayout: AttribLayout
-        get() = when (type) {
-        GpuType.FLOAT1 -> AttribLayout(1, 1)
-        GpuType.FLOAT2 -> AttribLayout(1, 2)
-        GpuType.FLOAT3 -> AttribLayout(1, 3)
-        GpuType.FLOAT4 -> AttribLayout(1, 4)
-        GpuType.INT1 -> AttribLayout(1, 1)
-        GpuType.INT2 -> AttribLayout(1, 2)
-        GpuType.INT3 -> AttribLayout(1, 3)
-        GpuType.INT4 -> AttribLayout(1, 4)
-        GpuType.MAT2 -> AttribLayout(2, 2)
-        GpuType.MAT3 -> AttribLayout(3, 3)
-        GpuType.MAT4 -> AttribLayout(4, 4)
-    }
-
-    private data class AttribLayout(val slots: Int, val size: Int)
 
     inner class AttributeBinder(
         val vbo: BufferResource,

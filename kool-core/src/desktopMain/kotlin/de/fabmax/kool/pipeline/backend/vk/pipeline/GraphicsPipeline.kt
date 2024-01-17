@@ -1,6 +1,8 @@
 package de.fabmax.kool.pipeline.backend.vk.pipeline
 
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.backend.gl.getAttribLocations
+import de.fabmax.kool.pipeline.backend.gl.locationSize
 import de.fabmax.kool.pipeline.backend.vk.*
 import de.fabmax.kool.pipeline.backend.vk.util.bitValue
 import de.fabmax.kool.scene.geometry.PrimitiveType
@@ -56,19 +58,20 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
                 }
             }
 
+            val locations = pipeline.vertexLayout.getAttribLocations()
             val nAttributes = pipeline.vertexLayout.bindings.sumOf { binding ->
-                binding.vertexAttributes.sumOf { it.attribute.locationIncrement }
+                binding.vertexAttributes.sumOf { it.locationSize }
             }
             val attributeDescriptions = callocVkVertexInputAttributeDescriptionN(nAttributes) {
                 var iAttrib = 0
                 pipeline.vertexLayout.bindings.forEach { binding ->
                     binding.vertexAttributes.forEach { attrib ->
-                        for (i in 0 until attrib.attribute.locationIncrement) {
+                        for (i in 0 until attrib.locationSize) {
                             val attrVkProps = attrib.attribute.vkProps()
                             this[iAttrib++].apply {
                                 binding(binding.binding)
-                                location(attrib.location + i)
-                                offset(attrib.offset + attrVkProps.slotOffset * i)
+                                location(locations[attrib]!! + i)
+                                offset(attrib.bufferOffset + attrVkProps.slotOffset * i)
                                 format(attrVkProps.slotType)
                             }
                         }
