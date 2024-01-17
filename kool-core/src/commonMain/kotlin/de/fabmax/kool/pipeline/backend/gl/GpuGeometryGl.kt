@@ -57,10 +57,10 @@ class GpuGeometryGl(
     }
 
     override fun release() {
-        indexBuffer.delete()
-        dataBufferF?.delete()
-        dataBufferI?.delete()
-        instanceBuffer?.delete()
+        indexBuffer.release()
+        dataBufferF?.release()
+        dataBufferI?.release()
+        instanceBuffer?.release()
         super.release()
     }
 

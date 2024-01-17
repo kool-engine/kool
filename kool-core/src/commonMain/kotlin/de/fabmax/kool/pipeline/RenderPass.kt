@@ -132,6 +132,10 @@ abstract class RenderPass(var name: String) : BaseReleasable() {
 
         private var updateEvent: UpdateEvent? = null
 
+        init {
+            viewPipelineData.releaseWith(this@RenderPass)
+        }
+
         internal fun makeUpdateEvent(ctx: KoolContext): UpdateEvent {
             return updateEvent ?: UpdateEvent(this, ctx).also { updateEvent = it }
         }

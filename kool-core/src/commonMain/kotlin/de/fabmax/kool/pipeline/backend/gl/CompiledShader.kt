@@ -30,31 +30,24 @@ sealed class CompiledShader(private val pipeline: PipelineBase, val program: GlP
         return mappedGroup
     }
 
-    protected fun createBindGroups(renderPass: RenderPass) {
-        mappedViewGroup?.createBuffers(renderPass)
-        mappedPipelineGroup?.createBuffers(renderPass)
-    }
-
-    protected fun bindUniforms(view: RenderPass.View?): Boolean {
-        val viewOk = view?.let { mappedViewGroup?.bindUniforms(it.viewPipelineData.getPipelineData(pipeline)) } != false
-        val pipelineOk = mappedPipelineGroup?.bindUniforms(pipeline.pipelineData) != false
+    protected fun bindUniforms(renderPass: RenderPass, view: RenderPass.View?): Boolean {
+        val viewOk = view?.let { mappedViewGroup?.bindUniforms(it.viewPipelineData.getPipelineData(pipeline), renderPass) } != false
+        val pipelineOk = mappedPipelineGroup?.bindUniforms(pipeline.pipelineData, renderPass) != false
         return viewOk && pipelineOk
 
     }
 
     override fun release() {
         super.release()
+        if (!pipeline.isReleased) {
+            pipeline.release()
+        }
         pipelineInfo.deleted()
-        mappedViewGroup?.releaseBuffers()
-        mappedPipelineGroup?.releaseBuffers()
     }
 
     inner class MappedBindGroup(val scope: BindGroupScope, val layout: BindGroupLayout) {
         private val mappings = mutableListOf<MappedUniform>()
-        private val uboBuffers = mutableListOf<BufferResource>()
         private val compatUbos = mutableSetOf<String>()
-
-        private var isCreated = false
 
         init {
             layout.bindings.forEach { binding ->
@@ -100,43 +93,17 @@ sealed class CompiledShader(private val pipeline: PipelineBase, val program: GlP
             }
         }
 
-        fun createBuffers(renderPass: RenderPass) {
-            if (isCreated) {
-                return
-            }
-            isCreated = true
-
-            mappings
-                .filterIsInstance<MappedUbo>()
-                .forEachIndexed { i, mappedUbo ->
-                    val creationInfo = BufferCreationInfo(
-                        bufferName = "${pipeline.name}[$scope].ubo-$i",
-                        renderPassName = renderPass.name,
-                        sceneName = renderPass.parentScene?.name ?: "scene:<null>"
-                    )
-
-                    val uboBuffer = BufferResource(gl.UNIFORM_BUFFER, backend, creationInfo)
-                    uboBuffers += uboBuffer
-                    mappedUbo.uboBuffer = uboBuffer
-                }
-        }
-
-        fun bindUniforms(bindGroupData: BindGroupData): Boolean {
+        fun bindUniforms(bindGroupData: BindGroupData, renderPass: RenderPass): Boolean {
             var uniformsValid = true
             for (i in mappings.indices) {
-                uniformsValid = uniformsValid && mappings[i].setUniform(bindGroupData)
+                uniformsValid = uniformsValid && mappings[i].setUniform(bindGroupData, renderPass)
             }
             return uniformsValid
         }
 
-        fun releaseBuffers() {
-            uboBuffers.forEach { it.delete() }
-            uboBuffers.clear()
-        }
-
         private fun mapUbo(ubo: UniformBufferLayout, locations: IntArray) {
             mappings += if (ubo.name !in compatUbos) {
-                MappedUbo(ubo, locations[0], gl)
+                MappedUbo(ubo, locations[0], backend)
             } else {
                 MappedUboCompat(ubo, locations, gl)
             }

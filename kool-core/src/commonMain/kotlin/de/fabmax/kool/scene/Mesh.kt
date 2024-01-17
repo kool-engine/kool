@@ -201,6 +201,7 @@ open class Mesh(
         if (!isReleased) {
             super.release()
             geometry.release()
+            meshPipelineData.release()
             shadowGeometry.forEach { it.release() }
             pipeline?.releaseMeshInstance(this)
             pipeline = null

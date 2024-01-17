@@ -30,14 +30,13 @@ class CompiledComputeShader(val pipeline: ComputePipeline, program: GlProgram, b
     inner class ComputePassInstance(val task: ComputeRenderPass.Task) : BaseReleasable() {
         init {
             pipelineInfo.numInstances++
-            createBindGroups(task.pass)
         }
 
         fun bindInstance(): Boolean {
             for (i in pipeline.onUpdate.indices) {
                 pipeline.onUpdate[i].invoke(task.pass)
             }
-            return bindUniforms(null)
+            return bindUniforms(task.pass, null)
         }
 
         override fun release() {

@@ -117,9 +117,6 @@ class CompiledDrawShader(val pipeline: DrawPipeline, program: GlProgram, backend
             checkMeshAttributes()
             attributeBinders += geom.createShaderVertexAttributeBinders(attributes, mappedAttribLocations)
             instanceAttribBinders += geom.createShaderInstanceAttributeBinders(instanceAttributes, mappedAttribLocations)
-
-            mappedMeshGroup?.createBuffers(cmd.queue.renderPass)
-            createBindGroups(cmd.queue.renderPass)
         }
 
         private fun checkMeshAttributes() {
@@ -136,8 +133,9 @@ class CompiledDrawShader(val pipeline: DrawPipeline, program: GlProgram, backend
         }
 
         private fun bindUniforms(cmd: DrawCommand): Boolean {
-            return bindUniforms(cmd.queue.view) &&
-                mappedMeshGroup?.bindUniforms(mesh.meshPipelineData.getPipelineData(pipeline)) != false
+            val rp = cmd.queue.view.renderPass
+            return bindUniforms(rp, cmd.queue.view) &&
+                mappedMeshGroup?.bindUniforms(mesh.meshPipelineData.getPipelineData(pipeline), rp) != false
         }
 
         private fun releaseGeometryBuffers() {
@@ -181,7 +179,6 @@ class CompiledDrawShader(val pipeline: DrawPipeline, program: GlProgram, backend
         override fun release() {
             super.release()
             releaseGeometryBuffers()
-            mappedMeshGroup?.releaseBuffers()
             pipelineInfo.numInstances--
         }
     }

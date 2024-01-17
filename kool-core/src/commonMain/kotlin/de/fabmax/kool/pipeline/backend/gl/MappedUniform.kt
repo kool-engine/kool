@@ -10,23 +10,32 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 interface MappedUniform {
-    fun setUniform(bindGroupData: BindGroupData): Boolean
+    fun setUniform(bindGroupData: BindGroupData, renderPass: RenderPass): Boolean
 }
 
-class MappedUbo(val ubo: UniformBufferLayout, val uboIndex: Int, val gl: GlApi) : MappedUniform {
-    var uboBuffer: BufferResource? = null
+class MappedUbo(val ubo: UniformBufferLayout, val uboIndex: Int, val backend: RenderBackendGl) : MappedUniform {
+    val gl: GlApi get() = backend.gl
 
-    override fun setUniform(bindGroupData: BindGroupData): Boolean {
-        return uboBuffer?.let { buffer ->
-            val uboData = bindGroupData.uniformBufferBindingData(ubo.bindingIndex)
-            // fixme: currently, buffer always needs to be refreshed because BufferResource is mesh-private even
-            //  for pipeline / view scope ubos
-            //if (uboData.getAndClearDirtyFlag()) {
-                buffer.setData(uboData.buffer, gl.DYNAMIC_DRAW)
-            //}
-            gl.bindBufferBase(gl.UNIFORM_BUFFER, uboIndex, buffer.buffer)
-            true
-        } ?: false
+    override fun setUniform(bindGroupData: BindGroupData, renderPass: RenderPass): Boolean {
+        val uboData = bindGroupData.uniformBufferBindingData(ubo.bindingIndex)
+
+        var gpuBuffer = uboData.gpuBuffer as BufferResource?
+        if (gpuBuffer == null) {
+            val creationInfo = BufferCreationInfo(
+                bufferName = "ubo-buffer:${ubo.name}",
+                renderPassName = renderPass.name,
+                sceneName = renderPass.parentScene?.name ?: "scene:<null>"
+            )
+
+            gpuBuffer = BufferResource(gl.UNIFORM_BUFFER, backend, creationInfo)
+            uboData.gpuBuffer = gpuBuffer
+        }
+
+        if (uboData.getAndClearDirtyFlag()) {
+            gpuBuffer.setData(uboData.buffer, gl.DYNAMIC_DRAW)
+        }
+        gl.bindBufferBase(gl.UNIFORM_BUFFER, uboIndex, gpuBuffer.buffer)
+        return true
     }
 }
 
@@ -69,7 +78,7 @@ class MappedUboCompat(val ubo: UniformBufferLayout, val locations: IntArray, val
         }
     }
 
-    override fun setUniform(bindGroupData: BindGroupData): Boolean {
+    override fun setUniform(bindGroupData: BindGroupData, renderPass: RenderPass): Boolean {
         ubo.uniforms.forEachIndexed { i, uniform ->
             val loc = locations[i]
             val buf = bindGroupData.uniformBufferBindingData(ubo.bindingIndex).buffer
@@ -202,7 +211,7 @@ class MappedUniformTex1d(private val sampler1d: Texture1dLayout, texUnit: Int, v
 {
     // 1d texture internally uses a 2d texture to be compatible with glsl version 300 es
 
-    override fun setUniform(bindGroupData: BindGroupData): Boolean {
+    override fun setUniform(bindGroupData: BindGroupData, renderPass: RenderPass): Boolean {
         var texUnit = texUnit
         var isValid = true
         val textures = bindGroupData.texture1dBindingData(sampler1d.bindingIndex).textures
@@ -222,7 +231,7 @@ class MappedUniformTex1d(private val sampler1d: Texture1dLayout, texUnit: Int, v
 class MappedUniformTex2d(private val sampler2d: Texture2dLayout, texUnit: Int, val locations: IntArray, backend: RenderBackendGl) :
     MappedUniformTex(texUnit, backend.gl.TEXTURE_2D, backend)
 {
-    override fun setUniform(bindGroupData: BindGroupData): Boolean {
+    override fun setUniform(bindGroupData: BindGroupData, renderPass: RenderPass): Boolean {
         var texUnit = texUnit
         var isValid = true
         val textures = bindGroupData.texture2dBindingData(sampler2d.bindingIndex).textures
@@ -242,7 +251,7 @@ class MappedUniformTex2d(private val sampler2d: Texture2dLayout, texUnit: Int, v
 class MappedUniformTex3d(private val sampler3d: Texture3dLayout, texUnit: Int, val locations: IntArray, backend: RenderBackendGl) :
     MappedUniformTex(texUnit, backend.gl.TEXTURE_3D, backend)
 {
-    override fun setUniform(bindGroupData: BindGroupData): Boolean {
+    override fun setUniform(bindGroupData: BindGroupData, renderPass: RenderPass): Boolean {
         var texUnit = texUnit
         var isValid = true
         val textures = bindGroupData.texture3dBindingData(sampler3d.bindingIndex).textures
@@ -262,7 +271,7 @@ class MappedUniformTex3d(private val sampler3d: Texture3dLayout, texUnit: Int, v
 class MappedUniformTexCube(private val samplerCube: TextureCubeLayout, texUnit: Int, val locations: IntArray, backend: RenderBackendGl) :
     MappedUniformTex(texUnit, backend.gl.TEXTURE_CUBE_MAP, backend)
 {
-    override fun setUniform(bindGroupData: BindGroupData): Boolean {
+    override fun setUniform(bindGroupData: BindGroupData, renderPass: RenderPass): Boolean {
         var texUnit = texUnit
         var isValid = true
         val textures = bindGroupData.textureCubeBindingData(samplerCube.bindingIndex).textures
@@ -318,7 +327,7 @@ class MappedUniformStorage1d(
     binding: Int,
     backend: RenderBackendGl
 ) : MappedUniformStorage(storage, binding, backend) {
-    override fun setUniform(bindGroupData: BindGroupData): Boolean {
+    override fun setUniform(bindGroupData: BindGroupData, renderPass: RenderPass): Boolean {
         val storageTex = bindGroupData.storageTexture1dBindingData(storage.bindingIndex).storageTexture ?: return false
         bindStorageTex(storageTex)
         return true
@@ -330,7 +339,7 @@ class MappedUniformStorage2d(
     binding: Int,
     backend: RenderBackendGl
 ) : MappedUniformStorage(storage, binding, backend) {
-    override fun setUniform(bindGroupData: BindGroupData): Boolean {
+    override fun setUniform(bindGroupData: BindGroupData, renderPass: RenderPass): Boolean {
         val storageTex = bindGroupData.storageTexture2dBindingData(storage.bindingIndex).storageTexture ?: return false
         bindStorageTex(storageTex)
         return true
@@ -342,7 +351,7 @@ class MappedUniformStorage3d(
     binding: Int,
     backend: RenderBackendGl
 ) : MappedUniformStorage(storage, binding, backend) {
-    override fun setUniform(bindGroupData: BindGroupData): Boolean {
+    override fun setUniform(bindGroupData: BindGroupData, renderPass: RenderPass): Boolean {
         val storageTex = bindGroupData.storageTexture3dBindingData(storage.bindingIndex).storageTexture ?: return false
         bindStorageTex(storageTex)
         return true

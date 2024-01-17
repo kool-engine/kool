@@ -43,6 +43,11 @@ abstract class PipelineBase(val name: String, val bindGroupLayouts: List<BindGro
         bindGroupLayouts.forEach { hash += it.hash }
     }
 
+    override fun release() {
+        super.release()
+        pipelineData.release()
+    }
+
     inline fun <reified T: BindingLayout> findBindingLayout(predicate: (T) -> Boolean): Pair<BindGroupLayout, T>? {
         for (group in bindGroupLayouts) {
             group.bindings.filterIsInstance<T>().find(predicate)?.let {
@@ -61,7 +66,7 @@ abstract class PipelineBase(val name: String, val bindGroupLayouts: List<BindGro
     }
 }
 
-class PipelineData(val scope: BindGroupScope) {
+class PipelineData(val scope: BindGroupScope) : BaseReleasable() {
     private val bindGroupData = mutableMapOf<Long, UpdateAwareBindGroupData>()
 
     fun getPipelineData(pipeline: PipelineBase): BindGroupData {
@@ -86,7 +91,12 @@ class PipelineData(val scope: BindGroupScope) {
 
     fun discardPipelineData(pipeline: PipelineBase) {
         val layout = pipeline.bindGroupLayouts[scope.group]
-        bindGroupData.remove(layout.hash)
+        bindGroupData.remove(layout.hash)?.data?.release()
+    }
+
+    override fun release() {
+        super.release()
+        bindGroupData.values.forEach { it.data.release() }
     }
 
     private class UpdateAwareBindGroupData(val data: BindGroupData) {
