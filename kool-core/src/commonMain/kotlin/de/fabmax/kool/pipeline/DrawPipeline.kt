@@ -30,7 +30,7 @@ class DrawPipeline(
 
     val onUpdate = mutableListOf<(DrawCommand) -> Unit>()
 
-    internal var pipelineBackend: PipelineBackend? = null
+    internal var pipelineBackend: DrawPipelineBackend? = null
 
     init {
         hash += cullMethod
@@ -52,7 +52,7 @@ class DrawPipeline(
     }
 }
 
-interface PipelineBackend : Releasable {
+interface DrawPipelineBackend : Releasable {
     fun releaseMeshInstance(mesh: Mesh)
 }
 

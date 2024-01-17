@@ -182,13 +182,14 @@ class FluidDemo : DemoScene("Fluid Simulation") {
 
     private fun initializeSolverTasks() {
         val randomIndices = IncompressibilitySolverShader.makeRandomAccessIndices(simWidth, simHeight)
+        val solver = IncompressibilitySolverShader(uStateA, vStateA, borderState, randomIndices)
         for (i in 0 until 200) {
             val offset = Vec2i(i * 31, i * 19)
-            val solver = IncompressibilitySolverShader(uStateA, vStateA, borderState, randomIndices, offset)
             solver.overRelaxation = overRelaxation.value
             solvers += solver
             solverPass.addTask(solver).apply {
                 isEnabled = i < numIterations.value
+                onBeforeDispatch { solver.indexOffset = offset }
             }
         }
     }

@@ -44,6 +44,7 @@ open class KslComputeShader(name: String) : ComputeShader(name) {
     }
 
     override fun pipelineCreated(pipeline: ComputePipeline) {
+        super.pipelineCreated(pipeline)
         pipeline.onUpdate += {
             for (i in program.shaderListeners.indices) {
                 program.shaderListeners[i].onComputeUpdate(it)

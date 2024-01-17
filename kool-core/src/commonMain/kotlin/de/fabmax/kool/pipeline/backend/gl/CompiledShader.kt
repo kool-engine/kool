@@ -36,8 +36,9 @@ sealed class CompiledShader(private val pipeline: PipelineBase, val program: GlP
     }
 
     protected fun bindUniforms(view: RenderPass.View?): Boolean {
-        return mappedPipelineGroup?.bindUniforms(pipeline.pipelineData) != false &&
-                view?.let { mappedViewGroup?.bindUniforms(it.viewPipelineData.getPipelineData(pipeline)) } != false
+        val viewOk = view?.let { mappedViewGroup?.bindUniforms(it.viewPipelineData.getPipelineData(pipeline)) } != false
+        val pipelineOk = mappedPipelineGroup?.bindUniforms(pipeline.pipelineData) != false
+        return viewOk && pipelineOk
 
     }
 

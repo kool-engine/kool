@@ -11,7 +11,7 @@ import de.fabmax.kool.util.logE
 
 class CompiledDrawShader(val pipeline: DrawPipeline, program: GlProgram, backend: RenderBackendGl) :
     CompiledShader(pipeline, program, backend),
-    PipelineBackend
+    DrawPipelineBackend
 {
     private val attributes: Map<String, VertexLayout.VertexAttribute> = pipeline.vertexLayout.bindings
         .filter { it.inputRate == InputRate.VERTEX }
@@ -191,23 +191,6 @@ class CompiledDrawShader(val pipeline: DrawPipeline, program: GlProgram, backend
             pipelineInfo.numInstances--
         }
     }
-
-//    inner class ComputeShaderInstance(val pipelineInstance: ComputePipeline, computePass: ComputeRenderPass) :
-//        ShaderInstanceBase(pipelineInstance)
-//    {
-//        init {
-//            createUboBuffers(computePass)
-//        }
-//
-//        fun bindInstance(computePass: ComputeRenderPass): Boolean {
-//            // call onUpdate callbacks
-//            for (i in pipelineInstance.onUpdate.indices) {
-//                pipelineInstance.onUpdate[i].invoke(computePass)
-//            }
-//            // todo: get the indices right
-//            return bindUniforms(listOf(pipelineInstance.pipelineData, pipelineInstance.pipelineData))
-//        }
-//    }
 
     private val PrimitiveType.glElemType: Int get() = when (this) {
         PrimitiveType.LINES -> gl.LINES

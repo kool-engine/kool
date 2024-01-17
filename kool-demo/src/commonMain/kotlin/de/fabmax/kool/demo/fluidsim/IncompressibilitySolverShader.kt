@@ -12,11 +12,11 @@ class IncompressibilitySolverShader(
     uState: StorageTexture2d,
     vState: StorageTexture2d,
     borderState: StorageTexture2d,
-    randomIndices: StorageTexture2d,
-    idxOffset: Vec2i
+    randomIndices: StorageTexture2d
 ) : KslComputeShader("Incompressibility solver") {
 
     var overRelaxation: Float by uniform1f("overRelaxation", 1f)
+    var indexOffset: Vec2i by uniform2i("idxOffset")
 
     init {
         storage2d("uVals", uState)
@@ -24,7 +24,6 @@ class IncompressibilitySolverShader(
         storage2d("borderState", borderState)
 
         storage2d("indices", randomIndices)
-        uniform2i("idxOffset", idxOffset)
 
         program.solverProg()
     }

@@ -206,7 +206,7 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
 
                 task.beforeDispatch()
 
-                if (shaderMgr.bindComputeShader(pipeline, computePass)) {
+                if (shaderMgr.bindComputeShader(pipeline, task)) {
                     val maxCnt = gl.capabilities.maxWorkGroupCount
                     if (numGroupsX > maxCnt.x || numGroupsY > maxCnt.y || numGroupsZ > maxCnt.z) {
                         logE { "Maximum compute shader workgroup count exceeded: max count = $maxCnt, requested count: ($numGroupsX, $numGroupsY, $numGroupsZ)" }
