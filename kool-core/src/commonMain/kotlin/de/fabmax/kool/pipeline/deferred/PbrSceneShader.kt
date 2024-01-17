@@ -74,7 +74,7 @@ open class PbrSceneShader(cfg: DeferredPbrConfig, model: Model = Model(cfg)) :
         }
     }
 
-    override fun createPipeline(mesh: Mesh, updateEvent: RenderPass.UpdateEvent): Pipeline {
+    override fun createPipeline(mesh: Mesh, updateEvent: RenderPass.UpdateEvent): DrawPipeline {
         return super.createPipeline(mesh, updateEvent).also {
             if (brdfLut == null) {
                 brdfLut = updateEvent.ctx.defaultPbrBrdfLut

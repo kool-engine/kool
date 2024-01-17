@@ -75,7 +75,7 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
         return VkOffscreenPassCube(parentPass)
     }
 
-    override fun generateKslShader(shader: KslShader, pipeline: Pipeline): ShaderCode {
+    override fun generateKslShader(shader: KslShader, pipeline: DrawPipeline): ShaderCode {
         val src = KslGlslGeneratorVk().generateProgram(shader.program, pipeline)
         if (shader.program.dumpCode) {
             src.dump()

@@ -9,7 +9,7 @@ import de.fabmax.kool.scene.geometry.PrimitiveType
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.logE
 
-class CompiledDrawShader(val pipeline: Pipeline, program: GlProgram, backend: RenderBackendGl) :
+class CompiledDrawShader(val pipeline: DrawPipeline, program: GlProgram, backend: RenderBackendGl) :
     CompiledShader(pipeline, program, backend),
     PipelineBackend
 {

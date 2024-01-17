@@ -23,7 +23,7 @@ interface ImageScope : UiScope {
 open class ImageModifier(surface: UiSurface) : UiModifier(surface) {
     var imageProvider: ImageProvider? by property(null)
     var tint: Color by property(Color.WHITE)
-    var customShader: Shader? by property(null)
+    var customShader: DrawShader? by property(null)
     var imageZ: Int by property(0)
     var imageSize: ImageSize by property(ImageSize.FitContent)
 }
@@ -34,7 +34,7 @@ fun <T: ImageModifier> T.tint(color: Color): T { this.tint = color; return this 
 fun <T: ImageModifier> T.imageZ(imageZ: Int): T { this.imageZ = imageZ; return this }
 fun <T: ImageModifier> T.imageSize(size: ImageSize): T { this.imageSize = size; return this }
 
-fun <T: ImageModifier> T.customShader(shader: Shader): T { customShader = shader; return this }
+fun <T: ImageModifier> T.customShader(shader: DrawShader): T { customShader = shader; return this }
 
 sealed class ImageSize {
     object Stretch : ImageSize()
@@ -208,7 +208,7 @@ class ImageMesh(name: String) : Mesh(IndexedVertexList(Ui2Shader.UI_MESH_ATTRIBS
         return shader
     }
 
-    fun applyShader(imageTex: Texture2d?, modShader: Shader?) {
+    fun applyShader(imageTex: Texture2d?, modShader: DrawShader?) {
         shader = modShader ?: getOrCreateDefaultShader(imageTex)
     }
 

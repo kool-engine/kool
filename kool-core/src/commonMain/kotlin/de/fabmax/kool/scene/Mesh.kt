@@ -92,9 +92,9 @@ open class Mesh(
 
     val meshPipelineData = PipelineData(BindGroupScope.MESH)
 
-    private var pipeline: Pipeline? = null
+    private var pipeline: DrawPipeline? = null
 
-    var shader: Shader? = null
+    var shader: DrawShader? = null
         set(value) {
             if (field !== value) {
                 field = value
@@ -108,14 +108,14 @@ open class Mesh(
      * DepthMapPass uses [depthShaderConfig] or - if this is null as well - a geometry based default config to create
      * a default depth shader.
      */
-    var depthShader: Shader? = null
+    var depthShader: DrawShader? = null
 
     /**
      * Optional shader used by [de.fabmax.kool.pipeline.NormalLinearDepthMapPass] (mainly used for rendering
      * screen-space ao maps). If null NormalLinearDepthMapPass uses [depthShaderConfig] or - if this is null as well -
      * a geometry based default config to create a default depth shader.
      */
-    var normalLinearDepthShader: Shader? = null
+    var normalLinearDepthShader: DrawShader? = null
 
     /**
      * Custom config for depth shader creation. If non-null, this is used to create depth shaders for shadow and ssao
@@ -167,7 +167,7 @@ open class Mesh(
         }
     }
 
-    fun getOrCreatePipeline(updateEvent: RenderPass.UpdateEvent): Pipeline? {
+    fun getOrCreatePipeline(updateEvent: RenderPass.UpdateEvent): DrawPipeline? {
         return pipeline ?: shader?.let { s ->
             s.getOrCreatePipeline(this, updateEvent).also { pipeline = it }
         }

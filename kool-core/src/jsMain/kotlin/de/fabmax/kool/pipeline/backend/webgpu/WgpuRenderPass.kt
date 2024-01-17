@@ -104,7 +104,7 @@ class WgpuRenderPass(val backend: RenderBackendWebGpu, val multiSamples: Int = 4
         return encoder.finish()
     }
 
-    private fun Pipeline.setup(pass: GPURenderPassEncoder, drawCmd: DrawCommand): Boolean {
+    private fun DrawPipeline.setup(pass: GPURenderPassEncoder, drawCmd: DrawCommand): Boolean {
         // call onUpdate callbacks
         for (i in onUpdate.indices) {
             onUpdate[i].invoke(drawCmd)
@@ -118,14 +118,14 @@ class WgpuRenderPass(val backend: RenderBackendWebGpu, val multiSamples: Int = 4
     }
 
     private val pipelines = mutableMapOf<Long, WgpuPipeline>()
-    private fun Pipeline.getOrCreateWgpuPipeline(): WgpuPipeline {
+    private fun DrawPipeline.getOrCreateWgpuPipeline(): WgpuPipeline {
         return pipelines.getOrPut(pipelineHash) {
             logD { "create pipeline: $name (hash=$pipelineHash)" }
             WgpuPipeline(this)
         }
     }
 
-    inner class WgpuPipeline(pipeline: Pipeline) {
+    inner class WgpuPipeline(pipeline: DrawPipeline) {
         val bindGroupLayout: GPUBindGroupLayout = device.createBindGroupLayout(bindGroupLayoutDescriptor(pipeline))
         val pipelineLayout: GPUPipelineLayout = device.createPipelineLayout(pipelineLayoutDescriptor(pipeline))
         val vertexBufferLayout: Array<GPUVertexBufferLayout> = vertexBufferLayout(pipeline)
@@ -133,7 +133,7 @@ class WgpuRenderPass(val backend: RenderBackendWebGpu, val multiSamples: Int = 4
         val fragemntShaderModule: GPUShaderModule = device.createShaderModule(fragmentShaderModuleDescriptor(pipeline))
         val pipeline: GPURenderPipeline = device.createRenderPipeline(renderPipelineDescriptor(pipeline))
 
-        fun bindGroupLayoutDescriptor(pipeline: Pipeline): GPUBindGroupLayoutDescriptor {
+        fun bindGroupLayoutDescriptor(pipeline: DrawPipeline): GPUBindGroupLayoutDescriptor {
             val layoutEntries = pipeline.bindGroupLayout.bindings.map { binding ->
                 val visibility = binding.stages.fold(0) { acc, stage ->
                     acc or when (stage) {
@@ -162,12 +162,12 @@ class WgpuRenderPass(val backend: RenderBackendWebGpu, val multiSamples: Int = 4
             )
         }
 
-        fun pipelineLayoutDescriptor(pipeline: Pipeline) = GPUPipelineLayoutDescriptor(
+        fun pipelineLayoutDescriptor(pipeline: DrawPipeline) = GPUPipelineLayoutDescriptor(
             label = "${pipeline.name}-bindGroupLayout",
             bindGroupLayouts = arrayOf(bindGroupLayout)
         )
 
-        fun renderPipelineDescriptor(pipeline: Pipeline): GPURenderPipelineDescriptor {
+        fun renderPipelineDescriptor(pipeline: DrawPipeline): GPURenderPipelineDescriptor {
             val shaderCode = pipeline.shaderCode as RenderBackendWebGpu.WebGpuShaderCode
             val vertexState = GPUVertexState(
                 module = vertexShaderModule,
@@ -196,7 +196,7 @@ class WgpuRenderPass(val backend: RenderBackendWebGpu, val multiSamples: Int = 4
             )
         }
 
-        fun vertexBufferLayout(pipeline: Pipeline): Array<GPUVertexBufferLayout> {
+        fun vertexBufferLayout(pipeline: DrawPipeline): Array<GPUVertexBufferLayout> {
             return pipeline.vertexLayout.bindings.map { vertexBinding ->
                 val attributes = vertexBinding.vertexAttributes.map { attr ->
                     val format = when (attr.type) {
@@ -228,12 +228,12 @@ class WgpuRenderPass(val backend: RenderBackendWebGpu, val multiSamples: Int = 4
             }.toTypedArray()
         }
 
-        fun vertexShaderModuleDescriptor(pipeline: Pipeline) = GPUShaderModuleDescriptor(
+        fun vertexShaderModuleDescriptor(pipeline: DrawPipeline) = GPUShaderModuleDescriptor(
             label = "${pipeline.name} vertex shader",
             code = (pipeline.shaderCode as RenderBackendWebGpu.WebGpuShaderCode).vertexSrc
         )
 
-        fun fragmentShaderModuleDescriptor(pipeline: Pipeline) = GPUShaderModuleDescriptor(
+        fun fragmentShaderModuleDescriptor(pipeline: DrawPipeline) = GPUShaderModuleDescriptor(
             label = "${pipeline.name} fragment shader",
             code = (pipeline.shaderCode as RenderBackendWebGpu.WebGpuShaderCode).fragmentSrc
         )
@@ -249,7 +249,7 @@ class WgpuRenderPass(val backend: RenderBackendWebGpu, val multiSamples: Int = 4
         var bindGroup: GPUBindGroup? = null
         val ubos = mutableListOf<UboBinding>()
 
-        fun bindBindGroups(pass: GPURenderPassEncoder, pipeline: Pipeline) {
+        fun bindBindGroups(pass: GPURenderPassEncoder, pipeline: DrawPipeline) {
             // fixme: support multiple bind groups
             if (bindGroup == null) {
                 val bindGroupEntries = mutableListOf<GPUBindGroupEntry>()

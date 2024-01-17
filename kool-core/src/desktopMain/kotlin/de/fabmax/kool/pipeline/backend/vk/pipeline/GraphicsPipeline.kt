@@ -13,7 +13,7 @@ import org.lwjgl.vulkan.VkPushConstantRange
 import java.nio.ByteBuffer
 
 class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vkRenderPass: VkRenderPass, val msaaSamples: Int, val dynamicViewPort: Boolean,
-                       val pipeline: Pipeline, val nImages: Int, val descriptorSetPoolSize: Int = 500) : VkResource() {
+                       val pipeline: DrawPipeline, val nImages: Int, val descriptorSetPoolSize: Int = 500) : VkResource() {
 
     val descriptorSetLayout: Long
     val descriptorPool: Long
@@ -370,7 +370,7 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
         return 0L
     }
 
-    fun getDescriptorSetInstance(pipeline: Pipeline): DescriptorSet {
+    fun getDescriptorSetInstance(pipeline: DrawPipeline): DescriptorSet {
         TODO()
 //        return descriptorSetInstances.getOrPut(pipeline.pipelineInstanceId) {
 //            val setInstance = if (reusableDescriptorSets.isNotEmpty()) {
@@ -389,7 +389,7 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
 //        }
     }
 
-    fun freeDescriptorSetInstance(pipeline: Pipeline): Boolean {
+    fun freeDescriptorSetInstance(pipeline: DrawPipeline): Boolean {
         TODO()
 //        val freeSet = descriptorSetInstances.remove(pipeline.pipelineInstanceId)
 //        if (freeSet != null) {

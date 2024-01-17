@@ -31,11 +31,11 @@ data class MaterialData(
         return shaderData.createShader(sceneShaderData)
     }
 
-    suspend fun updateShader(shader: Shader?, sceneShaderData: SceneModel.SceneShaderData): Boolean {
+    suspend fun updateShader(shader: DrawShader?, sceneShaderData: SceneModel.SceneShaderData): Boolean {
         return shaderData.updateShader(shader, sceneShaderData)
     }
 
-    fun matchesShader(shader: Shader?): Boolean = shaderData.matchesShader(shader)
+    fun matchesShader(shader: DrawShader?): Boolean = shaderData.matchesShader(shader)
 
 }
 
@@ -43,9 +43,9 @@ data class MaterialData(
 sealed interface MaterialShaderData {
     val genericSettings: GenericMaterialSettings
 
-    fun matchesShader(shader: Shader?): Boolean
+    fun matchesShader(shader: DrawShader?): Boolean
     suspend fun createShader(sceneShaderData: SceneModel.SceneShaderData): KslShader
-    suspend fun updateShader(shader: Shader?, sceneShaderData: SceneModel.SceneShaderData): Boolean
+    suspend fun updateShader(shader: DrawShader?, sceneShaderData: SceneModel.SceneShaderData): Boolean
 
     fun copy(genericSettings: GenericMaterialSettings = this.genericSettings): MaterialShaderData {
         return when (this) {
@@ -68,7 +68,7 @@ data class PbrShaderData(
     override val genericSettings: GenericMaterialSettings = GenericMaterialSettings()
 ) : MaterialShaderData {
 
-    override fun matchesShader(shader: Shader?): Boolean {
+    override fun matchesShader(shader: DrawShader?): Boolean {
         if (shader !is KslPbrShader) {
             return false
         }
@@ -154,7 +154,7 @@ data class PbrShaderData(
         return shader
     }
 
-    override suspend fun updateShader(shader: Shader?, sceneShaderData: SceneModel.SceneShaderData): Boolean {
+    override suspend fun updateShader(shader: DrawShader?, sceneShaderData: SceneModel.SceneShaderData): Boolean {
         if (!matchesShader(shader)) {
             return false
         }
@@ -217,7 +217,7 @@ data class BlinnPhongShaderData(
     override val genericSettings: GenericMaterialSettings = GenericMaterialSettings()
 ) : MaterialShaderData {
 
-    override fun matchesShader(shader: Shader?): Boolean {
+    override fun matchesShader(shader: DrawShader?): Boolean {
         TODO("Not yet implemented")
     }
 
@@ -225,7 +225,7 @@ data class BlinnPhongShaderData(
         TODO("Not yet implemented")
     }
 
-    override suspend fun updateShader(shader: Shader?, sceneShaderData: SceneModel.SceneShaderData): Boolean {
+    override suspend fun updateShader(shader: DrawShader?, sceneShaderData: SceneModel.SceneShaderData): Boolean {
         TODO("Not yet implemented")
     }
 }
@@ -236,7 +236,7 @@ data class UnlitShaderData(
     override val genericSettings: GenericMaterialSettings = GenericMaterialSettings()
 ) : MaterialShaderData {
 
-    override fun matchesShader(shader: Shader?): Boolean {
+    override fun matchesShader(shader: DrawShader?): Boolean {
         TODO("Not yet implemented")
     }
 
@@ -244,7 +244,7 @@ data class UnlitShaderData(
         TODO("Not yet implemented")
     }
 
-    override suspend fun updateShader(shader: Shader?, sceneShaderData: SceneModel.SceneShaderData): Boolean {
+    override suspend fun updateShader(shader: DrawShader?, sceneShaderData: SceneModel.SceneShaderData): Boolean {
         TODO("Not yet implemented")
     }
 }

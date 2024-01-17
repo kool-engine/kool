@@ -1,8 +1,8 @@
 package de.fabmax.kool.pipeline.backend.vk.pipeline
 
+import de.fabmax.kool.pipeline.DrawPipeline
 import de.fabmax.kool.pipeline.OffscreenRenderPass
 import de.fabmax.kool.pipeline.OffscreenRenderPass2d
-import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.pipeline.backend.vk.SwapChain
 import de.fabmax.kool.pipeline.backend.vk.VkRenderPass
@@ -26,10 +26,10 @@ class PipelineManager(val sys: VkSystem) {
         onScreenPipelineConfigs.forEach { createOnScreenPipeline(it.pipeline, it.koolRenderPass, swapChain.renderPass) }
     }
 
-    fun hasPipeline(pipeline: Pipeline, renderPass: Long): Boolean =
+    fun hasPipeline(pipeline: DrawPipeline, renderPass: Long): Boolean =
             createdPipelines[pipeline.pipelineHash]?.existsForRenderPass(renderPass) ?: false
 
-    fun addPipelineConfig(pipeline: Pipeline, nImages: Int, koolRenderPass: RenderPass, renderPass: VkRenderPass, dynVp: Boolean) {
+    fun addPipelineConfig(pipeline: DrawPipeline, nImages: Int, koolRenderPass: RenderPass, renderPass: VkRenderPass, dynVp: Boolean) {
         if (renderPass === swapChain?.renderPass) {
             if (onScreenPipelineConfigs.add(PipelineAndRenderPass(pipeline, koolRenderPass))) {
                 logD { "New on screen pipeline: ${pipeline.name}" }
@@ -52,7 +52,7 @@ class PipelineManager(val sys: VkSystem) {
         }
     }
 
-    private fun createOnScreenPipeline(pipeline: Pipeline, koolRenderPass: RenderPass, renderPass: VkRenderPass) {
+    private fun createOnScreenPipeline(pipeline: DrawPipeline, koolRenderPass: RenderPass, renderPass: VkRenderPass) {
         val swapChain = this.swapChain ?: return
         val gp = GraphicsPipeline(sys, koolRenderPass, renderPass, sys.physicalDevice.msaaSamples, true, pipeline, swapChain.nImages)
         swapChain.addDependingResource(gp)
@@ -60,12 +60,12 @@ class PipelineManager(val sys: VkSystem) {
         createdPipeline.addRenderPassPipeline(renderPass, gp)
     }
 
-    fun getPipeline(pipeline: Pipeline, renderPass: Long): GraphicsPipeline {
+    fun getPipeline(pipeline: DrawPipeline, renderPass: Long): GraphicsPipeline {
         return createdPipelines[pipeline.pipelineHash]?.graphicsPipelines?.get(renderPass)
                 ?: throw NoSuchElementException("Unknown pipeline config: ${pipeline.pipelineHash}")
     }
 
-    fun getPipeline(pipeline: Pipeline): CreatedPipeline? {
+    fun getPipeline(pipeline: DrawPipeline): CreatedPipeline? {
         return createdPipelines[pipeline.pipelineHash]
     }
 
@@ -78,7 +78,7 @@ class PipelineManager(val sys: VkSystem) {
             graphicsPipelines[renderPass.vkRenderPass] = graphicsPipeline
         }
 
-        fun freeDescriptorSetInstance(pipeline: Pipeline) {
+        fun freeDescriptorSetInstance(pipeline: DrawPipeline) {
             // find GraphicsPipeline containing pipelineInstance
             val iterator = graphicsPipelines.values.iterator()
             for (gp in iterator) {
@@ -101,5 +101,5 @@ class PipelineManager(val sys: VkSystem) {
         }
     }
 
-    private class PipelineAndRenderPass(val pipeline: Pipeline, val koolRenderPass: RenderPass)
+    private class PipelineAndRenderPass(val pipeline: DrawPipeline, val koolRenderPass: RenderPass)
 }

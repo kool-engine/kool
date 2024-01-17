@@ -4,7 +4,7 @@ import de.fabmax.kool.modules.ksl.generator.KslGenerator
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.modules.ksl.model.KslState
 import de.fabmax.kool.pipeline.ComputePipeline
-import de.fabmax.kool.pipeline.Pipeline
+import de.fabmax.kool.pipeline.DrawPipeline
 import de.fabmax.kool.pipeline.PipelineBase
 
 /**
@@ -14,7 +14,7 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
 
     var blockIndent = "  "
 
-    override fun generateProgram(program: KslProgram, pipeline: Pipeline): GlslGeneratorOutput {
+    override fun generateProgram(program: KslProgram, pipeline: DrawPipeline): GlslGeneratorOutput {
         val vertexStage = checkNotNull(program.vertexStage) {
             "KslProgram vertexStage is missing (a valid KslShader needs at least a vertexStage and fragmentStage)"
         }

@@ -1,7 +1,10 @@
 package de.fabmax.kool.pipeline.backend.gl
 
 import de.fabmax.kool.KoolException
-import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.ComputePipeline
+import de.fabmax.kool.pipeline.ComputeRenderPass
+import de.fabmax.kool.pipeline.PipelineBase
+import de.fabmax.kool.pipeline.ShaderCode
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.util.logE
 
@@ -14,25 +17,8 @@ class ShaderManager(val backend: RenderBackendGl) {
     private val glShaderPrograms = mutableMapOf<ShaderCodeGl, UsedGlProgram>()
     private val glComputePrograms = mutableMapOf<ComputeShaderCodeGl, UsedGlProgram>()
 
-    fun bindShader(cmd: DrawCommand): CompiledDrawShader.ShaderMeshInstance? {
-        val shader = bindShader(cmd.pipeline!!)
-        return shader.bindMesh(cmd)
-    }
-
-    fun setupComputeShader(computePipeline: ComputePipeline, computePass: ComputeRenderPass): Boolean {
-        val sz = computePipeline.workGroupSize
-        val maxSz = backend.gl.capabilities.maxWorkGroupSize
-        if (sz.x > maxSz.x || sz.y > maxSz.y || sz.z > maxSz.z) {
-            logE { "Maximum compute shader workgroup size exceeded: max size = $maxSz, requested size: $sz" }
-            return false
-        }
-
-        return false
-//        fixme: val shader = bindShader(computePipeline)
-//        return shader.bindComputeInstance(computePipeline, computePass) != null
-    }
-
-    private fun bindShader(pipeline: Pipeline): CompiledDrawShader {
+    fun bindDrawShader(cmd: DrawCommand): CompiledDrawShader.ShaderMeshInstance? {
+        val pipeline = cmd.pipeline!!
         val shader = shaders.getOrPut(pipeline) {
             val usedProgram = getCompiledGlProgram(pipeline.shaderCode)
             usedProgram.users += pipeline
@@ -52,7 +38,20 @@ class ShaderManager(val backend: RenderBackendGl) {
         }
 
         boundShader = shader
-        return shader
+        return shader.bindMesh(cmd)
+    }
+
+    fun bindComputeShader(computePipeline: ComputePipeline, computePass: ComputeRenderPass): Boolean {
+        val sz = computePipeline.workGroupSize
+        val maxSz = backend.gl.capabilities.maxWorkGroupSize
+        if (sz.x > maxSz.x || sz.y > maxSz.y || sz.z > maxSz.z) {
+            logE { "Maximum compute shader workgroup size exceeded: max size = $maxSz, requested size: $sz" }
+            return false
+        }
+
+        return false
+//        fixme: val shader = bindShader(computePipeline)
+//        return shader.bindComputeInstance(computePipeline, computePass) != null
     }
 
     private fun CompiledDrawShader.isSameVertexLayout(other: CompiledDrawShader): Boolean {

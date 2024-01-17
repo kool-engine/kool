@@ -56,7 +56,7 @@ class QueueRenderer(val backend: RenderBackendGl) {
 
             if (cmd.geometry.numIndices == 0) continue
             val pipeline = cmd.pipeline ?: continue
-            val shaderInst = backend.shaderMgr.bindShader(cmd) ?: continue
+            val shaderInst = backend.shaderMgr.bindDrawShader(cmd) ?: continue
 
             glAttribs.setupPipelineAttribs(pipeline, renderPass.isReverseDepth)
 
@@ -79,7 +79,7 @@ class QueueRenderer(val backend: RenderBackendGl) {
         var actCullMethod: CullMethod? = null
         var lineWidth = 0f
 
-        fun setupPipelineAttribs(pipeline: Pipeline, isReversedDepth: Boolean) {
+        fun setupPipelineAttribs(pipeline: DrawPipeline, isReversedDepth: Boolean) {
             setBlendMode(pipeline.blendMode)
             setDepthTest(pipeline.depthCompareOp, isReversedDepth && pipeline.autoReverseDepthFunc)
             setWriteDepth(pipeline.isWriteDepth)

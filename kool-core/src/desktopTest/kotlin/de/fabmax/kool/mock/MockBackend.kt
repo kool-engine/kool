@@ -24,7 +24,7 @@ class MockBackend(val shaderGen: KslGenerator = GlslGenerator(GlslGenerator.Hint
 
     override fun cleanup(ctx: KoolContext) { }
 
-    override fun generateKslShader(shader: KslShader, pipeline: Pipeline): ShaderCode {
+    override fun generateKslShader(shader: KslShader, pipeline: DrawPipeline): ShaderCode {
         val output = shaderGen.generateProgram(shader.program, pipeline) as KslGenerator.GeneratedSourceOutput
         return ShaderCodeGl(output.vertexSrc, output.fragmentSrc)
     }

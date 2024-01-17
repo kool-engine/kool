@@ -17,7 +17,7 @@ fun KslShader(
     return shader
 }
 
-open class KslShader private constructor(val program: KslProgram) : Shader(program.name) {
+open class KslShader private constructor(val program: KslProgram) : DrawShader(program.name) {
     constructor(name: String): this(KslProgram(name))
 
     constructor(program: KslProgram, pipelineConfig: PipelineConfig): this(program) {
@@ -44,7 +44,7 @@ open class KslShader private constructor(val program: KslProgram) : Shader(progr
         }.toSet()
     }
 
-    override fun createPipeline(mesh: Mesh, updateEvent: RenderPass.UpdateEvent): Pipeline {
+    override fun createPipeline(mesh: Mesh, updateEvent: RenderPass.UpdateEvent): DrawPipeline {
         checkNotNull(program.vertexStage) {
             "KslProgram vertexStage is missing (a valid KslShader needs at least a vertexStage and fragmentStage)"
         }
@@ -60,7 +60,7 @@ open class KslShader private constructor(val program: KslProgram) : Shader(progr
         // uniform is used by which shader stage)
         program.prepareGenerate()
 
-        return Pipeline(
+        return DrawPipeline(
             name = program.name,
             pipelineConfig = pipelineConfig,
             vertexLayout = makeVertexLayout(mesh),
@@ -69,7 +69,7 @@ open class KslShader private constructor(val program: KslProgram) : Shader(progr
         )
     }
 
-    override fun pipelineCreated(pipeline: Pipeline) {
+    override fun pipelineCreated(pipeline: DrawPipeline) {
         super.pipelineCreated(pipeline)
         pipeline.onUpdate += { cmd ->
             for (i in program.shaderListeners.indices) {

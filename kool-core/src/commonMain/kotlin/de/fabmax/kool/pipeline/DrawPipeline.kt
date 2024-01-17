@@ -9,12 +9,12 @@ import de.fabmax.kool.util.Releasable
  * to traditional OpenGL, these options cannot be changed after the pipeline is created (this is in line with
  * how modern graphics APIs, like Vulkan, work).
  */
-class Pipeline(
+class DrawPipeline(
     name: String,
     val pipelineConfig: PipelineConfig,
     val vertexLayout: VertexLayout,
     bindGroupLayouts: List<BindGroupLayout>,
-    shaderCodeGenerator: (Pipeline) -> ShaderCode
+    shaderCodeGenerator: (DrawPipeline) -> ShaderCode
 ) :
     PipelineBase(name, bindGroupLayouts)
 {

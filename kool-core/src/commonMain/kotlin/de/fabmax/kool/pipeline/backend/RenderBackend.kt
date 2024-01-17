@@ -25,7 +25,7 @@ interface RenderBackend {
         result.set(0, 0, ctx.windowWidth, ctx.windowHeight)
     }
 
-    fun generateKslShader(shader: KslShader, pipeline: Pipeline): ShaderCode
+    fun generateKslShader(shader: KslShader, pipeline: DrawPipeline): ShaderCode
     fun generateKslComputeShader(shader: KslComputeShader, pipeline: ComputePipeline): ComputeShaderCode
 
     fun createOffscreenPass2d(parentPass: OffscreenRenderPass2d): OffscreenPass2dImpl

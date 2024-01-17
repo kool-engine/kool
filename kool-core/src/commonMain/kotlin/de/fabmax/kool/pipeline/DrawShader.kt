@@ -4,17 +4,17 @@ import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.scene.Mesh
 
 /**
- * Base class for regular shaders / materials, which can be attached to [Mesh]es in order to render them. Usually,
+ * Base class for regular shaders / materials, which can be attached to [Mesh]es in order to draw them. Usually,
  * you should use [KslShader] to define your custom shaders, however, it is also possible to subclass this class
- * directly and create a [Pipeline] using arbitrary custom shader code in [createPipeline]. In that case the
+ * directly and create a [DrawPipeline] using arbitrary custom shader code in [createPipeline]. In that case the
  * supplied shader source code has to match the rendering backend (e.g. GLSL in case an OpenGL backend is used).
  */
-abstract class Shader(name: String) : ShaderBase<Pipeline>(name) {
+abstract class DrawShader(name: String) : ShaderBase<DrawPipeline>(name) {
 
     private var meshVertexLayout: List<Attribute>? = null
     private var meshInstanceLayout: List<Attribute>? = null
 
-    fun getOrCreatePipeline(mesh: Mesh, updateEvent: RenderPass.UpdateEvent): Pipeline {
+    fun getOrCreatePipeline(mesh: Mesh, updateEvent: RenderPass.UpdateEvent): DrawPipeline {
         val created = createdPipeline
         if (created == null) {
             meshVertexLayout = mesh.geometry.vertexAttributes
@@ -36,5 +36,5 @@ abstract class Shader(name: String) : ShaderBase<Pipeline>(name) {
         return created ?: createPipeline(mesh, updateEvent).also { pipelineCreated(it) }
     }
 
-    protected abstract fun createPipeline(mesh: Mesh, updateEvent: RenderPass.UpdateEvent): Pipeline
+    protected abstract fun createPipeline(mesh: Mesh, updateEvent: RenderPass.UpdateEvent): DrawPipeline
 }

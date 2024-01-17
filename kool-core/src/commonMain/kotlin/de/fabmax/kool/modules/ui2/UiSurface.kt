@@ -5,8 +5,8 @@ import de.fabmax.kool.input.*
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.ui2.docking.Dock
+import de.fabmax.kool.pipeline.DrawShader
 import de.fabmax.kool.pipeline.RenderPass
-import de.fabmax.kool.pipeline.Shader
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
@@ -557,7 +557,7 @@ open class UiSurface(
         }
     }
 
-    private class TextMesh(shader: Shader, name: String) {
+    private class TextMesh(shader: DrawShader, name: String) {
         val mesh = Mesh(MsdfUiShader.MSDF_UI_MESH_ATTRIBS, name = name).apply {
             isCastingShadow = false
             geometry.usage = Usage.DYNAMIC

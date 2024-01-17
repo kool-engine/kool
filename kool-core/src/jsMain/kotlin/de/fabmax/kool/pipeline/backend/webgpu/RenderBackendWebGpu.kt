@@ -100,7 +100,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         // do nothing for now
     }
 
-    override fun generateKslShader(shader: KslShader, pipeline: Pipeline): ShaderCode {
+    override fun generateKslShader(shader: KslShader, pipeline: DrawPipeline): ShaderCode {
         val output = WgslGenerator().generateProgram(shader.program, pipeline)
         if (shader.program.dumpCode) {
             output.dump()

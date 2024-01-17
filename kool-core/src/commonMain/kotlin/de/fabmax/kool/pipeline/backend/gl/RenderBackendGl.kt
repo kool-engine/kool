@@ -111,7 +111,7 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
         return OffscreenRenderPassCubeGl(parentPass, this)
     }
 
-    override fun generateKslShader(shader: KslShader, pipeline: Pipeline): ShaderCodeGl {
+    override fun generateKslShader(shader: KslShader, pipeline: DrawPipeline): ShaderCodeGl {
         val src = GlslGenerator(glslGeneratorHints).generateProgram(shader.program, pipeline)
         if (shader.program.dumpCode) {
             src.dump()
@@ -206,7 +206,7 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
 
                 task.beforeDispatch()
 
-                if (shaderMgr.setupComputeShader(pipeline, computePass)) {
+                if (shaderMgr.bindComputeShader(pipeline, computePass)) {
                     val maxCnt = gl.capabilities.maxWorkGroupCount
                     if (numGroupsX > maxCnt.x || numGroupsY > maxCnt.y || numGroupsZ > maxCnt.z) {
                         logE { "Maximum compute shader workgroup count exceeded: max count = $maxCnt, requested count: ($numGroupsX, $numGroupsY, $numGroupsZ)" }

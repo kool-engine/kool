@@ -79,7 +79,7 @@ class BloomBlurPass(kernelSize: Int, thresholdPass: BloomThresholdPass) :
         blurDirDirty = true
     }
 
-    private fun Node.fullScreenQuad(quadShader: Shader) {
+    private fun Node.fullScreenQuad(quadShader: DrawShader) {
         isFrustumChecked = false
         addMesh(Attribute.POSITIONS, Attribute.TEXTURE_COORDS) {
             generateFullscreenQuad()

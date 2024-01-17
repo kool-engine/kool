@@ -8,7 +8,7 @@ import de.fabmax.kool.util.Color
 
 
 open class DepthMapPass(drawNode: Node, config: Config) : OffscreenRenderPass2d(drawNode, config) {
-    protected val shadowPipelines = mutableMapOf<Int, Pipeline?>()
+    protected val shadowPipelines = mutableMapOf<Int, DrawPipeline?>()
 
     constructor(drawNode: Node, width: Int, height: Int = width) : this(drawNode, defaultSetup(width, height))
 
@@ -31,7 +31,7 @@ open class DepthMapPass(drawNode: Node, config: Config) : OffscreenRenderPass2d(
         cmd.pipeline = getDepthPipeline(cmd.mesh, updateEvent)
     }
 
-    protected open fun getDepthPipeline(mesh: Mesh, updateEvent: UpdateEvent): Pipeline? {
+    protected open fun getDepthPipeline(mesh: Mesh, updateEvent: UpdateEvent): DrawPipeline? {
         if (!mesh.geometry.hasAttribute(Attribute.POSITIONS)) {
             return null
         }
@@ -76,7 +76,7 @@ class NormalLinearDepthMapPass(drawNode: Node, config: Config) : DepthMapPass(dr
         }
     }
 
-    override fun getDepthPipeline(mesh: Mesh, updateEvent: UpdateEvent): Pipeline? {
+    override fun getDepthPipeline(mesh: Mesh, updateEvent: UpdateEvent): DrawPipeline? {
         if (!mesh.geometry.hasAttribute(Attribute.POSITIONS) || !mesh.geometry.hasAttribute(Attribute.NORMALS)) {
             return null
         }

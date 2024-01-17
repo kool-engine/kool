@@ -156,7 +156,7 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
         private val selectionColors = (1..255).map { Color(it/255f, 0f, 0f, 1f) }
     }
 
-    private data class ShaderAndPipeline(val shader: KslUnlitShader, val pipeline: Pipeline)
+    private data class ShaderAndPipeline(val shader: KslUnlitShader, val pipeline: DrawPipeline)
 
     private class SelectionOutlineShader(selectionMask: Texture2d?) : KslShader(Model(), pipelineCfg) {
         var outlineColor by uniformColor("uOutlineColor", Color.WHITE)

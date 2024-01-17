@@ -58,7 +58,7 @@ class DescriptorSet(val graphicsPipeline: GraphicsPipeline) {
         }
     }
 
-    fun createDescriptorObjects(pipeline: Pipeline) {
+    fun createDescriptorObjects(pipeline: DrawPipeline) {
         pipeline.bindGroupLayout.bindings.forEachIndexed { idx, desc ->
             addDescriptor {
                 when (desc.type) {
