@@ -2,19 +2,13 @@ package de.fabmax.kool.platform
 
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.TextureData
-import org.w3c.dom.HTMLImageElement
+import org.w3c.dom.ImageBitmap
 
-class ImageTextureData(val image: HTMLImageElement, fmt: TexFormat?) : TextureData() {
-    override val data = image
-
+class ImageTextureData(override val data: ImageBitmap, fmt: TexFormat?) : TextureData() {
     init {
-        if (!image.complete) {
-            throw IllegalStateException("Image must be complete")
-        }
-        width = image.width
-        height = image.height
+        width = data.width
+        height = data.height
         depth = 1
-
         fmt?.let { format = it }
     }
 }

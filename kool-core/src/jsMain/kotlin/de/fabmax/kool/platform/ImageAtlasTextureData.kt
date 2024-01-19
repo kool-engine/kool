@@ -5,16 +5,13 @@ import de.fabmax.kool.pipeline.TextureData
 import kotlinx.browser.document
 import org.w3c.dom.CanvasRenderingContext2D
 import org.w3c.dom.HTMLCanvasElement
-import org.w3c.dom.HTMLImageElement
+import org.w3c.dom.ImageBitmap
 import org.w3c.dom.ImageData
 
-class ImageAtlasTextureData(image: HTMLImageElement, tilesX: Int, tilesY: Int, fmt: TexFormat?) : TextureData() {
+class ImageAtlasTextureData(image: ImageBitmap, tilesX: Int, tilesY: Int, fmt: TexFormat?) : TextureData() {
     override val data: Array<ImageData>
 
     init {
-        if (!image.complete) {
-            throw IllegalStateException("Image must be complete")
-        }
         width = image.width / tilesX
         height = image.height / tilesY
         val w = width.toDouble()

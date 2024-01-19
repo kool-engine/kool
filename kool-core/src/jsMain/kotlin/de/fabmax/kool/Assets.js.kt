@@ -15,12 +15,11 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.await
 import org.khronos.webgl.ArrayBuffer
 import org.khronos.webgl.Uint8Array
-import org.w3c.dom.Image
+import org.w3c.dom.ImageBitmap
+import org.w3c.files.Blob
 import org.w3c.files.FileList
 import org.w3c.files.get
-import org.w3c.xhr.ARRAYBUFFER
-import org.w3c.xhr.XMLHttpRequest
-import org.w3c.xhr.XMLHttpRequestResponseType
+import kotlin.js.Promise
 
 internal actual fun PlatformAssets(): PlatformAssets = PlatformAssetsImpl
 
@@ -32,7 +31,18 @@ private object PlatformAssetsImpl : PlatformAssets {
     private val fontGenerator = FontMapGenerator(MAX_GENERATED_TEX_WIDTH, MAX_GENERATED_TEX_HEIGHT)
 
     override suspend fun loadBlob(blobRef: BlobAssetRef): LoadedBlobAsset {
-        return LoadedBlobAsset(blobRef, loadBlob(blobRef.path))
+        val url = blobRef.path
+        val prefixedUrl = if (Assets.isHttpAsset(url)) url else "${Assets.assetsBasePath}/$url"
+        val response = fetch(prefixedUrl).await()
+
+        val data = if (!response.ok) {
+            logE { "Failed loading resource $prefixedUrl: ${response.status} ${response.statusText}" }
+            null
+        } else {
+            val arrayBuffer = response.arrayBuffer().await()
+            Uint8BufferImpl(Uint8Array(arrayBuffer))
+        }
+        return LoadedBlobAsset(blobRef, data)
     }
 
     override suspend fun loadTexture(textureRef: TextureAssetRef): LoadedTextureAsset {
@@ -55,44 +65,11 @@ private object PlatformAssetsImpl : PlatformAssets {
         return LoadedTextureAsset(textureRef, texData)
     }
 
-    private suspend fun loadBlob(url: String): Uint8Buffer? {
-        val prefixedUrl = if (Assets.isHttpAsset(url)) url else "${Assets.assetsBasePath}/$url"
-
-        val data = CompletableDeferred<Uint8Buffer?>(Assets.job)
-        val req = XMLHttpRequest()
-        req.responseType = XMLHttpRequestResponseType.ARRAYBUFFER
-        req.onload = {
-            val array = Uint8Array(req.response as ArrayBuffer)
-            data.complete(Uint8BufferImpl(array))
-        }
-        req.onerror = {
-            data.complete(null)
-            logE { "Failed loading resource $prefixedUrl: $it" }
-        }
-        req.open("GET", prefixedUrl)
-        req.send()
-
-        return data.await()
-    }
-
-    private suspend fun loadImage(path: String, isHttp: Boolean): Image {
-        val deferred = CompletableDeferred<Image>()
+    private suspend fun loadImage(path: String, isHttp: Boolean): ImageBitmap {
         val prefixedUrl = if (isHttp) path else "${Assets.assetsBasePath}/${path}"
-
-        val img = Image()
-        img.onload = {
-            deferred.complete(img)
-        }
-        img.onerror = { _, _, _, _, _ ->
-            if (prefixedUrl.startsWith("data:")) {
-                deferred.completeExceptionally(KoolException("Failed loading tex from data URL"))
-            } else {
-                deferred.completeExceptionally(KoolException("Failed loading tex from $prefixedUrl"))
-            }
-        }
-        img.crossOrigin = ""
-        img.src = prefixedUrl
-        return deferred.await()
+        val response = fetch(prefixedUrl).await()
+        val blob = response.blob().await()
+        return createImageBitmap(blob).await()
     }
 
     override suspend fun waitForFonts() {
@@ -169,12 +146,14 @@ private object PlatformAssetsImpl : PlatformAssets {
     }
 
     override suspend fun loadTextureData2d(imagePath: String, props: TextureProps?): TextureData2d {
-        val image = (Assets.loadTextureData(imagePath, props) as ImageTextureData).image
-        return BufferedImageTextureData(image, props)
+        val texData = Assets.loadTextureData(imagePath, props) as ImageTextureData
+        return BufferedImageTextureData(texData.data, props)
     }
 
     override suspend fun loadTextureDataFromBuffer(texData: Uint8Buffer, mimeType: String, props: TextureProps?): TextureData {
-        return ImageTextureData(loadImage(texData.toDataUrl(mimeType), true), null)
+        val array = (texData as Uint8BufferImpl).buffer
+        val imgBitmap = createImageBitmap(Blob(arrayOf(array))).await()
+        return ImageTextureData(imgBitmap, null)
     }
 
     override suspend fun loadAudioClip(assetPath: String): AudioClip {
@@ -184,4 +163,18 @@ private object PlatformAssetsImpl : PlatformAssets {
             AudioClipImpl("${Assets.assetsBasePath}/$assetPath")
         }
     }
+}
+
+external fun createImageBitmap(blob: Blob): Promise<ImageBitmap>
+
+external fun fetch(resource: String): Promise<Response>
+
+external interface Response {
+    val ok: Boolean
+    val status: Int
+    val statusText: String
+
+    fun arrayBuffer(): Promise<ArrayBuffer>
+    fun blob(): Promise<Blob>
+    fun text(): Promise<String>
 }

@@ -10,9 +10,9 @@ import kotlinx.browser.document
 import org.khronos.webgl.get
 import org.w3c.dom.CanvasRenderingContext2D
 import org.w3c.dom.HTMLCanvasElement
-import org.w3c.dom.HTMLImageElement
+import org.w3c.dom.ImageBitmap
 
-class BufferedImageTextureData(image: HTMLImageElement, texProps: TextureProps?) :
+class BufferedImageTextureData(image: ImageBitmap, texProps: TextureProps?) :
     TextureData2d(
         image.toBuffer(texProps),
         texProps?.resolveSize?.x ?: image.width,
@@ -21,7 +21,7 @@ class BufferedImageTextureData(image: HTMLImageElement, texProps: TextureProps?)
     )
 {
     companion object {
-        private fun HTMLImageElement.toBuffer(texProps: TextureProps?): Buffer {
+        private fun ImageBitmap.toBuffer(texProps: TextureProps?): Buffer {
             val fmt = texProps?.format
             val prefSize = texProps?.resolveSize
             val w = prefSize?.x ?: width
