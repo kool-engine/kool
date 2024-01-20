@@ -1,5 +1,6 @@
 package de.fabmax.kool
 
+import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.modules.audio.AudioClip
 import de.fabmax.kool.modules.audio.AudioClipImpl
 import de.fabmax.kool.pipeline.TextureData
@@ -17,6 +18,7 @@ import org.khronos.webgl.ArrayBuffer
 import org.khronos.webgl.Uint8Array
 import org.w3c.dom.ImageBitmap
 import org.w3c.files.Blob
+import org.w3c.files.BlobPropertyBag
 import org.w3c.files.FileList
 import org.w3c.files.get
 import kotlin.js.Promise
@@ -46,18 +48,16 @@ private object PlatformAssetsImpl : PlatformAssets {
     }
 
     override suspend fun loadTexture(textureRef: TextureAssetRef): LoadedTextureAsset {
-        val img = loadImage(textureRef.path, textureRef.isHttp)
-        val texData = if (textureRef.props?.resolveSize != null) {
-            BufferedImageTextureData(img, textureRef.props)
-        } else {
-            ImageTextureData(img, textureRef.props?.format)
-        }
+        val resolveSz = textureRef.props?.resolveSize
+        val img = loadImage(textureRef.path, textureRef.isHttp, resolveSz)
+        val texData = ImageTextureData(img, textureRef.props?.format)
         return LoadedTextureAsset(textureRef, texData)
     }
 
     override suspend fun loadTextureAtlas(textureRef: TextureAtlasAssetRef): LoadedTextureAsset {
+        val resolveSz = textureRef.props?.resolveSize
         val texData = ImageAtlasTextureData(
-            loadImage(textureRef.path, textureRef.isHttp),
+            loadImage(textureRef.path, textureRef.isHttp, resolveSz),
             textureRef.tilesX,
             textureRef.tilesY,
             textureRef.props?.format
@@ -65,11 +65,11 @@ private object PlatformAssetsImpl : PlatformAssets {
         return LoadedTextureAsset(textureRef, texData)
     }
 
-    private suspend fun loadImage(path: String, isHttp: Boolean): ImageBitmap {
+    private suspend fun loadImage(path: String, isHttp: Boolean, resize: Vec2i?): ImageBitmap {
         val prefixedUrl = if (isHttp) path else "${Assets.assetsBasePath}/${path}"
         val response = fetch(prefixedUrl).await()
-        val blob = response.blob().await()
-        return createImageBitmap(blob).await()
+        val imgBlob = response.blob().await()
+        return createImageBitmap(imgBlob, ImageBitmapOptions(resize)).await()
     }
 
     override suspend fun waitForFonts() {
@@ -152,7 +152,8 @@ private object PlatformAssetsImpl : PlatformAssets {
 
     override suspend fun loadTextureDataFromBuffer(texData: Uint8Buffer, mimeType: String, props: TextureProps?): TextureData {
         val array = (texData as Uint8BufferImpl).buffer
-        val imgBitmap = createImageBitmap(Blob(arrayOf(array))).await()
+        val imgBlob = Blob(arrayOf(array), BlobPropertyBag(mimeType))
+        val imgBitmap = createImageBitmap(imgBlob, ImageBitmapOptions(props?.resolveSize)).await()
         return ImageTextureData(imgBitmap, null)
     }
 
@@ -165,9 +166,23 @@ private object PlatformAssetsImpl : PlatformAssets {
     }
 }
 
-external fun createImageBitmap(blob: Blob): Promise<ImageBitmap>
+external fun createImageBitmap(blob: Blob, options: ImageBitmapOptions = definedExternally): Promise<ImageBitmap>
 
 external fun fetch(resource: String): Promise<Response>
+
+external interface ImageBitmapOptions
+
+@Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+fun ImageBitmapOptions(resize: Vec2i? = null, resizeQuality: String = "high"): ImageBitmapOptions {
+    val o = js("({})")
+    o["premultiplyAlpha"] = "none"
+    if (resize != null) {
+        o["resizeWidth"] = resize.x
+        o["resizeHeight"] = resize.y
+        o["resizeQuality"] = resizeQuality
+    }
+    return o
+}
 
 external interface Response {
     val ok: Boolean
