@@ -71,7 +71,7 @@ open class KslShader private constructor(val program: KslProgram) : DrawShader(p
 
     override fun pipelineCreated(pipeline: DrawPipeline) {
         super.pipelineCreated(pipeline)
-        pipeline.onUpdate += { cmd ->
+        pipeline.onUpdate { cmd ->
             for (i in program.shaderListeners.indices) {
                 program.shaderListeners[i].onUpdate(cmd)
             }

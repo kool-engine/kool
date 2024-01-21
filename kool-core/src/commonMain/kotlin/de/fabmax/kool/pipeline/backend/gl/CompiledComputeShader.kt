@@ -33,9 +33,7 @@ class CompiledComputeShader(val pipeline: ComputePipeline, program: GlProgram, b
         }
 
         fun bindInstance(): Boolean {
-            for (i in pipeline.onUpdate.indices) {
-                pipeline.onUpdate[i].invoke(task.pass)
-            }
+            pipeline.update(task.pass)
             return bindUniforms(task.pass, null)
         }
 

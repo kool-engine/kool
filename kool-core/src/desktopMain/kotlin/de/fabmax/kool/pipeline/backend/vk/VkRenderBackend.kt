@@ -353,7 +353,7 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
                 val pipelineCfg = cmd.pipeline
                 if (!cmd.mesh.geometry.isEmpty() && pipelineCfg != null) {
                     val t = System.nanoTime()
-                    pipelineCfg.onUpdate.forEach { it(cmd) }
+                    pipelineCfg.update(cmd)
 
                     if (!sys.pipelineManager.hasPipeline(pipelineCfg, renderPass.vkRenderPass)) {
                         sys.pipelineManager.addPipelineConfig(pipelineCfg, nImages, cmd.queue.renderPass, renderPass, dynVp)

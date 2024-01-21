@@ -2,7 +2,6 @@ package de.fabmax.kool.platform
 
 import de.fabmax.kool.*
 import de.fabmax.kool.input.PlatformInputJs
-import de.fabmax.kool.pipeline.backend.RenderBackend
 import de.fabmax.kool.pipeline.backend.RenderBackendJs
 import de.fabmax.kool.pipeline.backend.gl.RenderBackendGlImpl
 import de.fabmax.kool.pipeline.backend.webgpu.RenderBackendWebGpu
@@ -25,7 +24,7 @@ import kotlin.math.roundToInt
  */
 class JsContext internal constructor() : KoolContext() {
 
-    override val backend: RenderBackend
+    override val backend: RenderBackendJs
 
     override val isJavascript = true
     override val isJvm = false
@@ -173,7 +172,7 @@ class JsContext internal constructor() : KoolContext() {
     override fun run() {
         Loader.launch {
             KoolSystem.configJs.loaderTasks.forEach { it() }
-            (backend as RenderBackendJs).startRenderLoop()
+            backend.startRenderLoop()
         }
     }
 

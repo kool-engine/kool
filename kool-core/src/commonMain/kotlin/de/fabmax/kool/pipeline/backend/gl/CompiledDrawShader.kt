@@ -158,10 +158,8 @@ class CompiledDrawShader(val pipeline: DrawPipeline, program: GlProgram, backend
             }
             val geom = gpuGeometry ?: return false
 
-            // call onUpdate callbacks
-            for (i in pipeline.onUpdate.indices) {
-                pipeline.onUpdate[i].invoke(drawCmd)
-            }
+            // update uniform values (camera + transform matrices, etc.)
+            pipeline.update(drawCmd)
 
             // update geometry buffers (vertex + instance data)
             geom.checkBuffers()

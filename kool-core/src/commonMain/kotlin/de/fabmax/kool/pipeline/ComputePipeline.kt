@@ -1,6 +1,7 @@
 package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.math.Vec3i
+import de.fabmax.kool.util.BufferedList
 import de.fabmax.kool.util.Releasable
 
 /**
@@ -14,12 +15,23 @@ class ComputePipeline(
 ) : PipelineBase(name, bindGroupLayouts) {
 
     override val shaderCode: ComputeShaderCode = shaderCodeGenerator(this)
-    val onUpdate = mutableListOf<(ComputeRenderPass) -> Unit>()
+    val onUpdate: BufferedList<(ComputeRenderPass) -> Unit> = BufferedList()
 
     internal var pipelineBackend: Releasable? = null
 
     init {
         hash += shaderCode.hash
+    }
+
+    fun update(computePass: ComputeRenderPass) {
+        onUpdate.update()
+        for (i in onUpdate.indices) {
+            onUpdate[i].invoke(computePass)
+        }
+    }
+
+    fun onUpdate(block: (ComputeRenderPass) -> Unit) {
+        onUpdate += block
     }
 
     override fun release() {

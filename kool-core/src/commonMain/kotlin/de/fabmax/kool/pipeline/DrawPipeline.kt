@@ -2,6 +2,7 @@ package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.util.BufferedList
 import de.fabmax.kool.util.Releasable
 
 /**
@@ -28,7 +29,7 @@ class DrawPipeline(
 
     override val shaderCode: ShaderCode = shaderCodeGenerator(this)
 
-    val onUpdate = mutableListOf<(DrawCommand) -> Unit>()
+    val onUpdate: BufferedList<(DrawCommand) -> Unit> = BufferedList()
 
     internal var pipelineBackend: DrawPipelineBackend? = null
 
@@ -40,6 +41,17 @@ class DrawPipeline(
 
         hash += vertexLayout.hash
         hash += shaderCode.hash
+    }
+
+    fun update(cmd: DrawCommand) {
+        onUpdate.update()
+        for (i in onUpdate.indices) {
+            onUpdate[i].invoke(cmd)
+        }
+    }
+
+    fun onUpdate(block: (DrawCommand) -> Unit) {
+        onUpdate += block
     }
 
     override fun release() {
