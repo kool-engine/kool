@@ -1,6 +1,6 @@
 package de.fabmax.kool.pipeline
 
-import de.fabmax.kool.pipeline.backend.GpuBuffer
+import de.fabmax.kool.pipeline.backend.GpuBindGroupData
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.MixedBuffer
 
@@ -20,6 +20,9 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
     }
     var isDirty = true
 
+    var gpuData: GpuBindGroupData? = null
+        internal set
+
     fun uniformBufferBindingData(bindingIndex: Int) = bindings[bindingIndex] as UniformBufferBindingData
     fun texture1dBindingData(bindingIndex: Int) = bindings[bindingIndex] as Texture1dBindingData
     fun texture2dBindingData(bindingIndex: Int) = bindings[bindingIndex] as Texture2dBindingData
@@ -31,7 +34,7 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
 
     override fun release() {
         super.release()
-        bindings.filterIsInstance<UniformBufferBindingData>().forEach { it.gpuBuffer?.release() }
+        gpuData?.release()
     }
 
     sealed interface BindingData
@@ -39,8 +42,6 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
     inner class UniformBufferBindingData(val binding: UniformBufferLayout) : BindingData {
         var isBufferDirty = true
         val buffer: MixedBuffer = MixedBuffer(binding.layout.size)
-        var gpuBuffer: GpuBuffer? = null
-            internal set
 
         fun getAndClearDirtyFlag(): Boolean {
             val isDirty = isBufferDirty

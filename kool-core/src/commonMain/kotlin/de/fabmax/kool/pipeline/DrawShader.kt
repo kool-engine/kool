@@ -23,16 +23,18 @@ abstract class DrawShader(name: String) : ShaderBase<DrawPipeline>(name) {
         } else {
             // if shader is used for multiple meshes, these must have identical buffer layouts
             check(meshVertexLayout == mesh.geometry.vertexAttributes) {
-                "Shader pipeline was created for mesh vertex layout $meshVertexLayout but provided mesh has vertex layout ${mesh.geometry.vertexAttributes}"
+                "Shader pipeline was created for mesh vertex layout $meshVertexLayout but provided " +
+                "mesh has vertex layout ${mesh.geometry.vertexAttributes}"
             }
             check(meshInstanceLayout == null || meshInstanceLayout == mesh.instances?.instanceAttributes) {
-                "Shader pipeline was created for mesh instance layout $meshInstanceLayout but provided mesh has instance layout ${mesh.instances?.instanceAttributes}"
+                "Shader pipeline was created for mesh instance layout $meshInstanceLayout but provided " +
+                "mesh has instance layout ${mesh.instances?.instanceAttributes}"
             }
             check(created.vertexLayout.primitiveType == mesh.geometry.primitiveType) {
-                "Shader pipeline was created for mesh primitive type ${created.vertexLayout.primitiveType} but provided mesh has primitive type ${mesh.geometry.primitiveType}"
+                "Shader pipeline was created for mesh primitive type ${created.vertexLayout.primitiveType} but " +
+                "provided mesh has primitive type ${mesh.geometry.primitiveType}"
             }
         }
-
         return created ?: createPipeline(mesh, updateEvent).also { pipelineCreated(it) }
     }
 

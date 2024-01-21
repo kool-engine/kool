@@ -36,6 +36,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
     val canvasFormat: GPUTextureFormat
         get() = _canvasFormat!!
 
+    val pipelineManager = PipelineManager(this)
     private val sceneRenderer = WgpuRenderPass(this)
 
     private var renderSize = Vec2i(canvas.width, canvas.height)

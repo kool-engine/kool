@@ -1,6 +1,7 @@
 package de.fabmax.kool.pipeline.backend.gl
 
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.backend.GpuBindGroupData
 import de.fabmax.kool.pipeline.backend.stats.PipelineInfo
 import de.fabmax.kool.util.BaseReleasable
 
@@ -34,7 +35,6 @@ sealed class CompiledShader(private val pipeline: PipelineBase, val program: GlP
         val viewOk = view?.let { mappedViewGroup?.bindUniforms(it.viewPipelineData.getPipelineData(pipeline), renderPass) } != false
         val pipelineOk = mappedPipelineGroup?.bindUniforms(pipeline.pipelineData, renderPass) != false
         return viewOk && pipelineOk
-
     }
 
     override fun release() {
@@ -94,9 +94,14 @@ sealed class CompiledShader(private val pipeline: PipelineBase, val program: GlP
         }
 
         fun bindUniforms(bindGroupData: BindGroupData, renderPass: RenderPass): Boolean {
+            if (bindGroupData.gpuData == null) {
+                bindGroupData.gpuData = GlBindGroupData(bindGroupData, renderPass, backend)
+            }
+            val glData = bindGroupData.gpuData as GlBindGroupData
+
             var uniformsValid = true
             for (i in mappings.indices) {
-                uniformsValid = uniformsValid && mappings[i].setUniform(bindGroupData, renderPass)
+                uniformsValid = uniformsValid && mappings[i].setUniform(glData, renderPass)
             }
             return uniformsValid
         }
@@ -156,6 +161,22 @@ sealed class CompiledShader(private val pipeline: PipelineBase, val program: GlP
         private fun checkStorageTexSupport() {
             check(backend.gl.version.isHigherOrEqualThan(4, 2)) {
                 "Storage textures require OpenGL 4.2 or higher"
+            }
+        }
+    }
+
+    class GlBindGroupData(val bindGroupData: BindGroupData, renderPass: RenderPass, backend: RenderBackendGl) : BaseReleasable(),
+        GpuBindGroupData {
+        val buffers: List<BufferResource?> = bindGroupData.bindings.map {
+            if (it is BindGroupData.UniformBufferBindingData) {
+                val bufferCreationInfo = BufferCreationInfo(
+                    bufferName = "bindGroup[${bindGroupData.layout.scope}]-ubo-${it.binding.name}",
+                    renderPassName = renderPass.name,
+                    sceneName = renderPass.parentScene?.name ?: "scene:<null>"
+                )
+                BufferResource(backend.gl.UNIFORM_BUFFER, backend, bufferCreationInfo)
+            } else {
+                null
             }
         }
     }

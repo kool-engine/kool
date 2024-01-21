@@ -130,24 +130,24 @@ class WgslGenerator : KslGenerator() {
     }
 
     private inner class UboStructs(stage: KslShaderStage, pipeline: PipelineBase) : WgslStructHelper {
-        val structs: List<UboStruct>
 
-        init {
-            structs = pipeline.bindGroupLayout.bindings
-                .filterIsInstance<UniformBufferLayout>().filter { layoutUbo ->
-                    stage.getUsedUbos().any { usedUbo -> usedUbo.name == layoutUbo.name }
-                }
-                .map { ubo ->
-                    val kslUbo = stage.getUsedUbos().first { it.name == ubo.name }
-                    val uboTypeName = ubo.name.mapIndexed { i, c -> if (i == 0) c.uppercase() else c }.joinToString("")
-                    val uboVarName = ubo.name.mapIndexed { i, c -> if (i == 0) c.lowercase() else c }.joinToString("")
-                    val members = kslUbo.uniforms.values
-                        .filter { it.expressionType !is KslArrayType<*> || it.arraySize > 0 }
-                        .map {
-                            WgslStructMember(uboVarName, it.value.name(), it.expressionType.wgslTypeName)
-                        }
-                    UboStruct(uboVarName, uboTypeName, members, pipeline.bindGroupLayout.group, ubo.bindingIndex)
-                }
+        val structs: List<UboStruct> = buildList {
+            pipeline.bindGroupLayouts.forEach { layout ->
+                layout.bindings
+                    .filterIsInstance<UniformBufferLayout>().filter { layoutUbo ->
+                        stage.getUsedUbos().any { usedUbo -> usedUbo.name == layoutUbo.name }
+                    }
+                    .map { ubo ->
+                        val kslUbo = stage.getUsedUbos().first { it.name == ubo.name }
+                        val uboTypeName = ubo.name.mapIndexed { i, c -> if (i == 0) c.uppercase() else c }.joinToString("")
+                        val uboVarName = ubo.name.mapIndexed { i, c -> if (i == 0) c.lowercase() else c }.joinToString("")
+                        val members = kslUbo.uniforms.values
+                            .filter { it.expressionType !is KslArrayType<*> || it.arraySize > 0 }
+                            .map { WgslStructMember(uboVarName, it.value.name(), it.expressionType.wgslTypeName) }
+
+                        add(UboStruct(uboVarName, uboTypeName, members, layout.group, ubo.bindingIndex))
+                    }
+            }
         }
 
         fun generateStructs(builder: StringBuilder) = builder.apply {
