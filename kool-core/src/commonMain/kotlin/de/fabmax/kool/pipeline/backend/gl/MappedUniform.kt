@@ -1,33 +1,29 @@
 package de.fabmax.kool.pipeline.backend.gl
 
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.util.Float32Buffer
-import de.fabmax.kool.util.Int32Buffer
-import de.fabmax.kool.util.MixedBuffer
-import de.fabmax.kool.util.RenderLoop
+import de.fabmax.kool.util.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 interface MappedUniform {
-    fun setUniform(glData: CompiledShader.GlBindGroupData, renderPass: RenderPass): Boolean
+    fun setUniform(glData: CompiledShader.MappedBindGroup, bindCtx: CompiledShader.UniformBindContext): Boolean
 }
 
-class MappedUbo(val ubo: UniformBufferLayout, val uboIndex: Int, val backend: RenderBackendGl) : MappedUniform {
+class MappedUbo(val ubo: UniformBufferLayout, val gpuBuffer: BufferResource, val backend: RenderBackendGl) : MappedUniform {
     val gl: GlApi get() = backend.gl
 
-    override fun setUniform(glData: CompiledShader.GlBindGroupData, renderPass: RenderPass): Boolean {
+    override fun setUniform(glData: CompiledShader.MappedBindGroup, bindCtx: CompiledShader.UniformBindContext): Boolean {
         val uboData = glData.bindGroupData.uniformBufferBindingData(ubo.bindingIndex)
-        val gpuBuffer = checkNotNull(glData.buffers[ubo.bindingIndex])
         if (uboData.getAndClearDirtyFlag()) {
             gpuBuffer.setData(uboData.buffer, gl.DYNAMIC_DRAW)
         }
-        gl.bindBufferBase(gl.UNIFORM_BUFFER, uboIndex, gpuBuffer.buffer)
+        gl.bindBufferBase(gl.UNIFORM_BUFFER, bindCtx.location(ubo.bindingIndex), gpuBuffer.buffer)
         return true
     }
 }
 
-class MappedUboCompat(val ubo: UniformBufferLayout, val locations: IntArray, val gl: GlApi) : MappedUniform {
+class MappedUboCompat(val ubo: UniformBufferLayout, val gl: GlApi) : MappedUniform {
     private val floatBuffers = buildList {
         ubo.uniforms.forEach {
             val bufferSize = if (it.isArray) {
@@ -66,9 +62,9 @@ class MappedUboCompat(val ubo: UniformBufferLayout, val locations: IntArray, val
         }
     }
 
-    override fun setUniform(glData: CompiledShader.GlBindGroupData, renderPass: RenderPass): Boolean {
+    override fun setUniform(glData: CompiledShader.MappedBindGroup, bindCtx: CompiledShader.UniformBindContext): Boolean {
         ubo.uniforms.forEachIndexed { i, uniform ->
-            val loc = locations[i]
+            val loc = bindCtx.locations(ubo.bindingIndex)[i]
             val buf = glData.bindGroupData.uniformBufferBindingData(ubo.bindingIndex).buffer
             val pos = ubo.layout.uniformPositions[uniform.name]!!.byteIndex
 
@@ -132,10 +128,10 @@ class MappedUboCompat(val ubo: UniformBufferLayout, val locations: IntArray, val
     }
 }
 
-sealed class MappedUniformTex(val texUnit: Int, val target: Int, val backend: RenderBackendGl) : MappedUniform {
+sealed class MappedUniformTex(val target: Int, val backend: RenderBackendGl) : MappedUniform {
     protected val gl = backend.gl
 
-    protected fun checkLoadingState(texture: Texture, arrayIdx: Int): Boolean {
+    protected fun checkLoadingState(texture: Texture, texUnit: Int): Boolean {
         texture.checkIsNotReleased()
 
         if (texture.loadingState == Texture.LoadingState.NOT_LOADED) {
@@ -165,13 +161,27 @@ sealed class MappedUniformTex(val texUnit: Int, val target: Int, val backend: Re
         }
         if (texture.loadingState == Texture.LoadingState.LOADED) {
             val tex = texture.loadedTexture as LoadedTextureGl
-            gl.activeTexture(texUnit + arrayIdx)
+            gl.activeTexture(gl.TEXTURE0 + texUnit)
             tex.bind()
             tex.applySamplerSettings(null)
             return true
         }
 
         return false
+    }
+
+    protected fun setTextures(textures: List<Texture?>, bindingIndex: Int, bindCtx: CompiledShader.UniformBindContext): Boolean {
+        var isValid = true
+        for (i in textures.indices) {
+            val tex = textures[i]
+            val texUnit = bindCtx.nextTexUnit++
+            if (tex != null && checkLoadingState(tex, texUnit)) {
+                gl.uniform1i(bindCtx.locations(bindingIndex)[i], texUnit)
+            } else {
+                isValid = false
+            }
+        }
+        return isValid
     }
 
     companion object {
@@ -194,99 +204,53 @@ sealed class MappedUniformTex(val texUnit: Int, val target: Int, val backend: Re
     }
 }
 
-class MappedUniformTex1d(private val sampler1d: Texture1dLayout, texUnit: Int, val locations: IntArray, backend: RenderBackendGl) :
-    MappedUniformTex(texUnit, backend.gl.TEXTURE_2D, backend)
+class MappedUniformTex1d(private val sampler1d: Texture1dLayout, backend: RenderBackendGl) :
+    MappedUniformTex(backend.gl.TEXTURE_2D, backend)
 {
     // 1d texture internally uses a 2d texture to be compatible with glsl version 300 es
-
-    override fun setUniform(glData: CompiledShader.GlBindGroupData, renderPass: RenderPass): Boolean {
-        var texUnit = texUnit
-        var isValid = true
+    override fun setUniform(glData: CompiledShader.MappedBindGroup, bindCtx: CompiledShader.UniformBindContext): Boolean {
         val textures = glData.bindGroupData.texture1dBindingData(sampler1d.bindingIndex).textures
-        for (i in 0 until sampler1d.arraySize) {
-            val tex = textures[i]
-            if (tex != null && checkLoadingState(tex, i)) {
-                gl.uniform1i(locations[i], this.texUnit - gl.TEXTURE0 + i)
-            } else {
-                isValid = false
-            }
-            texUnit++
-        }
-        return isValid
+        return setTextures(textures, sampler1d.bindingIndex, bindCtx)
     }
 }
 
-class MappedUniformTex2d(private val sampler2d: Texture2dLayout, texUnit: Int, val locations: IntArray, backend: RenderBackendGl) :
-    MappedUniformTex(texUnit, backend.gl.TEXTURE_2D, backend)
+class MappedUniformTex2d(private val sampler2d: Texture2dLayout, backend: RenderBackendGl) :
+    MappedUniformTex(backend.gl.TEXTURE_2D, backend)
 {
-    override fun setUniform(glData: CompiledShader.GlBindGroupData, renderPass: RenderPass): Boolean {
-        var texUnit = texUnit
-        var isValid = true
+    override fun setUniform(glData: CompiledShader.MappedBindGroup, bindCtx: CompiledShader.UniformBindContext): Boolean {
         val textures = glData.bindGroupData.texture2dBindingData(sampler2d.bindingIndex).textures
-        for (i in 0 until sampler2d.arraySize) {
-            val tex = textures[i]
-            if (tex != null && checkLoadingState(tex, i)) {
-                gl.uniform1i(locations[i], this.texUnit - gl.TEXTURE0 + i)
-            } else {
-                isValid = false
-            }
-            texUnit++
-        }
-        return isValid
+        return setTextures(textures, sampler2d.bindingIndex, bindCtx)
     }
 }
 
-class MappedUniformTex3d(private val sampler3d: Texture3dLayout, texUnit: Int, val locations: IntArray, backend: RenderBackendGl) :
-    MappedUniformTex(texUnit, backend.gl.TEXTURE_3D, backend)
+class MappedUniformTex3d(private val sampler3d: Texture3dLayout, backend: RenderBackendGl) :
+    MappedUniformTex(backend.gl.TEXTURE_3D, backend)
 {
-    override fun setUniform(glData: CompiledShader.GlBindGroupData, renderPass: RenderPass): Boolean {
-        var texUnit = texUnit
-        var isValid = true
+    override fun setUniform(glData: CompiledShader.MappedBindGroup, bindCtx: CompiledShader.UniformBindContext): Boolean {
         val textures = glData.bindGroupData.texture3dBindingData(sampler3d.bindingIndex).textures
-        for (i in 0 until sampler3d.arraySize) {
-            val tex = textures[i]
-            if (tex != null && checkLoadingState(tex, i)) {
-                gl.uniform1i(locations[i], this.texUnit - gl.TEXTURE0 + i)
-            } else {
-                isValid = false
-            }
-            texUnit++
-        }
-        return isValid
+        return setTextures(textures, sampler3d.bindingIndex, bindCtx)
     }
 }
 
-class MappedUniformTexCube(private val samplerCube: TextureCubeLayout, texUnit: Int, val locations: IntArray, backend: RenderBackendGl) :
-    MappedUniformTex(texUnit, backend.gl.TEXTURE_CUBE_MAP, backend)
+class MappedUniformTexCube(private val samplerCube: TextureCubeLayout, backend: RenderBackendGl) :
+    MappedUniformTex(backend.gl.TEXTURE_CUBE_MAP, backend)
 {
-    override fun setUniform(glData: CompiledShader.GlBindGroupData, renderPass: RenderPass): Boolean {
-        var texUnit = texUnit
-        var isValid = true
+    override fun setUniform(glData: CompiledShader.MappedBindGroup, bindCtx: CompiledShader.UniformBindContext): Boolean {
         val textures = glData.bindGroupData.textureCubeBindingData(samplerCube.bindingIndex).textures
-        for (i in 0 until samplerCube.arraySize) {
-            val tex = textures[i]
-            if (tex != null && checkLoadingState(tex, i)) {
-                gl.uniform1i(locations[i], this.texUnit - gl.TEXTURE0 + i)
-            } else {
-                isValid = false
-            }
-            texUnit++
-        }
-        return isValid
+        return setTextures(textures, samplerCube.bindingIndex, bindCtx)
     }
 }
 
 sealed class MappedUniformStorage(
     private val storage: StorageTextureLayout,
-    private val binding: Int,
     private val backend: RenderBackendGl
 ) : MappedUniform {
     protected val gl = backend.gl
 
-    protected fun bindStorageTex(storageTex: Texture): Boolean {
+    protected fun bindStorageTex(storageTex: Texture, storageUnit: Int): Boolean {
         val loadedTex = checkLoadingState(storageTex)
         gl.bindImageTexture(
-            unit = binding,
+            unit = storageUnit,
             texture = loadedTex.glTexture,
             level = storage.level,
             layered = false,
@@ -312,36 +276,36 @@ sealed class MappedUniformStorage(
 
 class MappedUniformStorage1d(
     private val storage: StorageTexture1dLayout,
-    binding: Int,
     backend: RenderBackendGl
-) : MappedUniformStorage(storage, binding, backend) {
-    override fun setUniform(glData: CompiledShader.GlBindGroupData, renderPass: RenderPass): Boolean {
+) : MappedUniformStorage(storage, backend) {
+    override fun setUniform(glData: CompiledShader.MappedBindGroup, bindCtx: CompiledShader.UniformBindContext): Boolean {
         val storageTex = glData.bindGroupData.storageTexture1dBindingData(storage.bindingIndex).storageTexture ?: return false
-        bindStorageTex(storageTex)
+        val storageUnit = bindCtx.location(storage.bindingIndex)
+        bindStorageTex(storageTex, storageUnit)
         return true
     }
 }
 
 class MappedUniformStorage2d(
     private val storage: StorageTexture2dLayout,
-    binding: Int,
     backend: RenderBackendGl
-) : MappedUniformStorage(storage, binding, backend) {
-    override fun setUniform(glData: CompiledShader.GlBindGroupData, renderPass: RenderPass): Boolean {
+) : MappedUniformStorage(storage, backend) {
+    override fun setUniform(glData: CompiledShader.MappedBindGroup, bindCtx: CompiledShader.UniformBindContext): Boolean {
         val storageTex = glData.bindGroupData.storageTexture2dBindingData(storage.bindingIndex).storageTexture ?: return false
-        bindStorageTex(storageTex)
+        val storageUnit = bindCtx.location(storage.bindingIndex)
+        bindStorageTex(storageTex, storageUnit)
         return true
     }
 }
 
 class MappedUniformStorage3d(
     private val storage: StorageTexture3dLayout,
-    binding: Int,
     backend: RenderBackendGl
-) : MappedUniformStorage(storage, binding, backend) {
-    override fun setUniform(glData: CompiledShader.GlBindGroupData, renderPass: RenderPass): Boolean {
+) : MappedUniformStorage(storage, backend) {
+    override fun setUniform(glData: CompiledShader.MappedBindGroup, bindCtx: CompiledShader.UniformBindContext): Boolean {
         val storageTex = glData.bindGroupData.storageTexture3dBindingData(storage.bindingIndex).storageTexture ?: return false
-        bindStorageTex(storageTex)
+        val storageUnit = bindCtx.location(storage.bindingIndex)
+        bindStorageTex(storageTex, storageUnit)
         return true
     }
 }

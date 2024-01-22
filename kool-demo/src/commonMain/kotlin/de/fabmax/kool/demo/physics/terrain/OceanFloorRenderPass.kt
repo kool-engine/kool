@@ -56,6 +56,6 @@ class OceanFloorRenderPass(mainScene: Scene, val terrainTiles: TerrainTiles) :
         const val RENDER_SIZE_FACTOR = 0.5f
 
         const val DEPTH_CAM_NEAR = 0.1f
-        const val DEPTH_CAM_FAR = 1000f
+        const val DEPTH_CAM_FAR = 10000f
     }
 }

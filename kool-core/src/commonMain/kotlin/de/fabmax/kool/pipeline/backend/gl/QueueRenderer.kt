@@ -56,16 +56,18 @@ class QueueRenderer(val backend: RenderBackendGl) {
 
             if (cmd.geometry.numIndices == 0) continue
             val pipeline = cmd.pipeline ?: continue
-            val shaderInst = backend.shaderMgr.bindDrawShader(cmd) ?: continue
+
+            val drawInfo = backend.shaderMgr.bindDrawShader(cmd)
+            if (!drawInfo.isValid || drawInfo.numIndices == 0) continue
 
             glAttribs.setupPipelineAttribs(pipeline, renderPass.isReverseDepth)
 
             val insts = cmd.mesh.instances
             if (insts == null) {
-                gl.drawElements(shaderInst.primitiveType, shaderInst.numIndices, shaderInst.indexType)
+                gl.drawElements(drawInfo.primitiveType, drawInfo.numIndices, drawInfo.indexType)
                 BackendStats.addDrawCommands(1, cmd.geometry.numPrimitives)
             } else if (insts.numInstances > 0) {
-                gl.drawElementsInstanced(shaderInst.primitiveType, shaderInst.numIndices, shaderInst.indexType, insts.numInstances)
+                gl.drawElementsInstanced(drawInfo.primitiveType, drawInfo.numIndices, drawInfo.indexType, insts.numInstances)
                 BackendStats.addDrawCommands(1, cmd.geometry.numPrimitives * insts.numInstances)
             }
 

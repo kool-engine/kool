@@ -98,7 +98,7 @@ open class Mesh(
         set(value) {
             if (field !== value) {
                 field = value
-                pipeline?.releaseMeshInstance(this)
+                pipeline?.removeUser(this)
                 pipeline = null
             }
         }
@@ -203,7 +203,7 @@ open class Mesh(
             geometry.release()
             meshPipelineData.release()
             shadowGeometry.forEach { it.release() }
-            pipeline?.releaseMeshInstance(this)
+            pipeline?.removeUser(this)
             pipeline = null
         }
     }

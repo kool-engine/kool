@@ -132,7 +132,7 @@ class WgslGenerator : KslGenerator() {
     private inner class UboStructs(stage: KslShaderStage, pipeline: PipelineBase) : WgslStructHelper {
 
         val structs: List<UboStruct> = buildList {
-            pipeline.bindGroupLayouts.forEach { layout ->
+            pipeline.bindGroupLayouts.asList.forEach { layout ->
                 layout.bindings
                     .filterIsInstance<UniformBufferLayout>().filter { layoutUbo ->
                         stage.getUsedUbos().any { usedUbo -> usedUbo.name == layoutUbo.name }

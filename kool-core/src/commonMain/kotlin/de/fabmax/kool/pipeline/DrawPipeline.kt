@@ -3,7 +3,6 @@ package de.fabmax.kool.pipeline
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.BufferedList
-import de.fabmax.kool.util.Releasable
 
 /**
  * Graphics pipeline class. Also includes rasterizing options like [cullMethod], [blendMode], etc. In contrast
@@ -14,7 +13,7 @@ class DrawPipeline(
     name: String,
     val pipelineConfig: PipelineConfig,
     val vertexLayout: VertexLayout,
-    bindGroupLayouts: List<BindGroupLayout>,
+    bindGroupLayouts: BindGroupLayouts,
     shaderCodeGenerator: (DrawPipeline) -> ShaderCode
 ) :
     PipelineBase(name, bindGroupLayouts)
@@ -30,8 +29,6 @@ class DrawPipeline(
     override val shaderCode: ShaderCode = shaderCodeGenerator(this)
 
     val onUpdate: BufferedList<(DrawCommand) -> Unit> = BufferedList()
-
-    internal var pipelineBackend: DrawPipelineBackend? = null
 
     init {
         hash += cullMethod
@@ -54,18 +51,14 @@ class DrawPipeline(
         onUpdate += block
     }
 
+    fun removeUser(mesh: Mesh) {
+        pipelineBackend?.removeUser(mesh)
+    }
+
     override fun release() {
         super.release()
         pipelineBackend?.release()
     }
-
-    fun releaseMeshInstance(mesh: Mesh) {
-        pipelineBackend?.releaseMeshInstance(mesh)
-    }
-}
-
-interface DrawPipelineBackend : Releasable {
-    fun releaseMeshInstance(mesh: Mesh)
 }
 
 enum class BlendMode {

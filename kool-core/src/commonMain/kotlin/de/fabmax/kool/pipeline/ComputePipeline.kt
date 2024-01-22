@@ -2,22 +2,19 @@ package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.math.Vec3i
 import de.fabmax.kool.util.BufferedList
-import de.fabmax.kool.util.Releasable
 
 /**
  * Compute pipeline: Compute shader + data layout.
  */
 class ComputePipeline(
     name: String,
-    bindGroupLayouts: List<BindGroupLayout>,
+    bindGroupLayouts: BindGroupLayouts,
     val workGroupSize: Vec3i,
     shaderCodeGenerator: (ComputePipeline) -> ComputeShaderCode
 ) : PipelineBase(name, bindGroupLayouts) {
 
     override val shaderCode: ComputeShaderCode = shaderCodeGenerator(this)
     val onUpdate: BufferedList<(ComputeRenderPass) -> Unit> = BufferedList()
-
-    internal var pipelineBackend: Releasable? = null
 
     init {
         hash += shaderCode.hash
@@ -32,6 +29,10 @@ class ComputePipeline(
 
     fun onUpdate(block: (ComputeRenderPass) -> Unit) {
         onUpdate += block
+    }
+
+    fun removeUser(task: ComputeRenderPass.Task) {
+        pipelineBackend?.removeUser(task)
     }
 
     override fun release() {

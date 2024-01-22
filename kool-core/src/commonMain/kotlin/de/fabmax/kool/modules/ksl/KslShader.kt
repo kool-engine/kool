@@ -144,14 +144,20 @@ open class KslShader private constructor(val program: KslProgram) : DrawShader(p
     }
 }
 
-fun KslProgram.makeBindGroupLayout(): List<BindGroupLayout> {
-    return BindGroupScope.entries.map {
-        val bindGrpBuilder = BindGroupLayout.Builder(it)
-        setupBindGroupLayoutUbos(bindGrpBuilder)
-        setupBindGroupLayoutTextures(bindGrpBuilder)
-        setupBindGroupLayoutStorage(bindGrpBuilder)
-        bindGrpBuilder.create()
-    }
+fun KslProgram.makeBindGroupLayout(): BindGroupLayouts {
+    return BindGroupLayouts(
+        makeBindGroupLayout(BindGroupScope.VIEW),
+        makeBindGroupLayout(BindGroupScope.PIPELINE),
+        makeBindGroupLayout(BindGroupScope.MESH),
+    )
+}
+
+private fun KslProgram.makeBindGroupLayout(scope: BindGroupScope): BindGroupLayout {
+    val bindGrpBuilder = BindGroupLayout.Builder(scope)
+    setupBindGroupLayoutUbos(bindGrpBuilder)
+    setupBindGroupLayoutTextures(bindGrpBuilder)
+    setupBindGroupLayoutStorage(bindGrpBuilder)
+    return bindGrpBuilder.create()
 }
 
 private fun KslProgram.setupBindGroupLayoutUbos(bindGrpBuilder: BindGroupLayout.Builder) {

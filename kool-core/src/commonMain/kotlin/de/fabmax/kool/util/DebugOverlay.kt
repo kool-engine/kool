@@ -109,7 +109,10 @@ class DebugOverlay(position: Position = Position.UPPER_RIGHT) {
                         debugTextStyle()
                         modifier.onClick { printBufferStats() }
                     }
-                    Text(numCmdsText.use()) { debugTextStyle() }
+                    Text(numCmdsText.use()) {
+                        debugTextStyle()
+                        modifier.onClick { printShaderStats() }
+                    }
                     Text(numFacesText.use()) { debugTextStyle() }
                 }
             }
@@ -215,6 +218,12 @@ class DebugOverlay(position: Position = Position.UPPER_RIGHT) {
                     }
                 }
             }
+        }
+    }
+
+    private fun printShaderStats() {
+        BackendStats.pipelines.values.forEach { pipelineInfo ->
+            println(pipelineInfo.pipeline.name)
         }
     }
 

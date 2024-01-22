@@ -9,7 +9,6 @@ import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.modules.ksl.blocks.cameraData
 import de.fabmax.kool.modules.ksl.blocks.modelMatrix
-import de.fabmax.kool.modules.ksl.blocks.mvpMatrix
 import de.fabmax.kool.modules.ksl.lang.KslProgram
 import de.fabmax.kool.modules.ksl.lang.minus
 import de.fabmax.kool.modules.ksl.lang.times
@@ -154,14 +153,14 @@ class SkyCubePass(opticalDepthLut: Texture2d, size: Int = 256) :
             private fun atmoProg() = KslProgram("Sky atmosphere").apply {
                 val camData = cameraData()
                 val modelMat = modelMatrix()
-                val mvp = mvpMatrix()
                 val worldPos = interStageFloat3()
 
                 vertexStage {
                     main {
                         val localPos = vertexAttribFloat3(Attribute.POSITIONS.name)
-                        worldPos.input set (modelMat.matrix * float4Value(localPos, 1f.const)).xyz
-                        outPosition set mvp.matrix * float4Value(localPos, 1f.const)
+                        val globalPos = float4Var(modelMat.matrix * float4Value(localPos, 1f.const))
+                        worldPos.input set globalPos.xyz
+                        outPosition set camData.viewProjMat * globalPos
                     }
                 }
 

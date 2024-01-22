@@ -1,12 +1,11 @@
 package de.fabmax.kool.pipeline.backend.gl
 
-import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.VertexLayout
 import de.fabmax.kool.pipeline.backend.GpuGeometry
 import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.Usage
 import de.fabmax.kool.util.BaseReleasable
+import de.fabmax.kool.util.checkIsNotReleased
 
 class GpuGeometryGl(
     val geometry: IndexedVertexList,
@@ -16,9 +15,9 @@ class GpuGeometryGl(
 ) : BaseReleasable(), GpuGeometry {
 
     internal val indexBuffer: BufferResource
-    private val dataBufferF: BufferResource?
-    private val dataBufferI: BufferResource?
-    private val instanceBuffer: BufferResource?
+    internal val dataBufferF: BufferResource?
+    internal val dataBufferI: BufferResource?
+    internal val instanceBuffer: BufferResource?
 
     private val gl = backend.gl
 
@@ -52,55 +51,6 @@ class GpuGeometryGl(
         }
     }
 
-    override fun toString(): String {
-        return "GpuGeometryGl(name=$name, geometry.name=${geometry.name})"
-    }
-
-    override fun release() {
-        indexBuffer.release()
-        dataBufferF?.release()
-        dataBufferI?.release()
-        instanceBuffer?.release()
-        super.release()
-    }
-
-    fun createShaderVertexAttributeBinders(
-        shaderAttributes: Map<String, VertexLayout.VertexAttribute>,
-        attribLocations: Map<VertexLayout.VertexAttribute, Int>
-    ): List<AttributeBinder> {
-        val binders = mutableListOf<AttributeBinder>()
-        geometry.vertexAttributes
-            .filter { !it.type.isInt }
-            .forEach { geomAttr ->
-                val stride = geometry.byteStrideF
-                val offset = geometry.attributeByteOffsets[geomAttr]!! / 4
-                binders += makeAttribBinders(shaderAttributes, attribLocations, geomAttr, dataBufferF!!, stride, offset, gl.FLOAT)
-            }
-        geometry.vertexAttributes
-            .filter { it.type.isInt }
-            .forEach { geomAttr ->
-                val stride = geometry.byteStrideI
-                val offset = geometry.attributeByteOffsets[geomAttr]!! / 4
-                binders += makeAttribBinders(shaderAttributes, attribLocations, geomAttr, dataBufferI!!, stride, offset, gl.INT)
-            }
-        return binders
-    }
-
-    fun createShaderInstanceAttributeBinders(
-        shaderAttributes: Map<String, VertexLayout.VertexAttribute>,
-        attribLocations: Map<VertexLayout.VertexAttribute, Int>
-    ): List<AttributeBinder> {
-        instances ?: return emptyList()
-
-        val binders = mutableListOf<AttributeBinder>()
-        for (instanceAttrib in instances.instanceAttributes) {
-            val stride = instances.strideBytesF
-            val offset = instances.attributeOffsets[instanceAttrib]!! / 4
-            binders += makeAttribBinders(shaderAttributes, attribLocations, instanceAttrib, instanceBuffer!!, stride, offset, gl.FLOAT)
-        }
-        return binders
-    }
-
     fun checkBuffers() {
         checkIsNotReleased()
 
@@ -122,51 +72,20 @@ class GpuGeometryGl(
         isNewlyCreated = false
     }
 
-    private fun makeAttribBinders(
-        shaderAttrs: Map<String, VertexLayout.VertexAttribute>,
-        attribLocations: Map<VertexLayout.VertexAttribute, Int>,
-        geomAttr: Attribute,
-        buffer: BufferResource,
-        stride: Int,
-        offset: Int,
-        type: Int
-    ): List<AttributeBinder> {
-        val binders = mutableListOf<AttributeBinder>()
-        shaderAttrs[geomAttr.name]?.let { shaderAttr ->
-            attribLocations[shaderAttr]!!.let { location ->
-                val slots = shaderAttr.locationSize
-                val elemSize = shaderAttr.type.channels
-                for (i in 0 until slots) {
-                    val off = offset + elemSize * i
-                    binders += AttributeBinder(buffer, elemSize, stride, off, type, location + i)
-                }
-            }
-        }
-        return binders
+    override fun toString(): String {
+        return "GpuGeometryGl(name=$name, geometry.name=${geometry.name})"
+    }
+
+    override fun release() {
+        indexBuffer.release()
+        dataBufferF?.release()
+        dataBufferI?.release()
+        instanceBuffer?.release()
+        super.release()
     }
 
     private val Usage.glUsage: Int get() = when (this) {
         Usage.DYNAMIC -> gl.DYNAMIC_DRAW
         Usage.STATIC -> gl.STATIC_DRAW
-    }
-
-    inner class AttributeBinder(
-        val vbo: BufferResource,
-        val elemSize: Int,
-        val strideBytes: Int,
-        val offset: Int,
-        val type: Int,
-        val loc: Int
-    ) {
-        val isIntAttribute: Boolean = type == gl.INT || type == gl.UNSIGNED_INT
-
-        fun bindAttribute(target: Int) {
-            vbo.bind()
-            if (isIntAttribute) {
-                gl.vertexAttribIPointer(target, elemSize, type, strideBytes, offset * 4)
-            } else {
-                gl.vertexAttribPointer(target, elemSize, type, false, strideBytes, offset * 4)
-            }
-        }
     }
 }

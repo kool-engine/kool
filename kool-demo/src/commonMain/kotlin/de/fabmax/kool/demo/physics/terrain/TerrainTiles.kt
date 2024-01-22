@@ -65,8 +65,9 @@ class TerrainTiles(val terrain: Terrain, val sky: Sky) : Node() {
         ssaoMap: Texture2d,
         isPbr: Boolean
     ) {
+        val shader = Terrain.makeTerrainShader(colorMap, normalMap, splatMap, shadowMap, ssaoMap, isPbr)
         meshes.values.forEach {
-            it.shader = Terrain.makeTerrainShader(colorMap, normalMap, splatMap, shadowMap, ssaoMap, isPbr)
+            it.shader = shader
         }
     }
 

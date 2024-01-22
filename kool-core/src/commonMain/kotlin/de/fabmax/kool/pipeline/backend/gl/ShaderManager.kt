@@ -17,28 +17,29 @@ class ShaderManager(val backend: RenderBackendGl) {
     private val glDrawPrograms = mutableMapOf<ShaderCodeGl, UsedGlProgram>()
     private val glComputePrograms = mutableMapOf<ComputeShaderCodeGl, UsedGlProgram>()
 
-    fun bindDrawShader(cmd: DrawCommand): CompiledDrawShader.ShaderMeshInstance? {
-        return cmd.pipeline?.let { pipeline ->
-            val shader = shaders.getOrPut(pipeline) {
-                val usedProgram = getCompiledGlProgram(pipeline.shaderCode)
-                usedProgram.users += pipeline
-                CompiledDrawShader(pipeline, usedProgram.glProgram, backend)
-            } as CompiledDrawShader
+    fun bindDrawShader(cmd: DrawCommand): CompiledDrawShader.DrawInfo {
+        val pipeline = checkNotNull(cmd.pipeline)
 
-            val current = boundShader as? CompiledDrawShader
-            if (shader.program != current?.program) {
-                current?.disableVertexLayout()
-                gl.useProgram(shader.program)
-                shader.enableVertexLayout()
+        val shader = shaders.getOrPut(pipeline) {
+            val rp = cmd.queue.renderPass
+            val usedProgram = getCompiledGlProgram(pipeline.shaderCode)
+            usedProgram.users += pipeline
+            CompiledDrawShader(pipeline, usedProgram.glProgram, rp, backend)
+        } as CompiledDrawShader
 
-            } else if (!shader.isSameVertexLayout(current)) {
-                current.disableVertexLayout()
-                shader.enableVertexLayout()
-            }
+        val current = boundShader as? CompiledDrawShader
+        if (shader.program != current?.program) {
+            current?.disableVertexLayout()
+            gl.useProgram(shader.program)
+            shader.enableVertexLayout()
 
-            boundShader = shader
-            shader.bindMesh(cmd)
+        } else if (!shader.isSameVertexLayout(current)) {
+            current.disableVertexLayout()
+            shader.enableVertexLayout()
         }
+
+        boundShader = shader
+        return shader.bindMesh(cmd)
     }
 
     fun bindComputeShader(pipeline: ComputePipeline, task: ComputeRenderPass.Task): Boolean {
@@ -66,7 +67,7 @@ class ShaderManager(val backend: RenderBackendGl) {
         }
 
         boundShader = shader
-        return shader.bindComputePass(task) != null
+        return shader.bindComputePass(task)
     }
 
     private fun CompiledDrawShader.isSameVertexLayout(other: CompiledDrawShader): Boolean {
