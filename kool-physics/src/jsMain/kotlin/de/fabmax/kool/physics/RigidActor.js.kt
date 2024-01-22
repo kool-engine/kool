@@ -8,6 +8,7 @@ import de.fabmax.kool.math.spatial.BoundingBoxF
 import de.fabmax.kool.scene.Tags
 import de.fabmax.kool.scene.TrsTransformF
 import de.fabmax.kool.util.BaseReleasable
+import de.fabmax.kool.util.checkIsNotReleased
 import physx.*
 
 @Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")

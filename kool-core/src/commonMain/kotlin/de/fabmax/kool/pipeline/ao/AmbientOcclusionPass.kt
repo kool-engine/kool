@@ -14,6 +14,7 @@ import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.addMesh
 import de.fabmax.kool.util.Uint8Buffer
+import de.fabmax.kool.util.releaseWith
 import kotlin.math.*
 import kotlin.random.Random
 

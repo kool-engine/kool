@@ -5,6 +5,7 @@ import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.Time
+import de.fabmax.kool.util.checkIsNotReleased
 import kotlin.math.abs
 import kotlin.math.max
 

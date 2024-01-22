@@ -17,21 +17,22 @@ interface Releasable {
      */
     fun release()
 
-    /**
-     * Attaches this [Releasable] to the given [baseReleasable], so that this object is automatically released when
-     * [baseReleasable] is released.
-     */
-    fun releaseWith(baseReleasable: BaseReleasable) {
-        baseReleasable.onRelease { release() }
-    }
+}
 
-    fun checkIsNotReleased() = check(!isReleased) {
-        "$this is already released."
-    }
+/**
+ * Attaches this [Releasable] to the given [baseReleasable], so that this object is automatically released when
+ * [baseReleasable] is released.
+ */
+fun Releasable.releaseWith(baseReleasable: BaseReleasable) {
+    baseReleasable.onRelease { release() }
+}
 
-    fun checkIsReleased() = check(isReleased) {
-        "$this is not released."
-    }
+fun Releasable.checkIsNotReleased() = check(!isReleased) {
+    "$this is already released."
+}
+
+fun Releasable.checkIsReleased() = check(isReleased) {
+    "$this is not released."
 }
 
 abstract class BaseReleasable : Releasable {

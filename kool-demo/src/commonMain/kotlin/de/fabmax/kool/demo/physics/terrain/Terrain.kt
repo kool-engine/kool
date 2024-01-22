@@ -17,10 +17,7 @@ import de.fabmax.kool.physics.Shape
 import de.fabmax.kool.physics.geometry.HeightField
 import de.fabmax.kool.physics.geometry.HeightFieldGeometry
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.util.HeightMap
-import de.fabmax.kool.util.MdColor
-import de.fabmax.kool.util.ShadowMap
-import de.fabmax.kool.util.Uint8Buffer
+import de.fabmax.kool.util.*
 import kotlin.math.roundToInt
 
 class Terrain(val demo: TerrainDemo, val heightMap: HeightMap) {

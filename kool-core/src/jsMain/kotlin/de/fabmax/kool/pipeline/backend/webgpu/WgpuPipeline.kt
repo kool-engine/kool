@@ -22,7 +22,7 @@ class WgpuPipeline(
     private val renderPipeline: GPURenderPipeline = createRenderPipeline(drawPipeline)
 
     private fun createBindGroupLayouts(pipeline: DrawPipeline): List<GPUBindGroupLayout> {
-        return pipeline.bindGroupLayouts.map { group ->
+        return pipeline.bindGroupLayouts.asList.map { group ->
             val layoutEntries = group.bindings.map { binding ->
                 val visibility = binding.stages.fold(0) { acc, stage ->
                     acc or when (stage) {

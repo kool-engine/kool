@@ -13,10 +13,7 @@ import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.multiShape
 import de.fabmax.kool.scene.geometry.simpleShape
-import de.fabmax.kool.util.ColorGradient
-import de.fabmax.kool.util.MdColor
-import de.fabmax.kool.util.TreeMap
-import de.fabmax.kool.util.Uint8Buffer
+import de.fabmax.kool.util.*
 import kotlin.math.*
 import kotlin.random.Random
 

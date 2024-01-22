@@ -14,6 +14,7 @@ import de.fabmax.kool.scene.addTextureMesh
 import de.fabmax.kool.scene.defaultOrbitCamera
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Time
+import de.fabmax.kool.util.releaseWith
 
 class HelloCompute : DemoScene("Hello Compute") {
     override fun Scene.setupMainScene(ctx: KoolContext) {

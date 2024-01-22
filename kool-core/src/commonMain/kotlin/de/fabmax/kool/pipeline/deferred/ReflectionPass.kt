@@ -15,6 +15,7 @@ import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.addMesh
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Uint8Buffer
+import de.fabmax.kool.util.releaseWith
 import kotlin.random.Random
 
 class ReflectionPass(val baseReflectionStep: Float) :

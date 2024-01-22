@@ -35,6 +35,32 @@ class BindGroupLayout(val scope: BindGroupScope, val bindings: List<BindingLayou
             return BindGroupLayout(scope, ubos + textures + storage)
         }
     }
+
+    companion object {
+        val EMPTY_VIEW = BindGroupLayout(BindGroupScope.VIEW, emptyList())
+        val EMPTY_PIPELINE = BindGroupLayout(BindGroupScope.PIPELINE, emptyList())
+        val EMPTY_MESH = BindGroupLayout(BindGroupScope.MESH, emptyList())
+    }
+}
+
+data class BindGroupLayouts(val viewScope: BindGroupLayout, val pipelineScope: BindGroupLayout, val meshScope: BindGroupLayout) {
+    val asList = listOf(viewScope, pipelineScope, meshScope)
+
+    init {
+        check(
+            viewScope.scope == BindGroupScope.VIEW &&
+            pipelineScope.scope == BindGroupScope.PIPELINE &&
+            meshScope.scope == BindGroupScope.MESH
+        )
+    }
+
+    operator fun get(scope: BindGroupScope): BindGroupLayout {
+        return when(scope) {
+            BindGroupScope.VIEW -> viewScope
+            BindGroupScope.PIPELINE -> pipelineScope
+            BindGroupScope.MESH -> meshScope
+        }
+    }
 }
 
 enum class BindGroupScope(val group: Int) {

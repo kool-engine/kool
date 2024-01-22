@@ -8,6 +8,7 @@ import de.fabmax.kool.math.spatial.BoundingBoxF
 import de.fabmax.kool.scene.Tags
 import de.fabmax.kool.scene.TrsTransformF
 import de.fabmax.kool.util.BaseReleasable
+import de.fabmax.kool.util.checkIsNotReleased
 import org.lwjgl.system.MemoryStack
 import physx.extensions.PxRigidActorExt
 import physx.physics.PxRigidActor

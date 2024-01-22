@@ -3,10 +3,7 @@ package de.fabmax.kool.pipeline.ibl
 import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.util.BaseReleasable
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.ColorGradient
-import de.fabmax.kool.util.RenderLoop
+import de.fabmax.kool.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 

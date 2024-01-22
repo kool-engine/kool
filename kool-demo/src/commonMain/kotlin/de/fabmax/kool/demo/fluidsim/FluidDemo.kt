@@ -14,6 +14,7 @@ import de.fabmax.kool.toString
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ColorGradient
 import de.fabmax.kool.util.MdColor
+import de.fabmax.kool.util.releaseWith
 import kotlin.math.roundToInt
 import kotlin.math.sin
 

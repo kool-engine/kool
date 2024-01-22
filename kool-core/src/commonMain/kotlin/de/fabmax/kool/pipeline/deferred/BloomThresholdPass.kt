@@ -12,6 +12,7 @@ import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.addMesh
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.releaseWith
 
 class BloomThresholdPass(deferredPipeline: DeferredPipeline, cfg: DeferredPipelineConfig) :
     OffscreenRenderPass2d(Node(), renderPassConfig {
