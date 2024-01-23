@@ -11,17 +11,17 @@ import de.fabmax.kool.pipeline.shading.AlphaMode
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.logE
 
-inline fun deferredKslPbrShader(block: DeferredKslPbrShader.Config.() -> Unit): DeferredKslPbrShader {
-    val cfg = DeferredKslPbrShader.Config()
+inline fun deferredKslPbrShader(block: DeferredKslPbrShader.Config.Builder.() -> Unit): DeferredKslPbrShader {
+    val cfg = DeferredKslPbrShader.Config.Builder()
     cfg.block()
-    return DeferredKslPbrShader(cfg)
+    return DeferredKslPbrShader(cfg.build())
 }
 
 /**
  * 1st pass shader for deferred pbr shading: Renders view space position, normals, albedo, roughness, metallic and
  * texture-based AO into three separate texture outputs.
  */
-open class DeferredKslPbrShader(cfg: Config) : KslShader(deferredPbrModel(cfg), cfg.pipelineCfg.build()) {
+open class DeferredKslPbrShader(cfg: Config) : KslShader(deferredPbrModel(cfg), cfg.pipelineCfg) {
 
     var color: Color by colorUniform(cfg.colorCfg)
     var colorMap: Texture2d? by colorTexture(cfg.colorCfg)
@@ -144,11 +144,17 @@ open class DeferredKslPbrShader(cfg: Config) : KslShader(deferredPbrModel(cfg), 
         }
     }
 
-    class Config : KslPbrShader.Config() {
-        var materialFlags = 0
+    class Config(builder: Builder) : KslPbrShader.Config(builder) {
+        val materialFlags = builder.materialFlags
 
-        init {
-            pipelineCfg.blendMode = BlendMode.DISABLED
+        class Builder : KslPbrShader.Config.Builder() {
+            var materialFlags = 0
+
+            init {
+                pipelineCfg.blendMode = BlendMode.DISABLED
+            }
+
+            override fun build() = Config(this)
         }
 
         companion object {

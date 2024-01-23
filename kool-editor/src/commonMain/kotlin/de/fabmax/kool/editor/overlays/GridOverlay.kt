@@ -5,6 +5,7 @@ import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.smoothStep
 import de.fabmax.kool.modules.ksl.KslUnlitShader
+import de.fabmax.kool.modules.ksl.UnlitShaderConfig
 import de.fabmax.kool.modules.ksl.blocks.cameraData
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.scene.Camera
@@ -77,7 +78,7 @@ class GridOverlay : Node("Grid overlay") {
     }
 
     private class GridShader(
-        cfg: UnlitShaderConfig = UnlitShaderConfig().apply {
+        cfg: UnlitShaderConfig = UnlitShaderConfig {
             color { vertexColor() }
             modelCustomizer = {
                 val clipPos = interStageFloat4()

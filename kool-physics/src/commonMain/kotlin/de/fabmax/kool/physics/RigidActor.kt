@@ -70,7 +70,7 @@ interface RigidActor : Releasable {
         return transform.invMatrixF.transform(vec, w)
     }
 
-    fun toMesh(meshColor: Color, materialCfg: KslPbrShader.Config.() -> Unit = { }): Node = ColorMesh().apply {
+    fun toMesh(meshColor: Color, materialCfg: KslPbrShader.Config.Builder.() -> Unit = { }): Node = ColorMesh().apply {
         generate {
             color = meshColor
             shapes.forEach { shape ->

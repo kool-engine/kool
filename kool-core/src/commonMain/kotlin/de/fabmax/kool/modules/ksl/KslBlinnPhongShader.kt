@@ -8,7 +8,7 @@ import de.fabmax.kool.util.copy
 
 open class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : KslLitShader(cfg, model) {
 
-    constructor(block: Config.() -> Unit) : this(Config().apply(block))
+    constructor(block: Config.Builder.() -> Unit) : this(Config.Builder().apply(block).build())
 
     var shininess: Float by propertyUniform(cfg.shininessCfg)
     var shininessMap: Texture2d? by propertyTexture(cfg.shininessCfg)
@@ -20,24 +20,40 @@ open class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : Ks
     val shininessCfg = PropertyBlockConfig(cfg.shininessCfg.propertyName, cfg.shininessCfg.propertySources.copy().toMutableList())
     val specularStrengthCfg = PropertyBlockConfig(cfg.specularStrengthCfg.propertyName, cfg.specularStrengthCfg.propertySources.copy().toMutableList())
 
-    class Config : LitShaderConfig() {
-        var specularColor: Color = Color.WHITE
-        val shininessCfg = PropertyBlockConfig("shininess").apply { constProperty(16f) }
-        val specularStrengthCfg = PropertyBlockConfig("specularStrength").apply { constProperty(1f) }
+    class Config(builder: Builder) : LitShaderConfig(builder) {
+        val specularColor: Color = builder.specularColor
+        val shininessCfg: PropertyBlockConfig = builder.shininessCfg.build()
+        val specularStrengthCfg: PropertyBlockConfig = builder.specularStrengthCfg.build()
 
-        fun shininess(block: PropertyBlockConfig.() -> Unit) {
-            shininessCfg.propertySources.clear()
-            shininessCfg.block()
+        class Builder : LitShaderConfig.Builder() {
+            var specularColor: Color = Color.WHITE
+            val shininessCfg = PropertyBlockConfig.Builder("shininess").constProperty(16f)
+            val specularStrengthCfg = PropertyBlockConfig.Builder("specularStrength").constProperty(1f)
+
+            fun shininess(block: PropertyBlockConfig.Builder.() -> Unit) {
+                shininessCfg.propertySources.clear()
+                shininessCfg.block()
+            }
+
+            fun shininess(value: Float): Builder {
+                shininess { constProperty(value) }
+                return this
+            }
+
+            fun specularStrength(block: PropertyBlockConfig.Builder.() -> Unit) {
+                specularStrengthCfg.propertySources.clear()
+                specularStrengthCfg.block()
+            }
+
+            fun specularStrength(value: Float): Builder {
+                specularStrength { constProperty(value) }
+                return this
+            }
+
+            override fun build(): Config {
+                return Config(this)
+            }
         }
-
-        fun shininess(value: Float) = shininess { constProperty(value) }
-
-        fun specularStrength(block: PropertyBlockConfig.() -> Unit) {
-            specularStrengthCfg.propertySources.clear()
-            specularStrengthCfg.block()
-        }
-
-        fun specularStrength(value: Float) = specularStrength { constProperty(value) }
     }
 
     class Model(cfg: Config) : LitShaderModel<Config>("Blinn-Phong Shader") {
@@ -78,4 +94,10 @@ open class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : Ks
             return float4Value(material.outColor + emissionColor.rgb, baseColor.a)
         }
     }
+}
+
+fun KslBlinnPhongShaderConfig(block: KslBlinnPhongShader.Config.Builder.() -> Unit): KslBlinnPhongShader.Config {
+    val builder = KslBlinnPhongShader.Config.Builder()
+    builder.block()
+    return builder.build()
 }

@@ -368,7 +368,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
     }
 
     private fun updatePlayerShader(isPlayerPbr: Boolean) {
-        fun KslLitShader.LitShaderConfig.baseConfig() {
+        fun KslLitShader.LitShaderConfig.Builder.baseConfig() {
             vertices { enableArmature(40) }
             color { constColor(MdColor.PINK.toLinear()) }
             shadow { addShadowMap(shadowMap) }
@@ -402,7 +402,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
     }
 
     private fun instancedObjectShader(roughness: Float, metallic: Float, isPbr: Boolean): KslShader {
-        fun KslLitShader.LitShaderConfig.baseConfig() {
+        fun KslLitShader.LitShaderConfig.Builder.baseConfig() {
             vertices { isInstanced = true }
             color { vertexColor() }
             shadow { addShadowMap(shadowMap) }
@@ -462,7 +462,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
     }
 
     companion object {
-        fun KslPbrShader.Config.iblConfig() {
+        fun KslPbrShader.Config.Builder.iblConfig() {
             isTextureReflection = true
             lightStrength = 3f
         }

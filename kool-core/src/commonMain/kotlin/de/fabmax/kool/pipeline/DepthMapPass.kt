@@ -83,10 +83,10 @@ class NormalLinearDepthMapPass(drawNode: Node, config: Config) : DepthMapPass(dr
         return shadowPipelines.getOrPut(mesh.id) {
             val depthShader = mesh.normalLinearDepthShader
                 ?: mesh.depthShaderConfig?.let { cfg -> DepthShader(cfg.copy(outputLinearDepth = true, outputNormals = true)) }
-                ?: DepthShader(DepthShader.Config.forMesh(mesh, getMeshCullMethod(mesh, updateEvent)).apply {
-                    outputLinearDepth = true
+                ?: DepthShader(DepthShader.Config.forMesh(mesh, getMeshCullMethod(mesh, updateEvent)).copy(
+                    outputLinearDepth = true,
                     outputNormals = true
-                })
+                ))
 
             depthShader.getOrCreatePipeline(mesh, updateEvent)
         }

@@ -3,6 +3,7 @@ package de.fabmax.kool.demo.physics.terrain
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.atmosphere.OpticalDepthLutPass
 import de.fabmax.kool.modules.ksl.KslUnlitShader
+import de.fabmax.kool.modules.ksl.UnlitShaderConfig
 import de.fabmax.kool.modules.ksl.blocks.ColorBlockConfig
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.modules.ksl.blocks.mvpMatrix
@@ -222,14 +223,14 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
     private class SkyObjectShader(
         isReverseDepth: Boolean,
         isPointShader: Boolean = false,
-        colorBlock: ColorBlockConfig.() -> Unit
+        colorBlock: ColorBlockConfig.Builder.() -> Unit
     ) : KslUnlitShader(config(isReverseDepth, isPointShader, colorBlock)) {
 
         var orientation: Mat3f by uniformMat3f("uOrientation")
         var alpha: Float by uniform1f("uAlpha", 1f)
 
         companion object {
-            fun config(isReverseDepth: Boolean, isPointShader: Boolean, colorBlock: ColorBlockConfig.() -> Unit) = UnlitShaderConfig().apply {
+            fun config(isReverseDepth: Boolean, isPointShader: Boolean, colorBlock: ColorBlockConfig.Builder.() -> Unit) = UnlitShaderConfig {
                 color {
                     colorBlock()
                 }

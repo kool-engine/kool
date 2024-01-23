@@ -34,7 +34,7 @@ interface Vehicle : RigidBody {
 
     fun setToRestState()
 
-    override fun toMesh(meshColor: Color, materialCfg: KslPbrShader.Config.() -> Unit) = ColorMesh().apply {
+    override fun toMesh(meshColor: Color, materialCfg: KslPbrShader.Config.Builder.() -> Unit) = ColorMesh().apply {
         generate {
             // skip first 4 (wheel-)shapes and add the chassis shapes
             color = meshColor

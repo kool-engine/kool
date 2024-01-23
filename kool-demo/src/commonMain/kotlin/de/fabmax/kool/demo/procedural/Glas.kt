@@ -206,12 +206,12 @@ class Glas(val ibl: EnvironmentMaps, shadowMap: SimpleShadowMap) : Node(), Defer
         var refractionColorMap by texture2d("tRefractionColor")
 
         companion object {
-            fun glassShaderConfig(ibl: EnvironmentMaps, shadowMap: SimpleShadowMap) = Config().apply {
+            fun glassShaderConfig(ibl: EnvironmentMaps, shadowMap: SimpleShadowMap) = Config.Builder().apply {
                 color { vertexColor() }
                 shadow { addShadowMap(shadowMap) }
                 roughness(0f)
                 enableImageBasedLighting(ibl)
-            }
+            }.build()
 
             fun glassShaderModel(cfg: Config) = Model(cfg).apply {
                 val matThickness = interStageFloat1()

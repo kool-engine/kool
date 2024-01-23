@@ -7,9 +7,8 @@ import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shading.AlphaMode
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.copy
 
-abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader(model, cfg.pipelineCfg.build()) {
+abstract class KslLitShader(val cfg: LitShaderConfig, model: KslProgram) : KslShader(model, cfg.pipelineCfg) {
 
     var color: Color by colorUniform(cfg.colorCfg)
     var colorMap: Texture2d? by colorTexture(cfg.colorCfg)
@@ -38,13 +37,13 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
     val ambientMaps = textureCubeArray("tAmbientTextures", 2)
     var ambientMapWeights by uniform2f("tAmbientWeights", Vec2f.X_AXIS)
 
-    val ambientCfg = cfg.ambientColor
-    val colorCfg = ColorBlockConfig(cfg.colorCfg.colorName, cfg.colorCfg.colorSources.copy().toMutableList())
-    val emissionCfg = ColorBlockConfig(cfg.emissionCfg.colorName, cfg.emissionCfg.colorSources.copy().toMutableList())
-    val materialAoCfg = PropertyBlockConfig(cfg.aoCfg.materialAo.propertyName, cfg.aoCfg.materialAo.propertySources.copy().toMutableList())
-    val displacementCfg = PropertyBlockConfig(cfg.vertexCfg.displacementCfg.propertyName, cfg.vertexCfg.displacementCfg.propertySources.copy().toMutableList())
-    val isNormalMapped = cfg.normalMapCfg.isNormalMapped
-    val isSsao = cfg.aoCfg.isSsao
+    val ambientCfg: AmbientColor get() = cfg.ambientColor
+    val colorCfg: ColorBlockConfig get() = cfg.colorCfg
+    val emissionCfg: ColorBlockConfig get() = cfg.emissionCfg
+    val materialAoCfg: PropertyBlockConfig get() = cfg.aoCfg.materialAo
+    val displacementCfg: PropertyBlockConfig get() = cfg.vertexCfg.displacementCfg
+    val isNormalMapped: Boolean get() = cfg.normalMapCfg.isNormalMapped
+    val isSsao: Boolean get() = cfg.aoCfg.isSsao
 
     /**
      * Read-only list of shadow maps used by this shader. To modify the shadow maps, the shader has to be re-created.
@@ -52,14 +51,14 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
     val shadowMaps = cfg.shadowCfg.shadowMaps.map { it.shadowMap }
 
     init {
-        when (ambientCfg) {
-            is AmbientColor.Uniform -> ambientFactor = ambientCfg.color
+        when (val ac = ambientCfg) {
+            is AmbientColor.Uniform -> ambientFactor = ac.color
             is AmbientColor.ImageBased -> {
-                ambientMap = ambientCfg.ambientMap
-                ambientFactor = ambientCfg.ambientFactor
+                ambientMap = ac.ambientMap
+                ambientFactor = ac.ambientFactor
             }
             is AmbientColor.DualImageBased -> {
-                ambientFactor = ambientCfg.colorFactor
+                ambientFactor = ac.colorFactor
             }
         }
     }
@@ -70,63 +69,91 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
         class DualImageBased(val colorFactor: Color) : AmbientColor()
     }
 
-    open class LitShaderConfig {
-        val vertexCfg = BasicVertexConfig()
-        val colorCfg = ColorBlockConfig("baseColor")
-        val normalMapCfg = NormalMapConfig()
-        val aoCfg = AmbientOcclusionConfig()
-        val pipelineCfg = PipelineConfigBuilder()
-        val shadowCfg = ShadowConfig()
-        val emissionCfg = ColorBlockConfig("emissionColor").apply { constColor(Color(0f, 0f, 0f, 0f)) }
+    open class LitShaderConfig(builder: Builder) {
+        val vertexCfg: BasicVertexConfig = builder.vertexCfg.build()
+        val colorCfg: ColorBlockConfig = builder.colorCfg.build()
+        val normalMapCfg: NormalMapConfig = builder.normalMapCfg.build()
+        val aoCfg: AmbientOcclusionConfig = builder.aoCfg.build()
+        val pipelineCfg: PipelineConfig = builder.pipelineCfg.build()
+        val shadowCfg: ShadowConfig = builder.shadowCfg.build()
+        val emissionCfg: ColorBlockConfig = builder.emissionCfg.build()
 
-        var ambientColor: AmbientColor = AmbientColor.Uniform(Color(0.2f, 0.2f, 0.2f).toLinear())
-        var colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
-        var maxNumberOfLights = 4
-        var lightStrength = 1f
-        var alphaMode: AlphaMode = AlphaMode.Blend
+        val ambientColor: AmbientColor = builder.ambientColor
+        val colorSpaceConversion = builder.colorSpaceConversion
+        val maxNumberOfLights = builder.maxNumberOfLights
+        val lightStrength = builder.lightStrength
+        val alphaMode: AlphaMode = builder.alphaMode
 
-        var modelCustomizer: (KslProgram.() -> Unit)? = null
+        val modelCustomizer: (KslProgram.() -> Unit)? = builder.modelCustomizer
 
-        fun enableSsao(ssaoMap: Texture2d? = null) = aoCfg.enableSsao(ssaoMap)
+        open class Builder {
+            val vertexCfg = BasicVertexConfig.Builder()
+            val colorCfg = ColorBlockConfig.Builder("baseColor").constColor(Color.GRAY)
+            val normalMapCfg = NormalMapConfig.Builder()
+            val aoCfg = AmbientOcclusionConfig.Builder()
+            val pipelineCfg = PipelineConfig.Builder()
+            val shadowCfg = ShadowConfig.Builder()
+            val emissionCfg = ColorBlockConfig.Builder("emissionColor").constColor(Color(0f, 0f, 0f, 0f))
 
-        inline fun ao(block: AmbientOcclusionConfig.() -> Unit) {
-            aoCfg.block()
-        }
+            var ambientColor: AmbientColor = AmbientColor.Uniform(Color(0.2f, 0.2f, 0.2f).toLinear())
+            var colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
+            var maxNumberOfLights = 4
+            var lightStrength = 1f
+            var alphaMode: AlphaMode = AlphaMode.Blend
 
-        inline fun color(block: ColorBlockConfig.() -> Unit) {
-            colorCfg.block()
-        }
+            var modelCustomizer: (KslProgram.() -> Unit)? = null
 
-        inline fun emission(block: ColorBlockConfig.() -> Unit) {
-            emissionCfg.block()
-        }
+            fun enableSsao(ssaoMap: Texture2d? = null): Builder {
+                aoCfg.enableSsao(ssaoMap)
+                return this
+            }
 
-        fun uniformAmbientColor(color: Color = Color(0.2f, 0.2f, 0.2f).toLinear()) {
-            ambientColor = AmbientColor.Uniform(color)
-        }
+            inline fun ao(block: AmbientOcclusionConfig.Builder.() -> Unit) {
+                aoCfg.block()
+            }
 
-        fun imageBasedAmbientColor(ambientTexture: TextureCube? = null, colorFactor: Color = Color.WHITE) {
-            ambientColor = AmbientColor.ImageBased(ambientTexture, colorFactor)
-        }
+            inline fun color(block: ColorBlockConfig.Builder.() -> Unit) {
+                colorCfg.colorSources.clear()
+                colorCfg.block()
+            }
 
-        fun dualImageBasedAmbientColor(colorFactor: Color = Color.WHITE) {
-            ambientColor = AmbientColor.DualImageBased(colorFactor)
-        }
+            inline fun emission(block: ColorBlockConfig.Builder.() -> Unit) {
+                emissionCfg.colorSources.clear()
+                emissionCfg.block()
+            }
 
-        inline fun normalMapping(block: NormalMapConfig.() -> Unit) {
-            normalMapCfg.block()
-        }
+            fun uniformAmbientColor(color: Color = Color(0.2f, 0.2f, 0.2f).toLinear()): Builder {
+                ambientColor = AmbientColor.Uniform(color)
+                return this
+            }
 
-        inline fun pipeline(block: PipelineConfigBuilder.() -> Unit) {
-            pipelineCfg.block()
-        }
+            fun imageBasedAmbientColor(ambientTexture: TextureCube? = null, colorFactor: Color = Color.WHITE): Builder {
+                ambientColor = AmbientColor.ImageBased(ambientTexture, colorFactor)
+                return this
+            }
 
-        inline fun shadow(block: ShadowConfig.() -> Unit) {
-            shadowCfg.block()
-        }
+            fun dualImageBasedAmbientColor(colorFactor: Color = Color.WHITE): Builder {
+                ambientColor = AmbientColor.DualImageBased(colorFactor)
+                return this
+            }
 
-        inline fun vertices(block: BasicVertexConfig.() -> Unit) {
-            vertexCfg.block()
+            inline fun normalMapping(block: NormalMapConfig.Builder.() -> Unit) {
+                normalMapCfg.block()
+            }
+
+            inline fun pipeline(block: PipelineConfig.Builder.() -> Unit) {
+                pipelineCfg.block()
+            }
+
+            inline fun shadow(block: ShadowConfig.Builder.() -> Unit) {
+                shadowCfg.block()
+            }
+
+            inline fun vertices(block: BasicVertexConfig.Builder.() -> Unit) {
+                vertexCfg.block()
+            }
+
+            open fun build() = LitShaderConfig(this)
         }
     }
 

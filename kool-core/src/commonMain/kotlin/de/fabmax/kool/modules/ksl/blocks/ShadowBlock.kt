@@ -175,19 +175,28 @@ class ShadowBlockFragmentStage(
     }
 }
 
-class ShadowConfig {
-    val shadowMaps = mutableListOf<ShadowMapConfig>()
-    var flipBacksideNormals = false
+data class ShadowConfig(
+    val shadowMaps: List<ShadowMapConfig>,
+    val flipBacksideNormals: Boolean
+) {
+    class Builder {
+        val shadowMaps = mutableListOf<ShadowMapConfig>()
+        var flipBacksideNormals = false
 
-    fun addShadowMap(shadowMap: ShadowMap, samplePattern: List<Vec2f> = SAMPLE_PATTERN_4x4) {
-        shadowMaps += ShadowMapConfig(shadowMap, samplePattern)
+        fun addShadowMap(shadowMap: ShadowMap, samplePattern: List<Vec2f> = SAMPLE_PATTERN_4x4): Builder {
+            shadowMaps += ShadowMapConfig(shadowMap, samplePattern)
+            return this
+        }
+
+        fun addShadowMaps(shadowMaps: Collection<ShadowMap>, samplePattern: List<Vec2f> = SAMPLE_PATTERN_4x4): Builder {
+            this.shadowMaps += shadowMaps.map { ShadowMapConfig(it, samplePattern) }
+            return this
+        }
+
+        fun build() = ShadowConfig(shadowMaps.toList(), flipBacksideNormals)
     }
 
-    fun addShadowMaps(shadowMaps: Collection<ShadowMap>, samplePattern: List<Vec2f> = SAMPLE_PATTERN_4x4) {
-        this.shadowMaps += shadowMaps.map { ShadowMapConfig(it, samplePattern) }
-    }
-
-    class ShadowMapConfig(val shadowMap: ShadowMap, val samplePattern: List<Vec2f> = SAMPLE_PATTERN_4x4)
+    data class ShadowMapConfig(val shadowMap: ShadowMap, val samplePattern: List<Vec2f> = SAMPLE_PATTERN_4x4)
 
     companion object {
         val SAMPLE_PATTERN_1x1: List<Vec2f> = listOf(Vec2f.ZERO)

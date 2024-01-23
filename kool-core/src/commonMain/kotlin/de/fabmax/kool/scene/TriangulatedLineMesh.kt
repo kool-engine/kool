@@ -235,10 +235,10 @@ class TriangulatedLineMesh(geometry: IndexedVertexList, name: String = makeNodeN
 
     open class Shader(cfg: Config = defaultCfg) : KslShader("Triangulated Line Shader") {
 
-        constructor(block: Config.() -> Unit) : this(Config().apply(block))
+        constructor(block: Config.Builder.() -> Unit) : this(Config.Builder().apply(block).build())
 
         init {
-            pipelineConfig = cfg.pipelineCfg.build()
+            pipelineConfig = cfg.pipelineCfg
             program.makeProgram(cfg)
             cfg.modelCustomizer?.invoke(program)
         }
@@ -330,14 +330,20 @@ class TriangulatedLineMesh(geometry: IndexedVertexList, name: String = makeNodeN
         }
 
         companion object {
-            private val defaultCfg = Config().apply {
+            private val defaultCfg = Config.Builder().apply {
                 pipeline { cullMethod = CullMethod.NO_CULLING }
                 color { vertexColor() }
-            }
+            }.build()
         }
 
-        class Config : KslUnlitShader.UnlitShaderConfig() {
-            var depthFactor = 1f
+        class Config(builder: Builder) : KslUnlitShader.UnlitShaderConfig(builder) {
+            val depthFactor = builder.depthFactor
+
+            class Builder : KslUnlitShader.UnlitShaderConfig.Builder() {
+                var depthFactor = 1f
+
+                override fun build() = Config(this)
+            }
         }
     }
 

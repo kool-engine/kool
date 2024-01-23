@@ -119,7 +119,7 @@ open class PbrSceneShader(cfg: DeferredPbrConfig, model: Model = Model(cfg)) :
 
                     val camData = deferredCameraData()
                     val lightData = sceneLightData(cfg.maxLights)
-                    val shadowData = shadowData(cfg.shadowCfg)
+                    val shadowData = shadowData(cfg.shadowCfg.build())
 
                     // transform input positions from view space back to world space
                     val worldPos = float3Var((camData.invViewMat * float4Value(viewPos, 1f.const)).xyz)
@@ -235,7 +235,7 @@ open class PbrSceneShader(cfg: DeferredPbrConfig, model: Model = Model(cfg)) :
 
         var maxLights = 4
         var lightStrength = 1f
-        val shadowCfg = ShadowConfig()
+        val shadowCfg = ShadowConfig.Builder()
 
         var ambientColor: KslLitShader.AmbientColor = KslLitShader.AmbientColor.Uniform(Color(0.2f, 0.2f, 0.2f).toLinear())
         var isTextureReflection = false

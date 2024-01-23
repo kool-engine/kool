@@ -51,7 +51,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
     private val physicsTimeTxt = mutableStateOf("0.00 ms")
     private val timeFactorTxt = mutableStateOf("1.00 x")
 
-    private val bodyMaterialCfg: KslPbrShader.Config.() -> Unit = {
+    private val bodyMaterialCfg: KslPbrShader.Config.Builder.() -> Unit = {
         color { vertexColor() }
         enableImageBasedLighting(ibl)
         shadow { addShadowMaps(shadows) }

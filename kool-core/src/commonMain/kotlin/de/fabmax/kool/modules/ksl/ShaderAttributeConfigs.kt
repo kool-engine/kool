@@ -5,38 +5,59 @@ import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.Texture2d
 
 data class BasicVertexConfig(
-    var isInstanced: Boolean = false,
-    var isFlipBacksideNormals: Boolean = true,
-    var maxNumberOfBones: Int = 0,
-    val morphAttributes: MutableList<Attribute> = mutableListOf(),
-    val displacementCfg: PropertyBlockConfig = PropertyBlockConfig("displacement").apply { constProperty(0f) }
+    var isInstanced: Boolean,
+    var isFlipBacksideNormals: Boolean,
+    var maxNumberOfBones: Int,
+    val morphAttributes: List<Attribute>,
+    val displacementCfg: PropertyBlockConfig
 ) {
-
     val isArmature: Boolean
         get() = maxNumberOfBones > 0
     val isMorphing: Boolean
         get() = morphAttributes.isNotEmpty()
 
-    fun enableArmature(maxNumberOfBones: Int = 32) {
-        this.maxNumberOfBones = maxNumberOfBones
-    }
+    class Builder {
+        var isInstanced: Boolean = false
+        var isFlipBacksideNormals: Boolean = true
+        var maxNumberOfBones: Int = 0
+        val morphAttributes: MutableList<Attribute> = mutableListOf()
+        val displacementCfg: PropertyBlockConfig.Builder = PropertyBlockConfig.Builder("displacement").apply { constProperty(0f) }
 
-    fun displacement(block: PropertyBlockConfig.() -> Unit) {
-        displacementCfg.block()
+        fun enableArmature(maxNumberOfBones: Int = 32): Builder {
+            this.maxNumberOfBones = maxNumberOfBones
+            return this
+        }
+
+        fun displacement(block: PropertyBlockConfig.Builder.() -> Unit): Builder {
+            displacementCfg.block()
+            return this
+        }
+
+        fun build() = BasicVertexConfig(isInstanced, isFlipBacksideNormals, maxNumberOfBones, morphAttributes.toList(), displacementCfg.build())
     }
 }
 
 data class AmbientOcclusionConfig(
-    var isSsao: Boolean = false,
-    var defaultSsaoMap: Texture2d? = null,
-    val materialAo: PropertyBlockConfig = PropertyBlockConfig("ao").apply { constProperty(1f) }
+    val isSsao: Boolean,
+    val defaultSsaoMap: Texture2d?,
+    val materialAo: PropertyBlockConfig
 ) {
-    fun enableSsao(ssaoMap: Texture2d? = null) {
-        isSsao = ssaoMap != null
-        defaultSsaoMap = ssaoMap
-    }
+    class Builder {
+        var isSsao: Boolean = false
+        var defaultSsaoMap: Texture2d? = null
+        val materialAo: PropertyBlockConfig.Builder = PropertyBlockConfig.Builder("ao").apply { constProperty(1f) }
 
-    fun materialAo(block: PropertyBlockConfig.() -> Unit) {
-        materialAo.block()
+        fun enableSsao(ssaoMap: Texture2d? = null): Builder {
+            isSsao = ssaoMap != null
+            defaultSsaoMap = ssaoMap
+            return this
+        }
+
+        fun materialAo(block: PropertyBlockConfig.Builder.() -> Unit): Builder {
+            materialAo.block()
+            return this
+        }
+
+        fun build() = AmbientOcclusionConfig(isSsao, defaultSsaoMap, materialAo.build())
     }
 }

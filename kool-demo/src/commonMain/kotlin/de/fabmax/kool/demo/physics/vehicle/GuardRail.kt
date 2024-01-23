@@ -216,7 +216,7 @@ class GuardRail {
     private class GuardRailShader(cfg: Config) : DeferredKslPbrShader(cfg) {
         companion object {
             fun createShader(): GuardRailShader {
-                val cfg = Config().apply {
+                val cfg = Config.Builder().apply {
                     vertices { isInstanced = true }
                     color { vertexColor() }
                     emission {
@@ -244,7 +244,7 @@ class GuardRail {
                         }
                     }
                 }
-                return GuardRailShader(cfg)
+                return GuardRailShader(cfg.build())
             }
         }
     }

@@ -155,47 +155,13 @@ class PropertyBlockFragmentStage(
     }
 }
 
-data class PropertyBlockConfig(
-    val propertyName: String,
-    val propertySources: MutableList<PropertySource> = mutableListOf()
-) {
-
-    fun constProperty(value: Float, blendMode: BlendMode = BlendMode.Set) {
-        propertySources += ConstProperty(value, blendMode)
-    }
-
-    fun uniformProperty(defaultValue: Float = 0f, uniformName: String = "u${propertyName}", blendMode: BlendMode = BlendMode.Set) {
-        propertySources += UniformProperty(defaultValue, uniformName, blendMode)
-    }
-
-    fun vertexProperty(attribute: Attribute, channel: Int = 0, blendMode: BlendMode = BlendMode.Set) {
-        propertySources += VertexProperty(attribute, channel, blendMode)
-    }
-
-    fun textureProperty(defaultTexture: Texture2d? = null,
-                        channel: Int = 0,
-                        textureName: String = "t${propertyName}",
-                        coordAttribute: Attribute = Attribute.TEXTURE_COORDS,
-                        blendMode: BlendMode = BlendMode.Set) {
-        propertySources += TextureProperty(defaultTexture, channel, textureName, coordAttribute, blendMode)
-    }
-
-    fun instanceProperty(attribute: Attribute, channel: Int = 0, blendMode: BlendMode = BlendMode.Set) {
-        propertySources += InstanceProperty(attribute, channel, blendMode)
-    }
+data class PropertyBlockConfig(val propertyName: String, val propertySources: List<PropertySource>) {
 
     val primaryUniform: UniformProperty?
         get() = propertySources.find { it is UniformProperty } as? UniformProperty
 
     val primaryTexture: TextureProperty?
         get() = propertySources.find { it is TextureProperty } as? TextureProperty
-
-    sealed class PropertySource(val blendMode: BlendMode)
-    class ConstProperty(val value: Float, blendMode: BlendMode) : PropertySource(blendMode)
-    class UniformProperty(val defaultValue: Float?, val uniformName: String, blendMode: BlendMode) : PropertySource(blendMode)
-    class VertexProperty(val propertyAttrib: Attribute, val channel: Int, blendMode: BlendMode) : PropertySource(blendMode)
-    class TextureProperty(val defaultTexture: Texture2d?, val channel: Int, val textureName: String, val coordAttribute: Attribute, blendMode: BlendMode) : PropertySource(blendMode)
-    class InstanceProperty(val propertyAttrib: Attribute, val channel: Int, blendMode: BlendMode) : PropertySource(blendMode)
 
     fun isEmptyOrConst(constValue: Float): Boolean {
         if (propertySources.size == 1) {
@@ -207,10 +173,64 @@ data class PropertyBlockConfig(
         return propertySources.isEmpty()
     }
 
+    sealed class PropertySource(val blendMode: BlendMode)
+    class ConstProperty(val value: Float, blendMode: BlendMode) : PropertySource(blendMode)
+    class UniformProperty(val defaultValue: Float?, val uniformName: String, blendMode: BlendMode) : PropertySource(blendMode)
+    class VertexProperty(val propertyAttrib: Attribute, val channel: Int, blendMode: BlendMode) : PropertySource(blendMode)
+    class TextureProperty(val defaultTexture: Texture2d?, val channel: Int, val textureName: String, val coordAttribute: Attribute, blendMode: BlendMode) : PropertySource(blendMode)
+    class InstanceProperty(val propertyAttrib: Attribute, val channel: Int, blendMode: BlendMode) : PropertySource(blendMode)
+
     enum class BlendMode {
         Set,
         Multiply,
         Add,
         Subtract
+    }
+
+    class Builder(val propertyName: String) {
+        val propertySources: MutableList<PropertySource> = mutableListOf()
+
+        val primaryUniform: UniformProperty?
+            get() = propertySources.find { it is UniformProperty } as? UniformProperty
+
+        val primaryTexture: TextureProperty?
+            get() = propertySources.find { it is TextureProperty } as? TextureProperty
+
+        fun constProperty(value: Float, blendMode: BlendMode = BlendMode.Set): Builder {
+            propertySources += ConstProperty(value, blendMode)
+            return this
+        }
+
+        fun uniformProperty(
+            defaultValue: Float = 0f,
+            uniformName: String = "u${propertyName}",
+            blendMode: BlendMode = BlendMode.Set
+        ): Builder {
+            propertySources += UniformProperty(defaultValue, uniformName, blendMode)
+            return this
+        }
+
+        fun vertexProperty(attribute: Attribute, channel: Int = 0, blendMode: BlendMode = BlendMode.Set): Builder {
+            propertySources += VertexProperty(attribute, channel, blendMode)
+            return this
+        }
+
+        fun textureProperty(
+            defaultTexture: Texture2d? = null,
+            channel: Int = 0,
+            textureName: String = "t${propertyName}",
+            coordAttribute: Attribute = Attribute.TEXTURE_COORDS,
+            blendMode: BlendMode = BlendMode.Set
+        ): Builder {
+            propertySources += TextureProperty(defaultTexture, channel, textureName, coordAttribute, blendMode)
+            return this
+        }
+
+        fun instanceProperty(attribute: Attribute, channel: Int = 0, blendMode: BlendMode = BlendMode.Set): Builder {
+            propertySources += InstanceProperty(attribute, channel, blendMode)
+            return this
+        }
+
+        fun build() = PropertyBlockConfig(propertyName, propertySources.toList())
     }
 }

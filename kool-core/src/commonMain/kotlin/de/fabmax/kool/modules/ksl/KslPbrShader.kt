@@ -11,11 +11,10 @@ import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.TextureCube
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.util.copy
 
 open class KslPbrShader(cfg: Config, model: KslProgram = Model(cfg)) : KslLitShader(cfg, model) {
 
-    constructor(block: Config.() -> Unit) : this(Config().apply(block))
+    constructor(block: Config.Builder.() -> Unit) : this(Config.Builder().apply(block).build())
 
     // basic material properties
     var roughness: Float by propertyUniform(cfg.roughnessCfg)
@@ -29,8 +28,8 @@ open class KslPbrShader(cfg: Config, model: KslProgram = Model(cfg)) : KslLitSha
 
     var brdfLut: Texture2d? by texture2d("tBrdfLut")
 
-    val roughnessCfg = PropertyBlockConfig(cfg.roughnessCfg.propertyName, cfg.roughnessCfg.propertySources.copy().toMutableList())
-    val metallicCfg = PropertyBlockConfig(cfg.metallicCfg.propertyName, cfg.metallicCfg.propertySources.copy().toMutableList())
+    val roughnessCfg = cfg.roughnessCfg
+    val metallicCfg = cfg.metallicCfg
 
     var reflectionMap: TextureCube?
         get() = reflectionMaps[0]
@@ -52,35 +51,55 @@ open class KslPbrShader(cfg: Config, model: KslProgram = Model(cfg)) : KslLitSha
         }
     }
 
-    open class Config : LitShaderConfig() {
-        val metallicCfg = PropertyBlockConfig("metallic").apply { constProperty(0f) }
-        val roughnessCfg = PropertyBlockConfig("roughness").apply { constProperty(0.5f) }
+    open class Config(builder: Builder) : LitShaderConfig(builder) {
+        val metallicCfg = builder.metallicCfg.build()
+        val roughnessCfg = builder.roughnessCfg.build()
 
-        var isTextureReflection = false
-        var reflectionStrength = Vec3f.ONES
-        var reflectionMap: TextureCube? = null
-            set(value) {
-                field = value
-                isTextureReflection = value != null
+        val isTextureReflection = builder.isTextureReflection
+        val reflectionStrength = builder.reflectionStrength
+        val reflectionMap = builder.reflectionMap
+
+        open class Builder : LitShaderConfig.Builder() {
+            val metallicCfg = PropertyBlockConfig.Builder("metallic").apply { constProperty(0f) }
+            val roughnessCfg = PropertyBlockConfig.Builder("roughness").apply { constProperty(0.5f) }
+
+            var isTextureReflection = false
+            var reflectionStrength = Vec3f.ONES
+            var reflectionMap: TextureCube? = null
+                set(value) {
+                    field = value
+                    isTextureReflection = value != null
+                }
+
+            fun metallic(block: PropertyBlockConfig.Builder.() -> Unit) {
+                metallicCfg.propertySources.clear()
+                metallicCfg.block()
             }
 
-        fun metallic(block: PropertyBlockConfig.() -> Unit) {
-            metallicCfg.propertySources.clear()
-            metallicCfg.block()
-        }
+            fun metallic(value: Float): Builder {
+                metallic { constProperty(value) }
+                return this
+            }
 
-        fun metallic(value: Float) = metallic { constProperty(value) }
+            fun roughness(block: PropertyBlockConfig.Builder.() -> Unit) {
+                roughnessCfg.propertySources.clear()
+                roughnessCfg.block()
+            }
 
-        fun roughness(block: PropertyBlockConfig.() -> Unit) {
-            roughnessCfg.propertySources.clear()
-            roughnessCfg.block()
-        }
+            fun roughness(value: Float): Builder {
+                roughness { constProperty(value) }
+                return this
+            }
 
-        fun roughness(value: Float) = roughness { constProperty(value) }
+            fun enableImageBasedLighting(iblMaps: EnvironmentMaps): Builder {
+                imageBasedAmbientColor(iblMaps.irradianceMap)
+                reflectionMap = iblMaps.reflectionMap
+                return this
+            }
 
-        fun enableImageBasedLighting(iblMaps: EnvironmentMaps) {
-            imageBasedAmbientColor(iblMaps.irradianceMap)
-            reflectionMap = iblMaps.reflectionMap
+            override fun build(): Config {
+                return Config(this)
+            }
         }
     }
 
@@ -135,4 +154,10 @@ open class KslPbrShader(cfg: Config, model: KslProgram = Model(cfg)) : KslLitSha
             return float4Value(material.outColor + emissionColor.rgb, baseColor.a)
         }
     }
+}
+
+fun KslPbrShaderConfig(block: KslPbrShader.Config.Builder.() -> Unit): KslPbrShader.Config {
+    val builder = KslPbrShader.Config.Builder()
+    builder.block()
+    return builder.build()
 }

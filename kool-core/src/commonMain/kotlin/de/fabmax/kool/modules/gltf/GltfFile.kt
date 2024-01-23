@@ -545,7 +545,7 @@ data class GltfFile(
             var isDeferred = cfg.materialConfig.isDeferredShading
             val useVertexColor = prim.attributes.containsKey(GltfMesh.Primitive.ATTRIBUTE_COLOR_0)
 
-            val pbrConfig = DeferredKslPbrShader.Config().apply {
+            val pbrConfig = DeferredKslPbrShader.Config.Builder().apply {
                 val material = prim.materialRef
                 if (material != null) {
                     material.applyTo(this, useVertexColor, this@GltfFile)
@@ -599,9 +599,9 @@ data class GltfFile(
 
             mesh.shader = if (isDeferred) {
                 pbrConfig.pipelineCfg.blendMode = BlendMode.DISABLED
-                DeferredKslPbrShader(pbrConfig)
+                DeferredKslPbrShader(pbrConfig.build())
             } else {
-                KslPbrShader(pbrConfig)
+                KslPbrShader(pbrConfig.build())
             }
 
             if (pbrConfig.alphaMode is AlphaMode.Mask) {

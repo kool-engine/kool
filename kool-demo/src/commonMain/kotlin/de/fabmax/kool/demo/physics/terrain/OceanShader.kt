@@ -76,7 +76,7 @@ object OceanShader {
         }
     }
 
-    private fun KslLitShader.LitShaderConfig.baseConfig(shadowMap: ShadowMap) {
+    private fun KslLitShader.LitShaderConfig.Builder.baseConfig(shadowMap: ShadowMap) {
         vertices { isInstanced = true }
         color { constColor(MdColor.CYAN.toLinear()) }
         shadow { addShadowMap(shadowMap) }
@@ -85,19 +85,19 @@ object OceanShader {
         modelCustomizer = { oceanMod() }
     }
 
-    private fun pbrConfig(shadowMap: ShadowMap) = KslPbrShader.Config().apply {
+    private fun pbrConfig(shadowMap: ShadowMap) = KslPbrShader.Config.Builder().apply {
         baseConfig(shadowMap)
         roughness(0.1f)
         with (TerrainDemo) {
             iblConfig()
         }
-    }
+    }.build()
 
-    private fun blinnPhongConfig(shadowMap: ShadowMap) = KslBlinnPhongShader.Config().apply {
+    private fun blinnPhongConfig(shadowMap: ShadowMap) = KslBlinnPhongShader.Config.Builder().apply {
         baseConfig(shadowMap)
         specularStrength(1f)
         shininess(500f)
-    }
+    }.build()
 
     private fun KslProgram.oceanMod() {
         val windOffsetStrength = uniformFloat4("uWindOffsetStrength")

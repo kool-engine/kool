@@ -1,6 +1,7 @@
 package de.fabmax.kool.demo.bees
 
 import de.fabmax.kool.modules.ksl.KslBlinnPhongShader
+import de.fabmax.kool.modules.ksl.KslBlinnPhongShaderConfig
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.CullMethod
@@ -9,7 +10,7 @@ import de.fabmax.kool.util.Color
 class BeeShader(
     aliveColor: Color,
     deadColor: Color,
-    cfg: Config = Config().apply {
+    cfg: Config = KslBlinnPhongShaderConfig {
         pipeline { cullMethod = CullMethod.NO_CULLING }
         color { textureColor() }
         shininess(5f)

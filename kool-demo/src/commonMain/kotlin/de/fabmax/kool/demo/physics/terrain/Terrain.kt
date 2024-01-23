@@ -131,7 +131,7 @@ class Terrain(val demo: TerrainDemo, val heightMap: HeightMap) {
             isPbr: Boolean
         ): KslShader {
 
-            fun KslLitShader.LitShaderConfig.terrainConfig() {
+            fun KslLitShader.LitShaderConfig.Builder.terrainConfig() {
                 color { textureColor(colorMap, coordAttribute = TERRAIN_GRID_COORDS) }
                 normalMapping { setNormalMap(normalMap, coordAttribute = TERRAIN_GRID_COORDS) }
                 shadow { addShadowMap(shadowMap) }
@@ -139,11 +139,11 @@ class Terrain(val demo: TerrainDemo, val heightMap: HeightMap) {
                 enableSsao(ssaoMap)
                 dualImageBasedAmbientColor()
 
-                if (this is KslPbrShader.Config) {
+                if (this is KslPbrShader.Config.Builder) {
                     with (TerrainDemo) {
                         iblConfig()
                     }
-                } else if (this is KslBlinnPhongShader.Config) {
+                } else if (this is KslBlinnPhongShader.Config.Builder) {
                     //imageBasedAmbientColor(ibl.irradianceMap, Color.GRAY)
                     specularStrength(0.25f)
                 }

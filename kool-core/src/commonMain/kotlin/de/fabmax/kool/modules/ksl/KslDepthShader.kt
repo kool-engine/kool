@@ -6,7 +6,7 @@ import de.fabmax.kool.modules.ksl.blocks.modelMatrix
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.BlendMode
-import de.fabmax.kool.pipeline.PipelineConfigBuilder
+import de.fabmax.kool.pipeline.PipelineConfig
 
 fun depthShader(cfgBlock: KslDepthShader.Config.() -> Unit): KslDepthShader {
     val cfg = KslDepthShader.Config().apply(cfgBlock)
@@ -16,17 +16,17 @@ fun depthShader(cfgBlock: KslDepthShader.Config.() -> Unit): KslDepthShader {
 open class KslDepthShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShader(model, cfg.pipelineCfg.build()) {
 
     class Config {
-        val pipelineCfg = PipelineConfigBuilder(blendMode = BlendMode.DISABLED)
-        val vertexCfg = BasicVertexConfig()
+        val pipelineCfg = PipelineConfig.Builder().apply { blendMode = BlendMode.DISABLED }
+        val vertexCfg = BasicVertexConfig.Builder()
         var outputMode = OutputMode.DEFAULT
 
         var modelCustomizer: (KslProgram.() -> Unit)? = null
 
-        fun pipeline(block: PipelineConfigBuilder.() -> Unit) {
+        fun pipeline(block: PipelineConfig.Builder.() -> Unit) {
             pipelineCfg.apply(block)
         }
 
-        fun vertices(block: BasicVertexConfig.() -> Unit) {
+        fun vertices(block: BasicVertexConfig.Builder.() -> Unit) {
             vertexCfg.block()
         }
     }
@@ -46,7 +46,7 @@ open class KslDepthShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShad
                         val instanceModelMat = instanceAttribMat4(Attribute.INSTANCE_MODEL_MAT.name)
                         modelMat *= instanceModelMat
                     }
-                    if (cfg.vertexCfg.isArmature) {
+                    if (cfg.vertexCfg.build().isArmature) {
                         val armatureBlock = armatureBlock(cfg.vertexCfg.maxNumberOfBones)
                         armatureBlock.inBoneWeights(vertexAttribFloat4(Attribute.WEIGHTS.name))
                         armatureBlock.inBoneIndices(vertexAttribInt4(Attribute.JOINTS.name))

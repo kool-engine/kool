@@ -19,7 +19,7 @@ class GltfLoadConfig(
     val mergeMeshesByMaterial: Boolean = false,
     val sortNodesByAlpha: Boolean = true,
     val addInstanceAttributes: List<Attribute> = emptyList(),
-    val pbrBlock: (KslPbrShader.Config.(GltfMesh.Primitive) -> Unit)? = null
+    val pbrBlock: (KslPbrShader.Config.Builder.(GltfMesh.Primitive) -> Unit)? = null
 )
 
 class GltfMaterialConfig(

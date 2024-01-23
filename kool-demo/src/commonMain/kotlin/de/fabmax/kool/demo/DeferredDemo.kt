@@ -4,6 +4,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ksl.KslUnlitShader
+import de.fabmax.kool.modules.ksl.UnlitShaderConfig
 import de.fabmax.kool.modules.ksl.blocks.ColorBlockConfig
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.modules.ksl.lang.*
@@ -533,7 +534,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
         var metal by texture2d("tMetal")
 
         companion object {
-            val cfg = UnlitShaderConfig().apply {
+            val cfg = UnlitShaderConfig {
                 pipeline { depthTest = DepthCompareOp.DISABLED }
                 colorSpaceConversion = ColorSpaceConversion.AS_IS
                 modelCustomizer = {

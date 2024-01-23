@@ -237,7 +237,7 @@ class GltfDemo : DemoScene("glTF Models") {
                 roundCylinder(4.1f, 0.2f)
             }
 
-            fun KslPbrShader.Config.materialConfig() {
+            fun KslPbrShader.Config.Builder.materialConfig() {
                 color { textureColor(colorMap) }
                 normalMapping { setNormalMap(normalMap) }
                 ao { materialAo { textureProperty(aoMap) } }

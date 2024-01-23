@@ -61,7 +61,7 @@ object TreeShader {
         }
     }
 
-    private fun KslLitShader.LitShaderConfig.baseConfig(shadowMap: ShadowMap, ssaoMap: Texture2d) {
+    private fun KslLitShader.LitShaderConfig.Builder.baseConfig(shadowMap: ShadowMap, ssaoMap: Texture2d) {
         vertices { isInstanced = true }
         color { vertexColor() }
         shadow { addShadowMap(shadowMap) }
@@ -71,18 +71,18 @@ object TreeShader {
         modelCustomizer = { windMod() }
     }
 
-    private fun pbrConfig(shadowMap: ShadowMap, ssaoMap: Texture2d) = KslPbrShader.Config().apply {
+    private fun pbrConfig(shadowMap: ShadowMap, ssaoMap: Texture2d) = KslPbrShader.Config.Builder().apply {
         baseConfig(shadowMap, ssaoMap)
         roughness(1f)
         with (TerrainDemo) {
             iblConfig()
         }
-    }
+    }.build()
 
-    private fun blinnPhongConfig(shadowMap: ShadowMap, ssaoMap: Texture2d) = KslBlinnPhongShader.Config().apply {
+    private fun blinnPhongConfig(shadowMap: ShadowMap, ssaoMap: Texture2d) = KslBlinnPhongShader.Config.Builder().apply {
         baseConfig(shadowMap, ssaoMap)
         specularStrength(0.05f)
-    }
+    }.build()
 
     private fun shadowConfig(isAoDepth: Boolean) = KslDepthShader.Config().apply {
         vertices { isInstanced = true }

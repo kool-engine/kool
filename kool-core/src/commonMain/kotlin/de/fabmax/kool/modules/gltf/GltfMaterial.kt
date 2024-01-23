@@ -38,7 +38,7 @@ data class GltfMaterial(
     val doubleSided: Boolean = false
 ) {
 
-    fun applyTo(cfg: KslPbrShader.Config, useVertexColor: Boolean, gltfFile: GltfFile) {
+    fun applyTo(cfg: KslPbrShader.Config.Builder, useVertexColor: Boolean, gltfFile: GltfFile) {
         val baseColorTexture: Texture2d? = pbrMetallicRoughness.baseColorTexture?.getTexture(gltfFile)
         val emissiveTexture: Texture2d? = emissiveTexture?.getTexture(gltfFile)
         val normalTexture: Texture2d? = this.normalTexture?.getTexture(gltfFile)

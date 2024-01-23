@@ -82,20 +82,20 @@ object GrassShader {
         }
     }
 
-    private fun pbrConfig(grassColor: Texture2d, shadowMap: ShadowMap, ssaoMap: Texture2d, isInstanced: Boolean) = KslPbrShader.Config().apply {
+    private fun pbrConfig(grassColor: Texture2d, shadowMap: ShadowMap, ssaoMap: Texture2d, isInstanced: Boolean) = KslPbrShader.Config.Builder().apply {
         dualImageBasedAmbientColor()
         with(TerrainDemo) {
             iblConfig()
         }
         roughness(0.8f)
         grassShaderConfig(grassColor, shadowMap, ssaoMap, isInstanced)
-    }
+    }.build()
 
-    private fun blinnPhongConfig(grassColor: Texture2d, shadowMap: ShadowMap, ssaoMap: Texture2d, isInstanced: Boolean) = KslBlinnPhongShader.Config().apply {
+    private fun blinnPhongConfig(grassColor: Texture2d, shadowMap: ShadowMap, ssaoMap: Texture2d, isInstanced: Boolean) = KslBlinnPhongShader.Config.Builder().apply {
         dualImageBasedAmbientColor()
         specularStrength(0.15f)
         grassShaderConfig(grassColor, shadowMap, ssaoMap, isInstanced)
-    }
+    }.build()
 
     private fun shadowConfig(isInstanced: Boolean, isAoDepth: Boolean) = KslDepthShader.Config().apply {
         pipeline { cullMethod = CullMethod.NO_CULLING }
@@ -125,7 +125,7 @@ object GrassShader {
         }
     }
 
-    private fun KslLitShader.LitShaderConfig.grassShaderConfig(grassColor: Texture2d, shadowMap: ShadowMap, ssaoMap: Texture2d, isInstanced: Boolean) {
+    private fun KslLitShader.LitShaderConfig.Builder.grassShaderConfig(grassColor: Texture2d, shadowMap: ShadowMap, ssaoMap: Texture2d, isInstanced: Boolean) {
         pipeline { cullMethod = CullMethod.NO_CULLING }
         color { textureColor(grassColor) }
         shadow { addShadowMap(shadowMap) }

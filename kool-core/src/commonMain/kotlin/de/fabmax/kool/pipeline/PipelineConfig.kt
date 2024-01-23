@@ -7,22 +7,24 @@ data class PipelineConfig(
     val isWriteDepth: Boolean = true,
     val lineWidth: Float = 1f,
     val autoReverseDepthFunc: Boolean = true
-)
-
-class PipelineConfigBuilder(
-    var blendMode: BlendMode = BlendMode.BLEND_MULTIPLY_ALPHA,
-    var cullMethod: CullMethod = CullMethod.CULL_BACK_FACES,
-    var depthTest: DepthCompareOp = DepthCompareOp.LESS_EQUAL,
-    var isWriteDepth: Boolean = true,
-    var lineWidth: Float = 1f,
-    var autoReverseDepthFunc: Boolean = true
 ) {
-    fun build() = PipelineConfig(
-        blendMode = blendMode,
-        cullMethod = cullMethod,
-        depthTest = depthTest,
-        isWriteDepth = isWriteDepth,
-        lineWidth = lineWidth,
-        autoReverseDepthFunc = autoReverseDepthFunc
-    )
+    class Builder {
+        private val defaultConfig = PipelineConfig()
+
+        var blendMode: BlendMode = defaultConfig.blendMode
+        var cullMethod: CullMethod = defaultConfig.cullMethod
+        var depthTest: DepthCompareOp = defaultConfig.depthTest
+        var isWriteDepth: Boolean = defaultConfig.isWriteDepth
+        var lineWidth: Float = defaultConfig.lineWidth
+        var autoReverseDepthFunc: Boolean = defaultConfig.autoReverseDepthFunc
+
+        fun build() = PipelineConfig(
+            blendMode = blendMode,
+            cullMethod = cullMethod,
+            depthTest = depthTest,
+            isWriteDepth = isWriteDepth,
+            lineWidth = lineWidth,
+            autoReverseDepthFunc = autoReverseDepthFunc
+        )
+    }
 }

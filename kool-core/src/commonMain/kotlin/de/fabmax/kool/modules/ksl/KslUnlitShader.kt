@@ -4,23 +4,22 @@ import de.fabmax.kool.modules.ksl.blocks.*
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.BlendMode
-import de.fabmax.kool.pipeline.PipelineConfigBuilder
+import de.fabmax.kool.pipeline.PipelineConfig
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.shading.AlphaMode
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.copy
 
 open class KslUnlitShader(cfg: UnlitShaderConfig) : KslShader("Unlit Shader") {
 
-    constructor(block: UnlitShaderConfig.() -> Unit) : this(UnlitShaderConfig().apply(block))
+    constructor(block: UnlitShaderConfig.Builder.() -> Unit) : this(UnlitShaderConfig.Builder().apply(block).build())
 
     var color: Color by colorUniform(cfg.colorCfg)
     var colorMap: Texture2d? by colorTexture(cfg.colorCfg)
 
-    val colorCfg = ColorBlockConfig(cfg.colorCfg.colorName, cfg.colorCfg.colorSources.copy().toMutableList())
+    val colorCfg = cfg.colorCfg
 
     init {
-        pipelineConfig = cfg.pipelineCfg.build()
+        pipelineConfig = cfg.pipelineCfg
         program.unlitProgram(cfg)
         cfg.modelCustomizer?.invoke(program)
     }
@@ -64,26 +63,46 @@ open class KslUnlitShader(cfg: UnlitShaderConfig) : KslShader("Unlit Shader") {
         }
     }
 
-    open class UnlitShaderConfig {
-        val vertexCfg = BasicVertexConfig()
-        val colorCfg = ColorBlockConfig("baseColor")
-        val pipelineCfg = PipelineConfigBuilder()
+    open class UnlitShaderConfig(builder: Builder) {
+        val vertexCfg: BasicVertexConfig = builder.vertexCfg.build()
+        val colorCfg: ColorBlockConfig = builder.colorCfg.build()
+        val pipelineCfg: PipelineConfig = builder.pipelineCfg.build()
 
-        var colorSpaceConversion = ColorSpaceConversion.AS_IS
-        var alphaMode: AlphaMode = AlphaMode.Blend
+        val colorSpaceConversion = builder.colorSpaceConversion
+        val alphaMode: AlphaMode = builder.alphaMode
 
-        var modelCustomizer: (KslProgram.() -> Unit)? = null
+        val modelCustomizer: (KslProgram.() -> Unit)? = builder.modelCustomizer
 
-        fun vertices(block: BasicVertexConfig.() -> Unit) {
-            vertexCfg.block()
-        }
+        open class Builder {
+            val vertexCfg = BasicVertexConfig.Builder()
+            val colorCfg = ColorBlockConfig.Builder("baseColor").constColor(Color.GRAY)
+            val pipelineCfg = PipelineConfig.Builder()
 
-        fun color(block: ColorBlockConfig.() -> Unit) {
-            colorCfg.apply(block)
-        }
+            var colorSpaceConversion = ColorSpaceConversion.AS_IS
+            var alphaMode: AlphaMode = AlphaMode.Blend
 
-        fun pipeline(block: PipelineConfigBuilder.() -> Unit) {
-            pipelineCfg.apply(block)
+            var modelCustomizer: (KslProgram.() -> Unit)? = null
+
+            fun vertices(block: BasicVertexConfig.Builder.() -> Unit) {
+                vertexCfg.block()
+            }
+
+            fun color(block: ColorBlockConfig.Builder.() -> Unit) {
+                colorCfg.colorSources.clear()
+                colorCfg.apply(block)
+            }
+
+            fun pipeline(block: PipelineConfig.Builder.() -> Unit) {
+                pipelineCfg.apply(block)
+            }
+
+            open fun build() = UnlitShaderConfig(this)
         }
     }
+}
+
+fun UnlitShaderConfig(block: KslUnlitShader.UnlitShaderConfig.Builder.() -> Unit): KslUnlitShader.UnlitShaderConfig {
+    val builder = KslUnlitShader.UnlitShaderConfig.Builder()
+    builder.block()
+    return builder.build()
 }

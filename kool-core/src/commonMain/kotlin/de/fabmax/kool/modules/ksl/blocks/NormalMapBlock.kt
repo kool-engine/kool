@@ -35,21 +35,33 @@ class NormalMapBlock(cfg: NormalMapConfig, name: String, parentScope: KslScopeBu
 }
 
 data class NormalMapConfig(
-    var isNormalMapped: Boolean = false,
-    var normalMapName: String = "tNormalMap",
-    var coordAttribute: Attribute = Attribute.TEXTURE_COORDS,
-    var defaultNormalMap: Texture2d? = null,
-    val strengthCfg: PropertyBlockConfig = PropertyBlockConfig("normalMapStrength").apply { constProperty(1f) }
+    val isNormalMapped: Boolean,
+    val normalMapName: String,
+    val coordAttribute: Attribute,
+    val defaultNormalMap: Texture2d?,
+    val strengthCfg: PropertyBlockConfig
 ) {
-    fun clearNormalMap() {
-        isNormalMapped = false
-        defaultNormalMap = null
-    }
+    class Builder {
+        var isNormalMapped: Boolean = false
+        var normalMapName: String = "tNormalMap"
+        var coordAttribute: Attribute = Attribute.TEXTURE_COORDS
+        var defaultNormalMap: Texture2d? = null
+        val strengthCfg: PropertyBlockConfig.Builder = PropertyBlockConfig.Builder("normalMapStrength").constProperty(1f)
 
-    fun setNormalMap(texture: Texture2d? = null, normalMapName: String = "tNormalMap", coordAttribute: Attribute = Attribute.TEXTURE_COORDS) {
-        this.isNormalMapped = true
-        this.normalMapName = normalMapName
-        this.coordAttribute = coordAttribute
-        this.defaultNormalMap = texture
+        fun clearNormalMap(): Builder {
+            isNormalMapped = false
+            defaultNormalMap = null
+            return this
+        }
+
+        fun setNormalMap(texture: Texture2d? = null, normalMapName: String = "tNormalMap", coordAttribute: Attribute = Attribute.TEXTURE_COORDS): Builder {
+            this.isNormalMapped = true
+            this.normalMapName = normalMapName
+            this.coordAttribute = coordAttribute
+            this.defaultNormalMap = texture
+            return this
+        }
+
+        fun build() = NormalMapConfig(isNormalMapped, normalMapName, coordAttribute, defaultNormalMap, strengthCfg.build())
     }
 }

@@ -21,7 +21,6 @@ class ShaderManager(val backend: RenderBackendGl) {
         val pipeline = checkNotNull(cmd.pipeline)
 
         val shader = shaders.getOrPut(pipeline) {
-            val rp = cmd.queue.renderPass
             val usedProgram = getCompiledGlProgram(pipeline.shaderCode)
             usedProgram.users += pipeline
             CompiledDrawShader(pipeline, usedProgram.glProgram, backend)
