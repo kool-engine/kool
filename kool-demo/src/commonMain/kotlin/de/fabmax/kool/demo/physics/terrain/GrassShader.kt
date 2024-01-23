@@ -1,13 +1,13 @@
 package de.fabmax.kool.demo.physics.terrain
 
 import de.fabmax.kool.modules.ksl.KslBlinnPhongShader
-import de.fabmax.kool.modules.ksl.KslDepthShader
 import de.fabmax.kool.modules.ksl.KslLitShader
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ksl.blocks.*
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shading.AlphaMode
+import de.fabmax.kool.pipeline.shading.DepthShader
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.ShadowMap
 
@@ -38,7 +38,7 @@ object GrassShader {
     }
 
     class Shadow(grassColor: Texture2d, windTex: Texture3d, isInstanced: Boolean, isAoDepth: Boolean)
-        : KslDepthShader(shadowConfig(isInstanced, isAoDepth)), WindAffectedShader {
+        : DepthShader(shadowConfig(isInstanced, isAoDepth)), WindAffectedShader {
         var grassAlpha by texture2d("grassAlpha", grassColor)
 
         override val shader = this
@@ -97,11 +97,12 @@ object GrassShader {
         grassShaderConfig(grassColor, shadowMap, ssaoMap, isInstanced)
     }.build()
 
-    private fun shadowConfig(isInstanced: Boolean, isAoDepth: Boolean) = KslDepthShader.Config().apply {
+    private fun shadowConfig(isInstanced: Boolean, isAoDepth: Boolean) = DepthShader.Config.Builder().apply {
         pipeline { cullMethod = CullMethod.NO_CULLING }
         vertexCfg.isInstanced = isInstanced
         if (isAoDepth) {
-            outputMode = KslDepthShader.OutputMode.NORMAL_LINEAR
+            outputNormals = true
+            outputLinearDepth = true
         }
         modelCustomizer = {
             grassWindMod(isInstanced)
@@ -123,7 +124,7 @@ object GrassShader {
                 }
             }
         }
-    }
+    }.build()
 
     private fun KslLitShader.LitShaderConfig.Builder.grassShaderConfig(grassColor: Texture2d, shadowMap: ShadowMap, ssaoMap: Texture2d, isInstanced: Boolean) {
         pipeline { cullMethod = CullMethod.NO_CULLING }

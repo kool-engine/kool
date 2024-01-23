@@ -9,7 +9,10 @@ import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.toDeg
 import de.fabmax.kool.modules.gltf.loadGltfModel
-import de.fabmax.kool.modules.ksl.*
+import de.fabmax.kool.modules.ksl.KslBlinnPhongShader
+import de.fabmax.kool.modules.ksl.KslLitShader
+import de.fabmax.kool.modules.ksl.KslPbrShader
+import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.physics.util.CharacterTrackingCamRig
@@ -18,6 +21,7 @@ import de.fabmax.kool.pipeline.GradientTexture
 import de.fabmax.kool.pipeline.SamplerSettings
 import de.fabmax.kool.pipeline.TextureProps
 import de.fabmax.kool.pipeline.ao.AoPipeline
+import de.fabmax.kool.pipeline.shading.DepthShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.*
 import kotlin.math.atan2
@@ -394,10 +398,11 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         playerModel.model.meshes.values.forEach {
             it.shader = shader
 
-            it.normalLinearDepthShader = KslDepthShader(KslDepthShader.Config().apply {
-                outputMode = KslDepthShader.OutputMode.NORMAL_LINEAR
+            it.normalLinearDepthShader = DepthShader(DepthShader.Config.Builder().apply {
+                outputNormals = true
+                outputLinearDepth = true
                 vertices { enableArmature(40) }
-            })
+            }.build())
         }
     }
 

@@ -1,11 +1,15 @@
 package de.fabmax.kool.demo.physics.terrain
 
 import de.fabmax.kool.math.Vec4f
-import de.fabmax.kool.modules.ksl.*
+import de.fabmax.kool.modules.ksl.KslBlinnPhongShader
+import de.fabmax.kool.modules.ksl.KslLitShader
+import de.fabmax.kool.modules.ksl.KslPbrShader
+import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.Texture3d
+import de.fabmax.kool.pipeline.shading.DepthShader
 import de.fabmax.kool.util.ShadowMap
 
 interface EnvMapShader {
@@ -44,7 +48,7 @@ object TreeShader {
         }
     }
 
-    class Shadow(windTex: Texture3d, isAoDepth: Boolean) : KslDepthShader(shadowConfig(isAoDepth)), WindAffectedShader {
+    class Shadow(windTex: Texture3d, isAoDepth: Boolean) : DepthShader(shadowConfig(isAoDepth)), WindAffectedShader {
         override val shader = this
         override var windOffsetStrength by uniform4f("uWindOffsetStrength")
         override var windScale by uniform1f("uWindScale", 0.01f)
@@ -84,13 +88,14 @@ object TreeShader {
         specularStrength(0.05f)
     }.build()
 
-    private fun shadowConfig(isAoDepth: Boolean) = KslDepthShader.Config().apply {
+    private fun shadowConfig(isAoDepth: Boolean) = DepthShader.Config.Builder().apply {
         vertices { isInstanced = true }
         if (isAoDepth) {
-            outputMode = KslDepthShader.OutputMode.NORMAL_LINEAR
+            outputNormals = true
+            outputLinearDepth = true
         }
         modelCustomizer = { windMod() }
-    }
+    }.build()
 
     fun KslProgram.windMod() {
         vertexStage {

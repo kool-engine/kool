@@ -10,7 +10,12 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.Mesh
 import kotlin.math.max
 
-class DepthShader(val cfg: Config) : KslShader(depthShaderProg(cfg), cfg.pipelineCfg) {
+fun depthShader(cfgBlock: DepthShader.Config.() -> Unit): DepthShader {
+    val cfg = DepthShader.Config().apply(cfgBlock)
+    return DepthShader(cfg)
+}
+
+open class DepthShader(val cfg: Config) : KslShader(depthShaderProg(cfg), cfg.pipelineCfg) {
 
     var alphaMask by texture2d("tAlphaMask", cfg.alphaMask)
 
@@ -33,7 +38,8 @@ class DepthShader(val cfg: Config) : KslShader(depthShaderProg(cfg), cfg.pipelin
                             inLocalNormal(vertexAttribFloat3(Attribute.NORMALS.name))
                         }
                     }
-                    outPosition set viewProj * float4Value(vertexBlock.outWorldPos, 1f)
+                    val worldPos = float3Port("worldPos", vertexBlock.outWorldPos)
+                    outPosition set viewProj * float4Value(worldPos, 1f)
 
                     if (cfg.alphaMode is AlphaMode.Mask) {
                         alphaMaskUv = interStageFloat2("alphaMaskUv").apply {
@@ -74,6 +80,7 @@ class DepthShader(val cfg: Config) : KslShader(depthShaderProg(cfg), cfg.pipelin
                     }
                 }
             }
+            cfg.modelCustomizer?.invoke(this)
         }
     }
 
@@ -82,9 +89,9 @@ class DepthShader(val cfg: Config) : KslShader(depthShaderProg(cfg), cfg.pipelin
         val vertexCfg: BasicVertexConfig = BasicVertexConfig.Builder().build(),
         val alphaMode: AlphaMode = AlphaMode.Opaque,
         val alphaMask: Texture2d? = null,
-
         val outputLinearDepth: Boolean = false,
-        val outputNormals: Boolean = false
+        val outputNormals: Boolean = false,
+        val modelCustomizer: (KslProgram.() -> Unit)? = null
     ) {
         companion object {
             fun forMesh(
@@ -92,7 +99,7 @@ class DepthShader(val cfg: Config) : KslShader(depthShaderProg(cfg), cfg.pipelin
                 cullMethod: CullMethod = CullMethod.CULL_BACK_FACES,
                 alphaMode: AlphaMode? = null,
                 alphaMask: Texture2d? = null
-            ) = ConfigBuilder().apply {
+            ) = Builder().apply {
                 pipeline {
                     this.cullMethod = cullMethod
                 }
@@ -109,41 +116,44 @@ class DepthShader(val cfg: Config) : KslShader(depthShaderProg(cfg), cfg.pipelin
                 }
             }.build()
         }
-    }
 
-    class ConfigBuilder {
-        val pipelineCfg: PipelineConfig.Builder = PipelineConfig.Builder()
-        val vertexCfg: BasicVertexConfig.Builder = BasicVertexConfig.Builder()
-        var alphaMode: AlphaMode = AlphaMode.Opaque
-        var alphaMask: Texture2d? = null
+        class Builder {
+            val pipelineCfg: PipelineConfig.Builder = PipelineConfig.Builder()
+            val vertexCfg: BasicVertexConfig.Builder = BasicVertexConfig.Builder()
+            var alphaMode: AlphaMode = AlphaMode.Opaque
+            var alphaMask: Texture2d? = null
 
-        var outputLinearDepth: Boolean = false
-        var outputNormals: Boolean = false
+            var outputLinearDepth: Boolean = false
+            var outputNormals: Boolean = false
 
-        init {
-            pipelineCfg.blendMode = BlendMode.DISABLED
+            var modelCustomizer: (KslProgram.() -> Unit)? = null
+
+            init {
+                pipelineCfg.blendMode = BlendMode.DISABLED
+            }
+
+            fun useAlphaMask(alphaMask: Texture2d, alphaCutOff: Float) {
+                this.alphaMask = alphaMask
+                alphaMode = AlphaMode.Mask(alphaCutOff)
+            }
+
+            inline fun pipeline(block: PipelineConfig.Builder.() -> Unit) {
+                pipelineCfg.block()
+            }
+
+            inline fun vertices(block: BasicVertexConfig.Builder.() -> Unit) {
+                vertexCfg.block()
+            }
+
+            fun build(): Config = Config(
+                pipelineCfg = pipelineCfg.build(),
+                vertexCfg = vertexCfg.build(),
+                alphaMode = alphaMode,
+                alphaMask = alphaMask,
+                outputLinearDepth = outputLinearDepth,
+                outputNormals = outputNormals,
+                modelCustomizer = modelCustomizer
+            )
         }
-
-        fun useAlphaMask(alphaMask: Texture2d, alphaCutOff: Float) {
-            this.alphaMask = alphaMask
-            alphaMode = AlphaMode.Mask(alphaCutOff)
-        }
-
-        inline fun pipeline(block: PipelineConfig.Builder.() -> Unit) {
-            pipelineCfg.block()
-        }
-
-        inline fun vertices(block: BasicVertexConfig.Builder.() -> Unit) {
-            vertexCfg.block()
-        }
-
-        fun build(): Config = Config(
-            pipelineCfg = pipelineCfg.build(),
-            vertexCfg = vertexCfg.build(),
-            alphaMode = alphaMode,
-            alphaMask = alphaMask,
-            outputLinearDepth = outputLinearDepth,
-            outputNormals = outputNormals
-        )
     }
 }
