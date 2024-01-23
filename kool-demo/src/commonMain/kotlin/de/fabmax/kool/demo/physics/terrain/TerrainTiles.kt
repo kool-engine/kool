@@ -51,7 +51,7 @@ class TerrainTiles(val terrain: Terrain, val sky: Sky) : Node() {
         }
 
         onUpdate += {
-            meshes.values.forEach { m ->
+            meshes.values.first().let { m ->
                 with(TerrainDemo) { (m.shader as KslLitShader).updateSky(sky.weightedEnvs) }
             }
         }

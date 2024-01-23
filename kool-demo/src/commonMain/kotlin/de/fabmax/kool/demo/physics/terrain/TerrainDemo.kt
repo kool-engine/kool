@@ -358,8 +358,9 @@ class TerrainDemo : DemoScene("Terrain Demo") {
 
     private fun updateGrassShader(isVegetationPbr: Boolean) {
         camLocalGrass.grassShader = GrassShader.makeGrassShader(grassColor, shadowMap, ssao.aoMap, wind.density, true, isVegetationPbr)
+        val grassQuadShader = GrassShader.makeGrassShader(grassColor, shadowMap, ssao.aoMap, wind.density, false, isVegetationPbr).shader
         grass.grassQuads.children.filterIsInstance<Mesh>().forEach {
-            it.shader = GrassShader.makeGrassShader(grassColor, shadowMap, ssao.aoMap, wind.density, false, isVegetationPbr).shader
+            it.shader = grassQuadShader
         }
     }
 

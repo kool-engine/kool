@@ -173,12 +173,14 @@ data class PropertyBlockConfig(val propertyName: String, val propertySources: Li
         return propertySources.isEmpty()
     }
 
-    sealed class PropertySource(val blendMode: BlendMode)
-    class ConstProperty(val value: Float, blendMode: BlendMode) : PropertySource(blendMode)
-    class UniformProperty(val defaultValue: Float?, val uniformName: String, blendMode: BlendMode) : PropertySource(blendMode)
-    class VertexProperty(val propertyAttrib: Attribute, val channel: Int, blendMode: BlendMode) : PropertySource(blendMode)
-    class TextureProperty(val defaultTexture: Texture2d?, val channel: Int, val textureName: String, val coordAttribute: Attribute, blendMode: BlendMode) : PropertySource(blendMode)
-    class InstanceProperty(val propertyAttrib: Attribute, val channel: Int, blendMode: BlendMode) : PropertySource(blendMode)
+    sealed interface PropertySource {
+        val blendMode: BlendMode
+    }
+    data class ConstProperty(val value: Float, override val blendMode: BlendMode) : PropertySource
+    data class UniformProperty(val defaultValue: Float?, val uniformName: String, override val blendMode: BlendMode) : PropertySource
+    data class VertexProperty(val propertyAttrib: Attribute, val channel: Int, override val blendMode: BlendMode) : PropertySource
+    data class TextureProperty(val defaultTexture: Texture2d?, val channel: Int, val textureName: String, val coordAttribute: Attribute, override val blendMode: BlendMode) : PropertySource
+    data class InstanceProperty(val propertyAttrib: Attribute, val channel: Int, override val blendMode: BlendMode) : PropertySource
 
     enum class BlendMode {
         Set,

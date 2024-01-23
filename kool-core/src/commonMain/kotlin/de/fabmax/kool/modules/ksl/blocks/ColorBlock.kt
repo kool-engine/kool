@@ -193,12 +193,14 @@ data class ColorBlockConfig(
         fun build() = ColorBlockConfig(colorName, colorSources)
     }
 
-    sealed class ColorSource(val blendMode: BlendMode)
-    class ConstColor(val constColor: Color, blendMode: BlendMode) : ColorSource(blendMode)
-    class UniformColor(val defaultColor: Color?, val uniformName: String, blendMode: BlendMode) : ColorSource(blendMode)
-    class VertexColor(val colorAttrib: Attribute, blendMode: BlendMode) : ColorSource(blendMode)
-    class TextureColor(val defaultTexture: Texture2d?, val textureName: String, val coordAttribute: Attribute, val gamma: Float, blendMode: BlendMode) : ColorSource(blendMode)
-    class InstanceColor(val colorAttrib: Attribute, blendMode: BlendMode) : ColorSource(blendMode)
+    sealed interface ColorSource {
+        val blendMode: BlendMode
+    }
+    data class ConstColor(val constColor: Color, override val blendMode: BlendMode) : ColorSource
+    data class UniformColor(val defaultColor: Color?, val uniformName: String, override val blendMode: BlendMode) : ColorSource
+    data class VertexColor(val colorAttrib: Attribute, override val blendMode: BlendMode) : ColorSource
+    data class TextureColor(val defaultTexture: Texture2d?, val textureName: String, val coordAttribute: Attribute, val gamma: Float, override val blendMode: BlendMode) : ColorSource
+    data class InstanceColor(val colorAttrib: Attribute, override val blendMode: BlendMode) : ColorSource
 
     enum class BlendMode {
         Set,

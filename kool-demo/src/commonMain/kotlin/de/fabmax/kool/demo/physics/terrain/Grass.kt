@@ -69,7 +69,6 @@ class Grass(val terrain: Terrain, val wind: Wind, val sky: Sky) {
 
         meshDatas.forEach { (_, data) ->
             data.generateNormals()
-
             grassQuads += Mesh(data)
         }
         setIsCastingShadow(true)
@@ -89,29 +88,26 @@ class Grass(val terrain: Terrain, val wind: Wind, val sky: Sky) {
 
     fun setupGrass(grassColor: Texture2d) {
         val childMeshes = grassQuads.children.filterIsInstance<Mesh>()
+        val grassDepthShader = GrassShader.Shadow(grassColor, wind.density, false, false)
+        val grassAoShader = GrassShader.Shadow(grassColor, wind.density, false, true)
         childMeshes.forEach {
-            it.depthShader = GrassShader.Shadow(grassColor, wind.density, false, false)
-            it.normalLinearDepthShader = GrassShader.Shadow(grassColor, wind.density, false, true)
+            it.depthShader = grassDepthShader
+            it.normalLinearDepthShader = grassAoShader
         }
 
         grassQuads.onUpdate += {
-            // fixme: for some reason a shared shader instance results in flickering whenever a mesh is rendered
-            //  for the first time -> as a workaround we don't use a shared shader instance but an exclusive one
-            //  for each child mesh
-            childMeshes.forEach { child ->
-                (child.shader as? WindAffectedShader)?.let {
-                    it.windOffsetStrength = wind.offsetStrength
-                    it.windScale = 1f / wind.scale
-                    it.updateEnvMaps(sky.weightedEnvs)
-                }
-                (child.depthShader as? WindAffectedShader)?.let {
-                    it.windOffsetStrength = wind.offsetStrength
-                    it.windScale = 1f / wind.scale
-                }
-                (child.normalLinearDepthShader as? WindAffectedShader)?.let {
-                    it.windOffsetStrength = wind.offsetStrength
-                    it.windScale = 1f / wind.scale
-                }
+            grassDepthShader.let {
+                it.windOffsetStrength = wind.offsetStrength
+                it.windScale = 1f / wind.scale
+            }
+            grassAoShader.let {
+                it.windOffsetStrength = wind.offsetStrength
+                it.windScale = 1f / wind.scale
+            }
+            (childMeshes.first().shader as? WindAffectedShader)?.apply {
+                windOffsetStrength = wind.offsetStrength
+                windScale = 1f / wind.scale
+                updateEnvMaps(sky.weightedEnvs)
             }
         }
     }

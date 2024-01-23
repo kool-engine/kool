@@ -9,6 +9,7 @@ import de.fabmax.kool.util.Color
 
 open class DepthMapPass(drawNode: Node, config: Config) : OffscreenRenderPass2d(drawNode, config) {
     protected val shadowPipelines = mutableMapOf<Int, DrawPipeline?>()
+    protected val depthShaders = mutableMapOf<DepthShaderKey, DepthShader>()
 
     constructor(drawNode: Node, width: Int, height: Int = width) : this(drawNode, defaultSetup(width, height))
 
@@ -38,10 +39,19 @@ open class DepthMapPass(drawNode: Node, config: Config) : OffscreenRenderPass2d(
         return shadowPipelines.getOrPut(mesh.id) {
             val depthShader = mesh.depthShader
                 ?: mesh.depthShaderConfig?.let { cfg -> DepthShader(cfg.copy(outputLinearDepth = false, outputNormals = false)) }
-                ?: DepthShader(DepthShader.Config.forMesh(mesh, getMeshCullMethod(mesh, updateEvent)))
-
+                ?: defaultDepthShader(mesh, updateEvent)
             depthShader.getOrCreatePipeline(mesh, updateEvent)
         }
+    }
+
+    private fun defaultDepthShader(mesh: Mesh, updateEvent: UpdateEvent): DepthShader {
+        val cfg = DepthShader.Config.forMesh(mesh, getMeshCullMethod(mesh, updateEvent))
+        val key = DepthShaderKey(
+            vertexLayout = mesh.geometry.vertexAttributes,
+            instanceLayout = mesh.instances?.instanceAttributes ?: emptyList(),
+            shaderCfg = cfg
+        )
+        return depthShaders.getOrPut(key) { DepthShader(cfg) }
     }
 
     protected fun getMeshCullMethod(mesh: Mesh, updateEvent: UpdateEvent): CullMethod {
@@ -50,8 +60,14 @@ open class DepthMapPass(drawNode: Node, config: Config) : OffscreenRenderPass2d(
 
     override fun release() {
         super.release()
-        shadowPipelines.values.filterNotNull().forEach { it.release() }
+        shadowPipelines.values.filterNotNull().distinct().forEach { it.release() }
     }
+
+    protected data class DepthShaderKey(
+        val vertexLayout: List<Attribute>,
+        val instanceLayout: List<Attribute>,
+        val shaderCfg: DepthShader.Config
+    )
 
     companion object {
         var defaultMaxNumberOfJoints = 16
@@ -83,13 +99,22 @@ class NormalLinearDepthMapPass(drawNode: Node, config: Config) : DepthMapPass(dr
         return shadowPipelines.getOrPut(mesh.id) {
             val depthShader = mesh.normalLinearDepthShader
                 ?: mesh.depthShaderConfig?.let { cfg -> DepthShader(cfg.copy(outputLinearDepth = true, outputNormals = true)) }
-                ?: DepthShader(DepthShader.Config.forMesh(mesh, getMeshCullMethod(mesh, updateEvent)).copy(
-                    outputLinearDepth = true,
-                    outputNormals = true
-                ))
-
+                ?: defaultDepthShader(mesh, updateEvent)
             depthShader.getOrCreatePipeline(mesh, updateEvent)
         }
+    }
+
+    private fun defaultDepthShader(mesh: Mesh, updateEvent: UpdateEvent): DepthShader {
+        val cfg = DepthShader.Config.forMesh(mesh, getMeshCullMethod(mesh, updateEvent)).copy(
+            outputLinearDepth = true,
+            outputNormals = true
+        )
+        val key = DepthShaderKey(
+            vertexLayout = mesh.geometry.vertexAttributes,
+            instanceLayout = mesh.instances?.instanceAttributes ?: emptyList(),
+            shaderCfg = cfg
+        )
+        return depthShaders.getOrPut(key) { DepthShader(cfg) }
     }
 
     companion object {
