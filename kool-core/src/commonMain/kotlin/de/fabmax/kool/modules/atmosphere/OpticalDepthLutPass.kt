@@ -6,7 +6,6 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
 import de.fabmax.kool.scene.Node
-import de.fabmax.kool.scene.OrthographicCamera
 import de.fabmax.kool.scene.addMesh
 import de.fabmax.kool.util.logI
 
@@ -25,15 +24,6 @@ class OpticalDepthLutPass :
 
     init {
         clearColor = null
-
-        camera = OrthographicCamera().apply {
-            isKeepAspectRatio = false
-            left = 0f
-            right = 1f
-            top = 1f
-            bottom = 0f
-        }
-
         drawNode.apply {
             addMesh(Attribute.POSITIONS, Attribute.TEXTURE_COORDS) {
                 generateFullscreenQuad()
@@ -55,7 +45,7 @@ class OpticalDepthLutPass :
         isEnabled = true
     }
 
-    private fun opticalDepthLutProg() = KslProgram("Optical Dpeth LUT").apply {
+    private fun opticalDepthLutProg() = KslProgram("Optical Depth LUT").apply {
         val uv = interStageFloat2("uv")
 
         fullscreenQuadVertexStage(uv)
