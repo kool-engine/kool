@@ -7,25 +7,24 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 interface MappedUniform {
-    fun setUniform(glData: CompiledShader.MappedBindGroup, bindCtx: CompiledShader.UniformBindContext): Boolean
+    fun setUniform(bindCtx: CompiledShader.UniformBindContext): Boolean
 }
 
-class MappedUbo(val ubo: UniformBufferLayout, val gpuBuffer: BufferResource, val backend: RenderBackendGl) : MappedUniform {
+class MappedUbo(val ubo: BindGroupData.UniformBufferBindingData, val gpuBuffer: BufferResource, val backend: RenderBackendGl) : MappedUniform {
     val gl: GlApi get() = backend.gl
 
-    override fun setUniform(glData: CompiledShader.MappedBindGroup, bindCtx: CompiledShader.UniformBindContext): Boolean {
-        val uboData = glData.bindGroupData.uniformBufferBindingData(ubo.bindingIndex)
-        if (uboData.getAndClearDirtyFlag()) {
-            gpuBuffer.setData(uboData.buffer, gl.DYNAMIC_DRAW)
+    override fun setUniform(bindCtx: CompiledShader.UniformBindContext): Boolean {
+        if (ubo.getAndClearDirtyFlag()) {
+            gpuBuffer.setData(ubo.buffer, gl.DYNAMIC_DRAW)
         }
-        gl.bindBufferBase(gl.UNIFORM_BUFFER, bindCtx.location(ubo.bindingIndex), gpuBuffer.buffer)
+        gl.bindBufferBase(gl.UNIFORM_BUFFER, bindCtx.location(ubo.layout.bindingIndex), gpuBuffer.buffer)
         return true
     }
 }
 
-class MappedUboCompat(val ubo: UniformBufferLayout, val gl: GlApi) : MappedUniform {
+class MappedUboCompat(val ubo: BindGroupData.UniformBufferBindingData, val gl: GlApi) : MappedUniform {
     private val floatBuffers = buildList {
-        ubo.uniforms.forEach {
+        ubo.layout.uniforms.forEach {
             val bufferSize = if (it.isArray) {
                 when (it.type) {
                     GpuType.FLOAT1 ->  1 * it.arraySize
@@ -48,7 +47,7 @@ class MappedUboCompat(val ubo: UniformBufferLayout, val gl: GlApi) : MappedUnifo
     }
 
     private val intBuffers = buildList {
-        ubo.uniforms.forEach {
+        ubo.layout.uniforms.forEach {
             val bufferSize = if (it.isArray) {
                 when (it.type) {
                     GpuType.INT1 -> 1 * it.arraySize
@@ -62,11 +61,11 @@ class MappedUboCompat(val ubo: UniformBufferLayout, val gl: GlApi) : MappedUnifo
         }
     }
 
-    override fun setUniform(glData: CompiledShader.MappedBindGroup, bindCtx: CompiledShader.UniformBindContext): Boolean {
-        ubo.uniforms.forEachIndexed { i, uniform ->
-            val loc = bindCtx.locations(ubo.bindingIndex)[i]
-            val buf = glData.bindGroupData.uniformBufferBindingData(ubo.bindingIndex).buffer
-            val pos = ubo.layout.uniformPositions[uniform.name]!!.byteIndex
+    override fun setUniform(bindCtx: CompiledShader.UniformBindContext): Boolean {
+        ubo.layout.uniforms.forEachIndexed { i, uniform ->
+            val loc = bindCtx.locations(ubo.layout.bindingIndex)[i]
+            val buf = ubo.buffer
+            val pos = ubo.layout.layout.uniformPositions[uniform.name]!!.byteIndex
 
             if (uniform.isArray) {
                 when (uniform.type) {
@@ -204,40 +203,36 @@ sealed class MappedUniformTex(val target: Int, val backend: RenderBackendGl) : M
     }
 }
 
-class MappedUniformTex1d(private val sampler1d: Texture1dLayout, backend: RenderBackendGl) :
+class MappedUniformTex1d(private val sampler1d: BindGroupData.Texture1dBindingData, backend: RenderBackendGl) :
     MappedUniformTex(backend.gl.TEXTURE_2D, backend)
 {
     // 1d texture internally uses a 2d texture to be compatible with glsl version 300 es
-    override fun setUniform(glData: CompiledShader.MappedBindGroup, bindCtx: CompiledShader.UniformBindContext): Boolean {
-        val textures = glData.bindGroupData.texture1dBindingData(sampler1d.bindingIndex).textures
-        return setTextures(textures, sampler1d.bindingIndex, bindCtx)
+    override fun setUniform(bindCtx: CompiledShader.UniformBindContext): Boolean {
+        return setTextures(sampler1d.textures, sampler1d.layout.bindingIndex, bindCtx)
     }
 }
 
-class MappedUniformTex2d(private val sampler2d: Texture2dLayout, backend: RenderBackendGl) :
+class MappedUniformTex2d(private val sampler2d: BindGroupData.Texture2dBindingData, backend: RenderBackendGl) :
     MappedUniformTex(backend.gl.TEXTURE_2D, backend)
 {
-    override fun setUniform(glData: CompiledShader.MappedBindGroup, bindCtx: CompiledShader.UniformBindContext): Boolean {
-        val textures = glData.bindGroupData.texture2dBindingData(sampler2d.bindingIndex).textures
-        return setTextures(textures, sampler2d.bindingIndex, bindCtx)
+    override fun setUniform(bindCtx: CompiledShader.UniformBindContext): Boolean {
+        return setTextures(sampler2d.textures, sampler2d.layout.bindingIndex, bindCtx)
     }
 }
 
-class MappedUniformTex3d(private val sampler3d: Texture3dLayout, backend: RenderBackendGl) :
+class MappedUniformTex3d(private val sampler3d: BindGroupData.Texture3dBindingData, backend: RenderBackendGl) :
     MappedUniformTex(backend.gl.TEXTURE_3D, backend)
 {
-    override fun setUniform(glData: CompiledShader.MappedBindGroup, bindCtx: CompiledShader.UniformBindContext): Boolean {
-        val textures = glData.bindGroupData.texture3dBindingData(sampler3d.bindingIndex).textures
-        return setTextures(textures, sampler3d.bindingIndex, bindCtx)
+    override fun setUniform(bindCtx: CompiledShader.UniformBindContext): Boolean {
+        return setTextures(sampler3d.textures, sampler3d.layout.bindingIndex, bindCtx)
     }
 }
 
-class MappedUniformTexCube(private val samplerCube: TextureCubeLayout, backend: RenderBackendGl) :
+class MappedUniformTexCube(private val samplerCube: BindGroupData.TextureCubeBindingData, backend: RenderBackendGl) :
     MappedUniformTex(backend.gl.TEXTURE_CUBE_MAP, backend)
 {
-    override fun setUniform(glData: CompiledShader.MappedBindGroup, bindCtx: CompiledShader.UniformBindContext): Boolean {
-        val textures = glData.bindGroupData.textureCubeBindingData(samplerCube.bindingIndex).textures
-        return setTextures(textures, samplerCube.bindingIndex, bindCtx)
+    override fun setUniform(bindCtx: CompiledShader.UniformBindContext): Boolean {
+        return setTextures(samplerCube.textures, samplerCube.layout.bindingIndex, bindCtx)
     }
 }
 
@@ -275,36 +270,36 @@ sealed class MappedUniformStorage(
 }
 
 class MappedUniformStorage1d(
-    private val storage: StorageTexture1dLayout,
+    private val storage: BindGroupData.StorageTexture1dBindingData,
     backend: RenderBackendGl
-) : MappedUniformStorage(storage, backend) {
-    override fun setUniform(glData: CompiledShader.MappedBindGroup, bindCtx: CompiledShader.UniformBindContext): Boolean {
-        val storageTex = glData.bindGroupData.storageTexture1dBindingData(storage.bindingIndex).storageTexture ?: return false
-        val storageUnit = bindCtx.location(storage.bindingIndex)
+) : MappedUniformStorage(storage.layout, backend) {
+    override fun setUniform(bindCtx: CompiledShader.UniformBindContext): Boolean {
+        val storageTex = storage.storageTexture ?: return false
+        val storageUnit = bindCtx.location(storage.layout.bindingIndex)
         bindStorageTex(storageTex, storageUnit)
         return true
     }
 }
 
 class MappedUniformStorage2d(
-    private val storage: StorageTexture2dLayout,
+    private val storage: BindGroupData.StorageTexture2dBindingData,
     backend: RenderBackendGl
-) : MappedUniformStorage(storage, backend) {
-    override fun setUniform(glData: CompiledShader.MappedBindGroup, bindCtx: CompiledShader.UniformBindContext): Boolean {
-        val storageTex = glData.bindGroupData.storageTexture2dBindingData(storage.bindingIndex).storageTexture ?: return false
-        val storageUnit = bindCtx.location(storage.bindingIndex)
+) : MappedUniformStorage(storage.layout, backend) {
+    override fun setUniform(bindCtx: CompiledShader.UniformBindContext): Boolean {
+        val storageTex = storage.storageTexture ?: return false
+        val storageUnit = bindCtx.location(storage.layout.bindingIndex)
         bindStorageTex(storageTex, storageUnit)
         return true
     }
 }
 
 class MappedUniformStorage3d(
-    private val storage: StorageTexture3dLayout,
+    private val storage: BindGroupData.StorageTexture3dBindingData,
     backend: RenderBackendGl
-) : MappedUniformStorage(storage, backend) {
-    override fun setUniform(glData: CompiledShader.MappedBindGroup, bindCtx: CompiledShader.UniformBindContext): Boolean {
-        val storageTex = glData.bindGroupData.storageTexture3dBindingData(storage.bindingIndex).storageTexture ?: return false
-        val storageUnit = bindCtx.location(storage.bindingIndex)
+) : MappedUniformStorage(storage.layout, backend) {
+    override fun setUniform(bindCtx: CompiledShader.UniformBindContext): Boolean {
+        val storageTex = storage.storageTexture ?: return false
+        val storageUnit = bindCtx.location(storage.layout.bindingIndex)
         bindStorageTex(storageTex, storageUnit)
         return true
     }

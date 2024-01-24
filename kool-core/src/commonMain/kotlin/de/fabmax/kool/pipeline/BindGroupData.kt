@@ -37,11 +37,14 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
         gpuData?.release()
     }
 
-    sealed interface BindingData
+    sealed interface BindingData {
+        val layout: BindingLayout
+        val name: String get() = layout.name
+    }
 
-    inner class UniformBufferBindingData(val binding: UniformBufferLayout) : BindingData {
+    inner class UniformBufferBindingData(override val layout: UniformBufferLayout) : BindingData {
         var isBufferDirty = true
-        val buffer: MixedBuffer = MixedBuffer(binding.layout.size)
+        val buffer: MixedBuffer = MixedBuffer(layout.layout.size)
 
         fun getAndClearDirtyFlag(): Boolean {
             val isDirty = isBufferDirty
@@ -50,8 +53,8 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
         }
     }
 
-    abstract inner class TextureBindingData<T: Texture, B: TextureLayout>(val binding: B) {
-        private val _textures = MutableList<T?>(binding.arraySize) { null }
+    abstract inner class TextureBindingData<T: Texture, B: TextureLayout>(layout: B) {
+        private val _textures = MutableList<T?>(layout.arraySize) { null }
         val textures: List<T?> get() = _textures
 
         var texture: T?
@@ -73,12 +76,12 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
         }
     }
 
-    inner class Texture1dBindingData(binding: Texture1dLayout) : TextureBindingData<Texture1d, Texture1dLayout>(binding), BindingData
-    inner class Texture2dBindingData(binding: Texture2dLayout) : TextureBindingData<Texture2d, Texture2dLayout>(binding), BindingData
-    inner class Texture3dBindingData(binding: Texture3dLayout) : TextureBindingData<Texture3d, Texture3dLayout>(binding), BindingData
-    inner class TextureCubeBindingData(binding: TextureCubeLayout) : TextureBindingData<TextureCube, TextureCubeLayout>(binding), BindingData
+    inner class Texture1dBindingData(override val layout: Texture1dLayout) : TextureBindingData<Texture1d, Texture1dLayout>(layout), BindingData
+    inner class Texture2dBindingData(override val layout: Texture2dLayout) : TextureBindingData<Texture2d, Texture2dLayout>(layout), BindingData
+    inner class Texture3dBindingData(override val layout: Texture3dLayout) : TextureBindingData<Texture3d, Texture3dLayout>(layout), BindingData
+    inner class TextureCubeBindingData(override val layout: TextureCubeLayout) : TextureBindingData<TextureCube, TextureCubeLayout>(layout), BindingData
 
-    inner class StorageTexture1dBindingData(val binding: StorageTexture1dLayout) : BindingData {
+    inner class StorageTexture1dBindingData(override val layout: StorageTexture1dLayout) : BindingData {
         var storageTexture: StorageTexture1d? = null
             set(value) {
                 field = value
@@ -86,7 +89,7 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
             }
     }
 
-    inner class StorageTexture2dBindingData(val binding: StorageTexture2dLayout) : BindingData {
+    inner class StorageTexture2dBindingData(override val layout: StorageTexture2dLayout) : BindingData {
         var storageTexture: StorageTexture2d? = null
             set(value) {
                 field = value
@@ -94,7 +97,7 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
             }
     }
 
-    inner class StorageTexture3dBindingData(val binding: StorageTexture3dLayout) : BindingData {
+    inner class StorageTexture3dBindingData(override val layout: StorageTexture3dLayout) : BindingData {
         var storageTexture: StorageTexture3d? = null
             set(value) {
                 field = value

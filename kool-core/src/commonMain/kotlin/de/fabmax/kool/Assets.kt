@@ -286,7 +286,7 @@ object Assets : CoroutineScope {
         props: TextureProps = TextureProps(),
         name: String = UniqueId.nextId("Texture2d")
     ): Texture2d {
-        val tex = Texture2d(props, name) { texData }
+        val tex = Texture2d(props, name, BufferedTextureLoader(texData))
         uploadTextureToGpu(tex, texData)
         return tex
     }

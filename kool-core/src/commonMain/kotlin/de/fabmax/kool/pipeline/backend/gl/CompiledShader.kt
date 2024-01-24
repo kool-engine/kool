@@ -123,16 +123,16 @@ sealed class CompiledShader(private val pipeline: PipelineBase, val program: GlP
         private val mappings = mutableListOf<MappedUniform>()
 
         init {
-            bindGroupData.layout.bindings.forEach { binding ->
+            bindGroupData.bindings.forEach { binding ->
                 when (binding) {
-                    is UniformBufferLayout -> mapUbo(binding)
-                    is Texture1dLayout -> mapTexture1d(binding)
-                    is Texture2dLayout -> mapTexture2d(binding)
-                    is Texture3dLayout -> mapTexture3d(binding)
-                    is TextureCubeLayout -> mapTextureCube(binding)
-                    is StorageTexture1dLayout -> mapStorage1d(binding)
-                    is StorageTexture2dLayout -> mapStorage2d(binding)
-                    is StorageTexture3dLayout -> mapStorage3d(binding)
+                    is BindGroupData.UniformBufferBindingData -> mapUbo(binding)
+                    is BindGroupData.Texture1dBindingData -> mapTexture1d(binding)
+                    is BindGroupData.Texture2dBindingData -> mapTexture2d(binding)
+                    is BindGroupData.Texture3dBindingData -> mapTexture3d(binding)
+                    is BindGroupData.TextureCubeBindingData -> mapTextureCube(binding)
+                    is BindGroupData.StorageTexture1dBindingData -> mapStorage1d(binding)
+                    is BindGroupData.StorageTexture2dBindingData -> mapStorage2d(binding)
+                    is BindGroupData.StorageTexture3dBindingData -> mapStorage3d(binding)
                 }
             }
         }
@@ -141,12 +141,12 @@ sealed class CompiledShader(private val pipeline: PipelineBase, val program: GlP
             uniformBindContext.group(bindGroupData.layout.scope)
             var uniformsValid = true
             for (i in mappings.indices) {
-                uniformsValid = uniformsValid && mappings[i].setUniform(this, uniformBindContext)
+                uniformsValid = uniformsValid && mappings[i].setUniform(uniformBindContext)
             }
             return uniformsValid
         }
 
-        private fun mapUbo(ubo: UniformBufferLayout) {
+        private fun mapUbo(ubo: BindGroupData.UniformBufferBindingData) {
             mappings += if (ubo.name !in plainUniformUbos) {
                 val bufferCreationInfo = BufferCreationInfo(
                     bufferName = "bindGroup[${bindGroupData.layout.scope}]-ubo-${ubo.name}",
@@ -162,33 +162,33 @@ sealed class CompiledShader(private val pipeline: PipelineBase, val program: GlP
             }
         }
 
-        private fun mapTexture1d(tex: Texture1dLayout) {
+        private fun mapTexture1d(tex: BindGroupData.Texture1dBindingData) {
             mappings += MappedUniformTex1d(tex, backend)
         }
 
-        private fun mapTexture2d(tex: Texture2dLayout) {
+        private fun mapTexture2d(tex: BindGroupData.Texture2dBindingData) {
             mappings += MappedUniformTex2d(tex, backend)
         }
 
-        private fun mapTexture3d(tex: Texture3dLayout) {
+        private fun mapTexture3d(tex: BindGroupData.Texture3dBindingData) {
             mappings += MappedUniformTex3d(tex, backend)
         }
 
-        private fun mapTextureCube(cubeMap: TextureCubeLayout) {
+        private fun mapTextureCube(cubeMap: BindGroupData.TextureCubeBindingData) {
             mappings += MappedUniformTexCube(cubeMap, backend)
         }
 
-        private fun mapStorage1d(storage: StorageTexture1dLayout) {
+        private fun mapStorage1d(storage: BindGroupData.StorageTexture1dBindingData) {
             checkStorageTexSupport()
             mappings += MappedUniformStorage1d(storage, backend)
         }
 
-        private fun mapStorage2d(storage: StorageTexture2dLayout) {
+        private fun mapStorage2d(storage: BindGroupData.StorageTexture2dBindingData) {
             checkStorageTexSupport()
             mappings += MappedUniformStorage2d(storage, backend)
         }
 
-        private fun mapStorage3d(storage: StorageTexture3dLayout) {
+        private fun mapStorage3d(storage: BindGroupData.StorageTexture3dBindingData) {
             checkStorageTexSupport()
             mappings += MappedUniformStorage3d(storage, backend)
         }
