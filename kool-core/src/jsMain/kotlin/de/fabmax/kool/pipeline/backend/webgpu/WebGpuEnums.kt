@@ -1,6 +1,14 @@
 package de.fabmax.kool.pipeline.backend.webgpu
 
-value class GPUBufferBindingType(val enumValue: String) {
+value class GPUAddressMode private constructor(val enumValue: String) {
+    companion object {
+        val clampToEdge = GPUAddressMode("clamp-to-edge")
+        val repeat = GPUAddressMode("repeat")
+        val mirrorRepeat = GPUAddressMode("mirror-repeat")
+    }
+}
+
+value class GPUBufferBindingType private constructor(val enumValue: String) {
     companion object {
         val uniform = GPUBufferBindingType("uniform")
         val storage = GPUBufferBindingType("storage")
@@ -8,14 +16,14 @@ value class GPUBufferBindingType(val enumValue: String) {
     }
 }
 
-value class GPUCanvasAlphaMode(val enumValue: String) {
+value class GPUCanvasAlphaMode private constructor(val enumValue: String) {
     companion object {
         val opaque = GPUCanvasAlphaMode("opaque")
         val premultiplied = GPUCanvasAlphaMode("premultiplied")
     }
 }
 
-value class GPUCompareFunction(val funcName: String) {
+value class GPUCompareFunction private constructor(val funcName: String) {
     companion object {
         val never = GPUCompareFunction("never")
         val less = GPUCompareFunction("less")
@@ -28,27 +36,41 @@ value class GPUCompareFunction(val funcName: String) {
     }
 }
 
-value class GPUIndexFormat(val enumValue: String) {
+value class GPUFilterMode private constructor(val enumValue: String) {
+    companion object {
+        val nearest = GPUFilterMode("nearest")
+        val linear = GPUFilterMode("linear")
+    }
+}
+
+value class GPUMipmapFilterMode private constructor(val enumValue: String) {
+    companion object {
+        val nearest = GPUMipmapFilterMode("nearest")
+        val linear = GPUMipmapFilterMode("linear")
+    }
+}
+
+value class GPUIndexFormat private constructor(val enumValue: String) {
     companion object {
         val uint16 = GPUIndexFormat("uint16")
         val uint32 = GPUIndexFormat("uint32")
     }
 }
 
-value class GPULoadOp(val enumValue: String) {
+value class GPULoadOp private constructor(val enumValue: String) {
     companion object {
         val load = GPULoadOp("load")
         val clear = GPULoadOp("clear")
     }
 }
 
-value class GPUPredefinedColorSpace(val enumValue: String) {
+value class GPUPredefinedColorSpace private constructor(val enumValue: String) {
     companion object {
         val srgb = GPUPredefinedColorSpace("srgb")
     }
 }
 
-value class GPUPrimitiveTopology(val enumValue: String) {
+value class GPUPrimitiveTopology private constructor(val enumValue: String) {
     companion object {
         val pointList = GPUPrimitiveTopology("point-list")
         val lineList = GPUPrimitiveTopology("line-list")
@@ -58,21 +80,21 @@ value class GPUPrimitiveTopology(val enumValue: String) {
     }
 }
 
-value class GPUPowerPreference(val enumValue: String) {
+value class GPUPowerPreference private constructor(val enumValue: String) {
     companion object {
         val lowPower = GPUPowerPreference("low-power")
         val highPerformance = GPUPowerPreference("high-performance")
     }
 }
 
-value class GPUStoreOp(val enumValue: String) {
+value class GPUStoreOp private constructor(val enumValue: String) {
     companion object {
         val store = GPUStoreOp("store")
         val discard = GPUStoreOp("discard")
     }
 }
 
-value class GPUTextureFormat(val enumValue: String) {
+value class GPUTextureFormat private constructor(val enumValue: String) {
     companion object {
         val r8unorm = GPUTextureFormat("r8unorm")
         val r8snorm = GPUTextureFormat("r8snorm")
@@ -121,7 +143,7 @@ value class GPUTextureFormat(val enumValue: String) {
     }
 }
 
-value class GPUVertexFormat(val enumValue: String) {
+value class GPUVertexFormat private constructor(val enumValue: String) {
     companion object {
         val uint8x2 = GPUVertexFormat("uint8x2")
         val uint8x4 = GPUVertexFormat("uint8x4")
@@ -156,7 +178,7 @@ value class GPUVertexFormat(val enumValue: String) {
     }
 }
 
-value class GPUVertexStepMode(val enumValue: String) {
+value class GPUVertexStepMode private constructor(val enumValue: String) {
     companion object {
         val vertex = GPUVertexStepMode("vertex")
         val instance = GPUVertexStepMode("instance")

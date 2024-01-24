@@ -9,9 +9,9 @@ import de.fabmax.kool.pipeline.backend.DepthRange
 import de.fabmax.kool.pipeline.backend.RenderBackend
 import de.fabmax.kool.pipeline.backend.RenderBackendJs
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
+import de.fabmax.kool.platform.ImageTextureData
 import de.fabmax.kool.platform.JsContext
 import de.fabmax.kool.util.LongHash
-import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logI
 import de.fabmax.kool.util.logT
 import kotlinx.browser.window
@@ -134,7 +134,21 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
     }
 
     override fun uploadTextureToGpu(tex: Texture, data: TextureData) {
-        logE { "Not yet implemented: uploadTextureToGpu()" }
+        val image = (data as ImageTextureData).data
+        val size = intArrayOf(data.width, data.height)
+        val gpuTex = device.createTexture(
+            GPUTextureDescriptor(
+                size = size,
+                format = GPUTextureFormat.rgba8unorm,
+                usage = GPUTextureUsage.COPY_DST or GPUTextureUsage.TEXTURE_BINDING or GPUTextureUsage.RENDER_ATTACHMENT
+            )
+        )
+        device.queue.copyExternalImageToTexture(
+            GPUImageCopyExternalImage(image),
+            GPUImageCopyTextureTagged(gpuTex),
+            size
+        )
+        tex.loadedTexture = LoadedTextureWebGpu(gpuTex, data.width, data.height, 1)
     }
 
     class WebGpuOffscreenPass2d(val parentPass: OffscreenRenderPass2d) : OffscreenPass2dImpl {

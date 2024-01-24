@@ -13,17 +13,24 @@ class WgpuPipeline(
     val fragemntShaderModule: GPUShaderModule,
     val renderPass: WgpuRenderPass,
     val backend: RenderBackendWebGpu,
-) {
+): BaseReleasable(), PipelineBackend {
     private val device: GPUDevice get() = backend.device
+
+    private val locations = WgslLocations(drawPipeline.bindGroupLayouts)
 
     private val bindGroupLayouts: List<GPUBindGroupLayout> = createBindGroupLayouts(drawPipeline)
     private val pipelineLayout: GPUPipelineLayout = createPipelineLayout(drawPipeline)
     private val vertexBufferLayout: List<GPUVertexBufferLayout> = createVertexBufferLayout(drawPipeline)
     private val renderPipeline: GPURenderPipeline = createRenderPipeline(drawPipeline)
 
+    init {
+        drawPipeline.pipelineBackend = this
+    }
+
     private fun createBindGroupLayouts(pipeline: DrawPipeline): List<GPUBindGroupLayout> {
+
         return pipeline.bindGroupLayouts.asList.map { group ->
-            val layoutEntries = group.bindings.map { binding ->
+            val layoutEntries = group.bindings.flatMap { binding ->
                 val visibility = binding.stages.fold(0) { acc, stage ->
                     acc or when (stage) {
                         ShaderStage.VERTEX_SHADER -> GPUShaderStage.VERTEX
@@ -32,15 +39,32 @@ class WgpuPipeline(
                         else -> error("unsupported shader stage: $stage")
                     }
                 }
+                val location = locations[binding]
 
                 when (binding) {
-                    is UniformBufferLayout -> GPUBindGroupLayoutEntryBuffer(
-                        binding.bindingIndex,
-                        visibility,
-                        GPUBufferBindingLayout()
+                    is UniformBufferLayout -> listOf(
+                        GPUBindGroupLayoutEntryBuffer(
+                            binding.bindingIndex,
+                            visibility,
+                            GPUBufferBindingLayout()
+                        )
                     )
+
                     is Texture1dLayout -> TODO()
-                    is Texture2dLayout -> TODO()
+
+                    is Texture2dLayout -> listOf(
+                        GPUBindGroupLayoutEntrySampler(
+                            location.binding,
+                            visibility,
+                            GPUSamplerBindingLayout()
+                        ),
+                        GPUBindGroupLayoutEntryTexture(
+                            location.binding + 1,
+                            visibility,
+                            GPUTextureBindingLayout()
+                        )
+                    )
+
                     is Texture3dLayout -> TODO()
                     is TextureCubeLayout -> TODO()
                     is StorageTexture1dLayout -> TODO()
@@ -151,7 +175,7 @@ class WgpuPipeline(
 
     private fun BindGroupData.getOrCreateWgpuData(): WgpuBindGroupData {
         if (gpuData == null) {
-            gpuData = WgpuBindGroupData(layout, bindGroupLayouts[layout.group], backend)
+            gpuData = WgpuBindGroupData(this, bindGroupLayouts[layout.group], backend)
         }
         return gpuData as WgpuBindGroupData
     }
@@ -169,8 +193,8 @@ class WgpuPipeline(
         encoder.setIndexBuffer(gpuGeom.indexBuffer, GPUIndexFormat.uint32)
     }
 
-    class WgpuBindGroupData(
-        private val layout: BindGroupLayout,
+    inner class WgpuBindGroupData(
+        private val data: BindGroupData,
         private val gpuLayout: GPUBindGroupLayout,
         private val backend: RenderBackendWebGpu
     ) :
@@ -178,38 +202,60 @@ class WgpuPipeline(
     {
         private val device: GPUDevice get() = backend.device
 
-        private val group = layout.scope.group
+        private val group = data.layout.group
+        private val mappedLocations = IntArray(data.bindings.size)
         private val ubos = mutableListOf<UboBinding>()
         private var bindGroup: GPUBindGroup? = null
 
         private fun createBindGroup() {
             val bindGroupEntries = mutableListOf<GPUBindGroupEntry>()
-            layout.bindings.forEach {
-                when (it) {
-                    is UniformBufferLayout -> {
-                        val bufferLayout = Std140BufferLayout(it.uniforms)
+            data.bindings.forEachIndexed { i, binding ->
+                val location = locations[binding.layout]
+                mappedLocations[i] = location.binding
+
+                when (binding) {
+                    is BindGroupData.UniformBufferBindingData -> {
+                        val bufferLayout = Std140BufferLayout(binding.layout.uniforms)
                         val gpuBuffer = device.createBuffer(
                             GPUBufferDescriptor(
-                                label = "bindGroup[${layout.scope}]-ubo-${it.name}",
+                                label = "bindGroup[${data.layout.scope}]-ubo-${binding.name}",
                                 size = bufferLayout.size.toLong(),
                                 usage = GPUBufferUsage.UNIFORM or GPUBufferUsage.COPY_DST
                             )
                         )
-                        ubos += UboBinding(it, bufferLayout, gpuBuffer)
-                        bindGroupEntries += GPUBindGroupEntry(it.bindingIndex, GPUBufferBinding(gpuBuffer))
+                        ubos += UboBinding(binding, bufferLayout, gpuBuffer)
+                        bindGroupEntries += GPUBindGroupEntry(location.binding, GPUBufferBinding(gpuBuffer))
                     }
-                    is Texture1dLayout -> TODO()
-                    is Texture2dLayout -> TODO()
-                    is Texture3dLayout -> TODO()
-                    is TextureCubeLayout -> TODO()
-                    is StorageTexture1dLayout -> TODO()
-                    is StorageTexture2dLayout -> TODO()
-                    is StorageTexture3dLayout -> TODO()
+                    is BindGroupData.Texture1dBindingData -> TODO()
+                    is BindGroupData.Texture2dBindingData -> {
+                        val tex = checkNotNull(binding.texture) {
+                            "Nullable textures are not yet supported"
+                        }
+                        val loadedTex = checkNotNull(tex.loadedTexture as LoadedTextureWebGpu?) {
+                            "Lazy loaded textures are not yet supported"
+                        }
+
+                        val samplerSettings = binding.sampler ?: tex.props.defaultSamplerSettings
+                        val sampler = device.createSampler(
+                            // todo: use values from samplerSettings
+                            GPUSamplerDescriptor(
+                                magFilter = GPUFilterMode.linear,
+                                minFilter = GPUFilterMode.linear
+                            )
+                        )
+                        bindGroupEntries += GPUBindGroupEntry(location.binding, sampler)
+                        bindGroupEntries += GPUBindGroupEntry(location.binding+1, loadedTex.texture.createView())
+                    }
+                    is BindGroupData.Texture3dBindingData -> TODO()
+                    is BindGroupData.TextureCubeBindingData -> TODO()
+                    is BindGroupData.StorageTexture1dBindingData -> TODO()
+                    is BindGroupData.StorageTexture2dBindingData -> TODO()
+                    is BindGroupData.StorageTexture3dBindingData -> TODO()
                 }
             }
             bindGroup = backend.device.createBindGroup(
                 GPUBindGroupDescriptor(
-                    label = "bindGroup[${layout.scope}]",
+                    label = "bindGroup[${data.layout.scope}]",
                     layout = gpuLayout,
                     entries = bindGroupEntries.toTypedArray()
                 )
@@ -223,12 +269,11 @@ class WgpuPipeline(
             }
 
             ubos.forEach { ubo ->
-                val data = bindGroupData.uniformBufferBindingData(ubo.binding.bindingIndex)
-                if (data.getAndClearDirtyFlag()) {
+                if (ubo.binding.getAndClearDirtyFlag()) {
                     device.queue.writeBuffer(
                         buffer = ubo.gpuBuffer,
                         bufferOffset = 0L,
-                        data = (data.buffer as MixedBufferImpl).buffer
+                        data = (ubo.binding.buffer as MixedBufferImpl).buffer
                     )
                 }
             }
@@ -238,8 +283,12 @@ class WgpuPipeline(
     }
 
     data class UboBinding(
-        val binding: UniformBufferLayout,
+        val binding: BindGroupData.UniformBufferBindingData,
         val layout: Std140BufferLayout,
         val gpuBuffer: GPUBuffer
     )
+
+    override fun removeUser(user: Any) {
+        // todo
+    }
 }

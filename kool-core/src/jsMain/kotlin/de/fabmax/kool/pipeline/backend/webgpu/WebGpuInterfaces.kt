@@ -65,6 +65,7 @@ external class GPUDevice {
     fun createCommandEncoder(): GPUCommandEncoder
     fun createRenderPipeline(descriptor: GPURenderPipelineDescriptor): GPURenderPipeline
     fun createShaderModule(descriptor: GPUShaderModuleDescriptor): GPUShaderModule
+    fun createSampler(descriptor: GPUSamplerDescriptor): GPUSampler
     fun createTexture(descriptor: GPUTextureDescriptor): GPUTexture
 }
 
@@ -75,6 +76,7 @@ external class GPUPipelineLayout
 external class GPUQueue {
     fun submit(commandBuffers: Array<GPUCommandBuffer>)
     fun writeBuffer(buffer: GPUBuffer, bufferOffset: Long, data: ArrayBufferView, dataOffset: Long = definedExternally, size: Long = definedExternally)
+    fun copyExternalImageToTexture(source: GPUImageCopyExternalImage, destination: GPUImageCopyTextureTagged, copySize: IntArray)
 }
 
 external class GPURenderPassEncoder {
@@ -106,6 +108,8 @@ external class GPUTexture {
 }
 
 external object GPUTextureUsage {
+    val TEXTURE_BINDING: Int
+    val COPY_DST: Int
     val RENDER_ATTACHMENT: Int
 }
 

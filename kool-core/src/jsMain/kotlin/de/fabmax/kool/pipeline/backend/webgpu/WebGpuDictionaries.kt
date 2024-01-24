@@ -1,6 +1,7 @@
 package de.fabmax.kool.pipeline.backend.webgpu
 
 import de.fabmax.kool.util.Color
+import org.w3c.dom.ImageBitmap
 
 interface GPUDictionary {
     @JsName("label")
@@ -149,6 +150,16 @@ class GPUFragmentState(
     val targets: Array<GPUColorTargetState>,
 )
 
+class GPUImageCopyExternalImage(
+    @JsName("source")
+    val source: ImageBitmap
+)
+
+class GPUImageCopyTextureTagged(
+    @JsName("texture")
+    val texture: GPUTexture
+)
+
 data class GPUMultisampleState(
     @JsName("count")
     val count: Int = 1,
@@ -258,6 +269,31 @@ data class GPUShaderModuleDescriptor(
     val code: String,
     override val label: String = "GPUShaderModuleDescriptor"
 ) : GPUDictionary
+
+class GPUSamplerDescriptor(
+    @JsName("label")
+    val label: String = "",
+    @JsName("addressModeU")
+    val addressModeU: GPUAddressMode = GPUAddressMode.clampToEdge,
+    @JsName("addressModeV")
+    val addressModeV: GPUAddressMode = GPUAddressMode.clampToEdge,
+    @JsName("addressModeW")
+    val addressModeW: GPUAddressMode = GPUAddressMode.clampToEdge,
+    @JsName("magFilter")
+    val magFilter: GPUFilterMode = GPUFilterMode.nearest,
+    @JsName("minFilter")
+    val minFilter: GPUFilterMode = GPUFilterMode.nearest,
+    @JsName("mipmapFilter")
+    val mipmapFilter: GPUMipmapFilterMode = GPUMipmapFilterMode.nearest,
+    @JsName("lodMinClamp")
+    val lodMinClamp: Float = 0f,
+    @JsName("lodMaxClamp")
+    val lodMaxClamp: Float = 32f,
+    //@JsName("compare")
+    //val compare: GPUCompareFunction,
+    @JsName("maxAnisotropy")
+    val maxAnisotropy: Int = 1,
+)
 
 class GPUTextureDescriptor(
     @JsName("size")

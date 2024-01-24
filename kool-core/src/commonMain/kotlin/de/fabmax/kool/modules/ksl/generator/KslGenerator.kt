@@ -240,7 +240,7 @@ abstract class KslGenerator {
         fun dump() {
             stages.forEach { (type, src) ->
                 println("### $type source:")
-                src.lines().forEachIndexed { i, line -> println("${linePrefix(i)}${line}") }
+                src.lines().forEachIndexed { i, line -> println("${linePrefix(i+1)}${line}") }
             }
         }
     }

@@ -3,10 +3,7 @@ package de.fabmax.kool.pipeline.backend.webgpu
 import de.fabmax.kool.modules.ksl.generator.KslGenerator
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.modules.ksl.model.KslState
-import de.fabmax.kool.pipeline.ComputePipeline
-import de.fabmax.kool.pipeline.DrawPipeline
-import de.fabmax.kool.pipeline.PipelineBase
-import de.fabmax.kool.pipeline.UniformBufferLayout
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.logW
 
 class WgslGenerator : KslGenerator() {
@@ -20,9 +17,11 @@ class WgslGenerator : KslGenerator() {
         val fragmentStage = checkNotNull(program.fragmentStage) {
             "KslProgram fragmentStage is missing (a valid KslShader needs at least a vertexStage and fragmentStage)"
         }
+
+        val locations = WgslLocations(pipeline.bindGroupLayouts)
         return WgslGeneratorOutput.shaderOutput(
-            generateVertexSrc(vertexStage, pipeline),
-            generateFragmentSrc(fragmentStage, pipeline)
+            generateVertexSrc(vertexStage, pipeline, locations),
+            generateFragmentSrc(fragmentStage, pipeline, locations)
         )
     }
 
@@ -30,10 +29,12 @@ class WgslGenerator : KslGenerator() {
         val computeStage = checkNotNull(program.computeStage) {
             "KslProgram computeStage is missing"
         }
-        return WgslGeneratorOutput.computeOutput(generateComputeSrc(computeStage, pipeline))
+
+        val locations = WgslLocations(pipeline.bindGroupLayouts)
+        return WgslGeneratorOutput.computeOutput(generateComputeSrc(computeStage, pipeline, locations))
     }
 
-    private fun generateVertexSrc(vertexStage: KslVertexStage, pipeline: PipelineBase): String {
+    private fun generateVertexSrc(vertexStage: KslVertexStage, pipeline: PipelineBase, locations: WgslLocations): String {
         val src = StringBuilder()
         src.appendLine("""
             /*
@@ -44,12 +45,12 @@ class WgslGenerator : KslGenerator() {
 
         val vertexInput = VertexInputStructs(vertexStage)
         val vertexOutput = VertexOutputStruct(vertexStage)
-        val ubos = UboStructs(vertexStage, pipeline)
+        val ubos = UboStructs(vertexStage, pipeline, locations)
 
         ubos.generateStructs(src)
         vertexInput.generateStructs(src)
         vertexOutput.generateStruct(src)
-//        src.generateUniformSamplers(vertexStage, pipeline)
+        src.generateTextureSamplers(vertexStage, pipeline, locations)
 //        src.generateUniformStorage(vertexStage, pipeline)
 //        src.generateFunctions(vertexStage)
 
@@ -69,7 +70,7 @@ class WgslGenerator : KslGenerator() {
         return src.toString()
     }
 
-    private fun generateFragmentSrc(fragmentStage: KslFragmentStage, pipeline: PipelineBase): String {
+    private fun generateFragmentSrc(fragmentStage: KslFragmentStage, pipeline: PipelineBase, locations: WgslLocations): String {
         val src = StringBuilder()
         src.appendLine("""
             /*
@@ -80,12 +81,12 @@ class WgslGenerator : KslGenerator() {
 
         val fragmentInput = FragmentInputStruct(fragmentStage)
         val fragmentOutput = FragmentOutputStruct(fragmentStage)
-        val ubos = UboStructs(fragmentStage, pipeline)
+        val ubos = UboStructs(fragmentStage, pipeline, locations)
 
         ubos.generateStructs(src)
         fragmentInput.generateStructs(src)
         fragmentOutput.generateStruct(src)
-//        src.generateUniformSamplers(fragmentStage, pipeline)
+        src.generateTextureSamplers(fragmentStage, pipeline, locations)
 //        src.generateUniformStorage(fragmentStage, pipeline)
 //        src.generateFunctions(fragmentStage)
 
@@ -105,7 +106,7 @@ class WgslGenerator : KslGenerator() {
         return src.toString()
     }
 
-    private fun generateComputeSrc(computeStage: KslComputeStage, pipeline: PipelineBase): String {
+    private fun generateComputeSrc(computeStage: KslComputeStage, pipeline: PipelineBase, locations: WgslLocations): String {
         val src = StringBuilder()
         src.appendLine("""
             /*
@@ -114,9 +115,9 @@ class WgslGenerator : KslGenerator() {
         """.trimIndent())
         src.appendLine()
 
-        val ubos = UboStructs(computeStage, pipeline)
+        val ubos = UboStructs(computeStage, pipeline, locations)
         ubos.generateStructs(src)
-//        src.generateUniformSamplers(computeStage, pipeline)
+        src.generateTextureSamplers(computeStage, pipeline, locations)
 //        src.generateUniformStorage(computeStage, pipeline)
 //        src.generateFunctions(computeStage)
 
@@ -129,7 +130,7 @@ class WgslGenerator : KslGenerator() {
         return src.toString()
     }
 
-    private inner class UboStructs(stage: KslShaderStage, pipeline: PipelineBase) : WgslStructHelper {
+    private inner class UboStructs(stage: KslShaderStage, pipeline: PipelineBase, val locations: WgslLocations) : WgslStructHelper {
 
         val structs: List<UboStruct> = buildList {
             pipeline.bindGroupLayouts.asList.forEach { layout ->
@@ -145,7 +146,7 @@ class WgslGenerator : KslGenerator() {
                             .filter { it.expressionType !is KslArrayType<*> || it.arraySize > 0 }
                             .map { WgslStructMember(uboVarName, it.value.name(), it.expressionType.wgslTypeName) }
 
-                        add(UboStruct(uboVarName, uboTypeName, members, layout.group, ubo.bindingIndex))
+                        add(UboStruct(uboVarName, uboTypeName, members, ubo))
                     }
             }
         }
@@ -153,7 +154,8 @@ class WgslGenerator : KslGenerator() {
         fun generateStructs(builder: StringBuilder) = builder.apply {
             structs.forEach { ubo -> generateStruct(ubo.typeName, ubo.members) }
             structs.forEach { ubo ->
-                appendLine("@group(${ubo.group}) @binding(${ubo.binding}) var<uniform> ${ubo.name}: ${ubo.typeName};")
+                val location = locations[ubo.binding]
+                appendLine("@group(${location.group}) @binding(${location.binding}) var<uniform> ${ubo.name}: ${ubo.typeName};")
             }
             appendLine()
         }
@@ -163,7 +165,7 @@ class WgslGenerator : KslGenerator() {
         }
     }
 
-    private data class UboStruct(val name: String, val typeName: String, val members: List<WgslStructMember>, val group: Int, val binding: Int)
+    private data class UboStruct(val name: String, val typeName: String, val members: List<WgslStructMember>, val binding: UniformBufferLayout)
 
     private class VertexInputStructs(stage: KslVertexStage) : WgslStructHelper {
         val vertexInputs = stage.attributes.values
@@ -270,6 +272,28 @@ class WgslGenerator : KslGenerator() {
         }
     }
 
+    private fun StringBuilder.generateTextureSamplers(stage: KslShaderStage, pipeline: PipelineBase, locations: WgslLocations) {
+        pipeline.bindGroupLayouts.asList.forEach { layout ->
+            layout.bindings
+                .filterIsInstance<TextureLayout>().filter { texLayout ->
+                    stage.getUsedSamplers().any { usedTex -> usedTex.name == texLayout.name }
+                }
+                .map { tex ->
+                    val location = locations[tex]
+                    val texType = when (tex.type) {
+                        BindingType.TEXTURE_1D -> "texture_1d<f32>"
+                        BindingType.TEXTURE_2D -> "texture_2d<f32>"
+                        BindingType.TEXTURE_3D -> "texture_3d<f32>"
+                        BindingType.TEXTURE_CUBE -> "texture_cube<f32>"
+                        else -> error("invalid texture/sampler type: ${tex.type}")
+                    }
+                    appendLine("@group(${location.group}) @binding(${location.binding}) var ${tex.name}_sampler: sampler;")
+                    appendLine("@group(${location.group}) @binding(${location.binding+1}) var ${tex.name}: $texType;")
+                }
+        }
+        appendLine()
+    }
+
     override fun constFloatVecExpression(vararg values: KslExpression<KslFloat1>) =
         constVecExpression("f32", values.toList())
 
@@ -304,11 +328,8 @@ class WgslGenerator : KslGenerator() {
     }
 
     override fun sampleColorTexture(sampleTexture: KslSampleColorTexture<*>): String {
-        // fixme: in contrast to GLSL, WGSL distinguishes between sampler and texture (which makes sense)
-        //  for now we generate the texture from the sampler expression by simply appending _tex, this is
-        //  only a hack!
         val samplerName = sampleTexture.sampler.generateExpression(this)
-        return "textureSample(${samplerName}_tex, $samplerName, ${sampleTexture.coord.generateExpression(this)})"
+        return "textureSample(${samplerName}, ${samplerName}_sampler, ${sampleTexture.coord.generateExpression(this)})"
     }
 
     override fun sampleDepthTexture(sampleTexture: KslSampleDepthTexture<*>): String {

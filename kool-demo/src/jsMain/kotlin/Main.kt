@@ -1,11 +1,16 @@
+import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolApplication
 import de.fabmax.kool.KoolConfigJs
+import de.fabmax.kool.demo.DemoLoader
 import de.fabmax.kool.demo.demo
 import de.fabmax.kool.modules.ksl.KslUnlitShader
+import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.physics.Physics
-import de.fabmax.kool.scene.addColorMesh
+import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.scene.addMesh
 import de.fabmax.kool.scene.defaultOrbitCamera
 import de.fabmax.kool.scene.scene
+import de.fabmax.kool.util.launchOnMainThread
 import kotlinx.browser.window
 import kotlin.collections.set
 
@@ -21,12 +26,7 @@ fun main() = KoolApplication(
     )
 ) {
     // uncomment to load assets locally instead of from remote
-    //Demo.setProperty("assets.base", ".")
-
-    // sub-directories for individual asset classes within asset base dir
-    //Demo.setProperty("assets.hdri", "hdri")
-    //Demo.setProperty("assets.materials", "materials")
-    //Demo.setProperty("assets.models", "models")
+    //DemoLoader.setProperty("assets.base", ".")
 
     if (isWebGpu) {
         // web-gpu backend does not yet support everything needed to run the full demo set
@@ -60,8 +60,20 @@ fun getParams(): Map<String, String> {
 
 fun helloWebGpu() = scene {
     defaultOrbitCamera()
-    addColorMesh {
+    addMesh(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS) {
         generate { cube { colored(false) } }
-        shader = KslUnlitShader { color { vertexColor() } }
+
+        launchOnMainThread {
+            val tex = Assets.loadTexture2d("${DemoLoader.materialPath}/uv_checker_map.jpg")
+
+            shader = KslUnlitShader {
+                color {
+                    //vertexColor()
+                    textureColor(tex, gamma = 1f)
+                }
+                colorSpaceConversion = ColorSpaceConversion.AS_IS
+                //modelCustomizer = { dumpCode = true }
+            }
+        }
     }
 }
