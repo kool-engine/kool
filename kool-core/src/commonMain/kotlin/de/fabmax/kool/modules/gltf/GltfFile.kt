@@ -628,7 +628,7 @@ data class GltfFile(
         }
 
         fun fromJson(json: String): GltfFile {
-            return jsonFmt.decodeFromString(json)
+            return jsonFmt.decodeFromString(serializer(), json)
         }
     }
 }
