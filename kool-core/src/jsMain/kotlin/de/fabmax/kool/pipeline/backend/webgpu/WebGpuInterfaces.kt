@@ -71,7 +71,7 @@ external class GPUDevice {
 
 external class GPUExternalTexture : GPUBindingResource
 
-external class GPUPipelineLayout
+external interface GPUPipelineLayout
 
 external class GPUQueue {
     fun submit(commandBuffers: Array<GPUCommandBuffer>)
@@ -90,7 +90,9 @@ external class GPURenderPassEncoder {
     fun end()
 }
 
-external class GPURenderPipeline
+external class GPURenderPipeline {
+    fun getBindGroupLayout(index: Int): GPUBindGroupLayout
+}
 
 external class GPUSampler : GPUBindingResource
 
@@ -104,6 +106,7 @@ external object GPUShaderStage {
 
 external class GPUTexture {
     fun createView(): GPUTextureView
+    fun createView(descriptor: GPUTextureViewDescriptor): GPUTextureView
     fun destroy()
 }
 

@@ -13,7 +13,7 @@ object TextureLoaderGl {
         loadedTex.bind()
         gl.texImage1d(gl.TEXTURE_1D, img)
         if (tex.props.generateMipMaps) {
-            gl.generateMipmap(gl.TEXTURE_2D)
+            gl.generateMipmap(gl.TEXTURE_1D)
         }
         return loadedTex
     }

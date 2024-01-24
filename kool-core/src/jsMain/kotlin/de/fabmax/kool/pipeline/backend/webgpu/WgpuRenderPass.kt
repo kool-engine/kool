@@ -66,7 +66,7 @@ class WgpuRenderPass(val backend: RenderBackendWebGpu, val multiSamples: Int = 4
         val colorAttachments = clearColors.map { clearColor ->
             val resolveTarget = gpuContext.getCurrentTexture().createView()
             clearColor?.let {
-                GPURenderPassColorAttachmentClear(colorAttachmentView!!, resolveTarget, GPUColorDict(it))
+                GPURenderPassColorAttachmentClear(colorAttachmentView!!, GPUColorDict(it), resolveTarget)
             } ?: GPURenderPassColorAttachmentLoad(colorAttachmentView!!, resolveTarget)
         }.toTypedArray()
 

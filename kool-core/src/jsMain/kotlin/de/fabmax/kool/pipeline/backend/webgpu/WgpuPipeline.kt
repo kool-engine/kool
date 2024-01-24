@@ -237,10 +237,14 @@ class WgpuPipeline(
 
                         val samplerSettings = binding.sampler ?: tex.props.defaultSamplerSettings
                         val sampler = device.createSampler(
-                            // todo: use values from samplerSettings
                             GPUSamplerDescriptor(
-                                magFilter = GPUFilterMode.linear,
-                                minFilter = GPUFilterMode.linear
+                                addressModeU = samplerSettings.addressModeU.wgpu,
+                                addressModeV = samplerSettings.addressModeV.wgpu,
+                                addressModeW = samplerSettings.addressModeW.wgpu,
+                                magFilter = samplerSettings.magFilter.wgpu,
+                                minFilter = samplerSettings.minFilter.wgpu,
+                                mipmapFilter = if (tex.props.generateMipMaps) GPUMipmapFilterMode.linear else GPUMipmapFilterMode.nearest,
+                                maxAnisotropy = samplerSettings.maxAnisotropy,
                             )
                         )
                         bindGroupEntries += GPUBindGroupEntry(location.binding, sampler)

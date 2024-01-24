@@ -9,7 +9,6 @@ import de.fabmax.kool.pipeline.backend.DepthRange
 import de.fabmax.kool.pipeline.backend.RenderBackend
 import de.fabmax.kool.pipeline.backend.RenderBackendJs
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
-import de.fabmax.kool.platform.ImageTextureData
 import de.fabmax.kool.platform.JsContext
 import de.fabmax.kool.util.LongHash
 import de.fabmax.kool.util.logI
@@ -35,6 +34,8 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
     private var _canvasFormat: GPUTextureFormat? = null
     val canvasFormat: GPUTextureFormat
         get() = _canvasFormat!!
+
+    private lateinit var texLoader: TextureLoader
 
     val pipelineManager = PipelineManager(this)
     private val sceneRenderer = WgpuRenderPass(this)
@@ -63,6 +64,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         gpuContext = canvas.getContext("webgpu") as GPUCanvasContext
         _canvasFormat = navigator.gpu.getPreferredCanvasFormat()
         gpuContext.configure(GPUCanvasConfiguration(device, canvasFormat))
+        texLoader = TextureLoader(this)
         logI { "WebGPU context created" }
 
         window.requestAnimationFrame { t -> (ctx as JsContext).renderFrame(t) }
@@ -134,21 +136,10 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
     }
 
     override fun uploadTextureToGpu(tex: Texture, data: TextureData) {
-        val image = (data as ImageTextureData).data
-        val size = intArrayOf(data.width, data.height)
-        val gpuTex = device.createTexture(
-            GPUTextureDescriptor(
-                size = size,
-                format = GPUTextureFormat.rgba8unorm,
-                usage = GPUTextureUsage.COPY_DST or GPUTextureUsage.TEXTURE_BINDING or GPUTextureUsage.RENDER_ATTACHMENT
-            )
-        )
-        device.queue.copyExternalImageToTexture(
-            GPUImageCopyExternalImage(image),
-            GPUImageCopyTextureTagged(gpuTex),
-            size
-        )
-        tex.loadedTexture = LoadedTextureWebGpu(gpuTex, data.width, data.height, 1)
+        when (tex) {
+            is Texture2d -> texLoader.loadTexture2d(tex, data)
+            else -> error("Unsupported texture type: $tex")
+        }
     }
 
     class WebGpuOffscreenPass2d(val parentPass: OffscreenRenderPass2d) : OffscreenPass2dImpl {

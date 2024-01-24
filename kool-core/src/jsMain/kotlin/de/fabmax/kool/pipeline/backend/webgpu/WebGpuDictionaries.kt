@@ -3,16 +3,12 @@ package de.fabmax.kool.pipeline.backend.webgpu
 import de.fabmax.kool.util.Color
 import org.w3c.dom.ImageBitmap
 
-interface GPUDictionary {
-    @JsName("label")
-    val label: String
-}
-
 class GPUBindGroupLayoutDescriptor(
     @JsName("entries")
     val entries: Array<GPUBindGroupLayoutEntry>,
-    override val label: String = "GPUBindGroupLayoutDescriptor"
-) : GPUDictionary
+    @JsName("label")
+    val label: String = ""
+)
 
 sealed interface GPUBindGroupLayoutEntry
 
@@ -83,8 +79,9 @@ class GPUBindGroupDescriptor(
     val layout: GPUBindGroupLayout,
     @JsName("entries")
     val entries: Array<GPUBindGroupEntry>,
-    override val label: String = "GPUBindGroupDescriptor"
-) : GPUDictionary
+    @JsName("label")
+    val label: String = ""
+)
 
 class GPUBindGroupEntry(
     @JsName("binding")
@@ -109,8 +106,9 @@ data class GPUBufferDescriptor(
     val usage: Int,
     @JsName("mappedAtCreation")
     val mappedAtCreation: Boolean = false,
-    override val label: String = "GPUBufferDescriptor"
-) : GPUDictionary
+    @JsName("label")
+    val label: String = ""
+)
 
 class GPUCanvasConfiguration(
     @JsName("device")
@@ -123,7 +121,7 @@ class GPUCanvasConfiguration(
     val alphaMode: GPUCanvasAlphaMode = GPUCanvasAlphaMode.opaque
 )
 
-class GPUColorDict(
+data class GPUColorDict(
     @JsName("r")
     val r: Float,
     @JsName("g")
@@ -172,46 +170,64 @@ data class GPUMultisampleState(
 class GPUPipelineLayoutDescriptor(
     @JsName("bindGroupLayouts")
     val bindGroupLayouts: Array<GPUBindGroupLayout>,
-    override val label: String = "GPUPipelineLayoutDescriptor"
-) : GPURenderPassColorAttachment
+    @JsName("label")
+    val label: String = ""
+)
 
 data class GPUPrimitiveState(
     @JsName("topology")
     val topology: GPUPrimitiveTopology = GPUPrimitiveTopology.triangleList,
-    //stripIndexFormat: GPUIndexFormat
-    //frontFace: GPUFrontFace= 'ccw'
-    //cullMode: GPUCullMode= 'none'
-    //unclippedDepth: boolean= 'false'
+    @JsName("frontFace")
+    val frontFace: GPUFrontFace = GPUFrontFace.ccw,
+    @JsName("cullMode")
+    val cullMode: GPUCullMode = GPUCullMode.none,
+    @JsName("unclippedDepth")
+    val unclippedDepth: Boolean = false
 )
 
-sealed interface GPURenderPassColorAttachment : GPUDictionary
-
-data class GPURenderPassColorAttachmentClear(
-    @JsName("view")
-    val view: GPUTextureView,
-    @JsName("resolveTarget")
-    val resolveTarget: GPUTextureView,
-    @JsName("clearValue")
-    val clearValue: GPUColorDict,
-    @JsName("storeOp")
-    val storeOp: GPUStoreOp = GPUStoreOp.store,
-    override val label: String = "GPURenderPassColorAttachmentClear"
-) : GPURenderPassColorAttachment {
-    @JsName("loadOp")
-    val loadOp: GPULoadOp = GPULoadOp.clear
+fun GPUPrimitiveStateStrip(
+    stripIndexFormat: GPUIndexFormat,
+    frontFace: GPUFrontFace = GPUFrontFace.ccw,
+    cullMode: GPUCullMode = GPUCullMode.none,
+    unclippedDepth: Boolean = false
+): GPUPrimitiveState {
+    val primState = GPUPrimitiveState(GPUPrimitiveTopology.triangleStrip, frontFace, cullMode, unclippedDepth)
+    primState.asDynamic()["stripIndexFormat"] = stripIndexFormat
+    return primState
 }
 
-data class GPURenderPassColorAttachmentLoad(
-    @JsName("view")
-    val view: GPUTextureView,
-    @JsName("resolveTarget")
-    val resolveTarget: GPUTextureView,
-    @JsName("storeOp")
-    val storeOp: GPUStoreOp = GPUStoreOp.store,
-    override val label: String = "GPURenderPassColorAttachmentClear"
+interface GPURenderPassColorAttachment
+
+fun GPURenderPassColorAttachmentClear(
+    view: GPUTextureView,
+    clearValue: GPUColorDict,
+    resolveTarget: GPUTextureView? = null,
+    storeOp: GPUStoreOp = GPUStoreOp.store,
+    label: String = ""
 ) : GPURenderPassColorAttachment {
-    @JsName("loadOp")
-    val loadOp: GPULoadOp = GPULoadOp.load
+    val o = js("({})")
+    o["label"] = label
+    o["clearValue"] = clearValue
+    o["loadOp"] = GPULoadOp.clear
+    o["view"] = view
+    o["storeOp"] = storeOp
+    resolveTarget?.let { o["resolveTarget"] = it }
+    return o
+}
+
+fun GPURenderPassColorAttachmentLoad(
+    view: GPUTextureView,
+    resolveTarget: GPUTextureView? = null,
+    storeOp: GPUStoreOp = GPUStoreOp.store,
+    label: String = ""
+) : GPURenderPassColorAttachment {
+    val o = js("({})")
+    o["label"] = label
+    o["loadOp"] = GPULoadOp.load
+    o["view"] = view
+    o["storeOp"] = storeOp
+    resolveTarget?.let { o["resolveTarget"] = it }
+    return o
 }
 
 data class GPURenderPassDepthStencilAttachment(
@@ -225,13 +241,18 @@ data class GPURenderPassDepthStencilAttachment(
     val depthClearValue: Float = 1f,
 )
 
-class GPURenderPassDescriptor(
-    @JsName("colorAttachments")
-    val colorAttachments: Array<GPURenderPassColorAttachment>,
-    @JsName("depthStencilAttachment")
-    val depthStencilAttachment: GPURenderPassDepthStencilAttachment,
-    override val label: String = "GPURenderPassDescriptor"
-) : GPUDictionary
+interface GPURenderPassDescriptor
+fun GPURenderPassDescriptor(
+    colorAttachments: Array<GPURenderPassColorAttachment>,
+    depthStencilAttachment: GPURenderPassDepthStencilAttachment? = null,
+    label: String = ""
+): GPURenderPassDescriptor {
+    val o = js("({})")
+    o["colorAttachments"] = colorAttachments
+    depthStencilAttachment?.let { o["depthStencilAttachment"] = it }
+    o["label"] = label
+    return o
+}
 
 data class GPURenderPipelineDescriptor(
     @JsName("layout")
@@ -240,14 +261,34 @@ data class GPURenderPipelineDescriptor(
     val vertex: GPUVertexState,
     @JsName("fragment")
     val fragment: GPUFragmentState,
-    @JsName("depthStencil")
-    val depthStencil: GPUDepthStencilState,
     @JsName("primitive")
     val primitive: GPUPrimitiveState = GPUPrimitiveState(),
     @JsName("multisample")
     val multisample: GPUMultisampleState = GPUMultisampleState(),
-    override val label: String = "GPURenderPipelineDescriptor"
-) : GPUDictionary
+    @JsName("label")
+    val label: String = ""
+)
+
+fun GPURenderPipelineDescriptor(
+    layout: GPUPipelineLayout,
+    vertex: GPUVertexState,
+    fragment: GPUFragmentState,
+    depthStencil: GPUDepthStencilState,
+    primitive: GPUPrimitiveState = GPUPrimitiveState(),
+    multisample: GPUMultisampleState = GPUMultisampleState(),
+    label: String = "GPURenderPipelineDescriptor"
+): GPURenderPipelineDescriptor {
+    val desc = GPURenderPipelineDescriptor(
+        layout = layout,
+        vertex = vertex,
+        fragment = fragment,
+        primitive = primitive,
+        multisample = multisample,
+        label = label
+    )
+    desc.asDynamic()["depthStencil"] = depthStencil
+    return desc
+}
 
 data class GPUDepthStencilState(
     @JsName("format")
@@ -267,8 +308,9 @@ data class GPUDepthStencilState(
 data class GPUShaderModuleDescriptor(
     @JsName("code")
     val code: String,
-    override val label: String = "GPUShaderModuleDescriptor"
-) : GPUDictionary
+    @JsName("label")
+    val label: String = ""
+)
 
 class GPUSamplerDescriptor(
     @JsName("label")
@@ -302,9 +344,38 @@ class GPUTextureDescriptor(
     val format: GPUTextureFormat,
     @JsName("usage")
     val usage: Int,
+    @JsName("label")
+    val label: String = "",
+    @JsName("mipLevelCount")
+    val mipLevelCount: Int = 1,
     @JsName("sampleCount")
     val sampleCount: Int = 1,
+    @JsName("dimension")
+    val dimension: GPUTextureDimension = GPUTextureDimension.texture2d,
+    @JsName("viewFormats")
+    val viewFormats: Array<GPUTextureFormat> = emptyArray(),
 )
+
+interface GPUTextureViewDescriptor
+fun GPUTextureViewDescriptor(
+    label: String = "",
+    format: GPUTextureFormat? = null,
+    //val dimension: GPUTextureViewDimension,
+    //val aspect: GPUTextureAspect = 'all'
+    baseMipLevel: Int = 0,
+    mipLevelCount: Int? = null,
+    baseArrayLayer: Int = 0,
+    arrayLayerCount: Int? = null
+): GPUTextureViewDescriptor {
+    val o = js("({})")
+    o["label"] = label
+    format?.let { o["format"] = it }
+    o["baseMipLevel"] = baseMipLevel
+    mipLevelCount?.let { o["mipLevelCount"] = it }
+    o["baseArrayLayer"] = baseArrayLayer
+    arrayLayerCount?.let { o["arrayLayerCount"] = it }
+    return o
+}
 
 class GPUVertexAttribute(
     @JsName("format")

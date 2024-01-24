@@ -1,6 +1,7 @@
 package de.fabmax.kool.pipeline.backend.webgpu
 
 value class GPUAddressMode private constructor(val enumValue: String) {
+    override fun toString() = enumValue
     companion object {
         val clampToEdge = GPUAddressMode("clamp-to-edge")
         val repeat = GPUAddressMode("repeat")
@@ -8,7 +9,15 @@ value class GPUAddressMode private constructor(val enumValue: String) {
     }
 }
 
+value class GPUAutoLayoutMode private constructor(val enumValue: String) : GPUPipelineLayout {
+    override fun toString() = enumValue
+    companion object {
+        val auto = GPUAutoLayoutMode("auto")
+    }
+}
+
 value class GPUBufferBindingType private constructor(val enumValue: String) {
+    override fun toString() = enumValue
     companion object {
         val uniform = GPUBufferBindingType("uniform")
         val storage = GPUBufferBindingType("storage")
@@ -17,13 +26,15 @@ value class GPUBufferBindingType private constructor(val enumValue: String) {
 }
 
 value class GPUCanvasAlphaMode private constructor(val enumValue: String) {
+    override fun toString() = enumValue
     companion object {
         val opaque = GPUCanvasAlphaMode("opaque")
         val premultiplied = GPUCanvasAlphaMode("premultiplied")
     }
 }
 
-value class GPUCompareFunction private constructor(val funcName: String) {
+value class GPUCompareFunction private constructor(val enumValue: String) {
+    override fun toString() = enumValue
     companion object {
         val never = GPUCompareFunction("never")
         val less = GPUCompareFunction("less")
@@ -36,14 +47,33 @@ value class GPUCompareFunction private constructor(val funcName: String) {
     }
 }
 
+value class GPUCullMode private constructor(val enumValue: String) {
+    override fun toString() = enumValue
+    companion object {
+        val none = GPUCullMode("none")
+        val front = GPUCullMode("front")
+        val back = GPUCullMode("back")
+    }
+}
+
 value class GPUFilterMode private constructor(val enumValue: String) {
+    override fun toString() = enumValue
     companion object {
         val nearest = GPUFilterMode("nearest")
         val linear = GPUFilterMode("linear")
     }
 }
 
+value class GPUFrontFace private constructor(val enumValue: String) {
+    override fun toString() = enumValue
+    companion object {
+        val ccw = GPUFrontFace("ccw")
+        val cw = GPUFrontFace("cw")
+    }
+}
+
 value class GPUMipmapFilterMode private constructor(val enumValue: String) {
+    override fun toString() = enumValue
     companion object {
         val nearest = GPUMipmapFilterMode("nearest")
         val linear = GPUMipmapFilterMode("linear")
@@ -51,6 +81,7 @@ value class GPUMipmapFilterMode private constructor(val enumValue: String) {
 }
 
 value class GPUIndexFormat private constructor(val enumValue: String) {
+    override fun toString() = enumValue
     companion object {
         val uint16 = GPUIndexFormat("uint16")
         val uint32 = GPUIndexFormat("uint32")
@@ -58,6 +89,7 @@ value class GPUIndexFormat private constructor(val enumValue: String) {
 }
 
 value class GPULoadOp private constructor(val enumValue: String) {
+    override fun toString() = enumValue
     companion object {
         val load = GPULoadOp("load")
         val clear = GPULoadOp("clear")
@@ -65,12 +97,14 @@ value class GPULoadOp private constructor(val enumValue: String) {
 }
 
 value class GPUPredefinedColorSpace private constructor(val enumValue: String) {
+    override fun toString() = enumValue
     companion object {
         val srgb = GPUPredefinedColorSpace("srgb")
     }
 }
 
 value class GPUPrimitiveTopology private constructor(val enumValue: String) {
+    override fun toString() = enumValue
     companion object {
         val pointList = GPUPrimitiveTopology("point-list")
         val lineList = GPUPrimitiveTopology("line-list")
@@ -81,6 +115,7 @@ value class GPUPrimitiveTopology private constructor(val enumValue: String) {
 }
 
 value class GPUPowerPreference private constructor(val enumValue: String) {
+    override fun toString() = enumValue
     companion object {
         val lowPower = GPUPowerPreference("low-power")
         val highPerformance = GPUPowerPreference("high-performance")
@@ -88,13 +123,24 @@ value class GPUPowerPreference private constructor(val enumValue: String) {
 }
 
 value class GPUStoreOp private constructor(val enumValue: String) {
+    override fun toString() = enumValue
     companion object {
         val store = GPUStoreOp("store")
         val discard = GPUStoreOp("discard")
     }
 }
 
+value class GPUTextureDimension private constructor(val enumValue: String) {
+    override fun toString() = enumValue
+    companion object {
+        val texture1d = GPUTextureDimension("1d")
+        val texture2d = GPUTextureDimension("2d")
+        val texture3d = GPUTextureDimension("3d")
+    }
+}
+
 value class GPUTextureFormat private constructor(val enumValue: String) {
+    override fun toString() = enumValue
     companion object {
         val r8unorm = GPUTextureFormat("r8unorm")
         val r8snorm = GPUTextureFormat("r8snorm")
@@ -144,6 +190,7 @@ value class GPUTextureFormat private constructor(val enumValue: String) {
 }
 
 value class GPUVertexFormat private constructor(val enumValue: String) {
+    override fun toString() = enumValue
     companion object {
         val uint8x2 = GPUVertexFormat("uint8x2")
         val uint8x4 = GPUVertexFormat("uint8x4")
@@ -179,6 +226,7 @@ value class GPUVertexFormat private constructor(val enumValue: String) {
 }
 
 value class GPUVertexStepMode private constructor(val enumValue: String) {
+    override fun toString() = enumValue
     companion object {
         val vertex = GPUVertexStepMode("vertex")
         val instance = GPUVertexStepMode("instance")
