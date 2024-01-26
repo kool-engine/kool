@@ -89,6 +89,7 @@ class RenderBackendGlImpl(ctx: KoolContext, canvas: HTMLCanvasElement) : RenderB
                 generate {
                     centeredRect {
                         size.set(2f, 2f)
+                        mirrorTexCoordsY()
                     }
                 }
                 shader = KslUnlitShader {

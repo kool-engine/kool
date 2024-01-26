@@ -328,14 +328,12 @@ object GlImpl : GlApi {
         }
 
         clipControlExt = gl.getExtension("EXT_clip_control")
-        if (clipControlExt != null) {
-            LOWER_LEFT = EXT_clip_control.LOWER_LEFT_EXT
-            UPPER_LEFT = EXT_clip_control.UPPER_LEFT_EXT
-            NEGATIVE_ONE_TO_ONE = EXT_clip_control.NEGATIVE_ONE_TO_ONE_EXT
-            ZERO_TO_ONE = EXT_clip_control.ZERO_TO_ONE_EXT
-            logD { "EXT_clip_control available" }
-        } else {
-            logD { "EXT_clip_control not available" }
+        clipControlExt?.let {
+            logD { "EXT_clip_control extension is available" }
+            LOWER_LEFT = it.LOWER_LEFT_EXT
+            UPPER_LEFT = it.UPPER_LEFT_EXT
+            NEGATIVE_ONE_TO_ONE = it.NEGATIVE_ONE_TO_ONE_EXT
+            ZERO_TO_ONE = it.ZERO_TO_ONE_EXT
         }
 
         val maxTexUnits = gl.getParameter(WebGLRenderingContext.MAX_TEXTURE_IMAGE_UNITS) as Int
