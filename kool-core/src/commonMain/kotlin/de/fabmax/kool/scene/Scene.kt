@@ -35,7 +35,20 @@ open class Scene(name: String? = null) : Node(name) {
 
     var framebufferCaptureMode = FramebufferCaptureMode.Disabled
     val capturedFramebuffer by lazy {
-        Texture2d(name = "$name.capturedFramebuffer")
+        Texture2d(
+            name = "$name.capturedFramebuffer",
+            props = TextureProps(
+                format = TexFormat.RGBA,
+                generateMipMaps = false,
+                defaultSamplerSettings = SamplerSettings(
+                    addressModeU = AddressMode.CLAMP_TO_EDGE,
+                    addressModeV = AddressMode.CLAMP_TO_EDGE,
+                    minFilter = FilterMethod.NEAREST,
+                    magFilter = FilterMethod.NEAREST,
+                    maxAnisotropy = 1
+                )
+            )
+        )
     }
 
     val isEmpty: Boolean

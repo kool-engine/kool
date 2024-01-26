@@ -1,7 +1,6 @@
 package de.fabmax.kool.pipeline.backend.gl
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.modules.ksl.KslComputeShader
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.pipeline.*
@@ -224,39 +223,23 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
         val targetTex = scene.capturedFramebuffer
 
         if (targetTex.loadedTexture == null) {
-            targetTex.loadedTexture = LoadedTextureGl(gl.TEXTURE_2D, gl.createTexture(), this, targetTex, 4096 * 2048 * 4)
+            targetTex.loadedTexture = LoadedTextureGl(gl.TEXTURE_2D, gl.createTexture(), this, targetTex, 4096 * 2048 * 4).apply {
+                applySamplerSettings(targetTex.props.defaultSamplerSettings)
+            }
         }
         val tex = targetTex.loadedTexture as LoadedTextureGl
         tex.bind()
 
-        val requiredTexWidth = nextPow2(scene.mainRenderPass.viewport.width)
-        val requiredTexHeight = nextPow2(scene.mainRenderPass.viewport.height)
-        if (tex.width != requiredTexWidth || tex.height != requiredTexHeight) {
-            tex.setSize(requiredTexWidth, requiredTexHeight, 1)
+        val viewport = scene.mainRenderPass.viewport
+        if (tex.width != viewport.width || tex.height != viewport.height) {
+            tex.setSize(viewport.width, viewport.height, 1)
             tex.applySamplerSettings(SamplerSettings().clamped().nearest())
             targetTex.loadingState = Texture.LoadingState.LOADED
-            gl.texImage2D(tex.target, 0, gl.RGBA8, requiredTexWidth, requiredTexHeight, 0, gl.RGBA, gl.UNSIGNED_BYTE, null)
+            gl.texImage2D(tex.target, 0, gl.RGBA8, viewport.width, viewport.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null)
         }
 
-        val viewport = scene.mainRenderPass.viewport
+        gl.bindFramebuffer(gl.READ_FRAMEBUFFER, gl.DEFAULT_FRAMEBUFFER)
         gl.readBuffer(gl.BACK)
         gl.copyTexSubImage2D(tex.target, 0, 0, 0, viewport.x, viewport.y, viewport.width, viewport.height)
-    }
-
-    private fun nextPow2(x: Int): Int {
-        var pow2 = x.takeHighestOneBit()
-        if (pow2 < x) {
-            pow2 = pow2 shl 1
-        }
-        return pow2
-    }
-
-    companion object {
-        val ZERO_TO_ONE_PROJ_CORRECTION = Mat4f(
-            1.0f, 0.0f, 0.0f, 0.0f,
-            0.0f, 1.0f, 0.0f, 0.0f,
-            0.0f, 0.0f, 0.5f, 0.5f,
-            0.0f, 0.0f, 0.0f, 1.0f
-        )
     }
 }
