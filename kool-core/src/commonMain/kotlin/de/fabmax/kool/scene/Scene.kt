@@ -40,13 +40,7 @@ open class Scene(name: String? = null) : Node(name) {
             props = TextureProps(
                 format = TexFormat.RGBA,
                 generateMipMaps = false,
-                defaultSamplerSettings = SamplerSettings(
-                    addressModeU = AddressMode.CLAMP_TO_EDGE,
-                    addressModeV = AddressMode.CLAMP_TO_EDGE,
-                    minFilter = FilterMethod.NEAREST,
-                    magFilter = FilterMethod.NEAREST,
-                    maxAnisotropy = 1
-                )
+                defaultSamplerSettings = SamplerSettings().clamped().nearest()
             )
         )
     }

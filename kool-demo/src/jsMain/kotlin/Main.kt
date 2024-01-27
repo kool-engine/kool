@@ -3,13 +3,15 @@ import de.fabmax.kool.KoolApplication
 import de.fabmax.kool.KoolConfigJs
 import de.fabmax.kool.demo.DemoLoader
 import de.fabmax.kool.demo.demo
-import de.fabmax.kool.modules.ksl.KslUnlitShader
-import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
+import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.deg
+import de.fabmax.kool.modules.ksl.KslBlinnPhongShader
 import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.addMesh
 import de.fabmax.kool.scene.defaultOrbitCamera
 import de.fabmax.kool.scene.scene
+import de.fabmax.kool.util.Time
 import de.fabmax.kool.util.launchOnMainThread
 import kotlinx.browser.window
 import kotlin.collections.set
@@ -60,19 +62,23 @@ fun getParams(): Map<String, String> {
 
 fun helloWebGpu() = scene {
     defaultOrbitCamera()
-    addMesh(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS) {
-        generate { cube { colored(false) } }
 
-        launchOnMainThread {
-            val tex = Assets.loadTexture2d("${DemoLoader.materialPath}/uv_checker_map.jpg")
+    launchOnMainThread {
+        val tex = Assets.loadTexture2d("${DemoLoader.materialPath}/uv_checker_map.jpg")
 
-            shader = KslUnlitShader {
+        addMesh(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS) {
+            generate { cube { colored(false) } }
+
+            shader = KslBlinnPhongShader {
                 color {
                     //vertexColor()
-                    textureColor(tex, gamma = 1f)
+                    textureColor(tex)
                 }
-                colorSpaceConversion = ColorSpaceConversion.AS_IS
-                //modelCustomizer = { dumpCode = true }
+                modelCustomizer = { dumpCode = true }
+            }
+
+            onUpdate {
+                transform.rotate(30f.deg * Time.deltaT, Vec3f(1f, 1f, 1f))
             }
         }
     }

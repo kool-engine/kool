@@ -10,6 +10,8 @@ class WgslGenerator : KslGenerator() {
 
     var blockIndent = "  "
 
+    private var generatorState = GeneratorState(BindGroupLayouts(BindGroupLayout.EMPTY_VIEW, BindGroupLayout.EMPTY_PIPELINE, BindGroupLayout.EMPTY_MESH))
+
     override fun generateProgram(program: KslProgram, pipeline: DrawPipeline): WgslGeneratorOutput {
         val vertexStage = checkNotNull(program.vertexStage) {
             "KslProgram vertexStage is missing (a valid KslShader needs at least a vertexStage and fragmentStage)"
@@ -18,10 +20,10 @@ class WgslGenerator : KslGenerator() {
             "KslProgram fragmentStage is missing (a valid KslShader needs at least a vertexStage and fragmentStage)"
         }
 
-        val locations = WgslLocations(pipeline.bindGroupLayouts)
+        generatorState = GeneratorState(pipeline.bindGroupLayouts)
         return WgslGeneratorOutput.shaderOutput(
-            generateVertexSrc(vertexStage, pipeline, locations),
-            generateFragmentSrc(fragmentStage, pipeline, locations)
+            generateVertexSrc(vertexStage, pipeline),
+            generateFragmentSrc(fragmentStage, pipeline)
         )
     }
 
@@ -30,11 +32,11 @@ class WgslGenerator : KslGenerator() {
             "KslProgram computeStage is missing"
         }
 
-        val locations = WgslLocations(pipeline.bindGroupLayouts)
-        return WgslGeneratorOutput.computeOutput(generateComputeSrc(computeStage, pipeline, locations))
+        generatorState = GeneratorState(pipeline.bindGroupLayouts)
+        return WgslGeneratorOutput.computeOutput(generateComputeSrc(computeStage, pipeline))
     }
 
-    private fun generateVertexSrc(vertexStage: KslVertexStage, pipeline: PipelineBase, locations: WgslLocations): String {
+    private fun generateVertexSrc(vertexStage: KslVertexStage, pipeline: PipelineBase): String {
         val src = StringBuilder()
         src.appendLine("""
             /*
@@ -45,32 +47,24 @@ class WgslGenerator : KslGenerator() {
 
         val vertexInput = VertexInputStructs(vertexStage)
         val vertexOutput = VertexOutputStruct(vertexStage)
-        val ubos = UboStructs(vertexStage, pipeline, locations)
+        val ubos = UboStructs(vertexStage, pipeline)
 
         ubos.generateStructs(src)
         vertexInput.generateStructs(src)
         vertexOutput.generateStruct(src)
-        src.generateTextureSamplers(vertexStage, pipeline, locations)
-//        src.generateUniformStorage(vertexStage, pipeline)
-//        src.generateFunctions(vertexStage)
+        src.generateTextureSamplers(vertexStage, pipeline)
+        src.generateFunctions(vertexStage)
 
         src.appendLine("@vertex")
         src.appendLine("fn vertexMain(vertexInput: VertexInput) -> VertexOutput {")
-
         src.appendLine("  var vertexOutput: VertexOutput;")
-        vertexOutput.generateExplodedMembers(src)
-        vertexInput.generateExplodedMembers(src)
-        ubos.generateExplodedMembers(src)
-
         src.appendLine(generateScope(vertexStage.main, blockIndent))
-
-        vertexOutput.generateSetMembers(src)
         src.appendLine("  return vertexOutput;")
         src.appendLine("}")
         return src.toString()
     }
 
-    private fun generateFragmentSrc(fragmentStage: KslFragmentStage, pipeline: PipelineBase, locations: WgslLocations): String {
+    private fun generateFragmentSrc(fragmentStage: KslFragmentStage, pipeline: PipelineBase): String {
         val src = StringBuilder()
         src.appendLine("""
             /*
@@ -81,32 +75,24 @@ class WgslGenerator : KslGenerator() {
 
         val fragmentInput = FragmentInputStruct(fragmentStage)
         val fragmentOutput = FragmentOutputStruct(fragmentStage)
-        val ubos = UboStructs(fragmentStage, pipeline, locations)
+        val ubos = UboStructs(fragmentStage, pipeline)
 
         ubos.generateStructs(src)
-        fragmentInput.generateStructs(src)
+        fragmentInput.generateStruct(src)
         fragmentOutput.generateStruct(src)
-        src.generateTextureSamplers(fragmentStage, pipeline, locations)
-//        src.generateUniformStorage(fragmentStage, pipeline)
-//        src.generateFunctions(fragmentStage)
+        src.generateTextureSamplers(fragmentStage, pipeline)
+        src.generateFunctions(fragmentStage)
 
         src.appendLine("@fragment")
         src.appendLine("fn fragmentMain(fragmentInput: FragmentInput) -> FragmentOutput {")
-
         src.appendLine("  var fragmentOutput: FragmentOutput;")
-        fragmentOutput.generateExplodedMembers(src)
-        fragmentInput.generateExplodedMembers(src)
-        ubos.generateExplodedMembers(src)
-
         src.appendLine(generateScope(fragmentStage.main, blockIndent))
-
-        fragmentOutput.generateSetMembers(src)
         src.appendLine("  return fragmentOutput;")
         src.appendLine("}")
         return src.toString()
     }
 
-    private fun generateComputeSrc(computeStage: KslComputeStage, pipeline: PipelineBase, locations: WgslLocations): String {
+    private fun generateComputeSrc(computeStage: KslComputeStage, pipeline: PipelineBase): String {
         val src = StringBuilder()
         src.appendLine("""
             /*
@@ -115,23 +101,30 @@ class WgslGenerator : KslGenerator() {
         """.trimIndent())
         src.appendLine()
 
-        val ubos = UboStructs(computeStage, pipeline, locations)
+        val ubos = UboStructs(computeStage, pipeline)
         ubos.generateStructs(src)
-        src.generateTextureSamplers(computeStage, pipeline, locations)
+        src.generateTextureSamplers(computeStage, pipeline)
 //        src.generateUniformStorage(computeStage, pipeline)
 //        src.generateFunctions(computeStage)
+
+        /*
+           todo: map compute inputs
+            KslComputeStage.NAME_IN_GLOBAL_INVOCATION_ID -> "computeInput.globalInvId"  // global_invocation_id
+            KslComputeStage.NAME_IN_LOCAL_INVOCATION_ID -> "computeInput.localInvId"    // local_invocation_id
+            KslComputeStage.NAME_IN_WORK_GROUP_ID -> "computeInput.workgroupId"         // workgroup_id
+            KslComputeStage.NAME_IN_NUM_WORK_GROUPS -> "computeInput.numWorkgroups"     // num_workgroups
+            KslComputeStage.NAME_IN_WORK_GROUP_SIZE -> "workgroupSize"                  // <emulated>
+         */
 
         src.appendLine("@compute")
         src.appendLine("@workgroup_size(${computeStage.workGroupSize.x}, ${computeStage.workGroupSize.y}, ${computeStage.workGroupSize.z})")
         src.appendLine("fn computeMain(input: VertexOutput) {")
-        ubos.generateExplodedMembers(src)
         src.appendLine(generateScope(computeStage.main, blockIndent))
         src.appendLine("}")
         return src.toString()
     }
 
-    private inner class UboStructs(stage: KslShaderStage, pipeline: PipelineBase, val locations: WgslLocations) : WgslStructHelper {
-
+    private inner class UboStructs(stage: KslShaderStage, pipeline: PipelineBase) : WgslStructHelper {
         val structs: List<UboStruct> = buildList {
             pipeline.bindGroupLayouts.asList.forEach { layout ->
                 layout.bindings
@@ -144,7 +137,7 @@ class WgslGenerator : KslGenerator() {
                         val uboVarName = ubo.name.mapIndexed { i, c -> if (i == 0) c.lowercase() else c }.joinToString("")
                         val members = kslUbo.uniforms.values
                             .filter { it.expressionType !is KslArrayType<*> || it.arraySize > 0 }
-                            .map { WgslStructMember(uboVarName, it.value.name(), it.expressionType.wgslTypeName) }
+                            .map { WgslStructMember(uboVarName, it.value.stateName, it.expressionType.wgslTypeName()) }
 
                         add(UboStruct(uboVarName, uboTypeName, members, ubo))
                     }
@@ -154,144 +147,11 @@ class WgslGenerator : KslGenerator() {
         fun generateStructs(builder: StringBuilder) = builder.apply {
             structs.forEach { ubo -> generateStruct(ubo.typeName, ubo.members) }
             structs.forEach { ubo ->
-                val location = locations[ubo.binding]
+                val location = generatorState.locations[ubo.binding]
                 appendLine("@group(${location.group}) @binding(${location.binding}) var<uniform> ${ubo.name}: ${ubo.typeName};")
             }
             appendLine()
         }
-
-        fun generateExplodedMembers(builder: StringBuilder) = builder.apply {
-            structs.forEach { ubo -> createAndAssignExplodedMembers(ubo.members) }
-        }
-    }
-
-    private data class UboStruct(val name: String, val typeName: String, val members: List<WgslStructMember>, val binding: UniformBufferLayout)
-
-    private class VertexInputStructs(stage: KslVertexStage) : WgslStructHelper {
-        val vertexInputs = stage.attributes.values
-            .filter { it.inputRate == KslInputRate.Vertex }
-            .mapIndexed { i, attr ->
-                WgslStructMember("vertexInput", attr.name, attr.expressionType.wgslTypeName, "@location($i) ")
-            }
-        val instanceInputs = stage.attributes.values
-            .filter { it.inputRate == KslInputRate.Instance }
-            .mapIndexed { i, attr ->
-                WgslStructMember("instanceInput", attr.name, attr.expressionType.wgslTypeName, "@location($i) ")
-            }
-        val vertexIndex = if (stage.isUsingVertexIndex) {
-            WgslStructMember("vertexInput", "vertexIndex", "u32", "@builtin(vertex_index) ")
-        } else null
-
-        val instanceIndex = if (stage.isUsingInstanceIndex) {
-            WgslStructMember("vertexInput", "instanceIndex", "u32", "@builtin(instance_index) ")
-        } else null
-
-        fun generateStructs(builder: StringBuilder) = builder.apply {
-            generateStruct("VertexInput", vertexInputs, vertexIndex, instanceIndex)
-            generateStruct("InstanceInput", instanceInputs)
-        }
-
-        fun generateExplodedMembers(builder: StringBuilder) = builder.apply {
-            createAndAssignExplodedMembers(vertexInputs + instanceInputs, vertexIndex, instanceIndex)
-        }
-    }
-
-    private inner class VertexOutputStruct(stage: KslVertexStage) : WgslStructHelper {
-        val vertexOutputs = stage.interStageVars
-            .mapIndexed { i, output ->
-                val outVal = output.output
-                val interp = if (output.interpolation == KslInterStageInterpolation.Flat) " @interpolate(flat)" else ""
-                WgslStructMember("vertexOutput", outVal.name(), outVal.expressionType.wgslTypeName, "@location($i)$interp ")
-            }
-        val position = WgslStructMember("vertexOutput", "position", "vec4<f32>", "@builtin(position) ")
-        val pointSize = if (stage.isSettingPointSize) {
-            WgslStructMember("vertexOutput", "pointSize", "f32", "@location(${stage.interStageVars.size}) ")
-        } else null
-
-        init {
-            if (pointSize != null) {
-                logW { "Ignoring vertex shader point size output: Not supported by WGSL" }
-            }
-        }
-
-        fun generateStruct(builder: StringBuilder) = builder.apply {
-            generateStruct("VertexOutput", vertexOutputs, position, pointSize)
-        }
-
-        fun generateExplodedMembers(builder: StringBuilder) = builder.apply {
-            createExplodedMembers(vertexOutputs, position, pointSize)
-        }
-
-        fun generateSetMembers(builder: StringBuilder) = builder.apply {
-            assignStructMembers(vertexOutputs, position, pointSize)
-        }
-    }
-
-    private inner class FragmentInputStruct(stage: KslFragmentStage) : WgslStructHelper {
-        val fragmentInputs = stage.interStageVars
-            .mapIndexed { i, input ->
-                val inVal = input.input
-                val interp = if (input.interpolation == KslInterStageInterpolation.Flat) " @interpolate(flat)" else ""
-                WgslStructMember("fragmentInput", inVal.name(), inVal.expressionType.wgslTypeName, "@location($i)$interp ")
-            }
-        val fragPosition = if (stage.isUsingFragPosition) {
-            WgslStructMember("fragmentInput", "position", " vec4<f32>", "@builtin(position) ")
-        } else null
-
-        val isFrontFacing = if (stage.isUsingIsFrontFacing) {
-            WgslStructMember("fragmentInput", "isFrontFacing", "bool", "@builtin(front_facing) ")
-        } else null
-
-        fun generateStructs(builder: StringBuilder) = builder.apply {
-            generateStruct("FragmentInput", fragmentInputs, fragPosition, isFrontFacing)
-        }
-
-        fun generateExplodedMembers(builder: StringBuilder) = builder.apply {
-            createAndAssignExplodedMembers(fragmentInputs, fragPosition, isFrontFacing)
-        }
-    }
-
-    private inner class FragmentOutputStruct(stage: KslFragmentStage) : WgslStructHelper {
-        val outColors = stage.outColors.mapIndexed { i, outColor ->
-            WgslStructMember("fragmentOutput", outColor.value.name(), outColor.value.expressionType.wgslTypeName, "@location($i) ")
-        }
-        val fragDepth = if (stage.isSettingFragDepth) {
-            WgslStructMember("fragmentOutput", "fragDepth", "f32", "@builtin(frag_depth) ")
-        } else null
-
-        fun generateStruct(builder: StringBuilder) = builder.apply {
-            generateStruct("FragmentOutput", outColors, fragDepth)
-        }
-
-        fun generateExplodedMembers(builder: StringBuilder) = builder.apply {
-            createExplodedMembers(outColors, fragDepth)
-        }
-
-        fun generateSetMembers(builder: StringBuilder) = builder.apply {
-            assignStructMembers(outColors, fragDepth)
-        }
-    }
-
-    private fun StringBuilder.generateTextureSamplers(stage: KslShaderStage, pipeline: PipelineBase, locations: WgslLocations) {
-        pipeline.bindGroupLayouts.asList.forEach { layout ->
-            layout.bindings
-                .filterIsInstance<TextureLayout>().filter { texLayout ->
-                    stage.getUsedSamplers().any { usedTex -> usedTex.name == texLayout.name }
-                }
-                .map { tex ->
-                    val location = locations[tex]
-                    val texType = when (tex.type) {
-                        BindingType.TEXTURE_1D -> "texture_1d<f32>"
-                        BindingType.TEXTURE_2D -> "texture_2d<f32>"
-                        BindingType.TEXTURE_3D -> "texture_3d<f32>"
-                        BindingType.TEXTURE_CUBE -> "texture_cube<f32>"
-                        else -> error("invalid texture/sampler type: ${tex.type}")
-                    }
-                    appendLine("@group(${location.group}) @binding(${location.binding}) var ${tex.name}_sampler: sampler;")
-                    appendLine("@group(${location.group}) @binding(${location.binding+1}) var ${tex.name}: $texType;")
-                }
-        }
-        appendLine()
     }
 
     override fun constFloatVecExpression(vararg values: KslExpression<KslFloat1>) =
@@ -318,7 +178,7 @@ class WgslGenerator : KslGenerator() {
     }
 
     override fun castExpression(castExpr: KslExpressionCast<*>): String {
-        return "${castExpr.expressionType.wgslTypeName}(${castExpr.value.generateExpression(this)})"
+        return "${castExpr.expressionType.wgslTypeName()}(${castExpr.value.generateExpression(this)})"
     }
 
     override fun <B: KslBoolType> compareExpression(expression: KslExpressionCompare<B>): String {
@@ -364,17 +224,6 @@ class WgslGenerator : KslGenerator() {
         TODO()
     }
 
-//    protected open fun StringBuilder.generateUniformSamplers(stage: KslShaderStage, pipeline: PipelineBase) {
-//        val samplers = stage.getUsedSamplers()
-//        if (samplers.isNotEmpty()) {
-//            appendLine("// texture samplers")
-//            for (u in samplers) {
-//                appendLine("uniform ${wgslTypeName(u.expressionType)} ${u.value.name()};")
-//            }
-//            appendLine()
-//        }
-//    }
-//
 //    protected open fun StringBuilder.generateUniformStorage(stage: KslShaderStage, pipeline: PipelineBase) {
 //        val storage = stage.getUsedStorage()
 //        if (storage.isNotEmpty()) {
@@ -386,62 +235,75 @@ class WgslGenerator : KslGenerator() {
 //        }
 //    }
 
-//    protected open fun StringBuilder.generateInterStageInputs(fragmentStage: KslFragmentStage) {
-//        if (fragmentStage.interStageVars.isNotEmpty()) {
-//            appendLine("// custom fragment stage inputs")
-//            fragmentStage.interStageVars.forEach { interStage ->
-//                val value = interStage.output
-//                appendLine("${interStage.interpolation.glsl()} in ${wgslTypeName(value.expressionType)} ${value.name()};")
-//            }
-//            appendLine()
-//        }
-//    }
-//
-//    protected open fun StringBuilder.generateOutputs(outputs: List<KslStageOutput<*>>) {
-//        if (outputs.isNotEmpty()) {
-//            appendLine("// stage outputs")
-//            outputs.forEach { output ->
-//                val loc = if (output.location >= 0) "layout(location=${output.location}) " else ""
-//                appendLine("${loc}out ${wgslTypeName(output.expressionType)} ${output.value.name()};")
-//            }
-//            appendLine()
-//        }
-//    }
-//
-//    private fun StringBuilder.generateFunctions(stage: KslShaderStage) {
-//        if (stage.functions.isNotEmpty()) {
-//            val funcList = stage.functions.values.toMutableList()
-//            sortFunctions(funcList)
-//            funcList.forEach { func ->
-//                appendLine("${wgslTypeName(func.returnType)} ${func.name}(${func.parameters.joinToString { p -> "${wgslTypeName(p.expressionType)} ${p.stateName}" }}) {")
-//                appendLine(generateScope(func.body, blockIndent))
-//                appendLine("}")
-//                appendLine()
-//            }
-//        }
-//    }
+    private fun StringBuilder.generateFunctions(stage: KslShaderStage) {
+        if (stage.functions.isNotEmpty()) {
+            val funcList = stage.functions.values.toMutableList()
+            sortFunctions(funcList)
+            funcList.forEach { func ->
+                val returnType = if (func.returnType == KslTypeVoid) "" else " -> ${func.returnType.wgslTypeName()}"
+                appendLine("fn ${func.name}(${func.parameters.joinToString { p -> "${p.name()}: ${p.expressionType.wgslTypeName()}" }})$returnType {")
+                appendLine(generateScope(func.body, blockIndent))
+                appendLine("}")
+                appendLine()
+            }
+        }
+    }
 
     override fun opDeclareVar(op: KslDeclareVar): String {
         val initExpr = op.initExpression?.generateExpression(this) ?: ""
         val state = op.declareVar
-        return "var ${state.name()} = ${state.expressionType.wgslTypeName}(${initExpr});"
+        return "var ${state.name()} = ${state.expressionType.wgslTypeName()}(${initExpr});"
     }
 
     override fun opDeclareArray(op: KslDeclareArray): String {
-        TODO()
-//        val array = op.declareVar
-//        val typeName = wgslTypeName(array.expressionType)
-//
-//        return if (op.elements.size == 1 && op.elements[0].expressionType == array.expressionType) {
-//            "$typeName ${array.name()} = ${op.elements[0].generateExpression(this)};"
-//        } else {
-//            val initExpr = op.elements.joinToString { it.generateExpression(this) }
-//            "$typeName ${array.name()} = ${typeName}(${initExpr});"
-//        }
+        val array = op.declareVar
+        val typeName = array.expressionType.wgslTypeName()
+
+        return if (op.elements.size == 1 && op.elements[0].expressionType == array.expressionType) {
+            "var ${array.name()} = ${op.elements[0].generateExpression(this)};"
+        } else {
+            val initExpr = op.elements.joinToString { it.generateExpression(this) }
+            "var ${array.name()} = ${typeName}(${initExpr});"
+        }
     }
 
     override fun opAssign(op: KslAssign<*>): String {
-        return "${op.assignTarget.generateAssignable(this)} = ${op.assignExpression.generateExpression(this)};"
+        return if (op.assignTarget is KslVectorAccessor<*> && op.assignTarget.components.length > 1) {
+            // wgsl currently does not permit assignment of swizzled values
+            // https://github.com/gpuweb/gpuweb/issues/737
+
+            val vec = op.assignTarget.vector as KslVectorExpression<*,*>
+            val assignType = vec.expressionType.wgslTypeName()
+            val targetComps = op.assignTarget.components
+            val assignDimens = (vec.expressionType as KslVector<*>).dimens
+
+            val compsXyzw = listOf('x', 'y', 'z', 'w')
+            val compsRgba = listOf('r', 'g', 'b', 'a')
+
+            val target = op.assignTarget.vector.generateExpression(this)
+            val tmpVarName = generatorState.nextTempVar()
+            val ctorArgs = buildString {
+                for (i in 0 until assignDimens) {
+                    val c1 = targetComps.indexOf(compsXyzw[i])
+                    val c2 = targetComps.indexOf(compsRgba[i])
+                    val src = when {
+                        c1 >= 0 -> "${tmpVarName}.${compsXyzw[c1]}"
+                        c2 >= 0 -> "${tmpVarName}.${compsXyzw[c2]}"
+                        else -> "${target}.${compsXyzw[i]}"
+                    }
+                    append(src)
+                    if (i < assignDimens-1) {
+                        append(", ")
+                    }
+                }
+            }
+            """
+                let $tmpVarName = ${op.assignExpression.generateExpression(this)};
+                $target = $assignType($ctorArgs);
+            """.trimIndent()
+        } else {
+            "${op.assignTarget.generateAssignable(this)} = ${op.assignExpression.generateExpression(this)};"
+        }
     }
 
     override fun opAugmentedAssign(op: KslAugmentedAssign<*>): String {
@@ -466,30 +328,28 @@ class WgslGenerator : KslGenerator() {
     }
 
     override fun opFor(op: KslLoopFor<*>): String {
-        TODO()
-//        return StringBuilder("for (; ")
-//            .append(op.whileExpression.generateExpression(this)).append("; ")
-//            .append(op.loopVar.generateAssignable(this)).append(" += ").append(op.incExpr.generateExpression(this))
-//            .appendLine(") {")
-//            .appendLine(generateScope(op.body, blockIndent))
-//            .append("}")
-//            .toString()
+        return StringBuilder("for (; ")
+            .append(op.whileExpression.generateExpression(this)).append("; ")
+            .append(op.loopVar.generateAssignable(this)).append(" += ").append(op.incExpr.generateExpression(this))
+            .appendLine(") {")
+            .appendLine(generateScope(op.body, blockIndent))
+            .append("}")
+            .toString()
     }
 
     override fun opWhile(op: KslLoopWhile): String {
-        TODO()
-//        return StringBuilder("while (${op.whileExpression.generateExpression(this)}) {\n")
-//            .appendLine(generateScope(op.body, blockIndent))
-//            .append("}")
-//            .toString()
+        return StringBuilder("while (${op.whileExpression.generateExpression(this)}) {\n")
+            .appendLine(generateScope(op.body, blockIndent))
+            .append("}")
+            .toString()
     }
 
     override fun opDoWhile(op: KslLoopDoWhile): String {
-        TODO()
-//        return StringBuilder("do {\n")
-//            .appendLine(generateScope(op.body, blockIndent))
-//            .append("} while (${op.whileExpression.generateExpression(this)});")
-//            .toString()
+        return StringBuilder("loop {\n")
+            .appendLine(generateScope(op.body, blockIndent))
+            .appendLine("${blockIndent}break if !(${op.whileExpression.generateExpression(this)})")
+            .append("}")
+            .toString()
     }
 
     override fun opBreak(op: KslLoopBreak) = "break;"
@@ -584,52 +444,31 @@ class WgslGenerator : KslGenerator() {
     override fun builtinDeterminant(func: KslBuiltinDeterminant<*, *>) = "determinant(${generateArgs(func.args, 1)})"
     override fun builtinTranspose(func: KslBuiltinTranspose<*, *>) = "transpose(${generateArgs(func.args, 1)})"
 
-    override fun KslState.name(): String {
-        return when (stateName) {
-            KslVertexStage.NAME_IN_VERTEX_INDEX -> "vertexInput.vertexIndex"            // vertex_index
-            KslVertexStage.NAME_IN_INSTANCE_INDEX -> "vertexInput.instanceIndex"        // instance_index
-            KslVertexStage.NAME_OUT_POSITION -> "position"                              // position
-            KslVertexStage.NAME_OUT_POINT_SIZE -> "pointSize"                           // <unsupported>
-
-            KslFragmentStage.NAME_IN_FRAG_POSITION -> "fragmentInput.position"          // position
-            KslFragmentStage.NAME_IN_IS_FRONT_FACING -> "fragmentInput.isFrontFacing"   // front_facing
-            KslFragmentStage.NAME_OUT_DEPTH -> "fragDepth"                              // frag_depth
-                                                                                        // not-implemented: sample_index
-                                                                                        // not-implemented: sample_mask
-
-            KslComputeStage.NAME_IN_GLOBAL_INVOCATION_ID -> "computeInput.globalInvId"  // global_invocation_id
-            KslComputeStage.NAME_IN_LOCAL_INVOCATION_ID -> "computeInput.localInvId"    // local_invocation_id
-            KslComputeStage.NAME_IN_WORK_GROUP_ID -> "computeInput.workgroupId"         // workgroup_id
-            KslComputeStage.NAME_IN_NUM_WORK_GROUPS -> "computeInput.numWorkgroups"     // num_workgroups
-            KslComputeStage.NAME_IN_WORK_GROUP_SIZE -> "workgroupSize"                  // <emulated>
-
-            else -> stateName
-        }
-    }
+    override fun KslState.name(): String = generatorState.getVarName(stateName)
 
     companion object {
-        val KslType.wgslTypeName: String get() {
+        fun KslType.wgslTypeName(): String {
             return when (this) {
                 KslTypeVoid -> TODO()
                 KslBool1 -> "bool"
-                KslBool2 -> "vec2<bool>"
-                KslBool3 -> "vec3<bool>"
-                KslBool4 -> "vec4<bool>"
+                KslBool2 -> "vec2b"
+                KslBool3 -> "vec3b"
+                KslBool4 -> "vec4b"
                 KslFloat1 -> "f32"
-                KslFloat2 -> "vec2<f32>"
-                KslFloat3 -> "vec3<f32>"
-                KslFloat4 -> "vec4<f32>"
+                KslFloat2 -> "vec2f"
+                KslFloat3 -> "vec3f"
+                KslFloat4 -> "vec4f"
                 KslInt1 -> "i32"
-                KslInt2 -> "vec2<i32>"
-                KslInt3 -> "vec3<i32>"
-                KslInt4 -> "vec4<i32>"
+                KslInt2 -> "vec2i"
+                KslInt3 -> "vec3i"
+                KslInt4 -> "vec4i"
                 KslUint1 -> "u32"
-                KslUint2 -> "vec2<u32>"
-                KslUint3 -> "vec3<u32>"
-                KslUint4 -> "vec4<u32>"
-                KslMat2 -> "mat2x2<f32>"
-                KslMat3 -> "mat3x3<f32>"
-                KslMat4 -> "mat4x4<f32>"
+                KslUint2 -> "vec2u"
+                KslUint3 -> "vec3u"
+                KslUint4 -> "vec4u"
+                KslMat2 -> "mat2x2f"
+                KslMat3 -> "mat3x3f"
+                KslMat4 -> "mat4x4f"
 
                 KslColorSampler1d -> TODO()
                 KslColorSampler2d -> TODO()
@@ -643,13 +482,170 @@ class WgslGenerator : KslGenerator() {
                 KslDepthSampler2dArray -> TODO()
                 KslDepthSamplerCubeArray -> TODO()
 
-                is KslArrayType<*> -> TODO()
+                is KslArrayType<*> -> "array<${elemType.wgslTypeName()},${arraySize}>"
 
                 is KslStorage1dType<*> -> TODO()
                 is KslStorage2dType<*> -> TODO()
                 is KslStorage3dType<*> -> TODO()
             }
         }
+    }
+
+    private class GeneratorState(groupLayouts: BindGroupLayouts) {
+        val locations = WgslLocations(groupLayouts)
+        var nextTempI = 0
+
+        val nameMap = mutableMapOf<String, String>()
+
+        init {
+            groupLayouts.asList.forEach { layout ->
+                layout.bindings
+                    .filterIsInstance<UniformBufferLayout>()
+                    .forEach { ubo ->
+                        val uboVarName = ubo.name.mapIndexed { i, c -> if (i == 0) c.lowercase() else c }.joinToString("")
+                        ubo.uniforms.forEach {  nameMap[it.name] = "${uboVarName}.${it.name}" }
+                    }
+            }
+        }
+
+        fun mapStructMemberNames(members: List<WgslStructMember>) {
+            members.forEach {  nameMap[it.name] = "${it.structName}.${it.name}" }
+        }
+
+        fun nextTempVar(): String = "generatorTempVar_${nextTempI++}"
+
+        fun getVarName(kslName: String): String {
+            return nameMap.getOrElse(kslName) { kslName }
+        }
+    }
+
+    private data class UboStruct(val name: String, val typeName: String, val members: List<WgslStructMember>, val binding: UniformBufferLayout)
+
+    private inner class VertexInputStructs(stage: KslVertexStage) : WgslStructHelper {
+        val vertexInputs = stage.attributes.values
+            .filter { it.inputRate == KslInputRate.Vertex }
+            .mapIndexed { i, attr ->
+                WgslStructMember("vertexInput", attr.name, attr.expressionType.wgslTypeName(), "@location($i) ")
+            }
+        val instanceInputs = stage.attributes.values
+            .filter { it.inputRate == KslInputRate.Instance }
+            .mapIndexed { i, attr ->
+                WgslStructMember("instanceInput", attr.name, attr.expressionType.wgslTypeName(), "@location($i) ")
+            }
+        val vertexIndex = if (stage.isUsingVertexIndex) {
+            WgslStructMember("vertexInput", KslVertexStage.NAME_IN_VERTEX_INDEX, "u32", "@builtin(vertex_index) ")
+        } else null
+
+        val instanceIndex = if (stage.isUsingInstanceIndex) {
+            WgslStructMember("vertexInput", KslVertexStage.NAME_IN_INSTANCE_INDEX, "u32", "@builtin(instance_index) ")
+        } else null
+
+        init {
+            generatorState.mapStructMemberNames(vertexInputs)
+            generatorState.mapStructMemberNames(instanceInputs)
+            vertexIndex?.let { generatorState.mapStructMemberNames(listOf(it)) }
+            instanceIndex?.let { generatorState.mapStructMemberNames(listOf(it)) }
+        }
+
+        fun generateStructs(builder: StringBuilder) = builder.apply {
+            generateStruct("VertexInput", vertexInputs, vertexIndex, instanceIndex)
+            generateStruct("InstanceInput", instanceInputs)
+        }
+    }
+
+    private inner class VertexOutputStruct(stage: KslVertexStage) : WgslStructHelper {
+        val vertexOutputs = stage.interStageVars
+            .mapIndexed { i, output ->
+                val outVal = output.output
+                val interp = if (output.interpolation == KslInterStageInterpolation.Flat) " @interpolate(flat)" else ""
+                WgslStructMember("vertexOutput", outVal.stateName, outVal.expressionType.wgslTypeName(), "@location($i)$interp ")
+            }
+        val position = WgslStructMember("vertexOutput", KslVertexStage.NAME_OUT_POSITION, "vec4<f32>", "@builtin(position) ")
+        val pointSize = if (stage.isSettingPointSize) {
+            WgslStructMember("vertexOutput", KslVertexStage.NAME_OUT_POINT_SIZE, "f32", "@location(${stage.interStageVars.size}) ")
+        } else null
+
+        init {
+            if (pointSize != null) {
+                logW { "Ignoring vertex shader point size output: Not supported by WGSL" }
+            }
+            generatorState.mapStructMemberNames(vertexOutputs)
+            generatorState.mapStructMemberNames(listOf(position))
+            pointSize?.let { generatorState.mapStructMemberNames(listOf(it)) }
+        }
+
+        fun generateStruct(builder: StringBuilder) = builder.apply {
+            generateStruct("VertexOutput", vertexOutputs, position, pointSize)
+        }
+    }
+
+    private inner class FragmentInputStruct(stage: KslFragmentStage) : WgslStructHelper {
+        val fragmentInputs = stage.interStageVars
+            .mapIndexed { i, input ->
+                val inVal = input.input
+                val interp = if (input.interpolation == KslInterStageInterpolation.Flat) " @interpolate(flat)" else ""
+                WgslStructMember("fragmentInput", inVal.stateName, inVal.expressionType.wgslTypeName(), "@location($i)$interp ")
+            }
+        val fragPosition = if (stage.isUsingFragPosition) {
+            WgslStructMember("fragmentInput", KslFragmentStage.NAME_IN_FRAG_POSITION, " vec4<f32>", "@builtin(position) ")
+        } else null
+
+        val isFrontFacing = if (stage.isUsingIsFrontFacing) {
+            WgslStructMember("fragmentInput", KslFragmentStage.NAME_IN_IS_FRONT_FACING, "bool", "@builtin(front_facing) ")
+        } else null
+
+        // not-implemented: input sample_index
+        // not-implemented: input sample_mask
+
+        init {
+            generatorState.mapStructMemberNames(fragmentInputs)
+            fragPosition?.let { generatorState.mapStructMemberNames(listOf(it)) }
+            isFrontFacing?.let { generatorState.mapStructMemberNames(listOf(it)) }
+        }
+
+        fun generateStruct(builder: StringBuilder) = builder.apply {
+            generateStruct("FragmentInput", fragmentInputs, fragPosition, isFrontFacing)
+        }
+    }
+
+    private inner class FragmentOutputStruct(stage: KslFragmentStage) : WgslStructHelper {
+        val outColors = stage.outColors.mapIndexed { i, outColor ->
+            WgslStructMember("fragmentOutput", outColor.value.stateName, outColor.value.expressionType.wgslTypeName(), "@location($i) ")
+        }
+        val fragDepth = if (stage.isSettingFragDepth) {
+            WgslStructMember("fragmentOutput", KslFragmentStage.NAME_OUT_DEPTH, "f32", "@builtin(frag_depth) ")
+        } else null
+
+        init {
+            generatorState.mapStructMemberNames(outColors)
+            fragDepth?.let { generatorState.mapStructMemberNames(listOf(it)) }
+        }
+
+        fun generateStruct(builder: StringBuilder) = builder.apply {
+            generateStruct("FragmentOutput", outColors, fragDepth)
+        }
+    }
+
+    private fun StringBuilder.generateTextureSamplers(stage: KslShaderStage, pipeline: PipelineBase) {
+        pipeline.bindGroupLayouts.asList.forEach { layout ->
+            layout.bindings
+                .filterIsInstance<TextureLayout>().filter { texLayout ->
+                    stage.getUsedSamplers().any { usedTex -> usedTex.name == texLayout.name }
+                }
+                .map { tex ->
+                    val location = generatorState.locations[tex]
+                    val texType = when (tex.type) {
+                        BindingType.TEXTURE_1D -> "texture_1d<f32>"
+                        BindingType.TEXTURE_2D -> "texture_2d<f32>"
+                        BindingType.TEXTURE_3D -> "texture_3d<f32>"
+                        BindingType.TEXTURE_CUBE -> "texture_cube<f32>"
+                        else -> error("invalid texture/sampler type: ${tex.type}")
+                    }
+                    appendLine("@group(${location.group}) @binding(${location.binding}) var ${tex.name}_sampler: sampler;")
+                    appendLine("@group(${location.group}) @binding(${location.binding+1}) var ${tex.name}: $texType;")
+                }
+        }
+        appendLine()
     }
 
     class WgslGeneratorOutput(

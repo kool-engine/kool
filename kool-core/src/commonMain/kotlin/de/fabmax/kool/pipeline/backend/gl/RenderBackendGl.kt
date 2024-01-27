@@ -220,20 +220,24 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
     }
 
     private fun captureFramebuffer(scene: Scene) {
+        val viewport = scene.mainRenderPass.viewport
         val targetTex = scene.capturedFramebuffer
 
         if (targetTex.loadedTexture == null) {
-            targetTex.loadedTexture = LoadedTextureGl(gl.TEXTURE_2D, gl.createTexture(), this, targetTex, 4096 * 2048 * 4).apply {
-                applySamplerSettings(targetTex.props.defaultSamplerSettings)
-            }
+            targetTex.loadedTexture = LoadedTextureGl(
+                target = gl.TEXTURE_2D,
+                glTexture = gl.createTexture(),
+                backend = this,
+                texture = targetTex,
+                estimatedSize = viewport.width * viewport.height * 4L
+            ).apply { applySamplerSettings(targetTex.props.defaultSamplerSettings) }
         }
         val tex = targetTex.loadedTexture as LoadedTextureGl
         tex.bind()
 
-        val viewport = scene.mainRenderPass.viewport
         if (tex.width != viewport.width || tex.height != viewport.height) {
             tex.setSize(viewport.width, viewport.height, 1)
-            tex.applySamplerSettings(SamplerSettings().clamped().nearest())
+            tex.applySamplerSettings(targetTex.props.defaultSamplerSettings)
             targetTex.loadingState = Texture.LoadingState.LOADED
             gl.texImage2D(tex.target, 0, gl.RGBA8, viewport.width, viewport.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null)
         }
