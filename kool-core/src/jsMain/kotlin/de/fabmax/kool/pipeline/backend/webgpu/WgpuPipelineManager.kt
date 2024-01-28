@@ -3,7 +3,6 @@ package de.fabmax.kool.pipeline.backend.webgpu
 import de.fabmax.kool.pipeline.DrawPipeline
 import de.fabmax.kool.pipeline.PipelineBase
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
-import de.fabmax.kool.util.logD
 
 class WgpuPipelineManager(val backend: RenderBackendWebGpu) {
 
@@ -20,7 +19,6 @@ class WgpuPipelineManager(val backend: RenderBackendWebGpu) {
     private fun DrawPipeline.getWgpuPipeline(renderPass: WgpuScreenRenderPass): WgpuDrawPipeline {
         (pipelineBackend as WgpuDrawPipeline?)?.let { return it }
 
-        logD { "create pipeline: $name" }
         val vertexShader = getOrCreateVertexShaderModule(this)
         val fragmentShader = getOrCreateFragmentShaderModule(this)
         return WgpuDrawPipeline(this, vertexShader, fragmentShader, renderPass, backend).also { pipelineBackend = it }

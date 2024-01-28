@@ -7,7 +7,6 @@ import de.fabmax.kool.util.*
 class WgpuGeometry(val mesh: Mesh, val backend: RenderBackendWebGpu) : BaseReleasable(), GpuGeometry {
     private val device: GPUDevice get() = backend.device
 
-
     private val createdIndexBuffer: CreatedBuffer
     private val createdFloatBuffer: CreatedBuffer
     private val createdIntBuffer: CreatedBuffer?
@@ -54,10 +53,10 @@ class WgpuGeometry(val mesh: Mesh, val backend: RenderBackendWebGpu) : BaseRelea
 
     override fun release() {
         super.release()
-        indexBuffer.destroy()
-        floatBuffer.destroy()
-        intBuffer?.destroy()
-        instanceBuffer?.destroy()
+        createdIndexBuffer.buffer.release()
+        createdFloatBuffer.buffer.release()
+        createdIntBuffer?.buffer?.release()
+        createdInstanceBuffer?.buffer?.release()
     }
 
     private inner class CreatedBuffer(val label: String, var size: Int, val usage: Int = GPUBufferUsage.VERTEX or GPUBufferUsage.COPY_DST) {

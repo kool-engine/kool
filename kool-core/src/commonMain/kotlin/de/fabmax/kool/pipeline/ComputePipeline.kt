@@ -34,9 +34,4 @@ class ComputePipeline(
     fun removeUser(task: ComputeRenderPass.Task) {
         pipelineBackend?.removeUser(task)
     }
-
-    override fun release() {
-        super.release()
-        pipelineBackend?.release()
-    }
 }

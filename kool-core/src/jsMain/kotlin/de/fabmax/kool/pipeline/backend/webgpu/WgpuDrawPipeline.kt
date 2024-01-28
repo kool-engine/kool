@@ -277,6 +277,9 @@ class WgpuDrawPipeline(
     override fun release() {
         if (!isReleased) {
             super.release()
+            if (!drawPipeline.isReleased) {
+                drawPipeline.release()
+            }
             backend.pipelineManager.removeDrawPipeline(this)
             pipelineInfo.deleted()
         }

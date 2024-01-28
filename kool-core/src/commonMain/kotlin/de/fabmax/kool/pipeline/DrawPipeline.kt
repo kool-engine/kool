@@ -54,11 +54,6 @@ class DrawPipeline(
     fun removeUser(mesh: Mesh) {
         pipelineBackend?.removeUser(mesh)
     }
-
-    override fun release() {
-        super.release()
-        pipelineBackend?.release()
-    }
 }
 
 enum class BlendMode {

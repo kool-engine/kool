@@ -44,6 +44,9 @@ abstract class PipelineBase(val name: String, val bindGroupLayouts: BindGroupLay
 
     override fun release() {
         super.release()
+        if (pipelineBackend?.isReleased == false) {
+            pipelineBackend?.release()
+        }
         pipelineData.release()
     }
 

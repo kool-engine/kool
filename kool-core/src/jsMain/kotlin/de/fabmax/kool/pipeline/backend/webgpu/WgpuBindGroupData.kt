@@ -127,6 +127,12 @@ class WgpuBindGroupData(
         )
     }
 
+    override fun release() {
+        super.release()
+        bufferBindings.forEach { it.gpuBuffer.release() }
+        bufferBindings.clear()
+    }
+
     private data class BufferBinding(
         val binding: BindGroupData.UniformBufferBindingData,
         val layout: Std140BufferLayout,

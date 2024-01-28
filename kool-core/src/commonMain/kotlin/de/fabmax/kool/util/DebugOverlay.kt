@@ -185,8 +185,8 @@ class DebugOverlay(position: Position = Position.UPPER_RIGHT) {
 
     private fun printBufferStats() {
         BackendStats.allocatedBuffers.values
-            .sortedBy { it.info }
             .sortedBy { -it.size }
+            .sortedBy { it.info }
             .forEachIndexed { i, info ->
                 println("  $i  ${info.name}  ${(info.size / 1e3).toString(1)} kB   [info: ${info.info}]")
         }
