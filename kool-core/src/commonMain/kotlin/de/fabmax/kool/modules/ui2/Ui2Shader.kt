@@ -34,11 +34,11 @@ class Ui2Shader : KslShader(Model(), pipelineConfig) {
             }
             fragmentStage {
                 main {
+                    val alpha = float1Var(sampleTexture(texture2d("uFontTex"), texCoords.output).r * color.output.a)
                     `if` (any(screenPos.output lt clipBounds.output.xy) or
                             any(screenPos.output gt clipBounds.output.zw)) {
                         discard()
                     }.`else` {
-                        val alpha = sampleTexture(texture2d("uFontTex"), texCoords.output).r * color.output.a
                         colorOutput(color.output.rgb * alpha, alpha)
                     }
                 }

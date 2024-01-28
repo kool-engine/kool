@@ -65,14 +65,15 @@ class MsdfUiShader(
                 }
 
                 main {
+                    val fontMap = texture2d("tFontMap")
+                    val msdfVals = float4Var(sampleTexture(fontMap, uv.output))
+
                     `if` (any(screenPos.output lt clipBounds.output.xy) or
                             any(screenPos.output gt clipBounds.output.zw)) {
                         discard()
 
                     }.`else` {
                         val color = float4Var(fgColor.output)
-                        val fontMap = texture2d("tFontMap")
-                        val msdfVals = sampleTexture(fontMap, uv.output)
 
                         val pxRange = msdfProps.output.x * uniformFloat1("uPxRange")
                         val weight = msdfProps.output.y
@@ -84,7 +85,7 @@ class MsdfUiShader(
                         val sdfOpa = float1Var(clamp(screenPxDistance + 0.5f.const, 0f.const, 1f.const))
 
                         // sample multi-sdf map (stored in texture rgb channels)
-                        val msdfOpa = computeOpacity(msdfVals.rgb, msdfProps.output)
+                        val msdfOpa = float1Var(computeOpacity(msdfVals.rgb, msdfProps.output))
 
                         // use sdf for small fonts and msdf for large fonts
                         val wMsdf = float1Var(smoothStep(5f.const, 10f.const, pxRange))
@@ -93,8 +94,7 @@ class MsdfUiShader(
                         val glow = float4Var(glowColor.output)
                         glow.a *= smoothStep(0f.const, 1f.const, msdfVals.a * 1.5f.const) * (1f.const - color.a)
 
-                        val outColor = float4Var(float4Value(color.rgb * color.a + glow.rgb * glow.a, color.a + glow.a))
-                        colorOutput(outColor)
+                        colorOutput(color.rgb * color.a + glow.rgb * glow.a, color.a + glow.a)
                     }
                 }
             }

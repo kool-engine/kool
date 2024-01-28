@@ -223,7 +223,7 @@ class UiPrimitiveMesh(name: String) :
                         val pos = float3Var(Vec3f.ZERO.const)
 
                         pos.xy set center + outerPosWeights.xy * outerDimens.xy + outerPosWeights.zw * outerDimens.zw
-                        pos.xy += innerPosWeights.xy * innerDimens.xy + innerPosWeights.zw * innerDimens.zw
+                        pos.xy set pos.xy + innerPosWeights.xy * innerDimens.xy + innerPosWeights.zw * innerDimens.zw
 
                         val colorA = instanceAttribFloat4(ATTRIB_COLOR_A.name)
                         val colorB = instanceAttribFloat4(ATTRIB_COLOR_B.name)

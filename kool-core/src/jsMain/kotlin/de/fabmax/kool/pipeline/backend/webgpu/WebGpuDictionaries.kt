@@ -68,7 +68,14 @@ data class GPUBufferBindingLayout(
 
 class GPUSamplerBindingLayout
 
-class GPUTextureBindingLayout
+class GPUTextureBindingLayout(
+    @JsName("sampleType")
+    val sampleType: GPUTextureSampleType = GPUTextureSampleType.float,
+    @JsName("viewDimension")
+    val viewDimension: GPUTextureViewDimension = GPUTextureViewDimension.view2d,
+    @JsName("multisampled")
+    val multisampled: Boolean = false
+)
 
 class GPUStorageTextureBindingLayout
 
@@ -88,6 +95,22 @@ class GPUBindGroupEntry(
     val binding: Int,
     @JsName("resource")
     val resource: GPUBindingResource,
+)
+
+class GPUBlendState(
+    @JsName("color")
+    val color: GPUBlendComponent,
+    @JsName("alpha")
+    val alpha: GPUBlendComponent,
+)
+
+class GPUBlendComponent(
+    @JsName("operation")
+    val operation: GPUBlendOperation = GPUBlendOperation.add,
+    @JsName("srcFactor")
+    val srcFactor: GPUBlendFactor = GPUBlendFactor.one,
+    @JsName("dstFactor")
+    val dstFactor: GPUBlendFactor = GPUBlendFactor.zero
 )
 
 class GPUBufferBinding(
@@ -134,10 +157,17 @@ data class GPUColorDict(
 
 fun GPUColorDict(color: Color): GPUColorDict = GPUColorDict(color.r, color.g, color.b, color.a)
 
-class GPUColorTargetState(
-    @JsName("format")
-    val format: GPUTextureFormat
-)
+interface GPUColorTargetState
+
+fun GPUColorTargetState(
+    format: GPUTextureFormat,
+    blend: GPUBlendState? = null
+) : GPUColorTargetState {
+    val o = js("({})")
+    o["format"] = format
+    blend?.let { o["blend"] = it }
+    return o
+}
 
 class GPUFragmentState(
     @JsName("module")
@@ -153,9 +183,35 @@ class GPUImageCopyExternalImage(
     val source: ImageBitmap
 )
 
+class GPUImageCopyTexture(
+    @JsName("texture")
+    val texture: GPUTexture
+    /*
+mipLevel: GPUIntegerCoordinate = 0
+origin: GPUOrigin3D = {}
+aspect: GPUTextureAspect = 'all'
+     */
+)
+
 class GPUImageCopyTextureTagged(
     @JsName("texture")
     val texture: GPUTexture
+    /*
+mipLevel: GPUIntegerCoordinate = 0
+origin: GPUOrigin3D = {}
+aspect: GPUTextureAspect = 'all'
+colorSpace: PredefinedColorSpace = 'srgb'
+premultipliedAlpha: boolean = 'false'
+     */
+)
+
+class GPUImageDataLayout(
+    @JsName("bytesPerRow")
+    val bytesPerRow: Int,
+    @JsName("rowsPerImage")
+    val rowsPerImage: Int,
+    @JsName("offset")
+    val offset: Long = 0
 )
 
 data class GPUMultisampleState(
@@ -254,40 +310,26 @@ fun GPURenderPassDescriptor(
     return o
 }
 
-data class GPURenderPipelineDescriptor(
-    @JsName("layout")
-    val layout: GPUPipelineLayout,
-    @JsName("vertex")
-    val vertex: GPUVertexState,
-    @JsName("fragment")
-    val fragment: GPUFragmentState,
-    @JsName("primitive")
-    val primitive: GPUPrimitiveState = GPUPrimitiveState(),
-    @JsName("multisample")
-    val multisample: GPUMultisampleState = GPUMultisampleState(),
-    @JsName("label")
-    val label: String = ""
-)
+interface GPURenderPipelineDescriptor
 
 fun GPURenderPipelineDescriptor(
     layout: GPUPipelineLayout,
     vertex: GPUVertexState,
-    fragment: GPUFragmentState,
-    depthStencil: GPUDepthStencilState,
-    primitive: GPUPrimitiveState = GPUPrimitiveState(),
-    multisample: GPUMultisampleState = GPUMultisampleState(),
-    label: String = "GPURenderPipelineDescriptor"
+    fragment: GPUFragmentState? = null,
+    depthStencil: GPUDepthStencilState? = null,
+    primitive: GPUPrimitiveState? = null,
+    multisample: GPUMultisampleState? = null,
+    label: String = "",
 ): GPURenderPipelineDescriptor {
-    val desc = GPURenderPipelineDescriptor(
-        layout = layout,
-        vertex = vertex,
-        fragment = fragment,
-        primitive = primitive,
-        multisample = multisample,
-        label = label
-    )
-    desc.asDynamic()["depthStencil"] = depthStencil
-    return desc
+    val o = js("({})")
+    o["layout"] = layout
+    o["vertex"] = vertex
+    fragment?.let { o["fragment"] = it }
+    depthStencil?.let { o["depthStencil"] = it }
+    primitive?.let { o["primitive"] = it }
+    multisample?.let { o["multisample"] = it }
+    o["label"] = label
+    return o
 }
 
 data class GPUDepthStencilState(
@@ -360,7 +402,7 @@ interface GPUTextureViewDescriptor
 fun GPUTextureViewDescriptor(
     label: String = "",
     format: GPUTextureFormat? = null,
-    //val dimension: GPUTextureViewDimension,
+    dimension: GPUTextureViewDimension? = null,
     //val aspect: GPUTextureAspect = 'all'
     baseMipLevel: Int = 0,
     mipLevelCount: Int? = null,
@@ -370,6 +412,7 @@ fun GPUTextureViewDescriptor(
     val o = js("({})")
     o["label"] = label
     format?.let { o["format"] = it }
+    dimension?.let { o["dimension"] = it }
     o["baseMipLevel"] = baseMipLevel
     mipLevelCount?.let { o["mipLevelCount"] = it }
     o["baseArrayLayer"] = baseArrayLayer

@@ -38,8 +38,6 @@ class CompiledDrawShader(val pipeline: DrawPipeline, program: GlProgram, backend
     private var drawInfo = DrawInfo(pipeline.vertexLayout.primitiveType.glElemType, gl.UNSIGNED_INT, 0, false)
 
     init {
-        pipeline.pipelineBackend = this
-
         val floatBinding = pipeline.vertexLayout.bindings
             .filter { it.inputRate == InputRate.VERTEX }
             .find { it.vertexAttributes.any { attr -> !attr.type.isInt } }

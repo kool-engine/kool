@@ -130,7 +130,7 @@ class MappedUboCompat(val ubo: BindGroupData.UniformBufferBindingData, val gl: G
 sealed class MappedUniformTex(val target: Int, val backend: RenderBackendGl) : MappedUniform {
     protected val gl = backend.gl
 
-    protected fun checkLoadingState(texture: Texture, texUnit: Int): Boolean {
+    private fun checkLoadingState(texture: Texture, texUnit: Int): Boolean {
         texture.checkIsNotReleased()
 
         if (texture.loadingState == Texture.LoadingState.NOT_LOADED) {

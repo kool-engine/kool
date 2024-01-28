@@ -20,6 +20,9 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
     }
     var isDirty = true
 
+    val isComplete: Boolean
+        get() = bindings.all { it.isComplete }
+
     var gpuData: GpuBindGroupData? = null
         internal set
 
@@ -40,11 +43,15 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
     sealed interface BindingData {
         val layout: BindingLayout
         val name: String get() = layout.name
+
+        val isComplete: Boolean
     }
 
     inner class UniformBufferBindingData(override val layout: UniformBufferLayout) : BindingData {
         var isBufferDirty = true
         val buffer: MixedBuffer = MixedBuffer(layout.layout.size)
+
+        override val isComplete = true
 
         fun getAndClearDirtyFlag(): Boolean {
             val isDirty = isBufferDirty
@@ -56,6 +63,8 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
     abstract inner class TextureBindingData<T: Texture, B: TextureLayout>(layout: B) {
         private val _textures = MutableList<T?>(layout.arraySize) { null }
         val textures: List<T?> get() = _textures
+
+        val isComplete get() = textures.all { it != null && it.loadingState == Texture.LoadingState.LOADED }
 
         var texture: T?
             get() = _textures[0]
@@ -87,6 +96,7 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
                 field = value
                 isDirty = true
             }
+        override val isComplete get() = storageTexture?.loadingState == Texture.LoadingState.LOADED
     }
 
     inner class StorageTexture2dBindingData(override val layout: StorageTexture2dLayout) : BindingData {
@@ -95,6 +105,7 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
                 field = value
                 isDirty = true
             }
+        override val isComplete get() = storageTexture?.loadingState == Texture.LoadingState.LOADED
     }
 
     inner class StorageTexture3dBindingData(override val layout: StorageTexture3dLayout) : BindingData {
@@ -103,5 +114,6 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
                 field = value
                 isDirty = true
             }
+        override val isComplete get() = storageTexture?.loadingState == Texture.LoadingState.LOADED
     }
 }

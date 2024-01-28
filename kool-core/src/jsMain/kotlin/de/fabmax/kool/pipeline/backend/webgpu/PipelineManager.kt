@@ -7,20 +7,23 @@ import de.fabmax.kool.util.logD
 
 class PipelineManager(val backend: RenderBackendWebGpu) {
 
-    private val drawPipelines = mutableMapOf<DrawPipeline, WgpuPipeline>()
     private val vertexShaderModules = mutableMapOf<String, UsedShaderModule>()
     private val fragmentShaderModules = mutableMapOf<String, UsedShaderModule>()
 
     fun bindDrawPipeline(cmd: DrawCommand, encoder: GPURenderPassEncoder, renderPass: WgpuRenderPass): Boolean {
         val drawPipeline = cmd.pipeline!!
-        val gpuPipeline = drawPipelines.getOrPut(drawPipeline) {
-            logD { "create pipeline: ${drawPipeline.name}" }
-            val vertexShader = getOrCreateVertexShaderModule(drawPipeline)
-            val fragmentShader = getOrCreateFragmentShaderModule(drawPipeline)
-            WgpuPipeline(drawPipeline, vertexShader, fragmentShader, renderPass, backend)
-        }
+        val gpuPipeline = drawPipeline.getWgpuPipeline(renderPass)
         drawPipeline.update(cmd)
         return gpuPipeline.bind(cmd, encoder)
+    }
+
+    private fun DrawPipeline.getWgpuPipeline(renderPass: WgpuRenderPass): WgpuDrawPipeline {
+        (pipelineBackend as WgpuDrawPipeline?)?.let { return it }
+
+        logD { "create pipeline: $name" }
+        val vertexShader = getOrCreateVertexShaderModule(this)
+        val fragmentShader = getOrCreateFragmentShaderModule(this)
+        return WgpuDrawPipeline(this, vertexShader, fragmentShader, renderPass, backend).also { pipelineBackend = it }
     }
 
     private fun getOrCreateVertexShaderModule(pipeline: DrawPipeline): GPUShaderModule {

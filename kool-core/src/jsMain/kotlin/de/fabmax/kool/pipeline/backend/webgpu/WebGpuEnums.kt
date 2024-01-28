@@ -16,6 +16,36 @@ value class GPUAutoLayoutMode private constructor(val enumValue: String) : GPUPi
     }
 }
 
+value class GPUBlendFactor private constructor(val enumValue: String) {
+    override fun toString() = enumValue
+    companion object {
+        val zero = GPUBlendFactor("zero")
+        val one = GPUBlendFactor("one")
+        val src = GPUBlendFactor("src")
+        val oneMinusSrc = GPUBlendFactor("one-minus-src")
+        val srcAlpha = GPUBlendFactor("src-alpha")
+        val oneMinusSrcAlpha = GPUBlendFactor("one-minus-src-alpha")
+        val dst = GPUBlendFactor("dst")
+        val oneMinusDst = GPUBlendFactor("one-minus-dst")
+        val dstAlpha = GPUBlendFactor("dst-alpha")
+        val oneMinusDstAlpha = GPUBlendFactor("one-minus-dst-alpha")
+        val srcAlphaSaturated = GPUBlendFactor("src-alpha-saturated")
+        val constant = GPUBlendFactor("constant")
+        val oneMinusConstant = GPUBlendFactor("one-minus-constant")
+    }
+}
+
+value class GPUBlendOperation private constructor(val enumValue: String) {
+    override fun toString() = enumValue
+    companion object {
+        val add = GPUBlendOperation("add")
+        val subtract = GPUBlendOperation("subtract")
+        val reverseSubtract = GPUBlendOperation("reverse-subtract")
+        val min = GPUBlendOperation("min")
+        val max = GPUBlendOperation("max")
+    }
+}
+
 value class GPUBufferBindingType private constructor(val enumValue: String) {
     override fun toString() = enumValue
     companion object {
@@ -186,6 +216,29 @@ value class GPUTextureFormat private constructor(val enumValue: String) {
         val depth32float = GPUTextureFormat("depth32float")
         val depth32floatStencil8 = GPUTextureFormat("depth32float-stencil8")
         // todo: many more compressed formats...
+    }
+}
+
+value class GPUTextureSampleType private constructor(val enumValue: String) {
+    override fun toString() = enumValue
+    companion object {
+        val float = GPUTextureSampleType("float")
+        val unfilterableFloat = GPUTextureSampleType("unfilterable-float")
+        val depth = GPUTextureSampleType("depth")
+        val sint = GPUTextureSampleType("sint")
+        val uint = GPUTextureSampleType("uint")
+    }
+}
+
+value class GPUTextureViewDimension private constructor(val enumValue: String) {
+    override fun toString() = enumValue
+    companion object {
+        val view1d = GPUTextureViewDimension("1d")
+        val view2d = GPUTextureViewDimension("2d")
+        val view2dArray = GPUTextureViewDimension("2d-array")
+        val viewCube = GPUTextureViewDimension("cube")
+        val viewCubeArray = GPUTextureViewDimension("cube-array")
+        val view3d = GPUTextureViewDimension("3d")
     }
 }
 

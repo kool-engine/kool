@@ -2,78 +2,103 @@ package de.fabmax.kool.pipeline.backend.webgpu
 
 import de.fabmax.kool.pipeline.backend.GpuGeometry
 import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.util.Float32BufferImpl
-import de.fabmax.kool.util.Int32BufferImpl
+import de.fabmax.kool.util.*
 
-class WgpuGeometry(mesh: Mesh, val backend: RenderBackendWebGpu) : GpuGeometry {
+class WgpuGeometry(val mesh: Mesh, val backend: RenderBackendWebGpu) : BaseReleasable(), GpuGeometry {
     private val device: GPUDevice get() = backend.device
 
-    val indexBuffer: GPUBuffer
-    val floatBuffer: GPUBuffer
-    val intBuffer: GPUBuffer?
 
-    override var isReleased: Boolean = false
+    private val createdIndexBuffer: CreatedBuffer
+    private val createdFloatBuffer: CreatedBuffer
+    private val createdIntBuffer: CreatedBuffer?
+    private val createdInstanceBuffer: CreatedBuffer?
+
+    val indexBuffer: GPUBuffer get() = createdIndexBuffer.buffer
+    val floatBuffer: GPUBuffer get() = createdFloatBuffer.buffer
+    val intBuffer: GPUBuffer? get() = createdIntBuffer?.buffer
+    val instanceBuffer: GPUBuffer? get() = createdInstanceBuffer?.buffer
+
+    private var isNewlyCreated =  true
 
     init {
         val geom = mesh.geometry
-        indexBuffer = device.createBuffer(
-            GPUBufferDescriptor(
-                label = "${mesh.name} index data",
-                size = 4 * geom.numIndices.toLong(),
-                usage = GPUBufferUsage.INDEX or GPUBufferUsage.COPY_DST
-            )
-        )
-
-        floatBuffer = device.createBuffer(
-            GPUBufferDescriptor(
-                label = "${mesh.name} vertex float data",
-                size = geom.byteStrideF.toLong() * geom.numVertices,
-                usage = GPUBufferUsage.VERTEX or GPUBufferUsage.COPY_DST
-            )
-        )
-
-        intBuffer = if (geom.byteStrideI > 0) {
-            device.createBuffer(
-                GPUBufferDescriptor(
-                    label = "${mesh.name} vertex int data",
-                    size = geom.byteStrideI.toLong() * geom.numVertices,
-                    usage = GPUBufferUsage.VERTEX or GPUBufferUsage.COPY_DST
-                )
-            )
-        } else null
-
-        device.queue.writeBuffer(
-            buffer = indexBuffer,
-            bufferOffset = 0L,
-            data = (geom.indices as Int32BufferImpl).buffer,
-            dataOffset = 0L,
-            size = geom.numIndices.toLong()
-        )
-
-        device.queue.writeBuffer(
-            buffer = floatBuffer,
-            bufferOffset = 0L,
-            data = (geom.dataF as Float32BufferImpl).buffer,
-            dataOffset = 0L,
-            size = geom.vertexSizeF * geom.numVertices.toLong()
-        )
-
-        intBuffer?.let {
-            device.queue.writeBuffer(
-                buffer = it,
-                bufferOffset = 0L,
-                data = (geom.dataI as Int32BufferImpl).buffer,
-                dataOffset = 0L,
-                size = geom.vertexSizeI * geom.numVertices.toLong()
-            )
+        createdIndexBuffer = CreatedBuffer("${mesh.name} index data", 4 * geom.numIndices, GPUBufferUsage.INDEX or GPUBufferUsage.COPY_DST)
+        createdFloatBuffer = CreatedBuffer("${mesh.name} vertex float data", geom.byteStrideF * geom.numVertices)
+        createdIntBuffer = if (geom.byteStrideI == 0) null else {
+            CreatedBuffer("${mesh.name} vertex int data", geom.byteStrideI * geom.numVertices)
+        }
+        createdInstanceBuffer = mesh.instances?.let {
+            CreatedBuffer("${mesh.name} instance data", it.strideBytesF * it.maxInstances)
         }
     }
 
+    fun checkBuffers() {
+        checkIsNotReleased()
+
+        val instances = mesh.instances
+        val geometry = mesh.geometry
+
+        if (instances != null && createdInstanceBuffer != null && (instances.hasChanged || isNewlyCreated)) {
+            createdInstanceBuffer.writeData(instances.dataF)
+            instances.hasChanged = false
+        }
+
+        if (!geometry.isBatchUpdate && (geometry.hasChanged || isNewlyCreated)) {
+            createdIndexBuffer.writeData(geometry.indices)
+            createdFloatBuffer.writeData(geometry.dataF)
+            createdIntBuffer?.writeData(geometry.dataI)
+            geometry.hasChanged = false
+        }
+        isNewlyCreated = false
+    }
+
     override fun release() {
+        super.release()
         indexBuffer.destroy()
         floatBuffer.destroy()
         intBuffer?.destroy()
-        isReleased = true
+        instanceBuffer?.destroy()
     }
 
+    private inner class CreatedBuffer(val label: String, var size: Int, val usage: Int = GPUBufferUsage.VERTEX or GPUBufferUsage.COPY_DST) {
+        var buffer: GPUBuffer = makeBuffer()
+
+        fun writeData(data: Float32Buffer) {
+            checkSize(data.limit * 4)
+            device.queue.writeBuffer(
+                buffer = buffer,
+                bufferOffset = 0L,
+                data = (data as Float32BufferImpl).buffer,
+                dataOffset = 0L,
+                size = data.limit.toLong()
+            )
+        }
+
+        fun writeData(data: Int32Buffer) {
+            checkSize(data.limit * 4)
+            device.queue.writeBuffer(
+                buffer = buffer,
+                bufferOffset = 0L,
+                data = (data as Int32BufferImpl).buffer,
+                dataOffset = 0L,
+                size = data.limit.toLong()
+            )
+        }
+
+        private fun checkSize(required: Int) {
+            if (required > size) {
+                buffer.destroy()
+                size = required
+                buffer = makeBuffer()
+            }
+        }
+
+        private fun makeBuffer() = device.createBuffer(
+            GPUBufferDescriptor(
+                label = label,
+                size = size.toLong(),
+                usage = usage
+            )
+        )
+    }
 }

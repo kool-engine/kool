@@ -1,18 +1,7 @@
-import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolApplication
 import de.fabmax.kool.KoolConfigJs
-import de.fabmax.kool.demo.DemoLoader
 import de.fabmax.kool.demo.demo
-import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.math.deg
-import de.fabmax.kool.modules.ksl.KslBlinnPhongShader
 import de.fabmax.kool.physics.Physics
-import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.scene.addMesh
-import de.fabmax.kool.scene.defaultOrbitCamera
-import de.fabmax.kool.scene.scene
-import de.fabmax.kool.util.Time
-import de.fabmax.kool.util.launchOnMainThread
 import kotlinx.browser.window
 import kotlin.collections.set
 
@@ -30,13 +19,8 @@ fun main() = KoolApplication(
     // uncomment to load assets locally instead of from remote
     //DemoLoader.setProperty("assets.base", ".")
 
-    if (isWebGpu) {
-        // web-gpu backend does not yet support everything needed to run the full demo set
-        it.scenes += helloWebGpu()
-    } else {
-        // launch demo
-        demo(params["demo"], it)
-    }
+    // launch demo
+    demo(params["demo"], it)
 }
 
 @Suppress("UNUSED_VARIABLE")
@@ -58,28 +42,4 @@ fun getParams(): Map<String, String> {
         }
     }
     return params
-}
-
-fun helloWebGpu() = scene {
-    defaultOrbitCamera()
-
-    launchOnMainThread {
-        val tex = Assets.loadTexture2d("${DemoLoader.materialPath}/uv_checker_map.jpg")
-
-        addMesh(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS) {
-            generate { cube { colored(false) } }
-
-            shader = KslBlinnPhongShader {
-                color {
-                    //vertexColor()
-                    textureColor(tex)
-                }
-                modelCustomizer = { dumpCode = true }
-            }
-
-            onUpdate {
-                transform.rotate(30f.deg * Time.deltaT, Vec3f(1f, 1f, 1f))
-            }
-        }
-    }
 }

@@ -1,17 +1,13 @@
 package de.fabmax.kool.pipeline.backend.gl
 
 import de.fabmax.kool.KoolException
-import de.fabmax.kool.pipeline.ComputePipeline
-import de.fabmax.kool.pipeline.ComputeRenderPass
-import de.fabmax.kool.pipeline.PipelineBase
-import de.fabmax.kool.pipeline.ShaderCode
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.util.logE
 
 class ShaderManager(val backend: RenderBackendGl) {
     private val gl: GlApi = backend.gl
 
-    private val shaders = mutableMapOf<PipelineBase, CompiledShader>()
     private var boundShader: CompiledShader? = null
 
     private val glDrawPrograms = mutableMapOf<ShaderCodeGl, UsedGlProgram>()
@@ -19,14 +15,9 @@ class ShaderManager(val backend: RenderBackendGl) {
 
     fun bindDrawShader(cmd: DrawCommand): CompiledDrawShader.DrawInfo {
         val pipeline = checkNotNull(cmd.pipeline)
-
-        val shader = shaders.getOrPut(pipeline) {
-            val usedProgram = getCompiledGlProgram(pipeline.shaderCode)
-            usedProgram.users += pipeline
-            CompiledDrawShader(pipeline, usedProgram.glProgram, backend)
-        } as CompiledDrawShader
-
+        val shader = pipeline.getCompiledShader()
         val current = boundShader as? CompiledDrawShader
+
         if (shader.program != current?.program) {
             current?.disableVertexLayout()
             gl.useProgram(shader.program)
@@ -54,12 +45,7 @@ class ShaderManager(val backend: RenderBackendGl) {
             return false
         }
 
-        val shader = shaders.getOrPut(pipeline) {
-            val usedProgram = getCompiledGlProgram(pipeline.shaderCode)
-            usedProgram.users += pipeline
-            CompiledComputeShader(pipeline, usedProgram.glProgram, backend)
-        } as CompiledComputeShader
-
+        val shader = pipeline.getCompiledShader()
         val current = boundShader as? CompiledComputeShader
         if (shader.program != current?.program) {
             gl.useProgram(shader.program)
@@ -67,6 +53,22 @@ class ShaderManager(val backend: RenderBackendGl) {
 
         boundShader = shader
         return shader.bindComputePass(task)
+    }
+
+    private fun DrawPipeline.getCompiledShader(): CompiledDrawShader {
+        (pipelineBackend as CompiledDrawShader?)?.let { return it }
+
+        val usedProgram = getCompiledGlProgram(shaderCode)
+        usedProgram.users += this
+        return CompiledDrawShader(this, usedProgram.glProgram, backend).also { pipelineBackend = it }
+    }
+
+    private fun ComputePipeline.getCompiledShader(): CompiledComputeShader {
+        (pipelineBackend as CompiledComputeShader?)?.let { return it }
+
+        val usedProgram = getCompiledGlProgram(shaderCode)
+        usedProgram.users += this
+        return CompiledComputeShader(this, usedProgram.glProgram, backend).also { pipelineBackend = it }
     }
 
     private fun CompiledDrawShader.isSameVertexLayout(other: CompiledDrawShader): Boolean {
@@ -146,7 +148,7 @@ class ShaderManager(val backend: RenderBackendGl) {
     }
 
     internal fun removeDrawShader(shader: CompiledDrawShader) {
-        shaders.remove(shader.pipeline)
+        shader.pipeline.pipelineBackend = null
         glDrawPrograms[shader.pipeline.shaderCode]?.let { usedProgram ->
             usedProgram.users -= shader.pipeline
             if (usedProgram.users.isEmpty()) {
@@ -161,7 +163,7 @@ class ShaderManager(val backend: RenderBackendGl) {
     }
 
     internal fun removeComputeShader(shader: CompiledComputeShader) {
-        shaders.remove(shader.pipeline)
+        shader.pipeline.pipelineBackend = null
         glComputePrograms[shader.pipeline.shaderCode]?.let { usedProgram ->
             usedProgram.users -= shader.pipeline
             if (usedProgram.users.isEmpty()) {

@@ -1,11 +1,12 @@
 package de.fabmax.kool.pipeline.backend.webgpu
 
+import de.fabmax.kool.modules.ksl.lang.KslVertexAttribute
 import de.fabmax.kool.pipeline.*
 
-class WgslLocations(val layout: BindGroupLayouts) {
+class WgslLocations(val bindingLayout: BindGroupLayouts, val vertexLayout: VertexLayout) {
 
     val bindingLocations = buildMap {
-        layout.asList.forEach { group ->
+        bindingLayout.asList.forEach { group ->
             var nextBinding = 0
             group.bindings.forEach { binding ->
                 put(binding, Location(group.group, nextBinding))
@@ -26,9 +27,39 @@ class WgslLocations(val layout: BindGroupLayouts) {
         }
     }
 
+    val vertexLocations = buildMap {
+        val matrixCols = mapOf(GpuType.MAT2 to 2, GpuType.MAT3 to 3, GpuType.MAT4 to 4)
+        var vLoc = 0
+
+        vertexLayout.bindings
+            .sortedBy { it.inputRate.name }     // INSTANCE first, VERTEX second
+            .flatMap { it.vertexAttributes }
+            .forEach { attr ->
+                val cols = matrixCols.getOrElse(attr.type) { 1 }
+                val locs = (0 until cols).map { i ->
+                    if (cols == 1) {
+                        VertexAttributeLocation(attr.name, vLoc++)
+                    } else {
+                        VertexAttributeLocation("${attr.name}_$i", vLoc++)
+                    }
+                }
+                put(attr.name, locs)
+            }
+    }
+
     operator fun get(binding: BindingLayout): Location {
         return bindingLocations[binding]!!
     }
 
+    operator fun get(attribute: VertexLayout.VertexAttribute): List<VertexAttributeLocation> {
+        return vertexLocations[attribute.name]!!
+    }
+
+    operator fun get(attribute: KslVertexAttribute<*>): List<VertexAttributeLocation> {
+        return vertexLocations[attribute.name]!!
+    }
+
     data class Location(val group: Int, val binding: Int)
+
+    data class VertexAttributeLocation(val name: String, val location: Int)
 }

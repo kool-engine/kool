@@ -35,7 +35,8 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
     val canvasFormat: GPUTextureFormat
         get() = _canvasFormat!!
 
-    private lateinit var texLoader: TextureLoader
+    internal lateinit var texLoader: TextureLoader
+        private set
 
     val pipelineManager = PipelineManager(this)
     private val sceneRenderer = WgpuRenderPass(this)
@@ -137,6 +138,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
 
     override fun uploadTextureToGpu(tex: Texture, data: TextureData) {
         when (tex) {
+            is Texture1d -> texLoader.loadTexture1d(tex, data)
             is Texture2d -> texLoader.loadTexture2d(tex, data)
             else -> error("Unsupported texture type: $tex")
         }

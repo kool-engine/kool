@@ -102,9 +102,9 @@ class TitleBgRenderer(
                         meshUv.x += uniformFloat1("uNoiseOffset")
                         meshUv.y += uvRange.x
 
-                        val noise = sampleTexture(texture2d("tNoise"), meshUv)
+                        val noise = sampleTexture(texture2d("tNoise"), meshUv, 0f.const)
                         val pos = float3Var(vertexAttribFloat3(Attribute.POSITIONS.name))
-                        pos.xy += (noise.xy * 2f.const - 1f.const) * Vec2f(0.1f, 0.5f).const
+                        pos.xy set pos.xy + (noise.xy * 2f.const - 1f.const) * Vec2f(0.1f, 0.5f).const
 
                         texCoords.input set pos.xy
                         texCoords.input.x set uvRange.x + clamp(pos.x + pos.y * 0.2f.const, (-0.1f).const, 1.1f.const) * (uvRange.y - uvRange.x)
@@ -120,6 +120,7 @@ class TitleBgRenderer(
                 fragmentStage {
                     main {
                         val gradientTex = texture1d("tGradient")
+                        val color = float4Var(sampleTexture(gradientTex, texCoords.output.x))
 
                         `if` (all(screenPos.output gt clipBounds.output.xy) and
                                 all(screenPos.output lt clipBounds.output.zw)) {
@@ -147,7 +148,6 @@ class TitleBgRenderer(
                                 discard()
                             }
 
-                            val color = sampleTexture(gradientTex, texCoords.output.x)
                             colorOutput(color)
                         }.`else` {
                             discard()

@@ -76,6 +76,7 @@ external interface GPUPipelineLayout
 external class GPUQueue {
     fun submit(commandBuffers: Array<GPUCommandBuffer>)
     fun writeBuffer(buffer: GPUBuffer, bufferOffset: Long, data: ArrayBufferView, dataOffset: Long = definedExternally, size: Long = definedExternally)
+    fun writeTexture(destination: GPUImageCopyTexture, data: ArrayBufferView, dataLayout: GPUImageDataLayout, size: IntArray)
     fun copyExternalImageToTexture(source: GPUImageCopyExternalImage, destination: GPUImageCopyTextureTagged, copySize: IntArray)
 }
 

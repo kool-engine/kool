@@ -4,13 +4,14 @@ import de.fabmax.kool.modules.ksl.generator.KslGenerator
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.modules.ksl.model.KslState
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.scene.geometry.PrimitiveType
 import de.fabmax.kool.util.logW
 
 class WgslGenerator : KslGenerator() {
 
     var blockIndent = "  "
 
-    private var generatorState = GeneratorState(BindGroupLayouts(BindGroupLayout.EMPTY_VIEW, BindGroupLayout.EMPTY_PIPELINE, BindGroupLayout.EMPTY_MESH))
+    private var generatorState = GeneratorState(BindGroupLayouts(BindGroupLayout.EMPTY_VIEW, BindGroupLayout.EMPTY_PIPELINE, BindGroupLayout.EMPTY_MESH), emptyVertexLayout)
 
     override fun generateProgram(program: KslProgram, pipeline: DrawPipeline): WgslGeneratorOutput {
         val vertexStage = checkNotNull(program.vertexStage) {
@@ -20,7 +21,7 @@ class WgslGenerator : KslGenerator() {
             "KslProgram fragmentStage is missing (a valid KslShader needs at least a vertexStage and fragmentStage)"
         }
 
-        generatorState = GeneratorState(pipeline.bindGroupLayouts)
+        generatorState = GeneratorState(pipeline.bindGroupLayouts, pipeline.vertexLayout)
         return WgslGeneratorOutput.shaderOutput(
             generateVertexSrc(vertexStage, pipeline),
             generateFragmentSrc(fragmentStage, pipeline)
@@ -32,7 +33,7 @@ class WgslGenerator : KslGenerator() {
             "KslProgram computeStage is missing"
         }
 
-        generatorState = GeneratorState(pipeline.bindGroupLayouts)
+        generatorState = GeneratorState(pipeline.bindGroupLayouts, emptyVertexLayout)
         return WgslGeneratorOutput.computeOutput(generateComputeSrc(computeStage, pipeline))
     }
 
@@ -50,13 +51,14 @@ class WgslGenerator : KslGenerator() {
         val ubos = UboStructs(vertexStage, pipeline)
 
         ubos.generateStructs(src)
-        vertexInput.generateStructs(src)
+        vertexInput.generateStruct(src)
         vertexOutput.generateStruct(src)
         src.generateTextureSamplers(vertexStage, pipeline)
         src.generateFunctions(vertexStage)
 
         src.appendLine("@vertex")
         src.appendLine("fn vertexMain(vertexInput: VertexInput) -> VertexOutput {")
+        src.appendLine(vertexInput.reassembleMatrices().prependIndent(blockIndent))
         src.appendLine("  var vertexOutput: VertexOutput;")
         src.appendLine(generateScope(vertexStage.main, blockIndent))
         src.appendLine("  return vertexOutput;")
@@ -189,7 +191,12 @@ class WgslGenerator : KslGenerator() {
 
     override fun sampleColorTexture(sampleTexture: KslSampleColorTexture<*>): String {
         val samplerName = sampleTexture.sampler.generateExpression(this)
-        return "textureSample(${samplerName}, ${samplerName}_sampler, ${sampleTexture.coord.generateExpression(this)})"
+        val level = sampleTexture.lod?.generateExpression(this)
+        return if (level != null) {
+            "textureSampleLevel(${samplerName}, ${samplerName}_sampler, ${sampleTexture.coord.generateExpression(this)}, $level)"
+        } else {
+            "textureSample(${samplerName}, ${samplerName}_sampler, ${sampleTexture.coord.generateExpression(this)})"
+        }
     }
 
     override fun sampleDepthTexture(sampleTexture: KslSampleDepthTexture<*>): String {
@@ -447,6 +454,8 @@ class WgslGenerator : KslGenerator() {
     override fun KslState.name(): String = generatorState.getVarName(stateName)
 
     companion object {
+        private val emptyVertexLayout = VertexLayout(emptyList(), PrimitiveType.TRIANGLES)
+
         fun KslType.wgslTypeName(): String {
             return when (this) {
                 KslTypeVoid -> TODO()
@@ -491,8 +500,8 @@ class WgslGenerator : KslGenerator() {
         }
     }
 
-    private class GeneratorState(groupLayouts: BindGroupLayouts) {
-        val locations = WgslLocations(groupLayouts)
+    private class GeneratorState(groupLayouts: BindGroupLayouts, vertexLayout: VertexLayout) {
+        val locations = WgslLocations(groupLayouts, vertexLayout)
         var nextTempI = 0
 
         val nameMap = mutableMapOf<String, String>()
@@ -521,17 +530,26 @@ class WgslGenerator : KslGenerator() {
 
     private data class UboStruct(val name: String, val typeName: String, val members: List<WgslStructMember>, val binding: UniformBufferLayout)
 
-    private inner class VertexInputStructs(stage: KslVertexStage) : WgslStructHelper {
-        val vertexInputs = stage.attributes.values
-            .filter { it.inputRate == KslInputRate.Vertex }
-            .mapIndexed { i, attr ->
-                WgslStructMember("vertexInput", attr.name, attr.expressionType.wgslTypeName(), "@location($i) ")
+    private inner class VertexInputStructs(val stage: KslVertexStage) : WgslStructHelper {
+        val vertexInputs = buildList {
+            stage.attributes.values.forEach { attr ->
+                val locs = generatorState.locations[attr]
+                if (locs.size == 1) {
+                    add(WgslStructMember("vertexInput", attr.name, attr.expressionType.wgslTypeName(), "@location(${locs[0].location}) "))
+                } else {
+                    val colType = when (attr.expressionType) {
+                        is KslMat2 -> KslFloat2.wgslTypeName()
+                        is KslMat3 -> KslFloat3.wgslTypeName()
+                        is KslMat4 -> KslFloat4.wgslTypeName()
+                        else -> error(attr.expressionType)
+                    }
+                    locs.forEach {
+                        add(WgslStructMember("vertexInput", it.name, colType, "@location(${it.location}) "))
+                    }
+                }
             }
-        val instanceInputs = stage.attributes.values
-            .filter { it.inputRate == KslInputRate.Instance }
-            .mapIndexed { i, attr ->
-                WgslStructMember("instanceInput", attr.name, attr.expressionType.wgslTypeName(), "@location($i) ")
-            }
+        }.sortedBy { it.annotation }
+
         val vertexIndex = if (stage.isUsingVertexIndex) {
             WgslStructMember("vertexInput", KslVertexStage.NAME_IN_VERTEX_INDEX, "u32", "@builtin(vertex_index) ")
         } else null
@@ -542,14 +560,22 @@ class WgslGenerator : KslGenerator() {
 
         init {
             generatorState.mapStructMemberNames(vertexInputs)
-            generatorState.mapStructMemberNames(instanceInputs)
             vertexIndex?.let { generatorState.mapStructMemberNames(listOf(it)) }
             instanceIndex?.let { generatorState.mapStructMemberNames(listOf(it)) }
         }
 
-        fun generateStructs(builder: StringBuilder) = builder.apply {
+        fun generateStruct(builder: StringBuilder) = builder.apply {
             generateStruct("VertexInput", vertexInputs, vertexIndex, instanceIndex)
-            generateStruct("InstanceInput", instanceInputs)
+        }
+
+        fun reassembleMatrices(): String = buildString {
+            stage.attributes.values
+                .filter { generatorState.locations[it].size > 1 }
+                .forEach { matrixAttr ->
+                    val type = matrixAttr.expressionType.wgslTypeName()
+                    val members = generatorState.locations[matrixAttr].joinToString { "vertexInput.${it.name}" }
+                    appendLine("let ${matrixAttr.name} = $type($members);")
+                }
         }
     }
 
@@ -560,7 +586,7 @@ class WgslGenerator : KslGenerator() {
                 val interp = if (output.interpolation == KslInterStageInterpolation.Flat) " @interpolate(flat)" else ""
                 WgslStructMember("vertexOutput", outVal.stateName, outVal.expressionType.wgslTypeName(), "@location($i)$interp ")
             }
-        val position = WgslStructMember("vertexOutput", KslVertexStage.NAME_OUT_POSITION, "vec4<f32>", "@builtin(position) ")
+        val position = WgslStructMember("vertexOutput", KslVertexStage.NAME_OUT_POSITION, "vec4f", "@builtin(position) ")
         val pointSize = if (stage.isSettingPointSize) {
             WgslStructMember("vertexOutput", KslVertexStage.NAME_OUT_POINT_SIZE, "f32", "@location(${stage.interStageVars.size}) ")
         } else null

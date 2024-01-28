@@ -10,10 +10,6 @@ class CompiledComputeShader(val pipeline: ComputePipeline, program: GlProgram, b
 {
     private val users = mutableSetOf<ComputeRenderPass.Task>()
 
-    init {
-        pipeline.pipelineBackend = this
-    }
-
     fun bindComputePass(task: ComputeRenderPass.Task): Boolean {
         users += task
         pipeline.update(task.pass)

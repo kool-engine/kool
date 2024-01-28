@@ -1,8 +1,7 @@
 package de.fabmax.kool.pipeline.backend.webgpu
 
-import de.fabmax.kool.pipeline.AddressMode
-import de.fabmax.kool.pipeline.FilterMethod
-import de.fabmax.kool.pipeline.TexFormat
+import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.scene.geometry.PrimitiveType
 
 fun GPUCommandEncoder.beginRenderPass(
     colorAttachments: Array<GPURenderPassColorAttachment>,
@@ -40,16 +39,35 @@ fun GPUDevice.createSampler(
     maxAnisotropy = maxAnisotropy
 ))
 
+fun GPUDevice.createRenderPipeline(
+    layout: GPUPipelineLayout,
+    vertex: GPUVertexState,
+    fragment: GPUFragmentState? = null,
+    depthStencil: GPUDepthStencilState? = null,
+    primitive: GPUPrimitiveState? = null,
+    multisample: GPUMultisampleState? = null,
+    label: String = ""
+) = createRenderPipeline(GPURenderPipelineDescriptor(
+    layout = layout,
+    vertex = vertex,
+    fragment = fragment,
+    depthStencil = depthStencil,
+    primitive = primitive,
+    multisample = multisample,
+    label = label
+))
+
 fun GPUDevice.createShaderModule(code: String) = createShaderModule(GPUShaderModuleDescriptor(code))
 
 fun GPUTexture.createView(
     label: String = "",
     format: GPUTextureFormat? = null,
+    dimension: GPUTextureViewDimension? = null,
     baseMipLevel: Int = 0,
     mipLevelCount: Int? = null,
     baseArrayLayer: Int = 0,
     arrayLayerCount: Int? = null
-) = createView(GPUTextureViewDescriptor(label, format, baseMipLevel, mipLevelCount, baseArrayLayer, arrayLayerCount))
+) = createView(GPUTextureViewDescriptor(label, format, dimension, baseMipLevel, mipLevelCount, baseArrayLayer, arrayLayerCount))
 
 val AddressMode.wgpu: GPUAddressMode
     get() = when (this) {
@@ -58,13 +76,40 @@ val AddressMode.wgpu: GPUAddressMode
         AddressMode.REPEAT -> GPUAddressMode.repeat
     }
 
+val CullMethod.wgpu: GPUCullMode
+    get() = when (this) {
+        CullMethod.CULL_BACK_FACES -> GPUCullMode.back
+        CullMethod.CULL_FRONT_FACES -> GPUCullMode.front
+        CullMethod.NO_CULLING -> GPUCullMode.none
+    }
+
+val DepthCompareOp.wgpu: GPUCompareFunction
+    get() = when (this) {
+        DepthCompareOp.DISABLED -> GPUCompareFunction.always
+        DepthCompareOp.ALWAYS -> GPUCompareFunction.always
+        DepthCompareOp.NEVER -> GPUCompareFunction.never
+        DepthCompareOp.LESS -> GPUCompareFunction.less
+        DepthCompareOp.LESS_EQUAL -> GPUCompareFunction.lessEqual
+        DepthCompareOp.GREATER -> GPUCompareFunction.greater
+        DepthCompareOp.GREATER_EQUAL -> GPUCompareFunction.greaterEqual
+        DepthCompareOp.EQUAL -> GPUCompareFunction.equal
+        DepthCompareOp.NOT_EQUAL -> GPUCompareFunction.notEqual
+    }
+
 val FilterMethod.wgpu: GPUFilterMode
     get() = when (this) {
         FilterMethod.NEAREST -> GPUFilterMode.nearest
         FilterMethod.LINEAR -> GPUFilterMode.linear
     }
 
-val TexFormat.wgpuFormat: GPUTextureFormat
+val PrimitiveType.wgpu: GPUPrimitiveTopology
+    get() = when (this) {
+        PrimitiveType.LINES -> GPUPrimitiveTopology.lineList
+        PrimitiveType.POINTS -> GPUPrimitiveTopology.pointList
+        PrimitiveType.TRIANGLES -> GPUPrimitiveTopology.triangleList
+    }
+
+val TexFormat.wgpu: GPUTextureFormat
     get() = when (this) {
         TexFormat.R -> GPUTextureFormat.r8unorm
         TexFormat.RG -> GPUTextureFormat.rg8unorm
