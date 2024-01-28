@@ -2,8 +2,7 @@ package de.fabmax.kool.pipeline.backend.stats
 
 class BufferInfo(
     name: String,
-    val renderPassName: String,
-    val sceneName: String
+    val info: String
 ) : ResourceInfo(name) {
 
     var size: Long = 0L

@@ -5,19 +5,19 @@ import de.fabmax.kool.pipeline.PipelineBase
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.util.logD
 
-class PipelineManager(val backend: RenderBackendWebGpu) {
+class WgpuPipelineManager(val backend: RenderBackendWebGpu) {
 
     private val vertexShaderModules = mutableMapOf<String, UsedShaderModule>()
     private val fragmentShaderModules = mutableMapOf<String, UsedShaderModule>()
 
-    fun bindDrawPipeline(cmd: DrawCommand, encoder: GPURenderPassEncoder, renderPass: WgpuRenderPass): Boolean {
+    fun bindDrawPipeline(cmd: DrawCommand, encoder: GPURenderPassEncoder, renderPass: WgpuScreenRenderPass): Boolean {
         val drawPipeline = cmd.pipeline!!
         val gpuPipeline = drawPipeline.getWgpuPipeline(renderPass)
         drawPipeline.update(cmd)
         return gpuPipeline.bind(cmd, encoder)
     }
 
-    private fun DrawPipeline.getWgpuPipeline(renderPass: WgpuRenderPass): WgpuDrawPipeline {
+    private fun DrawPipeline.getWgpuPipeline(renderPass: WgpuScreenRenderPass): WgpuDrawPipeline {
         (pipelineBackend as WgpuDrawPipeline?)?.let { return it }
 
         logD { "create pipeline: $name" }
@@ -50,6 +50,24 @@ class PipelineManager(val backend: RenderBackendWebGpu) {
         }
         usedModule.users += pipeline
         return usedModule.shaderModule
+    }
+
+    internal fun removeDrawPipeline(pipeline: WgpuDrawPipeline) {
+        pipeline.drawPipeline.pipelineBackend = null
+        val shaderCode = pipeline.drawPipeline.shaderCode as RenderBackendWebGpu.WebGpuShaderCode
+
+        vertexShaderModules[shaderCode.vertexSrc]?.let { usedModule ->
+            usedModule.users -= pipeline.drawPipeline
+            if (usedModule.users.isEmpty()) {
+                vertexShaderModules.remove(shaderCode.vertexSrc)
+            }
+        }
+        fragmentShaderModules[shaderCode.fragmentSrc]?.let { usedModule ->
+            usedModule.users -= pipeline.drawPipeline
+            if (usedModule.users.isEmpty()) {
+                fragmentShaderModules.remove(shaderCode.fragmentSrc)
+            }
+        }
     }
 
     private class UsedShaderModule(val shaderModule: GPUShaderModule) {

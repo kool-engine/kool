@@ -14,7 +14,7 @@ import kotlin.math.floor
 import kotlin.math.log2
 import kotlin.math.max
 
-internal class TextureLoader(val backend: RenderBackendWebGpu) {
+internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
 
     private val device: GPUDevice get() = backend.device
     private val mipmapGenerator2d = MipmapGenerator2d()
@@ -37,9 +37,9 @@ internal class TextureLoader(val backend: RenderBackendWebGpu) {
             usage = usage
         )
 
-        val gpuTex = device.createTexture(texDesc)
-        copyTextureData(data, gpuTex, size)
-        tex.loadedTexture = LoadedTextureWebGpu(gpuTex, data.width, data.height, 1)
+        val gpuTex = backend.createTexture(texDesc, tex)
+        copyTextureData(data, gpuTex.gpuTexture, size)
+        tex.loadedTexture = WgpuLoadedTexture(gpuTex, data.width, data.height, 1)
         tex.loadingState = Texture.LoadingState.LOADED
     }
 
@@ -58,13 +58,13 @@ internal class TextureLoader(val backend: RenderBackendWebGpu) {
             mipLevelCount = mipLevels
         )
 
-        val gpuTex = device.createTexture(texDesc)
-        copyTextureData(data, gpuTex, size)
+        val gpuTex = backend.createTexture(texDesc, tex)
+        copyTextureData(data, gpuTex.gpuTexture, size)
         if (tex.props.generateMipMaps) {
-            mipmapGenerator2d.generateMipLevels(texDesc, gpuTex)
+            mipmapGenerator2d.generateMipLevels(texDesc, gpuTex.gpuTexture)
         }
 
-        tex.loadedTexture = LoadedTextureWebGpu(gpuTex, data.width, data.height, 1)
+        tex.loadedTexture = WgpuLoadedTexture(gpuTex, data.width, data.height, 1)
         tex.loadingState = Texture.LoadingState.LOADED
     }
 
@@ -150,7 +150,7 @@ internal class TextureLoader(val backend: RenderBackendWebGpu) {
             for (i in 1 until texDesc.mipLevelCount) {
                 val dstView = texture.createView(baseMipLevel = i, mipLevelCount = 1)
                 val passEncoder = cmdEncoder.beginRenderPass(
-                    colorAttachments = arrayOf(GPURenderPassColorAttachmentLoad(
+                    colorAttachments = arrayOf(GPURenderPassColorAttachment(
                         view = dstView,
                         storeOp = GPUStoreOp.store
                     ))

@@ -29,17 +29,17 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         private set
     lateinit var device: GPUDevice
         private set
-    lateinit var gpuContext: GPUCanvasContext
+    lateinit var canvasContext: GPUCanvasContext
         private set
     private var _canvasFormat: GPUTextureFormat? = null
     val canvasFormat: GPUTextureFormat
         get() = _canvasFormat!!
 
-    internal lateinit var texLoader: TextureLoader
+    internal lateinit var textureLoader: WgpuTextureLoader
         private set
 
-    val pipelineManager = PipelineManager(this)
-    private val sceneRenderer = WgpuRenderPass(this)
+    val pipelineManager = WgpuPipelineManager(this)
+    private val sceneRenderer = WgpuScreenRenderPass(this)
 
     private var renderSize = Vec2i(canvas.width, canvas.height)
 
@@ -62,10 +62,10 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
 
         device = adapter.requestDevice().await()
 
-        gpuContext = canvas.getContext("webgpu") as GPUCanvasContext
+        canvasContext = canvas.getContext("webgpu") as GPUCanvasContext
         _canvasFormat = navigator.gpu.getPreferredCanvasFormat()
-        gpuContext.configure(GPUCanvasConfiguration(device, canvasFormat))
-        texLoader = TextureLoader(this)
+        canvasContext.configure(GPUCanvasConfiguration(device, canvasFormat))
+        textureLoader = WgpuTextureLoader(this)
         logI { "WebGPU context created" }
 
         window.requestAnimationFrame { t -> (ctx as JsContext).renderFrame(t) }
@@ -76,15 +76,8 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
 
         if (canvas.width != renderSize.x || canvas.height != renderSize.y) {
             renderSize = Vec2i(canvas.width, canvas.height)
-            sceneRenderer.createRenderAttachments()
+            sceneRenderer.onCanvasResized(canvas.width, canvas.height)
         }
-
-//        if (ctx.disposablePipelines.isNotEmpty()) {
-//            ctx.disposablePipelines.forEach {
-//                shaderMgr.deleteShader(it)
-//            }
-//            ctx.disposablePipelines.clear()
-//        }
 
 //        doOffscreenPasses(ctx.backgroundScene, ctx)
 
@@ -95,7 +88,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
 //                    captureFramebuffer(scene)
 //                }
 //                doOffscreenPasses(scene, ctx)
-                sceneRenderer.doForegroundPass(scene)
+                sceneRenderer.renderViewsPass(scene.mainRenderPass.renderPass)
             }
         }
     }
@@ -138,10 +131,18 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
 
     override fun uploadTextureToGpu(tex: Texture, data: TextureData) {
         when (tex) {
-            is Texture1d -> texLoader.loadTexture1d(tex, data)
-            is Texture2d -> texLoader.loadTexture2d(tex, data)
+            is Texture1d -> textureLoader.loadTexture1d(tex, data)
+            is Texture2d -> textureLoader.loadTexture2d(tex, data)
             else -> error("Unsupported texture type: $tex")
         }
+    }
+
+    fun createBuffer(descriptor: GPUBufferDescriptor, info: String?): WgpuBufferResource {
+        return WgpuBufferResource(device.createBuffer(descriptor), descriptor.size, info)
+    }
+
+    fun createTexture(descriptor: GPUTextureDescriptor, texture: Texture): WgpuTextureResource {
+        return WgpuTextureResource(device.createTexture(descriptor), texture)
     }
 
     class WebGpuOffscreenPass2d(val parentPass: OffscreenRenderPass2d) : OffscreenPass2dImpl {

@@ -13,10 +13,10 @@ class WgpuGeometry(val mesh: Mesh, val backend: RenderBackendWebGpu) : BaseRelea
     private val createdIntBuffer: CreatedBuffer?
     private val createdInstanceBuffer: CreatedBuffer?
 
-    val indexBuffer: GPUBuffer get() = createdIndexBuffer.buffer
-    val floatBuffer: GPUBuffer get() = createdFloatBuffer.buffer
-    val intBuffer: GPUBuffer? get() = createdIntBuffer?.buffer
-    val instanceBuffer: GPUBuffer? get() = createdInstanceBuffer?.buffer
+    val indexBuffer: GPUBuffer get() = createdIndexBuffer.buffer.buffer
+    val floatBuffer: GPUBuffer get() = createdFloatBuffer.buffer.buffer
+    val intBuffer: GPUBuffer? get() = createdIntBuffer?.buffer?.buffer
+    val instanceBuffer: GPUBuffer? get() = createdInstanceBuffer?.buffer?.buffer
 
     private var isNewlyCreated =  true
 
@@ -61,12 +61,12 @@ class WgpuGeometry(val mesh: Mesh, val backend: RenderBackendWebGpu) : BaseRelea
     }
 
     private inner class CreatedBuffer(val label: String, var size: Int, val usage: Int = GPUBufferUsage.VERTEX or GPUBufferUsage.COPY_DST) {
-        var buffer: GPUBuffer = makeBuffer()
+        var buffer: WgpuBufferResource = makeBuffer()
 
         fun writeData(data: Float32Buffer) {
             checkSize(data.limit * 4)
             device.queue.writeBuffer(
-                buffer = buffer,
+                buffer = buffer.buffer,
                 bufferOffset = 0L,
                 data = (data as Float32BufferImpl).buffer,
                 dataOffset = 0L,
@@ -77,7 +77,7 @@ class WgpuGeometry(val mesh: Mesh, val backend: RenderBackendWebGpu) : BaseRelea
         fun writeData(data: Int32Buffer) {
             checkSize(data.limit * 4)
             device.queue.writeBuffer(
-                buffer = buffer,
+                buffer = buffer.buffer,
                 bufferOffset = 0L,
                 data = (data as Int32BufferImpl).buffer,
                 dataOffset = 0L,
@@ -87,18 +87,19 @@ class WgpuGeometry(val mesh: Mesh, val backend: RenderBackendWebGpu) : BaseRelea
 
         private fun checkSize(required: Int) {
             if (required > size) {
-                buffer.destroy()
+                buffer.release()
                 size = required
                 buffer = makeBuffer()
             }
         }
 
-        private fun makeBuffer() = device.createBuffer(
+        private fun makeBuffer() = backend.createBuffer(
             GPUBufferDescriptor(
                 label = label,
                 size = size.toLong(),
                 usage = usage
-            )
+            ),
+            "mesh: ${mesh.name}"
         )
     }
 }

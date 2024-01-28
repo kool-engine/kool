@@ -30,6 +30,8 @@ external class GPUBindGroup
 external interface GPUBindingResource
 
 external class GPUBuffer {
+    val label: String
+    val size: dynamic
     fun getMappedRange(offset: Long = definedExternally, size: Long = definedExternally): ArrayBuffer
     fun unmap()
     fun destroy()
@@ -88,6 +90,7 @@ external class GPURenderPassEncoder {
     fun drawIndexed(indexCount: Int, instanceCount: Int = definedExternally, firstIndex: Int = definedExternally, baseVertex: Int = definedExternally, firstInstance: Int = definedExternally)
     fun setBindGroup(index: Int, bindGroup: GPUBindGroup, dynamicOffsets: Array<Int> = definedExternally)
     fun setViewport(x: Float, y: Float, width: Float, height: Float, minDepth: Float, maxDepth: Float)
+    fun setScissorRect(x: Int, y: Int, width: Int, height: Int)
     fun end()
 }
 
@@ -106,6 +109,13 @@ external object GPUShaderStage {
 }
 
 external class GPUTexture {
+    val label: String
+    val width: Int
+    val height: Int
+    val depthOrArrayLayers: Int
+    val mipLevelCount: Int
+    val sampleCount: Int
+    val format: GPUTextureFormat
     fun createView(): GPUTextureView
     fun createView(descriptor: GPUTextureViewDescriptor): GPUTextureView
     fun destroy()

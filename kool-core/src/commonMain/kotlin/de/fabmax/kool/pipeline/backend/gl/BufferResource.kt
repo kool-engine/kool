@@ -1,13 +1,11 @@
 package de.fabmax.kool.pipeline.backend.gl
 
-import de.fabmax.kool.pipeline.backend.GpuBindGroupData
 import de.fabmax.kool.pipeline.backend.stats.BufferInfo
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.util.*
 
 class BufferResource(val target: Int, val backend: RenderBackendGl, creationInfo: BufferCreationInfo) :
-    BaseReleasable(),
-    GpuBindGroupData
+    BaseReleasable()
 {
 
     private val gl: GlApi = backend.gl
@@ -15,7 +13,7 @@ class BufferResource(val target: Int, val backend: RenderBackendGl, creationInfo
     val bufferId = nextBufferId++
     val buffer = gl.createBuffer()
 
-    private val resInfo = BufferInfo(creationInfo.bufferName, creationInfo.renderPassName, creationInfo.sceneName)
+    private val resInfo = BufferInfo(creationInfo.bufferName, "scene: ${creationInfo.sceneName}, render-pass: ${creationInfo.renderPassName}")
 
     fun bind() {
         gl.bindBuffer(target, buffer)

@@ -13,7 +13,7 @@ class Buffer(val sys: VkSystem, val bufferSize: Long, val usage: Int, val allocU
     val vkBuffer: Long
     val allocation: Long
 
-    private val allocInfo = BufferInfo(UniqueId.nextId("VkBuffer"), "<unknown>", "<unknown>")
+    private val allocInfo = BufferInfo(UniqueId.nextId("VkBuffer"), "<none>")
 
     init {
         memStack {

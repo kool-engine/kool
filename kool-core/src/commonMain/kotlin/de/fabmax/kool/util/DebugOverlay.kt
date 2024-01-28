@@ -6,7 +6,6 @@ import de.fabmax.kool.math.MutableVec4f
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
-import de.fabmax.kool.pipeline.backend.stats.BufferInfo
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.geometry.IndexedVertexList
@@ -185,39 +184,11 @@ class DebugOverlay(position: Position = Position.UPPER_RIGHT) {
     }
 
     private fun printBufferStats() {
-        var line = 1
-        val bufInfos = BackendStats.allocatedBuffers.values
-        bufInfos.map { it.sceneName }.distinct().sorted().forEach { scene ->
-            println("Scene \"$scene\":")
-            val sceneInfos = bufInfos.filter { it.sceneName == scene }
-
-            sceneInfos.map { it.renderPassName }.distinct().sorted().forEach { rp ->
-                println("  Render pass \"$rp\":")
-                val rpInfos = sceneInfos.filter { it.renderPassName == rp }
-
-                val groups = mutableMapOf<String, MutableList<BufferInfo>>()
-                rpInfos.forEach {
-                    val grp = it.name.substringBeforeLast('.')
-                    groups.getOrPut(grp) { mutableListOf() } += it
-                }
-
-                groups.values.sortedBy { grp -> grp.sumOf { -it.size } }.forEach { grp ->
-                    grp.sortBy { -it.size }
-                    println("    ${line++}  ${grp[0].name}  ${(grp[0].size / 1e3).toString(1)} kB")
-                    if (grp.size > 1) {
-                        var indentation = grp[0].name.substringBeforeLast('.').length - 3
-                        var indent = "    "
-                        while (indentation-- > 0) {
-                            indent = " $indent"
-                        }
-                        for (i in 1 until grp.size) {
-                            val item = grp[i]
-                            val suffix = "." + item.name.substringAfterLast('.')
-                            println("    ${line++} $indent$suffix  ${(item.size / 1e3).toString(1)} kB")
-                        }
-                    }
-                }
-            }
+        BackendStats.allocatedBuffers.values
+            .sortedBy { it.info }
+            .sortedBy { -it.size }
+            .forEachIndexed { i, info ->
+                println("  $i  ${info.name}  ${(info.size / 1e3).toString(1)} kB   [info: ${info.info}]")
         }
     }
 

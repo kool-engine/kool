@@ -15,6 +15,14 @@ fun GPUDevice.createBindGroup(
     label: String = ""
 ) = createBindGroup(GPUBindGroupDescriptor(layout, entries, label))
 
+fun GPUDevice.createBindGroupLayout(
+    entries: Array<GPUBindGroupLayoutEntry>,
+    label: String = ""
+) = createBindGroupLayout(GPUBindGroupLayoutDescriptor(
+    entries = entries,
+    label = label
+))
+
 fun GPUDevice.createSampler(
     label: String = "",
     addressModeU: GPUAddressMode = GPUAddressMode.clampToEdge,

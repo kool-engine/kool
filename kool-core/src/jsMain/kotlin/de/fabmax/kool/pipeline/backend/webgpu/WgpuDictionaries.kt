@@ -254,32 +254,18 @@ fun GPUPrimitiveStateStrip(
 
 interface GPURenderPassColorAttachment
 
-fun GPURenderPassColorAttachmentClear(
+fun GPURenderPassColorAttachment(
     view: GPUTextureView,
-    clearValue: GPUColorDict,
+    clearValue: GPUColorDict? = null,
     resolveTarget: GPUTextureView? = null,
+    loadOp: GPULoadOp = if (clearValue != null) GPULoadOp.clear else GPULoadOp.load,
     storeOp: GPUStoreOp = GPUStoreOp.store,
     label: String = ""
 ) : GPURenderPassColorAttachment {
     val o = js("({})")
     o["label"] = label
-    o["clearValue"] = clearValue
-    o["loadOp"] = GPULoadOp.clear
-    o["view"] = view
-    o["storeOp"] = storeOp
-    resolveTarget?.let { o["resolveTarget"] = it }
-    return o
-}
-
-fun GPURenderPassColorAttachmentLoad(
-    view: GPUTextureView,
-    resolveTarget: GPUTextureView? = null,
-    storeOp: GPUStoreOp = GPUStoreOp.store,
-    label: String = ""
-) : GPURenderPassColorAttachment {
-    val o = js("({})")
-    o["label"] = label
-    o["loadOp"] = GPULoadOp.load
+    clearValue?.let { o["clearValue"] = it }
+    o["loadOp"] = loadOp
     o["view"] = view
     o["storeOp"] = storeOp
     resolveTarget?.let { o["resolveTarget"] = it }

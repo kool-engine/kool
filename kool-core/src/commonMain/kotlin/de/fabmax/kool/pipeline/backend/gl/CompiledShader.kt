@@ -9,7 +9,7 @@ import de.fabmax.kool.util.releaseWith
 
 sealed class CompiledShader(private val pipeline: PipelineBase, val program: GlProgram, val backend: RenderBackendGl) : BaseReleasable() {
     val gl: GlApi = backend.gl
-    val pipelineInfo = PipelineInfo(pipeline)
+    private val pipelineInfo = PipelineInfo(pipeline)
 
     private val plainUniformUbos = mutableSetOf<String>()
     private val uniformBindCtx: UniformBindContext
