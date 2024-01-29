@@ -21,6 +21,7 @@ data class KoolConfigJs(
     val isGlobalKeyEventGrabbing: Boolean = true,
     val isJsCanvasToWindowFitting: Boolean = true,
     val powerPreference: GPUPowerPreference = GPUPowerPreference.highPerformance,
+    val numSamples: Int = 4,
     val loaderTasks: List<suspend () -> Unit> = emptyList(),
 
     val customTtfFonts: Map<String, String> = emptyMap(),

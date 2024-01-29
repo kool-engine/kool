@@ -15,7 +15,7 @@ class WgpuDrawPipeline(
     val drawPipeline: DrawPipeline,
     private val vertexShaderModule: GPUShaderModule,
     private val fragmentShaderModule: GPUShaderModule,
-    private val renderPass: WgpuScreenRenderPass,
+    private val renderPass: WgpuRenderPass,
     private val backend: RenderBackendWebGpu,
 ): BaseReleasable(), PipelineBackend {
     private val device: GPUDevice get() = backend.device
@@ -166,13 +166,13 @@ class WgpuDrawPipeline(
             cullMode = pipeline.pipelineConfig.cullMethod.wgpu
         )
 
-        val isWriteDepth = if (pipeline.pipelineConfig.depthTest == DepthCompareOp.DISABLED) false else pipeline.pipelineConfig.isWriteDepth
-        val depthCompareOp = if (pipeline.pipelineConfig.depthTest == DepthCompareOp.DISABLED) GPUCompareFunction.always else pipeline.pipelineConfig.depthTest.wgpu
-        val depthStencil = GPUDepthStencilState(
-            format = renderPass.depthFormat,
-            depthWriteEnabled = isWriteDepth,
-            depthCompare = depthCompareOp
-        )
+        val depthStencil = renderPass.depthFormat?.let { depthFormat ->
+            GPUDepthStencilState(
+                format = depthFormat,
+                depthWriteEnabled = if (pipeline.pipelineConfig.depthTest == DepthCompareOp.DISABLED) false else pipeline.pipelineConfig.isWriteDepth,
+                depthCompare = if (pipeline.pipelineConfig.depthTest == DepthCompareOp.DISABLED) GPUCompareFunction.always else pipeline.pipelineConfig.depthTest.wgpu
+            )
+        }
 
         return device.createRenderPipeline(
             label = "${pipeline.name}-layout",

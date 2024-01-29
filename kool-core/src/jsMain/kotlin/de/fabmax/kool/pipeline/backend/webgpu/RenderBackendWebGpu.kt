@@ -10,7 +10,9 @@ import de.fabmax.kool.pipeline.backend.RenderBackend
 import de.fabmax.kool.pipeline.backend.RenderBackendJs
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.platform.JsContext
+import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.LongHash
+import de.fabmax.kool.util.Time
 import de.fabmax.kool.util.logI
 import de.fabmax.kool.util.logT
 import kotlinx.browser.window
@@ -79,7 +81,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
             sceneRenderer.onCanvasResized(canvas.width, canvas.height)
         }
 
-//        doOffscreenPasses(ctx.backgroundScene, ctx)
+        ctx.backgroundScene.renderOffscreenPasses()
 
         for (i in ctx.scenes.indices) {
             val scene = ctx.scenes[i]
@@ -87,9 +89,42 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
 //                if (scene.framebufferCaptureMode == Scene.FramebufferCaptureMode.BeforeRender) {
 //                    captureFramebuffer(scene)
 //                }
-//                doOffscreenPasses(scene, ctx)
-                sceneRenderer.renderViewsPass(scene.mainRenderPass.renderPass)
+
+                scene.renderOffscreenPasses()
+
+                when (val scenePass = scene.mainRenderPass) {
+                    is Scene.OffscreenSceneRenderPass -> TODO()
+                    is Scene.OnscreenSceneRenderPass -> sceneRenderer.renderScene(scenePass.renderPass)
+                }
+
+//                if (scene.framebufferCaptureMode == Scene.FramebufferCaptureMode.AfterRender) {
+//                    captureFramebuffer(scene)
+//                }
             }
+        }
+    }
+
+    private fun Scene.renderOffscreenPasses() {
+        for (i in sortedOffscreenPasses.indices) {
+            val pass = sortedOffscreenPasses[i]
+            if (pass.isEnabled) {
+                val t = if (pass.isProfileTimes) Time.precisionTime else 0.0
+                pass.render()
+                pass.afterDraw(ctx)
+                if (pass.isProfileTimes) {
+                    pass.tDraw = Time.precisionTime - t
+                }
+            }
+        }
+    }
+
+    private fun OffscreenRenderPass.render() {
+        when (this) {
+            is OffscreenRenderPass2d -> impl.draw(ctx)
+            is OffscreenRenderPassCube -> impl.draw(ctx)
+            is OffscreenRenderPass2dPingPong -> TODO("OffscreenRenderPass2dPingPong") //drawOffscreenPingPong(this)
+            is ComputeRenderPass -> TODO("ComputeRenderPass") //dispatchCompute(offscreenPass)
+            else -> throw IllegalArgumentException("Offscreen pass type not implemented: $this")
         }
     }
 

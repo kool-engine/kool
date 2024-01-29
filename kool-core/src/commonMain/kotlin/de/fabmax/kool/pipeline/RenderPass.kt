@@ -42,7 +42,7 @@ abstract class RenderPass(var name: String) : BaseReleasable() {
     val onAfterCollectDrawCommands = BufferedList<((UpdateEvent) -> Unit)>()
     val onAfterDraw = BufferedList<((KoolContext) -> Unit)>()
 
-    var isProfileTimes = true
+    var isProfileTimes = false
     var tUpdate = 0.0
     var tCollect = 0.0
     var tDraw = 0.0

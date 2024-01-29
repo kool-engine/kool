@@ -136,7 +136,9 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
                 val t = if (pass.isProfileTimes) Time.precisionTime else 0.0
                 drawOffscreen(pass)
                 pass.afterDraw(ctx)
-                pass.tDraw = if (pass.isProfileTimes) Time.precisionTime - t else 0.0
+                if (pass.isProfileTimes) {
+                    pass.tDraw = Time.precisionTime - t
+                }
             }
         }
     }
@@ -169,7 +171,9 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
             captureFramebuffer(scene)
         }
 
-        scenePass.renderPass.tDraw = if (scenePass.renderPass.isProfileTimes) Time.precisionTime - t else 0.0
+        if (scenePass.renderPass.isProfileTimes) {
+            scenePass.renderPass.tDraw = Time.precisionTime - t
+        }
         scenePass.renderPass.afterDraw(ctx)
     }
 

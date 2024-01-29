@@ -52,7 +52,7 @@ class QueueRenderer(val backend: RenderBackendGl) {
         }
 
         for (cmd in drawQueue.commands) {
-            val t = Time.precisionTime
+            val t = if (view.renderPass.isProfileTimes) Time.precisionTime else 0.0
 
             if (cmd.geometry.numIndices == 0) continue
             val pipeline = cmd.pipeline ?: continue
@@ -71,7 +71,9 @@ class QueueRenderer(val backend: RenderBackendGl) {
                 BackendStats.addDrawCommands(1, cmd.geometry.numPrimitives * insts.numInstances)
             }
 
-            cmd.mesh.drawTime = Time.precisionTime - t
+            if (view.renderPass.isProfileTimes) {
+                cmd.mesh.drawTime = Time.precisionTime - t
+            }
         }
     }
 

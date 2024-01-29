@@ -7,7 +7,6 @@ import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.modules.ksl.lang.xy
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.RenderBackendJs
-import de.fabmax.kool.pipeline.backend.webgpu.GPUPowerPreference
 import de.fabmax.kool.platform.JsContext
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
@@ -24,11 +23,10 @@ class RenderBackendGlImpl(ctx: KoolContext, canvas: HTMLCanvasElement) : RenderB
     )
 
     init {
-        val options = if (KoolSystem.configJs.powerPreference == GPUPowerPreference.highPerformance) {
-            js(" { antialias: true, stencil: false, powerPreference: 'high-performance' } ")
-        } else {
-            js(" { antialias: true, stencil: false, powerPreference: 'low-power' } ")
-        }
+        val options = js("({})")
+        options["powerPreference"] = KoolSystem.configJs.powerPreference
+        options["antialias"] = KoolSystem.configJs.numSamples > 1
+        options["stencil"] = false
 
         val webGlCtx = (canvas.getContext("webgl2", options) ?: canvas.getContext("experimental-webgl2", options)) as WebGL2RenderingContext?
         check(webGlCtx != null) {

@@ -276,45 +276,58 @@ class WgslGenerator : KslGenerator() {
 
     override fun opAssign(op: KslAssign<*>): String {
         return if (op.assignTarget is KslVectorAccessor<*> && op.assignTarget.components.length > 1) {
-            // wgsl currently does not permit assignment of swizzled values
-            // https://github.com/gpuweb/gpuweb/issues/737
-
-            val vec = op.assignTarget.vector as KslVectorExpression<*,*>
-            val assignType = vec.expressionType.wgslTypeName()
-            val targetComps = op.assignTarget.components
-            val assignDimens = (vec.expressionType as KslVector<*>).dimens
-
-            val compsXyzw = listOf('x', 'y', 'z', 'w')
-            val compsRgba = listOf('r', 'g', 'b', 'a')
-
-            val target = op.assignTarget.vector.generateExpression(this)
-            val tmpVarName = generatorState.nextTempVar()
-            val ctorArgs = buildString {
-                for (i in 0 until assignDimens) {
-                    val c1 = targetComps.indexOf(compsXyzw[i])
-                    val c2 = targetComps.indexOf(compsRgba[i])
-                    val src = when {
-                        c1 >= 0 -> "${tmpVarName}.${compsXyzw[c1]}"
-                        c2 >= 0 -> "${tmpVarName}.${compsXyzw[c2]}"
-                        else -> "${target}.${compsXyzw[i]}"
-                    }
-                    append(src)
-                    if (i < assignDimens-1) {
-                        append(", ")
-                    }
-                }
-            }
-            """
-                let $tmpVarName = ${op.assignExpression.generateExpression(this)};
-                $target = $assignType($ctorArgs);
-            """.trimIndent()
+            assignSwizzled(op.assignTarget, op.assignExpression) { _, b -> b }
         } else {
             "${op.assignTarget.generateAssignable(this)} = ${op.assignExpression.generateExpression(this)};"
         }
     }
 
     override fun opAugmentedAssign(op: KslAugmentedAssign<*>): String {
-        return "${op.assignTarget.generateAssignable(this)} ${op.augmentationMode.opChar}= ${op.assignExpression.generateExpression(this)};"
+        return if (op.assignTarget is KslVectorAccessor<*> && op.assignTarget.components.length > 1) {
+            val opChar = op.augmentationMode.opChar
+            assignSwizzled(op.assignTarget, op.assignExpression) { a, b -> "$a $opChar $b" }
+        } else {
+            "${op.assignTarget.generateAssignable(this)} ${op.augmentationMode.opChar}= ${op.assignExpression.generateExpression(this)};"
+        }
+    }
+
+    private fun assignSwizzled(
+        assignTarget: KslVectorAccessor<*>,
+        assignExpression: KslExpression<*>,
+        makeArg: (String, String) -> String
+    ): String {
+        // wgsl currently does not permit assignment of swizzled values
+        // https://github.com/gpuweb/gpuweb/issues/737
+
+        val vec = assignTarget.vector as KslVectorExpression<*,*>
+        val assignType = vec.expressionType.wgslTypeName()
+        val targetComps = assignTarget.components
+        val assignDimens = (vec.expressionType as KslVector<*>).dimens
+
+        val compsXyzw = listOf('x', 'y', 'z', 'w')
+        val compsRgba = listOf('r', 'g', 'b', 'a')
+
+        val target = assignTarget.vector.generateExpression(this)
+        val tmpVarName = generatorState.nextTempVar()
+        val ctorArgs = buildString {
+            for (i in 0 until assignDimens) {
+                val c1 = targetComps.indexOf(compsXyzw[i])
+                val c2 = targetComps.indexOf(compsRgba[i])
+                val src = when {
+                    c1 >= 0 -> makeArg("${target}.${compsXyzw[i]}", "${tmpVarName}.${compsXyzw[c1]}")
+                    c2 >= 0 -> makeArg("${target}.${compsXyzw[i]}", "${tmpVarName}.${compsXyzw[c2]}")
+                    else -> "${target}.${compsXyzw[i]}"
+                }
+                append(src)
+                if (i < assignDimens-1) {
+                    append(", ")
+                }
+            }
+        }
+        return """
+            let $tmpVarName = ${assignExpression.generateExpression(this)};
+            $target = $assignType($ctorArgs);
+        """.trimIndent()
     }
 
     override fun opIf(op: KslIf): String {

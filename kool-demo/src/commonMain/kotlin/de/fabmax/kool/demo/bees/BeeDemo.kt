@@ -49,6 +49,7 @@ class BeeDemo : DemoScene("Fighting Bees") {
         camera.setClipRange(1f, 1000f)
 
         mainRenderPass.clearColor = bgColor
+        mainRenderPass.renderPass.isProfileTimes = true
 
         beeMeshA.shader = BeeShader(MdColor.BLUE, MdColor.PURPLE).apply { colorMap = beeTex }
         beeMeshB.shader = BeeShader(MdColor.AMBER, MdColor.DEEP_ORANGE).apply { colorMap = beeTex }
@@ -93,9 +94,7 @@ class BeeDemo : DemoScene("Fighting Bees") {
         MenuRow {
             val tInstsA = beeSystemA.instanceUpdateTime.use()
             val tInstsB = beeSystemA.instanceUpdateTime.use()
-            val tDrawA = beeMeshA.drawTime * 1000.0
-            val tDrawB = beeMeshB.drawTime * 1000.0
-            val t = tInstsA + tInstsB + tDrawA + tDrawB
+            val t = tInstsA + tInstsB + mainScene.mainRenderPass.renderPass.tDraw * 1000.0
             Text("Bee drawing:") { labelStyle(Grow.Std) }
             Text("${t.toString(2)} ms") { labelStyle() }
         }
