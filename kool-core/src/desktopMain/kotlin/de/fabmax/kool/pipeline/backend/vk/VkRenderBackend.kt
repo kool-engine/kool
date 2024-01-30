@@ -4,7 +4,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.modules.ksl.KslComputeShader
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.pipeline.backend.DepthRange
+import de.fabmax.kool.pipeline.backend.DeviceCoordinates
 import de.fabmax.kool.pipeline.backend.RenderBackendJvm
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
@@ -32,7 +32,7 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
     override val glfwWindow: GlfwWindow
         get() = vkSystem.window
 
-    override val depthRange = DepthRange.ZERO_TO_ONE
+    override val deviceCoordinates: DeviceCoordinates = DeviceCoordinates.VULKAN
     override val canBlitRenderPasses = false
     override val isOnscreenInfiniteDepthCapable = true
 

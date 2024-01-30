@@ -4,7 +4,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.modules.ksl.KslComputeShader
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.pipeline.backend.DepthRange
+import de.fabmax.kool.pipeline.backend.DeviceCoordinates
 import de.fabmax.kool.pipeline.backend.RenderBackend
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.scene.Scene
@@ -26,7 +26,7 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
     var numSamples = 1
         private set
 
-    override var depthRange: DepthRange = DepthRange.NEGATIVE_ONE_TO_ONE
+    override var deviceCoordinates: DeviceCoordinates = DeviceCoordinates.OPEN_GL
         protected set
     override val canBlitRenderPasses = true
     override val isOnscreenInfiniteDepthCapable = false
@@ -41,7 +41,7 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
         if (gl.capabilities.hasClipControl) {
             logD { "Setting depth range to zero-to-one" }
             gl.clipControl(gl.LOWER_LEFT, gl.ZERO_TO_ONE)
-            depthRange = DepthRange.ZERO_TO_ONE
+            deviceCoordinates = DeviceCoordinates.OPEN_GL_ZERO_TO_ONE
         }
     }
 

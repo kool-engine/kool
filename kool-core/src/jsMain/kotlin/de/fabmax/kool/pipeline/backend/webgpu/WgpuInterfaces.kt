@@ -54,6 +54,7 @@ external class GPUCommandBuffer
 
 external class GPUCommandEncoder {
     fun beginRenderPass(descriptor: GPURenderPassDescriptor): GPURenderPassEncoder
+    fun copyTextureToTexture(source: GPUImageCopyTexture, destination: GPUImageCopyTexture, copySize: IntArray)
     fun finish(): GPUCommandBuffer
 }
 
@@ -122,8 +123,10 @@ external class GPUTexture {
 }
 
 external object GPUTextureUsage {
-    val TEXTURE_BINDING: Int
+    val COPY_SRC: Int
     val COPY_DST: Int
+    val TEXTURE_BINDING: Int
+    val STORAGE_BINDING: Int
     val RENDER_ATTACHMENT: Int
 }
 

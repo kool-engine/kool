@@ -158,7 +158,7 @@ class WgpuDrawPipeline(
         val fragmentState = GPUFragmentState(
             module = fragmentShaderModule,
             entryPoint = shaderCode.fragmentEntryPoint,
-            targets = arrayOf(GPUColorTargetState(backend.canvasFormat, blendMode))
+            targets = renderPass.colorTargetFormats.map { GPUColorTargetState(it, blendMode) }.toTypedArray()
         )
 
         val primitiveState = GPUPrimitiveState(
@@ -181,7 +181,7 @@ class WgpuDrawPipeline(
             fragment = fragmentState,
             depthStencil = depthStencil,
             primitive = primitiveState,
-            multisample = GPUMultisampleState(renderPass.multiSamples)
+            multisample = GPUMultisampleState(renderPass.numSamples)
         )
     }
 
@@ -212,6 +212,7 @@ class WgpuDrawPipeline(
             .flatMap { it.textures }
             .filter { it?.loadingState != Texture.LoadingState.LOADED }
             .forEach {
+                println("not loaded: ${it?.name}")
                 if (it == null || !checkLoadingState(it)) {
                     isComplete = false
                 }

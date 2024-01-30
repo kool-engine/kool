@@ -5,7 +5,7 @@ import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.modules.ksl.KslComputeShader
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.pipeline.backend.DepthRange
+import de.fabmax.kool.pipeline.backend.DeviceCoordinates
 import de.fabmax.kool.pipeline.backend.RenderBackend
 import de.fabmax.kool.pipeline.backend.RenderBackendJs
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
@@ -23,7 +23,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
     override val name: String = "WebGPU Backend"
     override val apiName: String = "WebGPU"
     override val deviceName: String = "WebGPU"
-    override val depthRange: DepthRange = DepthRange.ZERO_TO_ONE
+    override val deviceCoordinates: DeviceCoordinates = DeviceCoordinates.WEB_GPU
     override val canBlitRenderPasses: Boolean = false
     override val isOnscreenInfiniteDepthCapable: Boolean = false // actually it can...
 
@@ -78,7 +78,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
 
         if (canvas.width != renderSize.x || canvas.height != renderSize.y) {
             renderSize = Vec2i(canvas.width, canvas.height)
-            sceneRenderer.onCanvasResized(canvas.width, canvas.height)
+            sceneRenderer.applySize(canvas.width, canvas.height)
         }
 
         ctx.backgroundScene.renderOffscreenPasses()
@@ -157,7 +157,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
     }
 
     override fun createOffscreenPass2d(parentPass: OffscreenRenderPass2d): OffscreenPass2dImpl {
-        return WebGpuOffscreenPass2d(parentPass)
+        return WgpuOffscreenRenderPass2d(parentPass, 1, this)
     }
 
     override fun createOffscreenPassCube(parentPass: OffscreenRenderPassCube): OffscreenPassCubeImpl {
@@ -178,18 +178,6 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
 
     fun createTexture(descriptor: GPUTextureDescriptor, texture: Texture): WgpuTextureResource {
         return WgpuTextureResource(device.createTexture(descriptor), texture)
-    }
-
-    class WebGpuOffscreenPass2d(val parentPass: OffscreenRenderPass2d) : OffscreenPass2dImpl {
-        override val isReverseDepth: Boolean = false
-
-        override fun applySize(width: Int, height: Int) { }
-
-        override fun release() { }
-
-        override fun draw(ctx: KoolContext) {
-            logT { "Draw 2d: ${parentPass.name}" }
-        }
     }
 
     class WebGpuOffscreenPassCube(val parentPass: OffscreenRenderPassCube) : OffscreenPassCubeImpl {

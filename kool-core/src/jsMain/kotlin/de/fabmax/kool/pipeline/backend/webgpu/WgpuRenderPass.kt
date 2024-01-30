@@ -2,16 +2,19 @@ package de.fabmax.kool.pipeline.backend.webgpu
 
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
+import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.Time
 
 abstract class WgpuRenderPass(
     val depthFormat: GPUTextureFormat?,
-    val multiSamples: Int,
+    val numSamples: Int,
     val backend: RenderBackendWebGpu
-) {
+) : BaseReleasable() {
 
     protected val device: GPUDevice
         get() = backend.device
+
+    abstract val colorTargetFormats: List<GPUTextureFormat>
 
     protected fun render(
         renderPass: RenderPass,

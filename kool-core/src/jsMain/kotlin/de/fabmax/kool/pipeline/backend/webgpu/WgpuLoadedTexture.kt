@@ -5,10 +5,11 @@ import de.fabmax.kool.pipeline.TextureData
 
 class WgpuLoadedTexture(
     val texture: WgpuTextureResource,
-    override val width: Int,
-    override val height: Int,
-    override val depth: Int
 ): LoadedTexture {
+
+    override val width: Int = texture.gpuTexture.width
+    override val height: Int = texture.gpuTexture.height
+    override val depth: Int = texture.gpuTexture.depthOrArrayLayers
 
     override var isReleased: Boolean = false
     override fun readTexturePixels(targetData: TextureData) {

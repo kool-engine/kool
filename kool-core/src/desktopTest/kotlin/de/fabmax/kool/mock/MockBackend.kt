@@ -5,7 +5,7 @@ import de.fabmax.kool.modules.ksl.KslComputeShader
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.generator.KslGenerator
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.pipeline.backend.DepthRange
+import de.fabmax.kool.pipeline.backend.DeviceCoordinates
 import de.fabmax.kool.pipeline.backend.RenderBackend
 import de.fabmax.kool.pipeline.backend.gl.ComputeShaderCodeGl
 import de.fabmax.kool.pipeline.backend.gl.GlslGenerator
@@ -16,7 +16,7 @@ class MockBackend(val shaderGen: KslGenerator = GlslGenerator(GlslGenerator.Hint
     override val name: String = "Mock backend"
     override val apiName: String = "MockAPI"
     override val deviceName: String = "Mock device"
-    override val depthRange: DepthRange = DepthRange.NEGATIVE_ONE_TO_ONE
+    override val deviceCoordinates: DeviceCoordinates = DeviceCoordinates.OPEN_GL
     override val canBlitRenderPasses: Boolean = false
     override val isOnscreenInfiniteDepthCapable: Boolean = false
 

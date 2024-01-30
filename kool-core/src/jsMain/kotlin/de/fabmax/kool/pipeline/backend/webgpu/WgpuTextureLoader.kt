@@ -39,7 +39,7 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
 
         val gpuTex = backend.createTexture(texDesc, tex)
         copyTextureData(data, gpuTex.gpuTexture, size)
-        tex.loadedTexture = WgpuLoadedTexture(gpuTex, data.width, data.height, 1)
+        tex.loadedTexture = WgpuLoadedTexture(gpuTex)
         tex.loadingState = Texture.LoadingState.LOADED
     }
 
@@ -64,7 +64,7 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
             mipmapGenerator2d.generateMipLevels(texDesc, gpuTex.gpuTexture)
         }
 
-        tex.loadedTexture = WgpuLoadedTexture(gpuTex, data.width, data.height, 1)
+        tex.loadedTexture = WgpuLoadedTexture(gpuTex)
         tex.loadingState = Texture.LoadingState.LOADED
     }
 

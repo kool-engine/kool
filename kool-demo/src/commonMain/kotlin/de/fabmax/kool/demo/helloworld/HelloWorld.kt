@@ -4,7 +4,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.DemoScene
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.deg
-import de.fabmax.kool.modules.ksl.KslBlinnPhongShader
+import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.addColorMesh
 import de.fabmax.kool.scene.defaultOrbitCamera
@@ -21,15 +21,27 @@ class HelloWorld : DemoScene("Hello World") {
                     colored()
                 }
             }
-            shader = KslBlinnPhongShader {
+            shader = KslPbrShader {
                 color { vertexColor() }
-                //metallic(0f)
-                //roughness(0.25f)
+                metallic(0f)
+                roughness(0.25f)
             }
             onUpdate {
                 transform.rotate(45f.deg * Time.deltaT, Vec3f.X_AXIS)
             }
         }
+
+
+//        addTextureMesh {
+//            generate {
+//                centeredRect {
+//                    size.set(3f, 3f)
+//                }
+//            }
+//            shader = KslUnlitShader {
+//                color { textureColor(ctx.defaultPbrBrdfLut) }
+//            }
+//        }
 
         lighting.singleDirectionalLight {
             setup(Vec3f(-1f, -1f, -1f))

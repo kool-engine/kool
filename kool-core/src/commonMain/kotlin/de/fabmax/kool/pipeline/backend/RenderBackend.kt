@@ -13,7 +13,10 @@ interface RenderBackend {
     val apiName: String
     val deviceName: String
 
-    val depthRange: DepthRange
+    val deviceCoordinates: DeviceCoordinates
+    val depthRange: DepthRange get() = deviceCoordinates.ndcDepthRange
+    val ndcYDirection: NdcYDirection get() = deviceCoordinates.ndcYDirection
+
     val canBlitRenderPasses: Boolean
     val isOnscreenInfiniteDepthCapable: Boolean
 
@@ -32,6 +35,23 @@ interface RenderBackend {
     fun createOffscreenPassCube(parentPass: OffscreenRenderPassCube): OffscreenPassCubeImpl
     fun uploadTextureToGpu(tex: Texture, data: TextureData)
 
+}
+
+class DeviceCoordinates(
+    val ndcYDirection: NdcYDirection,
+    val ndcDepthRange: DepthRange
+) {
+    companion object {
+        val OPEN_GL = DeviceCoordinates(NdcYDirection.BOTTOM_TO_TOP, DepthRange.NEGATIVE_ONE_TO_ONE)
+        val OPEN_GL_ZERO_TO_ONE = DeviceCoordinates(NdcYDirection.BOTTOM_TO_TOP, DepthRange.ZERO_TO_ONE)
+        val WEB_GPU = DeviceCoordinates(NdcYDirection.TOP_TO_BOTTOM, DepthRange.ZERO_TO_ONE)
+        val VULKAN = DeviceCoordinates(NdcYDirection.TOP_TO_BOTTOM, DepthRange.ZERO_TO_ONE)
+    }
+}
+
+enum class NdcYDirection {
+    TOP_TO_BOTTOM,
+    BOTTOM_TO_TOP
 }
 
 enum class DepthRange {
