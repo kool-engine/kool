@@ -196,13 +196,17 @@ data class ShadowConfig(
 
     companion object {
         val SAMPLE_PATTERN_1x1: List<Vec2f> = listOf(Vec2f.ZERO)
-        val SAMPLE_PATTERN_4x4: List<Vec2f> = mutableListOf<Vec2f>().apply {
+        val SAMPLE_PATTERN_3x3: List<Vec2f> = buildList {
+            for (y in -1..1) {
+                for (x in -1..1) {
+                    add(Vec2f(x.toFloat(), y.toFloat()))
+                }
+            }
+        }
+        val SAMPLE_PATTERN_4x4: List<Vec2f> = buildList {
             for (y in 0..3) {
                 for (x in 0..3) {
-                    val v = Vec2f(-1.5f + x, -1.5f + y)
-                    if (v !in this) {
-                        add(v)
-                    }
+                    add(Vec2f(x - 1.5f, y - 1.5f))
                 }
             }
         }

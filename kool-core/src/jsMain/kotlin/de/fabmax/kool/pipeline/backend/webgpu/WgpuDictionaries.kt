@@ -66,7 +66,10 @@ data class GPUBufferBindingLayout(
     val minBindingSize: Long = 0
 )
 
-class GPUSamplerBindingLayout
+class GPUSamplerBindingLayout(
+    @JsName("type")
+    val type: GPUSamplerBindingType = GPUSamplerBindingType.filtering
+)
 
 class GPUTextureBindingLayout(
     @JsName("sampleType")
@@ -340,30 +343,34 @@ data class GPUShaderModuleDescriptor(
     val label: String = ""
 )
 
-class GPUSamplerDescriptor(
-    @JsName("label")
-    val label: String = "",
-    @JsName("addressModeU")
-    val addressModeU: GPUAddressMode = GPUAddressMode.clampToEdge,
-    @JsName("addressModeV")
-    val addressModeV: GPUAddressMode = GPUAddressMode.clampToEdge,
-    @JsName("addressModeW")
-    val addressModeW: GPUAddressMode = GPUAddressMode.clampToEdge,
-    @JsName("magFilter")
-    val magFilter: GPUFilterMode = GPUFilterMode.nearest,
-    @JsName("minFilter")
-    val minFilter: GPUFilterMode = GPUFilterMode.nearest,
-    @JsName("mipmapFilter")
-    val mipmapFilter: GPUMipmapFilterMode = GPUMipmapFilterMode.nearest,
-    @JsName("lodMinClamp")
-    val lodMinClamp: Float = 0f,
-    @JsName("lodMaxClamp")
-    val lodMaxClamp: Float = 32f,
-    //@JsName("compare")
-    //val compare: GPUCompareFunction,
-    @JsName("maxAnisotropy")
-    val maxAnisotropy: Int = 1,
-)
+interface GPUSamplerDescriptor
+fun GPUSamplerDescriptor(
+    label: String = "",
+    addressModeU: GPUAddressMode = GPUAddressMode.clampToEdge,
+    addressModeV: GPUAddressMode = GPUAddressMode.clampToEdge,
+    addressModeW: GPUAddressMode = GPUAddressMode.clampToEdge,
+    magFilter: GPUFilterMode = GPUFilterMode.nearest,
+    minFilter: GPUFilterMode = GPUFilterMode.nearest,
+    mipmapFilter: GPUMipmapFilterMode = GPUMipmapFilterMode.nearest,
+    lodMinClamp: Float = 0f,
+    lodMaxClamp: Float = 32f,
+    maxAnisotropy: Int = 1,
+    compare: GPUCompareFunction? = null,
+): GPUSamplerDescriptor {
+    val o = js("({})")
+    o["label"] = label
+    o["addressModeU"] = addressModeU
+    o["addressModeV"] = addressModeV
+    o["addressModeW"] = addressModeW
+    o["magFilter"] = magFilter
+    o["minFilter"] = minFilter
+    o["mipmapFilter"] = mipmapFilter
+    o["lodMinClamp"] = lodMinClamp
+    o["lodMaxClamp"] = lodMaxClamp
+    o["maxAnisotropy"] = maxAnisotropy
+    compare?.let { o["compare"] = it }
+    return o
+}
 
 class GPUTextureDescriptor(
     @JsName("size")

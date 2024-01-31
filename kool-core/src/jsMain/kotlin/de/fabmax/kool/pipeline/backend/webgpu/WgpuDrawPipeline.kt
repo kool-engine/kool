@@ -46,8 +46,8 @@ class WgpuDrawPipeline(
 
                     when (binding) {
                         is UniformBufferLayout -> add(makeLayoutEntryBuffer(location, visibility))
-                        is Texture1dLayout -> addAll(makeLayoutEntriesTexture(location, visibility, GPUTextureViewDimension.view1d))
-                        is Texture2dLayout -> addAll(makeLayoutEntriesTexture(location, visibility, GPUTextureViewDimension.view2d))
+                        is Texture1dLayout -> addAll(makeLayoutEntriesTexture(binding, location, visibility, GPUTextureViewDimension.view1d))
+                        is Texture2dLayout -> addAll(makeLayoutEntriesTexture(binding, location, visibility, GPUTextureViewDimension.view2d))
 
                         is Texture3dLayout -> TODO("Texture3dLayout")
                         is TextureCubeLayout -> TODO("TextureCubeLayout")
@@ -71,18 +71,35 @@ class WgpuDrawPipeline(
         buffer = GPUBufferBindingLayout()
     )
 
-    private fun makeLayoutEntriesTexture(location: WgslLocations.Location, visibility: Int, dimension: GPUTextureViewDimension) = listOf(
-        GPUBindGroupLayoutEntrySampler(
-            location.binding,
-            visibility,
-            GPUSamplerBindingLayout()
-        ),
-        GPUBindGroupLayoutEntryTexture(
-            location.binding + 1,
-            visibility,
-            GPUTextureBindingLayout(viewDimension = dimension)
+    private fun makeLayoutEntriesTexture(
+        binding: TextureLayout,
+        location: WgslLocations.Location,
+        visibility: Int,
+        dimension: GPUTextureViewDimension
+    ): List<GPUBindGroupLayoutEntry> {
+        val samplerType = when (binding) {
+            is Texture2dLayout -> if (binding.isDepthTexture) GPUSamplerBindingType.comparison else GPUSamplerBindingType.filtering
+            is TextureCubeLayout -> if (binding.isDepthTexture) GPUSamplerBindingType.comparison else GPUSamplerBindingType.filtering
+            else -> GPUSamplerBindingType.filtering
+        }
+        val texSampleType = when (binding) {
+            is Texture2dLayout -> if (binding.isDepthTexture) GPUTextureSampleType.depth else GPUTextureSampleType.float
+            is TextureCubeLayout -> if (binding.isDepthTexture) GPUTextureSampleType.depth else GPUTextureSampleType.float
+            else -> GPUTextureSampleType.float
+        }
+        return listOf(
+            GPUBindGroupLayoutEntrySampler(
+                location.binding,
+                visibility,
+                GPUSamplerBindingLayout(samplerType)
+            ),
+            GPUBindGroupLayoutEntryTexture(
+                location.binding + 1,
+                visibility,
+                GPUTextureBindingLayout(viewDimension = dimension, sampleType = texSampleType)
+            )
         )
-    )
+    }
 
     private fun createPipelineLayout(pipeline: DrawPipeline): GPUPipelineLayout {
         return device.createPipelineLayout(GPUPipelineLayoutDescriptor(

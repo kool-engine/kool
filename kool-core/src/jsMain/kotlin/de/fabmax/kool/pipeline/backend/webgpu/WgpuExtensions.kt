@@ -33,7 +33,8 @@ fun GPUDevice.createSampler(
     mipmapFilter: GPUMipmapFilterMode = GPUMipmapFilterMode.nearest,
     lodMinClamp: Float = 0f,
     lodMaxClamp: Float = 32f,
-    maxAnisotropy: Int = 1
+    maxAnisotropy: Int = 1,
+    compare: GPUCompareFunction? = null
 ): GPUSampler = createSampler(GPUSamplerDescriptor(
     label = label,
     addressModeU = addressModeU,
@@ -44,7 +45,8 @@ fun GPUDevice.createSampler(
     mipmapFilter = mipmapFilter,
     lodMinClamp = lodMinClamp,
     lodMaxClamp = lodMaxClamp,
-    maxAnisotropy = maxAnisotropy
+    maxAnisotropy = maxAnisotropy,
+    compare = compare
 ))
 
 fun GPUDevice.createRenderPipeline(

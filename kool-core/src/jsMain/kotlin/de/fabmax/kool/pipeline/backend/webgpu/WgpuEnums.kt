@@ -152,6 +152,15 @@ value class GPUPowerPreference private constructor(val enumValue: String) {
     }
 }
 
+value class GPUSamplerBindingType private constructor(val enumValue: String) {
+    override fun toString() = enumValue
+    companion object {
+        val filtering = GPUSamplerBindingType("filtering")
+        val nonFiltering = GPUSamplerBindingType("non-filtering")
+        val comparison = GPUSamplerBindingType("comparison")
+    }
+}
+
 value class GPUStoreOp private constructor(val enumValue: String) {
     override fun toString() = enumValue
     companion object {

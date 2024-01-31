@@ -1,10 +1,12 @@
 package de.fabmax.kool.util
 
 import de.fabmax.kool.KoolException
+import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.BoundingBoxF
 import de.fabmax.kool.pipeline.DepthMapPass
 import de.fabmax.kool.pipeline.backend.DepthRange
+import de.fabmax.kool.pipeline.backend.NdcYDirection
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.pipeline.renderPassConfig
 import de.fabmax.kool.scene.*
@@ -41,6 +43,8 @@ class SimpleShadowMap(val sceneCam: Camera, override var light: Light?, mapSize:
     var shaderDepthOffset = -0.005f
     var shadowBounds: BoundingBoxF? = null
 
+    private val biasMatrix = MutableMat4f()
+
     private val nearSceneCamPlane = FrustumPlane()
     private val farSceneCamPlane = FrustumPlane()
     private val shadowCamBounds = BoundingBoxF()
@@ -62,16 +66,20 @@ class SimpleShadowMap(val sceneCam: Camera, override var light: Light?, mapSize:
             it !is Mesh || it.isCastingShadow(shadowMapLevel)
         }
 
+        val backend = KoolSystem.requireContext().backend
+        if (backend.depthRange == DepthRange.ZERO_TO_ONE) {
+            biasMatrix.set(depthBiasMatrixZeroToOne)
+        } else {
+            biasMatrix.set(depthBiasMatrixNegOneToOne)
+        }
+        if (backend.ndcYDirection == NdcYDirection.TOP_TO_BOTTOM) {
+            biasMatrix[1, 1] = -biasMatrix[1, 1]
+        }
+
         onBeforeCollectDrawCommands += { ev ->
             light?.let { setupCamera(it) }
             camera.updateCamera(ev)
-
-            val bias = if (ev.ctx.backend.depthRange == DepthRange.ZERO_TO_ONE) {
-                depthBiasMatrixZeroToOne
-            } else {
-                depthBiasMatrixNegOneToOne
-            }
-            bias.mul(camera.viewProj, lightViewProjMat)
+            biasMatrix.mul(camera.viewProj, lightViewProjMat)
         }
     }
 

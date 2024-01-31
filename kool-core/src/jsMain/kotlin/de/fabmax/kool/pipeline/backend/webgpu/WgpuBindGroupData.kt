@@ -111,6 +111,7 @@ class WgpuBindGroupData(
         } else {
             1
         }
+        val compare = if (layout.isDepthTexture) GPUCompareFunction.less else null
 
         val sampler = device.createSampler(
             addressModeU = samplerSettings.addressModeU.wgpu,
@@ -119,6 +120,7 @@ class WgpuBindGroupData(
             minFilter = samplerSettings.minFilter.wgpu,
             mipmapFilter = if (tex.props.generateMipMaps) GPUMipmapFilterMode.linear else GPUMipmapFilterMode.nearest,
             maxAnisotropy = maxAnisotropy,
+            compare = compare
         )
 
         return listOf(

@@ -21,8 +21,12 @@ class WgpuOffscreenRenderPass2d(
 
     override val colorTargetFormats = parentPass.colorTextures.map { it.props.format.wgpu }
 
-    private val colorAttachments = List(parentPass.numColorTextures) { RenderAttachment(parentPass.colorTextures[it], false) }
-    private val depthAttachment = parentPass.depthTexture?.let { RenderAttachment(it, false) }
+    private val colorAttachments = List(parentPass.numColorTextures) {
+        RenderAttachment(parentPass.colorTextures[it], false, "${parentPass.name}.color[$it]")
+    }
+    private val depthAttachment = parentPass.depthTexture?.let {
+        RenderAttachment(it, true, "${parentPass.name}.depth")
+    }
 
     private var copySrcFlag = 0
     private val isCopyColor: Boolean
@@ -75,7 +79,7 @@ class WgpuOffscreenRenderPass2d(
         }
     }
 
-    private inner class RenderAttachment(val texture: Texture, val isDepth: Boolean) : BaseReleasable() {
+    private inner class RenderAttachment(val texture: Texture, val isDepth: Boolean, val name: String) : BaseReleasable() {
         var gpuTexture = createTexture(parentPass.width, parentPass.height, GPUTextureUsage.TEXTURE_BINDING or GPUTextureUsage.RENDER_ATTACHMENT)
         var view = gpuTexture.gpuTexture.createView()
 
