@@ -219,13 +219,15 @@ class SamplerDescriptor private constructor(binding: Int, private val sampler: T
         val sampler1d: Texture1dLayout? = null,
         val sampler2d: Texture2dLayout? = null,
         val sampler3d: Texture3dLayout? = null,
-        val samplerCube: TextureCubeLayout? = null,
-        val arraySize: Int) {
+        val samplerCube: TextureCubeLayout? = null
+    ) {
 
-        constructor(bindingIndex: Int, sampler1d: Texture1dLayout) : this(bindingIndex, MODE_1D, sampler1d = sampler1d, arraySize = sampler1d.arraySize)
-        constructor(bindingIndex: Int, sampler2d: Texture2dLayout) : this(bindingIndex, MODE_2D, sampler2d = sampler2d, arraySize = sampler2d.arraySize)
-        constructor(bindingIndex: Int, sampler3d: Texture3dLayout) : this(bindingIndex, MODE_3D, sampler3d = sampler3d, arraySize = sampler3d.arraySize)
-        constructor(bindingIndex: Int, samplerCube: TextureCubeLayout) : this(bindingIndex, MODE_CUBE, samplerCube = samplerCube, arraySize = samplerCube.arraySize)
+        val arraySize = 1
+
+        constructor(bindingIndex: Int, sampler1d: Texture1dLayout) : this(bindingIndex, MODE_1D, sampler1d = sampler1d)
+        constructor(bindingIndex: Int, sampler2d: Texture2dLayout) : this(bindingIndex, MODE_2D, sampler2d = sampler2d)
+        constructor(bindingIndex: Int, sampler3d: Texture3dLayout) : this(bindingIndex, MODE_3D, sampler3d = sampler3d)
+        constructor(bindingIndex: Int, samplerCube: TextureCubeLayout) : this(bindingIndex, MODE_CUBE, samplerCube = samplerCube)
 
 //        val textures: Array<out Texture?>
 //            get() = when (mode) {
@@ -237,7 +239,7 @@ class SamplerDescriptor private constructor(binding: Int, private val sampler: T
 //            }
 
         fun getTextures(data: BindGroupData): List<Texture?> {
-            return (data.bindings[bindingIndex] as BindGroupData.TextureBindingData<*,*>).textures
+            return listOf((data.bindings[bindingIndex] as BindGroupData.TextureBindingData<*>).texture)
         }
 
         companion object {

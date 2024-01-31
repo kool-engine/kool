@@ -66,7 +66,7 @@ object Skybox {
             PipelineConfig(cullMethod = CullMethod.CULL_FRONT_FACES, isWriteDepth = false)
         )
     {
-        val skies = textureCubeArray("tSkies", 2)
+        val skies = List(2) { textureCube("tSky_$it") }
         var skyWeights: Vec2f by uniform2f("uSkyWeights", Vec2f.X_AXIS)
 
         var skyOrientation: Mat3f by uniformMat3f("uSkyOrientation")
@@ -75,8 +75,8 @@ object Skybox {
         fun setSingleSky(skyTex: TextureCube?) = setBlendSkies(skyTex, 1f, skyTex, 0f)
 
         fun setBlendSkies(skyA: TextureCube?, weightA: Float, skyB: TextureCube?, weightB: Float) {
-            skies[0] = skyA
-            skies[1] = skyB
+            skies[0].set(skyA)
+            skies[1].set(skyB)
             skyWeights = Vec2f(weightA, weightB)
         }
 
@@ -103,7 +103,7 @@ object Skybox {
                 }
                 fragmentStage {
                     main {
-                        val skies = textureArrayCube("tSkies", 2)
+                        val skies = List(2) { textureCube("tSky_$it") }
                         val skyWeights = uniformFloat2("uSkyWeights")
                         val texLod = uniformFloat1("uLod")
                         val color = float3Var(sampleTexture(skies[0], orientedPos.output, texLod).rgb * skyWeights.x)

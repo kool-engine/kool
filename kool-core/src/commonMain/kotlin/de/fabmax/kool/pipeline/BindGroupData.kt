@@ -60,16 +60,12 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
         }
     }
 
-    abstract inner class TextureBindingData<T: Texture, B: TextureLayout>(layout: B) {
-        private val _textures = MutableList<T?>(layout.arraySize) { null }
-        val textures: List<T?> get() = _textures
+    abstract inner class TextureBindingData<T: Texture> {
+        val isComplete get() = texture?.loadingState == Texture.LoadingState.LOADED
 
-        val isComplete get() = textures.all { it != null && it.loadingState == Texture.LoadingState.LOADED }
-
-        var texture: T?
-            get() = _textures[0]
+        var texture: T? = null
             set(value) {
-                _textures[0] = value
+                field = value
                 isDirty = false
             }
 
@@ -78,17 +74,12 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
                 field = value
                 isDirty = true
             }
-
-        operator fun set(i: Int, texture: T?) {
-            _textures[i] = texture
-            isDirty = true
-        }
     }
 
-    inner class Texture1dBindingData(override val layout: Texture1dLayout) : TextureBindingData<Texture1d, Texture1dLayout>(layout), BindingData
-    inner class Texture2dBindingData(override val layout: Texture2dLayout) : TextureBindingData<Texture2d, Texture2dLayout>(layout), BindingData
-    inner class Texture3dBindingData(override val layout: Texture3dLayout) : TextureBindingData<Texture3d, Texture3dLayout>(layout), BindingData
-    inner class TextureCubeBindingData(override val layout: TextureCubeLayout) : TextureBindingData<TextureCube, TextureCubeLayout>(layout), BindingData
+    inner class Texture1dBindingData(override val layout: Texture1dLayout) : TextureBindingData<Texture1d>(), BindingData
+    inner class Texture2dBindingData(override val layout: Texture2dLayout) : TextureBindingData<Texture2d>(), BindingData
+    inner class Texture3dBindingData(override val layout: Texture3dLayout) : TextureBindingData<Texture3d>(), BindingData
+    inner class TextureCubeBindingData(override val layout: TextureCubeLayout) : TextureBindingData<TextureCube>(), BindingData
 
     inner class StorageTexture1dBindingData(override val layout: StorageTexture1dLayout) : BindingData {
         var storageTexture: StorageTexture1d? = null

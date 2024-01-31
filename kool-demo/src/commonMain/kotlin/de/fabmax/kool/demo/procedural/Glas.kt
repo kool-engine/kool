@@ -246,9 +246,8 @@ class Glas(val ibl: EnvironmentMaps, shadowMap: SimpleShadowMap) : Node(), Defer
                             refractionColor set sampleTexture(refractionColorMap, samplePos)
                         }
                         `if`(refractionColor.a eq 0f.const) {
-                            // refraction sample pos out of screen bounds -> use reflection map instead
-                            val reflectionMaps = textureArrayCube("tReflectionMaps", 2).value
-                            refractionColor set sampleTexture(reflectionMaps[0], refractionDir)
+                            // refraction sample pos out of screen bounds -> use first reflection map instead
+                            refractionColor set sampleTexture(textureCube("tReflectionMap_0"), refractionDir)
                         }
 
                         val weight = 1f.const - materialColorInput.a

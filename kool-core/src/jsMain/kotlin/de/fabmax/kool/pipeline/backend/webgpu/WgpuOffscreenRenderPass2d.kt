@@ -24,6 +24,10 @@ class WgpuOffscreenRenderPass2d(
     private val colorAttachments = List(parentPass.numColorTextures) { RenderAttachment(parentPass.colorTextures[it], false) }
     private val depthAttachment = parentPass.depthTexture?.let { RenderAttachment(it, false) }
 
+    private var copySrcFlag = 0
+    private val isCopyColor: Boolean
+        get() = parentPass.copyTargetsColor.isNotEmpty()
+
     init {
         releaseWith(parentPass)
     }
@@ -35,6 +39,12 @@ class WgpuOffscreenRenderPass2d(
     override fun release() { }
 
     override fun draw(ctx: KoolContext) {
+        if (isCopyColor && copySrcFlag == 0) {
+            // recreate color attachment texture with COPY_SRC flag set
+            copySrcFlag = GPUTextureUsage.COPY_SRC
+            colorAttachments[0].applySize(parentPass.width, parentPass.height)
+        }
+
         val gpuColorAttachments = colorAttachments.mapIndexed { i, colorTex ->
             GPURenderPassColorAttachment(
                 view = colorTex.view,
@@ -66,7 +76,7 @@ class WgpuOffscreenRenderPass2d(
     }
 
     private inner class RenderAttachment(val texture: Texture, val isDepth: Boolean) : BaseReleasable() {
-        var gpuTexture = createTexture(parentPass.width, parentPass.height)
+        var gpuTexture = createTexture(parentPass.width, parentPass.height, GPUTextureUsage.TEXTURE_BINDING or GPUTextureUsage.RENDER_ATTACHMENT)
         var view = gpuTexture.gpuTexture.createView()
 
         init {
@@ -76,17 +86,16 @@ class WgpuOffscreenRenderPass2d(
         }
 
         fun applySize(width: Int, height: Int) {
-            gpuTexture.release()
-            gpuTexture = createTexture(width, height)
+            texture.loadedTexture?.release()
+            gpuTexture = createTexture(width, height, GPUTextureUsage.TEXTURE_BINDING or GPUTextureUsage.RENDER_ATTACHMENT or copySrcFlag)
             view = gpuTexture.gpuTexture.createView()
-
             texture.loadedTexture = WgpuLoadedTexture(gpuTexture)
         }
 
         fun createTexture(
             width: Int,
             height: Int,
-            usage: Int = GPUTextureUsage.COPY_SRC or GPUTextureUsage.TEXTURE_BINDING or GPUTextureUsage.RENDER_ATTACHMENT,
+            usage: Int,
         ): WgpuTextureResource = backend.createTexture(
             GPUTextureDescriptor(
                 label = "${parentPass.name}.colorAttachment",

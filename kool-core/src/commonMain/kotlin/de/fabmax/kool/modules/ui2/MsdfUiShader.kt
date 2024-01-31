@@ -66,15 +66,14 @@ class MsdfUiShader(
 
                 main {
                     val fontMap = texture2d("tFontMap")
-                    val msdfVals = float4Var(sampleTexture(fontMap, uv.output))
 
                     `if` (any(screenPos.output lt clipBounds.output.xy) or
                             any(screenPos.output gt clipBounds.output.zw)) {
                         discard()
 
                     }.`else` {
+                        val msdfVals = float4Var(sampleTexture(fontMap, uv.output, 0f.const))
                         val color = float4Var(fgColor.output)
-
                         val pxRange = msdfProps.output.x * uniformFloat1("uPxRange")
                         val weight = msdfProps.output.y
                         //val cutoff = msdfProps.output.z

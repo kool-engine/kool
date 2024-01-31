@@ -34,7 +34,7 @@ abstract class KslLitShader(val cfg: LitShaderConfig, model: KslProgram) : KslSh
     // if ambient color is image based
     var ambientMap: TextureCube? by textureCube("tAmbientTexture")
     // if ambient color is dual image based
-    val ambientMaps = textureCubeArray("tAmbientTextures", 2)
+    val ambientMaps = List(2) { textureCube("tAmbientTexture_$it") }
     var ambientMapWeights by uniform2f("tAmbientWeights", Vec2f.X_AXIS)
 
     val ambientCfg: AmbientColor get() = cfg.ambientColor
@@ -274,7 +274,7 @@ abstract class KslLitShader(val cfg: LitShaderConfig, model: KslProgram) : KslSh
                         }
                         is AmbientColor.DualImageBased -> {
                             val ambientOri = uniformMat3("uAmbientTextureOri")
-                            val ambientTexs = textureArrayCube("tAmbientTextures", 2)
+                            val ambientTexs = List(2) { textureCube("tAmbientTexture_$it") }
                             val ambientWeights = uniformFloat2("tAmbientWeights")
                             val ambientColor = float4Var(sampleTexture(ambientTexs[0], ambientOri * normal) * ambientWeights.x)
                             `if`(ambientWeights.y gt 0f.const) {

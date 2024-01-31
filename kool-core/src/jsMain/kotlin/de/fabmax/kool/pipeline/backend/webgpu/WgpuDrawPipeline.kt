@@ -208,8 +208,8 @@ class WgpuDrawPipeline(
     private fun checkTextures(bindGroupData: BindGroupData): Boolean {
         var isComplete = true
         bindGroupData.bindings
-            .filterIsInstance<BindGroupData.TextureBindingData<*,*>>()
-            .flatMap { it.textures }
+            .filterIsInstance<BindGroupData.TextureBindingData<*>>()
+            .map { it.texture }
             .filter { it?.loadingState != Texture.LoadingState.LOADED }
             .forEach {
                 println("not loaded: ${it?.name}")

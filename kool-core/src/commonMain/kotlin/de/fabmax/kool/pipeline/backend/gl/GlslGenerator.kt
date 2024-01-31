@@ -107,7 +107,8 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
     }
 
     override fun sampleDepthTexture(sampleTexture: KslSampleDepthTexture<*>): String {
-        return "texture(${sampleTexture.sampler.generateExpression(this)}, ${sampleTexture.coord.generateExpression(this)})"
+        // always use mip-level 0 when sampling depth textures
+        return "textureLod(${sampleTexture.sampler.generateExpression(this)}, ${sampleTexture.coord.generateExpression(this)}, 0.0)"
     }
 
     override fun textureSize(textureSize: KslTextureSize<*, *>): String {

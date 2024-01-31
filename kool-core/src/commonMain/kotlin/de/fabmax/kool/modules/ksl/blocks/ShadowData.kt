@@ -21,7 +21,7 @@ class ShadowData(val shadowCfg: ShadowConfig, program: KslProgram) : KslDataBloc
     val numSubMaps: Int get() = subMaps.size
 
     val shadowMapViewProjMats: KslUniformMatrixArray<KslMat4, KslFloat4>
-    val depthMaps: KslUniformArray<KslDepthSampler2d>
+    val depthMaps: List<KslUniform<KslDepthSampler2d>>
 
     private var uShadowMapViewProjMats: UniformBindingMat4fv? = null
 
@@ -41,7 +41,7 @@ class ShadowData(val shadowCfg: ShadowConfig, program: KslProgram) : KslDataBloc
         // If shadowCfg is empty, uniforms are created with array size 0, which is kind of invalid. However, they are
         // also not referenced later on and therefore removed before shader is generated (again because shadowCfg is empty)
         shadowMapViewProjMats = program.uniformMat4Array(UNIFORM_NAME_SHADOW_VP_MATS, numSubMaps)
-        depthMaps = program.depthTextureArray2d(SAMPLER_NAME_SHADOW_MAPS, numSubMaps)
+        depthMaps = List(numSubMaps) { program.depthTexture2d(samplerName(it)) }
 
         program.dataBlocks += this
         if (subMaps.isNotEmpty()) {
@@ -51,9 +51,8 @@ class ShadowData(val shadowCfg: ShadowConfig, program: KslProgram) : KslDataBloc
 
     override fun onShaderCreated(shader: ShaderBase<*>) {
         uShadowMapViewProjMats = shader.uniformMat4fv(UNIFORM_NAME_SHADOW_VP_MATS)
-        val maps = shader.texture2dArray(SAMPLER_NAME_SHADOW_MAPS, subMaps.size)
         subMaps.forEachIndexed { i, shadowMap ->
-            maps[i] = shadowMap.depthTexture
+            shader.texture2d(samplerName(i), shadowMap.depthTexture)
         }
     }
 
@@ -74,6 +73,8 @@ class ShadowData(val shadowCfg: ShadowConfig, program: KslProgram) : KslDataBloc
         const val NAME = "ShadowData"
 
         const val UNIFORM_NAME_SHADOW_VP_MATS = "uShadowMapViewProjMats"
-        const val SAMPLER_NAME_SHADOW_MAPS = "tDepthMaps"
+        const val SAMPLER_PREFIX_SHADOW_MAPS = "tDepthMaps"
+
+        fun samplerName(index: Int) = "${SAMPLER_PREFIX_SHADOW_MAPS}_$index"
     }
 }

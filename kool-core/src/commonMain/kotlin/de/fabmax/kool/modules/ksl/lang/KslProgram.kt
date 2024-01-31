@@ -139,16 +139,6 @@ open class KslProgram(val name: String) {
     fun depthTexture2d(name: String) = getOrCreateSampler(name) { KslUniform(KslVar(name, KslDepthSampler2d, false)) }
     fun depthTextureCube(name: String) = getOrCreateSampler(name) { KslUniform(KslVar(name, KslDepthSamplerCube, false)) }
 
-    // arrays of textures (this is different to array textures, like, e.g., KslTypeColorSampler2dArray)
-    fun textureArray1d(name: String, arraySize: Int) = getOrCreateSampler(name) { KslUniformArray(KslArrayGeneric(name, KslColorSampler1d, arraySize, false)) }
-    fun textureArray2d(name: String, arraySize: Int) = getOrCreateSampler(name) { KslUniformArray(KslArrayGeneric(name, KslColorSampler2d, arraySize, false)) }
-    fun textureArray3d(name: String, arraySize: Int) = getOrCreateSampler(name) { KslUniformArray(KslArrayGeneric(name, KslColorSampler3d, arraySize, false)) }
-    fun textureArrayCube(name: String, arraySize: Int) = getOrCreateSampler(name) { KslUniformArray(KslArrayGeneric(name, KslColorSamplerCube, arraySize, false)) }
-
-    // arrays of depth textures (this is different to array textures, like, e.g., KslTypeDepthSampler2dArray)
-    fun depthTextureArray2d(name: String, arraySize: Int) = getOrCreateSampler(name) { KslUniformArray(KslArrayGeneric(name, KslDepthSampler2d, arraySize, false)) }
-    fun depthTextureArrayCube(name: String, arraySize: Int) = getOrCreateSampler(name) { KslUniformArray(KslArrayGeneric(name, KslDepthSamplerCube, arraySize, false)) }
-
     inline fun <reified T: KslNumericType> storage1d(name: String): KslStorage1d<KslStorage1dType<T>> {
         val storage: KslStorage<*,*> = uniformStorage[name]
             ?: KslStorage1d(name, KslStorage1dType(numericTypeForT<T>())).also { registerStorage(it) }
@@ -311,8 +301,4 @@ open class KslProgram(val name: String) {
     val Texture2dBinding.ksl: KslUniform<KslColorSampler2d> get() = texture2d(bindingName)
     val Texture3dBinding.ksl: KslUniform<KslColorSampler3d> get() = texture3d(bindingName)
     val TextureCubeBinding.ksl: KslUniform<KslColorSamplerCube> get() = textureCube(bindingName)
-
-    val Texture1dArrayBinding.ksl: KslUniformArray<KslColorSampler1d> get() = textureArray1d(bindingName, arraySize)
-    val Texture2dArrayBinding.ksl: KslUniformArray<KslColorSampler2d> get() = textureArray2d(bindingName, arraySize)
-    val TextureCubeArrayBinding.ksl: KslUniformArray<KslColorSamplerCube> get() = textureArrayCube(bindingName, arraySize)
 }

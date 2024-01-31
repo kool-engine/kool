@@ -231,17 +231,6 @@ private fun KslProgram.setupBindGroupLayoutTextures(bindGrpBuilder: BindGroupLay
             is KslColorSampler2d -> Texture2dLayout(name, texStages)
             is KslColorSampler3d -> Texture3dLayout(name, texStages)
             is KslColorSamplerCube -> TextureCubeLayout(name, texStages)
-
-            is KslArrayType<*> -> {
-                when (type.elemType) {
-                    is KslDepthSampler2d -> Texture2dLayout(name, texStages, sampler.arraySize, isDepthTexture = true)
-                    is KslDepthSamplerCube -> TextureCubeLayout(name, texStages, sampler.arraySize, isDepthTexture = true)
-                    is KslColorSampler1d -> Texture1dLayout(name, texStages, sampler.arraySize)
-                    is KslColorSampler2d -> Texture2dLayout(name, texStages, sampler.arraySize)
-                    is KslColorSamplerCube -> TextureCubeLayout(name, texStages, sampler.arraySize)
-                    else -> throw IllegalStateException("Unsupported sampler array type: ${type.elemType.typeName}")
-                }
-            }
             else -> throw IllegalStateException("Unsupported sampler uniform type: ${type.typeName}")
         }
     }

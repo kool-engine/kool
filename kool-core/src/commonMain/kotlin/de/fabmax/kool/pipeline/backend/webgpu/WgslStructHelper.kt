@@ -1,8 +1,13 @@
 package de.fabmax.kool.pipeline.backend.webgpu
 
 interface WgslStructHelper {
+
+    fun isNotEmpty(members: List<WgslStructMember>, vararg builtins: WgslStructMember?): Boolean {
+        return members.isNotEmpty() || builtins.count { it != null } > 0
+    }
+
     fun StringBuilder.generateStruct(name: String, members: List<WgslStructMember>, vararg builtins: WgslStructMember?) {
-        if (members.isNotEmpty() || builtins.isNotEmpty()) {
+        if (isNotEmpty(members, *builtins)) {
             appendLine("struct $name {")
             builtins.forEach { it?.generateStructMember(this) }
             members.forEach { it.generateStructMember(this) }

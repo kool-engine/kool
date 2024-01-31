@@ -117,14 +117,12 @@ class UniformBufferLayout(
 
 sealed class TextureLayout(
     name: String,
-    val arraySize: Int,
     stages: Set<ShaderStage>,
     type: BindingType,
 ) : BindingLayout(name, stages, type) {
 
     override val hash: Long = LongHash().let {
         it += name
-        it += arraySize
         it += type
         it.hash
     }
@@ -133,27 +131,24 @@ sealed class TextureLayout(
 class Texture1dLayout(
     name: String,
     stages: Set<ShaderStage>,
-    arraySize: Int = 1,
-) : TextureLayout(name, arraySize, stages, BindingType.TEXTURE_1D)
+) : TextureLayout(name, stages, BindingType.TEXTURE_1D)
 
 class Texture2dLayout(
     name: String,
     stages: Set<ShaderStage>,
-    arraySize: Int = 1,
     val isDepthTexture: Boolean = false,
-) : TextureLayout(name, arraySize, stages, BindingType.TEXTURE_2D)
+) : TextureLayout(name, stages, BindingType.TEXTURE_2D)
 
 class Texture3dLayout(
     name: String,
     stages: Set<ShaderStage>,
-) : TextureLayout(name, 1, stages, BindingType.TEXTURE_3D)
+) : TextureLayout(name, stages, BindingType.TEXTURE_3D)
 
 class TextureCubeLayout(
     name: String,
     stages: Set<ShaderStage>,
-    arraySize: Int = 1,
     val isDepthTexture: Boolean = false,
-) : TextureLayout(name, arraySize, stages, BindingType.TEXTURE_CUBE)
+) : TextureLayout(name, stages, BindingType.TEXTURE_CUBE)
 
 sealed class StorageTextureLayout(
     name: String,

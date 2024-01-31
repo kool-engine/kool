@@ -474,13 +474,13 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         }
 
         fun KslLitShader.updateSky(envMaps: Sky.WeightedEnvMaps) {
-            ambientMaps[0] = envMaps.envA.irradianceMap
-            ambientMaps[1] = envMaps.envB.irradianceMap
+            ambientMaps[0].set(envMaps.envA.irradianceMap)
+            ambientMaps[1].set(envMaps.envB.irradianceMap)
             ambientMapWeights = Vec2f(envMaps.weightA, envMaps.weightB)
 
             if (this is KslPbrShader) {
-                reflectionMaps[0] = envMaps.envA.reflectionMap
-                reflectionMaps[1] = envMaps.envB.reflectionMap
+                reflectionMaps[0].set(envMaps.envA.reflectionMap)
+                reflectionMaps[1].set(envMaps.envB.reflectionMap)
                 reflectionMapWeights = Vec2f(envMaps.weightA, envMaps.weightB)
             }
         }

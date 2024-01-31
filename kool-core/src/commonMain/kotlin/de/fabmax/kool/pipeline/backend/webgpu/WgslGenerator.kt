@@ -85,8 +85,10 @@ class WgslGenerator : KslGenerator() {
         src.generateTextureSamplers(fragmentStage, pipeline)
         src.generateFunctions(fragmentStage)
 
+        val mainParam = if (fragmentInput.isNotEmpty()) "fragmentInput: FragmentInput" else ""
+
         src.appendLine("@fragment")
-        src.appendLine("fn fragmentMain(fragmentInput: FragmentInput) -> FragmentOutput {")
+        src.appendLine("fn fragmentMain($mainParam) -> FragmentOutput {")
         src.appendLine("  var fragmentOutput: FragmentOutput;")
         src.appendLine(generateScope(fragmentStage.main, blockIndent))
         src.appendLine("  return fragmentOutput;")
@@ -190,21 +192,41 @@ class WgslGenerator : KslGenerator() {
     }
 
     override fun sampleColorTexture(sampleTexture: KslSampleColorTexture<*>): String {
-        val samplerName = sampleTexture.sampler.generateExpression(this)
+        val textureName = sampleTexture.sampler.generateExpression(this)
         val level = sampleTexture.lod?.generateExpression(this)
         return if (level != null) {
-            "textureSampleLevel(${samplerName}, ${samplerName}_sampler, ${sampleTexture.coord.generateExpression(this)}, $level)"
+            "textureSampleLevel(${textureName(textureName)}, ${samplerName(textureName)}, ${sampleTexture.coord.generateExpression(this)}, $level)"
         } else {
-            "textureSample(${samplerName}, ${samplerName}_sampler, ${sampleTexture.coord.generateExpression(this)})"
+            "textureSample(${textureName(textureName)}, ${samplerName(textureName)}, ${sampleTexture.coord.generateExpression(this)})"
         }
     }
 
     override fun sampleDepthTexture(sampleTexture: KslSampleDepthTexture<*>): String {
-        TODO()
+        val textureName = sampleTexture.sampler.generateExpression(this)
+        val coordExpr = sampleTexture.coord.generateExpression(this)
+        val coordType = sampleTexture.coord.expressionType
+        val coord: String
+        val ref: String
+        when (coordType) {
+            is KslFloat3 -> {
+                coord = "(${coordExpr}).xy"
+                ref = "(${coordExpr}).z"
+            }
+            is KslFloat4 -> {
+                coord = "(${coordExpr}).xyz"
+                ref = "(${coordExpr}).w"
+            }
+            else -> error("Invalid depth sampler coordinate type: $coordType")
+        }
+        // use "Level" variant of textureSampleCompare, as out depth maps don't have mip levels -> therefore
+        // no derivatives need to be computed and sampling can be invoked from non-uniform control flow
+        return "textureSampleCompareLevel(${textureName(textureName)}, ${samplerName(textureName)}, $coord, $ref)"
     }
 
     override fun textureSize(textureSize: KslTextureSize<*, *>): String {
-        TODO()
+        val textureName = textureSize.sampler.generateExpression(this)
+        val level = textureSize.lod.generateExpression(this)
+        return "textureDimensions(${textureName}, $level)"
     }
 
     override fun texelFetch(expression: KslTexelFetch<*>): String {
@@ -248,7 +270,15 @@ class WgslGenerator : KslGenerator() {
             sortFunctions(funcList)
             funcList.forEach { func ->
                 val returnType = if (func.returnType == KslTypeVoid) "" else " -> ${func.returnType.wgslTypeName()}"
-                appendLine("fn ${func.name}(${func.parameters.joinToString { p -> "${p.name()}: ${p.expressionType.wgslTypeName()}" }})$returnType {")
+                val params = func.parameters.joinToString { p ->
+                    if (p.expressionType is KslSamplerType<*>) {
+                        val (samplerType, texType) = p.expressionType.wgslSamplerAndTextureTypeName()
+                        "${samplerName(p.name())}: $samplerType, ${textureName(p.name())}: $texType"
+                    } else {
+                        "${p.name()}: ${p.expressionType.wgslTypeName()}"
+                    }
+                }
+                appendLine("fn ${func.name}($params)$returnType {")
                 appendLine(generateScope(func.body, blockIndent))
                 appendLine("}")
                 appendLine()
@@ -396,7 +426,17 @@ class WgslGenerator : KslGenerator() {
         return args.joinToString { it.generateExpression(this) }
     }
 
-    override fun invokeFunction(func: KslInvokeFunction<*>) = "${func.function.name}(${generateArgs(func.args, func.args.size)})"
+    override fun invokeFunction(func: KslInvokeFunction<*>): String {
+        val args = func.args.joinToString {
+            val expr = it.generateExpression(this)
+            if (it.expressionType is KslSamplerType<*>) {
+                "${samplerName(expr)}, ${textureName(expr)}"
+            } else {
+                expr
+            }
+        }
+        return "${func.function.name}($args)"
+    }
 
     override fun builtinAbs(func: KslBuiltinAbsScalar<*>) = "abs(${generateArgs(func.args, 1)})"
     override fun builtinAbs(func: KslBuiltinAbsVector<*, *>) = "abs(${generateArgs(func.args, 1)})"
@@ -424,8 +464,8 @@ class WgslGenerator : KslGenerator() {
     override fun builtinFract(func: KslBuiltinFractVector<*>) = "fract(${generateArgs(func.args, 1)})"
     override fun builtinInverseSqrt(func: KslBuiltinInverseSqrtScalar) = "inverseSqrt(${generateArgs(func.args, 1)})"
     override fun builtinInverseSqrt(func: KslBuiltinInverseSqrtVector<*>) = "inverseSqrt(${generateArgs(func.args, 1)})"
-    override fun builtinIsInf(func: KslBuiltinIsInfScalar) = TODO() //"isinf(${generateArgs(func.args, 1)})"
-    override fun builtinIsInf(func: KslBuiltinIsInfVector<*, *>) = TODO() //"isinf(${generateArgs(func.args, 1)})"
+    override fun builtinIsInf(func: KslBuiltinIsInfScalar) = TODO("isinf(scalar)")
+    override fun builtinIsInf(func: KslBuiltinIsInfVector<*, *>) = TODO("isinf(vector)")
     override fun builtinIsNan(func: KslBuiltinIsNanScalar) = "(${func.args[0].generateExpression(this)} != ${func.args[0].generateExpression(this)})"
     override fun builtinIsNan(func: KslBuiltinIsNanVector<*, *>) = "(${func.args[0].generateExpression(this)} != ${func.args[0].generateExpression(this)})"
     override fun builtinLength(func: KslBuiltinLength<*>) = "length(${generateArgs(func.args, 1)})"
@@ -469,6 +509,32 @@ class WgslGenerator : KslGenerator() {
     companion object {
         private val emptyVertexLayout = VertexLayout(emptyList(), PrimitiveType.TRIANGLES)
 
+        fun samplerName(samplerExpression: String): String {
+            return "${samplerExpression}_sampler"
+        }
+
+        fun textureName(samplerExpression: String): String {
+            return samplerExpression
+        }
+
+        fun KslType.wgslSamplerAndTextureTypeName(): Pair<String, String> {
+            return when (this) {
+                KslColorSampler1d -> "sampler" to "texture_1d<f32>"
+                KslColorSampler2d -> "sampler" to "texture_2d<f32>"
+                KslColorSampler3d -> "sampler" to "texture_3d<f32>"
+                KslColorSamplerCube -> "sampler" to "texture_cube<f32>"
+                KslColorSampler2dArray -> "sampler" to "texture_2d_array<f32>"
+                KslColorSamplerCubeArray -> "sampler" to "texture_cube_array<f32>"
+
+                KslDepthSampler2d -> "sampler_comparison" to "texture_depth_2d"
+                KslDepthSamplerCube -> "sampler_comparison" to "texture_depth_cube"
+                KslDepthSampler2dArray -> "sampler_comparison" to "texture_depth_2d_array"
+                KslDepthSamplerCubeArray -> "sampler_comparison" to "texture_depth_cube_array"
+
+                else -> error("$this is not a sampler type")
+            }
+        }
+
         fun KslType.wgslTypeName(): String {
             return when (this) {
                 KslTypeVoid -> TODO()
@@ -492,23 +558,22 @@ class WgslGenerator : KslGenerator() {
                 KslMat3 -> "mat3x3f"
                 KslMat4 -> "mat4x4f"
 
-                KslColorSampler1d -> TODO()
-                KslColorSampler2d -> TODO()
-                KslColorSampler3d -> TODO()
-                KslColorSamplerCube -> TODO()
-                KslColorSampler2dArray -> TODO()
-                KslColorSamplerCubeArray -> TODO()
-
-                KslDepthSampler2d -> TODO()
-                KslDepthSamplerCube -> TODO()
-                KslDepthSampler2dArray -> TODO()
-                KslDepthSamplerCubeArray -> TODO()
+                KslColorSampler1d -> error("use wgslSamplerAndTextureTypeName() for $this")
+                KslColorSampler2d -> error("use wgslSamplerAndTextureTypeName() for $this")
+                KslColorSampler3d -> error("use wgslSamplerAndTextureTypeName() for $this")
+                KslColorSamplerCube -> error("use wgslSamplerAndTextureTypeName() for $this")
+                KslColorSampler2dArray -> error("use wgslSamplerAndTextureTypeName() for $this")
+                KslColorSamplerCubeArray -> error("use wgslSamplerAndTextureTypeName() for $this")
+                KslDepthSampler2d -> error("use wgslSamplerAndTextureTypeName() for $this")
+                KslDepthSamplerCube -> error("use wgslSamplerAndTextureTypeName() for $this")
+                KslDepthSampler2dArray -> error("use wgslSamplerAndTextureTypeName() for $this")
+                KslDepthSamplerCubeArray -> error("use wgslSamplerAndTextureTypeName() for $this")
 
                 is KslArrayType<*> -> "array<${elemType.wgslTypeName()},${arraySize}>"
 
-                is KslStorage1dType<*> -> TODO()
-                is KslStorage2dType<*> -> TODO()
-                is KslStorage3dType<*> -> TODO()
+                is KslStorage1dType<*> -> TODO("KslStorage1dType<*>")
+                is KslStorage2dType<*> -> TODO("KslStorage2dType<*>")
+                is KslStorage3dType<*> -> TODO("KslStorage3dType<*>")
             }
         }
     }
@@ -642,6 +707,8 @@ class WgslGenerator : KslGenerator() {
             isFrontFacing?.let { generatorState.mapStructMemberNames(listOf(it)) }
         }
 
+        fun isNotEmpty(): Boolean = isNotEmpty(fragmentInputs, fragPosition, isFrontFacing)
+
         fun generateStruct(builder: StringBuilder) = builder.apply {
             generateStruct("FragmentInput", fragmentInputs, fragPosition, isFrontFacing)
         }
@@ -673,15 +740,10 @@ class WgslGenerator : KslGenerator() {
                 }
                 .map { tex ->
                     val location = generatorState.locations[tex]
-                    val texType = when (tex.type) {
-                        BindingType.TEXTURE_1D -> "texture_1d<f32>"
-                        BindingType.TEXTURE_2D -> "texture_2d<f32>"
-                        BindingType.TEXTURE_3D -> "texture_3d<f32>"
-                        BindingType.TEXTURE_CUBE -> "texture_cube<f32>"
-                        else -> error("invalid texture/sampler type: ${tex.type}")
-                    }
-                    appendLine("@group(${location.group}) @binding(${location.binding}) var ${tex.name}_sampler: sampler;")
-                    appendLine("@group(${location.group}) @binding(${location.binding+1}) var ${tex.name}: $texType;")
+                    val kslTex = stage.getUsedSamplers().first { it.name == tex.name }
+                    val (samplerType, texType) = kslTex.expressionType.wgslSamplerAndTextureTypeName()
+                    appendLine("@group(${location.group}) @binding(${location.binding}) var ${samplerName(tex.name)}: $samplerType;")
+                    appendLine("@group(${location.group}) @binding(${location.binding+1}) var ${textureName(tex.name)}: $texType;")
                 }
         }
         appendLine()

@@ -237,9 +237,9 @@ class ImageShader : KslShader(Model(), pipelineConfig) {
             }
             fragmentStage {
                 main {
+                    val color = float4Var(sampleTexture(texture2d("uImageTex"), texCoords.output) * tint.output)
                     `if` (all(screenPos.output gt clipBounds.output.xy) and
                             all(screenPos.output lt clipBounds.output.zw)) {
-                        val color = sampleTexture(texture2d("uImageTex"), texCoords.output) * tint.output
                         colorOutput(color.rgb * color.a, color.a)
                     }.`else` {
                         discard()

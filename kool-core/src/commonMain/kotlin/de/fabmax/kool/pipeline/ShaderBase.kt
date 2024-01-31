@@ -86,13 +86,6 @@ abstract class ShaderBase<T: PipelineBase>(val name: String) {
     fun textureCube(textureName: String, defaultVal: TextureCube? = null, defaultSampler: SamplerSettings? = null): TextureCubeBinding =
         getOrCreateBinding(textureName) { TextureCubeBinding(textureName, defaultVal, defaultSampler, this) } as TextureCubeBinding
 
-    fun texture1dArray(textureName: String, arraySize: Int, defaultSampler: SamplerSettings? = null): Texture1dArrayBinding =
-        getOrCreateBinding(textureName) { Texture1dArrayBinding(textureName, arraySize, defaultSampler, this) } as Texture1dArrayBinding
-    fun texture2dArray(textureName: String, arraySize: Int, defaultSampler: SamplerSettings? = null): Texture2dArrayBinding =
-        getOrCreateBinding(textureName) { Texture2dArrayBinding(textureName, arraySize, defaultSampler, this) } as Texture2dArrayBinding
-    fun textureCubeArray(textureName: String, arraySize: Int, defaultSampler: SamplerSettings? = null): TextureCubeArrayBinding =
-        getOrCreateBinding(textureName) { TextureCubeArrayBinding(textureName, arraySize, defaultSampler, this) } as TextureCubeArrayBinding
-
     fun storage1d(textureName: String, defaultVal: StorageTexture1d? = null): StorageTexture1dBinding =
         getOrCreateBinding(textureName) { StorageTexture1dBinding(textureName, defaultVal, this) } as StorageTexture1dBinding
     fun storage2d(textureName: String, defaultVal: StorageTexture2d? = null): StorageTexture2dBinding =

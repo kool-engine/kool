@@ -16,8 +16,8 @@ fun KslScopeBuilder.vertexShadowBlock(cfg: ShadowConfig, block: ShadowBlockVerte
 
 fun KslScopeBuilder.fragmentShadowBlock(vertexStage: ShadowBlockVertexStage, shadowFactors: KslArrayScalar<KslFloat1>): ShadowBlockFragmentStage {
     val shadowBlock = ShadowBlockFragmentStage(
-        lightSpacePositions = vertexStage.positionsLightSpace?.output,
-        lightSpaceNormalZs = vertexStage.normalZsLightSpace?.output,
+        lightSpacePositions = vertexStage.positionsLightSpace.map { it.output },
+        lightSpaceNormalZs = vertexStage.normalZsLightSpace.map { it.output },
         shadowData = vertexStage.shadowData,
         shadowFactors = shadowFactors,
         name = parentStage.program.nextName("shadowBlock"),
@@ -28,8 +28,8 @@ fun KslScopeBuilder.fragmentShadowBlock(vertexStage: ShadowBlockVertexStage, sha
 }
 
 fun KslScopeBuilder.fragmentShadowBlock(
-    lightSpacePositions: KslArrayVector<KslFloat4, KslFloat1>,
-    lightSpaceNormalZs: KslArrayScalar<KslFloat1>,
+    lightSpacePositions: List<KslExprFloat4>,
+    lightSpaceNormalZs: List<KslExprFloat1>,
     shadowData: ShadowData,
     shadowFactors: KslArrayScalar<KslFloat1>
 ): ShadowBlockFragmentStage {
@@ -50,10 +50,8 @@ class ShadowBlockVertexStage(cfg: ShadowConfig, name: String, parentScope: KslSc
     var inNormalWorldSpace = inFloat3("inNormalWorldSpace")
 
     val shadowData: ShadowData
-    var positionsLightSpace: KslInterStageVectorArray<KslFloat4, KslFloat1>? = null
-        private set
-    var normalZsLightSpace: KslInterStageScalarArray<KslFloat1>? = null
-        private set
+    val positionsLightSpace: MutableList<KslInterStageVector<KslFloat4, KslFloat1>> = mutableListOf()
+    val normalZsLightSpace: MutableList<KslInterStageScalar<KslFloat1>> = mutableListOf()
 
     init {
         body.apply {
@@ -61,10 +59,8 @@ class ShadowBlockVertexStage(cfg: ShadowConfig, name: String, parentScope: KslSc
 
             parentScope.parentStage.program.apply {
                 shadowData = shadowData(cfg)
-                if (shadowData.numSubMaps > 0) {
-                    positionsLightSpace = interStageFloat4Array(shadowData.numSubMaps)
-                    normalZsLightSpace = interStageFloat1Array(shadowData.numSubMaps)
-                }
+                repeat(shadowData.numSubMaps) { positionsLightSpace += interStageFloat4() }
+                repeat(shadowData.numSubMaps) { normalZsLightSpace += interStageFloat1() }
             }
 
             shadowData.shadowMapInfos.forEach { mapInfo ->
@@ -72,9 +68,9 @@ class ShadowBlockVertexStage(cfg: ShadowConfig, name: String, parentScope: KslSc
                     val subMapIdx = mapInfo.fromIndexIncl + i
                     val viewProj = shadowData.shadowMapViewProjMats[subMapIdx]
                     val normalLightSpace = float3Var(normalize((viewProj * float4Value(inNormalWorldSpace, 0f.const)).xyz))
-                    normalZsLightSpace!!.input[subMapIdx] set normalLightSpace.z
-                    positionsLightSpace!!.input[subMapIdx] set viewProj * float4Value(inPositionWorldSpace, 1f.const)
-                    positionsLightSpace!!.input[subMapIdx].xyz += normalLightSpace * subMap.shaderDepthOffset.const * sign(normalLightSpace.z)
+                    normalZsLightSpace[subMapIdx].input set normalLightSpace.z
+                    positionsLightSpace[subMapIdx].input set viewProj * float4Value(inPositionWorldSpace, 1f.const)
+                    positionsLightSpace[subMapIdx].input.xyz += normalLightSpace * subMap.shaderDepthOffset.const * sign(normalLightSpace.z)
                 }
             }
         }
@@ -82,8 +78,8 @@ class ShadowBlockVertexStage(cfg: ShadowConfig, name: String, parentScope: KslSc
 }
 
 class ShadowBlockFragmentStage(
-    lightSpacePositions: KslArrayVector<KslFloat4, KslFloat1>?,
-    lightSpaceNormalZs: KslArrayScalar<KslFloat1>?,
+    lightSpacePositions: List<KslExprFloat4>,
+    lightSpaceNormalZs: List<KslExprFloat1>,
     val shadowData: ShadowData,
     val shadowFactors: KslArrayScalar<KslFloat1>,
     name: String,
@@ -93,7 +89,7 @@ class ShadowBlockFragmentStage(
     init {
         body.apply {
             check(parentStage is KslFragmentStage) { "SimpleShadowMapBlockFragmentStage can only be added to KslFragmentStage" }
-            if (lightSpacePositions == null || lightSpaceNormalZs == null) {
+            if (lightSpacePositions.isEmpty() || lightSpaceNormalZs.isEmpty()) {
                 return@apply
             }
 
@@ -114,8 +110,8 @@ class ShadowBlockFragmentStage(
     }
 
     private fun KslScopeBuilder.sampleSimpleShadowMap(
-        lightSpacePositions: KslArrayVector<KslFloat4, KslFloat1>,
-        lightSpaceNormalZs: KslArrayScalar<KslFloat1>,
+        lightSpacePositions: List<KslExprFloat4>,
+        lightSpaceNormalZs: List<KslExprFloat1>,
         mapInfo: ShadowData.ShadowMapInfo
     ) {
         val light = requireNotNull(mapInfo.shadowMap.light) { "ShadowMap light must be set before creating a shader with it" }
@@ -124,7 +120,7 @@ class ShadowBlockFragmentStage(
 
         `if` (shadowData.shadowCfg.flipBacksideNormals.const or (lightSpaceNormalZs[subMapIdx] lt 0f.const)) {
             // normal points towards light source, compute shadow factor
-            shadowFactors[light.lightIndex] set getShadowMapFactor(shadowData.depthMaps.value[subMapIdx], posLightSpace, mapInfo.samplePattern)
+            shadowFactors[light.lightIndex] set getShadowMapFactor(shadowData.depthMaps[subMapIdx], posLightSpace, mapInfo.samplePattern)
         }.`else` {
             // normal points away from light source, set shadow factor to 0 (shadowed)
             shadowFactors[light.lightIndex] set 0f.const
@@ -132,8 +128,8 @@ class ShadowBlockFragmentStage(
     }
 
     private fun KslScopeBuilder.sampleCascadedShadowMap(
-        lightSpacePositions: KslArrayVector<KslFloat4, KslFloat1>,
-        lightSpaceNormalZs: KslArrayScalar<KslFloat1>,
+        lightSpacePositions: List<KslExprFloat4>,
+        lightSpaceNormalZs: List<KslExprFloat1>,
         mapInfo: ShadowData.ShadowMapInfo
     ) {
         val lightIdx = mapInfo.shadowMap.light?.lightIndex ?: 0
@@ -160,7 +156,7 @@ class ShadowBlockFragmentStage(
                     val w = float1Var(c * (1f.const - sampleW))
 
                     // projected position is inside shadow map bounds, sample shadow map
-                    sampleSum += getShadowMapFactor(shadowData.depthMaps.value[i], posLightSpace, mapInfo.samplePattern) * w
+                    sampleSum += getShadowMapFactor(shadowData.depthMaps[i], posLightSpace, mapInfo.samplePattern) * w
                     sampleW += w
                 }
             }

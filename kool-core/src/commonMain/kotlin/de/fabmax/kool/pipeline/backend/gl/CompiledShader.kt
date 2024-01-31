@@ -35,10 +35,10 @@ sealed class CompiledShader(private val pipeline: PipelineBase, val program: GlP
                             binding.uniforms.map { gl.getUniformLocation(program, it.name) }.toIntArray()
                         }
                     }
-                    is Texture1dLayout -> getUniformLocations(binding.name, binding.arraySize, program)
-                    is Texture2dLayout -> getUniformLocations(binding.name, binding.arraySize, program)
-                    is Texture3dLayout -> getUniformLocations(binding.name, binding.arraySize, program)
-                    is TextureCubeLayout -> getUniformLocations(binding.name, binding.arraySize, program)
+                    is Texture1dLayout -> intArrayOf(gl.getUniformLocation(program, binding.name)) //getUniformLocations(binding.name, binding.arraySize, program)
+                    is Texture2dLayout -> intArrayOf(gl.getUniformLocation(program, binding.name)) //getUniformLocations(binding.name, binding.arraySize, program)
+                    is Texture3dLayout -> intArrayOf(gl.getUniformLocation(program, binding.name)) //getUniformLocations(binding.name, binding.arraySize, program)
+                    is TextureCubeLayout -> intArrayOf(gl.getUniformLocation(program, binding.name)) //getUniformLocations(binding.name, binding.arraySize, program)
                     is StorageTexture1dLayout -> intArrayOf(storageIndex++)
                     is StorageTexture2dLayout -> intArrayOf(storageIndex++)
                     is StorageTexture3dLayout -> intArrayOf(storageIndex++)

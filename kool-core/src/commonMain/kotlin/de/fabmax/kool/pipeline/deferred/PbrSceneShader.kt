@@ -40,23 +40,23 @@ open class PbrSceneShader(cfg: DeferredPbrConfig, model: Model = Model(cfg)) :
     // if ambient color is image based
     var ambientMap: TextureCube? by textureCube("tAmbientTexture")
     // if ambient color is dual image based
-    val ambientMaps = textureCubeArray("tAmbientTextures", 2)
+    val ambientMaps = List(2) { textureCube("tAmbientTexture_$it") }
     var ambientMapWeights by uniform2f("tAmbientWeights", Vec2f.X_AXIS)
     var ambientShadowFactor by uniform1f("uAmbientShadowFactor", cfg.ambientShadowFactor)
 
     var scrSpcAmbientOcclusionMap: Texture2d? by texture2d("tSsaoMap")
     var scrSpcReflectionMap: Texture2d? by texture2d("tSsrMap")
 
-    val reflectionMaps = textureCubeArray("tReflectionMaps", 2)
+    val reflectionMaps = List(2) { textureCube("tReflectionMap_$it") }
     var reflectionMapWeights: Vec2f by uniform2f("uReflectionWeights")
     var reflectionStrength: Vec4f by uniform4f("uReflectionStrength", Vec4f(cfg.reflectionStrength, 0f))
     var brdfLut: Texture2d? by texture2d("tBrdfLut")
 
     var reflectionMap: TextureCube?
-        get() = reflectionMaps[0]
+        get() = reflectionMaps[0].get()
         set(value) {
-            reflectionMaps[0] = value
-            reflectionMaps[1] = value
+            reflectionMaps[0].set(value)
+            reflectionMaps[1].set(value)
             reflectionMapWeights = Vec2f.X_AXIS
         }
 
@@ -134,7 +134,7 @@ open class PbrSceneShader(cfg: DeferredPbrConfig, model: Model = Model(cfg)) :
                             float3Var((sampleTexture(ambientTex, ambientOri * worldNrm) * uniformFloat4("uAmbientColor")).rgb)
                         }
                         is KslLitShader.AmbientColor.DualImageBased -> {
-                            val ambientTexs = textureArrayCube("tAmbientTextures", 2)
+                            val ambientTexs = List(2) { textureCube("tAmbientTexture_$it") }
                             val ambientWeights = uniformFloat2("tAmbientWeights")
                             val ambientColor = float4Var(sampleTexture(ambientTexs[0], ambientOri * worldNrm) * ambientWeights.x)
                             `if`(ambientWeights.y gt 0f.const) {
@@ -148,8 +148,8 @@ open class PbrSceneShader(cfg: DeferredPbrConfig, model: Model = Model(cfg)) :
                     val shadowFactors = float1Array(lightData.maxLightCount, 1f.const)
                     val avgShadow = float1Var(0f.const)
                     if (shadowData.numSubMaps > 0) {
-                        val lightSpacePositions = float4Array(shadowData.numSubMaps, Vec4f.ZERO.const)
-                        val lightSpaceNormalZs = float1Array(shadowData.numSubMaps, 0f.const)
+                        val lightSpacePositions = List(shadowData.numSubMaps) { float4Var(Vec4f.ZERO.const) }
+                        val lightSpaceNormalZs = List(shadowData.numSubMaps) { float1Var(0f.const) }
 
                         // transform positions to light space
                         shadowData.shadowMapInfos.forEach { mapInfo ->
@@ -193,7 +193,7 @@ open class PbrSceneShader(cfg: DeferredPbrConfig, model: Model = Model(cfg)) :
                     val brdfLut = texture2d("tBrdfLut")
                     val reflectionStrength = uniformFloat4("uReflectionStrength").rgb
                     val reflectionMaps = if (cfg.isTextureReflection) {
-                        textureArrayCube("tReflectionMaps", 2).value
+                        List(2) { textureCube("tReflectionMap_$it") }
                     } else {
                         null
                     }

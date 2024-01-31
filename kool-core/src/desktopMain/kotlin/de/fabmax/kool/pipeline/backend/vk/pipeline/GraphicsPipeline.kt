@@ -329,14 +329,7 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
                     binding(b.bindingIndex)
                     descriptorType(b.type.intType())
                     stageFlags(b.stages.fold(0) { flags, stage -> flags or stage.bitValue() })
-
-                    val arraySize = when (b) {
-                        is Texture2dLayout -> b.arraySize
-                        is Texture3dLayout -> b.arraySize
-                        is TextureCubeLayout -> b.arraySize
-                        else -> 1
-                    }
-                    descriptorCount(arraySize)
+                    descriptorCount(1)
                 }
             }
         }
