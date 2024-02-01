@@ -12,6 +12,8 @@ class WgpuLoadedTexture(
     override val depth: Int = texture.gpuTexture.depthOrArrayLayers
 
     override var isReleased: Boolean = false
+        private set
+
     override fun readTexturePixels(targetData: TextureData) {
         TODO("Not yet implemented")
     }

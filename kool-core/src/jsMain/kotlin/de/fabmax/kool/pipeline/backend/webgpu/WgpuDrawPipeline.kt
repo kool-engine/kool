@@ -229,7 +229,6 @@ class WgpuDrawPipeline(
             .map { it.texture }
             .filter { it?.loadingState != Texture.LoadingState.LOADED }
             .forEach {
-                println("not loaded: ${it?.name}")
                 if (it == null || !checkLoadingState(it)) {
                     isComplete = false
                 }

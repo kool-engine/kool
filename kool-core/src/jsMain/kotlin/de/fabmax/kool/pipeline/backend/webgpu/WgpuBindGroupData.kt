@@ -17,9 +17,17 @@ class WgpuBindGroupData(
     private val device: GPUDevice get() = backend.device
 
     private val bufferBindings = mutableListOf<BufferBinding>()
+    private val textureBindings = mutableListOf<TextureBinding>()
     private var bindGroup: GPUBindGroup? = null
 
     fun bind(encoder: GPURenderPassEncoder, bindGroupData: BindGroupData, renderPass: RenderPass) {
+        textureBindings.forEach { tex ->
+            if (tex.binding.texture?.loadedTexture !== tex.loadedTex) {
+                // underlying gpu texture has changed, e.g. because render attachment of a render pass was recreated
+                bindGroupData.isDirty = true
+            }
+        }
+
         if (bindGroup == null || bindGroupData.isDirty) {
             bindGroupData.isDirty = false
             createBindGroup(renderPass)
@@ -40,15 +48,13 @@ class WgpuBindGroupData(
     private fun createBindGroup(renderPass: RenderPass) {
         bufferBindings.forEach { it.gpuBuffer.release() }
         bufferBindings.clear()
+        textureBindings.clear()
+
         val bindGroupEntries = mutableListOf<GPUBindGroupEntry>()
 
         data.bindings.forEach { binding ->
             when (binding) {
-                is BindGroupData.UniformBufferBindingData -> {
-                    val (bufferBinding, entry) = binding.makeEntry(renderPass)
-                    bufferBindings += bufferBinding
-                    bindGroupEntries += entry
-                }
+                is BindGroupData.UniformBufferBindingData -> bindGroupEntries += binding.makeEntry(renderPass)
                 is BindGroupData.Texture1dBindingData -> bindGroupEntries += binding.makeTexture1dEntry()
                 is BindGroupData.Texture2dBindingData -> bindGroupEntries += binding.makeTexture2dEntry()
 
@@ -66,7 +72,7 @@ class WgpuBindGroupData(
         )
     }
 
-    private fun BindGroupData.UniformBufferBindingData.makeEntry(renderPass: RenderPass): Pair<BufferBinding, GPUBindGroupEntry> {
+    private fun BindGroupData.UniformBufferBindingData.makeEntry(renderPass: RenderPass): GPUBindGroupEntry {
         val location = locations[layout]
         val bufferLayout = Std140BufferLayout(layout.uniforms)
         val gpuBuffer = backend.createBuffer(
@@ -77,7 +83,8 @@ class WgpuBindGroupData(
             ),
             "scene: ${renderPass.parentScene?.name}, render-pass: ${renderPass.name}"
         )
-        return BufferBinding(this, bufferLayout, gpuBuffer) to GPUBindGroupEntry(location.binding, GPUBufferBinding(gpuBuffer.buffer))
+        bufferBindings += BufferBinding(this, bufferLayout, gpuBuffer)
+        return GPUBindGroupEntry(location.binding, GPUBufferBinding(gpuBuffer.buffer))
     }
 
     private fun BindGroupData.Texture1dBindingData.makeTexture1dEntry(): List<GPUBindGroupEntry> {
@@ -92,6 +99,7 @@ class WgpuBindGroupData(
             minFilter = samplerSettings.minFilter.wgpu,
         )
 
+        textureBindings += TextureBinding(this, loadedTex)
         return listOf(
             GPUBindGroupEntry(location.binding, sampler),
             GPUBindGroupEntry(location.binding + 1, loadedTex.texture.gpuTexture.createView(dimension = GPUTextureViewDimension.view1d))
@@ -106,11 +114,7 @@ class WgpuBindGroupData(
         val maxAnisotropy = if (tex.props.generateMipMaps &&
             samplerSettings.minFilter == FilterMethod.LINEAR &&
             samplerSettings.magFilter == FilterMethod.LINEAR
-        ) {
-            samplerSettings.maxAnisotropy
-        } else {
-            1
-        }
+        ) samplerSettings.maxAnisotropy else 1
         val compare = if (layout.isDepthTexture) GPUCompareFunction.less else null
 
         val sampler = device.createSampler(
@@ -123,6 +127,7 @@ class WgpuBindGroupData(
             compare = compare
         )
 
+        textureBindings += TextureBinding(this, loadedTex)
         return listOf(
             GPUBindGroupEntry(location.binding, sampler),
             GPUBindGroupEntry(location.binding + 1, loadedTex.texture.gpuTexture.createView())
@@ -139,5 +144,10 @@ class WgpuBindGroupData(
         val binding: BindGroupData.UniformBufferBindingData,
         val layout: Std140BufferLayout,
         val gpuBuffer: WgpuBufferResource
+    )
+
+    private data class TextureBinding(
+        val binding: BindGroupData.TextureBindingData<*>,
+        val loadedTex: WgpuLoadedTexture
     )
 }
