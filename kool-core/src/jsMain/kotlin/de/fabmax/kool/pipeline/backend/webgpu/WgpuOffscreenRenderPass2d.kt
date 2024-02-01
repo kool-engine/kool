@@ -1,9 +1,7 @@
 package de.fabmax.kool.pipeline.backend.webgpu
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.pipeline.OffscreenPass2dImpl
-import de.fabmax.kool.pipeline.OffscreenRenderPass2d
-import de.fabmax.kool.pipeline.Texture
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.releaseWith
 
@@ -12,7 +10,7 @@ class WgpuOffscreenRenderPass2d(
     numSamples: Int,
     backend: RenderBackendWebGpu
 ) : WgpuRenderPass(
-    parentPass.depthTexture?.let { GPUTextureFormat.depth32float },
+    GPUTextureFormat.depth32float,
     numSamples,
     backend
 ), OffscreenPass2dImpl {
@@ -24,20 +22,27 @@ class WgpuOffscreenRenderPass2d(
     private val colorAttachments = List(parentPass.numColorTextures) {
         RenderAttachment(parentPass.colorTextures[it], false, "${parentPass.name}.color[$it]")
     }
-    private val depthAttachment = parentPass.depthTexture?.let {
-        RenderAttachment(it, true, "${parentPass.name}.depth")
-    }
+    private val depthAttachment: RenderAttachment
 
     private var copySrcFlag = 0
     private val isCopyColor: Boolean
         get() = parentPass.copyTargetsColor.isNotEmpty()
 
     init {
+        val depthTex = when (parentPass.depthAttachment) {
+            is OffscreenRenderPass.RenderBufferDepthAttachment -> Texture2d(
+                TextureProps(generateMipMaps = false, defaultSamplerSettings = SamplerSettings().clamped()),
+                "${parentPass.name}_depth"
+            )
+            is OffscreenRenderPass.TextureDepthAttachment -> parentPass.depthTexture!!
+        }
+        depthAttachment = RenderAttachment(depthTex, true,  depthTex.name)
         releaseWith(parentPass)
     }
 
     override fun applySize(width: Int, height: Int) {
         colorAttachments.forEach { it.applySize(width, height) }
+        depthAttachment.applySize(width, height)
     }
 
     override fun release() { }
@@ -56,7 +61,7 @@ class WgpuOffscreenRenderPass2d(
             )
         }.toTypedArray()
 
-        render(parentPass, gpuColorAttachments, depthAttachment?.view)
+        render(parentPass, gpuColorAttachments, depthAttachment.view)
 
         if (parentPass.copyTargetsColor.isNotEmpty()) {
             val encoder = device.createCommandEncoder()

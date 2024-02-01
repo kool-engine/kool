@@ -25,11 +25,11 @@ open class DepthShader(val cfg: Config) : KslShader(depthShaderProg(cfg), cfg.pi
         private fun depthShaderProg(cfg: Config) = KslProgram("Depth shader").apply {
             var alphaMaskUv: KslInterStageVector<KslFloat2, KslFloat1>? = null
             var viewNormal: KslInterStageVector<KslFloat3, KslFloat1>? = null
+            var linearDepth: KslInterStageScalar<KslFloat1>? = null
 
             vertexStage {
                 main {
                     val camData = cameraData()
-                    val viewProj = mat4Var(camData.viewProjMat)
                     val vertexBlock = vertexTransformBlock(cfg.vertexCfg) {
                         inModelMat(modelMatrix().matrix)
                         inLocalPos(vertexAttribFloat3(Attribute.POSITIONS.name))
@@ -39,8 +39,14 @@ open class DepthShader(val cfg: Config) : KslShader(depthShaderProg(cfg), cfg.pi
                         }
                     }
                     val worldPos = float3Port("worldPos", vertexBlock.outWorldPos)
-                    outPosition set viewProj * float4Value(worldPos, 1f)
+                    val viewPos = float4Var(camData.viewMat * float4Value(worldPos, 1f.const))
+                    outPosition set camData.projMat * viewPos
 
+                    if (cfg.outputLinearDepth) {
+                        linearDepth = interStageFloat1("linearDepth").apply {
+                            input set -viewPos.z
+                        }
+                    }
                     if (cfg.alphaMode is AlphaMode.Mask) {
                         alphaMaskUv = interStageFloat2("alphaMaskUv").apply {
                             input set vertexAttribFloat2(Attribute.TEXTURE_COORDS.name)
@@ -65,7 +71,7 @@ open class DepthShader(val cfg: Config) : KslShader(depthShaderProg(cfg), cfg.pi
                     if (cfg.outputNormals) {
                         var w: KslExprFloat1 = 1f.const
                         if (cfg.outputLinearDepth) {
-                            w = inFragPosition.z / inFragPosition.w
+                            w = linearDepth!!.output
                         }
                         val normal = float3Var(normalize(viewNormal!!.output))
                         `if` (!inIsFrontFacing) {
@@ -73,7 +79,7 @@ open class DepthShader(val cfg: Config) : KslShader(depthShaderProg(cfg), cfg.pi
                         }
                         colorOutput(float4Value(normal, -w))
                     } else if (cfg.outputLinearDepth) {
-                        val d = inFragPosition.z / inFragPosition.w
+                        val d = linearDepth!!.output
                         colorOutput(float4Value(-d, 1f.const, 1f.const, 1f.const))
                     } else {
                         colorOutput(float4Value(1f, 1f, 1f, 1f))

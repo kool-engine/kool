@@ -31,18 +31,6 @@ class HelloWorld : DemoScene("Hello World") {
             }
         }
 
-
-//        addTextureMesh {
-//            generate {
-//                centeredRect {
-//                    size.set(3f, 3f)
-//                }
-//            }
-//            shader = KslUnlitShader {
-//                color { textureColor(ctx.defaultPbrBrdfLut) }
-//            }
-//        }
-
         lighting.singleDirectionalLight {
             setup(Vec3f(-1f, -1f, -1f))
             setColor(Color.WHITE, 5f)

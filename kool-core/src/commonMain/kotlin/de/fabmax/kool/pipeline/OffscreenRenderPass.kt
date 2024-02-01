@@ -131,7 +131,7 @@ abstract class OffscreenRenderPass(config: Config) : RenderPass(config.name) {
         var drawMipLevels = true
 
         var colorAttachment: ColorAttachment = RenderBufferColorAttachment(TexFormat.RGBA, false)
-        var depthAttachment: DepthAttachment = RenderBufferDepthAttachment()
+        var depthAttachment: DepthAttachment = RenderBufferDepthAttachment
 
         fun size(size: Vec2i) = size(size.x, size.y)
         fun size(size: Vec3i) = size(size.x, size.y, size.z)
@@ -176,7 +176,7 @@ abstract class OffscreenRenderPass(config: Config) : RenderPass(config.name) {
         }
 
         fun depthTargetRenderBuffer() {
-            depthAttachment = RenderBufferDepthAttachment()
+            depthAttachment = RenderBufferDepthAttachment
         }
 
         fun depthTargetTexture(isUsedAsShadowMap: Boolean) {
@@ -197,7 +197,7 @@ abstract class OffscreenRenderPass(config: Config) : RenderPass(config.name) {
 
     sealed interface DepthAttachment
 
-    class RenderBufferDepthAttachment : DepthAttachment
+    data object RenderBufferDepthAttachment : DepthAttachment
 
     class TextureDepthAttachment(val isUsedAsShadowMap: Boolean) : DepthAttachment {
         val attachment = TextureAttachmentConfigBuilder().apply {

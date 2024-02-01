@@ -1,5 +1,6 @@
 package de.fabmax.kool.pipeline.ao
 
+import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec2f
@@ -10,6 +11,7 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenShaderPipelineCfg
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
+import de.fabmax.kool.pipeline.backend.NdcYDirection
 import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.addMesh
@@ -163,7 +165,7 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
                     `if`(linDistance lt sampleR * 200f.const) {
                         // compute kernel rotation
                         val noiseCoord = float2Var(uv.output * uNoiseScale)
-                        val rotVec = float3Var(sampleTexture(noiseTex, noiseCoord).xyz * 2f.const - 1f.const)
+                        val rotVec = float3Var(sampleTexture(noiseTex, noiseCoord, 0f.const).xyz * 2f.const - 1f.const)
                         val tangent = float3Var(normalize(rotVec - normal * dot(rotVec, normal)))
                         val bitangent = float3Var(cross(normal, tangent))
                         val tbn = mat3Var(mat3Value(tangent, bitangent, normal))
@@ -172,6 +174,9 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
                         val occlusionDiv = float1Var(0f.const)
                         fori(0.const, uKernelSize) { i ->
                             val kernel = float3Var(tbn * uKernel[i])
+                            if (KoolSystem.requireContext().backend.ndcYDirection == NdcYDirection.TOP_TO_BOTTOM) {
+                                kernel.y *= (-1f).const
+                            }
                             val samplePos = float3Var(origin + kernel * sampleR)
                             val sampleProj = float4Var(uProj * float4Value(samplePos, 1f.const))
                             sampleProj.xyz set sampleProj.xyz / sampleProj.w
@@ -180,7 +185,7 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
                                     (sampleProj.y gt (-1f).const) and (sampleProj.y lt 1f.const)) {
 
                                 val sampleUv = float2Var(sampleProj.xy * 0.5f.const + 0.5f.const)
-                                val sampleDepth = sampleTexture(depthTex, sampleUv).float1(depthComponent)
+                                val sampleDepth = sampleTexture(depthTex, sampleUv, 0f.const).float1(depthComponent)
                                 val rangeCheck = float1Var(1f.const - smoothStep(0f.const, 1f.const, abs(origin.z - sampleDepth) / (4f.const * sampleR)))
                                 val occlusionInc = float1Var(clamp((sampleDepth - (samplePos.z + uBias)) * 10f.const, 0f.const, 1f.const))
                                 occlusion += occlusionInc * rangeCheck

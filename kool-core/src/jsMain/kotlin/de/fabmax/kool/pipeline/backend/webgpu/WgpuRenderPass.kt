@@ -37,7 +37,6 @@ abstract class WgpuRenderPass(
 
             val encoder = commandEncoder.beginRenderPass(colorAttachments, depthAttachment, renderPass.name)
             encoder.setViewport(viewport.x.toFloat(), viewport.y.toFloat(), viewport.width.toFloat(), viewport.height.toFloat(), 0f, 1f)
-            encoder.setScissorRect(viewport.x, viewport.y, viewport.width, viewport.height)
             for (cmd in view.drawQueue.commands) {
                 if (cmd.geometry.numIndices == 0) continue
                 if (cmd.pipeline == null) continue
