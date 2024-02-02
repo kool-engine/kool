@@ -183,7 +183,7 @@ class SingleColorTexture(color: Color) : Texture2d(
 
         private val colorData = mutableMapOf<Color, TextureData2d>()
 
-        private fun getColorTextureData(color: Color): TextureData2d {
+        fun getColorTextureData(color: Color): TextureData2d {
             return colorData.getOrPut(color) { TextureData2d.singleColor(color) }
         }
     }
@@ -412,8 +412,22 @@ open class TextureData3d(override val data: Buffer, width: Int, height: Int, dep
     }
 }
 
-class TextureDataCube(val front: TextureData, val back: TextureData, val left: TextureData,
-                      val right: TextureData, val up: TextureData, val down: TextureData) : TextureData() {
+class TextureDataCube(
+    val front: TextureData,
+    val back: TextureData,
+    val left: TextureData,
+    val right: TextureData,
+    val up: TextureData,
+    val down: TextureData
+) : TextureData() {
+
+    val posX: TextureData get() = right
+    val negX: TextureData get() = left
+    val posY: TextureData get() = up
+    val negY: TextureData get() = down
+    val posZ: TextureData get() = back
+    val negZ: TextureData get() = front
+
     init {
         width = front.width
         height = front.height

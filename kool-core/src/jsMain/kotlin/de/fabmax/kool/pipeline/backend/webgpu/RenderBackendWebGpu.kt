@@ -168,6 +168,8 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         when (tex) {
             is Texture1d -> textureLoader.loadTexture1d(tex, data)
             is Texture2d -> textureLoader.loadTexture2d(tex, data)
+            is Texture3d -> textureLoader.loadTexture3d(tex, data)
+            is TextureCube -> textureLoader.loadTextureCube(tex, data)
             else -> error("Unsupported texture type: $tex")
         }
     }

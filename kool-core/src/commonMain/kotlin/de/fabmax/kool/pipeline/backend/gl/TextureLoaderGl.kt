@@ -64,12 +64,12 @@ object TextureLoaderGl {
         val loadedTex = LoadedTextureGl(gl.TEXTURE_CUBE_MAP, gl.createTexture(), backend, tex, img.estimateTexSize())
         loadedTex.setSize(img.width, img.height, 1)
         loadedTex.bind()
-        gl.texImage2d(gl.TEXTURE_CUBE_MAP_POSITIVE_X, img.right)
-        gl.texImage2d(gl.TEXTURE_CUBE_MAP_NEGATIVE_X, img.left)
-        gl.texImage2d(gl.TEXTURE_CUBE_MAP_POSITIVE_Y, img.up)
-        gl.texImage2d(gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, img.down)
-        gl.texImage2d(gl.TEXTURE_CUBE_MAP_POSITIVE_Z, img.back)
-        gl.texImage2d(gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, img.front)
+        gl.texImage2d(gl.TEXTURE_CUBE_MAP_POSITIVE_X, img.posX)
+        gl.texImage2d(gl.TEXTURE_CUBE_MAP_NEGATIVE_X, img.negX)
+        gl.texImage2d(gl.TEXTURE_CUBE_MAP_POSITIVE_Y, img.posY)
+        gl.texImage2d(gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, img.negY)
+        gl.texImage2d(gl.TEXTURE_CUBE_MAP_POSITIVE_Z, img.posZ)
+        gl.texImage2d(gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, img.negZ)
         if (tex.props.generateMipMaps) {
             gl.generateMipmap(gl.TEXTURE_CUBE_MAP)
         }

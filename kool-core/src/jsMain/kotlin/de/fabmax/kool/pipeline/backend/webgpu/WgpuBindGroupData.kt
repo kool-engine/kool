@@ -57,9 +57,9 @@ class WgpuBindGroupData(
                 is BindGroupData.UniformBufferBindingData -> bindGroupEntries += binding.makeEntry(renderPass)
                 is BindGroupData.Texture1dBindingData -> bindGroupEntries += binding.makeTexture1dEntry()
                 is BindGroupData.Texture2dBindingData -> bindGroupEntries += binding.makeTexture2dEntry()
+                is BindGroupData.Texture3dBindingData -> bindGroupEntries += binding.makeTexture3dEntry()
+                is BindGroupData.TextureCubeBindingData -> bindGroupEntries += binding.makeTextureCubeEntry()
 
-                is BindGroupData.Texture3dBindingData -> TODO("Texture3dBindingData")
-                is BindGroupData.TextureCubeBindingData -> TODO("TextureCubeBindingData")
                 is BindGroupData.StorageTexture1dBindingData -> TODO("StorageTexture1dBindingData")
                 is BindGroupData.StorageTexture2dBindingData -> TODO("StorageTexture2dBindingData")
                 is BindGroupData.StorageTexture3dBindingData -> TODO("StorageTexture3dBindingData")
@@ -124,13 +124,58 @@ class WgpuBindGroupData(
             minFilter = samplerSettings.minFilter.wgpu,
             mipmapFilter = if (tex.props.generateMipMaps) GPUMipmapFilterMode.linear else GPUMipmapFilterMode.nearest,
             maxAnisotropy = maxAnisotropy,
-            compare = compare
+            compare = compare,
         )
 
         textureBindings += TextureBinding(this, loadedTex)
         return listOf(
             GPUBindGroupEntry(location.binding, sampler),
             GPUBindGroupEntry(location.binding + 1, loadedTex.texture.gpuTexture.createView())
+        )
+    }
+
+    private fun BindGroupData.Texture3dBindingData.makeTexture3dEntry(): List<GPUBindGroupEntry> {
+        val location = locations[layout]
+        val tex = checkNotNull(texture) { "Cannot create texture binding from null texture" }
+        val loadedTex = checkNotNull(tex.loadedTexture as WgpuLoadedTexture?) { "Cannot create texture binding from null texture" }
+        val samplerSettings = sampler ?: tex.props.defaultSamplerSettings
+
+        val sampler = device.createSampler(
+            addressModeU = samplerSettings.addressModeU.wgpu,
+            addressModeV = samplerSettings.addressModeV.wgpu,
+            addressModeW = samplerSettings.addressModeW.wgpu,
+            magFilter = samplerSettings.magFilter.wgpu,
+            minFilter = samplerSettings.minFilter.wgpu,
+            mipmapFilter = if (tex.props.generateMipMaps) GPUMipmapFilterMode.linear else GPUMipmapFilterMode.nearest,
+        )
+
+        textureBindings += TextureBinding(this, loadedTex)
+        return listOf(
+            GPUBindGroupEntry(location.binding, sampler),
+            GPUBindGroupEntry(location.binding + 1, loadedTex.texture.gpuTexture.createView())
+        )
+    }
+
+    private fun BindGroupData.TextureCubeBindingData.makeTextureCubeEntry(): List<GPUBindGroupEntry> {
+        val location = locations[layout]
+        val tex = checkNotNull(texture) { "Cannot create texture binding from null texture" }
+        val loadedTex = checkNotNull(tex.loadedTexture as WgpuLoadedTexture?) { "Cannot create texture binding from null texture" }
+        val samplerSettings = sampler ?: tex.props.defaultSamplerSettings
+        val compare = if (layout.isDepthTexture) GPUCompareFunction.less else null
+
+        val sampler = device.createSampler(
+            addressModeU = samplerSettings.addressModeU.wgpu,
+            addressModeV = samplerSettings.addressModeV.wgpu,
+            magFilter = samplerSettings.magFilter.wgpu,
+            minFilter = samplerSettings.minFilter.wgpu,
+            mipmapFilter = if (tex.props.generateMipMaps) GPUMipmapFilterMode.linear else GPUMipmapFilterMode.nearest,
+            compare = compare,
+        )
+
+        textureBindings += TextureBinding(this, loadedTex)
+        return listOf(
+            GPUBindGroupEntry(location.binding, sampler),
+            GPUBindGroupEntry(location.binding + 1, loadedTex.texture.gpuTexture.createView(dimension = GPUTextureViewDimension.viewCube))
         )
     }
 

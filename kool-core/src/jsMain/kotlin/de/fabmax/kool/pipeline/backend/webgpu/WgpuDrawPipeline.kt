@@ -48,9 +48,9 @@ class WgpuDrawPipeline(
                         is UniformBufferLayout -> add(makeLayoutEntryBuffer(location, visibility))
                         is Texture1dLayout -> addAll(makeLayoutEntriesTexture(binding, location, visibility, GPUTextureViewDimension.view1d))
                         is Texture2dLayout -> addAll(makeLayoutEntriesTexture(binding, location, visibility, GPUTextureViewDimension.view2d))
+                        is Texture3dLayout -> addAll(makeLayoutEntriesTexture(binding, location, visibility, GPUTextureViewDimension.view3d))
+                        is TextureCubeLayout -> addAll(makeLayoutEntriesTexture(binding, location, visibility, GPUTextureViewDimension.viewCube))
 
-                        is Texture3dLayout -> TODO("Texture3dLayout")
-                        is TextureCubeLayout -> TODO("TextureCubeLayout")
                         is StorageTexture1dLayout -> TODO("StorageTexture1dLayout")
                         is StorageTexture2dLayout -> TODO("StorageTexture2dLayout")
                         is StorageTexture3dLayout -> TODO("StorageTexture3dLayout")
