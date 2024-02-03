@@ -8,7 +8,6 @@ import de.fabmax.kool.input.PlatformInputJvm
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.pipeline.backend.RenderBackendJvm
 import de.fabmax.kool.pipeline.backend.gl.RenderBackendGlImpl
-import de.fabmax.kool.pipeline.backend.vk.VkRenderBackend
 import de.fabmax.kool.util.RenderLoopCoroutineDispatcher
 import org.lwjgl.glfw.GLFW.*
 import java.awt.Desktop
@@ -77,7 +76,8 @@ class Lwjgl3Context : KoolContext() {
 
     init {
         backend = if (KoolSystem.configJvm.renderBackend == KoolConfigJvm.Backend.VULKAN) {
-            VkRenderBackend(this)
+            TODO("Vulkan backend is currently under maintenance")
+            //VkRenderBackend(this)
         } else {
             RenderBackendGlImpl(this)
         }

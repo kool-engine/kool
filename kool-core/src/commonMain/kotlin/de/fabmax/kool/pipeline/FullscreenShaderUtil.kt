@@ -1,7 +1,7 @@
 package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.KoolSystem
-import de.fabmax.kool.modules.ksl.blocks.mvpMatrix
+import de.fabmax.kool.modules.ksl.blocks.cameraData
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.backend.NdcYDirection
 import de.fabmax.kool.scene.Mesh
@@ -49,7 +49,7 @@ object FullscreenShaderUtil {
             main {
                 val vertexPos = float3Var(vertexAttribFloat3(Attribute.POSITIONS.name))
                 localPos?.let { it.input set vertexPos }
-                outPosition set mvpMatrix().matrix * float4Value(vertexPos, 1f.const)
+                outPosition set cameraData().viewProjMat * float4Value(vertexPos, 1f.const)
             }
         }
     }

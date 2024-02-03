@@ -1,6 +1,5 @@
 package de.fabmax.kool.pipeline
 
-import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.deg
@@ -20,8 +19,11 @@ open class OffscreenRenderPassCube(drawNode: Node, config: Config) : OffscreenRe
         View(it.toString(), drawNode, cam, arrayOf(Color.BLACK)).apply { setFullscreenViewport() }
     }
 
-    val mainView: View get() = views[0]
-    var drawNode: Node by mainView::drawNode
+    var drawNode: Node = drawNode
+        set(value) {
+            field = value
+            views.forEach { it.drawNode = value }
+        }
 
     val depthTexture = makeDepthAttachmentTex()
     val colorTextures = makeColorAttachmentTexs()
@@ -44,6 +46,7 @@ open class OffscreenRenderPassCube(drawNode: Node, config: Config) : OffscreenRe
         }
     }
 
+    // fixme: replace copyColor() by releaseKeepingTextures()
     fun copyColor(): TextureCube {
         val tex = TextureCube(getColorTexProps(), "$name-${copyTargetsColor.size}")
         copyTargetsColor += tex
@@ -104,12 +107,14 @@ open class OffscreenRenderPassCube(drawNode: Node, config: Config) : OffscreenRe
     }
 
     enum class ViewDirection(val index: Int, val lookAt: Vec3f, val up: Vec3f) {
-        FRONT(0, Vec3f( 0f,  0f,  1f), Vec3f.NEG_Y_AXIS),
-        BACK(1, Vec3f( 0f,  0f, -1f), Vec3f.NEG_Y_AXIS),
-        LEFT(2, Vec3f(-1f,  0f,  0f), Vec3f.NEG_Y_AXIS),
-        RIGHT(3, Vec3f( 1f,  0f,  0f), Vec3f.NEG_Y_AXIS),
-        UP(4, Vec3f( 0f,  1f,  0f), Vec3f.Z_AXIS),
-        DOWN(5, Vec3f( 0f, -1f,  0f), Vec3f.NEG_Z_AXIS),
+        // order of view directions matches the face order of web gpu cubes (notice neg-y before pos-y)
+        // OpenGL cube render pass maps the view order based on ViewDirection.index
+        POS_X(0, Vec3f( 1f,  0f,  0f), Vec3f.NEG_Y_AXIS),
+        NEG_X(1, Vec3f(-1f,  0f,  0f), Vec3f.NEG_Y_AXIS),
+        NEG_Y(2, Vec3f( 0f, -1f,  0f), Vec3f.NEG_Z_AXIS),
+        POS_Y(3, Vec3f( 0f,  1f,  0f), Vec3f.Z_AXIS),
+        POS_Z(4, Vec3f( 0f,  0f,  1f), Vec3f.NEG_Y_AXIS),
+        NEG_Z(5, Vec3f( 0f,  0f, -1f), Vec3f.NEG_Y_AXIS),
     }
 }
 
@@ -119,6 +124,4 @@ interface OffscreenPassCubeImpl {
     fun applySize(width: Int, height: Int)
 
     fun release()
-
-    fun draw(ctx: KoolContext)
 }

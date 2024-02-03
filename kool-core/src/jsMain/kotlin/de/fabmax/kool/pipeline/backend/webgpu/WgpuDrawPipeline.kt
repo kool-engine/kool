@@ -15,7 +15,7 @@ class WgpuDrawPipeline(
     val drawPipeline: DrawPipeline,
     private val vertexShaderModule: GPUShaderModule,
     private val fragmentShaderModule: GPUShaderModule,
-    private val renderPass: WgpuRenderPass,
+    private val renderPass: WgpuRenderPass<*>,
     private val backend: RenderBackendWebGpu,
 ): BaseReleasable(), PipelineBackend {
     private val device: GPUDevice get() = backend.device

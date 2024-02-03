@@ -1,6 +1,6 @@
 package de.fabmax.kool.pipeline.backend.vk
 
-import de.fabmax.kool.KoolContext
+import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.vk.util.vkFormat
 import de.fabmax.kool.platform.Lwjgl3Context
@@ -23,9 +23,9 @@ class VkOffscreenPassCube(val parentPass: OffscreenRenderPassCube) : OffscreenPa
     lateinit var imageView: ImageView
     var sampler: Long = 0L
 
-    override fun draw(ctx: KoolContext) {
+    fun draw() {
         if (!isCreated && !isCreationBlocked) {
-            create(ctx as Lwjgl3Context)
+            create()
         }
     }
 
@@ -180,8 +180,8 @@ class VkOffscreenPassCube(val parentPass: OffscreenRenderPassCube) : OffscreenPa
         }
     }
 
-    private fun create(ctx: Lwjgl3Context) {
-        val sys = (ctx.backend as VkRenderBackend).vkSystem
+    private fun create() {
+        val sys = (KoolSystem.requireContext().backend as VkRenderBackend).vkSystem
         val pass = parentPass
         val cfg = (pass.colorAttachment as OffscreenRenderPass.TextureColorAttachment).attachments[0]
         val rp = VkOffscreenRenderPass(sys, pass.size.x, pass.size.y, true, cfg.colorFormat.vkFormat)
@@ -265,12 +265,12 @@ class VkOffscreenPassCube(val parentPass: OffscreenRenderPassCube) : OffscreenPa
     companion object {
         private val VIEW_TO_CUBE_LAYER_MAP = IntArray(6) { i ->
             when (i) {
-                OffscreenRenderPassCube.ViewDirection.RIGHT.index -> 0
-                OffscreenRenderPassCube.ViewDirection.LEFT.index -> 1
-                OffscreenRenderPassCube.ViewDirection.UP.index -> 2
-                OffscreenRenderPassCube.ViewDirection.DOWN.index -> 3
-                OffscreenRenderPassCube.ViewDirection.FRONT.index -> 4
-                OffscreenRenderPassCube.ViewDirection.BACK.index -> 5
+                OffscreenRenderPassCube.ViewDirection.POS_X.index -> 0
+                OffscreenRenderPassCube.ViewDirection.NEG_X.index -> 1
+                OffscreenRenderPassCube.ViewDirection.POS_Y.index -> 2
+                OffscreenRenderPassCube.ViewDirection.NEG_Y.index -> 3
+                OffscreenRenderPassCube.ViewDirection.POS_Z.index -> 4
+                OffscreenRenderPassCube.ViewDirection.NEG_Z.index -> 5
                 else -> 0
             }
         }

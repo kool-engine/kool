@@ -1,6 +1,5 @@
 package de.fabmax.kool.pipeline
 
-import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Node
@@ -47,6 +46,7 @@ open class OffscreenRenderPass2d(drawNode: Node, config: Config) : OffscreenRend
         return view
     }
 
+    // fixme: replace copyColor() by releaseKeepingTextures()
     fun copyColor(): Texture2d {
         val tex = Texture2d(getColorTexProps(), "$name-copy-${copyTargetsColor.size}")
         copyTargetsColor += tex
@@ -113,6 +113,4 @@ interface OffscreenPass2dImpl {
     fun applySize(width: Int, height: Int)
 
     fun release()
-
-    fun draw(ctx: KoolContext)
 }

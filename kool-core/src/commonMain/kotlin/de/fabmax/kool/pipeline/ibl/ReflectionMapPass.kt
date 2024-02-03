@@ -1,15 +1,18 @@
 package de.fabmax.kool.pipeline.ibl
 
+import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenCubeVertexStage
+import de.fabmax.kool.pipeline.backend.NdcYDirection
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.addMesh
 import de.fabmax.kool.util.launchDelayed
 import de.fabmax.kool.util.logD
+import de.fabmax.kool.util.releaseWith
 
 class ReflectionMapPass private constructor(parentScene: Scene, hdriMap: Texture2d?, cubeMap: TextureCube?, size: Int) :
     OffscreenRenderPassCube(Node(), renderPassConfig {
@@ -35,7 +38,18 @@ class ReflectionMapPass private constructor(parentScene: Scene, hdriMap: Texture
             }
         }
 
-        onSetupMipLevel = { mipLevel, _ ->
+        val bindGroups = mutableMapOf<Int, BindGroupData>()
+        onSetupMipLevel { mipLevel ->
+            // use individual bind groups for each mip-level to avoid changing uniform buffer contents while
+            // previous mip-levels are not yet drawn
+            val pipeline = reflectionMapShader.createdPipeline!!
+            pipeline.pipelineData = bindGroups.getOrPut(mipLevel) {
+                // previous pipelineData won't be auto-released with the pipeline itself (because it is replaced by
+                // the new one) -> release it with the render pass instead
+                pipeline.pipelineData.releaseWith(this)
+                pipeline.pipelineData.copy()
+            }
+            // after mip-level bind group is set we can safely set the mip-level specific uniform values
             reflectionMapShader.uRoughness = mipLevel.toFloat() / (mipLevels - 1) * 0.55f
         }
 
@@ -68,6 +82,9 @@ class ReflectionMapPass private constructor(parentScene: Scene, hdriMap: Texture
 
                 main {
                     val normal = float3Var(normalize(localPos.output))
+                    if (KoolSystem.requireContext().backend.ndcYDirection == NdcYDirection.TOP_TO_BOTTOM) {
+                        normal.y *= (-1f).const
+                    }
 
                     `if`(uRoughness eq 0f.const) {
                         colorOutput(sampleEnvMap(normal, 0f.const))
@@ -95,8 +112,8 @@ class ReflectionMapPass private constructor(parentScene: Scene, hdriMap: Texture
         },
         FullscreenShaderUtil.fullscreenShaderPipelineCfg
     ) {
-        val hdri2dTex by texture2d("hdri2d", hdri2d)
-        val hdriCubeTex by textureCube("hdriCube", hdriCube)
+        var hdri2dTex by texture2d("hdri2d", hdri2d)
+        var hdriCubeTex by textureCube("hdriCube", hdriCube)
         var uRoughness by uniform1f("uRoughness", 0f)
     }
 

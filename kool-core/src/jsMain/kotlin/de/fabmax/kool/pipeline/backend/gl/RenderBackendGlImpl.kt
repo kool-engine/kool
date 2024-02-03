@@ -65,7 +65,7 @@ class RenderBackendGlImpl(ctx: KoolContext, canvas: HTMLCanvasElement) : RenderB
             val ctx = KoolSystem.requireContext()
             blitTempFrameBuffer.blitRenderPass = src
             blitTempFrameBuffer.setSize(src.width, src.height)
-            blitTempFrameBuffer.impl.draw(ctx)
+            blitTempFrameBuffer.impl.draw()
 
             blitScene.mainRenderPass.renderPass.update(ctx)
             blitScene.mainRenderPass.renderPass.collectDrawCommands(ctx)

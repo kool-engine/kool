@@ -5,7 +5,7 @@ import de.fabmax.kool.configJs
 import de.fabmax.kool.scene.Scene
 
 class WgpuScreenRenderPass(backend: RenderBackendWebGpu) :
-    WgpuRenderPass(GPUTextureFormat.depth32float, KoolSystem.configJs.numSamples, backend)
+    WgpuRenderPass<Scene.OnscreenSceneRenderPass>(GPUTextureFormat.depth32float, KoolSystem.configJs.numSamples, backend)
 {
     private val canvasContext: GPUCanvasContext
         get() = backend.canvasContext
@@ -23,20 +23,28 @@ class WgpuScreenRenderPass(backend: RenderBackendWebGpu) :
         updateRenderTextures(width, height)
     }
 
-    fun renderScene(scenePass: Scene.OnscreenSceneRenderPass) {
+    fun renderScene(scenePass: Scene.OnscreenSceneRenderPass, encoder: GPUCommandEncoder) {
         if (depthAttachment == null || colorTexture == null) {
             updateRenderTextures(backend.canvas.width, backend.canvas.height)
         }
+        render(scenePass, 1, encoder)
+    }
 
-        val colorAttachment = arrayOf(
+    override fun getRenderAttachments(renderPass: Scene.OnscreenSceneRenderPass, viewIndex: Int, mipLevel: Int): RenderAttachments {
+        val colors = arrayOf(
             GPURenderPassColorAttachment(
                 view = colorTextureView!!,
-                clearValue = scenePass.clearColor?.let { GPUColorDict(it) },
+                clearValue = renderPass.clearColor?.let { GPUColorDict(it) },
                 resolveTarget = canvasContext.getCurrentTexture().createView()
             )
         )
-
-        render(scenePass, colorAttachment, depthAttachmentView)
+        val depth = GPURenderPassDepthStencilAttachment(
+            view = depthAttachmentView!!,
+            depthLoadOp = if (renderPass.views[viewIndex].clearDepth) GPULoadOp.clear else GPULoadOp.load,
+            depthStoreOp = GPUStoreOp.store,
+            depthClearValue = 1f
+        )
+        return RenderAttachments(colors, depth)
     }
 
     private fun updateRenderTextures(width: Int, height: Int) {

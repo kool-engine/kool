@@ -17,6 +17,7 @@ class QueueRenderer(val backend: RenderBackendGl) {
 
     fun renderViews(renderPass: RenderPass, mipLevel: Int = 0) {
         for (i in renderPass.views.indices) {
+            renderPass.setupView(i)
             renderView(renderPass.views[i], mipLevel)
         }
     }

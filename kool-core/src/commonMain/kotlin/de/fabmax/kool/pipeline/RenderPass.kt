@@ -40,7 +40,8 @@ abstract class RenderPass(var name: String) : BaseReleasable() {
 
     val onBeforeCollectDrawCommands = BufferedList<((UpdateEvent) -> Unit)>()
     val onAfterCollectDrawCommands = BufferedList<((UpdateEvent) -> Unit)>()
-    val onAfterDraw = BufferedList<((KoolContext) -> Unit)>()
+    val onAfterDraw = BufferedList<(() -> Unit)>()
+    val onSetupView = BufferedList<((Int) -> Unit)>()
 
     var isProfileTimes = false
     var tUpdate = 0.0
@@ -88,11 +89,34 @@ abstract class RenderPass(var name: String) : BaseReleasable() {
         }
     }
 
-    open fun afterDraw(ctx: KoolContext) {
+    open fun afterDraw() {
         onAfterDraw.update()
         for (i in onAfterDraw.indices) {
-            onAfterDraw[i](ctx)
+            onAfterDraw[i]()
         }
+    }
+
+    open fun setupView(viewIndex: Int) {
+        onSetupView.update()
+        for (i in onSetupView.indices) {
+            onSetupView[i](viewIndex)
+        }
+    }
+
+    fun onAfterDraw(block: () -> Unit) {
+        onAfterDraw += block
+    }
+
+    /**
+     * Executes the given block each time before a specific view of this render pass is rendered. This can
+     * be used to change view specific shader configurations.
+     * However, be aware that, at the time this function is called, previous view passes are enqueued but not yet
+     * executed. This means, you should avoid changing single uniform values of a shader because that would affect
+     * the previous passes as well. Instead, you can and should change the entire pipeline bind-group of a shader
+     * in these cases.
+     */
+    fun onSetupView(block: (Int) -> Unit) {
+        onSetupView += block
     }
 
     override fun toString(): String {

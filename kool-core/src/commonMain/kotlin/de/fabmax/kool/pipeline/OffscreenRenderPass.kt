@@ -1,10 +1,10 @@
 package de.fabmax.kool.pipeline
 
-import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec3i
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.math.Vec3i
 import de.fabmax.kool.math.getNumMipLevels
+import de.fabmax.kool.util.BufferedList
 import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logT
 import de.fabmax.kool.util.logW
@@ -32,13 +32,32 @@ abstract class OffscreenRenderPass(config: Config) : RenderPass(config.name) {
 
     val mipLevels = config.mipLevels
     val drawMipLevels = config.drawMipLevels
-    var onSetupMipLevel: ((Int, KoolContext) -> Unit)? = null
+    val onSetupMipLevel = BufferedList<((Int) -> Unit)>()
 
     val dependencies = mutableListOf<RenderPass>()
     var isEnabled = true
 
     fun dependsOn(renderPass: RenderPass) {
         dependencies += renderPass
+    }
+
+    /**
+     * Executes the given block each time before this render pass is rendered at a specific mip-level. This can
+     * be used to change mip-level specific shader configuration if this render pass is rendered at multiple mip-levels.
+     * However, be aware that, at the time this function is called, previous mip-level passes are enqueued but not yet
+     * executed. This means, you should avoid changing single uniform values of a shader because that would affect
+     * the previous mip-levels as well. Instead, you can and should change the entire pipeline bind-group of a shader
+     * in these cases.
+     */
+    fun onSetupMipLevel(block: (Int) -> Unit) {
+        onSetupMipLevel += block
+    }
+
+    open fun setupMipLevel(mipLevel: Int) {
+        onSetupMipLevel.update()
+        for (i in onSetupMipLevel.indices) {
+            onSetupMipLevel[i](mipLevel)
+        }
     }
 
     fun getColorTexProps(attachment: Int = 0): TextureProps {

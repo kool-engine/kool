@@ -232,7 +232,7 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
                     }
 
                     for (i in group.renderPasses.indices) {
-                        group.renderPasses[i].afterDraw(ctx)
+                        group.renderPasses[i].afterDraw()
                     }
                 }
             }
@@ -487,14 +487,14 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
             //    }
             //}
 
-            offscreenPass.impl.draw(ctx)
+            offscreenPass.impl.draw()
             vkPass2d.renderPass?.let { rp ->
                 val renderPassInfo = renderPassBeginInfo(rp, rp.frameBuffer, offscreenPass)
 
                 vkPass2d.transitionTexLayout(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
                 val mipLevels = offscreenPass.mipLevels
                 for (mipLevel in 0 until vkPass2d.renderMipLevels) {
-                    offscreenPass.onSetupMipLevel?.invoke(mipLevel, ctx)
+                    offscreenPass.setupMipLevel(mipLevel)
                     vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE)
 
                     for (view in offscreenPass.views) {
@@ -513,15 +513,15 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
         }
 
         private fun MemoryStack.renderOffscreenCube(commandBuffer: VkCommandBuffer, offscreenPass: OffscreenRenderPassCube) {
-            offscreenPass.impl.draw(ctx)
             val vkPassCube = offscreenPass.impl as VkOffscreenPassCube
+            vkPassCube.draw()
             vkPassCube.renderPass?.let { rp ->
                 val renderPassInfo = renderPassBeginInfo(rp, rp.frameBuffer, offscreenPass)
 
                 vkPassCube.transitionTexLayout(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
                 val mipLevels = offscreenPass.mipLevels
                 for (mipLevel in 0 until mipLevels) {
-                    offscreenPass.onSetupMipLevel?.invoke(mipLevel, ctx)
+                    offscreenPass.setupMipLevel(mipLevel)
                     //offscreenPass.applyMipViewport(mipLevel)
                     for (cubeView in cubeRenderPassViews) {
                         val imageI = mipLevel * 6 + cubeView.index

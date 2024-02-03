@@ -77,7 +77,15 @@ fun GPUTexture.createView(
     mipLevelCount: Int? = null,
     baseArrayLayer: Int = 0,
     arrayLayerCount: Int? = null
-) = createView(GPUTextureViewDescriptor(label, format, dimension, baseMipLevel, mipLevelCount, baseArrayLayer, arrayLayerCount))
+) = createView(GPUTextureViewDescriptor(
+    label = label,
+    format = format,
+    dimension = dimension,
+    baseMipLevel = baseMipLevel,
+    mipLevelCount = mipLevelCount,
+    baseArrayLayer = baseArrayLayer,
+    arrayLayerCount = arrayLayerCount
+))
 
 val AddressMode.wgpu: GPUAddressMode
     get() = when (this) {

@@ -1,6 +1,6 @@
 package de.fabmax.kool.pipeline.backend.vk
 
-import de.fabmax.kool.KoolContext
+import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.vk.util.vkFormat
 import de.fabmax.kool.platform.Lwjgl3Context
@@ -25,9 +25,9 @@ class VkOffscreenPass2d(val parentPass: OffscreenRenderPass2d) : OffscreenPass2d
     var renderPass: VkOffscreenRenderPass? = null
         private set
 
-    override fun draw(ctx: KoolContext) {
+    fun draw() {
         if (!isCreated && !isCreationBlocked) {
-            create(ctx as Lwjgl3Context)
+            create()
         }
     }
 
@@ -235,8 +235,8 @@ class VkOffscreenPass2d(val parentPass: OffscreenRenderPass2d) : OffscreenPass2d
         }
     }
 
-    private fun create(ctx: Lwjgl3Context) {
-        val sys = (ctx.backend as VkRenderBackend).vkSystem
+    private fun create() {
+        val sys = (KoolSystem.requireContext().backend as VkRenderBackend).vkSystem
         val pass = parentPass
         val width = parentPass.width
         val height = parentPass.height

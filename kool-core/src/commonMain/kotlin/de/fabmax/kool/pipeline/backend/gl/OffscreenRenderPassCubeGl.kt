@@ -1,6 +1,5 @@
 package de.fabmax.kool.pipeline.backend.gl
 
-import de.fabmax.kool.KoolContext
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.DepthRange
 import de.fabmax.kool.pipeline.backend.stats.OffscreenPassInfo
@@ -20,7 +19,7 @@ class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, val backend
 
     private val resInfo = OffscreenPassInfo(parent)
 
-    override fun draw(ctx: KoolContext) {
+    fun draw() {
         resInfo.sceneName = parent.parentScene?.name ?: "scene:<null>"
         if (!isCreated) {
             createBuffers()
@@ -30,7 +29,7 @@ class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, val backend
 
         val pass = parent
         for (mipLevel in 0 until pass.mipLevels) {
-            pass.onSetupMipLevel?.invoke(mipLevel, ctx)
+            pass.setupMipLevel(mipLevel)
             for (i in pass.views.indices) {
                 pass.views[i].viewport.set(0, 0, pass.getMipWidth(mipLevel), pass.getMipHeight(mipLevel))
             }
@@ -38,6 +37,7 @@ class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, val backend
 
             for (i in CUBE_VIEWS.indices) {
                 val cubeView = CUBE_VIEWS[i]
+                pass.setupView(cubeView.index)
                 val passView = pass.views[cubeView.index]
                 gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, glColorTex, mipLevel)
                 backend.queueRenderer.renderView(passView, mipLevel)
@@ -173,12 +173,12 @@ class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, val backend
     companion object {
         private val CUBE_VIEWS = Array(6) { i ->
             when (i) {
-                0 -> OffscreenRenderPassCube.ViewDirection.RIGHT
-                1 -> OffscreenRenderPassCube.ViewDirection.LEFT
-                2 -> OffscreenRenderPassCube.ViewDirection.UP
-                3 -> OffscreenRenderPassCube.ViewDirection.DOWN
-                4 -> OffscreenRenderPassCube.ViewDirection.FRONT
-                5 -> OffscreenRenderPassCube.ViewDirection.BACK
+                0 -> OffscreenRenderPassCube.ViewDirection.POS_X
+                1 -> OffscreenRenderPassCube.ViewDirection.NEG_X
+                2 -> OffscreenRenderPassCube.ViewDirection.POS_Y
+                3 -> OffscreenRenderPassCube.ViewDirection.NEG_Y
+                4 -> OffscreenRenderPassCube.ViewDirection.POS_Z
+                5 -> OffscreenRenderPassCube.ViewDirection.NEG_Z
                 else -> throw IllegalStateException()
             }
         }

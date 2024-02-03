@@ -43,10 +43,22 @@ open class OffscreenRenderPass2dPingPong(config: Config) : OffscreenRenderPass(
         pong.collectDrawCommands(ctx)
     }
 
-    override fun afterDraw(ctx: KoolContext) {
-        super.afterDraw(ctx)
-        ping.afterDraw(ctx)
-        pong.afterDraw(ctx)
+    override fun afterDraw() {
+        super.afterDraw()
+        ping.afterDraw()
+        pong.afterDraw()
+    }
+
+    override fun setupView(viewIndex: Int) {
+        super.setupView(viewIndex)
+        ping.setupView(viewIndex)
+        pong.setupView(viewIndex)
+    }
+
+    override fun setupMipLevel(mipLevel: Int) {
+        super.setupMipLevel(mipLevel)
+        ping.setupMipLevel(mipLevel)
+        pong.setupMipLevel(mipLevel)
     }
 
     override fun release() {

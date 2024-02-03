@@ -14,7 +14,6 @@ import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.LongHash
 import de.fabmax.kool.util.Time
 import de.fabmax.kool.util.logI
-import de.fabmax.kool.util.logT
 import kotlinx.browser.window
 import kotlinx.coroutines.await
 import org.w3c.dom.HTMLCanvasElement
@@ -81,7 +80,9 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
             sceneRenderer.applySize(canvas.width, canvas.height)
         }
 
-        ctx.backgroundScene.renderOffscreenPasses()
+        val encoder = device.createCommandEncoder()
+
+        ctx.backgroundScene.renderOffscreenPasses(encoder)
 
         for (i in ctx.scenes.indices) {
             val scene = ctx.scenes[i]
@@ -90,11 +91,11 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
 //                    captureFramebuffer(scene)
 //                }
 
-                scene.renderOffscreenPasses()
+                scene.renderOffscreenPasses(encoder)
 
                 when (val scenePass = scene.mainRenderPass) {
                     is Scene.OffscreenSceneRenderPass -> TODO()
-                    is Scene.OnscreenSceneRenderPass -> sceneRenderer.renderScene(scenePass.renderPass)
+                    is Scene.OnscreenSceneRenderPass -> sceneRenderer.renderScene(scenePass.renderPass, encoder)
                 }
 
 //                if (scene.framebufferCaptureMode == Scene.FramebufferCaptureMode.AfterRender) {
@@ -102,15 +103,17 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
 //                }
             }
         }
+
+        device.queue.submit(arrayOf(encoder.finish()))
     }
 
-    private fun Scene.renderOffscreenPasses() {
+    private fun Scene.renderOffscreenPasses(encoder: GPUCommandEncoder) {
         for (i in sortedOffscreenPasses.indices) {
             val pass = sortedOffscreenPasses[i]
             if (pass.isEnabled) {
                 val t = if (pass.isProfileTimes) Time.precisionTime else 0.0
-                pass.render()
-                pass.afterDraw(ctx)
+                pass.render(encoder)
+                pass.afterDraw()
                 if (pass.isProfileTimes) {
                     pass.tDraw = Time.precisionTime - t
                 }
@@ -118,15 +121,18 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         }
     }
 
-    private fun OffscreenRenderPass.render() {
+    private fun OffscreenRenderPass.render(encoder: GPUCommandEncoder) {
         when (this) {
-            is OffscreenRenderPass2d -> impl.draw(ctx)
-            is OffscreenRenderPassCube -> impl.draw(ctx)
+            is OffscreenRenderPass2d -> impl.draw(encoder)
+            is OffscreenRenderPassCube -> impl.draw(encoder)
             is OffscreenRenderPass2dPingPong -> TODO("OffscreenRenderPass2dPingPong") //drawOffscreenPingPong(this)
             is ComputeRenderPass -> TODO("ComputeRenderPass") //dispatchCompute(offscreenPass)
             else -> throw IllegalArgumentException("Offscreen pass type not implemented: $this")
         }
     }
+
+    private fun OffscreenPass2dImpl.draw(encoder: GPUCommandEncoder) = (this as WgpuOffscreenRenderPass2d).draw(encoder)
+    private fun OffscreenPassCubeImpl.draw(encoder: GPUCommandEncoder) = (this as WgpuOffscreenRenderPassCube).draw(encoder)
 
     override fun cleanup(ctx: KoolContext) {
         // do nothing for now
@@ -161,7 +167,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
     }
 
     override fun createOffscreenPassCube(parentPass: OffscreenRenderPassCube): OffscreenPassCubeImpl {
-        return WebGpuOffscreenPassCube(parentPass)
+        return WgpuOffscreenRenderPassCube(parentPass, 1, this)
     }
 
     override fun uploadTextureToGpu(tex: Texture, data: TextureData) {
@@ -180,18 +186,6 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
 
     fun createTexture(descriptor: GPUTextureDescriptor, texture: Texture): WgpuTextureResource {
         return WgpuTextureResource(device.createTexture(descriptor), texture)
-    }
-
-    class WebGpuOffscreenPassCube(val parentPass: OffscreenRenderPassCube) : OffscreenPassCubeImpl {
-        override val isReverseDepth: Boolean = false
-
-        override fun applySize(width: Int, height: Int) { }
-
-        override fun release() { }
-
-        override fun draw(ctx: KoolContext) {
-            logT { "Draw cube: ${parentPass.name}" }
-        }
     }
 
     data class WebGpuShaderCode(
