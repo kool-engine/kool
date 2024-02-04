@@ -33,10 +33,8 @@ class AoDenoisePass(aoPass: OffscreenRenderPass2d, depthComponent: String) :
     private val clearMesh: Mesh
 
     init {
-        clearColor = null
-
         denoiseMesh = Mesh(Attribute.POSITIONS, Attribute.TEXTURE_COORDS, name = "AoDenoiseMesh").apply {
-            generateFullscreenQuad(true)
+            generateFullscreenQuad()
             shader = denoiseShader
         }
 
@@ -96,7 +94,6 @@ class AoDenoisePass(aoPass: OffscreenRenderPass2d, depthComponent: String) :
             fragmentStage {
                 val noisyAoTex = texture2d("noisyAoTex")
                 val viewSpaceTex = texture2d("viewSpaceTex")
-
                 val uRadius = uniformFloat1("uRadius")
 
                 main {

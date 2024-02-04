@@ -176,7 +176,7 @@ class DeferredPipeline(val scene: Scene, val cfg: DeferredPipelineConfig) {
         }
 
         return Mesh(Attribute.POSITIONS, Attribute.TEXTURE_COORDS).apply {
-            generateFullscreenQuad()
+            generateFullscreenQuad(true)
             shader = outputShader
         }
     }

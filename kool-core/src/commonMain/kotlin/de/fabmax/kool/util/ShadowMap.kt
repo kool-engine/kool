@@ -6,7 +6,6 @@ import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.BoundingBoxF
 import de.fabmax.kool.pipeline.DepthMapPass
 import de.fabmax.kool.pipeline.backend.DepthRange
-import de.fabmax.kool.pipeline.backend.NdcYDirection
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.pipeline.renderPassConfig
 import de.fabmax.kool.scene.*
@@ -72,7 +71,7 @@ class SimpleShadowMap(val sceneCam: Camera, override var light: Light?, mapSize:
         } else {
             biasMatrix.set(depthBiasMatrixNegOneToOne)
         }
-        if (backend.ndcYDirection == NdcYDirection.TOP_TO_BOTTOM) {
+        if (backend.isInvertedNdcY) {
             biasMatrix[1, 1] = -biasMatrix[1, 1]
         }
 

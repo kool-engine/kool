@@ -8,7 +8,6 @@ import de.fabmax.kool.modules.ksl.blocks.mvpMatrix
 import de.fabmax.kool.modules.ksl.blocks.pbrLightBlock
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.pipeline.backend.NdcYDirection
 import de.fabmax.kool.scene.Light
 
 /**
@@ -69,7 +68,7 @@ class DeferredLightShader(encodedLightType: Float, model: Model = Model(encodedL
             fragmentStage {
                 main {
                     val uv = float2Var(fragPos.output.xy / fragPos.output.w * 0.5.const + 0.5.const)
-                    if (KoolSystem.requireContext().backend.ndcYDirection == NdcYDirection.TOP_TO_BOTTOM) {
+                    if (KoolSystem.requireContext().backend.isInvertedNdcY) {
                         uv.y set 1f.const - uv.y
                     }
 

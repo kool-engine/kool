@@ -12,7 +12,6 @@ import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
-import de.fabmax.kool.pipeline.backend.NdcYDirection
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.addMesh
 import de.fabmax.kool.util.Color
@@ -138,11 +137,7 @@ class ReflectionPass(val baseReflectionStep: Float) :
                         `break`()
                     }
 
-                    val sampleUv = float2Var(samplePos.xy)
-                    if (KoolSystem.requireContext().backend.ndcYDirection == NdcYDirection.TOP_TO_BOTTOM) {
-                        sampleUv.y set 1f.const - sampleUv.y
-                    }
-                    sampleDepth set sampleTexture(positionFlags, sampleUv, 0f.const).z
+                    sampleDepth set sampleTexture(positionFlags, samplePos.xy, 0f.const).z
                     // set a large depth if sampleDepth is positive (clear value)
                     sampleDepth -= 1e5f.const * step(0.1f.const, sampleDepth)
 
@@ -174,7 +169,7 @@ class ReflectionPass(val baseReflectionStep: Float) :
                 rayPos set rayPos + rayDir * rayStep
                 val projPos = float4Var(camData.projMat * float4Value(rayPos, 1f.const))
                 val samplePos = float3Var((projPos.xyz / projPos.w) * 0.5f.const + 0.5f.const)
-                if (KoolSystem.requireContext().backend.ndcYDirection == NdcYDirection.TOP_TO_BOTTOM) {
+                if (KoolSystem.requireContext().backend.isInvertedNdcY) {
                     samplePos.y set 1f.const - samplePos.y
                 }
 

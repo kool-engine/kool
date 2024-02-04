@@ -3,7 +3,6 @@ package de.fabmax.kool.pipeline
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.modules.ksl.blocks.cameraData
 import de.fabmax.kool.modules.ksl.lang.*
-import de.fabmax.kool.pipeline.backend.NdcYDirection
 import de.fabmax.kool.scene.Mesh
 
 object FullscreenShaderUtil {
@@ -11,9 +10,7 @@ object FullscreenShaderUtil {
     /**
      * Generates a single quad stretching from (-1, -1, 0) to (1, 1, 0) as used by most fullscreen shaders.
      */
-    fun Mesh.generateFullscreenQuad(
-        mirrorTexCoordsY: Boolean = KoolSystem.requireContext().backend.ndcYDirection == NdcYDirection.BOTTOM_TO_TOP
-    ) {
+    fun Mesh.generateFullscreenQuad(mirrorTexCoordsY: Boolean = !KoolSystem.requireContext().backend.isInvertedNdcY) {
         isFrustumChecked = false
         generate {
             centeredRect {

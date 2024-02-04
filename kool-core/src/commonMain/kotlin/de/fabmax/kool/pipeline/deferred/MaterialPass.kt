@@ -41,6 +41,7 @@ class MaterialPass(pipeline: DeferredPipeline, suffix: String) :
         }
 
     init {
+        mirrorIfInvertedClipY()
         (pipeline.scene.camera as? PerspectiveCamera)?.let {
             proxyCamera = PerspectiveProxyCam(it)
         }

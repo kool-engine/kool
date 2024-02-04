@@ -11,7 +11,6 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenShaderPipelineCfg
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
-import de.fabmax.kool.pipeline.backend.NdcYDirection
 import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.addMesh
@@ -50,8 +49,7 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
         }
 
     init {
-        clearColor = null
-
+        mirrorIfInvertedClipY()
         drawNode.apply {
             addMesh(Attribute.POSITIONS, Attribute.TEXTURE_COORDS) {
                 generateFullscreenQuad()
@@ -139,12 +137,8 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
 
                 if (aoSetup.isDeferred) {
                     depthComponent = "z"
-                    val suv = float2Var(uv.output)
-                    if (KoolSystem.requireContext().backend.ndcYDirection == NdcYDirection.TOP_TO_BOTTOM) {
-                        suv.y set 1f.const - suv.y
-                    }
-                    normal = float3Var(sampleTexture(texture2d("normalTex"), suv).xyz)
-                    origin = float3Var(sampleTexture(viewSpaceTex, suv).xyz)
+                    normal = float3Var(sampleTexture(texture2d("normalTex"), uv.output).xyz)
+                    origin = float3Var(sampleTexture(viewSpaceTex, uv.output).xyz)
 
                 } else {
                     depthComponent = "a"
@@ -179,7 +173,7 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
                         val occlusionDiv = float1Var(0f.const)
                         fori(0.const, uKernelSize) { i ->
                             val kernel = float3Var(tbn * uKernel[i])
-                            if (!aoSetup.isDeferred && KoolSystem.requireContext().backend.ndcYDirection == NdcYDirection.TOP_TO_BOTTOM) {
+                            if (!aoSetup.isDeferred && KoolSystem.requireContext().backend.isInvertedNdcY) {
                                 kernel.y *= (-1f).const
                             }
                             val samplePos = float3Var(origin + kernel * sampleR)
@@ -190,7 +184,7 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
                                     (sampleProj.y gt (-1f).const) and (sampleProj.y lt 1f.const)) {
 
                                 val sampleUv = float2Var(sampleProj.xy * 0.5f.const + 0.5f.const)
-                                if (aoSetup.isDeferred && KoolSystem.requireContext().backend.ndcYDirection == NdcYDirection.TOP_TO_BOTTOM) {
+                                if (aoSetup.isDeferred && KoolSystem.requireContext().backend.isInvertedNdcY) {
                                     sampleUv.y set 1f.const - sampleUv.y
                                 }
                                 val sampleDepth = sampleTexture(viewSpaceTex, sampleUv, 0f.const).float1(depthComponent)

@@ -1,6 +1,5 @@
 package de.fabmax.kool.demo.procedural
 
-import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.math.deg
@@ -9,7 +8,6 @@ import de.fabmax.kool.modules.ksl.blocks.cameraData
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.GpuType
-import de.fabmax.kool.pipeline.backend.NdcYDirection
 import de.fabmax.kool.pipeline.deferred.DeferredPassSwapListener
 import de.fabmax.kool.pipeline.deferred.DeferredPasses
 import de.fabmax.kool.pipeline.deferred.deferredKslPbrShader
@@ -245,9 +243,9 @@ class Glas(val ibl: EnvironmentMaps, shadowMap: SimpleShadowMap) : Node(), Defer
                         val refractionColor = float4Var(Vec4f.ZERO.const)
                         `if`((samplePos.x gt 0f.const) and (samplePos.x lt 1f.const) and
                                 (samplePos.y gt 0f.const) and (samplePos.y lt 1f.const)) {
-                            if (KoolSystem.requireContext().backend.ndcYDirection == NdcYDirection.TOP_TO_BOTTOM) {
-                                samplePos.y set 1f.const - samplePos.y
-                            }
+//                            if (KoolSystem.requireContext().backend.isInvertedNdcY) {
+//                                samplePos.y set 1f.const - samplePos.y
+//                            }
                             refractionColor set sampleTexture(refractionColorMap, samplePos, 0f.const)
                         }
                         `if`(refractionColor.a eq 0f.const) {

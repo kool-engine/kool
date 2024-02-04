@@ -19,6 +19,7 @@ open class DepthMapPass(drawNode: Node, config: Config) : OffscreenRenderPass2d(
     var cullMethod: CullMethod? = null
 
     init {
+        mirrorIfInvertedClipY()
         onAfterCollectDrawCommands += { ev ->
             // replace regular object shaders by cheaper shadow versions
             val q = ev.view.drawQueue
@@ -86,6 +87,7 @@ class NormalLinearDepthMapPass(drawNode: Node, config: Config) : DepthMapPass(dr
     constructor(drawNode: Node, width: Int, height: Int = width) : this(drawNode, normalLinearDepthSetup(width, height))
 
     init {
+        mirrorIfInvertedClipY()
         name = "NormalLinearDepthMapPass"
         onAfterCollectDrawCommands += {
             clearColor = Color(0f, 1f, 0f, 1f)

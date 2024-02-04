@@ -13,6 +13,7 @@ class PbrLightingPass(pipeline: DeferredPipeline, suffix: String, val materialPa
         }) {
 
     init {
+        mirrorIfInvertedClipY()
         val scene = pipeline.scene
         lighting = scene.lighting
         clearColor = Color(0f, 0f, 0f, 0f)
