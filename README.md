@@ -3,8 +3,7 @@
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/de.fabmax.kool/kool-core/badge.svg)](https://central.sonatype.com/artifact/de.fabmax.kool/kool-core)
 ![Build](https://github.com/fabmax/kool/workflows/Build/badge.svg)
 
-A multi-platform OpenGL / Vulkan based game engine that works on Desktop Java and browsers with
-WebGL2.
+A multi-platform OpenGL / WebGPU / Vulkan game engine that works on Desktop Java and browsers.
 
 I started working on a graphical scene editor.
 The editor is still in an early state and not very useful yet, but you can try the [Web Demo](https://fabmax.github.io/kool/kool-editor/)
@@ -68,7 +67,20 @@ Feel free to join the [Discord Server](https://discord.gg/GvsJj2Pk3K)!
 - [Mesh Simplification](https://fabmax.github.io/kool/kool-js/?demo=simplification): Interactive mesh
   simplification demo (based on traditional [error-quadrics](https://www.cs.cmu.edu/~./garland/Papers/quadrics.pdf))
 
+By default, the demos use the WebGPU backend and fall back to WebGL if WebGPU is not supported by your browser. You
+can also force a certain backend by appending `&backend=webgpu` or `&backend=webgl` to the URL.
+
 Code for all demos is available in kool-demo sub-project.
+
+## Platform Support
+
+| Platform    | Backend | Implementation Status                |
+|-------------|---------|--------------------------------------|
+| Desktop JVM | OpenGL  | :white_check_mark: Fully working     |
+| Desktop JVM | Vulkan  | :x: Not working (under construction) |
+| Browser     | WebGL 2 | :white_check_mark: Fully working     |
+| Browser     | WebGPU  | :white_check_mark: Fully working     |
+| Android     | -       | :x: Not yet implemented              |
 
 ## Usage
 

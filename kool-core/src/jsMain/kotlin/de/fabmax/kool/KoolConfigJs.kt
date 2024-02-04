@@ -17,7 +17,7 @@ data class KoolConfigJs(
     override val defaultFont: MsdfFontInfo = DEFAULT_MSDF_FONT_INFO,
 
     val canvasName: String = "glCanvas",
-    val renderBackend: Backend = Backend.WEB_GL2,
+    val renderBackend: Backend = Backend.PREFER_WEB_GPU,
     val isGlobalKeyEventGrabbing: Boolean = true,
     val isJsCanvasToWindowFitting: Boolean = true,
     val powerPreference: GPUPowerPreference = GPUPowerPreference.highPerformance,
@@ -37,8 +37,9 @@ data class KoolConfigJs(
         }
     }
 
-    enum class Backend(val displayName: String) {
-        WEB_GL2("WebGL2"),
-        WEB_GPU("WebGPU")
+    enum class Backend {
+        WEB_GL2,
+        WEB_GPU,
+        PREFER_WEB_GPU
     }
 }

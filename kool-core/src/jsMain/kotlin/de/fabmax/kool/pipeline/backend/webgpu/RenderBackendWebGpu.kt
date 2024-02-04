@@ -45,7 +45,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
     private var renderSize = Vec2i(canvas.width, canvas.height)
 
     init {
-        check(!js("!navigator.gpu") as Boolean) {
+        check(isSupported()) {
             val txt = "WebGPU not supported on this browser."
             js("alert(txt)")
             txt
@@ -211,6 +211,12 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
     data class WebGpuComputeShaderCode(val computeSrc: String, val computeEntryPoint: String): ComputeShaderCode {
         override val hash = LongHash().apply {
             this += computeSrc
+        }
+    }
+
+    companion object {
+        fun isSupported(): Boolean {
+            return !js("!navigator.gpu") as Boolean
         }
     }
 }

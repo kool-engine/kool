@@ -6,12 +6,17 @@ import kotlinx.browser.window
 import kotlin.collections.set
 
 val params = getParams()
-val isWebGpu: Boolean
-    get() = params["backend"] == "webgpu"
+val backend: KoolConfigJs.Backend
+    get() = when {
+        params["backend"] == "webgpu" -> KoolConfigJs.Backend.WEB_GPU
+        params["backend"] == "webgl" -> KoolConfigJs.Backend.WEB_GL2
+        else -> KoolConfigJs.Backend.PREFER_WEB_GPU
+    }
+
 
 fun main() = KoolApplication(
     KoolConfigJs(
-        renderBackend = if (isWebGpu) KoolConfigJs.Backend.WEB_GPU else KoolConfigJs.Backend.WEB_GL2,
+        renderBackend = backend,
         isGlobalKeyEventGrabbing = true,
         loaderTasks = listOf { Physics.loadAndAwaitPhysics() }
     )

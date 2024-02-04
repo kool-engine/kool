@@ -71,10 +71,16 @@ class JsContext internal constructor() : KoolContext() {
             canvas.height = (canvasFixedHeight * window.devicePixelRatio).roundToInt()
         }
 
-        backend = if (KoolSystem.configJs.renderBackend == KoolConfigJs.Backend.WEB_GL2) {
-            RenderBackendGlImpl(this, canvas)
-        } else {
-            RenderBackendWebGpu(this, canvas)
+        backend = when (KoolSystem.configJs.renderBackend) {
+            KoolConfigJs.Backend.WEB_GL2 -> RenderBackendGlImpl(this, canvas)
+            KoolConfigJs.Backend.WEB_GPU -> RenderBackendWebGpu(this, canvas)
+            KoolConfigJs.Backend.PREFER_WEB_GPU -> {
+                if (RenderBackendWebGpu.isSupported()) {
+                    RenderBackendWebGpu(this, canvas)
+                } else {
+                    RenderBackendGlImpl(this, canvas)
+                }
+            }
         }
 
         document.onfullscreenchange = {
