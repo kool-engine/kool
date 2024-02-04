@@ -24,7 +24,7 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrCont
     private var nonIblContent: Node? = null
 
     private val selectedMatIdx = mutableStateOf(3)
-    val currentMat: MaterialMaps get() = materials[selectedMatIdx.value]
+    private val currentMat: MaterialMaps get() = materials[selectedMatIdx.value]
 
     private val displacement = mutableStateOf(0.25f).onChange { disp -> shaders.forEach { it.displacement = disp } }
 
@@ -96,7 +96,7 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrCont
 
     private fun Node.makeSphere(withIbl: Boolean, scene: Scene, envMaps: EnvironmentMaps) = addTextureMesh(isNormalMapped = true) {
         geometry.addGeometry(sphereProto.detailSphere)
-        val shader = KslPbrShader{
+        val shader = KslPbrShader {
             color { textureColor() }
             normalMapping { setNormalMap() }
             roughness { textureProperty() }

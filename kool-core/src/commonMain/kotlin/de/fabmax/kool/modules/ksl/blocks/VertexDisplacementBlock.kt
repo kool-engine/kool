@@ -39,7 +39,7 @@ class VertexDisplacementBlock(
                             val tex = parentStage.program.texture2d(source.textureName).also { textures[source] = it }
                             sampleValue = parentScope.run {
                                 val texCoords = this@apply.parentStage.vertexAttribFloat2(source.coordAttribute.name)
-                                float4Var(sampleTexture(tex, texCoords)).also {
+                                float4Var(sampleTexture(tex, texCoords, 0f.const)).also {
                                     outSamplerValues[source.textureName to source.coordAttribute] = it
                                 }
                             }

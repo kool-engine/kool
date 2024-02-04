@@ -12,6 +12,8 @@ abstract class WgpuRenderPass<T: RenderPass>(
     val backend: RenderBackendWebGpu
 ) : BaseReleasable() {
 
+    private val passEncoderState = PassEncoderState()
+
     protected val device: GPUDevice
         get() = backend.device
 
@@ -39,12 +41,13 @@ abstract class WgpuRenderPass<T: RenderPass>(
                 val w = viewport.width.toFloat()
                 val h = viewport.height.toFloat()
 
-                val passEncoder = encoder.beginRenderPass(colorAttachments, depthAttachment, renderPass.name)
+                passEncoderState.reset(encoder.beginRenderPass(colorAttachments, depthAttachment, renderPass.name))
+                val passEncoder = passEncoderState.passEncoder
                 passEncoder.setViewport(x, y, w, h, 0f, 1f)
 
                 for (cmd in view.drawQueue.commands) {
                     val isCmdValid = cmd.pipeline != null && cmd.geometry.numIndices > 0
-                    if (isCmdValid && backend.pipelineManager.bindDrawPipeline(cmd, passEncoder, this@WgpuRenderPass)) {
+                    if (isCmdValid && backend.pipelineManager.bindDrawPipeline(cmd, passEncoderState, this@WgpuRenderPass)) {
                         val insts = cmd.mesh.instances
                         if (insts == null) {
                             passEncoder.drawIndexed(cmd.geometry.numIndices)
@@ -70,4 +73,35 @@ abstract class WgpuRenderPass<T: RenderPass>(
         val colorAttachments: Array<GPURenderPassColorAttachment>,
         val depthAttachment: GPURenderPassDepthStencilAttachment?
     )
+}
+
+class PassEncoderState {
+    private var _passEncoder: GPURenderPassEncoder? = null
+    val passEncoder: GPURenderPassEncoder
+        get() = _passEncoder!!
+
+    private var renderPipeline: GPURenderPipeline? = null
+    private val bindGroups = Array<WgpuBindGroupData?>(4) { null }
+
+    fun reset(passEncoder: GPURenderPassEncoder) {
+        _passEncoder = passEncoder
+        renderPipeline = null
+        for (i in bindGroups.indices) {
+            bindGroups[i] = null
+        }
+    }
+
+    fun setPipeline(renderPipeline: GPURenderPipeline) {
+        if (this.renderPipeline !== renderPipeline) {
+            this.renderPipeline = renderPipeline
+            passEncoder.setPipeline(renderPipeline)
+        }
+    }
+
+    fun setBindGroup(group: Int, bindGroupData: WgpuBindGroupData) {
+        if (bindGroups[group] !== bindGroupData) {
+            bindGroups[group] = bindGroupData
+            passEncoder.setBindGroup(group, bindGroupData.bindGroup!!)
+        }
+    }
 }

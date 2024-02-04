@@ -202,7 +202,7 @@ class WgpuDrawPipeline(
         )
     }
 
-    fun bind(cmd: DrawCommand, encoder: GPURenderPassEncoder): Boolean {
+    fun bind(cmd: DrawCommand, passEncoderState: PassEncoderState): Boolean {
         users.add(cmd.mesh.id)
 
         val pipeline = cmd.pipeline!!
@@ -214,11 +214,11 @@ class WgpuDrawPipeline(
             return false
         }
 
-        encoder.setPipeline(renderPipeline)
-        viewData.getOrCreateWgpuData().bind(encoder, viewData, cmd.queue.renderPass)
-        pipelineData.getOrCreateWgpuData().bind(encoder, pipelineData, cmd.queue.renderPass)
-        meshData.getOrCreateWgpuData().bind(encoder, meshData, cmd.queue.renderPass)
-        bindVertexBuffers(encoder, cmd.mesh)
+        passEncoderState.setPipeline(renderPipeline)
+        viewData.getOrCreateWgpuData().bind(passEncoderState, viewData, cmd.queue.renderPass)
+        pipelineData.getOrCreateWgpuData().bind(passEncoderState, pipelineData, cmd.queue.renderPass)
+        meshData.getOrCreateWgpuData().bind(passEncoderState, meshData, cmd.queue.renderPass)
+        bindVertexBuffers(passEncoderState.passEncoder, cmd.mesh)
         return true
     }
 
@@ -270,7 +270,7 @@ class WgpuDrawPipeline(
         return gpuData as WgpuBindGroupData
     }
 
-    private fun bindVertexBuffers(encoder: GPURenderPassEncoder, mesh: Mesh) {
+    private fun bindVertexBuffers(passEncoder: GPURenderPassEncoder, mesh: Mesh) {
         if (mesh.geometry.gpuGeometry == null) {
             mesh.geometry.gpuGeometry = WgpuGeometry(mesh, backend)
         }
@@ -278,10 +278,10 @@ class WgpuDrawPipeline(
         gpuGeom.checkBuffers()
 
         var slot = 0
-        gpuGeom.instanceBuffer?.let { encoder.setVertexBuffer(slot++, it) }
-        encoder.setVertexBuffer(slot++, gpuGeom.floatBuffer)
-        gpuGeom.intBuffer?.let { encoder.setVertexBuffer(slot, it) }
-        encoder.setIndexBuffer(gpuGeom.indexBuffer, GPUIndexFormat.uint32)
+        gpuGeom.instanceBuffer?.let { passEncoder.setVertexBuffer(slot++, it) }
+        passEncoder.setVertexBuffer(slot++, gpuGeom.floatBuffer)
+        gpuGeom.intBuffer?.let { passEncoder.setVertexBuffer(slot, it) }
+        passEncoder.setIndexBuffer(gpuGeom.indexBuffer, GPUIndexFormat.uint32)
     }
 
     override fun removeUser(user: Any) {

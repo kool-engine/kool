@@ -91,7 +91,7 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
         var texture: T? = null
             set(value) {
                 field = value
-                isDirty = false
+                isDirty = true
             }
 
         var sampler: SamplerSettings? = null

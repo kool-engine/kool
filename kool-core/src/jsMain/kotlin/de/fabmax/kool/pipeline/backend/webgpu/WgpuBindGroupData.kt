@@ -18,23 +18,29 @@ class WgpuBindGroupData(
 
     private val bufferBindings = mutableListOf<BufferBinding>()
     private val textureBindings = mutableListOf<TextureBinding>()
-    private var bindGroup: GPUBindGroup? = null
 
-    fun bind(encoder: GPURenderPassEncoder, bindGroupData: BindGroupData, renderPass: RenderPass) {
-        textureBindings.forEach { tex ->
+    var bindGroup: GPUBindGroup? = null
+        private set
+
+    fun bind(passEncoderState: PassEncoderState, bindGroupData: BindGroupData, renderPass: RenderPass) {
+        for (i in textureBindings.indices) {
+            val tex = textureBindings[i]
             if (tex.binding.texture?.loadedTexture !== tex.loadedTex) {
                 // underlying gpu texture has changed, e.g. because render attachment of a render pass was recreated
                 bindGroupData.isDirty = true
             }
         }
 
+        var recreatedBindGroup = false
         if (bindGroup == null || bindGroupData.isDirty) {
             bindGroupData.isDirty = false
             createBindGroup(renderPass)
+            recreatedBindGroup = true
         }
 
-        bufferBindings.forEach { ubo ->
-            if (ubo.binding.getAndClearDirtyFlag()) {
+        for (i in bufferBindings.indices) {
+            val ubo = bufferBindings[i]
+            if (ubo.binding.getAndClearDirtyFlag() || recreatedBindGroup) {
                 device.queue.writeBuffer(
                     buffer = ubo.gpuBuffer.buffer,
                     bufferOffset = 0L,
@@ -42,7 +48,7 @@ class WgpuBindGroupData(
                 )
             }
         }
-        encoder.setBindGroup(data.layout.group, bindGroup!!)
+        passEncoderState.setBindGroup(data.layout.group, this)
     }
 
     private fun createBindGroup(renderPass: RenderPass) {
