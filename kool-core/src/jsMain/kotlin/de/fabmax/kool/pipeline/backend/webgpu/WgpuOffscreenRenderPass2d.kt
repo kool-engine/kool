@@ -50,16 +50,26 @@ class WgpuOffscreenRenderPass2d(
             colorAttachments[0].applySize(parentPass.width, parentPass.height)
         }
 
-        render(parentPass, parentPass.mipLevels, encoder)
+        val mipLevels = if (parentPass.drawMipLevels) parentPass.mipLevels else 1
+        render(parentPass, mipLevels, encoder)
+        if (!parentPass.drawMipLevels && parentPass.mipLevels > 1) {
+            colorAttachments.forEach {
+                backend.textureLoader.mipmapGenerator.generateMipLevels(it.descriptor, it.gpuTexture.gpuTexture, encoder)
+            }
+        }
 
         if (parentPass.copyTargetsColor.isNotEmpty()) {
             parentPass.copyTargetsColor.forEach { tex ->
-                val wgpuTex = (tex.loadedTexture as WgpuTextureResource?)
-                    ?: colorAttachments[0].createTexture(
+                var wgpuTex = (tex.loadedTexture as WgpuTextureResource?)
+                if (wgpuTex == null) {
+                    val (_, gpuTex) = colorAttachments[0].createTexture(
                         width = parentPass.width,
                         height = parentPass.height,
                         usage = GPUTextureUsage.COPY_DST or GPUTextureUsage.TEXTURE_BINDING or GPUTextureUsage.RENDER_ATTACHMENT,
-                    ).also { tex.loadedTexture = WgpuLoadedTexture(it) }
+                    )
+                    wgpuTex = gpuTex
+                    tex.loadedTexture = WgpuLoadedTexture(gpuTex)
+                }
                 tex.loadingState = Texture.LoadingState.LOADED
 
                 var width = parentPass.width
@@ -95,10 +105,15 @@ class WgpuOffscreenRenderPass2d(
     }
 
     private inner class RenderAttachment(val texture: Texture2d, val isDepth: Boolean, val name: String) : BaseReleasable() {
-        var gpuTexture = createTexture(parentPass.width, parentPass.height, GPUTextureUsage.TEXTURE_BINDING or GPUTextureUsage.RENDER_ATTACHMENT)
+        var descriptor: GPUTextureDescriptor
+        var gpuTexture: WgpuTextureResource
         val mipViews = mutableListOf<GPUTextureView>()
 
         init {
+            val (desc, tex) = createTexture(parentPass.width, parentPass.height, GPUTextureUsage.TEXTURE_BINDING or GPUTextureUsage.RENDER_ATTACHMENT)
+            descriptor = desc
+            gpuTexture = tex
+
             releaseWith(this@WgpuOffscreenRenderPass2d)
             texture.loadedTexture = WgpuLoadedTexture(gpuTexture)
             texture.loadingState = Texture.LoadingState.LOADED
@@ -106,8 +121,11 @@ class WgpuOffscreenRenderPass2d(
         }
 
         fun applySize(width: Int, height: Int) {
+            val (desc, tex) = createTexture(width, height, GPUTextureUsage.TEXTURE_BINDING or GPUTextureUsage.RENDER_ATTACHMENT or copySrcFlag)
+            descriptor = desc
+            gpuTexture = tex
+
             texture.loadedTexture?.release()
-            gpuTexture = createTexture(width, height, GPUTextureUsage.TEXTURE_BINDING or GPUTextureUsage.RENDER_ATTACHMENT or copySrcFlag)
             texture.loadedTexture = WgpuLoadedTexture(gpuTexture)
             createViews()
         }
@@ -123,17 +141,18 @@ class WgpuOffscreenRenderPass2d(
             width: Int,
             height: Int,
             usage: Int,
-        ): WgpuTextureResource = backend.createTexture(
-            GPUTextureDescriptor(
+        ): Pair<GPUTextureDescriptor, WgpuTextureResource> {
+            val descriptor = GPUTextureDescriptor(
                 label = name,
                 size = intArrayOf(width, height),
                 format = if (isDepth) GPUTextureFormat.depth32float else texture.props.format.wgpu,
                 usage = usage,
                 mipLevelCount = parentPass.mipLevels,
                 sampleCount = numSamples
-            ),
-            texture
-        )
+            )
+            val tex = backend.createTexture(descriptor, texture)
+            return descriptor to tex
+        }
 
         override fun release() {
             super.release()

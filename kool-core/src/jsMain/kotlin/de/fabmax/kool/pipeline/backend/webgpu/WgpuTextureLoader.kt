@@ -18,7 +18,7 @@ import kotlin.math.max
 internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
 
     private val device: GPUDevice get() = backend.device
-    private val mipmapGenerator2d = MipmapGenerator2d()
+    val mipmapGenerator = MipmapGenerator()
 
     fun loadTexture(tex: Texture, data: TextureData) {
         when (tex) {
@@ -68,7 +68,7 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
         val gpuTex = backend.createTexture(texDesc, tex)
         copyTextureData(data, gpuTex.gpuTexture, size)
         if (tex.props.generateMipMaps) {
-            mipmapGenerator2d.generateMipLevels(texDesc, gpuTex.gpuTexture)
+            mipmapGenerator.generateMipLevels(texDesc, gpuTex.gpuTexture)
         }
 
         tex.loadedTexture = WgpuLoadedTexture(gpuTex)
@@ -101,9 +101,6 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
         }
 
         val usage = GPUTextureUsage.COPY_DST or GPUTextureUsage.TEXTURE_BINDING or GPUTextureUsage.RENDER_ATTACHMENT
-        if (tex.props.generateMipMaps) {
-            logW { "generateMipMaps requested for TextureCube ${tex.name}: not yet implemented on WebGPU" }
-        }
         val texDesc = GPUTextureDescriptor(
             size = intArrayOf(data.width, data.height, 6),
             format = data.format.wgpu,
@@ -112,6 +109,10 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
 
         val gpuTex = backend.createTexture(texDesc, tex)
         copyTextureData(data, gpuTex.gpuTexture, intArrayOf(data.width, data.height))
+        if (tex.props.generateMipMaps) {
+            mipmapGenerator.generateMipLevels(texDesc, gpuTex.gpuTexture)
+        }
+
         tex.loadedTexture = WgpuLoadedTexture(gpuTex)
         tex.loadingState = Texture.LoadingState.LOADED
     }
@@ -147,92 +148,6 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
             dataLayout = layout,
             size = size
         )
-    }
-
-    private inner class MipmapGenerator2d {
-        val shaderModule = device.createShaderModule("""
-            var<private> pos : array<vec2f, 4> = array<vec2f, 4>(
-                vec2f(-1, 1), vec2f(1, 1),
-                vec2f(-1, -1), vec2f(1, -1)
-            );
-
-            struct VertexOutput {
-                @builtin(position) position : vec4f,
-                @location(0) texCoord : vec2f
-            };
-        
-            @vertex
-            fn vertexMain(@builtin(vertex_index) vertexIndex : u32) -> VertexOutput {
-                var output : VertexOutput;
-                output.texCoord = pos[vertexIndex] * vec2f(0.5, -0.5) + vec2f(0.5);
-                output.position = vec4f(pos[vertexIndex], 0, 1);
-                return output;
-            }
-        
-            @group(0) @binding(0) var imgSampler : sampler;
-            @group(0) @binding(1) var img : texture_2d<f32>;
-        
-            @fragment
-            fn fragmentMain(@location(0) texCoord : vec2f) -> @location(0) vec4f {
-                return textureSample(img, imgSampler, texCoord);
-            }
-        """.trimIndent())
-
-        val sampler = device.createSampler(minFilter = GPUFilterMode.linear)
-        val pipelines = mutableMapOf<GPUTextureFormat, GPURenderPipeline>()
-
-        fun getRenderPipeline(format: GPUTextureFormat): GPURenderPipeline = pipelines.getOrPut(format) {
-            device.createRenderPipeline(
-                GPURenderPipelineDescriptor(
-                    vertex = GPUVertexState(
-                        module = shaderModule,
-                        entryPoint = "vertexMain"
-                    ),
-                    fragment = GPUFragmentState(
-                        module = shaderModule,
-                        entryPoint = "fragmentMain",
-                        targets = arrayOf(GPUColorTargetState(format))
-                    ),
-                    primitive = GPUPrimitiveStateStrip(GPUIndexFormat.uint32),
-                    layout = GPUAutoLayoutMode.auto
-                )
-            )
-        }
-
-        fun generateMipLevels(texDesc: GPUTextureDescriptor, texture: GPUTexture) {
-            val pipeline = getRenderPipeline(texDesc.format)
-            var srcView = texture.createView(baseMipLevel = 0, mipLevelCount = 1)
-            val cmdEncoder = device.createCommandEncoder()
-
-            for (i in 1 until texDesc.mipLevelCount) {
-                val dstView = texture.createView(baseMipLevel = i, mipLevelCount = 1)
-                val passEncoder = cmdEncoder.beginRenderPass(
-                    colorAttachments = arrayOf(GPURenderPassColorAttachment(
-                        view = dstView,
-                        storeOp = GPUStoreOp.store
-                    ))
-                )
-                val bindGroup = device.createBindGroup(
-                    layout = pipeline.getBindGroupLayout(0),
-                    entries = arrayOf(
-                        GPUBindGroupEntry(
-                            binding = 0,
-                            resource = sampler
-                        ),
-                        GPUBindGroupEntry(
-                            binding = 1,
-                            resource = srcView
-                        ),
-                    )
-                )
-                passEncoder.setPipeline(pipeline)
-                passEncoder.setBindGroup(0, bindGroup)
-                passEncoder.draw(4)
-                passEncoder.end()
-                srcView = dstView
-            }
-            device.queue.submit(arrayOf(cmdEncoder.finish()))
-        }
     }
 
     private val TextureData.gpuImageDataLayout: GPUImageDataLayout get() {
@@ -289,5 +204,101 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
         val byteI = index * 2
         set(byteI, (f16bits and 0xff).toByte())
         set(byteI+1, (f16bits shr 8).toByte())
+    }
+
+    inner class MipmapGenerator {
+        private val shaderModule = device.createShaderModule("""
+            var<private> pos: array<vec2f, 4> = array<vec2f, 4>(
+                vec2f(-1.0, 1.0), vec2f(1.0, 1.0),
+                vec2f(-1.0, -1.0), vec2f(1.0, -1.0)
+            );
+
+            struct VertexOutput {
+                @builtin(position) position: vec4f,
+                @location(0) texCoord: vec2f
+            };
+        
+            @vertex
+            fn vertexMain(@builtin(vertex_index) vertexIndex: u32) -> VertexOutput {
+                var output: VertexOutput;
+                output.texCoord = pos[vertexIndex] * vec2f(0.5, -0.5) + vec2f(0.5);
+                output.position = vec4f(pos[vertexIndex], 0.0, 1.0);
+                return output;
+            }
+        
+            @group(0) @binding(0) var imgSampler: sampler;
+            @group(0) @binding(1) var img: texture_2d<f32>;
+        
+            @fragment
+            fn fragmentMain(@location(0) texCoord: vec2f) -> @location(0) vec4f {
+                let texSize = vec2f(textureDimensions(img));
+                let pxSize = vec2f(1.0, 1.0) / texSize;
+                let centerCoord = texCoord * (1.0 - pxSize * 2.0) + pxSize;
+                return textureSample(img, imgSampler, centerCoord);
+            }
+        """.trimIndent())
+
+        private val sampler = device.createSampler(minFilter = GPUFilterMode.linear)
+        private val pipelines = mutableMapOf<GPUTextureFormat, GPURenderPipeline>()
+
+        fun getRenderPipeline(format: GPUTextureFormat): GPURenderPipeline = pipelines.getOrPut(format) {
+            device.createRenderPipeline(
+                GPURenderPipelineDescriptor(
+                    vertex = GPUVertexState(
+                        module = shaderModule,
+                        entryPoint = "vertexMain"
+                    ),
+                    fragment = GPUFragmentState(
+                        module = shaderModule,
+                        entryPoint = "fragmentMain",
+                        targets = arrayOf(GPUColorTargetState(format))
+                    ),
+                    primitive = GPUPrimitiveStateStrip(GPUIndexFormat.uint32),
+                    layout = GPUAutoLayoutMode.auto
+                )
+            )
+        }
+
+        fun generateMipLevels(texDesc: GPUTextureDescriptor, texture: GPUTexture) {
+            val cmdEncoder = device.createCommandEncoder()
+            generateMipLevels(texDesc, texture, cmdEncoder)
+            device.queue.submit(arrayOf(cmdEncoder.finish()))
+        }
+
+        fun generateMipLevels(texDesc: GPUTextureDescriptor, texture: GPUTexture, cmdEncoder: GPUCommandEncoder) {
+            val pipeline = getRenderPipeline(texDesc.format)
+            val layers = if (texDesc.size.size == 3) texDesc.size[2] else 1
+
+            for (layer in 0 until layers) {
+                var srcView = texture.createView(baseMipLevel = 0, mipLevelCount = 1, baseArrayLayer = layer, arrayLayerCount = 1)
+                for (i in 1 until texDesc.mipLevelCount) {
+                    val dstView = texture.createView(baseMipLevel = i, mipLevelCount = 1, baseArrayLayer = layer, arrayLayerCount = 1)
+                    val passEncoder = cmdEncoder.beginRenderPass(
+                        colorAttachments = arrayOf(GPURenderPassColorAttachment(
+                            view = dstView,
+                            storeOp = GPUStoreOp.store
+                        ))
+                    )
+                    val bindGroup = device.createBindGroup(
+                        layout = pipeline.getBindGroupLayout(0),
+                        entries = arrayOf(
+                            GPUBindGroupEntry(
+                                binding = 0,
+                                resource = sampler
+                            ),
+                            GPUBindGroupEntry(
+                                binding = 1,
+                                resource = srcView
+                            ),
+                        )
+                    )
+                    passEncoder.setPipeline(pipeline)
+                    passEncoder.setBindGroup(0, bindGroup)
+                    passEncoder.draw(4)
+                    passEncoder.end()
+                    srcView = dstView
+                }
+            }
+        }
     }
 }

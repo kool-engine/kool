@@ -128,7 +128,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
             timeFactorTxt.set("${physicsStepper.perfTimeFactor.toString(2)} x")
         }
 
-        addNode(Skybox.cube(ibl.reflectionMap, 1f))
+        addNode(Skybox.cube(ibl.reflectionMap, 1.5f))
     }
 
     override fun onRelease(ctx: KoolContext) {

@@ -136,7 +136,7 @@ class GltfDemo : DemoScene("glTF Models") {
     override fun Scene.setupMainScene(ctx: KoolContext) {
         setupCamera()
 
-        addNode(Skybox.cube(envMaps.reflectionMap, 1f))
+        addNode(Skybox.cube(envMaps.reflectionMap, 1.5f))
 
         makeDeferredContent()
         makeForwardContent()

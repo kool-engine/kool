@@ -68,7 +68,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
             setDefaultDepthOffset(true)
             shadowBounds = BoundingBoxF(Vec3f(-20f, 0f, -20f), Vec3f(20f, 10f, 20f))
         }
-        mainScene += Skybox.cube(ibl.reflectionMap, 1f)
+        mainScene += Skybox.cube(ibl.reflectionMap, 1.5f)
 
         physicsWorld = PhysicsWorld(mainScene)
         physicsWorld.simStepper = physicsStepper

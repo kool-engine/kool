@@ -110,7 +110,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
             }
         }
 
-        addNode(Skybox.cube(ibl.reflectionMap, 1f))
+        addNode(Skybox.cube(ibl.reflectionMap, 1.5f))
 
         onUpdate += {
             if (resetPhysics) {
