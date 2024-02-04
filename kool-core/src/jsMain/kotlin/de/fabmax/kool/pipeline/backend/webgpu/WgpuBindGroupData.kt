@@ -1,9 +1,6 @@
 package de.fabmax.kool.pipeline.backend.webgpu
 
-import de.fabmax.kool.pipeline.BindGroupData
-import de.fabmax.kool.pipeline.FilterMethod
-import de.fabmax.kool.pipeline.RenderPass
-import de.fabmax.kool.pipeline.Std140BufferLayout
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.GpuBindGroupData
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.MixedBufferImpl
@@ -121,7 +118,7 @@ class WgpuBindGroupData(
             samplerSettings.minFilter == FilterMethod.LINEAR &&
             samplerSettings.magFilter == FilterMethod.LINEAR
         ) samplerSettings.maxAnisotropy else 1
-        val compare = if (layout.isDepthTexture) GPUCompareFunction.less else null
+        val compare = if (layout.sampleType == TextureSampleType.DEPTH) samplerSettings.compareOp.wgpu else null
 
         val sampler = device.createSampler(
             addressModeU = samplerSettings.addressModeU.wgpu,
@@ -167,7 +164,7 @@ class WgpuBindGroupData(
         val tex = checkNotNull(texture) { "Cannot create texture binding from null texture" }
         val loadedTex = checkNotNull(tex.loadedTexture as WgpuLoadedTexture?) { "Cannot create texture binding from null texture" }
         val samplerSettings = sampler ?: tex.props.defaultSamplerSettings
-        val compare = if (layout.isDepthTexture) GPUCompareFunction.less else null
+        val compare = if (layout.sampleType == TextureSampleType.DEPTH) samplerSettings.compareOp.wgpu else null
 
         val sampler = device.createSampler(
             addressModeU = samplerSettings.addressModeU.wgpu,

@@ -119,6 +119,7 @@ sealed class TextureLayout(
     name: String,
     stages: Set<ShaderStage>,
     type: BindingType,
+    val sampleType: TextureSampleType
 ) : BindingLayout(name, stages, type) {
 
     override val hash: Long = LongHash().let {
@@ -131,24 +132,26 @@ sealed class TextureLayout(
 class Texture1dLayout(
     name: String,
     stages: Set<ShaderStage>,
-) : TextureLayout(name, stages, BindingType.TEXTURE_1D)
+    sampleType: TextureSampleType = TextureSampleType.FLOAT,
+) : TextureLayout(name, stages, BindingType.TEXTURE_1D, sampleType)
 
 class Texture2dLayout(
     name: String,
     stages: Set<ShaderStage>,
-    val isDepthTexture: Boolean = false,
-) : TextureLayout(name, stages, BindingType.TEXTURE_2D)
+    sampleType: TextureSampleType = TextureSampleType.FLOAT,
+) : TextureLayout(name, stages, BindingType.TEXTURE_2D, sampleType)
 
 class Texture3dLayout(
     name: String,
     stages: Set<ShaderStage>,
-) : TextureLayout(name, stages, BindingType.TEXTURE_3D)
+    sampleType: TextureSampleType = TextureSampleType.FLOAT,
+) : TextureLayout(name, stages, BindingType.TEXTURE_3D, sampleType)
 
 class TextureCubeLayout(
     name: String,
     stages: Set<ShaderStage>,
-    val isDepthTexture: Boolean = false,
-) : TextureLayout(name, stages, BindingType.TEXTURE_CUBE)
+    sampleType: TextureSampleType = TextureSampleType.FLOAT,
+) : TextureLayout(name, stages, BindingType.TEXTURE_CUBE, sampleType)
 
 sealed class StorageTextureLayout(
     name: String,
@@ -208,4 +211,10 @@ enum class StorageAccessType {
     READ_ONLY,
     WRITE_ONLY,
     READ_WRITE
+}
+
+enum class TextureSampleType {
+    FLOAT,
+    UNFILTERABLE_FLOAT,
+    DEPTH
 }

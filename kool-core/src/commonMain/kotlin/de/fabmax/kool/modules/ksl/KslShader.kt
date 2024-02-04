@@ -216,21 +216,20 @@ private fun KslProgram.setupBindGroupLayoutTextures(bindGrpBuilder: BindGroupLay
         return
     }
 
-    uniformSamplers.values.forEach { sampler ->
+    uniformSamplers.values.forEach { samplerUniform ->
+        val (sampler, sampleType) = samplerUniform
         val texStages = stages
             .filter { it.dependsOn(sampler) }
             .map { it.type.pipelineStageType }
             .toSet()
 
-        val name = sampler.name
-
         bindGrpBuilder.textures += when(val type = sampler.value.expressionType)  {
-            is KslDepthSampler2d -> Texture2dLayout(name, texStages, isDepthTexture = true)
-            is KslDepthSamplerCube -> TextureCubeLayout(name, texStages, isDepthTexture = true)
-            is KslColorSampler1d -> Texture1dLayout(name, texStages)
-            is KslColorSampler2d -> Texture2dLayout(name, texStages)
-            is KslColorSampler3d -> Texture3dLayout(name, texStages)
-            is KslColorSamplerCube -> TextureCubeLayout(name, texStages)
+            is KslDepthSampler2d -> Texture2dLayout(sampler.name, texStages, sampleType)
+            is KslDepthSamplerCube -> TextureCubeLayout(sampler.name, texStages, sampleType)
+            is KslColorSampler1d -> Texture1dLayout(sampler.name, texStages, sampleType)
+            is KslColorSampler2d -> Texture2dLayout(sampler.name, texStages, sampleType)
+            is KslColorSampler3d -> Texture3dLayout(sampler.name, texStages, sampleType)
+            is KslColorSamplerCube -> TextureCubeLayout(sampler.name, texStages, sampleType)
             else -> throw IllegalStateException("Unsupported sampler uniform type: ${type.typeName}")
         }
     }

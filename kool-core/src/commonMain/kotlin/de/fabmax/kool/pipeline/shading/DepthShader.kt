@@ -44,7 +44,7 @@ open class DepthShader(val cfg: Config) : KslShader(depthShaderProg(cfg), cfg.pi
 
                     if (cfg.outputLinearDepth) {
                         linearDepth = interStageFloat1("linearDepth").apply {
-                            input set -viewPos.z
+                            input set viewPos.z
                         }
                     }
                     if (cfg.alphaMode is AlphaMode.Mask) {
@@ -69,7 +69,7 @@ open class DepthShader(val cfg: Config) : KslShader(depthShaderProg(cfg), cfg.pi
                     }
 
                     if (cfg.outputNormals) {
-                        var w: KslExprFloat1 = 1f.const
+                        var w: KslExprFloat1 = (-1f).const
                         if (cfg.outputLinearDepth) {
                             w = linearDepth!!.output
                         }
@@ -77,10 +77,10 @@ open class DepthShader(val cfg: Config) : KslShader(depthShaderProg(cfg), cfg.pi
                         `if` (!inIsFrontFacing) {
                             normal set normal * (-1f).const
                         }
-                        colorOutput(float4Value(normal, -w))
+                        colorOutput(float4Value(normal, w))
                     } else if (cfg.outputLinearDepth) {
                         val d = linearDepth!!.output
-                        colorOutput(float4Value(-d, 1f.const, 1f.const, 1f.const))
+                        colorOutput(float4Value(d, 1f.const, 1f.const, 1f.const))
                     } else {
                         colorOutput(float4Value(1f, 1f, 1f, 1f))
                     }

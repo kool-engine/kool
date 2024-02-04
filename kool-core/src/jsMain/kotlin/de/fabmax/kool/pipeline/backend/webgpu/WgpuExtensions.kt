@@ -150,3 +150,10 @@ val TexFormat.wgpu: GPUTextureFormat
         TexFormat.RGB_U32 -> GPUTextureFormat.rgba32uint
         TexFormat.RGBA_U32 -> GPUTextureFormat.rgba32uint
     }
+
+val TextureSampleType.wgpu: GPUTextureSampleType
+    get() = when (this) {
+        TextureSampleType.FLOAT -> GPUTextureSampleType.float
+        TextureSampleType.UNFILTERABLE_FLOAT -> GPUTextureSampleType.unfilterableFloat
+        TextureSampleType.DEPTH -> GPUTextureSampleType.depth
+    }

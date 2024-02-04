@@ -409,11 +409,11 @@ class FurShader(uvBased: Boolean) : KslShader("Fur shader") {
     private fun KslProgram.furProgram(uvBased: Boolean) {
         val noise3d = texture3d("tNoise3d")
 
-        val uv = interStageFloat2()
-        val shell = interStageFloat1()
         val basePos = interStageFloat3()
         val localPos = interStageFloat3()
         val worldNormal = interStageFloat3()
+        val uv = interStageFloat2()
+        val shell = interStageFloat1()
         val camCos = interStageFloat1()
 
         vertexStage {
@@ -434,9 +434,9 @@ class FurShader(uvBased: Boolean) : KslShader("Fur shader") {
                 val strength = uniformFloat1("uNoiseDispStrength") * 0.2f.const
 
                 val samplePos = float3Var(pos * scale + uniformFloat3("uWindOffset") * uniformFloat1("uWindStrength"))
-                var d = sampleTexture(noise3d, samplePos).xyz * 2f.const - 1f.const
+                val d = float3Var(sampleTexture(noise3d, samplePos, 0f.const).xyz * 2f.const - 1f.const)
                 val windPos = float3Var(pos + d * shell.input * strength)
-                d = sampleTexture(noise3d, pos.float3("zyx") * scale).xyz * 2f.const - 1f.const
+                d set sampleTexture(noise3d, pos.float3("zyx") * scale, 0f.const).xyz * 2f.const - 1f.const
                 windPos += d * shell.input * strength
 
                 // reproject distorted (windy) position to shell surface
@@ -521,16 +521,15 @@ class FurShader(uvBased: Boolean) : KslShader("Fur shader") {
                 val hairThicknessFac = float1Var(1f.const - (1f.const - hairLenPos) * (1f.const - hairLenPos))
                 val hairRadius = hairThickness * hairThicknessFac
 
+                // 1d texture needs to be sampled in uniform control flow to work in webgpu (the usual level = 0 trick does not work for 1d textures...)
+                val furColor = float3Var(sampleTexture(texture1d("tFurColor"), pow(shell.output, 1.5f.const)).rgb)
                 val isOutside = bool1Var((hairRadius - distToNearestHair lt 0f.const) or (shell.output gt randomHairLen))
+
                 `if`(isOutside and (shell.output gt 0f.const)) {
                     discard()
-
                 }.`else` {
-                    val lightColor = sampleTexture(textureCube("tIrradiance"), worldNormal.output).rgb
-
-                    val furColor = sampleTexture(texture1d("tFurColor"), pow(shell.output, 1.5f.const)).rgb
-                    val linColor = furColor * lightColor
-
+                    val lightColor = float3Var(sampleTexture(textureCube("tIrradiance"), worldNormal.output, 0f.const).rgb)
+                    val linColor = float3Var(furColor * lightColor)
                     colorOutput(convertColorSpace(linColor, ColorSpaceConversion.LINEAR_TO_sRGB_HDR), 1f.const)
                 }
             }

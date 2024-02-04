@@ -28,8 +28,8 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
 
     init {
         memStack {
-            descriptorSetLayout = createDescriptorSetLayout(pipeline.bindGroupLayout)
-            descriptorPool = createDescriptorPool(pipeline.bindGroupLayout)
+            descriptorSetLayout = createDescriptorSetLayout(pipeline.bindGroupLayouts[BindGroupScope.PIPELINE])
+            descriptorPool = createDescriptorPool(pipeline.bindGroupLayouts[BindGroupScope.PIPELINE])
 
             val shaderStages = (pipeline.shaderCode as ShaderCodeImplVk).vkStages
             val shaderStageModules = shaderStages.map { createShaderModule(it) }

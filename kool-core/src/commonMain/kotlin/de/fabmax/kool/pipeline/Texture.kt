@@ -271,6 +271,11 @@ data class SamplerSettings(
      * supports.
      */
     val maxAnisotropy: Int = 4,
+
+    /**
+     * Compare method to use in case this sampler is used to sample a depth map. Otherwise, compare op is ignored.
+     */
+    val compareOp: DepthCompareOp = DepthCompareOp.LESS,
 ) {
     /**
      * Returns a copy of this [SamplerSettings] with [minFilter] and [magFilter] set to [FilterMethod.NEAREST].

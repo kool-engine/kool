@@ -5,11 +5,8 @@ import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.modules.ksl.blocks.convertColorSpace
 import de.fabmax.kool.modules.ksl.lang.*
-import de.fabmax.kool.pipeline.BlendMode
-import de.fabmax.kool.pipeline.CullMethod
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
-import de.fabmax.kool.pipeline.PipelineConfig
-import de.fabmax.kool.pipeline.Texture2d
 
 class DeferredOutputShader(cfg: DeferredPipelineConfig, bloom: Texture2d?) :
     KslShader(
@@ -113,7 +110,7 @@ class DeferredOutputShader(cfg: DeferredPipelineConfig, bloom: Texture2d?) :
                     }
                     colorOutput(srgb)
 
-                    outDepth set sampleTexture(texture2d("currentDepth"), texCoord.output).r
+                    outDepth set sampleTexture(texture2d("currentDepth", TextureSampleType.UNFILTERABLE_FLOAT), texCoord.output).r
                 }
             }
         }

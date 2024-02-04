@@ -59,7 +59,7 @@ class DescriptorSet(val graphicsPipeline: GraphicsPipeline) {
     }
 
     fun createDescriptorObjects(pipeline: DrawPipeline) {
-        pipeline.bindGroupLayout.bindings.forEachIndexed { idx, desc ->
+        pipeline.bindGroupLayouts[BindGroupScope.PIPELINE].bindings.forEachIndexed { idx, desc ->
             addDescriptor {
                 when (desc.type) {
                     BindingType.UNIFORM_BUFFER -> UboDescriptor(idx, graphicsPipeline, desc as UniformBufferLayout)
@@ -86,7 +86,7 @@ class DescriptorSet(val graphicsPipeline: GraphicsPipeline) {
         if (isDescriptorSetUpdateRequired[imageIdx]) {
             clearUpdateRequired(imageIdx)
 
-            val descriptors = graphicsPipeline.pipeline.bindGroupLayout.bindings
+            val descriptors = graphicsPipeline.pipeline.bindGroupLayouts[BindGroupScope.PIPELINE].bindings
             memStack {
                 val descriptorWrite = callocVkWriteDescriptorSetN(descriptors.size) {
                     for (descIdx in descriptors.indices) {

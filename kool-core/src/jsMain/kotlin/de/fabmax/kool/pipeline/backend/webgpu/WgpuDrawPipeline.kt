@@ -77,16 +77,14 @@ class WgpuDrawPipeline(
         visibility: Int,
         dimension: GPUTextureViewDimension
     ): List<GPUBindGroupLayoutEntry> {
-        val samplerType = when (binding) {
-            is Texture2dLayout -> if (binding.isDepthTexture) GPUSamplerBindingType.comparison else GPUSamplerBindingType.filtering
-            is TextureCubeLayout -> if (binding.isDepthTexture) GPUSamplerBindingType.comparison else GPUSamplerBindingType.filtering
-            else -> GPUSamplerBindingType.filtering
+        val texSampleType = binding.sampleType.wgpu
+        val samplerType = when (texSampleType) {
+            GPUTextureSampleType.float -> GPUSamplerBindingType.filtering
+            GPUTextureSampleType.depth -> GPUSamplerBindingType.comparison
+            GPUTextureSampleType.unfilterableFloat -> GPUSamplerBindingType.nonFiltering
+            else -> error("unexpected: $texSampleType")
         }
-        val texSampleType = when (binding) {
-            is Texture2dLayout -> if (binding.isDepthTexture) GPUTextureSampleType.depth else GPUTextureSampleType.float
-            is TextureCubeLayout -> if (binding.isDepthTexture) GPUTextureSampleType.depth else GPUTextureSampleType.float
-            else -> GPUTextureSampleType.float
-        }
+
         return listOf(
             GPUBindGroupLayoutEntrySampler(
                 location.binding,

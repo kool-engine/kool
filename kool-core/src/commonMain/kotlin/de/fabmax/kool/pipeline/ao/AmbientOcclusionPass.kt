@@ -31,8 +31,8 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
 
     private val aoPassShader = AoPassShader()
 
-    var fwdNormalDepth: Texture2d? by aoPassShader::depthTex
-    var deferredPosition: Texture2d? by aoPassShader::depthTex
+    var fwdNormalDepth: Texture2d? by aoPassShader::viewSpaceTex
+    var deferredPosition: Texture2d? by aoPassShader::viewSpaceTex
     var deferredNormal: Texture2d? by aoPassShader::normalTex
 
     var radius: Float by aoPassShader::uRadius
@@ -120,7 +120,7 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
 
         fragmentStage {
             val noiseTex = texture2d("noiseTex")
-            val depthTex = texture2d("depthTex")
+            val viewSpaceTex = texture2d("viewSpaceTex")
 
             val uProj = uniformMat4("uProj")
             val uInvProj = uniformMat4("uInvProj")
@@ -139,19 +139,24 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
 
                 if (aoSetup.isDeferred) {
                     depthComponent = "z"
-                    normal = float3Var(sampleTexture(texture2d("normalTex"), uv.output).xyz)
-                    origin = float3Var(sampleTexture(depthTex, uv.output).xyz)
+                    val suv = float2Var(uv.output)
+                    if (KoolSystem.requireContext().backend.ndcYDirection == NdcYDirection.TOP_TO_BOTTOM) {
+                        suv.y set 1f.const - suv.y
+                    }
+                    normal = float3Var(sampleTexture(texture2d("normalTex"), suv).xyz)
+                    origin = float3Var(sampleTexture(viewSpaceTex, suv).xyz)
 
                 } else {
                     depthComponent = "a"
-                    val normalDepth = float4Var(sampleTexture(depthTex, uv.output))
-                    normal = normalDepth.xyz
+                    val normalDepth = float4Var(sampleTexture(viewSpaceTex, uv.output))
+                    normal = float3Var(normalDepth.xyz)
 
+                    val depth = float1Var(normalDepth.w)
                     val projPos = float4Var(Vec4f(0f, 0f, 1f, 1f).const)
                     projPos.xy set uv.output * 2f.const - 1f.const
                     projPos set uInvProj * projPos
                     origin = float3Var(projPos.xyz / projPos.w)
-                    origin set origin * (normalDepth.w / origin.z)
+                    origin set origin * (depth / origin.z)
                 }
 
                 val occlFac = float1Var(1f.const)
@@ -174,7 +179,7 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
                         val occlusionDiv = float1Var(0f.const)
                         fori(0.const, uKernelSize) { i ->
                             val kernel = float3Var(tbn * uKernel[i])
-                            if (KoolSystem.requireContext().backend.ndcYDirection == NdcYDirection.TOP_TO_BOTTOM) {
+                            if (!aoSetup.isDeferred && KoolSystem.requireContext().backend.ndcYDirection == NdcYDirection.TOP_TO_BOTTOM) {
                                 kernel.y *= (-1f).const
                             }
                             val samplePos = float3Var(origin + kernel * sampleR)
@@ -185,7 +190,10 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
                                     (sampleProj.y gt (-1f).const) and (sampleProj.y lt 1f.const)) {
 
                                 val sampleUv = float2Var(sampleProj.xy * 0.5f.const + 0.5f.const)
-                                val sampleDepth = sampleTexture(depthTex, sampleUv, 0f.const).float1(depthComponent)
+                                if (aoSetup.isDeferred && KoolSystem.requireContext().backend.ndcYDirection == NdcYDirection.TOP_TO_BOTTOM) {
+                                    sampleUv.y set 1f.const - sampleUv.y
+                                }
+                                val sampleDepth = sampleTexture(viewSpaceTex, sampleUv, 0f.const).float1(depthComponent)
                                 val rangeCheck = float1Var(1f.const - smoothStep(0f.const, 1f.const, abs(origin.z - sampleDepth) / (4f.const * sampleR)))
                                 val occlusionInc = float1Var(clamp((sampleDepth - (samplePos.z + uBias)) * 10f.const, 0f.const, 1f.const))
                                 occlusion += occlusionInc * rangeCheck
@@ -204,7 +212,7 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
 
     private inner class AoPassShader : KslShader(aoPassProg(), fullscreenShaderPipelineCfg) {
         var noiseTex by texture2d("noiseTex", generateNoiseTex().also { it.releaseWith(this@AmbientOcclusionPass) })
-        var depthTex by texture2d("depthTex")
+        var viewSpaceTex by texture2d("viewSpaceTex")
         var normalTex by texture2d("normalTex")
 
         val uKernel = uniform3fv("uKernel", MAX_KERNEL_SIZE)

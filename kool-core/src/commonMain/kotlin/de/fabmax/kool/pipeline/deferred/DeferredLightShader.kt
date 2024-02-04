@@ -1,5 +1,6 @@
 package de.fabmax.kool.pipeline.deferred
 
+import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.modules.ksl.KslShader
@@ -7,6 +8,7 @@ import de.fabmax.kool.modules.ksl.blocks.mvpMatrix
 import de.fabmax.kool.modules.ksl.blocks.pbrLightBlock
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.backend.NdcYDirection
 import de.fabmax.kool.scene.Light
 
 /**
@@ -67,6 +69,9 @@ class DeferredLightShader(encodedLightType: Float, model: Model = Model(encodedL
             fragmentStage {
                 main {
                     val uv = float2Var(fragPos.output.xy / fragPos.output.w * 0.5.const + 0.5.const)
+                    if (KoolSystem.requireContext().backend.ndcYDirection == NdcYDirection.TOP_TO_BOTTOM) {
+                        uv.y set 1f.const - uv.y
+                    }
 
                     val posFlags = float4Var(sampleTexture(texture2d("positionFlags"), uv))
                     val normalRoughness = float4Var(sampleTexture(texture2d("normalRoughness"), uv))

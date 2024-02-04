@@ -70,7 +70,7 @@ class BloomThresholdPass(deferredPipeline: DeferredPipeline, cfg: DeferredPipeli
             private val pipelineCfg = PipelineConfig(depthTest = DepthCompareOp.DISABLED)
 
             private fun program(samples: Int, avgDownSampling: Boolean) = KslProgram("Bloom threshold pass").apply {
-                val screenUv = interStageFloat2("uv")
+                val screenUv = interStageFloat2()
 
                 fullscreenQuadVertexStage(screenUv)
 

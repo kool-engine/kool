@@ -125,9 +125,18 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         when (this) {
             is OffscreenRenderPass2d -> impl.draw(encoder)
             is OffscreenRenderPassCube -> impl.draw(encoder)
-            is OffscreenRenderPass2dPingPong -> TODO("OffscreenRenderPass2dPingPong") //drawOffscreenPingPong(this)
+            is OffscreenRenderPass2dPingPong -> draw(encoder)
             is ComputeRenderPass -> TODO("ComputeRenderPass") //dispatchCompute(offscreenPass)
             else -> throw IllegalArgumentException("Offscreen pass type not implemented: $this")
+        }
+    }
+
+    private fun OffscreenRenderPass2dPingPong.draw(encoder: GPUCommandEncoder) {
+        for (i in 0 until pingPongPasses) {
+            onDrawPing?.invoke(i)
+            ping.impl.draw(encoder)
+            onDrawPong?.invoke(i)
+            pong.impl.draw(encoder)
         }
     }
 

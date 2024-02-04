@@ -1,6 +1,9 @@
 package de.fabmax.kool.pipeline
 
-import de.fabmax.kool.util.*
+import de.fabmax.kool.util.BaseReleasable
+import de.fabmax.kool.util.LongHash
+import de.fabmax.kool.util.Releasable
+import de.fabmax.kool.util.Time
 
 /**
  * Base class for regular (graphics) and compute pipelines. A pipeline includes the shader and additional attributes
@@ -18,12 +21,6 @@ abstract class PipelineBase(val name: String, val bindGroupLayouts: BindGroupLay
         get() = hash.hash
 
     abstract val shaderCode: ShaderCode
-
-    @Deprecated("Use bindGroupLayouts instead", ReplaceWith("bindGroupLayouts[0]"))
-    val bindGroupLayout: BindGroupLayout get() {
-        logE { "Pipeline has multiple bind groups, access via deprecated bindGroupLayout will likely not work" }
-        return bindGroupLayouts[BindGroupScope.PIPELINE]
-    }
 
     val pipelineDataLayout = bindGroupLayouts[BindGroupScope.PIPELINE]
     var pipelineData = pipelineDataLayout.createData()

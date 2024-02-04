@@ -56,7 +56,7 @@ abstract class KslShaderStage(val program: KslProgram, val type: KslShaderStageT
     }
 
     fun getUsedSamplers(): List<KslUniform<*>> {
-        return program.uniformSamplers.values.filter { dependsOn(it) }
+        return program.uniformSamplers.values.map { it.sampler }.filter { dependsOn(it) }
     }
 
     fun getUsedStorage(): List<KslStorage<*, *>> {
@@ -179,7 +179,8 @@ class KslFragmentStage(program: KslProgram) : KslShaderStage(program, KslShaderS
     fun KslScopeBuilder.colorOutput(rgb: KslVectorExpression<KslFloat3, KslFloat1>, a: KslScalarExpression<KslFloat1> = 1f.const, location: Int = 0) {
         check (parentStage is KslFragmentStage) { "colorOutput is only available in fragment stage" }
         val outColor = parentStage.colorOutput(location)
-        outColor.value set float4Value(rgb, a)
+        val cachedRgb = float3Var(rgb)
+        outColor.value set float4Value(cachedRgb, a)
     }
 
     fun KslScopeBuilder.colorOutput(value: KslVectorExpression<KslFloat4, KslFloat1>, location: Int = 0) {

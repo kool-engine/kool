@@ -77,7 +77,7 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
 
     fun loadTexture3d(tex: Texture3d, data: TextureData) {
         val size = intArrayOf(data.width, data.height, data.depth)
-        val usage = GPUTextureUsage.COPY_DST or GPUTextureUsage.TEXTURE_BINDING or GPUTextureUsage.RENDER_ATTACHMENT
+        val usage = GPUTextureUsage.COPY_DST or GPUTextureUsage.TEXTURE_BINDING
         if (tex.props.generateMipMaps) {
             logW { "generateMipMaps requested for Texture3d ${tex.name}: not yet implemented on WebGPU" }
         }

@@ -22,7 +22,7 @@ open class KslProgram(val name: String) {
 
     val commonUniformBuffer = KslUniformBuffer("CommonUniforms", this, BindGroupScope.PIPELINE)
     val uniformBuffers = mutableListOf(commonUniformBuffer)
-    val uniformSamplers = mutableMapOf<String, KslUniform<*>>()
+    val uniformSamplers = mutableMapOf<String, SamplerUniform>()
     val uniformStorage = mutableMapOf<String, KslStorage<*,*>>()
     val dataBlocks = mutableListOf<KslDataBlock>()
 
@@ -78,13 +78,13 @@ open class KslProgram(val name: String) {
         uniformBuffers.forEach { ubo ->
             ubo.uniforms.values.forEach { stage.globalScope.definedStates += it.value }
         }
-        uniformSamplers.values.forEach { stage.globalScope.definedStates += it.value }
+        uniformSamplers.values.forEach { stage.globalScope.definedStates += it.sampler.value }
     }
 
-    private fun registerSampler(uniform: KslUniform<*>) {
-        uniformSamplers[uniform.name] = uniform
+    private fun registerSampler(sampler : SamplerUniform) {
+        uniformSamplers[sampler.sampler.name] = sampler
         stages.forEach {
-            it.globalScope.definedStates += uniform.value
+            it.globalScope.definedStates += sampler.sampler.value
         }
     }
 
@@ -95,8 +95,8 @@ open class KslProgram(val name: String) {
         }
     }
 
-    private inline fun <reified T: KslUniform<*>> getOrCreateSampler(name: String, create: () -> T): T {
-        val uniform = uniformSamplers[name] ?: create().also { registerSampler(it) }
+    private inline fun <reified T: KslUniform<*>> getOrCreateSampler(name: String, sampleType: TextureSampleType, create: () -> T): T {
+        val uniform = uniformSamplers[name]?.sampler ?: create().also { registerSampler(SamplerUniform(it, sampleType)) }
         check(uniform is T) {
             "Existing uniform with name \"$name\" has not the expected type"
         }
@@ -131,13 +131,17 @@ open class KslProgram(val name: String) {
     fun uniformMat3Array(name: String, arraySize: Int) = commonUniformBuffer.uniformMat3Array(name, arraySize)
     fun uniformMat4Array(name: String, arraySize: Int) = commonUniformBuffer.uniformMat4Array(name, arraySize)
 
-    fun texture1d(name: String) = getOrCreateSampler(name) { KslUniform(KslVar(name, KslColorSampler1d, false)) }
-    fun texture2d(name: String) = getOrCreateSampler(name) { KslUniform(KslVar(name, KslColorSampler2d, false)) }
-    fun texture3d(name: String) = getOrCreateSampler(name) { KslUniform(KslVar(name, KslColorSampler3d, false)) }
-    fun textureCube(name: String) = getOrCreateSampler(name) { KslUniform(KslVar(name, KslColorSamplerCube, false)) }
+    fun texture1d(name: String, sampleType: TextureSampleType = TextureSampleType.FLOAT) =
+        getOrCreateSampler(name, sampleType) { KslUniform(KslVar(name, KslColorSampler1d, false)) }
+    fun texture2d(name: String, sampleType: TextureSampleType = TextureSampleType.FLOAT) =
+        getOrCreateSampler(name, sampleType) { KslUniform(KslVar(name, KslColorSampler2d, false)) }
+    fun texture3d(name: String, sampleType: TextureSampleType = TextureSampleType.FLOAT) =
+        getOrCreateSampler(name, sampleType) { KslUniform(KslVar(name, KslColorSampler3d, false)) }
+    fun textureCube(name: String, sampleType: TextureSampleType = TextureSampleType.FLOAT) =
+        getOrCreateSampler(name, sampleType) { KslUniform(KslVar(name, KslColorSamplerCube, false)) }
 
-    fun depthTexture2d(name: String) = getOrCreateSampler(name) { KslUniform(KslVar(name, KslDepthSampler2d, false)) }
-    fun depthTextureCube(name: String) = getOrCreateSampler(name) { KslUniform(KslVar(name, KslDepthSamplerCube, false)) }
+    fun depthTexture2d(name: String) = getOrCreateSampler(name, TextureSampleType.DEPTH) { KslUniform(KslVar(name, KslDepthSampler2d, false)) }
+    fun depthTextureCube(name: String) = getOrCreateSampler(name, TextureSampleType.DEPTH) { KslUniform(KslVar(name, KslDepthSamplerCube, false)) }
 
     inline fun <reified T: KslNumericType> storage1d(name: String): KslStorage1d<KslStorage1dType<T>> {
         val storage: KslStorage<*,*> = uniformStorage[name]
@@ -264,7 +268,7 @@ open class KslProgram(val name: String) {
             }
 
             // remove unused texture samplers
-            uniformSamplers.values.retainAll { u -> stages.any { stage -> stage.dependsOn(u) } }
+            uniformSamplers.values.retainAll { u -> stages.any { stage -> stage.dependsOn(u.sampler) } }
 
             // remove unused storage
             uniformStorage.values.retainAll { u -> stages.any { stage -> stage.dependsOn(u) } }
@@ -301,4 +305,6 @@ open class KslProgram(val name: String) {
     val Texture2dBinding.ksl: KslUniform<KslColorSampler2d> get() = texture2d(bindingName)
     val Texture3dBinding.ksl: KslUniform<KslColorSampler3d> get() = texture3d(bindingName)
     val TextureCubeBinding.ksl: KslUniform<KslColorSamplerCube> get() = textureCube(bindingName)
+
+    data class SamplerUniform(val sampler: KslUniform<*>, val sampleType: TextureSampleType)
 }

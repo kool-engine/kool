@@ -125,7 +125,7 @@ class WgpuOffscreenRenderPass2d(
             usage: Int,
         ): WgpuTextureResource = backend.createTexture(
             GPUTextureDescriptor(
-                label = "${parentPass.name}.colorAttachment",
+                label = name,
                 size = intArrayOf(width, height),
                 format = if (isDepth) GPUTextureFormat.depth32float else texture.props.format.wgpu,
                 usage = usage,
