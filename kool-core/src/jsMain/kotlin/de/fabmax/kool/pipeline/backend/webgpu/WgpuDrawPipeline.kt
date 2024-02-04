@@ -15,7 +15,6 @@ class WgpuDrawPipeline(
     val drawPipeline: DrawPipeline,
     private val vertexShaderModule: GPUShaderModule,
     private val fragmentShaderModule: GPUShaderModule,
-    private val renderPass: WgpuRenderPass<*>,
     private val backend: RenderBackendWebGpu,
 ): BaseReleasable(), PipelineBackend {
     private val device: GPUDevice get() = backend.device
@@ -26,7 +25,7 @@ class WgpuDrawPipeline(
     private val bindGroupLayouts: List<GPUBindGroupLayout> = createBindGroupLayouts(drawPipeline)
     private val pipelineLayout: GPUPipelineLayout = createPipelineLayout(drawPipeline)
     private val vertexBufferLayout: List<GPUVertexBufferLayout> = createVertexBufferLayout(drawPipeline)
-    private val renderPipeline: GPURenderPipeline = createRenderPipeline(drawPipeline)
+    private val renderPipelines = mutableMapOf<WgpuRenderPass<*>, GPURenderPipeline>()
 
     private val users = mutableSetOf<Int>()
 
@@ -116,10 +115,11 @@ class WgpuDrawPipeline(
                         GpuType.FLOAT2 -> GPUVertexFormat.float32x2 to 8
                         GpuType.FLOAT3 -> GPUVertexFormat.float32x3 to 12
                         GpuType.FLOAT4 -> GPUVertexFormat.float32x4 to 16
-                        GpuType.INT1 -> TODO("needs extra buffer") //GPUVertexFormat.sint32 to 4
-                        GpuType.INT2 -> TODO("needs extra buffer") //GPUVertexFormat.sint32x2 to 8
-                        GpuType.INT3 -> TODO("needs extra buffer") //GPUVertexFormat.sint32x3 to 12
-                        GpuType.INT4 -> TODO("needs extra buffer") //GPUVertexFormat.sint32x4 to 16
+
+                        GpuType.INT1 -> GPUVertexFormat.sint32 to 4
+                        GpuType.INT2 -> GPUVertexFormat.sint32x2 to 8
+                        GpuType.INT3 -> GPUVertexFormat.sint32x3 to 12
+                        GpuType.INT4 -> GPUVertexFormat.sint32x4 to 16
 
                         GpuType.MAT2 -> GPUVertexFormat.float32x2 to 8
                         GpuType.MAT3 -> GPUVertexFormat.float32x3 to 12
@@ -135,26 +135,29 @@ class WgpuDrawPipeline(
                     }
                 }
 
-            GPUVertexBufferLayout(
-                arrayStride = vertexBinding.strideBytes.toLong(),
-                attributes = attributes.toTypedArray(),
-                stepMode = when (vertexBinding.inputRate) {
-                    InputRate.VERTEX -> GPUVertexStepMode.vertex
-                    InputRate.INSTANCE -> GPUVertexStepMode.instance
-                }
-            )
-        }
+                GPUVertexBufferLayout(
+                    arrayStride = vertexBinding.strideBytes.toLong(),
+                    attributes = attributes.toTypedArray(),
+                    stepMode = when (vertexBinding.inputRate) {
+                        InputRate.VERTEX -> GPUVertexStepMode.vertex
+                        InputRate.INSTANCE -> GPUVertexStepMode.instance
+                    }
+                )
+            }
     }
 
-    private fun createRenderPipeline(pipeline: DrawPipeline): GPURenderPipeline {
-        val shaderCode = pipeline.shaderCode as RenderBackendWebGpu.WebGpuShaderCode
+    private fun createRenderPipeline(passEncoderState: PassEncoderState): GPURenderPipeline {
+        val renderPass = passEncoderState.renderPass
+        val gpuRenderPass = passEncoderState.gpuRenderPass
+
+        val shaderCode = drawPipeline.shaderCode as RenderBackendWebGpu.WebGpuShaderCode
         val vertexState = GPUVertexState(
             module = vertexShaderModule,
             entryPoint = shaderCode.vertexEntryPoint,
             buffers = vertexBufferLayout.toTypedArray()
         )
 
-        val blendMode = when (pipeline.pipelineConfig.blendMode) {
+        val blendMode = when (drawPipeline.pipelineConfig.blendMode) {
             BlendMode.DISABLED -> null
             BlendMode.BLEND_ADDITIVE -> GPUBlendState(
                 color = GPUBlendComponent(srcFactor = GPUBlendFactor.one, dstFactor = GPUBlendFactor.one),
@@ -173,30 +176,31 @@ class WgpuDrawPipeline(
         val fragmentState = GPUFragmentState(
             module = fragmentShaderModule,
             entryPoint = shaderCode.fragmentEntryPoint,
-            targets = renderPass.colorTargetFormats.map { GPUColorTargetState(it, blendMode) }.toTypedArray()
+            targets = gpuRenderPass.colorTargetFormats.map { GPUColorTargetState(it, blendMode) }.toTypedArray()
         )
 
         val primitiveState = GPUPrimitiveState(
-            topology = pipeline.vertexLayout.primitiveType.wgpu,
-            cullMode = pipeline.pipelineConfig.cullMethod.wgpu
+            topology = drawPipeline.vertexLayout.primitiveType.wgpu,
+            cullMode = drawPipeline.pipelineConfig.cullMethod.wgpu,
+            frontFace = if (renderPass.isMirrorY) GPUFrontFace.cw else GPUFrontFace.ccw
         )
 
-        val depthStencil = renderPass.depthFormat?.let { depthFormat ->
+        val depthStencil = gpuRenderPass.depthFormat?.let { depthFormat ->
             GPUDepthStencilState(
                 format = depthFormat,
-                depthWriteEnabled = if (pipeline.pipelineConfig.depthTest == DepthCompareOp.DISABLED) false else pipeline.pipelineConfig.isWriteDepth,
-                depthCompare = if (pipeline.pipelineConfig.depthTest == DepthCompareOp.DISABLED) GPUCompareFunction.always else pipeline.pipelineConfig.depthTest.wgpu
+                depthWriteEnabled = if (drawPipeline.pipelineConfig.depthTest == DepthCompareOp.DISABLED) false else drawPipeline.pipelineConfig.isWriteDepth,
+                depthCompare = if (drawPipeline.pipelineConfig.depthTest == DepthCompareOp.DISABLED) GPUCompareFunction.always else drawPipeline.pipelineConfig.depthTest.wgpu
             )
         }
 
         return device.createRenderPipeline(
-            label = "${pipeline.name}-layout",
+            label = "${drawPipeline.name}-layout",
             layout = pipelineLayout,
             vertex = vertexState,
             fragment = fragmentState,
             depthStencil = depthStencil,
             primitive = primitiveState,
-            multisample = GPUMultisampleState(renderPass.numSamples)
+            multisample = GPUMultisampleState(gpuRenderPass.numSamples)
         )
     }
 
@@ -212,10 +216,14 @@ class WgpuDrawPipeline(
             return false
         }
 
+        val renderPipeline = renderPipelines.getOrPut(passEncoderState.gpuRenderPass) {
+            createRenderPipeline(passEncoderState)
+        }
+
         passEncoderState.setPipeline(renderPipeline)
-        viewData.getOrCreateWgpuData().bind(passEncoderState, viewData, cmd.queue.renderPass)
-        pipelineData.getOrCreateWgpuData().bind(passEncoderState, pipelineData, cmd.queue.renderPass)
-        meshData.getOrCreateWgpuData().bind(passEncoderState, meshData, cmd.queue.renderPass)
+        viewData.getOrCreateWgpuData().bind(passEncoderState, cmd.queue.renderPass)
+        pipelineData.getOrCreateWgpuData().bind(passEncoderState, cmd.queue.renderPass)
+        meshData.getOrCreateWgpuData().bind(passEncoderState, cmd.queue.renderPass)
         bindVertexBuffers(passEncoderState.passEncoder, cmd.mesh)
         return true
     }

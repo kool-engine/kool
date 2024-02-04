@@ -154,11 +154,11 @@ object GrassShader {
                     // wind based tint (moving darker patches)
                     val windOffset = uniformFloat4("uWindOffsetStrength").xyz * 0.5f.const
                     val windSamplePos = (windOffset + worldPos) * uniformFloat1("uWindScale")
-                    val slowWind = float3Var(sampleTexture(windTex, windSamplePos).xyz)
+                    val slowWind = float3Var(sampleTexture(windTex, windSamplePos, 0f.const).xyz)
                     val windTint = clamp(slowWind.x + 0.3f.const, 0.2f.const, 1f.const)
 
                     // position based tint (fixed position yellowish patches)
-                    val positionTint = sampleTexture(windTex, worldPos * 0.05f.const).y * 0.5f.const
+                    val positionTint = sampleTexture(windTex, worldPos * 0.05f.const, 0f.const).y * 0.5f.const
 
                     // forward tint values to fragment stage
                     tint.input set float2Value(windTint, positionTint)

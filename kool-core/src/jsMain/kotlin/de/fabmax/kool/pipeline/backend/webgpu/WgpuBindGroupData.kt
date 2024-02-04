@@ -19,18 +19,18 @@ class WgpuBindGroupData(
     var bindGroup: GPUBindGroup? = null
         private set
 
-    fun bind(passEncoderState: PassEncoderState, bindGroupData: BindGroupData, renderPass: RenderPass) {
+    fun bind(passEncoderState: PassEncoderState, renderPass: RenderPass) {
         for (i in textureBindings.indices) {
             val tex = textureBindings[i]
             if (tex.binding.texture?.loadedTexture !== tex.loadedTex) {
                 // underlying gpu texture has changed, e.g. because render attachment of a render pass was recreated
-                bindGroupData.isDirty = true
+                data.isDirty = true
             }
         }
 
         var recreatedBindGroup = false
-        if (bindGroup == null || bindGroupData.isDirty) {
-            bindGroupData.isDirty = false
+        if (bindGroup == null || data.isDirty) {
+            data.isDirty = false
             createBindGroup(renderPass)
             recreatedBindGroup = true
         }

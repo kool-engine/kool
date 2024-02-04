@@ -1,12 +1,10 @@
 package de.fabmax.kool.pipeline.ibl
 
-import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenCubeVertexStage
-import de.fabmax.kool.pipeline.backend.NdcYDirection
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.addMesh
@@ -25,6 +23,7 @@ class ReflectionMapPass private constructor(parentScene: Scene, hdriMap: Texture
     var isAutoRemove = true
 
     init {
+        mirrorIfInvertedClipY()
         views.forEach { it.clearColor = null }
         isEnabled = true
 
@@ -82,9 +81,6 @@ class ReflectionMapPass private constructor(parentScene: Scene, hdriMap: Texture
 
                 main {
                     val normal = float3Var(normalize(localPos.output))
-                    if (KoolSystem.requireContext().backend.ndcYDirection == NdcYDirection.TOP_TO_BOTTOM) {
-                        normal.y *= (-1f).const
-                    }
 
                     `if`(uRoughness eq 0f.const) {
                         colorOutput(sampleEnvMap(normal, 0f.const))

@@ -104,6 +104,7 @@ class UniformBufferLayout(
     override val hash: Long = LongHash().let {
         it += name
         it += type
+        stages.forEach { s -> it += s }
         uniforms.forEach { u ->
             it += u.name
             it += u.type
@@ -125,6 +126,7 @@ sealed class TextureLayout(
     override val hash: Long = LongHash().let {
         it += name
         it += type
+        stages.forEach { s -> it += s }
         it.hash
     }
 }
@@ -168,6 +170,7 @@ sealed class StorageTextureLayout(
         it += format.typeName
         it += level
         it += type
+        stages.forEach { s -> it += s }
         it.hash
     }
 }

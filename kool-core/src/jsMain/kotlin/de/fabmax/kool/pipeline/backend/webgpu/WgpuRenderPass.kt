@@ -12,7 +12,7 @@ abstract class WgpuRenderPass<T: RenderPass>(
     val backend: RenderBackendWebGpu
 ) : BaseReleasable() {
 
-    private val passEncoderState = PassEncoderState()
+    private val passEncoderState = PassEncoderState(this)
 
     protected val device: GPUDevice
         get() = backend.device
@@ -41,18 +41,18 @@ abstract class WgpuRenderPass<T: RenderPass>(
                 val w = viewport.width.toFloat()
                 val h = viewport.height.toFloat()
 
-                passEncoderState.reset(encoder.beginRenderPass(colorAttachments, depthAttachment, renderPass.name))
+                passEncoderState.reset(encoder.beginRenderPass(colorAttachments, depthAttachment, renderPass.name), renderPass)
                 val passEncoder = passEncoderState.passEncoder
                 passEncoder.setViewport(x, y, w, h, 0f, 1f)
 
                 for (cmd in view.drawQueue.commands) {
                     val isCmdValid = cmd.pipeline != null && cmd.geometry.numIndices > 0
-                    if (isCmdValid && backend.pipelineManager.bindDrawPipeline(cmd, passEncoderState, this@WgpuRenderPass)) {
+                    if (isCmdValid && backend.pipelineManager.bindDrawPipeline(cmd, passEncoderState)) {
                         val insts = cmd.mesh.instances
                         if (insts == null) {
                             passEncoder.drawIndexed(cmd.geometry.numIndices)
                             BackendStats.addDrawCommands(1, cmd.geometry.numPrimitives)
-                        } else {
+                        } else if (insts.numInstances > 0) {
                             passEncoder.drawIndexed(cmd.geometry.numIndices, insts.numInstances)
                             BackendStats.addDrawCommands(1, cmd.geometry.numPrimitives * insts.numInstances)
                         }
@@ -75,15 +75,20 @@ abstract class WgpuRenderPass<T: RenderPass>(
     )
 }
 
-class PassEncoderState {
+class PassEncoderState(val gpuRenderPass: WgpuRenderPass<*>) {
+    private var _renderPass: RenderPass? = null
     private var _passEncoder: GPURenderPassEncoder? = null
+
     val passEncoder: GPURenderPassEncoder
         get() = _passEncoder!!
+    val renderPass: RenderPass
+        get() = _renderPass!!
 
     private var renderPipeline: GPURenderPipeline? = null
     private val bindGroups = Array<WgpuBindGroupData?>(4) { null }
 
-    fun reset(passEncoder: GPURenderPassEncoder) {
+    fun reset(passEncoder: GPURenderPassEncoder, renderPass: RenderPass) {
+        _renderPass = renderPass
         _passEncoder = passEncoder
         renderPipeline = null
         for (i in bindGroups.indices) {

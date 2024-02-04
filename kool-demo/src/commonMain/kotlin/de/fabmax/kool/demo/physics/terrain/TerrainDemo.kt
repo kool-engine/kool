@@ -227,10 +227,6 @@ class TerrainDemo : DemoScene("Terrain Demo") {
     }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
-        //ctx.isProfileRenderPasses = true
-        // no clear needed, we repaint the entire frame, each frame
-        mainRenderPass.clearColor = null
-
         // lighting
         lighting.singleDirectionalLight {
             setup(Vec3f(-1f, -1f, -1f))
@@ -270,8 +266,6 @@ class TerrainDemo : DemoScene("Terrain Demo") {
 
         oceanFloorPass.renderGroup += playerModel
         boxMesh?.let { oceanFloorPass.renderGroup += it }
-
-        //defaultCamTransform()
 
         // setup camera tracking player
         setupCamera()

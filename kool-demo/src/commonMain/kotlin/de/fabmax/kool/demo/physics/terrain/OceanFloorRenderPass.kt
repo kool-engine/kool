@@ -20,6 +20,7 @@ class OceanFloorRenderPass(mainScene: Scene, val terrainTiles: TerrainTiles) :
         get() = drawNode
 
     init {
+        mirrorIfInvertedClipY()
         isUpdateDrawNode = false
         clearColor = MdColor.GREY
         drawNode.apply {

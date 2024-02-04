@@ -10,6 +10,7 @@ import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.GradientTexture
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.Texture3d
+import de.fabmax.kool.pipeline.TextureSampleType
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.ShadowMap
 
@@ -120,16 +121,16 @@ object OceanShader {
 
                 val windScale2 = float1Var(windScale * 0.71.const)
 
-                pos.y set (sampleTexture(windTex, (windOffsetStrength.xyz + pos) * windScale).y - 0.5f.const) * windOffsetStrength.w +
-                        (sampleTexture(windTex, (windOffsetStrength.xyz + pos) * windScale2).y - 0.5f.const) * windOffsetStrength.w
-                posLt.y set (sampleTexture(windTex, (windOffsetStrength.xyz + posLt) * windScale).y - 0.5f.const) * windOffsetStrength.w +
-                        (sampleTexture(windTex, (windOffsetStrength.xyz + posLt) * windScale2).y - 0.5f.const) * windOffsetStrength.w
-                posRt.y set (sampleTexture(windTex, (windOffsetStrength.xyz + posRt) * windScale).y - 0.5f.const) * windOffsetStrength.w +
-                        (sampleTexture(windTex, (windOffsetStrength.xyz + posRt) * windScale2).y - 0.5f.const) * windOffsetStrength.w
-                posUp.y set (sampleTexture(windTex, (windOffsetStrength.xyz + posUp) * windScale).y - 0.5f.const) * windOffsetStrength.w +
-                        (sampleTexture(windTex, (windOffsetStrength.xyz + posUp) * windScale2).y - 0.5f.const) * windOffsetStrength.w
-                posDn.y set (sampleTexture(windTex, (windOffsetStrength.xyz + posDn) * windScale).y - 0.5f.const) * windOffsetStrength.w +
-                        (sampleTexture(windTex, (windOffsetStrength.xyz + posDn) * windScale2).y - 0.5f.const) * windOffsetStrength.w
+                pos.y set (sampleTexture(windTex, (windOffsetStrength.xyz + pos) * windScale, 0f.const).y - 0.5f.const) * windOffsetStrength.w +
+                        (sampleTexture(windTex, (windOffsetStrength.xyz + pos) * windScale2, 0f.const).y - 0.5f.const) * windOffsetStrength.w
+                posLt.y set (sampleTexture(windTex, (windOffsetStrength.xyz + posLt) * windScale, 0f.const).y - 0.5f.const) * windOffsetStrength.w +
+                        (sampleTexture(windTex, (windOffsetStrength.xyz + posLt) * windScale2, 0f.const).y - 0.5f.const) * windOffsetStrength.w
+                posRt.y set (sampleTexture(windTex, (windOffsetStrength.xyz + posRt) * windScale, 0f.const).y - 0.5f.const) * windOffsetStrength.w +
+                        (sampleTexture(windTex, (windOffsetStrength.xyz + posRt) * windScale2, 0f.const).y - 0.5f.const) * windOffsetStrength.w
+                posUp.y set (sampleTexture(windTex, (windOffsetStrength.xyz + posUp) * windScale, 0f.const).y - 0.5f.const) * windOffsetStrength.w +
+                        (sampleTexture(windTex, (windOffsetStrength.xyz + posUp) * windScale2, 0f.const).y - 0.5f.const) * windOffsetStrength.w
+                posDn.y set (sampleTexture(windTex, (windOffsetStrength.xyz + posDn) * windScale, 0f.const).y - 0.5f.const) * windOffsetStrength.w +
+                        (sampleTexture(windTex, (windOffsetStrength.xyz + posDn) * windScale2, 0f.const).y - 0.5f.const) * windOffsetStrength.w
 
                 worldPosPort.input(pos)
 
@@ -146,6 +147,8 @@ object OceanShader {
                 val camData = cameraData()
                 val material = findBlock<LitMaterialBlock>()!!
                 val baseColorPort = getFloat4Port("baseColor")
+                val oceanFloorDepthTex = texture2d("tOceanFloorDepth", sampleType = TextureSampleType.UNFILTERABLE_FLOAT)
+                val oceanFloorColorTex = texture2d("tOceanFloorColor")
 
                 // sample bump map and compute fragment normal
                 val worldPos = material.inFragmentPos.input!!
@@ -169,8 +172,8 @@ object OceanShader {
                 camToFrag set normalize(camToFrag)
 
                 // 1st depth sample - water depth without refraction
-                val oceanFloorUv = posScreenSpace.output.xy / posScreenSpace.output.w * 0.5f.const + 0.5f.const
-                val oceanDepth1 = float1Var(sampleTexture(texture2d("tOceanFloorDepth"), oceanFloorUv).x)
+                val oceanFloorUv = float2Var(posScreenSpace.output.xy / posScreenSpace.output.w * 0.5f.const + 0.5f.const)
+                val oceanDepth1 = float1Var(sampleTexture(oceanFloorDepthTex, oceanFloorUv).x)
                 //oceanDepth1 set getLinearDepth(oceanDepth1, camData.clipNear, camData.clipFar) - fragDepth
                 oceanDepth1 set getLinearDepth(oceanDepth1, OceanFloorRenderPass.DEPTH_CAM_NEAR.const, OceanFloorRenderPass.DEPTH_CAM_FAR.const) - fragDepth
 
@@ -181,7 +184,7 @@ object OceanShader {
                 val refractUv = float2Var(refractScreenSpace.xy / refractScreenSpace.w * 0.5f.const + 0.5f.const)
 
                 // 2nd depth sample - water depth at refracted position
-                val oceanDepth2 = float1Var(sampleTexture(texture2d("tOceanFloorDepth"), refractUv).x)
+                val oceanDepth2 = float1Var(sampleTexture(oceanFloorDepthTex, refractUv).x)
                 oceanDepth2 set getLinearDepth(oceanDepth2, OceanFloorRenderPass.DEPTH_CAM_NEAR.const, OceanFloorRenderPass.DEPTH_CAM_FAR.const) - fragDepth
 
                 `if`(oceanDepth2 lt 0f.const) {
@@ -195,7 +198,7 @@ object OceanShader {
                 val oceanFloorColor = float4Var(Vec4f.ZERO.const)
                 val oceanAlpha = clamp((oceanDepth2 - 0.5f.const) / 12f.const, 0f.const, 1f.const)
                 `if`(oceanAlpha lt 1f.const) {
-                    oceanFloorColor set sampleTexture(texture2d("tOceanFloorColor"), refractUv)
+                    oceanFloorColor set sampleTexture(oceanFloorColorTex, refractUv, 0f.const)
                     oceanFloorColor.rgb set convertColorSpace(oceanFloorColor.rgb, ColorSpaceConversion.sRGB_TO_LINEAR)
                 }
 

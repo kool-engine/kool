@@ -107,12 +107,10 @@ open class OffscreenRenderPassCube(drawNode: Node, config: Config) : OffscreenRe
     }
 
     enum class ViewDirection(val index: Int, val lookAt: Vec3f, val up: Vec3f) {
-        // order of view directions matches the face order of web gpu cubes (notice neg-y before pos-y)
-        // OpenGL cube render pass maps the view order based on ViewDirection.index
         POS_X(0, Vec3f( 1f,  0f,  0f), Vec3f.NEG_Y_AXIS),
         NEG_X(1, Vec3f(-1f,  0f,  0f), Vec3f.NEG_Y_AXIS),
-        NEG_Y(2, Vec3f( 0f, -1f,  0f), Vec3f.NEG_Z_AXIS),
-        POS_Y(3, Vec3f( 0f,  1f,  0f), Vec3f.Z_AXIS),
+        POS_Y(2, Vec3f( 0f,  1f,  0f), Vec3f.Z_AXIS),
+        NEG_Y(3, Vec3f( 0f, -1f,  0f), Vec3f.NEG_Z_AXIS),
         POS_Z(4, Vec3f( 0f,  0f,  1f), Vec3f.NEG_Y_AXIS),
         NEG_Z(5, Vec3f( 0f,  0f, -1f), Vec3f.NEG_Y_AXIS),
     }

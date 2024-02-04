@@ -1,13 +1,11 @@
 package de.fabmax.kool.pipeline.ibl
 
-import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenCubeVertexStage
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenCube
-import de.fabmax.kool.pipeline.backend.NdcYDirection
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.addMesh
@@ -25,6 +23,7 @@ class IrradianceMapPass private constructor(parentScene: Scene, hdriMap: Texture
     var isAutoRemove = true
 
     init {
+        mirrorIfInvertedClipY()
         views.forEach { it.clearColor = null }
         drawNode.apply {
             addMesh(Attribute.POSITIONS) {
@@ -61,9 +60,6 @@ class IrradianceMapPass private constructor(parentScene: Scene, hdriMap: Texture
 
                 main {
                     val normal = float3Var(normalize(localPos.output))
-                    if (KoolSystem.requireContext().backend.ndcYDirection == NdcYDirection.TOP_TO_BOTTOM) {
-                        normal.y *= (-1f).const
-                    }
                     val up = float3Var(Vec3f.Y_AXIS.const)
                     val right = float3Var(normalize(cross(up, normal)))
                     up set cross(normal, right)

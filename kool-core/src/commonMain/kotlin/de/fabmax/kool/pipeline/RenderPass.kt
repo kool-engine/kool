@@ -1,6 +1,7 @@
 package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.pipeline.drawqueue.DrawQueue
 import de.fabmax.kool.scene.*
@@ -48,7 +49,14 @@ abstract class RenderPass(var name: String) : BaseReleasable() {
     var tCollect = 0.0
     var tDraw = 0.0
 
+    var isMirrorY = false
+        protected set
+
     protected var complainedAboutReversedDepth = false
+
+    protected fun mirrorIfInvertedClipY() {
+        isMirrorY = KoolSystem.requireContext().backend.isInvertedNdcY
+    }
 
     open fun update(ctx: KoolContext) {
         checkIsNotReleased()

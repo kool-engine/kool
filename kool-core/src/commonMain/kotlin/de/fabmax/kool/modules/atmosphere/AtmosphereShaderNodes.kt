@@ -1,7 +1,7 @@
 package de.fabmax.kool.modules.atmosphere
 
-import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.modules.ksl.blocks.noise12
 import de.fabmax.kool.modules.ksl.blocks.raySphereIntersection
 import de.fabmax.kool.modules.ksl.lang.*
 
@@ -130,6 +130,7 @@ class AtmosphereBlock(
     }
 
     private val funScatterLight = parentScope.parentStage.functionFloat3("scatterLight") {
+        val startOffset = paramFloat1("startOffset")
         val origin = paramFloat3("origin")
         val dir = paramFloat3("dir")
         val rayLength = paramFloat1("rayLength")
@@ -141,14 +142,7 @@ class AtmosphereBlock(
             val inScatterPt = float3Var(origin)
             val inScatteredLight = float3Var(Vec3f.ZERO.const)
 
-            val r = if (randomizeStartOffsets) {
-                // generate pseudo randomness out of fragment coordinate
-                val seed = (parentScope.parentStage as KslFragmentStage).inFragPosition.xy / Vec2f(256f, 256f).const
-                float1Var(fract(sin(dot(seed + atmosphereData.uRandomOffset, Vec2f(12.9898f, 78.233f).const)) * 43758.547f.const))
-            } else {
-                float1Var(0f.const)
-            }
-            inScatterPt += dir * stepSize * r
+            inScatterPt += dir * stepSize * startOffset
 
             fori(0.const, numScatterSamples.const) { i ->
                 inScatterPt += dir * stepSize
@@ -204,8 +198,11 @@ class AtmosphereBlock(
                     distThroughAtmo set min(distThroughAtmo, sceneDepth - dToAtmo)
                 }
 
+                val seed = float2Var((parentStage as KslFragmentStage).inFragPosition.xy)
+                seed set ((seed * 1000f.const).toInt2() % 1000.const).toFloat2() + 1000f.const
+                val startOffset = float1Var(noise12(seed))
                 val atmoHitPt = float3Var(camOri + nrmLookDir * dToAtmo)
-                outColor.rgb += funScatterLight(atmoHitPt, nrmLookDir, distThroughAtmo, atmosphereData.uDirToSun)
+                outColor.rgb += funScatterLight(startOffset, atmoHitPt, nrmLookDir, distThroughAtmo, atmosphereData.uDirToSun)
             }
         }
     }

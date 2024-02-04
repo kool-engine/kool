@@ -387,12 +387,17 @@ open class PerspectiveCamera(name: String = "perspectiveCam") : Camera(name) {
 
     override fun updateProjectionMatrix(updateEvent: RenderPass.UpdateEvent) {
         isReverseDepthProjection = updateEvent.renderPass.isReverseDepth
+
+        proj.setIdentity()
+        if (updateEvent.renderPass.isMirrorY) {
+            proj.m11 *= -1f
+        }
         if (isReverseDepthProjection) {
             check(updateEvent.ctx.backend.depthRange == DepthRange.ZERO_TO_ONE)
-            proj.setIdentity().perspectiveReversedDepth(fovY, aspectRatio, clipNear)
+            proj.perspectiveReversedDepth(fovY, aspectRatio, clipNear)
 
         } else {
-            proj.setIdentity().perspective(fovY, aspectRatio, clipNear, clipFar, updateEvent.ctx.backend.depthRange)
+            proj.perspective(fovY, aspectRatio, clipNear, clipFar, updateEvent.ctx.backend.depthRange)
         }
 
         // compute intermediate values needed for view frustum culling

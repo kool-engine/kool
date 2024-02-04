@@ -61,6 +61,7 @@ class SkyCubePass(opticalDepthLut: Texture2d, size: Int = 256) :
     private val skyShader = SkyShader(opticalDepthLut)
 
     init {
+        mirrorIfInvertedClipY()
         lighting = Lighting().apply {
             clear()
             addLight(sunLight)
@@ -87,7 +88,7 @@ class SkyCubePass(opticalDepthLut: Texture2d, size: Int = 256) :
             // ground
             addColorMesh {
                 generate {
-                    translate(0f, -0.011f, 0f)
+                    translate(0f, -0.015f, 0f)
                     rotate((-90f).deg, Vec3f.X_AXIS)
                     circle {
                         radius = 9f

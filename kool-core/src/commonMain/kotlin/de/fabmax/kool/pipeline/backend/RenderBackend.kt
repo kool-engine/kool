@@ -16,6 +16,7 @@ interface RenderBackend {
     val deviceCoordinates: DeviceCoordinates
     val depthRange: DepthRange get() = deviceCoordinates.ndcDepthRange
     val ndcYDirection: NdcYDirection get() = deviceCoordinates.ndcYDirection
+    val isInvertedNdcY: Boolean get() = deviceCoordinates.ndcYDirection == NdcYDirection.TOP_TO_BOTTOM
 
     val canBlitRenderPasses: Boolean
     val isOnscreenInfiniteDepthCapable: Boolean

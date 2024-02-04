@@ -106,7 +106,7 @@ object TreeShader {
                 val windOffset = uniformFloat4("uWindOffsetStrength")
                 val worldPos = worldPosPort.input.input!!
                 val windSamplePos = (windOffset.xyz + worldPos) * uniformFloat1("uWindScale")
-                val windValue = float3Var(sampleTexture(windTex, windSamplePos).xyz - float3Value(0.5f, 0.5f, 0.5f), "windValue")
+                val windValue = float3Var(sampleTexture(windTex, windSamplePos, 0f.const).xyz - float3Value(0.5f, 0.5f, 0.5f), "windValue")
                 windValue.y *= 0.5f.const
                 val displacement = float3Port("windDisplacement", windValue * vertexAttribFloat1(Wind.WIND_SENSITIVITY.name) * windOffset.w)
                 worldPosPort.input(worldPos + displacement)
