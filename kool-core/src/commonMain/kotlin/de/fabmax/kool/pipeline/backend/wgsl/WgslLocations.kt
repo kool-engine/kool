@@ -1,4 +1,4 @@
-package de.fabmax.kool.pipeline.backend.webgpu
+package de.fabmax.kool.pipeline.backend.wgsl
 
 import de.fabmax.kool.modules.ksl.lang.KslVertexAttribute
 import de.fabmax.kool.pipeline.*

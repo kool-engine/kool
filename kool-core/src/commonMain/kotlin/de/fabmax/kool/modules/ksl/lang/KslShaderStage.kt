@@ -204,6 +204,12 @@ class KslComputeStage(program: KslProgram, val workGroupSize: Vec3i) : KslShader
     val inNumWorkGroups = KslStageInputVector(KslVarVector(NAME_IN_NUM_WORK_GROUPS, KslUint3, false))
     val inWorkGroupSize = KslStageInputVector(KslVarVector(NAME_IN_WORK_GROUP_SIZE, KslUint3, false))
 
+    val isUsingGlobalInvocationId: Boolean get() = inGlobalInvocationId.value in main.dependencies
+    val isUsingLocalInvocationId: Boolean get() = inLocalInvocationId.value in main.dependencies
+    val isUsingWorkGroupId: Boolean get() = inWorkGroupId.value in main.dependencies
+    val isUsingNumWorkGroups: Boolean get() = inNumWorkGroups.value in main.dependencies
+    val isUsingWorkGroupSize: Boolean get() = inWorkGroupSize.value in main.dependencies
+
     init {
         globalScope.definedStates += inGlobalInvocationId.value
         globalScope.definedStates += inLocalInvocationId.value

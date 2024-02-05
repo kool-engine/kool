@@ -1,4 +1,4 @@
-package de.fabmax.kool.pipeline.backend.webgpu
+package de.fabmax.kool.pipeline.backend.wgsl
 
 interface WgslStructHelper {
 

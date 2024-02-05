@@ -53,12 +53,14 @@ external class GPUCanvasContext : RenderingContext {
 external class GPUCommandBuffer
 
 external class GPUCommandEncoder {
+    fun beginComputePass(descriptor: GPUComputePassDescriptor = definedExternally): GPUComputePassEncoder
     fun beginRenderPass(descriptor: GPURenderPassDescriptor): GPURenderPassEncoder
     fun copyTextureToTexture(source: GPUImageCopyTexture, destination: GPUImageCopyTexture, copySize: IntArray)
     fun finish(): GPUCommandBuffer
 }
 
 external class GPUDevice {
+    val limits: GPUSupportedLimits
     val queue: GPUQueue
 
     fun createBuffer(descriptor: GPUBufferDescriptor): GPUBuffer
@@ -83,6 +85,13 @@ external class GPUQueue {
     fun copyExternalImageToTexture(source: GPUImageCopyExternalImage, destination: GPUImageCopyTextureTagged, copySize: IntArray)
 }
 
+external class GPUComputePassEncoder {
+    fun setPipeline(pipeline: GPUComputePipeline)
+    fun setBindGroup(index: Int, bindGroup: GPUBindGroup, dynamicOffsets: Array<Int> = definedExternally)
+    fun dispatchWorkgroups(workgroupCountX: Int, workgroupCountY: Int, workgroupCountZ: Int)
+    fun end()
+}
+
 external class GPURenderPassEncoder {
     fun setPipeline(pipeline: GPURenderPipeline)
     fun setIndexBuffer(buffer: GPUBuffer, indexFormat: GPUIndexFormat, offset: Long = definedExternally, size: Long = definedExternally)
@@ -93,6 +102,10 @@ external class GPURenderPassEncoder {
     fun setViewport(x: Float, y: Float, width: Float, height: Float, minDepth: Float, maxDepth: Float)
     fun setScissorRect(x: Int, y: Int, width: Int, height: Int)
     fun end()
+}
+
+external class GPUComputePipeline {
+    fun getBindGroupLayout(index: Int): GPUBindGroupLayout
 }
 
 external class GPURenderPipeline {
@@ -107,6 +120,41 @@ external object GPUShaderStage {
     val COMPUTE: Int
     val FRAGMENT: Int
     val VERTEX: Int
+}
+
+external class GPUSupportedLimits {
+    val maxTextureDimension1D: Int
+    val maxTextureDimension2D: Int
+    val maxTextureDimension3D: Int
+    val maxTextureArrayLayers: Int
+    val maxBindGroups: Int
+    val maxBindGroupsPlusVertexBuffers: Int
+    val maxBindingsPerBindGroup: Int
+    val maxDynamicUniformBuffersPerPipelineLayout: Int
+    val maxDynamicStorageBuffersPerPipelineLayout: Int
+    val maxSampledTexturesPerShaderStage: Int
+    val maxSamplersPerShaderStage: Int
+    val maxStorageBuffersPerShaderStage: Int
+    val maxStorageTexturesPerShaderStage: Int
+    val maxUniformBuffersPerShaderStage: Int
+    val maxUniformBufferBindingSize: Double
+    val maxStorageBufferBindingSize: Double
+    val minUniformBufferOffsetAlignment: Int
+    val minStorageBufferOffsetAlignment: Int
+    val maxVertexBuffers: Int
+    val maxBufferSize: Double
+    val maxVertexAttributes: Int
+    val maxVertexBufferArrayStride: Int
+    val maxInterStageShaderComponents: Int
+    val maxInterStageShaderVariables: Int
+    val maxColorAttachments: Int
+    val maxColorAttachmentBytesPerSample: Int
+    val maxComputeWorkgroupStorageSize: Int
+    val maxComputeInvocationsPerWorkgroup: Int
+    val maxComputeWorkgroupSizeX: Int
+    val maxComputeWorkgroupSizeY: Int
+    val maxComputeWorkgroupSizeZ: Int
+    val maxComputeWorkgroupsPerDimension: Int
 }
 
 external class GPUTexture {

@@ -299,11 +299,12 @@ More complex layouts can be created by nesting `Row { }` and `Column { }` object
 
 Kool comes with its own shader language (called ksl), which is implemented as a
 [Kotlin Type-safe builder / DSL](https://kotlinlang.org/docs/type-safe-builders.html). The ksl shader code you write is
-used to generate the actual GLSL shader code. The benefit with this approach is that there is no hard-coded GLSL
-code in common code, and it should be relatively easy to add different generators which generate shader code for
-different backends in the future (e.g. WGSL, or metal). 
+used to generate the actual GLSL / WGSL shader code. The benefit with this approach is that there is no hard-coded
+platform-specific shader code in common code and all shaders work on OpenGL / GLSL as well as WebGPU / WGSL.
+Moreover, it is relatively easy to add different generators which generate shader code for
+different backends in the future (e.g. metal). 
 
-Writing shaders in ksl is very similar to GLSL, here's how a hello-world style shader looks like:
+Writing shaders in ksl is quite similar to GLSL, here's how a hello-world style shader looks like:
 
 ```kotlin
 fun main() = KoolApplication { ctx ->

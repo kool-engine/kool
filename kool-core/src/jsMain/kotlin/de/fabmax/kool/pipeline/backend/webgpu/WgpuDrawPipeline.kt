@@ -2,6 +2,7 @@ package de.fabmax.kool.pipeline.backend.webgpu
 
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.stats.PipelineInfo
+import de.fabmax.kool.pipeline.backend.wgsl.WgslLocations
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.BaseReleasable
@@ -17,6 +18,7 @@ class WgpuDrawPipeline(
     private val fragmentShaderModule: GPUShaderModule,
     private val backend: RenderBackendWebGpu,
 ): BaseReleasable(), PipelineBackend {
+
     private val device: GPUDevice get() = backend.device
     private val pipelineInfo = PipelineInfo(drawPipeline)
 

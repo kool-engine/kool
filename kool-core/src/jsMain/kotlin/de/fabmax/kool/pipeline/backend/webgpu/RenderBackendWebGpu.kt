@@ -9,20 +9,24 @@ import de.fabmax.kool.pipeline.backend.DeviceCoordinates
 import de.fabmax.kool.pipeline.backend.RenderBackend
 import de.fabmax.kool.pipeline.backend.RenderBackendJs
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
+import de.fabmax.kool.pipeline.backend.wgsl.WgslGenerator
 import de.fabmax.kool.platform.JsContext
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.LongHash
 import de.fabmax.kool.util.Time
+import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logI
 import kotlinx.browser.window
 import kotlinx.coroutines.await
 import org.w3c.dom.HTMLCanvasElement
+import kotlin.math.ceil
 
 class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) : RenderBackend, RenderBackendJs {
     override val name: String = "WebGPU Backend"
     override val apiName: String = "WebGPU"
     override val deviceName: String = "WebGPU"
     override val deviceCoordinates: DeviceCoordinates = DeviceCoordinates.WEB_GPU
+    override val hasComputeShaders: Boolean = false
     override val canBlitRenderPasses: Boolean = false
     override val isOnscreenInfiniteDepthCapable: Boolean = false // actually it can...
 
@@ -123,10 +127,10 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
 
     private fun OffscreenRenderPass.render(encoder: GPUCommandEncoder) {
         when (this) {
-            is OffscreenRenderPass2d -> impl.draw(encoder)
-            is OffscreenRenderPassCube -> impl.draw(encoder)
+            is OffscreenRenderPass2d -> draw(encoder)
+            is OffscreenRenderPassCube -> draw(encoder)
             is OffscreenRenderPass2dPingPong -> draw(encoder)
-            is ComputeRenderPass -> TODO("ComputeRenderPass") //dispatchCompute(offscreenPass)
+            is ComputeRenderPass -> dispatch(encoder)
             else -> throw IllegalArgumentException("Offscreen pass type not implemented: $this")
         }
     }
@@ -134,14 +138,62 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
     private fun OffscreenRenderPass2dPingPong.draw(encoder: GPUCommandEncoder) {
         for (i in 0 until pingPongPasses) {
             onDrawPing?.invoke(i)
-            ping.impl.draw(encoder)
+            ping.draw(encoder)
             onDrawPong?.invoke(i)
-            pong.impl.draw(encoder)
+            pong.draw(encoder)
         }
     }
 
-    private fun OffscreenPass2dImpl.draw(encoder: GPUCommandEncoder) = (this as WgpuOffscreenRenderPass2d).draw(encoder)
-    private fun OffscreenPassCubeImpl.draw(encoder: GPUCommandEncoder) = (this as WgpuOffscreenRenderPassCube).draw(encoder)
+    private fun OffscreenRenderPass2d.draw(encoder: GPUCommandEncoder) = (impl as WgpuOffscreenRenderPass2d).draw(encoder)
+
+    private fun OffscreenRenderPassCube.draw(encoder: GPUCommandEncoder) = (impl as WgpuOffscreenRenderPassCube).draw(encoder)
+
+    private fun ComputeRenderPass.dispatch(encoder: GPUCommandEncoder) {
+        val tasks = tasks
+
+        val maxNumGroups = device.limits.maxComputeWorkgroupsPerDimension
+        val maxWorkGroupSzX = device.limits.maxComputeWorkgroupSizeX
+        val maxWorkGroupSzY = device.limits.maxComputeWorkgroupSizeY
+        val maxWorkGroupSzZ = device.limits.maxComputeWorkgroupSizeZ
+        val maxInvocations = device.limits.maxComputeInvocationsPerWorkgroup
+
+        val passEncoder = encoder.beginComputePass()
+        for (i in tasks.indices) {
+            val task = tasks[i]
+            if (task.isEnabled) {
+                val pipeline = tasks[i].pipeline
+
+                var isInLimits = true
+
+                val groupSize = pipeline.workGroupSize
+                val numGroupsX = ceil(width.toFloat() / pipeline.workGroupSize.x).toInt()
+                val numGroupsY = ceil(height.toFloat() / pipeline.workGroupSize.y).toInt()
+                val numGroupsZ = ceil(depth.toFloat() / pipeline.workGroupSize.z).toInt()
+                if (numGroupsX > maxNumGroups || numGroupsY > maxNumGroups || numGroupsZ > maxNumGroups) {
+                    logE { "Maximum compute shader workgroup count exceeded: max count = $maxNumGroups, requested count: ($numGroupsX, $numGroupsY, $numGroupsZ)" }
+                    isInLimits = false
+                }
+                if (groupSize.x > maxWorkGroupSzX || groupSize.y > maxWorkGroupSzY || groupSize.z > maxWorkGroupSzZ) {
+                    logE { "Maximum compute shader workgroup size exceeded: max size = ($maxWorkGroupSzX, $maxWorkGroupSzY, $maxWorkGroupSzZ), requested size: $groupSize" }
+                    isInLimits = false
+                }
+                if (groupSize.x * groupSize.y * groupSize.z > maxInvocations) {
+                    logE { "Maximum compute shader workgroup invocations exceeded: max invocations = $maxInvocations, " +
+                            "requested invocations: ${groupSize.x} x ${groupSize.y} x ${groupSize.z} = ${groupSize.x * groupSize.y * groupSize.z}" }
+                    isInLimits = false
+                }
+
+                if (isInLimits) {
+                    task.beforeDispatch()
+                    if (pipelineManager.bindComputePipeline(task)) {
+                        passEncoder.dispatchWorkgroups(numGroupsX, numGroupsY, numGroupsZ)
+                        task.afterDispatch()
+                    }
+                }
+            }
+        }
+        passEncoder.end()
+    }
 
     override fun cleanup(ctx: KoolContext) {
         // do nothing for now

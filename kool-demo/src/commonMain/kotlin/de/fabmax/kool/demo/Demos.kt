@@ -28,6 +28,7 @@ import kotlin.math.max
 object Demos {
 
     private val AllPlatforms = PlatformFilter { true }
+    private val NeedsComputeShaders = PlatformFilter { KoolSystem.requireContext().backend.hasComputeShaders }
     private val NonJavascript = PlatformFilter { !KoolSystem.isJavascript }
     private val NonVulkan = PlatformFilter { "Vulkan" !in KoolSystem.requireContext().backend.name }
     private val DesktopOpenGl = PlatformFilter { NonJavascript.applies() && NonVulkan.applies() }
@@ -74,7 +75,7 @@ object Demos {
         entry("bees", "Fighting Bees") { BeeDemo() }
         entry("simplification", "Simplification") { SimplificationDemo() }
         entry("ui", "User Interface") { UiDemo() }
-        entry("fluid-sim", "Fluid Simulation", DesktopOpenGl) { FluidDemo() }
+        entry("fluid-sim", "Fluid Simulation", NeedsComputeShaders) { FluidDemo() }
     }
 
     val hiddenDemos = Category("Hidden", true, 0.75f, 0.95f).apply {
@@ -82,7 +83,7 @@ object Demos {
         entry("helloksl", "Hello KSL Shaders") { HelloKsl() }
         entry("hellogltf", "Hello glTF") { HelloGltf() }
         entry("hellobuffers", "Hello RenderToTexture") { HelloRenderToTexture() }
-        entry("hellocompute", "Hello Compute", DesktopOpenGl) { HelloCompute() }
+        entry("hellocompute", "Hello Compute", NeedsComputeShaders) { HelloCompute() }
         entry("hello-ui", "Hello UI") { HelloUi() }
         entry("manybodies", "Many Bodies") { ManyBodiesDemo() }
         entry("manyvehicles", "Many Vehicles") { ManyVehiclesDemo() }

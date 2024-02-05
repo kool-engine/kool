@@ -172,6 +172,16 @@ fun GPUColorTargetState(
     return o
 }
 
+interface GPUComputePassDescriptor
+fun GPUComputePassDescriptor(
+    label: String = "",
+    //timestampWrites: GPUComputePassTimestampWrites
+): GPUComputePassDescriptor {
+    val o = js("({})")
+    o["label"] = label
+    return o
+}
+
 class GPUFragmentState(
     @JsName("module")
     val module: GPUShaderModule,

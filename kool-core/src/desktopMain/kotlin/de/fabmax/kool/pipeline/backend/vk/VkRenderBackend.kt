@@ -33,6 +33,7 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
         get() = vkSystem.window
 
     override val deviceCoordinates: DeviceCoordinates = DeviceCoordinates.VULKAN
+    override val hasComputeShaders: Boolean = false
     override val canBlitRenderPasses = false
     override val isOnscreenInfiniteDepthCapable = true
 
@@ -554,7 +555,7 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
                 val colorAttachments = max(1, clearColors.size)
                 pClearValues(callocVkClearValueN(colorAttachments + 1) {
                     for (i in 0 until colorAttachments) {
-                        val clearColor = if (clearColors != null && i < clearColors.size) {
+                        val clearColor = if (i < clearColors.size) {
                             clearColors[i] ?: Color.BLACK
                         } else {
                             Color.BLACK

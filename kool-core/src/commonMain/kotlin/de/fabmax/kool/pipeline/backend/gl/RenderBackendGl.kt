@@ -28,6 +28,8 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
 
     override var deviceCoordinates: DeviceCoordinates = DeviceCoordinates.OPEN_GL
         protected set
+
+    override val hasComputeShaders: Boolean get() = gl.capabilities.hasComputeShaders
     override val canBlitRenderPasses = true
     override val isOnscreenInfiniteDepthCapable = false
 

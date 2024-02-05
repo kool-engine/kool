@@ -2,6 +2,7 @@ package de.fabmax.kool.pipeline.backend.webgpu
 
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.GpuBindGroupData
+import de.fabmax.kool.pipeline.backend.wgsl.WgslLocations
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.MixedBufferImpl
 
