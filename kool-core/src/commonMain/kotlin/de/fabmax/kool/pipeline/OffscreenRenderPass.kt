@@ -4,7 +4,7 @@ import de.fabmax.kool.math.MutableVec3i
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.math.Vec3i
 import de.fabmax.kool.math.getNumMipLevels
-import de.fabmax.kool.util.BufferedList
+import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logT
 import de.fabmax.kool.util.logW
@@ -27,53 +27,28 @@ abstract class OffscreenRenderPass(config: Config) : RenderPass(config.name) {
     val colorAttachment = config.colorAttachment
     val depthAttachment = config.depthAttachment
 
-    val numColorTextures = if (colorAttachment is TextureColorAttachment) colorAttachment.attachments.size else 0
     val numColorAttachments = if (colorAttachment is TextureColorAttachment) colorAttachment.attachments.size else 1
 
-    val mipLevels = config.mipLevels
-    val drawMipLevels = config.drawMipLevels
-    val onSetupMipLevel = BufferedList<((Int) -> Unit)>()
+    override val clearColors: Array<Color?> = Array(numColorAttachments) { Color.BLACK }
 
     val dependencies = mutableListOf<RenderPass>()
     var isEnabled = true
 
+    init {
+        mipLevels = config.mipLevels
+        drawMipLevels = config.drawMipLevels
+    }
+
     fun dependsOn(renderPass: RenderPass) {
         dependencies += renderPass
-    }
-
-    /**
-     * Executes the given block each time before this render pass is rendered at a specific mip-level. This can
-     * be used to change mip-level specific shader configuration if this render pass is rendered at multiple mip-levels.
-     * However, be aware that, at the time this function is called, previous mip-level passes are enqueued but not yet
-     * executed. This means, you should avoid changing single uniform values of a shader because that would affect
-     * the previous mip-levels as well. Instead, you can and should change the entire pipeline bind-group of a shader
-     * in these cases.
-     */
-    fun onSetupMipLevel(block: (Int) -> Unit) {
-        onSetupMipLevel += block
-    }
-
-    open fun setupMipLevel(mipLevel: Int) {
-        onSetupMipLevel.update()
-        for (i in onSetupMipLevel.indices) {
-            onSetupMipLevel[i](mipLevel)
-        }
     }
 
     fun getColorTexProps(attachment: Int = 0): TextureProps {
         return (colorAttachment as TextureColorAttachment).attachments[attachment].getTextureProps(mipLevels > 1)
     }
 
-    fun getMipWidth(mipLevel: Int, width: Int = this.width): Int {
-        return if (mipLevel <= 0) width else width shr mipLevel
-    }
-
-    fun getMipHeight(mipLevel: Int, height: Int = this.height): Int {
-        return if (mipLevel <= 0) height else height shr mipLevel
-    }
-
-    protected fun View.setFullscreenViewport(mipLevel: Int = 0) {
-        viewport.set(0, 0, getMipWidth(mipLevel), getMipHeight(mipLevel))
+    protected fun View.setFullscreenViewport() {
+        viewport.set(0, 0, width, height)
     }
 
     open fun setSize(width: Int, height: Int, depth: Int = 1) {

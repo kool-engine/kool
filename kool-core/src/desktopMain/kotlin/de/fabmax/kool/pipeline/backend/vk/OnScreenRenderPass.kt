@@ -92,8 +92,8 @@ class OnScreenRenderPass(val swapChain: SwapChain) :
         logE { "Blitting render passes is not yet implemented on Vulkan backend" }
 
         val rp = src.renderPass ?: return
-        val srcWidth = src.parentPass.getMipWidth(mipLevel)
-        val srcHeight = src.parentPass.getMipHeight(mipLevel)
+        val srcWidth = src.parentPass.width shr mipLevel
+        val srcHeight = src.parentPass.height shr mipLevel
         val width = maxWidth
         val height = maxHeight
 

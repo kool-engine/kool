@@ -27,7 +27,7 @@ class WgpuScreenRenderPass(backend: RenderBackendWebGpu) :
         if (depthAttachment == null || colorTexture == null) {
             updateRenderTextures(backend.canvas.width, backend.canvas.height)
         }
-        render(scenePass, 1, encoder)
+        render(scenePass, encoder)
     }
 
     override fun getRenderAttachments(renderPass: Scene.OnscreenSceneRenderPass, viewIndex: Int, mipLevel: Int): RenderAttachments {
@@ -40,7 +40,7 @@ class WgpuScreenRenderPass(backend: RenderBackendWebGpu) :
         )
         val depth = GPURenderPassDepthStencilAttachment(
             view = depthAttachmentView!!,
-            depthLoadOp = if (renderPass.views[viewIndex].clearDepth) GPULoadOp.clear else GPULoadOp.load,
+            depthLoadOp = if (renderPass.clearDepth) GPULoadOp.clear else GPULoadOp.load,
             depthStoreOp = GPUStoreOp.store,
             depthClearValue = 1f
         )

@@ -24,7 +24,7 @@ fun UiScene(
  */
 fun Scene.setupUiScene(clearScreen: Boolean = false) {
     if (!clearScreen) {
-        mainRenderPass.clearColor = null
+        clearColor = null
     }
 
     camera = OrthographicCamera()

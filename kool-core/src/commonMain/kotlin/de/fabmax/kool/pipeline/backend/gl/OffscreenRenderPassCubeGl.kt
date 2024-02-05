@@ -19,6 +19,13 @@ class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, val backend
 
     private val resInfo = OffscreenPassInfo(parent)
 
+    private val frameBufferSetter = QueueRenderer.FrameBufferSetter { viewIndex, mipLevel ->
+        if (viewIndex == 0) {
+            gl.bindFramebuffer(gl.FRAMEBUFFER, fbos[mipLevel])
+        }
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + viewIndex, glColorTex, mipLevel)
+    }
+
     fun draw() {
         resInfo.sceneName = parent.parentScene?.name ?: "scene:<null>"
         if (!isCreated) {
@@ -27,52 +34,42 @@ class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, val backend
 
         val needsCopy = parent.copyTargetsColor.isNotEmpty()
 
-        val pass = parent
-        for (mipLevel in 0 until pass.mipLevels) {
-            pass.setupMipLevel(mipLevel)
-            for (i in pass.views.indices) {
-                pass.views[i].viewport.set(0, 0, pass.getMipWidth(mipLevel), pass.getMipHeight(mipLevel))
-            }
-            gl.bindFramebuffer(gl.FRAMEBUFFER, fbos[mipLevel])
+        backend.queueRenderer.renderViews(parent, frameBufferSetter)
 
-            for (i in CUBE_VIEWS.indices) {
-                val cubeView = CUBE_VIEWS[i]
-                pass.setupView(cubeView.index)
-                val passView = pass.views[cubeView.index]
-                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, glColorTex, mipLevel)
-                backend.queueRenderer.renderView(passView, mipLevel)
-
-                if (needsCopy && !gl.capabilities.canFastCopyTextures) {
-                    // use fallback / slightly slower texture copy method
-                    copyToTexturesCompat(i, mipLevel)
+        if (needsCopy) {
+            if (gl.capabilities.canFastCopyTextures) {
+                // use fast texture copy method, requires OpenGL 4.3 or higher
+                gl.copyTexturesFast(this)
+            } else {
+                for (mipLevel in 0 until parent.mipLevels) {
+                    copyToTexturesCompat(mipLevel)
                 }
             }
         }
         gl.bindFramebuffer(gl.FRAMEBUFFER, gl.DEFAULT_FRAMEBUFFER)
-
-        if (needsCopy && gl.capabilities.canFastCopyTextures) {
-            // use fast texture copy method, requires OpenGL 4.3 or higher
-            gl.copyTexturesFast(this)
-        }
     }
 
-    private fun copyToTexturesCompat(face: Int, mipLevel: Int) {
+    private fun copyToTexturesCompat(mipLevel: Int) {
+        gl.bindFramebuffer(gl.FRAMEBUFFER, fbos[mipLevel])
         gl.readBuffer(gl.COLOR_ATTACHMENT0)
-        for (i in parent.copyTargetsColor.indices) {
-            val copyTarget = parent.copyTargetsColor[i]
-            var width = copyTarget.loadedTexture?.width ?: 0
-            var height = copyTarget.loadedTexture?.height ?: 0
-            if (width != parent.width || height != parent.height) {
-                copyTarget.loadedTexture?.release()
-                copyTarget.createCopyTexColor()
-                width = copyTarget.loadedTexture!!.width
-                height = copyTarget.loadedTexture!!.height
+        for (face in 0..5) {
+            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + face, glColorTex, mipLevel)
+            for (i in parent.copyTargetsColor.indices) {
+                val copyTarget = parent.copyTargetsColor[i]
+                var width = copyTarget.loadedTexture?.width ?: 0
+                var height = copyTarget.loadedTexture?.height ?: 0
+                if (width != parent.width || height != parent.height) {
+                    copyTarget.loadedTexture?.release()
+                    copyTarget.createCopyTexColor()
+                    width = copyTarget.loadedTexture!!.width
+                    height = copyTarget.loadedTexture!!.height
+                }
+                width = width shr mipLevel
+                height = height shr mipLevel
+                val target = copyTarget.loadedTexture as LoadedTextureGl
+                gl.bindTexture(gl.TEXTURE_CUBE_MAP, target.glTexture)
+                gl.copyTexSubImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + face, mipLevel, 0, 0, 0, 0, width, height)
             }
-            width = width shr mipLevel
-            height = height shr mipLevel
-            val target = copyTarget.loadedTexture as LoadedTextureGl
-            gl.bindTexture(gl.TEXTURE_CUBE_MAP, target.glTexture)
-            gl.copyTexSubImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + face, mipLevel, 0, 0, 0, 0, width, height)
         }
     }
 
@@ -116,8 +113,8 @@ class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, val backend
             val fbo = gl.createFramebuffer()
             val rbo = gl.createRenderbuffer()
 
-            val mipWidth = parent.getMipWidth(i)
-            val mipHeight = parent.getMipHeight(i)
+            val mipWidth = parent.width shr i
+            val mipHeight = parent.height shr i
 
             gl.bindFramebuffer(gl.FRAMEBUFFER, fbo)
             gl.bindRenderbuffer(gl.RENDERBUFFER, rbo)

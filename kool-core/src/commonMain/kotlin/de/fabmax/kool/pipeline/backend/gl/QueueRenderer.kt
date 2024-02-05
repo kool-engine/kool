@@ -15,53 +15,55 @@ class QueueRenderer(val backend: RenderBackendGl) {
     private val ctx: KoolContext = backend.ctx
     private val gl: GlApi = backend.gl
 
-    fun renderViews(renderPass: RenderPass, mipLevel: Int = 0) {
-        for (i in renderPass.views.indices) {
-            renderPass.setupView(i)
-            renderView(renderPass.views[i], mipLevel)
+    fun renderViews(renderPass: RenderPass, frameBufferSetter: FrameBufferSetter?) {
+        val t = if (renderPass.isProfileTimes) Time.precisionTime else 0.0
+
+        val mipLevels = if (renderPass.drawMipLevels) renderPass.mipLevels else 1
+        for (mipLevel in 0 until mipLevels) {
+            renderPass.setupMipLevel(mipLevel)
+
+            when (renderPass.viewRenderMode) {
+                RenderPass.ViewRenderMode.SINGLE_RENDER_PASS -> {
+                    frameBufferSetter?.setupFramebuffer(0, mipLevel)
+                    clear(renderPass)
+                    for (viewIndex in renderPass.views.indices) {
+                        renderPass.setupView(viewIndex)
+                        renderView(renderPass.views[viewIndex], mipLevel)
+                    }
+                }
+
+                RenderPass.ViewRenderMode.MULTI_RENDER_PASS -> {
+                    for (viewIndex in renderPass.views.indices) {
+                        frameBufferSetter?.setupFramebuffer(viewIndex, mipLevel)
+                        clear(renderPass)
+                        renderPass.setupView(viewIndex)
+                        renderView(renderPass.views[viewIndex], mipLevel)
+                    }
+                }
+            }
+        }
+
+        if (renderPass.isProfileTimes) {
+            renderPass.tDraw = Time.precisionTime - t
         }
     }
 
-    fun renderView(view: RenderPass.View, mipLevel: Int = 0) = view.apply {
-        val rpHeight = renderPass.height shr mipLevel
-        val viewportY = rpHeight - viewport.y - viewport.height
-        gl.viewport(viewport.x, viewportY, viewport.width, viewport.height)
-        gl.scissor(viewport.x, viewportY, viewport.width, viewport.height)
+    fun renderView(view: RenderPass.View, mipLevel: Int) {
+        val viewport = view.viewport
+        val x = viewport.x shr mipLevel
+        val y = viewport.y shr mipLevel
+        val w = viewport.width shr mipLevel
+        val h = viewport.height shr mipLevel
+        gl.viewport(x, y, w, h)
 
-        gl.depthMask(true)
-        gl.clearDepth(if (renderPass.isReverseDepth) 0f else 1f)
-
-        val rp = renderPass
-        if (rp is OffscreenRenderPass) {
-            for (i in 0 until rp.numColorAttachments) {
-                clearColors[i]?.let { color ->
-                    colorBufferClearVal.clear()
-                    color.putTo(colorBufferClearVal)
-                    gl.clearBufferfv(gl.COLOR, i, colorBufferClearVal)
-                }
-            }
-            if (clearDepth) {
-                gl.clear(gl.DEPTH_BUFFER_BIT)
-            }
-
-        } else {
-            clearColor?.let { gl.clearColor(it.r, it.g, it.b, it.a) }
-            val clearMask = clearMask()
-            if (clearMask != 0) {
-                gl.clear(clearMask)
-            }
-        }
-
-        for (cmd in drawQueue.commands) {
-            val t = if (view.renderPass.isProfileTimes) Time.precisionTime else 0.0
-
+        for (cmd in view.drawQueue.commands) {
             if (cmd.geometry.numIndices == 0) continue
             val pipeline = cmd.pipeline ?: continue
 
             val drawInfo = backend.shaderMgr.bindDrawShader(cmd)
             if (!drawInfo.isValid || drawInfo.numIndices == 0) continue
 
-            glAttribs.setupPipelineAttribs(pipeline, renderPass.isReverseDepth)
+            glAttribs.setupPipelineAttribs(pipeline, view.renderPass.isReverseDepth)
 
             val insts = cmd.mesh.instances
             if (insts == null) {
@@ -71,10 +73,21 @@ class QueueRenderer(val backend: RenderBackendGl) {
                 gl.drawElementsInstanced(drawInfo.primitiveType, drawInfo.numIndices, drawInfo.indexType, insts.numInstances)
                 BackendStats.addDrawCommands(1, cmd.geometry.numPrimitives * insts.numInstances)
             }
+        }
+    }
 
-            if (view.renderPass.isProfileTimes) {
-                cmd.mesh.drawTime = Time.precisionTime - t
+    fun clear(renderPass: RenderPass) {
+        for (i in renderPass.clearColors.indices) {
+            renderPass.clearColors[i]?.let { color ->
+                colorBufferClearVal.clear()
+                color.putTo(colorBufferClearVal)
+                gl.clearBufferfv(gl.COLOR, i, colorBufferClearVal)
             }
+        }
+        if (renderPass.clearDepth) {
+            glAttribs.setWriteDepth(true)
+            gl.clearDepth(if (renderPass.isReverseDepth) 0f else 1f)
+            gl.clear(gl.DEPTH_BUFFER_BIT)
         }
     }
 
@@ -112,7 +125,7 @@ class QueueRenderer(val backend: RenderBackendGl) {
             }
         }
 
-        private fun setWriteDepth(enabled: Boolean) {
+        fun setWriteDepth(enabled: Boolean) {
             if (actIsWriteDepth != enabled) {
                 actIsWriteDepth = enabled
                 gl.depthMask(enabled)
@@ -162,17 +175,6 @@ class QueueRenderer(val backend: RenderBackendGl) {
         }
     }
 
-    private fun RenderPass.View.clearMask(): Int {
-        var mask = 0
-        if (clearDepth) {
-            mask = gl.DEPTH_BUFFER_BIT
-        }
-        if (clearColor != null) {
-            mask = mask or gl.COLOR_BUFFER_BIT
-        }
-        return mask
-    }
-
     private val DepthCompareOp.glOp: Int
         get() = when(this) {
             DepthCompareOp.DISABLED -> 0
@@ -185,4 +187,8 @@ class QueueRenderer(val backend: RenderBackendGl) {
             DepthCompareOp.EQUAL -> gl.EQUAL
             DepthCompareOp.NOT_EQUAL -> gl.NOTEQUAL
         }
+
+    fun interface FrameBufferSetter {
+        fun setupFramebuffer(viewIndex: Int, mipLevel: Int)
+    }
 }

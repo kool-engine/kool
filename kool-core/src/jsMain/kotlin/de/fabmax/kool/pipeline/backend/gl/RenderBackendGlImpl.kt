@@ -4,9 +4,12 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.configJs
 import de.fabmax.kool.modules.ksl.KslUnlitShader
-import de.fabmax.kool.modules.ksl.lang.xy
-import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
+import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
+import de.fabmax.kool.pipeline.OffscreenRenderPass2d
+import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.backend.RenderBackendJs
+import de.fabmax.kool.pipeline.renderPassConfig
 import de.fabmax.kool.platform.JsContext
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
@@ -69,7 +72,7 @@ class RenderBackendGlImpl(ctx: KoolContext, canvas: HTMLCanvasElement) : RenderB
 
             blitScene.mainRenderPass.renderPass.update(ctx)
             blitScene.mainRenderPass.renderPass.collectDrawCommands(ctx)
-            queueRenderer.renderView(blitScene.mainRenderPass.screenView)
+            queueRenderer.renderView(blitScene.mainRenderPass.screenView, mipLevel)
         } else {
             super.blitFrameBuffers(src, dst, srcViewport, dstViewport, mipLevel)
         }
@@ -78,27 +81,20 @@ class RenderBackendGlImpl(ctx: KoolContext, canvas: HTMLCanvasElement) : RenderB
     private val blitTempFrameBuffer: OffscreenRenderPass2d by lazy {
         OffscreenRenderPass2d(Node(), renderPassConfig {
             colorTargetTexture(TexFormat.RGBA)
-        })
+            name = "blitTempFrameBuffer"
+        }).apply {
+            clearColor = null
+            clearDepth = false
+        }
     }
 
     private val blitScene: Scene by lazy {
         Scene().apply {
             addTextureMesh {
-                generate {
-                    centeredRect {
-                        size.set(2f, 2f)
-                        mirrorTexCoordsY()
-                    }
-                }
+                generateFullscreenQuad()
                 shader = KslUnlitShader {
                     color { textureColor(blitTempFrameBuffer.colorTexture, gamma = 1f) }
-                    modelCustomizer = {
-                        vertexStage {
-                            main {
-                                outPosition set float4Value(vertexAttribFloat3(Attribute.POSITIONS).xy, 0f, 1f)
-                            }
-                        }
-                    }
+                    modelCustomizer = { fullscreenQuadVertexStage(null) }
                 }
             }
         }

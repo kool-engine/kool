@@ -41,8 +41,6 @@ class ShellShadingDemo : DemoScene("Shell Shading") {
     private val selectedModel = mutableStateOf(1)
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
-        mainRenderPass.clearColor = MdColor.GREY tone 600
-
         defaultOrbitCamera().apply {
             zoom = 3.5
         }

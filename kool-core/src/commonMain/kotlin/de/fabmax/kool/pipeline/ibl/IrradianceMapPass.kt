@@ -24,7 +24,7 @@ class IrradianceMapPass private constructor(parentScene: Scene, hdriMap: Texture
 
     init {
         mirrorIfInvertedClipY()
-        views.forEach { it.clearColor = null }
+
         drawNode.apply {
             addMesh(Attribute.POSITIONS) {
                 generateFullscreenCube()

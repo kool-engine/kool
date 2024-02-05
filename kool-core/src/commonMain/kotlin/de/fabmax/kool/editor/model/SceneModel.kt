@@ -169,12 +169,12 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : NodeMod
         }
 
         override fun updateSingleColorBg(bgColorLinear: Color) {
-            drawNode.mainRenderPass.clearColor = bgColorLinear.toSrgb()
+            drawNode.clearColor = bgColorLinear.toSrgb()
             skybox?.isVisible = false
         }
 
         override fun updateHdriBg(hdriBg: SceneBackgroundData.Hdri, ibl: EnvironmentMaps) {
-            drawNode.mainRenderPass.clearColor = null
+            drawNode.clearColor = null
             val skybox = this.skybox ?: Skybox.Cube()
             skybox.name = "Skybox"
             skybox.isVisible = true

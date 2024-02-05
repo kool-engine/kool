@@ -112,8 +112,6 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
     }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
-        mainRenderPass.clearColor = null
-
         (lighting.lights[0] as Light.Directional).apply {
             setup(Vec3f(-1f, -0.6f, -1f))
             setColor(Color.WHITE, 0.75f)

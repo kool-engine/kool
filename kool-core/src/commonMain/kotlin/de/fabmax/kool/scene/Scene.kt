@@ -23,6 +23,14 @@ open class Scene(name: String? = null) : Node(name) {
     val lighting = Lighting()
     var mainRenderPass: SceneRenderPass = OnscreenSceneRenderPass()
         private set
+
+    var clearColor: Color?
+        get() = mainRenderPass.renderPass.clearColor
+        set(value) { mainRenderPass.renderPass.clearColor = value }
+    var clearDepth: Boolean
+        get() = mainRenderPass.renderPass.clearDepth
+        set(value) { mainRenderPass.renderPass.clearDepth = value }
+
     val isInfiniteDepth: Boolean
         get() = mainRenderPass.renderPass.isReverseDepth
 
@@ -150,8 +158,6 @@ open class Scene(name: String? = null) : Node(name) {
         val screenView: RenderPass.View
         var camera: Camera
         val viewport: Viewport
-        var clearColor: Color?
-        var clearDepth: Boolean
         var useWindowViewport: Boolean
 
         val renderPass: RenderPass
@@ -161,22 +167,15 @@ open class Scene(name: String? = null) : Node(name) {
     }
 
     inner class OnscreenSceneRenderPass : RenderPass("${name}:OnScreenRenderPass"), SceneRenderPass {
-        override val screenView = View("screen", this@Scene, PerspectiveCamera(), arrayOf(DEFAULT_CLEAR_COLOR))
+        override val screenView = View("screen", this@Scene, PerspectiveCamera())
         override var camera: Camera by screenView::camera
         override val viewport: Viewport by screenView::viewport
-        override var clearColor: Color? by screenView::clearColor
-        override var clearDepth: Boolean by screenView::clearDepth
         override var useWindowViewport = true
 
+        override val clearColors: Array<Color?> = arrayOf(DEFAULT_CLEAR_COLOR)
         override val renderPass = this
 
         var blitRenderPass: OffscreenRenderPass2d? = null
-            set(value) {
-                field = value
-                if (value != null) {
-                    clearColor = null
-                }
-            }
 
         private val _views = mutableListOf(screenView)
         override val views: List<View>
@@ -197,7 +196,7 @@ open class Scene(name: String? = null) : Node(name) {
         }
 
         override fun createView(name: String): View {
-            val view = View(name, this@Scene, PerspectiveCamera(), arrayOf(null))
+            val view = View(name, this@Scene, PerspectiveCamera())
             _views += view
             return view
         }
@@ -243,7 +242,7 @@ open class Scene(name: String? = null) : Node(name) {
         }
 
         override fun createView(name: String): View {
-            val view = View(name, this@Scene, PerspectiveCamera(), arrayOf(null))
+            val view = View(name, this@Scene, PerspectiveCamera())
             views += view
             return view
         }
