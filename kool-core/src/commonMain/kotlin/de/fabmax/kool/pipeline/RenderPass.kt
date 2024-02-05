@@ -29,7 +29,32 @@ abstract class RenderPass(var name: String) : BaseReleasable() {
 
     var parentScene: Scene? = null
 
+    abstract val clearColors: Array<Color?>
+    var clearColor: Color?
+        get() = clearColors.getOrNull(0)
+        set(value) { clearColors[0] = value }
+    var clearDepth = true
+
     abstract val views: List<View>
+
+    var mipLevels = 1
+        protected set
+    var drawMipLevels = true
+        protected set
+
+    /**
+     * Determines whether individual [views] are rendered in a single render pass or one separate pass per view.
+     *
+     * If [ViewRenderMode.SINGLE_RENDER_PASS], each view is rendered with its individual viewport but without applying
+     * clear values or changing any attached frame buffer textures. This mode can be used, e.g., to put multiple
+     * camera perspectives on a single tiled texture.
+     *
+     * If [ViewRenderMode.MULTI_RENDER_PASS], each view is rendered in a separate render pass. For each pass
+     * clear values are applied as configured and the render attachments can change (depending on the render pass
+     * implementation). This is the default mode for [OffscreenRenderPassCube], where each cube face is rendered to
+     * the corresponding cube face of the attached cube map texture.
+     */
+    var viewRenderMode = ViewRenderMode.SINGLE_RENDER_PASS
 
     var lighting: Lighting? = null
 
@@ -43,6 +68,7 @@ abstract class RenderPass(var name: String) : BaseReleasable() {
     val onAfterCollectDrawCommands = BufferedList<((UpdateEvent) -> Unit)>()
     val onAfterDraw = BufferedList<(() -> Unit)>()
     val onSetupView = BufferedList<((Int) -> Unit)>()
+    val onSetupMipLevel = BufferedList<((Int) -> Unit)>()
 
     var isProfileTimes = false
     var tUpdate = 0.0
@@ -127,6 +153,25 @@ abstract class RenderPass(var name: String) : BaseReleasable() {
         onSetupView += block
     }
 
+    /**
+     * Executes the given block each time before this render pass is rendered at a specific mip-level. This can
+     * be used to change mip-level specific shader configuration if this render pass is rendered at multiple mip-levels.
+     * However, be aware that, at the time this function is called, previous mip-level passes are enqueued but not yet
+     * executed. This means, you should avoid changing single uniform values of a shader because that would affect
+     * the previous mip-levels as well. Instead, you can and should change the entire pipeline bind-group of a shader
+     * in these cases.
+     */
+    fun onSetupMipLevel(block: (Int) -> Unit) {
+        onSetupMipLevel += block
+    }
+
+    open fun setupMipLevel(mipLevel: Int) {
+        onSetupMipLevel.update()
+        for (i in onSetupMipLevel.indices) {
+            onSetupMipLevel[i](mipLevel)
+        }
+    }
+
     override fun toString(): String {
         return "${this::class.simpleName}:$name"
     }
@@ -145,17 +190,12 @@ abstract class RenderPass(var name: String) : BaseReleasable() {
         operator fun component2() = ctx
     }
 
-    inner class View(var name: String, var drawNode: Node, var camera: Camera, val clearColors: Array<Color?>) {
+    inner class View(var name: String, var drawNode: Node, var camera: Camera) {
         val renderPass: RenderPass get() = this@RenderPass
 
         val viewport = Viewport(0, 0, 0, 0)
         val drawQueue = DrawQueue(this@RenderPass, this)
         var drawFilter: (Node) -> Boolean = { true }
-
-        var clearDepth = true
-        var clearColor: Color?
-            get() = clearColors[0]
-            set(value) { clearColors[0] = value }
 
         var isUpdateDrawNode = true
         var isReleaseDrawNode = true
@@ -193,5 +233,10 @@ abstract class RenderPass(var name: String) : BaseReleasable() {
             drawNode.collectDrawCommands(updateEvent)
             afterCollectDrawCommands(updateEvent)
         }
+    }
+
+    enum class ViewRenderMode {
+        SINGLE_RENDER_PASS,
+        MULTI_RENDER_PASS,
     }
 }

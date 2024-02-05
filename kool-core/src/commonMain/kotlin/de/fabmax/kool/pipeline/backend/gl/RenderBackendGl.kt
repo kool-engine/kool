@@ -36,7 +36,7 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
 
     protected fun setupGl() {
         numSamples = gl.getInteger(gl.SAMPLES)
-        gl.enable(gl.SCISSOR_TEST)
+        //gl.enable(gl.SCISSOR_TEST)
 
         if (gl.capabilities.hasClipControl) {
             logD { "Setting depth range to zero-to-one" }
@@ -163,7 +163,7 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
                     val srcViewport = Viewport(0, 0, it.width, it.height)
                     blitFrameBuffers(it, null, srcViewport, scenePass.viewport, 0)
                 }
-                queueRenderer.renderViews(scenePass.renderPass)
+                queueRenderer.renderViews(scenePass.renderPass, null)
             }
         }
 

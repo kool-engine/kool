@@ -54,10 +54,10 @@ class MaterialPass(pipeline: DeferredPipeline, suffix: String) :
 
         // encoded position is in view space -> z value of valid position is always negative, use a positive z value
         // in clear color to encode clear areas
-        mainView.clearColors[0] = Color(0f, 0f, 1f, 0f)
-        mainView.clearColors[1] = Color(0f, 0f, 0f, 0f)
-        mainView.clearColors[2] = Color(0f, 0f, 0f, 0f)
-        mainView.clearColors[3] = Color(0f, 0f, 0f, 0f)
+        clearColors[0] = Color(0f, 0f, 1f, 0f)
+        clearColors[1] = Color(0f, 0f, 0f, 0f)
+        clearColors[2] = Color(0f, 0f, 0f, 0f)
+        clearColors[3] = Color(0f, 0f, 0f, 0f)
     }
 
     override fun collectDrawCommands(ctx: KoolContext) {

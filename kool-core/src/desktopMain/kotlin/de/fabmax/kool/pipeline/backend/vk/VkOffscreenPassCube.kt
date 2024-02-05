@@ -49,8 +49,8 @@ class VkOffscreenPassCube(val parentPass: OffscreenRenderPassCube) : OffscreenPa
 
                 val imageCopy = callocVkImageCopyN(mipLevels * 6) {
                     for (mipLevel in 0 until mipLevels) {
-                        val width = parentPass.getMipWidth(mipLevel)
-                        val height = parentPass.getMipHeight(mipLevel)
+                        val width = parentPass.width shr mipLevel
+                        val height = parentPass.height shr mipLevel
 
                         for (face in 0 until 6) {
                             this[mipLevel * 6 + face].apply {
@@ -150,8 +150,8 @@ class VkOffscreenPassCube(val parentPass: OffscreenRenderPassCube) : OffscreenPa
     fun copyView(commandBuffer: VkCommandBuffer, viewDir: OffscreenRenderPassCube.ViewDirection, mipLevel: Int) {
         val rp = renderPass ?: return
 
-        val width = parentPass.getMipWidth(mipLevel)
-        val height = parentPass.getMipHeight(mipLevel)
+        val width = parentPass.width shr mipLevel
+        val height = parentPass.height shr mipLevel
 
         memStack {
             rp.image.transitionLayout(this, commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)

@@ -352,7 +352,6 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
             drawQueue.forEach { cmd ->
                 val pipelineCfg = cmd.pipeline
                 if (!cmd.mesh.geometry.isEmpty() && pipelineCfg != null) {
-                    val t = System.nanoTime()
                     pipelineCfg.update(cmd)
 
                     if (!sys.pipelineManager.hasPipeline(pipelineCfg, renderPass.vkRenderPass)) {
@@ -446,7 +445,6 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
                             BackendStats.addDrawCommands(1, cmd.mesh.geometry.numPrimitives * instanceCnt)
                         }
                     }
-                    cmd.mesh.drawTime = (System.nanoTime() - t) / 1e9
                 }
             }
         }
@@ -498,7 +496,7 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
                     vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE)
 
                     for (view in offscreenPass.views) {
-                        view.viewport.set(0, 0, offscreenPass.getMipWidth(mipLevel), offscreenPass.getMipHeight(mipLevel))
+                        view.viewport.set(0, 0, offscreenPass.width shr mipLevel, offscreenPass.height shr mipLevel)
                         setViewport(commandBuffer, view.viewport, false)
                         renderDrawQueue(commandBuffer, view.drawQueue.commands, mipLevel, rp, mipLevels, true)
                     }
@@ -526,7 +524,7 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
                     for (cubeView in cubeRenderPassViews) {
                         val imageI = mipLevel * 6 + cubeView.index
                         val view = offscreenPass.views[cubeView.index]
-                        view.viewport.set(0, 0, offscreenPass.getMipWidth(mipLevel), offscreenPass.getMipHeight(mipLevel))
+                        view.viewport.set(0, 0, offscreenPass.width shr mipLevel, offscreenPass.height shr mipLevel)
 
                         vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE)
                         setViewport(commandBuffer, view.viewport, false)
@@ -552,8 +550,8 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
                 }
 
                 // fixme: make clear values optional (if clear color is null or clearDepth = false)
-                val clearColors = renderPass.views.getOrNull(0)?.clearColors
-                val colorAttachments = max(1, clearColors?.size ?: 0)
+                val clearColors = renderPass.clearColors
+                val colorAttachments = max(1, clearColors.size)
                 pClearValues(callocVkClearValueN(colorAttachments + 1) {
                     for (i in 0 until colorAttachments) {
                         val clearColor = if (clearColors != null && i < clearColors.size) {

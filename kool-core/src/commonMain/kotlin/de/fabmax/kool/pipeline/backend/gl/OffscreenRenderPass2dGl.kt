@@ -12,11 +12,10 @@ class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, val backend: Re
     internal val fbos = mutableListOf<GlFramebuffer>()
     internal val rbos = mutableListOf<GlRenderbuffer>()
 
-    internal val colorTextures = Array(parent.numColorTextures) { gl.NULL_TEXTURE }
+    internal val colorTextures = Array(parent.numColorAttachments) { gl.NULL_TEXTURE }
     internal var depthTexture = gl.NULL_TEXTURE
 
-    private val drawMipLevels = parent.drawMipLevels
-    private val renderMipLevels: Int = if (drawMipLevels) { parent.mipLevels } else { 1 }
+    private val renderMipLevels: Int = if (parent.drawMipLevels) { parent.mipLevels } else { 1 }
 
     override val isReverseDepth: Boolean
         get() = parent.useReversedDepthIfAvailable && backend.depthRange == DepthRange.ZERO_TO_ONE
@@ -24,6 +23,12 @@ class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, val backend: Re
     private var isCreated = false
 
     private val resInfo = OffscreenPassInfo(parent)
+
+    private val frameBufferSetter = QueueRenderer.FrameBufferSetter { viewIndex, mipLevel ->
+        if (viewIndex == 0) {
+            gl.bindFramebuffer(gl.FRAMEBUFFER, fbos[mipLevel])
+        }
+    }
 
     fun draw() {
         resInfo.sceneName = parent.parentScene?.name ?: "scene:<null>"
@@ -33,43 +38,36 @@ class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, val backend: Re
 
         val needsCopy = parent.copyTargetsColor.isNotEmpty()
 
-        if (isCreated) {
-            for (mipLevel in 0 until renderMipLevels) {
-                parent.blitRenderPass?.let {
-                    val srcViewport = Viewport(0, 0, it.width, it.height)
-                    val dstViewport = Viewport(0, 0, parent.width, parent.height)
-                    backend.blitFrameBuffers(it, this, srcViewport, dstViewport, mipLevel)
-                }
+        parent.blitRenderPass?.let {
+            val srcViewport = Viewport(0, 0, it.width, it.height)
+            val dstViewport = Viewport(0, 0, parent.width, parent.height)
+            backend.blitFrameBuffers(it, this, srcViewport, dstViewport, 0)
+        }
 
-                parent.setupMipLevel(mipLevel)
-                for (i in parent.views.indices) {
-                    parent.views[i].viewport.set(0, 0, parent.getMipWidth(mipLevel), parent.getMipHeight(mipLevel))
-                }
-                gl.bindFramebuffer(gl.FRAMEBUFFER, fbos[mipLevel])
-                backend.queueRenderer.renderViews(parent, mipLevel)
+        backend.queueRenderer.renderViews(parent, frameBufferSetter)
 
-                if (needsCopy && !gl.capabilities.canFastCopyTextures) {
-                    // use fallback / slightly slower texture copy method
-                    copyToTexturesCompat(mipLevel, !parent.drawMipLevels)
-                }
-            }
-            gl.bindFramebuffer(gl.FRAMEBUFFER, gl.DEFAULT_FRAMEBUFFER)
-
-            if (!drawMipLevels) {
-                for (i in colorTextures.indices) {
-                    gl.bindTexture(gl.TEXTURE_2D, colorTextures[i])
-                    gl.generateMipmap(gl.TEXTURE_2D)
-                }
-            }
-
-            if (needsCopy && gl.capabilities.canFastCopyTextures) {
-                // use fast texture copy method, requires OpenGL 4.3 or higher
-                gl.copyTexturesFast(this)
+        if (!parent.drawMipLevels && parent.mipLevels > 1) {
+            for (i in colorTextures.indices) {
+                gl.bindTexture(gl.TEXTURE_2D, colorTextures[i])
+                gl.generateMipmap(gl.TEXTURE_2D)
             }
         }
+
+        if (needsCopy) {
+            if (gl.capabilities.canFastCopyTextures) {
+                // use fast texture copy method, requires OpenGL 4.3 or higher
+                gl.copyTexturesFast(this)
+            } else {
+                for (mipLevel in 0 until parent.mipLevels) {
+                    copyToTexturesCompat(mipLevel)
+                }
+            }
+        }
+        gl.bindFramebuffer(gl.FRAMEBUFFER, gl.DEFAULT_FRAMEBUFFER)
     }
 
-    private fun copyToTexturesCompat(mipLevel: Int, generateMipMaps: Boolean) {
+    private fun copyToTexturesCompat(mipLevel: Int) {
+        gl.bindFramebuffer(gl.FRAMEBUFFER, fbos[mipLevel])
         gl.readBuffer(gl.COLOR_ATTACHMENT0)
         for (i in parent.copyTargetsColor.indices) {
             val copyTarget = parent.copyTargetsColor[i]
@@ -87,15 +85,6 @@ class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, val backend: Re
             val target = copyTarget.loadedTexture as LoadedTextureGl
             gl.bindTexture(gl.TEXTURE_2D, target.glTexture)
             gl.copyTexSubImage2D(gl.TEXTURE_2D, mipLevel, 0, 0, 0, 0, width, height)
-        }
-
-        if (generateMipMaps) {
-            for (i in parent.copyTargetsColor.indices) {
-                val copyTarget = parent.copyTargetsColor[i]
-                val target = copyTarget.loadedTexture as LoadedTextureGl
-                gl.bindTexture(gl.TEXTURE_2D, target.glTexture)
-                gl.generateMipmap(gl.TEXTURE_2D)
-            }
         }
     }
 
@@ -191,15 +180,15 @@ class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, val backend: Re
                 target = gl.RENDERBUFFER,
                 samples = backend.numSamples,
                 internalformat = attachment.colorFormat.glInternalFormat(gl),
-                width = parent.getMipWidth(mipLevel),
-                height = parent.getMipHeight(mipLevel)
+                width = parent.width shr mipLevel,
+                height = parent.height shr mipLevel
             )
         } else {
             gl.renderbufferStorage(
                 target = gl.RENDERBUFFER,
                 internalformat = attachment.colorFormat.glInternalFormat(gl),
-                width = parent.getMipWidth(mipLevel),
-                height = parent.getMipHeight(mipLevel)
+                width = parent.width shr mipLevel,
+                height = parent.height shr mipLevel
             )
         }
         gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, rbo)
@@ -214,8 +203,8 @@ class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, val backend: Re
         val isMultiSampled = parent.colorAttachment is OffscreenRenderPass.RenderBufferColorAttachment && parent.colorAttachment.isMultiSampled
 
         val rbo = gl.createRenderbuffer()
-        val mipWidth = parent.getMipWidth(mipLevel)
-        val mipHeight = parent.getMipHeight(mipLevel)
+        val mipWidth = parent.width shr mipLevel
+        val mipHeight = parent.height shr mipLevel
         gl.bindRenderbuffer(gl.RENDERBUFFER, rbo)
         if (isMultiSampled) {
             gl.renderbufferStorageMultisample(gl.RENDERBUFFER, backend.numSamples, gl.DEPTH_COMPONENT32F, mipWidth, mipHeight)

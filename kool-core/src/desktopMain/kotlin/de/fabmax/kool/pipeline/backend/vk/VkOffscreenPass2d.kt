@@ -59,10 +59,10 @@ class VkOffscreenPass2d(val parentPass: OffscreenRenderPass2d) : OffscreenPass2d
         logE { "Blitting render passes is not yet implemented on Vulkan backend" }
 
         val rp = src.renderPass ?: return
-        val srcWidth = src.parentPass.getMipWidth(mipLevel)
-        val srcHeight = src.parentPass.getMipHeight(mipLevel)
-        val width = parentPass.getMipWidth(mipLevel)
-        val height = parentPass.getMipHeight(mipLevel)
+        val srcWidth = src.parentPass.width shr mipLevel
+        val srcHeight = src.parentPass.height shr mipLevel
+        val width = parentPass.width shr mipLevel
+        val height = parentPass.height shr mipLevel
 
         if (srcWidth != width || srcHeight != height) {
             logE { "Render pass blitting requires source and destination pass to have the same size" }
@@ -102,8 +102,8 @@ class VkOffscreenPass2d(val parentPass: OffscreenRenderPass2d) : OffscreenPass2d
         }
 
         val rp = renderPass ?: return
-        val width = parentPass.getMipWidth(mipLevel)
-        val height = parentPass.getMipHeight(mipLevel)
+        val width = parentPass.width shr mipLevel
+        val height = parentPass.height shr mipLevel
 
         memStack {
             for (i in rp.images.indices) {
@@ -153,8 +153,8 @@ class VkOffscreenPass2d(val parentPass: OffscreenRenderPass2d) : OffscreenPass2d
 
                 val imageCopy = callocVkImageCopyN(mipLevels) {
                     for (mipLevel in 0 until mipLevels) {
-                        val width = parentPass.getMipWidth(mipLevel)
-                        val height = parentPass.getMipHeight(mipLevel)
+                        val width = parentPass.width shr mipLevel
+                        val height = parentPass.height shr mipLevel
 
                         this[mipLevel].apply {
                             srcSubresource {

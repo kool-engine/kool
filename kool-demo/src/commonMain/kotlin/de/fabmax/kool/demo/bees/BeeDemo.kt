@@ -48,7 +48,7 @@ class BeeDemo : DemoScene("Fighting Bees") {
         }
         camera.setClipRange(1f, 1000f)
 
-        mainRenderPass.clearColor = bgColor
+        clearColor = bgColor
         mainRenderPass.renderPass.isProfileTimes = true
 
         beeMeshA.shader = BeeShader(MdColor.BLUE, MdColor.PURPLE).apply { colorMap = beeTex }

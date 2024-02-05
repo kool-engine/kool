@@ -1,6 +1,5 @@
 package de.fabmax.kool.pipeline.backend.webgpu
 
-import de.fabmax.kool.pipeline.OffscreenRenderPass
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.util.BaseReleasable
@@ -19,51 +18,64 @@ abstract class WgpuRenderPass<T: RenderPass>(
 
     abstract val colorTargetFormats: List<GPUTextureFormat>
 
-    protected fun render(renderPass: T, mipLevels: Int, encoder: GPUCommandEncoder) {
+    protected fun render(renderPass: T, encoder: GPUCommandEncoder) {
         val t = if (renderPass.isProfileTimes) Time.precisionTime else 0.0
 
+        val mipLevels = if (renderPass.drawMipLevels) renderPass.mipLevels else 1
         for (mipLevel in 0 until mipLevels) {
-            if (renderPass is OffscreenRenderPass) {
-                renderPass.setupMipLevel(mipLevel)
-                for (i in renderPass.views.indices) {
-                    renderPass.views[i].viewport.set(0, 0, renderPass.getMipWidth(mipLevel), renderPass.getMipHeight(mipLevel))
+            renderPass.setupMipLevel(mipLevel)
+
+            when (renderPass.viewRenderMode) {
+                RenderPass.ViewRenderMode.SINGLE_RENDER_PASS -> {
+                    val (colorAttachments, depthAttachment) = getRenderAttachments(renderPass, 0, mipLevel)
+                    passEncoderState.reset(encoder.beginRenderPass(colorAttachments, depthAttachment, renderPass.name), renderPass)
+                    for (viewIndex in renderPass.views.indices) {
+                        renderView(viewIndex, mipLevel, passEncoderState)
+                    }
+                    passEncoderState.passEncoder.end()
                 }
-            }
 
-            for (viewIndex in renderPass.views.indices) {
-                renderPass.setupView(viewIndex)
-
-                val (colorAttachments, depthAttachment) = getRenderAttachments(renderPass, viewIndex, mipLevel)
-                val view = renderPass.views[viewIndex]
-                val viewport = view.viewport
-                val x = viewport.x.toFloat()
-                val y = viewport.y.toFloat()
-                val w = viewport.width.toFloat()
-                val h = viewport.height.toFloat()
-
-                passEncoderState.reset(encoder.beginRenderPass(colorAttachments, depthAttachment, renderPass.name), renderPass)
-                val passEncoder = passEncoderState.passEncoder
-                passEncoder.setViewport(x, y, w, h, 0f, 1f)
-
-                for (cmd in view.drawQueue.commands) {
-                    val isCmdValid = cmd.pipeline != null && cmd.geometry.numIndices > 0
-                    if (isCmdValid && backend.pipelineManager.bindDrawPipeline(cmd, passEncoderState)) {
-                        val insts = cmd.mesh.instances
-                        if (insts == null) {
-                            passEncoder.drawIndexed(cmd.geometry.numIndices)
-                            BackendStats.addDrawCommands(1, cmd.geometry.numPrimitives)
-                        } else if (insts.numInstances > 0) {
-                            passEncoder.drawIndexed(cmd.geometry.numIndices, insts.numInstances)
-                            BackendStats.addDrawCommands(1, cmd.geometry.numPrimitives * insts.numInstances)
-                        }
+                RenderPass.ViewRenderMode.MULTI_RENDER_PASS -> {
+                    for (viewIndex in renderPass.views.indices) {
+                        val (colorAttachments, depthAttachment) = getRenderAttachments(renderPass, viewIndex, mipLevel)
+                        passEncoderState.reset(encoder.beginRenderPass(colorAttachments, depthAttachment, renderPass.name), renderPass)
+                        renderView(viewIndex, mipLevel, passEncoderState)
+                        passEncoderState.passEncoder.end()
                     }
                 }
-                passEncoder.end()
             }
         }
 
         if (renderPass.isProfileTimes) {
             renderPass.tDraw = Time.precisionTime - t
+        }
+    }
+
+    private fun renderView(viewIndex: Int, mipLevel: Int, passEncoderState: PassEncoderState) {
+        val passEncoder = passEncoderState.passEncoder
+        val view = passEncoderState.renderPass.views[viewIndex]
+
+        passEncoderState.renderPass.setupView(viewIndex)
+
+        val viewport = view.viewport
+        val x = (viewport.x shr mipLevel).toFloat()
+        val y = (viewport.y shr mipLevel).toFloat()
+        val w = (viewport.width shr mipLevel).toFloat()
+        val h = (viewport.height shr mipLevel).toFloat()
+        passEncoder.setViewport(x, y, w, h, 0f, 1f)
+
+        for (cmd in view.drawQueue.commands) {
+            val isCmdValid = cmd.pipeline != null && cmd.geometry.numIndices > 0
+            if (isCmdValid && backend.pipelineManager.bindDrawPipeline(cmd, passEncoderState)) {
+                val insts = cmd.mesh.instances
+                if (insts == null) {
+                    passEncoder.drawIndexed(cmd.geometry.numIndices)
+                    BackendStats.addDrawCommands(1, cmd.geometry.numPrimitives)
+                } else if (insts.numInstances > 0) {
+                    passEncoder.drawIndexed(cmd.geometry.numIndices, insts.numInstances)
+                    BackendStats.addDrawCommands(1, cmd.geometry.numPrimitives * insts.numInstances)
+                }
+            }
         }
     }
 

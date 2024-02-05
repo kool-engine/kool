@@ -3,6 +3,7 @@ package de.fabmax.kool.mock
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.PerspectiveCamera
+import de.fabmax.kool.util.Color
 
 class MockRenderPass(
     override val width: Int = Mock.testCtx.windowWidth,
@@ -11,7 +12,8 @@ class MockRenderPass(
     override val isReverseDepth: Boolean = false
 ) : RenderPass("mock-render-pass") {
 
-    val mockView = View("mock-view", Node(), PerspectiveCamera(), arrayOf())
+    val mockView = View("mock-view", Node(), PerspectiveCamera())
+    override val clearColors: Array<Color?> = arrayOf(Color.BLACK)
     override val views = listOf(mockView)
 
     val updateEvent = views[0].makeUpdateEvent(Mock.testCtx)

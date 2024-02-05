@@ -39,14 +39,14 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
     val editorCameraTransform = EditorCamTransform(this)
     private val editorBackgroundScene = scene("editor-camera") {
         addNode(editorCameraTransform)
-        mainRenderPass.clearColor = Color.BLACK
-        mainRenderPass.clearDepth = false
+        clearColor = Color.BLACK
+        clearDepth = false
     }
 
     val editorOverlay = scene("editor-overlay") {
         camera.setClipRange(0.1f, 1000f)
-        mainRenderPass.clearColor = null
-        mainRenderPass.clearDepth = false
+        clearColor = null
+        clearDepth = false
     }
     val gridOverlay = GridOverlay()
     val lightOverlay = SceneObjectsOverlay()

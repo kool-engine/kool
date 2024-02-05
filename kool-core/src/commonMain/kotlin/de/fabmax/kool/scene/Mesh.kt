@@ -145,12 +145,6 @@ open class Mesh(
 
     private var lastGeomUpdateFrame = -1
 
-    /**
-     * Time the latest draw call took (in seconds).
-     */
-    var drawTime = 0.0
-        internal set
-
     init {
         // frustum check is disabled by default for instanced meshes
         isFrustumChecked = instances == null

@@ -231,10 +231,7 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
         
             @fragment
             fn fragmentMain(@location(0) texCoord: vec2f) -> @location(0) vec4f {
-                let texSize = vec2f(textureDimensions(img));
-                let pxSize = vec2f(1.0, 1.0) / texSize;
-                let centerCoord = texCoord * (1.0 - pxSize * 2.0) + pxSize;
-                return textureSample(img, imgSampler, centerCoord);
+                return textureSample(img, imgSampler, texCoord);
             }
         """.trimIndent())
 

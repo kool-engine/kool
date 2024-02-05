@@ -5,18 +5,20 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.deg
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.PerspectiveCamera
-import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.launchDelayed
 
 open class OffscreenRenderPassCube(drawNode: Node, config: Config) : OffscreenRenderPass(config) {
 
-    override val views: List<View> = ViewDirection.entries.map {
+    override val views: List<View> = ViewDirection.entries.mapIndexed { i, dir ->
         val cam = PerspectiveCamera()
         cam.fovY = 90f.deg
         cam.clipNear = 0.01f
         cam.clipFar = 10f
-        cam.setupCamera(position = Vec3f.ZERO, up = it.up, lookAt = it.lookAt)
-        View(it.toString(), drawNode, cam, arrayOf(Color.BLACK)).apply { setFullscreenViewport() }
+        cam.setupCamera(position = Vec3f.ZERO, up = dir.up, lookAt = dir.lookAt)
+        View(dir.toString(), drawNode, cam).apply { setFullscreenViewport() }.apply {
+            isReleaseDrawNode = i == 0
+            isUpdateDrawNode = i == 0
+        }
     }
 
     var drawNode: Node = drawNode
@@ -38,10 +40,11 @@ open class OffscreenRenderPassCube(drawNode: Node, config: Config) : OffscreenRe
     internal val impl = KoolSystem.requireContext().backend.createOffscreenPassCube(this)
 
     init {
+        viewRenderMode = ViewRenderMode.MULTI_RENDER_PASS
         if (config.depthAttachment is TextureDepthAttachment) {
             throw RuntimeException("CubeMapDepthTexture not yet implemented")
         }
-        if (numColorTextures > 1) {
+        if (numColorAttachments > 1) {
             throw RuntimeException("CubeMap multiple render targets not yet implemented")
         }
     }

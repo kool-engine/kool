@@ -14,7 +14,7 @@ class WgpuOffscreenRenderPassCube(
 
     override val colorTargetFormats = parentPass.colorTextures.map { it.props.format.wgpu }
 
-    private val colorAttachments = List(parentPass.numColorTextures) {
+    private val colorAttachments = List(parentPass.colorTextures.size) {
         RenderAttachment(parentPass.colorTextures[it], false, "${parentPass.name}.color[$it]")
     }
     private val depthAttachment: RenderAttachment
@@ -50,8 +50,7 @@ class WgpuOffscreenRenderPassCube(
             colorAttachments[0].applySize(parentPass.width, parentPass.height)
         }
 
-        val mipLevels = if (parentPass.drawMipLevels) parentPass.mipLevels else 1
-        render(parentPass, mipLevels, encoder)
+        render(parentPass, encoder)
         if (!parentPass.drawMipLevels && parentPass.mipLevels > 1) {
             colorAttachments.forEach {
                 backend.textureLoader.mipmapGenerator.generateMipLevels(it.descriptor, it.gpuTexture.gpuTexture, encoder)
@@ -91,13 +90,13 @@ class WgpuOffscreenRenderPassCube(
         val colors = colorAttachments.mapIndexed { i, colorTex ->
             GPURenderPassColorAttachment(
                 view = colorTex.getView(viewIndex, mipLevel),
-                clearValue = parentPass.views[viewIndex].clearColors[i]?.let { GPUColorDict(it) }
+                clearValue = parentPass.clearColors[i]?.let { GPUColorDict(it) }
             )
         }.toTypedArray()
 
         val depth = GPURenderPassDepthStencilAttachment(
             view = depthAttachment.getView(viewIndex, mipLevel),
-            depthLoadOp = if (parentPass.views[viewIndex].clearDepth) GPULoadOp.clear else GPULoadOp.load,
+            depthLoadOp = if (parentPass.clearDepth) GPULoadOp.clear else GPULoadOp.load,
             depthStoreOp = GPUStoreOp.store,
             depthClearValue = 1f
         )

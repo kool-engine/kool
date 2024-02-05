@@ -24,8 +24,6 @@ class ReflectionMapPass private constructor(parentScene: Scene, hdriMap: Texture
 
     init {
         mirrorIfInvertedClipY()
-        views.forEach { it.clearColor = null }
-        isEnabled = true
 
         val reflectionMapShader = ReflectionMapShader(hdriMap, cubeMap)
         drawNode.apply {
