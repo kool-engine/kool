@@ -176,7 +176,7 @@ class DebugOverlay(position: Position = Position.UPPER_RIGHT) {
         val scenes = KoolSystem.requireContext().scenes
         for (scene in scenes) {
             println("Scene \"${scene.name}\":")
-            scene.mainRenderPass.renderPass.printTimes()
+            scene.mainRenderPass.printTimes()
             BackendStats.offscreenPasses.values.filter { it.sceneName == scene.name }.forEach {
                 it.renderPass.printTimes()
             }

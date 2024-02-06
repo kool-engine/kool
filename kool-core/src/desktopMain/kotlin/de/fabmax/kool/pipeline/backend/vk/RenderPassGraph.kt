@@ -106,7 +106,7 @@ class RenderPassGraph {
         groups.add(onScreenGroup)
         for (i in scenes.indices) {
             if (scenes[i].isVisible) {
-                onScreenGroup += scenes[i].mainRenderPass.renderPass
+                onScreenGroup += scenes[i].mainRenderPass
             }
         }
 

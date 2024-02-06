@@ -11,7 +11,6 @@ import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.platform.GlfwWindow
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Viewport
 import de.fabmax.kool.util.memStack
@@ -277,17 +276,9 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
             // on screen render passes of all scenes are merged into a single command buffer
             for (i in group.renderPasses.indices) {
                 val onScreenPass = group.renderPasses[i]
-                check (onScreenPass is Scene.OnscreenSceneRenderPass) {
-                    "Vulkan backend currently only supports Scene.OnscreenSceneRenderPass as on screen render pass"
-                }
-
                 for (view in onScreenPass.views) {
                     mergeQueue += view.drawQueue.commands
                 }
-                // fixme: blitting render passes does not work yet
-                //onScreenPass.blitRenderPass?.let {
-                //    swapChain.renderPass.blitFrom(it.impl as VkOffscreenPass2d, cmdBuffer, 0)
-                //}
             }
 
             val renderPassInfo = renderPassBeginInfo(swapChain.renderPass, swapChain.framebuffers[imageIndex], group.renderPasses[0])

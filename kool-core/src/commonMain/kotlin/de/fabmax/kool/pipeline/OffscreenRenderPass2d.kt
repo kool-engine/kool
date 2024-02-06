@@ -23,8 +23,6 @@ open class OffscreenRenderPass2d(drawNode: Node, config: Config) : OffscreenRend
     var isUpdateDrawNode: Boolean by mainView::isUpdateDrawNode
     var isReleaseDrawNode: Boolean by mainView::isReleaseDrawNode
 
-    var blitRenderPass: OffscreenRenderPass2d? = null
-
     val depthTexture = makeDepthAttachmentTex()
     val colorTextures = makeColorAttachmentTexs()
     val colorTexture: Texture2d?

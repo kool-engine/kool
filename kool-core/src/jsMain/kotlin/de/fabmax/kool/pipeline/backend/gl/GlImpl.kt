@@ -329,7 +329,6 @@ object GlImpl : GlApi {
 
         clipControlExt = gl.getExtension("EXT_clip_control")
         clipControlExt?.let {
-            logD { "EXT_clip_control extension is available" }
             LOWER_LEFT = it.LOWER_LEFT_EXT
             UPPER_LEFT = it.UPPER_LEFT_EXT
             NEGATIVE_ONE_TO_ONE = it.NEGATIVE_ONE_TO_ONE_EXT
