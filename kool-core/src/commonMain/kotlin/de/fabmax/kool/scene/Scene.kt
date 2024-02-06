@@ -21,18 +21,17 @@ open class Scene(name: String? = null) : Node(name) {
     val onRenderScene: BufferedList<(KoolContext) -> Unit> = BufferedList()
 
     val lighting = Lighting()
-    var mainRenderPass: SceneRenderPass = OnscreenSceneRenderPass()
-        private set
+    val mainRenderPass: SceneRenderPass = SceneRenderPass()
 
     var clearColor: Color?
-        get() = mainRenderPass.renderPass.clearColor
-        set(value) { mainRenderPass.renderPass.clearColor = value }
+        get() = mainRenderPass.clearColor
+        set(value) { mainRenderPass.clearColor = value }
     var clearDepth: Boolean
-        get() = mainRenderPass.renderPass.clearDepth
-        set(value) { mainRenderPass.renderPass.clearDepth = value }
+        get() = mainRenderPass.clearDepth
+        set(value) { mainRenderPass.clearDepth = value }
 
     val isInfiniteDepth: Boolean
-        get() = mainRenderPass.renderPass.isReverseDepth
+        get() = mainRenderPass.isReverseDepth
 
     var camera: Camera
         get() = mainRenderPass.camera
@@ -62,21 +61,13 @@ open class Scene(name: String? = null) : Node(name) {
         }
 
         val ctx = KoolSystem.getContextOrNull() ?: return false
-        if (ctx.backend.isOnscreenInfiniteDepthCapable) {
-            mainRenderPass.renderPass.useReversedDepthIfAvailable = true
-            logI { "Enabled infinite depth mode (onscreen)" }
+        if (ctx.backend.depthRange == DepthRange.ZERO_TO_ONE) {
+            mainRenderPass.useReversedDepthIfAvailable = true
+            logI { "Enabled infinite depth mode" }
             return true
-
-        } else if (ctx.backend.canBlitRenderPasses && ctx.backend.depthRange == DepthRange.ZERO_TO_ONE) {
-            val cam = mainRenderPass.camera
-            mainRenderPass.renderPass.release()
-            mainRenderPass = OffscreenSceneRenderPass(true)
-            mainRenderPass.camera = cam
-            logI { "Enabled infinite depth mode (via offscreen render pass)" }
-            return true
+        } else {
+            return false
         }
-        logW { "Failed to enable infinite depth mode" }
-        return false
     }
 
     fun addOffscreenPass(pass: OffscreenRenderPass) {
@@ -93,7 +84,7 @@ open class Scene(name: String? = null) : Node(name) {
             onRenderScene[i](ctx)
         }
 
-        mainRenderPass.renderPass.update(ctx)
+        mainRenderPass.update(ctx)
 
         if (offscreenPasses.update()) {
             // offscreen passes have changed, re-sort them to maintain correct dependency order
@@ -110,7 +101,7 @@ open class Scene(name: String? = null) : Node(name) {
                 pass.collectDrawCommands(ctx)
             }
         }
-        mainRenderPass.renderPass.collectDrawCommands(ctx)
+        mainRenderPass.collectDrawCommands(ctx)
     }
 
     override fun update(updateEvent: RenderPass.UpdateEvent) {
@@ -129,7 +120,7 @@ open class Scene(name: String? = null) : Node(name) {
         checkIsNotReleased()
         super.release()
 
-        mainRenderPass.renderPass.release()
+        mainRenderPass.release()
         offscreenPasses.update()
         for (i in offscreenPasses.indices) {
             offscreenPasses[i].release()
@@ -154,35 +145,19 @@ open class Scene(name: String? = null) : Node(name) {
         AfterRender
     }
 
-    sealed interface SceneRenderPass {
-        val screenView: RenderPass.View
-        var camera: Camera
-        val viewport: Viewport
-        var useWindowViewport: Boolean
-
-        val renderPass: RenderPass
-
-        fun createView(name: String): RenderPass.View
-        fun removeView(view: RenderPass.View)
-    }
-
-    inner class OnscreenSceneRenderPass : RenderPass("${name}:OnScreenRenderPass"), SceneRenderPass {
-        override val screenView = View("screen", this@Scene, PerspectiveCamera())
-        override var camera: Camera by screenView::camera
-        override val viewport: Viewport by screenView::viewport
-        override var useWindowViewport = true
+    inner class SceneRenderPass : RenderPass("${name}:OnScreenRenderPass") {
+        val screenView = View("screen", this@Scene, PerspectiveCamera())
+        var camera: Camera by screenView::camera
+        val viewport: Viewport by screenView::viewport
+        var useWindowViewport = true
 
         override val clearColors: Array<Color?> = arrayOf(DEFAULT_CLEAR_COLOR)
-        override val renderPass = this
-
-        var blitRenderPass: OffscreenRenderPass2d? = null
 
         private val _views = mutableListOf(screenView)
         override val views: List<View>
             get() = _views
 
-        override val isReverseDepth get() =
-            useReversedDepthIfAvailable && KoolSystem.requireContext().backend.isOnscreenInfiniteDepthCapable
+        override val isReverseDepth get() = useReversedDepthIfAvailable
 
         override val width: Int
             get() = KoolSystem.requireContext().windowWidth
@@ -195,66 +170,21 @@ open class Scene(name: String? = null) : Node(name) {
             lighting = this@Scene.lighting
         }
 
-        override fun createView(name: String): View {
+        fun createView(name: String): View {
             val view = View(name, this@Scene, PerspectiveCamera())
+            view.isUpdateDrawNode = false
+            view.isReleaseDrawNode = false
             _views += view
             return view
         }
 
-        override fun removeView(view: View) {
+        fun removeView(view: View) {
             _views -= view
         }
 
         override fun update(ctx: KoolContext) {
             if (useWindowViewport) {
                 ctx.getWindowViewport(viewport)
-            }
-            super.update(ctx)
-        }
-    }
-
-    inner class OffscreenSceneRenderPass(isMultiSampled: Boolean) : OffscreenRenderPass2d(
-        this@Scene,
-        renderPassConfig {
-            this.name = "${this@Scene.name}:OffScreenRenderPass"
-            if (isMultiSampled) {
-                colorTargetRenderBuffer(TexFormat.RGBA, true)
-            } else {
-                colorTargetTexture(TexFormat.RGBA)
-            }
-        }
-    ), SceneRenderPass {
-        override val screenView: View get() = views[0]
-        override var useWindowViewport = true
-
-        override val renderPass = this
-
-        init {
-            parentScene = this@Scene
-            lighting = this@Scene.lighting
-            useReversedDepthIfAvailable = true
-
-            screenView.apply {
-                name = "screen"
-                drawNode = this@Scene
-                clearColor = DEFAULT_CLEAR_COLOR
-            }
-        }
-
-        override fun createView(name: String): View {
-            val view = View(name, this@Scene, PerspectiveCamera())
-            views += view
-            return view
-        }
-
-        override fun removeView(view: View) {
-            views -= view
-        }
-
-        override fun update(ctx: KoolContext) {
-            if (useWindowViewport) {
-                ctx.getWindowViewport(viewport)
-                setSize(viewport.width, viewport.height)
             }
             super.update(ctx)
         }

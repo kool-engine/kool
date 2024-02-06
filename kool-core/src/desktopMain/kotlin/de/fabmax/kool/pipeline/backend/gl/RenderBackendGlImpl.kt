@@ -13,7 +13,9 @@ import org.lwjgl.opengl.GL11.glEnable
 import org.lwjgl.opengl.GL20.GL_VERTEX_PROGRAM_POINT_SIZE
 import org.lwjgl.opengl.GL32.GL_TEXTURE_CUBE_MAP_SEAMLESS
 
-class RenderBackendGlImpl(ctx: KoolContext) : RenderBackendGl(GlImpl, ctx), RenderBackendJvm {
+class RenderBackendGlImpl(ctx: KoolContext) :
+    RenderBackendGl(KoolSystem.configJvm.msaaSamples, GlImpl, ctx), RenderBackendJvm
+{
     override val glfwWindow: GlfwWindow
     override val glslGeneratorHints: GlslGenerator.Hints
 
@@ -30,6 +32,7 @@ class RenderBackendGlImpl(ctx: KoolContext) : RenderBackendGl(GlImpl, ctx), Rend
             glslVersionStr = "#version ${GlImpl.version.major}${GlImpl.version.minor}0 core"
         )
 
+        sceneRenderer.resolveDirect = true
         glEnable(GL_VERTEX_PROGRAM_POINT_SIZE)
         glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS)
         setupGl()

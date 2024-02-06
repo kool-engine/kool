@@ -14,7 +14,7 @@ import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logE
 import kotlin.math.ceil
 
-abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolContext) : RenderBackend {
+abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, internal val ctx: KoolContext) : RenderBackend {
     override val name = "Common GL Backend"
     override val apiName: String
         get() = gl.version.versionName
@@ -22,9 +22,6 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
         get() = gl.version.deviceInfo
 
     abstract val glslGeneratorHints: GlslGenerator.Hints
-
-    var numSamples = 1
-        private set
 
     override var deviceCoordinates: DeviceCoordinates = DeviceCoordinates.OPEN_GL
         protected set
@@ -36,10 +33,10 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
     internal val shaderMgr = ShaderManager(this)
     internal val queueRenderer = QueueRenderer(this)
 
-    protected fun setupGl() {
-        numSamples = gl.getInteger(gl.SAMPLES)
-        //gl.enable(gl.SCISSOR_TEST)
+    private val windowViewport = Viewport(0, 0, 0, 0)
+    protected val sceneRenderer = SceneRenderPass(numSamples, this)
 
+    protected fun setupGl() {
         if (gl.capabilities.hasClipControl) {
             logD { "Setting depth range to zero-to-one" }
             gl.clipControl(gl.LOWER_LEFT, gl.ZERO_TO_ONE)
@@ -50,6 +47,9 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
     override fun renderFrame(ctx: KoolContext) {
         BackendStats.resetPerFrameCounts()
 
+        getWindowViewport(windowViewport)
+        sceneRenderer.applySize(windowViewport.width, windowViewport.height)
+
         doOffscreenPasses(ctx.backgroundScene)
 
         for (i in ctx.scenes.indices) {
@@ -58,39 +58,17 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
                 if (scene.framebufferCaptureMode == Scene.FramebufferCaptureMode.BeforeRender) {
                     captureFramebuffer(scene)
                 }
+
                 doOffscreenPasses(scene)
-                doForegroundPass(scene)
+                sceneRenderer.draw(scene)
+
+                if (scene.framebufferCaptureMode == Scene.FramebufferCaptureMode.AfterRender) {
+                    captureFramebuffer(scene)
+                }
             }
         }
-    }
 
-    internal open fun blitFrameBuffers(
-        src: OffscreenRenderPass2d,
-        dst: OffscreenRenderPass2dGl?,
-        srcViewport: Viewport,
-        dstViewport: Viewport,
-        mipLevel: Int
-    ) {
-        val dstBuffer = dst?.fbos?.get(mipLevel) ?: gl.DEFAULT_FRAMEBUFFER
-        val srcPassImpl = src.impl as OffscreenRenderPass2dGl
-        if (srcPassImpl.fbos.isEmpty()) {
-            logE { "blit source framebuffer is not available" }
-            return
-        }
-
-        gl.bindFramebuffer(gl.READ_FRAMEBUFFER, srcPassImpl.fbos[0])
-        gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, dstBuffer)
-
-        val filter = if (srcViewport.width == dstViewport.width && srcViewport.height == dstViewport.height) {
-            gl.NEAREST
-        } else {
-            gl.LINEAR
-        }
-        gl.blitFramebuffer(
-            srcViewport.x, srcViewport.y, srcViewport.width, srcViewport.height,
-            dstViewport.x, dstViewport.y, dstViewport.width, dstViewport.height,
-            gl.COLOR_BUFFER_BIT, filter
-        )
+        sceneRenderer.resolve(ctx)
     }
 
     override fun uploadTextureToGpu(tex: Texture, data: TextureData) {
@@ -143,40 +121,6 @@ abstract class RenderBackendGl(internal val gl: GlApi, internal val ctx: KoolCon
                 }
             }
         }
-    }
-
-    private fun doForegroundPass(scene: Scene) {
-        val scenePass = scene.mainRenderPass
-        val t = if (scenePass.renderPass.isProfileTimes) Time.precisionTime else 0.0
-
-        when (scenePass) {
-            is Scene.OffscreenSceneRenderPass -> {
-                scenePass.blitRenderPass?.let {
-                    val srcViewport = Viewport(0, 0, it.width, it.height)
-                    val dst = scenePass.impl as OffscreenRenderPass2dGl
-                    blitFrameBuffers(it, dst, srcViewport, scenePass.viewport, 0)
-                }
-                drawOffscreen(scenePass)
-                blitFrameBuffers(scenePass, null, scenePass.viewport, scenePass.viewport, 0)
-            }
-
-            is Scene.OnscreenSceneRenderPass -> {
-                scenePass.blitRenderPass?.let {
-                    val srcViewport = Viewport(0, 0, it.width, it.height)
-                    blitFrameBuffers(it, null, srcViewport, scenePass.viewport, 0)
-                }
-                queueRenderer.renderViews(scenePass.renderPass, null)
-            }
-        }
-
-        if (scene.framebufferCaptureMode == Scene.FramebufferCaptureMode.AfterRender) {
-            captureFramebuffer(scene)
-        }
-
-        if (scenePass.renderPass.isProfileTimes) {
-            scenePass.renderPass.tDraw = Time.precisionTime - t
-        }
-        scenePass.renderPass.afterDraw()
     }
 
     private fun drawOffscreen(offscreenPass: OffscreenRenderPass) {

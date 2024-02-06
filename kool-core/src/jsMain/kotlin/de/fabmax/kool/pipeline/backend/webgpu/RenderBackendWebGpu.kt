@@ -96,11 +96,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
 //                }
 
                 scene.renderOffscreenPasses(encoder)
-
-                when (val scenePass = scene.mainRenderPass) {
-                    is Scene.OffscreenSceneRenderPass -> TODO()
-                    is Scene.OnscreenSceneRenderPass -> sceneRenderer.renderScene(scenePass.renderPass, encoder)
-                }
+                sceneRenderer.renderScene(scene.mainRenderPass, encoder)
 
 //                if (scene.framebufferCaptureMode == Scene.FramebufferCaptureMode.AfterRender) {
 //                    captureFramebuffer(scene)

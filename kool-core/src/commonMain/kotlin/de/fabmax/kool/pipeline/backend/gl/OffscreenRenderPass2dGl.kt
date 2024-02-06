@@ -3,7 +3,6 @@ package de.fabmax.kool.pipeline.backend.gl
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.DepthRange
 import de.fabmax.kool.pipeline.backend.stats.OffscreenPassInfo
-import de.fabmax.kool.util.Viewport
 import de.fabmax.kool.util.logE
 
 class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, val backend: RenderBackendGl) : OffscreenPass2dImpl {
@@ -37,12 +36,6 @@ class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, val backend: Re
         }
 
         val needsCopy = parent.copyTargetsColor.isNotEmpty()
-
-        parent.blitRenderPass?.let {
-            val srcViewport = Viewport(0, 0, it.width, it.height)
-            val dstViewport = Viewport(0, 0, parent.width, parent.height)
-            backend.blitFrameBuffers(it, this, srcViewport, dstViewport, 0)
-        }
 
         backend.queueRenderer.renderViews(parent, frameBufferSetter)
 

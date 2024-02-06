@@ -14,11 +14,12 @@ import de.fabmax.kool.platform.JsContext
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.addTextureMesh
-import de.fabmax.kool.util.Viewport
 import kotlinx.browser.window
 import org.w3c.dom.HTMLCanvasElement
 
-class RenderBackendGlImpl(ctx: KoolContext, canvas: HTMLCanvasElement) : RenderBackendGl(GlImpl, ctx), RenderBackendJs {
+class RenderBackendGlImpl(ctx: KoolContext, canvas: HTMLCanvasElement) :
+    RenderBackendGl(KoolSystem.configJs.numSamples, GlImpl, ctx), RenderBackendJs
+{
     override val deviceName = "WebGL"
 
     override val glslGeneratorHints: GlslGenerator.Hints = GlslGenerator.Hints(
@@ -28,7 +29,7 @@ class RenderBackendGlImpl(ctx: KoolContext, canvas: HTMLCanvasElement) : RenderB
     init {
         val options = js("({})")
         options["powerPreference"] = KoolSystem.configJs.powerPreference
-        options["antialias"] = KoolSystem.configJs.numSamples > 1
+        options["antialias"] = numSamples > 1
         options["stencil"] = false
 
         val webGlCtx = (canvas.getContext("webgl2", options) ?: canvas.getContext("experimental-webgl2", options)) as WebGL2RenderingContext?
@@ -39,6 +40,8 @@ class RenderBackendGlImpl(ctx: KoolContext, canvas: HTMLCanvasElement) : RenderB
         }
         GlImpl.initWebGl(webGlCtx)
         setupGl()
+
+        sceneRenderer.resolveDirect = false
     }
 
     override suspend fun startRenderLoop() {
@@ -52,30 +55,6 @@ class RenderBackendGlImpl(ctx: KoolContext, canvas: HTMLCanvasElement) : RenderB
     override fun renderFrame(ctx: KoolContext) {
         super.renderFrame(ctx)
         GlImpl.gl.finish()
-    }
-
-    override fun blitFrameBuffers(
-        src: OffscreenRenderPass2d,
-        dst: OffscreenRenderPass2dGl?,
-        srcViewport: Viewport,
-        dstViewport: Viewport,
-        mipLevel: Int
-    ) {
-        if (dst == null && numSamples > 1) {
-            // on WebGL blitting frame-buffers does not work if target frame-buffer is multi-sampled
-            //  -> use a non-multi-sampled texture frame-buffer as conversion helper and then render the texture
-            //     using a shader. This means some overhead, but apparently it's the only thing we can do.
-            val ctx = KoolSystem.requireContext()
-            blitTempFrameBuffer.blitRenderPass = src
-            blitTempFrameBuffer.setSize(src.width, src.height)
-            blitTempFrameBuffer.impl.draw()
-
-            blitScene.mainRenderPass.renderPass.update(ctx)
-            blitScene.mainRenderPass.renderPass.collectDrawCommands(ctx)
-            queueRenderer.renderView(blitScene.mainRenderPass.screenView, mipLevel)
-        } else {
-            super.blitFrameBuffers(src, dst, srcViewport, dstViewport, mipLevel)
-        }
     }
 
     private val blitTempFrameBuffer: OffscreenRenderPass2d by lazy {
