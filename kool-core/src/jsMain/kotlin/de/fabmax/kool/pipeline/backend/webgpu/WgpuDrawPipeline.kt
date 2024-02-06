@@ -187,11 +187,24 @@ class WgpuDrawPipeline(
             frontFace = if (renderPass.isMirrorY) GPUFrontFace.cw else GPUFrontFace.ccw
         )
 
+        val depthOp = when {
+            drawPipeline.pipelineConfig.depthTest == DepthCompareOp.DISABLED -> DepthCompareOp.ALWAYS
+            passEncoderState.renderPass.isReverseDepth -> {
+                when (drawPipeline.pipelineConfig.depthTest) {
+                    DepthCompareOp.LESS -> DepthCompareOp.GREATER
+                    DepthCompareOp.LESS_EQUAL -> DepthCompareOp.GREATER_EQUAL
+                    DepthCompareOp.GREATER -> DepthCompareOp.LESS
+                    DepthCompareOp.GREATER_EQUAL -> DepthCompareOp.LESS_EQUAL
+                    else -> drawPipeline.pipelineConfig.depthTest
+                }
+            }
+            else -> drawPipeline.pipelineConfig.depthTest
+        }
         val depthStencil = gpuRenderPass.depthFormat?.let { depthFormat ->
             GPUDepthStencilState(
                 format = depthFormat,
                 depthWriteEnabled = if (drawPipeline.pipelineConfig.depthTest == DepthCompareOp.DISABLED) false else drawPipeline.pipelineConfig.isWriteDepth,
-                depthCompare = if (drawPipeline.pipelineConfig.depthTest == DepthCompareOp.DISABLED) GPUCompareFunction.always else drawPipeline.pipelineConfig.depthTest.wgpu
+                depthCompare = depthOp.wgpu
             )
         }
 

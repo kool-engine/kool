@@ -30,6 +30,7 @@ class LoadedTextureGl(
         this.width = width
         this.height = height
         this.depth = depth
+        currentSamplerSettings = null
     }
 
     fun bind() {

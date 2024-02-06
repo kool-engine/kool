@@ -56,14 +56,14 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
             val scene = ctx.scenes[i]
             if (scene.isVisible) {
                 if (scene.framebufferCaptureMode == Scene.FramebufferCaptureMode.BeforeRender) {
-                    captureFramebuffer(scene)
+                    sceneRenderer.captureFramebuffer(scene, ctx)
                 }
 
                 doOffscreenPasses(scene)
                 sceneRenderer.draw(scene)
 
                 if (scene.framebufferCaptureMode == Scene.FramebufferCaptureMode.AfterRender) {
-                    captureFramebuffer(scene)
+                    sceneRenderer.captureFramebuffer(scene, ctx)
                 }
             }
         }
@@ -170,33 +170,5 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
                 }
             }
         }
-    }
-
-    private fun captureFramebuffer(scene: Scene) {
-        val viewport = scene.mainRenderPass.viewport
-        val targetTex = scene.capturedFramebuffer
-
-        if (targetTex.loadedTexture == null) {
-            targetTex.loadedTexture = LoadedTextureGl(
-                target = gl.TEXTURE_2D,
-                glTexture = gl.createTexture(),
-                backend = this,
-                texture = targetTex,
-                estimatedSize = viewport.width * viewport.height * 4L
-            ).apply { applySamplerSettings(targetTex.props.defaultSamplerSettings) }
-        }
-        val tex = targetTex.loadedTexture as LoadedTextureGl
-        tex.bind()
-
-        if (tex.width != viewport.width || tex.height != viewport.height) {
-            tex.setSize(viewport.width, viewport.height, 1)
-            tex.applySamplerSettings(targetTex.props.defaultSamplerSettings)
-            targetTex.loadingState = Texture.LoadingState.LOADED
-            gl.texImage2D(tex.target, 0, gl.RGBA8, viewport.width, viewport.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null)
-        }
-
-        gl.bindFramebuffer(gl.READ_FRAMEBUFFER, gl.DEFAULT_FRAMEBUFFER)
-        gl.readBuffer(gl.BACK)
-        gl.copyTexSubImage2D(tex.target, 0, 0, 0, viewport.x, viewport.y, viewport.width, viewport.height)
     }
 }

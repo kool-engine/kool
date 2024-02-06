@@ -49,6 +49,7 @@ abstract class WgpuRenderPass<T: RenderPass>(
         if (renderPass.isProfileTimes) {
             renderPass.tDraw = Time.precisionTime - t
         }
+        renderPass.afterDraw()
     }
 
     private fun renderView(viewIndex: Int, mipLevel: Int, passEncoderState: PassEncoderState) {

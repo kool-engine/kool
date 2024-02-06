@@ -3,9 +3,7 @@ package de.fabmax.kool.pipeline.backend.webgpu
 import de.fabmax.kool.pipeline.LoadedTexture
 import de.fabmax.kool.pipeline.TextureData
 
-class WgpuLoadedTexture(
-    val texture: WgpuTextureResource,
-): LoadedTexture {
+class WgpuLoadedTexture(val texture: WgpuTextureResource): LoadedTexture {
 
     override val width: Int = texture.gpuTexture.width
     override val height: Int = texture.gpuTexture.height

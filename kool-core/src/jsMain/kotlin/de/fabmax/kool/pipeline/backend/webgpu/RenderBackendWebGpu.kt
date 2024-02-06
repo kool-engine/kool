@@ -91,16 +91,16 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         for (i in ctx.scenes.indices) {
             val scene = ctx.scenes[i]
             if (scene.isVisible) {
-//                if (scene.framebufferCaptureMode == Scene.FramebufferCaptureMode.BeforeRender) {
-//                    captureFramebuffer(scene)
-//                }
+                if (scene.framebufferCaptureMode == Scene.FramebufferCaptureMode.BeforeRender) {
+                    sceneRenderer.captureFramebuffer(scene, encoder)
+                }
 
                 scene.renderOffscreenPasses(encoder)
                 sceneRenderer.renderScene(scene.mainRenderPass, encoder)
 
-//                if (scene.framebufferCaptureMode == Scene.FramebufferCaptureMode.AfterRender) {
-//                    captureFramebuffer(scene)
-//                }
+                if (scene.framebufferCaptureMode == Scene.FramebufferCaptureMode.AfterRender) {
+                    sceneRenderer.captureFramebuffer(scene, encoder)
+                }
             }
         }
 
@@ -113,7 +113,6 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
             if (pass.isEnabled) {
                 val t = if (pass.isProfileTimes) Time.precisionTime else 0.0
                 pass.render(encoder)
-                pass.afterDraw()
                 if (pass.isProfileTimes) {
                     pass.tDraw = Time.precisionTime - t
                 }
