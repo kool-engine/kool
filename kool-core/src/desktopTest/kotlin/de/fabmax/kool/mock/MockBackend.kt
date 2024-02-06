@@ -18,8 +18,6 @@ class MockBackend(val shaderGen: KslGenerator = GlslGenerator(GlslGenerator.Hint
     override val deviceName: String = "Mock device"
     override val deviceCoordinates: DeviceCoordinates = DeviceCoordinates.OPEN_GL
     override val hasComputeShaders: Boolean = false
-    override val canBlitRenderPasses: Boolean = false
-    override val isOnscreenInfiniteDepthCapable: Boolean = false
 
     override fun renderFrame(ctx: KoolContext) { }
 

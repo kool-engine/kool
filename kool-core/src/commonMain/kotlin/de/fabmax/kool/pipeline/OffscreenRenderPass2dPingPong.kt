@@ -18,8 +18,12 @@ open class OffscreenRenderPass2dPingPong(config: Config) : OffscreenRenderPass(
     val ping: OffscreenRenderPass2d = OffscreenRenderPass2d(pingContent, config)
     val pong: OffscreenRenderPass2d = OffscreenRenderPass2d(pongContent, config)
 
-    override val isReverseDepth: Boolean
+    override var isReverseDepth: Boolean
         get() = ping.isReverseDepth && pong.isReverseDepth
+        set(value) {
+            ping.isReverseDepth = value
+            pong.isReverseDepth = value
+        }
 
     var onDrawPing: ((Int) -> Unit)? = null
     var onDrawPong: ((Int) -> Unit)? = null

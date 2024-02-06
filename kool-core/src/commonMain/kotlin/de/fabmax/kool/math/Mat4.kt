@@ -665,8 +665,8 @@ open class Mat4f(
             return MutableMat4f().perspective(fovy, aspect, near, far, depthRange)
         }
 
-        fun perspectiveReversedDepth(fovy: AngleF, aspect: Float, near: Float): Mat4f {
-            return MutableMat4f().perspectiveReversedDepth(fovy, aspect, near)
+        fun perspectiveReversedDepthInfiniteRange(fovy: AngleF, aspect: Float, near: Float): Mat4f {
+            return MutableMat4f().perspectiveReversedDepthInfiniteRange(fovy, aspect, near)
         }
     }
 }
@@ -1209,7 +1209,7 @@ open class MutableMat4f(
      * Inplace operation: Applies a perspective projection transform for reversed depth with an infinite far plane
      * to this matrix.
      */
-    fun perspectiveReversedDepth(fovy: AngleF, aspect: Float, near: Float): MutableMat4f {
+    fun perspectiveReversedDepthInfiniteRange(fovy: AngleF, aspect: Float, near: Float): MutableMat4f {
         val f = 1.0f / tan(fovy.rad / 2.0f)
         return mul(
             f / aspect, 0f, 0f, 0f,
@@ -1952,8 +1952,8 @@ open class Mat4d(
             return MutableMat4d().perspective(fovy, aspect, near, far, depthRange)
         }
 
-        fun perspectiveReversedDepth(fovy: AngleD, aspect: Double, near: Double): Mat4d {
-            return MutableMat4d().perspectiveReversedDepth(fovy, aspect, near)
+        fun perspectiveReversedDepthInfiniteRange(fovy: AngleD, aspect: Double, near: Double): Mat4d {
+            return MutableMat4d().perspectiveReversedDepthInfiniteRange(fovy, aspect, near)
         }
     }
 }
@@ -2496,7 +2496,7 @@ open class MutableMat4d(
      * Inplace operation: Applies a perspective projection transform for reversed depth with an infinite far plane
      * to this matrix.
      */
-    fun perspectiveReversedDepth(fovy: AngleD, aspect: Double, near: Double): MutableMat4d {
+    fun perspectiveReversedDepthInfiniteRange(fovy: AngleD, aspect: Double, near: Double): MutableMat4d {
         val f = 1.0 / tan(fovy.rad / 2.0)
         return mul(
             f / aspect, 0.0, 0.0, 0.0,

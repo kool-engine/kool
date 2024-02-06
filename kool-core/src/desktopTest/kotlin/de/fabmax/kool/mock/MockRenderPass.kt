@@ -9,7 +9,6 @@ class MockRenderPass(
     override val width: Int = Mock.testCtx.windowWidth,
     override val height: Int = Mock.testCtx.windowHeight,
     override val depth: Int = 1,
-    override val isReverseDepth: Boolean = false
 ) : RenderPass("mock-render-pass") {
 
     val mockView = View("mock-view", Node(), PerspectiveCamera())

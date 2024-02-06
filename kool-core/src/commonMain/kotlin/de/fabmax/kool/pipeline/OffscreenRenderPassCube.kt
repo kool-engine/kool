@@ -34,9 +34,6 @@ open class OffscreenRenderPassCube(drawNode: Node, config: Config) : OffscreenRe
 
     val copyTargetsColor = mutableListOf<TextureCube>()
 
-    override val isReverseDepth: Boolean
-        get() = impl.isReverseDepth
-
     internal val impl = KoolSystem.requireContext().backend.createOffscreenPassCube(this)
 
     init {
@@ -120,8 +117,6 @@ open class OffscreenRenderPassCube(drawNode: Node, config: Config) : OffscreenRe
 }
 
 interface OffscreenPassCubeImpl {
-    val isReverseDepth: Boolean
-
     fun applySize(width: Int, height: Int)
 
     fun release()

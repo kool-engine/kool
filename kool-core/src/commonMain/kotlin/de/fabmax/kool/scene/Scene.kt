@@ -56,16 +56,13 @@ open class Scene(name: String? = null) : Node(name) {
         get() = children.isEmpty() && (offscreenPasses.isEmpty() && !offscreenPasses.hasStagedItems)
 
     fun tryEnableInfiniteDepth(): Boolean {
-        if (isInfiniteDepth) {
-            return true
-        }
-
         val ctx = KoolSystem.getContextOrNull() ?: return false
         if (ctx.backend.depthRange == DepthRange.ZERO_TO_ONE) {
-            mainRenderPass.useReversedDepthIfAvailable = true
+            mainRenderPass.isReverseDepth = true
             logI { "Enabled infinite depth mode" }
             return true
         } else {
+            logW { "Failed to enable infinite depth mode: Incompatible clip depth range" }
             return false
         }
     }
@@ -156,8 +153,6 @@ open class Scene(name: String? = null) : Node(name) {
         private val _views = mutableListOf(screenView)
         override val views: List<View>
             get() = _views
-
-        override val isReverseDepth get() = useReversedDepthIfAvailable
 
         override val width: Int
             get() = KoolSystem.requireContext().windowWidth

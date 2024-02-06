@@ -17,7 +17,6 @@ class ComputeRenderPass(name: String, width: Int, height: Int = 1, depth: Int = 
     })
 {
     override val views: List<View> = emptyList()
-    override val isReverseDepth: Boolean = false
 
     private var isTasksDirty = false
     private val _tasks = mutableListOf<Task>()

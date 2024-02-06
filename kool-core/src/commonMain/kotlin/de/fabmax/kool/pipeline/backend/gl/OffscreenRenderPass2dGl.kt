@@ -1,7 +1,6 @@
 package de.fabmax.kool.pipeline.backend.gl
 
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.pipeline.backend.DepthRange
 import de.fabmax.kool.pipeline.backend.stats.OffscreenPassInfo
 import de.fabmax.kool.util.logE
 
@@ -15,9 +14,6 @@ class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, val backend: Re
     internal var depthTexture = gl.NULL_TEXTURE
 
     private val renderMipLevels: Int = if (parent.drawMipLevels) { parent.mipLevels } else { 1 }
-
-    override val isReverseDepth: Boolean
-        get() = parent.useReversedDepthIfAvailable && backend.depthRange == DepthRange.ZERO_TO_ONE
 
     private var isCreated = false
 

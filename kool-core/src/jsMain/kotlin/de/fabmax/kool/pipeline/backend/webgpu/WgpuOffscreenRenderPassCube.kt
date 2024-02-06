@@ -10,8 +10,6 @@ class WgpuOffscreenRenderPassCube(
     backend: RenderBackendWebGpu
 ) : WgpuRenderPass<OffscreenRenderPassCube>(GPUTextureFormat.depth32float, numSamples, backend), OffscreenPassCubeImpl {
 
-    override val isReverseDepth: Boolean = false
-
     override val colorTargetFormats = parentPass.colorTextures.map { it.props.format.wgpu }
 
     private val colorAttachments = List(parentPass.colorTextures.size) {

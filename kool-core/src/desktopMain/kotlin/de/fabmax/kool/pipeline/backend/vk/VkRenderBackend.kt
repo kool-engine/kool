@@ -33,8 +33,6 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
 
     override val deviceCoordinates: DeviceCoordinates = DeviceCoordinates.VULKAN
     override val hasComputeShaders: Boolean = false
-    override val canBlitRenderPasses = false
-    override val isOnscreenInfiniteDepthCapable = true
 
     private val shaderCodes = mutableMapOf<String, ShaderCodeImplVk>()
 
@@ -554,7 +552,7 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
                         this[i].setColor(clearColor)
                     }
                     this[colorAttachments].depthStencil {
-                        if (renderPass.useReversedDepthIfAvailable) {
+                        if (renderPass.isReverseDepth) {
                             it.depth(0f)
                         } else {
                             it.depth(1f)

@@ -25,10 +25,7 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
 
     override var deviceCoordinates: DeviceCoordinates = DeviceCoordinates.OPEN_GL
         protected set
-
     override val hasComputeShaders: Boolean get() = gl.capabilities.hasComputeShaders
-    override val canBlitRenderPasses = true
-    override val isOnscreenInfiniteDepthCapable = false
 
     internal val shaderMgr = ShaderManager(this)
     internal val queueRenderer = QueueRenderer(this)

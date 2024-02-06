@@ -30,9 +30,6 @@ open class OffscreenRenderPass2d(drawNode: Node, config: Config) : OffscreenRend
 
     val copyTargetsColor = mutableListOf<Texture2d>()
 
-    override val isReverseDepth: Boolean
-        get() = impl.isReverseDepth
-
     internal val impl = KoolSystem.requireContext().backend.createOffscreenPass2d(this)
 
     fun addView(name: String, camera: Camera): View {
@@ -103,8 +100,6 @@ open class OffscreenRenderPass2d(drawNode: Node, config: Config) : OffscreenRend
 }
 
 interface OffscreenPass2dImpl {
-    val isReverseDepth: Boolean
-
     fun applySize(width: Int, height: Int)
 
     fun release()

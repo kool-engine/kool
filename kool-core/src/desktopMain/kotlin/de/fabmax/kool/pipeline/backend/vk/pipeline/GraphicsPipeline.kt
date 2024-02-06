@@ -212,7 +212,7 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
                 depthTestEnable(pipeline.depthCompareOp != DepthCompareOp.DISABLED)
                 depthWriteEnable(pipeline.isWriteDepth)
 
-                if (koolRenderPass.useReversedDepthIfAvailable && pipeline.autoReverseDepthFunc) {
+                if (koolRenderPass.isReverseDepth && pipeline.autoReverseDepthFunc) {
                     depthCompareOp(when (pipeline.depthCompareOp) {
                         DepthCompareOp.DISABLED -> 0
                         DepthCompareOp.ALWAYS -> VK_COMPARE_OP_ALWAYS

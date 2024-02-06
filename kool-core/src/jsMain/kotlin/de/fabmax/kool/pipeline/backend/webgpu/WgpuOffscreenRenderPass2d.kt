@@ -10,8 +10,6 @@ class WgpuOffscreenRenderPass2d(
     backend: RenderBackendWebGpu
 ) : WgpuRenderPass<OffscreenRenderPass2d>(GPUTextureFormat.depth32float, numSamples, backend), OffscreenPass2dImpl {
 
-    override val isReverseDepth: Boolean = false
-
     override val colorTargetFormats = parentPass.colorTextures.map { it.props.format.wgpu }
 
     private val colorAttachments = List(parentPass.colorTextures.size) {

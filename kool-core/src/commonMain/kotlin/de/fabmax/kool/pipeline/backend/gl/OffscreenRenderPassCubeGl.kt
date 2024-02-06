@@ -1,7 +1,6 @@
 package de.fabmax.kool.pipeline.backend.gl
 
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.pipeline.backend.DepthRange
 import de.fabmax.kool.pipeline.backend.stats.OffscreenPassInfo
 
 class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, val backend: RenderBackendGl) : OffscreenPassCubeImpl {
@@ -11,9 +10,6 @@ class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, val backend
     private val rbos = mutableListOf<GlRenderbuffer>()
 
     internal var glColorTex = gl.NULL_TEXTURE
-
-    override val isReverseDepth: Boolean
-        get() = parent.useReversedDepthIfAvailable && backend.depthRange == DepthRange.ZERO_TO_ONE
 
     private var isCreated = false
 

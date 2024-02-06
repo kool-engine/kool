@@ -7,6 +7,7 @@ import de.fabmax.kool.pipeline.backend.DepthRange
 import de.fabmax.kool.util.LazyMat4d
 import de.fabmax.kool.util.LazyMat4f
 import de.fabmax.kool.util.Viewport
+import de.fabmax.kool.util.logW
 import kotlin.math.atan
 import kotlin.math.cos
 import kotlin.math.min
@@ -329,7 +330,11 @@ open class OrthographicCamera(name: String = "orthographicCam") : Camera(name) {
 
     override fun updateProjectionMatrix(updateEvent: RenderPass.UpdateEvent) {
         if (left != right && bottom != top && clipNear != clipFar) {
-            proj.setIdentity().orthographic(left, right, bottom, top, clipNear, clipFar, updateEvent.ctx.backend.depthRange)
+            proj.setIdentity()
+            if (updateEvent.renderPass.isMirrorY) {
+                proj.m11 *= -1f
+            }
+            proj.orthographic(left, right, bottom, top, clipNear, clipFar, updateEvent.ctx.backend.depthRange)
         }
     }
 
@@ -385,6 +390,8 @@ open class PerspectiveCamera(name: String = "perspectiveCam") : Camera(name) {
     private val tmpNodeCenter = MutableVec3f()
     private val tmpProjCorrection = MutableMat4f()
 
+    private var complainedAboutDepthRange = false
+
     override fun updateProjectionMatrix(updateEvent: RenderPass.UpdateEvent) {
         isReverseDepthProjection = updateEvent.renderPass.isReverseDepth
 
@@ -393,8 +400,11 @@ open class PerspectiveCamera(name: String = "perspectiveCam") : Camera(name) {
             proj.m11 *= -1f
         }
         if (isReverseDepthProjection) {
-            check(updateEvent.ctx.backend.depthRange == DepthRange.ZERO_TO_ONE)
-            proj.perspectiveReversedDepth(fovY, aspectRatio, clipNear)
+            proj.perspectiveReversedDepthInfiniteRange(fovY, aspectRatio, clipNear)
+            if (updateEvent.ctx.backend.depthRange != DepthRange.ZERO_TO_ONE && !complainedAboutDepthRange) {
+                complainedAboutDepthRange = true
+                logW { "Using infinite depth projection on incompatible clip depth range" }
+            }
 
         } else {
             proj.perspective(fovY, aspectRatio, clipNear, clipFar, updateEvent.ctx.backend.depthRange)

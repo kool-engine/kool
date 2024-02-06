@@ -61,8 +61,7 @@ abstract class RenderPass(var name: String) : BaseReleasable() {
     private var updateEvent: UpdateEvent? = null
 
     var isDoublePrecision = false
-    var useReversedDepthIfAvailable = false
-    abstract val isReverseDepth: Boolean
+    open var isReverseDepth = false
 
     val onBeforeCollectDrawCommands = BufferedList<((UpdateEvent) -> Unit)>()
     val onAfterCollectDrawCommands = BufferedList<((UpdateEvent) -> Unit)>()
@@ -99,11 +98,6 @@ abstract class RenderPass(var name: String) : BaseReleasable() {
             views[i].collectDrawCommands(ctx)
         }
         tCollect = if (isProfileTimes) Time.precisionTime - t else 0.0
-
-        if (useReversedDepthIfAvailable && !isReverseDepth && !complainedAboutReversedDepth) {
-            complainedAboutReversedDepth = true
-            logW { "Reversed depth testing requested but not available" }
-        }
     }
 
     protected open fun beforeCollectDrawCommands(updateEvent: UpdateEvent) {

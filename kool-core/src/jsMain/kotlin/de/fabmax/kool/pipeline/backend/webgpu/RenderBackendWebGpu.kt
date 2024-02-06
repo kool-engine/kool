@@ -27,8 +27,6 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
     override val deviceName: String = "WebGPU"
     override val deviceCoordinates: DeviceCoordinates = DeviceCoordinates.WEB_GPU
     override val hasComputeShaders: Boolean = false
-    override val canBlitRenderPasses: Boolean = false
-    override val isOnscreenInfiniteDepthCapable: Boolean = false // actually it can...
 
     lateinit var adapter: GPUAdapter
         private set

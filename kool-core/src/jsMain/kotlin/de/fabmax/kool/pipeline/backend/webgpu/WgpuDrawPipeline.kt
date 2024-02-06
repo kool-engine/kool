@@ -189,7 +189,7 @@ class WgpuDrawPipeline(
 
         val depthOp = when {
             drawPipeline.pipelineConfig.depthTest == DepthCompareOp.DISABLED -> DepthCompareOp.ALWAYS
-            passEncoderState.renderPass.isReverseDepth -> {
+            passEncoderState.renderPass.isReverseDepth && drawPipeline.autoReverseDepthFunc -> {
                 when (drawPipeline.pipelineConfig.depthTest) {
                     DepthCompareOp.LESS -> DepthCompareOp.GREATER
                     DepthCompareOp.LESS_EQUAL -> DepthCompareOp.GREATER_EQUAL
