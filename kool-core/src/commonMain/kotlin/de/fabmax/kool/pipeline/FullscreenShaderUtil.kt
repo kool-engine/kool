@@ -54,6 +54,7 @@ object FullscreenShaderUtil {
     val fullscreenShaderPipelineCfg = PipelineConfig(
         blendMode = BlendMode.DISABLED,
         cullMethod = CullMethod.NO_CULLING,
-        depthTest = DepthCompareOp.DISABLED
+        depthTest = DepthCompareOp.ALWAYS,
+        isWriteDepth = false
     )
 }

@@ -1,9 +1,9 @@
-# kool - An OpenGL / Vulkan graphics engine written in Kotlin
+# kool - An OpenGL / WebGPU graphics engine written in Kotlin
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/fabmax/kool/blob/master/LICENSE)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/de.fabmax.kool/kool-core/badge.svg)](https://central.sonatype.com/artifact/de.fabmax.kool/kool-core)
 ![Build](https://github.com/fabmax/kool/workflows/Build/badge.svg)
 
-A multi-platform OpenGL / WebGPU / Vulkan game engine that works on Desktop Java and browsers.
+A multi-platform OpenGL / WebGPU / ~~Vulkan~~ game engine that works on Desktop Java and browsers.
 
 I started working on a graphical scene editor.
 The editor is still in an early state and not very useful yet, but you can try the [Web Demo](https://fabmax.github.io/kool/kool-editor/)
@@ -67,20 +67,26 @@ Feel free to join the [Discord Server](https://discord.gg/GvsJj2Pk3K)!
 - [Mesh Simplification](https://fabmax.github.io/kool/kool-js/?demo=simplification): Interactive mesh
   simplification demo (based on traditional [error-quadrics](https://www.cs.cmu.edu/~./garland/Papers/quadrics.pdf))
 
-By default, the demos use the WebGPU backend and fall back to WebGL if WebGPU is not supported by your browser. You
-can also force a certain backend by appending `&backend=webgpu` or `&backend=webgl` to the URL.
-
 Code for all demos is available in kool-demo sub-project.
+
+By default, the demos use the WebGPU backend and fall back to WebGL if WebGPU is not supported by your browser. The
+used backend is printed in the extended info-panel in the lower right corner (click on the little `+`), apart from
+that there shouldn't be much visible difference in the WebGL and WebGPU backends. You can also force a certain backend
+by appending `&backend=webgpu` or `&backend=webgl` to the URL.
 
 ## Platform Support
 
-| Platform    | Backend | Implementation Status                |
-|-------------|---------|--------------------------------------|
-| Desktop JVM | OpenGL  | :white_check_mark: Fully working     |
-| Desktop JVM | Vulkan  | :x: Not working (under construction) |
-| Browser     | WebGL 2 | :white_check_mark: Fully working     |
-| Browser     | WebGPU  | :white_check_mark: Fully working     |
-| Android     | -       | :x: Not yet implemented              |
+| Platform    | Backend | Implementation Status                             |
+|-------------|---------|---------------------------------------------------|
+| Desktop JVM | OpenGL  | :white_check_mark: Fully working                  |
+| Desktop JVM | Vulkan  | :x: Not working (under construction)              |
+| Browser     | WebGL 2 | :white_check_mark: Fully working                  |
+| Browser     | WebGPU  | :white_check_mark: Fully working (no compute yet) |
+| Android     | -       | :x: Not yet implemented                           |
+
+WebGPU support is new and I took the chance to renovate the entire backend architecture (it's better than ever now!).
+However, to maintain a minimum degree of sanity, I disabled the Vulkan backend for the moment - I will re-enable it
+once things have stabilized. 
 
 ## Usage
 

@@ -296,7 +296,7 @@ class AoDemo : DemoScene("Ambient Occlusion") {
         val noisyAoMapShader = aoShader()
 
         private fun aoShader() = KslUnlitShader {
-            pipeline { depthTest = DepthCompareOp.DISABLED }
+            pipeline { depthTest = DepthCompareOp.ALWAYS }
             color { textureData() }
             modelCustomizer = {
                 fragmentStage {

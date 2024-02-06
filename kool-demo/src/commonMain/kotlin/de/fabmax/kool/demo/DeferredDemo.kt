@@ -496,7 +496,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
         private val positionMapShader = gBufferShader(10f, 0.05f)
         private val metalRoughFlagsShader = MetalRoughFlagsShader()
         private val bloomMapShader = KslUnlitShader {
-            pipeline { depthTest = DepthCompareOp.DISABLED }
+            pipeline { depthTest = DepthCompareOp.ALWAYS }
             color { textureData() }
             colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB
             modelCustomizer = {
@@ -511,7 +511,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
         }
 
         private fun gBufferShader(offset: Float, scale: Float) = KslUnlitShader {
-            pipeline { depthTest = DepthCompareOp.DISABLED }
+            pipeline { depthTest = DepthCompareOp.ALWAYS }
             color { textureData() }
             modelCustomizer = {
                 fragmentStage {
@@ -533,7 +533,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
 
         companion object {
             val cfg = UnlitShaderConfig {
-                pipeline { depthTest = DepthCompareOp.DISABLED }
+                pipeline { depthTest = DepthCompareOp.ALWAYS }
                 colorSpaceConversion = ColorSpaceConversion.AS_IS
                 modelCustomizer = {
                     val uv = interStageFloat2()

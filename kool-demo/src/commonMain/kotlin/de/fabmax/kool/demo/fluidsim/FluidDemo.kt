@@ -267,7 +267,7 @@ class FluidDemo : DemoScene("Fluid Simulation") {
         init {
             texture2d("drawState", draw)
             pipelineConfig = PipelineConfig(
-                depthTest = DepthCompareOp.DISABLED,
+                depthTest = DepthCompareOp.ALWAYS,
                 lineWidth = 2f
             )
             program.code()

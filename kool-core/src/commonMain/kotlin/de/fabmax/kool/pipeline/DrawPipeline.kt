@@ -64,8 +64,6 @@ enum class BlendMode {
 }
 
 enum class DepthCompareOp {
-    @Deprecated("DISABLED is ambigious, use ALWAYS instead (and consider disable writing depth)")
-    DISABLED,
     ALWAYS,
     NEVER,
     LESS,

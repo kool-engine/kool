@@ -113,7 +113,6 @@ val TexFormat.pxSize: Int get() = when(this) {
 }
 
 fun DepthCompareOp.glOp(gl: GlApi): Int = when(this) {
-    DepthCompareOp.DISABLED -> 0
     DepthCompareOp.ALWAYS -> gl.ALWAYS
     DepthCompareOp.NEVER -> gl.NEVER
     DepthCompareOp.LESS -> gl.LESS

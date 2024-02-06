@@ -5,14 +5,13 @@ import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.modules.ksl.blocks.convertColorSpace
 import de.fabmax.kool.modules.ksl.lang.*
-import de.fabmax.kool.pipeline.BlendMode
-import de.fabmax.kool.pipeline.CullMethod
-import de.fabmax.kool.pipeline.DepthCompareOp
+import de.fabmax.kool.pipeline.FullscreenShaderUtil
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
-import de.fabmax.kool.pipeline.PipelineConfig
 import kotlin.math.exp
 
-class BlurShader(cfg: BlurShaderConfig, model: Model = Model(cfg)) : KslShader(model, cfg.pipelineCfg) {
+class BlurShader(cfg: BlurShaderConfig, model: Model = Model(cfg)) :
+    KslShader(model, FullscreenShaderUtil.fullscreenShaderPipelineCfg)
+{
 
     var blurInput by texture2d("tBlurInput")
     var direction by uniform2f("uBlurDirection", Vec2f(0.001f, 0f))
@@ -71,12 +70,6 @@ class BlurShader(cfg: BlurShaderConfig, model: Model = Model(cfg)) : KslShader(m
 }
 
 class BlurShaderConfig {
-    val pipelineCfg = PipelineConfig(
-        blendMode = BlendMode.DISABLED,
-        cullMethod = CullMethod.NO_CULLING,
-        depthTest = DepthCompareOp.DISABLED,
-        isWriteDepth = false
-    )
     var kernel = BlurShader.blurKernel(8)
     var colorSpaceConversion = ColorSpaceConversion.AS_IS
 

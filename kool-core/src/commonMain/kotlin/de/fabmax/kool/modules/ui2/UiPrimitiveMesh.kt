@@ -258,7 +258,7 @@ class UiPrimitiveMesh(name: String) :
             val pipelineConfig = PipelineConfig(
                 blendMode = BlendMode.BLEND_PREMULTIPLIED_ALPHA,
                 cullMethod = CullMethod.NO_CULLING,
-                depthTest = DepthCompareOp.DISABLED
+                depthTest = DepthCompareOp.ALWAYS
             )
         }
     }

@@ -103,7 +103,6 @@ val CullMethod.wgpu: GPUCullMode
 
 val DepthCompareOp.wgpu: GPUCompareFunction
     get() = when (this) {
-        DepthCompareOp.DISABLED -> GPUCompareFunction.always
         DepthCompareOp.ALWAYS -> GPUCompareFunction.always
         DepthCompareOp.NEVER -> GPUCompareFunction.never
         DepthCompareOp.LESS -> GPUCompareFunction.less

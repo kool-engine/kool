@@ -20,7 +20,8 @@ class DeferredLightShader(encodedLightType: Float, model: Model = Model(encodedL
         PipelineConfig(
             blendMode = BlendMode.BLEND_ADDITIVE,
             cullMethod = CullMethod.CULL_FRONT_FACES,
-            depthTest = DepthCompareOp.DISABLED
+            depthTest = DepthCompareOp.ALWAYS,
+            isWriteDepth = false
         )
     )
 {

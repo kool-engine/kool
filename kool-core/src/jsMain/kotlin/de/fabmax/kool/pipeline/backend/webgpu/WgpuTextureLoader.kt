@@ -19,7 +19,6 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
 
     private val device: GPUDevice get() = backend.device
     val mipmapGenerator = MipmapGenerator()
-    val multisampleResolver = MultiSampleTextureResolver()
 
     fun loadTexture(tex: Texture, data: TextureData) {
         when (tex) {
@@ -27,7 +26,7 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
             is Texture2d -> loadTexture2d(tex, data)
             is Texture3d -> loadTexture3d(tex, data)
             is TextureCube -> loadTextureCube(tex, data)
-            else -> TODO("${tex::class.simpleName}")
+            else -> error("${tex::class.simpleName}")
         }
     }
 
@@ -311,64 +310,6 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
                     srcView = dstView
                 }
             }
-        }
-    }
-
-    inner class MultiSampleTextureResolver {
-        private val shaderModule = device.createShaderModule("""
-            var<private> pos: array<vec2f, 3> = array<vec2f, 3>(
-                vec2f(-1.0, -1.0), vec2f(-1.0, -1.0), vec2f(-1.0, -1.0)
-            );
-
-            @vertex
-            fn vertexMain(@builtin(vertex_index) vertexIndex: u32) -> @builtin(position) vec4f {
-                return vec4f(pos[vertexIndex], 0.0, 1.0);
-            }
-        
-            @fragment
-            fn fragmentMain() -> @location(0) vec4f {
-                return vec4f(0.0, 0.0, 0.0, 0.0);
-            }
-        """.trimIndent())
-
-        private val sampler = device.createSampler(minFilter = GPUFilterMode.nearest)
-        private val pipelines = mutableMapOf<GPUTextureFormat, GPURenderPipeline>()
-
-        fun getRenderPipeline(format: GPUTextureFormat): GPURenderPipeline = pipelines.getOrPut(format) {
-            device.createRenderPipeline(
-                GPURenderPipelineDescriptor(
-                    vertex = GPUVertexState(
-                        module = shaderModule,
-                        entryPoint = "vertexMain"
-                    ),
-                    fragment = GPUFragmentState(
-                        module = shaderModule,
-                        entryPoint = "fragmentMain",
-                        targets = arrayOf(GPUColorTargetState(format))
-                    ),
-                    primitive = GPUPrimitiveStateStrip(GPUIndexFormat.uint32),
-                    multisample = GPUMultisampleState(4),
-                    layout = GPUAutoLayoutMode.auto
-                )
-            )
-        }
-
-        fun resolve(src: GPUTexture, dst: GPUTexture, cmdEncoder: GPUCommandEncoder) {
-            val pipeline = getRenderPipeline(src.format)
-            val srcView = src.createView()
-            val dstView = dst.createView()
-
-            val passEncoder = cmdEncoder.beginRenderPass(
-                colorAttachments = arrayOf(GPURenderPassColorAttachment(
-                    view = srcView,
-                    resolveTarget = dstView,
-                    loadOp = GPULoadOp.load,
-                    storeOp = GPUStoreOp.store
-                ))
-            )
-
-            //passEncoder.setPipeline(pipeline)
-            passEncoder.end()
         }
     }
 }

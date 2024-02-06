@@ -251,7 +251,7 @@ class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, val backend: Re
             tex.setSize(width, height, 1)
             tex.bind()
             tex.applySamplerSettings(parentTex.props.defaultSamplerSettings)
-            if (cfg.depthCompareOp != DepthCompareOp.DISABLED) {
+            if (cfg.depthCompareOp != DepthCompareOp.ALWAYS) {
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_MODE, gl.COMPARE_REF_TO_TEXTURE)
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_FUNC, cfg.depthCompareOp.glOp(gl))
             }

@@ -99,7 +99,7 @@ class QueueRenderer(val backend: RenderBackendGl) {
 
         fun setupPipelineAttribs(pipeline: DrawPipeline, isReversedDepth: Boolean) {
             setBlendMode(pipeline.blendMode)
-            setDepthTest(pipeline.depthCompareOp, isReversedDepth && pipeline.autoReverseDepthFunc)
+            setDepthTest(pipeline, isReversedDepth)
             setWriteDepth(pipeline.isWriteDepth)
             setCullMethod(pipeline.cullMethod)
             if (lineWidth != pipeline.lineWidth) {
@@ -132,26 +132,26 @@ class QueueRenderer(val backend: RenderBackendGl) {
             }
         }
 
-        private fun setDepthTest(depthCompareOp: DepthCompareOp, isReversedDepth: Boolean) {
-            val newDepthOp = if (!isReversedDepth) {
-                depthCompareOp
-            } else {
-                when (depthCompareOp) {
+        private fun setDepthTest(pipeline: DrawPipeline, isReversedDepth: Boolean) {
+            val depthCompareOp = if (isReversedDepth && pipeline.autoReverseDepthFunc) {
+                when (pipeline.depthCompareOp) {
                     DepthCompareOp.LESS -> DepthCompareOp.GREATER
                     DepthCompareOp.LESS_EQUAL -> DepthCompareOp.GREATER_EQUAL
                     DepthCompareOp.GREATER -> DepthCompareOp.LESS
                     DepthCompareOp.GREATER_EQUAL -> DepthCompareOp.LESS_EQUAL
-                    else -> depthCompareOp
+                    else -> pipeline.depthCompareOp
                 }
+            } else {
+                pipeline.depthCompareOp
             }
 
-            if (actDepthTest != newDepthOp) {
-                actDepthTest = newDepthOp
-                if (newDepthOp == DepthCompareOp.DISABLED) {
+            if (actDepthTest != depthCompareOp) {
+                actDepthTest = depthCompareOp
+                if (depthCompareOp == DepthCompareOp.ALWAYS && !pipeline.isWriteDepth) {
                     gl.disable(gl.DEPTH_TEST)
                 } else {
                     gl.enable(gl.DEPTH_TEST)
-                    gl.depthFunc(newDepthOp.glOp)
+                    gl.depthFunc(depthCompareOp.glOp)
                 }
             }
         }
@@ -177,7 +177,6 @@ class QueueRenderer(val backend: RenderBackendGl) {
 
     private val DepthCompareOp.glOp: Int
         get() = when(this) {
-            DepthCompareOp.DISABLED -> 0
             DepthCompareOp.ALWAYS -> gl.ALWAYS
             DepthCompareOp.NEVER -> gl.NEVER
             DepthCompareOp.LESS -> gl.LESS

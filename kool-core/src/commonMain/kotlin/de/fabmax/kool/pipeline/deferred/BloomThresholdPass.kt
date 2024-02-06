@@ -60,15 +60,15 @@ class BloomThresholdPass(deferredPipeline: DeferredPipeline, cfg: DeferredPipeli
         }
     }
 
-    class ThresholdShader(samples: Int, avgDownSampling: Boolean) : KslShader(program(samples, avgDownSampling), pipelineCfg) {
+    class ThresholdShader(samples: Int, avgDownSampling: Boolean) :
+        KslShader(program(samples, avgDownSampling), FullscreenShaderUtil.fullscreenShaderPipelineCfg)
+    {
 
         var inputTexture by texture2d("tInput")
         var lowerThreshold by uniform1f("uThresholdLower", 0.5f)
         var upperThreshold by uniform1f("uThresholdUpper", 1f)
 
         companion object {
-            private val pipelineCfg = PipelineConfig(depthTest = DepthCompareOp.DISABLED)
-
             private fun program(samples: Int, avgDownSampling: Boolean) = KslProgram("Bloom threshold pass").apply {
                 val screenUv = interStageFloat2()
 

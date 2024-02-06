@@ -188,7 +188,6 @@ class WgpuDrawPipeline(
         )
 
         val depthOp = when {
-            drawPipeline.pipelineConfig.depthTest == DepthCompareOp.DISABLED -> DepthCompareOp.ALWAYS
             passEncoderState.renderPass.isReverseDepth && drawPipeline.autoReverseDepthFunc -> {
                 when (drawPipeline.pipelineConfig.depthTest) {
                     DepthCompareOp.LESS -> DepthCompareOp.GREATER
@@ -203,7 +202,7 @@ class WgpuDrawPipeline(
         val depthStencil = gpuRenderPass.depthFormat?.let { depthFormat ->
             GPUDepthStencilState(
                 format = depthFormat,
-                depthWriteEnabled = if (drawPipeline.pipelineConfig.depthTest == DepthCompareOp.DISABLED) false else drawPipeline.pipelineConfig.isWriteDepth,
+                depthWriteEnabled = drawPipeline.pipelineConfig.isWriteDepth,
                 depthCompare = depthOp.wgpu
             )
         }

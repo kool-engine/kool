@@ -209,12 +209,11 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
 
             val depthStencil = callocVkPipelineDepthStencilStateCreateInfo {
                 sType(VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO)
-                depthTestEnable(pipeline.depthCompareOp != DepthCompareOp.DISABLED)
+                depthTestEnable(pipeline.isWriteDepth || pipeline.depthCompareOp != DepthCompareOp.ALWAYS)
                 depthWriteEnable(pipeline.isWriteDepth)
 
                 if (koolRenderPass.isReverseDepth && pipeline.autoReverseDepthFunc) {
                     depthCompareOp(when (pipeline.depthCompareOp) {
-                        DepthCompareOp.DISABLED -> 0
                         DepthCompareOp.ALWAYS -> VK_COMPARE_OP_ALWAYS
                         DepthCompareOp.NEVER -> VK_COMPARE_OP_NEVER
                         DepthCompareOp.LESS -> VK_COMPARE_OP_GREATER
@@ -226,7 +225,6 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
                     })
                 } else {
                     depthCompareOp(when (pipeline.depthCompareOp) {
-                        DepthCompareOp.DISABLED -> 0
                         DepthCompareOp.ALWAYS -> VK_COMPARE_OP_ALWAYS
                         DepthCompareOp.NEVER -> VK_COMPARE_OP_NEVER
                         DepthCompareOp.LESS -> VK_COMPARE_OP_LESS

@@ -158,7 +158,9 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
 
     private data class ShaderAndPipeline(val shader: KslUnlitShader, val pipeline: DrawPipeline)
 
-    private class SelectionOutlineShader(selectionMask: Texture2d?) : KslShader(Model(), pipelineCfg) {
+    private class SelectionOutlineShader(selectionMask: Texture2d?) :
+        KslShader(Model(), FullscreenShaderUtil.fullscreenShaderPipelineCfg)
+    {
         var outlineColor by uniformColor("uOutlineColor", Color.WHITE)
 
         init {
@@ -219,10 +221,6 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
                     Vec2f(0f, rE)
                 )
             }
-        }
-
-        companion object {
-            val pipelineCfg = PipelineConfig(cullMethod = CullMethod.NO_CULLING, depthTest = DepthCompareOp.DISABLED)
         }
     }
 

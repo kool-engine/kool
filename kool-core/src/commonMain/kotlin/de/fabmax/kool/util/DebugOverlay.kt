@@ -92,7 +92,7 @@ class DebugOverlay(position: Position = Position.UPPER_RIGHT) {
 
                 if (isExpanded.use()) {
                     Text("Kool v${KoolContext.KOOL_VERSION}") { debugTextStyle() }
-                    Text(apiName) { debugTextStyle() }
+                    Text(apiName) { debugTextStyle(MdColor.LIGHT_BLUE) }
                     sysInfos.use().forEach { txt -> Text(txt) { debugTextStyle() } }
                     Text(viewportText.use()) { debugTextStyle() }
                     Text(uptimeText.use()) { debugTextStyle() }
@@ -144,11 +144,12 @@ class DebugOverlay(position: Position = Position.UPPER_RIGHT) {
         }
     }
 
-    private fun TextScope.debugTextStyle() {
+    private fun TextScope.debugTextStyle(color: Color? = null) {
         modifier
             .alignX(AlignmentX.End)
             .margin(top = (-2).dp, bottom = (-2).dp, start = 4.dp, end = 4.dp)
             .padding(vertical = 2.dp, horizontal = 2.dp)
+        color?.let { modifier.textColor(it) }
     }
 
     private fun updateUpText(time: Double) {

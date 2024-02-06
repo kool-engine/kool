@@ -200,7 +200,6 @@ abstract class OffscreenRenderPass(config: Config) : RenderPass(config.name) {
                 depthCompareOp = DepthCompareOp.LESS
             } else {
                 defaultSamplerSettings = defaultSamplerSettings.nearest()
-                depthCompareOp = DepthCompareOp.DISABLED
             }
         }.build()
     }
@@ -224,7 +223,7 @@ abstract class OffscreenRenderPass(config: Config) : RenderPass(config.name) {
     class TextureAttachmentConfigBuilder {
         var colorFormat = TexFormat.RGBA
         var defaultSamplerSettings = SamplerSettings().clamped()
-        var depthCompareOp = DepthCompareOp.DISABLED
+        var depthCompareOp = DepthCompareOp.ALWAYS
 
         var providedTexture: Texture? = null
 
