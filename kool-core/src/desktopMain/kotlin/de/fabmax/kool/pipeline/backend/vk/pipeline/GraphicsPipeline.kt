@@ -90,6 +90,7 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
                     PrimitiveType.LINES -> topology(VK_PRIMITIVE_TOPOLOGY_LINE_LIST)
                     PrimitiveType.POINTS -> topology(VK_PRIMITIVE_TOPOLOGY_POINT_LIST)
                     PrimitiveType.TRIANGLES -> topology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST)
+                    PrimitiveType.TRIANGLE_STRIP -> topology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP)
                 }
                 primitiveRestartEnable(false)
             }

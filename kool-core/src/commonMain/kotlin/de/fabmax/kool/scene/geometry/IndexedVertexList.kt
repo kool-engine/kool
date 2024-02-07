@@ -64,7 +64,7 @@ class IndexedVertexList(
         get() = indices.position
 
     val numPrimitives: Int
-        get() = numIndices / primitiveType.nVertices
+        get() = primitiveType.getNumberOfPrimitives(numIndices)
 
     val lastIndex
         get() = numVertices - 1
@@ -537,10 +537,21 @@ class IndexedVertexList(
     private class PointAndIndex(pos: Vec3f, val index: Int) : Vec3f(pos)
 }
 
-enum class PrimitiveType(val nVertices: Int) {
-    LINES(2),
-    POINTS(1),
-    TRIANGLES(3)
+enum class PrimitiveType {
+    LINES {
+        override fun getNumberOfPrimitives(numIndices: Int): Int = numIndices / 2
+    },
+    POINTS {
+        override fun getNumberOfPrimitives(numIndices: Int): Int = numIndices
+    },
+    TRIANGLES {
+        override fun getNumberOfPrimitives(numIndices: Int): Int = numIndices / 3
+    },
+    TRIANGLE_STRIP {
+        override fun getNumberOfPrimitives(numIndices: Int): Int = numIndices - 2
+    };
+
+    abstract fun getNumberOfPrimitives(numIndices: Int): Int
 }
 
 enum class Usage {

@@ -2,18 +2,12 @@ package de.fabmax.kool.demo.physics.terrain
 
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.atmosphere.OpticalDepthLutPass
+import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.modules.ksl.UnlitShaderConfig
-import de.fabmax.kool.modules.ksl.blocks.ColorBlockConfig
-import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
-import de.fabmax.kool.modules.ksl.blocks.mvpMatrix
-import de.fabmax.kool.modules.ksl.lang.a
-import de.fabmax.kool.modules.ksl.lang.float4
-import de.fabmax.kool.modules.ksl.lang.getFloat4Port
-import de.fabmax.kool.modules.ksl.lang.times
-import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.CullMethod
-import de.fabmax.kool.pipeline.Texture2d
+import de.fabmax.kool.modules.ksl.blocks.*
+import de.fabmax.kool.modules.ksl.lang.*
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.pipeline.ibl.SkyCubeIblSystem
 import de.fabmax.kool.scene.*
@@ -48,9 +42,7 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
     private val moonShader = SkyObjectShader(mainScene.isInfiniteDepth) {
         textureColor(moonTex)
     }
-    private val starShader = SkyObjectShader(mainScene.isInfiniteDepth, isPointShader = true) {
-        vertexColor()
-    }
+    private val starShader = StarShader(mainScene.isInfiniteDepth)
 
     private val sunMesh = ColorMesh().apply {
         isFrustumChecked = false
@@ -72,18 +64,20 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
         }
         shader = moonShader
     }
-    private val starMesh = PointMesh().apply {
+    private val starMesh = TriangulatedPointMesh(numVertices = 4).apply {
         isFrustumChecked = false
         val r = Random(1337)
-        for (i in 0..5_000) {
+        for (i in 0..10_000) {
             val p = MutableVec3f(1f, 1f, 1f)
             while (p.sqrLength() > 1f) {
                 p.set(r.randomF(-1f, 1f), r.randomF(-1f, 1f), r.randomF(-1f, 1f))
             }
+            p.y *= 0.6f
+            p.z *= 0.75f
             p.norm()
 
             val sz = r.randomF(1f, 3f)
-            addPoint(p, sz, Hsv(r.randomF(0f, 360f), r.randomF(0.2f, 0.5f), 1f).toSrgb(a = sz / 3f))
+            addPoint(p, sz, Hsv(r.randomF(0f, 360f), r.randomF(0f, 0.25f), 1f).toSrgb(a = sz / 3f))
         }
         shader = starShader
     }
@@ -222,15 +216,14 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
 
     private class SkyObjectShader(
         isReverseDepth: Boolean,
-        isPointShader: Boolean = false,
         colorBlock: ColorBlockConfig.Builder.() -> Unit
-    ) : KslUnlitShader(config(isReverseDepth, isPointShader, colorBlock)) {
+    ) : KslUnlitShader(config(isReverseDepth, colorBlock)) {
 
         var orientation: Mat3f by uniformMat3f("uOrientation")
         var alpha: Float by uniform1f("uAlpha", 1f)
 
         companion object {
-            fun config(isReverseDepth: Boolean, isPointShader: Boolean, colorBlock: ColorBlockConfig.Builder.() -> Unit) = UnlitShaderConfig {
+            fun config(isReverseDepth: Boolean, colorBlock: ColorBlockConfig.Builder.() -> Unit) = UnlitShaderConfig {
                 color {
                     colorBlock()
                 }
@@ -250,9 +243,6 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
                             } else {
                                 outPosition set (mvpMat * float4Value(orientation * localPos, 0f)).float4("xyww")
                             }
-                            if (isPointShader) {
-                                outPointSize set vertexAttribFloat1(PointMesh.ATTRIB_POINT_SIZE.name)
-                            }
                         }
                     }
                     fragmentStage {
@@ -262,6 +252,46 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
                             alphaColor.a *= uniformFloat1("uAlpha")
                             baseColorPort.input(alphaColor)
                         }
+                    }
+                }
+            }
+        }
+    }
+
+    private class StarShader(isReverseDepth: Boolean) : KslShader("triangulated-star-shader") {
+        var orientation: Mat3f by uniformMat3f("uOrientation")
+        var alpha: Float by uniform1f("uAlpha", 1f)
+
+        init {
+            program.apply {
+                val color = interStageFloat4()
+                vertexStage {
+                    main {
+                        val camData = cameraData()
+                        val modelMat = modelMatrix()
+
+                        val pointCfg = instanceAttribFloat4(TriangulatedPointMesh.ATTR_POINT_POS_SZ)
+                        val pointPos = float3Var(pointCfg.xyz)
+                        val pointSize = float1Var(pointCfg.w)
+                        val pxSize = float2Var(float2Value(1f.const / camData.viewport.z, 1f.const / camData.viewport.w))
+
+                        val mvpMat = mat4Var(camData.viewProjMat * modelMat.matrix)
+                        val orientation = uniformMat3("uOrientation")
+                        if (isReverseDepth) {
+                            outPosition set (mvpMat * float4Value(orientation * pointPos * 1e9f.const, 1f)).float4("xyzw")
+                        } else {
+                            outPosition set (mvpMat * float4Value(orientation * pointPos, 0f)).float4("xyww")
+                        }
+
+                        color.input set instanceAttribFloat4(TriangulatedPointMesh.ATTR_POINT_COLOR)
+                        outPosition.xy += vertexAttribFloat2(TriangulatedPointMesh.ATTR_POINT_VERTEX) * outPosition.w * pointSize * pxSize
+                    }
+                }
+                fragmentStage {
+                    main {
+                        val starColor = float4Var(color.output)
+                        starColor.a *= uniformFloat1("uAlpha")
+                        colorOutput(starColor)
                     }
                 }
             }

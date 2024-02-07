@@ -78,6 +78,7 @@ object GlImpl : GlApi {
     override val TEXTURE_WRAP_T = GL_TEXTURE_WRAP_T
     override val TEXTURE0 = GL_TEXTURE0
     override val TRIANGLES = GL_TRIANGLES
+    override val TRIANGLE_STRIP = GL_TRIANGLE_STRIP
     override val TRUE = GL_TRUE
     override val UNIFORM_BLOCK_DATA_SIZE = GL_UNIFORM_BLOCK_DATA_SIZE
     override val UNIFORM_BUFFER = GL_UNIFORM_BUFFER

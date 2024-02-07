@@ -243,26 +243,24 @@ class GPUPipelineLayoutDescriptor(
     val label: String = ""
 )
 
-data class GPUPrimitiveState(
-    @JsName("topology")
-    val topology: GPUPrimitiveTopology = GPUPrimitiveTopology.triangleList,
-    @JsName("frontFace")
-    val frontFace: GPUFrontFace = GPUFrontFace.ccw,
-    @JsName("cullMode")
-    val cullMode: GPUCullMode = GPUCullMode.none,
-    @JsName("unclippedDepth")
-    val unclippedDepth: Boolean = false
-)
+interface GPUPrimitiveState
 
-fun GPUPrimitiveStateStrip(
-    stripIndexFormat: GPUIndexFormat,
+fun GPUPrimitiveState(
+    topology: GPUPrimitiveTopology,
+    stripIndexFormat: GPUIndexFormat = GPUIndexFormat.uint32,
     frontFace: GPUFrontFace = GPUFrontFace.ccw,
     cullMode: GPUCullMode = GPUCullMode.none,
     unclippedDepth: Boolean = false
 ): GPUPrimitiveState {
-    val primState = GPUPrimitiveState(GPUPrimitiveTopology.triangleStrip, frontFace, cullMode, unclippedDepth)
-    primState.asDynamic()["stripIndexFormat"] = stripIndexFormat
-    return primState
+    val o = js("({})")
+    o["frontFace"] = frontFace
+    o["cullMode"] = cullMode
+    o["unclippedDepth"] = unclippedDepth
+    o["topology"] = topology
+    if (topology == GPUPrimitiveTopology.triangleStrip || topology == GPUPrimitiveTopology.lineStrip) {
+        o["stripIndexFormat"] = stripIndexFormat
+    }
+    return o
 }
 
 interface GPURenderPassColorAttachment

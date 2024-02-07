@@ -264,7 +264,7 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
                         entryPoint = "fragmentMain",
                         targets = arrayOf(GPUColorTargetState(format))
                     ),
-                    primitive = GPUPrimitiveStateStrip(GPUIndexFormat.uint32),
+                    primitive = GPUPrimitiveState(topology = GPUPrimitiveTopology.triangleStrip),
                     layout = GPUAutoLayoutMode.auto
                 )
             )

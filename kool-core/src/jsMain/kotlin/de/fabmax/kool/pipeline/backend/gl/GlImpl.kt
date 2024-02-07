@@ -78,6 +78,7 @@ object GlImpl : GlApi {
     override val TEXTURE_WRAP_T = WebGLRenderingContext.TEXTURE_WRAP_T
     override val TEXTURE0 = WebGLRenderingContext.TEXTURE0
     override val TRIANGLES = WebGLRenderingContext.TRIANGLES
+    override val TRIANGLE_STRIP = WebGLRenderingContext.TRIANGLE_STRIP
     override val TRUE = true
     override val UNIFORM_BLOCK_DATA_SIZE = WebGL2RenderingContext.UNIFORM_BLOCK_DATA_SIZE
     override val UNIFORM_BUFFER = WebGL2RenderingContext.UNIFORM_BUFFER

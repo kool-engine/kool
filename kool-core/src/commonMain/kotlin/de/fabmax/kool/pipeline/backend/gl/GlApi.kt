@@ -84,6 +84,7 @@ interface GlApi {
     val TEXTURE_WRAP_T: Int
     val TEXTURE0: Int
     val TRIANGLES: Int
+    val TRIANGLE_STRIP: Int
     val TRUE: Any
     val UNIFORM_BLOCK_DATA_SIZE: Int
     val UNIFORM_BUFFER: Int

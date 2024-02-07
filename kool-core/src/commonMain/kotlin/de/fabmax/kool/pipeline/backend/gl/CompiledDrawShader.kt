@@ -152,6 +152,7 @@ class CompiledDrawShader(val pipeline: DrawPipeline, program: GlProgram, backend
         PrimitiveType.LINES -> gl.LINES
         PrimitiveType.POINTS -> gl.POINTS
         PrimitiveType.TRIANGLES -> gl.TRIANGLES
+        PrimitiveType.TRIANGLE_STRIP -> gl.TRIANGLE_STRIP
     }
 
     class DrawInfo(val primitiveType: Int, val indexType: Int, var numIndices: Int, var isValid: Boolean)

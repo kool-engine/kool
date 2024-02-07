@@ -124,6 +124,7 @@ val PrimitiveType.wgpu: GPUPrimitiveTopology
         PrimitiveType.LINES -> GPUPrimitiveTopology.lineList
         PrimitiveType.POINTS -> GPUPrimitiveTopology.pointList
         PrimitiveType.TRIANGLES -> GPUPrimitiveTopology.triangleList
+        PrimitiveType.TRIANGLE_STRIP -> GPUPrimitiveTopology.triangleStrip
     }
 
 val TexFormat.wgpu: GPUTextureFormat
