@@ -55,6 +55,5 @@ object FullscreenShaderUtil {
         blendMode = BlendMode.DISABLED,
         cullMethod = CullMethod.NO_CULLING,
         depthTest = DepthCompareOp.ALWAYS,
-        isWriteDepth = false
     )
 }
