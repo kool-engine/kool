@@ -8,7 +8,6 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.SamplerSettings
-import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.TextureProps
 import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
@@ -17,7 +16,6 @@ import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Time
-import de.fabmax.kool.util.launchDelayed
 import de.fabmax.kool.util.launchOnMainThread
 
 /**
@@ -27,9 +25,8 @@ import de.fabmax.kool.util.launchOnMainThread
 class PbrDemo : DemoScene("PBR Materials") {
 
     private lateinit var skybox: Skybox.Cube
-    private lateinit var envMaps: EnvironmentMaps
 
-    private val loadedHdris = Array<Texture2d?>(hdriTextures.size) { null }
+    private val loadedHdris = Array<EnvironmentMaps?>(hdriTextures.size) { null }
 
     private val sphereProto = SphereProto()
     private val pbrContent = listOf(
@@ -53,8 +50,7 @@ class PbrDemo : DemoScene("PBR Materials") {
 
     override fun lateInit(ctx: KoolContext) {
         mainScene.onRelease {
-            loadedHdris.forEach { it?.dispose() }
-            envMaps.release()
+            loadedHdris.forEach { it?.release() }
         }
     }
 
@@ -72,13 +68,13 @@ class PbrDemo : DemoScene("PBR Materials") {
             setZoom(20.0)
         }
 
-        loadHdri(selectedHdriIdx.value) { hdri ->
-            envMaps = EnvironmentHelper.hdriEnvironment(hdri)
-            skybox = Skybox.cube(envMaps.reflectionMap, 1f)
+        launchOnMainThread {
+            val maps = loadHdri(selectedHdriIdx.value)
+            skybox = Skybox.cube(maps.reflectionMap, 1f)
             this += skybox
 
             pbrContent.forEach {
-                addNode(it.createContent(this, envMaps, ctx))
+                addNode(it.createContent(this, maps, ctx))
             }
             selectedContent.show()
         }
@@ -113,7 +109,7 @@ class PbrDemo : DemoScene("PBR Materials") {
                     .selectedIndex(selectedHdriIdx.use())
                     .onItemSelected {
                         selectedHdriIdx.set(it)
-                        updateHdri(it)
+                        launchOnMainThread { updateHdri(it) }
                     }
             }
         }
@@ -133,26 +129,22 @@ class PbrDemo : DemoScene("PBR Materials") {
         LabeledSwitch("Auto rotate view", isAutoRotate)
     }
 
-    private fun updateHdri(idx: Int) {
-        loadHdri(idx) { tex ->
-            envMaps.let { oldEnvMap -> launchDelayed(1) { oldEnvMap.release() } }
-            envMaps = EnvironmentHelper.hdriEnvironment(tex)
-            skybox.skyboxShader.setSingleSky(envMaps.reflectionMap)
-            pbrContent.forEach { it.updateEnvironmentMap(envMaps) }
-        }
+    private suspend fun updateHdri(idx: Int) {
+        val envMap = loadHdri(idx)
+        skybox.skyboxShader.setSingleSky(envMap.reflectionMap)
+        pbrContent.forEach { it.updateEnvironmentMap(envMap) }
     }
 
-    private fun loadHdri(idx: Int, recv: (Texture2d) -> Unit) {
-        val tex = loadedHdris[idx]
-        if (tex == null) {
-            launchOnMainThread {
-                val loadedTex = Assets.loadTexture2d(hdriTextures[idx].hdriPath, hdriTexProps)
-                loadedHdris[idx] = loadedTex
-                recv(loadedTex)
-            }
-        } else {
-            recv(tex)
+    private suspend fun loadHdri(idx: Int): EnvironmentMaps {
+        val loaded = loadedHdris[idx]
+        if (loaded != null) {
+            return loaded
         }
+
+        val rgbe = Assets.loadTexture2d(hdriTextures[idx].hdriPath, hdriTexProps)
+        val maps = EnvironmentHelper.hdriEnvironment(rgbe)
+        loadedHdris[idx] = maps
+        return maps
     }
 
     private class Hdri(val hdriPath: String, val name: String) {
