@@ -16,6 +16,7 @@ fun ShaderStage.bitValue(): Int {
     }
 }
 
+@Suppress("DEPRECATION")
 val TexFormat.vkFormat: Int
     get() = when(this) {
         TexFormat.R -> VK_FORMAT_R8_UNORM
@@ -44,6 +45,7 @@ val TexFormat.vkFormat: Int
         TexFormat.RGBA_U32 -> VK_FORMAT_R32G32B32A32_UINT
     }
 
+@Suppress("DEPRECATION")
 val TexFormat.vkBytesPerPx: Int
     get() = when(this) {
         TexFormat.R -> 1

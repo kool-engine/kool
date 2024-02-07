@@ -17,6 +17,7 @@ abstract class VkRenderPass(val sys: VkSystem, val maxWidth: Int, val maxHeight:
         get() = getTexFormat(0)
 
     fun getTexFormat(attachment: Int): TexFormat {
+        @Suppress("DEPRECATION")
         return when(colorFormats[attachment]) {
             VK_FORMAT_R8_UNORM -> TexFormat.R
             VK_FORMAT_R8G8_UNORM -> TexFormat.RG

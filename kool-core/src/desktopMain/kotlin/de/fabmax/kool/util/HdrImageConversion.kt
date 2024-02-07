@@ -33,6 +33,7 @@ object HdrImageConversion {
                     throw RuntimeException("Failed to load image: " + stbi_failure_reason())
             }
 
+            @Suppress("DEPRECATION")
             val texFormat = when (components[0]) {
                 1 -> TexFormat.R_F16
                 2 -> TexFormat.RG_F16

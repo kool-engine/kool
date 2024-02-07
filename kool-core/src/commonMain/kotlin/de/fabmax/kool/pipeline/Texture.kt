@@ -111,7 +111,7 @@ open class Texture2d(
     fun readTexturePixels(): TextureData2d? {
         val tex = loadedTexture ?: return null
         val bufferSize = tex.width * tex.height * props.format.channels
-        val buffer = if (props.format.isFloat) {
+        val buffer = if (props.format.isF16 || props.format.isF32) {
             Float32Buffer(bufferSize)
         } else {
             Uint8Buffer(bufferSize)

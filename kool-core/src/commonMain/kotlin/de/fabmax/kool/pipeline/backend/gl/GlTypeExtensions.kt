@@ -3,7 +3,7 @@ package de.fabmax.kool.pipeline.backend.gl
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
 
-
+@Suppress("DEPRECATION")
 fun TexFormat.glInternalFormat(gl: GlApi): Int = when(this) {
     TexFormat.R -> gl.R8
     TexFormat.RG -> gl.RG8
@@ -31,85 +31,38 @@ fun TexFormat.glInternalFormat(gl: GlApi): Int = when(this) {
     TexFormat.RGBA_U32 -> gl.RGBA32UI
 }
 
-fun TexFormat.glType(gl: GlApi): Int = when(this) {
-    TexFormat.R -> gl.UNSIGNED_BYTE
-    TexFormat.RG -> gl.UNSIGNED_BYTE
-    TexFormat.RGB -> gl.UNSIGNED_BYTE
-    TexFormat.RGBA -> gl.UNSIGNED_BYTE
-
-    TexFormat.R_F16 -> gl.FLOAT
-    TexFormat.RG_F16 -> gl.FLOAT
-    TexFormat.RGB_F16 -> gl.FLOAT
-    TexFormat.RGBA_F16 -> gl.FLOAT
-
-    TexFormat.R_F32 -> gl.FLOAT
-    TexFormat.RG_F32 -> gl.FLOAT
-    TexFormat.RGB_F32 -> gl.FLOAT
-    TexFormat.RGBA_F32 -> gl.FLOAT
-
-    TexFormat.R_I32 -> gl.INT
-    TexFormat.RG_I32 -> gl.INT
-    TexFormat.RGB_I32 -> gl.INT
-    TexFormat.RGBA_I32 -> gl.INT
-
-    TexFormat.R_U32 -> gl.UNSIGNED_INT
-    TexFormat.RG_U32 -> gl.UNSIGNED_INT
-    TexFormat.RGB_U32 -> gl.UNSIGNED_INT
-    TexFormat.RGBA_U32 -> gl.UNSIGNED_INT
+fun TexFormat.glType(gl: GlApi): Int = when {
+    isByte -> gl.UNSIGNED_BYTE
+    isF16 -> gl.FLOAT
+    isF32 -> gl.FLOAT
+    isI32 -> gl.INT
+    isU32 -> gl.UNSIGNED_INT
+    else -> error("unreachable")
 }
 
-fun TexFormat.glFormat(gl: GlApi): Int = when(this) {
-    TexFormat.R -> gl.RED
-    TexFormat.RG -> gl.RG
-    TexFormat.RGB -> gl.RGB
-    TexFormat.RGBA -> gl.RGBA
+fun TexFormat.glFormat(gl: GlApi): Int =
+    if (isI32 || isU32) {
+        when (channels) {
+            1 -> gl.RED_INTEGER
+            2 -> gl.RG_INTEGER
+            3 -> gl.RGB_INTEGER
+            4 -> gl.RGBA_INTEGER
+            else -> error("unreachable")
+        }
+    } else {
+        when (channels) {
+            1 -> gl.RED
+            2 -> gl.RG
+            3 -> gl.RGB
+            4 -> gl.RGBA
+            else -> error("unreachable")
+        }
+    }
 
-    TexFormat.R_F16 -> gl.RED
-    TexFormat.RG_F16 -> gl.RG
-    TexFormat.RGB_F16 -> gl.RGB
-    TexFormat.RGBA_F16 -> gl.RGBA
-
-    TexFormat.R_F32 -> gl.RED
-    TexFormat.RG_F32 -> gl.RG
-    TexFormat.RGB_F32 -> gl.RGB
-    TexFormat.RGBA_F32 -> gl.RGBA
-
-    TexFormat.R_I32 -> gl.RED_INTEGER
-    TexFormat.RG_I32 -> gl.RG_INTEGER
-    TexFormat.RGB_I32 -> gl.RGB_INTEGER
-    TexFormat.RGBA_I32 -> gl.RGBA_INTEGER
-
-    TexFormat.R_U32 -> gl.RED_INTEGER
-    TexFormat.RG_U32 -> gl.RG_INTEGER
-    TexFormat.RGB_U32 -> gl.RGB_INTEGER
-    TexFormat.RGBA_U32 -> gl.RGBA_INTEGER
-}
-
-val TexFormat.pxSize: Int get() = when(this) {
-    TexFormat.R -> 1
-    TexFormat.RG -> 2
-    TexFormat.RGB -> 3
-    TexFormat.RGBA -> 4
-
-    TexFormat.R_F16 -> 2
-    TexFormat.RG_F16 -> 4
-    TexFormat.RGB_F16 -> 6
-    TexFormat.RGBA_F16 -> 8
-
-    TexFormat.R_F32 -> 4
-    TexFormat.RG_F32 -> 8
-    TexFormat.RGB_F32 -> 12
-    TexFormat.RGBA_F32 -> 16
-
-    TexFormat.R_I32 -> 4
-    TexFormat.RG_I32 -> 8
-    TexFormat.RGB_I32 -> 12
-    TexFormat.RGBA_I32 -> 16
-
-    TexFormat.R_U32 -> 4
-    TexFormat.RG_U32 -> 8
-    TexFormat.RGB_U32 -> 12
-    TexFormat.RGBA_U32 -> 16
+val TexFormat.pxSize: Int get() = channels * when {
+    isByte -> 1
+    isF16 -> 2
+    else -> 4
 }
 
 fun DepthCompareOp.glOp(gl: GlApi): Int = when(this) {

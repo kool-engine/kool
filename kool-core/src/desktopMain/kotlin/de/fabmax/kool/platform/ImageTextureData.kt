@@ -2,6 +2,8 @@ package de.fabmax.kool.platform
 
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.TextureData2d
+import de.fabmax.kool.pipeline.isF16
+import de.fabmax.kool.pipeline.isF32
 import de.fabmax.kool.util.Buffer
 import de.fabmax.kool.util.Float32Buffer
 import de.fabmax.kool.util.Uint8Buffer
@@ -10,24 +12,17 @@ import java.awt.image.BufferedImage
 import java.awt.image.DataBufferByte
 
 class ImageTextureData(image: BufferedImage, dstFormat: TexFormat?) :
-        TextureData2d(image.toBuffer(dstFormat), image.width, image.height, dstFormat ?: image.format) {
+        TextureData2d(image.toBuffer(dstFormat), image.width, image.height, dstFormat ?: image.preferredFormat) {
 
     companion object {
-        private val BufferedImage.format: TexFormat get() {
+        private val BufferedImage.preferredFormat: TexFormat get() {
             val isFloat = colorModel.componentSize.any { it > 8 }
-            val isAlpha = transparency == Transparency.TRANSLUCENT || transparency == Transparency.BITMASK
-
-            return when {
-                isFloat && isAlpha -> TexFormat.RGBA_F16
-                isFloat && !isAlpha -> TexFormat.RGB_F16
-                isAlpha -> TexFormat.RGBA
-                else -> TexFormat.RGB
-            }
+            return if (isFloat) TexFormat.RGBA_F16 else TexFormat.RGBA
         }
 
         private fun BufferedImage.toBuffer(dstFormat: TexFormat?): Buffer {
-            val dstFmt = dstFormat ?: this.format
-            return if (dstFmt.isFloat) {
+            val dstFmt = dstFormat ?: this.preferredFormat
+            return if (dstFmt.isF16 || dstFmt.isF32) {
                 bufferedImageToFloat32Buffer(this, dstFmt)
             } else {
                 bufferedImageToUint8Buffer(this, dstFmt)
@@ -45,7 +40,6 @@ class ImageTextureData(image: BufferedImage, dstFormat: TexFormat?) :
             var copied = false
 
             if ((image.type == BufferedImage.TYPE_4BYTE_ABGR && dstFormat == TexFormat.RGBA)
-                || (image.type == BufferedImage.TYPE_3BYTE_BGR && dstFormat == TexFormat.RGB)
                 || (image.type == BufferedImage.TYPE_BYTE_GRAY && dstFormat == TexFormat.R)) {
                 // Images loaded via ImageIO usually are of a byte type. We can load them in an optimized
                 // way if the requested destination format matches
@@ -76,16 +70,6 @@ class ImageTextureData(image: BufferedImage, dstFormat: TexFormat?) :
                 target.put(bytes)
                 return true
 
-            } else if (dstFormat == TexFormat.RGB && bytes.size == nBytes) {
-                for (i in 0 until nBytes step 3) {
-                    // swap byte order (bgr -> rgb)
-                    val b = bytes[i]
-                    bytes[i] = bytes[i+2]
-                    bytes[i+2] = b
-                }
-                target.put(bytes)
-                return true
-
             } else if (dstFormat == TexFormat.R && bytes.size == nBytes) {
                 target.put(bytes)
                 return true
@@ -103,10 +87,8 @@ class ImageTextureData(image: BufferedImage, dstFormat: TexFormat?) :
 
             val targetBufUint8: Uint8Buffer? = target as? Uint8Buffer
             val targetBufFloat: Float32Buffer? = target as? Float32Buffer
-            val isUint8 = targetBufUint8 != null
-            val isFloat = targetBufFloat != null
 
-            check(isUint8 || isFloat) { "Supplied buffer is neither Uint8Buffer nor Float32Buffer" }
+            check(targetBufUint8 != null || targetBufFloat != null) { "Supplied buffer is neither Uint8Buffer nor Float32Buffer" }
 
             for (y in 0 until image.height) {
                 for (x in 0 until image.width) {
@@ -127,17 +109,17 @@ class ImageTextureData(image: BufferedImage, dstFormat: TexFormat?) :
                     val b = pixel[2] / sizes[2]
                     val a = pixel[3] / sizes[3]
 
-                    if (isUint8) {
-                        targetBufUint8!!.put((r * 255f).toInt().toByte())
-                        if (dstFormat.channels > 1) targetBufUint8.put((g * 255f).toInt().toByte())
-                        if (dstFormat.channels > 2) targetBufUint8.put((b * 255f).toInt().toByte())
-                        if (dstFormat.channels > 3) targetBufUint8.put((a * 255f).toInt().toByte())
-
-                    } else {
-                        targetBufFloat!!.put(r)
-                        if (dstFormat.channels > 1) targetBufFloat.put(g)
-                        if (dstFormat.channels > 2) targetBufFloat.put(b)
-                        if (dstFormat.channels > 3) targetBufFloat.put(a)
+                    targetBufUint8?.let { buf ->
+                        buf.put((r * 255f).toInt().toByte())
+                        if (dstFormat.channels > 1) buf.put((g * 255f).toInt().toByte())
+                        if (dstFormat.channels > 2) buf.put((b * 255f).toInt().toByte())
+                        if (dstFormat.channels > 3) buf.put((a * 255f).toInt().toByte())
+                    }
+                    targetBufFloat?.let { buf ->
+                        buf.put(r)
+                        if (dstFormat.channels > 1) buf.put(g)
+                        if (dstFormat.channels > 2) buf.put(b)
+                        if (dstFormat.channels > 3) buf.put(a)
                     }
                 }
             }

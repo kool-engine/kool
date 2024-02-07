@@ -1,8 +1,6 @@
 package de.fabmax.kool.platform
 
-import de.fabmax.kool.pipeline.TexFormat
-import de.fabmax.kool.pipeline.TextureData2d
-import de.fabmax.kool.pipeline.TextureProps
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.Buffer
 import de.fabmax.kool.util.Float32Buffer
 import de.fabmax.kool.util.Uint8Buffer
@@ -39,7 +37,7 @@ class BufferedImageTextureData(image: ImageBitmap, texProps: TextureProps?) :
             val c = dstFormat.channels
             val buffer: Buffer
 
-            if (dstFormat.isFloat) {
+            if (dstFormat.isF16 || dstFormat.isF32) {
                 buffer = Float32Buffer(w * h * c)
                 for (i in 0 until w * h) {
                     buffer[i * c + 0] = (imageData.data[i * 4 + 0].toInt() and 0xff) / 255f
@@ -47,7 +45,6 @@ class BufferedImageTextureData(image: ImageBitmap, texProps: TextureProps?) :
                     if (c > 2) buffer[i * c + 2] = (imageData.data[i * 4 + 2].toInt() and 0xff) / 255f
                     if (c > 3) buffer[i * c + 3] = (imageData.data[i * 4 + 3].toInt() and 0xff) / 255f
                 }
-
             } else {
                 buffer = Uint8Buffer(w * h * c)
                 for (i in 0 until w * h) {

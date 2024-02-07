@@ -223,6 +223,7 @@ object TextureLoader {
         }
     }
 
+    @Suppress("DEPRECATION")
     private fun checkFormat(format: TexFormat): TexFormat {
         if (format == TexFormat.RGB) {
             // fixme: check support for 3-channel textures on system init, for now we assume that 3-channel textures are not supported...
@@ -239,6 +240,7 @@ object TextureLoader {
         }
     }
 
+    @Suppress("DEPRECATION")
     private fun reshapeUint8(dstFormat: TexFormat, img: TextureData, imgData: Uint8BufferImpl): ByteBuffer {
         if (img.format != dstFormat) {
             if (img.format == TexFormat.RGB && dstFormat == TexFormat.RGBA) {
@@ -257,6 +259,7 @@ object TextureLoader {
         return imgData.getRawBuffer()
     }
 
+    @Suppress("DEPRECATION")
     private fun reshapeFloat32(dstFormat: TexFormat, img: TextureData, imgData: Float32BufferImpl): ByteBuffer {
         if (img.format == dstFormat) {
             val reshaped = Uint8Buffer(img.width * img.height * img.depth * img.format.vkBytesPerPx)

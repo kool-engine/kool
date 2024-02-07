@@ -127,28 +127,30 @@ val PrimitiveType.wgpu: GPUPrimitiveTopology
         PrimitiveType.TRIANGLE_STRIP -> GPUPrimitiveTopology.triangleStrip
     }
 
+@Suppress("DEPRECATION")
 val TexFormat.wgpu: GPUTextureFormat
     get() = when (this) {
         TexFormat.R -> GPUTextureFormat.r8unorm
         TexFormat.RG -> GPUTextureFormat.rg8unorm
-        TexFormat.RGB -> GPUTextureFormat.rgba8unorm
         TexFormat.RGBA -> GPUTextureFormat.rgba8unorm
         TexFormat.R_F16 -> GPUTextureFormat.r16float
         TexFormat.RG_F16 -> GPUTextureFormat.rg16float
-        TexFormat.RGB_F16 -> GPUTextureFormat.rgba16float
         TexFormat.RGBA_F16 -> GPUTextureFormat.rgba16float
         TexFormat.R_F32 -> GPUTextureFormat.r32float
         TexFormat.RG_F32 -> GPUTextureFormat.rg32float
-        TexFormat.RGB_F32 -> GPUTextureFormat.rgba32float
         TexFormat.RGBA_F32 -> GPUTextureFormat.rgba32float
         TexFormat.R_I32 -> GPUTextureFormat.r32sint
         TexFormat.RG_I32 -> GPUTextureFormat.rg32sint
-        TexFormat.RGB_I32 -> GPUTextureFormat.rgba32sint
         TexFormat.RGBA_I32 -> GPUTextureFormat.rgba32sint
         TexFormat.R_U32 -> GPUTextureFormat.r32uint
         TexFormat.RG_U32 -> GPUTextureFormat.rg32uint
-        TexFormat.RGB_U32 -> GPUTextureFormat.rgba32uint
         TexFormat.RGBA_U32 -> GPUTextureFormat.rgba32uint
+
+        TexFormat.RGB -> error("3-channel textures are not supported by WebGPU, use an rgba format instead")
+        TexFormat.RGB_F16 -> error("3-channel textures are not supported by WebGPU, use an rgba format instead")
+        TexFormat.RGB_F32 -> error("3-channel textures are not supported by WebGPU, use an rgba format instead")
+        TexFormat.RGB_I32 -> error("3-channel textures are not supported by WebGPU, use an rgba format instead")
+        TexFormat.RGB_U32 -> error("3-channel textures are not supported by WebGPU, use an rgba format instead")
     }
 
 val TextureSampleType.wgpu: GPUTextureSampleType
