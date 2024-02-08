@@ -15,27 +15,34 @@ import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.addTextureMesh
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.Time
+import de.fabmax.kool.util.*
 
-class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrContent("PBR material") {
+class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto, val scene: Scene) : PbrDemo.PbrContent("PBR material") {
     private val shaders = mutableListOf<KslPbrShader>()
     private var iblContent: Node? = null
     private var nonIblContent: Node? = null
 
     private val selectedMatIdx = mutableStateOf(3)
-    private val currentMat: MaterialMaps get() = materials[selectedMatIdx.value]
+    private val loadedMaterials = Array<MaterialMaps?>(materialLoaders.size) { null }
 
     private val displacement = mutableStateOf(0.25f).onChange { disp -> shaders.forEach { it.displacement = disp } }
 
     private fun updatePbrMaterial() {
-        shaders.forEach {
-            it.colorMap = currentMat.albedo
-            it.normalMap = currentMat.normal
-            it.roughnessMap = currentMat.roughness
-            it.metallicMap = currentMat.metallic ?: defaultMetallicTex
-            it.materialAoMap = currentMat.ao ?: defaultAoTex
-            it.displacementMap = currentMat.displacement ?: defaultDispTex
+        launchOnMainThread {
+            val materialIdx = selectedMatIdx.value
+            val maps = loadedMaterials[materialIdx] ?: materialLoaders[materialIdx].second().also {
+                it.releaseWith(scene)
+                loadedMaterials[materialIdx] = it
+            }
+
+            shaders.forEach {
+                it.colorMap = maps.albedo
+                it.normalMap = maps.normal
+                it.roughnessMap = maps.roughness
+                it.metallicMap = maps.metallic ?: defaultMetallicTex
+                it.materialAoMap = maps.ao ?: defaultAoTex
+                it.displacementMap = maps.displacement ?: defaultDispTex
+            }
         }
     }
 
@@ -46,10 +53,9 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrCont
                 modifier
                     .width(Grow.Std)
                     .margin(start = sizes.largeGap)
-                    .items(materials)
+                    .items(materialLoaders.map { it.first })
                     .selectedIndex(selectedMatIdx.use())
                     .onItemSelected {
-                        currentMat.disposeMaps()
                         selectedMatIdx.set(it)
                         updatePbrMaterial()
                     }
@@ -71,8 +77,8 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrCont
         content = Node().apply {
             isVisible = false
 
-            val ibl = makeSphere(true, scene, envMaps)
-            val nonIbl = makeSphere(false, scene, envMaps).apply { isVisible = false }
+            val ibl = makeSphere(true, envMaps)
+            val nonIbl = makeSphere(false, envMaps).apply { isVisible = false }
 
             iblContent = ibl
             nonIblContent = nonIbl
@@ -94,7 +100,7 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrCont
         }
     }
 
-    private fun Node.makeSphere(withIbl: Boolean, scene: Scene, envMaps: EnvironmentMaps) = addTextureMesh(isNormalMapped = true) {
+    private fun Node.makeSphere(withIbl: Boolean, envMaps: EnvironmentMaps) = addTextureMesh(isNormalMapped = true) {
         geometry.addGeometry(sphereProto.detailSphere)
         val shader = KslPbrShader {
             color { textureColor() }
@@ -117,31 +123,25 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrCont
         shaders += shader
 
         updatePbrMaterial()
-
-        scene.onRelease {
-            materials.forEach { it.disposeMaps() }
-        }
     }
 
-    data class MaterialMaps(
-        val name: String,
+    class MaterialMaps(
         val albedo: Texture2d,
         val normal: Texture2d,
         val roughness: Texture2d,
         val metallic: Texture2d?,
         val ao: Texture2d?,
         val displacement: Texture2d?
-    ) {
-        fun disposeMaps() {
-            albedo.dispose()
-            normal.dispose()
-            roughness.dispose()
-            metallic?.dispose()
-            ao?.dispose()
-            displacement?.dispose()
+    ) : BaseReleasable() {
+        override fun release() {
+            super.release()
+            albedo.release()
+            normal.release()
+            roughness.release()
+            metallic?.release()
+            ao?.release()
+            displacement?.release()
         }
-
-        override fun toString() = name
     }
 
     companion object {
@@ -150,87 +150,105 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrCont
         private val defaultDispTex = SingleColorTexture(Color.BLACK)
 
         private val assetPath = DemoLoader.materialPath
-        
-        private val materials = mutableListOf(
-            MaterialMaps(
-                "Bamboo",
-                Texture2d(name = "Bamboo-color") { Assets.loadTextureData("$assetPath/bamboo-wood-semigloss/bamboo-wood-semigloss-albedo.jpg") },
-                Texture2d(name = "Bamboo-normal") { Assets.loadTextureData("$assetPath/bamboo-wood-semigloss/bamboo-wood-semigloss-normal.jpg") },
-                Texture2d(name = "Bamboo-rough") { Assets.loadTextureData("$assetPath/bamboo-wood-semigloss/bamboo-wood-semigloss-roughness.jpg") },
-                null,
-                Texture2d(name = "Bamboo-ao") { Assets.loadTextureData("$assetPath/bamboo-wood-semigloss/bamboo-wood-semigloss-ao.jpg") },
-                null
-            ),
 
-            MaterialMaps(
-                "Castle Brick",
-                Texture2d(name = "CastleBrick-color") { Assets.loadTextureData("$assetPath/castle_brick/castle_brick_02_red_diff_2k.jpg") },
-                Texture2d(name = "CastleBrick-normal") { Assets.loadTextureData("$assetPath/castle_brick/castle_brick_02_red_nor_2k.jpg") },
-                Texture2d(name = "CastleBrick-rough") { Assets.loadTextureData("$assetPath/castle_brick/castle_brick_02_red_rough_2k.jpg") },
-                null,
-                Texture2d(name = "CastleBrick-ao") { Assets.loadTextureData("$assetPath/castle_brick/castle_brick_02_red_ao_2k.jpg") },
-                Texture2d(name = "CastleBrick-disp") { Assets.loadTextureData("$assetPath/castle_brick/castle_brick_02_red_disp_2k.jpg") }
-            ),
+        private suspend fun loadMaps(
+            albedoPath: String,
+            normalPath: String,
+            roughnessPath: String,
+            metallicPath: String?,
+            aoPath: String?,
+            displacementPath: String?,
+        ): MaterialMaps {
+            val albedo = Assets.loadTexture2dAsync(albedoPath)
+            val normal = Assets.loadTexture2dAsync(normalPath)
+            val roughness = Assets.loadTexture2dAsync(roughnessPath)
+            val metallic = metallicPath?.let { Assets.loadTexture2dAsync(it) }
+            val ao = aoPath?.let { Assets.loadTexture2dAsync(it) }
+            val displacement = displacementPath?.let { Assets.loadTexture2dAsync(it) }
+            return MaterialMaps(albedo.await(), normal.await(), roughness.await(), metallic?.await(), ao?.await(), displacement?.await())
+        }
 
-            MaterialMaps(
-                "Granite",
-                Texture2d(name = "Granite-color") { Assets.loadTextureData("$assetPath/granitesmooth1/granitesmooth1-albedo4.jpg") },
-                Texture2d(name = "Granite-normal") { Assets.loadTextureData("$assetPath/granitesmooth1/granitesmooth1-normal2.jpg") },
-                Texture2d(name = "Granite-rough") { Assets.loadTextureData("$assetPath/granitesmooth1/granitesmooth1-roughness3.jpg") },
-                null,
-                null,
-                null
-            ),
-
-            MaterialMaps(
-                "Weave Steel",
-                Texture2d(name = "WeaveSteel-color") { Assets.loadTextureData("$assetPath/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_COL_2K_METALNESS.jpg") },
-                Texture2d(name = "WeaveSteel-normal") { Assets.loadTextureData("$assetPath/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_NRM_2K_METALNESS.jpg") },
-                Texture2d(name = "WeaveSteel-rough") { Assets.loadTextureData("$assetPath/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_ROUGHNESS_2K_METALNESS.jpg") },
-                Texture2d(name = "WeaveSteel-metal") { Assets.loadTextureData("$assetPath/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_METALNESS_2K_METALNESS.jpg") },
-                Texture2d(name = "WeaveSteel-ao") { Assets.loadTextureData("$assetPath/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_AO_2K_METALNESS.jpg") },
-                Texture2d(name = "WeaveSteel-disp") { Assets.loadTextureData("$assetPath/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_DISP_2K_METALNESS.jpg") }
-            ),
-
-            MaterialMaps(
-                "Scuffed Plastic",
-                Texture2d(name = "ScuffedPlastic-color") { Assets.loadTextureData("$assetPath/scuffed-plastic-1/scuffed-plastic4-alb.jpg") },
-                Texture2d(name = "ScuffedPlastic-normal") { Assets.loadTextureData("$assetPath/scuffed-plastic-1/scuffed-plastic-normal.jpg") },
-                Texture2d(name = "ScuffedPlastic-rough") { Assets.loadTextureData("$assetPath/scuffed-plastic-1/scuffed-plastic-rough.jpg") },
-                null,
-                Texture2d(name = "ScuffedPlastic-ao") { Assets.loadTextureData("$assetPath/scuffed-plastic-1/scuffed-plastic-ao.jpg") },
-                null
-            ),
-
-            MaterialMaps(
-                "Snow Covered Path",
-                Texture2d(name = "SnowPath-color") { Assets.loadTextureData("$assetPath/snowcoveredpath/snowcoveredpath_albedo.jpg") },
-                Texture2d(name = "SnowPath-normal") { Assets.loadTextureData("$assetPath/snowcoveredpath/snowcoveredpath_normal-dx.jpg") },
-                Texture2d(name = "SnowPath-rough") { Assets.loadTextureData("$assetPath/snowcoveredpath/snowcoveredpath_roughness.jpg") },
-                null,
-                Texture2d(name = "SnowPath-ao") { Assets.loadTextureData("$assetPath/snowcoveredpath/snowcoveredpath_ao.jpg") },
-                Texture2d(name = "SnowPath-disp") { Assets.loadTextureData("$assetPath/snowcoveredpath/snowcoveredpath_height.jpg") }
-            ),
-
-            MaterialMaps(
-                "Marble",
-                Texture2d(name = "Marble-color") { Assets.loadTextureData("$assetPath/streaked-marble/streaked-marble-albedo2.jpg") },
-                Texture2d(name = "Marble-normal") { Assets.loadTextureData("$assetPath/streaked-marble/streaked-marble-normal.jpg") },
-                Texture2d(name = "Marble-rough") { Assets.loadTextureData("$assetPath/streaked-marble/streaked-marble-roughness1.jpg") },
-                null,
-                null,
-                null
-            ),
-
-            MaterialMaps(
-                "Onyx Tiles",
-                Texture2d(name = "OnyxTile-color") { Assets.loadTextureData("$assetPath/TilesOnyxOpaloBlack001/TilesOnyxOpaloBlack001_COL_2K.jpg") },
-                Texture2d(name = "OnyxTile-normal") { Assets.loadTextureData("$assetPath/TilesOnyxOpaloBlack001/TilesOnyxOpaloBlack001_NRM_2K.jpg") },
-                Texture2d(name = "OnyxTile-rough") { Assets.loadTextureData("$assetPath/TilesOnyxOpaloBlack001/TilesOnyxOpaloBlack001_REFL_2K.jpg") },
-                null,
-                null,
-                Texture2d(name = "OnyxTile-disp") { Assets.loadTextureData("$assetPath/TilesOnyxOpaloBlack001/TilesOnyxOpaloBlack001_DISP_2K.jpg") }
-            )
+        private val materialLoaders = listOf<Pair<String, suspend () -> MaterialMaps>>(
+            "Bamboo" to {
+                loadMaps(
+                    "$assetPath/bamboo-wood-semigloss/bamboo-wood-semigloss-albedo.jpg",
+                    "$assetPath/bamboo-wood-semigloss/bamboo-wood-semigloss-normal.jpg",
+                    "$assetPath/bamboo-wood-semigloss/bamboo-wood-semigloss-roughness.jpg",
+                    null,
+                    "$assetPath/bamboo-wood-semigloss/bamboo-wood-semigloss-ao.jpg",
+                    null
+                )
+            },
+            "Castle Brick" to {
+                loadMaps(
+                    "$assetPath/castle_brick/castle_brick_02_red_diff_2k.jpg",
+                    "$assetPath/castle_brick/castle_brick_02_red_nor_2k.jpg",
+                    "$assetPath/castle_brick/castle_brick_02_red_rough_2k.jpg",
+                    null,
+                    "$assetPath/castle_brick/castle_brick_02_red_ao_2k.jpg",
+                    "$assetPath/castle_brick/castle_brick_02_red_disp_2k.jpg"
+                )
+            },
+            "Granite" to {
+                loadMaps(
+                    "$assetPath/granitesmooth1/granitesmooth1-albedo4.jpg",
+                    "$assetPath/granitesmooth1/granitesmooth1-normal2.jpg",
+                    "$assetPath/granitesmooth1/granitesmooth1-roughness3.jpg",
+                    null,
+                    null,
+                    null
+                )
+            },
+            "Weave Steel" to {
+                loadMaps(
+                    "$assetPath/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_COL_2K_METALNESS.jpg",
+                    "$assetPath/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_NRM_2K_METALNESS.jpg",
+                    "$assetPath/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_ROUGHNESS_2K_METALNESS.jpg",
+                    "$assetPath/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_METALNESS_2K_METALNESS.jpg",
+                    "$assetPath/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_AO_2K_METALNESS.jpg",
+                    "$assetPath/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_DISP_2K_METALNESS.jpg"
+                )
+            },
+            "Scuffed Plastic" to {
+                loadMaps(
+                    "$assetPath/scuffed-plastic-1/scuffed-plastic4-alb.jpg",
+                    "$assetPath/scuffed-plastic-1/scuffed-plastic-normal.jpg",
+                    "$assetPath/scuffed-plastic-1/scuffed-plastic-rough.jpg",
+                    null,
+                    "$assetPath/scuffed-plastic-1/scuffed-plastic-ao.jpg",
+                    null
+                )
+            },
+            "Snow Covered Path" to {
+                loadMaps(
+                    "$assetPath/snowcoveredpath/snowcoveredpath_albedo.jpg",
+                    "$assetPath/snowcoveredpath/snowcoveredpath_normal-dx.jpg",
+                    "$assetPath/snowcoveredpath/snowcoveredpath_roughness.jpg",
+                    null,
+                    "$assetPath/snowcoveredpath/snowcoveredpath_ao.jpg",
+                    "$assetPath/snowcoveredpath/snowcoveredpath_height.jpg"
+                )
+            },
+            "Marble" to {
+                loadMaps(
+                    "$assetPath/streaked-marble/streaked-marble-albedo2.jpg",
+                    "$assetPath/streaked-marble/streaked-marble-normal.jpg",
+                    "$assetPath/streaked-marble/streaked-marble-roughness1.jpg",
+                    null,
+                    null,
+                    null
+                )
+            },
+            "Onyx Tiles" to {
+                loadMaps(
+                    "$assetPath/TilesOnyxOpaloBlack001/TilesOnyxOpaloBlack001_COL_2K.jpg",
+                    "$assetPath/TilesOnyxOpaloBlack001/TilesOnyxOpaloBlack001_NRM_2K.jpg",
+                    "$assetPath/TilesOnyxOpaloBlack001/TilesOnyxOpaloBlack001_REFL_2K.jpg",
+                    null,
+                    null,
+                    "$assetPath/TilesOnyxOpaloBlack001/TilesOnyxOpaloBlack001_DISP_2K.jpg"
+                )
+            },
         )
     }
 }

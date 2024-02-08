@@ -1,14 +1,23 @@
 package de.fabmax.kool.modules.gltf
 
 import de.fabmax.kool.Assets
-import de.fabmax.kool.KoolException
 import de.fabmax.kool.scene.Model
 import de.fabmax.kool.util.DataStream
 import de.fabmax.kool.util.inflate
 import de.fabmax.kool.util.logW
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
 
-suspend fun Assets.loadGltfFile(assetPath: String): GltfFile {
-    val file = when {
+suspend fun Assets.loadGltfFile(assetPath: String): GltfFile = loadGltfFileAsync(assetPath).await()
+
+suspend fun Assets.loadGltfModel(
+    assetPath: String,
+    modelCfg: GltfLoadConfig = GltfLoadConfig(),
+    scene: Int = 0
+): Model = loadGltfModelAsync(assetPath, modelCfg, scene).await()
+
+fun Assets.loadGltfFileAsync(assetPath: String): Deferred<GltfFile> = Assets.async {
+    val gltfFile = when {
         isGltf(assetPath) -> loadGltf(assetPath)
         isBinaryGltf(assetPath) -> loadGlb(assetPath)
         else -> throw IllegalArgumentException("Given asset path should end in .gltf, gltf.gz, glb or glb.gz")
@@ -18,7 +27,7 @@ suspend fun Assets.loadGltfFile(assetPath: String): GltfFile {
         assetPath.substring(0, assetPath.lastIndexOf('/'))
     } else { "." }
 
-    file.let { m ->
+    gltfFile.let { m ->
         m.buffers.filter { it.uri != null }.forEach {
             val uri = it.uri!!
             val bufferPath = if (uri.startsWith("data:", true)) { uri } else { "$modelBasePath/$uri" }
@@ -27,15 +36,15 @@ suspend fun Assets.loadGltfFile(assetPath: String): GltfFile {
         m.images.filter { it.uri != null }.forEach { it.uri = "$modelBasePath/${it.uri}" }
         m.updateReferences()
     }
-    return file
+    gltfFile
 }
 
-suspend fun Assets.loadGltfModel(
+fun Assets.loadGltfModelAsync(
     assetPath: String,
     modelCfg: GltfLoadConfig = GltfLoadConfig(),
     scene: Int = 0
-): Model {
-    return loadGltfFile(assetPath).makeModel(modelCfg, scene)
+): Deferred<Model> = Assets.async {
+    loadGltfFile(assetPath).makeModel(modelCfg, scene)
 }
 
 private fun isGltf(assetPath: String): Boolean {
@@ -67,7 +76,7 @@ private suspend fun Assets.loadGlb(assetPath: String): GltfFile {
     //val fileLength = str.readUInt()
     str.readUInt()
     if (magic != GltfFile.GLB_FILE_MAGIC) {
-        throw KoolException("Unexpected glTF magic number: $magic (should be ${GltfFile.GLB_FILE_MAGIC} / 'glTF')")
+        error("Unexpected glTF magic number: $magic (should be ${GltfFile.GLB_FILE_MAGIC} / 'glTF')")
     }
     if (version != 2) {
         logW { "Unexpected glTF version: $version (should be 2) - stuff might not work as expected" }
@@ -77,7 +86,7 @@ private suspend fun Assets.loadGlb(assetPath: String): GltfFile {
     var chunkLen = str.readUInt()
     var chunkType = str.readUInt()
     if (chunkType != GltfFile.GLB_CHUNK_MAGIC_JSON) {
-        throw KoolException("Unexpected chunk type for chunk 0: $chunkType (should be ${GltfFile.GLB_CHUNK_MAGIC_JSON} / 'JSON')")
+        error("Unexpected chunk type for chunk 0: $chunkType (should be ${GltfFile.GLB_CHUNK_MAGIC_JSON} / 'JSON')")
     }
     val jsonData = str.readData(chunkLen).toArray()
     val model = GltfFile.fromJson(jsonData.decodeToString())

@@ -30,7 +30,7 @@ class PbrDemo : DemoScene("PBR Materials") {
 
     private val sphereProto = SphereProto()
     private val pbrContent = listOf(
-        PbrMaterialContent(sphereProto),
+        PbrMaterialContent(sphereProto, mainScene),
         ColorGridContent(sphereProto),
         RoughnesMetalGridContent(sphereProto)
     )

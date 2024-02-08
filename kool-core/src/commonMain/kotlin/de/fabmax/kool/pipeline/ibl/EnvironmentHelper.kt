@@ -4,7 +4,9 @@ import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.*
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
 
 object EnvironmentHelper {
@@ -30,11 +32,17 @@ object EnvironmentHelper {
     }
 
     suspend fun hdriEnvironment(hdriPath: String, brightness: Float = 1f): EnvironmentMaps {
-        val samplerSettings = SamplerSettings().nearest()
-        val hdriTexProps = TextureProps(generateMipMaps = false, defaultSamplerSettings = samplerSettings)
-        val hdri = Assets.loadTexture2d(hdriPath, hdriTexProps)
-        return withContext(Dispatchers.RenderLoop) {
-            hdriEnvironment(hdri, brightness)
+        return hdriEnvironmentAsync(hdriPath, brightness).await()
+    }
+
+    fun hdriEnvironmentAsync(hdriPath: String, brightness: Float = 1f): Deferred<EnvironmentMaps> {
+        return Assets.async {
+            val samplerSettings = SamplerSettings().nearest()
+            val hdriTexProps = TextureProps(generateMipMaps = false, defaultSamplerSettings = samplerSettings)
+            val hdri = Assets.loadTexture2d(hdriPath, hdriTexProps)
+            withContext(Dispatchers.RenderLoop) {
+                hdriEnvironment(hdri, brightness)
+            }
         }
     }
 

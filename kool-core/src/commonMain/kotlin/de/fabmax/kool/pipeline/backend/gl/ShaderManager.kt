@@ -1,6 +1,5 @@
 package de.fabmax.kool.pipeline.backend.gl
 
-import de.fabmax.kool.KoolException
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.util.logE
@@ -92,7 +91,7 @@ class ShaderManager(val backend: RenderBackendGl) {
             val log = gl.getShaderInfoLog(vert)
             logE { "Vertex shader compilation failed:\n$log" }
             logE { "Vertex shader source: \n${formatShaderSrc(code.vertexSrc)}" }
-            throw KoolException("Vertex shader compilation failed: $log")
+            error("Vertex shader compilation failed: $log")
         }
 
         val frag = gl.createShader(gl.FRAGMENT_SHADER)
@@ -103,7 +102,7 @@ class ShaderManager(val backend: RenderBackendGl) {
             val log = gl.getShaderInfoLog(frag)
             logE { "Fragment shader compilation failed:\n$log" }
             logE { "Fragment shader source: \n${formatShaderSrc(code.fragmentSrc)}" }
-            throw KoolException("Fragment shader compilation failed: $log")
+            error("Fragment shader compilation failed: $log")
         }
 
         val prog = gl.createProgram()
@@ -117,7 +116,7 @@ class ShaderManager(val backend: RenderBackendGl) {
             logE { "Shader linkage failed:\n$log" }
             logE { "Vertex shader source: \n${formatShaderSrc(code.vertexSrc)}" }
             logE { "Fragment shader source: \n${formatShaderSrc(code.fragmentSrc)}" }
-            throw KoolException("Shader linkage failed: $log")
+            error("Shader linkage failed: $log")
         }
         return prog
     }
@@ -131,7 +130,7 @@ class ShaderManager(val backend: RenderBackendGl) {
             val log = gl.getShaderInfoLog(comp)
             logE { "Compute shader compilation failed:\n$log" }
             logE { "Compute shader source: \n${formatShaderSrc(code.computeSrc)}" }
-            throw KoolException("Compute shader compilation failed: $log")
+            error("Compute shader compilation failed: $log")
         }
 
         val prog = gl.createProgram()
@@ -142,7 +141,7 @@ class ShaderManager(val backend: RenderBackendGl) {
             val log = gl.getProgramInfoLog(prog)
             logE { "Compute shader linkage failed:\n$log" }
             logE { "Compute shader source: \n${formatShaderSrc(code.computeSrc)}" }
-            throw KoolException("Compute shader linkage failed: $log")
+            error("Compute shader linkage failed: $log")
         }
         return prog
     }

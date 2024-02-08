@@ -18,6 +18,8 @@ import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.roundToInt
@@ -46,7 +48,7 @@ class GltfDemo : DemoScene("glTF Models") {
         GltfModel(
             "Fox", "${DemoLoader.modelPath}/fox.glb",
             0.01f, Vec3f.ZERO, false, Vec3d(0.0, 1.25, 0.0), true, 3.5
-        ).apply { animate = { _, _ -> foxAnimator.animate(this) } },
+        ).apply { animate = { _ -> foxAnimator.animate(this) } },
         GltfModel(
             "Animated Box", "${DemoLoader.modelPath}/BoxAnimated.gltf",
             1f, Vec3f(0f, 0.5f, 0f), false, Vec3d(0.0, 1.5, 0.0), false, 5.0
@@ -60,6 +62,7 @@ class GltfDemo : DemoScene("glTF Models") {
             0.5f, Vec3f(0f, 0.06f, 0f), false, Vec3d(0.0, 0.75, 0.0), false, 3.5
         )
     )
+
     private val selectedModelIdx = mutableStateOf(0)
     private val currentModel: GltfModel get() = models[selectedModelIdx.value]
 
@@ -126,11 +129,13 @@ class GltfDemo : DemoScene("glTF Models") {
         )
 
         // load models
-        models.forEach {
-            showLoadText("Loading ${it.name}")
-            it.load(false, ctx)
-            it.load(true, ctx)
-        }
+        models.map {
+            Assets.async {
+                showLoadText("Loading ${it.name}")
+                it.load(false)
+                it.load(true)
+            }
+        }.awaitAll()
     }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
@@ -365,13 +370,13 @@ class GltfDemo : DemoScene("glTF Models") {
         var deferredModel: Model? = null
         var isVisible: Boolean = false
 
-        var animate: Model.(Float, KoolContext) -> Unit = { dt, _ ->
+        var animate: Model.(Float) -> Unit = { dt ->
             applyAnimation(dt)
         }
 
         override fun toString() = name
 
-        suspend fun load(isDeferredShading: Boolean, ctx: KoolContext): Model {
+        suspend fun load(isDeferredShading: Boolean): Model {
             val materialCfg = GltfMaterialConfig(
                 shadowMaps = if (isDeferredShading) deferredPipeline.shadowMaps else shadowsForward,
                 scrSpcAmbientOcclusionMap = if (isDeferredShading) deferredPipeline.aoPipeline?.aoMap else aoPipelineForward?.aoMap,
@@ -403,7 +408,7 @@ class GltfDemo : DemoScene("glTF Models") {
                 enableAnimation(0)
                 onUpdate += {
                     isVisible = this@GltfModel.isVisible
-                    animate(animationDeltaTime, ctx)
+                    animate(animationDeltaTime)
                 }
             }
             if (isDeferredShading) {

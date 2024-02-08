@@ -15,7 +15,7 @@ abstract class DemoScene(val name: String) {
     var demoEntry: Demos.Entry? = null
     var demoState = State.NEW
 
-    private val resources = ResourceGroup()
+    protected val resources = ResourceGroup()
 
     val mainScene = Scene(name)
     var menuUi: UiSurface? = null
@@ -61,7 +61,7 @@ abstract class DemoScene(val name: String) {
             // load resources (async from AssetManager CoroutineScope)
             demoState = State.LOADING
             launchOnMainThread {
-                resources.loadGroup()
+                resources.loadGroupParallel()
                 Assets.loadResources(ctx)
                 demoState = State.SETUP
             }
