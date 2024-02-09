@@ -15,7 +15,7 @@ class WgpuOffscreenRenderPass2d(
     private val colorAttachments = List(parentPass.colorTextures.size) {
         RenderAttachment(parentPass.colorTextures[it], false, "${parentPass.name}.color[$it]")
     }
-    private val depthAttachment: RenderAttachment
+    private val depthAttachment: RenderAttachment?
 
     private var copySrcFlag = 0
     private val isCopyColor: Boolean
@@ -23,20 +23,19 @@ class WgpuOffscreenRenderPass2d(
 
     init {
         val depthTex = when (parentPass.depthAttachment) {
-            is OffscreenRenderPass.DepthAttachmentTexture -> parentPass.depthTexture!!
-            // todo: proper no depth
-            else -> Texture2d(
+            OffscreenRenderPass.DepthAttachmentRender -> Texture2d(
                 TextureProps(generateMipMaps = false, defaultSamplerSettings = SamplerSettings().clamped()),
-                "${parentPass.name}_depth"
+                "${parentPass.name}:render-depth"
             )
+            else -> parentPass.depthTexture
         }
-        depthAttachment = RenderAttachment(depthTex, true,  depthTex.name)
+        depthAttachment = depthTex?.let { RenderAttachment(it, true,  it.name) }
         releaseWith(parentPass)
     }
 
     override fun applySize(width: Int, height: Int) {
         colorAttachments.forEach { it.applySize(width, height) }
-        depthAttachment.applySize(width, height)
+        depthAttachment?.applySize(width, height)
     }
 
     override fun release() { }
@@ -69,12 +68,14 @@ class WgpuOffscreenRenderPass2d(
             )
         }.toTypedArray()
 
-        val depth = GPURenderPassDepthStencilAttachment(
-            view = depthAttachment.mipViews[mipLevel],
-            depthLoadOp = if (parentPass.clearDepth) GPULoadOp.clear else GPULoadOp.load,
-            depthStoreOp = GPUStoreOp.store,
-            depthClearValue = if (renderPass.isReverseDepth) 0f else 1f
-        )
+        val depth = depthAttachment?.let {
+            GPURenderPassDepthStencilAttachment(
+                view = it.mipViews[mipLevel],
+                depthLoadOp = if (parentPass.clearDepth) GPULoadOp.clear else GPULoadOp.load,
+                depthStoreOp = GPUStoreOp.store,
+                depthClearValue = if (renderPass.isReverseDepth) 0f else 1f
+            )
+        }
         return RenderAttachments(colors, depth)
     }
 

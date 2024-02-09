@@ -82,7 +82,7 @@ open class DepthShader(val cfg: Config) : KslShader(depthShaderProg(cfg), cfg.pi
                         val d = linearDepth!!.output
                         colorOutput(float4Value(d, 1f.const, 1f.const, 1f.const))
                     } else {
-                        colorOutput(float4Value(1f, 1f, 1f, 1f))
+                        colorOutput(float4Value(0f, 0f, 0f, 1f))
                     }
                 }
             }

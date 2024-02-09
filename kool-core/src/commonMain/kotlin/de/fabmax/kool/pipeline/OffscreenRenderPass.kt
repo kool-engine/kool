@@ -141,7 +141,7 @@ abstract class OffscreenRenderPass(attachmentConfig: AttachmentConfig, initialSi
     sealed interface ColorAttachment
 
     /**
-     * Renderpass texture color attachment. The color texture(s) can be used by other passes after the renderpass is
+     * Render pass texture color attachment. The color texture(s) can be used by other passes after the render pass is
      * rendered.
      */
     data class ColorAttachmentTextures(val attachments: List<TextureAttachmentConfig>) : ColorAttachment
@@ -154,7 +154,7 @@ abstract class OffscreenRenderPass(attachmentConfig: AttachmentConfig, initialSi
     sealed interface DepthAttachment
 
     /**
-     * Renderpass texture depth attachment. The depth texture can be used by other passes after the renderpass is
+     * Render pass texture depth attachment. The depth texture can be used by other passes after the render pass is
      * rendered.
      */
     class DepthAttachmentTexture(
@@ -165,15 +165,14 @@ abstract class OffscreenRenderPass(attachmentConfig: AttachmentConfig, initialSi
     ) : DepthAttachment
 
     /**
-     * Default depth attachment, cannot be used by other renderpasses but provides the usual depth testing
-     * functionality inside the renderpass.
+     * Default depth attachment, cannot be used by other render passes but provides the usual depth testing
+     * functionality inside the render pass.
      */
     data object DepthAttachmentRender : DepthAttachment
 
     /**
-     * Don't use any depth attachment. This means there is no depth testing available inside this renderpass.
-     * Rendering without depth attachment is not possible on all platforms (e.g. OpenGL), in this case this mode
-     * behaves like [DepthAttachmentRender].
+     * Don't use any depth attachment. This means there is no depth testing available inside this render pass, which
+     * is fine for things like single full-screen quads used by many filter shaders, etc.
      */
     data object DepthAttachmentNone : DepthAttachment
 

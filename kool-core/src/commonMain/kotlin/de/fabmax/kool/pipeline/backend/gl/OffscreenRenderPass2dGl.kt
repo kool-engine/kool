@@ -121,13 +121,14 @@ class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, val backend: Re
             gl.bindFramebuffer(gl.FRAMEBUFFER, fbo)
 
             when (parent.colorAttachments) {
-                is OffscreenRenderPass.ColorAttachmentNone -> rbos += attachColorRenderBuffer(mipLevel)
+                OffscreenRenderPass.ColorAttachmentNone -> { }
                 is OffscreenRenderPass.ColorAttachmentTextures -> attachColorTextures(mipLevel, colorTextures)
             }
 
             when (parent.depthAttachment) {
+                OffscreenRenderPass.DepthAttachmentRender -> rbos += attachDepthRenderBuffer(mipLevel)
+                OffscreenRenderPass.DepthAttachmentNone -> { }
                 is OffscreenRenderPass.DepthAttachmentTexture -> attachDepthTexture(mipLevel)
-                else -> rbos += attachDepthRenderBuffer(mipLevel)
             }
 
             if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) != gl.FRAMEBUFFER_COMPLETE) {
@@ -149,19 +150,6 @@ class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, val backend: Re
             )
         }
         gl.drawBuffers(attachments)
-    }
-
-    private fun attachColorRenderBuffer(mipLevel: Int): GlRenderbuffer {
-        val rbo = gl.createRenderbuffer()
-        gl.bindRenderbuffer(gl.RENDERBUFFER, rbo)
-        gl.renderbufferStorage(
-            target = gl.RENDERBUFFER,
-            internalformat = TexFormat.R.glInternalFormat(gl),
-            width = parent.width shr mipLevel,
-            height = parent.height shr mipLevel
-        )
-        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, rbo)
-        return rbo
     }
 
     private fun attachDepthTexture(mipLevel: Int) {

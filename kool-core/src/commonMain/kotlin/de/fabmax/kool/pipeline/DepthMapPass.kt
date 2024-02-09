@@ -44,7 +44,6 @@ open class DepthMapPass(
         if (!mesh.geometry.hasAttribute(Attribute.POSITIONS)) {
             return null
         }
-        // todo: create shared shader
         return shadowPipelines.getOrPut(mesh.id) {
             val depthShader = mesh.depthShader
                 ?: mesh.depthShaderConfig?.let { cfg -> DepthShader(cfg.copy(outputLinearDepth = false, outputNormals = false)) }
@@ -106,7 +105,6 @@ class NormalLinearDepthMapPass(
         if (!mesh.geometry.hasAttribute(Attribute.POSITIONS) || !mesh.geometry.hasAttribute(Attribute.NORMALS)) {
             return null
         }
-        // todo: create shared shader
         return shadowPipelines.getOrPut(mesh.id) {
             val depthShader = mesh.normalLinearDepthShader
                 ?: mesh.depthShaderConfig?.let { cfg -> DepthShader(cfg.copy(outputLinearDepth = true, outputNormals = true)) }

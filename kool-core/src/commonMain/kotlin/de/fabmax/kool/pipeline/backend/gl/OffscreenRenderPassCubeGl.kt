@@ -19,7 +19,7 @@ class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, val backend
         if (viewIndex == 0) {
             gl.bindFramebuffer(gl.FRAMEBUFFER, fbos[mipLevel])
         }
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + viewIndex, glColorTex, mipLevel)
+        attachColorTextures(mipLevel, glColorTex, viewIndex)
     }
 
     fun draw() {
@@ -108,26 +108,47 @@ class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, val backend
         //    createDepthTexture(parent.depthAttachment)
         //}
 
-        for (i in 0 until parent.numRenderMipLevels) {
+        for (mipLevel in 0 until parent.numRenderMipLevels) {
             val fbo = gl.createFramebuffer()
-            val rbo = gl.createRenderbuffer()
-
-            val mipWidth = parent.width shr i
-            val mipHeight = parent.height shr i
-
-            gl.bindFramebuffer(gl.FRAMEBUFFER, fbo)
-            gl.bindRenderbuffer(gl.RENDERBUFFER, rbo)
-            gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT32F, mipWidth, mipHeight)
-            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, rbo)
-
             fbos += fbo
-            rbos += rbo
+            gl.bindFramebuffer(gl.FRAMEBUFFER, fbo)
+
+            when (parent.colorAttachments) {
+                OffscreenRenderPass.ColorAttachmentNone -> { }
+                is OffscreenRenderPass.ColorAttachmentTextures -> attachColorTextures(mipLevel, glColorTex, 0)
+            }
+
+            when (parent.depthAttachment) {
+                OffscreenRenderPass.DepthAttachmentRender -> rbos += attachDepthRenderBuffer(mipLevel)
+                OffscreenRenderPass.DepthAttachmentNone -> { }
+                is OffscreenRenderPass.DepthAttachmentTexture -> { TODO() }
+            }
 
             check(gl.checkFramebufferStatus(gl.FRAMEBUFFER) == gl.FRAMEBUFFER_COMPLETE) {
-                "OffscreenRenderPassCubeGl: Framebuffer incomplete: ${parent.name}, level: $i"
+                "OffscreenRenderPassCubeGl: Framebuffer incomplete: ${parent.name}, level: $mipLevel"
             }
         }
         isCreated = true
+    }
+
+    private fun attachColorTextures(mipLevel: Int, texture: GlTexture, viewIndex: Int) {
+        gl.framebufferTexture2D(
+            target = gl.FRAMEBUFFER,
+            attachment = gl.COLOR_ATTACHMENT0,
+            textarget = gl.TEXTURE_CUBE_MAP_POSITIVE_X + viewIndex,
+            texture = texture,
+            level = mipLevel
+        )
+    }
+
+    private fun attachDepthRenderBuffer(mipLevel: Int): GlRenderbuffer {
+        val rbo = gl.createRenderbuffer()
+        val mipWidth = parent.width shr mipLevel
+        val mipHeight = parent.height shr mipLevel
+        gl.bindRenderbuffer(gl.RENDERBUFFER, rbo)
+        gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT32F, mipWidth, mipHeight)
+        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, rbo)
+        return rbo
     }
 
     private fun createColorTex(colorAttachment: OffscreenRenderPass.ColorAttachmentTextures) {

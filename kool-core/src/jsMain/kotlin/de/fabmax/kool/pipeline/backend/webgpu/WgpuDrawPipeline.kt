@@ -175,16 +175,18 @@ class WgpuDrawPipeline(
             )
         }
 
-        val fragmentState = GPUFragmentState(
-            module = fragmentShaderModule,
-            entryPoint = shaderCode.fragmentEntryPoint,
-            targets = gpuRenderPass.colorTargetFormats.map { GPUColorTargetState(it, blendMode) }.toTypedArray()
-        )
-
         val primitiveState = GPUPrimitiveState(
             topology = drawPipeline.vertexLayout.primitiveType.wgpu,
             cullMode = drawPipeline.pipelineConfig.cullMethod.wgpu,
             frontFace = if (renderPass.isMirrorY) GPUFrontFace.cw else GPUFrontFace.ccw
+        )
+
+        // do not set fragmentState null even if there are no color targets
+        // we might still need the fragment shader to discard fragments (e.g. for a ShadowMap with alphaMask)
+        val fragmentState = GPUFragmentState(
+            module = fragmentShaderModule,
+            entryPoint = shaderCode.fragmentEntryPoint,
+            targets = gpuRenderPass.colorTargetFormats.map { GPUColorTargetState(it, blendMode) }.toTypedArray()
         )
 
         val depthOp = when {
@@ -199,12 +201,18 @@ class WgpuDrawPipeline(
             }
             else -> drawPipeline.pipelineConfig.depthTest
         }
-        val depthStencil = gpuRenderPass.depthFormat?.let { depthFormat ->
-            GPUDepthStencilState(
-                format = depthFormat,
-                depthWriteEnabled = drawPipeline.pipelineConfig.isWriteDepth,
-                depthCompare = depthOp.wgpu
-            )
+
+        val hasDepthAttachment = renderPass !is OffscreenRenderPass ||
+                renderPass.depthAttachment != OffscreenRenderPass.DepthAttachmentNone
+
+        val depthStencil = if (!hasDepthAttachment) null else {
+            gpuRenderPass.depthFormat?.let { depthFormat ->
+                GPUDepthStencilState(
+                    format = depthFormat,
+                    depthWriteEnabled = drawPipeline.pipelineConfig.isWriteDepth,
+                    depthCompare = depthOp.wgpu
+                )
+            }
         }
 
         return device.createRenderPipeline(
