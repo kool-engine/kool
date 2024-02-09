@@ -1,6 +1,7 @@
 package de.fabmax.kool.pipeline.ao
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.pipeline.NormalLinearDepthMapPass
 import de.fabmax.kool.pipeline.Texture2d
@@ -88,7 +89,7 @@ abstract class AoPipeline : BaseReleasable() {
         val proxyCamera = PerspectiveProxyCam(camera)
 
         init {
-            depthPass = NormalLinearDepthMapPass(drawNode, mapWidth, mapHeight)
+            depthPass = NormalLinearDepthMapPass(drawNode, initialSize = Vec2i(mapWidth, mapHeight))
             depthPass.camera = proxyCamera
             depthPass.isUpdateDrawNode = false
             depthPass.isReleaseDrawNode = false

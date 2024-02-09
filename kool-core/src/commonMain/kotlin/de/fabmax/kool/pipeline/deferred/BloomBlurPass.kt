@@ -2,6 +2,7 @@ package de.fabmax.kool.pipeline.deferred
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec2f
+import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
 import de.fabmax.kool.pipeline.shading.BlurShader
@@ -12,12 +13,12 @@ import de.fabmax.kool.util.Color
 import kotlin.math.sqrt
 
 class BloomBlurPass(kernelSize: Int, thresholdPass: BloomThresholdPass) :
-    OffscreenRenderPass2dPingPong(renderPassConfig {
-        name = "BloomBlurPass"
-        colorTargetTexture(TexFormat.RGBA_F16)
-    })
+    OffscreenRenderPass2dPingPong(
+        colorAttachmentNoDepth(TexFormat.RGBA_F16),
+        initialSize = Vec2i(128, 128),
+        name = "bloom-blur"
+    )
 {
-
     private val pingShader: BlurShader
     private val pongShader: BlurShader
     private var blurDirDirty = true

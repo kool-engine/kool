@@ -53,6 +53,10 @@ class LoadedTextureGl(
         if (target == gl.TEXTURE_3D) {
             gl.texParameteri(target, gl.TEXTURE_WRAP_R, settings.addressModeW.glAddressMode())
         }
+        if (settings.compareOp != DepthCompareOp.ALWAYS) {
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_MODE, gl.COMPARE_REF_TO_TEXTURE)
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_FUNC, settings.compareOp.glOp(gl))
+        }
 
         val anisotropy = min(settings.maxAnisotropy, gl.capabilities.maxAnisotropy)
         if (anisotropy > 1 && isMipMapped &&

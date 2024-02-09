@@ -1,13 +1,17 @@
 package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.Vec3i
 import de.fabmax.kool.math.deg
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.util.launchDelayed
 
-open class OffscreenRenderPassCube(drawNode: Node, config: Config) : OffscreenRenderPass(config) {
+open class OffscreenRenderPassCube(drawNode: Node, attachmentConfig: AttachmentConfig, initialSize: Vec2i, name: String) :
+    OffscreenRenderPass(attachmentConfig, Vec3i(initialSize.x, initialSize.y, 6), name)
+{
 
     override val views: List<View> = ViewDirection.entries.mapIndexed { i, dir ->
         val cam = PerspectiveCamera()
@@ -27,10 +31,10 @@ open class OffscreenRenderPassCube(drawNode: Node, config: Config) : OffscreenRe
             views.forEach { it.drawNode = value }
         }
 
-    val depthTexture = makeDepthAttachmentTex()
-    val colorTextures = makeColorAttachmentTexs()
+    val depthTexture = makeDepthAttachment()
+    val colorTextures = makeColorAttachments()
     val colorTexture: TextureCube?
-        get() = if (colorTextures.isNotEmpty()) colorTextures[0] else null
+        get() = colorTextures.getOrNull(0)
 
     val copyTargetsColor = mutableListOf<TextureCube>()
 
@@ -38,7 +42,7 @@ open class OffscreenRenderPassCube(drawNode: Node, config: Config) : OffscreenRe
 
     init {
         viewRenderMode = ViewRenderMode.MULTI_RENDER_PASS
-        if (config.depthAttachment is TextureDepthAttachment) {
+        if (attachmentConfig.depthAttachment is DepthAttachmentTexture) {
             throw RuntimeException("CubeMapDepthTexture not yet implemented")
         }
         if (numColorAttachments > 1) {
@@ -46,11 +50,15 @@ open class OffscreenRenderPassCube(drawNode: Node, config: Config) : OffscreenRe
         }
     }
 
-    // fixme: replace copyColor() by releaseKeepingTextures()
+    // todo: improve api
     fun copyColor(): TextureCube {
-        val tex = TextureCube(getColorTexProps(), "$name-${copyTargetsColor.size}")
+        val tex = TextureCube(createColorTextureProps(), "$name-${copyTargetsColor.size}")
         copyTargetsColor += tex
         return tex
+    }
+
+    override fun setSize(width: Int, height: Int, depth: Int) {
+        super.setSize(width, height, 6)
     }
 
     override fun release() {
@@ -58,49 +66,28 @@ open class OffscreenRenderPassCube(drawNode: Node, config: Config) : OffscreenRe
         impl.release()
 
         launchDelayed(3) {
-            if (depthAttachment !is TextureDepthAttachment || depthAttachment.attachment.providedTexture == null) {
-                depthTexture?.dispose()
-            }
-            colorTextures.forEachIndexed { i, tex ->
-                if (colorAttachment !is TextureColorAttachment || colorAttachment.attachments[i].providedTexture == null) {
-                    tex.dispose()
-                }
-            }
+            depthTexture?.release()
+            colorTextures.forEach { it.release() }
         }
     }
 
     override fun applySize(width: Int, height: Int, depth: Int) {
-        check(depth == 1) { "OffscreenRenderPassCube depth must be == 1" }
+        check(depth == 6) { "OffscreenRenderPassCube depth must be == 6" }
         super.applySize(width, height, depth)
         impl.applySize(width, height)
     }
 
-    private fun makeColorAttachmentTexs(): List<TextureCube> {
-        return if (colorAttachment is TextureColorAttachment) {
-            colorAttachment.attachments.mapIndexed { i, texCfg ->
-                if (texCfg.isProvided) {
-                    texCfg.providedTexture!! as TextureCube
-                } else {
-                    val name = "${name}_color[$i]"
-                    val props = texCfg.getTextureProps(mipLevels > 1)
-                    TextureCube(props, name)
-                }
-            }
+    private fun makeColorAttachments(): List<TextureCube> {
+        return if (colorAttachments is ColorAttachmentTextures) {
+            (0 until numColorAttachments).map { TextureCube(createColorTextureProps(it), "${name}_color[$it]") }
         } else {
             emptyList()
         }
     }
 
-    private fun makeDepthAttachmentTex(): TextureCube? {
-        return if (depthAttachment is TextureDepthAttachment) {
-            val cfg = depthAttachment.attachment
-            if (cfg.isProvided) {
-                cfg.providedTexture!! as TextureCube
-            } else {
-                val name = "${name}_depth"
-                val props = cfg.getTextureProps(mipLevels > 1)
-                TextureCube(props, name)
-            }
+    private fun makeDepthAttachment(): TextureCube? {
+        return if (depthAttachment is DepthAttachmentTexture) {
+            TextureCube(createDepthTextureProps(), "${name}_depth")
         } else {
             null
         }

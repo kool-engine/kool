@@ -2,6 +2,8 @@ package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.math.Vec3i
+import de.fabmax.kool.math.getNumMipLevels
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.pipeline.drawqueue.DrawQueue
 import de.fabmax.kool.scene.*
@@ -10,22 +12,18 @@ import de.fabmax.kool.util.*
 abstract class RenderPass(var name: String) : BaseReleasable() {
 
     /**
-     * Available width of the output (window / screen or framebuffer / texture). Notice, that the part
+     * Dimension of the output (window / screen or framebuffer / texture). Notice, that the part
      * of that output space actually used as output can be smaller and is set via [View.viewport].
      */
-    abstract val width: Int
+    abstract val size: Vec3i
+    val width: Int get() = size.x
+    val height: Int get() = size.y
+    val depth: Int get() = size.z
 
-    /**
-     * Available height of the output (window / screen or framebuffer / texture). Notice, that the part
-     * of that output space actually used as output can be smaller and is set via [View.viewport].
-     */
-    abstract val height: Int
-
-    /**
-     * Available depth of the output (window / screen or framebuffer / texture). This should be one for all
-     * non 3d render passes.
-     */
-    abstract val depth: Int
+    var mipMode: MipMode = MipMode.None
+        protected set
+    val numTextureMipLevels: Int get() = mipMode.getTextureMipLevels(size)
+    val numRenderMipLevels: Int get() = mipMode.getRenderMipLevels(size)
 
     var parentScene: Scene? = null
 
@@ -36,11 +34,6 @@ abstract class RenderPass(var name: String) : BaseReleasable() {
     var clearDepth = true
 
     abstract val views: List<View>
-
-    var mipLevels = 1
-        protected set
-    var drawMipLevels = true
-        protected set
 
     /**
      * Determines whether individual [views] are rendered in a single render pass or one separate pass per view.
@@ -168,6 +161,26 @@ abstract class RenderPass(var name: String) : BaseReleasable() {
 
     override fun toString(): String {
         return "${this::class.simpleName}:$name"
+    }
+
+    sealed class MipMode(val hasMipLevels: Boolean) {
+        data object None : MipMode(false) {
+            override fun getTextureMipLevels(size: Vec3i) = 1
+            override fun getRenderMipLevels(size: Vec3i) = 1
+        }
+
+        data object Generate : MipMode(true) {
+            override fun getTextureMipLevels(size: Vec3i) = getNumMipLevels(size.x, size.y)
+            override fun getRenderMipLevels(size: Vec3i) = 1
+        }
+
+        data class Render(val numMipLevels: Int = 0) : MipMode(true) {
+            override fun getTextureMipLevels(size: Vec3i) = if (numMipLevels == 0) getNumMipLevels(size.x, size.y) else numMipLevels
+            override fun getRenderMipLevels(size: Vec3i) = getTextureMipLevels(size)
+        }
+
+        abstract fun getTextureMipLevels(size: Vec3i): Int
+        abstract fun getRenderMipLevels(size: Vec3i): Int
     }
 
     class UpdateEvent(val view: View, val ctx: KoolContext) {

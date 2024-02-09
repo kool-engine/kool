@@ -83,7 +83,7 @@ class ShadowMapComponent(nodeModel: SceneNodeModel, override val componentData: 
         // create new shadow map
         shadowMap = when (shadowMapInfo) {
             is ShadowMapTypeData.Single -> {
-                SimpleShadowMap(sceneModel.drawNode, light, shadowMapInfo.mapInfo.mapSize).apply {
+                SimpleShadowMap(sceneModel.drawNode, light, mapSize = shadowMapInfo.mapInfo.mapSize).apply {
                     this.clipNear = clipNear
                     this.clipFar = clipFar
                 }

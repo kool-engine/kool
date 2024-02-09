@@ -1,25 +1,27 @@
 package de.fabmax.kool.pipeline.deferred
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.pipeline.OffscreenRenderPass2d
+import de.fabmax.kool.pipeline.SamplerSettings
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.Texture2d
-import de.fabmax.kool.pipeline.renderPassConfig
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.scene.PerspectiveProxyCam
 import de.fabmax.kool.util.Color
 
 class MaterialPass(pipeline: DeferredPipeline, suffix: String) :
-        OffscreenRenderPass2d(pipeline.sceneContent, renderPassConfig {
-            name = "MaterialPass-$suffix"
-            depthTargetTexture(isUsedAsShadowMap = false)
-            colorTargetTexture(FORMATS_DEFERRED_EMISSIVE.size) { i ->
-                colorFormat = FORMATS_DEFERRED_EMISSIVE[i]
-                // don't do any interpolation on output maps, or bad things will happen (especially for positions)
-                defaultSamplerSettings = defaultSamplerSettings.nearest()
-            }
-        }) {
+    OffscreenRenderPass2d(
+        pipeline.sceneContent,
+        AttachmentConfig(
+            ColorAttachmentTextures(FORMATS_DEFERRED_EMISSIVE),
+            DepthAttachmentTexture()
+        ),
+        Vec2i(128, 128),
+        "material-pass-$suffix"
+    )
+{
 
     internal val alphaMeshes = mutableListOf<Mesh>()
 
@@ -79,10 +81,12 @@ class MaterialPass(pipeline: DeferredPipeline, suffix: String) :
     }
 
     companion object {
-        val FMT_POSITION_FLAGS = TexFormat.RGBA_F16
-        val FMT_NORMAL_ROUGH = TexFormat.RGBA_F16
-        val FMT_ALBEDO_METAL = TexFormat.RGBA
-        val FMT_EMISSIVE_AO = TexFormat.RGBA_F16
+        private val samplerSettings = SamplerSettings().clamped().nearest()
+
+        val FMT_POSITION_FLAGS = TextureAttachmentConfig(TexFormat.RGBA_F16, samplerSettings)
+        val FMT_NORMAL_ROUGH = TextureAttachmentConfig(TexFormat.RGBA_F16, samplerSettings)
+        val FMT_ALBEDO_METAL = TextureAttachmentConfig(TexFormat.RGBA, samplerSettings)
+        val FMT_EMISSIVE_AO = TextureAttachmentConfig(TexFormat.RGBA_F16, samplerSettings)
 
         val FORMATS_DEFERRED_EMISSIVE = listOf(FMT_POSITION_FLAGS, FMT_NORMAL_ROUGH, FMT_ALBEDO_METAL, FMT_EMISSIVE_AO)
     }

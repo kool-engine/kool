@@ -1,8 +1,6 @@
 package de.fabmax.kool.pipeline.backend.vk.pipeline
 
 import de.fabmax.kool.pipeline.DrawPipeline
-import de.fabmax.kool.pipeline.OffscreenRenderPass
-import de.fabmax.kool.pipeline.OffscreenRenderPass2d
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.pipeline.backend.vk.SwapChain
 import de.fabmax.kool.pipeline.backend.vk.VkRenderPass
@@ -36,14 +34,15 @@ class PipelineManager(val sys: VkSystem) {
                 createOnScreenPipeline(pipeline, koolRenderPass, renderPass)
             }
         } else {
-            val numSamples = if (koolRenderPass is OffscreenRenderPass2d
-                && koolRenderPass.colorAttachment is OffscreenRenderPass.RenderBufferColorAttachment
-                && koolRenderPass.colorAttachment.isMultiSampled
-            ) {
-                sys.physicalDevice.msaaSamples
-            } else {
-                1
-            }
+            val numSamples = 1
+//                if (koolRenderPass is OffscreenRenderPass2d
+//                    && koolRenderPass.colorAttachments is OffscreenRenderPass.RenderBufferColorAttachment
+//                    && koolRenderPass.colorAttachments.isMultiSampled
+//                ) {
+//                    sys.physicalDevice.msaaSamples
+//                } else {
+//                    1
+//                }
 
             val gp = GraphicsPipeline(sys, koolRenderPass, renderPass, numSamples, dynVp, pipeline, nImages)
             sys.device.addDependingResource(gp)

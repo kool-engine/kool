@@ -1,13 +1,14 @@
 package de.fabmax.kool.util
 
-import de.fabmax.kool.KoolException
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.BoundingBoxF
+import de.fabmax.kool.pipeline.DepthCompareOp
 import de.fabmax.kool.pipeline.DepthMapPass
+import de.fabmax.kool.pipeline.SamplerSettings
+import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.backend.DepthRange
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
-import de.fabmax.kool.pipeline.renderPassConfig
 import de.fabmax.kool.scene.*
 import kotlin.math.abs
 import kotlin.math.min
@@ -20,16 +21,30 @@ sealed interface ShadowMap {
     val subMaps: List<SimpleShadowMap>
 }
 
-class SimpleShadowMap(val sceneCam: Camera, override var light: Light?, mapSize: Int = 2048, drawNode: Node) :
-    DepthMapPass(drawNode, renderPassConfig {
-        name = "SimpleShadowMap"
-        size(mapSize, mapSize)
-        depthTargetTexture(isUsedAsShadowMap = true)
-        colorTargetNone()
-    }),
+class SimpleShadowMap(
+    val sceneCam: Camera,
+    drawNode: Node,
+    override var light: Light?,
+    mapSize: Int = 2048,
+    name: String = UniqueId.nextId("simple-shadow-map")
+) :
+    DepthMapPass(
+        drawNode = drawNode,
+        attachmentConfig = AttachmentConfig(
+            colorAttachments = ColorAttachmentNone,
+            depthAttachment = DepthAttachmentTexture(
+                TextureAttachmentConfig(
+                    textureFormat = TexFormat.R_F32,
+                    defaultSamplerSettings = SamplerSettings(compareOp = DepthCompareOp.LESS).clamped().linear()
+                )
+            )
+        ),
+        initialSize = Vec2i(mapSize),
+        name = name
+    ),
     ShadowMap
 {
-    constructor(scene: Scene, light: Light?, mapSize: Int = 2048, drawNode: Node = scene) : this(scene.camera, light, mapSize, drawNode) {
+    constructor(scene: Scene, light: Light?, drawNode: Node = scene, mapSize: Int = 2048): this(scene.camera, drawNode, light, mapSize) {
         scene.addOffscreenPass(this)
     }
 
@@ -206,7 +221,7 @@ class CascadedShadowMap(
         nearOffset: Float = -20f,
         mapSizes: List<Int>? = null,
         drawNode: Node = scene
-    ) : this(scene.camera, drawNode, light, maxRange, numCascades, nearOffset, mapSizes) {
+    ): this(scene.camera, drawNode, light, maxRange, numCascades, nearOffset, mapSizes) {
         subMaps.forEach { scene.addOffscreenPass(it) }
     }
 
@@ -223,8 +238,7 @@ class CascadedShadowMap(
     }
 
     override val subMaps = List(numCascades) { level ->
-        SimpleShadowMap(sceneCam, light, mapSizes?.get(level) ?: 2048, drawNode).apply {
-            name = "CascadedShadopwMap-level-$level"
+        SimpleShadowMap(sceneCam, drawNode, light, mapSizes?.get(level) ?: 2048, "cascaded-shadopw-map[$level]").apply {
             shadowMapLevel = level
             directionalCamNearOffset = nearOffset
             setDefaultDepthOffset(true)
@@ -242,9 +256,7 @@ class CascadedShadowMap(
         set(value) { subMaps.forEach { it.isEnabled = value } }
 
     init {
-        if (numCascades > 8) {
-            throw KoolException("Too many shadow cascades: $numCascades (maximum is 8)")
-        }
+        check(numCascades <= 8) { "Too many shadow cascades: $numCascades (maximum is 8)" }
 
         subMaps[0].onBeforeCollectDrawCommands += {
             for (i in 0 until numCascades) {

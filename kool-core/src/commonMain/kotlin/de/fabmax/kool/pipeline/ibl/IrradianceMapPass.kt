@@ -1,5 +1,6 @@
 package de.fabmax.kool.pipeline.ibl
 
+import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.lang.*
@@ -14,11 +15,13 @@ import de.fabmax.kool.util.logD
 import kotlin.math.PI
 
 class IrradianceMapPass private constructor(parentScene: Scene, hdriMap: Texture2d?, cubeMap: TextureCube?, size: Int) :
-    OffscreenRenderPassCube(Node(), renderPassConfig {
-        name = "IrradianceMapPass"
-        size(size, size)
-        colorTargetTexture(TexFormat.RGBA_F16)
-    }) {
+    OffscreenRenderPassCube(
+        Node(),
+        colorAttachmentNoDepth(TexFormat.RGBA_F16),
+        Vec2i(size),
+        name = "irradiance-map"
+    )
+{
 
     var isAutoRemove = true
 

@@ -1,14 +1,17 @@
 package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.math.Vec2i
+import de.fabmax.kool.math.Vec3i
 import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.util.Viewport
 import de.fabmax.kool.util.launchDelayed
 
-open class OffscreenRenderPass2d(drawNode: Node, config: Config) : OffscreenRenderPass(config) {
-
+open class OffscreenRenderPass2d(drawNode: Node, attachmentConfig: AttachmentConfig, initialSize: Vec2i, name: String) :
+    OffscreenRenderPass(attachmentConfig, Vec3i(initialSize.x, initialSize.y, 1), name)
+{
     override val views = mutableListOf(
         View("default", drawNode, PerspectiveCamera()).apply {
             setFullscreenViewport()
@@ -23,10 +26,10 @@ open class OffscreenRenderPass2d(drawNode: Node, config: Config) : OffscreenRend
     var isUpdateDrawNode: Boolean by mainView::isUpdateDrawNode
     var isReleaseDrawNode: Boolean by mainView::isReleaseDrawNode
 
-    val depthTexture = makeDepthAttachmentTex()
-    val colorTextures = makeColorAttachmentTexs()
+    val depthTexture = makeDepthAttachment()
+    val colorTextures = makeColorAttachments()
     val colorTexture: Texture2d?
-        get() = if (colorTextures.isNotEmpty()) colorTextures[0] else null
+        get() = colorTextures.getOrNull(0)
 
     val copyTargetsColor = mutableListOf<Texture2d>()
 
@@ -38,11 +41,15 @@ open class OffscreenRenderPass2d(drawNode: Node, config: Config) : OffscreenRend
         return view
     }
 
-    // fixme: replace copyColor() by releaseKeepingTextures()
+    // todo: improve api
     fun copyColor(): Texture2d {
-        val tex = Texture2d(getColorTexProps(), "$name-copy-${copyTargetsColor.size}")
+        val tex = Texture2d(createColorTextureProps(), "$name-copy-${copyTargetsColor.size}")
         copyTargetsColor += tex
         return tex
+    }
+
+    override fun setSize(width: Int, height: Int, depth: Int) {
+        super.setSize(width, height, 1)
     }
 
     override fun release() {
@@ -50,14 +57,8 @@ open class OffscreenRenderPass2d(drawNode: Node, config: Config) : OffscreenRend
         impl.release()
 
         launchDelayed(3) {
-            if (depthAttachment !is TextureDepthAttachment || depthAttachment.attachment.providedTexture == null) {
-                depthTexture?.dispose()
-            }
-            colorTextures.forEachIndexed { i, tex ->
-                if (colorAttachment !is TextureColorAttachment || colorAttachment.attachments[i].providedTexture == null) {
-                    tex.dispose()
-                }
-            }
+            depthTexture?.release()
+            colorTextures.forEach { it.release() }
         }
     }
 
@@ -67,32 +68,17 @@ open class OffscreenRenderPass2d(drawNode: Node, config: Config) : OffscreenRend
         impl.applySize(width, height)
     }
 
-    private fun makeColorAttachmentTexs(): List<Texture2d> {
-        return if (colorAttachment is TextureColorAttachment) {
-            colorAttachment.attachments.mapIndexed { i, texCfg ->
-                if (texCfg.isProvided) {
-                    texCfg.providedTexture!! as Texture2d
-                } else {
-                    val name = "${name}_color[$i]"
-                    val props = texCfg.getTextureProps(mipLevels > 1)
-                    Texture2d(props, name)
-                }
-            }
+    private fun makeColorAttachments(): List<Texture2d> {
+        return if (colorAttachments is ColorAttachmentTextures) {
+            (0 until numColorAttachments).map { Texture2d(createColorTextureProps(it), "${name}:color[$it]") }
         } else {
             emptyList()
         }
     }
 
-    private fun makeDepthAttachmentTex(): Texture2d? {
-        return if (depthAttachment is TextureDepthAttachment) {
-            val cfg = depthAttachment.attachment
-            if (cfg.isProvided) {
-                cfg.providedTexture!! as Texture2d
-            } else {
-                val name = "${name}_depth"
-                val props = cfg.getTextureProps(mipLevels > 1)
-                Texture2d(props, name)
-            }
+    private fun makeDepthAttachment(): Texture2d? {
+        return if (depthAttachment is DepthAttachmentTexture) {
+            Texture2d(createDepthTextureProps(), "${name}:depth")
         } else {
             null
         }
@@ -101,6 +87,5 @@ open class OffscreenRenderPass2d(drawNode: Node, config: Config) : OffscreenRend
 
 interface OffscreenPass2dImpl {
     fun applySize(width: Int, height: Int)
-
     fun release()
 }

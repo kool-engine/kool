@@ -4,23 +4,26 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.lang.*
-import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenShaderPipelineCfg
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
+import de.fabmax.kool.pipeline.OffscreenRenderPass2d
+import de.fabmax.kool.pipeline.TexFormat
+import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.launchDelayed
 
 class AoDenoisePass(aoPass: OffscreenRenderPass2d, depthComponent: String) :
-    OffscreenRenderPass2d(Node(), renderPassConfig {
-        name = "AoDenoisePass"
-        size.set(aoPass.size)
-        colorTargetTexture(TexFormat.R)
-    })
+    OffscreenRenderPass2d(
+        Node(),
+        colorAttachmentNoDepth(TexFormat.R),
+        aoPass.size.xy,
+        "ambient-occlusion-denoise"
+    )
 {
-
     private val denoiseShader = DenoiseShader(aoPass, depthComponent)
 
     var radius: Float by denoiseShader::uRadius

@@ -1,33 +1,21 @@
 package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.math.MutableVec3i
-import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.math.Vec3i
-import de.fabmax.kool.math.getNumMipLevels
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logT
-import de.fabmax.kool.util.logW
-import kotlin.math.max
 
-inline fun renderPassConfig(block: OffscreenRenderPass.Config.() -> Unit): OffscreenRenderPass.Config {
-    val config = OffscreenRenderPass.Config()
-    config.block()
-    return config
-}
+abstract class OffscreenRenderPass(attachmentConfig: AttachmentConfig, initialSize: Vec3i, name: String) : RenderPass(name) {
 
-abstract class OffscreenRenderPass(config: Config) : RenderPass(config.name) {
+    private val _size = MutableVec3i(initialSize)
+    override val size: Vec3i get() = _size
 
-    private val _size = MutableVec3i(config.size)
-    val size: Vec3i get() = _size
-    override val width: Int get() = _size.x
-    override val height: Int get() = _size.y
-    override val depth: Int get() = _size.z
+    val colorAttachments: ColorAttachment = attachmentConfig.colorAttachments
+    val depthAttachment: DepthAttachment = attachmentConfig.depthAttachment
 
-    val colorAttachment = config.colorAttachment
-    val depthAttachment = config.depthAttachment
-
-    val numColorAttachments = if (colorAttachment is TextureColorAttachment) colorAttachment.attachments.size else 1
+    val numColorAttachments: Int
+        get() = if (colorAttachments is ColorAttachmentTextures) colorAttachments.attachments.size else 1
 
     override val clearColors: Array<Color?> = Array(numColorAttachments) { Color.BLACK }
 
@@ -35,16 +23,23 @@ abstract class OffscreenRenderPass(config: Config) : RenderPass(config.name) {
     var isEnabled = true
 
     init {
-        mipLevels = config.mipLevels
-        drawMipLevels = config.drawMipLevels
+        mipMode = attachmentConfig.mipLevels
     }
 
     fun dependsOn(renderPass: RenderPass) {
         dependencies += renderPass
     }
 
-    fun getColorTexProps(attachment: Int = 0): TextureProps {
-        return (colorAttachment as TextureColorAttachment).attachments[attachment].getTextureProps(mipLevels > 1)
+    fun createColorTextureProps(attachment: Int = 0): TextureProps {
+        check(colorAttachments is ColorAttachmentTextures)
+        return colorAttachments.attachments[attachment]
+            .createTextureProps(mipMode.hasMipLevels)
+    }
+
+    fun createDepthTextureProps(): TextureProps {
+        check(depthAttachment is DepthAttachmentTexture)
+        return depthAttachment.attachment
+            .createTextureProps(mipMode.hasMipLevels)
     }
 
     protected fun View.setFullscreenViewport() {
@@ -55,6 +50,8 @@ abstract class OffscreenRenderPass(config: Config) : RenderPass(config.name) {
         if (width != this.width || height != this.height || depth != this.depth) {
             logT { "OffscreenPass $name resized to $width x $height x $depth" }
             applySize(width, height, depth)
+
+            // fixme: resetting all viewports is probably not always right
             for (v in views) {
                 v.viewport.set(0, 0, width, height)
             }
@@ -115,123 +112,79 @@ abstract class OffscreenRenderPass(config: Config) : RenderPass(config.name) {
                 }
             }
         }
+
+        fun ColorAttachmentTextures(vararg textureFormats: TexFormat) =
+            ColorAttachmentTextures(textureFormats.map { TextureAttachmentConfig(it) })
+
+        fun colorAttachmentDefaultDepth(vararg textureFormats: TexFormat): AttachmentConfig =
+            AttachmentConfig(ColorAttachmentTextures(*textureFormats))
+
+        fun colorAttachmentTextureDepth(vararg textureFormats: TexFormat): AttachmentConfig =
+            AttachmentConfig(
+                ColorAttachmentTextures(*textureFormats),
+                DepthAttachmentTexture()
+            )
+
+        fun colorAttachmentNoDepth(vararg textureFormats: TexFormat): AttachmentConfig =
+            AttachmentConfig(
+                ColorAttachmentTextures(*textureFormats),
+                DepthAttachmentNone
+            )
     }
 
-    open class Config {
-        var name = "OffscreenRenderPass"
-
-        val size = MutableVec3i(128, 128, 1)
-        var mipLevels = 1
-        var drawMipLevels = true
-
-        var colorAttachment: ColorAttachment = RenderBufferColorAttachment(TexFormat.RGBA, false)
-        var depthAttachment: DepthAttachment = RenderBufferDepthAttachment
-
-        fun size(size: Vec2i) = size(size.x, size.y)
-        fun size(size: Vec3i) = size(size.x, size.y, size.z)
-
-        fun size(width: Int, height: Int, depth: Int = 1) {
-            size.set(max(1, width), max(1, height), max(1, depth))
-            if (size.x > width) logW { "Invalid OffscreenRenderPass width: $width" }
-            if (size.y > height) logW { "Invalid OffscreenRenderPass height: $height" }
-            if (size.z > depth) logW { "Invalid OffscreenRenderPass depth: $depth" }
-        }
-
-        fun enableMipLevels(mipLevels: Int = getNumMipLevels(size.x, size.y), drawMipLevels: Boolean = true) {
-            this.mipLevels = mipLevels
-            this.drawMipLevels = drawMipLevels
-        }
-
-        fun colorTargetNone() {
-            // even though it won't be used, we need some minimal color target to render to...
-            colorTargetRenderBuffer(TexFormat.R)
-        }
-
-        fun colorTargetRenderBuffer(format: TexFormat, isMultiSampled: Boolean = false) {
-            colorAttachment = RenderBufferColorAttachment(format, isMultiSampled)
-        }
-
-        fun colorTargetTexture(vararg formats: TexFormat) {
-            val attachments = mutableListOf<TextureAttachmentConfig>()
-            formats.forEach {
-                attachments += TextureAttachmentConfigBuilder().apply { colorFormat = it }.build()
-            }
-            colorAttachment = TextureColorAttachment(attachments)
-        }
-
-        fun colorTargetTexture(numTextures: Int, block: TextureAttachmentConfigBuilder.(Int) -> Unit) {
-            val attachments = mutableListOf<TextureAttachmentConfig>()
-            for (i in 0 until numTextures) {
-                val cfgBuilder = TextureAttachmentConfigBuilder()
-                cfgBuilder.block(i)
-                attachments += cfgBuilder.build()
-            }
-            colorAttachment = TextureColorAttachment(attachments)
-        }
-
-        fun depthTargetRenderBuffer() {
-            depthAttachment = RenderBufferDepthAttachment
-        }
-
-        fun depthTargetTexture(isUsedAsShadowMap: Boolean) {
-            depthAttachment = TextureDepthAttachment(isUsedAsShadowMap)
-        }
-    }
+    data class AttachmentConfig(
+        val colorAttachments: ColorAttachment,
+        val depthAttachment: DepthAttachment = DepthAttachmentRender,
+        val mipLevels: MipMode = MipMode.None
+    )
 
     sealed interface ColorAttachment
 
-    class RenderBufferColorAttachment(
-        val colorFormat: TexFormat,
-        val isMultiSampled: Boolean
-    ) : ColorAttachment
+    /**
+     * Renderpass texture color attachment. The color texture(s) can be used by other passes after the renderpass is
+     * rendered.
+     */
+    data class ColorAttachmentTextures(val attachments: List<TextureAttachmentConfig>) : ColorAttachment
 
-    class TextureColorAttachment(
-        val attachments: List<TextureAttachmentConfig>
-    ) : ColorAttachment
+    /**
+     * Discard the color output.
+     */
+    data object ColorAttachmentNone : ColorAttachment
 
     sealed interface DepthAttachment
 
-    data object RenderBufferDepthAttachment : DepthAttachment
+    /**
+     * Renderpass texture depth attachment. The depth texture can be used by other passes after the renderpass is
+     * rendered.
+     */
+    class DepthAttachmentTexture(
+        val attachment: TextureAttachmentConfig = TextureAttachmentConfig(
+            textureFormat = TexFormat.R_F32,
+            defaultSamplerSettings = SamplerSettings().clamped().nearest()
+        )
+    ) : DepthAttachment
 
-    class TextureDepthAttachment(val isUsedAsShadowMap: Boolean) : DepthAttachment {
-        val attachment = TextureAttachmentConfigBuilder().apply {
-            if (isUsedAsShadowMap) {
-                defaultSamplerSettings = defaultSamplerSettings.linear()
-                depthCompareOp = DepthCompareOp.LESS
-            } else {
-                defaultSamplerSettings = defaultSamplerSettings.nearest()
-            }
-        }.build()
-    }
+    /**
+     * Default depth attachment, cannot be used by other renderpasses but provides the usual depth testing
+     * functionality inside the renderpass.
+     */
+    data object DepthAttachmentRender : DepthAttachment
 
-    class TextureAttachmentConfig(builder: TextureAttachmentConfigBuilder) {
-        val colorFormat = builder.colorFormat
-        val defaultSamplerSettings = builder.defaultSamplerSettings
-        val depthCompareOp = builder.depthCompareOp
+    /**
+     * Don't use any depth attachment. This means there is no depth testing available inside this renderpass.
+     * Rendering without depth attachment is not possible on all platforms (e.g. OpenGL), in this case this mode
+     * behaves like [DepthAttachmentRender].
+     */
+    data object DepthAttachmentNone : DepthAttachment
 
-        val providedTexture: Texture? = builder.providedTexture
-        val isProvided: Boolean
-            get() = providedTexture != null
-
-        fun getTextureProps(mipMapping: Boolean) = TextureProps(
-            format = colorFormat,
-            generateMipMaps = mipMapping,
+    data class TextureAttachmentConfig(
+        val textureFormat: TexFormat = TexFormat.RGBA,
+        val defaultSamplerSettings: SamplerSettings = SamplerSettings().clamped(),
+    ) {
+        fun createTextureProps(generateMipMaps: Boolean) = TextureProps(
+            format = textureFormat,
+            generateMipMaps = generateMipMaps,
             defaultSamplerSettings = defaultSamplerSettings
         )
-    }
-
-    class TextureAttachmentConfigBuilder {
-        var colorFormat = TexFormat.RGBA
-        var defaultSamplerSettings = SamplerSettings().clamped()
-        var depthCompareOp = DepthCompareOp.ALWAYS
-
-        var providedTexture: Texture? = null
-
-        fun build(): TextureAttachmentConfig = TextureAttachmentConfig(this)
-    }
-
-    enum class RenderTarget {
-        TEXTURE,
-        RENDER_BUFFER
     }
 }

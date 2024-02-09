@@ -21,8 +21,7 @@ abstract class WgpuRenderPass<T: RenderPass>(
     protected fun render(renderPass: T, encoder: GPUCommandEncoder) {
         val t = if (renderPass.isProfileTimes) Time.precisionTime else 0.0
 
-        val mipLevels = if (renderPass.drawMipLevels) renderPass.mipLevels else 1
-        for (mipLevel in 0 until mipLevels) {
+        for (mipLevel in 0 until renderPass.numRenderMipLevels) {
             renderPass.setupMipLevel(mipLevel)
 
             when (renderPass.viewRenderMode) {

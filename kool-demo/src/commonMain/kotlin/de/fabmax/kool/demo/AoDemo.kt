@@ -69,7 +69,7 @@ class AoDemo : DemoScene("Ambient Occlusion") {
             }
         }
 
-        val shadowMap = SimpleShadowMap(this, lighting.lights[0], 2048)
+        val shadowMap = SimpleShadowMap(this, lighting.lights[0], mapSize = 2048)
         mainScene.addOffscreenPass(shadowMap)
         shadows.add(shadowMap)
 

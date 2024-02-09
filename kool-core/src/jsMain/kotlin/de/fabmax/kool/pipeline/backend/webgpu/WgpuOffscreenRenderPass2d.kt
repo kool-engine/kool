@@ -23,11 +23,12 @@ class WgpuOffscreenRenderPass2d(
 
     init {
         val depthTex = when (parentPass.depthAttachment) {
-            is OffscreenRenderPass.RenderBufferDepthAttachment -> Texture2d(
+            is OffscreenRenderPass.DepthAttachmentTexture -> parentPass.depthTexture!!
+            // todo: proper no depth
+            else -> Texture2d(
                 TextureProps(generateMipMaps = false, defaultSamplerSettings = SamplerSettings().clamped()),
                 "${parentPass.name}_depth"
             )
-            is OffscreenRenderPass.TextureDepthAttachment -> parentPass.depthTexture!!
         }
         depthAttachment = RenderAttachment(depthTex, true,  depthTex.name)
         releaseWith(parentPass)
@@ -49,7 +50,7 @@ class WgpuOffscreenRenderPass2d(
         }
 
         render(parentPass, encoder)
-        if (!parentPass.drawMipLevels && parentPass.mipLevels > 1) {
+        if (parentPass.mipMode == RenderPass.MipMode.Generate) {
             colorAttachments.forEach {
                 backend.textureLoader.mipmapGenerator.generateMipLevels(it.descriptor, it.gpuTexture.gpuTexture, encoder)
             }
@@ -125,12 +126,12 @@ class WgpuOffscreenRenderPass2d(
                 target.loadedTexture = copyDst
                 target.loadingState = Texture.LoadingState.LOADED
             }
-            backend.textureLoader.copyTexture2d(gpuTexture.gpuTexture, copyDst.texture.gpuTexture, parentPass.mipLevels, encoder)
+            backend.textureLoader.copyTexture2d(gpuTexture.gpuTexture, copyDst.texture.gpuTexture, parentPass.numTextureMipLevels, encoder)
         }
 
         private fun createViews() {
             mipViews.clear()
-            for (i in 0 until parentPass.mipLevels) {
+            for (i in 0 until parentPass.numRenderMipLevels) {
                 mipViews += gpuTexture.gpuTexture.createView(baseMipLevel = i, mipLevelCount = 1)
             }
         }
@@ -146,7 +147,7 @@ class WgpuOffscreenRenderPass2d(
                 size = intArrayOf(width, height),
                 format = if (isDepth) GPUTextureFormat.depth32float else texture.props.format.wgpu,
                 usage = usage,
-                mipLevelCount = parentPass.mipLevels,
+                mipLevelCount = parentPass.numTextureMipLevels,
                 sampleCount = numSamples
             )
             val tex = backend.createTexture(descriptor, texture)

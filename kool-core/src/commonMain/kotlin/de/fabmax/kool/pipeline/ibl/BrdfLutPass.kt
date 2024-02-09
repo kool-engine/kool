@@ -1,5 +1,6 @@
 package de.fabmax.kool.pipeline.ibl
 
+import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.lang.*
@@ -9,7 +10,6 @@ import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenShaderPipelineCfg
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
 import de.fabmax.kool.pipeline.OffscreenRenderPass2d
 import de.fabmax.kool.pipeline.TexFormat
-import de.fabmax.kool.pipeline.renderPassConfig
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.addMesh
@@ -18,11 +18,13 @@ import de.fabmax.kool.util.logD
 
 
 class BrdfLutPass(parentScene: Scene) :
-    OffscreenRenderPass2d(Node(), renderPassConfig {
-        name = "BrdfLutPass"
-        size(512, 512)
-        colorTargetTexture(TexFormat.RG_F16)
-    }) {
+    OffscreenRenderPass2d(
+        Node(),
+        colorAttachmentNoDepth(TexFormat.RG_F16),
+        Vec2i(512),
+        name = "brdf-lut"
+    )
+{
 
     var isAutoRemove = true
 

@@ -1,17 +1,24 @@
 package de.fabmax.kool.pipeline
 
+import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.pipeline.shading.DepthShader
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.UniqueId
 
 
-open class DepthMapPass(drawNode: Node, config: Config) : OffscreenRenderPass2d(drawNode, config) {
+open class DepthMapPass(
+    drawNode: Node,
+    attachmentConfig: AttachmentConfig = defaultRenderPassAttachmentConfig,
+    initialSize: Vec2i = Vec2i(128, 128),
+    name: String = UniqueId.nextId("depth-map-pass")
+) :
+    OffscreenRenderPass2d(drawNode, attachmentConfig, initialSize, name)
+{
     protected val shadowPipelines = mutableMapOf<Int, DrawPipeline?>()
     protected val depthShaders = mutableMapOf<DepthShaderKey, DepthShader>()
-
-    constructor(drawNode: Node, width: Int, height: Int = width) : this(drawNode, defaultSetup(width, height))
 
     /**
      * Cull method to use for depth map rendering. If null (the default) the original cull method of meshes is used.
@@ -37,6 +44,7 @@ open class DepthMapPass(drawNode: Node, config: Config) : OffscreenRenderPass2d(
         if (!mesh.geometry.hasAttribute(Attribute.POSITIONS)) {
             return null
         }
+        // todo: create shared shader
         return shadowPipelines.getOrPut(mesh.id) {
             val depthShader = mesh.depthShader
                 ?: mesh.depthShaderConfig?.let { cfg -> DepthShader(cfg.copy(outputLinearDepth = false, outputNormals = false)) }
@@ -73,22 +81,22 @@ open class DepthMapPass(drawNode: Node, config: Config) : OffscreenRenderPass2d(
     companion object {
         var defaultMaxNumberOfJoints = 16
 
-        fun defaultSetup(width: Int, height: Int) = renderPassConfig {
-            name = "DepthMapPass"
-            size(width, height)
-            colorTargetNone()
-            depthTargetTexture(isUsedAsShadowMap = false)
-        }
+        val defaultRenderPassAttachmentConfig = AttachmentConfig(
+            ColorAttachmentNone,
+            DepthAttachmentTexture()
+        )
     }
 }
 
-class NormalLinearDepthMapPass(drawNode: Node, config: Config) : DepthMapPass(drawNode, config) {
-
-    constructor(drawNode: Node, width: Int, height: Int = width) : this(drawNode, normalLinearDepthSetup(width, height))
+class NormalLinearDepthMapPass(
+    drawNode: Node,
+    attachmentConfig: AttachmentConfig = defaultRenderPassAttachmentConfig,
+    initialSize: Vec2i = Vec2i(128, 128),
+    name: String = UniqueId.nextId("normal-linear-depth-map-pass")
+) : DepthMapPass(drawNode, attachmentConfig, initialSize, name) {
 
     init {
         mirrorIfInvertedClipY()
-        name = "NormalLinearDepthMapPass"
         onAfterCollectDrawCommands += {
             clearColor = Color(0f, 1f, 0f, 1f)
         }
@@ -98,6 +106,7 @@ class NormalLinearDepthMapPass(drawNode: Node, config: Config) : DepthMapPass(dr
         if (!mesh.geometry.hasAttribute(Attribute.POSITIONS) || !mesh.geometry.hasAttribute(Attribute.NORMALS)) {
             return null
         }
+        // todo: create shared shader
         return shadowPipelines.getOrPut(mesh.id) {
             val depthShader = mesh.normalLinearDepthShader
                 ?: mesh.depthShaderConfig?.let { cfg -> DepthShader(cfg.copy(outputLinearDepth = true, outputNormals = true)) }
@@ -120,11 +129,8 @@ class NormalLinearDepthMapPass(drawNode: Node, config: Config) : DepthMapPass(dr
     }
 
     companion object {
-        private fun normalLinearDepthSetup(width: Int, height: Int) = renderPassConfig {
-            name = "NormalLinearDepthMapPass"
-            size(width, height)
-            depthTargetRenderBuffer()
-            colorTargetTexture(TexFormat.RGBA_F16)
-        }
+        val defaultRenderPassAttachmentConfig = AttachmentConfig(
+            ColorAttachmentTextures(listOf(TextureAttachmentConfig(textureFormat = TexFormat.RGBA_F16)))
+        )
     }
 }

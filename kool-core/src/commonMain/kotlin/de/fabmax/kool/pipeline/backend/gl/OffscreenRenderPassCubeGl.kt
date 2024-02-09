@@ -37,7 +37,7 @@ class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, val backend
                 // use fast texture copy method, requires OpenGL 4.3 or higher
                 gl.copyTexturesFast(this)
             } else {
-                for (mipLevel in 0 until parent.mipLevels) {
+                for (mipLevel in 0 until parent.numTextureMipLevels) {
                     copyToTexturesCompat(mipLevel)
                 }
             }
@@ -101,11 +101,14 @@ class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, val backend
     }
 
     private fun createBuffers() {
-        if (parent.colorAttachment is OffscreenRenderPass.TextureColorAttachment) {
-            createColorTex(parent.colorAttachment)
+        if (parent.colorAttachments is OffscreenRenderPass.ColorAttachmentTextures) {
+            createColorTex(parent.colorAttachments)
         }
+        //if (parent.depthAttachment is OffscreenRenderPass.TextureDepthAttachment) {
+        //    createDepthTexture(parent.depthAttachment)
+        //}
 
-        for (i in 0 until parent.mipLevels) {
+        for (i in 0 until parent.numRenderMipLevels) {
             val fbo = gl.createFramebuffer()
             val rbo = gl.createRenderbuffer()
 
@@ -114,7 +117,7 @@ class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, val backend
 
             gl.bindFramebuffer(gl.FRAMEBUFFER, fbo)
             gl.bindRenderbuffer(gl.RENDERBUFFER, rbo)
-            gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT24, mipWidth, mipHeight)
+            gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT32F, mipWidth, mipHeight)
             gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, rbo)
 
             fbos += fbo
@@ -127,13 +130,13 @@ class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, val backend
         isCreated = true
     }
 
-    private fun createColorTex(colorAttachment: OffscreenRenderPass.TextureColorAttachment) {
+    private fun createColorTex(colorAttachment: OffscreenRenderPass.ColorAttachmentTextures) {
         val parentTex = parent.colorTexture!!
-        val format = colorAttachment.attachments[0].colorFormat
+        val format = colorAttachment.attachments[0].textureFormat
         val intFormat = format.glInternalFormat(gl)
         val width = parent.width
         val height = parent.height
-        val mipLevels = parent.mipLevels
+        val mipLevels = parent.numTextureMipLevels
 
         val estSize = Texture.estimatedTexSize(width, height, 6, mipLevels, format.pxSize).toLong()
         val tex = LoadedTextureGl(gl.TEXTURE_CUBE_MAP, gl.createTexture(), backend, parentTex, estSize)
@@ -151,7 +154,7 @@ class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, val backend
         val intFormat = props.format.glInternalFormat(gl)
         val width = parent.width
         val height = parent.height
-        val mipLevels = parent.mipLevels
+        val mipLevels = parent.numTextureMipLevels
 
         val estSize = Texture.estimatedTexSize(width, height, 6, mipLevels, props.format.pxSize).toLong()
         val tex = LoadedTextureGl(gl.TEXTURE_CUBE_MAP, gl.createTexture(), backend, this, estSize)

@@ -1,5 +1,6 @@
 package de.fabmax.kool.pipeline.ibl
 
+import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.lang.*
@@ -9,25 +10,23 @@ import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
 import de.fabmax.kool.pipeline.OffscreenRenderPass2d
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.Texture2d
-import de.fabmax.kool.pipeline.renderPassConfig
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.addTextureMesh
 import de.fabmax.kool.util.launchDelayed
 import de.fabmax.kool.util.logD
-import kotlin.math.max
 
 class RgbeDecoder(parentScene: Scene, hdriTexture: Texture2d, brightness: Float = 1f) :
-    OffscreenRenderPass2d(Node(), renderPassConfig {
-        name = "RgbeDecoder"
-        colorTargetTexture(TexFormat.RGBA_F16)
-        enableMipLevels(drawMipLevels = false)
-
-        val w = hdriTexture.loadedTexture?.width ?: 1024
-        val h = hdriTexture.loadedTexture?.height ?: 512
-        val sz = max(w, h)
-        size(sz, sz)
-    }) {
+    OffscreenRenderPass2d(
+        Node(),
+        AttachmentConfig(
+            ColorAttachmentTextures(listOf(TextureAttachmentConfig(TexFormat.RGBA_F16))),
+            mipLevels = MipMode.Generate
+        ),
+        Vec2i(hdriTexture.loadedTexture?.width ?: 1024, hdriTexture.loadedTexture?.height ?: 512),
+        name = "rgbe-decoder"
+    )
+{
 
     var isAutoRemove = true
 

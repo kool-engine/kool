@@ -1,10 +1,7 @@
 package de.fabmax.kool.pipeline.deferred
 
 import de.fabmax.kool.KoolSystem
-import de.fabmax.kool.math.MutableVec2f
-import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.math.randomF
-import de.fabmax.kool.math.randomI
+import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.modules.ksl.blocks.convertColorSpace
@@ -22,11 +19,11 @@ import kotlin.random.Random
 class ReflectionPass(val baseReflectionStep: Float) :
     OffscreenRenderPass2d(
         Node(),
-        renderPassConfig {
-            name = "ReflectionPass"
-            colorTargetTexture(TexFormat.RGBA)
-        }
-    ) {
+        colorAttachmentNoDepth(TexFormat.RGBA),
+        Vec2i(128),
+        name = "reflection-denoise"
+    )
+{
 
     private val ssrShader = ReflectionShader()
 
@@ -71,7 +68,6 @@ class ReflectionPass(val baseReflectionStep: Float) :
         var noiseScale by uniform2f("uNoiseScale")
     }
 
-    // fixme: screen-space-reflections break if OpenGL zero-to-one depth is used. Why?
     private fun ssrShaderModel() = KslProgram("Screen space reflection pass").apply {
         val texCoord = interStageFloat2("uv")
 

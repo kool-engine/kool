@@ -16,8 +16,8 @@ class DeferredOutputShader(cfg: DeferredPipelineConfig, bloom: Texture2d?) :
             cullMethod = CullMethod.NO_CULLING,
             depthTest = cfg.outputDepthTest
         )
-    ) {
-
+    )
+{
     var bloomMap by texture2d("bloom", bloom)
 
     private var currentLighting by texture2d("currentLighting")

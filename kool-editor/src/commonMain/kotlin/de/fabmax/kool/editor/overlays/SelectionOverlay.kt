@@ -5,6 +5,7 @@ import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.model.NodeModel
 import de.fabmax.kool.editor.model.SceneModel
 import de.fabmax.kool.math.Vec2f
+import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.modules.ksl.lang.*
@@ -84,13 +85,9 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
     inner class SelectionPass(editor: KoolEditor) : OffscreenRenderPass2d(
         // drawNode will be replaced by content scene, once it is loaded
         Node(),
-        renderPassConfig {
-            name = "SelectionPass"
-            colorTargetTexture(1) {
-                colorFormat = TexFormat.R
-                defaultSamplerSettings = defaultSamplerSettings.nearest()
-            }
-        }
+        AttachmentConfig(ColorAttachmentTextures(listOf(TextureAttachmentConfig(TexFormat.R, SamplerSettings().nearest())))),
+        Vec2i(128),
+        name = "selection-overlay"
     ) {
         private val selectionPipelines = mutableMapOf<Int, ShaderAndPipeline?>()
 

@@ -1,11 +1,15 @@
 package de.fabmax.kool.pipeline.ibl
 
+import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.lang.KslProgram
 import de.fabmax.kool.modules.ksl.lang.div
 import de.fabmax.kool.modules.ksl.lang.y
-import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.FullscreenShaderUtil
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenCubeVertexStage
+import de.fabmax.kool.pipeline.OffscreenRenderPassCube
+import de.fabmax.kool.pipeline.TexFormat
+import de.fabmax.kool.pipeline.Texture1d
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.addTextureMesh
@@ -14,11 +18,13 @@ import de.fabmax.kool.util.logD
 import kotlin.math.PI
 
 class GradientCubeGenerator(scene: Scene, gradientTex: Texture1d, size: Int = 128) :
-    OffscreenRenderPassCube(Node(), renderPassConfig {
-        name = "GradientEnvGenerator"
-        size(size, size)
-        colorTargetTexture(TexFormat.RGBA_F16)
-    }) {
+    OffscreenRenderPassCube(
+        Node(),
+        colorAttachmentNoDepth(TexFormat.RGBA_F16),
+        Vec2i(size),
+        name = "gradient-cube"
+    )
+{
 
     init {
         drawNode.apply {

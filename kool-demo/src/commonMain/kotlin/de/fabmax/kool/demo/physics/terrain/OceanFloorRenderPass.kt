@@ -1,8 +1,8 @@
 package de.fabmax.kool.demo.physics.terrain
 
+import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.pipeline.OffscreenRenderPass2d
 import de.fabmax.kool.pipeline.TexFormat
-import de.fabmax.kool.pipeline.renderPassConfig
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.scene.PerspectiveProxyCam
@@ -10,11 +10,13 @@ import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.MdColor
 
 class OceanFloorRenderPass(mainScene: Scene, val terrainTiles: TerrainTiles) :
-    OffscreenRenderPass2d(Node(), renderPassConfig {
-        name = "OceanFloorPass"
-        colorTargetTexture(TexFormat.RGBA)
-        depthTargetTexture(isUsedAsShadowMap = false)
-    }) {
+    OffscreenRenderPass2d(
+        Node(),
+        colorAttachmentTextureDepth(TexFormat.RGBA),
+        Vec2i(128),
+        name = "ocean-floor"
+    )
+{
 
     val renderGroup: Node
         get() = drawNode

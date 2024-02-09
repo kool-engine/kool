@@ -1,21 +1,26 @@
 package de.fabmax.kool.modules.atmosphere
 
+import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.lang.*
-import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.pipeline.FullscreenShaderUtil
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
+import de.fabmax.kool.pipeline.OffscreenRenderPass2d
+import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.addMesh
 import de.fabmax.kool.util.logI
 
 class OpticalDepthLutPass :
-    OffscreenRenderPass2d(Node(), renderPassConfig {
-        name = "OpticalDepthLutPass"
-        size(LUT_SIZE_X, LUT_SIZE_Y)
-        colorTargetTexture(TexFormat.RG_F16)
-        depthTargetRenderBuffer()
-    }) {
+    OffscreenRenderPass2d(
+        Node(),
+        attachmentConfig = colorAttachmentNoDepth(TexFormat.RG_F16),
+        initialSize = Vec2i(LUT_SIZE),
+        name = "optical-depth-lut"
+    )
+{
 
     private val lutShader = OpticalDepthLutShader()
     var atmosphereRadius by lutShader::atmosphereRadius
@@ -131,7 +136,6 @@ class OpticalDepthLutPass :
     }
 
     companion object {
-        const val LUT_SIZE_X = 512
-        const val LUT_SIZE_Y = 512
+        const val LUT_SIZE = 512
     }
 }

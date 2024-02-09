@@ -50,7 +50,7 @@ class KslShaderTest : DemoScene("KslShader") {
             if (light is Light.Directional) {
                 CascadedShadowMap(this, light).apply { setMapRanges(0.05f, 0.25f, 1f) }
             } else {
-                SimpleShadowMap(this, light, 2048)
+                SimpleShadowMap(this, light, mapSize = 2048)
             }
         }
 

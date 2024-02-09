@@ -2,13 +2,14 @@ package de.fabmax.kool.demo.helloworld
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.DemoScene
+import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.deg
 import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.pipeline.CullMethod
+import de.fabmax.kool.pipeline.OffscreenRenderPass
 import de.fabmax.kool.pipeline.OffscreenRenderPass2d
 import de.fabmax.kool.pipeline.TexFormat
-import de.fabmax.kool.pipeline.renderPassConfig
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Time
@@ -31,10 +32,12 @@ class HelloRenderToTexture : DemoScene("Hello RenderToTexture") {
         backgroundGroup.releaseWith(this)
 
         // setup offscreen pass
-        val off = OffscreenRenderPass2d(backgroundGroup, renderPassConfig {
-            size(512, 512)
-            colorTargetTexture(TexFormat.RGBA)
-        }).apply {
+        val off = OffscreenRenderPass2d(
+            backgroundGroup,
+            OffscreenRenderPass.colorAttachmentDefaultDepth(TexFormat.RGBA),
+            Vec2i(512, 512),
+            name = "render-to-texture"
+        ).apply {
             clearColor = Color.BLACK
             camera.position.set(0f, 1f, 2f)
         }

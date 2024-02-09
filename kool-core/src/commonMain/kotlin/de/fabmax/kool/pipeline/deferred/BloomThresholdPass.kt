@@ -1,13 +1,17 @@
 package de.fabmax.kool.pipeline.deferred
 
 import de.fabmax.kool.math.Vec2f
+import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.lang.*
-import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.pipeline.FullscreenShaderUtil
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
+import de.fabmax.kool.pipeline.OffscreenRenderPass2d
+import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.addMesh
@@ -15,10 +19,13 @@ import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.releaseWith
 
 class BloomThresholdPass(deferredPipeline: DeferredPipeline, cfg: DeferredPipelineConfig) :
-    OffscreenRenderPass2d(Node(), renderPassConfig {
-        name = "BloomThresholdPass"
-        colorTargetTexture(TexFormat.RGBA_F16)
-    }) {
+    OffscreenRenderPass2d(
+        Node(),
+        colorAttachmentNoDepth(TexFormat.RGBA_F16),
+        initialSize = Vec2i(128),
+        name = "bloom-threshold"
+    )
+{
 
     private val doAvgDownsampling = cfg.bloomAvgDownSampling
     private var samples = 3

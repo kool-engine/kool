@@ -1,5 +1,7 @@
 package de.fabmax.kool.pipeline
 
+import de.fabmax.kool.math.Vec3i
+
 fun ComputeRenderPass(computeShader: ComputeShader, width: Int, height: Int = 1, depth: Int = 1): ComputeRenderPass {
     val pass = ComputeRenderPass(computeShader.name, width, height, depth)
     pass.addTask(computeShader)
@@ -7,14 +9,7 @@ fun ComputeRenderPass(computeShader: ComputeShader, width: Int, height: Int = 1,
 }
 
 class ComputeRenderPass(name: String, width: Int, height: Int = 1, depth: Int = 1) :
-    OffscreenRenderPass(renderPassConfig {
-        this.name = name
-        size(width, height, depth)
-
-        // color and depth target don't apply to ComputeRenderPass and are ignored...
-        colorTargetNone()
-        depthTargetRenderBuffer()
-    })
+    OffscreenRenderPass(renderPassAttachmentConfig, Vec3i(width, height, depth), name)
 {
     override val views: List<View> = emptyList()
 
@@ -45,6 +40,10 @@ class ComputeRenderPass(name: String, width: Int, height: Int = 1, depth: Int = 
             .distinct()
             .filter { !it.isReleased }
             .forEach { it.release() }
+    }
+
+    companion object {
+        private val renderPassAttachmentConfig = AttachmentConfig(ColorAttachmentNone, DepthAttachmentNone)
     }
 
     class Task(val pass: ComputeRenderPass, val shader: ComputeShader) {

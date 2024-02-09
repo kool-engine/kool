@@ -23,11 +23,12 @@ class WgpuOffscreenRenderPassCube(
 
     init {
         val depthTex = when (parentPass.depthAttachment) {
-            is OffscreenRenderPass.RenderBufferDepthAttachment -> TextureCube(
+            is OffscreenRenderPass.DepthAttachmentTexture -> parentPass.depthTexture!!
+            // todo: proper no depth
+            else -> TextureCube(
                 TextureProps(generateMipMaps = false, defaultSamplerSettings = SamplerSettings().clamped()),
                 "${parentPass.name}_depth"
             )
-            is OffscreenRenderPass.TextureDepthAttachment -> parentPass.depthTexture!!
         }
         depthAttachment = RenderAttachment(depthTex, true,  depthTex.name)
         releaseWith(parentPass)
@@ -49,7 +50,7 @@ class WgpuOffscreenRenderPassCube(
         }
 
         render(parentPass, encoder)
-        if (!parentPass.drawMipLevels && parentPass.mipLevels > 1) {
+        if (parentPass.mipMode == RenderPass.MipMode.Generate) {
             colorAttachments.forEach {
                 backend.textureLoader.mipmapGenerator.generateMipLevels(it.descriptor, it.gpuTexture.gpuTexture, encoder)
             }
@@ -135,7 +136,7 @@ class WgpuOffscreenRenderPassCube(
                 target.loadedTexture = copyDst
                 target.loadingState = Texture.LoadingState.LOADED
             }
-            backend.textureLoader.copyTexture2d(gpuTexture.gpuTexture, copyDst.texture.gpuTexture, parentPass.mipLevels, encoder)
+            backend.textureLoader.copyTexture2d(gpuTexture.gpuTexture, copyDst.texture.gpuTexture, parentPass.numTextureMipLevels, encoder)
         }
 
         private fun createTexture(
@@ -150,7 +151,7 @@ class WgpuOffscreenRenderPassCube(
                 format = if (isDepth) GPUTextureFormat.depth32float else texture.props.format.wgpu,
                 usage = usage,
                 dimension = GPUTextureDimension.texture2d,
-                mipLevelCount = parentPass.mipLevels,
+                mipLevelCount = parentPass.numRenderMipLevels,
                 sampleCount = numSamples,
             )
             val tex = backend.createTexture(desc, texture)

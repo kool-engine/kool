@@ -1,5 +1,6 @@
 package de.fabmax.kool.pipeline.ibl
 
+import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.lang.*
@@ -13,12 +14,16 @@ import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.releaseWith
 
 class ReflectionMapPass private constructor(parentScene: Scene, hdriMap: Texture2d?, cubeMap: TextureCube?, size: Int) :
-    OffscreenRenderPassCube(Node(), renderPassConfig {
-        name = "ReflectionMapPass"
-        size(size, size)
-        mipLevels = REFLECTION_MIP_LEVELS
-        colorTargetTexture(TexFormat.RGBA_F16)
-    }) {
+    OffscreenRenderPassCube(
+        Node(),
+        AttachmentConfig(
+            ColorAttachmentTextures(TexFormat.RGBA_F16),
+            mipLevels = MipMode.Render(REFLECTION_MIP_LEVELS)
+        ),
+        Vec2i(size),
+        name = "reflection-map"
+    )
+{
 
     var isAutoRemove = true
 
@@ -47,7 +52,7 @@ class ReflectionMapPass private constructor(parentScene: Scene, hdriMap: Texture
                 pipeline.pipelineData.copy()
             }
             // after mip-level bind group is set we can safely set the mip-level specific uniform values
-            reflectionMapShader.uRoughness = mipLevel.toFloat() / (mipLevels - 1) * 0.55f
+            reflectionMapShader.uRoughness = mipLevel.toFloat() / (numRenderMipLevels - 1) * 0.55f
         }
 
         // this pass only needs to be rendered once, remove it immediately after first render

@@ -1,22 +1,20 @@
 package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.math.Vec2i
+import de.fabmax.kool.math.Vec3i
 import de.fabmax.kool.scene.Node
 
-open class OffscreenRenderPass2dPingPong(config: Config) : OffscreenRenderPass(
-    renderPassConfig {
-        name = config.name
-        size(1, 1)
-    }
-) {
-
+open class OffscreenRenderPass2dPingPong(attachmentConfig: AttachmentConfig, initialSize: Vec2i, name: String) :
+    OffscreenRenderPass(attachmentConfig, Vec3i(initialSize.x, initialSize.y, 1), name)
+{
     var pingPongPasses = 1
 
     val pingContent = Node()
     val pongContent = Node()
 
-    val ping: OffscreenRenderPass2d = OffscreenRenderPass2d(pingContent, config)
-    val pong: OffscreenRenderPass2d = OffscreenRenderPass2d(pongContent, config)
+    val ping: OffscreenRenderPass2d = OffscreenRenderPass2d(pingContent, attachmentConfig, initialSize, "${name}-ping")
+    val pong: OffscreenRenderPass2d = OffscreenRenderPass2d(pongContent, attachmentConfig, initialSize, "${name}-pong")
 
     override var isReverseDepth: Boolean
         get() = ping.isReverseDepth && pong.isReverseDepth
@@ -31,9 +29,9 @@ open class OffscreenRenderPass2dPingPong(config: Config) : OffscreenRenderPass(
     override val views: List<View> = emptyList()
 
     override fun setSize(width: Int, height: Int, depth: Int) {
-        super.setSize(width, height, depth)
-        ping.setSize(width, height, depth)
-        pong.setSize(width, height, depth)
+        super.setSize(width, height, 1)
+        ping.setSize(width, height, 1)
+        pong.setSize(width, height, 1)
     }
 
     override fun update(ctx: KoolContext) {

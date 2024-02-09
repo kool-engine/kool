@@ -3,7 +3,9 @@ package de.fabmax.kool.scene
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.input.Pointer
+import de.fabmax.kool.math.MutableVec3i
 import de.fabmax.kool.math.RayF
+import de.fabmax.kool.math.Vec3i
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.DepthRange
 import de.fabmax.kool.util.*
@@ -154,11 +156,12 @@ open class Scene(name: String? = null) : Node(name) {
         override val views: List<View>
             get() = _views
 
-        override val width: Int
-            get() = KoolSystem.requireContext().windowWidth
-        override val height: Int
-            get() = KoolSystem.requireContext().windowHeight
-        override val depth: Int = 1
+        private val _size: MutableVec3i by lazy {
+            val ctx = KoolSystem.requireContext()
+            MutableVec3i(ctx.windowWidth, ctx.windowHeight, 1)
+        }
+        override val size: Vec3i
+            get() = _size
 
         init {
             parentScene = this@Scene
@@ -178,6 +181,7 @@ open class Scene(name: String? = null) : Node(name) {
         }
 
         override fun update(ctx: KoolContext) {
+            _size.set(ctx.windowWidth, ctx.windowHeight, 1)
             if (useWindowViewport) {
                 ctx.getWindowViewport(viewport)
             }

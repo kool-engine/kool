@@ -1,10 +1,7 @@
 package de.fabmax.kool.pipeline.ao
 
 import de.fabmax.kool.KoolSystem
-import de.fabmax.kool.math.MutableVec2f
-import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.math.Vec2f
-import de.fabmax.kool.math.Vec4f
+import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
@@ -20,11 +17,13 @@ import kotlin.math.*
 import kotlin.random.Random
 
 class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
-    OffscreenRenderPass2d(Node(), renderPassConfig {
-        name = "AmbientOcclusionPass"
-        size(width, height)
-        colorTargetTexture(TexFormat.R)
-    }) {
+    OffscreenRenderPass2d(
+        Node(),
+        colorAttachmentNoDepth(TexFormat.R),
+        Vec2i(width, height),
+        "ambient-occlusion"
+    )
+{
 
     var sceneCam: Camera? = null
 

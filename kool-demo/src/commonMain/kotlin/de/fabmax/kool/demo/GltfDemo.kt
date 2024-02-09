@@ -124,8 +124,8 @@ class GltfDemo : DemoScene("glTF Models") {
             radius = 0.2f
         }
         shadowsForward += listOf(
-            SimpleShadowMap(mainScene, mainScene.lighting.lights[0], 2048, contentGroupForward),
-            SimpleShadowMap(mainScene, mainScene.lighting.lights[1], 2048, contentGroupForward)
+            SimpleShadowMap(mainScene, mainScene.lighting.lights[0], contentGroupForward, mapSize = 2048),
+            SimpleShadowMap(mainScene, mainScene.lighting.lights[1], contentGroupForward, mapSize = 2048)
         )
 
         // load models

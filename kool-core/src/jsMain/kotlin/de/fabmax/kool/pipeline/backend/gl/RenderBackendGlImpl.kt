@@ -3,17 +3,8 @@ package de.fabmax.kool.pipeline.backend.gl
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.configJs
-import de.fabmax.kool.modules.ksl.KslUnlitShader
-import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
-import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
-import de.fabmax.kool.pipeline.OffscreenRenderPass2d
-import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.backend.RenderBackendJs
-import de.fabmax.kool.pipeline.renderPassConfig
 import de.fabmax.kool.platform.JsContext
-import de.fabmax.kool.scene.Node
-import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.scene.addTextureMesh
 import kotlinx.browser.window
 import org.w3c.dom.HTMLCanvasElement
 
@@ -55,27 +46,5 @@ class RenderBackendGlImpl(ctx: KoolContext, canvas: HTMLCanvasElement) :
     override fun renderFrame(ctx: KoolContext) {
         super.renderFrame(ctx)
         GlImpl.gl.finish()
-    }
-
-    private val blitTempFrameBuffer: OffscreenRenderPass2d by lazy {
-        OffscreenRenderPass2d(Node(), renderPassConfig {
-            colorTargetTexture(TexFormat.RGBA)
-            name = "blitTempFrameBuffer"
-        }).apply {
-            clearColor = null
-            clearDepth = false
-        }
-    }
-
-    private val blitScene: Scene by lazy {
-        Scene().apply {
-            addTextureMesh {
-                generateFullscreenQuad()
-                shader = KslUnlitShader {
-                    color { textureColor(blitTempFrameBuffer.colorTexture, gamma = 1f) }
-                    modelCustomizer = { fullscreenQuadVertexStage(null) }
-                }
-            }
-        }
     }
 }

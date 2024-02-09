@@ -14,12 +14,11 @@ import de.fabmax.kool.util.Color
 class ReflectionDenoisePass(reflectionPass: OffscreenRenderPass2d) :
     OffscreenRenderPass2d(
         Node(),
-        renderPassConfig {
-            name = "ReflectionDenoisePass"
-            size(reflectionPass.size)
-            colorTargetTexture(TexFormat.RGBA)
-        }
-    ) {
+        colorAttachmentNoDepth(TexFormat.RGBA),
+        reflectionPass.size.xy,
+        name = "reflection-denoise"
+    )
+{
 
     private lateinit var denoiseShader: DenoiseShader
 
