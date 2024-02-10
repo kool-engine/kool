@@ -275,7 +275,7 @@ data class SamplerSettings(
     /**
      * Compare method to use in case this sampler is used to sample a depth map. Otherwise, compare op is ignored.
      */
-    val compareOp: DepthCompareOp = DepthCompareOp.LESS,
+    val compareOp: DepthCompareOp = DepthCompareOp.ALWAYS,
 ) {
     /**
      * Returns a copy of this [SamplerSettings] with [minFilter] and [magFilter] set to [FilterMethod.NEAREST].

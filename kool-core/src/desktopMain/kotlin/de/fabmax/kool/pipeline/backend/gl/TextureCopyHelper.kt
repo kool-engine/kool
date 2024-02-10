@@ -43,11 +43,11 @@ internal object TextureCopyHelper {
             for (mipLevel in 0 until pass.numTextureMipLevels) {
                 if (pass.colorAttachments is OffscreenRenderPass.ColorAttachmentTextures) {
                     glCopyImageSubData(
-                        renderPass.glColorTex.handle, GlImpl.TEXTURE_CUBE_MAP, mipLevel, 0, 0, 0,
+                        renderPass.colorTextures[0].handle, GlImpl.TEXTURE_CUBE_MAP, mipLevel, 0, 0, 0,
                         target.glTexture.handle, GlImpl.TEXTURE_CUBE_MAP, mipLevel, 0, 0, 0, width, height, 6
                     )
                 } else {
-                    error("Cubemap color copy from renderbuffer is not supported")
+                    error("Render pass needs a color texture attachment to copy from")
                 }
                 width = width shr 1
                 height = height shr 1
@@ -77,10 +77,7 @@ internal object TextureCopyHelper {
                         target.glTexture.handle, GlImpl.TEXTURE_2D, mipLevel, 0, 0, 0, width, height, 1
                     )
                 } else {
-                    glCopyImageSubData(
-                        renderPass.rbos[mipLevel].handle, GlImpl.RENDERBUFFER, 0, 0, 0, 0,
-                        target.glTexture.handle, GlImpl.TEXTURE_2D, mipLevel, 0, 0, 0, width, height, 1
-                    )
+                    error("Render pass needs a color texture attachment to copy from")
                 }
                 width = width shr 1
                 height = height shr 1

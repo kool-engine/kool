@@ -9,7 +9,8 @@ class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, val backend
     private val fbos = mutableListOf<GlFramebuffer>()
     private val rbos = mutableListOf<GlRenderbuffer>()
 
-    internal var glColorTex = gl.NULL_TEXTURE
+    internal val colorTextures = Array(parent.numColorAttachments) { gl.NULL_TEXTURE }
+    internal var depthTexture = gl.NULL_TEXTURE
 
     private var isCreated = false
 
@@ -19,7 +20,10 @@ class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, val backend
         if (viewIndex == 0) {
             gl.bindFramebuffer(gl.FRAMEBUFFER, fbos[mipLevel])
         }
-        attachColorTextures(mipLevel, glColorTex, viewIndex)
+        attachColorTextures(mipLevel, viewIndex)
+        if (depthTexture != gl.NULL_TEXTURE) {
+            attachDepthTexture(mipLevel, viewIndex)
+        }
     }
 
     fun draw() {
@@ -49,7 +53,7 @@ class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, val backend
         gl.bindFramebuffer(gl.FRAMEBUFFER, fbos[mipLevel])
         gl.readBuffer(gl.COLOR_ATTACHMENT0)
         for (face in 0..5) {
-            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + face, glColorTex, mipLevel)
+            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + face, colorTextures[0], mipLevel)
             for (i in parent.copyTargetsColor.indices) {
                 val copyTarget = parent.copyTargetsColor[i]
                 var width = copyTarget.loadedTexture?.width ?: 0
@@ -86,7 +90,8 @@ class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, val backend
             }
         }
 
-        glColorTex = gl.NULL_TEXTURE
+        for (i in colorTextures.indices) { colorTextures[i] = gl.NULL_TEXTURE }
+        depthTexture = gl.NULL_TEXTURE
         isCreated = false
     }
 
@@ -102,11 +107,11 @@ class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, val backend
 
     private fun createBuffers() {
         if (parent.colorAttachments is OffscreenRenderPass.ColorAttachmentTextures) {
-            createColorTex(parent.colorAttachments)
+            createColorTextures(parent.colorAttachments)
         }
-        //if (parent.depthAttachment is OffscreenRenderPass.TextureDepthAttachment) {
-        //    createDepthTexture(parent.depthAttachment)
-        //}
+        if (parent.depthAttachment is OffscreenRenderPass.DepthAttachmentTexture) {
+            createDepthTexture(parent.depthAttachment)
+        }
 
         for (mipLevel in 0 until parent.numRenderMipLevels) {
             val fbo = gl.createFramebuffer()
@@ -115,13 +120,13 @@ class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, val backend
 
             when (parent.colorAttachments) {
                 OffscreenRenderPass.ColorAttachmentNone -> { }
-                is OffscreenRenderPass.ColorAttachmentTextures -> attachColorTextures(mipLevel, glColorTex, 0)
+                is OffscreenRenderPass.ColorAttachmentTextures -> attachColorTextures(mipLevel, 0)
             }
 
             when (parent.depthAttachment) {
                 OffscreenRenderPass.DepthAttachmentRender -> rbos += attachDepthRenderBuffer(mipLevel)
                 OffscreenRenderPass.DepthAttachmentNone -> { }
-                is OffscreenRenderPass.DepthAttachmentTexture -> { TODO() }
+                is OffscreenRenderPass.DepthAttachmentTexture -> attachDepthTexture(mipLevel, 0)
             }
 
             check(gl.checkFramebufferStatus(gl.FRAMEBUFFER) == gl.FRAMEBUFFER_COMPLETE) {
@@ -131,12 +136,28 @@ class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, val backend
         isCreated = true
     }
 
-    private fun attachColorTextures(mipLevel: Int, texture: GlTexture, viewIndex: Int) {
+    private fun attachColorTextures(mipLevel: Int, viewIndex: Int) {
+        colorTextures.forEachIndexed { iAttachment, tex ->
+            gl.framebufferTexture2D(
+                target = gl.FRAMEBUFFER,
+                attachment = gl.COLOR_ATTACHMENT0 + iAttachment,
+                textarget = gl.TEXTURE_CUBE_MAP_POSITIVE_X + viewIndex,
+                texture = tex,
+                level = mipLevel
+            )
+        }
+        if (colorTextures.size > 1) {
+            val attachments = IntArray(colorTextures.size) { gl.COLOR_ATTACHMENT0 + it }
+            gl.drawBuffers(attachments)
+        }
+    }
+
+    private fun attachDepthTexture(mipLevel: Int, viewIndex: Int) {
         gl.framebufferTexture2D(
             target = gl.FRAMEBUFFER,
-            attachment = gl.COLOR_ATTACHMENT0,
+            attachment = gl.DEPTH_ATTACHMENT,
             textarget = gl.TEXTURE_CUBE_MAP_POSITIVE_X + viewIndex,
-            texture = texture,
+            texture = depthTexture,
             level = mipLevel
         )
     }
@@ -151,22 +172,45 @@ class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, val backend
         return rbo
     }
 
-    private fun createColorTex(colorAttachment: OffscreenRenderPass.ColorAttachmentTextures) {
-        val parentTex = parent.colorTexture!!
-        val format = colorAttachment.attachments[0].textureFormat
-        val intFormat = format.glInternalFormat(gl)
+    private fun createColorTextures(colorAttachment: OffscreenRenderPass.ColorAttachmentTextures) {
+        for (i in parent.colorTextures.indices) {
+            val parentTex = parent.colorTextures[i]
+            val format = colorAttachment.attachments[i].textureFormat
+            val intFormat = format.glInternalFormat(gl)
+            val width = parent.width
+            val height = parent.height
+            val mipLevels = parent.numTextureMipLevels
+
+            val estSize = Texture.estimatedTexSize(width, height, 6, mipLevels, format.pxSize).toLong()
+            val tex = LoadedTextureGl(gl.TEXTURE_CUBE_MAP, gl.createTexture(), backend, parentTex, estSize)
+            tex.setSize(width, height, 6)
+            tex.bind()
+            tex.applySamplerSettings(parentTex.props.defaultSamplerSettings)
+            gl.texStorage2D(gl.TEXTURE_CUBE_MAP, mipLevels, intFormat, width, height)
+
+            colorTextures[i] = tex.glTexture
+            parentTex.loadedTexture = tex
+            parentTex.loadingState = Texture.LoadingState.LOADED
+        }
+    }
+
+    private fun createDepthTexture(depthAttachment: OffscreenRenderPass.DepthAttachmentTexture) {
+        check(depthAttachment.attachment.textureFormat == TexFormat.R_F32)
+
+        val parentTex = parent.depthTexture!!
+        val intFormat = gl.DEPTH_COMPONENT32F
         val width = parent.width
         val height = parent.height
         val mipLevels = parent.numTextureMipLevels
 
-        val estSize = Texture.estimatedTexSize(width, height, 6, mipLevels, format.pxSize).toLong()
+        val estSize = Texture.estimatedTexSize(width, height, 6, mipLevels, 4).toLong()
         val tex = LoadedTextureGl(gl.TEXTURE_CUBE_MAP, gl.createTexture(), backend, parentTex, estSize)
-        tex.setSize(width, height, 1)
+        tex.setSize(width, height, 6)
         tex.bind()
         tex.applySamplerSettings(parentTex.props.defaultSamplerSettings)
         gl.texStorage2D(gl.TEXTURE_CUBE_MAP, mipLevels, intFormat, width, height)
 
-        glColorTex = tex.glTexture
+        depthTexture = tex.glTexture
         parentTex.loadedTexture = tex
         parentTex.loadingState = Texture.LoadingState.LOADED
     }
@@ -185,19 +229,5 @@ class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, val backend
         gl.texStorage2D(gl.TEXTURE_CUBE_MAP, mipLevels, intFormat, width, height)
         loadedTexture = tex
         loadingState = Texture.LoadingState.LOADED
-    }
-
-    companion object {
-        private val CUBE_VIEWS = Array(6) { i ->
-            when (i) {
-                0 -> OffscreenRenderPassCube.ViewDirection.POS_X
-                1 -> OffscreenRenderPassCube.ViewDirection.NEG_X
-                2 -> OffscreenRenderPassCube.ViewDirection.POS_Y
-                3 -> OffscreenRenderPassCube.ViewDirection.NEG_Y
-                4 -> OffscreenRenderPassCube.ViewDirection.POS_Z
-                5 -> OffscreenRenderPassCube.ViewDirection.NEG_Z
-                else -> throw IllegalStateException()
-            }
-        }
     }
 }
