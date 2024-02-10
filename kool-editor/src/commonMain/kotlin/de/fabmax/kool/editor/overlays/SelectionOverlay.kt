@@ -12,7 +12,7 @@ import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
-import de.fabmax.kool.pipeline.drawqueue.DrawCommand
+import de.fabmax.kool.pipeline.DrawCommand
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.Color

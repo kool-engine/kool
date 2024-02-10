@@ -1,7 +1,6 @@
 package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.math.Vec2i
-import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.pipeline.shading.DepthShader
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node

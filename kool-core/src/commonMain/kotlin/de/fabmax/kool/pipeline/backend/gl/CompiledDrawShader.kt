@@ -4,7 +4,7 @@ import de.fabmax.kool.pipeline.DrawPipeline
 import de.fabmax.kool.pipeline.InputRate
 import de.fabmax.kool.pipeline.PipelineBackend
 import de.fabmax.kool.pipeline.VertexLayout
-import de.fabmax.kool.pipeline.drawqueue.DrawCommand
+import de.fabmax.kool.pipeline.DrawCommand
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.geometry.PrimitiveType
 

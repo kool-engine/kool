@@ -7,7 +7,7 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.DeviceCoordinates
 import de.fabmax.kool.pipeline.backend.RenderBackendJvm
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
-import de.fabmax.kool.pipeline.drawqueue.DrawCommand
+import de.fabmax.kool.pipeline.DrawCommand
 import de.fabmax.kool.platform.GlfwWindow
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.scene.Mesh

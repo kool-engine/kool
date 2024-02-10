@@ -1,6 +1,5 @@
 package de.fabmax.kool.pipeline
 
-import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.BufferedList
 

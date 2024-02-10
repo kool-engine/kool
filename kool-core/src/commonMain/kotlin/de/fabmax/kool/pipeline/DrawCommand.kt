@@ -1,9 +1,7 @@
-package de.fabmax.kool.pipeline.drawqueue
+package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.math.Mat4f
-import de.fabmax.kool.pipeline.DrawPipeline
-import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 

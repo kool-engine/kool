@@ -5,7 +5,7 @@ import de.fabmax.kool.modules.ksl.KslShaderListener
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.ShaderBase
 import de.fabmax.kool.pipeline.UniformBindingMat4fv
-import de.fabmax.kool.pipeline.drawqueue.DrawCommand
+import de.fabmax.kool.pipeline.DrawCommand
 import de.fabmax.kool.util.ShadowMap
 import de.fabmax.kool.util.SimpleShadowMap
 

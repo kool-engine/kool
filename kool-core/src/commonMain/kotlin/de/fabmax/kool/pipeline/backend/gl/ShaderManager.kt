@@ -1,7 +1,7 @@
 package de.fabmax.kool.pipeline.backend.gl
 
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.pipeline.drawqueue.DrawCommand
+import de.fabmax.kool.pipeline.DrawCommand
 import de.fabmax.kool.util.logE
 
 class ShaderManager(val backend: RenderBackendGl) {

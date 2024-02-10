@@ -7,7 +7,7 @@ import de.fabmax.kool.math.toMutableMat4f
 import de.fabmax.kool.modules.ksl.KslShaderListener
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.pipeline.drawqueue.DrawCommand
+import de.fabmax.kool.pipeline.DrawCommand
 
 fun KslProgram.mvpMatrix(): MvpMatrixData {
     return (dataBlocks.find { it is MvpMatrixData } as? MvpMatrixData) ?: MvpMatrixData(this)

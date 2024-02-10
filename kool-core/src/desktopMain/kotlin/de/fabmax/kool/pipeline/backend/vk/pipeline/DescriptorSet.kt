@@ -4,7 +4,7 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.vk.VkSystem
 import de.fabmax.kool.pipeline.backend.vk.callocVkDescriptorSetAllocateInfo
 import de.fabmax.kool.pipeline.backend.vk.callocVkWriteDescriptorSetN
-import de.fabmax.kool.pipeline.drawqueue.DrawCommand
+import de.fabmax.kool.pipeline.DrawCommand
 import de.fabmax.kool.util.memStack
 import org.lwjgl.vulkan.VK10.*
 

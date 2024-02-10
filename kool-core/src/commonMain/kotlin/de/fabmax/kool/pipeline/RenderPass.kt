@@ -4,8 +4,6 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.math.Vec3i
 import de.fabmax.kool.math.getNumMipLevels
-import de.fabmax.kool.pipeline.drawqueue.DrawCommand
-import de.fabmax.kool.pipeline.drawqueue.DrawQueue
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.*
 

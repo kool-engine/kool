@@ -2,7 +2,7 @@ package de.fabmax.kool.modules.ksl
 
 import de.fabmax.kool.pipeline.ComputeRenderPass
 import de.fabmax.kool.pipeline.ShaderBase
-import de.fabmax.kool.pipeline.drawqueue.DrawCommand
+import de.fabmax.kool.pipeline.DrawCommand
 
 interface KslShaderListener {
     fun onShaderCreated(shader: ShaderBase<*>) { }

@@ -8,7 +8,7 @@ import de.fabmax.kool.pipeline.DepthMapPass
 import de.fabmax.kool.pipeline.SamplerSettings
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.backend.DepthRange
-import de.fabmax.kool.pipeline.drawqueue.DrawCommand
+import de.fabmax.kool.pipeline.DrawCommand
 import de.fabmax.kool.scene.*
 import kotlin.math.abs
 import kotlin.math.min

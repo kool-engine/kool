@@ -1,7 +1,6 @@
-package de.fabmax.kool.pipeline.drawqueue
+package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.math.*
-import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.LazyMat4d

@@ -6,7 +6,7 @@ import de.fabmax.kool.modules.ksl.lang.KslDataBlock
 import de.fabmax.kool.modules.ksl.lang.KslProgram
 import de.fabmax.kool.pipeline.ShaderBase
 import de.fabmax.kool.pipeline.UniformBinding4f
-import de.fabmax.kool.pipeline.drawqueue.DrawCommand
+import de.fabmax.kool.pipeline.DrawCommand
 
 fun KslProgram.morphWeightData(): MorphWeightData {
     return (dataBlocks.find { it is MorphWeightData } as? MorphWeightData) ?: MorphWeightData(this)

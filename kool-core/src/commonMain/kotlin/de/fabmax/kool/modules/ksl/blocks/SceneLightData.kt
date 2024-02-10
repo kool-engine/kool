@@ -6,7 +6,7 @@ import de.fabmax.kool.pipeline.BindGroupScope
 import de.fabmax.kool.pipeline.BufferPosition
 import de.fabmax.kool.pipeline.ShaderBase
 import de.fabmax.kool.pipeline.UniformBufferLayout
-import de.fabmax.kool.pipeline.drawqueue.DrawCommand
+import de.fabmax.kool.pipeline.DrawCommand
 import de.fabmax.kool.util.positioned
 import kotlin.math.min
 

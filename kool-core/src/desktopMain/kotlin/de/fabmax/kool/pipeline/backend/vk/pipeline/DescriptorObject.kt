@@ -5,7 +5,7 @@ import de.fabmax.kool.pipeline.backend.vk.LoadedTextureVk
 import de.fabmax.kool.pipeline.backend.vk.VkSystem
 import de.fabmax.kool.pipeline.backend.vk.callocVkDescriptorBufferInfoN
 import de.fabmax.kool.pipeline.backend.vk.callocVkDescriptorImageInfoN
-import de.fabmax.kool.pipeline.drawqueue.DrawCommand
+import de.fabmax.kool.pipeline.DrawCommand
 import de.fabmax.kool.util.MixedBufferImpl
 import de.fabmax.kool.util.logE
 import kotlinx.coroutines.Deferred

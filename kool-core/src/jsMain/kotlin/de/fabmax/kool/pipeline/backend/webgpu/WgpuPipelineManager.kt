@@ -4,7 +4,7 @@ import de.fabmax.kool.pipeline.ComputePipeline
 import de.fabmax.kool.pipeline.ComputeRenderPass
 import de.fabmax.kool.pipeline.DrawPipeline
 import de.fabmax.kool.pipeline.PipelineBase
-import de.fabmax.kool.pipeline.drawqueue.DrawCommand
+import de.fabmax.kool.pipeline.DrawCommand
 
 class WgpuPipelineManager(val backend: RenderBackendWebGpu) {
 

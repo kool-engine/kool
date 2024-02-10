@@ -5,7 +5,7 @@ import de.fabmax.kool.modules.ksl.lang.KslDataBlock
 import de.fabmax.kool.modules.ksl.lang.KslProgram
 import de.fabmax.kool.pipeline.ShaderBase
 import de.fabmax.kool.pipeline.UniformBindingMat4fv
-import de.fabmax.kool.pipeline.drawqueue.DrawCommand
+import de.fabmax.kool.pipeline.DrawCommand
 import kotlin.math.min
 
 class ArmatureData(maxBones: Int, program: KslProgram) : KslDataBlock, KslShaderListener {

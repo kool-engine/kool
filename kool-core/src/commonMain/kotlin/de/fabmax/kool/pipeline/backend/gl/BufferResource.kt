@@ -1,7 +1,7 @@
 package de.fabmax.kool.pipeline.backend.gl
 
 import de.fabmax.kool.pipeline.backend.stats.BufferInfo
-import de.fabmax.kool.pipeline.drawqueue.DrawCommand
+import de.fabmax.kool.pipeline.DrawCommand
 import de.fabmax.kool.util.*
 
 class BufferResource(val target: Int, val backend: RenderBackendGl, creationInfo: BufferCreationInfo) :
