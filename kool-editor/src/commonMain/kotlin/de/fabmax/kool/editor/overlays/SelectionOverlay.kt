@@ -12,7 +12,6 @@ import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
-import de.fabmax.kool.pipeline.DrawCommand
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.Color
@@ -100,8 +99,9 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
             onAfterCollectDrawCommands += { ev ->
                 // replace regular object shaders by selection shader
                 val q = ev.view.drawQueue
-                for (i in q.commands.indices) {
-                    setupDrawCommand(i, q.commands[i], ev)
+                var i = 0
+                q.forEach {
+                    setupDrawCommand(i++, it, ev)
                 }
             }
         }

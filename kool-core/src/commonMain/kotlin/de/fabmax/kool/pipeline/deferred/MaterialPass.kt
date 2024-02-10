@@ -68,7 +68,7 @@ class MaterialPass(pipeline: DeferredPipeline, suffix: String) :
     }
 
     override fun afterCollectDrawCommands(updateEvent: UpdateEvent) {
-        val it = mainView.drawQueue.commands.iterator()
+        val it = mainView.drawQueue.iterator()
         while (it.hasNext()) {
             val cmd = it.next()
             if (!cmd.mesh.isOpaque) {

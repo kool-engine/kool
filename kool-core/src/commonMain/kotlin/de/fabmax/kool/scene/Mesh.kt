@@ -228,7 +228,7 @@ open class Mesh(
             }
             rayTest.onMeshDataChanged(this)
         }
-        updateEvent.view.appendMeshToDrawQueue(this, updateEvent)
+        updateEvent.view.drawQueue.addMesh(this, updateEvent)
     }
 
     companion object {

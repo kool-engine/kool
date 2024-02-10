@@ -43,6 +43,13 @@ open class Node(name: String? = null) : BaseReleasable() {
     var globalRadius = 0f
         protected set
 
+    /**
+     * Can be used to group nodes in the scene, changing their draw order. These groups will be drawn in ascending
+     * order of their drawGroupId. Nodes within a group (with the same drawGroupId will keep their order).
+     * A drawGroupId of 0 (the default value) will inherit the drawGroupId of the parent node.
+     */
+    var drawGroupId = 0
+
     private val globalCenterMut = MutableVec3f()
     private val globalExtentMut = MutableVec3f()
 
@@ -177,8 +184,15 @@ open class Node(name: String? = null) : BaseReleasable() {
         isRendered = checkIsVisible(updateEvent.camera, updateEvent.ctx)
         if (!isRendered) return
 
+        // determine this Node's drawOrderId
+        val orderId = if (drawGroupId == 0) updateEvent.view.drawQueue.drawGroupId else drawGroupId
+        updateEvent.view.drawQueue.drawGroupId = orderId
+
         for (i in mutChildren.indices) {
             mutChildren[i].collectDrawCommands(updateEvent)
+
+            // restore this Node's drawOrderId in case previous child node has changed it
+            updateEvent.view.drawQueue.drawGroupId
         }
     }
 

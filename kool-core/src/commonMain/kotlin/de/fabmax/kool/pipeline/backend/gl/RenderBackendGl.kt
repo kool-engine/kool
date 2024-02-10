@@ -28,7 +28,6 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
     override val hasComputeShaders: Boolean get() = gl.capabilities.hasComputeShaders
 
     internal val shaderMgr = ShaderManager(this)
-    internal val queueRenderer = QueueRenderer(this)
 
     private val windowViewport = Viewport(0, 0, 0, 0)
     protected val sceneRenderer = SceneRenderPass(numSamples, this)

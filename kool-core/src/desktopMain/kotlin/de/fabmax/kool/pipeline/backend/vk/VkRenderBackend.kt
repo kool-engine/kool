@@ -7,7 +7,6 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.DeviceCoordinates
 import de.fabmax.kool.pipeline.backend.RenderBackendJvm
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
-import de.fabmax.kool.pipeline.DrawCommand
 import de.fabmax.kool.platform.GlfwWindow
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.scene.Mesh
@@ -276,7 +275,7 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
             for (i in group.renderPasses.indices) {
                 val onScreenPass = group.renderPasses[i]
                 for (view in onScreenPass.views) {
-                    mergeQueue += view.drawQueue.commands
+                    view.drawQueue.forEach { mergeQueue += it }
                 }
             }
 
@@ -488,7 +487,10 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
                     for (view in offscreenPass.views) {
                         view.viewport.set(0, 0, offscreenPass.width shr mipLevel, offscreenPass.height shr mipLevel)
                         setViewport(commandBuffer, view.viewport, false)
-                        renderDrawQueue(commandBuffer, view.drawQueue.commands, mipLevel, rp, mipLevels, true)
+
+                        val commands = mutableListOf<DrawCommand>()
+                        view.drawQueue.forEach { commands += it }
+                        renderDrawQueue(commandBuffer, commands, mipLevel, rp, mipLevels, true)
                     }
 
                     vkCmdEndRenderPass(commandBuffer)
@@ -518,7 +520,10 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
 
                         vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE)
                         setViewport(commandBuffer, view.viewport, false)
-                        renderDrawQueue(commandBuffer, view.drawQueue.commands, imageI, rp, 6 * mipLevels, true)
+
+                        val commands = mutableListOf<DrawCommand>()
+                        view.drawQueue.forEach { commands += it }
+                        renderDrawQueue(commandBuffer, commands, imageI, rp, 6 * mipLevels, true)
                         vkCmdEndRenderPass(commandBuffer)
                         vkPassCube.copyView(commandBuffer, cubeView, mipLevel)
                     }

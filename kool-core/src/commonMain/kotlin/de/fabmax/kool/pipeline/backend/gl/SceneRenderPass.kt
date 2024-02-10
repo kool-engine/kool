@@ -10,9 +10,7 @@ import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.addTextureMesh
 import de.fabmax.kool.util.Time
 
-class SceneRenderPass(val numSamples: Int, val backend: RenderBackendGl) {
-    private val gl = backend.gl
-
+class SceneRenderPass(val numSamples: Int, backend: RenderBackendGl): GlRenderPass(backend) {
     private val renderFbo: GlFramebuffer by lazy { gl.createFramebuffer() }
     private val renderColor: GlRenderbuffer by lazy { gl.createRenderbuffer() }
     private val renderDepth: GlRenderbuffer by lazy { gl.createRenderbuffer() }
@@ -38,7 +36,7 @@ class SceneRenderPass(val numSamples: Int, val backend: RenderBackendGl) {
         }
     }
 
-    private val frameBufferSetter = QueueRenderer.FrameBufferSetter { viewIndex, _ ->
+    override fun setupFramebuffer(viewIndex: Int, mipLevel: Int) {
         if (viewIndex == 0) {
             gl.bindFramebuffer(gl.FRAMEBUFFER, renderFbo)
         }
@@ -48,7 +46,7 @@ class SceneRenderPass(val numSamples: Int, val backend: RenderBackendGl) {
         val scenePass = scene.mainRenderPass
         val t = if (scenePass.isProfileTimes) Time.precisionTime else 0.0
 
-        backend.queueRenderer.renderViews(scenePass, frameBufferSetter)
+        renderViews(scenePass)
 
         if (scenePass.isProfileTimes) {
             scenePass.tDraw = Time.precisionTime - t
@@ -117,7 +115,7 @@ class SceneRenderPass(val numSamples: Int, val backend: RenderBackendGl) {
             gl.bindFramebuffer(gl.FRAMEBUFFER, gl.DEFAULT_FRAMEBUFFER)
             blitScene.mainRenderPass.update(ctx)
             blitScene.mainRenderPass.collectDrawCommands(ctx)
-            backend.queueRenderer.renderView(blitScene.mainRenderPass.screenView, 0)
+            renderView(blitScene.mainRenderPass.screenView, 0)
         }
     }
 

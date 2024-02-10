@@ -4,7 +4,10 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.math.Vec3i
 import de.fabmax.kool.math.getNumMipLevels
-import de.fabmax.kool.scene.*
+import de.fabmax.kool.scene.Camera
+import de.fabmax.kool.scene.Lighting
+import de.fabmax.kool.scene.Node
+import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.*
 
 abstract class RenderPass(var name: String) : BaseReleasable() {
@@ -215,10 +218,6 @@ abstract class RenderPass(var name: String) : BaseReleasable() {
 
         internal fun makeUpdateEvent(ctx: KoolContext): UpdateEvent {
             return updateEvent ?: UpdateEvent(this, ctx).also { updateEvent = it }
-        }
-
-        fun appendMeshToDrawQueue(mesh: Mesh, updateEvent: UpdateEvent): DrawCommand {
-            return drawQueue.addMesh(mesh, updateEvent)
         }
 
         internal fun update(ctx: KoolContext) {

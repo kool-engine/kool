@@ -64,7 +64,7 @@ abstract class WgpuRenderPass<T: RenderPass>(
         val h = (viewport.height shr mipLevel).toFloat()
         passEncoder.setViewport(x, y, w, h, 0f, 1f)
 
-        for (cmd in view.drawQueue.commands) {
+        view.drawQueue.forEach { cmd ->
             val isCmdValid = cmd.pipeline != null && cmd.geometry.numIndices > 0
             if (isCmdValid && backend.pipelineManager.bindDrawPipeline(cmd, passEncoderState)) {
                 val insts = cmd.mesh.instances

@@ -3,9 +3,10 @@ package de.fabmax.kool.pipeline.backend.gl
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.stats.OffscreenPassInfo
 
-class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, val backend: RenderBackendGl) : OffscreenPassCubeImpl {
-    private val gl = backend.gl
-
+class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, backend: RenderBackendGl) :
+    GlRenderPass(backend),
+    OffscreenPassCubeImpl
+{
     private val fbos = mutableListOf<GlFramebuffer>()
     private val rbos = mutableListOf<GlRenderbuffer>()
 
@@ -16,7 +17,7 @@ class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, val backend
 
     private val resInfo = OffscreenPassInfo(parent)
 
-    private val frameBufferSetter = QueueRenderer.FrameBufferSetter { viewIndex, mipLevel ->
+    override fun setupFramebuffer(viewIndex: Int, mipLevel: Int) {
         if (viewIndex == 0) {
             gl.bindFramebuffer(gl.FRAMEBUFFER, fbos[mipLevel])
         }
@@ -34,7 +35,7 @@ class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, val backend
 
         val needsCopy = parent.copyTargetsColor.isNotEmpty()
 
-        backend.queueRenderer.renderViews(parent, frameBufferSetter)
+        renderViews(parent)
 
         if (needsCopy) {
             if (gl.capabilities.canFastCopyTextures) {

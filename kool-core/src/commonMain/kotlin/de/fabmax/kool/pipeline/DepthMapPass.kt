@@ -29,8 +29,8 @@ open class DepthMapPass(
         onAfterCollectDrawCommands += { ev ->
             // replace regular object shaders by cheaper shadow versions
             val q = ev.view.drawQueue
-            for (i in q.commands.indices) {
-                setupDrawCommand(q.commands[i], ev)
+            q.forEach {
+                setupDrawCommand(it, ev)
             }
         }
     }

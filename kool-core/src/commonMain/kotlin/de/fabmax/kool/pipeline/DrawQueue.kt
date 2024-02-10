@@ -52,13 +52,32 @@ class DrawQueue(val renderPass: RenderPass, val view: RenderPass.View) {
 
     val invViewMatD: Mat4d get() = lazyInvViewD.get()
 
-    val commands = mutableListOf<DrawCommand>()
     private val commandPool = mutableListOf<DrawCommand>()
+
+    @PublishedApi
+    internal val orderedQueues = mutableListOf(OrderedQueue(0))
+    private var prevQueue = orderedQueues[0]
+
+    var drawGroupId = 0
 
     fun reset(isDoublePrecision: Boolean) {
         this.isDoublePrecision = isDoublePrecision
-        commandPool.addAll(commands)
-        commands.clear()
+
+        var deleteAny = false
+        for (i in orderedQueues.indices) {
+            val queue = orderedQueues[i]
+            if (queue.commands.isEmpty() && queue.groupId != 0) {
+                queue.markDelete = true
+                deleteAny = true
+            }
+            commandPool.addAll(queue.commands)
+            queue.commands.clear()
+        }
+        if (deleteAny) {
+            orderedQueues.removeAll { it.markDelete }
+        }
+
+        drawGroupId = 0
     }
 
     fun setupCamera(camera: Camera) {
@@ -80,6 +99,22 @@ class DrawQueue(val renderPass: RenderPass, val view: RenderPass.View) {
         lazyInvViewD.isDirty = true
     }
 
+    private fun getOrderedQueue(): OrderedQueue {
+        if (prevQueue.groupId == drawGroupId) {
+            return prevQueue
+        }
+        for (i in orderedQueues.indices) {
+            if (orderedQueues[i].groupId == drawGroupId) {
+                prevQueue = orderedQueues[i]
+                return orderedQueues[i]
+            }
+        }
+        prevQueue = OrderedQueue(drawGroupId)
+        orderedQueues.add(prevQueue)
+        orderedQueues.sortBy { it.groupId }
+        return prevQueue
+    }
+
     fun addMesh(mesh: Mesh, updateEvent: RenderPass.UpdateEvent): DrawCommand {
         val cmd = if (commandPool.isNotEmpty()) {
             commandPool.removeAt(commandPool.lastIndex)
@@ -87,7 +122,7 @@ class DrawQueue(val renderPass: RenderPass, val view: RenderPass.View) {
             DrawCommand(this, mesh)
         }
         cmd.setup(mesh, updateEvent)
-        commands.add(cmd)
+        getOrderedQueue().commands.add(cmd)
         return cmd
     }
 
@@ -96,5 +131,54 @@ class DrawQueue(val renderPass: RenderPass, val view: RenderPass.View) {
             throw IllegalArgumentException("DrawCommand does not belong to this DrawQueue")
         }
         commandPool.add(cmd)
+    }
+
+    inline fun forEach(block: (DrawCommand) -> Unit) {
+        for (i in orderedQueues.indices) {
+            val queue = orderedQueues[i]
+            for (j in queue.commands.indices) {
+                block(queue.commands[j])
+            }
+        }
+    }
+
+    fun iterator(): MutableIterator<DrawCommand> = QueueIterator()
+
+    class OrderedQueue(val groupId: Int, val commands: MutableList<DrawCommand> = mutableListOf()) {
+        internal var markDelete = false
+    }
+
+    private inner class QueueIterator : MutableIterator<DrawCommand> {
+        val queueIt = orderedQueues.iterator()
+        var commandIt = nextGroup()
+        var prevCommandIt = commandIt
+
+        override fun hasNext(): Boolean {
+            return commandIt?.hasNext() == true
+        }
+
+        override fun next(): DrawCommand {
+            val it = commandIt!!
+            prevCommandIt = it
+            val next = it.next()
+            if (!it.hasNext()) {
+                commandIt = nextGroup()
+            }
+            return next
+        }
+
+        override fun remove() {
+            prevCommandIt!!.remove()
+        }
+
+        private fun nextGroup(): MutableIterator<DrawCommand>? {
+            while (queueIt.hasNext()) {
+                val it = queueIt.next().commands.iterator()
+                if (it.hasNext()) {
+                    return it
+                }
+            }
+            return null
+        }
     }
 }

@@ -4,9 +4,10 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.stats.OffscreenPassInfo
 import de.fabmax.kool.util.logE
 
-class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, val backend: RenderBackendGl) : OffscreenPass2dImpl {
-    private val gl = backend.gl
-
+class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, backend: RenderBackendGl) :
+    GlRenderPass(backend),
+    OffscreenPass2dImpl
+{
     private val fbos = mutableListOf<GlFramebuffer>()
     private val rbos = mutableListOf<GlRenderbuffer>()
 
@@ -17,7 +18,7 @@ class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, val backend: Re
 
     private val resInfo = OffscreenPassInfo(parent)
 
-    private val frameBufferSetter = QueueRenderer.FrameBufferSetter { viewIndex, mipLevel ->
+    override fun setupFramebuffer(viewIndex: Int, mipLevel: Int) {
         if (viewIndex == 0) {
             gl.bindFramebuffer(gl.FRAMEBUFFER, fbos[mipLevel])
         }
@@ -31,7 +32,7 @@ class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, val backend: Re
 
         val needsCopy = parent.copyTargetsColor.isNotEmpty()
 
-        backend.queueRenderer.renderViews(parent, frameBufferSetter)
+        renderViews(parent)
 
         if (parent.mipMode == RenderPass.MipMode.Generate) {
             for (i in colorTextures.indices) {
