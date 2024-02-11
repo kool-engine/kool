@@ -48,7 +48,7 @@ data class GltfFile(
     val materials: List<GltfMaterial> = emptyList(),
     val meshes: List<GltfMesh> = emptyList(),
     val nodes: List<GltfNode> = emptyList(),
-    //val samplers: List<Sampler> = emptyList(),
+    val samplers: List<GltfSampler> = emptyList(),
     val scene: Int = 0,
     val scenes: List<GltfScene> = emptyList(),
     val skins: List<GltfSkin> = emptyList(),
@@ -106,7 +106,10 @@ data class GltfFile(
             }
             it.jointRefs = it.joints.map { iJt -> nodes[iJt] }
         }
-        textures.forEach { it.imageRef = images[it.source] }
+        textures.forEach {
+            it.imageRef = images[it.source]
+            it.samplerRef = samplers.getOrNull(it.sampler)
+        }
     }
 
     private inner class ModelGenerator(val cfg: GltfLoadConfig) {

@@ -1,6 +1,8 @@
 package de.fabmax.kool.modules.gltf
 
 import de.fabmax.kool.Assets
+import de.fabmax.kool.pipeline.FilterMethod
+import de.fabmax.kool.pipeline.SamplerSettings
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.TextureProps
 import kotlinx.serialization.Serializable
@@ -23,6 +25,8 @@ data class GltfTexture(
 ) {
     @Transient
     lateinit var imageRef: GltfImage
+    @Transient
+    var samplerRef: GltfSampler? = null
 
     @Transient
     private var createdTex: Texture2d? = null
@@ -35,7 +39,20 @@ data class GltfTexture(
             } else {
                 "gltf_tex_$source"
             }
-            createdTex = Texture2d(TextureProps(), name) {
+
+            val sampler = samplerRef ?: GltfSampler()
+            val samplerSettings = SamplerSettings(
+                addressModeU = sampler.addressModeU,
+                addressModeV = sampler.addressModeV,
+                minFilter = sampler.minFilterKool,
+                magFilter = sampler.magFilterKool,
+            )
+            val generateMipMaps = samplerSettings.minFilter != FilterMethod.NEAREST
+
+            createdTex = Texture2d(
+                TextureProps(generateMipMaps = generateMipMaps, defaultSamplerSettings = samplerSettings),
+                name
+            ) {
                 if (uri != null) {
                     Assets.loadTextureData(uri)
                 } else {
