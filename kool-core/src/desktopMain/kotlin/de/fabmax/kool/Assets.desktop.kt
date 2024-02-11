@@ -260,7 +260,7 @@ private object PlatformAssetsImpl : PlatformAssets {
 
     override suspend fun loadAudioClip(assetPath: String): AudioClip {
         val asset = Assets.loadBlobAsset(assetPath)
-        return AudioClipImpl(asset.toArray())
+        return AudioClipImpl(asset.toArray(), assetPath.substringAfterLast('.').lowercase())
     }
 
     private fun renderSvg(inStream: InputStream, props: TextureProps?): TextureData2d {
