@@ -18,6 +18,7 @@ import kotlin.math.max
 internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
 
     private val device: GPUDevice get() = backend.device
+    private val multiSampledDepthTextureCopy = MultiSampledDepthTextureCopy()
     val mipmapGenerator = MipmapGenerator()
 
     fun loadTexture(tex: Texture, data: TextureData) {
@@ -129,6 +130,10 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
                 copySize = intArrayOf(width shr mipLevel, height shr mipLevel, arrayLayers)
             )
         }
+    }
+
+    fun resolveMultiSampledDepthTexture(src: GPUTexture, dst: GPUTexture, encoder: GPUCommandEncoder) {
+        multiSampledDepthTextureCopy.copyTexture(src, dst, encoder)
     }
 
     private fun copyTextureData(src: TextureData, dst: GPUTexture, size: IntArray) {
@@ -252,7 +257,7 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
         private val sampler = device.createSampler(minFilter = GPUFilterMode.linear)
         private val pipelines = mutableMapOf<GPUTextureFormat, GPURenderPipeline>()
 
-        fun getRenderPipeline(format: GPUTextureFormat): GPURenderPipeline = pipelines.getOrPut(format) {
+        private fun getRenderPipeline(format: GPUTextureFormat): GPURenderPipeline = pipelines.getOrPut(format) {
             device.createRenderPipeline(
                 GPURenderPipelineDescriptor(
                     vertex = GPUVertexState(
@@ -310,6 +315,89 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
                     srcView = dstView
                 }
             }
+        }
+    }
+
+    private inner class MultiSampledDepthTextureCopy {
+        private val shaderModule = device.createShaderModule("""
+            var<private> pos: array<vec2f, 4> = array<vec2f, 4>(
+                vec2f(-1.0, 1.0), vec2f(1.0, 1.0),
+                vec2f(-1.0, -1.0), vec2f(1.0, -1.0)
+            );
+
+            struct VertexOutput {
+                @builtin(position) position: vec4f,
+                @location(0) texCoord: vec2f
+            };
+        
+            @vertex
+            fn vertexMain(@builtin(vertex_index) vertexIndex: u32) -> VertexOutput {
+                var output: VertexOutput;
+                output.texCoord = pos[vertexIndex] * vec2f(0.5, -0.5) + vec2f(0.5);
+                output.position = vec4f(pos[vertexIndex], 0.0, 1.0);
+                return output;
+            }
+        
+            @group(0) @binding(0) var img: texture_multisampled_2d<f32>;
+        
+            @fragment
+            fn fragmentMain(@location(0) texCoord: vec2f) -> @builtin(frag_depth) f32 {
+                let dim = vec2f(textureDimensions(img));
+                return textureLoad(img, vec2u(texCoord * dim), 0).x;
+            }
+        """.trimIndent())
+
+        private val pipelines = mutableMapOf<GPUTextureFormat, GPURenderPipeline>()
+
+        private fun getRenderPipeline(format: GPUTextureFormat): GPURenderPipeline = pipelines.getOrPut(format) {
+            device.createRenderPipeline(
+                GPURenderPipelineDescriptor(
+                    vertex = GPUVertexState(
+                        module = shaderModule,
+                        entryPoint = "vertexMain"
+                    ),
+                    fragment = GPUFragmentState(
+                        module = shaderModule,
+                        entryPoint = "fragmentMain",
+                        targets = arrayOf()
+                    ),
+                    depthStencil = GPUDepthStencilState(
+                        format = format,
+                        depthWriteEnabled = true,
+                        depthCompare = GPUCompareFunction.always
+                    ),
+                    primitive = GPUPrimitiveState(topology = GPUPrimitiveTopology.triangleStrip),
+                    layout = GPUAutoLayoutMode.auto
+                )
+            )
+        }
+
+        fun copyTexture(src: GPUTexture, dst: GPUTexture, cmdEncoder: GPUCommandEncoder) {
+            val pipeline = getRenderPipeline(src.format)
+
+            val srcView = src.createView()
+            val dstView = dst.createView()
+            val passEncoder = cmdEncoder.beginRenderPass(
+                colorAttachments = emptyArray(),
+                depthStencilAttachment = GPURenderPassDepthStencilAttachment(
+                    view = dstView,
+                    depthLoadOp = GPULoadOp.clear,
+                    depthStoreOp = GPUStoreOp.store
+                )
+            )
+            val bindGroup = device.createBindGroup(
+                layout = pipeline.getBindGroupLayout(0),
+                entries = arrayOf(
+                    GPUBindGroupEntry(
+                        binding = 0,
+                        resource = srcView
+                    ),
+                )
+            )
+            passEncoder.setPipeline(pipeline)
+            passEncoder.setBindGroup(0, bindGroup)
+            passEncoder.draw(4)
+            passEncoder.end()
         }
     }
 }

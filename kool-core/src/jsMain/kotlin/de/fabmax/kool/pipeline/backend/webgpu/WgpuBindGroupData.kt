@@ -20,7 +20,7 @@ class WgpuBindGroupData(
     var bindGroup: GPUBindGroup? = null
         private set
 
-    fun bind(passEncoderState: PassEncoderState, renderPass: RenderPass) {
+    fun bind(passEncoderState: PassEncoderState<*>, renderPass: RenderPass) {
         for (i in textureBindings.indices) {
             val tex = textureBindings[i]
             if (tex.binding.texture?.loadedTexture !== tex.loadedTex) {

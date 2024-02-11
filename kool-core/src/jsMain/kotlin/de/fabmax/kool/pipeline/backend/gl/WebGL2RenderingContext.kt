@@ -31,6 +31,7 @@ abstract external class WebGL2RenderingContext : WebGLRenderingContext {
         val DEPTH: Int
         val STENCIL: Int
         val DEPTH_STENCIL: Int
+        val DEPTH_COMPONENT: Int
         val DRAW_FRAMEBUFFER: Int
         val READ_FRAMEBUFFER: Int
 

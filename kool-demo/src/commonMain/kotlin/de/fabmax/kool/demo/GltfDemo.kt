@@ -19,7 +19,6 @@ import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
 import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.roundToInt
@@ -130,12 +129,14 @@ class GltfDemo : DemoScene("glTF Models") {
 
         // load models
         models.map {
-            Assets.async {
-                showLoadText("Loading ${it.name}")
+            it to Assets.async {
                 it.load(false)
                 it.load(true)
             }
-        }.awaitAll()
+        }.forEach { (model, deferred) ->
+            showLoadText("Loading ${model.name}")
+            deferred.await()
+        }
     }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {

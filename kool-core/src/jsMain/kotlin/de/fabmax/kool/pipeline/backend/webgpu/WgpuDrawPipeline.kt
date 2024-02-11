@@ -3,7 +3,6 @@ package de.fabmax.kool.pipeline.backend.webgpu
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.stats.PipelineInfo
 import de.fabmax.kool.pipeline.backend.wgsl.WgslLocations
-import de.fabmax.kool.pipeline.DrawCommand
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.RenderLoop
@@ -148,7 +147,7 @@ class WgpuDrawPipeline(
             }
     }
 
-    private fun createRenderPipeline(passEncoderState: PassEncoderState): GPURenderPipeline {
+    private fun createRenderPipeline(passEncoderState: PassEncoderState<*>): GPURenderPipeline {
         val renderPass = passEncoderState.renderPass
         val gpuRenderPass = passEncoderState.gpuRenderPass
 
@@ -226,7 +225,7 @@ class WgpuDrawPipeline(
         )
     }
 
-    fun bind(cmd: DrawCommand, passEncoderState: PassEncoderState): Boolean {
+    fun bind(cmd: DrawCommand, passEncoderState: PassEncoderState<*>): Boolean {
         users.add(cmd.mesh.id)
 
         val pipeline = cmd.pipeline!!

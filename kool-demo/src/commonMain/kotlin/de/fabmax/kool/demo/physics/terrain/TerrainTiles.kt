@@ -16,9 +16,6 @@ class TerrainTiles(val terrain: Terrain, val sky: Sky) : Node() {
     private val meshes = mutableMapOf<Vec2i, Mesh>()
 
     init {
-        // draw terrain early and capture framebuffer after it, so that it can be used by the ocean shader
-        drawGroupId = -100
-
         isFrustumChecked = false
         for (y in 0 until TILE_CNT_XY) {
             for (x in 0 until TILE_CNT_XY) {
@@ -27,7 +24,8 @@ class TerrainTiles(val terrain: Terrain, val sky: Sky) : Node() {
                     Attribute.NORMALS,
                     Attribute.TEXTURE_COORDS,
                     Terrain.TERRAIN_GRID_COORDS,
-                    Attribute.TANGENTS
+                    Attribute.TANGENTS,
+                    name = "terrain-tile[$x,$y]"
                 ) {
                     meshes[Vec2i(x, y)] = this
                     generate {

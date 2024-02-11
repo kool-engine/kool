@@ -27,7 +27,7 @@ class Ocean(terrainTiles: TerrainTiles, val camera: Camera, val wind: Wind, val 
             oceanMesh.shader = value?.shader
         }
 
-    val oceanMesh = Mesh(IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS), instances = oceanInstances).apply {
+    val oceanMesh = Mesh(IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS), instances = oceanInstances, name = "ocean-mesh").apply {
         isFrustumChecked = false
         isCastingShadow = false
         generate {

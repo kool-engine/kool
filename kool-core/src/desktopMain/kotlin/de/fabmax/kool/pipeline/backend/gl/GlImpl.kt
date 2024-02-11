@@ -28,6 +28,7 @@ object GlImpl : GlApi {
     override val DEPTH_BUFFER_BIT = GL_DEPTH_BUFFER_BIT
     override val DEPTH_COMPONENT24 = GL_DEPTH_COMPONENT24
     override val DEPTH_COMPONENT32F = GL_DEPTH_COMPONENT32F
+    override val DEPTH_COMPONENT = GL_DEPTH_COMPONENT
     override val DEPTH_TEST = GL_DEPTH_TEST
     override val DRAW_FRAMEBUFFER = GL_DRAW_FRAMEBUFFER
     override val DYNAMIC_DRAW = GL_DYNAMIC_DRAW
@@ -308,14 +309,6 @@ object GlImpl : GlApi {
             workGroupSize,
             maxInvocations
         )
-    }
-
-    override fun copyTexturesFast(renderPass: OffscreenRenderPass2dGl) {
-        TextureCopyHelper.copyTexturesFast(renderPass, backend)
-    }
-
-    override fun copyTexturesFast(renderPass: OffscreenRenderPassCubeGl) {
-        TextureCopyHelper.copyTexturesFast(renderPass, backend)
     }
 
     override fun readTexturePixels(src: LoadedTextureGl, dst: TextureData) {

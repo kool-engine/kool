@@ -6,7 +6,8 @@ import de.fabmax.kool.input.Pointer
 import de.fabmax.kool.math.MutableVec3i
 import de.fabmax.kool.math.RayF
 import de.fabmax.kool.math.Vec3i
-import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.OffscreenRenderPass
+import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.pipeline.backend.DepthRange
 import de.fabmax.kool.util.*
 
@@ -41,18 +42,6 @@ open class Scene(name: String? = null) : Node(name) {
 
     val offscreenPasses: BufferedList<OffscreenRenderPass> = BufferedList()
     internal val sortedOffscreenPasses = mutableListOf<OffscreenRenderPass>()
-
-    var framebufferCaptureMode = FramebufferCaptureMode.Disabled
-    val capturedFramebuffer by lazy {
-        Texture2d(
-            name = "$name.capturedFramebuffer",
-            props = TextureProps(
-                format = TexFormat.RGBA,
-                generateMipMaps = false,
-                defaultSamplerSettings = SamplerSettings().clamped().nearest()
-            )
-        )
-    }
 
     val isEmpty: Boolean
         get() = children.isEmpty() && (offscreenPasses.isEmpty() && !offscreenPasses.hasStagedItems)
@@ -125,7 +114,6 @@ open class Scene(name: String? = null) : Node(name) {
             offscreenPasses[i].release()
         }
         offscreenPasses.clear()
-        capturedFramebuffer.dispose()
 
         logD { "Released scene \"$name\"" }
     }

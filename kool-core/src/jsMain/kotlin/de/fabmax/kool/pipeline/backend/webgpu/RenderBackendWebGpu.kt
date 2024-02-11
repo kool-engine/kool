@@ -67,7 +67,9 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
 
         canvasContext = canvas.getContext("webgpu") as GPUCanvasContext
         _canvasFormat = navigator.gpu.getPreferredCanvasFormat()
-        canvasContext.configure(GPUCanvasConfiguration(device, canvasFormat))
+        canvasContext.configure(
+            GPUCanvasConfiguration(device, canvasFormat)
+        )
         textureLoader = WgpuTextureLoader(this)
         logI { "WebGPU context created" }
 
@@ -89,16 +91,8 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         for (i in ctx.scenes.indices) {
             val scene = ctx.scenes[i]
             if (scene.isVisible) {
-                if (scene.framebufferCaptureMode == Scene.FramebufferCaptureMode.BeforeRender) {
-                    sceneRenderer.captureFramebuffer(scene, encoder)
-                }
-
                 scene.renderOffscreenPasses(encoder)
                 sceneRenderer.renderScene(scene.mainRenderPass, encoder)
-
-                if (scene.framebufferCaptureMode == Scene.FramebufferCaptureMode.AfterRender) {
-                    sceneRenderer.captureFramebuffer(scene, encoder)
-                }
             }
         }
 

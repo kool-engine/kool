@@ -12,7 +12,6 @@ import de.fabmax.kool.util.launchDelayed
 open class OffscreenRenderPassCube(drawNode: Node, attachmentConfig: AttachmentConfig, initialSize: Vec2i, name: String) :
     OffscreenRenderPass(attachmentConfig, Vec3i(initialSize.x, initialSize.y, 6), name)
 {
-
     override val views: List<View> = ViewDirection.entries.mapIndexed { i, dir ->
         val cam = PerspectiveCamera()
         cam.fovY = 90f.deg
@@ -36,8 +35,6 @@ open class OffscreenRenderPassCube(drawNode: Node, attachmentConfig: AttachmentC
     val colorTexture: TextureCube?
         get() = colorTextures.getOrNull(0)
 
-    val copyTargetsColor = mutableListOf<TextureCube>()
-
     internal val impl = KoolSystem.requireContext().backend.createOffscreenPassCube(this)
 
     init {
@@ -50,11 +47,13 @@ open class OffscreenRenderPassCube(drawNode: Node, attachmentConfig: AttachmentC
         }
     }
 
-    // todo: improve api
+    /**
+     * Convenience function: Create a single shot FrameCopy of the color attachment.
+     */
     fun copyColor(): TextureCube {
-        val tex = TextureCube(createColorTextureProps(), "$name-${copyTargetsColor.size}")
-        copyTargetsColor += tex
-        return tex
+        val copy = FrameCopy(this, isCopyColor = true, isCopyDepth = false, isSingleShot = true)
+        frameCopies += copy
+        return copy.colorCopyCube
     }
 
     override fun setSize(width: Int, height: Int, depth: Int) {

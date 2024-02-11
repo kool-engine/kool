@@ -1,10 +1,6 @@
 package de.fabmax.kool.pipeline.backend.webgpu
 
-import de.fabmax.kool.pipeline.ComputePipeline
-import de.fabmax.kool.pipeline.ComputeRenderPass
-import de.fabmax.kool.pipeline.DrawPipeline
-import de.fabmax.kool.pipeline.PipelineBase
-import de.fabmax.kool.pipeline.DrawCommand
+import de.fabmax.kool.pipeline.*
 
 class WgpuPipelineManager(val backend: RenderBackendWebGpu) {
 
@@ -12,7 +8,7 @@ class WgpuPipelineManager(val backend: RenderBackendWebGpu) {
     private val fragmentShaderModules = mutableMapOf<String, UsedShaderModule>()
     private val computeShaderModules = mutableMapOf<String, UsedShaderModule>()
 
-    fun bindDrawPipeline(cmd: DrawCommand, passEncoderState: PassEncoderState): Boolean {
+    fun bindDrawPipeline(cmd: DrawCommand, passEncoderState: PassEncoderState<*>): Boolean {
         val drawPipeline = cmd.pipeline!!
         val gpuPipeline = drawPipeline.getWgpuPipeline()
         drawPipeline.update(cmd)

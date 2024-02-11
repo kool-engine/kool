@@ -31,8 +31,6 @@ open class OffscreenRenderPass2d(drawNode: Node, attachmentConfig: AttachmentCon
     val colorTexture: Texture2d?
         get() = colorTextures.getOrNull(0)
 
-    val copyTargetsColor = mutableListOf<Texture2d>()
-
     internal val impl = KoolSystem.requireContext().backend.createOffscreenPass2d(this)
 
     fun addView(name: String, camera: Camera): View {
@@ -41,11 +39,13 @@ open class OffscreenRenderPass2d(drawNode: Node, attachmentConfig: AttachmentCon
         return view
     }
 
-    // todo: improve api
+    /**
+     * Convenience function: Create a single shot FrameCopy of the color attachment.
+     */
     fun copyColor(): Texture2d {
-        val tex = Texture2d(createColorTextureProps(), "$name-copy-${copyTargetsColor.size}")
-        copyTargetsColor += tex
-        return tex
+        val copy = FrameCopy(this, isCopyColor = true, isCopyDepth = false, isSingleShot = true)
+        frameCopies += copy
+        return copy.colorCopy2d
     }
 
     override fun setSize(width: Int, height: Int, depth: Int) {

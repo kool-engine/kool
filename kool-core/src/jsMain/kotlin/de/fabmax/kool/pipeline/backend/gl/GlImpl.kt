@@ -30,6 +30,7 @@ object GlImpl : GlApi {
     override val DEPTH_BUFFER_BIT = WebGLRenderingContext.DEPTH_BUFFER_BIT
     override val DEPTH_COMPONENT24 = WebGL2RenderingContext.DEPTH_COMPONENT24
     override val DEPTH_COMPONENT32F = WebGL2RenderingContext.DEPTH_COMPONENT32F
+    override val DEPTH_COMPONENT = WebGL2RenderingContext.DEPTH_COMPONENT
     override val DEPTH_TEST = WebGLRenderingContext.DEPTH_TEST
     override val DRAW_FRAMEBUFFER = WebGL2RenderingContext.DRAW_FRAMEBUFFER
     override val DYNAMIC_DRAW = WebGLRenderingContext.DYNAMIC_DRAW
@@ -346,14 +347,6 @@ object GlImpl : GlApi {
             canFastCopyTextures,
             hasClipControl
         )
-    }
-
-    override fun copyTexturesFast(renderPass: OffscreenRenderPass2dGl) {
-        throw IllegalStateException("WebGL implementation cannot copy fast")
-    }
-
-    override fun copyTexturesFast(renderPass: OffscreenRenderPassCubeGl) {
-        throw IllegalStateException("WebGL implementation cannot copy fast")
     }
 
     override fun readTexturePixels(src: LoadedTextureGl, dst: TextureData) {

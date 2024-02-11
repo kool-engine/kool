@@ -34,6 +34,7 @@ interface GlApi {
     val DEPTH_BUFFER_BIT: Int
     val DEPTH_COMPONENT24: Int
     val DEPTH_COMPONENT32F: Int
+    val DEPTH_COMPONENT: Int
     val DEPTH_TEST: Int
     val DRAW_FRAMEBUFFER: Int
     val DYNAMIC_DRAW: Int
@@ -263,8 +264,6 @@ interface GlApi {
     fun vertexAttribPointer(index: Int, size: Int, type: Int, normalized: Boolean, stride: Int, offset: Int)
     fun viewport(x: Int, y: Int, width: Int, height: Int)
 
-    fun copyTexturesFast(renderPass: OffscreenRenderPass2dGl)
-    fun copyTexturesFast(renderPass: OffscreenRenderPassCubeGl)
     fun readTexturePixels(src: LoadedTextureGl, dst: TextureData)
 
     fun checkNoError() = check(getError() == 0)

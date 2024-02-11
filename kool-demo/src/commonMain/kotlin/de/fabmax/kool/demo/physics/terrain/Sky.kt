@@ -147,8 +147,6 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
             sky.skyPass.elevation = 90f - acos(-sunDir.y).toDeg()
             sky.skyPass.azimuth = atan2(sunDir.x, -sunDir.z).toDeg()
 
-            sky.irradianceMapPass.copyTargetsColor.clear()
-            sky.reflectionMapPass.copyTargetsColor.clear()
             val skyIrradiance = sky.irradianceMapPass.copyColor()
             val skyReflection = sky.reflectionMapPass.copyColor()
             skies[timeOfDay] = EnvironmentMaps(skyIrradiance, skyReflection)

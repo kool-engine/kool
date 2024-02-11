@@ -1,8 +1,10 @@
 package de.fabmax.kool.modules.ksl.lang
 
+import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ksl.model.KslOp
 import de.fabmax.kool.modules.ksl.model.KslScope
+import de.fabmax.kool.pipeline.backend.NdcYDirection
 import de.fabmax.kool.util.Color
 
 class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val parentStage: KslShaderStage) : KslScope(parentOp) {
@@ -398,6 +400,11 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
             ops += KslDeclareArray(it, initExpr, this)
         }
 
+    fun KslVarVector<KslFloat2, KslFloat1>.flipUvByDeviceCoords(onClipY: NdcYDirection = NdcYDirection.TOP_TO_BOTTOM) {
+        if (KoolSystem.requireContext().backend.deviceCoordinates.ndcYDirection == onClipY) {
+            y set 1f.const - y
+        }
+    }
 
     infix fun <T: KslType> KslAssignable<T>.set(expression: KslExpression<T>) {
         ops += KslAssign(this, expression, this@KslScopeBuilder)

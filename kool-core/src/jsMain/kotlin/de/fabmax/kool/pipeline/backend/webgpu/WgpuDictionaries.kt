@@ -136,16 +136,23 @@ data class GPUBufferDescriptor(
     val label: String = ""
 )
 
-class GPUCanvasConfiguration(
-    @JsName("device")
-    val device: GPUDevice,
-    @JsName("format")
-    val format: GPUTextureFormat,
-    @JsName("colorSpace")
-    val colorSpace: GPUPredefinedColorSpace = GPUPredefinedColorSpace.srgb,
-    @JsName("alphaMode")
-    val alphaMode: GPUCanvasAlphaMode = GPUCanvasAlphaMode.opaque
-)
+interface GPUCanvasConfiguration
+
+fun GPUCanvasConfiguration(
+    device: GPUDevice,
+    format: GPUTextureFormat,
+    usage: Int? = null,
+    colorSpace: GPUPredefinedColorSpace? = null,
+    alphaMode: GPUCanvasAlphaMode? = null
+): GPUCanvasConfiguration {
+    val o = js("({})")
+    o["device"] = device
+    o["format"] = format
+    usage?.let { o["usage"] = it }
+    colorSpace?.let { o["colorSpace"] = it }
+    alphaMode?.let { o["alphaMode"] = it }
+    return o
+}
 
 data class GPUColorDict(
     @JsName("r")

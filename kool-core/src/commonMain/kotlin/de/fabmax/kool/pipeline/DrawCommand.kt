@@ -9,6 +9,8 @@ class DrawCommand(val queue: DrawQueue, mesh: Mesh) {
 
     var mesh: Mesh = mesh
         private set
+    var drawGroupId = 0
+        private set
 
     var geometry: IndexedVertexList = mesh.geometry
     var pipeline: DrawPipeline? = null
@@ -23,8 +25,9 @@ class DrawCommand(val queue: DrawQueue, mesh: Mesh) {
      */
     val modelMatD: Mat4d get() = mesh.modelMatD
 
-    fun setup(mesh: Mesh, updateEvent: RenderPass.UpdateEvent) {
+    fun setup(mesh: Mesh, drawGroupId: Int, updateEvent: RenderPass.UpdateEvent) {
         this.mesh = mesh
+        this.drawGroupId = drawGroupId
         geometry = mesh.geometry
         pipeline = mesh.getOrCreatePipeline(updateEvent)
     }

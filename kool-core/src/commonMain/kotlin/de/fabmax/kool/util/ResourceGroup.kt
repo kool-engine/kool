@@ -26,10 +26,10 @@ class ResourceGroup : BaseReleasable() {
     }
 
     suspend fun loadGroupParallel() {
-        loadables.map {
-            loadInfoCallback?.invoke(it)
-            it.loadAsync()
-        }.forEach { it.await()?.releaseWith(this) }
+        loadables.map { it to it.loadAsync() }.forEach { (loadable, deferred) ->
+            loadInfoCallback?.invoke(loadable)
+            deferred.await()?.releaseWith(this)
+        }
     }
 
     fun hdriGradient(gradient: ColorGradient, name: String = "hdriGradient"): Hdri {

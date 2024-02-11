@@ -37,6 +37,11 @@ abstract class RenderPass(var name: String) : BaseReleasable() {
     abstract val views: List<View>
 
     /**
+     * Frame copies to perform after the entire render pass is done.
+     */
+    val frameCopies = mutableListOf<FrameCopy>()
+
+    /**
      * Determines whether individual [views] are rendered in a single render pass or one separate pass per view.
      *
      * If [ViewRenderMode.SINGLE_RENDER_PASS], each view is rendered with its individual viewport but without applying
@@ -205,6 +210,13 @@ abstract class RenderPass(var name: String) : BaseReleasable() {
         val drawQueue = DrawQueue(this@RenderPass, this)
         var drawFilter: (Node) -> Boolean = { true }
 
+        /**
+         * Frame copies to perform during this view is rendered. This is particularly useful to
+         * capture intermediate render outputs, which can then be used by following draw
+         * operations / shaders.
+         */
+        val frameCopies = mutableListOf<FrameCopy>()
+
         var isUpdateDrawNode = true
         var isReleaseDrawNode = true
 
@@ -214,6 +226,15 @@ abstract class RenderPass(var name: String) : BaseReleasable() {
 
         init {
             viewPipelineData.releaseWith(this@RenderPass)
+        }
+
+        /**
+         * Convenience function to add an item to this view's [frameCopies].
+         */
+        fun copyOutput(isCopyColor: Boolean, isCopyDepth: Boolean, drawGroupId: Int = 0, isSingleShot: Boolean = false): FrameCopy {
+            val copy = FrameCopy(this@RenderPass, isCopyColor, isCopyDepth, drawGroupId, isSingleShot)
+            frameCopies += copy
+            return copy
         }
 
         internal fun makeUpdateEvent(ctx: KoolContext): UpdateEvent {

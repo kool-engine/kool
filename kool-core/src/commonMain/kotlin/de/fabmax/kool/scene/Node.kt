@@ -47,6 +47,9 @@ open class Node(name: String? = null) : BaseReleasable() {
      * Can be used to group nodes in the scene, changing their draw order. These groups will be drawn in ascending
      * order of their drawGroupId. Nodes within a group (with the same drawGroupId will keep their order).
      * A drawGroupId of 0 (the default value) will inherit the drawGroupId of the parent node.
+     *
+     * Draw groups are particularly useful in combination with [RenderPass.View.frameCopies] to capture intermediate
+     * render outputs, which can then be used by following draw operations / shaders.
      */
     var drawGroupId = 0
 
@@ -186,14 +189,14 @@ open class Node(name: String? = null) : BaseReleasable() {
 
         // determine this Node's drawOrderId
         val orderId = if (drawGroupId == 0) updateEvent.view.drawQueue.drawGroupId else drawGroupId
-        updateEvent.view.drawQueue.drawGroupId = orderId
 
         for (i in mutChildren.indices) {
+            // (re-)set this Node's drawOrderId for each child, in case it was changed by previous child
+            updateEvent.view.drawQueue.drawGroupId = orderId
             mutChildren[i].collectDrawCommands(updateEvent)
-
-            // restore this Node's drawOrderId in case previous child node has changed it
-            updateEvent.view.drawQueue.drawGroupId
         }
+        // restore this Node's drawOrderId for subclass implementation (mesh)
+        updateEvent.view.drawQueue.drawGroupId = orderId
     }
 
     /**

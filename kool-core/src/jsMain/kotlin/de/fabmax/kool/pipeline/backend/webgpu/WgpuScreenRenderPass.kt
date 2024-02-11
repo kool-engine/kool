@@ -2,6 +2,7 @@ package de.fabmax.kool.pipeline.backend.webgpu
 
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.configJs
+import de.fabmax.kool.pipeline.FrameCopy
 import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.launchDelayed
@@ -32,55 +33,106 @@ class WgpuScreenRenderPass(backend: RenderBackendWebGpu) :
         render(scenePass, encoder)
     }
 
-    fun captureFramebuffer(scene: Scene, encoder: GPUCommandEncoder) {
-        val src = colorTexture!!
-        val width = src.width
-        val height = src.height
+    override fun generateMipLevels(encoder: GPUCommandEncoder) { }
 
-        val target = scene.capturedFramebuffer
-        var copyDst = (target.loadedTexture as WgpuLoadedTexture?)
-        if (copyDst == null || copyDst.width != width || copyDst.height != height) {
-            copyDst?.let {
-                launchDelayed(1) { it.release() }
+    override fun copy(frameCopy: FrameCopy, encoder: GPUCommandEncoder) {
+        val colorDst = if (frameCopy.isCopyColor) frameCopy.colorCopy2d else null
+        val depthDst = if (frameCopy.isCopyDepth) frameCopy.depthCopy2d else null
+
+        val colorSrc = colorTexture!!
+        val width = colorSrc.width
+        val height = colorSrc.height
+
+        var colorDstWgpu: WgpuLoadedTexture? = null
+        var depthDstWgpu: WgpuLoadedTexture? = null
+
+        colorDst?.let { dst ->
+            var copyDstC = (dst.loadedTexture as WgpuLoadedTexture?)
+            if (copyDstC == null || copyDstC.width != width || copyDstC.height != height) {
+                copyDstC?.let {
+                    launchDelayed(1) { it.release() }
+                }
+
+                val descriptor = GPUTextureDescriptor(
+                    label = colorDst.name,
+                    size = intArrayOf(width, height),
+                    format = backend.canvasFormat,
+                    usage = GPUTextureUsage.COPY_DST or GPUTextureUsage.TEXTURE_BINDING or GPUTextureUsage.RENDER_ATTACHMENT,
+                )
+                val texResource = backend.createTexture(descriptor, dst)
+                copyDstC = WgpuLoadedTexture(texResource)
+                dst.loadedTexture = copyDstC
+                dst.loadingState = Texture.LoadingState.LOADED
             }
-
-            val descriptor = GPUTextureDescriptor(
-                label = "${scene.name}-capturedFramebuffer",
-                size = intArrayOf(width, height),
-                format = backend.canvasFormat,
-                usage = GPUTextureUsage.COPY_DST or GPUTextureUsage.TEXTURE_BINDING or GPUTextureUsage.RENDER_ATTACHMENT,
-            )
-            val texResource = backend.createTexture(descriptor, target)
-            copyDst = WgpuLoadedTexture(texResource)
-            target.loadedTexture = copyDst
-            target.loadingState = Texture.LoadingState.LOADED
+            colorDstWgpu = copyDstC
         }
 
-        if (numSamples > 1) {
+        depthDst?.let { dst ->
+            var copyDstD = (dst.loadedTexture as WgpuLoadedTexture?)
+            if (copyDstD == null || copyDstD.width != width || copyDstD.height != height) {
+                copyDstD?.let {
+                    launchDelayed(1) { it.release() }
+                }
+
+                val descriptor = GPUTextureDescriptor(
+                    label = dst.name,
+                    size = intArrayOf(width, height),
+                    format = depthFormat!!,
+                    usage = GPUTextureUsage.COPY_DST or GPUTextureUsage.TEXTURE_BINDING or GPUTextureUsage.RENDER_ATTACHMENT,
+                )
+                val texResource = backend.createTexture(descriptor, dst)
+                copyDstD = WgpuLoadedTexture(texResource)
+                dst.loadedTexture = copyDstD
+                dst.loadingState = Texture.LoadingState.LOADED
+            }
+            depthDstWgpu = copyDstD
+        }
+
+        if (numSamples > 1 && colorDstWgpu != null) {
             // run an empty render pass, which resolves the multi-sampled color texture into the target capture texture
             val passEncoder = encoder.beginRenderPass(
                 colorAttachments = arrayOf(GPURenderPassColorAttachment(
-                    view = src.createView(),
-                    resolveTarget = copyDst.texture.gpuTexture.createView(),
-                ))
+                    view = colorTextureView!!,
+                    resolveTarget = colorDstWgpu!!.texture.gpuTexture.createView(),
+                )),
             )
             passEncoder.end()
+
         } else {
-            backend.textureLoader.copyTexture2d(src, copyDst.texture.gpuTexture, 1, encoder)
+            colorDstWgpu?.let { copyDst ->
+                backend.textureLoader.copyTexture2d(colorSrc, copyDst.texture.gpuTexture, 1, encoder)
+            }
+        }
+        depthDstWgpu?.let { copyDst ->
+            backend.textureLoader.resolveMultiSampledDepthTexture(depthAttachment!!, copyDst.texture.gpuTexture, encoder)
         }
     }
 
-    override fun getRenderAttachments(renderPass: Scene.SceneRenderPass, viewIndex: Int, mipLevel: Int): RenderAttachments {
+    override fun getRenderAttachments(renderPass: Scene.SceneRenderPass, viewIndex: Int, mipLevel: Int, forceLoad: Boolean): RenderAttachments {
+        val colorLoadOp = when {
+            forceLoad -> GPULoadOp.load
+            renderPass.clearColor == null -> GPULoadOp.load
+            else -> GPULoadOp.clear
+        }
+        val clearColor = if (colorLoadOp == GPULoadOp.load) null else renderPass.clearColor?.let { GPUColorDict(it) }
+
+        val depthLoadOp = when {
+            forceLoad -> GPULoadOp.load
+            renderPass.clearDepth -> GPULoadOp.clear
+            else -> GPULoadOp.load
+        }
+
         val colors = arrayOf(
             GPURenderPassColorAttachment(
                 view = colorTextureView!!,
-                clearValue = renderPass.clearColor?.let { GPUColorDict(it) },
+                loadOp = colorLoadOp,
+                clearValue = clearColor,
                 resolveTarget = canvasContext.getCurrentTexture().createView()
             )
         )
         val depth = GPURenderPassDepthStencilAttachment(
             view = depthAttachmentView!!,
-            depthLoadOp = if (renderPass.clearDepth) GPULoadOp.clear else GPULoadOp.load,
+            depthLoadOp = depthLoadOp,
             depthStoreOp = GPUStoreOp.store,
             depthClearValue = if (renderPass.isReverseDepth) 0f else 1f
         )
@@ -104,7 +156,7 @@ class WgpuScreenRenderPass(backend: RenderBackendWebGpu) :
         val depthDescriptor = GPUTextureDescriptor(
             size = intArrayOf(width, height),
             format = depthFormat!!,
-            usage = GPUTextureUsage.RENDER_ATTACHMENT,
+            usage = GPUTextureUsage.RENDER_ATTACHMENT or GPUTextureUsage.TEXTURE_BINDING,
             sampleCount = numSamples
         )
         depthAttachment = device.createTexture(depthDescriptor).also {

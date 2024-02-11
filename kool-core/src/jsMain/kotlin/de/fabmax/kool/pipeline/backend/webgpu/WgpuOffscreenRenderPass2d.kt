@@ -18,8 +18,6 @@ class WgpuOffscreenRenderPass2d(
     private val depthAttachment: RenderAttachment?
 
     private var copySrcFlag = 0
-    private val isCopyColor: Boolean
-        get() = parentPass.copyTargetsColor.isNotEmpty()
 
     init {
         val depthTex = when (parentPass.depthAttachment) {
@@ -34,44 +32,66 @@ class WgpuOffscreenRenderPass2d(
     }
 
     override fun applySize(width: Int, height: Int) {
-        colorAttachments.forEach { it.applySize(width, height) }
-        depthAttachment?.applySize(width, height)
+        colorAttachments.forEach { it.recreate(width, height) }
+        depthAttachment?.recreate(width, height)
     }
 
     override fun release() { }
 
     fun draw(encoder: GPUCommandEncoder) {
-        if (isCopyColor && copySrcFlag == 0) {
-            // recreate color attachment texture with COPY_SRC flag set
-            // for now, texture copy is limited two first color target
+        val isCopySrc = parentPass.frameCopies.isNotEmpty() || parentPass.views.any { it.frameCopies.isNotEmpty() }
+        if (isCopySrc && copySrcFlag == 0) {
+            // recreate attachment textures with COPY_SRC flag set
             copySrcFlag = GPUTextureUsage.COPY_SRC
-            colorAttachments[0].applySize(parentPass.width, parentPass.height)
+            colorAttachments.forEach { it.recreate(parentPass.width, parentPass.height) }
+            depthAttachment?.recreate(parentPass.width, parentPass.height)
         }
 
         render(parentPass, encoder)
-        if (parentPass.mipMode == RenderPass.MipMode.Generate) {
-            colorAttachments.forEach {
-                backend.textureLoader.mipmapGenerator.generateMipLevels(it.descriptor, it.gpuTexture.gpuTexture, encoder)
-            }
-        }
+    }
 
-        if (parentPass.copyTargetsColor.isNotEmpty()) {
-            parentPass.copyTargetsColor.forEach { target -> colorAttachments[0].copyToTexture(target, encoder) }
+    override fun generateMipLevels(encoder: GPUCommandEncoder) {
+        colorAttachments.forEach {
+            backend.textureLoader.mipmapGenerator.generateMipLevels(it.descriptor, it.gpuTexture.gpuTexture, encoder)
         }
     }
 
-    override fun getRenderAttachments(renderPass: OffscreenRenderPass2d, viewIndex: Int, mipLevel: Int): RenderAttachments {
+    override fun copy(frameCopy: FrameCopy, encoder: GPUCommandEncoder) {
+        if (frameCopy.isCopyColor) {
+            for (i in frameCopy.colorCopy.indices) {
+                colorAttachments[i].copyToTexture(frameCopy.colorCopy[i] as Texture2d, encoder)
+            }
+        }
+        if (frameCopy.isCopyDepth) {
+            depthAttachment?.copyToTexture(frameCopy.depthCopy2d, encoder)
+        }
+    }
+
+    override fun getRenderAttachments(renderPass: OffscreenRenderPass2d, viewIndex: Int, mipLevel: Int, forceLoad: Boolean): RenderAttachments {
         val colors = colorAttachments.mapIndexed { i, colorTex ->
+            val colorLoadOp = when {
+                forceLoad -> GPULoadOp.load
+                renderPass.clearColor == null -> GPULoadOp.load
+                else -> GPULoadOp.clear
+            }
+            val clearColor = if (colorLoadOp == GPULoadOp.load) null else parentPass.clearColors[i]?.let { GPUColorDict(it) }
+
             GPURenderPassColorAttachment(
                 view = colorTex.mipViews[mipLevel],
-                clearValue = parentPass.clearColors[i]?.let { GPUColorDict(it) }
+                loadOp = colorLoadOp,
+                clearValue = clearColor,
             )
         }.toTypedArray()
 
+        val depthLoadOp = when {
+            forceLoad -> GPULoadOp.load
+            renderPass.clearDepth -> GPULoadOp.clear
+            else -> GPULoadOp.load
+        }
         val depth = depthAttachment?.let {
             GPURenderPassDepthStencilAttachment(
                 view = it.mipViews[mipLevel],
-                depthLoadOp = if (parentPass.clearDepth) GPULoadOp.clear else GPULoadOp.load,
+                depthLoadOp = depthLoadOp,
                 depthStoreOp = GPUStoreOp.store,
                 depthClearValue = if (renderPass.isReverseDepth) 0f else 1f
             )
@@ -99,7 +119,7 @@ class WgpuOffscreenRenderPass2d(
             createViews()
         }
 
-        fun applySize(width: Int, height: Int) {
+        fun recreate(width: Int, height: Int) {
             val (desc, tex) = createTexture(
                 width = width,
                 height = height,

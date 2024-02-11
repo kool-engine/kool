@@ -1,5 +1,6 @@
 package de.fabmax.kool.pipeline.backend.webgpu
 
+import de.fabmax.kool.pipeline.FrameCopy
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.util.BaseReleasable
@@ -26,23 +27,36 @@ abstract class WgpuRenderPass<T: RenderPass>(
 
             when (renderPass.viewRenderMode) {
                 RenderPass.ViewRenderMode.SINGLE_RENDER_PASS -> {
-                    val (colorAttachments, depthAttachment) = getRenderAttachments(renderPass, 0, mipLevel)
-                    passEncoderState.reset(encoder.beginRenderPass(colorAttachments, depthAttachment, renderPass.name), renderPass)
+                    passEncoderState.setup(encoder, renderPass)
+                    passEncoderState.begin(0, mipLevel)
                     for (viewIndex in renderPass.views.indices) {
                         renderView(viewIndex, mipLevel, passEncoderState)
                     }
-                    passEncoderState.passEncoder.end()
+                    passEncoderState.end()
                 }
 
                 RenderPass.ViewRenderMode.MULTI_RENDER_PASS -> {
                     for (viewIndex in renderPass.views.indices) {
-                        val (colorAttachments, depthAttachment) = getRenderAttachments(renderPass, viewIndex, mipLevel)
-                        passEncoderState.reset(encoder.beginRenderPass(colorAttachments, depthAttachment, renderPass.name), renderPass)
+                        passEncoderState.setup(encoder, renderPass)
+                        passEncoderState.begin(viewIndex, mipLevel)
                         renderView(viewIndex, mipLevel, passEncoderState)
-                        passEncoderState.passEncoder.end()
+                        passEncoderState.end()
                     }
                 }
             }
+        }
+
+        if (renderPass.mipMode == RenderPass.MipMode.Generate) {
+            generateMipLevels(encoder)
+        }
+
+        var anySingleShots = false
+        for (i in renderPass.frameCopies.indices) {
+            copy(renderPass.frameCopies[i], encoder)
+            anySingleShots = anySingleShots || renderPass.frameCopies[i].isSingleShot
+        }
+        if (anySingleShots) {
+            renderPass.frameCopies.removeAll { it.isSingleShot }
         }
 
         if (renderPass.isProfileTimes) {
@@ -51,8 +65,11 @@ abstract class WgpuRenderPass<T: RenderPass>(
         renderPass.afterDraw()
     }
 
-    private fun renderView(viewIndex: Int, mipLevel: Int, passEncoderState: PassEncoderState) {
-        val passEncoder = passEncoderState.passEncoder
+    protected abstract fun generateMipLevels(encoder: GPUCommandEncoder)
+
+    protected abstract fun copy(frameCopy: FrameCopy, encoder: GPUCommandEncoder)
+
+    private fun renderView(viewIndex: Int, mipLevel: Int, passEncoderState: PassEncoderState<*>) {
         val view = passEncoderState.renderPass.views[viewIndex]
 
         passEncoderState.renderPass.setupView(viewIndex)
@@ -62,49 +79,100 @@ abstract class WgpuRenderPass<T: RenderPass>(
         val y = (viewport.y shr mipLevel).toFloat()
         val w = (viewport.width shr mipLevel).toFloat()
         val h = (viewport.height shr mipLevel).toFloat()
-        passEncoder.setViewport(x, y, w, h, 0f, 1f)
+        passEncoderState.passEncoder.setViewport(x, y, w, h, 0f, 1f)
+
+        // only do copy when last mip-level is rendered
+        val isLastMipLevel = mipLevel == view.renderPass.numRenderMipLevels - 1
+        var nextFrameCopyI = 0
+        var nextFrameCopy = if (isLastMipLevel) view.frameCopies.getOrNull(nextFrameCopyI++) else null
+        var anySingleShots = false
 
         view.drawQueue.forEach { cmd ->
+            nextFrameCopy?.let { frameCopy ->
+                if (cmd.drawGroupId > frameCopy.drawGroupId) {
+                    passEncoderState.end()
+                    copy(frameCopy, passEncoderState.encoder)
+                    passEncoderState.begin(viewIndex, mipLevel, forceLoad = true)
+                    anySingleShots = anySingleShots || frameCopy.isSingleShot
+                    nextFrameCopy = view.frameCopies.getOrNull(nextFrameCopyI++)
+                }
+            }
+
             val isCmdValid = cmd.pipeline != null && cmd.geometry.numIndices > 0
             if (isCmdValid && backend.pipelineManager.bindDrawPipeline(cmd, passEncoderState)) {
                 val insts = cmd.mesh.instances
                 if (insts == null) {
-                    passEncoder.drawIndexed(cmd.geometry.numIndices)
+                    passEncoderState.passEncoder.drawIndexed(cmd.geometry.numIndices)
                     BackendStats.addDrawCommands(1, cmd.geometry.numPrimitives)
                 } else if (insts.numInstances > 0) {
-                    passEncoder.drawIndexed(cmd.geometry.numIndices, insts.numInstances)
+                    passEncoderState.passEncoder.drawIndexed(cmd.geometry.numIndices, insts.numInstances)
                     BackendStats.addDrawCommands(1, cmd.geometry.numPrimitives * insts.numInstances)
                 }
             }
         }
+
+        nextFrameCopy?.let {
+            passEncoderState.end()
+            copy(it, passEncoderState.encoder)
+            passEncoderState.begin(viewIndex, mipLevel, forceLoad = true)
+            anySingleShots = anySingleShots || it.isSingleShot
+        }
+        if (anySingleShots) {
+            view.frameCopies.removeAll { it.isSingleShot }
+        }
     }
 
-    protected abstract fun getRenderAttachments(renderPass: T, viewIndex: Int, mipLevel: Int): RenderAttachments
+    abstract fun getRenderAttachments(renderPass: T, viewIndex: Int, mipLevel: Int, forceLoad: Boolean): RenderAttachments
 
-    protected data class RenderAttachments(
+    data class RenderAttachments(
         val colorAttachments: Array<GPURenderPassColorAttachment>,
         val depthAttachment: GPURenderPassDepthStencilAttachment?
     )
 }
 
-class PassEncoderState(val gpuRenderPass: WgpuRenderPass<*>) {
-    private var _renderPass: RenderPass? = null
+class PassEncoderState<T: RenderPass>(val gpuRenderPass: WgpuRenderPass<T>) {
+    private var _encoder: GPUCommandEncoder? = null
+
+    private var _renderPass: T? = null
     private var _passEncoder: GPURenderPassEncoder? = null
 
+    val encoder: GPUCommandEncoder
+        get() = _encoder!!
     val passEncoder: GPURenderPassEncoder
         get() = _passEncoder!!
-    val renderPass: RenderPass
+    val renderPass: T
         get() = _renderPass!!
+    var isPassActive = false
+        private set
 
     private var renderPipeline: GPURenderPipeline? = null
     private val bindGroups = Array<WgpuBindGroupData?>(4) { null }
 
-    fun reset(passEncoder: GPURenderPassEncoder, renderPass: RenderPass) {
+    fun setup(
+        encoder: GPUCommandEncoder,
+        renderPass: T
+    ) {
+        _encoder = encoder
         _renderPass = renderPass
-        _passEncoder = passEncoder
-        renderPipeline = null
-        for (i in bindGroups.indices) {
-            bindGroups[i] = null
+    }
+
+    fun begin(viewIndex: Int, mipLevel: Int, forceLoad: Boolean = false) {
+        check(!isPassActive)
+
+        val (colorAttachments, depthAttachment) = gpuRenderPass.getRenderAttachments(renderPass, viewIndex, mipLevel, forceLoad)
+        _passEncoder = encoder.beginRenderPass(colorAttachments, depthAttachment, renderPass.name)
+        isPassActive = true
+    }
+
+    fun end() {
+        if (isPassActive) {
+            passEncoder.end()
+            isPassActive = false
+
+            renderPipeline = null
+            for (i in bindGroups.indices) {
+                bindGroups[i] = null
+            }
         }
     }
 

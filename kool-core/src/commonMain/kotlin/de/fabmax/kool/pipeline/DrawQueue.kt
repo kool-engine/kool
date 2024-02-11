@@ -121,7 +121,7 @@ class DrawQueue(val renderPass: RenderPass, val view: RenderPass.View) {
         } else {
             DrawCommand(this, mesh)
         }
-        cmd.setup(mesh, updateEvent)
+        cmd.setup(mesh, drawGroupId, updateEvent)
         getOrderedQueue().commands.add(cmd)
         return cmd
     }

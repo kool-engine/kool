@@ -1,18 +1,16 @@
 package de.fabmax.kool.pipeline.backend.gl
 
-import de.fabmax.kool.KoolContext
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.util.Float32Buffer
 import de.fabmax.kool.util.Time
 
 abstract class GlRenderPass(val backend: RenderBackendGl) {
-    private val colorBufferClearVal = Float32Buffer(4)
-
-    private val ctx: KoolContext = backend.ctx
     protected val gl: GlApi = backend.gl
 
-    fun renderViews(renderPass: RenderPass) {
+    private val colorBufferClearVal = Float32Buffer(4)
+
+    protected fun renderViews(renderPass: RenderPass) {
         val t = if (renderPass.isProfileTimes) Time.precisionTime else 0.0
 
         for (mipLevel in 0 until renderPass.numRenderMipLevels) {
@@ -24,7 +22,7 @@ abstract class GlRenderPass(val backend: RenderBackendGl) {
                     clear(renderPass)
                     for (viewIndex in renderPass.views.indices) {
                         renderPass.setupView(viewIndex)
-                        renderView(renderPass.views[viewIndex], mipLevel)
+                        renderView(renderPass.views[viewIndex], viewIndex, mipLevel)
                     }
                 }
 
@@ -33,10 +31,19 @@ abstract class GlRenderPass(val backend: RenderBackendGl) {
                         setupFramebuffer(viewIndex, mipLevel)
                         clear(renderPass)
                         renderPass.setupView(viewIndex)
-                        renderView(renderPass.views[viewIndex], mipLevel)
+                        renderView(renderPass.views[viewIndex], viewIndex, mipLevel)
                     }
                 }
             }
+        }
+
+        var anySingleShots = false
+        for (i in renderPass.frameCopies.indices) {
+            copy(renderPass.frameCopies[i])
+            anySingleShots = anySingleShots || renderPass.frameCopies[i].isSingleShot
+        }
+        if (anySingleShots) {
+            renderPass.frameCopies.removeAll { it.isSingleShot }
         }
 
         if (renderPass.isProfileTimes) {
@@ -44,7 +51,7 @@ abstract class GlRenderPass(val backend: RenderBackendGl) {
         }
     }
 
-    fun renderView(view: RenderPass.View, mipLevel: Int) {
+    protected fun renderView(view: RenderPass.View, viewIndex: Int, mipLevel: Int) {
         val viewport = view.viewport
         val x = viewport.x shr mipLevel
         val y = viewport.y shr mipLevel
@@ -52,7 +59,23 @@ abstract class GlRenderPass(val backend: RenderBackendGl) {
         val h = viewport.height shr mipLevel
         gl.viewport(x, y, w, h)
 
+        // only do copy when last mip-level is rendered
+        val isLastMipLevel = mipLevel == view.renderPass.numRenderMipLevels - 1
+        var nextFrameCopyI = 0
+        var nextFrameCopy = if (isLastMipLevel) view.frameCopies.getOrNull(nextFrameCopyI++) else null
+        var anySingleShots = false
+
         view.drawQueue.forEach { cmd ->
+            nextFrameCopy?.let { frameCopy ->
+                if (cmd.drawGroupId > frameCopy.drawGroupId) {
+                    copy(frameCopy)
+                    anySingleShots = anySingleShots || frameCopy.isSingleShot
+                    nextFrameCopy = view.frameCopies.getOrNull(nextFrameCopyI++)
+                    // copy messes up the currently bound frame buffer, restore the correct one
+                    setupFramebuffer(viewIndex, mipLevel)
+                }
+            }
+
             cmd.pipeline?.let { pipeline ->
                 val drawInfo = backend.shaderMgr.bindDrawShader(cmd)
                 val isValid = cmd.geometry.numIndices > 0  &&  drawInfo.isValid && drawInfo.numIndices > 0
@@ -71,9 +94,53 @@ abstract class GlRenderPass(val backend: RenderBackendGl) {
                 }
             }
         }
+
+        nextFrameCopy?.let {
+            copy(it)
+            anySingleShots = anySingleShots || it.isSingleShot
+        }
+        if (anySingleShots) {
+            view.frameCopies.removeAll { it.isSingleShot }
+        }
     }
 
     protected abstract fun setupFramebuffer(viewIndex: Int, mipLevel: Int)
+
+    protected abstract fun copy(frameCopy: FrameCopy)
+
+    protected fun FrameCopy.setupCopyTargets(width: Int, height: Int, mipLevels: Int, glTarget: Int) {
+        val layers = if (glTarget == gl.TEXTURE_CUBE_MAP) 6 else 1
+
+        if (isCopyColor) {
+            for (i in colorCopy.indices) {
+                val dst = colorCopy[i]
+                var loaded = dst.loadedTexture as LoadedTextureGl?
+                if (loaded == null || loaded.width != width || loaded.height != height) {
+                    dst.loadedTexture?.release()
+                    createColorAttachmentTexture(width, height, mipLevels, dst, glTarget)
+                    loaded = dst.loadedTexture as LoadedTextureGl
+                    loaded.bind()
+                    loaded.setSize(width, height, layers)
+                    loaded.applySamplerSettings(dst.props.defaultSamplerSettings)
+                    dst.loadedTexture = loaded
+                }
+            }
+        }
+
+        if (isCopyDepth) {
+            val dst = depthCopy2d
+            var loaded = dst.loadedTexture as LoadedTextureGl?
+            if (loaded == null || loaded.width != width || loaded.height != height) {
+                dst.loadedTexture?.release()
+                createDepthAttachmentTexture(width, height, mipLevels, dst, glTarget)
+                loaded = dst.loadedTexture as LoadedTextureGl
+                loaded.bind()
+                loaded.setSize(width, height, layers)
+                loaded.applySamplerSettings(dst.props.defaultSamplerSettings)
+                dst.loadedTexture = loaded
+            }
+        }
+    }
 
     fun clear(renderPass: RenderPass) {
         for (i in renderPass.clearColors.indices) {
@@ -88,6 +155,63 @@ abstract class GlRenderPass(val backend: RenderBackendGl) {
             gl.clearDepth(if (renderPass.isReverseDepth) 0f else 1f)
             gl.clear(gl.DEPTH_BUFFER_BIT)
         }
+    }
+
+    protected fun createAndAttachDepthRenderBuffer(pass: OffscreenRenderPass, mipLevel: Int): GlRenderbuffer {
+        val rbo = gl.createRenderbuffer()
+        val mipWidth = pass.width shr mipLevel
+        val mipHeight = pass.height shr mipLevel
+        gl.bindRenderbuffer(gl.RENDERBUFFER, rbo)
+        gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT32F, mipWidth, mipHeight)
+        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, rbo)
+        return rbo
+    }
+
+    protected fun createColorAttachmentTexture(
+        width: Int,
+        height: Int,
+        mipLevels: Int,
+        colorTexture: Texture,
+        texTarget: Int
+    ): GlTexture {
+        val format = colorTexture.props.format
+        val intFormat = format.glInternalFormat(gl)
+        val layers = if (texTarget == gl.TEXTURE_CUBE_MAP) 6 else 1
+
+        val estSize = Texture.estimatedTexSize(width, height, layers, mipLevels, format.pxSize).toLong()
+        val tex = LoadedTextureGl(texTarget, gl.createTexture(), backend, colorTexture, estSize)
+        tex.setSize(width, height, layers)
+        tex.bind()
+        tex.applySamplerSettings(colorTexture.props.defaultSamplerSettings)
+        gl.texStorage2D(texTarget, mipLevels, intFormat, width, height)
+
+        val glColorTexture = tex.glTexture
+        colorTexture.loadedTexture = tex
+        colorTexture.loadingState = Texture.LoadingState.LOADED
+        return glColorTexture
+    }
+
+    protected fun createDepthAttachmentTexture(
+        width: Int,
+        height: Int,
+        mipLevels: Int,
+        depthTexture: Texture,
+        texTarget: Int
+    ): GlTexture {
+        val intFormat = gl.DEPTH_COMPONENT32F
+        val layers = if (texTarget == gl.TEXTURE_CUBE_MAP) 6 else 1
+
+        val estSize = Texture.estimatedTexSize(width, height, layers, mipLevels, 4).toLong()
+        val tex = LoadedTextureGl(texTarget, gl.createTexture(), backend, depthTexture, estSize)
+        tex.setSize(width, height, layers)
+        tex.bind()
+        tex.applySamplerSettings(depthTexture.props.defaultSamplerSettings)
+        gl.texStorage2D(texTarget, mipLevels, intFormat, width, height)
+
+        val glDepthTexture = tex.glTexture
+        depthTexture.loadedTexture = tex
+        depthTexture.loadingState = Texture.LoadingState.LOADED
+        return glDepthTexture
     }
 
     private object GlState {

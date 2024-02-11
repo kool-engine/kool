@@ -45,9 +45,10 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         toLinear = true)
     ).also { it.releaseWith(mainScene) }
 
+    private val oceanFloorCopy = mainScene.mainRenderPass.screenView.copyOutput(isCopyColor = true, isCopyDepth = true, OCEAN_FLOOW_DRAW_GROUP)
+
     private lateinit var shadowMap: ShadowMap
     private lateinit var ssao: AoPipeline.ForwardAoPipeline
-    private lateinit var oceanFloorPass: OceanFloorRenderPass
     private lateinit var sky: Sky
 
     private lateinit var wind: Wind
@@ -125,7 +126,6 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         terrain = Terrain(this@TerrainDemo, heightMap)
         terrainTiles = TerrainTiles(terrain, sky)
         showLoadText("Creating ocean...")
-        oceanFloorPass = OceanFloorRenderPass(mainScene, terrainTiles)
         ocean = Ocean(terrainTiles, mainScene.camera, wind, sky)
         showLoadText("Creating trees...")
         trees = Trees(terrain, 150, wind, sky)
@@ -154,6 +154,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         physicsObjects.release()
 
         wind.density.release()
+        oceanFloorCopy.release()
 
         KeyboardInput.removeKeyListener(escKeyListener)
         PointerInput.cursorMode = CursorMode.NORMAL
@@ -237,7 +238,6 @@ class TerrainDemo : DemoScene("Terrain Demo") {
             subMaps.forEach {
                 it.directionalCamNearOffset = -200f
                 it.setDefaultDepthOffset(true)
-                oceanFloorPass.dependsOn(it)
             }
         }
 
@@ -264,8 +264,13 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         addNode(sky.skyGroup)
         addNode(physicsObjects.debugLines)
 
-        oceanFloorPass.renderGroup += playerModel
-        boxMesh?.let { oceanFloorPass.renderGroup += it }
+        // set ocean-floor drawGroupId for all objects that can be underwater
+        // by setting the draw group ID these objects are drawn before the frame buffer is captured for the ocean shader
+        // the captured frame buffer then contains color and depth information for these objects, which is then used
+        // by the ocean shader to compute the water color depending on depth and ground color
+        terrainTiles.drawGroupId = OCEAN_FLOOW_DRAW_GROUP
+        playerModel.drawGroupId = OCEAN_FLOOW_DRAW_GROUP
+        boxMesh?.drawGroupId = OCEAN_FLOOW_DRAW_GROUP
 
         // setup camera tracking player
         setupCamera()
@@ -343,7 +348,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
     }
 
     private fun updateOceanShader(isGroundPbr: Boolean) {
-        ocean.oceanShader = OceanShader.makeOceanShader(oceanFloorPass, shadowMap, wind.density, oceanBump, oceanColor, isGroundPbr)
+        ocean.oceanShader = OceanShader.makeOceanShader(oceanFloorCopy, shadowMap, wind.density, oceanBump, oceanColor, isGroundPbr, mainScene.isInfiniteDepth)
     }
 
     private fun updateTreeShader(isVegetationPbr: Boolean) {
@@ -462,6 +467,8 @@ class TerrainDemo : DemoScene("Terrain Demo") {
     }
 
     companion object {
+        private const val OCEAN_FLOOW_DRAW_GROUP = -100
+
         fun KslPbrShader.Config.Builder.iblConfig() {
             isTextureReflection = true
             lightStrength = 3f

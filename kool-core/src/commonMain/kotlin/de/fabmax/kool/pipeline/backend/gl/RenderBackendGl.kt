@@ -30,7 +30,7 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
     internal val shaderMgr = ShaderManager(this)
 
     private val windowViewport = Viewport(0, 0, 0, 0)
-    protected val sceneRenderer = SceneRenderPass(numSamples, this)
+    protected val sceneRenderer = SceneRenderPassGl(numSamples, this)
 
     protected fun setupGl() {
         if (gl.capabilities.hasClipControl) {
@@ -51,20 +51,12 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
         for (i in ctx.scenes.indices) {
             val scene = ctx.scenes[i]
             if (scene.isVisible) {
-                if (scene.framebufferCaptureMode == Scene.FramebufferCaptureMode.BeforeRender) {
-                    sceneRenderer.captureFramebuffer(scene, ctx)
-                }
-
                 doOffscreenPasses(scene)
                 sceneRenderer.draw(scene)
-
-                if (scene.framebufferCaptureMode == Scene.FramebufferCaptureMode.AfterRender) {
-                    sceneRenderer.captureFramebuffer(scene, ctx)
-                }
             }
         }
 
-        sceneRenderer.resolve(ctx)
+        sceneRenderer.resolve(gl.DEFAULT_FRAMEBUFFER, gl.COLOR_BUFFER_BIT)
     }
 
     override fun uploadTextureToGpu(tex: Texture, data: TextureData) {

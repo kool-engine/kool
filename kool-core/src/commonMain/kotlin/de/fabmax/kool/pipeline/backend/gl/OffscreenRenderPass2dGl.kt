@@ -10,6 +10,7 @@ class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, backend: Render
 {
     private val fbos = mutableListOf<GlFramebuffer>()
     private val rbos = mutableListOf<GlRenderbuffer>()
+    private var copyFbo: GlFramebuffer? = null
 
     internal val colorTextures = Array(parent.numColorAttachments) { gl.NULL_TEXTURE }
     internal var depthTexture = gl.NULL_TEXTURE
@@ -19,9 +20,7 @@ class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, backend: Render
     private val resInfo = OffscreenPassInfo(parent)
 
     override fun setupFramebuffer(viewIndex: Int, mipLevel: Int) {
-        if (viewIndex == 0) {
-            gl.bindFramebuffer(gl.FRAMEBUFFER, fbos[mipLevel])
-        }
+        gl.bindFramebuffer(gl.FRAMEBUFFER, fbos[mipLevel])
     }
 
     fun draw() {
@@ -29,8 +28,6 @@ class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, backend: Render
         if (!isCreated) {
             createBuffers()
         }
-
-        val needsCopy = parent.copyTargetsColor.isNotEmpty()
 
         renderViews(parent)
 
@@ -40,43 +37,46 @@ class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, backend: Render
                 gl.generateMipmap(gl.TEXTURE_2D)
             }
         }
-
-        if (needsCopy) {
-            if (gl.capabilities.canFastCopyTextures) {
-                // use fast texture copy method, requires OpenGL 4.3 or higher
-                gl.copyTexturesFast(this)
-            } else {
-                for (mipLevel in 0 until parent.numTextureMipLevels) {
-                    copyToTexturesCompat(mipLevel)
-                }
-            }
-        }
-        gl.bindFramebuffer(gl.FRAMEBUFFER, gl.DEFAULT_FRAMEBUFFER)
     }
 
-    private fun copyToTexturesCompat(mipLevel: Int) {
-        gl.bindFramebuffer(gl.FRAMEBUFFER, fbos[mipLevel])
-        gl.readBuffer(gl.COLOR_ATTACHMENT0)
-        for (i in parent.copyTargetsColor.indices) {
-            val copyTarget = parent.copyTargetsColor[i]
-            var width = copyTarget.loadedTexture?.width ?: 0
-            var height = copyTarget.loadedTexture?.height ?: 0
-            if (width != parent.width || height != parent.height) {
-                // recreate target texture if size has changed
-                copyTarget.loadedTexture?.release()
-                copyTarget.createCopyTexColor(parent, backend)
-                width = copyTarget.loadedTexture!!.width
-                height = copyTarget.loadedTexture!!.height
+    override fun copy(frameCopy: FrameCopy) {
+        val width = parent.width
+        val height = parent.height
+        val mipLevels = parent.numTextureMipLevels
+        frameCopy.setupCopyTargets(width, height, mipLevels, gl.TEXTURE_2D)
+
+        var blitMask = 0
+        if (frameCopy.isCopyColor) blitMask = gl.COLOR_BUFFER_BIT
+        if (frameCopy.isCopyDepth) blitMask = blitMask or gl.DEPTH_BUFFER_BIT
+
+        var mipWidth = width
+        var mipHeight = height
+        val copyFbo = this.copyFbo ?: gl.createFramebuffer().also { this.copyFbo = it }
+        for (mipLevel in 0 until parent.numTextureMipLevels) {
+            gl.bindFramebuffer(gl.FRAMEBUFFER, copyFbo)
+            for (i in frameCopy.colorCopy.indices) {
+                val loaded = frameCopy.colorCopy[i].loadedTexture as LoadedTextureGl
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0 + i, gl.TEXTURE_2D, loaded.glTexture, mipLevel)
             }
-            width = width shr mipLevel
-            height = height shr mipLevel
-            val target = copyTarget.loadedTexture as LoadedTextureGl
-            gl.bindTexture(gl.TEXTURE_2D, target.glTexture)
-            gl.copyTexSubImage2D(gl.TEXTURE_2D, mipLevel, 0, 0, 0, 0, width, height)
+            frameCopy.depthCopy?.let {
+                val loaded = it.loadedTexture as LoadedTextureGl
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, loaded.glTexture, mipLevel)
+            }
+
+            gl.bindFramebuffer(gl.READ_FRAMEBUFFER, fbos[mipLevel])
+            gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, copyFbo)
+            gl.blitFramebuffer(
+                0, 0, mipWidth, mipHeight,
+                0, 0, mipWidth, mipHeight,
+                blitMask, gl.NEAREST
+            )
+            mipWidth = mipWidth shr 1
+            mipHeight = mipHeight shr 1
         }
     }
 
     private fun deleteBuffers() {
+        copyFbo?.let { gl.deleteFramebuffer(it) }
         fbos.forEach { gl.deleteFramebuffer(it) }
         rbos.forEach { gl.deleteRenderbuffer(it) }
         fbos.clear()
@@ -110,10 +110,12 @@ class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, backend: Render
 
     private fun createBuffers() {
         if (parent.colorAttachments is OffscreenRenderPass.ColorAttachmentTextures) {
-            createColorTextures(parent.colorAttachments)
+            parent.colorTextures.forEachIndexed { i, tex ->
+                colorTextures[i] = createColorAttachmentTexture(parent.width, parent.height, parent.numTextureMipLevels, tex, gl.TEXTURE_2D)
+            }
         }
         if (parent.depthAttachment is OffscreenRenderPass.DepthAttachmentTexture) {
-            createDepthTexture(parent.depthAttachment)
+            depthTexture = createDepthAttachmentTexture(parent.width, parent.height, parent.numTextureMipLevels, parent.depthTexture!!, gl.TEXTURE_2D)
         }
 
         for (mipLevel in 0 until parent.numRenderMipLevels) {
@@ -127,7 +129,7 @@ class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, backend: Render
             }
 
             when (parent.depthAttachment) {
-                OffscreenRenderPass.DepthAttachmentRender -> rbos += attachDepthRenderBuffer(mipLevel)
+                OffscreenRenderPass.DepthAttachmentRender -> rbos += createAndAttachDepthRenderBuffer(parent, mipLevel)
                 OffscreenRenderPass.DepthAttachmentNone -> { }
                 is OffscreenRenderPass.DepthAttachmentTexture -> attachDepthTexture(mipLevel)
             }
@@ -155,68 +157,13 @@ class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, backend: Render
         }
     }
 
-    private fun attachDepthTexture(mipLevel: Int) {
-        gl.framebufferTexture2D(
-            target = gl.FRAMEBUFFER,
-            attachment = gl.DEPTH_ATTACHMENT,
-            textarget = gl.TEXTURE_2D,
-            texture = depthTexture,
-            level = mipLevel
-        )
-    }
-
-    private fun attachDepthRenderBuffer(mipLevel: Int): GlRenderbuffer {
-        val rbo = gl.createRenderbuffer()
-        val mipWidth = parent.width shr mipLevel
-        val mipHeight = parent.height shr mipLevel
-        gl.bindRenderbuffer(gl.RENDERBUFFER, rbo)
-        gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT32F, mipWidth, mipHeight)
-        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, rbo)
-        return rbo
-    }
-
-    private fun createColorTextures(colorAttachment: OffscreenRenderPass.ColorAttachmentTextures) {
-        for (i in parent.colorTextures.indices) {
-            val parentTex = parent.colorTextures[i]
-            val format = colorAttachment.attachments[i].textureFormat
-            val intFormat = format.glInternalFormat(gl)
-            val width = parent.width
-            val height = parent.height
-            val mipLevels = parent.numTextureMipLevels
-
-            val estSize = Texture.estimatedTexSize(width, height, 1, mipLevels, format.pxSize).toLong()
-            val tex = LoadedTextureGl(gl.TEXTURE_2D, gl.createTexture(), backend, parentTex, estSize)
-            tex.setSize(width, height, 1)
-            tex.bind()
-            tex.applySamplerSettings(parentTex.props.defaultSamplerSettings)
-            gl.texStorage2D(gl.TEXTURE_2D, mipLevels, intFormat, width, height)
-
-            colorTextures[i] = tex.glTexture
-            parentTex.loadedTexture = tex
-            parentTex.loadingState = Texture.LoadingState.LOADED
-        }
-    }
-
-    private fun createDepthTexture(depthAttachment: OffscreenRenderPass.DepthAttachmentTexture) {
-        check(depthAttachment.attachment.textureFormat == TexFormat.R_F32)
-
-        val parentTex = parent.depthTexture!!
-        val intFormat = gl.DEPTH_COMPONENT32F
-        val width = parent.width
-        val height = parent.height
-        val mipLevels = parent.numTextureMipLevels
-
-        val estSize = Texture.estimatedTexSize(width, height, 1, mipLevels, 4).toLong()
-        val tex = LoadedTextureGl(gl.TEXTURE_2D, gl.createTexture(), backend, parentTex, estSize)
-        tex.setSize(width, height, 1)
-        tex.bind()
-        tex.applySamplerSettings(parentTex.props.defaultSamplerSettings)
-        gl.texStorage2D(gl.TEXTURE_2D, mipLevels, intFormat, width, height)
-
-        depthTexture = tex.glTexture
-        parentTex.loadedTexture = tex
-        parentTex.loadingState = Texture.LoadingState.LOADED
-    }
+    private fun attachDepthTexture(mipLevel: Int) = gl.framebufferTexture2D(
+        target = gl.FRAMEBUFFER,
+        attachment = gl.DEPTH_ATTACHMENT,
+        textarget = gl.TEXTURE_2D,
+        texture = depthTexture,
+        level = mipLevel
+    )
 
     private fun Texture2d.createCopyTexColor(pass: OffscreenRenderPass2d, backend: RenderBackendGl) {
         val gl = backend.gl

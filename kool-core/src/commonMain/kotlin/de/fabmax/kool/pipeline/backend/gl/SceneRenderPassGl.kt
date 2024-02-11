@@ -1,6 +1,5 @@
 package de.fabmax.kool.pipeline.backend.gl
 
-import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec2i
 import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.pipeline.*
@@ -10,7 +9,7 @@ import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.addTextureMesh
 import de.fabmax.kool.util.Time
 
-class SceneRenderPass(val numSamples: Int, backend: RenderBackendGl): GlRenderPass(backend) {
+class SceneRenderPassGl(val numSamples: Int, backend: RenderBackendGl): GlRenderPass(backend) {
     private val renderFbo: GlFramebuffer by lazy { gl.createFramebuffer() }
     private val renderColor: GlRenderbuffer by lazy { gl.createRenderbuffer() }
     private val renderDepth: GlRenderbuffer by lazy { gl.createRenderbuffer() }
@@ -19,9 +18,11 @@ class SceneRenderPass(val numSamples: Int, backend: RenderBackendGl): GlRenderPa
     private val resolvedColor = Texture2d(TextureProps(generateMipMaps = false, defaultSamplerSettings = SamplerSettings().clamped().nearest()))
     private val resolveDepth: GlRenderbuffer by lazy { gl.createRenderbuffer() }
 
+    private val copyFbo: GlFramebuffer by lazy { gl.createFramebuffer() }
+
     private val renderSize = MutableVec2i()
 
-    internal var resolveDirect = false
+    internal var resolveDirect = true
 
     private val blitScene: Scene by lazy {
         Scene().apply {
@@ -37,9 +38,7 @@ class SceneRenderPass(val numSamples: Int, backend: RenderBackendGl): GlRenderPa
     }
 
     override fun setupFramebuffer(viewIndex: Int, mipLevel: Int) {
-        if (viewIndex == 0) {
-            gl.bindFramebuffer(gl.FRAMEBUFFER, renderFbo)
-        }
+        gl.bindFramebuffer(gl.FRAMEBUFFER, renderFbo)
     }
 
     fun draw(scene: Scene) {
@@ -54,68 +53,76 @@ class SceneRenderPass(val numSamples: Int, backend: RenderBackendGl): GlRenderPa
         scenePass.afterDraw()
     }
 
-    fun captureFramebuffer(scene: Scene, ctx: KoolContext) {
-        resolve(ctx)
+    override fun copy(frameCopy: FrameCopy) {
+        val width = renderSize.x
+        val height = renderSize.y
+        frameCopy.setupCopyTargets(width, height, 1, gl.TEXTURE_2D)
 
-        val viewport = scene.mainRenderPass.viewport
-        val targetTex = scene.capturedFramebuffer
+        var blitMask = 0
+        gl.bindFramebuffer(gl.FRAMEBUFFER, copyFbo)
+        if (frameCopy.isCopyColor) {
+            val loaded = frameCopy.colorCopy2d.loadedTexture as LoadedTextureGl
+            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, loaded.glTexture, 0)
+            blitMask = gl.COLOR_BUFFER_BIT
+        }
+        if (frameCopy.isCopyDepth) {
+            val loaded = frameCopy.depthCopy2d.loadedTexture as LoadedTextureGl
+            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, loaded.glTexture, 0)
+            blitMask = blitMask or gl.DEPTH_BUFFER_BIT
+        }
 
-        if (targetTex.loadedTexture == null) {
-            targetTex.loadedTexture = LoadedTextureGl(
+        resolve(copyFbo, blitMask)
+    }
+
+    fun resolve(targetFbo: GlFramebuffer, blitMask: Int) {
+        if (resolveDirect || targetFbo != gl.DEFAULT_FRAMEBUFFER) {
+            blitFramebuffers(renderFbo, targetFbo, blitMask)
+        } else {
+            // on WebGL trying to resolve a multi-sampled framebuffer into the default framebuffer fails with
+            // "GL_INVALID_OPERATION: Invalid operation on multi-sampled framebuffer". As a work-around we resolve
+            // the multi-sampled framebuffer into a non-multi-sampled one, which is then rendered to the default
+            // framebuffer (i.e. screen) using a copy shader.
+            blitFramebuffers(renderFbo, resolveFbo, blitMask)
+
+            gl.bindFramebuffer(gl.FRAMEBUFFER, targetFbo)
+            blitScene.mainRenderPass.update(backend.ctx)
+            blitScene.mainRenderPass.collectDrawCommands(backend.ctx)
+            renderView(blitScene.mainRenderPass.screenView, 0, 0)
+        }
+    }
+
+    private fun blitFramebuffers(src: GlFramebuffer, dst: GlFramebuffer, blitMask: Int) {
+        gl.bindFramebuffer(gl.READ_FRAMEBUFFER, src)
+        gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, dst)
+        gl.blitFramebuffer(
+            0, 0, renderSize.x, renderSize.y,
+            0, 0, renderSize.x, renderSize.y,
+            blitMask, gl.NEAREST
+        )
+    }
+
+    private fun bindTargetTex(dst: Texture2d, width: Int, height: Int, isColor: Boolean) {
+        if (dst.loadedTexture == null) {
+            dst.loadedTexture = LoadedTextureGl(
                 target = gl.TEXTURE_2D,
                 glTexture = gl.createTexture(),
                 backend = backend,
-                texture = targetTex,
-                estimatedSize = viewport.width * viewport.height * 4L
+                texture = dst,
+                estimatedSize = width * height * 4L
             )
         }
-        val tex = targetTex.loadedTexture as LoadedTextureGl
+        val tex = dst.loadedTexture as LoadedTextureGl
         tex.bind()
 
-        if (tex.width != viewport.width || tex.height != viewport.height) {
-            tex.setSize(viewport.width, viewport.height, 1)
-            tex.applySamplerSettings(targetTex.props.defaultSamplerSettings)
-            targetTex.loadingState = Texture.LoadingState.LOADED
-            gl.texImage2D(tex.target, 0, gl.RGBA8, viewport.width, viewport.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null)
-        }
+        if (tex.width != width || tex.height != height) {
+            tex.setSize(width, height, 1)
+            tex.applySamplerSettings(dst.props.defaultSamplerSettings)
+            dst.loadingState = Texture.LoadingState.LOADED
 
-        gl.bindFramebuffer(gl.READ_FRAMEBUFFER, gl.DEFAULT_FRAMEBUFFER)
-        gl.readBuffer(gl.BACK)
-        gl.copyTexSubImage2D(tex.target, 0, 0, 0, viewport.x, viewport.y, viewport.width, viewport.height)
-    }
-
-    fun resolve(ctx: KoolContext) {
-        if (resolveDirect) {
-            // direct resolve method: directly blit multi-sampled frame buffer into the default frame buffer.
-            // should be a bit faster, but does not work on web gl
-
-            gl.bindFramebuffer(gl.READ_FRAMEBUFFER, renderFbo)
-            gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, gl.DEFAULT_FRAMEBUFFER)
-
-            gl.blitFramebuffer(
-                0, 0, renderSize.x, renderSize.y,
-                0, 0, renderSize.x, renderSize.y,
-                gl.COLOR_BUFFER_BIT, gl.NEAREST
-            )
-
-        } else {
-            // default resolve method: blit multi-sampled frame buffer into non-multi-sampled frame buffer with texture
-            // attachment and render that texture to the default frame buffer.
-            // Comes with some overhead but works on all platforms.
-
-            gl.bindFramebuffer(gl.READ_FRAMEBUFFER, renderFbo)
-            gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, resolveFbo)
-
-            gl.blitFramebuffer(
-                0, 0, renderSize.x, renderSize.y,
-                0, 0, renderSize.x, renderSize.y,
-                gl.COLOR_BUFFER_BIT, gl.NEAREST
-            )
-
-            gl.bindFramebuffer(gl.FRAMEBUFFER, gl.DEFAULT_FRAMEBUFFER)
-            blitScene.mainRenderPass.update(ctx)
-            blitScene.mainRenderPass.collectDrawCommands(ctx)
-            renderView(blitScene.mainRenderPass.screenView, 0)
+            val internalFormat = if (isColor) gl.RGBA8 else gl.DEPTH_COMPONENT32F
+            val format = if (isColor) gl.RGBA else gl.DEPTH_COMPONENT
+            val type = if (isColor) gl.UNSIGNED_BYTE else gl.FLOAT
+            gl.texImage2D(tex.target, 0, internalFormat, width, height, 0,  format, type, null)
         }
     }
 
