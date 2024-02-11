@@ -4,12 +4,15 @@ import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.*
 import org.lwjgl.stb.STBImage.*
+import org.lwjgl.system.MemoryUtil
 import java.awt.RenderingHints
 import java.awt.Transparency
 import java.awt.geom.AffineTransform
 import java.awt.image.BufferedImage
 import java.awt.image.DataBufferByte
 import java.io.InputStream
+import java.nio.ByteBuffer
+import java.nio.FloatBuffer
 import java.nio.IntBuffer
 import javax.imageio.ImageIO
 import kotlin.math.roundToInt
@@ -36,18 +39,32 @@ object ImageDecoder {
             val channels: IntBuffer = mallocInt(1)
             val desiredChannels = props?.format?.channels ?: 4
 
-            val decoded = if (props?.format?.isF16 == true || props?.format?.isF32 == true) {
+            val rawBuffer = if (props?.format?.isF16 == true || props?.format?.isF32 == true) {
                 imageData.useRaw { raw ->
-                    stbi_loadf_from_memory(raw, w, h, channels, desiredChannels)?.let { Float32BufferImpl(it) }
+                    stbi_loadf_from_memory(raw, w, h, channels, desiredChannels)
                 }
             } else {
                 imageData.useRaw { raw ->
-                    stbi_load_from_memory(raw, w, h, channels, desiredChannels)?.let { Uint8BufferImpl(it) }
+                    stbi_load_from_memory(raw, w, h, channels, desiredChannels)
                 }
             }
-            checkNotNull(decoded) { "Failed to load image: ${stbi_failure_reason()}" }
+            checkNotNull(rawBuffer) { "Failed to load image: ${stbi_failure_reason()}" }
 
-            TextureData2d(decoded, w[0], h[0], props?.format ?: TexFormat.RGBA)
+            val managedBuffer = when (rawBuffer) {
+                is ByteBuffer -> {
+                    val managed = Uint8Buffer(rawBuffer.capacity())
+                    managed.useRaw { it.put(rawBuffer) }
+                    managed
+                }
+                is FloatBuffer -> {
+                    val managed = Float32Buffer(rawBuffer.capacity())
+                    managed.useRaw { it.put(rawBuffer) }
+                    managed
+                }
+                else -> error("unreachable")
+            }
+            MemoryUtil.memFree(rawBuffer)
+            TextureData2d(managedBuffer, w[0], h[0], props?.format ?: TexFormat.RGBA)
         }
     }
 
