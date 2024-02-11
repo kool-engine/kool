@@ -6,7 +6,6 @@ import de.fabmax.kool.modules.audio.AudioClipImpl
 import de.fabmax.kool.pipeline.TextureData
 import de.fabmax.kool.pipeline.TextureData2d
 import de.fabmax.kool.pipeline.TextureProps
-import de.fabmax.kool.platform.BufferedImageTextureData
 import de.fabmax.kool.platform.FontMapGenerator
 import de.fabmax.kool.platform.ImageAtlasTextureData
 import de.fabmax.kool.platform.ImageTextureData
@@ -146,8 +145,9 @@ private object PlatformAssetsImpl : PlatformAssets {
     }
 
     override suspend fun loadTextureData2d(imagePath: String, props: TextureProps?): TextureData2d {
+        val p = props ?: TextureProps()
         val texData = Assets.loadTextureData(imagePath, props) as ImageTextureData
-        return BufferedImageTextureData(texData.data, props)
+        return TextureData2d(ImageTextureData.imageBitmapToBuffer(texData.data, p), texData.width, texData.height, p.format)
     }
 
     override suspend fun loadTextureDataFromBuffer(texData: Uint8Buffer, mimeType: String, props: TextureProps?): TextureData {

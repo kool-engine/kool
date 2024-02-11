@@ -5,7 +5,6 @@ import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.TextureData2d
 import org.lwjgl.stb.STBImage.stbi_failure_reason
 import org.lwjgl.stb.STBImage.stbi_loadf_from_memory
-import org.lwjgl.system.MemoryStack
 import java.awt.image.BufferedImage
 import java.io.File
 import java.nio.FloatBuffer
@@ -23,26 +22,15 @@ object HdrImageConversion {
     }
 
     fun loadHdrImage(imageData: Uint8Buffer): TextureData2d {
-        return MemoryStack.stackPush().use { stack ->
-            val w: IntBuffer = stack.mallocInt(1)
-            val h: IntBuffer = stack.mallocInt(1)
-            val components: IntBuffer = stack.mallocInt(1)
+        return memStack {
+            val w: IntBuffer = mallocInt(1)
+            val h: IntBuffer = mallocInt(1)
+            val ch: IntBuffer = mallocInt(1)
+            val desiredCh = 4
 
-            val image: FloatBuffer = imageData.useRaw { raw ->
-                stbi_loadf_from_memory(raw, w, h, components, 0) ?:
-                    throw RuntimeException("Failed to load image: " + stbi_failure_reason())
-            }
-
-            @Suppress("DEPRECATION")
-            val texFormat = when (components[0]) {
-                1 -> TexFormat.R_F16
-                2 -> TexFormat.RG_F16
-                3 -> TexFormat.RGB_F16
-                4 -> TexFormat.RGBA_F16
-                else -> throw IllegalStateException("Invalid number of image components: ${components[0]}")
-            }
-
-            TextureData2d(Float32BufferImpl(image), w[0], h[0], texFormat)
+            val image: FloatBuffer? = imageData.useRaw { raw -> stbi_loadf_from_memory(raw, w, h, ch, desiredCh) }
+            checkNotNull(image) { "Failed to load image: ${stbi_failure_reason()}" }
+            TextureData2d(Float32BufferImpl(image), w[0], h[0], TexFormat.RGBA_F16)
         }
     }
 
@@ -51,14 +39,9 @@ object HdrImageConversion {
     }
 
     fun convertHdrImageToRgbe(hdrImage: TextureData2d): BufferedImage {
-        val hdrData = (hdrImage.data as? Float32BufferImpl)
-            ?: throw IllegalArgumentException("Supplied HDR image data needs to be in float format")
+        val hdrData = (hdrImage.data as? Float32BufferImpl) ?: error("Supplied HDR image data needs to be in float format")
 
         val c = hdrImage.format.channels
-        if (c !in 1..3) {
-            throw IllegalArgumentException("Supplied HDR image has an invalid number of components: ${hdrImage.format.channels}, must be in [1..3]")
-        }
-
         val img = BufferedImage(hdrImage.width, hdrImage.height, BufferedImage.TYPE_INT_ARGB)
         var i = 0
         var maxVal = 0f
@@ -67,6 +50,8 @@ object HdrImageConversion {
                 val rf = hdrData[i++]
                 val gf = if (c > 1) hdrData[i++] else 0f
                 val bf = if (c > 2) hdrData[i++] else 0f
+                // ignore alpha channel
+                if (c == 4) hdrData[i++]
 
                 val v = max(rf, max(gf, bf))
                 val e = ceil(log2(v)).toInt()

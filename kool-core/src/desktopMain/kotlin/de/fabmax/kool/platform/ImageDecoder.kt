@@ -4,7 +4,6 @@ import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.*
 import org.lwjgl.stb.STBImage.*
-import org.lwjgl.system.MemoryStack
 import java.awt.RenderingHints
 import java.awt.Transparency
 import java.awt.geom.AffineTransform
@@ -31,10 +30,10 @@ object ImageDecoder {
     private fun loadImageStb(inputStream: InputStream, props: TextureProps?): TextureData2d {
         val imageData = inputStream.readAllBytes().toBuffer()
 
-        return MemoryStack.stackPush().use { stack ->
-            val w: IntBuffer = stack.mallocInt(1)
-            val h: IntBuffer = stack.mallocInt(1)
-            val channels: IntBuffer = stack.mallocInt(1)
+        return memStack {
+            val w: IntBuffer = mallocInt(1)
+            val h: IntBuffer = mallocInt(1)
+            val channels: IntBuffer = mallocInt(1)
             val desiredChannels = props?.format?.channels ?: 4
 
             val decoded = if (props?.format?.isF16 == true || props?.format?.isF32 == true) {
