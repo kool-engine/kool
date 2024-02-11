@@ -36,7 +36,10 @@ class WgpuOffscreenRenderPassCube(
         depthAttachment?.recreate(width, height)
     }
 
-    override fun release() { }
+    override fun release() {
+        colorAttachments.forEach { it.release() }
+        depthAttachment?.release()
+    }
 
     fun draw(encoder: GPUCommandEncoder) {
         val isCopySrc = parentPass.frameCopies.isNotEmpty() || parentPass.views.any { it.frameCopies.isNotEmpty() }
@@ -112,7 +115,6 @@ class WgpuOffscreenRenderPassCube(
             descriptor = desc
             gpuTexture = tex
 
-            releaseWith(this@WgpuOffscreenRenderPassCube)
             texture.loadedTexture = WgpuLoadedTexture(gpuTexture)
             texture.loadingState = Texture.LoadingState.LOADED
         }
@@ -180,9 +182,12 @@ class WgpuOffscreenRenderPassCube(
         }
 
         override fun release() {
-            super.release()
-            texture.loadingState = Texture.LoadingState.NOT_LOADED
-            texture.loadedTexture = null
+            if (!isReleased) {
+                super.release()
+                texture.loadedTexture?.release()
+                texture.loadedTexture = null
+                texture.loadingState = Texture.LoadingState.NOT_LOADED
+            }
         }
     }
 }

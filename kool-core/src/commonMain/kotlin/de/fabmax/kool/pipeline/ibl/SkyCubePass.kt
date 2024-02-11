@@ -4,7 +4,7 @@ import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.atmosphere.OpticalDepthLutPass
 import de.fabmax.kool.modules.atmosphere.atmosphereBlock
 import de.fabmax.kool.modules.atmosphere.atmosphereData
-import de.fabmax.kool.modules.ksl.KslPbrShader
+import de.fabmax.kool.modules.ksl.KslBlinnPhongShader
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.modules.ksl.blocks.cameraData
@@ -59,7 +59,7 @@ class SkyCubePass(opticalDepthLut: Texture2d, size: Int = 256) :
             .setup(Vec3f(-1f, -1f, -1f))
             .setColor(Color.WHITE, 3f)
 
-    val groundShader: KslPbrShader
+    val groundShader: KslBlinnPhongShader
     private val skyShader = SkyShader(opticalDepthLut)
 
     init {
@@ -69,16 +69,21 @@ class SkyCubePass(opticalDepthLut: Texture2d, size: Int = 256) :
             addLight(sunLight)
         }
 
-        groundShader = KslPbrShader {
-            color { constColor(MdColor.BROWN toneLin 500) }
-            roughness(0.8f)
+        // use blinn-phong shader instead of pbr to avoid issues with lazy loaded brdf map not being immediately
+        // available
+        groundShader = KslBlinnPhongShader {
+            color { constColor(MdColor.BROWN tone 800) }
             uniformAmbientColor(nightSkyColor)
             colorSpaceConversion = ColorSpaceConversion.AS_IS
+            lightStrength = 0.15f
+            shininess(1f)
+            specularStrength(0.05f)
         }
 
         drawNode.apply {
             // sky
             addTextureMesh {
+                isFrustumChecked = false
                 generate {
                     icoSphere {
                         steps = 2
@@ -89,6 +94,7 @@ class SkyCubePass(opticalDepthLut: Texture2d, size: Int = 256) :
 
             // ground
             addColorMesh {
+                isFrustumChecked = false
                 generate {
                     translate(0f, -0.015f, 0f)
                     rotate((-90f).deg, Vec3f.X_AXIS)

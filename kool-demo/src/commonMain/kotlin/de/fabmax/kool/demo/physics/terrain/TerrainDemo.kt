@@ -41,7 +41,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         0.1f to MdColor.LIGHT_BLUE,
         0.2f to MdColor.BLUE,
         0.5f to MdColor.INDIGO.mix(MdColor.BLUE, 0.5f),
-        1.0f to (MdColor.INDIGO tone 800).mix(MdColor.BLUE tone 800, 0.5f),
+        1.0f to (MdColor.INDIGO tone 900).mix(MdColor.BLUE tone 900, 0.5f),
         toLinear = true)
     ).also { it.releaseWith(mainScene) }
 

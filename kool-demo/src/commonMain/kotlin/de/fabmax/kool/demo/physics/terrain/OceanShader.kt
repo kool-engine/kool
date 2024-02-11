@@ -176,7 +176,7 @@ object OceanShader {
                 oceanFloorUv.flipUvByDeviceCoords()
                 val oceanDepth1 = float1Var(sampleTexture(oceanFloorDepthTex, oceanFloorUv).x)
                 if (isInvertedDepth) {
-                    oceanDepth1 set camData.clipNear / oceanDepth1 - fragDepth
+                    oceanDepth1 set camData.clipNear / max(0.00001f.const, oceanDepth1) - fragDepth
                 } else {
                     oceanDepth1 set getLinearDepth(oceanDepth1, camData.clipNear, camData.clipFar) - fragDepth
                 }
@@ -190,7 +190,7 @@ object OceanShader {
                 // 2nd depth sample - water depth at refracted position
                 val oceanDepth2 = float1Var(sampleTexture(oceanFloorDepthTex, refractUv).x)
                 if (isInvertedDepth) {
-                    oceanDepth2 set camData.clipNear / oceanDepth2 - fragDepth
+                    oceanDepth2 set camData.clipNear / max(0.00001f.const, oceanDepth1) - fragDepth
                 } else {
                     oceanDepth2 set getLinearDepth(oceanDepth2, camData.clipNear, camData.clipFar) - fragDepth
                 }
@@ -204,7 +204,7 @@ object OceanShader {
                 val waveMod = dot(bumpNormal, Vec3f.X_AXIS.const)
                 val baseColor = float4Var(sampleTexture(texture1d("tOceanGradient"), oceanDepth2 / 50f.const + waveMod))
                 val oceanFloorColor = float4Var(Vec4f.ZERO.const)
-                val oceanAlpha = clamp((oceanDepth2 - 0.5f.const) / 12f.const, 0f.const, 1f.const)
+                val oceanAlpha = clamp((oceanDepth2 - 0.5f.const) / 12f.const, 0.5f.const, 1f.const)
                 `if`(oceanAlpha lt 1f.const) {
                     oceanFloorColor set sampleTexture(oceanFloorColorTex, refractUv, 0f.const)
                     oceanFloorColor.rgb set convertColorSpace(oceanFloorColor.rgb, ColorSpaceConversion.sRGB_TO_LINEAR)

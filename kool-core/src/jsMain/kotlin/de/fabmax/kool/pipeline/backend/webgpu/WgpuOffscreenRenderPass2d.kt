@@ -36,7 +36,10 @@ class WgpuOffscreenRenderPass2d(
         depthAttachment?.recreate(width, height)
     }
 
-    override fun release() { }
+    override fun release() {
+        colorAttachments.forEach { it.release() }
+        depthAttachment?.release()
+    }
 
     fun draw(encoder: GPUCommandEncoder) {
         val isCopySrc = parentPass.frameCopies.isNotEmpty() || parentPass.views.any { it.frameCopies.isNotEmpty() }
@@ -113,7 +116,6 @@ class WgpuOffscreenRenderPass2d(
             descriptor = desc
             gpuTexture = tex
 
-            releaseWith(this@WgpuOffscreenRenderPass2d)
             texture.loadedTexture = WgpuLoadedTexture(gpuTexture)
             texture.loadingState = Texture.LoadingState.LOADED
             createViews()
@@ -176,9 +178,12 @@ class WgpuOffscreenRenderPass2d(
         }
 
         override fun release() {
-            super.release()
-            texture.loadingState = Texture.LoadingState.NOT_LOADED
-            texture.loadedTexture = null
+            if (!isReleased) {
+                super.release()
+                texture.loadedTexture?.release()
+                texture.loadedTexture = null
+                texture.loadingState = Texture.LoadingState.NOT_LOADED
+            }
         }
     }
 }
