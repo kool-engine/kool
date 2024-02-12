@@ -34,6 +34,83 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
         return GlslGeneratorOutput.computeOutput(generateComputeSrc(computeStage, pipeline))
     }
 
+    private fun generateVertexSrc(vertexStage: KslVertexStage, pipeline: DrawPipeline): String {
+        val src = StringBuilder()
+        src.appendLine("""
+            ${hints.glslVersionStr}
+            precision highp sampler3D;
+            
+            /*
+             * ${vertexStage.program.name} - generated vertex shader
+             */
+        """.trimIndent())
+        src.appendLine()
+
+        src.generateStorageBuffers(vertexStage, pipeline)
+        src.generateUbos(vertexStage, pipeline)
+        src.generateUniformSamplers(vertexStage, pipeline)
+        src.generateAttributes(vertexStage.attributes.values.filter { it.inputRate == KslInputRate.Instance }, pipeline, "instance attributes")
+        src.generateAttributes(vertexStage.attributes.values.filter { it.inputRate == KslInputRate.Vertex }, pipeline, "vertex attributes")
+        src.generateInterStageOutputs(vertexStage)
+        src.generateFunctions(vertexStage)
+
+        src.appendLine("void main() {")
+        src.appendLine(generateScope(vertexStage.main, blockIndent))
+        src.appendLine("}")
+        return src.toString()
+    }
+
+    private fun generateFragmentSrc(fragmentStage: KslFragmentStage, pipeline: PipelineBase): String {
+        val src = StringBuilder()
+        src.appendLine("""
+            ${hints.glslVersionStr}
+            precision highp float;
+            precision highp sampler2DShadow;
+            precision highp sampler3D;
+            
+            /*
+             * ${fragmentStage.program.name} - generated fragment shader
+             */
+        """.trimIndent())
+        src.appendLine()
+
+        src.generateStorageBuffers(fragmentStage, pipeline)
+        src.generateUbos(fragmentStage, pipeline)
+        src.generateUniformSamplers(fragmentStage, pipeline)
+        src.generateInterStageInputs(fragmentStage)
+        src.generateOutputs(fragmentStage.outColors)
+        src.generateFunctions(fragmentStage)
+
+        src.appendLine("void main() {")
+        src.appendLine(generateScope(fragmentStage.main, blockIndent))
+        src.appendLine("}")
+        return src.toString()
+    }
+
+    private fun generateComputeSrc(computeStage: KslComputeStage, pipeline: PipelineBase): String {
+        val src = StringBuilder()
+        src.appendLine("""
+            ${hints.glslVersionStr}
+            
+            /*
+             * ${computeStage.program.name} - generated compute shader
+             */
+             
+            layout(local_size_x = ${computeStage.workGroupSize.x}, local_size_y = ${computeStage.workGroupSize.y}, local_size_z = ${computeStage.workGroupSize.z}) in;
+        """.trimIndent())
+        src.appendLine()
+
+        src.generateStorageBuffers(computeStage, pipeline)
+        src.generateUbos(computeStage, pipeline)
+        src.generateUniformSamplers(computeStage, pipeline)
+        src.generateFunctions(computeStage)
+
+        src.appendLine("void main() {")
+        src.appendLine(generateScope(computeStage.main, blockIndent))
+        src.appendLine("}")
+        return src.toString()
+    }
+
     override fun constFloatVecExpression(vararg values: KslExpression<KslFloat1>): String {
         if (values.size !in 2..4) {
             throw IllegalArgumentException("invalid number of values: ${values.size} (must be between 2 and 4)")
@@ -127,33 +204,18 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
     }
 
     override fun storageRead(storageRead: KslStorageRead<*, *, *>): String {
-        val elemType = storageRead.storage.expressionType.elemType
-        val channels = if (elemType is KslVector<*>) elemType.dimens else 1
-        val suffix = when (channels) {
-            1 -> ".x"
-            2 -> ".xy"
-            3 -> ".xyz"
-            else -> ""
-        }
-        return "imageLoad(${storageRead.storage.generateExpression(this)}, ${storageRead.coord.generateExpression(this)})$suffix"
+        val storage = storageRead.storage.generateExpression(this)
+        val coord = storageRead.coord.generateExpression(this)
+        // fixme hard-coded coord translation for testing
+        return "$storage[256 * $coord.y + $coord.x]"
     }
 
     override fun opStorageWrite(op: KslStorageWrite<*, *, *>): String {
+        val storage = op.storage.generateExpression(this)
         val expr = op.data.generateExpression(this)
-        val elemType = op.storage.expressionType.elemType
-        val vec4 = when (elemType) {
-            is KslFloat1 -> "vec4($expr, 0.0, 0.0, 0.0)"
-            is KslFloat2 -> "vec4($expr, 0.0, 0.0)"
-            is KslFloat3 -> "vec4($expr, 0.0)"
-            is KslInt1 -> "ivec4($expr, 0, 0, 0)"
-            is KslInt2 -> "ivec4($expr, 0, 0)"
-            is KslInt3 -> "ivec4($expr, 0)"
-            is KslUint1 -> "uvec4($expr, 0, 0, 0)"
-            is KslUint2 -> "uvec4($expr, 0, 0)"
-            is KslUint3 -> "uvec4($expr, 0)"
-            else -> expr
-        }
-        return "imageStore(${op.storage.generateExpression(this)}, ${op.coord.generateExpression(this)}, $vec4);"
+        val coord = op.coord.generateExpression(this)
+        // fixme hard-coded coord translation for testing
+        return "$storage[256 * $coord.y + $coord.x] = $expr;"
     }
 
     override fun storageAtomicOp(atomicOp: KslStorageAtomicOp<*, *, *>): String {
@@ -179,83 +241,6 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
                 "${atomicCompSwap.data.generateExpression(this)})"
     }
 
-    private fun generateVertexSrc(vertexStage: KslVertexStage, pipeline: DrawPipeline): String {
-        val src = StringBuilder()
-        src.appendLine("""
-            ${hints.glslVersionStr}
-            precision highp sampler3D;
-            
-            /*
-             * ${vertexStage.program.name} - generated vertex shader
-             */
-        """.trimIndent())
-        src.appendLine()
-
-        src.generateUbos(vertexStage, pipeline)
-        src.generateUniformSamplers(vertexStage, pipeline)
-        src.generateUniformStorage(vertexStage, pipeline)
-        src.generateAttributes(vertexStage.attributes.values.filter { it.inputRate == KslInputRate.Instance }, pipeline, "instance attributes")
-        src.generateAttributes(vertexStage.attributes.values.filter { it.inputRate == KslInputRate.Vertex }, pipeline, "vertex attributes")
-        src.generateInterStageOutputs(vertexStage)
-        src.generateFunctions(vertexStage)
-
-        src.appendLine("void main() {")
-        src.appendLine(generateScope(vertexStage.main, blockIndent))
-        src.appendLine("}")
-        return src.toString()
-    }
-
-    private fun generateFragmentSrc(fragmentStage: KslFragmentStage, pipeline: PipelineBase): String {
-        val src = StringBuilder()
-        src.appendLine("""
-            ${hints.glslVersionStr}
-            precision highp float;
-            precision highp sampler2DShadow;
-            precision highp sampler3D;
-            
-            /*
-             * ${fragmentStage.program.name} - generated fragment shader
-             */
-        """.trimIndent())
-        src.appendLine()
-
-        src.generateUbos(fragmentStage, pipeline)
-        src.generateUniformSamplers(fragmentStage, pipeline)
-        src.generateUniformStorage(fragmentStage, pipeline)
-        src.generateInterStageInputs(fragmentStage)
-        src.generateOutputs(fragmentStage.outColors)
-        src.generateFunctions(fragmentStage)
-
-        src.appendLine("void main() {")
-        src.appendLine(generateScope(fragmentStage.main, blockIndent))
-        src.appendLine("}")
-        return src.toString()
-    }
-
-    private fun generateComputeSrc(computeStage: KslComputeStage, pipeline: PipelineBase): String {
-        val src = StringBuilder()
-        src.appendLine("""
-            ${hints.glslVersionStr}
-            
-            /*
-             * ${computeStage.program.name} - generated compute shader
-             */
-             
-            layout(local_size_x = ${computeStage.workGroupSize.x}, local_size_y = ${computeStage.workGroupSize.y}, local_size_z = ${computeStage.workGroupSize.z}) in;
-        """.trimIndent())
-        src.appendLine()
-
-        src.generateUbos(computeStage, pipeline)
-        src.generateUniformSamplers(computeStage, pipeline)
-        src.generateUniformStorage(computeStage, pipeline)
-        src.generateFunctions(computeStage)
-
-        src.appendLine("void main() {")
-        src.appendLine(generateScope(computeStage.main, blockIndent))
-        src.appendLine("}")
-        return src.toString()
-    }
-
     protected open fun StringBuilder.generateUniformSamplers(stage: KslShaderStage, pipeline: PipelineBase) {
         val samplers = stage.getUsedSamplers()
         if (samplers.isNotEmpty()) {
@@ -267,12 +252,16 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
         }
     }
 
-    protected open fun StringBuilder.generateUniformStorage(stage: KslShaderStage, pipeline: PipelineBase) {
+    protected open fun StringBuilder.generateStorageBuffers(stage: KslShaderStage, pipeline: PipelineBase) {
         val storage = stage.getUsedStorage()
         if (storage.isNotEmpty()) {
             appendLine("// image storage")
             storage.forEachIndexed { i, it ->
-                appendLine("layout(${it.storageType.formatQualifier}, binding=$i) uniform ${glslTypeName(it.expressionType)} ${it.name};")
+                appendLine("""
+                    layout(std430, binding=$i) buffer ssboLayout$i {
+                        ${glslTypeName(it.storageType.elemType)} ${it.name}[];
+                    };
+                """.trimIndent())
             }
             appendLine()
         }
@@ -605,23 +594,6 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
             is KslUint2 -> "u"
             is KslUint3 -> "u"
             is KslUint4 -> "u"
-        }
-
-    private val KslStorageType<*, *>.formatQualifier: String
-        get() = when (elemType) {
-            is KslFloat1 -> "r32f"
-            is KslFloat2 -> "rg32f"
-            is KslFloat3 -> "rgb32f"
-            is KslFloat4 -> "rgba32f"
-            is KslInt1 -> "r32i"
-            is KslInt2 -> "rg32i"
-            is KslInt3 -> "rgb32i"
-            is KslInt4 -> "rgba32i"
-            is KslUint1 -> "r32ui"
-            is KslUint2 -> "rg32ui"
-            is KslUint3 -> "rgb32ui"
-            is KslUint4 -> "rgba32ui"
-            else -> throw IllegalStateException("Invalid storage element type $elemType")
         }
 
     data class Hints(

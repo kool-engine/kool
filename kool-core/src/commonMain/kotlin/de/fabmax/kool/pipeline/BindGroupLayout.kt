@@ -1,6 +1,5 @@
 package de.fabmax.kool.pipeline
 
-import de.fabmax.kool.modules.ksl.lang.KslNumericType
 import de.fabmax.kool.util.LongHash
 
 class BindGroupLayout(val scope: BindGroupScope, val bindings: List<BindingLayout>) {
@@ -29,7 +28,7 @@ class BindGroupLayout(val scope: BindGroupScope, val bindings: List<BindingLayou
     class Builder(val scope: BindGroupScope) {
         val ubos = mutableListOf<UniformBufferLayout>()
         val textures = mutableListOf<TextureLayout>()
-        val storage = mutableListOf<StorageTextureLayout>()
+        val storage = mutableListOf<StorageBufferLayout>()
 
         fun create(): BindGroupLayout {
             return BindGroupLayout(scope, ubos + textures + storage)
@@ -155,11 +154,10 @@ class TextureCubeLayout(
     sampleType: TextureSampleType = TextureSampleType.FLOAT,
 ) : TextureLayout(name, stages, BindingType.TEXTURE_CUBE, sampleType)
 
-sealed class StorageTextureLayout(
+sealed class StorageBufferLayout(
     name: String,
-    val format: KslNumericType,
+    val format: GpuType,
     val accessType: StorageAccessType,
-    val level: Int,
     stages: Set<ShaderStage>,
     type: BindingType,
 ) : BindingLayout(name, stages, type) {
@@ -167,37 +165,33 @@ sealed class StorageTextureLayout(
     override val hash: Long = LongHash().let {
         it += name
         it += accessType
-        it += format.typeName
-        it += level
+        it += format
         it += type
         stages.forEach { s -> it += s }
         it.hash
     }
 }
 
-class StorageTexture1dLayout(
+class StorageBuffer1dLayout(
     name: String,
-    format: KslNumericType,
+    format: GpuType,
     accessType: StorageAccessType,
     stages: Set<ShaderStage>,
-    level: Int = 0
-) : StorageTextureLayout(name, format, accessType, level, stages, BindingType.STORAGE_TEXTURE_1D)
+) : StorageBufferLayout(name, format, accessType, stages, BindingType.STORAGE_BUFFER_1D)
 
-class StorageTexture2dLayout(
+class StorageBuffer2dLayout(
     name: String,
-    format: KslNumericType,
+    format: GpuType,
     accessType: StorageAccessType,
     stages: Set<ShaderStage>,
-    level: Int = 0
-) : StorageTextureLayout(name, format, accessType, level, stages, BindingType.STORAGE_TEXTURE_2D)
+) : StorageBufferLayout(name, format, accessType, stages, BindingType.STORAGE_BUFFER_2D)
 
-class StorageTexture3dLayout(
+class StorageBuffer3dLayout(
     name: String,
-    format: KslNumericType,
+    format: GpuType,
     accessType: StorageAccessType,
     stages: Set<ShaderStage>,
-    level: Int = 0
-) : StorageTextureLayout(name, format, accessType, level, stages, BindingType.STORAGE_TEXTURE_3D)
+) : StorageBufferLayout(name, format, accessType, stages, BindingType.STORAGE_BUFFER_3D)
 
 enum class BindingType {
     TEXTURE_1D,
@@ -205,9 +199,9 @@ enum class BindingType {
     TEXTURE_3D,
     TEXTURE_CUBE,
     UNIFORM_BUFFER,
-    STORAGE_TEXTURE_1D,
-    STORAGE_TEXTURE_2D,
-    STORAGE_TEXTURE_3D
+    STORAGE_BUFFER_1D,
+    STORAGE_BUFFER_2D,
+    STORAGE_BUFFER_3D
 }
 
 enum class StorageAccessType {

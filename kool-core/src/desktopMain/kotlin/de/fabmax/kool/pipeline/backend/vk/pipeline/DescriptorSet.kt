@@ -4,7 +4,6 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.vk.VkSystem
 import de.fabmax.kool.pipeline.backend.vk.callocVkDescriptorSetAllocateInfo
 import de.fabmax.kool.pipeline.backend.vk.callocVkWriteDescriptorSetN
-import de.fabmax.kool.pipeline.DrawCommand
 import de.fabmax.kool.util.memStack
 import org.lwjgl.vulkan.VK10.*
 
@@ -67,9 +66,9 @@ class DescriptorSet(val graphicsPipeline: GraphicsPipeline) {
                     BindingType.TEXTURE_2D -> SamplerDescriptor(idx, desc as Texture2dLayout)
                     BindingType.TEXTURE_3D -> SamplerDescriptor(idx, desc as Texture3dLayout)
                     BindingType.TEXTURE_CUBE -> SamplerDescriptor(idx, desc as TextureCubeLayout)
-                    BindingType.STORAGE_TEXTURE_1D -> TODO()
-                    BindingType.STORAGE_TEXTURE_2D -> TODO()
-                    BindingType.STORAGE_TEXTURE_3D -> TODO()
+                    BindingType.STORAGE_BUFFER_1D -> TODO()
+                    BindingType.STORAGE_BUFFER_2D -> TODO()
+                    BindingType.STORAGE_BUFFER_3D -> TODO()
                 }
             }
         }

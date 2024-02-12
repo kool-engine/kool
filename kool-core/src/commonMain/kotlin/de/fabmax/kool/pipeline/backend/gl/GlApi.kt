@@ -64,6 +64,7 @@ interface GlApi {
     val REPEAT: Int
     val SAMPLES: Int
     val SCISSOR_TEST: Int
+    val SHADER_STORAGE_BUFFER: Int
     val SRC_ALPHA: Int
     val STATIC_DRAW: Int
     val TEXTURE_1D: Int

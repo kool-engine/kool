@@ -58,6 +58,7 @@ object GlImpl : GlApi {
     override val REPEAT = GL_REPEAT
     override val SAMPLES = GL_SAMPLES
     override val SCISSOR_TEST = GL_SCISSOR_TEST
+    override val SHADER_STORAGE_BUFFER = GL_SHADER_STORAGE_BUFFER
     override val SRC_ALPHA = GL_SRC_ALPHA
     override val STATIC_DRAW = GL_STATIC_DRAW
     override val TEXTURE_1D = GL_TEXTURE_1D

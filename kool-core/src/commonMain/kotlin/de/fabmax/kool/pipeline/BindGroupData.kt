@@ -13,9 +13,9 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
             is Texture2dLayout -> Texture2dBindingData(it)
             is Texture3dLayout -> Texture3dBindingData(it)
             is TextureCubeLayout -> TextureCubeBindingData(it)
-            is StorageTexture1dLayout -> StorageTexture1dBindingData(it)
-            is StorageTexture2dLayout -> StorageTexture2dBindingData(it)
-            is StorageTexture3dLayout -> StorageTexture3dBindingData(it)
+            is StorageBuffer1dLayout -> StorageBuffer1dBindingData(it)
+            is StorageBuffer2dLayout -> StorageBuffer2dBindingData(it)
+            is StorageBuffer3dLayout -> StorageBuffer3dBindingData(it)
         }
     }
     var isDirty = true
@@ -31,9 +31,9 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
     fun texture2dBindingData(bindingIndex: Int) = bindings[bindingIndex] as Texture2dBindingData
     fun texture3dBindingData(bindingIndex: Int) = bindings[bindingIndex] as Texture3dBindingData
     fun textureCubeBindingData(bindingIndex: Int) = bindings[bindingIndex] as TextureCubeBindingData
-    fun storageTexture1dBindingData(bindingIndex: Int) = bindings[bindingIndex] as StorageTexture1dBindingData
-    fun storageTexture2dBindingData(bindingIndex: Int) = bindings[bindingIndex] as StorageTexture2dBindingData
-    fun storageTexture3dBindingData(bindingIndex: Int) = bindings[bindingIndex] as StorageTexture3dBindingData
+    fun storageTexture1dBindingData(bindingIndex: Int) = bindings[bindingIndex] as StorageBuffer1dBindingData
+    fun storageTexture2dBindingData(bindingIndex: Int) = bindings[bindingIndex] as StorageBuffer2dBindingData
+    fun storageTexture3dBindingData(bindingIndex: Int) = bindings[bindingIndex] as StorageBuffer3dBindingData
 
     fun copy(): BindGroupData {
         val copy = BindGroupData(layout)
@@ -44,9 +44,9 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
                 is Texture2dBindingData -> bindingData.copyTo(copy.bindings[i] as Texture2dBindingData)
                 is Texture3dBindingData -> bindingData.copyTo(copy.bindings[i] as Texture3dBindingData)
                 is TextureCubeBindingData -> bindingData.copyTo(copy.bindings[i] as TextureCubeBindingData)
-                is StorageTexture1dBindingData -> bindingData.copyTo(copy.bindings[i] as StorageTexture1dBindingData)
-                is StorageTexture2dBindingData -> bindingData.copyTo(copy.bindings[i] as StorageTexture2dBindingData)
-                is StorageTexture3dBindingData -> bindingData.copyTo(copy.bindings[i] as StorageTexture3dBindingData)
+                is StorageBuffer1dBindingData -> bindingData.copyTo(copy.bindings[i] as StorageBuffer1dBindingData)
+                is StorageBuffer2dBindingData -> bindingData.copyTo(copy.bindings[i] as StorageBuffer2dBindingData)
+                is StorageBuffer3dBindingData -> bindingData.copyTo(copy.bindings[i] as StorageBuffer3dBindingData)
             }
         }
         return copy
@@ -111,42 +111,45 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
     inner class Texture3dBindingData(override val layout: Texture3dLayout) : TextureBindingData<Texture3d>(), BindingData
     inner class TextureCubeBindingData(override val layout: TextureCubeLayout) : TextureBindingData<TextureCube>(), BindingData
 
-    inner class StorageTexture1dBindingData(override val layout: StorageTexture1dLayout) : BindingData {
-        var storageTexture: StorageTexture1d? = null
+    abstract inner class StorageBufferBindingData<T: StorageBuffer> {
+        var storageBuffer: T? = null
             set(value) {
                 field = value
                 isDirty = true
             }
-        override val isComplete get() = storageTexture?.loadingState == Texture.LoadingState.LOADED
 
-        fun copyTo(other: StorageTexture1dBindingData) {
-            other.storageTexture = storageTexture
+        fun getAndClearDirtyFlag(): Boolean {
+            val isDirty = storageBuffer?.isDirty == true
+            storageBuffer?.isDirty = false
+            return isDirty
+        }
+
+        var sampler: SamplerSettings? = null
+            set(value) {
+                field = value
+                isDirty = true
+            }
+
+        fun copyTo(other: StorageBufferBindingData<T>) {
+            other.storageBuffer = storageBuffer
         }
     }
 
-    inner class StorageTexture2dBindingData(override val layout: StorageTexture2dLayout) : BindingData {
-        var storageTexture: StorageTexture2d? = null
-            set(value) {
-                field = value
-                isDirty = true
-            }
-        override val isComplete get() = storageTexture?.loadingState == Texture.LoadingState.LOADED
-
-        fun copyTo(other: StorageTexture2dBindingData) {
-            other.storageTexture = storageTexture
-        }
+    inner class StorageBuffer1dBindingData(override val layout: StorageBuffer1dLayout) :
+        StorageBufferBindingData<StorageBuffer1d>(), BindingData
+    {
+        override val isComplete = true
     }
 
-    inner class StorageTexture3dBindingData(override val layout: StorageTexture3dLayout) : BindingData {
-        var storageTexture: StorageTexture3d? = null
-            set(value) {
-                field = value
-                isDirty = true
-            }
-        override val isComplete get() = storageTexture?.loadingState == Texture.LoadingState.LOADED
+    inner class StorageBuffer2dBindingData(override val layout: StorageBuffer2dLayout) :
+        StorageBufferBindingData<StorageBuffer2d>(), BindingData
+    {
+        override val isComplete = true
+    }
 
-        fun copyTo(other: StorageTexture3dBindingData) {
-            other.storageTexture = storageTexture
-        }
+    inner class StorageBuffer3dBindingData(override val layout: StorageBuffer3dLayout) :
+        StorageBufferBindingData<StorageBuffer3d>(), BindingData
+    {
+        override val isComplete = true
     }
 }

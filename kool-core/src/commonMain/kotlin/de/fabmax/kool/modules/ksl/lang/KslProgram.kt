@@ -23,7 +23,7 @@ open class KslProgram(val name: String) {
     val commonUniformBuffer = KslUniformBuffer("CommonUniforms", this, BindGroupScope.PIPELINE)
     val uniformBuffers = mutableListOf(commonUniformBuffer)
     val uniformSamplers = mutableMapOf<String, SamplerUniform>()
-    val uniformStorage = mutableMapOf<String, KslStorage<*,*>>()
+    val storageBuffers = mutableMapOf<String, KslStorage<*,*>>()
     val dataBlocks = mutableListOf<KslDataBlock>()
 
     var vertexStage: KslVertexStage? = null
@@ -89,7 +89,7 @@ open class KslProgram(val name: String) {
     }
 
     @PublishedApi internal fun registerStorage(storage: KslStorage<*,*>) {
-        uniformStorage[storage.name] = storage
+        storageBuffers[storage.name] = storage
         stages.forEach {
             it.globalScope.definedStates += storage
         }
@@ -144,33 +144,45 @@ open class KslProgram(val name: String) {
     fun depthTextureCube(name: String) = getOrCreateSampler(name, TextureSampleType.DEPTH) { KslUniform(KslVar(name, KslDepthSamplerCube, false)) }
 
     inline fun <reified T: KslNumericType> storage1d(name: String): KslStorage1d<KslStorage1dType<T>> {
-        val storage: KslStorage<*,*> = uniformStorage[name]
-            ?: KslStorage1d(name, KslStorage1dType(numericTypeForT<T>())).also { registerStorage(it) }
+        val type = numericTypeForT<T>()
+        val storage: KslStorage<*,*> = storageBuffers[name]
+            ?: KslStorage1d(name, KslStorage1dType(type)).also { registerStorage(it) }
 
-        check(storage is KslStorage1d<*> && storage.storageType.elemType is T) {
+        check(storage is KslStorage1d<*> && storage.storageType.elemType == type) {
             "Existing uniform with name \"$name\" has not the expected type"
+        }
+        check(type != KslFloat3 && type != KslInt3 && type != KslUint3) {
+            "3-dimensional storage buffer types are not supported (use 4 dimensions instead)"
         }
         @Suppress("UNCHECKED_CAST")
         return storage as KslStorage1d<KslStorage1dType<T>>
     }
 
     inline fun <reified T: KslNumericType> storage2d(name: String): KslStorage2d<KslStorage2dType<T>> {
-        val storage: KslStorage<*,*> = uniformStorage[name]
-            ?: KslStorage2d(name, KslStorage2dType(numericTypeForT<T>())).also { registerStorage(it) }
+        val type = numericTypeForT<T>()
+        val storage: KslStorage<*,*> = storageBuffers[name]
+            ?: KslStorage2d(name, KslStorage2dType(type)).also { registerStorage(it) }
 
-        check(storage is KslStorage2d<*> && storage.storageType.elemType is T) {
+        check(storage is KslStorage2d<*> && type == storage.storageType.elemType) {
             "Existing uniform with name \"$name\" has not the expected type"
+        }
+        check(type != KslFloat3 && type != KslInt3 && type != KslUint3) {
+            "3-dimensional storage buffer types are not supported (use 4 dimensions instead)"
         }
         @Suppress("UNCHECKED_CAST")
         return storage as KslStorage2d<KslStorage2dType<T>>
     }
 
     inline fun <reified T: KslNumericType> storage3d(name: String): KslStorage3d<KslStorage3dType<T>> {
-        val storage: KslStorage<*,*> = uniformStorage[name]
-            ?: KslStorage3d(name, KslStorage3dType(numericTypeForT<T>())).also { registerStorage(it) }
+        val type = numericTypeForT<T>()
+        val storage: KslStorage<*,*> = storageBuffers[name]
+            ?: KslStorage3d(name, KslStorage3dType(type)).also { registerStorage(it) }
 
-        check(storage is KslStorage3d<*> && storage.storageType.elemType is T) {
+        check(storage is KslStorage3d<*> && storage.storageType.elemType == type) {
             "Existing uniform with name \"$name\" has not the expected type"
+        }
+        check(type != KslFloat3 && type != KslInt3 && type != KslUint3) {
+            "3-dimensional storage buffer types are not supported (use 4 dimensions instead)"
         }
         @Suppress("UNCHECKED_CAST")
         return storage as KslStorage3d<KslStorage3dType<T>>
@@ -271,7 +283,7 @@ open class KslProgram(val name: String) {
             uniformSamplers.values.retainAll { u -> stages.any { stage -> stage.dependsOn(u.sampler) } }
 
             // remove unused storage
-            uniformStorage.values.retainAll { u -> stages.any { stage -> stage.dependsOn(u) } }
+            storageBuffers.values.retainAll { u -> stages.any { stage -> stage.dependsOn(u) } }
         }
     }
 

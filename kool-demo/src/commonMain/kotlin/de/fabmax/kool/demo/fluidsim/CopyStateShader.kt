@@ -3,17 +3,17 @@ package de.fabmax.kool.demo.fluidsim
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.modules.ksl.KslComputeShader
 import de.fabmax.kool.modules.ksl.lang.*
-import de.fabmax.kool.pipeline.StorageTexture2d
+import de.fabmax.kool.pipeline.StorageBuffer2d
 
 class CopyStateShader(
-    uStateIn: StorageTexture2d,
-    vStateIn: StorageTexture2d,
-    smokeIn: StorageTexture2d,
-    uStateOut: StorageTexture2d,
-    vStateOut: StorageTexture2d,
-    smokeOut: StorageTexture2d,
-    borderStateOut: StorageTexture2d,
-    drawOutput: StorageTexture2d,
+    uStateIn: StorageBuffer2d,
+    vStateIn: StorageBuffer2d,
+    smokeIn: StorageBuffer2d,
+    uStateOut: StorageBuffer2d,
+    vStateOut: StorageBuffer2d,
+    smokeOut: StorageBuffer2d,
+    borderStateOut: StorageBuffer2d,
+    drawOutput: StorageBuffer2d,
 ) : KslComputeShader("Copy State Shader") {
 
     var clearFlag by uniform1i("clearFlag", 0)

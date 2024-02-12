@@ -811,15 +811,16 @@ class WgslGenerator : KslGenerator() {
     private fun StringBuilder.generateStorageTextures(stage: KslShaderStage, pipeline: PipelineBase) {
         pipeline.bindGroupLayouts.asList.forEach { layout ->
             layout.bindings
-                .filterIsInstance<StorageTextureLayout>().filter { texLayout ->
+                .filterIsInstance<StorageBufferLayout>().filter { texLayout ->
                     stage.type.pipelineStageType in texLayout.stages
                 }
-                .map { tex ->
-                    val location = generatorState.locations[tex]
-                    val kslTex = stage.getUsedStorage().first { it.name == tex.name }
-                    val samplerType = kslTex.expressionType.wgslTypeName()
-                    appendLine("@group(${location.group}) @binding(${location.binding}) var ${tex.name}: $samplerType;")
-                }
+            TODO()
+//                .map { tex ->
+//                    val location = generatorState.locations[tex]
+//                    val kslTex = stage.getUsedStorage().first { it.name == tex.name }
+//                    val samplerType = kslTex.expressionType.wgslTypeName()
+//                    appendLine("@group(${location.group}) @binding(${location.binding}) var ${tex.name}: $samplerType;")
+//                }
         }
         appendLine()
     }

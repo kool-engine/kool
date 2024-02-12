@@ -3,16 +3,15 @@ package de.fabmax.kool.demo.fluidsim
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.modules.ksl.KslComputeShader
 import de.fabmax.kool.modules.ksl.lang.*
-import de.fabmax.kool.pipeline.StorageTexture2d
-import de.fabmax.kool.pipeline.TexFormat
-import de.fabmax.kool.util.Int32Buffer
+import de.fabmax.kool.pipeline.GpuType
+import de.fabmax.kool.pipeline.StorageBuffer2d
 import kotlin.random.Random
 
 class IncompressibilitySolverShader(
-    uState: StorageTexture2d,
-    vState: StorageTexture2d,
-    borderState: StorageTexture2d,
-    randomIndices: StorageTexture2d
+    uState: StorageBuffer2d,
+    vState: StorageBuffer2d,
+    borderState: StorageBuffer2d,
+    randomIndices: StorageBuffer2d
 ) : KslComputeShader("Incompressibility solver") {
 
     var overRelaxation: Float by uniform1f("overRelaxation", 1f)
@@ -108,10 +107,10 @@ class IncompressibilitySolverShader(
     }
 
     companion object {
-        fun makeRandomAccessIndices(simWidth: Int, simHeight: Int): StorageTexture2d {
-            val randomIndices = StorageTexture2d(simWidth, simHeight, TexFormat.R_I32)
+        fun makeRandomAccessIndices(simWidth: Int, simHeight: Int): StorageBuffer2d {
+            val randomIndices = StorageBuffer2d(simWidth, simHeight, GpuType.INT1)
 
-            randomIndices.loadTextureData { buf ->
+            randomIndices.writeInts { buf ->
                 val indices = mutableListOf<Vec2i>()
                 for (y in 0 ..< simHeight) {
                     for (x in 0 ..< simWidth) {
@@ -120,7 +119,6 @@ class IncompressibilitySolverShader(
                 }
                 indices.shuffle(Random(31))
 
-                buf as Int32Buffer
                 for (y in 0 ..< simHeight) {
                     for (x in 0 ..< simWidth) {
                         val idx = indices[y * simWidth + x]

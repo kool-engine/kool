@@ -39,9 +39,9 @@ sealed class CompiledShader(private val pipeline: PipelineBase, val program: GlP
                     is Texture2dLayout -> intArrayOf(gl.getUniformLocation(program, binding.name)) //getUniformLocations(binding.name, binding.arraySize, program)
                     is Texture3dLayout -> intArrayOf(gl.getUniformLocation(program, binding.name)) //getUniformLocations(binding.name, binding.arraySize, program)
                     is TextureCubeLayout -> intArrayOf(gl.getUniformLocation(program, binding.name)) //getUniformLocations(binding.name, binding.arraySize, program)
-                    is StorageTexture1dLayout -> intArrayOf(storageIndex++)
-                    is StorageTexture2dLayout -> intArrayOf(storageIndex++)
-                    is StorageTexture3dLayout -> intArrayOf(storageIndex++)
+                    is StorageBuffer1dLayout -> intArrayOf(storageIndex++)
+                    is StorageBuffer2dLayout -> intArrayOf(storageIndex++)
+                    is StorageBuffer3dLayout -> intArrayOf(storageIndex++)
                 }
             }
         }
@@ -57,7 +57,7 @@ sealed class CompiledShader(private val pipeline: PipelineBase, val program: GlP
         lastUsed = Time.gameTime
 
         var uniformsOk = true
-        uniformBindCtx.reset()
+        uniformBindCtx.reset(renderPass)
 
         if (viewData != null) {
             val viewGroup = (viewData.gpuData as MappedBindGroup?) ?: mapBindGroup(viewData, renderPass).also { viewData.gpuData = it }
@@ -98,6 +98,8 @@ sealed class CompiledShader(private val pipeline: PipelineBase, val program: GlP
     class UniformBindContext(val locations: List<List<IntArray>>) {
         var group: Int = 0
         var nextTexUnit: Int = 0
+        lateinit var renderPass: RenderPass
+            private set
 
         fun location(bindingIndex: Int): Int = locations[group][bindingIndex][0]
         fun locations(bindingIndex: Int): IntArray = locations[group][bindingIndex]
@@ -106,7 +108,8 @@ sealed class CompiledShader(private val pipeline: PipelineBase, val program: GlP
             group = scope.group
         }
 
-        fun reset() {
+        fun reset(renderPass: RenderPass) {
+            this.renderPass = renderPass
             group = 0
             nextTexUnit = 0
         }
@@ -130,9 +133,9 @@ sealed class CompiledShader(private val pipeline: PipelineBase, val program: GlP
                     is BindGroupData.Texture2dBindingData -> mapTexture2d(binding)
                     is BindGroupData.Texture3dBindingData -> mapTexture3d(binding)
                     is BindGroupData.TextureCubeBindingData -> mapTextureCube(binding)
-                    is BindGroupData.StorageTexture1dBindingData -> mapStorage1d(binding)
-                    is BindGroupData.StorageTexture2dBindingData -> mapStorage2d(binding)
-                    is BindGroupData.StorageTexture3dBindingData -> mapStorage3d(binding)
+                    is BindGroupData.StorageBuffer1dBindingData -> mapStorage1d(binding)
+                    is BindGroupData.StorageBuffer2dBindingData -> mapStorage2d(binding)
+                    is BindGroupData.StorageBuffer3dBindingData -> mapStorage3d(binding)
                 }
             }
         }
@@ -146,15 +149,20 @@ sealed class CompiledShader(private val pipeline: PipelineBase, val program: GlP
             return uniformsValid
         }
 
+        private fun createGpuBuffer(name: String): BufferResource {
+            val bufferCreationInfo = BufferCreationInfo(
+                bufferName = name,
+                renderPassName = renderPass.name,
+                sceneName = renderPass.parentScene?.name ?: "scene:<null>"
+            )
+            val buffer = BufferResource(backend.gl.UNIFORM_BUFFER, backend, bufferCreationInfo)
+            buffer.releaseWith(this)
+            return buffer
+        }
+
         private fun mapUbo(ubo: BindGroupData.UniformBufferBindingData) {
             mappings += if (ubo.name !in plainUniformUbos) {
-                val bufferCreationInfo = BufferCreationInfo(
-                    bufferName = "bindGroup[${bindGroupData.layout.scope}]-ubo-${ubo.name}",
-                    renderPassName = renderPass.name,
-                    sceneName = renderPass.parentScene?.name ?: "scene:<null>"
-                )
-                val buffer = BufferResource(backend.gl.UNIFORM_BUFFER, backend, bufferCreationInfo)
-                buffer.releaseWith(this)
+                val buffer = createGpuBuffer("bindGroup[${bindGroupData.layout.scope}]-ubo-${ubo.name}")
                 MappedUbo(ubo, buffer, backend)
 
             } else {
@@ -178,23 +186,23 @@ sealed class CompiledShader(private val pipeline: PipelineBase, val program: GlP
             mappings += MappedUniformTexCube(cubeMap, backend)
         }
 
-        private fun mapStorage1d(storage: BindGroupData.StorageTexture1dBindingData) {
-            checkStorageTexSupport()
-            mappings += MappedUniformStorage1d(storage, backend)
+        private fun mapStorage1d(storage: BindGroupData.StorageBuffer1dBindingData) {
+            checkStorageBufferSupport()
+            mappings += MappedStorageBuffer1d(storage, backend)
         }
 
-        private fun mapStorage2d(storage: BindGroupData.StorageTexture2dBindingData) {
-            checkStorageTexSupport()
-            mappings += MappedUniformStorage2d(storage, backend)
+        private fun mapStorage2d(storage: BindGroupData.StorageBuffer2dBindingData) {
+            checkStorageBufferSupport()
+            mappings += MappedStorageBuffer2d(storage, backend)
         }
 
-        private fun mapStorage3d(storage: BindGroupData.StorageTexture3dBindingData) {
-            checkStorageTexSupport()
-            mappings += MappedUniformStorage3d(storage, backend)
+        private fun mapStorage3d(storage: BindGroupData.StorageBuffer3dBindingData) {
+            checkStorageBufferSupport()
+            mappings += MappedStorageBuffer3d(storage, backend)
         }
 
-        private fun checkStorageTexSupport() {
-            check(backend.gl.version.isHigherOrEqualThan(4, 2)) {
+        private fun checkStorageBufferSupport() {
+            check(backend.gl.version.isHigherOrEqualThan(4, 3)) {
                 "Storage textures require OpenGL 4.2 or higher"
             }
         }

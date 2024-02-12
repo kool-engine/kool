@@ -64,9 +64,9 @@ class WgpuBindGroupData(
                 is BindGroupData.Texture3dBindingData -> bindGroupEntries += binding.makeTexture3dEntry()
                 is BindGroupData.TextureCubeBindingData -> bindGroupEntries += binding.makeTextureCubeEntry()
 
-                is BindGroupData.StorageTexture1dBindingData -> TODO("StorageTexture1dBindingData")
-                is BindGroupData.StorageTexture2dBindingData -> TODO("StorageTexture2dBindingData")
-                is BindGroupData.StorageTexture3dBindingData -> TODO("StorageTexture3dBindingData")
+                is BindGroupData.StorageBuffer1dBindingData -> TODO("StorageBuffer1dBindingData")
+                is BindGroupData.StorageBuffer2dBindingData -> TODO("StorageBuffer2dBindingData")
+                is BindGroupData.StorageBuffer3dBindingData -> TODO("StorageBuffer3dBindingData")
             }
         }
         bindGroup = backend.device.createBindGroup(

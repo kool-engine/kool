@@ -29,22 +29,15 @@ class FluidDemo : DemoScene("Fluid Simulation") {
     private val simHeight = 256
     private val simWidth = 456
 
-    private val uStateA = StorageTexture2d(simWidth, simHeight, TexFormat.R_I32)
-    private val vStateA = StorageTexture2d(simWidth, simHeight, TexFormat.R_I32)
-    private val uStateB = StorageTexture2d(simWidth, simHeight, TexFormat.R_I32)
-    private val vStateB = StorageTexture2d(simWidth, simHeight, TexFormat.R_I32)
-    private val smokeDensityA = StorageTexture2d(simWidth, simHeight, TexFormat.R_I32)
-    private val smokeDensityB = StorageTexture2d(simWidth, simHeight, TexFormat.R_I32)
-    private val borderState = StorageTexture2d(simWidth, simHeight, TexFormat.R_I32)
+    private val uStateA = StorageBuffer2d(simWidth, simHeight, GpuType.INT1)
+    private val vStateA = StorageBuffer2d(simWidth, simHeight, GpuType.INT1)
+    private val uStateB = StorageBuffer2d(simWidth, simHeight, GpuType.INT1)
+    private val vStateB = StorageBuffer2d(simWidth, simHeight, GpuType.INT1)
+    private val smokeDensityA = StorageBuffer2d(simWidth, simHeight, GpuType.INT1)
+    private val smokeDensityB = StorageBuffer2d(simWidth, simHeight, GpuType.INT1)
+    private val borderState = StorageBuffer2d(simWidth, simHeight, GpuType.INT1)
 
-    private val draw = StorageTexture2d(
-        simWidth, simHeight,
-        TextureProps(
-            format = TexFormat.RGBA_F32,
-            generateMipMaps = false,
-            defaultSamplerSettings = SamplerSettings().clamped().linear()
-        )
-    )
+    private val draw = StorageBuffer2d(simWidth, simHeight, GpuType.FLOAT4)
 
     private val solvers = mutableListOf<IncompressibilitySolverShader>()
     private val advectionShader = AdvectionShader(uStateA, vStateA, smokeDensityA, uStateB, vStateB, smokeDensityB, borderState)
@@ -173,12 +166,13 @@ class FluidDemo : DemoScene("Fluid Simulation") {
             }
         }
 
-        // release storage texture when done
-        uStateA.releaseWith(this)
-        vStateA.releaseWith(this)
-        uStateB.releaseWith(this)
-        vStateB.releaseWith(this)
-        borderState.releaseWith(this)
+        // release storage buffers when done
+        // TODO
+//        uStateA.releaseWith(this)
+//        vStateA.releaseWith(this)
+//        uStateB.releaseWith(this)
+//        vStateB.releaseWith(this)
+//        borderState.releaseWith(this)
     }
 
     private fun initializeSolverTasks() {
@@ -265,7 +259,7 @@ class FluidDemo : DemoScene("Fluid Simulation") {
         var flowSpeed by uniform1f("flowSpeed", copyShader.flowSpeed)
 
         init {
-            texture2d("drawState", draw)
+            storage2d("drawState", draw)
             pipelineConfig = PipelineConfig(
                 depthTest = DepthCompareOp.ALWAYS,
                 lineWidth = 2f
@@ -302,7 +296,7 @@ class FluidDemo : DemoScene("Fluid Simulation") {
         var mode by uniform1i("uMode", 1)
 
         init {
-            texture2d("drawState", draw)
+            storage2d("drawState", draw)
 
             val baseColor = (MdColor.PURPLE toneLin 300).toOklab()
             val gradientColors = (0..18).map { i ->

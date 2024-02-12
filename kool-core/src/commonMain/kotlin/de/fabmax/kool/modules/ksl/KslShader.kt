@@ -241,20 +241,31 @@ private fun KslProgram.setupBindGroupLayoutStorage(bindGrpBuilder: BindGroupLayo
         return
     }
 
-    uniformStorage.values.forEach { storage ->
+    storageBuffers.values.forEach { storage ->
         val storageStages = stages
             .filter { it.dependsOn(storage) }
             .map { it.type.pipelineStageType }
             .toSet()
+        val format = when (storage.storageType.elemType) {
+            KslFloat1 -> GpuType.FLOAT1
+            KslFloat2 -> GpuType.FLOAT2
+            KslFloat4 -> GpuType.FLOAT4
+            KslInt1 -> GpuType.INT1
+            KslInt2 -> GpuType.INT2
+            KslInt4 -> GpuType.INT4
+            KslUint1 -> GpuType.INT1
+            KslUint2 -> GpuType.INT2
+            KslUint4 -> GpuType.INT4
+            else -> error("Invalid storage type: ${storage.storageType.elemType} (only 1, 2, and 4 dimensional float and int types are allowed)")
+        }
 
         val name = storage.name
-        val format = storage.storageType.elemType
         // todo: restrict this to read- / write-only if possible
         val accessType = StorageAccessType.READ_WRITE
         bindGrpBuilder.storage += when(storage.storageType)  {
-            is KslStorage1dType<*> -> StorageTexture1dLayout(name, format, accessType, storageStages)
-            is KslStorage2dType<*> -> StorageTexture2dLayout(name, format, accessType, storageStages)
-            is KslStorage3dType<*> -> StorageTexture3dLayout(name, format, accessType, storageStages)
+            is KslStorage1dType<*> -> StorageBuffer1dLayout(name, format, accessType, storageStages)
+            is KslStorage2dType<*> -> StorageBuffer2dLayout(name, format, accessType, storageStages)
+            is KslStorage3dType<*> -> StorageBuffer3dLayout(name, format, accessType, storageStages)
         }
     }
 }

@@ -86,12 +86,12 @@ abstract class ShaderBase<T: PipelineBase>(val name: String) {
     fun textureCube(textureName: String, defaultVal: TextureCube? = null, defaultSampler: SamplerSettings? = null): TextureCubeBinding =
         getOrCreateBinding(textureName) { TextureCubeBinding(textureName, defaultVal, defaultSampler, this) } as TextureCubeBinding
 
-    fun storage1d(textureName: String, defaultVal: StorageTexture1d? = null): StorageTexture1dBinding =
-        getOrCreateBinding(textureName) { StorageTexture1dBinding(textureName, defaultVal, this) } as StorageTexture1dBinding
-    fun storage2d(textureName: String, defaultVal: StorageTexture2d? = null): StorageTexture2dBinding =
-        getOrCreateBinding(textureName) { StorageTexture2dBinding(textureName, defaultVal, this) } as StorageTexture2dBinding
-    fun storage3d(textureName: String, defaultVal: StorageTexture3d? = null): StorageTexture3dBinding =
-        getOrCreateBinding(textureName) { StorageTexture3dBinding(textureName, defaultVal, this) } as StorageTexture3dBinding
+    fun storage1d(storageName: String, defaultVal: StorageBuffer1d? = null): StorageBuffer1dBinding =
+        getOrCreateBinding(storageName) { StorageBuffer1dBinding(storageName, defaultVal, this) } as StorageBuffer1dBinding
+    fun storage2d(storageName: String, defaultVal: StorageBuffer2d? = null): StorageBuffer2dBinding =
+        getOrCreateBinding(storageName) { StorageBuffer2dBinding(storageName, defaultVal, this) } as StorageBuffer2dBinding
+    fun storage3d(storageName: String, defaultVal: StorageBuffer3d? = null): StorageBuffer3dBinding =
+        getOrCreateBinding(storageName) { StorageBuffer3dBinding(storageName, defaultVal, this) } as StorageBuffer3dBinding
 
     fun colorUniform(cfg: ColorBlockConfig): UniformBindingColor =
         uniformColor(cfg.primaryUniform?.uniformName ?: UniqueId.nextId("_"), cfg.primaryUniform?.defaultColor ?: Color.BLACK)

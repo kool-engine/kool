@@ -316,9 +316,9 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
         BindingType.TEXTURE_3D -> VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
         BindingType.TEXTURE_CUBE -> VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
         BindingType.UNIFORM_BUFFER -> VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
-        BindingType.STORAGE_TEXTURE_1D -> TODO()
-        BindingType.STORAGE_TEXTURE_2D -> TODO()
-        BindingType.STORAGE_TEXTURE_3D -> TODO()
+        BindingType.STORAGE_BUFFER_1D -> TODO()
+        BindingType.STORAGE_BUFFER_2D -> TODO()
+        BindingType.STORAGE_BUFFER_3D -> TODO()
     }
 
     private fun MemoryStack.createDescriptorSetLayout(bindGroupLayout: BindGroupLayout): Long {

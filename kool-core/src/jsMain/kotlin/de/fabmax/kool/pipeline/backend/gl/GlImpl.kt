@@ -58,6 +58,7 @@ object GlImpl : GlApi {
     override val REPEAT = WebGLRenderingContext.REPEAT
     override val SAMPLES = WebGLRenderingContext.SAMPLES
     override val SCISSOR_TEST = WebGLRenderingContext.SCISSOR_TEST
+    override val SHADER_STORAGE_BUFFER = 0
     override val SRC_ALPHA = WebGLRenderingContext.SRC_ALPHA
     override val STATIC_DRAW = WebGLRenderingContext.STATIC_DRAW
     override val TEXTURE_1D = 0

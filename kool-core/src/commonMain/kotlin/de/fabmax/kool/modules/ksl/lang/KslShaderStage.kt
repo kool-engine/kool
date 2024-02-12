@@ -60,7 +60,7 @@ abstract class KslShaderStage(val program: KslProgram, val type: KslShaderStageT
     }
 
     fun getUsedStorage(): List<KslStorage<*, *>> {
-        return program.uniformStorage.values.filter { dependsOn(it) }
+        return program.storageBuffers.values.filter { dependsOn(it) }
     }
 
     fun getUsedUbos(): List<KslUniformBuffer> {
@@ -148,9 +148,10 @@ class KslVertexStage(program: KslProgram) : KslShaderStage(program, KslShaderSta
     }
 }
 
+@Suppress("DEPRECATION")
 class KslFragmentStage(program: KslProgram) : KslShaderStage(program, KslShaderStageType.FragmentShader) {
 
-    // fixme: in OpenGL frag position is in pixels, other shading languages use normalized coordinates
+    @Deprecated("Avoid using inFragPosition as it behaves differently on different backends (OpenGL vs. WebGPU")
     val inFragPosition = KslStageInputVector(KslVarVector(NAME_IN_FRAG_POSITION, KslFloat4, false))
     val inIsFrontFacing = KslStageInputScalar(KslVarScalar(NAME_IN_IS_FRONT_FACING, KslBool1, false))
     val outDepth = KslStageOutputScalar(KslVarScalar(NAME_OUT_DEPTH, KslFloat1, true))

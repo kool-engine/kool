@@ -3,16 +3,16 @@ package de.fabmax.kool.demo.fluidsim
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.modules.ksl.KslComputeShader
 import de.fabmax.kool.modules.ksl.lang.*
-import de.fabmax.kool.pipeline.StorageTexture2d
+import de.fabmax.kool.pipeline.StorageBuffer2d
 
 class AdvectionShader(
-    uStateIn: StorageTexture2d,
-    vStateIn: StorageTexture2d,
-    smokeIn: StorageTexture2d,
-    uStateOut: StorageTexture2d,
-    vStateOut: StorageTexture2d,
-    smokeOut: StorageTexture2d,
-    borderState: StorageTexture2d
+    uStateIn: StorageBuffer2d,
+    vStateIn: StorageBuffer2d,
+    smokeIn: StorageBuffer2d,
+    uStateOut: StorageBuffer2d,
+    vStateOut: StorageBuffer2d,
+    smokeOut: StorageBuffer2d,
+    borderState: StorageBuffer2d
 ) : KslComputeShader("Advection Projection") {
     var advectionStep: Float by uniform1f("advectionStep", 1f)
 
