@@ -167,12 +167,14 @@ class FluidDemo : DemoScene("Fluid Simulation") {
         }
 
         // release storage buffers when done
-        // TODO
-//        uStateA.releaseWith(this)
-//        vStateA.releaseWith(this)
-//        uStateB.releaseWith(this)
-//        vStateB.releaseWith(this)
-//        borderState.releaseWith(this)
+        uStateA.releaseWith(this)
+        vStateA.releaseWith(this)
+        uStateB.releaseWith(this)
+        vStateB.releaseWith(this)
+        smokeDensityA.releaseWith(this)
+        smokeDensityB.releaseWith(this)
+        borderState.releaseWith(this)
+        draw.releaseWith(this)
     }
 
     private fun initializeSolverTasks() {

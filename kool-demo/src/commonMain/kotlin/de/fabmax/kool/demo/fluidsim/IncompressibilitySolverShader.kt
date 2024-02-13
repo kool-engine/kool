@@ -30,10 +30,10 @@ class IncompressibilitySolverShader(
     private fun KslProgram.solverProg() {
         // larger work group sizes are faster but result in less stable simulation
         computeStage(2, 2) {
-            val uVals = storage2d<KslInt1>("uVals")
-            val vVals = storage2d<KslInt1>("vVals")
-            val indices = storage2d<KslInt1>("indices")
-            val borderState = storage2d<KslInt1>("borderState")
+            val uVals = storage2d<KslInt1>("uVals", 0)
+            val vVals = storage2d<KslInt1>("vVals", 0)
+            val indices = storage2d<KslInt1>("indices", 0)
+            val borderState = storage2d<KslInt1>("borderState", 0)
             val idxOffset = uniformInt2("idxOffset")
             val overRelaxation = uniformFloat1("overRelaxation")
 

@@ -13,9 +13,12 @@ import de.fabmax.kool.scene.addTextureMesh
 import de.fabmax.kool.scene.defaultOrbitCamera
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Time
+import de.fabmax.kool.util.releaseWith
 
 class HelloCompute : DemoScene("Hello Compute") {
     override fun Scene.setupMainScene(ctx: KoolContext) {
+        val storageSizeX = 256
+        val storageSizeY = 256
 
         // create a simple compute shader
         val computeShader = KslComputeShader("Compute shader test") {
@@ -23,7 +26,7 @@ class HelloCompute : DemoScene("Hello Compute") {
             computeStage(16, 16, 1) {
                 // storage maps to a 1d / 2d / 3d array of 1d / 2d / 4d float or (u)int vectors
                 // here we use a 2d array of 4d floats
-                val storage = storage2d<KslFloat4>("storage")
+                val storage = storage2d<KslFloat4>("storage", storageSizeX, storageSizeY)
 
                 // regular uniforms...
                 val offsetPos = uniformFloat2("uOffset")
@@ -53,14 +56,11 @@ class HelloCompute : DemoScene("Hello Compute") {
             }
         }
 
-        val outputWidth = 256
-        val outputHeight = 256
-
         // compute shaders are executed by ComputeRenderPasses, which are added as a scene offscreen pass
-        addOffscreenPass(ComputeRenderPass(computeShader, outputWidth, outputHeight))
+        addOffscreenPass(ComputeRenderPass(computeShader, storageSizeX, storageSizeY))
 
         // create and bind the storage texture used as compute shader output
-        val storageBuffer = StorageBuffer2d(outputWidth, outputHeight, GpuType.FLOAT4)
+        val storageBuffer = StorageBuffer2d(storageSizeX, storageSizeY, GpuType.FLOAT4)
         computeShader.storage2d("storage", storageBuffer)
 
         // animate offset position to change the colors over time
@@ -87,7 +87,7 @@ class HelloCompute : DemoScene("Hello Compute") {
                 }
                 fragmentStage {
                     main {
-                        val storage = storage2d<KslFloat4>("storage")
+                        val storage = storage2d<KslFloat4>("storage", storageSizeX, storageSizeY)
                         val color = float4Var(storageRead(storage, (Vec2f(256f).const * uv.output).toInt2()))
                         colorOutput(color.rgb, 1f.const)
                     }
@@ -97,7 +97,6 @@ class HelloCompute : DemoScene("Hello Compute") {
             }
         }
 
-        // todo: release storage texture when done
-        //storageBuffer.releaseWith(this)
+        storageBuffer.releaseWith(this)
     }
 }

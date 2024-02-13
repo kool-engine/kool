@@ -2,23 +2,34 @@ package de.fabmax.kool.modules.ksl.lang
 
 import de.fabmax.kool.modules.ksl.generator.KslGenerator
 import de.fabmax.kool.modules.ksl.model.KslMutatedState
+import de.fabmax.kool.pipeline.StorageAccessType
 
-sealed class KslStorage<T: KslStorageType<*, C>, C: KslIntType>(name: String, val storageType: T) : KslValue<T>(name, true) {
+sealed class KslStorage<T: KslStorageType<*, C>, C: KslIntType>(
+    name: String,
+    val accessType: StorageAccessType,
+    val storageType: T
+) : KslValue<T>(name, true) {
     val name: String
         get() = stateName
 }
 
-class KslStorage1d<T: KslStorage1dType<*>>(name: String, storage: T) : KslStorage<T, KslInt1>(name, storage) {
+class KslStorage1d<T: KslStorage1dType<*>>(name: String, storage: T, val sizeX: Int?, accessType: StorageAccessType) :
+    KslStorage<T, KslInt1>(name, accessType, storage)
+{
     override val expressionType: T
         get() = storageType
 }
 
-class KslStorage2d<T: KslStorage2dType<*>>(name: String, storage: T) : KslStorage<T, KslInt2>(name, storage) {
+class KslStorage2d<T: KslStorage2dType<*>>(name: String, storage: T, val sizeX: Int, val sizeY: Int?, accessType: StorageAccessType) :
+    KslStorage<T, KslInt2>(name, accessType, storage)
+{
     override val expressionType: T
         get() = storageType
 }
 
-class KslStorage3d<T: KslStorage3dType<*>>(name: String, storage: T) : KslStorage<T, KslInt3>(name, storage) {
+class KslStorage3d<T: KslStorage3dType<*>>(name: String, storage: T, val sizeX: Int, val sizeY: Int, val sizeZ: Int?, accessType: StorageAccessType) :
+    KslStorage<T, KslInt3>(name, accessType, storage)
+{
     override val expressionType: T
         get() = storageType
 }

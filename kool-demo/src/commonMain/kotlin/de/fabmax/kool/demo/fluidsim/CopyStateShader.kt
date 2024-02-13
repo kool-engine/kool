@@ -38,14 +38,14 @@ class CopyStateShader(
 
     fun KslProgram.copyProgram() {
         computeStage(8, 8) {
-            val uStateIn = storage2d<KslInt1>("uStateIn")
-            val vStateIn = storage2d<KslInt1>("vStateIn")
-            val smokeIn = storage2d<KslInt1>("smokeIn")
-            val uStateOut = storage2d<KslInt1>("uStateOut")
-            val vStateOut = storage2d<KslInt1>("vStateOut")
-            val smokeOut = storage2d<KslInt1>("smokeOut")
-            val borderStateOut = storage2d<KslInt1>("borderStateOut")
-            val drawOutput = storage2d<KslFloat4>("drawOutput")
+            val uStateIn = storage2d<KslInt1>("uStateIn", 0)
+            val vStateIn = storage2d<KslInt1>("vStateIn", 0)
+            val smokeIn = storage2d<KslInt1>("smokeIn", 0)
+            val uStateOut = storage2d<KslInt1>("uStateOut", 0)
+            val vStateOut = storage2d<KslInt1>("vStateOut", 0)
+            val smokeOut = storage2d<KslInt1>("smokeOut", 0)
+            val borderStateOut = storage2d<KslInt1>("borderStateOut", 0)
+            val drawOutput = storage2d<KslFloat4>("drawOutput", 0)
 
             main {
                 val size = int2Var(inNumWorkGroups.xy.toInt2() * inWorkGroupSize.xy.toInt2())

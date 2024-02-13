@@ -5,16 +5,13 @@ import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.math.Vec4i
 import de.fabmax.kool.pipeline.backend.GpuBuffer
-import de.fabmax.kool.util.Buffer
-import de.fabmax.kool.util.Float32Buffer
-import de.fabmax.kool.util.Int32Buffer
-import de.fabmax.kool.util.UniqueId
+import de.fabmax.kool.util.*
 
 abstract class StorageBuffer(
     val format: GpuType,
     val name: String,
     size: Int,
-) {
+): BaseReleasable() {
 
     internal var gpuBuffer: GpuBuffer? = null
 
@@ -91,6 +88,12 @@ abstract class StorageBuffer(
 
     suspend fun readbackInts(block: (Int32Buffer) -> Unit) {
         TODO()
+    }
+
+    override fun release() {
+        super.release()
+        gpuBuffer?.release()
+        gpuBuffer = null
     }
 
     companion object {

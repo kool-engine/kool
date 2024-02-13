@@ -175,6 +175,7 @@ sealed class StorageBufferLayout(
 class StorageBuffer1dLayout(
     name: String,
     format: GpuType,
+    val sizeX: Int?,
     accessType: StorageAccessType,
     stages: Set<ShaderStage>,
 ) : StorageBufferLayout(name, format, accessType, stages, BindingType.STORAGE_BUFFER_1D)
@@ -182,6 +183,8 @@ class StorageBuffer1dLayout(
 class StorageBuffer2dLayout(
     name: String,
     format: GpuType,
+    val sizeX: Int,
+    val sizeY: Int?,
     accessType: StorageAccessType,
     stages: Set<ShaderStage>,
 ) : StorageBufferLayout(name, format, accessType, stages, BindingType.STORAGE_BUFFER_2D)
@@ -189,6 +192,9 @@ class StorageBuffer2dLayout(
 class StorageBuffer3dLayout(
     name: String,
     format: GpuType,
+    val sizeX: Int,
+    val sizeY: Int,
+    val sizeZ: Int?,
     accessType: StorageAccessType,
     stages: Set<ShaderStage>,
 ) : StorageBufferLayout(name, format, accessType, stages, BindingType.STORAGE_BUFFER_3D)

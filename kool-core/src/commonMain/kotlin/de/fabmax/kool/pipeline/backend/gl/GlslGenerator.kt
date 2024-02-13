@@ -206,16 +206,26 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
     override fun storageRead(storageRead: KslStorageRead<*, *, *>): String {
         val storage = storageRead.storage.generateExpression(this)
         val coord = storageRead.coord.generateExpression(this)
-        // fixme hard-coded coord translation for testing
-        return "$storage[256 * $coord.y + $coord.x]"
+
+        val arrayCoord = when (storageRead.storage.expressionType) {
+            is KslStorage1dType<*> -> "[${coord}]"
+            is KslStorage2dType<*> -> "[${coord}.y][${coord}.x]"
+            is KslStorage3dType<*> -> "[${coord}.z][${coord}.y][${coord}.x]"
+        }
+        return "${storage}${arrayCoord}"
     }
 
     override fun opStorageWrite(op: KslStorageWrite<*, *, *>): String {
         val storage = op.storage.generateExpression(this)
         val expr = op.data.generateExpression(this)
         val coord = op.coord.generateExpression(this)
-        // fixme hard-coded coord translation for testing
-        return "$storage[256 * $coord.y + $coord.x] = $expr;"
+
+        val arrayCoord = when (op.storage) {
+            is KslStorage1d<*> -> "[${coord}]"
+            is KslStorage2d<*> -> "[${coord}.y][${coord}.x]"
+            is KslStorage3d<*> -> "[${coord}.z][${coord}.y][${coord}.x]"
+        }
+        return "${storage}${arrayCoord} = $expr;"
     }
 
     override fun storageAtomicOp(atomicOp: KslStorageAtomicOp<*, *, *>): String {
@@ -257,9 +267,14 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
         if (storage.isNotEmpty()) {
             appendLine("// image storage")
             storage.forEachIndexed { i, it ->
+                val arrayDim = when (it) {
+                    is KslStorage1d<*> -> if (it.sizeX == null) "[]" else "[${it.sizeX}]"
+                    is KslStorage2d<*> -> if (it.sizeY == null) "[][${it.sizeX}]" else "[${it.sizeY}][${it.sizeX}]"
+                    is KslStorage3d<*> -> if (it.sizeZ == null) "[][${it.sizeY}][${it.sizeZ}]" else "[${it.sizeZ}][${it.sizeY}][${it.sizeX}]"
+                }
                 appendLine("""
-                    layout(std430, binding=$i) buffer ssboLayout$i {
-                        ${glslTypeName(it.storageType.elemType)} ${it.name}[];
+                    layout(std430, binding=$i) buffer ssboLayout_$i {
+                        ${glslTypeName(it.storageType.elemType)} ${it.name}$arrayDim;
                     };
                 """.trimIndent())
             }

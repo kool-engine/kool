@@ -32,15 +32,15 @@ class AdvectionShader(
 
     private fun KslProgram.advectionProg() {
         computeStage(8, 8) {
-            val uStateIn = storage2d<KslInt1>("uStateIn")
-            val vStateIn = storage2d<KslInt1>("vStateIn")
-            val uStateOut = storage2d<KslInt1>("uStateOut")
-            val vStateOut = storage2d<KslInt1>("vStateOut")
+            val uStateIn = storage2d<KslInt1>("uStateIn", 0)
+            val vStateIn = storage2d<KslInt1>("vStateIn", 0)
+            val uStateOut = storage2d<KslInt1>("uStateOut", 0)
+            val vStateOut = storage2d<KslInt1>("vStateOut", 0)
 
-            val smokeIn = storage2d<KslInt1>("smokeIn")
-            val smokeOut = storage2d<KslInt1>("smokeOut")
+            val smokeIn = storage2d<KslInt1>("smokeIn", 0)
+            val smokeOut = storage2d<KslInt1>("smokeOut", 0)
 
-            val borderState = storage2d<KslInt1>("borderState")
+            val borderState = storage2d<KslInt1>("borderState", 0)
 
             val advectionStep = uniformFloat1("advectionStep")
 

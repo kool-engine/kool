@@ -212,7 +212,7 @@ private fun KslProgram.setupBindGroupLayoutUbos(bindGrpBuilder: BindGroupLayout.
 
 private fun KslProgram.setupBindGroupLayoutTextures(bindGrpBuilder: BindGroupLayout.Builder) {
     if (bindGrpBuilder.scope != BindGroupScope.PIPELINE) {
-        // todo: add bind group scope to ksl textures -> for now we use material scope for all of them
+        // todo: add bind group scope to ksl textures -> for now we use pipeline scope for all of them
         return
     }
 
@@ -237,7 +237,7 @@ private fun KslProgram.setupBindGroupLayoutTextures(bindGrpBuilder: BindGroupLay
 
 private fun KslProgram.setupBindGroupLayoutStorage(bindGrpBuilder: BindGroupLayout.Builder) {
     if (bindGrpBuilder.scope != BindGroupScope.PIPELINE) {
-        // todo: add bind group scope to ksl storage -> for now we use material scope for all of them
+        // todo: add bind group scope to ksl storage -> for now we use pipeline scope for all of them
         return
     }
 
@@ -260,12 +260,10 @@ private fun KslProgram.setupBindGroupLayoutStorage(bindGrpBuilder: BindGroupLayo
         }
 
         val name = storage.name
-        // todo: restrict this to read- / write-only if possible
-        val accessType = StorageAccessType.READ_WRITE
-        bindGrpBuilder.storage += when(storage.storageType)  {
-            is KslStorage1dType<*> -> StorageBuffer1dLayout(name, format, accessType, storageStages)
-            is KslStorage2dType<*> -> StorageBuffer2dLayout(name, format, accessType, storageStages)
-            is KslStorage3dType<*> -> StorageBuffer3dLayout(name, format, accessType, storageStages)
+        bindGrpBuilder.storage += when(storage)  {
+            is KslStorage1d<*> -> StorageBuffer1dLayout(name, format, storage.sizeX, storage.accessType, storageStages)
+            is KslStorage2d<*> -> StorageBuffer2dLayout(name, format, storage.sizeX, storage.sizeY, storage.accessType, storageStages)
+            is KslStorage3d<*> -> StorageBuffer3dLayout(name, format, storage.sizeX, storage.sizeY, storage.sizeZ, storage.accessType, storageStages)
         }
     }
 }
