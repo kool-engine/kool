@@ -5,7 +5,6 @@ import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.demo.Demos.PlatformFilter
 import de.fabmax.kool.demo.bees.BeeDemo
 import de.fabmax.kool.demo.creativecoding.CreativeCodingDemo
-import de.fabmax.kool.demo.fluidsim.FluidDemo
 import de.fabmax.kool.demo.helloworld.*
 import de.fabmax.kool.demo.pbr.PbrDemo
 import de.fabmax.kool.demo.physics.collision.CollisionDemo
@@ -75,7 +74,6 @@ object Demos {
         entry("bees", "Fighting Bees") { BeeDemo() }
         entry("simplification", "Simplification") { SimplificationDemo() }
         entry("ui", "User Interface") { UiDemo() }
-        entry("fluid-sim", "Fluid Simulation", NeedsComputeShaders) { FluidDemo() }
     }
 
     val hiddenDemos = Category("Hidden", true, 0.75f, 0.95f).apply {
