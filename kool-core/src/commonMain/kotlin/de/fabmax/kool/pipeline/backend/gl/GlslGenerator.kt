@@ -203,45 +203,50 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
         return "imageSize(${storageSize.storage.generateExpression(this)})"
     }
 
+    private fun KslStorage<*,*>.getIndexString(coordExpr: String) = when (this) {
+        // choosing array dimension based on storage dimension would also work, but seems to have issues
+        // with some glsl compilers
+        //is KslStorage1dType<*> -> "[${coord}]"
+        //is KslStorage2dType<*> -> "[${coord}.y][${coord}.x]"
+        //is KslStorage3dType<*> -> "[${coord}.z][${coord}.y][${coord}.x]"
+
+        // always use a 1d array and compute array index dynamically based on buffer size
+        is KslStorage1d<*> -> "[${coordExpr}]"
+        is KslStorage2d<*> -> "[${coordExpr}.y * $sizeX + ${coordExpr}.x]"
+        is KslStorage3d<*> -> "[${coordExpr}.z * ${sizeY * sizeX} + ${coordExpr}.y * $sizeX + ${coordExpr}.x]"
+    }
+
     override fun storageRead(storageRead: KslStorageRead<*, *, *>): String {
         val storage = storageRead.storage.generateExpression(this)
         val coord = storageRead.coord.generateExpression(this)
-
-        val arrayCoord = when (storageRead.storage.expressionType) {
-            is KslStorage1dType<*> -> "[${coord}]"
-            is KslStorage2dType<*> -> "[${coord}.y][${coord}.x]"
-            is KslStorage3dType<*> -> "[${coord}.z][${coord}.y][${coord}.x]"
-        }
-        return "${storage}${arrayCoord}"
+        val buffer = storageRead.storage as KslStorage<*,*>
+        val arrayIndex = buffer.getIndexString(coord)
+        return "${storage}${arrayIndex}"
     }
 
     override fun opStorageWrite(op: KslStorageWrite<*, *, *>): String {
         val storage = op.storage.generateExpression(this)
         val expr = op.data.generateExpression(this)
         val coord = op.coord.generateExpression(this)
-
-        val arrayCoord = when (op.storage) {
-            is KslStorage1d<*> -> "[${coord}]"
-            is KslStorage2d<*> -> "[${coord}.y][${coord}.x]"
-            is KslStorage3d<*> -> "[${coord}.z][${coord}.y][${coord}.x]"
-        }
-        return "${storage}${arrayCoord} = $expr;"
+        val arrayIndex = op.storage.getIndexString(coord)
+        return "${storage}${arrayIndex} = $expr;"
     }
 
     override fun storageAtomicOp(atomicOp: KslStorageAtomicOp<*, *, *>): String {
+        val storage = atomicOp.storage.generateExpression(this)
+        val expr = atomicOp.data.generateExpression(this)
+        val coord = atomicOp.coord.generateExpression(this)
+        val arrayIndex = atomicOp.storage.getIndexString(coord)
         val func = when(atomicOp.op) {
-            KslStorageAtomicOp.Op.Swap -> "imageAtomicExchange"
-            KslStorageAtomicOp.Op.Add -> "imageAtomicAdd"
-            KslStorageAtomicOp.Op.And -> "imageAtomicAnd"
-            KslStorageAtomicOp.Op.Or -> "imageAtomicOr"
-            KslStorageAtomicOp.Op.Xor -> "imageAtomicXor"
-            KslStorageAtomicOp.Op.Min -> "imageAtomicMin"
-            KslStorageAtomicOp.Op.Max -> "imageAtomicMax"
+            KslStorageAtomicOp.Op.Swap -> "atomicExchange"
+            KslStorageAtomicOp.Op.Add -> "atomicAdd"
+            KslStorageAtomicOp.Op.And -> "atomicAnd"
+            KslStorageAtomicOp.Op.Or -> "atomicOr"
+            KslStorageAtomicOp.Op.Xor -> "atomicXor"
+            KslStorageAtomicOp.Op.Min -> "atomicMin"
+            KslStorageAtomicOp.Op.Max -> "atomicMax"
         }
-
-        return "$func(${atomicOp.storage.generateExpression(this)}, " +
-                "${atomicOp.coord.generateExpression(this)}, " +
-                "${atomicOp.data.generateExpression(this)})"
+        return "$func(${storage}${arrayIndex}, ${expr})"
     }
 
     override fun storageAtomicCompareSwap(atomicCompSwap: KslStorageAtomicCompareSwap<*, *, *>): String {
@@ -268,9 +273,16 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
             appendLine("// image storage")
             storage.forEachIndexed { i, it ->
                 val arrayDim = when (it) {
-                    is KslStorage1d<*> -> if (it.sizeX == null) "[]" else "[${it.sizeX}]"
-                    is KslStorage2d<*> -> if (it.sizeY == null) "[][${it.sizeX}]" else "[${it.sizeY}][${it.sizeX}]"
-                    is KslStorage3d<*> -> if (it.sizeZ == null) "[][${it.sizeY}][${it.sizeZ}]" else "[${it.sizeZ}][${it.sizeY}][${it.sizeX}]"
+                    // choosing array dimension based on storage dimension would also work, but seems to have issues
+                    // with some glsl compilers
+                    //is KslStorage1d<*> -> if (it.sizeX == null) "[]" else "[${it.sizeX}]"
+                    //is KslStorage2d<*> -> if (it.sizeY == null) "[][${it.sizeX}]" else "[${it.sizeY}][${it.sizeX}]"
+                    //is KslStorage3d<*> -> if (it.sizeZ == null) "[][${it.sizeY}][${it.sizeX}]" else "[${it.sizeZ}][${it.sizeY}][${it.sizeX}]"
+
+                    // always use a 1d array and compute array index dynamically based on buffer size
+                    is KslStorage1d<*> -> "[]"
+                    is KslStorage2d<*> -> "[]"
+                    is KslStorage3d<*> -> "[]"
                 }
                 appendLine("""
                     layout(std430, binding=$i) buffer ssboLayout_$i {

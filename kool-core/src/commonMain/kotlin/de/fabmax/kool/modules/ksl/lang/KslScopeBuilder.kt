@@ -6,6 +6,7 @@ import de.fabmax.kool.modules.ksl.model.KslOp
 import de.fabmax.kool.modules.ksl.model.KslScope
 import de.fabmax.kool.pipeline.backend.NdcYDirection
 import de.fabmax.kool.util.Color
+import kotlin.jvm.JvmName
 
 class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val parentStage: KslShaderStage) : KslScope(parentOp) {
 
@@ -519,6 +520,14 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
     fun <V, S> clamp(vec: KslVectorExpression<V, S>, min: KslVectorExpression<V, S>, max: KslVectorExpression<V, S>)
         where V: KslNumericType, V: KslVector<S>, S: KslNumericType, S: KslScalar = KslBuiltinClampVector(vec, min, max)
 
+    fun saturate(value: KslExprFloat1) = clamp(value, 0f.const, 1f.const)
+    @JvmName("saturate2f")
+    fun saturate(value: KslExprFloat2) = clamp(value, Vec2f.ZERO.const, Vec2f.ONES.const)
+    @JvmName("saturate3f")
+    fun saturate(value: KslExprFloat3) = clamp(value, Vec3f.ZERO.const, Vec3f.ONES.const)
+    @JvmName("saturate4f")
+    fun saturate(value: KslExprFloat4) = clamp(value, Vec4f.ZERO.const, Vec4f.ONES.const)
+
     fun cross(a: KslVectorExpression<KslFloat3, KslFloat1>, b: KslVectorExpression<KslFloat3, KslFloat1>) = KslBuiltinCross(a, b)
 
     fun degrees(value: KslScalarExpression<KslFloat1>) = KslBuiltinDegreesScalar(value)
@@ -688,9 +697,43 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
     fun <T> textureSizeCubeArray(sampler: KslExpression<T>, lod: KslScalarExpression<KslInt1> = 0.const)
         where T: KslSamplerType<*>, T: KslSamplerCubeArrayType = KslTextureSizeCubeArray(sampler, lod)
 
-    // builtin storage functions - mostly for compute shaders
-    fun <T: KslStorageType<*, C>, C: KslIntType> storageSize(storage: KslExpression<T>): KslExpression<C> =
-        KslStorageSize(storage, storage.expressionType.coordType)
+    // builtin storage functions
+    operator fun <T: KslStorageType<R, C>, R: KslNumericType, C: KslIntType> KslExpression<T>.get(coord: KslExpression<C>): KslExpression<R> =
+        KslStorageRead(this, coord, expressionType.elemType)
+
+    @JvmName("get2d")
+    operator fun <T: KslStorage2dType<R>, R: KslNumericType> KslExpression<T>.get(x: KslExprInt1, y: KslExprInt1): KslExpression<R> =
+        KslStorageRead(this, int2Value(x, y), expressionType.elemType)
+
+    @JvmName("get3d")
+    operator fun <T: KslStorage3dType<R>, R: KslNumericType> KslExpression<T>.get(x: KslExprInt1, y: KslExprInt1, z: KslExprInt1): KslExpression<R> =
+        KslStorageRead(this, int3Value(x, y, z), expressionType.elemType)
+
+    operator fun <T: KslStorageType<R, C>, R: KslNumericType, C: KslIntType> KslStorage<T, C>.set(
+        coord: KslExpression<C>,
+        data: KslExpression<R>
+    ) {
+        ops += KslStorageWrite(this, coord, data, this@KslScopeBuilder)
+    }
+
+    @JvmName("set2d")
+    operator fun <T: KslStorage2dType<R>, R: KslNumericType> KslStorage2d<T>.set(
+        x: KslExprInt1,
+        y: KslExprInt1,
+        data: KslExpression<R>
+    ) {
+        ops += KslStorageWrite(this, int2Value(x, y), data, this@KslScopeBuilder)
+    }
+
+    @JvmName("set3d")
+    operator fun <T: KslStorage3dType<R>, R: KslNumericType> KslStorage3d<T>.set(
+        x: KslExprInt1,
+        y: KslExprInt1,
+        z: KslExprInt1,
+        data: KslExpression<R>
+    ) {
+        ops += KslStorageWrite(this, int3Value(x, y, z), data, this@KslScopeBuilder)
+    }
 
     fun <T: KslStorageType<R, C>, R: KslNumericType, C: KslIntType> storageRead(
         storage: KslExpression<T>,

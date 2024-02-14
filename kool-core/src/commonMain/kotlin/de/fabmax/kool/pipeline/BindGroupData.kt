@@ -114,12 +114,12 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
     abstract inner class StorageBufferBindingData<T: StorageBuffer> {
         var storageBuffer: T? = null
             set(value) {
-                value?.let { check(isMatchingDimensions(it)) { "Incorrect buffer dimensions" } }
+                value?.let { checkDimensions(it) }
                 field = value
                 isDirty = true
             }
 
-        abstract fun isMatchingDimensions(storageBuffer: T): Boolean
+        abstract fun checkDimensions(storageBuffer: T)
 
         fun getAndClearDirtyFlag(): Boolean {
             val isDirty = storageBuffer?.isDirty == true
@@ -136,7 +136,12 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
         StorageBufferBindingData<StorageBuffer1d>(), BindingData
     {
         override val isComplete = true
-        override fun isMatchingDimensions(storageBuffer: StorageBuffer1d): Boolean {
+
+        override fun checkDimensions(storageBuffer: StorageBuffer1d) = check(isMatchingDimensions(storageBuffer)) {
+            "Incorrect buffer dimensions. Layout ${layout.name}: ${layout.sizeX}, provided: ${storageBuffer.sizeX}"
+        }
+
+        fun isMatchingDimensions(storageBuffer: StorageBuffer1d): Boolean {
             return layout.sizeX == null || layout.sizeX == storageBuffer.sizeX
         }
     }
@@ -145,7 +150,12 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
         StorageBufferBindingData<StorageBuffer2d>(), BindingData
     {
         override val isComplete = true
-        override fun isMatchingDimensions(storageBuffer: StorageBuffer2d): Boolean {
+
+        override fun checkDimensions(storageBuffer: StorageBuffer2d) = check(isMatchingDimensions(storageBuffer)) {
+            "Incorrect buffer dimensions. Layout ${layout.name}: (${layout.sizeX}, ${layout.sizeY}), provided: (${storageBuffer.sizeX}, ${storageBuffer.sizeY})"
+        }
+
+        fun isMatchingDimensions(storageBuffer: StorageBuffer2d): Boolean {
             return layout.sizeX == storageBuffer.sizeX && (layout.sizeY == null || layout.sizeY == storageBuffer.sizeY)
         }
     }
@@ -154,7 +164,12 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
         StorageBufferBindingData<StorageBuffer3d>(), BindingData
     {
         override val isComplete = true
-        override fun isMatchingDimensions(storageBuffer: StorageBuffer3d): Boolean {
+
+        override fun checkDimensions(storageBuffer: StorageBuffer3d) = check(isMatchingDimensions(storageBuffer)) {
+            "Incorrect buffer dimensions. Layout ${layout.name}: (${layout.sizeX}, ${layout.sizeY}, ${layout.sizeZ}), provided: (${storageBuffer.sizeX}, ${storageBuffer.sizeY}, ${storageBuffer.sizeZ})"
+        }
+
+        fun isMatchingDimensions(storageBuffer: StorageBuffer3d): Boolean {
             return layout.sizeX == storageBuffer.sizeX && layout.sizeY == storageBuffer.sizeY && (layout.sizeZ == null || layout.sizeZ == storageBuffer.sizeZ)
         }
     }

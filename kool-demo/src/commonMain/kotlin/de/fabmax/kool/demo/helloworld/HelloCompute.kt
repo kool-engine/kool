@@ -51,7 +51,7 @@ class HelloCompute : DemoScene("Hello Compute") {
                     }
 
                     // storage textures can be randomly read and written
-                    storageWrite(storage, texelCoord, rgba)
+                    storage[texelCoord] = rgba
                 }
             }
         }
@@ -88,7 +88,7 @@ class HelloCompute : DemoScene("Hello Compute") {
                 fragmentStage {
                     main {
                         val storage = storage2d<KslFloat4>("storage", storageSizeX, storageSizeY)
-                        val color = float4Var(storageRead(storage, (Vec2f(256f).const * uv.output).toInt2()))
+                        val color = float4Var(storage[(Vec2f(256f).const * uv.output).toInt2()])
                         colorOutput(color.rgb, 1f.const)
                     }
                 }
