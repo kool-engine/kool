@@ -34,16 +34,6 @@ class KslStorage3d<T: KslStorage3dType<*>>(name: String, storage: T, val sizeX: 
         get() = storageType
 }
 
-
-class KslStorageSize<T: KslStorageType<*, C>, C: KslIntType>(
-    val storage: KslExpression<T>,
-    override val expressionType: C
-) : KslExpression<C> {
-    override fun collectStateDependencies(): Set<KslMutatedState> = storage.collectStateDependencies()
-    override fun generateExpression(generator: KslGenerator): String = generator.storageSize(this)
-    override fun toPseudoCode(): String = "storageSize(${storage.toPseudoCode()})"
-}
-
 class KslStorageRead<T: KslStorageType<R, C>, R: KslNumericType, C: KslIntType>(
     val storage: KslExpression<T>,
     val coord: KslExpression<C>,

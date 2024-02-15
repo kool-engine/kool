@@ -199,10 +199,6 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
         return "texelFetch($sampler, $coords, ${lod ?: 0})"
     }
 
-    override fun storageSize(storageSize: KslStorageSize<*, *>): String {
-        return "imageSize(${storageSize.storage.generateExpression(this)})"
-    }
-
     private fun KslStorage<*,*>.getIndexString(coordExpr: String) = when (this) {
         // choosing array dimension based on storage dimension would also work, but seems to have issues
         // with some glsl compilers

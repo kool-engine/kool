@@ -1,7 +1,7 @@
 package de.fabmax.kool.modules.atmosphere
 
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.modules.ksl.blocks.noise12
+import de.fabmax.kool.modules.ksl.blocks.noise13
 import de.fabmax.kool.modules.ksl.blocks.raySphereIntersection
 import de.fabmax.kool.modules.ksl.lang.*
 
@@ -198,9 +198,7 @@ class AtmosphereBlock(
                     distThroughAtmo set min(distThroughAtmo, sceneDepth - dToAtmo)
                 }
 
-                val seed = float2Var((parentStage as KslFragmentStage).inFragPosition.xy)
-                seed set ((seed * 1000f.const).toInt2() % 1000.const).toFloat2() + 1000f.const
-                val startOffset = float1Var(noise12(seed))
+                val startOffset = float1Var(noise13(inLookDir * 1000f.const))
                 val atmoHitPt = float3Var(camOri + nrmLookDir * dToAtmo)
                 outColor.rgb += funScatterLight(startOffset, atmoHitPt, nrmLookDir, distThroughAtmo, atmosphereData.uDirToSun)
             }

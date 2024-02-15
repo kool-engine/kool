@@ -65,7 +65,6 @@ abstract class KslGenerator {
     abstract fun textureSize(textureSize: KslTextureSize<*, *>): String
     abstract fun texelFetch(expression: KslTexelFetch<*>): String
 
-    abstract fun storageSize(storageSize: KslStorageSize<*, *>): String
     abstract fun storageRead(storageRead: KslStorageRead<*, *, *>): String
     abstract fun storageAtomicOp(atomicOp: KslStorageAtomicOp<*, *, *>): String
     abstract fun storageAtomicCompareSwap(atomicCompSwap: KslStorageAtomicCompareSwap<*, *, *>): String

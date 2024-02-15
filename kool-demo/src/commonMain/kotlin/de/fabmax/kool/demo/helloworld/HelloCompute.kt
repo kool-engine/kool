@@ -26,7 +26,7 @@ class HelloCompute : DemoScene("Hello Compute") {
             computeStage(16, 16, 1) {
                 // storage maps to a 1d / 2d / 3d array of 1d / 2d / 4d float or (u)int vectors
                 // here we use a 2d array of 4d floats
-                val storage = storage2d<KslFloat4>("storage", storageSizeX, storageSizeY)
+                val pixelStorage = storage2d<KslFloat4>("pixelStorage", storageSizeX, storageSizeY)
 
                 // regular uniforms...
                 val offsetPos = uniformFloat2("uOffset")
@@ -51,7 +51,7 @@ class HelloCompute : DemoScene("Hello Compute") {
                     }
 
                     // storage textures can be randomly read and written
-                    storage[texelCoord] = rgba
+                    pixelStorage[texelCoord] = rgba
                 }
             }
         }
@@ -61,7 +61,7 @@ class HelloCompute : DemoScene("Hello Compute") {
 
         // create and bind the storage texture used as compute shader output
         val storageBuffer = StorageBuffer2d(storageSizeX, storageSizeY, GpuType.FLOAT4)
-        computeShader.storage2d("storage", storageBuffer)
+        computeShader.storage2d("pixelStorage", storageBuffer)
 
         // animate offset position to change the colors over time
         var offsetPos by computeShader.uniform2f("uOffset")
@@ -87,13 +87,13 @@ class HelloCompute : DemoScene("Hello Compute") {
                 }
                 fragmentStage {
                     main {
-                        val storage = storage2d<KslFloat4>("storage", storageSizeX, storageSizeY)
+                        val storage = storage2d<KslFloat4>("pixelStorage", storageSizeX, storageSizeY)
                         val color = float4Var(storage[(Vec2f(256f).const * uv.output).toInt2()])
                         colorOutput(color.rgb, 1f.const)
                     }
                 }
             }.apply {
-                storage2d("storage", storageBuffer)
+                storage2d("pixelStorage", storageBuffer)
             }
         }
 
