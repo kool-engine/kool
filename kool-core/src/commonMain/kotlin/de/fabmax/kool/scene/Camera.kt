@@ -64,6 +64,8 @@ abstract class Camera(name: String = "camera") : Node(name) {
     // we need a bunch of temporary vectors, keep them as members (#perfmatters)
     private val tmpVec3 = MutableVec3f()
     private val tmpVec4 = MutableVec4f()
+    private val tmpVec3d = MutableVec3d()
+    private val tmpVec4d = MutableVec4d()
 
     val onCameraUpdated = mutableListOf<(RenderPass.UpdateEvent) -> Unit>()
 
@@ -113,6 +115,22 @@ abstract class Camera(name: String = "camera") : Node(name) {
     fun computePickRay(pickRay: RayF, screenX: Float, screenY: Float, viewport: Viewport): Boolean {
         var valid = unProjectScreen(tmpVec3.set(screenX, screenY, 0f), viewport, pickRay.origin)
         valid = valid && unProjectScreen(tmpVec3.set(screenX, screenY, 1f), viewport, pickRay.direction)
+
+        if (valid) {
+            pickRay.direction.subtract(pickRay.origin)
+            pickRay.direction.norm()
+        }
+
+        return valid
+    }
+
+    fun computePickRay(pickRay: RayD, ptr: Pointer, viewport: Viewport): Boolean {
+        return ptr.isValid && computePickRay(pickRay, ptr.x.toFloat(), ptr.y.toFloat(), viewport)
+    }
+
+    fun computePickRay(pickRay: RayD, screenX: Float, screenY: Float, viewport: Viewport): Boolean {
+        var valid = unProjectScreen(tmpVec3d.set(screenX.toDouble(), screenY.toDouble(), 0.0), viewport, pickRay.origin)
+        valid = valid && unProjectScreen(tmpVec3d.set(screenX.toDouble(), screenY.toDouble(), 1.0), viewport, pickRay.direction)
 
         if (valid) {
             pickRay.direction.subtract(pickRay.origin)
@@ -179,6 +197,46 @@ abstract class Camera(name: String = "camera") : Node(name) {
         invViewProj.transform(tmpVec4)
         val s = 1f / tmpVec4.w
         result.set(tmpVec4.x * s, tmpVec4.y * s, tmpVec4.z * s)
+        return true
+    }
+
+    fun project(world: Vec3d, result: MutableVec3d): Boolean {
+        tmpVec4d.set(world.x, world.y, world.z, 1.0)
+        dataD.viewProj.transform(tmpVec4d)
+        if (tmpVec4d.w.isFuzzyZero()) {
+            result.set(Vec3d.ZERO)
+            return false
+        }
+        result.set(tmpVec4d.x, tmpVec4d.y, tmpVec4d.z).mul(1f / tmpVec4d.w)
+        return result.x in -1.0..1.0 && result.y in -1.0..1.0 && result.z in -1.0..1.0
+    }
+
+    fun project(world: Vec3d, result: MutableVec4d): MutableVec4d =
+        dataD.viewProj.transform(result.set(world.x, world.y, world.z, 1.0))
+
+    fun projectViewport(world: Vec3d, viewport: Viewport, result: MutableVec3d): Boolean {
+        val projectOk = project(world, result)
+        result.x = (1.0 + result.x) * 0.5 * viewport.width
+        result.y = (1.0 - (1.0 + result.y) * 0.5) * viewport.height
+        result.z = (1.0 + result.z) * 0.5
+        return projectOk
+    }
+
+    fun projectScreen(world: Vec3d, viewport: Viewport, result: MutableVec3d): Boolean {
+        val projectOk = projectViewport(world, viewport, result)
+        result.x += viewport.x
+        result.y += viewport.y
+        return projectOk
+    }
+
+    fun unProjectScreen(screen: Vec3d, viewport: Viewport, result: MutableVec3d): Boolean {
+        val x = screen.x - viewport.x
+        val y = viewport.y + viewport.height - screen.y
+
+        tmpVec4d.set(2.0 * x / viewport.width - 1.0, 2.0 * y / viewport.height - 1.0, 2.0 * screen.z - 1.0, 1.0)
+        dataD.lazyInvViewProj.get().transform(tmpVec4d)
+        val s = 1.0 / tmpVec4d.w
+        result.set(tmpVec4d.x * s, tmpVec4d.y * s, tmpVec4d.z * s)
         return true
     }
 

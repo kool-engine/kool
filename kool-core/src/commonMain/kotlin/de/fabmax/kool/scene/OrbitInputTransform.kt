@@ -81,11 +81,11 @@ open class OrbitInputTransform(name: String? = null) : Node(name), InputStack.Po
     private var deltaScroll = 0.0
 
     private val ptrPos = MutableVec2d()
-    private val panPlane = Plane()
-    private val pointerHitStart = MutableVec3f()
-    private val pointerHit = MutableVec3f()
-    private val tmpVec1 = MutableVec3f()
-    private val tmpVec2 = MutableVec3f()
+    private val panPlane = PlaneD()
+    private val pointerHitStart = MutableVec3d()
+    private val pointerHit = MutableVec3d()
+    private val tmpVec1 = MutableVec3d()
+    private val tmpVec2 = MutableVec3d()
 
     private val mouseTransform = MutableMat4d()
     private val mouseTransformInv = MutableMat4d()
@@ -171,9 +171,9 @@ open class OrbitInputTransform(name: String? = null) : Node(name), InputStack.Po
                 stopSmoothMotion()
 
             } else {
-                val s = (1 - smoothness).clamp(0.1, 1.0).toFloat()
+                val s = (1 - smoothness).clamp(0.1, 1.0)
                 tmpVec1.set(pointerHitStart).subtract(pointerHit).mul(s)
-                parent?.toLocalCoords(tmpVec1, 0f)
+                parent?.toLocalCoords(tmpVec1, 0.0)
 
                 // limit panning speed
                 val tLen = tmpVec1.length()
@@ -222,13 +222,13 @@ open class OrbitInputTransform(name: String? = null) : Node(name), InputStack.Po
      */
     protected open fun computeZoomTranslationPerspective(camera: Camera, oldZoom: Double, newZoom: Double) {
         // tmpVec1 = zoomed pos on pointer ray
-        val s = (newZoom / oldZoom).toFloat()
-        camera.globalPos.subtract(pointerHit, tmpVec1).mul(s).add(pointerHit)
+        val s = newZoom / oldZoom
+        camera.dataD.globalPos.subtract(pointerHit, tmpVec1).mul(s).add(pointerHit)
         // tmpVec2 = zoomed pos on view center ray
-        camera.globalPos.subtract(camera.globalLookAt, tmpVec2).mul(s)
+        camera.dataD.globalPos.subtract(camera.dataD.globalLookAt, tmpVec2).mul(s)
             .add(camera.globalLookAt)
         tmpVec1.subtract(tmpVec2)
-        parent?.toLocalCoords(tmpVec1, 0f)
+        parent?.toLocalCoords(tmpVec1, 0.0)
         translation.add(tmpVec1)
     }
 
@@ -288,14 +288,14 @@ open class OrbitInputTransform(name: String? = null) : Node(name), InputStack.Po
 }
 
 abstract class PanBase {
-    abstract fun computePanPoint(result: MutableVec3f, view: RenderPass.View, ptrPos: Vec2d, ctx: KoolContext): Boolean
+    abstract fun computePanPoint(result: MutableVec3d, view: RenderPass.View, ptrPos: Vec2d, ctx: KoolContext): Boolean
 }
 
 class CameraOrthogonalPan : PanBase() {
-    val panPlane = Plane()
-    private val pointerRay = RayF()
+    val panPlane = PlaneD()
+    private val pointerRay = RayD()
 
-    override fun computePanPoint(result: MutableVec3f, view: RenderPass.View, ptrPos: Vec2d, ctx: KoolContext): Boolean {
+    override fun computePanPoint(result: MutableVec3d, view: RenderPass.View, ptrPos: Vec2d, ctx: KoolContext): Boolean {
         panPlane.p.set(view.camera.globalLookAt)
         panPlane.n.set(view.camera.globalLookDir)
         return view.camera.computePickRay(pointerRay, ptrPos.x.toFloat(), ptrPos.y.toFloat(), view.viewport) &&
@@ -304,14 +304,14 @@ class CameraOrthogonalPan : PanBase() {
 }
 
 class FixedPlanePan(planeNormal: Vec3f) : PanBase() {
-    val panPlane = Plane()
-    private val pointerRay = RayF()
+    val panPlane = PlaneD()
+    private val pointerRay = RayD()
 
     init {
         panPlane.n.set(planeNormal)
     }
 
-    override fun computePanPoint(result: MutableVec3f, view: RenderPass.View, ptrPos: Vec2d, ctx: KoolContext): Boolean {
+    override fun computePanPoint(result: MutableVec3d, view: RenderPass.View, ptrPos: Vec2d, ctx: KoolContext): Boolean {
         panPlane.p.set(view.camera.globalLookAt)
         return view.camera.computePickRay(pointerRay, ptrPos.x.toFloat(), ptrPos.y.toFloat(), view.viewport) &&
                 panPlane.intersectionPoint(pointerRay, result)

@@ -507,7 +507,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
         val forceAppPosGlobal = MutableVec3f()
         val forceDragPos = MutableVec3f()
         val force = MutableVec3f()
-        val dragPlane = Plane()
+        val dragPlane = PlaneF()
 
         var isActive = false
 
