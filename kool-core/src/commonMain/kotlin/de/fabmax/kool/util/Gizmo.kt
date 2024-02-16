@@ -30,7 +30,7 @@ class Gizmo : Node(), InputStack.PointerListener {
 
     private val pickRay = RayF()
     private val pickPoint = MutableVec3f()
-    private val pickPlane = Plane()
+    private val pickPlane = PlaneF()
     private val dragStartPos = MutableVec3f()
     private val tmpMat4 = MutableMat4f()
     private val tmpMat3 = MutableMat3f()
