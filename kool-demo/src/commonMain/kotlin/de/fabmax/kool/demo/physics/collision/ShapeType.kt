@@ -5,8 +5,6 @@ import de.fabmax.kool.physics.Material
 import de.fabmax.kool.physics.Shape
 import de.fabmax.kool.physics.geometry.*
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.simpleShape
@@ -18,46 +16,46 @@ enum class ShapeType {
     BOX {
         override val label = "Box"
 
-        override fun MeshBuilder.generateMesh() = bevelBox()
+        override fun MeshBuilder.generateShapeMesh() = bevelBox()
 
-        override fun generateShapes(genCtx: ShapeGeneratorContext): CollisionShapes {
-            val sx = genCtx.rand.randomF(2f, 3f)
-            val sy = genCtx.rand.randomF(2f, 3f)
-            val sz = genCtx.rand.randomF(2f, 3f)
+        override fun generatePhysicsShapes(meshGeometry: IndexedVertexList, material: Material, rand: Random): CollisionShapes {
+            val sx = rand.randomF(2f, 3f)
+            val sy = rand.randomF(2f, 3f)
+            val sz = rand.randomF(2f, 3f)
             val mass = sx * sy * sz
-            return CollisionShapes(mass, Shape(BoxGeometry(Vec3f(sx, sy, sz)), genCtx.material))
+            return CollisionShapes(mass, Shape(BoxGeometry(Vec3f(sx, sy, sz)), material))
         }
     },
 
     CAPSULE {
         override val label = "Capsule"
 
-        override fun MeshBuilder.generateMesh() = capsule()
+        override fun MeshBuilder.generateShapeMesh() = capsule()
 
-        override fun generateShapes(genCtx: ShapeGeneratorContext): CollisionShapes {
-            val s = genCtx.rand.randomF(0.75f, 1.5f)
+        override fun generatePhysicsShapes(meshGeometry: IndexedVertexList, material: Material, rand: Random): CollisionShapes {
+            val s = rand.randomF(0.75f, 1.5f)
             val mass = s.pow(3)
-            return CollisionShapes(mass, Shape(CapsuleGeometry(2.5f * s, s), genCtx.material))
+            return CollisionShapes(mass, Shape(CapsuleGeometry(2.5f * s, s), material))
         }
     },
 
     CONVEX_HULL {
         override val label = "Convex Hull"
 
-        override fun MeshBuilder.generateMesh() = flatIcoSphere()
+        override fun MeshBuilder.generateShapeMesh() = flatIcoSphere()
 
         var convexMesh: ConvexMesh? = null
 
-        override fun generateShapes(genCtx: ShapeGeneratorContext): CollisionShapes {
+        override fun generatePhysicsShapes(meshGeometry: IndexedVertexList, material: Material, rand: Random): CollisionShapes {
             if (convexMesh == null) {
                 val icoPoints = mutableListOf<Vec3f>()
-                mesh.geometry.forEach { icoPoints.add(Vec3f(it)) }
+                meshGeometry.forEach { icoPoints.add(Vec3f(it)) }
                 convexMesh = ConvexMesh(icoPoints)
                 convexMesh!!.releaseWithGeometry = false
             }
-            val s = genCtx.rand.randomF(1.25f, 2.5f)
+            val s = rand.randomF(1.25f, 2.5f)
             val mass = s.pow(3)
-            val shapes = CollisionShapes(mass, Shape(ConvexMeshGeometry(convexMesh!!, Vec3f(s, s, s)), genCtx.material))
+            val shapes = CollisionShapes(mass, Shape(ConvexMeshGeometry(convexMesh!!, Vec3f(s, s, s)), material))
             shapes.scale = s
             return shapes
         }
@@ -66,20 +64,20 @@ enum class ShapeType {
     CYLINDER {
         override val label = "Cylinder"
 
-        override fun MeshBuilder.generateMesh() = cylinder()
+        override fun MeshBuilder.generateShapeMesh() = cylinder()
 
-        override fun generateShapes(genCtx: ShapeGeneratorContext): CollisionShapes {
-            val l = genCtx.rand.randomF(2f, 4f)
-            val r = genCtx.rand.randomF(1f, 2f)
+        override fun generatePhysicsShapes(meshGeometry: IndexedVertexList, material: Material, rand: Random): CollisionShapes {
+            val l = rand.randomF(2f, 4f)
+            val r = rand.randomF(1f, 2f)
             val mass = r * r * l * 0.5f
-            return CollisionShapes(mass, Shape(CylinderGeometry(l, r), genCtx.material))
+            return CollisionShapes(mass, Shape(CylinderGeometry(l, r), material))
         }
     },
 
     MULTI_SHAPE {
         override val label = "Multi Shape"
 
-        override fun MeshBuilder.generateMesh() {
+        override fun MeshBuilder.generateShapeMesh() {
             cube {
                 size.set(0.5f, 0.5f, 2f)
                 origin.set(1f, 0f, 0f)
@@ -98,26 +96,26 @@ enum class ShapeType {
             }
         }
 
-        override fun generateShapes(genCtx: ShapeGeneratorContext): CollisionShapes {
-            val s = genCtx.rand.randomF(1f, 2f)
+        override fun generatePhysicsShapes(meshGeometry: IndexedVertexList, material: Material, rand: Random): CollisionShapes {
+            val s = rand.randomF(1f, 2f)
             val shape1 = Shape(
                 BoxGeometry(MutableVec3f(0.5f, 0.5f, 2.0f).mul(s)),
-                genCtx.material,
+                material,
                 Mat4f.translation(1f * s, 0f, 0f)
             )
             val shape2 = Shape(
                 BoxGeometry(MutableVec3f(0.5f, 0.5f, 2.0f).mul(s)),
-                genCtx.material,
+                material,
                 Mat4f.translation(-1f * s, 0f, 0f)
             )
             val shape3 = Shape(
                 BoxGeometry(MutableVec3f(2.5f, 0.5f, 0.5f).mul(s)),
-                genCtx.material,
+                material,
                 Mat4f.translation(0f, 0f, 1.25f * s)
             )
             val shape4 = Shape(
                 BoxGeometry(MutableVec3f(2.5f, 0.5f, 0.5f).mul(s)),
-                genCtx.material,
+                material,
                 Mat4f.translation(0f, 0f, -1.25f * s)
             )
 
@@ -129,37 +127,30 @@ enum class ShapeType {
     SPHERE {
         override val label = "Sphere"
 
-        override fun MeshBuilder.generateMesh() {
+        override fun MeshBuilder.generateShapeMesh() {
             icoSphere { steps = 2 }
         }
 
-        override fun generateShapes(genCtx: ShapeGeneratorContext): CollisionShapes {
-            val r = genCtx.rand.randomF(1.25f, 2.5f)
-            return CollisionShapes(r, Shape(SphereGeometry(r), genCtx.material))
+        override fun generatePhysicsShapes(meshGeometry: IndexedVertexList, material: Material, rand: Random): CollisionShapes {
+            val r = rand.randomF(1.25f, 2.5f)
+            return CollisionShapes(r, Shape(SphereGeometry(r), material))
         }
     },
 
     MIXED {
         override val label = "Mixed"
 
-        override fun MeshBuilder.generateMesh() { }
+        override fun MeshBuilder.generateShapeMesh() { }
 
-        override fun generateShapes(genCtx: ShapeGeneratorContext): CollisionShapes {
+        override fun generatePhysicsShapes(meshGeometry: IndexedVertexList, material: Material, rand: Random): CollisionShapes {
             throw IllegalStateException()
         }
     };
 
     abstract val label: String
-    val instances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.COLORS), 2000)
-    val mesh = Mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS), instances).apply {
-        isFrustumChecked = false
-        generate {
-            generateMesh()
-        }
-    }
 
-    abstract fun MeshBuilder.generateMesh()
-    abstract fun generateShapes(genCtx: ShapeGeneratorContext): CollisionShapes
+    abstract fun MeshBuilder.generateShapeMesh()
+    abstract fun generatePhysicsShapes(meshGeometry: IndexedVertexList, material: Material, rand: Random): CollisionShapes
 
     override fun toString(): String {
         return label
@@ -305,10 +296,5 @@ enum class ShapeType {
 
         // only used for mesh shapes (convex / triangle)
         var scale = 1f
-    }
-
-    class ShapeGeneratorContext {
-        val rand = Random(5843213)
-        lateinit var material: Material
     }
 }

@@ -27,12 +27,15 @@ class CollisionDemo : DemoScene("Physics - Collision") {
     private lateinit var aoPipeline: AoPipeline
     private val shadows = mutableListOf<ShadowMap>()
 
+    private val shapeMeshes = mutableMapOf<ShapeType, Mesh>()
+
     private val shapeTypes = ShapeType.entries
     private val selectedShapeType = mutableStateOf(6)
     private val numSpawnBodies = mutableStateOf(450)
+    private val drawBodyState = mutableStateOf(false)
     private val friction = mutableStateOf(0.5f)
     private val restitution = mutableStateOf(0.2f)
-    private val drawBodyState = mutableStateOf(false)
+    private var material: Material = Material(friction.value, friction.value, restitution.value)
 
     private val physicsTimeTxt = mutableStateOf("0.00 ms")
     private val activeActorsTxt = mutableStateOf("0")
@@ -44,15 +47,13 @@ class CollisionDemo : DemoScene("Physics - Collision") {
     }
     private val bodies = mutableMapOf<ShapeType, MutableList<ColoredBody>>()
 
-    private val shapeGenCtx = ShapeType.ShapeGeneratorContext()
-
     override fun Scene.setupMainScene(ctx: KoolContext) {
-        defaultOrbitCamera().apply {
+        defaultOrbitCamera(yaw = 10f, pitch = -40f).apply {
             zoomMethod = OrbitInputTransform.ZoomMethod.ZOOM_TRANSLATE
             panMethod = yPlanePan()
             translationBounds = BoundingBoxD(Vec3d(-50.0), Vec3d(50.0))
             minHorizontalRot = -90.0
-            maxHorizontalRot = -20.0
+            maxHorizontalRot = 0.0
             setZoom(75.0, min = 10.0)
         }
 
@@ -69,29 +70,28 @@ class CollisionDemo : DemoScene("Physics - Collision") {
         shadows.add(shadowMap)
         aoPipeline = AoPipeline.createForward(this)
 
-        makeGround(physicsWorld)
-        shapeGenCtx.material = Material(friction.value, friction.value, restitution.value)
-        resetPhysics()
-
         shapeTypes.forEach {
             if (it != ShapeType.MIXED) {
-                it.mesh.shader = instancedBodyShader()
-                addNode(it.mesh)
+                val mesh = it.createMesh()
+                shapeMeshes[it] = mesh
+                addNode(mesh)
             }
         }
+        makeGround(physicsWorld)
+        resetPhysics()
 
         val matBuf = MutableMat4f()
         val removeBodies = mutableListOf<ColoredBody>()
         onUpdate += {
-            for (i in shapeTypes.indices) {
-                shapeTypes[i].instances.clear()
+            shapeMeshes.values.forEach {
+                it.instances!!.clear()
             }
 
             val activeColor = MutableColor(MdColor.RED.toLinear())
             val inactiveColor = MutableColor(MdColor.LIGHT_GREEN.toLinear())
 
             bodies.forEach { (type, typeBodies) ->
-                type.instances.addInstances(typeBodies.size) { buf ->
+                shapeMeshes[type]!!.instances!!.addInstances(typeBodies.size) { buf ->
                     for (i in typeBodies.indices) {
                         val body = typeBodies[i]
                         matBuf.set(body.rigidActor.transform.matrixF).scale(body.scale)
@@ -131,9 +131,20 @@ class CollisionDemo : DemoScene("Physics - Collision") {
         addNode(Skybox.cube(ibl.reflectionMap, 1.5f))
     }
 
+    private fun ShapeType.createMesh(): Mesh {
+        val mesh = Mesh(
+            attributes = listOf(Attribute.POSITIONS, Attribute.NORMALS),
+            instances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.COLORS), 2000)
+        )
+        mesh.generate { generateShapeMesh() }
+        mesh.shader = instancedBodyShader()
+        return mesh
+    }
+
+
     override fun onRelease(ctx: KoolContext) {
         physicsWorld.release()
-        shapeGenCtx.material.release()
+        material.release()
     }
 
     private fun resetPhysics() {
@@ -151,8 +162,8 @@ class CollisionDemo : DemoScene("Physics - Collision") {
             listOf(shapeTypes[selectedShapeType.value])
         }
 
-        shapeGenCtx.material.release()
-        shapeGenCtx.material = Material(friction.value, friction.value, restitution.value)
+        material.release()
+        material = Material(friction.value, friction.value, restitution.value)
 
         val stacks = max(1, numSpawnBodies.value / 50)
         val centers = makeCenters(stacks)
@@ -168,7 +179,8 @@ class CollisionDemo : DemoScene("Physics - Collision") {
             val y = layer * 5f + 10f
 
             val type = types[rand.randomI(types.indices)]
-            val shapes = type.generateShapes(shapeGenCtx)
+            val mesh = shapeMeshes[type]!!
+            val shapes = type.generatePhysicsShapes(mesh.geometry, material, rand)
 
             val body = RigidDynamic(shapes.mass)
             shapes.primitives.forEach { s ->
