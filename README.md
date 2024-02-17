@@ -76,13 +76,13 @@ by appending `&backend=webgpu` or `&backend=webgl` to the URL.
 
 ## Platform Support
 
-| Platform    | Backend | Implementation Status                             |
-|-------------|---------|---------------------------------------------------|
-| Desktop JVM | OpenGL  | :white_check_mark: Fully working                  |
-| Desktop JVM | Vulkan  | :x: Not working (under construction)              |
-| Browser     | WebGL 2 | :white_check_mark: Fully working                  |
-| Browser     | WebGPU  | :white_check_mark: Fully working (no compute yet) |
-| Android     | -       | :x: Not yet implemented                           |
+| Platform    | Backend | Implementation Status                |
+|-------------|---------|--------------------------------------|
+| Desktop JVM | OpenGL  | :white_check_mark: Fully working     |
+| Desktop JVM | Vulkan  | :x: Not working (under construction) |
+| Browser     | WebGL 2 | :white_check_mark: Fully working     |
+| Browser     | WebGPU  | :white_check_mark: Fully working     |
+| Android     | -       | :x: Not yet implemented              |
 
 WebGPU support is new and I took the chance to renovate the entire backend architecture (it's better than ever now!).
 However, to maintain a minimum degree of sanity, I disabled the Vulkan backend for the moment - I will re-enable it
@@ -111,14 +111,15 @@ to build the project first (or manually run the `cacheRuntimeLibs` task) and the
 the libs are resolved and added to the IntelliJ module classpath.
 
 ## Engine Features / Noticeable Stuff:
-- Basic [Compute shader](kool-demo/src/commonMain/kotlin/de/fabmax/kool/demo/helloworld/HelloCompute.kt) support (OpenGL only for now, only storage textures)
+- js: Interchangeable WebGL and WebGPU backends
+- Basic [Compute shader](kool-demo/src/commonMain/kotlin/de/fabmax/kool/demo/helloworld/HelloCompute.kt) support
 - [Reversed-depth](https://developer.nvidia.com/content/depth-precision-visualized) rendering for vastly improved
   depth precision and range (more or less infinite)
-- Physics simulation (based on Nvidia PhysX 5.1, using [physx-jni](https://github.com/fabmax/physx-jni) on Java and [physx-js-webidl](https://github.com/fabmax/physx-js-webidl) on javascript)
-- Kotlin DSL based shader language (translates into GLSL)
+- Physics simulation (based on Nvidia PhysX 5.3, using [physx-jni](https://github.com/fabmax/physx-jni) on Java and [physx-js-webidl](https://github.com/fabmax/physx-js-webidl) on javascript)
+- Kotlin DSL based shader language (translates into GLSL and WGSL)
 - Neat little integrated GUI framework. The API is heavily inspired by [Jetpack Compose](https://github.com/JetBrains/compose-jb) but the implementation is different, as it needs to run within the OpenGL context.
 - [MSDF](https://github.com/Chlumsky/msdf-atlas-gen) Font support for text rendering in arbitrary font sizes
-- Experimental Vulkan rendering backend (on JVM)
+- ~~Experimental Vulkan rendering backend (on JVM)~~
 - Support for physical based rendering (with metallic workflow) and image-based lighting
 - (Almost) complete support for [glTF 2.0](https://github.com/KhronosGroup/glTF) model format (including animations, morph targets and skins)
 - Skin / armature mesh animation (vertex shader based)

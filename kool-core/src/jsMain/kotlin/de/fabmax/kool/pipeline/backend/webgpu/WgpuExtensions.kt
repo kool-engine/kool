@@ -49,6 +49,16 @@ fun GPUDevice.createSampler(
     compare = compare
 ))
 
+fun GPUDevice.createComputePipeline(
+    layout: GPUPipelineLayout,
+    compute: GPUProgrammableStage,
+    label: String = ""
+) = createComputePipeline(GPUComputePipelineDescriptor(
+    layout = layout,
+    compute = compute,
+    label = label
+))
+
 fun GPUDevice.createRenderPipeline(
     layout: GPUPipelineLayout,
     vertex: GPUVertexState,

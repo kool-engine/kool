@@ -145,12 +145,11 @@ open class KslProgram(val name: String) {
 
     inline fun <reified T: KslNumericType> storage1d(
         name: String,
-        size: Int? = null,
-        accessType: StorageAccessType = StorageAccessType.READ_WRITE
+        size: Int? = null
     ): KslStorage1d<KslStorage1dType<T>> {
         val type = numericTypeForT<T>()
         val storage: KslStorage<*,*> = storageBuffers[name]
-            ?: KslStorage1d(name, KslStorage1dType(type), size, accessType).also { registerStorage(it) }
+            ?: KslStorage1d(name, KslStorage1dType(type), size).also { registerStorage(it) }
 
         check(storage is KslStorage1d<*> && storage.storageType.elemType == type) {
             "Existing storage buffer with name \"$name\" has not the expected type"
@@ -168,12 +167,11 @@ open class KslProgram(val name: String) {
     inline fun <reified T: KslNumericType> storage2d(
         name: String,
         sizeX: Int,
-        sizeY: Int? = null,
-        accessType: StorageAccessType = StorageAccessType.READ_WRITE
+        sizeY: Int? = null
     ): KslStorage2d<KslStorage2dType<T>> {
         val type = numericTypeForT<T>()
         val storage: KslStorage<*,*> = storageBuffers[name]
-            ?: KslStorage2d(name, KslStorage2dType(type), sizeX, sizeY, accessType).also { registerStorage(it) }
+            ?: KslStorage2d(name, KslStorage2dType(type), sizeX, sizeY).also { registerStorage(it) }
 
         check(storage is KslStorage2d<*> && type == storage.storageType.elemType) {
             "Existing storage buffer with name \"$name\" has not the expected type"
@@ -193,11 +191,10 @@ open class KslProgram(val name: String) {
         sizeX: Int,
         sizeY: Int,
         sizeZ: Int? = null,
-        accessType: StorageAccessType = StorageAccessType.READ_WRITE
     ): KslStorage3d<KslStorage3dType<T>> {
         val type = numericTypeForT<T>()
         val storage: KslStorage<*,*> = storageBuffers[name]
-            ?: KslStorage3d(name, KslStorage3dType(type), sizeX, sizeY, sizeZ, accessType).also { registerStorage(it) }
+            ?: KslStorage3d(name, KslStorage3dType(type), sizeX, sizeY, sizeZ).also { registerStorage(it) }
 
         check(storage is KslStorage3d<*> && storage.storageType.elemType == type) {
             "Existing storage buffer with name \"$name\" has not the expected type"

@@ -12,7 +12,7 @@ abstract class WgpuRenderPass<T: RenderPass>(
     val backend: RenderBackendWebGpu
 ) : BaseReleasable() {
 
-    private val passEncoderState = PassEncoderState(this)
+    private val passEncoderState = RenderPassEncoderState(this)
 
     protected val device: GPUDevice
         get() = backend.device
@@ -69,7 +69,7 @@ abstract class WgpuRenderPass<T: RenderPass>(
 
     protected abstract fun copy(frameCopy: FrameCopy, encoder: GPUCommandEncoder)
 
-    private fun renderView(viewIndex: Int, mipLevel: Int, passEncoderState: PassEncoderState<*>) {
+    private fun renderView(viewIndex: Int, mipLevel: Int, passEncoderState: RenderPassEncoderState<*>) {
         val view = passEncoderState.renderPass.views[viewIndex]
 
         passEncoderState.renderPass.setupView(viewIndex)
@@ -128,65 +128,4 @@ abstract class WgpuRenderPass<T: RenderPass>(
         val colorAttachments: Array<GPURenderPassColorAttachment>,
         val depthAttachment: GPURenderPassDepthStencilAttachment?
     )
-}
-
-class PassEncoderState<T: RenderPass>(val gpuRenderPass: WgpuRenderPass<T>) {
-    private var _encoder: GPUCommandEncoder? = null
-
-    private var _renderPass: T? = null
-    private var _passEncoder: GPURenderPassEncoder? = null
-
-    val encoder: GPUCommandEncoder
-        get() = _encoder!!
-    val passEncoder: GPURenderPassEncoder
-        get() = _passEncoder!!
-    val renderPass: T
-        get() = _renderPass!!
-    var isPassActive = false
-        private set
-
-    private var renderPipeline: GPURenderPipeline? = null
-    private val bindGroups = Array<WgpuBindGroupData?>(4) { null }
-
-    fun setup(
-        encoder: GPUCommandEncoder,
-        renderPass: T
-    ) {
-        _encoder = encoder
-        _renderPass = renderPass
-    }
-
-    fun begin(viewIndex: Int, mipLevel: Int, forceLoad: Boolean = false) {
-        check(!isPassActive)
-
-        val (colorAttachments, depthAttachment) = gpuRenderPass.getRenderAttachments(renderPass, viewIndex, mipLevel, forceLoad)
-        _passEncoder = encoder.beginRenderPass(colorAttachments, depthAttachment, renderPass.name)
-        isPassActive = true
-    }
-
-    fun end() {
-        if (isPassActive) {
-            passEncoder.end()
-            isPassActive = false
-
-            renderPipeline = null
-            for (i in bindGroups.indices) {
-                bindGroups[i] = null
-            }
-        }
-    }
-
-    fun setPipeline(renderPipeline: GPURenderPipeline) {
-        if (this.renderPipeline !== renderPipeline) {
-            this.renderPipeline = renderPipeline
-            passEncoder.setPipeline(renderPipeline)
-        }
-    }
-
-    fun setBindGroup(group: Int, bindGroupData: WgpuBindGroupData) {
-        if (bindGroups[group] !== bindGroupData) {
-            bindGroups[group] = bindGroupData
-            passEncoder.setBindGroup(group, bindGroupData.bindGroup!!)
-        }
-    }
 }

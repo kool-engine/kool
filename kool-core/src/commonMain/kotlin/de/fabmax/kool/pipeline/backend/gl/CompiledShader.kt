@@ -20,30 +20,32 @@ sealed class CompiledShader(private val pipeline: PipelineBase, val program: GlP
     init {
         var uboIndex = 0
         var storageIndex = 0
-        val uniformLocations = pipeline.bindGroupLayouts.asList.map { groupLayout ->
-            groupLayout.bindings.map { binding ->
-                when (binding) {
-                    is UniformBufferLayout -> {
-                        val blockIndex = gl.getUniformBlockIndex(program, binding.name)
-                        if (blockIndex != gl.INVALID_INDEX) {
-                            val uboBinding = uboIndex++
-                            gl.uniformBlockBinding(program, blockIndex, uboBinding)
-                            intArrayOf(uboBinding)
-                        } else {
-                            // binding does not describe an actual UBO but plain old uniforms
-                            plainUniformUbos += binding.name
-                            binding.uniforms.map { gl.getUniformLocation(program, it.name) }.toIntArray()
+        val uniformLocations = pipeline.bindGroupLayouts.asList
+            .filter { it.group >= 0 }
+            .map { groupLayout ->
+                groupLayout.bindings.map { binding ->
+                    when (binding) {
+                        is UniformBufferLayout -> {
+                            val blockIndex = gl.getUniformBlockIndex(program, binding.name)
+                            if (blockIndex != gl.INVALID_INDEX) {
+                                val uboBinding = uboIndex++
+                                gl.uniformBlockBinding(program, blockIndex, uboBinding)
+                                intArrayOf(uboBinding)
+                            } else {
+                                // binding does not describe an actual UBO but plain old uniforms
+                                plainUniformUbos += binding.name
+                                binding.uniforms.map { gl.getUniformLocation(program, it.name) }.toIntArray()
+                            }
                         }
+                        is Texture1dLayout -> intArrayOf(gl.getUniformLocation(program, binding.name))
+                        is Texture2dLayout -> intArrayOf(gl.getUniformLocation(program, binding.name))
+                        is Texture3dLayout -> intArrayOf(gl.getUniformLocation(program, binding.name))
+                        is TextureCubeLayout -> intArrayOf(gl.getUniformLocation(program, binding.name))
+                        is StorageBuffer1dLayout -> intArrayOf(storageIndex++)
+                        is StorageBuffer2dLayout -> intArrayOf(storageIndex++)
+                        is StorageBuffer3dLayout -> intArrayOf(storageIndex++)
                     }
-                    is Texture1dLayout -> intArrayOf(gl.getUniformLocation(program, binding.name)) //getUniformLocations(binding.name, binding.arraySize, program)
-                    is Texture2dLayout -> intArrayOf(gl.getUniformLocation(program, binding.name)) //getUniformLocations(binding.name, binding.arraySize, program)
-                    is Texture3dLayout -> intArrayOf(gl.getUniformLocation(program, binding.name)) //getUniformLocations(binding.name, binding.arraySize, program)
-                    is TextureCubeLayout -> intArrayOf(gl.getUniformLocation(program, binding.name)) //getUniformLocations(binding.name, binding.arraySize, program)
-                    is StorageBuffer1dLayout -> intArrayOf(storageIndex++)
-                    is StorageBuffer2dLayout -> intArrayOf(storageIndex++)
-                    is StorageBuffer3dLayout -> intArrayOf(storageIndex++)
                 }
-            }
         }
         uniformBindCtx = UniformBindContext(uniformLocations)
         pipelineInfo.numInstances++
@@ -104,10 +106,6 @@ sealed class CompiledShader(private val pipeline: PipelineBase, val program: GlP
         fun location(bindingIndex: Int): Int = locations[group][bindingIndex][0]
         fun locations(bindingIndex: Int): IntArray = locations[group][bindingIndex]
 
-        fun group(scope: BindGroupScope) {
-            group = scope.group
-        }
-
         fun reset(renderPass: RenderPass) {
             this.renderPass = renderPass
             group = 0
@@ -141,7 +139,7 @@ sealed class CompiledShader(private val pipeline: PipelineBase, val program: GlP
         }
 
         fun bindUniforms(uniformBindContext: UniformBindContext): Boolean {
-            uniformBindContext.group(bindGroupData.layout.scope)
+            uniformBindContext.group = bindGroupData.layout.group
             var uniformsValid = true
             for (i in mappings.indices) {
                 uniformsValid = uniformsValid && mappings[i].setUniform(uniformBindContext)

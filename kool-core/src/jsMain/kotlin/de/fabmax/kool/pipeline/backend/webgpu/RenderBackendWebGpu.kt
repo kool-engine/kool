@@ -26,7 +26,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
     override val apiName: String = "WebGPU"
     override val deviceName: String = "WebGPU"
     override val deviceCoordinates: DeviceCoordinates = DeviceCoordinates.WEB_GPU
-    override val hasComputeShaders: Boolean = false
+    override val hasComputeShaders: Boolean = true
 
     lateinit var adapter: GPUAdapter
         private set
@@ -43,6 +43,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
 
     val pipelineManager = WgpuPipelineManager(this)
     private val sceneRenderer = WgpuScreenRenderPass(this)
+    private val computePassEncoderState = ComputePassEncoderState()
 
     private var renderSize = Vec2i(canvas.width, canvas.height)
 
@@ -144,7 +145,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         val maxWorkGroupSzZ = device.limits.maxComputeWorkgroupSizeZ
         val maxInvocations = device.limits.maxComputeInvocationsPerWorkgroup
 
-        val passEncoder = encoder.beginComputePass()
+        computePassEncoderState.setup(encoder, encoder.beginComputePass())
         for (i in tasks.indices) {
             val task = tasks[i]
             if (task.isEnabled) {
@@ -172,14 +173,14 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
 
                 if (isInLimits) {
                     task.beforeDispatch()
-                    if (pipelineManager.bindComputePipeline(task)) {
-                        passEncoder.dispatchWorkgroups(numGroupsX, numGroupsY, numGroupsZ)
+                    if (pipelineManager.bindComputePipeline(task, computePassEncoderState)) {
+                        computePassEncoderState.passEncoder.dispatchWorkgroups(numGroupsX, numGroupsY, numGroupsZ)
                         task.afterDispatch()
                     }
                 }
             }
         }
-        passEncoder.end()
+        computePassEncoderState.end()
     }
 
     override fun cleanup(ctx: KoolContext) {

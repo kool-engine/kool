@@ -698,15 +698,15 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
         where T: KslSamplerType<*>, T: KslSamplerCubeArrayType = KslTextureSizeCubeArray(sampler, lod)
 
     // builtin storage functions
-    operator fun <T: KslStorageType<R, C>, R: KslNumericType, C: KslIntType> KslExpression<T>.get(coord: KslExpression<C>): KslExpression<R> =
+    operator fun <T: KslStorageType<R, C>, R: KslNumericType, C: KslIntType> KslStorage<T,*>.get(coord: KslExpression<C>): KslExpression<R> =
         KslStorageRead(this, coord, expressionType.elemType)
 
     @JvmName("get2d")
-    operator fun <T: KslStorage2dType<R>, R: KslNumericType> KslExpression<T>.get(x: KslExprInt1, y: KslExprInt1): KslExpression<R> =
+    operator fun <T: KslStorage2dType<R>, R: KslNumericType> KslStorage<T,*>.get(x: KslExprInt1, y: KslExprInt1): KslExpression<R> =
         KslStorageRead(this, int2Value(x, y), expressionType.elemType)
 
     @JvmName("get3d")
-    operator fun <T: KslStorage3dType<R>, R: KslNumericType> KslExpression<T>.get(x: KslExprInt1, y: KslExprInt1, z: KslExprInt1): KslExpression<R> =
+    operator fun <T: KslStorage3dType<R>, R: KslNumericType> KslStorage<T,*>.get(x: KslExprInt1, y: KslExprInt1, z: KslExprInt1): KslExpression<R> =
         KslStorageRead(this, int3Value(x, y, z), expressionType.elemType)
 
     operator fun <T: KslStorageType<R, C>, R: KslNumericType, C: KslIntType> KslStorage<T, C>.set(
@@ -736,7 +736,7 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
     }
 
     fun <T: KslStorageType<R, C>, R: KslNumericType, C: KslIntType> storageRead(
-        storage: KslExpression<T>,
+        storage: KslStorage<T,*>,
         coord: KslExpression<C>
     ): KslExpression<R> = KslStorageRead(storage, coord, storage.expressionType.elemType)
 

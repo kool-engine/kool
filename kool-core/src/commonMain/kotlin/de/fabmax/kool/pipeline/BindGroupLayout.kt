@@ -2,8 +2,7 @@ package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.util.LongHash
 
-class BindGroupLayout(val scope: BindGroupScope, val bindings: List<BindingLayout>) {
-    val group: Int get() = scope.group
+class BindGroupLayout(val group: Int, val scope: BindGroupScope, val bindings: List<BindingLayout>) {
 
     val hash: Long = LongHash().let {
         it += scope
@@ -25,20 +24,14 @@ class BindGroupLayout(val scope: BindGroupScope, val bindings: List<BindingLayou
 
     override fun hashCode(): Int = hash.hashCode()
 
-    class Builder(val scope: BindGroupScope) {
+    class Builder(val group: Int, val scope: BindGroupScope) {
         val ubos = mutableListOf<UniformBufferLayout>()
         val textures = mutableListOf<TextureLayout>()
         val storage = mutableListOf<StorageBufferLayout>()
 
         fun create(): BindGroupLayout {
-            return BindGroupLayout(scope, ubos + textures + storage)
+            return BindGroupLayout(group, scope, ubos + textures + storage)
         }
-    }
-
-    companion object {
-        val EMPTY_VIEW = BindGroupLayout(BindGroupScope.VIEW, emptyList())
-        val EMPTY_PIPELINE = BindGroupLayout(BindGroupScope.PIPELINE, emptyList())
-        val EMPTY_MESH = BindGroupLayout(BindGroupScope.MESH, emptyList())
     }
 }
 
@@ -62,10 +55,10 @@ data class BindGroupLayouts(val viewScope: BindGroupLayout, val pipelineScope: B
     }
 }
 
-enum class BindGroupScope(val group: Int) {
-    VIEW(0),
-    PIPELINE(1),
-    MESH(2)
+enum class BindGroupScope {
+    VIEW,
+    PIPELINE,
+    MESH
 }
 
 sealed class BindingLayout(

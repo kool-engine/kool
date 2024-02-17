@@ -1,110 +1,19 @@
 package de.fabmax.kool.pipeline.backend.webgpu
 
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.pipeline.backend.stats.PipelineInfo
-import de.fabmax.kool.pipeline.backend.wgsl.WgslLocations
 import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.util.BaseReleasable
-import de.fabmax.kool.util.RenderLoop
-import de.fabmax.kool.util.checkIsNotReleased
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 class WgpuDrawPipeline(
     val drawPipeline: DrawPipeline,
     private val vertexShaderModule: GPUShaderModule,
     private val fragmentShaderModule: GPUShaderModule,
-    private val backend: RenderBackendWebGpu,
-): BaseReleasable(), PipelineBackend {
+    backend: RenderBackendWebGpu,
+): WgpuPipeline(drawPipeline, backend) {
 
-    private val device: GPUDevice get() = backend.device
-    private val pipelineInfo = PipelineInfo(drawPipeline)
-
-    private val locations = WgslLocations(drawPipeline.bindGroupLayouts, drawPipeline.vertexLayout)
-
-    private val bindGroupLayouts: List<GPUBindGroupLayout> = createBindGroupLayouts(drawPipeline)
-    private val pipelineLayout: GPUPipelineLayout = createPipelineLayout(drawPipeline)
     private val vertexBufferLayout: List<GPUVertexBufferLayout> = createVertexBufferLayout(drawPipeline)
     private val renderPipelines = mutableMapOf<WgpuRenderPass<*>, GPURenderPipeline>()
 
     private val users = mutableSetOf<Int>()
-
-    private fun createBindGroupLayouts(pipeline: DrawPipeline): List<GPUBindGroupLayout> {
-        return pipeline.bindGroupLayouts.asList.map { group ->
-            val layoutEntries = buildList {
-                group.bindings.forEach { binding ->
-                    val visibility = binding.stages.fold(0) { acc, stage ->
-                        acc or when (stage) {
-                            ShaderStage.VERTEX_SHADER -> GPUShaderStage.VERTEX
-                            ShaderStage.FRAGMENT_SHADER -> GPUShaderStage.FRAGMENT
-                            ShaderStage.COMPUTE_SHADER -> GPUShaderStage.COMPUTE
-                            else -> error("unsupported shader stage: $stage")
-                        }
-                    }
-                    val location = locations[binding]
-
-                    when (binding) {
-                        is UniformBufferLayout -> add(makeLayoutEntryBuffer(location, visibility))
-                        is Texture1dLayout -> addAll(makeLayoutEntriesTexture(binding, location, visibility, GPUTextureViewDimension.view1d))
-                        is Texture2dLayout -> addAll(makeLayoutEntriesTexture(binding, location, visibility, GPUTextureViewDimension.view2d))
-                        is Texture3dLayout -> addAll(makeLayoutEntriesTexture(binding, location, visibility, GPUTextureViewDimension.view3d))
-                        is TextureCubeLayout -> addAll(makeLayoutEntriesTexture(binding, location, visibility, GPUTextureViewDimension.viewCube))
-
-                        is StorageBuffer1dLayout -> TODO("StorageTexture1dLayout")
-                        is StorageBuffer2dLayout -> TODO("StorageTexture2dLayout")
-                        is StorageBuffer3dLayout -> TODO("StorageTexture3dLayout")
-                    }
-                }
-            }
-
-            device.createBindGroupLayout(
-                label = "${pipeline.name}-bindGroupLayout[${group.scope}]",
-                entries = layoutEntries.toTypedArray()
-            )
-        }
-    }
-
-    private fun makeLayoutEntryBuffer(location: WgslLocations.Location, visibility: Int) = GPUBindGroupLayoutEntryBuffer(
-        binding = location.binding,
-        visibility = visibility,
-        buffer = GPUBufferBindingLayout()
-    )
-
-    private fun makeLayoutEntriesTexture(
-        binding: TextureLayout,
-        location: WgslLocations.Location,
-        visibility: Int,
-        dimension: GPUTextureViewDimension
-    ): List<GPUBindGroupLayoutEntry> {
-        val texSampleType = binding.sampleType.wgpu
-        val samplerType = when (texSampleType) {
-            GPUTextureSampleType.float -> GPUSamplerBindingType.filtering
-            GPUTextureSampleType.depth -> GPUSamplerBindingType.comparison
-            GPUTextureSampleType.unfilterableFloat -> GPUSamplerBindingType.nonFiltering
-            else -> error("unexpected: $texSampleType")
-        }
-
-        return listOf(
-            GPUBindGroupLayoutEntrySampler(
-                location.binding,
-                visibility,
-                GPUSamplerBindingLayout(samplerType)
-            ),
-            GPUBindGroupLayoutEntryTexture(
-                location.binding + 1,
-                visibility,
-                GPUTextureBindingLayout(viewDimension = dimension, sampleType = texSampleType)
-            )
-        )
-    }
-
-    private fun createPipelineLayout(pipeline: DrawPipeline): GPUPipelineLayout {
-        return device.createPipelineLayout(GPUPipelineLayoutDescriptor(
-            label = "${pipeline.name}-bindGroupLayout",
-            bindGroupLayouts = bindGroupLayouts.toTypedArray()
-        ))
-    }
 
     private fun createVertexBufferLayout(pipeline: DrawPipeline): List<GPUVertexBufferLayout> {
         return pipeline.vertexLayout.bindings
@@ -147,7 +56,7 @@ class WgpuDrawPipeline(
             }
     }
 
-    private fun createRenderPipeline(passEncoderState: PassEncoderState<*>): GPURenderPipeline {
+    private fun createRenderPipeline(passEncoderState: RenderPassEncoderState<*>): GPURenderPipeline {
         val renderPass = passEncoderState.renderPass
         val gpuRenderPass = passEncoderState.gpuRenderPass
 
@@ -225,15 +134,14 @@ class WgpuDrawPipeline(
         )
     }
 
-    fun bind(cmd: DrawCommand, passEncoderState: PassEncoderState<*>): Boolean {
+    fun bind(cmd: DrawCommand, passEncoderState: RenderPassEncoderState<*>): Boolean {
         users.add(cmd.mesh.id)
 
-        val pipeline = cmd.pipeline!!
-        val pipelineData = pipeline.pipelineData
-        val viewData = cmd.queue.view.viewPipelineData.getPipelineData(pipeline)
-        val meshData = cmd.mesh.meshPipelineData.getPipelineData(pipeline)
+        val pipelineData = drawPipeline.pipelineData
+        val viewData = cmd.queue.view.viewPipelineData.getPipelineData(drawPipeline)
+        val meshData = cmd.mesh.meshPipelineData.getPipelineData(drawPipeline)
 
-        if (!checkTextures(pipelineData) || !checkTextures(viewData) || !checkTextures(meshData)) {
+        if (!pipelineData.checkBindings(backend) || !viewData.checkBindings(backend) || !meshData.checkBindings(backend)) {
             return false
         }
 
@@ -247,54 +155,6 @@ class WgpuDrawPipeline(
         meshData.getOrCreateWgpuData().bind(passEncoderState, cmd.queue.renderPass)
         bindVertexBuffers(passEncoderState.passEncoder, cmd.mesh)
         return true
-    }
-
-    private fun checkTextures(bindGroupData: BindGroupData): Boolean {
-        var isComplete = true
-        bindGroupData.bindings
-            .filterIsInstance<BindGroupData.TextureBindingData<*>>()
-            .map { it.texture }
-            .filter { it?.loadingState != Texture.LoadingState.LOADED }
-            .forEach {
-                if (it == null || !checkLoadingState(it)) {
-                    isComplete = false
-                }
-            }
-        return isComplete
-    }
-
-    private fun checkLoadingState(texture: Texture): Boolean {
-        texture.checkIsNotReleased()
-        if (texture.loadingState == Texture.LoadingState.NOT_LOADED) {
-            when (texture.loader) {
-                is AsyncTextureLoader -> {
-                    texture.loadingState = Texture.LoadingState.LOADING
-                    CoroutineScope(Dispatchers.RenderLoop).launch {
-                        val texData = texture.loader.loadTextureDataAsync().await()
-                        backend.textureLoader.loadTexture(texture, texData)
-                    }
-                }
-                is SyncTextureLoader -> {
-                    val texData = texture.loader.loadTextureDataSync()
-                    backend.textureLoader.loadTexture(texture, texData)
-                }
-                is BufferedTextureLoader -> {
-                    backend.textureLoader.loadTexture(texture, texture.loader.data)
-                }
-                else -> {
-                    // loader is null
-                    texture.loadingState = Texture.LoadingState.LOADING_FAILED
-                }
-            }
-        }
-        return texture.loadingState == Texture.LoadingState.LOADED
-    }
-
-    private fun BindGroupData.getOrCreateWgpuData(): WgpuBindGroupData {
-        if (gpuData == null) {
-            gpuData = WgpuBindGroupData(this, bindGroupLayouts[layout.group], locations, backend)
-        }
-        return gpuData as WgpuBindGroupData
     }
 
     private fun bindVertexBuffers(passEncoder: GPURenderPassEncoder, mesh: Mesh) {
@@ -315,17 +175,6 @@ class WgpuDrawPipeline(
         (user as? Mesh)?.let { users.remove(it.id) }
         if (users.isEmpty()) {
             release()
-        }
-    }
-
-    override fun release() {
-        if (!isReleased) {
-            super.release()
-            if (!drawPipeline.isReleased) {
-                drawPipeline.release()
-            }
-            backend.pipelineManager.removeDrawPipeline(this)
-            pipelineInfo.deleted()
         }
     }
 }

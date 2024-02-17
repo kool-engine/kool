@@ -4,14 +4,20 @@ import de.fabmax.kool.modules.ksl.generator.KslGenerator
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.modules.ksl.model.KslState
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.scene.geometry.PrimitiveType
 import de.fabmax.kool.util.logW
 
 class WgslGenerator : KslGenerator() {
 
     var blockIndent = "  "
 
-    private var generatorState = GeneratorState(BindGroupLayouts(BindGroupLayout.EMPTY_VIEW, BindGroupLayout.EMPTY_PIPELINE, BindGroupLayout.EMPTY_MESH), emptyVertexLayout)
+    private var generatorState = GeneratorState(
+        BindGroupLayouts(
+            BindGroupLayout(-1, BindGroupScope.VIEW, emptyList()),
+            BindGroupLayout(-1, BindGroupScope.PIPELINE, emptyList()),
+            BindGroupLayout(-1, BindGroupScope.MESH, emptyList())
+        ),
+        null
+    )
 
     override fun generateProgram(program: KslProgram, pipeline: DrawPipeline): WgslGeneratorOutput {
         val vertexStage = checkNotNull(program.vertexStage) {
@@ -21,7 +27,6 @@ class WgslGenerator : KslGenerator() {
             "KslProgram fragmentStage is missing (a valid KslShader needs at least a vertexStage and fragmentStage)"
         }
 
-        generatorState = GeneratorState(pipeline.bindGroupLayouts, pipeline.vertexLayout)
         return WgslGeneratorOutput.shaderOutput(
             generateVertexSrc(vertexStage, pipeline),
             generateFragmentSrc(fragmentStage, pipeline)
@@ -33,11 +38,13 @@ class WgslGenerator : KslGenerator() {
             "KslProgram computeStage is missing"
         }
 
-        generatorState = GeneratorState(pipeline.bindGroupLayouts, emptyVertexLayout)
+        generatorState = GeneratorState(pipeline.bindGroupLayouts, null)
         return WgslGeneratorOutput.computeOutput(generateComputeSrc(computeStage, pipeline))
     }
 
-    private fun generateVertexSrc(vertexStage: KslVertexStage, pipeline: PipelineBase): String {
+    private fun generateVertexSrc(vertexStage: KslVertexStage, pipeline: DrawPipeline): String {
+        generatorState = GeneratorState(pipeline.bindGroupLayouts, pipeline.vertexLayout)
+
         val src = StringBuilder()
         src.appendLine("""
             /*
@@ -54,7 +61,7 @@ class WgslGenerator : KslGenerator() {
         vertexInput.generateStruct(src)
         vertexOutput.generateStruct(src)
         src.generateTextureSamplers(vertexStage, pipeline)
-        src.generateStorageTextures(vertexStage, pipeline)
+        src.generateStorageBuffers(vertexStage, pipeline)
         src.generateFunctions(vertexStage)
 
         src.appendLine("@vertex")
@@ -67,7 +74,9 @@ class WgslGenerator : KslGenerator() {
         return src.toString()
     }
 
-    private fun generateFragmentSrc(fragmentStage: KslFragmentStage, pipeline: PipelineBase): String {
+    private fun generateFragmentSrc(fragmentStage: KslFragmentStage, pipeline: DrawPipeline): String {
+        generatorState = GeneratorState(pipeline.bindGroupLayouts, null)
+
         val src = StringBuilder()
         src.appendLine("""
             /*
@@ -84,7 +93,7 @@ class WgslGenerator : KslGenerator() {
         fragmentInput.generateStruct(src)
         fragmentOutput.generateStruct(src)
         src.generateTextureSamplers(fragmentStage, pipeline)
-        src.generateStorageTextures(fragmentStage, pipeline)
+        src.generateStorageBuffers(fragmentStage, pipeline)
         src.generateFunctions(fragmentStage)
 
         val mainParam = if (fragmentInput.isNotEmpty()) "fragmentInput: FragmentInput" else ""
@@ -113,12 +122,12 @@ class WgslGenerator : KslGenerator() {
         ubos.generateStructs(src)
         computeInput.generateStruct(src)
         src.generateTextureSamplers(computeStage, pipeline)
-        src.generateStorageTextures(computeStage, pipeline)
+        src.generateStorageBuffers(computeStage, pipeline)
         src.generateFunctions(computeStage)
 
         src.appendLine("@compute")
         src.appendLine("@workgroup_size(${computeStage.workGroupSize.x}, ${computeStage.workGroupSize.y}, ${computeStage.workGroupSize.z})")
-        src.appendLine("fn computeMain(input: ComputeInput) {")
+        src.appendLine("fn computeMain(computeInput: ComputeInput) {")
         src.appendLine(computeInput.addWorkGroupSizeDef().prependIndent(blockIndent))
         src.appendLine(generateScope(computeStage.main, blockIndent))
         src.appendLine("}")
@@ -233,41 +242,60 @@ class WgslGenerator : KslGenerator() {
         return "textureLoad($textureName, $coord, $level)"
     }
 
-    override fun storageSize(storageSize: KslStorageSize<*, *>): String {
-        val textureName = storageSize.storage.generateExpression(this)
-        return "textureDimensions(${textureName})"
+    private fun KslStorage<*,*>.getIndexString(coordExpr: String) = when (this) {
+        // always use a 1d array and compute array index dynamically based on buffer size
+        is KslStorage1d<*> -> "[${coordExpr}]"
+        is KslStorage2d<*> -> "[${coordExpr}.y * $sizeX + ${coordExpr}.x]"
+        is KslStorage3d<*> -> "[${coordExpr}.z * ${sizeY * sizeX} + ${coordExpr}.y * $sizeX + ${coordExpr}.x]"
     }
 
     override fun storageRead(storageRead: KslStorageRead<*, *, *>): String {
-        val textureName = storageRead.storage.generateExpression(this)
+        val storage = storageRead.storage.generateExpression(this)
         val coord = storageRead.coord.generateExpression(this)
-        return "textureLoad($textureName, $coord, 0)"
+        val arrayIndex = storageRead.storage.getIndexString(coord)
+        return if (storageRead.storage.isAccessedAtomically) {
+            "atomicLoad(&${storage}${arrayIndex})"
+        } else {
+            "${storage}${arrayIndex}"
+        }
     }
 
     override fun opStorageWrite(op: KslStorageWrite<*, *, *>): String {
+        val storage = op.storage.generateExpression(this)
         val expr = op.data.generateExpression(this)
-        val elemType = op.storage.expressionType.elemType
-        val vec4 = when (elemType) {
-            is KslFloat1 -> "vec4f($expr, 0.0, 0.0, 0.0)"
-            is KslFloat2 -> "vec4f($expr, 0.0, 0.0)"
-            is KslFloat3 -> "vec4f($expr, 0.0)"
-            is KslInt1 -> "vec4i($expr, 0, 0, 0)"
-            is KslInt2 -> "vec4i($expr, 0, 0)"
-            is KslInt3 -> "vec4i($expr, 0)"
-            is KslUint1 -> "vec4u($expr, 0, 0, 0)"
-            is KslUint2 -> "vec4u($expr, 0, 0)"
-            is KslUint3 -> "vec4u($expr, 0)"
-            else -> expr
+        val coord = op.coord.generateExpression(this)
+        val arrayIndex = op.storage.getIndexString(coord)
+        return if (op.storage.isAccessedAtomically) {
+            "atomicStore(&${storage}${arrayIndex}, $expr)"
+        } else {
+            "${storage}${arrayIndex} = $expr;"
         }
-        return "textureStore(${op.storage.generateExpression(this)}, ${op.coord.generateExpression(this)}, $vec4);"
     }
 
     override fun storageAtomicOp(atomicOp: KslStorageAtomicOp<*, *, *>): String {
-        TODO("storageAtomicOp")
+        val storage = atomicOp.storage.generateExpression(this)
+        val expr = atomicOp.data.generateExpression(this)
+        val coord = atomicOp.coord.generateExpression(this)
+        val arrayIndex = atomicOp.storage.getIndexString(coord)
+        val func = when(atomicOp.op) {
+            KslStorageAtomicOp.Op.Swap -> "atomicExchange"
+            KslStorageAtomicOp.Op.Add -> "atomicAdd"
+            KslStorageAtomicOp.Op.And -> "atomicAnd"
+            KslStorageAtomicOp.Op.Or -> "atomicOr"
+            KslStorageAtomicOp.Op.Xor -> "atomicXor"
+            KslStorageAtomicOp.Op.Min -> "atomicMin"
+            KslStorageAtomicOp.Op.Max -> "atomicMax"
+        }
+        return "$func(&${storage}${arrayIndex}, ${expr})"
     }
 
     override fun storageAtomicCompareSwap(atomicCompSwap: KslStorageAtomicCompareSwap<*, *, *>): String {
-        TODO("storageAtomicCompareSwap")
+        val storage = atomicCompSwap.storage.generateExpression(this)
+        val comp = atomicCompSwap.compare.generateExpression(this)
+        val expr = atomicCompSwap.data.generateExpression(this)
+        val coord = atomicCompSwap.coord.generateExpression(this)
+        val arrayIndex = atomicCompSwap.storage.getIndexString(coord)
+        return "atomicCompareExchangeWeak(&$storage${arrayIndex}, ${comp}, ${expr}).old_value"
     }
 
     private fun StringBuilder.generateFunctions(stage: KslShaderStage) {
@@ -470,10 +498,6 @@ class WgslGenerator : KslGenerator() {
     override fun builtinFract(func: KslBuiltinFractVector<*>) = "fract(${generateArgs(func.args, 1)})"
     override fun builtinInverseSqrt(func: KslBuiltinInverseSqrtScalar) = "inverseSqrt(${generateArgs(func.args, 1)})"
     override fun builtinInverseSqrt(func: KslBuiltinInverseSqrtVector<*>) = "inverseSqrt(${generateArgs(func.args, 1)})"
-    override fun builtinIsInf(func: KslBuiltinIsInfScalar) = TODO("isinf(scalar)")
-    override fun builtinIsInf(func: KslBuiltinIsInfVector<*, *>) = TODO("isinf(vector)")
-    override fun builtinIsNan(func: KslBuiltinIsNanScalar) = "(${func.args[0].generateExpression(this)} != ${func.args[0].generateExpression(this)})"
-    override fun builtinIsNan(func: KslBuiltinIsNanVector<*, *>) = "(${func.args[0].generateExpression(this)} != ${func.args[0].generateExpression(this)})"
     override fun builtinLength(func: KslBuiltinLength<*>) = "length(${generateArgs(func.args, 1)})"
     override fun builtinLog(func: KslBuiltinLogScalar) = "log(${generateArgs(func.args, 1)})"
     override fun builtinLog(func: KslBuiltinLogVector<*>) = "log(${generateArgs(func.args, 1)})"
@@ -510,11 +534,30 @@ class WgslGenerator : KslGenerator() {
     override fun builtinDeterminant(func: KslBuiltinDeterminant<*, *>) = "determinant(${generateArgs(func.args, 1)})"
     override fun builtinTranspose(func: KslBuiltinTranspose<*, *>) = "transpose(${generateArgs(func.args, 1)})"
 
+    override fun builtinIsInf(func: KslBuiltinIsInfScalar): String {
+        logW { "WGSL has no builtin isInfinity check, using fallback method, which might not work as expected: https://github.com/gpuweb/gpuweb/issues/2270" }
+        // In floating-point arithmetic Infinity * 0.0 is NaN
+        return "(${func.args[0].generateExpression(this)} * 0.0 != 0.0)"
+    }
+    override fun builtinIsInf(func: KslBuiltinIsInfVector<*, *>): String {
+        logW { "WGSL has no builtin isInfinity check, using fallback method, which might not work as expected: https://github.com/gpuweb/gpuweb/issues/2270" }
+        // In floating-point arithmetic Infinity * 0.0 is NaN
+        return "(${func.args[0].generateExpression(this)} * 0.0 != ${func.args[0].generateExpression(this)} * 0.0)"
+    }
+    override fun builtinIsNan(func: KslBuiltinIsNanScalar): String {
+        logW { "WGSL has no builtin isNaN check, using fallback method, which might not work as expected: https://github.com/gpuweb/gpuweb/issues/2270" }
+        // In floating-point arithmetic: NaN != NaN
+        return "(${func.args[0].generateExpression(this)} != ${func.args[0].generateExpression(this)})"
+    }
+    override fun builtinIsNan(func: KslBuiltinIsNanVector<*, *>): String {
+        logW { "WGSL has no builtin isNaN check, using fallback method, which might not work as expected: https://github.com/gpuweb/gpuweb/issues/2270" }
+        // In floating-point arithmetic: NaN != NaN
+        return "(${func.args[0].generateExpression(this)} != ${func.args[0].generateExpression(this)})"
+    }
+
     override fun KslState.name(): String = generatorState.getVarName(stateName)
 
     companion object {
-        private val emptyVertexLayout = VertexLayout(emptyList(), PrimitiveType.TRIANGLES)
-
         fun samplerName(samplerExpression: String): String {
             return "${samplerExpression}_sampler"
         }
@@ -565,44 +608,22 @@ class WgslGenerator : KslGenerator() {
                 KslMat3 -> "mat3x3f"
                 KslMat4 -> "mat4x4f"
 
-                KslColorSampler1d -> error("use wgslSamplerAndTextureTypeName() for $this")
-                KslColorSampler2d -> error("use wgslSamplerAndTextureTypeName() for $this")
-                KslColorSampler3d -> error("use wgslSamplerAndTextureTypeName() for $this")
-                KslColorSamplerCube -> error("use wgslSamplerAndTextureTypeName() for $this")
-                KslColorSampler2dArray -> error("use wgslSamplerAndTextureTypeName() for $this")
-                KslColorSamplerCubeArray -> error("use wgslSamplerAndTextureTypeName() for $this")
-                KslDepthSampler2d -> error("use wgslSamplerAndTextureTypeName() for $this")
-                KslDepthSamplerCube -> error("use wgslSamplerAndTextureTypeName() for $this")
-                KslDepthSampler2dArray -> error("use wgslSamplerAndTextureTypeName() for $this")
-                KslDepthSamplerCubeArray -> error("use wgslSamplerAndTextureTypeName() for $this")
-
                 is KslArrayType<*> -> "array<${elemType.wgslTypeName()},${arraySize}>"
 
-                is KslStorage1dType<*> -> "texture_storage_1d<$texelFormat, write>"     // read_write not yet supported by Chrome...
-                is KslStorage2dType<*> -> "texture_storage_2d<$texelFormat, write>"     // read_write not yet supported by Chrome...
-                is KslStorage3dType<*> -> "texture_storage_3d<$texelFormat, write>"     // read_write not yet supported by Chrome...
+                else -> error("no direct type mapping for type $this")
             }
         }
 
-        private val KslStorageType<*, *>.texelFormat: String
-            get() = when (elemType) {
-                is KslFloat1 -> "r32float"
-                is KslFloat2 -> "rg32float"
-                is KslFloat3 -> error("3-channel formats are not supported, use 4 channels instead")
-                is KslFloat4 -> "rgba32float"
-                is KslInt1 -> "r32sint"
-                is KslInt2 -> "rg32sint"
-                is KslInt3 -> error("3-channel formats are not supported, use 4 channels instead")
-                is KslInt4 -> "rgba32sint"
-                is KslUint1 -> "r32uint"
-                is KslUint2 -> "rg32uint"
-                is KslUint3 -> error("3-channel formats are not supported, use 4 channels instead")
-                is KslUint4 -> "rgba32uint"
-                else -> throw IllegalStateException("Invalid storage element type $elemType")
+        fun StorageAccessType.wgslAccessType(): String {
+            return when (this) {
+                StorageAccessType.READ_ONLY -> "read"
+                StorageAccessType.WRITE_ONLY -> "read_write"        // wgsl storage access type must be either "read" or "read_write"
+                StorageAccessType.READ_WRITE -> "read_write"
             }
+        }
     }
 
-    private class GeneratorState(groupLayouts: BindGroupLayouts, vertexLayout: VertexLayout) {
+    private class GeneratorState(groupLayouts: BindGroupLayouts, vertexLayout: VertexLayout?) {
         val locations = WgslLocations(groupLayouts, vertexLayout)
         var nextTempI = 0
 
@@ -808,19 +829,20 @@ class WgslGenerator : KslGenerator() {
         appendLine()
     }
 
-    private fun StringBuilder.generateStorageTextures(stage: KslShaderStage, pipeline: PipelineBase) {
+    private fun StringBuilder.generateStorageBuffers(stage: KslShaderStage, pipeline: PipelineBase) {
         pipeline.bindGroupLayouts.asList.forEach { layout ->
             layout.bindings
-                .filterIsInstance<StorageBufferLayout>().filter { texLayout ->
-                    stage.type.pipelineStageType in texLayout.stages
+                .filterIsInstance<StorageBufferLayout>().filter { storageLayout ->
+                    stage.type.pipelineStageType in storageLayout.stages
                 }
-            TODO()
-//                .map { tex ->
-//                    val location = generatorState.locations[tex]
-//                    val kslTex = stage.getUsedStorage().first { it.name == tex.name }
-//                    val samplerType = kslTex.expressionType.wgslTypeName()
-//                    appendLine("@group(${location.group}) @binding(${location.binding}) var ${tex.name}: $samplerType;")
-//                }
+                .forEach { storageLayout ->
+                    val location = generatorState.locations[storageLayout]
+                    val kslStorage = stage.getUsedStorage().first { it.name == storageLayout.name }
+                    val accessType = storageLayout.accessType.wgslAccessType()
+                    val typeName = kslStorage.expressionType.elemType.wgslTypeName()
+                    val elementType = if (kslStorage.isAccessedAtomically) "atomic<$typeName>" else typeName
+                    appendLine("@group(${location.group}) @binding(${location.binding}) var <storage, ${accessType}> ${storageLayout.name}: array<$elementType>;")
+                }
         }
         appendLine()
     }

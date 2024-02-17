@@ -46,7 +46,7 @@ dependencyResolutionManagement {
         create("jvmLibs") {
             version("lwjgl", "3.3.3")
 
-            library("jsvg", "com.github.weisj:jsvg:1.3.0")
+            library("jsvg", "com.github.weisj:jsvg:1.4.0")
             library("lwjgl-core", "org.lwjgl", "lwjgl").versionRef("lwjgl")
             library("lwjgl-glfw", "org.lwjgl", "lwjgl-glfw").versionRef("lwjgl")
             library("lwjgl-jemalloc", "org.lwjgl", "lwjgl-jemalloc").versionRef("lwjgl")

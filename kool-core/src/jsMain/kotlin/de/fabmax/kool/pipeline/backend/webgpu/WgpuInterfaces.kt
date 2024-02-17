@@ -38,10 +38,16 @@ external class GPUBuffer {
 }
 
 external object GPUBufferUsage {
+    val MAP_READ: Int
+    val MAP_WRITE: Int
+    val COPY_SRC: Int
+    val COPY_DST: Int
     val INDEX: Int
     val VERTEX: Int
     val UNIFORM: Int
-    val COPY_DST: Int
+    val STORAGE: Int
+    val INDIRECT: Int
+    val QUERY_RESOLVE: Int
 }
 
 external class GPUCanvasContext : RenderingContext {
@@ -68,6 +74,7 @@ external class GPUDevice {
     fun createPipelineLayout(descriptor: GPUPipelineLayoutDescriptor): GPUPipelineLayout
     fun createBindGroup(descriptor: GPUBindGroupDescriptor): GPUBindGroup
     fun createCommandEncoder(): GPUCommandEncoder
+    fun createComputePipeline(descriptor: GPUComputePipelineDescriptor): GPUComputePipeline
     fun createRenderPipeline(descriptor: GPURenderPipelineDescriptor): GPURenderPipeline
     fun createShaderModule(descriptor: GPUShaderModuleDescriptor): GPUShaderModule
     fun createSampler(descriptor: GPUSamplerDescriptor): GPUSampler

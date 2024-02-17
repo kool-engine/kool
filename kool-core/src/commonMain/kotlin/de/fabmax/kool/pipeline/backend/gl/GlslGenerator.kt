@@ -215,8 +215,7 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
     override fun storageRead(storageRead: KslStorageRead<*, *, *>): String {
         val storage = storageRead.storage.generateExpression(this)
         val coord = storageRead.coord.generateExpression(this)
-        val buffer = storageRead.storage as KslStorage<*,*>
-        val arrayIndex = buffer.getIndexString(coord)
+        val arrayIndex = storageRead.storage.getIndexString(coord)
         return "${storage}${arrayIndex}"
     }
 
@@ -246,10 +245,12 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
     }
 
     override fun storageAtomicCompareSwap(atomicCompSwap: KslStorageAtomicCompareSwap<*, *, *>): String {
-        return "imageAtomicCompSwap(${atomicCompSwap.storage.generateExpression(this)}, " +
-                "${atomicCompSwap.coord.generateExpression(this)}, " +
-                "${atomicCompSwap.compare.generateExpression(this)}, " +
-                "${atomicCompSwap.data.generateExpression(this)})"
+        val storage = atomicCompSwap.storage.generateExpression(this)
+        val comp = atomicCompSwap.compare.generateExpression(this)
+        val expr = atomicCompSwap.data.generateExpression(this)
+        val coord = atomicCompSwap.coord.generateExpression(this)
+        val arrayIndex = atomicCompSwap.storage.getIndexString(coord)
+        return "atomicCompSwap($storage${arrayIndex}, ${comp}, ${expr})"
     }
 
     protected open fun StringBuilder.generateUniformSamplers(stage: KslShaderStage, pipeline: PipelineBase) {
@@ -291,7 +292,7 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
     }
 
     protected open fun StringBuilder.generateUbos(stage: KslShaderStage, pipeline: PipelineBase) {
-        val ubos = stage.getUsedUbos().sortedBy { it.scope.group }
+        val ubos = stage.getUsedUbos().sortedBy { it.scope.ordinal }
         if (ubos.isNotEmpty()) {
             appendLine("// uniform buffer objects")
             for (ubo in ubos) {

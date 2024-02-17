@@ -180,11 +180,26 @@ fun GPUColorTargetState(
 }
 
 interface GPUComputePassDescriptor
+
 fun GPUComputePassDescriptor(
     label: String = "",
     //timestampWrites: GPUComputePassTimestampWrites
 ): GPUComputePassDescriptor {
     val o = js("({})")
+    o["label"] = label
+    return o
+}
+
+interface GPUComputePipelineDescriptor
+
+fun GPUComputePipelineDescriptor(
+    layout: GPUPipelineLayout,
+    compute: GPUProgrammableStage,
+    label: String = "",
+): GPUComputePipelineDescriptor {
+    val o = js("({})")
+    o["layout"] = layout
+    o["compute"] = compute
     o["label"] = label
     return o
 }
@@ -350,6 +365,19 @@ data class GPUDepthStencilState(
     @JsName("depthBiasClamp")
     val depthBiasClamp: Float = 0f
 )
+
+interface GPUProgrammableStage
+
+fun GPUProgrammableStage(
+    module: GPUShaderModule,
+    entryPoint: String,
+    // constants: Map<String, GPUPipelineConstantValue>
+): GPUProgrammableStage {
+    val o = js("({})")
+    o["module"] = module
+    o["entryPoint"] = entryPoint
+    return o
+}
 
 data class GPUShaderModuleDescriptor(
     @JsName("code")

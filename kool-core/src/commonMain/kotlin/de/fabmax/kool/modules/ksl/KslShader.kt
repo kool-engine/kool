@@ -64,7 +64,7 @@ open class KslShader private constructor(val program: KslProgram) : DrawShader(p
             name = program.name,
             pipelineConfig = pipelineConfig,
             vertexLayout = makeVertexLayout(mesh),
-            bindGroupLayouts = program.makeBindGroupLayout(),
+            bindGroupLayouts = program.makeBindGroupLayout(isComputePipeline = false),
             shaderCodeGenerator = { updateEvent.ctx.backend.generateKslShader(this, it) }
         )
     }
@@ -144,16 +144,24 @@ open class KslShader private constructor(val program: KslProgram) : DrawShader(p
     }
 }
 
-fun KslProgram.makeBindGroupLayout(): BindGroupLayouts {
-    return BindGroupLayouts(
-        makeBindGroupLayout(BindGroupScope.VIEW),
-        makeBindGroupLayout(BindGroupScope.PIPELINE),
-        makeBindGroupLayout(BindGroupScope.MESH),
-    )
+fun KslProgram.makeBindGroupLayout(isComputePipeline: Boolean): BindGroupLayouts {
+    return if (isComputePipeline) {
+        BindGroupLayouts(
+            BindGroupLayout(-1, BindGroupScope.VIEW, emptyList()),
+            makeBindGroupLayout(0, BindGroupScope.PIPELINE),
+            BindGroupLayout(-1, BindGroupScope.MESH, emptyList()),
+        )
+    } else {
+        BindGroupLayouts(
+            makeBindGroupLayout(0, BindGroupScope.VIEW),
+            makeBindGroupLayout(1, BindGroupScope.PIPELINE),
+            makeBindGroupLayout(2, BindGroupScope.MESH),
+        )
+    }
 }
 
-private fun KslProgram.makeBindGroupLayout(scope: BindGroupScope): BindGroupLayout {
-    val bindGrpBuilder = BindGroupLayout.Builder(scope)
+private fun KslProgram.makeBindGroupLayout(group: Int, scope: BindGroupScope): BindGroupLayout {
+    val bindGrpBuilder = BindGroupLayout.Builder(group, scope)
     setupBindGroupLayoutUbos(bindGrpBuilder)
     setupBindGroupLayoutTextures(bindGrpBuilder)
     setupBindGroupLayoutStorage(bindGrpBuilder)
@@ -246,6 +254,7 @@ private fun KslProgram.setupBindGroupLayoutStorage(bindGrpBuilder: BindGroupLayo
             .filter { it.dependsOn(storage) }
             .map { it.type.pipelineStageType }
             .toSet()
+
         val format = when (storage.storageType.elemType) {
             KslFloat1 -> GpuType.FLOAT1
             KslFloat2 -> GpuType.FLOAT2
@@ -259,11 +268,17 @@ private fun KslProgram.setupBindGroupLayoutStorage(bindGrpBuilder: BindGroupLayo
             else -> error("Invalid storage type: ${storage.storageType.elemType} (only 1, 2, and 4 dimensional float and int types are allowed)")
         }
 
+        val accessType = when {
+            storage.isRead && storage.isWritten -> StorageAccessType.READ_WRITE
+            storage.isRead -> StorageAccessType.READ_ONLY
+            else -> StorageAccessType.WRITE_ONLY
+        }
+
         val name = storage.name
         bindGrpBuilder.storage += when(storage)  {
-            is KslStorage1d<*> -> StorageBuffer1dLayout(name, format, storage.sizeX, storage.accessType, storageStages)
-            is KslStorage2d<*> -> StorageBuffer2dLayout(name, format, storage.sizeX, storage.sizeY, storage.accessType, storageStages)
-            is KslStorage3d<*> -> StorageBuffer3dLayout(name, format, storage.sizeX, storage.sizeY, storage.sizeZ, storage.accessType, storageStages)
+            is KslStorage1d<*> -> StorageBuffer1dLayout(name, format, storage.sizeX, accessType, storageStages)
+            is KslStorage2d<*> -> StorageBuffer2dLayout(name, format, storage.sizeX, storage.sizeY, accessType, storageStages)
+            is KslStorage3d<*> -> StorageBuffer3dLayout(name, format, storage.sizeX, storage.sizeY, storage.sizeZ, accessType, storageStages)
         }
     }
 }
