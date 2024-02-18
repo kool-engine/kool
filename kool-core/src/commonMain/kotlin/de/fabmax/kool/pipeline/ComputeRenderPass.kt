@@ -1,41 +1,33 @@
 package de.fabmax.kool.pipeline
 
+import de.fabmax.kool.math.MutableVec3i
 import de.fabmax.kool.math.Vec3i
+import kotlin.math.ceil
 
-fun ComputeRenderPass(computeShader: ComputeShader, width: Int, height: Int = 1, depth: Int = 1): ComputeRenderPass {
-    val pass = ComputeRenderPass(computeShader.name, width, height, depth)
-    pass.addTask(computeShader)
+fun ComputeRenderPass(computeShader: ComputeShader, numInvocationsX: Int, numInvocationsY: Int = 1, numInvocationsZ: Int = 1): ComputeRenderPass {
+    val pass = ComputeRenderPass(computeShader.name)
+    val task = pass.addTask(computeShader, Vec3i.ZERO)
+    task.setNumGroupsByInvocations(numInvocationsX, numInvocationsY, numInvocationsZ)
     return pass
 }
 
-class ComputeRenderPass(name: String, width: Int, height: Int = 1, depth: Int = 1) :
-    OffscreenRenderPass(renderPassAttachmentConfig, Vec3i(width, height, depth), name)
+class ComputeRenderPass(name: String) :
+    OffscreenRenderPass(renderPassAttachmentConfig, Vec3i.ZERO, name)
 {
     override val views: List<View> = emptyList()
 
-    private var isTasksDirty = false
     private val _tasks = mutableListOf<Task>()
-    val tasks: List<Task> get() {
-        if (isTasksDirty) {
-            _tasks
-                .filter { !it.isCreated }
-                .forEach { it.create(it.shader.getOrCreatePipeline(this)) }
-            isTasksDirty = false
-        }
-        return _tasks
-    }
+    val tasks: List<Task> get() = _tasks
 
-    fun addTask(computeShader: ComputeShader): Task {
-        val task = Task(this, computeShader)
+    fun addTask(computeShader: ComputeShader, numGroups: Vec3i): Task {
+        val task = Task(this, computeShader, numGroups)
         _tasks += task
-        isTasksDirty = true
         return task
     }
 
     override fun release() {
         super.release()
         _tasks
-            .filter { it.isCreated }
             .map { it.pipeline }
             .distinct()
             .filter { !it.isReleased }
@@ -46,19 +38,19 @@ class ComputeRenderPass(name: String, width: Int, height: Int = 1, depth: Int = 
         private val renderPassAttachmentConfig = AttachmentConfig(ColorAttachmentNone, DepthAttachmentNone)
     }
 
-    class Task(val pass: ComputeRenderPass, val shader: ComputeShader) {
+    inner class Task(val pass: ComputeRenderPass, val shader: ComputeShader, numGroups: Vec3i) {
+        val numGroups = MutableVec3i(numGroups)
         var isEnabled = true
-        var isCreated = false
-            private set
-        lateinit var pipeline: ComputePipeline
-            private set
+        val pipeline: ComputePipeline = shader.getOrCreatePipeline(this@ComputeRenderPass)
 
         private val beforeDispatch = mutableListOf<() -> Unit>()
         private val afterDispatch = mutableListOf<() -> Unit>()
 
-        fun create(pipeline: ComputePipeline) {
-            this.pipeline = pipeline
-            isCreated = true
+        fun setNumGroupsByInvocations(numInvocationsX: Int, numInvocationsY: Int = 1, numInvocationsZ: Int = 1) {
+            val numGroupsX = ceil(numInvocationsX.toFloat() / pipeline.workGroupSize.x).toInt()
+            val numGroupsY = ceil(numInvocationsY.toFloat() / pipeline.workGroupSize.y).toInt()
+            val numGroupsZ = ceil(numInvocationsZ.toFloat() / pipeline.workGroupSize.z).toInt()
+            numGroups.set(numGroupsX, numGroupsY, numGroupsZ)
         }
 
         fun onBeforeDispatch(block: () -> Unit) {

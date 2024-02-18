@@ -6,22 +6,23 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.ui2.mutableStateOf
 
 object BeeConfig {
-    val maxBeesPerTeam = 50_000
-    val beesPerTeam = mutableStateOf(if (KoolSystem.isJavascript) maxBeesPerTeam / 5 else maxBeesPerTeam)
+    val maxBeesPerTeamCpu = 50_000
+    val maxBeesPerTeamGpu = 500_000
+    val beesPerTeam = mutableStateOf(if (KoolSystem.isJavascript) maxBeesPerTeamCpu / 5 else maxBeesPerTeamCpu)
 
-    var maxSpawnSpeed = 20f
+    val maxSpawnSpeed = 20f
 
-    var speedJitter = 200f
-    var speedDamping = 0.9f
-    var teamAttraction = 5f
-    var teamRepulsion = -4f
+    val speedJitter = 200f
+    val speedDamping = 0.9f
+    val teamAttraction = 5f
+    val teamRepulsion = -4f
 
-    var chaseForce = 20f
-    var attackDistance = 5f
-    var attackForce = 500f
-    var hitDistance = 1f
+    val chaseForce = 20f
+    val attackDistance = 7.5f
+    val attackForce = 500f
+    val hitDistance = 2f
 
-    val worldSize: Vec3f = Vec3f(100f, 50f, 50f)
+    val worldSize: Vec3f = Vec3f(200f, 100f, 100f)
     val worldExtent: Vec3f = worldSize.mul(0.5f, MutableVec3f())
 
     val gravity = -20f

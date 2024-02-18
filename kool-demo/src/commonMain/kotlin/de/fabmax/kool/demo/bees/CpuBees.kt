@@ -2,7 +2,10 @@ package de.fabmax.kool.demo.bees
 
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ui2.mutableStateOf
+import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
+import de.fabmax.kool.scene.geometry.RectUvs
 import de.fabmax.kool.util.PerfTimer
 import de.fabmax.kool.util.Time
 import kotlin.jvm.JvmInline
@@ -12,17 +15,18 @@ import kotlin.math.min
 import kotlin.math.sign
 import kotlin.random.Random
 
-class BeeSystem(val team: Int) {
-    val beeInstances = MeshInstanceList(BeeConfig.maxBeesPerTeam, BeeDemo.ATTR_POSITION, BeeDemo.ATTR_ROTATION)
+class CpuBees(val team: Int) {
+    val beeInstances = MeshInstanceList(BeeConfig.maxBeesPerTeamCpu, BeeDemo.ATTR_POSITION, BeeDemo.ATTR_ROTATION)
+    val beeMesh: Mesh
 
-    val positions = Array(BeeConfig.maxBeesPerTeam + 1) { MutableVec4f(Vec4f.W_AXIS) }
-    val rotations = Array(BeeConfig.maxBeesPerTeam) { MutableQuatF(QuatF.IDENTITY) }
-    val velocities = Array(BeeConfig.maxBeesPerTeam) { MutableVec3f() }
-    val enemies = IntArray(BeeConfig.maxBeesPerTeam) { BeeConfig.maxBeesPerTeam }
+    val positions = Array(BeeConfig.maxBeesPerTeamCpu + 1) { MutableVec4f(Vec4f.W_AXIS) }
+    val rotations = Array(BeeConfig.maxBeesPerTeamCpu) { MutableQuatF(QuatF.IDENTITY) }
+    val velocities = Array(BeeConfig.maxBeesPerTeamCpu) { MutableVec3f() }
+    val enemies = IntArray(BeeConfig.maxBeesPerTeamCpu) { BeeConfig.maxBeesPerTeamCpu }
 
     var aliveBees = 0
 
-    lateinit var enemyBees: BeeSystem
+    lateinit var enemyBees: CpuBees
 
     private val random = Random(17 + team * 31)
 
@@ -37,6 +41,23 @@ class BeeSystem(val team: Int) {
 
     init {
         spawnBees()
+
+        beeMesh = Mesh(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS, instances = beeInstances).apply {
+            generate {
+                cube {
+                    size.set(0.7f, 0.7f, 1f)
+                    val s = 1/32f
+                    uvs = listOf(
+                        RectUvs(Vec2f(0*s, 0*s), Vec2f(7*s, 0*s), Vec2f(0*s, 10*s), Vec2f(7*s, 10*s)),      // top
+                        RectUvs(Vec2f(21*s, 10*s), Vec2f(14*s, 10*s), Vec2f(21*s, 0*s), Vec2f(14*s, 0*s)),  // bottom
+                        RectUvs(Vec2f(21*s, 0*s), Vec2f(28*s, 0*s), Vec2f(21*s, 10*s), Vec2f(28*s, 10*s)),  // left
+                        RectUvs(Vec2f(14*s, 10*s), Vec2f(7*s, 10*s), Vec2f(14*s, 0*s), Vec2f(7*s, 0*s)),    // right
+                        RectUvs(Vec2f(0*s, 10*s), Vec2f(7*s, 10*s), Vec2f(0*s, 17*s), Vec2f(7*s, 17*s)),    // front
+                        RectUvs(Vec2f(14*s, 17*s), Vec2f(7*s, 17*s), Vec2f(14*s, 10*s), Vec2f(7*s, 10*s))   // back
+                    )
+                }
+            }
+        }
     }
 
     fun updateBees() {
@@ -91,7 +112,7 @@ class BeeSystem(val team: Int) {
             spawned.rotation.set(randomF(0f, 360f).deg, random.randomInUnitSphere(tmpVec3a).norm())
             spawned.position.set(random.randomInUnitSphere(tmpVec3a).mul(BeeConfig.worldSize.x * 0.05f))
             spawned.position.x += -BeeConfig.worldSize.x * 0.4f + BeeConfig.worldSize.x * 0.8f * team
-            spawned.enemy = EnemyBee(BeeConfig.maxBeesPerTeam)
+            spawned.enemy = EnemyBee(BeeConfig.maxBeesPerTeamCpu)
             random.randomInUnitSphere(spawned.velocity).mul(BeeConfig.maxSpawnSpeed)
         }
     }
@@ -203,16 +224,13 @@ class BeeSystem(val team: Int) {
         // swarming
         val attractiveFriend = getRandomBee()
         var delta = attractiveFriend.position.subtract(pos, tmpVec4)
-        var dist = delta.length()
-        if (dist > 0f) {
-            vel.add(delta.mul(BeeConfig.teamAttraction * dt / dist))
-        }
+        var dist = max(0.1f, delta.length())
+        vel.add(delta.mul(BeeConfig.teamAttraction * dt / dist))
+
         val repellentFriend = getRandomBee()
-        delta = repellentFriend.position.subtract(pos, tmpVec4)
-        dist = delta.length()
-        if (dist > 0f) {
-            vel.add(delta.mul(BeeConfig.teamRepulsion * dt / dist))
-        }
+        delta = pos.subtract(repellentFriend.position, tmpVec4)
+        dist = max(0.1f, delta.length())
+        vel.add(delta.mul(BeeConfig.teamRepulsion * dt / dist))
 
         // attack enemy bee
         if (!target.isAlive) {

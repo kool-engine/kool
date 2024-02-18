@@ -1,61 +1,76 @@
 package de.fabmax.kool.demo.bees
 
-import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.demo.*
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.spatial.BoundingBoxF
 import de.fabmax.kool.modules.ui2.Grow
 import de.fabmax.kool.modules.ui2.Text
+import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.scene.*
-import de.fabmax.kool.scene.geometry.RectUvs
+import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.scene.addLineMesh
+import de.fabmax.kool.scene.defaultOrbitCamera
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
+import kotlin.math.min
 import kotlin.math.roundToInt
 
 class BeeDemo : DemoScene("Fighting Bees") {
 
-    private val beeSystemA = BeeSystem(0)
-    private val beeSystemB = BeeSystem(1)
+    private val cpuBeesA = CpuBees(0)
+    private val cpuBeesB = CpuBees(1)
 
-    private val beeMeshA = beeMesh(beeSystemA.beeInstances)
-    private val beeMeshB = beeMesh(beeSystemB.beeInstances)
+    val gpuBees = GpuBees(mainScene)
 
-    private lateinit var beeTex: Texture2d
-
-    init {
-        beeSystemA.enemyBees = beeSystemB
-        beeSystemB.enemyBees = beeSystemA
+    private val isGpuSimulation = mutableStateOf(KoolSystem.requireContext().backend.hasComputeShaders).onChange {
+        applyMode(it)
     }
 
-    override suspend fun Assets.loadResources(ctx: KoolContext) {
-        val texProps = TextureProps(
+    private val beeTex: Texture2d by texture2d(
+        path = "${DemoLoader.materialPath}/bee.png",
+        props = TextureProps(
             generateMipMaps = false,
             defaultSamplerSettings = SamplerSettings().clamped().nearest()
         )
-        beeTex = loadTexture2d("${DemoLoader.materialPath}/bee.png", texProps)
+    )
+
+    init {
+        cpuBeesA.enemyBees = cpuBeesB
+        cpuBeesB.enemyBees = cpuBeesA
     }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
         defaultOrbitCamera().apply {
             minZoom = 10.0
-            maxZoom = 250.0
-            zoom = 100.0
+            maxZoom = 400.0
+            zoom = 200.0
         }
-        camera.setClipRange(1f, 1000f)
 
         clearColor = bgColor
         mainRenderPass.isProfileTimes = true
 
-        beeMeshA.shader = BeeShader(MdColor.BLUE, MdColor.PURPLE).apply { colorMap = beeTex }
-        beeMeshB.shader = BeeShader(MdColor.AMBER, MdColor.DEEP_ORANGE).apply { colorMap = beeTex }
-
+        val beeMeshA = cpuBeesA.beeMesh
+        val beeMeshB = cpuBeesB.beeMesh
+        beeMeshA.shader = CpuBeeShader(MdColor.BLUE, MdColor.PURPLE).apply { colorMap = beeTex }
+        beeMeshB.shader = CpuBeeShader(MdColor.AMBER, MdColor.DEEP_ORANGE).apply { colorMap = beeTex }
         addNode(beeMeshA)
         addNode(beeMeshB)
+        onUpdate {
+            if (!isGpuSimulation.value) {
+                cpuBeesA.updateBees()
+                cpuBeesB.updateBees()
+            }
+        }
+
+        gpuBees.setupShaders(beeTex)
+        addNode(gpuBees.beeMeshA)
+        addNode(gpuBees.beeMeshB)
+
+        applyMode(isGpuSimulation.value)
 
         addLineMesh {
             addBoundingBox(
@@ -64,56 +79,41 @@ class BeeDemo : DemoScene("Fighting Bees") {
                     BeeConfig.worldExtent.mul(1f, MutableVec3f())
                 ), Color.WHITE)
         }
+    }
 
-        onUpdate {
-            beeSystemA.updateBees()
-            beeSystemB.updateBees()
-        }
-        onRelease {
-            beeTex.dispose()
-        }
+    private fun applyMode(isGpu: Boolean) {
+        gpuBees.setEnabled(isGpu)
+        cpuBeesA.beeMesh.isVisible = !isGpu
+        cpuBeesB.beeMesh.isVisible = !isGpu
+
+        val maxBees = if (isGpu) BeeConfig.maxBeesPerTeamGpu else BeeConfig.maxBeesPerTeamCpu
+        BeeConfig.beesPerTeam.set(min(BeeConfig.beesPerTeam.value, maxBees))
     }
 
     override fun createMenu(menu: DemoMenu, ctx: KoolContext) = menuSurface {
         // There are two teams -> total number of bees is beesPerTeam * 2
+        val maxBees = if (isGpuSimulation.use()) BeeConfig.maxBeesPerTeamGpu else BeeConfig.maxBeesPerTeamCpu
         MenuSlider2(
             "Number of Bees",
             BeeConfig.beesPerTeam.use().toFloat(),
             10f,
-            BeeConfig.maxBeesPerTeam.toFloat(),
+            maxBees.toFloat(),
             { "${it.roundToInt() * 2}" }
         ) {
             BeeConfig.beesPerTeam.set(it.roundToInt())
         }
 
-        MenuRow {
-            val t = beeSystemA.beeUpdateTime.use() + beeSystemB.beeUpdateTime.use()
-            Text("Bee update:") { labelStyle(Grow.Std) }
-            Text("${t.toString(2)} ms") { labelStyle() }
+        if (ctx.backend.hasComputeShaders) {
+            LabeledSwitch("GPU Simulation", isGpuSimulation)
         }
-        MenuRow {
-            val tInstsA = beeSystemA.instanceUpdateTime.use()
-            val tInstsB = beeSystemA.instanceUpdateTime.use()
-            val t = tInstsA + tInstsB + mainScene.mainRenderPass.tDraw * 1000.0
-            Text("Bee drawing:") { labelStyle(Grow.Std) }
-            Text("${t.toString(2)} ms") { labelStyle() }
-        }
-    }
 
-    private fun beeMesh(instances: MeshInstanceList) = Mesh(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS, instances = instances).apply {
-        generate {
-            //scale(10f)
-            cube {
-                size.set(0.7f, 0.7f, 1f)
-                val s = 1/32f
-                uvs = listOf(
-                    RectUvs(Vec2f(0*s, 0*s), Vec2f(7*s, 0*s), Vec2f(0*s, 10*s), Vec2f(7*s, 10*s)),      // top
-                    RectUvs(Vec2f(21*s, 10*s), Vec2f(14*s, 10*s), Vec2f(21*s, 0*s), Vec2f(14*s, 0*s)),  // bottom
-                    RectUvs(Vec2f(21*s, 0*s), Vec2f(28*s, 0*s), Vec2f(21*s, 10*s), Vec2f(28*s, 10*s)),  // left
-                    RectUvs(Vec2f(14*s, 10*s), Vec2f(7*s, 10*s), Vec2f(14*s, 0*s), Vec2f(7*s, 0*s)),    // right
-                    RectUvs(Vec2f(0*s, 10*s), Vec2f(7*s, 10*s), Vec2f(0*s, 17*s), Vec2f(7*s, 17*s)),    // front
-                    RectUvs(Vec2f(14*s, 17*s), Vec2f(7*s, 17*s), Vec2f(14*s, 10*s), Vec2f(7*s, 10*s))   // back
-                )
+        MenuRow {
+            val t = cpuBeesA.beeUpdateTime.use() + cpuBeesB.beeUpdateTime.use()
+            Text("Bee update:") { labelStyle(Grow.Std) }
+            if (isGpuSimulation.use()) {
+                Text("0.00 ms") { labelStyle() }
+            } else {
+                Text("${t.toString(2)} ms") { labelStyle() }
             }
         }
     }

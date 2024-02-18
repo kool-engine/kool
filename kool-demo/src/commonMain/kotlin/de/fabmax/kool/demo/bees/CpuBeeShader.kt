@@ -7,7 +7,7 @@ import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.CullMethod
 import de.fabmax.kool.util.Color
 
-class BeeShader(
+class CpuBeeShader(
     aliveColor: Color,
     deadColor: Color,
     cfg: Config = KslBlinnPhongShaderConfig {

@@ -19,7 +19,6 @@ import de.fabmax.kool.util.logI
 import kotlinx.browser.window
 import kotlinx.coroutines.await
 import org.w3c.dom.HTMLCanvasElement
-import kotlin.math.ceil
 
 class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) : RenderBackend, RenderBackendJs {
     override val name: String = "WebGPU Backend"
@@ -154,11 +153,8 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
                 var isInLimits = true
 
                 val groupSize = pipeline.workGroupSize
-                val numGroupsX = ceil(width.toFloat() / pipeline.workGroupSize.x).toInt()
-                val numGroupsY = ceil(height.toFloat() / pipeline.workGroupSize.y).toInt()
-                val numGroupsZ = ceil(depth.toFloat() / pipeline.workGroupSize.z).toInt()
-                if (numGroupsX > maxNumGroups || numGroupsY > maxNumGroups || numGroupsZ > maxNumGroups) {
-                    logE { "Maximum compute shader workgroup count exceeded: max count = $maxNumGroups, requested count: ($numGroupsX, $numGroupsY, $numGroupsZ)" }
+                if (task.numGroups.x > maxNumGroups || task.numGroups.y > maxNumGroups || task.numGroups.z > maxNumGroups) {
+                    logE { "Maximum compute shader workgroup count exceeded: max count = $maxNumGroups, requested count: (${task.numGroups.x}, ${task.numGroups.y}, ${task.numGroups.z})" }
                     isInLimits = false
                 }
                 if (groupSize.x > maxWorkGroupSzX || groupSize.y > maxWorkGroupSzY || groupSize.z > maxWorkGroupSzZ) {
@@ -174,7 +170,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
                 if (isInLimits) {
                     task.beforeDispatch()
                     if (pipelineManager.bindComputePipeline(task, computePassEncoderState)) {
-                        computePassEncoderState.passEncoder.dispatchWorkgroups(numGroupsX, numGroupsY, numGroupsZ)
+                        computePassEncoderState.passEncoder.dispatchWorkgroups(task.numGroups.x, task.numGroups.y, task.numGroups.z)
                         task.afterDispatch()
                     }
                 }

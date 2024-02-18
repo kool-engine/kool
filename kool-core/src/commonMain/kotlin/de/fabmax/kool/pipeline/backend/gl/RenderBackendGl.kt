@@ -8,11 +8,7 @@ import de.fabmax.kool.pipeline.backend.DeviceCoordinates
 import de.fabmax.kool.pipeline.backend.RenderBackend
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.util.Time
-import de.fabmax.kool.util.Viewport
-import de.fabmax.kool.util.logD
-import de.fabmax.kool.util.logE
-import kotlin.math.ceil
+import de.fabmax.kool.util.*
 
 abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, internal val ctx: KoolContext) : RenderBackend {
     override val name = "Common GL Backend"
@@ -87,8 +83,8 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
     }
 
     override fun generateKslComputeShader(shader: KslComputeShader, pipeline: ComputePipeline): ComputeShaderCodeGl {
-        check(gl.capabilities.hasComputeShaders) {
-            "Compute shaders require OpenGL 4.3 or higher"
+        if (!gl.capabilities.hasComputeShaders) {
+            logW { "Compute shaders require OpenGL 4.3 or higher" }
         }
         val src = GlslGenerator(glslGeneratorHints).generateComputeProgram(shader.program, pipeline)
         if (shader.program.dumpCode) {
@@ -140,18 +136,14 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
             val task = tasks[i]
             if (task.isEnabled) {
                 val pipeline = tasks[i].pipeline
-                val numGroupsX = ceil(computePass.width.toFloat() / pipeline.workGroupSize.x).toInt()
-                val numGroupsY = ceil(computePass.height.toFloat() / pipeline.workGroupSize.y).toInt()
-                val numGroupsZ = ceil(computePass.depth.toFloat() / pipeline.workGroupSize.z).toInt()
-
                 task.beforeDispatch()
 
                 if (shaderMgr.bindComputeShader(pipeline, task)) {
                     val maxCnt = gl.capabilities.maxWorkGroupCount
-                    if (numGroupsX > maxCnt.x || numGroupsY > maxCnt.y || numGroupsZ > maxCnt.z) {
-                        logE { "Maximum compute shader workgroup count exceeded: max count = $maxCnt, requested count: ($numGroupsX, $numGroupsY, $numGroupsZ)" }
+                    if (task.numGroups.x > maxCnt.x || task.numGroups.y > maxCnt.y || task.numGroups.z > maxCnt.z) {
+                        logE { "Maximum compute shader workgroup count exceeded: max count = $maxCnt, requested count: (${task.numGroups.x}, ${task.numGroups.y}, ${task.numGroups.z})" }
                     }
-                    gl.dispatchCompute(numGroupsX, numGroupsY, numGroupsZ)
+                    gl.dispatchCompute(task.numGroups.x, task.numGroups.y, task.numGroups.z)
                     gl.memoryBarrier(gl.SHADER_IMAGE_ACCESS_BARRIER_BIT)
 
                     task.afterDispatch()

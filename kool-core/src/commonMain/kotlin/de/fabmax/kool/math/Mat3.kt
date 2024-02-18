@@ -264,7 +264,6 @@ open class Mat3f(
                         var s = 0.5f / sqrt(r22 - r00 - r11 + 1f)
                         if (r10 < r01) s = -s   // ensure non-negative w
                         rotation.set((r02 + r20) * s, (r12 + r21) * s, 0.25f / s, (r10 - r01) * s)
-
                     } else {
                         var s = 0.5f / sqrt(r11 - r22 - r00 + 1f)
                         if (r02 < r20) s = -s   // ensure non-negative w
@@ -1156,7 +1155,6 @@ open class Mat3d(
                         var s = 0.5 / sqrt(r22 - r00 - r11 + 1.0)
                         if (r10 < r01) s = -s   // ensure non-negative w
                         rotation.set((r02 + r20) * s, (r12 + r21) * s, 0.25 / s, (r10 - r01) * s)
-
                     } else {
                         var s = 0.5 / sqrt(r11 - r22 - r00 + 1.0)
                         if (r02 < r20) s = -s   // ensure non-negative w

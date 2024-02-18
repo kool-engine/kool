@@ -18,7 +18,7 @@ class WgpuDrawPipeline(
     private fun createVertexBufferLayout(pipeline: DrawPipeline): List<GPUVertexBufferLayout> {
         return pipeline.vertexLayout.bindings
             .sortedBy { it.inputRate.name }     // INSTANCE first, VERTEX second
-            .map { vertexBinding ->
+            .mapNotNull { vertexBinding ->
                 val attributes = vertexBinding.vertexAttributes.flatMap { attr ->
                     val (format, stride) = when (attr.type) {
                         GpuType.FLOAT1 -> GPUVertexFormat.float32 to 4
@@ -45,14 +45,16 @@ class WgpuDrawPipeline(
                     }
                 }
 
-                GPUVertexBufferLayout(
-                    arrayStride = vertexBinding.strideBytes.toLong(),
-                    attributes = attributes.toTypedArray(),
-                    stepMode = when (vertexBinding.inputRate) {
-                        InputRate.VERTEX -> GPUVertexStepMode.vertex
-                        InputRate.INSTANCE -> GPUVertexStepMode.instance
-                    }
-                )
+                if (vertexBinding.strideBytes == 0) null else {
+                    GPUVertexBufferLayout(
+                        arrayStride = vertexBinding.strideBytes.toLong(),
+                        attributes = attributes.toTypedArray(),
+                        stepMode = when (vertexBinding.inputRate) {
+                            InputRate.VERTEX -> GPUVertexStepMode.vertex
+                            InputRate.INSTANCE -> GPUVertexStepMode.instance
+                        }
+                    )
+                }
             }
     }
 

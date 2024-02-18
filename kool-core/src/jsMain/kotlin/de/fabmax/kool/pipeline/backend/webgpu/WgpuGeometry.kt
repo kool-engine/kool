@@ -26,8 +26,10 @@ class WgpuGeometry(val mesh: Mesh, val backend: RenderBackendWebGpu) : BaseRelea
         createdIntBuffer = if (geom.byteStrideI == 0) null else {
             CreatedBuffer("${mesh.name} vertex int data", geom.byteStrideI * geom.numVertices)
         }
-        createdInstanceBuffer = mesh.instances?.let {
-            CreatedBuffer("${mesh.name} instance data", it.strideBytesF * it.maxInstances)
+        createdInstanceBuffer = if (mesh.instances != null && mesh.instances.instanceSizeF > 0) {
+            CreatedBuffer("${mesh.name} instance data", mesh.instances.strideBytesF * mesh.instances.maxInstances)
+        } else {
+            null
         }
     }
 

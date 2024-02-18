@@ -44,7 +44,7 @@ class GpuGeometryGl(
             null
         }
 
-        instanceBuffer = if (instances != null) {
+        instanceBuffer = if (instances != null && instances.instanceSizeF > 0) {
             BufferResource(gl.ARRAY_BUFFER, backend, creationInfo.copy(bufferName = "$namePrefix.${geometry.name}.instances"))
         } else {
             null
