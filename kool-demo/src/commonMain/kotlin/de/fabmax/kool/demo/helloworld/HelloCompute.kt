@@ -11,9 +11,7 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.addTextureMesh
 import de.fabmax.kool.scene.defaultOrbitCamera
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.Time
-import de.fabmax.kool.util.releaseWith
+import de.fabmax.kool.util.*
 
 class HelloCompute : DemoScene("Hello Compute") {
     override fun Scene.setupMainScene(ctx: KoolContext) {
@@ -98,5 +96,20 @@ class HelloCompute : DemoScene("Hello Compute") {
         }
 
         storageBuffer.releaseWith(this)
+
+        var counter = 0
+        onUpdate {
+            if (counter++ % 1000 == 0) {
+                // for the purpose of this example, we read back the buffer from time to time and print the color of
+                // the first pixel to the console
+                launchOnMainThread {
+                    logI { "${Time.frameCount}: Read back storage buffer from GPU memory..." }
+                    storageBuffer.readbackFloats {
+                        val color = storageBuffer.getF4(0)
+                        logI { "${Time.frameCount}: Got buffer, rgba[0] = ${color.x}, ${color.y}, ${color.z}, ${color.w}" }
+                    }
+                }
+            }
+        }
     }
 }

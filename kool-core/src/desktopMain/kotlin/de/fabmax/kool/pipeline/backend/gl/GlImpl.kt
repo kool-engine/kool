@@ -312,6 +312,31 @@ object GlImpl : GlApi {
         )
     }
 
+    override fun readBuffer(gpuBuffer: BufferResource, dstBuffer: Buffer): Boolean {
+        var success = false
+        gpuBuffer.bind()
+
+        val bytes = glMapBuffer(gpuBuffer.target, GL_READ_ONLY, dstBuffer.capacity * 4L, null)
+        if (bytes != null) {
+            success = true
+            when (dstBuffer) {
+                is Uint8BufferImpl -> dstBuffer.useRaw { it.put(bytes) }
+                is Uint16BufferImpl -> dstBuffer.useRaw { it.put(bytes.asShortBuffer()) }
+                is Int32BufferImpl -> dstBuffer.useRaw { it.put(bytes.asIntBuffer()) }
+                is Float32BufferImpl -> dstBuffer.useRaw { it.put(bytes.asFloatBuffer()) }
+                is MixedBufferImpl -> dstBuffer.useRaw { it.put(bytes) }
+                else -> {
+                    logE { "Unexpected buffer type: ${dstBuffer::class.simpleName}" }
+                    success = false
+                }
+            }
+        } else {
+            logE { "glMapBuffer failed: ${getError()}" }
+        }
+        glUnmapBuffer(gpuBuffer.target)
+        return success
+    }
+
     override fun readTexturePixels(src: LoadedTextureGl, dst: TextureData) {
         TextureCopyHelper.readTexturePixels(src, dst)
     }

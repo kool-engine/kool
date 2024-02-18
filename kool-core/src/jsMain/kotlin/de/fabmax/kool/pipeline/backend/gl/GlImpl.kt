@@ -350,6 +350,8 @@ object GlImpl : GlApi {
         )
     }
 
+    override fun readBuffer(gpuBuffer: BufferResource, dstBuffer: Buffer): Boolean = false
+
     override fun readTexturePixels(src: LoadedTextureGl, dst: TextureData) {
         val fb = createFramebuffer()
         bindFramebuffer(FRAMEBUFFER, fb)

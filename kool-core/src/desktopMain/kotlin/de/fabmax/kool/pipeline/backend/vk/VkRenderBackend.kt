@@ -10,9 +10,11 @@ import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.platform.GlfwWindow
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.util.Buffer
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Viewport
 import de.fabmax.kool.util.memStack
+import kotlinx.coroutines.CompletableDeferred
 import org.lwjgl.PointerBuffer
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.VK10.*
@@ -62,6 +64,10 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
         }
         tex.loadingState = Texture.LoadingState.LOADED
         vkSystem.device.addDependingResource(tex.loadedTexture as LoadedTextureVk)
+    }
+
+    override fun readStorageBuffer(storage: StorageBuffer, deferred: CompletableDeferred<Buffer>) {
+        TODO("Not yet implemented")
     }
 
     override fun createOffscreenPass2d(parentPass: OffscreenRenderPass2d): OffscreenPass2dImpl {

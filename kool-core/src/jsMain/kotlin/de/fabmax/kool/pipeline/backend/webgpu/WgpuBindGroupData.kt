@@ -124,7 +124,7 @@ class WgpuBindGroupData(
                 GPUBufferDescriptor(
                     label = "bindGroup[${data.layout.scope}]-storage-${name}",
                     size = storage.buffer.limit.toLong() * 4,
-                    usage = GPUBufferUsage.STORAGE or GPUBufferUsage.COPY_DST
+                    usage = GPUBufferUsage.STORAGE or GPUBufferUsage.COPY_SRC or GPUBufferUsage.COPY_DST
                 ),
                 "scene: ${renderPass.parentScene?.name}, render-pass: ${renderPass.name}"
             )

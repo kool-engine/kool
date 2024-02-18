@@ -12,12 +12,14 @@ import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.pipeline.backend.wgsl.WgslGenerator
 import de.fabmax.kool.platform.JsContext
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.util.LongHash
-import de.fabmax.kool.util.Time
-import de.fabmax.kool.util.logE
-import de.fabmax.kool.util.logI
+import de.fabmax.kool.util.*
 import kotlinx.browser.window
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.await
+import org.khronos.webgl.Float32Array
+import org.khronos.webgl.Int32Array
+import org.khronos.webgl.Uint16Array
+import org.khronos.webgl.Uint8Array
 import org.w3c.dom.HTMLCanvasElement
 
 class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) : RenderBackend, RenderBackendJs {
@@ -45,6 +47,8 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
     private val computePassEncoderState = ComputePassEncoderState()
 
     private var renderSize = Vec2i(canvas.width, canvas.height)
+
+    private val awaitedStorageBuffers = mutableListOf<AwaitedStorageBuffers>()
 
     init {
         check(isSupported()) {
@@ -96,7 +100,15 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
             }
         }
 
+        if (awaitedStorageBuffers.isNotEmpty()) {
+            // copy all buffers requested for readback to temporary buffers using the current command encoder
+            copyStorageBuffers(encoder)
+        }
         device.queue.submit(arrayOf(encoder.finish()))
+        if (awaitedStorageBuffers.isNotEmpty()) {
+            // after encoder is finished and submitted, temp buffers can be mapped for readback
+            mapCopiedStorageBuffers()
+        }
     }
 
     private fun Scene.renderOffscreenPasses(encoder: GPUCommandEncoder) {
@@ -225,12 +237,65 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         }
     }
 
+    override fun readStorageBuffer(storage: StorageBuffer, deferred: CompletableDeferred<Buffer>) {
+        awaitedStorageBuffers += AwaitedStorageBuffers(storage, deferred)
+    }
+
+    private fun copyStorageBuffers(encoder: GPUCommandEncoder) {
+        awaitedStorageBuffers.forEach { awaited ->
+            val gpuBuf = awaited.storage.gpuBuffer as WgpuBufferResource?
+            if (gpuBuf == null) {
+                awaited.deferred.completeExceptionally(IllegalStateException("Failed reading buffer"))
+            } else {
+                val size = awaited.storage.buffer.limit.toLong() * 4
+                val mapBuffer = device.createBuffer(
+                    GPUBufferDescriptor(
+                        label = "map-read-copy-dst",
+                        size = size,
+                        usage = GPUBufferUsage.MAP_READ or GPUBufferUsage.COPY_DST
+                    )
+                )
+                encoder.copyBufferToBuffer(gpuBuf.buffer, 0L, mapBuffer, 0L, size)
+                awaited.mapBuffer = mapBuffer
+            }
+        }
+    }
+
+    private fun mapCopiedStorageBuffers() {
+        awaitedStorageBuffers.forEach { awaited ->
+            val dst = awaited.storage.buffer
+            awaited.mapBuffer?.let { mapBuffer ->
+                mapBuffer.mapAsync(GPUMapMode.READ).then {
+                    val arrayBuffer = awaited.mapBuffer!!.getMappedRange()
+                    when (dst) {
+                        is Uint8BufferImpl -> dst.buffer.set(Uint8Array(arrayBuffer))
+                        is Uint16BufferImpl -> dst.buffer.set(Uint16Array(arrayBuffer))
+                        is Int32BufferImpl -> dst.buffer.set(Int32Array(arrayBuffer))
+                        is Float32BufferImpl -> dst.buffer.set(Float32Array(arrayBuffer))
+                        is MixedBufferImpl -> Uint8Array(dst.buffer.buffer).set(Uint8Array(arrayBuffer))
+                        else -> {
+                            logE { "Unexpected buffer type: ${dst::class.simpleName}" }
+                        }
+                    }
+                    mapBuffer.unmap()
+                    mapBuffer.destroy()
+                    awaited.deferred.complete(dst)
+                }
+            }
+        }
+        awaitedStorageBuffers.clear()
+    }
+
     fun createBuffer(descriptor: GPUBufferDescriptor, info: String?): WgpuBufferResource {
         return WgpuBufferResource(device.createBuffer(descriptor), descriptor.size, info)
     }
 
     fun createTexture(descriptor: GPUTextureDescriptor, texture: Texture): WgpuTextureResource {
         return WgpuTextureResource(device.createTexture(descriptor), texture)
+    }
+
+    private class AwaitedStorageBuffers(val storage: StorageBuffer, val deferred: CompletableDeferred<Buffer>) {
+        var mapBuffer: GPUBuffer? = null
     }
 
     data class WebGpuShaderCode(

@@ -44,7 +44,6 @@ class GpuBees(beeScene: Scene) {
                     val r10 = mat[0].y; val r11 = mat[1].y; val r12 = mat[2].y
                     val r20 = mat[0].z; val r21 = mat[1].z; val r22 = mat[2].z
 
-
                     val trace = float1Var(r00 + r11 + r22)
                     `if`(trace gt 0f.const) {
                         val s = float1Var(0.5f.const / sqrt(trace + 1f.const))

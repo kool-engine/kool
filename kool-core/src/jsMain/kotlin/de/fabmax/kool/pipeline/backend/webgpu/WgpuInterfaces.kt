@@ -33,8 +33,14 @@ external class GPUBuffer {
     val label: String
     val size: dynamic
     fun getMappedRange(offset: Long = definedExternally, size: Long = definedExternally): ArrayBuffer
+    fun mapAsync(mode: Int, offset: Long = definedExternally, size: Long = definedExternally): Promise<Unit>
     fun unmap()
     fun destroy()
+}
+
+external object GPUMapMode {
+    val READ: Int
+    val WRITE: Int
 }
 
 external object GPUBufferUsage {
@@ -61,6 +67,7 @@ external class GPUCommandBuffer
 external class GPUCommandEncoder {
     fun beginComputePass(descriptor: GPUComputePassDescriptor = definedExternally): GPUComputePassEncoder
     fun beginRenderPass(descriptor: GPURenderPassDescriptor): GPURenderPassEncoder
+    fun copyBufferToBuffer(source: GPUBuffer, sourceOffset: Long, destination: GPUBuffer, destinationOffset: Long, size: Long)
     fun copyTextureToTexture(source: GPUImageCopyTexture, destination: GPUImageCopyTexture, copySize: IntArray)
     fun finish(): GPUCommandBuffer
 }

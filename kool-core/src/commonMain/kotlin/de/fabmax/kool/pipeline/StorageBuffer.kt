@@ -1,11 +1,10 @@
 package de.fabmax.kool.pipeline
 
-import de.fabmax.kool.math.Vec2f
-import de.fabmax.kool.math.Vec2i
-import de.fabmax.kool.math.Vec4f
-import de.fabmax.kool.math.Vec4i
+import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.math.*
 import de.fabmax.kool.pipeline.backend.GpuBuffer
 import de.fabmax.kool.util.*
+import kotlinx.coroutines.CompletableDeferred
 
 abstract class StorageBuffer(
     val format: GpuType,
@@ -51,6 +50,38 @@ abstract class StorageBuffer(
         isDirty = true
     }
 
+    /**
+     * Returns the float value at the specified buffer index (given that the underlying buffer is a float buffer).
+     * Notice, that the buffer content is only synced with the GPU-buffer, when [readbackFloats] is called. Hence, if
+     * this buffer is modified by a (compute-) shader, [readbackFloats] has to be called before the updated buffer
+     * contents can be read.
+     */
+    fun getF1(index: Int): Float {
+        return bufferF32[index]
+    }
+
+    /**
+     * Returns the 2d float vector at the specified buffer index (given that the underlying buffer is a float buffer).
+     * Notice, that the buffer content is only synced with the GPU-buffer, when [readbackFloats] is called. Hence, if
+     * this buffer is modified by a (compute-) shader, [readbackFloats] has to be called before the updated buffer
+     * contents can be read.
+     */
+    fun getF2(index: Int, result: MutableVec2f = MutableVec2f()): MutableVec2f {
+        var i = index * 2
+        return result.set( bufferF32[i++],  bufferF32[i])
+    }
+
+    /**
+     * Returns the 4d float vector at the specified buffer index (given that the underlying buffer is a float buffer).
+     * Notice, that the buffer content is only synced with the GPU-buffer, when [readbackFloats] is called. Hence, if
+     * this buffer is modified by a (compute-) shader, [readbackFloats] has to be called before the updated buffer
+     * contents can be read.
+     */
+    fun getF4(index: Int, result: MutableVec4f = MutableVec4f()): MutableVec4f {
+        var i = index * 4
+        return result.set( bufferF32[i++],  bufferF32[i++], bufferF32[i++],  bufferF32[i])
+    }
+
     protected fun setI1(index: Int, value: Int) {
         bufferI32[index] = value
         isDirty = true
@@ -72,6 +103,38 @@ abstract class StorageBuffer(
         isDirty = true
     }
 
+    /**
+     * Returns the int value at the specified buffer index (given that the underlying buffer is an int buffer).
+     * Notice, that the buffer content is only synced with the GPU-buffer, when [readbackFloats] is called. Hence, if
+     * this buffer is modified by a (compute-) shader, [readbackFloats] has to be called before the updated buffer
+     * contents can be read.
+     */
+    fun getI1(index: Int): Int {
+        return bufferI32[index]
+    }
+
+    /**
+     * Returns the 2d int vector at the specified buffer index (given that the underlying buffer is an int buffer).
+     * Notice, that the buffer content is only synced with the GPU-buffer, when [readbackFloats] is called. Hence, if
+     * this buffer is modified by a (compute-) shader, [readbackFloats] has to be called before the updated buffer
+     * contents can be read.
+     */
+    fun getI2(index: Int, result: MutableVec2i = MutableVec2i()): MutableVec2i {
+        var i = index * 2
+        return result.set( bufferI32[i++],  bufferI32[i])
+    }
+
+    /**
+     * Returns the 4d int vector at the specified buffer index (given that the underlying buffer is an int buffer).
+     * Notice, that the buffer content is only synced with the GPU-buffer, when [readbackFloats] is called. Hence, if
+     * this buffer is modified by a (compute-) shader, [readbackFloats] has to be called before the updated buffer
+     * contents can be read.
+     */
+    fun getI4(index: Int, result: MutableVec4i = MutableVec4i()): MutableVec4i {
+        var i = index * 4
+        return result.set( bufferI32[i++],  bufferI32[i++], bufferI32[i++],  bufferI32[i])
+    }
+
     fun writeFloats(block: (Float32Buffer) -> Unit) {
         block(bufferF32)
         isDirty = true
@@ -82,12 +145,40 @@ abstract class StorageBuffer(
         isDirty = true
     }
 
-    suspend fun readbackFloats(block: (Float32Buffer) -> Unit) {
-        TODO()
+    /**
+     * Synchronizes the buffer with the GPU buffer by reading back the buffer data from the GPU. The synchronized
+     * buffer is passed into the given [block]. However, at the time [block] is executed, the buffer is synchronized
+     * and the [getF1], [getF2], and [getF4] convenience functions can be used as well.
+     *
+     * Notice that, depending on the platform, the buffer is read asynchronously and is neither guaranteed nor likely
+     * to complete in the same frame. Moreover, buffer reading is an expensive operation and should be avoided on a
+     * per-frame basis.
+     */
+    suspend inline fun readbackFloats(block: (Float32Buffer) -> Unit) {
+        val deferred = CompletableDeferred<Buffer>()
+        KoolSystem.requireContext().backend.readStorageBuffer(this, deferred)
+
+        val buffer = deferred.await()
+        check(buffer is Float32Buffer) { "Buffer has an int-format ($format), cannot used with float values" }
+        block(buffer)
     }
 
-    suspend fun readbackInts(block: (Int32Buffer) -> Unit) {
-        TODO()
+    /**
+     * Synchronizes the buffer with the GPU buffer by reading back the buffer data from the GPU. The synchronized
+     * buffer is passed into the given [block]. However, at the time [block] is executed, the buffer is synchronized
+     * and the [getI1], [getI2], and [getI4] convenience functions can be used as well.
+     *
+     * Notice that, depending on the platform, the buffer is read asynchronously and is neither guaranteed nor likely
+     * to complete in the same frame. Moreover, buffer reading is an expensive operation and should be avoided on a
+     * per-frame basis.
+     */
+    suspend inline fun readbackInts(block: (Int32Buffer) -> Unit) {
+        val deferred = CompletableDeferred<Buffer>()
+        KoolSystem.requireContext().backend.readStorageBuffer(this, deferred)
+
+        val buffer = deferred.await()
+        check(buffer is Int32Buffer) { "Buffer has an float-format ($format), cannot used with int values" }
+        block(buffer)
     }
 
     override fun release() {
